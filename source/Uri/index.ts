@@ -1,6 +1,6 @@
 import { Path } from '@typed/fp/Path'
-import { eqString } from 'fp-ts/lib/Eq'
-import { ReadonlyRecord } from 'fp-ts/lib/ReadonlyRecord'
+import { eqString } from 'fp-ts/es6/Eq'
+import { ReadonlyRecord } from 'fp-ts/es6/ReadonlyRecord'
 import { getEq, iso, Newtype, prism } from 'newtype-ts'
 
 export interface Uri extends Newtype<{ readonly Url: unique symbol }, string> {}
