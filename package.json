@@ -1,0 +1,60 @@
+{
+  "name": "@typed/fp",
+  "version": "0.0.0",
+  "description": "Data Structures and Resources for fp-ts",
+  "type": "module",
+  "main": "index.js",
+  "dependencies": {
+    "@most/core": "^1.5.0",
+    "@most/disposable": "^1.2.2",
+    "@most/scheduler": "^1.2.3",
+    "@most/types": "^1.0.2",
+    "fp-ts": "^2.8.1",
+    "io-ts": "^2.2.9",
+    "monocle-ts": "^2.3.3",
+    "most-subject": "^6.0.0",
+    "newtype-ts": "^0.3.4",
+    "path-to-regexp": "^6.1.0"
+  },
+  "devDependencies": {
+    "@typed/test": "^9.5.0",
+    "@types/node": "^14.0.27",
+    "@types/rimraf": "^3.0.0",
+    "lint-staged": "^10.2.11",
+    "prettier": "^2.0.5",
+    "rimraf": "^3.0.2",
+    "ts-node": "^8.10.2",
+    "tslib": "^2.0.1",
+    "tslint": "^6.1.3",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-no-circular-imports": "^0.7.0",
+    "tslint-plugin-prettier": "^2.3.0",
+    "typescript": "^3.9.7"
+  },
+  "scripts": {
+    "--maintenance--": "echo 'DO NOT USE'",
+    "build": "npm run cleanup && tsc",
+    "cleanup": "npm run tsnode -- ./tools/cleanup",
+    "test": "typed-test 'source/**/*.test.ts'",
+    "test:watch": "npm test -- --watch",
+    "update:gitignore": "npm run tsnode --  ./tools/update-gitignore",
+    "--helpers--": "echo 'DO NOT USE'",
+    "tsnode": "node --loader ts-node/esm.mjs --experimental-specifier-resolution=node "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TylorS/typed-fp.git"
+  },
+  "keywords": [
+    "TypeScript",
+    "Typed",
+    "fp-ts",
+    "fp"
+  ],
+  "author": "Tylor Steinberger <tlsteinberger167@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TylorS/typed-fp/issues"
+  },
+  "homepage": "https://github.com/TylorS/typed-fp#readme"
+}

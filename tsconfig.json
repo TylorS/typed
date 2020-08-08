@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "./source",
+    "module": "esnext",
+    "outDir": "./",
+    "baseUrl": "./",
+    "paths": {
+      "@typed/fp/*": [
+        "./source/*"
+      ]
+    }
+  },
+  "include": [
+    "./source/*.ts",
+    "./source/**/*.ts"
+  ],
+  "exclude": [
+    "./node_modules",
+    "./source/**/*.test.ts"
+  ]
+}

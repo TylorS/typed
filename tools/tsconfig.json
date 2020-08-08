@@ -1,0 +1,18 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "module": "esnext",
+    "outDir": "./",
+    "baseUrl": "./",
+    "paths": {
+      "@typed/fp/*": [
+        "../source/*"
+      ]
+    }
+  },
+  "include": [
+    "./*.ts",
+  ],
+  "exclude": []
+}
