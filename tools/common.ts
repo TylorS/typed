@@ -9,7 +9,7 @@ export const ROOT_FILES = ['index']
 export function compiledFiles(name: string): readonly string[] {
   name = name.replace(/.tsx?$/, '')
 
-  return [`${name}.ts`, `${name}.d.ts`, `${name}.d.ts.map`, `${name}.js`, `${name}.js.map`]
+  return [`/${name}.ts`, `/${name}.d.ts`, `/${name}.d.ts.map`, `/${name}.js`, `/${name}.js.map`]
 }
 
 export const MODULES: ReadonlyArray<string> = readdirSync(SOURCE_DIR).filter((path) =>

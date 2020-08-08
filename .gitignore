@@ -57,11 +57,11 @@ tsconfig*.tsbuildinfo
 .cache
 
 # generated
-index.ts
-index.d.ts
-index.d.ts.map
-index.js
-index.js.map
+/index.ts
+/index.d.ts
+/index.d.ts.map
+/index.js
+/index.js.map
 /History/
 /Path/
 /Routing/
