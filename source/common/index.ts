@@ -11,3 +11,7 @@ export type Arity5<A = any, B = any, C = any, D = any, E = any, F = any> = (
   d: D,
   e: E,
 ) => F
+
+export type Equals<A, B> = A extends B ? (B extends A ? true : false) : false
+
+export const isBrowser: boolean = typeof window !== 'undefined' && typeof document !== 'undefined'

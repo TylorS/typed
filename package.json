@@ -7,14 +7,17 @@
   "dependencies": {
     "@most/core": "^1.5.0",
     "@most/disposable": "^1.2.2",
+    "@most/hold": "^4.1.0",
     "@most/scheduler": "^1.2.3",
     "@most/types": "^1.0.2",
+    "@typed/promises": "^5.3.0",
     "fp-ts": "^2.8.1",
     "io-ts": "^2.2.9",
     "monocle-ts": "^2.3.3",
     "most-subject": "^6.0.0",
     "newtype-ts": "^0.3.4",
-    "path-to-regexp": "^6.1.0"
+    "path-to-regexp": "^6.1.0",
+    "ts-toolbelt": "^6.15.1"
   },
   "devDependencies": {
     "@typed/test": "^9.5.0",
@@ -32,13 +35,13 @@
     "typescript": "^3.9.7"
   },
   "scripts": {
-    "--maintenance--": "echo 'DO NOT USE'",
+    "--maintenance--": "exit 1",
     "build": "npm run cleanup && tsc",
     "cleanup": "npm run tsnode -- ./tools/cleanup",
-    "test": "typed-test 'source/**/*.test.ts'",
+    "test": "npm run tsnode -- ./node_modules/.bin/typed-test",
     "test:watch": "npm test -- --watch",
     "update:gitignore": "npm run tsnode --  ./tools/update-gitignore",
-    "--helpers--": "echo 'DO NOT USE'",
+    "--helpers--": "exit 1",
     "tsnode": "node --loader ts-node/esm.mjs --experimental-specifier-resolution=node "
   },
   "repository": {
