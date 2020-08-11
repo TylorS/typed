@@ -44,8 +44,9 @@
     "test": "npm run lint && npm run unit-test",
     "test:watch": "npm test -- --watch",
     "update:gitignore": "npm run tsnode --  ./tools/update-gitignore",
+    "update": "npm run update:gitignore",
     "preversion": "npm test && npm run build",
-    "postversion": "npm publish",
+    "postversion": "npm run update && npm publish",
     "--helpers--": "",
     "tsnode": "node --loader ts-node/esm.mjs --experimental-specifier-resolution=node "
   },

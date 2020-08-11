@@ -62,9 +62,12 @@ tsconfig*.tsbuildinfo
 /index.d.ts.map
 /index.js
 /index.js.map
-/History/
+/Disposable/
+/Effect/
 /Path/
-/Routing/
 /Stream/
 /Uri/
+/Uuid/
 /common/
+/history/
+/lambda/
