@@ -1,38 +1,55 @@
-import { Monad2 } from 'fp-ts/es6/Monad'
+import { flow } from 'fp-ts/es6/function'
+import { Monad1, Monad2 } from 'fp-ts/es6/Monad'
 import { ap, apSeq } from './ap'
+import { apResume } from './apResume'
 import { chain } from './chain'
-import { Effect } from './Effect'
+import { chainResume } from './chainResume'
+import { Effect, Resume, sync } from './Effect'
 import { map } from './map'
 
-export const URI = '@typed/fp/Effect'
-export type URI = typeof URI
+export const EffectURI = '@typed/fp/Effect'
+export type EffectURI = typeof EffectURI
+
+export const ResumeURI = '@typed/fp/Resume'
+export type ResumeURI = typeof ResumeURI
 
 declare module 'fp-ts/es6/HKT' {
   export interface URItoKind2<E, A> {
-    [URI]: Effect<E, A>
+    [EffectURI]: Effect<E, A>
+  }
+
+  export interface URItoKind<A> {
+    [ResumeURI]: Resume<A>
   }
 }
 
-export const effect: Monad2<URI> = {
-  URI,
+export const effect: Monad2<EffectURI> = {
+  URI: EffectURI,
   of: Effect.of,
   ap,
   map: (fa, f) => map(f, fa),
   chain: (fa, f) => chain(f, fa),
 }
 
-export const effectSeq: Monad2<URI> = {
-  URI,
+export const effectSeq: Monad2<EffectURI> = {
+  URI: EffectURI,
   of: Effect.of,
   ap: apSeq,
   map: (fa, f) => map(f, fa),
   chain: (fa, f) => chain(f, fa),
 }
 
+export const resume: Monad1<ResumeURI> = {
+  URI: ResumeURI,
+  of: sync,
+  ap: apResume,
+  map: (fa, f) => chainResume(fa, flow(f, sync)),
+  chain: chainResume,
+}
+
 export * from './ap'
 export * from './ask'
 export * from './chain'
-export * from './chainResume'
 export * from './doEffect'
 export * from './Effect'
 export * from './failures'

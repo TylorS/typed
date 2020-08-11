@@ -1,6 +1,9 @@
 import { chainResume } from './chainResume'
 import { Effect, EffectGenerator, Env, Resume, sync } from './Effect'
 
+/**
+ * Converts an Effect<A, A> to and Env<E, A> with a simple stack-safe interpreter.
+ */
 export const toEnv = <E, A>(effect: Effect<E, A>): Env<E, A> => (e: E) => {
   const generator = effect[Symbol.iterator]()
 
