@@ -1,19 +1,17 @@
-import { flow } from 'fp-ts/es6/function'
-import { pipe } from 'fp-ts/es6/pipeable'
-import { Arity1 } from '../common'
-import { curry } from '../lambda'
+import { Arity1 } from '@typed/fp/common'
+import { curry } from '@typed/fp/lambda'
+import { doEffect } from './doEffect'
 import { Effect } from './Effect'
-import { provide } from './provide'
-import { runEffect } from './runEffect'
 
-function chainUncurried<A, E1, B, E2>(
-  f: Arity1<A, Effect<E1, B>>,
-  effect: Effect<E2, A>,
-): Effect<E1 & E2, B> {
-  return (e) => (cb) => pipe(effect, provide(e), runEffect(flow(f, provide(e), runEffect(cb))))
-}
+export const chain = curry(
+  <A, E1, B, E2>(f: Arity1<A, Effect<E1, B>>, eff: Effect<E2, A>): Effect<E1 & E2, B> =>
+    doEffect(function* () {
+      const a = yield* eff
+      const b = yield* f(a)
 
-export const chain = curry(chainUncurried) as {
-  <A, E1, B, E2>(f: Arity1<A, Effect<E1, B>>, effect: Effect<E2, A>): Effect<E1 & E2, B>
-  <A, E1, B>(f: Arity1<A, Effect<E1, B>>): <E2>(effect: Effect<E2, A>) => Effect<E1 & E2, B>
+      return b
+    }),
+) as {
+  <A, E1, B, E2>(f: Arity1<A, Effect<E1, B>>, eff: Effect<E2, A>): Effect<E2 & E1, B>
+  <A, E1, B>(f: Arity1<A, Effect<E1, B>>): <E2>(eff: Effect<E2, A>) => Effect<E2 & E1, B>
 }

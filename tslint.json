@@ -17,6 +17,7 @@
     "no-console": false,
     "ban-types": false,
     "no-shadowed-variable": false,
-    "no-bitwise": false
+    "no-bitwise": false,
+    "callable-types": false
   }
 }

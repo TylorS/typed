@@ -1,11 +1,21 @@
-import { Disposable } from '@typed/fp/Disposable'
+import { Arity1 } from '@typed/fp/common'
+import { Disposable, disposeNone } from '@typed/fp/Disposable'
+import { pipe } from 'fp-ts/es6/pipeable'
 import { curry } from '../lambda'
-import { PureEffect } from './Effect'
+import { Effect, Pure } from './Effect'
+import { provide } from './provide'
+import { runResume } from './runResume'
+import { toEnv } from './toEnv'
 
-const runEffectUncurried = <A>(f: (value: A) => Disposable, effect: PureEffect<A>): Disposable =>
-  effect({})(f)
+function __runPure<A>(onReturn: Arity1<A, Disposable>, effect: Pure<A>): Disposable {
+  return runResume(toEnv(effect)({}), onReturn)
+}
 
-export const runEffect: {
-  <A>(f: (value: A) => Disposable, effect: PureEffect<A>): Disposable
-  <A>(f: (value: A) => Disposable): (effect: PureEffect<A>) => Disposable
-} = curry(runEffectUncurried)
+export const runPure = curry(__runPure) as {
+  <A>(onReturn: Arity1<A, Disposable>, effect: Pure<A>): Disposable
+  <A>(onReturn: Arity1<A, Disposable>): (effect: Pure<A>) => Disposable
+}
+
+export function runEffect<E, A>(effect: Effect<E, A>, env: E) {
+  return pipe(effect, provide(env), runPure(disposeNone))
+}
