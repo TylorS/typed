@@ -1,7 +1,7 @@
 import { Arity1 } from '@typed/fp/common'
 import { Disposable, disposeNone } from '@typed/fp/Disposable'
+import { curry } from '@typed/fp/lambda'
 import { pipe } from 'fp-ts/es6/pipeable'
-import { curry } from '../lambda'
 import { Effect, Pure } from './Effect'
 import { provide } from './provide'
 import { runResume } from './runResume'

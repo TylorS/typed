@@ -2,7 +2,7 @@ import { eqString } from 'fp-ts/es6/Eq'
 import { Is } from 'io-ts'
 import { getEq, getMonoid, iso, Newtype, prism } from 'newtype-ts'
 
-export interface Path extends Newtype<{ readonly Path: unique symbol }, string> {}
+export type Path = Newtype<{ readonly Path: unique symbol }, string>
 
 export const pathIso = iso<Path>()
 
@@ -31,7 +31,7 @@ const isString: Is<string> = (x): x is string => typeof x === 'string'
  */
 export function pathJoin(
   paths: ReadonlyArray<string | Path | undefined | null | void | boolean>,
-  trailingSlash: boolean = false,
+  trailingSlash = false,
 ): Path {
   const path = `/${paths.filter(isString).join(PATH_SEPARATOR)}`.replace(
     DUPLICATE_PATH_SEPARATOR_REGEX,

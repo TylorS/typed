@@ -1,5 +1,5 @@
 import { Disposable } from '@most/types'
-import { Arity1, EmptyObject, IsNever } from '@typed/fp/common'
+import { Arity1, IsNever } from '@typed/fp/common'
 import { fromEnv } from './fromEnv'
 
 /**
@@ -10,21 +10,21 @@ export interface Effect<E, A> {
 }
 
 export namespace Effect {
-  export const of = Pure.of
+  export const of = <A>(value: A): Pure<A> => fromEnv(() => sync(value))
 }
 /**
  * An Effect which has no particular requirement on the environment
  */
-export interface Pure<A> extends Effect<EmptyObject, A> {}
+export type Pure<A> = Effect<{}, A>
 
 export namespace Pure {
-  export const of = <A>(value: A): Pure<A> => fromEnv((_) => sync(value))
+  export const of = <A>(value: A): Pure<A> => fromEnv(() => sync(value))
 }
 
 /**
  * The underlying generator that allows modeling lightweight coroutines
  */
-export interface EffectGenerator<E, A> extends Generator<Env<E, any>, A, unknown> {}
+export type EffectGenerator<E, A> = Generator<Env<E, any>, A, unknown>
 
 export interface Env<E, A> {
   (env: E): Resume<A>

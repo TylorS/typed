@@ -3,7 +3,7 @@ import { eqString } from 'fp-ts/es6/Eq'
 import { ReadonlyRecord } from 'fp-ts/es6/ReadonlyRecord'
 import { getEq, iso, Newtype, prism } from 'newtype-ts'
 
-export interface Uri extends Newtype<{ readonly Url: unique symbol }, string> {}
+export type Uri = Newtype<{ readonly Url: unique symbol }, string>
 
 export const uriIso = iso<Uri>()
 export const uriPrism = prism<Uri>((s: string) => s.length > 0 && s[0] === '/')
@@ -13,7 +13,7 @@ export namespace Uri {
   export const { wrap, unwrap } = uriIso
 }
 
-export const URI_REGEX = /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/
+export const URI_REGEX = /^(?:([^:/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:/?#]*)(?::(\d*))?))?((((?:[^?#/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/
 
 /**
  * ParsedUri JSON data structure

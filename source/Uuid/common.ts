@@ -1,4 +1,7 @@
-import { PureEffect } from '../Effect'
+import { Newtype } from 'newtype-ts'
+import { Pure } from '../Effect'
+
+export type Uuid = Newtype<{ readonly Uuid: unique symbol }, string>
 
 export type UuidSeed = readonly [
   number,
@@ -20,5 +23,5 @@ export type UuidSeed = readonly [
 ]
 
 export interface UuidEnv {
-  readonly randomUuidSeed: () => PureEffect<UuidSeed>
+  readonly randomUuidSeed: () => Pure<UuidSeed>
 }

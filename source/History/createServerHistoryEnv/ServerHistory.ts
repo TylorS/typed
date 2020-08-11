@@ -7,10 +7,8 @@ export class ServerHistory implements History {
   public scrollRestoration: ScrollRestoration = 'auto'
 
   // ServerHistory specific
-  // tslint:disable-next-line:variable-name
-  private _states: { state: any; url: string }[]
-  // tslint:disable-next-line:variable-name
-  private _index: number = 0
+  private _states: { state: unknown; url: string }[]
+  private _index = 0
   private location: Location
 
   constructor(location: Location) {
@@ -40,7 +38,7 @@ export class ServerHistory implements History {
     return state
   }
 
-  public go(quanity: number = 0): void {
+  public go(quanity = 0): void {
     if (quanity === 0) {
       return void 0
     }
@@ -59,12 +57,12 @@ export class ServerHistory implements History {
     this.go(1)
   }
 
-  public pushState(state: any, _: string | null, url: string) {
+  public pushState(state: unknown, _: string | null, url: string): void {
     this._states = this._states.slice(0, this.index).concat({ state, url })
     this.index = this._states.length - 1
   }
 
-  public replaceState(state: any, _: string | null, url: string) {
+  public replaceState(state: unknown, _: string | null, url: string): void {
     this._states[this.index] = { state, url }
   }
 }

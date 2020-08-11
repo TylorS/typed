@@ -1,6 +1,6 @@
 import { disposeNone } from '@most/disposable'
+import { runPure } from '@typed/fp/Effect'
 import { describe, it } from '@typed/test'
-import { runEffect } from '../../Effect'
 import { createNodeUuidEnv } from './createNodeUuidEnv'
 
 export const test = describe(`createNodeUuidEnv`, [
@@ -8,7 +8,7 @@ export const test = describe(`createNodeUuidEnv`, [
     it(`returns UuidSeed`, ({ equal }, done) => {
       const generator = createNodeUuidEnv()
 
-      runEffect((seed) => {
+      runPure((seed) => {
         try {
           equal(16, seed.length)
 

@@ -9,19 +9,25 @@ export const curry = <F extends Fn>(f: F): Curry<F> => {
   return curriedN(f.length, f, []) as Curry<F>
 }
 
-function curriedN<Args extends any[], R>(arity: number, f: Fn<Args, R>, previousArgs: any[]): any {
+function curriedN<Args extends unknown[], R>(
+  arity: number,
+  f: Fn<Args, R>,
+  previousArgs: unknown[],
+): unknown {
   if (arity < 2) {
     return f
   }
 
-  return (...args: any[]) => {
+  return (...args: unknown[]) => {
     const concatArgs = previousArgs.concat(args) as Args
 
     return concatArgs.length >= arity ? f(...concatArgs) : curriedN(arity, f, concatArgs)
   }
 }
 
-export type Fn<Args extends readonly any[] = readonly any[], R = any> = (...args: Args) => R
+export type Fn<Args extends readonly unknown[] = readonly unknown[], R = unknown> = (
+  ...args: Args
+) => R
 
 export interface Curry2<A, B, C> extends Arity2<A, B, C>, Arity1<A, Arity1<B, C>> {}
 

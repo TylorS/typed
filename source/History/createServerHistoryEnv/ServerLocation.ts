@@ -10,7 +10,7 @@ const HTTP_DEFAULT_PORT = '80'
  */
 export class ServerLocation implements Location {
   get ancestorOrigins(): DOMStringList {
-    return ([] as any) as DOMStringList
+    return ([] as unknown) as DOMStringList
   }
 
   get hash(): string {
@@ -99,11 +99,11 @@ export class ServerLocation implements Location {
   }
 
   // Does not have defined behavior outside of browser
-  // tslint:disable-next-line:no-empty
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   public reload(): void {}
 
   public replace(url: string): void {
-    // tslint:disable-next-line:prefer-const
+    // eslint-disable-next-line prefer-const
     let { href, host, relative } = parseUri(Uri.wrap(url))
 
     if (this.host && !host) {
@@ -124,7 +124,7 @@ export class ServerLocation implements Location {
   }
 
   // ServerLocation Specific
-  public setHistory(history: History) {
+  public setHistory(this: ServerLocation, history: History): ServerLocation {
     this.history = history
 
     return this
