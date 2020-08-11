@@ -1,5 +1,5 @@
 import { Disposable } from '@most/types'
-import { Arity1, EmptyObject } from '@typed/fp/common'
+import { Arity1, EmptyObject, IsNever } from '@typed/fp/common'
 import { fromEnv } from './fromEnv'
 
 /**
@@ -65,7 +65,7 @@ export type EffectOf<A> = A extends Effect<infer E, infer B>
 /**
  * Helper for retrieving the environmental dependencies from an effect
  */
-export type EnvOf<A> = EffectOf<A> extends Effect<infer R, any> ? R : never
+export type EnvOf<A> = EffectOf<A> extends Effect<infer R, any> ? CastToEmptyObject<R> : never
 
 /**
  * Helper for getting the return type from a given effect type
@@ -75,4 +75,6 @@ export type ReturnOf<A> = EffectOf<A> extends Effect<any, infer R> ? R : never
 /**
  * Helper for widening the effect type of a given effect
  */
-export type AddEnv<E, Fx> = Effect<E & EnvOf<Fx>, ReturnOf<Fx>>
+export type AddEnv<E, Fx> = Effect<CastToEmptyObject<E> & EnvOf<Fx>, ReturnOf<Fx>>
+
+type CastToEmptyObject<A> = IsNever<A> extends true ? {} : [A] extends [{}] ? A : {}
