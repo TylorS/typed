@@ -25,6 +25,10 @@ export const lazy = (): LazyDisposable => {
   }
 
   const addDisposable = (d: Disposable) => {
+    if (d === disposeNone()) {
+      return d
+    }
+
     if (disposed) {
       d.dispose()
 
