@@ -25,9 +25,7 @@ function curriedN<Args extends unknown[], R>(
   }
 }
 
-export type Fn<Args extends readonly unknown[] = readonly unknown[], R = unknown> = (
-  ...args: Args
-) => R
+export type Fn<Args extends readonly any[] = readonly any[], R = any> = (...args: Args) => R
 
 export interface Curry2<A, B, C> extends Arity2<A, B, C>, Arity1<A, Arity1<B, C>> {}
 
