@@ -11,6 +11,6 @@ yarn add @typed/fp
 
 ## Support
 
-Only modern environments are supported out of the box. For browsers, the last 2 major versions of Chrome, Firefox, Safari, and Edge are supported. The latest stable and long-term-support releases for Node are supported, too. Lets keep the web improving!
+At present only modern environments that support ES2017 Syntax and dynamic imports, or newer. This is  Lets keep the web improving!
 
 > Pull requests are always welcomed for documenting any polyfill setup required for supporting any other platforms 😄
