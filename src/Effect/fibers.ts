@@ -108,15 +108,18 @@ function createFiber<A>(
         catchEffectErrors(onError),
         provide(fiberEnv),
         runPure((value) => {
-          fiberValue = some(value)
+          // Only "complete" if not in an error state
+          if (info.state === FiberState.Running) {
+            fiberValue = some(value)
 
-          // If not going to complete, because of child fibers, broadcast an event about
-          // having a fiber value
-          if (fibers.length > 0) {
-            pushInfo()
+            // If not going to complete, because of child fibers, broadcast an event about
+            // having a fiber value
+            if (fibers.length > 0) {
+              pushInfo()
+            }
+
+            onFinish()
           }
-
-          onFinish()
 
           return disposeNone()
         }),
