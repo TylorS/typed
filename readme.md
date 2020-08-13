@@ -11,6 +11,7 @@ yarn add @typed/fp
 
 ## Support
 
-At present only modern environments that support ES2017 Syntax and dynamic imports, or newer. This is  Lets keep the web improving!
+At present only modern environments that support ES2019 Syntax and dynamic imports. Lets keep the web improving and stick with the standards! 
+This includes the last ~2 versions of Chrome/Chromium, Firefox, Safari, Edge and include Node 12+.
 
-> Pull requests are always welcomed for documenting any polyfill setup required for supporting any other platforms 😄
+> Pull requests are always welcomed for documenting any polyfill setup required for supporting any other environments 😄

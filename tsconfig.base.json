@@ -16,10 +16,10 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "sourceMap": true,
-    "target": "es2017",
+    "target": "es2019",
     "lib": [
       "dom",
-      "es2017"
+      "es2019"
     ]
   }
 }
