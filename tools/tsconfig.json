@@ -7,7 +7,7 @@
     "baseUrl": "./",
     "paths": {
       "@typed/fp/*": [
-        "../source/*"
+        "../src/*"
       ]
     }
   },

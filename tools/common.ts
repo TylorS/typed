@@ -2,7 +2,7 @@ import { readdirSync, statSync } from 'fs'
 import { dirname, join } from 'path'
 
 export const ROOT_DIR = dirname(urlToDirname(import.meta.url))
-export const SOURCE_DIR = join(ROOT_DIR, 'source')
+export const SOURCE_DIR = join(ROOT_DIR, 'src')
 
 export const ROOT_FILES = ['index']
 

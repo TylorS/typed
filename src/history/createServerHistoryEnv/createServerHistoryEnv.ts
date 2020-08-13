@@ -1,4 +1,4 @@
-import { HistoryEnv } from '@typed/fp/HistoryEnv'
+import { HistoryEnv } from '@typed/fp/history/HistoryEnv'
 import { Uri } from '@typed/fp/Uri'
 import { ServerHistory } from './ServerHistory'
 import { ServerLocation } from './ServerLocation'
