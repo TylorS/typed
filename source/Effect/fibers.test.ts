@@ -1,8 +1,9 @@
 import { describe, it } from '@typed/test'
 import { doEffect } from './doEffect'
-import { getParentFiber, runAsFiber, fork } from './fibers'
+import { runAsFiber } from './fibers'
 import { none, some } from 'fp-ts/es6/Option'
 import { newDefaultScheduler } from '@most/scheduler'
+import { getParentFiber, fork } from './FiberEnv'
 
 export const test = describe(`fibers`, [
   describe(`getParentFiber`, [

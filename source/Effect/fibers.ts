@@ -1,66 +1,21 @@
-import { LazyDisposable, Disposable, lazy, disposeNone } from '@typed/fp/Disposable'
+import { LazyDisposable, Disposable, lazy, disposeNone, disposeAll } from '@typed/fp/Disposable'
 import { Effect, Resume, sync, async } from './Effect'
 import { runPure } from './runEffect'
 import { Either, right, left } from 'fp-ts/es6/Either'
-import { fromEnv } from './fromEnv'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { provide } from './provide'
 import { Option, isSome, none, some } from 'fp-ts/es6/Option'
 import { flow } from 'fp-ts/es6/function'
 import { Scheduler } from '@most/types'
-import { SchedulerEnv, createCallbackTask } from './SchedulerEnv'
+import { createCallbackTask } from './SchedulerEnv'
 import { asap } from '@most/scheduler'
-
-export interface FiberEnv extends SchedulerEnv {
-  readonly currentFiber: Fiber<unknown>
-  readonly fork: <E, A>(effect: Effect<E, A>, env: E & FiberEnv) => Resume<Fiber<A>>
-  readonly join: <A>(fiber: Fiber<A>) => Resume<Either<Error, A>>
-  readonly kill: <A>(fiber: Fiber<A>) => Resume<void>
-}
-
-export const getCurrentFiber = fromEnv((e: FiberEnv) => sync(e.currentFiber))
-export const getParentFiber = fromEnv((e: FiberEnv) => sync(e.currentFiber.parentFiber))
-
-export const fork = <E, A>(effect: Effect<E, A>): Effect<E & FiberEnv, Fiber<A>> =>
-  fromEnv((e) => e.fork(effect, e))
-
-export const join = <A>(fiber: Fiber<A>): Effect<FiberEnv, Either<Error, A>> =>
-  fromEnv((e) => e.join(fiber))
-
-export const kill = <A>(fiber: Fiber<A>): Effect<FiberEnv, void> => fromEnv((e) => e.kill(fiber))
-
-export interface Fiber<A> extends LazyDisposable {
-  readonly info: FiberInfo<A>
-  readonly parentFiber: Option<Fiber<unknown>>
-  readonly onInfoChange: (f: (info: FiberInfo<A>) => Disposable) => Disposable
-  readonly addFiber: (fiber: Fiber<unknown>) => void
-}
-
-export const enum FiberState {
-  Running,
-  Failed,
-  Success,
-}
-
-export type FiberInfo<A> = FiberRunning | FiberFailed | FiberSuccess<A>
-
-export type FiberRunning = {
-  readonly state: FiberState.Running
-}
-
-export type FiberFailed = {
-  readonly state: FiberState.Failed
-  readonly error: Error
-}
-
-export type FiberSuccess<A> = {
-  readonly state: FiberState.Success
-  readonly value: A
-}
+import { FiberEnv } from './FiberEnv'
+import { Fiber, FiberInfo, FiberState, foldFiberInfo } from './Fiber'
+import { doEffect } from './doEffect'
 
 /**
- * Intended for running an application using fibers. Should not be used to create fiber, instead
- * use `fork`
+ * Intended for running an application using fibers. Should not be used to create individual fibers, instead
+ * use `fork`.
  */
 export const runAsFiber = <A>(effect: Effect<FiberEnv, A>, scheduler: Scheduler): Fiber<A> =>
   createFiber(effect, scheduler)
@@ -81,7 +36,12 @@ function createFiber<A>(
   parentFiber: Option<Fiber<unknown>> = none,
 ): Fiber<A> {
   let fiberValue: Option<A> = none
-  let info: FiberInfo<A> = { state: FiberState.Running }
+  let info: FiberInfo<A> = {
+    state: FiberState.Running,
+    get exitValue() {
+      return fiberValue
+    },
+  }
   let subscribers: Array<readonly [(info: FiberInfo<A>) => Disposable, LazyDisposable]> = []
   let fibers: Array<Fiber<unknown>> = []
 
@@ -96,14 +56,14 @@ function createFiber<A>(
     },
     parentFiber,
     onInfoChange,
-    addFiber,
+    addChildFiber,
   }
 
   if (isSome(parentFiber)) {
-    parentFiber.value.addFiber(fiber)
+    parentFiber.value.addChildFiber(fiber)
   }
 
-  // Use timer to ensure fiber has a chance to return before executing
+  // Use scheduler to ensure fiber has a chance to return before executing
   disposable.addDisposable(asap(createCallbackTask(runFiber), scheduler))
 
   // Cleanup on disposal
@@ -129,6 +89,15 @@ function createFiber<A>(
     }
   }
 
+  function onError(error: Error) {
+    info = { state: FiberState.Failed, error }
+
+    // Cleeanup all child process
+    fiber.dispose()
+
+    pushInfo()
+  }
+
   // Fork out a fiber
   function runFiber(): Disposable {
     const fiberEnv = createFiberEnv(fiber, scheduler)
@@ -136,9 +105,16 @@ function createFiber<A>(
     try {
       return pipe(
         effect,
+        catchEffectErrors(onError),
         provide(fiberEnv),
         runPure((value) => {
           fiberValue = some(value)
+
+          // If not going to complete, because of child fibers, broadcast an event about
+          // having a fiber value
+          if (fibers.length > 0) {
+            pushInfo()
+          }
 
           onFinish()
 
@@ -146,19 +122,15 @@ function createFiber<A>(
         }),
       )
     } catch (error) {
-      info = { state: FiberState.Failed, error }
-
-      // Cleeanup all child process
-      fiber.dispose()
-
-      pushInfo()
+      onError(error)
 
       return disposeNone()
     }
   }
 
-  // Subscribe to info changes, always starting with the current value
-  function onInfoChange(cb: (info: FiberInfo<A>) => Disposable) {
+  // Subscribe to info changes, always starting with the current value.
+  // Always async to ensure Disposable can be returned before cb is executed
+  function onInfoChange(cb: (info: FiberInfo<A>) => Disposable): Disposable {
     if (disposable.disposed) {
       return cb(info)
     }
@@ -167,35 +139,41 @@ function createFiber<A>(
     const subscriber = [cb, infoDisposable] as const
 
     infoDisposable.addDisposable(disposable.addDisposable(infoDisposable))
-    infoDisposable.addDisposable(cb(info))
-
-    subscribers.push(subscriber)
-
+    infoDisposable.addDisposable(
+      asap(
+        createCallbackTask(() => cb(info)),
+        scheduler,
+      ),
+    )
     infoDisposable.addDisposable({
       dispose: () => subscribers.splice(subscribers.indexOf(subscriber), 1),
     })
 
+    subscribers.push(subscriber)
+
     return infoDisposable
   }
 
-  function addFiber(childFiber: Fiber<unknown>): void {
+  // Setup tracking of a child fiber
+  function addChildFiber(childFiber: Fiber<unknown>): void {
     fibers.push(childFiber)
 
     // Cleanup from array after completion
     const fiberDisposable = indexOfDisposable(childFiber, fibers)
-    const listener = disposable.addDisposable(
-      childFiber.onInfoChange(foldFiberInfo(disposeNone, dispose, dispose)),
-    )
+    // Listen to state changes from child fiber
+    const listener = childFiber.onInfoChange(foldFiberInfo(disposeNone, dispose, dispose))
     // Ensure if the parent fiber is disposed the child is too
     const parentDisposable = disposable.addDisposable(childFiber)
     // Ensure if the child fiber is disposed the child is cleaned up from parent
-    const childDisposable = childFiber.addDisposable(parentDisposable)
+    const childDisposable = childFiber.addDisposable(
+      disposeAll([parentDisposable, fiberDisposable, listener]),
+    )
 
     function dispose() {
-      childDisposable.dispose()
       parentDisposable.dispose()
       fiberDisposable.dispose()
       listener.dispose()
+      childDisposable.dispose()
 
       onFinish()
 
@@ -204,14 +182,17 @@ function createFiber<A>(
   }
 }
 
+function createFiberWith(scheduler: Scheduler, parentFiber: Option<Fiber<unknown>>) {
+  return <A>(effect: Effect<FiberEnv, A>) => createFiber(effect, scheduler, parentFiber)
+}
+
 function createFiberEnv(currentFiber: Fiber<unknown>, scheduler: Scheduler): FiberEnv {
   return {
     currentFiber,
     scheduler,
-    fork: (eff, e) =>
-      pipe(eff, provide(e), (a) => createFiber(a, scheduler, some(currentFiber)), sync),
     join: joinFiber,
     kill: killFiber,
+    fork: (eff, e) => pipe(eff, provide(e), createFiberWith(scheduler, some(currentFiber)), sync),
   }
 }
 
@@ -235,17 +216,13 @@ function killFiber<A>(fiber: Fiber<A>): Resume<void> {
   return sync(fiber.dispose())
 }
 
-export const foldFiberInfo = <A, B, C, D>(
-  running: () => A,
-  failed: (error: Error) => B,
-  success: (value: C) => D,
-) => (info: FiberInfo<C>): A | B | D => {
-  switch (info.state) {
-    case FiberState.Running:
-      return running()
-    case FiberState.Failed:
-      return failed(info.error)
-    case FiberState.Success:
-      return success(info.value)
-  }
+function catchEffectErrors(onError: (error: Error) => any) {
+  return <E, A>(effect: Effect<E, A>): Effect<E, A> =>
+    doEffect(function* () {
+      try {
+        return yield* effect
+      } catch (error) {
+        return onError(error)
+      }
+    })
 }

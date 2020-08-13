@@ -19,4 +19,6 @@ export type Equals<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : 
 export type IsNever<A> = Equals<A, never>
 export type IsUnknown<A> = Equals<A, unknown>
 
+export type NoInfer<T> = [T][T extends any ? 0 : never]
+
 export const isBrowser: boolean = typeof window !== 'undefined' && typeof document !== 'undefined'
