@@ -37,7 +37,7 @@
   },
   "scripts": {
     "--maintenance--": "",
-    "build": "npm run cleanup && tsc",
+    "build": "npm run cleanup && tsc -P ./tsconfig.build.json",
     "cleanup": "npm run tsnode -- ./tools/cleanup",
     "lint": "eslint source --ext .js,.jsx,.ts,.tsx --fix",
     "unit-test": "npm run tsnode -- ./node_modules/.bin/typed-test",

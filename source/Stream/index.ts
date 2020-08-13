@@ -9,6 +9,7 @@ import { Monad1 } from 'fp-ts/es6/Monad'
 import { Monoid } from 'fp-ts/es6/Monoid'
 import { isSome, Option, Some } from 'fp-ts/es6/Option'
 import { pipeable } from 'fp-ts/es6/pipeable'
+import { take, merge } from '@most/core'
 
 export const URI = '@most/core:Stream' as const
 export type URI = typeof URI
@@ -47,7 +48,7 @@ export const stream: Monad1<URI> & Alternative1<URI> & Filterable1<URI> = {
   ap: M.ap,
   chain: (fa, f) => M.chain(f, fa),
   zero: M.empty,
-  alt: (fx, f) => M.recoverWith(f, fx),
+  alt: (fa, f) => take(1, merge(fa, f())), // race the 2 streams
   compact,
   separate,
   partitionMap: _partitionMap,

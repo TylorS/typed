@@ -16,6 +16,8 @@
     "./source/**/*.ts"
   ],
   "exclude": [
-    "./node_modules"
+    "./node_modules",
+    "./source/**/*.test.ts",
+    "./source/**/*.browser-test.ts"
   ]
 }

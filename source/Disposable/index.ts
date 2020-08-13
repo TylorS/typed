@@ -1,5 +1,6 @@
 import { disposeAll, disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
+import { number } from 'io-ts'
 
 export * from '@most/disposable'
 export { Disposable } from '@most/types'
@@ -11,7 +12,7 @@ export interface LazyDisposable extends Disposable {
 
 export const lazy = (): LazyDisposable => {
   let disposed = false
-  let disposables: Disposable[] = []
+  let disposables: Disposable[] | undefined = []
 
   const dispose = () => {
     if (disposed) {
@@ -19,9 +20,8 @@ export const lazy = (): LazyDisposable => {
     }
 
     disposed = true
-
-    disposeAll(disposables).dispose()
-    disposables = void 0 as any // memory optimization
+    disposeAll(disposables!).dispose()
+    disposables = void 0 // small memory optimization..we may make a lot of these
   }
 
   const addDisposable = (d: Disposable) => {
@@ -35,12 +35,14 @@ export const lazy = (): LazyDisposable => {
       return disposeNone()
     }
 
-    disposables.push(d)
+    disposables!.push(d)
 
     const dispose = () => {
-      const index = disposables.indexOf(d)
+      const index = disposables!.indexOf(d)
 
-      disposables.splice(index, 1)
+      if (number.is(index) && index > -1) {
+        disposables?.splice(index, 1)
+      }
     }
 
     return { dispose }
