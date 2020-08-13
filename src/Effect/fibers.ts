@@ -135,19 +135,36 @@ function createFiber<A>(
       return cb(info)
     }
 
+    let initialCallbackHasRun = false
     const infoDisposable = lazy()
-    const subscriber = [cb, infoDisposable] as const
+
+    const scheduledTask = asap(
+      createCallbackTask(() => {
+        initialCallbackHasRun = true
+
+        return cb(info)
+      }),
+      scheduler,
+    )
+
+    const subscriber = [
+      (info: FiberInfo<A>) => {
+        // Delay any additional events until after initial info is able to return
+        if (!initialCallbackHasRun) {
+          return asap(
+            createCallbackTask(() => cb(info)),
+            scheduler,
+          )
+        }
+
+        return cb(info)
+      },
+      infoDisposable,
+    ] as const
 
     infoDisposable.addDisposable(disposable.addDisposable(infoDisposable))
-    infoDisposable.addDisposable(
-      asap(
-        createCallbackTask(() => cb(info)),
-        scheduler,
-      ),
-    )
-    infoDisposable.addDisposable({
-      dispose: () => subscribers.splice(subscribers.indexOf(subscriber), 1),
-    })
+    infoDisposable.addDisposable(scheduledTask)
+    infoDisposable.addDisposable(indexOfDisposable(subscriber, subscribers))
 
     subscribers.push(subscriber)
 
