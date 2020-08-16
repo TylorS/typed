@@ -1,4 +1,5 @@
 import { describe, given, it, Test } from '@typed/test'
+
 import { pathIso, pathJoin } from '.'
 
 export const test: Test = describe(`pathJoin`, [

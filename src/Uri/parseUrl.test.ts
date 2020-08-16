@@ -1,5 +1,6 @@
 import { Path } from '@typed/fp/Path'
 import { describe, given, it, Test } from '@typed/test'
+
 import { ParsedUri, parseUri, Uri } from '.'
 
 export const test: Test = describe(`parseUrl`, [

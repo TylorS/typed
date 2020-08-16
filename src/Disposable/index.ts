@@ -2,15 +2,27 @@ import { disposeAll, disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
 import { number } from 'io-ts'
 
+/**
+ * @since 0.0.1
+ */
 export * from '@most/disposable'
+/**
+ * @since 0.0.1
+ */
 export { Disposable } from '@most/types'
 
+/**
+ * @since 0.0.1
+ */
 export interface LazyDisposable extends Disposable {
   readonly disposed: boolean
   readonly addDisposable: (d: Disposable) => Disposable
 }
 
-export const lazy = (): LazyDisposable => {
+/**
+ * @since 0.0.1
+ */
+export const lazy = <A extends object = {}>(additional: A = {} as A): LazyDisposable & A => {
   let disposed = false
   let disposables: Disposable[] | undefined = []
 
@@ -49,6 +61,7 @@ export const lazy = (): LazyDisposable => {
   }
 
   return {
+    ...additional,
     get disposed() {
       return disposed
     },

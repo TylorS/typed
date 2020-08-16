@@ -5,7 +5,7 @@ const prettierConfig = require('./.prettierrc.cjs')
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'prettier'],
+  plugins: ['@typescript-eslint', 'prettier', 'simple-import-sort'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
@@ -13,6 +13,7 @@ module.exports = {
   ],
   rules: {
     'prettier/prettier': ['error', prettierConfig],
+    'simple-import-sort/sort': 'error',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',

@@ -1,4 +1,5 @@
 import { describe, given, it, Test } from '@typed/test'
+
 import { addQueryParameters, Uri } from '.'
 
 export const test: Test = describe(`addQueryParameters`, [

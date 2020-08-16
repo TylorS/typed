@@ -1,7 +1,11 @@
 import { Pure } from '@typed/fp/Effect'
-import { UuidEnv, UuidSeed } from '../common'
+import { UuidEnv, UuidSeed } from '@typed/fpcommon'
+
 import { VALID_UUID_LENGTH } from './constants'
 
+/**
+ * @since 0.0.1
+ */
 export function createBrowserUuidEnv(): UuidEnv {
   return {
     randomUuidSeed: () =>

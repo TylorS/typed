@@ -1,5 +1,8 @@
-import { Uuid, UuidSeed } from '../'
+import { Uuid, UuidSeed } from '@typed/fp'
 
+/**
+ * @since 0.0.1
+ */
 export function uuid4(seed: UuidSeed): Uuid {
   return ((seed[0].toString(16) +
     seed[1].toString(16) +

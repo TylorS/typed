@@ -1,9 +1,9 @@
-import { describe, it } from '@typed/test'
-import { doEffect } from './doEffect'
-import { runAsFiber } from './fibers'
-import { none, some } from 'fp-ts/es6/Option'
 import { newDefaultScheduler } from '@most/scheduler'
-import { getParentFiber, fork } from './FiberEnv'
+import { doEffect } from '@typed/fp/Effect/doEffect'
+import { fork, getParentFiber } from '@typed/fp/Effect/fibers/FiberEnv'
+import { runAsFiber } from '@typed/fp/Effect/fibers/fibers'
+import { describe, it } from '@typed/test'
+import { none, some } from 'fp-ts/es6/Option'
 
 export const test = describe(`fibers`, [
   describe(`getParentFiber`, [
@@ -44,7 +44,7 @@ export const test = describe(`fibers`, [
   ]),
 
   describe(`fork`, [
-    it(`is disposed as soon as parent is`, ({ ok }, done) => {
+    it(`disposes child as soon as parent is`, ({ ok }, done) => {
       // eslint-disable-next-line require-yield
       const child = doEffect(function* () {
         done(new Error(`Should not be called`))

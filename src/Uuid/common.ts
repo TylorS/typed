@@ -1,8 +1,14 @@
+import { Pure } from '@typed/fpEffect'
 import { Newtype } from 'newtype-ts'
-import { Pure } from '../Effect'
 
+/**
+ * @since 0.0.1
+ */
 export type Uuid = Newtype<{ readonly Uuid: unique symbol }, string>
 
+/**
+ * @since 0.0.1
+ */
 export type UuidSeed = readonly [
   number,
   number,
@@ -22,6 +28,9 @@ export type UuidSeed = readonly [
   number,
 ]
 
+/**
+ * @since 0.0.1
+ */
 export interface UuidEnv {
   readonly randomUuidSeed: () => Pure<UuidSeed>
 }

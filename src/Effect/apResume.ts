@@ -1,9 +1,13 @@
 import { Arity1 } from '@typed/fp/common'
 import { disposeBoth, disposeNone } from '@typed/fp/Disposable'
+import { async, Resume, sync } from '@typed/fp/Effect/Effect'
+import { runResume } from '@typed/fp/Effect/runResume'
 import { isNone, none, Option, some } from 'fp-ts/es6/Option'
-import { async, Resume, sync } from './Effect'
-import { runResume } from './runResume'
 
+/**
+ * @internal
+ * @since 0.0.1
+ */
 export const apResume = <A, B>(fn: Resume<Arity1<A, B>>, value: Resume<A>): Resume<B> => {
   if (!fn.async && !value.async) {
     return sync(fn.value(value.value))

@@ -1,8 +1,12 @@
 import { ArgsOf } from '@typed/fp/common'
 import { Path, pathJoin } from '@typed/fp/Path'
 import { parseUri, Uri } from '@typed/fp/Uri'
+
 import { HistoryEnv } from './HistoryEnv'
 
+/**
+ * @since 0.0.1
+ */
 export function scopeHistoryEnv<A>(
   scope: Path,
   { history, location }: HistoryEnv<A>,

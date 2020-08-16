@@ -1,4 +1,5 @@
 import * as M from '@most/core'
+import { merge, take } from '@most/core'
 import { Stream } from '@most/types'
 import { Alternative1 } from 'fp-ts/es6/Alternative'
 import { Separated } from 'fp-ts/es6/Compactable'
@@ -9,9 +10,15 @@ import { Monad1 } from 'fp-ts/es6/Monad'
 import { Monoid } from 'fp-ts/es6/Monoid'
 import { isSome, Option, Some } from 'fp-ts/es6/Option'
 import { pipeable } from 'fp-ts/es6/pipeable'
-import { take, merge } from '@most/core'
 
-export const URI = '@most/core:Stream' as const
+/**
+ * @since 0.0.1
+ */
+export const URI = '@most/core/Stream' as const
+
+/**
+ * @since 0.0.1
+ */
 export type URI = typeof URI
 
 declare module 'fp-ts/es6/HKT' {
@@ -20,6 +27,9 @@ declare module 'fp-ts/es6/HKT' {
   }
 }
 
+/**
+ * @since 0.0.1
+ */
 export const getMonoid = <A>(): Monoid<Stream<A>> => {
   return {
     concat: M.merge,
@@ -27,9 +37,15 @@ export const getMonoid = <A>(): Monoid<Stream<A>> => {
   }
 }
 
+/**
+ * @since 0.0.1
+ */
 export const compact = <A>(stream: Stream<Option<A>>): Stream<A> =>
   M.map((s: Some<A>) => s.value, M.filter(isSome, stream))
 
+/**
+ * @since 0.0.1
+ */
 export const separate = <A, B>(stream: Stream<Either<A, B>>): Separated<Stream<A>, Stream<B>> => {
   const s = M.multicast(stream)
   const left = M.map((l: Left<A>) => l.left, M.filter(isLeft, s))
@@ -41,6 +57,9 @@ export const separate = <A, B>(stream: Stream<Either<A, B>>): Separated<Stream<A
 const _partitionMap = <A, B, C>(fa: Stream<A>, f: (a: A) => Either<B, C>) => separate(M.map(f, fa))
 const _filterMap = <A, B>(fa: Stream<A>, f: (a: A) => Option<B>) => compact(M.map(f, fa))
 
+/**
+ * @since 0.0.1
+ */
 export const stream: Monad1<URI> & Alternative1<URI> & Filterable1<URI> = {
   URI,
   map: (fa, f) => M.map(f, fa),
@@ -58,6 +77,9 @@ export const stream: Monad1<URI> & Alternative1<URI> & Filterable1<URI> = {
   filter: <A>(fa: Stream<A>, p: Predicate<A>) => M.filter(p, fa),
 }
 
+/**
+ * @since 0.0.1
+ */
 export const {
   alt,
   ap,

@@ -1,18 +1,24 @@
 import { HeadArg } from '@typed/fp/common'
+import { async, Effect, Resume } from '@typed/fp/Effect/Effect'
+import { fromEnv } from '@typed/fp/Effect/fromEnv'
+import { map } from '@typed/fp/Effect/map'
+import { ProvidedEffect } from '@typed/fp/Effect/provide'
+import { runResume } from '@typed/fp/Effect/runResume'
+import { toEnv } from '@typed/fp/Effect/toEnv'
 import { curry } from '@typed/fp/lambda'
 import { Either, left, right } from 'fp-ts/es6/Either'
 import { O } from 'ts-toolbelt'
-import { async, Effect, Resume } from './Effect'
-import { fromEnv } from './fromEnv'
-import { map } from './map'
-import { ProvidedEffect } from './provide'
-import { runResume } from './runResume'
-import { toEnv } from './toEnv'
 
+/**
+ * @since 0.0.1
+ */
 export type FailEnv<K extends PropertyKey, Err> = {
   readonly [key in K]: (err: Err) => Resume<never>
 }
 
+/**
+ * @since 0.0.1
+ */
 export const fail = curry(
   <K extends PropertyKey, Err>(key: K, error: Err): Effect<FailEnv<K, Err>, never> =>
     fromEnv((e) => e[key](error)),
@@ -21,6 +27,9 @@ export const fail = curry(
   <K extends PropertyKey>(key: K): <Err>(error: Err) => Effect<FailEnv<K, Err>, never>
 }
 
+/**
+ * @since 0.0.1
+ */
 export const catchError = curry(
   <K extends PropertyKey, Err, E, A>(
     key: K,
@@ -75,6 +84,9 @@ type CatchError<K extends PropertyKey, Err, E, A> = K extends keyof E
     }
   : ProvidedEffect<FailEnv<K, Err>, E, A>
 
+/**
+ * @since 0.0.1
+ */
 export const attempt = curry(
   <K extends PropertyKey, E extends FailEnv<K, never>, A>(
     key: K,

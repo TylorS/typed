@@ -1,16 +1,23 @@
-import { Scheduler, Disposable, Task } from '@most/types'
 import * as S from '@most/scheduler'
+import { Disposable, Scheduler, Task, Time } from '@most/types'
 import { lazy } from '@typed/fp/Disposable'
-import { fromEnv } from './fromEnv'
-import { async, Effect } from './Effect'
-import { IO } from 'fp-ts/es6/IO'
+import { async, Effect } from '@typed/fp/Effect/Effect'
+import { fromEnv } from '@typed/fp/Effect/fromEnv'
 import { flow } from 'fp-ts/es6/function'
+import { IO } from 'fp-ts/es6/IO'
 
+/**
+ * @since 0.0.1
+ */
 export interface SchedulerEnv {
   readonly scheduler: Scheduler
 }
 
-export const delay = (delay: number) =>
+/**
+ * Add a delay at the specified about of time
+ * @since 0.0.1
+ */
+export const delay = (delay: Time) =>
   fromEnv(({ scheduler }: SchedulerEnv) =>
     async((cb) =>
       S.delay(
@@ -21,12 +28,20 @@ export const delay = (delay: number) =>
     ),
   )
 
+/**
+ * Run an IO asynchronously
+ * @since 0.0.1
+ */
 export const asyncIO = <A>(io: IO<A>): Effect<SchedulerEnv, A> =>
   fromEnv(({ scheduler }: SchedulerEnv) =>
     async((cb) => S.delay(0, createCallbackTask(flow(io, cb)), scheduler)),
   )
 
-export function createCallbackTask(cb: () => Disposable): Task {
+/**
+ * Convert an IO<Disposable> into a Most.js Task
+ * @since 0.0.1
+ */
+export function createCallbackTask(cb: IO<Disposable>): Task {
   const disposable = lazy()
 
   return {

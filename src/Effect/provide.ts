@@ -1,10 +1,13 @@
 import { Equals, IsUnknown } from '@typed/fp/common'
+import { Effect, Pure } from '@typed/fp/Effect/Effect'
+import { fromEnv } from '@typed/fp/Effect/fromEnv'
+import { toEnv } from '@typed/fp/Effect/toEnv'
 import { curry } from '@typed/fp/lambda'
 import { A, O } from 'ts-toolbelt'
-import { Effect, Pure } from './Effect'
-import { fromEnv } from './fromEnv'
-import { toEnv } from './toEnv'
 
+/**
+ * @since 0.0.1
+ */
 export type ProvidedEffect<Provided extends {}, E extends {}, A> = AllIsProvided<
   Provided,
   E
@@ -22,6 +25,7 @@ type AllIsProvided<E1, E2> = Equals<E1, E2> extends true
 
 /**
  * Provide part of the environemnt
+ * @since 0.0.1
  */
 export const provide = curry(
   <E1, E2, A>(e1: E1, fx: Effect<E1 & E2, A>): ProvidedEffect<E1, E2, A> =>

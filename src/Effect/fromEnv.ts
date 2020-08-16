@@ -1,5 +1,8 @@
-import { Effect, Env } from './Effect'
+import { Effect, Env } from '@typed/fp/Effect/Effect'
 
+/**
+ * @since 0.0.1
+ */
 export function fromEnv<E, A>(env: Env<E, A>): Effect<E, A> {
   return {
     *[Symbol.iterator]() {

@@ -1,20 +1,32 @@
-import { ap, apSeq } from './ap'
-import { chain } from './chain'
-import { Effect } from './Effect'
-import { map } from './map'
+import { ap, apSeq } from '@typed/fp/Effect/ap'
+import { chain } from '@typed/fp/Effect/chain'
+import { Effect, EnvOf, ReturnOf } from '@typed/fp/Effect/Effect'
+import { map } from '@typed/fp/Effect/map'
 import { MonadIO2 } from 'fp-ts/es6/MonadIO'
+import { readonlyArray } from 'fp-ts/es6/ReadonlyArray'
+import { U } from 'ts-toolbelt'
 
-export const EffectURI = '@typed/fp/Effect'
-export type EffectURI = typeof EffectURI
+/**
+ * @since 0.0.1
+ */
+export const URI = '@typed/fp/Effect'
+
+/**
+ * @since 0.0.1
+ */
+export type URI = typeof URI
 
 declare module 'fp-ts/es6/HKT' {
   export interface URItoKind2<E, A> {
-    [EffectURI]: Effect<E, A>
+    [URI]: Effect<E, A>
   }
 }
 
-export const effect: MonadIO2<EffectURI> = {
-  URI: EffectURI,
+/**
+ * @since 0.0.1
+ */
+export const effect: MonadIO2<URI> = {
+  URI,
   of: Effect.of,
   fromIO: Effect.fromIO,
   ap,
@@ -22,22 +34,36 @@ export const effect: MonadIO2<EffectURI> = {
   chain: (fa, f) => chain(f, fa),
 }
 
-export const effectSeq: MonadIO2<EffectURI> = {
+export const zip: ZipEffects = (readonlyArray.sequence(effect) as unknown) as ZipEffects
+
+/**
+ * @since 0.0.1
+ */
+export const effectSeq: MonadIO2<URI> = {
   ...effect,
   ap: apSeq,
 }
 
-export * from './ap'
-export * from './ask'
-export * from './chain'
-export * from './doEffect'
-export * from './Effect'
-export * from './failures'
-export * from './fibers'
-export * from './fromEnv'
-export * from './fromPromise'
-export * from './map'
-export * from './provide'
-export * from './runEffect'
-export * from './runResume'
-export * from './toEnv'
+export const zipSeq: ZipEffects = (readonlyArray.sequence(effect) as unknown) as ZipEffects
+
+export type ZipEffects = <A extends ReadonlyArray<Effect<any, any>>>(
+  effects: A,
+) => Effect<
+  U.IntersectOf<{ [K in keyof A]: EnvOf<A[K]> }[number]>,
+  { [K in keyof A]: ReturnOf<A[K]> }
+>
+
+export * from '@typed/fp/Effect/ap'
+export * from '@typed/fp/Effect/ask'
+export * from '@typed/fp/Effect/chain'
+export * from '@typed/fp/Effect/doEffect'
+export * from '@typed/fp/Effect/Effect'
+export * from '@typed/fp/Effect/failures'
+export * from '@typed/fp/Effect/fibers'
+export * from '@typed/fp/Effect/fromEnv'
+export * from '@typed/fp/Effect/fromPromise'
+export * from '@typed/fp/Effect/map'
+export * from '@typed/fp/Effect/provide'
+export * from '@typed/fp/Effect/runEffect'
+export * from '@typed/fp/Effect/runResume'
+export * from '@typed/fp/Effect/toEnv'
