@@ -1,4 +1,4 @@
-import { Pure } from '@typed/fpEffect'
+import { Pure } from '@typed/fp/Effect'
 import { Newtype } from 'newtype-ts'
 
 /**

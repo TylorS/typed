@@ -1,4 +1,4 @@
-import { Uuid, UuidSeed } from '@typed/fp'
+import { Uuid, UuidSeed } from '@typed/fp/Uuid/common'
 
 /**
  * @since 0.0.1

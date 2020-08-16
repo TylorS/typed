@@ -1,6 +1,6 @@
 import { fromPromise } from '@typed/fp/Effect'
-import { UuidEnv, UuidSeed } from '@typed/fpcommon'
 
+import { UuidEnv, UuidSeed } from '../common'
 import { VALID_UUID_LENGTH } from './constants'
 
 /**
