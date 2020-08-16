@@ -1,4 +1,4 @@
-import { disposeBoth } from '@typed/fp/Disposable'
+import { Disposable, disposeBoth, disposeNone, lazy } from '@typed/fp/Disposable'
 import { curry } from '@typed/fp/lambda'
 
 import { async, Effect } from './Effect'
@@ -20,7 +20,29 @@ export const race = curry(
         return bResume
       }
 
-      return async((cb) => disposeBoth(runResume(aResume, cb), runResume(bResume, cb)))
+      return async((resume) => {
+        const disposable = lazy()
+
+        function cb(value: A | B, dispose: () => void): Disposable {
+          if (disposable.disposed) {
+            return disposeNone()
+          }
+
+          dispose()
+
+          return resume(value)
+        }
+
+        const bDisposableLazy = lazy()
+
+        const aDisposable = runResume(aResume, (a) => cb(a, () => bDisposableLazy.dispose()))
+
+        bDisposableLazy.addDisposable(runResume(bResume, (b) => cb(b, () => aDisposable.dispose())))
+
+        disposable.addDisposable(disposeBoth(aDisposable, bDisposableLazy))
+
+        return disposable
+      })
     }),
 ) as {
   <E1, A, E2, B>(a: Effect<E1, A>, b: Effect<E2, B>): Effect<E1 & E2, A | B>
