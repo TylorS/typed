@@ -34,8 +34,3 @@ export interface HookEnvironment {
 
 export type UseState<A> = readonly [Pure<A>, UpdateState<A>]
 export type UpdateState<A> = <E>(update: Arity1<A, Effect<E, A>>) => Effect<E, A>
-
-export type UseChannelOptions<E, A, B = A> = {
-  readonly initialState?: Effect<E, A>
-  readonly selector: Arity1<A, B>
-}
