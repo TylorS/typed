@@ -29,7 +29,7 @@ export const Pure = Effect
  * The underlying generator that allows modeling lightweight coroutines
  * @since 0.0.1
  */
-export type EffectGenerator<E, A> = Generator<Env<E, any>, A, unknown>
+export type EffectGenerator<E, A> = Generator<Env<E, any>, A, any>
 
 /**
  * A monadic environment type which can be yielded within an Effect
