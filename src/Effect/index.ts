@@ -48,7 +48,7 @@ export const effectSeq: MonadIO2<URI> & Alt2<URI> = {
   ap: apSeq,
 }
 
-export const zipSeq: ZipEffects = (readonlyArray.sequence(effect) as unknown) as ZipEffects
+export const zipSeq: ZipEffects = (readonlyArray.sequence(effectSeq) as unknown) as ZipEffects
 
 export type ZipEffects = <A extends ReadonlyArray<Effect<any, any>>>(
   effects: A,
