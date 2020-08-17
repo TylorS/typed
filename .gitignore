@@ -64,10 +64,12 @@ tsconfig*.tsbuildinfo
 /index.js.map
 /Disposable/
 /Effect/
+/Future/
 /Path/
 /Stream/
 /Uri/
 /Uuid/
 /common/
 /history/
+/hooks/
 /lambda/
