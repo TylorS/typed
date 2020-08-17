@@ -54,22 +54,23 @@ export type ZipEffects = <A extends ReadonlyArray<Effect<any, any>>>(
   effects: A,
 ) => Effect<
   U.IntersectOf<{ [K in keyof A]: EnvOf<A[K]> }[number]>,
-  { [K in keyof A]: ReturnOf<A[K]> }
+  { readonly [K in keyof A]: ReturnOf<A[K]> }
 >
 
-export * from '@typed/fp/Effect/ap'
-export * from '@typed/fp/Effect/ask'
-export * from '@typed/fp/Effect/chain'
-export * from '@typed/fp/Effect/doEffect'
-export * from '@typed/fp/Effect/Effect'
-export * from '@typed/fp/Effect/failures'
-export * from '@typed/fp/Effect/fibers'
-export * from '@typed/fp/Effect/fromEnv'
-export * from '@typed/fp/Effect/fromPromise'
-export * from '@typed/fp/Effect/map'
-export * from '@typed/fp/Effect/memo'
-export * from '@typed/fp/Effect/provide'
-export * from '@typed/fp/Effect/race'
-export * from '@typed/fp/Effect/runEffect'
-export * from '@typed/fp/Effect/runResume'
-export * from '@typed/fp/Effect/toEnv'
+export * from './ap'
+export * from './ask'
+export * from './chain'
+export * from './doEffect'
+export * from './Effect'
+export * from './failures'
+export * from './fibers'
+export * from './fromEnv'
+export * from './fromPromise'
+export * from './map'
+export * from './memo'
+export * from './provide'
+export * from './race'
+export * from './runEffect'
+export * from './runResume'
+export * from './SchedulerEnv'
+export * from './toEnv'
