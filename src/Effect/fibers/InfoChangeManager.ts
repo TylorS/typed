@@ -58,14 +58,14 @@ export function createInfoChangeManager<A>(scheduler: Scheduler): InfoChangeMana
         initialCallbackHasRun = true
 
         return cb(initialInfo)
-      }),
+      }, infoDisposable.dispose),
       scheduler,
     )
 
     function infoSubscriber(updated: FiberInfo<A>): Disposable {
       if (!initialCallbackHasRun) {
         return asap(
-          createCallbackTask(() => cb(updated)),
+          createCallbackTask(() => cb(updated), infoDisposable.dispose),
           scheduler,
         )
       }

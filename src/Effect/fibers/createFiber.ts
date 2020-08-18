@@ -35,10 +35,10 @@ export function createFiber<A>(
     fiber.addDisposable(parentFiber.value.addChildFiber(fiber))
   }
 
-  // Use scheduler to ensure fiber has a chance to return before executing
-  fiber.addDisposable(asap(createCallbackTask(runFiber), scheduler))
   fiber.addDisposable(infoChangeManager)
   fiber.addDisposable(fiberManager)
+  // Use scheduler to ensure fiber has a chance to return before executing
+  fiber.addDisposable(asap(createCallbackTask(runFiber, onError), scheduler))
 
   return fiber
 

@@ -41,7 +41,7 @@ export const asyncIO = <A>(io: IO<A>): Effect<SchedulerEnv, A> =>
  * Convert an IO<Disposable> into a Most.js Task
  * @since 0.0.1
  */
-export function createCallbackTask(cb: IO<Disposable>): Task {
+export function createCallbackTask(cb: IO<Disposable>, onError?: (error: Error) => void): Task {
   const disposable = lazy()
 
   return {
@@ -52,6 +52,10 @@ export function createCallbackTask(cb: IO<Disposable>): Task {
     },
     error(_, e) {
       disposable.dispose()
+
+      if (onError) {
+        return onError(e)
+      }
 
       throw e
     },

@@ -1,6 +1,5 @@
 import { Disposable, disposeAll, disposeNone, lazy } from '@typed/fp/Disposable'
 import { IO } from 'fp-ts/es6/IO'
-import { newIORef } from 'fp-ts/es6/IORef'
 
 import { Fiber, foldFiberInfo } from './Fiber'
 
@@ -11,13 +10,13 @@ export interface FiberManager extends Disposable {
 
 export function createFiberManager(onFinish: IO<void>): FiberManager {
   const disposable = lazy()
-  const fibers = newIORef(new Set<Fiber<unknown>>())()
+  const fibers = new Set<Fiber<unknown>>()
 
   function addFiber(fiber: Fiber<unknown>): Disposable {
-    fibers.read().add(fiber)
+    fibers.add(fiber)
 
     const fiberDisposable: Disposable = {
-      dispose: () => fibers.read().delete(fiber),
+      dispose: () => fibers.delete(fiber),
     }
     const listener = fiber.onInfoChange(
       foldFiberInfo(disposeNone, disposeNone, onDispose, disposeNone, onDispose),
@@ -38,7 +37,7 @@ export function createFiberManager(onFinish: IO<void>): FiberManager {
     }
   }
 
-  const hasRemainingFibers = () => fibers.read().size > 0
+  const hasRemainingFibers = () => fibers.size > 0
 
   return {
     dispose: disposable.dispose,
