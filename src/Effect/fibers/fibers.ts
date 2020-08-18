@@ -15,6 +15,9 @@ import { createFiber } from './createFiber'
 export const runAsFiber = <A>(effect: Effect<FiberEnv, A>, scheduler: Scheduler): Fiber<A> =>
   createFiber(effect, scheduler)
 
+export const runAsFiberWith = (scheduler: Scheduler) => <A>(effect: Effect<FiberEnv, A>) =>
+  runAsFiber(effect, scheduler)
+
 /**
  * Convert a fiber to a Promise of it's success/completion value.
  * @since 0.0.1

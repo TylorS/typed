@@ -33,6 +33,7 @@ export const test = describe(`Op`, [
 
     pipe(
       program,
+      // Comment out any of these providers an you'll be greeted with an error
       provideComputation(Add, (x, y) => Effect.of(x + y)),
       provideComputation(Log, logImplementation),
       provide({ log: console.log }),

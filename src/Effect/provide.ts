@@ -24,7 +24,7 @@ type AllIsProvided<E1, E2> = Equals<E1, E2> extends true
   : false
 
 /**
- * Provide part of the environemnt
+ * Provide part of the environemnt, enforcing its usage.
  * @since 0.0.1
  */
 export const use = curry(
@@ -36,7 +36,7 @@ export const use = curry(
 }
 
 /**
- * Provide part of the environemnt
+ * Provide part of the environemnt, allowing for replacement later on.
  * @since 0.0.1
  */
 export const provide = curry(
