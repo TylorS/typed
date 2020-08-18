@@ -1,7 +1,7 @@
 import { ask, asks } from '@typed/fp/Effect/ask'
 import { doEffect } from '@typed/fp/Effect/doEffect'
 import { Effect } from '@typed/fp/Effect/Effect'
-import { provide, use } from '@typed/fp/Effect/provide'
+import { provide } from '@typed/fp/Effect/provide'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { iso, Newtype } from 'newtype-ts'
 
