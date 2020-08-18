@@ -1,21 +1,33 @@
 import { ask, asks } from '@typed/fp/Effect/ask'
 import { doEffect } from '@typed/fp/Effect/doEffect'
 import { Effect } from '@typed/fp/Effect/Effect'
-import { use } from '@typed/fp/Effect/provide'
+import { provide, use } from '@typed/fp/Effect/provide'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { iso, Newtype } from 'newtype-ts'
 
+/**
+ * Used to represent the resources required to perform a particular computation
+ */
 export interface Computation<
-  K = any,
+  Key = any,
   Args extends ReadonlyArray<any> = ReadonlyArray<any>,
   R = any
-> extends Newtype<{ readonly Op: unique symbol; readonly args: Args; readonly return: R }, K> {}
+> extends Newtype<ComputationUri<Args, R>, Key> {}
 
-export interface Op<K = any, R = any> extends Computation<K, ReadonlyArray<never>, R> {}
+export interface ComputationUri<Args extends ReadonlyArray<any> = ReadonlyArray<any>, R = any> {
+  readonly Computation: unique symbol
+  readonly Args: Args
+  readonly Return: R
+}
+
+/**
+ * An Op is simply a Computation that requires no additional parameters to execute
+ */
+export interface Op<Key = any, R = any> extends Computation<Key, ReadonlyArray<never>, R> {}
 
 export type OpKey<A> = A extends Computation<infer R, any, any> ? R : never
 export type OpArgs<A> = A extends Computation<any, infer R, any> ? R : never
-export type OpValue<A> = A extends Computation<any, any, infer R> ? R : never
+export type OpReturn<A> = A extends Computation<any, any, infer R> ? R : never
 
 export const OP = Symbol.for('@typed/fp/Op')
 export type OP = typeof OP
@@ -28,7 +40,9 @@ export interface OpEnv<C extends Computation>
     }
   > {}
 
-export type GetComputation<E, C extends Computation> = (...args: OpArgs<C>) => Effect<E, OpValue<C>>
+export type GetComputation<E, C extends Computation> = (
+  ...args: OpArgs<C>
+) => Effect<E, OpReturn<C>>
 
 const computationIso = iso<Computation<any, any, any>>()
 const computationEnvIso = iso<OpEnv<any>>()
@@ -40,6 +54,12 @@ export function createOp<A>() {
     return computationIso.wrap(key)
   }
 }
+
+export function createComputation<C extends Computation>(): (key: OpKey<C>) => C
+
+export function createComputation<Args extends ReadonlyArray<any>, A>(): <K>(
+  key: K,
+) => Computation<K, Args, A>
 
 export function createComputation<Args extends ReadonlyArray<any>, A>() {
   return function <K>(key: K): Computation<K, Args, A> {
@@ -59,7 +79,7 @@ export function provideComputation<C extends Computation, E>(
 
       computationEnvIso.unwrap(opEnv)[OP].set(key, computation)
 
-      const value = yield* pipe(eff, use(opEnv))
+      const value = yield* pipe(eff, provide(opEnv))
 
       return value
     })
@@ -68,26 +88,25 @@ export function provideComputation<C extends Computation, E>(
   }
 }
 
-export function useComputation<C extends Computation>(
-  key: C,
-  ...args: OpArgs<C>
-): Effect<OpEnv<C>, OpValue<C>> {
-  return doEffect(function* () {
-    const { [OP]: map } = yield* asks(computationEnvIso.unwrap)
-    const computation = map.get(key)! as GetComputation<unknown, C>
-    const value = yield* computation(...args)
+export function useComputation<C extends Computation>(key: C) {
+  return (...args: OpArgs<C>): Effect<OpEnv<C>, OpReturn<C>> => {
+    return doEffect(function* () {
+      const { [OP]: map } = yield* asks(computationEnvIso.unwrap)
+      const computation = map.get(key)! as GetComputation<unknown, C>
+      const value = yield* computation(...args)
 
-    return value
-  })
+      return value
+    })
+  }
 }
 
-export function useOp<O extends Op>(key: O): Effect<OpEnv<O>, OpValue<O>> {
-  return useComputation<O>(key, ...(EMPTY_ARGS as OpArgs<O>))
+export function useOp<O extends Op>(key: O): Effect<OpEnv<O>, OpReturn<O>> {
+  return useComputation<O>(key)(...(EMPTY_ARGS as OpArgs<O>))
 }
 
 export function provideOp<O extends Op, E>(
   key: O,
-  effect: Effect<E, OpValue<O>>,
+  effect: Effect<E, OpReturn<O>>,
 ): <F, A>(eff: Effect<F & OpEnv<O>, A>) => Effect<E & F, A> {
   return provideComputation<O, E>(key, () => effect)
 }

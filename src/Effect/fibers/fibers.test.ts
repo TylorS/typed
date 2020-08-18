@@ -1,6 +1,6 @@
 import { newDefaultScheduler } from '@most/scheduler'
 import { doEffect } from '@typed/fp/Effect/doEffect'
-import { fork, getParentFiber } from '@typed/fp/Effect/fibers/FiberEnv'
+import { fork, getCurrentFiber, getParentFiber } from '@typed/fp/Effect/fibers/FiberEnv'
 import { runAsFiber } from '@typed/fp/Effect/fibers/fibers'
 import { describe, it } from '@typed/test'
 import { none, some } from 'fp-ts/es6/Option'
@@ -25,6 +25,8 @@ export const test = describe(`fibers`, [
 
     it(`returns Some when used in nested fibers`, ({ equal }, done) => {
       const child = doEffect(function* () {
+        console.log(fiber, yield* getCurrentFiber)
+
         const parentFiber = yield* getParentFiber
 
         try {
