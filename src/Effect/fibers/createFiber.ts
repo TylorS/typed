@@ -5,7 +5,7 @@ import { lazy } from '@typed/fp/Disposable'
 import { async, Effect, Resume, sync } from '@typed/fp/Effect/Effect'
 import { Fiber, FiberState, foldFiberInfo } from '@typed/fp/Effect/fibers/Fiber'
 import { FiberEnv } from '@typed/fp/Effect/fibers/FiberEnv'
-import { provide } from '@typed/fp/Effect/provide'
+import { use } from '@typed/fp/Effect/provide'
 import { runPure } from '@typed/fp/Effect/runEffect'
 import { createCallbackTask } from '@typed/fp/Effect/SchedulerEnv'
 import { Either, left, right } from 'fp-ts/es6/Either'
@@ -47,7 +47,7 @@ export function createFiber<A>(
     try {
       infoChangeManager.updateInfo({ state: FiberState.Running })
 
-      return pipe(effect, provide(createFiberEnv(fiber, scheduler)), runPure(onEffectCompletion))
+      return pipe(effect, use(createFiberEnv(fiber, scheduler)), runPure(onEffectCompletion))
     } catch (error) {
       onError(error)
 
@@ -94,7 +94,7 @@ function createFiberEnv(currentFiber: Fiber<unknown>, scheduler: Scheduler): Fib
     scheduler,
     join: joinFiber,
     kill: killFiber,
-    fork: (eff, e) => pipe(eff, provide(e), createFiberWith(scheduler, some(currentFiber)), sync),
+    fork: (eff, e) => pipe(eff, use(e), createFiberWith(scheduler, some(currentFiber)), sync),
   }
 }
 

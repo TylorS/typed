@@ -1,7 +1,7 @@
 import { Arity1, NoInfer } from '@typed/fp/common'
 import { Disposable, disposeNone } from '@typed/fp/Disposable'
 import { Effect, Pure } from '@typed/fp/Effect/Effect'
-import { provide } from '@typed/fp/Effect/provide'
+import { use } from '@typed/fp/Effect/provide'
 import { runResume } from '@typed/fp/Effect/runResume'
 import { toEnv } from '@typed/fp/Effect/toEnv'
 import { curry } from '@typed/fp/lambda'
@@ -25,7 +25,7 @@ export const execPure = runPure<any>(disposeNone)
  */
 export const runEffect = curry(__runEffect) as {
   <A, E>(onReturn: Arity1<A, Disposable>, env: NoInfer<E>, effect: Effect<E, A>): Disposable
-  <A, E>(onReturn: Arity1<A, Disposable>, env: NoInfer<E>): (effect: Effect<E, A>) => Disposable
+  <A, E>(onReturn: Arity1<A, Disposable>, env: E): (effect: Effect<E, A>) => Disposable
   <A>(onReturn: Arity1<A, Disposable>): {
     <E>(env: NoInfer<E>, effect: Effect<E, A>): Disposable
     <E>(env: E): (effect: Effect<E, A>) => Disposable
@@ -42,7 +42,7 @@ function __runEffect<A, E>(
   env: NoInfer<E>,
   effect: Effect<E, A>,
 ): Disposable {
-  return pipe(effect, provide(env), runPure(onReturn))
+  return pipe(effect, use(env), runPure(onReturn))
 }
 
 function __runPure<A>(onReturn: Arity1<A, Disposable>, effect: Pure<A>): Disposable {

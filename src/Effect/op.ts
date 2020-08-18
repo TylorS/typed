@@ -1,7 +1,7 @@
 import { ask, asks } from '@typed/fp/Effect/ask'
 import { doEffect } from '@typed/fp/Effect/doEffect'
 import { Effect } from '@typed/fp/Effect/Effect'
-import { provide } from '@typed/fp/Effect/provide'
+import { use } from '@typed/fp/Effect/provide'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { iso, Newtype } from 'newtype-ts'
 
@@ -59,7 +59,7 @@ export function provideComputation<C extends Computation, E>(
 
       computationEnvIso.unwrap(opEnv)[OP].set(key, computation)
 
-      const value = yield* pipe(eff, provide(opEnv))
+      const value = yield* pipe(eff, use(opEnv))
 
       return value
     })
@@ -81,11 +81,14 @@ export function useComputation<C extends Computation>(
   })
 }
 
-export function useOp<O extends Op>(key: O) {
+export function useOp<O extends Op>(key: O): Effect<OpEnv<O>, OpValue<O>> {
   return useComputation<O>(key, ...(EMPTY_ARGS as OpArgs<O>))
 }
 
-export function provideOp<O extends Op, E>(key: O, effect: Effect<E, OpValue<O>>) {
+export function provideOp<O extends Op, E>(
+  key: O,
+  effect: Effect<E, OpValue<O>>,
+): <F, A>(eff: Effect<F & OpEnv<O>, A>) => Effect<E & F, A> {
   return provideComputation<O, E>(key, () => effect)
 }
 
