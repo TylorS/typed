@@ -29,7 +29,7 @@ type AllIsProvided<E1, E2> = Equals<E1, E2> extends true
  */
 export const provide = curry(
   <E1, E2, A>(e1: E1, fx: Effect<E1 & E2, A>): ProvidedEffect<E1, E2, A> =>
-    fromEnv((e2: E2) => toEnv(fx)({ ...e1, ...e2 })) as ProvidedEffect<E1, E2, A>,
+    fromEnv((e2: E2) => toEnv(fx)({ ...e2, ...e1 })) as ProvidedEffect<E1, E2, A>,
 ) as {
   <E1, E2, A>(e1: E1, fx: Effect<E1 & E2, A>): ProvidedEffect<E1, E2, A>
   <E1>(e1: E1): <E2, A>(fx: Effect<E1 & E2, A>) => ProvidedEffect<E1, E2, A>
