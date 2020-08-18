@@ -20,12 +20,13 @@ export type OpValue<A> = A extends Computation<any, any, infer R> ? R : never
 export const OP = Symbol.for('@typed/fp/Op')
 export type OP = typeof OP
 
-export type OpEnv<C extends Computation> = Newtype<
-  C,
-  {
-    readonly [OP]: Map<Computation, GetComputation<any, Computation>>
-  }
->
+export interface OpEnv<C extends Computation>
+  extends Newtype<
+    C,
+    {
+      readonly [OP]: Map<Computation, GetComputation<any, Computation>>
+    }
+  > {}
 
 export type GetComputation<E, C extends Computation> = (...args: OpArgs<C>) => Effect<E, OpValue<C>>
 
