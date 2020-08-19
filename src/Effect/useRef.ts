@@ -1,22 +1,13 @@
+import { Arity1 } from '@typed/fp/common'
+import { always } from '@typed/fp/lambda'
 import * as IO from 'fp-ts/es6/IO'
 import { IORef } from 'fp-ts/es6/IORef'
 import { pipe } from 'fp-ts/es6/pipeable'
 
-import { Arity1 } from '../common'
-import {
-  createOp,
-  doEffect,
-  Effect,
-  memo,
-  Op,
-  OpArgs,
-  OpEnv,
-  OpKey,
-  OpReturn,
-  provideOp,
-  useOp,
-} from '../Effect'
-import { always } from '../lambda'
+import { doEffect } from './doEffect'
+import { Effect } from './Effect'
+import { memo } from './memo'
+import { createOp, Op, OpArgs, OpEnv, OpKey, OpReturn, provideOp, useOp } from './Op'
 
 export interface Ref<K, A> extends Op<K, readonly [], IORef<A>> {}
 
