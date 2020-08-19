@@ -18,21 +18,21 @@ import {
 } from '../Effect'
 import { always } from '../lambda'
 
-export interface UseRef<K, A> extends Op<K, readonly [], IORef<A>> {}
+export interface Ref<K, A> extends Op<K, readonly [], IORef<A>> {}
 
 export type RefValue<A> = OpReturn<A> extends IORef<infer R> ? R : never
 
-export const createRef = <R extends UseRef<any, any>>(key: OpKey<R>): R => createOp<R>(key)
+export const createRef = <R extends Ref<any, any>>(key: OpKey<R>): R => createOp<R>(key)
 
-export const provideRef = <R extends UseRef<any, any>>(key: R, ref: IO.IO<OpReturn<R>>) =>
+export const provideRef = <R extends Ref<any, any>>(key: R, ref: IO.IO<OpReturn<R>>) =>
   provideOp<R, {}>(key, pipe(ref, Effect.fromIO, memo, always))
 
-export const useRef = <R extends UseRef<any, any>>(R: R) =>
+export const useRef = <R extends Ref<any, any>>(R: R) =>
   [readRef(R), writeRef(R), modifyRef(R)] as const
 
 const EMPTY: readonly any[] = []
 
-export const readRef = <R extends UseRef<any, any>>(R: R): Effect<OpEnv<R>, RefValue<R>> => {
+export const readRef = <R extends Ref<any, any>>(R: R): Effect<OpEnv<R>, RefValue<R>> => {
   const effect = doEffect(function* () {
     const ref = yield* useOp<R>(R)(...(EMPTY as OpArgs<R>))
 
@@ -42,7 +42,7 @@ export const readRef = <R extends UseRef<any, any>>(R: R): Effect<OpEnv<R>, RefV
   return effect
 }
 
-export const writeRef = <R extends UseRef<any, any>>(R: R) => (
+export const writeRef = <R extends Ref<any, any>>(R: R) => (
   value: RefValue<R>,
 ): Effect<OpEnv<R>, RefValue<R>> => {
   const effect = doEffect(function* () {
@@ -56,7 +56,7 @@ export const writeRef = <R extends UseRef<any, any>>(R: R) => (
   return effect
 }
 
-export const modifyRef = <R extends UseRef<any, any>>(R: R) => {
+export const modifyRef = <R extends Ref<any, any>>(R: R) => {
   return (mod: Arity1<RefValue<R>, RefValue<R>>): Effect<OpEnv<R>, RefValue<R>> => {
     const effect = doEffect(function* () {
       const ref = yield* useOp<R>(R)(...(EMPTY as OpArgs<R>))

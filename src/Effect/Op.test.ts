@@ -2,17 +2,17 @@ import { describe, it } from '@typed/test'
 import { pipe } from 'fp-ts/lib/pipeable'
 
 import { ask, doEffect, Effect, execEffect } from '.'
-import { Op, createOp, provideOp, useOp } from './Op'
+import { createOp, Op, provideOp, useOp } from './Op'
 
 export const test = describe(`Op`, [
   it(`allows delaying environment requirements`, ({ equal }) => {
     const ADD = Symbol()
-    interface Add extends Op<typeof ADD, [x: number, y: number], number> {}
+    interface Add extends Op<typeof ADD, [number, number], number> {}
     const Add = createOp<Add>(ADD)
     const add = useOp(Add)
 
     const LOG = Symbol()
-    interface Log extends Op<typeof LOG, [message: string, ...messages: string[]], void> {}
+    interface Log extends Op<typeof LOG, [string, ...string[]], void> {}
     const Log = createOp<Log>(LOG)
     const log = useOp(Log)
 
