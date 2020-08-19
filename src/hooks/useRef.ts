@@ -1,5 +1,6 @@
 import * as IO from 'fp-ts/es6/IO'
 import { IORef } from 'fp-ts/es6/IORef'
+import { pipe } from 'fp-ts/es6/pipeable'
 
 import { Arity1 } from '../common'
 import {
@@ -24,7 +25,7 @@ export type RefValue<A> = OpReturn<A> extends IORef<infer R> ? R : never
 export const createRef = <R extends UseRef<any, any>>(key: OpKey<R>): R => createOp<R>(key)
 
 export const provideRef = <R extends UseRef<any, any>>(key: R, ref: IO.IO<OpReturn<R>>) =>
-  provideOp<R, {}>(key, always(memo(Effect.fromIO(ref))))
+  provideOp<R, {}>(key, pipe(ref, Effect.fromIO, memo, always))
 
 export const useRef = <R extends UseRef<any, any>>(R: R) =>
   [readRef(R), writeRef(R), modifyRef(R)] as const
