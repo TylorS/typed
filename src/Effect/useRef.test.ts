@@ -2,7 +2,7 @@ import { describe, it } from '@typed/test'
 import { newIORef } from 'fp-ts/es6/IORef'
 import { pipe } from 'fp-ts/lib/function'
 
-import { doEffect, execEffect } from '../Effect'
+import { doEffect, execEffect } from '.'
 import { createRef, provideRef, Ref, useRef } from './useRef'
 
 export const test = describe(`useRef`, [

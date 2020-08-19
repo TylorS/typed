@@ -7,7 +7,7 @@ import { pipe } from 'fp-ts/es6/pipeable'
 import { doEffect } from './doEffect'
 import { Effect } from './Effect'
 import { memo } from './memo'
-import { createOp, Op, OpArgs, OpEnv, OpKey, OpReturn, provideOp, useOp } from './Op'
+import { createOp, Op, OpEnv, OpKey, OpReturn, performOp, provideOp } from './Op'
 
 export interface Ref<K, A> extends Op<K, readonly [], IORef<A>> {}
 
@@ -15,17 +15,15 @@ export type RefValue<A> = OpReturn<A> extends IORef<infer R> ? R : never
 
 export const createRef = <R extends Ref<any, any>>(key: OpKey<R>): R => createOp<R>(key)
 
-export const provideRef = <R extends Ref<any, any>>(key: R, ref: IO.IO<OpReturn<R>>) =>
-  provideOp<R, {}>(key, pipe(ref, Effect.fromIO, memo, always))
+export const provideRef = <R extends Ref<any, any>>(key: R, newRef: IO.IO<OpReturn<R>>) =>
+  provideOp<R, {}>(key, pipe(newRef, Effect.fromIO, memo, always))
 
 export const useRef = <R extends Ref<any, any>>(R: R) =>
   [readRef(R), writeRef(R), modifyRef(R)] as const
 
-const EMPTY: readonly any[] = []
-
 export const readRef = <R extends Ref<any, any>>(R: R): Effect<OpEnv<R>, RefValue<R>> => {
   const effect = doEffect(function* () {
-    const ref = yield* useOp<R>(R)(...(EMPTY as OpArgs<R>))
+    const ref = yield* performOp<R>(R)
 
     return ref.read()
   })
@@ -37,7 +35,7 @@ export const writeRef = <R extends Ref<any, any>>(R: R) => (
   value: RefValue<R>,
 ): Effect<OpEnv<R>, RefValue<R>> => {
   const effect = doEffect(function* () {
-    const ref = yield* useOp<R>(R)(...(EMPTY as OpArgs<R>))
+    const ref = yield* performOp<R>(R)
 
     ref.write(value)()
 
@@ -48,11 +46,11 @@ export const writeRef = <R extends Ref<any, any>>(R: R) => (
 }
 
 export const modifyRef = <R extends Ref<any, any>>(R: R) => {
-  return (mod: Arity1<RefValue<R>, RefValue<R>>): Effect<OpEnv<R>, RefValue<R>> => {
+  return (modify: Arity1<RefValue<R>, RefValue<R>>): Effect<OpEnv<R>, RefValue<R>> => {
     const effect = doEffect(function* () {
-      const ref = yield* useOp<R>(R)(...(EMPTY as OpArgs<R>))
+      const ref = yield* performOp<R>(R)
 
-      ref.modify(mod)()
+      ref.modify(modify)()
 
       return ref.read()
     })
