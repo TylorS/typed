@@ -32,7 +32,7 @@ export const useRef = <R extends UseRef<any, any>>(R: R) =>
 
 const EMPTY: readonly any[] = []
 
-const readRef = <R extends UseRef<any, any>>(R: R): Effect<OpEnv<R>, RefValue<R>> => {
+export const readRef = <R extends UseRef<any, any>>(R: R): Effect<OpEnv<R>, RefValue<R>> => {
   const effect = doEffect(function* () {
     const ref = yield* useOp<R>(R)(...(EMPTY as OpArgs<R>))
 
@@ -42,7 +42,7 @@ const readRef = <R extends UseRef<any, any>>(R: R): Effect<OpEnv<R>, RefValue<R>
   return effect
 }
 
-const writeRef = <R extends UseRef<any, any>>(R: R) => (
+export const writeRef = <R extends UseRef<any, any>>(R: R) => (
   value: RefValue<R>,
 ): Effect<OpEnv<R>, RefValue<R>> => {
   const effect = doEffect(function* () {
@@ -56,7 +56,7 @@ const writeRef = <R extends UseRef<any, any>>(R: R) => (
   return effect
 }
 
-const modifyRef = <R extends UseRef<any, any>>(R: R) => {
+export const modifyRef = <R extends UseRef<any, any>>(R: R) => {
   return (mod: Arity1<RefValue<R>, RefValue<R>>): Effect<OpEnv<R>, RefValue<R>> => {
     const effect = doEffect(function* () {
       const ref = yield* useOp<R>(R)(...(EMPTY as OpArgs<R>))
