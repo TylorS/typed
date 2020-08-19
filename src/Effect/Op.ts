@@ -34,16 +34,14 @@ export interface OpEnv<C extends Op>
 
 export type OpMap = Map<Op, GetOp<any, Op>>
 
-export type GetOp<E, C extends Op> = OpArgs<C> extends readonly []
-  ? () => Effect<E, OpReturn<C>>
-  : (...args: OpArgs<C>) => Effect<E, OpReturn<C>>
+export type GetOp<E, C extends Op> = (...args: OpArgs<C>) => Effect<E, OpReturn<C>>
 
 const opIso = iso<Op>()
 const opEnvIso = iso<OpEnv<any>>()
 const emptyOpEnv = (): OpEnv<any> => opEnvIso.wrap({ [OP]: new Map() })
 
 export function createOp<A extends Op>(key: OpKey<A>): A {
-  return  opIso.wrap(key) as A
+  return opIso.wrap(key) as A
 }
 
 export function provideOp<O extends Op, E>(Op: O, implementation: GetOp<E, O>) {

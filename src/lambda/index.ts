@@ -78,3 +78,6 @@ export type Curry<T extends Fn> = ArgsOf<T> extends [infer A]
   : ArgsOf<T> extends never[]
   ? IO<ReturnType<T>>
   : never
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const always = <A>(value: A) => (..._args: readonly any[]): A => value
