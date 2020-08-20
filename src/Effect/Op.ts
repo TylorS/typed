@@ -74,14 +74,10 @@ export function useOp<O extends Op>(Op: O) {
   }
 }
 
-const EMPTY: readonly any[] = []
+export function performOp<K, R>(Op: Op<K, readonly [], R>): Effect<OpEnv<typeof Op>, R>
 
-type PerformOp<O extends Op<any, readonly [], any>> = OpArgs<O> extends readonly []
-  ? Effect<OpEnv<O>, OpReturn<O>>
-  : never
-
-export function performOp<O extends Op<any, readonly [], any>>(Op: O): PerformOp<O> {
-  return useOp(Op)(...(EMPTY as OpArgs<O>)) as PerformOp<O>
+export function performOp<K, R>(Op: Op<K, readonly [], R>): Effect<OpEnv<typeof Op>, R> {
+  return useOp(Op)()
 }
 
 function isOpEnv(env: Partial<OpEnv<any>>): env is OpEnv<any> {
