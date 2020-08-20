@@ -20,14 +20,29 @@ export const createRef = <R extends Ref<any, any>>(key: OpKey<R>): R => createOp
 export const provideRef = <R extends Ref<any, any>>(key: R, newRef: IO.IO<OpReturn<R>>) =>
   provideOp<R, {}>(key, pipe(newRef, Effect.fromIO, memo, always))
 
-export const useRef = <R extends Ref<any, any>, E extends RefEnv<R> = RefEnv<R>>(R: R) =>
-  [readRef<R, E>(R), writeRef<R, E>(R), modifyRef<R, E>(R)] as const
+export const useRef = (<R extends Ref<any, any>>(R: R) => {
+  return [readRef<R>(R), writeRef<R>(R), modifyRef<R>(R)] as const
+}) as {
+  <R extends Ref<any, any>, E extends RefEnv<R> = RefEnv<R>>(R: R): readonly [
+    Effect<E, RefValue<R>>,
+    <A extends RefValue<R>>(value: A) => Effect<E, A>,
+    <A extends RefValue<R>>(modify: Arity1<A, A>) => Effect<E, A>,
+  ]
+  <K, A>(R: Ref<K, A>): readonly [
+    Effect<RefEnv<typeof R>, A>,
+    (value: A) => Effect<RefEnv<typeof R>, A>,
+    (modify: Arity1<A, A>) => Effect<RefEnv<typeof R>, A>,
+  ]
+}
 
-export const readRef = <R extends Ref<any, any>, E extends RefEnv<R> = RefEnv<R>>(
+export function readRef<R extends Ref<any, any>, E extends RefEnv<R> = RefEnv<R>>(
   R: R,
-): Effect<E, RefValue<R>> => {
+): Effect<E, RefValue<R>>
+export function readRef<K, A>(R: Ref<K, A>): Effect<RefEnv<typeof R>, A>
+
+export function readRef<K, A>(R: Ref<K, A>): Effect<RefEnv<typeof R>, A> {
   const effect = doEffect(function* () {
-    const ref = yield* performOp<R>(R)
+    const ref = yield* performOp(R)
 
     return ref.read()
   })
@@ -35,24 +50,34 @@ export const readRef = <R extends Ref<any, any>, E extends RefEnv<R> = RefEnv<R>
   return effect
 }
 
-export const writeRef = <R extends Ref<any, any>, E extends RefEnv<R> = RefEnv<R>>(R: R) => (
-  value: RefValue<R>,
-): Effect<E, RefValue<R>> => {
-  const effect = doEffect(function* () {
-    const ref = yield* performOp<R>(R)
+export function writeRef<R extends Ref<any, any>, E extends RefEnv<R> = RefEnv<R>>(
+  R: R,
+): <A extends RefValue<R>>(value: A) => Effect<E, A>
+export function writeRef<K, A>(R: Ref<K, A>): (value: A) => Effect<RefEnv<typeof R>, A>
 
-    ref.write(value)()
+export function writeRef<K, A>(R: Ref<K, A>) {
+  return (value: A): Effect<RefEnv<typeof R>, A> => {
+    const effect = doEffect(function* () {
+      const ref = yield* performOp(R)
 
-    return value
-  })
+      ref.write(value)()
 
-  return effect
+      return value
+    })
+
+    return effect
+  }
 }
 
-export const modifyRef = <R extends Ref<any, any>, E extends RefEnv<R> = RefEnv<R>>(R: R) => {
-  return (modify: Arity1<RefValue<R>, RefValue<R>>): Effect<E, RefValue<R>> => {
+export function modifyRef<R extends Ref<any, any>, E extends RefEnv<R> = RefEnv<R>>(
+  R: R,
+): <A extends RefValue<R>>(modify: Arity1<A, A>) => Effect<E, A>
+export function modifyRef<K, A>(R: Ref<K, A>): (modify: Arity1<A, A>) => Effect<RefEnv<typeof R>, A>
+
+export function modifyRef<K, A>(R: Ref<K, A>) {
+  return (modify: Arity1<A, A>): Effect<RefEnv<typeof R>, A> => {
     const effect = doEffect(function* () {
-      const ref = yield* performOp<R>(R)
+      const ref = yield* performOp(R)
 
       ref.modify(modify)()
 
