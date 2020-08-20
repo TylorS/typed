@@ -13,6 +13,8 @@ export interface Ref<K, A> extends Op<K, readonly [], IORef<A>> {}
 
 export type RefValue<A> = OpReturn<A> extends IORef<infer R> ? R : never
 
+export interface RefEnv<A extends Op> extends OpEnv<A> {}
+
 export const createRef = <R extends Ref<any, any>>(key: OpKey<R>): R => createOp<R>(key)
 
 export const provideRef = <R extends Ref<any, any>>(key: R, newRef: IO.IO<OpReturn<R>>) =>
@@ -21,7 +23,7 @@ export const provideRef = <R extends Ref<any, any>>(key: R, newRef: IO.IO<OpRetu
 export const useRef = <R extends Ref<any, any>>(R: R) =>
   [readRef(R), writeRef(R), modifyRef(R)] as const
 
-export const readRef = <R extends Ref<any, any>>(R: R): Effect<OpEnv<R>, RefValue<R>> => {
+export const readRef = <R extends Ref<any, any>>(R: R): Effect<RefEnv<R>, RefValue<R>> => {
   const effect = doEffect(function* () {
     const ref = yield* performOp<R>(R)
 
