@@ -3,14 +3,15 @@ import { newIORef } from 'fp-ts/es6/IORef'
 import { pipe } from 'fp-ts/lib/function'
 
 import { doEffect, execEffect } from '.'
-import { createRef, provideRef, Ref, useRef } from './useRef'
+import { createRef, provideRef, Ref, RefEnv, useRef } from './useRef'
 
 export const test = describe(`useRef`, [
   it(`allows reading/writing a ref`, ({ equal }) => {
     const FOO = Symbol('Foo')
     interface Foo extends Ref<typeof FOO, number> {}
+    interface FooEnv extends RefEnv<Foo> {}
     const Foo = createRef<Foo>(FOO)
-    const [readFoo, writeFoo, modifyFoo] = useRef(Foo)
+    const [readFoo, writeFoo, modifyFoo] = useRef<Foo, FooEnv>(Foo)
     const initial = 1
 
     const eff = doEffect(function* () {
