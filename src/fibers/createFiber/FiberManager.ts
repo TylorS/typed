@@ -1,7 +1,7 @@
 import { Disposable, disposeAll, disposeNone, lazy } from '@typed/fp/Disposable'
 import { IO } from 'fp-ts/es6/IO'
 
-import { Fiber, foldFiberInfo } from './Fiber'
+import { Fiber, foldFiberInfo } from '../Fiber'
 
 export interface FiberManager extends Disposable {
   readonly addFiber: (fiber: Fiber<unknown>) => Disposable

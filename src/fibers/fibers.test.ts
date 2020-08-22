@@ -1,7 +1,7 @@
 import { newDefaultScheduler } from '@most/scheduler'
 import { doEffect } from '@typed/fp/Effect/doEffect'
-import { fork, getCurrentFiber, getParentFiber } from '@typed/fp/Effect/fibers/FiberEnv'
-import { runAsFiber } from '@typed/fp/Effect/fibers/fibers'
+import { fork, getCurrentFiber, getParentFiber } from '@typed/fp/fibers/FiberEnv'
+import { runAsFiber } from '@typed/fp/fibers/runAsFiber'
 import { describe, it } from '@typed/test'
 import { none, some } from 'fp-ts/es6/Option'
 

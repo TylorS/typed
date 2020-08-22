@@ -1,7 +1,7 @@
 import { Effect, Resume, sync } from '@typed/fp/Effect/Effect'
-import { Fiber } from '@typed/fp/Effect/fibers/Fiber'
 import { fromEnv } from '@typed/fp/Effect/fromEnv'
-import { SchedulerEnv } from '@typed/fp/Effect/SchedulerEnv'
+import { Fiber } from '@typed/fp/fibers/Fiber'
+import { SchedulerEnv } from '@typed/fp/fibers/SchedulerEnv'
 import { Either } from 'fp-ts/es6/Either'
 
 /**

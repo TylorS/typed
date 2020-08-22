@@ -1,5 +1,6 @@
 import { ArgsOf, Arity1, Arity2, Arity3, Arity4, Arity5 } from '@typed/fp/common'
 import { IO } from 'fp-ts/es6/IO'
+import { FunctionN } from 'fp-ts/lib/function'
 
 /**
  * Allow a fixed length function to be partially applied.
@@ -28,7 +29,7 @@ function curriedN<Args extends unknown[], R>(
 /**
  * @since 0.0.1
  */
-export type Fn<Args extends readonly any[] = readonly any[], R = any> = (...args: Args) => R
+export type Fn<Args extends readonly any[] = readonly any[], R = any> = FunctionN<Args, R>
 
 /**
  * @since 0.0.1

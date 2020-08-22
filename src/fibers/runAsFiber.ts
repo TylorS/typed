@@ -1,8 +1,8 @@
 import { Scheduler } from '@most/types'
 import { disposeNone } from '@typed/fp/Disposable'
 import { Effect } from '@typed/fp/Effect/Effect'
-import { Fiber, foldFiberInfo } from '@typed/fp/Effect/fibers/Fiber'
-import { FiberEnv } from '@typed/fp/Effect/fibers/FiberEnv'
+import { Fiber, foldFiberInfo } from '@typed/fp/fibers/Fiber'
+import { FiberEnv } from '@typed/fp/fibers/FiberEnv'
 import { flow } from 'fp-ts/es6/function'
 
 import { createFiber } from './createFiber'

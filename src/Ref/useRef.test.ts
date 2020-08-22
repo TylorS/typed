@@ -1,9 +1,11 @@
+import { doEffect, execEffect } from '@typed/fp/Effect'
 import { describe, it } from '@typed/test'
+import { pipe } from 'fp-ts/es6/function'
 import { newIORef } from 'fp-ts/es6/IORef'
-import { pipe } from 'fp-ts/lib/function'
 
-import { doEffect, execEffect } from '.'
-import { createRef, provideRef, Ref, RefEnv, useRef } from './useRef'
+import { provideRef } from './provideRef'
+import { createRef, Ref, RefEnv } from './Ref'
+import { useRef } from './useRef'
 
 export const test = describe(`useRef`, [
   it(`allows reading/writing a ref`, ({ equal }) => {

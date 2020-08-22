@@ -1,7 +1,7 @@
 import { Effect, effect, effectSeq } from '@typed/fp/Effect'
 import { Either } from 'fp-ts/es6/Either'
 import { getEitherM } from 'fp-ts/es6/EitherT'
-import { pipeable } from 'fp-ts/lib/pipeable'
+import { pipeable } from 'fp-ts/es6/pipeable'
 
 export const URI = '@typed/fp/Future'
 export type URI = typeof URI
