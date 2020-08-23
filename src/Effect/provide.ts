@@ -8,10 +8,9 @@ import { A, O } from 'ts-toolbelt'
 /**
  * @since 0.0.1
  */
-export type ProvidedEffect<Provided extends {}, E extends {}, A> = AllIsProvided<
-  Provided,
-  E
-> extends true
+export type ProvidedEffect<Provided extends {}, E extends {}, A> = Equals<Provided, {}> extends true
+  ? Effect<E, A>
+  : AllIsProvided<Provided, E> extends true
   ? Pure<A>
   : A.Extends<E, Provided> extends 1
   ? Effect<O.Exclude<E, Provided>, A>

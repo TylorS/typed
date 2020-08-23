@@ -20,5 +20,5 @@ export const getOrCreateOpMap: Pure<OpMap> = doEffect(function* () {
 })
 
 export function isOpEnv(env: object): env is OpEnv<any> {
-  return OPS in env
+  return !!env && typeof env === 'object' && OPS in env
 }

@@ -1,0 +1,13 @@
+import { Uuid } from '@typed/fp/Uuid'
+import { Subject } from 'most-subject'
+
+import { ChannelName, HookEnv, HookEnvironment, HookEvent } from '../domain'
+
+export interface HooksManagerEnv extends HookEnv {
+  readonly hookEvents: HookEvents
+  readonly hookPositions: Map<Uuid, number>
+  readonly channelProviders: Map<ChannelName, Set<HookEnvironment>>
+  readonly channelConsumers: Map<ChannelName, Set<HookEnvironment>>
+}
+
+export type HookEvents = Subject<HookEvent, HookEvent>

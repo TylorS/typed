@@ -8,7 +8,7 @@ import { createSharedRef, SharedRef, SharedRefEnv } from './SharedRef'
 import { wrapSharedRef } from './wrapSharedRef'
 
 export const test = describe(`useRef`, [
-  it(`allows reading/writing a ref`, ({ equal }) => {
+  it(`allows reading/writing a ref`, ({ equal }, done) => {
     const FOO = Symbol('Foo')
     interface Foo extends SharedRef<typeof FOO, number> {}
     interface FooEnv extends SharedRefEnv<Foo> {}
@@ -17,9 +17,14 @@ export const test = describe(`useRef`, [
     const initial = 1
 
     const eff = doEffect(function* () {
-      equal(initial, yield* readFoo)
-      equal(initial + 1, yield* writeFoo(initial + 1))
-      equal(initial + 2, yield* modifyFoo((x) => x + 1))
+      try {
+        equal(initial, yield* readFoo)
+        equal(initial + 1, yield* writeFoo(initial + 1))
+        equal(initial + 2, yield* modifyFoo((x) => x + 1))
+        done()
+      } catch (error) {
+        done(error)
+      }
     })
 
     pipe(eff, provideSharedRef(Foo, newIORef(initial)), execEffect({}))

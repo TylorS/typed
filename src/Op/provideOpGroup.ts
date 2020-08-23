@@ -1,5 +1,5 @@
-import { doEffect, Effect, EnvOf, memo, ZipEnvOf } from '@typed/fp/Effect'
-import { GetOpEffect, Op, OpEnv, provideOp, ReturnOf } from '@typed/fp/Op'
+import { doEffect, Effect, EnvOf, memo, ReturnOf, ZipEnvOf } from '@typed/fp/Effect'
+import { GetOperation, Op, OpEnv, provideOp } from '@typed/fp/Op'
 import { pipe } from 'fp-ts/es6/pipeable'
 import { mapWithIndex, reduce } from 'fp-ts/es6/ReadonlyArray'
 import { IntersectOf } from 'Union/_api'
@@ -37,10 +37,12 @@ export type OpEnvs<OPS extends ReadonlyArray<Op>> = IntersectOf<
 
 export type OpGroup<OPS extends ReadonlyArray<Op> = ReadonlyArray<Op>> = Effect<
   any,
-  {
-    readonly [K in keyof OPS]: OPS[K] extends Op ? GetOpEffect<any, OPS[K]> : never
-  }
+  OpGroupEffects<OPS>
 >
+
+export type OpGroupEffects<OPS extends ReadonlyArray<Op>> = {
+  readonly [K in keyof OPS]: OPS[K] extends Op ? GetOperation<any, OPS[K]> : never
+}
 
 export type OpGroupEnv<G extends OpGroup> = ReturnOf<G> extends ReadonlyArray<Effect<any, any>>
   ? EnvOf<G> & ZipEnvOf<ReturnOf<G>>
