@@ -52,10 +52,15 @@ export const zipSeq: ZipEffects = (readonlyArray.sequence(effectSeq) as unknown)
 
 export type ZipEffects = <A extends ReadonlyArray<Effect<any, any>>>(
   effects: A,
-) => Effect<
-  U.IntersectOf<{ [K in keyof A]: EnvOf<A[K]> }[number]>,
-  { readonly [K in keyof A]: ReturnOf<A[K]> }
+) => Effect<ZipEnvOf<A>, ZipReturnOf<A>>
+
+export type ZipEnvOf<A extends ReadonlyArray<Effect<any, any>>> = U.IntersectOf<
+  { readonly [K in keyof A]: EnvOf<A[K]> }[number]
 >
+
+export type ZipReturnOf<A extends ReadonlyArray<Effect<any, any>>> = {
+  readonly [K in keyof A]: ReturnOf<A[K]>
+}
 
 export * from './ap'
 export * from './ask'
@@ -68,6 +73,7 @@ export * from './fromPromise'
 export * from './map'
 export * from './memo'
 export * from './provide'
+export * from './provideWith'
 export * from './race'
 export * from './runEffect'
 export * from './runResume'

@@ -4,6 +4,7 @@ import { fromEnv } from '@typed/fp/Effect/fromEnv'
 import { flow } from 'fp-ts/es6/function'
 import { IO } from 'fp-ts/es6/IO'
 import { Reader } from 'fp-ts/es6/Reader'
+import { Newtype } from 'newtype-ts'
 
 /**
  * An Iterable used to represent Effects which work like lightweight coroutines
@@ -111,7 +112,11 @@ export type EffectOf<A> = A extends Effect<infer E, infer B>
  * Helper for retrieving the environmental dependencies from an effect
  * @since 0.0.1
  */
-export type EnvOf<A> = EffectOf<A> extends Effect<infer R, any> ? CastToEmptyObject<R> : never
+export type EnvOf<A> = EffectOf<A> extends Effect<infer R, any>
+  ? CastToEmptyObject<ExtractNewType<R>>
+  : never
+
+type ExtractNewType<A> = A extends Newtype<any, infer R> ? R : A
 
 /**
  * Helper for getting the return type from a given effect type

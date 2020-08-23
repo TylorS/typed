@@ -1,20 +1,24 @@
-import { ask, asks, doEffect } from '@typed/fp/Effect'
+import { ask, asks, doEffect, Pure } from '@typed/fp/Effect'
 import { iso } from 'newtype-ts'
 
-import { OpEnv } from './Op'
+import { OpEnv, OpMap, OPS } from './'
 
 const opEnvIso = iso<OpEnv<any>>()
-const emptyOpEnv = (): OpEnv<any> => opEnvIso.wrap({ ops: new Map() })
+const emptyOpEnv = (): OpEnv<any> => opEnvIso.wrap({ [OPS]: new Map() })
 
 export const getOpMap = doEffect(function* () {
-  const { ops } = yield* asks(opEnvIso.unwrap)
+  const { [OPS]: map } = yield* asks(opEnvIso.unwrap)
 
-  return ops
+  return map
 })
 
-export const getOrCreateOpMap = doEffect(function* () {
-  const env = yield* ask<Partial<OpEnv<any>>>()
-  const { ops } = opEnvIso.unwrap('ops' in env ? env : emptyOpEnv())
+export const getOrCreateOpMap: Pure<OpMap> = doEffect(function* () {
+  const env = yield* ask<{}>()
+  const { [OPS]: map } = opEnvIso.unwrap(isOpEnv(env) ? env : emptyOpEnv())
 
-  return ops
+  return map
 })
+
+export function isOpEnv(env: object): env is OpEnv<any> {
+  return OPS in env
+}

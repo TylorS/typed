@@ -5,7 +5,6 @@ import { async, Effect } from '@typed/fp/Effect/Effect'
 import { fromEnv } from '@typed/fp/Effect/fromEnv'
 import { flow } from 'fp-ts/es6/function'
 import { IO } from 'fp-ts/es6/IO'
-
 /**
  * @since 0.0.1
  */
