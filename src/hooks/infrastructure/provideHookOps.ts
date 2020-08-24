@@ -6,6 +6,7 @@ import { provideOpGroup } from '@typed/fp/Op/provideOpGroup'
 import { createUuid } from '@typed/fp/Uuid'
 import { pipe } from 'fp-ts/es6/function'
 import { some } from 'fp-ts/es6/Option'
+import { constant } from 'fp-ts/lib/function'
 
 import { HookOps } from '../HookOps'
 import { hookRequirementsIso } from '../runWithHooks'
@@ -56,17 +57,6 @@ export const provideHookOps = provideOpGroup(
     const getKeyedEnv = createGetKeyedEnv(sendEvent)
     const removedKeyedEnv = createRemoveKeyedEnv(sendEvent)
 
-    const createHookRequirements = () =>
-      doEffect(function* () {
-        const { hookEnvironment } = yield* ask<HookEnv>()
-        const id = yield* createUuid
-        const requirements = hookRequirementsIso.wrap(
-          createHookEnvironment(id, some(hookEnvironment)),
-        )
-
-        return requirements
-      })
-
     return [
       useRefByIndex,
       useStateByIndex,
@@ -75,7 +65,15 @@ export const provideHookOps = provideOpGroup(
       runWithHooks,
       getKeyedEnv,
       removedKeyedEnv,
-      createHookRequirements,
+      constant(createHookRequirements),
     ] as const
   }),
 )
+
+const createHookRequirements = doEffect(function* () {
+  const { hookEnvironment } = yield* ask<HookEnv>()
+  const id = yield* createUuid
+  const requirements = hookRequirementsIso.wrap(createHookEnvironment(id, some(hookEnvironment)))
+
+  return requirements
+})
