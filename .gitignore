@@ -65,11 +65,14 @@ tsconfig*.tsbuildinfo
 /Disposable/
 /Effect/
 /Future/
+/Op/
 /Path/
+/SharedRef/
 /Stream/
 /Uri/
 /Uuid/
 /common/
+/fibers/
 /history/
 /hooks/
 /lambda/

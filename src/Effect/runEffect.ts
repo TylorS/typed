@@ -39,7 +39,7 @@ export const execEffect = runEffect<any>(disposeNone)
 
 function __runEffect<A, E>(
   onReturn: Arity1<A, Disposable>,
-  env: NoInfer<E>,
+  env: E,
   effect: Effect<E, A>,
 ): Disposable {
   return pipe(effect, provide(env), runPure(onReturn))
