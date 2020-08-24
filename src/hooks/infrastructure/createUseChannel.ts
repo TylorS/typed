@@ -5,9 +5,9 @@ import { pipe } from 'fp-ts/es6/function'
 import { fold, isSome, none, Option, some } from 'fp-ts/es6/Option'
 
 import { Channel, ChannelName } from '../Channel'
-import { HookEnv, HookEnvironment } from '../HookEnvironment'
 import { ProvideChannelOp } from '../provideChannel'
 import { appendTo } from './helpers'
+import { HookEnv, HookEnvironment } from './HookEnvironment'
 
 export function createUseChannel(
   rootHookEnvironment: HookEnvironment,

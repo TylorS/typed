@@ -7,11 +7,11 @@ import { HookRequirements } from './runWithHooks'
 import { useRef, UseRefOp } from './useRef'
 
 export const useHookRequirementsRef: Effect<
-  OpEnv<UseRefOp> & UuidEnv & OpEnv<GetKeyedEnvOp>,
+  OpEnv<UseRefOp> & OpEnv<GetKeyedEnvOp> & UuidEnv,
   HookRequirements
 > = doEffect(function* () {
   const idRef = yield* useRef(createUuid)
-  const hookEnvironment = yield* getKeyedEnv(idRef.value)
+  const requirements = yield* getKeyedEnv(idRef.current)
 
-  return hookEnvironment
+  return requirements
 })

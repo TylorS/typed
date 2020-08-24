@@ -1,8 +1,8 @@
 import { Arity1 } from '@typed/fp/common'
 import { doEffect, Effect, Pure } from '@typed/fp/Effect'
-import { Eq } from 'fp-ts/lib/Eq'
+import { Eq } from 'fp-ts/es6/Eq'
 
-import { HookEvent } from '../events'
+import { HookEvent } from './events'
 
 export type CreateUseStateOptions<K, E, A> = {
   readonly states: Map<K, any>

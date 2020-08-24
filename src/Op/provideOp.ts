@@ -1,5 +1,5 @@
 import { doEffect, Effect, provide } from '@typed/fp/Effect'
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/es6/function'
 
 import { GetOperation, Op, OpEnv, OPS } from './'
 import { getOrCreateOpMap } from './OpEnv'

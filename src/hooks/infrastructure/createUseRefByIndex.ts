@@ -3,9 +3,9 @@ import { Uuid } from '@typed/fp/Uuid'
 import { pipe } from 'fp-ts/es6/function'
 import { isNone } from 'fp-ts/es6/Option'
 
-import { HookEnv, HookEnvironment } from '../HookEnvironment'
 import { createRef, Ref } from '../Ref'
 import { getNextIndex, lookupByIndex } from './helpers'
+import { HookEnv, HookEnvironment } from './HookEnvironment'
 
 export function createUseRefByIndex(hookPositions: Map<Uuid, number>) {
   const useRefByIndex = <E, A>(initialValue: Effect<E, A>): Effect<HookEnv & E, Ref<A>> =>

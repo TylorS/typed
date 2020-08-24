@@ -18,18 +18,18 @@ export const useMemo = <A extends readonly any[], B>(
     const depsRef = yield* useRef(Pure.of(deps))
     const valueRef = yield* useRef(Pure.fromIO(() => f(...deps)))
 
-    if (firstRunRef.value) {
-      firstRunRef.value = false
+    if (firstRunRef.current) {
+      firstRunRef.current = false
 
-      return valueRef.value
+      return valueRef.current
     }
 
-    const changed = !eq.equals(depsRef.value, deps)
+    const changed = !eq.equals(depsRef.current, deps)
 
     if (changed) {
-      depsRef.value = deps
-      valueRef.value = f(...deps)
+      depsRef.current = deps
+      valueRef.current = f(...deps)
     }
 
-    return valueRef.value
+    return valueRef.current
   })

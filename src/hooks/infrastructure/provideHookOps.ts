@@ -3,10 +3,12 @@ import { Stream } from '@most/types'
 import { ask, doEffect } from '@typed/fp/Effect'
 import { SchedulerEnv } from '@typed/fp/fibers'
 import { provideOpGroup } from '@typed/fp/Op/provideOpGroup'
-import { pipe } from 'fp-ts/lib/function'
+import { createUuid } from '@typed/fp/Uuid'
+import { pipe } from 'fp-ts/es6/function'
+import { some } from 'fp-ts/es6/Option'
 
-import { HookEvent, isRemovedHookEnvironmentEvent } from '../events'
-import { HooksManagerEnv } from '../HooksManagerEnv'
+import { HookOps } from '../HookOps'
+import { hookRequirementsIso } from '../runWithHooks'
 import { createEventSink } from './createEventSink'
 import { createGetKeyedEnv } from './createGetKeyedEnv'
 import { createProvideChannel } from './createProvideChannel'
@@ -15,8 +17,10 @@ import { createRunWithHooks } from './createRunWithHooks'
 import { createUseChannel } from './createUseChannel'
 import { createUseRefByIndex } from './createUseRefByIndex'
 import { createUseStateByIndex } from './createUseStateByIndex'
+import { HookEvent, isRemovedHookEnvironmentEvent } from './events'
 import { handleRemoveEvent } from './handleRemoveEvent'
-import { HookOps } from './HookOps'
+import { createHookEnvironment, HookEnv } from './HookEnvironment'
+import { HooksManagerEnv } from './HooksManagerEnv'
 
 /**
  * Provides a default implementation of all of the base hook operations around a `HookEnv`
@@ -32,8 +36,6 @@ export const provideHookOps = provideOpGroup(
       hookEvents,
       scheduler,
     } = yield* ask<HooksManagerEnv & SchedulerEnv>()
-
-    console.log('setting up hook ops')
 
     const [sink, stream] = hookEvents
 
@@ -54,7 +56,13 @@ export const provideHookOps = provideOpGroup(
     const getKeyedEnv = createGetKeyedEnv(sendEvent)
     const removedKeyedEnv = createRemoveKeyedEnv(sendEvent)
 
-    console.log('returning hook ops')
+    const createHookRequirements = () =>
+      doEffect(function* () {
+        const { hookEnvironment } = yield* ask<HookEnv>()
+        const id = yield* createUuid
+
+        return hookRequirementsIso.wrap(createHookEnvironment(id, some(hookEnvironment)))
+      })
 
     return [
       useRefByIndex,
@@ -64,6 +72,7 @@ export const provideHookOps = provideOpGroup(
       runWithHooks,
       getKeyedEnv,
       removedKeyedEnv,
+      createHookRequirements,
     ] as const
   }),
 )

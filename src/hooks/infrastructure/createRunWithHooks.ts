@@ -2,10 +2,10 @@ import { doEffect, Effect, provide } from '@typed/fp/Effect'
 import { Uuid } from '@typed/fp/Uuid'
 import { pipe } from 'fp-ts/es6/function'
 
-import { HookEvent, HookEventType } from '../events'
-import { HookEnv, HookEnvironment } from '../HookEnvironment'
 import { HookRequirements, hookRequirementsIso } from '../runWithHooks'
 import { INITIAL_ENV_INDEX } from './constants'
+import { HookEvent, HookEventType } from './events'
+import { HookEnv, HookEnvironment } from './HookEnvironment'
 
 export function createRunWithHooks(
   hookPositions: Map<Uuid, number>,

@@ -2,9 +2,9 @@ import { ask, doEffect } from '@typed/fp/Effect'
 import { createUuid } from '@typed/fp/Uuid'
 import { some } from 'fp-ts/es6/Option'
 
-import { HookEvent, HookEventType } from '../events'
-import { createHookEnvironment, HookEnv } from '../HookEnvironment'
 import { hookRequirementsIso } from '../runWithHooks'
+import { HookEvent, HookEventType } from './events'
+import { createHookEnvironment, HookEnv } from './HookEnvironment'
 
 export function createGetKeyedEnv(sendEvent: (event: HookEvent) => void) {
   return (key: any) =>

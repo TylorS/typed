@@ -2,7 +2,7 @@ import { lazy, LazyDisposable } from '@typed/fp/Disposable'
 import { Uuid } from '@typed/fp/Uuid'
 import { isSome, none, Option } from 'fp-ts/es6/Option'
 
-import { ChannelName } from './Channel'
+import { ChannelName } from '../Channel'
 
 export interface HookEnv {
   readonly hookEnvironment: HookEnvironment

@@ -1,6 +1,6 @@
 import { Effect } from '@typed/fp/Effect'
 import { callOp, createOp, Op } from '@typed/fp/Op'
-import { Eq } from 'fp-ts/lib/Eq'
+import { Eq } from 'fp-ts/es6/Eq'
 
 import { Channel } from './Channel'
 import { UseState } from './useState'

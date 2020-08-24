@@ -4,11 +4,11 @@ import { Eq, eqStrict } from 'fp-ts/es6/Eq'
 import { pipe } from 'fp-ts/es6/function'
 import { isNone } from 'fp-ts/es6/Option'
 
-import { HookEvent, HookEventType } from '../events'
-import { HookEnv } from '../HookEnvironment'
 import { UseState } from '../useState'
 import { createUseState } from './createUseState'
+import { HookEvent, HookEventType } from './events'
 import { getNextIndex, lookupByIndex } from './helpers'
+import { HookEnv } from './HookEnvironment'
 
 export function createUseStateByIndex(
   hookPositions: Map<Uuid, number>,

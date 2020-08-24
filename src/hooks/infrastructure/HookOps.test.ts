@@ -5,9 +5,9 @@ import { createBrowserUuidEnv, createNodeUuidEnv } from '@typed/fp/Uuid'
 import { describe, it } from '@typed/test'
 import { pipe } from 'fp-ts/es6/pipeable'
 
-import { provideHooksManagerEnv } from '../provideHooksManagerEnv'
 import { useState } from '../useState'
 import { provideHookOps } from './provideHookOps'
+import { provideHooksManagerEnv } from './provideHooksManagerEnv'
 
 export const test = describe(`HookOps`, [
   describe(`useState`, [

@@ -1,12 +1,12 @@
 import { ask, doEffect, Effect } from '@typed/fp/Effect'
-import { Eq, eqStrict } from 'fp-ts/lib/Eq'
+import { Eq, eqStrict } from 'fp-ts/es6/Eq'
 
 import { Channel, ChannelName } from '../Channel'
-import { HookEvent, HookEventType } from '../events'
-import { HookEnv, HookEnvironment } from '../HookEnvironment'
 import { UseState } from '../useState'
 import { createUseState } from './createUseState'
+import { HookEvent, HookEventType } from './events'
 import { appendTo } from './helpers'
+import { HookEnv, HookEnvironment } from './HookEnvironment'
 
 export function createProvideChannel(
   channelProviders: Map<ChannelName, Set<HookEnvironment>>,

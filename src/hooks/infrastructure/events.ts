@@ -1,4 +1,4 @@
-import { ChannelName } from './Channel'
+import { ChannelName } from '../Channel'
 import { HookEnvironment } from './HookEnvironment'
 
 export type HookEvent<A = any> =
