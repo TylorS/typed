@@ -4,7 +4,9 @@ import { eqStrict } from 'fp-ts/es6/Eq'
 import { pipe } from 'fp-ts/es6/function'
 import { fold, isSome, none, Option, some } from 'fp-ts/es6/Option'
 
-import { Channel, ChannelName, HookEnv, HookEnvironment, ProvideChannelOp } from '../../domain'
+import { Channel, ChannelName } from '../Channel'
+import { HookEnv, HookEnvironment } from '../HookEnvironment'
+import { ProvideChannelOp } from '../provideChannel'
 import { appendTo } from './helpers'
 
 export function createUseChannel(

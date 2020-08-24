@@ -4,7 +4,9 @@ import { Eq, eqStrict } from 'fp-ts/es6/Eq'
 import { pipe } from 'fp-ts/es6/function'
 import { isNone } from 'fp-ts/es6/Option'
 
-import { HookEnv, HookEvent, HookEventType, UseState } from '../../domain'
+import { HookEvent, HookEventType } from '../events'
+import { HookEnv } from '../HookEnvironment'
+import { UseState } from '../useState'
 import { createUseState } from './createUseState'
 import { getNextIndex, lookupByIndex } from './helpers'
 

@@ -4,7 +4,7 @@ import { OpEnv } from '@typed/fp/Op'
 import { Eq, eqStrict } from 'fp-ts/es6/Eq'
 import { getEq } from 'fp-ts/es6/ReadonlyArray'
 
-import { useRef, UseRefOp } from '../domain'
+import { useRef, UseRefOp } from './useRef'
 
 const pureTrue = Pure.of(true)
 

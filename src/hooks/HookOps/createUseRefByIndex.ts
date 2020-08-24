@@ -3,7 +3,8 @@ import { Uuid } from '@typed/fp/Uuid'
 import { pipe } from 'fp-ts/es6/function'
 import { isNone } from 'fp-ts/es6/Option'
 
-import { createRef, HookEnv, HookEnvironment, Ref } from '../../domain'
+import { HookEnv, HookEnvironment } from '../HookEnvironment'
+import { createRef, Ref } from '../Ref'
 import { getNextIndex, lookupByIndex } from './helpers'
 
 export function createUseRefByIndex(hookPositions: Map<Uuid, number>) {

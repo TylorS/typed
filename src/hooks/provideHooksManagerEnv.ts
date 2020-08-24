@@ -3,7 +3,7 @@ import { provideWith } from '@typed/fp/Effect/provideWith'
 import { createUuid } from '@typed/fp/Uuid'
 import { create } from 'most-subject'
 
-import { createHookEnvironment } from '../domain'
+import { createHookEnvironment } from './HookEnvironment'
 import { HooksManagerEnv } from './HooksManagerEnv'
 
 export const provideHooksManagerEnv = provideWith(

@@ -1,6 +1,7 @@
 import { ask, doEffect } from '@typed/fp/Effect'
 
-import { HookEnv, HookEvent, HookEventType } from '../../domain'
+import { HookEvent, HookEventType } from '../events'
+import { HookEnv } from '../HookEnvironment'
 
 export function createRemoveKeyedEnv(sendEvent: (event: HookEvent) => void) {
   return (key: any) =>

@@ -1,4 +1,4 @@
-import { doEffect, Effect, EnvOf, ReturnOf, ZipEnvOf } from '@typed/fp/Effect'
+import { doEffect, Effect, EnvOf, ZipEnvOf } from '@typed/fp/Effect'
 import { GetOperation, Op, OpEnv, provideOp } from '@typed/fp/Op'
 import { pipe } from 'fp-ts/es6/pipeable'
 import { mapWithIndex, reduce } from 'fp-ts/es6/ReadonlyArray'
@@ -20,7 +20,7 @@ export function provideOpGroup<OPS extends ReadonlyArray<Op>, G extends OpGroup<
         ? provided.get(effect)!
         : provided.set(effect, yield* opGroup).get(effect)!
 
-      return pipe(
+      return yield* pipe(
         ops,
         mapWithIndex((i, op) => provideOp(op, effects[i])),
         reduce(effect, (fx, provide) => provide(fx)),
@@ -46,6 +46,14 @@ export type OpGroupEffects<OPS extends ReadonlyArray<Op>> = {
   readonly [K in keyof OPS]: OPS[K] extends Op ? GetOperation<any, OPS[K]> : never
 }
 
-export type OpGroupEnv<G extends OpGroup> = ReturnOf<G> extends ReadonlyArray<Effect<any, any>>
-  ? EnvOf<G> & ZipEnvOf<ReturnOf<G>>
-  : never
+export type OpGroupEnv<G extends OpGroup> = EnvOf<G> & ZipEnvOf<OpGroupEffEnvs<OpsOf<G>>>
+
+type OpsOf<A> = A extends OpGroup<infer R> ? R : never
+
+type OpGroupEffEnvs<OPS extends ReadonlyArray<Op>> = CastEffectArray<
+  {
+    readonly [K in keyof OPS]: OPS[K] extends Op ? ReturnType<GetOperation<any, OPS[K]>> : never
+  }
+>
+
+type CastEffectArray<A> = A extends ReadonlyArray<Effect<any, any>> ? A : []

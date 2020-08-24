@@ -2,7 +2,9 @@ import { ask, doEffect } from '@typed/fp/Effect'
 import { createUuid } from '@typed/fp/Uuid'
 import { some } from 'fp-ts/es6/Option'
 
-import { createHookEnvironment, HookEnv, HookEvent, HookEventType } from '../../domain'
+import { HookEvent, HookEventType } from '../events'
+import { createHookEnvironment, HookEnv } from '../HookEnvironment'
+import { hookRequirementsIso } from '../runWithHooks'
 
 export function createGetKeyedEnv(sendEvent: (event: HookEvent) => void) {
   return (key: any) =>
@@ -18,6 +20,6 @@ export function createGetKeyedEnv(sendEvent: (event: HookEvent) => void) {
         hookEnvironment.children.set(key, keyed)
       }
 
-      return hookEnvironment.children.get(key)!
+      return hookRequirementsIso.wrap(hookEnvironment.children.get(key)!)
     })
 }

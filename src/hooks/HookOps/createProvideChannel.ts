@@ -1,15 +1,10 @@
 import { ask, doEffect, Effect } from '@typed/fp/Effect'
 import { Eq, eqStrict } from 'fp-ts/lib/Eq'
 
-import {
-  Channel,
-  ChannelName,
-  HookEnv,
-  HookEnvironment,
-  HookEvent,
-  HookEventType,
-  UseState,
-} from '../../domain'
+import { Channel, ChannelName } from '../Channel'
+import { HookEvent, HookEventType } from '../events'
+import { HookEnv, HookEnvironment } from '../HookEnvironment'
+import { UseState } from '../useState'
 import { createUseState } from './createUseState'
 import { appendTo } from './helpers'
 

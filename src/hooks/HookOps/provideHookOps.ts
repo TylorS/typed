@@ -5,7 +5,7 @@ import { SchedulerEnv } from '@typed/fp/fibers'
 import { provideOpGroup } from '@typed/fp/Op/provideOpGroup'
 import { pipe } from 'fp-ts/lib/function'
 
-import { HookEvent, HookOps, isRemovedHookEnvironmentEvent } from '../../domain'
+import { HookEvent, isRemovedHookEnvironmentEvent } from '../events'
 import { HooksManagerEnv } from '../HooksManagerEnv'
 import { createEventSink } from './createEventSink'
 import { createGetKeyedEnv } from './createGetKeyedEnv'
@@ -16,6 +16,7 @@ import { createUseChannel } from './createUseChannel'
 import { createUseRefByIndex } from './createUseRefByIndex'
 import { createUseStateByIndex } from './createUseStateByIndex'
 import { handleRemoveEvent } from './handleRemoveEvent'
+import { HookOps } from './HookOps'
 
 /**
  * Provides a default implementation of all of the base hook operations around a `HookEnv`
@@ -31,6 +32,8 @@ export const provideHookOps = provideOpGroup(
       hookEvents,
       scheduler,
     } = yield* ask<HooksManagerEnv & SchedulerEnv>()
+
+    console.log('setting up hook ops')
 
     const [sink, stream] = hookEvents
 
@@ -49,7 +52,9 @@ export const provideHookOps = provideOpGroup(
     const useChannel = createUseChannel(hookEnvironment, channelConsumers, provideChannel)
     const runWithHooks = createRunWithHooks(hookPositions, sendEvent)
     const getKeyedEnv = createGetKeyedEnv(sendEvent)
-    const removeKeyedEnv = createRemoveKeyedEnv(sendEvent)
+    const removedKeyedEnv = createRemoveKeyedEnv(sendEvent)
+
+    console.log('returning hook ops')
 
     return [
       useRefByIndex,
@@ -58,7 +63,7 @@ export const provideHookOps = provideOpGroup(
       provideChannel,
       runWithHooks,
       getKeyedEnv,
-      removeKeyedEnv,
+      removedKeyedEnv,
     ] as const
   }),
 )
