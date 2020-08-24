@@ -1,9 +1,9 @@
 import { OpEnvs } from '@typed/fp/Op/provideOpGroup'
 
 import { CreateHookRequirementsOp } from './createHookRequirements'
-import { GetKeyedEnvOp } from './getKeyedEnv'
+import { GetKeyedReqirementsOp } from './getKeyedRequirements'
 import { ProvideChannelOp } from './provideChannel'
-import { RemoveKeyedEnvOp } from './removeKeyedEnv'
+import { RemoveKeyedRequirementsOp } from './removeKeyedRequirements'
 import { RunWithHooksOp } from './runWithHooks'
 import { UseChannelOp } from './useChannel'
 import { UseRefOp } from './useRef'
@@ -15,8 +15,8 @@ export const HookOps = [
   UseChannelOp,
   ProvideChannelOp,
   RunWithHooksOp,
-  GetKeyedEnvOp,
-  RemoveKeyedEnvOp,
+  GetKeyedReqirementsOp,
+  RemoveKeyedRequirementsOp,
   CreateHookRequirementsOp,
 ] as const
 export type HookOps = typeof HookOps

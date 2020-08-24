@@ -2,16 +2,16 @@ import { doEffect, Effect } from '@typed/fp/Effect'
 import { OpEnv } from '@typed/fp/Op'
 import { createUuid, UuidEnv } from '@typed/fp/Uuid'
 
-import { getKeyedEnv, GetKeyedEnvOp } from './getKeyedEnv'
+import { GetKeyedReqirementsOp, getKeyedRequirements } from './getKeyedRequirements'
 import { HookRequirements } from './runWithHooks'
 import { useRef, UseRefOp } from './useRef'
 
 export const useHookRequirementsRef: Effect<
-  OpEnv<UseRefOp> & OpEnv<GetKeyedEnvOp> & UuidEnv,
+  OpEnv<UseRefOp> & OpEnv<GetKeyedReqirementsOp> & UuidEnv,
   HookRequirements
 > = doEffect(function* () {
   const idRef = yield* useRef(createUuid)
-  const requirements = yield* getKeyedEnv(idRef.current)
+  const requirements = yield* getKeyedRequirements(idRef.current)
 
   return requirements
 })
