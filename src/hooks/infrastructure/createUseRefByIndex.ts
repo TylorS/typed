@@ -1,4 +1,4 @@
-import { ask, doEffect, Effect } from '@typed/fp/Effect'
+import { ask, doEffect, Effect, Pure } from '@typed/fp/Effect'
 import { Uuid } from '@typed/fp/Uuid'
 import { pipe } from 'fp-ts/es6/function'
 import { isNone } from 'fp-ts/es6/Option'
@@ -7,8 +7,12 @@ import { createRef, Ref } from '../Ref'
 import { getNextIndex, lookupByIndex } from './helpers'
 import { HookEnv, HookEnvironment } from './HookEnvironment'
 
+const pureUndefined = Pure.of(undefined)
+
 export function createUseRefByIndex(hookPositions: Map<Uuid, number>) {
-  const useRefByIndex = <E, A>(initialValue: Effect<E, A>): Effect<HookEnv & E, Ref<A>> =>
+  const useRefByIndex = <E, A>(
+    initialValue: Effect<E, A> = pureUndefined as any,
+  ): Effect<HookEnv & E, Ref<A>> =>
     doEffect(function* () {
       const { hookEnvironment } = yield* ask<HookEnv>()
       const index = getNextIndex(hookPositions, hookEnvironment.id)

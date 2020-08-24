@@ -14,6 +14,9 @@ export const useRef = callOp(UseRefOp)
 
 declare module '@typed/fp/Op' {
   export interface Ops<Env> {
-    [USE_REF]: <E, A>(initial: Effect<E, A>) => Effect<Env & E, Ref<A>>
+    [USE_REF]: {
+      <A>(): Effect<Env, Ref<A | undefined>>
+      <E, A>(initial: Effect<E, A>): Effect<Env & E, Ref<A>>
+    }
   }
 }
