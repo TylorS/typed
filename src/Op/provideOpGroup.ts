@@ -1,4 +1,4 @@
-import { doEffect, Effect, EnvOf, memo, ReturnOf, ZipEnvOf } from '@typed/fp/Effect'
+import { doEffect, Effect, EnvOf, ReturnOf, ZipEnvOf } from '@typed/fp/Effect'
 import { GetOperation, Op, OpEnv, provideOp } from '@typed/fp/Op'
 import { pipe } from 'fp-ts/es6/pipeable'
 import { mapWithIndex, reduce } from 'fp-ts/es6/ReadonlyArray'
@@ -10,17 +10,19 @@ import { IntersectOf } from 'Union/_api'
  */
 export function provideOpGroup<OPS extends ReadonlyArray<Op>, G extends OpGroup<OPS>>(
   ops: OPS,
-  opGroupEff: G,
+  opGroup: G,
 ) {
-  const getOpGroup = memo(opGroupEff)
+  const provided = new WeakMap<Effect<any, any>, any>()
 
   return <E, A>(effect: Effect<E & OpEnvs<OPS>, A>): Effect<E & OpGroupEnv<G>, A> => {
     const eff = doEffect(function* () {
-      const opGroup = yield* getOpGroup
+      const effects = provided.has(effect)
+        ? provided.get(effect)!
+        : provided.set(effect, yield* opGroup).get(effect)!
 
       return pipe(
         ops,
-        mapWithIndex((i, op) => provideOp(op, opGroup[i])),
+        mapWithIndex((i, op) => provideOp(op, effects[i])),
         reduce(effect, (fx, provide) => provide(fx)),
       )
     })

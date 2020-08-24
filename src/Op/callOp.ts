@@ -22,6 +22,6 @@ export function callOp<O extends Op>(op: O): CallOf<O> {
   return operation as CallOf<O>
 }
 
-export type CallOf<O extends Op> = UriOf<O> extends OpsUris
-  ? Ops<OpEnv<O>>[UriOf<O>]
-  : GetOperation<OpEnv<O>, O>
+export type CallOf<O extends Op, Env = unknown> = UriOf<O> extends OpsUris
+  ? Ops<OpEnv<O> & Env>[UriOf<O>]
+  : GetOperation<OpEnv<O> & Env, O>

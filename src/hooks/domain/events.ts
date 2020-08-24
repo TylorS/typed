@@ -36,3 +36,15 @@ export interface ChannelUpdated<A> {
   readonly hookEnvironment: HookEnvironment
   readonly value: A
 }
+
+export const isRemovedHookEnvironmentEvent = (e: HookEvent): e is RemovedHookEnvironment =>
+  e.type === HookEventType.RemovedEnvironment
+
+export const isUpdatedHookEnvironmentEvent = (e: HookEvent): e is UpdatedHookEnvironment =>
+  e.type === HookEventType.UpdatedEnvironment
+
+export const isCreatedHookEnvironmentEvent = (e: HookEvent): e is CreatedHookEnvironment =>
+  e.type === HookEventType.CreatedEnvironment
+
+export const isUpdatedChannelEvent = (e: HookEvent): e is ChannelUpdated<unknown> =>
+  e.type === HookEventType.UpdatedChannel
