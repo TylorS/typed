@@ -60,8 +60,11 @@ export const provideHookOps = provideOpGroup(
       doEffect(function* () {
         const { hookEnvironment } = yield* ask<HookEnv>()
         const id = yield* createUuid
+        const requirements = hookRequirementsIso.wrap(
+          createHookEnvironment(id, some(hookEnvironment)),
+        )
 
-        return hookRequirementsIso.wrap(createHookEnvironment(id, some(hookEnvironment)))
+        return requirements
       })
 
     return [

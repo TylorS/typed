@@ -5,6 +5,8 @@ import { createBrowserUuidEnv, createNodeUuidEnv } from '@typed/fp/Uuid'
 import { describe, it } from '@typed/test'
 import { pipe } from 'fp-ts/es6/pipeable'
 
+import { createHookRequirements } from '../createHookRequirements'
+import { runWithHooks } from '../runWithHooks'
 import { useState } from '../useState'
 import { provideHookOps } from './provideHookOps'
 import { provideHooksManagerEnv } from './provideHooksManagerEnv'
@@ -17,12 +19,17 @@ export const test = describe(`HookOps`, [
       const useNumState = useState(Pure.of(initial))
 
       const sut = doEffect(function* () {
-        const [getX, updateX] = yield* useNumState
+        const requirements = yield* createHookRequirements
+        const [getA, updateA] = yield* runWithHooks(useNumState, requirements)
 
         try {
-          equal(initial, yield* getX)
-          equal(f(initial), yield* updateX(f))
-          equal(f(initial), yield* getX)
+          equal(initial, yield* getA)
+          equal(f(initial), yield* updateA(f))
+
+          const [getB] = yield* runWithHooks(useNumState, requirements)
+
+          equal(f(initial), yield* getB)
+
           done()
         } catch (error) {
           done(error)

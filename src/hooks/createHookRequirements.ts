@@ -10,4 +10,4 @@ export interface CreateHookRequirementsOp
   extends Op<CREATE_HOOK_REQUIREMENTS, () => Pure<HookRequirements>> {}
 export const CreateHookRequirementsOp = createOp<CreateHookRequirementsOp>(CREATE_HOOK_REQUIREMENTS)
 
-export const createHookReqirements = callOp(CreateHookRequirementsOp)()
+export const createHookRequirements = callOp(CreateHookRequirementsOp)()
