@@ -13,6 +13,7 @@ export function createRunWithHooks(
 ) {
   return <E, A>(eff: Effect<E & HookEnv, A>, hookRequirements: HookRequirements): Effect<E, A> =>
     doEffect(function* () {
+      // TODO: possibly validate this is really the case?
       const hookEnvironment = hookRequirementsIso.unwrap(hookRequirements) as HookEnvironment
 
       sendEvent({
