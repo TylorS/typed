@@ -16,9 +16,8 @@ export function createRunWithHooks(
       const hookEnvironment = hookRequirementsIso.unwrap(hookRequirements) as HookEnvironment
 
       sendEvent({
-        type: HookEventType.UpdatedEnvironment,
+        type: HookEventType.RunningEnvironment,
         hookEnvironment,
-        updated: false,
       })
 
       hookPositions.set(hookEnvironment.id, INITIAL_ENV_INDEX)

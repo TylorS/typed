@@ -5,7 +5,7 @@ import { Eq } from 'fp-ts/es6/Eq'
 import { Channel, ChannelName } from '../Channel'
 import { UseState } from '../useState'
 import { createUseState } from './createUseState'
-import { HookEvent, HookEventType } from './events'
+import { ChannelUpdated, HookEvent, HookEventType } from './events'
 import { appendTo } from './helpers'
 import { HookEnv, HookEnvironment } from './HookEnvironment'
 
@@ -35,7 +35,7 @@ export function createProvideChannel(
         key: name,
         eq,
         sendEvent,
-        createEvent: <A>(value: A) => ({
+        createEvent: <A>(value: A): ChannelUpdated<A> => ({
           type: HookEventType.UpdatedChannel,
           channel: name,
           hookEnvironment,

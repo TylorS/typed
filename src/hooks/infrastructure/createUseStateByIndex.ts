@@ -7,7 +7,7 @@ import { isNone } from 'fp-ts/es6/Option'
 
 import { UseState } from '../useState'
 import { createUseState } from './createUseState'
-import { HookEvent, HookEventType } from './events'
+import { HookEvent, HookEventType, UpdatedHookEnvironment } from './events'
 import { getNextIndex, lookupByIndex } from './helpers'
 import { HookEnv } from './HookEnvironment'
 
@@ -31,10 +31,11 @@ export function createUseStateByIndex(
           key: index,
           eq,
           sendEvent,
-          createEvent: () => ({
+          createEvent: (value): UpdatedHookEnvironment => ({
             type: HookEventType.UpdatedEnvironment,
             hookEnvironment,
-            updated: true,
+            key: index,
+            value,
           }),
         })
       }

@@ -35,8 +35,10 @@ export function createUseState<K, E, A>(options: CreateUseStateOptions<K, E, A>)
         return state
       })
 
-    states.set(key, [getState, updateState])
+    const useState = [getState, updateState]
 
-    return states.get(key)!
+    states.set(key, useState)
+
+    return useState
   })
 }

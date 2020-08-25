@@ -4,12 +4,14 @@ import { HookEnvironment } from './HookEnvironment'
 export type HookEvent<A = any> =
   | CreatedHookEnvironment
   | UpdatedHookEnvironment
+  | RunningHookEnvironment
   | RemovedHookEnvironment
   | ChannelUpdated<A>
 
 export enum HookEventType {
   CreatedEnvironment = 'hookEnvironment/created',
   UpdatedEnvironment = 'hookEnvironment/updated',
+  RunningEnvironment = 'hookEnvironment/running',
   RemovedEnvironment = 'hookEnvironment/removed',
   UpdatedChannel = 'channel/updated',
 }
@@ -22,7 +24,13 @@ export interface CreatedHookEnvironment {
 export interface UpdatedHookEnvironment {
   readonly type: HookEventType.UpdatedEnvironment
   readonly hookEnvironment: HookEnvironment
-  readonly updated: boolean
+  readonly key: unknown
+  readonly value: unknown
+}
+
+export interface RunningHookEnvironment {
+  readonly type: HookEventType.RunningEnvironment
+  readonly hookEnvironment: HookEnvironment
 }
 
 export interface RemovedHookEnvironment {
