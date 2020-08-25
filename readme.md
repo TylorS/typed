@@ -15,3 +15,17 @@ At present only modern environments that support ES2019 Syntax and dynamic impor
 This includes the last ~2 versions of Chrome/Chromium, Firefox, Safari, Edge and include Node 12+.
 
 > Pull requests are always welcomed for documenting any polyfill setup required for supporting any other environments 😄
+
+
+## TODO 
+
+- Storage / Async Storage
+- Cryptography primitives
+- JWT
+- HTTP
+- JSON-RPC
+- Logger Abstractions
+- RemoteData w/ refreshing state
+- Routing
+- Investigate what typed-prelude functionality is still relevant 
+- More useful integrations with fp-ts, io-ts, monocle-ts, and fp-ts community
