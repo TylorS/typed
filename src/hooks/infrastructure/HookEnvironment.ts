@@ -13,14 +13,14 @@ export interface HookEnvironment extends LazyDisposable {
   readonly id: Uuid
 
   // Keep track of any state you'd like
-  readonly states: Map<PropertyKey, any>
+  readonly states: Map<unknown, any>
 
   // Keep track of any state related to a channel
   readonly channelStates: Map<ChannelName, any>
 
   // Allow tracking tree of hook environments
   readonly parent: Option<HookEnvironment>
-  readonly children: Map<any, HookEnvironment>
+  readonly children: Map<unknown, HookEnvironment>
 }
 
 export function createHookEnvironment(

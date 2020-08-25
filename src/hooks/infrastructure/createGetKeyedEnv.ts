@@ -7,7 +7,7 @@ import { HookEvent, HookEventType } from './events'
 import { createHookEnvironment, HookEnv } from './HookEnvironment'
 
 export function createGetKeyedEnv(sendEvent: (event: HookEvent) => void) {
-  return (key: any) =>
+  return (key: unknown) =>
     doEffect(function* () {
       const { hookEnvironment } = yield* ask<HookEnv>()
 
