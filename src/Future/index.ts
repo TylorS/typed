@@ -1,7 +1,9 @@
-import { Effect, effect, effectSeq } from '@typed/fp/Effect'
+import { Effect, effect, effectSeq, URI as EffectURI } from '@typed/fp/Effect'
+import { Alt3 } from 'fp-ts/es6/Alt'
 import { Either } from 'fp-ts/es6/Either'
-import { getEitherM } from 'fp-ts/es6/EitherT'
+import { EitherM2, getEitherM } from 'fp-ts/es6/EitherT'
 import { pipeable } from 'fp-ts/es6/pipeable'
+import { Monad3 } from 'fp-ts/lib/Monad'
 
 export const URI = '@typed/fp/Future'
 export type URI = typeof URI
@@ -14,8 +16,11 @@ declare module 'fp-ts/es6/HKT' {
   }
 }
 
-export const future = getEitherM(effect)
-export const futureSeq = getEitherM(effectSeq)
+export const future: Monad3<URI> & Alt3<URI> & EitherM2<EffectURI> = { ...getEitherM(effect), URI }
+export const futureSeq: Monad3<URI> & Alt3<URI> & EitherM2<EffectURI> = {
+  ...getEitherM(effectSeq),
+  URI,
+}
 
 export const {
   alt,
@@ -28,7 +33,4 @@ export const {
   bimap,
   mapLeft,
   flatten,
-} = pipeable({
-  URI,
-  ...future,
-})
+} = pipeable(future)
