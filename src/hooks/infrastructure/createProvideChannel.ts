@@ -1,5 +1,6 @@
+import { deepEqualsEq } from '@typed/fp/common'
 import { ask, doEffect, Effect } from '@typed/fp/Effect'
-import { Eq, eqStrict } from 'fp-ts/es6/Eq'
+import { Eq } from 'fp-ts/es6/Eq'
 
 import { Channel, ChannelName } from '../Channel'
 import { UseState } from '../useState'
@@ -15,7 +16,7 @@ export function createProvideChannel(
   return <E1, A, E2>(
     channel: Channel<E1, A>,
     initialValue: Effect<E2, A>,
-    eq: Eq<A> = eqStrict,
+    eq: Eq<A> = deepEqualsEq,
   ): Effect<HookEnv & E1 & E2, UseState<A>> =>
     doEffect(function* () {
       const { hookEnvironment } = yield* ask<HookEnv>()

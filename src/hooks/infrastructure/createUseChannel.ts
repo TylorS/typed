@@ -1,6 +1,6 @@
+import { deepEqualsEq } from '@typed/fp/common'
 import { ask, doEffect, Effect, provide } from '@typed/fp/Effect'
 import { CallOf } from '@typed/fp/Op'
-import { eqStrict } from 'fp-ts/es6/Eq'
 import { pipe } from 'fp-ts/es6/function'
 import { fold, isSome, none, Option, some } from 'fp-ts/es6/Option'
 
@@ -29,7 +29,7 @@ export function createUseChannel(
       }
 
       return yield* pipe(
-        provideChannelOp(channel, channel.defaultValue, eqStrict),
+        provideChannelOp(channel, channel.defaultValue, deepEqualsEq),
         provide({ hookEnvironment: rootHookEnvironment }),
       ) as Effect<E, any>
     })

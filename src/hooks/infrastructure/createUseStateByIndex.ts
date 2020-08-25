@@ -1,6 +1,7 @@
+import { deepEqualsEq } from '@typed/fp/common'
 import { ask, doEffect, Effect } from '@typed/fp/Effect'
 import { Uuid } from '@typed/fp/Uuid'
-import { Eq, eqStrict } from 'fp-ts/es6/Eq'
+import { Eq } from 'fp-ts/es6/Eq'
 import { pipe } from 'fp-ts/es6/function'
 import { isNone } from 'fp-ts/es6/Option'
 
@@ -16,7 +17,7 @@ export function createUseStateByIndex(
 ) {
   return <E, A>(
     initialValue: Effect<E, A>,
-    eq: Eq<A> = eqStrict,
+    eq: Eq<A> = deepEqualsEq,
   ): Effect<HookEnv & E, UseState<A>> =>
     doEffect(function* () {
       const { hookEnvironment } = yield* ask<HookEnv>()

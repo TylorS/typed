@@ -3,15 +3,13 @@ import { Stream } from '@most/types'
 import { ask, doEffect } from '@typed/fp/Effect'
 import { SchedulerEnv } from '@typed/fp/fibers'
 import { provideOpGroup } from '@typed/fp/Op/provideOpGroup'
-import { createUuid } from '@typed/fp/Uuid'
 import { pipe } from 'fp-ts/es6/function'
 import { constant } from 'fp-ts/es6/function'
-import { some } from 'fp-ts/es6/Option'
 
 import { HookOps } from '../HookOps'
-import { hookRequirementsIso } from '../runWithHooks'
 import { createEventSink } from './createEventSink'
 import { createGetKeyedEnv } from './createGetKeyedEnv'
+import { createHookRequirements } from './createHookRequirements'
 import { createProvideChannel } from './createProvideChannel'
 import { createRemoveKeyedEnv } from './createRemoveKeyedEnv'
 import { createRunWithHooks } from './createRunWithHooks'
@@ -20,7 +18,6 @@ import { createUseRefByIndex } from './createUseRefByIndex'
 import { createUseStateByIndex } from './createUseStateByIndex'
 import { HookEvent, isRemovedHookEnvironmentEvent } from './events'
 import { handleRemoveEvent } from './handleRemoveEvent'
-import { createHookEnvironment, HookEnv } from './HookEnvironment'
 import { HooksManagerEnv } from './HooksManagerEnv'
 
 /**
@@ -69,11 +66,3 @@ export const provideHookOps = provideOpGroup(
     ] as const
   }),
 )
-
-const createHookRequirements = doEffect(function* () {
-  const { hookEnvironment } = yield* ask<HookEnv>()
-  const id = yield* createUuid
-  const requirements = hookRequirementsIso.wrap(createHookEnvironment(id, some(hookEnvironment)))
-
-  return requirements
-})

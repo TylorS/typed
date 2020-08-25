@@ -23,10 +23,15 @@ export const provideChannel = callOp(ProvideChannelOp)
 
 declare module '@typed/fp/Op' {
   export interface Ops<Env> {
-    [PROVIDE_CHANNEL]: <E1, A, E2>(
-      channel: Channel<E1, A>,
-      initial: Effect<E2, A>,
-      eq: Eq<A>,
-    ) => Effect<Env & E1 & E2, UseState<A>>
+    [PROVIDE_CHANNEL]: {
+      <E1, A, E2>(channel: Channel<E1, A>, initial: Effect<E2, A>): Effect<
+        Env & E1 & E2,
+        UseState<A>
+      >
+      <E1, A, E2>(channel: Channel<E1, A>, initial: Effect<E2, A>, eq: Eq<A>): Effect<
+        Env & E1 & E2,
+        UseState<A>
+      >
+    }
   }
 }

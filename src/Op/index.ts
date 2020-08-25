@@ -67,6 +67,10 @@ export interface Ops<Env> {}
 
 export type OpsUris = keyof Ops<any>
 
+/**
+ * Creates the Call signature of an Operation using the Ops type-level map,
+ * if it exists, or simply appends the required environments.
+ */
 export type CallOf<O extends Op, Env = unknown> = UriOf<O> extends OpsUris
   ? Ops<OpEnv<O> & Env>[UriOf<O>]
   : GetOperation<OpEnv<O> & Env, O>
