@@ -1,21 +1,11 @@
-import { Clock, Disposable, Handle, Time, Timer } from '@most/types'
+import { Disposable, Handle, Timer } from '@most/types'
 import { IO } from 'fp-ts/es6/IO'
 
 import { Arity1 } from '../common'
 import { Timeline } from './Timeline'
-
-export interface VirtualClock extends Clock {
-  readonly progressTimeBy: (elapsedTime: Time) => Time
-}
+import { createVirtualClock, VirtualClock } from './VirtualClock'
 
 export interface VirtualTimer extends Timer, VirtualClock, Disposable {}
-
-export function createVirtualClock(time: Time = 0): VirtualClock {
-  return {
-    now: () => time,
-    progressTimeBy: (elapsedTime) => (time += elapsedTime),
-  }
-}
 
 export function createVirtualTimer(clock: VirtualClock = createVirtualClock()): VirtualTimer {
   const timeline = new Timeline()
