@@ -1,5 +1,5 @@
 import * as C from '@typed/fp/common'
-import { Effect, ReturnOf } from '@typed/fp/Effect'
+import { AddEnv, Effect } from '@typed/fp/Effect'
 import { Fn } from '@typed/fp/lambda'
 import { Newtype } from 'newtype-ts'
 
@@ -53,6 +53,8 @@ export interface OpMap extends Map<Op<any, any>, Fn<any, Effect<any, any>>> {}
 /**
  * Type-level map for using Op implementations that require type parameters. The "Env"
  * type-parameter is used to allow alternative implementations to inject environment requirements.
+ * This is necessary because mapping over the Op's second paramater loses any type-parameters.
+ * Hopefully TS will gain the ability to map over the return type of a function in the future
  * @example
  *
  * declare module "@typed/fp/Op" {
@@ -65,7 +67,11 @@ export interface Ops<Env> {}
 
 export type OpsUris = keyof Ops<any>
 
-export type GetOperation<E, O extends Op> = (...args: ArgsOf<O>) => Effect<E, ReturnOf<EffectOf<O>>>
+export type CallOf<O extends Op, Env = unknown> = UriOf<O> extends OpsUris
+  ? Ops<OpEnv<O> & Env>[UriOf<O>]
+  : GetOperation<OpEnv<O> & Env, O>
+
+export type GetOperation<E, O extends Op> = (...args: ArgsOf<O>) => AddEnv<E, EffectOf<O>>
 
 export * from './callOp'
 export * from './createOp'

@@ -1,6 +1,6 @@
 import { doEffect } from '@typed/fp/Effect'
 
-import { ArgsOf, GetOperation, Op, OpEnv, Ops, OpsUris, UriOf } from './'
+import { ArgsOf, CallOf, Op } from './'
 import { getOpMap } from './OpEnv'
 
 /**
@@ -21,7 +21,3 @@ export function callOp<O extends Op>(op: O): CallOf<O> {
 
   return operation as CallOf<O>
 }
-
-export type CallOf<O extends Op, Env = unknown> = UriOf<O> extends OpsUris
-  ? Ops<OpEnv<O> & Env>[UriOf<O>]
-  : GetOperation<OpEnv<O> & Env, O>
