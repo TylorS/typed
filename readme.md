@@ -19,7 +19,6 @@ This includes the last ~2 versions of Chrome/Chromium, Firefox, Safari, Edge and
 
 ## TODO 
 
-- Storage / Async Storage
 - Cryptography primitives
 - JWT
 - HTTP
