@@ -3,7 +3,7 @@ import { Uuid } from '@typed/fp/Uuid'
 import { pipe } from 'fp-ts/es6/function'
 import { isNone } from 'fp-ts/es6/Option'
 
-import { createRef, Ref } from '../Ref'
+import { createRef, Ref } from '../domain'
 import { getNextIndex, lookupByIndex } from './helpers'
 import { HookEnv, HookEnvironment } from './HookEnvironment'
 

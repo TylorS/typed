@@ -1,7 +1,7 @@
 import { Pure } from '@typed/fp/Effect'
 import { callOp, createOp, Op } from '@typed/fp/Op'
 
-import { HookRequirements } from './runWithHooks'
+import { HookRequirements } from '../../model'
 
 export const GET_KEYED_REQUREMENTS = Symbol('@typed/fp/hooks/GetKeyedEnv')
 export type GET_KEYED_REQUIREMENTS = typeof GET_KEYED_REQUREMENTS

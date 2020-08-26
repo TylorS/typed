@@ -6,7 +6,7 @@ import { provideOpGroup } from '@typed/fp/Op/provideOpGroup'
 import { pipe } from 'fp-ts/es6/function'
 import { constant } from 'fp-ts/es6/function'
 
-import { HookOps } from '../HookOps'
+import { HookOps } from '../domain'
 import { createEventSink } from './createEventSink'
 import { createGetKeyedEnv } from './createGetKeyedEnv'
 import { createHookRequirements } from './createHookRequirements'

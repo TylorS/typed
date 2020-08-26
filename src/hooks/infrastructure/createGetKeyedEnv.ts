@@ -2,7 +2,7 @@ import { ask, doEffect } from '@typed/fp/Effect'
 import { createUuid } from '@typed/fp/Uuid'
 import { some } from 'fp-ts/es6/Option'
 
-import { hookRequirementsIso } from '../runWithHooks'
+import { hookRequirementsIso } from '../domain'
 import { HookEvent, HookEventType } from './events'
 import { createHookEnvironment, HookEnv } from './HookEnvironment'
 

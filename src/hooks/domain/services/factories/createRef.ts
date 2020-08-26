@@ -1,7 +1,4 @@
-// A mutable reference
-export interface Ref<A> {
-  current: A
-}
+import { Ref } from '../../model'
 
 export function createRef<A>(): Ref<A | undefined>
 export function createRef<A>(value: A): Ref<A>

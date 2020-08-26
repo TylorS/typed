@@ -2,7 +2,7 @@ import { doEffect, Effect, use } from '@typed/fp/Effect'
 import { Uuid } from '@typed/fp/Uuid'
 import { pipe } from 'fp-ts/es6/function'
 
-import { HookRequirements, hookRequirementsIso } from '../runWithHooks'
+import { HookRequirements, hookRequirementsIso } from '../domain'
 import { INITIAL_ENV_INDEX } from './constants'
 import { HookEvent, HookEventType } from './events'
 import { HookEnv, HookEnvironment } from './HookEnvironment'

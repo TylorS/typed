@@ -2,7 +2,7 @@ import { Uuid } from '@typed/fp/Uuid'
 import { pipe } from 'fp-ts/es6/function'
 import { fold } from 'fp-ts/es6/Option'
 
-import { ChannelName } from '../Channel'
+import { ChannelName } from '../domain'
 import { RemovedHookEnvironment } from './events'
 import { HookEnvironment } from './HookEnvironment'
 

@@ -1,7 +1,7 @@
 import { Effect } from '@typed/fp/Effect'
 import { callOp, createOp, Op } from '@typed/fp/Op'
 
-import { Ref } from './Ref'
+import { Ref } from '../../model'
 
 export const USE_REF = Symbol('@typed/fp/hooks/UseRef')
 export type USE_REF = typeof USE_REF

@@ -1,7 +1,7 @@
 import { Effect } from '@typed/fp/Effect'
 import { callOp, createOp, Op } from '@typed/fp/Op'
 
-import { Channel } from './Channel'
+import { Channel } from '../../model'
 
 export const USE_CHANNEL = Symbol('@typed/fp/hooks/UseChannel')
 export type USE_CHANNEL = typeof USE_CHANNEL

@@ -1,7 +1,7 @@
+import { Pure } from '@typed/fp/Effect'
 import { callOp, createOp, Op } from '@typed/fp/Op'
 
-import { Pure } from '../Effect'
-import { HookRequirements } from './runWithHooks'
+import { HookRequirements } from '../../model'
 
 export const CREATE_HOOK_REQUIREMENTS = Symbol('@typed/fp/hooks/CreateHookRequirements')
 export type CREATE_HOOK_REQUIREMENTS = typeof CREATE_HOOK_REQUIREMENTS

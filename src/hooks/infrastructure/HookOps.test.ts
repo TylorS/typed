@@ -5,9 +5,7 @@ import { createBrowserUuidEnv, createNodeUuidEnv } from '@typed/fp/Uuid'
 import { describe, it } from '@typed/test'
 import { pipe } from 'fp-ts/es6/pipeable'
 
-import { createHookRequirements } from '../createHookRequirements'
-import { runWithHooks } from '../runWithHooks'
-import { useState } from '../useState'
+import { createHookRequirements, runWithHooks, useState } from '../domain'
 import { provideHookOps } from './provideHookOps'
 import { provideHooksManagerEnv } from './provideHooksManagerEnv'
 

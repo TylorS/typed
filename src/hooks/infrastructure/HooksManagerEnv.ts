@@ -1,7 +1,7 @@
 import { Uuid } from '@typed/fp/Uuid'
 import { Subject } from 'most-subject'
 
-import { ChannelName } from '../Channel'
+import { ChannelName } from '../domain'
 import { HookEvent } from './events'
 import { HookEnv, HookEnvironment } from './HookEnvironment'
 

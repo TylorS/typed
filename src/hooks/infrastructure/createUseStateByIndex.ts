@@ -5,7 +5,7 @@ import { Eq } from 'fp-ts/es6/Eq'
 import { pipe } from 'fp-ts/es6/function'
 import { isNone } from 'fp-ts/es6/Option'
 
-import { UseState } from '../useState'
+import { GetAndUpdateState } from '../domain'
 import { createUseState } from './createUseState'
 import { HookEvent, HookEventType, UpdatedHookEnvironment } from './events'
 import { getNextIndex, lookupByIndex } from './helpers'
@@ -18,7 +18,7 @@ export function createUseStateByIndex(
   return <E, A>(
     initialValue: Effect<E, A>,
     eq: Eq<A> = deepEqualsEq,
-  ): Effect<HookEnv & E, UseState<A>> =>
+  ): Effect<HookEnv & E, GetAndUpdateState<A>> =>
     doEffect(function* () {
       const { hookEnvironment } = yield* ask<HookEnv>()
       const index = getNextIndex(hookPositions, hookEnvironment.id)

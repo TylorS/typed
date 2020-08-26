@@ -1,15 +1,12 @@
 import { Effect } from '@typed/fp/Effect'
 import { callOp, createOp, Op } from '@typed/fp/Op'
-import { iso, Newtype } from 'newtype-ts'
+import { iso } from 'newtype-ts'
 
+import { HookRequirements } from '../../model'
 import { HookOpEnvs } from './HookOps'
 
 export const RUN_WITH_HOOKS = Symbol('@typed/fp/hooks/RunWithHooks')
 export type RUN_WITH_HOOKS = typeof RUN_WITH_HOOKS
-
-// Opaque type used to represent the current implementations requirements to run a nested hook-enabled effect
-export interface HookRequirements
-  extends Newtype<{ readonly HookRequirements: unique symbol }, unknown> {}
 
 export const hookRequirementsIso = iso<HookRequirements>()
 

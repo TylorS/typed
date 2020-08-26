@@ -4,8 +4,7 @@ import { CallOf } from '@typed/fp/Op'
 import { pipe } from 'fp-ts/es6/function'
 import { fold, isSome, none, Option, some } from 'fp-ts/es6/Option'
 
-import { Channel, ChannelName } from '../Channel'
-import { ProvideChannelOp } from '../provideChannel'
+import { Channel, ChannelName, ProvideChannelOp } from '../domain'
 import { appendTo } from './helpers'
 import { HookEnv, HookEnvironment } from './HookEnvironment'
 
