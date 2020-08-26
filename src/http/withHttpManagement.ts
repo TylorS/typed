@@ -33,6 +33,7 @@ export type TimestampedResponse = {
 // TODO: handle duplicated requests??
 export interface WithHttpManagementEnv {
   readonly httpCache: Map<string, TimestampedResponse>
+  readonly httpState: { cleanupScheduled: boolean }
 }
 
 export const withHttpManagement = (options: WithHttpManagementOptions) => {
@@ -44,7 +45,11 @@ export const withHttpManagement = (options: WithHttpManagementOptions) => {
       const env = yield* ask<HttpEnv & WithHttpManagementEnv & FiberEnv>()
       const wrappedEnv = createCachedHttpEnv(options, env)
 
-      yield* fork(cleanup)
+      if (!env.httpState.cleanupScheduled) {
+        env.httpState.cleanupScheduled = true
+
+        yield* fork(cleanup)
+      }
 
       return wrappedEnv
     }),
@@ -100,7 +105,7 @@ function isValidStatus({ status }: HttpResponse) {
 
 const clearOldTimestamps = (expiration: number) =>
   doEffect(function* () {
-    const { httpCache, scheduler } = yield* ask<WithHttpManagementEnv & SchedulerEnv>()
+    const { httpCache, httpState, scheduler } = yield* ask<WithHttpManagementEnv & SchedulerEnv>()
     const expired = scheduler.currentTime() - expiration
     const iterator = httpCache.entries()[Symbol.iterator]()
     const deadline = yield* whenIdle()
@@ -116,4 +121,6 @@ const clearOldTimestamps = (expiration: number) =>
 
       current = iterator.next()
     }
+
+    httpState.cleanupScheduled = false
   })
