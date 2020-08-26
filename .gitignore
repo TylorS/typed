@@ -68,6 +68,7 @@ tsconfig*.tsbuildinfo
 /Op/
 /Path/
 /SharedRef/
+/Storage/
 /Stream/
 /Uri/
 /Uuid/
