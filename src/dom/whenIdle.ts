@@ -7,8 +7,13 @@ export type IdleCallbackHandle = Newtype<{ readonly IdleCallbackHandle: unique s
 
 const idleCallbackHandle = iso<IdleCallbackHandle>()
 
-export type IdleCallbackOptions = {
-  readonly timeout: number
+export interface WhenIdleEnv {
+  readonly requestIdleCallback: (
+    callback: (deadline: IdleCallbackDeadline) => void,
+    opts?: IdleCallbackOptions,
+  ) => IdleCallbackHandle
+
+  readonly cancelIdleCallback: (handle: IdleCallbackHandle) => void
 }
 
 export type IdleCallbackDeadline = {
@@ -16,12 +21,8 @@ export type IdleCallbackDeadline = {
   readonly timeRemaining: () => number
 }
 
-export interface WhenIdleEnv {
-  readonly requestIdleCallback: (
-    callback: (deadline: IdleCallbackDeadline) => void,
-    opts?: IdleCallbackOptions,
-  ) => IdleCallbackHandle
-  readonly cancelIdleCallback: (handle: IdleCallbackHandle) => void
+export type IdleCallbackOptions = {
+  readonly timeout: number
 }
 
 export const whenIdle = (opts?: IdleCallbackOptions) =>
