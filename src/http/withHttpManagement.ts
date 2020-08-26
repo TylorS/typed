@@ -1,12 +1,12 @@
 import { Clock } from '@most/types'
-import { ask, doEffect, sync, useWith } from '@typed/fp/Effect'
+import { ask, doEffect, Effect, sync, useWith } from '@typed/fp/Effect'
 import { chainResume } from '@typed/fp/Effect/chainResume'
 import { FiberEnv, fork, SchedulerEnv } from '@typed/fp/fibers'
 import { Uri } from '@typed/fp/Uri'
 import { right } from 'fp-ts/es6/Either'
 import { isRight } from 'fp-ts/lib/These'
 
-import { whenIdle } from '../dom'
+import { whenIdle, WhenIdleEnv } from '../dom'
 import { HttpEnv, HttpOptions } from './HttpEnv'
 import { HttpMethod } from './HttpMethod'
 import { HttpResponse } from './HttpResponse'
@@ -32,9 +32,14 @@ export type TimestampedResponse = {
 
 // TODO: handle duplicated requests??
 export interface WithHttpManagementEnv {
-  readonly httpCache: Map<string, TimestampedResponse>
+  readonly httpCache: Map<string, TimestampedResponse> // Taking advantage of insertion order
   readonly httpState: { cleanupScheduled: boolean }
 }
+
+export const createWithHttpManagemntEnv = (): WithHttpManagementEnv => ({
+  httpCache: new Map(),
+  httpState: { cleanupScheduled: false },
+})
 
 export const withHttpManagement = (options: WithHttpManagementOptions) => {
   const { expiration = DEFAULT_EXPIRATION } = options
@@ -103,7 +108,9 @@ function isValidStatus({ status }: HttpResponse) {
   return status >= 200 && status < 300
 }
 
-const clearOldTimestamps = (expiration: number) =>
+const clearOldTimestamps = (
+  expiration: number,
+): Effect<WithHttpManagementEnv & SchedulerEnv & FiberEnv & WhenIdleEnv, void> =>
   doEffect(function* () {
     const { httpCache, httpState, scheduler } = yield* ask<WithHttpManagementEnv & SchedulerEnv>()
     const expired = scheduler.currentTime() - expiration
@@ -111,16 +118,29 @@ const clearOldTimestamps = (expiration: number) =>
     const deadline = yield* whenIdle()
 
     let current: IteratorResult<[string, TimestampedResponse]> = iterator.next()
+    let notCurrentlyExpired = false
 
     while (deadline.timeRemaining() > 0 && !deadline.didTimeout && !current.done) {
       const [key, { timestamp }] = current.value
 
       if (timestamp <= expired) {
         httpCache.delete(key)
+      } else {
+        // Since insertion order will be time dependent, once reaching an item that is not expired
+        // we can bail out
+        notCurrentlyExpired = true
+
+        break
       }
 
       current = iterator.next()
     }
 
-    httpState.cleanupScheduled = false
+    if (notCurrentlyExpired || current.done) {
+      httpState.cleanupScheduled = false
+
+      return
+    }
+
+    yield* fork(clearOldTimestamps(expiration))
   })

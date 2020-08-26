@@ -1,4 +1,4 @@
-export * from './createFetchHttpEnv'
+export * from './FetchHttpEnv'
 export * from './http'
 export * from './HttpEnv'
 export * from './HttpHeaders'
