@@ -12,19 +12,24 @@ export function provideOpGroup<OPS extends ReadonlyArray<Op>, G extends OpGroup<
   ops: OPS,
   opGroup: G,
 ) {
-  const provided = new WeakMap<Effect<any, any>, any>()
+  const provided = new WeakMap<Effect<any, any>, Effect<any, any>>()
 
   return <E, A>(effect: Effect<E & OpEnvs<OPS>, A>): Effect<E & OpGroupEnv<G>, A> => {
     const eff = doEffect(function* () {
-      const effects = provided.has(effect)
-        ? provided.get(effect)!
-        : provided.set(effect, yield* opGroup).get(effect)!
+      if (!provided.has(effect)) {
+        const effects = yield* opGroup
 
-      return yield* pipe(
-        ops,
-        mapWithIndex((i, op) => provideOp(op, effects[i])),
-        reduce(effect, (fx, provide) => provide(fx)),
-      )
+        provided.set(
+          effect,
+          pipe(
+            ops,
+            mapWithIndex((i, op) => provideOp(op, effects[i])),
+            reduce(effect, (fx, provide) => provide(fx)),
+          ),
+        )
+      }
+
+      return yield* provided.get(effect)!
     })
 
     return (eff as unknown) as Effect<E & OpGroupEnv<G>, A>
