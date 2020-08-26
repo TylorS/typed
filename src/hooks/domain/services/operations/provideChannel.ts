@@ -17,6 +17,7 @@ export interface ProvideChannelOp
       eq: Eq<A>,
     ) => Effect<E1 & E2, GetAndUpdateState<A>>
   > {}
+
 export const ProvideChannelOp = createOp<ProvideChannelOp>(PROVIDE_CHANNEL)
 
 export const provideChannel = callOp(ProvideChannelOp)

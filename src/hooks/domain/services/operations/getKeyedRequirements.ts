@@ -8,6 +8,7 @@ export type GET_KEYED_REQUIREMENTS = typeof GET_KEYED_REQUREMENTS
 
 export interface GetKeyedReqirementsOp
   extends Op<GET_KEYED_REQUIREMENTS, (key: unknown) => Pure<HookRequirements>> {}
+
 export const GetKeyedReqirementsOp = createOp<GetKeyedReqirementsOp>(GET_KEYED_REQUREMENTS)
 
 export const getKeyedRequirements = callOp(GetKeyedReqirementsOp)
