@@ -1,9 +1,18 @@
-import { Effect, effect, effectSeq, URI as EffectURI } from '@typed/fp/Effect'
+import {
+  doEffect,
+  Effect,
+  effect,
+  effectSeq,
+  fail,
+  FailEnv,
+  URI as EffectURI,
+} from '@typed/fp/Effect'
 import { Alt3 } from 'fp-ts/es6/Alt'
 import { Either } from 'fp-ts/es6/Either'
 import { EitherM2, getEitherM } from 'fp-ts/es6/EitherT'
 import { pipeable } from 'fp-ts/es6/pipeable'
 import { Monad3 } from 'fp-ts/lib/Monad'
+import { isLeft } from 'fp-ts/lib/These'
 
 export const URI = '@typed/fp/Future'
 export type URI = typeof URI
@@ -34,3 +43,20 @@ export const {
   mapLeft,
   flatten,
 } = pipeable(future)
+
+export const orFail = <K extends PropertyKey, E, A, B>(
+  key: K,
+  future: Future<E, A, B>,
+): Effect<E & FailEnv<K, A>, B> => {
+  const eff = doEffect(function* () {
+    const either = yield* future
+
+    if (isLeft(either)) {
+      return yield* fail(key, either.left)
+    }
+
+    return either.right
+  })
+
+  return eff
+}

@@ -1,6 +1,7 @@
 import { Arity1, IsNever } from '@typed/fp/common'
 import { Disposable, disposeNone } from '@typed/fp/Disposable'
 import { fromEnv } from '@typed/fp/Effect/fromEnv'
+import { Either, left, right } from 'fp-ts/es6/Either'
 import { flow } from 'fp-ts/es6/function'
 import { IO } from 'fp-ts/es6/IO'
 import { Reader } from 'fp-ts/es6/Reader'
@@ -77,6 +78,10 @@ export const async = <A>(run: (resume: Arity1<A, Disposable>) => Disposable): As
     run: resumeOnce(run),
   }
 }
+
+export const asyncEither = <A, B>(
+  run: (left: (value: A) => Disposable, right: (value: B) => Disposable) => Disposable,
+): Async<Either<A, B>> => async((cb) => run(flow(left, cb), flow(right, cb)))
 
 function resumeOnce<A>(run: (resume: Arity1<A, Disposable>) => Disposable) {
   return (resume: Arity1<A, Disposable>) => {
