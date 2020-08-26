@@ -6,7 +6,11 @@ import { typeOf } from './typeOf'
 
 export const deepEqualsEq: Eq<unknown> = { equals }
 
-function equals(a: any, b: any, stackA: any[] = [], stackB: any[] = []) {
+function equals(a: any, b: any) {
+  return _equals(a, b)
+}
+
+function _equals(a: any, b: any, stackA: any[] = [], stackB: any[] = []) {
   if (Object.is(a, b)) {
     return true
   }
@@ -124,7 +128,7 @@ function equals(a: any, b: any, stackA: any[] = [], stackB: any[] = []) {
     if (
       !(
         Object.prototype.hasOwnProperty.call(b, key) &&
-        equals(b[key], a[key], extendedStackA, extendedStackB)
+        _equals(b[key], a[key], extendedStackA, extendedStackB)
       )
     ) {
       return false
@@ -143,12 +147,10 @@ function _uniqContentEquals(
   const a = Array.from(aIterable)
   const b = Array.from(bIterable)
 
-  // tslint:disable-next-line:variable-name
   function eq(_a: any, _b: any): boolean {
-    return equals(_a, _b, stackA.slice(), stackB.slice())
+    return _equals(_a, _b, stackA.slice(), stackB.slice())
   }
 
   // if *a* array contains any element that is not included in *b*
-  // tslint:disable-next-line:no-shadowed-variable
   return !includesWith((b: any, aItem: any) => !includesWith(eq, aItem, b), b, a)
 }
