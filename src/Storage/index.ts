@@ -7,6 +7,8 @@ export interface KeyValueStorageEnv<K, V> {
 }
 
 export type KeyValueStorage<K, V> = {
+  readonly getKeys: () => Resume<ReadonlyArray<K>>
+  readonly getItems: () => Resume<ReadonlyArray<V>>
   readonly getItem: (key: K) => Resume<Option<V>>
   readonly setItem: (key: K, value: V) => Resume<V>
   readonly removeItem: (key: K) => Resume<Option<V>>
@@ -30,6 +32,32 @@ export function wrapDomStorage(storage: Storage): KeyValueStorage<string, string
   const getItem = (key: string) => fromNullable(storage.getItem(key))
 
   return {
+    getKeys: () => {
+      const items: string[] = []
+
+      for (let i = 0; i < storage.length; ++i) {
+        const key = storage.key(i)
+
+        if (key !== null) {
+          items.push(key)
+        }
+      }
+
+      return sync(items)
+    },
+    getItems: () => {
+      const items: string[] = []
+
+      for (let i = 0; i < storage.length; ++i) {
+        const key = storage.key(i)
+
+        if (key !== null) {
+          items.push(storage.getItem(key)!)
+        }
+      }
+
+      return sync(items)
+    },
     getItem: flow(getItem, sync),
     setItem: (key, value) => (storage.setItem(key, value), sync(value)),
     removeItem: (key) => {
