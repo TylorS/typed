@@ -71,8 +71,11 @@ tsconfig*.tsbuildinfo
 /Stream/
 /Uri/
 /Uuid/
+/VirtualTimer/
 /common/
+/dom/
 /fibers/
 /history/
 /hooks/
+/http/
 /lambda/
