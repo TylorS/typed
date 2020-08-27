@@ -8,7 +8,7 @@ import { identity } from 'fp-ts/es6/function'
 import { HKT } from 'fp-ts/es6/HKT'
 import { Monad2 } from 'fp-ts/es6/Monad'
 import { Monoid } from 'fp-ts/es6/Monoid'
-import { pipe } from 'fp-ts/es6/pipeable'
+import { pipe, pipeable } from 'fp-ts/es6/pipeable'
 import { Traversable2 } from 'fp-ts/es6/Traversable'
 
 import { ap } from './ap'
@@ -98,3 +98,17 @@ export const remoteData: Monad2<URI> &
     return rd
   },
 }
+
+export const {
+  alt,
+  apFirst,
+  apSecond,
+  bimap,
+  chainFirst,
+  duplicate,
+  extend,
+  flatten,
+  foldMap,
+  reduce,
+  reduceRight,
+} = pipeable(remoteData)
