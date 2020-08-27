@@ -72,17 +72,7 @@ export const catchError = curry(
   }
 }
 
-type CatchError<K extends PropertyKey, Err, E, A> = K extends keyof E
-  ? {
-      // K should be eliminated by E already, if correct
-      error: 'Provided an invalid error handler'
-      parameters: {
-        key: K
-        attempted: Err
-        expected: HeadArg<E[K]>
-      }
-    }
-  : ProvidedEffect<FailEnv<K, Err>, E, A>
+type CatchError<K extends PropertyKey, Err, E, A> = ProvidedEffect<FailEnv<K, Err>, E, A>
 
 /**
  * @since 0.0.1
