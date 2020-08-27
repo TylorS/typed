@@ -1,6 +1,7 @@
 import { curry } from '@typed/fp/lambda'
 
 import { chain } from './chain'
+import { SuccessInfo } from './fold'
 import { map } from './map'
 import { RemoteData } from './RemoteData'
 
@@ -11,16 +12,16 @@ import { RemoteData } from './RemoteData'
  */
 export const ap = curry(__ap) as {
   <A, B, C>(
-    fn: RemoteData<A, (value: B, refreshing: boolean) => C>,
+    fn: RemoteData<A, (value: B, info: SuccessInfo) => C>,
     value: RemoteData<A, B>,
   ): RemoteData<A, C>
-  <A, B, C>(fn: RemoteData<A, (value: B, refreshing: boolean) => C>): (
+  <A, B, C>(fn: RemoteData<A, (value: B, info: SuccessInfo) => C>): (
     value: RemoteData<A, B>,
   ) => RemoteData<A, C>
 }
 
 function __ap<A, B, C>(
-  fn: RemoteData<A, (value: B, refreshing: boolean) => C>,
+  fn: RemoteData<A, (value: B, info: SuccessInfo) => C>,
   value: RemoteData<A, B>,
 ): RemoteData<A, C> {
   return chain((f) => map(f, value), fn)

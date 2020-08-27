@@ -39,8 +39,3 @@ export const progress = (progress: Progress): Loading => ({
 
 export const fromEither = <A, B>(either: Either<A, B>): Loaded<A, B> =>
   fold<A, B, Loaded<A, B>>(Failure.of, Success.of)(either)
-
-export const URI = '@typed/fp/RemoteData'
-export type URI = typeof URI
-
-export const remoteData = {}
