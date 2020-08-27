@@ -62,6 +62,7 @@ tsconfig*.tsbuildinfo
 /index.d.ts.map
 /index.js
 /index.js.map
+/Console/
 /Disposable/
 /Effect/
 /Future/
@@ -80,3 +81,4 @@ tsconfig*.tsbuildinfo
 /hooks/
 /http/
 /lambda/
+/logging/
