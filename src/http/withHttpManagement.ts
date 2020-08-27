@@ -6,7 +6,7 @@ import { FiberEnv, fork, SchedulerEnv } from '@typed/fp/fibers'
 import { readSharedRef, SharedRef, SharedRefEnv, writeSharedRef } from '@typed/fp/SharedRef'
 import { Uri } from '@typed/fp/Uri'
 import { right } from 'fp-ts/es6/Either'
-import { isRight } from 'fp-ts/lib/These'
+import { isRight } from 'fp-ts/es6/These'
 
 import { HttpEnv, HttpOptions } from './HttpEnv'
 import { HttpMethod } from './HttpMethod'

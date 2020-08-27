@@ -1,5 +1,5 @@
 import { describe, it } from '@typed/test'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { pipe } from 'fp-ts/es6/pipeable'
 
 import { doEffect } from './doEffect'
 import { catchError, fail } from './failures'

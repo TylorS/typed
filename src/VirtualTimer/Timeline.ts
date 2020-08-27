@@ -1,6 +1,6 @@
 import { Arity1 } from '@typed/lambda'
+import { ordNumber } from 'fp-ts/es6/Ord'
 import { sort } from 'fp-ts/es6/ReadonlyArray'
-import { ordNumber } from 'fp-ts/lib/Ord'
 
 const sortNumbers = sort(ordNumber)
 

@@ -1,6 +1,6 @@
 import { ask, doEffect } from '@typed/fp/Effect'
 import { createUuid } from '@typed/fp/Uuid'
-import { some } from 'fp-ts/lib/Option'
+import { some } from 'fp-ts/es6/Option'
 
 import { hookRequirementsIso } from '../domain'
 import { createHookEnvironment, HookEnv } from './HookEnvironment'

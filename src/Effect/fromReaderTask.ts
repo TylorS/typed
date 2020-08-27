@@ -1,5 +1,5 @@
+import { pipe } from 'fp-ts/es6/function'
 import { ReaderTask } from 'fp-ts/es6/ReaderTask'
-import { pipe } from 'fp-ts/lib/function'
 
 import { chain } from './chain'
 import { Effect } from './Effect'
