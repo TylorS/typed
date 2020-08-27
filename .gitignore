@@ -68,6 +68,7 @@ tsconfig*.tsbuildinfo
 /Future/
 /Op/
 /Path/
+/RemoteData/
 /SharedRef/
 /Storage/
 /Stream/
