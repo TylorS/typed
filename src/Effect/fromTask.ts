@@ -1,7 +1,7 @@
 import { lazy } from '@typed/fp/Disposable'
 import { async, Pure } from '@typed/fp/Effect/Effect'
 import { fromEnv } from '@typed/fp/Effect/fromEnv'
-import { IO } from 'fp-ts/es6/IO'
+import { Task } from 'fp-ts/es6/Task'
 
 /**
  * Converts a PromiseLike to a Pure. Does not handle errors from your promise, if this is required
@@ -12,12 +12,12 @@ import { IO } from 'fp-ts/es6/IO'
  *
  * fromPromise(() => import('@typed/fp'))
  */
-export function fromPromise<A>(io: IO<PromiseLike<A>>): Pure<A> {
+export function fromTask<A>(task: Task<A>): Pure<A> {
   return fromEnv(() =>
     async((cb) => {
       const disposable = lazy()
 
-      io().then((a) => !disposable.disposed && disposable.addDisposable(cb(a)))
+      task().then((a) => !disposable.disposed && disposable.addDisposable(cb(a)))
 
       return disposable
     }),

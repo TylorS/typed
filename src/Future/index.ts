@@ -1,18 +1,22 @@
 import {
+  chain as chainEff,
   doEffect,
   Effect,
   effect,
   effectSeq,
   fail,
   FailEnv,
+  fromReader,
+  fromTask,
   URI as EffectURI,
 } from '@typed/fp/Effect'
 import { Alt3 } from 'fp-ts/es6/Alt'
 import { Either } from 'fp-ts/es6/Either'
 import { EitherM2, getEitherM } from 'fp-ts/es6/EitherT'
-import { pipeable } from 'fp-ts/es6/pipeable'
-import { Monad3 } from 'fp-ts/lib/Monad'
-import { isLeft } from 'fp-ts/lib/These'
+import { Monad3 } from 'fp-ts/es6/Monad'
+import { pipe, pipeable } from 'fp-ts/es6/pipeable'
+import { ReaderTaskEither } from 'fp-ts/es6/ReaderTaskEither'
+import { isLeft } from 'fp-ts/es6/These'
 
 export const URI = '@typed/fp/Future'
 export type URI = typeof URI
@@ -59,4 +63,8 @@ export const orFail = <K extends PropertyKey, E, A, B>(
   })
 
   return eff
+}
+
+export function fromReaderTaskEither<E, A, B>(rte: ReaderTaskEither<E, A, B>): Future<E, A, B> {
+  return pipe(rte, fromReader, chainEff(fromTask))
 }

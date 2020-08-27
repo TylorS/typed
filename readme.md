@@ -19,11 +19,6 @@ This includes the last ~2 versions of Chrome/Chromium, Firefox, Safari, Edge and
 
 ## TODO 
 
-- Cryptography primitives
-- JWT
-- HTTP
-- JSON-RPC
-- Logger Abstractions
 - RemoteData w/ refreshing state
 - Routing
 - Investigate what typed-prelude functionality is still relevant 

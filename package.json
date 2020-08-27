@@ -13,6 +13,7 @@
     "@typed/promises": "^5.3.0",
     "fp-ts": "^2.8.1",
     "io-ts": "^2.2.9",
+    "logging-ts": "^0.3.4",
     "monocle-ts": "^2.3.3",
     "most-subject": "^6.0.0",
     "newtype-ts": "^0.3.4",
