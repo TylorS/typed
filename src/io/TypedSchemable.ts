@@ -1,5 +1,6 @@
 import { Uuid } from '@typed/fp/Uuid'
 import { Either } from 'fp-ts/es6/Either'
+import { Refinement } from 'fp-ts/es6/function'
 import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/es6/HKT'
 import { Option } from 'fp-ts/es6/Option'
 import { Int } from 'io-ts'
@@ -29,7 +30,11 @@ export interface TypedSchemable<S> extends Schemable<S>, WithUnion<S>, WithRefin
   readonly int: HKT<S, Int>
   readonly bigint: HKT<S, BigInt>
   readonly unknown: HKT<S, unknown>
-  readonly newtype: <N extends AnyNewtype>(from: HKT<S, CarrierOf<N>>) => HKT<S, N>
+  readonly newtype: <N extends AnyNewtype>(
+    from: HKT<S, CarrierOf<N>>,
+    refinement: Refinement<CarrierOf<N>, N>,
+    id: string,
+  ) => HKT<S, N>
 }
 
 export interface TypedSchemable1<S extends URIS>
@@ -46,7 +51,11 @@ export interface TypedSchemable1<S extends URIS>
   readonly int: Kind<S, Int>
   readonly bigint: Kind<S, BigInt>
   readonly unknown: Kind<S, unknown>
-  readonly newtype: <N extends AnyNewtype>(from: Kind<S, CarrierOf<N>>) => Kind<S, N>
+  readonly newtype: <N extends AnyNewtype>(
+    from: Kind<S, CarrierOf<N>>,
+    refinement: Refinement<CarrierOf<N>, N>,
+    id: string,
+  ) => Kind<S, N>
 }
 
 export interface TypedSchemable2C<S extends URIS2, E>
@@ -66,5 +75,9 @@ export interface TypedSchemable2C<S extends URIS2, E>
   readonly int: Kind2<S, E, Int>
   readonly bigint: Kind2<S, E, BigInt>
   readonly unknown: Kind2<S, E, unknown>
-  readonly newtype: <N extends AnyNewtype>(from: Kind2<S, E, CarrierOf<N>>) => Kind2<S, E, N>
+  readonly newtype: <N extends AnyNewtype>(
+    from: Kind2<S, E, CarrierOf<N>>,
+    refinement: Refinement<CarrierOf<N>, N>,
+    id: string,
+  ) => Kind2<S, E, N>
 }

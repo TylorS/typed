@@ -26,5 +26,5 @@ export const Schemable: TypedSchemable1<Eq.URI> = {
   refine: (refinement) => (from) => ({
     equals: (a, b) => refinement(a) && refinement(b) && from.equals(a, b),
   }),
-  newtype: (from) => from,
+  newtype: (from, refine, id) => Schemable.refine(refine, id)(from),
 }

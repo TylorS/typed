@@ -103,5 +103,5 @@ export const Schemable: TypedSchemable2C<D.URI, unknown> = {
   unknown: D.fromGuard(G.unknown, `unknown`),
   union: D.union as TypedSchemable2C<D.URI, unknown>['union'],
   refine: D.refine as TypedSchemable2C<D.URI, unknown>['refine'],
-  newtype: (from) => from,
+  newtype: (from, refine, id) => D.refine(refine, id)(from),
 }

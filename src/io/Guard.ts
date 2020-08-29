@@ -88,5 +88,5 @@ export const Schemable: TypedSchemable1<G.URI> = {
   union: G.union as TypedSchemable1<G.URI>['union'],
   refine: G.refine as TypedSchemable1<G.URI>['refine'],
   unknown,
-  newtype: (from) => from,
+  newtype: (from, refine) => G.refine(refine)(from),
 }
