@@ -91,6 +91,8 @@ export const remoteData = <A, B>(
 
 export const Schemable: TypedSchemable2C<D.URI, unknown> = {
   ...D.Schemable,
+  ...D.WithRefine,
+  ...D.WithUnion,
   set,
   map,
   option,
@@ -101,7 +103,5 @@ export const Schemable: TypedSchemable2C<D.URI, unknown> = {
   int: D.fromGuard(G.int, `Int`),
   bigint: D.fromGuard(G.bigint, `BigInt`),
   unknown: D.fromGuard(G.unknown, `unknown`),
-  union: D.union as TypedSchemable2C<D.URI, unknown>['union'],
-  refine: D.refine as TypedSchemable2C<D.URI, unknown>['refine'],
   newtype: (from, refine, id) => D.refine(refine, id)(from),
 }

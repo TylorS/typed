@@ -76,6 +76,8 @@ export const unknown: G.Guard<unknown, unknown> = {
 
 export const Schemable: TypedSchemable1<G.URI> = {
   ...G.Schemable,
+  ...G.WithRefine,
+  ...G.WithUnion,
   set,
   map,
   option,
@@ -85,8 +87,6 @@ export const Schemable: TypedSchemable1<G.URI> = {
   uuid,
   int,
   bigint,
-  union: G.union as TypedSchemable1<G.URI>['union'],
-  refine: G.refine as TypedSchemable1<G.URI>['refine'],
   unknown,
   newtype: (from, refine) => G.refine(refine)(from),
 }

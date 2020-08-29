@@ -10,6 +10,7 @@ import { TypedSchemable1 } from './TypedSchemable'
 
 export const Schemable: TypedSchemable1<Eq.URI> = {
   ...Eq.Schemable,
+  ...Eq.WithRefine,
   set: RS.getEq,
   map: RM.getEq,
   option: O.getEq,
@@ -22,9 +23,6 @@ export const Schemable: TypedSchemable1<Eq.URI> = {
   unknown: eqStrict,
   union: (...eqs) => ({
     equals: (a, b) => eqs.some((e) => e.equals(a, b)),
-  }),
-  refine: (refinement) => (from) => ({
-    equals: (a, b) => refinement(a) && refinement(b) && from.equals(a, b),
   }),
   newtype: (from, refine, id) => Schemable.refine(refine, id)(from),
 }
