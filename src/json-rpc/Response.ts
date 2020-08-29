@@ -1,13 +1,13 @@
 import { Json, JsonArray, JsonRecord } from 'fp-ts/es6/Either'
 import { pipe } from 'fp-ts/es6/pipeable'
 
-import { makeTyped, TypedSchema } from '../io'
+import { createSchema, TypedSchema } from '../io'
 import { Id } from './Id'
 
 export const SuccessResponse = <A extends JsonArray | JsonRecord>(
   schema: TypedSchema<A>,
 ): TypedSchema<{ readonly jsonrpc: '2.0'; readonly id: Id; readonly result: A }> =>
-  makeTyped((t) =>
+  createSchema((t) =>
     t.type({
       jsonrpc: t.literal('2.0'),
       id: Id(t),
@@ -21,7 +21,7 @@ export const FailedResponse = <
 >(
   schema: TypedSchema<A>,
 ): TypedSchema<{ readonly jsonrpc: '2.0'; readonly id: Id; readonly error: A }> =>
-  makeTyped((t) =>
+  createSchema((t) =>
     t.type({
       jsonrpc: t.literal('2.0'),
       id: Id(t),

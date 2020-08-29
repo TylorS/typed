@@ -7,4 +7,4 @@ export interface TypedSchema<A> {
   <S>(schemable: TypedSchemable<S>): HKT<S, A>
 }
 
-export const makeTyped = <A>(schema: TypedSchema<A>): TypedSchema<A> => memoize(schema)
+export const createSchema = <A>(schema: TypedSchema<A>): TypedSchema<A> => memoize(schema)
