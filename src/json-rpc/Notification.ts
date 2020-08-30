@@ -8,9 +8,11 @@ export function Notification<
 >(
   schema: TypedSchema<A>,
 ): TypedSchema<
-  {
-    readonly jsonrpc: '2.0'
-  } & A
+  Readonly<
+    {
+      jsonrpc: '2.0'
+    } & A
+  >
 > {
   return createSchema((t) =>
     pipe(

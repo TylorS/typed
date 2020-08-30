@@ -6,7 +6,7 @@ import { Id } from './Id'
 
 export function Request<A extends { readonly method: string; readonly params?: Json }>(
   schema: TypedSchema<A>,
-): TypedSchema<{ readonly jsonrpc: '2.0'; readonly id: Id } & A> {
+): TypedSchema<{ readonly jsonrpc: '2.0'; readonly id: Id } & Readonly<A>> {
   return createSchema((t) =>
     pipe(
       schema(t),

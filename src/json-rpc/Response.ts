@@ -6,7 +6,7 @@ import { Id } from './Id'
 
 export const SuccessResponse = <A extends JsonArray | JsonRecord>(
   schema: TypedSchema<A>,
-): TypedSchema<{ readonly jsonrpc: '2.0'; readonly id: Id; readonly result: A }> =>
+): TypedSchema<{ readonly jsonrpc: '2.0'; readonly id: Id; readonly result: Readonly<A> }> =>
   createSchema((t) =>
     t.type({
       jsonrpc: t.literal('2.0'),
