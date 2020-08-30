@@ -1,4 +1,4 @@
-import { HKT } from 'fp-ts/lib/HKT'
+import { HKT } from 'fp-ts/es6/HKT'
 import { memoize } from 'io-ts/es6/Schemable'
 
 import { TypedSchemable } from './TypedSchemable'

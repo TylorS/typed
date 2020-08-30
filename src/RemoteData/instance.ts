@@ -24,6 +24,12 @@ import { Success } from './Success'
 export const URI = '@typed/fp/RemoteData'
 export type URI = typeof URI
 
+declare module 'fp-ts/lib/HKT' {
+  interface URItoKind2<E, A> {
+    [URI]: RemoteData<E, A>
+  }
+}
+
 declare module 'fp-ts/es6/HKT' {
   interface URItoKind2<E, A> {
     [URI]: RemoteData<E, A>
