@@ -19,6 +19,12 @@ export const URI = '@typed/fp/Effect'
  */
 export type URI = typeof URI
 
+declare module 'fp-ts/lib/HKT' {
+  export interface URItoKind2<E, A> {
+    [URI]: Effect<E, A>
+  }
+}
+
 declare module 'fp-ts/es6/HKT' {
   export interface URItoKind2<E, A> {
     [URI]: Effect<E, A>

@@ -21,6 +21,12 @@ export const URI = '@most/core/Stream' as const
  */
 export type URI = typeof URI
 
+declare module 'fp-ts/lib/HKT' {
+  interface URItoKind<A> {
+    readonly [URI]: Stream<A>
+  }
+}
+
 declare module 'fp-ts/es6/HKT' {
   interface URItoKind<A> {
     readonly [URI]: Stream<A>

@@ -23,6 +23,12 @@ export type URI = typeof URI
 
 export type Future<E, A, B> = Effect<E, Either<A, B>>
 
+declare module 'fp-ts/lib/HKT' {
+  export interface URItoKind3<R, E, A> {
+    [URI]: Future<R, E, A>
+  }
+}
+
 declare module 'fp-ts/es6/HKT' {
   export interface URItoKind3<R, E, A> {
     [URI]: Future<R, E, A>

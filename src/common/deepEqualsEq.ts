@@ -77,12 +77,7 @@ function _equals(a: any, b: any, stackA: any[] = [], stackB: any[] = []) {
         return false
       }
 
-      return _uniqContentEquals(
-        (a as Map<any, any>).entries(),
-        b.entries(),
-        stackA.concat([a]),
-        stackB.concat([b]),
-      )
+      return _uniqContentEquals(a.entries(), b.entries(), stackA.concat([a]), stackB.concat([b]))
     case 'Set':
       if (a.size !== b.size) {
         return false

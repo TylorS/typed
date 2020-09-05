@@ -15,6 +15,12 @@ export interface LoggerEffect<E, A> {
   (a: A): Effect<E, void>
 }
 
+declare module 'fp-ts/lib/HKT' {
+  interface URItoKind2<E, A> {
+    [URI]: LoggerEffect<E, A>
+  }
+}
+
 declare module 'fp-ts/es6/HKT' {
   interface URItoKind2<E, A> {
     [URI]: LoggerEffect<E, A>
