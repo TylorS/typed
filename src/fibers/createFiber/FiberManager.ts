@@ -36,12 +36,9 @@ export function createFiberManager(onFinish: IO<void>): FiberManager {
     function onDispose() {
       allResourcesDisposable.dispose()
       pausedFibers.delete(fiber)
+      proceedFibers.delete(fiber)
 
       onFinish()
-
-      if (proceedFibers.has(fiber)) {
-        return proceedFibers.get(fiber)!()
-      }
 
       return disposeNone()
     }
