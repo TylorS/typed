@@ -128,11 +128,11 @@ export const foldFiberInfo = <A, B, C, D, E, F, G>(
 
 export const listenFor = <A extends FiberState>(state: A) => <B>(
   fiber: Fiber<B>,
-): Pure<FiberEventFromState<A>> =>
+): Pure<FiberEventFromState<A, B>> =>
   fromEnv(() =>
     async((resume) =>
       fiber.onInfoChange((info) =>
-        info.state === state ? resume(info as FiberEventFromState<A>) : disposeNone(),
+        info.state === state ? resume(info as FiberEventFromState<A, B>) : disposeNone(),
       ),
     ),
   )
@@ -143,7 +143,7 @@ export const awaitFailed = listenFor(FiberState.Failed)
 export const awaitSuccess = listenFor(FiberState.Success)
 export const awaitCompleted = listenFor(FiberState.Completed)
 
-export type FiberEventFromState<A extends FiberState> = A extends FiberState.Queued
+export type FiberEventFromState<A extends FiberState, B> = A extends FiberState.Queued
   ? FiberQueued
   : A extends FiberState.Paused
   ? FiberPaused
@@ -152,7 +152,7 @@ export type FiberEventFromState<A extends FiberState> = A extends FiberState.Que
   : A extends FiberState.Failed
   ? FiberFailed
   : A extends FiberState.Success
-  ? FiberSuccess<A>
+  ? FiberSuccess<B>
   : A extends FiberState.Completed
-  ? FiberComplete<A>
+  ? FiberComplete<B>
   : never
