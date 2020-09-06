@@ -2,16 +2,25 @@ import { disposeNone } from '@most/disposable'
 import { asap } from '@most/scheduler'
 import { Disposable, Scheduler } from '@most/types'
 import { lazy } from '@typed/fp/Disposable'
+import { map, race, toEnv } from '@typed/fp/Effect'
 import { async, Effect, Resume, sync } from '@typed/fp/Effect/Effect'
 import { provide, use } from '@typed/fp/Effect/provide'
 import { runPure } from '@typed/fp/Effect/runEffect'
-import { Fiber, FiberState, foldFiberInfo } from '@typed/fp/fibers/Fiber'
+import {
+  awaitCompleted,
+  awaitFailed,
+  awaitPaused,
+  awaitSuccess,
+  Fiber,
+  FiberState,
+  foldFiberInfo,
+} from '@typed/fp/fibers/Fiber'
 import { FiberEnv } from '@typed/fp/fibers/FiberEnv'
 import { createCallbackTask } from '@typed/fp/fibers/SchedulerEnv'
 import { Either, left, right } from 'fp-ts/es6/Either'
-import { flow, pipe } from 'fp-ts/es6/function'
+import { constVoid, flow, pipe } from 'fp-ts/es6/function'
 import { newIORef } from 'fp-ts/es6/IORef'
-import { isNone, isSome, none, Option, some } from 'fp-ts/es6/Option'
+import { fold, isNone, isSome, none, Option, some } from 'fp-ts/es6/Option'
 
 import { createFiberManager } from './FiberManager'
 import { createInfoChangeManager } from './InfoChangeManager'
@@ -29,6 +38,19 @@ export function createFiber<A>(
     getInfo: infoChangeManager.getInfo,
     onInfoChange: infoChangeManager.onInfoChange,
     addChildFiber: fiberManager.addFiber,
+    pauseChildFiber: fiberManager.pauseFiber,
+    runChildFiber: fiberManager.runChildFiber,
+    setPaused: (paused: boolean) => {
+      const { state } = infoChangeManager.getInfo()
+
+      if (paused && state === FiberState.Running) {
+        infoChangeManager.updateInfo({ state: FiberState.Paused })
+      }
+
+      if (!paused && state === FiberState.Paused) {
+        infoChangeManager.updateInfo({ state: FiberState.Running })
+      }
+    },
   })
 
   if (isSome(parentFiber)) {
@@ -95,6 +117,32 @@ function createFiberEnv(currentFiber: Fiber<unknown>, scheduler: Scheduler): Fib
     join: joinFiber,
     kill: killFiber,
     fork: (eff, e) => pipe(eff, provide(e), createFiberWith(scheduler, some(currentFiber)), sync),
+    pause: async((resume) =>
+      pipe(
+        currentFiber.parentFiber,
+        fold(
+          () => asap(createCallbackTask(resume), scheduler),
+          (parent) => parent.pauseChildFiber(currentFiber, resume),
+        ),
+      ),
+    ),
+    proceed: (fiber) => {
+      const { state } = fiber.getInfo()
+
+      if (state === FiberState.Queued) {
+        return pipe(
+          fiber,
+          awaitPaused,
+          race(awaitFailed(fiber)),
+          race(awaitSuccess(fiber)),
+          race(awaitCompleted(fiber)),
+          map(constVoid),
+          toEnv,
+        )({})
+      }
+
+      return async<void>((resume) => currentFiber.runChildFiber(fiber, resume))
+    },
   }
 }
 
@@ -105,7 +153,14 @@ function createFiberWith(scheduler: Scheduler, parentFiber: Option<Fiber<unknown
 function joinFiber<A>(fiber: Fiber<A>): Resume<Either<Error, A>> {
   return async((cb) =>
     fiber.onInfoChange(
-      foldFiberInfo(disposeNone, disposeNone, flow(left, cb), flow(right, cb), flow(right, cb)),
+      foldFiberInfo(
+        disposeNone,
+        disposeNone,
+        disposeNone,
+        flow(left, cb),
+        flow(right, cb),
+        flow(right, cb),
+      ),
     ),
   )
 }
