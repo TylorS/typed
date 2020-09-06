@@ -8,6 +8,7 @@ import { provide, use } from '@typed/fp/Effect/provide'
 import { runPure } from '@typed/fp/Effect/runEffect'
 import {
   awaitCompleted,
+  awaitFailed,
   awaitPaused,
   awaitSuccess,
   Fiber,
@@ -132,6 +133,7 @@ function createFiberEnv(currentFiber: Fiber<unknown>, scheduler: Scheduler): Fib
         return pipe(
           fiber,
           awaitPaused,
+          race(awaitFailed(fiber)),
           race(awaitSuccess(fiber)),
           race(awaitCompleted(fiber)),
           map(constVoid),
