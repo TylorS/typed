@@ -93,7 +93,12 @@ export function createFiber<A>(
     }
 
     if (fiberManager.hasRemainingFibers()) {
-      return infoChangeManager.updateInfo({ state: FiberState.Success, value: exitValue.value })
+      infoChangeManager.updateInfo({ state: FiberState.Success, value: exitValue.value })
+
+      // Allow any paused fibers to proceed
+      fiberManager.proceed()
+
+      return
     }
 
     infoChangeManager.updateInfo({ state: FiberState.Completed, value: exitValue.value })

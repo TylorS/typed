@@ -8,6 +8,7 @@ export interface FiberManager extends Disposable {
   readonly pauseFiber: (fiber: Fiber<unknown>, resume: IO<Disposable>) => Disposable
   readonly runChildFiber: (fiber: Fiber<unknown>, resume: IO<Disposable>) => Disposable
   readonly hasRemainingFibers: () => boolean
+  readonly proceed: () => void
 }
 
 export function createFiberManager(onFinish: IO<void>): FiberManager {
@@ -72,11 +73,30 @@ export function createFiberManager(onFinish: IO<void>): FiberManager {
     return resume()
   }
 
+  function proceed() {
+    proceedFibers.clear()
+
+    if (pausedFibers.size === 0) {
+      return
+    }
+
+    const paused = Array.from(pausedFibers)
+
+    pausedFibers.clear()
+
+    paused.forEach(([fiber, resume]) => {
+      fiber.setPaused(false)
+
+      return resume()
+    })
+  }
+
   return {
     dispose: disposable.dispose,
     hasRemainingFibers,
     addFiber,
     pauseFiber,
     runChildFiber,
+    proceed,
   }
 }
