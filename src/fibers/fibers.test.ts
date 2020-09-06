@@ -1,6 +1,6 @@
 import { newDefaultScheduler } from '@most/scheduler'
 import { doEffect } from '@typed/fp/Effect/doEffect'
-import { fork, getParentFiber } from '@typed/fp/fibers/FiberEnv'
+import { fork, getParentFiber, pause, proceed } from '@typed/fp/fibers/FiberEnv'
 import { runAsFiber } from '@typed/fp/fibers/runAsFiber'
 import { describe, it } from '@typed/test'
 import { flow } from 'fp-ts/es6/function'
@@ -96,6 +96,7 @@ export const test = describe(`fibers`, [
         foldFiberInfo(
           flow(() => timer.progressTimeBy(0), disposeNone), // Fork child
           disposeNone,
+          disposeNone,
           flow(done, disposeNone),
           flow(equal(expected), () => timer.progressTimeBy(delayMs), disposeNone), // Return child
           flow(equal(expected), () => done(), disposeNone),
@@ -103,6 +104,66 @@ export const test = describe(`fibers`, [
       )
 
       timer.progressTimeBy(0) // Start parent fiber
+    }),
+  ]),
+
+  describe(`cooperative multitasking`, [
+    it(`allows parent and child fiber to yield to each other`, ({ equal }, done) => {
+      const initial = 1
+      const iterations = 3
+
+      const actual: Array<number> = []
+      const expected = [1, 2, 4, 5, 25, 26]
+
+      let value = initial
+
+      const child = doEffect(function* () {
+        while (true) {
+          actual.push(++value)
+
+          // Allow parent to resume
+          yield* pause
+        }
+      })
+
+      const parent = doEffect(function* () {
+        const childFiber = yield* fork(child)
+
+        try {
+          for (let i = 0; i < iterations; ++i) {
+            actual.push((value *= value))
+
+            // Allows child to proceed after being paused
+            yield* proceed(childFiber)
+          }
+        } catch (error) {
+          done(error)
+        }
+
+        return actual
+      })
+
+      const fiber = runAsFiber(parent, newDefaultScheduler())
+
+      fiber.onInfoChange(
+        foldFiberInfo(
+          disposeNone,
+          disposeNone,
+          disposeNone,
+          flow(done, disposeNone),
+          (actual) => {
+            try {
+              equal(expected, actual)
+              done()
+            } catch (error) {
+              done(error)
+            }
+
+            return disposeNone()
+          },
+          disposeNone,
+        ),
+      )
     }),
   ]),
 ])

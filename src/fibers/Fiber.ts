@@ -1,6 +1,8 @@
-import { Disposable, LazyDisposable } from '@typed/fp/Disposable'
+import { Disposable, disposeNone, LazyDisposable } from '@typed/fp/Disposable'
 import { IO } from 'fp-ts/es6/IO'
 import { Option } from 'fp-ts/es6/Option'
+
+import { async, fromEnv, Pure } from '../Effect'
 
 /**
  * A Fiber is a lightweight process which can be used similarly to promises within the context of Effects.
@@ -16,6 +18,11 @@ export interface Fiber<A> extends LazyDisposable {
   readonly onInfoChange: (f: (info: FiberInfo<A>) => Disposable) => Disposable // will always be called at least once with the current state
   // Track a child fiber
   readonly addChildFiber: (fiber: Fiber<unknown>) => Disposable
+
+  /* Cooperative multitasking */
+  readonly pauseChildFiber: (fiber: Fiber<unknown>, resume: IO<Disposable>) => Disposable
+  readonly runChildFiber: (fiber: Fiber<unknown>, resume: IO<Disposable>) => Disposable // resume any queued fibers
+  readonly setPaused: (paused: boolean) => void // to update it's current information
 }
 
 /**
@@ -23,6 +30,7 @@ export interface Fiber<A> extends LazyDisposable {
  */
 export const enum FiberState {
   Queued = 'queued',
+  Paused = 'paused',
   Running = 'running',
   Failed = 'failed',
   Success = 'success',
@@ -34,6 +42,7 @@ export const enum FiberState {
  */
 export type FiberInfo<A> =
   | FiberQueued
+  | FiberPaused
   | FiberRunning
   | FiberFailed
   | FiberSuccess<A>
@@ -45,6 +54,14 @@ export type FiberInfo<A> =
  */
 export type FiberQueued = {
   readonly state: FiberState.Queued
+}
+
+/**
+ * Paused state for a fiber
+ * @since 0.0.1
+ */
+export type FiberPaused = {
+  readonly state: FiberState.Paused
 }
 
 /**
@@ -85,16 +102,19 @@ export type FiberComplete<A> = {
 /**
  * @since 0.0.1
  */
-export const foldFiberInfo = <A, B, C, D, E, F>(
+export const foldFiberInfo = <A, B, C, D, E, F, G>(
   queued: () => A,
-  running: () => B,
-  failed: (error: Error) => C,
-  success: (value: D) => E,
-  completed: (value: D) => F,
-) => (info: FiberInfo<D>): A | B | C | E | F => {
+  paused: () => B,
+  running: () => C,
+  failed: (error: Error) => D,
+  success: (value: E) => F,
+  completed: (value: E) => G,
+) => (info: FiberInfo<E>): A | B | C | D | F | G => {
   switch (info.state) {
     case FiberState.Queued:
       return queued()
+    case FiberState.Paused:
+      return paused()
     case FiberState.Running:
       return running()
     case FiberState.Failed:
@@ -105,3 +125,34 @@ export const foldFiberInfo = <A, B, C, D, E, F>(
       return completed(info.value)
   }
 }
+
+export const listenFor = <A extends FiberState>(state: A) => <B>(
+  fiber: Fiber<B>,
+): Pure<FiberEventFromState<A>> =>
+  fromEnv(() =>
+    async((resume) =>
+      fiber.onInfoChange((info) =>
+        info.state === state ? resume(info as FiberEventFromState<A>) : disposeNone(),
+      ),
+    ),
+  )
+
+export const awaitPaused = listenFor(FiberState.Paused)
+export const awaitRunning = listenFor(FiberState.Running)
+export const awaitFailed = listenFor(FiberState.Failed)
+export const awaitSuccess = listenFor(FiberState.Success)
+export const awaitCompleted = listenFor(FiberState.Completed)
+
+export type FiberEventFromState<A extends FiberState> = A extends FiberState.Queued
+  ? FiberQueued
+  : A extends FiberState.Paused
+  ? FiberPaused
+  : A extends FiberState.Running
+  ? FiberRunning
+  : A extends FiberState.Failed
+  ? FiberFailed
+  : A extends FiberState.Success
+  ? FiberSuccess<A>
+  : A extends FiberState.Completed
+  ? FiberComplete<A>
+  : never

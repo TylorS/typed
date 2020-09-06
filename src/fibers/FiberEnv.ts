@@ -4,6 +4,8 @@ import { Fiber } from '@typed/fp/fibers/Fiber'
 import { SchedulerEnv } from '@typed/fp/fibers/SchedulerEnv'
 import { Either } from 'fp-ts/es6/Either'
 
+import { doEffect, zip } from '../Effect'
+
 /**
  * @since 0.0.1
  */
@@ -12,6 +14,12 @@ export interface FiberEnv extends SchedulerEnv {
   readonly fork: <E, A>(effect: Effect<E, A>, env: E & FiberEnv) => Resume<Fiber<A>>
   readonly join: <A>(fiber: Fiber<A>) => Resume<Either<Error, A>>
   readonly kill: <A>(fiber: Fiber<A>) => Resume<void>
+
+  /* Cooperative Multitasking */
+  readonly pause: Resume<void> // Only pauses if currentFiber has a parentFiber
+  // Allows proceeding processing of a fiber that has paused
+  // Only works if fiber is Queued/Paused and is child of current fiber
+  readonly proceed: (fiber: Fiber<unknown>) => Resume<void>
 }
 
 /**
@@ -45,3 +53,13 @@ export const join = <A>(fiber: Fiber<A>): Effect<FiberEnv, Either<Error, A>> =>
  * @since 0.0.1
  */
 export const kill = <A>(fiber: Fiber<A>): Effect<FiberEnv, void> => fromEnv((e) => e.kill(fiber))
+
+export const pause: Effect<FiberEnv, void> = fromEnv((e) => e.pause)
+
+export const proceed = (fiber: Fiber<unknown>): Effect<FiberEnv, void> =>
+  fromEnv((e) => e.proceed(fiber))
+
+export const proceedAll = (...fibers: ReadonlyArray<Fiber<unknown>>): Effect<FiberEnv, void> =>
+  doEffect(function* () {
+    yield* zip(fibers.map((f) => proceed(f)))
+  })
