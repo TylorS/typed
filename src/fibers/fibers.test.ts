@@ -151,6 +151,7 @@ export const test = describe(`fibers`, [
           disposeNone,
           disposeNone,
           flow(done, disposeNone),
+          disposeNone,
           (actual) => {
             try {
               equal(expected, actual)
@@ -161,7 +162,6 @@ export const test = describe(`fibers`, [
 
             return disposeNone()
           },
-          disposeNone,
         ),
       )
     }),
