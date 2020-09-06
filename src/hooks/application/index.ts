@@ -1,2 +1,6 @@
 export * from './useHookRequirementsRef'
+export * from './useIso'
+export * from './useLens'
 export * from './useMemo'
+export * from './useOptional'
+export * from './usePrism'
