@@ -1,5 +1,5 @@
 import { Arity1, IsNever } from '@typed/fp/common'
-import { Disposable, disposeNone } from '@typed/fp/Disposable'
+import { Disposable, disposeNone, lazy } from '@typed/fp/Disposable'
 import { fromEnv } from '@typed/fp/Effect/fromEnv'
 import { Either, left, right } from 'fp-ts/es6/Either'
 import { flow } from 'fp-ts/es6/function'
@@ -87,15 +87,23 @@ function resumeOnce<A>(run: (resume: Arity1<A, Disposable>) => Disposable) {
   return (resume: Arity1<A, Disposable>) => {
     let hasResumed = false
 
-    return run((a) => {
-      if (hasResumed) {
-        return disposeNone()
-      }
+    const disposable = lazy()
 
-      hasResumed = true
+    disposable.addDisposable(
+      run((a) => {
+        if (hasResumed) {
+          return disposeNone()
+        }
 
-      return resume(a)
-    })
+        hasResumed = true
+
+        disposable.dispose()
+
+        return resume(a)
+      }),
+    )
+
+    return disposable
   }
 }
 
