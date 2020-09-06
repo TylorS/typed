@@ -7,6 +7,7 @@ import { pipe } from 'fp-ts/es6/function'
 import { constant } from 'fp-ts/es6/function'
 
 import { HookOps } from '../domain'
+import { HookEnvironment } from '.'
 import { createEventSink } from './createEventSink'
 import { createGetKeyedEnv } from './createGetKeyedEnv'
 import { createHookRequirements } from './createHookRequirements'
@@ -16,7 +17,13 @@ import { createRunWithHooks } from './createRunWithHooks'
 import { createUseChannel } from './createUseChannel'
 import { createUseRefByIndex } from './createUseRefByIndex'
 import { createUseStateByIndex } from './createUseStateByIndex'
-import { HookEvent, isRemovedHookEnvironmentEvent } from './events'
+import {
+  HookEvent,
+  HookEventType,
+  isRemovedHookEnvironmentEvent,
+  isUpdatedChannelEvent,
+} from './events'
+import { handleChannelUpdateEvent } from './handleChannelUpdateEvent'
 import { handleRemoveEvent } from './handleRemoveEvent'
 import { HooksManagerEnv } from './HooksManagerEnv'
 
@@ -38,13 +45,22 @@ export const provideHookOps = provideOpGroup(
     const [sink, stream] = hookEvents
 
     const removeEvents = pipe(stream, filter(isRemovedHookEnvironmentEvent))
+    const channelUpdateEvents = pipe(stream, filter(isUpdatedChannelEvent))
 
     const sendEvent = (event: HookEvent) => sink.event(scheduler.currentTime(), event)
 
     const listenTo = <A>(stream: Stream<A>, f: (value: A) => void) =>
       hookEnvironment.addDisposable(stream.run(createEventSink(f), scheduler))
 
+    const updateChild = (hookEnvironment: HookEnvironment) =>
+      sendEvent({ type: HookEventType.UpdatedEnvironment, hookEnvironment })
+
     listenTo(removeEvents, handleRemoveEvent(hookPositions, channelConsumers, channelProviders))
+
+    listenTo(
+      channelUpdateEvents,
+      handleChannelUpdateEvent(channelConsumers, channelProviders, updateChild),
+    )
 
     const useRefByIndex = createUseRefByIndex(hookPositions)
     const useStateByIndex = createUseStateByIndex(hookPositions, sendEvent)

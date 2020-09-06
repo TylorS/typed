@@ -10,7 +10,7 @@ export type CreateUseStateOptions<K, E, A> = {
   readonly initialValue: Effect<E, A>
   readonly eq: Eq<A>
   readonly sendEvent: (event: HookEvent) => void
-  readonly createEvent: <A>(value: A) => HookEvent
+  readonly createEvent: <A>(current: A, updated: A) => HookEvent
 }
 
 export function createUseState<K, E, A>(options: CreateUseStateOptions<K, E, A>) {
@@ -22,7 +22,8 @@ export function createUseState<K, E, A>(options: CreateUseStateOptions<K, E, A>)
     const getState = Pure.fromIO(() => state)
     const updateState = (update: Arity1<A, A>) =>
       Pure.fromIO(() => {
-        const updated = update(state)
+        const current = state
+        const updated = update(current)
 
         if (eq.equals(state, updated)) {
           return state
@@ -30,7 +31,7 @@ export function createUseState<K, E, A>(options: CreateUseStateOptions<K, E, A>)
 
         state = updated
 
-        sendEvent(createEvent(state))
+        sendEvent(createEvent(current, state))
 
         return state
       })

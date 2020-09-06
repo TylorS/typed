@@ -34,11 +34,12 @@ export function createProvideChannel(
         key: name,
         eq,
         sendEvent,
-        createEvent: <A>(value: A): ChannelUpdated<A> => ({
+        createEvent: <A>(currentValue: A, updatedValue: A): ChannelUpdated<A> => ({
           type: HookEventType.UpdatedChannel,
           channel: name,
           hookEnvironment,
-          value,
+          currentValue,
+          updatedValue,
         }),
       })
     })

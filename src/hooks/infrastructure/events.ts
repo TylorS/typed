@@ -24,8 +24,6 @@ export interface CreatedHookEnvironment {
 export interface UpdatedHookEnvironment {
   readonly type: HookEventType.UpdatedEnvironment
   readonly hookEnvironment: HookEnvironment
-  readonly key: unknown
-  readonly value: unknown
 }
 
 export interface RunningHookEnvironment {
@@ -42,7 +40,8 @@ export interface ChannelUpdated<A> {
   readonly type: HookEventType.UpdatedChannel
   readonly channel: ChannelName
   readonly hookEnvironment: HookEnvironment
-  readonly value: A
+  readonly currentValue: A
+  readonly updatedValue: A
 }
 
 export const isRemovedHookEnvironmentEvent = (e: HookEvent): e is RemovedHookEnvironment =>

@@ -1,25 +1,27 @@
-import { deepEqualsEq } from '@typed/fp/common'
+import { Arity1, deepEqualsEq } from '@typed/fp/common'
 import { ask, doEffect, Effect, provide } from '@typed/fp/Effect'
 import { CallOf } from '@typed/fp/Op'
-import { pipe } from 'fp-ts/es6/function'
+import { identity, pipe } from 'fp-ts/es6/function'
 import { fold, isSome, none, Option, some } from 'fp-ts/es6/Option'
 
 import { Channel, ChannelName, ProvideChannelOp } from '../domain'
-import { appendTo } from './helpers'
 import { HookEnv, HookEnvironment } from './HookEnvironment'
 
 export function createUseChannel(
   rootHookEnvironment: HookEnvironment,
-  channelConsumers: Map<ChannelName, Set<HookEnvironment>>,
+  channelConsumers: Map<ChannelName, Map<HookEnvironment, Arity1<any, any>>>,
   provideChannelOp: CallOf<ProvideChannelOp, HookEnv>,
 ) {
-  return <E, A>(channel: Channel<E, A>): Effect<E & HookEnv, A> =>
+  return <E, A, B = A>(
+    channel: Channel<E, A>,
+    selector: Arity1<A, B> = identity as Arity1<A, B>,
+  ): Effect<E & HookEnv, A> =>
     doEffect(function* () {
       const env = yield* ask<HookEnv>()
       const { hookEnvironment } = env
       const { name } = channel
 
-      appendTo(channelConsumers, name, hookEnvironment)
+      addConsumer(channelConsumers, name, hookEnvironment, selector)
 
       const provider = findProvider(hookEnvironment, name)
 
@@ -49,4 +51,19 @@ function findProvider(
       (e) => findProvider(e, name),
     ),
   )
+}
+
+function addConsumer(
+  channelConsumers: Map<ChannelName, Map<HookEnvironment, Arity1<any, any>>>,
+  name: ChannelName,
+  hookEnvironment: HookEnvironment,
+  selector: Arity1<any, any>,
+) {
+  if (!channelConsumers.has(name)) {
+    channelConsumers.set(name, new Map())
+  }
+
+  const consumers = channelConsumers.get(name)!
+
+  consumers.set(hookEnvironment, selector)
 }

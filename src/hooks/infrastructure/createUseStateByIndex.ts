@@ -31,11 +31,9 @@ export function createUseStateByIndex(
           key: index,
           eq,
           sendEvent,
-          createEvent: (value): UpdatedHookEnvironment => ({
+          createEvent: (): UpdatedHookEnvironment => ({
             type: HookEventType.UpdatedEnvironment,
             hookEnvironment,
-            key: index,
-            value,
           }),
         })
       }

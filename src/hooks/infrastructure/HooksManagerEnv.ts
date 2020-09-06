@@ -1,3 +1,4 @@
+import { Arity1 } from '@typed/fp/common'
 import { Uuid } from '@typed/fp/Uuid'
 import { Subject } from 'most-subject'
 
@@ -9,7 +10,7 @@ export interface HooksManagerEnv extends HookEnv {
   readonly hookEvents: HookEvents
   readonly hookPositions: Map<Uuid, number>
   readonly channelProviders: Map<ChannelName, Set<HookEnvironment>>
-  readonly channelConsumers: Map<ChannelName, Set<HookEnvironment>>
+  readonly channelConsumers: Map<ChannelName, Map<HookEnvironment, Arity1<any, any>>>
 }
 
 export type HookEvents = Subject<HookEvent, HookEvent>
