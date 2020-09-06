@@ -81,5 +81,6 @@ tsconfig*.tsbuildinfo
 /history/
 /hooks/
 /http/
+/io/
 /lambda/
 /logging/
