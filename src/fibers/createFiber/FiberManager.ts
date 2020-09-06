@@ -44,38 +44,32 @@ export function createFiberManager(onFinish: IO<void>): FiberManager {
   const hasRemainingFibers = () => fibers.size > 0
 
   function pauseFiber(fiber: Fiber<unknown>, resume: IO<Disposable>): Disposable {
-    pausedFibers.set(fiber, resume)
-
+    const parentResume = proceedFibers.get(fiber) || disposeNone
     const disposable = { dispose: () => pausedFibers.delete(fiber) }
+
+    pausedFibers.set(fiber, resume)
 
     fiber.addDisposable(disposable)
     fiber.setPaused(true)
 
-    const parentResume = proceedFibers.get(fiber) || disposeNone
-
     proceedFibers.delete(fiber)
 
-    parentResume()
-
-    return disposable
+    return disposeAll([disposable, parentResume()])
   }
 
-  function runChildFiber(fiber: Fiber<unknown>, resume: IO<Disposable>): Disposable {
+  function runChildFiber(fiber: Fiber<unknown>, returnToParent: IO<Disposable>): Disposable {
     const { state } = fiber.getInfo()
 
-    const childResume = pausedFibers.get(fiber)
+    const resume = pausedFibers.get(fiber) || returnToParent
 
-    pausedFibers.delete(fiber)
+    if (state === FiberState.Paused) {
+      pausedFibers.delete(fiber)
+      proceedFibers.set(fiber, returnToParent)
 
-    if (!childResume || state !== FiberState.Paused) {
-      return resume()
+      fiber.setPaused(false)
     }
 
-    proceedFibers.set(fiber, resume)
-
-    fiber.setPaused(false)
-
-    return childResume()
+    return resume()
   }
 
   return {
