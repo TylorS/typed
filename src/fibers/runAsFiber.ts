@@ -28,6 +28,7 @@ export const fiberToPromise = <A>(fiber: Fiber<A>): Promise<A> =>
       foldFiberInfo(
         disposeNone,
         disposeNone,
+        disposeNone,
         flow(reject, disposeNone),
         flow(resolve, disposeNone),
         flow(resolve, disposeNone),

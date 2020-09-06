@@ -110,12 +110,16 @@ function createFiberEnv(currentFiber: Fiber<unknown>, scheduler: Scheduler): Fib
     join: joinFiber,
     kill: killFiber,
     fork: (eff, e) => pipe(eff, provide(e), createFiberWith(scheduler, some(currentFiber)), sync),
-    pause: async((resume) =>
+    pause: async<void>((resume) =>
       pipe(
         currentFiber.parentFiber,
         fold(
-          () => asap(createCallbackTask(resume), scheduler),
-          (parent) => parent.pauseChildFiber(currentFiber, resume),
+          () =>
+            asap(
+              createCallbackTask(() => resume()),
+              scheduler,
+            ),
+          (parent) => parent.pauseChildFiber(currentFiber, () => resume()),
         ),
       ),
     ),
@@ -134,7 +138,7 @@ function createFiberEnv(currentFiber: Fiber<unknown>, scheduler: Scheduler): Fib
         )({})
       }
 
-      return async<void>((resume) => currentFiber.runChildFiber(fiber, resume))
+      return async<void>((resume) => currentFiber.runChildFiber(fiber, () => resume()))
     },
   }
 }
