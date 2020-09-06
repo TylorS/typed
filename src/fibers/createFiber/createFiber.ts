@@ -47,7 +47,7 @@ export function createFiber<A>(
         infoChangeManager.updateInfo({ state: FiberState.Paused })
       }
 
-      if (!paused && state === FiberState.Queued) {
+      if (!paused && state === FiberState.Paused) {
         infoChangeManager.updateInfo({ state: FiberState.Running })
       }
     },
