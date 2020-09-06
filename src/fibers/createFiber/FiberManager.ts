@@ -4,24 +4,23 @@ import { IO } from 'fp-ts/es6/IO'
 import { Fiber, FiberState, foldFiberInfo } from '../Fiber'
 
 export interface FiberManager extends Disposable {
+  readonly fibers: ReadonlySet<Fiber<unknown>>
   readonly addFiber: (fiber: Fiber<unknown>) => Disposable
   readonly pauseFiber: (fiber: Fiber<unknown>, resume: IO<Disposable>) => Disposable
   readonly runChildFiber: (fiber: Fiber<unknown>, resume: IO<Disposable>) => Disposable
-  readonly hasRemainingFibers: () => boolean
-  readonly proceed: () => void
 }
 
 export function createFiberManager(onFinish: IO<void>): FiberManager {
   const disposable = lazy()
-  const fibers = new Set<Fiber<unknown>>()
+  const runningFibers = new Set<Fiber<unknown>>()
   const pausedFibers = new Map<Fiber<unknown>, IO<Disposable>>()
   const proceedFibers = new Map<Fiber<unknown>, IO<Disposable>>()
 
   function addFiber(fiber: Fiber<unknown>): Disposable {
-    fibers.add(fiber)
+    runningFibers.add(fiber)
 
     const fiberDisposable: Disposable = {
-      dispose: () => fibers.delete(fiber),
+      dispose: () => runningFibers.delete(fiber),
     }
     const listener = fiber.onInfoChange(
       foldFiberInfo(disposeNone, disposeNone, disposeNone, onDispose, disposeNone, onDispose),
@@ -44,12 +43,15 @@ export function createFiberManager(onFinish: IO<void>): FiberManager {
     }
   }
 
-  const hasRemainingFibers = () => fibers.size > 0
-
   function pauseFiber(fiber: Fiber<unknown>, resume: IO<Disposable>): Disposable {
+    if (!runningFibers.has(fiber)) {
+      return disposeNone()
+    }
+
     const parentResume = proceedFibers.get(fiber) || disposeNone
     const disposable = { dispose: () => pausedFibers.delete(fiber) }
 
+    runningFibers.delete(fiber)
     pausedFibers.set(fiber, resume)
 
     fiber.addDisposable(disposable)
@@ -61,11 +63,15 @@ export function createFiberManager(onFinish: IO<void>): FiberManager {
   }
 
   function runChildFiber(fiber: Fiber<unknown>, returnToParent: IO<Disposable>): Disposable {
-    const { state } = fiber.getInfo()
+    if (!pausedFibers.has(fiber)) {
+      return returnToParent()
+    }
 
-    const resume = pausedFibers.get(fiber) || returnToParent
+    const { state } = fiber.getInfo()
+    const resume = pausedFibers.get(fiber)!
 
     if (state === FiberState.Paused) {
+      runningFibers.add(fiber)
       pausedFibers.delete(fiber)
       proceedFibers.set(fiber, returnToParent)
 
@@ -75,30 +81,11 @@ export function createFiberManager(onFinish: IO<void>): FiberManager {
     return resume()
   }
 
-  function proceed() {
-    proceedFibers.clear()
-
-    if (pausedFibers.size === 0) {
-      return
-    }
-
-    const paused = Array.from(pausedFibers)
-
-    pausedFibers.clear()
-
-    paused.forEach(([fiber, resume]) => {
-      fiber.setPaused(false)
-
-      return resume()
-    })
-  }
-
   return {
     dispose: disposable.dispose,
-    hasRemainingFibers,
+    fibers: runningFibers,
     addFiber,
     pauseFiber,
     runChildFiber,
-    proceed,
   }
 }

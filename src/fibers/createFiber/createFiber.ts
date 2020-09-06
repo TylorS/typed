@@ -35,6 +35,7 @@ export function createFiber<A>(
   const exitValueRef = newIORef<Option<A>>(none)()
   const fiber: Fiber<A> = lazy({
     parentFiber,
+    children: fiberManager.fibers,
     getInfo: infoChangeManager.getInfo,
     onInfoChange: infoChangeManager.onInfoChange,
     setPaused: infoChangeManager.setPaused,
@@ -82,11 +83,8 @@ export function createFiber<A>(
       return
     }
 
-    if (fiberManager.hasRemainingFibers()) {
+    if (fiberManager.fibers.size > 0) {
       infoChangeManager.updateInfo({ state: FiberState.Success, value: exitValue.value })
-
-      // Allow any paused fibers to proceed
-      fiberManager.proceed()
 
       return
     }

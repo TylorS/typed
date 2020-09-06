@@ -14,6 +14,7 @@ export interface Fiber<A> extends LazyDisposable {
   readonly getInfo: IO<FiberInfo<A>>
   // Reference to the parent, if any
   readonly parentFiber: Option<Fiber<unknown>>
+  readonly children: ReadonlySet<Fiber<unknown>>
   // Listen to changes to the FiberInfo of the Fiber
   readonly onInfoChange: (f: (info: FiberInfo<A>) => Disposable) => Disposable // will always be called at least once with the current state
   // Track a child fiber
