@@ -6,6 +6,7 @@ import { pipe } from 'fp-ts/es6/function'
 import { Iso } from 'monocle-ts'
 
 import { GetAndUpdateState, UseRefOp } from '../domain'
+import { useCallback } from './useCallback'
 import { useMemo } from './useMemo'
 
 export const useIso: {
@@ -28,9 +29,8 @@ export const useIso: {
         getAndUpdateState[0],
       ])
 
-      const updateState = yield* useMemo(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        (_) => (update: Arity1<B, B>) =>
+      const updateState = yield* useCallback(
+        (update: Arity1<B, B>) =>
           map(
             iso.get,
             getAndUpdateState[1]((a) => pipe(a, iso.get, update, iso.reverseGet)),

@@ -6,6 +6,7 @@ import { pipe } from 'fp-ts/es6/function'
 import { Lens } from 'monocle-ts'
 
 import { GetAndUpdateState, UseRefOp } from '../domain'
+import { useCallback } from './useCallback'
 import { useMemo } from './useMemo'
 
 export const useLens: {
@@ -28,9 +29,8 @@ export const useLens: {
         getAndUpdateState[0],
       ])
 
-      const updateState = yield* useMemo(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        (_) => (update: Arity1<B, B>) =>
+      const updateState = yield* useCallback(
+        (update: Arity1<B, B>) =>
           map(
             lens.get,
             getAndUpdateState[1]((a) => pipe(a, lens.get, update, (b) => lens.set(b)(a))),

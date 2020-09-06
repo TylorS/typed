@@ -6,6 +6,7 @@ import * as O from 'fp-ts/es6/Option'
 import { Optional } from 'monocle-ts'
 
 import { GetAndUpdateState, UseRefOp } from '../domain'
+import { useCallback } from './useCallback'
 import { useMemo } from './useMemo'
 
 export const useOptional = <A, B>(
@@ -21,9 +22,8 @@ export const useOptional = <A, B>(
 
     const updateState: (
       update: Arity1<O.Option<B>, O.Option<B>>,
-    ) => Pure<O.Option<B>> = yield* useMemo(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      (_) => (update: Arity1<O.Option<B>, O.Option<B>>) =>
+    ) => Pure<O.Option<B>> = yield* useCallback(
+      (update: Arity1<O.Option<B>, O.Option<B>>) =>
         map(
           optional.getOption,
           s[1]((a) => {

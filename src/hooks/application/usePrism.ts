@@ -6,6 +6,7 @@ import * as O from 'fp-ts/es6/Option'
 import { Prism } from 'monocle-ts'
 
 import { GetAndUpdateState, UseRefOp } from '../domain'
+import { useCallback } from './useCallback'
 import { useMemo } from './useMemo'
 
 export const usePrism = <A, B>(
@@ -16,9 +17,8 @@ export const usePrism = <A, B>(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const getState = yield* useMemo((_) => map(prism.getOption, s[0]), [prism, s[0]])
 
-    const updateState = yield* useMemo(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      (_) => (update: Arity1<O.Option<B>, O.Option<B>>) =>
+    const updateState = yield* useCallback(
+      (update: Arity1<O.Option<B>, O.Option<B>>) =>
         map(
           prism.getOption,
           s[1]((a) =>
