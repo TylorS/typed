@@ -37,20 +37,10 @@ export function createFiber<A>(
     parentFiber,
     getInfo: infoChangeManager.getInfo,
     onInfoChange: infoChangeManager.onInfoChange,
+    setPaused: infoChangeManager.setPaused,
     addChildFiber: fiberManager.addFiber,
     pauseChildFiber: fiberManager.pauseFiber,
     runChildFiber: fiberManager.runChildFiber,
-    setPaused: (paused: boolean) => {
-      const { state } = infoChangeManager.getInfo()
-
-      if (paused && state === FiberState.Running) {
-        infoChangeManager.updateInfo({ state: FiberState.Paused })
-      }
-
-      if (!paused && state === FiberState.Paused) {
-        infoChangeManager.updateInfo({ state: FiberState.Running })
-      }
-    },
   })
 
   if (isSome(parentFiber)) {

@@ -11,6 +11,7 @@ export interface InfoChangeManager<A> extends Disposable {
   readonly getInfo: IO<FiberInfo<A>>
   readonly updateInfo: (updated: FiberInfo<A>) => void
   readonly onInfoChange: (f: (info: FiberInfo<A>) => Disposable) => Disposable
+  readonly setPaused: (paused: boolean) => void
 }
 
 export function createInfoChangeManager<A>(scheduler: Scheduler): InfoChangeManager<A> {
@@ -83,6 +84,18 @@ export function createInfoChangeManager<A>(scheduler: Scheduler): InfoChangeMana
     return infoDisposable
   }
 
+  function setPaused(paused: boolean) {
+    const { state } = info.read()
+
+    if (paused && state === FiberState.Running) {
+      updateInfo({ state: FiberState.Paused })
+    }
+
+    if (!paused && state === FiberState.Paused) {
+      updateInfo({ state: FiberState.Running })
+    }
+  }
+
   disposable.addDisposable({
     dispose: () => {
       subscribers.clear()
@@ -94,6 +107,7 @@ export function createInfoChangeManager<A>(scheduler: Scheduler): InfoChangeMana
     getInfo: () => info.read(),
     updateInfo,
     onInfoChange,
+    setPaused,
   }
 }
 
