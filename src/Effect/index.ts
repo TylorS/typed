@@ -2,11 +2,12 @@ import { ap, apSeq } from '@typed/fp/Effect/ap'
 import { chain } from '@typed/fp/Effect/chain'
 import { Effect, EnvOf, ReturnOf } from '@typed/fp/Effect/Effect'
 import { map } from '@typed/fp/Effect/map'
+import { Cast } from 'Any/Cast'
 import { Alt2 } from 'fp-ts/es6/Alt'
 import { MonadIO2 } from 'fp-ts/es6/MonadIO'
 import { readonlyArray } from 'fp-ts/es6/ReadonlyArray'
-import { U } from 'ts-toolbelt'
 
+import { And } from '../common'
 import { race } from './race'
 
 /**
@@ -60,8 +61,8 @@ export type ZipEffects = <A extends ReadonlyArray<Effect<any, any>>>(
   effects: A,
 ) => Effect<ZipEnvOf<A>, ZipReturnOf<A>>
 
-export type ZipEnvOf<A extends ReadonlyArray<Effect<any, any>>> = U.IntersectOf<
-  { readonly [K in keyof A]: EnvOf<A[K]> }[number]
+export type ZipEnvOf<A extends ReadonlyArray<Effect<any, any>>> = And<
+  Cast<{ readonly [K in keyof A]: EnvOf<A[K]> }, ReadonlyArray<any>>
 >
 
 export type ZipReturnOf<A extends ReadonlyArray<Effect<any, any>>> = {
@@ -78,6 +79,7 @@ export * from './fromEnv'
 export * from './fromReader'
 export * from './fromReaderTask'
 export * from './fromTask'
+export * from './lazy'
 export * from './map'
 export * from './memo'
 export * from './provide'

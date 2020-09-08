@@ -5,14 +5,13 @@ import { Either, left, right } from 'fp-ts/es6/Either'
 import { flow } from 'fp-ts/es6/function'
 import { IO } from 'fp-ts/es6/IO'
 import { Reader } from 'fp-ts/es6/Reader'
-import { Newtype } from 'newtype-ts'
 
 /**
  * An Iterable used to represent Effects which work like lightweight coroutines
  * @since 0.0.1
  */
-export interface Effect<E, A> {
-  readonly [Symbol.iterator]: () => EffectGenerator<E, A>
+export interface Effect<E, A, N = unknown> {
+  readonly [Symbol.iterator]: () => EffectGenerator<E, A, N>
 }
 
 export namespace Effect {
@@ -31,7 +30,7 @@ export const Pure = Effect
  * The underlying generator that allows modeling lightweight coroutines
  * @since 0.0.1
  */
-export type EffectGenerator<E, A> = Generator<Env<E, any>, A, unknown>
+export type EffectGenerator<E, A, N = unknown> = Generator<Env<E, any>, A, N>
 
 /**
  * A monadic environment type which can be yielded within an Effect
@@ -125,11 +124,7 @@ export type EffectOf<A> = A extends Effect<infer E, infer B>
  * Helper for retrieving the environmental dependencies from an effect
  * @since 0.0.1
  */
-export type EnvOf<A> = EffectOf<A> extends Effect<infer R, any>
-  ? CastToEmptyObject<ExtractNewType<R>>
-  : never
-
-type ExtractNewType<A> = A extends Newtype<any, infer R> ? R : A
+export type EnvOf<A> = EffectOf<A> extends Effect<infer R, any> ? CastToEmptyObject<R> : never
 
 /**
  * Helper for getting the return type from a given effect type

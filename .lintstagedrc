@@ -1,6 +1,6 @@
 {
   "*.{ts, tsx}": [
-    "tslint -p tsconfig.json --fix",
+    "eslint --ext .js,.jsx,.ts,.tsx --fix",
     "git add"
   ]
 }

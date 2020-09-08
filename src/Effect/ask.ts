@@ -9,7 +9,7 @@ import { toEnv } from './toEnv'
 /**
  * @since 0.0.1
  */
-export const ask = <E>(): Effect<E, E> => fromEnv(sync)
+export const ask = <E = unknown>(): Effect<E, E> => fromEnv(sync)
 
 /**
  * @since 0.0.1

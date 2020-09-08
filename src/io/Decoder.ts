@@ -103,5 +103,10 @@ export const Schemable: TypedSchemable2C<D.URI, unknown> = {
   int: D.fromGuard(G.int, `Int`),
   bigint: D.fromGuard(G.bigint, `BigInt`),
   unknown: D.fromGuard(G.unknown, `unknown`),
+  never: D.fromGuard(G.Schemable.never, `never`),
+  json: D.fromGuard(G.Schemable.json, `Json`),
+  jsonArray: D.fromGuard(G.Schemable.jsonArray, `JsonArray`),
+  jsonPrimitive: D.fromGuard(G.Schemable.jsonPrimitive, `JsonPrimitive`),
+  jsonRecord: D.fromGuard(G.Schemable.jsonRecord, `JsonRecord`),
   newtype: (from, refine, id) => D.refine(refine, id)(from),
 }

@@ -6,6 +6,7 @@ import * as RM from 'fp-ts/es6/ReadonlyMap'
 import * as RS from 'fp-ts/es6/ReadonlySet'
 import * as Eq from 'io-ts/es6/Eq'
 
+import { deepEqualsEq } from '../common'
 import { TypedSchemable1 } from './TypedSchemable'
 
 export const Schemable: TypedSchemable1<Eq.URI> = {
@@ -21,6 +22,11 @@ export const Schemable: TypedSchemable1<Eq.URI> = {
   int: eqNumber,
   bigint: eqStrict,
   unknown: eqStrict,
+  never: eqStrict,
+  json: deepEqualsEq,
+  jsonArray: deepEqualsEq,
+  jsonPrimitive: deepEqualsEq,
+  jsonRecord: deepEqualsEq,
   union: (...eqs) => ({
     equals: (a, b) => eqs.some((e) => e.equals(a, b)),
   }),

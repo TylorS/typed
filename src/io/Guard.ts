@@ -1,4 +1,4 @@
-import { Either } from 'fp-ts/es6/Either'
+import { Either, Json, JsonArray, JsonRecord } from 'fp-ts/es6/Either'
 import { Option } from 'fp-ts/es6/Option'
 import { Int } from 'io-ts'
 import * as G from 'io-ts/es6/Guard'
@@ -74,6 +74,15 @@ export const unknown: G.Guard<unknown, unknown> = {
   is: (_u): _u is unknown => true,
 }
 
+export const json: G.Guard<unknown, Json> = G.lazy(() =>
+  G.union(jsonRecord, jsonArray, jsonPrimitive),
+)
+export const jsonRecord: G.Guard<unknown, JsonRecord> = G.record(json)
+export const jsonArray: G.Guard<unknown, JsonArray> = G.array(json)
+export const jsonPrimitive: G.Guard<unknown, string | number | boolean | null> = G.nullable(
+  G.union(G.string, G.number, G.boolean),
+)
+
 export const Schemable: TypedSchemable1<G.URI> = {
   ...G.Schemable,
   ...G.WithRefine,
@@ -88,5 +97,11 @@ export const Schemable: TypedSchemable1<G.URI> = {
   int,
   bigint,
   unknown,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  never: { is: (_): _ is never => true },
+  json,
+  jsonRecord,
+  jsonArray,
+  jsonPrimitive,
   newtype: (from, refine) => G.refine(refine)(from),
 }

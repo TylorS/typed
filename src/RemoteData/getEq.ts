@@ -1,6 +1,6 @@
+import { deepEqualsEq } from '@typed/fp/common'
 import { Eq } from 'fp-ts/es6/Eq'
 
-import { deepEqualsEq } from '../common'
 import { hasNoData } from './hasNoData'
 import { isFailure } from './isFailure'
 import { isLoading } from './isLoading'

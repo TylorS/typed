@@ -1,5 +1,5 @@
 import { Uuid } from '@typed/fp/Uuid'
-import { Either } from 'fp-ts/es6/Either'
+import { Either, Json, JsonArray, JsonRecord } from 'fp-ts/es6/Either'
 import { Refinement } from 'fp-ts/es6/function'
 import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/es6/HKT'
 import { Option } from 'fp-ts/es6/Option'
@@ -30,6 +30,11 @@ export interface TypedSchemable<S> extends Schemable<S>, WithUnion<S>, WithRefin
   readonly int: HKT<S, Int>
   readonly bigint: HKT<S, BigInt>
   readonly unknown: HKT<S, unknown>
+  readonly never: HKT<S, never>
+  readonly json: HKT<S, Json>
+  readonly jsonRecord: HKT<S, JsonRecord>
+  readonly jsonArray: HKT<S, JsonArray>
+  readonly jsonPrimitive: HKT<S, string | number | boolean | null>
   readonly newtype: <N extends AnyNewtype>(
     from: HKT<S, CarrierOf<N>>,
     refinement: Refinement<CarrierOf<N>, N>,
@@ -51,6 +56,11 @@ export interface TypedSchemable1<S extends URIS>
   readonly int: Kind<S, Int>
   readonly bigint: Kind<S, BigInt>
   readonly unknown: Kind<S, unknown>
+  readonly never: Kind<S, never>
+  readonly json: Kind<S, Json>
+  readonly jsonRecord: Kind<S, JsonRecord>
+  readonly jsonArray: Kind<S, JsonArray>
+  readonly jsonPrimitive: Kind<S, string | number | boolean | null>
   readonly newtype: <N extends AnyNewtype>(
     from: Kind<S, CarrierOf<N>>,
     refinement: Refinement<CarrierOf<N>, N>,
@@ -75,6 +85,11 @@ export interface TypedSchemable2C<S extends URIS2, E>
   readonly int: Kind2<S, E, Int>
   readonly bigint: Kind2<S, E, BigInt>
   readonly unknown: Kind2<S, E, unknown>
+  readonly never: Kind2<S, E, never>
+  readonly json: Kind2<S, E, Json>
+  readonly jsonRecord: Kind2<S, E, JsonRecord>
+  readonly jsonArray: Kind2<S, E, JsonArray>
+  readonly jsonPrimitive: Kind2<S, E, string | number | boolean | null>
   readonly newtype: <N extends AnyNewtype>(
     from: Kind2<S, E, CarrierOf<N>>,
     refinement: Refinement<CarrierOf<N>, N>,
