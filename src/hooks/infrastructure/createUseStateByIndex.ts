@@ -13,6 +13,7 @@ import { HookEnv } from './HookEnvironment'
 
 export function createUseStateByIndex(
   hookPositions: Map<Uuid, number>,
+  getReference: (index: number) => symbol,
   sendEvent: (event: HookEvent) => void,
 ) {
   return <E, A>(
@@ -22,13 +23,14 @@ export function createUseStateByIndex(
     doEffect(function* () {
       const { hookEnvironment } = yield* ask<HookEnv>()
       const index = getNextIndex(hookPositions, hookEnvironment.id)
-      const state = pipe(hookEnvironment.states, lookupByIndex(index))
+      const reference = getReference(index)
+      const state = pipe(hookEnvironment.states, lookupByIndex(reference))
 
       if (isNone(state)) {
         return yield* createUseState({
           states: hookEnvironment.states,
           initialValue,
-          key: index,
+          key: reference,
           eq,
           sendEvent,
           createEvent: (): UpdatedHookEnvironment => ({

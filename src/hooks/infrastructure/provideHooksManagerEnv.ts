@@ -16,6 +16,7 @@ export const provideHooksManagerEnv = provideWith(
       hookPositions: new Map(),
       channelConsumers: new Map(),
       channelProviders: new Map(),
+      disposables: new Map(),
     }
 
     return hookEnv

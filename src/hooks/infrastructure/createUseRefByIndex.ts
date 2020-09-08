@@ -9,17 +9,21 @@ import { HookEnv, HookEnvironment } from './HookEnvironment'
 
 const pureUndefined = Pure.of(undefined)
 
-export function createUseRefByIndex(hookPositions: Map<Uuid, number>) {
+export function createUseRefByIndex(
+  hookPositions: Map<Uuid, number>,
+  getReference: (index: number) => symbol,
+) {
   const useRefByIndex = <E, A>(
     initialValue: Effect<E, A> = pureUndefined as any,
   ): Effect<HookEnv & E, Ref<A>> =>
     doEffect(function* () {
       const { hookEnvironment } = yield* ask<HookEnv>()
       const index = getNextIndex(hookPositions, hookEnvironment.id)
-      const state = pipe(hookEnvironment.states, lookupByIndex(index))
+      const reference = getReference(index)
+      const state = pipe(hookEnvironment.states, lookupByIndex(reference))
 
       if (isNone(state)) {
-        return yield* setRefByIndex(hookEnvironment, index, initialValue)
+        return yield* setRefByIndex(hookEnvironment, reference, initialValue)
       }
 
       return state.value as Ref<A>
@@ -30,13 +34,13 @@ export function createUseRefByIndex(hookPositions: Map<Uuid, number>) {
 
 function setRefByIndex<E, A>(
   hookEnvironment: HookEnvironment,
-  index: number,
+  reference: symbol,
   initialValue: Effect<E, A>,
 ): Effect<E, Ref<A>> {
   return doEffect(function* () {
     const ref = createRef(yield* initialValue)
 
-    hookEnvironment.states.set(index, ref)
+    hookEnvironment.states.set(reference, ref)
 
     return ref
   })

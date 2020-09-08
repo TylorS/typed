@@ -1,5 +1,6 @@
 import { OpEnvs } from '@typed/fp/Op/provideOpGroup'
 
+import { AddDisposableOp } from './addDisposable'
 import { CreateHookRequirementsOp } from './createHookRequirements'
 import { GetKeyedReqirementsOp } from './getKeyedRequirements'
 import { ProvideChannelOp } from './provideChannel'
@@ -18,6 +19,7 @@ export const HookOps = [
   GetKeyedReqirementsOp,
   RemoveKeyedRequirementsOp,
   CreateHookRequirementsOp,
+  AddDisposableOp,
 ] as const
 
 export type HookOps = typeof HookOps
