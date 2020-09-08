@@ -1,6 +1,7 @@
 import { deepEqualsEq } from '@typed/fp/common'
 import { doEffect, Effect, Pure, zip } from '@typed/fp/Effect'
 import { SchedulerEnv } from '@typed/fp/fibers'
+import { UuidEnv } from '@typed/fp/Uuid'
 import { Eq, eqNumber, getTupleEq } from 'fp-ts/es6/Eq'
 
 import {
@@ -23,7 +24,7 @@ export const useEffectBy = <A, B, E, C>(
   identify: (a: A, index: number) => B,
   fn: (a: A, index: number, key: B) => Effect<E & HookOpEnvs, C>,
   eq: Eq<A> = deepEqualsEq,
-): Effect<E & HookOpEnvs & SchedulerEnv, ReadonlyArray<C>> => {
+): Effect<E & HookOpEnvs & SchedulerEnv & UuidEnv, ReadonlyArray<C>> => {
   const eff = doEffect(function* () {
     const diffValues = yield* useMemo(diff, [eq])
     const identifyEq = yield* useMemo((e) => getTupleEq(e, eqNumber), [eq])

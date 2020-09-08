@@ -1,6 +1,6 @@
 import { deepEqualsEq } from '@typed/fp/common'
 import { Disposable, disposeAll, disposeNone } from '@typed/fp/Disposable'
-import { ask, doEffect, Effect, EffectGenerator, Pure, runEffect } from '@typed/fp/Effect'
+import { ask, doEffect, Effect, Pure, runEffect } from '@typed/fp/Effect'
 import { Fn } from '@typed/fp/lambda'
 import { Eq } from 'fp-ts/es6/Eq'
 import { getEq } from 'fp-ts/es6/ReadonlyArray'
@@ -15,7 +15,7 @@ export type UseEffectOptions<Args, A> = {
 }
 
 export const useEffect = <Args extends ReadonlyArray<any>, E, A>(
-  fn: Fn<Args, EffectGenerator<E, A>>,
+  fn: Fn<Args, Effect<E, A>>,
   args: Args,
   options: UseEffectOptions<Args, A> = {},
 ): Effect<E & HookOpEnvs, Disposable> => {

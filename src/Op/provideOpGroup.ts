@@ -1,10 +1,9 @@
+import { And, TupleKeys } from '@typed/fp/common'
 import { doEffect, Effect, EnvOf, ReturnOf } from '@typed/fp/Effect'
 import { GetOperation, Op, OpEnv, provideOp } from '@typed/fp/Op'
 import { pipe } from 'fp-ts/es6/pipeable'
 import { mapWithIndex, reduce } from 'fp-ts/es6/ReadonlyArray'
-import { IntersectOf } from 'Union/_api'
 
-import { TupleKeys } from '../common'
 import { useOp } from './provideOp'
 
 /**
@@ -67,10 +66,10 @@ export function useOpGroup<OPS extends ReadonlyArray<Op>, G extends OpGroup<OPS>
   }
 }
 
-export type OpEnvs<OPS extends ReadonlyArray<Op>> = IntersectOf<
+export type OpEnvs<OPS extends ReadonlyArray<Op>> = And<
   {
     [K in keyof OPS]: OPS[K] extends Op ? OpEnv<OPS[K]> : never
-  }[number]
+  }
 >
 
 export type OpGroup<OPS extends ReadonlyArray<Op> = ReadonlyArray<Op>> = Effect<
