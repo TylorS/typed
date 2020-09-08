@@ -1,6 +1,6 @@
+import { UuidEnv, UuidSeed } from '@typed/fp/common'
 import { Pure } from '@typed/fp/Effect'
 
-import { UuidEnv, UuidSeed } from '@typed/fp/common'
 import { VALID_UUID_LENGTH } from './constants'
 
 /**

@@ -1,3 +1,4 @@
+import { Progress, RemoteData, RemoteDataStatus } from '@typed/fp/RemoteData'
 import * as E from 'fp-ts/es6/Either'
 import * as O from 'fp-ts/es6/Option'
 import { pipe } from 'fp-ts/es6/pipeable'
@@ -5,7 +6,6 @@ import { leaf } from 'io-ts/es6/DecodeError'
 import * as D from 'io-ts/es6/Decoder'
 import * as FS from 'io-ts/es6/FreeSemigroup'
 
-import { Progress, RemoteData, RemoteDataStatus } from '@typed/fp/RemoteData'
 import * as G from './Guard'
 import { TypedSchemable2C } from './TypedSchemable'
 

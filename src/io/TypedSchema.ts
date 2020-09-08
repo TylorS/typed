@@ -1,7 +1,7 @@
+import { Fn } from '@typed/fp/lambda'
 import { HKT, Kind, Kind2 } from 'fp-ts/es6/HKT'
 import { memoize } from 'io-ts/es6/Schemable'
 
-import { Fn } from '@typed/fp/lambda'
 import { TypedSchemable } from './TypedSchemable'
 
 export interface TypedSchema<A> {

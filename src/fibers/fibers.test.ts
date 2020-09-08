@@ -1,13 +1,13 @@
 import { newDefaultScheduler } from '@most/scheduler'
+import { disposeNone } from '@typed/fp/Disposable'
 import { doEffect } from '@typed/fp/Effect/doEffect'
 import { fork, getParentFiber, pause, proceed } from '@typed/fp/fibers/FiberEnv'
 import { runAsFiber } from '@typed/fp/fibers/runAsFiber'
+import { createVirtualScheduler } from '@typed/fp/VirtualTimer'
 import { describe, it } from '@typed/test'
 import { flow } from 'fp-ts/es6/function'
 import { none, some } from 'fp-ts/es6/Option'
 
-import { disposeNone } from '@typed/fp/Disposable'
-import { createVirtualScheduler } from '@typed/fp/VirtualTimer'
 import { foldFiberInfo } from './Fiber'
 import { delay } from './SchedulerEnv'
 

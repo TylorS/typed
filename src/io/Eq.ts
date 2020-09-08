@@ -1,3 +1,4 @@
+import { deepEqualsEq } from '@typed/fp/common'
 import * as RD from '@typed/fp/RemoteData'
 import * as E from 'fp-ts/es6/Either'
 import { eqDate, eqNumber, eqStrict } from 'fp-ts/es6/Eq'
@@ -6,7 +7,6 @@ import * as RM from 'fp-ts/es6/ReadonlyMap'
 import * as RS from 'fp-ts/es6/ReadonlySet'
 import * as Eq from 'io-ts/es6/Eq'
 
-import { deepEqualsEq } from '@typed/fp/common'
 import { TypedSchemable1 } from './TypedSchemable'
 
 export const Schemable: TypedSchemable1<Eq.URI> = {

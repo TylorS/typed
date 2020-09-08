@@ -1,10 +1,10 @@
+import { Progress, RemoteData, RemoteDataStatus } from '@typed/fp/RemoteData'
+import { Uuid, uuidRegex } from '@typed/fp/Uuid'
 import { Either, Json, JsonArray, JsonRecord } from 'fp-ts/es6/Either'
 import { Option } from 'fp-ts/es6/Option'
 import { Int } from 'io-ts'
 import * as G from 'io-ts/es6/Guard'
 
-import { Progress, RemoteData, RemoteDataStatus } from '@typed/fp/RemoteData'
-import { Uuid, uuidRegex } from '@typed/fp/Uuid'
 import { TypedSchemable1 } from './TypedSchemable'
 
 export const set = <A>(t: G.Guard<unknown, A>): G.Guard<unknown, ReadonlySet<A>> => ({

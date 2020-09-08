@@ -1,6 +1,6 @@
+import { curry } from '@typed/fp/lambda'
 import { Lazy } from 'fp-ts/es6/function'
 
-import { curry } from '@typed/fp/lambda'
 import { isRefreshingSuccess } from './isRefreshingSuccess'
 import { isSuccess } from './isSuccess'
 import { RemoteData } from './RemoteData'

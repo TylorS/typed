@@ -1,12 +1,12 @@
 import { filter, take } from '@most/core'
 import { Disposable, Scheduler, Stream } from '@most/types'
-import { pipe } from 'fp-ts/es6/function'
-import { constVoid } from 'fp-ts/lib/function'
-
 import { Arity1 } from '@typed/fp/common'
 import { lazy } from '@typed/fp/Disposable'
 import { ask, async, doEffect, Effect, fromEnv } from '@typed/fp/Effect'
 import { SchedulerEnv } from '@typed/fp/fibers'
+import { pipe } from 'fp-ts/es6/function'
+import { constVoid } from 'fp-ts/es6/function'
+
 import { ConnectionEnv } from './Connection'
 import { JsonRpc } from './json-rpc-v2'
 import { MessageDirection } from './MessageDirection'

@@ -1,3 +1,4 @@
+import { RemoteData } from '@typed/fp/RemoteData'
 import { Uuid } from '@typed/fp/Uuid'
 import { Either, Json, JsonArray, JsonRecord } from 'fp-ts/es6/Either'
 import { Refinement } from 'fp-ts/es6/function'
@@ -16,8 +17,6 @@ import {
   WithUnion2C,
 } from 'io-ts/es6/Schemable'
 import { AnyNewtype, CarrierOf } from 'newtype-ts'
-
-import { RemoteData } from '@typed/fp/RemoteData'
 
 export interface TypedSchemable<S> extends Schemable<S>, WithUnion<S>, WithRefine<S> {
   readonly set: <A>(hkt: HKT<S, A>) => HKT<S, ReadonlySet<A>>
