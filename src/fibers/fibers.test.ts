@@ -6,8 +6,8 @@ import { describe, it } from '@typed/test'
 import { flow } from 'fp-ts/es6/function'
 import { none, some } from 'fp-ts/es6/Option'
 
-import { disposeNone } from '../Disposable'
-import { createVirtualScheduler } from '../VirtualTimer'
+import { disposeNone } from '@typed/fp/Disposable'
+import { createVirtualScheduler } from '@typed/fp/VirtualTimer'
 import { foldFiberInfo } from './Fiber'
 import { delay } from './SchedulerEnv'
 

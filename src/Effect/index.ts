@@ -1,3 +1,4 @@
+import { And } from '@typed/fp/common'
 import { ap, apSeq } from '@typed/fp/Effect/ap'
 import { chain } from '@typed/fp/Effect/chain'
 import { Effect, EnvOf, ReturnOf } from '@typed/fp/Effect/Effect'
@@ -7,7 +8,6 @@ import { Alt2 } from 'fp-ts/es6/Alt'
 import { MonadIO2 } from 'fp-ts/es6/MonadIO'
 import { readonlyArray } from 'fp-ts/es6/ReadonlyArray'
 
-import { And } from '../common'
 import { race } from './race'
 
 /**

@@ -6,7 +6,7 @@ import * as RM from 'fp-ts/es6/ReadonlyMap'
 import * as RS from 'fp-ts/es6/ReadonlySet'
 import * as Eq from 'io-ts/es6/Eq'
 
-import { deepEqualsEq } from '../common'
+import { deepEqualsEq } from '@typed/fp/common'
 import { TypedSchemable1 } from './TypedSchemable'
 
 export const Schemable: TypedSchemable1<Eq.URI> = {

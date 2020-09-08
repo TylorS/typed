@@ -5,7 +5,7 @@ import { leaf } from 'io-ts/es6/DecodeError'
 import * as D from 'io-ts/es6/Decoder'
 import * as FS from 'io-ts/es6/FreeSemigroup'
 
-import { Progress, RemoteData, RemoteDataStatus } from '../RemoteData'
+import { Progress, RemoteData, RemoteDataStatus } from '@typed/fp/RemoteData'
 import * as G from './Guard'
 import { TypedSchemable2C } from './TypedSchemable'
 
