@@ -31,9 +31,7 @@ import {
 
 const EMPTY: [] = []
 
-export type ServerState = Omit<Server, 'registerNotification' | 'registerRequest'>
-
-export type ServerHandler<A, B> = {
+type ServerHandler<A, B> = {
   readonly handler: A
   readonly env: EnvOf<A>
   readonly guard: Guard<unknown, B>
