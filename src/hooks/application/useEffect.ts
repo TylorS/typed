@@ -29,7 +29,11 @@ export const useEffect = <Args extends ReadonlyArray<any>, E, A>(
       ref.current.dispose()
 
       const e = yield* ask<E>()
-      const disposable = runEffect(onReturn, e, fn(...args))
+      const disposable = runEffect(
+        (u) => (isDisposable(u) ? disposeAll([u, onReturn(u)]) : onReturn(u)),
+        e,
+        fn(...args),
+      )
       const cleanup = yield* addDisposable(disposable)
 
       ref.current = disposeAll([disposable, cleanup])
@@ -39,4 +43,8 @@ export const useEffect = <Args extends ReadonlyArray<any>, E, A>(
   })
 
   return eff
+}
+
+function isDisposable(x: unknown): x is Disposable {
+  return !!x && typeof x === 'object' && typeof (x as { dispose?: Function }).dispose === 'function'
 }
