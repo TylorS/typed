@@ -12,11 +12,11 @@ import { JsonRpc } from './json-rpc-v2'
 import { MessageDirection } from './MessageDirection'
 import { isResponse } from './Response'
 
-export const waitForResponse = <A extends JsonRpc.Response<never, number, never>>(
+export const waitForResponse = <A extends JsonRpc.Response>(
   requestId: JsonRpc.Id,
   direction: MessageDirection,
-): Effect<ConnectionEnv & SchedulerEnv, A> =>
-  doEffect(function* () {
+): Effect<ConnectionEnv & SchedulerEnv, A> => {
+  const eff = doEffect(function* () {
     const { connection } = yield* ask<ConnectionEnv>()
     const [, messages] = connection[direction]
     const response = yield* pipe(
@@ -28,6 +28,9 @@ export const waitForResponse = <A extends JsonRpc.Response<never, number, never>
 
     return response
   })
+
+  return eff
+}
 
 function takeOne<A>(stream: Stream<A>): Effect<SchedulerEnv, A> {
   return fromEnv((e) => async((resume) => pipe(stream, take(1), resumeStream(e.scheduler, resume))))

@@ -1,30 +1,24 @@
-import { doEffect, Effect } from '@typed/fp/Effect'
-import { awaitRunning, FiberEnv, fork, join } from '@typed/fp/fibers'
-import { orFail } from '@typed/fp/Future'
+import { doEffect, Effect, zip } from '@typed/fp/Effect'
+import { SchedulerEnv } from '@typed/fp/fibers'
 
 import { ConnectionEnv } from './Connection'
 import { JsonRpc } from './json-rpc-v2'
-import { JsonRpcFailure } from './JsonRpcFailure'
 import { MessageDirection } from './MessageDirection'
 import { oppositeDirection } from './oppositeDirection'
 import { sendMessage } from './sendMessage'
 import { waitForResponse } from './waitForResponse'
 
-export const sendRequest = <
-  A extends JsonRpc.Request<string, never>,
-  B extends JsonRpc.Response<never, number, never>
->(
+export const sendRequest = <A extends JsonRpc.Request, B extends JsonRpc.Response>(
   request: A,
   direction: MessageDirection,
-): Effect<ConnectionEnv & FiberEnv & JsonRpcFailure, B> => {
+): Effect<ConnectionEnv & SchedulerEnv, B> => {
   const eff = doEffect(function* () {
-    const responseFiber = yield* fork(waitForResponse<B>(request.id, oppositeDirection(direction)))
+    const [response] = yield* zip([
+      waitForResponse<B>(request.id, oppositeDirection(direction)),
+      sendMessage(request, direction),
+    ] as const)
 
-    yield* awaitRunning(responseFiber)
-
-    yield* sendMessage(request, direction)
-
-    return yield* orFail(JsonRpcFailure, join(responseFiber))
+    return response
   })
 
   return eff

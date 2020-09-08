@@ -15,13 +15,13 @@ import * as RA from 'fp-ts/es6/ReadonlyArray'
 import { Decoder, draw } from 'io-ts/es6/Decoder'
 import { Guard } from 'io-ts/es6/Guard'
 
-import { DropNever } from '../common'
 import { JsonRpc } from './json-rpc-v2'
 import { JsonRpcFailure } from './JsonRpcFailure'
 import { isNotification } from './Notification'
 import { isRequest } from './Request'
 import { isResponse } from './Response'
 import {
+  HandleMessage,
   NotificationHandler,
   RegisterNotification,
   RegisterRequest,
@@ -115,7 +115,7 @@ export const useServer = doEffect(function* () {
     EMPTY,
   )
 
-  const handleMessage: Server['handleMessage'] = yield* useCallback((message: JsonRpc.Message) => {
+  const handleMessage: HandleMessage = yield* useCallback((message: JsonRpc.Message) => {
     const eff = doEffect(function* () {
       if (isRequest(message)) {
         const requestHandler = findHandler(message, requestHandlers)
@@ -133,10 +133,7 @@ export const useServer = doEffect(function* () {
           return O.some(response as JsonRpc.Response)
         }
 
-        const methodNotFound: DropNever<JsonRpc.FailedResponse<
-          JsonRpc.ErrorCode.MethodNotFound,
-          never
-        >> = {
+        const methodNotFound: JsonRpc.FailedResponse<JsonRpc.ErrorCode.MethodNotFound, never> = {
           jsonrpc: '2.0',
           id: message.id,
           error: {
@@ -163,13 +160,15 @@ export const useServer = doEffect(function* () {
 
           return O.none
         }
+
+        return O.none
       }
 
       if (Array.isArray(message) && message.every(isRequest)) {
         const responseOptions = yield* zip(message.map(handleMessage))
         const responses = pipe(responseOptions, RA.compact, RA.filter(isResponse))
 
-        return O.some(responses)
+        return responses.length > 0 ? O.some(responses) : O.none
       }
 
       return O.none

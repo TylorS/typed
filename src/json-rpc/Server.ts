@@ -11,9 +11,7 @@ import { JsonRpcFailure } from './JsonRpcFailure'
 export interface Server {
   readonly registerNotification: RegisterNotification
   readonly registerRequest: RegisterRequest
-  readonly handleMessage: (
-    message: JsonRpc.Message,
-  ) => Effect<ConnectionEnv & JsonRpcFailure, Option<JsonRpc.Message>>
+  readonly handleMessage: HandleMessage
 }
 
 export interface RegisterNotification {
@@ -35,3 +33,7 @@ export interface RegisterRequest {
 }
 
 export type RequestHandler<E, A, B> = (request: A) => Effect<E & HookOpEnvs & ConnectionEnv, B>
+
+export interface HandleMessage {
+  (message: JsonRpc.Message): Effect<ConnectionEnv & JsonRpcFailure, Option<JsonRpc.Message>>
+}

@@ -9,7 +9,7 @@ export namespace JsonRpc {
   export type Message =
     | Request
     | DropNever<Request<string, never>>
-    | Response<StructuredJson, number>
+    | Response
     | DropNever<Response<StructuredJson, number, never>>
     | Notification
     | DropNever<Notification<string, never>>
@@ -22,7 +22,7 @@ export namespace JsonRpc {
   export interface Notification<
     Method extends string = string,
     Params extends StructuredJson = StructuredJson
-  > extends JsonRecord {
+  > {
     readonly jsonrpc: '2.0'
     readonly method: Method
     readonly params: Params
@@ -31,7 +31,7 @@ export namespace JsonRpc {
   export interface Request<
     Method extends string = string,
     Params extends StructuredJson = StructuredJson
-  > extends JsonRecord {
+  > {
     readonly jsonrpc: '2.0'
     readonly id: Id
     readonly method: Method
@@ -44,22 +44,19 @@ export namespace JsonRpc {
     ErrorData extends Json = Json
   > = SuccessfulResponse<Result> | FailedResponse<Code, ErrorData>
 
-  export interface SuccessfulResponse<Result extends StructuredJson = StructuredJson>
-    extends JsonRecord {
+  export interface SuccessfulResponse<Result extends StructuredJson = StructuredJson> {
     readonly jsonrpc: '2.0'
     readonly id: Id
     readonly result: Result
   }
 
-  export interface FailedResponse<Code extends number = number, ErrorData extends Json = Json>
-    extends JsonRecord {
+  export interface FailedResponse<Code extends number = number, ErrorData extends Json = Json> {
     readonly jsonrpc: '2.0'
     readonly id: Id
-    readonly error: Error<Code, ErrorData>
+    readonly error: DropNever<Error<Code, ErrorData>>
   }
 
-  export interface Error<Code extends number = number, ErrorData extends Json = Json>
-    extends JsonRecord {
+  export interface Error<Code extends number = number, ErrorData extends Json = Json> {
     readonly code: Code
     readonly message: string
     readonly data: ErrorData
