@@ -10,7 +10,7 @@ import { useOp } from './provideOp'
  * Allows providing multiple operations together which may require shared state, resources, or
  * simply for convenience.
  */
-export function provideOpGroup<OPS extends ReadonlyArray<Op>, G extends OpGroup<OPS>>(
+export function provideOpGroup<OPS extends ReadonlyArray<Op<any, any>>, G extends OpGroup<OPS>>(
   ops: OPS,
   opGroup: G,
 ) {
@@ -38,7 +38,7 @@ export function provideOpGroup<OPS extends ReadonlyArray<Op>, G extends OpGroup<
   }
 }
 
-export function useOpGroup<OPS extends ReadonlyArray<Op>, G extends OpGroup<OPS>>(
+export function useOpGroup<OPS extends ReadonlyArray<Op<any, any>>, G extends OpGroup<OPS>>(
   ops: OPS,
   opGroup: G,
 ) {
@@ -66,19 +66,19 @@ export function useOpGroup<OPS extends ReadonlyArray<Op>, G extends OpGroup<OPS>
   }
 }
 
-export type OpEnvs<OPS extends ReadonlyArray<Op>> = And<
+export type OpEnvs<OPS extends ReadonlyArray<Op<any, any>>> = And<
   {
-    [K in keyof OPS]: OPS[K] extends Op ? OpEnv<OPS[K]> : never
+    [K in keyof OPS]: OPS[K] extends Op<any, any> ? OpEnv<OPS[K]> : never
   }
 >
 
-export type OpGroup<OPS extends ReadonlyArray<Op> = ReadonlyArray<Op>> = Effect<
+export type OpGroup<OPS extends ReadonlyArray<Op<any, any>> = ReadonlyArray<Op<any, any>>> = Effect<
   any,
   OpGroupEffects<OPS>
 >
 
-export type OpGroupEffects<OPS extends ReadonlyArray<Op>> = {
-  readonly [K in keyof OPS]: OPS[K] extends Op ? GetOperation<any, OPS[K]> : never
+export type OpGroupEffects<OPS extends ReadonlyArray<Op<any, any>>> = {
+  readonly [K in keyof OPS]: OPS[K] extends Op<any, any> ? GetOperation<any, OPS[K]> : never
 }
 
 export type OpGroupEnv<G> = EnvOf<G> & OpGroupEnvs<G>

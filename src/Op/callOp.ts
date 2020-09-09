@@ -6,7 +6,7 @@ import { getOpMap } from './OpEnv'
 /**
  * Given an Op, returns the corresponding effect function which will be provided by the infrastructure later.
  */
-export function callOp<O extends Op>(op: O): CallOf<O> {
+export function callOp<O extends Op<any, any>>(op: O): CallOf<O> {
   const operation = (...args: ArgsOf<O>) => {
     const eff = doEffect(function* () {
       const map = yield* getOpMap

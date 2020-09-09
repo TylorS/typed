@@ -1,12 +1,12 @@
 import * as C from '@typed/fp/common'
-import { AddEnv, Effect } from '@typed/fp/Effect'
+import * as E from '@typed/fp/Effect'
 import { Fn } from '@typed/fp/lambda'
 import { Newtype } from 'newtype-ts'
 
 /**
  * Used to represent the resources required to perform a particular operation.
  */
-export interface Op<Uri = any, F extends Fn<readonly any[], Effect<any, any>> = Fn>
+export interface Op<Uri, F extends Fn<readonly any[], E.Effect<any, any>>>
   extends Newtype<OpUri<Uri, F>, Uri> {}
 
 interface OpUri<Uri, F extends Fn = Fn> {
@@ -25,7 +25,7 @@ export type UriOf<A> = A extends Op<infer R, any> ? R : never
 /**
  * Extract the Function behind an Operation
  */
-export type FnOf<A> = A extends Op<any, infer R> ? R : Fn<any, Effect<any, any>>
+export type FnOf<A> = A extends Op<any, infer R> ? R : never
 
 /**
  * Extract the arguments for a particular Op
@@ -33,9 +33,14 @@ export type FnOf<A> = A extends Op<any, infer R> ? R : Fn<any, Effect<any, any>>
 export type ArgsOf<A> = C.ArgsOf<FnOf<A>>
 
 /**
- * Extract the return type of a particular Op
+ * Extract the effect of a particular Op
  */
 export type EffectOf<A> = ReturnType<FnOf<A>>
+
+/**
+ * Extract the return value of a particular Op
+ */
+export type ReturnOf<A> = E.ReturnOf<EffectOf<A>>
 
 export const OPS = Symbol('@typed/fp/Ops')
 export type OPS = typeof OPS
@@ -43,12 +48,12 @@ export type OPS = typeof OPS
 /**
  * Opaque environment in which to request the implementation of a particular operation.
  */
-export interface OpEnv<O extends Op> extends Newtype<O, Readonly<Record<OPS, OpMap>>> {}
+export interface OpEnv<O extends Op<any, any>> extends Newtype<O, Readonly<Record<OPS, OpMap>>> {}
 
 /**
  * The shared map in which *all* implementation of operations are placed in.
  */
-export interface OpMap extends Map<Op<any, any>, Fn<any, Effect<any, any>>> {}
+export interface OpMap extends Map<Op<any, any>, Fn<any, E.Effect<any, any>>> {}
 
 /**
  * Type-level map for using Op implementations that require type parameters. The "Env"
@@ -71,11 +76,13 @@ export type OpsUris = keyof Ops<any>
  * Creates the Call signature of an Operation using the Ops type-level map,
  * if it exists, or simply appends the required environments.
  */
-export type CallOf<O extends Op, Env = unknown> = UriOf<O> extends OpsUris
+export type CallOf<O extends Op<any, any>, Env = unknown> = UriOf<O> extends OpsUris
   ? Ops<OpEnv<O> & Env>[UriOf<O>]
   : GetOperation<OpEnv<O> & Env, O>
 
-export type GetOperation<E, O extends Op> = (...args: ArgsOf<O>) => AddEnv<E, EffectOf<O>>
+export type GetOperation<E, O extends Op<any, any>> = (
+  ...args: ArgsOf<O>
+) => E.AddEnv<E, EffectOf<O>>
 
 export * from './callOp'
 export * from './createOp'
