@@ -1,0 +1,1 @@
+{"version":3,"file":"JsonRpcFailure.d.ts","sourceRoot":"","sources":["../src/json-rpc/JsonRpcFailure.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,MAAM,kBAAkB,CAAA;AAE1C,eAAO,MAAM,cAAc,eAA2B,CAAA;AACtD,MAAM,WAAW,cAAe,SAAQ,OAAO,CAAC,OAAO,cAAc,EAAE,KAAK,CAAC;CAAG"}

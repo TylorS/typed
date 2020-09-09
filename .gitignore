@@ -82,6 +82,5 @@ tsconfig*.tsbuildinfo
 /hooks/
 /http/
 /io/
-/json-rpc/
 /lambda/
 /logging/
