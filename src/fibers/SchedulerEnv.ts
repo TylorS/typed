@@ -16,7 +16,7 @@ export interface SchedulerEnv {
  * Add a delay at the specified about of time
  * @since 0.0.1
  */
-export const delay = (delay: Time) =>
+export const delay = (delay: Time): Effect<SchedulerEnv, Time> =>
   fromEnv(({ scheduler }: SchedulerEnv) =>
     async((cb) =>
       S.delay(

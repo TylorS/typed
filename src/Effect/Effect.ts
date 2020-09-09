@@ -110,15 +110,15 @@ function resumeOnce<A>(run: (resume: Arity1<A, Disposable>) => Disposable) {
  * Helper for retrieving the effect with widened environment type
  * @since 0.0.1
  */
-export type EffectOf<A> = A extends Effect<infer E, infer B>
-  ? Effect<E, B>
-  : A extends (...args: any) => any
-  ? ReturnType<A> extends Effect<infer E, infer B>
-    ? Effect<E, B>
-    : A extends EffectGenerator<infer E, infer B>
-    ? Effect<E, B>
-    : never
+export type EffectOf<A> = A extends Effect<infer E, infer B, infer C>
+  ? Effect<E, B, C>
+  : ReturnTypeOf<A> extends Effect<infer E, infer B, infer C>
+  ? Effect<E, B, C>
+  : A extends EffectGenerator<infer E, infer B, infer C>
+  ? Effect<E, B, C>
   : never
+
+type ReturnTypeOf<A> = A extends (...args: any) => any ? ReturnType<A> : never
 
 /**
  * Helper for retrieving the environmental dependencies from an effect
