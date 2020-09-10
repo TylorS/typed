@@ -1,11 +1,13 @@
 import { HeadArg } from '@typed/fp/common'
 import { ask } from '@typed/fp/Effect/ask'
-import { AddEnv, EffectOf } from '@typed/fp/Effect/Effect'
+import { AddEnv, EffectGenerator, EffectOf } from '@typed/fp/Effect/Effect'
 
 /**
  * @since 0.0.1
  */
-export const doEffect = <G extends () => Generator>(effectGeneratorFunction: G): EffectOf<G> =>
+export const doEffect = <G extends () => EffectGenerator<any, any>>(
+  effectGeneratorFunction: G,
+): EffectOf<G> =>
   (({
     [Symbol.iterator]: effectGeneratorFunction,
   } as unknown) as EffectOf<G>)
@@ -13,7 +15,7 @@ export const doEffect = <G extends () => Generator>(effectGeneratorFunction: G):
 /**
  * @since 0.0.1
  */
-export const doEffectWith = <G extends (e: any) => Generator>(
+export const doEffectWith = <G extends (env: any) => EffectGenerator<any, any>>(
   effectGeneratorFunction: G,
 ): AddEnv<HeadArg<G>, EffectOf<G>> =>
   doEffect(function* () {

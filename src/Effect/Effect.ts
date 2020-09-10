@@ -10,8 +10,8 @@ import { Reader } from 'fp-ts/es6/Reader'
  * An Iterable used to represent Effects which work like lightweight coroutines
  * @since 0.0.1
  */
-export interface Effect<E, A, N = unknown> {
-  readonly [Symbol.iterator]: () => EffectGenerator<E, A, N>
+export interface Effect<E, A> {
+  readonly [Symbol.iterator]: () => EffectGenerator<E, A>
 }
 
 export namespace Effect {
@@ -30,7 +30,7 @@ export const Pure = Effect
  * The underlying generator that allows modeling lightweight coroutines
  * @since 0.0.1
  */
-export type EffectGenerator<E, A, N = unknown> = Generator<Env<E, any>, A, N>
+export type EffectGenerator<E, A> = Generator<Env<E, any>, A>
 
 /**
  * A monadic environment type which can be yielded within an Effect
@@ -110,12 +110,12 @@ function resumeOnce<A>(run: (resume: Arity1<A, Disposable>) => Disposable) {
  * Helper for retrieving the effect with widened environment type
  * @since 0.0.1
  */
-export type EffectOf<A> = A extends Effect<infer E, infer B, infer C>
-  ? Effect<E, B, C>
-  : ReturnTypeOf<A> extends Effect<infer E, infer B, infer C>
-  ? Effect<E, B, C>
-  : A extends EffectGenerator<infer E, infer B, infer C>
-  ? Effect<E, B, C>
+export type EffectOf<A> = A extends Effect<infer E, infer B>
+  ? Effect<E, B>
+  : ReturnTypeOf<A> extends Effect<infer E, infer B>
+  ? Effect<E, B>
+  : A extends EffectGenerator<infer E, infer B>
+  ? Effect<E, B>
   : never
 
 type ReturnTypeOf<A> = A extends (...args: any) => any ? ReturnType<A> : never
