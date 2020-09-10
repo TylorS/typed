@@ -1,1 +1,0 @@
-{"version":3,"file":"Notification.d.ts","sourceRoot":"","sources":["../src/json-rpc/Notification.ts"],"names":[],"mappings":"AAAA,OAAO,EAAuC,WAAW,EAAE,MAAM,EAAE,MAAM,cAAc,CAAA;AAGvF,OAAO,EAAE,OAAO,EAAE,MAAM,eAAe,CAAA;AAEvC,eAAO,MAAM,YAAY;aAIsB,KAAK;GAUjD,CAAA;AASH,eAAO,MAAY,cAAc;;;;aAnBc,KAAK;;;;;aAAL,KAAK;EAmB4B,CAAA"}

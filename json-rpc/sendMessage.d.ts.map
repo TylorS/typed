@@ -1,1 +1,0 @@
-{"version":3,"file":"sendMessage.d.ts","sourceRoot":"","sources":["../src/json-rpc/sendMessage.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,YAAY,EAAE,MAAM,kBAAkB,CAAA;AAE/C,OAAO,EAAE,aAAa,EAAE,MAAM,cAAc,CAAA;AAC5C,OAAO,EAAE,OAAO,EAAE,MAAM,eAAe,CAAA;AACvC,OAAO,EAAE,gBAAgB,EAAE,MAAM,oBAAoB,CAAA;AAErD,eAAO,MAAM,WAAW,YAAa,QAAQ,OAAO,aAAa,gBAAgB,4EAM7E,CAAA"}
