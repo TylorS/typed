@@ -1,4 +1,4 @@
-import { Effect, effectSeq } from '@typed/fp/Effect'
+import { Effect, effectSeq } from '@typed/fp/Effect/exports'
 import { Contravariant2 } from 'fp-ts/es6/Contravariant'
 import { flow, Predicate } from 'fp-ts/es6/function'
 import { Monoid } from 'fp-ts/es6/Monoid'

@@ -1,8 +1,8 @@
-import { Effect } from '@typed/fp/Effect'
-import { callOp, createOp, Op } from '@typed/fp/Op'
+import { Effect } from '@typed/fp/Effect/exports'
+import { callOp, createOp, Op } from '@typed/fp/Op/exports'
 import { iso } from 'newtype-ts'
 
-import { HookRequirements } from '../../model'
+import { HookRequirements } from '../../model/exports'
 import { HookOpEnvs } from './HookOps'
 
 export const RUN_WITH_HOOKS = Symbol('@typed/fp/hooks/RunWithHooks')
@@ -17,7 +17,7 @@ export const RunWithHooksOp = createOp<RunWithHooksOp>(RUN_WITH_HOOKS)
 
 export const runWithHooks = callOp(RunWithHooksOp)
 
-declare module '@typed/fp/Op' {
+declare module '@typed/fp/Op/exports' {
   export interface Ops<Env> {
     [RUN_WITH_HOOKS]: <E, A>(
       eff: Effect<E & HookOpEnvs, A>,

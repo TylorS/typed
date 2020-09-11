@@ -1,10 +1,10 @@
-import { Arity1, deepEqualsEq } from '@typed/fp/common'
-import { ask, doEffect, Effect, provide } from '@typed/fp/Effect'
-import { CallOf } from '@typed/fp/Op'
+import { Arity1, deepEqualsEq } from '@typed/fp/common/exports'
+import { ask, doEffect, Effect, provide } from '@typed/fp/Effect/exports'
+import { CallOf } from '@typed/fp/Op/exports'
 import { identity, pipe } from 'fp-ts/es6/function'
 import { fold, isSome, none, Option, some } from 'fp-ts/es6/Option'
 
-import { Channel, ChannelName, ProvideChannelOp } from '../domain'
+import { Channel, ChannelName, ProvideChannelOp } from '../domain/exports'
 import { HookEnv, HookEnvironment } from './HookEnvironment'
 
 export function createUseChannel(

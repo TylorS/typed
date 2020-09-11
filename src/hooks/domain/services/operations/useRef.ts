@@ -1,7 +1,7 @@
-import { Effect } from '@typed/fp/Effect'
-import { callOp, createOp, Op } from '@typed/fp/Op'
+import { Effect } from '@typed/fp/Effect/exports'
+import { callOp, createOp, Op } from '@typed/fp/Op/exports'
 
-import { Ref } from '../../model'
+import { Ref } from '../../model/exports'
 
 export const USE_REF = Symbol('@typed/fp/hooks/UseRef')
 export type USE_REF = typeof USE_REF
@@ -12,7 +12,7 @@ export const UseRefOp = createOp<UseRefOp>(USE_REF)
 
 export const useRef = callOp(UseRefOp)
 
-declare module '@typed/fp/Op' {
+declare module '@typed/fp/Op/exports' {
   export interface Ops<Env> {
     [USE_REF]: {
       <A>(): Effect<Env, Ref<A | undefined>>

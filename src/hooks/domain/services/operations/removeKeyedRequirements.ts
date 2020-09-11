@@ -1,5 +1,5 @@
-import { Pure } from '@typed/fp/Effect'
-import { callOp, createOp, Op } from '@typed/fp/Op'
+import { Pure } from '@typed/fp/Effect/exports'
+import { callOp, createOp, Op } from '@typed/fp/Op/exports'
 
 export const REMOVE_KEYED_REQUIREMENTS = Symbol('@typed/fp/hooks/RemovedKeyedEnv')
 export type REMOVE_KEYED_REQUIREMENTS = typeof REMOVE_KEYED_REQUIREMENTS

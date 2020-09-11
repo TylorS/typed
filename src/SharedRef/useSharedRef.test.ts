@@ -1,4 +1,4 @@
-import { doEffect, execEffect } from '@typed/fp/Effect'
+import { doEffect, execEffect } from '@typed/fp/Effect/exports'
 import { describe, it } from '@typed/test'
 import { pipe } from 'fp-ts/es6/function'
 import { newIORef } from 'fp-ts/es6/IORef'

@@ -1,7 +1,7 @@
-import { doEffect, Pure } from '@typed/fp/Effect'
+import { doEffect, Pure } from '@typed/fp/Effect/exports'
 import { Eq } from 'fp-ts/es6/Eq'
 
-import { useRef } from '../domain'
+import { useRef } from '../domain/exports'
 
 const pureTrue = Pure.of(true)
 

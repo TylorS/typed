@@ -1,6 +1,6 @@
-import { ArgsOf } from '@typed/fp/common'
-import { Path, pathJoin } from '@typed/fp/Path'
-import { parseUri, Uri } from '@typed/fp/Uri'
+import { ArgsOf } from '@typed/fp/common/exports'
+import { Path, pathJoin } from '@typed/fp/Path/exports'
+import { parseUri, Uri } from '@typed/fp/Uri/exports'
 
 import { HistoryEnv } from './HistoryEnv'
 

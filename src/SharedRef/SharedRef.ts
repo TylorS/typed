@@ -1,5 +1,5 @@
-import { Pure } from '@typed/fp/Effect'
-import { createOp, Op, OpEnv, UriOf } from '@typed/fp/Op'
+import { Pure } from '@typed/fp/Effect/exports'
+import { createOp, Op, OpEnv, UriOf } from '@typed/fp/Op/exports'
 import { IORef } from 'fp-ts/es6/IORef'
 
 export interface SharedRef<Uri, A> extends Op<Uri, () => Pure<IORef<A>>> {}

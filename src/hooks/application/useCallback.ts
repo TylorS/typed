@@ -1,4 +1,4 @@
-import { Fn } from '@typed/fp/lambda'
+import { Fn } from '@typed/fp/lambda/exports'
 
 import { useMemo } from './useMemo'
 

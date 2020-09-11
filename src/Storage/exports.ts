@@ -1,3 +1,3 @@
 export * from './KeyValueStorage'
 export * from './dom'
-export * from './indexedDb'
+export * from './indexedDb/exports'

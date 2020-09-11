@@ -1,11 +1,11 @@
-import { deepEqualsEq } from '@typed/fp/common'
-import { Effect, Pure } from '@typed/fp/Effect'
-import { Fn } from '@typed/fp/lambda'
-import { OpEnv } from '@typed/fp/Op'
+import { deepEqualsEq } from '@typed/fp/common/exports'
+import { Effect, Pure } from '@typed/fp/Effect/exports'
+import { Fn } from '@typed/fp/lambda/exports'
+import { OpEnv } from '@typed/fp/Op/exports'
 import { Eq } from 'fp-ts/es6/Eq'
 import { getEq } from 'fp-ts/es6/ReadonlyArray'
 
-import { UseRefOp } from '../domain'
+import { UseRefOp } from '../domain/exports'
 import { useMemoEffect } from './useMemoEffect'
 
 export const useMemo = <A extends readonly any[], B>(

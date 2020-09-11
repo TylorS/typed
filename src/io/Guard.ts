@@ -1,5 +1,5 @@
-import { Progress, RemoteData, RemoteDataStatus } from '@typed/fp/RemoteData'
-import { Uuid, uuidRegex } from '@typed/fp/Uuid'
+import { Progress, RemoteData, RemoteDataStatus } from '@typed/fp/RemoteData/exports'
+import { Uuid, uuidRegex } from '@typed/fp/Uuid/exports'
 import { Either, Json, JsonArray, JsonRecord } from 'fp-ts/es6/Either'
 import { Option } from 'fp-ts/es6/Option'
 import { Int } from 'io-ts'

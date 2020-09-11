@@ -1,4 +1,4 @@
-import { Disposable, disposeAll, disposeNone, lazy } from '@typed/fp/Disposable'
+import { Disposable, disposeAll, disposeNone, lazy } from '@typed/fp/Disposable/exports'
 import { IO } from 'fp-ts/es6/IO'
 
 import { Fiber, FiberState, foldFiberInfo } from '../Fiber'

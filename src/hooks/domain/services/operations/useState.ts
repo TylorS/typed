@@ -1,5 +1,5 @@
-import { Effect } from '@typed/fp/Effect'
-import { callOp, createOp, Op } from '@typed/fp/Op'
+import { Effect } from '@typed/fp/Effect/exports'
+import { callOp, createOp, Op } from '@typed/fp/Op/exports'
 import { Eq } from 'fp-ts/es6/Eq'
 
 import { GetAndUpdateState } from './GetAndUpdateState'
@@ -17,7 +17,7 @@ export const UseStateOp = createOp<UseStateOp>(USE_STATE)
 
 export const useState = callOp(UseStateOp)
 
-declare module '@typed/fp/Op' {
+declare module '@typed/fp/Op/exports' {
   export interface Ops<Env> {
     readonly [USE_STATE]: {
       <E, A>(initial: Effect<E, A>): Effect<Env & E, GetAndUpdateState<A>>

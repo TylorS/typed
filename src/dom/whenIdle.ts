@@ -1,6 +1,6 @@
 import { Timer } from '@most/types'
-import { lazy } from '@typed/fp/Disposable'
-import { async, fromEnv } from '@typed/fp/Effect'
+import { lazy } from '@typed/fp/Disposable/exports'
+import { async, fromEnv } from '@typed/fp/Effect/exports'
 import { iso, Newtype } from 'newtype-ts'
 
 export type IdleCallbackHandle = Newtype<{ readonly IdleCallbackHandle: unique symbol }, any>

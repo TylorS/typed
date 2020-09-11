@@ -1,5 +1,5 @@
-import { async, fromEnv } from '@typed/fp/Effect'
-import { Uri, uriIso } from '@typed/fp/Uri'
+import { async, fromEnv } from '@typed/fp/Effect/exports'
+import { Uri, uriIso } from '@typed/fp/Uri/exports'
 
 import { HistoryEnv } from './HistoryEnv'
 

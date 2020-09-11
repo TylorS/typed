@@ -1,6 +1,6 @@
-import { Arity1, deepEqualsEq } from '@typed/fp/common'
+import { Arity1, deepEqualsEq } from '@typed/fp/common/exports'
 
-import { ChannelName } from '../domain'
+import { ChannelName } from '../domain/exports'
 import { ChannelUpdated } from './events'
 import { HookEnvironment } from './HookEnvironment'
 

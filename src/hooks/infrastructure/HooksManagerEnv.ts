@@ -1,9 +1,9 @@
-import { Arity1 } from '@typed/fp/common'
-import { LazyDisposable } from '@typed/fp/Disposable'
-import { Uuid } from '@typed/fp/Uuid'
+import { Arity1 } from '@typed/fp/common/exports'
+import { LazyDisposable } from '@typed/fp/Disposable/exports'
+import { Uuid } from '@typed/fp/Uuid/exports'
 import { Subject } from 'most-subject'
 
-import { ChannelName } from '../domain'
+import { ChannelName } from '../domain/exports'
 import { HookEvent } from './events'
 import { HookEnv, HookEnvironment } from './HookEnvironment'
 

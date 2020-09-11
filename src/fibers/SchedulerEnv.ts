@@ -1,6 +1,6 @@
 import * as S from '@most/scheduler'
 import { Disposable, Scheduler, Task, Time } from '@most/types'
-import { lazy } from '@typed/fp/Disposable'
+import { lazy } from '@typed/fp/Disposable/exports'
 import { async, Effect } from '@typed/fp/Effect/Effect'
 import { fromEnv } from '@typed/fp/Effect/fromEnv'
 import { flow } from 'fp-ts/es6/function'

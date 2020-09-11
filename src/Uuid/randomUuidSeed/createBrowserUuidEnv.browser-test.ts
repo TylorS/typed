@@ -1,5 +1,5 @@
 import { disposeNone } from '@most/disposable'
-import { runPure } from '@typed/fp/Effect'
+import { runPure } from '@typed/fp/Effect/exports'
 import { describe, it } from '@typed/test'
 
 import { VALID_UUID_LENGTH } from './constants'

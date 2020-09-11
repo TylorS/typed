@@ -1,4 +1,4 @@
-import { Uuid } from '@typed/fp/Uuid'
+import { Uuid } from '@typed/fp/Uuid/exports'
 import { eqStrict } from 'fp-ts/es6/Eq'
 import { lookup } from 'fp-ts/es6/Map'
 

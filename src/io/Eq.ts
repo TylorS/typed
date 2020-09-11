@@ -1,5 +1,5 @@
-import { deepEqualsEq } from '@typed/fp/common'
-import * as RD from '@typed/fp/RemoteData'
+import { deepEqualsEq } from '@typed/fp/common/exports'
+import * as RD from '@typed/fp/RemoteData/exports'
 import * as E from 'fp-ts/es6/Either'
 import { eqDate, eqNumber, eqStrict } from 'fp-ts/es6/Eq'
 import * as O from 'fp-ts/es6/Option'

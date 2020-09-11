@@ -1,10 +1,10 @@
-import { deepEqualsEq } from '@typed/fp/common'
-import { doEffect, Effect, lazy } from '@typed/fp/Effect'
-import { Fn } from '@typed/fp/lambda'
+import { deepEqualsEq } from '@typed/fp/common/exports'
+import { doEffect, Effect, lazy } from '@typed/fp/Effect/exports'
+import { Fn } from '@typed/fp/lambda/exports'
 import { Eq } from 'fp-ts/es6/Eq'
 import { getEq } from 'fp-ts/es6/ReadonlyArray'
 
-import { useRef } from '../domain'
+import { useRef } from '../domain/exports'
 import { useDepChange } from './useDepChange'
 
 export const useMemoEffect = <Args extends ReadonlyArray<any>, E, A>(

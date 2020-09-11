@@ -1,4 +1,4 @@
-import { ask, chain, map } from '@typed/fp/Effect'
+import { ask, chain, map } from '@typed/fp/Effect/exports'
 import { pipe } from 'fp-ts/es6/pipeable'
 import { iso, prism } from 'newtype-ts'
 

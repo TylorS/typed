@@ -1,4 +1,4 @@
-import { lazy } from '@typed/fp/Disposable'
+import { lazy } from '@typed/fp/Disposable/exports'
 import { async, Pure } from '@typed/fp/Effect/Effect'
 import { fromEnv } from '@typed/fp/Effect/fromEnv'
 import { Task } from 'fp-ts/es6/Task'

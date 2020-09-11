@@ -1,7 +1,7 @@
-import { deepEqualsEq } from '@typed/fp/common'
-import { doEffect, Effect, Pure, zip } from '@typed/fp/Effect'
-import { SchedulerEnv } from '@typed/fp/fibers'
-import { UuidEnv } from '@typed/fp/Uuid'
+import { deepEqualsEq } from '@typed/fp/common/exports'
+import { doEffect, Effect, Pure, zip } from '@typed/fp/Effect/exports'
+import { SchedulerEnv } from '@typed/fp/fibers/exports'
+import { UuidEnv } from '@typed/fp/Uuid/exports'
 import { Eq, eqNumber, getTupleEq } from 'fp-ts/es6/Eq'
 
 import {
@@ -11,7 +11,7 @@ import {
   runWithHooks,
   useRef,
   useState,
-} from '../domain'
+} from '../domain/exports'
 import { diff } from './diff'
 import { useCallback } from './useCallback'
 import { useEffect } from './useEffect'

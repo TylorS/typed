@@ -1,10 +1,10 @@
-import { Arity1 } from '@typed/fp/common'
-import { LazyDisposable } from '@typed/fp/Disposable'
-import { Uuid } from '@typed/fp/Uuid'
+import { Arity1 } from '@typed/fp/common/exports'
+import { LazyDisposable } from '@typed/fp/Disposable/exports'
+import { Uuid } from '@typed/fp/Uuid/exports'
 import { pipe } from 'fp-ts/es6/function'
 import { fold } from 'fp-ts/es6/Option'
 
-import { ChannelName } from '../domain'
+import { ChannelName } from '../domain/exports'
 import { RemovedHookEnvironment } from './events'
 import { HookEnvironment } from './HookEnvironment'
 

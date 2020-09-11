@@ -1,5 +1,5 @@
 import { Disposable } from '@most/types'
-import { Arity1 } from '@typed/fp/common'
+import { Arity1 } from '@typed/fp/common/exports'
 import { Resume } from '@typed/fp/Effect/Effect'
 
 /**

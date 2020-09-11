@@ -1,11 +1,11 @@
 import { newDefaultScheduler } from '@most/scheduler'
-import { isBrowser } from '@typed/fp/common'
-import { doEffect, execEffect, Pure } from '@typed/fp/Effect'
-import { createBrowserUuidEnv, createNodeUuidEnv } from '@typed/fp/Uuid'
+import { isBrowser } from '@typed/fp/common/exports'
+import { doEffect, execEffect, Pure } from '@typed/fp/Effect/exports'
+import { createBrowserUuidEnv, createNodeUuidEnv } from '@typed/fp/Uuid/exports'
 import { describe, it } from '@typed/test'
 import { pipe } from 'fp-ts/es6/pipeable'
 
-import { createHookRequirements, runWithHooks, useState } from '../domain'
+import { createHookRequirements, runWithHooks, useState } from '../domain/exports'
 import { provideHookOps } from './provideHookOps'
 import { provideHooksManagerEnv } from './provideHooksManagerEnv'
 

@@ -1,5 +1,5 @@
-import { Arity1 } from '@typed/fp/common'
-import { disposeBoth, disposeNone } from '@typed/fp/Disposable'
+import { Arity1 } from '@typed/fp/common/exports'
+import { disposeBoth, disposeNone } from '@typed/fp/Disposable/exports'
 import { async, Resume, sync } from '@typed/fp/Effect/Effect'
 import { runResume } from '@typed/fp/Effect/runResume'
 import { isNone, none, Option, some } from 'fp-ts/es6/Option'

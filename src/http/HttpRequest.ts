@@ -1,4 +1,4 @@
-import { Future } from '@typed/fp/Future'
+import { Future } from '@typed/fp/Future/exports'
 
 import { HttpEnv } from './HttpEnv'
 import { HttpResponse } from './HttpResponse'

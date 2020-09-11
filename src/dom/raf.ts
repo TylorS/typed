@@ -1,5 +1,5 @@
-import { lazy } from '@typed/fp/Disposable'
-import { async, fromEnv } from '@typed/fp/Effect'
+import { lazy } from '@typed/fp/Disposable/exports'
+import { async, fromEnv } from '@typed/fp/Effect/exports'
 
 export interface RafEnv {
   readonly requestAnimationFrame: typeof requestAnimationFrame

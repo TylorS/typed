@@ -1,6 +1,6 @@
-import { doEffect, Effect, FailEnv, Resume, sync } from '@typed/fp/Effect'
 import { chainResume } from '@typed/fp/Effect/chainResume'
-import { orFail } from '@typed/fp/Future'
+import { doEffect, Effect, FailEnv, Resume, sync } from '@typed/fp/Effect/exports'
+import { orFail } from '@typed/fp/Future/exports'
 import { Either, fold, left, map } from 'fp-ts/es6/Either'
 import { flow } from 'fp-ts/es6/function'
 

@@ -1,6 +1,6 @@
-import { Arity1 } from '@typed/fp/common'
-import { chain, Effect, map } from '@typed/fp/Effect'
-import { curry } from '@typed/fp/lambda'
+import { Arity1 } from '@typed/fp/common/exports'
+import { chain, Effect, map } from '@typed/fp/Effect/exports'
+import { curry } from '@typed/fp/lambda/exports'
 import { pipe } from 'fp-ts/es6/pipeable'
 
 import { readSharedRef } from './readSharedRef'

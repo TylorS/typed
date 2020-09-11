@@ -1,6 +1,6 @@
-import { doEffect } from '@typed/fp/Effect'
+import { doEffect } from '@typed/fp/Effect/exports'
 
-import { ArgsOf, CallOf, Op } from './'
+import { ArgsOf, CallOf, Op } from './exports'
 import { getOpMap } from './OpEnv'
 
 /**

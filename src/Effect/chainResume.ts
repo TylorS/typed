@@ -1,4 +1,4 @@
-import { Arity1 } from '@typed/fp/common'
+import { Arity1 } from '@typed/fp/common/exports'
 import { async, Resume } from '@typed/fp/Effect/Effect'
 import { runResume } from '@typed/fp/Effect/runResume'
 

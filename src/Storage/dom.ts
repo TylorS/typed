@@ -1,5 +1,5 @@
-import { Resume, sync } from '@typed/fp/Effect'
 import { chainResume } from '@typed/fp/Effect/chainResume'
+import { Resume, sync } from '@typed/fp/Effect/exports'
 import { Either, left, right } from 'fp-ts/es6/Either'
 import { flow } from 'fp-ts/es6/function'
 import { fromNullable } from 'fp-ts/es6/Option'

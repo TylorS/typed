@@ -1,6 +1,6 @@
 import { Disposable } from '@most/types'
-import { Pure } from '@typed/fp/Effect'
-import { callOp, createOp, Op } from '@typed/fp/Op'
+import { Pure } from '@typed/fp/Effect/exports'
+import { callOp, createOp, Op } from '@typed/fp/Op/exports'
 
 export const ADD_DISPOSABLE = Symbol()
 export type ADD_DISPOSABLE = typeof ADD_DISPOSABLE

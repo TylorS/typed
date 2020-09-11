@@ -1,7 +1,7 @@
-import { ask, asks, doEffect, Pure } from '@typed/fp/Effect'
+import { ask, asks, doEffect, Pure } from '@typed/fp/Effect/exports'
 import { iso } from 'newtype-ts'
 
-import { OpEnv, OpMap, OPS } from './'
+import { OpEnv, OpMap, OPS } from './exports'
 
 const opEnvIso = iso<OpEnv<any>>()
 const emptyOpEnv = (): OpEnv<any> => opEnvIso.wrap({ [OPS]: new Map() })

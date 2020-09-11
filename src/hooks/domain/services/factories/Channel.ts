@@ -1,7 +1,7 @@
-import { Effect } from '@typed/fp/Effect'
+import { Effect } from '@typed/fp/Effect/exports'
 import { iso } from 'newtype-ts'
 
-import { Channel, ChannelName } from '../../model'
+import { Channel, ChannelName } from '../../model/exports'
 
 export function createChannel<E, A>(name: string, defaultValue: Effect<E, A>): Channel<E, A> {
   return {

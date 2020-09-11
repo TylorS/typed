@@ -1,5 +1,5 @@
 import { Scheduler } from '@most/types'
-import { disposeNone } from '@typed/fp/Disposable'
+import { disposeNone } from '@typed/fp/Disposable/exports'
 import { Effect } from '@typed/fp/Effect/Effect'
 import { Fiber, foldFiberInfo } from '@typed/fp/fibers/Fiber'
 import { FiberEnv } from '@typed/fp/fibers/FiberEnv'

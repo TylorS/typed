@@ -1,5 +1,5 @@
-import { fromEnv, Resume } from '@typed/fp/Effect'
-import { Future } from '@typed/fp/Future'
+import { fromEnv, Resume } from '@typed/fp/Effect/exports'
+import { Future } from '@typed/fp/Future/exports'
 import { Either } from 'fp-ts/es6/Either'
 import { Option } from 'fp-ts/es6/Option'
 

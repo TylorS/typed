@@ -1,8 +1,8 @@
-import { Effect } from '@typed/fp/Effect'
-import { callOp, createOp, Op } from '@typed/fp/Op'
+import { Effect } from '@typed/fp/Effect/exports'
+import { callOp, createOp, Op } from '@typed/fp/Op/exports'
 import { Eq } from 'fp-ts/es6/Eq'
 
-import { Channel } from '../../model'
+import { Channel } from '../../model/exports'
 import { GetAndUpdateState } from './GetAndUpdateState'
 
 export const PROVIDE_CHANNEL = Symbol('@typed/fp/hooks/ProvideChannel')
@@ -22,7 +22,7 @@ export const ProvideChannelOp = createOp<ProvideChannelOp>(PROVIDE_CHANNEL)
 
 export const provideChannel = callOp(ProvideChannelOp)
 
-declare module '@typed/fp/Op' {
+declare module '@typed/fp/Op/exports' {
   export interface Ops<Env> {
     [PROVIDE_CHANNEL]: {
       <E1, A, E2>(channel: Channel<E1, A>, initial: Effect<E2, A>): Effect<

@@ -1,4 +1,4 @@
-import { And } from '@typed/fp/common'
+import { And } from '@typed/fp/common/exports'
 import { ap, apSeq } from '@typed/fp/Effect/ap'
 import { chain } from '@typed/fp/Effect/chain'
 import { Effect, EnvOf, ReturnOf } from '@typed/fp/Effect/Effect'
@@ -13,7 +13,7 @@ import { race } from './race'
 /**
  * @since 0.0.1
  */
-export const URI = '@typed/fp/Effect'
+export const URI = '@typed/fp/Effect/exports'
 
 /**
  * @since 0.0.1

@@ -1,4 +1,4 @@
-import { doEffect, Effect } from '@typed/fp/Effect'
+import { doEffect, Effect } from '@typed/fp/Effect/exports'
 
 import { retrieveSharedRef } from './retrieveSharedRef'
 import { SharedRef, SharedRefEnv, SharedRefValue } from './SharedRef'

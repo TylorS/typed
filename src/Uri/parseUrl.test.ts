@@ -1,4 +1,4 @@
-import { Path } from '@typed/fp/Path'
+import { Path } from '@typed/fp/Path/exports'
 import { describe, given, it, Test } from '@typed/test'
 
 import { ParsedUri, parseUri, Uri } from '.'

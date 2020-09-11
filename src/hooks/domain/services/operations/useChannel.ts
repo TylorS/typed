@@ -1,8 +1,8 @@
-import { Arity1 } from '@typed/fp/common'
-import { Effect } from '@typed/fp/Effect'
-import { callOp, createOp, Op } from '@typed/fp/Op'
+import { Arity1 } from '@typed/fp/common/exports'
+import { Effect } from '@typed/fp/Effect/exports'
+import { callOp, createOp, Op } from '@typed/fp/Op/exports'
 
-import { Channel } from '../../model'
+import { Channel } from '../../model/exports'
 
 export const USE_CHANNEL = Symbol('@typed/fp/hooks/UseChannel')
 export type USE_CHANNEL = typeof USE_CHANNEL
@@ -17,7 +17,7 @@ export const UseChannelOp = createOp<UseChannelOp>(USE_CHANNEL)
 
 export const useChannel = callOp(UseChannelOp)
 
-declare module '@typed/fp/Op' {
+declare module '@typed/fp/Op/exports' {
   export interface Ops<Env> {
     [USE_CHANNEL]: {
       <E, A>(channel: Channel<E, A>): Effect<Env & E, A>

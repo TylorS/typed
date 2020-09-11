@@ -1,4 +1,4 @@
-import { ask, doEffect } from '@typed/fp/Effect'
+import { ask, doEffect } from '@typed/fp/Effect/exports'
 
 import { HookEvent, HookEventType } from './events'
 import { HookEnv } from './HookEnvironment'

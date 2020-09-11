@@ -1,15 +1,14 @@
 import { filter } from '@most/core'
 import { Disposable, Stream } from '@most/types'
-import { Arity1, deepEqualsEq } from '@typed/fp/common'
-import { lazy } from '@typed/fp/Disposable'
-import { ask, doEffect } from '@typed/fp/Effect'
-import { SchedulerEnv } from '@typed/fp/fibers'
+import { Arity1, deepEqualsEq } from '@typed/fp/common/exports'
+import { lazy } from '@typed/fp/Disposable/exports'
+import { ask, doEffect } from '@typed/fp/Effect/exports'
+import { SchedulerEnv } from '@typed/fp/fibers/exports'
 import { provideOpGroup } from '@typed/fp/Op/provideOpGroup'
 import { pipe } from 'fp-ts/es6/function'
 import { constant } from 'fp-ts/es6/function'
 
-import { ChannelName, HookOps } from '../domain'
-import { HookEnvironment } from '.'
+import { ChannelName, HookOps } from '../domain/exports'
 import { createEventSink } from './createEventSink'
 import { createGetKeyedEnv } from './createGetKeyedEnv'
 import { createHookRequirements } from './createHookRequirements'
@@ -26,7 +25,9 @@ import {
   isRemovedHookEnvironmentEvent,
   isUpdatedChannelEvent,
 } from './events'
+import { HookEnvironment } from './exports'
 import { handleRemoveEvent } from './handleRemoveEvent'
+import { HookEnv } from './HookEnvironment'
 import { HooksManagerEnv } from './HooksManagerEnv'
 
 /**
@@ -87,7 +88,7 @@ export const provideHookOps = provideOpGroup(
 
     const addDisposable = (disposable: Disposable) => {
       const eff = doEffect(function* () {
-        const { hookEnvironment } = yield* ask()
+        const { hookEnvironment } = yield* ask<HookEnv>()
         const { addDisposable } =
           disposables.get(hookEnvironment) ??
           disposables.set(hookEnvironment, lazy()).get(hookEnvironment)!

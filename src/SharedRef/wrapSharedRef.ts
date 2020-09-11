@@ -1,5 +1,5 @@
-import { Arity1 } from '@typed/fp/common'
-import { Effect } from '@typed/fp/Effect'
+import { Arity1 } from '@typed/fp/common/exports'
+import { Effect } from '@typed/fp/Effect/exports'
 
 import { modifySharedRef } from './modifySharedRef'
 import { readSharedRef } from './readSharedRef'

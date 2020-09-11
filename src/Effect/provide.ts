@@ -1,8 +1,8 @@
-import { Equals, IsUnknown } from '@typed/fp/common'
+import { Equals, IsUnknown } from '@typed/fp/common/exports'
 import { Effect, Pure } from '@typed/fp/Effect/Effect'
 import { fromEnv } from '@typed/fp/Effect/fromEnv'
 import { toEnv } from '@typed/fp/Effect/toEnv'
-import { curry } from '@typed/fp/lambda'
+import { curry } from '@typed/fp/lambda/exports'
 import { A, O } from 'ts-toolbelt'
 
 /**

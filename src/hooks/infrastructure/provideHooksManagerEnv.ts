@@ -1,6 +1,6 @@
-import { doEffect } from '@typed/fp/Effect'
+import { doEffect } from '@typed/fp/Effect/exports'
 import { provideWith } from '@typed/fp/Effect/provideWith'
-import { createUuid } from '@typed/fp/Uuid'
+import { createUuid } from '@typed/fp/Uuid/exports'
 import { create } from 'most-subject'
 
 import { createHookEnvironment } from './HookEnvironment'

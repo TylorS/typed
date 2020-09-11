@@ -21,7 +21,7 @@ import { mapLeft } from './mapLeft'
 import { NoData, RemoteData } from './RemoteData'
 import { Success } from './Success'
 
-export const URI = '@typed/fp/RemoteData'
+export const URI = '@typed/fp/RemoteData/exports'
 export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {

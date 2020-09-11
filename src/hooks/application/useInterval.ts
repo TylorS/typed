@@ -1,11 +1,11 @@
 import { disposeNone } from '@most/disposable'
 import { periodic } from '@most/scheduler'
 import { Disposable, Period } from '@most/types'
-import { ask, Effect, execEffect, Pure } from '@typed/fp/Effect'
-import { createCallbackTask, SchedulerEnv } from '@typed/fp/fibers'
+import { ask, Effect, execEffect, Pure } from '@typed/fp/Effect/exports'
+import { createCallbackTask, SchedulerEnv } from '@typed/fp/fibers/exports'
 
-import { HookOpEnvs } from '../domain'
-import { addDisposable, useRef } from '../domain/services'
+import { HookOpEnvs } from '../domain/exports'
+import { addDisposable, useRef } from '../domain/services/exports'
 import { useEffect } from './useEffect'
 
 export const useInterval = <E>(

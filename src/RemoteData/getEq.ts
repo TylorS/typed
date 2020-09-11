@@ -1,4 +1,4 @@
-import { deepEqualsEq } from '@typed/fp/common'
+import { deepEqualsEq } from '@typed/fp/common/exports'
 import { Eq } from 'fp-ts/es6/Eq'
 
 import { hasNoData } from './hasNoData'

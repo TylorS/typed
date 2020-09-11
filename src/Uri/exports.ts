@@ -1,4 +1,4 @@
-import { Path } from '@typed/fp/Path'
+import { Path } from '@typed/fp/Path/exports'
 import { eqString } from 'fp-ts/es6/Eq'
 import { ReadonlyRecord } from 'fp-ts/es6/ReadonlyRecord'
 import { getEq, iso, Newtype, prism } from 'newtype-ts'

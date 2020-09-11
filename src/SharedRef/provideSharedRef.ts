@@ -1,6 +1,6 @@
-import { Effect, memo, ReturnOf } from '@typed/fp/Effect'
-import { always } from '@typed/fp/lambda'
-import { FnOf, provideOp } from '@typed/fp/Op'
+import { Effect, memo, ReturnOf } from '@typed/fp/Effect/exports'
+import { always } from '@typed/fp/lambda/exports'
+import { FnOf, provideOp } from '@typed/fp/Op/exports'
 import { IO } from 'fp-ts/es6/IO'
 import { pipe } from 'fp-ts/es6/pipeable'
 

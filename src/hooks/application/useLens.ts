@@ -1,11 +1,11 @@
-import { Arity1 } from '@typed/fp/common'
-import { doEffect, Effect, map } from '@typed/fp/Effect'
-import { curry } from '@typed/fp/lambda'
-import { OpEnv } from '@typed/fp/Op'
+import { Arity1 } from '@typed/fp/common/exports'
+import { doEffect, Effect, map } from '@typed/fp/Effect/exports'
+import { curry } from '@typed/fp/lambda/exports'
+import { OpEnv } from '@typed/fp/Op/exports'
 import { pipe } from 'fp-ts/es6/function'
 import { Lens } from 'monocle-ts'
 
-import { GetAndUpdateState, UseRefOp } from '../domain'
+import { GetAndUpdateState, UseRefOp } from '../domain/exports'
 import { useCallback } from './useCallback'
 import { useMemo } from './useMemo'
 

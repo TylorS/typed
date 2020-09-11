@@ -1,6 +1,6 @@
 import { iso } from 'newtype-ts'
 
-import { Op, UriOf } from './'
+import { Op, UriOf } from './exports'
 
 const isoOp = iso<Op<any, any>>()
 

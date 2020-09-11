@@ -1,8 +1,8 @@
-import { doEffect, Effect, use } from '@typed/fp/Effect'
-import { Uuid } from '@typed/fp/Uuid'
+import { doEffect, Effect, use } from '@typed/fp/Effect/exports'
+import { Uuid } from '@typed/fp/Uuid/exports'
 import { pipe } from 'fp-ts/es6/function'
 
-import { HookRequirements, hookRequirementsIso } from '../domain'
+import { HookRequirements, hookRequirementsIso } from '../domain/exports'
 import { INITIAL_ENV_INDEX } from './constants'
 import { HookEvent, HookEventType } from './events'
 import { HookEnv, HookEnvironment } from './HookEnvironment'

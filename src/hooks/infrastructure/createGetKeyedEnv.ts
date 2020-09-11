@@ -1,8 +1,8 @@
-import { ask, doEffect } from '@typed/fp/Effect'
-import { createUuid } from '@typed/fp/Uuid'
+import { ask, doEffect } from '@typed/fp/Effect/exports'
+import { createUuid } from '@typed/fp/Uuid/exports'
 import { some } from 'fp-ts/es6/Option'
 
-import { hookRequirementsIso } from '../domain'
+import { hookRequirementsIso } from '../domain/exports'
 import { HookEvent, HookEventType } from './events'
 import { createHookEnvironment, HookEnv } from './HookEnvironment'
 

@@ -1,4 +1,4 @@
-import { curry } from '@typed/fp/lambda'
+import { curry } from '@typed/fp/lambda/exports'
 import { none } from 'fp-ts/es6/Option'
 
 import { Failure } from './Failure'

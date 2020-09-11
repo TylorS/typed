@@ -1,11 +1,11 @@
-import { deepEqualsEq } from '@typed/fp/common'
-import { Disposable, disposeAll, disposeNone } from '@typed/fp/Disposable'
-import { ask, doEffect, Effect, Pure, runEffect } from '@typed/fp/Effect'
-import { Fn } from '@typed/fp/lambda'
+import { deepEqualsEq } from '@typed/fp/common/exports'
+import { Disposable, disposeAll, disposeNone } from '@typed/fp/Disposable/exports'
+import { ask, doEffect, Effect, Pure, runEffect } from '@typed/fp/Effect/exports'
+import { Fn } from '@typed/fp/lambda/exports'
 import { Eq } from 'fp-ts/es6/Eq'
 import { getEq } from 'fp-ts/es6/ReadonlyArray'
 
-import { HookOpEnvs, Ref, useRef } from '../domain'
+import { HookOpEnvs, Ref, useRef } from '../domain/exports'
 import { addDisposable } from '../domain/services/operations/addDisposable'
 import { useDepChange } from './useDepChange'
 

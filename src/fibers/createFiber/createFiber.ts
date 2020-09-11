@@ -1,9 +1,9 @@
 import { disposeNone } from '@most/disposable'
 import { asap } from '@most/scheduler'
 import { Disposable, Scheduler } from '@most/types'
-import { lazy } from '@typed/fp/Disposable'
-import { map, race, toEnv } from '@typed/fp/Effect'
+import { lazy } from '@typed/fp/Disposable/exports'
 import { async, Effect, Resume, sync } from '@typed/fp/Effect/Effect'
+import { map, race, toEnv } from '@typed/fp/Effect/exports'
 import { provide, use } from '@typed/fp/Effect/provide'
 import { runPure } from '@typed/fp/Effect/runEffect'
 import {

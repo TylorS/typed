@@ -1,4 +1,4 @@
-import { Uri } from '@typed/fp/Uri'
+import { Uri } from '@typed/fp/Uri/exports'
 import { describe, given, it, Test } from '@typed/test'
 
 import { createServerHistoryEnv } from './createServerHistoryEnv'

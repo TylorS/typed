@@ -1,6 +1,6 @@
-import { lazy } from '@typed/fp/Disposable'
-import { async, Resume } from '@typed/fp/Effect'
-import { Uri, uriIso } from '@typed/fp/Uri'
+import { lazy } from '@typed/fp/Disposable/exports'
+import { async, Resume } from '@typed/fp/Effect/exports'
+import { Uri, uriIso } from '@typed/fp/Uri/exports'
 import { Either, left, right } from 'fp-ts/es6/Either'
 
 import { HttpEnv, HttpOptions } from './HttpEnv'

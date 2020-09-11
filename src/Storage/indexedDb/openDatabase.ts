@@ -1,6 +1,6 @@
-import { lazy } from '@typed/fp/Disposable'
-import { asyncEither, fromEnv } from '@typed/fp/Effect'
-import { Future } from '@typed/fp/Future'
+import { lazy } from '@typed/fp/Disposable/exports'
+import { asyncEither, fromEnv } from '@typed/fp/Effect/exports'
+import { Future } from '@typed/fp/Future/exports'
 
 import { IndexedDbFactoryEnv } from './IndexedDbFactoryEnv'
 

@@ -1,4 +1,4 @@
-import { Effect } from '@typed/fp/Effect'
+import { Effect } from '@typed/fp/Effect/exports'
 import { Newtype } from 'newtype-ts'
 
 /**

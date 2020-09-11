@@ -1,6 +1,6 @@
-import { doEffect, Effect } from '@typed/fp/Effect'
-import { OpEnv } from '@typed/fp/Op'
-import { createUuid, UuidEnv } from '@typed/fp/Uuid'
+import { doEffect, Effect } from '@typed/fp/Effect/exports'
+import { OpEnv } from '@typed/fp/Op/exports'
+import { createUuid, UuidEnv } from '@typed/fp/Uuid/exports'
 
 import {
   GetKeyedReqirementsOp,
@@ -8,7 +8,7 @@ import {
   HookRequirements,
   useRef,
   UseRefOp,
-} from '../domain'
+} from '../domain/exports'
 
 export const useHookRequirementsRef: Effect<
   OpEnv<UseRefOp> & OpEnv<GetKeyedReqirementsOp> & UuidEnv,

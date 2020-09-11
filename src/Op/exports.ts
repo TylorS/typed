@@ -1,6 +1,6 @@
-import * as C from '@typed/fp/common'
-import * as E from '@typed/fp/Effect'
-import { Fn } from '@typed/fp/lambda'
+import * as C from '@typed/fp/common/exports'
+import * as E from '@typed/fp/Effect/exports'
+import { Fn } from '@typed/fp/lambda/exports'
 import { Newtype } from 'newtype-ts'
 
 /**
@@ -42,7 +42,7 @@ export type EffectOf<A> = ReturnType<FnOf<A>>
  */
 export type ReturnOf<A> = E.ReturnOf<EffectOf<A>>
 
-export const OPS = Symbol('@typed/fp/Ops')
+export const OPS = Symbol('@typed/fp/Op/exportss')
 export type OPS = typeof OPS
 
 /**
@@ -62,7 +62,7 @@ export interface OpMap extends Map<Op<any, any>, Fn<any, E.Effect<any, any>>> {}
  * Hopefully TS will gain the ability to map over the return type of a function in the future
  * @example
  *
- * declare module "@typed/fp/Op" {
+ * declare module "@typed/fp/Op/exports" {
  *   export interface Ops<Env> {
  *      [MY_URI]: <E, A>(eff: Effect<E, A>) => Effect<Env & E, A>
  *   }

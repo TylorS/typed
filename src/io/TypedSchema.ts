@@ -1,4 +1,4 @@
-import { Fn } from '@typed/fp/lambda'
+import { Fn } from '@typed/fp/lambda/exports'
 import { HKT, Kind, Kind2 } from 'fp-ts/es6/HKT'
 import { memoize } from 'io-ts/es6/Schemable'
 

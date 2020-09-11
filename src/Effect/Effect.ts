@@ -1,10 +1,11 @@
-import { Arity1, IsNever } from '@typed/fp/common'
-import { Disposable, disposeNone, lazy } from '@typed/fp/Disposable'
+import { And, Arity1, IsNever } from '@typed/fp/common/exports'
+import { Disposable, disposeNone, lazy } from '@typed/fp/Disposable/exports'
 import { fromEnv } from '@typed/fp/Effect/fromEnv'
 import { Either, left, right } from 'fp-ts/es6/Either'
 import { flow } from 'fp-ts/es6/function'
 import { IO } from 'fp-ts/es6/IO'
 import { Reader } from 'fp-ts/es6/Reader'
+import { U } from 'ts-toolbelt'
 
 /**
  * An Iterable used to represent Effects which work like lightweight coroutines
@@ -114,8 +115,10 @@ export type EffectOf<A> = A extends Effect<infer E, infer B>
   ? Effect<E, B>
   : ReturnTypeOf<A> extends Effect<infer E, infer B>
   ? Effect<E, B>
-  : A extends EffectGenerator<infer E, infer B>
-  ? Effect<E, B>
+  : A extends Generator<infer E, infer B>
+  ? Effect<And<U.ListOf<E>>, B>
+  : ReturnTypeOf<A> extends Generator<infer E, infer B>
+  ? Effect<And<U.ListOf<E>>, B>
   : never
 
 type ReturnTypeOf<A> = A extends (...args: any) => any ? ReturnType<A> : never

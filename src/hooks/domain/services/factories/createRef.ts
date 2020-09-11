@@ -1,4 +1,4 @@
-import { Ref } from '../../model'
+import { Ref } from '../../model/exports'
 
 export function createRef<A>(): Ref<A | undefined>
 export function createRef<A>(value: A): Ref<A>

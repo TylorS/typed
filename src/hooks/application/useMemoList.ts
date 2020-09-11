@@ -1,9 +1,9 @@
-import { deepEqualsEq } from '@typed/fp/common'
-import { Effect, Pure } from '@typed/fp/Effect'
-import { SchedulerEnv } from '@typed/fp/fibers'
+import { deepEqualsEq } from '@typed/fp/common/exports'
+import { Effect, Pure } from '@typed/fp/Effect/exports'
+import { SchedulerEnv } from '@typed/fp/fibers/exports'
 import { Eq } from 'fp-ts/es6/Eq'
 
-import { HookOpEnvs } from '../domain'
+import { HookOpEnvs } from '../domain/exports'
 import { useMemoListEffect } from './useMemoListEffect'
 
 export const useMemoList = <A, B>(

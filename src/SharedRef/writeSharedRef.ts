@@ -1,5 +1,5 @@
-import { doEffect, Effect } from '@typed/fp/Effect'
-import { curry } from '@typed/fp/lambda'
+import { doEffect, Effect } from '@typed/fp/Effect/exports'
+import { curry } from '@typed/fp/lambda/exports'
 
 import { retrieveSharedRef } from './retrieveSharedRef'
 import { SharedRef, SharedRefEnv, SharedRefValue } from './SharedRef'

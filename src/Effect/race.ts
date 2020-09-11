@@ -1,5 +1,5 @@
-import { Disposable, disposeBoth, disposeNone, lazy } from '@typed/fp/Disposable'
-import { curry } from '@typed/fp/lambda'
+import { Disposable, disposeBoth, disposeNone, lazy } from '@typed/fp/Disposable/exports'
+import { curry } from '@typed/fp/lambda/exports'
 
 import { async, Effect } from './Effect'
 import { fromEnv } from './fromEnv'

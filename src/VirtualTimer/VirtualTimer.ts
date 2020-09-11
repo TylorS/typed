@@ -1,5 +1,5 @@
 import { Disposable, Handle, Timer } from '@most/types'
-import { Arity1 } from '@typed/fp/common'
+import { Arity1 } from '@typed/fp/common/exports'
 import { IO } from 'fp-ts/es6/IO'
 
 import { Timeline } from './Timeline'
