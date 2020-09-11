@@ -1,5 +1,5 @@
 import { ask, chain, map } from '@typed/fp/Effect/exports'
-import { pipe } from 'fp-ts/es6/pipeable'
+import { pipe } from 'fp-ts/pipeable'
 import { iso, prism } from 'newtype-ts'
 
 import { Uuid, UuidEnv } from './common'

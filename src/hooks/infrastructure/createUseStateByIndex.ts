@@ -1,9 +1,9 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
 import { ask, doEffect, Effect } from '@typed/fp/Effect/exports'
 import { Uuid } from '@typed/fp/Uuid/exports'
-import { Eq } from 'fp-ts/es6/Eq'
-import { pipe } from 'fp-ts/es6/function'
-import { isNone } from 'fp-ts/es6/Option'
+import { Eq } from 'fp-ts/Eq'
+import { pipe } from 'fp-ts/function'
+import { isNone } from 'fp-ts/Option'
 
 import { GetAndUpdateState } from '../domain/exports'
 import { createUseState } from './createUseState'

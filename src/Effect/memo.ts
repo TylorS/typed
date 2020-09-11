@@ -1,4 +1,4 @@
-import { isSome, none, Option, some } from 'fp-ts/es6/Option'
+import { isSome, none, Option, some } from 'fp-ts/Option'
 
 import { doEffect } from './doEffect'
 import { Effect } from './Effect'

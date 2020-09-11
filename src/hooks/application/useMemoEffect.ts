@@ -1,8 +1,8 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Effect, lazy } from '@typed/fp/Effect/exports'
 import { Fn } from '@typed/fp/lambda/exports'
-import { Eq } from 'fp-ts/es6/Eq'
-import { getEq } from 'fp-ts/es6/ReadonlyArray'
+import { Eq } from 'fp-ts/Eq'
+import { getEq } from 'fp-ts/ReadonlyArray'
 
 import { useRef } from '../domain/exports'
 import { useDepChange } from './useDepChange'

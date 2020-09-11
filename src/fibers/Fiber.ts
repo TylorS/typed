@@ -1,7 +1,7 @@
 import { Disposable, disposeNone, LazyDisposable } from '@typed/fp/Disposable/exports'
 import { async, fromEnv, Pure } from '@typed/fp/Effect/exports'
-import { IO } from 'fp-ts/es6/IO'
-import { Option } from 'fp-ts/es6/Option'
+import { IO } from 'fp-ts/IO'
+import { Option } from 'fp-ts/Option'
 
 /**
  * A Fiber is a lightweight process which can be used similarly to promises within the context of Effects.

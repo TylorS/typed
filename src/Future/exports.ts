@@ -10,26 +10,20 @@ import {
   fromTask,
   URI as EffectURI,
 } from '@typed/fp/Effect/exports'
-import { Alt3 } from 'fp-ts/es6/Alt'
-import { Either } from 'fp-ts/es6/Either'
-import { EitherM2, getEitherM } from 'fp-ts/es6/EitherT'
-import { Monad3 } from 'fp-ts/es6/Monad'
-import { pipe, pipeable } from 'fp-ts/es6/pipeable'
-import { ReaderTaskEither } from 'fp-ts/es6/ReaderTaskEither'
-import { isLeft } from 'fp-ts/es6/These'
+import { Alt3 } from 'fp-ts/Alt'
+import { Either } from 'fp-ts/Either'
+import { EitherM2, getEitherM } from 'fp-ts/EitherT'
+import { Monad3 } from 'fp-ts/Monad'
+import { pipe, pipeable } from 'fp-ts/pipeable'
+import { ReaderTaskEither } from 'fp-ts/ReaderTaskEither'
+import { isLeft } from 'fp-ts/These'
 
 export const URI = '@typed/fp/Future/exports'
 export type URI = typeof URI
 
 export type Future<E, A, B> = Effect<E, Either<A, B>>
 
-declare module 'fp-ts/lib/HKT' {
-  export interface URItoKind3<R, E, A> {
-    [URI]: Future<R, E, A>
-  }
-}
-
-declare module 'fp-ts/es6/HKT' {
+declare module 'fp-ts/HKT' {
   export interface URItoKind3<R, E, A> {
     [URI]: Future<R, E, A>
   }

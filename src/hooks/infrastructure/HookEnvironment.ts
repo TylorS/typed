@@ -1,6 +1,6 @@
 import { lazy, LazyDisposable } from '@typed/fp/Disposable/exports'
 import { Uuid } from '@typed/fp/Uuid/exports'
-import { isSome, none, Option } from 'fp-ts/es6/Option'
+import { isSome, none, Option } from 'fp-ts/Option'
 
 import { ChannelName } from '../domain/exports'
 

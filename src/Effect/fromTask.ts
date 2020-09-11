@@ -1,7 +1,7 @@
 import { lazy } from '@typed/fp/Disposable/exports'
 import { async, Pure } from '@typed/fp/Effect/Effect'
 import { fromEnv } from '@typed/fp/Effect/fromEnv'
-import { Task } from 'fp-ts/es6/Task'
+import { Task } from 'fp-ts/Task'
 
 /**
  * Converts a PromiseLike to a Pure. Does not handle errors from your promise, if this is required

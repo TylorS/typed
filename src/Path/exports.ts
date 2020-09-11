@@ -1,4 +1,4 @@
-import { eqString } from 'fp-ts/es6/Eq'
+import { eqString } from 'fp-ts/Eq'
 import { Is } from 'io-ts'
 import { getEq, getMonoid, iso, Newtype, prism } from 'newtype-ts'
 

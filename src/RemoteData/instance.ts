@@ -1,15 +1,15 @@
-import { Alt2 } from 'fp-ts/es6/Alt'
-import { Alternative2 } from 'fp-ts/es6/Alternative'
-import { Applicative } from 'fp-ts/es6/Applicative'
-import { Bifunctor2 } from 'fp-ts/es6/Bifunctor'
-import { Extend2 } from 'fp-ts/es6/Extend'
-import { Foldable2 } from 'fp-ts/es6/Foldable'
-import { identity } from 'fp-ts/es6/function'
-import { HKT } from 'fp-ts/es6/HKT'
-import { Monad2 } from 'fp-ts/es6/Monad'
-import { Monoid } from 'fp-ts/es6/Monoid'
-import { pipe, pipeable } from 'fp-ts/es6/pipeable'
-import { Traversable2 } from 'fp-ts/es6/Traversable'
+import { Alt2 } from 'fp-ts/Alt'
+import { Alternative2 } from 'fp-ts/Alternative'
+import { Applicative } from 'fp-ts/Applicative'
+import { Bifunctor2 } from 'fp-ts/Bifunctor'
+import { Extend2 } from 'fp-ts/Extend'
+import { Foldable2 } from 'fp-ts/Foldable'
+import { identity } from 'fp-ts/function'
+import { HKT } from 'fp-ts/HKT'
+import { Monad2 } from 'fp-ts/Monad'
+import { Monoid } from 'fp-ts/Monoid'
+import { pipe, pipeable } from 'fp-ts/pipeable'
+import { Traversable2 } from 'fp-ts/Traversable'
 
 import { ap } from './ap'
 import { chain } from './chain'
@@ -24,13 +24,7 @@ import { Success } from './Success'
 export const URI = '@typed/fp/RemoteData/exports'
 export type URI = typeof URI
 
-declare module 'fp-ts/lib/HKT' {
-  interface URItoKind2<E, A> {
-    [URI]: RemoteData<E, A>
-  }
-}
-
-declare module 'fp-ts/es6/HKT' {
+declare module 'fp-ts/HKT' {
   interface URItoKind2<E, A> {
     [URI]: RemoteData<E, A>
   }

@@ -1,8 +1,8 @@
 import { Arity1 } from '@typed/fp/common/exports'
 import { doEffect, Effect, map } from '@typed/fp/Effect/exports'
 import { OpEnv } from '@typed/fp/Op/exports'
-import { constant, pipe } from 'fp-ts/es6/function'
-import * as O from 'fp-ts/es6/Option'
+import { constant, pipe } from 'fp-ts/function'
+import * as O from 'fp-ts/Option'
 import { Prism } from 'monocle-ts'
 
 import { GetAndUpdateState, UseRefOp } from '../domain/exports'

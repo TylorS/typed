@@ -1,7 +1,7 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Effect, lazy, Pure, zip } from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/fibers/exports'
-import { Eq } from 'fp-ts/es6/Eq'
+import { Eq } from 'fp-ts/Eq'
 
 import { HookOpEnvs, useRef, useState } from '../domain/exports'
 import { diff } from './diff'

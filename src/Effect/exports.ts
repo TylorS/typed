@@ -4,9 +4,9 @@ import { chain } from '@typed/fp/Effect/chain'
 import { Effect, EnvOf, ReturnOf } from '@typed/fp/Effect/Effect'
 import { map } from '@typed/fp/Effect/map'
 import { Cast } from 'Any/Cast'
-import { Alt2 } from 'fp-ts/es6/Alt'
-import { MonadIO2 } from 'fp-ts/es6/MonadIO'
-import { readonlyArray } from 'fp-ts/es6/ReadonlyArray'
+import { Alt2 } from 'fp-ts/Alt'
+import { MonadIO2 } from 'fp-ts/MonadIO'
+import { readonlyArray } from 'fp-ts/ReadonlyArray'
 
 import { race } from './race'
 
@@ -20,13 +20,7 @@ export const URI = '@typed/fp/Effect/exports'
  */
 export type URI = typeof URI
 
-declare module 'fp-ts/lib/HKT' {
-  export interface URItoKind2<E, A> {
-    [URI]: Effect<E, A>
-  }
-}
-
-declare module 'fp-ts/es6/HKT' {
+declare module 'fp-ts/HKT' {
   export interface URItoKind2<E, A> {
     [URI]: Effect<E, A>
   }

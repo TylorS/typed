@@ -1,5 +1,5 @@
 import { curry } from '@typed/fp/lambda/exports'
-import { none } from 'fp-ts/es6/Option'
+import { none } from 'fp-ts/Option'
 
 import { SuccessInfo } from './fold'
 import { isRefreshingSuccess } from './isRefreshingSuccess'

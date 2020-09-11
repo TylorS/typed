@@ -1,8 +1,8 @@
 import { And, TupleKeys } from '@typed/fp/common/exports'
 import { doEffect, Effect, EnvOf, ReturnOf } from '@typed/fp/Effect/exports'
 import { GetOperation, Op, OpEnv, provideOp } from '@typed/fp/Op/exports'
-import { pipe } from 'fp-ts/es6/pipeable'
-import { mapWithIndex, reduce } from 'fp-ts/es6/ReadonlyArray'
+import { pipe } from 'fp-ts/pipeable'
+import { mapWithIndex, reduce } from 'fp-ts/ReadonlyArray'
 
 import { useOp } from './provideOp'
 

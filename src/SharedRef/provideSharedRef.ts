@@ -1,8 +1,8 @@
 import { Effect, memo, ReturnOf } from '@typed/fp/Effect/exports'
 import { always } from '@typed/fp/lambda/exports'
 import { FnOf, provideOp } from '@typed/fp/Op/exports'
-import { IO } from 'fp-ts/es6/IO'
-import { pipe } from 'fp-ts/es6/pipeable'
+import { IO } from 'fp-ts/IO'
+import { pipe } from 'fp-ts/pipeable'
 
 import { SharedRef } from './SharedRef'
 

@@ -6,7 +6,7 @@ import { ProvidedEffect } from '@typed/fp/Effect/provide'
 import { runResume } from '@typed/fp/Effect/runResume'
 import { toEnv } from '@typed/fp/Effect/toEnv'
 import { curry } from '@typed/fp/lambda/exports'
-import { Either, left, right } from 'fp-ts/es6/Either'
+import { Either, left, right } from 'fp-ts/Either'
 import { O } from 'ts-toolbelt'
 
 /**

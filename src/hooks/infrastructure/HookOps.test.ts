@@ -3,7 +3,7 @@ import { isBrowser } from '@typed/fp/common/exports'
 import { doEffect, execEffect, Pure } from '@typed/fp/Effect/exports'
 import { createBrowserUuidEnv, createNodeUuidEnv } from '@typed/fp/Uuid/exports'
 import { describe, it } from '@typed/test'
-import { pipe } from 'fp-ts/es6/pipeable'
+import { pipe } from 'fp-ts/pipeable'
 
 import { createHookRequirements, runWithHooks, useState } from '../domain/exports'
 import { provideHookOps } from './provideHookOps'

@@ -3,7 +3,7 @@ import { doEffect, zip } from '@typed/fp/Effect/exports'
 import { fromEnv } from '@typed/fp/Effect/fromEnv'
 import { Fiber } from '@typed/fp/fibers/Fiber'
 import { SchedulerEnv } from '@typed/fp/fibers/SchedulerEnv'
-import { Either } from 'fp-ts/es6/Either'
+import { Either } from 'fp-ts/Either'
 
 /**
  * @since 0.0.1

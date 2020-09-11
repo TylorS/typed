@@ -1,6 +1,6 @@
 import { Uuid } from '@typed/fp/Uuid/exports'
-import { eqStrict } from 'fp-ts/es6/Eq'
-import { lookup } from 'fp-ts/es6/Map'
+import { eqStrict } from 'fp-ts/Eq'
+import { lookup } from 'fp-ts/Map'
 
 import { INITIAL_ENV_INDEX } from './constants'
 

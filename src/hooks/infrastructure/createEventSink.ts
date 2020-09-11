@@ -1,5 +1,5 @@
 import { Sink } from '@most/types'
-import { constVoid } from 'fp-ts/es6/function'
+import { constVoid } from 'fp-ts/function'
 
 export function createEventSink<A>(f: (value: A) => void): Sink<A> {
   return {

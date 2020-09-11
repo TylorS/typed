@@ -1,4 +1,4 @@
-import { pipe } from 'fp-ts/es6/function'
+import { pipe } from 'fp-ts/function'
 
 import { doEffect } from './doEffect'
 import { Effect } from './Effect'

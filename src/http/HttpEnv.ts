@@ -1,7 +1,7 @@
 import { Disposable } from '@typed/fp/Disposable/exports'
 import { Resume } from '@typed/fp/Effect/exports'
 import { Uri } from '@typed/fp/Uri/exports'
-import { Either } from 'fp-ts/es6/Either'
+import { Either } from 'fp-ts/Either'
 
 import { HttpHeaders } from './HttpHeaders'
 import { HttpMethod } from './HttpMethod'

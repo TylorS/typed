@@ -1,9 +1,9 @@
 import { RemoteData } from '@typed/fp/RemoteData/exports'
 import { Uuid } from '@typed/fp/Uuid/exports'
-import { Either, Json, JsonArray, JsonRecord } from 'fp-ts/es6/Either'
-import { Refinement } from 'fp-ts/es6/function'
-import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/es6/HKT'
-import { Option } from 'fp-ts/es6/Option'
+import { Either, Json, JsonArray, JsonRecord } from 'fp-ts/Either'
+import { Refinement } from 'fp-ts/function'
+import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/HKT'
+import { Option } from 'fp-ts/Option'
 import { Int } from 'io-ts'
 import {
   Schemable,

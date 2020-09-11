@@ -2,7 +2,7 @@ import { Arity1 } from '@typed/fp/common/exports'
 import { doEffect, Effect, map } from '@typed/fp/Effect/exports'
 import { curry } from '@typed/fp/lambda/exports'
 import { OpEnv } from '@typed/fp/Op/exports'
-import { pipe } from 'fp-ts/es6/function'
+import { pipe } from 'fp-ts/function'
 import { Iso } from 'monocle-ts'
 
 import { GetAndUpdateState, UseRefOp } from '../domain/exports'

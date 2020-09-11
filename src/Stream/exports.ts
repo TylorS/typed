@@ -1,15 +1,15 @@
 import * as M from '@most/core'
 import { merge, take } from '@most/core'
 import { Stream } from '@most/types'
-import { Alternative1 } from 'fp-ts/es6/Alternative'
-import { Separated } from 'fp-ts/es6/Compactable'
-import { Either, isLeft, isRight, Left, left, Right, right } from 'fp-ts/es6/Either'
-import { Filterable1 } from 'fp-ts/es6/Filterable'
-import { Predicate } from 'fp-ts/es6/function'
-import { Monad1 } from 'fp-ts/es6/Monad'
-import { Monoid } from 'fp-ts/es6/Monoid'
-import { isSome, Option, Some } from 'fp-ts/es6/Option'
-import { pipeable } from 'fp-ts/es6/pipeable'
+import { Alternative1 } from 'fp-ts/Alternative'
+import { Separated } from 'fp-ts/Compactable'
+import { Either, isLeft, isRight, Left, left, Right, right } from 'fp-ts/Either'
+import { Filterable1 } from 'fp-ts/Filterable'
+import { Predicate } from 'fp-ts/function'
+import { Monad1 } from 'fp-ts/Monad'
+import { Monoid } from 'fp-ts/Monoid'
+import { isSome, Option, Some } from 'fp-ts/Option'
+import { pipeable } from 'fp-ts/pipeable'
 
 /**
  * @since 0.0.1
@@ -21,13 +21,7 @@ export const URI = '@most/core/Stream' as const
  */
 export type URI = typeof URI
 
-declare module 'fp-ts/lib/HKT' {
-  interface URItoKind<A> {
-    readonly [URI]: Stream<A>
-  }
-}
-
-declare module 'fp-ts/es6/HKT' {
+declare module 'fp-ts/HKT' {
   interface URItoKind<A> {
     readonly [URI]: Stream<A>
   }

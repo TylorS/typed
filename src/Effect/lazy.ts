@@ -1,4 +1,4 @@
-import { IO } from 'fp-ts/es6/IO'
+import { IO } from 'fp-ts/IO'
 
 import { doEffect } from './doEffect'
 import { Effect, Pure } from './Effect'

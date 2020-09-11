@@ -2,7 +2,7 @@ import { deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Effect, Pure, zip } from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/fibers/exports'
 import { UuidEnv } from '@typed/fp/Uuid/exports'
-import { Eq, eqNumber, getTupleEq } from 'fp-ts/es6/Eq'
+import { Eq, eqNumber, getTupleEq } from 'fp-ts/Eq'
 
 import {
   getKeyedRequirements,

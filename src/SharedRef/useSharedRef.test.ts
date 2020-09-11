@@ -1,7 +1,7 @@
 import { doEffect, execEffect } from '@typed/fp/Effect/exports'
 import { describe, it } from '@typed/test'
-import { pipe } from 'fp-ts/es6/function'
-import { newIORef } from 'fp-ts/es6/IORef'
+import { pipe } from 'fp-ts/function'
+import { newIORef } from 'fp-ts/IORef'
 
 import { provideSharedRef } from './provideSharedRef'
 import { createSharedRef, SharedRef, SharedRefEnv } from './SharedRef'

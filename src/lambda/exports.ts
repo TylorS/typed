@@ -1,6 +1,6 @@
 import { ArgsOf, Arity1, Arity2, Arity3, Arity4, Arity5 } from '@typed/fp/common/exports'
-import { FunctionN } from 'fp-ts/es6/function'
-import { IO } from 'fp-ts/es6/IO'
+import { FunctionN } from 'fp-ts/function'
+import { IO } from 'fp-ts/IO'
 
 /**
  * Allow a fixed length function to be partially applied.

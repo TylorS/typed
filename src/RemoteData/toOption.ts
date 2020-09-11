@@ -1,5 +1,5 @@
-import { none, Option, some } from 'fp-ts/es6/Option'
-import { pipe } from 'fp-ts/es6/pipeable'
+import { none, Option, some } from 'fp-ts/Option'
+import { pipe } from 'fp-ts/pipeable'
 
 import { getOrElse } from './getOrElse'
 import { map } from './map'

@@ -1,5 +1,5 @@
 import { curry } from '@typed/lambda'
-import { none, Option } from 'fp-ts/es6/Option'
+import { none, Option } from 'fp-ts/Option'
 
 import { hasNoData } from './hasNoData'
 import { isFailure } from './isFailure'

@@ -1,6 +1,6 @@
 import { doEffect, Effect, use } from '@typed/fp/Effect/exports'
 import { Uuid } from '@typed/fp/Uuid/exports'
-import { pipe } from 'fp-ts/es6/function'
+import { pipe } from 'fp-ts/function'
 
 import { HookRequirements, hookRequirementsIso } from '../domain/exports'
 import { INITIAL_ENV_INDEX } from './constants'

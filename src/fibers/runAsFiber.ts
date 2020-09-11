@@ -3,7 +3,7 @@ import { disposeNone } from '@typed/fp/Disposable/exports'
 import { Effect } from '@typed/fp/Effect/Effect'
 import { Fiber, foldFiberInfo } from '@typed/fp/fibers/Fiber'
 import { FiberEnv } from '@typed/fp/fibers/FiberEnv'
-import { flow } from 'fp-ts/es6/function'
+import { flow } from 'fp-ts/function'
 
 import { createFiber } from './createFiber'
 

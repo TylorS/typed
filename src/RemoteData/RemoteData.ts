@@ -1,5 +1,5 @@
-import { Either, fold } from 'fp-ts/es6/Either'
-import { none, Option, some } from 'fp-ts/es6/Option'
+import { Either, fold } from 'fp-ts/Either'
+import { none, Option, some } from 'fp-ts/Option'
 
 import { RemoteDataStatus } from './enums'
 import { Failure } from './Failure'

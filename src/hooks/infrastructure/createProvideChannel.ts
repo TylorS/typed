@@ -1,6 +1,6 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
 import { ask, doEffect, Effect } from '@typed/fp/Effect/exports'
-import { Eq } from 'fp-ts/es6/Eq'
+import { Eq } from 'fp-ts/Eq'
 
 import { Channel, ChannelName, GetAndUpdateState } from '../domain/exports'
 import { createUseState } from './createUseState'

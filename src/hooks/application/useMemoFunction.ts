@@ -1,9 +1,9 @@
 import { doEffect, Pure } from '@typed/fp/Effect/exports'
 import { Fn } from '@typed/fp/lambda/exports'
-import { Eq } from 'fp-ts/es6/Eq'
-import { identity, pipe } from 'fp-ts/es6/function'
-import * as M from 'fp-ts/es6/Map'
-import * as O from 'fp-ts/es6/Option'
+import { Eq } from 'fp-ts/Eq'
+import { identity, pipe } from 'fp-ts/function'
+import * as M from 'fp-ts/Map'
+import * as O from 'fp-ts/Option'
 
 import { useRef } from '../domain/exports'
 import { useMemo } from './useMemo'

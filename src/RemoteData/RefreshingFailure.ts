@@ -1,4 +1,4 @@
-import { fromNullable, Option } from 'fp-ts/es6/Option'
+import { fromNullable, Option } from 'fp-ts/Option'
 
 import { RemoteDataStatus } from './enums'
 import { Progress } from './Progress'

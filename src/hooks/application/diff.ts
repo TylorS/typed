@@ -1,7 +1,7 @@
-import { Eq } from 'fp-ts/es6/Eq'
-import { pipe } from 'fp-ts/es6/function'
-import * as O from 'fp-ts/es6/Option'
-import * as RA from 'fp-ts/es6/ReadonlyArray'
+import { Eq } from 'fp-ts/Eq'
+import { pipe } from 'fp-ts/function'
+import * as O from 'fp-ts/Option'
+import * as RA from 'fp-ts/ReadonlyArray'
 
 export const diff = <A>(eq: Eq<A>) => {
   return (current: ReadonlyArray<A>, updated: ReadonlyArray<A>) => {

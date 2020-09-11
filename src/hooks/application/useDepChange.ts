@@ -1,5 +1,5 @@
 import { doEffect, Pure } from '@typed/fp/Effect/exports'
-import { Eq } from 'fp-ts/es6/Eq'
+import { Eq } from 'fp-ts/Eq'
 
 import { useRef } from '../domain/exports'
 

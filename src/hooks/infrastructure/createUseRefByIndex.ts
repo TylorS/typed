@@ -1,7 +1,7 @@
 import { ask, doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
 import { Uuid } from '@typed/fp/Uuid/exports'
-import { pipe } from 'fp-ts/es6/function'
-import { isNone } from 'fp-ts/es6/Option'
+import { pipe } from 'fp-ts/function'
+import { isNone } from 'fp-ts/Option'
 
 import { createRef, Ref } from '../domain/exports'
 import { getNextIndex, lookupByIndex } from './helpers'

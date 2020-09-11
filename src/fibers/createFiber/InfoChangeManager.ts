@@ -4,8 +4,8 @@ import { Arity1 } from '@typed/fp/common/exports'
 import { lazy, LazyDisposable } from '@typed/fp/Disposable/exports'
 import { FiberInfo, FiberState } from '@typed/fp/fibers/Fiber'
 import { createCallbackTask } from '@typed/fp/fibers/SchedulerEnv'
-import { IO } from 'fp-ts/es6/IO'
-import { newIORef } from 'fp-ts/es6/IORef'
+import { IO } from 'fp-ts/IO'
+import { newIORef } from 'fp-ts/IORef'
 
 export interface InfoChangeManager<A> extends Disposable {
   readonly getInfo: IO<FiberInfo<A>>

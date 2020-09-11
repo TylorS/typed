@@ -1,7 +1,7 @@
 import { fromEnv, Resume } from '@typed/fp/Effect/exports'
 import { Future } from '@typed/fp/Future/exports'
-import { Either } from 'fp-ts/es6/Either'
-import { Option } from 'fp-ts/es6/Option'
+import { Either } from 'fp-ts/Either'
+import { Option } from 'fp-ts/Option'
 
 export interface KeyValueStorageEnv<K, V> {
   readonly keyValueStorage: KeyValueStorage<K, V>

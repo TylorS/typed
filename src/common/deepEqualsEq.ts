@@ -1,4 +1,4 @@
-import { Eq } from 'fp-ts/es6/Eq'
+import { Eq } from 'fp-ts/Eq'
 
 import { functionName } from './functionName'
 import { includesWith } from './includesWith'

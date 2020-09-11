@@ -1,6 +1,6 @@
 import { Arity1 } from '@typed/fp/common/exports'
 import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
-import { Eq } from 'fp-ts/es6/Eq'
+import { Eq } from 'fp-ts/Eq'
 
 import { HookEvent } from './events'
 

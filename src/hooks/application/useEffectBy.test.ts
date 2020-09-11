@@ -2,7 +2,7 @@ import { doEffect, execEffect, Pure } from '@typed/fp/Effect/exports'
 import { createBrowserUuidEnv } from '@typed/fp/Uuid/exports'
 import { createVirtualScheduler } from '@typed/fp/VirtualTimer/exports'
 import { describe, given, it } from '@typed/test'
-import { identity, increment, pipe } from 'fp-ts/es6/function'
+import { identity, increment, pipe } from 'fp-ts/function'
 
 import { getKeyedRequirements, runWithHooks, useState } from '../domain/exports'
 import { provideHookOps, provideHooksManagerEnv } from '../infrastructure'

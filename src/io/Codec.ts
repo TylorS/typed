@@ -6,13 +6,7 @@ import { TypedSchemable1 } from './TypedSchemable'
 export const URI = 'io-ts/Codec'
 export type URI = typeof URI
 
-declare module 'fp-ts/lib/HKT' {
-  interface URItoKind<A> {
-    readonly [URI]: Codec<unknown, A, A>
-  }
-}
-
-declare module 'fp-ts/es6/HKT' {
+declare module 'fp-ts/HKT' {
   interface URItoKind<A> {
     readonly [URI]: Codec<unknown, A, A>
   }

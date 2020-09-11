@@ -1,4 +1,4 @@
-import { Option } from 'fp-ts/es6/Option'
+import { Option } from 'fp-ts/Option'
 
 export interface Progress {
   readonly loaded: number

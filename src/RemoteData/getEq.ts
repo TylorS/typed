@@ -1,5 +1,5 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
-import { Eq } from 'fp-ts/es6/Eq'
+import { Eq } from 'fp-ts/Eq'
 
 import { hasNoData } from './hasNoData'
 import { isFailure } from './isFailure'

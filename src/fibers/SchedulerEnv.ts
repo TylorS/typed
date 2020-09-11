@@ -3,8 +3,8 @@ import { Disposable, Scheduler, Task, Time } from '@most/types'
 import { lazy } from '@typed/fp/Disposable/exports'
 import { async, Effect } from '@typed/fp/Effect/Effect'
 import { fromEnv } from '@typed/fp/Effect/fromEnv'
-import { flow } from 'fp-ts/es6/function'
-import { IO } from 'fp-ts/es6/IO'
+import { flow } from 'fp-ts/function'
+import { IO } from 'fp-ts/IO'
 /**
  * @since 0.0.1
  */

@@ -1,8 +1,8 @@
 import { Effect, effectSeq } from '@typed/fp/Effect/exports'
-import { Contravariant2 } from 'fp-ts/es6/Contravariant'
-import { flow, Predicate } from 'fp-ts/es6/function'
-import { Monoid } from 'fp-ts/es6/Monoid'
-import { pipeable } from 'fp-ts/es6/pipeable'
+import { Contravariant2 } from 'fp-ts/Contravariant'
+import { flow, Predicate } from 'fp-ts/function'
+import { Monoid } from 'fp-ts/Monoid'
+import { pipeable } from 'fp-ts/pipeable'
 import { getLoggerM } from 'logging-ts'
 import { LoggerIO } from 'logging-ts/es6/IO'
 
@@ -15,13 +15,7 @@ export interface LoggerEffect<E, A> {
   (a: A): Effect<E, void>
 }
 
-declare module 'fp-ts/lib/HKT' {
-  interface URItoKind2<E, A> {
-    [URI]: LoggerEffect<E, A>
-  }
-}
-
-declare module 'fp-ts/es6/HKT' {
+declare module 'fp-ts/HKT' {
   interface URItoKind2<E, A> {
     [URI]: LoggerEffect<E, A>
   }
