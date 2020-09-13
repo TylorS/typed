@@ -56,12 +56,12 @@ tsconfig*.tsbuildinfo
 .rpt2_cache
 .cache
 
-# generated
-/index.ts
-/index.d.ts
-/index.d.ts.map
-/index.js
-/index.js.map
+# generated - run 'npm run update' to re-generate
+/expo.ts
+/expo.d.ts
+/expo.d.ts.map
+/expo.js
+/expo.js.map
 /Console/
 /Disposable/
 /Effect/

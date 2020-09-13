@@ -56,4 +56,4 @@ tsconfig*.tsbuildinfo
 .rpt2_cache
 .cache
 
-# generated
+# generated - run 'npm run update' to re-generate

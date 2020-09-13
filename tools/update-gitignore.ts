@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from 'fs'
 import { EOL } from 'os'
 import { join } from 'path'
 import rimraf from 'rimraf'
+
 import { compiledFiles, MODULES, ROOT_DIR, ROOT_FILES, urlToDirname } from './common'
 
 const GITIGNORE = join(ROOT_DIR, '.gitignore')
