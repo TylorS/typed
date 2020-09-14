@@ -57,11 +57,10 @@ tsconfig*.tsbuildinfo
 .cache
 
 # generated - run 'npm run update' to re-generate
-/expo.ts
-/expo.d.ts
-/expo.d.ts.map
-/expo.js
-/expo.js.map
+/exports.d.ts
+/exports.d.ts.map
+/exports.js
+/exports.js.map
 /Console/
 /Disposable/
 /Effect/

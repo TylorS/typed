@@ -1,11 +1,12 @@
 import { Arity1, NoInfer } from '@typed/fp/common/exports'
 import { Disposable, disposeNone } from '@typed/fp/Disposable/exports'
-import { Effect, Pure } from '@typed/fp/Effect/Effect'
-import { provide } from '@typed/fp/Effect/provide'
-import { runResume } from '@typed/fp/Effect/runResume'
-import { toEnv } from '@typed/fp/Effect/toEnv'
 import { curry } from '@typed/fp/lambda/exports'
 import { pipe } from 'fp-ts/pipeable'
+
+import { Effect, Pure } from './Effect'
+import { provide } from './provide'
+import { runResume } from './runResume'
+import { toEnv } from './toEnv'
 
 /**
  * @since 0.0.1

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "rootDir": "./",
+    "outDir": "../../http"
+  },
+  "references": [
+    {
+      "path": "../Disposable/tsconfig.json"
+    },
+    {
+      "path": "../Effect/tsconfig.json"
+    },
+    {
+      "path": "../Future/tsconfig.json"
+    },
+    {
+      "path": "../SharedRef/tsconfig.json"
+    },
+    {
+      "path": "../Uri/tsconfig.json"
+    },
+    {
+      "path": "../dom/tsconfig.json"
+    },
+    {
+      "path": "../fibers/tsconfig.json"
+    }
+  ],
+  "include": [
+    "./*.ts",
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "./*.test.ts",
+    "./*.browser-test.ts",
+    "./**/*.test.ts",
+    "./**/*.browser-test.ts",
+    "./tsconfig.json"
+  ]
+}

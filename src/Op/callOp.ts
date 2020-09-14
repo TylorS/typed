@@ -19,5 +19,5 @@ export function callOp<O extends Op<any, any>>(op: O): CallOf<O> {
     return eff
   }
 
-  return operation as CallOf<O>
+  return (operation as unknown) as CallOf<O>
 }

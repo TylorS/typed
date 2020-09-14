@@ -1,6 +1,7 @@
 import { HeadArg } from '@typed/fp/common/exports'
-import { ask } from '@typed/fp/Effect/ask'
-import { AddEnv, EffectOf } from '@typed/fp/Effect/Effect'
+
+import { ask } from './ask'
+import { AddEnv, EffectOf } from './Effect'
 
 /**
  * @since 0.0.1

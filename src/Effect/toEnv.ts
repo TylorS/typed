@@ -1,5 +1,5 @@
-import { chainResume } from '@typed/fp/Effect/chainResume'
-import { Effect, EffectGenerator, Env, Resume, sync } from '@typed/fp/Effect/Effect'
+import { chainResume } from './chainResume'
+import { Effect, EffectGenerator, Env, Resume, sync } from './Effect'
 
 /**
  * Converts an Effect<A, A> to and Env<E, A> with a simple stack-safe interpreter.

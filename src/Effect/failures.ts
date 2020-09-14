@@ -1,13 +1,14 @@
 import { HeadArg } from '@typed/fp/common/exports'
-import { async, Effect, Resume } from '@typed/fp/Effect/Effect'
-import { fromEnv } from '@typed/fp/Effect/fromEnv'
-import { map } from '@typed/fp/Effect/map'
-import { ProvidedEffect } from '@typed/fp/Effect/provide'
-import { runResume } from '@typed/fp/Effect/runResume'
-import { toEnv } from '@typed/fp/Effect/toEnv'
 import { curry } from '@typed/fp/lambda/exports'
 import { Either, left, right } from 'fp-ts/Either'
 import { O } from 'ts-toolbelt'
+
+import { async, Effect, Resume } from './Effect'
+import { fromEnv } from './fromEnv'
+import { map } from './map'
+import { ProvidedEffect } from './provide'
+import { runResume } from './runResume'
+import { toEnv } from './toEnv'
 
 /**
  * @since 0.0.1

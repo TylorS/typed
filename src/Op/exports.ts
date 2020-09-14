@@ -68,6 +68,7 @@ export interface OpMap extends Map<Op<any, any>, Fn<any, E.Effect<any, any>>> {}
  *   }
  * }
  */
+// @ts-ignore
 export interface Ops<Env> {}
 
 export type OpsUris = keyof Ops<any>

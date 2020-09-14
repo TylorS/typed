@@ -1,7 +1,8 @@
 import { Arity1 } from '@typed/fp/common/exports'
-import { doEffect } from '@typed/fp/Effect/doEffect'
-import { Effect } from '@typed/fp/Effect/Effect'
 import { curry } from '@typed/fp/lambda/exports'
+
+import { doEffect } from './doEffect'
+import { Effect } from './Effect'
 
 /**
  * @since 0.0.1

@@ -1,5 +1,12 @@
 {
   "compilerOptions": {
+    "outDir": "./",
+    "baseUrl": "./",
+    "paths": {
+      "@typed/fp/*": [
+        "./src/*"
+      ]
+    },
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "declarationMap": true,
@@ -20,6 +27,6 @@
     "lib": [
       "dom",
       "es2019"
-    ]
+    ],
   }
 }

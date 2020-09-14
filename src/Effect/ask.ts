@@ -1,9 +1,9 @@
 import { Arity1 } from '@typed/fp/common/exports'
-import { Effect, Pure, sync } from '@typed/fp/Effect/Effect'
-import { fromEnv } from '@typed/fp/Effect/fromEnv'
 import { flow } from 'fp-ts/function'
 
 import { doEffect } from './doEffect'
+import { Effect, Pure, sync } from './Effect'
+import { fromEnv } from './fromEnv'
 import { toEnv } from './toEnv'
 
 /**

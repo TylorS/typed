@@ -1,0 +1,6 @@
+{
+  "type": "module",
+  "main": "./exports.ts",
+  "types": "./exports.d.ts",
+  "sideEffects": false
+}

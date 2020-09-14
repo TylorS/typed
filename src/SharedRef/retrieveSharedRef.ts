@@ -6,4 +6,4 @@ import { SharedRef, SharedRefEnv, SharedRefValue } from './SharedRef'
 
 export const retrieveSharedRef = <R extends SharedRef<any, any>>(
   ref: R,
-): Effect<SharedRefEnv<R>, IORef<SharedRefValue<R>>> => callOp<R>(ref)()
+): Effect<SharedRefEnv<R>, IORef<SharedRefValue<R>>> => (callOp<R>(ref) as any)()

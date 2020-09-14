@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "rootDir": "./",
+    "outDir": "../../Path"
+  },
+  "references": [],
+  "include": [
+    "./*.ts",
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "./*.test.ts",
+    "./*.browser-test.ts",
+    "./**/*.test.ts",
+    "./**/*.browser-test.ts",
+    "./tsconfig.json"
+  ]
+}

@@ -1,10 +1,16 @@
 import { Pure } from '@typed/fp/Effect/exports'
-import { Newtype } from 'newtype-ts'
+import { iso, Newtype } from 'newtype-ts'
 
 /**
  * @since 0.0.1
  */
-export type Uuid = Newtype<{ readonly Uuid: unique symbol }, string>
+export interface Uuid extends Newtype<{ readonly Uuid: unique symbol }, string> {}
+
+export const uuidIso = iso<Uuid>()
+
+export namespace Uuid {
+  export const { wrap, unwrap } = uuidIso
+}
 
 /**
  * @since 0.0.1

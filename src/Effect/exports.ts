@@ -1,19 +1,19 @@
 import { And } from '@typed/fp/common/exports'
-import { ap, apSeq } from '@typed/fp/Effect/ap'
-import { chain } from '@typed/fp/Effect/chain'
-import { Effect, EnvOf, ReturnOf } from '@typed/fp/Effect/Effect'
-import { map } from '@typed/fp/Effect/map'
 import { Cast } from 'Any/Cast'
 import { Alt2 } from 'fp-ts/Alt'
 import { MonadIO2 } from 'fp-ts/MonadIO'
 import { readonlyArray } from 'fp-ts/ReadonlyArray'
 
+import { ap, apSeq } from './ap'
+import { chain } from './chain'
+import { Effect, EnvOf, ReturnOf } from './Effect'
+import { map } from './map'
 import { race } from './race'
 
 /**
  * @since 0.0.1
  */
-export const URI = '@typed/fp/Effect/exports'
+export const URI = './exports'
 
 /**
  * @since 0.0.1

@@ -1,6 +1,6 @@
 import { ask, chain, map } from '@typed/fp/Effect/exports'
 import { pipe } from 'fp-ts/pipeable'
-import { iso, prism } from 'newtype-ts'
+import { prism } from 'newtype-ts'
 
 import { Uuid, UuidEnv } from './common'
 import { uuid4 } from './uuid4'
@@ -8,7 +8,6 @@ import { uuid4 } from './uuid4'
 /**
  * @since 0.0.1
  */
-export const uuidIso = iso<Uuid>()
 
 /**
  * @since 0.0.1

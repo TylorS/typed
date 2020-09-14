@@ -1,23 +1,106 @@
 {
   "extends": "./tsconfig.base.json",
-  "compilerOptions": {
-    "rootDir": "./src",
-    "module": "esnext",
-    "outDir": "./",
-    "baseUrl": "./",
-    "paths": {
-      "@typed/fp/*": [
-        "./src/*"
-      ]
-    }
-  },
-  "include": [
-    "./src/*.ts",
-    "./src/**/*.ts"
+  "files": [
+    "src/exports.ts"
   ],
+  "include": [],
   "exclude": [
     "./node_modules",
     "./src/**/*.test.ts",
-    "./src/**/*.browser-test.ts"
+    "./src/**/*.browser-test.ts",
+    "./exports.d.ts",
+    "./exports.d.ts.map",
+    "./exports.js",
+    "./exports.js.map",
+    "./Console/",
+    "./Disposable/",
+    "./Effect/",
+    "./Future/",
+    "./Op/",
+    "./Path/",
+    "./RemoteData/",
+    "./SharedRef/",
+    "./Storage/",
+    "./Stream/",
+    "./Uri/",
+    "./Uuid/",
+    "./VirtualTimer/",
+    "./common/",
+    "./dom/",
+    "./fibers/",
+    "./history/",
+    "./hooks/",
+    "./http/",
+    "./io/",
+    "./lambda/",
+    "./logging/"
+  ],
+  "references": [
+    {
+      "path": "./src/Console/tsconfig.json"
+    },
+    {
+      "path": "./src/Disposable/tsconfig.json"
+    },
+    {
+      "path": "./src/Effect/tsconfig.json"
+    },
+    {
+      "path": "./src/Future/tsconfig.json"
+    },
+    {
+      "path": "./src/Op/tsconfig.json"
+    },
+    {
+      "path": "./src/Path/tsconfig.json"
+    },
+    {
+      "path": "./src/RemoteData/tsconfig.json"
+    },
+    {
+      "path": "./src/SharedRef/tsconfig.json"
+    },
+    {
+      "path": "./src/Storage/tsconfig.json"
+    },
+    {
+      "path": "./src/Stream/tsconfig.json"
+    },
+    {
+      "path": "./src/Uri/tsconfig.json"
+    },
+    {
+      "path": "./src/Uuid/tsconfig.json"
+    },
+    {
+      "path": "./src/VirtualTimer/tsconfig.json"
+    },
+    {
+      "path": "./src/common/tsconfig.json"
+    },
+    {
+      "path": "./src/dom/tsconfig.json"
+    },
+    {
+      "path": "./src/fibers/tsconfig.json"
+    },
+    {
+      "path": "./src/history/tsconfig.json"
+    },
+    {
+      "path": "./src/hooks/tsconfig.json"
+    },
+    {
+      "path": "./src/http/tsconfig.json"
+    },
+    {
+      "path": "./src/io/tsconfig.json"
+    },
+    {
+      "path": "./src/lambda/tsconfig.json"
+    },
+    {
+      "path": "./src/logging/tsconfig.json"
+    }
   ]
 }

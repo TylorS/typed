@@ -1,6 +1,7 @@
 import { Arity1 } from '@typed/fp/common/exports'
-import { async, Resume } from '@typed/fp/Effect/Effect'
-import { runResume } from '@typed/fp/Effect/runResume'
+
+import { async, Resume } from './Effect'
+import { runResume } from './runResume'
 
 /**
  * @internal

@@ -1,11 +1,12 @@
 import { And, Arity1, IsNever } from '@typed/fp/common/exports'
 import { Disposable, disposeNone, lazy } from '@typed/fp/Disposable/exports'
-import { fromEnv } from '@typed/fp/Effect/fromEnv'
 import { Either, left, right } from 'fp-ts/Either'
 import { flow } from 'fp-ts/function'
 import { IO } from 'fp-ts/IO'
 import { Reader } from 'fp-ts/Reader'
 import { U } from 'ts-toolbelt'
+
+import { fromEnv } from './fromEnv'
 
 /**
  * An Iterable used to represent Effects which work like lightweight coroutines

@@ -1,4 +1,4 @@
-import { Effect, Env } from '@typed/fp/Effect/Effect'
+import { Effect, Env } from './Effect'
 
 /**
  * @since 0.0.1
