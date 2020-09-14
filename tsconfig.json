@@ -3,5 +3,6 @@
   "include": [
     "./src/*.ts",
     "./src/**/*.ts",
+    "./tools/*.ts"
   ]
 }

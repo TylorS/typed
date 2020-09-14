@@ -3,7 +3,15 @@ import { join } from 'path'
 import TSM from 'ts-morph'
 import { promisify } from 'util'
 
-import { findFilePaths, getRelativeFile, MODULES, readRelativeFile, ROOT_DIR } from './common'
+import {
+  compiledFiles,
+  findFilePaths,
+  getRelativeFile,
+  MODULES,
+  readRelativeFile,
+  ROOT_DIR,
+  ROOT_FILES,
+} from './common'
 
 const readFile = promisify(fs.readFile)
 const writeFile = promisify(fs.writeFile)
@@ -23,10 +31,7 @@ async function updateBuildConfg() {
       './node_modules',
       './src/**/*.test.ts',
       './src/**/*.browser-test.ts',
-      './exports.d.ts',
-      './exports.d.ts.map',
-      './exports.js',
-      './exports.js.map',
+      ...ROOT_FILES.flatMap(compiledFiles),
       ...MODULES.map((m) => `./${m}/`),
     ]
     json.references = MODULES.map((name) => ({ path: `./src/${name}/tsconfig.json` }))
