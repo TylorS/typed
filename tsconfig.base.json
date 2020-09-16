@@ -30,7 +30,8 @@
     ],
     "plugins": [
       {
-        "transform": "@zerollup/ts-transform-paths"
+        "transform": "@zerollup/ts-transform-paths",
+        "after": true
       },
       {
         "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",

@@ -29,6 +29,7 @@
     "@types/rimraf": "^3.0.0",
     "@typescript-eslint/eslint-plugin": "^3.9.0",
     "@typescript-eslint/parser": "^3.9.0",
+    "@zerollup/ts-transform-paths": "^1.7.18",
     "@zoltu/typescript-transformer-append-js-extension": "^1.0.1",
     "docs-ts": "^0.5.1",
     "eslint": "^7.6.0",
@@ -67,7 +68,8 @@
     "postversion": "npm run update && npm publish",
     "watch": "tsc-watch --build --incremental tsconfig.build.json --onSuccess 'npm run build:packages'",
     "--helpers--": "",
-    "tsnode": "node --loader ts-node/esm.mjs --experimental-specifier-resolution=node "
+    "tsnode": "node --loader ts-node/esm.mjs --experimental-specifier-resolution=node ",
+    "postinstall": "ts-patch install"
   },
   "repository": {
     "type": "git",
