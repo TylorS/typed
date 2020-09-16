@@ -13,7 +13,6 @@
     "@most/hold": "^4.1.0",
     "@most/scheduler": "^1.2.3",
     "@most/types": "^1.0.2",
-    "@typed/promises": "^5.3.0",
     "fp-ts": "^2.8.2",
     "io-ts": "^2.2.10",
     "logging-ts": "^0.3.4",

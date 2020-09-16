@@ -1,4 +1,4 @@
-import { Codec, fromDecoder } from 'io-ts/es6/Codec'
+import { Codec, fromDecoder } from 'io-ts/Codec'
 
 import * as D from './Decoder'
 import { TypedSchemable1 } from './TypedSchemable'

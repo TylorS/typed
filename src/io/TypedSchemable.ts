@@ -15,7 +15,7 @@ import {
   WithUnion,
   WithUnion1,
   WithUnion2C,
-} from 'io-ts/es6/Schemable'
+} from 'io-ts/Schemable'
 import { AnyNewtype, CarrierOf } from 'newtype-ts'
 
 export interface TypedSchemable<S> extends Schemable<S>, WithUnion<S>, WithRefine<S> {

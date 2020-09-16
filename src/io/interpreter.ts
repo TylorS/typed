@@ -1,6 +1,6 @@
 import { Kind, Kind2, URIS, URIS2 } from 'fp-ts/HKT'
-import { Schema } from 'io-ts/es6/Schema'
-import { Schemable1, Schemable2C } from 'io-ts/es6/Schemable'
+import { Schema } from 'io-ts/Schema'
+import { Schemable1, Schemable2C } from 'io-ts/Schemable'
 
 import { TypedSchema } from './TypedSchema'
 import { TypedSchemable1, TypedSchemable2C } from './TypedSchemable'

@@ -3,7 +3,7 @@ import { Uuid, uuidRegex } from '@typed/fp/Uuid/exports'
 import { Either, Json, JsonArray, JsonRecord } from 'fp-ts/Either'
 import { Option } from 'fp-ts/Option'
 import { Int } from 'io-ts'
-import * as G from 'io-ts/es6/Guard'
+import * as G from 'io-ts/Guard'
 
 import { TypedSchemable1 } from './TypedSchemable'
 

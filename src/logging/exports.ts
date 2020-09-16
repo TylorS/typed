@@ -1,10 +1,9 @@
 import { Effect, effectSeq } from '@typed/fp/Effect/exports'
 import { Contravariant2 } from 'fp-ts/Contravariant'
-import { flow, Predicate } from 'fp-ts/function'
+import { Predicate } from 'fp-ts/function'
 import { Monoid } from 'fp-ts/Monoid'
 import { pipeable } from 'fp-ts/pipeable'
 import { getLoggerM } from 'logging-ts'
-import { LoggerIO } from 'logging-ts/es6/IO'
 
 const loggerM = getLoggerM(effectSeq)
 
@@ -34,7 +33,3 @@ export const loggerEffect: Contravariant2<URI> = {
 }
 
 export const { contramap } = pipeable(loggerEffect)
-
-export function fromLoggerIO<A>(loggerIO: LoggerIO<A>): LoggerEffect<{}, A> {
-  return flow(loggerIO, Effect.fromIO)
-}
