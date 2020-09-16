@@ -102,16 +102,5 @@
     {
       "path": "./src/logging/tsconfig.json"
     }
-  ],
-  "compilerOptions": {
-    "plugins": [
-      {
-        "transform": "@zerollup/ts-transform-paths"
-      },
-      {
-        "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
-        "after": true
-      }
-    ]
-  }
+  ]
 }

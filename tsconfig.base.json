@@ -5,7 +5,7 @@
     "paths": {
       "@typed/fp/*": [
         "./*"
-      ]
+      ],
     },
     "allowSyntheticDefaultImports": true,
     "declaration": true,
@@ -27,6 +27,15 @@
     "lib": [
       "dom",
       "es2019"
+    ],
+    "plugins": [
+      {
+        "transform": "@zerollup/ts-transform-paths"
+      },
+      {
+        "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
+        "after": true
+      }
     ]
   }
 }
