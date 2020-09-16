@@ -21,7 +21,7 @@
     "most-subject": "^6.0.0",
     "newtype-ts": "^0.3.4",
     "path-to-regexp": "^6.1.0",
-    "ts-toolbelt": "^6.15.1"
+    "ts-toolbelt": "^8.0.6"
   },
   "devDependencies": {
     "@typed/test": "^9.5.0",

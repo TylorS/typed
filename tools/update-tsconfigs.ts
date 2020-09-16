@@ -32,7 +32,7 @@ async function updateBuildConfg() {
       './src/**/*.test.ts',
       './src/**/*.browser-test.ts',
       ...ROOT_FILES.flatMap(compiledFiles),
-      ...MODULES.map((m) => `./${m}/`),
+      ...MODULES.map((m) => `./${m}`),
     ]
     json.references = MODULES.map((name) => ({ path: `./src/${name}/tsconfig.json` }))
 

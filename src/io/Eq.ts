@@ -5,13 +5,13 @@ import { eqDate, eqNumber, eqStrict } from 'fp-ts/Eq'
 import * as O from 'fp-ts/Option'
 import * as RM from 'fp-ts/ReadonlyMap'
 import * as RS from 'fp-ts/ReadonlySet'
-import * as Eq from 'io-ts/es6/Eq'
+import * as Eq from 'io-ts/Eq'
 
 import { TypedSchemable1 } from './TypedSchemable'
 
 export const Schemable: TypedSchemable1<Eq.URI> = {
   ...Eq.Schemable,
-  ...Eq.WithRefine,
+  refine: (refinement, id) => Eq.WithRefine.refine(refinement, id),
   set: RS.getEq,
   map: RM.getEq,
   option: O.getEq,
@@ -28,7 +28,17 @@ export const Schemable: TypedSchemable1<Eq.URI> = {
   jsonPrimitive: deepEqualsEq,
   jsonRecord: deepEqualsEq,
   union: (...eqs) => ({
-    equals: (a, b) => eqs.some((e) => e.equals(a, b)),
+    equals: (a, b) => eqs.some(tryEq(a, b)),
   }),
   newtype: (from, refine, id) => Schemable.refine(refine, id)(from),
+}
+
+function tryEq<A>(a: A, b: A) {
+  return (eq: { readonly equals: (a: A, b: A) => boolean }) => {
+    try {
+      return eq.equals(a, b)
+    } catch {
+      return false
+    }
+  }
 }
