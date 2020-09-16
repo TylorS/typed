@@ -1,10 +1,12 @@
 import fs from 'fs'
+import { EOL } from 'os'
 import { join } from 'path'
 import TSM from 'ts-morph'
 import { promisify } from 'util'
 
 import {
   compiledFiles,
+  COMPILER_PLUGINS,
   findFilePaths,
   getRelativeFile,
   MODULES,
@@ -27,6 +29,12 @@ async function updateBuildConfg() {
   try {
     const json = JSON.parse((await readFile(BUILD_TSCONFIG_PATH)).toString())
 
+    if (!json.compilerOptions) {
+      json.compilerOptions = {}
+    }
+
+    json.compilerOptions.plugins = COMPILER_PLUGINS
+
     json.exclude = [
       './node_modules',
       './src/**/*.test.ts',
@@ -36,7 +44,7 @@ async function updateBuildConfg() {
     ]
     json.references = MODULES.map((name) => ({ path: `./src/${name}/tsconfig.json` }))
 
-    await writeFile(BUILD_TSCONFIG_PATH, JSON.stringify(json, null, 2))
+    await writeFile(BUILD_TSCONFIG_PATH, JSON.stringify(json, null, 2) + EOL)
   } catch (error) {
     console.error(`Build Config:`, error)
 
@@ -54,9 +62,12 @@ async function updateTsConfig(name: string) {
       '%name%',
       name,
     )
+
+    delete tsconfigJson.compilerOptions.plugins
+
     tsconfigJson.references = findAllReferences(directory, name)
 
-    await writeFile(tsconfigJsonPath, JSON.stringify(tsconfigJson, null, 2))
+    await writeFile(tsconfigJsonPath, JSON.stringify(tsconfigJson, null, 2) + EOL)
   } catch (error) {
     console.error(`${name}:`, error)
 

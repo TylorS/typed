@@ -13,7 +13,7 @@ export function createNodeUuidEnv(): UuidEnv {
         import('crypto').then((c) => {
           const { data } = c.randomBytes(VALID_UUID_LENGTH).toJSON()
 
-          return data as any
+          return (data as unknown) as UuidSeed
         }),
       ),
   }

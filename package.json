@@ -29,6 +29,7 @@
     "@types/rimraf": "^3.0.0",
     "@typescript-eslint/eslint-plugin": "^3.9.0",
     "@typescript-eslint/parser": "^3.9.0",
+    "@zoltu/typescript-transformer-append-js-extension": "^1.0.1",
     "docs-ts": "^0.5.1",
     "eslint": "^7.6.0",
     "eslint-config-prettier": "^6.11.0",
@@ -41,6 +42,7 @@
     "rimraf": "^3.0.2",
     "ts-morph": "^8.1.0",
     "ts-node": "^8.10.2",
+    "ts-patch": "^1.3.0",
     "tsc-watch": "^4.2.9",
     "tslib": "^2.0.1",
     "typescript": "^4.0.2"
