@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "outDir": "./",
-    "baseUrl": "./",
+    "baseUrl": "./src",
     "paths": {
       "@typed/fp/*": [
-        "./src/*"
+        "./*"
       ]
     },
     "allowSyntheticDefaultImports": true,
