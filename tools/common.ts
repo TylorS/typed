@@ -48,13 +48,3 @@ export function findFilePaths(directory: string, fileGlobs: readonly string[]): 
 export function makeAbsolute(basePath: string, absoluteOrRelative: string): string {
   return isAbsolute(absoluteOrRelative) ? absoluteOrRelative : join(basePath, absoluteOrRelative)
 }
-
-export const COMPILER_PLUGINS = [
-  {
-    transform: '@zerollup/ts-transform-paths',
-  },
-  {
-    transform: '@zoltu/typescript-transformer-append-js-extension/output/index.js',
-    after: true,
-  },
-]

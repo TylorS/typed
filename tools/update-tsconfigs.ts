@@ -6,7 +6,6 @@ import { promisify } from 'util'
 
 import {
   compiledFiles,
-  COMPILER_PLUGINS,
   findFilePaths,
   getRelativeFile,
   MODULES,
@@ -32,8 +31,6 @@ async function updateBuildConfg() {
     if (!json.compilerOptions) {
       json.compilerOptions = {}
     }
-
-    json.compilerOptions.plugins = COMPILER_PLUGINS
 
     json.exclude = [
       './node_modules',

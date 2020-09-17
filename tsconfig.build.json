@@ -102,5 +102,6 @@
     {
       "path": "./src/logging/tsconfig.json"
     }
-  ]
+  ],
+  "compilerOptions": {}
 }
