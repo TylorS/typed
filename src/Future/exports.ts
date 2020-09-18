@@ -8,6 +8,7 @@ import {
   FailEnv,
   fromReader,
   fromTask,
+  toReaderTask,
   URI as EffectURI,
 } from '@typed/fp/Effect/exports'
 import { Alt3 } from 'fp-ts/Alt'
@@ -68,3 +69,6 @@ export const orFail = <K extends PropertyKey, E, A, B>(
 export function fromReaderTaskEither<E, A, B>(rte: ReaderTaskEither<E, A, B>): Future<E, A, B> {
   return pipe(rte, fromReader, chainEff(fromTask))
 }
+
+export const toReaderTaskEither = <E, A, B>(future: Future<E, A, B>): ReaderTaskEither<E, A, B> =>
+  toReaderTask(future)

@@ -69,3 +69,9 @@ export const lazy = <A extends object = {}>(additional: A = {} as A): LazyDispos
     addDisposable,
   }
 }
+
+export const undisposable = <A>(f: (value: A) => void) => (value: A): Disposable => {
+  f(value)
+
+  return disposeNone()
+}
