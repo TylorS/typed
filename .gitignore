@@ -65,6 +65,7 @@ tsconfig*.tsbuildinfo
 /Disposable/
 /Effect/
 /Future/
+/Key/
 /Op/
 /Path/
 /RemoteData/

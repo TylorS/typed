@@ -16,6 +16,7 @@
     "./Disposable",
     "./Effect",
     "./Future",
+    "./Key",
     "./Op",
     "./Path",
     "./RemoteData",
@@ -47,6 +48,9 @@
     },
     {
       "path": "./src/Future/tsconfig.json"
+    },
+    {
+      "path": "./src/Key/tsconfig.json"
     },
     {
       "path": "./src/Op/tsconfig.json"
