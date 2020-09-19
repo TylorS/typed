@@ -5,7 +5,7 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../lambda"
+    "outDir": "../../cjs/lambda"
   },
   "references": [
     {

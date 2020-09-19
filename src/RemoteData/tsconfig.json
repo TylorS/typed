@@ -5,7 +5,7 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../RemoteData"
+    "outDir": "../../cjs/RemoteData"
   },
   "references": [
     {

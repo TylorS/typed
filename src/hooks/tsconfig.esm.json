@@ -5,9 +5,12 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/SharedRef"
+    "outDir": "../../esm/hooks"
   },
   "references": [
+    {
+      "path": "../Disposable/tsconfig.json"
+    },
     {
       "path": "../Effect/tsconfig.json"
     },
@@ -15,7 +18,16 @@
       "path": "../Op/tsconfig.json"
     },
     {
+      "path": "../Uuid/tsconfig.json"
+    },
+    {
+      "path": "../VirtualTimer/tsconfig.json"
+    },
+    {
       "path": "../common/tsconfig.json"
+    },
+    {
+      "path": "../fibers/tsconfig.json"
     },
     {
       "path": "../lambda/tsconfig.json"

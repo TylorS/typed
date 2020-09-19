@@ -1,41 +1,41 @@
 {
+  "compilerOptions": {
+    "outDir": "./esm",
+    "module": "esnext"
+  },
   "extends": "./tsconfig.base.json",
-  "files": [
-    "./src/exports.ts"
-  ],
-  "include": [],
   "exclude": [
     "./node_modules",
     "./src/**/*.test.ts",
     "./src/**/*.browser-test.ts",
     "./tools",
-    "cjs/exports.d.ts",
-    "cjs/exports.d.ts.map",
-    "cjs/exports.js",
-    "cjs/exports.js.map",
-    "cjs/Console",
-    "cjs/Disposable",
-    "cjs/Effect",
-    "cjs/Future",
-    "cjs/Key",
-    "cjs/Op",
-    "cjs/Path",
-    "cjs/RemoteData",
-    "cjs/SharedRef",
-    "cjs/Storage",
-    "cjs/Stream",
-    "cjs/Uri",
-    "cjs/Uuid",
-    "cjs/VirtualTimer",
-    "cjs/common",
-    "cjs/dom",
-    "cjs/fibers",
-    "cjs/history",
-    "cjs/hooks",
-    "cjs/http",
-    "cjs/io",
-    "cjs/lambda",
-    "cjs/logging"
+    "esm/exports.d.ts",
+    "esm/exports.d.ts.map",
+    "esm/exports.js",
+    "esm/exports.js.map",
+    "esm/Console",
+    "esm/Disposable",
+    "esm/Effect",
+    "esm/Future",
+    "esm/Key",
+    "esm/Op",
+    "esm/Path",
+    "esm/RemoteData",
+    "esm/SharedRef",
+    "esm/Storage",
+    "esm/Stream",
+    "esm/Uri",
+    "esm/Uuid",
+    "esm/VirtualTimer",
+    "esm/common",
+    "esm/dom",
+    "esm/fibers",
+    "esm/history",
+    "esm/hooks",
+    "esm/http",
+    "esm/io",
+    "esm/lambda",
+    "esm/logging"
   ],
   "references": [
     {
@@ -107,9 +107,5 @@
     {
       "path": "./src/logging/tsconfig.json"
     }
-  ],
-  "compilerOptions": {
-    "outDir": "./cjs",
-    "module": "CommonJS"
-  }
+  ]
 }

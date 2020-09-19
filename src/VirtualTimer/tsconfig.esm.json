@@ -5,20 +5,11 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/SharedRef"
+    "outDir": "../../esm/VirtualTimer"
   },
   "references": [
     {
-      "path": "../Effect/tsconfig.json"
-    },
-    {
-      "path": "../Op/tsconfig.json"
-    },
-    {
       "path": "../common/tsconfig.json"
-    },
-    {
-      "path": "../lambda/tsconfig.json"
     }
   ],
   "include": [

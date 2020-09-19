@@ -5,7 +5,7 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../io"
+    "outDir": "../../cjs/io"
   },
   "references": [
     {

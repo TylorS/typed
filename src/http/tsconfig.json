@@ -5,7 +5,7 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../http"
+    "outDir": "../../cjs/http"
   },
   "references": [
     {

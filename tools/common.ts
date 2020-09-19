@@ -1,8 +1,8 @@
-import fastGlob from 'fast-glob'
+import * as fastGlob from 'fast-glob'
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { dirname, isAbsolute, join } from 'path'
 
-export const ROOT_DIR = dirname(urlToDirname(import.meta.url))
+export const ROOT_DIR = dirname(__dirname)
 export const SOURCE_DIR = join(ROOT_DIR, 'src')
 
 export const ROOT_FILES = ['exports']
@@ -21,22 +21,12 @@ export const MODULES: ReadonlyArray<string> = readdirSync(SOURCE_DIR).filter((pa
   statSync(join(SOURCE_DIR, path)).isDirectory(),
 )
 
-export function urlToDirname(url: string) {
-  return dirname(urlToFilename(url))
+export function getRelativeFile(directory: string, fileName: string) {
+  return join(directory, fileName)
 }
 
-export function urlToFilename(url: string) {
-  const u = new URL(url)
-
-  return u.pathname
-}
-
-export function getRelativeFile(meta: ImportMeta, fileName: string) {
-  return join(urlToDirname(meta.url), fileName)
-}
-
-export function readRelativeFile(meta: ImportMeta, fileName: string) {
-  return readFileSync(getRelativeFile(meta, fileName)).toString()
+export function readRelativeFile(directory: string, fileName: string) {
+  return readFileSync(getRelativeFile(directory, fileName)).toString()
 }
 
 export function findFilePaths(directory: string, fileGlobs: readonly string[]): string[] {

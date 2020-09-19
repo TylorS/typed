@@ -5,14 +5,14 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/SharedRef"
+    "outDir": "../../esm/io"
   },
   "references": [
     {
-      "path": "../Effect/tsconfig.json"
+      "path": "../RemoteData/tsconfig.json"
     },
     {
-      "path": "../Op/tsconfig.json"
+      "path": "../Uuid/tsconfig.json"
     },
     {
       "path": "../common/tsconfig.json"

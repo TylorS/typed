@@ -5,7 +5,7 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../Key"
+    "outDir": "../../cjs/Key"
   },
   "references": [
     {

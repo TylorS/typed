@@ -1,7 +1,7 @@
-import fs from 'fs'
+import * as fs from 'fs'
 import { EOL } from 'os'
 import { join } from 'path'
-import TSM from 'ts-morph'
+import * as TSM from 'ts-morph'
 import { promisify } from 'util'
 
 import {
@@ -17,31 +17,50 @@ import {
 const readFile = promisify(fs.readFile)
 const writeFile = promisify(fs.writeFile)
 
-const TSCONFIG_TEMPLATE = readRelativeFile(import.meta, 'tsconfig-template.json')
-const BASE_TSCONFIG_PATH = getRelativeFile(import.meta, '../tsconfig.base.json')
-const BUILD_TSCONFIG_PATH = getRelativeFile(import.meta, '../tsconfig.build.json')
+const TSCONFIG_TEMPLATE = readRelativeFile(__dirname, 'tsconfig-template.json')
+const BASE_TSCONFIG_PATH = getRelativeFile(__dirname, '../tsconfig.base.json')
+const CJS_BUILD_TSCONFIG_PATH = getRelativeFile(__dirname, '../tsconfig.build.json')
+const ESM_BUILD_TSCONFIG_PATH = getRelativeFile(__dirname, '../tsconfig.esm.json')
 const SRC_DIR = join(ROOT_DIR, 'src')
 
-Promise.all([updateBuildConfg(), ...MODULES.map(updateTsConfig)]).catch(() => process.exit(1))
+const DEFAULT_EXCLUSIONS = [
+  './node_modules',
+  './src/**/*.test.ts',
+  './src/**/*.browser-test.ts',
+  './tools',
+]
+const NAME_REGEX = new RegExp('%name%', 'g')
+const MODULE_TYPE_REGEX = new RegExp('%moduleType%', 'g')
 
-async function updateBuildConfg() {
+Promise.all([
+  updateBuildConfg(ESM_BUILD_TSCONFIG_PATH, { outDir: './esm', module: 'esnext' }),
+  updateBuildConfg(CJS_BUILD_TSCONFIG_PATH, { outDir: './cjs', module: 'CommonJS' }),
+  ...MODULES.map((name) => updateTsConfig(name, 'esm')),
+  ...MODULES.map((name) => updateTsConfig(name, 'cjs')),
+]).catch(() => process.exit(1))
+
+async function updateBuildConfg(path: string, compilerOptions: {}) {
   try {
-    const json = JSON.parse((await readFile(BUILD_TSCONFIG_PATH)).toString())
+    const json = fs.existsSync(path) ? JSON.parse((await readFile(path)).toString()) : {}
 
     if (!json.compilerOptions) {
       json.compilerOptions = {}
     }
 
+    json.extends = './tsconfig.base.json'
+    json.compilerOptions = { ...json.compilerOptions, ...compilerOptions }
+
+    const outDir = json.compilerOptions.outDir
+
     json.exclude = [
-      './node_modules',
-      './src/**/*.test.ts',
-      './src/**/*.browser-test.ts',
-      ...ROOT_FILES.flatMap(compiledFiles),
-      ...MODULES.map((m) => `./${m}`),
+      ...DEFAULT_EXCLUSIONS,
+      ...ROOT_FILES.flatMap((file) => compiledFiles(file).map((path) => join(outDir, path))),
+      ...MODULES.map((m) => join(outDir, m)),
     ]
+
     json.references = MODULES.map((name) => ({ path: `./src/${name}/tsconfig.json` }))
 
-    await writeFile(BUILD_TSCONFIG_PATH, JSON.stringify(json, null, 2) + EOL)
+    await writeFile(path, JSON.stringify(json, null, 2) + EOL)
   } catch (error) {
     console.error(`Build Config:`, error)
 
@@ -49,18 +68,16 @@ async function updateBuildConfg() {
   }
 }
 
-async function updateTsConfig(name: string) {
+async function updateTsConfig(name: string, moduleType: 'esm' | 'cjs') {
   try {
     const directory = join(SRC_DIR, name)
-    const tsconfigJsonPath = join(directory, 'tsconfig.json')
-    const tsconfigJson = JSON.parse(TSCONFIG_TEMPLATE)
-
-    tsconfigJson.compilerOptions.outDir = tsconfigJson.compilerOptions.outDir.replace(
-      '%name%',
-      name,
+    const tsconfigJsonPath = join(
+      directory,
+      moduleType === 'cjs' ? `tsconfig.json` : `tsconfig.${moduleType}.json`,
     )
-
-    delete tsconfigJson.compilerOptions.plugins
+    const tsconfigJson = JSON.parse(
+      TSCONFIG_TEMPLATE.replace(MODULE_TYPE_REGEX, moduleType).replace(NAME_REGEX, name),
+    )
 
     tsconfigJson.references = findAllReferences(directory, name)
 

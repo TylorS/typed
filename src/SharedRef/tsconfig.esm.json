@@ -5,7 +5,7 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/SharedRef"
+    "outDir": "../../esm/SharedRef"
   },
   "references": [
     {

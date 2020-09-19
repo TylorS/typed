@@ -5,22 +5,9 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/SharedRef"
+    "outDir": "../../esm/Stream"
   },
-  "references": [
-    {
-      "path": "../Effect/tsconfig.json"
-    },
-    {
-      "path": "../Op/tsconfig.json"
-    },
-    {
-      "path": "../common/tsconfig.json"
-    },
-    {
-      "path": "../lambda/tsconfig.json"
-    }
-  ],
+  "references": [],
   "include": [
     "./*.ts",
     "./**/*.ts"
