@@ -50,11 +50,12 @@
   },
   "scripts": {
     "--maintenance--": "",
-    "build": "npm run build:typescript && npm run build:packages",
+    "build": "npm run check:ts-patch && npm run build:typescript && npm run build:packages",
     "build:packages": "ts-node ./tools/build-packages",
     "build:typescript": "npm run build:typescript:cjs && npm run build:typescript:esm",
     "build:typescript:cjs": "tsc -b ./src/tsconfig.json --incremental",
     "build:typescript:esm": "tsc -b ./src/tsconfig.esm.json --incremental",
+    "check:ts-patch": "ts-node ./tools/checkTsPatchIsActive",
     "clean": "npm run clean:build && npm run clean:typescript",
     "clean:build": "ts-node ./tools/cleanup",
     "clean:typescript": "npm run clean:typescript:cjs && npm run clean:typescript:esm",
