@@ -1,0 +1,101 @@
+{
+  "compilerOptions": {
+    "outDir": "../cjs",
+    "module": "commonjs",
+    "plugins": [
+      {
+        "transform": "@zerollup/ts-transform-paths",
+        "after": true
+      },
+      {
+        "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
+        "after": true
+      },
+      {
+        "transform": "ts-transform-import-path-rewrite",
+        "import": "transform",
+        "alias": {
+          "^fp-ts/(.+)": "fp-ts/lib/$1"
+        },
+        "after": true,
+        "type": "config"
+      }
+    ]
+  },
+  "extends": "../tsconfig.base.json",
+  "files": [],
+  "includes": [
+    "./exports.ts"
+  ],
+  "references": [
+    {
+      "path": "./Console/tsconfig.json"
+    },
+    {
+      "path": "./Disposable/tsconfig.json"
+    },
+    {
+      "path": "./Effect/tsconfig.json"
+    },
+    {
+      "path": "./Future/tsconfig.json"
+    },
+    {
+      "path": "./Key/tsconfig.json"
+    },
+    {
+      "path": "./Op/tsconfig.json"
+    },
+    {
+      "path": "./Path/tsconfig.json"
+    },
+    {
+      "path": "./RemoteData/tsconfig.json"
+    },
+    {
+      "path": "./SharedRef/tsconfig.json"
+    },
+    {
+      "path": "./Storage/tsconfig.json"
+    },
+    {
+      "path": "./Stream/tsconfig.json"
+    },
+    {
+      "path": "./Uri/tsconfig.json"
+    },
+    {
+      "path": "./Uuid/tsconfig.json"
+    },
+    {
+      "path": "./VirtualTimer/tsconfig.json"
+    },
+    {
+      "path": "./common/tsconfig.json"
+    },
+    {
+      "path": "./dom/tsconfig.json"
+    },
+    {
+      "path": "./fibers/tsconfig.json"
+    },
+    {
+      "path": "./history/tsconfig.json"
+    },
+    {
+      "path": "./hooks/tsconfig.json"
+    },
+    {
+      "path": "./http/tsconfig.json"
+    },
+    {
+      "path": "./io/tsconfig.json"
+    },
+    {
+      "path": "./lambda/tsconfig.json"
+    },
+    {
+      "path": "./logging/tsconfig.json"
+    }
+  ]
+}

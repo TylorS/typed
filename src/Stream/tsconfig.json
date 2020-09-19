@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/Stream"
+    "outDir": "../../cjs/Stream",
+    "module": "commonjs"
   },
   "references": [],
   "include": [

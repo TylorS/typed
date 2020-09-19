@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/fibers"
+    "outDir": "../../cjs/fibers",
+    "module": "commonjs"
   },
   "references": [
     {

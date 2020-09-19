@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/Storage"
+    "outDir": "../../esm/Storage",
+    "module": "esnext"
   },
   "references": [
     {

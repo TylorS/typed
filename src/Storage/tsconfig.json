@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/Storage"
+    "outDir": "../../cjs/Storage",
+    "module": "commonjs"
   },
   "references": [
     {

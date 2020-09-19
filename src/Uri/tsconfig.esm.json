@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/Uri"
+    "outDir": "../../esm/Uri",
+    "module": "esnext"
   },
   "references": [
     {

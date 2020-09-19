@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/Disposable"
+    "outDir": "../../cjs/Disposable",
+    "module": "commonjs"
   },
   "references": [],
   "include": [

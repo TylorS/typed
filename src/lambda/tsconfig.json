@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/lambda"
+    "outDir": "../../cjs/lambda",
+    "module": "commonjs"
   },
   "references": [
     {

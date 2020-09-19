@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/Path"
+    "outDir": "../../cjs/Path",
+    "module": "commonjs"
   },
   "references": [],
   "include": [

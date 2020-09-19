@@ -1,0 +1,101 @@
+{
+  "compilerOptions": {
+    "outDir": "../esm",
+    "module": "esnext",
+    "plugins": [
+      {
+        "transform": "@zerollup/ts-transform-paths",
+        "after": true
+      },
+      {
+        "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
+        "after": true
+      },
+      {
+        "transform": "ts-transform-import-path-rewrite",
+        "import": "transform",
+        "alias": {
+          "^fp-ts/(.+)": "fp-ts/es6/$1"
+        },
+        "after": true,
+        "type": "config"
+      }
+    ]
+  },
+  "extends": "../tsconfig.base.json",
+  "files": [],
+  "includes": [
+    "./exports.ts"
+  ],
+  "references": [
+    {
+      "path": "./Console/tsconfig.esm.json"
+    },
+    {
+      "path": "./Disposable/tsconfig.esm.json"
+    },
+    {
+      "path": "./Effect/tsconfig.esm.json"
+    },
+    {
+      "path": "./Future/tsconfig.esm.json"
+    },
+    {
+      "path": "./Key/tsconfig.esm.json"
+    },
+    {
+      "path": "./Op/tsconfig.esm.json"
+    },
+    {
+      "path": "./Path/tsconfig.esm.json"
+    },
+    {
+      "path": "./RemoteData/tsconfig.esm.json"
+    },
+    {
+      "path": "./SharedRef/tsconfig.esm.json"
+    },
+    {
+      "path": "./Storage/tsconfig.esm.json"
+    },
+    {
+      "path": "./Stream/tsconfig.esm.json"
+    },
+    {
+      "path": "./Uri/tsconfig.esm.json"
+    },
+    {
+      "path": "./Uuid/tsconfig.esm.json"
+    },
+    {
+      "path": "./VirtualTimer/tsconfig.esm.json"
+    },
+    {
+      "path": "./common/tsconfig.esm.json"
+    },
+    {
+      "path": "./dom/tsconfig.esm.json"
+    },
+    {
+      "path": "./fibers/tsconfig.esm.json"
+    },
+    {
+      "path": "./history/tsconfig.esm.json"
+    },
+    {
+      "path": "./hooks/tsconfig.esm.json"
+    },
+    {
+      "path": "./http/tsconfig.esm.json"
+    },
+    {
+      "path": "./io/tsconfig.esm.json"
+    },
+    {
+      "path": "./lambda/tsconfig.esm.json"
+    },
+    {
+      "path": "./logging/tsconfig.esm.json"
+    }
+  ]
+}

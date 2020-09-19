@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/VirtualTimer"
+    "outDir": "../../cjs/VirtualTimer",
+    "module": "commonjs"
   },
   "references": [
     {

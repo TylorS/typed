@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/Stream"
+    "outDir": "../../esm/Stream",
+    "module": "esnext"
   },
   "references": [],
   "include": [

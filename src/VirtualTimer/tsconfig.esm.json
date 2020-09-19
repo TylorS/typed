@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/VirtualTimer"
+    "outDir": "../../esm/VirtualTimer",
+    "module": "esnext"
   },
   "references": [
     {

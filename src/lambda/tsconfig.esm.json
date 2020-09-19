@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/lambda"
+    "outDir": "../../esm/lambda",
+    "module": "esnext"
   },
   "references": [
     {

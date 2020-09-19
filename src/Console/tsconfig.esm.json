@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/Console"
+    "outDir": "../../esm/Console",
+    "module": "esnext"
   },
   "references": [
     {

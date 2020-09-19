@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/Effect"
+    "outDir": "../../esm/Effect",
+    "module": "esnext"
   },
   "references": [
     {

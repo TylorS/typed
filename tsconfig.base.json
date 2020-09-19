@@ -5,13 +5,13 @@
     "paths": {
       "@typed/fp/*": [
         "./*"
-      ],
+      ]
     },
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "declarationMap": true,
     "importHelpers": true,
-    "module": "esnext",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
@@ -38,5 +38,36 @@
         "after": true
       }
     ]
-  }
+  },
+  "exclude": [
+    "./node_modules",
+    "./src/**/*.test.ts",
+    "./src/**/*.browser-test.ts",
+    "./tools",
+    "./cjs",
+    "./esm",
+    "./Console",
+    "./Disposable",
+    "./Effect",
+    "./Future",
+    "./Key",
+    "./Op",
+    "./Path",
+    "./RemoteData",
+    "./SharedRef",
+    "./Storage",
+    "./Stream",
+    "./Uri",
+    "./Uuid",
+    "./VirtualTimer",
+    "./common",
+    "./dom",
+    "./fibers",
+    "./history",
+    "./hooks",
+    "./http",
+    "./io",
+    "./lambda",
+    "./logging"
+  ]
 }

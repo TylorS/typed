@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/Uuid"
+    "outDir": "../../cjs/Uuid",
+    "module": "commonjs"
   },
   "references": [
     {

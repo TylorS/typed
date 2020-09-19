@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/RemoteData"
+    "outDir": "../../esm/RemoteData",
+    "module": "esnext"
   },
   "references": [
     {

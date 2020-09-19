@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/Future"
+    "outDir": "../../esm/Future",
+    "module": "esnext"
   },
   "references": [
     {

@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/Effect"
+    "outDir": "../../cjs/Effect",
+    "module": "commonjs"
   },
   "references": [
     {

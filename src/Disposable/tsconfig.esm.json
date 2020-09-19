@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/Disposable"
+    "outDir": "../../esm/Disposable",
+    "module": "esnext"
   },
   "references": [],
   "include": [

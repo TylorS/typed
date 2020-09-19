@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/history"
+    "outDir": "../../cjs/history",
+    "module": "commonjs"
   },
   "references": [
     {

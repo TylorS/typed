@@ -5,7 +5,8 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/SharedRef"
+    "outDir": "../../esm/SharedRef",
+    "module": "esnext"
   },
   "references": [
     {
