@@ -43,7 +43,7 @@
     "ts-morph": "^8.1.0",
     "ts-node": "^8.10.2",
     "ts-patch": "^1.3.0",
-    "ts-transform-import-path-rewrite": "^0.2.1",
+    "ts-transformer-replace-paths": "^1.0.1",
     "tsc-watch": "^4.2.9",
     "tslib": "^2.0.1",
     "typescript": "^4.0.2"
@@ -72,7 +72,7 @@
     "postversion": "npm run update && npm publish",
     "watch": "tsc-watch --build --incremental tsconfig.build.json --onSuccess 'npm run build:packages'",
     "--helpers--": "",
-    "postinstall": "ts-patch install"
+    "postinstall": "ts-patch install --persist"
   },
   "repository": {
     "type": "git",

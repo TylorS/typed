@@ -1,32 +1,13 @@
 {
   "compilerOptions": {
     "outDir": "../esm",
-    "module": "esnext",
-    "plugins": [
-      {
-        "transform": "@zerollup/ts-transform-paths",
-        "after": true
-      },
-      {
-        "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
-        "after": true
-      },
-      {
-        "transform": "ts-transform-import-path-rewrite",
-        "import": "transform",
-        "alias": {
-          "^fp-ts/(.+)": "fp-ts/es6/$1"
-        },
-        "after": true,
-        "type": "config"
-      }
-    ]
+    "module": "esnext"
   },
-  "extends": "../tsconfig.base.json",
-  "files": [],
-  "includes": [
+  "extends": "../tsconfig.esm.json",
+  "files": [
     "./exports.ts"
   ],
+  "includes": [],
   "references": [
     {
       "path": "./Console/tsconfig.esm.json"

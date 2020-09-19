@@ -27,47 +27,6 @@
     "lib": [
       "dom",
       "es2019"
-    ],
-    "plugins": [
-      {
-        "transform": "@zerollup/ts-transform-paths",
-        "after": true
-      },
-      {
-        "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
-        "after": true
-      }
     ]
-  },
-  "exclude": [
-    "./node_modules",
-    "./src/**/*.test.ts",
-    "./src/**/*.browser-test.ts",
-    "./tools",
-    "./cjs",
-    "./esm",
-    "./Console",
-    "./Disposable",
-    "./Effect",
-    "./Future",
-    "./Key",
-    "./Op",
-    "./Path",
-    "./RemoteData",
-    "./SharedRef",
-    "./Storage",
-    "./Stream",
-    "./Uri",
-    "./Uuid",
-    "./VirtualTimer",
-    "./common",
-    "./dom",
-    "./fibers",
-    "./history",
-    "./hooks",
-    "./http",
-    "./io",
-    "./lambda",
-    "./logging"
-  ]
+  }
 }

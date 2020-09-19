@@ -1,6 +1,6 @@
 import { disposeAll, disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
-import { number } from 'io-ts'
+import { number } from 'io-ts/Guard'
 
 /**
  * @since 0.0.1

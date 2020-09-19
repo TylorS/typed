@@ -1,0 +1,96 @@
+{
+  "compilerOptions": {
+    "outDir": "./",
+    "baseUrl": "./src",
+    "paths": {
+      "@typed/fp/*": [
+        "./*"
+      ]
+    },
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "declarationMap": true,
+    "importHelpers": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "preserveConstEnums": true,
+    "strict": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "sourceMap": true,
+    "target": "es2019",
+    "lib": [
+      "dom",
+      "es2019"
+    ],
+    "plugins": [
+      {
+        "transform": "@zerollup/ts-transform-paths",
+        "after": true
+      },
+      {
+        "transform": "@zerollup/ts-transform-paths",
+        "afterDeclarations": true
+      },
+      {
+        "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
+        "after": true
+      },
+      {
+        "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
+        "afterDeclarations": true
+      },
+      {
+        "transform": "ts-transformer-replace-paths",
+        "replaceImportPaths": {
+          "fp-ts/(.+)": "fp-ts/es6/$1",
+          "io-ts/(.+)": "io-ts/es6/$1"
+        }
+      },
+      {
+        "transform": "ts-transformer-replace-paths",
+        "replaceImportPaths": {
+          "fp-ts/(.+)": "fp-ts/es6/$1",
+          "io-ts/(.+)": "io-ts/es6/$1"
+        },
+        "afterDeclarations": true
+      }
+    ]
+  },
+  "exclude": [
+    "./node_modules",
+    "./src/**/*.test.ts",
+    "./src/**/*.browser-test.ts",
+    "./tools",
+    "./cjs",
+    "./esm",
+    "./Console",
+    "./Disposable",
+    "./Effect",
+    "./Future",
+    "./Key",
+    "./Op",
+    "./Path",
+    "./RemoteData",
+    "./SharedRef",
+    "./Storage",
+    "./Stream",
+    "./Uri",
+    "./Uuid",
+    "./VirtualTimer",
+    "./common",
+    "./dom",
+    "./fibers",
+    "./history",
+    "./hooks",
+    "./http",
+    "./io",
+    "./lambda",
+    "./logging"
+  ]
+}

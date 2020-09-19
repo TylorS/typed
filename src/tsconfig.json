@@ -1,32 +1,13 @@
 {
   "compilerOptions": {
     "outDir": "../cjs",
-    "module": "commonjs",
-    "plugins": [
-      {
-        "transform": "@zerollup/ts-transform-paths",
-        "after": true
-      },
-      {
-        "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
-        "after": true
-      },
-      {
-        "transform": "ts-transform-import-path-rewrite",
-        "import": "transform",
-        "alias": {
-          "^fp-ts/(.+)": "fp-ts/lib/$1"
-        },
-        "after": true,
-        "type": "config"
-      }
-    ]
+    "module": "commonjs"
   },
-  "extends": "../tsconfig.base.json",
-  "files": [],
-  "includes": [
+  "extends": "../tsconfig.cjs.json",
+  "files": [
     "./exports.ts"
   ],
+  "includes": [],
   "references": [
     {
       "path": "./Console/tsconfig.json"

@@ -17,9 +17,9 @@ export function parseName(name: string): string {
   return name.replace(/\.tsx?/, '')
 }
 
-export const MODULES: ReadonlyArray<string> = readdirSync(SOURCE_DIR).filter((path) =>
-  statSync(join(SOURCE_DIR, path)).isDirectory(),
-)
+export const MODULES: ReadonlyArray<string> = readdirSync(SOURCE_DIR)
+  .sort()
+  .filter((path) => statSync(join(SOURCE_DIR, path)).isDirectory())
 
 export function getRelativeFile(directory: string, fileName: string) {
   return join(directory, fileName)
