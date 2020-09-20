@@ -1,20 +1,23 @@
-import { fromTask } from '@typed/fp/Effect/exports'
+import { doEffect, fromTask, memo } from '@typed/fp/Effect/exports'
 
-import { UuidEnv, UuidSeed } from '../common'
+import { UuidEnv } from '../common'
 import { VALID_UUID_LENGTH } from './constants'
 
 /**
  * @since 0.0.1
  */
 export function createNodeUuidEnv(): UuidEnv {
+  const getModule = memo(fromTask(() => import('crypto')))
+
   return {
     randomUuidSeed: () =>
-      fromTask<UuidSeed>(() =>
-        import('crypto').then((c) => {
-          const { data } = c.randomBytes(VALID_UUID_LENGTH).toJSON()
+      doEffect(function* () {
+        const { randomBytes } = yield* getModule
 
-          return (data as unknown) as UuidSeed
-        }),
-      ),
+        const { data } = randomBytes(VALID_UUID_LENGTH).toJSON()
+        const [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p] = data
+
+        return [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p] as const
+      }),
   }
 }

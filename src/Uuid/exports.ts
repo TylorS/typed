@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/pipeable'
 import { prism } from 'newtype-ts'
 
 import { Uuid, UuidEnv } from './common'
-import { uuid4 } from './uuid4'
+import { uuid4 } from './uuid4/exports'
 
 /**
  * @since 0.0.1
@@ -29,4 +29,5 @@ export const createUuid = pipe(
 )
 
 export * from './common'
-export * from './randomUuidSeed'
+export * from './uuid4/exports'
+export * from './randomUuidSeed/exports'
