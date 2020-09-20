@@ -10,6 +10,9 @@
   },
   "references": [
     {
+      "path": "../Disposable/tsconfig.json"
+    },
+    {
       "path": "../common/tsconfig.json"
     }
   ],

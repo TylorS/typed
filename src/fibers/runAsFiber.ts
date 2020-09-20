@@ -5,7 +5,7 @@ import { Fiber, foldFiberInfo } from '@typed/fp/fibers/Fiber'
 import { FiberEnv } from '@typed/fp/fibers/FiberEnv'
 import { flow } from 'fp-ts/function'
 
-import { createFiber } from './createFiber'
+import { createFiber } from './createFiber/exports'
 
 /**
  * Intended for running an application using fibers. Should not be used to create individual fibers, instead

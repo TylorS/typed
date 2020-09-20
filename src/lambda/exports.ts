@@ -1,6 +1,10 @@
 import { ArgsOf, Arity1, Arity2, Arity3, Arity4, Arity5 } from '@typed/fp/common/exports'
-import { FunctionN } from 'fp-ts/function'
+import { Disposable } from '@typed/fp/Disposable/exports'
+import { Eq } from 'fp-ts/Eq'
+import { FunctionN, identity, pipe } from 'fp-ts/function'
 import { IO } from 'fp-ts/IO'
+import { lookup } from 'fp-ts/Map'
+import { fold } from 'fp-ts/Option'
 
 /**
  * Allow a fixed length function to be partially applied.
@@ -82,3 +86,27 @@ export type Curry<T extends Fn> = ArgsOf<T> extends [infer A]
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const always = <A>(value: A) => (..._args: readonly any[]): A => value
+
+export const memoize = <Args extends readonly any[]>(eq: Eq<Args>) => <R>(
+  fn: Fn<Args, R>,
+): Fn<Args, R> & Disposable => {
+  const map = new Map<Args, R>()
+  const findMemoed = (key: Args) => lookup(eq)(key, map)
+  const applyArgs = (args: Args): R => {
+    const r = fn(...args)
+
+    map.set(args, r)
+
+    return r
+  }
+
+  const memoized = (...args: Args): R =>
+    pipe(
+      findMemoed(args),
+      fold(() => applyArgs(args), identity),
+    )
+
+  memoized.dispose = () => map.clear()
+
+  return memoized
+}
