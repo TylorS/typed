@@ -87,12 +87,12 @@ export type Curry<T extends Fn> = ArgsOf<T> extends [infer A]
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const always = <A>(value: A) => (..._args: readonly any[]): A => value
 
-export const memoize = <Args extends readonly any[]>(eq: Eq<Args>) => <R>(
-  fn: Fn<Args, R>,
-): Fn<Args, R> & Disposable => {
-  const map = new Map<Args, R>()
-  const findMemoed = (key: Args) => lookup(eq)(key, map)
-  const applyArgs = (args: Args): R => {
+export const memoize = <Args extends readonly any[]>(eq: Eq<Args>) => <A extends Args, R>(
+  fn: Fn<A, R>,
+): Fn<A, R> & Disposable => {
+  const map = new Map<A, R>()
+  const findMemoed = (key: A) => lookup(eq)(key, map)
+  const applyArgs = (args: A): R => {
     const r = fn(...args)
 
     map.set(args, r)
@@ -100,7 +100,7 @@ export const memoize = <Args extends readonly any[]>(eq: Eq<Args>) => <R>(
     return r
   }
 
-  const memoized = (...args: Args): R =>
+  const memoized = (...args: A): R =>
     pipe(
       findMemoed(args),
       fold(() => applyArgs(args), identity),
