@@ -61,6 +61,9 @@
       "path": "./fibers/tsconfig.esm.json"
     },
     {
+      "path": "./form/tsconfig.esm.json"
+    },
+    {
       "path": "./history/tsconfig.esm.json"
     },
     {

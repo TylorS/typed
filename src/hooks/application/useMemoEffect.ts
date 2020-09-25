@@ -9,7 +9,7 @@ import { useDepChange } from './useDepChange'
 
 export const useMemoEffect = <Args extends ReadonlyArray<any>, E, A>(
   fn: Fn<Args, Effect<E, A>>,
-  args: Args,
+  args: Args | Readonly<Args>,
   eq: Eq<Args> = getEq(deepEqualsEq),
 ) => {
   const eff = doEffect(function* () {

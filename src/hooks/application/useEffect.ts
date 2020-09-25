@@ -16,7 +16,7 @@ export type UseEffectOptions<Args, A> = {
 
 export const useEffect = <Args extends ReadonlyArray<any>, E, A>(
   fn: Fn<Args, Effect<E, A>>,
-  args: Args,
+  args: Args | Readonly<Args>,
   options: UseEffectOptions<Args, A> = {},
 ): Effect<E & HookOpEnvs, Disposable> => {
   const { onReturn = disposeNone, eq = getEq(deepEqualsEq) } = options

@@ -11,7 +11,7 @@ export const useMemoList = <A, B>(
   values: ReadonlyArray<A>,
   eq: Eq<A> = deepEqualsEq,
 ): Effect<HookOpEnvs & SchedulerEnv, ReadonlyArray<B>> => {
-  return useMemoListEffect<A, {}, B, {}>(
+  return useMemoListEffect<A, {}, B>(
     (value, index) => Pure.fromIO(() => fn(value, index)),
     values,
     eq,

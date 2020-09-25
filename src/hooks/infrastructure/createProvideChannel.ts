@@ -2,7 +2,7 @@ import { deepEqualsEq } from '@typed/fp/common/exports'
 import { ask, doEffect, Effect } from '@typed/fp/Effect/exports'
 import { Eq } from 'fp-ts/Eq'
 
-import { Channel, ChannelName, GetAndUpdateState } from '../domain/exports'
+import { Channel, ChannelName, UseState } from '../domain/exports'
 import { createUseState } from './createUseState'
 import { ChannelUpdated, HookEvent, HookEventType } from './events'
 import { appendTo } from './helpers'
@@ -16,7 +16,7 @@ export function createProvideChannel(
     channel: Channel<E1, A>,
     initialValue: Effect<E2, A>,
     eq: Eq<A> = deepEqualsEq,
-  ): Effect<HookEnv & E1 & E2, GetAndUpdateState<A>> =>
+  ): Effect<HookEnv & E1 & E2, UseState<A>> =>
     doEffect(function* () {
       const { hookEnvironment } = yield* ask<HookEnv>()
       const { channelStates } = hookEnvironment

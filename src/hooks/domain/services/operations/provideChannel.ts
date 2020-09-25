@@ -3,7 +3,7 @@ import { callOp, createOp, Op } from '@typed/fp/Op/exports'
 import { Eq } from 'fp-ts/Eq'
 
 import { Channel } from '../../model/exports'
-import { GetAndUpdateState } from './GetAndUpdateState'
+import { UseState } from './GetAndUpdateState'
 
 export const PROVIDE_CHANNEL = Symbol('@typed/fp/hooks/ProvideChannel')
 export type PROVIDE_CHANNEL = typeof PROVIDE_CHANNEL
@@ -15,7 +15,7 @@ export interface ProvideChannelOp
       channel: Channel<E1, A>,
       initial: Effect<E2, A>,
       eq: Eq<A>,
-    ) => Effect<E1 & E2, GetAndUpdateState<A>>
+    ) => Effect<E1 & E2, UseState<A>>
   > {}
 
 export const ProvideChannelOp = createOp<ProvideChannelOp>(PROVIDE_CHANNEL)
@@ -27,11 +27,11 @@ declare module '@typed/fp/Op/exports' {
     [PROVIDE_CHANNEL]: {
       <E1, A, E2>(channel: Channel<E1, A>, initial: Effect<E2, A>): Effect<
         Env & E1 & E2,
-        GetAndUpdateState<A>
+        UseState<A>
       >
       <E1, A, E2>(channel: Channel<E1, A>, initial: Effect<E2, A>, eq: Eq<A>): Effect<
         Env & E1 & E2,
-        GetAndUpdateState<A>
+        UseState<A>
       >
     }
   }

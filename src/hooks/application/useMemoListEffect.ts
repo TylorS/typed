@@ -7,15 +7,11 @@ import { HookOpEnvs, useRef, useState } from '../domain/exports'
 import { diff } from './diff'
 import { useEffect } from './useEffect'
 
-export type UseMemoListEffectOptions<A, E> = {
-  readonly onRemoved?: (value: A, index: number) => Effect<E, void>
-}
-
-export const useMemoListEffect = <A, E1, B, E2>(
+export const useMemoListEffect = <A, E1, B>(
   fn: (value: A, index: number) => Effect<E1, B>,
   values: ReadonlyArray<A>,
   eq: Eq<A> = deepEqualsEq,
-): Effect<E1 & E2 & HookOpEnvs & SchedulerEnv, ReadonlyArray<B>> => {
+): Effect<E1 & HookOpEnvs & SchedulerEnv, ReadonlyArray<B>> => {
   const diffValues = diff(eq)
 
   const eff = doEffect(function* () {
