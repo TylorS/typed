@@ -17,6 +17,7 @@ export const getEq = <A, B>(left: Eq<A>, right: Eq<B>): Eq<RemoteData<A, B>> => 
     if (hasNoData(a)) {
       return true
     }
+
     if (isLoading(a)) {
       return deepEqualsEq.equals(a.progress, (b as typeof a).progress)
     }
