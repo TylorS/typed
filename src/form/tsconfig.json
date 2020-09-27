@@ -13,7 +13,19 @@
       "path": "../Effect/tsconfig.json"
     },
     {
+      "path": "../Future/tsconfig.json"
+    },
+    {
+      "path": "../RemoteData/tsconfig.json"
+    },
+    {
+      "path": "../Uuid/tsconfig.json"
+    },
+    {
       "path": "../common/tsconfig.json"
+    },
+    {
+      "path": "../fibers/tsconfig.json"
     },
     {
       "path": "../hooks/tsconfig.json"

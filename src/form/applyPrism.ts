@@ -6,19 +6,29 @@ import { fold, Option } from 'fp-ts/Option'
 import { Prism } from 'monocle-ts'
 
 export const applyPrism = curry(
-  <A, B>(state: UseState<A>, prism: Prism<A, B>): UseState<Option<B>> => {
-    const [getA, updateA] = state
+  <A, B extends ReadonlyArray<any>, C>(
+    state: readonly [...UseState<A>, ...B],
+    prism: Prism<A, C>,
+  ): readonly [...UseState<Option<C>>, ...B] => {
+    const [getA, updateA, ...b] = state
 
     return [
       map(prism.getOption, getA),
-      (updateB) =>
+      (updateC) =>
         map(
           prism.getOption,
-          updateA((a) => pipe(a, prism.getOption, updateB, fold(constant(a), prism.reverseGet))),
+          updateA((a) => pipe(a, prism.getOption, updateC, fold(constant(a), prism.reverseGet))),
         ),
+      ...b,
     ]
   },
 ) as {
-  <A, B>(state: UseState<A>, prism: Prism<A, B>): UseState<Option<B>>
-  <A>(state: UseState<A>): <B>(prism: Prism<A, B>) => UseState<Option<B>>
+  <A, B extends ReadonlyArray<any>, C>(
+    state: readonly [...UseState<A>, ...B],
+    prism: Prism<A, C>,
+  ): readonly [...UseState<Option<C>>, ...B]
+
+  <A, B extends ReadonlyArray<any>>(state: readonly [...UseState<A>, ...B]): <C>(
+    prism: Prism<A, C>,
+  ) => readonly [...UseState<Option<C>>, ...B]
 }

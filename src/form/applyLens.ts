@@ -5,19 +5,29 @@ import { pipe } from 'fp-ts/function'
 import { Lens } from 'monocle-ts'
 
 export const applyLens = curry(
-  <A, B>(state: UseState<A>, lens: Lens<A, B>): UseState<B> => {
-    const [getA, updateA] = state
+  <A, B extends ReadonlyArray<any>, C>(
+    state: readonly [...UseState<A>, ...B],
+    lens: Lens<A, C>,
+  ): readonly [...UseState<C>, ...B] => {
+    const [getA, updateA, ...b] = state
 
     return [
       map(lens.get, getA),
-      (updateB) =>
+      (updateC) =>
         map(
           lens.get,
-          updateA((a) => pipe(a, lens.get, updateB, (b) => lens.set(b)(a))),
+          updateA((a) => pipe(a, lens.get, updateC, (c) => lens.set(c)(a))),
         ),
+      ...b,
     ]
   },
 ) as {
-  <A, B>(state: UseState<A>, lens: Lens<A, B>): UseState<B>
-  <A>(state: UseState<A>): <B>(lens: Lens<A, B>) => UseState<B>
+  <A, B extends ReadonlyArray<any>, C>(
+    state: readonly [...UseState<A>, ...B],
+    lens: Lens<A, C>,
+  ): readonly [...UseState<C>, ...B]
+
+  <A, B extends ReadonlyArray<any>>(state: readonly [...UseState<A>, ...B]): <C>(
+    lens: Lens<A, C>,
+  ) => readonly [...UseState<C>, ...B]
 }

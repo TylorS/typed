@@ -1,67 +1,76 @@
-import { deepEqualsEq } from '@typed/fp/common/exports'
+import { And } from '@typed/fp/common/And'
 import { Arity1 } from '@typed/fp/common/types'
-import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
-import { HookOpEnvs, useMemo, useState } from '@typed/fp/hooks/exports'
-import { Either, isRight, map } from 'fp-ts/Either'
-import { Eq, eqStrict, getTupleEq } from 'fp-ts/Eq'
-import { pipe } from 'fp-ts/function'
-import { DecodeError, Decoder } from 'io-ts/Decoder'
+import { doEffect, Effect, Pure, zipObj } from '@typed/fp/Effect/exports'
+import { HookOpEnvs, useCallback, useMemo, UseState } from '@typed/fp/hooks/exports'
 
-export type UseFormOptions<E, A, B, C> = {
-  readonly initialState: Effect<E, A>
-  readonly decoder: Decoder<unknown, B> | Decoder<A, B>
-  readonly onFormSubmit: Arity1<B, C>
-  readonly eq?: Eq<A>
-}
+import { FieldKeyOf, FieldState, FieldValue, getFieldKey } from './FieldState'
+import { ownKeys } from './reflection'
 
-export const getReadonlyTupleEq = <A extends readonly any[]>(
-  ...eqs: { readonly [K in keyof A]: Eq<A[K]> }
-): Eq<Readonly<A>> => {
-  return getTupleEq(...eqs) as any
-}
-
-export const useForm = <E, A, B, C>(
-  options: UseFormOptions<E, A, B, C>,
-): Effect<E & HookOpEnvs, UseForm<A, B, C>> => {
-  const { initialState, decoder, onFormSubmit, eq = deepEqualsEq } = options
+export function useForm<Fields extends ReadonlyArray<FieldState<PropertyKey, any>>>(
+  ...fields: Fields
+): Effect<HookOpEnvs, UseForm<Fields>> {
+  type S = FormStateOf<Fields>
 
   const eff = doEffect(function* () {
-    const [getState, updateState] = yield* useState(initialState, eq)
-
-    const a = yield* getState
-
-    const validation = yield* useMemo(
-      (d, a) => d.decode(a),
-      [decoder, a] as const,
-      getReadonlyTupleEq(eqStrict, eq),
+    const obj = yield* useMemo(
+      (fs) => Object.fromEntries(fs.map((s) => [getFieldKey(s), s])) as FormStateObj<Fields>,
+      [fields],
+    )
+    const getState = yield* useMemo(
+      (fs) =>
+        zipObj(
+          Object.fromEntries(fs.map(([getField, , fieldData]) => [fieldData.key, getField])),
+        ) as Pure<S>,
+      [fields],
     )
 
-    const submitForm = yield* useMemo(
-      (_) =>
+    const updateState = yield* useCallback(
+      (update: Arity1<S, S>): Pure<S> =>
         doEffect(function* () {
-          const a = yield* getState
+          const current = yield* getState
+          const updated = update(current)
+          const keys = ownKeys(updated as any) as Array<keyof S>
 
-          return pipe(a, decoder.decode, map(onFormSubmit))
+          for (const key of keys) {
+            const [, setState, { eq }] = Reflect.get(obj as object, key) as FieldState<
+              typeof key,
+              S[typeof key]
+            >
+            const a = Reflect.get(current as object, key)
+            const b = Reflect.get(updated as object, key)
+
+            if (!eq.equals(a, b)) {
+              yield* setState(() => b)
+            }
+          }
+
+          return updated
         }),
-      [decoder, onFormSubmit],
+      [],
     )
 
-    return {
-      getState,
-      updateState,
-      validation,
-      isValid: isRight(validation),
-      submitForm,
-    }
+    return [getState, updateState] as const
   })
 
   return eff
 }
 
-export type UseForm<A, B, C> = {
-  readonly getState: Pure<A>
-  readonly updateState: (update: Arity1<A, A>) => Pure<A>
-  readonly validation: Either<DecodeError, B>
-  readonly isValid: boolean
-  readonly submitForm: Pure<Either<DecodeError, C>>
-}
+export type UseForm<Fields extends ReadonlyArray<FieldState<PropertyKey, any>>> = UseState<
+  FormStateOf<Fields>
+>
+
+export type FormStateOf<Fields extends ReadonlyArray<FieldState<PropertyKey, any>>> = And<
+  {
+    [K in keyof Fields]: FieldKeyOf<Fields[K]> extends PropertyKey
+      ? { [Key in FieldKeyOf<Fields[K]>]: FieldValue<Fields[K]> }
+      : never
+  }
+>
+
+type FormStateObj<Fields extends ReadonlyArray<FieldState<PropertyKey, any>>> = And<
+  {
+    [K in keyof Fields]: FieldKeyOf<Fields[K]> extends PropertyKey
+      ? { [Key in FieldKeyOf<Fields[K]>]: Fields[K] }
+      : never
+  }
+>

@@ -6,26 +6,36 @@ import { fold, Option } from 'fp-ts/Option'
 import { Optional } from 'monocle-ts'
 
 export const applyOptional = curry(
-  <A, B>(state: UseState<A>, optional: Optional<A, B>): UseState<Option<B>> => {
-    const [getA, updateA] = state
+  <A, B extends ReadonlyArray<any>, C>(
+    state: readonly [...UseState<A>, ...B],
+    optional: Optional<A, C>,
+  ): readonly [...UseState<Option<C>>, ...B] => {
+    const [getA, updateA, ...b] = state
 
     return [
       map(optional.getOption, getA),
-      (updateB) =>
+      (updateC) =>
         map(
           optional.getOption,
           updateA((a) =>
             pipe(
               a,
               optional.getOption,
-              updateB,
-              fold(constant(a), (b) => optional.set(b)(a)),
+              updateC,
+              fold(constant(a), (c) => optional.set(c)(a)),
             ),
           ),
         ),
+      ...b,
     ]
   },
 ) as {
-  <A, B>(state: UseState<A>, optional: Optional<A, B>): UseState<Option<B>>
-  <A>(state: UseState<A>): <B>(optional: Optional<A, B>) => UseState<Option<B>>
+  <A, B extends ReadonlyArray<any>, C>(
+    state: readonly [...UseState<A>, ...B],
+    optional: Optional<A, C>,
+  ): readonly [...UseState<Option<C>>, ...B]
+
+  <A, B extends ReadonlyArray<any>>(state: readonly [...UseState<A>, ...B]): <C>(
+    optional: Optional<A, C>,
+  ) => readonly [...UseState<Option<C>>, ...B]
 }
