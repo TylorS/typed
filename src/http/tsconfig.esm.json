@@ -19,6 +19,9 @@
       "path": "../Future/tsconfig.json"
     },
     {
+      "path": "../RemoteData/tsconfig.json"
+    },
+    {
       "path": "../SharedRef/tsconfig.json"
     },
     {
