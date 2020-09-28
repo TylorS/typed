@@ -80,6 +80,9 @@
     },
     {
       "path": "./logging/tsconfig.json"
+    },
+    {
+      "path": "./logic/tsconfig.json"
     }
   ]
 }

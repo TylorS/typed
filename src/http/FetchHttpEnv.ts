@@ -3,7 +3,7 @@ import { async, Resume } from '@typed/fp/Effect/exports'
 import { Uri, uriIso } from '@typed/fp/Uri/exports'
 import { Either, left, right } from 'fp-ts/Either'
 import { flow, not, pipe } from 'fp-ts/function'
-import * as O from 'fp-ts/lib/Option'
+import * as O from 'fp-ts/Option'
 
 import { HttpEnv, HttpOptions } from './HttpEnv'
 import { HttpResponse } from './HttpResponse'

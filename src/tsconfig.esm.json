@@ -80,6 +80,9 @@
     },
     {
       "path": "./logging/tsconfig.esm.json"
+    },
+    {
+      "path": "./logic/tsconfig.esm.json"
     }
   ]
 }

@@ -2,8 +2,8 @@ import { deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
 import { HookOpEnvs, UpdateState, useMemo } from '@typed/fp/hooks/exports'
 import { getEq } from 'fp-ts/Either'
+import { Either, isLeft, isRight } from 'fp-ts/Either'
 import { Eq, getTupleEq } from 'fp-ts/Eq'
-import { Either, isLeft, isRight } from 'fp-ts/lib/Either'
 
 export type UseValidationOptions<A, B, C> = {
   readonly stateEq?: Eq<A>

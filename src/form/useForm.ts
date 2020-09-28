@@ -2,7 +2,7 @@ import { And } from '@typed/fp/common/And'
 import { Arity1 } from '@typed/fp/common/types'
 import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
 import { HookOpEnvs, useCallback, useMemo, useState } from '@typed/fp/hooks/exports'
-import { eqBoolean } from 'fp-ts/lib/Eq'
+import { eqBoolean } from 'fp-ts/Eq'
 
 import {
   FieldKeyOf,

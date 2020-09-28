@@ -1,7 +1,7 @@
 import { Arity1 } from '@typed/fp/common/types'
 import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
 import { Either, map } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/function'
 
 import { HookOpEnvs, useCallback } from '../hooks/exports'
 import { FormState, updateHasBeenSubmitted } from './FormState'

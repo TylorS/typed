@@ -1,9 +1,9 @@
 import { Arity1 } from '@typed/fp/common/exports'
 import { chain, doEffect, Effect, map, Pure } from '@typed/fp/Effect/exports'
 import { UpdateState, UseState, useState } from '@typed/fp/hooks/exports'
+import { Eq } from 'fp-ts/Eq'
 import { flow } from 'fp-ts/function'
 import { Invariant1 } from 'fp-ts/Invariant'
-import { Eq } from 'fp-ts/lib/Eq'
 
 export type CurrentState<A> = readonly [A, UpdateState<A>]
 

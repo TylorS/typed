@@ -92,6 +92,7 @@
     "./http",
     "./io",
     "./lambda",
-    "./logging"
+    "./logging",
+    "./logic"
   ]
 }

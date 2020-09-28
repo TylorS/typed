@@ -85,3 +85,4 @@ tsconfig*.tsbuildinfo
 /io/
 /lambda/
 /logging/
+/logic/
