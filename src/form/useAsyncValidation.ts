@@ -1,7 +1,7 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
 import { Future } from '@typed/fp/Future/exports'
-import { HookOpEnvs, useEffect, useMemo, UseState, useState } from '@typed/fp/hooks/exports'
+import { HookOpEnvs, useEffect, useMemo, useState } from '@typed/fp/hooks/exports'
 import {
   fold,
   fromEither,
@@ -14,6 +14,8 @@ import { Eq, getTupleEq } from 'fp-ts/Eq'
 import { constant, pipe } from 'fp-ts/function'
 import { none, Option, some } from 'fp-ts/Option'
 
+import { CurrentState } from './CurrentState'
+
 const constNone = constant(none)
 
 export type UseAsyncValidationOptions<A, B, C> = {
@@ -23,12 +25,12 @@ export type UseAsyncValidationOptions<A, B, C> = {
 }
 
 export function useAsyncValidation<A, B extends ReadonlyArray<any>, E, C, D>(
-  state: readonly [...UseState<A>, ...B],
+  state: readonly [...CurrentState<A>, ...B],
   validate: (value: A) => Future<E, C, D>,
   options: UseAsyncValidationOptions<A, C, D> = {},
 ): Effect<E & HookOpEnvs, AsyncValidationObj<C, D>> {
   const { stateEq = deepEqualsEq, errorEq = deepEqualsEq, valueEq = deepEqualsEq } = options
-  const [getA] = state
+  const [a] = state
 
   const eff = doEffect(function* () {
     const [getValidation, setValidation] = yield* useState<{}, RemoteData<C, D>>(Pure.of(NoData))
@@ -47,13 +49,11 @@ export function useAsyncValidation<A, B extends ReadonlyArray<any>, E, C, D>(
 
           yield* setValidation(() => fromEither(either))
         }),
-      [yield* getA],
+      [a],
       options,
     )
 
-    const validation = yield* getValidation
-
-    return yield* useMemo(toAsyncValidationObj, [validation], validationEq)
+    return yield* useMemo(toAsyncValidationObj, [yield* getValidation], validationEq)
   })
 
   return eff
@@ -64,6 +64,14 @@ export type AsyncValidationObj<A, B> = {
   readonly isValid: Option<boolean>
   readonly isInvalid: Option<boolean>
 }
+
+export const getAsyncValidation = <A, B>(vo: AsyncValidationObj<A, B>): RemoteData<A, B> =>
+  vo.validation
+
+export const getAsyncIsValid = <A, B>(vo: AsyncValidationObj<A, B>): Option<boolean> => vo.isValid
+
+export const getAsyncIsInvalid = <A, B>(vo: AsyncValidationObj<A, B>): Option<boolean> =>
+  vo.isInvalid
 
 function toAsyncValidationObj<A, B>(validation: RemoteData<A, B>): AsyncValidationObj<A, B> {
   return {

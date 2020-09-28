@@ -1,12 +1,13 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/fibers/exports'
-import { HookOpEnvs, useEffectBy, useMemo, UseState } from '@typed/fp/hooks/exports'
+import { HookOpEnvs, useEffectBy, useMemo } from '@typed/fp/hooks/exports'
 import { UuidEnv } from '@typed/fp/Uuid/exports'
 import { Eq } from 'fp-ts/Eq'
 import { identity, pipe } from 'fp-ts/function'
 
 import { applyLens } from './applyLens'
+import { CurrentState } from './CurrentState'
 import { FieldState } from './FieldState'
 import { FormDataObj } from './FormDataObj'
 import { getLensProps } from './getLensProps'
@@ -14,12 +15,11 @@ import { getKey, ownKeys } from './reflection'
 import { useFieldData } from './useFieldData'
 
 export function useFieldStates<A extends FormDataObj>(
-  state: UseState<A>,
+  state: CurrentState<A>,
   eqs: Partial<EqsOf<A>> = {},
 ): Effect<SchedulerEnv & UuidEnv & HookOpEnvs, FieldStatesOf<A>> {
   const eff = doEffect(function* () {
-    const [getA] = state
-    const a = yield* getA
+    const [a] = state
     const keys = yield* useMemo(ownKeys, [a])
     const lenses = yield* useMemo(getLensProps, [a])
     const fieldStates = yield* useEffectBy(keys, identity, (key) =>

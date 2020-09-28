@@ -1,18 +1,19 @@
 import { map } from '@typed/fp/Effect/exports'
-import { UseState } from '@typed/fp/hooks/exports'
 import { curry } from '@typed/fp/lambda/exports'
 import { pipe } from 'fp-ts/function'
 import { Lens } from 'monocle-ts'
 
+import { CurrentState } from './CurrentState'
+
 export const applyLens = curry(
   <A, B extends ReadonlyArray<any>, C>(
-    state: readonly [...UseState<A>, ...B],
+    state: readonly [...CurrentState<A>, ...B],
     lens: Lens<A, C>,
-  ): readonly [...UseState<C>, ...B] => {
-    const [getA, updateA, ...b] = state
+  ): readonly [...CurrentState<C>, ...B] => {
+    const [a, updateA, ...b] = state
 
     return [
-      map(lens.get, getA),
+      lens.get(a),
       (updateC) =>
         map(
           lens.get,
@@ -23,11 +24,11 @@ export const applyLens = curry(
   },
 ) as {
   <A, B extends ReadonlyArray<any>, C>(
-    state: readonly [...UseState<A>, ...B],
+    state: readonly [...CurrentState<A>, ...B],
     lens: Lens<A, C>,
-  ): readonly [...UseState<C>, ...B]
+  ): readonly [...CurrentState<C>, ...B]
 
-  <A, B extends ReadonlyArray<any>>(state: readonly [...UseState<A>, ...B]): <C>(
+  <A, B extends ReadonlyArray<any>>(state: readonly [...CurrentState<A>, ...B]): <C>(
     lens: Lens<A, C>,
-  ) => readonly [...UseState<C>, ...B]
+  ) => readonly [...CurrentState<C>, ...B]
 }

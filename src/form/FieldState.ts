@@ -1,8 +1,11 @@
+import { Arity1 } from '@typed/fp/common/types'
 import { Pure } from '@typed/fp/Effect/exports'
-import { UpdateState, UseState } from '@typed/fp/hooks/exports'
+import { UpdateState } from '@typed/fp/hooks/exports'
 import { Eq } from 'fp-ts/Eq'
 
-export type FieldState<K, A> = readonly [...UseState<A>, FieldData<K, A>, FieldActions]
+import { CurrentState } from './CurrentState'
+
+export type FieldState<K, A> = readonly [...CurrentState<A>, FieldData<K, A>, FieldActions]
 
 export type FieldData<K, A> = {
   readonly key: K
@@ -13,7 +16,7 @@ export type FieldData<K, A> = {
 }
 
 export type FieldActions = {
-  readonly setHasBlurred: UpdateState<boolean>
+  readonly updateHasBlurred: UpdateState<boolean>
 }
 
 export type FieldValue<A> = A extends FieldState<any, infer R>
@@ -28,7 +31,13 @@ export type FieldKeyOf<A> = A extends FieldState<infer R, any>
   ? R
   : never
 
+export const getFieldState = <K, A>(state: FieldState<K, A>): A => state[0]
+
+export const updateFieldState = <K, A>(state: FieldState<K, A>, update: Arity1<A, A>): Pure<A> =>
+  state[1](update)
+
 export const getFieldData = <K, A>(state: FieldState<K, A>): FieldData<K, A> => state[2]
+
 export const getFieldActions = <K, A>(state: FieldState<K, A>): FieldActions => state[3]
 
 export const getFieldKey = <K, A>(state: FieldState<K, A>): K => getFieldData(state).key
@@ -47,4 +56,4 @@ export const getFieldHasBlurred = <K, A>(state: FieldState<K, A>): boolean =>
 export const setFieldHasBlurred = <K, A>(
   state: FieldState<K, A>,
   blurred: boolean,
-): Pure<boolean> => getFieldActions(state).setHasBlurred(() => blurred)
+): Pure<boolean> => getFieldActions(state).updateHasBlurred(() => blurred)
