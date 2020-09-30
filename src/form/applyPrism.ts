@@ -6,6 +6,9 @@ import { Prism } from 'monocle-ts'
 
 import { CurrentState } from './CurrentState'
 
+/**
+ * Apply a Prims to a given piece of state
+ */
 export const applyPrism = curry(
   <A, B extends ReadonlyArray<any>, C>(
     state: readonly [...CurrentState<A>, ...B],

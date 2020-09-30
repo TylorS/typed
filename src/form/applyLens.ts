@@ -5,6 +5,9 @@ import { Lens } from 'monocle-ts'
 
 import { CurrentState } from './CurrentState'
 
+/**
+ * Apply a lens to a CurrentState
+ */
 export const applyLens = curry(
   <A, B extends ReadonlyArray<any>, C>(
     state: readonly [...CurrentState<A>, ...B],

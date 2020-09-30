@@ -14,6 +14,9 @@ import { getLensProps } from './getLensProps'
 import { getKey, ownKeys } from './reflection'
 import { useFieldData } from './useFieldData'
 
+/**
+ * Generate a number of fields based on a FormDataObj
+ */
 export function useFieldStates<A extends FormDataObj>(
   state: CurrentState<A>,
   eqs: Partial<EqsOf<A>> = {},

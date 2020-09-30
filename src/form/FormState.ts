@@ -4,6 +4,9 @@ import { UpdateState } from '@typed/fp/hooks/exports'
 
 import { CurrentState } from './CurrentState'
 
+/**
+ * A piece of state enriched with form-specific metadata
+ */
 export type FormState<A> = readonly [...CurrentState<A>, FormStateData, FormStateActions]
 
 export type FormStateData = {

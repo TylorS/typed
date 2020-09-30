@@ -5,6 +5,9 @@ import { Eq } from 'fp-ts/Eq'
 
 import { CurrentState } from './CurrentState'
 
+/**
+ * The current state enriched with field-specific metadata and actions.
+ */
 export type FieldState<K, A> = readonly [...CurrentState<A>, FieldData<K, A>, FieldActions]
 
 export type FieldData<K, A> = {

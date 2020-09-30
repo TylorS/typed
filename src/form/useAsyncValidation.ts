@@ -24,6 +24,9 @@ export type UseAsyncValidationOptions<A, B, C> = {
   readonly valueEq?: Eq<C>
 }
 
+/**
+ * Perform async validation on given state
+ */
 export function useAsyncValidation<A, B extends ReadonlyArray<any>, E, C, D>(
   state: readonly [...CurrentState<A>, ...B],
   validate: (value: A) => Future<E, C, D>,

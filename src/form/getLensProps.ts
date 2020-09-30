@@ -3,11 +3,13 @@ import { reduce } from 'fp-ts/ReadonlyArray'
 import { Lens } from 'monocle-ts'
 import { O } from 'ts-toolbelt'
 
+import { FormDataObj } from './FormDataObj'
 import { ownKeys } from './reflection'
 
-export function getLensProps<A extends Readonly<Record<PropertyKey, any>>>(
-  value: A,
-): LensPropsOf<A> {
+/**
+ * Get all the lens derived from a given recorrd
+ */
+export function getLensProps<A extends FormDataObj>(value: A): LensPropsOf<A> {
   const lensProp = Lens.fromProp<A>()
 
   return pipe(
@@ -17,6 +19,6 @@ export function getLensProps<A extends Readonly<Record<PropertyKey, any>>>(
   )
 }
 
-type LensPropsOf<A extends Readonly<Record<PropertyKey, any>>> = {
+type LensPropsOf<A extends FormDataObj> = {
   readonly [K in O.RequiredKeys<A>]: Lens<A, A[K]>
 }

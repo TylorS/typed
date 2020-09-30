@@ -1,9 +1,11 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { HookOpEnvs, UpdateState, useMemo } from '@typed/fp/hooks/exports'
+import { HookOpEnvs, useMemo } from '@typed/fp/hooks/exports'
 import { getEq } from 'fp-ts/Either'
 import { Either, isLeft, isRight } from 'fp-ts/Either'
 import { Eq, getTupleEq } from 'fp-ts/Eq'
+
+import { CurrentState } from './CurrentState'
 
 export type UseValidationOptions<A, B, C> = {
   readonly stateEq?: Eq<A>
@@ -11,8 +13,11 @@ export type UseValidationOptions<A, B, C> = {
   readonly valueEq?: Eq<C>
 }
 
+/**
+ * Perform synchronous validation of a given piece of state
+ */
 export function useValidation<A, B extends ReadonlyArray<any>, C, D>(
-  state: readonly [A, UpdateState<A>, ...B],
+  state: readonly [...CurrentState<A>, ...B],
   validate: (value: A) => Either<C, D>,
   options: UseValidationOptions<A, C, D> = {},
 ): Effect<HookOpEnvs, ValidationObj<C, D>> {

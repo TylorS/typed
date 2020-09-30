@@ -7,6 +7,9 @@ import { Eq, eqBoolean } from 'fp-ts/Eq'
 import { CurrentState } from './CurrentState'
 import { FieldData, FieldState } from './FieldState'
 
+/**
+ * Create a FieldState from a key, state, and optionally an Eq.
+ */
 export function useFieldData<K, A>(
   key: K,
   [a, updateA]: CurrentState<A>,

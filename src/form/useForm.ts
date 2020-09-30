@@ -16,6 +16,9 @@ import {
 import { FormState, FormStateData } from './FormState'
 import { ownKeys } from './reflection'
 
+/**
+ * Build a Form up from a series of field states
+ */
 export function useForm<Fields extends ReadonlyArray<FieldState<PropertyKey, any>>>(
   ...fields: Fields
 ): Effect<HookOpEnvs, UseForm<Fields>> {
