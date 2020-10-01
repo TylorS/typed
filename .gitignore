@@ -78,7 +78,6 @@ tsconfig*.tsbuildinfo
 /common/
 /dom/
 /fibers/
-/form/
 /history/
 /hooks/
 /http/

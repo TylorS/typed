@@ -61,9 +61,6 @@
       "path": "./fibers/tsconfig.json"
     },
     {
-      "path": "./form/tsconfig.json"
-    },
-    {
       "path": "./history/tsconfig.json"
     },
     {
