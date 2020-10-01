@@ -6,6 +6,9 @@ import { Optional } from 'monocle-ts'
 
 import { CurrentState } from './CurrentState'
 
+/**
+ * Apply a Optional to a CurrentState
+ */
 export const applyOptional = curry(
   <A, B extends ReadonlyArray<any>, C>(
     state: readonly [...CurrentState<A>, ...B],
