@@ -10,10 +10,10 @@
   },
   "references": [
     {
-      "path": "../Disposable/tsconfig.json"
+      "path": "../Disposable/tsconfig.cjs.json"
     },
     {
-      "path": "../common/tsconfig.json"
+      "path": "../common/tsconfig.cjs.json"
     }
   ],
   "include": [

@@ -10,10 +10,10 @@
   },
   "references": [
     {
-      "path": "../Disposable/tsconfig.json"
+      "path": "../Disposable/tsconfig.esm.json"
     },
     {
-      "path": "../Effect/tsconfig.json"
+      "path": "../Effect/tsconfig.esm.json"
     }
   ],
   "include": [

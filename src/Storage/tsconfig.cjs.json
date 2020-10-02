@@ -10,13 +10,13 @@
   },
   "references": [
     {
-      "path": "../Disposable/tsconfig.json"
+      "path": "../Disposable/tsconfig.cjs.json"
     },
     {
-      "path": "../Effect/tsconfig.json"
+      "path": "../Effect/tsconfig.cjs.json"
     },
     {
-      "path": "../Future/tsconfig.json"
+      "path": "../Future/tsconfig.cjs.json"
     }
   ],
   "include": [

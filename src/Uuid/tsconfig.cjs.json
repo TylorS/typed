@@ -10,7 +10,7 @@
   },
   "references": [
     {
-      "path": "../Effect/tsconfig.json"
+      "path": "../Effect/tsconfig.cjs.json"
     }
   ],
   "include": [

@@ -10,16 +10,16 @@
   },
   "references": [
     {
-      "path": "../Disposable/tsconfig.json"
+      "path": "../Disposable/tsconfig.cjs.json"
     },
     {
-      "path": "../Effect/tsconfig.json"
+      "path": "../Effect/tsconfig.cjs.json"
     },
     {
-      "path": "../VirtualTimer/tsconfig.json"
+      "path": "../VirtualTimer/tsconfig.cjs.json"
     },
     {
-      "path": "../common/tsconfig.json"
+      "path": "../common/tsconfig.cjs.json"
     }
   ],
   "include": [

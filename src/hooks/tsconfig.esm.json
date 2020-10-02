@@ -10,28 +10,28 @@
   },
   "references": [
     {
-      "path": "../Disposable/tsconfig.json"
+      "path": "../Disposable/tsconfig.esm.json"
     },
     {
-      "path": "../Effect/tsconfig.json"
+      "path": "../Effect/tsconfig.esm.json"
     },
     {
-      "path": "../Key/tsconfig.json"
+      "path": "../Key/tsconfig.esm.json"
     },
     {
-      "path": "../SharedRef/tsconfig.json"
+      "path": "../SharedRef/tsconfig.esm.json"
     },
     {
-      "path": "../Uuid/tsconfig.json"
+      "path": "../Uuid/tsconfig.esm.json"
     },
     {
-      "path": "../common/tsconfig.json"
+      "path": "../common/tsconfig.esm.json"
     },
     {
-      "path": "../fibers/tsconfig.json"
+      "path": "../fibers/tsconfig.esm.json"
     },
     {
-      "path": "../lambda/tsconfig.json"
+      "path": "../lambda/tsconfig.esm.json"
     }
   ],
   "include": [

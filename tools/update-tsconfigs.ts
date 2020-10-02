@@ -173,7 +173,7 @@ async function updateModuleConfig(name: string, moduleType?: ModuleType) {
       }
     }
 
-    tsconfigJson.references = findAllReferences(directory, name)
+    tsconfigJson.references = findAllReferences(directory, moduleType, name)
 
     if (!moduleType) {
       tsconfigJson.extends = '../../tsconfig.json'
@@ -189,7 +189,7 @@ async function updateModuleConfig(name: string, moduleType?: ModuleType) {
   }
 }
 
-function findAllReferences(directory: string, name: string) {
+function findAllReferences(directory: string, moduleType: ModuleType | undefined, name: string) {
   const filePaths = findFilePaths(directory, ['*.ts', '**/*.ts'])
   const project = new TSM.Project({
     tsConfigFilePath: BASE_TSCONFIG_PATH,
@@ -209,7 +209,9 @@ function findAllReferences(directory: string, name: string) {
     typedDependencies.map((dep) => dep.replace('@typed/fp/', '').split('/')[0]),
   )
 
-  return typedDependencyNames.map((name) => ({ path: `../${name}/tsconfig.json` }))
+  return typedDependencyNames.map((name) => ({
+    path: `../${name}/tsconfig.${moduleType ? `${moduleType}.` : ``}json`,
+  }))
 }
 
 function uniqStrings(strs: ReadonlyArray<string>) {

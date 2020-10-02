@@ -10,13 +10,13 @@
   },
   "references": [
     {
-      "path": "../Effect/tsconfig.json"
+      "path": "../Effect/tsconfig.cjs.json"
     },
     {
-      "path": "../common/tsconfig.json"
+      "path": "../common/tsconfig.cjs.json"
     },
     {
-      "path": "../lambda/tsconfig.json"
+      "path": "../lambda/tsconfig.cjs.json"
     }
   ],
   "include": [

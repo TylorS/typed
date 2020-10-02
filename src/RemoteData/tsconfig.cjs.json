@@ -10,10 +10,10 @@
   },
   "references": [
     {
-      "path": "../common/tsconfig.json"
+      "path": "../common/tsconfig.cjs.json"
     },
     {
-      "path": "../lambda/tsconfig.json"
+      "path": "../lambda/tsconfig.cjs.json"
     }
   ],
   "include": [

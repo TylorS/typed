@@ -10,16 +10,16 @@
   },
   "references": [
     {
-      "path": "../RemoteData/tsconfig.json"
+      "path": "../RemoteData/tsconfig.cjs.json"
     },
     {
-      "path": "../Uuid/tsconfig.json"
+      "path": "../Uuid/tsconfig.cjs.json"
     },
     {
-      "path": "../common/tsconfig.json"
+      "path": "../common/tsconfig.cjs.json"
     },
     {
-      "path": "../lambda/tsconfig.json"
+      "path": "../lambda/tsconfig.cjs.json"
     }
   ],
   "include": [
