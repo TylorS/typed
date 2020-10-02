@@ -1,12 +1,11 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "../../tsconfig.cjs.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/hooks",
-    "module": "commonjs"
+    "outDir": "../../hooks"
   },
   "references": [
     {
@@ -16,13 +15,13 @@
       "path": "../Effect/tsconfig.json"
     },
     {
-      "path": "../Op/tsconfig.json"
+      "path": "../Key/tsconfig.json"
+    },
+    {
+      "path": "../SharedRef/tsconfig.json"
     },
     {
       "path": "../Uuid/tsconfig.json"
-    },
-    {
-      "path": "../VirtualTimer/tsconfig.json"
     },
     {
       "path": "../common/tsconfig.json"
@@ -38,11 +37,5 @@
     "./*.ts",
     "./**/*.ts"
   ],
-  "exclude": [
-    "./*.test.ts",
-    "./*.browser-test.ts",
-    "./**/*.test.ts",
-    "./**/*.browser-test.ts",
-    "./tsconfig.json"
-  ]
+  "exclude": []
 }

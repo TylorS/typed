@@ -15,7 +15,7 @@ const TSCONFIG_TEMPLATE = readRelativeFile(__dirname, 'tsconfig-template.json')
 const BASE_TSCONFIG_PATH = getRelativeFile(__dirname, '../tsconfig.base.json')
 const CJS_BASE_TSCONFIG_PATH = getRelativeFile(__dirname, '../tsconfig.cjs.json')
 const ESM_BASE_TSCONFIG_PATH = getRelativeFile(__dirname, '../tsconfig.esm.json')
-const CJS_BUILD_TSCONFIG_PATH = getRelativeFile(__dirname, '../src/tsconfig.json')
+const CJS_BUILD_TSCONFIG_PATH = getRelativeFile(__dirname, '../src/tsconfig.cjs.json')
 const ESM_BUILD_TSCONFIG_PATH = getRelativeFile(__dirname, '../src/tsconfig.esm.json')
 const SRC_DIR = join(ROOT_DIR, 'src')
 const ENTRY_FILE = join(SRC_DIR, 'exports.ts')
@@ -68,7 +68,11 @@ const updateBuildConfigs = () =>
 const updateModuleConfigs = () =>
   Promise.all(
     MODULES.map((name) =>
-      Promise.all([updateModuleConfig(name, 'esm'), updateModuleConfig(name, 'cjs')]),
+      Promise.all([
+        updateModuleConfig(name),
+        updateModuleConfig(name, 'esm'),
+        updateModuleConfig(name, 'cjs'),
+      ]),
     ),
   ).then(() => process.stdout.write(EOL))
 
@@ -118,9 +122,9 @@ async function updateBuildConfig(path: string, moduleType: ModuleType) {
         : { outDir: relative(directory, CJS_BUILD_PATH), module: 'commonjs' }
 
     json.references = MODULES.map((name) => ({
-      path: `${isInSrcDirectory ? `.` : relative(directory, SRC_DIR)}/${name}/tsconfig.${
-        moduleType === 'esm' ? 'esm.' : ''
-      }json`,
+      path: `${
+        isInSrcDirectory ? `.` : relative(directory, SRC_DIR)
+      }/${name}/tsconfig.${moduleType}.json`,
     }))
 
     await writeFile(path, JSON.stringify(json, null, 2) + EOL)
@@ -141,28 +145,41 @@ function createFpTsImportRewrite(moduleType: ModuleType) {
   }
 }
 
-async function updateModuleConfig(name: string, moduleType: ModuleType) {
+async function updateModuleConfig(name: string, moduleType?: ModuleType) {
   try {
     const directory = join(SRC_DIR, name)
-    const configName = moduleType === 'cjs' ? `tsconfig.json` : `tsconfig.${moduleType}.json`
+    const configName = moduleType === void 0 ? `tsconfig.json` : `tsconfig.${moduleType}.json`
     const tsconfigJsonPath = join(directory, configName)
 
-    console.log(`Updating Module Config [${moduleType}]: @typed/fp/${name}`)
+    console.log(
+      `Updating Module Config [${moduleType ? `${moduleType}` : 'default'}]: @typed/fp/${name}`,
+    )
 
     const tsconfigJson = JSON.parse(
-      TSCONFIG_TEMPLATE.replace(MODULE_TYPE_REGEX, moduleType).replace(NAME_REGEX, name),
+      TSCONFIG_TEMPLATE.replace(MODULE_TYPE_REGEX, moduleType ? moduleType : '').replace(
+        NAME_REGEX,
+        name,
+      ),
     )
 
     if (!tsconfigJson.compilerOptions) {
       tsconfigJson.compilerOptions = {}
     }
 
-    tsconfigJson.compilerOptions = {
-      ...tsconfigJson.compilerOptions,
-      ...(moduleType === 'esm' ? { module: 'esnext' } : { module: 'commonjs' }),
+    if (moduleType) {
+      tsconfigJson.compilerOptions = {
+        ...tsconfigJson.compilerOptions,
+        ...(moduleType === 'esm' ? { module: 'esnext' } : { module: 'commonjs' }),
+      }
     }
 
     tsconfigJson.references = findAllReferences(directory, name)
+
+    if (!moduleType) {
+      tsconfigJson.extends = '../../tsconfig.json'
+      tsconfigJson.compilerOptions.outDir = `../../${name}`
+      tsconfigJson.exclude = []
+    }
 
     await writeFile(tsconfigJsonPath, JSON.stringify(tsconfigJson, null, 2) + EOL)
   } catch (error) {

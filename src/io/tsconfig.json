@@ -1,12 +1,11 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "../../tsconfig.cjs.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/io",
-    "module": "commonjs"
+    "outDir": "../../io"
   },
   "references": [
     {
@@ -26,11 +25,5 @@
     "./*.ts",
     "./**/*.ts"
   ],
-  "exclude": [
-    "./*.test.ts",
-    "./*.browser-test.ts",
-    "./**/*.test.ts",
-    "./**/*.browser-test.ts",
-    "./tsconfig.json"
-  ]
+  "exclude": []
 }

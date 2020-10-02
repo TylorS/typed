@@ -16,13 +16,13 @@
       "path": "../Effect/tsconfig.json"
     },
     {
-      "path": "../Op/tsconfig.json"
+      "path": "../Key/tsconfig.json"
+    },
+    {
+      "path": "../SharedRef/tsconfig.json"
     },
     {
       "path": "../Uuid/tsconfig.json"
-    },
-    {
-      "path": "../VirtualTimer/tsconfig.json"
     },
     {
       "path": "../common/tsconfig.json"

@@ -1,7 +1,7 @@
 import { Path } from '@typed/fp/Path/exports'
 import { describe, given, it, Test } from '@typed/test'
 
-import { ParsedUri, parseUri, Uri } from '.'
+import { ParsedUri, parseUri, Uri } from './exports'
 
 export const test: Test = describe(`parseUrl`, [
   given(`an href`, [

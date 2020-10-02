@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.cjs.json",
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "rootDir": "./",
+    "outDir": "../../cjs/Console",
+    "module": "commonjs"
+  },
+  "references": [
+    {
+      "path": "../Effect/tsconfig.json"
+    },
+    {
+      "path": "../logging/tsconfig.json"
+    }
+  ],
+  "include": [
+    "./*.ts",
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "./*.test.ts",
+    "./*.browser-test.ts",
+    "./**/*.test.ts",
+    "./**/*.browser-test.ts",
+    "./tsconfig.json"
+  ]
+}
