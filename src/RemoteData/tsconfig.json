@@ -4,8 +4,7 @@
   "compilerOptions": {
     "composite": true,
     "incremental": true,
-    "rootDir": "./",
-    "outDir": "../../RemoteData"
+    "rootDir": "./"
   },
   "references": [
     {

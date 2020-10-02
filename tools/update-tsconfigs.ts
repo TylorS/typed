@@ -177,7 +177,7 @@ async function updateModuleConfig(name: string, moduleType?: ModuleType) {
 
     if (!moduleType) {
       tsconfigJson.extends = '../../tsconfig.json'
-      tsconfigJson.compilerOptions.outDir = `../../${name}`
+      delete tsconfigJson.compilerOptions.outDir
       tsconfigJson.exclude = []
     }
 
