@@ -30,6 +30,9 @@
     },
     {
       "path": "../lambda/tsconfig.json"
+    },
+    {
+      "path": "../logic/tsconfig.json"
     }
   ],
   "include": [

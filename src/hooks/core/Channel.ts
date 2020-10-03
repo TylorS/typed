@@ -2,7 +2,9 @@ import { Effect } from '@typed/fp/Effect/exports'
 import { iso, Newtype } from 'newtype-ts'
 
 /**
- * A Channel is used by reference
+ * A Channel is an abstraction used to represent shared state
+ * that can be provided for at different levels in a tree of
+ * hook environments.
  */
 export interface Channel<E, A> {
   readonly name: ChannelName

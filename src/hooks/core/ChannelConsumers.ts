@@ -29,7 +29,7 @@ export const ChannelConsumers = createSharedRef<ChannelConsumers>(CHANNEL_CONSUM
 
 export const getChannelConsumers = readSharedRef(ChannelConsumers)
 
-export const isConsumer = (
+export const checkIsConsumer = (
   channel: ChannelName,
   id: HookEnvironmentId,
 ): Effect<SharedRefEnv<ChannelConsumers>, boolean> => {
@@ -73,7 +73,7 @@ export const setChannelConsumer = (
   hookEnvironmentId: HookEnvironmentId,
   key: symbol,
   consumer: ChannelConsumer<any, any>,
-) => {
+): Effect<SharedRefEnv<ChannelConsumers>, void> => {
   const eff = doEffect(function* () {
     const consumersByChannel = yield* getChannelConsumers
 

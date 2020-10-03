@@ -1,4 +1,4 @@
-import { ask, doEffect, Effect, EnvOf, provide } from '@typed/fp/Effect/exports'
+import { ask, doEffect, Effect, EnvOf, provide, use } from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/fibers/exports'
 import { Channel, ChannelName } from '@typed/fp/hooks/core/Channel'
 import {
@@ -15,11 +15,11 @@ import {
 } from '@typed/fp/SharedRef/exports'
 import { Eq } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
-import { isSome } from 'fp-ts/Option'
 
 import { getOrSet } from '../helpers/getOrSet'
 import { createState } from './createState'
 import { ChannelUpdated } from './events'
+import { findProvider } from './findProvider'
 import { HookEvents, sendHookEvent } from './HookEvents'
 import { State } from './State'
 
@@ -34,6 +34,37 @@ export const ChannelProviders = createSharedRef<ChannelProviders>(CHANNEL_PROVID
 export const getChannelProviders = readSharedRef(ChannelProviders)
 
 export const getChannelProvider = <E, A>(
+  channel: Channel<E, A>,
+  eq: Eq<A>,
+): Effect<
+  EnvOf<typeof createState> &
+    EnvOf<typeof getChannelProviders> &
+    EnvOf<typeof setChannelProvider> &
+    EnvOf<typeof getHookEnv> &
+    E,
+  readonly [HookEnvironment, State<A, A>]
+> => {
+  const eff = doEffect(function* () {
+    const hookEnvironment = yield* getHookEnv
+    const channelProviders = yield* getChannelProviders
+    const providers = getOrSet(
+      channel.name,
+      channelProviders,
+      (): Map<HookEnvironmentId, State<any, any>> => new Map(),
+    )
+    const provider = findProvider(hookEnvironment, providers)
+
+    if (providers.has(provider.id)) {
+      return [provider, providers.get(provider.id)! as State<A, A>] as const
+    }
+
+    return yield* pipe(setChannelProvider(channel, eq), use({ hookEnvironment: provider } as {}))
+  })
+
+  return eff
+}
+
+export const setChannelProvider = <E, A>(
   channel: Channel<E, A>,
   eq: Eq<A>,
 ): Effect<
@@ -53,17 +84,16 @@ export const getChannelProvider = <E, A>(
       channelProviders,
       (): Map<HookEnvironmentId, State<any, any>> => new Map(),
     )
-    const provider = findProvider(hookEnvironment, providers)
 
-    if (providers.has(provider.id)) {
-      return [provider, providers.get(provider.id)! as State<A, A>] as const
+    if (providers.has(hookEnvironment.id)) {
+      return [hookEnvironment, providers.get(hookEnvironment.id)! as State<A, A>] as const
     }
 
     const state = yield* createState(channel.defaultValue, eq, (currentValue, updatedValue) =>
       pipe(
         ChannelUpdated.of({
           channel: channel.name,
-          hookEnvironment: provider,
+          hookEnvironment,
           currentValue,
           updatedValue,
         }),
@@ -72,28 +102,15 @@ export const getChannelProvider = <E, A>(
       ),
     )
 
-    providers.set(provider.id, state)
+    providers.set(hookEnvironment.id, state)
 
-    return [provider, state] as const
+    return [hookEnvironment, state] as const
   })
 
   return eff
 }
 
-function findProvider(
-  env: HookEnvironment,
-  providers: Map<HookEnvironmentId, State<any, any>>,
-): HookEnvironment {
-  let current = env
-
-  while (!providers.has(current.id) && isSome(current.parent)) {
-    current = current.parent.value
-  }
-
-  return current
-}
-
-export const isProvider = (
+export const checkIsProvider = (
   channel: ChannelName,
   id: HookEnvironmentId,
 ): Effect<SharedRefEnv<ChannelProviders>, boolean> => {

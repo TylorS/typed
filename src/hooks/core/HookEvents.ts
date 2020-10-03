@@ -1,6 +1,6 @@
 import { filter } from '@most/core'
-import { Disposable } from '@typed/fp/Disposable/exports'
-import { ask, doEffect, Effect } from '@typed/fp/Effect/exports'
+import { Disposable, lazy } from '@typed/fp/Disposable/exports'
+import { ask, doEffect, Effect, EnvOf } from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/fibers/exports'
 import {
   createSharedRef,
@@ -13,6 +13,7 @@ import { Subject } from 'most-subject'
 
 import { createEventSink } from '../helpers/createEventSink'
 import { HookEvent } from './events'
+import { useDisposable } from './useDisposable'
 
 export const HOOK_EVENTS = '@typed/fp/HookEvents'
 export type HOOK_EVENTS = typeof HOOK_EVENTS
@@ -38,14 +39,27 @@ export const sendHookEvent = (
 
 export const listenToHookEvents = <A extends HookEvent>(
   refinement: (event: HookEvent) => event is A,
-  onValue: (value: A) => void,
-): Effect<SchedulerEnv & SharedRefEnv<HookEvents>, Disposable> => {
+  onValue: (value: A) => Disposable,
+): Effect<EnvOf<typeof useDisposable> & SchedulerEnv & SharedRefEnv<HookEvents>, Disposable> => {
   const eff = doEffect(function* () {
     const { scheduler } = yield* ask<SchedulerEnv>()
     const [, stream] = yield* getHookEvents
-    const filtered = pipe(stream, filter(refinement))
 
-    return filtered.run(createEventSink(onValue), scheduler)
+    return yield* useDisposable(
+      (s) => {
+        const disposable = lazy()
+
+        disposable.addDisposable(
+          pipe(s, filter(refinement)).run(
+            createEventSink((a) => disposable.addDisposable(onValue(a))),
+            scheduler,
+          ),
+        )
+
+        return disposable
+      },
+      [stream],
+    )
   })
 
   return eff

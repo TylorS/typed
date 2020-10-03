@@ -1,4 +1,4 @@
-import { Pure } from '@typed/fp/Effect/exports'
+import { IO } from 'fp-ts/lib/IO'
 import { iso, Newtype } from 'newtype-ts'
 
 /**
@@ -38,5 +38,5 @@ export type UuidSeed = readonly [
  * @since 0.0.1
  */
 export interface UuidEnv {
-  readonly randomUuidSeed: () => Pure<UuidSeed>
+  readonly randomUuidSeed: IO<UuidSeed>
 }

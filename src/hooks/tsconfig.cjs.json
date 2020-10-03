@@ -32,6 +32,9 @@
     },
     {
       "path": "../lambda/tsconfig.cjs.json"
+    },
+    {
+      "path": "../logic/tsconfig.cjs.json"
     }
   ],
   "include": [

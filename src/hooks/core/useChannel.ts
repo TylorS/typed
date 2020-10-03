@@ -4,7 +4,7 @@ import { identity } from 'fp-ts/lib/function'
 
 import { Channel } from './Channel'
 import { ChannelConsumer } from './ChannelConsumer'
-import { getChannelConsumer, setChannelConsumer } from './ChannelConsumers'
+import { checkIsConsumer, getChannelConsumer, setChannelConsumer } from './ChannelConsumers'
 import { getChannelProvider } from './ChannelProviders'
 import { getNextSymbol } from './getNextSymbol'
 import { getHookEnv } from './HookEnvironment'
@@ -36,6 +36,7 @@ export function useChannel<E, A, B = A>(
 ): Effect<
   E &
     EnvOf<typeof getHookEnv> &
+    EnvOf<typeof getNextSymbol> &
     EnvOf<typeof getChannelProvider> &
     EnvOf<typeof getChannelConsumer>,
   B
@@ -44,8 +45,11 @@ export function useChannel<E, A, B = A>(
     const env = yield* getHookEnv
     const key = yield* getNextSymbol(env.id)
     const [, [getA]] = yield* getChannelProvider(channel, deepEqualsEq)
+    const isConsumer = yield* checkIsConsumer(channel.name, env.id)
 
-    yield* setChannelConsumer(channel.name, env.id, key, consumer)
+    if (!isConsumer) {
+      yield* setChannelConsumer(channel.name, env.id, key, consumer)
+    }
 
     return yield* map(consumer.selector, getA)
   })
