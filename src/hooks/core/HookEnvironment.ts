@@ -5,7 +5,9 @@ import { SharedRefEnv } from '@typed/fp/SharedRef/exports'
 import { createUuid, UuidEnv } from '@typed/fp/Uuid/exports'
 import { fromNullable, isSome, none, Option } from 'fp-ts/Option'
 
+import { CreatedHookEnvironment } from './events'
 import { addDisposable, HookDisposables } from './HookDisposables'
+import { sendHookEvent } from './HookEvents'
 import { removeHookEnvironment } from './removeHookEnvironment'
 
 export interface HookEnv {
@@ -74,7 +76,7 @@ export const removeKeyedEnvironment = (
 }
 
 export const createChildHookEnvironment: Effect<
-  UuidEnv & SharedRefEnv<HookDisposables>,
+  UuidEnv & SharedRefEnv<HookDisposables> & EnvOf<typeof sendHookEvent>,
   HookEnvironment
 > = doEffect(function* () {
   const { hookEnvironment } = (yield* ask<unknown>()) as Partial<HookEnv>
@@ -89,6 +91,8 @@ export const createChildHookEnvironment: Effect<
 
     yield* addDisposable(id, { dispose: () => parent.value.children.delete(id) })
   }
+
+  yield* sendHookEvent(CreatedHookEnvironment.of(created))
 
   return created
 })
