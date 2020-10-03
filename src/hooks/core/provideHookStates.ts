@@ -4,6 +4,7 @@ import { pipe } from 'fp-ts/function'
 import { newIORef } from 'fp-ts/IORef'
 import { create } from 'most-subject'
 
+import { HookEvent } from './events'
 import {
   ChannelConsumers,
   ChannelProviders,
@@ -27,12 +28,12 @@ export const provideHookStates = (states: Partial<HookStates>) => <E, A>(
 ): Effect<E, A> =>
   pipe(
     eff,
-    provideSharedRef(ChannelProviders, newIORef(states.channelProviders ?? new Map())),
-    provideSharedRef(ChannelConsumers, newIORef(states.channelConsumers ?? new Map())),
-    provideSharedRef(HookEvents, newIORef(states.hookEvents ?? create())),
-    provideSharedRef(HookDisposables, newIORef(states.hookDisposables ?? new Map())),
-    provideSharedRef(HookPositions, newIORef(states.hookPositions ?? new Map())),
-    provideSharedRef(HookSymbols, newIORef(states.hookSymbols ?? new Map())),
+    provideSharedRef(ChannelProviders, newIORef(createMapIfUndefined(states.channelProviders))),
+    provideSharedRef(ChannelConsumers, newIORef(createMapIfUndefined(states.channelConsumers))),
+    provideSharedRef(HookEvents, newIORef(states.hookEvents ?? create<HookEvent>())),
+    provideSharedRef(HookDisposables, newIORef(createMapIfUndefined(states.hookDisposables))),
+    provideSharedRef(HookPositions, newIORef(createMapIfUndefined(states.hookPositions))),
+    provideSharedRef(HookSymbols, newIORef(createMapIfUndefined(states.hookSymbols))),
   )
 
 export const provideEmptyHookStates = provideHookStates({})
@@ -44,4 +45,8 @@ export type HookStates = {
   readonly hookEvents: SharedRefValue<HookEvents>
   readonly hookPositions: SharedRefValue<HookPositions>
   readonly hookSymbols: SharedRefValue<HookSymbols>
+}
+
+function createMapIfUndefined<A extends Map<any, any>>(map: A | undefined): A {
+  return map ?? (new Map() as A)
 }
