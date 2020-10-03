@@ -2,7 +2,7 @@ import { deepEqualsEq } from '@typed/fp/common/exports'
 import { Disposable, disposeAll, disposeNone } from '@typed/fp/Disposable/exports'
 import { doEffect, Pure } from '@typed/fp/Effect/exports'
 import { Fn } from '@typed/fp/lambda/exports'
-import { Eq } from 'fp-ts/lib/Eq'
+import { Eq } from 'fp-ts/Eq'
 import { getEq } from 'fp-ts/ReadonlyArray'
 
 import { addDisposable } from './HookDisposables'

@@ -8,7 +8,7 @@ import {
   SharedRef,
   SharedRefEnv,
 } from '@typed/fp/SharedRef/exports'
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/function'
 import { Subject } from 'most-subject'
 
 import { createEventSink } from '../helpers/createEventSink'

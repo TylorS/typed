@@ -1,4 +1,4 @@
-import { IO } from 'fp-ts/lib/IO'
+import { IO } from 'fp-ts/IO'
 import { iso, Newtype } from 'newtype-ts'
 
 /**

@@ -9,6 +9,7 @@ export type JsonSerializable =
   | JsonSerializableRecord
   | ReadonlyMap<JsonSerializable, JsonSerializable>
   | ReadonlySet<JsonSerializable>
+  | symbol
 
 export type JsonPrimitive = Exclude<Json, JsonRecord | JsonArray>
 
@@ -34,11 +35,15 @@ type VALUES_TAG = typeof VALUES_TAG
 enum Tag {
   Set,
   Map,
+  Symbol,
+  SymbolFor,
 }
 
 type TaggedJsonValues = {
   [Tag.Map]: ReadonlyArray<readonly [Json, Json]>
   [Tag.Set]: ReadonlyArray<Json>
+  [Tag.Symbol]: string
+  [Tag.SymbolFor]: string
 }
 
 type TaggedJson<A extends Tag> = {
@@ -65,6 +70,15 @@ function replaceJson(_: JsonSerializable, value: JsonSerializable): Json {
     }
   }
 
+  if (typeof value === 'symbol') {
+    const key = Symbol.keyFor(value)
+
+    return {
+      [JSON_TAG]: key ? Tag.SymbolFor : Tag.Symbol,
+      [VALUES_TAG]: key ?? value.description ?? '',
+    }
+  }
+
   return value as Json
 }
 
@@ -79,6 +93,14 @@ function reviveJson(_: Json, value: Json): JsonSerializable {
 
     if (tag === Tag.Map) {
       return new Map(reviveMapEntries((value as TaggedJson<Tag.Map>)[VALUES_TAG]))
+    }
+
+    if (tag === Tag.Symbol) {
+      return Symbol(((tag as unknown) as TaggedJson<Tag.Symbol>)[VALUES_TAG])
+    }
+
+    if (tag === Tag.SymbolFor) {
+      return Symbol.for(((tag as unknown) as TaggedJson<Tag.SymbolFor>)[VALUES_TAG])
     }
   }
 

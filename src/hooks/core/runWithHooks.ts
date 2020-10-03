@@ -4,7 +4,7 @@ import { use } from '@typed/fp/Effect/provide'
 import { SchedulerEnv } from '@typed/fp/fibers/exports'
 import { curry } from '@typed/fp/lambda/exports'
 import { SharedRefEnv } from '@typed/fp/SharedRef/exports'
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/function'
 
 import { RunningHookEnvironment } from './events'
 import { HookEnv } from './HookEnvironment'

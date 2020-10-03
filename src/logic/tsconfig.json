@@ -8,6 +8,9 @@
   },
   "references": [
     {
+      "path": "../RemoteData/tsconfig.json"
+    },
+    {
       "path": "../common/tsconfig.json"
     },
     {

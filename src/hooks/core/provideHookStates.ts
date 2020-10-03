@@ -1,7 +1,7 @@
 import { Effect } from '@typed/fp/Effect/Effect'
 import { provideSharedRef, SharedRefEnv, SharedRefValue } from '@typed/fp/SharedRef/exports'
-import { pipe } from 'fp-ts/lib/function'
-import { newIORef } from 'fp-ts/lib/IORef'
+import { pipe } from 'fp-ts/function'
+import { newIORef } from 'fp-ts/IORef'
 import { create } from 'most-subject'
 
 import {
