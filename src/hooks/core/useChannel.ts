@@ -1,6 +1,7 @@
 import { Arity1, deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Effect, EnvOf, map } from '@typed/fp/Effect/exports'
 import { identity } from 'fp-ts/function'
+import { getTupleEq } from 'fp-ts/lib/Eq'
 
 import { Channel } from './Channel'
 import { ChannelConsumer } from './ChannelConsumer'
@@ -8,6 +9,7 @@ import { checkIsConsumer, getChannelConsumer, setChannelConsumer } from './Chann
 import { getChannelProvider } from './ChannelProviders'
 import { getNextSymbol } from './getNextSymbol'
 import { getHookEnv } from './HookEnvironment'
+import { useMemo } from './useMemo'
 
 export function useChannel<E, A>(
   channel: Channel<E, A>,
@@ -46,12 +48,15 @@ export function useChannel<E, A, B = A>(
     const key = yield* getNextSymbol(env.id)
     const [, [getA]] = yield* getChannelProvider(channel, deepEqualsEq)
     const isConsumer = yield* checkIsConsumer(channel.name, env.id)
+    const b = yield* map(consumer.selector, getA)
+    const tupleEq = yield* useMemo(getTupleEq, [consumer.eq])
+    const stable = yield* useMemo(identity, [b], tupleEq)
 
     if (!isConsumer) {
       yield* setChannelConsumer(channel.name, env.id, key, consumer)
     }
 
-    return yield* map(consumer.selector, getA)
+    return stable
   })
 
   return eff
