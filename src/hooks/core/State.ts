@@ -12,13 +12,18 @@ export const setState = curry(<A, B>(value: A, state: State<B, A>): Pure<B> => s
   <A>(value: A): <B>(state: State<B, A>) => Pure<B>
 }
 
-export const updateState = <A, B>(f: (value: A) => B, state: State<A, B>): Pure<A> =>
-  doEffect(function* () {
-    const a = yield* getState(state)
-    const b = f(a)
+export const updateState = curry(
+  <A, B>(f: (value: A) => B, state: State<A, B>): Pure<A> =>
+    doEffect(function* () {
+      const a = yield* getState(state)
+      const b = f(a)
 
-    return yield* setState(b, state)
-  })
+      return yield* setState(b, state)
+    }),
+) as {
+  <A, B>(f: (value: A) => B, state: State<A, B>): Pure<A>
+  <A, B>(f: (value: A) => B): (state: State<A, B>) => Pure<A>
+}
 
 export const contramap = curry(
   <A, B, C>(f: (a: A) => B, state: State<C, B>): State<C, A> => pipe(state, promap(identity, f)),

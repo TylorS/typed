@@ -28,8 +28,18 @@ export function useState<E, A>(
       return states.get(symbol) as State<A, A>
     }
 
-    const state: State<A, A> = yield* createState(initial, eq, () =>
-      pipe(sendHookEvent(UpdatedHookEnvironment.of(env.hookEnvironment)), provide(env)),
+    const state: State<A, A> = yield* createState(initial, eq, (currentValue, updatedValue) =>
+      pipe(
+        sendHookEvent(
+          UpdatedHookEnvironment.of({
+            hookEnvironment: env.hookEnvironment,
+            symbol,
+            currentValue,
+            updatedValue,
+          }),
+        ),
+        provide(env),
+      ),
     )
 
     states.set(symbol, state)
