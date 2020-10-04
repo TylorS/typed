@@ -49,5 +49,7 @@ export const test = describe(`provideChannel`, [
         execPure,
       )
     }),
+
+    it(`updates a child consumers`, () => {}),
   ]),
 ])
