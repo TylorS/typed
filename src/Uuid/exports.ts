@@ -29,5 +29,6 @@ export const createUuid = pipe(
 )
 
 export * from './common'
-export * from './uuid4/exports'
+export * from './provideUuidEnv'
 export * from './randomUuidSeed/exports'
+export * from './uuid4/exports'

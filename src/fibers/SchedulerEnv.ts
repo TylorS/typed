@@ -1,16 +1,25 @@
 import * as S from '@most/scheduler'
 import { Disposable, Scheduler, Task, Time } from '@most/types'
 import { lazy } from '@typed/fp/Disposable/exports'
-import { async, Effect } from '@typed/fp/Effect/Effect'
-import { fromEnv } from '@typed/fp/Effect/fromEnv'
+import { async, Effect, fromEnv, provideWith, Pure } from '@typed/fp/Effect/exports'
+import {} from '@typed/fp/Effect/fromEnv'
 import { flow } from 'fp-ts/function'
 import { IO } from 'fp-ts/IO'
+
 /**
  * @since 0.0.1
  */
 export interface SchedulerEnv {
   readonly scheduler: Scheduler
 }
+
+export const provideSchedulerEnv = provideWith(
+  Pure.fromIO(
+    (): SchedulerEnv => ({
+      scheduler: S.newDefaultScheduler(),
+    }),
+  ),
+)
 
 /**
  * Add a delay at the specified about of time

@@ -10,9 +10,6 @@
   },
   "references": [
     {
-      "path": "../RemoteData/tsconfig.esm.json"
-    },
-    {
       "path": "../common/tsconfig.esm.json"
     },
     {

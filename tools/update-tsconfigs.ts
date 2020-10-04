@@ -68,11 +68,7 @@ const updateBuildConfigs = () =>
 const updateModuleConfigs = () =>
   Promise.all(
     MODULES.map((name) =>
-      Promise.all([
-        updateModuleConfig(name),
-        updateModuleConfig(name, 'esm'),
-        updateModuleConfig(name, 'cjs'),
-      ]),
+      Promise.all([updateModuleConfig(name, 'esm'), updateModuleConfig(name, 'cjs')]),
     ),
   ).then(() => process.stdout.write(EOL))
 
@@ -145,7 +141,7 @@ function createFpTsImportRewrite(moduleType: ModuleType) {
   }
 }
 
-async function updateModuleConfig(name: string, moduleType?: ModuleType) {
+async function updateModuleConfig(name: string, moduleType: ModuleType) {
   try {
     const directory = join(SRC_DIR, name)
     const configName = moduleType === void 0 ? `tsconfig.json` : `tsconfig.${moduleType}.json`
@@ -166,20 +162,12 @@ async function updateModuleConfig(name: string, moduleType?: ModuleType) {
       tsconfigJson.compilerOptions = {}
     }
 
-    if (moduleType) {
-      tsconfigJson.compilerOptions = {
-        ...tsconfigJson.compilerOptions,
-        ...(moduleType === 'esm' ? { module: 'esnext' } : { module: 'commonjs' }),
-      }
+    tsconfigJson.compilerOptions = {
+      ...tsconfigJson.compilerOptions,
+      ...(moduleType === 'esm' ? { module: 'esnext' } : { module: 'commonjs' }),
     }
 
     tsconfigJson.references = findAllReferences(directory, moduleType, name)
-
-    if (!moduleType) {
-      tsconfigJson.extends = '../../tsconfig.json'
-      delete tsconfigJson.compilerOptions.outDir
-      tsconfigJson.exclude = []
-    }
 
     await writeFile(tsconfigJsonPath, JSON.stringify(tsconfigJson, null, 2) + EOL)
   } catch (error) {
@@ -189,7 +177,7 @@ async function updateModuleConfig(name: string, moduleType?: ModuleType) {
   }
 }
 
-function findAllReferences(directory: string, moduleType: ModuleType | undefined, name: string) {
+function findAllReferences(directory: string, moduleType: ModuleType, name: string) {
   const filePaths = findFilePaths(directory, ['*.ts', '**/*.ts'])
   const project = new TSM.Project({
     tsConfigFilePath: BASE_TSCONFIG_PATH,
@@ -210,7 +198,7 @@ function findAllReferences(directory: string, moduleType: ModuleType | undefined
   )
 
   return typedDependencyNames.map((name) => ({
-    path: `../${name}/tsconfig.${moduleType ? `${moduleType}.` : ``}json`,
+    path: `../${name}/tsconfig.${moduleType}.json`,
   }))
 }
 

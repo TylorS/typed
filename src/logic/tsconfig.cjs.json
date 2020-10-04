@@ -10,9 +10,6 @@
   },
   "references": [
     {
-      "path": "../RemoteData/tsconfig.cjs.json"
-    },
-    {
       "path": "../common/tsconfig.cjs.json"
     },
     {

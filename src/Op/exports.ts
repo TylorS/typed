@@ -9,11 +9,14 @@ import { Newtype } from 'newtype-ts'
 export interface Op<Uri extends PropertyKey, F extends Fn<readonly any[], E.Effect<any, any>>>
   extends Newtype<OpUri<Uri, F>, Uri> {}
 
-interface OpUri<Uri extends PropertyKey, F extends Fn = Fn> {
-  readonly Op: unique symbol
-  readonly Uri: Uri
-  readonly Fn: F
-}
+type OpUri<Uri extends PropertyKey, F extends Fn = Fn> = Record<
+  Uri,
+  {
+    readonly Uri: Uri
+    readonly Fn: F
+    readonly Op: unique symbol
+  }
+>
 
 // Type-level Helpers
 
@@ -51,10 +54,7 @@ export type OPS = typeof OPS
  * Opaque environment in which to request the implementation of a particular operation.
  */
 export interface OpEnv<O extends Op<PropertyKey, any>>
-  extends Newtype<
-    Readonly<Record<UriOf<O>, { readonly OpEnv: unique symbol }>>,
-    Readonly<Record<OPS, OpMap>>
-  > {}
+  extends Newtype<Record<UriOf<O>, O['_URI']>, Record<OPS, OpMap>> {}
 
 /**
  * The shared map in which *all* implementation of operations are placed in.
