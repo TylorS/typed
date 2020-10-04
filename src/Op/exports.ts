@@ -9,14 +9,11 @@ import { Newtype } from 'newtype-ts'
 export interface Op<Uri extends PropertyKey, F extends Fn<readonly any[], E.Effect<any, any>>>
   extends Newtype<OpUri<Uri, F>, Uri> {}
 
-type OpUri<Uri extends PropertyKey, F extends Fn = Fn> = Record<
-  Uri,
-  {
-    readonly Uri: Uri
-    readonly Fn: F
-    readonly Op: unique symbol
-  }
->
+export interface OpUri<Uri extends PropertyKey, F extends Fn = Fn> {
+  readonly Uri: Uri
+  readonly Fn: F
+  readonly Op: unique symbol
+}
 
 // Type-level Helpers
 
