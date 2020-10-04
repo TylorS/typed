@@ -8,26 +8,26 @@
   "typings": "./cjs/exports.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@most/core": "^1.5.0",
-    "@most/disposable": "^1.2.2",
+    "@most/core": "^1.6.1",
+    "@most/disposable": "^1.3.0",
     "@most/hold": "^4.1.0",
-    "@most/scheduler": "^1.2.3",
-    "@most/types": "^1.0.2",
+    "@most/scheduler": "^1.3.0",
+    "@most/types": "^1.1.0",
     "fp-ts": "^2.8.3",
     "io-ts": "^2.2.10",
     "logging-ts": "^0.3.4",
     "monocle-ts": "^2.3.3",
     "most-subject": "^6.0.0",
     "newtype-ts": "^0.3.4",
-    "path-to-regexp": "^6.1.0",
+    "path-to-regexp": "^6.2.0",
     "ts-toolbelt": "^8.0.6"
   },
   "devDependencies": {
     "@typed/test": "^9.5.0",
-    "@types/node": "^14.0.27",
+    "@types/node": "^14.11.2",
     "@types/rimraf": "^3.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.2.0",
-    "@typescript-eslint/parser": "^4.2.0",
+    "@typescript-eslint/eslint-plugin": "^4.3.0",
+    "@typescript-eslint/parser": "^4.3.0",
     "@zerollup/ts-transform-paths": "^1.7.18",
     "@zoltu/typescript-transformer-append-js-extension": "^1.0.1",
     "docs-ts": "^0.5.1",
@@ -46,7 +46,7 @@
     "ts-transformer-replace-paths": "^1.0.1",
     "tsc-watch": "^4.2.9",
     "tslib": "^2.0.1",
-    "typescript": "^4.0.2"
+    "typescript": "^4.0.3"
   },
   "scripts": {
     "--maintenance--": "",

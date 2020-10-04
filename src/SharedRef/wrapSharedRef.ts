@@ -14,7 +14,7 @@ export const wrapSharedRef = (<R extends SharedRef<any, any>>(R: R) => {
     <A extends SharedRefValue<R>>(value: A) => Effect<E, A>,
     <A extends SharedRefValue<R>>(modify: Arity1<A, A>) => Effect<E, A>,
   ]
-  <K, A>(R: SharedRef<K, A>): readonly [
+  <K extends PropertyKey, A>(R: SharedRef<K, A>): readonly [
     Effect<SharedRefEnv<typeof R>, A>,
     (value: A) => Effect<SharedRefEnv<typeof R>, A>,
     (modify: Arity1<A, A>) => Effect<SharedRefEnv<typeof R>, A>,

@@ -6,10 +6,10 @@ import { Newtype } from 'newtype-ts'
 /**
  * Used to represent the resources required to perform a particular operation.
  */
-export interface Op<Uri, F extends Fn<readonly any[], E.Effect<any, any>>>
+export interface Op<Uri extends PropertyKey, F extends Fn<readonly any[], E.Effect<any, any>>>
   extends Newtype<OpUri<Uri, F>, Uri> {}
 
-interface OpUri<Uri, F extends Fn = Fn> {
+interface OpUri<Uri extends PropertyKey, F extends Fn = Fn> {
   readonly Op: unique symbol
   readonly Uri: Uri
   readonly Fn: F
@@ -20,7 +20,9 @@ interface OpUri<Uri, F extends Fn = Fn> {
 /**
  * Extract the URI of an Op
  */
-export type UriOf<A> = A extends Op<infer R, any> ? R : never
+export type UriOf<A> = CastPropertyKey<A extends Op<infer R, any> ? R : never>
+
+type CastPropertyKey<A> = A extends PropertyKey ? A : PropertyKey
 
 /**
  * Extract the Function behind an Operation
@@ -42,13 +44,17 @@ export type EffectOf<A> = ReturnType<FnOf<A>>
  */
 export type ReturnOf<A> = E.ReturnOf<EffectOf<A>>
 
-export const OPS = Symbol('@typed/fp/Op/exportss')
+export const OPS = Symbol('@typed/fp/Ops')
 export type OPS = typeof OPS
 
 /**
  * Opaque environment in which to request the implementation of a particular operation.
  */
-export interface OpEnv<O extends Op<any, any>> extends Newtype<O, Readonly<Record<OPS, OpMap>>> {}
+export interface OpEnv<O extends Op<PropertyKey, any>>
+  extends Newtype<
+    Readonly<Record<UriOf<O>, { readonly OpEnv: unique symbol }>>,
+    Readonly<Record<OPS, OpMap>>
+  > {}
 
 /**
  * The shared map in which *all* implementation of operations are placed in.
