@@ -18,8 +18,8 @@ export const runWithHooks = curry(
     effect: Effect<HookEnv & E, A>,
   ): Effect<E & SchedulerEnv & SharedRefEnv<HookEvents> & SharedRefEnv<HookPositions>, A> =>
     doEffect(function* () {
+      yield* resetIndex(hookEnvironment.id) // Ensure indexed states always reset
       yield* sendHookEvent(RunningHookEnvironment.of(hookEnvironment))
-      yield* resetIndex(hookEnvironment.id)
 
       return yield* pipe(effect, use({ hookEnvironment })) as Effect<E, A>
     }),
