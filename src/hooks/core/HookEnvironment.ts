@@ -75,9 +75,9 @@ export const removeKeyedEnvironment = (
   return eff
 }
 
-export const createChildHookEnvironment: Effect<
+export const createHookEnv: Effect<
   UuidEnv & SharedRefEnv<HookDisposables> & EnvOf<typeof sendHookEvent>,
-  HookEnvironment
+  HookEnv
 > = doEffect(function* () {
   const { hookEnvironment } = (yield* ask<unknown>()) as Partial<HookEnv>
   const id = HookEnvironmentId.wrap(yield* createUuid)
@@ -94,7 +94,7 @@ export const createChildHookEnvironment: Effect<
 
   yield* sendHookEvent(CreatedHookEnvironment.of(created))
 
-  return created
+  return { hookEnvironment: created }
 })
 
 export function createHookEnvironment(

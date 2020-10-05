@@ -1,7 +1,7 @@
 import { Arity1, deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Effect, EnvOf, map } from '@typed/fp/Effect/exports'
+import { getTupleEq } from 'fp-ts/Eq'
 import { identity } from 'fp-ts/function'
-import { getTupleEq } from 'fp-ts/lib/Eq'
 
 import { Channel } from './Channel'
 import { ChannelConsumer } from './ChannelConsumer'

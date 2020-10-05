@@ -2,7 +2,6 @@ import { doEffect, Effect } from '@typed/fp/Effect/exports'
 import {
   createSharedRef,
   readSharedRef,
-  retrieveSharedRef,
   SharedRef,
   SharedRefEnv,
 } from '@typed/fp/SharedRef/exports'
@@ -25,9 +24,9 @@ export const getNextIndex = (
   id: HookEnvironmentId,
 ): Effect<SharedRefEnv<HookPositions>, number> => {
   const eff = doEffect(function* () {
-    const ref = yield* retrieveSharedRef(HookPositions)
+    const positions = yield* getHookPositions
 
-    return getNextById(ref.read(), id)
+    return getNextById(positions, id)
   })
 
   return eff
@@ -35,8 +34,7 @@ export const getNextIndex = (
 
 export const resetIndex = (id: HookEnvironmentId): Effect<SharedRefEnv<HookPositions>, void> => {
   const eff = doEffect(function* () {
-    const ref = yield* retrieveSharedRef(HookPositions)
-    const positions = ref.read()
+    const positions = yield* getHookPositions
 
     positions.set(id, INITIAL_ENV_INDEX)
   })
@@ -48,8 +46,7 @@ export const deleteHookPosition = (
   id: HookEnvironmentId,
 ): Effect<SharedRefEnv<HookPositions>, void> => {
   const eff = doEffect(function* () {
-    const ref = yield* retrieveSharedRef(HookPositions)
-    const positions = ref.read()
+    const positions = yield* getHookPositions
 
     positions.delete(id)
   })

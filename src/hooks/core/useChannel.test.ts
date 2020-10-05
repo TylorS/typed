@@ -6,7 +6,7 @@ import { describe, given, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 
 import { createChannel } from './Channel'
-import { provideHookEnv } from './provideHookEnvironment'
+import { provideHookEnv } from './provideHookEnv'
 import { provideEmptyHookStates } from './provideHookStates'
 import { useChannel } from './useChannel'
 

@@ -1,8 +1,7 @@
-import { Effect, Pure } from '@typed/fp/Effect/Effect'
-import { doEffect } from '@typed/fp/Effect/exports'
+import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
 import { Eq } from 'fp-ts/Eq'
 
-import { State } from './State'
+import { State } from '../core/State'
 
 export function createState<A, B>(
   initial: Effect<A, B>,

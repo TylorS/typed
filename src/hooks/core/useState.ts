@@ -5,7 +5,7 @@ import { SharedRefEnv } from '@typed/fp/SharedRef/exports'
 import { Eq } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
 
-import { createState } from './createState'
+import { createState } from '../helpers/createState'
 import { UpdatedHookEnvironment } from './events'
 import { getNextSymbol } from './getNextSymbol'
 import { HookEnv } from './HookEnvironment'

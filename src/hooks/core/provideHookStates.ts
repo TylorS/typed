@@ -14,17 +14,15 @@ import {
 } from './exports'
 import { HookDisposables } from './HookDisposables'
 
+export type HookRefEnvs = SharedRefEnv<ChannelProviders> &
+  SharedRefEnv<ChannelConsumers> &
+  SharedRefEnv<HookDisposables> &
+  SharedRefEnv<HookEvents> &
+  SharedRefEnv<HookPositions> &
+  SharedRefEnv<HookSymbols>
+
 export const provideHookStates = (states: Partial<HookStates>) => <E, A>(
-  eff: Effect<
-    E &
-      SharedRefEnv<ChannelProviders> &
-      SharedRefEnv<ChannelConsumers> &
-      SharedRefEnv<HookDisposables> &
-      SharedRefEnv<HookEvents> &
-      SharedRefEnv<HookPositions> &
-      SharedRefEnv<HookSymbols>,
-    A
-  >,
+  eff: Effect<E & HookRefEnvs, A>,
 ): Effect<E, A> =>
   pipe(
     eff,

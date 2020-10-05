@@ -63,7 +63,7 @@
     "clean:typescript:esm": "npm run build:typescript:esm -- --clean",
     "docs": "ts-node ./node_modules/.bin/docs-ts",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
-    "unit-test": "ts-node ./node_modules/.bin/typed-test",
+    "unit-test": "typed-test",
     "test": "npm run lint && npm run unit-test",
     "test:watch": "npm test -- --watch",
     "update": "npm run update:gitignore && npm run update:tsconfig",

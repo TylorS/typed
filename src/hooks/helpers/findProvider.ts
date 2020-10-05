@@ -1,7 +1,7 @@
 import { isSome } from 'fp-ts/Option'
 
-import { HookEnvironment, HookEnvironmentId } from './HookEnvironment'
-import { State } from './State'
+import { HookEnvironment, HookEnvironmentId } from '../core/HookEnvironment'
+import { State } from '../core/State'
 
 export function findProvider(
   env: HookEnvironment,

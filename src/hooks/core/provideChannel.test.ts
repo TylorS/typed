@@ -7,10 +7,10 @@ import { pipe } from 'fp-ts/function'
 
 import { createChannel } from './Channel'
 import { isUpdatedHookEnvironmentEvent } from './events'
-import { createChildHookEnvironment } from './HookEnvironment'
+import { createHookEnv } from './HookEnvironment'
 import { listenToHookEvents } from './HookEvents'
 import { provideChannel } from './provideChannel'
-import { provideHookEnv } from './provideHookEnvironment'
+import { provideHookEnv } from './provideHookEnv'
 import { provideEmptyHookStates } from './provideHookStates'
 import { runWithHooks } from './runWithHooks'
 import { updateState } from './State'
@@ -38,9 +38,9 @@ export const test = describe(`provideChannel`, [
 
         yield* updateState((x) => x + 1, testState)
 
-        const env = yield* createChildHookEnvironment
+        const env = yield* createHookEnv
 
-        yield* runWithHooks(env, child)
+        yield* runWithHooks(env.hookEnvironment, child)
       })
 
       pipe(
@@ -73,13 +73,13 @@ export const test = describe(`provideChannel`, [
 
         yield* updateState((x) => x + 1, testState)
 
-        const env = yield* createChildHookEnvironment
+        const env = yield* createHookEnv
 
         yield* listenToHookEvents(
           isUpdatedHookEnvironmentEvent,
           undisposable((event) => {
             try {
-              equal(env.id, event.hookEnvironment.id)
+              equal(env.hookEnvironment.id, event.hookEnvironment.id)
               done()
             } catch (error) {
               done(error)
@@ -87,7 +87,7 @@ export const test = describe(`provideChannel`, [
           }),
         )
 
-        yield* runWithHooks(env, child)
+        yield* runWithHooks(env.hookEnvironment, child)
       })
 
       pipe(

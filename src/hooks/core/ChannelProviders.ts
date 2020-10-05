@@ -16,10 +16,10 @@ import {
 import { Eq } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
 
+import { createState } from '../helpers/createState'
+import { findProvider } from '../helpers/findProvider'
 import { getOrSet } from '../helpers/getOrSet'
-import { createState } from './createState'
 import { ChannelUpdated } from './events'
-import { findProvider } from './findProvider'
 import { HookEvents, sendHookEvent } from './HookEvents'
 import { State } from './State'
 

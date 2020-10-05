@@ -18,7 +18,7 @@ import { createChannel } from './Channel'
 import { getChannelProvider } from './ChannelProviders'
 import { HookEvent, isUpdatedHookEnvironmentEvent } from './events'
 import {
-  createChildHookEnvironment,
+  createHookEnv,
   createHookEnvironment,
   HookEnvironment,
   HookEnvironmentId,
@@ -42,16 +42,16 @@ export const test = describe(`ChannelProviders`, [
         })
 
         const parent = doEffect(function* () {
-          const childEnv = yield* createChildHookEnvironment
+          const { hookEnvironment } = yield* createHookEnv
 
-          return yield* runWithHooks(childEnv, child)
+          return yield* runWithHooks(hookEnvironment, child)
         })
 
         const test = doEffect(function* () {
-          const root = yield* createChildHookEnvironment
-          const actual = yield* runWithHooks(root, parent)
+          const { hookEnvironment } = yield* createHookEnv
+          const actual = yield* runWithHooks(hookEnvironment, parent)
 
-          equal(root, actual)
+          equal(hookEnvironment, actual)
         })
 
         pipe(test, provideEmptyHookStates, provideSchedulerEnv, provideUuidEnv, execPure)
@@ -67,19 +67,21 @@ export const test = describe(`ChannelProviders`, [
         const child = doEffect(function* () {
           yield* provideChannel(channel, eqNumber)
 
-          return yield* runWithHooks(yield* createChildHookEnvironment, grandChild)
+          const { hookEnvironment } = yield* createHookEnv
+
+          return yield* runWithHooks(hookEnvironment, grandChild)
         })
 
         const parent = doEffect(function* () {
-          const childEnv = yield* createChildHookEnvironment
-          const provider = yield* runWithHooks(childEnv, child)
+          const { hookEnvironment } = yield* createHookEnv
+          const provider = yield* runWithHooks(hookEnvironment, child)
 
-          return [childEnv, provider] as const
+          return [hookEnvironment, provider] as const
         })
 
         const test = doEffect(function* () {
-          const root = yield* createChildHookEnvironment
-          const [expected, actual] = yield* runWithHooks(root, parent)
+          const { hookEnvironment } = yield* createHookEnv
+          const [expected, actual] = yield* runWithHooks(hookEnvironment, parent)
 
           equal(expected.id, actual.id)
         })
