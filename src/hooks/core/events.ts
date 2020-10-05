@@ -31,15 +31,12 @@ export namespace CreatedHookEnvironment {
 export interface UpdatedHookEnvironment {
   readonly type: HookEventType.UpdatedEnvironment
   readonly hookEnvironment: HookEnvironment
-  readonly symbol: symbol
-  readonly currentValue: unknown
-  readonly updatedValue: unknown
 }
 
 export namespace UpdatedHookEnvironment {
-  export const of = (event: Omit<UpdatedHookEnvironment, 'type'>): UpdatedHookEnvironment => ({
+  export const of = (hookEnvironment: HookEnvironment): UpdatedHookEnvironment => ({
     type: HookEventType.UpdatedEnvironment,
-    ...event,
+    hookEnvironment,
   })
 }
 

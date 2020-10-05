@@ -14,13 +14,15 @@ export function createState<A, B>(
     const getState = Pure.fromIO(() => current)
     const updateState = (b: B) =>
       doEffect(function* () {
-        if (eq.equals(current, b)) {
+        const a = current
+
+        if (eq.equals(a, b)) {
           return current
         }
 
         current = b
 
-        yield* onUpdated(current, b)
+        yield* onUpdated(a, b)
 
         return b
       })

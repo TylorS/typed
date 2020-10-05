@@ -45,21 +45,18 @@ export const listenToHookEvents = <A extends HookEvent>(
     const { scheduler } = yield* ask<SchedulerEnv>()
     const [, stream] = yield* getHookEvents
 
-    return yield* useDisposable(
-      (s) => {
-        const disposable = lazy()
+    return yield* useDisposable(() => {
+      const disposable = lazy()
 
-        disposable.addDisposable(
-          pipe(s, filter(refinement)).run(
-            createEventSink((a) => disposable.addDisposable(onValue(a))),
-            scheduler,
-          ),
-        )
+      disposable.addDisposable(
+        pipe(stream, filter(refinement)).run(
+          createEventSink((a) => disposable.addDisposable(onValue(a))),
+          scheduler,
+        ),
+      )
 
-        return disposable
-      },
-      [stream],
-    )
+      return disposable
+    }, [])
   })
 
   return eff
