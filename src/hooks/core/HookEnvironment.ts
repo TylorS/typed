@@ -111,3 +111,18 @@ export function createHookEnvironment(
 
   return env
 }
+
+export function getAllDescendants(node: HookEnvironment): ReadonlyArray<HookEnvironment> {
+  const children: Array<HookEnvironment> = []
+  const toProcess = [...node.children.values()]
+
+  while (toProcess.length > 0) {
+    const child = toProcess.shift()!
+
+    children.push(child)
+
+    toProcess.push(...child.children.values())
+  }
+
+  return children
+}

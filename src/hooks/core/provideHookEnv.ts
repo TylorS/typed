@@ -21,7 +21,7 @@ export const provideHookEnv: <E, A>(
 
     yield* pipe(
       listenToHookEvents(isRemovedHookEnvironmentEvent, (ev) =>
-        pipe(removeHookEnvironment(ev.hookEnvironment), use(env), use(hookEnv), execPure),
+        pipe(removeHookEnvironment(ev.hookEnvironment), use(env), execPure),
       ),
       use(hookEnv),
     )
