@@ -1,6 +1,6 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Effect, EnvOf, lazy, Pure, zip } from '@typed/fp/Effect/exports'
-import { Eq, eqStrict, getTupleEq } from 'fp-ts/Eq'
+import { Eq, getTupleEq } from 'fp-ts/Eq'
 import { constVoid, flow } from 'fp-ts/function'
 import { getEq } from 'fp-ts/ReadonlyArray'
 
@@ -20,12 +20,12 @@ export const useMemoListEffect = <A, E, B>(
     EnvOf<typeof useFiber>,
   ReadonlyArray<B>
 > => {
-  const diffValues = diff(eq)
   const eff = doEffect(function* () {
     const previousValues = yield* useRef<{}, ReadonlyArray<A>>(Pure.fromIO(() => values.slice()))
     const [getStableValues, updateStableValues] = yield* useState(lazy(() => zip(values.map(fn))))
     const firstRun = yield* useRef(Pure.of(true))
-    const argsEq = yield* useMemo(flow(getEq, getTupleEq), [eq], eqStrict)
+    const argsEq = yield* useMemo(flow(getEq, getTupleEq), [eq])
+    const diffValues = yield* useMemo(diff, [eq])
 
     yield* useFiber(
       (vs: ReadonlyArray<A>) => {
