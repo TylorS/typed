@@ -23,7 +23,15 @@ function interval(timer: Timer, ms: Time, f: () => Disposable): Disposable {
   const handles: Array<Handle> = []
   const disposable = lazy()
 
-  handles.push(timer.setTimer(() => !disposable.disposed && disposable.addDisposable(f()), ms))
+  function run() {
+    if (!disposable.disposed) {
+      disposable.addDisposable(f())
+
+      handles.push(timer.setTimer(run, ms))
+    }
+  }
+
+  handles.push(timer.setTimer(run, ms))
 
   const dispose = () => handles.forEach((handle) => timer.clearTimer(handle))
 

@@ -1,24 +1,15 @@
 import { Time } from '@most/types'
 import { Effect } from '@typed/fp/Effect/Effect'
-import { doEffect } from '@typed/fp/Effect/exports'
-import { delay } from '@typed/fp/fibers/exports'
+import { ask, doEffect, execPure, use } from '@typed/fp/Effect/exports'
+import { pipe } from 'fp-ts/function'
 
-import { useFiber } from './useFiber'
+import { useInterval } from './useInterval'
 
-export function useIntervalEffect<Args extends ReadonlyArray<any>, E>(
-  f: (...args: Args) => Effect<E, void>,
-  ms: Time,
-  deps: Args,
-) {
-  return useFiber((n, ...args) => intervalEffect(f(...args), n), [ms, ...deps] as const)
-}
-
-function intervalEffect<E>(fx: Effect<E, void>, ms: Time) {
+export function useIntervalEffect<E>(f: () => Effect<E, any>, ms: Time) {
   const eff = doEffect(function* () {
-    while (true) {
-      yield* delay(ms)
-      yield* fx
-    }
+    const env = yield* ask<E>()
+
+    return yield* useInterval(() => pipe(f(), use(env), execPure), ms)
   })
 
   return eff

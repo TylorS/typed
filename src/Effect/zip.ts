@@ -2,6 +2,7 @@ import { And } from '@typed/fp/common/And'
 import { readonlyArray } from 'fp-ts/ReadonlyArray'
 import { A } from 'ts-toolbelt'
 
+import { IsUnknown } from '../common/types'
 import { Effect, EnvOf, ReturnOf } from './Effect'
 import { effect, effectSeq } from './fp-ts'
 
@@ -13,9 +14,11 @@ export type ZipEffects = <A extends ReadonlyArray<Effect<any, any>>>(
   effects: A,
 ) => Effect<ZipEnvOf<A>, ZipReturnOf<A>>
 
-export type ZipEnvOf<A extends ReadonlyArray<Effect<any, any>>> = And<
-  A.Cast<{ readonly [K in keyof A]: EnvOf<A[K]> }, ReadonlyArray<any>>
+export type ZipEnvOf<A extends ReadonlyArray<Effect<any, any>>> = A extends ReadonlyArray<
+  Effect<infer R, any>
 >
+  ? R
+  : never
 
 export type ZipReturnOf<A extends ReadonlyArray<Effect<any, any>>> = {
   readonly [K in keyof A]: ReturnOf<A[K]>

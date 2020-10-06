@@ -9,8 +9,8 @@ import { createRef, Ref, useDepChange, useMemo } from '../core/exports'
 
 export const useFiber = <A extends ReadonlyArray<any>, B, C>(
   f: Fn<A, Effect<B, C>>,
-  args: A,
-  eq: Eq<A> = getEq(deepEqualsEq),
+  args: A | Readonly<A>,
+  eq: Eq<A> | Eq<Readonly<A>> = getEq(deepEqualsEq),
 ): Effect<B & FiberEnv & EnvOf<typeof useDepChange> & EnvOf<typeof useMemo>, Fiber<C>> => {
   const eff = doEffect(function* () {
     const depsChanged = yield* useDepChange(args, eq, true)
