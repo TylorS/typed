@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.cjs.json",
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "rootDir": "./",
+    "outDir": "../../cjs/hooks",
+    "module": "commonjs"
+  },
+  "references": [
+    {
+      "path": "../Disposable/tsconfig.cjs.json"
+    },
+    {
+      "path": "../Effect/tsconfig.cjs.json"
+    },
+    {
+      "path": "../Key/tsconfig.cjs.json"
+    },
+    {
+      "path": "../SharedRef/tsconfig.cjs.json"
+    },
+    {
+      "path": "../Uuid/tsconfig.cjs.json"
+    },
+    {
+      "path": "../common/tsconfig.cjs.json"
+    },
+    {
+      "path": "../fibers/tsconfig.cjs.json"
+    },
+    {
+      "path": "../lambda/tsconfig.cjs.json"
+    },
+    {
+      "path": "../logic/tsconfig.cjs.json"
+    }
+  ],
+  "include": [
+    "./*.ts",
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "./*.test.ts",
+    "./*.browser-test.ts",
+    "./**/*.test.ts",
+    "./**/*.browser-test.ts",
+    "./tsconfig.json"
+  ]
+}

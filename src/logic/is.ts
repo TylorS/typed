@@ -83,7 +83,7 @@ export const isNotNumber: IsNot<number> = complement(isNumber)
 export const isString: Is<string> = (u): u is string => typeof u === 'string'
 export const isNotString: IsNot<string> = complement(isString)
 
-export const isObject: Is<object> = (u): u is object => typeof u === 'object'
+export const isObject: Is<object> = (u): u is object => !!u && typeof u === 'object'
 export const isNotObject: IsNot<object> = complement(isObject)
 
 export const isRecord: Is<Readonly<Record<PropertyKey, unknown>>> = (

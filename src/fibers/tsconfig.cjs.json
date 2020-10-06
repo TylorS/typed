@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.cjs.json",
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "rootDir": "./",
+    "outDir": "../../cjs/fibers",
+    "module": "commonjs"
+  },
+  "references": [
+    {
+      "path": "../Disposable/tsconfig.cjs.json"
+    },
+    {
+      "path": "../Effect/tsconfig.cjs.json"
+    },
+    {
+      "path": "../VirtualTimer/tsconfig.cjs.json"
+    },
+    {
+      "path": "../common/tsconfig.cjs.json"
+    }
+  ],
+  "include": [
+    "./*.ts",
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "./*.test.ts",
+    "./*.browser-test.ts",
+    "./**/*.test.ts",
+    "./**/*.browser-test.ts",
+    "./tsconfig.json"
+  ]
+}

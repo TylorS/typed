@@ -4,6 +4,16 @@ import { IORef } from 'fp-ts/IORef'
 
 import { SharedRef, SharedRefEnv, SharedRefValue } from './SharedRef'
 
-export const retrieveSharedRef = <R extends SharedRef<any, any>>(
+export function retrieveSharedRef<R extends SharedRef<any, any>>(
   ref: R,
-): Effect<SharedRefEnv<R>, IORef<SharedRefValue<R>>> => (callOp<R>(ref) as any)()
+): Effect<SharedRefEnv<typeof ref>, IORef<SharedRefValue<R>>>
+
+export function retrieveSharedRef<K extends PropertyKey, A>(
+  ref: SharedRef<K, A>,
+): Effect<SharedRefEnv<typeof ref>, IORef<A>>
+
+export function retrieveSharedRef<K extends PropertyKey, A>(
+  ref: SharedRef<K, A>,
+): Effect<SharedRefEnv<typeof ref>, IORef<A>> {
+  return callOp<typeof ref>(ref)()
+}

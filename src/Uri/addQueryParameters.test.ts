@@ -1,6 +1,6 @@
 import { describe, given, it, Test } from '@typed/test'
 
-import { addQueryParameters, Uri } from '.'
+import { addQueryParameters, Uri } from './exports'
 
 export const test: Test = describe(`addQueryParameters`, [
   given(`a url and a Record of query parameters`, [

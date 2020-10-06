@@ -10,16 +10,16 @@
   },
   "references": [
     {
-      "path": "../RemoteData/tsconfig.json"
+      "path": "../RemoteData/tsconfig.esm.json"
     },
     {
-      "path": "../Uuid/tsconfig.json"
+      "path": "../Uuid/tsconfig.esm.json"
     },
     {
-      "path": "../common/tsconfig.json"
+      "path": "../common/tsconfig.esm.json"
     },
     {
-      "path": "../lambda/tsconfig.json"
+      "path": "../lambda/tsconfig.esm.json"
     }
   ],
   "include": [

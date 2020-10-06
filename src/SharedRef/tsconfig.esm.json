@@ -10,16 +10,16 @@
   },
   "references": [
     {
-      "path": "../Effect/tsconfig.json"
+      "path": "../Effect/tsconfig.esm.json"
     },
     {
-      "path": "../Op/tsconfig.json"
+      "path": "../Op/tsconfig.esm.json"
     },
     {
-      "path": "../common/tsconfig.json"
+      "path": "../common/tsconfig.esm.json"
     },
     {
-      "path": "../lambda/tsconfig.json"
+      "path": "../lambda/tsconfig.esm.json"
     }
   ],
   "include": [

@@ -1,4 +1,4 @@
-import { ask, chain, map } from '@typed/fp/Effect/exports'
+import { ask, map } from '@typed/fp/Effect/exports'
 import { pipe } from 'fp-ts/pipeable'
 import { prism } from 'newtype-ts'
 
@@ -24,10 +24,11 @@ export const uuidPrism = prism<Uuid>((s) => uuidRegex.test(s))
  */
 export const createUuid = pipe(
   ask<UuidEnv>(),
-  chain((e) => e.randomUuidSeed()),
+  map((e) => e.randomUuidSeed()),
   map(uuid4),
 )
 
 export * from './common'
-export * from './uuid4/exports'
+export * from './provideUuidEnv'
 export * from './randomUuidSeed/exports'
+export * from './uuid4/exports'

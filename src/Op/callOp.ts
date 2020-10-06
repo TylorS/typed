@@ -11,7 +11,8 @@ export function callOp<O extends Op<any, any>>(op: O): CallOf<O> {
     const eff = doEffect(function* () {
       const map = yield* getOpMap
       const callOf = map.get(op)!
-      const value = yield* callOf(...args)
+      const eff = callOf(...args)
+      const value = yield* eff
 
       return value
     })

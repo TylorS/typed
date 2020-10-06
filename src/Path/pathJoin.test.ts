@@ -1,6 +1,6 @@
 import { describe, given, it, Test } from '@typed/test'
 
-import { pathIso, pathJoin } from '.'
+import { pathIso, pathJoin } from './exports'
 
 export const test: Test = describe(`pathJoin`, [
   given(`a array of paths without deliminators`, [

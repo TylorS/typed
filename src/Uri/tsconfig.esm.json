@@ -10,7 +10,7 @@
   },
   "references": [
     {
-      "path": "../Path/tsconfig.json"
+      "path": "../Path/tsconfig.esm.json"
     }
   ],
   "include": [
