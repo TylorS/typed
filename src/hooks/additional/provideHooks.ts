@@ -27,7 +27,7 @@ export const provideNodeHooks = <E, A>(
   pipe(eff, provideHookEnv, provideEmptyHookStates, provideSchedulerEnv, provideNodeUuidEnv)
 
 /**
- * Provide all the hook requirements for a node environment
+ * Provide all the hook requirements for a node or browser environment
  */
 export const provideHooks = <E, A>(
   eff: Effect<E & HookEnv & HookRefEnvs & SchedulerEnv & UuidEnv, A>,

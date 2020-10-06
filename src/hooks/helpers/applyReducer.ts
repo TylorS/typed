@@ -2,6 +2,9 @@ import { doEffect, Pure } from '@typed/fp/Effect/exports'
 
 import { setState, State } from '../core/State'
 
+/**
+ * Apply an reducer to a piece of state
+ */
 export const applyReducer = <A, B>(
   reducer: (acc: A, value: B) => A,
   state: State<A, A>,
