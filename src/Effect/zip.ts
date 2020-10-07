@@ -1,9 +1,6 @@
-import { And } from '@typed/fp/common/And'
 import { readonlyArray } from 'fp-ts/ReadonlyArray'
-import { A } from 'ts-toolbelt'
 
-import { IsUnknown } from '../common/types'
-import { Effect, EnvOf, ReturnOf } from './Effect'
+import { Effect, ReturnOf } from './Effect'
 import { effect, effectSeq } from './fp-ts'
 
 export const zip: ZipEffects = (readonlyArray.sequence(effect) as unknown) as ZipEffects
