@@ -5,9 +5,9 @@ import { Fn } from '@typed/fp/lambda/exports'
 import { Eq } from 'fp-ts/Eq'
 import { getEq } from 'fp-ts/ReadonlyArray'
 
+import { Ref } from '../../../SharedRef/Ref'
 import { addDisposable } from '../sharedRefs/HookDisposables'
 import { getHookEnv } from '../types/HookEnvironment'
-import { Ref } from '../types/Ref'
 import { useDepChange } from './useDepChange'
 import { useRef } from './useRef'
 

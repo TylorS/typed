@@ -1,8 +1,8 @@
 import { doEffect, Effect, EnvOf } from '@typed/fp/Effect/exports'
+import { createRef, Ref } from '@typed/fp/SharedRef/exports'
 
 import { getNextSymbol } from '../sharedRefs/getNextSymbol'
 import { getHookEnv, HookEnv } from '../types/HookEnvironment'
-import { createRef, Ref } from '../types/Ref'
 
 export function useRef<E, A>(
   initial: Effect<E, A>,

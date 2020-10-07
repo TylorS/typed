@@ -1,6 +1,6 @@
 import { doEffect, Pure } from '@typed/fp/Effect/exports'
 
-import { setState, State } from '../core/State'
+import { setState, State } from '../core/exports'
 
 /**
  * Apply an reducer to a piece of state

@@ -1,7 +1,6 @@
 import { doEffect, execEffect } from '@typed/fp/Effect/exports'
 import { describe, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
-import { newIORef } from 'fp-ts/IORef'
 
 import { provideSharedRef } from './provideSharedRef'
 import { createSharedRef, SharedRef, SharedRefEnv } from './SharedRef'
@@ -27,6 +26,6 @@ export const test = describe(`useRef`, [
       }
     })
 
-    pipe(eff, provideSharedRef(Foo, newIORef(initial)), execEffect({}))
+    pipe(eff, provideSharedRef(Foo, initial), execEffect({}))
   }),
 ])

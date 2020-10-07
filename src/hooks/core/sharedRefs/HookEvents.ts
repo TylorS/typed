@@ -11,9 +11,9 @@ import {
 import { pipe } from 'fp-ts/function'
 import { Subject } from 'most-subject'
 
-import { createEventSink } from '../helpers/createEventSink'
-import { HookEvent } from './events'
-import { useDisposable } from './useDisposable'
+import { createEventSink } from '../../helpers/createEventSink'
+import { useDisposable } from '../hooks/useDisposable'
+import { HookEvent } from '../types/exports'
 
 export const HOOK_EVENTS = '@typed/fp/HookEvents'
 export type HOOK_EVENTS = typeof HOOK_EVENTS

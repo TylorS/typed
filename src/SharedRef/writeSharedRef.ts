@@ -6,13 +6,13 @@ import { SharedRef, SharedRefEnv, SharedRefValue } from './SharedRef'
 
 export const writeSharedRef = curry(
   <R extends SharedRef<any, any>>(
-    ref: R,
+    shared: R,
     value: SharedRefValue<R>,
   ): Effect<SharedRefEnv<R>, SharedRefValue<R>> =>
     doEffect(function* () {
-      const ioRef = yield* retrieveSharedRef<R>(ref)
+      const ref = yield* retrieveSharedRef<R>(shared)
 
-      ioRef.write(value)()
+      ref.current = value
 
       return value
     }),

@@ -34,7 +34,7 @@ export type TimestampedResponse = {
 // TODO: handle duplicated requests??
 export interface WithHttpManagementEnv {
   readonly httpCache: Map<string, TimestampedResponse> // Taking advantage of insertion order
-  readonly httpCacheCleanupScheduled: SharedRef<unknown, boolean>
+  readonly httpCacheCleanupScheduled: SharedRef<PropertyKey, boolean>
 }
 
 export const withHttpManagement = (options: WithHttpManagementOptions) => {
@@ -112,7 +112,7 @@ const clearOldTimestamps = (
     SchedulerEnv &
     FiberEnv &
     WhenIdleEnv &
-    SharedRefEnv<SharedRef<unknown, boolean>>,
+    SharedRefEnv<SharedRef<PropertyKey, boolean>>,
   void
 > =>
   doEffect(function* () {

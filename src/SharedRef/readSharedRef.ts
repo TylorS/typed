@@ -4,10 +4,10 @@ import { retrieveSharedRef } from './retrieveSharedRef'
 import { SharedRef, SharedRefEnv, SharedRefValue } from './SharedRef'
 
 export const readSharedRef = <R extends SharedRef<any, any>>(
-  ref: R,
+  shared: R,
 ): Effect<SharedRefEnv<R>, SharedRefValue<R>> =>
   doEffect(function* () {
-    const ioRef = yield* retrieveSharedRef<R>(ref)
+    const ref = yield* retrieveSharedRef<R>(shared)
 
-    return ioRef.read()
+    return ref.current
   })

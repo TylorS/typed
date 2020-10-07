@@ -1,8 +1,9 @@
 import { Pure } from '@typed/fp/Effect/exports'
 import { createOp, Op, OpEnv, UriOf } from '@typed/fp/Op/exports'
-import { IORef } from 'fp-ts/IORef'
 
-export interface SharedRef<Uri extends PropertyKey, A> extends Op<Uri, () => Pure<IORef<A>>> {}
+import { Ref } from './Ref'
+
+export interface SharedRef<Uri extends PropertyKey, A> extends Op<Uri, () => Pure<Ref<A>>> {}
 
 export type SharedRefValue<A> = A extends SharedRef<any, infer R> ? R : never
 

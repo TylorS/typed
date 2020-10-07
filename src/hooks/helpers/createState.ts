@@ -1,7 +1,7 @@
 import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
 import { Eq } from 'fp-ts/Eq'
 
-import { State } from '../core/State'
+import { State } from '../core/exports'
 
 /**
  * Create a piece of state that uses an initial value,
