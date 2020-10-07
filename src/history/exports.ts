@@ -1,5 +1,6 @@
 export * from './HistoryEnv'
 export * from './createHistoryEnv'
 export * from './createServerHistoryEnv/exports'
+export * from './pushPath'
 export * from './pushUri'
 export * from './scopeHistoryEnv'
