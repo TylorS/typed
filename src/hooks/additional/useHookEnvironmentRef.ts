@@ -9,8 +9,8 @@ import {
   HookEnvironment,
   HookPositions,
   HookSymbols,
+  useRef,
 } from '../core/exports'
-import { useRef } from '../core/useRef'
 
 export const useHookEnvironmentRef: Effect<
   HookEnv &

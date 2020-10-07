@@ -1,6 +1,6 @@
 import { Disposable, lazy, LazyDisposable } from '@typed/fp/Disposable/exports'
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { HookEnvironmentId } from '@typed/fp/hooks/core/HookEnvironment'
+import { HookEnvironmentId } from '@typed/fp/hooks/core/types/HookEnvironment'
 import {
   createSharedRef,
   readSharedRef,

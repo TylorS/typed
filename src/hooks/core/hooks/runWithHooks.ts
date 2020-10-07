@@ -6,11 +6,10 @@ import { curry } from '@typed/fp/lambda/exports'
 import { SharedRefEnv } from '@typed/fp/SharedRef/exports'
 import { pipe } from 'fp-ts/function'
 
-import { RunningHookEnvironment } from './events'
-import { HookEnv } from './HookEnvironment'
-import { HookEnvironment } from './HookEnvironment'
-import { HookEvents, sendHookEvent } from './HookEvents'
-import { HookPositions, resetIndex } from './HookPositions'
+import { HookEvents, HookPositions, resetIndex, sendHookEvent } from '../sharedRefs/exports'
+import { RunningHookEnvironment } from '../types/events'
+import { HookEnv } from '../types/HookEnvironment'
+import { HookEnvironment } from '../types/HookEnvironment'
 
 export const runWithHooks = curry(
   <E, A>(

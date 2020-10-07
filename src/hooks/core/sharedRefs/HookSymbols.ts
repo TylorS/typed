@@ -6,8 +6,8 @@ import {
   SharedRefEnv,
 } from '@typed/fp/SharedRef/exports'
 
-import { getOrSet } from '../helpers/getOrSet'
-import { HookEnvironmentId } from './HookEnvironment'
+import { getOrSet } from '../../helpers/getOrSet'
+import { HookEnvironmentId } from '../types/HookEnvironment'
 
 export const HOOK_SYMBOLS = '@typed/fp/HookSymbols'
 export type HOOK_SYMBOLS = typeof HOOK_SYMBOLS

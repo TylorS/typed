@@ -7,8 +7,7 @@ import * as M from 'fp-ts/Map'
 import * as O from 'fp-ts/Option'
 
 import { HookEnv, HookPositions, HookSymbols } from '../core/exports'
-import { useMemo } from '../core/useMemo'
-import { useRef } from '../core/useRef'
+import { useMemo, useRef } from '../core/exports'
 
 export const useMemoFunction = <Args extends ReadonlyArray<any>, R>(
   fn: Fn<Args, R>,

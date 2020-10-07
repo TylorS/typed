@@ -5,12 +5,12 @@ import { SharedRefEnv } from '@typed/fp/SharedRef/exports'
 import { Eq } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
 
-import { createState } from '../helpers/createState'
-import { UpdatedHookEnvironment } from './events'
-import { getNextSymbol } from './getNextSymbol'
-import { HookEnv } from './HookEnvironment'
-import { HookEvents, sendHookEvent } from './HookEvents'
-import { State } from './State'
+import { createState } from '../../helpers/createState'
+import { getNextSymbol } from '../sharedRefs/getNextSymbol'
+import { HookEvents, sendHookEvent } from '../sharedRefs/HookEvents'
+import { UpdatedHookEnvironment } from '../types/events'
+import { HookEnv } from '../types/HookEnvironment'
+import { State } from '../types/State'
 
 export function useState<E, A>(
   initial: Effect<E, A>,

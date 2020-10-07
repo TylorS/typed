@@ -1,6 +1,6 @@
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { ChannelName } from '@typed/fp/hooks/core/Channel'
-import { HookEnvironmentId } from '@typed/fp/hooks/core/HookEnvironment'
+import { ChannelName } from '@typed/fp/hooks/core/types/Channel'
+import { HookEnvironmentId } from '@typed/fp/hooks/core/types/HookEnvironment'
 import {
   createSharedRef,
   readSharedRef,
@@ -13,8 +13,8 @@ import { Option } from 'fp-ts/Option'
 
 const find = lookup(eqStrict)
 
-import { getOrSet } from '../helpers/getOrSet'
-import { ChannelConsumer } from './ChannelConsumer'
+import { getOrSet } from '../../helpers/getOrSet'
+import { ChannelConsumer } from '../types/exports'
 
 export const CHANNEL_CONSUMERS = '@typed/fp/ChannelConsumers'
 export type CHANNEL_CONSUMERS = typeof CHANNEL_CONSUMERS

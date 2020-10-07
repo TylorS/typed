@@ -8,7 +8,7 @@ import {
 } from '@typed/fp/Uuid/exports'
 import { pipe } from 'fp-ts/function'
 
-import { HookEnv, HookRefEnvs, provideEmptyHookStates, provideHookEnv } from '../core/exports'
+import { HookEnv, HookRefEnvs, provideEmptyHookStates, provideHookEnv } from '../exports'
 
 /**
  * Provide all the hook requirements for a browser environment

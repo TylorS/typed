@@ -14,21 +14,21 @@ import { pipe } from 'fp-ts/function'
 import { fromNullable } from 'fp-ts/Option'
 import { create } from 'most-subject'
 
-import { createChannel } from './Channel'
-import { getChannelProvider } from './ChannelProviders'
-import { HookEvent, isUpdatedHookEnvironmentEvent } from './events'
+import { provideChannel } from '../hooks/exports'
+import { useChannel } from '../hooks/exports'
+import { runWithHooks } from '../hooks/runWithHooks'
+import { provideEmptyHookStates, provideHookStates } from '../providers/exports'
+import { createChannel } from '../types/Channel'
+import { HookEvent, isUpdatedHookEnvironmentEvent } from '../types/events'
+import { updateState } from '../types/exports'
 import {
   createHookEnv,
   createHookEnvironment,
   HookEnvironment,
   HookEnvironmentId,
-} from './HookEnvironment'
+} from '../types/HookEnvironment'
+import { getChannelProvider } from './ChannelProviders'
 import { listenToHookEvents } from './HookEvents'
-import { provideChannel } from './provideChannel'
-import { provideEmptyHookStates, provideHookStates } from './provideHookStates'
-import { runWithHooks } from './runWithHooks'
-import { updateState } from './State'
-import { useChannel } from './useChannel'
 
 export const test = describe(`ChannelProviders`, [
   describe(`getChannelProvider`, [

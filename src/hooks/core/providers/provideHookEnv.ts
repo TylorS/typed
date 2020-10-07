@@ -3,11 +3,10 @@ import { SchedulerEnv } from '@typed/fp/fibers/exports'
 import { UuidEnv } from '@typed/fp/Uuid/common'
 import { pipe } from 'fp-ts/function'
 
-import { isRemovedHookEnvironmentEvent } from './events'
-import { createHookEnv, HookEnv } from './HookEnvironment'
-import { listenToHookEvents } from './HookEvents'
+import { listenToHookEvents, removeHookEnvironment } from '../sharedRefs/exports'
+import { isRemovedHookEnvironmentEvent } from '../types/events'
+import { createHookEnv, HookEnv } from '../types/HookEnvironment'
 import { HookRefEnvs } from './provideHookStates'
-import { removeHookEnvironment } from './removeHookEnvironment'
 
 /**
  * Provide the root hook environment

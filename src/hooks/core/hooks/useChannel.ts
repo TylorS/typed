@@ -3,12 +3,16 @@ import { doEffect, Effect, EnvOf, map } from '@typed/fp/Effect/exports'
 import { getTupleEq } from 'fp-ts/Eq'
 import { identity } from 'fp-ts/function'
 
-import { Channel } from './Channel'
-import { ChannelConsumer } from './ChannelConsumer'
-import { checkIsConsumer, getChannelConsumer, setChannelConsumer } from './ChannelConsumers'
-import { getChannelProvider } from './ChannelProviders'
-import { getNextSymbol } from './getNextSymbol'
-import { getHookEnv } from './HookEnvironment'
+import {
+  checkIsConsumer,
+  getChannelConsumer,
+  setChannelConsumer,
+} from '../sharedRefs/ChannelConsumers'
+import { getChannelProvider } from '../sharedRefs/ChannelProviders'
+import { getNextSymbol } from '../sharedRefs/getNextSymbol'
+import { Channel } from '../types/Channel'
+import { ChannelConsumer } from '../types/ChannelConsumer'
+import { getHookEnv } from '../types/HookEnvironment'
 import { useMemo } from './useMemo'
 
 export function useChannel<E, A>(

@@ -6,11 +6,10 @@ import { propEq } from '@typed/fp/logic/exports'
 import { SharedRefEnv } from '@typed/fp/SharedRef/exports'
 import { pipe } from 'fp-ts/function'
 
-import { ChannelName } from './Channel'
+import { isUpdatedChannelEvent, UpdatedHookEnvironment } from '../types/events'
+import { ChannelName, HookEnvironment, HookEnvironmentId } from '../types/exports'
 import { ChannelConsumers, checkIsConsumer, getChannelConsumers } from './ChannelConsumers'
 import { ChannelProviders, checkIsProvider } from './ChannelProviders'
-import { isUpdatedChannelEvent, UpdatedHookEnvironment } from './events'
-import { HookEnvironment, HookEnvironmentId } from './HookEnvironment'
 import { HookEvents, listenToHookEvents, sendHookEvent } from './HookEvents'
 
 /**
@@ -27,7 +26,9 @@ export const respondToChannelUpdates = (
   Disposable
 > => {
   const eff = doEffect(function* () {
-    const env = yield* ask<EnvOf<typeof getAllConsumerDescendants> & EnvOf<typeof updateConsumer>>()
+    const env = yield* ask<
+      EnvOf<typeof getAllConsumerDescendants> & EnvOf<ReturnType<typeof updateConsumer>>
+    >()
 
     const disposable = yield* listenToHookEvents(isUpdatedChannelEvent, (event) => {
       const { hookEnvironment, currentValue, updatedValue } = event

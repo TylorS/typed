@@ -3,11 +3,11 @@ import { Effect, EnvOf } from '@typed/fp/Effect/Effect'
 import { doEffect } from '@typed/fp/Effect/exports'
 import { Eq } from 'fp-ts/Eq'
 
-import { Channel } from './Channel'
-import { setChannelProvider } from './ChannelProviders'
-import { getHookEnv } from './HookEnvironment'
-import { respondToChannelUpdates } from './respondToChannelUpdates'
-import { State } from './State'
+import { setChannelProvider } from '../sharedRefs/exports'
+import { respondToChannelUpdates } from '../sharedRefs/respondToChannelUpdates'
+import { Channel } from '../types/Channel'
+import { getHookEnv } from '../types/HookEnvironment'
+import { State } from '../types/State'
 
 export function provideChannel<E, A>(
   channel: Channel<E, A>,

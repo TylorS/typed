@@ -5,9 +5,9 @@ import { provideUuidEnv } from '@typed/fp/Uuid/exports'
 import { describe, given, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 
-import { createChannel } from './Channel'
-import { provideHookEnv } from './provideHookEnv'
-import { provideEmptyHookStates } from './provideHookStates'
+import { provideHookEnv } from '../providers/provideHookEnv'
+import { provideEmptyHookStates } from '../providers/provideHookStates'
+import { createChannel } from '../types/Channel'
 import { useChannel } from './useChannel'
 
 export const test = describe(`useChannel`, [

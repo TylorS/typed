@@ -1,10 +1,9 @@
 import { doEffect, Effect, EnvOf, zip } from '@typed/fp/Effect/exports'
 
+import { getAllDescendants, HookEnvironment, RemovedHookEnvironment } from '../types/exports'
 import { deleteChannelConsumer } from './ChannelConsumers'
 import { deleteChannelProvider } from './ChannelProviders'
-import { RemovedHookEnvironment } from './events'
 import { disposeHookEnvironment } from './HookDisposables'
-import { getAllDescendants, HookEnvironment } from './HookEnvironment'
 import { sendHookEvent } from './HookEvents'
 import { deleteHookPosition } from './HookPositions'
 import { deleteHookSymbols } from './HookSymbols'

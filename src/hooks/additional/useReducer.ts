@@ -4,8 +4,7 @@ import { Effect } from '@typed/fp/Effect/Effect'
 import { doEffect } from '@typed/fp/Effect/exports'
 import { Eq } from 'fp-ts/Eq'
 
-import { useMemo } from '../core/useMemo'
-import { useState } from '../core/useState'
+import { useMemo, useState } from '../core/exports'
 import { applyReducer } from '../helpers/applyReducer'
 
 export const useReducer = <E, A, B>(

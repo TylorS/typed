@@ -8,15 +8,14 @@ import { identity, pipe } from 'fp-ts/function'
 import { newIORef } from 'fp-ts/IORef'
 import { isNone, isSome } from 'fp-ts/Option'
 
-import { createChannel } from './Channel'
-import { ChannelConsumer } from './ChannelConsumer'
+import { ChannelConsumer, createChannel } from '../types/exports'
+import { createHookEnvironment, HookEnvironmentId } from '../types/HookEnvironment'
 import {
   ChannelConsumers,
   deleteChannelConsumer,
   getChannelConsumer,
   setChannelConsumer,
 } from './ChannelConsumers'
-import { createHookEnvironment, HookEnvironmentId } from './HookEnvironment'
 
 export const test = describe(`ChannelConsumers`, [
   describe(`getChannelConsumer`, [

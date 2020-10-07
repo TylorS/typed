@@ -4,15 +4,15 @@ import { pipe } from 'fp-ts/function'
 import { newIORef } from 'fp-ts/IORef'
 import { create } from 'most-subject'
 
-import { HookEvent } from './events'
 import {
   ChannelConsumers,
   ChannelProviders,
+  HookDisposables,
   HookEvents,
   HookPositions,
   HookSymbols,
-} from './exports'
-import { HookDisposables } from './HookDisposables'
+} from '../sharedRefs/exports'
+import { HookEvent } from '../types/exports'
 
 export type HookRefEnvs = SharedRefEnv<ChannelProviders> &
   SharedRefEnv<ChannelConsumers> &

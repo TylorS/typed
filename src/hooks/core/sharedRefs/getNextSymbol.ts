@@ -2,7 +2,7 @@ import { Effect } from '@typed/fp/Effect/Effect'
 import { doEffect } from '@typed/fp/Effect/exports'
 import { SharedRefEnv } from '@typed/fp/SharedRef/exports'
 
-import { HookEnvironmentId } from './HookEnvironment'
+import { HookEnvironmentId } from '../types/exports'
 import { getNextIndex, HookPositions } from './HookPositions'
 import { getHookSymbol, HookSymbols } from './HookSymbols'
 

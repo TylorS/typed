@@ -1,12 +1,12 @@
 import { ask, doEffect, Effect, EnvOf, provide, use } from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/fibers/exports'
-import { Channel, ChannelName } from '@typed/fp/hooks/core/Channel'
+import { Channel, ChannelName } from '@typed/fp/hooks/core/types/Channel'
 import {
   getHookEnv,
   HookEnv,
   HookEnvironment,
   HookEnvironmentId,
-} from '@typed/fp/hooks/core/HookEnvironment'
+} from '@typed/fp/hooks/core/types/HookEnvironment'
 import {
   createSharedRef,
   readSharedRef,
@@ -16,12 +16,11 @@ import {
 import { Eq } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
 
-import { createState } from '../helpers/createState'
-import { findProvider } from '../helpers/findProvider'
-import { getOrSet } from '../helpers/getOrSet'
-import { ChannelUpdated } from './events'
+import { createState } from '../../helpers/createState'
+import { findProvider } from '../../helpers/findProvider'
+import { getOrSet } from '../../helpers/getOrSet'
+import { ChannelUpdated, State } from '../types/exports'
 import { HookEvents, sendHookEvent } from './HookEvents'
-import { State } from './State'
 
 export const CHANNEL_PROVIDERS = '@typed/fp/ChannelProviders'
 export type CHANNEL_PROVIDERS = typeof CHANNEL_PROVIDERS

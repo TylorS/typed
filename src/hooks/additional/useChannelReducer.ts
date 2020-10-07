@@ -3,7 +3,8 @@ import { Arity2 } from '@typed/fp/common/types'
 import { doEffect } from '@typed/fp/Effect/exports'
 import { Eq } from 'fp-ts/Eq'
 
-import { applyReducer, Channel, getChannelProvider, useMemo } from '../core/exports'
+import { Channel, getChannelProvider, useMemo } from '../core/exports'
+import { applyReducer } from '../helpers/applyReducer'
 
 export const useChannelReducer = <E, A, B>(
   channel: Channel<E, A>,

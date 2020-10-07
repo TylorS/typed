@@ -5,10 +5,9 @@ import { SharedRefEnv } from '@typed/fp/SharedRef/exports'
 import { createUuid, UuidEnv } from '@typed/fp/Uuid/exports'
 import { fromNullable, isSome, none, Option } from 'fp-ts/Option'
 
+import { addDisposable, HookDisposables, sendHookEvent } from '../sharedRefs/exports'
+import { removeHookEnvironment } from '../sharedRefs/removeHookEnvironment'
 import { CreatedHookEnvironment } from './events'
-import { addDisposable, HookDisposables } from './HookDisposables'
-import { sendHookEvent } from './HookEvents'
-import { removeHookEnvironment } from './removeHookEnvironment'
 
 export interface HookEnv {
   readonly hookEnvironment: HookEnvironment
