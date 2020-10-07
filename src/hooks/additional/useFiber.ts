@@ -2,10 +2,11 @@ import { deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Effect, EnvOf } from '@typed/fp/Effect/exports'
 import { Fiber, FiberEnv, fork } from '@typed/fp/fibers/exports'
 import { Fn } from '@typed/fp/lambda/exports'
+import { createRef, Ref } from '@typed/fp/SharedRef/exports'
 import { Eq } from 'fp-ts/Eq'
 import { getEq } from 'fp-ts/ReadonlyArray'
 
-import { createRef, Ref, useDepChange, useMemo } from '../core/exports'
+import { useDepChange, useMemo } from '../core/exports'
 
 export const useFiber = <A extends ReadonlyArray<any>, B, C>(
   f: Fn<A, Effect<B, C>>,
