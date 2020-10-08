@@ -1,17 +1,17 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
 import * as RD from '@typed/fp/RemoteData/exports'
 import * as E from 'fp-ts/Either'
-import { eqDate, eqNumber, eqStrict } from 'fp-ts/Eq'
+import { Eq, eqDate, eqNumber, eqStrict } from 'fp-ts/Eq'
 import * as O from 'fp-ts/Option'
 import * as RM from 'fp-ts/ReadonlyMap'
 import * as RS from 'fp-ts/ReadonlySet'
-import * as Eq from 'io-ts/Eq'
+import * as EqI from 'io-ts/Eq'
 
 import { TypedSchemable1 } from './TypedSchemable'
 
-export const Schemable: TypedSchemable1<Eq.URI> = {
-  ...Eq.Schemable,
-  refine: (refinement, id) => Eq.WithRefine.refine(refinement, id),
+export const Schemable: TypedSchemable1<EqI.URI> = {
+  ...EqI.Schemable,
+  refine: (refinement, id) => EqI.WithRefine.refine(refinement, id),
   set: RS.getEq,
   map: RM.getEq,
   option: O.getEq,
@@ -34,7 +34,7 @@ export const Schemable: TypedSchemable1<Eq.URI> = {
 }
 
 function tryEq<A>(a: A, b: A) {
-  return (eq: { readonly equals: (a: A, b: A) => boolean }) => {
+  return (eq: Eq<A>) => {
     try {
       return eq.equals(a, b)
     } catch {
