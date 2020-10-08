@@ -38,7 +38,7 @@ export const whenIdle = (opts?: IdleCallbackOptions) =>
     }),
   )
 
-const DEFAULT_TIMEOUT = 16
+const DEFAULT_TIMEOUT = 30 * 1000
 
 export function createFallbackWhenIdleEnv(timer: Timer, defaultTimeout = DEFAULT_TIMEOUT) {
   const allHandles = new Map<IdleCallbackHandle, [any, any]>()
