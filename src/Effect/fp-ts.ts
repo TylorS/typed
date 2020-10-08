@@ -10,7 +10,7 @@ import { race } from './race'
 /**
  * @since 0.0.1
  */
-export const URI = './exports'
+export const URI = '@typed/fp/Effect'
 
 /**
  * @since 0.0.1
