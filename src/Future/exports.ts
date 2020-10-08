@@ -1,13 +1,11 @@
 import {
-  chain as chainEff,
   doEffect,
   Effect,
   effect,
   effectSeq,
   fail,
   FailEnv,
-  fromReader,
-  fromTask,
+  fromReaderTask,
   Pure,
   toReaderTask,
   URI as EffectURI,
@@ -16,7 +14,7 @@ import { Alt3 } from 'fp-ts/Alt'
 import * as E from 'fp-ts/Either'
 import { EitherM2, getEitherM } from 'fp-ts/EitherT'
 import { Monad3 } from 'fp-ts/Monad'
-import { pipe, pipeable } from 'fp-ts/pipeable'
+import { pipeable } from 'fp-ts/pipeable'
 import { ReaderTaskEither } from 'fp-ts/ReaderTaskEither'
 import { isLeft } from 'fp-ts/These'
 
@@ -71,7 +69,7 @@ export const orFail = <K extends PropertyKey, E, A, B>(
 }
 
 export function fromReaderTaskEither<E, A, B>(rte: ReaderTaskEither<E, A, B>): Future<E, A, B> {
-  return pipe(rte, fromReader, chainEff(fromTask))
+  return fromReaderTask(rte)
 }
 
 export const toReaderTaskEither = <E, A, B>(future: Future<E, A, B>): ReaderTaskEither<E, A, B> =>
