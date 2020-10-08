@@ -1,6 +1,7 @@
 export * from './useCallback'
 export * from './useChannelReducer'
 export * from './useFiber'
+export * from './useFiberInfo'
 export * from './useHookEnvironmentRef'
 export * from './useInterval'
 export * from './useIntervalEffect'
