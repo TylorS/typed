@@ -1,9 +1,9 @@
-import { chainResume } from './chainResume'
-import { Effect, EffectGenerator, Env, Resume, sync } from './Effect'
+import { chain, Resume, sync } from '@typed/fp/Resume/exports'
+
+import { Effect, EffectGenerator, Env } from './Effect'
 
 /**
  * Converts an Effect<A, A> to and Env<E, A> with a simple stack-safe interpreter.
- * @since 0.0.1
  */
 export const toEnv = <E, A>(effect: Effect<E, A>): Env<E, A> => (e: E) => {
   const generator = effect[Symbol.iterator]()
@@ -20,7 +20,7 @@ const effectGeneratorToResume = <E, A>(
     const resume = result.value(env)
 
     if (resume.async) {
-      return chainResume(resume, (a) => effectGeneratorToResume(generator, generator.next(a), env))
+      return chain((a) => effectGeneratorToResume(generator, generator.next(a), env), resume)
     }
 
     result = generator.next(resume.value)

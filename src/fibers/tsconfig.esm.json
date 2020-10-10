@@ -16,6 +16,9 @@
       "path": "../Effect/tsconfig.esm.json"
     },
     {
+      "path": "../Resume/tsconfig.esm.json"
+    },
+    {
       "path": "../VirtualTimer/tsconfig.esm.json"
     },
     {

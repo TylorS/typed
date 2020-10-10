@@ -1,6 +1,7 @@
 import { lazy } from '@typed/fp/Disposable/exports'
-import { asyncEither, fromEnv } from '@typed/fp/Effect/exports'
+import { fromEnv } from '@typed/fp/Effect/exports'
 import { Future } from '@typed/fp/Future/exports'
+import { asyncEither } from '@typed/fp/Resume/exports'
 
 import { IndexedDbFactoryEnv } from './IndexedDbFactoryEnv'
 

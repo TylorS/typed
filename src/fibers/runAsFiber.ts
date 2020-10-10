@@ -10,7 +10,6 @@ import { createFiber } from './createFiber/exports'
 /**
  * Intended for running an application using fibers. Should not be used to create individual fibers, instead
  * use `fork`.
- * @since 0.0.1
  */
 export const runAsFiber = <A>(effect: Effect<FiberEnv, A>, scheduler: Scheduler): Fiber<A> =>
   createFiber(effect, scheduler)
@@ -20,7 +19,6 @@ export const runAsFiberWith = (scheduler: Scheduler) => <A>(effect: Effect<Fiber
 
 /**
  * Convert a fiber to a Promise of it's success/completion value.
- * @since 0.0.1
  */
 export const fiberToPromise = <A>(fiber: Fiber<A>): Promise<A> =>
   new Promise((resolve, reject) => {

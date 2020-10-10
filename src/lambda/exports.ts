@@ -8,7 +8,6 @@ import { fold } from 'fp-ts/Option'
 
 /**
  * Allow a fixed length function to be partially applied.
- * @since 0.0.1
  */
 export const curry = <F extends Fn>(f: F): Curry<F> => {
   return curriedN(f.length, f, []) as Curry<F>
@@ -30,36 +29,21 @@ function curriedN<Args extends unknown[], R>(
   }
 }
 
-/**
- * @since 0.0.1
- */
 export type Fn<Args extends readonly any[] = readonly any[], R = any> = FunctionN<Args, R>
 
-/**
- * @since 0.0.1
- */
 export interface Curry2<A, B, C> extends Arity2<A, B, C>, Arity1<A, Arity1<B, C>> {}
 
-/**
- * @since 0.0.1
- */
 export interface Curry3<A, B, C, D>
   extends Arity3<A, B, C, D>,
     Arity2<A, B, Arity1<C, D>>,
     Arity1<A, Curry2<B, C, D>> {}
 
-/**
- * @since 0.0.1
- */
 export interface Curry4<A, B, C, D, E>
   extends Arity4<A, B, C, D, E>,
     Arity3<A, B, C, Arity1<D, E>>,
     Arity2<A, B, Curry2<C, D, E>>,
     Arity1<A, Curry3<B, C, D, E>> {}
 
-/**
- * @since 0.0.1
- */
 export interface Curry5<A, B, C, D, E, F>
   extends Arity5<A, B, C, D, E, F>,
     Arity4<A, B, C, D, Arity1<E, F>>,
@@ -67,9 +51,6 @@ export interface Curry5<A, B, C, D, E, F>
     Arity2<A, B, Curry3<C, D, E, F>>,
     Arity1<A, Curry4<B, C, D, E, F>> {}
 
-/**
- * @since 0.0.1
- */
 export type Curry<T extends Fn> = ArgsOf<T> extends [infer A]
   ? Arity1<A, ReturnType<T>>
   : ArgsOf<T> extends [infer A, infer B]

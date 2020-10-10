@@ -1,5 +1,5 @@
 import { lazy } from '@typed/fp/Disposable/exports'
-import { Async, asyncEither } from '@typed/fp/Effect/exports'
+import { Async, asyncEither } from '@typed/fp/Resume/exports'
 import { Either } from 'fp-ts/Either'
 
 import { IndexedDbStoreTransation } from './IndexedDbStoreTransaction'

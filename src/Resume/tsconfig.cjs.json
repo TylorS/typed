@@ -5,18 +5,18 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/Console",
+    "outDir": "../../cjs/Resume",
     "module": "commonjs"
   },
   "references": [
     {
-      "path": "../Effect/tsconfig.cjs.json"
+      "path": "../Disposable/tsconfig.cjs.json"
     },
     {
-      "path": "../Resume/tsconfig.cjs.json"
+      "path": "../common/tsconfig.cjs.json"
     },
     {
-      "path": "../logging/tsconfig.cjs.json"
+      "path": "../lambda/tsconfig.cjs.json"
     }
   ],
   "include": [

@@ -1,5 +1,6 @@
-import { Effect, fromEnv, sync } from '@typed/fp/Effect/exports'
+import { Effect, fromEnv } from '@typed/fp/Effect/exports'
 import { LoggerEffect } from '@typed/fp/logging/exports'
+import { sync } from '@typed/fp/Resume/exports'
 
 export interface ConsoleEnv {
   readonly console: Console

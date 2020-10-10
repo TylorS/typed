@@ -1,11 +1,16 @@
 import { isBrowser } from '@typed/fp/common/exports'
-import { doEffect, execEffect, Pure } from '@typed/fp/Effect/exports'
+import { doEffect, execEffect, execPure, Pure } from '@typed/fp/Effect/exports'
 import { provideSharedRef, SharedRefValue } from '@typed/fp/SharedRef/exports'
-import { createBrowserUuidEnv, createNodeUuidEnv, createUuid } from '@typed/fp/Uuid/exports'
+import {
+  createBrowserUuidEnv,
+  createNodeUuidEnv,
+  createUuid,
+  provideUuidEnv,
+} from '@typed/fp/Uuid/exports'
 import { describe, given, it } from '@typed/test'
 import { eqStrict } from 'fp-ts/Eq'
 import { identity, pipe } from 'fp-ts/function'
-import { newIORef } from 'fp-ts/IORef'
+import {} from 'fp-ts/IORef'
 import { isNone, isSome } from 'fp-ts/Option'
 
 import { ChannelConsumer, createChannel } from '../types/exports'
@@ -28,11 +33,7 @@ export const test = describe(`ChannelConsumers`, [
           ok(isNone(option))
         })
 
-        pipe(
-          eff,
-          provideSharedRef(ChannelConsumers, newIORef(new Map())),
-          execEffect(createUuidEnv()),
-        )
+        pipe(eff, provideUuidEnv, provideSharedRef(ChannelConsumers, new Map()), execPure)
       }),
 
       it(`returns Some<ChannelConsumer> if not configured`, ({ ok, same }) => {
@@ -48,7 +49,7 @@ export const test = describe(`ChannelConsumers`, [
 
           const option = yield* pipe(
             getChannelConsumer(channel.name, hookEnvironment.id, key),
-            provideSharedRef(ChannelConsumers, newIORef(consumers)),
+            provideSharedRef(ChannelConsumers, consumers),
           )
 
           ok(isSome(option))
@@ -82,11 +83,7 @@ export const test = describe(`ChannelConsumers`, [
           }
         })
 
-        pipe(
-          eff,
-          provideSharedRef(ChannelConsumers, newIORef(new Map())),
-          execEffect(createUuidEnv()),
-        )
+        pipe(eff, provideSharedRef(ChannelConsumers, new Map()), execEffect(createUuidEnv()))
       }),
     ]),
   ]),
@@ -107,11 +104,7 @@ export const test = describe(`ChannelConsumers`, [
           ok(isNone(option))
         })
 
-        pipe(
-          eff,
-          provideSharedRef(ChannelConsumers, newIORef(new Map())),
-          execEffect(createUuidEnv()),
-        )
+        pipe(eff, provideSharedRef(ChannelConsumers, new Map()), execEffect(createUuidEnv()))
       }),
     ]),
   ]),

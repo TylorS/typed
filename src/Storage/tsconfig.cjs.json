@@ -17,6 +17,9 @@
     },
     {
       "path": "../Future/tsconfig.cjs.json"
+    },
+    {
+      "path": "../Resume/tsconfig.cjs.json"
     }
   ],
   "include": [

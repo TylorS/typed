@@ -13,6 +13,9 @@
       "path": "../Disposable/tsconfig.cjs.json"
     },
     {
+      "path": "../Resume/tsconfig.cjs.json"
+    },
+    {
       "path": "../common/tsconfig.cjs.json"
     },
     {

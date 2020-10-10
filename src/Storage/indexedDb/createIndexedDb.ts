@@ -1,6 +1,6 @@
-import { chainResume } from '@typed/fp/Effect/chainResume'
-import { doEffect, Effect, FailEnv, Resume, sync } from '@typed/fp/Effect/exports'
+import { doEffect, Effect, FailEnv } from '@typed/fp/Effect/exports'
 import { orFail } from '@typed/fp/Future/exports'
+import { chain, Resume, sync } from '@typed/fp/Resume/exports'
 import { Either, fold, left, map } from 'fp-ts/Either'
 import { flow } from 'fp-ts/function'
 
@@ -65,7 +65,7 @@ function createKeyValueStorageFromDatabase<K extends IDBValidKey, V>(
 }
 
 const mapResumeEither = <A, B, C>(r: Resume<Either<A, B>>, f: (b: B) => C) =>
-  chainResume(r, flow(map(f), sync))
+  chain(flow(map(f), sync), r)
 
 const chainResumeEither = <A, B, C>(r: Resume<Either<A, B>>, f: (b: B) => Resume<Either<A, C>>) =>
-  chainResume(r, fold(flow(left, sync), f))
+  chain(fold(flow(left, sync), f), r)

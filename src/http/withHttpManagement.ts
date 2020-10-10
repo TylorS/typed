@@ -1,8 +1,8 @@
 import { Clock } from '@most/types'
 import { whenIdle, WhenIdleEnv } from '@typed/fp/dom/exports'
-import { chainResume } from '@typed/fp/Effect/chainResume'
-import { ask, doEffect, Effect, sync, useWith } from '@typed/fp/Effect/exports'
+import { ask, doEffect, Effect, useWith } from '@typed/fp/Effect/exports'
 import { FiberEnv, fork, SchedulerEnv } from '@typed/fp/fibers/exports'
+import { chain, sync } from '@typed/fp/Resume/exports'
 import { readSharedRef, SharedRef, SharedRefEnv, writeSharedRef } from '@typed/fp/SharedRef/exports'
 import { Uri } from '@typed/fp/Uri/exports'
 import { right } from 'fp-ts/Either'
@@ -88,13 +88,13 @@ function createCachedHttpEnv(
         return sync(right(lastResponse.response))
       }
 
-      return chainResume(request, (response) => {
+      return chain((response) => {
         if (isRight(response) && shouldBeCached(response.right)) {
           httpCache.set(key, { timestamp: scheduler.currentTime(), response: response.right })
         }
 
         return sync(response)
-      })
+      }, request)
     },
   }
 }

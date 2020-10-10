@@ -1,25 +1,19 @@
 import { HeadArg } from '@typed/fp/common/exports'
 import { curry } from '@typed/fp/lambda/exports'
+import { async, Resume, run } from '@typed/fp/Resume/exports'
 import { Either, left, right } from 'fp-ts/Either'
 import { O } from 'ts-toolbelt'
 
-import { async, Effect, Resume } from './Effect'
+import { Effect } from './Effect'
 import { fromEnv } from './fromEnv'
 import { map } from './map'
 import { ProvidedEffect } from './provide'
-import { runResume } from './runResume'
 import { toEnv } from './toEnv'
 
-/**
- * @since 0.0.1
- */
 export type FailEnv<K extends PropertyKey, Err> = {
   readonly [key in K]: (err: Err) => Resume<never>
 }
 
-/**
- * @since 0.0.1
- */
 export const fail = curry(
   <K extends PropertyKey, Err>(key: K, error: Err): Effect<FailEnv<K, Err>, never> =>
     fromEnv((e) => e[key](error)),
@@ -28,9 +22,6 @@ export const fail = curry(
   <K extends PropertyKey>(key: K): <Err>(error: Err) => Effect<FailEnv<K, Err>, never>
 }
 
-/**
- * @since 0.0.1
- */
 export const catchError = curry(
   <K extends PropertyKey, Err, E, A>(
     key: K,
@@ -46,7 +37,7 @@ export const catchError = curry(
 
         const env = toEnv(effect)
 
-        return runResume(env({ ...e, ...failEnv }), returnToOuterContext)
+        return run(env({ ...e, ...failEnv }), returnToOuterContext)
       }),
     ) as CatchError<K, Err, E, A>,
 ) as {
@@ -75,9 +66,6 @@ export const catchError = curry(
 
 type CatchError<K extends PropertyKey, Err, E, A> = ProvidedEffect<FailEnv<K, Err>, E, A>
 
-/**
- * @since 0.0.1
- */
 export const attempt = curry(
   <K extends PropertyKey, E extends FailEnv<K, never>, A>(
     key: K,

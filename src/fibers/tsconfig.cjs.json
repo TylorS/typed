@@ -16,6 +16,9 @@
       "path": "../Effect/tsconfig.cjs.json"
     },
     {
+      "path": "../Resume/tsconfig.cjs.json"
+    },
+    {
       "path": "../VirtualTimer/tsconfig.cjs.json"
     },
     {

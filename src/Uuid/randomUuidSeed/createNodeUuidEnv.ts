@@ -1,9 +1,6 @@
 import { UuidEnv } from '../common'
 import { VALID_UUID_LENGTH } from './constants'
 
-/**
- * @since 0.0.1
- */
 export function createNodeUuidEnv(): UuidEnv {
   return {
     randomUuidSeed: () => {

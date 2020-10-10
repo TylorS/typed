@@ -1,5 +1,4 @@
-import { chainResume } from '@typed/fp/Effect/chainResume'
-import { Resume, sync } from '@typed/fp/Effect/exports'
+import { chain, Resume, sync } from '@typed/fp/Resume/exports'
 import { Either, left, right } from 'fp-ts/Either'
 import { flow, pipe } from 'fp-ts/function'
 import { fromNullable } from 'fp-ts/Option'
@@ -57,7 +56,7 @@ const tryCatch = <A extends readonly any[], B>(
   f: (...args: A) => Resume<B>,
 ): ((...args: A) => Resume<Either<Error, B>>) => (...args) => {
   try {
-    return chainResume(f(...args), flow(right, sync))
+    return chain(flow(right, sync), f(...args))
   } catch (error) {
     return pipe(error, left, sync)
   }

@@ -1,14 +1,11 @@
 import * as S from '@most/scheduler'
 import { Disposable, Scheduler, Task, Time } from '@most/types'
 import { lazy } from '@typed/fp/Disposable/exports'
-import { async, Effect, fromEnv, provideWith, Pure } from '@typed/fp/Effect/exports'
-import {} from '@typed/fp/Effect/fromEnv'
+import { Effect, fromEnv, provideWith, Pure } from '@typed/fp/Effect/exports'
+import { async } from '@typed/fp/Resume/exports'
 import { flow } from 'fp-ts/function'
 import { IO } from 'fp-ts/IO'
 
-/**
- * @since 0.0.1
- */
 export interface SchedulerEnv {
   readonly scheduler: Scheduler
 }
@@ -23,7 +20,6 @@ export const provideSchedulerEnv = provideWith(
 
 /**
  * Add a delay at the specified about of time
- * @since 0.0.1
  */
 export const delay = (delay: Time): Effect<SchedulerEnv, Time> =>
   fromEnv(({ scheduler }: SchedulerEnv) =>
@@ -38,7 +34,6 @@ export const delay = (delay: Time): Effect<SchedulerEnv, Time> =>
 
 /**
  * Run an IO asynchronously
- * @since 0.0.1
  */
 export const asyncIO = <A>(io: IO<A>): Effect<SchedulerEnv, A> =>
   fromEnv(({ scheduler }: SchedulerEnv) =>
@@ -47,7 +42,6 @@ export const asyncIO = <A>(io: IO<A>): Effect<SchedulerEnv, A> =>
 
 /**
  * Convert an IO<Disposable> into a Most.js Task
- * @since 0.0.1
  */
 export function createCallbackTask(cb: IO<Disposable>, onError?: (error: Error) => void): Task {
   const disposable = lazy()

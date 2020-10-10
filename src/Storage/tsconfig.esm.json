@@ -17,6 +17,9 @@
     },
     {
       "path": "../Future/tsconfig.esm.json"
+    },
+    {
+      "path": "../Resume/tsconfig.esm.json"
     }
   ],
   "include": [

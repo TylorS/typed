@@ -1,5 +1,5 @@
 import { lazy } from '@typed/fp/Disposable/exports'
-import { async, Resume } from '@typed/fp/Effect/exports'
+import { async, Resume } from '@typed/fp/Resume/exports'
 import { Uri, uriIso } from '@typed/fp/Uri/exports'
 import { Either, left, right } from 'fp-ts/Either'
 import { flow, not, pipe } from 'fp-ts/function'

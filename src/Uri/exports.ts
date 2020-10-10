@@ -3,43 +3,24 @@ import { eqString } from 'fp-ts/Eq'
 import { ReadonlyRecord } from 'fp-ts/ReadonlyRecord'
 import { getEq, iso, Newtype, prism } from 'newtype-ts'
 
-/**
- * @since 0.0.1
- */
 export type Uri = Newtype<{ readonly Url: unique symbol }, string>
 
-/**
- * @since 0.0.1
- */
 export const uriIso = iso<Uri>()
 
-/**
- * @since 0.0.1
- */
 export const uriPrism = prism<Uri>((s: string) => s.length > 0 && s[0] === '/')
 
-/**
- * @since 0.0.1
- */
 export const uriEq = getEq<Uri>(eqString)
 
-/**
- * @since 0.0.1
- */
 export namespace Uri {
   export const { wrap, unwrap } = uriIso
 }
 
-/**
- * @since 0.0.1
- */
 export const URI_REGEX = /^(?:([^:/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:/?#]*)(?::(\d*))?))?((((?:[^?#/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/
 
 /**
  * ParsedUri JSON data structure
  * @name ParsedUri
  * @type
- * @since 0.0.1
  */
 export type ParsedUri = {
   readonly href: string
@@ -60,7 +41,7 @@ export type ParsedUri = {
 
 /**
  * Parses an URL into JSON.
- * @since 0.0.1
+ *
  * @name parseUri(url: Uri): ParsedUri
  */
 export function parseUri(url: Uri): ParsedUri {
@@ -111,9 +92,6 @@ const parsedUriKeys: ReadonlyArray<keyof ParsedUri> = [
 
 const parsedUriKeyCount = parsedUriKeys.length
 
-/**
- * @since 0.0.1
- */
 export type QueryParams = ReadonlyRecord<string, string | undefined>
 
 export function addQueryParameters(url: Uri, queryParams: QueryParams): Uri
@@ -121,7 +99,6 @@ export function addQueryParameters(url: Uri): (queryParams: QueryParams) => Uri
 
 /**
  * Append Query Parameters to a Url
- * @since 0.0.1
  */
 export function addQueryParameters(url: Uri, queryParams?: QueryParams) {
   if (queryParams === void 0) {

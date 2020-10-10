@@ -16,6 +16,9 @@
       "path": "../Path/tsconfig.esm.json"
     },
     {
+      "path": "../Resume/tsconfig.esm.json"
+    },
+    {
       "path": "../Uri/tsconfig.esm.json"
     },
     {

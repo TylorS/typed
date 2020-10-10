@@ -34,6 +34,9 @@
       "path": "./RemoteData/tsconfig.cjs.json"
     },
     {
+      "path": "./Resume/tsconfig.cjs.json"
+    },
+    {
       "path": "./SharedRef/tsconfig.cjs.json"
     },
     {

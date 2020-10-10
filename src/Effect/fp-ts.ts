@@ -7,14 +7,8 @@ import { Effect } from './Effect'
 import { map } from './map'
 import { race } from './race'
 
-/**
- * @since 0.0.1
- */
 export const URI = '@typed/fp/Effect'
 
-/**
- * @since 0.0.1
- */
 export type URI = typeof URI
 
 declare module 'fp-ts/HKT' {
@@ -23,9 +17,6 @@ declare module 'fp-ts/HKT' {
   }
 }
 
-/**
- * @since 0.0.1
- */
 export const effect: MonadIO2<URI> & Alt2<URI> = {
   URI,
   of: Effect.of,
@@ -36,9 +27,6 @@ export const effect: MonadIO2<URI> & Alt2<URI> = {
   alt: (fa, f) => race(fa, f()),
 }
 
-/**
- * @since 0.0.1
- */
 export const effectSeq: MonadIO2<URI> & Alt2<URI> = {
   ...effect,
   ap: apSeq,

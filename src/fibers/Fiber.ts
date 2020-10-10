@@ -1,12 +1,12 @@
 import { Disposable, disposeNone, LazyDisposable } from '@typed/fp/Disposable/exports'
-import { async, fromEnv, Pure } from '@typed/fp/Effect/exports'
+import { fromEnv, Pure } from '@typed/fp/Effect/exports'
+import { async } from '@typed/fp/Resume/exports'
 import { IO } from 'fp-ts/IO'
 import { Option } from 'fp-ts/Option'
 
 /**
  * A Fiber is a lightweight process which can be used similarly to promises within the context of Effects.
  * Guaranteed to be asynchronously executed.
- * @since 0.0.1
  */
 export interface Fiber<A> extends LazyDisposable {
   // Always up-to-date information about a fiber
@@ -25,9 +25,6 @@ export interface Fiber<A> extends LazyDisposable {
   readonly setPaused: (paused: boolean) => void // to update it's current information
 }
 
-/**
- * @since 0.0.1
- */
 export const enum FiberState {
   Queued = 'queued',
   Paused = 'paused',
@@ -37,9 +34,6 @@ export const enum FiberState {
   Completed = 'completed',
 }
 
-/**
- * @since 0.0.1
- */
 export type FiberInfo<A> =
   | FiberQueued
   | FiberPaused
@@ -50,7 +44,6 @@ export type FiberInfo<A> =
 
 /**
  * Starting state for a fiber
- * @since 0.0.1
  */
 export type FiberQueued = {
   readonly state: FiberState.Queued
@@ -58,7 +51,6 @@ export type FiberQueued = {
 
 /**
  * Paused state for a fiber
- * @since 0.0.1
  */
 export type FiberPaused = {
   readonly state: FiberState.Paused
@@ -66,7 +58,6 @@ export type FiberPaused = {
 
 /**
  * Fiber has begun executing
- * @since 0.0.1
  */
 export type FiberRunning = {
   readonly state: FiberState.Running
@@ -74,7 +65,6 @@ export type FiberRunning = {
 
 /**
  * Executing a fiber process threw and exception
- * @since 0.0.1
  */
 export type FiberFailed = {
   readonly state: FiberState.Failed
@@ -83,7 +73,6 @@ export type FiberFailed = {
 
 /**
  * Parent fiber has a return value, but has forked fibers still running.
- * @since 0.0.1
  */
 export type FiberSuccess<A> = {
   readonly state: FiberState.Success
@@ -92,16 +81,12 @@ export type FiberSuccess<A> = {
 
 /**
  * Parent fiber has a return value, and all forked fibers have completed.
- * @since 0.0.1
  */
 export type FiberComplete<A> = {
   readonly state: FiberState.Completed
   readonly value: A
 }
 
-/**
- * @since 0.0.1
- */
 export const foldFiberInfo = <A, B, C, D, E, F, G>(
   queued: () => A,
   paused: () => B,

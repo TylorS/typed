@@ -1,9 +1,9 @@
 import { Disposable, disposeBoth, disposeNone, lazy } from '@typed/fp/Disposable/exports'
 import { curry } from '@typed/fp/lambda/exports'
+import { async, run } from '@typed/fp/Resume/exports'
 
-import { async, Effect } from './Effect'
+import { Effect } from './Effect'
 import { fromEnv } from './fromEnv'
-import { runResume } from './runResume'
 import { toEnv } from './toEnv'
 
 export const race = curry(
@@ -35,9 +35,9 @@ export const race = curry(
 
         const bDisposableLazy = lazy()
 
-        const aDisposable = runResume(aResume, (a) => cb(a, () => bDisposableLazy.dispose()))
+        const aDisposable = run(aResume, (a) => cb(a, () => bDisposableLazy.dispose()))
 
-        bDisposableLazy.addDisposable(runResume(bResume, (b) => cb(b, () => aDisposable.dispose())))
+        bDisposableLazy.addDisposable(run(bResume, (b) => cb(b, () => aDisposable.dispose())))
 
         disposable.addDisposable(disposeBoth(aDisposable, bDisposableLazy))
 

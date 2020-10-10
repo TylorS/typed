@@ -69,6 +69,7 @@ tsconfig*.tsbuildinfo
 /Op/
 /Path/
 /RemoteData/
+/Resume/
 /SharedRef/
 /Storage/
 /Stream/

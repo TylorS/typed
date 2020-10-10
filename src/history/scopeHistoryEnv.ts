@@ -4,9 +4,6 @@ import { parseUri, Uri } from '@typed/fp/Uri/exports'
 
 import { HistoryEnv } from './HistoryEnv'
 
-/**
- * @since 0.0.1
- */
 export function scopeHistoryEnv<A>(
   scope: Path,
   { history, location }: HistoryEnv<A>,

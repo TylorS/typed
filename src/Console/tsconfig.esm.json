@@ -13,6 +13,9 @@
       "path": "../Effect/tsconfig.esm.json"
     },
     {
+      "path": "../Resume/tsconfig.esm.json"
+    },
+    {
       "path": "../logging/tsconfig.esm.json"
     }
   ],

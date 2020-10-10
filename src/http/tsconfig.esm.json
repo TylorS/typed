@@ -22,6 +22,9 @@
       "path": "../RemoteData/tsconfig.esm.json"
     },
     {
+      "path": "../Resume/tsconfig.esm.json"
+    },
+    {
       "path": "../SharedRef/tsconfig.esm.json"
     },
     {

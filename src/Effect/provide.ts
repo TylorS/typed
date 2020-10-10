@@ -6,9 +6,6 @@ import { Effect, Pure } from './Effect'
 import { fromEnv } from './fromEnv'
 import { toEnv } from './toEnv'
 
-/**
- * @since 0.0.1
- */
 export type ProvidedEffect<Provided extends {}, E extends {}, A> = Equals<Provided, {}> extends true
   ? Effect<E, A>
   : AllIsProvided<Provided, E> extends true
@@ -25,7 +22,6 @@ type AllIsProvided<E1, E2> = Equals<E1, E2> extends true
 
 /**
  * Provide part of the environemnt, enforcing its usage.
- * @since 0.0.1
  */
 export const use = curry(
   <E1, E2, A>(e1: E1, fx: Effect<E1 & E2, A>): ProvidedEffect<E1, E2, A> =>
@@ -37,7 +33,6 @@ export const use = curry(
 
 /**
  * Provide part of the environemnt, allowing for replacement later on.
- * @since 0.0.1
  */
 export const provide = curry(
   <E1, E2, A>(e1: E1, fx: Effect<E1 & E2, A>): ProvidedEffect<E1, E2, A> =>

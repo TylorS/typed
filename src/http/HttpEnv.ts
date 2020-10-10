@@ -1,6 +1,6 @@
 import { Disposable } from '@typed/fp/Disposable/exports'
-import { Resume } from '@typed/fp/Effect/exports'
 import { Progress } from '@typed/fp/RemoteData/exports'
+import { Resume } from '@typed/fp/Resume/exports'
 import { Uri } from '@typed/fp/Uri/exports'
 import { Either } from 'fp-ts/Either'
 

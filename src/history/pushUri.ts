@@ -1,11 +1,9 @@
-import { async, fromEnv } from '@typed/fp/Effect/exports'
+import { fromEnv } from '@typed/fp/Effect/exports'
+import { async } from '@typed/fp/Resume/exports'
 import { Uri, uriIso } from '@typed/fp/Uri/exports'
 
 import { HistoryEnv } from './HistoryEnv'
 
-/**
- * @since 0.0.1
- */
 export const pushUri = (uri: Uri) =>
   fromEnv<HistoryEnv<unknown>, Location>((e) =>
     async((cb) => {
