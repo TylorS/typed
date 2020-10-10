@@ -44,7 +44,7 @@ export type EffectOf<A> = ReturnType<FnOf<A>>
  */
 export type ReturnOf<A> = E.ReturnOf<EffectOf<A>>
 
-export const OPS = Symbol('@typed/fp/Ops')
+export const OPS = '@typed/fp/Ops'
 export type OPS = typeof OPS
 
 /**

@@ -11,7 +11,7 @@ import { idbRequestToResume } from './idbRequestToResume'
 import { IndexedDbFactoryEnv } from './IndexedDbFactoryEnv'
 import { openDatabase } from './openDatabase'
 
-export const IndexedDBFailure = Symbol('@typed/fp/Storage/IndexedDbFailure')
+export const IndexedDBFailure = '@typed/fp/Storage/IndexedDbFailure'
 export type IndexedDBFailure = FailEnv<typeof IndexedDBFailure, Error>
 
 export function createIndexedDbKeyValueStorage<K extends IDBValidKey, V>(
