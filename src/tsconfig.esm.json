@@ -31,6 +31,9 @@
       "path": "./Path/tsconfig.esm.json"
     },
     {
+      "path": "./Queue/tsconfig.esm.json"
+    },
+    {
       "path": "./RemoteData/tsconfig.esm.json"
     },
     {

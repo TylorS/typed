@@ -68,6 +68,7 @@ tsconfig*.tsbuildinfo
 /Key/
 /Op/
 /Path/
+/Queue/
 /RemoteData/
 /Resume/
 /SharedRef/
