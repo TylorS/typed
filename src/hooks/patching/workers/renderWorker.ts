@@ -1,0 +1,56 @@
+import { doEffect, Effect, use, zip } from '@typed/fp/Effect/exports'
+import { pause } from '@typed/fp/fibers/exports'
+import { Ref } from '@typed/fp/SharedRef/Ref'
+import { pipe } from 'fp-ts/function'
+import { isNone, Some } from 'fp-ts/Option'
+
+import { runWithHooks } from '../../core/exports'
+import { patch } from '../Patch'
+import { renderedEnvs } from '../sharedRefs/RenderedEnvs'
+import { rendererEnvs } from '../sharedRefs/RendererEnvs'
+import { renderQueue } from '../sharedRefs/RenderQueue'
+import { updatedEnvs } from '../sharedRefs/UpdatedEnvs'
+import { updatingEnvs } from '../sharedRefs/UpdatingEnvs'
+
+export const renderWorker = doEffect(function* () {
+  const option = yield* renderQueue.dequeue
+
+  if (isNone(option)) {
+    return
+  }
+
+  const hookEnv = option.value
+  const { id } = hookEnv
+  const [rendered, renderer, updated] = yield* zip([
+    renderedEnvs.get(id),
+    rendererEnvs.get(id),
+    updatedEnvs.has(id),
+  ] as const)
+
+  const notReadyForPatching =
+    !updated || isNone(rendered) || !rendered.value.current || isNone(renderer)
+  const isCurrentlyUpdating = yield* updatingEnvs.has(id)
+  const shouldRequeue = isCurrentlyUpdating && !(yield* renderQueue.some((e) => e.id == id))
+
+  if (shouldRequeue) {
+    yield* renderQueue.enqueue(hookEnv)
+  }
+
+  if (notReadyForPatching || shouldRequeue) {
+    return
+  }
+
+  yield* updatingEnvs.add(id)
+
+  const renderedRef = (rendered as Some<Ref<any>>).value
+  const [render, env] = (renderer as Some<
+    readonly [effect: (ref: Ref<any>) => Effect<any, any>, env: any]
+  >).value
+
+  const b = yield* pipe(runWithHooks(hookEnv, render(renderedRef)), use(env))
+  const a = yield* patch(renderedRef.current, b)
+
+  renderedRef.current = a
+
+  yield* pause
+})

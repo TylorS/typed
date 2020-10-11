@@ -50,3 +50,13 @@ export const proceedAll = (...fibers: ReadonlyArray<Fiber<unknown>>): Effect<Fib
   doEffect(function* () {
     yield* zip(fibers.map((f) => proceed(f)))
   })
+
+export const forkPaused = <E, A>(effect: Effect<E, A>): Effect<E & FiberEnv, Fiber<A>> => {
+  const eff = doEffect(function* () {
+    yield* pause
+
+    return yield* effect
+  })
+
+  return fork(eff)
+}

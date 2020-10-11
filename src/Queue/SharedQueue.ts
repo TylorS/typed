@@ -10,11 +10,21 @@ export type SharedQueueValue<A> = A extends SharedQueue<any, infer R> ? R : neve
 
 export const wrapSharedQueue = <Q extends SharedQueue<any, any>>(
   queue: Q,
-): readonly [
-  (value: SharedQueueValue<Q>) => Effect<SharedRefEnv<Q>, void>,
-  Effect<SharedRefEnv<Q>, Option<SharedQueueValue<Q>>>,
-  Effect<SharedRefEnv<Q>, Option<SharedQueueValue<Q>>>,
-] => [(value: SharedQueueValue<Q>) => enqueue(queue, value), dequeue(queue), peek(queue)]
+): WrappedSharedQueue<Q> => ({
+  enqueue: (value: SharedQueueValue<Q>) => enqueue(queue, value),
+  dequeue: dequeue(queue),
+  dequeueAll: dequeueAll(queue),
+  peek: peek(queue),
+  some: (f: (value: SharedQueueValue<Q>) => boolean) => some(f, queue),
+})
+
+export type WrappedSharedQueue<Q extends SharedQueue<any, any>> = {
+  readonly enqueue: (value: SharedQueueValue<Q>) => Effect<SharedRefEnv<Q>, void>
+  readonly dequeue: Effect<SharedRefEnv<Q>, Option<SharedQueueValue<Q>>>
+  readonly dequeueAll: Effect<SharedRefEnv<Q>, ReadonlyArray<SharedQueueValue<Q>>>
+  readonly peek: Effect<SharedRefEnv<Q>, Option<SharedQueueValue<Q>>>
+  readonly some: (f: (value: SharedQueueValue<Q>) => boolean) => Effect<SharedRefEnv<Q>, boolean>
+}
 
 export const enqueue = <A, K extends PropertyKey>(
   value: A,
@@ -41,6 +51,18 @@ export const dequeue = <K extends PropertyKey, A>(
   return eff
 }
 
+export const dequeueAll = <K extends PropertyKey, A>(
+  queue: SharedQueue<K, A>,
+): Effect<SharedRefEnv<SharedQueue<K, A>>, ReadonlyArray<A>> => {
+  const eff = doEffect(function* () {
+    const q: Queue<A> = yield* readSharedRef(queue)
+
+    return q.dequeueAll()
+  })
+
+  return eff
+}
+
 export const peek = <K extends PropertyKey, A>(
   queue: SharedQueue<K, A>,
 ): Effect<SharedRefEnv<SharedQueue<K, A>>, Option<A>> => {
@@ -48,6 +70,19 @@ export const peek = <K extends PropertyKey, A>(
     const q: Queue<A> = yield* readSharedRef(queue)
 
     return q.peek()
+  })
+
+  return eff
+}
+
+export const some = <K extends PropertyKey, A>(
+  f: (value: A) => boolean,
+  queue: SharedQueue<K, A>,
+): Effect<SharedRefEnv<SharedQueue<K, A>>, boolean> => {
+  const eff = doEffect(function* () {
+    const q: Queue<A> = yield* readSharedRef(queue)
+
+    return q.some(f)
   })
 
   return eff
