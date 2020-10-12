@@ -5,7 +5,7 @@ import { Option } from 'fp-ts/Option'
  * A synchronous, likely in-memory, representation of a Queue.
  */
 export interface Queue<A> {
-  readonly enqueue: (value: A) => void
+  readonly enqueue: (...values: ReadonlyArray<A>) => void
   readonly dequeue: IO<Option<A>>
   readonly dequeueAll: IO<ReadonlyArray<A>>
   readonly peek: IO<Option<A>>

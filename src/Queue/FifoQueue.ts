@@ -6,8 +6,8 @@ import { none, some } from 'fp-ts/Option'
 import { Queue } from './Queue'
 
 export function createFifoQueue<A>(queue: Array<A>): Queue<A> {
-  function enqueue(value: A) {
-    queue.push(value)
+  function enqueue(...values: ReadonlyArray<A>) {
+    queue.push(...values)
   }
 
   function dequeue() {
