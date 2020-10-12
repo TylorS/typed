@@ -2,7 +2,7 @@ import { WhenIdleEnv } from '@typed/fp/dom/exports'
 import { raf, RafEnv } from '@typed/fp/dom/raf'
 import { Effect, EnvOf } from '@typed/fp/Effect/Effect'
 import { doEffect } from '@typed/fp/Effect/exports'
-import { FiberEnv, fork, proceedAll } from '@typed/fp/fibers/exports'
+import { FiberEnv, forkPaused, proceedAll } from '@typed/fp/fibers/exports'
 import { getHookEnv, HookEnv, runWithHooks } from '@typed/fp/hooks/core/exports'
 
 import { Patch, patch } from './Patch'
@@ -17,13 +17,13 @@ import { whenIdleWorker } from './workers/whenIdleWorker'
 export function patchOnRaf<E extends HookEnv, A, B>(
   main: Effect<E, A>,
   initial: B,
-): Effect<E & PatchOnRafEnv<A, B>, never> {
+): Effect<E & PatchOnRafEnv<B, A>, never> {
   let firstRun = true
 
   const eff = doEffect(function* () {
     const env = yield* getHookEnv
-    const renderFiber = yield* fork(whenIdleWorker(renderWorker))
-    const effectsFiber = yield* fork(whenIdleWorker(effectsWorker))
+    const renderFiber = yield* forkPaused(whenIdleWorker(renderWorker))
+    const effectsFiber = yield* forkPaused(whenIdleWorker(effectsWorker))
 
     yield* respondToRemoveEvents
     yield* respondToRunningEvents
@@ -52,7 +52,7 @@ export function patchOnRaf<E extends HookEnv, A, B>(
 export type PatchOnRafEnv<A, B> = FiberEnv &
   RafEnv &
   WhenIdleEnv &
-  Patch<B, A> &
+  Patch<A, B> &
   EnvOf<typeof respondToRemoveEvents> &
   EnvOf<typeof respondToRunningEvents> &
   EnvOf<typeof respondToUpdateEvents> &

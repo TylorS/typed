@@ -1,4 +1,5 @@
 export * from './EffectQueue'
+export * from './providePatchRefs'
 export * from './RenderableEnvs'
 export * from './RenderedEnvs'
 export * from './RendererEnvs'
