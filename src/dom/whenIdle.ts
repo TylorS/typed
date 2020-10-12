@@ -17,6 +17,10 @@ export interface WhenIdleEnv {
   readonly cancelIdleCallback: (handle: IdleCallbackHandle) => void
 }
 
+declare global {
+  export interface Window extends WhenIdleEnv {}
+}
+
 export type IdleCallbackDeadline = {
   readonly didTimeout: boolean
   readonly timeRemaining: () => number
