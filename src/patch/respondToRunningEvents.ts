@@ -1,12 +1,12 @@
 import { undisposable } from '@typed/fp/Disposable/exports'
 import { doEffect } from '@typed/fp/Effect/exports'
-import { readSharedRef } from '@typed/fp/SharedRef/exports'
-
 import {
   getAllDescendants,
   isUpdatedHookEnvironmentEvent,
   listenToHookEvents,
-} from '../core/exports'
+} from '@typed/fp/hooks/core/exports'
+import { readSharedRef } from '@typed/fp/SharedRef/exports'
+
 import { RenderQueue } from './sharedRefs/exports'
 import { UpdatedEnvs } from './sharedRefs/UpdatedEnvs'
 

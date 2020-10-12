@@ -1,7 +1,6 @@
+import { HookEnvironment } from '@typed/fp/hooks/core/exports'
 import { SharedQueue, wrapSharedQueue } from '@typed/fp/Queue/exports'
 import { createSharedRef } from '@typed/fp/SharedRef/exports'
-
-import { HookEnvironment } from '../../core/exports'
 
 export const RENDER_QUEUE = '@typed/fp/hooks/RenderQueue'
 export type RENDER_QUEUE = typeof RENDER_QUEUE

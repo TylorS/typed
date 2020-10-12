@@ -87,3 +87,4 @@ tsconfig*.tsbuildinfo
 /lambda/
 /logging/
 /logic/
+/patch/

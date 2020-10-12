@@ -1,9 +1,13 @@
 import { undisposable } from '@typed/fp/Disposable/exports'
 import { doEffect } from '@typed/fp/Effect/exports'
+import {
+  HookEnvironment,
+  isUpdatedHookEnvironmentEvent,
+  listenToHookEvents,
+} from '@typed/fp/hooks/core/exports'
 import { readSharedRef } from '@typed/fp/SharedRef/exports'
 import { isSome } from 'fp-ts/lib/Option'
 
-import { HookEnvironment, isUpdatedHookEnvironmentEvent, listenToHookEvents } from '../core/exports'
 import { UpdatedEnvs } from './sharedRefs/UpdatedEnvs'
 
 export const respondToUpdateEvents = doEffect(function* () {

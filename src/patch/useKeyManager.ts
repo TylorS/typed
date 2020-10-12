@@ -1,10 +1,6 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
 import { Effect, EnvOf, Pure } from '@typed/fp/Effect/Effect'
 import { ask, doEffect, execEffect } from '@typed/fp/Effect/exports'
-import { Ref } from '@typed/fp/SharedRef/Ref'
-import { Eq, getTupleEq } from 'fp-ts/Eq'
-import { constNull, pipe } from 'fp-ts/function'
-
 import {
   getKeyedEnvironment,
   HookEnv,
@@ -13,7 +9,11 @@ import {
   useDisposable,
   useMemo,
   useRef,
-} from '../core/exports'
+} from '@typed/fp/hooks/core/exports'
+import { Ref } from '@typed/fp/SharedRef/Ref'
+import { Eq, getTupleEq } from 'fp-ts/Eq'
+import { constNull, pipe } from 'fp-ts/function'
+
 import { renderableEnvs } from './sharedRefs/RenderableEnvs'
 import { renderedEnvs } from './sharedRefs/RenderedEnvs'
 import { rendererEnvs } from './sharedRefs/RendererEnvs'

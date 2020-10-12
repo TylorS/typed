@@ -1,13 +1,13 @@
 import { And, Arity1 } from '@typed/fp/common/exports'
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
+import { useEffectBy, useMatches } from '@typed/fp/hooks/additional/exports'
+import { HookEnv, HookPositions, HookSymbols, useMemo } from '@typed/fp/hooks/core/exports'
 import { Fn } from '@typed/fp/lambda/exports'
 import { Match } from '@typed/fp/logic/exports'
 import { Ref, SharedRefEnv } from '@typed/fp/SharedRef/exports'
 import { identity } from 'fp-ts/function'
 import { isNone, none, Option, some } from 'fp-ts/Option'
 
-import { useEffectBy, useMatches } from '../additional/exports'
-import { HookEnv, HookPositions, HookSymbols, useMemo } from '../core/exports'
 import { useKeyManager } from './useKeyManager'
 
 /**

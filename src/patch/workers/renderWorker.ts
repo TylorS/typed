@@ -1,10 +1,10 @@
 import { doEffect, Effect, use, zip } from '@typed/fp/Effect/exports'
 import { pause } from '@typed/fp/fibers/exports'
+import { runWithHooks } from '@typed/fp/hooks/core/exports'
 import { Ref } from '@typed/fp/SharedRef/Ref'
 import { pipe } from 'fp-ts/function'
 import { isNone, Some } from 'fp-ts/Option'
 
-import { runWithHooks } from '../../core/exports'
 import { patch } from '../Patch'
 import { renderedEnvs } from '../sharedRefs/RenderedEnvs'
 import { rendererEnvs } from '../sharedRefs/RendererEnvs'

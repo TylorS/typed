@@ -2,9 +2,9 @@ import { WhenIdleEnv } from '@typed/fp/dom/exports'
 import { raf, RafEnv } from '@typed/fp/dom/raf'
 import { Effect, EnvOf } from '@typed/fp/Effect/Effect'
 import { doEffect } from '@typed/fp/Effect/exports'
-import { FiberEnv, forkPaused, proceedAll } from '@typed/fp/fibers/exports'
+import { FiberEnv, fork, proceedAll } from '@typed/fp/fibers/exports'
+import { getHookEnv, HookEnv, runWithHooks } from '@typed/fp/hooks/core/exports'
 
-import { getHookEnv, HookEnv, runWithHooks } from '../core/exports'
 import { Patch, patch } from './Patch'
 import { respondToRemoveEvents } from './respondToRemoveEvents'
 import { respondToRunningEvents } from './respondToRunningEvents'
@@ -18,23 +18,26 @@ export function patchOnRaf<E extends HookEnv, A, B>(
   main: Effect<E, A>,
   initial: B,
 ): Effect<E & PatchOnRafEnv<A, B>, never> {
+  let firstRun = true
+
   const eff = doEffect(function* () {
     const env = yield* getHookEnv
-    const renderFiber = yield* forkPaused(whenIdleWorker(renderWorker))
-    const effectsFiber = yield* forkPaused(whenIdleWorker(effectsWorker))
+    const renderFiber = yield* fork(whenIdleWorker(renderWorker))
+    const effectsFiber = yield* fork(whenIdleWorker(effectsWorker))
 
     yield* respondToRemoveEvents
     yield* respondToRunningEvents
     yield* respondToUpdateEvents
 
-    let previous = yield* patch(initial, yield* runWithHooks(env, main))
+    let previous = initial
 
     while (true) {
-      yield* raf
+      if (!firstRun) {
+        yield* raf
+      }
 
-      const updated = yield* updatedEnvs.has(env.id)
-
-      if (updated) {
+      if (firstRun || (yield* updatedEnvs.has(env.id))) {
+        firstRun = false
         previous = yield* patch(previous, yield* runWithHooks(env, main))
       }
 

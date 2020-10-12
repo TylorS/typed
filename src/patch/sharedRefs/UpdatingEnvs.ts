@@ -1,6 +1,5 @@
+import { HookEnvironmentId } from '@typed/fp/hooks/core/exports'
 import { createSharedRef, SharedRef, wrapSharedSet } from '@typed/fp/SharedRef/exports'
-
-import { HookEnvironmentId } from '../../core/exports'
 
 export const UPDATING_ENVS = '@typed/fp/hooks/UpdatingEnvs'
 export type UPDATING_ENVS = typeof UPDATING_ENVS

@@ -86,6 +86,9 @@
     },
     {
       "path": "./logic/tsconfig.cjs.json"
+    },
+    {
+      "path": "./patch/tsconfig.cjs.json"
     }
   ]
 }

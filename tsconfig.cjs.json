@@ -94,6 +94,7 @@
     "./io",
     "./lambda",
     "./logging",
-    "./logic"
+    "./logic",
+    "./patch"
   ]
 }

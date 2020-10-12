@@ -5,15 +5,39 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/Queue",
+    "outDir": "../../cjs/patch",
     "module": "commonjs"
   },
   "references": [
     {
+      "path": "../Disposable/tsconfig.cjs.json"
+    },
+    {
       "path": "../Effect/tsconfig.cjs.json"
     },
     {
+      "path": "../Queue/tsconfig.cjs.json"
+    },
+    {
+      "path": "../Resume/tsconfig.cjs.json"
+    },
+    {
       "path": "../SharedRef/tsconfig.cjs.json"
+    },
+    {
+      "path": "../common/tsconfig.cjs.json"
+    },
+    {
+      "path": "../dom/tsconfig.cjs.json"
+    },
+    {
+      "path": "../fibers/tsconfig.cjs.json"
+    },
+    {
+      "path": "../hooks/tsconfig.cjs.json"
+    },
+    {
+      "path": "../lambda/tsconfig.cjs.json"
     },
     {
       "path": "../logic/tsconfig.cjs.json"

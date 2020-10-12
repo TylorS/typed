@@ -1,9 +1,9 @@
 import { Arity1 } from '@typed/fp/common/types'
 import { Effect, EnvOf } from '@typed/fp/Effect/Effect'
+import { useEffectBy } from '@typed/fp/hooks/additional/useEffectBy'
+import { HookEnv } from '@typed/fp/hooks/core/exports'
 import { Ref } from '@typed/fp/SharedRef/Ref'
 
-import { useEffectBy } from '../additional/useEffectBy'
-import { HookEnv } from '../core/exports'
 import { useKeyManager } from './useKeyManager'
 
 export function useListManager<A, B, C, E extends HookEnv>(

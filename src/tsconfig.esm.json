@@ -86,6 +86,9 @@
     },
     {
       "path": "./logic/tsconfig.esm.json"
+    },
+    {
+      "path": "./patch/tsconfig.esm.json"
     }
   ]
 }

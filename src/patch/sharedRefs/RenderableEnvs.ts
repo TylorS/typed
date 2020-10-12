@@ -1,6 +1,5 @@
+import { HookEnvironmentId } from '@typed/fp/hooks/core/exports'
 import { createSharedRef, Ref, SharedRef, wrapSharedMap } from '@typed/fp/SharedRef/exports'
-
-import { HookEnvironmentId } from '../../core/exports'
 
 export const RENDERABLE_ENVS = '@typed/fp/hooks/RenderableEnvs'
 export type RENDERABLE_ENVS = typeof RENDERABLE_ENVS

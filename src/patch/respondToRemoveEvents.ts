@@ -1,11 +1,11 @@
 import { undisposable } from '@typed/fp/Disposable/exports'
 import { doEffect } from '@typed/fp/Effect/exports'
-
 import {
   getHookDisposables,
   isRemovedHookEnvironmentEvent,
   listenToHookEvents,
-} from '../core/exports'
+} from '@typed/fp/hooks/core/exports'
+
 import { readPatchRefs } from './sharedRefs/readPatchRefs'
 
 export const respondToRemoveEvents = doEffect(function* () {

@@ -5,15 +5,39 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/Queue",
+    "outDir": "../../esm/patch",
     "module": "esnext"
   },
   "references": [
     {
+      "path": "../Disposable/tsconfig.esm.json"
+    },
+    {
       "path": "../Effect/tsconfig.esm.json"
     },
     {
+      "path": "../Queue/tsconfig.esm.json"
+    },
+    {
+      "path": "../Resume/tsconfig.esm.json"
+    },
+    {
       "path": "../SharedRef/tsconfig.esm.json"
+    },
+    {
+      "path": "../common/tsconfig.esm.json"
+    },
+    {
+      "path": "../dom/tsconfig.esm.json"
+    },
+    {
+      "path": "../fibers/tsconfig.esm.json"
+    },
+    {
+      "path": "../hooks/tsconfig.esm.json"
+    },
+    {
+      "path": "../lambda/tsconfig.esm.json"
     },
     {
       "path": "../logic/tsconfig.esm.json"
