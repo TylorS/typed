@@ -2,8 +2,8 @@ import { WhenIdleEnv } from '@typed/fp/dom/exports'
 import { raf, RafEnv } from '@typed/fp/dom/raf'
 import { Effect, EnvOf } from '@typed/fp/Effect/Effect'
 import { doEffect } from '@typed/fp/Effect/exports'
-import { FiberEnv, forkPaused, proceedAll } from '@typed/fp/fibers/exports'
-import { getHookEnv, HookEnv, runWithHooks } from '@typed/fp/hooks/core/exports'
+import { FiberEnv, fork, proceedAll } from '@typed/fp/fibers/exports'
+import { createHookEnv, HookEnv, runWithHooks } from '@typed/fp/hooks/core/exports'
 
 import { Patch, patch } from './Patch'
 import { respondToRemoveEvents } from './respondToRemoveEvents'
@@ -21,13 +21,14 @@ export function patchOnRaf<E extends HookEnv, A, B>(
   let firstRun = true
 
   const eff = doEffect(function* () {
-    const env = yield* getHookEnv
-    const renderFiber = yield* forkPaused(whenIdleWorker(renderWorker))
-    const effectsFiber = yield* forkPaused(whenIdleWorker(effectsWorker))
+    const renderFiber = yield* fork(whenIdleWorker(renderWorker))
+    const effectsFiber = yield* fork(whenIdleWorker(effectsWorker))
 
     yield* respondToRemoveEvents
     yield* respondToRunningEvents
     yield* respondToUpdateEvents
+
+    const { hookEnvironment } = yield* createHookEnv
 
     let previous = initial
 
@@ -36,13 +37,15 @@ export function patchOnRaf<E extends HookEnv, A, B>(
         yield* raf
       }
 
-      if (firstRun || (yield* updatedEnvs.has(env.id))) {
+      const shouldRun = firstRun || (yield* updatedEnvs.has(hookEnvironment.id))
+
+      if (shouldRun) {
         firstRun = false
-        previous = yield* patch(previous, yield* runWithHooks(env, main))
+        previous = yield* patch(previous, yield* runWithHooks(hookEnvironment, main))
       }
 
       // Run any queued effects and do any patching that can happen while idle
-      yield* proceedAll(effectsFiber, renderFiber)
+      yield* proceedAll(renderFiber, effectsFiber)
     }
   })
 
@@ -53,6 +56,7 @@ export type PatchOnRafEnv<A, B> = FiberEnv &
   RafEnv &
   WhenIdleEnv &
   Patch<A, B> &
+  EnvOf<typeof createHookEnv> &
   EnvOf<typeof respondToRemoveEvents> &
   EnvOf<typeof respondToRunningEvents> &
   EnvOf<typeof respondToUpdateEvents> &

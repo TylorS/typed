@@ -1,5 +1,4 @@
 import { any } from '@typed/fp/logic/any'
-import { complement } from '@typed/fp/logic/exports'
 import { Predicate } from 'fp-ts/function'
 import { none, some } from 'fp-ts/Option'
 
@@ -27,7 +26,7 @@ export function createFifoQueue<A>(queue: Array<A>): Queue<A> {
   }
 
   function remove(f: Predicate<A>) {
-    queue = queue.filter(complement(f))
+    queue = queue.filter((a) => !f(a))
   }
 
   return {

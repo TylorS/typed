@@ -2,7 +2,7 @@ import { undisposable } from '@typed/fp/Disposable/exports'
 import { doEffect } from '@typed/fp/Effect/exports'
 import {
   getAllDescendants,
-  isUpdatedHookEnvironmentEvent,
+  isRunningHookEnvironmentEvent,
   listenToHookEvents,
 } from '@typed/fp/hooks/core/exports'
 import { readSharedRef } from '@typed/fp/SharedRef/exports'
@@ -15,7 +15,7 @@ export const respondToRunningEvents = doEffect(function* () {
   const queue = yield* readSharedRef(RenderQueue)
 
   yield* listenToHookEvents(
-    isUpdatedHookEnvironmentEvent,
+    isRunningHookEnvironmentEvent,
     undisposable(({ hookEnvironment }) => {
       const ids = new Set([hookEnvironment.id])
 

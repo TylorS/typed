@@ -1,6 +1,8 @@
-import { Disposable, Handle, Time, Timer } from '@most/types'
-import { lazy } from '@typed/fp/Disposable/exports'
+import { disposeNone } from '@most/disposable'
+import { periodic } from '@most/scheduler'
+import { Disposable, Scheduler, Time, Timer } from '@most/types'
 import { ask, doEffect, Effect, EnvOf } from '@typed/fp/Effect/exports'
+import { createCallbackTask, SchedulerEnv } from '@typed/fp/fibers/exports'
 
 import { useDisposable } from '../core/exports'
 
@@ -9,33 +11,22 @@ export type TimerEnv = { readonly timer: Timer }
 export const useInterval = (
   f: () => Disposable,
   ms: Time,
-): Effect<TimerEnv & EnvOf<typeof useDisposable>, Disposable> => {
+): Effect<SchedulerEnv & EnvOf<typeof useDisposable>, Disposable> => {
   const eff = doEffect(function* () {
-    const { timer } = yield* ask<TimerEnv>()
+    const { scheduler } = yield* ask<SchedulerEnv>()
 
-    return yield* useDisposable((t, n) => interval(t, n, f), [timer, ms] as const)
+    return yield* useDisposable((s, n) => interval(s, n, f), [scheduler, ms] as const)
   })
 
   return eff
 }
 
-function interval(timer: Timer, ms: Time, f: () => Disposable): Disposable {
-  const handles: Array<Handle> = []
-  const disposable = lazy()
+function interval(scheduler: Scheduler, ms: Time, f: () => Disposable): Disposable {
+  let first = true
 
-  function run() {
-    if (!disposable.disposed) {
-      disposable.addDisposable(f())
-
-      handles.push(timer.setTimer(run, ms))
-    }
-  }
-
-  handles.push(timer.setTimer(run, ms))
-
-  const dispose = () => handles.forEach((handle) => timer.clearTimer(handle))
-
-  disposable.addDisposable({ dispose })
-
-  return disposable
+  return periodic(
+    ms,
+    createCallbackTask(() => (first ? ((first = false), disposeNone()) : f())),
+    scheduler,
+  )
 }

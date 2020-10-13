@@ -13,7 +13,9 @@ export const raf = fromEnv((e: RafEnv) =>
 
     const handle = e.requestAnimationFrame((n) => disposable.addDisposable(resume(n)))
 
-    disposable.addDisposable({ dispose: () => e.cancelAnimationFrame(handle) })
+    disposable.addDisposable({
+      dispose: () => e.cancelAnimationFrame(handle),
+    })
 
     return disposable
   }),

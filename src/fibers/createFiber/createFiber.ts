@@ -91,14 +91,14 @@ export function createFiber<A>(
 
     infoChangeManager.updateInfo({ state: FiberState.Completed, value: exitValue.value })
 
-    // Cleeanup all resources
+    // Cleanup all resources
     fiber.dispose()
   }
 
   function onError(error: Error): void {
     infoChangeManager.updateInfo({ state: FiberState.Failed, error })
 
-    // Cleeanup all resources
+    // Cleanup all resources
     fiber.dispose()
   }
 }

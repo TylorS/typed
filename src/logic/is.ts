@@ -21,8 +21,13 @@ export const isNotFunction: IsNot<Function> = complement(isFunction)
 export const isNotMap: IsNot<Map<unknown, unknown>> = complement(isMap)
 export const isNotSet: IsNot<Set<unknown>> = complement(isSet)
 
-export const [isUndefined, isNotUndefined] = isAndIsNot(undefined)
-export const [isNull, isNotNull] = isAndIsNot(null)
+const [isUndefined, isNotUndefined] = isAndIsNot(undefined)
+
+export { isUndefined, isNotUndefined }
+
+const [isNull, isNotNull] = isAndIsNot(null)
+
+export { isNull, isNotNull }
 
 export function isArray(x: unknown): x is unknown[] {
   return Array.isArray(x)
@@ -96,8 +101,13 @@ export const isPromiseLike: Is<PromiseLike<unknown>> = (x: unknown): x is Promis
   !!x && isObject(x) && isFunction((x as PromiseLike<unknown>).then)
 export const isNotPromiseLie: IsNot<PromiseLike<unknown>> = complement(isPromiseLike)
 
-export const [isTrue, isNotTrue] = isAndIsNot<true>(true)
-export const [isFalse, isNotFalse] = isAndIsNot<false>(false)
+const [isTrue, isNotTrue] = isAndIsNot<true>(true)
+
+export { isTrue, isNotTrue }
+
+const [isFalse, isNotFalse] = isAndIsNot<false>(false)
+
+export { isFalse, isNotFalse }
 
 export const isBoolean: Is<boolean> = or(isTrue, isFalse)
 export const isNotBoolean: IsNot<boolean> = complement(isBoolean)

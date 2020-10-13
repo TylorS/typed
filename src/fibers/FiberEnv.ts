@@ -1,4 +1,4 @@
-import { doEffect, Effect, zip } from '@typed/fp/Effect/exports'
+import { doEffect, Effect } from '@typed/fp/Effect/exports'
 import { fromEnv } from '@typed/fp/Effect/fromEnv'
 import { Fiber } from '@typed/fp/fibers/Fiber'
 import { SchedulerEnv } from '@typed/fp/fibers/SchedulerEnv'
@@ -48,7 +48,9 @@ export const proceed = (fiber: Fiber<unknown>): Effect<FiberEnv, void> =>
 
 export const proceedAll = (...fibers: ReadonlyArray<Fiber<unknown>>): Effect<FiberEnv, void> =>
   doEffect(function* () {
-    yield* zip(fibers.map((f) => proceed(f)))
+    for (const fiber of fibers) {
+      yield* proceed(fiber)
+    }
   })
 
 export const forkPaused = <E, A>(effect: Effect<E, A>): Effect<E & FiberEnv, Fiber<A>> => {

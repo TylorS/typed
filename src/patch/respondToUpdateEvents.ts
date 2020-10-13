@@ -6,12 +6,14 @@ import {
   listenToHookEvents,
 } from '@typed/fp/hooks/core/exports'
 import { readSharedRef } from '@typed/fp/SharedRef/exports'
-import { isSome } from 'fp-ts/lib/Option'
+import { isSome } from 'fp-ts/Option'
 
+import { RenderQueue } from './sharedRefs/exports'
 import { UpdatedEnvs } from './sharedRefs/UpdatedEnvs'
 
 export const respondToUpdateEvents = doEffect(function* () {
   const updated = yield* readSharedRef(UpdatedEnvs)
+  const renderQueue = yield* readSharedRef(RenderQueue)
 
   yield* listenToHookEvents(
     isUpdatedHookEnvironmentEvent,
@@ -28,6 +30,7 @@ export const respondToUpdateEvents = doEffect(function* () {
       }
 
       updated.add(hookEnvironment.id)
+      renderQueue.enqueue(hookEnvironment)
     }),
   )
 })

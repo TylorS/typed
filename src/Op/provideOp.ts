@@ -1,7 +1,7 @@
 import { doEffect, Effect, provide, use } from '@typed/fp/Effect/exports'
 import { pipe } from 'fp-ts/function'
 
-import { GetOperation, Op, OpEnv, OPS } from './exports'
+import { GetOperation, Op, OpEnv, OPS } from './Op'
 import { getOrCreateOpMap } from './OpEnv'
 
 export function provideOp<O extends Op<any, any>, E1>(op: O, opEff: GetOperation<E1, O>) {

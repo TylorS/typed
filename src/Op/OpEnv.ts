@@ -14,11 +14,18 @@ export const getOpMap = doEffect(function* () {
 
 export const getOrCreateOpMap: Pure<OpMap> = doEffect(function* () {
   const env = yield* ask<{}>()
-  const { [OPS]: map } = opEnvIso.unwrap(isOpEnv(env) ? env : emptyOpEnv())
+
+  if (isOpEnv(env)) {
+    return opEnvIso.unwrap(env)[OPS]
+  }
+
+  const created = emptyOpEnv()
+
+  const map = opEnvIso.unwrap(created)[OPS]
 
   return map
 })
 
 export function isOpEnv(env: object): env is OpEnv<any> {
-  return !!env && typeof env === 'object' && OPS in env
+  return OPS in env
 }

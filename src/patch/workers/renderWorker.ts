@@ -1,4 +1,4 @@
-import { doEffect, Effect, use, zip } from '@typed/fp/Effect/exports'
+import { doEffect, Effect, provide, zip } from '@typed/fp/Effect/exports'
 import { pause } from '@typed/fp/fibers/exports'
 import { runWithHooks } from '@typed/fp/hooks/core/exports'
 import { Ref } from '@typed/fp/SharedRef/Ref'
@@ -21,6 +21,7 @@ export const renderWorker = doEffect(function* () {
 
   const hookEnv = option.value
   const { id } = hookEnv
+
   const [rendered, renderer, updated] = yield* zip([
     renderedEnvs.get(id),
     rendererEnvs.get(id),
@@ -47,10 +48,12 @@ export const renderWorker = doEffect(function* () {
     readonly [effect: (ref: Ref<any>) => Effect<any, any>, env: any]
   >).value
 
-  const b = yield* pipe(runWithHooks(hookEnv, render(renderedRef)), use(env))
+  const b = yield* pipe(runWithHooks(hookEnv, render(renderedRef)), provide(env))
   const a = yield* patch(renderedRef.current, b)
 
   renderedRef.current = a
+
+  yield* updatingEnvs.delete(id)
 
   yield* pause
 })
