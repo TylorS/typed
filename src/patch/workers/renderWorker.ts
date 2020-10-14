@@ -1,6 +1,5 @@
 import { doEffect, Effect, provide, zip } from '@typed/fp/Effect/exports'
-import { pause } from '@typed/fp/fibers/exports'
-import { runWithHooks } from '@typed/fp/hooks/core/exports'
+import { HookEnvironmentId, runWithHooks } from '@typed/fp/hooks/core/exports'
 import { Ref } from '@typed/fp/SharedRef/Ref'
 import { pipe } from 'fp-ts/function'
 import { isNone, Some } from 'fp-ts/Option'
@@ -12,48 +11,53 @@ import { renderQueue } from '../sharedRefs/RenderQueue'
 import { updatedEnvs } from '../sharedRefs/UpdatedEnvs'
 import { updatingEnvs } from '../sharedRefs/UpdatingEnvs'
 
-export const renderWorker = doEffect(function* () {
-  const option = yield* renderQueue.dequeue
+export const renderWorker = (rootId: HookEnvironmentId) =>
+  doEffect(function* () {
+    const option = yield* renderQueue.dequeue
 
-  if (isNone(option)) {
-    return
-  }
+    if (isNone(option)) {
+      return false
+    }
 
-  const hookEnv = option.value
-  const { id } = hookEnv
+    const hookEnv = option.value
+    const { id } = hookEnv
 
-  const [rendered, renderer, updated] = yield* zip([
-    renderedEnvs.get(id),
-    rendererEnvs.get(id),
-    updatedEnvs.has(id),
-  ] as const)
+    if (id === rootId) {
+      return true
+    }
 
-  const notReadyForPatching =
-    !updated || isNone(rendered) || !rendered.value.current || isNone(renderer)
-  const isCurrentlyUpdating = yield* updatingEnvs.has(id)
-  const shouldRequeue = isCurrentlyUpdating && !(yield* renderQueue.some((e) => e.id == id))
+    const [rendered, renderer, updated] = yield* zip([
+      renderedEnvs.get(id),
+      rendererEnvs.get(id),
+      updatedEnvs.has(id),
+    ] as const)
 
-  if (shouldRequeue) {
-    yield* renderQueue.enqueue(hookEnv)
-  }
+    const notReadyForPatching =
+      !updated || isNone(rendered) || !rendered.value.current || isNone(renderer)
+    const isCurrentlyUpdating = yield* updatingEnvs.has(id)
+    const shouldRequeue = isCurrentlyUpdating && !(yield* renderQueue.some((e) => e.id == id))
 
-  if (notReadyForPatching || shouldRequeue) {
-    return
-  }
+    if (shouldRequeue) {
+      yield* renderQueue.enqueue(hookEnv)
+    }
 
-  yield* updatingEnvs.add(id)
+    if (notReadyForPatching || shouldRequeue) {
+      return true
+    }
 
-  const renderedRef = (rendered as Some<Ref<any>>).value
-  const [render, env] = (renderer as Some<
-    readonly [effect: (ref: Ref<any>) => Effect<any, any>, env: any]
-  >).value
+    yield* updatingEnvs.add(id)
 
-  const b = yield* pipe(runWithHooks(hookEnv, render(renderedRef)), provide(env))
-  const a = yield* patch(renderedRef.current, b)
+    const renderedRef = (rendered as Some<Ref<any>>).value
+    const [render, env] = (renderer as Some<
+      readonly [effect: (ref: Ref<any>) => Effect<any, any>, env: any]
+    >).value
 
-  renderedRef.current = a
+    const b = yield* pipe(runWithHooks(hookEnv, render(renderedRef)), provide(env))
+    const a = yield* patch(renderedRef.current, b)
 
-  yield* updatingEnvs.delete(id)
+    renderedRef.current = a
 
-  yield* pause
-})
+    yield* updatingEnvs.delete(id)
+
+    return true
+  })

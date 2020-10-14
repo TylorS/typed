@@ -9,7 +9,7 @@ export const effectsWorker = doEffect(function* () {
   const option = yield* effectQueue.dequeue
 
   if (isNone(option)) {
-    return
+    return false
   }
 
   const [eff, env] = option.value
@@ -17,4 +17,6 @@ export const effectsWorker = doEffect(function* () {
   yield* pipe(eff, use(env))
 
   yield* pause
+
+  return true
 })

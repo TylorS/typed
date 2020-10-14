@@ -1,4 +1,3 @@
-import { disposeNone } from '@most/disposable'
 import { deepEqualsEq } from '@typed/fp/common/exports'
 import { ask, doEffect, Effect, EnvOf, execEffect, Pure, zip } from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/fibers/exports'
@@ -63,20 +62,12 @@ export const useEffectBy = <A, B, E, C>(
       [],
     )
     const previousValues = yield* useRef(Pure.fromIO((): ReadonlyArray<A> => values.slice()))
-    const effects = values.map(runEffect)
-    const [getStableValues, updateStableValues] = yield* useState(zip(effects))
-    const firstRun = yield* useRef(Pure.of(true))
+    const [getStableValues, updateStableValues] = yield* useState(zip(values.map(runEffect)))
     const env = yield* ask<E & HookRefEnvs & UuidEnv & EnvOf<typeof useFiber>>()
     const argsEq = yield* useMemo(flow(getEq, getTupleEq), [eq])
 
     yield* useDisposable(
       (vs: ReadonlyArray<A>) => {
-        if (firstRun.current) {
-          firstRun.current = false
-
-          return disposeNone()
-        }
-
         const eff = doEffect(function* () {
           const { added, removed } = diffValues(previousValues.current, values)
 

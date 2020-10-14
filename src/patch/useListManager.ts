@@ -6,13 +6,13 @@ import { Ref } from '@typed/fp/SharedRef/Ref'
 
 import { useKeyManager } from './useKeyManager'
 
-export function useListManager<A, B, C, E extends HookEnv>(
+export function useListManager<A, B, C, E extends HookEnv, D>(
   list: ReadonlyArray<A>,
   identify: Arity1<A, B>,
-  computation: Arity1<ListManagerValue<A, B, C>, Effect<E, A>>,
-): Effect<E & EnvOf<typeof useEffectBy> & EnvOf<typeof useKeyManager>, ReadonlyArray<A>> {
+  computation: Arity1<ListManagerValue<A, B, C>, Effect<E, D>>,
+): Effect<E & EnvOf<typeof useEffectBy> & EnvOf<typeof useKeyManager>, ReadonlyArray<D>> {
   return useEffectBy(list, identify, (value, index, key) =>
-    useKeyManager<B, E, C, A>(key, (ref) => computation({ value, index, key, ref })),
+    useKeyManager<B, E, C, D>(key, (ref) => computation({ value, index, key, ref })),
   )
 }
 

@@ -1,7 +1,7 @@
 import { undisposable } from '@typed/fp/Disposable/exports'
 import { doEffect, execPure, Pure } from '@typed/fp/Effect/exports'
 import { provideSchedulerEnv } from '@typed/fp/fibers/exports'
-import { provideUuidEnv } from '@typed/fp/Uuid/exports'
+import { provideNodeUuidEnv } from '@typed/fp/Uuid/provideNodeUuidEnv'
 import { describe, given, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 
@@ -47,7 +47,7 @@ export const test = describe(`provideChannel`, [
         sut,
         provideHookEnv,
         provideEmptyHookStates,
-        provideUuidEnv,
+        provideNodeUuidEnv,
         provideSchedulerEnv,
         execPure,
       )
@@ -94,7 +94,7 @@ export const test = describe(`provideChannel`, [
         sut,
         provideHookEnv,
         provideEmptyHookStates,
-        provideUuidEnv,
+        provideNodeUuidEnv,
         provideSchedulerEnv,
         execPure,
       )

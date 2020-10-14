@@ -1,6 +1,6 @@
-import { doEffect, provide, Pure } from '@typed/fp/Effect/exports'
+import { doEffect, Pure } from '@typed/fp/Effect/exports'
 import { runAsFiberWith } from '@typed/fp/fibers/exports'
-import { provideUuidEnv } from '@typed/fp/Uuid/exports'
+import { provideNodeUuidEnv } from '@typed/fp/Uuid/provideNodeUuidEnv'
 import { createVirtualScheduler } from '@typed/fp/VirtualTimer/exports'
 import { describe, given, it } from '@typed/test'
 import { identity, increment, pipe } from 'fp-ts/function'
@@ -15,7 +15,6 @@ import {
   useState,
 } from '../core/exports'
 import { useEffectBy } from './useEffectBy'
-import { TimerEnv } from './useInterval'
 import { useIntervalEffect } from './useIntervalEffect'
 
 export const test = describe(`useEffectBy`, [
@@ -65,8 +64,7 @@ export const test = describe(`useEffectBy`, [
         sut,
         provideHookEnv,
         provideEmptyHookStates,
-        provideUuidEnv,
-        provide<TimerEnv>({ timer }),
+        provideNodeUuidEnv,
         runAsFiberWith(scheduler),
       )
 

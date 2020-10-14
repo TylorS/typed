@@ -1,12 +1,9 @@
 import { isBrowser } from '@typed/fp/common/exports'
 import { doEffect, execEffect, execPure, Pure } from '@typed/fp/Effect/exports'
 import { provideSharedRef, SharedRefValue } from '@typed/fp/SharedRef/exports'
-import {
-  createBrowserUuidEnv,
-  createNodeUuidEnv,
-  createUuid,
-  provideUuidEnv,
-} from '@typed/fp/Uuid/exports'
+import { createBrowserUuidEnv, createUuid } from '@typed/fp/Uuid/exports'
+import { provideNodeUuidEnv } from '@typed/fp/Uuid/provideNodeUuidEnv'
+import { createNodeUuidEnv } from '@typed/fp/Uuid/randomUuidSeed/createNodeUuidEnv'
 import { describe, given, it } from '@typed/test'
 import { eqStrict } from 'fp-ts/Eq'
 import { identity, pipe } from 'fp-ts/function'
@@ -33,7 +30,7 @@ export const test = describe(`ChannelConsumers`, [
           ok(isNone(option))
         })
 
-        pipe(eff, provideUuidEnv, provideSharedRef(ChannelConsumers, new Map()), execPure)
+        pipe(eff, provideNodeUuidEnv, provideSharedRef(ChannelConsumers, new Map()), execPure)
       }),
 
       it(`returns Some<ChannelConsumer> if not configured`, ({ ok, same }) => {

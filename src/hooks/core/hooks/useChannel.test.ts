@@ -1,7 +1,7 @@
 import { Pure } from '@typed/fp/Effect/Effect'
 import { doEffect, execPure } from '@typed/fp/Effect/exports'
 import { provideSchedulerEnv } from '@typed/fp/fibers/exports'
-import { provideUuidEnv } from '@typed/fp/Uuid/exports'
+import { provideNodeUuidEnv } from '@typed/fp/Uuid/provideNodeUuidEnv'
 import { describe, given, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 
@@ -32,7 +32,7 @@ export const test = describe(`useChannel`, [
         provideHookEnv,
         provideEmptyHookStates,
         provideSchedulerEnv,
-        provideUuidEnv,
+        provideNodeUuidEnv,
         execPure,
       )
     }),

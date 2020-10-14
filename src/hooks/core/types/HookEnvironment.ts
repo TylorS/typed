@@ -66,6 +66,8 @@ export const removeKeyedEnvironment = (
     const { children } = yield* getHookEnv
     const env = children.get(key)
 
+    children.delete(key)
+
     if (env) {
       yield* removeHookEnvironment(env)
     }
@@ -111,14 +113,14 @@ export function createHookEnvironment(
   return env
 }
 
-export function getAllDescendants(node: HookEnvironment): ReadonlyArray<HookEnvironment> {
+export function* getAllDescendants(node: HookEnvironment): Iterable<HookEnvironment> {
   const children: Array<HookEnvironment> = []
   const toProcess = [...node.children.values()]
 
   while (toProcess.length > 0) {
     const child = toProcess.shift()!
 
-    children.push(child)
+    yield child
 
     toProcess.push(...child.children.values())
   }

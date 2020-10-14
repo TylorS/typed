@@ -2,12 +2,9 @@ import { isBrowser } from '@typed/fp/common/exports'
 import { undisposable } from '@typed/fp/Disposable/exports'
 import { doEffect, execPure, Pure } from '@typed/fp/Effect/exports'
 import { provideSchedulerEnv } from '@typed/fp/fibers/exports'
-import {
-  createBrowserUuidEnv,
-  createNodeUuidEnv,
-  provideUuidEnv,
-  uuid4,
-} from '@typed/fp/Uuid/exports'
+import { createBrowserUuidEnv, uuid4 } from '@typed/fp/Uuid/exports'
+import { provideNodeUuidEnv } from '@typed/fp/Uuid/provideNodeUuidEnv'
+import { createNodeUuidEnv } from '@typed/fp/Uuid/randomUuidSeed/createNodeUuidEnv'
 import { describe, given, it } from '@typed/test'
 import { eqNumber } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
@@ -54,7 +51,7 @@ export const test = describe(`ChannelProviders`, [
           equal(hookEnvironment, actual)
         })
 
-        pipe(test, provideEmptyHookStates, provideSchedulerEnv, provideUuidEnv, execPure)
+        pipe(test, provideEmptyHookStates, provideSchedulerEnv, provideNodeUuidEnv, execPure)
       }),
       it(`returns the closest specified HookEnvironment`, ({ equal }) => {
         const channel = createChannel('test', Pure.of(1))
@@ -86,7 +83,7 @@ export const test = describe(`ChannelProviders`, [
           equal(expected.id, actual.id)
         })
 
-        pipe(test, provideEmptyHookStates, provideSchedulerEnv, provideUuidEnv, execPure)
+        pipe(test, provideEmptyHookStates, provideSchedulerEnv, provideNodeUuidEnv, execPure)
       }),
     ]),
   ]),
@@ -129,7 +126,7 @@ export const test = describe(`ChannelProviders`, [
           runWithHooks(parentEnv, parent),
           provideHookStates({ hookEvents }),
           provideSchedulerEnv,
-          provideUuidEnv,
+          provideNodeUuidEnv,
           execPure,
         )
       }),

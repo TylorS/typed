@@ -1,51 +1,61 @@
 import { WhenIdleEnv } from '@typed/fp/dom/exports'
 import { raf, RafEnv } from '@typed/fp/dom/raf'
-import { Effect, EnvOf } from '@typed/fp/Effect/Effect'
-import { doEffect } from '@typed/fp/Effect/exports'
-import { FiberEnv, fork, proceedAll } from '@typed/fp/fibers/exports'
+import { ask, doEffect, Effect, EnvOf, execEffect, map, zip } from '@typed/fp/Effect/exports'
+import { FiberEnv, fork, proceed } from '@typed/fp/fibers/exports'
 import { createHookEnv, HookEnv, runWithHooks } from '@typed/fp/hooks/core/exports'
 
 import { Patch, patch } from './Patch'
 import { respondToRemoveEvents } from './respondToRemoveEvents'
 import { respondToRunningEvents } from './respondToRunningEvents'
 import { respondToUpdateEvents } from './respondToUpdateEvents'
+import { effectQueue } from './sharedRefs/exports'
 import { updatedEnvs } from './sharedRefs/UpdatedEnvs'
 import { effectsWorker } from './workers/effectsWorker'
 import { renderWorker } from './workers/renderWorker'
 import { whenIdleWorker } from './workers/whenIdleWorker'
 
+export type AddEffect = <E>(eff: Effect<E, any>, env: E) => void
+
 export function patchOnRaf<E extends HookEnv, A, B>(
-  main: Effect<E, A>,
+  main: (addEffect: AddEffect) => Effect<E, A>,
   initial: B,
 ): Effect<E & PatchOnRafEnv<B, A>, never> {
   let firstRun = true
 
   const eff = doEffect(function* () {
-    const renderFiber = yield* fork(whenIdleWorker(renderWorker))
-    const effectsFiber = yield* fork(whenIdleWorker(effectsWorker))
+    const { hookEnvironment } = yield* createHookEnv
+    const workers = map(([x, y]) => x || y, zip([renderWorker(hookEnvironment.id), effectsWorker]))
+    const fiber = yield* fork(whenIdleWorker(workers))
 
     yield* respondToRemoveEvents
     yield* respondToRunningEvents
     yield* respondToUpdateEvents
 
-    const { hookEnvironment } = yield* createHookEnv
+    const e = yield* ask<EnvOf<typeof effectQueue['enqueue']>>()
+    const addEffect: AddEffect = <E, A>(effect: Effect<E, A>, env: E) =>
+      execEffect(e, effectQueue.enqueue([effect, env]))
 
     let previous = initial
+
+    function* checkShouldRun() {
+      if (firstRun) {
+        return true
+      }
+
+      return yield* updatedEnvs.has(hookEnvironment.id)
+    }
 
     while (true) {
       if (!firstRun) {
         yield* raf
       }
 
-      const shouldRun = firstRun || (yield* updatedEnvs.has(hookEnvironment.id))
-
-      if (shouldRun) {
+      if (yield* checkShouldRun()) {
         firstRun = false
-        previous = yield* patch(previous, yield* runWithHooks(hookEnvironment, main))
+        previous = yield* patch(previous, yield* runWithHooks(hookEnvironment, main(addEffect)))
       }
 
-      // Run any queued effects and do any patching that can happen while idle
-      yield* proceedAll(renderFiber, effectsFiber)
+      yield* proceed(fiber)
     }
   })
 
