@@ -34,9 +34,9 @@ const main = (addEffect: AddEffect) =>
 
     return html`<div>
       <section style="display:flex;align-items:center;">
-        <button onclick=${() => addEffect(removeCounter, {})}>-</button>
+        <button onclick=${() => addEffect(removeCounter)}>-</button>
         <p style="margin: 0 0.5rem;">Number of Counters: ${count}</p>
-        <button onclick=${() => addEffect(addCounter, {})}>+</button>
+        <button onclick=${() => addEffect(addCounter)}>+</button>
       </section>
 
       <section>${counters}</section>

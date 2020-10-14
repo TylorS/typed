@@ -1,6 +1,6 @@
 import { WhenIdleEnv } from '@typed/fp/dom/exports'
 import { raf, RafEnv } from '@typed/fp/dom/raf'
-import { ask, doEffect, Effect, EnvOf, execEffect, map, zip } from '@typed/fp/Effect/exports'
+import { ask, doEffect, Effect, EnvOf, execEffect, map, Pure, zip } from '@typed/fp/Effect/exports'
 import { FiberEnv, fork, proceed } from '@typed/fp/fibers/exports'
 import { createHookEnv, HookEnv, runWithHooks } from '@typed/fp/hooks/core/exports'
 
@@ -14,7 +14,10 @@ import { effectsWorker } from './workers/effectsWorker'
 import { renderWorker } from './workers/renderWorker'
 import { whenIdleWorker } from './workers/whenIdleWorker'
 
-export type AddEffect = <E>(eff: Effect<E, any>, env: E) => void
+export interface AddEffect {
+  (eff: Pure<any>): void
+  <E>(eff: Effect<E, any>, env: E): void
+}
 
 export function patchOnRaf<E extends HookEnv, A, B>(
   main: (addEffect: AddEffect) => Effect<E, A>,
@@ -32,7 +35,7 @@ export function patchOnRaf<E extends HookEnv, A, B>(
     yield* respondToUpdateEvents
 
     const e = yield* ask<EnvOf<typeof effectQueue['enqueue']>>()
-    const addEffect: AddEffect = <E, A>(effect: Effect<E, A>, env: E) =>
+    const addEffect: AddEffect = <E, A>(effect: Effect<E, A>, env: E = {} as E) =>
       execEffect(e, effectQueue.enqueue([effect, env]))
 
     let previous = initial

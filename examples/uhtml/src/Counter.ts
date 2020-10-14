@@ -21,9 +21,9 @@ export const Counter = (
     return html`<section ref=${ref}>
       <h2>Counter ${index + 1}</h2>
       <section style="display:flex;align-items:center;">
-        <button onclick=${() => addEffect(decrement, {})}>-</button>
+        <button onclick=${() => addEffect(decrement)}>-</button>
         <p style="margin: 0 0.5rem;">${yield* getState(count)}</p>
-        <button onclick=${() => addEffect(increment, {})}>+</button>
+        <button onclick=${() => addEffect(increment)}>+</button>
       </section>
     </section>`
   })
