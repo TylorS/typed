@@ -2,8 +2,9 @@ import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import { join, resolve } from 'path'
 import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin'
+import { Configuration } from 'webpack'
 
-const config = {
+const config: Configuration = {
   entry: './src/main.ts',
   devtool: 'source-map',
   output: {
@@ -26,6 +27,11 @@ const config = {
       },
     ],
   },
+  optimization: {},
+}
+
+const withDevServer: any = {
+  ...config,
   devServer: {
     contentBase: join(__dirname, 'dist'),
     compress: true,
@@ -33,4 +39,4 @@ const config = {
   },
 }
 
-export = config
+export = withDevServer

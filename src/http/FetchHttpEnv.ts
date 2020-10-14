@@ -3,7 +3,7 @@ import { async, Resume } from '@typed/fp/Resume/exports'
 import { Uri, uriIso } from '@typed/fp/Uri/exports'
 import { Either, left, right } from 'fp-ts/Either'
 import { flow, not, pipe } from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
+import { filter, fromNullable, map, Option } from 'fp-ts/Option'
 
 import { HttpEnv, HttpOptions } from './HttpEnv'
 import { HttpResponse } from './HttpResponse'
@@ -40,9 +40,9 @@ function httpFetchRequest(uri: Uri, options: HttpOptions): Resume<Either<Error, 
 
       const total = pipe(
         response.headers.get('Content-Length'),
-        O.fromNullable,
-        O.map(flow(parseFloat, Math.abs)),
-        O.filter<number>(not(Number.isNaN)),
+        fromNullable,
+        map(flow(parseFloat, Math.abs)),
+        filter<number>(not(Number.isNaN)),
       )
 
       options.onProgress?.({ loaded: 0, total })
@@ -75,7 +75,7 @@ function httpFetchRequest(uri: Uri, options: HttpOptions): Resume<Either<Error, 
 
 async function onProgress(
   response: Response,
-  total: O.Option<number>,
+  total: Option<number>,
   onProgress: NonNullable<HttpOptions['onProgress']>,
 ): Promise<string> {
   const reader = response.body?.getReader()

@@ -1,12 +1,12 @@
-import * as C from '@typed/fp/common/exports'
-import * as E from '@typed/fp/Effect/exports'
+import { ArgsOf as ArgsOfFn } from '@typed/fp/common/exports'
+import { AddEnv, Effect, ReturnOf as ReturnOfEff } from '@typed/fp/Effect/exports'
 import { Fn } from '@typed/fp/lambda/exports'
 import { Newtype } from 'newtype-ts'
 
 /**
  * Used to represent the resources required to perform a particular operation.
  */
-export interface Op<Uri extends PropertyKey, F extends Fn<readonly any[], E.Effect<any, any>>>
+export interface Op<Uri extends PropertyKey, F extends Fn<readonly any[], Effect<any, any>>>
   extends Newtype<OpUri<Uri, F>, Uri> {}
 
 export interface OpUri<Uri extends PropertyKey, F extends Fn = Fn> {
@@ -32,7 +32,7 @@ export type FnOf<A> = A extends Op<any, infer R> ? R : never
 /**
  * Extract the arguments for a particular Op
  */
-export type ArgsOf<A> = C.ArgsOf<FnOf<A>>
+export type ArgsOf<A> = ArgsOfFn<FnOf<A>>
 
 /**
  * Extract the effect of a particular Op
@@ -42,7 +42,7 @@ export type EffectOf<A> = ReturnType<FnOf<A>>
 /**
  * Extract the return value of a particular Op
  */
-export type ReturnOf<A> = E.ReturnOf<EffectOf<A>>
+export type ReturnOf<A> = ReturnOfEff<EffectOf<A>>
 
 export const OPS = '@typed/fp/Ops'
 export type OPS = typeof OPS
@@ -56,7 +56,7 @@ export interface OpEnv<O extends Op<PropertyKey, any>>
 /**
  * The shared map in which *all* implementation of operations are placed in.
  */
-export interface OpMap extends Map<Op<any, any>, Fn<any, E.Effect<any, any>>> {}
+export interface OpMap extends Map<Op<any, any>, Fn<any, Effect<any, any>>> {}
 
 /**
  * Type-level map for using Op implementations that require type parameters. The "Env"
@@ -84,6 +84,4 @@ export type CallOf<O extends Op<any, any>, Env = unknown> = UriOf<O> extends Ops
   ? Ops<OpEnv<O> & Env>[UriOf<O>]
   : GetOperation<OpEnv<O> & Env, O>
 
-export type GetOperation<E, O extends Op<any, any>> = (
-  ...args: ArgsOf<O>
-) => E.AddEnv<E, EffectOf<O>>
+export type GetOperation<E, O extends Op<any, any>> = (...args: ArgsOf<O>) => AddEnv<E, EffectOf<O>>

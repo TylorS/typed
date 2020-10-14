@@ -1,4 +1,4 @@
-import * as S from '@most/scheduler'
+import { currentTime, delay as delayScheduler, newDefaultScheduler } from '@most/scheduler'
 import { Disposable, Scheduler, Task, Time } from '@most/types'
 import { lazy } from '@typed/fp/Disposable/exports'
 import { Effect, fromEnv, provideWith, Pure } from '@typed/fp/Effect/exports'
@@ -13,7 +13,7 @@ export interface SchedulerEnv {
 export const provideSchedulerEnv = provideWith(
   Pure.fromIO(
     (): SchedulerEnv => ({
-      scheduler: S.newDefaultScheduler(),
+      scheduler: newDefaultScheduler(),
     }),
   ),
 )
@@ -24,9 +24,9 @@ export const provideSchedulerEnv = provideWith(
 export const delay = (delay: Time): Effect<SchedulerEnv, Time> =>
   fromEnv(({ scheduler }: SchedulerEnv) =>
     async((cb) =>
-      S.delay(
+      delayScheduler(
         delay,
-        createCallbackTask(() => cb(S.currentTime(scheduler))),
+        createCallbackTask(() => cb(currentTime(scheduler))),
         scheduler,
       ),
     ),
@@ -37,7 +37,7 @@ export const delay = (delay: Time): Effect<SchedulerEnv, Time> =>
  */
 export const asyncIO = <A>(io: IO<A>): Effect<SchedulerEnv, A> =>
   fromEnv(({ scheduler }: SchedulerEnv) =>
-    async((cb) => S.delay(0, createCallbackTask(flow(io, cb)), scheduler)),
+    async((cb) => delayScheduler(0, createCallbackTask(flow(io, cb)), scheduler)),
   )
 
 /**

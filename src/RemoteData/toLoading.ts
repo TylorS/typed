@@ -1,5 +1,5 @@
 import { pipe } from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
+import { fold as foldO } from 'fp-ts/Option'
 
 import { fold } from './fold'
 import { RefreshingFailure } from './RefreshingFailure'
@@ -16,12 +16,12 @@ export const toLoading = <A, B>(
       (p) =>
         pipe(
           p,
-          O.fold(() => Loading, progress),
+          foldO(() => Loading, progress),
         ),
       (value, info) =>
         pipe(
           info.progress,
-          O.fold(
+          foldO(
             () => RefreshingFailure.of(value),
             (p) => RefreshingFailure.of(value, p),
           ),
@@ -29,7 +29,7 @@ export const toLoading = <A, B>(
       (value, info) =>
         pipe(
           info.progress,
-          O.fold(
+          foldO(
             () => RefreshingSuccess.of(value),
             (p) => RefreshingSuccess.of(value, p),
           ),

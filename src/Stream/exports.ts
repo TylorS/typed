@@ -1,5 +1,4 @@
-import * as M from '@most/core'
-import { merge, take } from '@most/core'
+import { ap, chain, empty, filter, map, merge, multicast, now, take } from '@most/core'
 import { Stream } from '@most/types'
 import { Alternative1 } from 'fp-ts/Alternative'
 import { Separated } from 'fp-ts/Compactable'
@@ -23,32 +22,32 @@ declare module 'fp-ts/HKT' {
 
 export const getMonoid = <A>(): Monoid<Stream<A>> => {
   return {
-    concat: M.merge,
-    empty: M.empty(),
+    concat: merge,
+    empty: empty(),
   }
 }
 
 export const compact = <A>(stream: Stream<Option<A>>): Stream<A> =>
-  M.map((s: Some<A>) => s.value, M.filter(isSome, stream))
+  map((s: Some<A>) => s.value, filter(isSome, stream))
 
 export const separate = <A, B>(stream: Stream<Either<A, B>>): Separated<Stream<A>, Stream<B>> => {
-  const s = M.multicast(stream)
-  const left = M.map((l: Left<A>) => l.left, M.filter(isLeft, s))
-  const right = M.map((r: Right<B>) => r.right, M.filter(isRight, s))
+  const s = multicast(stream)
+  const left = map((l: Left<A>) => l.left, filter(isLeft, s))
+  const right = map((r: Right<B>) => r.right, filter(isRight, s))
 
   return { left, right }
 }
 
-const _partitionMap = <A, B, C>(fa: Stream<A>, f: (a: A) => Either<B, C>) => separate(M.map(f, fa))
-const _filterMap = <A, B>(fa: Stream<A>, f: (a: A) => Option<B>) => compact(M.map(f, fa))
+const _partitionMap = <A, B, C>(fa: Stream<A>, f: (a: A) => Either<B, C>) => separate(map(f, fa))
+const _filterMap = <A, B>(fa: Stream<A>, f: (a: A) => Option<B>) => compact(map(f, fa))
 
 export const stream: Monad1<URI> & Alternative1<URI> & Filterable1<URI> = {
   URI,
-  map: (fa, f) => M.map(f, fa),
-  of: M.now,
-  ap: M.ap,
-  chain: (fa, f) => M.chain(f, fa),
-  zero: M.empty,
+  map: (fa, f) => map(f, fa),
+  of: now,
+  ap,
+  chain: (fa, f) => chain(f, fa),
+  zero: empty,
   alt: (fa, f) => take(1, merge(fa, f())), // race the 2 streams
   compact,
   separate,
@@ -56,20 +55,9 @@ export const stream: Monad1<URI> & Alternative1<URI> & Filterable1<URI> = {
   partition: <A>(fa: Stream<A>, predicate: Predicate<A>) =>
     _partitionMap(fa, (a) => (predicate(a) ? right(a) : left(a))),
   filterMap: _filterMap,
-  filter: <A>(fa: Stream<A>, p: Predicate<A>) => M.filter(p, fa),
+  filter: <A>(fa: Stream<A>, p: Predicate<A>) => filter(p, fa),
 }
 
-export const {
-  alt,
-  ap,
-  apFirst,
-  apSecond,
-  chain,
-  chainFirst,
-  flatten,
-  map,
-  filter,
-  filterMap,
-  partition,
-  partitionMap,
-} = pipeable(stream)
+export const { alt, apFirst, apSecond, chainFirst, filterMap, partition, partitionMap } = pipeable(
+  stream,
+)
