@@ -1,6 +1,6 @@
 import { newDefaultScheduler } from '@most/scheduler'
 import { provideRafEnv, provideWhenIdleEnv } from '@typed/fp/dom/exports'
-import { doEffect, provide, Pure } from '@typed/fp/Effect/exports'
+import { doEffect, Effect, EnvOf, provide, Pure } from '@typed/fp/Effect/exports'
 import { runAsFiberWith } from '@typed/fp/fibers/exports'
 import { getState, provideBrowserHooks, updateState, useState } from '@typed/fp/hooks/exports'
 import {
@@ -10,14 +10,14 @@ import {
   providePatchRefs,
   useListManager,
 } from '@typed/fp/patch/exports'
+import { Ref } from '@typed/fp/SharedRef/exports'
 import { eqNumber } from 'fp-ts/Eq'
 import { decrement, increment } from 'fp-ts/function'
 import { pipe } from 'fp-ts/pipeable'
 import { range } from 'fp-ts/ReadonlyArray'
-import { html } from 'uhtml'
+import { html, Renderable } from 'uhtml'
 
-import { Counter } from './Counter'
-import { patchMicroHtmlEnv } from './infrastructure'
+import { patchReactEnv } from './infrastructure'
 
 const main = (addEffect: AddEffect) =>
   doEffect(function* () {
@@ -43,12 +43,36 @@ const main = (addEffect: AddEffect) =>
     </div>`
   })
 
+const useCount = useState(Pure.of(0))
+
+export const Counter = (
+  ref: Ref<Node | null | undefined>,
+  index: number,
+  addEffect: AddEffect,
+): Effect<EnvOf<typeof useState>, Renderable> =>
+  doEffect(function* () {
+    const count = yield* useCount
+    const decrement = updateState((x) => x - 1, count)
+    const increment = updateState((x) => x + 1, count)
+
+    return html`<section ref=${ref}>
+      <h2>Counter ${index + 1}</h2>
+      <section style="display:flex;align-items:center;">
+        <button onclick=${() => addEffect(decrement)}>-</button>
+        <p style="margin: 0 0.5rem;">${yield* getState(count)}</p>
+        <button onclick=${() => addEffect(increment)}>+</button>
+      </section>
+    </section>`
+  })
+
 pipe(
   patchOnRaf(main, document.body),
   provideBrowserHooks,
   providePatchRefs,
-  provide(patchMicroHtmlEnv),
+  provide(patchReactEnv),
   provideRafEnv,
   provideWhenIdleEnv,
   runAsFiberWith(newDefaultScheduler()),
 )
+
+document.title = `uhtml: Counter Example`

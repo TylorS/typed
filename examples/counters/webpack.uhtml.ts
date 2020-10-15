@@ -5,7 +5,7 @@ import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin'
 import { Configuration } from 'webpack'
 
 const config: Configuration = {
-  entry: './src/main.ts',
+  entry: './src/uhtml.ts',
   devtool: 'source-map',
   output: {
     path: resolve(__dirname, './dist'),

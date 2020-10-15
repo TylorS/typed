@@ -1,12 +1,14 @@
-import { doEffect, Effect, EnvOf, zip } from '@typed/fp/Effect/exports'
+import { ask, doEffect, Effect, EnvOf, execEffect } from '@typed/fp/Effect/exports'
+import { readSharedRefs } from '@typed/fp/SharedRef/exports'
+import { pipe } from 'fp-ts/lib/function'
 
 import { getAllDescendants, HookEnvironment, RemovedHookEnvironment } from '../types/exports'
-import { deleteChannelConsumer } from './ChannelConsumers'
-import { deleteChannelProvider } from './ChannelProviders'
-import { disposeHookEnvironment } from './HookDisposables'
+import { ChannelConsumers, deleteChannelConsumer } from './ChannelConsumers'
+import { ChannelProviders, deleteChannelProvider } from './ChannelProviders'
+import { disposeHookEnvironment, HookDisposables } from './HookDisposables'
 import { sendHookEvent } from './HookEvents'
-import { deleteHookPosition } from './HookPositions'
-import { deleteHookSymbols } from './HookSymbols'
+import { deleteHookPosition, HookPositions } from './HookPositions'
+import { deleteHookSymbols, HookSymbols } from './HookSymbols'
 
 export const removeHookEnvironment = (
   hookEnvironment: HookEnvironment,
@@ -20,25 +22,37 @@ export const removeHookEnvironment = (
   void
 > => {
   const eff = doEffect(function* () {
-    yield* remove(hookEnvironment)
+    const remove = yield* createRemove()
+
+    remove(hookEnvironment)
 
     for (const child of getAllDescendants(hookEnvironment)) {
-      yield* remove(child)
+      remove(child)
     }
   })
 
   return eff
 }
 
-function* remove(hookEnvironment: HookEnvironment) {
-  const { id } = hookEnvironment
+function* createRemove() {
+  const [consumers, providers, position, symbols, disposables] = yield* readSharedRefs(
+    ChannelConsumers,
+    ChannelProviders,
+    HookPositions,
+    HookSymbols,
+    HookDisposables,
+  )
+  const eventEnv = yield* ask<EnvOf<typeof sendHookEvent>>()
 
-  yield* zip([
-    deleteChannelConsumer(id),
-    deleteChannelProvider(id),
-    deleteHookPosition(id),
-    deleteHookSymbols(id),
-    disposeHookEnvironment(id),
-    sendHookEvent(RemovedHookEnvironment.of(hookEnvironment)),
-  ] as const)
+  return function remove(hookEnvironment: HookEnvironment) {
+    const { id } = hookEnvironment
+
+    consumers.forEach((c) => c.delete(id))
+    providers.forEach((c) => c.delete(id))
+    position.delete(id)
+    symbols.delete(id)
+    disposables.get(id)?.dispose()
+
+    pipe(sendHookEvent(RemovedHookEnvironment.of(hookEnvironment)), execEffect(eventEnv))
+  }
 }
