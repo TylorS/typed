@@ -13,6 +13,7 @@ const config: Configuration = {
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
     plugins: [new TsconfigPathsPlugin({})],
+    mainFields: ['module', 'main'],
   },
   plugins: [
     new ForkTsCheckerWebpackPlugin(),

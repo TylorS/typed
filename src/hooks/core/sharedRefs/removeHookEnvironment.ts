@@ -1,6 +1,6 @@
 import { ask, doEffect, Effect, EnvOf, execEffect } from '@typed/fp/Effect/exports'
 import { readSharedRefs } from '@typed/fp/SharedRef/exports'
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/function'
 
 import { getAllDescendants, HookEnvironment, RemovedHookEnvironment } from '../types/exports'
 import { ChannelConsumers, deleteChannelConsumer } from './ChannelConsumers'

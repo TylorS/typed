@@ -1,6 +1,6 @@
 import { Eq } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
-import { isNone } from 'fp-ts/lib/Option'
+import { isNone } from 'fp-ts/Option'
 import { findFirst, fromArray } from 'fp-ts/ReadonlyArray'
 
 export const diff = <A>(eq: Eq<A>) => {

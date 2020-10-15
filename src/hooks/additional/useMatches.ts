@@ -1,6 +1,6 @@
 import { doEffect, Effect, EnvOf } from '@typed/fp/Effect/exports'
 import { Match, oneOf } from '@typed/fp/logic/exports'
-import { Option } from 'fp-ts/lib/Option'
+import { Option } from 'fp-ts/Option'
 
 import { useMemo } from '../core/exports'
 
