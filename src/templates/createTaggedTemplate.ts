@@ -2,19 +2,16 @@ import { And } from '@typed/fp/common/exports'
 import { EnvOf } from '@typed/fp/Effect/exports'
 import { EnvBrand } from '@typed/fp/patch/EnvBrand'
 
-export function createTaggedTemplate<
-  F extends (template: TemplateStringsArray, ...values: readonly unknown[]) => unknown
->(templateFunction: F) {
-  return <V extends ReadonlyArray<unknown>>(
-    template: TemplateStringsArray,
-    ...values: V
-  ): ReturnType<F> & { [EnvBrand]: EnvOfTemplateValues<V> } =>
-    templateFunction(template, ...values) as ReturnType<F> & { [EnvBrand]: EnvOfTemplateValues<V> }
-}
+export const createTaggedTemplate = <F extends TaggedTemplateFn>(
+  templateFunction: F,
+): TaggedEffectTemplate<F> => templateFunction as TaggedEffectTemplate<F>
 
-export type TaggedEffectTemplate<
-  F extends (template: TemplateStringsArray, ...values: readonly unknown[]) => unknown
-> = <V extends ReadonlyArray<unknown>>(
+export type TaggedTemplateFn<R = unknown> = (
+  template: TemplateStringsArray,
+  ...values: readonly unknown[]
+) => R
+
+export type TaggedEffectTemplate<F extends TaggedTemplateFn> = <V extends ReadonlyArray<unknown>>(
   template: TemplateStringsArray,
   ...values: V
 ) => ReturnType<F> & { [EnvBrand]: EnvOfTemplateValues<V> }
