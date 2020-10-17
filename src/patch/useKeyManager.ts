@@ -14,6 +14,7 @@ import { Ref } from '@typed/fp/SharedRef/Ref'
 import { Eq, getTupleEq } from 'fp-ts/Eq'
 import { constNull, pipe } from 'fp-ts/function'
 
+import { EnvBrandOf } from './EnvBrand'
 import { renderableEnvs } from './sharedRefs/RenderableEnvs'
 import { renderedEnvs } from './sharedRefs/RenderedEnvs'
 import { rendererEnvs } from './sharedRefs/RendererEnvs'
@@ -29,7 +30,7 @@ export function useKeyManager<K, E extends HookEnv, A, B>(
   key: K,
   render: (ref: Ref<A | null | undefined>) => Effect<E, B>,
   eq: Eq<K> = deepEqualsEq,
-): Effect<E & KeyManagerEnv, B> {
+): Effect<E & KeyManagerEnv & EnvBrandOf<B>, B> {
   const eff = doEffect(function* () {
     const firstRunRef = yield* useFirstRun
     const hookEnvironment = yield* getKeyedEnvironment(key)

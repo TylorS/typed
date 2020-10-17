@@ -4,13 +4,17 @@ import { useEffectBy } from '@typed/fp/hooks/additional/useEffectBy'
 import { HookEnv } from '@typed/fp/hooks/core/exports'
 import { Ref } from '@typed/fp/SharedRef/Ref'
 
+import { EnvBrandOf } from './EnvBrand'
 import { useKeyManager } from './useKeyManager'
 
 export function useListManager<A, B, C, E extends HookEnv, D>(
   list: ReadonlyArray<A>,
   identify: Arity1<A, B>,
   computation: Arity1<ListManagerValue<A, B, C>, Effect<E, D>>,
-): Effect<E & EnvOf<typeof useEffectBy> & EnvOf<typeof useKeyManager>, ReadonlyArray<D>> {
+): Effect<
+  E & EnvOf<typeof useEffectBy> & EnvOf<typeof useKeyManager> & EnvBrandOf<D>,
+  ReadonlyArray<D>
+> {
   return useEffectBy(list, identify, (value, index, key) =>
     useKeyManager<B, E, C, D>(key, (ref) => computation({ value, index, key, ref })),
   )

@@ -8,6 +8,7 @@ import { Ref, SharedRefEnv } from '@typed/fp/SharedRef/exports'
 import { identity } from 'fp-ts/function'
 import { isNone, none, Option, some } from 'fp-ts/Option'
 
+import { EnvBrandOf } from './EnvBrand'
 import { useKeyManager } from './useKeyManager'
 
 /**
@@ -21,7 +22,11 @@ export function useMatchManager<
   value: A,
   ...matches: Matches
 ): Effect<
-  HookEnv & SharedRefEnv<HookPositions> & SharedRefEnv<HookSymbols> & EnvOfMatchesReturn<Matches>,
+  HookEnv &
+    SharedRefEnv<HookPositions> &
+    SharedRefEnv<HookSymbols> &
+    EnvOfMatchesReturn<Matches> &
+    EnvBrandOf<ReturnOfMatchesReturn<Matches>>,
   Option<ReturnOfMatchesReturn<Matches>>
 > {
   const eff = doEffect(function* () {

@@ -4,6 +4,7 @@ import { ask, doEffect, Effect, EnvOf, execEffect, map, Pure, zip } from '@typed
 import { FiberEnv, fork, proceed } from '@typed/fp/fibers/exports'
 import { createHookEnv, HookEnv, runWithHooks } from '@typed/fp/hooks/core/exports'
 
+import { EnvBrandOf } from './EnvBrand'
 import { Patch, patch } from './Patch'
 import { respondToRemoveEvents } from './respondToRemoveEvents'
 import { respondToRunningEvents } from './respondToRunningEvents'
@@ -22,7 +23,7 @@ export interface AddEffect {
 export function patchOnRaf<E extends HookEnv, A, B>(
   main: (addEffect: AddEffect) => Effect<E, A>,
   initial: B,
-): Effect<E & PatchOnRafEnv<B, A>, never> {
+): Effect<E & PatchOnRafEnv<B, A> & EnvBrandOf<B>, never> {
   let firstRun = true
 
   const eff = doEffect(function* () {
@@ -37,6 +38,7 @@ export function patchOnRaf<E extends HookEnv, A, B>(
     const e = yield* ask<EnvOf<typeof effectQueue['enqueue']>>()
     const addEffect: AddEffect = <E, A>(effect: Effect<E, A>, env: E = {} as E) =>
       execEffect(e, effectQueue.enqueue([effect, env]))
+    const mainEff = main(addEffect)
 
     let previous = initial
 
@@ -55,7 +57,7 @@ export function patchOnRaf<E extends HookEnv, A, B>(
 
       if (yield* checkShouldRun()) {
         firstRun = false
-        previous = yield* patch(previous, yield* runWithHooks(hookEnvironment, main(addEffect)))
+        previous = yield* patch(previous, yield* runWithHooks(hookEnvironment, mainEff))
       }
 
       yield* proceed(fiber)
