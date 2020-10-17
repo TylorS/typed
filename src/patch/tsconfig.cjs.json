@@ -16,6 +16,9 @@
       "path": "../Effect/tsconfig.cjs.json"
     },
     {
+      "path": "../Op/tsconfig.cjs.json"
+    },
+    {
       "path": "../Queue/tsconfig.cjs.json"
     },
     {

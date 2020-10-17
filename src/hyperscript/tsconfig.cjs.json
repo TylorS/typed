@@ -5,14 +5,10 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/Uuid",
+    "outDir": "../../cjs/hyperscript",
     "module": "commonjs"
   },
-  "references": [
-    {
-      "path": "../Effect/tsconfig.cjs.json"
-    }
-  ],
+  "references": [],
   "include": [
     "./*.ts",
     "./**/*.ts"

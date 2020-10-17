@@ -76,6 +76,9 @@
       "path": "./http/tsconfig.cjs.json"
     },
     {
+      "path": "./hyperscript/tsconfig.cjs.json"
+    },
+    {
       "path": "./io/tsconfig.cjs.json"
     },
     {

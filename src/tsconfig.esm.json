@@ -76,6 +76,9 @@
       "path": "./http/tsconfig.esm.json"
     },
     {
+      "path": "./hyperscript/tsconfig.esm.json"
+    },
+    {
       "path": "./io/tsconfig.esm.json"
     },
     {

@@ -91,6 +91,7 @@
     "./history",
     "./hooks",
     "./http",
+    "./hyperscript",
     "./io",
     "./lambda",
     "./logging",
