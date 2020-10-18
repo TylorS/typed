@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/pipeable'
 
 import { doEffect } from './doEffect'
 import { catchError, fail } from './failures'
-import { provide } from './provide'
+import { provideSome } from './provide'
 import { execPure } from './runEffect'
 
 export const test = describe(`failures`, [
@@ -18,7 +18,7 @@ export const test = describe(`failures`, [
 
       pipe(
         sut,
-        provide({
+        provideSome({
           [key]: (e: typeof error) => {
             try {
               equal(e, error)

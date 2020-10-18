@@ -1,13 +1,14 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
 import { Disposable, disposeAll, disposeNone } from '@typed/fp/Disposable/exports'
-import { doEffect, Pure } from '@typed/fp/Effect/exports'
+import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
 import { Fn } from '@typed/fp/lambda/exports'
+import { Ref, SharedRefEnv } from '@typed/fp/SharedRef/exports'
 import { Eq } from 'fp-ts/Eq'
 import { getEq } from 'fp-ts/ReadonlyArray'
 
-import { Ref } from '../../../SharedRef/Ref'
-import { addDisposable } from '../sharedRefs/HookDisposables'
-import { getHookEnv } from '../types/HookEnvironment'
+import { HookPositions, HookSymbols } from '../exports'
+import { addDisposable, HookDisposables } from '../sharedRefs/HookDisposables'
+import { getHookEnv, HookEnv } from '../types/HookEnvironment'
 import { useDepChange } from './useDepChange'
 import { useRef } from './useRef'
 
@@ -15,7 +16,10 @@ export const useDisposable = <A extends ReadonlyArray<any>>(
   f: Fn<A, Disposable>,
   args: A | Readonly<A>,
   eq: Eq<A> = getEq(deepEqualsEq),
-) => {
+): Effect<
+  HookEnv & SharedRefEnv<HookPositions> & SharedRefEnv<HookSymbols> & SharedRefEnv<HookDisposables>,
+  Disposable
+> => {
   const eff = doEffect(function* () {
     const env = yield* getHookEnv
     const depsChanged = yield* useDepChange(args, eq, true)

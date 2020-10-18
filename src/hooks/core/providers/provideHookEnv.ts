@@ -1,4 +1,13 @@
-import { ask, doEffect, Effect, EnvOf, execPure, provideWith, use } from '@typed/fp/Effect/exports'
+import {
+  ask,
+  doEffect,
+  Effect,
+  EnvOf,
+  execPure,
+  provideWith,
+  useAll,
+  useSome,
+} from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/fibers/exports'
 import { UuidEnv } from '@typed/fp/Uuid/common'
 import { pipe } from 'fp-ts/function'
@@ -20,9 +29,9 @@ export const provideHookEnv: <E, A>(
 
     yield* pipe(
       listenToHookEvents(isRemovedHookEnvironmentEvent, (ev) =>
-        pipe(removeHookEnvironment(ev.hookEnvironment), use(env), execPure),
+        pipe(removeHookEnvironment(ev.hookEnvironment), useAll(env), execPure),
       ),
-      use(hookEnv),
+      useSome<HookEnv>(hookEnv),
     )
 
     return hookEnv

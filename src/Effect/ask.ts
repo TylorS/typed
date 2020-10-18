@@ -14,7 +14,7 @@ export const asks = <E, A>(f: Arity1<E, A>): Effect<E, A> => fromEnv(flow(f, syn
 export const askFor = <E, A>(eff: Effect<E, A>): Effect<E, Pure<A>> =>
   doEffect(function* () {
     const e1 = yield* ask<E>()
-    const pure = fromEnv((e2: {}) => toEnv(eff)({ ...e2, ...e1 }))
+    const pure = fromEnv((e2: unknown) => toEnv(eff)({ ...(e2 as {}), ...e1 }))
 
     return pure
   })

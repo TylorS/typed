@@ -2,7 +2,7 @@ import { pipe } from 'fp-ts/function'
 
 import { doEffect } from './doEffect'
 import { Effect } from './Effect'
-import { provide, use } from './provide'
+import { provideSome, useSome } from './provide'
 
 export function provideWith<E1, E2>(provider: Effect<E1, E2>) {
   const providedEnvs = new WeakMap<Effect<any, any>, any>()
@@ -12,7 +12,7 @@ export function provideWith<E1, E2>(provider: Effect<E1, E2>) {
       const provided = providedEnvs.has(effect)
         ? providedEnvs.get(effect)!
         : providedEnvs.set(effect, yield* provider).get(effect)!
-      const value = yield* pipe(effect, provide(provided)) as Effect<E3, A>
+      const value = yield* pipe(effect, provideSome(provided)) as Effect<E3, A>
 
       return value
     })
@@ -26,7 +26,7 @@ export function useWith<E1, E2>(provider: Effect<E1, E2>) {
       const provided = providedEnvs.has(effect)
         ? providedEnvs.get(effect)!
         : providedEnvs.set(effect, yield* provider).get(effect)!
-      const value = yield* pipe(effect, use(provided)) as Effect<E3, A>
+      const value = yield* pipe(effect, useSome(provided)) as Effect<E3, A>
 
       return value
     })

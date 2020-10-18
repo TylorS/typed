@@ -3,7 +3,7 @@ import { asap } from '@most/scheduler'
 import { Disposable, Scheduler } from '@most/types'
 import { lazy } from '@typed/fp/Disposable/exports'
 import { Effect, map, race, toEnv } from '@typed/fp/Effect/exports'
-import { provide, use } from '@typed/fp/Effect/provide'
+import { provideSome, useSome } from '@typed/fp/Effect/provide'
 import { runPure } from '@typed/fp/Effect/runEffect'
 import {
   awaitCompleted,
@@ -60,7 +60,7 @@ export function createFiber<A>(
     try {
       infoChangeManager.updateInfo({ state: FiberState.Running })
 
-      return pipe(effect, use(createFiberEnv(fiber, scheduler)), runPure(onEffectCompletion))
+      return pipe(effect, useSome(createFiberEnv(fiber, scheduler)), runPure(onEffectCompletion))
     } catch (error) {
       onError(error)
 
@@ -109,7 +109,8 @@ function createFiberEnv(currentFiber: Fiber<unknown>, scheduler: Scheduler): Fib
     scheduler,
     join: joinFiber,
     kill: killFiber,
-    fork: (eff, e) => pipe(eff, provide(e), createFiberWith(scheduler, some(currentFiber)), sync),
+    fork: (eff, e) =>
+      pipe(eff, provideSome(e), createFiberWith(scheduler, some(currentFiber)), sync),
     pause: async<void>((resume) =>
       pipe(
         currentFiber.parentFiber,

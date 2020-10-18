@@ -7,7 +7,6 @@ import { O } from 'ts-toolbelt'
 import { Effect } from './Effect'
 import { fromEnv } from './fromEnv'
 import { map } from './map'
-import { ProvidedEffect } from './provide'
 import { toEnv } from './toEnv'
 
 export type FailEnv<K extends PropertyKey, Err> = {
@@ -27,7 +26,7 @@ export const catchError = curry(
     key: K,
     onError: (error: Err) => A,
     effect: Effect<E & FailEnv<K, Err>, A>,
-  ): CatchError<K, Err, E, A> =>
+  ): Effect<E, A> =>
     fromEnv((e: E) =>
       async((returnToOuterContext) => {
         // FailEnv implementation which uses continuations to bail out to the outer context
@@ -39,32 +38,25 @@ export const catchError = curry(
 
         return run(env({ ...e, ...failEnv }), returnToOuterContext)
       }),
-    ) as CatchError<K, Err, E, A>,
+    ) as Effect<E, A>,
 ) as {
   <K extends PropertyKey, Err, A, E>(
     key: K,
     onError: (error: Err) => A,
     effect: Effect<E & FailEnv<K, Err>, A>,
-  ): CatchError<K, Err, E, A>
+  ): Effect<E, A>
 
   <K extends PropertyKey, Err, A>(key: K, onError: (error: Err) => A): <E>(
     effect: Effect<E & FailEnv<K, Err>, A>,
-  ) => CatchError<K, Err, E, A>
+  ) => Effect<E, A>
 
   <K extends PropertyKey>(key: K): {
-    <Err, A, E>(onError: (error: Err) => A, effect: Effect<E & FailEnv<K, Err>, A>): CatchError<
-      K,
-      Err,
-      E,
-      A
-    >
+    <Err, A, E>(onError: (error: Err) => A, effect: Effect<E & FailEnv<K, Err>, A>): Effect<E, A>
     <Err, A>(onError: (error: Err) => A): <E>(
       effect: Effect<E & FailEnv<K, Err>, A>,
-    ) => CatchError<K, Err, E, A>
+    ) => Effect<E, A>
   }
 }
-
-type CatchError<K extends PropertyKey, Err, E, A> = ProvidedEffect<FailEnv<K, Err>, E, A>
 
 export const attempt = curry(
   <K extends PropertyKey, E extends FailEnv<K, never>, A>(

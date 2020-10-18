@@ -35,8 +35,8 @@ export const futureSeq: Monad3<URI> & Alt3<URI> & EitherM2<EffectURI> = {
   URI,
 }
 
-export const left = <A, B>(value: A): Future<{}, A, B> => Pure.of(leftE<A, B>(value))
-export const right = <A, B>(value: B): Future<{}, A, B> => Pure.of(rightE<A, B>(value))
+export const left = <A, B>(value: A): Future<unknown, A, B> => Pure.of(leftE<A, B>(value))
+export const right = <A, B>(value: B): Future<unknown, A, B> => Pure.of(rightE<A, B>(value))
 
 export const {
   alt,

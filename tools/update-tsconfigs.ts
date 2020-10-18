@@ -42,12 +42,17 @@ const BASE_PLUGINS = [
 ]
 
 const DEFAULT_EXCLUSIONS_PATH = [
-  './node_modules',
-  './src/**/*.test.ts',
-  './src/**/*.browser-test.ts',
-  './tools',
-  './cjs',
-  './esm',
+  'examples',
+  'node_modules',
+  'src/**/*.test.ts',
+  'src/**/*.browser-test.ts',
+  'tools',
+  'cjs',
+  'esm',
+  'exports.js',
+  'exports.d.ts',
+  'exports.js.map',
+  'exports.d.ts.map',
 ]
 
 const NAME_REGEX = new RegExp('%name%', 'g')
@@ -91,7 +96,7 @@ async function updatePluginConfig(path: string, moduleType: ModuleType) {
     createFpTsImportRewrite(moduleType),
     { ...createFpTsImportRewrite(moduleType), afterDeclarations: true },
   ]
-  json.exclude = [...DEFAULT_EXCLUSIONS_PATH, ...MODULES.map((m) => `./${m}`)]
+  json.exclude = [...DEFAULT_EXCLUSIONS_PATH, ...MODULES.map((m) => `${m}`)]
 
   await writeFile(path, JSON.stringify(json, null, 2) + EOL)
 }

@@ -1,4 +1,4 @@
-import { ask, doEffect, Effect, EnvOf, provide, use } from '@typed/fp/Effect/exports'
+import { ask, doEffect, Effect, EnvOf, provideSome, useSome } from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/fibers/exports'
 import { Channel, ChannelName } from '@typed/fp/hooks/core/types/Channel'
 import {
@@ -57,7 +57,10 @@ export const getChannelProvider = <E, A>(
       return [provider, providers.get(provider.id)! as State<A, A>] as const
     }
 
-    return yield* pipe(setChannelProvider(channel, eq), use({ hookEnvironment: provider } as {}))
+    return yield* pipe(
+      setChannelProvider(channel, eq),
+      useSome({ hookEnvironment: provider } as {}),
+    )
   })
 
   return eff
@@ -97,7 +100,7 @@ export const setChannelProvider = <E, A>(
           updatedValue,
         }),
         sendHookEvent,
-        provide(env),
+        provideSome<typeof env>(env),
       ),
     )
 

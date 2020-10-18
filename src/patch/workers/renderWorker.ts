@@ -1,4 +1,4 @@
-import { doEffect, Effect, provide, zip } from '@typed/fp/Effect/exports'
+import { doEffect, Effect, provideSome, zip } from '@typed/fp/Effect/exports'
 import { HookEnvironmentId, runWithHooks } from '@typed/fp/hooks/core/exports'
 import { Ref } from '@typed/fp/SharedRef/Ref'
 import { pipe } from 'fp-ts/function'
@@ -52,7 +52,7 @@ export const renderWorker = (rootId: HookEnvironmentId) =>
       readonly [effect: (ref: Ref<any>) => Effect<any, any>, env: any]
     >).value
 
-    const b = yield* pipe(runWithHooks(hookEnv, render(renderedRef)), provide(env))
+    const b = yield* pipe(runWithHooks(hookEnv, render(renderedRef)), provideSome(env))
     const a = yield* patch(renderedRef.current, b)
 
     renderedRef.current = a

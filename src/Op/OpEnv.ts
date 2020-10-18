@@ -1,4 +1,5 @@
 import { ask, asks, doEffect, Pure } from '@typed/fp/Effect/exports'
+import { isObject } from '@typed/fp/logic/is'
 import { iso } from 'newtype-ts'
 
 import { OpEnv, OpMap, OPS } from './exports'
@@ -13,7 +14,7 @@ export const getOpMap = doEffect(function* () {
 })
 
 export const getOrCreateOpMap: Pure<OpMap> = doEffect(function* () {
-  const env = yield* ask<{}>()
+  const env = yield* ask<unknown>()
 
   if (isOpEnv(env)) {
     return opEnvIso.unwrap(env)[OPS]
@@ -26,6 +27,6 @@ export const getOrCreateOpMap: Pure<OpMap> = doEffect(function* () {
   return map
 })
 
-export function isOpEnv(env: object): env is OpEnv<any> {
-  return OPS in env
+export function isOpEnv(env: unknown): env is OpEnv<any> {
+  return isObject(env) && OPS in env
 }

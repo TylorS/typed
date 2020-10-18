@@ -34,7 +34,7 @@ export function useKeyManager<K, E extends HookEnv, A, B>(
     const firstRunRef = yield* useFirstRun
     const hookEnvironment = yield* getKeyedEnvironment(key)
     const env = yield* ask<E & KeyManagerEnv>()
-    const rendered = yield* useRef<{}, A | null | undefined>(Pure.fromIO(constNull))
+    const rendered = yield* useRef<unknown, A | null | undefined>(Pure.fromIO(constNull))
     const renderEff = runWithHooks(hookEnvironment, render(rendered))
     const renderable = yield* useRef(renderEff)
     const { id } = hookEnvironment

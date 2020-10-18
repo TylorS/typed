@@ -1,6 +1,5 @@
 import { existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'fs'
 import { basename, dirname, join, relative } from 'path'
-import * as rimraf from 'rimraf'
 
 import { MODULES, readRelativeFile, ROOT_DIR, SOURCE_DIR } from './common'
 
@@ -22,7 +21,7 @@ MODULES.forEach((name) =>
 function createExportTemplate(name: string) {
   const directory = join(ROOT_DIR, name)
 
-  createDir(directory)
+  mkdir(directory)
 
   const packageJsonPath = join(directory, 'package.json')
   const main = `../cjs/${name}/exports.js`
@@ -62,16 +61,12 @@ function createPackageFor(name: string, filePath: string) {
 
   const json = createPkgJson(main, types, module)
 
-  createDir(modulePath)
+  mkdir(modulePath)
 
   writeFileSync(jsonPath, json)
 }
 
-function createDir(directory: string) {
-  if (existsSync(directory)) {
-    rimraf.sync(directory)
-  }
-
+function mkdir(directory: string) {
   let parent = dirname(directory)
   const dirsToCreate: string[] = []
 
@@ -82,10 +77,16 @@ function createDir(directory: string) {
   }
 
   for (const dir of dirsToCreate) {
-    mkdirSync(dir)
+    mkdirIfNotExists(dir)
   }
 
-  mkdirSync(directory)
+  mkdirIfNotExists(directory)
+}
+
+function mkdirIfNotExists(directory: string) {
+  if (!existsSync(directory)) {
+    mkdirSync(directory)
+  }
 }
 
 function shouldCreatePackageFor(fileName: string) {

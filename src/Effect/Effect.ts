@@ -22,7 +22,7 @@ export namespace Effect {
 /**
  * An Effect which has no particular requirement on the environment
  */
-export type Pure<A> = Effect<{}, A>
+export type Pure<A> = Effect<unknown, A>
 export const Pure = Effect
 
 /**

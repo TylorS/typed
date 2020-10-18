@@ -1,6 +1,15 @@
 import { disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
-import { ask, chain, doEffect, Effect, EnvOf, execPure, use, zip } from '@typed/fp/Effect/exports'
+import {
+  ask,
+  chain,
+  doEffect,
+  Effect,
+  EnvOf,
+  execPure,
+  useSome,
+  zip,
+} from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/fibers/exports'
 import { propEq } from '@typed/fp/logic/exports'
 import { SharedRefEnv } from '@typed/fp/SharedRef/exports'
@@ -44,7 +53,7 @@ export const respondToChannelUpdates = (
         chain((hookEnvironments) =>
           zip(hookEnvironments.map(updateConsumer(channelName, currentValue, updatedValue))),
         ),
-        use(env),
+        useSome<typeof env>(env),
         execPure,
       )
     })

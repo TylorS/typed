@@ -1,5 +1,5 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
-import { ask, doEffect, Effect, EnvOf, provide } from '@typed/fp/Effect/exports'
+import { ask, doEffect, Effect, EnvOf, provideAll } from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/fibers/exports'
 import { SharedRefEnv } from '@typed/fp/SharedRef/exports'
 import { Eq } from 'fp-ts/Eq'
@@ -29,7 +29,7 @@ export function useState<E, A>(
     }
 
     const state: State<A, A> = yield* createState(initial, eq, () =>
-      pipe(sendHookEvent(UpdatedHookEnvironment.of(env.hookEnvironment)), provide(env)),
+      pipe(sendHookEvent(UpdatedHookEnvironment.of(env.hookEnvironment)), provideAll(env)),
     )
 
     states.set(symbol, state)
