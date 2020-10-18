@@ -1,6 +1,6 @@
 {
-  "main": "../cjs/%name%/exports.js",
-  "types": "../cjs/%name%/exports.d.ts",
-  "module": "../esm/%name%/exports.js",
+  "main": "%main%",
+  "types": "%types%",
+  "module": "%module%",
   "sideEffects": false
 }
