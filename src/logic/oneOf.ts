@@ -4,8 +4,8 @@ import { Match } from './types'
 
 /**
  * Combine a list of matches into one.
- * @param matches :: [Match a b]
- * @returns :: Match a b
+ * @param matches [Match a b]
+ * @returns Match a b
  */
 export function oneOf<A, B>(matches: ReadonlyArray<Match<A, B>>): Match<A, B> {
   return (a: A) => {

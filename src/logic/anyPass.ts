@@ -3,9 +3,9 @@ import { Predicate } from 'fp-ts/function'
 
 /**
  * Returns true if value matches any predicates
- * @param predicates :: [(a -> boolean)]
- * @param value :: a
- * @returns :: boolean
+ * @param predicates [(a -> boolean)]
+ * @param value a
+ * @returns boolean
  */
 export const anyPass: {
   <A>(predicates: ReadonlyArray<Predicate<A>>, value: A): boolean

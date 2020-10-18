@@ -6,8 +6,8 @@ import { negate } from './negate'
 
 /**
  * Wrap a function in a negation
- * @param :: (a -> b)
- * @returns :: (a -> boolean)
+ * @param (a -> b)
+ * @returns (a -> boolean)
  */
 export const complement: {
   <A>(fn: Is<A>): IsNot<A>

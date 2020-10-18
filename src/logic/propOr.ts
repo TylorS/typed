@@ -2,10 +2,10 @@ import { curry } from '@typed/fp/lambda/exports'
 
 /**
  * Get the value of a property if present or use default value.
- * @param defaultValue :: a
- * @param key :: PropertyKey
- * @param obj :: { [PropertyKey]?: a }
- * @returns :: a
+ * @param defaultValue a
+ * @param key PropertyKey
+ * @param obj { [PropertyKey]?: a }
+ * @returns a
  */
 export const propOr: {
   <A, K extends PropertyKey>(defaultValue: A, key: K, obj: { [Key in K]: A }): A

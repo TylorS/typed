@@ -5,9 +5,9 @@ import { negate } from './negate'
 
 /**
  * Returns true if value matches a list of predicates.
- * @param predicates :: [(a -> boolean)]
- * @param value :: a
- * @returns :: boolean
+ * @param predicates [(a -> boolean)]
+ * @param value a
+ * @returns boolean
  */
 export const allPass: {
   <A>(predicates: ReadonlyArray<Predicate<A>>, value: A): boolean

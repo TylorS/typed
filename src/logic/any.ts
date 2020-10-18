@@ -3,9 +3,9 @@ import { Predicate } from 'fp-ts/function'
 
 /**
  * Returns true if any values in a list pass the given predicate.
- * @param predicate :: (a -> boolean)
- * @param list :: [a]
- * @returns :: boolean
+ * @param predicate (a -> boolean)
+ * @param list [a]
+ * @returns boolean
  */
 // tslint:disable-next-line:variable-name
 export const any: {

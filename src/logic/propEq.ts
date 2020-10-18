@@ -4,10 +4,10 @@ import { equals } from './equals'
 
 /**
  * Returns true if a property is equal to a given value
- * @param key :: PropertyKey
- * @param value :: a
- * @param obj :: { [PropertyKey]: a }
- * @returns :: boolean
+ * @param key PropertyKey
+ * @param value a
+ * @param obj { [PropertyKey]: a }
+ * @returns boolean
  */
 export const propEq = (curry(<O, K extends keyof O>(key: K, value: O[K], obj: O): boolean =>
   equals(obj[key], value),

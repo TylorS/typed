@@ -4,9 +4,9 @@ import { none, Option, some } from 'fp-ts/Option'
 
 /**
  * Basic pattern matching
- * @param conditionals :: [((a -> boolean), (a -> b))]
- * @param value :: a
- * @returns :: Maybe b
+ * @param conditionals [((a -> boolean), (a -> b))]
+ * @param value a
+ * @returns Maybe b
  */
 export const cond: {
   <A, B>(conditions: ReadonlyArray<Conditional<A, B>>, value: A): Option<B>

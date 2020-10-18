@@ -2,9 +2,9 @@ import { curry } from '@typed/fp/lambda/exports'
 
 /**
  * Compare two values using <
- * @param right :: a
- * @param left :: a
- * @returns :: boolean
+ * @param right a
+ * @param left a
+ * @returns boolean
  */
 export const lessThan: {
   <A>(right: A, left: A): boolean

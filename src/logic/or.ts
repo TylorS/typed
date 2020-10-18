@@ -5,10 +5,10 @@ import { Is } from './is'
 
 /**
  * Returns true if either predicates return true.
- * @param predicate1 :: (a -> boolean)
- * @param predicate2 :: (a -> boolean)
- * @param value :: a
- * @returns :: boolean
+ * @param predicate1 (a -> boolean)
+ * @param predicate2 (a -> boolean)
+ * @param value a
+ * @returns boolean
  */
 export const or: {
   <A, B>(predicate1: Is<A>, predicate2: Is<B>, value: unknown): value is A | B

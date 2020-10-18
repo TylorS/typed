@@ -5,11 +5,11 @@ import { Is } from 'io-ts'
 
 /**
  * If-else statement for functions.
- * @param predicate :: (a -> boolean)
- * @param thenFn :: (a -> b)
- * @param elseFn :: (a -> b)
- * @param value :: a
- * @returns :: b
+ * @param predicate (a -> boolean)
+ * @param thenFn (a -> b)
+ * @param elseFn (a -> b)
+ * @param value a
+ * @returns b
  */
 export const ifElse: IfElseFn = curry(__ifElse) as IfElseFn
 
