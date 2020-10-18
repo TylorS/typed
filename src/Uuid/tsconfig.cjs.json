@@ -11,9 +11,6 @@
   "references": [
     {
       "path": "../Effect/tsconfig.cjs.json"
-    },
-    {
-      "path": "../common/tsconfig.cjs.json"
     }
   ],
   "include": [

@@ -16,6 +16,9 @@
       "path": "../Effect/tsconfig.esm.json"
     },
     {
+      "path": "../Op/tsconfig.esm.json"
+    },
+    {
       "path": "../Queue/tsconfig.esm.json"
     },
     {
