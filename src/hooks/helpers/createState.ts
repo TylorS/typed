@@ -1,4 +1,4 @@
-import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
+import { doEffect, Effect, execPure, Pure } from '@typed/fp/Effect/exports'
 import { Eq } from 'fp-ts/Eq'
 
 import { State } from '../core/exports'
@@ -16,21 +16,21 @@ export function createState<A, B>(
 ): Effect<A, State<B, B>> {
   const eff = doEffect(function* () {
     let current = yield* initial
-    const getState = Pure.fromIO(() => current)
-    const updateState = (b: B) =>
-      doEffect(function* () {
-        const a = current
+    const getState = () => current
+    const updateState = (b: B) => {
+      const a = current
 
-        if (eq.equals(a, b)) {
-          return current
-        }
+      if (eq.equals(a, b)) {
+        return current
+      }
 
-        current = b
+      current = b
 
-        yield* onUpdated(a, b)
+      execPure(onUpdated(a, b))
 
-        return b
-      })
+      return b
+    }
+
     const state: State<B, B> = [getState, updateState]
 
     return state
