@@ -23,7 +23,7 @@ export { stream } from './Stream/exports'
 
 // New types
 
-export { Key, UuidKey } from './Key/exports'
-export { Path } from './Path/exports'
-export { Uri } from './Uri/exports'
-export { Uuid } from './Uuid/exports'
+export type { Key, UuidKey } from './Key/exports'
+export type { Path } from './Path/exports'
+export type { Uri } from './Uri/exports'
+export type { Uuid } from './Uuid/exports'

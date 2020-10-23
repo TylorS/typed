@@ -1,4 +1,4 @@
-export const enum RemoteDataStatus {
+export enum RemoteDataStatus {
   NoData = 'no-data',
   Loading = 'loading',
   Failure = 'failure',

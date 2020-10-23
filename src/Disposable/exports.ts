@@ -4,7 +4,7 @@ import { number } from 'io-ts/Guard'
 
 export * from '@most/disposable'
 
-export { Disposable } from '@most/types'
+export type { Disposable } from '@most/types'
 
 export interface LazyDisposable extends Disposable {
   readonly disposed: boolean
