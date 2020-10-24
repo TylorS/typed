@@ -1,6 +1,7 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
+import { undisposable } from '@typed/fp/Disposable/exports'
 import { Effect, Pure } from '@typed/fp/Effect/Effect'
-import { doEffect, execPure } from '@typed/fp/Effect/exports'
+import { doEffect } from '@typed/fp/Effect/exports'
 import { FiberInfo } from '@typed/fp/fibers/Fiber'
 import { Fn } from '@typed/fp/lambda/exports'
 import { Eq } from 'fp-ts/Eq'
@@ -20,11 +21,12 @@ export function useFiberInfo<A extends ReadonlyArray<any>, B, C, D>(
     const fiber = yield* useFiber(f, args, eq)
     const state = yield* useState(Pure.fromIO(flow(fiber.getInfo, onInfo)))
 
-    yield* useDisposable((f) => f.onInfoChange((info) => execPure(setState(onInfo(info), state))), [
-      fiber,
-    ])
+    yield* useDisposable(
+      (f) => f.onInfoChange(undisposable((info) => setState(onInfo(info), state))),
+      [fiber],
+    )
 
-    return yield* getState(state)
+    return getState(state)
   })
 
   return eff

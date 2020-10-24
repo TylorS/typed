@@ -44,7 +44,7 @@ export const useMemoListEffect = <A, E, B>(
         const eff = doEffect(function* () {
           previousValues.current = vs.slice()
 
-          const stableValues = yield* getStableValues
+          const stableValues = getStableValues()
           const addedIndexes = new Set(added.map(([, i]) => i))
           const updatedValues = yield* zip(
             vs.map((value, index) =>
@@ -52,7 +52,7 @@ export const useMemoListEffect = <A, E, B>(
             ),
           )
 
-          yield* updateStableValues(updatedValues)
+          updateStableValues(updatedValues)
         })
 
         return eff
@@ -61,7 +61,7 @@ export const useMemoListEffect = <A, E, B>(
       argsEq,
     )
 
-    return yield* getStableValues
+    return getStableValues()
   })
 
   return eff

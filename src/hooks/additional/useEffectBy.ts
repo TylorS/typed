@@ -79,7 +79,7 @@ export const useEffectBy = <A, B, E, C>(
 
           const updatedValues = yield* zip(values.map(runEffect))
 
-          yield* updateStableValues(updatedValues)
+          updateStableValues(updatedValues)
 
           yield* zip(removed.map(([v, i]) => onRemoved(v, i)))
         })
@@ -90,7 +90,7 @@ export const useEffectBy = <A, B, E, C>(
       argsEq,
     )
 
-    return yield* getStableValues
+    return getStableValues()
   })
 
   const withRequirements = doEffect(function* () {

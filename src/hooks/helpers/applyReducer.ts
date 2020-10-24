@@ -1,5 +1,3 @@
-import { doEffect, Pure } from '@typed/fp/Effect/exports'
-
 import { setState, State } from '../core/exports'
 
 /**
@@ -10,13 +8,7 @@ export const applyReducer = <A, B>(
   state: State<A, A>,
 ): State<A, B> => {
   const getState = state[0]
-  const dispatch = (b: B): Pure<A> =>
-    doEffect(function* () {
-      const a = yield* getState
-      const updated = yield* setState(reducer(a, b), state)
-
-      return updated
-    })
+  const dispatch = (b: B): A => setState(reducer(getState(), b), state)
 
   return [getState, dispatch]
 }
