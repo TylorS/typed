@@ -18,7 +18,6 @@ const ESM_BASE_TSCONFIG_PATH = getRelativeFile(__dirname, '../tsconfig.esm.json'
 const CJS_BUILD_TSCONFIG_PATH = getRelativeFile(__dirname, '../src/tsconfig.cjs.json')
 const ESM_BUILD_TSCONFIG_PATH = getRelativeFile(__dirname, '../src/tsconfig.esm.json')
 const SRC_DIR = join(ROOT_DIR, 'src')
-const ENTRY_FILE = join(SRC_DIR, 'exports.ts')
 const ESM_BUILD_PATH = join(ROOT_DIR, 'esm')
 const CJS_BUILD_PATH = join(ROOT_DIR, 'cjs')
 
@@ -115,7 +114,7 @@ async function updateBuildConfig(path: string, moduleType: ModuleType) {
     const isInSrcDirectory = directory === SRC_DIR
 
     json.extends = relative(directory, BASE_TSCONFIG_PATH.replace('base', moduleType))
-    json.files = [isInSrcDirectory ? './exports.ts' : relative(directory, ENTRY_FILE)]
+    json.files = []
     json.includes = []
     json.compilerOptions =
       moduleType === 'esm'

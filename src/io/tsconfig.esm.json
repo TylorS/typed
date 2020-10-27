@@ -20,6 +20,9 @@
     },
     {
       "path": "../lambda/tsconfig.esm.json"
+    },
+    {
+      "path": "../logic/tsconfig.esm.json"
     }
   ],
   "include": [

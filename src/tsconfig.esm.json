@@ -4,9 +4,7 @@
     "module": "esnext"
   },
   "extends": "../tsconfig.esm.json",
-  "files": [
-    "./exports.ts"
-  ],
+  "files": [],
   "includes": [],
   "references": [
     {

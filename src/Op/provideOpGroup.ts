@@ -26,7 +26,7 @@ export function provideOpGroup<OPS extends ReadonlyArray<Op<any, any>>, G extend
           pipe(
             ops,
             mapWithIndex((i, op) => provideOp(op, effects[i])),
-            reduce(effect, (fx, provide) => provide(fx)),
+            reduce(effect, (fx, provide) => (provide as any)(fx)),
           ),
         )
       }
@@ -54,7 +54,7 @@ export function useOpGroup<OPS extends ReadonlyArray<Op<any, any>>, G extends Op
           pipe(
             ops,
             mapWithIndex((i, op) => useOp(op, effects[i])),
-            reduce(effect, (fx, use) => use(fx)),
+            reduce(effect, (fx, use) => (use as any)(fx)),
           ),
         )
       }

@@ -2,10 +2,6 @@
   "name": "@typed/fp",
   "version": "0.0.0",
   "description": "Data Structures and Resources for fp-ts",
-  "main": "./cjs/exports.js",
-  "module": "./esm/exports.js",
-  "types": "./cjs/exports.d.ts",
-  "typings": "./cjs/exports.d.ts",
   "sideEffects": false,
   "dependencies": {
     "@most/core": "^1.6.1",

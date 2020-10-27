@@ -8,7 +8,14 @@
     "outDir": "../../cjs/Path",
     "module": "commonjs"
   },
-  "references": [],
+  "references": [
+    {
+      "path": "../io/tsconfig.cjs.json"
+    },
+    {
+      "path": "../logic/tsconfig.cjs.json"
+    }
+  ],
   "include": [
     "./*.ts",
     "./**/*.ts"

@@ -8,7 +8,14 @@
     "outDir": "../../esm/Path",
     "module": "esnext"
   },
-  "references": [],
+  "references": [
+    {
+      "path": "../io/tsconfig.esm.json"
+    },
+    {
+      "path": "../logic/tsconfig.esm.json"
+    }
+  ],
   "include": [
     "./*.ts",
     "./**/*.ts"

@@ -4,9 +4,7 @@
     "module": "commonjs"
   },
   "extends": "../tsconfig.cjs.json",
-  "files": [
-    "./exports.ts"
-  ],
+  "files": [],
   "includes": [],
   "references": [
     {
