@@ -1,9 +1,10 @@
 import { Alt2 } from 'fp-ts/Alt'
-import { MonadIO2 } from 'fp-ts/MonadIO'
+import { MonadTask2 } from 'fp-ts/MonadTask'
 
 import { ap, apSeq } from './ap'
 import { chain } from './chain'
 import { Effect } from './Effect'
+import { fromTask } from './fromTask'
 import { map } from './map'
 import { race } from './race'
 
@@ -17,17 +18,18 @@ declare module 'fp-ts/HKT' {
   }
 }
 
-export const effect: MonadIO2<URI> & Alt2<URI> = {
+export const effect: MonadTask2<URI> & Alt2<URI> = {
   URI,
   of: Effect.of,
   fromIO: Effect.fromIO,
+  fromTask: fromTask,
   ap,
   map: (fa, f) => map(f, fa),
   chain: (fa, f) => chain(f, fa),
   alt: (fa, f) => race(fa, f()),
 }
 
-export const effectSeq: MonadIO2<URI> & Alt2<URI> = {
+export const effectSeq: MonadTask2<URI> & Alt2<URI> = {
   ...effect,
   ap: apSeq,
 }
