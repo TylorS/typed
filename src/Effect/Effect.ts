@@ -1,4 +1,4 @@
-import { And, IsNever } from '@typed/fp/common/exports'
+import { And, Equals, IsNever } from '@typed/fp/common/exports'
 import { Resume, sync } from '@typed/fp/Resume/exports'
 import { flow } from 'fp-ts/function'
 import { IO } from 'fp-ts/IO'
@@ -40,15 +40,31 @@ export type Env<E, A> = Reader<E, Resume<A>>
  */
 export type EffectOf<A> = A extends Effect<infer E, infer B>
   ? Effect<E, B>
-  : ReturnTypeOf<A> extends Effect<infer E, infer B>
-  ? Effect<E, B>
   : A extends Generator<infer E, infer B>
   ? Effect<And<U.ListOf<E>>, B>
+  : IsNever<ReturnTypeOf<A>> extends true
+  ? never
+  : ReturnTypeOf<A> extends Effect<infer E, infer B>
+  ? Effect<E, B>
   : ReturnTypeOf<A> extends Generator<infer E, infer B>
   ? Effect<And<U.ListOf<E>>, B>
   : never
 
-type ReturnTypeOf<A> = A extends (...args: any) => any ? ReturnType<A> : never
+/**
+ * Helper for creating an intersection of environments
+ */
+export type Envs<A extends ReadonlyArray<unknown>> = And<
+  {
+    [K in keyof A]: IsNever<A[K]> extends true
+      ? unknown
+      : IsEffect<EffectOf<A[K]>> extends true
+      ? EnvOf<A[K]>
+      : A[K]
+  }
+>
+
+type IsEffect<A> = Equals<A, Effect<any, any>>
+type ReturnTypeOf<A> = [A] extends [(...args: any) => any] ? ReturnType<A> : never
 
 /**
  * Helper for retrieving the environmental dependencies from an effect
