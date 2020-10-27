@@ -12,7 +12,6 @@ export interface Op<Uri extends PropertyKey, F extends Fn<readonly any[], Effect
 export interface OpUri<Uri extends PropertyKey, F extends Fn = Fn> {
   readonly Uri: Uri
   readonly Fn: F
-  readonly Op: unique symbol
 }
 
 // Type-level Helpers

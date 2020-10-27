@@ -1,5 +1,10 @@
-import { ap, chain, empty, filter, map, merge, multicast, now, take } from '@most/core'
+import { ap, chain, empty, filter, map, merge, multicast, newStream, now, take } from '@most/core'
+import { asap } from '@most/scheduler'
 import { Stream } from '@most/types'
+import { undisposable } from '@typed/fp/Disposable/exports'
+import { Effect } from '@typed/fp/Effect/Effect'
+import { runEffect } from '@typed/fp/Effect/exports'
+import { createCallbackTask } from '@typed/fp/fibers/exports'
 import { Alternative1 } from 'fp-ts/Alternative'
 import { Separated } from 'fp-ts/Compactable'
 import { Either, isLeft, isRight, Left, left, Right, right } from 'fp-ts/Either'
@@ -61,3 +66,22 @@ export const stream: Monad1<URI> & Alternative1<URI> & Filterable1<URI> = {
 export const { alt, apFirst, apSecond, chainFirst, filterMap, partition, partitionMap } = pipeable(
   stream,
 )
+
+export const fromEffect = <E, A>(effect: Effect<E, A>, env: E): Stream<A> =>
+  newStream<A>((sink, scheduler) =>
+    asap(
+      createCallbackTask(() =>
+        runEffect(
+          undisposable((a) => {
+            const time = scheduler.currentTime()
+
+            sink.event(time, a)
+            sink.end(time)
+          }),
+          env,
+          effect,
+        ),
+      ),
+      scheduler,
+    ),
+  )

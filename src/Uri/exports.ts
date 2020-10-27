@@ -3,7 +3,7 @@ import { eqString } from 'fp-ts/Eq'
 import { ReadonlyRecord } from 'fp-ts/ReadonlyRecord'
 import { getEq, iso, Newtype, prism } from 'newtype-ts'
 
-export type Uri = Newtype<{ readonly Url: unique symbol }, string>
+export type Uri = Newtype<'Uri', string>
 
 export const uriIso = iso<Uri>()
 

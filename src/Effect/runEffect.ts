@@ -1,4 +1,4 @@
-import { Arity1, NoInfer } from '@typed/fp/common/exports'
+import { Arity1, IsUnknown, NoInfer } from '@typed/fp/common/exports'
 import { Disposable, disposeNone } from '@typed/fp/Disposable/exports'
 import { curry } from '@typed/fp/lambda/exports'
 import { run } from '@typed/fp/Resume/exports'
@@ -13,7 +13,9 @@ export const runPure = curry(__runPure) as {
   <A>(onReturn: Arity1<A, Disposable>): (effect: Pure<A>) => Disposable
 }
 
-export const execPure = runPure<any>(disposeNone)
+export const execPure = <E>(
+  e: Effect<E, unknown>,
+): IsUnknown<E> extends true ? Disposable : never => runPure(disposeNone, e as Pure<unknown>) as any
 
 export const runEffect = curry(__runEffect) as {
   <A, E>(onReturn: Arity1<A, Disposable>, env: NoInfer<E>, effect: Effect<E, A>): Disposable
@@ -24,7 +26,7 @@ export const runEffect = curry(__runEffect) as {
   }
 }
 
-export const execEffect = runEffect<any>(disposeNone)
+export const execEffect = runEffect<unknown>(disposeNone)
 
 function __runEffect<A, E>(
   onReturn: Arity1<A, Disposable>,

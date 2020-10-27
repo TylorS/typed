@@ -4,7 +4,7 @@ import { fromEnv } from '@typed/fp/Effect/exports'
 import { async } from '@typed/fp/Resume/exports'
 import { iso, Newtype } from 'newtype-ts'
 
-export type IdleCallbackHandle = Newtype<{ readonly IdleCallbackHandle: unique symbol }, any>
+export type IdleCallbackHandle = Newtype<'IdleCallbackHandle', any>
 
 const idleCallbackHandle = iso<IdleCallbackHandle>()
 

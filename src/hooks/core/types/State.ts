@@ -3,7 +3,7 @@ import { curry } from '@typed/fp/lambda/exports'
 import { flow, identity, pipe } from 'fp-ts/function'
 import { IO, map as mapIo } from 'fp-ts/IO'
 
-export type State<A, B> = readonly [IO<A>, Arity1<B, A>]
+export type State<A, B = A> = readonly [IO<A>, Arity1<B, A>]
 
 export const getState = <A, B>(state: State<A, B>): A => state[0]()
 

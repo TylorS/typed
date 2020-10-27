@@ -11,7 +11,7 @@ export interface Channel<E, A> {
   readonly defaultValue: Effect<E, A>
 }
 
-export interface ChannelName extends Newtype<{ readonly ChannelName: unique symbol }, string> {}
+export interface ChannelName extends Newtype<'ChannelName', string> {}
 
 export namespace ChannelName {
   export const { wrap, unwrap } = iso<ChannelName>()

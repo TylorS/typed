@@ -15,6 +15,6 @@ export interface UuidKeyIso<A> extends Iso<UuidKey<A>, Uuid> {}
 
 export const getUuidKeyIso = <A>(): UuidKeyIso<A> => iso<UuidKey<A>>()
 
-export type KeyBrand = { readonly Key: unique symbol }
+export type KeyBrand = 'Key'
 
 export type KeyFor<A> = A extends Newtype<Const<unknown, infer R>, any> ? R : never

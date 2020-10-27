@@ -1,6 +1,10 @@
-import { FlattenIntersection, ToConsList, UnNest } from './ConsList'
+import { Head } from 'List/Head'
+import { Tail } from 'List/Tail'
 
-export type And<A extends readonly any[], Fallback = unknown> = UnNest<
-  FlattenIntersection<ToConsList<A>, Fallback>,
-  Fallback
->
+// Convert directly to an intersection with recursive type
+export type And<A extends ReadonlyArray<any>, Fallback = unknown> = AndLoop_<A, Fallback>
+
+type AndLoop_<A extends ReadonlyArray<any>, End> = {
+  continue: AndLoop_<Tail<A>, End & Head<A>>
+  end: End
+}[[] extends A ? 'end' : 'continue']

@@ -8,7 +8,17 @@
     "outDir": "../../esm/Stream",
     "module": "esnext"
   },
-  "references": [],
+  "references": [
+    {
+      "path": "../Disposable/tsconfig.esm.json"
+    },
+    {
+      "path": "../Effect/tsconfig.esm.json"
+    },
+    {
+      "path": "../fibers/tsconfig.esm.json"
+    }
+  ],
   "include": [
     "./*.ts",
     "./**/*.ts"

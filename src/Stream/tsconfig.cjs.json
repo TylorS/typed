@@ -8,7 +8,17 @@
     "outDir": "../../cjs/Stream",
     "module": "commonjs"
   },
-  "references": [],
+  "references": [
+    {
+      "path": "../Disposable/tsconfig.cjs.json"
+    },
+    {
+      "path": "../Effect/tsconfig.cjs.json"
+    },
+    {
+      "path": "../fibers/tsconfig.cjs.json"
+    }
+  ],
   "include": [
     "./*.ts",
     "./**/*.ts"
