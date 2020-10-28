@@ -19,7 +19,6 @@ This includes the last ~2 versions of Chrome/Chromium, Firefox, Safari, Edge and
 
 ## TODO 
 
-- Rendering
 - Routing
-- Investigate what typed-prelude functionality is still relevant 
-- More useful integrations with fp-ts, io-ts, monocle-ts, and fp-ts community
+- More examples
+- Publish
