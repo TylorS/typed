@@ -1,7 +1,6 @@
-import { deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Pure } from '@typed/fp/Effect/exports'
-import { Eq, getTupleEq } from 'fp-ts/Eq'
 
+import { defaultEqs, EqsOf, tupleEqOf } from './EqsOf'
 import { useDepChange } from './useDepChange'
 import { useRef } from './useRef'
 
@@ -12,10 +11,10 @@ import { useRef } from './useRef'
 export const useMemo = <A, Deps extends ReadonlyArray<any>>(
   f: () => A,
   deps: Deps,
-  eqs: EqsOf<Deps> = (deps.map(() => deepEqualsEq) as unknown) as EqsOf<Deps>,
+  eqs: EqsOf<Deps> = defaultEqs(deps),
 ) => {
   const eff = doEffect(function* () {
-    const changed = yield* useDepChange(deps, getTupleEq(...eqs) as Eq<Deps>, false)
+    const changed = yield* useDepChange(deps, tupleEqOf(eqs), false)
     const ref = yield* useRef(Pure.fromIO(f))
 
     if (changed) {
@@ -26,8 +25,4 @@ export const useMemo = <A, Deps extends ReadonlyArray<any>>(
   })
 
   return eff
-}
-
-export type EqsOf<A extends ReadonlyArray<any>> = {
-  [K in keyof A]: Eq<A[K]>
 }
