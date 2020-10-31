@@ -9,6 +9,7 @@ import { createState, State } from './State'
 
 /**
  * Create a piece of state
+ * @hook
  */
 export const useState = <E, A>(
   initial: Effect<E, A>,
