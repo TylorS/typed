@@ -1,3 +1,6 @@
+/**
+ * A mutable piece of state
+ */
 export interface Ref<A> {
   current: A
 }

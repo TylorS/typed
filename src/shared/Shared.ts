@@ -1,8 +1,8 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
-import { Effect, ReturnOf } from '@typed/fp/Effect/exports'
+import { Effect, EnvOf as EffEnv, ReturnOf } from '@typed/fp/Effect/exports'
 import { createSchema } from '@typed/fp/io/exports'
 import { Eq } from 'fp-ts/Eq'
-import { HKT } from 'fp-ts/lib/HKT'
+import { HKT } from 'fp-ts/HKT'
 
 /**
  * A shared value that can be used to dynamically keep track of state
@@ -32,6 +32,12 @@ export type KeyOf<A extends Shared> = A['key']
  * Get the value of a shared value type
  */
 export type ValueOf<A extends Shared> = ReturnOf<A['initial']>
+
+/**
+ * Get the requirements for a Shared value to satisfy it's
+ * type-signature.
+ */
+export type EnvOf<A extends Shared> = EffEnv<A['initial']>
 
 /**
  * Contstruct a share value

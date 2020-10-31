@@ -4,7 +4,7 @@ import { Shared } from './Shared'
 import { getCurrentNamespace, getNamespacesMap, sendSharedEvent, SharedEnv } from './SharedEnv'
 
 /**
- * Delete a shared value
+ * Delete a shared value.
  */
 export const deleteShared = <S extends Shared>(shared: S): Effect<SharedEnv, void> =>
   doEffect(function* () {

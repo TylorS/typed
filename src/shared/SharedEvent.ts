@@ -2,6 +2,10 @@ import { createSchema } from '@typed/fp/io/exports'
 
 import { Shared } from './Shared'
 
+/**
+ * A set of events that describe the CRUD operations
+ * associated with a given namespace or a Shared value.
+ */
 export type SharedEvent = NamespaceEvent | SharedValueEvent
 
 export type NamespaceEvent =

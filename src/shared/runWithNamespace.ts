@@ -2,7 +2,7 @@ import { doEffect, Effect } from '@typed/fp/Effect/exports'
 import { curry } from '@typed/fp/lambda/exports'
 import { pipe } from 'fp-ts/function'
 
-import { resetPosition } from './NamespacePositions'
+import { resetPosition } from './hooks/exports'
 import {
   getCurrentNamespace,
   getNamespaceChildren,
@@ -11,7 +11,7 @@ import {
   sendSharedEvent,
   SharedEnv,
 } from './SharedEnv'
-import { usingNamespace } from './useingNamespace'
+import { usingNamespace } from './usingNamespace'
 
 /**
  * Run an effect using a particular namespace while providing namespace events and managing
@@ -28,9 +28,10 @@ export const runWithNamespace = curry(
         yield* addToTree(namespace)
       }
 
+      yield* pipe(resetPosition, usingNamespace(namespace))
+
       const returnValue = yield* pipe(effect, usingNamespace(namespace))
 
-      yield* pipe(resetPosition, usingNamespace(namespace))
       yield* sendSharedEvent({ type: 'namespace/completed', namespace, returnValue })
 
       return returnValue

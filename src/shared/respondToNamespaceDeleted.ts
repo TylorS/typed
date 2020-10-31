@@ -1,9 +1,11 @@
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
 
-import { getNamespaceDisposables } from './NamespaceDisposables'
-import { getNamespacePositions } from './NamespacePositions'
-import { getNamespaceStates } from './NamespaceStates'
-import { getNamespaceSymbols } from './NamespaceSymbols'
+import {
+  getNamespaceDisposables,
+  getNamespacePositions,
+  getNamespaceStates,
+  getNamespaceSymbols,
+} from './hooks/exports'
 import { getNamespaceChildren, getNamespaceParents, SharedEnv } from './SharedEnv'
 import { NamespaceDeleted } from './SharedEvent'
 

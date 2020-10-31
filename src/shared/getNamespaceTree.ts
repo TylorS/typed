@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function'
 import { Tree } from 'fp-ts/Tree'
 
 import { getNamespaceChildren, SharedEnv } from './SharedEnv'
-import { usingNamespace } from './useingNamespace'
+import { usingNamespace } from './usingNamespace'
 
 /**
  * Takes the current snapshot of namespaces into a Tree.

@@ -7,7 +7,7 @@ import { IO, map as mapIo } from 'fp-ts/IO'
 export type State<A, B = A> = readonly [IO<A>, Arity1<B, A>]
 
 /**
- * Get the current state. d
+ * Get the current state.
  */
 export const getState = <A, B>(state: State<A, B>): A => state[0]()
 
@@ -34,6 +34,9 @@ export const updateState = curry(
   <A, B>(f: (value: A) => B): (state: State<A, B>) => A
 }
 
+/**
+ * Change the right hand value of a piece of state.
+ */
 export const contramap = curry(
   <A, B, C>(f: (a: A) => B, state: State<C, B>): State<C, A> => pipe(state, promap(identity, f)),
 ) as {
@@ -41,6 +44,11 @@ export const contramap = curry(
   <A, B>(f: (a: A) => B): <C>(state: State<C, B>) => State<C, A>
 }
 
+/**
+ * Change the left and right side values of state. Helpful for
+ * focusing in on a individual piece of state.
+ *
+ */
 export const promap = curry(
   <A, B, C, D>(f: (a: A) => B, g: (d: D) => C, [getA, sendC]: State<A, C>): State<B, D> => [
     pipe(getA, mapIo(f)),

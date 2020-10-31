@@ -1,4 +1,4 @@
-import { usingNamespace } from './useingNamespace'
+import { usingNamespace } from './usingNamespace'
 
 /**
  * A namespace to be used as if it is global state.

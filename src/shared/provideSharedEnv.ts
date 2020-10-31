@@ -17,12 +17,12 @@ import { createGuardFromSchema } from '@typed/fp/io/exports'
 import { constVoid, flow, pipe } from 'fp-ts/function'
 
 import { GLOBAL_NAMESPACE } from './global'
-import { addDisposable } from './NamespaceDisposables'
+import { addDisposable } from './hooks/NamespaceDisposables'
 import { respondToNamespaceDeleted } from './respondToNamespaceDeleted'
 import { getSharedEvents, SHARED, SharedEnv } from './SharedEnv'
 import { NamespaceDeleted } from './SharedEvent'
 
-const guard = createGuardFromSchema(NamespaceDeleted.schema)
+const namespaceDeletedGuard = createGuardFromSchema(NamespaceDeleted.schema)
 
 /**
  * Provides the underlying map used at runtime to dynamically add/remove values
@@ -45,7 +45,7 @@ const listenToEvents = (env: SharedEnv) =>
     doEffect(function* () {
       const { scheduler } = yield* ask<SchedulerEnv>()
       const stream = yield* getSharedEvents
-      const removedEvents = filter(guard.is, stream)
+      const removedEvents = filter(namespaceDeletedGuard.is, stream)
 
       yield* addDisposable(
         removedEvents.run(

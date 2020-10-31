@@ -2,11 +2,11 @@ import { Effect, Pure } from '@typed/fp/Effect/Effect'
 import { doEffect } from '@typed/fp/Effect/exports'
 import { pipe } from 'fp-ts/function'
 
-import { strictMap } from './common'
-import { getShared } from './getShared'
-import { usingGlobal } from './global'
-import { shared } from './Shared'
-import { SharedEnv } from './SharedEnv'
+import { strictMap } from '../common'
+import { getShared } from '../getShared'
+import { usingGlobal } from '../global'
+import { shared } from '../Shared'
+import { SharedEnv } from '../SharedEnv'
 
 export const NamespaceStates = shared(
   Symbol('NamespaceStates'),

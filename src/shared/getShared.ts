@@ -1,6 +1,6 @@
-import { doEffect, Effect, EnvOf } from '@typed/fp/Effect/exports'
+import { doEffect, Effect } from '@typed/fp/Effect/exports'
 
-import { Shared, ValueOf } from './Shared'
+import { EnvOf, Shared, ValueOf } from './Shared'
 import { getCurrentNamespace, getNamespace, sendSharedEvent, SharedEnv } from './SharedEnv'
 
 /**
@@ -8,7 +8,7 @@ import { getCurrentNamespace, getNamespace, sendSharedEvent, SharedEnv } from '.
  */
 export const getShared = <S extends Shared>(
   shared: S,
-): Effect<SharedEnv & EnvOf<Shared['initial']>, ValueOf<S>> => {
+): Effect<SharedEnv & EnvOf<S>, ValueOf<S>> => {
   const eff = doEffect(function* () {
     const namespace = yield* getCurrentNamespace
     const map = yield* getNamespace(namespace)

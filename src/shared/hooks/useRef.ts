@@ -1,9 +1,9 @@
 import { doEffect, Effect, map } from '@typed/fp/Effect/exports'
 
+import { createRef, Ref } from '../Ref'
+import { SharedEnv } from '../SharedEnv'
 import { getNamespaceState } from './NamespaceStates'
 import { getNextSymbol } from './NamespaceSymbols'
-import { createRef, Ref } from './Ref'
-import { SharedEnv } from './SharedEnv'
 
 /**
  * Create a shared reference

@@ -2,10 +2,10 @@ import { deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Effect, map } from '@typed/fp/Effect/exports'
 import { Eq } from 'fp-ts/Eq'
 
+import { getCurrentNamespace, getSendSharedEvent, SharedEnv } from '../SharedEnv'
+import { createState, State } from '../State'
 import { getNamespaceState } from './NamespaceStates'
 import { getNextSymbol } from './NamespaceSymbols'
-import { getCurrentNamespace, getSendSharedEvent, SharedEnv } from './SharedEnv'
-import { createState, State } from './State'
 
 /**
  * Create a piece of state
