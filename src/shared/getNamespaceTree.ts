@@ -1,13 +1,22 @@
 import { Effect, map } from '@typed/fp/Effect/exports'
+import { pipe } from 'fp-ts/function'
 import { Tree } from 'fp-ts/Tree'
 
 import { getNamespaceChildren, SharedEnv } from './SharedEnv'
+import { usingNamespace } from './useingNamespace'
 
 /**
- * Takes the current snapshot of namespaces into a Tree
+ * Takes the current snapshot of namespaces into a Tree.
+ * Can be helpful if perhaps you wanted to have a dev tool that had an
+ * always up-to-date display of the current state in a particular namespace.
+ * You might be able to listen to all of the SharedEvents occuring and create
+ * snapshots from the namespace that has been updated.
  */
 export const getNamespaceTree = (root: PropertyKey): Effect<SharedEnv, Tree<PropertyKey>> =>
-  map((children) => createTree(root, children), getNamespaceChildren)
+  pipe(
+    map((children) => createTree(root, children), getNamespaceChildren),
+    usingNamespace(root),
+  )
 
 function createTree(namespace: PropertyKey, children: Map<PropertyKey, Set<PropertyKey>>) {
   const tree: Tree<PropertyKey> = {
