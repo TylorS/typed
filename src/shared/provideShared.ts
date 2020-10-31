@@ -25,16 +25,21 @@ import { NamespaceDeleted } from './SharedEvent'
 const guard = createGuardFromSchema(NamespaceDeleted.schema)
 
 /**
- * Provides the underlying map used at runtime to add/remove values
+ * Provides the underlying map used at runtime to dynamically add/remove values
+ * within sectioned-off namespaces.
  */
 export const provideShared: Provider<SharedEnv, SchedulerEnv> = <E, A>(
   eff: Effect<E & SharedEnv, A>,
 ): Effect<E & SchedulerEnv, A> => {
-  const env = defaultSharedEnv(GLOBAL_NAMESPACE)
+  const env = createSharedEnv(GLOBAL_NAMESPACE)
 
   return pipe(eff, useWith(listenToEvents(env)), useSome(env))
 }
 
+/**
+ * Listen to delete events to release all resources
+ * @internal
+ */
 const listenToEvents = (env: SharedEnv) =>
   memo(
     doEffect(function* () {
@@ -56,7 +61,7 @@ const listenToEvents = (env: SharedEnv) =>
 /**
  * Create a new SharedEnv
  */
-export const defaultSharedEnv = (currentNamespace: PropertyKey): SharedEnv => ({
+export const createSharedEnv = (currentNamespace: PropertyKey): SharedEnv => ({
   currentNamespace,
   [SHARED]: {
     events: createAdapter(),

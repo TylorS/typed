@@ -11,7 +11,7 @@ import { shared } from './Shared'
 import { getCurrentNamespace, SharedEnv } from './SharedEnv'
 
 export const NamespaceDisposables = shared(
-  'NamespaceDisposables',
+  Symbol('NamespaceDisposables'),
   Pure.fromIO(() => new Map<PropertyKey, LazyDisposable>()),
   strictMap,
 )

@@ -9,7 +9,7 @@ import { shared } from './Shared'
 import { SharedEnv } from './SharedEnv'
 
 export const NamespaceStates = shared(
-  'NamespaceStates',
+  Symbol('NamespaceStates'),
   Pure.fromIO(() => new Map<any, any>()),
   strictMap,
 )

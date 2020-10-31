@@ -3,6 +3,9 @@ import { Tree } from 'fp-ts/Tree'
 
 import { getNamespaceChildren, SharedEnv } from './SharedEnv'
 
+/**
+ * Takes the current snapshot of namespaces into a Tree
+ */
 export const getNamespaceTree = (root: PropertyKey): Effect<SharedEnv, Tree<PropertyKey>> =>
   map((children) => createTree(root, children), getNamespaceChildren)
 

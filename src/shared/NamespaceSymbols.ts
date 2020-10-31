@@ -8,7 +8,7 @@ import { shared } from './Shared'
 import { getCurrentNamespace, SharedEnv } from './SharedEnv'
 
 export const NamespaceSymbols = shared(
-  'NamespaceSymbols',
+  Symbol('NamespaceSymbols'),
   Pure.fromIO(() => new Map<PropertyKey, Map<number, symbol>>()),
 )
 

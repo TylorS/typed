@@ -8,7 +8,7 @@ import { shared } from './Shared'
 import { getCurrentNamespace, SharedEnv } from './SharedEnv'
 
 export const NamespacePositions = shared(
-  'NamespacePositions',
+  Symbol('NamespacePositions'),
   Pure.fromIO(() => new Map<PropertyKey, number>()),
   strictMap,
 )

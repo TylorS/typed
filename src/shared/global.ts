@@ -6,6 +6,7 @@ import { usingNamespace } from './useingNamespace'
 export const GLOBAL_NAMESPACE = Symbol.for('@typed/fp/Global')
 
 /**
- * Helper for running effects withing the Global namespace
+ * Helper for running effects within. the Global namespace. Can be
+ * used to model singletons.
  */
 export const usingGlobal = usingNamespace(GLOBAL_NAMESPACE)
