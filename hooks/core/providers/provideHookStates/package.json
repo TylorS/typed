@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/providers/provideHookStates.js",
+  "types": "../../../../cjs/hooks/core/providers/provideHookStates.d.ts",
+  "module": "../../../../esm/hooks/core/providers/provideHookStates.js",
+  "sideEffects": false
+}

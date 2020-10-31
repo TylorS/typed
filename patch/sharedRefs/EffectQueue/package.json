@@ -1,0 +1,6 @@
+{
+  "main": "../../../cjs/patch/sharedRefs/EffectQueue.js",
+  "types": "../../../cjs/patch/sharedRefs/EffectQueue.d.ts",
+  "module": "../../../esm/patch/sharedRefs/EffectQueue.js",
+  "sideEffects": false
+}

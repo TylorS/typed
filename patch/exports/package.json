@@ -1,0 +1,6 @@
+{
+  "main": "../../cjs/patch/exports.js",
+  "types": "../../cjs/patch/exports.d.ts",
+  "module": "../../esm/patch/exports.js",
+  "sideEffects": false
+}

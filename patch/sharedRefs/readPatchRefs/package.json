@@ -1,0 +1,6 @@
+{
+  "main": "../../../cjs/patch/sharedRefs/readPatchRefs.js",
+  "types": "../../../cjs/patch/sharedRefs/readPatchRefs.d.ts",
+  "module": "../../../esm/patch/sharedRefs/readPatchRefs.js",
+  "sideEffects": false
+}

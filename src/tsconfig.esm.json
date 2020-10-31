@@ -23,9 +23,6 @@
       "path": "./Key/tsconfig.esm.json"
     },
     {
-      "path": "./Op/tsconfig.esm.json"
-    },
-    {
       "path": "./Path/tsconfig.esm.json"
     },
     {
@@ -36,9 +33,6 @@
     },
     {
       "path": "./Resume/tsconfig.esm.json"
-    },
-    {
-      "path": "./SharedRef/tsconfig.esm.json"
     },
     {
       "path": "./Storage/tsconfig.esm.json"
@@ -68,9 +62,6 @@
       "path": "./history/tsconfig.esm.json"
     },
     {
-      "path": "./hooks/tsconfig.esm.json"
-    },
-    {
       "path": "./http/tsconfig.esm.json"
     },
     {
@@ -86,7 +77,7 @@
       "path": "./logic/tsconfig.esm.json"
     },
     {
-      "path": "./patch/tsconfig.esm.json"
+      "path": "./shared/tsconfig.esm.json"
     }
   ]
 }

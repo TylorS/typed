@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/hooks/useMemo.js",
+  "types": "../../../../cjs/hooks/core/hooks/useMemo.d.ts",
+  "module": "../../../../esm/hooks/core/hooks/useMemo.js",
+  "sideEffects": false
+}

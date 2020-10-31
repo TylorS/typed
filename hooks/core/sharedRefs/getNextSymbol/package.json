@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/sharedRefs/getNextSymbol.js",
+  "types": "../../../../cjs/hooks/core/sharedRefs/getNextSymbol.d.ts",
+  "module": "../../../../esm/hooks/core/sharedRefs/getNextSymbol.js",
+  "sideEffects": false
+}

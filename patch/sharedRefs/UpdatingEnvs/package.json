@@ -1,0 +1,6 @@
+{
+  "main": "../../../cjs/patch/sharedRefs/UpdatingEnvs.js",
+  "types": "../../../cjs/patch/sharedRefs/UpdatingEnvs.d.ts",
+  "module": "../../../esm/patch/sharedRefs/UpdatingEnvs.js",
+  "sideEffects": false
+}

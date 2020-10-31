@@ -1,0 +1,6 @@
+{
+  "main": "../../cjs/Op/OpEnv.js",
+  "types": "../../cjs/Op/OpEnv.d.ts",
+  "module": "../../esm/Op/OpEnv.js",
+  "sideEffects": false
+}

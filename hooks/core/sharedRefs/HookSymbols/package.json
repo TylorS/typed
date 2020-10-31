@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/sharedRefs/HookSymbols.js",
+  "types": "../../../../cjs/hooks/core/sharedRefs/HookSymbols.d.ts",
+  "module": "../../../../esm/hooks/core/sharedRefs/HookSymbols.js",
+  "sideEffects": false
+}

@@ -1,0 +1,6 @@
+{
+  "main": "../../../cjs/hooks/additional/useFiber.js",
+  "types": "../../../cjs/hooks/additional/useFiber.d.ts",
+  "module": "../../../esm/hooks/additional/useFiber.js",
+  "sideEffects": false
+}

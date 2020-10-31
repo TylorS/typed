@@ -10,12 +10,6 @@
   },
   "references": [
     {
-      "path": "../Effect/tsconfig.cjs.json"
-    },
-    {
-      "path": "../SharedRef/tsconfig.cjs.json"
-    },
-    {
       "path": "../logic/tsconfig.cjs.json"
     }
   ],

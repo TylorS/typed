@@ -1,0 +1,6 @@
+{
+  "main": "../../cjs/patch/respondToRunningEvents.js",
+  "types": "../../cjs/patch/respondToRunningEvents.d.ts",
+  "module": "../../esm/patch/respondToRunningEvents.js",
+  "sideEffects": false
+}

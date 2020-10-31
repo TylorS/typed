@@ -3,7 +3,7 @@ import { whenIdle, WhenIdleEnv } from '@typed/fp/dom/exports'
 import { ask, doEffect, Effect, useWith } from '@typed/fp/Effect/exports'
 import { FiberEnv, fork, SchedulerEnv } from '@typed/fp/fibers/exports'
 import { chain, sync } from '@typed/fp/Resume/exports'
-import { readSharedRef, SharedRef, SharedRefEnv, writeSharedRef } from '@typed/fp/SharedRef/exports'
+import { getShared, Shared, SharedEnv, updatedShared } from '@typed/fp/shared/exports'
 import { Uri } from '@typed/fp/Uri/exports'
 import { right } from 'fp-ts/Either'
 import { isRight } from 'fp-ts/These'
@@ -34,7 +34,7 @@ export type TimestampedResponse = {
 // TODO: handle duplicated requests??
 export interface WithHttpManagementEnv {
   readonly httpCache: Map<string, TimestampedResponse> // Taking advantage of insertion order
-  readonly httpCacheCleanupScheduled: SharedRef<PropertyKey, boolean>
+  readonly httpCacheCleanupScheduled: Shared<PropertyKey, unknown, boolean>
 }
 
 export const withHttpManagement = (options: WithHttpManagementOptions) => {
@@ -45,10 +45,10 @@ export const withHttpManagement = (options: WithHttpManagementOptions) => {
     doEffect(function* () {
       const env = yield* ask<HttpEnv & WithHttpManagementEnv & FiberEnv>()
       const wrappedEnv = createCachedHttpEnv(options, env)
-      const cleanupIsScheduled = yield* readSharedRef(env.httpCacheCleanupScheduled)
+      const cleanupIsScheduled = yield* getShared(env.httpCacheCleanupScheduled)
 
       if (!cleanupIsScheduled) {
-        yield* writeSharedRef(env.httpCacheCleanupScheduled, true)
+        yield* updatedShared(env.httpCacheCleanupScheduled, () => true)
 
         yield* fork(cleanup)
       }
@@ -107,14 +107,7 @@ function isValidStatus({ status }: HttpResponse) {
 
 const clearOldTimestamps = (
   expiration: number,
-): Effect<
-  WithHttpManagementEnv &
-    SchedulerEnv &
-    FiberEnv &
-    WhenIdleEnv &
-    SharedRefEnv<SharedRef<PropertyKey, boolean>>,
-  void
-> =>
+): Effect<WithHttpManagementEnv & SchedulerEnv & FiberEnv & WhenIdleEnv & SharedEnv, void> =>
   doEffect(function* () {
     const { httpCache, httpCacheCleanupScheduled, scheduler } = yield* ask<
       WithHttpManagementEnv & SchedulerEnv
@@ -143,7 +136,7 @@ const clearOldTimestamps = (
     }
 
     if (notCurrentlyExpired || current.done) {
-      yield* writeSharedRef(httpCacheCleanupScheduled, false)
+      yield* updatedShared(httpCacheCleanupScheduled, () => false)
 
       return
     }

@@ -25,9 +25,6 @@
       "path": "../Resume/tsconfig.cjs.json"
     },
     {
-      "path": "../SharedRef/tsconfig.cjs.json"
-    },
-    {
       "path": "../Uri/tsconfig.cjs.json"
     },
     {
@@ -35,6 +32,9 @@
     },
     {
       "path": "../fibers/tsconfig.cjs.json"
+    },
+    {
+      "path": "../shared/tsconfig.cjs.json"
     }
   ],
   "include": [

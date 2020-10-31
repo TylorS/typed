@@ -1,0 +1,6 @@
+{
+  "main": "../../cjs/SharedRef/wrapSharedMap.js",
+  "types": "../../cjs/SharedRef/wrapSharedMap.d.ts",
+  "module": "../../esm/SharedRef/wrapSharedMap.js",
+  "sideEffects": false
+}

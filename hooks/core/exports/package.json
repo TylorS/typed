@@ -1,0 +1,6 @@
+{
+  "main": "../../../cjs/hooks/core/exports.js",
+  "types": "../../../cjs/hooks/core/exports.d.ts",
+  "module": "../../../esm/hooks/core/exports.js",
+  "sideEffects": false
+}

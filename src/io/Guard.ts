@@ -83,6 +83,8 @@ export const jsonPrimitive: G.Guard<unknown, string | number | boolean | null> =
   G.union(G.string, G.number, G.boolean),
 )
 
+export const symbol: G.Guard<unknown, symbol> = { is: (u): u is symbol => typeof u === 'symbol' }
+
 export const Schemable: TypedSchemable1<G.URI> = {
   ...G.Schemable,
   ...G.WithRefine,
@@ -99,6 +101,7 @@ export const Schemable: TypedSchemable1<G.URI> = {
   unknown,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   never: { is: (_): _ is never => true },
+  symbol,
   json,
   jsonRecord,
   jsonArray,

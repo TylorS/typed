@@ -1,9 +1,6 @@
-import { L } from 'ts-toolbelt'
+import { FlattenIntersection, ToConsList, UnNest } from './ConsList'
 
-// Convert directly to an intersection with recursive type
-export type And<A extends ReadonlyArray<any>, Fallback = unknown> = AndLoop_<A, Fallback>
-
-type AndLoop_<A extends ReadonlyArray<any>, End> = {
-  continue: AndLoop_<L.Tail<A>, End & L.Head<A>>
-  end: End
-}[[] extends A ? 'end' : 'continue']
+export type And<A extends ReadonlyArray<any>, Fallback = unknown> = UnNest<
+  FlattenIntersection<ToConsList<A>, Fallback>,
+  Fallback
+>

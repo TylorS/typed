@@ -1,0 +1,6 @@
+{
+  "main": "../../cjs/patch/useKeyManager.js",
+  "types": "../../cjs/patch/useKeyManager.d.ts",
+  "module": "../../esm/patch/useKeyManager.js",
+  "sideEffects": false
+}

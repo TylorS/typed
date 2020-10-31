@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/sharedRefs/ChannelConsumers.js",
+  "types": "../../../../cjs/hooks/core/sharedRefs/ChannelConsumers.d.ts",
+  "module": "../../../../esm/hooks/core/sharedRefs/ChannelConsumers.js",
+  "sideEffects": false
+}

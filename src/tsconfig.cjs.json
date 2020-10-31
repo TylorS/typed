@@ -23,9 +23,6 @@
       "path": "./Key/tsconfig.cjs.json"
     },
     {
-      "path": "./Op/tsconfig.cjs.json"
-    },
-    {
       "path": "./Path/tsconfig.cjs.json"
     },
     {
@@ -36,9 +33,6 @@
     },
     {
       "path": "./Resume/tsconfig.cjs.json"
-    },
-    {
-      "path": "./SharedRef/tsconfig.cjs.json"
     },
     {
       "path": "./Storage/tsconfig.cjs.json"
@@ -68,9 +62,6 @@
       "path": "./history/tsconfig.cjs.json"
     },
     {
-      "path": "./hooks/tsconfig.cjs.json"
-    },
-    {
       "path": "./http/tsconfig.cjs.json"
     },
     {
@@ -86,7 +77,7 @@
       "path": "./logic/tsconfig.cjs.json"
     },
     {
-      "path": "./patch/tsconfig.cjs.json"
+      "path": "./shared/tsconfig.cjs.json"
     }
   ]
 }

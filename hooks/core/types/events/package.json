@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/types/events.js",
+  "types": "../../../../cjs/hooks/core/types/events.d.ts",
+  "module": "../../../../esm/hooks/core/types/events.js",
+  "sideEffects": false
+}

@@ -66,12 +66,10 @@ tsconfig*.tsbuildinfo
 /Effect/
 /Future/
 /Key/
-/Op/
 /Path/
 /Queue/
 /RemoteData/
 /Resume/
-/SharedRef/
 /Storage/
 /Stream/
 /Uri/
@@ -81,10 +79,9 @@ tsconfig*.tsbuildinfo
 /dom/
 /fibers/
 /history/
-/hooks/
 /http/
 /io/
 /lambda/
 /logging/
 /logic/
-/patch/
+/shared/

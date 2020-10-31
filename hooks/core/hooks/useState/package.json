@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/hooks/useState.js",
+  "types": "../../../../cjs/hooks/core/hooks/useState.d.ts",
+  "module": "../../../../esm/hooks/core/hooks/useState.js",
+  "sideEffects": false
+}

@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/hooks/useStream.js",
+  "types": "../../../../cjs/hooks/core/hooks/useStream.d.ts",
+  "module": "../../../../esm/hooks/core/hooks/useStream.js",
+  "sideEffects": false
+}

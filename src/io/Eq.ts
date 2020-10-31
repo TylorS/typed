@@ -23,6 +23,7 @@ export const Schemable: TypedSchemable1<EqI.URI> = {
   bigint: eqStrict,
   unknown: eqStrict,
   never: eqStrict,
+  symbol: eqStrict,
   json: deepEqualsEq,
   jsonArray: deepEqualsEq,
   jsonPrimitive: deepEqualsEq,

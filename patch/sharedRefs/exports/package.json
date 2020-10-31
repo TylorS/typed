@@ -1,0 +1,6 @@
+{
+  "main": "../../../cjs/patch/sharedRefs/exports.js",
+  "types": "../../../cjs/patch/sharedRefs/exports.d.ts",
+  "module": "../../../esm/patch/sharedRefs/exports.js",
+  "sideEffects": false
+}

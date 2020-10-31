@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/sharedRefs/HookEvents.js",
+  "types": "../../../../cjs/hooks/core/sharedRefs/HookEvents.d.ts",
+  "module": "../../../../esm/hooks/core/sharedRefs/HookEvents.js",
+  "sideEffects": false
+}

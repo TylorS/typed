@@ -1,0 +1,6 @@
+{
+  "main": "../../../cjs/patch/sharedRefs/RenderedEnvs.js",
+  "types": "../../../cjs/patch/sharedRefs/RenderedEnvs.d.ts",
+  "module": "../../../esm/patch/sharedRefs/RenderedEnvs.js",
+  "sideEffects": false
+}

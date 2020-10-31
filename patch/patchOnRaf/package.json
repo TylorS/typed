@@ -1,0 +1,6 @@
+{
+  "main": "../../cjs/patch/patchOnRaf.js",
+  "types": "../../cjs/patch/patchOnRaf.d.ts",
+  "module": "../../esm/patch/patchOnRaf.js",
+  "sideEffects": false
+}

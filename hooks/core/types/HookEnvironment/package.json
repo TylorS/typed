@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/types/HookEnvironment.js",
+  "types": "../../../../cjs/hooks/core/types/HookEnvironment.d.ts",
+  "module": "../../../../esm/hooks/core/types/HookEnvironment.js",
+  "sideEffects": false
+}

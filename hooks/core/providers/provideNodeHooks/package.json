@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/providers/provideNodeHooks.js",
+  "types": "../../../../cjs/hooks/core/providers/provideNodeHooks.d.ts",
+  "module": "../../../../esm/hooks/core/providers/provideNodeHooks.js",
+  "sideEffects": false
+}

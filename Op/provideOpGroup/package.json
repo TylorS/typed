@@ -1,0 +1,6 @@
+{
+  "main": "../../cjs/Op/provideOpGroup.js",
+  "types": "../../cjs/Op/provideOpGroup.d.ts",
+  "module": "../../esm/Op/provideOpGroup.js",
+  "sideEffects": false
+}

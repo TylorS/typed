@@ -1,0 +1,6 @@
+{
+  "main": "../../../cjs/hooks/additional/useEffectBy.js",
+  "types": "../../../cjs/hooks/additional/useEffectBy.d.ts",
+  "module": "../../../esm/hooks/additional/useEffectBy.js",
+  "sideEffects": false
+}

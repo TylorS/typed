@@ -31,6 +31,7 @@ export interface TypedSchemable<S> extends Schemable<S>, WithUnion<S>, WithRefin
   readonly bigint: HKT<S, BigInt>
   readonly unknown: HKT<S, unknown>
   readonly never: HKT<S, never>
+  readonly symbol: HKT<S, symbol>
   readonly json: HKT<S, Json>
   readonly jsonRecord: HKT<S, JsonRecord>
   readonly jsonArray: HKT<S, JsonArray>
@@ -57,6 +58,7 @@ export interface TypedSchemable1<S extends URIS>
   readonly bigint: Kind<S, BigInt>
   readonly unknown: Kind<S, unknown>
   readonly never: Kind<S, never>
+  readonly symbol: Kind<S, symbol>
   readonly json: Kind<S, Json>
   readonly jsonRecord: Kind<S, JsonRecord>
   readonly jsonArray: Kind<S, JsonArray>
@@ -86,6 +88,7 @@ export interface TypedSchemable2C<S extends URIS2, E>
   readonly bigint: Kind2<S, E, BigInt>
   readonly unknown: Kind2<S, E, unknown>
   readonly never: Kind2<S, E, never>
+  readonly symbol: Kind2<S, E, symbol>
   readonly json: Kind2<S, E, Json>
   readonly jsonRecord: Kind2<S, E, JsonRecord>
   readonly jsonArray: Kind2<S, E, JsonArray>

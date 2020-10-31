@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/sharedRefs/removeHookEnvironment.js",
+  "types": "../../../../cjs/hooks/core/sharedRefs/removeHookEnvironment.d.ts",
+  "module": "../../../../esm/hooks/core/sharedRefs/removeHookEnvironment.js",
+  "sideEffects": false
+}

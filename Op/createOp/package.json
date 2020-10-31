@@ -1,0 +1,6 @@
+{
+  "main": "../../cjs/Op/createOp.js",
+  "types": "../../cjs/Op/createOp.d.ts",
+  "module": "../../esm/Op/createOp.js",
+  "sideEffects": false
+}

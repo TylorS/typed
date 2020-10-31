@@ -1,0 +1,6 @@
+{
+  "main": "../cjs/Op/exports.js",
+  "types": "../cjs/Op/exports.d.ts",
+  "module": "../esm/Op/exports.d.ts",
+  "sideEffects": false
+}

@@ -1,0 +1,6 @@
+{
+  "main": "../../../cjs/hooks/additional/useInterval.js",
+  "types": "../../../cjs/hooks/additional/useInterval.d.ts",
+  "module": "../../../esm/hooks/additional/useInterval.js",
+  "sideEffects": false
+}

@@ -1,0 +1,6 @@
+{
+  "main": "../../../cjs/hooks/helpers/getOrSet.js",
+  "types": "../../../cjs/hooks/helpers/getOrSet.d.ts",
+  "module": "../../../esm/hooks/helpers/getOrSet.js",
+  "sideEffects": false
+}

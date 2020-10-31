@@ -1,0 +1,6 @@
+{
+  "main": "../../cjs/Op/callOp.js",
+  "types": "../../cjs/Op/callOp.d.ts",
+  "module": "../../esm/Op/callOp.js",
+  "sideEffects": false
+}

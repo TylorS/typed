@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/sharedRefs/HookDisposables.js",
+  "types": "../../../../cjs/hooks/core/sharedRefs/HookDisposables.d.ts",
+  "module": "../../../../esm/hooks/core/sharedRefs/HookDisposables.js",
+  "sideEffects": false
+}

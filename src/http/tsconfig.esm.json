@@ -25,9 +25,6 @@
       "path": "../Resume/tsconfig.esm.json"
     },
     {
-      "path": "../SharedRef/tsconfig.esm.json"
-    },
-    {
       "path": "../Uri/tsconfig.esm.json"
     },
     {
@@ -35,6 +32,9 @@
     },
     {
       "path": "../fibers/tsconfig.esm.json"
+    },
+    {
+      "path": "../shared/tsconfig.esm.json"
     }
   ],
   "include": [

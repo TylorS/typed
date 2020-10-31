@@ -1,0 +1,6 @@
+{
+  "main": "../../../../cjs/hooks/core/hooks/provideChannel.js",
+  "types": "../../../../cjs/hooks/core/hooks/provideChannel.d.ts",
+  "module": "../../../../esm/hooks/core/hooks/provideChannel.js",
+  "sideEffects": false
+}

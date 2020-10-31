@@ -1,0 +1,6 @@
+{
+  "main": "../../cjs/SharedRef/provideSharedRef.js",
+  "types": "../../cjs/SharedRef/provideSharedRef.d.ts",
+  "module": "../../esm/SharedRef/provideSharedRef.js",
+  "sideEffects": false
+}
