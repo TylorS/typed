@@ -7,7 +7,7 @@ import { HKT } from 'fp-ts/lib/HKT'
 /**
  * A shared value that can be used to dynamically keep track of state
  */
-export interface Shared<K extends PropertyKey = PropertyKey, E = unknown, A = any> {
+export interface Shared<K extends PropertyKey = PropertyKey, E = any, A = any> {
   readonly key: K
   readonly initial: Effect<E, A>
   readonly eq: Eq<A>

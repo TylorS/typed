@@ -28,12 +28,12 @@ export const runWithNamespace = curry(
         yield* addToTree(namespace)
       }
 
-      const a = yield* pipe(effect, usingNamespace(namespace))
+      const returnValue = yield* pipe(effect, usingNamespace(namespace))
 
       yield* pipe(resetPosition, usingNamespace(namespace))
-      yield* sendSharedEvent({ type: 'namespace/completed', namespace })
+      yield* sendSharedEvent({ type: 'namespace/completed', namespace, returnValue })
 
-      return a
+      return returnValue
     })
 
     return eff

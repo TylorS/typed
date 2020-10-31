@@ -56,6 +56,7 @@ export namespace NamespaceUpdated {
 export type NamespaceCompleted = {
   readonly type: 'namespace/completed'
   readonly namespace: PropertyKey
+  readonly returnValue: unknown
 }
 
 export namespace NamespaceCompleted {
@@ -63,6 +64,7 @@ export namespace NamespaceCompleted {
     t.type({
       type: t.literal('namespace/completed'),
       namespace: t.union(t.string, t.number, t.symbol),
+      returnValue: t.unknown,
     }),
   )
 }

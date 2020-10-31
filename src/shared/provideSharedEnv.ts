@@ -28,7 +28,7 @@ const guard = createGuardFromSchema(NamespaceDeleted.schema)
  * Provides the underlying map used at runtime to dynamically add/remove values
  * within sectioned-off namespaces.
  */
-export const provideShared: Provider<SharedEnv, SchedulerEnv> = <E, A>(
+export const provideSharedEnv: Provider<SharedEnv, SchedulerEnv> = <E, A>(
   eff: Effect<E & SharedEnv, A>,
 ): Effect<E & SchedulerEnv, A> => {
   const env = createSharedEnv(GLOBAL_NAMESPACE)
