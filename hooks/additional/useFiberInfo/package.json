@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/hooks/additional/useFiberInfo.js",
-  "types": "../../../cjs/hooks/additional/useFiberInfo.d.ts",
-  "module": "../../../esm/hooks/additional/useFiberInfo.js",
-  "sideEffects": false
-}

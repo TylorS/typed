@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/hooks/helpers/createEventSink.js",
-  "types": "../../../cjs/hooks/helpers/createEventSink.d.ts",
-  "module": "../../../esm/hooks/helpers/createEventSink.js",
-  "sideEffects": false
-}

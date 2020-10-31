@@ -1,6 +1,0 @@
-{
-  "main": "../../cjs/patch/respondToRemoveEvents.js",
-  "types": "../../cjs/patch/respondToRemoveEvents.d.ts",
-  "module": "../../esm/patch/respondToRemoveEvents.js",
-  "sideEffects": false
-}

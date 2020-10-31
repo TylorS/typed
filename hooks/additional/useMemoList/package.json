@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/hooks/additional/useMemoList.js",
-  "types": "../../../cjs/hooks/additional/useMemoList.d.ts",
-  "module": "../../../esm/hooks/additional/useMemoList.js",
-  "sideEffects": false
-}

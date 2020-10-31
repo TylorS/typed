@@ -1,6 +1,0 @@
-{
-  "main": "../../../../cjs/hooks/core/hooks/useMemoEffect.js",
-  "types": "../../../../cjs/hooks/core/hooks/useMemoEffect.d.ts",
-  "module": "../../../../esm/hooks/core/hooks/useMemoEffect.js",
-  "sideEffects": false
-}

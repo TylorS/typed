@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/patch/workers/effectsWorker.js",
-  "types": "../../../cjs/patch/workers/effectsWorker.d.ts",
-  "module": "../../../esm/patch/workers/effectsWorker.js",
-  "sideEffects": false
-}

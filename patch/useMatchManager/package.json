@@ -1,6 +1,0 @@
-{
-  "main": "../../cjs/patch/useMatchManager.js",
-  "types": "../../cjs/patch/useMatchManager.d.ts",
-  "module": "../../esm/patch/useMatchManager.js",
-  "sideEffects": false
-}

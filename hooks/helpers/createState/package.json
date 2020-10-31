@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/hooks/helpers/createState.js",
-  "types": "../../../cjs/hooks/helpers/createState.d.ts",
-  "module": "../../../esm/hooks/helpers/createState.js",
-  "sideEffects": false
-}

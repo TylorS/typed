@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/hooks/helpers/diff.js",
-  "types": "../../../cjs/hooks/helpers/diff.d.ts",
-  "module": "../../../esm/hooks/helpers/diff.js",
-  "sideEffects": false
-}

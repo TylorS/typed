@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/hooks/additional/useMatches.js",
-  "types": "../../../cjs/hooks/additional/useMatches.d.ts",
-  "module": "../../../esm/hooks/additional/useMatches.js",
-  "sideEffects": false
-}

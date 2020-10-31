@@ -1,6 +1,0 @@
-{
-  "main": "../../../../cjs/hooks/core/sharedRefs/respondToChannelUpdates.js",
-  "types": "../../../../cjs/hooks/core/sharedRefs/respondToChannelUpdates.d.ts",
-  "module": "../../../../esm/hooks/core/sharedRefs/respondToChannelUpdates.js",
-  "sideEffects": false
-}

@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/hooks/additional/useCallback.js",
-  "types": "../../../cjs/hooks/additional/useCallback.d.ts",
-  "module": "../../../esm/hooks/additional/useCallback.js",
-  "sideEffects": false
-}

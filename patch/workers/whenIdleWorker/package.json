@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/patch/workers/whenIdleWorker.js",
-  "types": "../../../cjs/patch/workers/whenIdleWorker.d.ts",
-  "module": "../../../esm/patch/workers/whenIdleWorker.js",
-  "sideEffects": false
-}

@@ -1,6 +1,0 @@
-{
-  "main": "../../../../cjs/hooks/core/providers/provideHookEnv.js",
-  "types": "../../../../cjs/hooks/core/providers/provideHookEnv.d.ts",
-  "module": "../../../../esm/hooks/core/providers/provideHookEnv.js",
-  "sideEffects": false
-}

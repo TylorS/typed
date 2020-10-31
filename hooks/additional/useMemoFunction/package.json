@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/hooks/additional/useMemoFunction.js",
-  "types": "../../../cjs/hooks/additional/useMemoFunction.d.ts",
-  "module": "../../../esm/hooks/additional/useMemoFunction.js",
-  "sideEffects": false
-}

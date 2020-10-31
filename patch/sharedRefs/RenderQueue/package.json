@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/patch/sharedRefs/RenderQueue.js",
-  "types": "../../../cjs/patch/sharedRefs/RenderQueue.d.ts",
-  "module": "../../../esm/patch/sharedRefs/RenderQueue.js",
-  "sideEffects": false
-}

@@ -1,6 +1,0 @@
-{
-  "main": "../../cjs/SharedRef/modifySharedRef.js",
-  "types": "../../cjs/SharedRef/modifySharedRef.d.ts",
-  "module": "../../esm/SharedRef/modifySharedRef.js",
-  "sideEffects": false
-}

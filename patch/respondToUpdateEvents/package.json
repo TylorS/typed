@@ -1,6 +1,0 @@
-{
-  "main": "../../cjs/patch/respondToUpdateEvents.js",
-  "types": "../../cjs/patch/respondToUpdateEvents.d.ts",
-  "module": "../../esm/patch/respondToUpdateEvents.js",
-  "sideEffects": false
-}

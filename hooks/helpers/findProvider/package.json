@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/hooks/helpers/findProvider.js",
-  "types": "../../../cjs/hooks/helpers/findProvider.d.ts",
-  "module": "../../../esm/hooks/helpers/findProvider.js",
-  "sideEffects": false
-}

@@ -1,6 +1,0 @@
-{
-  "main": "../../../../cjs/hooks/core/hooks/runWithHooks.js",
-  "types": "../../../../cjs/hooks/core/hooks/runWithHooks.d.ts",
-  "module": "../../../../esm/hooks/core/hooks/runWithHooks.js",
-  "sideEffects": false
-}

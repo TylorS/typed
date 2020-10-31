@@ -1,6 +1,0 @@
-{
-  "main": "../../../../cjs/hooks/core/hooks/useDepChange.js",
-  "types": "../../../../cjs/hooks/core/hooks/useDepChange.d.ts",
-  "module": "../../../../esm/hooks/core/hooks/useDepChange.js",
-  "sideEffects": false
-}

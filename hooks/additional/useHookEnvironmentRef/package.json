@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/hooks/additional/useHookEnvironmentRef.js",
-  "types": "../../../cjs/hooks/additional/useHookEnvironmentRef.d.ts",
-  "module": "../../../esm/hooks/additional/useHookEnvironmentRef.js",
-  "sideEffects": false
-}

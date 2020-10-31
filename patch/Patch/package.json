@@ -1,6 +1,0 @@
-{
-  "main": "../../cjs/patch/Patch.js",
-  "types": "../../cjs/patch/Patch.d.ts",
-  "module": "../../esm/patch/Patch.js",
-  "sideEffects": false
-}

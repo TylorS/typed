@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/patch/sharedRefs/providePatchRefs.js",
-  "types": "../../../cjs/patch/sharedRefs/providePatchRefs.d.ts",
-  "module": "../../../esm/patch/sharedRefs/providePatchRefs.js",
-  "sideEffects": false
-}

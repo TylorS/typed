@@ -1,6 +1,0 @@
-{
-  "main": "../../../../cjs/hooks/core/hooks/useDisposable.js",
-  "types": "../../../../cjs/hooks/core/hooks/useDisposable.d.ts",
-  "module": "../../../../esm/hooks/core/hooks/useDisposable.js",
-  "sideEffects": false
-}

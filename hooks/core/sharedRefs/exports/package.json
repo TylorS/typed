@@ -1,6 +1,0 @@
-{
-  "main": "../../../../cjs/hooks/core/sharedRefs/exports.js",
-  "types": "../../../../cjs/hooks/core/sharedRefs/exports.d.ts",
-  "module": "../../../../esm/hooks/core/sharedRefs/exports.js",
-  "sideEffects": false
-}

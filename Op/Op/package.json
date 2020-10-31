@@ -1,6 +1,0 @@
-{
-  "main": "../../cjs/Op/Op.js",
-  "types": "../../cjs/Op/Op.d.ts",
-  "module": "../../esm/Op/Op.js",
-  "sideEffects": false
-}

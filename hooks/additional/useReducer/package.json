@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/hooks/additional/useReducer.js",
-  "types": "../../../cjs/hooks/additional/useReducer.d.ts",
-  "module": "../../../esm/hooks/additional/useReducer.js",
-  "sideEffects": false
-}

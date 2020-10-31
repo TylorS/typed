@@ -1,6 +1,0 @@
-{
-  "main": "../../../../cjs/hooks/core/sharedRefs/ChannelProviders.js",
-  "types": "../../../../cjs/hooks/core/sharedRefs/ChannelProviders.d.ts",
-  "module": "../../../../esm/hooks/core/sharedRefs/ChannelProviders.js",
-  "sideEffects": false
-}

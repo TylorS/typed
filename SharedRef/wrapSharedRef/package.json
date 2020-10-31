@@ -1,6 +1,0 @@
-{
-  "main": "../../cjs/SharedRef/wrapSharedRef.js",
-  "types": "../../cjs/SharedRef/wrapSharedRef.d.ts",
-  "module": "../../esm/SharedRef/wrapSharedRef.js",
-  "sideEffects": false
-}

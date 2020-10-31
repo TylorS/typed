@@ -1,6 +1,0 @@
-{
-  "main": "../../../../cjs/hooks/core/hooks/useRef.js",
-  "types": "../../../../cjs/hooks/core/hooks/useRef.d.ts",
-  "module": "../../../../esm/hooks/core/hooks/useRef.js",
-  "sideEffects": false
-}

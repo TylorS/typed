@@ -1,6 +1,0 @@
-{
-  "main": "../../cjs/patch/useListManager.js",
-  "types": "../../cjs/patch/useListManager.d.ts",
-  "module": "../../esm/patch/useListManager.js",
-  "sideEffects": false
-}

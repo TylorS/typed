@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/patch/workers/renderWorker.js",
-  "types": "../../../cjs/patch/workers/renderWorker.d.ts",
-  "module": "../../../esm/patch/workers/renderWorker.js",
-  "sideEffects": false
-}

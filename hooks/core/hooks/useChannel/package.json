@@ -1,6 +1,0 @@
-{
-  "main": "../../../../cjs/hooks/core/hooks/useChannel.js",
-  "types": "../../../../cjs/hooks/core/hooks/useChannel.d.ts",
-  "module": "../../../../esm/hooks/core/hooks/useChannel.js",
-  "sideEffects": false
-}

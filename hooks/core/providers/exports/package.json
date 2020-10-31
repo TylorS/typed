@@ -1,6 +1,0 @@
-{
-  "main": "../../../../cjs/hooks/core/providers/exports.js",
-  "types": "../../../../cjs/hooks/core/providers/exports.d.ts",
-  "module": "../../../../esm/hooks/core/providers/exports.js",
-  "sideEffects": false
-}

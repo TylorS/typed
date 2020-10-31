@@ -1,6 +1,0 @@
-{
-  "main": "../../../cjs/hooks/additional/useChannelReducer.js",
-  "types": "../../../cjs/hooks/additional/useChannelReducer.d.ts",
-  "module": "../../../esm/hooks/additional/useChannelReducer.js",
-  "sideEffects": false
-}

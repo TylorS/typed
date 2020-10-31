@@ -1,6 +1,0 @@
-{
-  "main": "../../../../cjs/hooks/core/sharedRefs/HookPositions.js",
-  "types": "../../../../cjs/hooks/core/sharedRefs/HookPositions.d.ts",
-  "module": "../../../../esm/hooks/core/sharedRefs/HookPositions.js",
-  "sideEffects": false
-}
