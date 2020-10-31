@@ -6,13 +6,22 @@ import { IO, map as mapIo } from 'fp-ts/IO'
 
 export type State<A, B = A> = readonly [IO<A>, Arity1<B, A>]
 
+/**
+ * Get the current state. d
+ */
 export const getState = <A, B>(state: State<A, B>): A => state[0]()
 
+/**
+ * Set the current state.
+ */
 export const setState = curry(<A, B>(value: A, state: State<B, A>): B => state[1](value)) as {
   <A, B>(value: A, state: State<B, A>): B
   <A>(value: A): <B>(state: State<B, A>) => B
 }
 
+/**
+ * Perform and update with the current piece of state
+ */
 export const updateState = curry(
   <A, B>(f: (value: A) => B, state: State<A, B>): A => {
     const a = getState(state)
@@ -48,9 +57,9 @@ export const promap = curry(
 }
 
 export type StateOptions<A> = {
-  initial: A
-  eq: Eq<A>
-  onValue: (previous: A, current: A) => void
+  readonly initial: A
+  readonly eq: Eq<A>
+  readonly onValue: (previous: A, current: A) => void
 }
 
 /**
@@ -75,4 +84,15 @@ export function createState<A>(options: StateOptions<A>): State<A> {
   ]
 
   return state
+}
+
+/**
+ * Apply a reducer to a piece of state.
+ */
+export const applyReducer = curry(
+  <A, B, C>(reducer: (a: A, b: B) => C, state: State<A, C>): State<A, B> =>
+    contramap((b) => reducer(getState(state), b), state),
+) as {
+  <A, B, C>(reducer: (a: A, b: B) => C, state: State<A, C>): State<A, B>
+  <A, B, C>(reducer: (a: A, b: B) => C): (state: State<A, C>) => State<A, B>
 }
