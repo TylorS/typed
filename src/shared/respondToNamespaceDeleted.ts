@@ -6,7 +6,7 @@ import {
   getNamespaceStates,
   getNamespaceSymbols,
 } from './hooks/exports'
-import { getNamespaceChildren, getNamespaceParents, SharedEnv } from './SharedEnv'
+import { getSharedEnv, SharedEnv } from './SharedEnv'
 import { NamespaceDeleted } from './SharedEvent'
 
 /**
@@ -20,15 +20,17 @@ export function respondToNamespaceDeleted({
     const positions = yield* getNamespacePositions
     const symbols = yield* getNamespaceSymbols
     const states = yield* getNamespaceStates
-    const dependencies = yield* getNamespaceChildren
-    const parents = yield* getNamespaceParents
+    const { children, parents, consumers } = yield* getSharedEnv
 
     disposables.delete(namespace)
     positions.delete(namespace)
     symbols.delete(namespace)
-    dependencies.delete(namespace)
-    parents.delete(namespace)
     states.delete(namespace)
+
+    children.delete(namespace)
+    parents.delete(namespace)
+    // TODO: is the a better way to make this O(1) as well?
+    consumers.forEach((set) => set.delete(namespace))
   })
 
   return eff

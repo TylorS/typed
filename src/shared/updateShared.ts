@@ -4,7 +4,7 @@ import { curry } from '@typed/fp/lambda/exports'
 
 import { getShared } from './getShared'
 import { EnvOf, Shared, ValueOf } from './Shared'
-import { getCurrentNamespace, modifyNamespace, sendSharedEvent, SharedEnv } from './SharedEnv'
+import { getCurrentNamespace, modifyKeyStore, sendSharedEvent, SharedEnv } from './SharedEnv'
 
 export const updatedShared = curry(
   <S extends Shared>(
@@ -18,7 +18,7 @@ export const updatedShared = curry(
       if (!shared.eq.equals(current, value)) {
         const namespace = yield* getCurrentNamespace
 
-        yield* modifyNamespace(namespace, (map) => map.set(shared.key, value))
+        yield* modifyKeyStore(namespace, (map) => map.set(shared.key, value))
 
         yield* sendSharedEvent({
           type: 'sharedValue/updated',

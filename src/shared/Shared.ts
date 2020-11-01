@@ -1,7 +1,6 @@
-import { deepEqualsEq } from '@typed/fp/common/exports'
 import { Effect, EnvOf as EffEnv, ReturnOf } from '@typed/fp/Effect/exports'
 import { createSchema } from '@typed/fp/io/exports'
-import { Eq } from 'fp-ts/Eq'
+import { Eq, eqStrict } from 'fp-ts/Eq'
 import { HKT } from 'fp-ts/HKT'
 
 /**
@@ -45,11 +44,25 @@ export type EnvOf<A extends Shared> = EffEnv<A['initial']>
 export function shared<K extends PropertyKey, E, A>(
   key: K,
   initial: Effect<E, A>,
-  eq: Eq<A> = deepEqualsEq,
+  eq: Eq<A> = eqStrict,
 ): Shared<K, E, A> {
   return {
     key,
     initial,
     eq,
   }
+}
+
+/**
+ * Provide a new initial value for a Shared key.
+ */
+export function provideInitial<S extends Shared>(s: S, initial: S['initial']): S {
+  return shared(s.key, initial, s.eq) as S
+}
+
+/**
+ * Provide a new Eq instance for a Shared key.
+ */
+export function provideEq<S extends Shared>(s: S, eq: S['eq']): S {
+  return shared(s.key, s.initial, eq) as S
 }

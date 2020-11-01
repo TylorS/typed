@@ -1,6 +1,5 @@
-import { deepEqualsEq } from '@typed/fp/common/exports'
 import { doEffect, Effect, map } from '@typed/fp/Effect/exports'
-import { Eq } from 'fp-ts/Eq'
+import { Eq, eqStrict } from 'fp-ts/Eq'
 
 import { getCurrentNamespace, getSendSharedEvent, SharedEnv } from '../SharedEnv'
 import { createState, State } from '../State'
@@ -13,7 +12,7 @@ import { getNextSymbol } from './NamespaceSymbols'
  */
 export const useState = <E, A>(
   initial: Effect<E, A>,
-  eq: Eq<A> = deepEqualsEq,
+  eq: Eq<A> = eqStrict,
 ): Effect<E & SharedEnv, State<A>> => {
   const eff = doEffect(function* () {
     const symbol = yield* getNextSymbol

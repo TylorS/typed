@@ -9,7 +9,7 @@ import { getNextSymbol } from './NamespaceSymbols'
  * Create a shared reference
  * @hook
  */
-export const useRef = <E, A>(initial: Effect<E, A>): Effect<E & SharedEnv, Ref<A>> => {
+export const useRef = (<E, A>(initial: Effect<E, A>): Effect<E & SharedEnv, Ref<A>> => {
   const eff = doEffect(function* () {
     const symbol = yield* getNextSymbol
     const ref = yield* getNamespaceState(
@@ -21,4 +21,7 @@ export const useRef = <E, A>(initial: Effect<E, A>): Effect<E & SharedEnv, Ref<A
   })
 
   return eff
+}) as {
+  <A>(): Effect<SharedEnv, Ref<A | undefined>>
+  <E, A>(initial: Effect<E, A>): Effect<E & SharedEnv, Ref<A>>
 }

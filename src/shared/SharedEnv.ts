@@ -16,23 +16,28 @@ export interface SharedEnv {
   readonly currentNamespace: PropertyKey
   readonly [SHARED]: {
     readonly events: Adapter<SharedEvent, SharedEvent>
-    readonly states: Map<PropertyKey, SharedMap<Shared>>
+    // Namespace -> Key stores
+    readonly keyStores: Map<PropertyKey, SharedKeyStore<Shared>>
+    // Child Namespace -> Parent Namespace
     readonly parents: Map<PropertyKey, PropertyKey>
+    // Parent Namespace -> Children Namespaces
     readonly children: Map<PropertyKey, Set<PropertyKey>>
+    /**
+     * Provider Namespace -> Shared Key -> Consumer Namespace -> Shared instances
+     */
+    readonly consumers: Map<PropertyKey, Map<PropertyKey, Map<PropertyKey, Set<Shared>>>>
   }
 }
 
 /**
  * Derive the environment record for a shared value
  */
-export type SharedMap<S extends Shared> = Map<KeyOf<S>, ValueOf<S>>
+export type SharedKeyStore<S extends Shared> = Map<KeyOf<S>, ValueOf<S>>
 
 /**
  * Get the top-level shared map
  */
-export const getNamespacesMap: Effect<SharedEnv, Map<PropertyKey, SharedMap<Shared>>> = asks(
-  (e: SharedEnv) => e[SHARED].states,
-)
+export const getSharedEnv: Effect<SharedEnv, SharedEnv[SHARED]> = asks((e: SharedEnv) => e[SHARED])
 
 /**
  * Get the top-level shared events
@@ -62,35 +67,21 @@ export const getSendSharedEvent: Effect<SharedEnv, (event: SharedEvent) => void>
 )
 
 /**
- * Get dependencies tree
- */
-export const getNamespaceChildren: Effect<SharedEnv, Map<PropertyKey, Set<PropertyKey>>> = asks(
-  (e: SharedEnv) => e[SHARED].children,
-)
-
-/**
- * Get dependents tree
- */
-export const getNamespaceParents: Effect<SharedEnv, Map<PropertyKey, PropertyKey>> = asks(
-  (e: SharedEnv) => e[SHARED].parents,
-)
-
-/**
  * Get the map associated with a given namespace or create it
  */
-export function getNamespace<S extends Shared = Shared>(
+export function getKeyStore<S extends Shared = Shared>(
   namespace: PropertyKey,
-): Effect<SharedEnv, SharedMap<S>> {
+): Effect<SharedEnv, SharedKeyStore<S>> {
   const eff = doEffect(function* () {
-    const shared = yield* getNamespacesMap
+    const { keyStores } = yield* getSharedEnv
 
-    if (shared.has(namespace)) {
-      return shared.get(namespace)! as SharedMap<S>
+    if (keyStores.has(namespace)) {
+      return keyStores.get(namespace)! as SharedKeyStore<S>
     }
 
     yield* sendSharedEvent({ type: 'namespace/created', namespace })
 
-    return shared.set(namespace, new Map()).get(namespace)! as SharedMap<S>
+    return keyStores.set(namespace, new Map()).get(namespace)! as SharedKeyStore<S>
   })
 
   return eff
@@ -99,12 +90,12 @@ export function getNamespace<S extends Shared = Shared>(
 /**
  * Modify a namespace map
  */
-export function modifyNamespace<S extends Shared = Shared>(
+export function modifyKeyStore<S extends Shared = Shared>(
   namespace: PropertyKey,
-  f: (map: SharedMap<S>) => void,
-): Effect<SharedEnv, SharedMap<S>> {
+  f: (map: SharedKeyStore<S>) => void,
+): Effect<SharedEnv, SharedKeyStore<S>> {
   const eff = doEffect(function* () {
-    const shared = yield* getNamespace<S>(namespace)
+    const shared = yield* getKeyStore<S>(namespace)
 
     f(shared)
 
@@ -119,15 +110,15 @@ export function modifyNamespace<S extends Shared = Shared>(
 /**
  * Delete a namespace
  */
-export function deleteNamespace<S extends Shared = Shared>(
+export function deleteKeyStore<S extends Shared = Shared>(
   namespace: PropertyKey,
-): Effect<SharedEnv, Option<SharedMap<S>>> {
+): Effect<SharedEnv, Option<SharedKeyStore<S>>> {
   return doEffect(function* () {
-    const map = yield* getNamespacesMap
-    const option = fromNullable(map.get(namespace) as SharedMap<S>)
+    const { keyStores } = yield* getSharedEnv
+    const option = fromNullable(keyStores.get(namespace) as SharedKeyStore<S>)
 
     if (isSome(option)) {
-      map.delete(namespace)
+      keyStores.delete(namespace)
 
       yield* sendSharedEvent({ type: 'namespace/deleted', namespace })
     }

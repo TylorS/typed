@@ -1,7 +1,7 @@
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
 
 import { Shared } from './Shared'
-import { getCurrentNamespace, getNamespacesMap, sendSharedEvent, SharedEnv } from './SharedEnv'
+import { getCurrentNamespace, getSharedEnv, sendSharedEvent, SharedEnv } from './SharedEnv'
 
 /**
  * Delete a shared value. Will allow re-initializing a default value the next time you
@@ -10,8 +10,8 @@ import { getCurrentNamespace, getNamespacesMap, sendSharedEvent, SharedEnv } fro
 export const deleteShared = <S extends Shared>(shared: S): Effect<SharedEnv, void> =>
   doEffect(function* () {
     const namespace = yield* getCurrentNamespace
-    const namespaces = yield* getNamespacesMap
-    const map = namespaces.get(namespace)
+    const { keyStores } = yield* getSharedEnv
+    const map = keyStores.get(namespace)
 
     if (!map || !map.has(shared.key)) {
       return

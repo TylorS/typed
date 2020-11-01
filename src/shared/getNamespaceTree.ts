@@ -2,7 +2,7 @@ import { Effect, map } from '@typed/fp/Effect/exports'
 import { pipe } from 'fp-ts/function'
 import { Tree } from 'fp-ts/Tree'
 
-import { getNamespaceChildren, SharedEnv } from './SharedEnv'
+import { getSharedEnv, SharedEnv } from './SharedEnv'
 import { usingNamespace } from './usingNamespace'
 
 /**
@@ -14,7 +14,7 @@ import { usingNamespace } from './usingNamespace'
  */
 export const getNamespaceTree = (root: PropertyKey): Effect<SharedEnv, Tree<PropertyKey>> =>
   pipe(
-    map((children) => createTree(root, children), getNamespaceChildren),
+    map(({ children }) => createTree(root, children), getSharedEnv),
     usingNamespace(root),
   )
 

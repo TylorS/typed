@@ -2,15 +2,9 @@ import { doEffect, Effect } from '@typed/fp/Effect/exports'
 import { curry } from '@typed/fp/lambda/exports'
 import { pipe } from 'fp-ts/function'
 
+import { addToSet } from './common'
 import { resetPosition } from './hooks/exports'
-import {
-  getCurrentNamespace,
-  getNamespaceChildren,
-  getNamespaceParents,
-  getNamespacesMap,
-  sendSharedEvent,
-  SharedEnv,
-} from './SharedEnv'
+import { getCurrentNamespace, getSharedEnv, sendSharedEvent, SharedEnv } from './SharedEnv'
 import { usingNamespace } from './usingNamespace'
 
 /**
@@ -22,9 +16,9 @@ export const runWithNamespace = curry(
     const eff = doEffect(function* () {
       yield* sendSharedEvent({ type: 'namespace/started', namespace })
 
-      const namespaces = yield* getNamespacesMap
+      const { keyStores } = yield* getSharedEnv
 
-      if (!namespaces.has(namespace)) {
+      if (!keyStores.has(namespace)) {
         yield* addToTree(namespace)
       }
 
@@ -47,22 +41,12 @@ export const runWithNamespace = curry(
 function addToTree(namespace: PropertyKey) {
   const eff = doEffect(function* () {
     const currentNamespace = yield* getCurrentNamespace
-    const parents = yield* getNamespaceParents
-    const children = yield* getNamespaceChildren
+    const { parents, children } = yield* getSharedEnv
 
     parents.set(namespace, currentNamespace)
+
     addToSet(children, currentNamespace, namespace)
   })
 
   return eff
-}
-
-function addToSet<A, B>(map: Map<A, Set<B>>, key: A, value: B) {
-  if (!map.get(key)) {
-    map.set(key, new Set())
-  }
-
-  const set = map.get(key)!
-
-  set.add(value)
 }

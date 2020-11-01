@@ -1,5 +1,6 @@
 import { createAdapter } from '@most/adapter'
 import { filter } from '@most/core/dist/combinator/filter'
+import { disposeAll } from '@most/disposable'
 import { Sink } from '@most/types'
 import {
   ask,
@@ -19,10 +20,14 @@ import { constVoid, flow, pipe } from 'fp-ts/function'
 import { GLOBAL_NAMESPACE } from './global'
 import { addDisposable } from './hooks/NamespaceDisposables'
 import { respondToNamespaceDeleted } from './respondToNamespaceDeleted'
+import { respondToSharedValueDeleted } from './respondToSharedValueDeleted'
+import { respondToSharedValueUpdated } from './respondToSharedValueUpdated'
 import { getSharedEvents, SHARED, SharedEnv } from './SharedEnv'
-import { NamespaceDeleted } from './SharedEvent'
+import { NamespaceDeleted, SharedValueDeleted, SharedValueUpdated } from './SharedEvent'
 
 const namespaceDeletedGuard = createGuardFromSchema(NamespaceDeleted.schema)
+const sharedValueDeletedGuard = createGuardFromSchema(SharedValueDeleted.schema)
+const sharedValueUpdatedGuard = createGuardFromSchema(SharedValueUpdated.schema)
 
 /**
  * Provides the underlying map used at runtime to dynamically add/remove values
@@ -46,12 +51,24 @@ const listenToEvents = (env: SharedEnv) =>
       const { scheduler } = yield* ask<SchedulerEnv>()
       const stream = yield* getSharedEvents
       const removedEvents = filter(namespaceDeletedGuard.is, stream)
+      const sharedValueUpdated = filter(sharedValueUpdatedGuard.is, stream)
+      const sharedValueDeleted = filter(sharedValueDeletedGuard.is, stream)
 
       yield* addDisposable(
-        removedEvents.run(
-          createEmptySink(flow(respondToNamespaceDeleted, useAll(env), execPure)),
-          scheduler,
-        ),
+        disposeAll([
+          removedEvents.run(
+            createEmptySink(flow(respondToNamespaceDeleted, useAll(env), execPure)),
+            scheduler,
+          ),
+          sharedValueUpdated.run(
+            createEmptySink(flow(respondToSharedValueUpdated, useAll(env), execPure)),
+            scheduler,
+          ),
+          sharedValueDeleted.run(
+            createEmptySink(flow(respondToSharedValueDeleted, useAll(env), execPure)),
+            scheduler,
+          ),
+        ]),
       )
 
       return env
@@ -65,9 +82,10 @@ export const createSharedEnv = (currentNamespace: PropertyKey): SharedEnv => ({
   currentNamespace,
   [SHARED]: {
     events: createAdapter(),
-    states: new Map(),
+    keyStores: new Map(),
     children: new Map(),
     parents: new Map(),
+    consumers: new Map(),
   },
 })
 
