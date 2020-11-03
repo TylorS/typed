@@ -69,7 +69,7 @@ type ReturnTypeOf<A> = [A] extends [(...args: any) => any] ? ReturnType<A> : nev
 /**
  * Helper for retrieving the environmental dependencies from an effect
  */
-export type EnvOf<A> = EffectOf<A> extends Effect<infer R, any> ? CastToEmptyObject<R> : never
+export type EnvOf<A> = EffectOf<A> extends Effect<infer R, any> ? R : never
 
 /**
  * Helper for getting the return type from a given effect type
@@ -79,6 +79,4 @@ export type ReturnOf<A> = EffectOf<A> extends Effect<any, infer R> ? R : never
 /**
  * Helper for widening the effect type of a given effect
  */
-export type AddEnv<E, Fx> = Effect<CastToEmptyObject<E> & EnvOf<Fx>, ReturnOf<Fx>>
-
-type CastToEmptyObject<A> = IsNever<A> extends true ? {} : [A] extends [{}] ? A : {}
+export type AddEnv<E, Fx> = Effect<E & EnvOf<Fx>, ReturnOf<Fx>>

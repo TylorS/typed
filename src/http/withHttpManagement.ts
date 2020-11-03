@@ -3,7 +3,7 @@ import { whenIdle, WhenIdleEnv } from '@typed/fp/dom/exports'
 import { ask, doEffect, Effect, useWith } from '@typed/fp/Effect/exports'
 import { FiberEnv, fork, SchedulerEnv } from '@typed/fp/fibers/exports'
 import { chain, sync } from '@typed/fp/Resume/exports'
-import { getShared, Shared, SharedEnv, updatedShared } from '@typed/fp/shared/exports'
+import { getShared, setShared, Shared, SharedEnv, SharedKey } from '@typed/fp/shared/exports'
 import { Uri } from '@typed/fp/Uri/exports'
 import { right } from 'fp-ts/Either'
 import { isRight } from 'fp-ts/These'
@@ -34,7 +34,7 @@ export type TimestampedResponse = {
 // TODO: handle duplicated requests??
 export interface WithHttpManagementEnv {
   readonly httpCache: Map<string, TimestampedResponse> // Taking advantage of insertion order
-  readonly httpCacheCleanupScheduled: Shared<PropertyKey, unknown, boolean>
+  readonly httpCacheCleanupScheduled: Shared<SharedKey, unknown, boolean>
 }
 
 export const withHttpManagement = (options: WithHttpManagementOptions) => {
@@ -48,7 +48,7 @@ export const withHttpManagement = (options: WithHttpManagementOptions) => {
       const cleanupIsScheduled = yield* getShared(env.httpCacheCleanupScheduled)
 
       if (!cleanupIsScheduled) {
-        yield* updatedShared(env.httpCacheCleanupScheduled, () => true)
+        yield* setShared(env.httpCacheCleanupScheduled, true)
 
         yield* fork(cleanup)
       }
@@ -136,7 +136,7 @@ const clearOldTimestamps = (
     }
 
     if (notCurrentlyExpired || current.done) {
-      yield* updatedShared(httpCacheCleanupScheduled, () => false)
+      yield* setShared(httpCacheCleanupScheduled, false)
 
       return
     }
