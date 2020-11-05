@@ -103,9 +103,7 @@ async function onProgress(
     result = await reader.read()
   }
 
-  if (result.value) {
-    addChunk(result)
-  }
+  addChunk(result)
 
   onProgress({ loaded, total })
 
