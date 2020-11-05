@@ -24,6 +24,7 @@ export const Schemable: TypedSchemable1<EqI.URI> = {
   unknown: eqStrict,
   never: eqStrict,
   symbol: eqStrict,
+  propertyKey: eqStrict,
   json: deepEqualsEq,
   jsonArray: deepEqualsEq,
   jsonPrimitive: deepEqualsEq,

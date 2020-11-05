@@ -102,6 +102,7 @@ export const Schemable: TypedSchemable1<G.URI> = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   never: { is: (_): _ is never => true },
   symbol,
+  propertyKey: G.union(G.Schemable.string, G.Schemable.number, symbol),
   json,
   jsonRecord,
   jsonArray,

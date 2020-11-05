@@ -11,7 +11,5 @@ export interface SharedKey<K extends PropertyKey = PropertyKey> extends Newtype<
 export namespace SharedKey {
   export const { wrap, unwrap } = iso<SharedKey>()
 
-  export const schema = createSchema((t) =>
-    t.newtype(t.union(t.string, t.number, t.symbol), flow(wrap, some), 'SharedKey'),
-  )
+  export const schema = createSchema((t) => t.newtype(t.propertyKey, flow(wrap, some), 'SharedKey'))
 }

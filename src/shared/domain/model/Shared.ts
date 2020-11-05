@@ -19,11 +19,7 @@ export interface Shared<K extends SharedKey = SharedKey, E = any, A = any> {
 export namespace Shared {
   export const schema = createSchema<Shared>((t) =>
     t.type({
-      key: t.newtype(
-        t.union(t.string, t.number, t.symbol),
-        flow(SharedKey.wrap, some),
-        'SharedKey',
-      ),
+      key: t.newtype(t.propertyKey, flow(SharedKey.wrap, some), 'SharedKey'),
       initial: t.unknown as HKT<any, Shared['initial']>,
       eq: t.unknown as HKT<any, Shared['eq']>,
     }),
