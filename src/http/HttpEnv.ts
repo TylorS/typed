@@ -1,12 +1,12 @@
-import { Disposable } from '@typed/fp/Disposable/exports'
-import { Progress } from '@typed/fp/RemoteData/exports'
-import { Resume } from '@typed/fp/Resume/exports'
-import { Uri } from '@typed/fp/Uri/exports'
-import { Either } from 'fp-ts/Either'
+import type { Disposable } from '@typed/fp/Disposable/exports'
+import type { Progress } from '@typed/fp/RemoteData/exports'
+import type { Resume } from '@typed/fp/Resume/exports'
+import type { Uri } from '@typed/fp/Uri/exports'
+import type { Either } from 'fp-ts/Either'
 
-import { HttpHeaders } from './HttpHeaders'
-import { HttpMethod } from './HttpMethod'
-import { HttpResponse } from './HttpResponse'
+import type { HttpHeaders } from './HttpHeaders'
+import type { HttpMethod } from './HttpMethod'
+import type { HttpResponse } from './HttpResponse'
 
 export interface HttpEnv {
   readonly http: (uri: Uri, options: HttpOptions) => Resume<Either<Error, HttpResponse>>

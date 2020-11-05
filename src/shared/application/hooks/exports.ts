@@ -1,5 +1,6 @@
 export * from './getNextPosition'
 export * from './getNextSymbol'
+export * from './listenToSharedEvent'
 export * from './NamespacePosition'
 export * from './NamespaceSymbols'
 export * from './resetPosition'

@@ -1,7 +1,7 @@
 import { currentTime, delay as delayScheduler, newDefaultScheduler } from '@most/scheduler'
 import { Disposable, Scheduler, Task, Time } from '@most/types'
 import { lazy } from '@typed/fp/Disposable/exports'
-import { Effect, fromEnv, provideWith, Pure } from '@typed/fp/Effect/exports'
+import { Effect, fromEnv, Provider, provideWith, Pure } from '@typed/fp/Effect/exports'
 import { async } from '@typed/fp/Resume/exports'
 import { flow } from 'fp-ts/function'
 import { IO } from 'fp-ts/IO'
@@ -10,7 +10,7 @@ export interface SchedulerEnv {
   readonly scheduler: Scheduler
 }
 
-export const provideSchedulerEnv = provideWith(
+export const provideSchedulerEnv: Provider<SchedulerEnv> = provideWith(
   Pure.fromIO(
     (): SchedulerEnv => ({
       scheduler: newDefaultScheduler(),

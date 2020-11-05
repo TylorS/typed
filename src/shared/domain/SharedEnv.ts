@@ -1,5 +1,5 @@
-import { SharedEventEnv } from './events/exports'
-import { CurrentNamespaceEnv } from './services/CurrentNamespaceEnv'
-import { NamespaceKeyStoresEnv } from './services/NamespaceKeyStoresEnv'
+import type { SharedEventEnv } from './events/exports'
+import type { CurrentNamespaceEnv } from './services/CurrentNamespaceEnv'
+import type { NamespaceKeyStoresEnv } from './services/NamespaceKeyStoresEnv'
 
 export interface SharedEnv extends CurrentNamespaceEnv, NamespaceKeyStoresEnv, SharedEventEnv {}

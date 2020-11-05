@@ -8,14 +8,21 @@ import { useDiffList } from './useDiffList'
 import { useMemo } from './useMemo'
 import { useRef } from './useRef'
 
+export type ListEffectOptions<A> = {
+  readonly eq?: Eq<A>
+  readonly onDelete?: (value: A, index: number) => void
+}
+
 /**
  * Reform an effect over a list of values only as the values change.
  */
 export function useListEffect<A, E, B>(
   list: ReadonlyArray<A>,
   f: (value: A, index: number) => Effect<E, B>,
-  eq: Eq<A> = deepEqualsEq,
+  options: ListEffectOptions<A> = {},
 ): Effect<E & SharedEnv, ReadonlyArray<B>> {
+  const { eq = deepEqualsEq, onDelete } = options
+
   const eff = doEffect(function* () {
     const { added, removed } = yield* useDiffList(list, eq)
     const memoized = yield* useMemo(() => new Map<number, B>(), [])
@@ -24,7 +31,10 @@ export function useListEffect<A, E, B>(
     const removedValues = removed.length > 0
 
     if (removedValues) {
-      removed.forEach(([, i]) => memoized.delete(i))
+      removed.forEach(([value, i]) => {
+        memoized.delete(i)
+        onDelete?.(value, i)
+      })
     }
 
     if (addedValues) {

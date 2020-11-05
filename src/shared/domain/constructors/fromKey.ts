@@ -1,6 +1,7 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
-import { Shared, SharedKey } from '@typed/fp/Shared/domain/model/exports'
 
+import { Shared } from '../model/Shared'
+import { SharedKey } from '../model/SharedKey'
 import { fromEq } from './fromEq'
 
 /**

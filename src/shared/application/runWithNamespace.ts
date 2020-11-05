@@ -16,10 +16,13 @@ import { pipe } from 'fp-ts/function'
 export const runWithNamespace = (curry(
   <E extends SharedEnv, A>(namespace: Namespace, effect: Effect<E, A>): Effect<E, A> => {
     const eff = doEffect(function* () {
+      const parent = yield* getCurrentNamespace
+
       yield* sendSharedEvent({
         type: 'namespace/started',
-        parent: yield* getCurrentNamespace,
+        parent,
         namespace,
+        effect,
       })
 
       const returnValue = yield* pipe(effect, usingNamespace(namespace))

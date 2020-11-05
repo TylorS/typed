@@ -1,9 +1,9 @@
 import { asks } from '@typed/fp/Effect/exports'
 import { curry } from '@typed/fp/lambda/exports'
-import { Shared } from '@typed/fp/Shared/domain/model/Shared'
 import { Eq } from 'fp-ts/Eq'
 
-import { SharedKey } from '../model/exports'
+import { Shared } from '../model/Shared'
+import { SharedKey } from '../model/SharedKey'
 import { shared } from './shared'
 
 /**

@@ -1,8 +1,8 @@
-import { Effect, EnvOf as EffEnv, ReturnOf } from '@typed/fp/Effect/exports'
+import type { Effect, EnvOf as EffEnv, ReturnOf } from '@typed/fp/Effect/exports'
 import { createSchema } from '@typed/fp/io/exports'
-import { Eq } from 'fp-ts/Eq'
+import type { Eq } from 'fp-ts/Eq'
 import { flow } from 'fp-ts/function'
-import { HKT } from 'fp-ts/HKT'
+import type { HKT } from 'fp-ts/HKT'
 import { some } from 'fp-ts/Option'
 
 import { SharedKey } from './SharedKey'

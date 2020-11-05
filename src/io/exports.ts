@@ -1,5 +1,5 @@
 export * from './interpreter'
-export * from './TypedSchemable'
+export type { TypedSchemable, TypedSchemable1, TypedSchemable2C } from './TypedSchemable'
 export * from './TypedSchema'
 
 import { Schemable as Decoder } from './Decoder'

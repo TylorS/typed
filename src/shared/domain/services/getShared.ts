@@ -4,11 +4,13 @@ import { sendSharedEvent } from '../events/exports'
 import { Shared, ValueOf } from '../model/exports'
 import { SharedEnv } from '../SharedEnv'
 import { getCurrentNamespace } from './getCurrentNamespace'
+import { getKeyStore } from './getKeyStore'
 import { getOrCreate } from './getOrCreate'
-import { withKeyStore } from './withKeyStore'
 
 export const getShared = <S extends Shared>(shared: S): Effect<SharedEnv, ValueOf<S>> =>
-  withKeyStore(function* (keyStore) {
+  doEffect(function* () {
+    const keyStore = yield* getKeyStore
+
     return yield* getOrCreate(keyStore, shared.key, createShared(shared))
   })
 

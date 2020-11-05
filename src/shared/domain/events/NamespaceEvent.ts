@@ -1,5 +1,7 @@
+import type { Effect } from '@typed/fp/Effect/Effect'
 import { createSchema } from '@typed/fp/io/exports'
-import { Namespace } from '@typed/fp/Shared/domain/exports'
+import type { Namespace } from '@typed/fp/Shared/domain/exports'
+import type { HKT } from 'fp-ts/HKT'
 
 export type NamespaceEvent =
   | NamespaceCreated
@@ -38,6 +40,7 @@ export type NamespaceStarted = {
   readonly type: 'namespace/started'
   readonly parent: Namespace
   readonly namespace: Namespace
+  readonly effect: Effect<any, any>
 }
 
 export namespace NamespaceStarted {
@@ -46,6 +49,7 @@ export namespace NamespaceStarted {
       type: t.literal('namespace/started'),
       parent: Namespace.schema(t),
       namespace: Namespace.schema(t),
+      effect: t.unknown as HKT<any, Effect<any, any>>,
     }),
   )
 }

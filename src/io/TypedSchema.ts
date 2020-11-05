@@ -1,5 +1,5 @@
-import { Fn } from '@typed/fp/lambda/exports'
-import { HKT, Kind, Kind2 } from 'fp-ts/HKT'
+import type { Fn } from '@typed/fp/lambda/exports'
+import type { HKT, Kind, Kind2 } from 'fp-ts/HKT'
 import { memoize } from 'io-ts/Schemable'
 
 import { TypedSchemable } from './TypedSchemable'

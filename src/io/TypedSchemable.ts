@@ -1,12 +1,12 @@
-import { Match } from '@typed/fp/logic/types'
-import { RemoteData } from '@typed/fp/RemoteData/exports'
-import { Uuid } from '@typed/fp/Uuid/exports'
-import { Either, Json, JsonArray, JsonRecord } from 'fp-ts/Either'
-import { Refinement } from 'fp-ts/function'
-import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/HKT'
-import { Option } from 'fp-ts/Option'
-import { Int } from 'io-ts'
-import {
+import type { Match } from '@typed/fp/logic/types'
+import type { RemoteData } from '@typed/fp/RemoteData/exports'
+import type { Uuid } from '@typed/fp/Uuid/exports'
+import type { Either, Json, JsonArray, JsonRecord } from 'fp-ts/Either'
+import type { Refinement } from 'fp-ts/function'
+import type { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/HKT'
+import type { Option } from 'fp-ts/Option'
+import type { Int } from 'io-ts'
+import type {
   Schemable,
   Schemable1,
   Schemable2C,
@@ -17,7 +17,7 @@ import {
   WithUnion1,
   WithUnion2C,
 } from 'io-ts/Schemable'
-import { AnyNewtype, CarrierOf } from 'newtype-ts'
+import type { AnyNewtype, CarrierOf } from 'newtype-ts'
 
 export interface TypedSchemable<S> extends Schemable<S>, WithUnion<S>, WithRefine<S> {
   readonly set: <A>(hkt: HKT<S, A>) => HKT<S, ReadonlySet<A>>

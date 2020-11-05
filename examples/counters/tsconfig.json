@@ -3,6 +3,16 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "jsx": "react"
+    "jsx": "react",
+    "plugins": [
+      {
+        "transform": "@zerollup/ts-transform-paths",
+        "after": true
+      },
+      {
+        "transform": "@zerollup/ts-transform-paths",
+        "afterDeclarations": true
+      }
+    ]
   }
 }

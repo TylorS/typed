@@ -1,5 +1,5 @@
-import { NamespaceKeyStores } from '../model/exports'
+import { Namespace, SharedKeyStore } from '../model/exports'
 
 export interface NamespaceKeyStoresEnv {
-  readonly namespaceKeyStores: NamespaceKeyStores
+  readonly namespaceKeyStores: Map<Namespace, SharedKeyStore>
 }

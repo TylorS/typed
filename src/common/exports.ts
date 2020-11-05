@@ -1,11 +1,22 @@
-export * from './And'
-export * from './ConsList'
+export type { And } from './And'
+export type { ToConsList, UnNest, FlattenIntersection, FlattenUnion } from './ConsList'
 export * from './deepEqualsEq'
-export * from './DropNever'
+export type { DropNever, DropNeverKeys } from './DropNever'
 export * from './functionName'
-export * from './include'
+export type { Include } from './include'
 export * from './includesWith'
 export * from './isBrowser'
-export * from './TupleKeys'
+export type { TupleKeys } from './TupleKeys'
 export * from './typeOf'
-export * from './types'
+export type {
+  ArgsOf,
+  Arity1,
+  Arity2,
+  Arity3,
+  Arity4,
+  Arity5,
+  Equals,
+  IsNever,
+  IsUnknown,
+  NoInfer,
+} from './types'

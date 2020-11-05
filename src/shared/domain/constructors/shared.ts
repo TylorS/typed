@@ -1,6 +1,8 @@
 import { Effect } from '@typed/fp/Effect/Effect'
-import { Shared, SharedKey } from '@typed/fp/Shared/domain/model/exports'
 import { Eq, eqStrict } from 'fp-ts/Eq'
+
+import { Shared } from '../model/Shared'
+import { SharedKey } from '../model/SharedKey'
 
 /**
  * Contstruct a share value
