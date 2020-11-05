@@ -15,6 +15,7 @@ export type {
   Arity3,
   Arity4,
   Arity5,
+  HeadArg,
   Equals,
   IsNever,
   IsUnknown,

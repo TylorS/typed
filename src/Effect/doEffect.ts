@@ -1,4 +1,4 @@
-import { HeadArg } from '@typed/fp/common/exports'
+import type { HeadArg } from '@typed/fp/common/exports'
 
 import { ask } from './ask'
 import { AddEnv, EffectGenerator, EffectOf } from './Effect'
