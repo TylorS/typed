@@ -55,6 +55,8 @@ src/test.ts
 tsconfig*.tsbuildinfo
 .rpt2_cache
 .cache
+snowpack.crt
+snowpack.key
 
 # generated - run 'npm run update' to re-generate
 /exports.d.ts
@@ -70,6 +72,7 @@ tsconfig*.tsbuildinfo
 /Queue/
 /RemoteData/
 /Resume/
+/Shared/
 /Storage/
 /Stream/
 /Uri/
@@ -84,4 +87,3 @@ tsconfig*.tsbuildinfo
 /lambda/
 /logging/
 /logic/
-/shared/

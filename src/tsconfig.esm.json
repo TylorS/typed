@@ -35,6 +35,9 @@
       "path": "./Resume/tsconfig.esm.json"
     },
     {
+      "path": "./Shared/tsconfig.esm.json"
+    },
+    {
       "path": "./Storage/tsconfig.esm.json"
     },
     {
@@ -75,9 +78,6 @@
     },
     {
       "path": "./logic/tsconfig.esm.json"
-    },
-    {
-      "path": "./shared/tsconfig.esm.json"
     }
   ]
 }

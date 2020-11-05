@@ -84,6 +84,7 @@
     "Queue",
     "RemoteData",
     "Resume",
+    "Shared",
     "Storage",
     "Stream",
     "Uri",
@@ -97,7 +98,6 @@
     "io",
     "lambda",
     "logging",
-    "logic",
-    "shared"
+    "logic"
   ]
 }

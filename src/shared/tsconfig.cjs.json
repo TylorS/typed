@@ -5,7 +5,7 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/shared",
+    "outDir": "../../cjs/Shared",
     "module": "commonjs"
   },
   "references": [
@@ -16,7 +16,13 @@
       "path": "../Effect/tsconfig.cjs.json"
     },
     {
+      "path": "../Resume/tsconfig.cjs.json"
+    },
+    {
       "path": "../common/tsconfig.cjs.json"
+    },
+    {
+      "path": "../dom/tsconfig.cjs.json"
     },
     {
       "path": "../fibers/tsconfig.cjs.json"

@@ -1,2 +1,0 @@
-# @typed/fp Examples
-
