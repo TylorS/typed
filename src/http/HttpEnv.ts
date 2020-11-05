@@ -1,4 +1,3 @@
-import type { Disposable } from '@typed/fp/Disposable/exports'
 import type { Progress } from '@typed/fp/RemoteData/exports'
 import type { Resume } from '@typed/fp/Resume/exports'
 import type { Uri } from '@typed/fp/Uri/exports'
@@ -17,9 +16,4 @@ export type HttpOptions = {
   readonly headers?: HttpHeaders
   readonly body?: string | File | ArrayBuffer | FormData
   readonly onProgress?: (progress: Progress) => void
-}
-
-export type HttpCallbacks = {
-  readonly success: (response: HttpResponse) => Disposable
-  readonly failure: (error: Error) => Disposable
 }
