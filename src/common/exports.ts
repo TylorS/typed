@@ -3,7 +3,7 @@ export type { ToConsList, UnNest, FlattenIntersection, FlattenUnion } from './Co
 export * from './deepEqualsEq'
 export type { DropNever, DropNeverKeys } from './DropNever'
 export * from './functionName'
-export type { Include } from './include'
+export type { Include } from './Include'
 export * from './includesWith'
 export * from './isBrowser'
 export type { TupleKeys } from './TupleKeys'

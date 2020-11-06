@@ -15,8 +15,9 @@ import {
 import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 
-import { getNamespaceParent, getNamspaceProviders } from './exports'
 import { getNamespaceConsumers } from './NamespaceConsumers'
+import { getNamespaceParent } from './NamespaceParent'
+import { getNamspaceProviders } from './NamespaceProviders'
 
 /**
  * Uses the tree-like nature of namespaces to traverse "up"

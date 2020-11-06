@@ -1,8 +1,8 @@
 import { Arity1 } from '@typed/fp/common/exports'
 import { pipe } from 'fp-ts/function'
 
-import { Is, IsNot } from './is'
 import { negate } from './negate'
+import { Is, IsNot } from './types'
 
 /**
  * Wrap a function in a negation

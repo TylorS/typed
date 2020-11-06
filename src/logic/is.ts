@@ -4,12 +4,11 @@ import { flow } from 'fp-ts/function'
 import { all } from './all'
 import { complement } from './complement'
 import { equals } from './equals'
+import { isObject } from './isObject'
 import { JsonPrimitive } from './json'
 import { negate } from './negate'
 import { or } from './or'
-
-export type Is<A> = (value: unknown) => value is A
-export type IsNot<A> = <B extends unknown>(value: A | B) => value is B
+import { Is, IsNot } from './types'
 
 export const is = <A>(value: A): Is<A> => equals(value) as any
 export const isNot = <A>(a: A): IsNot<A> => flow(is(a), negate) as any
@@ -87,9 +86,6 @@ export const isNotNumber: IsNot<number> = complement(isNumber)
 
 export const isString: Is<string> = (u): u is string => typeof u === 'string'
 export const isNotString: IsNot<string> = complement(isString)
-
-export const isObject: Is<object> = (u): u is object => !!u && typeof u === 'object'
-export const isNotObject: IsNot<object> = complement(isObject)
 
 export const isRecord: Is<Readonly<Record<PropertyKey, unknown>>> = (
   u,

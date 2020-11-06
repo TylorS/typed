@@ -5,8 +5,6 @@ import { IO } from 'fp-ts/IO'
 import { Reader } from 'fp-ts/Reader'
 import { U } from 'ts-toolbelt'
 
-import { fromEnv } from './fromEnv'
-
 /**
  * An Iterable used to represent Effects which work like lightweight coroutines
  */
@@ -34,6 +32,16 @@ export type EffectGenerator<E, A> = Generator<Env<E, any>, A>
  * A monadic environment type which can be yielded within an Effect
  */
 export type Env<E, A> = Reader<E, Resume<A>>
+
+export function fromEnv<E, A>(env: Env<E, A>): Effect<E, A> {
+  return {
+    *[Symbol.iterator]() {
+      const a = yield env
+
+      return a as A
+    },
+  }
+}
 
 /**
  * Helper for retrieving the effect with widened environment type

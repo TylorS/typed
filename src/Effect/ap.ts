@@ -3,8 +3,7 @@ import { curry } from '@typed/fp/lambda/exports'
 import { ap as apResume } from '@typed/fp/Resume/exports'
 
 import { chain } from './chain'
-import { Effect } from './Effect'
-import { fromEnv } from './fromEnv'
+import { Effect, fromEnv } from './Effect'
 import { map } from './map'
 import { toEnv } from './toEnv'
 

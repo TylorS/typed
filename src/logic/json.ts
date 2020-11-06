@@ -1,6 +1,6 @@
 import { Json, JsonArray, JsonRecord } from 'fp-ts/Either'
 
-import { isObject } from './is'
+import { isObject } from './isObject'
 
 export type JsonSerializable =
   | JsonPrimitive

@@ -1,7 +1,8 @@
 import type { Effect } from '@typed/fp/Effect/Effect'
 import { createSchema } from '@typed/fp/io/exports'
-import { Namespace } from '@typed/fp/Shared/domain/exports'
 import type { HKT } from 'fp-ts/HKT'
+
+import { Namespace } from '../model/Namespace'
 
 export type NamespaceEvent =
   | NamespaceCreated

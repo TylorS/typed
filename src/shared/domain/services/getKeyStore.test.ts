@@ -3,7 +3,7 @@ import { runEffects, tap } from '@most/core'
 import { newDefaultScheduler } from '@most/scheduler'
 import { doEffect, execPure, provideAll } from '@typed/fp/Effect/exports'
 import { describe, given, it } from '@typed/test'
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/function'
 
 import { NamespaceCreated } from '../events/exports'
 import { Namespace, SharedKeyStore } from '../model/exports'

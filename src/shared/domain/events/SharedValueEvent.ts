@@ -1,7 +1,7 @@
 import { createSchema } from '@typed/fp/io/exports'
-import { Shared } from '@typed/fp/Shared/domain/exports'
 
-import { Namespace } from '../model/exports'
+import { Namespace } from '../model/Namespace'
+import { Shared } from '../model/Shared'
 
 export type SharedValueEvent = SharedValueCreated | SharedValueUpdated | SharedValueDeleted
 

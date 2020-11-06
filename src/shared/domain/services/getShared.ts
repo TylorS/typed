@@ -1,7 +1,7 @@
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
 
 import { sendSharedEvent } from '../events/exports'
-import { Shared, ValueOf } from '../model/exports'
+import { Shared, ValueOf } from '../model/Shared'
 import { SharedEnv } from '../SharedEnv'
 import { getCurrentNamespace } from './getCurrentNamespace'
 import { getKeyStore } from './getKeyStore'

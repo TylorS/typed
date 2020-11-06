@@ -1,7 +1,11 @@
 import { Provider, provideSome } from '@typed/fp/Effect/exports'
 
-import { IdleCallbackDeadline, IdleCallbackHandle, IdleCallbackOptions } from './exports'
-import { WhenIdleEnv } from './whenIdle'
+import {
+  IdleCallbackDeadline,
+  IdleCallbackHandle,
+  IdleCallbackOptions,
+  WhenIdleEnv,
+} from './whenIdle'
 
 export const provideWhenIdleEnv: Provider<WhenIdleEnv> = provideSome({
   requestIdleCallback: (

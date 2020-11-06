@@ -8,7 +8,7 @@ import {
 import { pipe } from 'fp-ts/function'
 import { isNone, isSome, some } from 'fp-ts/Option'
 
-import { getNamespaceDisposable } from '../exports'
+import { getNamespaceDisposable } from '../model/NamespaceDisposable'
 import { addDisposable } from '../services/exports'
 import { addChild, removeChild } from './NamespaceChildren'
 import { getNamespaceParent, setNamespaceParent } from './NamespaceParent'

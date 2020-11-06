@@ -2,8 +2,7 @@ import { Disposable, disposeBoth, disposeNone, lazy } from '@typed/fp/Disposable
 import { curry } from '@typed/fp/lambda/exports'
 import { async, run } from '@typed/fp/Resume/exports'
 
-import { Effect } from './Effect'
-import { fromEnv } from './fromEnv'
+import { Effect, fromEnv } from './Effect'
 import { toEnv } from './toEnv'
 
 export const race = curry(

@@ -7,7 +7,6 @@ import {
   doEffect,
   Effect,
   execPure,
-  memo,
   Provider,
   useAll,
   useWith,
@@ -41,47 +40,33 @@ const sharedValueDeletedGuard = createGuardFromSchema(SharedValueDeleted.schema)
 const sharedValueUpdatedGuard = createGuardFromSchema(SharedValueUpdated.schema)
 
 /**
- * Provides the underlying map used at runtime to dynamically add/remove values
- * within sectioned-off namespaces.
- */
-export const provideSharedEnv: Provider<SharedEnv, SchedulerEnv> = <E, A>(
-  eff: Effect<E & SharedEnv, A>,
-): Effect<E & SchedulerEnv, A> =>
-  pipe(eff, useWith(listenToEvents(createSharedEnv(GlobalNamespace))))
-
-/**
  * Listen to delete events to release all resources
  * @internal
  */
 const listenToEvents = (env: SharedEnv): Effect<SchedulerEnv, SharedEnv> =>
-  memo(
-    doEffect(function* () {
-      const { scheduler } = yield* ask<SchedulerEnv>()
-      const stream = yield* pipe(getSharedEvents, useAll(env))
-      const listen = <A extends SharedEvent>(
-        guard: Guard<unknown, A>,
-        respond: (value: A) => Effect<SharedEnv, void>,
-      ) =>
-        filter(guard.is, stream).run(
-          createEmptySink(flow(respond, useAll(env), execPure)),
-          scheduler,
-        )
+  doEffect(function* () {
+    const { scheduler } = yield* ask<SchedulerEnv>()
+    const stream = yield* pipe(getSharedEvents, useAll(env))
+    const listen = <A extends SharedEvent>(
+      guard: Guard<unknown, A>,
+      respond: (value: A) => Effect<SharedEnv, void>,
+    ) =>
+      filter(guard.is, stream).run(createEmptySink(flow(respond, useAll(env), execPure)), scheduler)
 
-      yield* pipe(
-        addDisposable(
-          disposeAll([
-            listen(namespaceDeletedGuard, respondToNamespaceDeleted),
-            listen(namespaceStartedGuard, respondToNamespaceStarted),
-            listen(sharedValueUpdatedGuard, respondToSharedValueUpdated),
-            listen(sharedValueDeletedGuard, respondToSharedValueDeleted),
-          ]),
-        ),
-        useAll(env),
-      )
+    yield* pipe(
+      addDisposable(
+        disposeAll([
+          listen(namespaceDeletedGuard, respondToNamespaceDeleted),
+          listen(namespaceStartedGuard, respondToNamespaceStarted),
+          listen(sharedValueUpdatedGuard, respondToSharedValueUpdated),
+          listen(sharedValueDeletedGuard, respondToSharedValueDeleted),
+        ]),
+      ),
+      useAll(env),
+    )
 
-      return env
-    }),
-  )
+    return env
+  })
 
 /**
  * Create a new SharedEnv
@@ -99,3 +84,10 @@ function createEmptySink<A>(onValue: (value: A) => void): Sink<A> {
     end: constVoid,
   }
 }
+
+export const provideSharedEnv: Provider<SharedEnv, SchedulerEnv> = pipe(
+  GlobalNamespace,
+  createSharedEnv,
+  listenToEvents,
+  useWith,
+)

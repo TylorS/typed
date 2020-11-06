@@ -1,10 +1,9 @@
-import { Arity1 } from '@typed/fp/common/exports'
+import { Arity1, HeadArg } from '@typed/fp/common/exports'
 import { sync } from '@typed/fp/Resume/exports'
 import { flow } from 'fp-ts/function'
 
 import { doEffect } from './doEffect'
-import { Effect, Pure } from './Effect'
-import { fromEnv } from './fromEnv'
+import { AddEnv, Effect, EffectGenerator, EffectOf, fromEnv, Pure } from './Effect'
 import { toEnv } from './toEnv'
 
 export const ask = <E = unknown>(): Effect<E, E> => fromEnv(sync)
@@ -17,4 +16,13 @@ export const askFor = <E, A>(eff: Effect<E, A>): Effect<E, Pure<A>> =>
     const pure = fromEnv((e2: unknown) => toEnv(eff)({ ...(e2 as {}), ...e1 }))
 
     return pure
+  })
+
+export const doEffectWith = <G extends (env: unknown) => EffectGenerator<any, any>>(
+  effectGeneratorFunction: G,
+): AddEnv<HeadArg<G>, EffectOf<G>> =>
+  doEffect(function* () {
+    const e1 = yield* ask<HeadArg<G>>()
+
+    return yield* effectGeneratorFunction(e1)
   })

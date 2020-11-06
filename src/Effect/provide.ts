@@ -1,8 +1,7 @@
 import { And } from '@typed/fp/common/And'
 import { curry } from '@typed/fp/lambda/exports'
 
-import { Effect, Pure } from './Effect'
-import { fromEnv } from './fromEnv'
+import { Effect, fromEnv, Pure } from './Effect'
 import { toEnv } from './toEnv'
 
 export type Provider<Provided, Additional = unknown> = <E, A>(

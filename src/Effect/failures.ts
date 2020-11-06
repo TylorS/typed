@@ -4,8 +4,7 @@ import { async, Resume, run } from '@typed/fp/Resume/exports'
 import { Either, left, right } from 'fp-ts/Either'
 import { O } from 'ts-toolbelt'
 
-import { Effect } from './Effect'
-import { fromEnv } from './fromEnv'
+import { Effect, fromEnv } from './Effect'
 import { map } from './map'
 import { toEnv } from './toEnv'
 

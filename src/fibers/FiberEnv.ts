@@ -1,5 +1,4 @@
-import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { fromEnv } from '@typed/fp/Effect/fromEnv'
+import { doEffect, Effect, fromEnv } from '@typed/fp/Effect/exports'
 import { Fiber } from '@typed/fp/fibers/Fiber'
 import { SchedulerEnv } from '@typed/fp/fibers/SchedulerEnv'
 import { Resume, sync } from '@typed/fp/Resume/exports'

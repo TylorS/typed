@@ -3,7 +3,8 @@ import { curry } from '@typed/fp/lambda/exports'
 import { pipe, Predicate } from 'fp-ts/function'
 import { map as mapO, none, Option, some } from 'fp-ts/Option'
 
-import { Is } from './is'
+export type Is<A> = (value: unknown) => value is A
+export type IsNot<A> = <B extends unknown>(value: A | B) => value is B
 
 export interface Match<A, B> extends Arity1<A, Option<B>> {}
 
