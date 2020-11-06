@@ -1,9 +1,11 @@
+import { Match } from '@typed/fp/logic/exports'
 import { Progress, RemoteData, RemoteDataStatus } from '@typed/fp/RemoteData/exports'
 import { Uuid, uuidRegex } from '@typed/fp/Uuid/exports'
 import { Either, Json, JsonArray, JsonRecord } from 'fp-ts/Either'
-import { Option } from 'fp-ts/Option'
+import { isSome, Option } from 'fp-ts/Option'
 import { Int } from 'io-ts'
 import * as G from 'io-ts/Guard'
+import { AnyNewtype, CarrierOf } from 'newtype-ts'
 
 import { TypedSchemable1 } from './TypedSchemable'
 
@@ -107,5 +109,8 @@ export const Schemable: TypedSchemable1<G.URI> = {
   jsonRecord,
   jsonArray,
   jsonPrimitive,
-  newtype: (from, refine) => G.refine(refine)(from),
+  newtype: <A extends AnyNewtype>(
+    from: G.Guard<unknown, CarrierOf<A>>,
+    refine: Match<CarrierOf<A>, A>,
+  ) => G.refine((a): a is A => isSome(refine(a)))(from),
 }

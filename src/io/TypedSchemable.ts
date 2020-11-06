@@ -2,7 +2,6 @@ import type { Match } from '@typed/fp/logic/types'
 import type { RemoteData } from '@typed/fp/RemoteData/exports'
 import type { Uuid } from '@typed/fp/Uuid/exports'
 import type { Either, Json, JsonArray, JsonRecord } from 'fp-ts/Either'
-import type { Refinement } from 'fp-ts/function'
 import type { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/HKT'
 import type { Option } from 'fp-ts/Option'
 import type { Int } from 'io-ts'
@@ -67,7 +66,7 @@ export interface TypedSchemable1<S extends URIS>
   readonly jsonPrimitive: Kind<S, string | number | boolean | null>
   readonly newtype: <N extends AnyNewtype>(
     from: Kind<S, CarrierOf<N>>,
-    refinement: Refinement<unknown, N>,
+    refinement: Match<CarrierOf<N>, N>,
     id: string,
   ) => Kind<S, N>
 }
@@ -98,7 +97,7 @@ export interface TypedSchemable2C<S extends URIS2, E>
   readonly jsonPrimitive: Kind2<S, E, string | number | boolean | null>
   readonly newtype: <N extends AnyNewtype>(
     from: Kind2<S, E, CarrierOf<N>>,
-    refinement: Refinement<unknown, N>,
+    refinement: Match<CarrierOf<N>, N>,
     id: string,
   ) => Kind2<S, E, N>
 }

@@ -5,7 +5,9 @@ import { pipe } from 'fp-ts/pipeable'
 import { leaf } from 'io-ts/DecodeError'
 import * as D from 'io-ts/Decoder'
 import * as FS from 'io-ts/FreeSemigroup'
+import { AnyNewtype, CarrierOf } from 'newtype-ts'
 
+import { Match } from '../logic/types'
 import * as G from './Guard'
 import { TypedSchemable2C } from './TypedSchemable'
 
@@ -110,5 +112,9 @@ export const Schemable: TypedSchemable2C<D.URI, unknown> = {
   jsonArray: D.fromGuard(G.Schemable.jsonArray, `JsonArray`),
   jsonPrimitive: D.fromGuard(G.Schemable.jsonPrimitive, `JsonPrimitive`),
   jsonRecord: D.fromGuard(G.Schemable.jsonRecord, `JsonRecord`),
-  newtype: (from, refine, id) => D.refine(refine, id)(from),
+  newtype: <A extends AnyNewtype>(
+    from: D.Decoder<unknown, CarrierOf<A>>,
+    refine: Match<CarrierOf<A>, A>,
+    id: string,
+  ) => D.refine((a): a is A => O.isSome(refine(a)), id)(from),
 }

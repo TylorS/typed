@@ -1,11 +1,14 @@
 import { deepEqualsEq } from '@typed/fp/common/exports'
+import { Match } from '@typed/fp/logic/types'
 import * as RD from '@typed/fp/RemoteData/exports'
 import * as E from 'fp-ts/Either'
 import { Eq, eqDate, eqNumber, eqStrict } from 'fp-ts/Eq'
 import * as O from 'fp-ts/Option'
+import { isSome } from 'fp-ts/Option'
 import * as RM from 'fp-ts/ReadonlyMap'
 import * as RS from 'fp-ts/ReadonlySet'
 import * as EqI from 'io-ts/Eq'
+import { AnyNewtype, CarrierOf } from 'newtype-ts'
 
 import { TypedSchemable1 } from './TypedSchemable'
 
@@ -32,7 +35,11 @@ export const Schemable: TypedSchemable1<EqI.URI> = {
   union: (...eqs) => ({
     equals: (a, b) => eqs.some(tryEq(a, b)),
   }),
-  newtype: (from, refine, id) => Schemable.refine(refine, id)(from),
+  newtype: <A extends AnyNewtype>(
+    from: Eq<CarrierOf<A>>,
+    refine: Match<CarrierOf<A>, A>,
+    id: string,
+  ) => Schemable.refine((a): a is A => isSome(refine(a)), id)(from),
 }
 
 function tryEq<A>(a: A, b: A) {
