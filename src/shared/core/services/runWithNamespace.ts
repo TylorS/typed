@@ -26,7 +26,13 @@ export const runWithNamespace = (curry(
 
       const returnValue = yield* pipe(effect, usingNamespace(namespace))
 
-      yield* sendSharedEvent({ type: 'namespace/completed', namespace, returnValue })
+      yield* sendSharedEvent({
+        type: 'namespace/completed',
+        parent,
+        namespace,
+        effect,
+        returnValue,
+      })
 
       return returnValue
     })

@@ -71,7 +71,9 @@ export namespace NamespaceUpdated {
 
 export type NamespaceCompleted = {
   readonly type: 'namespace/completed'
+  readonly parent: Namespace
   readonly namespace: Namespace
+  readonly effect: Effect<any, any>
   readonly returnValue: unknown
 }
 
@@ -79,8 +81,10 @@ export namespace NamespaceCompleted {
   export const schema = createSchema<NamespaceCompleted>((t) =>
     t.type({
       type: t.literal('namespace/completed'),
+      parent: Namespace.schema(t),
       namespace: Namespace.schema(t),
       returnValue: t.unknown,
+      effect: t.unknown as HKT<any, Effect<any, any>>,
     }),
   )
 }
