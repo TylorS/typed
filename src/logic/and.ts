@@ -1,7 +1,7 @@
 import { curry } from '@typed/fp/lambda/exports'
 import { Predicate } from 'fp-ts/function'
 
-import { Is } from './is'
+import { Is } from './types'
 
 /**
  * Returns true if both predicates return true.

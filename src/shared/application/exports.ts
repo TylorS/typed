@@ -1,6 +1,0 @@
-export * from './context/exports'
-export * from './model/exports'
-export * from './hooks/exports'
-export * from './services/exports'
-export * from './memoNamepsace'
-export * from './runWithNamespace'

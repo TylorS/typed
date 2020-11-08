@@ -1,0 +1,16 @@
+import { Effect } from '@typed/fp/Effect/exports'
+import { Guard } from 'io-ts/Guard'
+
+import { SharedEnv, SharedEvent } from '../core/exports'
+
+export type SharedEventHandler<A extends SharedEvent> = readonly [
+  guard: Guard<unknown, A>,
+  respond: (value: A) => Effect<SharedEnv, any>,
+]
+
+export function createSharedEventHandler<A extends SharedEvent>(
+  guard: Guard<unknown, A>,
+  respond: (value: A) => Effect<SharedEnv, any>,
+): SharedEventHandler<A> {
+  return [guard, respond]
+}
