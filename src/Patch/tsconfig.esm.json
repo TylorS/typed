@@ -32,6 +32,12 @@
     },
     {
       "path": "../logic/tsconfig.esm.json"
+    },
+    {
+      "path": "../scheduler/tsconfig.esm.json"
+    },
+    {
+      "path": "../shared/tsconfig.esm.json"
     }
   ],
   "include": [

@@ -32,6 +32,12 @@
     },
     {
       "path": "../logic/tsconfig.cjs.json"
+    },
+    {
+      "path": "../scheduler/tsconfig.cjs.json"
+    },
+    {
+      "path": "../shared/tsconfig.cjs.json"
     }
   ],
   "include": [

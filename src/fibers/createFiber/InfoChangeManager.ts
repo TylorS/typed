@@ -3,7 +3,7 @@ import { Disposable, Scheduler } from '@most/types'
 import { Arity1 } from '@typed/fp/common/exports'
 import { lazy, LazyDisposable } from '@typed/fp/Disposable/exports'
 import { FiberInfo, FiberState } from '@typed/fp/fibers/Fiber'
-import { createCallbackTask } from '@typed/fp/fibers/SchedulerEnv'
+import { createCallbackTask } from '@typed/fp/scheduler/exports'
 import { IO } from 'fp-ts/IO'
 import { newIORef } from 'fp-ts/IORef'
 

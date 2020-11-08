@@ -11,7 +11,7 @@ import {
   useSome,
   useWith,
 } from '@typed/fp/Effect/exports'
-import { SchedulerEnv } from '@typed/fp/fibers/exports'
+import { SchedulerEnv } from '@typed/fp/scheduler/exports'
 import { constVoid, flow, pipe } from 'fp-ts/function'
 import { Guard } from 'io-ts/Guard'
 

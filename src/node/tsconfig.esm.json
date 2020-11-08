@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.esm.json",
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "rootDir": "./",
+    "outDir": "../../esm/node",
+    "module": "esnext"
+  },
+  "references": [
+    {
+      "path": "../Effect/tsconfig.esm.json"
+    },
+    {
+      "path": "../Uri/tsconfig.esm.json"
+    },
+    {
+      "path": "../dom/tsconfig.esm.json"
+    },
+    {
+      "path": "../history/tsconfig.esm.json"
+    }
+  ],
+  "include": [
+    "./*.ts",
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "./*.test.ts",
+    "./*.browser-test.ts",
+    "./**/*.test.ts",
+    "./**/*.browser-test.ts",
+    "./tsconfig.json"
+  ]
+}

@@ -5,7 +5,7 @@ import {
   Namespace,
   NamespaceDeleted,
   usingNamespace,
-} from '@typed/fp/Shared/core/exports'
+} from '@typed/fp/shared/core/exports'
 import { pipe } from 'fp-ts/lib/function'
 
 export function namespaceDeleted(event: NamespaceDeleted) {

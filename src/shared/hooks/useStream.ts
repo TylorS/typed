@@ -1,7 +1,7 @@
 import { Disposable, Stream } from '@most/types'
 import { ask, doEffect, Effect } from '@typed/fp/Effect/exports'
-import { SchedulerEnv } from '@typed/fp/fibers/exports'
-import { SharedEnv } from '@typed/fp/Shared/core/exports'
+import { SchedulerEnv } from '@typed/fp/scheduler/exports'
+import { SharedEnv } from '@typed/fp/shared/core/exports'
 import { constVoid } from 'fp-ts/function'
 
 import { useDisposable } from './useDisposable'

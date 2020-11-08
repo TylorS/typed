@@ -19,10 +19,16 @@
       "path": "../Resume/tsconfig.esm.json"
     },
     {
+      "path": "../Scheduler/tsconfig.esm.json"
+    },
+    {
       "path": "../VirtualTimer/tsconfig.esm.json"
     },
     {
       "path": "../common/tsconfig.esm.json"
+    },
+    {
+      "path": "../scheduler/tsconfig.esm.json"
     }
   ],
   "include": [

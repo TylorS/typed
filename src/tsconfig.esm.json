@@ -38,7 +38,7 @@
       "path": "./Resume/tsconfig.esm.json"
     },
     {
-      "path": "./Shared/tsconfig.esm.json"
+      "path": "./Scheduler/tsconfig.esm.json"
     },
     {
       "path": "./Storage/tsconfig.esm.json"
@@ -54,6 +54,9 @@
     },
     {
       "path": "./VirtualTimer/tsconfig.esm.json"
+    },
+    {
+      "path": "./browser/tsconfig.esm.json"
     },
     {
       "path": "./common/tsconfig.esm.json"
@@ -81,6 +84,12 @@
     },
     {
       "path": "./logic/tsconfig.esm.json"
+    },
+    {
+      "path": "./node/tsconfig.esm.json"
+    },
+    {
+      "path": "./shared/tsconfig.esm.json"
     }
   ]
 }

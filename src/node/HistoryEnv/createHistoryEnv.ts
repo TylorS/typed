@@ -7,7 +7,7 @@ import { ServerLocation } from './ServerLocation'
 /**
  * Create A History Environment that works in browser and non-browser environments
  */
-export function createServerHistoryEnv<A>(uri: Uri = Uri.wrap('/')): HistoryEnv<A> {
+export function createHistoryEnv(uri: Uri = Uri.wrap('/')): HistoryEnv {
   const serverLocation = new ServerLocation(uri)
   const serverHistory = new ServerHistory(serverLocation)
   serverLocation.setHistory(serverHistory)

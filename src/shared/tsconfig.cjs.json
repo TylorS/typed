@@ -5,7 +5,7 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/Shared",
+    "outDir": "../../cjs/shared",
     "module": "commonjs"
   },
   "references": [
@@ -19,13 +19,13 @@
       "path": "../common/tsconfig.cjs.json"
     },
     {
-      "path": "../fibers/tsconfig.cjs.json"
-    },
-    {
       "path": "../io/tsconfig.cjs.json"
     },
     {
       "path": "../lambda/tsconfig.cjs.json"
+    },
+    {
+      "path": "../scheduler/tsconfig.cjs.json"
     }
   ],
   "include": [

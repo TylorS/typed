@@ -1,5 +1,5 @@
 import { doEffect, Pure } from '@typed/fp/Effect/exports'
-import { createShared, getShared, Namespace } from '@typed/fp/Shared/core/exports'
+import { createShared, getShared, Namespace } from '@typed/fp/shared/core/exports'
 
 export const NamespaceChildren = createShared(
   Symbol('NamespaceChildren'),

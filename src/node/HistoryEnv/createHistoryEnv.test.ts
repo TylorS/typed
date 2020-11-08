@@ -1,18 +1,18 @@
 import { Uri } from '@typed/fp/Uri/exports'
 import { describe, given, it, Test } from '@typed/test'
 
-import { createServerHistoryEnv } from './createServerHistoryEnv'
+import { createHistoryEnv } from './createHistoryEnv'
 
 export const test: Test = describe(`createHistoryEnv`, [
   it(`returns Env with '/' as default location.pathname`, ({ equal }) => {
-    const { location } = createServerHistoryEnv()
+    const { location } = createHistoryEnv()
 
     equal('/', location.pathname)
   }),
 
   given(`an href`, [
     it(`returns { history: History, location: Location }`, ({ equal }) => {
-      const { location, history } = createServerHistoryEnv(Uri.wrap('http://www.example.com'))
+      const { location, history } = createHistoryEnv(Uri.wrap('http://www.example.com'))
 
       history.pushState(null, '', '/example')
 
@@ -28,7 +28,7 @@ export const test: Test = describe(`createHistoryEnv`, [
     describe(`pushState`, [
       given(`an href with a different protocol`, [
         it(`updates the location correctly`, ({ equal }) => {
-          const { location, history } = createServerHistoryEnv(Uri.wrap('https://www.example.com'))
+          const { location, history } = createHistoryEnv(Uri.wrap('https://www.example.com'))
 
           const href = 'http://www.example.com'
 

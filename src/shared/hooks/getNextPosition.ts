@@ -1,5 +1,5 @@
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { setShared, SharedEnv } from '@typed/fp/Shared/core/exports'
+import { setShared, SharedEnv } from '@typed/fp/shared/core/exports'
 
 import { getNamespacePosition, NamespacePosition } from './NamespacePosition'
 

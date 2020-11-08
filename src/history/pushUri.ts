@@ -5,7 +5,7 @@ import { Uri, uriIso } from '@typed/fp/Uri/exports'
 import { HistoryEnv } from './HistoryEnv'
 
 export const pushUri = (uri: Uri) =>
-  fromEnv<HistoryEnv<unknown>, Location>((e) =>
+  fromEnv<HistoryEnv, Location>((e) =>
     async((cb) => {
       e.history.pushState(null, '', uriIso.unwrap(uri))
 

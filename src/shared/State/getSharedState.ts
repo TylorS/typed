@@ -10,7 +10,7 @@ import {
   Shared,
   SharedEnv,
   ValueOf,
-} from '@typed/fp/Shared/core/exports'
+} from '@typed/fp/shared/core/exports'
 
 import { SharedStates } from './NamespaceStates'
 import { State } from './State'

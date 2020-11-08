@@ -2,7 +2,7 @@ import { createAdapter } from '@most/adapter'
 import { runEffects, tap } from '@most/core'
 import { newDefaultScheduler } from '@most/scheduler'
 import { doEffect, execPure, provideAll, Pure } from '@typed/fp/Effect/exports'
-import { provideSchedulerEnv } from '@typed/fp/fibers/exports'
+import { provideSchedulerEnv } from '@typed/fp/scheduler/exports'
 import { describe, given, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 

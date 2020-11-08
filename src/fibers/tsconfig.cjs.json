@@ -19,10 +19,16 @@
       "path": "../Resume/tsconfig.cjs.json"
     },
     {
+      "path": "../Scheduler/tsconfig.cjs.json"
+    },
+    {
       "path": "../VirtualTimer/tsconfig.cjs.json"
     },
     {
       "path": "../common/tsconfig.cjs.json"
+    },
+    {
+      "path": "../scheduler/tsconfig.cjs.json"
     }
   ],
   "include": [

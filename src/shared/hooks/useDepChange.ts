@@ -1,5 +1,5 @@
 import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
-import { SharedEnv } from '@typed/fp/Shared/core/exports'
+import { SharedEnv } from '@typed/fp/shared/core/exports'
 import { Eq } from 'fp-ts/Eq'
 
 import { useFirstRun } from './useFirstRun'

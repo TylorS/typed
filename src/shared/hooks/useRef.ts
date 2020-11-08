@@ -1,5 +1,5 @@
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { createShared, SharedEnv } from '@typed/fp/Shared/core/exports'
+import { createShared, SharedEnv } from '@typed/fp/shared/core/exports'
 import { Eq, eqStrict } from 'fp-ts/Eq'
 
 import { getSharedRef, Ref } from '../Ref/exports'

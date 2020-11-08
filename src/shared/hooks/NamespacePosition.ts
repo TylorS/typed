@@ -1,5 +1,5 @@
 import { Pure } from '@typed/fp/Effect/Effect'
-import { createShared, getShared } from '@typed/fp/Shared/core/exports'
+import { createShared, getShared } from '@typed/fp/shared/core/exports'
 
 export const NamespacePosition = createShared(Symbol('NamespacePositions'), Pure.of(0))
 

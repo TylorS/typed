@@ -5,7 +5,7 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/Shared",
+    "outDir": "../../esm/shared",
     "module": "esnext"
   },
   "references": [
@@ -19,13 +19,13 @@
       "path": "../common/tsconfig.esm.json"
     },
     {
-      "path": "../fibers/tsconfig.esm.json"
-    },
-    {
       "path": "../io/tsconfig.esm.json"
     },
     {
       "path": "../lambda/tsconfig.esm.json"
+    },
+    {
+      "path": "../scheduler/tsconfig.esm.json"
     }
   ],
   "include": [

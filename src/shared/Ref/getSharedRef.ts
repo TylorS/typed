@@ -6,7 +6,7 @@ import {
   Shared,
   SharedEnv,
   ValueOf,
-} from '@typed/fp/Shared/core/exports'
+} from '@typed/fp/shared/core/exports'
 
 import { getSharedState, getState, setState, State } from '../State/exports'
 import { NamespaceRefs } from './NamespaceRefs'

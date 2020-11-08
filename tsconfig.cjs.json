@@ -85,12 +85,13 @@
     "Queue",
     "RemoteData",
     "Resume",
-    "Shared",
+    "Scheduler",
     "Storage",
     "Stream",
     "Uri",
     "Uuid",
     "VirtualTimer",
+    "browser",
     "common",
     "dom",
     "fibers",
@@ -99,6 +100,8 @@
     "io",
     "lambda",
     "logging",
-    "logic"
+    "logic",
+    "node",
+    "shared"
   ]
 }

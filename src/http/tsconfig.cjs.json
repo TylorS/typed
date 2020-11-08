@@ -25,6 +25,9 @@
       "path": "../Resume/tsconfig.cjs.json"
     },
     {
+      "path": "../Scheduler/tsconfig.cjs.json"
+    },
+    {
       "path": "../Shared/tsconfig.cjs.json"
     },
     {

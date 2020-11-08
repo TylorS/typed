@@ -73,12 +73,13 @@ snowpack.key
 /Queue/
 /RemoteData/
 /Resume/
-/Shared/
+/Scheduler/
 /Storage/
 /Stream/
 /Uri/
 /Uuid/
 /VirtualTimer/
+/browser/
 /common/
 /dom/
 /fibers/
@@ -88,3 +89,5 @@ snowpack.key
 /lambda/
 /logging/
 /logic/
+/node/
+/shared/

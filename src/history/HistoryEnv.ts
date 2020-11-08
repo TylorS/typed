@@ -1,5 +1,4 @@
-// @ts-ignore - for phantom type parameter
-export interface HistoryEnv<A = unknown> {
+export interface HistoryEnv {
   readonly location: Location
   readonly history: History
 }

@@ -1,6 +1,8 @@
 import { IO } from 'fp-ts/IO'
 import { iso, Newtype } from 'newtype-ts'
 
+export const VALID_UUID_LENGTH = 16 as const
+
 export interface Uuid extends Newtype<'Uuid', string> {}
 
 export const uuidIso = iso<Uuid>()

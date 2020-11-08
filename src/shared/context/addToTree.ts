@@ -5,7 +5,7 @@ import {
   Namespace,
   SharedEnv,
   usingNamespace,
-} from '@typed/fp/Shared/core/exports'
+} from '@typed/fp/shared/core/exports'
 import { pipe } from 'fp-ts/function'
 import { isNone, isSome, some } from 'fp-ts/Option'
 

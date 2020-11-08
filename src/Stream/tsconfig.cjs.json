@@ -16,7 +16,7 @@
       "path": "../Effect/tsconfig.cjs.json"
     },
     {
-      "path": "../fibers/tsconfig.cjs.json"
+      "path": "../scheduler/tsconfig.cjs.json"
     }
   ],
   "include": [

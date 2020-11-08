@@ -16,7 +16,7 @@
       "path": "../Effect/tsconfig.esm.json"
     },
     {
-      "path": "../fibers/tsconfig.esm.json"
+      "path": "../scheduler/tsconfig.esm.json"
     }
   ],
   "include": [

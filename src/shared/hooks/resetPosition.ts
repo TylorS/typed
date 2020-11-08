@@ -1,4 +1,4 @@
-import { setShared } from '@typed/fp/Shared/core/exports'
+import { setShared } from '@typed/fp/shared/core/exports'
 
 import { NamespacePosition } from './NamespacePosition'
 

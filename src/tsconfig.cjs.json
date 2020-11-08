@@ -38,7 +38,7 @@
       "path": "./Resume/tsconfig.cjs.json"
     },
     {
-      "path": "./Shared/tsconfig.cjs.json"
+      "path": "./Scheduler/tsconfig.cjs.json"
     },
     {
       "path": "./Storage/tsconfig.cjs.json"
@@ -54,6 +54,9 @@
     },
     {
       "path": "./VirtualTimer/tsconfig.cjs.json"
+    },
+    {
+      "path": "./browser/tsconfig.cjs.json"
     },
     {
       "path": "./common/tsconfig.cjs.json"
@@ -81,6 +84,12 @@
     },
     {
       "path": "./logic/tsconfig.cjs.json"
+    },
+    {
+      "path": "./node/tsconfig.cjs.json"
+    },
+    {
+      "path": "./shared/tsconfig.cjs.json"
     }
   ]
 }

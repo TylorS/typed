@@ -1,8 +1,7 @@
+import { RafEnv } from '@typed/fp/dom/exports'
 import { Provider, provideSome } from '@typed/fp/Effect/exports'
 
-import { RafEnv } from './raf'
-
-export const rafEnv: RafEnv = {
+export const rafEnv: RafEnv<number> = {
   requestAnimationFrame: (cb: FrameRequestCallback) => window.requestAnimationFrame(cb),
   cancelAnimationFrame: (n: number) => window.cancelAnimationFrame(n),
 }
