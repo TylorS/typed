@@ -1,11 +1,19 @@
 import { doEffect, execPure } from '@typed/fp/Effect/exports'
 import { provideSchedulerEnv } from '@typed/fp/fibers/exports'
 import { sync } from '@typed/fp/Resume/Sync'
+import {
+  Namespace,
+  runWithNamespace,
+  sendSharedEvent,
+  usingNamespace,
+} from '@typed/fp/Shared/core/exports'
+import {
+  createSharedEnvProvider,
+  defaultHandlers,
+} from '@typed/fp/Shared/createSharedEnvProvider/exports'
 import { describe, it } from '@typed/test'
 import { pipe } from 'fp-ts/lib/function'
 
-import { Namespace, runWithNamespace, sendSharedEvent, usingNamespace } from '../core/exports'
-import { createSharedEnvProvider, defaultHandlers } from '../createSharedEnvProvider/exports'
 import { createRenderHandlers } from './handlers/exports'
 import { Patch } from './Patch'
 import { getRenderRef } from './RenderRef'

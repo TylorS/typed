@@ -1,10 +1,15 @@
 import { doEffect, useAll, useSome } from '@typed/fp/Effect/exports'
 import { isNull, isUndefined } from '@typed/fp/logic/is'
+import { getNamespaceParent } from '@typed/fp/Shared/context/exports'
+import {
+  hasShared,
+  Namespace,
+  runWithNamespace,
+  usingNamespace,
+} from '@typed/fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/lib/Option'
 
-import { getNamespaceParent } from '../../context/exports'
-import { hasShared, Namespace, runWithNamespace, usingNamespace } from '../../core/exports'
 import { Patch, patch } from '../Patch'
 import { getRenderer, Renderer } from '../Renderer'
 import { getRenderRef } from '../RenderRef'

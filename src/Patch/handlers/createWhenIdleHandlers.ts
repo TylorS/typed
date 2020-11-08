@@ -1,15 +1,15 @@
 import { WhenIdleEnv } from '@typed/fp/dom/exports'
 import { doEffect, useSome } from '@typed/fp/Effect/exports'
 import { createGuardFromSchema } from '@typed/fp/io/exports'
-import { pipe } from 'fp-ts/lib/function'
-
 import {
   Namespace,
   NamespaceCompleted,
   NamespaceUpdated,
   SharedValueUpdated,
-} from '../../core/exports'
-import { createSharedEventHandler } from '../../createSharedEnvProvider/exports'
+} from '@typed/fp/Shared/core/exports'
+import { createSharedEventHandler } from '@typed/fp/Shared/createSharedEnvProvider/exports'
+import { pipe } from 'fp-ts/lib/function'
+
 import { Patch } from '../Patch'
 import { createPatchNamespace } from './createPatchNamespace'
 import { createIdleScheduler } from './IdleScheduler'

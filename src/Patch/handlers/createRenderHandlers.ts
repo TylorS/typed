@@ -1,7 +1,11 @@
 import { createGuardFromSchema } from '@typed/fp/io/exports'
+import {
+  NamespaceCompleted,
+  NamespaceUpdated,
+  SharedValueUpdated,
+} from '@typed/fp/Shared/core/exports'
+import { createSharedEventHandler } from '@typed/fp/Shared/createSharedEnvProvider/exports'
 
-import { NamespaceCompleted, NamespaceUpdated, SharedValueUpdated } from '../../core/exports'
-import { createSharedEventHandler } from '../../createSharedEnvProvider/exports'
 import { Patch } from '../Patch'
 import { createPatchNamespace } from './createPatchNamespace'
 import { namespaceCompleted } from './namespaceCompleted'

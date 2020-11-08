@@ -1,9 +1,9 @@
 import { raf, RafEnv } from '@typed/fp/dom/raf'
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/fibers/exports'
+import { getCurrentNamespace, getShared, SharedEnv } from '@typed/fp/Shared/core/exports'
+import { HasBeenUpdated } from '@typed/fp/Shared/memoNamespace/exports'
 
-import { getCurrentNamespace, getShared, SharedEnv } from '../core/exports'
-import { HasBeenUpdated } from '../memoNamespace/exports'
 import { Patch, patch } from './Patch'
 
 export type PatchOnRafEnv<A, B> = SchedulerEnv & SharedEnv & RafEnv & Patch<A, B>

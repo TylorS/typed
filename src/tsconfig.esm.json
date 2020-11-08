@@ -23,6 +23,9 @@
       "path": "./Key/tsconfig.esm.json"
     },
     {
+      "path": "./Patch/tsconfig.esm.json"
+    },
+    {
       "path": "./Path/tsconfig.esm.json"
     },
     {

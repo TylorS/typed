@@ -5,21 +5,12 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/http",
+    "outDir": "../../esm/Patch",
     "module": "esnext"
   },
   "references": [
     {
-      "path": "../Disposable/tsconfig.esm.json"
-    },
-    {
       "path": "../Effect/tsconfig.esm.json"
-    },
-    {
-      "path": "../Future/tsconfig.esm.json"
-    },
-    {
-      "path": "../RemoteData/tsconfig.esm.json"
     },
     {
       "path": "../Resume/tsconfig.esm.json"
@@ -28,13 +19,19 @@
       "path": "../Shared/tsconfig.esm.json"
     },
     {
-      "path": "../Uri/tsconfig.esm.json"
+      "path": "../common/tsconfig.esm.json"
     },
     {
       "path": "../dom/tsconfig.esm.json"
     },
     {
       "path": "../fibers/tsconfig.esm.json"
+    },
+    {
+      "path": "../io/tsconfig.esm.json"
+    },
+    {
+      "path": "../logic/tsconfig.esm.json"
     }
   ],
   "include": [

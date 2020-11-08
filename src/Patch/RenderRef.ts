@@ -1,7 +1,7 @@
 import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
+import { createShared, getShared, SharedEnv } from '@typed/fp/Shared/core/exports'
+import { createRef, Ref } from '@typed/fp/Shared/Ref/exports'
 
-import { createShared, getShared, SharedEnv } from '../core/exports'
-import { createRef, Ref } from '../Ref/exports'
 import { addNamespaceRenderer } from './NamespaceRenderers'
 
 export const RenderRef = createShared(

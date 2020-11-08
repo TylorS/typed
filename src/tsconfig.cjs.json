@@ -23,6 +23,9 @@
       "path": "./Key/tsconfig.cjs.json"
     },
     {
+      "path": "./Patch/tsconfig.cjs.json"
+    },
+    {
       "path": "./Path/tsconfig.cjs.json"
     },
     {

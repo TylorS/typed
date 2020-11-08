@@ -1,7 +1,7 @@
 import { ask, doEffect } from '@typed/fp/Effect/exports'
+import { NamespaceCompleted, usingNamespace } from '@typed/fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
 
-import { NamespaceCompleted, usingNamespace } from '../../core/exports'
 import { getNamespaceRenderers } from '../NamespaceRenderers'
 import { setRenderer } from '../Renderer'
 

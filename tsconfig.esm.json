@@ -80,6 +80,7 @@
     "Effect",
     "Future",
     "Key",
+    "Patch",
     "Path",
     "Queue",
     "RemoteData",

@@ -1,15 +1,14 @@
 import { Pure } from '@typed/fp/Effect/Effect'
 import { doEffect } from '@typed/fp/Effect/exports'
-import { pipe } from 'fp-ts/function'
-
 import {
   addDisposable,
   createShared,
   getCurrentNamespace,
   getShared,
   Namespace,
-} from '../core/exports'
-import { usingGlobal } from '../global/exports'
+} from '@typed/fp/Shared/core/exports'
+import { usingGlobal } from '@typed/fp/Shared/global/exports'
+import { pipe } from 'fp-ts/function'
 
 export const NamespaceRenderers = createShared(
   Symbol('NamespaceRenderers'),
