@@ -1,9 +1,11 @@
 import { whenIdle, WhenIdleEnv } from '@typed/fp/dom/exports'
 import { Effect } from '@typed/fp/Effect/exports'
+import { Queue } from '@typed/fp/Queue/exports'
+import { isNone, isSome } from 'fp-ts/Option'
 
 export type IdleScheduler = ReturnType<typeof createIdleScheduler>
 
-export function createIdleScheduler<E, A>(queue: Set<A>, f: (value: A) => Effect<E, void>) {
+export function createIdleScheduler<E, A>(queue: Queue<A>, f: (value: A) => Effect<E, void>) {
   let scheduled = false
 
   function* scheduleNextRun(): Effect<E & WhenIdleEnv, void> {
@@ -17,20 +19,20 @@ export function createIdleScheduler<E, A>(queue: Set<A>, f: (value: A) => Effect
     const timeRemaining = () => deadline.timeRemaining() > 0 || deadline.didTimeout
 
     while (timeRemaining()) {
-      const result = queue[Symbol.iterator]().next()
+      const result = queue.dequeue()
 
-      if (result.done) {
+      if (isNone(result)) {
         break
       }
 
       yield* f(result.value)
 
-      if (queue.size === 0) {
+      if (isNone(queue.peek())) {
         break
       }
     }
 
-    if (queue.size > 0) {
+    if (isSome(queue.peek())) {
       return yield* scheduleNextRun()
     }
 

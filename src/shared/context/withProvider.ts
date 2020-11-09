@@ -12,8 +12,8 @@ import {
   SharedKeyStore,
   usingNamespace,
 } from '@typed/fp/shared/core/exports'
+import { Eq } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
-import { Eq } from 'fp-ts/lib/Eq'
 import { isNone } from 'fp-ts/Option'
 
 import { getNamespaceConsumers } from './NamespaceConsumers'
@@ -26,7 +26,7 @@ import { getNamspaceProviders } from './NamespaceProviders'
  * it will use the root of the tree as the provider to store
  * the initial value. Very similar to React's useContext. If you'd
  * like to only be updated based on a specific part of the state, provide
- * a new Eq instance (tip: see contramap in fp-ts/lib/Eq).
+ * a new Eq instance (tip: see contramap in fp-ts/Eq).
  */
 export const withProvider = <S extends Shared, E, A>(
   shared: S,

@@ -9,7 +9,7 @@ import { getShared } from '../services/exports'
  * Namespace.
  */
 export const NamespaceDisposable = createShared(
-  Symbol('NamespaceDisposable'),
+  Symbol.for('NamespaceDisposable'),
   Pure.fromIO((): LazyDisposable => lazy()),
 )
 

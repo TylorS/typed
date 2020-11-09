@@ -43,11 +43,11 @@ export const memoNamespace = <E extends SharedEnv, A>(
 }
 
 // Keep track of the current return value
-export const RETURN_VALUE = Symbol('ReturnValue')
+export const RETURN_VALUE = Symbol.for('ReturnValue')
 export const ReturnValue = <E, A>(initial: Effect<E, A>) => createShared(RETURN_VALUE, initial)
 
 // Listen to update events and mark as updated
-export const HAS_BEEN_UPDATED = Symbol('HAS_BEEN_UPDATED')
+export const HAS_BEEN_UPDATED = Symbol.for('HasBeenUpdated')
 export const HasBeenUpdated = (namespace: Namespace) =>
   createShared(
     HAS_BEEN_UPDATED,

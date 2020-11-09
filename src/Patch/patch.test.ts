@@ -1,6 +1,6 @@
 import { doEffect, execPure } from '@typed/fp/Effect/exports'
-import { provideSchedulerEnv } from '@typed/fp/fibers/exports'
 import { sync } from '@typed/fp/Resume/Sync'
+import { provideSchedulerEnv } from '@typed/fp/scheduler/exports'
 import {
   Namespace,
   runWithNamespace,
@@ -12,8 +12,9 @@ import {
   defaultHandlers,
 } from '@typed/fp/Shared/createSharedEnvProvider/exports'
 import { describe, it } from '@typed/test'
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/function'
 
+import { isUndefined } from '../logic/exports'
 import { createRenderHandlers } from './handlers/exports'
 import { Patch } from './Patch'
 import { getRenderRef } from './RenderRef'
@@ -21,14 +22,13 @@ import { getRenderRef } from './RenderRef'
 export const test = describe(`Patching`, [
   it(`patches namespace given a RenderRef`, ({ equal }, done) => {
     const namespaceB = Namespace.wrap('b')
-    const initial = 0
     const value = 1
 
     const component = doEffect(function* () {
-      const ref = yield* getRenderRef()
+      const ref = yield* getRenderRef<number>()
 
-      if (!ref.current) {
-        ref.current = initial
+      if (isUndefined(ref.current) || isUndefined(ref.current)) {
+        ref.current = value
       }
 
       return value
@@ -38,17 +38,17 @@ export const test = describe(`Patching`, [
       try {
         equal(value, yield* runWithNamespace(namespaceB, component))
 
-        yield* sendSharedEvent({ type: 'namespace/updated', namespace: namespaceB })
-
-        let updated = yield* pipe(getRenderRef(), usingNamespace(namespaceB))
+        const updated = yield* pipe(getRenderRef(), usingNamespace(namespaceB))
 
         equal(value, updated.current)
 
         yield* sendSharedEvent({ type: 'namespace/updated', namespace: namespaceB })
 
-        updated = yield* pipe(getRenderRef(), usingNamespace(namespaceB))
+        equal(value + value, updated.current)
 
-        equal(value + 1, updated.current)
+        yield* sendSharedEvent({ type: 'namespace/updated', namespace: namespaceB })
+
+        equal(value + value + value, updated.current)
 
         done()
       } catch (error) {

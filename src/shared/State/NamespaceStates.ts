@@ -7,7 +7,7 @@ import { State } from './State'
  * Memoize the creation of State objects wrapping Shared value.
  */
 export const SharedStates = createShared(
-  Symbol('SharedStates'),
+  Symbol.for('SharedStates'),
   Pure.fromIO(() => new Map<SharedKey, State<any>>()),
 )
 

@@ -3,7 +3,7 @@ import { createShared, getShared, SharedEnv } from '@typed/fp/Shared/core/export
 import { createRef, Ref } from '@typed/fp/Shared/Ref/exports'
 
 export const Renderer = createShared(
-  Symbol('Renderer'),
+  Symbol.for('Renderer'),
   Pure.fromIO(() => createRef<any>()),
 )
 

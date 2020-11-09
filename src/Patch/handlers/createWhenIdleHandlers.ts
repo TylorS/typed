@@ -1,6 +1,7 @@
 import { WhenIdleEnv } from '@typed/fp/dom/exports'
 import { doEffect, useSome } from '@typed/fp/Effect/exports'
 import { createGuardFromSchema } from '@typed/fp/io/exports'
+import { createFifoQueue } from '@typed/fp/Queue/exports'
 import {
   Namespace,
   NamespaceCompleted,
@@ -8,7 +9,7 @@ import {
   SharedValueUpdated,
 } from '@typed/fp/Shared/core/exports'
 import { createSharedEventHandler } from '@typed/fp/Shared/createSharedEnvProvider/exports'
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/function'
 
 import { Patch } from '../Patch'
 import { createPatchNamespace } from './createPatchNamespace'
@@ -24,12 +25,12 @@ const sharedValueUpdatedGuard = createGuardFromSchema(SharedValueUpdated.schema)
  * as soon when the browser is idle.
  */
 export function createWhenIdleHandlers<A, B>(env: Patch<A, B> & WhenIdleEnv) {
-  const queue = new Set<Namespace>()
+  const queue = createFifoQueue<Namespace>([])
   const patchNamespace = createPatchNamespace(env)
   const scheduler = createIdleScheduler(queue, patchNamespace)
   const addNamespace = (namespace: Namespace) => {
     const eff = doEffect(function* () {
-      queue.add(namespace)
+      queue.enqueue(namespace)
 
       yield* pipe(scheduler.scheduleNextRun(), useSome(env))
     })

@@ -3,13 +3,13 @@ import { disposeNone } from '@typed/fp/Disposable/exports'
 import { doEffect } from '@typed/fp/Effect/doEffect'
 import { fork, getParentFiber, pause, proceed } from '@typed/fp/fibers/FiberEnv'
 import { runAsFiber } from '@typed/fp/fibers/runAsFiber'
+import { delay } from '@typed/fp/scheduler/exports'
 import { createVirtualScheduler } from '@typed/fp/VirtualTimer/exports'
 import { describe, it } from '@typed/test'
 import { flow } from 'fp-ts/function'
 import { none, some } from 'fp-ts/Option'
 
 import { foldFiberInfo } from './Fiber'
-import { delay } from './SchedulerEnv'
 
 export const test = describe(`fibers`, [
   describe(`getParentFiber`, [

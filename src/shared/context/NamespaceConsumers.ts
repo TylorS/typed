@@ -3,7 +3,7 @@ import { createShared, getShared, Namespace, SharedKey } from '@typed/fp/shared/
 import { Eq } from 'fp-ts/Eq'
 
 export const NamespaceConsumers = createShared(
-  Symbol('NamespaceConsumers'),
+  Symbol.for('NamespaceConsumers'),
   Pure.fromIO(() => new Map<SharedKey, Map<Namespace, Set<Eq<unknown>>>>()),
 )
 

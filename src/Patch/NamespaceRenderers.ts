@@ -11,7 +11,7 @@ import { usingGlobal } from '@typed/fp/Shared/global/exports'
 import { pipe } from 'fp-ts/function'
 
 export const NamespaceRenderers = createShared(
-  Symbol('NamespaceRenderers'),
+  Symbol.for('NamespaceRenderers'),
   Pure.fromIO(() => new Set<Namespace>()),
 )
 

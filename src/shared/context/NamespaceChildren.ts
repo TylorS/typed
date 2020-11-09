@@ -2,7 +2,7 @@ import { doEffect, Pure } from '@typed/fp/Effect/exports'
 import { createShared, getShared, Namespace } from '@typed/fp/shared/core/exports'
 
 export const NamespaceChildren = createShared(
-  Symbol('NamespaceChildren'),
+  Symbol.for('NamespaceChildren'),
   Pure.fromIO((): Set<Namespace> => new Set()),
 )
 

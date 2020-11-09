@@ -7,7 +7,7 @@ import { Ref } from './Ref'
  * Memoize the creation of Ref objects wrapping Shared value.
  */
 export const NamespaceRefs = createShared(
-  Symbol('NamespaceRefs'),
+  Symbol.for('NamespaceRefs'),
   Pure.fromIO(() => new Map<SharedKey, Ref<any>>()),
 )
 

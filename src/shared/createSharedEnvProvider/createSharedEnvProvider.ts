@@ -1,5 +1,3 @@
-import { filter } from '@most/core'
-import { disposeAll } from '@most/disposable'
 import { Sink } from '@most/types'
 import {
   ask,
@@ -12,8 +10,7 @@ import {
   useWith,
 } from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/scheduler/exports'
-import { constVoid, flow, pipe } from 'fp-ts/function'
-import { Guard } from 'io-ts/Guard'
+import { constVoid, pipe } from 'fp-ts/function'
 
 import { getSharedEvents, SharedEvent } from '../core/events/exports'
 import { addDisposable } from '../core/exports'
@@ -54,16 +51,16 @@ const listenToEvents = (
   const eff = doEffect(function* () {
     const { scheduler } = yield* ask<SchedulerEnv>()
     const stream = yield* pipe(getSharedEvents, useAll(env))
-    const listen = <A extends SharedEvent>(
-      guard: Guard<unknown, A>,
-      respond: (value: A) => Effect<SharedEnv, void>,
-    ) =>
-      filter(guard.is, stream).run(createEmptySink(flow(respond, useAll(env), execPure)), scheduler)
 
-    yield* pipe(
-      addDisposable(disposeAll(handlers.map(([guard, handler]) => listen(guard, handler)))),
-      useAll(env),
-    )
+    const respondToEvents = (event: SharedEvent) => {
+      for (const [guard, handler] of handlers) {
+        if (guard.is(event)) {
+          pipe(event, handler, useAll(env), execPure)
+        }
+      }
+    }
+
+    yield* pipe(addDisposable(stream.run(createEmptySink(respondToEvents), scheduler)), useAll(env))
 
     return env
   })

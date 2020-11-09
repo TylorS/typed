@@ -3,7 +3,7 @@ import { createShared, getShared, Namespace, setShared } from '@typed/fp/shared/
 import { none, Option } from 'fp-ts/Option'
 
 export const NamespaceParent = createShared(
-  Symbol('NamespaceParent'),
+  Symbol.for('NamespaceParent'),
   Pure.fromIO((): Option<Namespace> => none),
 )
 

@@ -27,10 +27,9 @@ export const addToTree = (parent: Namespace) => {
     // Set parent if changed
     if (isNone(currentParent) || currentParent.value !== parent) {
       yield* setNamespaceParent(some(parent))
+      // Add as child to parent
+      yield* pipe(currentNamespace, addChild, usingNamespace(parent))
     }
-
-    // Add as child to parent
-    yield* pipe(currentNamespace, addChild, usingNamespace(parent))
 
     yield* addDisposable(
       disposeAll([

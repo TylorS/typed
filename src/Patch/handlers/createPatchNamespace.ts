@@ -8,7 +8,7 @@ import {
   usingNamespace,
 } from '@typed/fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
-import { isNone } from 'fp-ts/lib/Option'
+import { isNone } from 'fp-ts/Option'
 
 import { Patch, patch } from '../Patch'
 import { getRenderer, Renderer } from '../Renderer'
@@ -17,7 +17,9 @@ import { getRenderRef } from '../RenderRef'
 export function createPatchNamespace<A, B>(Patch: Patch<A, B>) {
   return (namespace: Namespace) => {
     const eff = doEffect(function* () {
-      if (!(yield* hasShared(Renderer))) {
+      const hasRenderer = yield* hasShared(Renderer)
+
+      if (!hasRenderer) {
         return
       }
 

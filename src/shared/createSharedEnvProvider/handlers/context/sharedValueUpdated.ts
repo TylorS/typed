@@ -7,7 +7,7 @@ import {
   SharedValueUpdated,
   usingNamespace,
 } from '@typed/fp/shared/core/exports'
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/function'
 
 export function sharedValueUpdated({
   namespace,
