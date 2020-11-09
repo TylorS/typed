@@ -1,6 +1,6 @@
 import { Arity2 } from '@typed/fp/common/types'
 import { Effect, map } from '@typed/fp/Effect/exports'
-import { applyReducer, State } from '@typed/fp/shared/State/exports'
+import { applyReducer, State } from '@typed/fp/Shared/State/exports'
 import { pipe } from 'fp-ts/function'
 
 import { EnvOf, Shared, ValueOf } from '../core/model/exports'

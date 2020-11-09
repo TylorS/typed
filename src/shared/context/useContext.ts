@@ -6,7 +6,7 @@ import {
   SharedEnv,
   usingNamespace,
   ValueOf,
-} from '@typed/fp/shared/core/exports'
+} from '@typed/fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
 
 import { withProvider } from './withProvider'

@@ -1,7 +1,7 @@
 import { Clock } from '@most/types'
 import { whenIdle, WhenIdleEnv } from '@typed/fp/dom/exports'
 import { ask, doEffect, Effect, Provider, useWith } from '@typed/fp/Effect/exports'
-import { FiberEnv, fork } from '@typed/fp/fibers/exports'
+import { FiberEnv, fork } from '@typed/fp/Fiber/exports'
 import { chain, sync } from '@typed/fp/Resume/exports'
 import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
 import {

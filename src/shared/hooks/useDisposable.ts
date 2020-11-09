@@ -1,7 +1,7 @@
 import { disposeAll, disposeNone } from '@most/disposable'
 import { Disposable } from '@typed/fp/Disposable/exports'
 import { doEffect, Pure } from '@typed/fp/Effect/exports'
-import { defaultEqs, EqsOf, tupleEqOf } from '@typed/fp/shared/common/EqsOf'
+import { defaultEqs, EqsOf, tupleEqOf } from '@typed/fp/Shared/common/EqsOf'
 
 import { addDisposable } from '../core/disposables/exports'
 import { Ref } from '../Ref/exports'

@@ -8,7 +8,7 @@ import {
   Namespace,
   runWithNamespace,
   SharedEnv,
-} from '@typed/fp/shared/core/exports'
+} from '@typed/fp/Shared/core/exports'
 import { Eq, getTupleEq } from 'fp-ts/Eq'
 
 import { useDiffList } from './useDiffList'

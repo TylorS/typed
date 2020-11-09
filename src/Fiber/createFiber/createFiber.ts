@@ -13,8 +13,8 @@ import {
   Fiber,
   FiberState,
   foldFiberInfo,
-} from '@typed/fp/fibers/Fiber'
-import { FiberEnv } from '@typed/fp/fibers/FiberEnv'
+} from '@typed/fp/Fiber/Fiber'
+import { FiberEnv } from '@typed/fp/Fiber/FiberEnv'
 import { async, Resume, sync } from '@typed/fp/Resume/exports'
 import { createCallbackTask } from '@typed/fp/scheduler/exports'
 import { Either, left, right } from 'fp-ts/Either'

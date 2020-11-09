@@ -12,7 +12,7 @@ import {
   setShared,
   SharedEnv,
   usingNamespace,
-} from '@typed/fp/shared/core/exports'
+} from '@typed/fp/Shared/core/exports'
 import { constVoid, pipe } from 'fp-ts/function'
 
 import { createRef } from '../Ref/exports'

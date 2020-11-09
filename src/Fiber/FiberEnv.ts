@@ -1,5 +1,5 @@
 import { doEffect, Effect, fromEnv } from '@typed/fp/Effect/exports'
-import { Fiber } from '@typed/fp/fibers/Fiber'
+import { Fiber } from '@typed/fp/Fiber/Fiber'
 import { Resume, sync } from '@typed/fp/Resume/exports'
 import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
 import { Either } from 'fp-ts/Either'

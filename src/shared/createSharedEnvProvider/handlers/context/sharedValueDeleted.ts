@@ -1,7 +1,7 @@
 import { doEffect } from '@typed/fp/Effect/exports'
-import { getNamespaceConsumers, getNamspaceProviders } from '@typed/fp/shared/context/exports'
-import { SharedValueDeleted } from '@typed/fp/shared/core/events/exports'
-import { Namespace, Shared, usingNamespace } from '@typed/fp/shared/core/exports'
+import { getNamespaceConsumers, getNamspaceProviders } from '@typed/fp/Shared/context/exports'
+import { SharedValueDeleted } from '@typed/fp/Shared/core/events/exports'
+import { Namespace, Shared, usingNamespace } from '@typed/fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
 
 export function sharedValueDeleted({ namespace, shared }: SharedValueDeleted) {

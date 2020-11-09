@@ -1,5 +1,5 @@
 import { Pure } from '@typed/fp/Effect/Effect'
-import { createShared, getShared, Namespace } from '@typed/fp/shared/core/exports'
+import { createShared, getShared, Namespace } from '@typed/fp/Shared/core/exports'
 
 export const NamespaceProviders = createShared(
   Symbol.for('NamespaceProviders'),

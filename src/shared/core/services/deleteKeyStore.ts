@@ -1,6 +1,6 @@
 import { doEffect } from '@typed/fp/Effect/exports'
-import { sendSharedEvent } from '@typed/fp/shared/core/events/exports'
-import { Namespace } from '@typed/fp/shared/core/model/exports'
+import { sendSharedEvent } from '@typed/fp/Shared/core/events/exports'
+import { Namespace } from '@typed/fp/Shared/core/model/exports'
 import { fromNullable } from 'fp-ts/Option'
 
 import { getKeyStores } from './getKeyStores'

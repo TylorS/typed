@@ -1,5 +1,5 @@
 import { Pure } from '@typed/fp/Effect/exports'
-import { createShared, getShared, SharedKey } from '@typed/fp/shared/core/exports'
+import { createShared, getShared, SharedKey } from '@typed/fp/Shared/core/exports'
 
 import { State } from './State'
 

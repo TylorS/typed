@@ -1,8 +1,8 @@
 import { raf, RafEnv } from '@typed/fp/dom/raf'
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/scheduler/exports'
-import { getCurrentNamespace, getShared, SharedEnv } from '@typed/fp/shared/core/exports'
-import { HasBeenUpdated } from '@typed/fp/shared/memoNamespace/exports'
+import { getCurrentNamespace, getShared, SharedEnv } from '@typed/fp/Shared/core/exports'
+import { HasBeenUpdated } from '@typed/fp/Shared/memoNamespace/exports'
 
 import { Patch, patch } from './Patch'
 

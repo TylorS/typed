@@ -1,12 +1,12 @@
 import { doEffect } from '@typed/fp/Effect/exports'
-import { getNamespaceConsumers } from '@typed/fp/shared/context/exports'
+import { getNamespaceConsumers } from '@typed/fp/Shared/context/exports'
 import {
   getKeyStore,
   sendSharedEvent,
   Shared,
   SharedValueUpdated,
   usingNamespace,
-} from '@typed/fp/shared/core/exports'
+} from '@typed/fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
 
 export function sharedValueUpdated({
