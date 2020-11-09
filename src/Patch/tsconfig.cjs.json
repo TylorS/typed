@@ -13,6 +13,9 @@
       "path": "../Effect/tsconfig.cjs.json"
     },
     {
+      "path": "../Queue/tsconfig.cjs.json"
+    },
+    {
       "path": "../Resume/tsconfig.cjs.json"
     },
     {
@@ -23,9 +26,6 @@
     },
     {
       "path": "../dom/tsconfig.cjs.json"
-    },
-    {
-      "path": "../fibers/tsconfig.cjs.json"
     },
     {
       "path": "../io/tsconfig.cjs.json"

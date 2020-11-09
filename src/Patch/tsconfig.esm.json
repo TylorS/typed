@@ -13,6 +13,9 @@
       "path": "../Effect/tsconfig.esm.json"
     },
     {
+      "path": "../Queue/tsconfig.esm.json"
+    },
+    {
       "path": "../Resume/tsconfig.esm.json"
     },
     {
@@ -23,9 +26,6 @@
     },
     {
       "path": "../dom/tsconfig.esm.json"
-    },
-    {
-      "path": "../fibers/tsconfig.esm.json"
     },
     {
       "path": "../io/tsconfig.esm.json"

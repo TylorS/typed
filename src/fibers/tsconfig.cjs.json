@@ -22,9 +22,6 @@
       "path": "../Scheduler/tsconfig.cjs.json"
     },
     {
-      "path": "../VirtualTimer/tsconfig.cjs.json"
-    },
-    {
       "path": "../common/tsconfig.cjs.json"
     },
     {

@@ -22,9 +22,6 @@
       "path": "../Scheduler/tsconfig.esm.json"
     },
     {
-      "path": "../VirtualTimer/tsconfig.esm.json"
-    },
-    {
       "path": "../common/tsconfig.esm.json"
     },
     {

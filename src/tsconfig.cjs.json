@@ -53,9 +53,6 @@
       "path": "./Uuid/tsconfig.cjs.json"
     },
     {
-      "path": "./VirtualTimer/tsconfig.cjs.json"
-    },
-    {
       "path": "./browser/tsconfig.cjs.json"
     },
     {
