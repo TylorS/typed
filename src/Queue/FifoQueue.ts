@@ -16,7 +16,7 @@ export function createFifoQueue<A>(queue: Array<A>): Queue<A> {
   function dequeueAll() {
     const q = queue.slice()
 
-    queue = []
+    queue.length = 0
 
     return q
   }
