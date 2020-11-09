@@ -1,6 +1,7 @@
 import { WhenIdleEnv } from '@typed/fp/dom/exports'
 import { doEffect, useSome } from '@typed/fp/Effect/exports'
 import { createGuardFromSchema } from '@typed/fp/io/exports'
+import { equals } from '@typed/fp/logic/equals'
 import { createFifoQueue } from '@typed/fp/Queue/exports'
 import {
   Namespace,
@@ -30,9 +31,13 @@ export function createWhenIdleHandlers<A, B>(env: Patch<A, B> & WhenIdleEnv) {
   const scheduler = createIdleScheduler(queue, patchNamespace)
   const addNamespace = (namespace: Namespace) => {
     const eff = doEffect(function* () {
-      queue.enqueue(namespace)
+      if (!queue.some(equals(namespace))) {
+        queue.enqueue(namespace)
+      }
 
-      yield* pipe(scheduler.scheduleNextRun(), useSome(env))
+      if (!scheduler.scheduled) {
+        yield* pipe(scheduler.scheduleNextRun(), useSome(env))
+      }
     })
 
     return eff
