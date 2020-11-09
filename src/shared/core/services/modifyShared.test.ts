@@ -6,7 +6,7 @@ import { doEffect, execPure, provideAll } from '@typed/fp/Effect/exports'
 import { describe, given, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 
-import { defaultSharedEnvProvider } from '../../createSharedEnvProvider/exports'
+import { provideSharedEnv } from '../../createSharedEnvProvider/exports'
 import { createShared } from '../constructors/createShared'
 import { SharedValueUpdated } from '../events/exports'
 import { Namespace, Shared, SharedKeyStore, ValueOf } from '../exports'
@@ -30,7 +30,7 @@ export const test = describe(`modifyShared`, [
         }
       })
 
-      pipe(sut, defaultSharedEnvProvider, execPure)
+      pipe(sut, provideSharedEnv, execPure)
     }),
 
     it(`emits a SharedValueUpdated event`, ({ equal }, done) => {

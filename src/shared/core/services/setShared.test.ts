@@ -7,7 +7,7 @@ import { describe, given, it } from '@typed/test'
 import { contramap, eqNumber } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
 
-import { defaultSharedEnvProvider } from '../../createSharedEnvProvider/exports'
+import { provideSharedEnv } from '../../createSharedEnvProvider/exports'
 import { createShared } from '../constructors/createShared'
 import { SharedValueUpdated } from '../events/exports'
 import { Namespace, Shared, SharedKeyStore } from '../exports'
@@ -32,7 +32,7 @@ export const test = describe(`setShared`, [
         }
       })
 
-      pipe(sut, defaultSharedEnvProvider, execPure)
+      pipe(sut, provideSharedEnv, execPure)
     }),
 
     it(`avoids excess updates using the Shared Eq instance`, ({ same }, done) => {

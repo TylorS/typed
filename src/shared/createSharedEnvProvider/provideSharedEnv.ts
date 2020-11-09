@@ -7,7 +7,7 @@ import { GlobalNamespace } from '../global/Global'
 import { createSharedEnvProvider } from './createSharedEnvProvider'
 import { defaultHandlers } from './defaultHandlers'
 
-export const defaultSharedEnvProvider: Provider<SharedEnv> = (effect) =>
+export const provideSharedEnv: Provider<SharedEnv> = (effect) =>
   pipe(
     effect,
     createSharedEnvProvider({

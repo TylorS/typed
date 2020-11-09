@@ -3,10 +3,10 @@ import { describe, given, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 
 import {
-  defaultSharedEnvProvider,
   deleteShared,
   fromKey,
   Namespace,
+  provideSharedEnv,
   runWithNamespace,
   setShared,
   usingNamespace,
@@ -55,7 +55,7 @@ export const test = describe(`useContext`, [
 
       pipe(
         test,
-        defaultSharedEnvProvider,
+        provideSharedEnv,
         provideAll({
           test: { name: 'initial' },
         }),
