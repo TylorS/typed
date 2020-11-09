@@ -16,15 +16,13 @@ import { getSharedEvents, SharedEvent } from '../core/events/exports'
 import { addDisposable } from '../core/exports'
 import { Namespace } from '../core/model/exports'
 import { SharedEnv } from '../core/services/SharedEnv'
-import { GlobalNamespace } from '../global/exports'
 import { createSharedEnv } from './createSharedEnv'
-import { defaultHandlers } from './defaultHandlers'
 import { SharedEventHandler } from './SharedEventHandler'
 
 export type SharedEnvOptions = {
   readonly namespace: Namespace
   // Optionally configure event listeners for SharedEvents
-  readonly handlers?: ReadonlyArray<SharedEventHandler<any>>
+  readonly handlers: ReadonlyArray<SharedEventHandler<any>>
 }
 
 /**
@@ -32,9 +30,9 @@ export type SharedEnvOptions = {
  * functionality.
  */
 export function createSharedEnvProvider(
-  options: SharedEnvOptions = { namespace: GlobalNamespace },
+  options: SharedEnvOptions,
 ): Provider<SharedEnv, SchedulerEnv> {
-  const { namespace, handlers = defaultHandlers } = options
+  const { namespace, handlers } = options
   const sharedEnv = createSharedEnv(namespace)
 
   if (handlers.length > 0) {

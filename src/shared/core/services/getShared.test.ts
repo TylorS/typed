@@ -2,11 +2,10 @@ import { createAdapter } from '@most/adapter'
 import { runEffects, tap } from '@most/core'
 import { newDefaultScheduler } from '@most/scheduler'
 import { doEffect, execPure, provideAll, Pure } from '@typed/fp/Effect/exports'
-import { provideSchedulerEnv } from '@typed/fp/scheduler/exports'
 import { describe, given, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 
-import { createSharedEnvProvider } from '../../createSharedEnvProvider/exports'
+import { defaultSharedEnvProvider } from '../../createSharedEnvProvider/exports'
 import { createShared } from '../constructors/exports'
 import { SharedEvent, SharedValueCreated } from '../events/exports'
 import { Namespace, SharedKeyStore } from '../exports'
@@ -31,7 +30,7 @@ export const test = describe(`getShared`, [
         }
       })
 
-      pipe(sut, createSharedEnvProvider(), provideSchedulerEnv, execPure)
+      pipe(sut, defaultSharedEnvProvider, execPure)
     }),
 
     it(`emits SharedValueCreated event when does not exist in store`, ({ equal }, done) => {

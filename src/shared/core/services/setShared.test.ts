@@ -3,12 +3,11 @@ import { runEffects, tap } from '@most/core'
 import { newDefaultScheduler } from '@most/scheduler'
 import { Pure } from '@typed/fp/Effect/Effect'
 import { doEffect, execPure, provideAll } from '@typed/fp/Effect/exports'
-import { provideSchedulerEnv } from '@typed/fp/scheduler/exports'
 import { describe, given, it } from '@typed/test'
 import { contramap, eqNumber } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
 
-import { createSharedEnvProvider } from '../../createSharedEnvProvider/exports'
+import { defaultSharedEnvProvider } from '../../createSharedEnvProvider/exports'
 import { createShared } from '../constructors/createShared'
 import { SharedValueUpdated } from '../events/exports'
 import { Namespace, Shared, SharedKeyStore } from '../exports'
@@ -33,7 +32,7 @@ export const test = describe(`setShared`, [
         }
       })
 
-      pipe(sut, createSharedEnvProvider(), provideSchedulerEnv, execPure)
+      pipe(sut, defaultSharedEnvProvider, execPure)
     }),
 
     it(`avoids excess updates using the Shared Eq instance`, ({ same }, done) => {

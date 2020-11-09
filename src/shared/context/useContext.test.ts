@@ -1,10 +1,9 @@
 import { doEffect, execPure, provideAll } from '@typed/fp/Effect/exports'
-import { provideSchedulerEnv } from '@typed/fp/scheduler/exports'
 import { describe, given, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 
 import {
-  createSharedEnvProvider,
+  defaultSharedEnvProvider,
   deleteShared,
   fromKey,
   Namespace,
@@ -56,8 +55,7 @@ export const test = describe(`useContext`, [
 
       pipe(
         test,
-        createSharedEnvProvider(),
-        provideSchedulerEnv,
+        defaultSharedEnvProvider,
         provideAll({
           test: { name: 'initial' },
         }),
