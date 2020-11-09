@@ -1,12 +1,20 @@
 import { Clock } from '@most/types'
 import { whenIdle, WhenIdleEnv } from '@typed/fp/dom/exports'
-import { ask, doEffect, Effect, useWith } from '@typed/fp/Effect/exports'
+import { ask, doEffect, Effect, Provider, useWith } from '@typed/fp/Effect/exports'
 import { FiberEnv, fork } from '@typed/fp/fibers/exports'
 import { chain, sync } from '@typed/fp/Resume/exports'
 import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
-import { getShared, setShared, Shared, SharedEnv, SharedKey } from '@typed/fp/Shared/exports'
+import {
+  getShared,
+  setShared,
+  Shared,
+  SharedEnv,
+  SharedKey,
+  usingGlobal,
+} from '@typed/fp/Shared/exports'
 import { Uri } from '@typed/fp/Uri/exports'
 import { isRight, right } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
 
 import { HttpEnv, HttpOptions } from './HttpEnv'
 import { HttpMethod } from './HttpMethod'
@@ -37,7 +45,9 @@ export interface WithHttpManagementEnv {
   readonly httpCacheCleanupScheduled: Shared<SharedKey, unknown, boolean>
 }
 
-export const withHttpManagement = (options: WithHttpManagementOptions) => {
+export const withHttpManagement = (
+  options: WithHttpManagementOptions,
+): Provider<HttpEnv, HttpEnv & WithHttpManagementEnv & FiberEnv & WhenIdleEnv & SharedEnv> => {
   const { expiration = DEFAULT_EXPIRATION } = options
   const cleanup = clearOldTimestamps(expiration)
 
@@ -45,7 +55,7 @@ export const withHttpManagement = (options: WithHttpManagementOptions) => {
     doEffect(function* () {
       const env = yield* ask<HttpEnv & WithHttpManagementEnv & FiberEnv>()
       const wrappedEnv = createCachedHttpEnv(options, env)
-      const cleanupIsScheduled = yield* getShared(env.httpCacheCleanupScheduled)
+      const cleanupIsScheduled = yield* pipe(env.httpCacheCleanupScheduled, getShared, usingGlobal)
 
       if (!cleanupIsScheduled) {
         yield* setShared(env.httpCacheCleanupScheduled, true)
@@ -136,7 +146,7 @@ const clearOldTimestamps = (
     }
 
     if (notCurrentlyExpired || current.done) {
-      yield* setShared(httpCacheCleanupScheduled, false)
+      yield* usingGlobal(setShared(httpCacheCleanupScheduled, false))
 
       return
     }
