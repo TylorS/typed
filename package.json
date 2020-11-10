@@ -70,7 +70,7 @@
     "update:gitignore": "ts-node ./tools/update-gitignore",
     "update:tsconfig": "ts-node ./tools/update-tsconfigs",
     "preversion": "npm test && npm run update && npm run build",
-    "postversion": "npm publish",
+    "postversion": "npm publish --access=public",
     "watch": "concurrently 'npm:watch:cjs' 'npm:watch:esm'",
     "watch:cjs": "tsc-watch --build --incremental tsconfig.cjs.json --onSuccess 'npm run build:packages'",
     "watch:esm": "tsc-watch --build --incremental tsconfig.esm.json --onSuccess 'npm run build:packages'",
