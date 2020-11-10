@@ -129,7 +129,7 @@ const clearOldTimestamps = (
     let current: IteratorResult<[string, TimestampedResponse]> = iterator.next()
     let notCurrentlyExpired = false
 
-    while (deadline.timeRemaining() > 0 && !deadline.didTimeout && !current.done) {
+    while (deadline.timeRemaining() > 0 && !current.done) {
       const [key, { timestamp }] = current.value
 
       if (timestamp <= expired) {
