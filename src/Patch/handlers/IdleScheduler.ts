@@ -32,11 +32,11 @@ export function createIdleScheduler<E, A>(queue: Queue<A>, f: (value: A) => Effe
       }
     }
 
+    scheduled = false
+
     if (isSome(queue.peek())) {
       return yield* scheduleNextRun()
     }
-
-    scheduled = false
   }
 
   return {

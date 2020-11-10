@@ -1,3 +1,3 @@
 export * from './FifoQueue'
 export * from './LifoQueue'
-export * from './Queue'
+export type { Queue } from './Queue'

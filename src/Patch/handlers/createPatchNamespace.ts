@@ -26,7 +26,7 @@ export function createPatchNamespace<A, B>(Patch: Patch<A, B>) {
       const parent = yield* getNamespaceParent
 
       // Only patch non-root nodes
-      if (isNone(parent)) {
+      if (isNone(parent) || !(yield* hasShared(Renderer))) {
         return
       }
 

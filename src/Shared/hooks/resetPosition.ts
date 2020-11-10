@@ -1,5 +1,9 @@
-import { setShared } from '@typed/fp/Shared/core/exports'
+import { doEffect } from '@typed/fp/Effect/exports'
 
-import { NamespacePosition } from './NamespacePosition'
+import { getNamespacePosition } from './NamespacePosition'
 
-export const resetPosition = setShared(NamespacePosition, 0)
+export const resetPosition = doEffect(function* () {
+  const position = yield* getNamespacePosition
+
+  position.current = 0
+})

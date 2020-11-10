@@ -35,7 +35,9 @@ export const provideSome = curry(
 /**
  * Provide part of the environemnt, enforcing its usage.
  */
-export const useAll = curry(<E, A>(e1: E, fx: Effect<E, A>) => fromEnv(() => toEnv(fx)(e1))) as {
+export const useAll = curry(<E, A>(e1: E, fx: Effect<E, A>) =>
+  fromEnv((e2) => toEnv(fx)({ ...(e2 as object), ...e1 })),
+) as {
   <E, A>(e1: E, fx: Effect<E, A>): Pure<A>
   <E>(e1: E): <A>(fx: Effect<E, A>) => Pure<A>
 }
@@ -44,7 +46,8 @@ export const useAll = curry(<E, A>(e1: E, fx: Effect<E, A>) => fromEnv(() => toE
  * Provide part of the environemnt, allowing for replacement later on.
  */
 export const provideAll = curry(
-  <E, A>(e: E, fx: Effect<E, A>): Pure<A> => fromEnv(() => toEnv(fx)(e)),
+  <E, A>(e: E, fx: Effect<E, A>): Pure<A> =>
+    fromEnv((u: unknown) => toEnv(fx)({ ...e, ...(u as object) })),
 ) as {
   <E, A>(e: E, fx: Effect<E, A>): Pure<A>
   <E>(e: E): <A>(fx: Effect<E, A>) => Pure<A>

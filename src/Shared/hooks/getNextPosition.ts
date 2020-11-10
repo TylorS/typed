@@ -1,12 +1,14 @@
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { setShared, SharedEnv } from '@typed/fp/Shared/core/exports'
+import { SharedEnv } from '@typed/fp/Shared/core/exports'
 
-import { getNamespacePosition, NamespacePosition } from './NamespacePosition'
+import { getNamespacePosition } from './NamespacePosition'
 
 export const getNextPosition: Effect<SharedEnv, number> = doEffect(function* () {
   const position = yield* getNamespacePosition
 
-  yield* setShared(NamespacePosition, position + 1)
+  const current = position.current
 
-  return position
+  position.current = position.current + 1
+
+  return current
 })

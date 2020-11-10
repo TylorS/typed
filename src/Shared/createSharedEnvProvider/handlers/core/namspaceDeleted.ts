@@ -1,7 +1,7 @@
 import { doEffect } from '@typed/fp/Effect/exports'
 import {
-  deleteKeyStore,
   disposeNamespace,
+  getKeyStores,
   Namespace,
   NamespaceDeleted,
   usingNamespace,
@@ -17,5 +17,8 @@ export function namespaceDeleted(event: NamespaceDeleted) {
 
 function* deleteNamespace(namespace: Namespace) {
   yield* disposeNamespace // Dispose of all Resources associated with Namespace
-  yield* deleteKeyStore(namespace) // Delete Namespace from KeyStores
+
+  // Delete namespace
+  const keyStores = yield* getKeyStores
+  keyStores.delete(namespace)
 }
