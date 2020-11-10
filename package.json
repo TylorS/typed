@@ -1,6 +1,6 @@
 {
   "name": "@typed/fp",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Data Structures and Resources for fp-ts",
   "sideEffects": false,
   "dependencies": {
