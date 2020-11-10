@@ -5,13 +5,19 @@ export const forever = <E, A>(
   effect: Effect<E, A>,
   onValue?: (value: A) => void,
 ): Effect<E, never> => {
-  const eff = doEffect(function* () {
-    while (true) {
-      const a = yield* effect
+  if (onValue) {
+    return doEffect(function* () {
+      while (true) {
+        const a = yield* effect
 
-      onValue?.(a)
+        onValue(a)
+      }
+    })
+  }
+
+  return doEffect(function* () {
+    while (true) {
+      yield* effect
     }
   })
-
-  return eff
 }
