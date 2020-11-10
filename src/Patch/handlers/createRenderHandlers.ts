@@ -4,7 +4,7 @@ import {
   NamespaceUpdated,
   SharedValueUpdated,
 } from '@typed/fp/Shared/core/exports'
-import { createSharedEventHandler } from '@typed/fp/Shared/createSharedEnvProvider/exports'
+import { createSharedEventHandler } from '@typed/fp/Shared/exports'
 
 import { Patch } from '../Patch'
 import { createPatchNamespace } from './createPatchNamespace'

@@ -78,6 +78,7 @@
     "Console",
     "Disposable",
     "Effect",
+    "Fiber",
     "Future",
     "Key",
     "Patch",
@@ -86,6 +87,7 @@
     "RemoteData",
     "Resume",
     "Scheduler",
+    "Shared",
     "Storage",
     "Stream",
     "Uri",
@@ -93,14 +95,12 @@
     "browser",
     "common",
     "dom",
-    "fibers",
     "history",
     "http",
     "io",
     "lambda",
     "logging",
     "logic",
-    "node",
-    "shared"
+    "node"
   ]
 }

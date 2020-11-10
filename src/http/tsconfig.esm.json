@@ -16,6 +16,9 @@
       "path": "../Effect/tsconfig.esm.json"
     },
     {
+      "path": "../Fiber/tsconfig.esm.json"
+    },
+    {
       "path": "../Future/tsconfig.esm.json"
     },
     {
@@ -35,9 +38,6 @@
     },
     {
       "path": "../dom/tsconfig.esm.json"
-    },
-    {
-      "path": "../fibers/tsconfig.esm.json"
     }
   ],
   "include": [

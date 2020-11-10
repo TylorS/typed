@@ -17,6 +17,9 @@
       "path": "./Effect/tsconfig.cjs.json"
     },
     {
+      "path": "./Fiber/tsconfig.cjs.json"
+    },
+    {
       "path": "./Future/tsconfig.cjs.json"
     },
     {
@@ -41,6 +44,9 @@
       "path": "./Scheduler/tsconfig.cjs.json"
     },
     {
+      "path": "./Shared/tsconfig.cjs.json"
+    },
+    {
       "path": "./Storage/tsconfig.cjs.json"
     },
     {
@@ -62,9 +68,6 @@
       "path": "./dom/tsconfig.cjs.json"
     },
     {
-      "path": "./fibers/tsconfig.cjs.json"
-    },
-    {
       "path": "./history/tsconfig.cjs.json"
     },
     {
@@ -84,9 +87,6 @@
     },
     {
       "path": "./node/tsconfig.cjs.json"
-    },
-    {
-      "path": "./shared/tsconfig.cjs.json"
     }
   ]
 }

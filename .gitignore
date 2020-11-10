@@ -66,6 +66,7 @@ snowpack.key
 /Console/
 /Disposable/
 /Effect/
+/Fiber/
 /Future/
 /Key/
 /Patch/
@@ -74,6 +75,7 @@ snowpack.key
 /RemoteData/
 /Resume/
 /Scheduler/
+/Shared/
 /Storage/
 /Stream/
 /Uri/
@@ -81,7 +83,6 @@ snowpack.key
 /browser/
 /common/
 /dom/
-/fibers/
 /history/
 /http/
 /io/
@@ -89,4 +90,3 @@ snowpack.key
 /logging/
 /logic/
 /node/
-/shared/

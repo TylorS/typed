@@ -16,6 +16,9 @@
       "path": "../Effect/tsconfig.cjs.json"
     },
     {
+      "path": "../Fiber/tsconfig.cjs.json"
+    },
+    {
       "path": "../Future/tsconfig.cjs.json"
     },
     {
@@ -35,9 +38,6 @@
     },
     {
       "path": "../dom/tsconfig.cjs.json"
-    },
-    {
-      "path": "../fibers/tsconfig.cjs.json"
     }
   ],
   "include": [

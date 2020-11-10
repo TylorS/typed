@@ -5,7 +5,7 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../cjs/shared",
+    "outDir": "../../cjs/Shared",
     "module": "commonjs"
   },
   "references": [

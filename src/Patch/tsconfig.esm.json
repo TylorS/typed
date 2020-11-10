@@ -35,9 +35,6 @@
     },
     {
       "path": "../scheduler/tsconfig.esm.json"
-    },
-    {
-      "path": "../shared/tsconfig.esm.json"
     }
   ],
   "include": [

@@ -5,7 +5,7 @@
     "composite": true,
     "incremental": true,
     "rootDir": "./",
-    "outDir": "../../esm/fibers",
+    "outDir": "../../esm/Fiber",
     "module": "esnext"
   },
   "references": [

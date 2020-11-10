@@ -17,6 +17,9 @@
       "path": "./Effect/tsconfig.esm.json"
     },
     {
+      "path": "./Fiber/tsconfig.esm.json"
+    },
+    {
       "path": "./Future/tsconfig.esm.json"
     },
     {
@@ -41,6 +44,9 @@
       "path": "./Scheduler/tsconfig.esm.json"
     },
     {
+      "path": "./Shared/tsconfig.esm.json"
+    },
+    {
       "path": "./Storage/tsconfig.esm.json"
     },
     {
@@ -62,9 +68,6 @@
       "path": "./dom/tsconfig.esm.json"
     },
     {
-      "path": "./fibers/tsconfig.esm.json"
-    },
-    {
       "path": "./history/tsconfig.esm.json"
     },
     {
@@ -84,9 +87,6 @@
     },
     {
       "path": "./node/tsconfig.esm.json"
-    },
-    {
-      "path": "./shared/tsconfig.esm.json"
     }
   ]
 }
