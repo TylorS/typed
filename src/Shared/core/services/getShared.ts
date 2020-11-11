@@ -11,7 +11,7 @@ export const getShared = <S extends Shared>(shared: S): Effect<SharedEnv, ValueO
   doEffect(function* () {
     const keyStore = yield* getKeyStore
 
-    return yield* getOrCreate(keyStore, shared.key, createShared(shared))
+    return yield* getOrCreate(keyStore, shared.key, () => createShared(shared))
   })
 
 const createShared = <S extends Shared>(shared: S) =>

@@ -20,15 +20,12 @@ import { State } from './State'
  */
 export const getSharedState = <S extends Shared>(
   shared: S,
-): Effect<SharedEnv & EnvOf<S>, State<ValueOf<S>>> => {
-  const eff = doEffect(function* () {
-    const states = yield* getShared(SharedStates)
-
-    return yield* getOrCreate(states, shared.key, createSharedState(shared))
+): Effect<SharedEnv & EnvOf<S>, State<ValueOf<S>>> =>
+  doEffect(function* () {
+    return yield* getOrCreate(yield* getShared(SharedStates), shared.key, () =>
+      createSharedState(shared),
+    )
   })
-
-  return eff
-}
 
 function createSharedState<S extends Shared>(shared: S) {
   const eff = doEffect(function* () {

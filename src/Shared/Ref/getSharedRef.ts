@@ -17,7 +17,7 @@ export const getSharedRef = <S extends Shared>(
       return refs.get(shared.key)!
     }
 
-    const ref = createRef(yield* getShared(shared))
+    const ref = createRef(yield* shared.initial)
 
     refs.set(shared.key, ref)
 

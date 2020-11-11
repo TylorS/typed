@@ -8,9 +8,5 @@ export const getNextSymbol: Effect<SharedEnv, symbol> = doEffect(function* () {
   const position = yield* getNextPosition
   const symbols = yield* getNamespaceSymbols
 
-  return yield* getOrCreate(
-    symbols,
-    position,
-    Pure.fromIO(() => Symbol(`HookPosition: ${position}`)),
-  )
+  return yield* getOrCreate(symbols, position, () => Pure.of(Symbol(`HookPosition: ${position}`)))
 })

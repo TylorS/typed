@@ -15,12 +15,11 @@ export const getKeyStore: Effect<SharedEnv, SharedKeyStore> = doEffect(function*
   return yield* getOrCreate(keyStores, namespace, createNewKeyStore)
 })
 
-const createNewKeyStore: Effect<SharedEventEnv & CurrentNamespaceEnv, SharedKeyStore> = doEffect(
-  function* () {
+const createNewKeyStore = (): Effect<SharedEventEnv & CurrentNamespaceEnv, SharedKeyStore> =>
+  doEffect(function* () {
     const namespace = yield* getCurrentNamespace
 
     yield* sendSharedEvent({ type: 'namespace/created', namespace })
 
     return new Map()
-  },
-)
+  })

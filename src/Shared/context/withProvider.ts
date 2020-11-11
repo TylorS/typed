@@ -40,7 +40,7 @@ export const withProvider = <S extends Shared, E, A>(
     const consumers = yield* getOrCreate(
       yield* pipe(getNamespaceConsumers, usingNamespace(provider)),
       shared.key,
-      Pure.fromIO(() => new Map<Namespace, Set<Eq<unknown>>>()),
+      () => Pure.of(new Map<Namespace, Set<Eq<unknown>>>()),
     )
 
     addToSet(consumers, namespace, shared.eq)
