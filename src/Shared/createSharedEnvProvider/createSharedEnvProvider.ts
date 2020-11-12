@@ -11,6 +11,8 @@ import {
 } from '@typed/fp/Effect/exports'
 import { SchedulerEnv } from '@typed/fp/scheduler/exports'
 import { constVoid, pipe } from 'fp-ts/function'
+import { isNonEmpty } from 'fp-ts/lib/ReadonlyArray'
+import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
 
 import { getSharedEvents, SharedEvent } from '../core/events/exports'
 import { addDisposable } from '../core/exports'
@@ -21,9 +23,10 @@ import { createSharedEnv } from './createSharedEnv'
 import { SharedEventHandler } from './SharedEventHandler'
 
 export type SharedEnvOptions = {
-  readonly namespace?: Namespace
-  // Optionally configure event listeners for SharedEvents
+  // Configure event listeners for SharedEvents
   readonly handlers: ReadonlyArray<SharedEventHandler<any>>
+  // Configure the namespace used as the root.
+  readonly namespace?: Namespace
 }
 
 /**
@@ -36,15 +39,11 @@ export function createSharedEnvProvider(
   const { namespace = GlobalNamespace, handlers } = options
   const sharedEnv = createSharedEnv(namespace)
 
-  if (handlers.length > 0) {
-    return useWith(listenToEvents(handlers, sharedEnv))
-  }
-
-  return (eff) => pipe(eff, useSome(sharedEnv))
+  return isNonEmpty(handlers) ? useWith(listenToEvents(handlers, sharedEnv)) : useSome(sharedEnv)
 }
 
 const listenToEvents = (
-  handlers: ReadonlyArray<SharedEventHandler<any>>,
+  handlers: ReadonlyNonEmptyArray<SharedEventHandler<any>>,
   env: SharedEnv,
 ): Effect<SchedulerEnv, SharedEnv> => {
   const eff = doEffect(function* () {
