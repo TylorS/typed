@@ -3,7 +3,6 @@ import { Resume, sync } from '@typed/fp/Resume/exports'
 import { flow } from 'fp-ts/function'
 import { IO } from 'fp-ts/IO'
 import { Reader } from 'fp-ts/Reader'
-import { U } from 'ts-toolbelt'
 
 /**
  * An Iterable used to represent Effects which work like lightweight coroutines
@@ -18,7 +17,11 @@ export namespace Effect {
 }
 
 /**
- * An Effect which has no particular requirement on the environment
+ * An Effect which has no particular requirement on the environment. It has
+ * been chosen to represent the "empty environment" using `unknown` because
+ * A & unknown == A. However, it is often possible to get into an edge case
+ * where you can pass an Effect<E, A> to a function expecting a Pure<A>
+ * and not get a type-error.
  */
 export type Pure<A> = Effect<unknown, A>
 export const Pure = Effect
@@ -26,7 +29,7 @@ export const Pure = Effect
 /**
  * The underlying generator that allows modeling lightweight coroutines
  */
-export type EffectGenerator<E, A> = Generator<Env<E, any>, A>
+export type EffectGenerator<E, A> = Generator<Env<E, any>, A, unknown>
 
 /**
  * A monadic environment type which can be yielded within an Effect
@@ -48,14 +51,10 @@ export function fromEnv<E, A>(env: Env<E, A>): Effect<E, A> {
  */
 export type EffectOf<A> = A extends Effect<infer E, infer B>
   ? Effect<E, B>
-  : A extends Generator<infer E, infer B>
-  ? Effect<And<U.ListOf<E>>, B>
   : IsNever<ReturnTypeOf<A>> extends true
   ? never
   : ReturnTypeOf<A> extends Effect<infer E, infer B>
   ? Effect<E, B>
-  : ReturnTypeOf<A> extends Generator<infer E, infer B>
-  ? Effect<And<U.ListOf<E>>, B>
   : never
 
 /**

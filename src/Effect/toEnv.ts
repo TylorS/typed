@@ -16,15 +16,19 @@ const effectGeneratorToResume = <E, A>(
   result: IteratorResult<Env<E, unknown>, A>,
   env: E,
 ): Resume<A> => {
-  while (!result.done) {
-    const resume = result.value(env)
+  try {
+    while (!result.done) {
+      const resume = result.value(env)
 
-    if (resume.async) {
-      return chain((a) => effectGeneratorToResume(generator, generator.next(a), env), resume)
+      if (resume.async) {
+        return chain((a) => effectGeneratorToResume(generator, generator.next(a), env), resume)
+      }
+
+      result = generator.next(resume.value)
     }
 
-    result = generator.next(resume.value)
+    return sync(result.value)
+  } catch (error) {
+    return effectGeneratorToResume(generator, generator.throw(error), env)
   }
-
-  return sync(result.value)
 }
