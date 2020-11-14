@@ -8,7 +8,7 @@ import { describe, given, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 
 import { SharedValueDeleted } from '../events/exports'
-import { createShared, Namespace, Shared, SharedKeyStore, ValueOf } from '../exports'
+import { createShared, GetSharedValue, Namespace, Shared, SharedKeyStore } from '../exports'
 import { deleteShared } from './deleteShared'
 
 export const test = describe(`deleteShared`, [
@@ -89,7 +89,7 @@ export const test = describe(`deleteShared`, [
   ]),
 ])
 
-function createKeyStoresFrom<S extends Shared>(state: S, initial: ValueOf<S>) {
+function createKeyStoresFrom<S extends Shared>(state: S, initial: GetSharedValue<S>) {
   const namespaceA = Namespace.wrap('a')
   const keyStoreA: SharedKeyStore<typeof state> = new Map([[state.key, initial]])
 

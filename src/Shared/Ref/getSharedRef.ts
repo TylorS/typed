@@ -1,5 +1,11 @@
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { EnvOf, getShared, Shared, SharedEnv, ValueOf } from '@typed/fp/Shared/core/exports'
+import {
+  getShared,
+  GetSharedEnv,
+  GetSharedValue,
+  Shared,
+  SharedEnv,
+} from '@typed/fp/Shared/core/exports'
 
 import { NamespaceRefs } from './NamespaceRefs'
 import { createRef, Ref } from './Ref'
@@ -9,7 +15,7 @@ import { createRef, Ref } from './Ref'
  */
 export const getSharedRef = <S extends Shared>(
   shared: S,
-): Effect<SharedEnv & EnvOf<S>, Ref<ValueOf<S>>> =>
+): Effect<SharedEnv & GetSharedEnv<S>, Ref<GetSharedValue<S>>> =>
   doEffect(function* () {
     const refs = yield* getShared(NamespaceRefs)
 

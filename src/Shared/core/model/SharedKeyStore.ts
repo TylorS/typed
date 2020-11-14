@@ -1,3 +1,4 @@
-import { KeyOf, Shared, ValueOf } from './Shared'
+import { GetSharedKey, GetSharedValue, Shared } from './Shared'
 
-export interface SharedKeyStore<S extends Shared = Shared> extends Map<KeyOf<S>, ValueOf<S>> {}
+export interface SharedKeyStore<S extends Shared = Shared>
+  extends Map<GetSharedKey<S>, GetSharedValue<S>> {}

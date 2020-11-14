@@ -9,7 +9,7 @@ import { pipe } from 'fp-ts/function'
 import { provideSharedEnv } from '../../createSharedEnvProvider/exports'
 import { createShared } from '../constructors/createShared'
 import { SharedValueUpdated } from '../events/exports'
-import { Namespace, Shared, SharedKeyStore, ValueOf } from '../exports'
+import { GetSharedValue, Namespace, Shared, SharedKeyStore } from '../exports'
 import { getShared } from './getShared'
 import { modifyShared } from './modifyShared'
 
@@ -82,7 +82,7 @@ export const test = describe(`modifyShared`, [
   ]),
 ])
 
-function createKeyStoresFrom<S extends Shared>(state: S, initial: ValueOf<S>) {
+function createKeyStoresFrom<S extends Shared>(state: S, initial: GetSharedValue<S>) {
   const namespaceA = Namespace.wrap('a')
   const keyStoreA: SharedKeyStore<typeof state> = new Map([[state.key, initial]])
 

@@ -2,7 +2,7 @@ import { doEffect, Effect } from '@typed/fp/Effect/exports'
 import { curry } from '@typed/fp/lambda/exports'
 
 import { sendSharedEvent } from '../events/exports'
-import { Shared, ValueOf } from '../model/Shared'
+import { GetSharedValue, Shared } from '../model/Shared'
 import { getCurrentNamespace } from './getCurrentNamespace'
 import { getKeyStore } from './getKeyStore'
 import { getShared } from './getShared'
@@ -12,7 +12,7 @@ import { SharedEnv } from './SharedEnv'
  * Set the Shared Value.
  */
 export const setShared = curry(
-  <S extends Shared>(shared: S, value: ValueOf<S>): Effect<SharedEnv, ValueOf<S>> =>
+  <S extends Shared>(shared: S, value: GetSharedValue<S>): Effect<SharedEnv, GetSharedValue<S>> =>
     doEffect(function* () {
       const current = yield* getShared(shared)
 
@@ -37,6 +37,6 @@ export const setShared = curry(
       return value
     }),
 ) as {
-  <S extends Shared>(shared: S, value: ValueOf<S>): Effect<SharedEnv, ValueOf<S>>
-  <S extends Shared>(shared: S): (value: ValueOf<S>) => Effect<SharedEnv, ValueOf<S>>
+  <S extends Shared>(shared: S, value: GetSharedValue<S>): Effect<SharedEnv, GetSharedValue<S>>
+  <S extends Shared>(shared: S): (value: GetSharedValue<S>) => Effect<SharedEnv, GetSharedValue<S>>
 }

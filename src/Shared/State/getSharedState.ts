@@ -1,15 +1,15 @@
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
 import {
-  EnvOf,
   getCurrentNamespace,
   getKeyStore,
   getOrCreate,
   getSendSharedEvent,
   getShared,
+  GetSharedEnv,
+  GetSharedValue,
   setShared,
   Shared,
   SharedEnv,
-  ValueOf,
 } from '@typed/fp/Shared/core/exports'
 
 import { SharedStates } from './NamespaceStates'
@@ -20,7 +20,7 @@ import { State } from './State'
  */
 export const getSharedState = <S extends Shared>(
   shared: S,
-): Effect<SharedEnv & EnvOf<S>, State<ValueOf<S>>> =>
+): Effect<SharedEnv & GetSharedEnv<S>, State<GetSharedValue<S>>> =>
   doEffect(function* () {
     return yield* getOrCreate(yield* getShared(SharedStates), shared.key, () =>
       createSharedState(shared),
@@ -38,12 +38,12 @@ function createSharedState<S extends Shared>(shared: S) {
       yield* setShared(shared, initial)
     }
 
-    const get = (): ValueOf<S> =>
+    const get = (): GetSharedValue<S> =>
       keyStore.has(shared.key)
         ? keyStore.get(shared.key)!
         : keyStore.set(shared.key, initial).get(shared.key)!
 
-    const set = (value: ValueOf<S>) => {
+    const set = (value: GetSharedValue<S>) => {
       const current = get()
 
       keyStore.set(shared.key, value)
@@ -61,7 +61,7 @@ function createSharedState<S extends Shared>(shared: S) {
       return value
     }
 
-    const state: State<ValueOf<S>> = [get, set]
+    const state: State<GetSharedValue<S>> = [get, set]
 
     return state
   })

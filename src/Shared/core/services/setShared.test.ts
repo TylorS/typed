@@ -11,7 +11,7 @@ import { provideSharedEnv } from '../../createSharedEnvProvider/exports'
 import { createShared } from '../constructors/createShared'
 import { SharedValueUpdated } from '../events/exports'
 import { Namespace, Shared, SharedKeyStore } from '../exports'
-import { ValueOf } from '../model/Shared'
+import { GetSharedValue } from '../model/Shared'
 import { getShared } from './getShared'
 import { setShared } from './setShared'
 
@@ -127,7 +127,7 @@ export const test = describe(`setShared`, [
   ]),
 ])
 
-function createKeyStoresFrom<S extends Shared>(state: S, initial: ValueOf<S>) {
+function createKeyStoresFrom<S extends Shared>(state: S, initial: GetSharedValue<S>) {
   const namespaceA = Namespace.wrap('a')
   const keyStoreA: SharedKeyStore<typeof state> = new Map([[state.key, initial]])
 

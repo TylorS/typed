@@ -29,15 +29,15 @@ export namespace Shared {
 /**
  * Get the key of a shared value type
  */
-export type KeyOf<A extends Shared> = A['key']
+export type GetSharedKey<A extends Shared> = A['key']
 
 /**
  * Get the value of a shared value type
  */
-export type ValueOf<A extends Shared> = ReturnOf<A['initial']>
+export type GetSharedValue<A extends Shared> = ReturnOf<A['initial']>
 
 /**
  * Get the requirements for a Shared value to satisfy it's
  * type-signature.
  */
-export type EnvOf<A extends Shared> = EffEnv<A['initial']>
+export type GetSharedEnv<A extends Shared> = EffEnv<A['initial']>

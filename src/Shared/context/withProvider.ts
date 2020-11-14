@@ -2,10 +2,10 @@ import { Effect, Pure } from '@typed/fp/Effect/Effect'
 import { doEffect } from '@typed/fp/Effect/exports'
 import { addToSet } from '@typed/fp/Shared/common/addToSet'
 import {
-  EnvOf,
   getCurrentNamespace,
   getKeyStores,
   getOrCreate,
+  GetSharedEnv,
   Namespace,
   Shared,
   SharedEnv,
@@ -31,7 +31,7 @@ import { getNamspaceProviders } from './NamespaceProviders'
 export const withProvider = <S extends Shared, E, A>(
   shared: S,
   f: (provider: Namespace) => Effect<E, A>,
-): Effect<E & SharedEnv & EnvOf<S>, A> => {
+): Effect<E & SharedEnv & GetSharedEnv<S>, A> => {
   const eff = doEffect(function* () {
     const namespace = yield* getCurrentNamespace
     const keyStores = yield* getKeyStores
