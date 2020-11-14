@@ -115,7 +115,7 @@ async function updateBuildConfig(path: string, moduleType: ModuleType) {
 
     json.extends = relative(directory, BASE_TSCONFIG_PATH.replace('base', moduleType))
     json.files = []
-    json.includes = []
+    json.include = ['./exports.ts']
     json.compilerOptions =
       moduleType === 'esm'
         ? { outDir: relative(directory, ESM_BUILD_PATH), module: 'esnext' }

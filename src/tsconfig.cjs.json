@@ -5,7 +5,9 @@
   },
   "extends": "../tsconfig.cjs.json",
   "files": [],
-  "includes": [],
+  "includes": [
+    "./exports.ts"
+  ],
   "references": [
     {
       "path": "./Console/tsconfig.cjs.json"
@@ -88,5 +90,8 @@
     {
       "path": "./node/tsconfig.cjs.json"
     }
+  ],
+  "include": [
+    "./exports.ts"
   ]
 }

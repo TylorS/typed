@@ -5,7 +5,9 @@
   },
   "extends": "../tsconfig.esm.json",
   "files": [],
-  "includes": [],
+  "includes": [
+    "./exports.ts"
+  ],
   "references": [
     {
       "path": "./Console/tsconfig.esm.json"
@@ -88,5 +90,8 @@
     {
       "path": "./node/tsconfig.esm.json"
     }
+  ],
+  "include": [
+    "./exports.ts"
   ]
 }
