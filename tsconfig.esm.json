@@ -101,6 +101,7 @@
     "lambda",
     "logging",
     "logic",
-    "node"
+    "node",
+    "./src/node"
   ]
 }
