@@ -1,6 +1,6 @@
 {
   "name": "@typed/fp",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Data Structures and Resources for fp-ts",
   "main": "./cjs/exports.js",
   "module": "./esm/exports.js",
