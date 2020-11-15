@@ -78,9 +78,7 @@
     "postversion": "npm publish --access=public",
     "watch": "concurrently 'npm:watch:cjs' 'npm:watch:esm'",
     "watch:cjs": "tsc-watch --build --incremental tsconfig.cjs.json --onSuccess 'npm run build:packages'",
-    "watch:esm": "tsc-watch --build --incremental tsconfig.esm.json --onSuccess 'npm run update:package-exports'",
-    "--helpers--": "",
-    "postinstall": "ts-patch install"
+    "watch:esm": "tsc-watch --build --incremental tsconfig.esm.json --onSuccess 'npm run update:package-exports'"
   },
   "repository": {
     "type": "git",
