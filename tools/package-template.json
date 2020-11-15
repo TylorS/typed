@@ -2,5 +2,6 @@
   "main": "%main%",
   "types": "%types%",
   "module": "%module%",
+  "browser": "%browser%",
   "sideEffects": false
 }

@@ -96,6 +96,7 @@
     "url": "https://github.com/TylorS/typed-fp/issues"
   },
   "homepage": "https://github.com/TylorS/typed-fp#readme",
+  "*---*---*GENERATED*---*---*": "",
   "exports": {
     ".": {
       "require": "./cjs/exports.js",

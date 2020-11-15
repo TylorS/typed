@@ -6,6 +6,7 @@ import { MODULES, readRelativeFile, ROOT_DIR, SOURCE_DIR } from './common'
 const MAIN_REGEX = new RegExp('%main%', 'g')
 const TYPES_REGEX = new RegExp('%types%', 'g')
 const MODULE_REGEX = new RegExp('%module%', 'g')
+const BROWSER_REGEX = new RegExp('%browser%', 'g')
 
 const PACKAGE_JSON_TEMPLATE = readRelativeFile(__dirname, 'package-template.json')
 const TS_REGEX = /.tsx?$/g
@@ -27,7 +28,8 @@ function createExportTemplate(name: string) {
   const main = `../cjs/${name}/exports.js`
   const types = `../cjs/${name}/exports.d.ts`
   const module = `../esm/${name}/exports.d.ts`
-  const packageJsonContents = createPkgJson(main, types, module)
+  const browser = `../browser/${name}/exports.js`
+  const packageJsonContents = createPkgJson(main, types, module, browser)
 
   writeFileSync(packageJsonPath, packageJsonContents)
 }
@@ -47,6 +49,7 @@ function createPackageFor(name: string, filePath: string) {
   const srcDir = join(SOURCE_DIR, name)
   const cjsDir = join(ROOT_DIR, 'cjs', name)
   const esmDir = join(ROOT_DIR, 'esm', name)
+  const browserDir = join(ROOT_DIR, 'build', name)
   const relativeSrcPath = relative(srcDir, filePath)
   const relativePath = relativeSrcPath.replace(TS_REGEX, '')
   const modulePath = join(moduleDir, relativePath)
@@ -54,12 +57,14 @@ function createPackageFor(name: string, filePath: string) {
   const cjsPath = join(cjsDir, relativePath)
   const typesPath = join(cjsDir, relativePath)
   const esmPath = join(esmDir, relativePath)
+  const browserPath = join(browserDir, relativePath)
 
   const main = relative(modulePath, cjsPath) + '.js'
   const types = relative(modulePath, typesPath) + '.d.ts'
   const module = relative(modulePath, esmPath) + '.js'
+  const browser = relative(modulePath, browserPath) + '.js'
 
-  const json = createPkgJson(main, types, module)
+  const json = createPkgJson(main, types, module, browser)
 
   mkdir(modulePath)
 
@@ -101,8 +106,9 @@ function shouldCreatePackageFor(fileName: string) {
   return true
 }
 
-function createPkgJson(main: string, types: string, module: string): string {
+function createPkgJson(main: string, types: string, module: string, browser: string): string {
   return PACKAGE_JSON_TEMPLATE.replace(MAIN_REGEX, main)
     .replace(TYPES_REGEX, types)
     .replace(MODULE_REGEX, module)
+    .replace(BROWSER_REGEX, browser)
 }
