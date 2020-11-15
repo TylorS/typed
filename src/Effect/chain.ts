@@ -7,11 +7,8 @@ import { Effect } from './Effect'
 export const chain = curry(
   <A, E1, B, E2>(f: Arity1<A, Effect<E1, B>>, eff: Effect<E2, A>): Effect<E1 & E2, B> =>
     doEffect(function* () {
-      const a = yield* eff
-      const b = yield* f(a)
-
-      return b
-    }),
+      return yield* f(yield* eff)
+    }) as Effect<E1 & E2, B>,
 ) as {
   <A, E1, B, E2>(f: Arity1<A, Effect<E1, B>>, eff: Effect<E2, A>): Effect<E2 & E1, B>
   <A, E1, B>(f: Arity1<A, Effect<E1, B>>): <E2>(eff: Effect<E2, A>) => Effect<E2 & E1, B>
