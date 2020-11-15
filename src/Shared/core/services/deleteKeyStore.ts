@@ -1,7 +1,8 @@
-import { doEffect } from '@typed/fp/Effect/exports'
+import { doEffect, Effect } from '@typed/fp/Effect/exports'
 import { sendSharedEvent } from '@typed/fp/Shared/core/events/exports'
-import { Namespace } from '@typed/fp/Shared/core/model/exports'
-import { fromNullable } from 'fp-ts/Option'
+import { Namespace, SharedKeyStore } from '@typed/fp/Shared/core/model/exports'
+import { SharedEnv } from '@typed/fp/Shared/core/services/SharedEnv'
+import { fromNullable, Option } from 'fp-ts/Option'
 
 import { getKeyStores } from './getKeyStores'
 
@@ -9,7 +10,7 @@ import { getKeyStores } from './getKeyStores'
  * Delete a Namespace from NamespaceKeyStores, sending out a Deleted
  * event.
  */
-export const deleteKeyStore = (namespace: Namespace) =>
+export const deleteKeyStore = (namespace: Namespace): Effect<SharedEnv, Option<SharedKeyStore>> =>
   doEffect(function* () {
     const keyStores = yield* getKeyStores
     const keyStore = keyStores.get(namespace)

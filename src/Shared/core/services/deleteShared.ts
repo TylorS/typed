@@ -2,7 +2,7 @@ import { doEffect, Effect } from '@typed/fp/Effect/exports'
 import { none, Option, some } from 'fp-ts/Option'
 
 import { sendSharedEvent } from '../events/exports'
-import { GetSharedValue, Shared } from '../model/exports'
+import { GetSharedEnv, GetSharedValue, Shared } from '../model/exports'
 import { getCurrentNamespace } from './getCurrentNamespace'
 import { getKeyStore } from './getKeyStore'
 import { SharedEnv } from './SharedEnv'
@@ -12,7 +12,7 @@ import { SharedEnv } from './SharedEnv'
  */
 export const deleteShared = <S extends Shared>(
   shared: S,
-): Effect<SharedEnv, Option<GetSharedValue<S>>> =>
+): Effect<SharedEnv & GetSharedEnv<S>, Option<GetSharedValue<S>>> =>
   doEffect(function* () {
     const keyStore = yield* getKeyStore
 

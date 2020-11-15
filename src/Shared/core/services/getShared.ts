@@ -1,18 +1,24 @@
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
 
 import { sendSharedEvent } from '../events/exports'
-import { GetSharedValue, Shared } from '../model/Shared'
+import { GetSharedEnv, GetSharedValue, Shared } from '../model/Shared'
 import { getCurrentNamespace } from './getCurrentNamespace'
 import { getKeyStore } from './getKeyStore'
 import { getOrCreate } from './getOrCreate'
 import { SharedEnv } from './SharedEnv'
 
-export const getShared = <S extends Shared>(shared: S): Effect<SharedEnv, GetSharedValue<S>> =>
-  doEffect(function* () {
+export function getShared<S extends Shared>(
+  shared: S,
+): Effect<SharedEnv & GetSharedEnv<S>, GetSharedValue<S>> {
+  const eff = doEffect(function* () {
     const keyStore = yield* getKeyStore
+    const value = yield* getOrCreate(keyStore, shared.key, () => createShared(shared))
 
-    return yield* getOrCreate(keyStore, shared.key, () => createShared(shared))
+    return value as GetSharedValue<S>
   })
+
+  return eff
+}
 
 const createShared = <S extends Shared>(shared: S) =>
   doEffect(function* () {
