@@ -29,9 +29,13 @@ function createExportTemplate(name: string) {
   const types = `../cjs/${name}/exports.d.ts`
   const module = `../esm/${name}/exports.d.ts`
   const browser = `../browser/${name}/exports.js`
-  const packageJsonContents = createPkgJson(main, types, module, browser)
+  const packageJsonContents = JSON.parse(createPkgJson(main, types, module, browser))
 
-  writeFileSync(packageJsonPath, packageJsonContents)
+  if (name === 'node') {
+    delete packageJsonContents.browser
+  }
+
+  writeFileSync(packageJsonPath, JSON.stringify(packageJsonContents, null, 2) + '\n')
 }
 
 function readAllFiles(directory: string): ReadonlyArray<string> {
@@ -64,11 +68,15 @@ function createPackageFor(name: string, filePath: string) {
   const module = relative(modulePath, esmPath) + '.js'
   const browser = relative(modulePath, browserPath) + '.js'
 
-  const json = createPkgJson(main, types, module, browser)
+  const json = JSON.parse(createPkgJson(main, types, module, browser))
+
+  if (name === 'node') {
+    delete json.browser
+  }
 
   mkdir(modulePath)
 
-  writeFileSync(jsonPath, json)
+  writeFileSync(jsonPath, JSON.stringify(json, null, 2) + '\n')
 }
 
 function mkdir(directory: string) {

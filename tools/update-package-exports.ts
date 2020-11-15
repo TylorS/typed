@@ -13,8 +13,10 @@ packageJson.exports = createExports()
 
 fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + `\n`)
 
+type ExportMap = { require: string; import: string; browser?: string }
+
 export function createExports() {
-  const exports: Record<string, { require: string; import: string; browser: string }> = {
+  const exports: Record<string, ExportMap> = {
     '.': {
       require: './cjs/exports.js',
       import: './esm/exports.js',
@@ -38,12 +40,18 @@ export function createExports() {
 
     for (const filePath of filePaths) {
       const relativePath = path.relative(sourceDir, filePath)
-
-      exports[`./${module}/${relativePath.replace('.ts', '')}`] = {
-        require: './' + path.join('cjs', module, relativePath.replace('.ts', '.js')),
-        import: './' + path.join('esm', module, relativePath.replace('.ts', '.js')),
-        browser: './' + path.join('build', module, relativePath.replace('.ts', '.js')),
+      const jsPath = relativePath.replace('.ts', '.js')
+      const map: ExportMap = {
+        require: './' + path.join('cjs', module, jsPath),
+        import: './' + path.join('esm', module, jsPath),
+        browser: './' + path.join('build', module, jsPath),
       }
+
+      if (module === 'node') {
+        delete map.browser
+      }
+
+      exports[`./${module}/${relativePath.replace('.ts', '')}`] = map
     }
   }
 

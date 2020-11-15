@@ -1710,43 +1710,35 @@
     },
     "./node/RafEnv": {
       "require": "./cjs/node/RafEnv.js",
-      "import": "./esm/node/RafEnv.js",
-      "browser": "./build/node/RafEnv.js"
+      "import": "./esm/node/RafEnv.js"
     },
     "./node/UuidEnv": {
       "require": "./cjs/node/UuidEnv.js",
-      "import": "./esm/node/UuidEnv.js",
-      "browser": "./build/node/UuidEnv.js"
+      "import": "./esm/node/UuidEnv.js"
     },
     "./node/WhenIdleEnv": {
       "require": "./cjs/node/WhenIdleEnv.js",
-      "import": "./esm/node/WhenIdleEnv.js",
-      "browser": "./build/node/WhenIdleEnv.js"
+      "import": "./esm/node/WhenIdleEnv.js"
     },
     "./node/exports": {
       "require": "./cjs/node/exports.js",
-      "import": "./esm/node/exports.js",
-      "browser": "./build/node/exports.js"
+      "import": "./esm/node/exports.js"
     },
     "./node/HistoryEnv/ServerHistory": {
       "require": "./cjs/node/HistoryEnv/ServerHistory.js",
-      "import": "./esm/node/HistoryEnv/ServerHistory.js",
-      "browser": "./build/node/HistoryEnv/ServerHistory.js"
+      "import": "./esm/node/HistoryEnv/ServerHistory.js"
     },
     "./node/HistoryEnv/ServerLocation": {
       "require": "./cjs/node/HistoryEnv/ServerLocation.js",
-      "import": "./esm/node/HistoryEnv/ServerLocation.js",
-      "browser": "./build/node/HistoryEnv/ServerLocation.js"
+      "import": "./esm/node/HistoryEnv/ServerLocation.js"
     },
     "./node/HistoryEnv/createHistoryEnv": {
       "require": "./cjs/node/HistoryEnv/createHistoryEnv.js",
-      "import": "./esm/node/HistoryEnv/createHistoryEnv.js",
-      "browser": "./build/node/HistoryEnv/createHistoryEnv.js"
+      "import": "./esm/node/HistoryEnv/createHistoryEnv.js"
     },
     "./node/HistoryEnv/exports": {
       "require": "./cjs/node/HistoryEnv/exports.js",
-      "import": "./esm/node/HistoryEnv/exports.js",
-      "browser": "./build/node/HistoryEnv/exports.js"
+      "import": "./esm/node/HistoryEnv/exports.js"
     }
   }
 }

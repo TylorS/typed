@@ -1,34 +1,6 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": "./src",
-    "paths": {
-      "@typed/fp/*": [
-        "./*"
-      ]
-    },
-    "allowSyntheticDefaultImports": true,
-    "declaration": true,
-    "declarationMap": true,
-    "esModuleInterop": true,
-    "importHelpers": true,
-    "isolatedModules": true,
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "preserveConstEnums": true,
-    "strict": true,
-    "strictFunctionTypes": true,
-    "strictNullChecks": true,
-    "strictPropertyInitialization": true,
-    "sourceMap": true,
-    "target": "es2019",
-    "lib": [
-      "dom",
-      "es2019"
-    ],
     "plugins": [
       {
         "transform": "@zerollup/ts-transform-paths",

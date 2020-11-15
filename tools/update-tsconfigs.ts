@@ -88,10 +88,13 @@ updatePluginConfigs()
 async function updatePluginConfig(path: string, moduleType: ModuleType) {
   console.log(`Updating Plugin Config [${moduleType}]: ${path}`)
 
-  const json = JSON.parse((await readFile(BASE_TSCONFIG_PATH)).toString())
-
-  json.compilerOptions.plugins = BASE_PLUGINS
-  json.exclude = [...DEFAULT_EXCLUSIONS_PATH, ...MODULES.map((m) => `${m}`)]
+  const json = {
+    extends: './tsconfig.base.json',
+    compilerOptions: {
+      plugins: BASE_PLUGINS,
+    },
+    exclude: [...DEFAULT_EXCLUSIONS_PATH, ...MODULES.map((m) => `${m}`)],
+  }
 
   await writeFile(path, JSON.stringify(json, null, 2) + EOL)
 }
