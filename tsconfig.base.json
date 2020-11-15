@@ -10,6 +10,7 @@
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "declarationMap": true,
+    "esModuleInterop": true,
     "importHelpers": true,
     "isolatedModules": true,
     "module": "CommonJS",

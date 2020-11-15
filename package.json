@@ -4,6 +4,7 @@
   "description": "Data Structures and Resources for fp-ts",
   "main": "./cjs/exports.js",
   "module": "./esm/exports.js",
+  "browser": "./build/exports.js",
   "types": "./cjs/exports.d.ts",
   "sideEffects": false,
   "dependencies": {
@@ -41,7 +42,7 @@
     "lint-staged": "^10.5.1",
     "prettier": "^2.1.2",
     "rimraf": "^3.0.2",
-    "ts-morph": "^8.1.2",
+    "snowpack": "^2.17.1",
     "ts-node": "^9.0.0",
     "ts-patch": "^1.3.0",
     "ts-transformer-replace-paths": "^1.0.1",
@@ -50,7 +51,8 @@
   },
   "scripts": {
     "--maintenance--": "",
-    "build": "npm run check:ts-patch && npm run build:typescript && npm run build:packages",
+    "build": "npm run check:ts-patch && concurrently 'npm:build:typescript' 'npm:build:browser' && concurrently 'npm:build:packages' 'npm:update:package-exports'",
+    "build:browser": "snowpack build",
     "build:packages": "ts-node ./tools/build-packages",
     "build:packages:cjs": "ts-node ./tools/build-packages --cjs",
     "build:packages:esm": "ts-node ./tools/build-packages --esm",
@@ -63,7 +65,6 @@
     "clean:typescript": "concurrently 'npm:clean:typescript:cjs' 'npm:clean:typescript:esm'",
     "clean:typescript:cjs": "npm run build:typescript:cjs -- --clean",
     "clean:typescript:esm": "npm run build:typescript:esm -- --clean",
-    "docs": "ts-node ./node_modules/.bin/docs-ts",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
     "unit-test": "typed-test",
     "test": "concurrently 'npm:lint' 'npm:unit-test'",
@@ -71,6 +72,7 @@
     "update": "concurrently 'npm:update:gitignore' 'npm:update:tsconfig'",
     "update:gitignore": "ts-node ./tools/update-gitignore",
     "update:tsconfig": "ts-node ./tools/update-tsconfigs",
+    "update:package-exports": "ts-node ./tools/update-package-exports",
     "preversion": "npm test && npm run update && npm run build",
     "postversion": "npm publish --access=public",
     "watch": "concurrently 'npm:watch:cjs' 'npm:watch:esm'",
@@ -94,5 +96,1657 @@
   "bugs": {
     "url": "https://github.com/TylorS/typed-fp/issues"
   },
-  "homepage": "https://github.com/TylorS/typed-fp#readme"
+  "homepage": "https://github.com/TylorS/typed-fp#readme",
+  "exports": {
+    ".": {
+      "require": "./cjs/exports.js",
+      "import": "./esm/exports.js",
+      "browser": "./browser/exprts.js"
+    },
+    "./Console": {
+      "require": "./cjs/Console/exports.js",
+      "import": "./esm/Console/exports.js",
+      "browser": "./build/Console/exports.js"
+    },
+    "./Console/exports": {
+      "require": "./cjs/Console/exports.js",
+      "import": "./esm/Console/exports.js",
+      "browser": "./build/Console/exports.js"
+    },
+    "./Disposable": {
+      "require": "./cjs/Disposable/exports.js",
+      "import": "./esm/Disposable/exports.js",
+      "browser": "./build/Disposable/exports.js"
+    },
+    "./Disposable/exports": {
+      "require": "./cjs/Disposable/exports.js",
+      "import": "./esm/Disposable/exports.js",
+      "browser": "./build/Disposable/exports.js"
+    },
+    "./Effect": {
+      "require": "./cjs/Effect/exports.js",
+      "import": "./esm/Effect/exports.js",
+      "browser": "./build/Effect/exports.js"
+    },
+    "./Effect/Effect": {
+      "require": "./cjs/Effect/Effect.js",
+      "import": "./esm/Effect/Effect.js",
+      "browser": "./build/Effect/Effect.js"
+    },
+    "./Effect/ap": {
+      "require": "./cjs/Effect/ap.js",
+      "import": "./esm/Effect/ap.js",
+      "browser": "./build/Effect/ap.js"
+    },
+    "./Effect/ask": {
+      "require": "./cjs/Effect/ask.js",
+      "import": "./esm/Effect/ask.js",
+      "browser": "./build/Effect/ask.js"
+    },
+    "./Effect/chain": {
+      "require": "./cjs/Effect/chain.js",
+      "import": "./esm/Effect/chain.js",
+      "browser": "./build/Effect/chain.js"
+    },
+    "./Effect/doEffect": {
+      "require": "./cjs/Effect/doEffect.js",
+      "import": "./esm/Effect/doEffect.js",
+      "browser": "./build/Effect/doEffect.js"
+    },
+    "./Effect/exports": {
+      "require": "./cjs/Effect/exports.js",
+      "import": "./esm/Effect/exports.js",
+      "browser": "./build/Effect/exports.js"
+    },
+    "./Effect/failures": {
+      "require": "./cjs/Effect/failures.js",
+      "import": "./esm/Effect/failures.js",
+      "browser": "./build/Effect/failures.js"
+    },
+    "./Effect/forever": {
+      "require": "./cjs/Effect/forever.js",
+      "import": "./esm/Effect/forever.js",
+      "browser": "./build/Effect/forever.js"
+    },
+    "./Effect/fp-ts": {
+      "require": "./cjs/Effect/fp-ts.js",
+      "import": "./esm/Effect/fp-ts.js",
+      "browser": "./build/Effect/fp-ts.js"
+    },
+    "./Effect/fromReader": {
+      "require": "./cjs/Effect/fromReader.js",
+      "import": "./esm/Effect/fromReader.js",
+      "browser": "./build/Effect/fromReader.js"
+    },
+    "./Effect/fromReaderTask": {
+      "require": "./cjs/Effect/fromReaderTask.js",
+      "import": "./esm/Effect/fromReaderTask.js",
+      "browser": "./build/Effect/fromReaderTask.js"
+    },
+    "./Effect/fromTask": {
+      "require": "./cjs/Effect/fromTask.js",
+      "import": "./esm/Effect/fromTask.js",
+      "browser": "./build/Effect/fromTask.js"
+    },
+    "./Effect/lazy": {
+      "require": "./cjs/Effect/lazy.js",
+      "import": "./esm/Effect/lazy.js",
+      "browser": "./build/Effect/lazy.js"
+    },
+    "./Effect/map": {
+      "require": "./cjs/Effect/map.js",
+      "import": "./esm/Effect/map.js",
+      "browser": "./build/Effect/map.js"
+    },
+    "./Effect/memo": {
+      "require": "./cjs/Effect/memo.js",
+      "import": "./esm/Effect/memo.js",
+      "browser": "./build/Effect/memo.js"
+    },
+    "./Effect/provide": {
+      "require": "./cjs/Effect/provide.js",
+      "import": "./esm/Effect/provide.js",
+      "browser": "./build/Effect/provide.js"
+    },
+    "./Effect/provideWith": {
+      "require": "./cjs/Effect/provideWith.js",
+      "import": "./esm/Effect/provideWith.js",
+      "browser": "./build/Effect/provideWith.js"
+    },
+    "./Effect/race": {
+      "require": "./cjs/Effect/race.js",
+      "import": "./esm/Effect/race.js",
+      "browser": "./build/Effect/race.js"
+    },
+    "./Effect/runEffect": {
+      "require": "./cjs/Effect/runEffect.js",
+      "import": "./esm/Effect/runEffect.js",
+      "browser": "./build/Effect/runEffect.js"
+    },
+    "./Effect/toEnv": {
+      "require": "./cjs/Effect/toEnv.js",
+      "import": "./esm/Effect/toEnv.js",
+      "browser": "./build/Effect/toEnv.js"
+    },
+    "./Effect/toPromise": {
+      "require": "./cjs/Effect/toPromise.js",
+      "import": "./esm/Effect/toPromise.js",
+      "browser": "./build/Effect/toPromise.js"
+    },
+    "./Effect/toReaderTask": {
+      "require": "./cjs/Effect/toReaderTask.js",
+      "import": "./esm/Effect/toReaderTask.js",
+      "browser": "./build/Effect/toReaderTask.js"
+    },
+    "./Effect/zip": {
+      "require": "./cjs/Effect/zip.js",
+      "import": "./esm/Effect/zip.js",
+      "browser": "./build/Effect/zip.js"
+    },
+    "./Effect/zipObj": {
+      "require": "./cjs/Effect/zipObj.js",
+      "import": "./esm/Effect/zipObj.js",
+      "browser": "./build/Effect/zipObj.js"
+    },
+    "./Fiber": {
+      "require": "./cjs/Fiber/exports.js",
+      "import": "./esm/Fiber/exports.js",
+      "browser": "./build/Fiber/exports.js"
+    },
+    "./Fiber/Fiber": {
+      "require": "./cjs/Fiber/Fiber.js",
+      "import": "./esm/Fiber/Fiber.js",
+      "browser": "./build/Fiber/Fiber.js"
+    },
+    "./Fiber/FiberEnv": {
+      "require": "./cjs/Fiber/FiberEnv.js",
+      "import": "./esm/Fiber/FiberEnv.js",
+      "browser": "./build/Fiber/FiberEnv.js"
+    },
+    "./Fiber/exports": {
+      "require": "./cjs/Fiber/exports.js",
+      "import": "./esm/Fiber/exports.js",
+      "browser": "./build/Fiber/exports.js"
+    },
+    "./Fiber/runAsFiber": {
+      "require": "./cjs/Fiber/runAsFiber.js",
+      "import": "./esm/Fiber/runAsFiber.js",
+      "browser": "./build/Fiber/runAsFiber.js"
+    },
+    "./Fiber/createFiber/FiberManager": {
+      "require": "./cjs/Fiber/createFiber/FiberManager.js",
+      "import": "./esm/Fiber/createFiber/FiberManager.js",
+      "browser": "./build/Fiber/createFiber/FiberManager.js"
+    },
+    "./Fiber/createFiber/InfoChangeManager": {
+      "require": "./cjs/Fiber/createFiber/InfoChangeManager.js",
+      "import": "./esm/Fiber/createFiber/InfoChangeManager.js",
+      "browser": "./build/Fiber/createFiber/InfoChangeManager.js"
+    },
+    "./Fiber/createFiber/createFiber": {
+      "require": "./cjs/Fiber/createFiber/createFiber.js",
+      "import": "./esm/Fiber/createFiber/createFiber.js",
+      "browser": "./build/Fiber/createFiber/createFiber.js"
+    },
+    "./Fiber/createFiber/exports": {
+      "require": "./cjs/Fiber/createFiber/exports.js",
+      "import": "./esm/Fiber/createFiber/exports.js",
+      "browser": "./build/Fiber/createFiber/exports.js"
+    },
+    "./Future": {
+      "require": "./cjs/Future/exports.js",
+      "import": "./esm/Future/exports.js",
+      "browser": "./build/Future/exports.js"
+    },
+    "./Future/exports": {
+      "require": "./cjs/Future/exports.js",
+      "import": "./esm/Future/exports.js",
+      "browser": "./build/Future/exports.js"
+    },
+    "./Key": {
+      "require": "./cjs/Key/exports.js",
+      "import": "./esm/Key/exports.js",
+      "browser": "./build/Key/exports.js"
+    },
+    "./Key/exports": {
+      "require": "./cjs/Key/exports.js",
+      "import": "./esm/Key/exports.js",
+      "browser": "./build/Key/exports.js"
+    },
+    "./Patch": {
+      "require": "./cjs/Patch/exports.js",
+      "import": "./esm/Patch/exports.js",
+      "browser": "./build/Patch/exports.js"
+    },
+    "./Patch/NamespaceRenderers": {
+      "require": "./cjs/Patch/NamespaceRenderers.js",
+      "import": "./esm/Patch/NamespaceRenderers.js",
+      "browser": "./build/Patch/NamespaceRenderers.js"
+    },
+    "./Patch/Patch": {
+      "require": "./cjs/Patch/Patch.js",
+      "import": "./esm/Patch/Patch.js",
+      "browser": "./build/Patch/Patch.js"
+    },
+    "./Patch/RenderRef": {
+      "require": "./cjs/Patch/RenderRef.js",
+      "import": "./esm/Patch/RenderRef.js",
+      "browser": "./build/Patch/RenderRef.js"
+    },
+    "./Patch/Renderer": {
+      "require": "./cjs/Patch/Renderer.js",
+      "import": "./esm/Patch/Renderer.js",
+      "browser": "./build/Patch/Renderer.js"
+    },
+    "./Patch/exports": {
+      "require": "./cjs/Patch/exports.js",
+      "import": "./esm/Patch/exports.js",
+      "browser": "./build/Patch/exports.js"
+    },
+    "./Patch/patchOnRaf": {
+      "require": "./cjs/Patch/patchOnRaf.js",
+      "import": "./esm/Patch/patchOnRaf.js",
+      "browser": "./build/Patch/patchOnRaf.js"
+    },
+    "./Patch/handlers/IdleScheduler": {
+      "require": "./cjs/Patch/handlers/IdleScheduler.js",
+      "import": "./esm/Patch/handlers/IdleScheduler.js",
+      "browser": "./build/Patch/handlers/IdleScheduler.js"
+    },
+    "./Patch/handlers/createPatchNamespace": {
+      "require": "./cjs/Patch/handlers/createPatchNamespace.js",
+      "import": "./esm/Patch/handlers/createPatchNamespace.js",
+      "browser": "./build/Patch/handlers/createPatchNamespace.js"
+    },
+    "./Patch/handlers/createRenderHandlers": {
+      "require": "./cjs/Patch/handlers/createRenderHandlers.js",
+      "import": "./esm/Patch/handlers/createRenderHandlers.js",
+      "browser": "./build/Patch/handlers/createRenderHandlers.js"
+    },
+    "./Patch/handlers/createWhenIdleHandlers": {
+      "require": "./cjs/Patch/handlers/createWhenIdleHandlers.js",
+      "import": "./esm/Patch/handlers/createWhenIdleHandlers.js",
+      "browser": "./build/Patch/handlers/createWhenIdleHandlers.js"
+    },
+    "./Patch/handlers/exports": {
+      "require": "./cjs/Patch/handlers/exports.js",
+      "import": "./esm/Patch/handlers/exports.js",
+      "browser": "./build/Patch/handlers/exports.js"
+    },
+    "./Patch/handlers/namespaceCompleted": {
+      "require": "./cjs/Patch/handlers/namespaceCompleted.js",
+      "import": "./esm/Patch/handlers/namespaceCompleted.js",
+      "browser": "./build/Patch/handlers/namespaceCompleted.js"
+    },
+    "./Path": {
+      "require": "./cjs/Path/exports.js",
+      "import": "./esm/Path/exports.js",
+      "browser": "./build/Path/exports.js"
+    },
+    "./Path/exports": {
+      "require": "./cjs/Path/exports.js",
+      "import": "./esm/Path/exports.js",
+      "browser": "./build/Path/exports.js"
+    },
+    "./Queue": {
+      "require": "./cjs/Queue/exports.js",
+      "import": "./esm/Queue/exports.js",
+      "browser": "./build/Queue/exports.js"
+    },
+    "./Queue/FifoQueue": {
+      "require": "./cjs/Queue/FifoQueue.js",
+      "import": "./esm/Queue/FifoQueue.js",
+      "browser": "./build/Queue/FifoQueue.js"
+    },
+    "./Queue/LifoQueue": {
+      "require": "./cjs/Queue/LifoQueue.js",
+      "import": "./esm/Queue/LifoQueue.js",
+      "browser": "./build/Queue/LifoQueue.js"
+    },
+    "./Queue/Queue": {
+      "require": "./cjs/Queue/Queue.js",
+      "import": "./esm/Queue/Queue.js",
+      "browser": "./build/Queue/Queue.js"
+    },
+    "./Queue/exports": {
+      "require": "./cjs/Queue/exports.js",
+      "import": "./esm/Queue/exports.js",
+      "browser": "./build/Queue/exports.js"
+    },
+    "./RemoteData": {
+      "require": "./cjs/RemoteData/exports.js",
+      "import": "./esm/RemoteData/exports.js",
+      "browser": "./build/RemoteData/exports.js"
+    },
+    "./RemoteData/Failure": {
+      "require": "./cjs/RemoteData/Failure.js",
+      "import": "./esm/RemoteData/Failure.js",
+      "browser": "./build/RemoteData/Failure.js"
+    },
+    "./RemoteData/Progress": {
+      "require": "./cjs/RemoteData/Progress.js",
+      "import": "./esm/RemoteData/Progress.js",
+      "browser": "./build/RemoteData/Progress.js"
+    },
+    "./RemoteData/RefreshingFailure": {
+      "require": "./cjs/RemoteData/RefreshingFailure.js",
+      "import": "./esm/RemoteData/RefreshingFailure.js",
+      "browser": "./build/RemoteData/RefreshingFailure.js"
+    },
+    "./RemoteData/RefreshingSuccess": {
+      "require": "./cjs/RemoteData/RefreshingSuccess.js",
+      "import": "./esm/RemoteData/RefreshingSuccess.js",
+      "browser": "./build/RemoteData/RefreshingSuccess.js"
+    },
+    "./RemoteData/RemoteData": {
+      "require": "./cjs/RemoteData/RemoteData.js",
+      "import": "./esm/RemoteData/RemoteData.js",
+      "browser": "./build/RemoteData/RemoteData.js"
+    },
+    "./RemoteData/Success": {
+      "require": "./cjs/RemoteData/Success.js",
+      "import": "./esm/RemoteData/Success.js",
+      "browser": "./build/RemoteData/Success.js"
+    },
+    "./RemoteData/ap": {
+      "require": "./cjs/RemoteData/ap.js",
+      "import": "./esm/RemoteData/ap.js",
+      "browser": "./build/RemoteData/ap.js"
+    },
+    "./RemoteData/chain": {
+      "require": "./cjs/RemoteData/chain.js",
+      "import": "./esm/RemoteData/chain.js",
+      "browser": "./build/RemoteData/chain.js"
+    },
+    "./RemoteData/enums": {
+      "require": "./cjs/RemoteData/enums.js",
+      "import": "./esm/RemoteData/enums.js",
+      "browser": "./build/RemoteData/enums.js"
+    },
+    "./RemoteData/exports": {
+      "require": "./cjs/RemoteData/exports.js",
+      "import": "./esm/RemoteData/exports.js",
+      "browser": "./build/RemoteData/exports.js"
+    },
+    "./RemoteData/fold": {
+      "require": "./cjs/RemoteData/fold.js",
+      "import": "./esm/RemoteData/fold.js",
+      "browser": "./build/RemoteData/fold.js"
+    },
+    "./RemoteData/getEq": {
+      "require": "./cjs/RemoteData/getEq.js",
+      "import": "./esm/RemoteData/getEq.js",
+      "browser": "./build/RemoteData/getEq.js"
+    },
+    "./RemoteData/getOrElse": {
+      "require": "./cjs/RemoteData/getOrElse.js",
+      "import": "./esm/RemoteData/getOrElse.js",
+      "browser": "./build/RemoteData/getOrElse.js"
+    },
+    "./RemoteData/hasFailed": {
+      "require": "./cjs/RemoteData/hasFailed.js",
+      "import": "./esm/RemoteData/hasFailed.js",
+      "browser": "./build/RemoteData/hasFailed.js"
+    },
+    "./RemoteData/hasNoData": {
+      "require": "./cjs/RemoteData/hasNoData.js",
+      "import": "./esm/RemoteData/hasNoData.js",
+      "browser": "./build/RemoteData/hasNoData.js"
+    },
+    "./RemoteData/instance": {
+      "require": "./cjs/RemoteData/instance.js",
+      "import": "./esm/RemoteData/instance.js",
+      "browser": "./build/RemoteData/instance.js"
+    },
+    "./RemoteData/isDoneLoading": {
+      "require": "./cjs/RemoteData/isDoneLoading.js",
+      "import": "./esm/RemoteData/isDoneLoading.js",
+      "browser": "./build/RemoteData/isDoneLoading.js"
+    },
+    "./RemoteData/isFailure": {
+      "require": "./cjs/RemoteData/isFailure.js",
+      "import": "./esm/RemoteData/isFailure.js",
+      "browser": "./build/RemoteData/isFailure.js"
+    },
+    "./RemoteData/isLoading": {
+      "require": "./cjs/RemoteData/isLoading.js",
+      "import": "./esm/RemoteData/isLoading.js",
+      "browser": "./build/RemoteData/isLoading.js"
+    },
+    "./RemoteData/isRefreshing": {
+      "require": "./cjs/RemoteData/isRefreshing.js",
+      "import": "./esm/RemoteData/isRefreshing.js",
+      "browser": "./build/RemoteData/isRefreshing.js"
+    },
+    "./RemoteData/isRefreshingFailure": {
+      "require": "./cjs/RemoteData/isRefreshingFailure.js",
+      "import": "./esm/RemoteData/isRefreshingFailure.js",
+      "browser": "./build/RemoteData/isRefreshingFailure.js"
+    },
+    "./RemoteData/isRefreshingSuccess": {
+      "require": "./cjs/RemoteData/isRefreshingSuccess.js",
+      "import": "./esm/RemoteData/isRefreshingSuccess.js",
+      "browser": "./build/RemoteData/isRefreshingSuccess.js"
+    },
+    "./RemoteData/isSuccess": {
+      "require": "./cjs/RemoteData/isSuccess.js",
+      "import": "./esm/RemoteData/isSuccess.js",
+      "browser": "./build/RemoteData/isSuccess.js"
+    },
+    "./RemoteData/isSuccessful": {
+      "require": "./cjs/RemoteData/isSuccessful.js",
+      "import": "./esm/RemoteData/isSuccessful.js",
+      "browser": "./build/RemoteData/isSuccessful.js"
+    },
+    "./RemoteData/map": {
+      "require": "./cjs/RemoteData/map.js",
+      "import": "./esm/RemoteData/map.js",
+      "browser": "./build/RemoteData/map.js"
+    },
+    "./RemoteData/mapLeft": {
+      "require": "./cjs/RemoteData/mapLeft.js",
+      "import": "./esm/RemoteData/mapLeft.js",
+      "browser": "./build/RemoteData/mapLeft.js"
+    },
+    "./RemoteData/toLoading": {
+      "require": "./cjs/RemoteData/toLoading.js",
+      "import": "./esm/RemoteData/toLoading.js",
+      "browser": "./build/RemoteData/toLoading.js"
+    },
+    "./RemoteData/toOption": {
+      "require": "./cjs/RemoteData/toOption.js",
+      "import": "./esm/RemoteData/toOption.js",
+      "browser": "./build/RemoteData/toOption.js"
+    },
+    "./Resume": {
+      "require": "./cjs/Resume/exports.js",
+      "import": "./esm/Resume/exports.js",
+      "browser": "./build/Resume/exports.js"
+    },
+    "./Resume/Async": {
+      "require": "./cjs/Resume/Async.js",
+      "import": "./esm/Resume/Async.js",
+      "browser": "./build/Resume/Async.js"
+    },
+    "./Resume/AsyncEither": {
+      "require": "./cjs/Resume/AsyncEither.js",
+      "import": "./esm/Resume/AsyncEither.js",
+      "browser": "./build/Resume/AsyncEither.js"
+    },
+    "./Resume/Resume": {
+      "require": "./cjs/Resume/Resume.js",
+      "import": "./esm/Resume/Resume.js",
+      "browser": "./build/Resume/Resume.js"
+    },
+    "./Resume/Sync": {
+      "require": "./cjs/Resume/Sync.js",
+      "import": "./esm/Resume/Sync.js",
+      "browser": "./build/Resume/Sync.js"
+    },
+    "./Resume/ap": {
+      "require": "./cjs/Resume/ap.js",
+      "import": "./esm/Resume/ap.js",
+      "browser": "./build/Resume/ap.js"
+    },
+    "./Resume/chain": {
+      "require": "./cjs/Resume/chain.js",
+      "import": "./esm/Resume/chain.js",
+      "browser": "./build/Resume/chain.js"
+    },
+    "./Resume/exports": {
+      "require": "./cjs/Resume/exports.js",
+      "import": "./esm/Resume/exports.js",
+      "browser": "./build/Resume/exports.js"
+    },
+    "./Resume/map": {
+      "require": "./cjs/Resume/map.js",
+      "import": "./esm/Resume/map.js",
+      "browser": "./build/Resume/map.js"
+    },
+    "./Resume/run": {
+      "require": "./cjs/Resume/run.js",
+      "import": "./esm/Resume/run.js",
+      "browser": "./build/Resume/run.js"
+    },
+    "./Scheduler": {
+      "require": "./cjs/Scheduler/exports.js",
+      "import": "./esm/Scheduler/exports.js",
+      "browser": "./build/Scheduler/exports.js"
+    },
+    "./Scheduler/SchedulerEnv": {
+      "require": "./cjs/Scheduler/SchedulerEnv.js",
+      "import": "./esm/Scheduler/SchedulerEnv.js",
+      "browser": "./build/Scheduler/SchedulerEnv.js"
+    },
+    "./Scheduler/createCallbackTask": {
+      "require": "./cjs/Scheduler/createCallbackTask.js",
+      "import": "./esm/Scheduler/createCallbackTask.js",
+      "browser": "./build/Scheduler/createCallbackTask.js"
+    },
+    "./Scheduler/exports": {
+      "require": "./cjs/Scheduler/exports.js",
+      "import": "./esm/Scheduler/exports.js",
+      "browser": "./build/Scheduler/exports.js"
+    },
+    "./Scheduler/VirtualTimer/Timeline": {
+      "require": "./cjs/Scheduler/VirtualTimer/Timeline.js",
+      "import": "./esm/Scheduler/VirtualTimer/Timeline.js",
+      "browser": "./build/Scheduler/VirtualTimer/Timeline.js"
+    },
+    "./Scheduler/VirtualTimer/VirtualClock": {
+      "require": "./cjs/Scheduler/VirtualTimer/VirtualClock.js",
+      "import": "./esm/Scheduler/VirtualTimer/VirtualClock.js",
+      "browser": "./build/Scheduler/VirtualTimer/VirtualClock.js"
+    },
+    "./Scheduler/VirtualTimer/VirtualTimer": {
+      "require": "./cjs/Scheduler/VirtualTimer/VirtualTimer.js",
+      "import": "./esm/Scheduler/VirtualTimer/VirtualTimer.js",
+      "browser": "./build/Scheduler/VirtualTimer/VirtualTimer.js"
+    },
+    "./Scheduler/VirtualTimer/createVirtualScheduler": {
+      "require": "./cjs/Scheduler/VirtualTimer/createVirtualScheduler.js",
+      "import": "./esm/Scheduler/VirtualTimer/createVirtualScheduler.js",
+      "browser": "./build/Scheduler/VirtualTimer/createVirtualScheduler.js"
+    },
+    "./Scheduler/VirtualTimer/exports": {
+      "require": "./cjs/Scheduler/VirtualTimer/exports.js",
+      "import": "./esm/Scheduler/VirtualTimer/exports.js",
+      "browser": "./build/Scheduler/VirtualTimer/exports.js"
+    },
+    "./Shared": {
+      "require": "./cjs/Shared/exports.js",
+      "import": "./esm/Shared/exports.js",
+      "browser": "./build/Shared/exports.js"
+    },
+    "./Shared/exports": {
+      "require": "./cjs/Shared/exports.js",
+      "import": "./esm/Shared/exports.js",
+      "browser": "./build/Shared/exports.js"
+    },
+    "./Shared/Ref/NamespaceRefs": {
+      "require": "./cjs/Shared/Ref/NamespaceRefs.js",
+      "import": "./esm/Shared/Ref/NamespaceRefs.js",
+      "browser": "./build/Shared/Ref/NamespaceRefs.js"
+    },
+    "./Shared/Ref/Ref": {
+      "require": "./cjs/Shared/Ref/Ref.js",
+      "import": "./esm/Shared/Ref/Ref.js",
+      "browser": "./build/Shared/Ref/Ref.js"
+    },
+    "./Shared/Ref/exports": {
+      "require": "./cjs/Shared/Ref/exports.js",
+      "import": "./esm/Shared/Ref/exports.js",
+      "browser": "./build/Shared/Ref/exports.js"
+    },
+    "./Shared/Ref/getSharedRef": {
+      "require": "./cjs/Shared/Ref/getSharedRef.js",
+      "import": "./esm/Shared/Ref/getSharedRef.js",
+      "browser": "./build/Shared/Ref/getSharedRef.js"
+    },
+    "./Shared/State/NamespaceStates": {
+      "require": "./cjs/Shared/State/NamespaceStates.js",
+      "import": "./esm/Shared/State/NamespaceStates.js",
+      "browser": "./build/Shared/State/NamespaceStates.js"
+    },
+    "./Shared/State/State": {
+      "require": "./cjs/Shared/State/State.js",
+      "import": "./esm/Shared/State/State.js",
+      "browser": "./build/Shared/State/State.js"
+    },
+    "./Shared/State/exports": {
+      "require": "./cjs/Shared/State/exports.js",
+      "import": "./esm/Shared/State/exports.js",
+      "browser": "./build/Shared/State/exports.js"
+    },
+    "./Shared/State/getSharedState": {
+      "require": "./cjs/Shared/State/getSharedState.js",
+      "import": "./esm/Shared/State/getSharedState.js",
+      "browser": "./build/Shared/State/getSharedState.js"
+    },
+    "./Shared/common/EqsOf": {
+      "require": "./cjs/Shared/common/EqsOf.js",
+      "import": "./esm/Shared/common/EqsOf.js",
+      "browser": "./build/Shared/common/EqsOf.js"
+    },
+    "./Shared/common/addToSet": {
+      "require": "./cjs/Shared/common/addToSet.js",
+      "import": "./esm/Shared/common/addToSet.js",
+      "browser": "./build/Shared/common/addToSet.js"
+    },
+    "./Shared/common/strictMap": {
+      "require": "./cjs/Shared/common/strictMap.js",
+      "import": "./esm/Shared/common/strictMap.js",
+      "browser": "./build/Shared/common/strictMap.js"
+    },
+    "./Shared/context/NamespaceChildren": {
+      "require": "./cjs/Shared/context/NamespaceChildren.js",
+      "import": "./esm/Shared/context/NamespaceChildren.js",
+      "browser": "./build/Shared/context/NamespaceChildren.js"
+    },
+    "./Shared/context/NamespaceConsumers": {
+      "require": "./cjs/Shared/context/NamespaceConsumers.js",
+      "import": "./esm/Shared/context/NamespaceConsumers.js",
+      "browser": "./build/Shared/context/NamespaceConsumers.js"
+    },
+    "./Shared/context/NamespaceParent": {
+      "require": "./cjs/Shared/context/NamespaceParent.js",
+      "import": "./esm/Shared/context/NamespaceParent.js",
+      "browser": "./build/Shared/context/NamespaceParent.js"
+    },
+    "./Shared/context/NamespaceProviders": {
+      "require": "./cjs/Shared/context/NamespaceProviders.js",
+      "import": "./esm/Shared/context/NamespaceProviders.js",
+      "browser": "./build/Shared/context/NamespaceProviders.js"
+    },
+    "./Shared/context/addToTree": {
+      "require": "./cjs/Shared/context/addToTree.js",
+      "import": "./esm/Shared/context/addToTree.js",
+      "browser": "./build/Shared/context/addToTree.js"
+    },
+    "./Shared/context/exports": {
+      "require": "./cjs/Shared/context/exports.js",
+      "import": "./esm/Shared/context/exports.js",
+      "browser": "./build/Shared/context/exports.js"
+    },
+    "./Shared/context/useContext": {
+      "require": "./cjs/Shared/context/useContext.js",
+      "import": "./esm/Shared/context/useContext.js",
+      "browser": "./build/Shared/context/useContext.js"
+    },
+    "./Shared/context/useContextReducer": {
+      "require": "./cjs/Shared/context/useContextReducer.js",
+      "import": "./esm/Shared/context/useContextReducer.js",
+      "browser": "./build/Shared/context/useContextReducer.js"
+    },
+    "./Shared/context/useContextState": {
+      "require": "./cjs/Shared/context/useContextState.js",
+      "import": "./esm/Shared/context/useContextState.js",
+      "browser": "./build/Shared/context/useContextState.js"
+    },
+    "./Shared/context/withProvider": {
+      "require": "./cjs/Shared/context/withProvider.js",
+      "import": "./esm/Shared/context/withProvider.js",
+      "browser": "./build/Shared/context/withProvider.js"
+    },
+    "./Shared/core/exports": {
+      "require": "./cjs/Shared/core/exports.js",
+      "import": "./esm/Shared/core/exports.js",
+      "browser": "./build/Shared/core/exports.js"
+    },
+    "./Shared/createSharedEnvProvider/SharedEventHandler": {
+      "require": "./cjs/Shared/createSharedEnvProvider/SharedEventHandler.js",
+      "import": "./esm/Shared/createSharedEnvProvider/SharedEventHandler.js",
+      "browser": "./build/Shared/createSharedEnvProvider/SharedEventHandler.js"
+    },
+    "./Shared/createSharedEnvProvider/createSharedEnv": {
+      "require": "./cjs/Shared/createSharedEnvProvider/createSharedEnv.js",
+      "import": "./esm/Shared/createSharedEnvProvider/createSharedEnv.js",
+      "browser": "./build/Shared/createSharedEnvProvider/createSharedEnv.js"
+    },
+    "./Shared/createSharedEnvProvider/createSharedEnvProvider": {
+      "require": "./cjs/Shared/createSharedEnvProvider/createSharedEnvProvider.js",
+      "import": "./esm/Shared/createSharedEnvProvider/createSharedEnvProvider.js",
+      "browser": "./build/Shared/createSharedEnvProvider/createSharedEnvProvider.js"
+    },
+    "./Shared/createSharedEnvProvider/defaultHandlers": {
+      "require": "./cjs/Shared/createSharedEnvProvider/defaultHandlers.js",
+      "import": "./esm/Shared/createSharedEnvProvider/defaultHandlers.js",
+      "browser": "./build/Shared/createSharedEnvProvider/defaultHandlers.js"
+    },
+    "./Shared/createSharedEnvProvider/exports": {
+      "require": "./cjs/Shared/createSharedEnvProvider/exports.js",
+      "import": "./esm/Shared/createSharedEnvProvider/exports.js",
+      "browser": "./build/Shared/createSharedEnvProvider/exports.js"
+    },
+    "./Shared/createSharedEnvProvider/provideSharedEnv": {
+      "require": "./cjs/Shared/createSharedEnvProvider/provideSharedEnv.js",
+      "import": "./esm/Shared/createSharedEnvProvider/provideSharedEnv.js",
+      "browser": "./build/Shared/createSharedEnvProvider/provideSharedEnv.js"
+    },
+    "./Shared/global/Global": {
+      "require": "./cjs/Shared/global/Global.js",
+      "import": "./esm/Shared/global/Global.js",
+      "browser": "./build/Shared/global/Global.js"
+    },
+    "./Shared/global/exports": {
+      "require": "./cjs/Shared/global/exports.js",
+      "import": "./esm/Shared/global/exports.js",
+      "browser": "./build/Shared/global/exports.js"
+    },
+    "./Shared/global/usingGlobal": {
+      "require": "./cjs/Shared/global/usingGlobal.js",
+      "import": "./esm/Shared/global/usingGlobal.js",
+      "browser": "./build/Shared/global/usingGlobal.js"
+    },
+    "./Shared/hooks/NamespacePosition": {
+      "require": "./cjs/Shared/hooks/NamespacePosition.js",
+      "import": "./esm/Shared/hooks/NamespacePosition.js",
+      "browser": "./build/Shared/hooks/NamespacePosition.js"
+    },
+    "./Shared/hooks/NamespaceSymbols": {
+      "require": "./cjs/Shared/hooks/NamespaceSymbols.js",
+      "import": "./esm/Shared/hooks/NamespaceSymbols.js",
+      "browser": "./build/Shared/hooks/NamespaceSymbols.js"
+    },
+    "./Shared/hooks/exports": {
+      "require": "./cjs/Shared/hooks/exports.js",
+      "import": "./esm/Shared/hooks/exports.js",
+      "browser": "./build/Shared/hooks/exports.js"
+    },
+    "./Shared/hooks/getNextPosition": {
+      "require": "./cjs/Shared/hooks/getNextPosition.js",
+      "import": "./esm/Shared/hooks/getNextPosition.js",
+      "browser": "./build/Shared/hooks/getNextPosition.js"
+    },
+    "./Shared/hooks/getNextSymbol": {
+      "require": "./cjs/Shared/hooks/getNextSymbol.js",
+      "import": "./esm/Shared/hooks/getNextSymbol.js",
+      "browser": "./build/Shared/hooks/getNextSymbol.js"
+    },
+    "./Shared/hooks/listenToSharedEvent": {
+      "require": "./cjs/Shared/hooks/listenToSharedEvent.js",
+      "import": "./esm/Shared/hooks/listenToSharedEvent.js",
+      "browser": "./build/Shared/hooks/listenToSharedEvent.js"
+    },
+    "./Shared/hooks/listenToSharedUpdates": {
+      "require": "./cjs/Shared/hooks/listenToSharedUpdates.js",
+      "import": "./esm/Shared/hooks/listenToSharedUpdates.js",
+      "browser": "./build/Shared/hooks/listenToSharedUpdates.js"
+    },
+    "./Shared/hooks/resetPosition": {
+      "require": "./cjs/Shared/hooks/resetPosition.js",
+      "import": "./esm/Shared/hooks/resetPosition.js",
+      "browser": "./build/Shared/hooks/resetPosition.js"
+    },
+    "./Shared/hooks/useDepChange": {
+      "require": "./cjs/Shared/hooks/useDepChange.js",
+      "import": "./esm/Shared/hooks/useDepChange.js",
+      "browser": "./build/Shared/hooks/useDepChange.js"
+    },
+    "./Shared/hooks/useDiffList": {
+      "require": "./cjs/Shared/hooks/useDiffList.js",
+      "import": "./esm/Shared/hooks/useDiffList.js",
+      "browser": "./build/Shared/hooks/useDiffList.js"
+    },
+    "./Shared/hooks/useDisposable": {
+      "require": "./cjs/Shared/hooks/useDisposable.js",
+      "import": "./esm/Shared/hooks/useDisposable.js",
+      "browser": "./build/Shared/hooks/useDisposable.js"
+    },
+    "./Shared/hooks/useEffect": {
+      "require": "./cjs/Shared/hooks/useEffect.js",
+      "import": "./esm/Shared/hooks/useEffect.js",
+      "browser": "./build/Shared/hooks/useEffect.js"
+    },
+    "./Shared/hooks/useFirstRun": {
+      "require": "./cjs/Shared/hooks/useFirstRun.js",
+      "import": "./esm/Shared/hooks/useFirstRun.js",
+      "browser": "./build/Shared/hooks/useFirstRun.js"
+    },
+    "./Shared/hooks/useListEffect": {
+      "require": "./cjs/Shared/hooks/useListEffect.js",
+      "import": "./esm/Shared/hooks/useListEffect.js",
+      "browser": "./build/Shared/hooks/useListEffect.js"
+    },
+    "./Shared/hooks/useMemo": {
+      "require": "./cjs/Shared/hooks/useMemo.js",
+      "import": "./esm/Shared/hooks/useMemo.js",
+      "browser": "./build/Shared/hooks/useMemo.js"
+    },
+    "./Shared/hooks/useReducer": {
+      "require": "./cjs/Shared/hooks/useReducer.js",
+      "import": "./esm/Shared/hooks/useReducer.js",
+      "browser": "./build/Shared/hooks/useReducer.js"
+    },
+    "./Shared/hooks/useRef": {
+      "require": "./cjs/Shared/hooks/useRef.js",
+      "import": "./esm/Shared/hooks/useRef.js",
+      "browser": "./build/Shared/hooks/useRef.js"
+    },
+    "./Shared/hooks/useState": {
+      "require": "./cjs/Shared/hooks/useState.js",
+      "import": "./esm/Shared/hooks/useState.js",
+      "browser": "./build/Shared/hooks/useState.js"
+    },
+    "./Shared/hooks/useStream": {
+      "require": "./cjs/Shared/hooks/useStream.js",
+      "import": "./esm/Shared/hooks/useStream.js",
+      "browser": "./build/Shared/hooks/useStream.js"
+    },
+    "./Shared/memoNamespace/exports": {
+      "require": "./cjs/Shared/memoNamespace/exports.js",
+      "import": "./esm/Shared/memoNamespace/exports.js",
+      "browser": "./build/Shared/memoNamespace/exports.js"
+    },
+    "./Shared/memoNamespace/memoNamespace": {
+      "require": "./cjs/Shared/memoNamespace/memoNamespace.js",
+      "import": "./esm/Shared/memoNamespace/memoNamespace.js",
+      "browser": "./build/Shared/memoNamespace/memoNamespace.js"
+    },
+    "./Shared/core/constructors/createShared": {
+      "require": "./cjs/Shared/core/constructors/createShared.js",
+      "import": "./esm/Shared/core/constructors/createShared.js",
+      "browser": "./build/Shared/core/constructors/createShared.js"
+    },
+    "./Shared/core/constructors/exports": {
+      "require": "./cjs/Shared/core/constructors/exports.js",
+      "import": "./esm/Shared/core/constructors/exports.js",
+      "browser": "./build/Shared/core/constructors/exports.js"
+    },
+    "./Shared/core/constructors/fromEq": {
+      "require": "./cjs/Shared/core/constructors/fromEq.js",
+      "import": "./esm/Shared/core/constructors/fromEq.js",
+      "browser": "./build/Shared/core/constructors/fromEq.js"
+    },
+    "./Shared/core/constructors/fromKey": {
+      "require": "./cjs/Shared/core/constructors/fromKey.js",
+      "import": "./esm/Shared/core/constructors/fromKey.js",
+      "browser": "./build/Shared/core/constructors/fromKey.js"
+    },
+    "./Shared/core/disposables/NamespaceDisposable": {
+      "require": "./cjs/Shared/core/disposables/NamespaceDisposable.js",
+      "import": "./esm/Shared/core/disposables/NamespaceDisposable.js",
+      "browser": "./build/Shared/core/disposables/NamespaceDisposable.js"
+    },
+    "./Shared/core/disposables/addDisposable": {
+      "require": "./cjs/Shared/core/disposables/addDisposable.js",
+      "import": "./esm/Shared/core/disposables/addDisposable.js",
+      "browser": "./build/Shared/core/disposables/addDisposable.js"
+    },
+    "./Shared/core/disposables/disposeNamespace": {
+      "require": "./cjs/Shared/core/disposables/disposeNamespace.js",
+      "import": "./esm/Shared/core/disposables/disposeNamespace.js",
+      "browser": "./build/Shared/core/disposables/disposeNamespace.js"
+    },
+    "./Shared/core/disposables/exports": {
+      "require": "./cjs/Shared/core/disposables/exports.js",
+      "import": "./esm/Shared/core/disposables/exports.js",
+      "browser": "./build/Shared/core/disposables/exports.js"
+    },
+    "./Shared/core/events/NamespaceEvent": {
+      "require": "./cjs/Shared/core/events/NamespaceEvent.js",
+      "import": "./esm/Shared/core/events/NamespaceEvent.js",
+      "browser": "./build/Shared/core/events/NamespaceEvent.js"
+    },
+    "./Shared/core/events/SharedEvent": {
+      "require": "./cjs/Shared/core/events/SharedEvent.js",
+      "import": "./esm/Shared/core/events/SharedEvent.js",
+      "browser": "./build/Shared/core/events/SharedEvent.js"
+    },
+    "./Shared/core/events/SharedEventEnv": {
+      "require": "./cjs/Shared/core/events/SharedEventEnv.js",
+      "import": "./esm/Shared/core/events/SharedEventEnv.js",
+      "browser": "./build/Shared/core/events/SharedEventEnv.js"
+    },
+    "./Shared/core/events/SharedValueEvent": {
+      "require": "./cjs/Shared/core/events/SharedValueEvent.js",
+      "import": "./esm/Shared/core/events/SharedValueEvent.js",
+      "browser": "./build/Shared/core/events/SharedValueEvent.js"
+    },
+    "./Shared/core/events/exports": {
+      "require": "./cjs/Shared/core/events/exports.js",
+      "import": "./esm/Shared/core/events/exports.js",
+      "browser": "./build/Shared/core/events/exports.js"
+    },
+    "./Shared/core/model/Namespace": {
+      "require": "./cjs/Shared/core/model/Namespace.js",
+      "import": "./esm/Shared/core/model/Namespace.js",
+      "browser": "./build/Shared/core/model/Namespace.js"
+    },
+    "./Shared/core/model/Shared": {
+      "require": "./cjs/Shared/core/model/Shared.js",
+      "import": "./esm/Shared/core/model/Shared.js",
+      "browser": "./build/Shared/core/model/Shared.js"
+    },
+    "./Shared/core/model/SharedKey": {
+      "require": "./cjs/Shared/core/model/SharedKey.js",
+      "import": "./esm/Shared/core/model/SharedKey.js",
+      "browser": "./build/Shared/core/model/SharedKey.js"
+    },
+    "./Shared/core/model/SharedKeyStore": {
+      "require": "./cjs/Shared/core/model/SharedKeyStore.js",
+      "import": "./esm/Shared/core/model/SharedKeyStore.js",
+      "browser": "./build/Shared/core/model/SharedKeyStore.js"
+    },
+    "./Shared/core/model/exports": {
+      "require": "./cjs/Shared/core/model/exports.js",
+      "import": "./esm/Shared/core/model/exports.js",
+      "browser": "./build/Shared/core/model/exports.js"
+    },
+    "./Shared/core/services/CurrentNamespaceEnv": {
+      "require": "./cjs/Shared/core/services/CurrentNamespaceEnv.js",
+      "import": "./esm/Shared/core/services/CurrentNamespaceEnv.js",
+      "browser": "./build/Shared/core/services/CurrentNamespaceEnv.js"
+    },
+    "./Shared/core/services/NamespaceKeyStoresEnv": {
+      "require": "./cjs/Shared/core/services/NamespaceKeyStoresEnv.js",
+      "import": "./esm/Shared/core/services/NamespaceKeyStoresEnv.js",
+      "browser": "./build/Shared/core/services/NamespaceKeyStoresEnv.js"
+    },
+    "./Shared/core/services/SharedEnv": {
+      "require": "./cjs/Shared/core/services/SharedEnv.js",
+      "import": "./esm/Shared/core/services/SharedEnv.js",
+      "browser": "./build/Shared/core/services/SharedEnv.js"
+    },
+    "./Shared/core/services/deleteKeyStore": {
+      "require": "./cjs/Shared/core/services/deleteKeyStore.js",
+      "import": "./esm/Shared/core/services/deleteKeyStore.js",
+      "browser": "./build/Shared/core/services/deleteKeyStore.js"
+    },
+    "./Shared/core/services/deleteShared": {
+      "require": "./cjs/Shared/core/services/deleteShared.js",
+      "import": "./esm/Shared/core/services/deleteShared.js",
+      "browser": "./build/Shared/core/services/deleteShared.js"
+    },
+    "./Shared/core/services/exports": {
+      "require": "./cjs/Shared/core/services/exports.js",
+      "import": "./esm/Shared/core/services/exports.js",
+      "browser": "./build/Shared/core/services/exports.js"
+    },
+    "./Shared/core/services/getCurrentNamespace": {
+      "require": "./cjs/Shared/core/services/getCurrentNamespace.js",
+      "import": "./esm/Shared/core/services/getCurrentNamespace.js",
+      "browser": "./build/Shared/core/services/getCurrentNamespace.js"
+    },
+    "./Shared/core/services/getDeleteNamespace": {
+      "require": "./cjs/Shared/core/services/getDeleteNamespace.js",
+      "import": "./esm/Shared/core/services/getDeleteNamespace.js",
+      "browser": "./build/Shared/core/services/getDeleteNamespace.js"
+    },
+    "./Shared/core/services/getKeyStore": {
+      "require": "./cjs/Shared/core/services/getKeyStore.js",
+      "import": "./esm/Shared/core/services/getKeyStore.js",
+      "browser": "./build/Shared/core/services/getKeyStore.js"
+    },
+    "./Shared/core/services/getKeyStores": {
+      "require": "./cjs/Shared/core/services/getKeyStores.js",
+      "import": "./esm/Shared/core/services/getKeyStores.js",
+      "browser": "./build/Shared/core/services/getKeyStores.js"
+    },
+    "./Shared/core/services/getOrCreate": {
+      "require": "./cjs/Shared/core/services/getOrCreate.js",
+      "import": "./esm/Shared/core/services/getOrCreate.js",
+      "browser": "./build/Shared/core/services/getOrCreate.js"
+    },
+    "./Shared/core/services/getShared": {
+      "require": "./cjs/Shared/core/services/getShared.js",
+      "import": "./esm/Shared/core/services/getShared.js",
+      "browser": "./build/Shared/core/services/getShared.js"
+    },
+    "./Shared/core/services/hasShared": {
+      "require": "./cjs/Shared/core/services/hasShared.js",
+      "import": "./esm/Shared/core/services/hasShared.js",
+      "browser": "./build/Shared/core/services/hasShared.js"
+    },
+    "./Shared/core/services/modifyShared": {
+      "require": "./cjs/Shared/core/services/modifyShared.js",
+      "import": "./esm/Shared/core/services/modifyShared.js",
+      "browser": "./build/Shared/core/services/modifyShared.js"
+    },
+    "./Shared/core/services/runWithNamespace": {
+      "require": "./cjs/Shared/core/services/runWithNamespace.js",
+      "import": "./esm/Shared/core/services/runWithNamespace.js",
+      "browser": "./build/Shared/core/services/runWithNamespace.js"
+    },
+    "./Shared/core/services/setShared": {
+      "require": "./cjs/Shared/core/services/setShared.js",
+      "import": "./esm/Shared/core/services/setShared.js",
+      "browser": "./build/Shared/core/services/setShared.js"
+    },
+    "./Shared/core/services/usingNamespace": {
+      "require": "./cjs/Shared/core/services/usingNamespace.js",
+      "import": "./esm/Shared/core/services/usingNamespace.js",
+      "browser": "./build/Shared/core/services/usingNamespace.js"
+    },
+    "./Shared/core/services/withCurrentNamespace": {
+      "require": "./cjs/Shared/core/services/withCurrentNamespace.js",
+      "import": "./esm/Shared/core/services/withCurrentNamespace.js",
+      "browser": "./build/Shared/core/services/withCurrentNamespace.js"
+    },
+    "./Shared/core/services/withShared": {
+      "require": "./cjs/Shared/core/services/withShared.js",
+      "import": "./esm/Shared/core/services/withShared.js",
+      "browser": "./build/Shared/core/services/withShared.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/exports": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/exports.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/exports.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/exports.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/guards": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/guards.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/guards.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/guards.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/context/contextHandlers": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/context/contextHandlers.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/context/contextHandlers.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/context/contextHandlers.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/context/exports": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/context/exports.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/context/exports.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/context/exports.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/context/namespaceDeleted": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/context/namespaceStarted": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/context/namespaceStarted.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/context/namespaceStarted.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/context/namespaceStarted.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/context/sharedValueUpdated": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/context/sharedValueUpdated.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/context/sharedValueUpdated.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/context/sharedValueUpdated.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/core/coreHandlers": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/core/coreHandlers.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/core/coreHandlers.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/core/coreHandlers.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/core/exports": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/core/exports.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/core/exports.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/core/exports.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/core/namspaceDeleted": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/core/namspaceDeleted.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/core/namspaceDeleted.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/core/namspaceDeleted.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/hooks/exports": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/hooks/exports.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/hooks/exports.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/hooks/exports.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/hooks/hooksHandlers": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/hooks/hooksHandlers.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/hooks/hooksHandlers.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/hooks/hooksHandlers.js"
+    },
+    "./Shared/createSharedEnvProvider/handlers/hooks/namespaceStarted": {
+      "require": "./cjs/Shared/createSharedEnvProvider/handlers/hooks/namespaceStarted.js",
+      "import": "./esm/Shared/createSharedEnvProvider/handlers/hooks/namespaceStarted.js",
+      "browser": "./build/Shared/createSharedEnvProvider/handlers/hooks/namespaceStarted.js"
+    },
+    "./Storage": {
+      "require": "./cjs/Storage/exports.js",
+      "import": "./esm/Storage/exports.js",
+      "browser": "./build/Storage/exports.js"
+    },
+    "./Storage/KeyValueStorage": {
+      "require": "./cjs/Storage/KeyValueStorage.js",
+      "import": "./esm/Storage/KeyValueStorage.js",
+      "browser": "./build/Storage/KeyValueStorage.js"
+    },
+    "./Storage/dom": {
+      "require": "./cjs/Storage/dom.js",
+      "import": "./esm/Storage/dom.js",
+      "browser": "./build/Storage/dom.js"
+    },
+    "./Storage/exports": {
+      "require": "./cjs/Storage/exports.js",
+      "import": "./esm/Storage/exports.js",
+      "browser": "./build/Storage/exports.js"
+    },
+    "./Storage/proxyStorage": {
+      "require": "./cjs/Storage/proxyStorage.js",
+      "import": "./esm/Storage/proxyStorage.js",
+      "browser": "./build/Storage/proxyStorage.js"
+    },
+    "./Storage/scopeStorage": {
+      "require": "./cjs/Storage/scopeStorage.js",
+      "import": "./esm/Storage/scopeStorage.js",
+      "browser": "./build/Storage/scopeStorage.js"
+    },
+    "./Storage/serverStorage": {
+      "require": "./cjs/Storage/serverStorage.js",
+      "import": "./esm/Storage/serverStorage.js",
+      "browser": "./build/Storage/serverStorage.js"
+    },
+    "./Storage/indexedDb/IndexedDbFactoryEnv": {
+      "require": "./cjs/Storage/indexedDb/IndexedDbFactoryEnv.js",
+      "import": "./esm/Storage/indexedDb/IndexedDbFactoryEnv.js",
+      "browser": "./build/Storage/indexedDb/IndexedDbFactoryEnv.js"
+    },
+    "./Storage/indexedDb/IndexedDbStoreTransaction": {
+      "require": "./cjs/Storage/indexedDb/IndexedDbStoreTransaction.js",
+      "import": "./esm/Storage/indexedDb/IndexedDbStoreTransaction.js",
+      "browser": "./build/Storage/indexedDb/IndexedDbStoreTransaction.js"
+    },
+    "./Storage/indexedDb/createIndexedDb": {
+      "require": "./cjs/Storage/indexedDb/createIndexedDb.js",
+      "import": "./esm/Storage/indexedDb/createIndexedDb.js",
+      "browser": "./build/Storage/indexedDb/createIndexedDb.js"
+    },
+    "./Storage/indexedDb/createReadTransaction": {
+      "require": "./cjs/Storage/indexedDb/createReadTransaction.js",
+      "import": "./esm/Storage/indexedDb/createReadTransaction.js",
+      "browser": "./build/Storage/indexedDb/createReadTransaction.js"
+    },
+    "./Storage/indexedDb/createWriteTransaction": {
+      "require": "./cjs/Storage/indexedDb/createWriteTransaction.js",
+      "import": "./esm/Storage/indexedDb/createWriteTransaction.js",
+      "browser": "./build/Storage/indexedDb/createWriteTransaction.js"
+    },
+    "./Storage/indexedDb/exports": {
+      "require": "./cjs/Storage/indexedDb/exports.js",
+      "import": "./esm/Storage/indexedDb/exports.js",
+      "browser": "./build/Storage/indexedDb/exports.js"
+    },
+    "./Storage/indexedDb/idbRequestToResume": {
+      "require": "./cjs/Storage/indexedDb/idbRequestToResume.js",
+      "import": "./esm/Storage/indexedDb/idbRequestToResume.js",
+      "browser": "./build/Storage/indexedDb/idbRequestToResume.js"
+    },
+    "./Storage/indexedDb/openDatabase": {
+      "require": "./cjs/Storage/indexedDb/openDatabase.js",
+      "import": "./esm/Storage/indexedDb/openDatabase.js",
+      "browser": "./build/Storage/indexedDb/openDatabase.js"
+    },
+    "./Stream": {
+      "require": "./cjs/Stream/exports.js",
+      "import": "./esm/Stream/exports.js",
+      "browser": "./build/Stream/exports.js"
+    },
+    "./Stream/exports": {
+      "require": "./cjs/Stream/exports.js",
+      "import": "./esm/Stream/exports.js",
+      "browser": "./build/Stream/exports.js"
+    },
+    "./Uri": {
+      "require": "./cjs/Uri/exports.js",
+      "import": "./esm/Uri/exports.js",
+      "browser": "./build/Uri/exports.js"
+    },
+    "./Uri/exports": {
+      "require": "./cjs/Uri/exports.js",
+      "import": "./esm/Uri/exports.js",
+      "browser": "./build/Uri/exports.js"
+    },
+    "./Uuid": {
+      "require": "./cjs/Uuid/exports.js",
+      "import": "./esm/Uuid/exports.js",
+      "browser": "./build/Uuid/exports.js"
+    },
+    "./Uuid/common": {
+      "require": "./cjs/Uuid/common.js",
+      "import": "./esm/Uuid/common.js",
+      "browser": "./build/Uuid/common.js"
+    },
+    "./Uuid/exports": {
+      "require": "./cjs/Uuid/exports.js",
+      "import": "./esm/Uuid/exports.js",
+      "browser": "./build/Uuid/exports.js"
+    },
+    "./Uuid/uuid4/exports": {
+      "require": "./cjs/Uuid/uuid4/exports.js",
+      "import": "./esm/Uuid/uuid4/exports.js",
+      "browser": "./build/Uuid/uuid4/exports.js"
+    },
+    "./Uuid/uuid4/uuid4": {
+      "require": "./cjs/Uuid/uuid4/uuid4.js",
+      "import": "./esm/Uuid/uuid4/uuid4.js",
+      "browser": "./build/Uuid/uuid4/uuid4.js"
+    },
+    "./browser": {
+      "require": "./cjs/browser/exports.js",
+      "import": "./esm/browser/exports.js",
+      "browser": "./build/browser/exports.js"
+    },
+    "./browser/HistoryEnv": {
+      "require": "./cjs/browser/HistoryEnv.js",
+      "import": "./esm/browser/HistoryEnv.js",
+      "browser": "./build/browser/HistoryEnv.js"
+    },
+    "./browser/RafEnv": {
+      "require": "./cjs/browser/RafEnv.js",
+      "import": "./esm/browser/RafEnv.js",
+      "browser": "./build/browser/RafEnv.js"
+    },
+    "./browser/UuidEnv": {
+      "require": "./cjs/browser/UuidEnv.js",
+      "import": "./esm/browser/UuidEnv.js",
+      "browser": "./build/browser/UuidEnv.js"
+    },
+    "./browser/WhenIdleEnv": {
+      "require": "./cjs/browser/WhenIdleEnv.js",
+      "import": "./esm/browser/WhenIdleEnv.js",
+      "browser": "./build/browser/WhenIdleEnv.js"
+    },
+    "./browser/exports": {
+      "require": "./cjs/browser/exports.js",
+      "import": "./esm/browser/exports.js",
+      "browser": "./build/browser/exports.js"
+    },
+    "./common": {
+      "require": "./cjs/common/exports.js",
+      "import": "./esm/common/exports.js",
+      "browser": "./build/common/exports.js"
+    },
+    "./common/And": {
+      "require": "./cjs/common/And.js",
+      "import": "./esm/common/And.js",
+      "browser": "./build/common/And.js"
+    },
+    "./common/Args": {
+      "require": "./cjs/common/Args.js",
+      "import": "./esm/common/Args.js",
+      "browser": "./build/common/Args.js"
+    },
+    "./common/ConsList": {
+      "require": "./cjs/common/ConsList.js",
+      "import": "./esm/common/ConsList.js",
+      "browser": "./build/common/ConsList.js"
+    },
+    "./common/DropNever": {
+      "require": "./cjs/common/DropNever.js",
+      "import": "./esm/common/DropNever.js",
+      "browser": "./build/common/DropNever.js"
+    },
+    "./common/Include": {
+      "require": "./cjs/common/Include.js",
+      "import": "./esm/common/Include.js",
+      "browser": "./build/common/Include.js"
+    },
+    "./common/Or": {
+      "require": "./cjs/common/Or.js",
+      "import": "./esm/common/Or.js",
+      "browser": "./build/common/Or.js"
+    },
+    "./common/TupleKeys": {
+      "require": "./cjs/common/TupleKeys.js",
+      "import": "./esm/common/TupleKeys.js",
+      "browser": "./build/common/TupleKeys.js"
+    },
+    "./common/deepEqualsEq": {
+      "require": "./cjs/common/deepEqualsEq.js",
+      "import": "./esm/common/deepEqualsEq.js",
+      "browser": "./build/common/deepEqualsEq.js"
+    },
+    "./common/exports": {
+      "require": "./cjs/common/exports.js",
+      "import": "./esm/common/exports.js",
+      "browser": "./build/common/exports.js"
+    },
+    "./common/functionName": {
+      "require": "./cjs/common/functionName.js",
+      "import": "./esm/common/functionName.js",
+      "browser": "./build/common/functionName.js"
+    },
+    "./common/includesWith": {
+      "require": "./cjs/common/includesWith.js",
+      "import": "./esm/common/includesWith.js",
+      "browser": "./build/common/includesWith.js"
+    },
+    "./common/isBrowser": {
+      "require": "./cjs/common/isBrowser.js",
+      "import": "./esm/common/isBrowser.js",
+      "browser": "./build/common/isBrowser.js"
+    },
+    "./common/typeOf": {
+      "require": "./cjs/common/typeOf.js",
+      "import": "./esm/common/typeOf.js",
+      "browser": "./build/common/typeOf.js"
+    },
+    "./common/types": {
+      "require": "./cjs/common/types.js",
+      "import": "./esm/common/types.js",
+      "browser": "./build/common/types.js"
+    },
+    "./dom": {
+      "require": "./cjs/dom/exports.js",
+      "import": "./esm/dom/exports.js",
+      "browser": "./build/dom/exports.js"
+    },
+    "./dom/exports": {
+      "require": "./cjs/dom/exports.js",
+      "import": "./esm/dom/exports.js",
+      "browser": "./build/dom/exports.js"
+    },
+    "./dom/raf": {
+      "require": "./cjs/dom/raf.js",
+      "import": "./esm/dom/raf.js",
+      "browser": "./build/dom/raf.js"
+    },
+    "./dom/whenIdle": {
+      "require": "./cjs/dom/whenIdle.js",
+      "import": "./esm/dom/whenIdle.js",
+      "browser": "./build/dom/whenIdle.js"
+    },
+    "./history": {
+      "require": "./cjs/history/exports.js",
+      "import": "./esm/history/exports.js",
+      "browser": "./build/history/exports.js"
+    },
+    "./history/HistoryEnv": {
+      "require": "./cjs/history/HistoryEnv.js",
+      "import": "./esm/history/HistoryEnv.js",
+      "browser": "./build/history/HistoryEnv.js"
+    },
+    "./history/exports": {
+      "require": "./cjs/history/exports.js",
+      "import": "./esm/history/exports.js",
+      "browser": "./build/history/exports.js"
+    },
+    "./history/pushPath": {
+      "require": "./cjs/history/pushPath.js",
+      "import": "./esm/history/pushPath.js",
+      "browser": "./build/history/pushPath.js"
+    },
+    "./history/pushUri": {
+      "require": "./cjs/history/pushUri.js",
+      "import": "./esm/history/pushUri.js",
+      "browser": "./build/history/pushUri.js"
+    },
+    "./history/scopeHistoryEnv": {
+      "require": "./cjs/history/scopeHistoryEnv.js",
+      "import": "./esm/history/scopeHistoryEnv.js",
+      "browser": "./build/history/scopeHistoryEnv.js"
+    },
+    "./http": {
+      "require": "./cjs/http/exports.js",
+      "import": "./esm/http/exports.js",
+      "browser": "./build/http/exports.js"
+    },
+    "./http/FetchHttpEnv": {
+      "require": "./cjs/http/FetchHttpEnv.js",
+      "import": "./esm/http/FetchHttpEnv.js",
+      "browser": "./build/http/FetchHttpEnv.js"
+    },
+    "./http/HttpEnv": {
+      "require": "./cjs/http/HttpEnv.js",
+      "import": "./esm/http/HttpEnv.js",
+      "browser": "./build/http/HttpEnv.js"
+    },
+    "./http/HttpHeaders": {
+      "require": "./cjs/http/HttpHeaders.js",
+      "import": "./esm/http/HttpHeaders.js",
+      "browser": "./build/http/HttpHeaders.js"
+    },
+    "./http/HttpMethod": {
+      "require": "./cjs/http/HttpMethod.js",
+      "import": "./esm/http/HttpMethod.js",
+      "browser": "./build/http/HttpMethod.js"
+    },
+    "./http/HttpRequest": {
+      "require": "./cjs/http/HttpRequest.js",
+      "import": "./esm/http/HttpRequest.js",
+      "browser": "./build/http/HttpRequest.js"
+    },
+    "./http/HttpResponse": {
+      "require": "./cjs/http/HttpResponse.js",
+      "import": "./esm/http/HttpResponse.js",
+      "browser": "./build/http/HttpResponse.js"
+    },
+    "./http/exports": {
+      "require": "./cjs/http/exports.js",
+      "import": "./esm/http/exports.js",
+      "browser": "./build/http/exports.js"
+    },
+    "./http/http": {
+      "require": "./cjs/http/http.js",
+      "import": "./esm/http/http.js",
+      "browser": "./build/http/http.js"
+    },
+    "./http/withHttpManagement": {
+      "require": "./cjs/http/withHttpManagement.js",
+      "import": "./esm/http/withHttpManagement.js",
+      "browser": "./build/http/withHttpManagement.js"
+    },
+    "./io": {
+      "require": "./cjs/io/exports.js",
+      "import": "./esm/io/exports.js",
+      "browser": "./build/io/exports.js"
+    },
+    "./io/Decoder": {
+      "require": "./cjs/io/Decoder.js",
+      "import": "./esm/io/Decoder.js",
+      "browser": "./build/io/Decoder.js"
+    },
+    "./io/Eq": {
+      "require": "./cjs/io/Eq.js",
+      "import": "./esm/io/Eq.js",
+      "browser": "./build/io/Eq.js"
+    },
+    "./io/Guard": {
+      "require": "./cjs/io/Guard.js",
+      "import": "./esm/io/Guard.js",
+      "browser": "./build/io/Guard.js"
+    },
+    "./io/TypedSchema": {
+      "require": "./cjs/io/TypedSchema.js",
+      "import": "./esm/io/TypedSchema.js",
+      "browser": "./build/io/TypedSchema.js"
+    },
+    "./io/TypedSchemable": {
+      "require": "./cjs/io/TypedSchemable.js",
+      "import": "./esm/io/TypedSchemable.js",
+      "browser": "./build/io/TypedSchemable.js"
+    },
+    "./io/exports": {
+      "require": "./cjs/io/exports.js",
+      "import": "./esm/io/exports.js",
+      "browser": "./build/io/exports.js"
+    },
+    "./io/interpreter": {
+      "require": "./cjs/io/interpreter.js",
+      "import": "./esm/io/interpreter.js",
+      "browser": "./build/io/interpreter.js"
+    },
+    "./lambda": {
+      "require": "./cjs/lambda/exports.js",
+      "import": "./esm/lambda/exports.js",
+      "browser": "./build/lambda/exports.js"
+    },
+    "./lambda/exports": {
+      "require": "./cjs/lambda/exports.js",
+      "import": "./esm/lambda/exports.js",
+      "browser": "./build/lambda/exports.js"
+    },
+    "./logging": {
+      "require": "./cjs/logging/exports.js",
+      "import": "./esm/logging/exports.js",
+      "browser": "./build/logging/exports.js"
+    },
+    "./logging/LoggerEffect": {
+      "require": "./cjs/logging/LoggerEffect.js",
+      "import": "./esm/logging/LoggerEffect.js",
+      "browser": "./build/logging/LoggerEffect.js"
+    },
+    "./logging/exports": {
+      "require": "./cjs/logging/exports.js",
+      "import": "./esm/logging/exports.js",
+      "browser": "./build/logging/exports.js"
+    },
+    "./logic": {
+      "require": "./cjs/logic/exports.js",
+      "import": "./esm/logic/exports.js",
+      "browser": "./build/logic/exports.js"
+    },
+    "./logic/all": {
+      "require": "./cjs/logic/all.js",
+      "import": "./esm/logic/all.js",
+      "browser": "./build/logic/all.js"
+    },
+    "./logic/allPass": {
+      "require": "./cjs/logic/allPass.js",
+      "import": "./esm/logic/allPass.js",
+      "browser": "./build/logic/allPass.js"
+    },
+    "./logic/and": {
+      "require": "./cjs/logic/and.js",
+      "import": "./esm/logic/and.js",
+      "browser": "./build/logic/and.js"
+    },
+    "./logic/any": {
+      "require": "./cjs/logic/any.js",
+      "import": "./esm/logic/any.js",
+      "browser": "./build/logic/any.js"
+    },
+    "./logic/anyPass": {
+      "require": "./cjs/logic/anyPass.js",
+      "import": "./esm/logic/anyPass.js",
+      "browser": "./build/logic/anyPass.js"
+    },
+    "./logic/complement": {
+      "require": "./cjs/logic/complement.js",
+      "import": "./esm/logic/complement.js",
+      "browser": "./build/logic/complement.js"
+    },
+    "./logic/cond": {
+      "require": "./cjs/logic/cond.js",
+      "import": "./esm/logic/cond.js",
+      "browser": "./build/logic/cond.js"
+    },
+    "./logic/equals": {
+      "require": "./cjs/logic/equals.js",
+      "import": "./esm/logic/equals.js",
+      "browser": "./build/logic/equals.js"
+    },
+    "./logic/exec": {
+      "require": "./cjs/logic/exec.js",
+      "import": "./esm/logic/exec.js",
+      "browser": "./build/logic/exec.js"
+    },
+    "./logic/exports": {
+      "require": "./cjs/logic/exports.js",
+      "import": "./esm/logic/exports.js",
+      "browser": "./build/logic/exports.js"
+    },
+    "./logic/greaterThan": {
+      "require": "./cjs/logic/greaterThan.js",
+      "import": "./esm/logic/greaterThan.js",
+      "browser": "./build/logic/greaterThan.js"
+    },
+    "./logic/greaterThanOrEqual": {
+      "require": "./cjs/logic/greaterThanOrEqual.js",
+      "import": "./esm/logic/greaterThanOrEqual.js",
+      "browser": "./build/logic/greaterThanOrEqual.js"
+    },
+    "./logic/ifElse": {
+      "require": "./cjs/logic/ifElse.js",
+      "import": "./esm/logic/ifElse.js",
+      "browser": "./build/logic/ifElse.js"
+    },
+    "./logic/is": {
+      "require": "./cjs/logic/is.js",
+      "import": "./esm/logic/is.js",
+      "browser": "./build/logic/is.js"
+    },
+    "./logic/isObject": {
+      "require": "./cjs/logic/isObject.js",
+      "import": "./esm/logic/isObject.js",
+      "browser": "./build/logic/isObject.js"
+    },
+    "./logic/json": {
+      "require": "./cjs/logic/json.js",
+      "import": "./esm/logic/json.js",
+      "browser": "./build/logic/json.js"
+    },
+    "./logic/lessThan": {
+      "require": "./cjs/logic/lessThan.js",
+      "import": "./esm/logic/lessThan.js",
+      "browser": "./build/logic/lessThan.js"
+    },
+    "./logic/lessThanOrEqual": {
+      "require": "./cjs/logic/lessThanOrEqual.js",
+      "import": "./esm/logic/lessThanOrEqual.js",
+      "browser": "./build/logic/lessThanOrEqual.js"
+    },
+    "./logic/negate": {
+      "require": "./cjs/logic/negate.js",
+      "import": "./esm/logic/negate.js",
+      "browser": "./build/logic/negate.js"
+    },
+    "./logic/oneOf": {
+      "require": "./cjs/logic/oneOf.js",
+      "import": "./esm/logic/oneOf.js",
+      "browser": "./build/logic/oneOf.js"
+    },
+    "./logic/or": {
+      "require": "./cjs/logic/or.js",
+      "import": "./esm/logic/or.js",
+      "browser": "./build/logic/or.js"
+    },
+    "./logic/propEq": {
+      "require": "./cjs/logic/propEq.js",
+      "import": "./esm/logic/propEq.js",
+      "browser": "./build/logic/propEq.js"
+    },
+    "./logic/propOr": {
+      "require": "./cjs/logic/propOr.js",
+      "import": "./esm/logic/propOr.js",
+      "browser": "./build/logic/propOr.js"
+    },
+    "./logic/regexTest": {
+      "require": "./cjs/logic/regexTest.js",
+      "import": "./esm/logic/regexTest.js",
+      "browser": "./build/logic/regexTest.js"
+    },
+    "./logic/toggleOrSet": {
+      "require": "./cjs/logic/toggleOrSet.js",
+      "import": "./esm/logic/toggleOrSet.js",
+      "browser": "./build/logic/toggleOrSet.js"
+    },
+    "./logic/types": {
+      "require": "./cjs/logic/types.js",
+      "import": "./esm/logic/types.js",
+      "browser": "./build/logic/types.js"
+    },
+    "./node": {
+      "require": "./cjs/node/exports.js",
+      "import": "./esm/node/exports.js",
+      "browser": "./build/node/exports.js"
+    },
+    "./node/RafEnv": {
+      "require": "./cjs/node/RafEnv.js",
+      "import": "./esm/node/RafEnv.js",
+      "browser": "./build/node/RafEnv.js"
+    },
+    "./node/UuidEnv": {
+      "require": "./cjs/node/UuidEnv.js",
+      "import": "./esm/node/UuidEnv.js",
+      "browser": "./build/node/UuidEnv.js"
+    },
+    "./node/WhenIdleEnv": {
+      "require": "./cjs/node/WhenIdleEnv.js",
+      "import": "./esm/node/WhenIdleEnv.js",
+      "browser": "./build/node/WhenIdleEnv.js"
+    },
+    "./node/exports": {
+      "require": "./cjs/node/exports.js",
+      "import": "./esm/node/exports.js",
+      "browser": "./build/node/exports.js"
+    },
+    "./node/HistoryEnv/ServerHistory": {
+      "require": "./cjs/node/HistoryEnv/ServerHistory.js",
+      "import": "./esm/node/HistoryEnv/ServerHistory.js",
+      "browser": "./build/node/HistoryEnv/ServerHistory.js"
+    },
+    "./node/HistoryEnv/ServerLocation": {
+      "require": "./cjs/node/HistoryEnv/ServerLocation.js",
+      "import": "./esm/node/HistoryEnv/ServerLocation.js",
+      "browser": "./build/node/HistoryEnv/ServerLocation.js"
+    },
+    "./node/HistoryEnv/createHistoryEnv": {
+      "require": "./cjs/node/HistoryEnv/createHistoryEnv.js",
+      "import": "./esm/node/HistoryEnv/createHistoryEnv.js",
+      "browser": "./build/node/HistoryEnv/createHistoryEnv.js"
+    },
+    "./node/HistoryEnv/exports": {
+      "require": "./cjs/node/HistoryEnv/exports.js",
+      "import": "./esm/node/HistoryEnv/exports.js",
+      "browser": "./build/node/HistoryEnv/exports.js"
+    }
+  }
 }

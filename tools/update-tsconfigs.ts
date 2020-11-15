@@ -95,11 +95,7 @@ async function updatePluginConfig(path: string, moduleType: ModuleType) {
     createFpTsImportRewrite(moduleType),
     { ...createFpTsImportRewrite(moduleType), afterDeclarations: true },
   ]
-  json.exclude = [
-    ...DEFAULT_EXCLUSIONS_PATH,
-    ...MODULES.map((m) => `${m}`),
-    moduleType === 'cjs' ? './src/browser' : './src/node',
-  ]
+  json.exclude = [...DEFAULT_EXCLUSIONS_PATH, ...MODULES.map((m) => `${m}`)]
 
   await writeFile(path, JSON.stringify(json, null, 2) + EOL)
 }
