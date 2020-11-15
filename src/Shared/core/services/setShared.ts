@@ -40,6 +40,11 @@ export const setShared = curry(
       return value
     }),
 ) as {
-  <S extends Shared>(shared: S, value: GetSharedValue<S>): Effect<SharedEnv, GetSharedValue<S>>
-  <S extends Shared>(shared: S): (value: GetSharedValue<S>) => Effect<SharedEnv, GetSharedValue<S>>
+  <S extends Shared>(shared: S, value: GetSharedValue<S>): Effect<
+    SharedEnv & GetSharedEnv<S>,
+    GetSharedValue<S>
+  >
+  <S extends Shared>(shared: S): (
+    value: GetSharedValue<S>,
+  ) => Effect<SharedEnv & GetSharedEnv<S>, GetSharedValue<S>>
 }

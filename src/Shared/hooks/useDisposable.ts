@@ -1,9 +1,10 @@
 import { disposeAll, disposeNone } from '@most/disposable'
 import { Disposable } from '@typed/fp/Disposable/exports'
-import { doEffect, Pure } from '@typed/fp/Effect/exports'
+import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
 import { defaultEqs, EqsOf, tupleEqOf } from '@typed/fp/Shared/common/EqsOf'
 
 import { addDisposable } from '../core/disposables/exports'
+import { SharedEnv } from '../core/services/SharedEnv'
 import { Ref } from '../Ref/exports'
 import { useDepChange } from './useDepChange'
 import { useRef } from './useRef'
@@ -15,7 +16,7 @@ export const useDisposable = <Deps extends ReadonlyArray<any>>(
   f: () => Disposable,
   deps: Deps,
   eqs: EqsOf<Deps> = defaultEqs(deps),
-) => {
+): Effect<SharedEnv, Disposable> => {
   const eff = doEffect(function* () {
     const depsChanged = yield* useDepChange(deps, tupleEqOf(eqs), true)
     const ref: Ref<Disposable> = yield* useRef(Pure.fromIO(disposeNone))

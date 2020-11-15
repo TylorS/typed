@@ -1,11 +1,11 @@
-import { ask, doEffect } from '@typed/fp/Effect/exports'
-import { NamespaceCompleted, usingNamespace } from '@typed/fp/Shared/core/exports'
+import { ask, doEffect, Effect } from '@typed/fp/Effect/exports'
+import { NamespaceCompleted, SharedEnv, usingNamespace } from '@typed/fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
 
 import { getNamespaceRenderers } from '../NamespaceRenderers'
 import { setRenderer } from '../Renderer'
 
-export function namespaceCompleted(event: NamespaceCompleted) {
+export function namespaceCompleted(event: NamespaceCompleted): Effect<SharedEnv, void> {
   const eff = doEffect(function* () {
     const renderers = yield* getNamespaceRenderers
 

@@ -19,10 +19,10 @@ export const modifyShared = curry(
     pipe(shared, getShared, map(f), chain(setShared(shared))),
 ) as {
   <S extends Shared>(shared: S, f: Arity1<GetSharedValue<S>, GetSharedValue<S>>): Effect<
-    SharedEnv,
+    SharedEnv & GetSharedEnv<S>,
     GetSharedValue<S>
   >
   <S extends Shared>(shared: S): (
     f: Arity1<GetSharedValue<S>, GetSharedValue<S>>,
-  ) => Effect<SharedEnv, GetSharedValue<S>>
+  ) => Effect<SharedEnv & GetSharedEnv<S>, GetSharedValue<S>>
 }

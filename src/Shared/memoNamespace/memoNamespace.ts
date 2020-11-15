@@ -10,12 +10,14 @@ import {
   NamespaceUpdated,
   runWithNamespace,
   setShared,
+  Shared,
   SharedEnv,
+  SharedKey,
   usingNamespace,
 } from '@typed/fp/Shared/core/exports'
 import { constVoid, pipe } from 'fp-ts/function'
 
-import { createRef } from '../Ref/exports'
+import { createRef, Ref } from '../Ref/exports'
 
 /**
  * Memoize the result of an effect, only updating when Namespace
@@ -48,7 +50,9 @@ export const ReturnValue = <E, A>(initial: Effect<E, A>) => createShared(RETURN_
 
 // Listen to update events and mark as updated
 export const HAS_BEEN_UPDATED = Symbol.for('HasBeenUpdated')
-export const HasBeenUpdated = (namespace: Namespace) =>
+export const HasBeenUpdated = (
+  namespace: Namespace,
+): Shared<SharedKey<typeof HAS_BEEN_UPDATED>, SharedEnv & SchedulerEnv, Ref<boolean>> =>
   createShared(
     HAS_BEEN_UPDATED,
     doEffect(function* () {

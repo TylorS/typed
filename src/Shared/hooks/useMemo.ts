@@ -1,6 +1,7 @@
-import { doEffect, Pure } from '@typed/fp/Effect/exports'
+import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
 import { defaultEqs, EqsOf, tupleEqOf } from '@typed/fp/Shared/common/EqsOf'
 
+import { SharedEnv } from '../core/exports'
 import { useDepChange } from './useDepChange'
 import { useRef } from './useRef'
 
@@ -12,7 +13,7 @@ export const useMemo = <A, Deps extends ReadonlyArray<any>>(
   f: () => A,
   deps: Deps,
   eqs: EqsOf<Deps> = defaultEqs(deps),
-) => {
+): Effect<SharedEnv, A> => {
   const eff = doEffect(function* () {
     const changed = yield* useDepChange(deps, tupleEqOf(eqs), false)
     const ref = yield* useRef(Pure.fromIO(f))

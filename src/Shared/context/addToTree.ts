@@ -1,5 +1,5 @@
 import { disposeAll } from '@most/disposable'
-import { ask, doEffect, execEffect } from '@typed/fp/Effect/exports'
+import { ask, doEffect, Effect, execEffect } from '@typed/fp/Effect/exports'
 import {
   getCurrentNamespace,
   Namespace,
@@ -13,7 +13,7 @@ import { addDisposable, getNamespaceDisposable } from '../core/disposables/expor
 import { addChild, removeChild } from './NamespaceChildren'
 import { getNamespaceParent, setNamespaceParent } from './NamespaceParent'
 
-export const addToTree = (parent: Namespace) => {
+export const addToTree = (parent: Namespace): Effect<SharedEnv, void> => {
   const eff = doEffect(function* () {
     const env = yield* ask<SharedEnv>()
     const currentNamespace = yield* getCurrentNamespace
