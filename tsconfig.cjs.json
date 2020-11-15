@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "outDir": "./",
     "baseUrl": "./src",
     "paths": {
       "@typed/fp/*": [
