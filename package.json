@@ -913,6 +913,61 @@
       "import": "./esm/Shared/hooks/useStream.js",
       "browser": "./build/Shared/hooks/useStream.js"
     },
+    "./Shared/map/SharedMap": {
+      "require": "./cjs/Shared/map/SharedMap.js",
+      "import": "./esm/Shared/map/SharedMap.js",
+      "browser": "./build/Shared/map/SharedMap.js"
+    },
+    "./Shared/map/createMap": {
+      "require": "./cjs/Shared/map/createMap.js",
+      "import": "./esm/Shared/map/createMap.js",
+      "browser": "./build/Shared/map/createMap.js"
+    },
+    "./Shared/map/deleteKey": {
+      "require": "./cjs/Shared/map/deleteKey.js",
+      "import": "./esm/Shared/map/deleteKey.js",
+      "browser": "./build/Shared/map/deleteKey.js"
+    },
+    "./Shared/map/exports": {
+      "require": "./cjs/Shared/map/exports.js",
+      "import": "./esm/Shared/map/exports.js",
+      "browser": "./build/Shared/map/exports.js"
+    },
+    "./Shared/map/fromMap": {
+      "require": "./cjs/Shared/map/fromMap.js",
+      "import": "./esm/Shared/map/fromMap.js",
+      "browser": "./build/Shared/map/fromMap.js"
+    },
+    "./Shared/map/getKey": {
+      "require": "./cjs/Shared/map/getKey.js",
+      "import": "./esm/Shared/map/getKey.js",
+      "browser": "./build/Shared/map/getKey.js"
+    },
+    "./Shared/map/getKeyOrCreate": {
+      "require": "./cjs/Shared/map/getKeyOrCreate.js",
+      "import": "./esm/Shared/map/getKeyOrCreate.js",
+      "browser": "./build/Shared/map/getKeyOrCreate.js"
+    },
+    "./Shared/map/hasKey": {
+      "require": "./cjs/Shared/map/hasKey.js",
+      "import": "./esm/Shared/map/hasKey.js",
+      "browser": "./build/Shared/map/hasKey.js"
+    },
+    "./Shared/map/setKey": {
+      "require": "./cjs/Shared/map/setKey.js",
+      "import": "./esm/Shared/map/setKey.js",
+      "browser": "./build/Shared/map/setKey.js"
+    },
+    "./Shared/map/withMutations": {
+      "require": "./cjs/Shared/map/withMutations.js",
+      "import": "./esm/Shared/map/withMutations.js",
+      "browser": "./build/Shared/map/withMutations.js"
+    },
+    "./Shared/map/wrapMap": {
+      "require": "./cjs/Shared/map/wrapMap.js",
+      "import": "./esm/Shared/map/wrapMap.js",
+      "browser": "./build/Shared/map/wrapMap.js"
+    },
     "./Shared/memoNamespace/exports": {
       "require": "./cjs/Shared/memoNamespace/exports.js",
       "import": "./esm/Shared/memoNamespace/exports.js",
@@ -922,6 +977,51 @@
       "require": "./cjs/Shared/memoNamespace/memoNamespace.js",
       "import": "./esm/Shared/memoNamespace/memoNamespace.js",
       "browser": "./build/Shared/memoNamespace/memoNamespace.js"
+    },
+    "./Shared/set/SharedSet": {
+      "require": "./cjs/Shared/set/SharedSet.js",
+      "import": "./esm/Shared/set/SharedSet.js",
+      "browser": "./build/Shared/set/SharedSet.js"
+    },
+    "./Shared/set/addValue": {
+      "require": "./cjs/Shared/set/addValue.js",
+      "import": "./esm/Shared/set/addValue.js",
+      "browser": "./build/Shared/set/addValue.js"
+    },
+    "./Shared/set/createSet": {
+      "require": "./cjs/Shared/set/createSet.js",
+      "import": "./esm/Shared/set/createSet.js",
+      "browser": "./build/Shared/set/createSet.js"
+    },
+    "./Shared/set/deleteValue": {
+      "require": "./cjs/Shared/set/deleteValue.js",
+      "import": "./esm/Shared/set/deleteValue.js",
+      "browser": "./build/Shared/set/deleteValue.js"
+    },
+    "./Shared/set/exports": {
+      "require": "./cjs/Shared/set/exports.js",
+      "import": "./esm/Shared/set/exports.js",
+      "browser": "./build/Shared/set/exports.js"
+    },
+    "./Shared/set/fromSet": {
+      "require": "./cjs/Shared/set/fromSet.js",
+      "import": "./esm/Shared/set/fromSet.js",
+      "browser": "./build/Shared/set/fromSet.js"
+    },
+    "./Shared/set/hasValue": {
+      "require": "./cjs/Shared/set/hasValue.js",
+      "import": "./esm/Shared/set/hasValue.js",
+      "browser": "./build/Shared/set/hasValue.js"
+    },
+    "./Shared/set/withMutations": {
+      "require": "./cjs/Shared/set/withMutations.js",
+      "import": "./esm/Shared/set/withMutations.js",
+      "browser": "./build/Shared/set/withMutations.js"
+    },
+    "./Shared/set/wrapSet": {
+      "require": "./cjs/Shared/set/wrapSet.js",
+      "import": "./esm/Shared/set/wrapSet.js",
+      "browser": "./build/Shared/set/wrapSet.js"
     },
     "./Shared/core/constructors/createShared": {
       "require": "./cjs/Shared/core/constructors/createShared.js",
