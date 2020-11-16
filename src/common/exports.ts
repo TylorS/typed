@@ -6,6 +6,7 @@ export * from './functionName'
 export type { Include } from './Include'
 export * from './includesWith'
 export * from './isBrowser'
+export * from './TupleFromUnion'
 export type { TupleKeys } from './TupleKeys'
 export * from './typeOf'
 export type {
