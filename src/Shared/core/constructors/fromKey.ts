@@ -9,4 +9,4 @@ import { fromEq } from './fromEq'
  */
 export const fromKey = <A>() => <K extends PropertyKey>(
   key: K,
-): Shared<SharedKey, Record<K, A>, A> => fromEq<A, K>(deepEqualsEq, key)
+): Shared<SharedKey<K>, Record<K, A>, A> => fromEq<A, K>(deepEqualsEq, key)
