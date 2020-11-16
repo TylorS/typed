@@ -1,5 +1,5 @@
 import { rafEnv, whenIdleEnv } from '@typed/fp/browser/exports'
-import { execPure, provideAll } from '@typed/fp/Effect/exports'
+import { execEffect } from '@typed/fp/Effect/exports'
 import { createWhenIdleHandlers, Patch, patchOnRaf } from '@typed/fp/Patch/exports'
 import { sync } from '@typed/fp/Resume/Sync'
 import { provideSchedulerEnv } from '@typed/fp/scheduler/exports'
@@ -21,14 +21,17 @@ const lighterHtmlPatch: Patch<Element, Hole> = {
 }
 
 pipe(
+  // Setup your application to update on requestAnimationFrame
   patchOnRaf(rootElement, Counters),
   createSharedEnvProvider({
+    // Provide Event listeners
     handlers: [
+      // Provides the handlers required for SharedEnv core, hooks, and context API,
       ...defaultHandlers,
+      // Renders patches using the provided WhenIdleEnv to schedule the patches
       ...createWhenIdleHandlers({ ...lighterHtmlPatch, ...whenIdleEnv }),
     ],
   }),
   provideSchedulerEnv,
-  provideAll({ ...lighterHtmlPatch, ...rafEnv }),
-  execPure,
+  execEffect({ ...lighterHtmlPatch, ...rafEnv }),
 )
