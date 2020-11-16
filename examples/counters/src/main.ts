@@ -4,7 +4,7 @@ import { createWhenIdleHandlers, Patch, patchOnRaf } from '@typed/fp/Patch/expor
 import { sync } from '@typed/fp/Resume/Sync'
 import { provideSchedulerEnv } from '@typed/fp/scheduler/exports'
 import { createSharedEnvProvider, defaultHandlers } from '@typed/fp/Shared/exports'
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/function'
 import { Hole, render } from 'lighterhtml-plus'
 
 import { Counters } from './Counters'

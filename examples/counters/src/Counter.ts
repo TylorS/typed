@@ -1,7 +1,7 @@
 import { doEffect, ReturnOf } from '@typed/fp/Effect/exports'
 import { getRenderRef } from '@typed/fp/Patch/exports'
 import { Ref } from '@typed/fp/Shared/Ref/Ref'
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/function'
 import { html } from 'lighterhtml-plus'
 
 import { useCounter } from './useCounter'
