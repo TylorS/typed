@@ -14,7 +14,11 @@ export const withMutations = curry(
 
       f(mutable)
 
-      return yield* setShared(shared, mutable)
+      if (!shared.eq.equals(set, mutable)) {
+        return yield* setShared(shared, mutable)
+      }
+
+      return set
     })
   },
 ) as {
