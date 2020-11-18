@@ -16,7 +16,7 @@ import {
 } from '@typed/fp/Fiber/Fiber'
 import { FiberEnv } from '@typed/fp/Fiber/FiberEnv'
 import { async, Resume, sync } from '@typed/fp/Resume/exports'
-import { createCallbackTask } from '@typed/fp/scheduler/exports'
+import { createCallbackTask } from '@typed/fp/Scheduler/exports'
 import { Either, left, right } from 'fp-ts/Either'
 import { constVoid, flow, pipe } from 'fp-ts/function'
 import { newIORef } from 'fp-ts/IORef'

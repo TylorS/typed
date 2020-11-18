@@ -1,6 +1,6 @@
 import { raf, RafEnv } from '@typed/fp/dom/raf'
 import { doEffect, Effect, forever } from '@typed/fp/Effect/exports'
-import { SchedulerEnv } from '@typed/fp/scheduler/exports'
+import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
 import {
   Namespace,
   NamespaceUpdated,

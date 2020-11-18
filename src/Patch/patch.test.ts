@@ -1,6 +1,6 @@
 import { doEffect, execPure } from '@typed/fp/Effect/exports'
 import { sync } from '@typed/fp/Resume/Sync'
-import { provideSchedulerEnv } from '@typed/fp/scheduler/exports'
+import { provideSchedulerEnv } from '@typed/fp/Scheduler/exports'
 import {
   Namespace,
   runWithNamespace,

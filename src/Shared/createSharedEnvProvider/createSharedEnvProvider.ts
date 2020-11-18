@@ -9,7 +9,7 @@ import {
   useSome,
   useWith,
 } from '@typed/fp/Effect/exports'
-import { SchedulerEnv } from '@typed/fp/scheduler/exports'
+import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
 import { constVoid, pipe } from 'fp-ts/function'
 import { isNonEmpty } from 'fp-ts/ReadonlyArray'
 import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'

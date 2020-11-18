@@ -25,7 +25,7 @@
       "path": "../common/tsconfig.cjs.json"
     },
     {
-      "path": "../scheduler/tsconfig.cjs.json"
+      "path": "../Scheduler/tsconfig.cjs.json"
     }
   ],
   "include": [

@@ -1,5 +1,5 @@
 import { Provider } from '@typed/fp/Effect/provide'
-import { provideSchedulerEnv } from '@typed/fp/scheduler/exports'
+import { provideSchedulerEnv } from '@typed/fp/Scheduler/exports'
 import { pipe } from 'fp-ts/function'
 
 import { SharedEnv } from '../core/exports'

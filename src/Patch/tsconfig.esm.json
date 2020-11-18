@@ -34,7 +34,7 @@
       "path": "../logic/tsconfig.esm.json"
     },
     {
-      "path": "../scheduler/tsconfig.esm.json"
+      "path": "../Scheduler/tsconfig.esm.json"
     }
   ],
   "include": [
