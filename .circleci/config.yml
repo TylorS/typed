@@ -1,0 +1,105 @@
+version: 2.1
+
+executors:
+  custom-executor:
+    docker:
+      - image: circleci/node:lts-browsers
+
+jobs:
+  install:
+    executor: custom-executor
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - node-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
+            - node-v1-{{ .Branch }}-
+            - node-v1-
+      - run:
+          name: Installing local dependencies
+          command: npm ci
+      - save_cache:
+          key: node-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - project/src
+            - project/node_modules
+
+  build:
+    executor: custom-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /home/circleci
+      - run:
+          name: Build Package
+          command: |
+            pwd
+            npm run build
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - project/build
+
+  test:
+    executor: custom-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /home/circleci
+      - run:
+          name: Test
+          command: npm run unit-test
+
+  lint:
+    executor: custom-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /home/circleci
+      - run:
+          name: Lint
+          command: npm run lint
+
+  audit:
+    executor: custom-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /home/circleci
+      - run:
+          name: Audit root project
+          command: |
+            pwd
+            ls
+
+            npm version
+
+            for n in {1..5}; do
+              audit=`npm --color always audit --production 2>&1`
+              echo "$audit"
+              if [[ "$audit" != *"ENOAUDIT"* ]]; then
+                break
+              fi
+            done
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - install
+      - build:
+          requires:
+            - install
+      - test:
+          requires:
+            - install
+      - lint:
+          requires:
+            - install
+      - audit:
+          requires:
+            - install
