@@ -55,13 +55,11 @@
     "build": "npm run check:ts-patch && concurrently 'npm:build:typescript' 'npm:build:browser' && concurrently 'npm:build:packages' 'npm:update:package-exports'",
     "build:browser": "snowpack build",
     "build:packages": "ts-node ./tools/build-packages",
-    "build:packages:cjs": "ts-node ./tools/build-packages --cjs",
-    "build:packages:esm": "ts-node ./tools/build-packages --esm",
     "build:typescript": "concurrently 'npm:build:typescript:cjs' 'npm:build:typescript:esm'",
     "build:typescript:cjs": "tsc -b ./src/tsconfig.cjs.json --incremental",
     "build:typescript:esm": "tsc -b ./src/tsconfig.esm.json --incremental",
     "check:ts-patch": "ts-node ./tools/checkTsPatchIsActive",
-    "clean": "npm run clean:build && npm run clean:typescript",
+    "clean": "concurrently 'npm:clean:build' 'npm:clean:typescript'",
     "clean:build": "ts-node ./tools/cleanup",
     "clean:typescript": "concurrently 'npm:clean:typescript:cjs' 'npm:clean:typescript:esm'",
     "clean:typescript:cjs": "npm run build:typescript:cjs -- --clean",
@@ -78,9 +76,9 @@
     "precommit": "concurrently 'npm:update' 'npm:lint-staged'",
     "preversion": "npm test && npm run update && npm run build",
     "postversion": "npm publish --access=public",
-    "watch": "concurrently 'npm:watch:cjs' 'npm:watch:esm'",
-    "watch:cjs": "tsc-watch --build --incremental tsconfig.cjs.json --onSuccess 'npm run build:packages'",
-    "watch:esm": "tsc-watch --build --incremental tsconfig.esm.json --onSuccess 'npm run update:package-exports'"
+    "watch": "npm run check:ts-patch && concurrently 'npm:watch:cjs' 'npm:watch:esm'",
+    "watch:cjs": "tsc-watch -b tsconfig.cjs.json --incremental --onSuccess 'npm run build:packages'",
+    "watch:esm": "tsc-watch -b tsconfig.esm.json --incremental --onSuccess 'npm run update:package-exports'"
   },
   "repository": {
     "type": "git",
