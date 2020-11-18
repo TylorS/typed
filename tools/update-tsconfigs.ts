@@ -197,7 +197,7 @@ function findAllReferences(directory: string, moduleType: ModuleType, name: stri
     ),
   )
   const typedDependencyNames = uniqStrings(
-    typedDependencies.map((dep) => dep.replace('@typed/fp/', '').split('/')[0]),
+    typedDependencies.map((dep) => dep.replace('@typed/fp/', '').split('/')[0]!),
   )
 
   return typedDependencyNames.map((name) => ({

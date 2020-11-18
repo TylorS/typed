@@ -1,10 +1,4 @@
-import {
-  createDecoderFromSchema,
-  createEqFromSchema,
-  createGuardFromSchema,
-  createSchema,
-  TypedSchema,
-} from '@typed/fp/io/exports'
+import { createSchema } from '@typed/fp/io/exports'
 import { isString } from '@typed/fp/logic/is'
 import { getMonoid, iso, Newtype, prism } from 'newtype-ts'
 
@@ -14,6 +8,10 @@ export const pathIso = iso<Path>()
 
 export namespace Path {
   export const { wrap, unwrap } = pathIso
+
+  export const schema = createSchema<Path>((t) =>
+    t.newtype<Path>(t.string, pathPrism.getOption, 'Path'),
+  )
 }
 
 export const pathPrism = prism<Path>((s: string) => s.length > 0 && s[0] === '/')
@@ -37,13 +35,3 @@ export function pathJoin(
 
   return pathIso.wrap(!trailingSlash || path[path.length - 1] === '/' ? path : path + '/')
 }
-
-export const pathSchema: TypedSchema<Path> = createSchema((t) =>
-  t.newtype<Path>(t.string, pathPrism.getOption, 'Path'),
-)
-
-export const pathDecoder = createDecoderFromSchema(pathSchema)
-
-export const pathGuard = createGuardFromSchema(pathSchema)
-
-export const pathEq = createEqFromSchema(pathSchema)

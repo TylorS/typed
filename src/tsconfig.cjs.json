@@ -89,6 +89,9 @@
     },
     {
       "path": "./node/tsconfig.cjs.json"
+    },
+    {
+      "path": "./testing/tsconfig.cjs.json"
     }
   ],
   "include": [
