@@ -26,6 +26,7 @@ jobs:
           root: /home/circleci
           paths:
             - project/src
+            - project/tools
             - project/node_modules
 
   build:
