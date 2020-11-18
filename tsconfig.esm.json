@@ -58,7 +58,6 @@
     "lambda",
     "logging",
     "logic",
-    "node",
-    "testing"
+    "node"
   ]
 }

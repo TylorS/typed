@@ -67,13 +67,15 @@
     "clean:typescript:cjs": "npm run build:typescript:cjs -- --clean",
     "clean:typescript:esm": "npm run build:typescript:esm -- --clean",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
+    "lint-staged": "lint-staged",
     "unit-test": "typed-test",
     "test": "concurrently 'npm:lint' 'npm:unit-test'",
     "test:watch": "npm test -- --watch",
-    "update": "concurrently 'npm:update:gitignore' 'npm:update:tsconfig'",
+    "update": "concurrently 'npm:update:gitignore' 'npm:update:tsconfig' 'npm:update:package-exports'",
     "update:gitignore": "ts-node ./tools/update-gitignore",
     "update:tsconfig": "ts-node ./tools/update-tsconfigs",
     "update:package-exports": "ts-node ./tools/update-package-exports",
+    "precommit": "concurrently 'npm:update' 'npm:lint-staged'",
     "preversion": "npm test && npm run update && npm run build",
     "postversion": "npm publish --access=public",
     "watch": "concurrently 'npm:watch:cjs' 'npm:watch:esm'",
@@ -1462,6 +1464,11 @@
       "require": "./cjs/common/Or.js",
       "import": "./esm/common/Or.js",
       "browser": "./build/common/Or.js"
+    },
+    "./common/TupleFromUnion": {
+      "require": "./cjs/common/TupleFromUnion.js",
+      "import": "./esm/common/TupleFromUnion.js",
+      "browser": "./build/common/TupleFromUnion.js"
     },
     "./common/TupleKeys": {
       "require": "./cjs/common/TupleKeys.js",
