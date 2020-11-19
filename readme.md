@@ -64,4 +64,4 @@ All modules can be imported directly using `@typed/fp/MODULE_NAME`
 #### Resource Modules
 
 It is a goal of @typed/fp to be generally functional in all environments that support es2019 including 
-browsers and node. When there are the need for environment-specific implementations of any Effects they will be able to be found within `@typed/fp/browser` and `@typed/fp/node` for browser and node-specific implementations respectively. 
+browsers and node. When there are the need for environment-specific implementations of any Effects they will be able to be found within [@typed/fp/browser](./src/browser/readme.md) and [@typed/fp/node](./src/node/readme.md) for browser and node-specific implementations respectively. 
