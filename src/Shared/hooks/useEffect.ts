@@ -16,7 +16,7 @@ import { useRef } from './useRef'
  * Schedule to perform an Effect everytime the dependencies change,
  * as defined by the (optionally) provided Eq instances.
  */
-export const useEffect = <E, A, Deps extends ReadonlyArray<A>>(
+export const useEffect = <E, A, Deps extends ReadonlyArray<unknown> = ReadonlyArray<unknown>>(
   effect: Effect<E, A>,
   deps: Deps,
   eqs: EqsOf<Deps> = defaultEqs(deps),
