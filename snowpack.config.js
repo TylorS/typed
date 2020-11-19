@@ -2,7 +2,7 @@
 
 const config = {
   alias: {
-    '@typed/fp': './src'
+    '@typed/fp': './src',
   },
   exclude: ['**/node/**/*', '**/*.browser-test.ts', '**/*.test.ts', '**/tsconfig.*.json'],
   mount: {
