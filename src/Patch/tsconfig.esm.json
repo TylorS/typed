@@ -19,6 +19,9 @@
       "path": "../Resume/tsconfig.esm.json"
     },
     {
+      "path": "../Scheduler/tsconfig.esm.json"
+    },
+    {
       "path": "../Shared/tsconfig.esm.json"
     },
     {
@@ -32,9 +35,6 @@
     },
     {
       "path": "../logic/tsconfig.esm.json"
-    },
-    {
-      "path": "../Scheduler/tsconfig.esm.json"
     }
   ],
   "include": [

@@ -23,9 +23,6 @@
     },
     {
       "path": "../common/tsconfig.esm.json"
-    },
-    {
-      "path": "../Scheduler/tsconfig.esm.json"
     }
   ],
   "include": [

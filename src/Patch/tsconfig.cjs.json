@@ -19,6 +19,9 @@
       "path": "../Resume/tsconfig.cjs.json"
     },
     {
+      "path": "../Scheduler/tsconfig.cjs.json"
+    },
+    {
       "path": "../Shared/tsconfig.cjs.json"
     },
     {
@@ -32,9 +35,6 @@
     },
     {
       "path": "../logic/tsconfig.cjs.json"
-    },
-    {
-      "path": "../Scheduler/tsconfig.cjs.json"
     }
   ],
   "include": [

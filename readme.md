@@ -5,6 +5,8 @@ with Algebraic Effects and other useful data structures and libraries to help bu
 
 While not a requirement for usage, the design of `@typed/fp` has been geared towards developing applications using Domain-Driven Design and Onion/Hexagonal/Clean Architectural patterns.
 
+Until a v1.0.0 there will likely be many more breaking changes, but it's getting to the point where it's very much usable and the key pieces of complexity have been tested. 
+
 ## Install
 
 ### NPM
