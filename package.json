@@ -348,6 +348,11 @@
       "import": "./esm/Patch/patchOnRaf.js",
       "browser": "./build/Patch/patchOnRaf.js"
     },
+    "./Patch/useLazyLoad": {
+      "require": "./cjs/Patch/useLazyLoad.js",
+      "import": "./esm/Patch/useLazyLoad.js",
+      "browser": "./build/Patch/useLazyLoad.js"
+    },
     "./Patch/handlers/IdleScheduler": {
       "require": "./cjs/Patch/handlers/IdleScheduler.js",
       "import": "./esm/Patch/handlers/IdleScheduler.js",
