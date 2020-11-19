@@ -1,6 +1,9 @@
 import { pipe } from 'fp-ts/function'
 import { contramap, Ord, ordNumber } from 'fp-ts/Ord'
 
+/**
+ * Converts a Union of keys into a union of Tuples representing all possible combinations.
+ */
 export type TupleFromUnion<U extends PropertyKey, R extends readonly PropertyKey[] = []> = {
   readonly [S in U]: Exclude<U, S> extends never
     ? readonly [...R, S]
