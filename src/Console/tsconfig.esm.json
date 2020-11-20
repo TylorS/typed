@@ -16,6 +16,9 @@
       "path": "../Resume/tsconfig.esm.json"
     },
     {
+      "path": "../lambda/tsconfig.esm.json"
+    },
+    {
       "path": "../logging/tsconfig.esm.json"
     }
   ],

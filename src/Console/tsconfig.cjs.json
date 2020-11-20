@@ -16,6 +16,9 @@
       "path": "../Resume/tsconfig.cjs.json"
     },
     {
+      "path": "../lambda/tsconfig.cjs.json"
+    },
+    {
       "path": "../logging/tsconfig.cjs.json"
     }
   ],
