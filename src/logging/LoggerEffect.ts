@@ -1,11 +1,11 @@
-import { Effect, effectSeq } from '@typed/fp/Effect/exports'
+import { Effect, effect } from '@typed/fp/Effect/exports'
 import { Contravariant2 } from 'fp-ts/Contravariant'
 import { Predicate } from 'fp-ts/function'
 import { Monoid } from 'fp-ts/Monoid'
 import { pipeable } from 'fp-ts/pipeable'
 import { getLoggerM } from 'logging-ts'
 
-const loggerM = getLoggerM(effectSeq)
+const loggerM = getLoggerM(effect)
 
 export const URI = '@typed/fp/logging/LoggerEffect'
 export type URI = typeof URI
