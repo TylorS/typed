@@ -48,6 +48,7 @@ const DEFAULT_EXCLUSIONS_PATH = [
   'tools',
   'cjs',
   'esm',
+  'build',
   'exports.js',
   'exports.d.ts',
   'exports.js.map',
