@@ -44,11 +44,11 @@ export const test = describe(`Patching`, [
 
         yield* sendSharedEvent({ type: 'namespace/updated', namespace: namespaceB })
 
-        equal(value + value, updated.current)
+        equal(value * 2, updated.current)
 
         yield* sendSharedEvent({ type: 'namespace/updated', namespace: namespaceB })
 
-        equal(value + value + value, updated.current)
+        equal(value * 3, updated.current)
 
         done()
       } catch (error) {
