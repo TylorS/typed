@@ -1,4 +1,5 @@
 import { Effect, effect } from '@typed/fp/Effect/exports'
+import { curry } from '@typed/fp/lambda/exports'
 import { Contravariant2 } from 'fp-ts/Contravariant'
 import { Predicate } from 'fp-ts/function'
 import { Monoid } from 'fp-ts/Monoid'
@@ -20,10 +21,10 @@ declare module 'fp-ts/HKT' {
   }
 }
 
-export const filter: <E, A>(
-  logger: LoggerEffect<E, A>,
-  predicate: Predicate<A>,
-) => LoggerEffect<E, A> = loggerM.filter
+export const filter = curry(loggerM.filter) as {
+  <E, A>(logger: LoggerEffect<E, A>, predicate: Predicate<A>): LoggerEffect<E, A>
+  <E, A>(logger: LoggerEffect<E, A>): (predicate: Predicate<A>) => LoggerEffect<E, A>
+}
 
 export const getMonoid: <E, A>() => Monoid<LoggerEffect<E, A>> = loggerM.getMonoid
 
