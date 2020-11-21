@@ -27,6 +27,13 @@ export * from './http/exports'
 export * from './io/exports'
 export * from './Key/exports'
 export * from './lambda/exports'
+export type { LoggerEffect } from './logging/exports'
+export {
+  contramap as contramapLog,
+  filter as filterLog,
+  getMonoid as getLoggingMonoid,
+  loggerEffect,
+} from './logging/exports'
 export * from './logic/exports'
 export * from './Patch/exports'
 export * from './Path/exports'

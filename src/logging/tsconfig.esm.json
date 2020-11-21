@@ -11,6 +11,9 @@
   "references": [
     {
       "path": "../Effect/tsconfig.esm.json"
+    },
+    {
+      "path": "../lambda/tsconfig.esm.json"
     }
   ],
   "include": [
