@@ -13,5 +13,3 @@ export const createMap = <K, V>(key: Eq<K> = deepEqualsEq, value: Eq<V> = deepEq
 >(
   sk: SK,
 ) => pipe(sk, fromMap(key, value), wrapMap)
-
-export const foo = createMap<string, number>()('foo')
