@@ -19,6 +19,9 @@
       "path": "../Resume/tsconfig.cjs.json"
     },
     {
+      "path": "../Shared/tsconfig.cjs.json"
+    },
+    {
       "path": "../Uri/tsconfig.cjs.json"
     },
     {

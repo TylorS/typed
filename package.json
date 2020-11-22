@@ -1574,6 +1574,11 @@
       "import": "./esm/history/scopeHistoryEnv.js",
       "browser": "./build/history/scopeHistoryEnv.js"
     },
+    "./history/useLocation": {
+      "require": "./cjs/history/useLocation.js",
+      "import": "./esm/history/useLocation.js",
+      "browser": "./build/history/useLocation.js"
+    },
     "./http": {
       "require": "./cjs/http/exports.js",
       "import": "./esm/http/exports.js",
