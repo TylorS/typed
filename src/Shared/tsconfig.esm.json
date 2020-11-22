@@ -16,7 +16,13 @@
       "path": "../Effect/tsconfig.esm.json"
     },
     {
+      "path": "../Resume/tsconfig.esm.json"
+    },
+    {
       "path": "../Scheduler/tsconfig.esm.json"
+    },
+    {
+      "path": "../Storage/tsconfig.esm.json"
     },
     {
       "path": "../common/tsconfig.esm.json"

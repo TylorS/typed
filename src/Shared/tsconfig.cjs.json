@@ -16,7 +16,13 @@
       "path": "../Effect/tsconfig.cjs.json"
     },
     {
+      "path": "../Resume/tsconfig.cjs.json"
+    },
+    {
       "path": "../Scheduler/tsconfig.cjs.json"
+    },
+    {
+      "path": "../Storage/tsconfig.cjs.json"
     },
     {
       "path": "../common/tsconfig.cjs.json"

@@ -963,6 +963,11 @@
       "import": "./esm/Shared/map/setKey.js",
       "browser": "./build/Shared/map/setKey.js"
     },
+    "./Shared/map/toKeyValueStorage": {
+      "require": "./cjs/Shared/map/toKeyValueStorage.js",
+      "import": "./esm/Shared/map/toKeyValueStorage.js",
+      "browser": "./build/Shared/map/toKeyValueStorage.js"
+    },
     "./Shared/map/withMutations": {
       "require": "./cjs/Shared/map/withMutations.js",
       "import": "./esm/Shared/map/withMutations.js",
@@ -982,6 +987,11 @@
       "require": "./cjs/Shared/memoNamespace/memoNamespace.js",
       "import": "./esm/Shared/memoNamespace/memoNamespace.js",
       "browser": "./build/Shared/memoNamespace/memoNamespace.js"
+    },
+    "./Shared/memoNamespace/withMemo": {
+      "require": "./cjs/Shared/memoNamespace/withMemo.js",
+      "import": "./esm/Shared/memoNamespace/withMemo.js",
+      "browser": "./build/Shared/memoNamespace/withMemo.js"
     },
     "./Shared/set/SharedSet": {
       "require": "./cjs/Shared/set/SharedSet.js",
