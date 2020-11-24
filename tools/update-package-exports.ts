@@ -20,7 +20,7 @@ export function createExports() {
     '.': {
       require: './cjs/exports.js',
       import: './esm/exports.js',
-      browser: './browser/exprts.js',
+      browser: './browser/exports.js',
     },
   }
 

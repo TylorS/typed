@@ -103,7 +103,7 @@
     ".": {
       "require": "./cjs/exports.js",
       "import": "./esm/exports.js",
-      "browser": "./browser/exprts.js"
+      "browser": "./browser/exports.js"
     },
     "./Console": {
       "require": "./cjs/Console/exports.js",
