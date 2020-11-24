@@ -6,7 +6,6 @@ import { promisify } from 'util'
 
 import { findFilePaths, getRelativeFile, MODULES, readRelativeFile, ROOT_DIR } from './common'
 
-const readFile = promisify(fs.readFile)
 const writeFile = promisify(fs.writeFile)
 
 type ModuleType = 'esm' | 'cjs'
@@ -108,7 +107,7 @@ async function updateBuildConfig(path: string, moduleType: ModuleType) {
   try {
     console.log(`Updating Build Config [${moduleType}]: ${path}`)
 
-    const json = fs.existsSync(path) ? JSON.parse((await readFile(path)).toString()) : {}
+    const json = fs.existsSync(path) ? require(path) : {}
 
     if (!json.compilerOptions) {
       json.compilerOptions = {}
@@ -152,18 +151,13 @@ function createFpTsImportRewrite(moduleType: ModuleType) {
 async function updateModuleConfig(name: string, moduleType: ModuleType) {
   try {
     const directory = join(SRC_DIR, name)
-    const configName = moduleType === void 0 ? `tsconfig.json` : `tsconfig.${moduleType}.json`
+    const configName = `tsconfig.${moduleType}.json`
     const tsconfigJsonPath = join(directory, configName)
 
-    console.log(
-      `Updating Module Config [${moduleType ? `${moduleType}` : 'default'}]: @typed/fp/${name}`,
-    )
+    console.log(`Updating Module Config [${moduleType}]: @typed/fp/${name}`)
 
     const tsconfigJson = JSON.parse(
-      TSCONFIG_TEMPLATE.replace(MODULE_TYPE_REGEX, moduleType ? moduleType : '').replace(
-        NAME_REGEX,
-        name,
-      ),
+      TSCONFIG_TEMPLATE.replace(MODULE_TYPE_REGEX, moduleType).replace(NAME_REGEX, name),
     )
 
     if (!tsconfigJson.compilerOptions) {
