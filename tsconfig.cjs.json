@@ -17,6 +17,21 @@
       {
         "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
         "afterDeclarations": true
+      },
+      {
+        "transform": "ts-transformer-replace-paths",
+        "replaceImportPaths": {
+          "fp-ts/(.+)": "fp-ts/lib/$1",
+          "io-ts/(.+)": "io-ts/lib/$1"
+        }
+      },
+      {
+        "transform": "ts-transformer-replace-paths",
+        "replaceImportPaths": {
+          "fp-ts/(.+)": "fp-ts/lib/$1",
+          "io-ts/(.+)": "io-ts/lib/$1"
+        },
+        "afterDeclarations": true
       }
     ]
   },

@@ -6,6 +6,9 @@ import { constVoid } from 'fp-ts/function'
 
 import { useDisposable } from './useDisposable'
 
+/**
+ * Subscribe to the events contained within a Stream.
+ */
 export function useStream<A>(
   stream: Stream<A>,
   onValue: (value: A) => void,
