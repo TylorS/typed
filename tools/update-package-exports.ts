@@ -1,7 +1,7 @@
 // TODO: update exports in package.json with all modules
 
 import fs from 'fs'
-import path from 'path'
+import path, { extname } from 'path'
 
 import { findFilePaths, MODULES, ROOT_DIR, SOURCE_DIR } from './common'
 
@@ -40,6 +40,11 @@ export function createExports() {
 
     for (const filePath of filePaths) {
       const relativePath = path.relative(sourceDir, filePath)
+
+      if (extname(relativePath) !== '.ts') {
+        continue
+      }
+
       const jsPath = relativePath.replace('.ts', '.js')
       const map: ExportMap = {
         require: './' + path.join('cjs', module, jsPath),

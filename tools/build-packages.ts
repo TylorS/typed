@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'fs'
-import { basename, dirname, join, relative } from 'path'
+import { basename, dirname, extname, join, relative } from 'path'
 
 import { MODULES, readRelativeFile, ROOT_DIR, SOURCE_DIR } from './common'
 
@@ -16,7 +16,9 @@ const BROWSER_TEST_REGEX = /.browser-test.tsx?$/g
 MODULES.forEach(createExportTemplate)
 
 MODULES.forEach((name) =>
-  readAllFiles(join(SOURCE_DIR, name)).forEach((file) => createPackageFor(name, file)),
+  readAllFiles(join(SOURCE_DIR, name))
+    .filter((file) => extname(file) === '.ts')
+    .forEach((file) => createPackageFor(name, file)),
 )
 
 function createExportTemplate(name: string) {
