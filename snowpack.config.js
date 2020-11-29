@@ -8,6 +8,13 @@ const config = {
   mount: {
     src: '/',
   },
+  installOptions: {
+    rollup: {
+      output: {
+        sourcemap: true,
+      },
+    },
+  },
   buildOptions: {
     sourceMaps: true,
   },
