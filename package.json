@@ -1,6 +1,6 @@
 {
   "name": "@typed/fp",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Data Structures and Resources for fp-ts",
   "main": "./cjs/exports.js",
   "module": "./esm/exports.js",
@@ -824,6 +824,11 @@
       "require": "./cjs/Shared/global/usingGlobal.js",
       "import": "./esm/Shared/global/usingGlobal.js",
       "browser": "./build/Shared/global/usingGlobal.js"
+    },
+    "./Shared/history/exports": {
+      "require": "./cjs/Shared/history/exports.js",
+      "import": "./esm/Shared/history/exports.js",
+      "browser": "./build/Shared/history/exports.js"
     },
     "./Shared/hooks/NamespacePosition": {
       "require": "./cjs/Shared/hooks/NamespacePosition.js",
