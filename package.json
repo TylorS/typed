@@ -825,11 +825,6 @@
       "import": "./esm/Shared/global/usingGlobal.js",
       "browser": "./build/Shared/global/usingGlobal.js"
     },
-    "./Shared/history/exports": {
-      "require": "./cjs/Shared/history/exports.js",
-      "import": "./esm/Shared/history/exports.js",
-      "browser": "./build/Shared/history/exports.js"
-    },
     "./Shared/hooks/NamespacePosition": {
       "require": "./cjs/Shared/hooks/NamespacePosition.js",
       "import": "./esm/Shared/hooks/NamespacePosition.js",

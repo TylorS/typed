@@ -91,11 +91,7 @@ async function updatePluginConfig(path: string, moduleType: ModuleType) {
   const json = {
     extends: './tsconfig.base.json',
     compilerOptions: {
-      plugins: [
-        ...BASE_PLUGINS,
-        createFpTsImportRewrite(moduleType),
-        { ...createFpTsImportRewrite(moduleType), afterDeclarations: true },
-      ],
+      plugins: [...BASE_PLUGINS],
     },
     exclude: [...DEFAULT_EXCLUSIONS_PATH, ...MODULES.map((m) => `${m}`)],
   }
@@ -135,16 +131,6 @@ async function updateBuildConfig(path: string, moduleType: ModuleType) {
     console.error(`Build Config:`, error)
 
     throw error
-  }
-}
-
-function createFpTsImportRewrite(moduleType: ModuleType) {
-  return {
-    transform: 'ts-transformer-replace-paths',
-    replaceImportPaths: {
-      'fp-ts/(.+)': `fp-ts/${moduleType === 'cjs' ? 'lib' : 'es6'}/$1`,
-      'io-ts/(.+)': `io-ts/${moduleType === 'cjs' ? 'lib' : 'es6'}/$1`,
-    },
   }
 }
 
