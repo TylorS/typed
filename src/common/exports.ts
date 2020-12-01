@@ -1,5 +1,5 @@
 export type { And } from './And'
-export type { ToConsList, UnNest, FlattenIntersection, FlattenUnion } from './ConsList'
+export type { FlattenIntersection, FlattenUnion, ToConsList, UnNest } from './ConsList'
 export * from './deepEqualsEq'
 export type { DropNever, DropNeverKeys } from './DropNever'
 export * from './functionName'
@@ -16,8 +16,8 @@ export type {
   Arity3,
   Arity4,
   Arity5,
-  HeadArg,
   Equals,
+  HeadArg,
   IsNever,
   IsUnknown,
   NoInfer,

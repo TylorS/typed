@@ -169,7 +169,7 @@ function findAllReferences(directory: string, moduleType: ModuleType, name: stri
   const filePaths = findFilePaths(directory, ['*.ts', '**/*.ts'])
   const project = new TSM.Project({
     tsConfigFilePath: BASE_TSCONFIG_PATH,
-    addFilesFromTsConfig: false,
+    skipAddingFilesFromTsConfig: true,
   })
 
   const sourceFiles = project.addSourceFilesAtPaths(filePaths)

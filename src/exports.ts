@@ -38,17 +38,16 @@ export * from './logic/exports'
 export * from './Patch/exports'
 export * from './Path/exports'
 export * from './Queue/exports'
-export type { RemoteDataStatus, Progress, Refreshing } from './RemoteData/exports'
+export type { Progress, Refreshing, RemoteDataStatus } from './RemoteData/exports'
 export {
   ap as apRd,
   chain as chainRd,
-  fold as foldRd,
   foldMap as foldMapRd,
+  fold as foldRd,
   getEq as getRdEq,
   getOrElse as getRdOrElse,
   hasFailed,
   hasNoData,
-  remoteData,
   isDoneLoading,
   isFailure,
   isLoading,
@@ -57,15 +56,16 @@ export {
   isRefreshingSuccess,
   isSuccess,
   isSuccessful,
-  map as mapRd,
   mapLeft as mapLeftRd,
-  RefreshingFailure,
-  RefreshingSuccess,
-  Success,
-  toLoading,
+  map as mapRd,
   toOption as rdToOption,
   reduce as reduceRd,
   reduceRight as reduceRightRd,
+  RefreshingFailure,
+  RefreshingSuccess,
+  remoteData,
+  Success,
+  toLoading,
 } from './RemoteData/exports'
 export type { Async, AsyncEither, Resume, Sync } from './Resume/exports'
 export {
@@ -80,6 +80,6 @@ export {
 export * from './Scheduler/exports'
 export * from './Shared/exports'
 export * from './Storage/exports'
-export { stream, getMonoid, compact, separate, fromEffect } from './Stream/exports'
+export { compact, fromEffect, getMonoid, separate, stream } from './Stream/exports'
 export * from './Uri/exports'
 export * from './Uuid/exports'

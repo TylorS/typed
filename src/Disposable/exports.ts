@@ -3,7 +3,6 @@ import { Disposable } from '@most/types'
 import { number } from 'io-ts/Guard'
 
 export * from '@most/disposable'
-
 export type { Disposable } from '@most/types'
 
 export interface LazyDisposable extends Disposable {

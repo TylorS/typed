@@ -22,11 +22,11 @@ export const isNotSet: IsNot<Set<unknown>> = complement(isSet)
 
 const [isUndefined, isNotUndefined] = isAndIsNot(undefined)
 
-export { isUndefined, isNotUndefined }
+export { isNotUndefined, isUndefined }
 
 const [isNull, isNotNull] = isAndIsNot(null)
 
-export { isNull, isNotNull }
+export { isNotNull, isNull }
 
 export function isArray(x: unknown): x is unknown[] {
   return Array.isArray(x)
@@ -99,7 +99,7 @@ export const isNotPromiseLie: IsNot<PromiseLike<unknown>> = complement(isPromise
 
 const [isTrue, isNotTrue] = isAndIsNot<true>(true)
 
-export { isTrue, isNotTrue }
+export { isNotTrue, isTrue }
 
 const [isFalse, isNotFalse] = isAndIsNot<false>(false)
 
