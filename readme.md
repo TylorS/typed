@@ -67,7 +67,7 @@ It is a goal of @typed/fp to be generally functional in all environments that su
 browsers and node. When there are the need for environment-specific implementations of any Effects they will be able to be found within [@typed/fp/browser](./src/browser/readme.md) and [@typed/fp/node](./src/node/readme.md) for browser and node-specific implementations respectively. 
 
 
-## TODO
+## Documentation
 
-- [ ] Documentation
-- [ ] Tutorials and/or Blog Posts
+Currently generated documentation is available [here](./docs)
+
