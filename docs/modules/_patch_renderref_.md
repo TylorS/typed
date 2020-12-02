@@ -20,7 +20,7 @@
 
 • `Const` **RenderRef**: [Shared](_shared_core_model_shared_.shared.md)\<[SharedKey](_shared_core_model_sharedkey_.sharedkey.md)\<symbol>, unknown, [Ref](../interfaces/_shared_ref_ref_.ref.md)\<any>> = createShared( Symbol.for('RenderRef'), Pure.fromIO(() => createRef\<any>()),)
 
-*Defined in [src/Patch/RenderRef.ts:10](https://github.com/TylorS/typed-fp/blob/8639976/src/Patch/RenderRef.ts#L10)*
+*Defined in [src/Patch/RenderRef.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/Patch/RenderRef.ts#L10)*
 
 A Ref to the previously rendered value for a given Namespace.
 
@@ -30,7 +30,7 @@ A Ref to the previously rendered value for a given Namespace.
 
 ▸ `Const`**getRenderRef**\<A>(): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), [Ref](../interfaces/_shared_ref_ref_.ref.md)\<A \| null \| undefined>>
 
-*Defined in [src/Patch/RenderRef.ts:18](https://github.com/TylorS/typed-fp/blob/8639976/src/Patch/RenderRef.ts#L18)*
+*Defined in [src/Patch/RenderRef.ts:18](https://github.com/TylorS/typed-fp/blob/559f273/src/Patch/RenderRef.ts#L18)*
 
 Get a Ref that can be used to track the most-up-to-date Rendered value for a Namespace
 

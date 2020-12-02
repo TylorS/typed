@@ -16,7 +16,7 @@
 
 ▸ `Const`**isRefreshingSuccess**\<A, B>(`remoteData`: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>): remoteData is RefreshingSuccess\<B>
 
-*Defined in [src/RemoteData/isRefreshingSuccess.ts:8](https://github.com/TylorS/typed-fp/blob/8639976/src/RemoteData/isRefreshingSuccess.ts#L8)*
+*Defined in [src/RemoteData/isRefreshingSuccess.ts:8](https://github.com/TylorS/typed-fp/blob/559f273/src/RemoteData/isRefreshingSuccess.ts#L8)*
 
 Check if a RemoteData value is RefreshingSuccess
 

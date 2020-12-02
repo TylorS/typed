@@ -18,7 +18,7 @@
 
 ▸ **createScopedStorage**(`scope`: string, `storage`: Storage): Storage
 
-*Defined in [src/Storage/scopeStorage.ts:10](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/scopeStorage.ts#L10)*
+*Defined in [src/Storage/scopeStorage.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/Storage/scopeStorage.ts#L10)*
 
 #### Parameters:
 
@@ -35,7 +35,7 @@ ___
 
 ▸ **getAllKeysInScope**(`scope`: string, `storage`: Storage): string[]
 
-*Defined in [src/Storage/scopeStorage.ts:52](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/scopeStorage.ts#L52)*
+*Defined in [src/Storage/scopeStorage.ts:52](https://github.com/TylorS/typed-fp/blob/559f273/src/Storage/scopeStorage.ts#L52)*
 
 #### Parameters:
 
@@ -52,7 +52,7 @@ ___
 
 ▸ **scopeStorage**(`scope`: string, `storage`: Storage): Storage
 
-*Defined in [src/Storage/scopeStorage.ts:6](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/scopeStorage.ts#L6)*
+*Defined in [src/Storage/scopeStorage.ts:6](https://github.com/TylorS/typed-fp/blob/559f273/src/Storage/scopeStorage.ts#L6)*
 
 Create namespaces within a Storage implementation.
 

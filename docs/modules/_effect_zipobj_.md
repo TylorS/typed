@@ -22,7 +22,7 @@
 
 Ƭ  **ZipObjEffect**\<A>: [Effect](_effect_effect_.effect.md)\<[ZipObjEnvOf](_effect_zipobj_.md#zipobjenvof)\<A>, [ZipObjReturnOf](_effect_zipobj_.md#zipobjreturnof)\<A>>
 
-*Defined in [src/Effect/zipObj.ts:27](https://github.com/TylorS/typed-fp/blob/8639976/src/Effect/zipObj.ts#L27)*
+*Defined in [src/Effect/zipObj.ts:27](https://github.com/TylorS/typed-fp/blob/559f273/src/Effect/zipObj.ts#L27)*
 
 #### Type parameters:
 
@@ -36,7 +36,7 @@ ___
 
 Ƭ  **ZipObjEnvOf**\<A>: [And](_common_and_.md#and)\<U.ListOf\<{}[keyof A]>>
 
-*Defined in [src/Effect/zipObj.ts:32](https://github.com/TylorS/typed-fp/blob/8639976/src/Effect/zipObj.ts#L32)*
+*Defined in [src/Effect/zipObj.ts:32](https://github.com/TylorS/typed-fp/blob/559f273/src/Effect/zipObj.ts#L32)*
 
 #### Type parameters:
 
@@ -50,7 +50,7 @@ ___
 
 Ƭ  **ZipObjReturnOf**\<A>: {}
 
-*Defined in [src/Effect/zipObj.ts:40](https://github.com/TylorS/typed-fp/blob/8639976/src/Effect/zipObj.ts#L40)*
+*Defined in [src/Effect/zipObj.ts:40](https://github.com/TylorS/typed-fp/blob/559f273/src/Effect/zipObj.ts#L40)*
 
 #### Type parameters:
 
@@ -64,7 +64,7 @@ Name | Type |
 
 ▸ **zipObj**\<A>(`effects`: A): [ZipObjEffect](_effect_zipobj_.md#zipobjeffect)\<A>
 
-*Defined in [src/Effect/zipObj.ts:17](https://github.com/TylorS/typed-fp/blob/8639976/src/Effect/zipObj.ts#L17)*
+*Defined in [src/Effect/zipObj.ts:17](https://github.com/TylorS/typed-fp/blob/559f273/src/Effect/zipObj.ts#L17)*
 
 Convert an Object of Effects into an Effect of an Object.
 

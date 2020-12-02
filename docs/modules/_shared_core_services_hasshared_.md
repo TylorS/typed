@@ -16,7 +16,7 @@
 
 ▸ `Const`**hasShared**\<S>(`shared`: S): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), boolean>
 
-*Defined in [src/Shared/core/services/hasShared.ts:10](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/core/services/hasShared.ts#L10)*
+*Defined in [src/Shared/core/services/hasShared.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/services/hasShared.ts#L10)*
 
 Check to see if the current Namespace has the given Shared value.
 

@@ -16,6 +16,6 @@
 
 • `Const` **equals**: \<A>(a: A, b: A) => boolean\<A>(a: A) => (b: A) => boolean = curry(\<A>(a: A, b: A): boolean => deepEqualsEq.equals(a, b)) as { \<A>(a: A, b: A): boolean \<A>(a: A): (b: A) => boolean}
 
-*Defined in [src/logic/equals.ts:7](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/equals.ts#L7)*
+*Defined in [src/logic/equals.ts:7](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/equals.ts#L7)*
 
 Deep Equality check of 2 values.

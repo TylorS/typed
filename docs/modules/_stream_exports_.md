@@ -44,7 +44,7 @@
 
 Ƭ  **URI**: *typeof* [URI](_stream_exports_.md#uri)
 
-*Defined in [src/Stream/exports.ts:20](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L20)*
+*Defined in [src/Stream/exports.ts:20](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L20)*
 
 ## Variables
 
@@ -52,7 +52,7 @@
 
 • `Const` **URI**: \"@most/core/Stream\" = '@most/core/Stream' as const
 
-*Defined in [src/Stream/exports.ts:18](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L18)*
+*Defined in [src/Stream/exports.ts:18](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L18)*
 
 ___
 
@@ -60,7 +60,7 @@ ___
 
 •  **alt**: \<A>(that: Lazy\<Kind\<F, A>>) => (fa: Kind\<F, A>) => Kind\<F, A>
 
-*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L78)*
+*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L78)*
 
 ___
 
@@ -68,7 +68,7 @@ ___
 
 •  **apFirst**: \<B>(fb: Kind\<F, B>) => \<A>(fa: Kind\<F, A>) => Kind\<F, A>
 
-*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L78)*
+*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L78)*
 
 ___
 
@@ -76,7 +76,7 @@ ___
 
 •  **apSecond**: \<B>(fb: Kind\<F, B>) => \<A>(fa: Kind\<F, A>) => Kind\<F, B>
 
-*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L78)*
+*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L78)*
 
 ___
 
@@ -84,7 +84,7 @@ ___
 
 •  **chainFirst**: \<A, B>(f: (a: A) => Kind\<F, B>) => (ma: Kind\<F, A>) => Kind\<F, A>
 
-*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L78)*
+*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L78)*
 
 ___
 
@@ -92,7 +92,7 @@ ___
 
 •  **filterMap**: \<A, B>(f: (a: A) => Option\<B>) => (fa: Kind\<F, A>) => Kind\<F, B>
 
-*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L78)*
+*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L78)*
 
 ___
 
@@ -100,7 +100,7 @@ ___
 
 •  **partition**: \<A, B>(refinement: Refinement\<A, B>) => (fa: Kind\<F, A>) => Separated\<Kind\<F, A>, Kind\<F, B>>\<A>(predicate: Predicate\<A>) => (fa: Kind\<F, A>) => Separated\<Kind\<F, A>, Kind\<F, A>>
 
-*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L78)*
+*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L78)*
 
 ___
 
@@ -108,7 +108,7 @@ ___
 
 •  **partitionMap**: \<A, B, C>(f: (a: A) => Either\<B, C>) => (fa: Kind\<F, A>) => Separated\<Kind\<F, B>, Kind\<F, C>>
 
-*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L78)*
+*Defined in [src/Stream/exports.ts:78](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L78)*
 
 ## Functions
 
@@ -116,7 +116,7 @@ ___
 
 ▸ `Const`**_filterMap**\<A, B>(`fa`: Stream\<A>, `f`: (a: A) => Option\<B>): Stream\<B>
 
-*Defined in [src/Stream/exports.ts:56](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L56)*
+*Defined in [src/Stream/exports.ts:56](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L56)*
 
 #### Type parameters:
 
@@ -140,7 +140,7 @@ ___
 
 ▸ `Const`**_partitionMap**\<A, B, C>(`fa`: Stream\<A>, `f`: (a: A) => Either\<B, C>): Separated\<Stream\<B>, Stream\<C>>
 
-*Defined in [src/Stream/exports.ts:55](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L55)*
+*Defined in [src/Stream/exports.ts:55](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L55)*
 
 #### Type parameters:
 
@@ -165,7 +165,7 @@ ___
 
 ▸ `Const`**compact**\<A>(`stream`: Stream\<Option\<A>>): Stream\<A>
 
-*Defined in [src/Stream/exports.ts:41](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L41)*
+*Defined in [src/Stream/exports.ts:41](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L41)*
 
 Filter Option's from within a Stream
 
@@ -189,7 +189,7 @@ ___
 
 ▸ `Const`**fromEffect**\<E, A>(`effect`: [Effect](_effect_effect_.effect.md)\<E, A>, `env`: E): Stream\<A>
 
-*Defined in [src/Stream/exports.ts:85](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L85)*
+*Defined in [src/Stream/exports.ts:85](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L85)*
 
 Convert an Effect into a Stream.
 
@@ -215,7 +215,7 @@ ___
 
 ▸ `Const`**getMonoid**\<A>(): Monoid\<Stream\<A>>
 
-*Defined in [src/Stream/exports.ts:31](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L31)*
+*Defined in [src/Stream/exports.ts:31](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L31)*
 
 Create a Stream monoid where concat is a parallel merge.
 
@@ -233,7 +233,7 @@ ___
 
 ▸ `Const`**separate**\<A, B>(`stream`: Stream\<Either\<A, B>>): Separated\<Stream\<A>, Stream\<B>>
 
-*Defined in [src/Stream/exports.ts:47](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L47)*
+*Defined in [src/Stream/exports.ts:47](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L47)*
 
 Separate left and right values
 
@@ -258,7 +258,7 @@ Name | Type |
 
 ▪ `Const` **stream**: object
 
-*Defined in [src/Stream/exports.ts:61](https://github.com/TylorS/typed-fp/blob/8639976/src/Stream/exports.ts#L61)*
+*Defined in [src/Stream/exports.ts:61](https://github.com/TylorS/typed-fp/blob/559f273/src/Stream/exports.ts#L61)*
 
 Monad, Alternative, and Filterable instances for @most/core Streams.
 

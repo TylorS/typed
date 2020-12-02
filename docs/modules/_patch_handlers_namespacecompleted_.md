@@ -16,7 +16,7 @@
 
 ▸ **namespaceCompleted**(`event`: [NamespaceCompleted](_shared_core_events_namespaceevent_.namespacecompleted.md)): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), void>
 
-*Defined in [src/Patch/handlers/namespaceCompleted.ts:8](https://github.com/TylorS/typed-fp/blob/8639976/src/Patch/handlers/namespaceCompleted.ts#L8)*
+*Defined in [src/Patch/handlers/namespaceCompleted.ts:8](https://github.com/TylorS/typed-fp/blob/559f273/src/Patch/handlers/namespaceCompleted.ts#L8)*
 
 #### Parameters:
 

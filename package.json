@@ -67,7 +67,7 @@
     "clean:typescript": "concurrently 'npm:clean:typescript:cjs' 'npm:clean:typescript:esm'",
     "clean:typescript:cjs": "npm run build:typescript:cjs -- --clean",
     "clean:typescript:esm": "npm run build:typescript:esm -- --clean",
-    "docs": "concurrently npm:docs:api",
+    "docs": "rimraf docs && concurrently npm:docs:api",
     "docs:api": "typedoc --hideGenerator --readme ./docs-src/readme.md --plugin typedoc-plugin-markdown --out docs src",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
     "lint-staged": "lint-staged",

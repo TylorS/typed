@@ -20,7 +20,7 @@
 
 Ƭ  **TupleFromUnion**\<U, R>: {}[U]
 
-*Defined in [src/common/TupleFromUnion.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/common/TupleFromUnion.ts#L14)*
+*Defined in [src/common/TupleFromUnion.ts:14](https://github.com/TylorS/typed-fp/blob/559f273/src/common/TupleFromUnion.ts#L14)*
 
 Converts a Union of keys into a union of Tuples representing all possible combinations.
 
@@ -45,7 +45,7 @@ Name | Type | Default |
 
 ▸ **ordFromUnion**\<U>(...`ordering`: [TupleFromUnion](_common_tuplefromunion_.md#tuplefromunion)\<U>): Ord\<U>
 
-*Defined in [src/common/TupleFromUnion.ts:24](https://github.com/TylorS/typed-fp/blob/8639976/src/common/TupleFromUnion.ts#L24)*
+*Defined in [src/common/TupleFromUnion.ts:24](https://github.com/TylorS/typed-fp/blob/559f273/src/common/TupleFromUnion.ts#L24)*
 
 Create an Ord instance from a union of string | number | symbol. This requires a valid
 combination of all members of that union to construct an ordering for values of that union.

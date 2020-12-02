@@ -27,7 +27,7 @@
 
 • `Const` **HTTPS\_DEFAULT\_PORT**: \"443\" = "443"
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:4](https://github.com/TylorS/typed-fp/blob/8639976/src/node/HistoryEnv/ServerLocation.ts#L4)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:4](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L4)*
 
 ___
 
@@ -35,7 +35,7 @@ ___
 
 • `Const` **HTTPS\_PROTOCOL**: \"https:\" = "https:"
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:3](https://github.com/TylorS/typed-fp/blob/8639976/src/node/HistoryEnv/ServerLocation.ts#L3)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:3](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L3)*
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 • `Const` **HTTP\_DEFAULT\_PORT**: \"80\" = "80"
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:5](https://github.com/TylorS/typed-fp/blob/8639976/src/node/HistoryEnv/ServerLocation.ts#L5)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:5](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L5)*
 
 ## Functions
 
@@ -51,7 +51,7 @@ ___
 
 ▸ **parseValue**(`key`: keyof [ParsedUri](_uri_exports_.md#parseduri), `location`: [ServerLocation](../classes/_node_historyenv_serverlocation_.serverlocation.md)): string
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:147](https://github.com/TylorS/typed-fp/blob/8639976/src/node/HistoryEnv/ServerLocation.ts#L147)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:147](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L147)*
 
 #### Parameters:
 
@@ -68,7 +68,7 @@ ___
 
 ▸ **replace**(`key`: keyof [ParsedUri](_uri_exports_.md#parseduri), `value`: string, `location`: [ServerLocation](../classes/_node_historyenv_serverlocation_.serverlocation.md)): void
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:138](https://github.com/TylorS/typed-fp/blob/8639976/src/node/HistoryEnv/ServerLocation.ts#L138)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:138](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L138)*
 
 #### Parameters:
 

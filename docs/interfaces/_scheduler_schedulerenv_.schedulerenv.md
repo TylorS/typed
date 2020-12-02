@@ -24,4 +24,4 @@ An environment type for accessing a Scheduler
 
 • `Readonly` **scheduler**: Scheduler
 
-*Defined in [src/Scheduler/SchedulerEnv.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/Scheduler/SchedulerEnv.ts#L14)*
+*Defined in [src/Scheduler/SchedulerEnv.ts:14](https://github.com/TylorS/typed-fp/blob/559f273/src/Scheduler/SchedulerEnv.ts#L14)*

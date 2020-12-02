@@ -17,7 +17,7 @@
 
 ▸ `Const`**effectGeneratorToResume**\<E, A>(`generator`: [EffectGenerator](_effect_effect_.md#effectgenerator)\<E, A>, `result`: IteratorResult\<[Env](_effect_effect_.md#env)\<E, unknown>, A>, `env`: E): [Resume](_resume_resume_.md#resume)\<A>
 
-*Defined in [src/Effect/toEnv.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/Effect/toEnv.ts#L14)*
+*Defined in [src/Effect/toEnv.ts:14](https://github.com/TylorS/typed-fp/blob/559f273/src/Effect/toEnv.ts#L14)*
 
 #### Type parameters:
 
@@ -42,7 +42,7 @@ ___
 
 ▸ `Const`**toEnv**\<E, A>(`effect`: [Effect](_effect_effect_.effect.md)\<E, A>): [Env](_effect_effect_.md#env)\<E, A>
 
-*Defined in [src/Effect/toEnv.ts:8](https://github.com/TylorS/typed-fp/blob/8639976/src/Effect/toEnv.ts#L8)*
+*Defined in [src/Effect/toEnv.ts:8](https://github.com/TylorS/typed-fp/blob/559f273/src/Effect/toEnv.ts#L8)*
 
 Converts an Effect<A, A> to and Env<E, A> with a simple stack-safe interpreter.
 

@@ -20,7 +20,7 @@
 
 • `Const` **provideHistoryEnv**: [Provider](_effect_provide_.md#provider)\<[HistoryEnv](../interfaces/_history_historyenv_.historyenv.md)> = provideSome\<HistoryEnv>(historyEnv)
 
-*Defined in [src/browser/HistoryEnv.ts:15](https://github.com/TylorS/typed-fp/blob/8639976/src/browser/HistoryEnv.ts#L15)*
+*Defined in [src/browser/HistoryEnv.ts:15](https://github.com/TylorS/typed-fp/blob/559f273/src/browser/HistoryEnv.ts#L15)*
 
 Provide an Effect with a browser implementation of HistoryEnv
 
@@ -30,7 +30,7 @@ Provide an Effect with a browser implementation of HistoryEnv
 
 ▪ `Const` **historyEnv**: object
 
-*Defined in [src/browser/HistoryEnv.ts:7](https://github.com/TylorS/typed-fp/blob/8639976/src/browser/HistoryEnv.ts#L7)*
+*Defined in [src/browser/HistoryEnv.ts:7](https://github.com/TylorS/typed-fp/blob/559f273/src/browser/HistoryEnv.ts#L7)*
 
 Browser implementation of HistoryEnv. Uses the native History and Location APIs.
 

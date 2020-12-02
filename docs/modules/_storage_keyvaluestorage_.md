@@ -30,7 +30,7 @@
 
 Ƭ  **KeyValueStorage**\<K, V>: { clearItems: () => [Resume](_resume_resume_.md#resume)\<Either\<Error, boolean>> ; getItem: (key: K) => [Resume](_resume_resume_.md#resume)\<Either\<Error, Option\<V>>> ; getItems: () => [Resume](_resume_resume_.md#resume)\<Either\<Error, ReadonlyArray\<V>>> ; getKeys: () => [Resume](_resume_resume_.md#resume)\<Either\<Error, ReadonlyArray\<K>>> ; removeItem: (key: K) => [Resume](_resume_resume_.md#resume)\<Either\<Error, Option\<V>>> ; setItem: (key: K, value: V) => [Resume](_resume_resume_.md#resume)\<Either\<Error, V>>  }
 
-*Defined in [src/Storage/KeyValueStorage.ts:17](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/KeyValueStorage.ts#L17)*
+*Defined in [src/Storage/KeyValueStorage.ts:17](https://github.com/TylorS/typed-fp/blob/559f273/src/Storage/KeyValueStorage.ts#L17)*
 
 Asynchronous localStorage-like API for key-value stores.
 
@@ -58,7 +58,7 @@ Name | Type |
 
 • `Const` **clearItems**: [Effect](_effect_effect_.effect.md)\<[KeyValueStorageEnv](../interfaces/_storage_keyvaluestorage_.keyvaluestorageenv.md)\<unknown, unknown>, Either\<Error, boolean>> = fromEnv((e: KeyValueStorageEnv\<unknown, unknown>) => e.keyValueStorage.clearItems(),)
 
-*Defined in [src/Storage/KeyValueStorage.ts:51](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/KeyValueStorage.ts#L51)*
+*Defined in [src/Storage/KeyValueStorage.ts:51](https://github.com/TylorS/typed-fp/blob/559f273/src/Storage/KeyValueStorage.ts#L51)*
 
 Clear items from a KeyValueStorage.
 
@@ -68,7 +68,7 @@ Clear items from a KeyValueStorage.
 
 ▸ `Const`**getItem**\<K, V>(`key`: K): [Future](_future_exports_.md#future)\<[KeyValueStorageEnv](../interfaces/_storage_keyvaluestorage_.keyvaluestorageenv.md)\<K, V>, Error, Option\<V>>
 
-*Defined in [src/Storage/KeyValueStorage.ts:29](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/KeyValueStorage.ts#L29)*
+*Defined in [src/Storage/KeyValueStorage.ts:29](https://github.com/TylorS/typed-fp/blob/559f273/src/Storage/KeyValueStorage.ts#L29)*
 
 Get an Item.
 
@@ -93,7 +93,7 @@ ___
 
 ▸ `Const`**removeItem**\<K, V>(`key`: K): [Future](_future_exports_.md#future)\<[KeyValueStorageEnv](../interfaces/_storage_keyvaluestorage_.keyvaluestorageenv.md)\<K, V>, Error, Option\<V>>
 
-*Defined in [src/Storage/KeyValueStorage.ts:43](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/KeyValueStorage.ts#L43)*
+*Defined in [src/Storage/KeyValueStorage.ts:43](https://github.com/TylorS/typed-fp/blob/559f273/src/Storage/KeyValueStorage.ts#L43)*
 
 Remmove an item
 
@@ -118,7 +118,7 @@ ___
 
 ▸ `Const`**setItem**\<K, V>(`key`: K, `value`: V): [Future](_future_exports_.md#future)\<[KeyValueStorageEnv](../interfaces/_storage_keyvaluestorage_.keyvaluestorageenv.md)\<K, V>, Error, V>
 
-*Defined in [src/Storage/KeyValueStorage.ts:37](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/KeyValueStorage.ts#L37)*
+*Defined in [src/Storage/KeyValueStorage.ts:37](https://github.com/TylorS/typed-fp/blob/559f273/src/Storage/KeyValueStorage.ts#L37)*
 
 Set an item
 

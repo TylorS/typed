@@ -16,7 +16,7 @@
 
 ▸ `Const`**createSet**\<V>(`value?`: Eq\<V>): (Anonymous function)
 
-*Defined in [src/Shared/set/createSet.ts:10](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/set/createSet.ts#L10)*
+*Defined in [src/Shared/set/createSet.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/set/createSet.ts#L10)*
 
 Create a Shared Set
 

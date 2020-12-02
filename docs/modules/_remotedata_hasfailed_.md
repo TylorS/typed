@@ -16,7 +16,7 @@
 
 ▸ `Const`**hasFailed**\<A, B>(`rd`: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>): rd is Failure\<A> \| RefreshingFailure\<A>
 
-*Defined in [src/RemoteData/hasFailed.ts:10](https://github.com/TylorS/typed-fp/blob/8639976/src/RemoteData/hasFailed.ts#L10)*
+*Defined in [src/RemoteData/hasFailed.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/RemoteData/hasFailed.ts#L10)*
 
 RemoteData is Failure or RefreshingFailure
 

@@ -22,4 +22,4 @@
 
 • `Readonly` **namespaceKeyStores**: [Map](_shared_core_model_sharedkeystore_.sharedkeystore.md#map)\<[Namespace](../modules/_shared_core_model_namespace_.namespace.md), [SharedKeyStore](_shared_core_model_sharedkeystore_.sharedkeystore.md)>
 
-*Defined in [src/Shared/core/services/NamespaceKeyStoresEnv.ts:4](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/core/services/NamespaceKeyStoresEnv.ts#L4)*
+*Defined in [src/Shared/core/services/NamespaceKeyStoresEnv.ts:4](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/services/NamespaceKeyStoresEnv.ts#L4)*

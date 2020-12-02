@@ -29,7 +29,7 @@ A Disposable indexed db transaction
 
 • `Readonly` **store**: IDBObjectStore
 
-*Defined in [src/Storage/indexedDb/IndexedDbStoreTransaction.ts:8](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/indexedDb/IndexedDbStoreTransaction.ts#L8)*
+*Defined in [src/Storage/indexedDb/IndexedDbStoreTransaction.ts:8](https://github.com/TylorS/typed-fp/blob/559f273/src/Storage/indexedDb/IndexedDbStoreTransaction.ts#L8)*
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 • `Readonly` **transaction**: IDBTransaction
 
-*Defined in [src/Storage/indexedDb/IndexedDbStoreTransaction.ts:7](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/indexedDb/IndexedDbStoreTransaction.ts#L7)*
+*Defined in [src/Storage/indexedDb/IndexedDbStoreTransaction.ts:7](https://github.com/TylorS/typed-fp/blob/559f273/src/Storage/indexedDb/IndexedDbStoreTransaction.ts#L7)*
 
 ## Methods
 

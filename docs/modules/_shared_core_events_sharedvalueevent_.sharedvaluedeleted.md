@@ -18,4 +18,4 @@ A Shared value has been deleted from a given Namespace.
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[SharedValueDeleted](_shared_core_events_sharedvalueevent_.sharedvaluedeleted.md)> = createSchema\<SharedValueDeleted>((t) => t.type({ type: t.literal('sharedValue/deleted'), namespace: Namespace.schema(t), shared: Shared.schema(t), }), )
 
-*Defined in [src/Shared/core/events/SharedValueEvent.ts:75](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/core/events/SharedValueEvent.ts#L75)*
+*Defined in [src/Shared/core/events/SharedValueEvent.ts:75](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/events/SharedValueEvent.ts#L75)*

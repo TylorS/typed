@@ -10,6 +10,7 @@
 
 * [AddEnv](_exports_.md#addenv)
 * [And](_exports_.md#and)
+* [Args](_exports_.md#args)
 * [ArgsOf](_exports_.md#argsof)
 * [Arity1](_exports_.md#arity1)
 * [Arity2](_exports_.md#arity2)
@@ -49,6 +50,8 @@
 * [FiberRunning](_exports_.md#fiberrunning)
 * [FiberState](_exports_.md#fiberstate)
 * [FiberSuccess](_exports_.md#fibersuccess)
+* [FlattenIntersection](_exports_.md#flattenintersection)
+* [FlattenUnion](_exports_.md#flattenunion)
 * [Fn](_exports_.md#fn)
 * [Future](_exports_.md#future)
 * [GetSharedEnv](_exports_.md#getsharedenv)
@@ -161,6 +164,7 @@
 * [Sync](_exports_.md#sync)
 * [Timestamp](_exports_.md#timestamp)
 * [TimestampedResponse](_exports_.md#timestampedresponse)
+* [ToConsList](_exports_.md#toconslist)
 * [TupleFromUnion](_exports_.md#tuplefromunion)
 * [TypeOf](_exports_.md#typeof)
 * [TypedSchema](_exports_.md#typedschema)
@@ -169,6 +173,7 @@
 * [TypedSchemable2C](_exports_.md#typedschemable2c)
 * [URI](_exports_.md#uri)
 * [URI\_REGEX](_exports_.md#uri_regex)
+* [UnNest](_exports_.md#unnest)
 * [Uri](_exports_.md#uri)
 * [Uuid](_exports_.md#uuid)
 * [UuidEnv](_exports_.md#uuidenv)
@@ -582,6 +587,12 @@ Re-exports: [And](_common_and_.md#and)
 
 ___
 
+### Args
+
+Re-exports: [Args](_common_args_.md#args)
+
+___
+
 ### ArgsOf
 
 Re-exports: [ArgsOf](_common_types_.md#argsof)
@@ -813,6 +824,18 @@ ___
 ### FiberSuccess
 
 Re-exports: [FiberSuccess](_fiber_fiber_.md#fibersuccess)
+
+___
+
+### FlattenIntersection
+
+Re-exports: [FlattenIntersection](_common_conslist_.md#flattenintersection)
+
+___
+
+### FlattenUnion
+
+Re-exports: [FlattenUnion](_common_conslist_.md#flattenunion)
 
 ___
 
@@ -1488,6 +1511,12 @@ Re-exports: [TimestampedResponse](_http_withhttpmanagement_.md#timestampedrespon
 
 ___
 
+### ToConsList
+
+Re-exports: [ToConsList](_common_conslist_.md#toconslist)
+
+___
+
 ### TupleFromUnion
 
 Re-exports: [TupleFromUnion](_common_tuplefromunion_.md#tuplefromunion)
@@ -1533,6 +1562,12 @@ ___
 ### URI\_REGEX
 
 Re-exports: [URI\_REGEX](_uri_exports_.md#uri_regex)
+
+___
+
+### UnNest
+
+Re-exports: [UnNest](_common_conslist_.md#unnest)
 
 ___
 

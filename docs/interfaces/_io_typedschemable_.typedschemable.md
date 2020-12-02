@@ -88,7 +88,7 @@ ___
 
 • `Readonly` **bigint**: HKT\<S, BigInt>
 
-*Defined in [src/io/TypedSchemable.ts:34](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L34)*
+*Defined in [src/io/TypedSchemable.ts:34](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L34)*
 
 ___
 
@@ -106,7 +106,7 @@ ___
 
 • `Readonly` **date**: HKT\<S, Date>
 
-*Defined in [src/io/TypedSchemable.ts:31](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L31)*
+*Defined in [src/io/TypedSchemable.ts:31](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L31)*
 
 ___
 
@@ -114,7 +114,7 @@ ___
 
 • `Readonly` **either**: \<A, B>(left: HKT\<S, A>, right: HKT\<S, B>) => HKT\<S, Either\<A, B>>
 
-*Defined in [src/io/TypedSchemable.ts:29](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L29)*
+*Defined in [src/io/TypedSchemable.ts:29](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L29)*
 
 ___
 
@@ -122,7 +122,7 @@ ___
 
 • `Readonly` **int**: HKT\<S, Int>
 
-*Defined in [src/io/TypedSchemable.ts:33](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L33)*
+*Defined in [src/io/TypedSchemable.ts:33](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L33)*
 
 ___
 
@@ -140,7 +140,7 @@ ___
 
 • `Readonly` **json**: HKT\<S, Json>
 
-*Defined in [src/io/TypedSchemable.ts:39](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L39)*
+*Defined in [src/io/TypedSchemable.ts:39](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L39)*
 
 ___
 
@@ -148,7 +148,7 @@ ___
 
 • `Readonly` **jsonArray**: HKT\<S, JsonArray>
 
-*Defined in [src/io/TypedSchemable.ts:41](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L41)*
+*Defined in [src/io/TypedSchemable.ts:41](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L41)*
 
 ___
 
@@ -156,7 +156,7 @@ ___
 
 • `Readonly` **jsonPrimitive**: HKT\<S, string \| number \| boolean \| null>
 
-*Defined in [src/io/TypedSchemable.ts:42](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L42)*
+*Defined in [src/io/TypedSchemable.ts:42](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L42)*
 
 ___
 
@@ -164,7 +164,7 @@ ___
 
 • `Readonly` **jsonRecord**: HKT\<S, JsonRecord>
 
-*Defined in [src/io/TypedSchemable.ts:40](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L40)*
+*Defined in [src/io/TypedSchemable.ts:40](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L40)*
 
 ___
 
@@ -192,7 +192,7 @@ ___
 
 • `Readonly` **map**: \<A, B>(key: HKT\<S, A>, value: HKT\<S, B>) => HKT\<S, ReadonlyMap\<A, B>>
 
-*Defined in [src/io/TypedSchemable.ts:27](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L27)*
+*Defined in [src/io/TypedSchemable.ts:27](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L27)*
 
 ___
 
@@ -200,7 +200,7 @@ ___
 
 • `Readonly` **never**: HKT\<S, never>
 
-*Defined in [src/io/TypedSchemable.ts:36](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L36)*
+*Defined in [src/io/TypedSchemable.ts:36](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L36)*
 
 ___
 
@@ -208,7 +208,7 @@ ___
 
 • `Readonly` **newtype**: \<N>(from: HKT\<S, CarrierOf\<N>>, refinement: [Match](../modules/_logic_types_.match.md)\<CarrierOf\<N>, N>, id: string) => HKT\<S, N>
 
-*Defined in [src/io/TypedSchemable.ts:43](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L43)*
+*Defined in [src/io/TypedSchemable.ts:43](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L43)*
 
 ___
 
@@ -236,7 +236,7 @@ ___
 
 • `Readonly` **option**: \<A>(hkt: HKT\<S, A>) => HKT\<S, Option\<A>>
 
-*Defined in [src/io/TypedSchemable.ts:28](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L28)*
+*Defined in [src/io/TypedSchemable.ts:28](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L28)*
 
 ___
 
@@ -254,7 +254,7 @@ ___
 
 • `Readonly` **propertyKey**: HKT\<S, PropertyKey>
 
-*Defined in [src/io/TypedSchemable.ts:38](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L38)*
+*Defined in [src/io/TypedSchemable.ts:38](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L38)*
 
 ___
 
@@ -282,7 +282,7 @@ ___
 
 • `Readonly` **remoteData**: \<A, B>(left: HKT\<S, A>, right: HKT\<S, B>) => HKT\<S, [RemoteData](../modules/_remotedata_remotedata_.md#remotedata)\<A, B>>
 
-*Defined in [src/io/TypedSchemable.ts:30](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L30)*
+*Defined in [src/io/TypedSchemable.ts:30](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L30)*
 
 ___
 
@@ -290,7 +290,7 @@ ___
 
 • `Readonly` **set**: \<A>(hkt: HKT\<S, A>) => HKT\<S, ReadonlySet\<A>>
 
-*Defined in [src/io/TypedSchemable.ts:26](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L26)*
+*Defined in [src/io/TypedSchemable.ts:26](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L26)*
 
 ___
 
@@ -318,7 +318,7 @@ ___
 
 • `Readonly` **symbol**: HKT\<S, symbol>
 
-*Defined in [src/io/TypedSchemable.ts:37](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L37)*
+*Defined in [src/io/TypedSchemable.ts:37](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L37)*
 
 ___
 
@@ -356,7 +356,7 @@ ___
 
 • `Readonly` **unknown**: HKT\<S, unknown>
 
-*Defined in [src/io/TypedSchemable.ts:35](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L35)*
+*Defined in [src/io/TypedSchemable.ts:35](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L35)*
 
 ___
 
@@ -364,4 +364,4 @@ ___
 
 • `Readonly` **uuid**: HKT\<S, [Uuid](../modules/_uuid_common_.uuid.md)>
 
-*Defined in [src/io/TypedSchemable.ts:32](https://github.com/TylorS/typed-fp/blob/8639976/src/io/TypedSchemable.ts#L32)*
+*Defined in [src/io/TypedSchemable.ts:32](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchemable.ts#L32)*

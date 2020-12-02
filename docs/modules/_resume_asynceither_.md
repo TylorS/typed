@@ -20,7 +20,7 @@
 
 ▸ `Const`**asyncEither**\<A, B>(`run`: (left: (value: A) => Disposable, right: (value: B) => Disposable) => Disposable): [AsyncEither](../interfaces/_resume_asynceither_.asynceither.md)\<A, B>
 
-*Defined in [src/Resume/AsyncEither.ts:15](https://github.com/TylorS/typed-fp/blob/8639976/src/Resume/AsyncEither.ts#L15)*
+*Defined in [src/Resume/AsyncEither.ts:15](https://github.com/TylorS/typed-fp/blob/559f273/src/Resume/AsyncEither.ts#L15)*
 
 Resume an effect asynchronously that can possibly fail.
 

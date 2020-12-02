@@ -31,7 +31,7 @@ Name |
 
 • `Readonly` **async**: true
 
-*Defined in [src/Resume/Async.ts:8](https://github.com/TylorS/typed-fp/blob/8639976/src/Resume/Async.ts#L8)*
+*Defined in [src/Resume/Async.ts:8](https://github.com/TylorS/typed-fp/blob/559f273/src/Resume/Async.ts#L8)*
 
 ___
 
@@ -39,4 +39,4 @@ ___
 
 • `Readonly` **run**: (resume: [Arity1](../modules/_common_types_.md#arity1)\<A, Disposable>) => Disposable
 
-*Defined in [src/Resume/Async.ts:9](https://github.com/TylorS/typed-fp/blob/8639976/src/Resume/Async.ts#L9)*
+*Defined in [src/Resume/Async.ts:9](https://github.com/TylorS/typed-fp/blob/559f273/src/Resume/Async.ts#L9)*

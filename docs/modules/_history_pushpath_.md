@@ -16,7 +16,7 @@
 
 ▸ `Const`**pushPath**(`path`: [Path](_path_exports_.path.md)): [Effect](_effect_effect_.effect.md)\<[HistoryEnv](../interfaces/_history_historyenv_.historyenv.md), Location>
 
-*Defined in [src/history/pushPath.ts:10](https://github.com/TylorS/typed-fp/blob/8639976/src/history/pushPath.ts#L10)*
+*Defined in [src/history/pushPath.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/history/pushPath.ts#L10)*
 
 An Effect for change the current Path using the History API.
 

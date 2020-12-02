@@ -18,4 +18,4 @@ When an Effect correlated to a namespace is being run.
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[NamespaceStarted](_shared_core_events_namespaceevent_.namespacestarted.md)> = createSchema\<NamespaceStarted>((t) => t.type({ type: t.literal('namespace/started'), parent: Namespace.schema(t), namespace: Namespace.schema(t), effect: t.unknown as HKT\<any, Effect\<any, any>>, }), )
 
-*Defined in [src/Shared/core/events/NamespaceEvent.ts:57](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/core/events/NamespaceEvent.ts#L57)*
+*Defined in [src/Shared/core/events/NamespaceEvent.ts:57](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/events/NamespaceEvent.ts#L57)*

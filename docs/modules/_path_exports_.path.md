@@ -20,7 +20,7 @@ A NewType for Paths
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[Path](_path_exports_.path.md)> = createSchema\<Path>((t) => t.newtype\<Path>(t.string, pathPrism.getOption, 'Path'), )
 
-*Defined in [src/Path/exports.ts:24](https://github.com/TylorS/typed-fp/blob/8639976/src/Path/exports.ts#L24)*
+*Defined in [src/Path/exports.ts:24](https://github.com/TylorS/typed-fp/blob/559f273/src/Path/exports.ts#L24)*
 
 A Schema for Path
 
@@ -30,7 +30,7 @@ ___
 
 •  **unwrap**: (s: S) => A
 
-*Defined in [src/Path/exports.ts:19](https://github.com/TylorS/typed-fp/blob/8639976/src/Path/exports.ts#L19)*
+*Defined in [src/Path/exports.ts:19](https://github.com/TylorS/typed-fp/blob/559f273/src/Path/exports.ts#L19)*
 
 ___
 
@@ -38,4 +38,4 @@ ___
 
 •  **wrap**: (a: A) => S
 
-*Defined in [src/Path/exports.ts:19](https://github.com/TylorS/typed-fp/blob/8639976/src/Path/exports.ts#L19)*
+*Defined in [src/Path/exports.ts:19](https://github.com/TylorS/typed-fp/blob/559f273/src/Path/exports.ts#L19)*

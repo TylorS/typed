@@ -16,7 +16,7 @@
 
 ▸ `Const`**usingNamespace**(`namespace`: [Namespace](_shared_core_model_namespace_.namespace.md)): [Provider](_effect_provide_.md#provider)\<[CurrentNamespaceEnv](../interfaces/_shared_core_services_currentnamespaceenv_.currentnamespaceenv.md)>
 
-*Defined in [src/Shared/core/services/usingNamespace.ts:9](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/core/services/usingNamespace.ts#L9)*
+*Defined in [src/Shared/core/services/usingNamespace.ts:9](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/services/usingNamespace.ts#L9)*
 
 Run an Effect using a given namespace
 

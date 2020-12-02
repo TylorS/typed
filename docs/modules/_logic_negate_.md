@@ -16,7 +16,7 @@
 
 ▸ **negate**\<A>(`x`: A): boolean
 
-*Defined in [src/logic/negate.ts:6](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/negate.ts#L6)*
+*Defined in [src/logic/negate.ts:6](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/negate.ts#L6)*
 
 Negates a value
 

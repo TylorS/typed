@@ -20,7 +20,7 @@
 
 • `Const` **anyPass**: \<A>(predicates: ReadonlyArray\<Predicate\<A>>, value: A) => boolean\<A>(predicates: ReadonlyArray\<Predicate\<A>>) => (value: A) => boolean = curry(\_\_anyPass) as { \<A>(predicates: ReadonlyArray\<Predicate\<A>>, value: A): boolean \<A>(predicates: ReadonlyArray\<Predicate\<A>>): (value: A) => boolean}
 
-*Defined in [src/logic/anyPass.ts:10](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/anyPass.ts#L10)*
+*Defined in [src/logic/anyPass.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/anyPass.ts#L10)*
 
 Returns true if value matches any predicates
 
@@ -36,7 +36,7 @@ Returns true if value matches any predicates
 
 ▸ **__anyPass**\<A>(`predicates`: ReadonlyArray\<Predicate\<A>>, `value`: A): boolean
 
-*Defined in [src/logic/anyPass.ts:18](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/anyPass.ts#L18)*
+*Defined in [src/logic/anyPass.ts:18](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/anyPass.ts#L18)*
 
 #### Type parameters:
 

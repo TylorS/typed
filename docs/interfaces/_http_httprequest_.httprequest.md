@@ -31,7 +31,7 @@ An Effect representing an Http Request that can fail with an Error
 
 *Inherited from [Effect](../modules/_effect_effect_.effect.md).[[Symbol.iterator]](../modules/_effect_effect_.effect.md#[symbol.iterator])*
 
-*Defined in [src/Effect/Effect.ts:11](https://github.com/TylorS/typed-fp/blob/8639976/src/Effect/Effect.ts#L11)*
+*Defined in [src/Effect/Effect.ts:11](https://github.com/TylorS/typed-fp/blob/559f273/src/Effect/Effect.ts#L11)*
 
 ## Methods
 
@@ -39,7 +39,7 @@ An Effect representing an Http Request that can fail with an Error
 
 ▸ **fromIO**\<A>(`io`: IO\<A>): [Pure](../modules/_effect_effect_.md#pure)\<A>
 
-*Defined in [src/Effect/Effect.ts:23](https://github.com/TylorS/typed-fp/blob/8639976/src/Effect/Effect.ts#L23)*
+*Defined in [src/Effect/Effect.ts:23](https://github.com/TylorS/typed-fp/blob/559f273/src/Effect/Effect.ts#L23)*
 
 Create an Effect from an IO
 
@@ -63,7 +63,7 @@ ___
 
 ▸ **of**\<A>(`value`: A): [Pure](../modules/_effect_effect_.md#pure)\<A>
 
-*Defined in [src/Effect/Effect.ts:18](https://github.com/TylorS/typed-fp/blob/8639976/src/Effect/Effect.ts#L18)*
+*Defined in [src/Effect/Effect.ts:18](https://github.com/TylorS/typed-fp/blob/559f273/src/Effect/Effect.ts#L18)*
 
 Create an Effect containing a given value
 

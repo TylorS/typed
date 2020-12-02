@@ -29,4 +29,4 @@ Name |
 
 • `Readonly` **patch**: [Arity2](../modules/_common_types_.md#arity2)\<A, B, [Resume](../modules/_resume_resume_.md#resume)\<A>>
 
-*Defined in [src/Patch/Patch.ts:9](https://github.com/TylorS/typed-fp/blob/8639976/src/Patch/Patch.ts#L9)*
+*Defined in [src/Patch/Patch.ts:9](https://github.com/TylorS/typed-fp/blob/559f273/src/Patch/Patch.ts#L9)*

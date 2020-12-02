@@ -35,7 +35,7 @@
 
 *Inherited from [VirtualClock](_scheduler_virtualtimer_virtualclock_.virtualclock.md).[progressTimeBy](_scheduler_virtualtimer_virtualclock_.virtualclock.md#progresstimeby)*
 
-*Defined in [src/Scheduler/VirtualTimer/VirtualClock.ts:7](https://github.com/TylorS/typed-fp/blob/8639976/src/Scheduler/VirtualTimer/VirtualClock.ts#L7)*
+*Defined in [src/Scheduler/VirtualTimer/VirtualClock.ts:7](https://github.com/TylorS/typed-fp/blob/559f273/src/Scheduler/VirtualTimer/VirtualClock.ts#L7)*
 
 ## Methods
 

@@ -16,7 +16,7 @@
 
 • `Const` **isBrowser**: boolean = typeof window !== 'undefined' && typeof document !== 'undefined'
 
-*Defined in [src/common/isBrowser.ts:5](https://github.com/TylorS/typed-fp/blob/8639976/src/common/isBrowser.ts#L5)*
+*Defined in [src/common/isBrowser.ts:5](https://github.com/TylorS/typed-fp/blob/559f273/src/common/isBrowser.ts#L5)*
 
 A helper for determining if you are currently in a browser environment checking if
 `window` and `document` are defined.

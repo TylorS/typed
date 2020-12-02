@@ -19,7 +19,7 @@ Newtype representing Universal Resource Idenitifiers
 
 •  **unwrap**: (s: S) => A
 
-*Defined in [src/Uri/exports.ts:25](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L25)*
+*Defined in [src/Uri/exports.ts:25](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L25)*
 
 ___
 
@@ -27,4 +27,4 @@ ___
 
 •  **wrap**: (a: A) => S
 
-*Defined in [src/Uri/exports.ts:25](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L25)*
+*Defined in [src/Uri/exports.ts:25](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L25)*

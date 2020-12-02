@@ -27,4 +27,4 @@ Name |
 
 •  **[URI]**: [LoggerEffect](_logging_loggereffect_.loggereffect.md)\<E, A>
 
-*Defined in [src/logging/LoggerEffect.ts:20](https://github.com/TylorS/typed-fp/blob/8639976/src/logging/LoggerEffect.ts#L20)*
+*Defined in [src/logging/LoggerEffect.ts:20](https://github.com/TylorS/typed-fp/blob/559f273/src/logging/LoggerEffect.ts#L20)*

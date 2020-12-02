@@ -16,6 +16,6 @@
 
 • `Const` **hasValue**: \<K, V>(shared: [SharedSet](../interfaces/_shared_set_sharedset_.sharedset.md)\<K, V>, value: V) => [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), boolean>\<K, V>(shared: [SharedSet](../interfaces/_shared_set_sharedset_.sharedset.md)\<K, V>) => (value: V) => [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), boolean> = curry( \<K extends SharedKey, V>(shared: SharedSet\<K, V>, value: V): Effect\<SharedEnv, boolean> => // eslint-disable-next-line require-yield withShared(shared, function* (set) { return set.has(value) }),) as { \<K extends SharedKey, V>(shared: SharedSet\<K, V>, value: V): Effect\<SharedEnv, boolean> \<K extends SharedKey, V>(shared: SharedSet\<K, V>): (value: V) => Effect\<SharedEnv, boolean>}
 
-*Defined in [src/Shared/set/hasValue.ts:10](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/set/hasValue.ts#L10)*
+*Defined in [src/Shared/set/hasValue.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/set/hasValue.ts#L10)*
 
 Check if a SharedSet has a given values

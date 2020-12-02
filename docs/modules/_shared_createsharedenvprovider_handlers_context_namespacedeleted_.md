@@ -17,7 +17,7 @@
 
 ▸ **deleteConsumers**(`namespace`: [Namespace](_shared_core_model_namespace_.namespace.md)): Generator\<[Env](_effect_effect_.md#env)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), any>, void, unknown>
 
-*Defined in [src/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted.ts:13](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted.ts#L13)*
+*Defined in [src/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted.ts:13](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted.ts#L13)*
 
 #### Parameters:
 
@@ -33,7 +33,7 @@ ___
 
 ▸ **namespaceDeleted**(`event`: [NamespaceDeleted](_shared_core_events_namespaceevent_.namespacedeleted.md)): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), void>
 
-*Defined in [src/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted.ts:6](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted.ts#L6)*
+*Defined in [src/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted.ts:6](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted.ts#L6)*
 
 #### Parameters:
 

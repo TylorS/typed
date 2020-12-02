@@ -36,7 +36,7 @@
 
 Ƭ  **ParsedUri**: { directory: string ; file: string ; hash: string ; host: string ; hostname: string ; href: string ; password: string ; pathname: [Path](_path_exports_.path.md) ; port: string ; protocol: string ; relative: string ; search: string ; userInfo: string ; username: string  }
 
-*Defined in [src/Uri/exports.ts:68](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L68)*
+*Defined in [src/Uri/exports.ts:68](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L68)*
 
 ParsedUri JSON data structure
 
@@ -67,7 +67,7 @@ ___
 
 Ƭ  **QueryParams**: ReadonlyRecord\<string, string \| undefined>
 
-*Defined in [src/Uri/exports.ts:33](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L33)*
+*Defined in [src/Uri/exports.ts:33](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L33)*
 
 ## Variables
 
@@ -75,7 +75,7 @@ ___
 
 • `Const` **URI\_REGEX**: RegExp = /^(?:([^:/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:/?#]*)(?::(\d*))?))?((((?:[^?#/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/
 
-*Defined in [src/Uri/exports.ts:31](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L31)*
+*Defined in [src/Uri/exports.ts:31](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L31)*
 
 Regex for URIs
 
@@ -85,7 +85,7 @@ ___
 
 • `Const` **parsedUriKeyCount**: number = parsedUriKeys.length
 
-*Defined in [src/Uri/exports.ts:136](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L136)*
+*Defined in [src/Uri/exports.ts:136](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L136)*
 
 ___
 
@@ -93,7 +93,7 @@ ___
 
 • `Const` **parsedUriKeys**: ReadonlyArray\<keyof [ParsedUri](_uri_exports_.md#parseduri)> = [ 'href', 'protocol', 'host', 'userInfo', 'username', 'password', 'hostname', 'port', 'relative', 'pathname', 'directory', 'file', 'search', 'hash',]
 
-*Defined in [src/Uri/exports.ts:119](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L119)*
+*Defined in [src/Uri/exports.ts:119](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L119)*
 
 ___
 
@@ -101,7 +101,7 @@ ___
 
 • `Const` **uriEq**: Eq\<[Uri](_uri_exports_.uri.md)> = getEq\<Uri>(eqString)
 
-*Defined in [src/Uri/exports.ts:19](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L19)*
+*Defined in [src/Uri/exports.ts:19](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L19)*
 
 Eq instance for Uri
 
@@ -111,7 +111,7 @@ ___
 
 • `Const` **uriPrism**: Prism\<string, [Uri](_uri_exports_.uri.md)> = prism\<Uri>((s: string) => URI\_REGEX.test(s))
 
-*Defined in [src/Uri/exports.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L14)*
+*Defined in [src/Uri/exports.ts:14](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L14)*
 
 Prism instance for Uri
 
@@ -121,7 +121,7 @@ Prism instance for Uri
 
 ▸ **__addQueryParameters**(`url`: [Uri](_uri_exports_.uri.md), `queryParams`: [QueryParams](_uri_exports_.md#queryparams)): [Uri](_uri_exports_.uri.md)
 
-*Defined in [src/Uri/exports.ts:49](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L49)*
+*Defined in [src/Uri/exports.ts:49](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L49)*
 
 #### Parameters:
 
@@ -138,7 +138,7 @@ ___
 
 ▸ **addQueryParameters**(`url`: [Uri](_uri_exports_.uri.md), `queryParams`: [QueryParams](_uri_exports_.md#queryparams)): [Uri](_uri_exports_.uri.md)
 
-*Defined in [src/Uri/exports.ts:35](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L35)*
+*Defined in [src/Uri/exports.ts:35](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L35)*
 
 Append Query Parameters to a Url
 
@@ -153,7 +153,7 @@ Name | Type |
 
 ▸ **addQueryParameters**(`url`: [Uri](_uri_exports_.uri.md)): function
 
-*Defined in [src/Uri/exports.ts:36](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L36)*
+*Defined in [src/Uri/exports.ts:36](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L36)*
 
 Append Query Parameters to a Url
 
@@ -171,7 +171,7 @@ ___
 
 ▸ **parseUri**(`url`: [Uri](_uri_exports_.uri.md)): [ParsedUri](_uri_exports_.md#parseduri)
 
-*Defined in [src/Uri/exports.ts:90](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L90)*
+*Defined in [src/Uri/exports.ts:90](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L90)*
 
 Parses an URL into JSON.
 
@@ -191,7 +191,7 @@ ___
 
 ▸ **queryParam**(`queryParams`: [QueryParams](_uri_exports_.md#queryparams)): (Anonymous function)
 
-*Defined in [src/Uri/exports.ts:55](https://github.com/TylorS/typed-fp/blob/8639976/src/Uri/exports.ts#L55)*
+*Defined in [src/Uri/exports.ts:55](https://github.com/TylorS/typed-fp/blob/559f273/src/Uri/exports.ts#L55)*
 
 #### Parameters:
 

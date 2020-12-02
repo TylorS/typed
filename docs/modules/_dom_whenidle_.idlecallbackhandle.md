@@ -19,7 +19,7 @@ A newtype to represent an IdleCallbackHandle
 
 •  **unwrap**: (s: S) => A
 
-*Defined in [src/dom/whenIdle.ts:13](https://github.com/TylorS/typed-fp/blob/8639976/src/dom/whenIdle.ts#L13)*
+*Defined in [src/dom/whenIdle.ts:13](https://github.com/TylorS/typed-fp/blob/559f273/src/dom/whenIdle.ts#L13)*
 
 ___
 
@@ -27,4 +27,4 @@ ___
 
 •  **wrap**: (a: A) => S
 
-*Defined in [src/dom/whenIdle.ts:13](https://github.com/TylorS/typed-fp/blob/8639976/src/dom/whenIdle.ts#L13)*
+*Defined in [src/dom/whenIdle.ts:13](https://github.com/TylorS/typed-fp/blob/559f273/src/dom/whenIdle.ts#L13)*

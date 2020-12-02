@@ -47,7 +47,7 @@
 
 Ƭ  **JSON\_TAG**: *typeof* [JSON\_TAG](_logic_json_.md#json_tag)
 
-*Defined in [src/logic/json.ts:44](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L44)*
+*Defined in [src/logic/json.ts:44](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L44)*
 
 ___
 
@@ -55,7 +55,7 @@ ___
 
 Ƭ  **JsonPrimitive**: Exclude\<Json, JsonRecord \| JsonArray>
 
-*Defined in [src/logic/json.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L14)*
+*Defined in [src/logic/json.ts:14](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L14)*
 
 ___
 
@@ -63,7 +63,7 @@ ___
 
 Ƭ  **JsonSerializable**: [JsonPrimitive](_logic_json_.md#jsonprimitive) \| Date \| ReadonlyArray\<[JsonSerializable](_logic_json_.md#jsonserializable)> \| [JsonSerializableRecord](../interfaces/_logic_json_.jsonserializablerecord.md) \| ReadonlyMap\<[JsonSerializable](_logic_json_.md#jsonserializable), [JsonSerializable](_logic_json_.md#jsonserializable)> \| ReadonlySet\<[JsonSerializable](_logic_json_.md#jsonserializable)> \| symbol
 
-*Defined in [src/logic/json.ts:5](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L5)*
+*Defined in [src/logic/json.ts:5](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L5)*
 
 ___
 
@@ -71,7 +71,7 @@ ___
 
 Ƭ  **TaggedJson**\<A>: { [JSON_TAG]: A ; [VALUES_TAG]: TaggedJsonValues[A]  }
 
-*Defined in [src/logic/json.ts:65](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L65)*
+*Defined in [src/logic/json.ts:65](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L65)*
 
 #### Type parameters:
 
@@ -92,7 +92,7 @@ ___
 
 Ƭ  **TaggedJsonValues**: { [Tag.Date]: string ; [Tag.Map]: ReadonlyArray\<readonly [Json, Json]> ; [Tag.Set]: ReadonlyArray\<Json> ; [Tag.SymbolFor]: string ; [Tag.Symbol]: string  }
 
-*Defined in [src/logic/json.ts:57](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L57)*
+*Defined in [src/logic/json.ts:57](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L57)*
 
 #### Type declaration:
 
@@ -110,7 +110,7 @@ ___
 
 Ƭ  **VALUES\_TAG**: *typeof* [VALUES\_TAG](_logic_json_.md#values_tag)
 
-*Defined in [src/logic/json.ts:47](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L47)*
+*Defined in [src/logic/json.ts:47](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L47)*
 
 ## Variables
 
@@ -118,7 +118,7 @@ ___
 
 • `Const` **JSON\_TAG**: \"\_\_json\_tag\_\_\" = '\_\_json\_tag\_\_' as const
 
-*Defined in [src/logic/json.ts:43](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L43)*
+*Defined in [src/logic/json.ts:43](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L43)*
 
 ___
 
@@ -126,7 +126,7 @@ ___
 
 • `Const` **VALUES\_TAG**: \"\_\_values\_tag\_\_\" = '\_\_values\_tag\_\_' as const
 
-*Defined in [src/logic/json.ts:46](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L46)*
+*Defined in [src/logic/json.ts:46](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L46)*
 
 ## Functions
 
@@ -134,7 +134,7 @@ ___
 
 ▸ **fromJson**(`jsonString`: string): [JsonSerializable](_logic_json_.md#jsonserializable)
 
-*Defined in [src/logic/json.ts:32](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L32)*
+*Defined in [src/logic/json.ts:32](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L32)*
 
 Convert a JSON string into runtime JsonSerializable values.
 
@@ -152,7 +152,7 @@ ___
 
 ▸ `Const`**hasJsonTag**(`x`: unknown): boolean
 
-*Defined in [src/logic/json.ts:70](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L70)*
+*Defined in [src/logic/json.ts:70](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L70)*
 
 #### Parameters:
 
@@ -168,7 +168,7 @@ ___
 
 ▸ `Const`**hasValuesTag**(`x`: unknown): boolean
 
-*Defined in [src/logic/json.ts:71](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L71)*
+*Defined in [src/logic/json.ts:71](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L71)*
 
 #### Parameters:
 
@@ -184,7 +184,7 @@ ___
 
 ▸ `Const`**jsonReplace**(`serializable`: [JsonSerializable](_logic_json_.md#jsonserializable)): Json
 
-*Defined in [src/logic/json.ts:22](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L22)*
+*Defined in [src/logic/json.ts:22](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L22)*
 
 Replace a JsonSerializable value with a JSON-friendly equivalent. Does not support circular
 structures.
@@ -203,7 +203,7 @@ ___
 
 ▸ `Const`**jsonRevive**(`json`: Json): [JsonSerializable](_logic_json_.md#jsonserializable)
 
-*Defined in [src/logic/json.ts:27](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L27)*
+*Defined in [src/logic/json.ts:27](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L27)*
 
 Replace a Serialized piece of Json with it's runtime equivalent.
 
@@ -221,7 +221,7 @@ ___
 
 ▸ **replaceJson**(`_`: [JsonSerializable](_logic_json_.md#jsonserializable), `value`: [JsonSerializable](_logic_json_.md#jsonserializable)): Json
 
-*Defined in [src/logic/json.ts:74](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L74)*
+*Defined in [src/logic/json.ts:74](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L74)*
 
 #### Parameters:
 
@@ -238,7 +238,7 @@ ___
 
 ▸ **reviveJson**(`_`: Json, `value`: Json): [JsonSerializable](_logic_json_.md#jsonserializable)
 
-*Defined in [src/logic/json.ts:109](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L109)*
+*Defined in [src/logic/json.ts:109](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L109)*
 
 #### Parameters:
 
@@ -255,7 +255,7 @@ ___
 
 ▸ **reviveMapEntries**(`entries`: ReadonlyArray\<readonly [Json, Json]>): ReadonlyArray\<readonly [[JsonSerializable](_logic_json_.md#jsonserializable), [JsonSerializable](_logic_json_.md#jsonserializable)]>
 
-*Defined in [src/logic/json.ts:137](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L137)*
+*Defined in [src/logic/json.ts:137](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L137)*
 
 #### Parameters:
 
@@ -271,7 +271,7 @@ ___
 
 ▸ **reviveSetEntries**(`entries`: ReadonlyArray\<Json>): ReadonlyArray\<[JsonSerializable](_logic_json_.md#jsonserializable)>
 
-*Defined in [src/logic/json.ts:133](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L133)*
+*Defined in [src/logic/json.ts:133](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L133)*
 
 #### Parameters:
 
@@ -287,7 +287,7 @@ ___
 
 ▸ **toJson**\<A>(`x`: A, `space?`: string \| number): string
 
-*Defined in [src/logic/json.ts:39](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/json.ts#L39)*
+*Defined in [src/logic/json.ts:39](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/json.ts#L39)*
 
 Converts JsonSerializable values into a JSON-encoded format.
 

@@ -101,7 +101,7 @@ Re-exports: tryDispose
 
 ▸ `Const`**lazy**\<A>(`additional?`: A): [LazyDisposable](../interfaces/_disposable_exports_.lazydisposable.md) & A
 
-*Defined in [src/Disposable/exports.ts:22](https://github.com/TylorS/typed-fp/blob/8639976/src/Disposable/exports.ts#L22)*
+*Defined in [src/Disposable/exports.ts:22](https://github.com/TylorS/typed-fp/blob/559f273/src/Disposable/exports.ts#L22)*
 
 Create a LazyDisposable instance that can only be dispose of one time.
 When attempting to add a Disposable after the LazyDisposable has been disposed it will be
@@ -127,7 +127,7 @@ ___
 
 ▸ `Const`**undisposable**\<A>(`f`: (...values: A) => void): (Anonymous function)
 
-*Defined in [src/Disposable/exports.ts:73](https://github.com/TylorS/typed-fp/blob/8639976/src/Disposable/exports.ts#L73)*
+*Defined in [src/Disposable/exports.ts:73](https://github.com/TylorS/typed-fp/blob/559f273/src/Disposable/exports.ts#L73)*
 
 Convert a void returning function into a Disposable returning function.
 
