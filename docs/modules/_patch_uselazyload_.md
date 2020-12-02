@@ -16,7 +16,7 @@
 
 ▸ `Const`**useLazyLoad**\<A, E, B>(`task`: Task\<A>, `f`: (value: A) => [Effect](_effect_effect_.effect.md)\<E, B>, `fallback`: IO\<B>): [Effect](_effect_effect_.effect.md)\<E & [SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md) & [SchedulerEnv](../interfaces/_scheduler_schedulerenv_.schedulerenv.md), B>
 
-*Defined in [src/Patch/useLazyLoad.ts:23](https://github.com/TylorS/typed-fp/blob/559f273/src/Patch/useLazyLoad.ts#L23)*
+*Defined in [src/Patch/useLazyLoad.ts:23](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Patch/useLazyLoad.ts#L23)*
 
 A hook function for lazy loading a module using dynamic imports.
 

@@ -26,7 +26,7 @@
 
 Ƭ  **ArgsOf**\<A>: A *extends* (...args: *infer* R) => any ? R : never
 
-*Defined in [src/common/types.ts:4](https://github.com/TylorS/typed-fp/blob/559f273/src/common/types.ts#L4)*
+*Defined in [src/common/types.ts:4](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/types.ts#L4)*
 
 Extract the Arguments from a Function type.
 
@@ -42,7 +42,7 @@ ___
 
 Ƭ  **Arity1**\<A, B>: (value: A) => B
 
-*Defined in [src/common/types.ts:14](https://github.com/TylorS/typed-fp/blob/559f273/src/common/types.ts#L14)*
+*Defined in [src/common/types.ts:14](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/types.ts#L14)*
 
 A type-level helper for functions with an arity of 1.
 
@@ -59,7 +59,7 @@ ___
 
 Ƭ  **Arity2**\<A, B, C>: (a: A, b: B) => C
 
-*Defined in [src/common/types.ts:19](https://github.com/TylorS/typed-fp/blob/559f273/src/common/types.ts#L19)*
+*Defined in [src/common/types.ts:19](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/types.ts#L19)*
 
 A type-level helper for functions with an arity of 2.
 
@@ -77,7 +77,7 @@ ___
 
 Ƭ  **Arity3**\<A, B, C, D>: (a: A, b: B, c: C) => D
 
-*Defined in [src/common/types.ts:24](https://github.com/TylorS/typed-fp/blob/559f273/src/common/types.ts#L24)*
+*Defined in [src/common/types.ts:24](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/types.ts#L24)*
 
 A type-level helper for functions with an arity of 3.
 
@@ -96,7 +96,7 @@ ___
 
 Ƭ  **Arity4**\<A, B, C, D, E>: (a: A, b: B, c: C, d: D) => E
 
-*Defined in [src/common/types.ts:29](https://github.com/TylorS/typed-fp/blob/559f273/src/common/types.ts#L29)*
+*Defined in [src/common/types.ts:29](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/types.ts#L29)*
 
 A type-level helper for functions with an arity of 4.
 
@@ -116,7 +116,7 @@ ___
 
 Ƭ  **Arity5**\<A, B, C, D, E, F>: (a: A, b: B, c: C, d: D, e: E) => F
 
-*Defined in [src/common/types.ts:34](https://github.com/TylorS/typed-fp/blob/559f273/src/common/types.ts#L34)*
+*Defined in [src/common/types.ts:34](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/types.ts#L34)*
 
 A type-level helper for functions with an arity of 5.
 
@@ -137,7 +137,7 @@ ___
 
 Ƭ  **Equals**\<A, B>: [A] *extends* [B] ? [B] *extends* [A] ? true : false : false
 
-*Defined in [src/common/types.ts:45](https://github.com/TylorS/typed-fp/blob/559f273/src/common/types.ts#L45)*
+*Defined in [src/common/types.ts:45](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/types.ts#L45)*
 
 A type-level helper for checking for strict equality between types.
 
@@ -154,7 +154,7 @@ ___
 
 Ƭ  **HeadArg**\<A>: ArgsOf\<A>[0]
 
-*Defined in [src/common/types.ts:9](https://github.com/TylorS/typed-fp/blob/559f273/src/common/types.ts#L9)*
+*Defined in [src/common/types.ts:9](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/types.ts#L9)*
 
 Extract the first argument from a Function type.
 
@@ -170,7 +170,7 @@ ___
 
 Ƭ  **IsNever**\<A>: [Equals](_common_types_.md#equals)\<A, never>
 
-*Defined in [src/common/types.ts:50](https://github.com/TylorS/typed-fp/blob/559f273/src/common/types.ts#L50)*
+*Defined in [src/common/types.ts:50](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/types.ts#L50)*
 
 Check if a value is strictly equal to never
 
@@ -186,7 +186,7 @@ ___
 
 Ƭ  **IsUnknown**\<A>: [Equals](_common_types_.md#equals)\<A, unknown>
 
-*Defined in [src/common/types.ts:55](https://github.com/TylorS/typed-fp/blob/559f273/src/common/types.ts#L55)*
+*Defined in [src/common/types.ts:55](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/types.ts#L55)*
 
 Check if a value is strictly equal to unknown
 
@@ -202,7 +202,7 @@ ___
 
 Ƭ  **NoInfer**\<T>: [T][T *extends* any ? 0 : never]
 
-*Defined in [src/common/types.ts:62](https://github.com/TylorS/typed-fp/blob/559f273/src/common/types.ts#L62)*
+*Defined in [src/common/types.ts:62](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/types.ts#L62)*
 
 Use TS laziness to avoid inference in a particular function argument.
 

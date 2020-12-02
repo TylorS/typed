@@ -47,7 +47,7 @@ An implementation of the `History` interface in-memory.
 
 \+ **new ServerHistory**(`location`: Location): [ServerHistory](_node_historyenv_serverhistory_.serverhistory.md)
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:11](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L11)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:11](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L11)*
 
 #### Parameters:
 
@@ -63,7 +63,7 @@ Name | Type |
 
 • `Private` **\_index**: number = 0
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L10)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L10)*
 
 ___
 
@@ -71,7 +71,7 @@ ___
 
 • `Private` **\_states**: { state: unknown ; url: string  }[]
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:9](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L9)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:9](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L9)*
 
 ___
 
@@ -79,7 +79,7 @@ ___
 
 • `Private` **location**: Location
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:11](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L11)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:11](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L11)*
 
 ___
 
@@ -87,7 +87,7 @@ ___
 
 •  **scrollRestoration**: ScrollRestoration = "auto"
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:6](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L6)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:6](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L6)*
 
 ## Accessors
 
@@ -95,13 +95,13 @@ ___
 
 • `Private`get **index**(): number
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:26](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L26)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:26](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L26)*
 
 **Returns:** number
 
 • `Private`set **index**(`value`: number): void
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:18](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L18)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:18](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L18)*
 
 #### Parameters:
 
@@ -117,7 +117,7 @@ ___
 
 • get **length**(): number
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:30](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L30)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:30](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L30)*
 
 **Returns:** number
 
@@ -127,7 +127,7 @@ ___
 
 • get **state**(): any
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:34](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L34)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:34](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L34)*
 
 **Returns:** any
 
@@ -137,7 +137,7 @@ ___
 
 ▸ **back**(): void
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:51](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L51)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:51](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L51)*
 
 **Returns:** void
 
@@ -147,7 +147,7 @@ ___
 
 ▸ **forward**(): void
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:55](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L55)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:55](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L55)*
 
 **Returns:** void
 
@@ -157,7 +157,7 @@ ___
 
 ▸ **go**(`quanity?`: number): void
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:40](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L40)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:40](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L40)*
 
 #### Parameters:
 
@@ -173,7 +173,7 @@ ___
 
 ▸ **pushState**(`state`: unknown, `_`: string \| null, `url`: string): void
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:59](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L59)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:59](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L59)*
 
 #### Parameters:
 
@@ -191,7 +191,7 @@ ___
 
 ▸ **replaceState**(`state`: unknown, `_`: string \| null, `url`: string): void
 
-*Defined in [src/node/HistoryEnv/ServerHistory.ts:64](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerHistory.ts#L64)*
+*Defined in [src/node/HistoryEnv/ServerHistory.ts:64](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerHistory.ts#L64)*
 
 #### Parameters:
 

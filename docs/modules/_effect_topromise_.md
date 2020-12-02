@@ -17,7 +17,7 @@
 
 ▸ `Const`**toPromise**\<A>(`pure`: [Pure](_effect_effect_.md#pure)\<A>): Promise\<A>
 
-*Defined in [src/Effect/toPromise.ts:15](https://github.com/TylorS/typed-fp/blob/559f273/src/Effect/toPromise.ts#L15)*
+*Defined in [src/Effect/toPromise.ts:15](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Effect/toPromise.ts#L15)*
 
 Converts a Pure<A> Effect into a Promise<A>
 
@@ -41,7 +41,7 @@ ___
 
 ▸ `Const`**toTask**\<A>(`pure`: [Pure](_effect_effect_.md#pure)\<A>): Task\<A>
 
-*Defined in [src/Effect/toPromise.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/Effect/toPromise.ts#L10)*
+*Defined in [src/Effect/toPromise.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Effect/toPromise.ts#L10)*
 
 Converts a Pure<A> Effect into a Task<A>
 

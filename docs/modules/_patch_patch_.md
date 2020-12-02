@@ -20,7 +20,7 @@
 
 ▸ `Const`**patch**\<A, B>(`a`: A, `b`: B): [Effect](_effect_effect_.effect.md)\<[Patch](../interfaces/_patch_patch_.patch.md)\<A, B>, A>
 
-*Defined in [src/Patch/Patch.ts:15](https://github.com/TylorS/typed-fp/blob/559f273/src/Patch/Patch.ts#L15)*
+*Defined in [src/Patch/Patch.ts:15](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Patch/Patch.ts#L15)*
 
 Patch a previous value with a current, generally used for Rendering.
 

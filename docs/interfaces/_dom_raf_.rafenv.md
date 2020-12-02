@@ -29,7 +29,7 @@ Name | Default |
 
 • `Readonly` **cancelAnimationFrame**: (handle: Handle) => void
 
-*Defined in [src/dom/raf.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/dom/raf.ts#L10)*
+*Defined in [src/dom/raf.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/dom/raf.ts#L10)*
 
 ___
 
@@ -37,4 +37,4 @@ ___
 
 • `Readonly` **requestAnimationFrame**: (callback: FrameRequestCallback) => Handle
 
-*Defined in [src/dom/raf.ts:9](https://github.com/TylorS/typed-fp/blob/559f273/src/dom/raf.ts#L9)*
+*Defined in [src/dom/raf.ts:9](https://github.com/TylorS/typed-fp/blob/6ccb290/src/dom/raf.ts#L9)*

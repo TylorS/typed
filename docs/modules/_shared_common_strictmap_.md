@@ -16,4 +16,4 @@
 
 • `Const` **strictMap**: Eq\<[Map](../interfaces/_shared_core_model_sharedkeystore_.sharedkeystore.md#map)\<unknown, unknown>> = getEq(eqStrict, deepEqualsEq)
 
-*Defined in [src/Shared/common/strictMap.ts:5](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/common/strictMap.ts#L5)*
+*Defined in [src/Shared/common/strictMap.ts:5](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/common/strictMap.ts#L5)*

@@ -18,4 +18,4 @@ When an Effect related to a specific Namespace has completed.
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[NamespaceCompleted](_shared_core_events_namespaceevent_.namespacecompleted.md)> = createSchema\<NamespaceCompleted>((t) => t.type({ type: t.literal('namespace/completed'), parent: Namespace.schema(t), namespace: Namespace.schema(t), returnValue: t.unknown, effect: t.unknown as HKT\<any, Effect\<any, any>>, }), )
 
-*Defined in [src/Shared/core/events/NamespaceEvent.ts:96](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/events/NamespaceEvent.ts#L96)*
+*Defined in [src/Shared/core/events/NamespaceEvent.ts:96](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/events/NamespaceEvent.ts#L96)*

@@ -41,7 +41,7 @@ Name | Type | Default |
 
 • `Readonly` **eq**: Eq\<A>
 
-*Defined in [src/Shared/core/model/Shared.ts:17](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/model/Shared.ts#L17)*
+*Defined in [src/Shared/core/model/Shared.ts:17](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/model/Shared.ts#L17)*
 
 ___
 
@@ -49,7 +49,7 @@ ___
 
 • `Readonly` **initial**: [Effect](_effect_effect_.effect.md)\<E, A>
 
-*Defined in [src/Shared/core/model/Shared.ts:16](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/model/Shared.ts#L16)*
+*Defined in [src/Shared/core/model/Shared.ts:16](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/model/Shared.ts#L16)*
 
 ___
 
@@ -57,7 +57,7 @@ ___
 
 • `Readonly` **key**: K
 
-*Defined in [src/Shared/core/model/Shared.ts:15](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/model/Shared.ts#L15)*
+*Defined in [src/Shared/core/model/Shared.ts:15](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/model/Shared.ts#L15)*
 
 ## Variables
 
@@ -65,4 +65,4 @@ ___
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[Shared](_shared_core_model_shared_.shared.md)\<[SharedKey](_shared_core_model_sharedkey_.sharedkey.md)\<string \| number \| symbol>, any, any>> = createSchema\<Shared>((t) => t.type({ key: t.newtype(t.propertyKey, flow(SharedKey.wrap, some), 'SharedKey'), initial: t.unknown as HKT\<any, Shared['initial']>, eq: t.unknown as HKT\<any, Shared['eq']>, }), )
 
-*Defined in [src/Shared/core/model/Shared.ts:21](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/model/Shared.ts#L21)*
+*Defined in [src/Shared/core/model/Shared.ts:21](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/model/Shared.ts#L21)*

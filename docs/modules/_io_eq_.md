@@ -20,7 +20,7 @@
 
 ▸ **tryEq**\<A>(`a`: A, `b`: A): (Anonymous function)
 
-*Defined in [src/io/Eq.ts:48](https://github.com/TylorS/typed-fp/blob/559f273/src/io/Eq.ts#L48)*
+*Defined in [src/io/Eq.ts:48](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/Eq.ts#L48)*
 
 #### Type parameters:
 
@@ -43,7 +43,7 @@ Name | Type |
 
 ▪ `Const` **Schemable**: object
 
-*Defined in [src/io/Eq.ts:18](https://github.com/TylorS/typed-fp/blob/559f273/src/io/Eq.ts#L18)*
+*Defined in [src/io/Eq.ts:18](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/Eq.ts#L18)*
 
 A TypedSchemable instance for Eqs
 

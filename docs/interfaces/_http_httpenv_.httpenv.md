@@ -22,4 +22,4 @@ An environment type for performning HttpRequests
 
 • `Readonly` **http**: (uri: [Uri](../modules/_uri_exports_.uri.md), options: [HttpOptions](../modules/_http_httpenv_.md#httpoptions)) => [Resume](../modules/_resume_resume_.md#resume)\<Either\<Error, [HttpResponse](_http_httpresponse_.httpresponse.md)>>
 
-*Defined in [src/http/HttpEnv.ts:14](https://github.com/TylorS/typed-fp/blob/559f273/src/http/HttpEnv.ts#L14)*
+*Defined in [src/http/HttpEnv.ts:14](https://github.com/TylorS/typed-fp/blob/6ccb290/src/http/HttpEnv.ts#L14)*

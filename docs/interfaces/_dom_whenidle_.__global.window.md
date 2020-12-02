@@ -25,7 +25,7 @@
 
 *Inherited from [WhenIdleEnv](_dom_whenidle_.whenidleenv.md).[cancelIdleCallback](_dom_whenidle_.whenidleenv.md#cancelidlecallback)*
 
-*Defined in [src/dom/whenIdle.ts:25](https://github.com/TylorS/typed-fp/blob/559f273/src/dom/whenIdle.ts#L25)*
+*Defined in [src/dom/whenIdle.ts:25](https://github.com/TylorS/typed-fp/blob/6ccb290/src/dom/whenIdle.ts#L25)*
 
 ___
 
@@ -35,4 +35,4 @@ ___
 
 *Inherited from [WhenIdleEnv](_dom_whenidle_.whenidleenv.md).[requestIdleCallback](_dom_whenidle_.whenidleenv.md#requestidlecallback)*
 
-*Defined in [src/dom/whenIdle.ts:20](https://github.com/TylorS/typed-fp/blob/559f273/src/dom/whenIdle.ts#L20)*
+*Defined in [src/dom/whenIdle.ts:20](https://github.com/TylorS/typed-fp/blob/6ccb290/src/dom/whenIdle.ts#L20)*

@@ -16,7 +16,7 @@
 
 ▸ `Const`**fromSet**\<V>(`value?`: Eq\<V>): (Anonymous function)
 
-*Defined in [src/Shared/set/fromSet.ts:11](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/set/fromSet.ts#L11)*
+*Defined in [src/Shared/set/fromSet.ts:11](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/set/fromSet.ts#L11)*
 
 Create a SharedSet from an Eq + Key
 

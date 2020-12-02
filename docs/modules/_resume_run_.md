@@ -16,7 +16,7 @@
 
 ▸ `Const`**run**\<A>(`resume`: [Resume](_resume_resume_.md#resume)\<A>, `f`: [Arity1](_common_types_.md#arity1)\<A, Disposable>): Disposable
 
-*Defined in [src/Resume/run.ts:9](https://github.com/TylorS/typed-fp/blob/559f273/src/Resume/run.ts#L9)*
+*Defined in [src/Resume/run.ts:9](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Resume/run.ts#L9)*
 
 Run a Resume returning a Disposable of the resources created.
 

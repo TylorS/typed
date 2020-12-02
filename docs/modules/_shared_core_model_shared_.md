@@ -22,7 +22,7 @@
 
 Ƭ  **GetSharedEnv**\<A>: EffEnv\<A[\"initial\"]>
 
-*Defined in [src/Shared/core/model/Shared.ts:44](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/model/Shared.ts#L44)*
+*Defined in [src/Shared/core/model/Shared.ts:44](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/model/Shared.ts#L44)*
 
 Get the requirements for a Shared value to satisfy it's
 type-signature.
@@ -39,7 +39,7 @@ ___
 
 Ƭ  **GetSharedKey**\<A>: A[\"key\"]
 
-*Defined in [src/Shared/core/model/Shared.ts:33](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/model/Shared.ts#L33)*
+*Defined in [src/Shared/core/model/Shared.ts:33](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/model/Shared.ts#L33)*
 
 Get the key of a shared value type
 
@@ -55,7 +55,7 @@ ___
 
 Ƭ  **GetSharedValue**\<A>: [ReturnOf](_effect_effect_.md#returnof)\<A[\"initial\"]>
 
-*Defined in [src/Shared/core/model/Shared.ts:38](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/model/Shared.ts#L38)*
+*Defined in [src/Shared/core/model/Shared.ts:38](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/model/Shared.ts#L38)*
 
 Get the value of a shared value type
 

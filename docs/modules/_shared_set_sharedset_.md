@@ -20,7 +20,7 @@
 
 Ƭ  **SharedSetValue**\<A>: GetSharedValue\<A> *extends* ReadonlySet\<*infer* V> ? V : never
 
-*Defined in [src/Shared/set/SharedSet.ts:12](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/set/SharedSet.ts#L12)*
+*Defined in [src/Shared/set/SharedSet.ts:12](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/set/SharedSet.ts#L12)*
 
 Extract the value from a SharedSet
 

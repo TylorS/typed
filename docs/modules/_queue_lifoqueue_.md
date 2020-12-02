@@ -16,7 +16,7 @@
 
 ▸ **createLifoQueue**\<A>(`queue`: Array\<A>): [Queue](../interfaces/_queue_queue_.queue.md)\<A>
 
-*Defined in [src/Queue/LifoQueue.ts:7](https://github.com/TylorS/typed-fp/blob/559f273/src/Queue/LifoQueue.ts#L7)*
+*Defined in [src/Queue/LifoQueue.ts:7](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Queue/LifoQueue.ts#L7)*
 
 Create a simple in-memory last-in-first-out Queue
 

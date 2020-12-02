@@ -30,7 +30,7 @@ An environment type for managing fibers and performing simple cooperative multit
 
 • `Readonly` **currentFiber**: [Fiber](_fiber_fiber_.fiber.md)\<unknown>
 
-*Defined in [src/Fiber/FiberEnv.ts:11](https://github.com/TylorS/typed-fp/blob/559f273/src/Fiber/FiberEnv.ts#L11)*
+*Defined in [src/Fiber/FiberEnv.ts:11](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L11)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 • `Readonly` **fork**: \<E, A>(effect: [Effect](../modules/_effect_effect_.effect.md)\<E, A>, env: E & [FiberEnv](_fiber_fiberenv_.fiberenv.md)) => [Resume](../modules/_resume_resume_.md#resume)\<[Fiber](_fiber_fiber_.fiber.md)\<A>>
 
-*Defined in [src/Fiber/FiberEnv.ts:12](https://github.com/TylorS/typed-fp/blob/559f273/src/Fiber/FiberEnv.ts#L12)*
+*Defined in [src/Fiber/FiberEnv.ts:12](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L12)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 • `Readonly` **join**: \<A>(fiber: [Fiber](_fiber_fiber_.fiber.md)\<A>) => [Resume](../modules/_resume_resume_.md#resume)\<Either\<Error, A>>
 
-*Defined in [src/Fiber/FiberEnv.ts:13](https://github.com/TylorS/typed-fp/blob/559f273/src/Fiber/FiberEnv.ts#L13)*
+*Defined in [src/Fiber/FiberEnv.ts:13](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L13)*
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 • `Readonly` **kill**: \<A>(fiber: [Fiber](_fiber_fiber_.fiber.md)\<A>) => [Resume](../modules/_resume_resume_.md#resume)\<void>
 
-*Defined in [src/Fiber/FiberEnv.ts:14](https://github.com/TylorS/typed-fp/blob/559f273/src/Fiber/FiberEnv.ts#L14)*
+*Defined in [src/Fiber/FiberEnv.ts:14](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L14)*
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 • `Readonly` **pause**: [Resume](../modules/_resume_resume_.md#resume)\<void>
 
-*Defined in [src/Fiber/FiberEnv.ts:17](https://github.com/TylorS/typed-fp/blob/559f273/src/Fiber/FiberEnv.ts#L17)*
+*Defined in [src/Fiber/FiberEnv.ts:17](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L17)*
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 • `Readonly` **proceed**: (fiber: [Fiber](_fiber_fiber_.fiber.md)\<unknown>) => [Resume](../modules/_resume_resume_.md#resume)\<void>
 
-*Defined in [src/Fiber/FiberEnv.ts:20](https://github.com/TylorS/typed-fp/blob/559f273/src/Fiber/FiberEnv.ts#L20)*
+*Defined in [src/Fiber/FiberEnv.ts:20](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L20)*
 
 ___
 
@@ -80,4 +80,4 @@ ___
 
 *Inherited from [SchedulerEnv](_scheduler_schedulerenv_.schedulerenv.md).[scheduler](_scheduler_schedulerenv_.schedulerenv.md#scheduler)*
 
-*Defined in [src/Scheduler/SchedulerEnv.ts:14](https://github.com/TylorS/typed-fp/blob/559f273/src/Scheduler/SchedulerEnv.ts#L14)*
+*Defined in [src/Scheduler/SchedulerEnv.ts:14](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Scheduler/SchedulerEnv.ts#L14)*

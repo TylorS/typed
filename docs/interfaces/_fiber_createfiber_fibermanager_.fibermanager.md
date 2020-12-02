@@ -29,7 +29,7 @@
 
 • `Readonly` **addFiber**: (fiber: [Fiber](_fiber_fiber_.fiber.md)\<unknown>) => Disposable
 
-*Defined in [src/Fiber/createFiber/FiberManager.ts:8](https://github.com/TylorS/typed-fp/blob/559f273/src/Fiber/createFiber/FiberManager.ts#L8)*
+*Defined in [src/Fiber/createFiber/FiberManager.ts:8](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/createFiber/FiberManager.ts#L8)*
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 • `Readonly` **fibers**: ReadonlySet\<[Fiber](_fiber_fiber_.fiber.md)\<unknown>>
 
-*Defined in [src/Fiber/createFiber/FiberManager.ts:7](https://github.com/TylorS/typed-fp/blob/559f273/src/Fiber/createFiber/FiberManager.ts#L7)*
+*Defined in [src/Fiber/createFiber/FiberManager.ts:7](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/createFiber/FiberManager.ts#L7)*
 
 ___
 
@@ -45,7 +45,7 @@ ___
 
 • `Readonly` **pauseFiber**: (fiber: [Fiber](_fiber_fiber_.fiber.md)\<unknown>, resume: IO\<Disposable>) => Disposable
 
-*Defined in [src/Fiber/createFiber/FiberManager.ts:9](https://github.com/TylorS/typed-fp/blob/559f273/src/Fiber/createFiber/FiberManager.ts#L9)*
+*Defined in [src/Fiber/createFiber/FiberManager.ts:9](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/createFiber/FiberManager.ts#L9)*
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 • `Readonly` **runChildFiber**: (fiber: [Fiber](_fiber_fiber_.fiber.md)\<unknown>, resume: IO\<Disposable>) => Disposable
 
-*Defined in [src/Fiber/createFiber/FiberManager.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/Fiber/createFiber/FiberManager.ts#L10)*
+*Defined in [src/Fiber/createFiber/FiberManager.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/createFiber/FiberManager.ts#L10)*
 
 ## Methods
 

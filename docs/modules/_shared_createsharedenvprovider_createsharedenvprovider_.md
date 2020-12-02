@@ -22,7 +22,7 @@
 
 Ƭ  **SharedEnvOptions**: { handlers: ReadonlyArray\<[SharedEventHandler](_shared_createsharedenvprovider_sharedeventhandler_.md#sharedeventhandler)\<any>> ; namespace?: [Namespace](_shared_core_model_namespace_.namespace.md)  }
 
-*Defined in [src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts:25](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts#L25)*
+*Defined in [src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts:25](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts#L25)*
 
 #### Type declaration:
 
@@ -37,7 +37,7 @@ Name | Type |
 
 ▸ **createEmptySink**\<A>(`onValue`: (value: A) => void): Sink\<A>
 
-*Defined in [src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts:69](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts#L69)*
+*Defined in [src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts:69](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts#L69)*
 
 #### Type parameters:
 
@@ -59,7 +59,7 @@ ___
 
 ▸ **createSharedEnvProvider**(`options`: [SharedEnvOptions](_shared_createsharedenvprovider_createsharedenvprovider_.md#sharedenvoptions)): [Provider](_effect_provide_.md#provider)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), [SchedulerEnv](../interfaces/_scheduler_schedulerenv_.schedulerenv.md)>
 
-*Defined in [src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts:36](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts#L36)*
+*Defined in [src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts:36](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts#L36)*
 
 Create a SharedEnv Provider that will listen to SharedEvents to provide additional
 functionality.
@@ -78,7 +78,7 @@ ___
 
 ▸ `Const`**listenToEvents**(`handlers`: ReadonlyNonEmptyArray\<[SharedEventHandler](_shared_createsharedenvprovider_sharedeventhandler_.md#sharedeventhandler)\<any>>, `env`: [SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md)): [Effect](_effect_effect_.effect.md)\<[SchedulerEnv](../interfaces/_scheduler_schedulerenv_.schedulerenv.md), [SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md)>
 
-*Defined in [src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts:45](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts#L45)*
+*Defined in [src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts:45](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/createSharedEnvProvider.ts#L45)*
 
 #### Parameters:
 

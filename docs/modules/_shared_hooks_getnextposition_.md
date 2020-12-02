@@ -16,6 +16,6 @@
 
 • `Const` **getNextPosition**: [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), number> = doEffect(function* () { const position = yield* getNamespacePosition const current = position.current position.current = position.current + 1 return current})
 
-*Defined in [src/Shared/hooks/getNextPosition.ts:9](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/hooks/getNextPosition.ts#L9)*
+*Defined in [src/Shared/hooks/getNextPosition.ts:9](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/hooks/getNextPosition.ts#L9)*
 
 Get the current namespace's next position

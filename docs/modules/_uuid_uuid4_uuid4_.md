@@ -16,7 +16,7 @@
 
 ▸ **uuid4**(`seed`: [UuidSeed](_uuid_common_.md#uuidseed)): [Uuid](_uuid_common_.uuid.md)
 
-*Defined in [src/Uuid/uuid4/uuid4.ts:6](https://github.com/TylorS/typed-fp/blob/559f273/src/Uuid/uuid4/uuid4.ts#L6)*
+*Defined in [src/Uuid/uuid4/uuid4.ts:6](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Uuid/uuid4/uuid4.ts#L6)*
 
 Convert a UuidSeed into a v4 Uuid
 

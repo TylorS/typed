@@ -16,7 +16,7 @@
 
 ▸ `Const`**getSharedRef**\<S>(`shared`: S): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md) & [GetSharedEnv](_shared_core_model_shared_.md#getsharedenv)\<S>, [Ref](../interfaces/_shared_ref_ref_.ref.md)\<[GetSharedValue](_shared_core_model_shared_.md#getsharedvalue)\<S>>>
 
-*Defined in [src/Shared/Ref/getSharedRef.ts:16](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/Ref/getSharedRef.ts#L16)*
+*Defined in [src/Shared/Ref/getSharedRef.ts:16](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/Ref/getSharedRef.ts#L16)*
 
 Get a shared value as a Reference
 

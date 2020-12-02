@@ -45,7 +45,7 @@ ___
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[Namespace](_shared_core_model_namespace_.namespace.md)> = createSchema((t) => t.newtype(t.propertyKey, flow(wrap, some), 'Namespace'))
 
-*Defined in [src/Shared/core/model/Namespace.ts:14](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/model/Namespace.ts#L14)*
+*Defined in [src/Shared/core/model/Namespace.ts:14](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/model/Namespace.ts#L14)*
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 •  **unwrap**: (s: S) => A
 
-*Defined in [src/Shared/core/model/Namespace.ts:12](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/model/Namespace.ts#L12)*
+*Defined in [src/Shared/core/model/Namespace.ts:12](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/model/Namespace.ts#L12)*
 
 ___
 
@@ -61,4 +61,4 @@ ___
 
 •  **wrap**: (a: A) => S
 
-*Defined in [src/Shared/core/model/Namespace.ts:12](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/model/Namespace.ts#L12)*
+*Defined in [src/Shared/core/model/Namespace.ts:12](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/model/Namespace.ts#L12)*

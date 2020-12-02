@@ -16,7 +16,7 @@
 
 ▸ `Const`**wrapMap**\<SK, K, V>(`shared`: [SharedMap](../interfaces/_shared_map_sharedmap_.sharedmap.md)\<SK, K, V>): object
 
-*Defined in [src/Shared/map/wrapMap.ts:15](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/map/wrapMap.ts#L15)*
+*Defined in [src/Shared/map/wrapMap.ts:15](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/map/wrapMap.ts#L15)*
 
 Wrap a SharedMap in useful operations.
 

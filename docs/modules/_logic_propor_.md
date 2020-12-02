@@ -20,7 +20,7 @@
 
 • `Const` **propOr**: \<A, K>(defaultValue: A, key: K, obj: {}) => A\<A, K>(defaultValue: A, key: K) => (obj: {}) => A\<A>(defaultValue: A) => \<K>(key: K, obj: {}) => A\<K>(key: K) => (obj: {}) => A = curry(\_\_propOr) as { \<A, K extends PropertyKey>(defaultValue: A, key: K, obj: { [Key in K]: A }): A \<A, K extends PropertyKey>(defaultValue: A, key: K): (obj: { [Key in K]: A }) => A \<A>(defaultValue: A): { \<K extends PropertyKey>(key: K, obj: { [Key in K]: A }): A \<K extends PropertyKey>(key: K): (obj: { [Key in K]: A }) => A }}
 
-*Defined in [src/logic/propOr.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/propOr.ts#L10)*
+*Defined in [src/logic/propOr.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/propOr.ts#L10)*
 
 Get the value of a property if present or use default value.
 
@@ -38,7 +38,7 @@ Get the value of a property if present or use default value.
 
 ▸ **__propOr**\<A, K>(`defaultValue`: A, `key`: K, `obj`: {}): A
 
-*Defined in [src/logic/propOr.ts:26](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/propOr.ts#L26)*
+*Defined in [src/logic/propOr.ts:26](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/propOr.ts#L26)*
 
 #### Type parameters:
 

@@ -24,7 +24,7 @@
 
 Ƭ  **TypeOf**\<A>: ReturnType\<A> *extends* HKT\<any, *infer* R> ? R : ReturnType\<A> *extends* Kind\<any, *infer* R> ? R : ReturnType\<A> *extends* Kind2\<any, any, *infer* R> ? R : never
 
-*Defined in [src/io/TypedSchema.ts:15](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchema.ts#L15)*
+*Defined in [src/io/TypedSchema.ts:15](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/TypedSchema.ts#L15)*
 
 #### Type parameters:
 
@@ -38,7 +38,7 @@ Name | Type |
 
 ▸ `Const`**createSchema**\<A>(`schema`: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<A>): [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<A>
 
-*Defined in [src/io/TypedSchema.ts:26](https://github.com/TylorS/typed-fp/blob/559f273/src/io/TypedSchema.ts#L26)*
+*Defined in [src/io/TypedSchema.ts:26](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/TypedSchema.ts#L26)*
 
 Create a TypedSchema
 

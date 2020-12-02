@@ -34,7 +34,7 @@ Name |
 
 *Inherited from [Async](_resume_async_.async.md).[async](_resume_async_.async.md#async)*
 
-*Defined in [src/Resume/Async.ts:8](https://github.com/TylorS/typed-fp/blob/559f273/src/Resume/Async.ts#L8)*
+*Defined in [src/Resume/Async.ts:8](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Resume/Async.ts#L8)*
 
 ___
 
@@ -44,4 +44,4 @@ ___
 
 *Inherited from [Async](_resume_async_.async.md).[run](_resume_async_.async.md#run)*
 
-*Defined in [src/Resume/Async.ts:9](https://github.com/TylorS/typed-fp/blob/559f273/src/Resume/Async.ts#L9)*
+*Defined in [src/Resume/Async.ts:9](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Resume/Async.ts#L9)*

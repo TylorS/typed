@@ -16,7 +16,7 @@
 
 ▸ `Const`**fromKey**\<A>(): (Anonymous function)
 
-*Defined in [src/Shared/core/constructors/fromKey.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/core/constructors/fromKey.ts#L10)*
+*Defined in [src/Shared/core/constructors/fromKey.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/constructors/fromKey.ts#L10)*
 
 Create a Shared instance from just a Key, using a deep equalily check.
 

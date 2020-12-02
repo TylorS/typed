@@ -21,7 +21,7 @@
 
 Ƭ  **Is**\<A>: (value: unknown) => value is A
 
-*Defined in [src/logic/types.ts:9](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/types.ts#L9)*
+*Defined in [src/logic/types.ts:9](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/types.ts#L9)*
 
 Check if a value is a given type
 
@@ -37,7 +37,7 @@ ___
 
 Ƭ  **IsNot**\<A>: \<B>(value: A \| B) => value is B
 
-*Defined in [src/logic/types.ts:14](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/types.ts#L14)*
+*Defined in [src/logic/types.ts:14](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/types.ts#L14)*
 
 Check that value is not a given type
 

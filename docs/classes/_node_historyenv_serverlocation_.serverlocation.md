@@ -52,7 +52,7 @@ into a History instance with setHistory.
 
 \+ **new ServerLocation**(`uri`: [Uri](../modules/_uri_exports_.uri.md)): [ServerLocation](_node_historyenv_serverlocation_.serverlocation.md)
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:87](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L87)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:87](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L87)*
 
 #### Parameters:
 
@@ -68,7 +68,7 @@ Name | Type |
 
 • `Private` **history**: History
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:87](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L87)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:87](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L87)*
 
 ___
 
@@ -76,7 +76,7 @@ ___
 
 •  **href**: string
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:86](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L86)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:86](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L86)*
 
 ## Accessors
 
@@ -84,7 +84,7 @@ ___
 
 • get **ancestorOrigins**(): DOMStringList
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:12](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L12)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:12](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L12)*
 
 **Returns:** DOMStringList
 
@@ -94,13 +94,13 @@ ___
 
 • get **hash**(): string
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:16](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L16)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:16](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L16)*
 
 **Returns:** string
 
 • set **hash**(`value`: string): void
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:20](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L20)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:20](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L20)*
 
 #### Parameters:
 
@@ -116,13 +116,13 @@ ___
 
 • get **host**(): string
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:26](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L26)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:26](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L26)*
 
 **Returns:** string
 
 • set **host**(`value`: string): void
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:30](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L30)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:30](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L30)*
 
 #### Parameters:
 
@@ -138,13 +138,13 @@ ___
 
 • get **hostname**(): string
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:34](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L34)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:34](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L34)*
 
 **Returns:** string
 
 • set **hostname**(`value`: string): void
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:38](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L38)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:38](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L38)*
 
 #### Parameters:
 
@@ -160,7 +160,7 @@ ___
 
 • get **origin**(): string
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:83](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L83)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:83](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L83)*
 
 **Returns:** string
 
@@ -170,13 +170,13 @@ ___
 
 • get **pathname**(): string
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:42](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L42)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:42](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L42)*
 
 **Returns:** string
 
 • set **pathname**(`value`: string): void
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:46](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L46)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:46](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L46)*
 
 #### Parameters:
 
@@ -192,13 +192,13 @@ ___
 
 • get **port**(): string
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:50](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L50)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:50](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L50)*
 
 **Returns:** string
 
 • set **port**(`value`: string): void
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:61](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L61)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:61](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L61)*
 
 #### Parameters:
 
@@ -214,13 +214,13 @@ ___
 
 • get **protocol**(): string
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:65](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L65)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:65](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L65)*
 
 **Returns:** string
 
 • set **protocol**(`value`: string): void
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:69](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L69)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:69](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L69)*
 
 #### Parameters:
 
@@ -236,13 +236,13 @@ ___
 
 • get **search**(): string
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:73](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L73)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:73](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L73)*
 
 **Returns:** string
 
 • set **search**(`value`: string): void
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:77](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L77)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:77](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L77)*
 
 #### Parameters:
 
@@ -258,7 +258,7 @@ Name | Type |
 
 ▸ **assign**(`url`: string): void
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:93](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L93)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:93](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L93)*
 
 #### Parameters:
 
@@ -274,7 +274,7 @@ ___
 
 ▸ **reload**(): void
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:103](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L103)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:103](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L103)*
 
 **Returns:** void
 
@@ -284,7 +284,7 @@ ___
 
 ▸ **replace**(`url`: string): void
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:105](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L105)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:105](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L105)*
 
 #### Parameters:
 
@@ -300,7 +300,7 @@ ___
 
 ▸ **setHistory**(`this`: [ServerLocation](_node_historyenv_serverlocation_.serverlocation.md), `history`: History): [ServerLocation](_node_historyenv_serverlocation_.serverlocation.md)
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:131](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L131)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:131](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L131)*
 
 #### Parameters:
 
@@ -317,6 +317,6 @@ ___
 
 ▸ **toString**(): string
 
-*Defined in [src/node/HistoryEnv/ServerLocation.ts:126](https://github.com/TylorS/typed-fp/blob/559f273/src/node/HistoryEnv/ServerLocation.ts#L126)*
+*Defined in [src/node/HistoryEnv/ServerLocation.ts:126](https://github.com/TylorS/typed-fp/blob/6ccb290/src/node/HistoryEnv/ServerLocation.ts#L126)*
 
 **Returns:** string

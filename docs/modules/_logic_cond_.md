@@ -24,7 +24,7 @@
 
 Ƭ  **Conditional**\<A, B>: [Predicate\<A>, (value: A) => B]
 
-*Defined in [src/logic/cond.ts:37](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/cond.ts#L37)*
+*Defined in [src/logic/cond.ts:37](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/cond.ts#L37)*
 
 #### Type parameters:
 
@@ -39,7 +39,7 @@ Name |
 
 • `Const` **cond**: \<A, B>(conditions: ReadonlyArray\<[Conditional](_logic_cond_.md#conditional)\<A, B>>, value: A) => Option\<B>\<A, B>(conditions: ReadonlyArray\<[Conditional](_logic_cond_.md#conditional)\<A, B>>) => (value: A) => Option\<B> = curry(\_\_cond) as { \<A, B>(conditions: ReadonlyArray\<Conditional\<A, B>>, value: A): Option\<B> \<A, B>(conditions: ReadonlyArray\<Conditional\<A, B>>): (value: A) => Option\<B>}
 
-*Defined in [src/logic/cond.ts:11](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/cond.ts#L11)*
+*Defined in [src/logic/cond.ts:11](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/cond.ts#L11)*
 
 Basic pattern matching
 
@@ -55,7 +55,7 @@ Basic pattern matching
 
 ▸ **__cond**\<A, B>(`conditionals`: ReadonlyArray\<[Conditional](_logic_cond_.md#conditional)\<A, B>>, `value`: A): Option\<B>
 
-*Defined in [src/logic/cond.ts:19](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/cond.ts#L19)*
+*Defined in [src/logic/cond.ts:19](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/cond.ts#L19)*
 
 #### Type parameters:
 

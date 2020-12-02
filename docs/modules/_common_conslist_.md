@@ -19,7 +19,7 @@
 
 Ƭ  **FlattenIntersection**\<A, S>: A *extends* [*infer* H] ? S & H : A *extends* [*infer* H, *infer* T] ? [FlattenIntersection\<T, S & H>] : S
 
-*Defined in [src/common/ConsList.ts:22](https://github.com/TylorS/typed-fp/blob/559f273/src/common/ConsList.ts#L22)*
+*Defined in [src/common/ConsList.ts:22](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/ConsList.ts#L22)*
 
 Lazily flatten a ConsList to an Intersection
 
@@ -36,7 +36,7 @@ ___
 
 Ƭ  **FlattenUnion**\<A, S>: A *extends* [*infer* H] ? S \| H : A *extends* [*infer* H, *infer* T] ? [FlattenUnion\<T, S \| H>] : S
 
-*Defined in [src/common/ConsList.ts:31](https://github.com/TylorS/typed-fp/blob/559f273/src/common/ConsList.ts#L31)*
+*Defined in [src/common/ConsList.ts:31](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/ConsList.ts#L31)*
 
 Lazily flatten a ConsList to a Union
 
@@ -53,7 +53,7 @@ ___
 
 Ƭ  **ToConsList**\<A>: [] *extends* A ? unknown : (...a: A) => any *extends* (t: *infer* T, ...ts: *infer* TS) => any ? [T, ToConsList\<TS>] : never
 
-*Defined in [src/common/ConsList.ts:4](https://github.com/TylorS/typed-fp/blob/559f273/src/common/ConsList.ts#L4)*
+*Defined in [src/common/ConsList.ts:4](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/ConsList.ts#L4)*
 
 Convert a list of values to a ConsList
 
@@ -69,7 +69,7 @@ ___
 
 Ƭ  **UnNest**\<T, Fallback>: T *extends* any[] ? {}[number] : Fallback
 
-*Defined in [src/common/ConsList.ts:13](https://github.com/TylorS/typed-fp/blob/559f273/src/common/ConsList.ts#L13)*
+*Defined in [src/common/ConsList.ts:13](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/ConsList.ts#L13)*
 
 Unnest a Flattened ConsList
 

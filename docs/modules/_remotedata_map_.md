@@ -20,7 +20,7 @@
 
 • `Const` **map**: \<A, B, C>(f: (value: B, successInfo: [SuccessInfo](_remotedata_fold_.md#successinfo)) => C, data: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>) => [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, C>\<A, B, C>(f: (value: B, successInfo: [SuccessInfo](_remotedata_fold_.md#successinfo)) => C) => (data: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>) => [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, C> = curry(\_\_map) as { \<A, B, C>(f: (value: B, successInfo: SuccessInfo) => C, data: RemoteData\<A, B>): RemoteData\<A, C> \<A, B, C>(f: (value: B, successInfo: SuccessInfo) => C): ( data: RemoteData\<A, B>, ) => RemoteData\<A, C>}
 
-*Defined in [src/RemoteData/map.ts:14](https://github.com/TylorS/typed-fp/blob/559f273/src/RemoteData/map.ts#L14)*
+*Defined in [src/RemoteData/map.ts:14](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/map.ts#L14)*
 
 Map over the value of a successful RemoteData.
 
@@ -30,7 +30,7 @@ Map over the value of a successful RemoteData.
 
 ▸ **__map**\<A, B, C>(`f`: (value: B, successInfo: [SuccessInfo](_remotedata_fold_.md#successinfo)) => C, `data`: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>): [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, C>
 
-*Defined in [src/RemoteData/map.ts:21](https://github.com/TylorS/typed-fp/blob/559f273/src/RemoteData/map.ts#L21)*
+*Defined in [src/RemoteData/map.ts:21](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/map.ts#L21)*
 
 #### Type parameters:
 

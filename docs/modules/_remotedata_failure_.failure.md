@@ -29,7 +29,7 @@ Name |
 
 • `Readonly` **status**: [Failure](../enums/_remotedata_enums_.remotedatastatus.md#failure)
 
-*Defined in [src/RemoteData/Failure.ts:7](https://github.com/TylorS/typed-fp/blob/559f273/src/RemoteData/Failure.ts#L7)*
+*Defined in [src/RemoteData/Failure.ts:7](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/Failure.ts#L7)*
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 • `Readonly` **value**: A
 
-*Defined in [src/RemoteData/Failure.ts:8](https://github.com/TylorS/typed-fp/blob/559f273/src/RemoteData/Failure.ts#L8)*
+*Defined in [src/RemoteData/Failure.ts:8](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/Failure.ts#L8)*
 
 ## Functions
 
@@ -45,7 +45,7 @@ ___
 
 ▸ `Const`**of**\<A>(`value`: A): [Failure](_remotedata_failure_.failure.md)\<A>
 
-*Defined in [src/RemoteData/Failure.ts:15](https://github.com/TylorS/typed-fp/blob/559f273/src/RemoteData/Failure.ts#L15)*
+*Defined in [src/RemoteData/Failure.ts:15](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/Failure.ts#L15)*
 
 Create a Failure containing a specific value.
 

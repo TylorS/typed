@@ -16,7 +16,7 @@
 
 ▸ **fromReader**\<E, A>(`reader`: Reader\<E, A>): [Effect](_effect_effect_.effect.md)\<E, A>
 
-*Defined in [src/Effect/fromReader.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/Effect/fromReader.ts#L10)*
+*Defined in [src/Effect/fromReader.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Effect/fromReader.ts#L10)*
 
 Convert a Reader<E, A> into an Effect<E, A>
 

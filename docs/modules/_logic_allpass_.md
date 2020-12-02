@@ -20,7 +20,7 @@
 
 • `Const` **allPass**: \<A>(predicates: ReadonlyArray\<Predicate\<A>>, value: A) => boolean\<A>(predicates: ReadonlyArray\<Predicate\<A>>) => Predicate\<A> = curry(\_\_allPass) as { \<A>(predicates: ReadonlyArray\<Predicate\<A>>, value: A): boolean \<A>(predicates: ReadonlyArray\<Predicate\<A>>): Predicate\<A>}
 
-*Defined in [src/logic/allPass.ts:12](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/allPass.ts#L12)*
+*Defined in [src/logic/allPass.ts:12](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/allPass.ts#L12)*
 
 Returns true if value matches a list of predicates.
 
@@ -36,7 +36,7 @@ Returns true if value matches a list of predicates.
 
 ▸ **__allPass**\<A>(`predicates`: ReadonlyArray\<Predicate\<A>>, `value`: A): boolean
 
-*Defined in [src/logic/allPass.ts:20](https://github.com/TylorS/typed-fp/blob/559f273/src/logic/allPass.ts#L20)*
+*Defined in [src/logic/allPass.ts:20](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/allPass.ts#L20)*
 
 #### Type parameters:
 

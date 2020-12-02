@@ -16,7 +16,7 @@
 
 Ƭ  **Or**\<A>: A[number]
 
-*Defined in [src/common/Or.ts:6](https://github.com/TylorS/typed-fp/blob/559f273/src/common/Or.ts#L6)*
+*Defined in [src/common/Or.ts:6](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/Or.ts#L6)*
 
 Convert a List of values into a union of those values.
 

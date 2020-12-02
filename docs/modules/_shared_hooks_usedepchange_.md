@@ -16,7 +16,7 @@
 
 ▸ `Const`**useDepChange**\<A>(`value`: A, `eq`: Eq\<A>, `first?`: boolean): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), boolean>
 
-*Defined in [src/Shared/hooks/useDepChange.ts:11](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/hooks/useDepChange.ts#L11)*
+*Defined in [src/Shared/hooks/useDepChange.ts:11](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/hooks/useDepChange.ts#L11)*
 
 Track if a value has changed
 

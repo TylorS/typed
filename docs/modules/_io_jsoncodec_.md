@@ -21,7 +21,7 @@
 
 • `Const` **JsonCodec**: Codec\<string, string, [JsonSerializable](_logic_json_.md#jsonserializable)> = make(JsonDecoder, JsonEncoder)
 
-*Defined in [src/io/JsonCodec.ts:24](https://github.com/TylorS/typed-fp/blob/559f273/src/io/JsonCodec.ts#L24)*
+*Defined in [src/io/JsonCodec.ts:24](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/JsonCodec.ts#L24)*
 
 A codec between JSON-strings and JsonSerializable values.
 
@@ -31,7 +31,7 @@ ___
 
 • `Const` **JsonDecoder**: Decoder\<string, [JsonSerializable](_logic_json_.md#jsonserializable)> = pipe(Schemable.string, map(fromJson))
 
-*Defined in [src/io/JsonCodec.ts:19](https://github.com/TylorS/typed-fp/blob/559f273/src/io/JsonCodec.ts#L19)*
+*Defined in [src/io/JsonCodec.ts:19](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/JsonCodec.ts#L19)*
 
 Decode an encoded JsonSerializable value.
 
@@ -41,7 +41,7 @@ Decode an encoded JsonSerializable value.
 
 ▪ `Const` **JsonEncoder**: object
 
-*Defined in [src/io/JsonCodec.ts:12](https://github.com/TylorS/typed-fp/blob/559f273/src/io/JsonCodec.ts#L12)*
+*Defined in [src/io/JsonCodec.ts:12](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/JsonCodec.ts#L12)*
 
 Encode JsonSerializable values into a JSON-string
 

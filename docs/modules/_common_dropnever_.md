@@ -17,7 +17,7 @@
 
 Ƭ  **DropNever**\<A>: {}
 
-*Defined in [src/common/DropNever.ts:8](https://github.com/TylorS/typed-fp/blob/559f273/src/common/DropNever.ts#L8)*
+*Defined in [src/common/DropNever.ts:8](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/DropNever.ts#L8)*
 
 Remove all keys in an object that evaluate to `never`
 
@@ -36,7 +36,7 @@ ___
 
 Ƭ  **DropNeverKeys**\<A>: {}[keyof A]
 
-*Defined in [src/common/DropNever.ts:15](https://github.com/TylorS/typed-fp/blob/559f273/src/common/DropNever.ts#L15)*
+*Defined in [src/common/DropNever.ts:15](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/DropNever.ts#L15)*
 
 Get all of the keys in an object that do not evaluate to `never`.
 

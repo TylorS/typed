@@ -33,7 +33,7 @@ Name |
 
 • `Readonly` **dequeue**: IO\<Option\<A>>
 
-*Defined in [src/Queue/Queue.ts:9](https://github.com/TylorS/typed-fp/blob/559f273/src/Queue/Queue.ts#L9)*
+*Defined in [src/Queue/Queue.ts:9](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Queue/Queue.ts#L9)*
 
 ___
 
@@ -41,7 +41,7 @@ ___
 
 • `Readonly` **dequeueAll**: IO\<ReadonlyArray\<A>>
 
-*Defined in [src/Queue/Queue.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/Queue/Queue.ts#L10)*
+*Defined in [src/Queue/Queue.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Queue/Queue.ts#L10)*
 
 ___
 
@@ -49,7 +49,7 @@ ___
 
 • `Readonly` **enqueue**: (...values: ReadonlyArray\<A>) => void
 
-*Defined in [src/Queue/Queue.ts:8](https://github.com/TylorS/typed-fp/blob/559f273/src/Queue/Queue.ts#L8)*
+*Defined in [src/Queue/Queue.ts:8](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Queue/Queue.ts#L8)*
 
 ___
 
@@ -57,7 +57,7 @@ ___
 
 • `Readonly` **peek**: IO\<Option\<A>>
 
-*Defined in [src/Queue/Queue.ts:11](https://github.com/TylorS/typed-fp/blob/559f273/src/Queue/Queue.ts#L11)*
+*Defined in [src/Queue/Queue.ts:11](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Queue/Queue.ts#L11)*
 
 ___
 
@@ -65,7 +65,7 @@ ___
 
 • `Readonly` **remove**: (f: (value: A) => boolean) => void
 
-*Defined in [src/Queue/Queue.ts:13](https://github.com/TylorS/typed-fp/blob/559f273/src/Queue/Queue.ts#L13)*
+*Defined in [src/Queue/Queue.ts:13](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Queue/Queue.ts#L13)*
 
 ___
 
@@ -73,4 +73,4 @@ ___
 
 • `Readonly` **some**: (f: (value: A) => boolean) => boolean
 
-*Defined in [src/Queue/Queue.ts:12](https://github.com/TylorS/typed-fp/blob/559f273/src/Queue/Queue.ts#L12)*
+*Defined in [src/Queue/Queue.ts:12](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Queue/Queue.ts#L12)*

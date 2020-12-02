@@ -28,7 +28,7 @@
 
 • `Const` **progress**: Decoder\<unknown, [Progress](../interfaces/_remotedata_progress_.progress.md)> = D.type({ loaded: D.number, total: option(D.number),})
 
-*Defined in [src/io/Decoder.ts:83](https://github.com/TylorS/typed-fp/blob/559f273/src/io/Decoder.ts#L83)*
+*Defined in [src/io/Decoder.ts:83](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/Decoder.ts#L83)*
 
 A Decoder instance for RemoteData Progress
 
@@ -38,7 +38,7 @@ A Decoder instance for RemoteData Progress
 
 ▸ `Const`**either**\<A, B>(`left`: Decoder\<unknown, A>, `right`: Decoder\<unknown, B>): Decoder\<unknown, E.Either\<A, B>>
 
-*Defined in [src/io/Decoder.ts:74](https://github.com/TylorS/typed-fp/blob/559f273/src/io/Decoder.ts#L74)*
+*Defined in [src/io/Decoder.ts:74](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/Decoder.ts#L74)*
 
 Create a Decoder instance for Either<A, B>
 
@@ -64,7 +64,7 @@ ___
 
 ▸ `Const`**map**\<A, B>(`key`: Decoder\<unknown, A>, `value`: Decoder\<unknown, B>): Decoder\<unknown, ReadonlyMap\<A, B>>
 
-*Defined in [src/io/Decoder.ts:40](https://github.com/TylorS/typed-fp/blob/559f273/src/io/Decoder.ts#L40)*
+*Defined in [src/io/Decoder.ts:40](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/Decoder.ts#L40)*
 
 Create a Decoder instance for a Map<K, V>
 
@@ -90,7 +90,7 @@ ___
 
 ▸ `Const`**option**\<A>(`v`: Decoder\<unknown, A>): Decoder\<unknown, O.Option\<A>>
 
-*Defined in [src/io/Decoder.ts:68](https://github.com/TylorS/typed-fp/blob/559f273/src/io/Decoder.ts#L68)*
+*Defined in [src/io/Decoder.ts:68](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/Decoder.ts#L68)*
 
 Create a Decoder instance for Option<A>
 
@@ -114,7 +114,7 @@ ___
 
 ▸ `Const`**remoteData**\<A, B>(`left`: Decoder\<unknown, A>, `right`: Decoder\<unknown, B>): Decoder\<unknown, [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>>
 
-*Defined in [src/io/Decoder.ts:91](https://github.com/TylorS/typed-fp/blob/559f273/src/io/Decoder.ts#L91)*
+*Defined in [src/io/Decoder.ts:91](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/Decoder.ts#L91)*
 
 A Decoder instance for RemoteData
 
@@ -140,7 +140,7 @@ ___
 
 ▸ `Const`**set**\<A>(`from`: Decoder\<unknown, A>): Decoder\<unknown, ReadonlySet\<A>>
 
-*Defined in [src/io/Decoder.ts:17](https://github.com/TylorS/typed-fp/blob/559f273/src/io/Decoder.ts#L17)*
+*Defined in [src/io/Decoder.ts:17](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/Decoder.ts#L17)*
 
 Create a Decoder instance for a Set
 
@@ -164,7 +164,7 @@ Name | Type |
 
 ▪ `Const` **Schemable**: object
 
-*Defined in [src/io/Decoder.ts:115](https://github.com/TylorS/typed-fp/blob/559f273/src/io/Decoder.ts#L115)*
+*Defined in [src/io/Decoder.ts:115](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/Decoder.ts#L115)*
 
 A Decoder TypedSchemable instance
 

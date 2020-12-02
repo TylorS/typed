@@ -16,7 +16,7 @@
 
 ▸ `Const`**withMemo**\<E, A>(`effect`: [Effect](_effect_effect_.effect.md)\<E, A>): [Effect](_effect_effect_.effect.md)\<E & [SchedulerEnv](../interfaces/_scheduler_schedulerenv_.schedulerenv.md), A>
 
-*Defined in [src/Shared/memoNamespace/withMemo.ts:10](https://github.com/TylorS/typed-fp/blob/559f273/src/Shared/memoNamespace/withMemo.ts#L10)*
+*Defined in [src/Shared/memoNamespace/withMemo.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/memoNamespace/withMemo.ts#L10)*
 
 Memoize an Effect with the current namespace.
 
