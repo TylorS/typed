@@ -1,6 +1,6 @@
 import { lazy } from '@typed/fp/Disposable/exports'
 import { async, Resume } from '@typed/fp/Resume/exports'
-import { Uri, uriIso } from '@typed/fp/Uri/exports'
+import { Uri } from '@typed/fp/Uri/exports'
 import { Either, left, right } from 'fp-ts/Either'
 import { flow, not, pipe } from 'fp-ts/function'
 import { filter, fromNullable, map, Option } from 'fp-ts/Option'
@@ -34,7 +34,7 @@ function httpFetchRequest(uri: Uri, options: HttpOptions): Resume<Either<Error, 
     }
 
     async function makeRequest() {
-      const response = await fetch(uriIso.unwrap(uri), init)
+      const response = await fetch(Uri.unwrap(uri), init)
 
       const headers: Record<string, string | undefined> = {}
       response.headers.forEach((value, key) => {

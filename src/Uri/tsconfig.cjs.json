@@ -8,7 +8,11 @@
     "outDir": "../../cjs/Uri",
     "module": "commonjs"
   },
-  "references": [],
+  "references": [
+    {
+      "path": "../Path/tsconfig.cjs.json"
+    }
+  ],
   "include": [
     "./*.ts",
     "./**/*.ts"

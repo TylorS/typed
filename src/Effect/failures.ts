@@ -11,9 +11,7 @@ import { toEnv } from './toEnv'
 /**
  * An environment to represent type-safe errors.
  */
-export type FailEnv<K extends PropertyKey, Err> = {
-  readonly [key in K]: (err: Err) => Resume<never>
-}
+export type FailEnv<K extends PropertyKey, Err> = Record<K, (err: Err) => Resume<never>>
 
 /**
  * Place the requirement to satisfy a potential failure from the environment at the provided key.
@@ -52,7 +50,7 @@ export const catchError = curry(
     key: K,
     onError: (error: Err) => A,
     effect: Effect<E & FailEnv<K, Err>, A>,
-  ): Effect<E, A>
+  ): Effect<{ [EK in keyof E as EK extends K ? never : EK]: E[EK] }, A>
 
   <K extends PropertyKey, Err, A>(key: K, onError: (error: Err) => A): <E>(
     effect: Effect<E & FailEnv<K, Err>, A>,

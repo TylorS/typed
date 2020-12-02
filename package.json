@@ -50,6 +50,8 @@
     "ts-node": "^9.0.0",
     "ts-patch": "^1.3.1",
     "tsc-watch": "^4.2.9",
+    "typedoc": "^0.19.2",
+    "typedoc-plugin-markdown": "^3.0.11",
     "typescript": "^4.1.2"
   },
   "scripts": {
@@ -66,6 +68,8 @@
     "clean:typescript": "concurrently 'npm:clean:typescript:cjs' 'npm:clean:typescript:esm'",
     "clean:typescript:cjs": "npm run build:typescript:cjs -- --clean",
     "clean:typescript:esm": "npm run build:typescript:esm -- --clean",
+    "docs": "concurrently npm:docs:api",
+    "docs:api": "typedoc --plugin typedoc-plugin-markdown --out docs src",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
     "lint-staged": "lint-staged",
     "unit-test": "typed-test",

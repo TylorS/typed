@@ -1,10 +1,10 @@
 import { describe, it } from '@typed/test'
 import { pipe } from 'fp-ts/pipeable'
 
+import { ask } from './ask'
 import { doEffect } from './doEffect'
 import { catchError, fail } from './failures'
-import { provideSome } from './provide'
-import { execPure } from './runEffect'
+import { execEffect, execPure } from './runEffect'
 
 export const test = describe(`failures`, [
   describe(`fail`, [
@@ -18,15 +18,13 @@ export const test = describe(`failures`, [
 
       pipe(
         sut,
-        provideSome({
-          [key]: (e: typeof error) => {
-            try {
-              equal(e, error)
-              done()
-            } catch (error) {
-              done(error)
-            }
-          },
+        catchError(key, (e: string) => {
+          try {
+            equal(e, error)
+            done()
+          } catch (error) {
+            done(error)
+          }
         }),
         execPure,
       )
@@ -40,9 +38,10 @@ export const test = describe(`failures`, [
       const expected = 10
 
       const child = doEffect(function* () {
+        const { value } = yield* ask<{ value: number }>()
         yield* fail(key, error)
 
-        return 5
+        return value
       })
 
       const parent = doEffect(function* () {
@@ -56,7 +55,7 @@ export const test = describe(`failures`, [
         }
       })
 
-      pipe(parent, execPure)
+      pipe(parent, execEffect({ value: 5 }))
     }),
   ]),
 ])

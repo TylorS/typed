@@ -8,7 +8,11 @@
     "outDir": "../../esm/Uri",
     "module": "esnext"
   },
-  "references": [],
+  "references": [
+    {
+      "path": "../Path/tsconfig.esm.json"
+    }
+  ],
   "include": [
     "./*.ts",
     "./**/*.ts"
