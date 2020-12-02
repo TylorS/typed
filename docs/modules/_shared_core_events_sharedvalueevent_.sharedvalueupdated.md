@@ -18,4 +18,4 @@ A Shared value has been updated in the environment for a given namespace.
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[SharedValueUpdated](_shared_core_events_sharedvalueevent_.sharedvalueupdated.md)> = createSchema\<SharedValueUpdated>((t) => t.type({ type: t.literal('sharedValue/updated'), namespace: Namespace.schema(t), shared: Shared.schema(t), value: t.unknown, previousValue: t.unknown, }), )
 
-*Defined in [src/Shared/core/events/SharedValueEvent.ts:54](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/events/SharedValueEvent.ts#L54)*
+*Defined in [src/Shared/core/events/SharedValueEvent.ts:54](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/core/events/SharedValueEvent.ts#L54)*

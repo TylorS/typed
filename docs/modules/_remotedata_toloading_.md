@@ -16,7 +16,7 @@
 
 ▸ `Const`**toLoading**\<A, B>(`rd`: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>): [Loading](../enums/_remotedata_enums_.remotedatastatus.md#loading) \| [RefreshingFailure](_remotedata_refreshingfailure_.refreshingfailure.md)\<A> \| [RefreshingSuccess](_remotedata_refreshingsuccess_.refreshingsuccess.md)\<B>
 
-*Defined in [src/RemoteData/toLoading.ts:12](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/toLoading.ts#L12)*
+*Defined in [src/RemoteData/toLoading.ts:12](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/toLoading.ts#L12)*
 
 Transition a RemoteData into a Loading state.
 

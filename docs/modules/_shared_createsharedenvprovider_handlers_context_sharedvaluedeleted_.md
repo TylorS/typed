@@ -17,7 +17,7 @@
 
 ▸ **deleteSharedValues**(`namespace`: [Namespace](_shared_core_model_namespace_.namespace.md), `shared`: [Shared](_shared_core_model_shared_.shared.md)): Generator\<[Env](_effect_effect_.md#env)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), any>, void, unknown>
 
-*Defined in [src/Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted.ts:14](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted.ts#L14)*
+*Defined in [src/Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted.ts:14](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted.ts#L14)*
 
 #### Parameters:
 
@@ -34,7 +34,7 @@ ___
 
 ▸ **sharedValueDeleted**(`__namedParameters`: { namespace: [Namespace](_shared_core_model_namespace_.namespace.md) ; shared: [Shared](_shared_core_model_shared_.shared.md)\<[SharedKey](_shared_core_model_sharedkey_.sharedkey.md)\<string \| number \| symbol>, any, any>  }): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), void>
 
-*Defined in [src/Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted.ts:7](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted.ts#L7)*
+*Defined in [src/Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted.ts:7](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted.ts#L7)*
 
 #### Parameters:
 

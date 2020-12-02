@@ -31,7 +31,7 @@ Name |
 
 • `Readonly` **progress**: Option\<[Progress](../interfaces/_remotedata_progress_.progress.md)>
 
-*Defined in [src/RemoteData/RefreshingFailure.ts:13](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/RefreshingFailure.ts#L13)*
+*Defined in [src/RemoteData/RefreshingFailure.ts:13](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/RefreshingFailure.ts#L13)*
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 • `Readonly` **status**: [RefreshingFailure](../enums/_remotedata_enums_.remotedatastatus.md#refreshingfailure)
 
-*Defined in [src/RemoteData/RefreshingFailure.ts:11](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/RefreshingFailure.ts#L11)*
+*Defined in [src/RemoteData/RefreshingFailure.ts:11](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/RefreshingFailure.ts#L11)*
 
 ___
 
@@ -47,7 +47,7 @@ ___
 
 • `Readonly` **value**: A
 
-*Defined in [src/RemoteData/RefreshingFailure.ts:12](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/RefreshingFailure.ts#L12)*
+*Defined in [src/RemoteData/RefreshingFailure.ts:12](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/RefreshingFailure.ts#L12)*
 
 ## Functions
 
@@ -55,7 +55,7 @@ ___
 
 ▸ `Const`**of**\<A>(`value`: A, `progress?`: [Progress](../interfaces/_remotedata_progress_.progress.md)): [RefreshingFailure](_remotedata_refreshingfailure_.refreshingfailure.md)\<A>
 
-*Defined in [src/RemoteData/RefreshingFailure.ts:17](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/RefreshingFailure.ts#L17)*
+*Defined in [src/RemoteData/RefreshingFailure.ts:17](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/RefreshingFailure.ts#L17)*
 
 #### Type parameters:
 

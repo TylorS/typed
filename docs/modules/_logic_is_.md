@@ -65,7 +65,7 @@
 
 • `Const` **isBoolean**: [Is](_logic_types_.md#is)\<boolean> = or(isTrue, isFalse)
 
-*Defined in [src/logic/is.ts:207](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L207)*
+*Defined in [src/logic/is.ts:207](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L207)*
 
 Check if a value is or is not boolean
 
@@ -75,7 +75,7 @@ ___
 
 •  **isFalse**: [Is](_logic_types_.md#is)\<false>
 
-*Defined in [src/logic/is.ts:200](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L200)*
+*Defined in [src/logic/is.ts:200](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L200)*
 
 ___
 
@@ -83,7 +83,7 @@ ___
 
 • `Const` **isJson**: [Is](_logic_types_.md#is)\<Json> = or(isJsonPrimitive, or(isJsonArray, isJsonRecord))
 
-*Defined in [src/logic/is.ts:249](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L249)*
+*Defined in [src/logic/is.ts:249](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L249)*
 
 Check if a value is Json
 
@@ -93,7 +93,7 @@ ___
 
 • `Const` **isJsonPrimitive**: [Is](_logic_types_.md#is)\<[JsonPrimitive](_logic_json_.md#jsonprimitive)> = or(isString, or(isNumber, or(isBoolean, isNull)))
 
-*Defined in [src/logic/is.ts:239](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L239)*
+*Defined in [src/logic/is.ts:239](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L239)*
 
 Check if a value is a Json primitive
 
@@ -103,7 +103,7 @@ ___
 
 • `Const` **isNotArray**: [IsNot](_logic_types_.md#isnot)\<ReadonlyArray\<unknown>> = complement(isArray)
 
-*Defined in [src/logic/is.ts:68](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L68)*
+*Defined in [src/logic/is.ts:68](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L68)*
 
 Check if a value is not an Array
 
@@ -113,7 +113,7 @@ ___
 
 • `Const` **isNotArrayLike**: [IsNot](_logic_types_.md#isnot)\<ArrayLike\<unknown>> = complement(isArrayLike)
 
-*Defined in [src/logic/is.ts:144](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L144)*
+*Defined in [src/logic/is.ts:144](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L144)*
 
 Check if a value is not a ArrayLike
 
@@ -123,7 +123,7 @@ ___
 
 • `Const` **isNotBoolean**: [IsNot](_logic_types_.md#isnot)\<boolean> = complement(isBoolean)
 
-*Defined in [src/logic/is.ts:208](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L208)*
+*Defined in [src/logic/is.ts:208](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L208)*
 
 ___
 
@@ -131,7 +131,7 @@ ___
 
 • `Const` **isNotDate**: [IsNot](_logic_types_.md#isnot)\<Date> = complement(isDate)
 
-*Defined in [src/logic/is.ts:264](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L264)*
+*Defined in [src/logic/is.ts:264](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L264)*
 
 Check if a value is not a Date
 
@@ -141,7 +141,7 @@ ___
 
 •  **isNotFalse**: [IsNot](_logic_types_.md#isnot)\<false>
 
-*Defined in [src/logic/is.ts:200](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L200)*
+*Defined in [src/logic/is.ts:200](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L200)*
 
 ___
 
@@ -149,7 +149,7 @@ ___
 
 • `Const` **isNotFunction**: [IsNot](_logic_types_.md#isnot)\<Function> = complement(isFunction)
 
-*Defined in [src/logic/is.ts:32](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L32)*
+*Defined in [src/logic/is.ts:32](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L32)*
 
 Check if a value is not a function.
 
@@ -159,7 +159,7 @@ ___
 
 • `Const` **isNotGenerator**: [IsNot](_logic_types_.md#isnot)\<Generator\<unknown, unknown, unknown>> = complement(isGenerator)
 
-*Defined in [src/logic/is.ts:111](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L111)*
+*Defined in [src/logic/is.ts:111](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L111)*
 
 Check if a value is not a Generator
 
@@ -169,7 +169,7 @@ ___
 
 • `Const` **isNotIterable**: [IsNot](_logic_types_.md#isnot)\<Iterable\<unknown>> = complement(isIterable)
 
-*Defined in [src/logic/is.ts:92](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L92)*
+*Defined in [src/logic/is.ts:92](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L92)*
 
 Check if a value is not an interable
 
@@ -179,7 +179,7 @@ ___
 
 • `Const` **isNotIterator**: [IsNot](_logic_types_.md#isnot)\<Iterator\<unknown>> = complement(isIterable)
 
-*Defined in [src/logic/is.ts:80](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L80)*
+*Defined in [src/logic/is.ts:80](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L80)*
 
 Check if a value is not an Iterator
 
@@ -189,7 +189,7 @@ ___
 
 • `Const` **isNotJson**: [IsNot](_logic_types_.md#isnot)\<Json> = complement(isJson)
 
-*Defined in [src/logic/is.ts:254](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L254)*
+*Defined in [src/logic/is.ts:254](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L254)*
 
 Check if a value is not Json
 
@@ -199,7 +199,7 @@ ___
 
 • `Const` **isNotJsonArray**: [IsNot](_logic_types_.md#isnot)\<JsonArray> = complement(isJsonArray)
 
-*Defined in [src/logic/is.ts:220](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L220)*
+*Defined in [src/logic/is.ts:220](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L220)*
 
 Check if a value is not a JsonArray
 
@@ -209,7 +209,7 @@ ___
 
 • `Const` **isNotJsonPrimitive**: [IsNot](_logic_types_.md#isnot)\<[JsonPrimitive](_logic_json_.md#jsonprimitive)> = complement(isJsonPrimitive)
 
-*Defined in [src/logic/is.ts:244](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L244)*
+*Defined in [src/logic/is.ts:244](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L244)*
 
 Check if a value is not a Json primitive
 
@@ -219,7 +219,7 @@ ___
 
 • `Const` **isNotJsonRecord**: [IsNot](_logic_types_.md#isnot)\<JsonRecord> = complement(isJsonRecord)
 
-*Defined in [src/logic/is.ts:234](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L234)*
+*Defined in [src/logic/is.ts:234](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L234)*
 
 Check if a value is not a JsonRecord
 
@@ -229,7 +229,7 @@ ___
 
 • `Const` **isNotMap**: [IsNot](_logic_types_.md#isnot)\<[Map](../interfaces/_shared_core_model_sharedkeystore_.sharedkeystore.md#map)\<unknown, unknown>> = complement(isMap)
 
-*Defined in [src/logic/is.ts:37](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L37)*
+*Defined in [src/logic/is.ts:37](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L37)*
 
 Check if a value is not a Map
 
@@ -239,7 +239,7 @@ ___
 
 •  **isNotNull**: [IsNot](_logic_types_.md#isnot)\<null>
 
-*Defined in [src/logic/is.ts:54](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L54)*
+*Defined in [src/logic/is.ts:54](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L54)*
 
 ___
 
@@ -247,7 +247,7 @@ ___
 
 • `Const` **isNotNumber**: [IsNot](_logic_types_.md#isnot)\<number> = complement(isNumber)
 
-*Defined in [src/logic/is.ts:154](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L154)*
+*Defined in [src/logic/is.ts:154](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L154)*
 
 Check if a value is not a number
 
@@ -257,7 +257,7 @@ ___
 
 • `Const` **isNotPromiseLie**: [IsNot](_logic_types_.md#isnot)\<PromiseLike\<unknown>> = complement(isPromiseLike)
 
-*Defined in [src/logic/is.ts:188](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L188)*
+*Defined in [src/logic/is.ts:188](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L188)*
 
 Check if a value is not PromiseLike
 
@@ -267,7 +267,7 @@ ___
 
 • `Const` **isNotRecord**: [IsNot](_logic_types_.md#isnot)\<Readonly\<Record\<PropertyKey, unknown>>> = complement(isRecord)
 
-*Defined in [src/logic/is.ts:177](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L177)*
+*Defined in [src/logic/is.ts:177](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L177)*
 
 Check if a value is not a Record
 
@@ -277,7 +277,7 @@ ___
 
 • `Const` **isNotSet**: [IsNot](_logic_types_.md#isnot)\<Set\<unknown>> = complement(isSet)
 
-*Defined in [src/logic/is.ts:42](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L42)*
+*Defined in [src/logic/is.ts:42](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L42)*
 
 Check if a value is not a Set
 
@@ -287,7 +287,7 @@ ___
 
 • `Const` **isNotString**: [IsNot](_logic_types_.md#isnot)\<string> = complement(isString)
 
-*Defined in [src/logic/is.ts:164](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L164)*
+*Defined in [src/logic/is.ts:164](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L164)*
 
 Check if a value is not a string
 
@@ -297,7 +297,7 @@ ___
 
 •  **isNotTrue**: [IsNot](_logic_types_.md#isnot)\<true>
 
-*Defined in [src/logic/is.ts:193](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L193)*
+*Defined in [src/logic/is.ts:193](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L193)*
 
 ___
 
@@ -305,7 +305,7 @@ ___
 
 •  **isNotUndefined**: [IsNot](_logic_types_.md#isnot)\<undefined>
 
-*Defined in [src/logic/is.ts:47](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L47)*
+*Defined in [src/logic/is.ts:47](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L47)*
 
 ___
 
@@ -313,7 +313,7 @@ ___
 
 •  **isNull**: [Is](_logic_types_.md#is)\<null>
 
-*Defined in [src/logic/is.ts:54](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L54)*
+*Defined in [src/logic/is.ts:54](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L54)*
 
 ___
 
@@ -321,7 +321,7 @@ ___
 
 •  **isTrue**: [Is](_logic_types_.md#is)\<true>
 
-*Defined in [src/logic/is.ts:193](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L193)*
+*Defined in [src/logic/is.ts:193](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L193)*
 
 ___
 
@@ -329,7 +329,7 @@ ___
 
 •  **isUndefined**: [Is](_logic_types_.md#is)\<undefined>
 
-*Defined in [src/logic/is.ts:47](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L47)*
+*Defined in [src/logic/is.ts:47](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L47)*
 
 ## Functions
 
@@ -337,7 +337,7 @@ ___
 
 ▸ `Const`**is**\<A>(`value`: A): [Is](_logic_types_.md#is)\<A>
 
-*Defined in [src/logic/is.ts:16](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L16)*
+*Defined in [src/logic/is.ts:16](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L16)*
 
 Create a function for checking if something is equal to a given value.
 
@@ -361,7 +361,7 @@ ___
 
 ▸ `Const`**isAndIsNot**\<A>(`value`: A): readonly [[Is](_logic_types_.md#is)\<A>, [IsNot](_logic_types_.md#isnot)\<A>]
 
-*Defined in [src/logic/is.ts:26](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L26)*
+*Defined in [src/logic/is.ts:26](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L26)*
 
 Create both Is<A> and IsNot<A> instances for a value.
 
@@ -385,7 +385,7 @@ ___
 
 ▸ **isArray**(`x`: unknown): x is unknown[]
 
-*Defined in [src/logic/is.ts:61](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L61)*
+*Defined in [src/logic/is.ts:61](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L61)*
 
 Check if a value is an Array
 
@@ -403,7 +403,7 @@ ___
 
 ▸ `Const`**isArrayLike**(`x`: unknown): x is ArrayLike\<unknown>
 
-*Defined in [src/logic/is.ts:116](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L116)*
+*Defined in [src/logic/is.ts:116](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L116)*
 
 Check if a value is a ArrayLike
 
@@ -421,7 +421,7 @@ ___
 
 ▸ `Const`**isDate**(`u`: unknown): u is Date
 
-*Defined in [src/logic/is.ts:259](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L259)*
+*Defined in [src/logic/is.ts:259](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L259)*
 
 Check if a value is a Date
 
@@ -439,7 +439,7 @@ ___
 
 ▸ **isFunction**(`x`: any): x is Function
 
-*Defined in [src/logic/is.ts:308](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L308)*
+*Defined in [src/logic/is.ts:308](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L308)*
 
 Check if a value is a Function
 
@@ -457,7 +457,7 @@ ___
 
 ▸ `Const`**isGenerator**(`x`: unknown): x is Generator\<unknown, unknown, unknown>
 
-*Defined in [src/logic/is.ts:97](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L97)*
+*Defined in [src/logic/is.ts:97](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L97)*
 
 Check if a value is a Generator
 
@@ -475,7 +475,7 @@ ___
 
 ▸ **isIterable**(`x`: unknown): x is Iterable\<unknown>
 
-*Defined in [src/logic/is.ts:85](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L85)*
+*Defined in [src/logic/is.ts:85](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L85)*
 
 Check if a value is an interable
 
@@ -493,7 +493,7 @@ ___
 
 ▸ **isIterator**(`x`: unknown): x is Iterator\<unknown>
 
-*Defined in [src/logic/is.ts:73](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L73)*
+*Defined in [src/logic/is.ts:73](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L73)*
 
 Check if a value is an Iterator
 
@@ -511,7 +511,7 @@ ___
 
 ▸ `Const`**isJsonArray**(`x`: unknown): x is JsonArray
 
-*Defined in [src/logic/is.ts:213](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L213)*
+*Defined in [src/logic/is.ts:213](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L213)*
 
 Check if a value is a JsonArray
 
@@ -529,7 +529,7 @@ ___
 
 ▸ `Const`**isJsonRecord**(`x`: unknown): x is JsonRecord
 
-*Defined in [src/logic/is.ts:225](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L225)*
+*Defined in [src/logic/is.ts:225](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L225)*
 
 Check if a value is a JsonRecord
 
@@ -547,7 +547,7 @@ ___
 
 ▸ **isMap**\<A, B>(`x`: any): x is Map\<A, B>
 
-*Defined in [src/logic/is.ts:269](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L269)*
+*Defined in [src/logic/is.ts:269](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L269)*
 
 Check if a value is a Map
 
@@ -572,7 +572,7 @@ ___
 
 ▸ `Const`**isNot**\<A>(`a`: A): [IsNot](_logic_types_.md#isnot)\<A>
 
-*Defined in [src/logic/is.ts:21](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L21)*
+*Defined in [src/logic/is.ts:21](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L21)*
 
 Create a function for checking if something is not equal to a given value.
 
@@ -596,7 +596,7 @@ ___
 
 ▸ `Const`**isNumber**(`u`: unknown): u is number
 
-*Defined in [src/logic/is.ts:149](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L149)*
+*Defined in [src/logic/is.ts:149](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L149)*
 
 Check if a value is a number
 
@@ -614,7 +614,7 @@ ___
 
 ▸ `Const`**isPromiseLike**(`x`: unknown): x is PromiseLike\<unknown>
 
-*Defined in [src/logic/is.ts:182](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L182)*
+*Defined in [src/logic/is.ts:182](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L182)*
 
 Check if a value is not a PromiseLike
 
@@ -632,7 +632,7 @@ ___
 
 ▸ `Const`**isRecord**(`u`: unknown): u is Readonly\<Record\<PropertyKey, unknown>>
 
-*Defined in [src/logic/is.ts:169](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L169)*
+*Defined in [src/logic/is.ts:169](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L169)*
 
 Check if a value is a Record
 
@@ -650,7 +650,7 @@ ___
 
 ▸ **isSet**\<A>(`x`: any): x is Set\<A>
 
-*Defined in [src/logic/is.ts:289](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L289)*
+*Defined in [src/logic/is.ts:289](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L289)*
 
 Check if a value is a Set
 
@@ -674,7 +674,7 @@ ___
 
 ▸ `Const`**isString**(`u`: unknown): u is string
 
-*Defined in [src/logic/is.ts:159](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/is.ts#L159)*
+*Defined in [src/logic/is.ts:159](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/is.ts#L159)*
 
 Check if a value is a string
 

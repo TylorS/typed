@@ -30,4 +30,4 @@ An environment type for all the things required to power Shared with lifecycle e
 
 *Inherited from [NamespaceKeyStoresEnv](_shared_core_services_namespacekeystoresenv_.namespacekeystoresenv.md).[namespaceKeyStores](_shared_core_services_namespacekeystoresenv_.namespacekeystoresenv.md#namespacekeystores)*
 
-*Defined in [src/Shared/core/services/NamespaceKeyStoresEnv.ts:4](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/services/NamespaceKeyStoresEnv.ts#L4)*
+*Defined in [src/Shared/core/services/NamespaceKeyStoresEnv.ts:4](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/core/services/NamespaceKeyStoresEnv.ts#L4)*

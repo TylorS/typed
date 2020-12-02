@@ -48,7 +48,7 @@
 
 Ƭ  **Future**\<E, A, B>: [Effect](_effect_effect_.effect.md)\<E, Either\<A, B>>
 
-*Defined in [src/Future/exports.ts:24](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L24)*
+*Defined in [src/Future/exports.ts:24](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L24)*
 
 #### Type parameters:
 
@@ -64,7 +64,7 @@ ___
 
 Ƭ  **URI**: *typeof* [URI](_future_exports_.md#uri)
 
-*Defined in [src/Future/exports.ts:22](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L22)*
+*Defined in [src/Future/exports.ts:22](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L22)*
 
 ## Variables
 
@@ -72,7 +72,7 @@ ___
 
 • `Const` **URI**: \"@typed/fp/Future/exports\" = "@typed/fp/Future/exports"
 
-*Defined in [src/Future/exports.ts:21](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L21)*
+*Defined in [src/Future/exports.ts:21](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L21)*
 
 ___
 
@@ -80,7 +80,7 @@ ___
 
 •  **alt**: \<R, E, A>(that: Lazy\<Kind3\<F, R, E, A>>) => (fa: Kind3\<F, R, E, A>) => Kind3\<F, R, E, A>
 
-*Defined in [src/Future/exports.ts:56](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L56)*
+*Defined in [src/Future/exports.ts:56](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L56)*
 
 ___
 
@@ -88,7 +88,7 @@ ___
 
 •  **ap**: \<R, E, A>(fa: Kind3\<F, R, E, A>) => \<B>(fab: Kind3\<F, R, E, (a: A) => B>) => Kind3\<F, R, E, B>
 
-*Defined in [src/Future/exports.ts:57](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L57)*
+*Defined in [src/Future/exports.ts:57](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L57)*
 
 ___
 
@@ -96,7 +96,7 @@ ___
 
 •  **apFirst**: \<R, E, B>(fb: Kind3\<F, R, E, B>) => \<A>(fa: Kind3\<F, R, E, A>) => Kind3\<F, R, E, A>
 
-*Defined in [src/Future/exports.ts:58](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L58)*
+*Defined in [src/Future/exports.ts:58](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L58)*
 
 ___
 
@@ -104,7 +104,7 @@ ___
 
 •  **apSecond**: \<R, E, B>(fb: Kind3\<F, R, E, B>) => \<A>(fa: Kind3\<F, R, E, A>) => Kind3\<F, R, E, B>
 
-*Defined in [src/Future/exports.ts:59](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L59)*
+*Defined in [src/Future/exports.ts:59](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L59)*
 
 ___
 
@@ -112,7 +112,7 @@ ___
 
 •  **bimap**: \<E, G, A, B>(f: (e: E) => G, g: (a: A) => B) => \<R>(fa: Kind3\<F, R, E, A>) => Kind3\<F, R, G, B>
 
-*Defined in [src/Future/exports.ts:63](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L63)*
+*Defined in [src/Future/exports.ts:63](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L63)*
 
 ___
 
@@ -120,7 +120,7 @@ ___
 
 •  **chain**: \<R, E, A, B>(f: (a: A) => Kind3\<F, R, E, B>) => (ma: Kind3\<F, R, E, A>) => Kind3\<F, R, E, B>
 
-*Defined in [src/Future/exports.ts:60](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L60)*
+*Defined in [src/Future/exports.ts:60](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L60)*
 
 ___
 
@@ -128,7 +128,7 @@ ___
 
 •  **chainFirst**: \<R, E, A, B>(f: (a: A) => Kind3\<F, R, E, B>) => (ma: Kind3\<F, R, E, A>) => Kind3\<F, R, E, A>
 
-*Defined in [src/Future/exports.ts:61](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L61)*
+*Defined in [src/Future/exports.ts:61](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L61)*
 
 ___
 
@@ -136,7 +136,7 @@ ___
 
 •  **flatten**: \<R, E, A>(mma: Kind3\<F, R, E, Kind3\<F, R, E, A>>) => Kind3\<F, R, E, A>
 
-*Defined in [src/Future/exports.ts:65](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L65)*
+*Defined in [src/Future/exports.ts:65](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L65)*
 
 ___
 
@@ -144,7 +144,7 @@ ___
 
 •  **map**: \<A, B>(f: (a: A) => B) => \<R, E>(fa: Kind3\<F, R, E, A>) => Kind3\<F, R, E, B>
 
-*Defined in [src/Future/exports.ts:62](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L62)*
+*Defined in [src/Future/exports.ts:62](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L62)*
 
 ___
 
@@ -152,7 +152,7 @@ ___
 
 •  **mapLeft**: \<E, G>(f: (e: E) => G) => \<R, A>(fa: Kind3\<F, R, E, A>) => Kind3\<F, R, G, A>
 
-*Defined in [src/Future/exports.ts:64](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L64)*
+*Defined in [src/Future/exports.ts:64](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L64)*
 
 ## Functions
 
@@ -160,7 +160,7 @@ ___
 
 ▸ **fromReaderTaskEither**\<E, A, B>(`rte`: ReaderTaskEither\<E, A, B>): [Future](_future_exports_.md#future)\<E, A, B>
 
-*Defined in [src/Future/exports.ts:91](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L91)*
+*Defined in [src/Future/exports.ts:91](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L91)*
 
 Convert a ReaderTaskEither into a Future
 
@@ -186,7 +186,7 @@ ___
 
 ▸ `Const`**left**\<A, B>(`value`: A): [Future](_future_exports_.md#future)\<unknown, A, B>
 
-*Defined in [src/Future/exports.ts:48](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L48)*
+*Defined in [src/Future/exports.ts:48](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L48)*
 
 Create a Left Effect
 
@@ -211,7 +211,7 @@ ___
 
 ▸ `Const`**orFail**\<K, E, A, B>(`key`: K, `future`: [Future](_future_exports_.md#future)\<E, A, B>): [Effect](_effect_effect_.effect.md)\<E & [FailEnv](_effect_failures_.md#failenv)\<K, A>, B>
 
-*Defined in [src/Future/exports.ts:71](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L71)*
+*Defined in [src/Future/exports.ts:71](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L71)*
 
 Convert an Either into a type-safe Effect failure.
 
@@ -239,7 +239,7 @@ ___
 
 ▸ `Const`**right**\<A, B>(`value`: B): [Future](_future_exports_.md#future)\<unknown, A, B>
 
-*Defined in [src/Future/exports.ts:53](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L53)*
+*Defined in [src/Future/exports.ts:53](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L53)*
 
 Create a Right Effect
 
@@ -264,7 +264,7 @@ ___
 
 ▸ `Const`**toReaderTaskEither**\<E, A, B>(`future`: [Future](_future_exports_.md#future)\<E, A, B>): ReaderTaskEither\<E, A, B>
 
-*Defined in [src/Future/exports.ts:98](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L98)*
+*Defined in [src/Future/exports.ts:98](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L98)*
 
 Convert a Future into a ReaderTaskEither
 
@@ -290,7 +290,7 @@ Name | Type |
 
 ▪ `Const` **future**: object
 
-*Defined in [src/Future/exports.ts:35](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L35)*
+*Defined in [src/Future/exports.ts:35](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L35)*
 
 A Monad, Alt and Either transformer instance of Effect with parallel Applicative.
 
@@ -306,7 +306,7 @@ ___
 
 ▪ `Const` **futureSeq**: object
 
-*Defined in [src/Future/exports.ts:40](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L40)*
+*Defined in [src/Future/exports.ts:40](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L40)*
 
 A Monad, Alt and Either transformer instance of Effect with sequential Applicative.
 

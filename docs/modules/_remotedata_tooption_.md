@@ -16,7 +16,7 @@
 
 ▸ **toOption**\<A, B>(`rd`: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>): Option\<B>
 
-*Defined in [src/RemoteData/toOption.ts:11](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/toOption.ts#L11)*
+*Defined in [src/RemoteData/toOption.ts:11](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/toOption.ts#L11)*
 
 Convert a RemoteData<A, B> into an Option<B>
 

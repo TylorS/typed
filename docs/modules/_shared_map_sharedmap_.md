@@ -21,7 +21,7 @@
 
 Ƭ  **SharedMapKey**\<A>: GetSharedValue\<A> *extends* ReadonlyMap\<*infer* K, any> ? K : never
 
-*Defined in [src/Shared/map/SharedMap.ts:12](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/map/SharedMap.ts#L12)*
+*Defined in [src/Shared/map/SharedMap.ts:12](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/map/SharedMap.ts#L12)*
 
 Extract the keys of a SharedMap
 
@@ -37,7 +37,7 @@ ___
 
 Ƭ  **SharedMapValue**\<A>: GetSharedValue\<A> *extends* ReadonlyMap\<any, *infer* V> ? V : never
 
-*Defined in [src/Shared/map/SharedMap.ts:19](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/map/SharedMap.ts#L19)*
+*Defined in [src/Shared/map/SharedMap.ts:19](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/map/SharedMap.ts#L19)*
 
 Extract the values of a SharedMap
 

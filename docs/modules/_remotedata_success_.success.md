@@ -29,7 +29,7 @@ Name |
 
 • `Readonly` **status**: [Success](../enums/_remotedata_enums_.remotedatastatus.md#success)
 
-*Defined in [src/RemoteData/Success.ts:7](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/Success.ts#L7)*
+*Defined in [src/RemoteData/Success.ts:7](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/Success.ts#L7)*
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 • `Readonly` **value**: A
 
-*Defined in [src/RemoteData/Success.ts:8](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/Success.ts#L8)*
+*Defined in [src/RemoteData/Success.ts:8](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/Success.ts#L8)*
 
 ## Functions
 
@@ -45,7 +45,7 @@ ___
 
 ▸ `Const`**of**\<A>(`value`: A): [Success](_remotedata_success_.success.md)\<A>
 
-*Defined in [src/RemoteData/Success.ts:12](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/Success.ts#L12)*
+*Defined in [src/RemoteData/Success.ts:12](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/Success.ts#L12)*
 
 #### Type parameters:
 

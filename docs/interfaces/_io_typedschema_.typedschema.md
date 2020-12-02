@@ -20,7 +20,7 @@ Name |
 
 ▸ \<S>(`schemable`: [TypedSchemable](_io_typedschemable_.typedschemable.md)\<S>): HKT\<S, A>
 
-*Defined in [src/io/TypedSchema.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/io/TypedSchema.ts#L10)*
+*Defined in [src/io/TypedSchema.ts:10](https://github.com/TylorS/typed-fp/blob/f129829/src/io/TypedSchema.ts#L10)*
 
 A io-ts Schema type using TypedSchemable to include additional types.
 

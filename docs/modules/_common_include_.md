@@ -16,7 +16,7 @@
 
 Ƭ  **Include**\<A, B>: A *extends* B ? A : never
 
-*Defined in [src/common/Include.ts:6](https://github.com/TylorS/typed-fp/blob/6ccb290/src/common/Include.ts#L6)*
+*Defined in [src/common/Include.ts:6](https://github.com/TylorS/typed-fp/blob/f129829/src/common/Include.ts#L6)*
 
 Include only values of `A` that extend some type of `B`.
 

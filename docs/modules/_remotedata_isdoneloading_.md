@@ -16,7 +16,7 @@
 
 ▸ `Const`**isDoneLoading**\<A, B>(`remoteData`: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>): remoteData is Loaded\<A, B>
 
-*Defined in [src/RemoteData/isDoneLoading.ts:8](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/isDoneLoading.ts#L8)*
+*Defined in [src/RemoteData/isDoneLoading.ts:8](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/isDoneLoading.ts#L8)*
 
 Check if a RemoteData has Loaded
 

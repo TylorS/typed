@@ -18,4 +18,4 @@ When a namespace has changed.
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[NamespaceUpdated](_shared_core_events_namespaceevent_.namespaceupdated.md)> = createSchema\<NamespaceUpdated>((t) => t.type({ type: t.literal('namespace/updated'), namespace: Namespace.schema(t), }), )
 
-*Defined in [src/Shared/core/events/NamespaceEvent.ts:76](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/events/NamespaceEvent.ts#L76)*
+*Defined in [src/Shared/core/events/NamespaceEvent.ts:76](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/core/events/NamespaceEvent.ts#L76)*

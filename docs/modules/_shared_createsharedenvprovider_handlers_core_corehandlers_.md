@@ -16,7 +16,7 @@
 
 • `Const` **coreHandlers**: [[SharedEventHandler](_shared_createsharedenvprovider_sharedeventhandler_.md#sharedeventhandler)\<[NamespaceDeleted](_shared_core_events_namespaceevent_.namespacedeleted.md)>] = [ createSharedEventHandler(namespaceDeletedGuard, namespaceDeleted),] as const
 
-*Defined in [src/Shared/createSharedEnvProvider/handlers/core/coreHandlers.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/handlers/core/coreHandlers.ts#L10)*
+*Defined in [src/Shared/createSharedEnvProvider/handlers/core/coreHandlers.ts:10](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/createSharedEnvProvider/handlers/core/coreHandlers.ts#L10)*
 
 The Shared handlers required for the core of Shared. It simply removes
 resources it creates on your behalf. Feel free to otherwise replace this

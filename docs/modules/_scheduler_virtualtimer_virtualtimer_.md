@@ -20,7 +20,7 @@
 
 ▸ **createVirtualTimer**(`clock?`: [VirtualClock](../interfaces/_scheduler_virtualtimer_virtualclock_.virtualclock.md)): [VirtualTimer](../interfaces/_scheduler_virtualtimer_virtualtimer_.virtualtimer.md)
 
-*Defined in [src/Scheduler/VirtualTimer/VirtualTimer.ts:13](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Scheduler/VirtualTimer/VirtualTimer.ts#L13)*
+*Defined in [src/Scheduler/VirtualTimer/VirtualTimer.ts:13](https://github.com/TylorS/typed-fp/blob/f129829/src/Scheduler/VirtualTimer/VirtualTimer.ts#L13)*
 
 Create a VirtualTimer.
 

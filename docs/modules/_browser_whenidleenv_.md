@@ -20,7 +20,7 @@
 
 • `Const` **provideWhenIdleEnv**: [Provider](_effect_provide_.md#provider)\<[WhenIdleEnv](../interfaces/_dom_whenidle_.whenidleenv.md)> = provideSome(whenIdleEnv)
 
-*Defined in [src/browser/WhenIdleEnv.ts:24](https://github.com/TylorS/typed-fp/blob/6ccb290/src/browser/WhenIdleEnv.ts#L24)*
+*Defined in [src/browser/WhenIdleEnv.ts:24](https://github.com/TylorS/typed-fp/blob/f129829/src/browser/WhenIdleEnv.ts#L24)*
 
 Provide an Effect with a requestIdleCallback version of WhenIdleEnv.
 
@@ -30,7 +30,7 @@ Provide an Effect with a requestIdleCallback version of WhenIdleEnv.
 
 ▪ `Const` **whenIdleEnv**: object
 
-*Defined in [src/browser/WhenIdleEnv.ts:13](https://github.com/TylorS/typed-fp/blob/6ccb290/src/browser/WhenIdleEnv.ts#L13)*
+*Defined in [src/browser/WhenIdleEnv.ts:13](https://github.com/TylorS/typed-fp/blob/f129829/src/browser/WhenIdleEnv.ts#L13)*
 
 Browser implementation of WhenIdleEnv that uses requestIdleCallback to schedule work to be done when
 no other higher-priority work needed to be done.

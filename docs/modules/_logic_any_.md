@@ -20,7 +20,7 @@
 
 • `Const` **any**: \<A>(predicate: Predicate\<A>, list: readonly A[]) => boolean\<A>(predicate: Predicate\<A>) => (list: readonly A[]) => boolean = curry(\_\_any) as { \<A>(predicate: Predicate\<A>, list: readonly A[]): boolean \<A>(predicate: Predicate\<A>): (list: readonly A[]) => boolean}
 
-*Defined in [src/logic/any.ts:11](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/any.ts#L11)*
+*Defined in [src/logic/any.ts:11](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/any.ts#L11)*
 
 Returns true if any values in a list pass the given predicate.
 
@@ -36,7 +36,7 @@ Returns true if any values in a list pass the given predicate.
 
 ▸ **__any**\<A>(`predicate`: Predicate\<A>, `list`: readonly A[]): boolean
 
-*Defined in [src/logic/any.ts:19](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/any.ts#L19)*
+*Defined in [src/logic/any.ts:19](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/any.ts#L19)*
 
 #### Type parameters:
 

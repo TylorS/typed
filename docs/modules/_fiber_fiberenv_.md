@@ -31,7 +31,7 @@
 
 • `Const` **getCurrentFiber**: [Effect](_effect_effect_.effect.md)\<[FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md), [Fiber](../interfaces/_fiber_fiber_.fiber.md)\<unknown>> = fromEnv((e: FiberEnv) => sync(e.currentFiber))
 
-*Defined in [src/Fiber/FiberEnv.ts:26](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L26)*
+*Defined in [src/Fiber/FiberEnv.ts:26](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/FiberEnv.ts#L26)*
 
 Get the current Fiber instance.
 
@@ -41,7 +41,7 @@ ___
 
 • `Const` **getParentFiber**: [Effect](_effect_effect_.effect.md)\<[FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md), Option\<[Fiber](../interfaces/_fiber_fiber_.fiber.md)\<unknown>>> = fromEnv((e: FiberEnv) => sync(e.currentFiber.parentFiber))
 
-*Defined in [src/Fiber/FiberEnv.ts:31](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L31)*
+*Defined in [src/Fiber/FiberEnv.ts:31](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/FiberEnv.ts#L31)*
 
 Get the parent Fiber instance.
 
@@ -51,7 +51,7 @@ ___
 
 • `Const` **pause**: [Effect](_effect_effect_.effect.md)\<[FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md), void> = fromEnv((e) => e.pause)
 
-*Defined in [src/Fiber/FiberEnv.ts:69](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L69)*
+*Defined in [src/Fiber/FiberEnv.ts:69](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/FiberEnv.ts#L69)*
 
 Pause the current fiber allowing for cooperative multitasking with a parent Fiber.
 
@@ -76,7 +76,7 @@ const foo = forever(doEffect(function*(){
 
 ▸ `Const`**fork**\<E, A>(`effect`: [Effect](_effect_effect_.effect.md)\<E, A>): [Effect](_effect_effect_.effect.md)\<E & [FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md), [Fiber](../interfaces/_fiber_fiber_.fiber.md)\<A>>
 
-*Defined in [src/Fiber/FiberEnv.ts:38](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L38)*
+*Defined in [src/Fiber/FiberEnv.ts:38](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/FiberEnv.ts#L38)*
 
 Creates a Fiber, a "child process" that is inherently tied to the fiber that it originates within.
 When the parent is killed, the child process will also be killed.
@@ -103,7 +103,7 @@ ___
 
 ▸ `Const`**forkPaused**\<E, A>(`effect`: [Effect](_effect_effect_.effect.md)\<E, A>): [Effect](_effect_effect_.effect.md)\<E & [FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md), [Fiber](../interfaces/_fiber_fiber_.fiber.md)\<A>>
 
-*Defined in [src/Fiber/FiberEnv.ts:89](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L89)*
+*Defined in [src/Fiber/FiberEnv.ts:89](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/FiberEnv.ts#L89)*
 
 Create a Fiber that will start in an immediately paused state to allow for the parent fiber
 to decide when it starts doing any work.
@@ -129,7 +129,7 @@ ___
 
 ▸ `Const`**join**\<A>(`fiber`: [Fiber](../interfaces/_fiber_fiber_.fiber.md)\<A>): [Effect](_effect_effect_.effect.md)\<[FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md), Either\<Error, A>>
 
-*Defined in [src/Fiber/FiberEnv.ts:44](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L44)*
+*Defined in [src/Fiber/FiberEnv.ts:44](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/FiberEnv.ts#L44)*
 
 Rejoin a fiber with the current process
 
@@ -153,7 +153,7 @@ ___
 
 ▸ `Const`**kill**\<A>(`fiber`: [Fiber](../interfaces/_fiber_fiber_.fiber.md)\<A>): [Effect](_effect_effect_.effect.md)\<[FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md), void>
 
-*Defined in [src/Fiber/FiberEnv.ts:50](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L50)*
+*Defined in [src/Fiber/FiberEnv.ts:50](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/FiberEnv.ts#L50)*
 
 Kill a fiber process
 
@@ -177,7 +177,7 @@ ___
 
 ▸ `Const`**proceed**(`fiber`: [Fiber](../interfaces/_fiber_fiber_.fiber.md)\<unknown>): [Effect](_effect_effect_.effect.md)\<[FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md), void>
 
-*Defined in [src/Fiber/FiberEnv.ts:74](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L74)*
+*Defined in [src/Fiber/FiberEnv.ts:74](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/FiberEnv.ts#L74)*
 
 Allow for a paused Fiber to continue running.
 
@@ -195,7 +195,7 @@ ___
 
 ▸ `Const`**proceedAll**(...`fibers`: ReadonlyArray\<[Fiber](../interfaces/_fiber_fiber_.fiber.md)\<unknown>>): [Effect](_effect_effect_.effect.md)\<[FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md), void>
 
-*Defined in [src/Fiber/FiberEnv.ts:80](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/FiberEnv.ts#L80)*
+*Defined in [src/Fiber/FiberEnv.ts:80](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/FiberEnv.ts#L80)*
 
 Allow for many paused Fibers to continue running.
 

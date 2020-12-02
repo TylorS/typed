@@ -22,4 +22,4 @@ An environment which contains a Console as its resource.
 
 • `Readonly` **console**: Console
 
-*Defined in [src/Console/exports.ts:11](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L11)*
+*Defined in [src/Console/exports.ts:11](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L11)*

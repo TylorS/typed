@@ -20,4 +20,4 @@
 
 • `Readonly` **tx**: [IndexedDbStoreTransation](_storage_indexeddb_indexeddbstoretransaction_.indexeddbstoretransation.md)
 
-*Defined in [src/Storage/indexedDb/idbRequestToResume.ts:8](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Storage/indexedDb/idbRequestToResume.ts#L8)*
+*Defined in [src/Storage/indexedDb/idbRequestToResume.ts:8](https://github.com/TylorS/typed-fp/blob/f129829/src/Storage/indexedDb/idbRequestToResume.ts#L8)*

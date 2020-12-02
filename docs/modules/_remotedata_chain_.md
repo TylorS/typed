@@ -20,7 +20,7 @@
 
 • `Const` **chain**: \<A, B, C>(f: (value: B, info: [SuccessInfo](_remotedata_fold_.md#successinfo)) => [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, C>, data: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>) => [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, C>\<A, B, C>(f: (value: B, info: [SuccessInfo](_remotedata_fold_.md#successinfo)) => [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, C>) => (data: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>) => [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, C> = curry(\_\_chain) as { \<A, B, C>( f: (value: B, info: SuccessInfo) => RemoteData\<A, C>, data: RemoteData\<A, B>, ): RemoteData\<A, C> \<A, B, C>(f: (value: B, info: SuccessInfo) => RemoteData\<A, C>): ( data: RemoteData\<A, B>, ) => RemoteData\<A, C>}
 
-*Defined in [src/RemoteData/chain.ts:13](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/chain.ts#L13)*
+*Defined in [src/RemoteData/chain.ts:13](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/chain.ts#L13)*
 
 Returns a `RemoteData` that is the result of calling `f` with the resolved
 value of another `RemoteData`.
@@ -31,7 +31,7 @@ value of another `RemoteData`.
 
 ▸ **__chain**\<A, B, C>(`f`: (value: B, info: [SuccessInfo](_remotedata_fold_.md#successinfo)) => [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, C>, `data`: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>): [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, C>
 
-*Defined in [src/RemoteData/chain.ts:23](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/chain.ts#L23)*
+*Defined in [src/RemoteData/chain.ts:23](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/chain.ts#L23)*
 
 #### Type parameters:
 

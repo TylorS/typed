@@ -16,7 +16,7 @@
 
 ▸ `Const`**createSharedEnv**(`currentNamespace`: [Namespace](_shared_core_model_namespace_.namespace.md)): [SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md)
 
-*Defined in [src/Shared/createSharedEnvProvider/createSharedEnv.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/createSharedEnv.ts#L10)*
+*Defined in [src/Shared/createSharedEnvProvider/createSharedEnv.ts:10](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/createSharedEnvProvider/createSharedEnv.ts#L10)*
 
 Create a new SharedEnv
 

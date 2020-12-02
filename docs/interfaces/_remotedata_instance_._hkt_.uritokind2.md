@@ -27,4 +27,4 @@ Name |
 
 •  **[URI]**: [RemoteData](../modules/_remotedata_remotedata_.md#remotedata)\<E, A>
 
-*Defined in [src/RemoteData/instance.ts:29](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/instance.ts#L29)*
+*Defined in [src/RemoteData/instance.ts:29](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/instance.ts#L29)*

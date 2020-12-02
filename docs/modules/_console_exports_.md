@@ -59,7 +59,7 @@
 
 • `Const` **clear**: [Effect](_effect_effect_.effect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), void> = withConsole((c) => c.clear())
 
-*Defined in [src/Console/exports.ts:35](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L35)*
+*Defined in [src/Console/exports.ts:35](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L35)*
 
 Clear the console.
 
@@ -69,7 +69,7 @@ ___
 
 • `Const` **count**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createCountLogger(showString)
 
-*Defined in [src/Console/exports.ts:135](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L135)*
+*Defined in [src/Console/exports.ts:135](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L135)*
 
 Use console.count from ConsoleEnv to log a message
 
@@ -79,7 +79,7 @@ ___
 
 • `Const` **createConsoleLogger**: \<A>(type: keyof Console, \_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A>(type: keyof Console) => \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = curry( \<A>(type: keyof Console, { show }: Show\<A>): LoggerEffect\<ConsoleEnv, A> => (a) => withConsole((c) => c[type](show(a))),) as { \<A>(type: keyof Console, { show }: Show\<A>): LoggerEffect\<ConsoleEnv, A> (type: keyof Console): \<A>({ show }: Show\<A>) => LoggerEffect\<ConsoleEnv, A>}
 
-*Defined in [src/Console/exports.ts:24](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L24)*
+*Defined in [src/Console/exports.ts:24](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L24)*
 
 Creates a LoggerEffect using Console and a Show<A> instance to determine the
 payload type.
@@ -90,7 +90,7 @@ ___
 
 • `Const` **createCountLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('count')
 
-*Defined in [src/Console/exports.ts:53](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L53)*
+*Defined in [src/Console/exports.ts:53](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L53)*
 
 Provide a Show instance to create a console.count LoggerEffect
 
@@ -100,7 +100,7 @@ ___
 
 • `Const` **createDebugLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('debug')
 
-*Defined in [src/Console/exports.ts:58](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L58)*
+*Defined in [src/Console/exports.ts:58](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L58)*
 
 Provide a Show instance to create a console.debug LoggerEffect
 
@@ -110,7 +110,7 @@ ___
 
 • `Const` **createDirLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('dir')
 
-*Defined in [src/Console/exports.ts:63](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L63)*
+*Defined in [src/Console/exports.ts:63](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L63)*
 
 Provide a Show instance to create a console.dir LoggerEffect
 
@@ -120,7 +120,7 @@ ___
 
 • `Const` **createDirXmlLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('dirxml')
 
-*Defined in [src/Console/exports.ts:68](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L68)*
+*Defined in [src/Console/exports.ts:68](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L68)*
 
 Provide a Show instance to create a console.dirxml LoggerEffect
 
@@ -130,7 +130,7 @@ ___
 
 • `Const` **createErrorLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('error')
 
-*Defined in [src/Console/exports.ts:73](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L73)*
+*Defined in [src/Console/exports.ts:73](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L73)*
 
 Provide a Show instance to create a console.error LoggerEffect
 
@@ -140,7 +140,7 @@ ___
 
 • `Const` **createExceptionLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('exception')
 
-*Defined in [src/Console/exports.ts:78](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L78)*
+*Defined in [src/Console/exports.ts:78](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L78)*
 
 Provide a Show instance to create a console.exception LoggerEffect
 
@@ -150,7 +150,7 @@ ___
 
 • `Const` **createGroupCollapsedLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('groupCollapsed')
 
-*Defined in [src/Console/exports.ts:88](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L88)*
+*Defined in [src/Console/exports.ts:88](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L88)*
 
 Provide a Show instance to create a console.groupCollapsed LoggerEffect
 
@@ -160,7 +160,7 @@ ___
 
 • `Const` **createGroupLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('group')
 
-*Defined in [src/Console/exports.ts:83](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L83)*
+*Defined in [src/Console/exports.ts:83](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L83)*
 
 Provide a Show instance to create a console.group LoggerEffect
 
@@ -170,7 +170,7 @@ ___
 
 • `Const` **createInfoLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('info')
 
-*Defined in [src/Console/exports.ts:93](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L93)*
+*Defined in [src/Console/exports.ts:93](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L93)*
 
 Provide a Show instance to create a console.info LoggerEffect
 
@@ -180,7 +180,7 @@ ___
 
 • `Const` **createLogLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('log')
 
-*Defined in [src/Console/exports.ts:98](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L98)*
+*Defined in [src/Console/exports.ts:98](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L98)*
 
 Provide a Show instance to create a console.log LoggerEffect
 
@@ -190,7 +190,7 @@ ___
 
 • `Const` **createTimeEndLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('timeEnd')
 
-*Defined in [src/Console/exports.ts:108](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L108)*
+*Defined in [src/Console/exports.ts:108](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L108)*
 
 Provide a Show instance to create a console.timeEnd LoggerEffect
 
@@ -200,7 +200,7 @@ ___
 
 • `Const` **createTimeLogLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('timeLog')
 
-*Defined in [src/Console/exports.ts:113](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L113)*
+*Defined in [src/Console/exports.ts:113](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L113)*
 
 Provide a Show instance to create a console.timeLog LoggerEffect
 
@@ -210,7 +210,7 @@ ___
 
 • `Const` **createTimeLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('time')
 
-*Defined in [src/Console/exports.ts:103](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L103)*
+*Defined in [src/Console/exports.ts:103](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L103)*
 
 Provide a Show instance to create a console.time LoggerEffect
 
@@ -220,7 +220,7 @@ ___
 
 • `Const` **createTimeStampLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('timeStamp')
 
-*Defined in [src/Console/exports.ts:118](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L118)*
+*Defined in [src/Console/exports.ts:118](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L118)*
 
 Provide a Show instance to create a console.timeStamp LoggerEffect
 
@@ -230,7 +230,7 @@ ___
 
 • `Const` **createTraceLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('trace')
 
-*Defined in [src/Console/exports.ts:123](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L123)*
+*Defined in [src/Console/exports.ts:123](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L123)*
 
 Provide a Show instance to create a console.trace LoggerEffect
 
@@ -240,7 +240,7 @@ ___
 
 • `Const` **createWarnLogger**: \<A>(\_\_namedParameters: { show: (a: A) => string  }) => [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A> = createConsoleLogger('warn')
 
-*Defined in [src/Console/exports.ts:128](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L128)*
+*Defined in [src/Console/exports.ts:128](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L128)*
 
 Provide a Show instance to create a console.warn LoggerEffect
 
@@ -250,7 +250,7 @@ ___
 
 • `Const` **debug**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createDebugLogger(showString)
 
-*Defined in [src/Console/exports.ts:140](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L140)*
+*Defined in [src/Console/exports.ts:140](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L140)*
 
 Use console.debug from ConsoleEnv to log a message
 
@@ -260,7 +260,7 @@ ___
 
 • `Const` **dir**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createDirLogger(showString)
 
-*Defined in [src/Console/exports.ts:145](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L145)*
+*Defined in [src/Console/exports.ts:145](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L145)*
 
 Use console.dir from ConsoleEnv to log a message
 
@@ -270,7 +270,7 @@ ___
 
 • `Const` **dirXml**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createDirXmlLogger(showString)
 
-*Defined in [src/Console/exports.ts:150](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L150)*
+*Defined in [src/Console/exports.ts:150](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L150)*
 
 Use console.dirXml from ConsoleEnv to log a message
 
@@ -280,7 +280,7 @@ ___
 
 • `Const` **error**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createErrorLogger(showString)
 
-*Defined in [src/Console/exports.ts:155](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L155)*
+*Defined in [src/Console/exports.ts:155](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L155)*
 
 Use console.error from ConsoleEnv to log a message
 
@@ -290,7 +290,7 @@ ___
 
 • `Const` **exception**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createExceptionLogger(showString)
 
-*Defined in [src/Console/exports.ts:160](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L160)*
+*Defined in [src/Console/exports.ts:160](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L160)*
 
 Use console.exception from ConsoleEnv to log a message
 
@@ -300,7 +300,7 @@ ___
 
 • `Const` **group**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createGroupLogger(showString)
 
-*Defined in [src/Console/exports.ts:165](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L165)*
+*Defined in [src/Console/exports.ts:165](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L165)*
 
 Use console.group from ConsoleEnv to log a message
 
@@ -310,7 +310,7 @@ ___
 
 • `Const` **groupCollapsed**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createInfoLogger(showString)
 
-*Defined in [src/Console/exports.ts:170](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L170)*
+*Defined in [src/Console/exports.ts:170](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L170)*
 
 Use console.groupCollapsed from ConsoleEnv to log a message
 
@@ -320,7 +320,7 @@ ___
 
 • `Const` **groupEnd**: [Effect](_effect_effect_.effect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), void> = withConsole((c) => c.groupEnd())
 
-*Defined in [src/Console/exports.ts:46](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L46)*
+*Defined in [src/Console/exports.ts:46](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L46)*
 
 End the current group
 
@@ -330,7 +330,7 @@ ___
 
 • `Const` **info**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createInfoLogger(showString)
 
-*Defined in [src/Console/exports.ts:175](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L175)*
+*Defined in [src/Console/exports.ts:175](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L175)*
 
 Use console.info from ConsoleEnv to log a message
 
@@ -340,7 +340,7 @@ ___
 
 • `Const` **log**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createLogLogger(showString)
 
-*Defined in [src/Console/exports.ts:180](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L180)*
+*Defined in [src/Console/exports.ts:180](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L180)*
 
 Use console.log from ConsoleEnv to log a message
 
@@ -350,7 +350,7 @@ ___
 
 • `Const` **time**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createTimeLogger(showString)
 
-*Defined in [src/Console/exports.ts:185](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L185)*
+*Defined in [src/Console/exports.ts:185](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L185)*
 
 Use console.time from ConsoleEnv to log a message
 
@@ -360,7 +360,7 @@ ___
 
 • `Const` **timeEnd**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createTimeEndLogger(showString)
 
-*Defined in [src/Console/exports.ts:190](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L190)*
+*Defined in [src/Console/exports.ts:190](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L190)*
 
 Use console.timeEnd from ConsoleEnv to log a message
 
@@ -370,7 +370,7 @@ ___
 
 • `Const` **timeLog**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createTimeLogLogger(showString)
 
-*Defined in [src/Console/exports.ts:195](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L195)*
+*Defined in [src/Console/exports.ts:195](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L195)*
 
 Use console.timeLog from ConsoleEnv to log a message
 
@@ -380,7 +380,7 @@ ___
 
 • `Const` **timeStamp**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createTimeStampLogger(showString)
 
-*Defined in [src/Console/exports.ts:200](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L200)*
+*Defined in [src/Console/exports.ts:200](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L200)*
 
 Use console.timeStamp from ConsoleEnv to log a message
 
@@ -390,7 +390,7 @@ ___
 
 • `Const` **trace**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createTraceLogger(showString)
 
-*Defined in [src/Console/exports.ts:205](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L205)*
+*Defined in [src/Console/exports.ts:205](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L205)*
 
 Use console.trace from ConsoleEnv to log a message
 
@@ -400,7 +400,7 @@ ___
 
 • `Const` **warn**: [LoggerEffect](../interfaces/_logging_loggereffect_.loggereffect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), string> = createWarnLogger(showString)
 
-*Defined in [src/Console/exports.ts:210](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L210)*
+*Defined in [src/Console/exports.ts:210](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L210)*
 
 Use console.warm from ConsoleEnv to log a message
 
@@ -410,7 +410,7 @@ Use console.warm from ConsoleEnv to log a message
 
 ▸ `Const`**assert**(`condition?`: undefined \| false \| true, ...`data`: readonly any[]): [Effect](_effect_effect_.effect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), void>
 
-*Defined in [src/Console/exports.ts:40](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L40)*
+*Defined in [src/Console/exports.ts:40](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L40)*
 
 Assert a condition using the Console API.
 
@@ -429,7 +429,7 @@ ___
 
 ▸ `Const`**withConsole**\<A>(`f`: (c: Console) => A): [Effect](_effect_effect_.effect.md)\<[ConsoleEnv](../interfaces/_console_exports_.consoleenv.md), A>
 
-*Defined in [src/Console/exports.ts:17](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Console/exports.ts#L17)*
+*Defined in [src/Console/exports.ts:17](https://github.com/TylorS/typed-fp/blob/f129829/src/Console/exports.ts#L17)*
 
 Perform a synchronous effect using the Console
 

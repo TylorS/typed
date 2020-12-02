@@ -28,4 +28,4 @@ Name |
 
 •  **[URI]**: [Future](../modules/_future_exports_.md#future)\<R, E, A>
 
-*Defined in [src/Future/exports.ts:28](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Future/exports.ts#L28)*
+*Defined in [src/Future/exports.ts:28](https://github.com/TylorS/typed-fp/blob/f129829/src/Future/exports.ts#L28)*

@@ -19,7 +19,7 @@
 
 • `Const` **namespaceDeletedGuard**: Guard\<unknown, [NamespaceDeleted](_shared_core_events_namespaceevent_.namespacedeleted.md)> = createGuardFromSchema(NamespaceDeleted.schema)
 
-*Defined in [src/Shared/createSharedEnvProvider/handlers/guards.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/handlers/guards.ts#L10)*
+*Defined in [src/Shared/createSharedEnvProvider/handlers/guards.ts:10](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/createSharedEnvProvider/handlers/guards.ts#L10)*
 
 ___
 
@@ -27,7 +27,7 @@ ___
 
 • `Const` **namespaceStartedGuard**: Guard\<unknown, [NamespaceStarted](_shared_core_events_namespaceevent_.namespacestarted.md)> = createGuardFromSchema(NamespaceStarted.schema)
 
-*Defined in [src/Shared/createSharedEnvProvider/handlers/guards.ts:11](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/handlers/guards.ts#L11)*
+*Defined in [src/Shared/createSharedEnvProvider/handlers/guards.ts:11](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/createSharedEnvProvider/handlers/guards.ts#L11)*
 
 ___
 
@@ -35,7 +35,7 @@ ___
 
 • `Const` **sharedValueDeletedGuard**: Guard\<unknown, [SharedValueDeleted](_shared_core_events_sharedvalueevent_.sharedvaluedeleted.md)> = createGuardFromSchema(SharedValueDeleted.schema)
 
-*Defined in [src/Shared/createSharedEnvProvider/handlers/guards.ts:12](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/handlers/guards.ts#L12)*
+*Defined in [src/Shared/createSharedEnvProvider/handlers/guards.ts:12](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/createSharedEnvProvider/handlers/guards.ts#L12)*
 
 ___
 
@@ -43,4 +43,4 @@ ___
 
 • `Const` **sharedValueUpdatedGuard**: Guard\<unknown, [SharedValueUpdated](_shared_core_events_sharedvalueevent_.sharedvalueupdated.md)> = createGuardFromSchema(SharedValueUpdated.schema)
 
-*Defined in [src/Shared/createSharedEnvProvider/handlers/guards.ts:13](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/handlers/guards.ts#L13)*
+*Defined in [src/Shared/createSharedEnvProvider/handlers/guards.ts:13](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/createSharedEnvProvider/handlers/guards.ts#L13)*

@@ -24,7 +24,7 @@
 
 • `Const` **ifElse**: [IfElseFn](../interfaces/_logic_ifelse_.ifelsefn.md) = curry(\_\_ifElse) as IfElseFn
 
-*Defined in [src/logic/ifElse.ts:14](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/ifElse.ts#L14)*
+*Defined in [src/logic/ifElse.ts:14](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/ifElse.ts#L14)*
 
 If-else statement for functions.
 
@@ -44,7 +44,7 @@ If-else statement for functions.
 
 ▸ **__ifElse**\<A, B>(`predicate`: Predicate\<A>, `thenFn`: [Arity1](_common_types_.md#arity1)\<A, B>, `elseFn`: [Arity1](_common_types_.md#arity1)\<A, B>, `value`: A): B
 
-*Defined in [src/logic/ifElse.ts:16](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/ifElse.ts#L16)*
+*Defined in [src/logic/ifElse.ts:16](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/ifElse.ts#L16)*
 
 #### Type parameters:
 

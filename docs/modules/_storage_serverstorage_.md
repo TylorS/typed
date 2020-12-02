@@ -20,7 +20,7 @@
 
 ▸ **serverStorage**(`map?`: [Map](../enums/_logic_json_.tag.md#map)\<string, string>): Storage
 
-*Defined in [src/Storage/serverStorage.ts:8](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Storage/serverStorage.ts#L8)*
+*Defined in [src/Storage/serverStorage.ts:8](https://github.com/TylorS/typed-fp/blob/f129829/src/Storage/serverStorage.ts#L8)*
 
 Create an in-memory implementation of Storage
 

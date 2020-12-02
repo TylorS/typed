@@ -16,7 +16,7 @@
 
 ▸ `Const`**wrapSet**\<K, V>(`shared`: [SharedSet](../interfaces/_shared_set_sharedset_.sharedset.md)\<K, V>): object
 
-*Defined in [src/Shared/set/wrapSet.ts:13](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/set/wrapSet.ts#L13)*
+*Defined in [src/Shared/set/wrapSet.ts:13](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/set/wrapSet.ts#L13)*
 
 Wrap a Shared Set in common operations.
 

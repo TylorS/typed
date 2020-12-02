@@ -16,4 +16,4 @@
 
 • `Const` **test**: Test = describe(\`browser/UuidEnv\`, [ describe(\`randomUuidSeed\`, [ it(\`returns UuidSeed\`, ({ equal }) => { const seed = uuidEnv.randomUuidSeed() equal(VALID\_UUID\_LENGTH, seed.length) }), ]),])
 
-*Defined in [src/browser/UuidEnv.browser-test.ts:6](https://github.com/TylorS/typed-fp/blob/6ccb290/src/browser/UuidEnv.browser-test.ts#L6)*
+*Defined in [src/browser/UuidEnv.browser-test.ts:6](https://github.com/TylorS/typed-fp/blob/f129829/src/browser/UuidEnv.browser-test.ts#L6)*

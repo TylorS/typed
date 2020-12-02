@@ -44,7 +44,7 @@
 
 Ƭ  **FiberComplete**\<A>: { state: [Completed](../enums/_fiber_fiber_.fiberstate.md#completed) ; value: A  }
 
-*Defined in [src/Fiber/Fiber.ts:85](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L85)*
+*Defined in [src/Fiber/Fiber.ts:85](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L85)*
 
 Parent fiber has a return value, and all forked fibers have completed.
 
@@ -67,7 +67,7 @@ ___
 
 Ƭ  **FiberEventFromState**\<A, B>: A *extends* Queued ? FiberQueued : A *extends* Paused ? FiberPaused : A *extends* Running ? FiberRunning : A *extends* Failed ? FiberFailed : A *extends* Success ? FiberSuccess\<B> : A *extends* Completed ? FiberComplete\<B> : never
 
-*Defined in [src/Fiber/Fiber.ts:131](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L131)*
+*Defined in [src/Fiber/Fiber.ts:131](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L131)*
 
 #### Type parameters:
 
@@ -82,7 +82,7 @@ ___
 
 Ƭ  **FiberFailed**: { error: Error ; state: [Failed](../enums/_fiber_fiber_.fiberstate.md#failed)  }
 
-*Defined in [src/Fiber/Fiber.ts:69](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L69)*
+*Defined in [src/Fiber/Fiber.ts:69](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L69)*
 
 Executing a fiber process threw and exception
 
@@ -99,7 +99,7 @@ ___
 
 Ƭ  **FiberInfo**\<A>: [FiberQueued](_fiber_fiber_.md#fiberqueued) \| [FiberPaused](_fiber_fiber_.md#fiberpaused) \| [FiberRunning](_fiber_fiber_.md#fiberrunning) \| [FiberFailed](_fiber_fiber_.md#fiberfailed) \| [FiberSuccess](_fiber_fiber_.md#fibersuccess)\<A> \| [FiberComplete](_fiber_fiber_.md#fibercomplete)\<A>
 
-*Defined in [src/Fiber/Fiber.ts:37](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L37)*
+*Defined in [src/Fiber/Fiber.ts:37](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L37)*
 
 #### Type parameters:
 
@@ -113,7 +113,7 @@ ___
 
 Ƭ  **FiberPaused**: { state: [Paused](../enums/_fiber_fiber_.fiberstate.md#paused)  }
 
-*Defined in [src/Fiber/Fiber.ts:55](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L55)*
+*Defined in [src/Fiber/Fiber.ts:55](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L55)*
 
 Paused state for a fiber
 
@@ -129,7 +129,7 @@ ___
 
 Ƭ  **FiberQueued**: { state: [Queued](../enums/_fiber_fiber_.fiberstate.md#queued)  }
 
-*Defined in [src/Fiber/Fiber.ts:48](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L48)*
+*Defined in [src/Fiber/Fiber.ts:48](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L48)*
 
 Starting state for a fiber
 
@@ -145,7 +145,7 @@ ___
 
 Ƭ  **FiberRunning**: { state: [Running](../enums/_fiber_fiber_.fiberstate.md#running)  }
 
-*Defined in [src/Fiber/Fiber.ts:62](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L62)*
+*Defined in [src/Fiber/Fiber.ts:62](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L62)*
 
 Fiber has begun executing
 
@@ -161,7 +161,7 @@ ___
 
 Ƭ  **FiberSuccess**\<A>: { state: [Success](../enums/_fiber_fiber_.fiberstate.md#success) ; value: A  }
 
-*Defined in [src/Fiber/Fiber.ts:77](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L77)*
+*Defined in [src/Fiber/Fiber.ts:77](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L77)*
 
 Parent fiber has a return value, but has forked fibers still running.
 
@@ -184,7 +184,7 @@ Name | Type |
 
 • `Const` **awaitCompleted**: (Anonymous function) = listenFor(FiberState.Completed)
 
-*Defined in [src/Fiber/Fiber.ts:129](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L129)*
+*Defined in [src/Fiber/Fiber.ts:129](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L129)*
 
 ___
 
@@ -192,7 +192,7 @@ ___
 
 • `Const` **awaitFailed**: (Anonymous function) = listenFor(FiberState.Failed)
 
-*Defined in [src/Fiber/Fiber.ts:127](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L127)*
+*Defined in [src/Fiber/Fiber.ts:127](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L127)*
 
 ___
 
@@ -200,7 +200,7 @@ ___
 
 • `Const` **awaitPaused**: (Anonymous function) = listenFor(FiberState.Paused)
 
-*Defined in [src/Fiber/Fiber.ts:125](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L125)*
+*Defined in [src/Fiber/Fiber.ts:125](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L125)*
 
 ___
 
@@ -208,7 +208,7 @@ ___
 
 • `Const` **awaitRunning**: (Anonymous function) = listenFor(FiberState.Running)
 
-*Defined in [src/Fiber/Fiber.ts:126](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L126)*
+*Defined in [src/Fiber/Fiber.ts:126](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L126)*
 
 ___
 
@@ -216,7 +216,7 @@ ___
 
 • `Const` **awaitSuccess**: (Anonymous function) = listenFor(FiberState.Success)
 
-*Defined in [src/Fiber/Fiber.ts:128](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L128)*
+*Defined in [src/Fiber/Fiber.ts:128](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L128)*
 
 ## Functions
 
@@ -224,7 +224,7 @@ ___
 
 ▸ `Const`**foldFiberInfo**\<A, B, C, D, E, F, G>(`queued`: () => A, `paused`: () => B, `running`: () => C, `failed`: (error: Error) => D, `success`: (value: E) => F, `completed`: (value: E) => G): (Anonymous function)
 
-*Defined in [src/Fiber/Fiber.ts:90](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L90)*
+*Defined in [src/Fiber/Fiber.ts:90](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L90)*
 
 #### Type parameters:
 
@@ -257,7 +257,7 @@ ___
 
 ▸ `Const`**listenFor**\<A>(`state`: A): (Anonymous function)
 
-*Defined in [src/Fiber/Fiber.ts:114](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Fiber/Fiber.ts#L114)*
+*Defined in [src/Fiber/Fiber.ts:114](https://github.com/TylorS/typed-fp/blob/f129829/src/Fiber/Fiber.ts#L114)*
 
 #### Type parameters:
 

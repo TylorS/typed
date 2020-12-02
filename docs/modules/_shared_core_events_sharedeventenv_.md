@@ -25,7 +25,7 @@
 
 • `Const` **getSendSharedEvent**: [Effect](_effect_effect_.effect.md)\<[SharedEventEnv](../interfaces/_shared_core_events_sharedeventenv_.sharedeventenv.md), (event: [SharedEvent](_shared_core_events_sharedevent_.sharedevent.md)) => void> = asks( (e: SharedEventEnv) => e.sharedEvents[0],)
 
-*Defined in [src/Shared/core/events/SharedEventEnv.ts:13](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/events/SharedEventEnv.ts#L13)*
+*Defined in [src/Shared/core/events/SharedEventEnv.ts:13](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/core/events/SharedEventEnv.ts#L13)*
 
 ___
 
@@ -33,7 +33,7 @@ ___
 
 • `Const` **getSharedEvents**: [Effect](_effect_effect_.effect.md)\<[SharedEventEnv](../interfaces/_shared_core_events_sharedeventenv_.sharedeventenv.md), Stream\<[SharedEvent](_shared_core_events_sharedevent_.sharedevent.md)>> = asks( (e: SharedEventEnv) => e.sharedEvents[1],)
 
-*Defined in [src/Shared/core/events/SharedEventEnv.ts:9](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/events/SharedEventEnv.ts#L9)*
+*Defined in [src/Shared/core/events/SharedEventEnv.ts:9](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/core/events/SharedEventEnv.ts#L9)*
 
 ## Functions
 
@@ -41,7 +41,7 @@ ___
 
 ▸ `Const`**sendSharedEvent**(`event`: [SharedEvent](_shared_core_events_sharedevent_.sharedevent.md)): [Effect](_effect_effect_.effect.md)\<[SharedEventEnv](../interfaces/_shared_core_events_sharedeventenv_.sharedeventenv.md), void>
 
-*Defined in [src/Shared/core/events/SharedEventEnv.ts:17](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/events/SharedEventEnv.ts#L17)*
+*Defined in [src/Shared/core/events/SharedEventEnv.ts:17](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/core/events/SharedEventEnv.ts#L17)*
 
 #### Parameters:
 

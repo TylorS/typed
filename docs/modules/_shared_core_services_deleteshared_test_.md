@@ -20,7 +20,7 @@
 
 • `Const` **test**: Test = describe(\`deleteShared\`, [ given(\`a Shared value\`, [ it(\`deletes it from the key store\`, ({ ok, notOk }, done) => { const initial = 0 const state = createShared('test', Pure.of(initial)) const { namespaceA, keyStoreA, keyStores } = createKeyStoresFrom(state, initial) const sharedEvents = createAdapter() const sut = doEffect(function* () { try { ok(keyStoreA.has(state.key)) yield* deleteShared(state) notOk(keyStoreA.has(state.key)) done() } catch (error) { done(error) } }) pipe( sut, provideAll({ currentNamespace: namespaceA, namespaceKeyStores: keyStores, sharedEvents, }), execPure, ) }), it(\`deletes it from the key store\`, ({ ok, notOk, equal }, done) => { const initial = 0 const state = createShared('test', Pure.of(initial)) const { namespaceA, keyStoreA, keyStores } = createKeyStoresFrom(state, initial) const sharedEvents = createAdapter() const scheduler = newDefaultScheduler() const expected: SharedValueDeleted = { type: 'sharedValue/deleted', namespace: namespaceA, shared: state, } runEffects( tap((event) => { try { equal(expected, event) done() } catch (error) { done(error) } }, sharedEvents[1]), scheduler, ) const sut = doEffect(function* () { try { ok(keyStoreA.has(state.key)) yield* deleteShared(state) notOk(keyStoreA.has(state.key)) } catch (error) { done(error) } }) pipe( sut, provideAll({ currentNamespace: namespaceA, namespaceKeyStores: keyStores, sharedEvents, }), execPure, ) }), ]),])
 
-*Defined in [src/Shared/core/services/deleteShared.test.ts:14](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/services/deleteShared.test.ts#L14)*
+*Defined in [src/Shared/core/services/deleteShared.test.ts:14](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/core/services/deleteShared.test.ts#L14)*
 
 ## Functions
 
@@ -28,7 +28,7 @@
 
 ▸ **createKeyStoresFrom**\<S>(`state`: S, `initial`: [GetSharedValue](_shared_core_model_shared_.md#getsharedvalue)\<S>): object
 
-*Defined in [src/Shared/core/services/deleteShared.test.ts:92](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/core/services/deleteShared.test.ts#L92)*
+*Defined in [src/Shared/core/services/deleteShared.test.ts:92](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/core/services/deleteShared.test.ts#L92)*
 
 #### Type parameters:
 

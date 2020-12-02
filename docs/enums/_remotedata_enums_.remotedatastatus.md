@@ -23,7 +23,7 @@ All of the statuses RemoteData can be in
 
 •  **Failure**:  = "failure"
 
-*Defined in [src/RemoteData/enums.ts:7](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/enums.ts#L7)*
+*Defined in [src/RemoteData/enums.ts:7](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/enums.ts#L7)*
 
 ___
 
@@ -31,7 +31,7 @@ ___
 
 •  **Loading**:  = "loading"
 
-*Defined in [src/RemoteData/enums.ts:6](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/enums.ts#L6)*
+*Defined in [src/RemoteData/enums.ts:6](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/enums.ts#L6)*
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 •  **NoData**:  = "no-data"
 
-*Defined in [src/RemoteData/enums.ts:5](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/enums.ts#L5)*
+*Defined in [src/RemoteData/enums.ts:5](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/enums.ts#L5)*
 
 ___
 
@@ -47,7 +47,7 @@ ___
 
 •  **RefreshingFailure**:  = "refreshing-failure"
 
-*Defined in [src/RemoteData/enums.ts:9](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/enums.ts#L9)*
+*Defined in [src/RemoteData/enums.ts:9](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/enums.ts#L9)*
 
 ___
 
@@ -55,7 +55,7 @@ ___
 
 •  **RefreshingSuccess**:  = "refreshing-success"
 
-*Defined in [src/RemoteData/enums.ts:10](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/enums.ts#L10)*
+*Defined in [src/RemoteData/enums.ts:10](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/enums.ts#L10)*
 
 ___
 
@@ -63,4 +63,4 @@ ___
 
 •  **Success**:  = "success"
 
-*Defined in [src/RemoteData/enums.ts:8](https://github.com/TylorS/typed-fp/blob/6ccb290/src/RemoteData/enums.ts#L8)*
+*Defined in [src/RemoteData/enums.ts:8](https://github.com/TylorS/typed-fp/blob/f129829/src/RemoteData/enums.ts#L8)*

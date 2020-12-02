@@ -20,7 +20,7 @@
 
 ▸ **createRef**\<A>(): [Ref](../interfaces/_shared_ref_ref_.ref.md)\<A \| undefined>
 
-*Defined in [src/Shared/Ref/Ref.ts:8](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/Ref/Ref.ts#L8)*
+*Defined in [src/Shared/Ref/Ref.ts:8](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/Ref/Ref.ts#L8)*
 
 #### Type parameters:
 
@@ -32,7 +32,7 @@ Name |
 
 ▸ **createRef**\<A>(`value`: A): [Ref](../interfaces/_shared_ref_ref_.ref.md)\<A>
 
-*Defined in [src/Shared/Ref/Ref.ts:9](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/Ref/Ref.ts#L9)*
+*Defined in [src/Shared/Ref/Ref.ts:9](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/Ref/Ref.ts#L9)*
 
 #### Type parameters:
 

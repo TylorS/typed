@@ -20,7 +20,7 @@
 
 Ƭ  **SharedEventHandler**\<A>: readonly [guard: Guard\<unknown, A>, handler: function]
 
-*Defined in [src/Shared/createSharedEnvProvider/SharedEventHandler.ts:6](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/SharedEventHandler.ts#L6)*
+*Defined in [src/Shared/createSharedEnvProvider/SharedEventHandler.ts:6](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/createSharedEnvProvider/SharedEventHandler.ts#L6)*
 
 #### Type parameters:
 
@@ -34,7 +34,7 @@ Name | Type |
 
 ▸ **createSharedEventHandler**\<A>(`guard`: Guard\<unknown, A>, `handler`: (value: A) => [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), any>): [SharedEventHandler](_shared_createsharedenvprovider_sharedeventhandler_.md#sharedeventhandler)\<A>
 
-*Defined in [src/Shared/createSharedEnvProvider/SharedEventHandler.ts:14](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Shared/createSharedEnvProvider/SharedEventHandler.ts#L14)*
+*Defined in [src/Shared/createSharedEnvProvider/SharedEventHandler.ts:14](https://github.com/TylorS/typed-fp/blob/f129829/src/Shared/createSharedEnvProvider/SharedEventHandler.ts#L14)*
 
 Construct SharedEventHandler instances
 

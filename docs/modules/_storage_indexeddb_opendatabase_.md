@@ -16,7 +16,7 @@
 
 ▸ **openDatabase**(`name`: string): [Future](_future_exports_.md#future)\<[IndexedDbFactoryEnv](../interfaces/_storage_indexeddb_indexeddbfactoryenv_.indexeddbfactoryenv.md), Error, IDBDatabase>
 
-*Defined in [src/Storage/indexedDb/openDatabase.ts:11](https://github.com/TylorS/typed-fp/blob/6ccb290/src/Storage/indexedDb/openDatabase.ts#L11)*
+*Defined in [src/Storage/indexedDb/openDatabase.ts:11](https://github.com/TylorS/typed-fp/blob/f129829/src/Storage/indexedDb/openDatabase.ts#L11)*
 
 Open a database at a specific name.
 

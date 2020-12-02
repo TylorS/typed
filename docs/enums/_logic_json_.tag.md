@@ -20,7 +20,7 @@
 
 •  **Date**: 
 
-*Defined in [src/logic/json.ts:54](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/json.ts#L54)*
+*Defined in [src/logic/json.ts:54](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/json.ts#L54)*
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 •  **Map**: 
 
-*Defined in [src/logic/json.ts:51](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/json.ts#L51)*
+*Defined in [src/logic/json.ts:51](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/json.ts#L51)*
 
 ___
 
@@ -36,7 +36,7 @@ ___
 
 •  **Set**: 
 
-*Defined in [src/logic/json.ts:50](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/json.ts#L50)*
+*Defined in [src/logic/json.ts:50](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/json.ts#L50)*
 
 ___
 
@@ -44,7 +44,7 @@ ___
 
 •  **Symbol**: 
 
-*Defined in [src/logic/json.ts:52](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/json.ts#L52)*
+*Defined in [src/logic/json.ts:52](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/json.ts#L52)*
 
 ___
 
@@ -52,4 +52,4 @@ ___
 
 •  **SymbolFor**: 
 
-*Defined in [src/logic/json.ts:53](https://github.com/TylorS/typed-fp/blob/6ccb290/src/logic/json.ts#L53)*
+*Defined in [src/logic/json.ts:53](https://github.com/TylorS/typed-fp/blob/f129829/src/logic/json.ts#L53)*
