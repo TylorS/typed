@@ -20,7 +20,7 @@
 
 • `Const` **provideUuidEnv**: [Provider](_effect_provide_.md#provider)\<[UuidEnv](../interfaces/_uuid_common_.uuidenv.md)> = provideSome(uuidEnv)
 
-*Defined in [src/node/UuidEnv.ts:20](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/node/UuidEnv.ts#L20)*
+*Defined in [src/node/UuidEnv.ts:20](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/node/UuidEnv.ts#L20)*
 
 ## Object literals
 
@@ -28,7 +28,7 @@
 
 ▪ `Const` **uuidEnv**: object
 
-*Defined in [src/node/UuidEnv.ts:9](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/node/UuidEnv.ts#L9)*
+*Defined in [src/node/UuidEnv.ts:9](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/node/UuidEnv.ts#L9)*
 
 A node-specific implementation of UuidEnv
 

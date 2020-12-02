@@ -20,7 +20,7 @@
 
 • `Const` **provideRafEnv**: [Provider](_effect_provide_.md#provider)\<[RafEnv](../interfaces/_dom_raf_.rafenv.md)> = provideSome(rafEnv)
 
-*Defined in [src/browser/RafEnv.ts:16](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/browser/RafEnv.ts#L16)*
+*Defined in [src/browser/RafEnv.ts:16](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/browser/RafEnv.ts#L16)*
 
 Provide a RafEnv to an Effect using the native browser implementation of requestAnimationFrame.
 
@@ -30,7 +30,7 @@ Provide a RafEnv to an Effect using the native browser implementation of request
 
 ▪ `Const` **rafEnv**: object
 
-*Defined in [src/browser/RafEnv.ts:8](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/browser/RafEnv.ts#L8)*
+*Defined in [src/browser/RafEnv.ts:8](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/browser/RafEnv.ts#L8)*
 
 Browser implementation of RafEnv with a return handle of `number` matching that of the
 native requestAnimationFrame and cancelAnimationFrame.

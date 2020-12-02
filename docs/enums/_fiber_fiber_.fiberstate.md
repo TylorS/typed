@@ -21,7 +21,7 @@
 
 •  **Completed**:  = "completed"
 
-*Defined in [src/Fiber/Fiber.ts:34](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Fiber/Fiber.ts#L34)*
+*Defined in [src/Fiber/Fiber.ts:34](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L34)*
 
 ___
 
@@ -29,7 +29,7 @@ ___
 
 •  **Failed**:  = "failed"
 
-*Defined in [src/Fiber/Fiber.ts:32](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Fiber/Fiber.ts#L32)*
+*Defined in [src/Fiber/Fiber.ts:32](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L32)*
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 •  **Paused**:  = "paused"
 
-*Defined in [src/Fiber/Fiber.ts:30](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Fiber/Fiber.ts#L30)*
+*Defined in [src/Fiber/Fiber.ts:30](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L30)*
 
 ___
 
@@ -45,7 +45,7 @@ ___
 
 •  **Queued**:  = "queued"
 
-*Defined in [src/Fiber/Fiber.ts:29](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Fiber/Fiber.ts#L29)*
+*Defined in [src/Fiber/Fiber.ts:29](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L29)*
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 •  **Running**:  = "running"
 
-*Defined in [src/Fiber/Fiber.ts:31](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Fiber/Fiber.ts#L31)*
+*Defined in [src/Fiber/Fiber.ts:31](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L31)*
 
 ___
 
@@ -61,4 +61,4 @@ ___
 
 •  **Success**:  = "success"
 
-*Defined in [src/Fiber/Fiber.ts:33](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Fiber/Fiber.ts#L33)*
+*Defined in [src/Fiber/Fiber.ts:33](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L33)*

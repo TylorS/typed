@@ -17,7 +17,7 @@
 
 ▸ **createSharedState**\<S>(`shared`: S): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md) & [EnvOf](_effect_effect_.md#envof)\<S["initial"]>, [State](_shared_state_state_.md#state)\<[ReturnOf](_effect_effect_.md#returnof)\<S["initial"]>, [ReturnOf](_effect_effect_.md#returnof)\<S["initial"]>>>
 
-*Defined in [src/Shared/State/getSharedState.ts:30](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/State/getSharedState.ts#L30)*
+*Defined in [src/Shared/State/getSharedState.ts:30](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/State/getSharedState.ts#L30)*
 
 #### Type parameters:
 
@@ -39,7 +39,7 @@ ___
 
 ▸ `Const`**getSharedState**\<S>(`shared`: S): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md) & [GetSharedEnv](_shared_core_model_shared_.md#getsharedenv)\<S>, [State](_shared_state_state_.md#state)\<[GetSharedValue](_shared_core_model_shared_.md#getsharedvalue)\<S>>>
 
-*Defined in [src/Shared/State/getSharedState.ts:21](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/State/getSharedState.ts#L21)*
+*Defined in [src/Shared/State/getSharedState.ts:21](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/State/getSharedState.ts#L21)*
 
 Get a Shared value as a State object
 

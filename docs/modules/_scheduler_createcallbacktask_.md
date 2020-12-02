@@ -16,7 +16,7 @@
 
 ▸ **createCallbackTask**(`cb`: IO\<Disposable>, `onError?`: undefined \| (error: Error) => void): Task
 
-*Defined in [src/Scheduler/createCallbackTask.ts:8](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Scheduler/createCallbackTask.ts#L8)*
+*Defined in [src/Scheduler/createCallbackTask.ts:8](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Scheduler/createCallbackTask.ts#L8)*
 
 Convert an IO<Disposable> into a Most.js Task
 

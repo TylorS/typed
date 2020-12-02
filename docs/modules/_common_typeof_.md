@@ -16,7 +16,7 @@
 
 ▸ **typeOf**(`value`: string): \"String\"
 
-*Defined in [src/common/typeOf.ts:4](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/common/typeOf.ts#L4)*
+*Defined in [src/common/typeOf.ts:4](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/typeOf.ts#L4)*
 
 Returns the type of a value.
 
@@ -30,7 +30,7 @@ Name | Type |
 
 ▸ **typeOf**(`value`: number): \"Number\"
 
-*Defined in [src/common/typeOf.ts:5](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/common/typeOf.ts#L5)*
+*Defined in [src/common/typeOf.ts:5](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/typeOf.ts#L5)*
 
 #### Parameters:
 
@@ -42,7 +42,7 @@ Name | Type |
 
 ▸ **typeOf**(`value`: null): \"Null\"
 
-*Defined in [src/common/typeOf.ts:6](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/common/typeOf.ts#L6)*
+*Defined in [src/common/typeOf.ts:6](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/typeOf.ts#L6)*
 
 #### Parameters:
 
@@ -54,7 +54,7 @@ Name | Type |
 
 ▸ **typeOf**(`value`: undefined): \"Undefined\"
 
-*Defined in [src/common/typeOf.ts:7](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/common/typeOf.ts#L7)*
+*Defined in [src/common/typeOf.ts:7](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/typeOf.ts#L7)*
 
 #### Parameters:
 
@@ -66,7 +66,7 @@ Name | Type |
 
 ▸ **typeOf**(`value`: undefined): \"Undefined\"
 
-*Defined in [src/common/typeOf.ts:8](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/common/typeOf.ts#L8)*
+*Defined in [src/common/typeOf.ts:8](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/typeOf.ts#L8)*
 
 #### Parameters:
 
@@ -78,7 +78,7 @@ Name | Type |
 
 ▸ **typeOf**(`value`: any): string
 
-*Defined in [src/common/typeOf.ts:9](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/common/typeOf.ts#L9)*
+*Defined in [src/common/typeOf.ts:9](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/typeOf.ts#L9)*
 
 #### Parameters:
 

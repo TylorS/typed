@@ -16,4 +16,4 @@
 
 Ƭ  **HttpHeaders**: Readonly\<Record\<string, string \| undefined>>
 
-*Defined in [src/http/HttpHeaders.ts:1](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/HttpHeaders.ts#L1)*
+*Defined in [src/http/HttpHeaders.ts:1](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/HttpHeaders.ts#L1)*

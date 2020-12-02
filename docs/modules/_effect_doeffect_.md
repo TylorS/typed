@@ -16,7 +16,7 @@
 
 ▸ **doEffect**\<G>(`effectGeneratorFunction`: G): [EffectOf](_effect_effect_.md#effectof)\<G>
 
-*Defined in [src/Effect/doEffect.ts:6](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/doEffect.ts#L6)*
+*Defined in [src/Effect/doEffect.ts:6](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/doEffect.ts#L6)*
 
 Convert a Generator Function into an Effect
 

@@ -16,7 +16,7 @@
 
 ▸ **fromReaderTask**\<E, A>(`rte`: ReaderTask\<E, A>): [Effect](_effect_effect_.effect.md)\<E, A>
 
-*Defined in [src/Effect/fromReaderTask.ts:12](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/fromReaderTask.ts#L12)*
+*Defined in [src/Effect/fromReaderTask.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/fromReaderTask.ts#L12)*
 
 Convert a ReaderTask<E, A> into an Effect<E, A>
 

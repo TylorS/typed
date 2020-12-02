@@ -21,7 +21,7 @@
 
 • `Const` **DEFAULT\_MATCH**: string[] = ['', '']
 
-*Defined in [src/common/functionName.ts:3](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/common/functionName.ts#L3)*
+*Defined in [src/common/functionName.ts:3](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/functionName.ts#L3)*
 
 ___
 
@@ -29,7 +29,7 @@ ___
 
 • `Const` **FUNCTION\_NAME\_REGEX**: RegExp = /^function\s*([\w$]+)/
 
-*Defined in [src/common/functionName.ts:1](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/common/functionName.ts#L1)*
+*Defined in [src/common/functionName.ts:1](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/functionName.ts#L1)*
 
 ## Functions
 
@@ -37,7 +37,7 @@ ___
 
 ▸ **functionName**(`fn`: Function): string
 
-*Defined in [src/common/functionName.ts:12](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/common/functionName.ts#L12)*
+*Defined in [src/common/functionName.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/functionName.ts#L12)*
 
 Returns the name of a function.
 

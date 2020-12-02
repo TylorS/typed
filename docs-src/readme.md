@@ -1,7 +1,3 @@
-**[@typed/fp](README.md)**
-
-> [Globals](globals.md)
-
 # @typed/fp
 
 `@typed/fp` is composed of many à-la-carte modules, bringing together [fp-ts](https://gcanti.github.io/fp-ts/) and [@most/core](https://mostcore.readthedocs.io/en/latest/)
@@ -35,4 +31,4 @@ At present only modern environments that support ES2019 Syntax, including newer 
 
 ## API Documentation
 
-For the time being documentation
+For the time being documentation 

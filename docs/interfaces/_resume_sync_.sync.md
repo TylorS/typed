@@ -29,7 +29,7 @@ Name |
 
 • `Readonly` **async**: false
 
-*Defined in [src/Resume/Sync.ts:5](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Resume/Sync.ts#L5)*
+*Defined in [src/Resume/Sync.ts:5](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Resume/Sync.ts#L5)*
 
 ___
 
@@ -37,4 +37,4 @@ ___
 
 • `Readonly` **value**: A
 
-*Defined in [src/Resume/Sync.ts:6](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Resume/Sync.ts#L6)*
+*Defined in [src/Resume/Sync.ts:6](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Resume/Sync.ts#L6)*

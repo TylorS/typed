@@ -16,7 +16,7 @@
 
 Ƭ  **Args**\<A>: Readonly\<A>
 
-*Defined in [src/common/Args.ts:4](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/common/Args.ts#L4)*
+*Defined in [src/common/Args.ts:4](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/Args.ts#L4)*
 
 Constructor for creating readonly argument tuples.
 

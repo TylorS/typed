@@ -22,4 +22,4 @@ Environment type for IDBFactory resources
 
 • `Readonly` **indexedDbFactory**: IDBFactory
 
-*Defined in [src/Storage/indexedDb/IndexedDbFactoryEnv.ts:5](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Storage/indexedDb/IndexedDbFactoryEnv.ts#L5)*
+*Defined in [src/Storage/indexedDb/IndexedDbFactoryEnv.ts:5](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Storage/indexedDb/IndexedDbFactoryEnv.ts#L5)*

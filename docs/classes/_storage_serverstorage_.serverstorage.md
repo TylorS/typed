@@ -40,7 +40,7 @@
 
 \+ **new ServerStorage**(`map?`: [Map](../enums/_logic_json_.tag.md#map)\<string, string>): [ServerStorage](_storage_serverstorage_.serverstorage.md)
 
-*Defined in [src/Storage/serverStorage.ts:13](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Storage/serverStorage.ts#L13)*
+*Defined in [src/Storage/serverStorage.ts:13](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Storage/serverStorage.ts#L13)*
 
 #### Parameters:
 
@@ -56,7 +56,7 @@ Name | Type |
 
 •  **map**: [Map](../interfaces/_shared_core_model_sharedkeystore_.sharedkeystore.md#map)\<string, string>
 
-*Defined in [src/Storage/serverStorage.ts:13](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Storage/serverStorage.ts#L13)*
+*Defined in [src/Storage/serverStorage.ts:13](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Storage/serverStorage.ts#L13)*
 
 ## Accessors
 
@@ -64,7 +64,7 @@ Name | Type |
 
 • get **length**(): number
 
-*Defined in [src/Storage/serverStorage.ts:19](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Storage/serverStorage.ts#L19)*
+*Defined in [src/Storage/serverStorage.ts:19](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Storage/serverStorage.ts#L19)*
 
 **Returns:** number
 
@@ -74,7 +74,7 @@ Name | Type |
 
 ▸ **clear**(): void
 
-*Defined in [src/Storage/serverStorage.ts:23](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Storage/serverStorage.ts#L23)*
+*Defined in [src/Storage/serverStorage.ts:23](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Storage/serverStorage.ts#L23)*
 
 **Returns:** void
 
@@ -84,7 +84,7 @@ ___
 
 ▸ **getItem**(`key`: string): string \| null
 
-*Defined in [src/Storage/serverStorage.ts:31](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Storage/serverStorage.ts#L31)*
+*Defined in [src/Storage/serverStorage.ts:31](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Storage/serverStorage.ts#L31)*
 
 #### Parameters:
 
@@ -100,7 +100,7 @@ ___
 
 ▸ **key**(`index`: number): string \| null
 
-*Defined in [src/Storage/serverStorage.ts:35](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Storage/serverStorage.ts#L35)*
+*Defined in [src/Storage/serverStorage.ts:35](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Storage/serverStorage.ts#L35)*
 
 #### Parameters:
 
@@ -116,7 +116,7 @@ ___
 
 ▸ **removeItem**(`key`: string): void
 
-*Defined in [src/Storage/serverStorage.ts:41](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Storage/serverStorage.ts#L41)*
+*Defined in [src/Storage/serverStorage.ts:41](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Storage/serverStorage.ts#L41)*
 
 #### Parameters:
 
@@ -132,7 +132,7 @@ ___
 
 ▸ **setItem**(`key`: string, `value`: string): void
 
-*Defined in [src/Storage/serverStorage.ts:27](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Storage/serverStorage.ts#L27)*
+*Defined in [src/Storage/serverStorage.ts:27](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Storage/serverStorage.ts#L27)*
 
 #### Parameters:
 

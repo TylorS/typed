@@ -16,7 +16,7 @@
 
 ▸ **oneOf**\<A, B>(`matches`: ReadonlyArray\<[Match](_logic_types_.match.md)\<A, B>>): [Match](_logic_types_.match.md)\<A, B>
 
-*Defined in [src/logic/oneOf.ts:10](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/logic/oneOf.ts#L10)*
+*Defined in [src/logic/oneOf.ts:10](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/oneOf.ts#L10)*
 
 Combine a list of matches into one.
 

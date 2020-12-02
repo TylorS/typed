@@ -16,7 +16,7 @@
 
 ▸ `Const`**provideSharedEnv**(`effect`: [Effect](_effect_effect_.effect.md)\<E & [SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), A>): [Effect](_effect_effect_.effect.md)\<E, A>
 
-*Defined in [src/Shared/createSharedEnvProvider/provideSharedEnv.ts:19](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/createSharedEnvProvider/provideSharedEnv.ts#L19)*
+*Defined in [src/Shared/createSharedEnvProvider/provideSharedEnv.ts:19](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/createSharedEnvProvider/provideSharedEnv.ts#L19)*
 
 This is for running an application defined using an Effect requiring a SharedEnv, using
 

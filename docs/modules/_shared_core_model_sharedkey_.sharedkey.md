@@ -51,7 +51,7 @@ ___
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[SharedKey](_shared_core_model_sharedkey_.sharedkey.md)\<string \| number \| symbol>> = createSchema((t) => t.newtype(t.propertyKey, flow(wrap, some), 'SharedKey'))
 
-*Defined in [src/Shared/core/model/SharedKey.ts:14](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/core/model/SharedKey.ts#L14)*
+*Defined in [src/Shared/core/model/SharedKey.ts:14](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/core/model/SharedKey.ts#L14)*
 
 ___
 
@@ -59,7 +59,7 @@ ___
 
 •  **unwrap**: (s: S) => A
 
-*Defined in [src/Shared/core/model/SharedKey.ts:12](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/core/model/SharedKey.ts#L12)*
+*Defined in [src/Shared/core/model/SharedKey.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/core/model/SharedKey.ts#L12)*
 
 ___
 
@@ -67,4 +67,4 @@ ___
 
 •  **wrap**: (a: A) => S
 
-*Defined in [src/Shared/core/model/SharedKey.ts:12](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/core/model/SharedKey.ts#L12)*
+*Defined in [src/Shared/core/model/SharedKey.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/core/model/SharedKey.ts#L12)*

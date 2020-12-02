@@ -16,7 +16,7 @@
 
 ▸ `Const`**useOneOf**\<E, O, I, A>(`shared`: [Shared](_shared_core_model_shared_.shared.md)\<[SharedKey](_shared_core_model_sharedkey_.sharedkey.md), E, O>, `input`: I, ...`matches`: A): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md) & E, O>
 
-*Defined in [src/Shared/hooks/useOneOf.ts:12](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/hooks/useOneOf.ts#L12)*
+*Defined in [src/Shared/hooks/useOneOf.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/hooks/useOneOf.ts#L12)*
 
 Keep track of the current match value.
 

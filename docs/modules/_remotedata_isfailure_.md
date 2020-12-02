@@ -16,7 +16,7 @@
 
 ▸ `Const`**isFailure**\<A, B>(`remoteData`: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>): remoteData is Failure\<A>
 
-*Defined in [src/RemoteData/isFailure.ts:8](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/RemoteData/isFailure.ts#L8)*
+*Defined in [src/RemoteData/isFailure.ts:8](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/isFailure.ts#L8)*
 
 RemoteData is a Failure
 

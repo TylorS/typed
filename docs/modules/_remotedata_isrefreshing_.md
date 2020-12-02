@@ -16,7 +16,7 @@
 
 ▸ `Const`**isRefreshing**\<A, B>(`remoteData`: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>): remoteData is Refreshing\<A, B>
 
-*Defined in [src/RemoteData/isRefreshing.ts:7](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/RemoteData/isRefreshing.ts#L7)*
+*Defined in [src/RemoteData/isRefreshing.ts:7](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/isRefreshing.ts#L7)*
 
 Check if a RemoteData is Refreshing
 

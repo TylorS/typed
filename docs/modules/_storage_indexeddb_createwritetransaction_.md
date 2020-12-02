@@ -16,7 +16,7 @@
 
 ▸ `Const`**createWriteTransaction**(`database`: IDBDatabase): [IndexedDbStoreTransation](../interfaces/_storage_indexeddb_indexeddbstoretransaction_.indexeddbstoretransation.md)
 
-*Defined in [src/Storage/indexedDb/createWriteTransaction.ts:6](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Storage/indexedDb/createWriteTransaction.ts#L6)*
+*Defined in [src/Storage/indexedDb/createWriteTransaction.ts:6](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Storage/indexedDb/createWriteTransaction.ts#L6)*
 
 Create a Write transaction
 

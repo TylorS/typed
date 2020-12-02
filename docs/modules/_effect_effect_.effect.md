@@ -36,7 +36,7 @@ Name |
 
 • `Readonly` **[Symbol.iterator]**: () => [EffectGenerator](_effect_effect_.md#effectgenerator)\<E, A>
 
-*Defined in [src/Effect/Effect.ts:11](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L11)*
+*Defined in [src/Effect/Effect.ts:11](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L11)*
 
 ## Functions
 
@@ -44,7 +44,7 @@ Name |
 
 ▸ `Const`**fromIO**\<A>(`io`: IO\<A>): [Pure](_effect_effect_.md#pure)\<A>
 
-*Defined in [src/Effect/Effect.ts:23](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L23)*
+*Defined in [src/Effect/Effect.ts:23](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L23)*
 
 Create an Effect from an IO
 
@@ -68,7 +68,7 @@ ___
 
 ▸ `Const`**of**\<A>(`value`: A): [Pure](_effect_effect_.md#pure)\<A>
 
-*Defined in [src/Effect/Effect.ts:18](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L18)*
+*Defined in [src/Effect/Effect.ts:18](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L18)*
 
 Create an Effect containing a given value
 

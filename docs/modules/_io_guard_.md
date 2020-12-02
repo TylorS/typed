@@ -38,7 +38,7 @@
 
 • `Const` **json**: Guard\<unknown, Json> = G.lazy(() => G.union(jsonRecord, jsonArray, jsonPrimitive),)
 
-*Defined in [src/io/Guard.ts:115](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L115)*
+*Defined in [src/io/Guard.ts:115](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L115)*
 
 Create a Guard instance for Json
 
@@ -48,7 +48,7 @@ ___
 
 • `Const` **jsonArray**: Guard\<unknown, JsonArray> = G.array(json)
 
-*Defined in [src/io/Guard.ts:125](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L125)*
+*Defined in [src/io/Guard.ts:125](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L125)*
 
 Create a Guard instance for JsonArray
 
@@ -58,7 +58,7 @@ ___
 
 • `Const` **jsonPrimitive**: Guard\<unknown, string \| number \| boolean \| null> = G.nullable( G.union(G.string, G.number, G.boolean),)
 
-*Defined in [src/io/Guard.ts:129](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L129)*
+*Defined in [src/io/Guard.ts:129](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L129)*
 
 Create a Guard instance for Json Primitives
 
@@ -68,7 +68,7 @@ ___
 
 • `Const` **jsonRecord**: Guard\<unknown, JsonRecord> = G.record(json)
 
-*Defined in [src/io/Guard.ts:121](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L121)*
+*Defined in [src/io/Guard.ts:121](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L121)*
 
 Create a Guard instance for JsonRecord
 
@@ -78,7 +78,7 @@ ___
 
 • `Const` **progress**: Guard\<unknown, [Progress](../interfaces/_remotedata_progress_.progress.md)> = G.type({ loaded: G.number, total: option(G.number),})
 
-*Defined in [src/io/Guard.ts:99](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L99)*
+*Defined in [src/io/Guard.ts:99](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L99)*
 
 Create a Guard instance for RemoteData's Progress
 
@@ -88,7 +88,7 @@ Create a Guard instance for RemoteData's Progress
 
 ▸ `Const`**either**\<A, B>(`left`: Guard\<unknown, A>, `right`: Guard\<unknown, B>): Guard\<unknown, Either\<A, B>>
 
-*Defined in [src/io/Guard.ts:38](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L38)*
+*Defined in [src/io/Guard.ts:38](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L38)*
 
 Create a Guard instance for Either<A, B>
 
@@ -114,7 +114,7 @@ ___
 
 ▸ `Const`**map**\<A, B>(`k`: Guard\<unknown, A>, `v`: Guard\<unknown, B>): object
 
-*Defined in [src/io/Guard.ts:22](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L22)*
+*Defined in [src/io/Guard.ts:22](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L22)*
 
 Create a Guard instance for Map
 
@@ -144,7 +144,7 @@ ___
 
 ▸ `Const`**option**\<A>(`v`: Guard\<unknown, A>): Guard\<unknown, Option\<A>>
 
-*Defined in [src/io/Guard.ts:32](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L32)*
+*Defined in [src/io/Guard.ts:32](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L32)*
 
 Create a Guard instance for Option<A>
 
@@ -168,7 +168,7 @@ ___
 
 ▸ `Const`**remoteData**\<A, B>(`left`: Guard\<unknown, A>, `right`: Guard\<unknown, B>): Guard\<unknown, [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>>
 
-*Defined in [src/io/Guard.ts:47](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L47)*
+*Defined in [src/io/Guard.ts:47](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L47)*
 
 Create a Guard instance for RemoteData<A, B>
 
@@ -194,7 +194,7 @@ ___
 
 ▸ `Const`**set**\<A>(`t`: Guard\<unknown, A>): Guard\<unknown, ReadonlySet\<A>>
 
-*Defined in [src/io/Guard.ts:15](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L15)*
+*Defined in [src/io/Guard.ts:15](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L15)*
 
 Create a Guard instance for Set
 
@@ -218,7 +218,7 @@ Name | Type |
 
 ▪ `Const` **Schemable**: object
 
-*Defined in [src/io/Guard.ts:141](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L141)*
+*Defined in [src/io/Guard.ts:141](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L141)*
 
 TypedSchemable instance for Guard
 
@@ -251,7 +251,7 @@ ___
 
 ▪ `Const` **bigint**: object
 
-*Defined in [src/io/Guard.ts:92](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L92)*
+*Defined in [src/io/Guard.ts:92](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L92)*
 
 Create a Guard instance for BigInt
 
@@ -267,7 +267,7 @@ ___
 
 ▪ `Const` **date**: object
 
-*Defined in [src/io/Guard.ts:71](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L71)*
+*Defined in [src/io/Guard.ts:71](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L71)*
 
 Guard instance for Date
 
@@ -283,7 +283,7 @@ ___
 
 ▪ `Const` **int**: object
 
-*Defined in [src/io/Guard.ts:85](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L85)*
+*Defined in [src/io/Guard.ts:85](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L85)*
 
 Create a Guard instance for Int
 
@@ -299,7 +299,7 @@ ___
 
 ▪ `Const` **symbol**: object
 
-*Defined in [src/io/Guard.ts:136](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L136)*
+*Defined in [src/io/Guard.ts:136](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L136)*
 
 Create a Guard instance for symbol
 
@@ -315,7 +315,7 @@ ___
 
 ▪ `Const` **unknown**: object
 
-*Defined in [src/io/Guard.ts:107](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L107)*
+*Defined in [src/io/Guard.ts:107](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L107)*
 
 Create a Guard instance for `unknown`
 
@@ -331,7 +331,7 @@ ___
 
 ▪ `Const` **uuid**: object
 
-*Defined in [src/io/Guard.ts:78](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/Guard.ts#L78)*
+*Defined in [src/io/Guard.ts:78](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/Guard.ts#L78)*
 
 Create a Guard instance for Uuid
 

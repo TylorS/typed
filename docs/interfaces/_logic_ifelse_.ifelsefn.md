@@ -12,7 +12,7 @@
 
 ▸ \<A, B, C>(`predicate`: [Is](../modules/_logic_types_.md#is)\<B>, `thenFn`: [Arity1](../modules/_common_types_.md#arity1)\<B, C>, `elseFn`: [Arity1](../modules/_common_types_.md#arity1)\<A, C>, `value`: A): C
 
-*Defined in [src/logic/ifElse.ts:29](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/logic/ifElse.ts#L29)*
+*Defined in [src/logic/ifElse.ts:29](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/ifElse.ts#L29)*
 
 #### Type parameters:
 
@@ -35,7 +35,7 @@ Name | Type |
 
 ▸ \<A, B>(`predicate`: Predicate\<A>, `thenFn`: [Arity1](../modules/_common_types_.md#arity1)\<A, B>, `elseFn`: [Arity1](../modules/_common_types_.md#arity1)\<A, B>, `value`: A): B
 
-*Defined in [src/logic/ifElse.ts:30](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/logic/ifElse.ts#L30)*
+*Defined in [src/logic/ifElse.ts:30](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/ifElse.ts#L30)*
 
 #### Type parameters:
 
@@ -57,7 +57,7 @@ Name | Type |
 
 ▸ \<A, B, C>(`predicate`: [Is](../modules/_logic_types_.md#is)\<B>, `thenFn`: [Arity1](../modules/_common_types_.md#arity1)\<B, C>, `elseFn`: [Arity1](../modules/_common_types_.md#arity1)\<A, C>): function
 
-*Defined in [src/logic/ifElse.ts:31](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/logic/ifElse.ts#L31)*
+*Defined in [src/logic/ifElse.ts:31](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/ifElse.ts#L31)*
 
 #### Type parameters:
 
@@ -79,7 +79,7 @@ Name | Type |
 
 ▸ \<A, B>(`predicate`: Predicate\<A>, `thenFn`: [Arity1](../modules/_common_types_.md#arity1)\<A, B>, `elseFn`: [Arity1](../modules/_common_types_.md#arity1)\<A, B>): function
 
-*Defined in [src/logic/ifElse.ts:33](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/logic/ifElse.ts#L33)*
+*Defined in [src/logic/ifElse.ts:33](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/ifElse.ts#L33)*
 
 #### Type parameters:
 
@@ -100,7 +100,7 @@ Name | Type |
 
 ▸ \<A, B, C>(`predicate`: [Is](../modules/_logic_types_.md#is)\<B>, `thenFn`: [Arity1](../modules/_common_types_.md#arity1)\<B, C>): function
 
-*Defined in [src/logic/ifElse.ts:34](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/logic/ifElse.ts#L34)*
+*Defined in [src/logic/ifElse.ts:34](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/ifElse.ts#L34)*
 
 #### Type parameters:
 
@@ -121,7 +121,7 @@ Name | Type |
 
 ▸ \<A, B>(`predicate`: Predicate\<A>, `thenFn`: [Arity1](../modules/_common_types_.md#arity1)\<A, B>): function
 
-*Defined in [src/logic/ifElse.ts:39](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/logic/ifElse.ts#L39)*
+*Defined in [src/logic/ifElse.ts:39](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/ifElse.ts#L39)*
 
 #### Type parameters:
 
@@ -141,7 +141,7 @@ Name | Type |
 
 ▸ \<A, B>(`predicate`: [Is](../modules/_logic_types_.md#is)\<B>): function
 
-*Defined in [src/logic/ifElse.ts:43](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/logic/ifElse.ts#L43)*
+*Defined in [src/logic/ifElse.ts:43](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/ifElse.ts#L43)*
 
 #### Type parameters:
 
@@ -160,7 +160,7 @@ Name | Type |
 
 ▸ \<A>(`predicate`: Predicate\<A>): function
 
-*Defined in [src/logic/ifElse.ts:52](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/logic/ifElse.ts#L52)*
+*Defined in [src/logic/ifElse.ts:52](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/ifElse.ts#L52)*
 
 #### Type parameters:
 

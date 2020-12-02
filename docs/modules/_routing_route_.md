@@ -37,7 +37,7 @@
 
 Ƭ  **GetRouteParts**\<A>: A[\"parts\"]
 
-*Defined in [src/routing/Route.ts:52](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/routing/Route.ts#L52)*
+*Defined in [src/routing/Route.ts:52](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/Route.ts#L52)*
 
 Get a tuple of path parts from a Route
 
@@ -53,7 +53,7 @@ ___
 
 Ƭ  **GetRoutePath**\<A>: A[\"path\"]
 
-*Defined in [src/routing/Route.ts:47](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/routing/Route.ts#L47)*
+*Defined in [src/routing/Route.ts:47](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/Route.ts#L47)*
 
 Get the generated path from a Route
 
@@ -69,7 +69,7 @@ ___
 
 Ƭ  **GetRouteValue**\<A>: [PartsToValues](_routing_route_.md#partstovalues)\<[GetRouteParts](_routing_route_.md#getrouteparts)\<A>>
 
-*Defined in [src/routing/Route.ts:42](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/routing/Route.ts#L42)*
+*Defined in [src/routing/Route.ts:42](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/Route.ts#L42)*
 
 Extract an object from RouteParts
 
@@ -85,7 +85,7 @@ ___
 
 Ƭ  **NormalizePart**\<A>: [A] *extends* [Route\<*infer* Parts>] ? Parts : [A] *extends* [RouteParam\<*infer* K>] ? [RouteParam\<K>] : [RemoveSlash\<Cast\<A, string>>]
 
-*Defined in [src/routing/Route.ts:90](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/routing/Route.ts#L90)*
+*Defined in [src/routing/Route.ts:90](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/Route.ts#L90)*
 
 Remove slashes from a RoutePart
 
@@ -101,7 +101,7 @@ ___
 
 Ƭ  **NormalizeParts**\<P, Normalized>: P *extends* readonly [*infer* A] ? NormalizeParts\<Cast\<Rest, RouteParts>, [NormalizePart\<Cast\<A, RoutePart>>]> : P *extends* readonly [*infer* A] ? [NormalizePart\<Cast\<A, RoutePart>>] : Normalized
 
-*Defined in [src/routing/Route.ts:78](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/routing/Route.ts#L78)*
+*Defined in [src/routing/Route.ts:78](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/Route.ts#L78)*
 
 Ensure double-slashes don't end up in paths
 
@@ -118,7 +118,7 @@ ___
 
 Ƭ  **PartToPath**\<A>: A *extends* Route\<*infer* Parts> ? PartsToPath\<Parts> : A *extends* RouteParam\<*infer* R> ? \`:${R}\` : Cast\<A, string>
 
-*Defined in [src/routing/Route.ts:69](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/routing/Route.ts#L69)*
+*Defined in [src/routing/Route.ts:69](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/Route.ts#L69)*
 
 Convert a RoutePart into a Path
 
@@ -134,7 +134,7 @@ ___
 
 Ƭ  **PartsToPath**\<P, R>: P *extends* readonly [*infer* A] ? PartsToPath\<Cast\<Rest, RouteParts>, \`${R}/${PartToPath\<Cast\<A, RoutePart>>}\`> : P *extends* readonly [*infer* A] ? \`${R}/${PartToPath\<Cast\<A, RoutePart>>}\` : R
 
-*Defined in [src/routing/Route.ts:57](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/routing/Route.ts#L57)*
+*Defined in [src/routing/Route.ts:57](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/Route.ts#L57)*
 
 Convert a Tuple of Path parts back into a Path
 
@@ -151,7 +151,7 @@ ___
 
 Ƭ  **PartsToValues**\<A>: [And](_common_and_.md#and)\<{}>
 
-*Defined in [src/routing/Route.ts:99](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/routing/Route.ts#L99)*
+*Defined in [src/routing/Route.ts:99](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/Route.ts#L99)*
 
 Converts RouteParts into a Record of values.
 
@@ -167,7 +167,7 @@ ___
 
 Ƭ  **RoutePart**: string \| [RouteParam](_routing_routeparam_.md#routeparam)\<string> \| [Route](../interfaces/_routing_route_.route.md)\<[RouteParts](_routing_route_.md#routeparts)>
 
-*Defined in [src/routing/Route.ts:20](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/routing/Route.ts#L20)*
+*Defined in [src/routing/Route.ts:20](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/Route.ts#L20)*
 
 Valid Route Parts
 
@@ -177,7 +177,7 @@ ___
 
 Ƭ  **RouteParts**: ReadonlyArray\<[RoutePart](_routing_route_.md#routepart)>
 
-*Defined in [src/routing/Route.ts:25](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/routing/Route.ts#L25)*
+*Defined in [src/routing/Route.ts:25](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/Route.ts#L25)*
 
 A Tuple of Route Parts
 
@@ -187,7 +187,7 @@ A Tuple of Route Parts
 
 • `Const` **pathSplitRegex**: RegExp = /\/+/g
 
-*Defined in [src/routing/Route.ts:7](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/routing/Route.ts#L7)*
+*Defined in [src/routing/Route.ts:7](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/Route.ts#L7)*
 
 ## Functions
 
@@ -195,7 +195,7 @@ A Tuple of Route Parts
 
 ▸ **createRoute**\<A>(`path`: A[\"path\"]): A
 
-*Defined in [src/routing/Route.ts:30](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/routing/Route.ts#L30)*
+*Defined in [src/routing/Route.ts:30](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/Route.ts#L30)*
 
 A constructor for creating a type-safe path from a Route.
 

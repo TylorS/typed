@@ -20,7 +20,7 @@
 
 ▸ **idbRequestToResume**\<A>(`tx`: [IndexedDbStoreTransation](../interfaces/_storage_indexeddb_indexeddbstoretransaction_.indexeddbstoretransation.md), `f`: (store: IDBObjectStore) => IDBRequest\<A>): [Async](../interfaces/_resume_async_.async.md)\<Either\<Error, A>>
 
-*Defined in [src/Storage/indexedDb/idbRequestToResume.ts:14](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Storage/indexedDb/idbRequestToResume.ts#L14)*
+*Defined in [src/Storage/indexedDb/idbRequestToResume.ts:14](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Storage/indexedDb/idbRequestToResume.ts#L14)*
 
 Convert an indexed db request to a Resume
 

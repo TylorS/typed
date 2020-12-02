@@ -16,7 +16,7 @@
 
 ▸ `Const`**complement**\<A, B>(`fn`: [Arity1](_common_types_.md#arity1)\<A, B>): any
 
-*Defined in [src/logic/complement.ts:16](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/logic/complement.ts#L16)*
+*Defined in [src/logic/complement.ts:16](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/complement.ts#L16)*
 
 Wrap a function in a negation
 

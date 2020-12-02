@@ -20,7 +20,7 @@
 
 Ƭ  **HttpOptions**: { body?: string \| File \| ArrayBuffer \| FormData ; headers?: [HttpHeaders](_http_httpheaders_.md#httpheaders) ; method?: [HttpMethod](_http_httpmethod_.md#httpmethod) ; onProgress?: undefined \| (progress: [Progress](../interfaces/_remotedata_progress_.progress.md)) => void  }
 
-*Defined in [src/http/HttpEnv.ts:17](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/HttpEnv.ts#L17)*
+*Defined in [src/http/HttpEnv.ts:17](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/HttpEnv.ts#L17)*
 
 #### Type declaration:
 

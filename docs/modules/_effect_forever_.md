@@ -16,7 +16,7 @@
 
 ▸ `Const`**forever**\<E, A>(`effect`: [Effect](_effect_effect_.effect.md)\<E, A>, `onValue?`: undefined \| (value: A) => void): [Effect](_effect_effect_.effect.md)\<E, never>
 
-*Defined in [src/Effect/forever.ts:7](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/forever.ts#L7)*
+*Defined in [src/Effect/forever.ts:7](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/forever.ts#L7)*
 
 Run an Effect over and over within a while-loop.
 

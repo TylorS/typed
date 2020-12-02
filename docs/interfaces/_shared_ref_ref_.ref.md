@@ -28,4 +28,4 @@ Name |
 
 •  **current**: A
 
-*Defined in [src/Shared/Ref/Ref.ts:5](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/Ref/Ref.ts#L5)*
+*Defined in [src/Shared/Ref/Ref.ts:5](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/Ref/Ref.ts#L5)*

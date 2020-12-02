@@ -27,4 +27,4 @@ Name |
 
 •  **[URI]**: [Effect](../modules/_effect_effect_.effect.md)\<E, A>
 
-*Defined in [src/Effect/fp-ts.ts:17](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/fp-ts.ts#L17)*
+*Defined in [src/Effect/fp-ts.ts:17](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/fp-ts.ts#L17)*

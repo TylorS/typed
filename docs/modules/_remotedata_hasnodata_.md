@@ -16,7 +16,7 @@
 
 ▸ `Const`**hasNoData**\<A, B>(`remoteData`: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>): remoteData is NoData
 
-*Defined in [src/RemoteData/hasNoData.ts:7](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/RemoteData/hasNoData.ts#L7)*
+*Defined in [src/RemoteData/hasNoData.ts:7](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/hasNoData.ts#L7)*
 
 RemoteData instance is NoData
 

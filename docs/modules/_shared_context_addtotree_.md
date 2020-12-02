@@ -16,7 +16,7 @@
 
 ▸ `Const`**addToTree**(`parent`: [Namespace](_shared_core_model_namespace_.namespace.md)): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), void>
 
-*Defined in [src/Shared/context/addToTree.ts:19](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/context/addToTree.ts#L19)*
+*Defined in [src/Shared/context/addToTree.ts:19](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/context/addToTree.ts#L19)*
 
 Add a Namespace to the NamespaceTree used to power a React Context-like API.
 

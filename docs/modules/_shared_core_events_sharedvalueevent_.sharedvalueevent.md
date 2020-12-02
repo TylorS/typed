@@ -18,4 +18,4 @@ Shared value lifecycle events
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[SharedValueEvent](_shared_core_events_sharedvalueevent_.sharedvalueevent.md)> = createSchema\<SharedValueEvent>((t) => t.union( SharedValueCreated.schema(t), SharedValueUpdated.schema(t), SharedValueDeleted.schema(t), ), )
 
-*Defined in [src/Shared/core/events/SharedValueEvent.ts:12](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/core/events/SharedValueEvent.ts#L12)*
+*Defined in [src/Shared/core/events/SharedValueEvent.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/core/events/SharedValueEvent.ts#L12)*

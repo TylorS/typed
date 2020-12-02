@@ -16,7 +16,7 @@
 
 ▸ **namespaceDeleted**(`event`: [NamespaceDeleted](_shared_core_events_namespaceevent_.namespacedeleted.md)): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), void>
 
-*Defined in [src/Patch/handlers/namespaceDeleted.ts:7](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Patch/handlers/namespaceDeleted.ts#L7)*
+*Defined in [src/Patch/handlers/namespaceDeleted.ts:7](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Patch/handlers/namespaceDeleted.ts#L7)*
 
 #### Parameters:
 

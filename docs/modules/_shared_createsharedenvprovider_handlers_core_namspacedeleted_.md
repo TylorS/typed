@@ -17,7 +17,7 @@
 
 ▸ **deleteNamespace**(`namespace`: [Namespace](_shared_core_model_namespace_.namespace.md)): [EffectGenerator](_effect_effect_.md#effectgenerator)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), void>
 
-*Defined in [src/Shared/createSharedEnvProvider/handlers/core/namspaceDeleted.ts:19](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/createSharedEnvProvider/handlers/core/namspaceDeleted.ts#L19)*
+*Defined in [src/Shared/createSharedEnvProvider/handlers/core/namspaceDeleted.ts:19](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/createSharedEnvProvider/handlers/core/namspaceDeleted.ts#L19)*
 
 #### Parameters:
 
@@ -33,7 +33,7 @@ ___
 
 ▸ **namespaceDeleted**(`event`: [NamespaceDeleted](_shared_core_events_namespaceevent_.namespacedeleted.md)): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), void>
 
-*Defined in [src/Shared/createSharedEnvProvider/handlers/core/namspaceDeleted.ts:12](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/createSharedEnvProvider/handlers/core/namspaceDeleted.ts#L12)*
+*Defined in [src/Shared/createSharedEnvProvider/handlers/core/namspaceDeleted.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/createSharedEnvProvider/handlers/core/namspaceDeleted.ts#L12)*
 
 #### Parameters:
 

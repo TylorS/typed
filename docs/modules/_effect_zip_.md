@@ -23,7 +23,7 @@
 
 Ƭ  **ZipEffects**: \<A>(effects: A) => [Effect](_effect_effect_.effect.md)\<[ZipEnvOf](_effect_zip_.md#zipenvof)\<A>, [ZipReturnOf](_effect_zip_.md#zipreturnof)\<A>>
 
-*Defined in [src/Effect/zip.ts:16](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/zip.ts#L16)*
+*Defined in [src/Effect/zip.ts:16](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/zip.ts#L16)*
 
 ___
 
@@ -31,7 +31,7 @@ ___
 
 Ƭ  **ZipEnvOf**\<A>: A *extends* ReadonlyArray\<Effect\<*infer* R, any>> ? R : never
 
-*Defined in [src/Effect/zip.ts:20](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/zip.ts#L20)*
+*Defined in [src/Effect/zip.ts:20](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/zip.ts#L20)*
 
 #### Type parameters:
 
@@ -45,7 +45,7 @@ ___
 
 Ƭ  **ZipReturnOf**\<A>: {}
 
-*Defined in [src/Effect/zip.ts:26](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/zip.ts#L26)*
+*Defined in [src/Effect/zip.ts:26](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/zip.ts#L26)*
 
 #### Type parameters:
 
@@ -59,7 +59,7 @@ Name | Type |
 
 • `Const` **zip**: [ZipEffects](_effect_zip_.md#zipeffects) = (readonlyArray.sequence(effect) as unknown) as ZipEffects
 
-*Defined in [src/Effect/zip.ts:9](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/zip.ts#L9)*
+*Defined in [src/Effect/zip.ts:9](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/zip.ts#L9)*
 
 Sequence together some number of Effects into an array of all of their values in parallel.
 
@@ -69,6 +69,6 @@ ___
 
 • `Const` **zipSeq**: [ZipEffects](_effect_zip_.md#zipeffects) = (readonlyArray.sequence(effectSeq) as unknown) as ZipEffects
 
-*Defined in [src/Effect/zip.ts:14](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/zip.ts#L14)*
+*Defined in [src/Effect/zip.ts:14](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/zip.ts#L14)*
 
 Sequence together some number of Effects into an array of all of their values in sequential order.

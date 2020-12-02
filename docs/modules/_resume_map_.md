@@ -16,6 +16,6 @@
 
 • `Const` **map**: \<A, B>(f: (value: A) => B, resume: [Sync](../interfaces/_resume_sync_.sync.md)\<A>) => [Sync](../interfaces/_resume_sync_.sync.md)\<B>\<A, B>(f: (value: A) => B, resume: [Async](../interfaces/_resume_async_.async.md)\<A>) => [Async](../interfaces/_resume_async_.async.md)\<B>\<A, B>(f: (value: A) => B, resume: [Resume](_resume_resume_.md#resume)\<A>) => [Resume](_resume_resume_.md#resume)\<B>\<A, B>(f: (value: A) => B) => (resume: [Sync](../interfaces/_resume_sync_.sync.md)\<A>) => [Sync](../interfaces/_resume_sync_.sync.md)\<B>(resume: [Async](../interfaces/_resume_async_.async.md)\<A>) => [Async](../interfaces/_resume_async_.async.md)\<B>(resume: [Resume](_resume_resume_.md#resume)\<A>) => [Resume](_resume_resume_.md#resume)\<B> = curry( \<A, B>(f: (value: A) => B, resume: Resume\<A>): Resume\<B> => chain(flow(f, sync), resume),) as { \<A, B>(f: (value: A) => B, resume: Sync\<A>): Sync\<B> \<A, B>(f: (value: A) => B, resume: Async\<A>): Async\<B> \<A, B>(f: (value: A) => B, resume: Resume\<A>): Resume\<B> \<A, B>(f: (value: A) => B): { (resume: Sync\<A>): Sync\<B> (resume: Async\<A>): Async\<B> (resume: Resume\<A>): Resume\<B> }}
 
-*Defined in [src/Resume/map.ts:12](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Resume/map.ts#L12)*
+*Defined in [src/Resume/map.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Resume/map.ts#L12)*
 
 Apply a function to a Resume's valeu.

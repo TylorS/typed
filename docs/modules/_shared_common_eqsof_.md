@@ -22,7 +22,7 @@
 
 Ƭ  **EqFrom**\<A>: [A] *extends* [EqsOf\<*infer* R>] ? Eq\<R> : never
 
-*Defined in [src/Shared/common/EqsOf.ts:7](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/common/EqsOf.ts#L7)*
+*Defined in [src/Shared/common/EqsOf.ts:7](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/common/EqsOf.ts#L7)*
 
 #### Type parameters:
 
@@ -36,7 +36,7 @@ ___
 
 Ƭ  **EqsOf**\<A>: {}
 
-*Defined in [src/Shared/common/EqsOf.ts:3](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/common/EqsOf.ts#L3)*
+*Defined in [src/Shared/common/EqsOf.ts:3](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/common/EqsOf.ts#L3)*
 
 #### Type parameters:
 
@@ -50,7 +50,7 @@ Name | Type |
 
 ▸ `Const`**defaultEqs**\<A>(`deps`: A): [EqsOf](_shared_common_eqsof_.md#eqsof)\<A>
 
-*Defined in [src/Shared/common/EqsOf.ts:9](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/common/EqsOf.ts#L9)*
+*Defined in [src/Shared/common/EqsOf.ts:9](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/common/EqsOf.ts#L9)*
 
 #### Type parameters:
 
@@ -72,7 +72,7 @@ ___
 
 ▸ `Const`**tupleEqOf**\<A>(`eqsOf`: A): [EqFrom](_shared_common_eqsof_.md#eqfrom)\<A>
 
-*Defined in [src/Shared/common/EqsOf.ts:12](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/common/EqsOf.ts#L12)*
+*Defined in [src/Shared/common/EqsOf.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/common/EqsOf.ts#L12)*
 
 #### Type parameters:
 

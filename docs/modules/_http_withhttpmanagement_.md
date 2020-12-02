@@ -37,7 +37,7 @@
 
 Ƭ  **Timestamp**: ReturnType\<Clock[\"now\"]>
 
-*Defined in [src/http/withHttpManagement.ts:36](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/withHttpManagement.ts#L36)*
+*Defined in [src/http/withHttpManagement.ts:36](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/withHttpManagement.ts#L36)*
 
 ___
 
@@ -45,7 +45,7 @@ ___
 
 Ƭ  **TimestampedResponse**: { response: [HttpResponse](../interfaces/_http_httpresponse_.httpresponse.md) ; timestamp: [Timestamp](_http_withhttpmanagement_.md#timestamp)  }
 
-*Defined in [src/http/withHttpManagement.ts:37](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/withHttpManagement.ts#L37)*
+*Defined in [src/http/withHttpManagement.ts:37](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/withHttpManagement.ts#L37)*
 
 #### Type declaration:
 
@@ -60,7 +60,7 @@ ___
 
 Ƭ  **WithHttpManagementOptions**: { expiration?: undefined \| number ; getCacheKey?: undefined \| (url: [Uri](_uri_exports_.uri.md), options: [HttpOptions](_http_httpenv_.md#httpoptions)) => string ; methodsToCache?: [HttpMethod](_http_httpmethod_.md#httpmethod)[] ; shouldBeCached?: undefined \| (response: [HttpResponse](../interfaces/_http_httpresponse_.httpresponse.md)) => boolean  }
 
-*Defined in [src/http/withHttpManagement.ts:29](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/withHttpManagement.ts#L29)*
+*Defined in [src/http/withHttpManagement.ts:29](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/withHttpManagement.ts#L29)*
 
 #### Type declaration:
 
@@ -77,7 +77,7 @@ Name | Type |
 
 • `Const` **DEFAULT\_EXPIRATION**: number = 5 * MINUTE
 
-*Defined in [src/http/withHttpManagement.ts:26](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/withHttpManagement.ts#L26)*
+*Defined in [src/http/withHttpManagement.ts:26](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/withHttpManagement.ts#L26)*
 
 ___
 
@@ -85,7 +85,7 @@ ___
 
 • `Const` **DEFAULT\_METHODS\_TO\_CACHE**: [HttpMethod](_http_httpmethod_.md#httpmethod)[] = ['GET', 'HEAD', 'OPTIONS']
 
-*Defined in [src/http/withHttpManagement.ts:27](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/withHttpManagement.ts#L27)*
+*Defined in [src/http/withHttpManagement.ts:27](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/withHttpManagement.ts#L27)*
 
 ___
 
@@ -93,7 +93,7 @@ ___
 
 • `Const` **MINUTE**: number = 60 * SECOND
 
-*Defined in [src/http/withHttpManagement.ts:25](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/withHttpManagement.ts#L25)*
+*Defined in [src/http/withHttpManagement.ts:25](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/withHttpManagement.ts#L25)*
 
 ___
 
@@ -101,7 +101,7 @@ ___
 
 • `Const` **SECOND**: 1000 = 1000
 
-*Defined in [src/http/withHttpManagement.ts:24](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/withHttpManagement.ts#L24)*
+*Defined in [src/http/withHttpManagement.ts:24](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/withHttpManagement.ts#L24)*
 
 ## Functions
 
@@ -109,7 +109,7 @@ ___
 
 ▸ `Const`**clearOldTimestamps**(`expiration`: number): [Effect](_effect_effect_.effect.md)\<[WithHttpManagementEnv](../interfaces/_http_withhttpmanagement_.withhttpmanagementenv.md) & [SchedulerEnv](../interfaces/_scheduler_schedulerenv_.schedulerenv.md) & [FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md) & [WhenIdleEnv](../interfaces/_dom_whenidle_.whenidleenv.md) & [SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), void>
 
-*Defined in [src/http/withHttpManagement.ts:122](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/withHttpManagement.ts#L122)*
+*Defined in [src/http/withHttpManagement.ts:122](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/withHttpManagement.ts#L122)*
 
 #### Parameters:
 
@@ -125,7 +125,7 @@ ___
 
 ▸ **createCachedHttpEnv**(`options`: [WithHttpManagementOptions](_http_withhttpmanagement_.md#withhttpmanagementoptions), `env`: [HttpEnv](../interfaces/_http_httpenv_.httpenv.md) & [WithHttpManagementEnv](../interfaces/_http_withhttpmanagement_.withhttpmanagementenv.md) & [FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md)): [HttpEnv](../interfaces/_http_httpenv_.httpenv.md)
 
-*Defined in [src/http/withHttpManagement.ts:75](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/withHttpManagement.ts#L75)*
+*Defined in [src/http/withHttpManagement.ts:75](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/withHttpManagement.ts#L75)*
 
 #### Parameters:
 
@@ -142,7 +142,7 @@ ___
 
 ▸ `Const`**getDefaultCacheKey**(`url`: [Uri](_uri_exports_.uri.md), `options`: [HttpOptions](_http_httpenv_.md#httpoptions)): string
 
-*Defined in [src/http/withHttpManagement.ts:116](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/withHttpManagement.ts#L116)*
+*Defined in [src/http/withHttpManagement.ts:116](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/withHttpManagement.ts#L116)*
 
 #### Parameters:
 
@@ -159,7 +159,7 @@ ___
 
 ▸ **isValidStatus**(`__namedParameters`: { status: number  }): boolean
 
-*Defined in [src/http/withHttpManagement.ts:118](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/withHttpManagement.ts#L118)*
+*Defined in [src/http/withHttpManagement.ts:118](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/withHttpManagement.ts#L118)*
 
 #### Parameters:
 
@@ -175,7 +175,7 @@ ___
 
 ▸ `Const`**withHttpManagement**(`options`: [WithHttpManagementOptions](_http_withhttpmanagement_.md#withhttpmanagementoptions)): [Provider](_effect_provide_.md#provider)\<[HttpEnv](../interfaces/_http_httpenv_.httpenv.md), [HttpEnv](../interfaces/_http_httpenv_.httpenv.md) & [WithHttpManagementEnv](../interfaces/_http_withhttpmanagement_.withhttpmanagementenv.md) & [FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md) & [WhenIdleEnv](../interfaces/_dom_whenidle_.whenidleenv.md) & [SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md)>
 
-*Defined in [src/http/withHttpManagement.ts:52](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/http/withHttpManagement.ts#L52)*
+*Defined in [src/http/withHttpManagement.ts:52](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/withHttpManagement.ts#L52)*
 
 Create an in-memory cache for GET requests that are periodically cleaned up when the browser
 is idle.

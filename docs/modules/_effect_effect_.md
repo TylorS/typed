@@ -37,7 +37,7 @@
 
 Ƭ  **AddEnv**\<E, Fx>: [Effect](_effect_effect_.effect.md)\<E & [EnvOf](_effect_effect_.md#envof)\<Fx>, [ReturnOf](_effect_effect_.md#returnof)\<Fx>>
 
-*Defined in [src/Effect/Effect.ts:96](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L96)*
+*Defined in [src/Effect/Effect.ts:96](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L96)*
 
 Helper for widening the effect type of a given effect
 
@@ -54,7 +54,7 @@ ___
 
 Ƭ  **EffectGenerator**\<E, A>: Generator\<[Env](_effect_effect_.md#env)\<E, any>, A, unknown>
 
-*Defined in [src/Effect/Effect.ts:39](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L39)*
+*Defined in [src/Effect/Effect.ts:39](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L39)*
 
 The underlying generator that allows modeling lightweight coroutines
 
@@ -71,7 +71,7 @@ ___
 
 Ƭ  **EffectOf**\<A>: A *extends* Effect\<*infer* E, *infer* B> ? Effect\<E, B> : IsNever\<ReturnTypeOf\<A>> *extends* true ? never : ReturnTypeOf\<A> *extends* Effect\<*infer* E, *infer* B> ? Effect\<E, B> : never
 
-*Defined in [src/Effect/Effect.ts:59](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L59)*
+*Defined in [src/Effect/Effect.ts:59](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L59)*
 
 Helper for retrieving the effect with widened environment type
 
@@ -87,7 +87,7 @@ ___
 
 Ƭ  **Env**\<E, A>: Reader\<E, [Resume](_resume_resume_.md#resume)\<A>>
 
-*Defined in [src/Effect/Effect.ts:44](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L44)*
+*Defined in [src/Effect/Effect.ts:44](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L44)*
 
 A monadic environment type which can be yielded within an Effect
 
@@ -104,7 +104,7 @@ ___
 
 Ƭ  **EnvOf**\<A>: EffectOf\<A> *extends* Effect\<*infer* R, any> ? R : never
 
-*Defined in [src/Effect/Effect.ts:86](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L86)*
+*Defined in [src/Effect/Effect.ts:86](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L86)*
 
 Helper for retrieving the environmental dependencies from an effect
 
@@ -120,7 +120,7 @@ ___
 
 Ƭ  **Envs**\<A>: [And](_common_and_.md#and)\<{}>
 
-*Defined in [src/Effect/Effect.ts:70](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L70)*
+*Defined in [src/Effect/Effect.ts:70](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L70)*
 
 Helper for creating an intersection of environments
 
@@ -136,7 +136,7 @@ ___
 
 Ƭ  **IsEffect**\<A>: [Equals](_common_types_.md#equals)\<A, [Effect](_effect_effect_.effect.md)\<any, any>>
 
-*Defined in [src/Effect/Effect.ts:80](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L80)*
+*Defined in [src/Effect/Effect.ts:80](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L80)*
 
 #### Type parameters:
 
@@ -150,7 +150,7 @@ ___
 
 Ƭ  **Pure**\<A>: [Effect](_effect_effect_.effect.md)\<unknown, A>
 
-*Defined in [src/Effect/Effect.ts:33](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L33)*
+*Defined in [src/Effect/Effect.ts:33](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L33)*
 
 An Effect which has no particular requirement on the environment. It has
 been chosen to represent the "empty environment" using `unknown` because
@@ -170,7 +170,7 @@ ___
 
 Ƭ  **ReturnOf**\<A>: EffectOf\<A> *extends* Effect\<any, *infer* R> ? R : never
 
-*Defined in [src/Effect/Effect.ts:91](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L91)*
+*Defined in [src/Effect/Effect.ts:91](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L91)*
 
 Helper for getting the return type from a given effect type
 
@@ -186,7 +186,7 @@ ___
 
 Ƭ  **ReturnTypeOf**\<A>: [A] *extends* [(...args: any) => any] ? ReturnType\<A> : never
 
-*Defined in [src/Effect/Effect.ts:81](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L81)*
+*Defined in [src/Effect/Effect.ts:81](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L81)*
 
 #### Type parameters:
 
@@ -200,7 +200,7 @@ Name |
 
 • `Const` **Pure**: [Effect](_effect_effect_.effect.md) = Effect
 
-*Defined in [src/Effect/Effect.ts:34](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L34)*
+*Defined in [src/Effect/Effect.ts:34](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L34)*
 
 ## Functions
 
@@ -208,7 +208,7 @@ Name |
 
 ▸ **fromEnv**\<E, A>(`env`: [Env](_effect_effect_.md#env)\<E, A>): [Effect](_effect_effect_.effect.md)\<E, A>
 
-*Defined in [src/Effect/Effect.ts:46](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Effect/Effect.ts#L46)*
+*Defined in [src/Effect/Effect.ts:46](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/Effect.ts#L46)*
 
 #### Type parameters:
 

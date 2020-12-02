@@ -16,7 +16,7 @@
 
 ▸ `Const`**useEffect**\<E, A, Deps>(`effect`: [Effect](_effect_effect_.effect.md)\<E, A>, `deps`: Deps, `eqs?`: [EqsOf](_shared_common_eqsof_.md#eqsof)\<Deps>): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md) & E & [SchedulerEnv](../interfaces/_scheduler_schedulerenv_.schedulerenv.md), Disposable>
 
-*Defined in [src/Shared/hooks/useEffect.ts:15](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/hooks/useEffect.ts#L15)*
+*Defined in [src/Shared/hooks/useEffect.ts:15](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/hooks/useEffect.ts#L15)*
 
 Schedule to perform an Effect everytime the dependencies change,
 as defined by the (optionally) provided Eq instances.

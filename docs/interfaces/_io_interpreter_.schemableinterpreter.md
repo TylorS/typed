@@ -12,7 +12,7 @@
 
 ▸ \<S, E>(`schemable`: [TypedSchemable2C](_io_typedschemable_.typedschemable2c.md)\<S, E>): function
 
-*Defined in [src/io/interpreter.ts:9](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/interpreter.ts#L9)*
+*Defined in [src/io/interpreter.ts:9](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/interpreter.ts#L9)*
 
 #### Type parameters:
 
@@ -31,7 +31,7 @@ Name | Type |
 
 ▸ \<S>(`schemable`: [TypedSchemable1](_io_typedschemable_.typedschemable1.md)\<S>): function
 
-*Defined in [src/io/interpreter.ts:12](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/interpreter.ts#L12)*
+*Defined in [src/io/interpreter.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/interpreter.ts#L12)*
 
 #### Type parameters:
 
@@ -49,7 +49,7 @@ Name | Type |
 
 ▸ \<S, E>(`schemable`: Schemable2C\<S, E>): function
 
-*Defined in [src/io/interpreter.ts:13](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/interpreter.ts#L13)*
+*Defined in [src/io/interpreter.ts:13](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/interpreter.ts#L13)*
 
 #### Type parameters:
 
@@ -68,7 +68,7 @@ Name | Type |
 
 ▸ \<S>(`schemable`: Schemable1\<S>): function
 
-*Defined in [src/io/interpreter.ts:15](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/io/interpreter.ts#L15)*
+*Defined in [src/io/interpreter.ts:15](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/interpreter.ts#L15)*
 
 #### Type parameters:
 

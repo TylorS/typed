@@ -16,6 +16,6 @@
 
 • `Const` **test**: [Curry2](../interfaces/_lambda_exports_.curry2.md)\<RegExp, string, boolean> = curry((regex: RegExp, str: string): boolean => regex.test(str),)
 
-*Defined in [src/logic/regexTest.ts:6](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/logic/regexTest.ts#L6)*
+*Defined in [src/logic/regexTest.ts:6](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/regexTest.ts#L6)*
 
 Test a Regex

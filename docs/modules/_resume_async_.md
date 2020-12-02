@@ -20,7 +20,7 @@
 
 ▸ `Const`**async**\<A>(`run`: (resume: [Arity1](_common_types_.md#arity1)\<A, Disposable>) => Disposable): [Async](../interfaces/_resume_async_.async.md)\<A>
 
-*Defined in [src/Resume/Async.ts:15](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Resume/Async.ts#L15)*
+*Defined in [src/Resume/Async.ts:15](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Resume/Async.ts#L15)*
 
 Resume an effect asynchronously, can only be resumed one time.
 

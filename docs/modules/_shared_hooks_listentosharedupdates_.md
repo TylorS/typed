@@ -20,7 +20,7 @@
 
 • `Const` **sharedValueUpdatedGuard**: Guard\<unknown, [SharedValueUpdated](_shared_core_events_sharedvalueevent_.sharedvalueupdated.md)> = createGuardFromSchema(SharedValueUpdated.schema)
 
-*Defined in [src/Shared/hooks/listenToSharedUpdates.ts:12](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/hooks/listenToSharedUpdates.ts#L12)*
+*Defined in [src/Shared/hooks/listenToSharedUpdates.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/hooks/listenToSharedUpdates.ts#L12)*
 
 ## Functions
 
@@ -28,7 +28,7 @@
 
 ▸ **listenToSharedUpdates**\<S>(`shared`: S, `onUpdate`: (update: [SharedValueUpdated](_shared_core_events_sharedvalueevent_.sharedvalueupdated.md) & { shared: S  }) => void): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md) & [SchedulerEnv](../interfaces/_scheduler_schedulerenv_.schedulerenv.md), Disposable>
 
-*Defined in [src/Shared/hooks/listenToSharedUpdates.ts:17](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/Shared/hooks/listenToSharedUpdates.ts#L17)*
+*Defined in [src/Shared/hooks/listenToSharedUpdates.ts:17](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/hooks/listenToSharedUpdates.ts#L17)*
 
 Listen to the Updates of a Shared Value in the current Namespace
 

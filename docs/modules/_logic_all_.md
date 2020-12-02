@@ -20,7 +20,7 @@
 
 • `Const` **all**: \<A>(predicate: Predicate\<A>, value: ReadonlyArray\<A>) => boolean\<A>(predicate: Predicate\<A>) => Predicate\<ReadonlyArray\<A>> = curry(\_\_all)
 
-*Defined in [src/logic/all.ts:12](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/logic/all.ts#L12)*
+*Defined in [src/logic/all.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/all.ts#L12)*
 
 Returns true if all values in a list match a predicate, false otherwise.
 
@@ -36,7 +36,7 @@ Returns true if all values in a list match a predicate, false otherwise.
 
 ▸ **__all**\<A>(`predicate`: Predicate\<A>, `list`: ReadonlyArray\<A>): boolean
 
-*Defined in [src/logic/all.ts:17](https://github.com/TylorS/typed-fp/blob/ac98ca1/src/logic/all.ts#L17)*
+*Defined in [src/logic/all.ts:17](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/all.ts#L17)*
 
 #### Type parameters:
 
