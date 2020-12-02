@@ -5,6 +5,9 @@ import { fromNullable } from 'fp-ts/Option'
 
 import { KeyValueStorage } from './KeyValueStorage'
 
+/**
+ * Wrap session/localStorage into a KeyValueStorage implementation.
+ */
 export function wrapDomStorage(storage: Storage): KeyValueStorage<string, string> {
   const getItem = (key: string) => fromNullable(storage.getItem(key))
 

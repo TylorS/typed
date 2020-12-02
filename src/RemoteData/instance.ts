@@ -30,6 +30,9 @@ declare module 'fp-ts/HKT' {
   }
 }
 
+/**
+ * Monad, Foldable, Traverasble, Alt, Extend and Alternative instances for RemoteData.
+ */
 export const remoteData: Monad2<URI> &
   Foldable2<URI> &
   Traversable2<URI> &

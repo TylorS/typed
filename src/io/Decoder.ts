@@ -11,6 +11,9 @@ import { Match } from '../logic/types'
 import * as G from './Guard'
 import { TypedSchemable2C } from './TypedSchemable'
 
+/**
+ * Create a Decoder instance for a Set
+ */
 export const set = <A>(from: D.Decoder<unknown, A>): D.Decoder<unknown, ReadonlySet<A>> => {
   const array = D.array(from)
 
@@ -31,6 +34,9 @@ export const set = <A>(from: D.Decoder<unknown, A>): D.Decoder<unknown, Readonly
   }
 }
 
+/**
+ * Create a Decoder instance for a Map<K, V>
+ */
 export const map = <A, B>(
   key: D.Decoder<unknown, A>,
   value: D.Decoder<unknown, B>,
@@ -56,20 +62,32 @@ export const map = <A, B>(
   }
 }
 
+/**
+ * Create a Decoder instance for Option<A>
+ */
 export const option = <A>(v: D.Decoder<unknown, A>): D.Decoder<unknown, O.Option<A>> =>
   D.union(D.type({ _tag: D.literal('None') }), D.type({ _tag: D.literal('Some'), value: v }))
 
+/**
+ * Create a Decoder instance for Either<A, B>
+ */
 export const either = <A, B>(
   left: D.Decoder<unknown, A>,
   right: D.Decoder<unknown, B>,
 ): D.Decoder<unknown, E.Either<A, B>> =>
   D.union(D.type({ _tag: D.literal('Left'), left }), D.type({ _tag: D.literal('Right'), right }))
 
+/**
+ * A Decoder instance for RemoteData Progress
+ */
 export const progress: D.Decoder<unknown, Progress> = D.type({
   loaded: D.number,
   total: option(D.number),
 })
 
+/**
+ * A Decoder instance for RemoteData
+ */
 export const remoteData = <A, B>(
   left: D.Decoder<unknown, A>,
   right: D.Decoder<unknown, B>,
@@ -91,6 +109,9 @@ export const remoteData = <A, B>(
     }),
   )
 
+/**
+ * A Decoder TypedSchemable instance
+ */
 export const Schemable: TypedSchemable2C<D.URI, unknown> = {
   ...D.Schemable,
   ...D.WithRefine,

@@ -4,6 +4,9 @@ import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
 import { SharedEnv, withCurrentNamespace } from '../core/exports'
 import { memoNamespace } from './memoNamespace'
 
+/**
+ * Memoize an Effect with the current namespace.
+ */
 export const withMemo = <E extends SharedEnv, A>(
   effect: Effect<E, A>,
 ): Effect<E & SchedulerEnv, A> =>

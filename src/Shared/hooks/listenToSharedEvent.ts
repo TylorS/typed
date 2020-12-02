@@ -6,6 +6,9 @@ import { getSharedEvents, SharedEvent } from '../core/events/exports'
 import { useMemo } from './useMemo'
 import { useStream } from './useStream'
 
+/**
+ * Listen to Shared events that match a Guard instance.
+ */
 export const listenToSharedEvent = <A extends SharedEvent>(
   guard: Guard<unknown, A>,
   onEvent: (value: A) => void,

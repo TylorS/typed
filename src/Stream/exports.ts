@@ -25,6 +25,9 @@ declare module 'fp-ts/HKT' {
   }
 }
 
+/**
+ * Create a Stream monoid where concat is a parallel merge.
+ */
 export const getMonoid = <A>(): Monoid<Stream<A>> => {
   return {
     concat: merge,
@@ -32,9 +35,15 @@ export const getMonoid = <A>(): Monoid<Stream<A>> => {
   }
 }
 
+/**
+ * Filter Option's from within a Stream
+ */
 export const compact = <A>(stream: Stream<Option<A>>): Stream<A> =>
   map((s: Some<A>) => s.value, filter(isSome, stream))
 
+/**
+ * Separate left and right values
+ */
 export const separate = <A, B>(stream: Stream<Either<A, B>>): Separated<Stream<A>, Stream<B>> => {
   const s = multicast(stream)
   const left = map((l: Left<A>) => l.left, filter(isLeft, s))
@@ -46,6 +55,9 @@ export const separate = <A, B>(stream: Stream<Either<A, B>>): Separated<Stream<A
 const _partitionMap = <A, B, C>(fa: Stream<A>, f: (a: A) => Either<B, C>) => separate(map(f, fa))
 const _filterMap = <A, B>(fa: Stream<A>, f: (a: A) => Option<B>) => compact(map(f, fa))
 
+/**
+ * Monad, Alternative, and Filterable instances for @most/core Streams.
+ */
 export const stream: Monad1<URI> & Alternative1<URI> & Filterable1<URI> = {
   URI,
   map: (fa, f) => map(f, fa),
@@ -67,6 +79,9 @@ export const { alt, apFirst, apSecond, chainFirst, filterMap, partition, partiti
   stream,
 )
 
+/**
+ * Convert an Effect into a Stream.
+ */
 export const fromEffect = <E, A>(effect: Effect<E, A>, env: E): Stream<A> =>
   newStream<A>((sink, scheduler) =>
     asap(

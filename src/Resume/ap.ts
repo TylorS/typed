@@ -8,6 +8,9 @@ import { Resume } from './Resume'
 import { run } from './run'
 import { Sync, sync } from './Sync'
 
+/**
+ * Apply the function to a value contained within Resume's.
+ */
 export const ap = curry(
   <A, B>(fn: Resume<Arity1<A, B>>, value: Resume<A>): Resume<B> => {
     if (!fn.async && !value.async) {

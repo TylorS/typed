@@ -18,6 +18,9 @@ declare module 'fp-ts/HKT' {
   }
 }
 
+/**
+ * MonadTask + Alt instances for Effect with a parallel Applicative instance.
+ */
 export const effect: MonadTask2<URI> & Alt2<URI> = {
   URI,
   of: Effect.of,
@@ -29,6 +32,9 @@ export const effect: MonadTask2<URI> & Alt2<URI> = {
   alt: (fa, f) => race(fa, f()),
 }
 
+/**
+ * MonadTask + Alt instances for Effect with a sequential Applicative instance.
+ */
 export const effectSeq: MonadTask2<URI> & Alt2<URI> = {
   ...effect,
   ap: apSeq,

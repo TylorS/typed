@@ -31,7 +31,7 @@ function __cond<A, B>(conditionals: ReadonlyArray<Conditional<A, B>>, value: A):
 }
 
 /**
- * @name Conditional
- * @type
+
+
  */
 export type Conditional<A, B> = [Predicate<A>, (value: A) => B]

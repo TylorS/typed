@@ -9,10 +9,16 @@ import { AnyNewtype, CarrierOf } from 'newtype-ts'
 
 import { TypedSchemable1 } from './TypedSchemable'
 
+/**
+ * Create a Guard instance for Set
+ */
 export const set = <A>(t: G.Guard<unknown, A>): G.Guard<unknown, ReadonlySet<A>> => ({
   is: (u): u is ReadonlySet<A> => u instanceof Set && G.array(t).is(Array.from(u.values())),
 })
 
+/**
+ * Create a Guard instance for Map
+ */
 export const map = <A, B>(k: G.Guard<unknown, A>, v: G.Guard<unknown, B>) => ({
   is: (u: unknown): u is ReadonlyMap<A, B> =>
     u instanceof Map &&
@@ -20,15 +26,24 @@ export const map = <A, B>(k: G.Guard<unknown, A>, v: G.Guard<unknown, B>) => ({
     G.array(v).is(Array.from(u.values())),
 })
 
+/**
+ * Create a Guard instance for Option<A>
+ */
 export const option = <A>(v: G.Guard<unknown, A>): G.Guard<unknown, Option<A>> =>
   G.union(G.type({ _tag: G.literal('None') }), G.type({ _tag: G.literal('Some'), value: v }))
 
+/**
+ * Create a Guard instance for Either<A, B>
+ */
 export const either = <A, B>(
   left: G.Guard<unknown, A>,
   right: G.Guard<unknown, B>,
 ): G.Guard<unknown, Either<A, B>> =>
   G.union(G.type({ _tag: G.literal('Left'), left }), G.type({ _tag: G.literal('Right'), right }))
 
+/**
+ * Create a Guard instance for RemoteData<A, B>
+ */
 export const remoteData = <A, B>(
   left: G.Guard<unknown, A>,
   right: G.Guard<unknown, B>,
@@ -50,43 +65,79 @@ export const remoteData = <A, B>(
     }),
   )
 
+/**
+ * Guard instance for Date
+ */
 export const date: G.Guard<unknown, Date> = {
   is: (u): u is Date => u instanceof Date && u.getTime() > 0,
 }
 
+/**
+ * Create a Guard instance for Uuid
+ */
 export const uuid: G.Guard<unknown, Uuid> = {
   is: (u): u is Uuid => G.string.is(u) && uuidRegex.test(u),
 }
 
+/**
+ * Create a Guard instance for Int
+ */
 export const int: G.Guard<unknown, Int> = {
   is: (u): u is Int => G.number.is(u) && Math.floor(u) === u,
 }
 
+/**
+ * Create a Guard instance for BigInt
+ */
 export const bigint: G.Guard<unknown, BigInt> = {
   is: (u): u is BigInt => u instanceof BigInt,
 }
 
+/**
+ * Create a Guard instance for RemoteData's Progress
+ */
 export const progress: G.Guard<unknown, Progress> = G.type({
   loaded: G.number,
   total: option(G.number),
 })
 
+/**
+ * Create a Guard instance for `unknown`
+ */
 export const unknown: G.Guard<unknown, unknown> = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   is: (_u): _u is unknown => true,
 }
 
+/**
+ * Create a Guard instance for Json
+ */
 export const json: G.Guard<unknown, Json> = G.lazy(() =>
   G.union(jsonRecord, jsonArray, jsonPrimitive),
 )
+/**
+ * Create a Guard instance for JsonRecord
+ */
 export const jsonRecord: G.Guard<unknown, JsonRecord> = G.record(json)
+/**
+ * Create a Guard instance for JsonArray
+ */
 export const jsonArray: G.Guard<unknown, JsonArray> = G.array(json)
+/**
+ * Create a Guard instance for Json Primitives
+ */
 export const jsonPrimitive: G.Guard<unknown, string | number | boolean | null> = G.nullable(
   G.union(G.string, G.number, G.boolean),
 )
 
+/**
+ * Create a Guard instance for symbol
+ */
 export const symbol: G.Guard<unknown, symbol> = { is: (u): u is symbol => typeof u === 'symbol' }
 
+/**
+ * TypedSchemable instance for Guard
+ */
 export const Schemable: TypedSchemable1<G.URI> = {
   ...G.Schemable,
   ...G.WithRefine,

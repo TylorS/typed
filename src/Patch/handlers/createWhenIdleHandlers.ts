@@ -6,10 +6,12 @@ import { createFifoQueue } from '@typed/fp/Queue/exports'
 import {
   Namespace,
   NamespaceCompleted,
+  NamespaceDeleted,
   NamespaceUpdated,
   SharedValueUpdated,
 } from '@typed/fp/Shared/core/exports'
 import { createSharedEventHandler } from '@typed/fp/Shared/createSharedEnvProvider/exports'
+import { namespaceDeleted } from '@typed/fp/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted'
 import { pipe } from 'fp-ts/function'
 
 import { Patch } from '../Patch'
@@ -18,6 +20,7 @@ import { createIdleScheduler } from './IdleScheduler'
 import { namespaceCompleted } from './namespaceCompleted'
 
 const namespaceCompletedGuard = createGuardFromSchema(NamespaceCompleted.schema)
+const namespaceDeletedGuard = createGuardFromSchema(NamespaceDeleted.schema)
 const namespaceUpdatedGuard = createGuardFromSchema(NamespaceUpdated.schema)
 const sharedValueUpdatedGuard = createGuardFromSchema(SharedValueUpdated.schema)
 
@@ -47,6 +50,7 @@ export function createWhenIdleHandlers<A, B>(env: Patch<A, B> & WhenIdleEnv) {
     createSharedEventHandler(namespaceCompletedGuard, namespaceCompleted),
     createSharedEventHandler(namespaceUpdatedGuard, (event) => addNamespace(event.namespace)),
     createSharedEventHandler(sharedValueUpdatedGuard, (event) => addNamespace(event.namespace)),
+    createSharedEventHandler(namespaceDeletedGuard, namespaceDeleted),
   ] as const
 
   return handlers

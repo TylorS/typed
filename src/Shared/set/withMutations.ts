@@ -4,6 +4,9 @@ import { curry } from '@typed/fp/lambda/exports'
 import { setShared, SharedEnv, SharedKey, withShared } from '../core/exports'
 import { SharedSet } from './SharedSet'
 
+/**
+ * Expose a mutable access to a SharedSet.
+ */
 export const withMutations = curry(
   <K extends SharedKey, V>(
     shared: SharedSet<K, V>,

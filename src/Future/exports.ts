@@ -29,13 +29,27 @@ declare module 'fp-ts/HKT' {
   }
 }
 
+/**
+ * A Monad, Alt and Either transformer instance of Effect with parallel Applicative.
+ */
 export const future: Monad3<URI> & Alt3<URI> & EitherM2<EffectURI> = { ...getEitherM(effect), URI }
+
+/**
+ * A Monad, Alt and Either transformer instance of Effect with sequential Applicative.
+ */
 export const futureSeq: Monad3<URI> & Alt3<URI> & EitherM2<EffectURI> = {
   ...getEitherM(effectSeq),
   URI,
 }
 
+/**
+ * Create a Left Effect
+ */
 export const left = <A, B>(value: A): Future<unknown, A, B> => Pure.of(leftE<A, B>(value))
+
+/**
+ * Create a Right Effect
+ */
 export const right = <A, B>(value: B): Future<unknown, A, B> => Pure.of(rightE<A, B>(value))
 
 export const {
@@ -51,6 +65,9 @@ export const {
   flatten,
 } = pipeable(future)
 
+/**
+ * Convert an Either into a type-safe Effect failure.
+ */
 export const orFail = <K extends PropertyKey, E, A, B>(
   key: K,
   future: Future<E, A, B>,
@@ -68,9 +85,15 @@ export const orFail = <K extends PropertyKey, E, A, B>(
   return eff
 }
 
+/**
+ * Convert a ReaderTaskEither into a Future
+ */
 export function fromReaderTaskEither<E, A, B>(rte: ReaderTaskEither<E, A, B>): Future<E, A, B> {
   return fromReaderTask(rte)
 }
 
+/**
+ * Convert a Future into a ReaderTaskEither
+ */
 export const toReaderTaskEither = <E, A, B>(future: Future<E, A, B>): ReaderTaskEither<E, A, B> =>
   toReaderTask(future)

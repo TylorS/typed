@@ -1,6 +1,5 @@
 /**
  * Returns the type of a value.
- * @name typeOf(value: any): string
  */
 export function typeOf(value: string): 'String'
 export function typeOf(value: number): 'Number'

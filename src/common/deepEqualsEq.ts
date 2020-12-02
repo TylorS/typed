@@ -4,6 +4,11 @@ import { functionName } from './functionName'
 import { includesWith } from './includesWith'
 import { typeOf } from './typeOf'
 
+/**
+ * A deep-equality Eq instance.
+ * Supports Reference equality, all JavaScript Primitives including `RegExp`, `Set` and `Map`.
+ * @Eq
+ */
 export const deepEqualsEq: Eq<unknown> = { equals }
 
 function equals(a: any, b: any) {

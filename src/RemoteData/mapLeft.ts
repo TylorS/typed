@@ -8,6 +8,9 @@ import { isRefreshingFailure } from './isRefreshingFailure'
 import { RefreshingFailure } from './RefreshingFailure'
 import { RemoteData } from './RemoteData'
 
+/**
+ * Map over the failure state of a RemoteData type.
+ */
 export const mapLeft = curry(
   <A, B, C>(f: (value: A, info: FailureInfo) => B, rd: RemoteData<A, C>): RemoteData<B, C> => {
     if (isRefreshingFailure(rd)) {

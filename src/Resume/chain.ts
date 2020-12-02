@@ -6,6 +6,9 @@ import { Resume } from './Resume'
 import { run } from './run'
 import { Sync } from './Sync'
 
+/**
+ * Sequence together multiple Resumes.
+ */
 export const chain = curry(
   <A, B>(f: Arity1<A, Resume<B>>, resume: Resume<A>): Resume<B> => {
     return resume.async ? async((cb) => run(resume, (a) => run(f(a), cb))) : f(resume.value)

@@ -3,6 +3,9 @@ import { isSome, none, Option, some } from 'fp-ts/Option'
 import { doEffect } from './doEffect'
 import { Effect } from './Effect'
 
+/**
+ * Memoize the output of an Effect.
+ */
 export const memo = <E, A>(effect: Effect<E, A>): Effect<E, A> => {
   let returnValue: Option<A> = none
 

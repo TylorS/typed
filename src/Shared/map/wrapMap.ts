@@ -9,6 +9,9 @@ import { setKey } from './setKey'
 import { SharedMap } from './SharedMap'
 import { withMutations } from './withMutations'
 
+/**
+ * Wrap a SharedMap in useful operations.
+ */
 export const wrapMap = <SK extends SharedKey, K, V>(shared: SharedMap<SK, K, V>) => {
   return {
     ...shared,

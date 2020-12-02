@@ -15,13 +15,27 @@ export type JsonPrimitive = Exclude<Json, JsonRecord | JsonArray>
 
 export interface JsonSerializableRecord extends Record<string, JsonSerializable> {}
 
+/**
+ * Replace a JsonSerializable value with a JSON-friendly equivalent. Does not support circular
+ * structures.
+ */
 export const jsonReplace = (serializable: JsonSerializable) => replaceJson('', serializable)
+
+/**
+ * Replace a Serialized piece of Json with it's runtime equivalent.
+ */
 export const jsonRevive = (json: Json) => reviveJson('', json)
 
+/**
+ * Convert a JSON string into runtime JsonSerializable values.
+ */
 export function fromJson(jsonString: string): JsonSerializable {
   return JSON.parse(jsonString, reviveJson)
 }
 
+/**
+ * Converts JsonSerializable values into a JSON-encoded format.
+ */
 export function toJson<A extends JsonSerializable>(x: A, space?: string | number): string {
   return JSON.stringify(x, replaceJson, space)
 }
@@ -37,6 +51,7 @@ enum Tag {
   Map,
   Symbol,
   SymbolFor,
+  Date,
 }
 
 type TaggedJsonValues = {
@@ -44,6 +59,7 @@ type TaggedJsonValues = {
   [Tag.Set]: ReadonlyArray<Json>
   [Tag.Symbol]: string
   [Tag.SymbolFor]: string
+  [Tag.Date]: string
 }
 
 type TaggedJson<A extends Tag> = {
@@ -67,6 +83,13 @@ function replaceJson(_: JsonSerializable, value: JsonSerializable): Json {
         replaceJson(key, key),
         replaceJson(key, value),
       ]),
+    }
+  }
+
+  if (value instanceof Date) {
+    return {
+      [JSON_TAG]: Tag.Date,
+      [VALUES_TAG]: value.toString(),
     }
   }
 

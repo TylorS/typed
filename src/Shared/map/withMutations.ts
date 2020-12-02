@@ -4,6 +4,9 @@ import { curry } from '@typed/fp/lambda/exports'
 import { getShared, setShared, SharedEnv, SharedKey } from '../core/exports'
 import { SharedMap } from './SharedMap'
 
+/**
+ * Provide a mutable interface to a SharedMap
+ */
 export const withMutations = curry(
   <SK extends SharedKey, K, V>(
     shared: SharedMap<SK, K, V>,

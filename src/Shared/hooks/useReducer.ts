@@ -9,6 +9,9 @@ import { SharedEnv } from '../core/services/SharedEnv'
 import { getNextSymbol } from './getNextSymbol'
 import { useMemo } from './useMemo'
 
+/**
+ * Use a Reducer to keep track of state.
+ */
 export const useReducer = <A, B, E>(
   reducer: Arity2<A, B, A>,
   initial: Effect<E, A>,

@@ -4,6 +4,9 @@ import { async } from '@typed/fp/Resume/exports'
 
 import { HistoryEnv } from './HistoryEnv'
 
+/**
+ * An Effect for change the current Path using the History API.
+ */
 export const pushPath = (path: Path) =>
   fromEnv<HistoryEnv, Location>((e) =>
     async((cb) => {

@@ -4,6 +4,9 @@ import { flow } from 'fp-ts/function'
 
 import { Async, async } from './Async'
 
+/**
+ * An Async effect that might fail.
+ */
 export interface AsyncEither<A, B> extends Async<Either<A, B>> {}
 
 /**

@@ -6,6 +6,9 @@ import { chain } from './chain'
 import { Resume } from './Resume'
 import { Sync, sync } from './Sync'
 
+/**
+ * Apply a function to a Resume's valeu.
+ */
 export const map = curry(
   <A, B>(f: (value: A) => B, resume: Resume<A>): Resume<B> => chain(flow(f, sync), resume),
 ) as {

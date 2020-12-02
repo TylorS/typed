@@ -7,6 +7,9 @@ import { createVirtualClock, VirtualClock } from './VirtualClock'
 
 export interface VirtualTimer extends Timer, VirtualClock, Disposable {}
 
+/**
+ * Create a VirtualTimer.
+ */
 export function createVirtualTimer(clock: VirtualClock = createVirtualClock()): VirtualTimer {
   const timeline = new Timeline()
 

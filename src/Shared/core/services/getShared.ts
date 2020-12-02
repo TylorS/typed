@@ -7,6 +7,10 @@ import { getKeyStore } from './getKeyStore'
 import { getOrCreate } from './getOrCreate'
 import { SharedEnv } from './SharedEnv'
 
+/**
+ * Get the current Shared value for the current namespace. If one does not exist,
+ * the currently configured initial Effect will be used to populate it.
+ */
 export function getShared<S extends Shared>(
   shared: S,
 ): Effect<SharedEnv & GetSharedEnv<S>, GetSharedValue<S>> {

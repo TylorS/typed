@@ -11,4 +11,7 @@ export const SharedStates = createShared(
   Pure.fromIO(() => new Map<SharedKey, State<any>>()),
 )
 
+/**
+ * Get Map of SharedStates
+ */
 export const getSharedStates = getShared(SharedStates)

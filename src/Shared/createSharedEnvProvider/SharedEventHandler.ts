@@ -8,6 +8,9 @@ export type SharedEventHandler<A extends SharedEvent> = readonly [
   handler: (value: A) => Effect<SharedEnv, any>,
 ]
 
+/**
+ * Construct SharedEventHandler instances
+ */
 export function createSharedEventHandler<A extends SharedEvent>(
   guard: Guard<unknown, A>,
   handler: (value: A) => Effect<SharedEnv, any>,

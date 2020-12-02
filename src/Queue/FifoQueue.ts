@@ -4,6 +4,9 @@ import { none, some } from 'fp-ts/Option'
 
 import { Queue } from './Queue'
 
+/**
+ * Create a simple in-memory first-in-first-out Queue
+ */
 export function createFifoQueue<A>(queue: Array<A>): Queue<A> {
   function enqueue(...values: ReadonlyArray<A>) {
     queue.push(...values)

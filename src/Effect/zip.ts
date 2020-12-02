@@ -3,8 +3,14 @@ import { readonlyArray } from 'fp-ts/ReadonlyArray'
 import { Effect, ReturnOf } from './Effect'
 import { effect, effectSeq } from './fp-ts'
 
+/**
+ * Sequence together some number of Effects into an array of all of their values in parallel.
+ */
 export const zip: ZipEffects = (readonlyArray.sequence(effect) as unknown) as ZipEffects
 
+/**
+ * Sequence together some number of Effects into an array of all of their values in sequential order.
+ */
 export const zipSeq: ZipEffects = (readonlyArray.sequence(effectSeq) as unknown) as ZipEffects
 
 export type ZipEffects = <A extends ReadonlyArray<Effect<any, any>>>(

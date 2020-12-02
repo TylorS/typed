@@ -21,13 +21,22 @@ declare module 'fp-ts/HKT' {
   }
 }
 
+/**
+ * Filter a LoggerEffect
+ */
 export const filter = curry(loggerM.filter) as {
   <E, A>(logger: LoggerEffect<E, A>, predicate: Predicate<A>): LoggerEffect<E, A>
   <E, A>(logger: LoggerEffect<E, A>): (predicate: Predicate<A>) => LoggerEffect<E, A>
 }
 
+/**
+ * Create a Monoid instance for LoggerEffect
+ */
 export const getMonoid: <E, A>() => Monoid<LoggerEffect<E, A>> = loggerM.getMonoid
 
+/**
+ * Contravariant instance for LoggerInstance
+ */
 export const loggerEffect: Contravariant2<URI> = {
   URI,
   contramap: loggerM.contramap,

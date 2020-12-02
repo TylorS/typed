@@ -4,6 +4,9 @@ import { memoize } from 'io-ts/Schemable'
 
 import { TypedSchemable } from './TypedSchemable'
 
+/**
+ * A io-ts Schema type using TypedSchemable to include additional types.
+ */
 export interface TypedSchema<A> {
   <S>(schemable: TypedSchemable<S>): HKT<S, A>
 }
@@ -17,4 +20,7 @@ export type TypeOf<A extends Fn> = ReturnType<A> extends HKT<any, infer R>
   ? R
   : never
 
+/**
+ * Create a TypedSchema
+ */
 export const createSchema = <A>(schema: TypedSchema<A>): TypedSchema<A> => memoize(schema)

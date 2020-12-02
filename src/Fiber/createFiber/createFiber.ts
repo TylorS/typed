@@ -25,6 +25,10 @@ import { fold, isNone, isSome, none, Option, some } from 'fp-ts/Option'
 import { createFiberManager } from './FiberManager'
 import { createInfoChangeManager } from './InfoChangeManager'
 
+/**
+ * Create a Fiber instance for an Effect<FiberEnv, A> given a Scheduler and
+ * its parent instance.
+ */
 export function createFiber<A>(
   effect: Effect<FiberEnv, A>,
   scheduler: Scheduler,

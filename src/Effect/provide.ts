@@ -4,6 +4,10 @@ import { curry } from '@typed/fp/lambda/exports'
 import { Effect, fromEnv, Pure } from './Effect'
 import { toEnv } from './toEnv'
 
+/**
+ * A type representing functions which provide (or add) requirements
+ * to an Effect's environment.
+ */
 export type Provider<Provided, Additional = unknown> = <E, A>(
   effect: Effect<E & Provided, A>,
 ) => Effect<E & Additional, A>
@@ -65,6 +69,9 @@ export type ProvidedAdditional<Providers extends ReadonlyArray<Provider<any, any
   }
 >
 
+/**
+ * A helper fro composing many Provider functions together to create a singular Provider function.
+ */
 export const provideMany = <
   Providers extends readonly [Provider<any, any>, ...ReadonlyArray<Provider<any, any>>]
 >(

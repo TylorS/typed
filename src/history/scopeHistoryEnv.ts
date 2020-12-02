@@ -4,6 +4,9 @@ import { parseUri, Uri } from '@typed/fp/Uri/exports'
 
 import { HistoryEnv } from './HistoryEnv'
 
+/**
+ * Scopes a particular HistoryEnv to a given Path to help create fractal HistoryEnv instances.
+ */
 export function scopeHistoryEnv(scope: Path, { history, location }: HistoryEnv): HistoryEnv {
   const pushState = (...args: ArgsOf<History['pushState']>) =>
     history.pushState(args[0], args[1], Path.unwrap(pathJoin(['/', scope, args[2]])))

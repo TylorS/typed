@@ -5,14 +5,21 @@ import { IO } from 'fp-ts/IO'
 import { Reader } from 'fp-ts/Reader'
 
 /**
- * An Iterable used to represent Effects which work like lightweight coroutines
+ * An Iterable used to simulate algebraic effects using generator functions.
  */
 export interface Effect<E, A> {
   readonly [Symbol.iterator]: () => EffectGenerator<E, A>
 }
 
 export namespace Effect {
+  /**
+   * Create an Effect containing a given value
+   */
   export const of = <A>(value: A): Pure<A> => fromEnv(() => sync(value))
+
+  /**
+   * Create an Effect from an IO
+   */
   export const fromIO = <A>(io: IO<A>): Pure<A> => fromEnv(flow(io, sync))
 }
 

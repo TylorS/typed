@@ -3,6 +3,9 @@ import { createSchema } from '@typed/fp/io/exports'
 import { Namespace } from '../model/Namespace'
 import { Shared } from '../model/Shared'
 
+/**
+ * Shared value lifecycle events
+ */
 export type SharedValueEvent = SharedValueCreated | SharedValueUpdated | SharedValueDeleted
 
 export namespace SharedValueEvent {
@@ -15,6 +18,9 @@ export namespace SharedValueEvent {
   )
 }
 
+/**
+ * A Shared value has been added to the environment for a given namespace.
+ */
 export type SharedValueCreated = {
   readonly type: 'sharedValue/created'
   readonly namespace: Namespace
@@ -33,6 +39,9 @@ export namespace SharedValueCreated {
   )
 }
 
+/**
+ * A Shared value has been updated in the environment for a given namespace.
+ */
 export type SharedValueUpdated = {
   readonly type: 'sharedValue/updated'
   readonly namespace: Namespace
@@ -53,6 +62,9 @@ export namespace SharedValueUpdated {
   )
 }
 
+/**
+ * A Shared value has been deleted from a given Namespace.
+ */
 export type SharedValueDeleted = {
   readonly type: 'sharedValue/deleted'
   readonly namespace: Namespace

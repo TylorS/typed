@@ -1,5 +1,8 @@
 import { RemoteDataStatus } from './enums'
 
+/**
+ * Success state for RemoteData
+ */
 export interface Success<A> {
   readonly status: RemoteDataStatus.Success
   readonly value: A

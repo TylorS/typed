@@ -10,7 +10,6 @@ import { Success } from './Success'
 
 /**
  * Map over the value of a successful RemoteData.
- * @name map<A, B, C>(f: (value: B, refreshing: boolean) => C,, data: RemoteData<A, B>): RemoteData<A, C>
  */
 export const map = curry(__map) as {
   <A, B, C>(f: (value: B, successInfo: SuccessInfo) => C, data: RemoteData<A, B>): RemoteData<A, C>

@@ -45,6 +45,10 @@ export interface WithHttpManagementEnv {
   readonly httpCacheCleanupScheduled: Shared<SharedKey, unknown, boolean>
 }
 
+/**
+ * Create an in-memory cache for GET requests that are periodically cleaned up when the browser
+ * is idle.
+ */
 export const withHttpManagement = (
   options: WithHttpManagementOptions,
 ): Provider<HttpEnv, HttpEnv & WithHttpManagementEnv & FiberEnv & WhenIdleEnv & SharedEnv> => {

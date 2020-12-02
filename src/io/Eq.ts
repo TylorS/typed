@@ -12,6 +12,9 @@ import { AnyNewtype, CarrierOf } from 'newtype-ts'
 
 import { TypedSchemable1 } from './TypedSchemable'
 
+/**
+ * A TypedSchemable instance for Eqs
+ */
 export const Schemable: TypedSchemable1<EqI.URI> = {
   ...EqI.Schemable,
   refine: (refinement, id) => EqI.WithRefine.refine(refinement, id),

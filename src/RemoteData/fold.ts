@@ -19,6 +19,9 @@ export type SuccessInfo = {
   readonly progress: Option<Progress>
 }
 
+/**
+ * Fold over a RemoteData value.
+ */
 export const fold = curry(__foldRemoteData) as {
   <R1, R2, A, R3, B, R4>(
     noData: () => R1,

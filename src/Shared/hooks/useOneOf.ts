@@ -6,6 +6,9 @@ import { Shared, SharedEnv, SharedKey } from '../core/exports'
 import { getSharedState } from '../State/exports'
 import { useMemo } from './useMemo'
 
+/**
+ * Keep track of the current match value.
+ */
 export const useOneOf = <E, O, I, A extends ReadonlyArray<Match<I, O>>>(
   shared: Shared<SharedKey, E, O>,
   input: I,

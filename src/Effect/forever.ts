@@ -1,6 +1,9 @@
 import { doEffect } from './doEffect'
 import { Effect } from './Effect'
 
+/**
+ * Run an Effect over and over within a while-loop.
+ */
 export const forever = <E, A>(
   effect: Effect<E, A>,
   onValue?: (value: A) => void,

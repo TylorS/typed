@@ -32,6 +32,9 @@ export const runEffect = curry(__runEffect) as {
   }
 }
 
+/**
+ * Execute an Effect without care for the return value.
+ */
 export const execEffect = runEffect<unknown>(disposeNone)
 
 function __runEffect<A, E>(

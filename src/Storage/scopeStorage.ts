@@ -1,6 +1,8 @@
 import { proxyStorage } from './proxyStorage'
 
-// Allows creating namespaces within Storage
+/**
+ * Create namespaces within a Storage implementation.
+ */
 export function scopeStorage(scope: string, storage: Storage): Storage {
   return proxyStorage(createScopedStorage(scope, storage))
 }

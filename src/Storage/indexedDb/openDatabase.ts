@@ -5,6 +5,9 @@ import { asyncEither } from '@typed/fp/Resume/exports'
 
 import { IndexedDbFactoryEnv } from './IndexedDbFactoryEnv'
 
+/**
+ * Open a database at a specific name.
+ */
 export function openDatabase(name: string): Future<IndexedDbFactoryEnv, Error, IDBDatabase> {
   return fromEnv((e: IndexedDbFactoryEnv) =>
     asyncEither((left, right) => {

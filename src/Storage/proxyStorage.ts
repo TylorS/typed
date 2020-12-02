@@ -1,3 +1,7 @@
+/**
+ * Proxy a Storage interface to allow indexing functionality around an otherwise
+ * valid Storage interface.
+ */
 export function proxyStorage(storage: Storage): Storage {
   return new Proxy(storage, { get, set })
 }

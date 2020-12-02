@@ -8,6 +8,9 @@ import { isRefreshingFailure } from './isRefreshingFailure'
 import { isSuccess } from './isSuccess'
 import { RemoteData } from './RemoteData'
 
+/**
+ * Create an Eq instance for RemoteData given a left and right Eq instance.
+ */
 export const getEq = <A, B>(left: Eq<A>, right: Eq<B>): Eq<RemoteData<A, B>> => ({
   equals: (a, b) => {
     if (a.status !== b.status) {

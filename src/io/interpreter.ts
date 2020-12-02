@@ -16,6 +16,9 @@ export interface SchemableInterpreter {
   <S extends URIS>(schemable: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
 }
 
+/**
+ * Create an interpreter from a Schemable instance
+ */
 export const createInterpreter: SchemableInterpreter = (s: any) => (schema: any) => schema(s)
 
 export type Schemable2CE<S> = S extends Schemable2C<any, infer R> ? R : never

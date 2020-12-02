@@ -5,6 +5,15 @@ import { Effect, EnvOf, ReturnOf } from './Effect'
 import { map } from './map'
 import { zip } from './zip'
 
+/**
+ * Convert an Object of Effects into an Effect of an Object.
+ * @example
+ * const foo: Pure<{a: number, b:number, c: number }> = zipObj({
+ *   a: Pure.of(1),
+ *   b: Pure.of(2),
+ *   c: Pure.of(3)
+ * })
+ */
 export function zipObj<A extends Readonly<Record<PropertyKey, Effect<any, any>>>>(
   effects: A,
 ): ZipObjEffect<A> {

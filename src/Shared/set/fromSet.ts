@@ -5,6 +5,9 @@ import { getEq } from 'fp-ts/ReadonlySet'
 
 import { createShared } from '../core/exports'
 
+/**
+ * Create a SharedSet from an Eq + Key
+ */
 export const fromSet = <V>(value: Eq<V> = deepEqualsEq) => <K extends PropertyKey>(key: K) =>
   createShared(
     key,

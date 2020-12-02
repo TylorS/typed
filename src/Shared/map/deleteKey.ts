@@ -6,6 +6,9 @@ import { SharedEnv, SharedKey } from '../core/exports'
 import { SharedMap } from './SharedMap'
 import { withMutations } from './withMutations'
 
+/**
+ * Delete a Value in a SharedMap
+ */
 export const deleteKey = curry(
   <SK extends SharedKey, K, V>(
     shared: SharedMap<SK, K, V>,

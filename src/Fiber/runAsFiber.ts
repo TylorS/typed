@@ -14,6 +14,9 @@ import { createFiber } from './createFiber/exports'
 export const runAsFiber = <A>(effect: Effect<FiberEnv, A>, scheduler: Scheduler): Fiber<A> =>
   createFiber(effect, scheduler)
 
+/**
+ * A curried variant of runAsFiber to be used with pipe()
+ */
 export const runAsFiberWith = (scheduler: Scheduler) => <A>(effect: Effect<FiberEnv, A>) =>
   runAsFiber(effect, scheduler)
 

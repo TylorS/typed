@@ -18,6 +18,10 @@ import type {
 } from 'io-ts/Schemable'
 import type { AnyNewtype, CarrierOf } from 'newtype-ts'
 
+/**
+ * A Schemable interface with unions, refinements, and many other common data types
+ * including Option, Either, RemoteData, Newtypes and more.
+ */
 export interface TypedSchemable<S> extends Schemable<S>, WithUnion<S>, WithRefine<S> {
   readonly set: <A>(hkt: HKT<S, A>) => HKT<S, ReadonlySet<A>>
   readonly map: <A, B>(key: HKT<S, A>, value: HKT<S, B>) => HKT<S, ReadonlyMap<A, B>>

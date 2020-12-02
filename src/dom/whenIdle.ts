@@ -4,10 +4,18 @@ import { fromEnv } from '@typed/fp/Effect/exports'
 import { async } from '@typed/fp/Resume/exports'
 import { iso, Newtype } from 'newtype-ts'
 
+/**
+ * A newtype to represent an IdleCallbackHandle
+ */
 export type IdleCallbackHandle = Newtype<'IdleCallbackHandle', any>
 
-const idleCallbackHandle = iso<IdleCallbackHandle>()
+export namespace IdleCallbackHandle {
+  export const { wrap, unwrap } = iso<IdleCallbackHandle>()
+}
 
+/**
+ * An environment for scheduling and cancelling work using requestIdleCallback.
+ */
 export interface WhenIdleEnv {
   readonly requestIdleCallback: (
     callback: (deadline: IdleCallbackDeadline) => void,
@@ -18,18 +26,28 @@ export interface WhenIdleEnv {
 }
 
 declare global {
+  // Extend global window with requestIdleCallback since it is not currently provided by TS.
   export interface Window extends WhenIdleEnv {}
 }
 
+/**
+ * RequestIdleCallback deadline type
+ */
 export type IdleCallbackDeadline = {
   readonly didTimeout: boolean
   readonly timeRemaining: () => number
 }
 
+/**
+ * Options for requestIdleCallback
+ */
 export type IdleCallbackOptions = {
   readonly timeout: number
 }
 
+/**
+ * An Effect for waiting to perform work cooperatively with the main thread.
+ */
 export const whenIdle = (opts?: IdleCallbackOptions) =>
   fromEnv((e: WhenIdleEnv) =>
     async<IdleCallbackDeadline>((resume) => {
@@ -45,6 +63,9 @@ export const whenIdle = (opts?: IdleCallbackOptions) =>
 
 const DEFAULT_TIMEOUT = 30 * 1000
 
+/**
+ * Given a Timer instance to create a WhenIdleEnv implementation.
+ */
 export function createFallbackWhenIdleEnv(timer: Timer, defaultTimeout = DEFAULT_TIMEOUT) {
   const allHandles = new Map<IdleCallbackHandle, [any, any]>()
   let currentHandle = 0
@@ -65,7 +86,7 @@ export function createFallbackWhenIdleEnv(timer: Timer, defaultTimeout = DEFAULT
       timeRemaining: () => Math.max(timeoutTime - timer.now(), 0),
     }
 
-    const handle = idleCallbackHandle.wrap(currentHandle++)
+    const handle = IdleCallbackHandle.wrap(currentHandle++)
     const initialHandle = timer.setTimer(() => callback(deadline), 0)
     const timeoutHandle = timer.setTimer(() => {
       didTimeout = true

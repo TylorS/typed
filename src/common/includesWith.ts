@@ -1,3 +1,7 @@
+/**
+ * Checks to see if a list contains a value passing an additional
+ * value to the predicate.
+ */
 export function includesWith<A, B>(
   pred: (value: A, item: B, index: number) => boolean,
   x: A,

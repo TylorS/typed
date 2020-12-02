@@ -3,6 +3,9 @@ import { randomBytes } from 'crypto'
 import { Provider, provideSome } from '../Effect/provide'
 import { UuidEnv, VALID_UUID_LENGTH } from '../Uuid/exports'
 
+/**
+ * A node-specific implementation of UuidEnv
+ */
 export const uuidEnv: UuidEnv = {
   randomUuidSeed: () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires

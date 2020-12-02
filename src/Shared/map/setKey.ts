@@ -6,6 +6,9 @@ import { SharedKey } from '../core/model/exports'
 import { SharedMap } from './SharedMap'
 import { withMutations } from './withMutations'
 
+/**
+ * Set the value of a key in a SharedMap
+ */
 export const setKey = curry(
   <SK extends SharedKey, K, V>(
     shared: SharedMap<SK, K, V>,

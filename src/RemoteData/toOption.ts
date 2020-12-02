@@ -5,6 +5,9 @@ import { getOrElse } from './getOrElse'
 import { map } from './map'
 import { RemoteData } from './RemoteData'
 
+/**
+ * Convert a RemoteData<A, B> into an Option<B>
+ */
 export function toOption<A, B>(rd: RemoteData<A, B>): Option<B> {
   return pipe(
     rd,

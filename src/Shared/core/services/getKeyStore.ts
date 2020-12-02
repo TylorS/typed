@@ -8,6 +8,9 @@ import { getKeyStores } from './getKeyStores'
 import { getOrCreate } from './getOrCreate'
 import { SharedEnv } from './SharedEnv'
 
+/**
+ * Get the current namespace's KeyStore
+ */
 export const getKeyStore: Effect<SharedEnv, SharedKeyStore> = doEffect(function* () {
   const namespace = yield* getCurrentNamespace
   const keyStores = yield* getKeyStores

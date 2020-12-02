@@ -4,7 +4,10 @@ const DEFAULT_MATCH = ['', '']
 
 /**
  * Returns the name of a function.
- * @name functionName(fn: Function): string
+ * @example
+ * function foo() {...}
+ *
+ * functionName(foo) === 'foo'
  */
 export function functionName(fn: Function): string {
   if (fn.name) {

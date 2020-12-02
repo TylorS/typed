@@ -5,8 +5,8 @@ const HTTPS_DEFAULT_PORT = '443'
 const HTTP_DEFAULT_PORT = '80'
 
 /**
- * An in-memory implementation of `Location`.
- * @name ServerLocation
+ * An in-memory implementation of `Location`. Optionally mirror Location changes
+ * into a History instance with setHistory.
  */
 export class ServerLocation implements Location {
   get ancestorOrigins(): DOMStringList {
@@ -117,6 +117,10 @@ export class ServerLocation implements Location {
     }
 
     this.href = href
+
+    if (this.history) {
+      this.history.replaceState(null, '', this.href)
+    }
   }
 
   public toString(): string {

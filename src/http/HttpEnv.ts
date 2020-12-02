@@ -7,6 +7,9 @@ import type { HttpHeaders } from './HttpHeaders'
 import type { HttpMethod } from './HttpMethod'
 import type { HttpResponse } from './HttpResponse'
 
+/**
+ * An environment type for performning HttpRequests
+ */
 export interface HttpEnv {
   readonly http: (uri: Uri, options: HttpOptions) => Resume<Either<Error, HttpResponse>>
 }

@@ -1,6 +1,5 @@
 /**
- * An implementation of the `History` interface.
- * @name ServerHistory
+ * An implementation of the `History` interface in-memory.
  */
 export class ServerHistory implements History {
   // Does not affect behavior

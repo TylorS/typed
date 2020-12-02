@@ -6,6 +6,9 @@ import { getShared, SharedEnv, SharedKey } from '../core/exports'
 import { setKey } from './setKey'
 import { SharedMap } from './SharedMap'
 
+/**
+ * Get the value at a specific key or create it.
+ */
 export const getKeyOrCreate = curry(
   <SK extends SharedKey, K, V, E>(
     shared: SharedMap<SK, K, V>,

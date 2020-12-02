@@ -7,10 +7,16 @@ import { IO } from 'fp-ts/IO'
 
 import { createCallbackTask } from './createCallbackTask'
 
+/**
+ * An environment type for accessing a Scheduler
+ */
 export interface SchedulerEnv {
   readonly scheduler: Scheduler
 }
 
+/**
+ * Provide an Effect with a SchedulerEnv
+ */
 export const provideSchedulerEnv: Provider<SchedulerEnv> = provideWith(
   Pure.fromIO(
     (): SchedulerEnv => ({

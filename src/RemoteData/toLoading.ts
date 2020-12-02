@@ -6,6 +6,9 @@ import { RefreshingFailure } from './RefreshingFailure'
 import { RefreshingSuccess } from './RefreshingSuccess'
 import { Loading, progress, RemoteData } from './RemoteData'
 
+/**
+ * Transition a RemoteData into a Loading state.
+ */
 export const toLoading = <A, B>(
   rd: RemoteData<A, B>,
 ): Loading | RefreshingFailure<A> | RefreshingSuccess<B> =>

@@ -4,6 +4,9 @@ import type { HKT } from 'fp-ts/HKT'
 
 import { Namespace } from '../model/Namespace'
 
+/**
+ * All of the Namespace-specific events
+ */
 export type NamespaceEvent =
   | NamespaceCreated
   | NamespaceStarted
@@ -23,6 +26,9 @@ export namespace NamespaceEvent {
   )
 }
 
+/**
+ * When a Namespace is added to the environment
+ */
 export type NamespaceCreated = {
   readonly type: 'namespace/created'
   readonly namespace: Namespace
@@ -37,6 +43,9 @@ export namespace NamespaceCreated {
   )
 }
 
+/**
+ * When an Effect correlated to a namespace is being run.
+ */
 export type NamespaceStarted = {
   readonly type: 'namespace/started'
   readonly parent: Namespace
@@ -55,6 +64,9 @@ export namespace NamespaceStarted {
   )
 }
 
+/**
+ * When a namespace has changed.
+ */
 export type NamespaceUpdated = {
   readonly type: 'namespace/updated'
   readonly namespace: Namespace
@@ -69,6 +81,9 @@ export namespace NamespaceUpdated {
   )
 }
 
+/**
+ * When an Effect related to a specific Namespace has completed.
+ */
 export type NamespaceCompleted = {
   readonly type: 'namespace/completed'
   readonly parent: Namespace
@@ -89,6 +104,9 @@ export namespace NamespaceCompleted {
   )
 }
 
+/**
+ * When a Namespace is being deleted from the environment.
+ */
 export type NamespaceDeleted = {
   readonly type: 'namespace/deleted'
   readonly namespace: Namespace

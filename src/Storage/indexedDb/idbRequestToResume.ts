@@ -8,6 +8,9 @@ export interface IDBRequestEnv {
   readonly tx: IndexedDbStoreTransation
 }
 
+/**
+ * Convert an indexed db request to a Resume
+ */
 export function idbRequestToResume<A>(
   tx: IndexedDbStoreTransation,
   f: (store: IDBObjectStore) => IDBRequest<A>,

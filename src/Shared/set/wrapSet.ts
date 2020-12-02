@@ -7,6 +7,9 @@ import { hasValue } from './hasValue'
 import { SharedSet } from './SharedSet'
 import { withMutations } from './withMutations'
 
+/**
+ * Wrap a Shared Set in common operations.
+ */
 export const wrapSet = <K extends SharedKey, V>(shared: SharedSet<K, V>) => {
   return {
     ...shared,

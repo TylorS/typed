@@ -13,6 +13,9 @@ import { addDisposable, getNamespaceDisposable } from '../core/disposables/expor
 import { addChild, removeChild } from './NamespaceChildren'
 import { getNamespaceParent, setNamespaceParent } from './NamespaceParent'
 
+/**
+ * Add a Namespace to the NamespaceTree used to power a React Context-like API.
+ */
 export const addToTree = (parent: Namespace): Effect<SharedEnv, void> => {
   const eff = doEffect(function* () {
     const env = yield* ask<SharedEnv>()

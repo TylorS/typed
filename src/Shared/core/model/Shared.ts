@@ -8,7 +8,8 @@ import { some } from 'fp-ts/Option'
 import { SharedKey } from './SharedKey'
 
 /**
- * A shared value that can be used to track values at a given key
+ * A Shared instance is a Effect-based abstraction for key-value pairs with lifecycle
+ * events and optional namespacing.
  */
 export interface Shared<K extends SharedKey = SharedKey, E = any, A = any> {
   readonly key: K

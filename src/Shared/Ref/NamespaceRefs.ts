@@ -11,4 +11,7 @@ export const NamespaceRefs = createShared(
   Pure.fromIO(() => new Map<SharedKey, Ref<any>>()),
 )
 
+/**
+ * Get a Map of References
+ */
 export const getNamespaceRefs = getShared(NamespaceRefs)

@@ -7,6 +7,9 @@ import { GetSharedEnv, GetSharedValue, Shared } from '../core/model/exports'
 import { SharedEnv } from '../core/services/SharedEnv'
 import { useContextState } from './useContextState'
 
+/**
+ * Apply a reducer to a contextual value.
+ */
 export const useContextReducer = <S extends Shared, A>(
   shared: S,
   reducer: Arity2<GetSharedValue<S>, A, GetSharedValue<S>>,

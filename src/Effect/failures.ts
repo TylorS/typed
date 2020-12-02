@@ -8,10 +8,16 @@ import { Effect, fromEnv } from './Effect'
 import { map } from './map'
 import { toEnv } from './toEnv'
 
+/**
+ * An environment to represent type-safe errors.
+ */
 export type FailEnv<K extends PropertyKey, Err> = {
   readonly [key in K]: (err: Err) => Resume<never>
 }
 
+/**
+ * Place the requirement to satisfy a potential failure from the environment at the provided key.
+ */
 export const fail = curry(
   <K extends PropertyKey, Err>(key: K, error: Err): Effect<FailEnv<K, Err>, never> =>
     fromEnv((e) => e[key](error)),
@@ -20,6 +26,9 @@ export const fail = curry(
   <K extends PropertyKey>(key: K): <Err>(error: Err) => Effect<FailEnv<K, Err>, never>
 }
 
+/**
+ * Catch a keyed error using continuations.
+ */
 export const catchError = curry(
   <K extends PropertyKey, Err, E, A>(
     key: K,
@@ -57,6 +66,9 @@ export const catchError = curry(
   }
 }
 
+/**
+ * Attempt an Effect that can fail catching the error into an Either.
+ */
 export const attempt = curry(
   <K extends PropertyKey, E extends FailEnv<K, never>, A>(
     key: K,

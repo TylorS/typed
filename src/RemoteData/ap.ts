@@ -8,7 +8,6 @@ import { RemoteData } from './RemoteData'
 /**
  * Applies the function contains in an `RemoteData` to the value contained in a
  * second `RemoteData`.
- * @name ap<A, B, C>(fn: RemoteData<A, (value: B, refreshing: boolean) => C>, value: RemoteData<A, B>): RemoteData<A, C>
  */
 export const ap = curry(__ap) as {
   <A, B, C>(

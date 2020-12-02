@@ -1,5 +1,8 @@
 import { Uuid, UuidSeed } from '@typed/fp/Uuid/common'
 
+/**
+ * Convert a UuidSeed into a v4 Uuid
+ */
 export function uuid4(seed: UuidSeed): Uuid {
   return ((seed[0].toString(16) +
     seed[1].toString(16) +

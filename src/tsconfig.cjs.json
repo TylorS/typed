@@ -89,6 +89,9 @@
     },
     {
       "path": "./node/tsconfig.cjs.json"
+    },
+    {
+      "path": "./routing/tsconfig.cjs.json"
     }
   ],
   "include": [

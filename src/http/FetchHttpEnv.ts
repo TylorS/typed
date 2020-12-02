@@ -8,6 +8,9 @@ import { filter, fromNullable, map, Option } from 'fp-ts/Option'
 import { HttpEnv, HttpOptions } from './HttpEnv'
 import { HttpResponse } from './HttpResponse'
 
+/**
+ * An implementation of HttpEnv using the Fetch API, supports progress events.
+ */
 export const FetchHttEnv: HttpEnv = { http: httpFetchRequest }
 
 const utf8Decoder = new TextDecoder('utf-8')

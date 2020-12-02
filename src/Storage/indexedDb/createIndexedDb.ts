@@ -14,6 +14,9 @@ import { openDatabase } from './openDatabase'
 export const IndexedDBFailure = '@typed/fp/Storage/IndexedDbFailure'
 export type IndexedDBFailure = FailEnv<typeof IndexedDBFailure, Error>
 
+/**
+ * Create a KeyValueStorage implementation using indexed-db
+ */
 export function createIndexedDbKeyValueStorage<K extends IDBValidKey, V>(
   name: string,
 ): Effect<IndexedDbFactoryEnv & IndexedDBFailure, KeyValueStorage<K, V>> {

@@ -385,6 +385,11 @@
       "import": "./esm/Patch/handlers/namespaceCompleted.js",
       "browser": "./build/Patch/handlers/namespaceCompleted.js"
     },
+    "./Patch/handlers/namespaceDeleted": {
+      "require": "./cjs/Patch/handlers/namespaceDeleted.js",
+      "import": "./esm/Patch/handlers/namespaceDeleted.js",
+      "browser": "./build/Patch/handlers/namespaceDeleted.js"
+    },
     "./Path": {
       "require": "./cjs/Path/exports.js",
       "import": "./esm/Path/exports.js",
@@ -1465,11 +1470,6 @@
       "import": "./esm/common/Args.js",
       "browser": "./build/common/Args.js"
     },
-    "./common/ConsList": {
-      "require": "./cjs/common/ConsList.js",
-      "import": "./esm/common/ConsList.js",
-      "browser": "./build/common/ConsList.js"
-    },
     "./common/DropNever": {
       "require": "./cjs/common/DropNever.js",
       "import": "./esm/common/DropNever.js",
@@ -1489,11 +1489,6 @@
       "require": "./cjs/common/TupleFromUnion.js",
       "import": "./esm/common/TupleFromUnion.js",
       "browser": "./build/common/TupleFromUnion.js"
-    },
-    "./common/TupleKeys": {
-      "require": "./cjs/common/TupleKeys.js",
-      "import": "./esm/common/TupleKeys.js",
-      "browser": "./build/common/TupleKeys.js"
     },
     "./common/deepEqualsEq": {
       "require": "./cjs/common/deepEqualsEq.js",
@@ -1654,6 +1649,11 @@
       "require": "./cjs/io/Guard.js",
       "import": "./esm/io/Guard.js",
       "browser": "./build/io/Guard.js"
+    },
+    "./io/JsonCodec": {
+      "require": "./cjs/io/JsonCodec.js",
+      "import": "./esm/io/JsonCodec.js",
+      "browser": "./build/io/JsonCodec.js"
     },
     "./io/TypedSchema": {
       "require": "./cjs/io/TypedSchema.js",

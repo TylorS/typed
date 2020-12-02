@@ -4,6 +4,9 @@ import { createRef, Ref } from '@typed/fp/Shared/Ref/exports'
 
 import { addNamespaceRenderer } from './NamespaceRenderers'
 
+/**
+ * A Ref to the previously rendered value for a given Namespace.
+ */
 export const RenderRef = createShared(
   Symbol.for('RenderRef'),
   Pure.fromIO(() => createRef<any>()),

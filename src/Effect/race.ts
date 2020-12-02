@@ -5,6 +5,9 @@ import { async, run } from '@typed/fp/Resume/exports'
 import { Effect, fromEnv } from './Effect'
 import { toEnv } from './toEnv'
 
+/**
+ * Race two Effects together.
+ */
 export const race = curry(
   <E1, A, E2, B>(a: Effect<E1, A>, b: Effect<E2, B>): Effect<E1 & E2, A | B> =>
     fromEnv((e) => {
