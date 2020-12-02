@@ -16,7 +16,7 @@
 
 • `Const` **greaterThan**: \<A>(right: A, left: A) => boolean\<A>(right: A) => (left: A) => boolean = curry(\<A>(right: A, left: A) => left > right) as { \<A>(right: A, left: A): boolean \<A>(right: A): (left: A) => boolean}
 
-*Defined in [src/logic/greaterThan.ts:9](https://github.com/TylorS/typed-fp/blob/41076ce/src/logic/greaterThan.ts#L9)*
+*Defined in [src/logic/greaterThan.ts:9](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/greaterThan.ts#L9)*
 
 Compares two values with >
 

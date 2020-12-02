@@ -16,7 +16,7 @@
 
 ▸ **createPatchNamespace**\<A, B>(`Patch`: [Patch](../interfaces/_patch_patch_.patch.md)\<A, B>): (Anonymous function)
 
-*Defined in [src/Patch/handlers/createPatchNamespace.ts:17](https://github.com/TylorS/typed-fp/blob/41076ce/src/Patch/handlers/createPatchNamespace.ts#L17)*
+*Defined in [src/Patch/handlers/createPatchNamespace.ts:17](https://github.com/TylorS/typed-fp/blob/8639976/src/Patch/handlers/createPatchNamespace.ts#L17)*
 
 #### Type parameters:
 

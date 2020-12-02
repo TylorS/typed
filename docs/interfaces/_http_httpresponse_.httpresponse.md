@@ -25,7 +25,7 @@ A JSON-friendly HttpResponse
 
 • `Readonly` **headers**: [HttpHeaders](../modules/_http_httpheaders_.md#httpheaders)
 
-*Defined in [src/http/HttpResponse.ts:10](https://github.com/TylorS/typed-fp/blob/41076ce/src/http/HttpResponse.ts#L10)*
+*Defined in [src/http/HttpResponse.ts:10](https://github.com/TylorS/typed-fp/blob/8639976/src/http/HttpResponse.ts#L10)*
 
 ___
 
@@ -33,7 +33,7 @@ ___
 
 • `Readonly` **responseText**: string
 
-*Defined in [src/http/HttpResponse.ts:7](https://github.com/TylorS/typed-fp/blob/41076ce/src/http/HttpResponse.ts#L7)*
+*Defined in [src/http/HttpResponse.ts:7](https://github.com/TylorS/typed-fp/blob/8639976/src/http/HttpResponse.ts#L7)*
 
 ___
 
@@ -41,7 +41,7 @@ ___
 
 • `Readonly` **status**: number
 
-*Defined in [src/http/HttpResponse.ts:8](https://github.com/TylorS/typed-fp/blob/41076ce/src/http/HttpResponse.ts#L8)*
+*Defined in [src/http/HttpResponse.ts:8](https://github.com/TylorS/typed-fp/blob/8639976/src/http/HttpResponse.ts#L8)*
 
 ___
 
@@ -49,4 +49,4 @@ ___
 
 • `Readonly` **statusText**: string
 
-*Defined in [src/http/HttpResponse.ts:9](https://github.com/TylorS/typed-fp/blob/41076ce/src/http/HttpResponse.ts#L9)*
+*Defined in [src/http/HttpResponse.ts:9](https://github.com/TylorS/typed-fp/blob/8639976/src/http/HttpResponse.ts#L9)*

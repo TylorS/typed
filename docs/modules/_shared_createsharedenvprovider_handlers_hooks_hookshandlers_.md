@@ -16,6 +16,6 @@
 
 • `Const` **hooksHandlers**: [[SharedEventHandler](_shared_createsharedenvprovider_sharedeventhandler_.md#sharedeventhandler)\<[NamespaceStarted](_shared_core_events_namespaceevent_.namespacestarted.md)>] = [ createSharedEventHandler(namespaceStartedGuard, namespaceStarted),] as const
 
-*Defined in [src/Shared/createSharedEnvProvider/handlers/hooks/hooksHandlers.ts:8](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/createSharedEnvProvider/handlers/hooks/hooksHandlers.ts#L8)*
+*Defined in [src/Shared/createSharedEnvProvider/handlers/hooks/hooksHandlers.ts:8](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/createSharedEnvProvider/handlers/hooks/hooksHandlers.ts#L8)*
 
 All of the Shared handlers required to provide a React hooks-like API.

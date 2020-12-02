@@ -19,7 +19,7 @@ Name |
 
 ▸ (`a`: A): [Effect](../modules/_effect_effect_.effect.md)\<E, void>
 
-*Defined in [src/logging/LoggerEffect.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/logging/LoggerEffect.ts#L14)*
+*Defined in [src/logging/LoggerEffect.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/logging/LoggerEffect.ts#L14)*
 
 #### Parameters:
 

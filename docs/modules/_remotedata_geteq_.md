@@ -16,7 +16,7 @@
 
 ▸ `Const`**getEq**\<A, B>(`left`: Eq\<A>, `right`: Eq\<B>): Eq\<[RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>>
 
-*Defined in [src/RemoteData/getEq.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/getEq.ts#L14)*
+*Defined in [src/RemoteData/getEq.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/RemoteData/getEq.ts#L14)*
 
 Create an Eq instance for RemoteData given a left and right Eq instance.
 

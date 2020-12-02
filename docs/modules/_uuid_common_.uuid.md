@@ -44,7 +44,7 @@ ___
 
 •  **unwrap**: (s: S) => A
 
-*Defined in [src/Uuid/common.ts:18](https://github.com/TylorS/typed-fp/blob/41076ce/src/Uuid/common.ts#L18)*
+*Defined in [src/Uuid/common.ts:18](https://github.com/TylorS/typed-fp/blob/8639976/src/Uuid/common.ts#L18)*
 
 ___
 
@@ -52,4 +52,4 @@ ___
 
 •  **wrap**: (a: A) => S
 
-*Defined in [src/Uuid/common.ts:18](https://github.com/TylorS/typed-fp/blob/41076ce/src/Uuid/common.ts#L18)*
+*Defined in [src/Uuid/common.ts:18](https://github.com/TylorS/typed-fp/blob/8639976/src/Uuid/common.ts#L18)*

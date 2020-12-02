@@ -19,7 +19,7 @@
 
 ▸ **get**(`target`: Storage, `property`: keyof Storage): any
 
-*Defined in [src/Storage/proxyStorage.ts:9](https://github.com/TylorS/typed-fp/blob/41076ce/src/Storage/proxyStorage.ts#L9)*
+*Defined in [src/Storage/proxyStorage.ts:9](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/proxyStorage.ts#L9)*
 
 #### Parameters:
 
@@ -36,7 +36,7 @@ ___
 
 ▸ **getByIndex**(`index`: number, `storage`: Storage): null \| string
 
-*Defined in [src/Storage/proxyStorage.ts:21](https://github.com/TylorS/typed-fp/blob/41076ce/src/Storage/proxyStorage.ts#L21)*
+*Defined in [src/Storage/proxyStorage.ts:21](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/proxyStorage.ts#L21)*
 
 #### Parameters:
 
@@ -53,7 +53,7 @@ ___
 
 ▸ **proxyStorage**(`storage`: Storage): Storage
 
-*Defined in [src/Storage/proxyStorage.ts:5](https://github.com/TylorS/typed-fp/blob/41076ce/src/Storage/proxyStorage.ts#L5)*
+*Defined in [src/Storage/proxyStorage.ts:5](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/proxyStorage.ts#L5)*
 
 Proxy a Storage interface to allow indexing functionality around an otherwise
 valid Storage interface.
@@ -72,7 +72,7 @@ ___
 
 ▸ **set**(`target`: Storage, `property`: keyof Storage, `value`: string): boolean
 
-*Defined in [src/Storage/proxyStorage.ts:27](https://github.com/TylorS/typed-fp/blob/41076ce/src/Storage/proxyStorage.ts#L27)*
+*Defined in [src/Storage/proxyStorage.ts:27](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/proxyStorage.ts#L27)*
 
 #### Parameters:
 

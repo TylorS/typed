@@ -24,7 +24,7 @@
 
 • `Const` **WHEN\_IDLE\_TIMEOUT**: string = process.env.WHEN\_IDLE\_TIMEOUT \|\| '100'
 
-*Defined in [src/node/WhenIdleEnv.ts:8](https://github.com/TylorS/typed-fp/blob/41076ce/src/node/WhenIdleEnv.ts#L8)*
+*Defined in [src/node/WhenIdleEnv.ts:8](https://github.com/TylorS/typed-fp/blob/8639976/src/node/WhenIdleEnv.ts#L8)*
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 • `Const` **maxMs**: number = parseInt(WHEN\_IDLE\_TIMEOUT)
 
-*Defined in [src/node/WhenIdleEnv.ts:9](https://github.com/TylorS/typed-fp/blob/41076ce/src/node/WhenIdleEnv.ts#L9)*
+*Defined in [src/node/WhenIdleEnv.ts:9](https://github.com/TylorS/typed-fp/blob/8639976/src/node/WhenIdleEnv.ts#L9)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • `Const` **provideNoOpWhenIdleEnv**: [Provider](_effect_provide_.md#provider)\<[WhenIdleEnv](../interfaces/_dom_whenidle_.whenidleenv.md)> = provideSome\<WhenIdleEnv>( noOpWhenIdleEnv,)
 
-*Defined in [src/node/WhenIdleEnv.ts:45](https://github.com/TylorS/typed-fp/blob/41076ce/src/node/WhenIdleEnv.ts#L45)*
+*Defined in [src/node/WhenIdleEnv.ts:45](https://github.com/TylorS/typed-fp/blob/8639976/src/node/WhenIdleEnv.ts#L45)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 • `Const` **provideWhenIdleEnv**: [Provider](_effect_provide_.md#provider)\<[WhenIdleEnv](../interfaces/_dom_whenidle_.whenidleenv.md)> = provideSome\<WhenIdleEnv>(whenIdleEnv)
 
-*Defined in [src/node/WhenIdleEnv.ts:35](https://github.com/TylorS/typed-fp/blob/41076ce/src/node/WhenIdleEnv.ts#L35)*
+*Defined in [src/node/WhenIdleEnv.ts:35](https://github.com/TylorS/typed-fp/blob/8639976/src/node/WhenIdleEnv.ts#L35)*
 
 Provide an Effect with a setTimeout-based WhenIdleEnv.
 
@@ -58,7 +58,7 @@ Provide an Effect with a setTimeout-based WhenIdleEnv.
 
 ▪ `Const` **noOpWhenIdleEnv**: object
 
-*Defined in [src/node/WhenIdleEnv.ts:40](https://github.com/TylorS/typed-fp/blob/41076ce/src/node/WhenIdleEnv.ts#L40)*
+*Defined in [src/node/WhenIdleEnv.ts:40](https://github.com/TylorS/typed-fp/blob/8639976/src/node/WhenIdleEnv.ts#L40)*
 
 An implementation of WhenIdleEnv that will not schedule any work to be performed.
 
@@ -75,7 +75,7 @@ ___
 
 ▪ `Const` **whenIdleEnv**: object
 
-*Defined in [src/node/WhenIdleEnv.ts:16](https://github.com/TylorS/typed-fp/blob/41076ce/src/node/WhenIdleEnv.ts#L16)*
+*Defined in [src/node/WhenIdleEnv.ts:16](https://github.com/TylorS/typed-fp/blob/8639976/src/node/WhenIdleEnv.ts#L16)*
 
 A setTimeout based implementation of WhenIdleEnv for node and other non-browser environments.
 Every deadline will have 100 milliseconds available to it by default. Use process.env.WHEN_IDLE_TIMEOUT

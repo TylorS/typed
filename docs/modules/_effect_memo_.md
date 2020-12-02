@@ -16,7 +16,7 @@
 
 ▸ `Const`**memo**\<E, A>(`effect`: [Effect](_effect_effect_.effect.md)\<E, A>): [Effect](_effect_effect_.effect.md)\<E, A>
 
-*Defined in [src/Effect/memo.ts:9](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/memo.ts#L9)*
+*Defined in [src/Effect/memo.ts:9](https://github.com/TylorS/typed-fp/blob/8639976/src/Effect/memo.ts#L9)*
 
 Memoize the output of an Effect.
 

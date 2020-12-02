@@ -16,4 +16,4 @@
 
 • `Const` **exec**: (regex: RegExp, str: string) => Option\<RegExpExecArray>(regex: RegExp) => (str: string) => Option\<RegExpExecArray> = curry((regex: RegExp, str: string): Option\<RegExpExecArray> => fromNullable(regex.exec(str)))
 
-*Defined in [src/logic/exec.ts:4](https://github.com/TylorS/typed-fp/blob/41076ce/src/logic/exec.ts#L4)*
+*Defined in [src/logic/exec.ts:4](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/exec.ts#L4)*

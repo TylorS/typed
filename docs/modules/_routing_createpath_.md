@@ -20,7 +20,7 @@
 
 Ƭ  **CreatePathOptions**: ParseOptions & TokensToFunctionOptions
 
-*Defined in [src/routing/createPath.ts:6](https://github.com/TylorS/typed-fp/blob/41076ce/src/routing/createPath.ts#L6)*
+*Defined in [src/routing/createPath.ts:6](https://github.com/TylorS/typed-fp/blob/8639976/src/routing/createPath.ts#L6)*
 
 ## Functions
 
@@ -28,7 +28,7 @@
 
 ▸ **createPath**\<A>(`route`: A, `options?`: [CreatePathOptions](_routing_createpath_.md#createpathoptions)): (Anonymous function)
 
-*Defined in [src/routing/createPath.ts:11](https://github.com/TylorS/typed-fp/blob/41076ce/src/routing/createPath.ts#L11)*
+*Defined in [src/routing/createPath.ts:11](https://github.com/TylorS/typed-fp/blob/8639976/src/routing/createPath.ts#L11)*
 
 Create a function to generate a Path from a given set of Route values.
 

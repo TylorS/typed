@@ -16,7 +16,7 @@
 
 ▸ `Const`**fromMap**\<K, V>(`key?`: Eq\<K>, `value?`: Eq\<V>): (Anonymous function)
 
-*Defined in [src/Shared/map/fromMap.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/map/fromMap.ts#L12)*
+*Defined in [src/Shared/map/fromMap.ts:12](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/map/fromMap.ts#L12)*
 
 Constructor a SharedMap that requires being provided by the environment.
 

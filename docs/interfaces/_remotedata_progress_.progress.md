@@ -23,7 +23,7 @@ A type to represent loading progress
 
 • `Readonly` **loaded**: number
 
-*Defined in [src/RemoteData/Progress.ts:7](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/Progress.ts#L7)*
+*Defined in [src/RemoteData/Progress.ts:7](https://github.com/TylorS/typed-fp/blob/8639976/src/RemoteData/Progress.ts#L7)*
 
 ___
 
@@ -31,4 +31,4 @@ ___
 
 • `Readonly` **total**: Option\<number>
 
-*Defined in [src/RemoteData/Progress.ts:8](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/Progress.ts#L8)*
+*Defined in [src/RemoteData/Progress.ts:8](https://github.com/TylorS/typed-fp/blob/8639976/src/RemoteData/Progress.ts#L8)*

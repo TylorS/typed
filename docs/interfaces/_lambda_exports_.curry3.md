@@ -27,7 +27,7 @@ Name |
 
 ▸ (`a`: A, `b`: B, `c`: C): D
 
-*Defined in [src/common/types.ts:24](https://github.com/TylorS/typed-fp/blob/41076ce/src/common/types.ts#L24)*
+*Defined in [src/common/types.ts:24](https://github.com/TylorS/typed-fp/blob/8639976/src/common/types.ts#L24)*
 
 #### Parameters:
 
@@ -41,7 +41,7 @@ Name | Type |
 
 ▸ (`a`: A, `b`: B): C
 
-*Defined in [src/common/types.ts:19](https://github.com/TylorS/typed-fp/blob/41076ce/src/common/types.ts#L19)*
+*Defined in [src/common/types.ts:19](https://github.com/TylorS/typed-fp/blob/8639976/src/common/types.ts#L19)*
 
 #### Parameters:
 
@@ -54,7 +54,7 @@ Name | Type |
 
 ▸ (`value`: A): B
 
-*Defined in [src/common/types.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/common/types.ts#L14)*
+*Defined in [src/common/types.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/common/types.ts#L14)*
 
 #### Parameters:
 

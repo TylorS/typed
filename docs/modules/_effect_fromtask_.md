@@ -16,7 +16,7 @@
 
 ▸ **fromTask**\<A>(`task`: Task\<A>): [Pure](_effect_effect_.md#pure)\<A>
 
-*Defined in [src/Effect/fromTask.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/fromTask.ts#L14)*
+*Defined in [src/Effect/fromTask.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/Effect/fromTask.ts#L14)*
 
 Converts a Task into an Effect. Does not handle errors from your promise, if this is required
 try using Either or another more expressive type.

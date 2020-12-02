@@ -27,7 +27,7 @@
 
 • `Let` **lastTime**: number = performance.now()
 
-*Defined in [src/node/RafEnv.ts:5](https://github.com/TylorS/typed-fp/blob/41076ce/src/node/RafEnv.ts#L5)*
+*Defined in [src/node/RafEnv.ts:5](https://github.com/TylorS/typed-fp/blob/8639976/src/node/RafEnv.ts#L5)*
 
 ___
 
@@ -35,7 +35,7 @@ ___
 
 • `Const` **provideNoOpRafEnv**: [Provider](_effect_provide_.md#provider)\<[RafEnv](../interfaces/_dom_raf_.rafenv.md)\<any>, unknown> = provideSome\<RafEnv>(noOpRafEnv)
 
-*Defined in [src/node/RafEnv.ts:45](https://github.com/TylorS/typed-fp/blob/41076ce/src/node/RafEnv.ts#L45)*
+*Defined in [src/node/RafEnv.ts:45](https://github.com/TylorS/typed-fp/blob/8639976/src/node/RafEnv.ts#L45)*
 
 Provide an Effect with a RafEnv that will not schedule any work
 
@@ -45,7 +45,7 @@ ___
 
 • `Const` **provideRafEnv**: [Provider](_effect_provide_.md#provider)\<[RafEnv](../interfaces/_dom_raf_.rafenv.md)\<any>, unknown> = provideSome\<RafEnv>(rafEnv)
 
-*Defined in [src/node/RafEnv.ts:25](https://github.com/TylorS/typed-fp/blob/41076ce/src/node/RafEnv.ts#L25)*
+*Defined in [src/node/RafEnv.ts:25](https://github.com/TylorS/typed-fp/blob/8639976/src/node/RafEnv.ts#L25)*
 
 Provide an Effect with a setTimeout-based RafEnv
 
@@ -55,7 +55,7 @@ Provide an Effect with a setTimeout-based RafEnv
 
 ▸ **getNextTime**(): number
 
-*Defined in [src/node/RafEnv.ts:27](https://github.com/TylorS/typed-fp/blob/41076ce/src/node/RafEnv.ts#L27)*
+*Defined in [src/node/RafEnv.ts:27](https://github.com/TylorS/typed-fp/blob/8639976/src/node/RafEnv.ts#L27)*
 
 **Returns:** number
 
@@ -65,7 +65,7 @@ Provide an Effect with a setTimeout-based RafEnv
 
 ▪ `Const` **noOpRafEnv**: object
 
-*Defined in [src/node/RafEnv.ts:37](https://github.com/TylorS/typed-fp/blob/41076ce/src/node/RafEnv.ts#L37)*
+*Defined in [src/node/RafEnv.ts:37](https://github.com/TylorS/typed-fp/blob/8639976/src/node/RafEnv.ts#L37)*
 
 A RafEnv implementation that does not schedule nor cancel any kind of work.
 
@@ -82,7 +82,7 @@ ___
 
 ▪ `Const` **rafEnv**: object
 
-*Defined in [src/node/RafEnv.ts:10](https://github.com/TylorS/typed-fp/blob/41076ce/src/node/RafEnv.ts#L10)*
+*Defined in [src/node/RafEnv.ts:10](https://github.com/TylorS/typed-fp/blob/8639976/src/node/RafEnv.ts#L10)*
 
 A setTimeout based implementation of raf for Node
 

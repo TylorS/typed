@@ -16,6 +16,6 @@
 
 • `Const` **usingGlobal**: [Provider](_effect_provide_.md#provider)\<[CurrentNamespaceEnv](../interfaces/_shared_core_services_currentnamespaceenv_.currentnamespaceenv.md), unknown> = usingNamespace(GlobalNamespace)
 
-*Defined in [src/Shared/global/usingGlobal.ts:8](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/global/usingGlobal.ts#L8)*
+*Defined in [src/Shared/global/usingGlobal.ts:8](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/global/usingGlobal.ts#L8)*
 
 Perform an effect using the Global Namespace

@@ -29,7 +29,7 @@ Name | Type |
 
 • `Readonly` **parts**: [NormalizeParts](../modules/_routing_route_.md#normalizeparts)\<P>
 
-*Defined in [src/routing/Route.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/routing/Route.ts#L14)*
+*Defined in [src/routing/Route.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/routing/Route.ts#L14)*
 
 ___
 
@@ -37,4 +37,4 @@ ___
 
 • `Readonly` **path**: [PartsToPath](../modules/_routing_route_.md#partstopath)\<[NormalizeParts](../modules/_routing_route_.md#normalizeparts)\<P>>
 
-*Defined in [src/routing/Route.ts:13](https://github.com/TylorS/typed-fp/blob/41076ce/src/routing/Route.ts#L13)*
+*Defined in [src/routing/Route.ts:13](https://github.com/TylorS/typed-fp/blob/8639976/src/routing/Route.ts#L13)*

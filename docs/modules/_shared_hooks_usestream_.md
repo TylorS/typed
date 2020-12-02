@@ -16,7 +16,7 @@
 
 ▸ **useStream**\<A>(`stream`: Stream\<A>, `onValue`: (value: A) => void): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md) & [SchedulerEnv](../interfaces/_scheduler_schedulerenv_.schedulerenv.md), Disposable>
 
-*Defined in [src/Shared/hooks/useStream.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/hooks/useStream.ts#L12)*
+*Defined in [src/Shared/hooks/useStream.ts:12](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/hooks/useStream.ts#L12)*
 
 Subscribe to the events contained within a Stream.
 

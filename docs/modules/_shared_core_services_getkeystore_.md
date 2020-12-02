@@ -20,7 +20,7 @@
 
 • `Const` **getKeyStore**: [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), [SharedKeyStore](../interfaces/_shared_core_model_sharedkeystore_.sharedkeystore.md)> = doEffect(function* () { const namespace = yield* getCurrentNamespace const keyStores = yield* getKeyStores return yield* getOrCreate(keyStores, namespace, createNewKeyStore)})
 
-*Defined in [src/Shared/core/services/getKeyStore.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/core/services/getKeyStore.ts#L14)*
+*Defined in [src/Shared/core/services/getKeyStore.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/core/services/getKeyStore.ts#L14)*
 
 Get the current namespace's KeyStore
 
@@ -30,6 +30,6 @@ Get the current namespace's KeyStore
 
 ▸ `Const`**createNewKeyStore**(): [Effect](_effect_effect_.effect.md)\<[SharedEventEnv](../interfaces/_shared_core_events_sharedeventenv_.sharedeventenv.md) & [CurrentNamespaceEnv](../interfaces/_shared_core_services_currentnamespaceenv_.currentnamespaceenv.md), [SharedKeyStore](../interfaces/_shared_core_model_sharedkeystore_.sharedkeystore.md)>
 
-*Defined in [src/Shared/core/services/getKeyStore.ts:21](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/core/services/getKeyStore.ts#L21)*
+*Defined in [src/Shared/core/services/getKeyStore.ts:21](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/core/services/getKeyStore.ts#L21)*
 
 **Returns:** [Effect](_effect_effect_.effect.md)\<[SharedEventEnv](../interfaces/_shared_core_events_sharedeventenv_.sharedeventenv.md) & [CurrentNamespaceEnv](../interfaces/_shared_core_services_currentnamespaceenv_.currentnamespaceenv.md), [SharedKeyStore](../interfaces/_shared_core_model_sharedkeystore_.sharedkeystore.md)>

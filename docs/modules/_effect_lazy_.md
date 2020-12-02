@@ -16,7 +16,7 @@
 
 ▸ `Const`**lazy**\<E, A>(`io`: IO\<[Effect](_effect_effect_.effect.md)\<E, A>>): [Effect](_effect_effect_.effect.md)\<E, A>
 
-*Defined in [src/Effect/lazy.ts:9](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/lazy.ts#L9)*
+*Defined in [src/Effect/lazy.ts:9](https://github.com/TylorS/typed-fp/blob/8639976/src/Effect/lazy.ts#L9)*
 
 Create an Effect<E, A> from an IO<Effect<E, A>>
 

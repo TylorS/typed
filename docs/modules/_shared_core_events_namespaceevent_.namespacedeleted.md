@@ -18,4 +18,4 @@ When a Namespace is being deleted from the environment.
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[NamespaceDeleted](_shared_core_events_namespaceevent_.namespacedeleted.md)> = createSchema\<NamespaceDeleted>((t) => t.type({ type: t.literal('namespace/deleted'), namespace: Namespace.schema(t), }), )
 
-*Defined in [src/Shared/core/events/NamespaceEvent.ts:116](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/core/events/NamespaceEvent.ts#L116)*
+*Defined in [src/Shared/core/events/NamespaceEvent.ts:116](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/core/events/NamespaceEvent.ts#L116)*

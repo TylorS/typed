@@ -35,7 +35,7 @@
 
 Ƭ  **IdleCallbackDeadline**: { didTimeout: boolean ; timeRemaining: () => number  }
 
-*Defined in [src/dom/whenIdle.ts:36](https://github.com/TylorS/typed-fp/blob/41076ce/src/dom/whenIdle.ts#L36)*
+*Defined in [src/dom/whenIdle.ts:36](https://github.com/TylorS/typed-fp/blob/8639976/src/dom/whenIdle.ts#L36)*
 
 RequestIdleCallback deadline type
 
@@ -52,7 +52,7 @@ ___
 
 Ƭ  **IdleCallbackOptions**: { timeout: number  }
 
-*Defined in [src/dom/whenIdle.ts:44](https://github.com/TylorS/typed-fp/blob/41076ce/src/dom/whenIdle.ts#L44)*
+*Defined in [src/dom/whenIdle.ts:44](https://github.com/TylorS/typed-fp/blob/8639976/src/dom/whenIdle.ts#L44)*
 
 Options for requestIdleCallback
 
@@ -68,7 +68,7 @@ Name | Type |
 
 • `Const` **DEFAULT\_TIMEOUT**: number = 30 * 1000
 
-*Defined in [src/dom/whenIdle.ts:64](https://github.com/TylorS/typed-fp/blob/41076ce/src/dom/whenIdle.ts#L64)*
+*Defined in [src/dom/whenIdle.ts:64](https://github.com/TylorS/typed-fp/blob/8639976/src/dom/whenIdle.ts#L64)*
 
 ## Functions
 
@@ -76,7 +76,7 @@ Name | Type |
 
 ▸ **createFallbackWhenIdleEnv**(`timer`: Timer, `defaultTimeout?`: number): object
 
-*Defined in [src/dom/whenIdle.ts:69](https://github.com/TylorS/typed-fp/blob/41076ce/src/dom/whenIdle.ts#L69)*
+*Defined in [src/dom/whenIdle.ts:69](https://github.com/TylorS/typed-fp/blob/8639976/src/dom/whenIdle.ts#L69)*
 
 Given a Timer instance to create a WhenIdleEnv implementation.
 
@@ -100,7 +100,7 @@ ___
 
 ▸ `Const`**whenIdle**(`opts?`: [IdleCallbackOptions](_dom_whenidle_.md#idlecallbackoptions)): [Effect](_effect_effect_.effect.md)\<[WhenIdleEnv](../interfaces/_dom_whenidle_.whenidleenv.md), [IdleCallbackDeadline](_dom_whenidle_.md#idlecallbackdeadline)>
 
-*Defined in [src/dom/whenIdle.ts:51](https://github.com/TylorS/typed-fp/blob/41076ce/src/dom/whenIdle.ts#L51)*
+*Defined in [src/dom/whenIdle.ts:51](https://github.com/TylorS/typed-fp/blob/8639976/src/dom/whenIdle.ts#L51)*
 
 An Effect for waiting to perform work cooperatively with the main thread.
 

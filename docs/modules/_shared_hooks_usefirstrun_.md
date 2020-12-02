@@ -17,7 +17,7 @@
 
 • `Const` **pureTrue**: [Pure](_effect_effect_.md#pure)\<boolean> = Pure.of(true)
 
-*Defined in [src/Shared/hooks/useFirstRun.ts:6](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/hooks/useFirstRun.ts#L6)*
+*Defined in [src/Shared/hooks/useFirstRun.ts:6](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/hooks/useFirstRun.ts#L6)*
 
 ___
 
@@ -25,6 +25,6 @@ ___
 
 • `Const` **useFirstRun**: [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), boolean> = doEffect(function* () { const ref = yield* useRef(pureTrue) if (ref.current) { ref.current = false return true } return ref.current})
 
-*Defined in [src/Shared/hooks/useFirstRun.ts:11](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/hooks/useFirstRun.ts#L11)*
+*Defined in [src/Shared/hooks/useFirstRun.ts:11](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/hooks/useFirstRun.ts#L11)*
 
 Track if it's the first time running in this namespace.

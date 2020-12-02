@@ -16,6 +16,6 @@
 
 • `Const` **GlobalNamespace**: [Namespace](_shared_core_model_namespace_.namespace.md) = Namespace.wrap(Symbol.for('@typed/fp/Global'))
 
-*Defined in [src/Shared/global/Global.ts:6](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/global/Global.ts#L6)*
+*Defined in [src/Shared/global/Global.ts:6](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/global/Global.ts#L6)*
 
 A namespace to be used as if it is global state.

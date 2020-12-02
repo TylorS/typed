@@ -22,7 +22,7 @@
 
 ▸ **_equals**(`a`: any, `b`: any, `stackA?`: any[], `stackB?`: any[]): boolean
 
-*Defined in [src/common/deepEqualsEq.ts:18](https://github.com/TylorS/typed-fp/blob/41076ce/src/common/deepEqualsEq.ts#L18)*
+*Defined in [src/common/deepEqualsEq.ts:18](https://github.com/TylorS/typed-fp/blob/8639976/src/common/deepEqualsEq.ts#L18)*
 
 #### Parameters:
 
@@ -41,7 +41,7 @@ ___
 
 ▸ **_uniqContentEquals**(`aIterable`: Iterable\<any>, `bIterable`: Iterable\<any>, `stackA`: any[], `stackB`: any[]): boolean
 
-*Defined in [src/common/deepEqualsEq.ts:141](https://github.com/TylorS/typed-fp/blob/41076ce/src/common/deepEqualsEq.ts#L141)*
+*Defined in [src/common/deepEqualsEq.ts:141](https://github.com/TylorS/typed-fp/blob/8639976/src/common/deepEqualsEq.ts#L141)*
 
 #### Parameters:
 
@@ -60,7 +60,7 @@ ___
 
 ▸ **equals**(`a`: any, `b`: any): boolean
 
-*Defined in [src/common/deepEqualsEq.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/common/deepEqualsEq.ts#L14)*
+*Defined in [src/common/deepEqualsEq.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/common/deepEqualsEq.ts#L14)*
 
 #### Parameters:
 
@@ -77,7 +77,7 @@ Name | Type |
 
 ▪ `Const` **deepEqualsEq**: object
 
-*Defined in [src/common/deepEqualsEq.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/common/deepEqualsEq.ts#L12)*
+*Defined in [src/common/deepEqualsEq.ts:12](https://github.com/TylorS/typed-fp/blob/8639976/src/common/deepEqualsEq.ts#L12)*
 
 A deep-equality Eq instance.
 Supports Reference equality, all JavaScript Primitives including `RegExp`, `Set` and `Map`.

@@ -29,4 +29,4 @@ Name |
 
 • `Readonly` **keyValueStorage**: [KeyValueStorage](../modules/_storage_keyvaluestorage_.md#keyvaluestorage)\<K, V>
 
-*Defined in [src/Storage/KeyValueStorage.ts:11](https://github.com/TylorS/typed-fp/blob/41076ce/src/Storage/KeyValueStorage.ts#L11)*
+*Defined in [src/Storage/KeyValueStorage.ts:11](https://github.com/TylorS/typed-fp/blob/8639976/src/Storage/KeyValueStorage.ts#L11)*

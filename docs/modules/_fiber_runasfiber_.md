@@ -18,7 +18,7 @@
 
 ▸ `Const`**fiberToPromise**\<A>(`fiber`: [Fiber](../interfaces/_fiber_fiber_.fiber.md)\<A>): Promise\<A>
 
-*Defined in [src/Fiber/runAsFiber.ts:26](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/runAsFiber.ts#L26)*
+*Defined in [src/Fiber/runAsFiber.ts:26](https://github.com/TylorS/typed-fp/blob/8639976/src/Fiber/runAsFiber.ts#L26)*
 
 Convert a fiber to a Promise of it's success/completion value.
 
@@ -42,7 +42,7 @@ ___
 
 ▸ `Const`**runAsFiber**\<A>(`effect`: [Effect](_effect_effect_.effect.md)\<[FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md), A>, `scheduler`: Scheduler): [Fiber](../interfaces/_fiber_fiber_.fiber.md)\<A>
 
-*Defined in [src/Fiber/runAsFiber.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/runAsFiber.ts#L14)*
+*Defined in [src/Fiber/runAsFiber.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/Fiber/runAsFiber.ts#L14)*
 
 Intended for running an application using fibers. Should not be used to create individual fibers, instead
 use `fork`.
@@ -68,7 +68,7 @@ ___
 
 ▸ `Const`**runAsFiberWith**(`scheduler`: Scheduler): (Anonymous function)
 
-*Defined in [src/Fiber/runAsFiber.ts:20](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/runAsFiber.ts#L20)*
+*Defined in [src/Fiber/runAsFiber.ts:20](https://github.com/TylorS/typed-fp/blob/8639976/src/Fiber/runAsFiber.ts#L20)*
 
 A curried variant of runAsFiber to be used with pipe()
 

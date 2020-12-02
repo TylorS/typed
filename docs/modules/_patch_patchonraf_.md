@@ -26,7 +26,7 @@
 
 Ƭ  **PatchOnRafEnv**\<A, B>: [SchedulerEnv](../interfaces/_scheduler_schedulerenv_.schedulerenv.md) & [SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md) & [RafEnv](../interfaces/_dom_raf_.rafenv.md) & [Patch](../interfaces/_patch_patch_.patch.md)\<A, B>
 
-*Defined in [src/Patch/patchOnRaf.ts:19](https://github.com/TylorS/typed-fp/blob/41076ce/src/Patch/patchOnRaf.ts#L19)*
+*Defined in [src/Patch/patchOnRaf.ts:19](https://github.com/TylorS/typed-fp/blob/8639976/src/Patch/patchOnRaf.ts#L19)*
 
 #### Type parameters:
 
@@ -41,7 +41,7 @@ Name |
 
 • `Const` **namespaceUpdatedGuard**: Guard\<unknown, [NamespaceUpdated](_shared_core_events_namespaceevent_.namespaceupdated.md)> = pipe(NamespaceUpdated.schema, createGuardFromSchema)
 
-*Defined in [src/Patch/patchOnRaf.ts:21](https://github.com/TylorS/typed-fp/blob/41076ce/src/Patch/patchOnRaf.ts#L21)*
+*Defined in [src/Patch/patchOnRaf.ts:21](https://github.com/TylorS/typed-fp/blob/8639976/src/Patch/patchOnRaf.ts#L21)*
 
 ___
 
@@ -49,7 +49,7 @@ ___
 
 • `Const` **sharedValueUpdatedGuard**: Guard\<unknown, [SharedValueUpdated](_shared_core_events_sharedvalueevent_.sharedvalueupdated.md)> = pipe(SharedValueUpdated.schema, createGuardFromSchema)
 
-*Defined in [src/Patch/patchOnRaf.ts:22](https://github.com/TylorS/typed-fp/blob/41076ce/src/Patch/patchOnRaf.ts#L22)*
+*Defined in [src/Patch/patchOnRaf.ts:22](https://github.com/TylorS/typed-fp/blob/8639976/src/Patch/patchOnRaf.ts#L22)*
 
 ## Functions
 
@@ -57,7 +57,7 @@ ___
 
 ▸ `Const`**createGuard**(`namespace`: [Namespace](_shared_core_model_namespace_.namespace.md)): Guard\<unknown, [NamespaceUpdated](_shared_core_events_namespaceevent_.namespaceupdated.md) \| [SharedValueUpdated](_shared_core_events_sharedvalueevent_.sharedvalueupdated.md)>
 
-*Defined in [src/Patch/patchOnRaf.ts:24](https://github.com/TylorS/typed-fp/blob/41076ce/src/Patch/patchOnRaf.ts#L24)*
+*Defined in [src/Patch/patchOnRaf.ts:24](https://github.com/TylorS/typed-fp/blob/8639976/src/Patch/patchOnRaf.ts#L24)*
 
 #### Parameters:
 
@@ -73,7 +73,7 @@ ___
 
 ▸ **patchOnRaf**\<A, E, B>(`initial`: A, `main`: [Effect](_effect_effect_.effect.md)\<E, B>): [Effect](_effect_effect_.effect.md)\<E & [PatchOnRafEnv](_patch_patchonraf_.md#patchonrafenv)\<A, B>, never>
 
-*Defined in [src/Patch/patchOnRaf.ts:33](https://github.com/TylorS/typed-fp/blob/41076ce/src/Patch/patchOnRaf.ts#L33)*
+*Defined in [src/Patch/patchOnRaf.ts:33](https://github.com/TylorS/typed-fp/blob/8639976/src/Patch/patchOnRaf.ts#L33)*
 
 Keep the root of an Application properly Patched
 

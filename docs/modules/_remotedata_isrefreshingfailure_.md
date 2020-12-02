@@ -16,7 +16,7 @@
 
 ▸ `Const`**isRefreshingFailure**\<A, B>(`remoteData`: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>): remoteData is RefreshingFailure\<A>
 
-*Defined in [src/RemoteData/isRefreshingFailure.ts:8](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/isRefreshingFailure.ts#L8)*
+*Defined in [src/RemoteData/isRefreshingFailure.ts:8](https://github.com/TylorS/typed-fp/blob/8639976/src/RemoteData/isRefreshingFailure.ts#L8)*
 
 Check if a RemoteData is a RefreshingFailure
 

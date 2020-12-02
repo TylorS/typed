@@ -20,7 +20,7 @@
 
 • `Const` **isNotObject**: [IsNot](_logic_types_.md#isnot)\<object> = complement(isObject)
 
-*Defined in [src/logic/isObject.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/logic/isObject.ts#L12)*
+*Defined in [src/logic/isObject.ts:12](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/isObject.ts#L12)*
 
 Check if a value is not an Object
 
@@ -30,7 +30,7 @@ Check if a value is not an Object
 
 ▸ `Const`**isObject**(`u`: unknown): u is object
 
-*Defined in [src/logic/isObject.ts:7](https://github.com/TylorS/typed-fp/blob/41076ce/src/logic/isObject.ts#L7)*
+*Defined in [src/logic/isObject.ts:7](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/isObject.ts#L7)*
 
 Check if a value is an Object
 

@@ -20,7 +20,7 @@
 
 • `Const` **test**: Test = describe(\`uuid4\`, [ given(\`[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]\`, [ it(\`returns\`, ({ equal }) => { const expected = Uuid.wrap('1234-56-478-89a-bcdef10') equal(expected, uuid4(createUuidArray())) }), ]),])
 
-*Defined in [src/Uuid/uuid4/uuid4.test.ts:6](https://github.com/TylorS/typed-fp/blob/41076ce/src/Uuid/uuid4/uuid4.test.ts#L6)*
+*Defined in [src/Uuid/uuid4/uuid4.test.ts:6](https://github.com/TylorS/typed-fp/blob/8639976/src/Uuid/uuid4/uuid4.test.ts#L6)*
 
 ## Functions
 
@@ -28,6 +28,6 @@
 
 ▸ **createUuidArray**(): [UuidSeed](_uuid_common_.md#uuidseed)
 
-*Defined in [src/Uuid/uuid4/uuid4.test.ts:16](https://github.com/TylorS/typed-fp/blob/41076ce/src/Uuid/uuid4/uuid4.test.ts#L16)*
+*Defined in [src/Uuid/uuid4/uuid4.test.ts:16](https://github.com/TylorS/typed-fp/blob/8639976/src/Uuid/uuid4/uuid4.test.ts#L16)*
 
 **Returns:** [UuidSeed](_uuid_common_.md#uuidseed)

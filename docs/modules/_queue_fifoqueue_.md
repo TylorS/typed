@@ -16,7 +16,7 @@
 
 ▸ **createFifoQueue**\<A>(`queue`: Array\<A>): [Queue](../interfaces/_queue_queue_.queue.md)\<A>
 
-*Defined in [src/Queue/FifoQueue.ts:10](https://github.com/TylorS/typed-fp/blob/41076ce/src/Queue/FifoQueue.ts#L10)*
+*Defined in [src/Queue/FifoQueue.ts:10](https://github.com/TylorS/typed-fp/blob/8639976/src/Queue/FifoQueue.ts#L10)*
 
 Create a simple in-memory first-in-first-out Queue
 

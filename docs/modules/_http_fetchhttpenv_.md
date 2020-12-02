@@ -26,7 +26,7 @@
 
 • `Const` **utf8Decoder**: TextDecoder = new TextDecoder('utf-8')
 
-*Defined in [src/http/FetchHttpEnv.ts:16](https://github.com/TylorS/typed-fp/blob/41076ce/src/http/FetchHttpEnv.ts#L16)*
+*Defined in [src/http/FetchHttpEnv.ts:16](https://github.com/TylorS/typed-fp/blob/8639976/src/http/FetchHttpEnv.ts#L16)*
 
 ## Functions
 
@@ -34,7 +34,7 @@
 
 ▸ **combineChunks**(`chunks`: ReadonlyArray\<Uint8Array>, `loaded`: number): string
 
-*Defined in [src/http/FetchHttpEnv.ts:116](https://github.com/TylorS/typed-fp/blob/41076ce/src/http/FetchHttpEnv.ts#L116)*
+*Defined in [src/http/FetchHttpEnv.ts:116](https://github.com/TylorS/typed-fp/blob/8639976/src/http/FetchHttpEnv.ts#L116)*
 
 #### Parameters:
 
@@ -51,7 +51,7 @@ ___
 
 ▸ **httpFetchRequest**(`uri`: [Uri](_uri_exports_.uri.md), `options`: [HttpOptions](_http_httpenv_.md#httpoptions)): [Resume](_resume_resume_.md#resume)\<Either\<Error, [HttpResponse](../interfaces/_http_httpresponse_.httpresponse.md)>>
 
-*Defined in [src/http/FetchHttpEnv.ts:18](https://github.com/TylorS/typed-fp/blob/41076ce/src/http/FetchHttpEnv.ts#L18)*
+*Defined in [src/http/FetchHttpEnv.ts:18](https://github.com/TylorS/typed-fp/blob/8639976/src/http/FetchHttpEnv.ts#L18)*
 
 #### Parameters:
 
@@ -68,7 +68,7 @@ ___
 
 ▸ **onProgress**(`response`: Response, `total`: Option\<number>, `onProgress`: NonNullable\<HttpOptions[\"onProgress\"]>): Promise\<string>
 
-*Defined in [src/http/FetchHttpEnv.ts:79](https://github.com/TylorS/typed-fp/blob/41076ce/src/http/FetchHttpEnv.ts#L79)*
+*Defined in [src/http/FetchHttpEnv.ts:79](https://github.com/TylorS/typed-fp/blob/8639976/src/http/FetchHttpEnv.ts#L79)*
 
 #### Parameters:
 
@@ -86,7 +86,7 @@ Name | Type |
 
 ▪ `Const` **FetchHttEnv**: object
 
-*Defined in [src/http/FetchHttpEnv.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/http/FetchHttpEnv.ts#L14)*
+*Defined in [src/http/FetchHttpEnv.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/http/FetchHttpEnv.ts#L14)*
 
 An implementation of HttpEnv using the Fetch API, supports progress events.
 

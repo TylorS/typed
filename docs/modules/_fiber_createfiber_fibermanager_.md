@@ -20,7 +20,7 @@
 
 ▸ **createFiberManager**(`onFinish`: IO\<void>): [FiberManager](../interfaces/_fiber_createfiber_fibermanager_.fibermanager.md)
 
-*Defined in [src/Fiber/createFiber/FiberManager.ts:13](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/createFiber/FiberManager.ts#L13)*
+*Defined in [src/Fiber/createFiber/FiberManager.ts:13](https://github.com/TylorS/typed-fp/blob/8639976/src/Fiber/createFiber/FiberManager.ts#L13)*
 
 #### Parameters:
 

@@ -17,7 +17,7 @@ Name |
 
 ▸ (`value`: A): B
 
-*Defined in [src/common/types.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/common/types.ts#L14)*
+*Defined in [src/common/types.ts:14](https://github.com/TylorS/typed-fp/blob/8639976/src/common/types.ts#L14)*
 
 A type for matching against a particular value.
 
@@ -45,7 +45,7 @@ Name | Type |
 
 • `Const` **map**: \<A, B, C>(fn: (value: B) => C, match: [Match](_logic_types_.match.md)\<A, B>) => [Match](_logic_types_.match.md)\<A, C>\<B, C>(fn: (value: B) => C) => \<A>(match: [Match](_logic_types_.match.md)\<A, B>) => [Match](_logic_types_.match.md)\<A, C> = curry( \<A, B, C>(fn: (value: B) => C, match: Match\<A, B>): Match\<A, C> => (value: A) => pipe(value, match, mapO(fn)), ) as { \<A, B, C>(fn: (value: B) => C, match: Match\<A, B>): Match\<A, C> \<B, C>(fn: (value: B) => C): \<A>(match: Match\<A, B>) => Match\<A, C> }
 
-*Defined in [src/logic/types.ts:25](https://github.com/TylorS/typed-fp/blob/41076ce/src/logic/types.ts#L25)*
+*Defined in [src/logic/types.ts:25](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/types.ts#L25)*
 
 Map over a Match
 
@@ -55,7 +55,7 @@ Map over a Match
 
 ▸ **fromPredicate**\<A>(`predicate`: Predicate\<A>): [Match](_logic_types_.match.md)\<A, A>
 
-*Defined in [src/logic/types.ts:36](https://github.com/TylorS/typed-fp/blob/41076ce/src/logic/types.ts#L36)*
+*Defined in [src/logic/types.ts:36](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/types.ts#L36)*
 
 Create a match from a predicate.
 
@@ -75,7 +75,7 @@ Name | Type |
 
 ▸ **fromPredicate**\<A, B>(`predicate`: [Is](_logic_types_.md#is)\<B>): [Match](_logic_types_.match.md)\<A, B>
 
-*Defined in [src/logic/types.ts:37](https://github.com/TylorS/typed-fp/blob/41076ce/src/logic/types.ts#L37)*
+*Defined in [src/logic/types.ts:37](https://github.com/TylorS/typed-fp/blob/8639976/src/logic/types.ts#L37)*
 
 #### Type parameters:
 

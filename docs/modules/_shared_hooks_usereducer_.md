@@ -16,7 +16,7 @@
 
 ▸ `Const`**useReducer**\<A, B, E>(`reducer`: [Arity2](_common_types_.md#arity2)\<A, B, A>, `initial`: [Effect](_effect_effect_.effect.md)\<E, A>, `eq?`: Eq\<A>): [Effect](_effect_effect_.effect.md)\<E & [SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), [State](_shared_state_state_.md#state)\<A, B>>
 
-*Defined in [src/Shared/hooks/useReducer.ts:15](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/hooks/useReducer.ts#L15)*
+*Defined in [src/Shared/hooks/useReducer.ts:15](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/hooks/useReducer.ts#L15)*
 
 Use a Reducer to keep track of state.
 

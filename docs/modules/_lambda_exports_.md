@@ -31,7 +31,7 @@
 
 Ƭ  **Curry**\<T>: ArgsOf\<T> *extends* [*infer* A] ? Arity1\<A, ReturnType\<T>> : ArgsOf\<T> *extends* [*infer* A, *infer* B] ? Curry2\<A, B, ReturnType\<T>> : ArgsOf\<T> *extends* [*infer* A, *infer* B, *infer* C] ? Curry3\<A, B, C, ReturnType\<T>> : ArgsOf\<T> *extends* [*infer* A, *infer* B, *infer* C, *infer* D] ? Curry4\<A, B, C, D, ReturnType\<T>> : ArgsOf\<T> *extends* [*infer* A, *infer* B, *infer* C, *infer* D, *infer* E] ? Curry5\<A, B, C, D, E, ReturnType\<T>> : ArgsOf\<T> *extends* never[] ? IO\<ReturnType\<T>> : never
 
-*Defined in [src/lambda/exports.ts:54](https://github.com/TylorS/typed-fp/blob/41076ce/src/lambda/exports.ts#L54)*
+*Defined in [src/lambda/exports.ts:54](https://github.com/TylorS/typed-fp/blob/8639976/src/lambda/exports.ts#L54)*
 
 #### Type parameters:
 
@@ -45,7 +45,7 @@ ___
 
 Ƭ  **Fn**\<Args, R>: FunctionN\<Args, R>
 
-*Defined in [src/lambda/exports.ts:32](https://github.com/TylorS/typed-fp/blob/41076ce/src/lambda/exports.ts#L32)*
+*Defined in [src/lambda/exports.ts:32](https://github.com/TylorS/typed-fp/blob/8639976/src/lambda/exports.ts#L32)*
 
 #### Type parameters:
 
@@ -60,7 +60,7 @@ Name | Type | Default |
 
 ▸ `Const`**always**\<A>(`value`: A): (Anonymous function)
 
-*Defined in [src/lambda/exports.ts:69](https://github.com/TylorS/typed-fp/blob/41076ce/src/lambda/exports.ts#L69)*
+*Defined in [src/lambda/exports.ts:69](https://github.com/TylorS/typed-fp/blob/8639976/src/lambda/exports.ts#L69)*
 
 #### Type parameters:
 
@@ -82,7 +82,7 @@ ___
 
 ▸ **curriedN**\<Args, R>(`arity`: number, `f`: [Fn](_lambda_exports_.md#fn)\<Args, R>, `previousArgs`: unknown[]): unknown
 
-*Defined in [src/lambda/exports.ts:16](https://github.com/TylorS/typed-fp/blob/41076ce/src/lambda/exports.ts#L16)*
+*Defined in [src/lambda/exports.ts:16](https://github.com/TylorS/typed-fp/blob/8639976/src/lambda/exports.ts#L16)*
 
 #### Type parameters:
 
@@ -107,7 +107,7 @@ ___
 
 ▸ `Const`**curry**\<F>(`f`: F): [Curry](_lambda_exports_.md#curry)\<F>
 
-*Defined in [src/lambda/exports.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/lambda/exports.ts#L12)*
+*Defined in [src/lambda/exports.ts:12](https://github.com/TylorS/typed-fp/blob/8639976/src/lambda/exports.ts#L12)*
 
 Allow a fixed length function to be partially applied.
 
@@ -131,7 +131,7 @@ ___
 
 ▸ `Const`**memoize**\<Args>(`eq`: Eq\<Args>): (Anonymous function)
 
-*Defined in [src/lambda/exports.ts:71](https://github.com/TylorS/typed-fp/blob/41076ce/src/lambda/exports.ts#L71)*
+*Defined in [src/lambda/exports.ts:71](https://github.com/TylorS/typed-fp/blob/8639976/src/lambda/exports.ts#L71)*
 
 #### Type parameters:
 

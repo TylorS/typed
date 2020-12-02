@@ -16,7 +16,7 @@
 
 ▸ `Const`**useDisposable**\<Deps>(`f`: () => Disposable, `deps`: Deps, `eqs?`: [EqsOf](_shared_common_eqsof_.md#eqsof)\<Deps>): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), Disposable>
 
-*Defined in [src/Shared/hooks/useDisposable.ts:15](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/hooks/useDisposable.ts#L15)*
+*Defined in [src/Shared/hooks/useDisposable.ts:15](https://github.com/TylorS/typed-fp/blob/8639976/src/Shared/hooks/useDisposable.ts#L15)*
 
 Keep track of Disposable resources between runs.
 
