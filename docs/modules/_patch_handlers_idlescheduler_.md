@@ -20,7 +20,7 @@
 
 Ƭ  **IdleScheduler**: ReturnType\<*typeof* [createIdleScheduler](_patch_handlers_idlescheduler_.md#createidlescheduler)>
 
-*Defined in [src/Patch/handlers/IdleScheduler.ts:6](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Patch/handlers/IdleScheduler.ts#L6)*
+*Defined in [src/Patch/handlers/IdleScheduler.ts:6](https://github.com/TylorS/typed-fp/blob/41076ce/src/Patch/handlers/IdleScheduler.ts#L6)*
 
 ## Functions
 
@@ -28,7 +28,7 @@
 
 ▸ **createIdleScheduler**\<E, A>(`queue`: [Queue](../interfaces/_queue_queue_.queue.md)\<A>, `f`: (value: A) => [Effect](_effect_effect_.effect.md)\<E, void>): object
 
-*Defined in [src/Patch/handlers/IdleScheduler.ts:8](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Patch/handlers/IdleScheduler.ts#L8)*
+*Defined in [src/Patch/handlers/IdleScheduler.ts:8](https://github.com/TylorS/typed-fp/blob/41076ce/src/Patch/handlers/IdleScheduler.ts#L8)*
 
 #### Type parameters:
 

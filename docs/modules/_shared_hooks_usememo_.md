@@ -16,7 +16,7 @@
 
 ▸ `Const`**useMemo**\<A, Deps>(`f`: () => A, `deps`: Deps, `eqs?`: [EqsOf](_shared_common_eqsof_.md#eqsof)\<Deps>): [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), A>
 
-*Defined in [src/Shared/hooks/useMemo.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/hooks/useMemo.ts#L12)*
+*Defined in [src/Shared/hooks/useMemo.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/hooks/useMemo.ts#L12)*
 
 Memoize the result of a function.
 

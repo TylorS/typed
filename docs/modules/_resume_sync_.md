@@ -20,7 +20,7 @@
 
 ▸ `Const`**sync**\<A>(`value`: A): [Sync](../interfaces/_resume_sync_.sync.md)\<A>
 
-*Defined in [src/Resume/Sync.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Resume/Sync.ts#L12)*
+*Defined in [src/Resume/Sync.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/Resume/Sync.ts#L12)*
 
 Resume an effect synchronously
 

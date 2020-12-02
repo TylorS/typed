@@ -44,7 +44,7 @@ Name |
 
 • `Readonly` **addChildFiber**: (fiber: [Fiber](_fiber_fiber_.fiber.md)\<unknown>) => Disposable
 
-*Defined in [src/Fiber/Fiber.ts:20](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L20)*
+*Defined in [src/Fiber/Fiber.ts:20](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/Fiber.ts#L20)*
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 *Inherited from [LazyDisposable](_disposable_exports_.lazydisposable.md).[addDisposable](_disposable_exports_.lazydisposable.md#adddisposable)*
 
-*Defined in [src/Disposable/exports.ts:14](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Disposable/exports.ts#L14)*
+*Defined in [src/Disposable/exports.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/Disposable/exports.ts#L14)*
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 • `Readonly` **children**: ReadonlySet\<[Fiber](_fiber_fiber_.fiber.md)\<unknown>>
 
-*Defined in [src/Fiber/Fiber.ts:16](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L16)*
+*Defined in [src/Fiber/Fiber.ts:16](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/Fiber.ts#L16)*
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 *Inherited from [LazyDisposable](_disposable_exports_.lazydisposable.md).[disposed](_disposable_exports_.lazydisposable.md#disposed)*
 
-*Defined in [src/Disposable/exports.ts:13](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Disposable/exports.ts#L13)*
+*Defined in [src/Disposable/exports.ts:13](https://github.com/TylorS/typed-fp/blob/41076ce/src/Disposable/exports.ts#L13)*
 
 ___
 
@@ -80,7 +80,7 @@ ___
 
 • `Readonly` **getInfo**: IO\<[FiberInfo](../modules/_fiber_fiber_.md#fiberinfo)\<A>>
 
-*Defined in [src/Fiber/Fiber.ts:13](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L13)*
+*Defined in [src/Fiber/Fiber.ts:13](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/Fiber.ts#L13)*
 
 ___
 
@@ -88,7 +88,7 @@ ___
 
 • `Readonly` **onInfoChange**: (f: (info: [FiberInfo](../modules/_fiber_fiber_.md#fiberinfo)\<A>) => Disposable) => Disposable
 
-*Defined in [src/Fiber/Fiber.ts:18](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L18)*
+*Defined in [src/Fiber/Fiber.ts:18](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/Fiber.ts#L18)*
 
 ___
 
@@ -96,7 +96,7 @@ ___
 
 • `Readonly` **parentFiber**: Option\<[Fiber](_fiber_fiber_.fiber.md)\<unknown>>
 
-*Defined in [src/Fiber/Fiber.ts:15](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L15)*
+*Defined in [src/Fiber/Fiber.ts:15](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/Fiber.ts#L15)*
 
 ___
 
@@ -104,7 +104,7 @@ ___
 
 • `Readonly` **pauseChildFiber**: (fiber: [Fiber](_fiber_fiber_.fiber.md)\<unknown>, resume: IO\<Disposable>) => Disposable
 
-*Defined in [src/Fiber/Fiber.ts:23](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L23)*
+*Defined in [src/Fiber/Fiber.ts:23](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/Fiber.ts#L23)*
 
 ___
 
@@ -112,7 +112,7 @@ ___
 
 • `Readonly` **runChildFiber**: (fiber: [Fiber](_fiber_fiber_.fiber.md)\<unknown>, resume: IO\<Disposable>) => Disposable
 
-*Defined in [src/Fiber/Fiber.ts:24](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L24)*
+*Defined in [src/Fiber/Fiber.ts:24](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/Fiber.ts#L24)*
 
 ___
 
@@ -120,7 +120,7 @@ ___
 
 • `Readonly` **setPaused**: (paused: boolean) => void
 
-*Defined in [src/Fiber/Fiber.ts:25](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/Fiber.ts#L25)*
+*Defined in [src/Fiber/Fiber.ts:25](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/Fiber.ts#L25)*
 
 ## Methods
 

@@ -35,7 +35,7 @@ Name |
 
 • `Readonly` **getInfo**: IO\<[FiberInfo](../modules/_fiber_fiber_.md#fiberinfo)\<A>>
 
-*Defined in [src/Fiber/createFiber/InfoChangeManager.ts:11](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/createFiber/InfoChangeManager.ts#L11)*
+*Defined in [src/Fiber/createFiber/InfoChangeManager.ts:11](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/createFiber/InfoChangeManager.ts#L11)*
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 • `Readonly` **onInfoChange**: (f: (info: [FiberInfo](../modules/_fiber_fiber_.md#fiberinfo)\<A>) => Disposable) => Disposable
 
-*Defined in [src/Fiber/createFiber/InfoChangeManager.ts:13](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/createFiber/InfoChangeManager.ts#L13)*
+*Defined in [src/Fiber/createFiber/InfoChangeManager.ts:13](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/createFiber/InfoChangeManager.ts#L13)*
 
 ___
 
@@ -51,7 +51,7 @@ ___
 
 • `Readonly` **setPaused**: (paused: boolean) => void
 
-*Defined in [src/Fiber/createFiber/InfoChangeManager.ts:14](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/createFiber/InfoChangeManager.ts#L14)*
+*Defined in [src/Fiber/createFiber/InfoChangeManager.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/createFiber/InfoChangeManager.ts#L14)*
 
 ___
 
@@ -59,7 +59,7 @@ ___
 
 • `Readonly` **updateInfo**: (updated: [FiberInfo](../modules/_fiber_fiber_.md#fiberinfo)\<A>) => void
 
-*Defined in [src/Fiber/createFiber/InfoChangeManager.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/createFiber/InfoChangeManager.ts#L12)*
+*Defined in [src/Fiber/createFiber/InfoChangeManager.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/createFiber/InfoChangeManager.ts#L12)*
 
 ## Methods
 

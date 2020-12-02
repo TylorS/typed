@@ -16,7 +16,7 @@
 
 ▸ **includesWith**\<A, B>(`pred`: (value: A, item: B, index: number) => boolean, `x`: A, `list`: B[]): boolean
 
-*Defined in [src/common/includesWith.ts:5](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/includesWith.ts#L5)*
+*Defined in [src/common/includesWith.ts:5](https://github.com/TylorS/typed-fp/blob/41076ce/src/common/includesWith.ts#L5)*
 
 Checks to see if a list contains a value passing an additional
 value to the predicate.

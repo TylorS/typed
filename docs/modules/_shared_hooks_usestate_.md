@@ -16,7 +16,7 @@
 
 ▸ `Const`**useState**\<E, A>(`initial`: [Effect](_effect_effect_.effect.md)\<E, A>, `eq?`: Eq\<A>): [Effect](_effect_effect_.effect.md)\<E & [SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), [State](_shared_state_state_.md#state)\<A>>
 
-*Defined in [src/Shared/hooks/useState.ts:14](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/hooks/useState.ts#L14)*
+*Defined in [src/Shared/hooks/useState.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/hooks/useState.ts#L14)*
 
 Create a piece of local state
 

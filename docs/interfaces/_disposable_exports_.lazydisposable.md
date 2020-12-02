@@ -32,7 +32,7 @@ Disposable resources to it. This can be helpful for converting third-party APIs.
 
 • `Readonly` **addDisposable**: (d: Disposable) => Disposable
 
-*Defined in [src/Disposable/exports.ts:14](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Disposable/exports.ts#L14)*
+*Defined in [src/Disposable/exports.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/Disposable/exports.ts#L14)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • `Readonly` **disposed**: boolean
 
-*Defined in [src/Disposable/exports.ts:13](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Disposable/exports.ts#L13)*
+*Defined in [src/Disposable/exports.ts:13](https://github.com/TylorS/typed-fp/blob/41076ce/src/Disposable/exports.ts#L13)*
 
 ## Methods
 

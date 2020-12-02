@@ -26,4 +26,4 @@ Name |
 
 • `Readonly` **[URI]**: Stream\<A>
 
-*Defined in [src/Stream/exports.ts:24](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Stream/exports.ts#L24)*
+*Defined in [src/Stream/exports.ts:24](https://github.com/TylorS/typed-fp/blob/41076ce/src/Stream/exports.ts#L24)*

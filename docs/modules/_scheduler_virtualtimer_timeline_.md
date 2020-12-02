@@ -20,4 +20,4 @@
 
 • `Const` **sortNumbers**: \<A>(as: readonly A[]) => readonly A[] = sort(ordNumber)
 
-*Defined in [src/Scheduler/VirtualTimer/Timeline.ts:5](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Scheduler/VirtualTimer/Timeline.ts#L5)*
+*Defined in [src/Scheduler/VirtualTimer/Timeline.ts:5](https://github.com/TylorS/typed-fp/blob/41076ce/src/Scheduler/VirtualTimer/Timeline.ts#L5)*

@@ -16,6 +16,6 @@
 
 • `Const` **disposeNamespace**: [Effect](_effect_effect_.effect.md)\<[SharedEnv](../interfaces/_shared_core_services_sharedenv_.sharedenv.md), void> = doEffect(function* () { const keyStore = yield* getKeyStore const disposable = keyStore.get(NamespaceDisposable.key) disposable?.dispose()})
 
-*Defined in [src/Shared/core/disposables/disposeNamespace.ts:9](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/core/disposables/disposeNamespace.ts#L9)*
+*Defined in [src/Shared/core/disposables/disposeNamespace.ts:9](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/core/disposables/disposeNamespace.ts#L9)*
 
 Release all resources related to the current namespace

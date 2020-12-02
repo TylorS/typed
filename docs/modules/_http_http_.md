@@ -16,7 +16,7 @@
 
 ▸ `Const`**http**(`uri`: [Uri](_uri_exports_.uri.md), `options?`: [HttpOptions](_http_httpenv_.md#httpoptions)): [HttpRequest](../interfaces/_http_httprequest_.httprequest.md)
 
-*Defined in [src/http/http.ts:10](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/http/http.ts#L10)*
+*Defined in [src/http/http.ts:10](https://github.com/TylorS/typed-fp/blob/41076ce/src/http/http.ts#L10)*
 
 An Effect for performing Http Requests
 

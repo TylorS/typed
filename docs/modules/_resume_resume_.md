@@ -16,7 +16,7 @@
 
 Ƭ  **Resume**\<A>: [Sync](../interfaces/_resume_sync_.sync.md)\<A> \| [Async](../interfaces/_resume_async_.async.md)\<A>
 
-*Defined in [src/Resume/Resume.ts:8](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Resume/Resume.ts#L8)*
+*Defined in [src/Resume/Resume.ts:8](https://github.com/TylorS/typed-fp/blob/41076ce/src/Resume/Resume.ts#L8)*
 
 Resume is a sync or async effect which is meant to be used
 for control flow.

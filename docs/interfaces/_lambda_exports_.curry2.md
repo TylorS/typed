@@ -24,7 +24,7 @@ Name |
 
 ▸ (`a`: A, `b`: B): C
 
-*Defined in [src/common/types.ts:19](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/types.ts#L19)*
+*Defined in [src/common/types.ts:19](https://github.com/TylorS/typed-fp/blob/41076ce/src/common/types.ts#L19)*
 
 #### Parameters:
 
@@ -37,7 +37,7 @@ Name | Type |
 
 ▸ (`value`: A): B
 
-*Defined in [src/common/types.ts:14](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/types.ts#L14)*
+*Defined in [src/common/types.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/common/types.ts#L14)*
 
 #### Parameters:
 

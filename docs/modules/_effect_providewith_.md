@@ -17,7 +17,7 @@
 
 ▸ **provideWith**\<E1, E2>(`provider`: [Effect](_effect_effect_.effect.md)\<E1, E2>): (Anonymous function)
 
-*Defined in [src/Effect/provideWith.ts:10](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/provideWith.ts#L10)*
+*Defined in [src/Effect/provideWith.ts:10](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/provideWith.ts#L10)*
 
 Use an Effect to compute part of the environment for another Effect using provideSome.
 
@@ -42,7 +42,7 @@ ___
 
 ▸ **useWith**\<E1, E2>(`provider`: [Effect](_effect_effect_.effect.md)\<E1, E2>): (Anonymous function)
 
-*Defined in [src/Effect/provideWith.ts:20](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/provideWith.ts#L20)*
+*Defined in [src/Effect/provideWith.ts:20](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/provideWith.ts#L20)*
 
 Use an Effect to computer part of the environment for another Effect using useSome.
 

@@ -29,7 +29,7 @@
 
 Ƭ  **URI**: *typeof* [URI](_effect_fp_ts_.md#uri)
 
-*Defined in [src/Effect/fp-ts.ts:13](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/fp-ts.ts#L13)*
+*Defined in [src/Effect/fp-ts.ts:13](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/fp-ts.ts#L13)*
 
 ## Variables
 
@@ -37,7 +37,7 @@
 
 • `Const` **URI**: \"@typed/fp/Effect\" = "@typed/fp/Effect"
 
-*Defined in [src/Effect/fp-ts.ts:11](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/fp-ts.ts#L11)*
+*Defined in [src/Effect/fp-ts.ts:11](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/fp-ts.ts#L11)*
 
 ## Object literals
 
@@ -45,7 +45,7 @@
 
 ▪ `Const` **effect**: object
 
-*Defined in [src/Effect/fp-ts.ts:24](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/fp-ts.ts#L24)*
+*Defined in [src/Effect/fp-ts.ts:24](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/fp-ts.ts#L24)*
 
 MonadTask + Alt instances for Effect with a parallel Applicative instance.
 
@@ -68,7 +68,7 @@ ___
 
 ▪ `Const` **effectSeq**: object
 
-*Defined in [src/Effect/fp-ts.ts:38](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/fp-ts.ts#L38)*
+*Defined in [src/Effect/fp-ts.ts:38](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/fp-ts.ts#L38)*
 
 MonadTask + Alt instances for Effect with a sequential Applicative instance.
 

@@ -17,7 +17,7 @@
 
 Ƭ  **RemoveSyntax**\<A>: A *extends* \`:${R}\` ? RemoveSyntax\<R> : A
 
-*Defined in [src/routing/RouteParam.ts:6](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/RouteParam.ts#L6)*
+*Defined in [src/routing/RouteParam.ts:6](https://github.com/TylorS/typed-fp/blob/41076ce/src/routing/RouteParam.ts#L6)*
 
 #### Type parameters:
 
@@ -31,7 +31,7 @@ ___
 
 Ƭ  **RouteParam**\<K>: \`:${RemoveSyntax\<K>}\`
 
-*Defined in [src/routing/RouteParam.ts:4](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/routing/RouteParam.ts#L4)*
+*Defined in [src/routing/RouteParam.ts:4](https://github.com/TylorS/typed-fp/blob/41076ce/src/routing/RouteParam.ts#L4)*
 
 A type-level helper for creating Route Parameters
 

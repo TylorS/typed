@@ -56,7 +56,7 @@ Re-exports: [uuid4](_uuid_uuid4_uuid4_.md#uuid4)
 
 • `Const` **createUuid**: [Effect](_effect_effect_.effect.md)\<[UuidEnv](../interfaces/_uuid_common_.uuidenv.md), [Uuid](_uuid_common_.uuid.md)> = pipe( ask\<UuidEnv>(), map((e) => e.randomUuidSeed()), map(uuid4),)
 
-*Defined in [src/Uuid/exports.ts:21](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Uuid/exports.ts#L21)*
+*Defined in [src/Uuid/exports.ts:21](https://github.com/TylorS/typed-fp/blob/41076ce/src/Uuid/exports.ts#L21)*
 
 Effect for creating a Uuid
 
@@ -66,7 +66,7 @@ ___
 
 • `Const` **uuidPrism**: Prism\<string, [Uuid](_uuid_common_.uuid.md)> = prism\<Uuid>((s) => uuidRegex.test(s))
 
-*Defined in [src/Uuid/exports.ts:16](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Uuid/exports.ts#L16)*
+*Defined in [src/Uuid/exports.ts:16](https://github.com/TylorS/typed-fp/blob/41076ce/src/Uuid/exports.ts#L16)*
 
 Prism instance for a Uuid.
 
@@ -76,6 +76,6 @@ ___
 
 • `Const` **uuidRegex**: RegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
 
-*Defined in [src/Uuid/exports.ts:11](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Uuid/exports.ts#L11)*
+*Defined in [src/Uuid/exports.ts:11](https://github.com/TylorS/typed-fp/blob/41076ce/src/Uuid/exports.ts#L11)*
 
 Regex to validate a UUID

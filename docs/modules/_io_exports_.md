@@ -105,7 +105,7 @@ Re-exports: [createSchema](_io_typedschema_.md#createschema)
 
 • `Const` **createDecoderFromSchema**: \<A>(schema: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<A>) => Kind2\<S, E, A> = createInterpreter(Decoder)
 
-*Defined in [src/io/exports.ts:11](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/exports.ts#L11)*
+*Defined in [src/io/exports.ts:11](https://github.com/TylorS/typed-fp/blob/41076ce/src/io/exports.ts#L11)*
 
 ___
 
@@ -113,7 +113,7 @@ ___
 
 • `Const` **createEqFromSchema**: \<A>(schema: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<A>) => Kind\<S, A> = createInterpreter(Eq)
 
-*Defined in [src/io/exports.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/exports.ts#L12)*
+*Defined in [src/io/exports.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/io/exports.ts#L12)*
 
 ___
 
@@ -121,4 +121,4 @@ ___
 
 • `Const` **createGuardFromSchema**: \<A>(schema: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<A>) => Kind\<S, A> = createInterpreter(Guard)
 
-*Defined in [src/io/exports.ts:13](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/exports.ts#L13)*
+*Defined in [src/io/exports.ts:13](https://github.com/TylorS/typed-fp/blob/41076ce/src/io/exports.ts#L13)*

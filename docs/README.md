@@ -35,4 +35,4 @@ At present only modern environments that support ES2019 Syntax, including newer 
 
 ## API Documentation
 
-For the time being documentation is only being generated from source code using TypeDoc availabile [here](./globals.md)
+For the time being documentation

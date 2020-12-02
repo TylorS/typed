@@ -20,7 +20,7 @@
 
 • `Const` **provideUuidEnv**: [Provider](_effect_provide_.md#provider)\<[UuidEnv](../interfaces/_uuid_common_.uuidenv.md)> = provideSome(uuidEnv)
 
-*Defined in [src/browser/UuidEnv.ts:16](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/browser/UuidEnv.ts#L16)*
+*Defined in [src/browser/UuidEnv.ts:16](https://github.com/TylorS/typed-fp/blob/41076ce/src/browser/UuidEnv.ts#L16)*
 
 Provide an Effect with a UuidEnv using WebCrypto.
 
@@ -30,7 +30,7 @@ Provide an Effect with a UuidEnv using WebCrypto.
 
 ▪ `Const` **uuidEnv**: object
 
-*Defined in [src/browser/UuidEnv.ts:8](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/browser/UuidEnv.ts#L8)*
+*Defined in [src/browser/UuidEnv.ts:8](https://github.com/TylorS/typed-fp/blob/41076ce/src/browser/UuidEnv.ts#L8)*
 
 Browser implementation of UuidEnv using native WebCrypto API to retrieve cryptographically-safe
 random numbers to generate real UUIDs in the browser.

@@ -20,7 +20,7 @@
 
 ▸ **createFiber**\<A>(`effect`: [Effect](_effect_effect_.effect.md)\<[FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md), A>, `scheduler`: Scheduler, `parentFiber?`: Option\<[Fiber](../interfaces/_fiber_fiber_.fiber.md)\<unknown>>): [Fiber](../interfaces/_fiber_fiber_.fiber.md)\<A>
 
-*Defined in [src/Fiber/createFiber/createFiber.ts:32](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/createFiber/createFiber.ts#L32)*
+*Defined in [src/Fiber/createFiber/createFiber.ts:32](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/createFiber/createFiber.ts#L32)*
 
 Create a Fiber instance for an Effect<FiberEnv, A> given a Scheduler and
 its parent instance.
@@ -47,7 +47,7 @@ ___
 
 ▸ **createFiberEnv**(`currentFiber`: [Fiber](../interfaces/_fiber_fiber_.fiber.md)\<unknown>, `scheduler`: Scheduler): [FiberEnv](../interfaces/_fiber_fiberenv_.fiberenv.md)
 
-*Defined in [src/Fiber/createFiber/createFiber.ts:110](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/createFiber/createFiber.ts#L110)*
+*Defined in [src/Fiber/createFiber/createFiber.ts:110](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/createFiber/createFiber.ts#L110)*
 
 #### Parameters:
 
@@ -64,7 +64,7 @@ ___
 
 ▸ **createFiberWith**(`scheduler`: Scheduler, `parentFiber`: Option\<[Fiber](../interfaces/_fiber_fiber_.fiber.md)\<unknown>>): (Anonymous function)
 
-*Defined in [src/Fiber/createFiber/createFiber.ts:151](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/createFiber/createFiber.ts#L151)*
+*Defined in [src/Fiber/createFiber/createFiber.ts:151](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/createFiber/createFiber.ts#L151)*
 
 #### Parameters:
 
@@ -81,7 +81,7 @@ ___
 
 ▸ **joinFiber**\<A>(`fiber`: [Fiber](../interfaces/_fiber_fiber_.fiber.md)\<A>): [Resume](_resume_resume_.md#resume)\<Either\<Error, A>>
 
-*Defined in [src/Fiber/createFiber/createFiber.ts:155](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/createFiber/createFiber.ts#L155)*
+*Defined in [src/Fiber/createFiber/createFiber.ts:155](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/createFiber/createFiber.ts#L155)*
 
 #### Type parameters:
 
@@ -103,7 +103,7 @@ ___
 
 ▸ **killFiber**\<A>(`fiber`: [Fiber](../interfaces/_fiber_fiber_.fiber.md)\<A>): [Resume](_resume_resume_.md#resume)\<void>
 
-*Defined in [src/Fiber/createFiber/createFiber.ts:170](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Fiber/createFiber/createFiber.ts#L170)*
+*Defined in [src/Fiber/createFiber/createFiber.ts:170](https://github.com/TylorS/typed-fp/blob/41076ce/src/Fiber/createFiber/createFiber.ts#L170)*
 
 #### Type parameters:
 

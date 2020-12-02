@@ -16,7 +16,7 @@
 
 • `Const` **toggleOrSet**: (bool: boolean \| undefined, toggleableBoolean: boolean) => boolean(bool: boolean \| undefined) => (toggleableBoolean: boolean) => boolean = curry((bool: boolean \| undefined, toggleableBoolean: boolean): boolean => bool === void 0 ? !toggleableBoolean : bool,) as { (bool: boolean \| undefined, toggleableBoolean: boolean): boolean (bool: boolean \| undefined): (toggleableBoolean: boolean) => boolean}
 
-*Defined in [src/logic/toggleOrSet.ts:9](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/logic/toggleOrSet.ts#L9)*
+*Defined in [src/logic/toggleOrSet.ts:9](https://github.com/TylorS/typed-fp/blob/41076ce/src/logic/toggleOrSet.ts#L9)*
 
 Toggle a boolean off/on if given boolean is undefined or sets the value if boolean is not undefined.
 

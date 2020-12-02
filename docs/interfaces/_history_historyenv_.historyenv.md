@@ -23,7 +23,7 @@ An environment type for representing the History API.
 
 • `Readonly` **history**: History
 
-*Defined in [src/history/HistoryEnv.ts:6](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/history/HistoryEnv.ts#L6)*
+*Defined in [src/history/HistoryEnv.ts:6](https://github.com/TylorS/typed-fp/blob/41076ce/src/history/HistoryEnv.ts#L6)*
 
 ___
 
@@ -31,4 +31,4 @@ ___
 
 • `Readonly` **location**: Location
 
-*Defined in [src/history/HistoryEnv.ts:5](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/history/HistoryEnv.ts#L5)*
+*Defined in [src/history/HistoryEnv.ts:5](https://github.com/TylorS/typed-fp/blob/41076ce/src/history/HistoryEnv.ts#L5)*

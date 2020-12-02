@@ -16,7 +16,7 @@
 
 ▸ `Const`**createVirtualScheduler**(): [[VirtualTimer](../interfaces/_scheduler_virtualtimer_virtualtimer_.virtualtimer.md), SchedulerImpl]
 
-*Defined in [src/Scheduler/VirtualTimer/createVirtualScheduler.ts:8](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Scheduler/VirtualTimer/createVirtualScheduler.ts#L8)*
+*Defined in [src/Scheduler/VirtualTimer/createVirtualScheduler.ts:8](https://github.com/TylorS/typed-fp/blob/41076ce/src/Scheduler/VirtualTimer/createVirtualScheduler.ts#L8)*
 
 Create a [VirtualTimer, Scheduler] pair
 

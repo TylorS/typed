@@ -20,7 +20,7 @@
 
 • `Const` **test**: Test = describe(\`getShared\`, [ given(\`a Shared instance\`, [ it(\`returns the default value\`, ({ same }, done) => { const expected = {} const initial = Pure.of(expected) const state = createShared('test', initial) const sut = doEffect(function* () { try { const actual = yield* getShared(state) same(expected, actual) done() } catch (error) { done(error) } }) pipe(sut, provideSharedEnv, execPure) }), it(\`emits SharedValueCreated event when does not exist in store\`, ({ equal }, done) => { const initial = 0 const state = createShared('test', Pure.of(initial)) const { namespaceA, keyStores } = createKeyStores() const sharedEvents = createAdapter\<SharedEvent>() const expected: SharedValueCreated = { type: 'sharedValue/created', namespace: namespaceA, shared: state, value: initial, } runEffects( tap((event) => { try { equal(expected, event) done() } catch (error) { done(error) } }, sharedEvents[1]), newDefaultScheduler(), ) pipe( getShared(state), provideAll({ currentNamespace: namespaceA, sharedEvents, namespaceKeyStores: keyStores }), execPure, ) }), ]),])
 
-*Defined in [src/Shared/core/services/getShared.test.ts:14](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/core/services/getShared.test.ts#L14)*
+*Defined in [src/Shared/core/services/getShared.test.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/core/services/getShared.test.ts#L14)*
 
 ## Functions
 
@@ -28,7 +28,7 @@
 
 ▸ **createKeyStores**(): object
 
-*Defined in [src/Shared/core/services/getShared.test.ts:70](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/core/services/getShared.test.ts#L70)*
+*Defined in [src/Shared/core/services/getShared.test.ts:70](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/core/services/getShared.test.ts#L70)*
 
 **Returns:** object
 

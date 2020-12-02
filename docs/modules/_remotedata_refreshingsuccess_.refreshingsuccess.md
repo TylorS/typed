@@ -31,7 +31,7 @@ Name |
 
 • `Readonly` **progress**: Option\<[Progress](../interfaces/_remotedata_progress_.progress.md)>
 
-*Defined in [src/RemoteData/RefreshingSuccess.ts:13](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/RefreshingSuccess.ts#L13)*
+*Defined in [src/RemoteData/RefreshingSuccess.ts:13](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/RefreshingSuccess.ts#L13)*
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 • `Readonly` **status**: [RefreshingSuccess](../enums/_remotedata_enums_.remotedatastatus.md#refreshingsuccess)
 
-*Defined in [src/RemoteData/RefreshingSuccess.ts:11](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/RefreshingSuccess.ts#L11)*
+*Defined in [src/RemoteData/RefreshingSuccess.ts:11](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/RefreshingSuccess.ts#L11)*
 
 ___
 
@@ -47,7 +47,7 @@ ___
 
 • `Readonly` **value**: A
 
-*Defined in [src/RemoteData/RefreshingSuccess.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/RefreshingSuccess.ts#L12)*
+*Defined in [src/RemoteData/RefreshingSuccess.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/RefreshingSuccess.ts#L12)*
 
 ## Functions
 
@@ -55,7 +55,7 @@ ___
 
 ▸ `Const`**of**\<A>(`value`: A, `progress?`: [Progress](../interfaces/_remotedata_progress_.progress.md)): [RefreshingSuccess](_remotedata_refreshingsuccess_.refreshingsuccess.md)\<A>
 
-*Defined in [src/RemoteData/RefreshingSuccess.ts:17](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/RefreshingSuccess.ts#L17)*
+*Defined in [src/RemoteData/RefreshingSuccess.ts:17](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/RefreshingSuccess.ts#L17)*
 
 #### Type parameters:
 

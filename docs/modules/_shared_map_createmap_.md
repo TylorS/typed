@@ -16,7 +16,7 @@
 
 ▸ `Const`**createMap**\<K, V>(`key?`: Eq\<K>, `value?`: Eq\<V>): (Anonymous function)
 
-*Defined in [src/Shared/map/createMap.ts:11](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/map/createMap.ts#L11)*
+*Defined in [src/Shared/map/createMap.ts:11](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/map/createMap.ts#L11)*
 
 Helper for constructing a SharedMap with a handful of core operators.
 

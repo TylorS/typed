@@ -29,7 +29,7 @@
 
 Ƭ  **KeyBrand**: \"Key\"
 
-*Defined in [src/Key/exports.ts:42](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Key/exports.ts#L42)*
+*Defined in [src/Key/exports.ts:42](https://github.com/TylorS/typed-fp/blob/41076ce/src/Key/exports.ts#L42)*
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 Ƭ  **KeyFor**\<A>: A *extends* Newtype\<Const\<*infer* R, any>, any> ? R : never
 
-*Defined in [src/Key/exports.ts:47](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Key/exports.ts#L47)*
+*Defined in [src/Key/exports.ts:47](https://github.com/TylorS/typed-fp/blob/41076ce/src/Key/exports.ts#L47)*
 
 Retrieve the value a given Key is For
 
@@ -53,7 +53,7 @@ Name |
 
 ▸ `Const`**getKeyIso**\<A>(): [KeyIso](../interfaces/_key_exports_.keyiso.md)\<A>
 
-*Defined in [src/Key/exports.ts:22](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Key/exports.ts#L22)*
+*Defined in [src/Key/exports.ts:22](https://github.com/TylorS/typed-fp/blob/41076ce/src/Key/exports.ts#L22)*
 
 Create an KeyIso<A>
 
@@ -71,7 +71,7 @@ ___
 
 ▸ `Const`**getUuidKeyIso**\<A>(): [UuidKeyIso](../interfaces/_key_exports_.uuidkeyiso.md)\<A>
 
-*Defined in [src/Key/exports.ts:40](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Key/exports.ts#L40)*
+*Defined in [src/Key/exports.ts:40](https://github.com/TylorS/typed-fp/blob/41076ce/src/Key/exports.ts#L40)*
 
 Create a UuidKeyIso<A>
 

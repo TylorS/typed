@@ -30,7 +30,7 @@ A clock where you control time.
 
 • `Readonly` **progressTimeBy**: (elapsedTime: Time) => Time
 
-*Defined in [src/Scheduler/VirtualTimer/VirtualClock.ts:7](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Scheduler/VirtualTimer/VirtualClock.ts#L7)*
+*Defined in [src/Scheduler/VirtualTimer/VirtualClock.ts:7](https://github.com/TylorS/typed-fp/blob/41076ce/src/Scheduler/VirtualTimer/VirtualClock.ts#L7)*
 
 ## Methods
 

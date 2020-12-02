@@ -30,7 +30,7 @@ returns what tasks are ready at the current time.
 
 • `Private` **tasks**: [Map](../interfaces/_shared_core_model_sharedkeystore_.sharedkeystore.md#map)\<number, [Arity1](../modules/_common_types_.md#arity1)\<number>[]> = new Map()
 
-*Defined in [src/Scheduler/VirtualTimer/Timeline.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Scheduler/VirtualTimer/Timeline.ts#L12)*
+*Defined in [src/Scheduler/VirtualTimer/Timeline.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/Scheduler/VirtualTimer/Timeline.ts#L12)*
 
 ## Methods
 
@@ -38,7 +38,7 @@ returns what tasks are ready at the current time.
 
 ▸ **addTask**(`time`: number, `f`: [Arity1](../modules/_common_types_.md#arity1)\<number>): void
 
-*Defined in [src/Scheduler/VirtualTimer/Timeline.ts:14](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Scheduler/VirtualTimer/Timeline.ts#L14)*
+*Defined in [src/Scheduler/VirtualTimer/Timeline.ts:14](https://github.com/TylorS/typed-fp/blob/41076ce/src/Scheduler/VirtualTimer/Timeline.ts#L14)*
 
 #### Parameters:
 
@@ -55,7 +55,7 @@ ___
 
 ▸ `Private`**getAndDelete**(`time`: number): [Arity1](../modules/_common_types_.md#arity1)\<number, any>[]
 
-*Defined in [src/Scheduler/VirtualTimer/Timeline.ts:47](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Scheduler/VirtualTimer/Timeline.ts#L47)*
+*Defined in [src/Scheduler/VirtualTimer/Timeline.ts:47](https://github.com/TylorS/typed-fp/blob/41076ce/src/Scheduler/VirtualTimer/Timeline.ts#L47)*
 
 #### Parameters:
 
@@ -71,7 +71,7 @@ ___
 
 ▸ **readyTasks**(`currentTime`: number): [Arity1](../modules/_common_types_.md#arity1)\<number, any>[]
 
-*Defined in [src/Scheduler/VirtualTimer/Timeline.ts:40](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Scheduler/VirtualTimer/Timeline.ts#L40)*
+*Defined in [src/Scheduler/VirtualTimer/Timeline.ts:40](https://github.com/TylorS/typed-fp/blob/41076ce/src/Scheduler/VirtualTimer/Timeline.ts#L40)*
 
 #### Parameters:
 
@@ -87,7 +87,7 @@ ___
 
 ▸ **removeTask**(`time`: number, `f`: [Arity1](../modules/_common_types_.md#arity1)\<number>): void
 
-*Defined in [src/Scheduler/VirtualTimer/Timeline.ts:22](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Scheduler/VirtualTimer/Timeline.ts#L22)*
+*Defined in [src/Scheduler/VirtualTimer/Timeline.ts:22](https://github.com/TylorS/typed-fp/blob/41076ce/src/Scheduler/VirtualTimer/Timeline.ts#L22)*
 
 #### Parameters:
 

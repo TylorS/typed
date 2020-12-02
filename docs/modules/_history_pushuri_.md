@@ -16,7 +16,7 @@
 
 ▸ `Const`**pushUri**(`uri`: [Uri](_uri_exports_.uri.md)): [Effect](_effect_effect_.effect.md)\<[HistoryEnv](../interfaces/_history_historyenv_.historyenv.md), Location>
 
-*Defined in [src/history/pushUri.ts:10](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/history/pushUri.ts#L10)*
+*Defined in [src/history/pushUri.ts:10](https://github.com/TylorS/typed-fp/blob/41076ce/src/history/pushUri.ts#L10)*
 
 An Effect for change the current Uri using the History API.
 

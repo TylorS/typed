@@ -16,6 +16,6 @@
 
 • `Const` **fromEq**: \<A, K>(eq: Eq\<A>, key: K) => [Shared](_shared_core_model_shared_.shared.md)\<[SharedKey](_shared_core_model_sharedkey_.sharedkey.md)\<K>, Record\<K, A>, A>\<A>(eq: Eq\<A>) => \<K>(key: K) => [Shared](_shared_core_model_shared_.shared.md)\<[SharedKey](_shared_core_model_sharedkey_.sharedkey.md)\<K>, Record\<K, A>, A> = curry( \<A, K extends PropertyKey>(eq: Eq\<A>, key: K): Shared\<SharedKey\<K>, Record\<K, A>, A> => createShared( key, asks((e: Record\<K, A>) => Reflect.get(e, key)), eq, ),) as { \<A, K extends PropertyKey>(eq: Eq\<A>, key: K): Shared\<SharedKey\<K>, Record\<K, A>, A> \<A>(eq: Eq\<A>): \<K extends PropertyKey>(key: K) => Shared\<SharedKey\<K>, Record\<K, A>, A>}
 
-*Defined in [src/Shared/core/constructors/fromEq.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/core/constructors/fromEq.ts#L12)*
+*Defined in [src/Shared/core/constructors/fromEq.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/core/constructors/fromEq.ts#L12)*
 
 Creates a Shared instance given an Eq instance and a key.

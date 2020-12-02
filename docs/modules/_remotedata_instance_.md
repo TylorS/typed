@@ -39,7 +39,7 @@
 
 Ƭ  **URI**: *typeof* [URI](_remotedata_instance_.md#uri)
 
-*Defined in [src/RemoteData/instance.ts:25](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L25)*
+*Defined in [src/RemoteData/instance.ts:25](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L25)*
 
 ## Variables
 
@@ -47,7 +47,7 @@
 
 • `Const` **URI**: \"@typed/fp/RemoteData/exports\" = "@typed/fp/RemoteData/exports"
 
-*Defined in [src/RemoteData/instance.ts:24](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L24)*
+*Defined in [src/RemoteData/instance.ts:24](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L24)*
 
 ___
 
@@ -55,7 +55,7 @@ ___
 
 •  **alt**: \<E, A>(that: Lazy\<Kind2\<F, E, A>>) => (fa: Kind2\<F, E, A>) => Kind2\<F, E, A>
 
-*Defined in [src/RemoteData/instance.ts:106](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L106)*
+*Defined in [src/RemoteData/instance.ts:106](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L106)*
 
 ___
 
@@ -63,7 +63,7 @@ ___
 
 •  **apFirst**: \<E, B>(fb: Kind2\<F, E, B>) => \<A>(fa: Kind2\<F, E, A>) => Kind2\<F, E, A>
 
-*Defined in [src/RemoteData/instance.ts:107](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L107)*
+*Defined in [src/RemoteData/instance.ts:107](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L107)*
 
 ___
 
@@ -71,7 +71,7 @@ ___
 
 •  **apSecond**: \<E, B>(fb: Kind2\<F, E, B>) => \<A>(fa: Kind2\<F, E, A>) => Kind2\<F, E, B>
 
-*Defined in [src/RemoteData/instance.ts:108](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L108)*
+*Defined in [src/RemoteData/instance.ts:108](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L108)*
 
 ___
 
@@ -79,7 +79,7 @@ ___
 
 •  **bimap**: \<E, G, A, B>(f: (e: E) => G, g: (a: A) => B) => (fa: Kind2\<F, E, A>) => Kind2\<F, G, B>
 
-*Defined in [src/RemoteData/instance.ts:109](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L109)*
+*Defined in [src/RemoteData/instance.ts:109](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L109)*
 
 ___
 
@@ -87,7 +87,7 @@ ___
 
 •  **chainFirst**: \<E, A, B>(f: (a: A) => Kind2\<F, E, B>) => (ma: Kind2\<F, E, A>) => Kind2\<F, E, A>
 
-*Defined in [src/RemoteData/instance.ts:110](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L110)*
+*Defined in [src/RemoteData/instance.ts:110](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L110)*
 
 ___
 
@@ -95,7 +95,7 @@ ___
 
 •  **duplicate**: \<E, A>(wa: Kind2\<F, E, A>) => Kind2\<F, E, Kind2\<F, E, A>>
 
-*Defined in [src/RemoteData/instance.ts:111](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L111)*
+*Defined in [src/RemoteData/instance.ts:111](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L111)*
 
 ___
 
@@ -103,7 +103,7 @@ ___
 
 •  **extend**: \<E, A, B>(f: (wa: Kind2\<F, E, A>) => B) => (wa: Kind2\<F, E, A>) => Kind2\<F, E, B>
 
-*Defined in [src/RemoteData/instance.ts:112](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L112)*
+*Defined in [src/RemoteData/instance.ts:112](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L112)*
 
 ___
 
@@ -111,7 +111,7 @@ ___
 
 •  **flatten**: \<E, A>(mma: Kind2\<F, E, Kind2\<F, E, A>>) => Kind2\<F, E, A>
 
-*Defined in [src/RemoteData/instance.ts:113](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L113)*
+*Defined in [src/RemoteData/instance.ts:113](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L113)*
 
 ___
 
@@ -119,7 +119,7 @@ ___
 
 •  **foldMap**: \<M>(M: Monoid\<M>) => \<A>(f: (a: A) => M) => \<E>(fa: Kind2\<F, E, A>) => M
 
-*Defined in [src/RemoteData/instance.ts:114](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L114)*
+*Defined in [src/RemoteData/instance.ts:114](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L114)*
 
 ___
 
@@ -127,7 +127,7 @@ ___
 
 •  **reduce**: \<A, B>(b: B, f: (b: B, a: A) => B) => \<E>(fa: Kind2\<F, E, A>) => B
 
-*Defined in [src/RemoteData/instance.ts:115](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L115)*
+*Defined in [src/RemoteData/instance.ts:115](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L115)*
 
 ___
 
@@ -135,7 +135,7 @@ ___
 
 •  **reduceRight**: \<A, B>(b: B, f: (a: A, b: B) => B) => \<E>(fa: Kind2\<F, E, A>) => B
 
-*Defined in [src/RemoteData/instance.ts:116](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L116)*
+*Defined in [src/RemoteData/instance.ts:116](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L116)*
 
 ## Object literals
 
@@ -143,7 +143,7 @@ ___
 
 ▪ `Const` **remoteData**: object
 
-*Defined in [src/RemoteData/instance.ts:36](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/instance.ts#L36)*
+*Defined in [src/RemoteData/instance.ts:36](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/instance.ts#L36)*
 
 Monad, Foldable, Traverasble, Alt, Extend and Alternative instances for RemoteData.
 

@@ -18,4 +18,4 @@ All of the Namespace-specific events
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[NamespaceEvent](_shared_core_events_namespaceevent_.namespaceevent.md)> = createSchema((t) => t.union( NamespaceCreated.schema(t), NamespaceStarted.schema(t), NamespaceUpdated.schema(t), NamespaceCompleted.schema(t), NamespaceDeleted.schema(t), ), )
 
-*Defined in [src/Shared/core/events/NamespaceEvent.ts:18](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/core/events/NamespaceEvent.ts#L18)*
+*Defined in [src/Shared/core/events/NamespaceEvent.ts:18](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/core/events/NamespaceEvent.ts#L18)*

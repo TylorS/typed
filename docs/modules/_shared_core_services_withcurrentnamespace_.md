@@ -16,7 +16,7 @@
 
 ▸ `Const`**withCurrentNamespace**\<E, A>(`f`: (namespace: [Namespace](_shared_core_model_namespace_.namespace.md)) => [EffectGenerator](_effect_effect_.md#effectgenerator)\<E, A>): [Effect](_effect_effect_.effect.md)\<[CurrentNamespaceEnv](../interfaces/_shared_core_services_currentnamespaceenv_.currentnamespaceenv.md) & E, A>
 
-*Defined in [src/Shared/core/services/withCurrentNamespace.ts:10](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/core/services/withCurrentNamespace.ts#L10)*
+*Defined in [src/Shared/core/services/withCurrentNamespace.ts:10](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/core/services/withCurrentNamespace.ts#L10)*
 
 Run an effect using the current namespace
 

@@ -17,7 +17,7 @@
 
 ▸ `Const`**tryCatch**\<A, B>(`f`: (...args: A) => [Resume](_resume_resume_.md#resume)\<B>): function
 
-*Defined in [src/Storage/dom.ts:58](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Storage/dom.ts#L58)*
+*Defined in [src/Storage/dom.ts:58](https://github.com/TylorS/typed-fp/blob/41076ce/src/Storage/dom.ts#L58)*
 
 #### Type parameters:
 
@@ -40,7 +40,7 @@ ___
 
 ▸ **wrapDomStorage**(`storage`: Storage): [KeyValueStorage](_storage_keyvaluestorage_.md#keyvaluestorage)\<string, string>
 
-*Defined in [src/Storage/dom.ts:11](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Storage/dom.ts#L11)*
+*Defined in [src/Storage/dom.ts:11](https://github.com/TylorS/typed-fp/blob/41076ce/src/Storage/dom.ts#L11)*
 
 Wrap session/localStorage into a KeyValueStorage implementation.
 

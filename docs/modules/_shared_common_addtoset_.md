@@ -16,7 +16,7 @@
 
 ▸ **addToSet**\<A, B>(`map`: [Map](../interfaces/_shared_core_model_sharedkeystore_.sharedkeystore.md#map)\<A, Set\<B>>, `key`: A, `value`: B): boolean
 
-*Defined in [src/Shared/common/addToSet.ts:1](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/common/addToSet.ts#L1)*
+*Defined in [src/Shared/common/addToSet.ts:1](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/common/addToSet.ts#L1)*
 
 #### Type parameters:
 

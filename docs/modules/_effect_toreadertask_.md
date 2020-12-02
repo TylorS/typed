@@ -16,7 +16,7 @@
 
 ▸ `Const`**toReaderTask**\<E, A>(`effect`: [Effect](_effect_effect_.effect.md)\<E, A>): ReaderTask\<E, A>
 
-*Defined in [src/Effect/toReaderTask.ts:11](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/toReaderTask.ts#L11)*
+*Defined in [src/Effect/toReaderTask.ts:11](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/toReaderTask.ts#L11)*
 
 Converts an Effect<E, A> into a ReaderTask<E, A>
 

@@ -20,7 +20,7 @@
 
 • `Const` **ap**: \<A, B, C>(fn: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, (value: B, info: [SuccessInfo](_remotedata_fold_.md#successinfo)) => C>, value: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>) => [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, C>\<A, B, C>(fn: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, (value: B, info: [SuccessInfo](_remotedata_fold_.md#successinfo)) => C>) => (value: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>) => [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, C> = curry(\_\_ap) as { \<A, B, C>( fn: RemoteData\<A, (value: B, info: SuccessInfo) => C>, value: RemoteData\<A, B>, ): RemoteData\<A, C> \<A, B, C>(fn: RemoteData\<A, (value: B, info: SuccessInfo) => C>): ( value: RemoteData\<A, B>, ) => RemoteData\<A, C>}
 
-*Defined in [src/RemoteData/ap.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/ap.ts#L12)*
+*Defined in [src/RemoteData/ap.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/ap.ts#L12)*
 
 Applies the function contains in an `RemoteData` to the value contained in a
 second `RemoteData`.
@@ -31,7 +31,7 @@ second `RemoteData`.
 
 ▸ **__ap**\<A, B, C>(`fn`: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, (value: B, info: [SuccessInfo](_remotedata_fold_.md#successinfo)) => C>, `value`: [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, B>): [RemoteData](_remotedata_remotedata_.md#remotedata)\<A, C>
 
-*Defined in [src/RemoteData/ap.ts:22](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/RemoteData/ap.ts#L22)*
+*Defined in [src/RemoteData/ap.ts:22](https://github.com/TylorS/typed-fp/blob/41076ce/src/RemoteData/ap.ts#L22)*
 
 #### Type parameters:
 

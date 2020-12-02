@@ -19,7 +19,7 @@
 
 ▸ `Const`**ask**\<E>(): [Effect](_effect_effect_.effect.md)\<E, E>
 
-*Defined in [src/Effect/ask.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/ask.ts#L12)*
+*Defined in [src/Effect/ask.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/ask.ts#L12)*
 
 Ask for a value from the Environment
 
@@ -37,7 +37,7 @@ ___
 
 ▸ `Const`**askFor**\<E, A>(`eff`: [Effect](_effect_effect_.effect.md)\<E, A>): [Effect](_effect_effect_.effect.md)\<E, [Pure](_effect_effect_.md#pure)\<A>>
 
-*Defined in [src/Effect/ask.ts:22](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/ask.ts#L22)*
+*Defined in [src/Effect/ask.ts:22](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/ask.ts#L22)*
 
 Ask for the Pure version of an Effect.
 
@@ -62,7 +62,7 @@ ___
 
 ▸ `Const`**asks**\<E, A>(`f`: [Arity1](_common_types_.md#arity1)\<E, A>): [Effect](_effect_effect_.effect.md)\<E, A>
 
-*Defined in [src/Effect/ask.ts:17](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/ask.ts#L17)*
+*Defined in [src/Effect/ask.ts:17](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/ask.ts#L17)*
 
 Apply a function to the Environment.
 
@@ -87,7 +87,7 @@ ___
 
 ▸ `Const`**doEffectWith**\<G>(`effectGeneratorFunction`: G): [AddEnv](_effect_effect_.md#addenv)\<[HeadArg](_common_types_.md#headarg)\<G>, [EffectOf](_effect_effect_.md#effectof)\<G>>
 
-*Defined in [src/Effect/ask.ts:33](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Effect/ask.ts#L33)*
+*Defined in [src/Effect/ask.ts:33](https://github.com/TylorS/typed-fp/blob/41076ce/src/Effect/ask.ts#L33)*
 
 Create an Effect with part of the environment being provided to the provided generator function.
 

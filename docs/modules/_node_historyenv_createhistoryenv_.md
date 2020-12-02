@@ -16,7 +16,7 @@
 
 ▸ **createHistoryEnv**(`uri?`: [Uri](_uri_exports_.uri.md)): [HistoryEnv](../interfaces/_history_historyenv_.historyenv.md)
 
-*Defined in [src/node/HistoryEnv/createHistoryEnv.ts:10](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/node/HistoryEnv/createHistoryEnv.ts#L10)*
+*Defined in [src/node/HistoryEnv/createHistoryEnv.ts:10](https://github.com/TylorS/typed-fp/blob/41076ce/src/node/HistoryEnv/createHistoryEnv.ts#L10)*
 
 Create A History Environment that works in-memory.
 

@@ -18,4 +18,4 @@ All of the lifecycle events of Namespaces and Shared values
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[SharedEvent](_shared_core_events_sharedevent_.sharedevent.md)> = createSchema\<SharedEvent>((t) => t.union(NamespaceEvent.schema(t), SharedValueEvent.schema(t)), )
 
-*Defined in [src/Shared/core/events/SharedEvent.ts:12](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/core/events/SharedEvent.ts#L12)*
+*Defined in [src/Shared/core/events/SharedEvent.ts:12](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/core/events/SharedEvent.ts#L12)*

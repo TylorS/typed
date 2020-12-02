@@ -24,7 +24,7 @@
 
 Ƭ  **Schemable2CE**\<S>: S *extends* Schemable2C\<any, *infer* R> ? R : never
 
-*Defined in [src/io/interpreter.ts:24](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/interpreter.ts#L24)*
+*Defined in [src/io/interpreter.ts:24](https://github.com/TylorS/typed-fp/blob/41076ce/src/io/interpreter.ts#L24)*
 
 #### Type parameters:
 
@@ -38,7 +38,7 @@ Name |
 
 ▸ `Const`**createInterpreter**(`s`: any): (Anonymous function)
 
-*Defined in [src/io/interpreter.ts:22](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/io/interpreter.ts#L22)*
+*Defined in [src/io/interpreter.ts:22](https://github.com/TylorS/typed-fp/blob/41076ce/src/io/interpreter.ts#L22)*
 
 Create an interpreter from a Schemable instance
 

@@ -18,4 +18,4 @@ When a Namespace is added to the environment
 
 • `Const` **schema**: [TypedSchema](../interfaces/_io_typedschema_.typedschema.md)\<[NamespaceCreated](_shared_core_events_namespaceevent_.namespacecreated.md)> = createSchema\<NamespaceCreated>((t) => t.type({ type: t.literal('namespace/created'), namespace: Namespace.schema(t), }), )
 
-*Defined in [src/Shared/core/events/NamespaceEvent.ts:38](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/Shared/core/events/NamespaceEvent.ts#L38)*
+*Defined in [src/Shared/core/events/NamespaceEvent.ts:38](https://github.com/TylorS/typed-fp/blob/41076ce/src/Shared/core/events/NamespaceEvent.ts#L38)*

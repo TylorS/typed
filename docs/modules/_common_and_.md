@@ -16,7 +16,7 @@
 
 Ƭ  **And**\<A, R>: A *extends* readonly [*infer* T] ? And\<Rest, R & T> : A *extends* readonly [*infer* T] ? R & T : R
 
-*Defined in [src/common/And.ts:9](https://github.com/TylorS/typed-fp/blob/f27ba3e/src/common/And.ts#L9)*
+*Defined in [src/common/And.ts:9](https://github.com/TylorS/typed-fp/blob/41076ce/src/common/And.ts#L9)*
 
 Convert a n-ary tuple of values into an intersection of all of those values. If
 the tuple is empty the fallback value, defaulting to `unknown`, will be used.
