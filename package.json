@@ -20,7 +20,6 @@
     "logging-ts": "^0.3.4",
     "monocle-ts": "^2.3.3",
     "newtype-ts": "^0.3.4",
-    "path-to-regexp": "^6.2.0",
     "ts-toolbelt": "^8.0.7",
     "tslib": "^2.0.3"
   },
@@ -1474,6 +1473,11 @@
       "import": "./esm/common/Args.js",
       "browser": "./build/common/Args.js"
     },
+    "./common/ConsList": {
+      "require": "./cjs/common/ConsList.js",
+      "import": "./esm/common/ConsList.js",
+      "browser": "./build/common/ConsList.js"
+    },
     "./common/DropNever": {
       "require": "./cjs/common/DropNever.js",
       "import": "./esm/common/DropNever.js",
@@ -1875,41 +1879,6 @@
     "./node/HistoryEnv/exports": {
       "require": "./cjs/node/HistoryEnv/exports.js",
       "import": "./esm/node/HistoryEnv/exports.js"
-    },
-    "./routing": {
-      "require": "./cjs/routing/exports.js",
-      "import": "./esm/routing/exports.js",
-      "browser": "./build/routing/exports.js"
-    },
-    "./routing/ReplaceSlash": {
-      "require": "./cjs/routing/ReplaceSlash.js",
-      "import": "./esm/routing/ReplaceSlash.js",
-      "browser": "./build/routing/ReplaceSlash.js"
-    },
-    "./routing/Route": {
-      "require": "./cjs/routing/Route.js",
-      "import": "./esm/routing/Route.js",
-      "browser": "./build/routing/Route.js"
-    },
-    "./routing/RouteParam": {
-      "require": "./cjs/routing/RouteParam.js",
-      "import": "./esm/routing/RouteParam.js",
-      "browser": "./build/routing/RouteParam.js"
-    },
-    "./routing/createPath": {
-      "require": "./cjs/routing/createPath.js",
-      "import": "./esm/routing/createPath.js",
-      "browser": "./build/routing/createPath.js"
-    },
-    "./routing/exports": {
-      "require": "./cjs/routing/exports.js",
-      "import": "./esm/routing/exports.js",
-      "browser": "./build/routing/exports.js"
-    },
-    "./routing/matchRoute": {
-      "require": "./cjs/routing/matchRoute.js",
-      "import": "./esm/routing/matchRoute.js",
-      "browser": "./build/routing/matchRoute.js"
     }
   }
 }

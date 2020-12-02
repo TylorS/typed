@@ -89,9 +89,6 @@
     },
     {
       "path": "./node/tsconfig.esm.json"
-    },
-    {
-      "path": "./routing/tsconfig.esm.json"
     }
   ],
   "include": [

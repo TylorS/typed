@@ -59,7 +59,6 @@
     "lambda",
     "logging",
     "logic",
-    "node",
-    "routing"
+    "node"
   ]
 }

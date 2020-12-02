@@ -1,4 +1,6 @@
 export type { And } from './And'
+export type { Args } from './Args'
+export type { FlattenIntersection, FlattenUnion, ToConsList, UnNest } from './ConsList'
 export * from './deepEqualsEq'
 export type { DropNever, DropNeverKeys } from './DropNever'
 export * from './functionName'
