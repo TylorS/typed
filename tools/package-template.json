@@ -3,6 +3,5 @@
   "types": "%types%",
   "typings": "%types%",
   "module": "%module%",
-  "browser": "%browser%",
   "sideEffects": false
 }
