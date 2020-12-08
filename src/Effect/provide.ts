@@ -1,5 +1,6 @@
 import { And } from '@typed/fp/common/And'
 import { curry } from '@typed/fp/lambda/exports'
+import { Cast } from 'Any/Cast'
 
 import { Effect, fromEnv, Pure } from './Effect'
 import { toEnv } from './toEnv'
@@ -63,10 +64,17 @@ export type ProvidedEnvs<Providers extends ReadonlyArray<Provider<any, any>>> = 
   }
 >
 
-export type ProvidedAdditional<Providers extends ReadonlyArray<Provider<any, any>>> = And<
-  {
-    [K in keyof Providers]: Providers[K] extends Provider<any, infer R> ? R : unknown
-  }
+export type ProvidedAdditional<Providers extends ReadonlyArray<Provider<any, any>>, Envs> = And<
+  Cast<
+    {
+      [K in keyof Providers as K extends keyof Envs
+        ? Providers[K] extends Envs[K]
+          ? never
+          : K
+        : K]: Providers[K] extends Provider<any, infer R> ? R : unknown
+    },
+    readonly any[]
+  >
 >
 
 /**
@@ -76,6 +84,9 @@ export const provideMany = <
   Providers extends readonly [Provider<any, any>, ...ReadonlyArray<Provider<any, any>>]
 >(
   ...[first, ...rest]: Providers
-): Provider<ProvidedEnvs<Providers>, ProvidedAdditional<Providers>> => <E, A>(
+): Provider<ProvidedEnvs<Providers>, ProvidedAdditional<Providers, ProvidedEnvs<Providers>>> => <
+  E,
+  A
+>(
   effect: Effect<E & ProvidedEnvs<Providers>, A>,
 ) => rest.reduce((fx, provider) => provider(fx), first(effect))

@@ -39,10 +39,12 @@ export function createSharedEnvProvider(
   const { namespace = GlobalNamespace, handlers } = options
   const sharedEnv = createSharedEnv(namespace)
 
-  return isNonEmpty(handlers) ? useWith(listenToEvents(handlers, sharedEnv)) : useSome(sharedEnv)
+  return isNonEmpty(handlers)
+    ? useWith(listenToSharedEvents(handlers, sharedEnv))
+    : useSome(sharedEnv)
 }
 
-const listenToEvents = (
+export const listenToSharedEvents = (
   handlers: ReadonlyNonEmptyArray<SharedEventHandler<any>>,
   env: SharedEnv,
 ): Effect<SchedulerEnv, SharedEnv> => {

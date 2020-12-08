@@ -1,3 +1,4 @@
+export * from './createWhenIdleProvider'
 export * from './handlers/exports'
 export * from './NamespaceRenderers'
 export * from './Patch'

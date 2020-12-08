@@ -18,6 +18,7 @@
     "@types/json-schema": "^7.0.6",
     "fp-ts": "^2.9.0",
     "io-ts": "^2.2.13",
+    "lighterhtml": "^4.1.1",
     "logging-ts": "^0.3.4",
     "monocle-ts": "^2.3.3",
     "newtype-ts": "^0.3.4",
