@@ -296,6 +296,10 @@
       "require": "./cjs/Patch/Renderer.js",
       "import": "./esm/Patch/Renderer.js"
     },
+    "./Patch/createWhenIdleProvider": {
+      "require": "./cjs/Patch/createWhenIdleProvider.js",
+      "import": "./esm/Patch/createWhenIdleProvider.js"
+    },
     "./Patch/exports": {
       "require": "./cjs/Patch/exports.js",
       "import": "./esm/Patch/exports.js"
