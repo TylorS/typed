@@ -1,5 +1,6 @@
 import { Const, make } from 'fp-ts/Const'
 import { flow, pipe } from 'fp-ts/function'
+import { isSome, none, Option, some } from 'fp-ts/lib/Option'
 import { map } from 'fp-ts/lib/Record'
 import { Reader } from 'fp-ts/Reader'
 import { Literal, Schemable2C, WithRefine2C, WithUnion2C } from 'io-ts/Schemable'
@@ -62,30 +63,44 @@ export const Schemable: Schemable2C<URI, Partial<JSONSchema7>> = {
   boolean: JsonSchema.of({ type: 'boolean' }),
   nullable: (or) => jsonSchema((o) => ({ anyOf: [or.make(o), { type: 'null' }] })),
   type: (props) =>
-    jsonSchema((o) => ({
-      ...o,
+    JsonSchema.of({
       type: 'object',
       properties: pipe(
         props,
         map((a: JsonSchema<Partial<JSONSchema7>, unknown>) => a.make({})),
       ),
       required: Object.keys(props),
-    })),
+    }),
   partial: (props) =>
-    jsonSchema((o) => ({
-      ...o,
+    JsonSchema.of({
       type: 'object',
       properties: pipe(
         props,
         map((a: JsonSchema<Partial<JSONSchema7>, unknown>) => a.make({})),
       ),
-    })),
+    }),
   intersect: (right) => (left) => JsonSchema.of({ allOf: [left.make({}), right.make({})] }),
-  record: (co) => jsonSchema((o) => ({ ...o, type: 'object', additionalProperties: co.make({}) })),
-  array: (item) => jsonSchema((o) => ({ ...o, type: 'array', items: item.make({}) })),
-  tuple: (...items) => jsonSchema((o) => ({ ...o, anyOf: items.map((i) => i.make({})) })),
+  record: (co) => JsonSchema.of({ type: 'object', additionalProperties: co.make({}) }),
+  array: (item) => JsonSchema.of({ type: 'array', items: item.make({}) }),
+  tuple: (...items) => JsonSchema.of({ anyOf: items.map((i) => i.make({})) }),
   sum: (() => (members) => union(...members)) as Schemable2C<URI, Partial<JSONSchema7>>['sum'],
-  lazy: (_, f) => jsonSchema((o) => f().make(o)),
+  lazy: <A>(_: string, f: () => JsonSchema<Partial<JSONSchema7>, A>) => {
+    let schema: Option<JsonSchema<Partial<JSONSchema7>, A>> = none
+
+    return {
+      make: (o) => {
+        if (isSome(schema)) {
+          return schema.value.make(o)
+        }
+
+        const jsonSchema = f()
+
+        schema = some(jsonSchema)
+
+        return jsonSchema.make(o)
+      },
+    }
+  },
 }
 
 export const WithUnion: WithUnion2C<URI, Partial<JSONSchema7>> = {
