@@ -1,6 +1,6 @@
 import { Disposable } from '@typed/fp/Disposable/exports'
 import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { createGuardFromSchema } from '@typed/fp/io/exports'
+import { createGuard } from '@typed/fp/io/exports'
 import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
 import { pipe } from 'fp-ts/function'
 import { refine } from 'io-ts/Guard'
@@ -9,7 +9,7 @@ import { getCurrentNamespace, Shared, SharedEnv, SharedValueUpdated } from '../c
 import { listenToSharedEvent } from './listenToSharedEvent'
 import { useMemo } from './useMemo'
 
-const sharedValueUpdatedGuard = createGuardFromSchema(SharedValueUpdated.schema)
+const sharedValueUpdatedGuard = createGuard(SharedValueUpdated.schema)
 
 /**
  * Listen to the Updates of a Shared Value in the current Namespace

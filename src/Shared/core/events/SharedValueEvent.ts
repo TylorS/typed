@@ -1,4 +1,4 @@
-import { createSchema } from '@typed/fp/io/exports'
+import { createRuntimeSchema } from '@typed/fp/io/exports'
 
 import { Namespace } from '../model/Namespace'
 import { Shared } from '../model/Shared'
@@ -9,7 +9,7 @@ import { Shared } from '../model/Shared'
 export type SharedValueEvent = SharedValueCreated | SharedValueUpdated | SharedValueDeleted
 
 export namespace SharedValueEvent {
-  export const schema = createSchema<SharedValueEvent>((t) =>
+  export const schema = createRuntimeSchema<SharedValueEvent>((t) =>
     t.union(
       SharedValueCreated.schema(t),
       SharedValueUpdated.schema(t),
@@ -29,7 +29,7 @@ export type SharedValueCreated = {
 }
 
 export namespace SharedValueCreated {
-  export const schema = createSchema<SharedValueCreated>((t) =>
+  export const schema = createRuntimeSchema<SharedValueCreated>((t) =>
     t.type({
       type: t.literal('sharedValue/created'),
       namespace: Namespace.schema(t),
@@ -51,7 +51,7 @@ export type SharedValueUpdated = {
 }
 
 export namespace SharedValueUpdated {
-  export const schema = createSchema<SharedValueUpdated>((t) =>
+  export const schema = createRuntimeSchema<SharedValueUpdated>((t) =>
     t.type({
       type: t.literal('sharedValue/updated'),
       namespace: Namespace.schema(t),
@@ -72,7 +72,7 @@ export type SharedValueDeleted = {
 }
 
 export namespace SharedValueDeleted {
-  export const schema = createSchema<SharedValueDeleted>((t) =>
+  export const schema = createRuntimeSchema<SharedValueDeleted>((t) =>
     t.type({
       type: t.literal('sharedValue/deleted'),
       namespace: Namespace.schema(t),

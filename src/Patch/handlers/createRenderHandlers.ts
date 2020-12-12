@@ -1,4 +1,4 @@
-import { createGuardFromSchema } from '@typed/fp/io/exports'
+import { createGuard } from '@typed/fp/io/exports'
 import {
   NamespaceCompleted,
   NamespaceDeleted,
@@ -12,10 +12,10 @@ import { createPatchNamespace } from './createPatchNamespace'
 import { namespaceCompleted } from './namespaceCompleted'
 import { namespaceDeleted } from './namespaceDeleted'
 
-const namespaceCompletedGuard = createGuardFromSchema(NamespaceCompleted.schema)
-const namespaceDeletedGuard = createGuardFromSchema(NamespaceDeleted.schema)
-const namespaceUpdatedGuard = createGuardFromSchema(NamespaceUpdated.schema)
-const sharedValueUpdatedGuard = createGuardFromSchema(SharedValueUpdated.schema)
+const namespaceCompletedGuard = createGuard(NamespaceCompleted.schema)
+const namespaceDeletedGuard = createGuard(NamespaceDeleted.schema)
+const namespaceUpdatedGuard = createGuard(NamespaceUpdated.schema)
+const sharedValueUpdatedGuard = createGuard(SharedValueUpdated.schema)
 
 /**
  * Creates a version of the Render Handlers that will Patch a Namespace

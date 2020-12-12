@@ -8,14 +8,19 @@ import { isSome } from 'fp-ts/Option'
 import * as RM from 'fp-ts/ReadonlyMap'
 import * as RS from 'fp-ts/ReadonlySet'
 import * as EqI from 'io-ts/Eq'
+import { WithRefine1, WithUnion1 } from 'io-ts/lib/Schemable'
 import { AnyNewtype, CarrierOf } from 'newtype-ts'
 
-import { TypedSchemable1 } from './TypedSchemable'
+import { TypedSchemable1, WithNever1, WithUnknown1 } from './TypedSchemable'
 
 /**
  * A TypedSchemable instance for Eqs
  */
-export const Schemable: TypedSchemable1<EqI.URI> = {
+export const Schemable: TypedSchemable1<EqI.URI> &
+  WithRefine1<EqI.URI> &
+  WithUnion1<EqI.URI> &
+  WithUnknown1<EqI.URI> &
+  WithNever1<EqI.URI> = {
   ...EqI.Schemable,
   refine: (refinement, id) => EqI.WithRefine.refine(refinement, id),
   set: RS.getEq,

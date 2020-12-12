@@ -1,6 +1,6 @@
 import { WhenIdleEnv } from '@typed/fp/dom/exports'
 import { doEffect, useSome } from '@typed/fp/Effect/exports'
-import { createGuardFromSchema } from '@typed/fp/io/exports'
+import { createGuard } from '@typed/fp/io/exports'
 import { equals } from '@typed/fp/logic/equals'
 import { createFifoQueue } from '@typed/fp/Queue/exports'
 import {
@@ -19,10 +19,10 @@ import { createPatchNamespace } from './createPatchNamespace'
 import { createIdleScheduler } from './IdleScheduler'
 import { namespaceCompleted } from './namespaceCompleted'
 
-const namespaceCompletedGuard = createGuardFromSchema(NamespaceCompleted.schema)
-const namespaceDeletedGuard = createGuardFromSchema(NamespaceDeleted.schema)
-const namespaceUpdatedGuard = createGuardFromSchema(NamespaceUpdated.schema)
-const sharedValueUpdatedGuard = createGuardFromSchema(SharedValueUpdated.schema)
+const namespaceCompletedGuard = createGuard(NamespaceCompleted.schema)
+const namespaceDeletedGuard = createGuard(NamespaceDeleted.schema)
+const namespaceUpdatedGuard = createGuard(NamespaceUpdated.schema)
+const sharedValueUpdatedGuard = createGuard(SharedValueUpdated.schema)
 
 /**
  * Creates a version of the Render Handlers that will Patch a Namespace

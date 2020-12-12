@@ -5,6 +5,7 @@ import { isObject } from './isObject'
 export type JsonSerializable =
   | JsonPrimitive
   | Date
+  | BigInt
   | ReadonlyArray<JsonSerializable>
   | JsonSerializableRecord
   | ReadonlyMap<JsonSerializable, JsonSerializable>
@@ -40,45 +41,50 @@ export function toJson<A extends JsonSerializable>(x: A, space?: string | number
   return JSON.stringify(x, replaceJson, space)
 }
 
-const JSON_TAG = '__json_tag__' as const
-type JSON_TAG = typeof JSON_TAG
+export const JSON_TAG = '__json_tag__' as const
+export type JSON_TAG = typeof JSON_TAG
 
-const VALUES_TAG = '__values_tag__' as const
-type VALUES_TAG = typeof VALUES_TAG
+export const VALUES_TAG = '__values_tag__' as const
+export type VALUES_TAG = typeof VALUES_TAG
 
-enum Tag {
+export enum JsonTag {
   Set,
   Map,
   Symbol,
   SymbolFor,
   Date,
+  BigInt,
 }
 
-type TaggedJsonValues = {
-  [Tag.Map]: ReadonlyArray<readonly [Json, Json]>
-  [Tag.Set]: ReadonlyArray<Json>
-  [Tag.Symbol]: string
-  [Tag.SymbolFor]: string
-  [Tag.Date]: string
+export type TaggedJsonValues = {
+  [JsonTag.Map]: ReadonlyArray<readonly [Json, Json]>
+  [JsonTag.Set]: ReadonlyArray<Json>
+  [JsonTag.Symbol]: string
+  [JsonTag.SymbolFor]: string
+  [JsonTag.Date]: string
+  [JsonTag.BigInt]: string
 }
 
-type TaggedJson<A extends Tag> = {
+export type TaggedJson<A extends JsonTag> = {
   readonly [JSON_TAG]: A
   readonly [VALUES_TAG]: TaggedJsonValues[A]
 }
 
-const hasJsonTag = (x: unknown) => Object.prototype.hasOwnProperty.call(x, JSON_TAG)
-const hasValuesTag = (x: unknown) => Object.prototype.hasOwnProperty.call(x, VALUES_TAG)
+export const hasJsonTag = (x: unknown) => Object.prototype.hasOwnProperty.call(x, JSON_TAG)
+export const hasValuesTag = (x: unknown) => Object.prototype.hasOwnProperty.call(x, VALUES_TAG)
 
 // Replace
 function replaceJson(_: JsonSerializable, value: JsonSerializable): Json {
   if (value instanceof Set) {
-    return { [JSON_TAG]: Tag.Set, [VALUES_TAG]: Array.from(value).map((x, i) => replaceJson(i, x)) }
+    return {
+      [JSON_TAG]: JsonTag.Set,
+      [VALUES_TAG]: Array.from(value).map((x, i) => replaceJson(i, x)),
+    }
   }
 
   if (value instanceof Map) {
     return {
-      [JSON_TAG]: Tag.Map,
+      [JSON_TAG]: JsonTag.Map,
       [VALUES_TAG]: Array.from(value.entries()).map(([key, value]) => [
         replaceJson(key, key),
         replaceJson(key, value),
@@ -88,17 +94,22 @@ function replaceJson(_: JsonSerializable, value: JsonSerializable): Json {
 
   if (value instanceof Date) {
     return {
-      [JSON_TAG]: Tag.Date,
+      [JSON_TAG]: JsonTag.Date,
+      [VALUES_TAG]: value.toString(),
+    }
+  }
+
+  if (value instanceof BigInt) {
+    return {
+      [JSON_TAG]: JsonTag.BigInt,
       [VALUES_TAG]: value.toString(),
     }
   }
 
   if (typeof value === 'symbol') {
-    const key = Symbol.keyFor(value)
-
     return {
-      [JSON_TAG]: key ? Tag.SymbolFor : Tag.Symbol,
-      [VALUES_TAG]: key ?? value.description ?? '',
+      [JSON_TAG]: Symbol.keyFor(value) ? JsonTag.SymbolFor : JsonTag.Symbol,
+      [VALUES_TAG]: value.description ?? '',
     }
   }
 
@@ -108,22 +119,22 @@ function replaceJson(_: JsonSerializable, value: JsonSerializable): Json {
 // Revive
 function reviveJson(_: Json, value: Json): JsonSerializable {
   if (isObject(value) && hasJsonTag(value) && hasValuesTag(value)) {
-    const { [JSON_TAG]: tag } = value as TaggedJson<Tag>
+    const { [JSON_TAG]: tag } = value as TaggedJson<JsonTag>
 
-    if (tag === Tag.Set) {
-      return new Set(reviveSetEntries((value as TaggedJson<Tag.Set>)[VALUES_TAG]))
+    if (tag === JsonTag.Set) {
+      return new Set(reviveSetEntries((value as TaggedJson<JsonTag.Set>)[VALUES_TAG]))
     }
 
-    if (tag === Tag.Map) {
-      return new Map(reviveMapEntries((value as TaggedJson<Tag.Map>)[VALUES_TAG]))
+    if (tag === JsonTag.Map) {
+      return new Map(reviveMapEntries((value as TaggedJson<JsonTag.Map>)[VALUES_TAG]))
     }
 
-    if (tag === Tag.Symbol) {
-      return Symbol(((tag as unknown) as TaggedJson<Tag.Symbol>)[VALUES_TAG])
+    if (tag === JsonTag.Symbol) {
+      return Symbol(((tag as unknown) as TaggedJson<JsonTag.Symbol>)[VALUES_TAG])
     }
 
-    if (tag === Tag.SymbolFor) {
-      return Symbol.for(((tag as unknown) as TaggedJson<Tag.SymbolFor>)[VALUES_TAG])
+    if (tag === JsonTag.SymbolFor) {
+      return Symbol.for(((tag as unknown) as TaggedJson<JsonTag.SymbolFor>)[VALUES_TAG])
     }
   }
 

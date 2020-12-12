@@ -11,20 +11,23 @@ import {
 import { pipe } from 'fp-ts/function'
 import { refine, union } from 'io-ts/Guard'
 
-import { createGuardFromSchema } from '../io/exports'
+import { createGuard } from '../io/exports'
 import { listenToSharedEvent } from '../Shared/exports'
 import { createRef } from '../Shared/Ref/Ref'
 import { Patch, patch } from './Patch'
 
 export type PatchOnRafEnv<A, B> = SchedulerEnv & SharedEnv & RafEnv & Patch<A, B>
 
-const namespaceUpdatedGuard = pipe(NamespaceUpdated.schema, createGuardFromSchema)
-const sharedValueUpdatedGuard = pipe(SharedValueUpdated.schema, createGuardFromSchema)
+const namespaceUpdatedGuard = createGuard(NamespaceUpdated.schema)
+const sharedValueUpdatedGuard = createGuard(SharedValueUpdated.schema)
 
-const createGuard = (namespace: Namespace) =>
+const createNamespaceGuard = (namespace: Namespace) =>
   pipe(
     union(namespaceUpdatedGuard, sharedValueUpdatedGuard),
-    refine((a): a is NamespaceUpdated | SharedValueUpdated => a.namespace === namespace),
+    refine(
+      (a: NamespaceUpdated | SharedValueUpdated): a is NamespaceUpdated | SharedValueUpdated =>
+        a.namespace === namespace,
+    ),
   )
 
 /**
@@ -39,7 +42,10 @@ export function patchOnRaf<A, E extends SharedEnv, B>(
     const hasBeenUpdated = createRef(false)
     const runMain = pipe(main, runWithNamespace(namespace))
 
-    yield* listenToSharedEvent(createGuard(namespace), () => (hasBeenUpdated.current = true))
+    yield* listenToSharedEvent(
+      createNamespaceGuard(namespace),
+      () => (hasBeenUpdated.current = true),
+    )
 
     let previous = yield* patch(initial, yield* runMain)
 

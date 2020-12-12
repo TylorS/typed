@@ -1,5 +1,5 @@
 import type { Effect, EnvOf as EffEnv, ReturnOf } from '@typed/fp/Effect/exports'
-import { createSchema } from '@typed/fp/io/exports'
+import { createRuntimeSchema } from '@typed/fp/io/exports'
 import type { Eq } from 'fp-ts/Eq'
 import { flow } from 'fp-ts/function'
 import type { HKT } from 'fp-ts/HKT'
@@ -18,7 +18,7 @@ export interface Shared<K extends SharedKey = SharedKey, E = any, A = any> {
 }
 
 export namespace Shared {
-  export const schema = createSchema<Shared>((t) =>
+  export const schema = createRuntimeSchema<Shared>((t) =>
     t.type({
       key: t.newtype(t.propertyKey, flow(SharedKey.wrap, some), 'SharedKey'),
       initial: t.unknown as HKT<any, Shared['initial']>,

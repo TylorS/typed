@@ -1,4 +1,4 @@
-import { createGuardFromSchema } from '@typed/fp/io/exports'
+import { createGuard } from '@typed/fp/io/exports'
 
 import {
   NamespaceDeleted,
@@ -7,7 +7,7 @@ import {
   SharedValueUpdated,
 } from '../../core/exports'
 
-export const namespaceDeletedGuard = createGuardFromSchema(NamespaceDeleted.schema)
-export const namespaceStartedGuard = createGuardFromSchema(NamespaceStarted.schema)
-export const sharedValueDeletedGuard = createGuardFromSchema(SharedValueDeleted.schema)
-export const sharedValueUpdatedGuard = createGuardFromSchema(SharedValueUpdated.schema)
+export const namespaceDeletedGuard = createGuard(NamespaceDeleted.schema)
+export const namespaceStartedGuard = createGuard(NamespaceStarted.schema)
+export const sharedValueDeletedGuard = createGuard(SharedValueDeleted.schema)
+export const sharedValueUpdatedGuard = createGuard(SharedValueUpdated.schema)

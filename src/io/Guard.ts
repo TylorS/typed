@@ -5,9 +5,10 @@ import { Either, Json, JsonArray, JsonRecord } from 'fp-ts/Either'
 import { isSome, Option } from 'fp-ts/Option'
 import { Int } from 'io-ts'
 import * as G from 'io-ts/Guard'
+import { WithRefine1, WithUnion1 } from 'io-ts/lib/Schemable'
 import { AnyNewtype, CarrierOf } from 'newtype-ts'
 
-import { TypedSchemable1 } from './TypedSchemable'
+import { TypedSchemable1, WithNever1, WithUnknown1 } from './TypedSchemable'
 
 /**
  * Create a Guard instance for Set
@@ -138,7 +139,11 @@ export const symbol: G.Guard<unknown, symbol> = { is: (u): u is symbol => typeof
 /**
  * TypedSchemable instance for Guard
  */
-export const Schemable: TypedSchemable1<G.URI> = {
+export const Schemable: TypedSchemable1<G.URI> &
+  WithUnion1<G.URI> &
+  WithRefine1<G.URI> &
+  WithNever1<G.URI> &
+  WithUnknown1<G.URI> = {
   ...G.Schemable,
   ...G.WithRefine,
   ...G.WithUnion,

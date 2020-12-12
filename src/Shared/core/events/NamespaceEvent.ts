@@ -1,5 +1,5 @@
 import type { Effect } from '@typed/fp/Effect/Effect'
-import { createSchema } from '@typed/fp/io/exports'
+import { createRuntimeSchema, createSchema } from '@typed/fp/io/exports'
 import type { HKT } from 'fp-ts/HKT'
 
 import { Namespace } from '../model/Namespace'
@@ -15,7 +15,7 @@ export type NamespaceEvent =
   | NamespaceDeleted
 
 export namespace NamespaceEvent {
-  export const schema = createSchema((t) =>
+  export const schema = createRuntimeSchema((t) =>
     t.union(
       NamespaceCreated.schema(t),
       NamespaceStarted.schema(t),
@@ -54,7 +54,7 @@ export type NamespaceStarted = {
 }
 
 export namespace NamespaceStarted {
-  export const schema = createSchema<NamespaceStarted>((t) =>
+  export const schema = createRuntimeSchema<NamespaceStarted>((t) =>
     t.type({
       type: t.literal('namespace/started'),
       parent: Namespace.schema(t),
@@ -93,7 +93,7 @@ export type NamespaceCompleted = {
 }
 
 export namespace NamespaceCompleted {
-  export const schema = createSchema<NamespaceCompleted>((t) =>
+  export const schema = createRuntimeSchema<NamespaceCompleted>((t) =>
     t.type({
       type: t.literal('namespace/completed'),
       parent: Namespace.schema(t),

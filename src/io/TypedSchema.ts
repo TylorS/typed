@@ -1,8 +1,8 @@
 import type { Fn } from '@typed/fp/lambda/exports'
 import type { HKT, Kind, Kind2 } from 'fp-ts/HKT'
-import { memoize } from 'io-ts/Schemable'
+import { memoize, WithRefine } from 'io-ts/Schemable'
 
-import { TypedSchemable } from './TypedSchemable'
+import { TypedSchemable, WithNever, WithUnknown } from './TypedSchemable'
 
 /**
  * A io-ts Schema type using TypedSchemable to include additional types.
@@ -24,3 +24,16 @@ export type TypeOf<A extends Fn> = ReturnType<A> extends HKT<any, infer R>
  * Create a TypedSchema
  */
 export const createSchema = <A>(schema: TypedSchema<A>): TypedSchema<A> => memoize(schema)
+
+/**
+ * A io-ts Schema type using TypedSchemable plus concepts only available with runtime types.
+ */
+export interface RuntimeSchema<A> {
+  <S>(schemable: TypedSchemable<S> & WithRefine<S> & WithNever<S> & WithUnknown<S>): HKT<S, A>
+}
+
+/**
+ * Create a TypedSchema
+ */
+export const createRuntimeSchema = <A>(schema: RuntimeSchema<A>): RuntimeSchema<A> =>
+  memoize(schema)

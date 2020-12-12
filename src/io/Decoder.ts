@@ -5,11 +5,12 @@ import { pipe } from 'fp-ts/pipeable'
 import { leaf } from 'io-ts/DecodeError'
 import * as D from 'io-ts/Decoder'
 import * as FS from 'io-ts/FreeSemigroup'
+import { WithRefine2C, WithUnion2C } from 'io-ts/lib/Schemable'
 import { AnyNewtype, CarrierOf } from 'newtype-ts'
 
 import { Match } from '../logic/types'
 import * as G from './Guard'
-import { TypedSchemable2C } from './TypedSchemable'
+import { TypedSchemable2C, WithNever2C, WithUnknown2C } from './TypedSchemable'
 
 /**
  * Create a Decoder instance for a Set
@@ -112,7 +113,11 @@ export const remoteData = <A, B>(
 /**
  * A Decoder TypedSchemable instance
  */
-export const Schemable: TypedSchemable2C<D.URI, unknown> = {
+export const Schemable: TypedSchemable2C<D.URI, unknown> &
+  WithNever2C<D.URI, unknown> &
+  WithUnknown2C<D.URI, unknown> &
+  WithRefine2C<D.URI, unknown> &
+  WithUnion2C<D.URI, unknown> = {
   ...D.Schemable,
   ...D.WithRefine,
   ...D.WithUnion,

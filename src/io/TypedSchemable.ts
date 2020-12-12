@@ -1,4 +1,4 @@
-import type { Match } from '@typed/fp/logic/types'
+import type { Match } from '@typed/fp/logic/exports'
 import type { RemoteData } from '@typed/fp/RemoteData/exports'
 import type { Uuid } from '@typed/fp/Uuid/exports'
 import type { Either, Json, JsonArray, JsonRecord } from 'fp-ts/Either'
@@ -19,10 +19,10 @@ import type {
 import type { AnyNewtype, CarrierOf } from 'newtype-ts'
 
 /**
- * A Schemable interface with unions, refinements, and many other common data types
- * including Option, Either, RemoteData, Newtypes and more.
+ * A Schemable interface with union, and many other common data types
+ * including Option, Either, RemoteData and more.
  */
-export interface TypedSchemable<S> extends Schemable<S>, WithUnion<S>, WithRefine<S> {
+export interface TypedSchemable<S> extends Schemable<S>, WithUnion<S> {
   readonly set: <A>(hkt: HKT<S, A>) => HKT<S, ReadonlySet<A>>
   readonly map: <A, B>(key: HKT<S, A>, value: HKT<S, B>) => HKT<S, ReadonlyMap<A, B>>
   readonly option: <A>(hkt: HKT<S, A>) => HKT<S, Option<A>>
@@ -32,25 +32,20 @@ export interface TypedSchemable<S> extends Schemable<S>, WithUnion<S>, WithRefin
   readonly uuid: HKT<S, Uuid>
   readonly int: HKT<S, Int>
   readonly bigint: HKT<S, BigInt>
-  readonly unknown: HKT<S, unknown>
-  readonly never: HKT<S, never>
   readonly symbol: HKT<S, symbol>
   readonly propertyKey: HKT<S, PropertyKey>
   readonly json: HKT<S, Json>
   readonly jsonRecord: HKT<S, JsonRecord>
   readonly jsonArray: HKT<S, JsonArray>
   readonly jsonPrimitive: HKT<S, string | number | boolean | null>
-  readonly newtype: <N extends AnyNewtype>(
-    from: HKT<S, CarrierOf<N>>,
-    refinement: Match<CarrierOf<N>, N>,
+  readonly newtype: <A extends AnyNewtype>(
+    from: HKT<S, CarrierOf<A>>,
+    refine: Match<CarrierOf<A>, A>,
     id: string,
-  ) => HKT<S, N>
+  ) => HKT<S, A>
 }
 
-export interface TypedSchemable1<S extends URIS>
-  extends Schemable1<S>,
-    WithUnion1<S>,
-    WithRefine1<S> {
+export interface TypedSchemable1<S extends URIS> extends Schemable1<S>, WithUnion1<S> {
   readonly set: <A>(hkt: Kind<S, A>) => Kind<S, ReadonlySet<A>>
   readonly map: <A, B>(key: Kind<S, A>, value: Kind<S, B>) => Kind<S, ReadonlyMap<A, B>>
   readonly option: <A>(Kind: Kind<S, A>) => Kind<S, Option<A>>
@@ -60,25 +55,20 @@ export interface TypedSchemable1<S extends URIS>
   readonly uuid: Kind<S, Uuid>
   readonly int: Kind<S, Int>
   readonly bigint: Kind<S, BigInt>
-  readonly unknown: Kind<S, unknown>
-  readonly never: Kind<S, never>
   readonly symbol: Kind<S, symbol>
   readonly propertyKey: Kind<S, PropertyKey>
   readonly json: Kind<S, Json>
   readonly jsonRecord: Kind<S, JsonRecord>
   readonly jsonArray: Kind<S, JsonArray>
   readonly jsonPrimitive: Kind<S, string | number | boolean | null>
-  readonly newtype: <N extends AnyNewtype>(
-    from: Kind<S, CarrierOf<N>>,
-    refinement: Match<CarrierOf<N>, N>,
+  readonly newtype: <A extends AnyNewtype>(
+    from: Kind<S, CarrierOf<A>>,
+    refine: Match<CarrierOf<A>, A>,
     id: string,
-  ) => Kind<S, N>
+  ) => Kind<S, A>
 }
 
-export interface TypedSchemable2C<S extends URIS2, E>
-  extends Schemable2C<S, E>,
-    WithUnion2C<S, E>,
-    WithRefine2C<S, E> {
+export interface TypedSchemable2C<S extends URIS2, E> extends Schemable2C<S, E>, WithUnion2C<S, E> {
   readonly set: <A>(hkt: Kind2<S, E, A>) => Kind2<S, E, ReadonlySet<A>>
   readonly map: <A, B>(key: Kind2<S, E, A>, value: Kind2<S, E, B>) => Kind2<S, E, ReadonlyMap<A, B>>
   readonly option: <A>(k: Kind2<S, E, A>) => Kind2<S, E, Option<A>>
@@ -91,17 +81,57 @@ export interface TypedSchemable2C<S extends URIS2, E>
   readonly uuid: Kind2<S, E, Uuid>
   readonly int: Kind2<S, E, Int>
   readonly bigint: Kind2<S, E, BigInt>
-  readonly unknown: Kind2<S, E, unknown>
-  readonly never: Kind2<S, E, never>
   readonly symbol: Kind2<S, E, symbol>
   readonly propertyKey: Kind2<S, E, PropertyKey>
   readonly json: Kind2<S, E, Json>
   readonly jsonRecord: Kind2<S, E, JsonRecord>
   readonly jsonArray: Kind2<S, E, JsonArray>
   readonly jsonPrimitive: Kind2<S, E, string | number | boolean | null>
-  readonly newtype: <N extends AnyNewtype>(
-    from: Kind2<S, E, CarrierOf<N>>,
-    refinement: Match<CarrierOf<N>, N>,
+  readonly newtype: <A extends AnyNewtype>(
+    from: Kind2<S, E, CarrierOf<A>>,
+    refine: Match<CarrierOf<A>, A>,
     id: string,
-  ) => Kind2<S, E, N>
+  ) => Kind2<S, E, A>
 }
+
+export interface WithUnknown<S> {
+  readonly unknown: HKT<S, unknown>
+}
+
+export interface WithUnknown1<S extends URIS> {
+  readonly unknown: Kind<S, unknown>
+}
+
+export interface WithUnknown2C<S extends URIS2, E> {
+  readonly unknown: Kind2<S, E, unknown>
+}
+
+export interface WithNever<S> {
+  readonly never: HKT<S, never>
+}
+
+export interface WithNever1<S extends URIS> {
+  readonly never: Kind<S, never>
+}
+
+export interface WithNever2C<S extends URIS2, E> {
+  readonly never: Kind2<S, E, never>
+}
+
+export interface RuntimeSchemable<S>
+  extends TypedSchemable<S>,
+    WithRefine<S>,
+    WithUnknown<S>,
+    WithNever<S> {}
+
+export interface RuntimeSchemable1<S extends URIS>
+  extends TypedSchemable1<S>,
+    WithRefine1<S>,
+    WithUnknown1<S>,
+    WithNever1<S> {}
+
+export interface RuntimeSchemable2C<S extends URIS2, E>
+  extends TypedSchemable2C<S, E>,
+    WithRefine2C<S, E>,
+    WithUnknown2C<S, E>,
+    WithNever2C<S, E> {}

@@ -22,7 +22,7 @@ export const test = describe.only(`io/JsonSchema`, [
 
       const createJsonSchema = createInterpreter(Schemable)
       const myJsonSchema = createJsonSchema(mySchema)
-      const actual = myJsonSchema.make({})
+      const actual = myJsonSchema.createSchema({})
       const expected = makeConst<Omit<typeof actual, '_A'>>({
         allOf: [
           {
