@@ -2,11 +2,12 @@ import { describe, given, it } from '@typed/test'
 import { make as makeConst } from 'fp-ts/Const'
 import { pipe } from 'fp-ts/function'
 import { make } from 'io-ts/Schema'
+import { JSONSchema7 } from 'json-schema'
 
 import { createInterpreter } from './interpreter'
 import { Schemable } from './JsonSchema'
 
-export const test = describe.only(`io/JsonSchema`, [
+export const test = describe(`io/JsonSchema`, [
   given(`Schema`, [
     it(`outputs expected JsonSchema`, ({ equal }) => {
       const mySchema = make((t) =>
@@ -22,8 +23,10 @@ export const test = describe.only(`io/JsonSchema`, [
 
       const createJsonSchema = createInterpreter(Schemable)
       const myJsonSchema = createJsonSchema(mySchema)
-      const actual = myJsonSchema.createSchema({})
+      const additional: JSONSchema7 = { title: 'foo' }
+      const actual = myJsonSchema.createSchema(additional)
       const expected = makeConst<Omit<typeof actual, '_A'>>({
+        ...additional,
         allOf: [
           {
             type: 'object',

@@ -13,7 +13,7 @@ import {
 import { Const, make } from 'fp-ts/Const'
 import { Either, Left, Right } from 'fp-ts/Either'
 import { Endomorphism, flow, pipe } from 'fp-ts/function'
-import { isSome, None, none, Option, Some, some } from 'fp-ts/Option'
+import { isSome, none, Option, some } from 'fp-ts/Option'
 import { Reader } from 'fp-ts/Reader'
 import { map as mapRecord } from 'fp-ts/Record'
 import { Int } from 'io-ts'
@@ -53,6 +53,34 @@ export const number = JsonSchema.of<number>({ type: 'number' })
 export const string = JsonSchema.of<string>({ type: 'string' })
 export const boolean = JsonSchema.of<boolean>({ type: 'boolean' })
 
+export const lazy = <A>(_: string, f: () => JsonSchema<A>): JsonSchema<A> => {
+  let schema: Option<JsonSchema<A>> = none
+
+  return {
+    createSchema: (o) => {
+      if (isSome(schema)) {
+        return schema.value.createSchema(o)
+      }
+
+      const jsonSchema = f()
+
+      schema = some(jsonSchema)
+
+      return jsonSchema.createSchema(o)
+    },
+  }
+}
+
+export const type = <A>(props: { readonly [K in keyof A]: JsonSchema<A[K]> }): JsonSchema<A> =>
+  JsonSchema.of({
+    type: 'object',
+    properties: pipe(
+      props,
+      mapRecord((a: JsonSchema<unknown>) => a.createSchema({})),
+    ),
+    required: Object.keys(props),
+  })
+
 export const union = <A extends readonly JsonSchema<any>[]>(
   ...values: A
 ): JsonSchema<JsonSchemaValue<A[number]>> =>
@@ -78,27 +106,11 @@ const literalToJsonSchema = (literal: Literal): JSONSchema7 => {
   }
 }
 
-export const type = <A>(props: { readonly [K in keyof A]: JsonSchema<A[K]> }): JsonSchema<A> =>
-  JsonSchema.of({
-    type: 'object',
-    properties: pipe(
-      props,
-      mapRecord((a: JsonSchema<unknown>) => a.createSchema({})),
-    ),
-    required: Object.keys(props),
-  })
-
 export const option = <A>(k: JsonSchema<A>): JsonSchema<Option<A>> =>
-  union(
-    JsonSchema.of<None>({
-      type: 'object',
-      properties: { _tag: Schemable.literal('None').createSchema({}) },
-    }),
-    JsonSchema.of<Some<A>>({
-      type: 'object',
-      properties: { _tag: Schemable.literal('Some').createSchema({}), value: k.createSchema({}) },
-    }),
-  )
+  union(type({ _tag: literal('None') }), type({ _tag: literal('Some'), value: k }))
+
+export const array = <A>(item: JsonSchema<A>): JsonSchema<ReadonlyArray<A>> =>
+  JsonSchema.of({ type: 'array', items: item.createSchema({}) })
 
 // Encoding for Set as defined by @typed/fp/logic/json
 export const set = <A>(a: JsonSchema<A>): JsonSchema<ReadonlySet<A>> =>
@@ -106,9 +118,13 @@ export const set = <A>(a: JsonSchema<A>): JsonSchema<ReadonlySet<A>> =>
     type: 'object',
     properties: {
       [JSON_TAG]: number.createSchema({ enum: [JsonTag.Set] }),
-      [VALUES_TAG]: Schemable.array(a).createSchema({}),
+      [VALUES_TAG]: array(a).createSchema({}),
     },
   })
+
+export const tuple = <A extends ReadonlyArray<any>>(
+  ...items: { readonly [K in keyof A]: JsonSchema<A[K]> }
+): JsonSchema<A> => JsonSchema.of({ type: 'array', items: items.map((i) => i.createSchema({})) })
 
 // Encoding for Map as defined by @typed/fp/logic/json
 export const map = <K, V>(k: JsonSchema<K>, v: JsonSchema<V>): JsonSchema<ReadonlyMap<K, V>> =>
@@ -116,14 +132,14 @@ export const map = <K, V>(k: JsonSchema<K>, v: JsonSchema<V>): JsonSchema<Readon
     type: 'object',
     properties: {
       [JSON_TAG]: number.createSchema({ enum: [JsonTag.Map] }),
-      [VALUES_TAG]: Schemable.array(Schemable.tuple(k, v)).createSchema({}),
+      [VALUES_TAG]: array(tuple(k, v)).createSchema({}),
     },
   })
 
 export const either = <A, B>(left: JsonSchema<A>, right: JsonSchema<B>): JsonSchema<Either<A, B>> =>
   union(
-    Schemable.type<Left<A>>({ _tag: Schemable.literal('Left'), left }),
-    Schemable.type<Right<B>>({ _tag: Schemable.literal('Right'), right }),
+    type<Left<A>>({ _tag: literal('Left'), left }),
+    type<Right<B>>({ _tag: literal('Right'), right }),
   )
 
 export const remoteData = <A, B>(
@@ -131,26 +147,26 @@ export const remoteData = <A, B>(
   right: JsonSchema<B>,
 ): JsonSchema<RemoteData<A, B>> =>
   union(
-    Schemable.type<NoData>({ status: Schemable.literal(RemoteDataStatus.NoData) }),
-    Schemable.type<Loading>({
-      status: Schemable.literal(RemoteDataStatus.Loading),
+    type<NoData>({ status: literal(RemoteDataStatus.NoData) }),
+    type<Loading>({
+      status: literal(RemoteDataStatus.Loading),
       progress: option(progress),
     }),
-    Schemable.type<Failure<A>>({
-      status: Schemable.literal(RemoteDataStatus.Failure),
+    type<Failure<A>>({
+      status: literal(RemoteDataStatus.Failure),
       value: left,
     }),
-    Schemable.type<Success<B>>({
-      status: Schemable.literal(RemoteDataStatus.Success),
+    type<Success<B>>({
+      status: literal(RemoteDataStatus.Success),
       value: right,
     }),
-    Schemable.type<RefreshingFailure<A>>({
-      status: Schemable.literal(RemoteDataStatus.RefreshingFailure),
+    type<RefreshingFailure<A>>({
+      status: literal(RemoteDataStatus.RefreshingFailure),
       value: left,
       progress: option(progress),
     }),
-    Schemable.type<RefreshingSuccess<B>>({
-      status: Schemable.literal(RemoteDataStatus.RefreshingSuccess),
+    type<RefreshingSuccess<B>>({
+      status: literal(RemoteDataStatus.RefreshingSuccess),
       value: right,
       progress: option(progress),
     }),
@@ -189,24 +205,6 @@ export const propertyKey: JsonSchema<PropertyKey> = union(string, number, symbol
 export const nullable = <A>(or: JsonSchema<A>): JsonSchema<A | null> =>
   jsonSchema((o) => ({ anyOf: [or.createSchema(o), { type: 'null' }] }))
 
-export const lazy = <A>(_: string, f: () => JsonSchema<A>): JsonSchema<A> => {
-  let schema: Option<JsonSchema<A>> = none
-
-  return {
-    createSchema: (o) => {
-      if (isSome(schema)) {
-        return schema.value.createSchema(o)
-      }
-
-      const jsonSchema = f()
-
-      schema = some(jsonSchema)
-
-      return jsonSchema.createSchema(o)
-    },
-  }
-}
-
 export const Schemable: TypedSchemable1<URI> = {
   URI,
   literal,
@@ -226,9 +224,8 @@ export const Schemable: TypedSchemable1<URI> = {
   intersect: (right) => (left) =>
     JsonSchema.of({ allOf: [left.createSchema({}), right.createSchema({})] }),
   record: (co) => JsonSchema.of({ type: 'object', additionalProperties: co.createSchema({}) }),
-  array: (item) => JsonSchema.of({ type: 'array', items: item.createSchema({}) }),
-  tuple: (...items) =>
-    JsonSchema.of({ type: 'array', items: items.map((i) => i.createSchema({})) }),
+  array: array as TypedSchemable1<URI>['array'],
+  tuple: tuple as TypedSchemable1<URI>['tuple'],
   sum: (() => (members) => union(...members)) as Schemable1<URI>['sum'],
   lazy,
   set,
