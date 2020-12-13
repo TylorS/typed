@@ -1337,6 +1337,10 @@
       "require": "./cjs/http/withHttpManagement.js",
       "import": "./esm/http/withHttpManagement.js"
     },
+    "./http/zipIterables": {
+      "require": "./cjs/http/zipIterables.js",
+      "import": "./esm/http/zipIterables.js"
+    },
     "./io": {
       "require": "./cjs/io/exports.js",
       "import": "./esm/io/exports.js"
