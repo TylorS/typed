@@ -1,8 +1,9 @@
+import { disposeBoth } from '@most/disposable'
 import { Clock } from '@most/types'
 import { whenIdle, WhenIdleEnv } from '@typed/fp/dom/exports'
-import { ask, doEffect, Effect, Provider, useWith } from '@typed/fp/Effect/exports'
+import { ask, doEffect, Effect, fromTask, Provider, toEnv, useWith } from '@typed/fp/Effect/exports'
 import { FiberEnv, fork } from '@typed/fp/Fiber/exports'
-import { chain, sync } from '@typed/fp/Resume/exports'
+import { async, chain, run, sync } from '@typed/fp/Resume/exports'
 import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
 import {
   getShared,
@@ -13,24 +14,32 @@ import {
   usingGlobal,
 } from '@typed/fp/Shared/exports'
 import { Uri } from '@typed/fp/Uri/exports'
-import { isRight, right } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
+import { Either, isRight, right } from 'fp-ts/Either'
+import { constVoid, pipe } from 'fp-ts/function'
+import { fromNullable, isSome, Option } from 'fp-ts/Option'
 
 import { HttpEnv, HttpOptions } from './HttpEnv'
 import { HttpMethod } from './HttpMethod'
 import { HttpResponse } from './HttpResponse'
+import { zipIterables } from './zipIterables'
 
 // milliseconds
 const SECOND = 1000
 const MINUTE = 60 * SECOND
 const DEFAULT_EXPIRATION = 5 * MINUTE
 const DEFAULT_METHODS_TO_CACHE: HttpMethod[] = ['GET', 'HEAD', 'OPTIONS']
+const DEFAULT_DEDUPLICATE_REQUESTS = true
 
 export type WithHttpManagementOptions = {
-  readonly expiration?: number
+  readonly expirationMs?: number
   readonly methodsToCache?: HttpMethod[]
+  readonly deduplicateRequests?: boolean
   readonly getCacheKey?: (url: Uri, options: HttpOptions) => string
   readonly shouldBeCached?: (response: HttpResponse) => boolean
+}
+
+export type DeduplicateRequestOptions = {
+  readonly expirationMs: string
 }
 
 export type Timestamp = ReturnType<Clock['now']>
@@ -39,9 +48,15 @@ export type TimestampedResponse = {
   readonly response: HttpResponse
 }
 
+export type TimestampedPromise = {
+  readonly timestamp: Timestamp
+  readonly promise: Promise<Either<Error, HttpResponse>>
+}
+
 // TODO: handle duplicated requests??
 export interface WithHttpManagementEnv {
   readonly httpCache: Map<string, TimestampedResponse> // Taking advantage of insertion order
+  readonly ongoingRequests: Map<Uri, Map<HttpMethod, Map<HttpOptions, TimestampedPromise>>>
   readonly httpCacheCleanupScheduled: Shared<SharedKey, unknown, boolean>
 }
 
@@ -52,7 +67,7 @@ export interface WithHttpManagementEnv {
 export const withHttpManagement = (
   options: WithHttpManagementOptions,
 ): Provider<HttpEnv, HttpEnv & WithHttpManagementEnv & FiberEnv & WhenIdleEnv & SharedEnv> => {
-  const { expiration = DEFAULT_EXPIRATION } = options
+  const { expirationMs: expiration = DEFAULT_EXPIRATION } = options
   const cleanup = clearOldTimestamps(expiration)
 
   return useWith(
@@ -77,24 +92,39 @@ function createCachedHttpEnv(
   env: HttpEnv & WithHttpManagementEnv & FiberEnv,
 ): HttpEnv {
   const {
-    expiration = DEFAULT_EXPIRATION,
+    expirationMs = DEFAULT_EXPIRATION,
     methodsToCache = DEFAULT_METHODS_TO_CACHE,
     getCacheKey = getDefaultCacheKey,
     shouldBeCached = isValidStatus,
+    deduplicateRequests = DEFAULT_DEDUPLICATE_REQUESTS,
   } = options
-  const { httpCache, scheduler, http } = env
+  const { httpCache, ongoingRequests, scheduler, http } = env
 
   return {
     http: (uri, options) => {
-      const isCacheable = methodsToCache.includes(options.method || 'GET')
+      const method = options.method ?? 'GET'
+      const isCacheable = methodsToCache.includes(method)
       const request = http(uri, options)
+      const isOngoing = getOngoingRequest(uri, options, ongoingRequests)
 
       if (!isCacheable) {
         return request
       }
 
+      if (deduplicateRequests && isSome(isOngoing)) {
+        const { timestamp, promise } = isOngoing.value
+        const timeSince = scheduler.currentTime() - timestamp
+
+        // If not expired, return the ongoing request
+        if (timeSince < expirationMs) {
+          return toEnv(fromTask(() => promise))({})
+        }
+
+        ongoingRequests.get(uri)?.get(method)?.delete(options)
+      }
+
       const now = scheduler.currentTime()
-      const earliestTimestampToUse = now - expiration
+      const earliestTimestampToUse = now - expirationMs
       const key = getCacheKey(uri, options)
       const lastResponse = httpCache.get(key)
 
@@ -102,13 +132,34 @@ function createCachedHttpEnv(
         return sync(right(lastResponse.response))
       }
 
-      return chain((response) => {
-        if (isRight(response) && shouldBeCached(response.right)) {
-          httpCache.set(key, { timestamp: scheduler.currentTime(), response: response.right })
-        }
+      const { byOptions } = createOngoingRequestMap(uri, options, ongoingRequests)
 
-        return sync(response)
-      }, request)
+      let resolve: (value: Either<Error, HttpResponse>) => void = constVoid
+      let reject: (value: Error) => void = constVoid
+      const promise = new Promise<Either<Error, HttpResponse>>((res, rej) => {
+        resolve = res
+        reject = rej
+      })
+
+      byOptions.set(options, { timestamp: now, promise })
+
+      const resume = pipe(
+        request,
+        chain((response) => {
+          if (isRight(response) && shouldBeCached(response.right)) {
+            httpCache.set(key, { timestamp: scheduler.currentTime(), response: response.right })
+          }
+
+          byOptions.delete(options)
+          resolve(response)
+
+          return sync(response)
+        }),
+      )
+
+      return async((cb) =>
+        disposeBoth({ dispose: () => reject(new Error('disposed')) }, run(resume, cb)),
+      )
     },
   }
 }
@@ -123,33 +174,48 @@ const clearOldTimestamps = (
   expiration: number,
 ): Effect<WithHttpManagementEnv & SchedulerEnv & FiberEnv & WhenIdleEnv & SharedEnv, void> =>
   doEffect(function* () {
-    const { httpCache, httpCacheCleanupScheduled, scheduler } = yield* ask<
+    const { httpCache, httpCacheCleanupScheduled, ongoingRequests, scheduler } = yield* ask<
       WithHttpManagementEnv & SchedulerEnv
     >()
     const expired = scheduler.currentTime() - expiration
-    const iterator = httpCache.entries()[Symbol.iterator]()
     const deadline = yield* whenIdle()
+    const iterator = zipIterables(httpCache.entries(), ongoingRequestGenerator(ongoingRequests))[
+      Symbol.iterator
+    ]()
 
-    let current: IteratorResult<[string, TimestampedResponse]> = iterator.next()
-    let notCurrentlyExpired = false
+    let result = iterator.next()
 
-    while (deadline.timeRemaining() > 0 && !current.done) {
-      const [key, { timestamp }] = current.value
+    while (deadline.timeRemaining() > 0 && !result.done) {
+      const [
+        [key, { timestamp }],
+        { uri, method, options, timestamp: requestTimestamp },
+      ] = result.value
+      const cacheExpired = timestamp <= expired
+      const requestExpired = requestTimestamp <= expired
 
-      if (timestamp <= expired) {
+      if (cacheExpired) {
         httpCache.delete(key)
-      } else {
-        // Since insertion order will be time dependent, once reaching an item that is not expired
-        // we can bail out
-        notCurrentlyExpired = true
-
-        break
       }
 
-      current = iterator.next()
+      if (requestExpired) {
+        const byMethod = ongoingRequests.get(uri)!
+        const byOptions = byMethod.get(method)!
+
+        byOptions.delete(options)
+
+        if (byOptions.size === 0) {
+          byMethod.delete(method)
+        }
+
+        if (byMethod.size === 0) {
+          ongoingRequests.delete(uri)
+        }
+      }
+
+      result = iterator.next()
     }
 
-    if (notCurrentlyExpired || current.done) {
+    if (result.done) {
       yield* usingGlobal(setShared(httpCacheCleanupScheduled, false))
 
       return
@@ -157,3 +223,52 @@ const clearOldTimestamps = (
 
     yield* fork(clearOldTimestamps(expiration))
   })
+
+function getOngoingRequest(
+  uri: Uri,
+  options: HttpOptions,
+  ongoingRequests: WithHttpManagementEnv['ongoingRequests'],
+): Option<TimestampedPromise> {
+  return fromNullable(
+    ongoingRequests
+      .get(uri)
+      ?.get(options.method ?? 'GET')
+      ?.get(options),
+  )
+}
+
+function createOngoingRequestMap(
+  uri: Uri,
+  options: HttpOptions,
+  ongoingRequests: WithHttpManagementEnv['ongoingRequests'],
+) {
+  if (!ongoingRequests.has(uri)) {
+    ongoingRequests.set(uri, new Map())
+  }
+
+  const byMethod = ongoingRequests.get(uri)!
+  const method = options.method ?? 'GET'
+
+  if (!byMethod.has(method)) {
+    byMethod.set(method, new Map())
+  }
+
+  const byOptions = byMethod.get(method)!
+
+  return {
+    byMethod,
+    byOptions,
+  } as const
+}
+
+function* ongoingRequestGenerator(
+  ongoingRequests: Map<Uri, Map<HttpMethod, Map<HttpOptions, TimestampedPromise>>>,
+) {
+  for (const [uri, byMethod] of ongoingRequests) {
+    for (const [method, byOptions] of byMethod) {
+      for (const [options, { timestamp }] of byOptions) {
+        yield { uri, method, options, timestamp } as const
+      }
+    }
+  }
+}
