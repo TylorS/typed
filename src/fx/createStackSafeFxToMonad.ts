@@ -46,10 +46,12 @@ export function createStackSafeFxToMonad<F>(chainRec: Monad<F> & ChainRec<F>) {
       return chainRec.of(result.value)
     }
 
-    return chainRec.chainRec(result.value, (a) => {
-      const result = generator.next(a)
+    return chainRec.chain(result.value, (initial) =>
+      chainRec.chainRec(initial, (a) => {
+        const result = generator.next(a)
 
-      return result.done ? chainRec.of(right(result.value)) : chainRec.of(left(result.value))
-    })
+        return result.done ? chainRec.of(right(result.value)) : chainRec.map(result.value, left)
+      }),
+    )
   }
 }
