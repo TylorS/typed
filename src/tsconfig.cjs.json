@@ -25,6 +25,9 @@
       "path": "./Future/tsconfig.cjs.json"
     },
     {
+      "path": "./Fx/tsconfig.cjs.json"
+    },
+    {
       "path": "./Key/tsconfig.cjs.json"
     },
     {
