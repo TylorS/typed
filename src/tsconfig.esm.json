@@ -25,6 +25,9 @@
       "path": "./Future/tsconfig.esm.json"
     },
     {
+      "path": "./Fx/tsconfig.esm.json"
+    },
+    {
       "path": "./Key/tsconfig.esm.json"
     },
     {

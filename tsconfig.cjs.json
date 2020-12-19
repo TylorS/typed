@@ -38,6 +38,7 @@
     "Effect",
     "Fiber",
     "Future",
+    "Fx",
     "Key",
     "Patch",
     "Path",

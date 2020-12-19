@@ -269,6 +269,46 @@
       "require": "./cjs/Future/exports.js",
       "import": "./esm/Future/exports.js"
     },
+    "./Fx": {
+      "require": "./cjs/Fx/exports.js",
+      "import": "./esm/Fx/exports.js"
+    },
+    "./Fx/Fx": {
+      "require": "./cjs/Fx/Fx.js",
+      "import": "./esm/Fx/Fx.js"
+    },
+    "./Fx/FxT": {
+      "require": "./cjs/Fx/FxT.js",
+      "import": "./esm/Fx/FxT.js"
+    },
+    "./Fx/createFxToMonad": {
+      "require": "./cjs/Fx/createFxToMonad.js",
+      "import": "./esm/Fx/createFxToMonad.js"
+    },
+    "./Fx/createStackSafeFxToMonad": {
+      "require": "./cjs/Fx/createStackSafeFxToMonad.js",
+      "import": "./esm/Fx/createStackSafeFxToMonad.js"
+    },
+    "./Fx/doFx": {
+      "require": "./cjs/Fx/doFx.js",
+      "import": "./esm/Fx/doFx.js"
+    },
+    "./Fx/exports": {
+      "require": "./cjs/Fx/exports.js",
+      "import": "./esm/Fx/exports.js"
+    },
+    "./Fx/fromIO": {
+      "require": "./cjs/Fx/fromIO.js",
+      "import": "./esm/Fx/fromIO.js"
+    },
+    "./Fx/liftFx": {
+      "require": "./cjs/Fx/liftFx.js",
+      "import": "./esm/Fx/liftFx.js"
+    },
+    "./Fx/pure": {
+      "require": "./cjs/Fx/pure.js",
+      "import": "./esm/Fx/pure.js"
+    },
     "./Key": {
       "require": "./cjs/Key/exports.js",
       "import": "./esm/Key/exports.js"
