@@ -1,4 +1,4 @@
-import { curry, Curry2 } from '@typed/fp/lambda/exports'
+import { curry, Curry2 } from '@fp/lambda/exports'
 
 /**
  * Test a Regex

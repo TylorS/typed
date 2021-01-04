@@ -1,4 +1,4 @@
-import { doEffect, Effect } from '@typed/fp/Effect/exports'
+import { doEffect, Effect } from '@fp/Effect/exports'
 
 /**
  * Get the current value within a map or create the value. This allows for

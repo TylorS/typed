@@ -1,5 +1,5 @@
-import { Pure } from '@typed/fp/Effect/exports'
-import { createShared, getShared, Namespace, setShared } from '@typed/fp/Shared/core/exports'
+import { Pure } from '@fp/Effect/exports'
+import { createShared, getShared, Namespace, setShared } from '@fp/Shared/core/exports'
 import { none, Option } from 'fp-ts/Option'
 
 /**

@@ -1,4 +1,4 @@
-import { doEffect, Effect, EffectGenerator } from '@typed/fp/Effect/exports'
+import { doEffect, Effect, EffectGenerator } from '@fp/Effect/exports'
 import {
   disposeNamespace,
   getKeyStores,
@@ -6,7 +6,7 @@ import {
   NamespaceDeleted,
   SharedEnv,
   usingNamespace,
-} from '@typed/fp/Shared/core/exports'
+} from '@fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
 
 export function namespaceDeleted(event: NamespaceDeleted): Effect<SharedEnv, void> {

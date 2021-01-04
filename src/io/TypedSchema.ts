@@ -1,4 +1,4 @@
-import type { Fn } from '@typed/fp/lambda/exports'
+import type { Fn } from '@fp/lambda/exports'
 import type { HKT, Kind, Kind2 } from 'fp-ts/HKT'
 import { memoize, WithRefine } from 'io-ts/Schemable'
 

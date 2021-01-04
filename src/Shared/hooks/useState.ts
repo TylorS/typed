@@ -1,7 +1,7 @@
-import { deepEqualsEq } from '@typed/fp/common/exports'
-import { Effect } from '@typed/fp/Effect/Effect'
-import { doEffect } from '@typed/fp/Effect/exports'
-import { createShared, SharedEnv } from '@typed/fp/Shared/core/exports'
+import { deepEqualsEq } from '@fp/common/exports'
+import { Effect } from '@fp/Effect/Effect'
+import { doEffect } from '@fp/Effect/exports'
+import { createShared, SharedEnv } from '@fp/Shared/core/exports'
 import { Eq } from 'fp-ts/Eq'
 
 import { getSharedState, State } from '../State/exports'

@@ -1,4 +1,4 @@
-import { And, Arity1 } from '@typed/fp/common/exports'
+import { And, Arity1 } from '@fp/common/exports'
 import { ChainRec, ChainRec1, ChainRec2, ChainRec3 } from 'fp-ts/ChainRec'
 import { HKT, Kind, Kind2, Kind3, URIS, URIS2, URIS3 } from 'fp-ts/HKT'
 import { Monad, Monad1, Monad2, Monad3 } from 'fp-ts/Monad'

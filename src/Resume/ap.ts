@@ -1,6 +1,6 @@
-import { Arity1 } from '@typed/fp/common/exports'
-import { disposeBoth, disposeNone } from '@typed/fp/Disposable/exports'
-import { curry } from '@typed/fp/lambda/exports'
+import { Arity1 } from '@fp/common/exports'
+import { disposeBoth, disposeNone } from '@fp/Disposable/exports'
+import { curry } from '@fp/lambda/exports'
 import { isNone, none, Option, some } from 'fp-ts/Option'
 
 import { Async, async } from './Async'

@@ -1,4 +1,4 @@
-import { Uuid, UuidSeed } from '@typed/fp/Uuid/common'
+import { Uuid, UuidSeed } from '@fp/Uuid/common'
 
 /**
  * Convert a UuidSeed into a v4 Uuid

@@ -1,11 +1,11 @@
-import { Effect } from '@typed/fp/Effect/Effect'
+import { Effect } from '@fp/Effect/Effect'
 import {
   GetSharedEnv,
   GetSharedValue,
   Shared,
   SharedEnv,
   usingNamespace,
-} from '@typed/fp/Shared/core/exports'
+} from '@fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
 
 import { getSharedState, State } from '../State/exports'

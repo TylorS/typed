@@ -1,6 +1,6 @@
-import { Arity1 } from '@typed/fp/common/exports'
-import { curry } from '@typed/fp/lambda/exports'
-import { ap as apResume } from '@typed/fp/Resume/exports'
+import { Arity1 } from '@fp/common/exports'
+import { curry } from '@fp/lambda/exports'
+import { ap as apResume } from '@fp/Resume/exports'
 
 import { chain } from './chain'
 import { Effect, fromEnv } from './Effect'

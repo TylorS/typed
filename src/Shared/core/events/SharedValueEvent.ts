@@ -1,4 +1,4 @@
-import { createRuntimeSchema } from '@typed/fp/io/exports'
+import { createRuntimeSchema } from '@fp/io/exports'
 
 import { Namespace } from '../model/Namespace'
 import { Shared } from '../model/Shared'

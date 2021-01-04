@@ -1,4 +1,4 @@
-import { doEffect } from '@typed/fp/Effect/exports'
+import { doEffect } from '@fp/Effect/exports'
 
 import { getKeyStore } from '../services/exports'
 import { NamespaceDisposable } from './NamespaceDisposable'

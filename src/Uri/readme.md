@@ -1,3 +1,3 @@
-# @typed/fp/Uri
+# @fp/Uri
 
 Newtype for representing Universal Resource Identifiers.

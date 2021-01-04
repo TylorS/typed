@@ -9,7 +9,7 @@ import {
   Pure,
   toReaderTask,
   URI as EffectURI,
-} from '@typed/fp/Effect/exports'
+} from '@fp/Effect/exports'
 import { Alt3 } from 'fp-ts/Alt'
 import { Either, left as leftE, right as rightE } from 'fp-ts/Either'
 import { EitherM2, getEitherM } from 'fp-ts/EitherT'
@@ -18,7 +18,7 @@ import { pipeable } from 'fp-ts/pipeable'
 import { ReaderTaskEither } from 'fp-ts/ReaderTaskEither'
 import { isLeft } from 'fp-ts/These'
 
-export const URI = '@typed/fp/Future/exports'
+export const URI = '@fp/Future/exports'
 export type URI = typeof URI
 
 export type Future<E, A, B> = Effect<E, Either<A, B>>

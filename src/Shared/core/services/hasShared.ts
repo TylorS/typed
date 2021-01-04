@@ -1,5 +1,5 @@
-import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { SharedEnv } from '@typed/fp/Shared/core/services/SharedEnv'
+import { doEffect, Effect } from '@fp/Effect/exports'
+import { SharedEnv } from '@fp/Shared/core/services/SharedEnv'
 
 import { Shared } from '../model/Shared'
 import { getKeyStore } from './getKeyStore'

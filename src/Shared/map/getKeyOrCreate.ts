@@ -1,6 +1,6 @@
-import { Effect } from '@typed/fp/Effect/Effect'
-import { doEffect } from '@typed/fp/Effect/exports'
-import { curry } from '@typed/fp/lambda/exports'
+import { Effect } from '@fp/Effect/Effect'
+import { doEffect } from '@fp/Effect/exports'
+import { curry } from '@fp/lambda/exports'
 
 import { getShared, SharedEnv, SharedKey } from '../core/exports'
 import { setKey } from './setKey'

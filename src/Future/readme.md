@@ -1,4 +1,4 @@
-# @typed/fp/Future
+# @fp/Future
 
 ```typescript
 import { Either } from 'fp-ts/Either'

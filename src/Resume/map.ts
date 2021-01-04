@@ -1,4 +1,4 @@
-import { curry } from '@typed/fp/lambda/exports'
+import { curry } from '@fp/lambda/exports'
 import { flow } from 'fp-ts/function'
 
 import { Async } from './Async'

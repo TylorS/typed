@@ -8,7 +8,7 @@ import { fromTask } from './fromTask'
 import { map } from './map'
 import { race } from './race'
 
-export const URI = '@typed/fp/Effect'
+export const URI = '@fp/Effect'
 
 export type URI = typeof URI
 

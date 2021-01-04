@@ -1,6 +1,6 @@
-import { doEffect } from '@typed/fp/Effect/exports'
-import { getNamespaceConsumers, getNamspaceProviders } from '@typed/fp/Shared/context/exports'
-import { Namespace, NamespaceDeleted, usingNamespace } from '@typed/fp/Shared/core/exports'
+import { doEffect } from '@fp/Effect/exports'
+import { getNamespaceConsumers, getNamspaceProviders } from '@fp/Shared/context/exports'
+import { Namespace, NamespaceDeleted, usingNamespace } from '@fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
 
 export function namespaceDeleted(event: NamespaceDeleted) {

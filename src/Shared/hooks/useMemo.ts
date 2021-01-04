@@ -1,5 +1,5 @@
-import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
-import { defaultEqs, EqsOf, tupleEqOf } from '@typed/fp/Shared/common/EqsOf'
+import { doEffect, Effect, Pure } from '@fp/Effect/exports'
+import { defaultEqs, EqsOf, tupleEqOf } from '@fp/Shared/common/EqsOf'
 
 import { SharedEnv } from '../core/exports'
 import { useDepChange } from './useDepChange'

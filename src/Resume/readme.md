@@ -1,3 +1,3 @@
-# @typed/fp/Resume
+# @fp/Resume
 
 Sync or Async Effects.

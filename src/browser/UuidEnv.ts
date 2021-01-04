@@ -1,5 +1,5 @@
-import { Provider, provideSome } from '@typed/fp/Effect/exports'
-import { UuidEnv, UuidSeed, VALID_UUID_LENGTH } from '@typed/fp/Uuid/exports'
+import { Provider, provideSome } from '@fp/Effect/exports'
+import { UuidEnv, UuidSeed, VALID_UUID_LENGTH } from '@fp/Uuid/exports'
 
 /**
  * Browser implementation of UuidEnv using native WebCrypto API to retrieve cryptographically-safe

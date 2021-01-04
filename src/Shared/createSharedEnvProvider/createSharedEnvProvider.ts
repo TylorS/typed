@@ -1,4 +1,3 @@
-import { Sink } from '@most/types'
 import {
   ask,
   doEffect,
@@ -8,8 +7,9 @@ import {
   useAll,
   useSome,
   useWith,
-} from '@typed/fp/Effect/exports'
-import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
+} from '@fp/Effect/exports'
+import { SchedulerEnv } from '@fp/Scheduler/exports'
+import { Sink } from '@most/types'
 import { constVoid, pipe } from 'fp-ts/function'
 import { isNonEmpty } from 'fp-ts/ReadonlyArray'
 import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'

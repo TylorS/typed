@@ -1,7 +1,7 @@
+import { Disposable } from '@fp/Disposable/exports'
+import { doEffect, Effect, Pure } from '@fp/Effect/exports'
+import { defaultEqs, EqsOf, tupleEqOf } from '@fp/Shared/common/EqsOf'
 import { disposeAll, disposeNone } from '@most/disposable'
-import { Disposable } from '@typed/fp/Disposable/exports'
-import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
-import { defaultEqs, EqsOf, tupleEqOf } from '@typed/fp/Shared/common/EqsOf'
 
 import { addDisposable } from '../core/disposables/exports'
 import { SharedEnv } from '../core/services/SharedEnv'

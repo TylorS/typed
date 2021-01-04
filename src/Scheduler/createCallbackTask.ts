@@ -1,5 +1,5 @@
+import { Disposable, lazy } from '@fp/Disposable/exports'
 import { Task } from '@most/types'
-import { Disposable, lazy } from '@typed/fp/Disposable/exports'
 import { IO } from 'fp-ts/IO'
 
 /**

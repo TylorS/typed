@@ -3,8 +3,8 @@ import {
   IdleCallbackHandle,
   IdleCallbackOptions,
   WhenIdleEnv,
-} from '@typed/fp/dom/exports'
-import { Provider, provideSome } from '@typed/fp/Effect/exports'
+} from '@fp/dom/exports'
+import { Provider, provideSome } from '@fp/Effect/exports'
 
 /**
  * Browser implementation of WhenIdleEnv that uses requestIdleCallback to schedule work to be done when

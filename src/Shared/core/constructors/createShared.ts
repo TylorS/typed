@@ -1,4 +1,4 @@
-import { Effect } from '@typed/fp/Effect/Effect'
+import { Effect } from '@fp/Effect/Effect'
 import { Eq, eqStrict } from 'fp-ts/Eq'
 
 import { Shared } from '../model/Shared'

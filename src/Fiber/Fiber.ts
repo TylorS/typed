@@ -1,6 +1,6 @@
-import { Disposable, disposeNone, LazyDisposable } from '@typed/fp/Disposable/exports'
-import { fromEnv, Pure } from '@typed/fp/Effect/exports'
-import { async } from '@typed/fp/Resume/exports'
+import { Disposable, disposeNone, LazyDisposable } from '@fp/Disposable/exports'
+import { fromEnv, Pure } from '@fp/Effect/exports'
+import { async } from '@fp/Resume/exports'
 import { IO } from 'fp-ts/IO'
 import { Option } from 'fp-ts/Option'
 

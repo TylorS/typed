@@ -1,11 +1,11 @@
-import { createGuard } from '@typed/fp/io/exports'
+import { createGuard } from '@fp/io/exports'
 import {
   NamespaceCompleted,
   NamespaceDeleted,
   NamespaceUpdated,
   SharedValueUpdated,
-} from '@typed/fp/Shared/core/exports'
-import { createSharedEventHandler } from '@typed/fp/Shared/exports'
+} from '@fp/Shared/core/exports'
+import { createSharedEventHandler } from '@fp/Shared/exports'
 
 import { Patch } from '../Patch'
 import { createPatchNamespace } from './createPatchNamespace'

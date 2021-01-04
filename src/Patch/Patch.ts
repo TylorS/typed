@@ -1,6 +1,6 @@
-import { Arity2 } from '@typed/fp/common/exports'
-import { Effect, fromEnv } from '@typed/fp/Effect/exports'
-import { Resume } from '@typed/fp/Resume/exports'
+import { Arity2 } from '@fp/common/exports'
+import { Effect, fromEnv } from '@fp/Effect/exports'
+import { Resume } from '@fp/Resume/exports'
 
 /**
  * Environment type for Patching some values.

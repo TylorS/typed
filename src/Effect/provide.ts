@@ -1,5 +1,5 @@
-import { And } from '@typed/fp/common/And'
-import { curry } from '@typed/fp/lambda/exports'
+import { And } from '@fp/common/And'
+import { curry } from '@fp/lambda/exports'
 import { Cast } from 'Any/Cast'
 
 import { Effect, fromEnv, Pure } from './Effect'

@@ -1,4 +1,4 @@
-import { any } from '@typed/fp/logic/any'
+import { any } from '@fp/logic/any'
 import { Predicate } from 'fp-ts/function'
 import { none, some } from 'fp-ts/Option'
 

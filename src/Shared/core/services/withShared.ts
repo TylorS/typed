@@ -1,5 +1,5 @@
-import { Effect, EffectGenerator } from '@typed/fp/Effect/Effect'
-import { doEffect } from '@typed/fp/Effect/exports'
+import { Effect, EffectGenerator } from '@fp/Effect/Effect'
+import { doEffect } from '@fp/Effect/exports'
 
 import { GetSharedEnv, GetSharedValue, Shared } from '../model/Shared'
 import { getShared } from './getShared'

@@ -1,13 +1,13 @@
-import { Pure } from '@typed/fp/Effect/Effect'
-import { doEffect } from '@typed/fp/Effect/exports'
+import { Pure } from '@fp/Effect/Effect'
+import { doEffect } from '@fp/Effect/exports'
 import {
   addDisposable,
   createShared,
   getCurrentNamespace,
   getShared,
   Namespace,
-} from '@typed/fp/Shared/core/exports'
-import { usingGlobal } from '@typed/fp/Shared/global/exports'
+} from '@fp/Shared/core/exports'
+import { usingGlobal } from '@fp/Shared/global/exports'
 import { pipe } from 'fp-ts/function'
 
 /**

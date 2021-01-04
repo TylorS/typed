@@ -140,7 +140,7 @@ async function updateModuleConfig(name: string, moduleType: ModuleType) {
     const configName = `tsconfig.${moduleType}.json`
     const tsconfigJsonPath = join(directory, configName)
 
-    console.log(`Updating Module Config [${moduleType}]: @typed/fp/${name}`)
+    console.log(`Updating Module Config [${moduleType}]: @fp/${name}`)
 
     const tsconfigJson = JSON.parse(
       TSCONFIG_TEMPLATE.replace(MODULE_TYPE_REGEX, moduleType).replace(NAME_REGEX, name),
@@ -177,12 +177,10 @@ function findAllReferences(directory: string, moduleType: ModuleType, name: stri
     s.getImportDeclarations().map((l) => l.getModuleSpecifier().getText().replace(/'/g, '')),
   )
   const typedDependencies = uniqStrings(
-    allDependencies.filter(
-      (dep) => dep.includes('@typed/fp/') && !dep.includes(`@typed/fp/${name}`),
-    ),
+    allDependencies.filter((dep) => dep.includes('@fp/') && !dep.includes(`@fp/${name}`)),
   )
   const typedDependencyNames = uniqStrings(
-    typedDependencies.map((dep) => dep.replace('@typed/fp/', '').split('/')[0]!),
+    typedDependencies.map((dep) => dep.replace('@fp/', '').split('/')[0]!),
   )
 
   return typedDependencyNames.map((name) => ({

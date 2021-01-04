@@ -1,12 +1,7 @@
-import { doEffect, useAll, useSome } from '@typed/fp/Effect/exports'
-import { isNull, isUndefined } from '@typed/fp/logic/is'
-import { getNamespaceParent } from '@typed/fp/Shared/context/exports'
-import {
-  hasShared,
-  Namespace,
-  runWithNamespace,
-  usingNamespace,
-} from '@typed/fp/Shared/core/exports'
+import { doEffect, useAll, useSome } from '@fp/Effect/exports'
+import { isNull, isUndefined } from '@fp/logic/is'
+import { getNamespaceParent } from '@fp/Shared/context/exports'
+import { hasShared, Namespace, runWithNamespace, usingNamespace } from '@fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 

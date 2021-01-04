@@ -1,5 +1,5 @@
-import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { curry } from '@typed/fp/lambda/exports'
+import { doEffect, Effect } from '@fp/Effect/exports'
+import { curry } from '@fp/lambda/exports'
 
 import { getShared, SharedEnv, SharedKey } from '../core/exports'
 import { SharedMap } from './SharedMap'

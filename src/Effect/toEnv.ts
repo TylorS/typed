@@ -1,4 +1,4 @@
-import { chain, Resume, sync } from '@typed/fp/Resume/exports'
+import { chain, Resume, sync } from '@fp/Resume/exports'
 
 import { Effect, EffectGenerator, Env } from './Effect'
 

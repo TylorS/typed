@@ -1,5 +1,5 @@
-import { RafEnv } from '@typed/fp/dom/exports'
-import { Provider, provideSome } from '@typed/fp/Effect/exports'
+import { RafEnv } from '@fp/dom/exports'
+import { Provider, provideSome } from '@fp/Effect/exports'
 
 /**
  * Browser implementation of RafEnv with a return handle of `number` matching that of the

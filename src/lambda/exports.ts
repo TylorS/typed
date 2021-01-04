@@ -1,5 +1,5 @@
-import { ArgsOf, Arity1, Arity2, Arity3, Arity4, Arity5 } from '@typed/fp/common/exports'
-import { Disposable } from '@typed/fp/Disposable/exports'
+import { ArgsOf, Arity1, Arity2, Arity3, Arity4, Arity5 } from '@fp/common/exports'
+import { Disposable } from '@fp/Disposable/exports'
 import { Eq } from 'fp-ts/Eq'
 import { FunctionN, identity, pipe } from 'fp-ts/function'
 import { IO } from 'fp-ts/IO'

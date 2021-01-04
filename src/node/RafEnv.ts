@@ -1,5 +1,5 @@
-import { RafEnv } from '@typed/fp/dom/raf'
-import { provideSome } from '@typed/fp/Effect/exports'
+import { RafEnv } from '@fp/dom/raf'
+import { provideSome } from '@fp/Effect/exports'
 import { performance } from 'perf_hooks'
 
 let lastTime: number = performance.now()

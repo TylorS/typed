@@ -1,7 +1,7 @@
-import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { sendSharedEvent } from '@typed/fp/Shared/core/events/exports'
-import { Namespace, SharedKeyStore } from '@typed/fp/Shared/core/model/exports'
-import { SharedEnv } from '@typed/fp/Shared/core/services/SharedEnv'
+import { doEffect, Effect } from '@fp/Effect/exports'
+import { sendSharedEvent } from '@fp/Shared/core/events/exports'
+import { Namespace, SharedKeyStore } from '@fp/Shared/core/model/exports'
+import { SharedEnv } from '@fp/Shared/core/services/SharedEnv'
 import { fromNullable, Option } from 'fp-ts/Option'
 
 import { getKeyStores } from './getKeyStores'

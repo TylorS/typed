@@ -1,6 +1,6 @@
-import { fromEnv } from '@typed/fp/Effect/exports'
-import { Path } from '@typed/fp/Path/exports'
-import { async } from '@typed/fp/Resume/exports'
+import { fromEnv } from '@fp/Effect/exports'
+import { Path } from '@fp/Path/exports'
+import { async } from '@fp/Resume/exports'
 
 import { HistoryEnv } from './HistoryEnv'
 

@@ -1,6 +1,6 @@
-import { whenIdle, WhenIdleEnv } from '@typed/fp/dom/exports'
-import { Effect } from '@typed/fp/Effect/exports'
-import { Queue } from '@typed/fp/Queue/exports'
+import { whenIdle, WhenIdleEnv } from '@fp/dom/exports'
+import { Effect } from '@fp/Effect/exports'
+import { Queue } from '@fp/Queue/exports'
 import { isNone, isSome } from 'fp-ts/Option'
 
 export type IdleScheduler = ReturnType<typeof createIdleScheduler>

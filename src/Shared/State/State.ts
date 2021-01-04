@@ -1,5 +1,5 @@
-import { Arity1 } from '@typed/fp/common/exports'
-import { curry } from '@typed/fp/lambda/exports'
+import { Arity1 } from '@fp/common/exports'
+import { curry } from '@fp/lambda/exports'
 import { flow, identity, pipe } from 'fp-ts/function'
 import { IO, map as mapIo } from 'fp-ts/IO'
 

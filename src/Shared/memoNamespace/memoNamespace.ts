@@ -1,6 +1,5 @@
-import { filter } from '@most/core'
-import { ask, doEffect, Effect } from '@typed/fp/Effect/exports'
-import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
+import { ask, doEffect, Effect } from '@fp/Effect/exports'
+import { SchedulerEnv } from '@fp/Scheduler/exports'
 import {
   addDisposable,
   createShared,
@@ -14,7 +13,8 @@ import {
   SharedEnv,
   SharedKey,
   usingNamespace,
-} from '@typed/fp/Shared/core/exports'
+} from '@fp/Shared/core/exports'
+import { filter } from '@most/core'
 import { constVoid, pipe } from 'fp-ts/function'
 
 import { createRef, Ref } from '../Ref/exports'

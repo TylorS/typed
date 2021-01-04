@@ -1,5 +1,5 @@
-import { IdleCallbackDeadline, IdleCallbackHandle, WhenIdleEnv } from '@typed/fp/dom/exports'
-import { Provider, provideSome } from '@typed/fp/Effect/provide'
+import { IdleCallbackDeadline, IdleCallbackHandle, WhenIdleEnv } from '@fp/dom/exports'
+import { Provider, provideSome } from '@fp/Effect/provide'
 import { constVoid } from 'fp-ts/function'
 import { performance } from 'perf_hooks'
 

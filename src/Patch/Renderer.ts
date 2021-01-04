@@ -1,6 +1,6 @@
-import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
-import { createShared, getShared, SharedEnv } from '@typed/fp/Shared/core/exports'
-import { createRef, Ref } from '@typed/fp/Shared/Ref/exports'
+import { doEffect, Effect, Pure } from '@fp/Effect/exports'
+import { createShared, getShared, SharedEnv } from '@fp/Shared/core/exports'
+import { createRef, Ref } from '@fp/Shared/Ref/exports'
 
 /**
  * A Shared value for the Effect being used to Render a given Namespace.

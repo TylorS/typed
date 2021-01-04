@@ -1,5 +1,5 @@
-import { Pure } from '@typed/fp/Effect/exports'
-import { createShared, getShared, SharedKey } from '@typed/fp/Shared/core/exports'
+import { Pure } from '@fp/Effect/exports'
+import { createShared, getShared, SharedKey } from '@fp/Shared/core/exports'
 
 import { Ref } from './Ref'
 

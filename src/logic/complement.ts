@@ -1,4 +1,4 @@
-import { Arity1 } from '@typed/fp/common/exports'
+import { Arity1 } from '@fp/common/exports'
 import { pipe } from 'fp-ts/function'
 
 import { negate } from './negate'

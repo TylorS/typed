@@ -1,5 +1,5 @@
-import { createSchema } from '@typed/fp/io/exports'
-import { isString } from '@typed/fp/logic/is'
+import { createSchema } from '@fp/io/exports'
+import { isString } from '@fp/logic/is'
 import { getMonoid, iso, Newtype, prism } from 'newtype-ts'
 
 /**

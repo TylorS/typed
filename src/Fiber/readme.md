@@ -1,4 +1,4 @@
-# @typed/fp/Fiber
+# @fp/Fiber
 
 In a world with [Effect](../Effect/readme.md), your sync and async operations all live in
 a relatively synchronous looking world. Fiber is an abstraction a lot like threads which allow 

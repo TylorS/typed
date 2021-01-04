@@ -1,5 +1,5 @@
-import type { Effect } from '@typed/fp/Effect/Effect'
-import { createRuntimeSchema, createSchema } from '@typed/fp/io/exports'
+import type { Effect } from '@fp/Effect/Effect'
+import { createRuntimeSchema, createSchema } from '@fp/io/exports'
 import type { HKT } from 'fp-ts/HKT'
 
 import { Namespace } from '../model/Namespace'

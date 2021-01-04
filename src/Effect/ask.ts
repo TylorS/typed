@@ -1,5 +1,5 @@
-import { Arity1, HeadArg } from '@typed/fp/common/exports'
-import { sync } from '@typed/fp/Resume/exports'
+import { Arity1, HeadArg } from '@fp/common/exports'
+import { sync } from '@fp/Resume/exports'
 import { flow } from 'fp-ts/function'
 
 import { doEffect } from './doEffect'

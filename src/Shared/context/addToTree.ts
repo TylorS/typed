@@ -1,11 +1,6 @@
+import { ask, doEffect, Effect, execEffect } from '@fp/Effect/exports'
+import { getCurrentNamespace, Namespace, SharedEnv, usingNamespace } from '@fp/Shared/core/exports'
 import { disposeAll } from '@most/disposable'
-import { ask, doEffect, Effect, execEffect } from '@typed/fp/Effect/exports'
-import {
-  getCurrentNamespace,
-  Namespace,
-  SharedEnv,
-  usingNamespace,
-} from '@typed/fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
 import { isNone, isSome, some } from 'fp-ts/Option'
 

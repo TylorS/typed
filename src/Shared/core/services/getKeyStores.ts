@@ -1,4 +1,4 @@
-import { asks, Effect } from '@typed/fp/Effect/exports'
+import { asks, Effect } from '@fp/Effect/exports'
 
 import { Namespace, SharedKeyStore } from '../model/exports'
 import { SharedEnv } from './SharedEnv'

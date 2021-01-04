@@ -1,17 +1,17 @@
-import { WhenIdleEnv } from '@typed/fp/dom/exports'
-import { doEffect, useSome } from '@typed/fp/Effect/exports'
-import { createGuard } from '@typed/fp/io/exports'
-import { equals } from '@typed/fp/logic/equals'
-import { createFifoQueue } from '@typed/fp/Queue/exports'
+import { WhenIdleEnv } from '@fp/dom/exports'
+import { doEffect, useSome } from '@fp/Effect/exports'
+import { createGuard } from '@fp/io/exports'
+import { equals } from '@fp/logic/equals'
+import { createFifoQueue } from '@fp/Queue/exports'
 import {
   Namespace,
   NamespaceCompleted,
   NamespaceDeleted,
   NamespaceUpdated,
   SharedValueUpdated,
-} from '@typed/fp/Shared/core/exports'
-import { createSharedEventHandler } from '@typed/fp/Shared/createSharedEnvProvider/exports'
-import { namespaceDeleted } from '@typed/fp/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted'
+} from '@fp/Shared/core/exports'
+import { createSharedEventHandler } from '@fp/Shared/createSharedEnvProvider/exports'
+import { namespaceDeleted } from '@fp/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted'
 import { pipe } from 'fp-ts/function'
 
 import { Patch } from '../Patch'

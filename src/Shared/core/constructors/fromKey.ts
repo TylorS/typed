@@ -1,4 +1,4 @@
-import { deepEqualsEq } from '@typed/fp/common/exports'
+import { deepEqualsEq } from '@fp/common/exports'
 
 import { Shared } from '../model/Shared'
 import { SharedKey } from '../model/SharedKey'

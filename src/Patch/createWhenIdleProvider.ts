@@ -1,10 +1,6 @@
-import { WhenIdleEnv } from '@typed/fp/dom/exports'
-import { provideMany, provideSome } from '@typed/fp/Effect/exports'
-import {
-  createSharedEnvProvider,
-  defaultHandlers,
-  provideSharedEnv,
-} from '@typed/fp/Shared/exports'
+import { WhenIdleEnv } from '@fp/dom/exports'
+import { provideMany, provideSome } from '@fp/Effect/exports'
+import { createSharedEnvProvider, defaultHandlers, provideSharedEnv } from '@fp/Shared/exports'
 
 import { provideSchedulerEnv } from '../Scheduler/exports'
 import { createWhenIdleHandlers } from './handlers/exports'

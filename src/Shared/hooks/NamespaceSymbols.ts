@@ -1,5 +1,5 @@
-import { Pure } from '@typed/fp/Effect/exports'
-import { createShared, getShared } from '@typed/fp/Shared/core/exports'
+import { Pure } from '@fp/Effect/exports'
+import { createShared, getShared } from '@fp/Shared/core/exports'
 
 /**
  * Keep track of a Map of positions to symbols to ensure

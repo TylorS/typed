@@ -1,7 +1,7 @@
+import { lazy } from '@fp/Disposable/exports'
+import { fromEnv } from '@fp/Effect/exports'
+import { async } from '@fp/Resume/exports'
 import { Timer } from '@most/types'
-import { lazy } from '@typed/fp/Disposable/exports'
-import { fromEnv } from '@typed/fp/Effect/exports'
-import { async } from '@typed/fp/Resume/exports'
 import { iso, Newtype } from 'newtype-ts'
 
 /**

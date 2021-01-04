@@ -1,5 +1,5 @@
-import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { Match, oneOf } from '@typed/fp/logic/exports'
+import { doEffect, Effect } from '@fp/Effect/exports'
+import { Match, oneOf } from '@fp/logic/exports'
 import { isSome } from 'fp-ts/Option'
 
 import { Shared, SharedEnv, SharedKey } from '../core/exports'

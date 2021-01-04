@@ -1,4 +1,4 @@
-import { doEffect, Effect, EffectGenerator } from '@typed/fp/Effect/exports'
+import { doEffect, Effect, EffectGenerator } from '@fp/Effect/exports'
 
 import { Namespace } from '../model/exports'
 import { CurrentNamespaceEnv } from './CurrentNamespaceEnv'

@@ -1,4 +1,4 @@
-import { Disposable } from '@typed/fp/Disposable/exports'
+import { Disposable } from '@fp/Disposable/exports'
 import { Either, left, right } from 'fp-ts/Either'
 import { flow } from 'fp-ts/function'
 

@@ -1,5 +1,5 @@
-import { fromEnv } from '@typed/fp/Effect/exports'
-import { Uri } from '@typed/fp/Uri/exports'
+import { fromEnv } from '@fp/Effect/exports'
+import { Uri } from '@fp/Uri/exports'
 
 import { HttpOptions } from './HttpEnv'
 import { HttpRequest } from './HttpRequest'

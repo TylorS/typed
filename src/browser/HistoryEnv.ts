@@ -1,5 +1,5 @@
-import { Provider, provideSome } from '@typed/fp/Effect/exports'
-import { HistoryEnv } from '@typed/fp/history/exports'
+import { Provider, provideSome } from '@fp/Effect/exports'
+import { HistoryEnv } from '@fp/history/exports'
 
 /**
  * Browser implementation of HistoryEnv. Uses the native History and Location APIs.

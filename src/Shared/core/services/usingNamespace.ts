@@ -1,4 +1,4 @@
-import { Provider, useSome } from '@typed/fp/Effect/exports'
+import { Provider, useSome } from '@fp/Effect/exports'
 
 import { Namespace } from '../model/exports'
 import { CurrentNamespaceEnv } from './CurrentNamespaceEnv'

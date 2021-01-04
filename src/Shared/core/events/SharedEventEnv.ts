@@ -1,6 +1,6 @@
+import { ap, asks, Effect, Pure } from '@fp/Effect/exports'
 import { Adapter } from '@most/adapter'
 import { Stream } from '@most/types'
-import { ap, asks, Effect, Pure } from '@typed/fp/Effect/exports'
 
 import { SharedEvent } from './SharedEvent'
 

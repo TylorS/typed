@@ -1,4 +1,4 @@
-# @typed/fp/http
+# @fp/http
 
 [Effect](../Effect/readme.md) abstraction for working with HTTP. 
 

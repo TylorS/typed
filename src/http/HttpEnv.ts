@@ -1,6 +1,6 @@
-import type { Progress } from '@typed/fp/RemoteData/exports'
-import type { Resume } from '@typed/fp/Resume/exports'
-import type { Uri } from '@typed/fp/Uri/exports'
+import type { Progress } from '@fp/RemoteData/exports'
+import type { Resume } from '@fp/Resume/exports'
+import type { Uri } from '@fp/Uri/exports'
 import type { Either } from 'fp-ts/Either'
 
 import type { HttpHeaders } from './HttpHeaders'

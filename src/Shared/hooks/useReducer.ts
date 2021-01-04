@@ -1,8 +1,8 @@
-import { Arity2 } from '@typed/fp/common/types'
-import { Effect } from '@typed/fp/Effect/Effect'
-import { doEffect } from '@typed/fp/Effect/exports'
-import { createShared } from '@typed/fp/Shared/core/constructors/exports'
-import { applyReducer, getSharedState, State } from '@typed/fp/Shared/State/exports'
+import { Arity2 } from '@fp/common/types'
+import { Effect } from '@fp/Effect/Effect'
+import { doEffect } from '@fp/Effect/exports'
+import { createShared } from '@fp/Shared/core/constructors/exports'
+import { applyReducer, getSharedState, State } from '@fp/Shared/State/exports'
 import { Eq, eqStrict } from 'fp-ts/Eq'
 
 import { SharedEnv } from '../core/services/SharedEnv'

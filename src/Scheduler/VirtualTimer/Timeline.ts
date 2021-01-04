@@ -1,4 +1,4 @@
-import { Arity1 } from '@typed/fp/common/exports'
+import { Arity1 } from '@fp/common/exports'
 import { ordNumber } from 'fp-ts/Ord'
 import { sort } from 'fp-ts/ReadonlyArray'
 

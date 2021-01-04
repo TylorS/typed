@@ -1,1 +1,1 @@
-# @typed/fp/logging
+# @fp/logging

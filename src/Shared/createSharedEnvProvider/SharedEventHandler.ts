@@ -1,4 +1,4 @@
-import { Effect } from '@typed/fp/Effect/exports'
+import { Effect } from '@fp/Effect/exports'
 import { Guard } from 'io-ts/Guard'
 
 import { SharedEnv, SharedEvent } from '../core/exports'

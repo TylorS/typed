@@ -1,5 +1,5 @@
+import { doEffect } from '@fp/Effect/exports'
 import { Disposable } from '@most/types'
-import { doEffect } from '@typed/fp/Effect/exports'
 
 import { getNamespaceDisposable } from './NamespaceDisposable'
 

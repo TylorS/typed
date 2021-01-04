@@ -1,4 +1,4 @@
-import { curry } from '@typed/fp/lambda/exports'
+import { curry } from '@fp/lambda/exports'
 import { Lazy } from 'fp-ts/function'
 
 import { isSuccessful } from './isSuccessful'

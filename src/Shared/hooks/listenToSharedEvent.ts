@@ -1,5 +1,5 @@
+import { doEffect } from '@fp/Effect/exports'
 import { filter } from '@most/core'
-import { doEffect } from '@typed/fp/Effect/exports'
 import { Guard } from 'io-ts/Guard'
 
 import { getSharedEvents, SharedEvent } from '../core/events/exports'

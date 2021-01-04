@@ -1,5 +1,5 @@
-import { asks } from '@typed/fp/Effect/exports'
-import { curry } from '@typed/fp/lambda/exports'
+import { asks } from '@fp/Effect/exports'
+import { curry } from '@fp/lambda/exports'
 import { Eq } from 'fp-ts/Eq'
 
 import { Shared } from '../model/Shared'

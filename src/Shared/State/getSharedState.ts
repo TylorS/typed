@@ -1,4 +1,4 @@
-import { doEffect, Effect } from '@typed/fp/Effect/exports'
+import { doEffect, Effect } from '@fp/Effect/exports'
 import {
   getCurrentNamespace,
   getKeyStore,
@@ -10,7 +10,7 @@ import {
   setShared,
   Shared,
   SharedEnv,
-} from '@typed/fp/Shared/core/exports'
+} from '@fp/Shared/core/exports'
 
 import { SharedStates } from './NamespaceStates'
 import { State } from './State'

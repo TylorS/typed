@@ -1,4 +1,4 @@
-import { VALID_UUID_LENGTH } from '@typed/fp/Uuid/exports'
+import { VALID_UUID_LENGTH } from '@fp/Uuid/exports'
 import { describe, it } from '@typed/test'
 
 import { uuidEnv } from './UuidEnv'

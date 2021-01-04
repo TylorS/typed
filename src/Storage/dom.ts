@@ -1,4 +1,4 @@
-import { chain, Resume, sync } from '@typed/fp/Resume/exports'
+import { chain, Resume, sync } from '@fp/Resume/exports'
 import { Either, left, right } from 'fp-ts/Either'
 import { flow, pipe } from 'fp-ts/function'
 import { fromNullable } from 'fp-ts/Option'

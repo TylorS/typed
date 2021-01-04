@@ -1,4 +1,4 @@
-import { usingNamespace } from '@typed/fp/Shared/core/exports'
+import { usingNamespace } from '@fp/Shared/core/exports'
 
 import { GlobalNamespace } from './Global'
 

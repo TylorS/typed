@@ -1,4 +1,4 @@
-import { And } from '@typed/fp/common/exports'
+import { And } from '@fp/common/exports'
 import { U } from 'ts-toolbelt'
 
 import { Effect, EnvOf, ReturnOf } from './Effect'

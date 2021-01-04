@@ -1,4 +1,4 @@
-import { Uuid } from '@typed/fp/Uuid/exports'
+import { Uuid } from '@fp/Uuid/exports'
 import { Const } from 'fp-ts/Const'
 import { Iso } from 'monocle-ts'
 import { iso, Newtype } from 'newtype-ts'

@@ -1,5 +1,5 @@
-import { lazy } from '@typed/fp/Disposable/exports'
-import { async } from '@typed/fp/Resume/exports'
+import { lazy } from '@fp/Disposable/exports'
+import { async } from '@fp/Resume/exports'
 import { Task } from 'fp-ts/Task'
 
 import { fromEnv, Pure } from './Effect'
@@ -9,7 +9,7 @@ import { fromEnv, Pure } from './Effect'
  * try using Either or another more expressive type.
  *
  * @example
- * fromTask(() => import('@typed/fp'))
+ * fromTask(() => import('@fp'))
  */
 export function fromTask<A>(task: Task<A>): Pure<A> {
   return fromEnv(() =>

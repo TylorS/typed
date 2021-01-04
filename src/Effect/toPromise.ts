@@ -1,4 +1,4 @@
-import { undisposable } from '@typed/fp/Disposable/exports'
+import { undisposable } from '@fp/Disposable/exports'
 import { Task } from 'fp-ts/Task'
 
 import { Pure } from './Effect'

@@ -1,4 +1,4 @@
-import { doEffect, execPure, provideAll } from '@typed/fp/Effect/exports'
+import { doEffect, execPure, provideAll } from '@fp/Effect/exports'
 import { describe, given, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 

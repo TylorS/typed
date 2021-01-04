@@ -1,4 +1,4 @@
-import { curry } from '@typed/fp/lambda/exports'
+import { curry } from '@fp/lambda/exports'
 import { none } from 'fp-ts/Option'
 
 import { SuccessInfo } from './fold'

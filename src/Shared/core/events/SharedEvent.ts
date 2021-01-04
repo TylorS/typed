@@ -1,4 +1,4 @@
-import { createRuntimeSchema } from '@typed/fp/io/exports'
+import { createRuntimeSchema } from '@fp/io/exports'
 
 import { NamespaceEvent } from './NamespaceEvent'
 import { SharedValueEvent } from './SharedValueEvent'

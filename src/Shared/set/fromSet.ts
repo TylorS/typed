@@ -1,5 +1,5 @@
-import { deepEqualsEq } from '@typed/fp/common/exports'
-import { Pure } from '@typed/fp/Effect/exports'
+import { deepEqualsEq } from '@fp/common/exports'
+import { Pure } from '@fp/Effect/exports'
 import { Eq } from 'fp-ts/Eq'
 import { getEq } from 'fp-ts/ReadonlySet'
 

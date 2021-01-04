@@ -1,6 +1,6 @@
-import { fromEnv } from '@typed/fp/Effect/exports'
-import type { Future } from '@typed/fp/Future/exports'
-import type { Resume } from '@typed/fp/Resume/exports'
+import { fromEnv } from '@fp/Effect/exports'
+import type { Future } from '@fp/Future/exports'
+import type { Resume } from '@fp/Resume/exports'
 import type { Either } from 'fp-ts/Either'
 import type { Option } from 'fp-ts/Option'
 

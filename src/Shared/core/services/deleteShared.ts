@@ -1,4 +1,4 @@
-import { doEffect, Effect } from '@typed/fp/Effect/exports'
+import { doEffect, Effect } from '@fp/Effect/exports'
 import { none, Option, some } from 'fp-ts/Option'
 
 import { sendSharedEvent } from '../events/exports'

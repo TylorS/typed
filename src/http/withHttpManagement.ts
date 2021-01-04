@@ -1,19 +1,12 @@
+import { whenIdle, WhenIdleEnv } from '@fp/dom/exports'
+import { ask, doEffect, Effect, fromTask, Provider, toEnv, useWith } from '@fp/Effect/exports'
+import { FiberEnv, fork } from '@fp/Fiber/exports'
+import { async, chain, run, sync } from '@fp/Resume/exports'
+import { SchedulerEnv } from '@fp/Scheduler/exports'
+import { getShared, setShared, Shared, SharedEnv, SharedKey, usingGlobal } from '@fp/Shared/exports'
+import { Uri } from '@fp/Uri/exports'
 import { disposeBoth } from '@most/disposable'
 import { Clock } from '@most/types'
-import { whenIdle, WhenIdleEnv } from '@typed/fp/dom/exports'
-import { ask, doEffect, Effect, fromTask, Provider, toEnv, useWith } from '@typed/fp/Effect/exports'
-import { FiberEnv, fork } from '@typed/fp/Fiber/exports'
-import { async, chain, run, sync } from '@typed/fp/Resume/exports'
-import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
-import {
-  getShared,
-  setShared,
-  Shared,
-  SharedEnv,
-  SharedKey,
-  usingGlobal,
-} from '@typed/fp/Shared/exports'
-import { Uri } from '@typed/fp/Uri/exports'
 import { Either, isRight, right } from 'fp-ts/Either'
 import { constVoid, pipe } from 'fp-ts/function'
 import { fromNullable, isSome, Option } from 'fp-ts/Option'

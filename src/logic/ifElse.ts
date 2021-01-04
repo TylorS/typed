@@ -1,5 +1,5 @@
-import { Arity1 } from '@typed/fp/common/exports'
-import { curry } from '@typed/fp/lambda/exports'
+import { Arity1 } from '@fp/common/exports'
+import { curry } from '@fp/lambda/exports'
 import { Predicate } from 'fp-ts/function'
 import { Is } from 'io-ts'
 

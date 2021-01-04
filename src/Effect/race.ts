@@ -1,6 +1,6 @@
-import { Disposable, disposeBoth, disposeNone, lazy } from '@typed/fp/Disposable/exports'
-import { curry } from '@typed/fp/lambda/exports'
-import { async, run } from '@typed/fp/Resume/exports'
+import { Disposable, disposeBoth, disposeNone, lazy } from '@fp/Disposable/exports'
+import { curry } from '@fp/lambda/exports'
+import { async, run } from '@fp/Resume/exports'
 
 import { Effect, fromEnv } from './Effect'
 import { toEnv } from './toEnv'

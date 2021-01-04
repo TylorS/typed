@@ -1,4 +1,4 @@
-import { ParsedUri, parseUri, Uri } from '@typed/fp/Uri/exports'
+import { ParsedUri, parseUri, Uri } from '@fp/Uri/exports'
 
 const HTTPS_PROTOCOL = 'https:'
 const HTTPS_DEFAULT_PORT = '443'

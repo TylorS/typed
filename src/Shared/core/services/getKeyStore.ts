@@ -1,4 +1,4 @@
-import { doEffect, Effect } from '@typed/fp/Effect/exports'
+import { doEffect, Effect } from '@fp/Effect/exports'
 
 import { sendSharedEvent, SharedEventEnv } from '../events/SharedEventEnv'
 import { SharedKeyStore } from '../model/exports'

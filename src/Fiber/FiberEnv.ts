@@ -1,7 +1,7 @@
-import { doEffect, Effect, fromEnv, zip } from '@typed/fp/Effect/exports'
-import { Fiber } from '@typed/fp/Fiber/Fiber'
-import { Resume, sync } from '@typed/fp/Resume/exports'
-import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
+import { doEffect, Effect, fromEnv, zip } from '@fp/Effect/exports'
+import { Fiber } from '@fp/Fiber/Fiber'
+import { Resume, sync } from '@fp/Resume/exports'
+import { SchedulerEnv } from '@fp/Scheduler/exports'
 import { Either } from 'fp-ts/Either'
 
 /**

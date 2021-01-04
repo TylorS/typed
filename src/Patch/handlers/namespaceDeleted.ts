@@ -1,5 +1,5 @@
-import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { NamespaceDeleted, SharedEnv, usingNamespace } from '@typed/fp/Shared/core/exports'
+import { doEffect, Effect } from '@fp/Effect/exports'
+import { NamespaceDeleted, SharedEnv, usingNamespace } from '@fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
 
 import { getNamespaceRenderers } from '../NamespaceRenderers'

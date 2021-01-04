@@ -1,3 +1,3 @@
-# @typed/fp/node
+# @fp/node
 
-A collection of node-specific implementations of resources from other `@typed/fp` modules.
+A collection of node-specific implementations of resources from other `@fp` modules.

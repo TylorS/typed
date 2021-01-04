@@ -1,5 +1,5 @@
-import { lazy, LazyDisposable } from '@typed/fp/Disposable/exports'
-import { Pure } from '@typed/fp/Effect/exports'
+import { lazy, LazyDisposable } from '@fp/Disposable/exports'
+import { Pure } from '@fp/Effect/exports'
 
 import { createShared } from '../constructors/exports'
 import { getShared } from '../services/exports'

@@ -1,4 +1,4 @@
-import { fromJson, JsonSerializable, toJson } from '@typed/fp/logic/exports'
+import { fromJson, JsonSerializable, toJson } from '@fp/logic/exports'
 import { pipe } from 'fp-ts/function'
 import { Codec, make } from 'io-ts/Codec'
 import { Decoder, map, string } from 'io-ts/Decoder'

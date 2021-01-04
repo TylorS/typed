@@ -1,4 +1,4 @@
-import { sync } from '@typed/fp/Resume/exports'
+import { sync } from '@fp/Resume/exports'
 import { flow } from 'fp-ts/function'
 import { Reader } from 'fp-ts/Reader'
 

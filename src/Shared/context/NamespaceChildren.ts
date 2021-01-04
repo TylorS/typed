@@ -1,5 +1,5 @@
-import { doEffect, Pure } from '@typed/fp/Effect/exports'
-import { createShared, getShared, Namespace } from '@typed/fp/Shared/core/exports'
+import { doEffect, Pure } from '@fp/Effect/exports'
+import { createShared, getShared, Namespace } from '@fp/Shared/core/exports'
 
 /**
  * Keep track of all of the "child" namespaces in the tree of namespaces.

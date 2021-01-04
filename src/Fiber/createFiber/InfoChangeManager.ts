@@ -1,9 +1,9 @@
+import { Arity1 } from '@fp/common/exports'
+import { lazy, LazyDisposable } from '@fp/Disposable/exports'
+import { FiberInfo, FiberState } from '@fp/Fiber/Fiber'
+import { createCallbackTask } from '@fp/Scheduler/exports'
 import { asap } from '@most/scheduler'
 import { Disposable, Scheduler } from '@most/types'
-import { Arity1 } from '@typed/fp/common/exports'
-import { lazy, LazyDisposable } from '@typed/fp/Disposable/exports'
-import { FiberInfo, FiberState } from '@typed/fp/Fiber/Fiber'
-import { createCallbackTask } from '@typed/fp/Scheduler/exports'
 import { IO } from 'fp-ts/IO'
 import { newIORef } from 'fp-ts/IORef'
 

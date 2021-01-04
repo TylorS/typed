@@ -1,5 +1,5 @@
-import { deepEqualsEq } from '@typed/fp/common/exports'
-import { curry } from '@typed/fp/lambda/exports'
+import { deepEqualsEq } from '@fp/common/exports'
+import { curry } from '@fp/lambda/exports'
 
 /**
  * Deep Equality check of 2 values.

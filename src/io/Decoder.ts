@@ -1,4 +1,4 @@
-import { Progress, RemoteData, RemoteDataStatus } from '@typed/fp/RemoteData/exports'
+import { Progress, RemoteData, RemoteDataStatus } from '@fp/RemoteData/exports'
 import * as E from 'fp-ts/Either'
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/pipeable'

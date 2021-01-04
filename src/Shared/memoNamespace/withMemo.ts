@@ -1,5 +1,5 @@
-import { Effect } from '@typed/fp/Effect/Effect'
-import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
+import { Effect } from '@fp/Effect/Effect'
+import { SchedulerEnv } from '@fp/Scheduler/exports'
 
 import { SharedEnv, withCurrentNamespace } from '../core/exports'
 import { memoNamespace } from './memoNamespace'

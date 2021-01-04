@@ -1,4 +1,4 @@
-import { curry } from '@typed/fp/lambda/exports'
+import { curry } from '@fp/lambda/exports'
 import { none, Option } from 'fp-ts/Option'
 
 import { hasNoData } from './hasNoData'

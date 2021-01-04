@@ -1,6 +1,6 @@
-import { HeadArg } from '@typed/fp/common/exports'
-import { curry } from '@typed/fp/lambda/exports'
-import { async, Resume, run } from '@typed/fp/Resume/exports'
+import { HeadArg } from '@fp/common/exports'
+import { curry } from '@fp/lambda/exports'
+import { async, Resume, run } from '@fp/Resume/exports'
 import { Either, left, right } from 'fp-ts/Either'
 import { O } from 'ts-toolbelt'
 

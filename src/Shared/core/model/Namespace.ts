@@ -1,4 +1,4 @@
-import { createSchema } from '@typed/fp/io/exports'
+import { createSchema } from '@fp/io/exports'
 import { flow } from 'fp-ts/function'
 import { some } from 'fp-ts/Option'
 import { iso, Newtype } from 'newtype-ts'

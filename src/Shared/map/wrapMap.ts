@@ -1,4 +1,4 @@
-import { Pure } from '@typed/fp/Effect/Effect'
+import { Pure } from '@fp/Effect/Effect'
 
 import { deleteShared, SharedKey, withShared } from '../core/exports'
 import { deleteKey } from './deleteKey'

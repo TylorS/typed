@@ -1,5 +1,5 @@
-import { Arity1 } from '@typed/fp/common/exports'
-import { Disposable } from '@typed/fp/Disposable/exports'
+import { Arity1 } from '@fp/common/exports'
+import { Disposable } from '@fp/Disposable/exports'
 
 /**
  * An cancelable asynchronous effect

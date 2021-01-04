@@ -1,5 +1,5 @@
-import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
-import { SharedEnv } from '@typed/fp/Shared/core/exports'
+import { doEffect, Effect, Pure } from '@fp/Effect/exports'
+import { SharedEnv } from '@fp/Shared/core/exports'
 
 import { useRef } from './useRef'
 

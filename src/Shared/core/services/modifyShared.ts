@@ -1,7 +1,7 @@
-import { Arity1 } from '@typed/fp/common/types'
-import { chain, Effect, map } from '@typed/fp/Effect/exports'
-import { curry } from '@typed/fp/lambda/exports'
-import { GetSharedEnv, GetSharedValue, Shared } from '@typed/fp/Shared/core/model/Shared'
+import { Arity1 } from '@fp/common/types'
+import { chain, Effect, map } from '@fp/Effect/exports'
+import { curry } from '@fp/lambda/exports'
+import { GetSharedEnv, GetSharedValue, Shared } from '@fp/Shared/core/model/Shared'
 import { pipe } from 'fp-ts/function'
 
 import { getShared } from './getShared'

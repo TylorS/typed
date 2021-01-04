@@ -1,5 +1,5 @@
-import type { Effect, EnvOf as EffEnv, ReturnOf } from '@typed/fp/Effect/exports'
-import { createRuntimeSchema } from '@typed/fp/io/exports'
+import type { Effect, EnvOf as EffEnv, ReturnOf } from '@fp/Effect/exports'
+import { createRuntimeSchema } from '@fp/io/exports'
 import type { Eq } from 'fp-ts/Eq'
 import { flow } from 'fp-ts/function'
 import type { HKT } from 'fp-ts/HKT'

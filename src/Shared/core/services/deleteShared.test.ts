@@ -1,9 +1,9 @@
+import { Pure } from '@fp/Effect/Effect'
+import { doEffect, execPure } from '@fp/Effect/exports'
+import { provideAll } from '@fp/Effect/provide'
 import { createAdapter } from '@most/adapter'
 import { runEffects, tap } from '@most/core'
 import { newDefaultScheduler } from '@most/scheduler'
-import { Pure } from '@typed/fp/Effect/Effect'
-import { doEffect, execPure } from '@typed/fp/Effect/exports'
-import { provideAll } from '@typed/fp/Effect/provide'
 import { describe, given, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 

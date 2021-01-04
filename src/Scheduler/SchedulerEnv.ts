@@ -1,7 +1,7 @@
+import { Effect, fromEnv, Provider, provideWith, Pure } from '@fp/Effect/exports'
+import { async } from '@fp/Resume/exports'
 import { currentTime, delay as delayScheduler, newDefaultScheduler } from '@most/scheduler'
 import { Scheduler, Time } from '@most/types'
-import { Effect, fromEnv, Provider, provideWith, Pure } from '@typed/fp/Effect/exports'
-import { async } from '@typed/fp/Resume/exports'
 import { flow } from 'fp-ts/function'
 import { IO } from 'fp-ts/IO'
 

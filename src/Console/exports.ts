@@ -1,7 +1,7 @@
-import { Effect, fromEnv } from '@typed/fp/Effect/exports'
-import { curry } from '@typed/fp/lambda/exports'
-import { LoggerEffect } from '@typed/fp/logging/exports'
-import { sync } from '@typed/fp/Resume/exports'
+import { Effect, fromEnv } from '@fp/Effect/exports'
+import { curry } from '@fp/lambda/exports'
+import { LoggerEffect } from '@fp/logging/exports'
+import { sync } from '@fp/Resume/exports'
 import { Show, showString } from 'fp-ts/Show'
 
 /**

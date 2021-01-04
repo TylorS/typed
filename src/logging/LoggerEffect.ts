@@ -1,5 +1,5 @@
-import { Effect, effect } from '@typed/fp/Effect/exports'
-import { curry } from '@typed/fp/lambda/exports'
+import { Effect, effect } from '@fp/Effect/exports'
+import { curry } from '@fp/lambda/exports'
 import { Contravariant2 } from 'fp-ts/Contravariant'
 import { Predicate } from 'fp-ts/function'
 import { Monoid } from 'fp-ts/Monoid'
@@ -8,7 +8,7 @@ import { getLoggerM } from 'logging-ts'
 
 const loggerM = getLoggerM(effect)
 
-export const URI = '@typed/fp/logging/LoggerEffect'
+export const URI = '@fp/logging/LoggerEffect'
 export type URI = typeof URI
 
 export interface LoggerEffect<E, A> {

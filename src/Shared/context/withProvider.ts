@@ -1,6 +1,6 @@
-import { Effect, Pure } from '@typed/fp/Effect/Effect'
-import { doEffect } from '@typed/fp/Effect/exports'
-import { addToSet } from '@typed/fp/Shared/common/addToSet'
+import { Effect, Pure } from '@fp/Effect/Effect'
+import { doEffect } from '@fp/Effect/exports'
+import { addToSet } from '@fp/Shared/common/addToSet'
 import {
   getCurrentNamespace,
   getKeyStores,
@@ -11,7 +11,7 @@ import {
   SharedEnv,
   SharedKeyStore,
   usingNamespace,
-} from '@typed/fp/Shared/core/exports'
+} from '@fp/Shared/core/exports'
 import { Eq } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'

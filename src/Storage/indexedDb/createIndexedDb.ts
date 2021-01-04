@@ -1,6 +1,6 @@
-import { doEffect, Effect, FailEnv } from '@typed/fp/Effect/exports'
-import { orFail } from '@typed/fp/Future/exports'
-import { chain, Resume, sync } from '@typed/fp/Resume/exports'
+import { doEffect, Effect, FailEnv } from '@fp/Effect/exports'
+import { orFail } from '@fp/Future/exports'
+import { chain, Resume, sync } from '@fp/Resume/exports'
 import { Either, fold, left, map } from 'fp-ts/Either'
 import { flow } from 'fp-ts/function'
 
@@ -11,7 +11,7 @@ import { idbRequestToResume } from './idbRequestToResume'
 import { IndexedDbFactoryEnv } from './IndexedDbFactoryEnv'
 import { openDatabase } from './openDatabase'
 
-export const IndexedDBFailure = '@typed/fp/Storage/IndexedDbFailure'
+export const IndexedDBFailure = '@fp/Storage/IndexedDbFailure'
 export type IndexedDBFailure = FailEnv<typeof IndexedDBFailure, Error>
 
 /**

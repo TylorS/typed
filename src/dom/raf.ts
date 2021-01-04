@@ -1,6 +1,6 @@
-import { lazy } from '@typed/fp/Disposable/exports'
-import { Effect, fromEnv } from '@typed/fp/Effect/exports'
-import { async } from '@typed/fp/Resume/exports'
+import { lazy } from '@fp/Disposable/exports'
+import { Effect, fromEnv } from '@fp/Effect/exports'
+import { async } from '@fp/Resume/exports'
 
 /**
  * An environment type for scheduling and cancelling with requestAnimationFrame.

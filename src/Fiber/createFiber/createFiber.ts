@@ -1,10 +1,7 @@
-import { disposeNone } from '@most/disposable'
-import { asap } from '@most/scheduler'
-import { Disposable, Scheduler } from '@most/types'
-import { lazy } from '@typed/fp/Disposable/exports'
-import { Effect, map, race, toEnv } from '@typed/fp/Effect/exports'
-import { provideSome, useSome } from '@typed/fp/Effect/provide'
-import { runPure } from '@typed/fp/Effect/runEffect'
+import { lazy } from '@fp/Disposable/exports'
+import { Effect, map, race, toEnv } from '@fp/Effect/exports'
+import { provideSome, useSome } from '@fp/Effect/provide'
+import { runPure } from '@fp/Effect/runEffect'
 import {
   awaitCompleted,
   awaitFailed,
@@ -13,10 +10,13 @@ import {
   Fiber,
   FiberState,
   foldFiberInfo,
-} from '@typed/fp/Fiber/Fiber'
-import { FiberEnv } from '@typed/fp/Fiber/FiberEnv'
-import { async, Resume, sync } from '@typed/fp/Resume/exports'
-import { createCallbackTask } from '@typed/fp/Scheduler/exports'
+} from '@fp/Fiber/Fiber'
+import { FiberEnv } from '@fp/Fiber/FiberEnv'
+import { async, Resume, sync } from '@fp/Resume/exports'
+import { createCallbackTask } from '@fp/Scheduler/exports'
+import { disposeNone } from '@most/disposable'
+import { asap } from '@most/scheduler'
+import { Disposable, Scheduler } from '@most/types'
 import { Either, left, right } from 'fp-ts/Either'
 import { constVoid, flow, pipe } from 'fp-ts/function'
 import { newIORef } from 'fp-ts/IORef'

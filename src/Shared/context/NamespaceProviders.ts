@@ -1,5 +1,5 @@
-import { Pure } from '@typed/fp/Effect/Effect'
-import { createShared, getShared, Namespace } from '@typed/fp/Shared/core/exports'
+import { Pure } from '@fp/Effect/Effect'
+import { createShared, getShared, Namespace } from '@fp/Shared/core/exports'
 
 /**
  * Get the current Namespace's providers of values.

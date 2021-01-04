@@ -1,16 +1,16 @@
-import { doEffect, execPure } from '@typed/fp/Effect/exports'
-import { sync } from '@typed/fp/Resume/Sync'
-import { provideSchedulerEnv } from '@typed/fp/Scheduler/exports'
+import { doEffect, execPure } from '@fp/Effect/exports'
+import { sync } from '@fp/Resume/Sync'
+import { provideSchedulerEnv } from '@fp/Scheduler/exports'
 import {
   Namespace,
   runWithNamespace,
   sendSharedEvent,
   usingNamespace,
-} from '@typed/fp/Shared/core/exports'
+} from '@fp/Shared/core/exports'
 import {
   createSharedEnvProvider,
   defaultHandlers,
-} from '@typed/fp/Shared/createSharedEnvProvider/exports'
+} from '@fp/Shared/createSharedEnvProvider/exports'
 import { describe, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 

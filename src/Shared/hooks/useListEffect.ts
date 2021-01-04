@@ -1,14 +1,9 @@
-import { Arity1, deepEqualsEq } from '@typed/fp/common/exports'
-import { Effect } from '@typed/fp/Effect/Effect'
-import { doEffect, zip } from '@typed/fp/Effect/exports'
-import { memoize } from '@typed/fp/lambda/exports'
-import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
-import {
-  getSendSharedEvent,
-  Namespace,
-  runWithNamespace,
-  SharedEnv,
-} from '@typed/fp/Shared/core/exports'
+import { Arity1, deepEqualsEq } from '@fp/common/exports'
+import { Effect } from '@fp/Effect/Effect'
+import { doEffect, zip } from '@fp/Effect/exports'
+import { memoize } from '@fp/lambda/exports'
+import { SchedulerEnv } from '@fp/Scheduler/exports'
+import { getSendSharedEvent, Namespace, runWithNamespace, SharedEnv } from '@fp/Shared/core/exports'
 import { Eq, getTupleEq } from 'fp-ts/Eq'
 
 import { useDiffList } from './useDiffList'

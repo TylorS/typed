@@ -1,7 +1,7 @@
-import { Disposable } from '@typed/fp/Disposable/exports'
-import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import { createGuard } from '@typed/fp/io/exports'
-import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
+import { Disposable } from '@fp/Disposable/exports'
+import { doEffect, Effect } from '@fp/Effect/exports'
+import { createGuard } from '@fp/io/exports'
+import { SchedulerEnv } from '@fp/Scheduler/exports'
 import { pipe } from 'fp-ts/function'
 import { refine } from 'io-ts/Guard'
 

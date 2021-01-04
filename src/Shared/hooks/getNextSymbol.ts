@@ -1,5 +1,5 @@
-import { doEffect, Effect, Pure } from '@typed/fp/Effect/exports'
-import { getOrCreate, SharedEnv } from '@typed/fp/Shared/core/exports'
+import { doEffect, Effect, Pure } from '@fp/Effect/exports'
+import { getOrCreate, SharedEnv } from '@fp/Shared/core/exports'
 
 import { getNextPosition } from './getNextPosition'
 import { getNamespaceSymbols } from './NamespaceSymbols'

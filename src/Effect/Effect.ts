@@ -1,5 +1,5 @@
-import { And, Equals, IsNever } from '@typed/fp/common/exports'
-import { Resume, sync } from '@typed/fp/Resume/exports'
+import { And, Equals, IsNever } from '@fp/common/exports'
+import { Resume, sync } from '@fp/Resume/exports'
 import { flow } from 'fp-ts/function'
 import { IO } from 'fp-ts/IO'
 import { Reader } from 'fp-ts/Reader'

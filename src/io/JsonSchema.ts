@@ -1,4 +1,4 @@
-import { JSON_TAG, JsonTag, VALUES_TAG } from '@typed/fp/logic/json'
+import { JSON_TAG, JsonTag, VALUES_TAG } from '@fp/logic/json'
 import {
   Failure,
   Loading,
@@ -9,7 +9,7 @@ import {
   RemoteData,
   RemoteDataStatus,
   Success,
-} from '@typed/fp/RemoteData/exports'
+} from '@fp/RemoteData/exports'
 import { Const, make } from 'fp-ts/Const'
 import { Either, Left, Right } from 'fp-ts/Either'
 import { Endomorphism, flow, pipe } from 'fp-ts/function'
@@ -40,7 +40,7 @@ export namespace JsonSchema {
     jsonSchema((o) => ({ ...o, ...schema }))
 }
 
-export const URI = '@typed/fp/io/JsonSchema'
+export const URI = '@fp/io/JsonSchema'
 export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {
@@ -112,7 +112,7 @@ export const option = <A>(k: JsonSchema<A>): JsonSchema<Option<A>> =>
 export const array = <A>(item: JsonSchema<A>): JsonSchema<ReadonlyArray<A>> =>
   JsonSchema.of({ type: 'array', items: item.createSchema({}) })
 
-// Encoding for Set as defined by @typed/fp/logic/json
+// Encoding for Set as defined by @fp/logic/json
 export const set = <A>(a: JsonSchema<A>): JsonSchema<ReadonlySet<A>> =>
   JsonSchema.of({
     type: 'object',
@@ -126,7 +126,7 @@ export const tuple = <A extends ReadonlyArray<any>>(
   ...items: { readonly [K in keyof A]: JsonSchema<A[K]> }
 ): JsonSchema<A> => JsonSchema.of({ type: 'array', items: items.map((i) => i.createSchema({})) })
 
-// Encoding for Map as defined by @typed/fp/logic/json
+// Encoding for Map as defined by @fp/logic/json
 export const map = <K, V>(k: JsonSchema<K>, v: JsonSchema<V>): JsonSchema<ReadonlyMap<K, V>> =>
   JsonSchema.of({
     type: 'object',
@@ -191,7 +191,7 @@ export const bigint = JsonSchema.of<BigInt>({
   },
 })
 
-// Encoding for Symbol as defined by @typed/fp/logic/json
+// Encoding for Symbol as defined by @fp/logic/json
 export const symbol = JsonSchema.of<symbol>({
   type: 'object',
   properties: {

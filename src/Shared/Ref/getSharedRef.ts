@@ -1,11 +1,5 @@
-import { doEffect, Effect } from '@typed/fp/Effect/exports'
-import {
-  getShared,
-  GetSharedEnv,
-  GetSharedValue,
-  Shared,
-  SharedEnv,
-} from '@typed/fp/Shared/core/exports'
+import { doEffect, Effect } from '@fp/Effect/exports'
+import { getShared, GetSharedEnv, GetSharedValue, Shared, SharedEnv } from '@fp/Shared/core/exports'
 
 import { NamespaceRefs } from './NamespaceRefs'
 import { createRef, Ref } from './Ref'

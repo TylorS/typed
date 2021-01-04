@@ -1,13 +1,13 @@
-import { raf, RafEnv } from '@typed/fp/dom/raf'
-import { doEffect, Effect, forever } from '@typed/fp/Effect/exports'
-import { SchedulerEnv } from '@typed/fp/Scheduler/exports'
+import { raf, RafEnv } from '@fp/dom/raf'
+import { doEffect, Effect, forever } from '@fp/Effect/exports'
+import { SchedulerEnv } from '@fp/Scheduler/exports'
 import {
   Namespace,
   NamespaceUpdated,
   runWithNamespace,
   SharedEnv,
   SharedValueUpdated,
-} from '@typed/fp/Shared/core/exports'
+} from '@fp/Shared/core/exports'
 import { pipe } from 'fp-ts/function'
 import { refine, union } from 'io-ts/Guard'
 

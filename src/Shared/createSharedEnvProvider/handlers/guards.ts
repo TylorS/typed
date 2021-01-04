@@ -1,4 +1,4 @@
-import { createGuard } from '@typed/fp/io/exports'
+import { createGuard } from '@fp/io/exports'
 
 import {
   NamespaceDeleted,

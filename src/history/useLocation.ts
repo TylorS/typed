@@ -1,5 +1,4 @@
-import { popstate } from '@most/dom-event'
-import { doEffect, Effect } from '@typed/fp/Effect/exports'
+import { doEffect, Effect } from '@fp/Effect/exports'
 import {
   fromKey,
   getShared,
@@ -8,7 +7,8 @@ import {
   useMemo,
   useStream,
   usingGlobal,
-} from '@typed/fp/Shared/exports'
+} from '@fp/Shared/exports'
+import { popstate } from '@most/dom-event'
 import { pipe } from 'fp-ts/function'
 
 import { SchedulerEnv } from '../Scheduler/exports'

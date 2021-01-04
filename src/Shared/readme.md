@@ -1,4 +1,4 @@
-# @typed/fp/Shared
+# @fp/Shared
 
 An [Effect](../Effect/readme.md)-based implementation of managing state, and receiving lifecycle events
 about those values changing over time. A great way to describe your application state without being coupled to a particular view/templating library.

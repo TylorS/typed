@@ -1,7 +1,7 @@
-import { Arity1, NoInfer } from '@typed/fp/common/exports'
-import { Disposable, disposeNone } from '@typed/fp/Disposable/exports'
-import { curry } from '@typed/fp/lambda/exports'
-import { run } from '@typed/fp/Resume/exports'
+import { Arity1, NoInfer } from '@fp/common/exports'
+import { Disposable, disposeNone } from '@fp/Disposable/exports'
+import { curry } from '@fp/lambda/exports'
+import { run } from '@fp/Resume/exports'
 import { pipe } from 'fp-ts/pipeable'
 
 import { Effect, Pure } from './Effect'
