@@ -2,7 +2,12 @@ import { Effect, fromEnv } from '@fp/Effect/exports'
 import { curry } from '@fp/lambda/exports'
 import { LoggerEffect } from '@fp/logging/exports'
 import { sync } from '@fp/Resume/exports'
-import { Show, showString } from 'fp-ts/Show'
+import { identity } from 'fp-ts/function'
+import { Show } from 'fp-ts/Show'
+
+const showString: Show<string> = {
+  show: identity,
+}
 
 /**
  * An environment which contains a Console as its resource.
