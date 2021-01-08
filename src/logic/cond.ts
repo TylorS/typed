@@ -1,5 +1,5 @@
 import { curry } from '@fp/lambda/exports'
-import { Predicate } from 'fp-ts/function'
+import { Refinement } from 'fp-ts/function'
 import { none, Option, some } from 'fp-ts/Option'
 
 /**
@@ -8,15 +8,23 @@ import { none, Option, some } from 'fp-ts/Option'
  * @param value a
  * @returns Maybe b
  */
-export const cond: {
-  <A, B>(conditions: ReadonlyArray<Conditional<A, B>>, value: A): Option<B>
-  <A, B>(conditions: ReadonlyArray<Conditional<A, B>>): (value: A) => Option<B>
-} = curry(__cond) as {
-  <A, B>(conditions: ReadonlyArray<Conditional<A, B>>, value: A): Option<B>
-  <A, B>(conditions: ReadonlyArray<Conditional<A, B>>): (value: A) => Option<B>
+export const cond = curry(__cond) as {
+  <A extends ReadonlyArray<Conditional<I, any, any>>, I>(conditions: A, value: I): Option<
+    ConditionalOutput<A[number]>
+  >
+  <A extends ReadonlyArray<Conditional<I, any, any>>, I>(conditions: A): (
+    value: I,
+  ) => Option<ConditionalOutput<A[number]>>
+
+  create: <A, B extends A, C>(...args: Conditional<A, B, C>) => Conditional<A, B, C>
 }
 
-function __cond<A, B>(conditionals: ReadonlyArray<Conditional<A, B>>, value: A): Option<B> {
+cond.create = <A, B extends A, C>(...args: Conditional<A, B, C>) => args
+
+function __cond<A extends ReadonlyArray<Conditional<I, any, any>>, I>(
+  conditionals: A,
+  value: I,
+): Option<ConditionalOutput<A[number]>> {
   const itemCount = conditionals.length
 
   for (let i = 0; i < itemCount; ++i) {
@@ -34,4 +42,8 @@ function __cond<A, B>(conditionals: ReadonlyArray<Conditional<A, B>>, value: A):
 
 
  */
-export type Conditional<A, B> = [Predicate<A>, (value: A) => B]
+export type Conditional<A, B extends A, C> = [refinement: Refinement<A, B>, f: (value: B) => C]
+
+export type ConditionalInput<A> = A extends Conditional<infer R, any, any> ? R : never
+export type ConditionalRefinment<A> = A extends Conditional<any, infer R, any> ? R : never
+export type ConditionalOutput<A> = A extends Conditional<any, any, infer R> ? R : never
