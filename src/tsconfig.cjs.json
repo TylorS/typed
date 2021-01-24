@@ -13,10 +13,16 @@
       "path": "./Console/tsconfig.cjs.json"
     },
     {
+      "path": "./DiGraph/tsconfig.cjs.json"
+    },
+    {
       "path": "./Disposable/tsconfig.cjs.json"
     },
     {
       "path": "./Effect/tsconfig.cjs.json"
+    },
+    {
+      "path": "./Env/tsconfig.cjs.json"
     },
     {
       "path": "./Fiber/tsconfig.cjs.json"

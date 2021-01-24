@@ -64,8 +64,10 @@ snowpack.key
 /exports.js
 /exports.js.map
 /Console/
+/DiGraph/
 /Disposable/
 /Effect/
+/Env/
 /Fiber/
 /Future/
 /Fx/

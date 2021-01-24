@@ -13,10 +13,16 @@
       "path": "./Console/tsconfig.esm.json"
     },
     {
+      "path": "./DiGraph/tsconfig.esm.json"
+    },
+    {
       "path": "./Disposable/tsconfig.esm.json"
     },
     {
       "path": "./Effect/tsconfig.esm.json"
+    },
+    {
+      "path": "./Env/tsconfig.esm.json"
     },
     {
       "path": "./Fiber/tsconfig.esm.json"

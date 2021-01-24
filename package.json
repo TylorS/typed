@@ -117,6 +117,74 @@
       "require": "./cjs/Console/exports.js",
       "import": "./esm/Console/exports.js"
     },
+    "./DiGraph": {
+      "require": "./cjs/DiGraph/exports.js",
+      "import": "./esm/DiGraph/exports.js"
+    },
+    "./DiGraph/DiGraph": {
+      "require": "./cjs/DiGraph/DiGraph.js",
+      "import": "./esm/DiGraph/DiGraph.js"
+    },
+    "./DiGraph/addEdge": {
+      "require": "./cjs/DiGraph/addEdge.js",
+      "import": "./esm/DiGraph/addEdge.js"
+    },
+    "./DiGraph/addVertice": {
+      "require": "./cjs/DiGraph/addVertice.js",
+      "import": "./esm/DiGraph/addVertice.js"
+    },
+    "./DiGraph/exports": {
+      "require": "./cjs/DiGraph/exports.js",
+      "import": "./esm/DiGraph/exports.js"
+    },
+    "./DiGraph/fromDependencyMap": {
+      "require": "./cjs/DiGraph/fromDependencyMap.js",
+      "import": "./esm/DiGraph/fromDependencyMap.js"
+    },
+    "./DiGraph/getAncestors": {
+      "require": "./cjs/DiGraph/getAncestors.js",
+      "import": "./esm/DiGraph/getAncestors.js"
+    },
+    "./DiGraph/getCircularDependencies": {
+      "require": "./cjs/DiGraph/getCircularDependencies.js",
+      "import": "./esm/DiGraph/getCircularDependencies.js"
+    },
+    "./DiGraph/getDependencies": {
+      "require": "./cjs/DiGraph/getDependencies.js",
+      "import": "./esm/DiGraph/getDependencies.js"
+    },
+    "./DiGraph/getDependents": {
+      "require": "./cjs/DiGraph/getDependents.js",
+      "import": "./esm/DiGraph/getDependents.js"
+    },
+    "./DiGraph/getDescendants": {
+      "require": "./cjs/DiGraph/getDescendants.js",
+      "import": "./esm/DiGraph/getDescendants.js"
+    },
+    "./DiGraph/getEntrypoints": {
+      "require": "./cjs/DiGraph/getEntrypoints.js",
+      "import": "./esm/DiGraph/getEntrypoints.js"
+    },
+    "./DiGraph/getStronglyConnectedComponents": {
+      "require": "./cjs/DiGraph/getStronglyConnectedComponents.js",
+      "import": "./esm/DiGraph/getStronglyConnectedComponents.js"
+    },
+    "./DiGraph/removeEdge": {
+      "require": "./cjs/DiGraph/removeEdge.js",
+      "import": "./esm/DiGraph/removeEdge.js"
+    },
+    "./DiGraph/removeVertice": {
+      "require": "./cjs/DiGraph/removeVertice.js",
+      "import": "./esm/DiGraph/removeVertice.js"
+    },
+    "./DiGraph/toDependencyMap": {
+      "require": "./cjs/DiGraph/toDependencyMap.js",
+      "import": "./esm/DiGraph/toDependencyMap.js"
+    },
+    "./DiGraph/toDependentGraph": {
+      "require": "./cjs/DiGraph/toDependentGraph.js",
+      "import": "./esm/DiGraph/toDependentGraph.js"
+    },
     "./Disposable": {
       "require": "./cjs/Disposable/exports.js",
       "import": "./esm/Disposable/exports.js"
@@ -224,6 +292,10 @@
     "./Effect/zipObj": {
       "require": "./cjs/Effect/zipObj.js",
       "import": "./esm/Effect/zipObj.js"
+    },
+    "./Env": {
+      "require": "./cjs/Env/exports.js",
+      "import": "./esm/Env/exports.js"
     },
     "./Fiber": {
       "require": "./cjs/Fiber/exports.js",
