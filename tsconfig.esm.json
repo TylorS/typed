@@ -37,7 +37,6 @@
     "DiGraph",
     "Disposable",
     "Effect",
-    "Env",
     "Fiber",
     "Future",
     "Fx",

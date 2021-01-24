@@ -293,10 +293,6 @@
       "require": "./cjs/Effect/zipObj.js",
       "import": "./esm/Effect/zipObj.js"
     },
-    "./Env": {
-      "require": "./cjs/Env/exports.js",
-      "import": "./esm/Env/exports.js"
-    },
     "./Fiber": {
       "require": "./cjs/Fiber/exports.js",
       "import": "./esm/Fiber/exports.js"

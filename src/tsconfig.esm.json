@@ -22,9 +22,6 @@
       "path": "./Effect/tsconfig.esm.json"
     },
     {
-      "path": "./Env/tsconfig.esm.json"
-    },
-    {
       "path": "./Fiber/tsconfig.esm.json"
     },
     {

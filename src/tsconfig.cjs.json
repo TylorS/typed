@@ -22,9 +22,6 @@
       "path": "./Effect/tsconfig.cjs.json"
     },
     {
-      "path": "./Env/tsconfig.cjs.json"
-    },
-    {
       "path": "./Fiber/tsconfig.cjs.json"
     },
     {
