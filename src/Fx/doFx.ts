@@ -1,10 +1,9 @@
-import { U } from 'ts-toolbelt'
+import { Fx, GetEffects, GetNext, GetResult } from './Fx'
 
-import { Fx } from './Fx'
-
-/**
- * Use generators as do-notation for effects
- */
-export const doFx = <Y, R>(f: () => Generator<Y, R, any>): Fx<readonly [...U.ListOf<Y>], R> => ({
-  [Symbol.iterator]: f,
-})
+export function doFx<G extends Generator<any, any, any>>(
+  generatorFn: () => G,
+): Fx<GetEffects<G>, GetResult<G>, GetNext<G>> {
+  return {
+    [Symbol.iterator]: generatorFn,
+  }
+}

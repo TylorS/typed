@@ -1,62 +1,54 @@
-import { Arity1 } from '@fp/common/exports'
-import { disposeBoth, disposeNone } from '@fp/Disposable/exports'
-import { curry } from '@fp/lambda/exports'
-import { isNone, none, Option, some } from 'fp-ts/Option'
+import { settable, undisposable } from '@fp/Disposable'
+import { Arity1 } from '@fp/lambda'
+import { isNone, none, Option, some } from 'fp-ts/dist/Option'
 
-import { Async, async } from './Async'
-import { Resume } from './Resume'
-import { run } from './run'
-import { Sync, sync } from './Sync'
+import { async } from './Async'
+import { isAsync, isSync, Resume } from './Resume'
+import { sync } from './Sync'
 
-/**
- * Apply the function to a value contained within Resume's.
- */
-export const ap = curry(
-  <A, B>(fn: Resume<Arity1<A, B>>, value: Resume<A>): Resume<B> => {
-    if (!fn.async && !value.async) {
-      return sync(fn.value(value.value))
-    }
+export const ap = <A>(fa: Resume<A>) => <B>(fab: Resume<Arity1<A, B>>): Resume<B> => {
+  if (isSync(fa) && isSync(fab)) {
+    return sync(() => fab.resume()(fa.resume()))
+  }
 
-    return async((cb) => {
-      let f: Option<Arity1<A, B>> = none
-      let v: Option<A> = none
+  return async((resume) => {
+    const disposable = settable()
 
-      const onValue = () => {
-        if (isNone(f) || isNone(v)) {
-          return disposeNone()
-        }
+    let ab: Option<Arity1<A, B>> = isSync(fab) ? some(fab.resume()) : none
+    let a: Option<A> = isSync(fa) ? some(fa.resume()) : none
 
-        return cb(f.value(v.value))
+    function onReady() {
+      if (isNone(ab) || isNone(a)) {
+        return
       }
 
-      return disposeBoth(
-        run(fn, (ab) => {
-          f = some(ab)
+      if (!disposable.isDisposed()) {
+        disposable.addDisposable(resume(ab.value(a.value)))
+      }
+    }
 
-          return onValue()
-        }),
-        run(value, (a) => {
-          v = some(a)
-
-          return onValue()
-        }),
+    if (isAsync(fab)) {
+      disposable.addDisposable(
+        fab.resume(
+          undisposable((f) => {
+            ab = some(f)
+            onReady()
+          }),
+        ),
       )
-    })
-  },
-) as {
-  <A, B>(fn: Sync<Arity1<A, B>>, value: Sync<A>): Sync<B>
-  <A, B>(fn: Async<Arity1<A, B>>, value: Async<A>): Async<B>
-  <A, B>(fn: Resume<Arity1<A, B>>, value: Resume<A>): Resume<B>
+    }
 
-  <A, B>(fn: Sync<Arity1<A, B>>): {
-    (value: Sync<A>): Sync<B>
-    (value: Resume<A>): Resume<B>
-  }
+    if (isAsync(fa)) {
+      disposable.addDisposable(
+        fa.resume(
+          undisposable((x) => {
+            a = some(x)
+            onReady()
+          }),
+        ),
+      )
+    }
 
-  <A, B>(fn: Async<Arity1<A, B>>): {
-    (value: Async<A>): Async<B>
-    (value: Resume<A>): Resume<B>
-  }
-
-  <A, B>(fn: Resume<Arity1<A, B>>): (value: Resume<A>) => Resume<B>
+    return disposable
+  })
 }

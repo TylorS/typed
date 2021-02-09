@@ -1,30 +1,9 @@
-import { Arity1 } from '@fp/common/exports'
-import { curry } from '@fp/lambda/exports'
+import { Arity1 } from '@fp/lambda'
+import { pipe } from 'fp-ts/dist/function'
 
-import { Async, async } from './Async'
-import { Resume } from './Resume'
+import { async } from './Async'
+import { isSync, Resume } from './Resume'
 import { run } from './run'
-import { Sync } from './Sync'
 
-/**
- * Sequence together multiple Resumes.
- */
-export const chain = curry(
-  <A, B>(f: Arity1<A, Resume<B>>, resume: Resume<A>): Resume<B> => {
-    return resume.async ? async((cb) => run(resume, (a) => run(f(a), cb))) : f(resume.value)
-  },
-) as {
-  <A, B>(f: Arity1<A, Sync<B>>, resume: Sync<A>): Sync<B>
-  <A, B>(f: Arity1<A, Async<B>>, resume: Async<A>): Async<B>
-  <A, B>(f: Arity1<A, Resume<B>>, resume: Resume<A>): Resume<B>
-
-  <A, B>(f: Arity1<A, Sync<B>>): {
-    (resume: Sync<A>): Sync<B>
-    (resume: Resume<A>): Resume<B>
-  }
-  <A, B>(f: Arity1<A, Async<B>>): {
-    (resume: Async<A>): Async<B>
-    (resume: Resume<A>): Resume<B>
-  }
-  <A, B>(f: Arity1<A, Resume<B>>): (resume: Resume<A>) => Resume<B>
-}
+export const chain = <A, B>(f: Arity1<A, Resume<B>>) => (resume: Resume<A>): Resume<B> =>
+  isSync(resume) ? f(resume.resume()) : async((r) => pipe(resume, chain(f), run(r)))

@@ -1,10 +1,9 @@
 import { doFx } from './doFx'
-import { PureFx } from './Fx'
+import { Fx } from './Fx'
 
-/**
- * Create an PureFx containing a value
- */
-export const pure = <A>(value: A): PureFx<A> =>
+export interface Pure<A> extends Fx<never, A> {}
+
+export const pure = <A>(value: A): Pure<A> =>
   // eslint-disable-next-line require-yield
   doFx(function* () {
     return value

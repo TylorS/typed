@@ -1,12 +1,8 @@
-/**
- * A synchronous effect
- */
+import { IO } from 'fp-ts/dist/IO'
+
 export interface Sync<A> {
-  readonly async: false
-  readonly value: A
+  readonly _tag: 'sync'
+  readonly resume: IO<A>
 }
 
-/**
- * Resume an effect synchronously
- */
-export const sync = <A>(value: A): Sync<A> => ({ async: false, value })
+export const sync = <A>(resume: IO<A>): Sync<A> => ({ _tag: 'sync', resume })

@@ -1,21 +1,29 @@
+import { Equals } from 'ts-toolbelt/out/Any/Equals'
+
 /**
- * A generator-based do-notation for effects.
+ * A iterable using generators as do-notation for effects.
  */
-export interface Fx<E extends readonly any[] = readonly any[], A = unknown> {
-  readonly [Symbol.iterator]: () => Iterator<E[number], A, unknown>
+export interface Fx<Effects, Result, Next = unknown> {
+  readonly [Symbol.iterator]: () => Generator<Effects, Result, Next>
 }
 
 /**
- * An Fx which has all of it's effects satisfied.
+ * Extract the effects being performed within an Fx
  */
-export interface PureFx<A = unknown> extends Fx<readonly [], A> {}
+export type GetEffects<A> = A extends Fx<infer R, any, any>
+  ? IsNever<R> extends true
+    ? unknown
+    : R
+  : never
+
+type IsNever<A> = Equals<[never], [A]> extends 1 ? true : false
 
 /**
- * Extract all of the effects contained within an Fx
+ * Extract the result being performed within an Fx
  */
-export type EffectsOf<A> = A extends Fx<infer R, any> ? R : never
+export type GetResult<A> = A extends Fx<any, infer R, any> ? R : never
 
 /**
- * Extract the result value from an Fx
+ * Extract the values being returned to the internal Fx
  */
-export type ResultOf<A> = A extends Fx<any, infer R> ? R : never
+export type GetNext<A> = A extends Fx<any, any, infer R> ? R : never
