@@ -2,13 +2,14 @@ import { doFx, pure } from '@fp/Fx'
 import { liftFx } from '@fp/Fx/liftFx'
 import { Arity1 } from '@fp/lambda'
 import { MonadRec, MonadRec1, MonadRec2, MonadRec2C, MonadRec3 } from '@fp/MonadRec'
+import { UnionWiden, WideningOptions } from '@fp/Widen'
 import { Apply, Apply1, Apply2, Apply2C, Apply3 } from 'fp-ts/dist/Apply'
 import { pipe } from 'fp-ts/dist/function'
 import { URIS, URIS2, URIS3 } from 'fp-ts/dist/HKT'
 
 import { chain_, map_ } from './_internal'
 import { createRecFxToMonad } from './createRecFxToMonad'
-import { FxM, FxM1, FxM2, FxM3, UnionWiden, WideningOptions } from './FxM'
+import { FxM, FxM1, FxM2, FxM3 } from './FxM'
 import { FxT } from './FxT'
 
 export function getRecFxM<F extends URIS>(monad: MonadRec1<F> & Apply1<F>): FxM1<F>
