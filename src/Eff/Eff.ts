@@ -28,7 +28,7 @@ export const fromEnv: <E, A>(hkt: Env<E, A>) => Eff<E, A> = effM.fromMonad
 
 export const toEnv = effM.toMonad as <E, A>(eff: Eff<E, A>) => Env<Widen<E, 'intersection'>, A>
 
-export const doEnv: <Effects extends Env<any, any>, R, N = unknown>(
+export const doEff: <Effects extends Env<any, any>, R, N = unknown>(
   f: (lift: LiftFx<EnvURI>) => Generator<Effects, R, N>,
 ) => Eff<GetRequirements<Effects>, R> = effM.doMonad
 
