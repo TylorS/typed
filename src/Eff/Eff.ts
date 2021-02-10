@@ -1,10 +1,10 @@
-import { Apply, Env, MonadRec, URI as EnvURI } from '@fp/Env'
+import { Apply, Env, GetRequirements as GetEnvRequirements, MonadRec, URI as EnvURI } from '@fp/Env'
 import { Fx, LiftFx, Pure, pure } from '@fp/Fx'
 import { getRecFxM } from '@fp/FxT'
 import { Arity1 } from '@fp/lambda'
 import { IntersectionWiden, Widen } from '@fp/Widen'
 import { pipe } from 'fp-ts/dist/function'
-import { A, U } from 'ts-toolbelt'
+import { A } from 'ts-toolbelt'
 
 export interface Eff<E, A> extends Fx<IsNever<E> extends true ? never : Env<E, unknown>, A> {}
 
@@ -33,8 +33,4 @@ export const toEnv: <E, A>(eff: Eff<E, A>) => Env<Widen<E, 'intersection'>, A> =
 
 export const doEff: <Effects extends Env<any, any>, R, N = unknown>(
   f: (lift: LiftFx<EnvURI>) => Generator<Effects, R, N>,
-) => Eff<ToRequirements<Effects>, R> = effM.doMonad
-
-export type ToRequirements<T extends Env<any, any>> = {
-  [K in keyof U.ListOf<T>]: U.ListOf<T>[K] extends Env<infer R, any> ? R : never
-}[number]
+) => Eff<Widen<GetEnvRequirements<Effects>, 'intersection'>, R> = effM.doMonad
