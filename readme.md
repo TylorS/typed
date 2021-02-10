@@ -25,7 +25,36 @@ import * as fp from 'https://cdn.skypack.dev/@typed/fp'
 
 At present only modern environments that support ES2019 Syntax, including newer version of Node. Lets keep the web improving! 
 
-## Documentation
+## Things still todo
 
-Currently generated documentation is available [here](./docs)
+### Modules
 
+- IO
+- IOEither
+- Option
+- Reader
+- ReaderEither
+- ReaderTask
+- ReaderTaskEither
+- ReadonlyArray
+- ReadonlyMap
+- ReadonlyNonEmptyArray
+- ReadonlyRecord
+- ReadonlySet
+- State
+- StateReaderTaskEither
+- Task
+- TaskEither
+- TaskOption
+- TaskThese
+- These
+- Tree
+- Tuple2
+- Writer
+
+### Comonads
+
+- Is there a syntax for Comonadic syntax we can adopt?
+
+- Store
+- Traced
