@@ -46,3 +46,7 @@ export interface IntersectionWiden extends WideningOptions {
   readonly 2: 'intersection'
   readonly 3: 'intersection'
 }
+
+export function intersect<A, B>(a: A, b: B): Widen<A | B, 'intersection'> {
+  return { ...a, ...b } as Widen<A | B, 'intersection'>
+}

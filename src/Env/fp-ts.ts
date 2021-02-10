@@ -31,7 +31,7 @@ export const Pointed: Pointed2<URI> = {
 
 export const Apply: Apply2<URI> = {
   ...Functor,
-  ap,
+  ap: ap as Apply2<URI>['ap'],
 }
 
 export const Applicative: Applicative2<URI> = {
@@ -42,7 +42,7 @@ export const Applicative: Applicative2<URI> = {
 export const Monad: Monad2<URI> = {
   ...Functor,
   ...Pointed,
-  chain,
+  chain: chain as Monad2<URI>['chain'],
 }
 
 export const MonadRec: MonadRec2<URI> = {
@@ -55,7 +55,7 @@ export const Alt: Alt2<URI> = {
   alt: (snd) => (fst) => (r) => pipe(fst(r), race(snd()(r))),
 }
 
-export const Do: Env<unknown, {}> = () => sync(() => Object.create(null))
+export const Do: Env<never, {}> = () => sync(() => Object.create(null))
 export const bindTo = bindTo_(Functor)
 export const bind = bind_(Monad) as <N extends string, A, E, B>(
   name: Exclude<N, keyof A>,
