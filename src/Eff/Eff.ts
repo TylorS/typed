@@ -6,9 +6,26 @@ import { IntersectionWiden, Widen } from '@fp/Widen'
 import { pipe } from 'fp-ts/dist/function'
 import { A } from 'ts-toolbelt'
 
+/**
+ * Eff is the Env monad lifted into Fx/generators for a do-like notation.
+ *
+ * @example
+ * const baz: Eff<{a:number}, number> = doEff(function*(_) { ... })
+ *
+ * const eff: Eff<{a:number} & {foo: string}, string> = doEff(function*(_) {
+ *   // "_" can be used to lift Env monads into a generator
+ *   const foo: string = yield* _( asks((e: {foo: string} ) => e.foo) )
+ *
+ *   // Effs can be nested with "yield *", all requirements will be composed as an intersection.
+ *   const bar: number = yield* baz
+ *
+ *   return foo + bar
+ * })
+ */
 export interface Eff<E, A> extends Fx<IsNever<E> extends true ? never : Env<E, unknown>, A> {}
 
 export type GetRequirements<A> = A extends Eff<infer R, any> ? Widen<R, 'intersection'> : never
+
 export type GetResult<A> = A extends Eff<any, infer R> ? R : never
 
 type IsNever<A> = A.Equals<[never], [A]> extends 1 ? true : false

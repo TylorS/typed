@@ -6,6 +6,17 @@ import { pipe } from 'fp-ts/dist/function'
 
 import { MonadRec } from './chainRec'
 
+/**
+ * EitherFx is an Either monad lifted into a Fx/generator context for do-like notation
+ *
+ * @example
+ * const fx: EitherFx<E | F, B> = doEither(function* (_) {
+ *   const a: A = yield* _(eitherReturningFunction<E, A>())
+ *   const b: B = yield* _(eitherReturningFunction2<F, B>(a))
+ *
+ *   return B
+ * })
+ */
 export interface EitherFx<E, A> extends Fx<Either<E, unknown>, A> {}
 
 export type GetRequirements<A> = A extends EitherFx<infer R, any> ? R : never
