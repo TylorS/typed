@@ -33,7 +33,7 @@ export function getRecFxM<F extends string>(monad: MonadRec<F> & Apply<F>): FxM<
   const fromMonad = liftFx<F>()
   const toMonad = createRecFxToMonad(monad)
   const ap = <A>(fa: FxT<F, A>) => <B>(fab: FxT<F, Arity1<A, B>>): FxT<F, B> =>
-    pipe(toMonad(fab), monad.ap(toMonad(fa)), fromMonad) as FxT<F, B>
+    fromMonad(pipe(toMonad(fab), monad.ap(toMonad(fa))))
 
   return {
     of: pure,

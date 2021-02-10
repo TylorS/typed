@@ -32,7 +32,7 @@ export function getFxM<F extends string>(monad: Monad<F> & Apply<F>): FxM<F> {
   const fromMonad = liftFx<F>()
   const toMonad = createFxToMonad(monad)
   const ap = <A>(fa: FxT<F, A>) => <B>(fab: FxT<F, Arity1<A, B>>): FxT<F, B> =>
-    pipe(toMonad(fab), monad.ap(toMonad(fa)), fromMonad) as FxT<F, B>
+    fromMonad(pipe(toMonad(fab), monad.ap(toMonad(fa))))
 
   return {
     of: pure,
