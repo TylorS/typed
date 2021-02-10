@@ -1,26 +1,33 @@
-import { Alt as Alt_ } from '@fp/Env'
 import { fromIO } from '@fp/Fx'
-import { fromTask } from '@fp/Resume'
-import { Widen } from '@fp/Widen'
 import { Alt2 } from 'fp-ts/dist/Alt'
 import { Applicative2 } from 'fp-ts/dist/Applicative'
 import { Apply2 } from 'fp-ts/dist/Apply'
+import { Alt as Alt_ } from 'fp-ts/dist/Either'
 import { FromIO2 } from 'fp-ts/dist/FromIO'
-import { FromTask2 } from 'fp-ts/dist/FromTask'
 import { pipe } from 'fp-ts/dist/function'
 import { Functor2 } from 'fp-ts/dist/Functor'
 import { Monad2 } from 'fp-ts/dist/Monad'
 import { Pointed2 } from 'fp-ts/dist/Pointed'
 import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
-import { ap, chain, doEff, Eff, fromEnv, GetRequirements, GetResult, map, of, toEnv } from './Eff'
+import {
+  ap,
+  chain,
+  doEither,
+  EitherFx,
+  GetRequirements,
+  GetResult,
+  map,
+  of,
+  toEither,
+} from './EitherFx'
 
-export const URI = '@typed/fp/Eff'
+export const URI = '@typed/fp/EitherFx'
 export type URI = typeof URI
 
 declare module 'fp-ts/dist/HKT' {
   export interface URItoKind2<E, A> {
-    [URI]: Eff<E, A>
+    [URI]: EitherFx<E, A>
   }
 }
 
@@ -55,27 +62,21 @@ export const FromIO: FromIO2<URI> = {
   fromIO,
 }
 
-export const FromTask: FromTask2<URI> = {
-  ...FromIO,
-  fromTask: (task) => fromEnv(() => fromTask(task)),
-}
-
 export const Alt: Alt2<URI> = {
   ...Functor,
   alt: ((snd) => (fst) =>
-    doEff(function* (_) {
+    doEither(function* (_) {
       return yield* pipe(
         fst,
-        toEnv,
-        Alt_.alt(() => toEnv(snd())),
+        toEither,
+        Alt_.alt(() => toEither(snd())),
         _,
       )
     })) as Alt2<URI>['alt'],
 }
 
-export const zip = (sequence(Applicative) as unknown) as <Effs extends readonly Eff<any, any>[]>(
+export const zip = (sequence(Applicative) as unknown) as <
+  Effs extends readonly EitherFx<any, any>[]
+>(
   envs: Effs,
-) => Eff<
-  Widen<GetRequirements<Effs[number]>, 'intersection'>,
-  { readonly [K in keyof Effs]: GetResult<Effs[K]> }
->
+) => EitherFx<GetRequirements<Effs[number]>, { readonly [K in keyof Effs]: GetResult<Effs[K]> }>

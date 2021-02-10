@@ -2,12 +2,15 @@ import { MonadRec1 } from '@fp/MonadRec'
 import { Alt1 } from 'fp-ts/dist/Alt'
 import { Applicative1 } from 'fp-ts/dist/Applicative'
 import { Apply1 } from 'fp-ts/dist/Apply'
+import { FromIO1 } from 'fp-ts/dist/FromIO'
+import { FromTask1 } from 'fp-ts/dist/FromTask'
 import { constant, flow, pipe } from 'fp-ts/dist/function'
 import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/dist/Functor'
 import { bind as bind_, Monad1 } from 'fp-ts/dist/Monad'
 import { Pointed1 } from 'fp-ts/dist/Pointed'
 
 import { ap } from './ap'
+import { fromTask } from './Async'
 import { chain } from './chain'
 import { chainRec } from './monadRec'
 import { race } from './race'
@@ -57,6 +60,16 @@ export const MonadRec: MonadRec1<URI> = {
 export const Alt: Alt1<URI> = {
   ...Functor,
   alt: (snd) => (fst) => pipe(fst, race(snd())),
+}
+
+export const FromIO: FromIO1<URI> = {
+  URI,
+  fromIO: sync,
+}
+
+export const FromTask: FromTask1<URI> = {
+  ...FromIO,
+  fromTask,
 }
 
 export const Do: Resume<{}> = sync(() => Object.create(null))
