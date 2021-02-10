@@ -1,5 +1,13 @@
 import { Arity1 } from '@fp/lambda'
-import { Apply, chainRec as chainRec_, Functor, Monad, Pointed, Resume } from '@fp/Resume'
+import {
+  Apply,
+  chainRec as chainRec_,
+  Functor,
+  Monad,
+  Pointed,
+  race as race_,
+  Resume,
+} from '@fp/Resume'
 import { Widen } from '@fp/Widen'
 import { Either } from 'fp-ts/dist/Either'
 import { pipe } from 'fp-ts/dist/function'
@@ -45,3 +53,6 @@ export const chainRec = <A, R, B>(f: (a: A) => Env<R, Either<A, B>>) => (value: 
     value,
     chainRec_((a: A) => f(a)(r)),
   )
+
+export const race = <R1, A>(enva: Env<R1, A>) => <R2, B>(envb: Env<R2, B>) => (r: R1 & R2) =>
+  pipe(enva(r), race_(envb(r)))

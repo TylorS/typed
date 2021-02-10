@@ -1,12 +1,15 @@
 import { Kind2, Kind3, URIS2, URIS3 } from 'fp-ts/dist/HKT'
-import { U } from 'ts-toolbelt'
+import { A, U } from 'ts-toolbelt'
 
-export type Widen<W, Type extends WidenType | undefined> = Type extends WidenType
+export type Widen<W, Type extends WidenType | undefined> = IsNever<W> extends true
+  ? never
+  : Type extends WidenType
   ? {
       union: W
       intersection: Intersect<U.ListOf<W>>
     }[Type]
   : W
+export type IsNever<A> = A.Equals<[never], [A]> extends 1 ? true : false
 
 export type WidenType = 'union' | 'intersection'
 

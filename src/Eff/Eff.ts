@@ -1,5 +1,5 @@
 import { Apply, Env, MonadRec, URI as EnvURI } from '@fp/Env'
-import { Fx, LiftFx, Pure } from '@fp/Fx'
+import { Fx, LiftFx, Pure, pure } from '@fp/Fx'
 import { getRecFxM } from '@fp/FxT'
 import { Arity1 } from '@fp/lambda'
 import { IntersectionWiden, Widen } from '@fp/Widen'
@@ -8,11 +8,14 @@ import { A, U } from 'ts-toolbelt'
 
 export interface Eff<E, A> extends Fx<IsNever<E> extends true ? never : Env<E, unknown>, A> {}
 
+export type GetRequirements<A> = A extends Eff<infer R, any> ? Widen<R, 'intersection'> : never
+export type GetResult<A> = A extends Eff<any, infer R> ? R : never
+
 type IsNever<A> = A.Equals<[never], [A]> extends 1 ? true : false
 
 const effM = getRecFxM<EnvURI, IntersectionWiden>({ ...MonadRec, ...Apply })
 
-export const of = <A>(value: A): Pure<A> => effM.of(value) as Pure<A>
+export const of = <A>(value: A): Pure<A> => pure(value)
 
 export const ap = <E1, A>(fa: Eff<E1, A>) => <E2, B>(
   fab: Eff<E2, Arity1<A, B>>,
@@ -26,12 +29,12 @@ export const chain: <A, E1, B>(
 
 export const fromEnv: <E, A>(hkt: Env<E, A>) => Eff<E, A> = effM.fromMonad
 
-export const toEnv = effM.toMonad as <E, A>(eff: Eff<E, A>) => Env<Widen<E, 'intersection'>, A>
+export const toEnv: <E, A>(eff: Eff<E, A>) => Env<Widen<E, 'intersection'>, A> = effM.toMonad
 
 export const doEff: <Effects extends Env<any, any>, R, N = unknown>(
   f: (lift: LiftFx<EnvURI>) => Generator<Effects, R, N>,
-) => Eff<GetRequirements<Effects>, R> = effM.doMonad
+) => Eff<ToRequirements<Effects>, R> = effM.doMonad
 
-export type GetRequirements<T extends Env<any, any>> = {
+export type ToRequirements<T extends Env<any, any>> = {
   [K in keyof U.ListOf<T>]: U.ListOf<T>[K] extends Env<infer R, any> ? R : never
 }[number]

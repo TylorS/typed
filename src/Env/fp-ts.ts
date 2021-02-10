@@ -1,5 +1,6 @@
 import { MonadRec2 } from '@fp/MonadRec'
 import { race, sync } from '@fp/Resume'
+import { Widen } from '@fp/Widen'
 import { Alt2 } from 'fp-ts/dist/Alt'
 import { Applicative2 } from 'fp-ts/dist/Applicative'
 import { Apply2 } from 'fp-ts/dist/Apply'
@@ -7,8 +8,9 @@ import { pipe } from 'fp-ts/dist/function'
 import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/dist/Functor'
 import { bind as bind_, Monad2 } from 'fp-ts/dist/Monad'
 import { Pointed2 } from 'fp-ts/dist/Pointed'
+import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
-import { ap, chain, chainRec, Env, map, of } from './Env'
+import { ap, chain, chainRec, Env, GetRequirements, GetResume, map, of } from './Env'
 
 export const URI = '@typed/fp/Env'
 export type URI = typeof URI
@@ -62,3 +64,10 @@ export const bind = bind_(Monad) as <N extends string, A, E, B>(
   f: (a: A) => Env<E, B>,
 ) => <E2>(ma: Env<E2, A>) => Env<E & E2, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 export const tupled = tupled_(Functor)
+
+export const zip = (sequence(Applicative) as unknown) as <Envs extends readonly Env<any, any>[]>(
+  envs: Envs,
+) => Env<
+  Widen<{ readonly [K in keyof Envs]: GetRequirements<Envs[K]> }[number], 'intersection'>,
+  { readonly [K in keyof Envs]: GetResume<Envs[K]> }
+>
