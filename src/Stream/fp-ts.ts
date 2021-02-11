@@ -24,8 +24,8 @@ import { Filterable1 } from 'fp-ts/dist/Filterable'
 import { FromIO1 } from 'fp-ts/dist/FromIO'
 import { FromTask1 } from 'fp-ts/dist/FromTask'
 import { pipe, Predicate } from 'fp-ts/dist/function'
-import { Functor1 } from 'fp-ts/dist/Functor'
-import { Monad1 } from 'fp-ts/dist/Monad'
+import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/dist/Functor'
+import { bind as bind_, Monad1 } from 'fp-ts/dist/Monad'
 import { Monoid } from 'fp-ts/dist/Monoid'
 import { isSome, Option, Some } from 'fp-ts/dist/Option'
 import { Pointed1 } from 'fp-ts/dist/Pointed'
@@ -179,3 +179,8 @@ export const Filterable: Filterable1<URI> = {
   filterMap,
   filter,
 }
+
+export const Do: Stream<{}> = pipe(null, now, map(Object.create))
+export const bindTo = bindTo_(Functor)
+export const bind = bind_(Monad)
+export const tupled = tupled_(Functor)
