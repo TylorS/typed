@@ -38,6 +38,11 @@ export const chain: <A, E1, B>(
   f: Arity1<A, EitherFx<E1, B>>,
 ) => <E2>(fa: EitherFx<E2, A>) => EitherFx<E1 | E2, B> = FxT.chain<EitherURI>()
 
-export const fromEither = FxT.liftFx<EitherURI>()
+export const fromEither: <E, A>(either: Either<E, A>) => EitherFx<E, A> = FxT.liftFx<EitherURI>()
 export const toEither: <E, A>(fx: EitherFx<E, A>) => Either<E, A> = FxT.toMonad(MonadRec)
-export const doEither = getDo<EitherURI>()
+export const doEither: <Effects extends Either<any, any>, R, N = unknown>(
+  f: (lift: FxT.LiftFx<EitherURI>) => Generator<Effects, R, N>,
+) => EitherFx<GetLeftValue<Effects>, R> = getDo<EitherURI>()
+
+export type GetLeftValue<A> = [A] extends [Either<infer L, any>] ? L : never
+export type GetRightValue<A> = [A] extends [Either<any, infer R>] ? R : never

@@ -39,11 +39,9 @@ export const chain: <A, E1, B>(
   f: Arity1<A, Eff<E1, B>>,
 ) => <E2>(fa: Eff<E2, A>) => Eff<E1 & E2, B> = FxT.chain<EnvURI>()
 
-export const fromEnv: <E, A>(hkt: Env<E, A>) => Eff<E, A> = FxT.liftFx<EnvURI>()
+export const fromEnv: <E, A>(env: Env<E, A>) => Eff<E, A> = FxT.liftFx<EnvURI>()
 
-export const toEnv = FxT.toMonad(MonadRec) as <E, A>(
-  eff: Eff<E, A>,
-) => Env<Widen<E, 'intersection'>, A>
+export const toEnv = FxT.toMonad<EnvURI>(MonadRec)
 
 export const doEff: <Effects extends Env<any, any>, R, N = unknown>(
   f: (lift: FxT.LiftFx<EnvURI>) => Generator<Effects, R, N>,

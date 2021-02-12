@@ -1,6 +1,5 @@
 import { Fx } from '@fp/Fx'
 import { MonadRec, MonadRec1, MonadRec2, MonadRec3 } from '@fp/MonadRec'
-import { UnionWiden, WideningOptions } from '@fp/Widen'
 import { left, right } from 'fp-ts/dist/Either'
 import { pipe } from 'fp-ts/dist/function'
 import { HKT, Kind, Kind2, Kind3, URIS, URIS2, URIS3 } from 'fp-ts/dist/HKT'
@@ -9,7 +8,7 @@ export function toMonad<F extends URIS>(
   M: MonadRec1<F>,
 ): <E extends Kind<F, any>, R>(fx: Fx<E, R>) => Kind<F, R>
 
-export function toMonad<F extends URIS2, W extends WideningOptions = UnionWiden>(
+export function toMonad<F extends URIS2>(
   M: MonadRec2<F>,
 ): <E extends Kind2<F, S, any>, S, R>(fx: Fx<E, R>) => Kind2<F, S, R>
 

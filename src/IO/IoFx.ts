@@ -30,6 +30,8 @@ export const chain: <A, B>(f: Arity1<A, IOFx<B>>) => (fa: IOFx<A>) => IOFx<B> = 
 
 export const fromIO: <A>(io: IO<A>) => IOFx<A> = FxT.liftFx<IoURI>()
 
-export const toIO: <A>(IOFx: IOFx<A>) => IO<A> = FxT.toMonad(MonadRec)
+export const toIO: <A>(fx: IOFx<A>) => IO<A> = FxT.toMonad(MonadRec)
 
-export const doIO = FxT.getDo<IoURI>()
+export const doIO: <Effects extends IO<any>, R, N = unknown>(
+  f: (lift: FxT.LiftFx<IoURI>) => Generator<Effects, R, N>,
+) => IOFx<R> = FxT.getDo<IoURI>()
