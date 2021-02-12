@@ -1,8 +1,7 @@
-import { Fx, LiftFx, Pure, pure } from '@fp/Fx'
-import { getRecFxM } from '@fp/FxT'
+import { chain as chain_, Fx, map as map_, pure } from '@fp/Fx'
+import * as FxT from '@fp/FxT'
 import { Arity1 } from '@fp/lambda'
-import { pipe } from 'fp-ts/dist/function'
-import { Apply, IO, URI as EitherURI } from 'fp-ts/dist/IO'
+import { Apply, IO, URI as IoURI } from 'fp-ts/dist/IO'
 
 import { MonadRec } from './chainRec'
 
@@ -21,23 +20,16 @@ export interface IOFx<A> extends Fx<IO<unknown>, A> {}
 
 export type GetResult<A> = A extends IOFx<infer R> ? R : never
 
-const eitherFxM = getRecFxM<EitherURI>({ ...MonadRec, ...Apply })
+export const of = pure
 
-export const of = <A>(value: A): Pure<A> => pure(value)
+export const ap = FxT.ap({ ...MonadRec, ...Apply })
 
-export const ap = <A>(fa: IOFx<A>) => <B>(fab: IOFx<Arity1<A, B>>): IOFx<B> =>
-  pipe(fab, eitherFxM.ap(fa))
+export const map: <A, B>(f: Arity1<A, B>) => (fa: IOFx<A>) => IOFx<B> = map_
 
-export const map: <A, B>(f: Arity1<A, B>) => (fa: IOFx<A>) => IOFx<B> = eitherFxM.map
+export const chain: <A, B>(f: Arity1<A, IOFx<B>>) => (fa: IOFx<A>) => IOFx<B> = chain_
 
-export const chain: <A, B>(f: Arity1<A, IOFx<B>>) => (fa: IOFx<A>) => IOFx<B> = eitherFxM.chain
+export const fromIO: <A>(io: IO<A>) => IOFx<A> = FxT.liftFx<IoURI>()
 
-export const fromIO: <A>(io: IO<A>) => IOFx<A> = eitherFxM.fromMonad
+export const toIO: <A>(IOFx: IOFx<A>) => IO<A> = FxT.toMonad(MonadRec)
 
-export const toIO: <A>(IOFx: IOFx<A>) => IO<A> = eitherFxM.toMonad
-
-export const doIO: <IOFxs extends IO<any>, R, N = unknown>(
-  f: (lift: LiftFx<EitherURI>) => Generator<IOFxs, R, N>,
-) => IOFx<R> = eitherFxM.doMonad
-
-export type GetIOValue<A> = [A] extends [IO<infer E>] ? E : never
+export const doIO = FxT.getDo<IoURI>()
