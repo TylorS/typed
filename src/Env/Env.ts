@@ -22,6 +22,13 @@ import {
   of as of_,
 } from 'fp-ts/ReaderT'
 
+/**
+ * Env<E, A> has the requirements E on the environment and will eventually Resume
+ * with some value A. Resume<A> can be synchronous or asynchronous.
+ *
+ * This is a powerful combination which can be used to create various async
+ * patterns like coroutines.
+ */
 export interface Env<E, A> extends Reader<E, Resume<A>> {}
 
 export type GetRequirements<A> = A extends Env<infer R, any> ? R : never

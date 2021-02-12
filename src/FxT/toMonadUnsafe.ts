@@ -30,8 +30,7 @@ export function toMonadUnsafe<F extends URIS3, S, T>(
 export function toMonadUnsafe<F>(M: Monad<F>): <E extends HKT<F, any>, R>(fx: Fx<E, R>) => HKT<F, R>
 
 /**
- * Using a Monad that also implements M, we can create a stack-UNSAFE interpreter for do-notation
- * using Fx + generators.
+ * Using a Monad we can create a stack-UNSAFE interpreter for do-notation using Fx + generators.
  */
 export function toMonadUnsafe<F>(M: Monad<F>) {
   return function fxToMonad<E extends HKT<F, any>, R, N = unknown>(fx: Fx<E, R, N>): HKT<F, R> {

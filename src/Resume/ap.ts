@@ -1,5 +1,6 @@
-import { settable, undisposable } from '@fp/Disposable'
+import { settable } from '@fp/Disposable'
 import { Arity1 } from '@fp/lambda'
+import { disposeNone } from '@most/disposable'
 import { isNone, none, Option, some } from 'fp-ts/Option'
 
 import { async } from './Async'
@@ -11,6 +12,7 @@ export const ap = <A>(fa: Resume<A>) => <B>(fab: Resume<Arity1<A, B>>): Resume<B
     return sync(() => fab.resume()(fa.resume()))
   }
 
+  // Concurrently
   return async((resume) => {
     const disposable = settable()
 
@@ -19,33 +21,33 @@ export const ap = <A>(fa: Resume<A>) => <B>(fab: Resume<Arity1<A, B>>): Resume<B
 
     function onReady() {
       if (isNone(ab) || isNone(a)) {
-        return
+        return disposeNone()
       }
 
       if (!disposable.isDisposed()) {
-        disposable.addDisposable(resume(ab.value(a.value)))
+        return disposable.addDisposable(resume(ab.value(a.value)))
       }
+
+      return disposeNone()
     }
 
     if (isAsync(fab)) {
       disposable.addDisposable(
-        fab.resume(
-          undisposable((f) => {
-            ab = some(f)
-            onReady()
-          }),
-        ),
+        fab.resume((f) => {
+          ab = some(f)
+
+          return onReady()
+        }),
       )
     }
 
     if (isAsync(fa)) {
       disposable.addDisposable(
-        fa.resume(
-          undisposable((x) => {
-            a = some(x)
-            onReady()
-          }),
-        ),
+        fa.resume((x) => {
+          a = some(x)
+
+          return onReady()
+        }),
       )
     }
 

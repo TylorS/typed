@@ -11,6 +11,9 @@ export type LiftFx<F> = F extends URIS
   ? <S, R, E, A>(kind: Kind4<F, S, R, E, A>) => Fx<Kind4<F, S, R, E, A>, A>
   : <A>(kind: HKT<F, A>) => Fx<HKT<F, A>, A>
 
+/**
+ * Create a lift function that will convert any F<A> into Fx<F<A>, A>
+ */
 export const liftFx = <F>() => lift_ as LiftFx<F>
 
 function lift_<F, A>(hkt: HKT<F, A>): Fx<typeof hkt, A> {

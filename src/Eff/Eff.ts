@@ -7,6 +7,8 @@ import { A } from 'ts-toolbelt'
 
 /**
  * Eff is the Env monad lifted into Fx/generators for a do-like notation.
+ * This leads to a powerful abstraction in which its very natural to ask for external resources,
+ * perform dependency injection, and perform synchronous or asynchronous effects.
  *
  * @example
  * const baz: Eff<{a:number}, number> = doEff(function*(_) { ... })
@@ -23,8 +25,14 @@ import { A } from 'ts-toolbelt'
  */
 export interface Eff<E, A> extends Fx<IsNever<E> extends true ? never : Env<E, unknown>, A> {}
 
+/**
+ * Extract the resources that are required to run a given Eff
+ */
 export type GetRequirements<A> = A extends Eff<infer R, any> ? Widen<R, 'intersection'> : never
 
+/**
+ * Extract the result value from an Eff
+ */
 export type GetResult<A> = A extends Eff<any, infer R> ? R : never
 
 type IsNever<A> = A.Equals<[never], [A]> extends 1 ? true : false
@@ -41,7 +49,7 @@ export const chain: <A, E1, B>(
 
 export const fromEnv: <E, A>(env: Env<E, A>) => Eff<E, A> = FxT.liftFx<EnvURI>()
 
-export const toEnv = FxT.toMonad<EnvURI>(MonadRec)
+export const toEnv: <E, A>(env: Eff<E, A>) => Env<E, A> = FxT.toMonad<EnvURI>(MonadRec)
 
 export const doEff: <Effects extends Env<any, any>, R, N = unknown>(
   f: (lift: FxT.LiftFx<EnvURI>) => Generator<Effects, R, N>,

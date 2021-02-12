@@ -31,7 +31,7 @@ export function toMonad<F extends URIS3, S, T>(
 export function toMonad<F>(M: MonadRec<F>): <E extends HKT<F, any>, R>(fx: Fx<E, R>) => HKT<F, R>
 
 /**
- * Using a Monad that also implements MonadRec, we can create a stack-safe interpreter for do-notation
+ * Using a MonadRec instance we can create a stack-safe interpreter for do-notation
  * using Fx + generators.
  */
 export function toMonad<F>(M: MonadRec<F>) {

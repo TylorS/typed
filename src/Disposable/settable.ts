@@ -1,8 +1,10 @@
 import { disposeAll, disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
 
-// A Disposable that works in a more imperative manner.
-// Can be useful when coercing external libraries or using promises.
+/**
+ * A Disposable that works in a more imperative manner.
+ * Can be useful when coercing external libraries or using promises.
+ */
 export interface SettableDisposable extends Disposable {
   readonly addDisposable: (disposable: Disposable) => Disposable
   readonly isDisposed: () => boolean
@@ -10,6 +12,9 @@ export interface SettableDisposable extends Disposable {
 
 const NONE = disposeNone()
 
+/**
+ * Construct a SettableDisposable
+ */
 export function settable(): SettableDisposable {
   let disposed = false
   const disposables: Disposable[] = []
@@ -27,7 +32,7 @@ export function settable(): SettableDisposable {
       const index = disposables.indexOf(disposable)
 
       if (index > -1) {
-        disposables.splice(index, 1)
+        disposables.splice(index, 1).forEach((d) => d.dispose())
       }
     }
 

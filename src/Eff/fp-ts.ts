@@ -7,13 +7,13 @@ import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { FromIO2 } from 'fp-ts/FromIO'
 import { FromTask2 } from 'fp-ts/FromTask'
-import { pipe } from 'fp-ts/function'
+import { flow, pipe } from 'fp-ts/function'
 import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 import { sequence } from 'fp-ts/ReadonlyArray'
 
-import { ap, chain, doEff, Eff, fromEnv, GetRequirements, GetResult, map, of, toEnv } from './Eff'
+import { ap, chain, Eff, fromEnv, GetRequirements, GetResult, map, of, toEnv } from './Eff'
 
 export const URI = '@typed/fp/Eff'
 export type URI = typeof URI
@@ -62,15 +62,7 @@ export const FromTask: FromTask2<URI> = {
 
 export const Alt: Alt2<URI> = {
   ...Functor,
-  alt: ((snd) => (fst) =>
-    doEff(function* (_) {
-      return yield* pipe(
-        fst,
-        toEnv,
-        Alt_.alt(() => toEnv(snd())),
-        _,
-      )
-    })) as Alt2<URI>['alt'],
+  alt: (snd) => (fst) => pipe(fst, toEnv, Alt_.alt(flow(snd, toEnv)), fromEnv),
 }
 
 export const zip = (sequence(Applicative) as unknown) as <Effs extends readonly Eff<any, any>[]>(

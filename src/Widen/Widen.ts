@@ -1,6 +1,9 @@
 import { Kind2, Kind3, URIS2, URIS3 } from 'fp-ts/HKT'
 import { A, U } from 'ts-toolbelt'
 
+/**
+ * Helper for widening a union or an intersection
+ */
 export type Widen<W, Type extends WidenType | undefined> = IsNever<W> extends true
   ? never
   : Type extends WidenType
@@ -9,6 +12,7 @@ export type Widen<W, Type extends WidenType | undefined> = IsNever<W> extends tr
       intersection: Intersect<U.ListOf<W>>
     }[Type]
   : W
+
 export type IsNever<A> = A.Equals<[never], [A]> extends 1 ? true : false
 
 export type WidenType = 'union' | 'intersection'
