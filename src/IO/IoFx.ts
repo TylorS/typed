@@ -1,4 +1,4 @@
-import { chain as chain_, Fx, map as map_, pure } from '@fp/Fx'
+import { Fx, map as map_, pure } from '@fp/Fx'
 import * as FxT from '@fp/FxT'
 import { Arity1 } from '@fp/lambda'
 import { Apply, IO, URI as IoURI } from 'fp-ts/dist/IO'
@@ -26,7 +26,7 @@ export const ap = FxT.ap({ ...MonadRec, ...Apply })
 
 export const map: <A, B>(f: Arity1<A, B>) => (fa: IOFx<A>) => IOFx<B> = map_
 
-export const chain: <A, B>(f: Arity1<A, IOFx<B>>) => (fa: IOFx<A>) => IOFx<B> = chain_
+export const chain: <A, B>(f: Arity1<A, IOFx<B>>) => (fa: IOFx<A>) => IOFx<B> = FxT.chain<IoURI>()
 
 export const fromIO: <A>(io: IO<A>) => IOFx<A> = FxT.liftFx<IoURI>()
 

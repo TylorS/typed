@@ -1,5 +1,5 @@
 import { Apply, Env, GetRequirements as GetEnvRequirements, MonadRec, URI as EnvURI } from '@fp/Env'
-import { chain as chain_, Fx, map as map_, pure } from '@fp/Fx'
+import { Fx, map as map_, pure } from '@fp/Fx'
 import * as FxT from '@fp/FxT'
 import { Arity1 } from '@fp/lambda'
 import { Widen } from '@fp/Widen'
@@ -35,9 +35,9 @@ export const ap = FxT.ap({ ...MonadRec, ...Apply })
 
 export const map: <A, B>(f: Arity1<A, B>) => <E>(fa: Eff<E, A>) => Eff<E, B> = map_
 
-export const chain = chain_ as <A, E1, B>(
+export const chain: <A, E1, B>(
   f: Arity1<A, Eff<E1, B>>,
-) => <E2>(fa: Eff<E2, A>) => Eff<Widen<E1 | E2, 'intersection'>, B>
+) => <E2>(fa: Eff<E2, A>) => Eff<E1 & E2, B> = FxT.chain<EnvURI>()
 
 export const fromEnv: <E, A>(hkt: Env<E, A>) => Eff<E, A> = FxT.liftFx<EnvURI>()
 

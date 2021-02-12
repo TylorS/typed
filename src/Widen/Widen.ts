@@ -32,6 +32,7 @@ export type GetKind3E<F extends URIS3, A, W extends WidenType | undefined = 'uni
 export interface WideningOptions {
   readonly 2?: WidenType
   readonly 3?: WidenType
+  readonly 4?: WidenType
 }
 
 export type GetKind2E<F extends URIS2, A, W extends WidenType | undefined> = [A] extends [
@@ -43,11 +44,13 @@ export type GetKind2E<F extends URIS2, A, W extends WidenType | undefined> = [A]
 export interface UnionWiden extends WideningOptions {
   readonly 2: 'union'
   readonly 3: 'union'
+  readonly 4: 'union'
 }
 
 export interface IntersectionWiden extends WideningOptions {
   readonly 2: 'intersection'
   readonly 3: 'intersection'
+  readonly 4: 'intersection'
 }
 
 export function intersect<A, B>(a: A, b: B): Widen<A | B, 'intersection'> {
