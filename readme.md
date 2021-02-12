@@ -27,34 +27,53 @@ At present only modern environments that support ES2019 Syntax, including newer 
 
 ## Things still todo
 
-### Modules
+### Monads
 
-- IO
-- IOEither
-- Option
-- Reader
-- ReaderEither
-- ReaderTask
-- ReaderTaskEither
-- ReadonlyArray
-- ReadonlyMap
-- ReadonlyNonEmptyArray
-- ReadonlyRecord
-- ReadonlySet
-- State
-- StateReaderTaskEither
-- Task
-- TaskEither
-- TaskOption
-- TaskThese
-- These
-- Tree
-- Tuple2
-- Writer
+- [x] IO
+- [ ] IOEither
+- [ ] Option
+- [ ] Reader
+- [ ] ReaderEither
+- [ ] ReaderTask
+- [ ] ReaderTaskEither
+- [ ] ReadonlyArray
+- [ ] ReadonlyMap
+- [ ] ReadonlyNonEmptyArray
+- [ ] ReadonlyRecord
+- [ ] ReadonlySet
+- [ ] State
+- [ ] StateReaderTaskEither
+- [ ] Task
+- [ ] TaskEither
+- [ ] TaskOption
+- [ ] TaskThese
+- [ ] These
+- [ ] Tree
+- [ ] Tuple2
+- [ ] Writer
 
 ### Comonads
 
 - Is there a syntax for Comonadic syntax we can adopt?
 
-- Store
-- Traced
+- [ ] Store
+- [ ] Traced
+
+### Addition Packages
+
+- [ ] Fibers
+- [ ] Shared
+- [ ] RemoteData
+- [ ] ADT generators
+- [ ] io-ts or custom ??
+- [ ] Tagged types 
+- [ ] Graphs
+- [ ] History API
+- [ ] Queue
+- [ ] Storage
+- [ ] HTTP
+- [ ] Logging
+- [ ] Logical operators
+- [ ] Node + Browser implementations
+- [ ] Services Workers
+- [ ] JSON-RPC
