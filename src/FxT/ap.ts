@@ -42,5 +42,5 @@ export function ap<F>(M: MonadRec<F> & Apply<F>) {
   const to = toMonad(M)
 
   return <A>(fa: FxT<F, A>) => <B>(fab: FxT<F, Arity1<A, B>>): FxT<F, B> =>
-    lift(pipe(to(fab), M.ap(to(fa)))) as FxT<F, B>
+    pipe(fab, to, pipe(fa, to, M.ap), lift) as FxT<F, B>
 }
