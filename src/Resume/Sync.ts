@@ -1,4 +1,4 @@
-import { IO } from 'fp-ts/dist/IO'
+import { IO } from 'fp-ts/IO'
 
 export interface Sync<A> {
   readonly _tag: 'sync'

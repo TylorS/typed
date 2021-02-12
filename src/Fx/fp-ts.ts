@@ -1,12 +1,12 @@
 import { doFx } from '@fp/Fx'
 import { MonadRec2 } from '@fp/MonadRec'
-import { Applicative2 } from 'fp-ts/dist/Applicative'
-import { Apply2 } from 'fp-ts/dist/Apply'
-import { Either, isLeft } from 'fp-ts/dist/Either'
-import { FromIO2 } from 'fp-ts/dist/FromIO'
-import { Functor2 } from 'fp-ts/dist/Functor'
-import { ap as ap_, Monad2 } from 'fp-ts/dist/Monad'
-import { Pointed2 } from 'fp-ts/dist/Pointed'
+import { Applicative2 } from 'fp-ts/Applicative'
+import { Apply2 } from 'fp-ts/Apply'
+import { Either, isLeft } from 'fp-ts/Either'
+import { FromIO2 } from 'fp-ts/FromIO'
+import { Functor2 } from 'fp-ts/Functor'
+import { ap as ap_, Monad2 } from 'fp-ts/Monad'
+import { Pointed2 } from 'fp-ts/Pointed'
 
 import { Fx } from './Fx'
 import { fromIO, pure } from './Pure'
@@ -14,7 +14,7 @@ import { fromIO, pure } from './Pure'
 export const URI = '@typed/fp/Fx'
 export type URI = typeof URI
 
-declare module 'fp-ts/dist/HKT' {
+declare module 'fp-ts/HKT' {
   export interface URItoKind2<E, A> {
     [URI]: Fx<E, A>
   }

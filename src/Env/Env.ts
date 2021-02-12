@@ -9,9 +9,9 @@ import {
   Resume,
 } from '@fp/Resume'
 import { Widen } from '@fp/Widen'
-import { Either } from 'fp-ts/dist/Either'
-import { pipe } from 'fp-ts/dist/function'
-import { Reader } from 'fp-ts/dist/Reader'
+import { Either } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
+import { Reader } from 'fp-ts/Reader'
 import {
   ap as ap_,
   ask as ask_,
@@ -20,7 +20,7 @@ import {
   fromReader as fromReader_,
   map as map_,
   of as of_,
-} from 'fp-ts/dist/ReaderT'
+} from 'fp-ts/ReaderT'
 
 export interface Env<E, A> extends Reader<E, Resume<A>> {}
 

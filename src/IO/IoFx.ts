@@ -1,7 +1,7 @@
 import { Fx, map as map_, pure } from '@fp/Fx'
 import * as FxT from '@fp/FxT'
 import { Arity1 } from '@fp/lambda'
-import { Apply, IO, URI as IoURI } from 'fp-ts/dist/IO'
+import { Apply, IO, URI as IoURI } from 'fp-ts/IO'
 
 import { MonadRec } from './chainRec'
 

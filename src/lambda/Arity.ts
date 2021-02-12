@@ -1,4 +1,4 @@
-import { FunctionN } from 'fp-ts/dist/function'
+import { FunctionN } from 'fp-ts/function'
 
 export type Arity1<A, B> = FunctionN<[a: A], B>
 export type Arity2<A, B, C> = FunctionN<[a: A, b: B], C>

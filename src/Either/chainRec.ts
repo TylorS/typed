@@ -1,6 +1,6 @@
 import { Arity1 } from '@fp/lambda'
 import { MonadRec2 } from '@fp/MonadRec'
-import { Either, isRight, Monad, URI as EitherURI } from 'fp-ts/dist/Either'
+import { Either, isRight, Monad, URI as EitherURI } from 'fp-ts/Either'
 
 export const chainRec = <A, E, B>(f: Arity1<A, Either<E, Either<A, B>>>) => (
   value: A,

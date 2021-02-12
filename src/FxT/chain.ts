@@ -1,7 +1,7 @@
 import { chain as chain_ } from '@fp/Fx'
 import { Arity1 } from '@fp/lambda'
 import { UnionWiden, Widen, WideningOptions } from '@fp/Widen'
-import { URIS, URIS2, URIS3 } from 'fp-ts/dist/HKT'
+import { URIS, URIS2, URIS3 } from 'fp-ts/HKT'
 
 import { FxT, FxT1, FxT2, FxT3 } from './FxT'
 

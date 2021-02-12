@@ -1,13 +1,13 @@
 import { MonadRec1 } from '@fp/MonadRec'
-import { Alt1 } from 'fp-ts/dist/Alt'
-import { Applicative1 } from 'fp-ts/dist/Applicative'
-import { Apply1 } from 'fp-ts/dist/Apply'
-import { FromIO1 } from 'fp-ts/dist/FromIO'
-import { FromTask1 } from 'fp-ts/dist/FromTask'
-import { constant, flow, pipe } from 'fp-ts/dist/function'
-import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/dist/Functor'
-import { bind as bind_, Monad1 } from 'fp-ts/dist/Monad'
-import { Pointed1 } from 'fp-ts/dist/Pointed'
+import { Alt1 } from 'fp-ts/Alt'
+import { Applicative1 } from 'fp-ts/Applicative'
+import { Apply1 } from 'fp-ts/Apply'
+import { FromIO1 } from 'fp-ts/FromIO'
+import { FromTask1 } from 'fp-ts/FromTask'
+import { constant, flow, pipe } from 'fp-ts/function'
+import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/Functor'
+import { bind as bind_, Monad1 } from 'fp-ts/Monad'
+import { Pointed1 } from 'fp-ts/Pointed'
 
 import { ap } from './ap'
 import { fromTask } from './Async'
@@ -20,7 +20,7 @@ import { sync } from './Sync'
 export const URI = '@typed/fp/Resume'
 export type URI = typeof URI
 
-declare module 'fp-ts/dist/HKT' {
+declare module 'fp-ts/HKT' {
   export interface URItoKind<A> {
     [URI]: Resume<A>
   }

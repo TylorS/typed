@@ -1,18 +1,18 @@
 import { fromIO } from '@fp/Fx'
-import { Applicative1 } from 'fp-ts/dist/Applicative'
-import { Apply1 } from 'fp-ts/dist/Apply'
-import { FromIO1 } from 'fp-ts/dist/FromIO'
-import { Functor1 } from 'fp-ts/dist/Functor'
-import { Monad1 } from 'fp-ts/dist/Monad'
-import { Pointed1 } from 'fp-ts/dist/Pointed'
-import { sequence } from 'fp-ts/dist/ReadonlyArray'
+import { Applicative1 } from 'fp-ts/Applicative'
+import { Apply1 } from 'fp-ts/Apply'
+import { FromIO1 } from 'fp-ts/FromIO'
+import { Functor1 } from 'fp-ts/Functor'
+import { Monad1 } from 'fp-ts/Monad'
+import { Pointed1 } from 'fp-ts/Pointed'
+import { sequence } from 'fp-ts/ReadonlyArray'
 
 import { ap, chain, GetResult, IOFx, map, of } from './IoFx'
 
 export const URI = '@typed/fp/EitherFx'
 export type URI = typeof URI
 
-declare module 'fp-ts/dist/HKT' {
+declare module 'fp-ts/HKT' {
   export interface URItoKind<A> {
     [URI]: IOFx<A>
   }

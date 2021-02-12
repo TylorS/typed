@@ -1,6 +1,6 @@
-import { Either, isLeft } from 'fp-ts/dist/Either'
-import { HKT, Kind, Kind2, Kind3, URIS, URIS2, URIS3 } from 'fp-ts/dist/HKT'
-import { Monad, Monad1, Monad2, Monad2C, Monad3 } from 'fp-ts/dist/Monad'
+import { Either, isLeft } from 'fp-ts/Either'
+import { HKT, Kind, Kind2, Kind3, URIS, URIS2, URIS3 } from 'fp-ts/HKT'
+import { Monad, Monad1, Monad2, Monad2C, Monad3 } from 'fp-ts/Monad'
 
 export interface MonadRec<F> extends Monad<F> {
   readonly chainRec: <A, B>(f: (a: A) => HKT<F, Either<A, B>>) => (a: A) => HKT<F, B>

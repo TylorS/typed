@@ -1,6 +1,6 @@
 import { Arity1 } from '@fp/lambda'
-import { Either, isRight, match } from 'fp-ts/dist/Either'
-import { constant, flow, pipe } from 'fp-ts/dist/function'
+import { Either, isRight, match } from 'fp-ts/Either'
+import { constant, flow, pipe } from 'fp-ts/function'
 
 import { chain } from './chain'
 import { isSync, Resume } from './Resume'

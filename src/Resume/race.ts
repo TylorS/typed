@@ -1,6 +1,6 @@
 import { settable } from '@fp/Disposable'
 import { disposeBoth } from '@most/disposable'
-import { pipe } from 'fp-ts/dist/function'
+import { pipe } from 'fp-ts/function'
 
 import { async } from './Async'
 import { isSync, Resume } from './Resume'

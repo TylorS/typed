@@ -1,5 +1,5 @@
 import { describe, it } from '@typed/test'
-import * as IO from 'fp-ts/dist/IO'
+import * as IO from 'fp-ts/IO'
 
 import * as IOFx from './'
 import { doIO, toIO } from './IoFx'

@@ -2,7 +2,7 @@ import { undisposable } from '@fp/Disposable'
 import { asks } from '@fp/Env'
 import { async, Resume } from '@fp/Resume'
 import { describe, it } from '@typed/test'
-import { pipe } from 'fp-ts/dist/function'
+import { pipe } from 'fp-ts/function'
 import { performance } from 'perf_hooks'
 
 import { doEff, fromEnv } from './Eff'

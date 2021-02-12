@@ -1,7 +1,7 @@
 import { Arity1 } from '@fp/lambda'
-import { Apply } from 'fp-ts/dist/Apply'
-import { pipe } from 'fp-ts/dist/function'
-import { Monad } from 'fp-ts/dist/Monad'
+import { Apply } from 'fp-ts/Apply'
+import { pipe } from 'fp-ts/function'
+import { Monad } from 'fp-ts/Monad'
 
 import { FxT } from './FxT'
 import { liftFx } from './liftFx'

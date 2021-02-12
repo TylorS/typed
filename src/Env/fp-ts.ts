@@ -1,21 +1,21 @@
 import { MonadRec2 } from '@fp/MonadRec'
 import { race, sync } from '@fp/Resume'
 import { Widen } from '@fp/Widen'
-import { Alt2 } from 'fp-ts/dist/Alt'
-import { Applicative2 } from 'fp-ts/dist/Applicative'
-import { Apply2 } from 'fp-ts/dist/Apply'
-import { pipe } from 'fp-ts/dist/function'
-import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/dist/Functor'
-import { bind as bind_, Monad2 } from 'fp-ts/dist/Monad'
-import { Pointed2 } from 'fp-ts/dist/Pointed'
-import { sequence } from 'fp-ts/dist/ReadonlyArray'
+import { Alt2 } from 'fp-ts/Alt'
+import { Applicative2 } from 'fp-ts/Applicative'
+import { Apply2 } from 'fp-ts/Apply'
+import { pipe } from 'fp-ts/function'
+import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
+import { bind as bind_, Monad2 } from 'fp-ts/Monad'
+import { Pointed2 } from 'fp-ts/Pointed'
+import { sequence } from 'fp-ts/ReadonlyArray'
 
 import { ap, chain, chainRec, Env, GetRequirements, GetResume, map, of } from './Env'
 
 export const URI = '@typed/fp/Env'
 export type URI = typeof URI
 
-declare module 'fp-ts/dist/HKT' {
+declare module 'fp-ts/HKT' {
   export interface URItoKind2<E, A> {
     [URI]: Env<E, A>
   }

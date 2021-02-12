@@ -14,28 +14,28 @@ import {
   take,
 } from '@most/core'
 import { Stream } from '@most/types'
-import { Alt1 } from 'fp-ts/dist/Alt'
-import { Alternative1 } from 'fp-ts/dist/Alternative'
-import { Applicative1 } from 'fp-ts/dist/Applicative'
-import { Apply1 } from 'fp-ts/dist/Apply'
-import { Compactable1 } from 'fp-ts/dist/Compactable'
-import { Either, isLeft, isRight, Left, left, match, Right, right } from 'fp-ts/dist/Either'
-import { Filterable1 } from 'fp-ts/dist/Filterable'
-import { FromIO1 } from 'fp-ts/dist/FromIO'
-import { FromTask1 } from 'fp-ts/dist/FromTask'
-import { pipe, Predicate } from 'fp-ts/dist/function'
-import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/dist/Functor'
-import { bind as bind_, Monad1 } from 'fp-ts/dist/Monad'
-import { Monoid } from 'fp-ts/dist/Monoid'
-import { isSome, Option, Some } from 'fp-ts/dist/Option'
-import { Pointed1 } from 'fp-ts/dist/Pointed'
-import { Separated } from 'fp-ts/dist/Separated'
+import { Alt1 } from 'fp-ts/Alt'
+import { Alternative1 } from 'fp-ts/Alternative'
+import { Applicative1 } from 'fp-ts/Applicative'
+import { Apply1 } from 'fp-ts/Apply'
+import { Compactable1 } from 'fp-ts/Compactable'
+import { Either, isLeft, isRight, Left, left, match, Right, right } from 'fp-ts/Either'
+import { Filterable1 } from 'fp-ts/Filterable'
+import { FromIO1 } from 'fp-ts/FromIO'
+import { FromTask1 } from 'fp-ts/FromTask'
+import { pipe, Predicate } from 'fp-ts/function'
+import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/Functor'
+import { bind as bind_, Monad1 } from 'fp-ts/Monad'
+import { Monoid } from 'fp-ts/Monoid'
+import { isSome, Option, Some } from 'fp-ts/Option'
+import { Pointed1 } from 'fp-ts/Pointed'
+import { Separated } from 'fp-ts/Separated'
 
 export const URI = '@most/core/Stream' as const
 
 export type URI = typeof URI
 
-declare module 'fp-ts/dist/HKT' {
+declare module 'fp-ts/HKT' {
   interface URItoKind<A> {
     [URI]: Stream<A>
   }

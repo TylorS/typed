@@ -1,8 +1,8 @@
 import { Fx } from '@fp/Fx'
 import { MonadRec, MonadRec1, MonadRec2, MonadRec3 } from '@fp/MonadRec'
-import { left, right } from 'fp-ts/dist/Either'
-import { pipe } from 'fp-ts/dist/function'
-import { HKT, Kind, Kind2, Kind3, URIS, URIS2, URIS3 } from 'fp-ts/dist/HKT'
+import { left, right } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
+import { HKT, Kind, Kind2, Kind3, URIS, URIS2, URIS3 } from 'fp-ts/HKT'
 
 export function toMonad<F extends URIS>(
   M: MonadRec1<F>,

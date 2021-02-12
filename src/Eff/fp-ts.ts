@@ -2,23 +2,23 @@ import { Alt as Alt_ } from '@fp/Env'
 import { fromIO } from '@fp/Fx'
 import { fromTask } from '@fp/Resume'
 import { Widen } from '@fp/Widen'
-import { Alt2 } from 'fp-ts/dist/Alt'
-import { Applicative2 } from 'fp-ts/dist/Applicative'
-import { Apply2 } from 'fp-ts/dist/Apply'
-import { FromIO2 } from 'fp-ts/dist/FromIO'
-import { FromTask2 } from 'fp-ts/dist/FromTask'
-import { pipe } from 'fp-ts/dist/function'
-import { Functor2 } from 'fp-ts/dist/Functor'
-import { Monad2 } from 'fp-ts/dist/Monad'
-import { Pointed2 } from 'fp-ts/dist/Pointed'
-import { sequence } from 'fp-ts/dist/ReadonlyArray'
+import { Alt2 } from 'fp-ts/Alt'
+import { Applicative2 } from 'fp-ts/Applicative'
+import { Apply2 } from 'fp-ts/Apply'
+import { FromIO2 } from 'fp-ts/FromIO'
+import { FromTask2 } from 'fp-ts/FromTask'
+import { pipe } from 'fp-ts/function'
+import { Functor2 } from 'fp-ts/Functor'
+import { Monad2 } from 'fp-ts/Monad'
+import { Pointed2 } from 'fp-ts/Pointed'
+import { sequence } from 'fp-ts/ReadonlyArray'
 
 import { ap, chain, doEff, Eff, fromEnv, GetRequirements, GetResult, map, of, toEnv } from './Eff'
 
 export const URI = '@typed/fp/Eff'
 export type URI = typeof URI
 
-declare module 'fp-ts/dist/HKT' {
+declare module 'fp-ts/HKT' {
   export interface URItoKind2<E, A> {
     [URI]: Eff<E, A>
   }
