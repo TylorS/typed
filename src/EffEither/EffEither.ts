@@ -1,6 +1,7 @@
 import * as Eff from '@fp/Eff'
 import { fromEnv, toEnv } from '@fp/Eff/Eff'
 import { chainRec as chainRec_ } from '@fp/EnvEither'
+import { fromIO, pure } from '@fp/Fx'
 import { MonadRec3 } from '@fp/MonadRec'
 import { Widen, WideningOptions } from '@fp/Widen'
 import { Alt3 } from 'fp-ts/Alt'
@@ -8,6 +9,8 @@ import { Apply3 } from 'fp-ts/Apply'
 import { Bifunctor3 } from 'fp-ts/Bifunctor'
 import { Either } from 'fp-ts/Either'
 import * as ET from 'fp-ts/EitherT'
+import { FromEither3 } from 'fp-ts/FromEither'
+import { FromIO3 } from 'fp-ts/FromIO'
 import { flow, Lazy, pipe } from 'fp-ts/function'
 import { Functor3 } from 'fp-ts/Functor'
 import { Monad3 } from 'fp-ts/Monad'
@@ -45,7 +48,7 @@ export const leftEff: <E, FE, A = never>(e: Eff.Eff<FE, E>) => EffEither<FE, E, 
   Eff.Functor,
 )
 
-export const rightEnv: <FE, A, E = never>(e: Eff.Eff<FE, A>) => EffEither<FE, E, A> = ET.rightF(
+export const rightEff: <FE, A, E = never>(e: Eff.Eff<FE, A>) => EffEither<FE, E, A> = ET.rightF(
   Eff.Functor,
 )
 
@@ -121,6 +124,16 @@ export const Bifunctor: Bifunctor3<URI> = {
   ...Functor,
   mapLeft,
   bimap,
+}
+
+export const FromEither: FromEither3<URI> = {
+  URI,
+  fromEither: pure,
+}
+
+export const FromIO: FromIO3<URI> = {
+  URI,
+  fromIO: flow(fromIO, rightEff),
 }
 
 export const getOrElse = ET.getOrElse(Eff.Monad) as <E, ME1, A>(
