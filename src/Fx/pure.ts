@@ -3,6 +3,9 @@ import { IO } from 'fp-ts/IO'
 import { doFx } from './doFx'
 import { Fx } from './Fx'
 
+/**
+ * An Fx which has no Effects or they have all been accounted for.
+ */
 export interface Pure<A> extends Fx<never, A> {}
 
 export const pure = <A>(value: A): Pure<A> =>
