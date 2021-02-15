@@ -45,7 +45,7 @@ export const map: <A, B>(f: Arity1<A, B>) => <E>(fa: Eff<E, A>) => Eff<E, B> = m
 
 export const chain: <A, E1, B>(
   f: Arity1<A, Eff<E1, B>>,
-) => <E2>(fa: Eff<E2, A>) => Eff<E1 & E2, B> = FxT.chain<EnvURI>()
+) => <E2>(fa: Eff<E2, A>) => Eff<E1 & E2, B> = FxT.chain<EnvURI>(MonadRec)
 
 export const fromEnv: <E, A>(env: Env<E, A>) => Eff<E, A> = FxT.liftFx<EnvURI>()
 

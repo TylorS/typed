@@ -36,7 +36,7 @@ export const map: <A, B>(f: Arity1<A, B>) => <E>(fa: EitherFx<E, A>) => EitherFx
 
 export const chain: <A, E1, B>(
   f: Arity1<A, EitherFx<E1, B>>,
-) => <E2>(fa: EitherFx<E2, A>) => EitherFx<E1 | E2, B> = FxT.chain<EitherURI>()
+) => <E2>(fa: EitherFx<E2, A>) => EitherFx<E1 | E2, B> = FxT.chain<EitherURI>(MonadRec)
 
 export const fromEither: <E, A>(either: Either<E, A>) => EitherFx<E, A> = FxT.liftFx<EitherURI>()
 export const toEither: <E, A>(fx: EitherFx<E, A>) => Either<E, A> = FxT.toMonad(MonadRec)

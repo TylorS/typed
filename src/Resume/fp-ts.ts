@@ -31,6 +31,8 @@ export const Functor: Functor1<URI> = {
   map: (f) => (fa) => pipe(fa, chain(flow(f, constant, sync))),
 }
 
+export const map = Functor.map
+
 export const Pointed: Pointed1<URI> = {
   ...Functor,
   of: flow(constant, sync),
