@@ -29,6 +29,15 @@ At present only modern environments that support ES2019 Syntax, including newer 
 
 ### Monads
 
+- [ ] EnvThese
+- [ ] EffThese
+- [ ] ResumeThese
+- [ ] StateEnv
+- [ ] StateEnvEither
+- [ ] StateEnvThese
+- [ ] FxThese
+- [ ] StreamEither
+- [ ] StreamThese
 - [x] IO
 - [ ] IOEither
 - [ ] Option
