@@ -244,10 +244,7 @@ function writeModule([moduleName, { packageJson, cjs, esm }]: [string, Module]) 
   replaceES5LocalImports(cjsSource)
 
   const cjsMap = cjsSource.generateMap({ hires: true, includeContent: true }).toString()
-  const remappedCjsMap =
-    cjsSource.toString() === cjsSource.original
-      ? cjs.map
-      : remapping([cjsMap, cjs.map], () => null).toString()
+  const remappedCjsMap = remapping([cjsMap, cjs.map], () => null).toString()
 
   const esmSource = new MagicString(esm.source, {
     filename: `${moduleName}.mjs`,
@@ -257,10 +254,7 @@ function writeModule([moduleName, { packageJson, cjs, esm }]: [string, Module]) 
   replaceES6LocalImports(esmSource)
 
   const esmMap = esmSource.generateMap({ hires: true, includeContent: true }).toString()
-  const remappedEsmMap =
-    esmSource.toString() === esmSource.original
-      ? esm.map
-      : remapping([esmMap, esm.map], () => null).toString()
+  const remappedEsmMap = remapping([esmMap, esm.map], () => null).toString()
 
   const files = [
     [`${moduleName}/package.json`, packageJson],
