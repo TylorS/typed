@@ -3,7 +3,7 @@ version: 2.1
 executors:
   custom-executor:
     docker:
-      - image: circleci/node:lts-browsers
+      - image: circleci/node:lts
 
 jobs:
   install:
