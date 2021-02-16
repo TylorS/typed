@@ -1,7 +1,7 @@
-import { Fx, map as map_, pure } from '@fp/Fx'
-import * as FxT from '@fp/FxT'
-import { getDo } from '@fp/FxT'
-import { Arity1 } from '@fp/lambda'
+import { Fx, map as map_, pure } from '@typed/fp/Fx'
+import * as FxT from '@typed/fp/FxT'
+import { getDo } from '@typed/fp/FxT'
+import { Arity1 } from '@typed/fp/lambda'
 import { Apply, Either, URI as EitherURI } from 'fp-ts/Either'
 
 import { MonadRec } from './chainRec'

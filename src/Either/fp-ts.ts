@@ -1,4 +1,4 @@
-import { fromIO } from '@fp/Fx'
+import { fromIO } from '@typed/fp/Fx'
 import { Alt2 } from 'fp-ts/Alt'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'

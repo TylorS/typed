@@ -59,21 +59,3 @@ snowpack.crt
 snowpack.key
 
 # generated - run 'npm run update' to re-generate
-/Disposable/
-/Eff/
-/EffEither/
-/Either/
-/Env/
-/EnvEither/
-/Fail/
-/Fx/
-/FxEither/
-/FxT/
-/IO/
-/MonadRec/
-/Resume/
-/ResumeEither/
-/Stream/
-/Widen/
-/lambda/
-/string/

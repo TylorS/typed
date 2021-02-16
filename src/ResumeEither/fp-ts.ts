@@ -1,4 +1,4 @@
-import * as R from '@fp/Resume'
+import * as R from '@typed/fp/Resume'
 import { Alt2 } from 'fp-ts/Alt'
 import { Apply2 } from 'fp-ts/Apply'
 import { Bifunctor2 } from 'fp-ts/Bifunctor'

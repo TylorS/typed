@@ -1,6 +1,6 @@
-import { Env } from '@fp/Env'
-import { EnvEither } from '@fp/EnvEither'
-import { capitalize } from '@fp/string'
+import { Env } from '@typed/fp/Env'
+import { EnvEither } from '@typed/fp/EnvEither'
+import { capitalize } from '@typed/fp/string'
 
 import { keyValue } from './_internal'
 import { attempt } from './attempt'

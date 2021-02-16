@@ -1,4 +1,4 @@
-import { Arity1 } from '@fp/lambda'
+import { Arity1 } from '@typed/fp/lambda'
 import { Either, isRight, match } from 'fp-ts/Either'
 import { constant, flow, pipe } from 'fp-ts/function'
 

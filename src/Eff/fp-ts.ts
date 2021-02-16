@@ -1,7 +1,7 @@
-import { Alt as Alt_ } from '@fp/Env'
-import { fromIO } from '@fp/Fx'
-import { fromTask } from '@fp/Resume'
-import { Widen } from '@fp/Widen'
+import { Alt as Alt_ } from '@typed/fp/Env'
+import { fromIO } from '@typed/fp/Fx'
+import { fromTask as fromTask_ } from '@typed/fp/Resume'
+import { Widen } from '@typed/fp/Widen'
 import { Alt2 } from 'fp-ts/Alt'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
@@ -57,13 +57,17 @@ export const FromIO: FromIO2<URI> = {
 
 export const FromTask: FromTask2<URI> = {
   ...FromIO,
-  fromTask: (task) => fromEnv(() => fromTask(task)),
+  fromTask: (task) => fromEnv(() => fromTask_(task)),
 }
+
+export const fromTask = FromTask.fromTask
 
 export const Alt: Alt2<URI> = {
   ...Functor,
   alt: (snd) => (fst) => pipe(fst, toEnv, Alt_.alt(flow(snd, toEnv)), fromEnv),
 }
+
+export const alt = Alt.alt
 
 export const zip = (sequence(Applicative) as unknown) as <Effs extends readonly Eff<any, any>[]>(
   envs: Effs,

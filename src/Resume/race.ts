@@ -1,5 +1,5 @@
-import { settable } from '@fp/Disposable'
 import { disposeBoth } from '@most/disposable'
+import { settable } from '@typed/fp/Disposable'
 import { pipe } from 'fp-ts/function'
 
 import { async } from './Async'

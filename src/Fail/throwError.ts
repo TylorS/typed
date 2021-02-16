@@ -1,4 +1,4 @@
-import { Env } from '@fp/Env'
+import { Env } from '@typed/fp/Env'
 import { asks } from 'fp-ts/Reader'
 
 import { FailEnv } from './FailEnv'

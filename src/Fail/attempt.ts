@@ -1,5 +1,5 @@
-import { Env, map } from '@fp/Env'
-import { EnvEither } from '@fp/EnvEither'
+import { Env, map } from '@typed/fp/Env'
+import { EnvEither } from '@typed/fp/EnvEither'
 import { left, right } from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 

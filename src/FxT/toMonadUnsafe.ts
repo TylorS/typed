@@ -1,4 +1,4 @@
-import { Fx } from '@fp/Fx/Fx'
+import { Fx } from '@typed/fp/Fx/Fx'
 import { pipe } from 'fp-ts/function'
 import { HKT, Kind, Kind2, Kind3, URIS, URIS2, URIS3 } from 'fp-ts/HKT'
 import { Monad, Monad1, Monad2, Monad3 } from 'fp-ts/Monad'

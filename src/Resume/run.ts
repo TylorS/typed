@@ -1,5 +1,5 @@
-import { Arity1 } from '@fp/lambda'
 import { Disposable } from '@most/types'
+import { Arity1 } from '@typed/fp/lambda'
 
 import { isAsync, Resume } from './Resume'
 

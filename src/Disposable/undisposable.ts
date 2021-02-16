@@ -1,6 +1,6 @@
-import { ArgsOf } from '@fp/lambda'
 import { disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
+import { ArgsOf } from '@typed/fp/lambda'
 import { FunctionN } from 'fp-ts/function'
 
 /**

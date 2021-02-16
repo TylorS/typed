@@ -1,5 +1,5 @@
-import { Env } from '@fp/Env'
-import { async, run } from '@fp/Resume'
+import { Env } from '@typed/fp/Env'
+import { async, run } from '@typed/fp/Resume'
 import { pipe } from 'fp-ts/function'
 
 import { keyValue } from './_internal'

@@ -1,4 +1,4 @@
-import { fromIO } from '@fp/Fx'
+import { fromIO } from '@typed/fp/Fx'
 import { Applicative1 } from 'fp-ts/Applicative'
 import { Apply1 } from 'fp-ts/Apply'
 import { FromIO1 } from 'fp-ts/FromIO'

@@ -1,9 +1,10 @@
-import { toEnv } from '@fp/Eff'
-import { Pure } from '@fp/Fx'
-import { run } from '@fp/Resume'
 import { disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
+import { Pure } from '@typed/fp/Fx'
+import { run } from '@typed/fp/Resume'
 import { pipe } from 'fp-ts/function'
+
+import { toEnv } from './Eff'
 
 export function runPure<A>(onValue: (value: A) => Disposable) {
   return (pure: Pure<A>): Disposable => pipe(null, Object.create, toEnv(pure), run(onValue))

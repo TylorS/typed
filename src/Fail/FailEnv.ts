@@ -1,4 +1,4 @@
-import { Resume } from '@fp/Resume'
+import { Resume } from '@typed/fp/Resume'
 
 /**
  * An Environment requirement for failures that do not resume

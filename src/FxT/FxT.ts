@@ -1,4 +1,4 @@
-import { Fx } from '@fp/Fx'
+import { Fx } from '@typed/fp/Fx'
 import { HKT, Kind, Kind2, Kind3, URIS, URIS2, URIS3 } from 'fp-ts/HKT'
 
 export interface FxT<F, A> extends Fx<HKT<F, unknown>, A> {}

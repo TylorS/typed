@@ -1,5 +1,5 @@
-import { Arity1 } from '@fp/lambda'
-import { MonadRec1, tailRec } from '@fp/MonadRec'
+import { Arity1 } from '@typed/fp/lambda'
+import { MonadRec1, tailRec } from '@typed/fp/MonadRec'
 import { Either } from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import { IO, Monad, URI as IoUri } from 'fp-ts/IO'

@@ -1,4 +1,4 @@
-import { Arity1 } from '@fp/lambda'
+import { Arity1 } from '@typed/fp/lambda'
 import { Apply } from 'fp-ts/Apply'
 import { pipe } from 'fp-ts/function'
 import { Monad } from 'fp-ts/Monad'

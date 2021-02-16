@@ -1,4 +1,4 @@
-import * as Fx from '@fp/Fx'
+import * as Fx from '@typed/fp/Fx'
 import { Alt3 } from 'fp-ts/Alt'
 import { Apply3 } from 'fp-ts/Apply'
 import { Bifunctor3 } from 'fp-ts/Bifunctor'

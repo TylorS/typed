@@ -1,4 +1,4 @@
-import { MonadRec1 } from '@fp/MonadRec'
+import { MonadRec1 } from '@typed/fp/MonadRec'
 import { Alt1 } from 'fp-ts/Alt'
 import { Applicative1 } from 'fp-ts/Applicative'
 import { Apply1 } from 'fp-ts/Apply'

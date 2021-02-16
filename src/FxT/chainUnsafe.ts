@@ -1,5 +1,5 @@
-import { Arity1 } from '@fp/lambda'
-import { UnionWiden, WideningOptions } from '@fp/Widen'
+import { Arity1 } from '@typed/fp/lambda'
+import { UnionWiden, WideningOptions } from '@typed/fp/Widen'
 import { pipe } from 'fp-ts/function'
 import { Monad } from 'fp-ts/Monad'
 

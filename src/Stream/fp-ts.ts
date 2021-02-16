@@ -1,4 +1,3 @@
-import { MonadRec1 } from '@fp/MonadRec'
 import {
   ap,
   chain,
@@ -14,6 +13,7 @@ import {
   take,
 } from '@most/core'
 import { Stream } from '@most/types'
+import { MonadRec1 } from '@typed/fp/MonadRec'
 import { Alt1 } from 'fp-ts/Alt'
 import { Alternative1 } from 'fp-ts/Alternative'
 import { Applicative1 } from 'fp-ts/Applicative'

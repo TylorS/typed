@@ -1,4 +1,4 @@
-import { Pure } from '@fp/Fx'
+import { Pure } from '@typed/fp/Fx'
 
 import { Eff, fromEnv, toEnv } from './Eff'
 

@@ -1,4 +1,4 @@
-import { Arity1 } from '@fp/lambda'
+import { Arity1 } from '@typed/fp/lambda'
 import {
   Apply,
   chainRec as chainRec_,
@@ -7,8 +7,8 @@ import {
   Pointed,
   race as race_,
   Resume,
-} from '@fp/Resume'
-import { Widen } from '@fp/Widen'
+} from '@typed/fp/Resume'
+import { Widen } from '@typed/fp/Widen'
 import { Either } from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import { Reader } from 'fp-ts/Reader'

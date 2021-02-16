@@ -1,4 +1,4 @@
-import { Arity1 } from '@fp/lambda'
+import { Arity1 } from '@typed/fp/lambda'
 import { flow } from 'fp-ts/function'
 
 import { async } from './Async'

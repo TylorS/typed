@@ -1,8 +1,14 @@
-import { Apply, Env, GetRequirements as GetEnvRequirements, MonadRec, URI as EnvURI } from '@fp/Env'
-import { Fx, map as map_, pure } from '@fp/Fx'
-import * as FxT from '@fp/FxT'
-import { Arity1 } from '@fp/lambda'
-import { Widen } from '@fp/Widen'
+import {
+  Apply,
+  Env,
+  GetRequirements as GetEnvRequirements,
+  MonadRec,
+  URI as EnvURI,
+} from '@typed/fp/Env'
+import { Fx, map as map_, pure } from '@typed/fp/Fx'
+import * as FxT from '@typed/fp/FxT'
+import { Arity1 } from '@typed/fp/lambda'
+import { Widen } from '@typed/fp/Widen'
 import { A } from 'ts-toolbelt'
 
 /**

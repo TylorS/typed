@@ -1,5 +1,4 @@
-import { doFx } from '@fp/Fx'
-import { MonadRec2 } from '@fp/MonadRec'
+import { MonadRec2 } from '@typed/fp/MonadRec'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { Either, isLeft } from 'fp-ts/Either'
@@ -8,6 +7,7 @@ import { Functor2 } from 'fp-ts/Functor'
 import { ap as ap_, Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 
+import { doFx } from './doFx'
 import { Fx } from './Fx'
 import { fromIO, pure } from './Pure'
 
