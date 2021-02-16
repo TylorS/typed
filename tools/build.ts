@@ -9,7 +9,6 @@ import fs from 'fs'
 import MagicString from 'magic-string'
 import { EOL } from 'os'
 import { extname, join } from 'path'
-import rimraf from 'rimraf'
 
 // TODO: implement a watch mode
 // const watchMode = process.argv.includes('--watch')
@@ -19,45 +18,23 @@ const SOURCE_DIR = join(ROOT_DIR, 'src')
 
 const EXTERNALS = ['fp-ts/*', '@typed/fp/*', '@most/adapter', '@most/*']
 const textDecoder = new TextDecoder('utf-8')
+const es6Import = /from\s"@typed\/fp\/([a-z0-9-_]+)"/gi
 
-const es5Import = /(require\("@typed\/fp\/)/g
-
-const replaceES5LocalImports = (s: MagicString): void => {
-  const match = s.original.match(es5Import)
-
-  if (!match) {
-    return
-  }
-
-  let offset = match.index ?? 0
-
-  for (const part of match) {
-    const start = s.original.indexOf(part, offset)
-    const end = (offset = start + part.length)
-
-    s.overwrite(start, end, 'require("../')
-  }
-}
-
-const es6Import = /from\s"@typed\/fp\//g
-
-const replaceES6LocalImports = (s: MagicString): void => {
-  const match = s.original.match(es6Import)
+const replaceES6LocalImports = (s: MagicString, offset = 0): void => {
+  const match = s.original.slice(offset).match(es6Import)
 
   if (!match) {
     return
   }
 
-  let offset = match.index ?? 0
+  const part = match[0]
+  const start = s.original.indexOf(part, offset)
+  const end = start + part.length
+  const replacement = part.replace(es6Import, 'from "../$1.mjs"')
 
-  for (const part of match) {
-    const start = s.original.indexOf(part, offset)
-    const end = (offset = start + part.length)
+  s.overwrite(start, end, replacement)
 
-    s.overwrite(start, end, 'from "../')
-
-    offset += part.length
-  }
+  replaceES6LocalImports(s, offset + part.length)
 }
 
 const readdir = (path: string) =>
@@ -71,8 +48,6 @@ const readdir = (path: string) =>
     TE.mapLeft((e) => new Error(e.message)),
   )
 
-const rmdir = TE.taskify(rimraf)
-const mkdir = TE.taskify(fs.mkdir)
 const writeFile = TE.taskify(fs.writeFile)
 const readFile = TE.taskify(fs.readFile)
 
@@ -108,7 +83,7 @@ program()
   })
 
 type Modules = Record<string, Module>
-type Module = { packageJson: string; cjs: Bundle; esm: Bundle }
+type Module = { packageJson: string; esm: Bundle }
 type Bundle = { source: string; map: string }
 
 function createModules(
@@ -123,18 +98,7 @@ function createModules(
 }
 
 function createModule(name: string, service: Service): TE.TaskEither<Error, Modules> {
-  const cjs = createBundle(name, service, {
-    mainFields: ['main'],
-    outfile: `${name}.js`,
-    format: 'cjs',
-  })
-  const esm = createBundle(name, service, {
-    mainFields: ['module', 'jsnext:main', 'main'],
-    outfile: `${name}.mjs`,
-    format: 'esm',
-  })
-
-  const bundles = zipPar([cjs, esm])
+  const moduleDir = join(ROOT_DIR, name)
 
   return pipe(
     TE.Do,
@@ -143,12 +107,21 @@ function createModule(name: string, service: Service): TE.TaskEither<Error, Modu
 
       return {}
     }),
-    TE.bind('bundles', () => bundles),
+    TE.bind('esm', () =>
+      createBundle(name, service, {
+        mainFields: ['module', 'jsnext:main', 'main'],
+        bundle: true,
+        outfile: join(moduleDir, `${name}.mjs`),
+        outExtension: { '.js': '.mjs' },
+        external: EXTERNALS.filter((x) => !x.startsWith(moduleDir)),
+        format: 'esm',
+      }),
+    ),
     TE.bind('packageJson', () => createPackageJson(name)),
-    TE.map(({ packageJson, bundles }) => {
+    TE.map((mod) => {
       console.log(`Created module ${name}!`)
 
-      return { [name]: { packageJson, cjs: bundles[0], esm: bundles[1] } }
+      return { [name]: mod }
     }),
   )
 }
@@ -160,15 +133,12 @@ function createBundle(
 ): TE.TaskEither<Error, Bundle> {
   return async () => {
     try {
-      const moduleDir = join(SOURCE_DIR, name)
       const entry = join(SOURCE_DIR, name, 'index.ts')
       const result = await service.build({
         entryPoints: [entry],
         sourcemap: true,
-        bundle: true,
         write: false,
         platform: 'node',
-        external: EXTERNALS.filter((x) => !x.startsWith(moduleDir)),
         ...options,
       })
       const source = result.outputFiles?.find((x) => ['.js', '.mjs'].includes(extname(x.path)))
@@ -191,10 +161,10 @@ function createBundle(
 
 function createPackageJson(name: string) {
   const base = {
-    main: `${name}.js`,
+    main: `index.js`,
     module: `${name}.mjs`,
-    types: `${name}.d.ts`,
-    typings: `${name}.d.ts`,
+    types: `index.d.ts`,
+    typings: `index.d.ts`,
     sideEffects: false,
   }
 
@@ -233,21 +203,7 @@ function writeModules(modules: Modules) {
   return zipPar(Object.entries(modules).map(writeModule))
 }
 
-function writeModule([moduleName, { packageJson, cjs, esm }]: [string, Module]) {
-  const dir = join(ROOT_DIR, moduleName)
-
-  const cjsSource = new MagicString(cjs.source, {
-    filename: `${moduleName}.js`,
-    indentExclusionRanges: [],
-  })
-
-  replaceES5LocalImports(cjsSource)
-
-  const cjsMap = cjsSource
-    .generateMap({ hires: true, file: `${moduleName}.js`, includeContent: true })
-    .toString()
-  const remappedCjsMap = remapping([cjsMap, cjs.map], () => null).toString()
-
+function writeModule([moduleName, { packageJson, esm }]: [string, Module]) {
   const esmSource = new MagicString(esm.source, {
     filename: `${moduleName}.mjs`,
     indentExclusionRanges: [],
@@ -262,19 +218,11 @@ function writeModule([moduleName, { packageJson, cjs, esm }]: [string, Module]) 
 
   const files = [
     [`${moduleName}/package.json`, packageJson],
-    [`${moduleName}/${moduleName}.js`, cjsSource.toString()],
-    [`${moduleName}/${moduleName}.js.map`, formatJsonString(remappedCjsMap)],
     [`${moduleName}/${moduleName}.mjs`, esmSource.toString()],
     [`${moduleName}/${moduleName}.mjs.map`, formatJsonString(remappedEsmMap)],
   ] as const
 
-  return pipe(
-    dir,
-    rmdir,
-    TE.chain(() => mkdir(dir)),
-    TE.mapLeft((e) => new Error(e.message)),
-    TE.chain(() => zipPar(files.map(([name, contents]) => writeFile(name, contents)))),
-  )
+  return zipPar(files.map(([name, contents]) => writeFile(name, contents)))
 }
 
 function formatJsonString(s: string) {
