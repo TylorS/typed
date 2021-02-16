@@ -7,6 +7,7 @@ import * as RA from 'fp-ts/ReadonlyArray'
 import * as TE from 'fp-ts/TaskEither'
 import fs from 'fs'
 import MagicString from 'magic-string'
+import { EOL } from 'os'
 import { extname, join } from 'path'
 import rimraf from 'rimraf'
 
@@ -32,11 +33,9 @@ const replaceES5LocalImports = (s: MagicString): void => {
 
   for (const part of match) {
     const start = s.original.indexOf(part, offset)
-    const end = start + part.length
+    const end = (offset = start + part.length)
 
     s.overwrite(start, end, 'require("../')
-
-    offset += part.length
   }
 }
 
@@ -204,8 +203,8 @@ function createPackageJson(name: string) {
     readPackageJson,
     TE.map(
       O.match(
-        () => JSON.stringify(base),
-        (current) => JSON.stringify({ ...JSON.parse(current), ...base }),
+        () => JSON.stringify(base, null, 2) + EOL,
+        (current) => JSON.stringify({ ...JSON.parse(current), ...base }, null, 2) + EOL,
       ),
     ),
   )
