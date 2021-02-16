@@ -39,7 +39,7 @@ const replaceES5LocalImports = (s: MagicString): void => {
   }
 }
 
-const es6Import = /(from "@typed\/fp\/)/g
+const es6Import = /from\s"@typed\/fp\//g
 
 const replaceES6LocalImports = (s: MagicString): void => {
   const match = s.original.match(es6Import)
@@ -52,7 +52,7 @@ const replaceES6LocalImports = (s: MagicString): void => {
 
   for (const part of match) {
     const start = s.original.indexOf(part, offset)
-    const end = start + part.length
+    const end = (offset = start + part.length)
 
     s.overwrite(start, end, 'from "../')
 
@@ -243,7 +243,9 @@ function writeModule([moduleName, { packageJson, cjs, esm }]: [string, Module]) 
 
   replaceES5LocalImports(cjsSource)
 
-  const cjsMap = cjsSource.generateMap({ hires: true, includeContent: true }).toString()
+  const cjsMap = cjsSource
+    .generateMap({ hires: true, file: `${moduleName}.js`, includeContent: true })
+    .toString()
   const remappedCjsMap = remapping([cjsMap, cjs.map], () => null).toString()
 
   const esmSource = new MagicString(esm.source, {
@@ -253,15 +255,17 @@ function writeModule([moduleName, { packageJson, cjs, esm }]: [string, Module]) 
 
   replaceES6LocalImports(esmSource)
 
-  const esmMap = esmSource.generateMap({ hires: true, includeContent: true }).toString()
+  const esmMap = esmSource
+    .generateMap({ hires: true, file: `${moduleName}.mjs`, includeContent: true })
+    .toString()
   const remappedEsmMap = remapping([esmMap, esm.map], () => null).toString()
 
   const files = [
     [`${moduleName}/package.json`, packageJson],
     [`${moduleName}/${moduleName}.js`, cjsSource.toString()],
-    [`${moduleName}/${moduleName}.js.map`, remappedCjsMap],
+    [`${moduleName}/${moduleName}.js.map`, formatJsonString(remappedCjsMap)],
     [`${moduleName}/${moduleName}.mjs`, esmSource.toString()],
-    [`${moduleName}/${moduleName}.mjs.map`, remappedEsmMap],
+    [`${moduleName}/${moduleName}.mjs.map`, formatJsonString(remappedEsmMap)],
   ] as const
 
   return pipe(
@@ -271,4 +275,8 @@ function writeModule([moduleName, { packageJson, cjs, esm }]: [string, Module]) 
     TE.mapLeft((e) => new Error(e.message)),
     TE.chain(() => zipPar(files.map(([name, contents]) => writeFile(name, contents)))),
   )
+}
+
+function formatJsonString(s: string) {
+  return JSON.stringify(JSON.parse(s), null, 2)
 }

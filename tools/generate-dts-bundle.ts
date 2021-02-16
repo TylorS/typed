@@ -6,4 +6,4 @@ const [typings] = dts.generateDtsBundle(
   { followSymlinks: true },
 )
 
-process.stdout.write(typings)
+process.stdout.write(typings.replace(/..\/(.*)\/index/g, '../$1'))
