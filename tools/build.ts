@@ -30,7 +30,7 @@ const replaceES6LocalImports = (s: MagicString, offset = 0): void => {
   const part = match[0]
   const start = s.original.indexOf(part, offset)
   const end = start + part.length
-  const replacement = part.replace(es6Import, 'from "../$1.mjs"')
+  const replacement = part.replace(es6Import, 'from "../$1/$1.mjs"')
 
   s.overwrite(start, end, replacement)
 
@@ -110,10 +110,9 @@ function createModule(name: string, service: Service): TE.TaskEither<Error, Modu
     TE.bind('esm', () =>
       createBundle(name, service, {
         mainFields: ['module', 'jsnext:main', 'main'],
-        bundle: true,
         outfile: join(moduleDir, `${name}.mjs`),
         outExtension: { '.js': '.mjs' },
-        external: EXTERNALS.filter((x) => !x.startsWith(moduleDir)),
+        external: EXTERNALS,
         format: 'esm',
       }),
     ),
@@ -139,6 +138,7 @@ function createBundle(
         sourcemap: true,
         write: false,
         platform: 'node',
+        bundle: true,
         ...options,
       })
       const source = result.outputFiles?.find((x) => ['.js', '.mjs'].includes(extname(x.path)))
