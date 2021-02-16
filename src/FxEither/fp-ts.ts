@@ -1,4 +1,4 @@
-import * as Fx from '@typed/fp/Fx'
+import { Apply as Apply_, Functor as Functor_, Fx, Monad as Monad_, pure } from '@typed/fp/Fx'
 import { Alt3 } from 'fp-ts/Alt'
 import { Apply3 } from 'fp-ts/Apply'
 import { Bifunctor3 } from 'fp-ts/Bifunctor'
@@ -11,10 +11,10 @@ import { Pointed3 } from 'fp-ts/Pointed'
 
 import { FxEither, PureEither } from './FxEither'
 
-export const left: <E, A = never>(e: E) => PureEither<E, A> = flow(left_, Fx.pure)
-export const right: <A, E = never>(a: A) => PureEither<E, A> = flow(right_, Fx.pure)
-export const rightFx = ET.rightF(Fx.Functor)
-export const leftFx = ET.leftF(Fx.Functor)
+export const left: <E, A = never>(e: E) => PureEither<E, A> = flow(left_, pure)
+export const right: <A, E = never>(a: A) => PureEither<E, A> = flow(right_, pure)
+export const rightFx = ET.rightF(Functor_)
+export const leftFx = ET.leftF(Functor_)
 
 export const URI = '@typed/fp/FxEither'
 export type URI = typeof URI
@@ -25,7 +25,7 @@ declare module 'fp-ts/HKT' {
   }
 }
 
-export const map = ET.map(Fx.Functor)
+export const map = ET.map(Functor_)
 
 export const Functor: Functor3<URI> = {
   URI,
@@ -37,35 +37,33 @@ export const Pointed: Pointed3<URI> = {
   of: right,
 }
 
-export const chain = ET.chain(Fx.Monad) as <A, ME, E1, B>(
-  f: (a: A) => Fx.Fx<ME, Either<E1, B>, unknown>,
-) => <E2>(ma: Fx.Fx<ME, Either<E2, A>, unknown>) => Fx.Fx<ME, Either<E1 | E2, B>, unknown>
+export const chain = ET.chain(Monad_) as <A, ME, E1, B>(
+  f: (a: A) => Fx<ME, Either<E1, B>, unknown>,
+) => <E2>(ma: Fx<ME, Either<E2, A>, unknown>) => Fx<ME, Either<E1 | E2, B>, unknown>
 
 export const Chain: Monad3<URI> = {
   ...Pointed,
   chain,
 }
 
-export const ap = ET.ap(Fx.Apply) as <FE, E1, A>(
-  fa: Fx.Fx<FE, Either<E1, A>, unknown>,
-) => <E2, B>(
-  fab: Fx.Fx<FE, Either<E2, (a: A) => B>, unknown>,
-) => Fx.Fx<FE, Either<E1 | E2, B>, unknown>
+export const ap = ET.ap(Apply_) as <FE, E1, A>(
+  fa: Fx<FE, Either<E1, A>, unknown>,
+) => <E2, B>(fab: Fx<FE, Either<E2, (a: A) => B>, unknown>) => Fx<FE, Either<E1 | E2, B>, unknown>
 
 export const Apply: Apply3<URI> = {
   ...Functor,
   ap,
 }
 
-export const alt = ET.alt(Fx.Monad)
+export const alt = ET.alt(Monad_)
 
 export const Alt: Alt3<URI> = {
   ...Functor,
   alt,
 }
 
-export const bimap = ET.bimap(Fx.Functor)
-export const mapLeft = ET.mapLeft(Fx.Functor)
+export const bimap = ET.bimap(Functor_)
+export const mapLeft = ET.mapLeft(Functor_)
 
 export const Bifunctor: Bifunctor3<URI> = {
   ...Functor,
@@ -73,8 +71,8 @@ export const Bifunctor: Bifunctor3<URI> = {
   bimap,
 }
 
-export const getOrElse = ET.getOrElse(Fx.Monad)
-export const orElse = ET.orElse(Fx.Monad)
-export const swap = ET.swap(Fx.Functor)
-export const toUnion = ET.toUnion(Fx.Functor)
-export const match = ET.match(Fx.Monad)
+export const getOrElse = ET.getOrElse(Monad_)
+export const orElse = ET.orElse(Monad_)
+export const swap = ET.swap(Functor_)
+export const toUnion = ET.toUnion(Functor_)
+export const match = ET.match(Monad_)
