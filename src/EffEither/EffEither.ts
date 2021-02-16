@@ -1,5 +1,4 @@
 import * as Eff from '@typed/fp/Eff'
-import { fromEnv, toEnv } from '@typed/fp/Eff/Eff'
 import { chainRec as chainRec_ } from '@typed/fp/EnvEither'
 import { fromIO, pure } from '@typed/fp/Fx'
 import { MonadRec3 } from '@typed/fp/MonadRec'
@@ -86,7 +85,7 @@ export const Monad: Monad3<URI> = {
 
 export const chainRec = <A, ME, E, B>(f: (a: A) => EffEither<ME, E, Either<A, B>>) => (
   value: A,
-): EffEither<ME, E, B> => fromEnv(flow(pipe(value, chainRec_(flow(f, toEnv)))))
+): EffEither<ME, E, B> => Eff.fromEnv(flow(pipe(value, chainRec_(flow(f, Eff.toEnv)))))
 
 export const MonadRec: MonadRec3<URI> = {
   ...Monad,
