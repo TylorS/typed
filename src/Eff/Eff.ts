@@ -57,6 +57,6 @@ export const fromEnv: <E, A>(env: Env<E, A>) => Eff<E, A> = FxT.liftFx<EnvURI>()
 
 export const toEnv: <E, A>(env: Eff<E, A>) => Env<E, A> = FxT.toMonad<EnvURI>(MonadRec)
 
-export const doEff: <Effects extends Env<any, any>, R, N = unknown>(
+export const doEnv: <Effects extends Env<any, any>, R, N = unknown>(
   f: (lift: FxT.LiftFx<EnvURI>) => Generator<Effects, R, N>,
 ) => Eff<Widen<GetEnvRequirements<Effects>, 'intersection'>, R> = FxT.getDo<EnvURI>()

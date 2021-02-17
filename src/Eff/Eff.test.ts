@@ -5,14 +5,14 @@ import { describe, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
 import { performance } from 'perf_hooks'
 
-import { doEff, fromEnv } from './Eff'
+import { doEnv, fromEnv } from './Eff'
 import { provideAll } from './provide'
 import { runPure } from './runPure'
 
 export const test = describe(`Eff`, [
   describe(`synchronous workflows`, [
     it(`wraps Env in generator-based do notation`, ({ equal }, done) => {
-      const foo = doEff(function* (_) {
+      const foo = doEnv(function* (_) {
         const a = yield* _(asks((e: { a: number }) => e.a))
         const b = yield* _(asks((e: { b: number }) => e.b))
 
@@ -38,7 +38,7 @@ export const test = describe(`Eff`, [
 
   describe(`asynchronous workflows`, [
     it(`wraps Env in generator-based do notation`, ({ ok }, done) => {
-      const foo = doEff(function* (_) {
+      const foo = doEnv(function* (_) {
         const a = yield* _(asks((e: { a: number }) => e.a))
         const x = yield* fromEnv((e: { delay: (time: number) => Resume<number> }) => e.delay(a))
 

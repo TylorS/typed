@@ -18,10 +18,11 @@ const SOURCE_DIR = join(ROOT_DIR, 'src')
 
 const EXTERNALS = ['fp-ts/*', '@typed/fp/*', '@most/adapter', '@most/*']
 const textDecoder = new TextDecoder('utf-8')
-const es6Import = /from\s"@typed\/fp\/([a-z0-9-_]+)"/gi
+const typedFpImport = /from\s"@typed\/fp\/([a-z0-9-_]+)"/gi
+const fpTsImport = /from\s"fp-ts\/([a-z0-9-_]+)"/gi
 
-const replaceES6LocalImports = (s: MagicString, offset = 0): void => {
-  const match = s.original.slice(offset).match(es6Import)
+const replaceTypedFpImports = (s: MagicString, offset = 0): void => {
+  const match = s.original.slice(offset).match(typedFpImport)
 
   if (!match) {
     return
@@ -30,11 +31,28 @@ const replaceES6LocalImports = (s: MagicString, offset = 0): void => {
   const part = match[0]
   const start = s.original.indexOf(part, offset)
   const end = start + part.length
-  const replacement = part.replace(es6Import, 'from "../$1/$1.mjs"')
+  const replacement = part.replace(typedFpImport, 'from "../$1/$1.mjs"')
 
   s.overwrite(start, end, replacement)
 
-  replaceES6LocalImports(s, offset + part.length)
+  replaceTypedFpImports(s, offset + part.length)
+}
+
+const replaceFpTsImports = (s: MagicString, offset = 0): void => {
+  const match = s.original.slice(offset).match(fpTsImport)
+
+  if (!match) {
+    return
+  }
+
+  const part = match[0]
+  const start = s.original.indexOf(part, offset)
+  const end = start + part.length
+  const replacement = part.replace(fpTsImport, 'from "fp-ts/$1/$1.es6.js"')
+
+  s.overwrite(start, end, replacement)
+
+  replaceFpTsImports(s, offset + part.length)
 }
 
 const readdir = (path: string) =>
@@ -209,7 +227,8 @@ function writeModule([moduleName, { packageJson, esm }]: [string, Module]) {
     indentExclusionRanges: [],
   })
 
-  replaceES6LocalImports(esmSource)
+  replaceTypedFpImports(esmSource)
+  replaceFpTsImports(esmSource)
 
   const esmMap = esmSource
     .generateMap({ hires: true, file: `${moduleName}.mjs`, includeContent: true })
@@ -217,7 +236,7 @@ function writeModule([moduleName, { packageJson, esm }]: [string, Module]) {
   const remappedEsmMap = remapping([esmMap, esm.map], () => null).toString()
 
   const files = [
-    [`${moduleName}/package.json`, packageJson],
+    [`${moduleName}/package.json`, packageJson + EOL],
     [`${moduleName}/${moduleName}.mjs`, esmSource.toString()],
     [`${moduleName}/${moduleName}.mjs.map`, formatJsonString(remappedEsmMap)],
   ] as const

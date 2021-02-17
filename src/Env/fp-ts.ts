@@ -1,9 +1,11 @@
 import { MonadRec2 } from '@typed/fp/MonadRec'
-import { race, sync } from '@typed/fp/Resume'
+import { fromTask as fromTask_, race, sync } from '@typed/fp/Resume'
 import { Widen } from '@typed/fp/Widen'
 import { Alt2 } from 'fp-ts/Alt'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
+import { FromIO2 } from 'fp-ts/FromIO'
+import { FromTask2 } from 'fp-ts/FromTask'
 import { pipe } from 'fp-ts/function'
 import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
 import { bind as bind_, Monad2 } from 'fp-ts/Monad'
@@ -51,6 +53,20 @@ export const MonadRec: MonadRec2<URI> = {
   ...Monad,
   chainRec,
 }
+
+export const FromIO: FromIO2<URI> = {
+  URI,
+  fromIO: (io) => () => sync(io),
+}
+
+export const fromIO = FromIO.fromIO
+
+export const FromTask: FromTask2<URI> = {
+  ...FromIO,
+  fromTask: (task) => () => fromTask_(task),
+}
+
+export const fromTask = FromTask.fromTask
 
 export const Alt: Alt2<URI> = {
   ...Functor,

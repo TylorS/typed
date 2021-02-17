@@ -1,12 +1,16 @@
 import * as E from '@typed/fp/Env'
 import { MonadRec3 } from '@typed/fp/MonadRec'
 import * as R from '@typed/fp/Resume'
+import { sync } from '@typed/fp/Resume'
 import { Alt3 } from 'fp-ts/Alt'
 import { Apply3 } from 'fp-ts/Apply'
 import { Bifunctor3 } from 'fp-ts/Bifunctor'
 import * as Ei from 'fp-ts/Either'
 import * as ET from 'fp-ts/EitherT'
-import { Lazy, pipe } from 'fp-ts/function'
+import { FromEither3 } from 'fp-ts/FromEither'
+import { FromIO3 } from 'fp-ts/FromIO'
+import { FromTask3 } from 'fp-ts/FromTask'
+import { constant, Lazy, pipe } from 'fp-ts/function'
 import { Functor3 } from 'fp-ts/Functor'
 import { Monad3 } from 'fp-ts/Monad'
 import { Pointed3 } from 'fp-ts/Pointed'
@@ -136,3 +140,25 @@ export const match = ET.match(E.Monad) as <E, R1, B, A, R2, C>(
   onLeft: (e: E) => E.Env<R1, B>,
   onRight: (a: A) => E.Env<R2, C>,
 ) => (ma: EnvEither<R1, E, A>) => E.Env<R1 & R2, B | C>
+
+export const FromIO: FromIO3<URI> = {
+  URI,
+  fromIO: (io) => rightEnv(E.fromReader(io)),
+}
+
+export const fromIO = FromIO.fromIO
+
+export const FromTask: FromTask3<URI> = {
+  ...FromIO,
+  fromTask: (task) => rightEnv(E.fromTask(task)),
+}
+
+export const fromTask = FromTask.fromTask
+
+export const fromEither = <E, A, R = never>(either: Ei.Either<E, A>): EnvEither<R, E, A> =>
+  pipe(either, constant, sync, constant)
+
+export const FromEither: FromEither3<URI> = {
+  URI,
+  fromEither,
+}
