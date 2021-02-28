@@ -1,7 +1,7 @@
 import { disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
 import { ArgsOf } from '@typed/fp/lambda'
-import { FunctionN } from 'fp-ts/function'
+import { FunctionN } from 'fp-ts/dist/function'
 
 /**
  * Wrap a non-Disposable function into a Disposable-returning function

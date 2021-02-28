@@ -1,2 +1,2 @@
-export * from './chainRec'
+export * from './MonadRec'
 export * from './EitherFx'

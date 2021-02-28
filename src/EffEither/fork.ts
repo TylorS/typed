@@ -1,7 +1,7 @@
 import { Disposable } from '@most/types'
 import { run } from '@typed/fp/Resume'
-import { match } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
+import { match } from 'fp-ts/dist/Either'
+import { pipe } from 'fp-ts/dist/function'
 
 import { EffEither, toEnvEither } from './EffEither'
 

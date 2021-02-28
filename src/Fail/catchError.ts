@@ -1,6 +1,6 @@
 import { Env } from '@typed/fp/Env'
 import { async, run } from '@typed/fp/Resume'
-import { pipe } from 'fp-ts/function'
+import { pipe } from 'fp-ts/dist/function'
 
 import { keyValue } from './_internal'
 import { FailEnv } from './FailEnv'

@@ -1,13 +1,13 @@
 import { Apply as Apply_, Functor as Functor_, Fx, Monad as Monad_, pure } from '@typed/fp/Fx'
-import { Alt3 } from 'fp-ts/Alt'
-import { Apply3 } from 'fp-ts/Apply'
-import { Bifunctor3 } from 'fp-ts/Bifunctor'
-import { Either, left as left_, right as right_ } from 'fp-ts/Either'
-import * as ET from 'fp-ts/EitherT'
-import { flow } from 'fp-ts/function'
-import { Functor3 } from 'fp-ts/Functor'
-import { Monad3 } from 'fp-ts/Monad'
-import { Pointed3 } from 'fp-ts/Pointed'
+import { Alt3 } from 'fp-ts/dist/Alt'
+import { Apply3 } from 'fp-ts/dist/Apply'
+import { Bifunctor3 } from 'fp-ts/dist/Bifunctor'
+import { Either, left as left_, right as right_ } from 'fp-ts/dist/Either'
+import * as ET from 'fp-ts/dist/EitherT'
+import { flow } from 'fp-ts/dist/function'
+import { Functor3 } from 'fp-ts/dist/Functor'
+import { Monad3 } from 'fp-ts/dist/Monad'
+import { Pointed3 } from 'fp-ts/dist/Pointed'
 
 import { FxEither, PureEither } from './FxEither'
 
@@ -19,7 +19,7 @@ export const leftFx = ET.leftF(Functor_)
 export const URI = '@typed/fp/FxEither'
 export type URI = typeof URI
 
-declare module 'fp-ts/HKT' {
+declare module 'fp-ts/dist/HKT' {
   export interface URItoKind3<R, E, A> {
     [URI]: FxEither<R, E, A>
   }
@@ -33,7 +33,6 @@ export const Functor: Functor3<URI> = {
 }
 
 export const Pointed: Pointed3<URI> = {
-  ...Functor,
   of: right,
 }
 
@@ -41,8 +40,9 @@ export const chain = ET.chain(Monad_) as <A, ME, E1, B>(
   f: (a: A) => Fx<ME, Either<E1, B>, unknown>,
 ) => <E2>(ma: Fx<ME, Either<E2, A>, unknown>) => Fx<ME, Either<E1 | E2, B>, unknown>
 
-export const Chain: Monad3<URI> = {
+export const Monad: Monad3<URI> = {
   ...Pointed,
+  ...Functor,
   chain,
 }
 

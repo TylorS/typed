@@ -1,4 +1,4 @@
-import { IO } from 'fp-ts/IO'
+import { IO } from 'fp-ts/dist/IO'
 
 import { doFx } from './doFx'
 import { Fx } from './Fx'

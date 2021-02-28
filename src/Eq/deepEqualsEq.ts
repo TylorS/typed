@@ -1,5 +1,5 @@
 import { functionName } from '@typed/fp/lambda/functionName'
-import { Eq } from 'fp-ts/Eq'
+import { Eq } from 'fp-ts/dist/Eq'
 
 /**
  * A deep-equality Eq instance.

@@ -1,3 +1,3 @@
-export * from './chainRec'
+export * from './MonadRec'
 export * from './fp-ts'
 export * from './IoFx'

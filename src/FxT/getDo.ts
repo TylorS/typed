@@ -1,5 +1,5 @@
 import { doFx, Fx } from '@typed/fp/Fx'
-import { HKT, Kind, Kind2, Kind3, Kind4, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
+import { HKT, Kind, Kind2, Kind3, Kind4, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 import { LiftFx, liftFx } from './liftFx'
 

@@ -1,7 +1,7 @@
 import { Env, map } from '@typed/fp/Env'
 import { EnvEither } from '@typed/fp/EnvEither'
-import { left, right } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
+import { left, right } from 'fp-ts/dist/Either'
+import { pipe } from 'fp-ts/dist/function'
 
 import { catchError } from './catchError'
 import { FailEnv } from './FailEnv'

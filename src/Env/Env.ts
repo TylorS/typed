@@ -9,9 +9,9 @@ import {
   Resume,
 } from '@typed/fp/Resume'
 import { Widen } from '@typed/fp/Widen'
-import { Either } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
-import { Reader } from 'fp-ts/Reader'
+import { Either } from 'fp-ts/dist/Either'
+import { pipe } from 'fp-ts/dist/function'
+import { Reader } from 'fp-ts/dist/Reader'
 import {
   ap as ap_,
   ask as ask_,
@@ -20,7 +20,7 @@ import {
   fromReader as fromReader_,
   map as map_,
   of as of_,
-} from 'fp-ts/ReaderT'
+} from 'fp-ts/dist/ReaderT'
 
 /**
  * Env<E, A> has the requirements E on the environment and will eventually Resume

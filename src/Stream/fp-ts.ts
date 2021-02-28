@@ -13,29 +13,30 @@ import {
   take,
 } from '@most/core'
 import { Stream } from '@most/types'
-import { MonadRec1 } from '@typed/fp/MonadRec'
-import { Alt1 } from 'fp-ts/Alt'
-import { Alternative1 } from 'fp-ts/Alternative'
-import { Applicative1 } from 'fp-ts/Applicative'
-import { Apply1 } from 'fp-ts/Apply'
-import { Compactable1 } from 'fp-ts/Compactable'
-import { Either, isLeft, isRight, Left, left, match, Right, right } from 'fp-ts/Either'
-import { Filterable1 } from 'fp-ts/Filterable'
-import { FromIO1 } from 'fp-ts/FromIO'
-import { FromTask1 } from 'fp-ts/FromTask'
-import { pipe, Predicate } from 'fp-ts/function'
-import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/Functor'
-import { bind as bind_, Monad1 } from 'fp-ts/Monad'
-import { Monoid } from 'fp-ts/Monoid'
-import { isSome, Option, Some } from 'fp-ts/Option'
-import { Pointed1 } from 'fp-ts/Pointed'
-import { Separated } from 'fp-ts/Separated'
+import { Alt1 } from 'fp-ts/dist/Alt'
+import { Alternative1 } from 'fp-ts/dist/Alternative'
+import { Applicative1 } from 'fp-ts/dist/Applicative'
+import { Apply1 } from 'fp-ts/dist/Apply'
+import { bind as bind_ } from 'fp-ts/dist/Chain'
+import { ChainRec1 } from 'fp-ts/dist/ChainRec'
+import { Compactable1 } from 'fp-ts/dist/Compactable'
+import { Either, isLeft, isRight, Left, left, match, Right, right } from 'fp-ts/dist/Either'
+import { Filterable1 } from 'fp-ts/dist/Filterable'
+import { FromIO1 } from 'fp-ts/dist/FromIO'
+import { FromTask1 } from 'fp-ts/dist/FromTask'
+import { pipe, Predicate } from 'fp-ts/dist/function'
+import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/dist/Functor'
+import { Monad1 } from 'fp-ts/dist/Monad'
+import { Monoid } from 'fp-ts/dist/Monoid'
+import { isSome, Option, Some } from 'fp-ts/dist/Option'
+import { Pointed1 } from 'fp-ts/dist/Pointed'
+import { Separated } from 'fp-ts/dist/Separated'
 
 export const URI = '@most/core/Stream' as const
 
 export type URI = typeof URI
 
-declare module 'fp-ts/HKT' {
+declare module 'fp-ts/dist/HKT' {
   interface URItoKind<A> {
     [URI]: Stream<A>
   }
@@ -82,7 +83,6 @@ export const Functor: Functor1<URI> = {
 }
 
 export const Pointed: Pointed1<URI> = {
-  ...Functor,
   of: now,
 }
 
@@ -105,7 +105,7 @@ export const Monad: Monad1<URI> = {
 export const chainRec = <A, B>(f: (value: A) => Stream<Either<A, B>>) => (value: A): Stream<B> =>
   pipe(value, f, chain(match(chainRec(f), now)))
 
-export const MonadRecChain: MonadRec1<URI> = {
+export const ChainRecChain: ChainRec1<URI> = {
   ...Monad,
   chainRec,
 }
@@ -113,7 +113,7 @@ export const MonadRecChain: MonadRec1<URI> = {
 export const switchRec = <A, B>(f: (value: A) => Stream<Either<A, B>>) => (value: A): Stream<B> =>
   pipe(value, f, map(match(switchRec(f), now)), switchLatest)
 
-export const MonadRecSwitch: MonadRec1<URI> = {
+export const ChainRecSwitch: ChainRec1<URI> = {
   ...Monad,
   chainRec: switchRec,
 }
@@ -128,7 +128,7 @@ export const mergeConcurrentlyRec = (concurrency: number) => <A, B>(
     mergeConcurrently(concurrency),
   )
 
-export const getConcurrentMonadRec = (concurrency: number): MonadRec1<URI> => ({
+export const getConcurrentChainRec = (concurrency: number): ChainRec1<URI> => ({
   ...Monad,
   chainRec: mergeConcurrentlyRec(concurrency),
 })

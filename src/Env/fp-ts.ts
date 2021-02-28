@@ -1,23 +1,25 @@
 import { MonadRec2 } from '@typed/fp/MonadRec'
 import { fromTask as fromTask_, race, sync } from '@typed/fp/Resume'
 import { Widen } from '@typed/fp/Widen'
-import { Alt2 } from 'fp-ts/Alt'
-import { Applicative2 } from 'fp-ts/Applicative'
-import { Apply2 } from 'fp-ts/Apply'
-import { FromIO2 } from 'fp-ts/FromIO'
-import { FromTask2 } from 'fp-ts/FromTask'
-import { pipe } from 'fp-ts/function'
-import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
-import { bind as bind_, Monad2 } from 'fp-ts/Monad'
-import { Pointed2 } from 'fp-ts/Pointed'
-import { sequence } from 'fp-ts/ReadonlyArray'
+import { Alt2 } from 'fp-ts/dist/Alt'
+import { Applicative2 } from 'fp-ts/dist/Applicative'
+import { Apply2 } from 'fp-ts/dist/Apply'
+import { bind as bind_ } from 'fp-ts/dist/Chain'
+import { ChainRec2 } from 'fp-ts/dist/ChainRec'
+import { FromIO2 } from 'fp-ts/dist/FromIO'
+import { FromTask2 } from 'fp-ts/dist/FromTask'
+import { pipe } from 'fp-ts/dist/function'
+import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/dist/Functor'
+import { Monad2 } from 'fp-ts/dist/Monad'
+import { Pointed2 } from 'fp-ts/dist/Pointed'
+import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
 import { ap, chain, chainRec, Env, GetRequirements, GetResume, map, of } from './Env'
 
 export const URI = '@typed/fp/Env'
 export type URI = typeof URI
 
-declare module 'fp-ts/HKT' {
+declare module 'fp-ts/dist/HKT' {
   export interface URItoKind2<E, A> {
     [URI]: Env<E, A>
   }
@@ -29,7 +31,6 @@ export const Functor: Functor2<URI> = {
 }
 
 export const Pointed: Pointed2<URI> = {
-  ...Functor,
   of,
 }
 
@@ -49,9 +50,14 @@ export const Monad: Monad2<URI> = {
   chain: chain as Monad2<URI>['chain'],
 }
 
+export const ChainRec: ChainRec2<URI> = {
+  URI,
+  chainRec,
+}
+
 export const MonadRec: MonadRec2<URI> = {
   ...Monad,
-  chainRec,
+  ...ChainRec,
 }
 
 export const FromIO: FromIO2<URI> = {

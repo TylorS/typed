@@ -1,6 +1,6 @@
 import { asks, Env } from '@typed/fp/Env'
 import { deepEqualsEq } from '@typed/fp/Eq'
-import { Eq } from 'fp-ts/Eq'
+import { Eq } from 'fp-ts/dist/Eq'
 
 /**
  * The abstraction over a Shared Key-Value pair using Env

@@ -1,4 +1,4 @@
-import { FunctionN } from 'fp-ts/function'
+import { FunctionN } from 'fp-ts/dist/function'
 
 export type Uncurry<
   F extends FunctionN<any, any>,

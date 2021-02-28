@@ -1,7 +1,7 @@
 import { Fx } from '@typed/fp/Fx'
-import { pipe } from 'fp-ts/function'
-import { HKT, Kind, Kind2, Kind3, URIS, URIS2, URIS3 } from 'fp-ts/HKT'
-import { Monad, Monad1, Monad2, Monad3 } from 'fp-ts/Monad'
+import { pipe } from 'fp-ts/dist/function'
+import { HKT, Kind, Kind2, Kind3, URIS, URIS2, URIS3 } from 'fp-ts/dist/HKT'
+import { Monad, Monad1, Monad2, Monad3 } from 'fp-ts/dist/Monad'
 
 export function toMonadUnsafe<F extends URIS>(
   M: Monad1<F>,

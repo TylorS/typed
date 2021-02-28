@@ -18,6 +18,7 @@ module.exports = {
     'prettier/prettier': ['error', prettierConfig],
     'simple-import-sort/imports': 'error',
     'simple-import-sort/exports': 'error',
+    'import/namespace': 'off',
     'import/no-unresolved': 'off', // Allow TS to do this checking,
     'import/no-cycle': ['error', { maxDepth: Infinity }],
     '@typescript-eslint/no-explicit-any': 'off',

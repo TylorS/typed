@@ -1,4 +1,4 @@
-import { Kind2, Kind3, URIS2, URIS3 } from 'fp-ts/HKT'
+import { Kind2, Kind3, URIS2, URIS3 } from 'fp-ts/dist/HKT'
 import { A, U } from 'ts-toolbelt'
 
 /**

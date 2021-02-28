@@ -1,7 +1,7 @@
 import { chain, Env, of } from '@typed/fp/Env'
 import { EnvEither } from '@typed/fp/EnvEither'
-import { isLeft } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
+import { isLeft } from 'fp-ts/dist/Either'
+import { pipe } from 'fp-ts/dist/function'
 
 import { FailEnv } from './FailEnv'
 import { throwError } from './throwError'

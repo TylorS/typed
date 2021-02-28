@@ -1,5 +1,5 @@
 import { Env } from '@typed/fp/Env'
-import { Either } from 'fp-ts/Either'
+import { Either } from 'fp-ts/dist/Either'
 
 export interface EnvEither<R, E, A> extends Env<R, Either<E, A>> {}
 

@@ -1,5 +1,5 @@
 import { Arity1 } from '@typed/fp/lambda'
-import { flow } from 'fp-ts/function'
+import { flow } from 'fp-ts/dist/function'
 
 import { async } from './Async'
 import { isSync, Resume } from './Resume'

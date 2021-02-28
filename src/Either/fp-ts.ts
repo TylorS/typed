@@ -1,14 +1,14 @@
 import { fromIO } from '@typed/fp/Fx'
-import { Alt2 } from 'fp-ts/Alt'
-import { Applicative2 } from 'fp-ts/Applicative'
-import { Apply2 } from 'fp-ts/Apply'
-import { Alt as Alt_ } from 'fp-ts/Either'
-import { FromIO2 } from 'fp-ts/FromIO'
-import { pipe } from 'fp-ts/function'
-import { Functor2 } from 'fp-ts/Functor'
-import { Monad2 } from 'fp-ts/Monad'
-import { Pointed2 } from 'fp-ts/Pointed'
-import { sequence } from 'fp-ts/ReadonlyArray'
+import { Alt2 } from 'fp-ts/dist/Alt'
+import { Applicative2 } from 'fp-ts/dist/Applicative'
+import { Apply2 } from 'fp-ts/dist/Apply'
+import { Alt as Alt_ } from 'fp-ts/dist/Either'
+import { FromIO2 } from 'fp-ts/dist/FromIO'
+import { pipe } from 'fp-ts/dist/function'
+import { Functor2 } from 'fp-ts/dist/Functor'
+import { Monad2 } from 'fp-ts/dist/Monad'
+import { Pointed2 } from 'fp-ts/dist/Pointed'
+import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
 import {
   ap,
@@ -25,7 +25,7 @@ import {
 export const URI = '@typed/fp/EitherFx'
 export type URI = typeof URI
 
-declare module 'fp-ts/HKT' {
+declare module 'fp-ts/dist/HKT' {
   export interface URItoKind2<E, A> {
     [URI]: EitherFx<E, A>
   }
@@ -37,7 +37,6 @@ export const Functor: Functor2<URI> = {
 }
 
 export const Pointed: Pointed2<URI> = {
-  ...Functor,
   of,
 }
 

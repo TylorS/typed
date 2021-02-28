@@ -1,12 +1,13 @@
 import * as R from '@typed/fp/Resume'
-import { Alt2 } from 'fp-ts/Alt'
-import { Apply2 } from 'fp-ts/Apply'
-import { Bifunctor2 } from 'fp-ts/Bifunctor'
-import * as ET from 'fp-ts/EitherT'
-import { Lazy } from 'fp-ts/function'
-import { Functor2 } from 'fp-ts/Functor'
-import { Monad2 } from 'fp-ts/Monad'
-import { Pointed2 } from 'fp-ts/Pointed'
+import { Alt2 } from 'fp-ts/dist/Alt'
+import { Apply2 } from 'fp-ts/dist/Apply'
+import { Bifunctor2 } from 'fp-ts/dist/Bifunctor'
+import { Chain2 } from 'fp-ts/dist/Chain'
+import * as ET from 'fp-ts/dist/EitherT'
+import { Lazy } from 'fp-ts/dist/function'
+import { Functor2 } from 'fp-ts/dist/Functor'
+import { Monad2 } from 'fp-ts/dist/Monad'
+import { Pointed2 } from 'fp-ts/dist/Pointed'
 
 import { ResumeEither } from './ResumeEither'
 
@@ -18,7 +19,7 @@ export const leftFromResume = ET.leftF(R.Functor)
 export const URI = '@typed/fp/ResumeEither'
 export type URI = typeof URI
 
-declare module 'fp-ts/HKT' {
+declare module 'fp-ts/dist/HKT' {
   export interface URItoKind2<E, A> {
     [URI]: ResumeEither<E, A>
   }
@@ -34,7 +35,6 @@ export const Functor: Functor2<URI> = {
 }
 
 export const Pointed: Pointed2<URI> = {
-  ...Functor,
   of: right,
 }
 
@@ -42,8 +42,14 @@ export const chain = ET.chain(R.Monad) as <A, E1, B>(
   f: (a: A) => ResumeEither<E1, B>,
 ) => <E2>(ma: ResumeEither<E2, A>) => ResumeEither<E1 | E2, B>
 
-export const Chain: Monad2<URI> = {
+export const Chain: Chain2<URI> = {
+  ...Functor,
+  chain,
+}
+
+export const Monad: Monad2<URI> = {
   ...Pointed,
+  ...Functor,
   chain,
 }
 

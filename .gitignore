@@ -65,14 +65,17 @@ snowpack.key
 /Either/
 /Env/
 /EnvEither/
+/Eq/
 /Fail/
 /Fx/
 /FxEither/
 /FxT/
 /IO/
 /MonadRec/
+/Ref/
 /Resume/
 /ResumeEither/
+/Shared/
 /Stream/
 /Widen/
 /lambda/

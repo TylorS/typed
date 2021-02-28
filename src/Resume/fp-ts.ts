@@ -1,18 +1,19 @@
-import { MonadRec1 } from '@typed/fp/MonadRec'
-import { Alt1 } from 'fp-ts/Alt'
-import { Applicative1 } from 'fp-ts/Applicative'
-import { Apply1 } from 'fp-ts/Apply'
-import { FromIO1 } from 'fp-ts/FromIO'
-import { FromTask1 } from 'fp-ts/FromTask'
-import { constant, flow, pipe } from 'fp-ts/function'
-import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/Functor'
-import { bind as bind_, Monad1 } from 'fp-ts/Monad'
-import { Pointed1 } from 'fp-ts/Pointed'
+import { Alt1 } from 'fp-ts/dist/Alt'
+import { Applicative1 } from 'fp-ts/dist/Applicative'
+import { Apply1 } from 'fp-ts/dist/Apply'
+import { bind as bind_ } from 'fp-ts/dist/Chain'
+import { ChainRec1 } from 'fp-ts/dist/ChainRec'
+import { FromIO1 } from 'fp-ts/dist/FromIO'
+import { FromTask1 } from 'fp-ts/dist/FromTask'
+import { constant, flow, pipe } from 'fp-ts/dist/function'
+import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/dist/Functor'
+import { Monad1 } from 'fp-ts/dist/Monad'
+import { Pointed1 } from 'fp-ts/dist/Pointed'
 
 import { ap } from './ap'
 import { fromTask } from './Async'
 import { chain } from './chain'
-import { chainRec } from './monadRec'
+import { chainRec } from './ChainRec'
 import { race } from './race'
 import { Resume } from './Resume'
 import { sync } from './Sync'
@@ -20,7 +21,7 @@ import { sync } from './Sync'
 export const URI = '@typed/fp/Resume'
 export type URI = typeof URI
 
-declare module 'fp-ts/HKT' {
+declare module 'fp-ts/dist/HKT' {
   export interface URItoKind<A> {
     [URI]: Resume<A>
   }
@@ -34,7 +35,6 @@ export const Functor: Functor1<URI> = {
 export const map = Functor.map
 
 export const Pointed: Pointed1<URI> = {
-  ...Functor,
   of: flow(constant, sync),
 }
 
@@ -54,8 +54,8 @@ export const Monad: Monad1<URI> = {
   chain,
 }
 
-export const MonadRec: MonadRec1<URI> = {
-  ...Monad,
+export const ChainRec: ChainRec1<URI> = {
+  URI,
   chainRec,
 }
 

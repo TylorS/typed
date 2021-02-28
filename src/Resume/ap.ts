@@ -1,7 +1,7 @@
 import { disposeNone } from '@most/disposable'
 import { settable } from '@typed/fp/Disposable'
 import { Arity1 } from '@typed/fp/lambda'
-import { isNone, none, Option, some } from 'fp-ts/Option'
+import { isNone, none, Option, some } from 'fp-ts/dist/Option'
 
 import { async } from './Async'
 import { isAsync, isSync, Resume } from './Resume'

@@ -2,9 +2,9 @@ import { Fx, map as map_, pure } from '@typed/fp/Fx'
 import * as FxT from '@typed/fp/FxT'
 import { getDo } from '@typed/fp/FxT'
 import { Arity1 } from '@typed/fp/lambda'
-import { Apply, Either, URI as EitherURI } from 'fp-ts/Either'
+import { Apply, Either, URI as EitherURI } from 'fp-ts/dist/Either'
 
-import { MonadRec } from './chainRec'
+import { MonadRec } from './MonadRec'
 
 /**
  * EitherFx is an Either monad lifted into a Fx/generator context for do-like notation

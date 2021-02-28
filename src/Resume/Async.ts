@@ -1,6 +1,6 @@
 import { Disposable } from '@most/types'
 import { settable } from '@typed/fp/Disposable'
-import { Task } from 'fp-ts/Task'
+import { Task } from 'fp-ts/dist/Task'
 
 export interface Async<A> {
   readonly _tag: 'async'

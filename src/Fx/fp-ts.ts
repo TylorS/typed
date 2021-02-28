@@ -1,11 +1,12 @@
-import { MonadRec2 } from '@typed/fp/MonadRec'
-import { Applicative2 } from 'fp-ts/Applicative'
-import { Apply2 } from 'fp-ts/Apply'
-import { Either, isLeft } from 'fp-ts/Either'
-import { FromIO2 } from 'fp-ts/FromIO'
-import { Functor2 } from 'fp-ts/Functor'
-import { ap as ap_, Monad2 } from 'fp-ts/Monad'
-import { Pointed2 } from 'fp-ts/Pointed'
+import { Applicative2 } from 'fp-ts/dist/Applicative'
+import { Apply2 } from 'fp-ts/dist/Apply'
+import { ap as ap_ } from 'fp-ts/dist/Chain'
+import { ChainRec2 } from 'fp-ts/dist/ChainRec'
+import { Either, isLeft } from 'fp-ts/dist/Either'
+import { FromIO2 } from 'fp-ts/dist/FromIO'
+import { Functor2 } from 'fp-ts/dist/Functor'
+import { Monad2 } from 'fp-ts/dist/Monad'
+import { Pointed2 } from 'fp-ts/dist/Pointed'
 
 import { doFx } from './doFx'
 import { Fx } from './Fx'
@@ -14,7 +15,7 @@ import { fromIO, pure } from './Pure'
 export const URI = '@typed/fp/Fx'
 export type URI = typeof URI
 
-declare module 'fp-ts/HKT' {
+declare module 'fp-ts/dist/HKT' {
   export interface URItoKind2<E, A> {
     [URI]: Fx<E, A>
   }
@@ -33,7 +34,6 @@ export const Functor: Functor2<URI> = {
 export const of = pure
 
 export const Pointed: Pointed2<URI> = {
-  ...Functor,
   of,
 }
 
@@ -46,7 +46,11 @@ export const chain = <A, E1, B>(f: (value: A) => Fx<E1, B>) => <E2>(
     return yield* f(a)
   })
 
-export const Monad: Monad2<URI> = { ...Pointed, chain }
+export const Monad: Monad2<URI> = {
+  ...Pointed,
+  ...Functor,
+  chain,
+}
 
 export const chainRec = <A, E, B>(f: (value: A) => Fx<E, Either<A, B>>) => (value: A): Fx<E, B> =>
   doFx(function* () {
@@ -59,7 +63,10 @@ export const chainRec = <A, E, B>(f: (value: A) => Fx<E, Either<A, B>>) => (valu
     return either.right
   })
 
-export const MonadRec: MonadRec2<URI> = { ...Monad, chainRec }
+export const ChainRec: ChainRec2<URI> = {
+  URI,
+  chainRec,
+}
 
 export const ap = ap_(Monad) as <E1, A>(
   fa: Fx<E1, A, unknown>,

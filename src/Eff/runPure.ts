@@ -2,7 +2,7 @@ import { disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
 import { Pure } from '@typed/fp/Fx'
 import { run } from '@typed/fp/Resume'
-import { pipe } from 'fp-ts/function'
+import { pipe } from 'fp-ts/dist/function'
 
 import { toEnv } from './Eff'
 

@@ -2,18 +2,19 @@ import * as E from '@typed/fp/Env'
 import { MonadRec3 } from '@typed/fp/MonadRec'
 import * as R from '@typed/fp/Resume'
 import { sync } from '@typed/fp/Resume'
-import { Alt3 } from 'fp-ts/Alt'
-import { Apply3 } from 'fp-ts/Apply'
-import { Bifunctor3 } from 'fp-ts/Bifunctor'
-import * as Ei from 'fp-ts/Either'
-import * as ET from 'fp-ts/EitherT'
-import { FromEither3 } from 'fp-ts/FromEither'
-import { FromIO3 } from 'fp-ts/FromIO'
-import { FromTask3 } from 'fp-ts/FromTask'
-import { constant, Lazy, pipe } from 'fp-ts/function'
-import { Functor3 } from 'fp-ts/Functor'
-import { Monad3 } from 'fp-ts/Monad'
-import { Pointed3 } from 'fp-ts/Pointed'
+import { Alt3 } from 'fp-ts/dist/Alt'
+import { Apply3 } from 'fp-ts/dist/Apply'
+import { Bifunctor3 } from 'fp-ts/dist/Bifunctor'
+import { ChainRec3 } from 'fp-ts/dist/ChainRec'
+import * as Ei from 'fp-ts/dist/Either'
+import * as ET from 'fp-ts/dist/EitherT'
+import { FromEither3 } from 'fp-ts/dist/FromEither'
+import { FromIO3 } from 'fp-ts/dist/FromIO'
+import { FromTask3 } from 'fp-ts/dist/FromTask'
+import { constant, Lazy, pipe } from 'fp-ts/dist/function'
+import { Functor3 } from 'fp-ts/dist/Functor'
+import { Monad3 } from 'fp-ts/dist/Monad'
+import { Pointed3 } from 'fp-ts/dist/Pointed'
 
 import { EnvEither } from './EnvEither'
 
@@ -32,7 +33,7 @@ export const rightEnv: <FE, A, E = never>(e: E.Env<FE, A>) => EnvEither<FE, E, A
 export const URI = '@typed/fp/EnvEither'
 export type URI = typeof URI
 
-declare module 'fp-ts/HKT' {
+declare module 'fp-ts/dist/HKT' {
   export interface URItoKind3<R, E, A> {
     [URI]: EnvEither<R, E, A>
   }
@@ -48,7 +49,6 @@ export const Functor: Functor3<URI> = {
 }
 
 export const Pointed: Pointed3<URI> = {
-  ...Functor,
   of: right,
 }
 
@@ -58,6 +58,7 @@ export const chain = ET.chain(E.Monad) as <A, ME1, E, B>(
 
 export const Monad: Monad3<URI> = {
   ...Pointed,
+  ...Functor,
   chain,
 }
 
@@ -87,9 +88,14 @@ export const chainRec = <A, ME, E, B>(f: (a: A) => EnvEither<ME, E, Ei.Either<A,
     ),
   )
 
+export const ChainRec: ChainRec3<URI> = {
+  URI,
+  chainRec,
+}
+
 export const MonadRec: MonadRec3<URI> = {
   ...Monad,
-  chainRec,
+  ...ChainRec,
 }
 
 export const ap = ET.ap(E.Apply) as <FE1, E, A>(

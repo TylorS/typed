@@ -1,9 +1,9 @@
 import { Fx, map as map_, pure } from '@typed/fp/Fx'
 import * as FxT from '@typed/fp/FxT'
 import { Arity1 } from '@typed/fp/lambda'
-import { Apply, IO, URI as IoURI } from 'fp-ts/IO'
+import { Apply, IO, URI as IoURI } from 'fp-ts/dist/IO'
 
-import { MonadRec } from './chainRec'
+import { MonadRec } from './MonadRec'
 
 /**
  * IOFx is an Either monad lifted into a Fx/generator context for do-like notation

@@ -1,17 +1,17 @@
 import { Alt as Alt_, fromTask as fromTask_ } from '@typed/fp/EnvEither'
 import { fromIO } from '@typed/fp/Fx'
-import { Alt3 } from 'fp-ts/Alt'
-import { Applicative3 } from 'fp-ts/Applicative'
-import { Apply3 } from 'fp-ts/Apply'
-import { FromIO3 } from 'fp-ts/FromIO'
-import { FromTask3 } from 'fp-ts/FromTask'
-import { flow, pipe } from 'fp-ts/function'
-import { Functor3 } from 'fp-ts/Functor'
-import { Monad3 } from 'fp-ts/Monad'
-import { Pointed3 } from 'fp-ts/Pointed'
-import { sequence } from 'fp-ts/ReadonlyArray'
+import { Widen } from '@typed/fp/Widen'
+import { Alt3 } from 'fp-ts/dist/Alt'
+import { Applicative3 } from 'fp-ts/dist/Applicative'
+import { Apply3 } from 'fp-ts/dist/Apply'
+import { FromIO3 } from 'fp-ts/dist/FromIO'
+import { FromTask3 } from 'fp-ts/dist/FromTask'
+import { flow, pipe } from 'fp-ts/dist/function'
+import { Functor3 } from 'fp-ts/dist/Functor'
+import { Monad3 } from 'fp-ts/dist/Monad'
+import { Pointed3 } from 'fp-ts/dist/Pointed'
+import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
-import { Widen } from '../Widen'
 import {
   ap,
   chain,
@@ -28,7 +28,7 @@ import {
 export const URI = '@typed/fp/Eff'
 export type URI = typeof URI
 
-declare module 'fp-ts/HKT' {
+declare module 'fp-ts/dist/HKT' {
   export interface URItoKind3<R, E, A> {
     [URI]: EffEither<R, E, A>
   }
@@ -40,7 +40,6 @@ export const Functor: Functor3<URI> = {
 }
 
 export const Pointed: Pointed3<URI> = {
-  ...Functor,
   of,
 }
 

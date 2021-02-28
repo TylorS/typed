@@ -1,9 +1,9 @@
 import { Arity1 } from '@typed/fp/lambda'
 import { MonadRec, MonadRec1, MonadRec2, MonadRec3 } from '@typed/fp/MonadRec'
 import { UnionWiden, Widen, WideningOptions } from '@typed/fp/Widen'
-import { Apply, Apply1, Apply2, Apply3 } from 'fp-ts/Apply'
-import { pipe } from 'fp-ts/function'
-import { URIS, URIS2, URIS3 } from 'fp-ts/HKT'
+import { Apply, Apply1, Apply2, Apply3 } from 'fp-ts/dist/Apply'
+import { pipe } from 'fp-ts/dist/function'
+import { URIS, URIS2, URIS3 } from 'fp-ts/dist/HKT'
 
 import { FxT, FxT1, FxT2, FxT3 } from './FxT'
 import { liftFx } from './liftFx'

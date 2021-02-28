@@ -1,6 +1,6 @@
 import { fromTask } from '@typed/fp/Eff'
 import { PureEither } from '@typed/fp/FxEither'
-import { left, right } from 'fp-ts/Either'
+import { left, right } from 'fp-ts/dist/Either'
 
 export function envify<L, R>(
   f: (cb: (e: L | null | undefined, r?: R) => void) => void,
