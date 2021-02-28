@@ -1,40 +1,31 @@
-import { asks, Env } from '@typed/fp/Env'
-import { deepEqualsEq } from '@typed/fp/Eq'
 import { Eq } from 'fp-ts/dist/Eq'
+import { HKT, Kind, Kind2, Kind3, Kind4, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 /**
- * The abstraction over a Shared Key-Value pair using Env
- * as the mechanism for retrieving the initial value if a
- * current value can not be found.
+ * The abstraction over a Shared Key-Value pair with an initial value and an Eq instance for
+ * checking when values change over time.
  */
-export interface Shared<K, E, V> extends Eq<V> {
+export interface Shared<F, K, A> extends Eq<A> {
   readonly key: K
-  readonly initial: Env<E, V>
+  readonly initial: HKT<F, A>
 }
 
-/**
- * Construct a Shared instance
- */
-export function createShared<K, E, V>(
-  key: K,
-  initial: Env<E, V>,
-  eq: Eq<V> = deepEqualsEq,
-): Shared<K, E, V> {
-  return {
-    key,
-    initial,
-    ...eq,
-  }
+export interface Shared1<F extends URIS, K, A> extends Eq<A> {
+  readonly key: K
+  readonly initial: Kind<F, A>
 }
 
-/**
- * Smart constructor for createing Shared using the environment
- */
-export const fromKey = <V>(eq: Eq<V> = deepEqualsEq) => <K extends PropertyKey>(
-  key: K,
-): Shared<K, { readonly [_ in K]: V }, V> =>
-  createShared(
-    key,
-    asks((e: { readonly [_ in K]: V }) => e[key]),
-    eq,
-  )
+export interface Shared2<F extends URIS2, K, E, A> extends Eq<A> {
+  readonly key: K
+  readonly initial: Kind2<F, E, A>
+}
+
+export interface Shared3<F extends URIS3, K, R, E, A> extends Eq<A> {
+  readonly key: K
+  readonly initial: Kind3<F, R, E, A>
+}
+
+export interface Shared4<F extends URIS4, K, S, R, E, A> extends Eq<A> {
+  readonly key: K
+  readonly initial: Kind4<F, S, R, E, A>
+}

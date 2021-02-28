@@ -26,7 +26,7 @@ declare module 'fp-ts/dist/HKT' {
   }
 }
 
-export const getAsk = <A>(): Ask2<URI, A> => ({ URI, ask })
+export const Ask: Ask2<URI> = { URI, ask }
 
 export const Functor: Functor2<URI> = {
   URI,

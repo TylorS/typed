@@ -13,6 +13,8 @@ export type Widen<W, Type extends WidenType | undefined> = IsNever<W> extends tr
     }[Type]
   : W
 
+export type WidenI<W> = Widen<W, 'intersection'>
+
 export type IsNever<A> = A.Equals<[never], [A]> extends 1 ? true : false
 
 export type WidenType = 'union' | 'intersection'
