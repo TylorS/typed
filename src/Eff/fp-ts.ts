@@ -1,4 +1,4 @@
-import { Alt as Alt_ } from '@typed/fp/Env'
+import { Alt as Alt_, ask } from '@typed/fp/Env'
 import { fromIO } from '@typed/fp/Fx'
 import { fromTask as fromTask_ } from '@typed/fp/Resume'
 import { Widen } from '@typed/fp/Widen'
@@ -13,6 +13,7 @@ import { Monad2 } from 'fp-ts/dist/Monad'
 import { Pointed2 } from 'fp-ts/dist/Pointed'
 import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
+import { Ask2 } from '../Ask'
 import { ap, chain, Eff, fromEnv, GetRequirements, GetResult, map, of, toEnv } from './Eff'
 
 export const URI = '@typed/fp/Eff'
@@ -23,6 +24,11 @@ declare module 'fp-ts/dist/HKT' {
     [URI]: Eff<E, A>
   }
 }
+
+export const getAsk = <A>(): Ask2<URI, A> => ({
+  URI,
+  ask: () => fromEnv(ask<A>()),
+})
 
 export const Functor: Functor2<URI> = {
   URI,

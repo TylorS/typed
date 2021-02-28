@@ -1,3 +1,4 @@
+import { Ask2 } from '@typed/fp/Ask'
 import { MonadRec2 } from '@typed/fp/MonadRec'
 import { fromTask as fromTask_, race, sync } from '@typed/fp/Resume'
 import { Widen } from '@typed/fp/Widen'
@@ -14,7 +15,7 @@ import { Monad2 } from 'fp-ts/dist/Monad'
 import { Pointed2 } from 'fp-ts/dist/Pointed'
 import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
-import { ap, chain, chainRec, Env, GetRequirements, GetResume, map, of } from './Env'
+import { ap, ask, chain, chainRec, Env, GetRequirements, GetResume, map, of } from './Env'
 
 export const URI = '@typed/fp/Env'
 export type URI = typeof URI
@@ -24,6 +25,8 @@ declare module 'fp-ts/dist/HKT' {
     [URI]: Env<E, A>
   }
 }
+
+export const getAsk = <A>(): Ask2<URI, A> => ({ URI, ask })
 
 export const Functor: Functor2<URI> = {
   URI,
