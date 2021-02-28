@@ -8,7 +8,9 @@ import { FxT } from './FxT'
 import { liftFx } from './liftFx'
 import { toMonadUnsafe } from './toMonadUnsafe'
 
-export function chainUnsafe<F, W extends WideningOptions = UnionWiden>(M: Monad<F>): ChainFxT<F, W> {
+export function chainUnsafe<F, W extends WideningOptions = UnionWiden>(
+  M: Monad<F>,
+): ChainFxT<F, W> {
   return chain_(M) as ChainFxT<F, W>
 }
 
