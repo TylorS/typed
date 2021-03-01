@@ -22,6 +22,10 @@ export interface GetShared2<F extends URIS2> {
   readonly getShared: <K, E, A>(shared: Shared2<F, K, E, A>) => Kind2<F, E, A>
 }
 
+export interface GetShared2C<F extends URIS2, E> {
+  readonly getShared: <K, A>(shared: Shared2<F, K, E, A>) => Kind2<F, E, A>
+}
+
 export interface GetShared3<F extends URIS3> {
   readonly getShared: <K, R, E, A>(shared: Shared3<F, K, R, E, A>) => Kind3<F, R, E, A>
 }

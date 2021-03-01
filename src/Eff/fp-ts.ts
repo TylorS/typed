@@ -1,6 +1,7 @@
 import { Ask2 } from '@typed/fp/Ask'
 import { Alt as Alt_, ask } from '@typed/fp/Env'
 import { fromIO } from '@typed/fp/Fx'
+import { MonadAsk2 } from '@typed/fp/MonadAsk'
 import { fromTask as fromTask_ } from '@typed/fp/Resume'
 import { Widen } from '@typed/fp/Widen'
 import { Alt2 } from 'fp-ts/dist/Alt'
@@ -14,7 +15,9 @@ import { Monad2 } from 'fp-ts/dist/Monad'
 import { Pointed2 } from 'fp-ts/dist/Pointed'
 import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '../Provider'
 import { ap, chain, Eff, fromEnv, GetRequirements, GetResult, map, of, toEnv } from './Eff'
+import { provideAll, provideSome, useAll, useSome } from './provide'
 
 export const URI = '@typed/fp/Eff'
 export type URI = typeof URI
@@ -53,6 +56,34 @@ export const Monad: Monad2<URI> = {
   ...Functor,
   ...Pointed,
   chain: chain as Monad2<URI>['chain'],
+}
+
+export const MonadAsk: MonadAsk2<URI> = {
+  ...Monad,
+  ...Ask,
+}
+
+export const ProvideSome: ProvideSome2<URI> = {
+  provideSome,
+}
+
+export const ProvideAll: ProvideAll2<URI> = {
+  provideAll,
+}
+
+export const UseSome: UseSome2<URI> = {
+  useSome,
+}
+
+export const UseAll: UseAll2<URI> = {
+  useAll,
+}
+
+export const Provide: Provide2<URI> = {
+  provideSome,
+  provideAll,
+  useSome,
+  useAll,
 }
 
 export const FromIO: FromIO2<URI> = {

@@ -15,6 +15,7 @@ import { Monad2 } from 'fp-ts/dist/Monad'
 import { Pointed2 } from 'fp-ts/dist/Pointed'
 import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
+import { MonadAsk2 } from '../MonadAsk'
 import { ap, ask, chain, chainRec, Env, GetRequirements, GetResume, map, of } from './Env'
 
 export const URI = '@typed/fp/Env'
@@ -51,6 +52,11 @@ export const Monad: Monad2<URI> = {
   ...Functor,
   ...Pointed,
   chain: chain as Monad2<URI>['chain'],
+}
+
+export const MonadAsk: MonadAsk2<URI> = {
+  ...Monad,
+  ...Ask,
 }
 
 export const ChainRec: ChainRec2<URI> = {

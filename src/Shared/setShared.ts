@@ -53,35 +53,37 @@ export interface SetShared4C<F extends URIS4, E> {
 
 export function setShared<F extends URIS2>(
   M: MonadAsk2<F>,
-): <A>(value: A) => <K, E>(shared: Shared2<F, K, E, A>) => Kind2<F, WidenI<E | SetShared<F>>, A>
+): <A>(value: A) => <K, E>(shared: Shared2<F, K, E, A>) => Kind2<F, WidenI<E | SetShared2<F>>, A>
 
 export function setShared<F extends URIS2, E>(
   M: MonadAsk2C<F, E>,
-): <A>(value: A) => <K>(shared: Shared2<F, K, E, A>) => Kind2<F, WidenI<E | SetShared<F>>, A>
+): <A>(value: A) => <K>(shared: Shared2<F, K, E, A>) => Kind2<F, WidenI<E | SetShared2C<F, E>>, A>
 
 export function setShared<F extends URIS3>(
   M: MonadAsk3<F>,
 ): <A>(
   value: A,
-) => <K, R, E>(shared: Shared3<F, K, R, E, A>) => Kind3<F, WidenI<R | SetShared<F>>, E, A>
+) => <K, R, E>(shared: Shared3<F, K, R, E, A>) => Kind3<F, WidenI<R | SetShared3<F>>, E, A>
 
 export function setShared<F extends URIS3, E>(
   M: MonadAsk3C<F, E>,
 ): <A>(
   value: A,
-) => <K, R>(shared: Shared3<F, K, R, E, A>) => Kind3<F, WidenI<R | SetShared<F>>, E, A>
+) => <K, R>(shared: Shared3<F, K, R, E, A>) => Kind3<F, WidenI<R | SetShared3C<F, E>>, E, A>
 
 export function setShared<F extends URIS4>(
   M: MonadAsk4<F>,
 ): <A>(
   value: A,
-) => <K, S, R, E>(shared: Shared4<F, K, S, R, E, A>) => Kind4<F, S, WidenI<R | SetShared<F>>, E, A>
+) => <K, S, R, E>(shared: Shared4<F, K, S, R, E, A>) => Kind4<F, S, WidenI<R | SetShared4<F>>, E, A>
 
 export function setShared<F extends URIS4, E>(
   M: MonadAsk4C<F, E>,
 ): <A>(
   value: A,
-) => <K, S, R>(shared: Shared4<F, K, S, R, E, A>) => Kind4<F, S, WidenI<R | SetShared<F>>, E, A>
+) => <K, S, R>(
+  shared: Shared4<F, K, S, R, E, A>,
+) => Kind4<F, S, WidenI<R | SetShared4C<F, E>>, E, A>
 
 export function setShared<F>(
   M: MonadAsk<F>,
