@@ -30,49 +30,84 @@ At present only modern environments that support ES2019 Syntax, including newer 
 ### Monads
 
 - [ ] EnvThese
+- [ ] EnvTheseFx
 - [ ] EffThese
+- [ ] EffTheseFx
 - [ ] ResumeThese
+- [ ] ResumeTheseFx
 - [ ] StateEnv
+- [ ] StateEnvFx
 - [ ] StateEnvEither
+- [ ] StateEnvEitherFx
 - [ ] StateEnvThese
+- [ ] StateEnvTheseFx
 - [ ] FxThese
 - [ ] StreamEither
 - [ ] StreamThese
 - [x] IO
+- [x] IOFx
 - [ ] IOEither
+- [ ] IOEitherFx
 - [ ] Option
-- [ ] Reader
+- [ ] OptionFx
+- [x] Reader
+- [x] ReaderFx
 - [ ] ReaderEither
+- [ ] ReaderEitherFx
 - [ ] ReaderTask
+- [ ] ReaderTaskFx
 - [ ] ReaderTaskEither
+- [ ] ReaderTaskEitherFx
 - [ ] ReadonlyArray
+- [ ] ReadonlyArrayFx
 - [ ] ReadonlyMap
+- [ ] ReadonlyMapFx
 - [ ] ReadonlyNonEmptyArray
+- [ ] ReadonlyNonEmptyArrayFx
 - [ ] ReadonlyRecord
+- [ ] ReadonlyRecordFx
 - [ ] ReadonlySet
+- [ ] ReadonlySetFx
 - [ ] State
+- [ ] StateFx
 - [ ] StateReaderTaskEither
+- [ ] StateReaderTaskEitherFx
 - [ ] Task
+- [ ] TaskFx
 - [ ] TaskEither
+- [ ] TaskEitherFx
 - [ ] TaskOption
+- [ ] TaskOptionFX
 - [ ] TaskThese
+- [ ] TaskTheseFx
 - [ ] These
+- [ ] TheseFx
 - [ ] Tree
+- [ ] TreeFx
 - [ ] Tuple2
+- [ ] Tuple2Fx
 - [ ] Writer
+- [ ] WriterFx
 
 ### Comonads
 
-- Is there a syntax for Comonadic syntax we can adopt?
-
-- [ ] Store
-- [ ] Traced
-
+- Explore Co (CoMonad->Monad), Pairings (Comonad+Monad), Day convolution and related concepts..
+  
 ### Addition Packages
 
+- [ ] Shared - Key-values built atop of MonadAsk
+  - [ ] EnvShared
+  - [ ] EffShared
+  - [ ] ReaderShared
+- [ ] FromResume
+  - [ ] fromResume(FromTask)
+- [ ] ToTask
+- [ ] ToResume
+  - [ ] toResume(ToTask)
+- [ ] Failures - Ask + FromResume/ToResume
 - [ ] Fibers
-- [ ] Shared
 - [ ] RemoteData
+- [ ] RemoteDataFx
 - [ ] ADT generators
 - [ ] io-ts or custom ??
 - [ ] Tagged types 
