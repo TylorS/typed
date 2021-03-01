@@ -1,10 +1,9 @@
+import { MonadRec } from '@typed/fp/Either'
 import { Fx, map as map_, pure } from '@typed/fp/Fx'
 import * as FxT from '@typed/fp/FxT'
 import { getDo } from '@typed/fp/FxT'
 import { Arity1 } from '@typed/fp/lambda'
 import { Apply, Either, URI as EitherURI } from 'fp-ts/dist/Either'
-
-import { MonadRec } from './MonadRec'
 
 /**
  * EitherFx is an Either monad lifted into a Fx/generator context for do-like notation
@@ -19,7 +18,7 @@ import { MonadRec } from './MonadRec'
  */
 export interface EitherFx<E, A> extends Fx<Either<E, unknown>, A> {}
 
-export type GetRequirements<A> = A extends EitherFx<infer R, any> ? R : never
+export type GetLeft<A> = A extends EitherFx<infer R, any> ? R : never
 
 export type GetResult<A> = A extends EitherFx<any, infer R> ? R : never
 

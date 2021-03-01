@@ -1,3 +1,4 @@
+import { Ask2 } from '@typed/fp/Ask'
 import { Alt as Alt_, ask } from '@typed/fp/Env'
 import { fromIO } from '@typed/fp/Fx'
 import { fromTask as fromTask_ } from '@typed/fp/Resume'
@@ -13,7 +14,6 @@ import { Monad2 } from 'fp-ts/dist/Monad'
 import { Pointed2 } from 'fp-ts/dist/Pointed'
 import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
-import { Ask2 } from '../Ask'
 import { ap, chain, Eff, fromEnv, GetRequirements, GetResult, map, of, toEnv } from './Eff'
 
 export const URI = '@typed/fp/Eff'

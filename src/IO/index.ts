@@ -1,3 +1,2 @@
 export * from './MonadRec'
-export * from './fp-ts'
-export * from './IoFx'
+export * from 'fp-ts/dist/IO'

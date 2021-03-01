@@ -1,2 +1,2 @@
 export * from './MonadRec'
-export * from './EitherFx'
+export * from 'fp-ts/dist/Either'

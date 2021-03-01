@@ -10,17 +10,7 @@ import { Monad2 } from 'fp-ts/dist/Monad'
 import { Pointed2 } from 'fp-ts/dist/Pointed'
 import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
-import {
-  ap,
-  chain,
-  doEither,
-  EitherFx,
-  GetRequirements,
-  GetResult,
-  map,
-  of,
-  toEither,
-} from './EitherFx'
+import { ap, chain, doEither, EitherFx, GetLeft, GetResult, map, of, toEither } from './EitherFx'
 
 export const URI = '@typed/fp/EitherFx'
 export type URI = typeof URI
@@ -78,4 +68,4 @@ export const zip = (sequence(Applicative) as unknown) as <
   Effs extends readonly EitherFx<any, any>[]
 >(
   envs: Effs,
-) => EitherFx<GetRequirements<Effs[number]>, { readonly [K in keyof Effs]: GetResult<Effs[K]> }>
+) => EitherFx<GetLeft<Effs[number]>, { readonly [K in keyof Effs]: GetResult<Effs[K]> }>

@@ -7,14 +7,14 @@ import { Monad1 } from 'fp-ts/dist/Monad'
 import { Pointed1 } from 'fp-ts/dist/Pointed'
 import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
-import { ap, chain, GetResult, IOFx, map, of } from './IoFx'
+import { ap, chain, GetResult, IoFx, map, of } from './IOFx'
 
 export const URI = '@typed/fp/EitherFx'
 export type URI = typeof URI
 
 declare module 'fp-ts/dist/HKT' {
   export interface URItoKind<A> {
-    [URI]: IOFx<A>
+    [URI]: IoFx<A>
   }
 }
 
@@ -48,6 +48,6 @@ export const FromIO: FromIO1<URI> = {
   fromIO,
 }
 
-export const zip = (sequence(Applicative) as unknown) as <Effs extends readonly IOFx<any>[]>(
+export const zip = (sequence(Applicative) as unknown) as <Effs extends readonly IoFx<any>[]>(
   envs: Effs,
-) => IOFx<{ readonly [K in keyof Effs]: GetResult<Effs[K]> }>
+) => IoFx<{ readonly [K in keyof Effs]: GetResult<Effs[K]> }>
