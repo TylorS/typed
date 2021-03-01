@@ -15,7 +15,7 @@ import { Monad2 } from 'fp-ts/dist/Monad'
 import { Pointed2 } from 'fp-ts/dist/Pointed'
 import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
-import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '../Provider'
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '../Provide'
 import { ap, chain, Eff, fromEnv, GetRequirements, GetResult, map, of, toEnv } from './Eff'
 import { provideAll, provideSome, useAll, useSome } from './provide'
 
