@@ -32,6 +32,12 @@ export function usingNamespace<F extends URIS4>(
   <S, R, E, A>(kind: Kind4<F, S, R & CurrentNamespace<K>, E, A>): Kind4<F, S, R, E, A>
 }
 
+export function usingNamespace<F>(
+  M: UseSome<F>,
+): <K extends PropertyKey = PropertyKey>(
+  namespace: Namespace<K>,
+) => <A>(kind: HKT2<F, CurrentNamespace<K>, A>) => HKT2<F, never, A>
+
 export function usingNamespace<F>(M: UseSome<F>) {
   return <K extends PropertyKey = PropertyKey>(namespace: Namespace<K>) => <A>(
     kind: HKT2<F, CurrentNamespace<K>, A>,
