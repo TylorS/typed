@@ -95,11 +95,11 @@ At present only modern environments that support ES2019 Syntax, including newer 
   
 ### Addition Packages
 
-- [ ] Shared - Key-values built atop of MonadAsk
+- [x] Shared - Key-values built atop of MonadAsk
 - [ ] Namespace 
   - [ ] CurrentNamespace 
-- [ ] EnvShared
-- [ ] EffShared
+- [x] EnvShared
+- [x] EffShared
 - [ ] ReaderShared
 - [x] FromResume
   - [ ] fromResume(FromTask)

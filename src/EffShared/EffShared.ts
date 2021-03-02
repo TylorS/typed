@@ -1,4 +1,4 @@
-import { Eff, MonadAsk, URI } from '@typed/fp/Eff'
+import { Ask, Eff, Functor, MonadAsk, URI } from '@typed/fp/Eff'
 import {
   createShared as createShared_,
   deleteShared as deleteShared_,
@@ -47,4 +47,4 @@ export const fromKey: <A>(
   eq?: Eq<A>,
 ) => <K extends string | number | symbol>(
   key: K,
-) => EffShared<K, Readonly<Record<K, A>>, A> = fromKey_(MonadAsk)
+) => EffShared<K, Readonly<Record<K, A>>, A> = fromKey_({ ...Ask, ...Functor })

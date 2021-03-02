@@ -42,10 +42,18 @@ export function createShared<F extends URIS4, E>(): <K, S, R, A>(
 
 export function createShared<F>(): <K, A>(key: K, initial: HKT<F, A>, eq?: Eq<A>) => Shared<F, K, A>
 
-export function createShared<F>() {
-  return <K, A>(key: K, initial: HKT<F, A>, eq: Eq<A> = deepEqualsEq): Shared<F, K, A> => ({
+export function createShared() {
+  return _createShared
+}
+
+function _createShared<K, A>(
+  key: K,
+  initial: HKT<any, A>,
+  eq: Eq<A> = deepEqualsEq,
+): Shared<any, K, A> {
+  return {
     key,
     initial,
     ...eq,
-  })
+  }
 }

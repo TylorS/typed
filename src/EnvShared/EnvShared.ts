@@ -1,4 +1,4 @@
-import { Env, MonadAsk, URI } from '@typed/fp/Env'
+import { Ask, Env, Functor, MonadAsk, URI } from '@typed/fp/Env'
 import {
   createShared as createShared_,
   deleteShared as deleteShared_,
@@ -47,4 +47,4 @@ export const fromKey: <A>(
   eq?: Eq<A> | undefined,
 ) => <K extends string | number | symbol>(
   key: K,
-) => EnvShared<K, Readonly<Record<K, A>>, A> = fromKey_(MonadAsk)
+) => EnvShared<K, Readonly<Record<K, A>>, A> = fromKey_({ ...Ask, ...Functor })
