@@ -16,7 +16,9 @@ import { Pointed2 } from 'fp-ts/dist/Pointed'
 import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
 import { MonadAsk2 } from '../MonadAsk'
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '../Provide'
 import { ap, ask, chain, chainRec, Env, GetRequirements, GetResume, map, of } from './Env'
+import { provideAll, provideSome, useAll, useSome } from './provide'
 
 export const URI = '@typed/fp/Env'
 export type URI = typeof URI
@@ -102,3 +104,26 @@ export const zip = (sequence(Applicative) as unknown) as <Envs extends readonly 
   Widen<{ readonly [K in keyof Envs]: GetRequirements<Envs[K]> }[number], 'intersection'>,
   { readonly [K in keyof Envs]: GetResume<Envs[K]> }
 >
+
+export const ProvideSome: ProvideSome2<URI> = {
+  provideSome,
+}
+
+export const ProvideAll: ProvideAll2<URI> = {
+  provideAll,
+}
+
+export const UseSome: UseSome2<URI> = {
+  useSome,
+}
+
+export const UseAll: UseAll2<URI> = {
+  useAll,
+}
+
+export const Provide: Provide2<URI> = {
+  provideSome,
+  provideAll,
+  useSome,
+  useAll,
+}

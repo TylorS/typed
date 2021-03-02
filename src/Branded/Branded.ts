@@ -1,4 +1,4 @@
-import { unsafeCoerce } from 'fp-ts/dist/function'
+import { constant, unsafeCoerce } from 'fp-ts/dist/function'
 
 /**
  * Construct a branded type. It remains compatible with the underlying type A, but
@@ -9,9 +9,9 @@ export type Branded<Brand, A> = A & { __brand__: Brand }
 /**
  * A curried functon for helping to construct certain kinds of brands
  */
-export const Branded = <B extends Branded<unknown, unknown>>() => <A extends BrandValue<B>>(
+export const Branded: <B extends Branded<unknown, unknown>>() => <A extends BrandValue<B>>(
   value: A,
-): Branded<BrandOf<B>, A> => brand<B, A>(value)
+) => Branded<BrandOf<B>, A> = constant(unsafeCoerce)
 
 /**
  * Extract the Brand of a given Branded Type
@@ -26,6 +26,4 @@ export type BrandValue<A> = [A] extends [Branded<BrandOf<A>, infer R>] ? R : nev
 /**
  * Construct a branded type.
  */
-export const brand: <B extends Branded<unknown, unknown>, A extends BrandValue<B> = BrandValue<B>>(
-  value: A,
-) => Branded<BrandOf<B>, A> = unsafeCoerce
+export const brand: <B extends Branded<unknown, unknown>>(value: BrandValue<B>) => B = unsafeCoerce

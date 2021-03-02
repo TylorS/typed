@@ -17,7 +17,7 @@ export interface Ask2C<F extends URIS2, A> {
 
 export interface Ask3<F extends URIS3> {
   readonly URI?: F
-  readonly ask: <R, A>() => Kind3<F, R, A, A>
+  readonly ask: <E, A>() => Kind3<F, A, E, A>
 }
 
 export interface Ask3C<F extends URIS3, E> {

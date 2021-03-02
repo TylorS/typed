@@ -10,7 +10,7 @@ export function asks<F extends URIS2, A>(
 
 export function asks<F extends URIS3>(
   M: Ask3<F> & Functor3<F>,
-): <R, A, B>(f: (asked: A) => B) => Kind3<F, R, A, B>
+): <A, B, E = never>(f: (asked: A) => B) => Kind3<F, A, E, B>
 
 export function asks<F extends URIS3, E>(
   M: Ask3C<F, E> & Functor3C<F, E>,
