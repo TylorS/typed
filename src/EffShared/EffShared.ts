@@ -1,4 +1,4 @@
-import { Env, MonadAsk, URI } from '@typed/fp/Env'
+import { Eff, MonadAsk, URI } from '@typed/fp/Eff'
 import {
   createShared as createShared_,
   deleteShared as deleteShared_,
@@ -15,36 +15,36 @@ import { WidenI } from '@typed/fp/Widen'
 import { Eq } from 'fp-ts/dist/Eq'
 import { Option } from 'fp-ts/dist/Option'
 
-export interface EnvShared<K, E, A> extends Shared2<URI, K, E, A> {}
+export interface EffShared<K, E, A> extends Shared2<URI, K, E, A> {}
 
 export const createShared: <K, E, A>(
   key: K,
-  initial: Env<E, A>,
+  initial: Eff<E, A>,
   eq?: Eq<A>,
-) => EnvShared<K, E, A> = createShared_<URI>()
+) => EffShared<K, E, A> = createShared_<URI>()
 
 export const modifyShared: <A>(
   f: (value: A) => A,
 ) => <K, E>(
-  shared: EnvShared<K, E, A>,
-) => Env<WidenI<E | SetShared2<URI> | GetShared2<URI>>, A> = modifyShared_(MonadAsk)
+  shared: EffShared<K, E, A>,
+) => Eff<WidenI<E | SetShared2<URI> | GetShared2<URI>>, A> = modifyShared_(MonadAsk)
 
 export const getShared: <K, E, A>(
-  shared: EnvShared<K, E, A>,
-) => Env<WidenI<E | GetShared2<URI>>, A> = getShared_(MonadAsk)
+  shared: EffShared<K, E, A>,
+) => Eff<WidenI<E | GetShared2<URI>>, A> = getShared_(MonadAsk)
 
 export const setShared: <A>(
   value: A,
-) => <K, E>(shared: EnvShared<K, E, A>) => Env<WidenI<E | SetShared2<URI>>, A> = setShared_(
+) => <K, E>(shared: EffShared<K, E, A>) => Eff<WidenI<E | SetShared2<URI>>, A> = setShared_(
   MonadAsk,
 )
 
 export const deleteShared: <K, E, A>(
-  shared: EnvShared<K, E, A>,
-) => Env<WidenI<E | DeleteShared2<URI>>, Option<A>> = deleteShared_(MonadAsk)
+  shared: EffShared<K, E, A>,
+) => Eff<WidenI<E | DeleteShared2<URI>>, Option<A>> = deleteShared_(MonadAsk)
 
 export const fromKey: <A>(
   eq?: Eq<A>,
 ) => <K extends string | number | symbol>(
   key: K,
-) => EnvShared<K, Readonly<Record<K, A>>, A> = fromKey_(MonadAsk)
+) => EffShared<K, Readonly<Record<K, A>>, A> = fromKey_(MonadAsk)
