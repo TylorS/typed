@@ -8,7 +8,7 @@ import {
 import { Fx, map as map_, pure } from '@typed/fp/Fx'
 import * as FxT from '@typed/fp/FxT'
 import { Arity1 } from '@typed/fp/lambda'
-import { Widen } from '@typed/fp/Widen'
+import { WidenI } from '@typed/fp/Widen'
 import { A } from 'ts-toolbelt'
 
 /**
@@ -34,7 +34,7 @@ export interface Eff<E, A> extends Fx<IsNever<E> extends true ? never : Env<E, u
 /**
  * Extract the resources that are required to run a given Eff
  */
-export type GetRequirements<A> = A extends Eff<infer R, any> ? Widen<R, 'intersection'> : never
+export type GetRequirements<A> = A extends Eff<infer R, any> ? WidenI<R> : never
 
 /**
  * Extract the result value from an Eff
@@ -57,6 +57,6 @@ export const fromEnv: <E, A>(env: Env<E, A>) => Eff<E, A> = FxT.liftFx<EnvURI>()
 
 export const toEnv: <E, A>(env: Eff<E, A>) => Env<E, A> = FxT.toMonad<EnvURI>(MonadRec)
 
-export const doEnv: <Effects extends Env<any, any>, R, N = unknown>(
+export const doEnv = FxT.getDo<EnvURI>() as <Effects extends Env<never, any>, R, N = unknown>(
   f: (lift: FxT.LiftFx<EnvURI>) => Generator<Effects, R, N>,
-) => Eff<Widen<GetEnvRequirements<Effects>, 'intersection'>, R> = FxT.getDo<EnvURI>()
+) => Eff<WidenI<GetEnvRequirements<Effects>>, R>

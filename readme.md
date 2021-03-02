@@ -96,10 +96,12 @@ At present only modern environments that support ES2019 Syntax, including newer 
 ### Addition Packages
 
 - [ ] Shared - Key-values built atop of MonadAsk
-  - [ ] EnvShared
-  - [ ] EffShared
-  - [ ] ReaderShared
-- [ ] FromResume
+- [ ] Namespace 
+  - [ ] CurrentNamespace 
+- [ ] EnvShared
+- [ ] EffShared
+- [ ] ReaderShared
+- [x] FromResume
   - [ ] fromResume(FromTask)
 - [ ] ToTask
 - [ ] ToResume
@@ -110,7 +112,6 @@ At present only modern environments that support ES2019 Syntax, including newer 
 - [ ] RemoteDataFx
 - [ ] ADT generators
 - [ ] io-ts or custom ??
-- [ ] Tagged types 
 - [ ] Graphs
 - [ ] History API
 - [ ] Queue
