@@ -1,6 +1,7 @@
 import { Namespace } from '@typed/fp/Namespace'
-import { Shared, Shared2, Shared3, Shared4 } from '@typed/fp/Shared'
 import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+
+import { Shared, Shared2, Shared3, Shared4 } from '../Shared/Shared'
 
 export type SharedEvent<F> = NamespaceEvent<F> | SharedValueEvent<F>
 

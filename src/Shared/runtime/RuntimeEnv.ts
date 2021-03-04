@@ -4,11 +4,10 @@ import { CurrentNamespace, Namespace } from '@typed/fp/Namespace'
 import { GlobalNamespace } from './global'
 import { EffectOf, SharedEvent } from './SharedEvent'
 
-export interface RuntimeEnv<F>
-  extends CurrentNamespace,
-    SharedEventsEnv<F>,
-    SharedKeyStoreEnv,
-    SharedEffectsEnv<F> {}
+export type RuntimeEnv<F> = CurrentNamespace &
+  SharedEventsEnv<F> &
+  SharedKeyStoreEnv &
+  SharedEffectsEnv<F>
 
 export interface SharedEventsEnv<F> {
   // Send an receive runtime lifecycle events

@@ -1,10 +1,10 @@
 import { MonadAsk, MonadAsk2, MonadAsk2C, MonadAsk3, MonadAsk3C } from '@typed/fp/MonadAsk'
 import { WidenI } from '@typed/fp/Widen'
 import { pipe } from 'fp-ts/dist/function'
-import { HKT, Kind2, Kind3, URIS2, URIS3 } from 'fp-ts/dist/HKT'
+import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 import { Option } from 'fp-ts/dist/Option'
 
-import { Shared, Shared2, Shared3 } from './Shared'
+import { Shared, Shared2, Shared3, Shared4 } from './Shared'
 
 export interface DeleteShared<F> {
   readonly deleteShared: <K, A>(shared: Shared<F, K, A>) => HKT<F, Option<A>>
@@ -20,6 +20,12 @@ export interface DeleteShared3<F extends URIS3> {
 
 export interface DeleteShared3C<F extends URIS3, E> {
   readonly deleteShared: <K, R, A>(shared: Shared3<F, K, R, E, A>) => Kind3<F, R, E, Option<A>>
+}
+
+export interface DeleteShared4<F extends URIS4> {
+  readonly deleteShared: <K, S, R, E, A>(
+    shared: Shared4<F, K, S, R, E, A>,
+  ) => Kind4<F, S, R, E, Option<A>>
 }
 
 export function deleteShared<F extends URIS2>(

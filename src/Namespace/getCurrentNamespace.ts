@@ -1,6 +1,6 @@
 import { Ask, Ask2, Ask2C, Ask3, Ask3C, asks } from '@typed/fp/Ask'
 import { Functor, Functor2, Functor2C, Functor3, Functor3C } from 'fp-ts/dist/Functor'
-import { Kind2, Kind3, URIS2, URIS3 } from 'fp-ts/dist/HKT'
+import { HKT, Kind2, Kind3, URIS2, URIS3 } from 'fp-ts/dist/HKT'
 
 import { Namespace } from './Namespace'
 
@@ -28,6 +28,10 @@ export function getCurrentNamespace<F extends URIS3>(
 export function getCurrentNamespace<F extends URIS3, E>(
   M: Ask3C<F, E> & Functor3C<F, E>,
 ): <K extends PropertyKey = PropertyKey>() => Kind3<F, CurrentNamespace<K>, E, Namespace<K>>
+
+export function getCurrentNamespace<F>(
+  M: Ask<F> & Functor<F>,
+): <K extends PropertyKey = PropertyKey>() => HKT<F, Namespace<K>>
 
 export function getCurrentNamespace<F>(M: Ask<F> & Functor<F>) {
   const asks_ = asks(M)
