@@ -33,13 +33,13 @@ export type NamespaceStarted<F> = {
   readonly effect: EffectOf<F>
 }
 
-export type EffectOf<F> = F extends URIS2
-  ? Kind2<F, any, any>
+export type EffectOf<F, E = any, R = any> = F extends URIS2
+  ? Kind2<F, E, R>
   : F extends URIS3
-  ? Kind3<F, any, any, any>
+  ? Kind3<F, E, any, R>
   : F extends URIS4
-  ? Kind4<F, any, any, any, any>
-  : HKT2<F, any, any>
+  ? Kind4<F, any, E, any, R>
+  : HKT2<F, E, R>
 
 /*
  * When a namespace has changed.

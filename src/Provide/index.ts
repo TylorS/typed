@@ -1,1 +1,6 @@
 export * from './Provide'
+export * from './provideAllWith'
+export * from './Provider'
+export * from './provideSomeWith'
+export * from './useAllWith'
+export * from './useSomeWith'

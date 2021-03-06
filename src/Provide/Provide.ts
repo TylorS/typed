@@ -3,7 +3,7 @@ import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 /**
  * Type-class for providing some or all of the requirements.
  */
-export interface Provide<F> {
+export default interface Provide<F> {
   readonly provideSome: <A>(provided: A) => <B>(hkt: HKT<F, B>) => HKT<F, B>
   readonly provideAll: <A>(provided: A) => <B>(hkt: HKT<F, B>) => HKT<F, B>
   readonly useSome: Provide<F>['provideSome']
