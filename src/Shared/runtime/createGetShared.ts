@@ -35,7 +35,7 @@ export function createGetShared<F extends URIS4>(
 
 export function createGetShared<F>(
   M: MonadAsk<F> & FromIO<F> & UseSome<F>,
-): (env: RuntimeEnv<F>) => <K, A>(shared: Shared<F, K, A>) => HKT<F, any>
+): (env: RuntimeEnv<F>) => <K, A>(shared: Shared<F, K, A>) => HKT<F, A>
 
 export function createGetShared<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>) {
   const getOrInsert = createGetOrInsert(M)
