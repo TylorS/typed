@@ -1,6 +1,6 @@
 import { Reader, URI } from 'fp-ts/dist/Reader'
 
-import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '../Provide'
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '@typed/fp/Provide'
 
 export function useSome<E1>(provided: E1) {
   return <E2, A>(eff: Reader<E1 & E2, A>): Reader<E2, A> => (env) => eff({ ...env, ...provided })
