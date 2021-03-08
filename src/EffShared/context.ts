@@ -18,6 +18,7 @@ export const NamespaceProviders = C.createNamespaceProviders(FromIO)
 export const getNamespaceProviders = C.createGetNamespaceProviders(eff)
 
 export const useContext = C.createUseContext({ ...eff, ...UseSome, ...ChainRec })
+export const useContextState = C.createUseContextState({ ...eff, ...UseSome, ...ChainRec })
 
 export const withProvider = C.createWithProvider({ ...eff, ...UseSome, ...ChainRec })
 

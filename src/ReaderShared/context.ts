@@ -18,6 +18,7 @@ export const NamespaceProviders = C.createNamespaceProviders(FromIO)
 export const getNamespaceProviders = C.createGetNamespaceProviders(reader)
 
 export const useContext = C.createUseContext({ ...reader, ...UseSome, ...ChainRec })
+export const useContextState = C.createUseContextState({ ...reader, ...UseSome, ...ChainRec })
 
 export const withProvider = C.createWithProvider({ ...reader, ...UseSome, ...ChainRec })
 

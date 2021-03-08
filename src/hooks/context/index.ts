@@ -1,6 +1,7 @@
 export * from './createAddToTree'
 export * from './createContextHandlers'
 export * from './createUseContext'
+export * from './createUseContextState'
 export * from './createWithProvider'
 export * from './NamespaceChildren'
 export * from './NamespaceConsumers'
