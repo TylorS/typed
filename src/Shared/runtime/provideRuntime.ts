@@ -1,3 +1,4 @@
+import { pipe } from 'fp-ts/dist/function'
 import { MonadAsk, MonadAsk2, MonadAsk3, MonadAsk4 } from '@typed/fp/MonadAsk'
 import { Namespace } from '@typed/fp/Namespace'
 import {
@@ -63,9 +64,9 @@ export function provideRuntime<F>(M: MonadAsk<F> & FromIO<F> & ProvideSome<F>) {
     const deleteShared = createDeleteShared(M)
     const runtime: RuntimeEnv<F> & GetShared<F> & SetShared<F> & DeleteShared<F> = {
       ...runtimeEnv,
-      getShared,
-      setShared,
-      deleteShared,
+      getShared: (shared) => pipe(getShared(shared), M.provideSome(runtimeEnv)),
+      setShared: (value) => (shared) => pipe(shared, setShared(value), M.provideSome(runtimeEnv)),
+      deleteShared: (shared) => pipe(shared, deleteShared, M.provideSome(runtimeEnv)),
     }
 
     return M.provideSome(runtime)(effect)
