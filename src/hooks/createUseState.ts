@@ -8,7 +8,7 @@ import { MonadAsk, MonadAsk2, MonadAsk3, MonadAsk3C, MonadAsk4 } from '@typed/fp
 import { UseSome, UseSome2, UseSome3, UseSome3C, UseSome4 } from '@typed/fp/Provide'
 import { createShared as createShared_, RuntimeEnv } from '@typed/fp/Shared'
 import { createGetSharedState } from './createGetSharedState'
-import { UseState } from './UseState'
+import { UseState, UseState2, UseState3, UseState4 } from './UseState'
 import { WidenI } from '@typed/fp/Widen'
 
 export function createUseState<F extends URIS2>(
@@ -16,28 +16,28 @@ export function createUseState<F extends URIS2>(
 ): <E, A>(
   initial: Kind2<F, E, A>,
   eq?: Eq<A>,
-) => Kind2<F, WidenI<E | RuntimeEnv<F>>, UseState<F, A>>
+) => Kind2<F, WidenI<E | RuntimeEnv<F>>, UseState2<F, A, A>>
 
 export function createUseState<F extends URIS3>(
   M: MonadAsk3<F> & FromIO3<F> & UseSome3<F>,
 ): <R, E, A>(
   initial: Kind3<F, R, E, A>,
   eq?: Eq<A>,
-) => Kind3<F, WidenI<R | RuntimeEnv<F>>, E, UseState<F, A>>
+) => Kind3<F, WidenI<R | RuntimeEnv<F>>, E, UseState3<F, A, A, E>>
 
 export function createUseState<F extends URIS3, E>(
   M: MonadAsk3C<F, E> & FromIO3C<F, E> & UseSome3C<F, E>,
 ): <R, A>(
   initial: Kind3<F, R, E, A>,
   eq?: Eq<A>,
-) => Kind3<F, WidenI<R | RuntimeEnv<F>>, E, UseState<F, A>>
+) => Kind3<F, WidenI<R | RuntimeEnv<F>>, E, UseState3<F, A, A, E>>
 
 export function createUseState<F extends URIS4>(
   M: MonadAsk4<F> & FromIO4<F> & UseSome4<F>,
 ): <S, R, E, A>(
   initial: Kind4<F, S, R, E, A>,
   eq?: Eq<A>,
-) => Kind4<F, S, WidenI<R | RuntimeEnv<F>>, E, UseState<F, A>>
+) => Kind4<F, S, WidenI<R | RuntimeEnv<F>>, E, UseState4<F, A, A, S, E>>
 
 export function createUseState<F>(
   M: MonadAsk<F> & FromIO<F> & UseSome<F>,
