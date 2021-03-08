@@ -2,11 +2,14 @@ import { Ask2 } from '@typed/fp/Ask'
 import { Alt as Alt_, ask } from '@typed/fp/Env'
 import { fromIO } from '@typed/fp/Fx'
 import { MonadAsk2 } from '@typed/fp/MonadAsk'
+import { MonadRec2 } from '@typed/fp/MonadRec'
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '@typed/fp/Provide'
 import { fromTask as fromTask_ } from '@typed/fp/Resume'
 import { Widen } from '@typed/fp/Widen'
 import { Alt2 } from 'fp-ts/dist/Alt'
 import { Applicative2 } from 'fp-ts/dist/Applicative'
 import { Apply2 } from 'fp-ts/dist/Apply'
+import { ChainRec2 } from 'fp-ts/dist/ChainRec'
 import { FromIO2 } from 'fp-ts/dist/FromIO'
 import { FromTask2 } from 'fp-ts/dist/FromTask'
 import { flow, pipe } from 'fp-ts/dist/function'
@@ -15,8 +18,18 @@ import { Monad2 } from 'fp-ts/dist/Monad'
 import { Pointed2 } from 'fp-ts/dist/Pointed'
 import { sequence } from 'fp-ts/dist/ReadonlyArray'
 
-import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '@typed/fp/Provide'
-import { ap, chain, Eff, fromEnv, GetRequirements, GetResult, map, of, toEnv } from './Eff'
+import {
+  ap,
+  chain,
+  chainRec,
+  Eff,
+  fromEnv,
+  GetRequirements,
+  GetResult,
+  map,
+  of,
+  toEnv,
+} from './Eff'
 import { provideAll, provideSome, useAll, useSome } from './provide'
 
 export const URI = '@typed/fp/Eff'
@@ -56,6 +69,15 @@ export const Monad: Monad2<URI> = {
   ...Functor,
   ...Pointed,
   chain: chain as Monad2<URI>['chain'],
+}
+
+export const ChainRec: ChainRec2<URI> = {
+  chainRec,
+}
+
+export const MonadRec: MonadRec2<URI> = {
+  ...Monad,
+  ...ChainRec,
 }
 
 export const MonadAsk: MonadAsk2<URI> = {

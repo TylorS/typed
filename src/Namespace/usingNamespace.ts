@@ -1,6 +1,6 @@
 import { UseSome, UseSome2, UseSome3, UseSome4 } from '@typed/fp/Provide'
 import { pipe } from 'fp-ts/dist/function'
-import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { HKT, HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 import { CurrentNamespace } from './getCurrentNamespace'
 import { Namespace } from './Namespace'
@@ -36,7 +36,7 @@ export function usingNamespace<F>(
   M: UseSome<F>,
 ): <K extends PropertyKey = PropertyKey>(
   namespace: Namespace<K>,
-) => <A>(kind: HKT2<F, CurrentNamespace<K>, A>) => HKT2<F, never, A>
+) => <A>(kind: HKT<F, A>) => HKT<F, A>
 
 export function usingNamespace<F>(M: UseSome<F>) {
   return <K extends PropertyKey = PropertyKey>(namespace: Namespace<K>) => <A>(

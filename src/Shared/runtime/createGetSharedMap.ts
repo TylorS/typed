@@ -3,7 +3,9 @@ import { getCurrentNamespace as getCurrentNamespace_ } from '@typed/fp/Namespace
 import { FromIO, FromIO2, FromIO3, FromIO3C } from 'fp-ts/dist/FromIO'
 import { pipe } from 'fp-ts/dist/function'
 import { HKT, Kind2, Kind3, URIS2, URIS3 } from 'fp-ts/dist/HKT'
-import { createGetOrCreateNamespace, RuntimeEnv } from '@typed/fp/Shared'
+
+import { createGetOrCreateNamespace } from './createGetOrCreateNamespace'
+import { RuntimeEnv } from './RuntimeEnv'
 
 export function createGetSharedMap<F extends URIS2>(
   M: MonadAsk2<F> & FromIO2<F>,

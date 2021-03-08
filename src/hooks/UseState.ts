@@ -1,5 +1,5 @@
-import { HKT, URIS2, Kind2, URIS3, Kind3, URIS4, Kind4 } from 'fp-ts/dist/HKT'
 import { RuntimeEnv } from '@typed/fp/Shared'
+import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 export type UseState<F, A, B = A> = readonly [() => A, (updated: B) => HKT<F, A>]
 

@@ -1,4 +1,3 @@
-import { pipe } from 'fp-ts/dist/function'
 import { MonadAsk, MonadAsk2, MonadAsk3, MonadAsk4 } from '@typed/fp/MonadAsk'
 import { Namespace } from '@typed/fp/Namespace'
 import {
@@ -6,12 +5,13 @@ import {
   Provider2,
   Provider3,
   Provider4,
-  UseAll,
   ProvideSome,
   ProvideSome2,
+  UseAll,
 } from '@typed/fp/Provide'
 import { ProvideSome3, ProvideSome4 } from '@typed/fp/Provide/Provide'
 import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
+import { pipe } from 'fp-ts/dist/function'
 import { HKT, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 import {

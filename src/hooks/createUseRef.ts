@@ -1,10 +1,11 @@
-import { FromIO, FromIO2, FromIO3, FromIO3C, FromIO4 } from 'fp-ts/dist/FromIO'
 import { MonadAsk, MonadAsk2, MonadAsk3, MonadAsk3C, MonadAsk4 } from '@typed/fp/MonadAsk'
-import { createGetNextSymbol } from './createGetNextSymbol'
-import { createGetShared, createShared, RuntimeEnv } from '@typed/fp/Shared'
-import { pipe } from 'fp-ts/dist/function'
 import { createRef, Ref } from '@typed/fp/Ref'
+import { createGetShared, createShared, RuntimeEnv } from '@typed/fp/Shared'
+import { FromIO, FromIO2, FromIO3, FromIO3C, FromIO4 } from 'fp-ts/dist/FromIO'
+import { pipe } from 'fp-ts/dist/function'
 import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+
+import { createGetNextSymbol } from './createGetNextSymbol'
 
 export function createUseRef<F extends URIS2>(
   M: MonadAsk2<F> & FromIO2<F>,

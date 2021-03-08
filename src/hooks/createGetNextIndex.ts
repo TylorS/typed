@@ -1,5 +1,3 @@
-import { FromIO, FromIO2, FromIO3, FromIO3C, FromIO4 } from 'fp-ts/dist/FromIO'
-import { Eq } from 'fp-ts/dist/number'
 import {
   MonadAsk,
   MonadAsk2,
@@ -9,8 +7,10 @@ import {
   MonadAsk4C,
 } from '@typed/fp/MonadAsk'
 import { createGetShared, createSetShared, createShared, RuntimeEnv } from '@typed/fp/Shared'
+import { FromIO, FromIO2, FromIO3, FromIO3C, FromIO4 } from 'fp-ts/dist/FromIO'
 import { constVoid, pipe } from 'fp-ts/dist/function'
 import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { Eq } from 'fp-ts/dist/number'
 
 export const NEXT_INDEX = Symbol('NextIndex')
 export const INITIAL_INDEX = 0

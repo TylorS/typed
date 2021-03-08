@@ -12,7 +12,7 @@ module.exports = {
     'plugin:import/errors',
     'plugin:import/warnings',
     'plugin:import/typescript',
-    'prettier/@typescript-eslint',
+    'prettier',
   ],
   rules: {
     'prettier/prettier': ['error', prettierConfig],

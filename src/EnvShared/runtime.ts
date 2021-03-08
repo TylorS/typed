@@ -4,6 +4,10 @@ import * as R from '@typed/fp/Shared/runtime'
 
 const env = { ...MonadAsk, ...FromIO }
 
+export const coreHandlers: readonly [
+  R.RuntimeHandler<URI, R.NamespaceDeleted>,
+] = R.createCoreHandlers(MonadAsk)
+
 export const createDeleteShared = R.createDeleteShared(env)
 export const createGetOrCreateNamespace = R.createGetOrCreateNamespace(env)
 export const createGetOrInsert = R.createGetOrInsert(Monad)

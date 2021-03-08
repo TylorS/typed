@@ -12,7 +12,7 @@ export function listenToEvents<F, H extends ReadonlyArray<RuntimeHandler<F>>>(
   const respondToEvent = (event: SharedEvent<F>) => {
     for (const { guard, handler } of handlers) {
       if (guard(event)) {
-        env.queuedEffects.push(handler(event))
+        env.queuedEffects.push([event.namespace, handler(event)])
       }
     }
   }

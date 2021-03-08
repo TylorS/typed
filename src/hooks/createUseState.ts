@@ -1,13 +1,14 @@
+import { MonadAsk, MonadAsk2, MonadAsk3, MonadAsk3C, MonadAsk4 } from '@typed/fp/MonadAsk'
+import { createShared as createShared_, RuntimeEnv } from '@typed/fp/Shared'
+import { WidenI } from '@typed/fp/Widen'
 import { Eq } from 'fp-ts/dist/Eq'
 import { FromIO, FromIO2, FromIO3, FromIO3C, FromIO4 } from 'fp-ts/dist/FromIO'
 import { pipe } from 'fp-ts/dist/function'
 import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+
 import { createGetNextSymbol } from './createGetNextSymbol'
-import { MonadAsk, MonadAsk2, MonadAsk3, MonadAsk3C, MonadAsk4 } from '@typed/fp/MonadAsk'
-import { createShared as createShared_, RuntimeEnv } from '@typed/fp/Shared'
 import { createGetSharedState } from './createGetSharedState'
 import { UseState, UseState2, UseState3, UseState4 } from './UseState'
-import { WidenI } from '@typed/fp/Widen'
 
 export function createUseState<F extends URIS2>(
   M: MonadAsk2<F> & FromIO2<F>,

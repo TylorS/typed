@@ -16,7 +16,7 @@ export interface SharedEventsEnv<F> {
 
 export interface SharedKeyStoreEnv {
   // A *mutable* map of Namespaces to key-value pairs
-  readonly sharedKeyStore: Map<Namespace, Map<unknown, unknown>>
+  readonly sharedKeyStore: Map<Namespace, Map<any, any>>
 }
 
 export interface SharedEffectsEnv<F> {
@@ -24,7 +24,7 @@ export interface SharedEffectsEnv<F> {
   readonly sharedEffects: Map<Namespace, EffectOf<F>>
 
   // A *mutable* map of effects that need to be run by the runtime
-  readonly queuedEffects: Array<EffectOf<F>>
+  readonly queuedEffects: Array<readonly [Namespace, EffectOf<F>]>
 }
 
 export function createRuntimeEnv<F>(namespace: Namespace = GlobalNamespace): RuntimeEnv<F> {

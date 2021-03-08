@@ -1,8 +1,9 @@
+import { createShared, Shared, Shared2, Shared3, Shared4 } from '@typed/fp/Shared'
 import { EqStrict } from 'fp-ts/dist/Eq'
 import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
-import { createShared, Shared, Shared2, Shared3, Shared4 } from '@typed/fp/Shared'
-import { UseState, UseState2, UseState3, UseState4 } from './UseState'
 import { URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+
+import { UseState, UseState2, UseState3, UseState4 } from './UseState'
 
 export const SHARED_STATES = Symbol('SharedStates')
 

@@ -1,5 +1,3 @@
-import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
-import { bind } from 'fp-ts/dist/Chain'
 import { MonadAsk, MonadAsk2, MonadAsk3, MonadAsk4 } from '@typed/fp/MonadAsk'
 import {
   createGetOrInsert,
@@ -12,12 +10,15 @@ import {
   Shared4,
   SharedOf,
 } from '@typed/fp/Shared'
+import { bind } from 'fp-ts/dist/Chain'
+import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
 import { pipe } from 'fp-ts/dist/function'
-import { createSharedStates } from './createGetSharedStates'
-import { createGetSharedMap } from './createGetSharedMap'
 import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
-import { UseState, UseState2, UseState3, UseState4 } from './UseState'
+
+import { createGetSharedMap } from '../Shared/runtime/createGetSharedMap'
 import { WidenI } from '../Widen'
+import { createSharedStates } from './createGetSharedStates'
+import { UseState, UseState2, UseState3, UseState4 } from './UseState'
 
 export function createGetSharedState<F extends URIS2>(
   M: MonadAsk2<F> & FromIO2<F>,
@@ -52,7 +53,7 @@ export function createGetSharedState<F>(M: MonadAsk<F> & FromIO<F>) {
     pipe(
       Do,
       bindTo('env', () => M.ask<RuntimeEnv<F>>()),
-      bindTo('sharedStates', ({}) => getShared(sharedStates)),
+      bindTo('sharedStates', () => getShared(sharedStates)),
       M.chain(({ env, sharedStates }) =>
         getOrInsert(
           sharedStates,
@@ -71,24 +72,26 @@ export function createGetSharedState<F>(M: MonadAsk<F> & FromIO<F>) {
               const set = (value: A) => {
                 const current = get()
 
+                // Always set the updated value
                 sharedMap.set(key, value)
 
-                const changed = !shared.equals(current)(value)
+                const hasNotChanged = shared.equals(current)(value)
 
-                if (changed) {
-                  return pipe(
-                    sendSharedEvent({
-                      type: 'sharedValue/updated',
-                      namespace,
-                      shared: shared as SharedOf<F>,
-                      previousValue: current,
-                      value,
-                    }),
-                    M.map(() => value),
-                  )
+                // Skip notifying downstream consumers if Eq says it hasn't changed
+                if (hasNotChanged) {
+                  return M.of(current)
                 }
 
-                return M.of(value)
+                return pipe(
+                  sendSharedEvent({
+                    type: 'sharedValue/updated',
+                    namespace,
+                    shared: shared as SharedOf<F>,
+                    previousValue: current,
+                    value,
+                  }),
+                  M.map(() => value),
+                )
               }
 
               const useState = [get, set] as const

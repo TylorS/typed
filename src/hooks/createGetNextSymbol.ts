@@ -1,19 +1,20 @@
-import { bind } from 'fp-ts/dist/Chain'
-import { EqStrict } from 'fp-ts/dist/Eq'
-import { FromIO2, FromIO3, FromIO3C, FromIO4, FromIO } from 'fp-ts/dist/FromIO'
-import { pipe } from 'fp-ts/dist/function'
-import { URIS2, Kind2, URIS3, Kind3, URIS4, Kind4, HKT } from 'fp-ts/dist/HKT'
-import { Eq } from 'fp-ts/dist/number'
-import { getEq } from 'fp-ts/dist/ReadonlyMap'
 import {
+  MonadAsk,
   MonadAsk2,
   MonadAsk3,
   MonadAsk3C,
   MonadAsk4,
   MonadAsk4C,
-  MonadAsk,
 } from '@typed/fp/MonadAsk'
-import { RuntimeEnv, createShared, createGetShared, createGetOrInsert } from '@typed/fp/Shared'
+import { createGetOrInsert, createGetShared, createShared, RuntimeEnv } from '@typed/fp/Shared'
+import { bind } from 'fp-ts/dist/Chain'
+import { EqStrict } from 'fp-ts/dist/Eq'
+import { FromIO, FromIO2, FromIO3, FromIO3C, FromIO4 } from 'fp-ts/dist/FromIO'
+import { pipe } from 'fp-ts/dist/function'
+import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { Eq } from 'fp-ts/dist/number'
+import { getEq } from 'fp-ts/dist/ReadonlyMap'
+
 import { createGetNextIndex } from './createGetNextIndex'
 
 export const NEXT_SYMBOL = Symbol('NextSymbol')

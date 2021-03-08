@@ -8,11 +8,16 @@ import {
   merge,
   mergeConcurrently,
   multicast,
+  newStream,
   now,
   switchLatest,
   take,
 } from '@most/core'
+import { asap } from '@most/scheduler'
 import { Stream } from '@most/types'
+import { undisposable } from '@typed/fp/Disposable'
+import { FromResume1 } from '@typed/fp/FromResume'
+import { run } from '@typed/fp/Resume'
 import { Alt1 } from 'fp-ts/dist/Alt'
 import { Alternative1 } from 'fp-ts/dist/Alternative'
 import { Applicative1 } from 'fp-ts/dist/Applicative'
@@ -31,6 +36,8 @@ import { Monoid } from 'fp-ts/dist/Monoid'
 import { isSome, Option, Some } from 'fp-ts/dist/Option'
 import { Pointed1 } from 'fp-ts/dist/Pointed'
 import { Separated } from 'fp-ts/dist/Separated'
+
+import { createCallbackTask } from './createCallbackTask'
 
 export const URI = '@most/core/Stream' as const
 
@@ -153,12 +160,26 @@ export const FromTask: FromTask1<URI> = {
 
 export const fromTask = FromTask.fromTask
 
+export const FromResume: FromResume1<URI> = {
+  fromResume: (resume) =>
+    newStream((sink, scheduler) =>
+      asap(
+        createCallbackTask(() =>
+          pipe(resume, run(undisposable((a) => sink.event(scheduler.currentTime(), a)))),
+        ),
+        scheduler,
+      ),
+    ),
+}
+
+export const fromResume = FromResume.fromResume
+
 export const Alt: Alt1<URI> = {
   ...Functor,
   alt: (f) => (fa) => take(1, merge(fa, f())), // race the 2 streams
 }
 
-export const alt = Alt.alt
+export const race = Alt.alt
 
 export const Alternative: Alternative1<URI> = {
   ...Alt,

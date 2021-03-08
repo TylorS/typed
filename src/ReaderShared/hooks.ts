@@ -1,25 +1,16 @@
 import * as H from '@typed/fp/hooks'
-import { MonadAsk, FromIO, URI, Reader } from '@typed/fp/Reader'
-import { RuntimeEnv } from '@typed/fp/Shared'
-import { Ref } from '@typed/fp/Ref'
-import { Eq } from 'fp-ts/dist/Eq'
-import { WidenI } from '@typed/fp/Widen'
-import { UseState2 } from '@typed/fp/hooks/UseState'
+import { FromIO, MonadAsk, URI, UseSome } from '@typed/fp/Reader'
 
-const eff = { ...MonadAsk, ...FromIO }
+const reader = { ...MonadAsk, ...FromIO }
 
-export const getNextIndex: Reader<RuntimeEnv<URI>, number> = H.createGetNextIndex(eff)()
-export const getNextSymbol: Reader<RuntimeEnv<URI>, symbol> = H.createGetNextSymbol(eff)()
-export const resetIndex: Reader<RuntimeEnv<URI>, void> = H.createResetIndex(eff)()
+export const getNextIndex = H.createGetNextIndex(reader)()
+export const getNextSymbol = H.createGetNextSymbol(reader)()
+export const resetIndex = H.createResetIndex(reader)()
 
-export const getSharedMap: Reader<RuntimeEnv<URI>, Map<any, any>> = H.createGetSharedMap(eff)
+export const getSharedState = H.createGetSharedState(reader)
 
-export const useRef: {
-  <A>(): Reader<RuntimeEnv<URI>, Ref<A | undefined>>
-  <A>(value: A): Reader<RuntimeEnv<URI>, Ref<A>>
-} = H.createUseRef(eff)
+export const useRef = H.createUseRef(reader)
+export const useState = H.createUseState(reader)
 
-export const useState: <E, A>(
-  initial: Reader<E, A>,
-  eq?: Eq<A>,
-) => Reader<WidenI<RuntimeEnv<URI> | E>, UseState2<URI, A, A>> = H.createUseState(eff)
+export const NamespaceDisposable = H.createNamespaceDisposable(FromIO)
+export const hooksHandlers: H.HooksHandlers<URI> = H.createHooksHandlers({ ...reader, ...UseSome })

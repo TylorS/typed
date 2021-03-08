@@ -1,8 +1,12 @@
-import { FromIO, Functor, Monad, MonadAsk, ProvideSome, URI, UseSome } from '@typed/fp/Reader'
 import { Namespace } from '@typed/fp/Namespace'
+import { FromIO, Functor, Monad, MonadAsk, ProvideSome, URI, UseSome } from '@typed/fp/Reader'
 import * as R from '@typed/fp/Shared/runtime'
 
 const reader = { ...MonadAsk, ...FromIO }
+
+export const coreHandlers: readonly [
+  R.RuntimeHandler<URI, R.NamespaceDeleted>,
+] = R.createCoreHandlers(MonadAsk)
 
 export const createDeleteShared = R.createDeleteShared(reader)
 export const createGetOrCreateNamespace = R.createGetOrCreateNamespace(reader)
