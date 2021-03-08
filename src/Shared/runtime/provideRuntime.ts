@@ -6,10 +6,10 @@ import {
   Provider3,
   Provider4,
   UseAll,
-  UseSome,
-  UseSome2,
+  ProvideSome,
+  ProvideSome2,
 } from '@typed/fp/Provide'
-import { UseSome3, UseSome4 } from '@typed/fp/Provide/Provide'
+import { ProvideSome3, ProvideSome4 } from '@typed/fp/Provide/Provide'
 import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
 import { HKT, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
@@ -34,33 +34,33 @@ import { GlobalNamespace } from './global'
 import { createRuntimeEnv, RuntimeEnv } from './RuntimeEnv'
 
 export function provideRuntime<F extends URIS2>(
-  M: MonadAsk2<F> & FromIO2<F> & UseSome2<F>,
+  M: MonadAsk2<F> & FromIO2<F> & ProvideSome2<F>,
 ): (
   options?: RuntimeOptions<F>,
 ) => Provider2<F, GetShared2<F> & SetShared2<F> & DeleteShared2<F> & RuntimeEnv<F>, never>
 
 export function provideRuntime<F extends URIS3>(
-  M: MonadAsk3<F> & FromIO3<F> & UseSome3<F>,
+  M: MonadAsk3<F> & FromIO3<F> & ProvideSome3<F>,
 ): <E = never>(
   options?: RuntimeOptions<F>,
 ) => Provider3<F, GetShared3<F> & SetShared3<F> & DeleteShared3<F> & RuntimeEnv<F>, never, E>
 
 export function provideRuntime<F extends URIS4>(
-  M: MonadAsk4<F> & FromIO4<F> & UseSome4<F>,
+  M: MonadAsk4<F> & FromIO4<F> & ProvideSome4<F>,
 ): <R = never, E = never>(
   options?: RuntimeOptions<F>,
 ) => Provider4<F, GetShared4<F> & SetShared4<F> & DeleteShared4<F> & RuntimeEnv<F>, never, R, E>
 
 export function provideRuntime<F>(
-  M: MonadAsk<F> & FromIO<F> & UseSome<F> & UseAll<F>,
+  M: MonadAsk<F> & FromIO<F> & ProvideSome<F> & UseAll<F>,
 ): (options?: RuntimeOptions<F>) => Provider<F>
 
-export function provideRuntime<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>) {
+export function provideRuntime<F>(M: MonadAsk<F> & FromIO<F> & ProvideSome<F>) {
   return (options: RuntimeOptions<F>) => <A>(effect: HKT<F, A>): HKT<F, A> => {
     const { namespace = GlobalNamespace, runtimeEnv = createRuntimeEnv<F>(namespace) } = options
-    const getShared = createGetShared(M)(runtimeEnv)
-    const setShared = createSetShared(M)(runtimeEnv)
-    const deleteShared = createDeleteShared(M)(runtimeEnv)
+    const getShared = createGetShared(M)
+    const setShared = createSetShared(M)
+    const deleteShared = createDeleteShared(M)
     const runtime: RuntimeEnv<F> & GetShared<F> & SetShared<F> & DeleteShared<F> = {
       ...runtimeEnv,
       getShared,
@@ -68,7 +68,7 @@ export function provideRuntime<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>) {
       deleteShared,
     }
 
-    return M.useSome(runtime)(effect)
+    return M.provideSome(runtime)(effect)
   }
 }
 

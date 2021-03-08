@@ -1,20 +1,45 @@
-import { FromIO } from 'fp-ts/dist/FromIO'
+import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
 import { bind } from 'fp-ts/dist/Chain'
-import { MonadAsk } from '@typed/fp/MonadAsk'
-import { UseSome } from '@typed/fp/Provide'
+import { MonadAsk, MonadAsk2, MonadAsk3, MonadAsk4 } from '@typed/fp/MonadAsk'
 import {
   createGetOrInsert,
   createGetShared,
   createSendSharedEvent,
   RuntimeEnv,
   Shared,
+  Shared2,
+  Shared3,
+  Shared4,
   SharedOf,
 } from '@typed/fp/Shared'
 import { pipe } from 'fp-ts/dist/function'
 import { createSharedStates } from './createGetSharedStates'
 import { createGetSharedMap } from './createGetSharedMap'
+import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { UseState, UseState2, UseState3, UseState4 } from './UseState'
+import { WidenI } from '../Widen'
 
-export function createGetSharedState<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>) {
+export function createGetSharedState<F extends URIS2>(
+  M: MonadAsk2<F> & FromIO2<F>,
+): <K, E, A>(shared: Shared2<F, K, E, A>) => Kind2<F, WidenI<E | RuntimeEnv<F>>, UseState2<F, A, A>>
+
+export function createGetSharedState<F extends URIS3>(
+  M: MonadAsk3<F> & FromIO3<F>,
+): <K, R, E, A>(
+  shared: Shared3<F, K, R, E, A>,
+) => Kind3<F, WidenI<R | RuntimeEnv<F>>, E, UseState3<F, A, A, E>>
+
+export function createGetSharedState<F extends URIS4>(
+  M: MonadAsk4<F> & FromIO4<F>,
+): <K, S, R, E, A>(
+  shared: Shared4<F, K, S, R, E, A>,
+) => Kind4<F, S, WidenI<R | RuntimeEnv<F>>, E, UseState4<F, A, A, S, E>>
+
+export function createGetSharedState<F>(
+  M: MonadAsk<F> & FromIO<F>,
+): <K, A>(shared: Shared<F, K, A>) => HKT<F, UseState<F, A>>
+
+export function createGetSharedState<F>(M: MonadAsk<F> & FromIO<F>) {
   const Do = M.of({})
   const bindTo = bind(M)
   const sharedStates = createSharedStates(M)
@@ -27,7 +52,7 @@ export function createGetSharedState<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>)
     pipe(
       Do,
       bindTo('env', () => M.ask<RuntimeEnv<F>>()),
-      bindTo('sharedStates', ({ env }) => getShared(env)(sharedStates)),
+      bindTo('sharedStates', ({}) => getShared(sharedStates)),
       M.chain(({ env, sharedStates }) =>
         getOrInsert(
           sharedStates,
@@ -36,7 +61,7 @@ export function createGetSharedState<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>)
             Do,
             bindTo('sharedMap', () => getSharedMap),
             bindTo('namespace', () => M.of(env.currentNamespace)),
-            bindTo('initial', () => getShared(env)(shared)),
+            bindTo('initial', () => getShared(shared)),
             M.map(({ namespace, sharedMap, initial }) => {
               const key = shared.key
 
