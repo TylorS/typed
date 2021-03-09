@@ -12,7 +12,7 @@ import {
 import { ProvideSome3, ProvideSome4 } from '@typed/fp/Provide/Provide'
 import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
 import { pipe } from 'fp-ts/dist/function'
-import { HKT, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 import {
   DeleteShared,
@@ -70,7 +70,7 @@ export function provideRuntime<F>(M: MonadAsk<F> & FromIO<F> & ProvideSome<F>) {
       deleteShared: (shared) => pipe(shared, deleteShared, M.provideSome(runtimeEnv)),
     }
 
-    return <A>(effect: HKT<F, A>): HKT<F, A> => M.provideSome(runtime)(effect)
+    return M.provideSome(runtime)
   }
 }
 
