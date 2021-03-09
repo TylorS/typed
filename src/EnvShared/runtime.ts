@@ -1,12 +1,11 @@
 import { FromIO, Functor, Monad, MonadAsk, ProvideSome, URI, UseSome } from '@typed/fp/Env'
 import { Namespace } from '@typed/fp/Namespace'
 import * as R from '@typed/fp/Shared/runtime'
+import { CoreHandlers } from '@typed/fp/Shared/runtime'
 
 const env = { ...MonadAsk, ...FromIO }
 
-export const coreHandlers: readonly [
-  R.RuntimeHandler<URI, R.NamespaceDeleted>,
-] = R.createCoreHandlers(MonadAsk)
+export const coreHandlers: CoreHandlers<URI> = R.createCoreHandlers(MonadAsk)
 
 export const createDeleteShared = R.createDeleteShared(env)
 export const createGetOrCreateNamespace = R.createGetOrCreateNamespace(env)
@@ -19,3 +18,4 @@ export const createRuntimeEnv = (namespace: Namespace) => R.createRuntimeEnv<URI
 export const provideRuntime = R.provideRuntime({ ...env, ...ProvideSome })
 
 export const usingGlobal = R.usingGlobal({ ...UseSome, ...Functor })
+export const runWithNamespace = R.createRunWithNamespace(env)

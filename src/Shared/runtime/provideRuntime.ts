@@ -57,11 +57,12 @@ export function provideRuntime<F>(
 ): (options?: RuntimeOptions<F>) => Provider<F>
 
 export function provideRuntime<F>(M: MonadAsk<F> & FromIO<F> & ProvideSome<F>) {
-  return (options: RuntimeOptions<F>) => <A>(effect: HKT<F, A>): HKT<F, A> => {
+  const getShared = createGetShared(M)
+  const setShared = createSetShared(M)
+  const deleteShared = createDeleteShared(M)
+
+  return (options: RuntimeOptions<F>) => {
     const { namespace = GlobalNamespace, runtimeEnv = createRuntimeEnv<F>(namespace) } = options
-    const getShared = createGetShared(M)
-    const setShared = createSetShared(M)
-    const deleteShared = createDeleteShared(M)
     const runtime: RuntimeEnv<F> & GetShared<F> & SetShared<F> & DeleteShared<F> = {
       ...runtimeEnv,
       getShared: (shared) => pipe(getShared(shared), M.provideSome(runtimeEnv)),
@@ -69,7 +70,7 @@ export function provideRuntime<F>(M: MonadAsk<F> & FromIO<F> & ProvideSome<F>) {
       deleteShared: (shared) => pipe(shared, deleteShared, M.provideSome(runtimeEnv)),
     }
 
-    return M.provideSome(runtime)(effect)
+    return <A>(effect: HKT<F, A>): HKT<F, A> => M.provideSome(runtime)(effect)
   }
 }
 

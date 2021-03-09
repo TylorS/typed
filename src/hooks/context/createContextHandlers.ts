@@ -6,6 +6,7 @@ import {
   createGetSharedMap,
   createSendSharedEvent,
   EffectOf,
+  NamespaceCompleted,
   NamespaceDeleted,
   NamespaceStarted,
   RuntimeEnv,
@@ -33,6 +34,7 @@ const isSharedValueDeleted = <F>(event: SharedEvent<F>): event is SharedValueDel
 export type ContextHandlers<F> = readonly [
   RuntimeHandler<F, NamespaceDeleted>,
   RuntimeHandler<F, NamespaceStarted<F>>,
+  RuntimeHandler<F, NamespaceCompleted<F>>,
   RuntimeHandler<F, SharedValueUpdated<F>>,
   RuntimeHandler<F, SharedValueDeleted<F>>,
 ]
@@ -65,7 +67,11 @@ export function createContextHandlers<F>(
   const using = usingNamespace(M)
   const addToTree = createAddToTree(M)
 
-  const [hooksNamespaceDeleted, hooksNamespaceStarted] = createHooksHandlers<F>(M)
+  const [
+    hooksNamespaceDeleted,
+    hooksNamespaceStarted,
+    hooksNamespaceCompleted,
+  ] = createHooksHandlers<F>(M)
 
   const contextNamespaceDeleted: RuntimeHandler<F, NamespaceDeleted> = {
     ...hooksNamespaceDeleted,
@@ -162,6 +168,7 @@ export function createContextHandlers<F>(
   return [
     contextNamespaceDeleted,
     contextNamespaceStarted,
+    hooksNamespaceCompleted,
     contextSharedValueUpdated,
     contextSharedValueDeleted,
   ] as const

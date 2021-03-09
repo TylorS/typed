@@ -23,6 +23,9 @@ export interface SharedEffectsEnv<F> {
   // A *mutable* map of Namespace to the effect associated with running within it.
   readonly sharedEffects: Map<Namespace, EffectOf<F>>
 
+  // A *mutable* map of Namespace to returns values associated with running it.
+  readonly sharedReturnValues: Map<Namespace, unknown>
+
   // A *mutable* map of effects that need to be run by the runtime
   readonly queuedEffects: Array<readonly [Namespace, EffectOf<F>]>
 }
@@ -33,6 +36,7 @@ export function createRuntimeEnv<F>(namespace: Namespace = GlobalNamespace): Run
     sharedEvents: createAdapter<SharedEvent<F>>(),
     sharedKeyStore: new Map(),
     sharedEffects: new Map(),
+    sharedReturnValues: new Map(),
     queuedEffects: [],
   }
 }

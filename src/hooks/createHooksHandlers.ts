@@ -4,6 +4,7 @@ import { UseSome, UseSome2, UseSome3, UseSome4 } from '@typed/fp/Provide'
 import {
   createCoreHandlers,
   EffectOf,
+  NamespaceCompleted,
   NamespaceDeleted,
   NamespaceStarted,
   RuntimeEnv,
@@ -19,6 +20,7 @@ import { NAMESPACE_DISPOSABLE } from './NamespaceDisposable'
 export type HooksHandlers<F> = readonly [
   RuntimeHandler<F, NamespaceDeleted>,
   RuntimeHandler<F, NamespaceStarted<F>>,
+  RuntimeHandler<F, NamespaceCompleted<F>>,
 ]
 
 export function createHooksHandlers<F extends URIS2>(
@@ -36,7 +38,9 @@ export function createHooksHandlers<F extends URIS4>(
 export function createHooksHandlers<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>): HooksHandlers<F>
 
 export function createHooksHandlers<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>): HooksHandlers<F> {
-  const [coreDeleteNamespace, coreNamespaceStarted] = createCoreHandlers<F>(M)
+  const [coreDeleteNamespace, coreNamespaceStarted, coreNamespaceCompleted] = createCoreHandlers<F>(
+    M,
+  )
   const resetIndex = createResetIndex<F>(M)()
   const using = usingNamespace(M)
 
@@ -64,5 +68,5 @@ export function createHooksHandlers<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>):
       ) as EffectOf<F, RuntimeEnv<F>>,
   }
 
-  return [onDeleteNamespace, onNamespaceStart] as const
+  return [onDeleteNamespace, onNamespaceStart, coreNamespaceCompleted] as const
 }

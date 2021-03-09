@@ -6,11 +6,18 @@ import { filterMapWithIndex } from 'fp-ts/dist/ReadonlyArray'
 
 import { RuntimeHandler } from './listenToEvents'
 import { RuntimeEnv } from './RuntimeEnv'
-import { EffectOf, NamespaceDeleted, NamespaceStarted, SharedEvent } from './SharedEvent'
+import {
+  EffectOf,
+  NamespaceCompleted,
+  NamespaceDeleted,
+  NamespaceStarted,
+  SharedEvent,
+} from './SharedEvent'
 
 export type CoreHandlers<F> = readonly [
   RuntimeHandler<F, NamespaceDeleted>,
   RuntimeHandler<F, NamespaceStarted<F>>,
+  RuntimeHandler<F, NamespaceCompleted<F>>,
 ]
 
 const isNamespaceDeleted = <F>(event: SharedEvent<F>): event is NamespaceDeleted =>
@@ -18,6 +25,9 @@ const isNamespaceDeleted = <F>(event: SharedEvent<F>): event is NamespaceDeleted
 
 const isNamespaceStarted = <F>(event: SharedEvent<F>): event is NamespaceStarted<F> =>
   event.type === 'namespace/started'
+
+const isNamespaceCompleted = <F>(event: SharedEvent<F>): event is NamespaceCompleted<F> =>
+  event.type === 'namespace/completed'
 
 export function createCoreHandlers<F extends URIS2>(M: MonadAsk2<F>): CoreHandlers<F>
 
@@ -66,5 +76,16 @@ export function createCoreHandlers<F>(M: MonadAsk<F>): CoreHandlers<F> {
       ) as EffectOf<F, RuntimeEnv<F>>,
   }
 
-  return [onDeleteNamespace, onNamespaceStarted] as const
+  const onNamespaceCompleted: RuntimeHandler<F, NamespaceCompleted<F>> = {
+    guard: isNamespaceCompleted,
+    handler: (event) =>
+      pipe(
+        M.ask<RuntimeEnv<F>>(),
+        M.map((env) => {
+          env.sharedReturnValues.set(event.namespace, event.returnValue)
+        }),
+      ) as EffectOf<F, RuntimeEnv<F>>,
+  }
+
+  return [onDeleteNamespace, onNamespaceStarted, onNamespaceCompleted] as const
 }
