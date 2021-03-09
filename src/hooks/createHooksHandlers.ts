@@ -8,7 +8,6 @@ import {
   NamespaceStarted,
   RuntimeEnv,
   RuntimeHandler,
-  SharedEvent,
 } from '@typed/fp/Shared'
 import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
 import { pipe } from 'fp-ts/dist/function'
@@ -16,12 +15,6 @@ import { HKT, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 import { createResetIndex } from './createGetNextIndex'
 import { NAMESPACE_DISPOSABLE } from './NamespaceDisposable'
-
-const isDeleteNamespace = <F>(event: SharedEvent<F>): event is NamespaceDeleted =>
-  event.type === 'namespace/deleted'
-
-const isNamespaceStarted = <F>(event: SharedEvent<F>): event is NamespaceStarted<F> =>
-  event.type === 'namespace/started'
 
 export type HooksHandlers<F> = readonly [
   RuntimeHandler<F, NamespaceDeleted>,
@@ -43,13 +36,13 @@ export function createHooksHandlers<F extends URIS4>(
 export function createHooksHandlers<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>): HooksHandlers<F>
 
 export function createHooksHandlers<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>): HooksHandlers<F> {
-  const [coreDeleteNamespace] = createCoreHandlers<F>(M)
+  const [coreDeleteNamespace, coreNamespaceStarted] = createCoreHandlers<F>(M)
   const resetIndex = createResetIndex<F>(M)()
   const using = usingNamespace(M)
 
   // Ensure resources are cleaned up after deleting a namespace
   const onDeleteNamespace: RuntimeHandler<F, NamespaceDeleted> = {
-    guard: isDeleteNamespace,
+    ...coreDeleteNamespace,
     handler: (event) =>
       pipe(
         M.ask<RuntimeEnv<F>>(),
@@ -63,8 +56,12 @@ export function createHooksHandlers<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>):
   }
 
   const onNamespaceStart: RuntimeHandler<F, NamespaceStarted<F>> = {
-    guard: isNamespaceStarted,
-    handler: (event) => pipe(resetIndex, using(event.namespace)) as EffectOf<F, RuntimeEnv<F>>,
+    ...coreNamespaceStarted,
+    handler: (event) =>
+      pipe(
+        coreNamespaceStarted.handler(event) as HKT<F, void>,
+        M.chain(() => pipe(resetIndex, using(event.namespace))),
+      ) as EffectOf<F, RuntimeEnv<F>>,
   }
 
   return [onDeleteNamespace, onNamespaceStart] as const
