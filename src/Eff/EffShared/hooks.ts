@@ -1,5 +1,6 @@
-import { FromIO, MonadAsk, URI, UseSome } from '@typed/fp/Eff'
 import * as H from '@typed/fp/hooks'
+
+import { FromIO, MonadAsk, URI, UseSome } from '../fp-ts'
 
 const eff = { ...MonadAsk, ...FromIO }
 

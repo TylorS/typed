@@ -1,9 +1,11 @@
 import { chain, filter, merge } from '@most/core'
 import { Stream } from '@most/types'
-import { Eff, toEnv, URI } from '@typed/fp/Eff'
 import { RuntimeEnv } from '@typed/fp/Shared'
 import { fromResume } from '@typed/fp/Stream'
 import { pipe } from 'fp-ts/dist/function'
+
+import { Eff, toEnv } from '../Eff'
+import { URI } from '../fp-ts'
 
 /**
  * Converts an environment into a Stream sampling the latest value produced by the provided Eff.

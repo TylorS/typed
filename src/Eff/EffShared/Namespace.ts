@@ -1,10 +1,12 @@
-import { Ask, Eff, Functor, UseSome } from '@typed/fp/Eff'
 import {
   CurrentNamespace,
   getCurrentNamespace as getNamespace_,
   Namespace,
   usingNamespace as usingNamespace_,
 } from '@typed/fp/Namespace'
+
+import { Eff } from '../Eff'
+import { Ask, Functor, UseSome } from '../fp-ts'
 
 export const getCurrentNamespace: <K extends PropertyKey = PropertyKey>() => Eff<
   CurrentNamespace<K>,

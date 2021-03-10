@@ -1,7 +1,8 @@
-import { FromIO, Functor, Monad, MonadAsk, ProvideSome, URI, UseSome } from '@typed/fp/Eff'
 import { Namespace } from '@typed/fp/Namespace'
 import * as R from '@typed/fp/Shared/runtime'
 import { CoreHandlers } from '@typed/fp/Shared/runtime'
+
+import { FromIO, Functor, Monad, MonadAsk, ProvideSome, URI, UseSome } from '../fp-ts'
 
 const eff = { ...MonadAsk, ...FromIO }
 
