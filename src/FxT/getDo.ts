@@ -7,11 +7,11 @@ export function getDo<F extends URIS>(): <Y extends Kind<F, any>, R, N = unknown
   f: (lift: LiftFx1<F>) => Generator<Y, R, N>,
 ) => Fx<Y, R, N>
 
-export function getDo<F extends URIS2, E = never>(): <Y extends Kind2<F, E, any>, R, N = unknown>(
+export function getDo<F extends URIS2, E = any>(): <Y extends Kind2<F, E, any>, R, N = unknown>(
   f: (lift: LiftFx2<F>) => Generator<Y, R, N>,
 ) => Fx<Y, R, N>
 
-export function getDo<F extends URIS3, R = never, E = never>(): <
+export function getDo<F extends URIS3, R = any, E = any>(): <
   Y extends Kind3<F, R, E, any>,
   Z,
   N = unknown
@@ -19,7 +19,7 @@ export function getDo<F extends URIS3, R = never, E = never>(): <
   f: (lift: LiftFx3<F>) => Generator<Y, Z, N>,
 ) => Fx<Y, Z, N>
 
-export function getDo<F extends URIS4, S = never, R = never, E = never>(): <
+export function getDo<F extends URIS4, S = any, R = any, E = any>(): <
   Y extends Kind4<F, S, R, E, any>,
   Z,
   N = unknown

@@ -58,7 +58,7 @@ export const toEnvEither: <R, E, A>(
 ) => EnvEither<R, E, A> = FxT.toMonad<EnvEitherURI>(MonadRec)
 
 export const doEffEither: <Effects extends EnvEither<any, any, any>, R, N = unknown>(
-  f: (lift: FxT.LiftFx<EnvEitherURI>) => Generator<Effects, R, N>,
+  f: (lift: FxT.LiftFx3<EnvEitherURI>) => Generator<Effects, R, N>,
 ) => EffEither<
   Widen<GetRequirements_<Effects>, 'intersection'>,
   GetLeft_<Effects>,

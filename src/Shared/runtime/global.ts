@@ -2,7 +2,7 @@ import { CurrentNamespace, Namespace, usingNamespace } from '@typed/fp/Namespace
 import { UseSome, UseSome2, UseSome3, UseSome3C, UseSome4 } from '@typed/fp/Provide'
 import { WidenI } from '@typed/fp/Widen'
 import { Functor, Functor2, Functor3, Functor3C, Functor4 } from 'fp-ts/dist/Functor'
-import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 /**
  * A dedicated namespace to work as a "global" namespace within a given runtime context.
@@ -37,12 +37,7 @@ export function usingGlobal<F extends URIS4>(
   <S, E, A>(hkt: Kind4<F, S, CurrentNamespace, E, A>): Kind4<F, S, never, E, A>
 }
 
-export function usingGlobal<F>(
-  M: UseSome<F> & Functor<F>,
-): {
-  <E, A>(hkt: HKT2<F, E & CurrentNamespace, A>): HKT2<F, E, A>
-  <A>(hkt: HKT2<F, CurrentNamespace, A>): HKT2<F, never, A>
-}
+export function usingGlobal<F>(M: UseSome<F> & Functor<F>): <A>(hkt: HKT<F, A>) => HKT<F, A>
 
 export function usingGlobal<F>(M: UseSome<F> & Functor<F>) {
   return usingNamespace(M)(GlobalNamespace)
