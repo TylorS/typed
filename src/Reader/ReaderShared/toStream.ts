@@ -1,18 +1,21 @@
 import { chain, filter, merge } from '@most/core'
 import { Stream } from '@most/types'
-import { Env, URI } from '@typed/fp/Env'
 import { RuntimeEnv } from '@typed/fp/Shared'
-import { fromResume } from '@typed/fp/Stream'
+import { fromIO } from '@typed/fp/Stream'
 import { pipe } from 'fp-ts/dist/function'
+import { Reader, URI } from 'fp-ts/dist/Reader'
 
 /**
- * Converts an environment into a Stream sampling the latest value produced by the provided Env.
+ * Converts an environment into a Stream sampling the latest value produced by the provided Reader.
  * Note that the provided requirements.currentNamespace will be used to filter which SharedEvents
  * are considered updates.
  */
-export function toStream<E extends RuntimeEnv<URI>, A>(env: Env<E, A>, requirements: E): Stream<A> {
+export function toStream<E extends RuntimeEnv<URI>, A>(
+  reader: Reader<E, A>,
+  requirements: E,
+): Stream<A> {
   const namespace = requirements.currentNamespace
-  const start = fromResume(env(requirements))
+  const effect = fromIO(() => reader(requirements))
   const updates = pipe(
     requirements.sharedEvents[1],
     filter(
@@ -20,8 +23,8 @@ export function toStream<E extends RuntimeEnv<URI>, A>(env: Env<E, A>, requireme
         event.namespace === namespace &&
         (event.type === 'namespace/updated' || event.type === 'sharedValue/updated'),
     ),
-    chain(() => fromResume(env(requirements))),
+    chain(() => effect),
   )
 
-  return merge(start, updates)
+  return merge(effect, updates)
 }

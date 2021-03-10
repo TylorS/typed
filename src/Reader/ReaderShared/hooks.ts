@@ -1,5 +1,9 @@
 import * as H from '@typed/fp/hooks'
-import { FromIO, MonadAsk, URI, UseSome } from '@typed/fp/Reader'
+import { URI } from 'fp-ts/dist/Reader'
+
+import { MonadAsk } from '../ask'
+import { FromIO } from '../fromIO'
+import { UseSome } from '../provide'
 
 const reader = { ...MonadAsk, ...FromIO }
 

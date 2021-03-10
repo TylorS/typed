@@ -1,5 +1,10 @@
 import * as C from '@typed/fp/hooks/context'
-import { ChainRec, FromIO, MonadAsk, MonadRec, Pointed, URI, UseSome } from '@typed/fp/Reader'
+import { Pointed, URI } from 'fp-ts/dist/Reader'
+
+import { MonadAsk } from '../ask'
+import { ChainRec, MonadRec } from '../chainRec'
+import { FromIO } from '../fromIO'
+import { UseSome } from '../provide'
 
 const reader = { ...MonadAsk, ...FromIO }
 

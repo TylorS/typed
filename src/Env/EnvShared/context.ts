@@ -1,5 +1,6 @@
-import { ChainRec, FromIO, MonadAsk, MonadRec, Pointed, URI, UseSome } from '@typed/fp/Env'
 import * as C from '@typed/fp/hooks/context'
+
+import { ChainRec, FromIO, MonadAsk, MonadRec, Pointed, URI, UseSome } from '../fp-ts'
 
 const env = { ...MonadAsk, ...FromIO }
 

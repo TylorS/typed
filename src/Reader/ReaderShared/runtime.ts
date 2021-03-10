@@ -1,7 +1,11 @@
 import { Namespace } from '@typed/fp/Namespace'
-import { FromIO, Functor, Monad, MonadAsk, ProvideSome, URI, UseSome } from '@typed/fp/Reader'
 import * as R from '@typed/fp/Shared/runtime'
 import { CoreHandlers } from '@typed/fp/Shared/runtime'
+import { Functor, Monad, URI } from 'fp-ts/dist/Reader'
+
+import { MonadAsk } from '../ask'
+import { FromIO } from '../fromIO'
+import { ProvideSome, UseSome } from '../provide'
 
 const reader = { ...MonadAsk, ...FromIO }
 

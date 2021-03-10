@@ -1,4 +1,3 @@
-import { Ask, Env, Functor, MonadAsk, URI } from '@typed/fp/Env'
 import {
   createShared as createShared_,
   deleteShared as deleteShared_,
@@ -14,6 +13,9 @@ import {
 import { WidenI } from '@typed/fp/Widen'
 import { Eq } from 'fp-ts/dist/Eq'
 import { Option } from 'fp-ts/dist/Option'
+
+import { Env } from '../Env'
+import { Ask, Functor, MonadAsk, URI } from '../fp-ts'
 
 export interface EnvShared<K, E, A> extends Shared2<URI, K, E, A> {}
 

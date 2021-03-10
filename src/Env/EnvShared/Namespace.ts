@@ -4,9 +4,11 @@ import {
   Namespace,
   usingNamespace as usingNamespace_,
 } from '@typed/fp/Namespace'
-import { Ask, Functor, Reader, UseSome } from '@typed/fp/Reader'
 
-export const getCurrentNamespace: <K extends PropertyKey = PropertyKey>() => Reader<
+import { Env } from '../Env'
+import { Ask, Functor, UseSome } from '../fp-ts'
+
+export const getCurrentNamespace: <K extends PropertyKey = PropertyKey>() => Env<
   CurrentNamespace<K>,
   Namespace<K>
 > = getNamespace_({ ...Ask, ...Functor })
@@ -14,6 +16,6 @@ export const getCurrentNamespace: <K extends PropertyKey = PropertyKey>() => Rea
 export const usingNamespace: <K extends PropertyKey = PropertyKey>(
   namespace: Namespace<K>,
 ) => {
-  <A>(reader: Reader<CurrentNamespace<K>, A>): Reader<never, A>
-  <E, A>(reader: Reader<E & CurrentNamespace<K>, A>): Reader<E, A>
+  <A>(reader: Env<CurrentNamespace<K>, A>): Env<never, A>
+  <E, A>(reader: Env<E & CurrentNamespace<K>, A>): Env<E, A>
 } = usingNamespace_(UseSome)

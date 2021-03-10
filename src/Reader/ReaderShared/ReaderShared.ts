@@ -1,4 +1,3 @@
-import { Ask, Functor, MonadAsk, Reader, URI } from '@typed/fp/Reader'
 import {
   createShared as createShared_,
   deleteShared as deleteShared_,
@@ -14,6 +13,9 @@ import {
 import { WidenI } from '@typed/fp/Widen'
 import { Eq } from 'fp-ts/dist/Eq'
 import { Option } from 'fp-ts/dist/Option'
+import { Functor, Reader, URI } from 'fp-ts/dist/Reader'
+
+import { Ask, MonadAsk } from '../ask'
 
 export interface ReaderShared<K, E, A> extends Shared2<URI, K, E, A> {}
 
