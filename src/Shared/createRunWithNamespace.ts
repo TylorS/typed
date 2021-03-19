@@ -5,7 +5,7 @@ import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
 import { pipe } from 'fp-ts/dist/function'
 import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
-import { createGetKVMap } from './createGetSharedMap'
+import { createGetKVMap } from './createGetKVMap'
 import { Shared } from './Shared'
 import { EffectOf } from './SharedEvent'
 

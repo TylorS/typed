@@ -21,9 +21,9 @@ import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
 import { pipe } from 'fp-ts/dist/function'
 import { HKT2, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
-import { createDeleteKV } from './createDeleteShared'
-import { createGetKV } from './createGetShared'
-import { createSetKV } from './createSetShared'
+import { createDeleteKV } from './createDeleteKv'
+import { createGetKV } from './createGetKv'
+import { createSetKV } from './createSetKV'
 import { GlobalNamespace } from './global'
 import { createShared, Shared } from './Shared'
 
