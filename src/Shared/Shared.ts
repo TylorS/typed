@@ -1,7 +1,7 @@
 import { Adapter, createAdapter } from '@most/adapter'
 import { CurrentNamespace, Namespace } from '@typed/fp/Namespace'
 
-import { GlobalNamespace } from './global'
+import { GlobalNamespace } from '../Global/Global'
 import { EffectOf, SharedEvent } from './SharedEvent'
 
 export type Shared<F> = CurrentNamespace &

@@ -1,3 +1,4 @@
+import { usingGlobal as usingGlobal_ } from '@typed/fp/Global'
 import { Namespace } from '@typed/fp/Namespace'
 import * as S from '@typed/fp/Shared'
 
@@ -17,5 +18,5 @@ export const createSetKV = S.createSetKV(reader)
 export const createShared = (namespace: Namespace) => S.createShared<URI>(namespace)
 export const provideShared = S.provideShared({ ...reader, ...ProvideSome })
 
-export const usingGlobal = S.usingGlobal({ ...UseSome, ...Functor })
+export const usingGlobal = usingGlobal_({ ...UseSome, ...Functor })
 export const runWithNamespace = S.createRunWithNamespace(reader)

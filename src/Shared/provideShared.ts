@@ -24,7 +24,7 @@ import { HKT2, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 import { createDeleteKV } from './createDeleteKv'
 import { createGetKV } from './createGetKv'
 import { createSetKV } from './createSetKV'
-import { GlobalNamespace } from './global'
+import { GlobalNamespace } from '../Global/Global'
 import { createShared, Shared } from './Shared'
 
 export function provideShared<F extends URIS2>(
