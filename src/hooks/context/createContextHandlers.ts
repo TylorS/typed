@@ -3,17 +3,17 @@ import { MonadReader, MonadReader2, MonadReader3, MonadReader4 } from '@typed/fp
 import { usingNamespace } from '@typed/fp/Namespace'
 import { UseSome, UseSome2, UseSome3, UseSome4 } from '@typed/fp/Provide'
 import {
-  createGetSharedMap,
+  createGetKVMap,
   createSendSharedEvent,
   EffectOf,
+  KVDeleted,
+  KVUpdated,
   NamespaceCompleted,
   NamespaceDeleted,
   NamespaceStarted,
-  RuntimeEnv,
   RuntimeHandler,
+  Shared,
   SharedEvent,
-  SharedValueDeleted,
-  SharedValueUpdated,
 } from '@typed/fp/Shared'
 import { ChainRec, ChainRec2, ChainRec3, ChainRec4 } from 'fp-ts/dist/ChainRec'
 import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
@@ -25,18 +25,16 @@ import { createAddToTree } from './createAddToTree'
 import { createGetNamespaceConsumers } from './NamespaceConsumers'
 import { createGetNamespaceProviders } from './NamespaceProviders'
 
-const isSharedValueUpdated = <F>(event: SharedEvent<F>): event is SharedValueUpdated<F> =>
-  event.type === 'sharedValue/updated'
+const isKVUpdated = <F>(event: SharedEvent<F>): event is KVUpdated<F> => event.type === 'kv/updated'
 
-const isSharedValueDeleted = <F>(event: SharedEvent<F>): event is SharedValueDeleted<F> =>
-  event.type === 'sharedValue/deleted'
+const isKVDeleted = <F>(event: SharedEvent<F>): event is KVDeleted<F> => event.type === 'kv/deleted'
 
 export type ContextHandlers<F> = readonly [
   RuntimeHandler<F, NamespaceDeleted>,
   RuntimeHandler<F, NamespaceStarted<F>>,
   RuntimeHandler<F, NamespaceCompleted<F>>,
-  RuntimeHandler<F, SharedValueUpdated<F>>,
-  RuntimeHandler<F, SharedValueDeleted<F>>,
+  RuntimeHandler<F, KVUpdated<F>>,
+  RuntimeHandler<F, KVDeleted<F>>,
 ]
 
 export function createContextHandlers<F extends URIS2>(
@@ -60,7 +58,7 @@ export function createContextHandlers<F>(
 ): ContextHandlers<F> {
   const getProviders = createGetNamespaceProviders(M)
   const getConsumers = createGetNamespaceConsumers(M)
-  const getSharedMap = createGetSharedMap(M)
+  const getSharedMap = createGetKVMap(M)
   const sendSharedEvent = createSendSharedEvent(M)
   const Do = getDo<F>()
   const toM = toMonad<F>(M)
@@ -90,9 +88,9 @@ export function createContextHandlers<F>(
               consumers.forEach((m) => m.delete(event.namespace))
             }
           }),
-        ) as HKT2<F, RuntimeEnv<F>, void>,
+        ) as HKT2<F, Shared<F>, void>,
         using(event.namespace),
-      ) as EffectOf<F, RuntimeEnv<F>>,
+      ) as EffectOf<F, Shared<F>>,
   }
 
   const contextNamespaceStarted: RuntimeHandler<F, NamespaceStarted<F>> = {
@@ -106,18 +104,18 @@ export function createContextHandlers<F>(
             yield* pipe(event.parent, addToTree, using(event.namespace), _)
           }),
         ),
-      ) as EffectOf<F, RuntimeEnv<F>>,
+      ) as EffectOf<F, Shared<F>>,
   }
 
-  const contextSharedValueUpdated: RuntimeHandler<F, SharedValueUpdated<F>> = {
-    guard: isSharedValueUpdated,
+  const contextKVUpdated: RuntimeHandler<F, KVUpdated<F>> = {
+    guard: isKVUpdated,
     handler: (event) =>
       pipe(
         Do(function* (_) {
           // Mark consumers of a given namespace as updated when a context value changes
-          const { shared, previousValue, value } = event
+          const { kv, previousValue, value } = event
           const consumers = yield* _(getConsumers)
-          const consumersOfKey = consumers.get(shared.key)
+          const consumersOfKey = consumers.get(kv.key)
           const sharedMap = yield* _(getSharedMap)
 
           if (!consumersOfKey || !sharedMap) {
@@ -136,21 +134,21 @@ export function createContextHandlers<F>(
           }
         }),
         toM,
-        (x) => using(event.namespace)(x as HKT2<F, RuntimeEnv<F>, void>),
-      ) as EffectOf<F, RuntimeEnv<F>>,
+        (x) => using(event.namespace)(x as HKT2<F, Shared<F>, void>),
+      ) as EffectOf<F, Shared<F>>,
   }
 
-  const contextSharedValueDeleted: RuntimeHandler<F, SharedValueDeleted<F>> = {
-    guard: isSharedValueDeleted,
+  const contextKVDeleted: RuntimeHandler<F, KVDeleted<F>> = {
+    guard: isKVDeleted,
     handler: (event) =>
       pipe(
         Do(function* (_) {
           // Remove consumers of a given namespace's shared value when it has been deleted
-          const { shared, namespace } = event
+          const { kv, namespace } = event
           const consumers = yield* _(getConsumers)
-          const consumersOf = consumers.get(shared.key)
+          const consumersOf = consumers.get(kv.key)
 
-          consumers.delete(shared.key)
+          consumers.delete(kv.key)
 
           if (consumersOf) {
             for (const consumer of consumersOf.keys()) {
@@ -161,15 +159,15 @@ export function createContextHandlers<F>(
           }
         }),
         toM,
-        (x) => using(event.namespace)(x as HKT2<F, RuntimeEnv<F>, void>),
-      ) as EffectOf<F, RuntimeEnv<F>>,
+        (x) => using(event.namespace)(x as HKT2<F, Shared<F>, void>),
+      ) as EffectOf<F, Shared<F>>,
   }
 
   return [
     contextNamespaceDeleted,
     contextNamespaceStarted,
     hooksNamespaceCompleted,
-    contextSharedValueUpdated,
-    contextSharedValueDeleted,
+    contextKVUpdated,
+    contextKVDeleted,
   ] as const
 }

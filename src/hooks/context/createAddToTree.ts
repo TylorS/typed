@@ -6,7 +6,7 @@ import {
   usingNamespace,
 } from '@typed/fp/Namespace'
 import { UseSome, UseSome2, UseSome3, UseSome4 } from '@typed/fp/Provide'
-import { createGetShared, createSetShared, RuntimeEnv } from '@typed/fp/Shared'
+import { createGetKV, createSetKV, Shared } from '@typed/fp/Shared'
 import { WidenI } from '@typed/fp/Widen'
 import { bind, chainFirst as chainFirst_ } from 'fp-ts/dist/Chain/'
 import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
@@ -20,15 +20,15 @@ import { createGetNamespaceParent, createNamespaceParent } from './NamespacePare
 
 export function createAddToTree<F extends URIS2, E = never>(
   M: MonadReader2<F> & FromIO2<F> & UseSome2<F>,
-): (parent: Namespace) => Kind2<F, WidenI<RuntimeEnv<F> | E>, void>
+): (parent: Namespace) => Kind2<F, WidenI<Shared<F> | E>, void>
 
 export function createAddToTree<F extends URIS3, R = never, E = never>(
   M: MonadReader3<F> & FromIO3<F> & UseSome3<F>,
-): (parent: Namespace) => Kind3<F, WidenI<RuntimeEnv<F> | R>, E, void>
+): (parent: Namespace) => Kind3<F, WidenI<Shared<F> | R>, E, void>
 
 export function createAddToTree<F extends URIS4, S = never, R = never, E = never>(
   M: MonadReader4<F> & FromIO4<F> & UseSome4<F>,
-): (parent: Namespace) => Kind4<F, S, WidenI<RuntimeEnv<F> | R>, E, void>
+): (parent: Namespace) => Kind4<F, S, WidenI<Shared<F> | R>, E, void>
 
 export function createAddToTree<F>(
   M: MonadReader<F> & FromIO<F> & UseSome<F>,
@@ -42,8 +42,8 @@ export function createAddToTree<F>(M: MonadReader<F> & FromIO<F> & UseSome<F>) {
   const NamespaceDisposable = createNamespaceDisposable(M)
   const getNamespaceParent = createGetNamespaceParent(M)
   const getNamespaceChildren = createGetNamespaceChildren(M)
-  const setShared = createSetShared(M)
-  const getShared = createGetShared(M)
+  const setShared = createSetKV(M)
+  const getShared = createGetKV(M)
   const chainFirst = chainFirst_(M)
   const using = usingNamespace(M)
   const voidM = M.fromIO(constVoid)
@@ -51,7 +51,7 @@ export function createAddToTree<F>(M: MonadReader<F> & FromIO<F> & UseSome<F>) {
   return (parent: Namespace) =>
     pipe(
       Do,
-      bindTo('env', () => ask(M)<RuntimeEnv<F>>()),
+      bindTo('env', () => ask(M)<Shared<F>>()),
       bindTo('namespace', getCurrentNamespace),
       bindTo('currentParent', () => getNamespaceParent),
       chainFirst(

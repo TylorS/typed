@@ -1,5 +1,5 @@
 export * from './Eff'
-export * from './EffShared'
 export * from './fp-ts'
+export * from './KV'
 export * from './provide'
 export * from './runPure'

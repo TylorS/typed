@@ -1,8 +1,9 @@
 import { getDo, toMonad } from '@typed/fp/FxT'
+import { KV, KV2, KV3, KV4 } from '@typed/fp/KV'
 import { ask, MonadReader, MonadReader2, MonadReader3, MonadReader4 } from '@typed/fp/MonadReader'
 import { getCurrentNamespace, Namespace, usingNamespace } from '@typed/fp/Namespace'
 import { UseSome, UseSome2, UseSome3, UseSome4 } from '@typed/fp/Provide'
-import { createGetOrInsert, RuntimeEnv, Shared, Shared2, Shared3, Shared4 } from '@typed/fp/Shared'
+import { createGetOrInsert, Shared } from '@typed/fp/Shared'
 import { WidenI } from '@typed/fp/Widen'
 import { bind, chainFirst } from 'fp-ts/dist/Chain'
 import { ChainRec, ChainRec2, ChainRec3, ChainRec4 } from 'fp-ts/dist/ChainRec'
@@ -19,30 +20,30 @@ import { createGetNamespaceProviders } from './NamespaceProviders'
 export function createWithProvider<F extends URIS2>(
   M: MonadReader2<F> & FromIO2<F> & UseSome2<F> & ChainRec2<F>,
 ): <K, A, B, C>(
-  shared: Shared2<F, K, A, B>,
+  shared: KV2<F, K, any, B>,
   f: (provider: Namespace) => Kind2<F, A, C>,
-) => Kind2<F, WidenI<RuntimeEnv<F> | A>, C>
+) => Kind2<F, WidenI<Shared<F> | A>, C>
 
 export function createWithProvider<F extends URIS3>(
   M: MonadReader3<F> & FromIO3<F> & UseSome3<F> & ChainRec3<F>,
 ): <K, A, B, C, D>(
-  shared: Shared3<F, K, A, B, C>,
+  shared: KV3<F, K, any, B, C>,
   f: (provider: Namespace) => Kind3<F, A, B, D>,
-) => Kind3<F, WidenI<RuntimeEnv<F> | A>, B, D>
+) => Kind3<F, WidenI<Shared<F> | A>, B, D>
 
 export function createWithProvider<F extends URIS4>(
   M: MonadReader4<F> & FromIO4<F> & UseSome4<F> & ChainRec4<F>,
 ): <K, A, B, C, D, E>(
-  shared: Shared4<F, K, A, B, C, D>,
+  shared: KV4<F, K, A, any, C, D>,
   f: (provider: Namespace) => Kind4<F, A, B, C, E>,
-) => Kind4<F, A, WidenI<RuntimeEnv<F> | B>, C, E>
+) => Kind4<F, A, WidenI<Shared<F> | B>, C, E>
 
 export function createWithProvider<F>(
   M: MonadReader<F> & FromIO<F> & UseSome<F> & ChainRec<F>,
-): <K, E, A, B>(
-  shared: Shared<F, K, E, A>,
+): <K, A, E, B>(
+  shared: KV<F, K, any, A>,
   f: (provider: Namespace) => HKT2<F, E, B>,
-) => HKT2<F, WidenI<RuntimeEnv<F> | E>, B>
+) => HKT2<F, WidenI<Shared<F> | E>, B>
 
 export function createWithProvider<F>(M: MonadReader<F> & FromIO<F> & UseSome<F> & ChainRec<F>) {
   const getNamespace = getCurrentNamespace(M)
@@ -57,11 +58,11 @@ export function createWithProvider<F>(M: MonadReader<F> & FromIO<F> & UseSome<F>
   const bindTo = bind(M)
   const chainFirst_ = chainFirst(M)
 
-  return <K, E, A, B>(shared: Shared<F, K, E, A>, f: (provider: Namespace) => HKT2<F, E, B>) =>
+  return <K, A, E, B>(shared: KV<F, K, any, A>, f: (provider: Namespace) => HKT2<F, E, B>) =>
     pipe(
       Do,
       bindTo('namespace', getNamespace),
-      bindTo('env', () => ask(M)<RuntimeEnv<F>>()),
+      bindTo('env', () => ask(M)<Shared<F>>()),
       bindTo('provider', ({ env, namespace }) =>
         toM(
           doFx(function* (_) {

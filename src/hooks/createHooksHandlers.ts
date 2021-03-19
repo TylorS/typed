@@ -7,7 +7,7 @@ import {
   NamespaceCompleted,
   NamespaceDeleted,
   NamespaceStarted,
-  RuntimeEnv,
+  Shared,
   RuntimeHandler,
 } from '@typed/fp/Shared'
 import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
@@ -51,14 +51,14 @@ export function createHooksHandlers<F>(
     ...coreDeleteNamespace,
     handler: (event) =>
       pipe(
-        ask(M)<RuntimeEnv<F>>(),
+        ask(M)<Shared<F>>(),
         M.chain((env) => {
           // Clean up disposable BEFORE cleaning up namespace from "core" handlers
           env.sharedKeyStore.get(event.namespace)?.get(NAMESPACE_DISPOSABLE)?.dispose()
 
           return coreDeleteNamespace.handler(event) as HKT<F, void>
         }),
-      ) as EffectOf<F, RuntimeEnv<F>>,
+      ) as EffectOf<F, Shared<F>>,
   }
 
   const onNamespaceStart: RuntimeHandler<F, NamespaceStarted<F>> = {
@@ -67,7 +67,7 @@ export function createHooksHandlers<F>(
       pipe(
         coreNamespaceStarted.handler(event) as HKT<F, void>,
         M.chain(() => pipe(resetIndex, using(event.namespace))),
-      ) as EffectOf<F, RuntimeEnv<F>>,
+      ) as EffectOf<F, Shared<F>>,
   }
 
   return [onDeleteNamespace, onNamespaceStart, coreNamespaceCompleted] as const
