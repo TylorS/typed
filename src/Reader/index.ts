@@ -1,5 +1,6 @@
 export * from './chainRec'
 export * from './fromIO'
+export * from './KV'
 export * from './MonadReader'
 export * from './provide'
 export * from 'fp-ts/dist/Reader'
