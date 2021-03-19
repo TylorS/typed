@@ -59,7 +59,6 @@ snowpack.crt
 snowpack.key
 
 # generated - run 'npm run update' to re-generate
-/Ask/
 /Branded/
 /Disposable/
 /Eff/
@@ -75,7 +74,7 @@ snowpack.key
 /FxT/
 /IO/
 /IOFx/
-/MonadAsk/
+/MonadReader/
 /MonadRec/
 /Namespace/
 /Patch/
@@ -88,6 +87,8 @@ snowpack.key
 /Shared/
 /Stream/
 /Widen/
+/browser/
+/dom/
 /hooks/
 /lambda/
 /string/
