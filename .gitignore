@@ -72,8 +72,10 @@ snowpack.key
 /Fx/
 /FxEither/
 /FxT/
+/Global/
 /IO/
 /IOFx/
+/KV/
 /MonadReader/
 /MonadRec/
 /Namespace/
@@ -84,11 +86,9 @@ snowpack.key
 /Ref/
 /Resume/
 /ResumeEither/
-/Shared/
 /Stream/
 /Widen/
 /browser/
 /dom/
-/hooks/
 /lambda/
 /string/

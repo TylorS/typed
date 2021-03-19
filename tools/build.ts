@@ -69,7 +69,7 @@ const readdir = (path: string) =>
 const writeFile = TE.taskify(fs.writeFile)
 const readFile = TE.taskify(fs.readFile)
 
-const zipPar = RA.sequence(TE.ApplicativePar)
+const zipPar = RA.traverse(TE.ApplicativePar)(TE.of)
 
 const program = pipe(
   SOURCE_DIR,
