@@ -1,11 +1,13 @@
-import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+
+import { WidenI } from '../Widen'
 
 /**
  * Type-class for providing some or all of the requirements.
  */
-export default interface Provide<F> {
-  readonly provideSome: <A>(provided: A) => <B>(hkt: HKT<F, B>) => HKT<F, B>
-  readonly provideAll: <A>(provided: A) => <B>(hkt: HKT<F, B>) => HKT<F, B>
+export interface Provide<F> {
+  readonly provideSome: <A>(provided: A) => <B, C>(hkt: HKT2<F, WidenI<A | B>, C>) => HKT2<F, B, C>
+  readonly provideAll: <A>(provided: A) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, never, B>
   readonly useSome: Provide<F>['provideSome']
   readonly useAll: Provide<F>['provideAll']
 }
@@ -68,19 +70,3 @@ export interface ProvideSome4<F extends URIS4> extends Pick<Provide4<F>, 'provid
 export interface ProvideAll4<F extends URIS4> extends Pick<Provide4<F>, 'provideAll'> {}
 export interface UseSome4<F extends URIS4> extends Pick<Provide4<F>, 'useSome'> {}
 export interface UseAll4<F extends URIS4> extends Pick<Provide4<F>, 'useAll'> {}
-
-export interface Provide4C<F extends URIS4, E> {
-  readonly provideSome: <A>(
-    provided: A,
-  ) => <R, B, C>(hkt: Kind4<F, R, A & B, E, C>) => Kind4<F, R, B, E, C>
-  readonly provideAll: <A>(
-    provided: A,
-  ) => <R, C>(hkt: Kind4<F, R, A, E, C>) => Kind4<F, R, never, E, C>
-  readonly useSome: Provide4C<F, E>['provideSome']
-  readonly useAll: Provide4C<F, E>['provideAll']
-}
-
-export interface ProvideSome4C<F extends URIS4, E> extends Pick<Provide4C<F, E>, 'provideSome'> {}
-export interface ProvideAll4C<F extends URIS4, E> extends Pick<Provide4C<F, E>, 'provideAll'> {}
-export interface UseSome4C<F extends URIS4, E> extends Pick<Provide4C<F, E>, 'useSome'> {}
-export interface UseAll4C<F extends URIS4, E> extends Pick<Provide4C<F, E>, 'useAll'> {}

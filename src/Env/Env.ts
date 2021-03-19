@@ -10,12 +10,10 @@ import {
 } from '@typed/fp/Resume'
 import { Widen } from '@typed/fp/Widen'
 import { Either } from 'fp-ts/dist/Either'
-import { pipe } from 'fp-ts/dist/function'
+import { identity, pipe } from 'fp-ts/dist/function'
 import { Reader } from 'fp-ts/dist/Reader'
 import {
   ap as ap_,
-  ask as ask_,
-  asks as asks_,
   chain as chain_,
   fromReader as fromReader_,
   map as map_,
@@ -37,9 +35,9 @@ export type GetResume<A> = A extends Env<any, infer R> ? R : never
 
 export const of: <A, R>(a: A) => Env<R, A> = of_(Pointed)
 
-export const ask: <R>() => Env<R, R> = ask_(Pointed)
+export const asks: <R, A>(f: (r: R) => A) => Env<R, A> = fromReader_(Pointed)
 
-export const asks: <R, A>(f: (r: R) => A) => Env<R, A> = asks_(Pointed)
+export const ask: <R>() => Env<R, R> = () => asks(identity)
 
 export const chain = chain_(Monad) as <A, R1, B>(
   f: (a: A) => Env<R1, B>,

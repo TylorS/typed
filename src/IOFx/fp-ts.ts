@@ -5,7 +5,7 @@ import { FromIO1 } from 'fp-ts/dist/FromIO'
 import { Functor1 } from 'fp-ts/dist/Functor'
 import { Monad1 } from 'fp-ts/dist/Monad'
 import { Pointed1 } from 'fp-ts/dist/Pointed'
-import { sequence } from 'fp-ts/dist/ReadonlyArray'
+import { traverse } from 'fp-ts/dist/ReadonlyArray'
 
 import { ap, chain, GetResult, IoFx, map, of } from './IOFx'
 
@@ -48,6 +48,6 @@ export const FromIO: FromIO1<URI> = {
   fromIO,
 }
 
-export const zip = (sequence(Applicative) as unknown) as <Effs extends readonly IoFx<any>[]>(
+export const zip = (traverse(Applicative)(of) as unknown) as <Effs extends readonly IoFx<any>[]>(
   envs: Effs,
 ) => IoFx<{ readonly [K in keyof Effs]: GetResult<Effs[K]> }>

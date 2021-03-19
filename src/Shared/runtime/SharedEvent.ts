@@ -82,7 +82,7 @@ export type SharedOf<F> = F extends URIS2
   ? Shared3<F, any, any, any, any>
   : F extends URIS4
   ? Shared4<F, any, any, any, any, any>
-  : Shared<F, any, any>
+  : Shared<F, any, any, any>
 
 /**
  * A Shared value has been added to the environment for a given namespace.

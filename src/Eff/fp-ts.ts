@@ -1,7 +1,6 @@
-import { Ask2 } from '@typed/fp/Ask'
-import { Alt as Alt_, ask } from '@typed/fp/Env'
+import { Alt as Alt_, fromReader as fromReader_ } from '@typed/fp/Env'
 import { fromIO } from '@typed/fp/Fx'
-import { MonadAsk2 } from '@typed/fp/MonadAsk'
+import { MonadReader2 } from '@typed/fp/MonadReader'
 import { MonadRec2 } from '@typed/fp/MonadRec'
 import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '@typed/fp/Provide'
 import { fromTask as fromTask_ } from '@typed/fp/Resume'
@@ -11,12 +10,13 @@ import { Applicative2 } from 'fp-ts/dist/Applicative'
 import { Apply2 } from 'fp-ts/dist/Apply'
 import { ChainRec2 } from 'fp-ts/dist/ChainRec'
 import { FromIO2 } from 'fp-ts/dist/FromIO'
+import { FromReader2 } from 'fp-ts/dist/FromReader'
 import { FromTask2 } from 'fp-ts/dist/FromTask'
 import { flow, pipe } from 'fp-ts/dist/function'
 import { Functor2 } from 'fp-ts/dist/Functor'
 import { Monad2 } from 'fp-ts/dist/Monad'
 import { Pointed2 } from 'fp-ts/dist/Pointed'
-import { sequence } from 'fp-ts/dist/ReadonlyArray'
+import { traverse } from 'fp-ts/dist/ReadonlyArray'
 
 import {
   ap,
@@ -41,9 +41,9 @@ declare module 'fp-ts/dist/HKT' {
   }
 }
 
-export const Ask: Ask2<URI> = {
+export const FromReader: FromReader2<URI> = {
   URI,
-  ask: <A>() => fromEnv(ask<A>()),
+  fromReader: flow(fromReader_, fromEnv),
 }
 
 export const Functor: Functor2<URI> = {
@@ -80,9 +80,9 @@ export const MonadRec: MonadRec2<URI> = {
   ...ChainRec,
 }
 
-export const MonadAsk: MonadAsk2<URI> = {
+export const MonadReader: MonadReader2<URI> = {
   ...Monad,
-  ...Ask,
+  ...FromReader,
 }
 
 export const ProvideSome: ProvideSome2<URI> = {
@@ -127,7 +127,9 @@ export const Alt: Alt2<URI> = {
 
 export const alt = Alt.alt
 
-export const zip = (sequence(Applicative) as unknown) as <Effs extends readonly Eff<any, any>[]>(
+export const zip = (traverse(Applicative)(of) as unknown) as <
+  Effs extends readonly Eff<any, any>[]
+>(
   envs: Effs,
 ) => Eff<
   Widen<GetRequirements<Effs[number]>, 'intersection'>,

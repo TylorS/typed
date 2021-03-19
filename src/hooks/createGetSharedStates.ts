@@ -1,7 +1,7 @@
 import { createShared, Shared, Shared2, Shared3, Shared4 } from '@typed/fp/Shared'
 import { EqStrict } from 'fp-ts/dist/Eq'
 import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
-import { URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { HKT2, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 import { UseState, UseState2, UseState3, UseState4 } from './UseState'
 
@@ -19,16 +19,16 @@ export function createSharedStates<F extends URIS4, S = unknown, R = never, E = 
   M: FromIO4<F>,
 ): Shared4<F, typeof SHARED_STATES, S, R, E, Map<any, UseState4<F, any>>>
 
-export function createSharedStates<F>(
+export function createSharedStates<F, E = never>(
   M: FromIO<F>,
-): Shared<F, typeof SHARED_STATES, Map<any, UseState<F, any>>>
+): Shared<F, typeof SHARED_STATES, E, Map<any, UseState<F, any>>>
 
 export function createSharedStates<F>(M: FromIO<F>) {
   const create = createShared<F>()
 
   return create(
     SHARED_STATES,
-    M.fromIO(() => new Map<any, UseState<F, any>>()),
+    M.fromIO(() => new Map<any, UseState<F, any>>()) as HKT2<F, any, Map<any, UseState<F, any>>>,
     EqStrict,
   )
 }

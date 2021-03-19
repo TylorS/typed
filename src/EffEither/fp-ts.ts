@@ -10,7 +10,7 @@ import { flow, pipe } from 'fp-ts/dist/function'
 import { Functor3 } from 'fp-ts/dist/Functor'
 import { Monad3 } from 'fp-ts/dist/Monad'
 import { Pointed3 } from 'fp-ts/dist/Pointed'
-import { sequence } from 'fp-ts/dist/ReadonlyArray'
+import { traverse } from 'fp-ts/dist/ReadonlyArray'
 
 import {
   ap,
@@ -78,7 +78,7 @@ export const Alt: Alt3<URI> = {
 
 export const alt = Alt.alt
 
-export const zip = (sequence(Applicative) as unknown) as <
+export const zip = (traverse(Applicative)(of) as unknown) as <
   Effs extends readonly EffEither<any, any, any>[]
 >(
   envs: Effs,

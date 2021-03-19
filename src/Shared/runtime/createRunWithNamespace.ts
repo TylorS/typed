@@ -1,58 +1,54 @@
-import { MonadAsk, MonadAsk2, MonadAsk2C, MonadAsk3, MonadAsk4 } from '@typed/fp/MonadAsk'
+import { ask, MonadReader, MonadReader2, MonadReader3, MonadReader4 } from '@typed/fp/MonadReader'
 import { Namespace } from '@typed/fp/Namespace'
 import { bind, chainFirst } from 'fp-ts/dist/Chain'
-import { FromIO, FromIO2, FromIO2C, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
+import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
 import { pipe } from 'fp-ts/dist/function'
-import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 import { createGetSharedMap } from './createGetSharedMap'
 import { RuntimeEnv } from './RuntimeEnv'
 import { EffectOf } from './SharedEvent'
 
 export function createRunWithNamespace<F extends URIS2>(
-  M: MonadAsk2<F> & FromIO2<F>,
-): <K extends PropertyKey>(
-  namespace: Namespace<K>,
-) => <E extends RuntimeEnv<F>, A>(effect: Kind2<F, E, A>) => Kind2<F, E, A>
-
-export function createRunWithNamespace<F extends URIS2, E>(
-  M: MonadAsk2C<F, E> & FromIO2C<F, E>,
+  M: MonadReader2<F> & FromIO2<F>,
 ): <K extends PropertyKey>(
   namespace: Namespace<K>,
 ) => <E extends RuntimeEnv<F>, A>(effect: Kind2<F, E, A>) => Kind2<F, E, A>
 
 export function createRunWithNamespace<F extends URIS3>(
-  M: MonadAsk3<F> & FromIO3<F>,
+  M: MonadReader3<F> & FromIO3<F>,
 ): <K extends PropertyKey>(
   namespace: Namespace<K>,
 ) => <R extends RuntimeEnv<F>, E, A>(effect: Kind3<F, R, E, A>) => Kind3<F, R, E, A>
 
 export function createRunWithNamespace<F extends URIS3, E>(
-  M: MonadAsk3<F> & FromIO3<F>,
+  M: MonadReader3<F> & FromIO3<F>,
 ): <K extends PropertyKey>(
   namespace: Namespace<K>,
 ) => <R extends RuntimeEnv<F>, A>(effect: Kind3<F, R, E, A>) => Kind3<F, R, E, A>
 
 export function createRunWithNamespace<F extends URIS4>(
-  M: MonadAsk4<F> & FromIO4<F>,
+  M: MonadReader4<F> & FromIO4<F>,
 ): <K extends PropertyKey>(
   namespace: Namespace<K>,
 ) => <S, R extends RuntimeEnv<F>, E, A>(effect: Kind4<F, S, R, E, A>) => Kind4<F, S, R, E, A>
 
 export function createRunWithNamespace<F>(
-  M: MonadAsk<F> & FromIO<F>,
-): (namespace: Namespace) => <A>(effect: HKT<F, A>) => HKT<F, A>
+  M: MonadReader<F> & FromIO<F>,
+): <K extends PropertyKey>(
+  namespace: Namespace<K>,
+) => <E extends RuntimeEnv<F>, A>(effect: HKT2<F, E, A>) => HKT2<F, E, A>
 
-export function createRunWithNamespace<F>(M: MonadAsk<F> & FromIO<F>) {
+export function createRunWithNamespace<F>(M: MonadReader<F> & FromIO<F>) {
   const getMap = createGetSharedMap(M)
   const Do = M.of({})
   const bindTo = bind(M)
   const chainF = chainFirst(M)
 
-  return (namespace: Namespace) => <A>(effect: HKT<F, A>) =>
+  return (namespace: Namespace) => <E extends RuntimeEnv<F>, A>(effect: HKT2<F, E, A>) =>
     pipe(
       Do,
-      bindTo('env', () => M.ask<RuntimeEnv<F>>()),
+      bindTo('env', () => ask(M)<RuntimeEnv<F>>()),
       bindTo('map', () => getMap),
       bindTo('parent', ({ env }) => M.of(env.currentNamespace)),
       chainF(({ env, parent }) => {

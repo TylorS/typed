@@ -8,7 +8,7 @@ import { pipe } from 'fp-ts/dist/function'
 import { Functor2 } from 'fp-ts/dist/Functor'
 import { Monad2 } from 'fp-ts/dist/Monad'
 import { Pointed2 } from 'fp-ts/dist/Pointed'
-import { sequence } from 'fp-ts/dist/ReadonlyArray'
+import { traverse } from 'fp-ts/dist/ReadonlyArray'
 
 import { ap, chain, doEither, EitherFx, GetLeft, GetResult, map, of, toEither } from './EitherFx'
 
@@ -64,7 +64,7 @@ export const Alt: Alt2<URI> = {
     })) as Alt2<URI>['alt'],
 }
 
-export const zip = (sequence(Applicative) as unknown) as <
+export const zip = (traverse(Applicative)(of) as unknown) as <
   Effs extends readonly EitherFx<any, any>[]
 >(
   envs: Effs,

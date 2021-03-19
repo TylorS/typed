@@ -1,12 +1,12 @@
 import * as C from '@typed/fp/hooks/context'
 import { Pointed, URI } from 'fp-ts/dist/Reader'
 
-import { MonadAsk } from '../ask'
 import { ChainRec, MonadRec } from '../chainRec'
 import { FromIO } from '../fromIO'
+import { MonadReader } from '../MonadReader'
 import { UseSome } from '../provide'
 
-const reader = { ...MonadAsk, ...FromIO }
+const reader = { ...MonadReader, ...FromIO }
 
 export const addToTree = C.createAddToTree({ ...reader, ...UseSome })
 

@@ -6,12 +6,12 @@ import {
 } from '@typed/fp/Namespace'
 
 import { Env } from '../Env'
-import { Ask, Functor, UseSome } from '../fp-ts'
+import { FromReader, Functor, UseSome } from '../fp-ts'
 
 export const getCurrentNamespace: <K extends PropertyKey = PropertyKey>() => Env<
   CurrentNamespace<K>,
   Namespace<K>
-> = getNamespace_({ ...Ask, ...Functor })
+> = getNamespace_({ ...FromReader, ...Functor })
 
 export const usingNamespace: <K extends PropertyKey = PropertyKey>(
   namespace: Namespace<K>,

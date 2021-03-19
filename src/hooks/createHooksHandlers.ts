@@ -1,4 +1,4 @@
-import { MonadAsk, MonadAsk2, MonadAsk3, MonadAsk4 } from '@typed/fp/MonadAsk'
+import { ask, MonadReader, MonadReader2, MonadReader3, MonadReader4 } from '@typed/fp/MonadReader'
 import { usingNamespace } from '@typed/fp/Namespace'
 import { UseSome, UseSome2, UseSome3, UseSome4 } from '@typed/fp/Provide'
 import {
@@ -24,20 +24,22 @@ export type HooksHandlers<F> = readonly [
 ]
 
 export function createHooksHandlers<F extends URIS2>(
-  M: MonadAsk2<F> & FromIO2<F> & UseSome2<F>,
+  M: MonadReader2<F> & FromIO2<F> & UseSome2<F>,
 ): HooksHandlers<F>
 
 export function createHooksHandlers<F extends URIS3>(
-  M: MonadAsk3<F> & FromIO3<F> & UseSome3<F>,
+  M: MonadReader3<F> & FromIO3<F> & UseSome3<F>,
 ): HooksHandlers<F>
 
 export function createHooksHandlers<F extends URIS4>(
-  M: MonadAsk4<F> & FromIO4<F> & UseSome4<F>,
+  M: MonadReader4<F> & FromIO4<F> & UseSome4<F>,
 ): HooksHandlers<F>
 
-export function createHooksHandlers<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>): HooksHandlers<F>
+export function createHooksHandlers<F>(M: MonadReader<F> & FromIO<F> & UseSome<F>): HooksHandlers<F>
 
-export function createHooksHandlers<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>): HooksHandlers<F> {
+export function createHooksHandlers<F>(
+  M: MonadReader<F> & FromIO<F> & UseSome<F>,
+): HooksHandlers<F> {
   const [coreDeleteNamespace, coreNamespaceStarted, coreNamespaceCompleted] = createCoreHandlers<F>(
     M,
   )
@@ -49,7 +51,7 @@ export function createHooksHandlers<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>):
     ...coreDeleteNamespace,
     handler: (event) =>
       pipe(
-        M.ask<RuntimeEnv<F>>(),
+        ask(M)<RuntimeEnv<F>>(),
         M.chain((env) => {
           // Clean up disposable BEFORE cleaning up namespace from "core" handlers
           env.sharedKeyStore.get(event.namespace)?.get(NAMESPACE_DISPOSABLE)?.dispose()

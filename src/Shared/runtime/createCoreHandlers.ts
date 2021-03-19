@@ -1,4 +1,4 @@
-import { MonadAsk, MonadAsk2, MonadAsk3, MonadAsk4 } from '@typed/fp/MonadAsk'
+import { ask, MonadReader, MonadReader2, MonadReader3, MonadReader4 } from '@typed/fp/MonadReader'
 import { pipe } from 'fp-ts/dist/function'
 import { URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 import { none, some } from 'fp-ts/dist/Option'
@@ -29,21 +29,21 @@ const isNamespaceStarted = <F>(event: SharedEvent<F>): event is NamespaceStarted
 const isNamespaceCompleted = <F>(event: SharedEvent<F>): event is NamespaceCompleted<F> =>
   event.type === 'namespace/completed'
 
-export function createCoreHandlers<F extends URIS2>(M: MonadAsk2<F>): CoreHandlers<F>
+export function createCoreHandlers<F extends URIS2>(M: MonadReader2<F>): CoreHandlers<F>
 
-export function createCoreHandlers<F extends URIS3>(M: MonadAsk3<F>): CoreHandlers<F>
+export function createCoreHandlers<F extends URIS3>(M: MonadReader3<F>): CoreHandlers<F>
 
-export function createCoreHandlers<F extends URIS4>(M: MonadAsk4<F>): CoreHandlers<F>
+export function createCoreHandlers<F extends URIS4>(M: MonadReader4<F>): CoreHandlers<F>
 
-export function createCoreHandlers<F>(M: MonadAsk<F>): CoreHandlers<F>
+export function createCoreHandlers<F>(M: MonadReader<F>): CoreHandlers<F>
 
-export function createCoreHandlers<F>(M: MonadAsk<F>): CoreHandlers<F> {
+export function createCoreHandlers<F>(M: MonadReader<F>): CoreHandlers<F> {
   // Ensure resources are cleaned up after deleting a namespace
   const onDeleteNamespace: RuntimeHandler<F, NamespaceDeleted> = {
     guard: isNamespaceDeleted,
     handler: (event) =>
       pipe(
-        M.ask<RuntimeEnv<F>>(),
+        ask(M)<RuntimeEnv<F>>(),
         M.map((env) => {
           env.sharedEffects.delete(event.namespace)
           env.sharedKeyStore.delete(event.namespace)
@@ -69,7 +69,7 @@ export function createCoreHandlers<F>(M: MonadAsk<F>): CoreHandlers<F> {
     guard: isNamespaceStarted,
     handler: (event) =>
       pipe(
-        M.ask<RuntimeEnv<F>>(),
+        ask(M)<RuntimeEnv<F>>(),
         M.map((env) => {
           env.sharedEffects.set(event.namespace, event.effect)
         }),
@@ -80,7 +80,7 @@ export function createCoreHandlers<F>(M: MonadAsk<F>): CoreHandlers<F> {
     guard: isNamespaceCompleted,
     handler: (event) =>
       pipe(
-        M.ask<RuntimeEnv<F>>(),
+        ask(M)<RuntimeEnv<F>>(),
         M.map((env) => {
           env.sharedReturnValues.set(event.namespace, event.returnValue)
         }),

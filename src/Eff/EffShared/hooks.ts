@@ -1,8 +1,8 @@
 import * as H from '@typed/fp/hooks'
 
-import { FromIO, MonadAsk, URI, UseSome } from '../fp-ts'
+import { FromIO, MonadReader, URI, UseSome } from '../fp-ts'
 
-const eff = { ...MonadAsk, ...FromIO }
+const eff = { ...MonadReader, ...FromIO }
 
 export const getNextIndex = H.createGetNextIndex(eff)()
 export const getNextSymbol = H.createGetNextSymbol(eff)()

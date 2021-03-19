@@ -1,5 +1,5 @@
 import { disposeAll } from '@most/disposable'
-import { MonadAsk, MonadAsk2, MonadAsk3, MonadAsk4 } from '@typed/fp/MonadAsk'
+import { ask, MonadReader, MonadReader2, MonadReader3, MonadReader4 } from '@typed/fp/MonadReader'
 import {
   getCurrentNamespace as getCurrentNamespace_,
   Namespace,
@@ -11,7 +11,7 @@ import { WidenI } from '@typed/fp/Widen'
 import { bind, chainFirst as chainFirst_ } from 'fp-ts/dist/Chain/'
 import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
 import { constVoid, pipe } from 'fp-ts/dist/function'
-import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { HKT, HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 import { matchW, some } from 'fp-ts/dist/Option'
 
 import { createNamespaceDisposable } from '../NamespaceDisposable'
@@ -19,22 +19,22 @@ import { createGetNamespaceChildren } from './NamespaceChildren'
 import { createGetNamespaceParent, createNamespaceParent } from './NamespaceParent'
 
 export function createAddToTree<F extends URIS2, E = never>(
-  M: MonadAsk2<F> & FromIO2<F> & UseSome2<F>,
+  M: MonadReader2<F> & FromIO2<F> & UseSome2<F>,
 ): (parent: Namespace) => Kind2<F, WidenI<RuntimeEnv<F> | E>, void>
 
 export function createAddToTree<F extends URIS3, R = never, E = never>(
-  M: MonadAsk3<F> & FromIO3<F> & UseSome3<F>,
+  M: MonadReader3<F> & FromIO3<F> & UseSome3<F>,
 ): (parent: Namespace) => Kind3<F, WidenI<RuntimeEnv<F> | R>, E, void>
 
 export function createAddToTree<F extends URIS4, S = never, R = never, E = never>(
-  M: MonadAsk4<F> & FromIO4<F> & UseSome4<F>,
+  M: MonadReader4<F> & FromIO4<F> & UseSome4<F>,
 ): (parent: Namespace) => Kind4<F, S, WidenI<RuntimeEnv<F> | R>, E, void>
 
 export function createAddToTree<F>(
-  M: MonadAsk<F> & FromIO<F> & UseSome<F>,
-): (parent: Namespace) => HKT<F, void>
+  M: MonadReader<F> & FromIO<F> & UseSome<F>,
+): <E = never>(parent: Namespace) => HKT2<F, E, void>
 
-export function createAddToTree<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>) {
+export function createAddToTree<F>(M: MonadReader<F> & FromIO<F> & UseSome<F>) {
   const Do = M.of({})
   const bindTo = bind(M)
   const getCurrentNamespace = getCurrentNamespace_(M)
@@ -51,7 +51,7 @@ export function createAddToTree<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>) {
   return (parent: Namespace) =>
     pipe(
       Do,
-      bindTo('env', () => M.ask<RuntimeEnv<F>>()),
+      bindTo('env', () => ask(M)<RuntimeEnv<F>>()),
       bindTo('namespace', getCurrentNamespace),
       bindTo('currentParent', () => getNamespaceParent),
       chainFirst(
@@ -69,7 +69,7 @@ export function createAddToTree<F>(M: MonadAsk<F> & FromIO<F> & UseSome<F>) {
                       M.map((children) => {
                         children.delete(namespace)
                       }),
-                      using(parentNamespace),
+                      (x) => using(parentNamespace)(x as HKT2<F, any, void>),
                     ),
             ),
           ),

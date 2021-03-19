@@ -1,5 +1,4 @@
-import { Ask2 } from '@typed/fp/Ask'
-import { MonadAsk2 } from '@typed/fp/MonadAsk'
+import { MonadReader2 } from '@typed/fp/MonadReader'
 import { MonadRec2 } from '@typed/fp/MonadRec'
 import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '@typed/fp/Provide'
 import { fromTask as fromTask_, race, sync } from '@typed/fp/Resume'
@@ -10,14 +9,15 @@ import { Apply2 } from 'fp-ts/dist/Apply'
 import { bind as bind_ } from 'fp-ts/dist/Chain'
 import { ChainRec2 } from 'fp-ts/dist/ChainRec'
 import { FromIO2 } from 'fp-ts/dist/FromIO'
+import { FromReader2 } from 'fp-ts/dist/FromReader'
 import { FromTask2 } from 'fp-ts/dist/FromTask'
 import { pipe } from 'fp-ts/dist/function'
 import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/dist/Functor'
 import { Monad2 } from 'fp-ts/dist/Monad'
 import { Pointed2 } from 'fp-ts/dist/Pointed'
-import { sequence } from 'fp-ts/dist/ReadonlyArray'
+import { traverse } from 'fp-ts/dist/ReadonlyArray'
 
-import { ap, ask, chain, chainRec, Env, GetRequirements, GetResume, map, of } from './Env'
+import { ap, asks, chain, chainRec, Env, GetRequirements, GetResume, map, of } from './Env'
 import { provideAll, provideSome, useAll, useSome } from './provide'
 
 export const URI = '@typed/fp/Env'
@@ -29,7 +29,7 @@ declare module 'fp-ts/dist/HKT' {
   }
 }
 
-export const Ask: Ask2<URI> = { URI, ask }
+export const FromReader: FromReader2<URI> = { URI, fromReader: asks }
 
 export const Functor: Functor2<URI> = {
   URI,
@@ -56,9 +56,9 @@ export const Monad: Monad2<URI> = {
   chain: chain as Monad2<URI>['chain'],
 }
 
-export const MonadAsk: MonadAsk2<URI> = {
+export const MonadReader: MonadReader2<URI> = {
   ...Monad,
-  ...Ask,
+  ...FromReader,
 }
 
 export const ChainRec: ChainRec2<URI> = {
@@ -98,7 +98,9 @@ export const bind = bind_(Monad) as <N extends string, A, E, B>(
 ) => <E2>(ma: Env<E2, A>) => Env<E & E2, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 export const tupled = tupled_(Functor)
 
-export const zip = (sequence(Applicative) as unknown) as <Envs extends readonly Env<any, any>[]>(
+export const zip = (traverse(Applicative)(of) as unknown) as <
+  Envs extends readonly Env<any, any>[]
+>(
   envs: Envs,
 ) => Env<
   Widen<{ readonly [K in keyof Envs]: GetRequirements<Envs[K]> }[number], 'intersection'>,

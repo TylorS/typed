@@ -1,5 +1,5 @@
 import { getDo, toMonad } from '@typed/fp/FxT'
-import { MonadAsk, MonadAsk2, MonadAsk3, MonadAsk4 } from '@typed/fp/MonadAsk'
+import { MonadReader, MonadReader2, MonadReader3, MonadReader4 } from '@typed/fp/MonadReader'
 import { usingNamespace } from '@typed/fp/Namespace'
 import { UseSome, UseSome2, UseSome3, UseSome4 } from '@typed/fp/Provide'
 import {
@@ -18,7 +18,7 @@ import {
 import { ChainRec, ChainRec2, ChainRec3, ChainRec4 } from 'fp-ts/dist/ChainRec'
 import { FromIO, FromIO2, FromIO3, FromIO4 } from 'fp-ts/dist/FromIO'
 import { pipe } from 'fp-ts/dist/function'
-import { HKT, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { HKT, HKT2, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 import { createHooksHandlers } from '../createHooksHandlers'
 import { createAddToTree } from './createAddToTree'
@@ -40,23 +40,23 @@ export type ContextHandlers<F> = readonly [
 ]
 
 export function createContextHandlers<F extends URIS2>(
-  M: MonadAsk2<F> & FromIO2<F> & UseSome2<F> & ChainRec2<F>,
+  M: MonadReader2<F> & FromIO2<F> & UseSome2<F> & ChainRec2<F>,
 ): ContextHandlers<F>
 
 export function createContextHandlers<F extends URIS3>(
-  M: MonadAsk3<F> & FromIO3<F> & UseSome3<F> & ChainRec3<F>,
+  M: MonadReader3<F> & FromIO3<F> & UseSome3<F> & ChainRec3<F>,
 ): ContextHandlers<F>
 
 export function createContextHandlers<F extends URIS4>(
-  M: MonadAsk4<F> & FromIO4<F> & UseSome4<F> & ChainRec4<F>,
+  M: MonadReader4<F> & FromIO4<F> & UseSome4<F> & ChainRec4<F>,
 ): ContextHandlers<F>
 
 export function createContextHandlers<F>(
-  M: MonadAsk<F> & FromIO<F> & UseSome<F> & ChainRec<F>,
+  M: MonadReader<F> & FromIO<F> & UseSome<F> & ChainRec<F>,
 ): ContextHandlers<F>
 
 export function createContextHandlers<F>(
-  M: MonadAsk<F> & FromIO<F> & UseSome<F> & ChainRec<F>,
+  M: MonadReader<F> & FromIO<F> & UseSome<F> & ChainRec<F>,
 ): ContextHandlers<F> {
   const getProviders = createGetNamespaceProviders(M)
   const getConsumers = createGetNamespaceConsumers(M)
@@ -90,7 +90,7 @@ export function createContextHandlers<F>(
               consumers.forEach((m) => m.delete(event.namespace))
             }
           }),
-        ),
+        ) as HKT2<F, RuntimeEnv<F>, void>,
         using(event.namespace),
       ) as EffectOf<F, RuntimeEnv<F>>,
   }
@@ -136,7 +136,7 @@ export function createContextHandlers<F>(
           }
         }),
         toM,
-        using(event.namespace),
+        (x) => using(event.namespace)(x as HKT2<F, RuntimeEnv<F>, void>),
       ) as EffectOf<F, RuntimeEnv<F>>,
   }
 
@@ -161,7 +161,7 @@ export function createContextHandlers<F>(
           }
         }),
         toM,
-        using(event.namespace),
+        (x) => using(event.namespace)(x as HKT2<F, RuntimeEnv<F>, void>),
       ) as EffectOf<F, RuntimeEnv<F>>,
   }
 

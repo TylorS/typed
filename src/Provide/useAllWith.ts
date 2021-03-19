@@ -1,6 +1,6 @@
 import { Chain, Chain2, Chain3, Chain4 } from 'fp-ts/dist/Chain'
 import { pipe } from 'fp-ts/dist/function'
-import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 import { UseAll, UseAll2, UseAll3, UseAll4 } from './Provide'
 
@@ -20,10 +20,10 @@ export function useAllWith<F extends URIS4>(
 
 export function useAllWith<F>(
   M: UseAll<F> & Chain<F>,
-): <A>(provider: HKT<F, A>) => <B>(hkt: HKT<F, B>) => HKT<F, B>
+): <E, A>(provider: HKT2<F, E, A>) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, E, B>
 
 export function useAllWith<F>(M: UseAll<F> & Chain<F>) {
-  return <A>(provider: HKT<F, A>) => <B>(hkt: HKT<F, B>): HKT<F, B> =>
+  return <E, A>(provider: HKT2<F, E, A>) => <B>(hkt: HKT2<F, A, B>) =>
     pipe(
       provider,
       M.chain((e) => pipe(hkt, M.useAll(e))),

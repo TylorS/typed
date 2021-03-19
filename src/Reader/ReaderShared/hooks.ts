@@ -1,11 +1,11 @@
 import * as H from '@typed/fp/hooks'
 import { URI } from 'fp-ts/dist/Reader'
 
-import { MonadAsk } from '../ask'
 import { FromIO } from '../fromIO'
+import { MonadReader } from '../MonadReader'
 import { UseSome } from '../provide'
 
-const reader = { ...MonadAsk, ...FromIO }
+const reader = { ...MonadReader, ...FromIO }
 
 export const getNextIndex = H.createGetNextIndex(reader)()
 export const getNextSymbol = H.createGetNextSymbol(reader)()

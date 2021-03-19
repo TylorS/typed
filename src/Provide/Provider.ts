@@ -1,7 +1,9 @@
 import { WidenI } from '@typed/fp/Widen'
-import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
-export type Provider<F> = <B>(hkt: HKT<F, B>) => HKT<F, B>
+export type Provider<F, Removed, Added> = <E, A>(
+  hkt: HKT2<F, WidenI<Removed | E>, A>,
+) => HKT2<F, WidenI<Added | E>, A>
 
 export type Provider2<F extends URIS2, A, B> = <C, D>(
   kind: Kind2<F, WidenI<A | C>, D>,

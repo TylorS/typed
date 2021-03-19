@@ -1,6 +1,6 @@
 import { WidenI } from '@typed/fp/Widen'
 import { pipe } from 'fp-ts/dist/function'
-import { HKT, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 import { Monad, Monad2, Monad3, Monad4 } from 'fp-ts/dist/Monad'
 
 import { RuntimeEnv } from './RuntimeEnv'
@@ -31,10 +31,10 @@ export function createGetOrInsert<F extends URIS4>(
 
 export function createGetOrInsert<F>(
   M: Monad<F>,
-): <A, B>(map: Map<A, B>, key: A, insert: HKT<F, B>) => HKT<F, B>
+): <A, E, B>(map: Map<A, B>, key: A, insert: HKT2<F, E, B>) => HKT2<F, E, B>
 
 export function createGetOrInsert<F>(M: Monad<F>) {
-  return <A, B>(map: Map<A, B>, key: A, insert: HKT<F, B>) =>
+  return <A, E, B>(map: Map<A, B>, key: A, insert: HKT2<F, E, B>) =>
     pipe(
       map,
       M.of,

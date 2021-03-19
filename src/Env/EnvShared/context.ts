@@ -1,8 +1,8 @@
 import * as C from '@typed/fp/hooks/context'
 
-import { ChainRec, FromIO, MonadAsk, MonadRec, Pointed, URI, UseSome } from '../fp-ts'
+import { ChainRec, FromIO, MonadReader, MonadRec, Pointed, URI, UseSome } from '../fp-ts'
 
-const env = { ...MonadAsk, ...FromIO }
+const env = { ...MonadReader, ...FromIO }
 
 export const addToTree = C.createAddToTree({ ...env, ...UseSome })
 
