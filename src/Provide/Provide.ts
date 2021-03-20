@@ -1,6 +1,6 @@
 import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
-import { WidenI } from '../Widen'
+import { WidenI } from '@typed/fp/Widen'
 
 /**
  * Type-class for providing some or all of the requirements.

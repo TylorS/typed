@@ -7,12 +7,12 @@ import {
   MonadReader3C,
   MonadReader4,
 } from '@typed/fp/MonadReader'
+import { WidenI } from '@typed/fp/Widen'
 import { FromIO, FromIO2, FromIO3, FromIO3C, FromIO4 } from 'fp-ts/dist/FromIO'
 import { pipe } from 'fp-ts/dist/function'
 import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 import { match } from 'fp-ts/dist/Option'
 
-import { WidenI } from '../Widen'
 import { createSendKvEvent } from './createSendKvEvent'
 import { KvEnv, KvOf } from './KvEnv'
 import { lookup } from './lookup'
