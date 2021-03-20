@@ -13,27 +13,27 @@ import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 import { KvEnv, KvEvent } from './KvEnv'
 
-export function createSendSharedEvent<F extends URIS4>(
+export function createSendKvEvent<F extends URIS4>(
   M: FromReader4<F> & FromIO4<F> & Chain4<F>,
 ): <S, E = never>(event: KvEvent<F>) => Kind4<F, S, KvEnv<F, any, any>, E, void>
 
-export function createSendSharedEvent<F extends URIS3>(
+export function createSendKvEvent<F extends URIS3>(
   M: FromReader3<F> & FromIO3<F> & Chain3<F>,
 ): <E = never>(event: KvEvent<F>) => Kind3<F, KvEnv<F, any, any>, E, void>
 
-export function createSendSharedEvent<F extends URIS3, E>(
+export function createSendKvEvent<F extends URIS3, E>(
   M: FromReader3C<F, E> & FromIO3C<F, E> & Chain3C<F, E>,
 ): (event: KvEvent<F>) => Kind3<F, KvEnv<F, any, any>, E, void>
 
-export function createSendSharedEvent<F extends URIS2>(
+export function createSendKvEvent<F extends URIS2>(
   M: FromReader2<F> & FromIO2<F> & Chain2<F>,
 ): (event: KvEvent<F>) => Kind2<F, KvEnv<F, any, any>, void>
 
-export function createSendSharedEvent<F>(
+export function createSendKvEvent<F>(
   M: FromReader<F> & FromIO<F> & Chain<F>,
 ): (event: KvEvent<F>) => HKT2<F, KvEnv<F, any, any>, void>
 
-export function createSendSharedEvent<F>(M: FromReader<F> & FromIO<F> & Chain<F>) {
+export function createSendKvEvent<F>(M: FromReader<F> & FromIO<F> & Chain<F>) {
   return (event: KvEvent<F>) =>
     pipe(
       ask(M)<KvEnv<F, any, any>>(),

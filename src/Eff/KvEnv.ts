@@ -7,7 +7,7 @@ import { Chain, FromIO, FromReader, MonadReader, ProvideSome, URI, UseSome } fro
 
 export const sendSharedEvent: (
   event: K.KvEvent<URI>,
-) => Eff<K.KvEnv<URI, any, any>, void> = K.createSendSharedEvent({
+) => Eff<K.KvEnv<URI, any, any>, void> = K.createSendKvEvent({
   ...FromReader,
   ...FromIO,
   ...Chain,
@@ -23,7 +23,7 @@ export const provideKV: <E, A>(
 
 export const useKV: <E, A>(
   hkt: Eff<WidenI<E | GetKV2<URI> | SetKV2<URI> | DeleteKV2<URI> | K.KvEnv<URI, any, any>>, A>,
-) => Eff<WidenI<E | K.KvEnv<URI, any, any>>, any> = K.useKV({
+) => Eff<WidenI<E | K.KvEnv<URI, any, any>>, any> = K.createUseKV({
   ...MonadReader,
   ...FromIO,
   ...UseSome,

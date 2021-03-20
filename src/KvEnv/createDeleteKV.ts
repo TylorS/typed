@@ -14,7 +14,7 @@ import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 import { Option } from 'fp-ts/dist/Option'
 
 import { WidenI } from '../Widen'
-import { createSendSharedEvent } from './createSendSharedEvent'
+import { createSendKvEvent } from './createSendKvEvent'
 import { KvEnv, KvOf } from './KvEnv'
 import { lookup } from './lookup'
 
@@ -41,7 +41,7 @@ export function createDeleteKV<F>(
 ): <K, E, A>(kv: KV<F, K, E, A>) => HKT2<F, WidenI<E | KvEnv<F, K, A>>, Option<A>>
 
 export function createDeleteKV<F>(M: MonadReader<F> & FromIO<F>) {
-  const sendEvent = createSendSharedEvent(M)
+  const sendEvent = createSendKvEvent(M)
   const chainF = chainFirst(M)
   const get = ask(M)
 

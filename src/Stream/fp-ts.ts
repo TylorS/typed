@@ -1,9 +1,9 @@
 import {
   ap,
+  awaitPromises,
   chain,
   empty,
   filter,
-  fromPromise,
   map,
   merge,
   mergeConcurrently,
@@ -29,7 +29,7 @@ import { Either, isLeft, isRight, Left, left, match, Right, right } from 'fp-ts/
 import { Filterable1 } from 'fp-ts/dist/Filterable'
 import { FromIO1 } from 'fp-ts/dist/FromIO'
 import { FromTask1 } from 'fp-ts/dist/FromTask'
-import { pipe } from 'fp-ts/dist/function'
+import { flow, pipe } from 'fp-ts/dist/function'
 import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/dist/Functor'
 import { Monad1 } from 'fp-ts/dist/Monad'
 import { Monoid } from 'fp-ts/dist/Monoid'
@@ -37,6 +37,7 @@ import { isSome, Option, Some } from 'fp-ts/dist/Option'
 import { Pointed1 } from 'fp-ts/dist/Pointed'
 import { Predicate } from 'fp-ts/dist/Predicate'
 import { Separated } from 'fp-ts/dist/Separated'
+import { Task } from 'fp-ts/dist/Task'
 
 import { createCallbackTask } from './createCallbackTask'
 
@@ -148,15 +149,11 @@ export const FromIO: FromIO1<URI> = {
 
 export const fromIO = FromIO.fromIO
 
+const applyTask = <A>(task: Task<A>): Stream<Promise<A>> => ap(now(task), now(void 0))
+
 export const FromTask: FromTask1<URI> = {
   ...FromIO,
-  fromTask: (task) =>
-    pipe(
-      task,
-      now,
-      map((t) => fromPromise(t())),
-      switchLatest,
-    ),
+  fromTask: flow(applyTask, awaitPromises),
 }
 
 export const fromTask = FromTask.fromTask

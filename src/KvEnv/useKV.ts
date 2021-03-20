@@ -35,19 +35,19 @@ import { createGetKV } from './createGetKV'
 import { createSetKV } from './createSetKV'
 import { KvEnv } from './KvEnv'
 
-export function useKV<F extends URIS4>(
+export function createUseKV<F extends URIS4>(
   M: MonadReader4<F> & FromIO4<F> & UseSome4<F>,
 ): <S, R, E, A>(
   hkt: Kind4<F, S, WidenI<GetKV4<F> | SetKV4<F> | DeleteKV4<F> | KvEnv<F, any, any> | R>, E, A>,
 ) => Kind4<F, S, WidenI<KvEnv<F, any, any> | R>, E, A>
 
-export function useKV<F extends URIS3>(
+export function createUseKV<F extends URIS3>(
   M: MonadReader3<F> & FromIO3<F> & UseSome3<F>,
 ): <R, E, A>(
   hkt: Kind3<F, WidenI<GetKV3<F> | SetKV3<F> | DeleteKV3<F> | KvEnv<F, any, any> | R>, E, A>,
 ) => Kind3<F, WidenI<KvEnv<F, any, any> | R>, E, A>
 
-export function useKV<F extends URIS3, E>(
+export function createUseKV<F extends URIS3, E>(
   M: MonadReader3C<F, E> & FromIO3C<F, E> & UseSome3C<F, E>,
 ): <R, A>(
   hkt: Kind3<
@@ -58,19 +58,19 @@ export function useKV<F extends URIS3, E>(
   >,
 ) => Kind3<F, WidenI<KvEnv<F, any, any> | R>, E, A>
 
-export function useKV<F extends URIS2>(
+export function createUseKV<F extends URIS2>(
   M: MonadReader2<F> & FromIO2<F> & UseSome2<F>,
 ): <E, A>(
   hkt: Kind2<F, WidenI<GetKV2<F> | SetKV2<F> | DeleteKV2<F> | KvEnv<F, any, any> | E>, A>,
 ) => Kind2<F, WidenI<KvEnv<F, any, any> | E>, A>
 
-export function useKV<F>(
+export function createUseKV<F>(
   M: MonadReader<F> & FromIO<F> & UseSome<F>,
 ): <E, A>(
   hkt: HKT2<F, WidenI<GetKV<F> | SetKV<F> | DeleteKV<F> | KvEnv<F, any, any> | E>, A>,
 ) => HKT2<F, WidenI<KvEnv<F, any, any> | E>, A>
 
-export function useKV<F>(M: MonadReader<F> & FromIO<F> & UseSome<F>) {
+export function createUseKV<F>(M: MonadReader<F> & FromIO<F> & UseSome<F>) {
   const getKV = createGetKV(M)
   const setKV = createSetKV(M)
   const deleteKV = createDeleteKV(M)

@@ -9,7 +9,7 @@ import { ProvideSome, UseSome } from './provide'
 
 export const sendSharedEvent: (
   event: K.KvEvent<URI>,
-) => Reader<K.KvEnv<URI, any, any>, void> = K.createSendSharedEvent({
+) => Reader<K.KvEnv<URI, any, any>, void> = K.createSendKvEvent({
   ...FromReader,
   ...FromIO,
   ...Chain,
@@ -25,7 +25,7 @@ export const provideKV: <E, A>(
 
 export const useKV: <E, A>(
   hkt: Reader<WidenI<E | GetKV2<URI> | SetKV2<URI> | DeleteKV2<URI> | K.KvEnv<URI, any, any>>, A>,
-) => Reader<WidenI<E | K.KvEnv<URI, any, any>>, any> = K.useKV({
+) => Reader<WidenI<E | K.KvEnv<URI, any, any>>, any> = K.createUseKV({
   ...MonadReader,
   ...FromIO,
   ...UseSome,
