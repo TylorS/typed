@@ -19,9 +19,9 @@ import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 import { createGetOrCreateNamespace } from './createGetOrCreateNamespace'
 import { createSendSharedEvent } from './createSendSharedEvent'
-import { EffectOf, SharedEnv, SharedEvent, SharedValueEvent } from './SharedEnv'
+import { EffectOf, Shared, SharedEvent, SharedValueEvent } from './Shared'
 
-const kvTypes = new Set(['kv/created', 'kv/updated', 'kv/deleted'])
+const kvTypes = new Set<SharedEvent<any>['type']>(['kv/created', 'kv/updated', 'kv/deleted'])
 const isKvEvent = <F>(event: SharedEvent<F>): event is SharedValueEvent<F> =>
   kvTypes.has(event.type)
 
@@ -31,7 +31,7 @@ export function runWithNamespace<F extends URIS4>(
   namespace: Namespace<K>,
 ) => <S, R, E, A>(
   hkt: Kind4<F, S, WidenI<R | KvEnv<F, any, any> | GetKV<F> | SetKV<F> | DeleteKV<F>>, E, A>,
-) => Kind4<F, S, WidenI<R | SharedEnv<F>>, E, A>
+) => Kind4<F, S, WidenI<R | Shared<F>>, E, A>
 
 export function runWithNamespace<F extends URIS3>(
   M: MonadReader3<F> & FromIO3<F> & UseSome3<F>,
@@ -39,7 +39,7 @@ export function runWithNamespace<F extends URIS3>(
   namespace: Namespace<K>,
 ) => <R, E, A>(
   hkt: Kind3<F, WidenI<R | KvEnv<F, any, any> | GetKV<F> | SetKV<F> | DeleteKV<F>>, E, A>,
-) => Kind3<F, WidenI<R | SharedEnv<F>>, E, A>
+) => Kind3<F, WidenI<R | Shared<F>>, E, A>
 
 export function runWithNamespace<F extends URIS3, E>(
   M: MonadReader3C<F, E> & FromIO3C<F, E> & UseSome3C<F, E>,
@@ -47,7 +47,7 @@ export function runWithNamespace<F extends URIS3, E>(
   namespace: Namespace<K>,
 ) => <R, A>(
   hkt: Kind3<F, WidenI<R | KvEnv<F, any, any> | GetKV<F> | SetKV<F> | DeleteKV<F>>, E, A>,
-) => Kind3<F, WidenI<R | SharedEnv<F>>, E, A>
+) => Kind3<F, WidenI<R | Shared<F>>, E, A>
 
 export function runWithNamespace<F extends URIS2>(
   M: MonadReader2<F> & FromIO2<F> & UseSome2<F>,
@@ -55,7 +55,7 @@ export function runWithNamespace<F extends URIS2>(
   namespace: Namespace<K>,
 ) => <E, A>(
   hkt: Kind2<F, WidenI<E | KvEnv<F, any, any> | GetKV<F> | SetKV<F> | DeleteKV<F>>, A>,
-) => Kind2<F, WidenI<E | SharedEnv<F>>, A>
+) => Kind2<F, WidenI<E | Shared<F>>, A>
 
 export function runWithNamespace<F>(
   M: MonadReader<F> & FromIO<F> & UseSome<F>,
@@ -63,7 +63,7 @@ export function runWithNamespace<F>(
   namespace: Namespace<K>,
 ) => <E, A>(
   hkt: HKT2<F, WidenI<E | KvEnv<F, any, any> | GetKV<F> | SetKV<F> | DeleteKV<F>>, A>,
-) => HKT2<F, WidenI<E | SharedEnv<F>>, A>
+) => HKT2<F, WidenI<E | Shared<F>>, A>
 
 export function runWithNamespace<F>(M: MonadReader<F> & FromIO<F> & UseSome<F>) {
   const get = ask(M)
@@ -80,7 +80,7 @@ export function runWithNamespace<F>(M: MonadReader<F> & FromIO<F> & UseSome<F>) 
     ) => {
       return pipe(
         Do,
-        bindTo('env', () => get<SharedEnv<F> & CurrentNamespace>()),
+        bindTo('env', () => get<Shared<F> & CurrentNamespace>()),
         bindTo('kvEvents', ({ env: { sharedEvents } }) =>
           pipe(
             sharedEvents,
@@ -117,7 +117,7 @@ export function runWithNamespace<F>(M: MonadReader<F> & FromIO<F> & UseSome<F>) 
             ),
           )
         }),
-      ) as HKT2<F, WidenI<E | SharedEnv<F>>, A>
+      ) as HKT2<F, WidenI<E | Shared<F>>, A>
     }
   }
 }

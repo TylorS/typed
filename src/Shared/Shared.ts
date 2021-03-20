@@ -4,7 +4,7 @@ import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 import { KvCreated, KvDeleted, KvUpdated } from '../KvEnv'
 
-export interface SharedEnv<F> {
+export interface Shared<F> {
   /**
    * All of the lifecycle events
    */
@@ -17,7 +17,7 @@ export interface SharedEnv<F> {
 
 export type SharedEvents<F> = Adapter<SharedEvent<F>, SharedEvent<F>>
 
-export type SharedMap = Map<Namespace, Map<any, any>>
+export type SharedMap = ReadonlyMap<Namespace, ReadonlyMap<any, any>>
 
 export type SharedEvent<F> = NamespaceEvent<F> | SharedValueEvent<F>
 

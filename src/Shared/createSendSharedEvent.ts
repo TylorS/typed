@@ -11,34 +11,34 @@ import {
 import { pipe } from 'fp-ts/dist/function'
 import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
-import { SharedEnv, SharedEvent } from './SharedEnv'
+import { Shared, SharedEvent } from './Shared'
 
 export function createSendSharedEvent<F extends URIS4>(
   M: FromReader4<F> & FromIO4<F> & Chain4<F>,
-): <S, E = never>(event: SharedEvent<F>) => Kind4<F, S, SharedEnv<F>, E, void>
+): <S, E = never>(event: SharedEvent<F>) => Kind4<F, S, Shared<F>, E, void>
 
 export function createSendSharedEvent<F extends URIS3>(
   M: FromReader3<F> & FromIO3<F> & Chain3<F>,
-): <E = never>(event: SharedEvent<F>) => Kind3<F, SharedEnv<F>, E, void>
+): <E = never>(event: SharedEvent<F>) => Kind3<F, Shared<F>, E, void>
 
 export function createSendSharedEvent<F extends URIS3, E>(
   M: FromReader3C<F, E> & FromIO3C<F, E> & Chain3C<F, E>,
-): (event: SharedEvent<F>) => Kind3<F, SharedEnv<F>, E, void>
+): (event: SharedEvent<F>) => Kind3<F, Shared<F>, E, void>
 
 export function createSendSharedEvent<F extends URIS2>(
   M: FromReader2<F> & FromIO2<F> & Chain2<F>,
-): (event: SharedEvent<F>) => Kind2<F, SharedEnv<F>, void>
+): (event: SharedEvent<F>) => Kind2<F, Shared<F>, void>
 
 export function createSendSharedEvent<F>(
   M: FromReader<F> & FromIO<F> & Chain<F>,
-): (event: SharedEvent<F>) => HKT2<F, SharedEnv<F>, void>
+): (event: SharedEvent<F>) => HKT2<F, Shared<F>, void>
 
 export function createSendSharedEvent<F>(M: FromReader<F> & FromIO<F> & Chain<F>) {
   const get = ask(M)
 
   return (event: SharedEvent<F>) =>
     pipe(
-      get<SharedEnv<F>>(),
+      get<Shared<F>>(),
       M.chain(({ sharedEvents }) => M.fromIO(() => sharedEvents[0](event))),
-    ) as HKT2<F, SharedEnv<F>, void>
+    ) as HKT2<F, Shared<F>, void>
 }

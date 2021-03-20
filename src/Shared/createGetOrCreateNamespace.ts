@@ -6,7 +6,7 @@ import { match } from 'fp-ts/dist/Option'
 
 import { lookup } from '../KvEnv/lookup'
 import { createSendSharedEvent } from './createSendSharedEvent'
-import { SharedEnv } from './SharedEnv'
+import { Shared } from './Shared'
 
 export function createGetOrCreateNamespace<F>(M: MonadReader<F> & FromIO<F>) {
   const get = ask(M)
@@ -14,7 +14,7 @@ export function createGetOrCreateNamespace<F>(M: MonadReader<F> & FromIO<F>) {
 
   return (namespace: Namespace) =>
     pipe(
-      get<SharedEnv<F>>(),
+      get<Shared<F>>(),
       M.chain(({ sharedMap }) =>
         pipe(
           sharedMap,
