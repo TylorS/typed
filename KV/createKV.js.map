@@ -1,1 +1,0 @@
-{"version":3,"file":"createKV.js","sourceRoot":"","sources":["../src/KV/createKV.ts"],"names":[],"mappings":";;;AAAA,oCAA2C;AAgD3C,SAAgB,QAAQ;IACtB,OAAO,SAAS,CAAA;AAClB,CAAC;AAFD,4BAEC;AAED,SAAS,SAAS,CAChB,GAAM,EACN,OAAwB,EACxB,KAAY,iBAAY;IAExB,OAAO;QACL,GAAG;QACH,OAAO;QACP,GAAG,EAAE;KACN,CAAA;AACH,CAAC"}

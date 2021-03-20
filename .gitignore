@@ -76,6 +76,7 @@ snowpack.key
 /IO/
 /IOFx/
 /KV/
+/KvEnv/
 /MonadReader/
 /MonadRec/
 /Namespace/

@@ -1,12 +1,15 @@
 import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '@typed/fp/Provide'
+import { WidenI } from '@typed/fp/Widen'
 import { Reader, URI } from 'fp-ts/dist/Reader'
 
 export function useSome<E1>(provided: E1) {
-  return <E2, A>(eff: Reader<E1 & E2, A>): Reader<E2, A> => (env) => eff({ ...env, ...provided })
+  return <E2, A>(eff: Reader<WidenI<E1 | E2>, A>): Reader<E2, A> => (env) =>
+    eff({ ...env, ...provided } as WidenI<E1 | E2>)
 }
 
 export function provideSome<E1>(provided: E1) {
-  return <E2, A>(eff: Reader<E1 & E2, A>): Reader<E2, A> => (env) => eff({ ...provided, ...env })
+  return <E2, A>(eff: Reader<WidenI<E1 | E2>, A>): Reader<E2, A> => (env) =>
+    eff({ ...provided, ...env } as WidenI<E1 | E2>)
 }
 
 export function useAll<E>(env: E) {
