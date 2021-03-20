@@ -27,7 +27,7 @@ import {
 import { UseSome, UseSome2, UseSome3, UseSome3C, UseSome4 } from '@typed/fp/Provide'
 import { WidenI } from '@typed/fp/Widen'
 import { FromIO, FromIO2, FromIO3, FromIO3C, FromIO4 } from 'fp-ts/dist/FromIO'
-import { pipe } from 'fp-ts/dist/function'
+import { flow, pipe } from 'fp-ts/dist/function'
 import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
 import { createDeleteKV } from './createDeleteKV'
@@ -84,12 +84,13 @@ export function createUseKV<F>(M: MonadReader<F> & FromIO<F> & UseSome<F>) {
       M.chain((kvEnv) => {
         const provideKvEnv = M.useSome(kvEnv)
         const provide = M.useSome<GetKV<F> & SetKV<F> & DeleteKV<F>>({
-          getKV: (kv) => provideKvEnv(getKV(kv)),
-          setKV: <A>(value: A) => <K, E>(kv: KV<F, K, E, A>) => provideKvEnv(setKV(value)(kv)),
-          deleteKV: (x) => pipe(deleteKV(x), M.useSome(kvEnv)),
+          getKV: flow(getKV, provideKvEnv),
+          setKV: <A>(value: A) => <K, E>(kv: KV<F, K, E, A>) =>
+            pipe(kv, setKV(value), provideKvEnv),
+          deleteKV: flow(deleteKV, M.useSome(kvEnv)),
         })
 
-        return pipe(hkt, provide, provideKvEnv)
+        return pipe(hkt, provide)
       }),
     )
 }
