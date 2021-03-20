@@ -6,7 +6,7 @@ import { Widen } from '@typed/fp/Widen'
 import { Alt2 } from 'fp-ts/dist/Alt'
 import { Applicative2 } from 'fp-ts/dist/Applicative'
 import { Apply2 } from 'fp-ts/dist/Apply'
-import { bind as bind_ } from 'fp-ts/dist/Chain'
+import { bind as bind_, Chain2 } from 'fp-ts/dist/Chain'
 import { ChainRec2 } from 'fp-ts/dist/ChainRec'
 import { FromIO2 } from 'fp-ts/dist/FromIO'
 import { FromReader2 } from 'fp-ts/dist/FromReader'
@@ -50,10 +50,14 @@ export const Applicative: Applicative2<URI> = {
   ...Pointed,
 }
 
-export const Monad: Monad2<URI> = {
+export const Chain: Chain2<URI> = {
   ...Functor,
-  ...Pointed,
   chain: chain as Monad2<URI>['chain'],
+}
+
+export const Monad: Monad2<URI> = {
+  ...Pointed,
+  ...Chain,
 }
 
 export const MonadReader: MonadReader2<URI> = {

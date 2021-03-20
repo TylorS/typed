@@ -18,7 +18,9 @@ export interface UseSome<F> extends Pick<Provide<F>, 'useSome'> {}
 export interface UseAll<F> extends Pick<Provide<F>, 'useAll'> {}
 
 export interface Provide2<F extends URIS2> {
-  readonly provideSome: <A>(provided: A) => <B, C>(hkt: Kind2<F, A & B, C>) => Kind2<F, B, C>
+  readonly provideSome: <A>(
+    provided: A,
+  ) => <B, C>(hkt: Kind2<F, WidenI<A | B>, C>) => Kind2<F, B, C>
   readonly provideAll: <A>(provided: A) => <B>(hkt: Kind2<F, A, B>) => Kind2<F, never, B>
   readonly useSome: Provide2<F>['provideSome']
   readonly useAll: Provide2<F>['provideAll']
@@ -32,7 +34,7 @@ export interface UseAll2<F extends URIS2> extends Pick<Provide2<F>, 'useAll'> {}
 export interface Provide3<F extends URIS3> {
   readonly provideSome: <A>(
     provided: A,
-  ) => <B, E, C>(hkt: Kind3<F, A & B, E, C>) => Kind3<F, B, E, C>
+  ) => <B, E, C>(hkt: Kind3<F, WidenI<A | B>, E, C>) => Kind3<F, B, E, C>
   readonly provideAll: <A>(provided: A) => <E, C>(hkt: Kind3<F, A, E, C>) => Kind3<F, never, E, C>
   readonly useSome: Provide3<F>['provideSome']
   readonly useAll: Provide3<F>['provideAll']
@@ -44,7 +46,9 @@ export interface UseSome3<F extends URIS3> extends Pick<Provide3<F>, 'useSome'> 
 export interface UseAll3<F extends URIS3> extends Pick<Provide3<F>, 'useAll'> {}
 
 export interface Provide3C<F extends URIS3, E> {
-  readonly provideSome: <A>(provided: A) => <B, C>(hkt: Kind3<F, A & B, E, C>) => Kind3<F, B, E, C>
+  readonly provideSome: <A>(
+    provided: A,
+  ) => <B, C>(hkt: Kind3<F, WidenI<A | B>, E, C>) => Kind3<F, B, E, C>
   readonly provideAll: <A>(provided: A) => <C>(hkt: Kind3<F, A, E, C>) => Kind3<F, never, E, C>
   readonly useSome: Provide3C<F, E>['provideSome']
   readonly useAll: Provide3C<F, E>['provideAll']
@@ -58,7 +62,7 @@ export interface UseAll3C<F extends URIS3, E> extends Pick<Provide3C<F, E>, 'use
 export interface Provide4<F extends URIS4> {
   readonly provideSome: <A>(
     provided: A,
-  ) => <R, B, E, C>(hkt: Kind4<F, R, A & B, E, C>) => Kind4<F, R, B, E, C>
+  ) => <R, B, E, C>(hkt: Kind4<F, R, WidenI<A | B>, E, C>) => Kind4<F, R, B, E, C>
   readonly provideAll: <A>(
     provided: A,
   ) => <R, E, C>(hkt: Kind4<F, R, A, E, C>) => Kind4<F, R, never, E, C>

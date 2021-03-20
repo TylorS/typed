@@ -1,3 +1,4 @@
+import { KV, KV2, KV3, KV4 } from '@typed/fp/KV'
 import {
   ask,
   MonadReader,
@@ -9,27 +10,35 @@ import {
 import { chainFirst } from 'fp-ts/dist/Chain'
 import { FromIO, FromIO2, FromIO3, FromIO3C, FromIO4 } from 'fp-ts/dist/FromIO'
 import { pipe } from 'fp-ts/dist/function'
-import { URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { Option } from 'fp-ts/dist/Option'
 
-import { DeleteKV, DeleteKV2, DeleteKV3, DeleteKV3C, DeleteKV4 } from '../deleteKV'
-import { KV } from '../KV'
+import { WidenI } from '../Widen'
 import { createSendSharedEvent } from './createSendSharedEvent'
 import { KvEnv, KvOf } from './KvEnv'
 import { lookup } from './lookup'
 
 export function createDeleteKV<F extends URIS4>(
   M: MonadReader4<F> & FromIO4<F>,
-): DeleteKV4<F>['deleteKV']
+): <K, S, R, E, A>(
+  kv: KV4<F, K, S, R, E, A>,
+) => Kind4<F, S, WidenI<R | KvEnv<F, K, A>>, E, Option<A>>
+
 export function createDeleteKV<F extends URIS3>(
   M: MonadReader3<F> & FromIO3<F>,
-): DeleteKV3<F>['deleteKV']
+): <K, R, E, A>(kv: KV3<F, K, R, E, A>) => Kind3<F, WidenI<R | KvEnv<F, K, A>>, E, Option<A>>
+
 export function createDeleteKV<F extends URIS3, E>(
   M: MonadReader3C<F, E> & FromIO3C<F, E>,
-): DeleteKV3C<F, E>['deleteKV']
+): <K, R, A>(kv: KV3<F, K, R, E, A>) => Kind3<F, WidenI<R | KvEnv<F, K, A>>, E, Option<A>>
+
 export function createDeleteKV<F extends URIS2>(
   M: MonadReader2<F> & FromIO2<F>,
-): DeleteKV2<F>['deleteKV']
-export function createDeleteKV<F>(M: MonadReader<F> & FromIO<F>): DeleteKV<F>['deleteKV']
+): <K, E, A>(kv: KV2<F, K, E, A>) => Kind2<F, WidenI<E | KvEnv<F, K, A>>, Option<A>>
+
+export function createDeleteKV<F>(
+  M: MonadReader<F> & FromIO<F>,
+): <K, E, A>(kv: KV<F, K, E, A>) => HKT2<F, WidenI<E | KvEnv<F, K, A>>, Option<A>>
 
 export function createDeleteKV<F>(M: MonadReader<F> & FromIO<F>) {
   const sendEvent = createSendSharedEvent(M)

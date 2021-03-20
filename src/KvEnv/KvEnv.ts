@@ -1,15 +1,9 @@
 import { Adapter } from '@most/adapter'
+import { KV, KV2, KV3, KV4 } from '@typed/fp/KV'
 import { URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 
-import { KV, KV2, KV3, KV4 } from '../KV'
-
-export type KvEnv<F, K, V> = KvAdapterEnv<F> & KvMapEnv<K, V>
-
-export interface KvAdapterEnv<F> {
+export type KvEnv<F, K, V> = {
   readonly kvEvents: KvAdapter<F>
-}
-
-export interface KvMapEnv<K, V> {
   readonly kvMap: ReadonlyMap<K, V>
 }
 

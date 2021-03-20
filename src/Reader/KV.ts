@@ -25,10 +25,6 @@ export const deleteKV: <K, E, A>(
   kv: ReaderKV<K, E, A>,
 ) => Reader<WidenI<E | KV.DeleteKV2<URI>>, Option<A>> = KV.deleteKV(MonadReader)
 
-export const dep: <A>() => <K extends PropertyKey>(
-  key: K,
-) => Reader<WidenI<Readonly<Record<K, A>> | KV.GetKV2<URI>>, A> = KV.dep(MonadReader)
-
 export const getKV: <K, E, A>(
   kv: ReaderKV<K, E, A>,
 ) => Reader<WidenI<E | KV.GetKV2<URI>>, A> = KV.getKV(MonadReader)

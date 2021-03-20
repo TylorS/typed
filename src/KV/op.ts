@@ -59,9 +59,13 @@ export function op<F>(M: MonadReader<F>) {
   const get = getKV(M)
   const from = fromKey(M)
 
-  return <Op>() => <K extends PropertyKey>(key: K) => {
-    const getOp = get(from<Op>()(key))
+  return <Op>() => {
+    const fromKey_ = from<Op>()
 
-    return <E, A>(f: (op: Op) => HKT2<Op, E, A>) => pipe(getOp, M.chain(f as any))
+    return <K extends PropertyKey>(key: K) => {
+      const getOp = get(fromKey_(key))
+
+      return <E, A>(f: (op: Op) => HKT2<Op, E, A>) => pipe(getOp, M.chain(f as any))
+    }
   }
 }

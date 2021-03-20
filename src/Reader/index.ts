@@ -1,6 +1,7 @@
 export * from './chainRec'
 export * from './fromIO'
 export * from './KV'
+export * from './KvEnv'
 export * from './MonadReader'
 export * from './Namespace'
 export * from './provide'

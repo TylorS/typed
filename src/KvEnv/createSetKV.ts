@@ -1,3 +1,4 @@
+import { KV, KV2, KV3, KV4 } from '@typed/fp/KV'
 import {
   ask,
   MonadReader,
@@ -8,22 +9,35 @@ import {
 } from '@typed/fp/MonadReader'
 import { FromIO, FromIO2, FromIO3, FromIO3C, FromIO4 } from 'fp-ts/dist/FromIO'
 import { pipe } from 'fp-ts/dist/function'
-import { URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
+import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/dist/HKT'
 import { match } from 'fp-ts/dist/Option'
 
-import { KV } from '../KV'
-import { SetKV, SetKV2, SetKV3, SetKV3C, SetKV4 } from '../setKV'
+import { WidenI } from '../Widen'
 import { createSendSharedEvent } from './createSendSharedEvent'
 import { KvEnv, KvOf } from './KvEnv'
 import { lookup } from './lookup'
 
-export function createSetKV<F extends URIS4>(M: MonadReader4<F> & FromIO4<F>): SetKV4<F>['setKV']
-export function createSetKV<F extends URIS3>(M: MonadReader3<F> & FromIO3<F>): SetKV3<F>['setKV']
+export function createSetKV<F extends URIS4>(
+  M: MonadReader4<F> & FromIO4<F>,
+): <A>(
+  value: A,
+) => <K, S, R, E>(kv: KV4<F, K, S, R, E, A>) => Kind4<F, S, WidenI<R | KvEnv<F, K, A>>, E, A>
+
+export function createSetKV<F extends URIS3>(
+  M: MonadReader3<F> & FromIO3<F>,
+): <A>(value: A) => <K, R, E>(kv: KV3<F, K, R, E, A>) => Kind3<F, WidenI<R | KvEnv<F, K, A>>, E, A>
+
 export function createSetKV<F extends URIS3, E>(
   M: MonadReader3C<F, E> & FromIO3C<F, E>,
-): SetKV3C<F, E>['setKV']
-export function createSetKV<F extends URIS2>(M: MonadReader2<F> & FromIO2<F>): SetKV2<F>['setKV']
-export function createSetKV<F>(M: MonadReader<F> & FromIO<F>): SetKV<F>['setKV']
+): <A>(value: A) => <K, R>(kv: KV3<F, K, R, E, A>) => Kind3<F, WidenI<R | KvEnv<F, K, A>>, E, A>
+
+export function createSetKV<F extends URIS2>(
+  M: MonadReader2<F> & FromIO2<F>,
+): <A>(value: A) => <K, E>(kv: KV2<F, K, E, A>) => Kind2<F, WidenI<E | KvEnv<F, K, A>>, A>
+
+export function createSetKV<F>(
+  M: MonadReader<F> & FromIO<F>,
+): <A>(value: A) => <K, E>(kv: KV<F, K, E, A>) => HKT2<F, WidenI<E | KvEnv<F, K, A>>, A>
 
 export function createSetKV<F>(M: MonadReader<F> & FromIO<F>) {
   const sendEvent = createSendSharedEvent(M)
