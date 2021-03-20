@@ -1,4 +1,5 @@
 export * from './Eff'
 export * from './fp-ts'
+export * from './Namespace'
 export * from './provide'
 export * from './runPure'
