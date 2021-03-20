@@ -5,27 +5,22 @@ import { Chain, FromReader, Reader, URI } from 'fp-ts/dist/Reader'
 
 import { FromIO } from './fromIO'
 import { MonadReader } from './MonadReader'
-import { ProvideSome, UseSome } from './provide'
+import { UseSome } from './provide'
 
-export const sendSharedEvent: (
+export const sendKvEvent: (
   event: K.KvEvent<URI>,
-) => Reader<K.KvEnv<URI, any, any>, void> = K.createSendKvEvent({
+) => Reader<K.KvEnv<URI, unknown, unknown>, void> = K.createSendKvEvent({
   ...FromReader,
   ...FromIO,
   ...Chain,
 })
 
-export const provideKV: <E, A>(
-  hkt: Reader<WidenI<E | GetKV2<URI> | SetKV2<URI> | DeleteKV2<URI> | K.KvEnv<URI, any, any>>, A>,
-) => Reader<WidenI<E | K.KvEnv<URI, any, any>>, any> = K.provideKV({
-  ...MonadReader,
-  ...FromIO,
-  ...ProvideSome,
-})
-
 export const useKV: <E, A>(
-  hkt: Reader<WidenI<E | GetKV2<URI> | SetKV2<URI> | DeleteKV2<URI> | K.KvEnv<URI, any, any>>, A>,
-) => Reader<WidenI<E | K.KvEnv<URI, any, any>>, any> = K.createUseKV({
+  hkt: Reader<
+    WidenI<E | GetKV2<URI> | SetKV2<URI> | DeleteKV2<URI> | K.KvEnv<URI, unknown, unknown>>,
+    A
+  >,
+) => Reader<WidenI<E | K.KvEnv<URI, unknown, unknown>>, A> = K.createUseKV({
   ...MonadReader,
   ...FromIO,
   ...UseSome,
