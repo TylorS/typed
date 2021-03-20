@@ -46,12 +46,12 @@ export function createGetKV<F>(M: MonadReader<F> & FromIO<F>) {
   return <K, E, A>(kv: KV<F, K, E, A>) =>
     pipe(
       get<KvEnv<F, K, A>>(),
-      M.chain(({ kvMap: sharedMap }) =>
+      M.chain(({ kvMap }) =>
         pipe(
-          sharedMap,
+          kvMap,
           lookup(kv.key),
           match(
-            // If there is no value already in the sharedMap, run the KV's initial value effect
+            // If there is no value already in the kvMap, run the KV's initial value effect
             // and send an event that lets the runtime know that it should record this value.
             () =>
               pipe(

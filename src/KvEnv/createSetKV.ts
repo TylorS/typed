@@ -46,14 +46,16 @@ export function createSetKV<F>(M: MonadReader<F> & FromIO<F>) {
   return <A>(value: A) => <K, E>(kv: KV<F, K, E, A>) =>
     pipe(
       get<KvEnv<F, K, A>>(),
-      M.chain(({ kvMap: sharedMap }) =>
+      M.chain(({ kvMap }) =>
         pipe(
-          sharedMap,
+          kvMap,
           lookup(kv.key),
           match(
             () => sendEvent({ type: 'kv/created', kv: kv as KvOf<F>, value }),
             (previousValue) =>
-              sendEvent({ type: 'kv/updated', kv: kv as KvOf<F>, previousValue, value }),
+              kv.equals(previousValue)(value)
+                ? (M.of(void 0) as HKT2<F, any, void>)
+                : sendEvent({ type: 'kv/updated', kv: kv as KvOf<F>, previousValue, value }),
           ),
           M.map(() => value),
         ),

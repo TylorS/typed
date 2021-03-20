@@ -48,9 +48,9 @@ export function createDeleteKV<F>(M: MonadReader<F> & FromIO<F>) {
   return <K, E, A>(kv: KV<F, K, E, A>) =>
     pipe(
       get<KvEnv<F, K, A>>(),
-      M.chain(({ kvMap: sharedMap }) =>
+      M.chain(({ kvMap }) =>
         pipe(
-          sharedMap,
+          kvMap,
           lookup(kv.key),
           M.of,
           chainF(() => sendEvent({ type: 'kv/deleted', kv: kv as KvOf<F> })),
