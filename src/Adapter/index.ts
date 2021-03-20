@@ -28,7 +28,7 @@ export type Adapter<A, B = A> = readonly [...MA.Adapter<A, B>]
 export const adapt = <A, B>(f: (stream: Stream<A>) => Stream<B>) => <C>([send, stream]: Adapter<
   C,
   A
->): Adapter<C, B> => [send, f(stream)]
+>): Adapter<C, B> => [send, M.multicast(f(stream))]
 
 export function create<A>(): Adapter<A>
 export function create<A, B>(f: (stream: Stream<A>) => Stream<B>): Adapter<A, B>
