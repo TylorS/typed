@@ -4,7 +4,7 @@ import { constant, unsafeCoerce } from 'fp-ts/dist/function'
  * Construct a branded type. It remains compatible with the underlying type A, but
  * is given additional structure to differentiate this A from other As.
  */
-export type Branded<Brand, A> = A & { __brand__: Brand }
+export type Branded<Brand, A> = A & { readonly __brand__: Brand }
 
 /**
  * A curried functon for helping to construct certain kinds of brands

@@ -35,12 +35,6 @@ export const modifyKV: <A>(
   kv: EffKV<K, E, A>,
 ) => Eff<WidenI<E | KV.SetKV2<URI> | KV.GetKV2<URI>>, A> = KV.modifyKV(MonadReader)
 
-export const op: <Op>() => <K extends PropertyKey>(
-  key: K,
-) => <E, A>(
-  f: (op: Op) => Eff<E, A>,
-) => Eff<WidenI<E | Readonly<Record<K, Op>> | KV.GetKV2<URI>>, A> = KV.op(MonadReader)
-
 export const setKV: <A>(
   value: A,
 ) => <K, E>(kv: EffKV<K, E, A>) => Eff<WidenI<E | KV.SetKV2<URI>>, A> = KV.setKV(MonadReader)

@@ -1,6 +1,6 @@
 import { Alt as Alt_, fromReader as fromReader_ } from '@typed/fp/Env'
 import { fromIO } from '@typed/fp/Fx'
-import { MonadReader2 } from '@typed/fp/MonadReader'
+import { ask as ask_, askFor as askFor_, MonadReader2 } from '@typed/fp/MonadReader'
 import { MonadRec2 } from '@typed/fp/MonadRec'
 import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '@typed/fp/Provide'
 import { fromTask as fromTask_ } from '@typed/fp/Resume'
@@ -140,3 +140,7 @@ export const zip = (traverse(Applicative)(of) as unknown) as <
   Widen<GetRequirements<Effs[number]>, 'intersection'>,
   { readonly [K in keyof Effs]: GetResult<Effs[K]> }
 >
+
+export const ask = ask_(FromReader)
+
+export const askFor = askFor_({ ...FromReader, ...Functor, ...UseAll })

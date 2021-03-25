@@ -29,11 +29,15 @@ import {
  */
 export interface Env<E, A> extends Reader<E, Resume<A>> {}
 
-export type GetRequirements<A> = A extends Env<infer R, any> ? R : never
+export type GetRequirements<A> = A extends (...args: readonly any[]) => Env<infer R, any>
+  ? R
+  : A extends Env<infer R, any>
+  ? R
+  : never
 
 export type GetResume<A> = A extends Env<any, infer R> ? R : never
 
-export const of: <A, R>(a: A) => Env<R, A> = of_(Pointed)
+export const of: <A, R = never>(a: A) => Env<R, A> = of_(Pointed)
 
 export const asks: <R, A>(f: (r: R) => A) => Env<R, A> = fromReader_(Pointed)
 
