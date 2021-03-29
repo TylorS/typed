@@ -2,9 +2,9 @@ import * as Env from './Env'
 import * as E from 'fp-ts/Either'
 import * as ET from 'fp-ts/EitherT'
 import { Semigroup } from 'fp-ts/Semigroup'
-import * as hkt from './Hkt'
+import { Kind } from './Hkt'
 
-export interface EnvEither<R, E, A> extends hkt.Kind<[Env.URI, E.URI], [R, E, A]> {}
+export interface EnvEither<R, E, A> extends Kind<[Env.URI, E.URI], [R, E, A]> {}
 
 export const alt = ET.alt(Env.Monad)
 export const altValidation = <A>(semigroup: Semigroup<A>) => ET.altValidation(Env.Monad, semigroup)
@@ -39,6 +39,6 @@ declare module 'fp-ts/HKT' {
 
 declare module './Hkt' {
   export interface VarianceMap {
-    [URI]: V<hkt.R, hkt.Contravariant> & V<hkt.E, hkt.Covariant>
+    [URI]: V<R, Contravariant> & V<E, Covariant>
   }
 }

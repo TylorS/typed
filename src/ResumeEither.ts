@@ -46,6 +46,12 @@ declare module 'fp-ts/HKT' {
   }
 }
 
+declare module './Hkt' {
+  export interface VarianceMap {
+    [URI]: V<E, Covariant>
+  }
+}
+
 export const Pointed: Pointed2<URI> = {
   of: flow(E.right, R.of),
 }

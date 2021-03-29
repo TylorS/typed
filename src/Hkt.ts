@@ -59,9 +59,9 @@ export type Variance = Covariant | Contravariant
 export type Covariant = '+'
 export type Contravariant = '-'
 
-export interface V<P extends Param, T extends Variance> {
+export interface V<P extends Param, V extends Variance> {
   readonly Variance: {
-    readonly [K in P]: () => T
+    readonly [K in P]: () => V
   }
 }
 
