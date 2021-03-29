@@ -206,14 +206,6 @@ const chain_ = <A, B>(f: (value: A) => FxT<unknown, [B]>) => {
     }) as FxT<unknown, [B]>
 }
 
-export function ap<F extends URIS3>(
-  M: MonadRec3<F> & Apply3<F>,
-): <R1, E1, A>(
-  fa: FxT<F, [R1, E1, A]>,
-) => <R2, E2, B>(
-  fab: FxT<F, [R2, E2, Arity1<A, B>]>,
-) => FxT<F, [ApplyVariance<F, 'R', [R1, R2]>, ApplyVariance<F, 'E', [E1, E2]>, B]>
-
 export function ap<F extends URIS2>(
   M: MonadRec2<F> & Apply2<F>,
 ): <E1, A>(
@@ -223,6 +215,14 @@ export function ap<F extends URIS2>(
 export function ap<F extends URIS2, E>(
   M: MonadRec2<F> & Apply2<F>,
 ): <A>(fa: FxT<F, [E, A]>) => <B>(fab: FxT<F, [E, Arity1<A, B>]>) => FxT<F, [E, B]>
+
+export function ap<F extends URIS3>(
+  M: MonadRec3<F> & Apply3<F>,
+): <R1, E1, A>(
+  fa: FxT<F, [R1, E1, A]>,
+) => <R2, E2, B>(
+  fab: FxT<F, [R2, E2, Arity1<A, B>]>,
+) => FxT<F, [ApplyVariance<F, 'R', [R1, R2]>, ApplyVariance<F, 'E', [E1, E2]>, B]>
 
 export function ap<F>(
   M: MonadRec<F> & Apply<F>,

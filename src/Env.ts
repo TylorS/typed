@@ -40,6 +40,7 @@ import { Lazy } from 'fp-ts/function'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 import * as hkt from './Hkt'
+import { MonadRec2 } from './MonadRec'
 
 export const URI = '@typed/fp/Env'
 export type URI = typeof URI
@@ -87,6 +88,11 @@ export const Monad: Monad2<URI> = {
 
 export const ChainRec: ChainRec2<URI> = {
   URI,
+  chainRec,
+}
+
+export const MonadRec: MonadRec2<URI> = {
+  ...Monad,
   chainRec,
 }
 

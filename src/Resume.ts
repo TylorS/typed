@@ -17,6 +17,7 @@ import { Alt1 } from 'fp-ts/Alt'
 import { FromIO1 } from 'fp-ts/FromIO'
 import { FromTask1 } from 'fp-ts/FromTask'
 import { bindTo as bindTo_, tupled as tupled_ } from 'fp-ts/Functor'
+import { MonadRec1 } from './MonadRec'
 
 export type Resume<A> = Sync<A> | Async<A>
 
@@ -201,6 +202,11 @@ export const Monad: Monad1<URI> = {
 
 export const ChainRec: ChainRec1<URI> = {
   URI,
+  chainRec,
+}
+
+export const MonadRec: MonadRec1<URI> = {
+  ...Monad,
   chainRec,
 }
 
