@@ -1,22 +1,31 @@
 import { ApplyVariance, Hkt } from './Hkt'
 import { Env } from './Env'
-import { HKT, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
+import { HKT, HKT2, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
 import { Chain, Chain2, Chain3, Chain4, chainFirst } from 'fp-ts/Chain'
 import { flow } from 'fp-ts/function'
 
 export type FromEnv<F> = {
-  readonly fromEnv: <E, A>(resume: Env<E, A>) => Hkt<F, [E, A]>
+  readonly URI?: F
+  readonly fromEnv: <E, A>(resume: Env<E, A>) => HKT2<F, E, A>
 }
 
 export type FromEnv2<F extends URIS2> = {
+  readonly URI?: F
   readonly fromEnv: <E, A>(resume: Env<E, A>) => Hkt<F, [E, A]>
 }
 
 export type FromEnv3<F extends URIS3> = {
+  readonly URI?: F
   readonly fromEnv: <R, A, E = never>(resume: Env<R, A>) => Hkt<F, [R, E, A]>
 }
 
+export type FromEnv3C<F extends URIS3, E> = {
+  readonly URI?: F
+  readonly fromEnv: <R, A>(resume: Env<R, A>) => Hkt<F, [R, E, A]>
+}
+
 export type FromEnv4<F extends URIS4> = {
+  readonly URI?: F
   readonly fromEnv: <R, A, S = unknown, E = never>(resume: Env<R, A>) => Hkt<F, [S, R, E, A]>
 }
 
@@ -41,9 +50,8 @@ export function fromEnvK<F>(
 ): <A extends readonly any[], E, B>(f: (...args: A) => Env<E, B>) => (...args: A) => Hkt<F, [E, B]>
 
 export function fromEnvK<F>(F: FromEnv<F>) {
-  return <A extends readonly any[], E, B>(f: (...args: A) => Env<E, B>) => (
-    ...args: A
-  ): Hkt<F, [E, B]> => F.fromEnv(f(...args))
+  return <A extends readonly any[], E, B>(f: (...args: A) => Env<E, B>) => (...args: A) =>
+    F.fromEnv(f(...args))
 }
 
 export function chainEnvK<F extends URIS2>(

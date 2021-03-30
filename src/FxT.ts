@@ -1,5 +1,5 @@
 import { pipe } from 'fp-ts/function'
-import { Apply, Apply2, Apply3 } from 'fp-ts/Apply'
+import { Apply, Apply1, Apply2, Apply3 } from 'fp-ts/Apply'
 import { right, left, Either, match } from 'fp-ts/Either'
 import { doFx, Fx } from './Fx'
 import { ApplyVariance, Hkt } from './Hkt'
@@ -86,13 +86,17 @@ export function getDo<F>() {
   ): Fx<Y, R, N> => doFx(() => f(lift as LiftFxHKT<F>))
 }
 
+type Kind2E<F extends URIS2, E> = E extends Kind2<F, infer R, any> ? R : never
+type Kind3E<F extends URIS3, E> = E extends Kind3<F, any, infer R, any> ? R : never
+type Kind3R<F extends URIS3, E> = E extends Kind3<F, infer R, any, any> ? R : never
+
 export function toMonad<F extends URIS>(
   M: MonadRec1<F>,
 ): <E extends Kind<F, any>, R>(fx: Fx<E, R>) => Kind<F, R>
 
 export function toMonad<F extends URIS2>(
   M: MonadRec2<F>,
-): <E extends Kind2<F, S, any>, S, R>(fx: Fx<E, R>) => Kind2<F, S, R>
+): <E extends Kind2<F, any, any>, R>(fx: Fx<E, R>) => Kind2<F, Kind2E<F, E>, R>
 
 export function toMonad<F extends URIS2, S>(
   M: MonadRec2C<F, S>,
@@ -100,7 +104,7 @@ export function toMonad<F extends URIS2, S>(
 
 export function toMonad<F extends URIS3>(
   M: MonadRec3<F>,
-): <E extends Kind3<F, S, T, any>, S, T, R>(fx: Fx<E, R>) => Kind3<F, S, T, R>
+): <E extends Kind3<F, any, any, any>, R>(fx: Fx<E, R>) => Kind3<F, Kind3R<F, E>, Kind3E<F, E>, R>
 
 export function toMonad<F>(M: MonadRec<F>): <E extends Hkt<F, any>, R>(fx: Fx<E, R>) => HKT<F, R>
 
@@ -205,6 +209,10 @@ const chain_ = <A, B>(f: (value: A) => FxT<unknown, [B]>) => {
       return b
     }) as FxT<unknown, [B]>
 }
+
+export function ap<F extends URIS>(
+  M: MonadRec1<F> & Apply1<F>,
+): <A>(fa: FxT<F, [A]>) => <B>(fab: FxT<F, [Arity1<A, B>]>) => FxT<F, [B]>
 
 export function ap<F extends URIS2>(
   M: MonadRec2<F> & Apply2<F>,

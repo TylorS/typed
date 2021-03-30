@@ -3,7 +3,7 @@ import * as R from './Resume'
 import * as E from 'fp-ts/Either'
 import * as ET from 'fp-ts/EitherT'
 import { Semigroup } from 'fp-ts/Semigroup'
-import { flow } from 'fp-ts/function'
+import { flow, pipe } from 'fp-ts/function'
 import { Pointed2 } from 'fp-ts/Pointed'
 import { Functor2 } from 'fp-ts/Functor'
 import { Chain2 } from 'fp-ts/Chain'
@@ -12,6 +12,9 @@ import { Applicative2 } from 'fp-ts/Applicative'
 import { Monad2 } from 'fp-ts/Monad'
 import { Alt2 } from 'fp-ts/Alt'
 import { Bifunctor2 } from 'fp-ts/Bifunctor'
+import { ChainRec2 } from 'fp-ts/ChainRec'
+import { swapEithers } from './internal'
+import { MonadRec2 } from './MonadRec'
 
 export type ResumeEither<E, A> = Kind<[R.URI, E.URI], [E, A]>
 
@@ -67,6 +70,12 @@ export const Chain: Chain2<URI> = {
   chain,
 }
 
+export const ChainRec: ChainRec2<URI> = {
+  chainRec: (f) => (a) => pipe(a, R.chainRec(flow(f, R.map(swapEithers)))),
+}
+
+export const chainRec = ChainRec.chainRec
+
 export const Apply: Apply2<URI> = {
   ...Functor,
   ap,
@@ -80,6 +89,11 @@ export const Applicative: Applicative2<URI> = {
 export const Monad: Monad2<URI> = {
   ...Applicative,
   chain,
+}
+
+export const MonadRec: MonadRec2<URI> = {
+  ...Monad,
+  chainRec,
 }
 
 export const Alt: Alt2<URI> = {

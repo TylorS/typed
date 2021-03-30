@@ -3,6 +3,7 @@ import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { Arity1 } from './function'
 import * as FR from 'fp-ts/FromReader'
+import * as FRe from './FromResume'
 import { bind as bind_, Chain2 } from 'fp-ts/Chain'
 import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
 import { ChainRec2 } from 'fp-ts/ChainRec'
@@ -10,7 +11,7 @@ import { Either } from 'fp-ts/Either'
 import { FromIO2 } from 'fp-ts/FromIO'
 import { FromTask2 } from 'fp-ts/FromTask'
 import { Kind } from './Hkt'
-import { Lazy } from 'fp-ts/function'
+import { constant, Lazy } from 'fp-ts/function'
 import { Monad2 } from 'fp-ts/Monad'
 import { MonadRec2 } from './MonadRec'
 import { Pointed2 } from 'fp-ts/Pointed'
@@ -18,6 +19,8 @@ import * as hkt from './Hkt'
 import * as R from './Resume'
 import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
+import { FromResume2 } from './FromResume'
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from './Provide'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>
@@ -124,6 +127,47 @@ export const FromTask: FromTask2<URI> = {
 
 export const fromTask = FromTask.fromTask
 
+export const FromResume: FromResume2<URI> = {
+  fromResume: constant,
+}
+
+export const fromResume = FromResume.fromResume
+
+export const useSome = <E1>(provided: E1) => <E2, A>(env: Env<E1 & E2, A>): Env<E2, A> => (e) =>
+  env({ ...e, ...provided })
+
+export const provideSome = <E1>(provided: E1) => <E2, A>(env: Env<E1 & E2, A>): Env<E2, A> => (e) =>
+  env({ ...provided, ...e })
+
+export const useAll = <E1>(provided: E1) => <A>(env: Env<E1, A>): Env<never, A> => () =>
+  env(provided)
+
+export const provideAll = <E1>(provided: E1) => <A>(env: Env<E1, A>): Env<never, A> => (e) =>
+  env({ ...provided, ...((e as any) ?? {}) })
+
+export const UseSome: UseSome2<URI> = {
+  useSome,
+}
+
+export const UseAll: UseAll2<URI> = {
+  useAll,
+}
+
+export const ProvideSome: ProvideSome2<URI> = {
+  provideSome,
+}
+
+export const ProvideAll: ProvideAll2<URI> = {
+  provideAll,
+}
+
+export const Provide: Provide2<URI> = {
+  useSome,
+  useAll,
+  provideSome,
+  provideAll,
+}
+
 export const Do: Env<unknown, {}> = fromIO(() => Object.create(null))
 export const bindTo = bindTo_(Functor)
 export const bind = bind_(Monad)
@@ -133,3 +177,7 @@ export const ask = FR.ask(FromReader)
 export const asks = FR.asks(FromReader)
 export const chainReaderK = FR.chainReaderK(FromReader, Chain)
 export const fromReaderK = FR.fromReaderK(FromReader)
+
+export const chainFirstResumeK = FRe.chainFirstResumeK(FromResume, Chain)
+export const chainResumeK = FRe.chainResumeK(FromResume, Chain)
+export const fromResumeK = FRe.fromResumeK(FromResume)

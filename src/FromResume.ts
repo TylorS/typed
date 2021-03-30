@@ -5,30 +5,37 @@ import { Chain, Chain1, Chain2, Chain3, Chain4, chainFirst } from 'fp-ts/Chain'
 import { flow } from 'fp-ts/function'
 
 export type FromResume<F> = {
-  readonly fromResume: <A>(resume: Resume<A>) => Hkt<F, [A]>
+  readonly URI?: F
+  readonly fromResume: <A>(resume: Resume<A>) => HKT<F, A>
 }
 
 export type FromResume1<F extends URIS> = {
+  readonly URI?: F
   readonly fromResume: <A>(resume: Resume<A>) => Hkt<F, [A]>
 }
 
 export type FromResume2<F extends URIS2> = {
+  readonly URI?: F
   readonly fromResume: <A, E = never>(resume: Resume<A>) => Hkt<F, [E, A]>
 }
 
 export type FromResume2C<F extends URIS2, E> = {
+  readonly URI?: F
   readonly fromResume: <A>(resume: Resume<A>) => Hkt<F, [E, A]>
 }
 
 export type FromResume3<F extends URIS3> = {
+  readonly URI?: F
   readonly fromResume: <A, R = never, E = never>(resume: Resume<A>) => Hkt<F, [R, E, A]>
 }
 
 export type FromResume3C<F extends URIS3, E> = {
+  readonly URI?: F
   readonly fromResume: <A, R = never>(resume: Resume<A>) => Hkt<F, [R, E, A]>
 }
 
 export type FromResume4<F extends URIS4> = {
+  readonly URI?: F
   readonly fromResume: <A, S = unknown, R = unknown, E = never>(
     resume: Resume<A>,
   ) => Hkt<F, [S, R, E, A]>
@@ -59,7 +66,7 @@ export function fromResumeK<F>(
 ): <A extends readonly any[], B>(f: (...args: A) => Resume<B>) => (...args: A) => Hkt<F, [B]>
 
 export function fromResumeK<F>(F: FromResume<F>) {
-  return <A extends readonly any[], B>(f: (...args: A) => Resume<B>) => (...args: A): Hkt<F, [B]> =>
+  return <A extends readonly any[], B>(f: (...args: A) => Resume<B>) => (...args: A): HKT<F, B> =>
     F.fromResume(f(...args))
 }
 

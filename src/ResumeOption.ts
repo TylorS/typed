@@ -1,9 +1,10 @@
 import { Kind } from './Hkt'
+import * as E from 'fp-ts/Either'
 import * as R from './Resume'
 import * as O from 'fp-ts/Option'
 import * as OT from 'fp-ts/OptionT'
 import { Pointed1 } from 'fp-ts/Pointed'
-import { flow } from 'fp-ts/function'
+import { flow, pipe } from 'fp-ts/function'
 import { Functor1 } from 'fp-ts/Functor'
 import { Apply1 } from 'fp-ts/Apply'
 import { Applicative1 } from 'fp-ts/Applicative'
@@ -11,6 +12,8 @@ import { Chain1 } from 'fp-ts/Chain'
 import { Monad1 } from 'fp-ts/Monad'
 import { Alt1 } from 'fp-ts/Alt'
 import { Alternative1 } from 'fp-ts/Alternative'
+import { ChainRec1 } from 'fp-ts/ChainRec'
+import { MonadRec1 } from './MonadRec'
 
 export type ResumeOption<A> = Kind<[R.URI, O.URI], [A]>
 
@@ -65,9 +68,38 @@ export const Chain: Chain1<URI> = {
   chain,
 }
 
+export const chainRec = <A, B>(f: (value: A) => ResumeOption<E.Either<A, B>>) => (
+  value: A,
+): ResumeOption<B> =>
+  pipe(
+    value,
+    R.chainRec((a) =>
+      pipe(
+        a,
+        f,
+        R.map((oe) => {
+          if (O.isNone(oe)) {
+            return E.right(oe)
+          }
+
+          return pipe(oe.value, E.map(O.some))
+        }),
+      ),
+    ),
+  )
+
+export const ChainRec: ChainRec1<URI> = {
+  chainRec,
+}
+
 export const Monad: Monad1<URI> = {
   ...Chain,
   ...Pointed,
+}
+
+export const MonadRec: MonadRec1<URI> = {
+  ...Monad,
+  ...ChainRec,
 }
 
 export const Alt: Alt1<URI> = {
