@@ -1,6 +1,20 @@
-import { Either } from 'fp-ts/Either'
+import { Alt2 } from 'fp-ts/Alt'
+import { Applicative2 } from 'fp-ts/Applicative'
+import { Apply2 } from 'fp-ts/Apply'
 import { Arity1 } from './function'
+import * as FR from 'fp-ts/FromReader'
+import { bind as bind_, Chain2 } from 'fp-ts/Chain'
+import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
+import { ChainRec2 } from 'fp-ts/ChainRec'
+import { Either } from 'fp-ts/Either'
+import { FromIO2 } from 'fp-ts/FromIO'
+import { FromTask2 } from 'fp-ts/FromTask'
 import { Kind } from './Hkt'
+import { Lazy } from 'fp-ts/function'
+import { Monad2 } from 'fp-ts/Monad'
+import { MonadRec2 } from './MonadRec'
+import { Pointed2 } from 'fp-ts/Pointed'
+import * as hkt from './Hkt'
 import * as R from './Resume'
 import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
@@ -27,20 +41,6 @@ export const of: <A, R>(a: A) => Env<R, A> = RT.of(R.Pointed)
 export function chainRec<A, E, B>(f: (value: A) => Env<E, Either<A, B>>): (value: A) => Env<E, B> {
   return (value) => (env) => R.chainRec((a: A) => f(a)(env))(value)
 }
-
-import { Alt2 } from 'fp-ts/Alt'
-import { Applicative2 } from 'fp-ts/Applicative'
-import { Apply2 } from 'fp-ts/Apply'
-import { ChainRec2 } from 'fp-ts/ChainRec'
-import { bind as bind_, Chain2 } from 'fp-ts/Chain'
-import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
-import { FromIO2 } from 'fp-ts/FromIO'
-import { FromTask2 } from 'fp-ts/FromTask'
-import { Lazy } from 'fp-ts/function'
-import { Monad2 } from 'fp-ts/Monad'
-import { Pointed2 } from 'fp-ts/Pointed'
-import * as hkt from './Hkt'
-import { MonadRec2 } from './MonadRec'
 
 export const URI = '@typed/fp/Env'
 export type URI = typeof URI
@@ -96,6 +96,10 @@ export const MonadRec: MonadRec2<URI> = {
   chainRec,
 }
 
+export const FromReader: FR.FromReader2<URI> = {
+  fromReader: (reader) => (e) => R.sync(() => reader(e)),
+}
+
 export const race = <E1, A>(a: Env<E1, A>) => <E2, B>(b: Env<E2, B>): Env<E1 & E2, A | B> => (e) =>
   R.race(a(e))(b(e))
 
@@ -124,3 +128,8 @@ export const Do: Env<unknown, {}> = fromIO(() => Object.create(null))
 export const bindTo = bindTo_(Functor)
 export const bind = bind_(Monad)
 export const tupled = tupled_(Functor)
+
+export const ask = FR.ask(FromReader)
+export const asks = FR.asks(FromReader)
+export const chainReaderK = FR.chainReaderK(FromReader, Chain)
+export const fromReaderK = FR.fromReaderK(FromReader)
