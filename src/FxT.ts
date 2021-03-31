@@ -6,6 +6,7 @@ import { ApplyVariance, Hkt } from './Hkt'
 import { MonadRec1, MonadRec2, MonadRec2C, MonadRec3, MonadRec } from './MonadRec'
 import { HKT, Kind, Kind2, Kind3, Kind4, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
 import { Arity1 } from './function'
+import { A, U } from 'ts-toolbelt'
 
 export type FxT<F, Params extends readonly any[]> = Params extends readonly [...infer Init, infer R]
   ? Fx<Hkt<F, readonly [...Init, unknown]>, R>
@@ -23,15 +24,20 @@ export type LiftFx<F> = F extends URIS
 
 export type LiftFx1<F extends URIS> = <A>(kind: Kind<F, A>) => Fx<Kind<F, A>, A>
 
-export type LiftFx2<F extends URIS2> = <E, A>(kind: Kind2<F, E, A>) => Fx<Kind2<F, E, A>, A>
+export type LiftFx2<F extends URIS2> = <E, A>(
+  kind: Kind2<F, OrUnknown<E>, A>,
+) => Fx<Kind2<F, OrUnknown<E>, A>, A>
+
+type IsNever<T> = A.Equals<[T], [never]> extends 1 ? true : false
+type OrUnknown<T> = IsNever<T> extends true ? unknown : T
 
 export type LiftFx3<F extends URIS3> = <R, E, A>(
-  kind: Kind3<F, R, E, A>,
-) => Fx<Kind3<F, R, E, A>, A>
+  kind: Kind3<F, OrUnknown<R>, E, A>,
+) => Fx<Kind3<F, OrUnknown<R>, E, A>, A>
 
 export type LiftFx4<F extends URIS4> = <S, R, E, A>(
-  kind: Kind4<F, S, R, E, A>,
-) => Fx<Kind4<F, S, R, E, A>, A>
+  kind: Kind4<F, S, OrUnknown<R>, E, A>,
+) => Fx<Kind4<F, S, OrUnknown<R>, E, A>, A>
 
 export type LiftFxHKT<F> = <A>(kind: HKT<F, A>) => Fx<HKT<F, A>, A>
 
@@ -96,7 +102,9 @@ export function toMonad<F extends URIS>(
 
 export function toMonad<F extends URIS2>(
   M: MonadRec2<F>,
-): <E extends Kind2<F, any, any>, R>(fx: Fx<E, R>) => Kind2<F, Kind2E<F, E>, R>
+): <E extends Kind2<F, any, any>, R>(
+  fx: Fx<E, R>,
+) => Kind2<F, ApplyVariance<F, 'E', U.ListOf<Kind2E<F, E>>>, R>
 
 export function toMonad<F extends URIS2, S>(
   M: MonadRec2C<F, S>,
@@ -104,7 +112,14 @@ export function toMonad<F extends URIS2, S>(
 
 export function toMonad<F extends URIS3>(
   M: MonadRec3<F>,
-): <E extends Kind3<F, any, any, any>, R>(fx: Fx<E, R>) => Kind3<F, Kind3R<F, E>, Kind3E<F, E>, R>
+): <E extends Kind3<F, any, any, any>, R>(
+  fx: Fx<E, R>,
+) => Kind3<
+  F,
+  ApplyVariance<F, 'R', U.ListOf<Kind3R<F, E>>>,
+  ApplyVariance<F, 'E', U.ListOf<Kind3E<F, E>>>,
+  R
+>
 
 export function toMonad<F>(M: MonadRec<F>): <E extends Hkt<F, any>, R>(fx: Fx<E, R>) => HKT<F, R>
 

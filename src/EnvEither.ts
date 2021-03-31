@@ -24,6 +24,7 @@ import { Alt3 } from 'fp-ts/Alt'
 import { FromReader3 } from 'fp-ts/FromReader'
 import { FromEnv3 } from './FromEnv'
 import { Provide3, ProvideAll3, ProvideSome3, UseAll3, UseSome3 } from './Provide'
+import { swapEithers } from './internal'
 
 export interface EnvEither<R, E, A> extends Kind<[Env.URI, E.URI], [R, E, A]> {}
 
@@ -64,8 +65,10 @@ declare module './Hkt' {
   }
 }
 
+export const of = flow(E.right, Env.of)
+
 export const Pointed: Pointed3<URI> = {
-  of: flow(E.right, Env.of),
+  of,
 }
 
 export const Functor: Functor3<URI> = {
@@ -95,20 +98,6 @@ export const Chain: Chain3<URI> = {
 export const Monad: Monad3<URI> = {
   ...Chain,
   ...Pointed,
-}
-
-const swapEithers = <E, A, B>(either: E.Either<E, E.Either<A, B>>): E.Either<A, E.Either<E, B>> => {
-  if (E.isLeft(either)) {
-    return E.right(either)
-  }
-
-  const e = either.right
-
-  if (E.isLeft(e)) {
-    return e
-  }
-
-  return E.right(e)
 }
 
 export const chainRec = <A, R, E, B>(f: (value: A) => EnvEither<R, E, E.Either<A, B>>) => (
