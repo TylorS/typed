@@ -63,8 +63,9 @@ export function settable(): SettableDisposable {
   }
 }
 
-import { ArgsOf } from './function'
 import { FunctionN } from 'fp-ts/function'
+
+import { ArgsOf } from './function'
 
 /**
  * Wrap a non-Disposable function into a Disposable-returning function

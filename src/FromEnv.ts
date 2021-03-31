@@ -1,8 +1,9 @@
-import { ApplyVariance, Hkt } from './Hkt'
-import { Env } from './Env'
-import { HKT, HKT2, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
 import { Chain, Chain2, Chain3, Chain4, chainFirst } from 'fp-ts/Chain'
 import { flow } from 'fp-ts/function'
+import { HKT, HKT2, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
+
+import { Env } from './Env'
+import { ApplyVariance, Hkt } from './Hkt'
 
 export type FromEnv<F> = {
   readonly URI?: F

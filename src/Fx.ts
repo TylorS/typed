@@ -1,4 +1,3 @@
-import { A } from 'ts-toolbelt'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { ap as ap_ } from 'fp-ts/Chain'
@@ -6,9 +5,10 @@ import { ChainRec2 } from 'fp-ts/ChainRec'
 import { Either, isLeft } from 'fp-ts/Either'
 import { FromIO2 } from 'fp-ts/FromIO'
 import { Functor2 } from 'fp-ts/Functor'
+import { IO } from 'fp-ts/IO'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
-import { IO } from 'fp-ts/IO'
+import { A } from 'ts-toolbelt'
 
 /**
  * Fx is a generator-based abstraction for do-notation for any single-shot

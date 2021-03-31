@@ -1,4 +1,5 @@
 import * as E from 'fp-ts/IO'
+
 import * as FxT from './FxT'
 
 export const ap = FxT.ap({ ...E.Monad, ...E.ChainRec, ...E.Apply })

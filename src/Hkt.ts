@@ -1,5 +1,4 @@
 import * as H from 'fp-ts/HKT'
-
 import { L, N } from 'ts-toolbelt'
 
 /**

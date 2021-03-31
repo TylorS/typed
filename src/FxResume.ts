@@ -1,5 +1,5 @@
-import * as R from './Resume'
 import * as FxT from './FxT'
+import * as R from './Resume'
 
 export const ap = FxT.ap({ ...R.MonadRec, ...R.Apply })
 export const chain = FxT.chain<R.URI>()

@@ -1,8 +1,9 @@
-import { Hkt } from './Hkt'
-import { Resume } from './Resume'
-import { HKT, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
 import { Chain, Chain1, Chain2, Chain3, Chain4, chainFirst } from 'fp-ts/Chain'
 import { flow } from 'fp-ts/function'
+import { HKT, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
+
+import { Hkt } from './Hkt'
+import { Resume } from './Resume'
 
 export type FromResume<F> = {
   readonly URI?: F

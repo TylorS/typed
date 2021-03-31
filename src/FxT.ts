@@ -1,12 +1,13 @@
-import { pipe } from 'fp-ts/function'
 import { Apply, Apply1, Apply2, Apply3 } from 'fp-ts/Apply'
-import { right, left, Either, match } from 'fp-ts/Either'
+import { Either, left, match, right } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
+import { HKT, Kind, Kind2, Kind3, Kind4, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
+import { A, U } from 'ts-toolbelt'
+
+import { Arity1 } from './function'
 import { doFx, Fx } from './Fx'
 import { ApplyVariance, Hkt } from './Hkt'
-import { MonadRec1, MonadRec2, MonadRec2C, MonadRec3, MonadRec } from './MonadRec'
-import { HKT, Kind, Kind2, Kind3, Kind4, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
-import { Arity1 } from './function'
-import { A, U } from 'ts-toolbelt'
+import { MonadRec, MonadRec1, MonadRec2, MonadRec2C, MonadRec3 } from './MonadRec'
 
 export type FxT<F, Params extends readonly any[]> = Params extends readonly [...infer Init, infer R]
   ? Fx<Hkt<F, readonly [...Init, unknown]>, R>

@@ -1,6 +1,7 @@
 import { Chain, Chain2, Chain3, Chain4 } from 'fp-ts/Chain'
 import { pipe } from 'fp-ts/function'
 import { HKT2, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
+
 import { ApplyVariance, Hkt } from './Hkt'
 
 /**

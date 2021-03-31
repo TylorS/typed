@@ -1,7 +1,8 @@
 import { Eq } from 'fp-ts/Eq'
 import { identity, unsafeCoerce } from 'fp-ts/function'
 import { HKT2 } from 'fp-ts/HKT'
-import { Chain, UseAll, URI, FromReader, Env } from './Env'
+
+import { Chain, Env, FromReader, URI, UseAll } from './Env'
 import * as F from './Fiber'
 import { FromEnv2 } from './FromEnv'
 
