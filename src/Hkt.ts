@@ -107,6 +107,14 @@ export type ApplyVariance<
     : T[0]
   : T[0]
 
+export type Initial<F, P extends Param> = F extends keyof VarianceMap
+  ? VarianceMap[F] extends V<P, infer R>
+    ? R extends Covariant
+      ? never
+      : unknown
+    : unknown
+  : unknown
+
 export type Intersect<A extends readonly any[], R = unknown> = A extends readonly [
   infer Head,
   ...infer Tail

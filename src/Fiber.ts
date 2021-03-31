@@ -1,119 +1,46 @@
 import { Disposable } from '@most/types'
-import { Chain, Chain2, Chain3, Chain4 } from 'fp-ts/Chain'
 import { Either } from 'fp-ts/Either'
-import { Eq } from 'fp-ts/Eq'
-import { FromReader, FromReader2, FromReader3, FromReader4 } from 'fp-ts/FromReader'
-import { identity, pipe } from 'fp-ts/function'
+import { FromReader, FromReader2, FromReader3, FromReader3C, FromReader4 } from 'fp-ts/FromReader'
+import { flow } from 'fp-ts/function'
 import { HKT2, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
 import { Option } from 'fp-ts/Option'
 import { Refinement } from 'fp-ts/Refinement'
-import { L } from 'ts-toolbelt'
 
+import { Adapter } from './Adapter'
 import { Branded } from './Branded'
-import * as E from './Env'
-import { deepEqualsEq } from './Eq'
 import { FromEnv, FromEnv2, FromEnv3, FromEnv4 } from './FromEnv'
-import { Hkt } from './Hkt'
+import { Hkt, Initial } from './Hkt'
 import { UseAll, UseAll2, UseAll3, UseAll4 } from './Provide'
+import { Refs, Refs2, Refs3, Refs4 } from './Ref'
 import { Resume } from './Resume'
 import { ResumeOption } from './ResumeOption'
 
-export interface Fiber<F, A> {
-  // Fiber information
+export type Fiber<F, A> = Refs<F> & {
   readonly id: FiberId
   readonly status: HKT2<F, unknown, FiberStatus<A>>
-
-  // References
-  readonly getRef: <E, A>(ref: FiberRef<F, [E, A]>) => HKT2<F, E, A>
-  readonly setRef: <A>(value: A) => <E>(ref: FiberRef<F, [E, A]>) => HKT2<F, E, A>
-  readonly deleteRef: <E, A>(ref: FiberRef<F, [E, A]>) => HKT2<F, unknown, Option<A>>
+  readonly statusEvents: Adapter<FiberStatus<A>, FiberStatus<A>>
 }
 
-export interface Fiber2<F extends URIS2, A> {
-  // Fiber information
+export type Fiber2<F extends URIS2, A> = Refs2<F> & {
   readonly id: FiberId
   readonly status: Hkt<F, [unknown, FiberStatus<A>]>
-  // References
-  readonly getRef: <E, A>(ref: FiberRef<F, [E, A]>) => Hkt<F, [E, A]>
-  readonly setRef: <A>(value: A) => <E>(ref: FiberRef<F, [E, A]>) => Hkt<F, [E, A]>
-  readonly deleteRef: <E>(ref: FiberRef<F, [E, A]>) => Hkt<F, [unknown, Option<A>]>
+  readonly statusEvents: Adapter<FiberStatus<A>, FiberStatus<A>>
 }
 
-export interface Fiber3<F extends URIS3, E, A> {
-  // Fiber information
+export type Fiber3<F extends URIS3, E, A> = Refs3<F> & {
   readonly id: FiberId
   readonly status: Hkt<F, [unknown, E, FiberStatus<A>]>
-  // References
-  readonly getRef: <R, E, A>(ref: FiberRef<F, [R, E, A]>) => Hkt<F, [R, E, A]>
-  readonly setRef: <A>(value: A) => <R, E>(ref: FiberRef<F, [R, E, A]>) => Hkt<F, [R, E, A]>
-  readonly deleteRef: <R, E>(ref: FiberRef<F, [R, E, A]>) => Hkt<F, [unknown, E, Option<A>]>
+  readonly statusEvents: Adapter<FiberStatus<A>, FiberStatus<A>>
 }
 
-export interface Fiber4<F extends URIS4, S, E, A> {
-  // Fiber information
+export type Fiber4<F extends URIS4, S, E, A> = Refs4<F> & {
   readonly id: FiberId
   readonly status: Hkt<F, [S, unknown, E, FiberStatus<A>]>
-  // References
-  readonly getRef: <S, R, E, A>(ref: FiberRef<F, [S, R, E, A]>) => Hkt<F, [S, R, E, A]>
-  readonly setRef: <A>(
-    value: A,
-  ) => <S, R, E>(ref: FiberRef<F, [S, R, E, A]>) => Hkt<F, [S, R, E, A]>
-  readonly deleteRef: <S, R, E>(
-    ref: FiberRef<F, [S, R, E, A]>,
-  ) => Hkt<F, [S, unknown, E, Option<A>]>
+  readonly statusEvents: Adapter<FiberStatus<A>, FiberStatus<A>>
 }
 
 export type FiberId = Branded<{ readonly FiberId: unique symbol }, symbol>
 export const FiberId = Branded<FiberId>()
-
-export interface FiberRef<F, Params extends readonly any[]> {
-  readonly id: FiberRefId
-  readonly initial: Hkt<F, Params>
-  readonly eq: Eq<L.Last<Params>>
-}
-
-export function createRef<F extends URIS2, E, A>(
-  initial: Hkt<F, [E, A]>,
-  id?: FiberRefId,
-  eq?: Eq<A>,
-): FiberRef2<F, E, A>
-
-export function createRef<F extends URIS3, R, E, A>(
-  initial: Hkt<F, [R, E, A]>,
-  id?: PropertyKey,
-  eq?: Eq<A>,
-): FiberRef3<F, R, E, A>
-
-export function createRef<F extends URIS4, S, R, E, A>(
-  initial: Hkt<F, [S, R, E, A]>,
-  id?: PropertyKey,
-  eq?: Eq<A>,
-): FiberRef4<F, S, R, E, A>
-
-export function createRef<F, E, A>(
-  initial: HKT2<F, E, A>,
-  id?: PropertyKey,
-  eq?: Eq<A>,
-): FiberRef<F, [E, A]>
-
-export function createRef<F, Params extends readonly any[]>(
-  initial: Hkt<F, Params>,
-  id: PropertyKey = Symbol(),
-  eq: Eq<L.Last<Params>> = deepEqualsEq,
-): FiberRef<F, Params> {
-  return {
-    id: FiberRefId(id),
-    initial,
-    eq,
-  }
-}
-
-export interface FiberRef2<F extends URIS2, E, A> extends FiberRef<F, [E, A]> {}
-export interface FiberRef3<F extends URIS3, R, E, A> extends FiberRef<F, [R, E, A]> {}
-export interface FiberRef4<F extends URIS4, S, R, E, A> extends FiberRef<F, [S, R, E, A]> {}
-
-export type FiberRefId = Branded<{ readonly FiberRefId: unique symbol }, PropertyKey>
-export const FiberRefId = Branded<FiberRefId>()
 
 export type FiberStatus<A> =
   | FiberQueuedStatus
@@ -183,8 +110,8 @@ export type FiberEvent<F, A> =
   | FiberRunning<F>
   | FiberFailed
   | FiberPaused
-  | FiberAborted
   | FiberFinished<A>
+  | FiberAborted
   | FiberCompleted<A>
 
 export type FiberQueued = {
@@ -308,7 +235,7 @@ export function listenToEvents<F>(M: FromEnv<F> & UseAll<F>) {
     refinement: Refinement<FiberEvent<F, any>, A>,
     onEvent: (event: A) => HKT2<F, R, any>,
   ): HKT2<F, R & ListenToEvents<F>, Disposable> =>
-    M.fromEnv((e) => e.listenToFiberEvents(refinement, (ev) => M.useAll(e as R)(onEvent(ev))))
+    M.fromEnv((e) => e.listenToFiberEvents(refinement, flow(onEvent, M.useAll(e))))
 }
 
 export type Fork<F> = {
@@ -530,92 +457,28 @@ export function play<F>(M: FromEnv<F>) {
   return <A>(fiber: Fiber<F, A>) => M.fromEnv((e: PlayFiber<F>) => e.playFiber(fiber))
 }
 
-export function fromKey<F extends URIS2>(
-  M: FromReader2<F>,
-): <A>(eq?: Eq<A>) => <K extends PropertyKey>(key: K) => FiberRef2<F, Readonly<Record<K, A>>, A>
-
-export function fromKey<F extends URIS3, E = unknown>(
-  M: FromReader3<F>,
-): <A>(eq?: Eq<A>) => <K extends PropertyKey>(key: K) => FiberRef3<F, Readonly<Record<K, A>>, E, A>
-
-export function fromKey<F extends URIS4, S = unknown, E = unknown>(
-  M: FromReader4<F>,
-): <A>(
-  eq?: Eq<A>,
-) => <K extends PropertyKey>(key: K) => FiberRef4<F, S, Readonly<Record<K, A>>, E, A>
-
-export function fromKey<F>(
-  M: FromReader<F>,
-): <A>(eq?: Eq<A>) => <K extends PropertyKey>(key: K) => FiberRef<F, [Readonly<Record<K, A>>, A]>
-
-export function fromKey<F>(M: FromReader<F>) {
-  return <A>(eq: Eq<A> = deepEqualsEq) => <K extends PropertyKey>(key: K) =>
-    createRef(
-      M.fromReader((e: Readonly<Record<K, A>>) => e[key]),
-      FiberRefId(key),
-      eq,
-    )
-}
-
 export type CurrentFiber<F> = {
   readonly currentFiber: Fiber<F, unknown>
 }
 
-export function getRef<F extends URIS2>(
-  M: FromEnv2<F> & Chain2<F>,
-): <E, A>(ref: FiberRef2<F, E, A>) => Hkt<F, [E & CurrentFiber<F>, A]>
-export function getRef<F extends URIS3>(
-  M: FromEnv3<F> & Chain3<F>,
-): <R, E, A>(ref: FiberRef3<F, R, E, A>) => Hkt<F, [R & CurrentFiber<F>, E, A]>
-export function getRef<F extends URIS4>(
-  M: FromEnv4<F> & Chain4<F>,
-): <S, R, E, A>(ref: FiberRef4<F, S, R, E, A>) => Hkt<F, [S, R & CurrentFiber<F>, E, A]>
-export function getRef<F>(
-  M: FromEnv<F> & Chain<F>,
-): <E, A>(ref: FiberRef<F, [E, A]>) => HKT2<F, E & CurrentFiber<F>, A>
-export function getRef<F>(M: FromEnv<F> & Chain<F>) {
-  return <E, A>(ref: FiberRef<F, [E, A]>) =>
-    pipe(M.fromEnv(E.asks((e: CurrentFiber<F>) => e.currentFiber.getRef(ref))), M.chain(identity))
-}
+export function getCurrentFiber<F extends URIS2>(
+  M: FromReader2<F>,
+): Hkt<F, [CurrentFiber<F>, Fiber2<F, unknown>]>
 
-export function setRef<F extends URIS2>(
-  M: FromEnv2<F> & Chain2<F>,
-): <A>(value: A) => <E>(ref: FiberRef2<F, E, A>) => Hkt<F, [E & CurrentFiber<F>, A]>
-export function setRef<F extends URIS3>(
-  M: FromEnv3<F> & Chain3<F>,
-): <A>(value: A) => <R, E>(ref: FiberRef3<F, R, E, A>) => Hkt<F, [R & CurrentFiber<F>, E, A]>
-export function setRef<F extends URIS4>(
-  M: FromEnv4<F> & Chain4<F>,
-): <A>(
-  value: A,
-) => <S, R, E>(ref: FiberRef4<F, S, R, E, A>) => Hkt<F, [S, R & CurrentFiber<F>, E, A]>
-export function setRef<F>(
-  M: FromEnv<F> & Chain<F>,
-): <A>(value: A) => <E>(ref: FiberRef<F, [E, A]>) => HKT2<F, E & CurrentFiber<F>, A>
-export function setRef<F>(M: FromEnv<F> & Chain<F>) {
-  return <A>(value: A) => <E>(ref: FiberRef<F, [E, A]>) =>
-    pipe(
-      M.fromEnv(E.asks((e: CurrentFiber<F>) => pipe(ref, e.currentFiber.setRef(value)))),
-      M.chain(identity),
-    )
-}
+export function getCurrentFiber<F extends URIS3>(
+  M: FromReader3<F>,
+): Hkt<F, [CurrentFiber<F>, never, Fiber3<F, Initial<F, 'E'>, unknown>]>
 
-export function deleteRef<F extends URIS2>(
-  M: FromEnv2<F> & Chain2<F>,
-): <E, A>(ref: FiberRef2<F, E, A>) => Hkt<F, [CurrentFiber<F>, Option<A>]>
-export function deleteRef<F extends URIS3>(
-  M: FromEnv3<F> & Chain3<F>,
-): <R, E, A>(ref: FiberRef3<F, R, E, A>) => Hkt<F, [CurrentFiber<F>, E, Option<A>]>
-export function deleteRef<F extends URIS4>(
-  M: FromEnv4<F> & Chain4<F>,
-): <S, R, E, A>(ref: FiberRef4<F, S, R, E, A>) => Hkt<F, [S, CurrentFiber<F>, E, Option<A>]>
-export function deleteRef<F>(
-  M: FromEnv<F> & Chain<F>,
-): <E, A>(ref: FiberRef<F, [E, A]>) => HKT2<F, CurrentFiber<F>, Option<A>>
-export function deleteRef<F>(M: FromEnv<F> & Chain<F>) {
-  return <E, A>(ref: FiberRef<F, [E, A]>) =>
-    pipe(
-      M.fromEnv(E.asks((e: CurrentFiber<F>) => e.currentFiber.deleteRef(ref))),
-      M.chain(identity),
-    )
+export function getCurrentFiber<F extends URIS3, E>(
+  M: FromReader3C<F, E>,
+): Hkt<F, [CurrentFiber<F>, E, Fiber3<F, E, unknown>]>
+
+export function getCurrentFiber<F extends URIS4>(
+  M: FromReader4<F>,
+): Hkt<F, [Initial<F, 'R'>, CurrentFiber<F>, Initial<F, 'E'>, Fiber<F, unknown>]>
+
+export function getCurrentFiber<F>(M: FromReader<F>): HKT2<F, CurrentFiber<F>, Fiber<F, unknown>>
+
+export function getCurrentFiber<F>(M: FromReader<F>) {
+  return M.fromReader((e: CurrentFiber<F>) => e.currentFiber)
 }

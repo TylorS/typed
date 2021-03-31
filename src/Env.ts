@@ -18,7 +18,6 @@ import * as FRe from './FromResume'
 import { FromResume2 } from './FromResume'
 import { Arity1 } from './function'
 import { Kind } from './Hkt'
-import * as hkt from './Hkt'
 import { MonadRec2 } from './MonadRec'
 import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from './Provide'
 import * as R from './Resume'
@@ -57,7 +56,7 @@ declare module 'fp-ts/HKT' {
 
 declare module './Hkt' {
   export interface VarianceMap {
-    [URI]: V<hkt.R, hkt.Contravariant>
+    [URI]: V<E, Contravariant>
   }
 }
 
