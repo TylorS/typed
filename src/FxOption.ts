@@ -30,9 +30,9 @@ export const MonadRec: MonadRec1<O.URI> = {
   ...ChainRec,
 }
 
-export const ap = FxT.ap({ ...O.Monad, ...ChainRec, ...O.Apply })
+export const ap = FxT.ap({ ...MonadRec, ...O.Apply })
 export const chain = FxT.chain<O.URI>()
 export const doOption = FxT.getDo<O.URI>()
 export const liftOption = FxT.liftFx<O.URI>()
 export const map = FxT.map<O.URI>()
-export const toOption = FxT.toMonad<O.URI>({ ...O.Monad, ...ChainRec })
+export const toOption = FxT.toMonad<O.URI>(MonadRec)

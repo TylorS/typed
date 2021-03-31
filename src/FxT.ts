@@ -93,27 +93,27 @@ export function getDo<F>() {
   ): Fx<Y, R, N> => doFx(() => f(lift as LiftFxHKT<F>))
 }
 
-type Kind2E<F extends URIS2, E> = E extends Kind2<F, infer R, any> ? R : never
-type Kind3E<F extends URIS3, E> = E extends Kind3<F, any, infer R, any> ? R : never
-type Kind3R<F extends URIS3, E> = E extends Kind3<F, infer R, any, any> ? R : never
+type Kind2E<F extends URIS2, E> = [E] extends [Kind2<F, infer R, any>] ? R : never
+type Kind3E<F extends URIS3, E> = [E] extends [Kind3<F, any, infer R, any>] ? R : never
+type Kind3R<F extends URIS3, E> = [E] extends [Kind3<F, infer R, any, any>] ? R : never
 
 export function toMonad<F extends URIS>(
   M: MonadRec1<F>,
-): <E extends Kind<F, any>, R>(fx: Fx<E, R>) => Kind<F, R>
+): <E extends Kind<F, unknown>, R>(fx: Fx<E, R>) => Kind<F, R>
 
 export function toMonad<F extends URIS2>(
   M: MonadRec2<F>,
-): <E extends Kind2<F, any, any>, R>(
+): <E extends Kind2<F, unknown, unknown>, R>(
   fx: Fx<E, R>,
 ) => Kind2<F, ApplyVariance<F, 'E', U.ListOf<Kind2E<F, E>>>, R>
 
 export function toMonad<F extends URIS2, S>(
   M: MonadRec2C<F, S>,
-): <E extends Kind2<F, S, any>, R>(fx: Fx<E, R>) => Kind2<F, S, R>
+): <E extends Kind2<F, S, unknown>, R>(fx: Fx<E, R>) => Kind2<F, S, R>
 
 export function toMonad<F extends URIS3>(
   M: MonadRec3<F>,
-): <E extends Kind3<F, any, any, any>, R>(
+): <E extends Kind3<F, unknown, unknown, unknown>, R>(
   fx: Fx<E, R>,
 ) => Kind3<
   F,
