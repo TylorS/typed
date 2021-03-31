@@ -9,6 +9,7 @@ import { Pointed3 } from 'fp-ts/Pointed'
 import * as E from './EnvEither'
 import { Fx } from './Fx'
 import * as FxT from './FxT'
+import { Provide3, ProvideAll3, ProvideSome3, UseAll3, UseSome3 } from './Provide'
 
 export const of = FxT.of(E.Pointed)
 export const ap = FxT.ap({ ...E.MonadRec, ...E.Apply })
@@ -20,6 +21,10 @@ export const map = FxT.map<E.URI>()
 export const toEnvEither = FxT.toMonad<E.URI>(E.MonadRec)
 export const ask = FxT.ask(E.FromReader)
 export const asks = FxT.asks(E.FromReader)
+export const useSome = FxT.useSome({ ...E.UseSome, ...E.MonadRec })
+export const useAll = FxT.useAll({ ...E.UseAll, ...E.MonadRec })
+export const provideSome = FxT.provideSome({ ...E.ProvideSome, ...E.MonadRec })
+export const provideAll = FxT.provideAll({ ...E.ProvideAll, ...E.MonadRec })
 
 export const URI = '@typed/fp/Fx/EnvEither'
 export type URI = typeof URI
@@ -62,4 +67,27 @@ export const Monad: Monad3<URI> = {
 
 export const ChainRec: ChainRec3<URI> = {
   chainRec,
+}
+
+export const UseSome: UseSome3<URI> = {
+  useSome,
+}
+
+export const UseAll: UseAll3<URI> = {
+  useAll,
+}
+
+export const ProvideSome: ProvideSome3<URI> = {
+  provideSome,
+}
+
+export const ProvideAll: ProvideAll3<URI> = {
+  provideAll,
+}
+
+export const Provide: Provide3<URI> = {
+  useSome,
+  useAll,
+  provideSome,
+  provideAll,
 }

@@ -23,6 +23,7 @@ import * as FRe from './FromResume'
 import { FromResume2 } from './FromResume'
 import { Kind } from './Hkt'
 import { MonadRec2 } from './MonadRec'
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from './Provide'
 import { Resume } from './Resume'
 
 export type EnvOption<E, A> = Kind<[E.URI, O.URI], [E, A]>
@@ -147,6 +148,29 @@ export const FromEnv: FromEnv2<URI> = {
 
 export const FromReader: FromReader2<URI> = {
   fromReader: flow(E.fromReader, E.map(O.some)),
+}
+
+export const UseSome: UseSome2<URI> = {
+  useSome: E.useSome,
+}
+
+export const UseAll: UseAll2<URI> = {
+  useAll: E.useAll,
+}
+
+export const ProvideSome: ProvideSome2<URI> = {
+  provideSome: E.provideSome,
+}
+
+export const ProvideAll: ProvideAll2<URI> = {
+  provideAll: E.provideAll,
+}
+
+export const Provide: Provide2<URI> = {
+  ...UseAll,
+  ...UseSome,
+  ...ProvideSome,
+  ...ProvideAll,
 }
 
 export const ask = FR.ask(FromReader)

@@ -10,6 +10,20 @@ import { Arity1 } from './function'
 import { doFx, Fx } from './Fx'
 import { ApplyVariance, Hkt, Initial } from './Hkt'
 import { MonadRec, MonadRec1, MonadRec2, MonadRec2C, MonadRec3 } from './MonadRec'
+import {
+  ProvideAll,
+  ProvideAll2,
+  ProvideAll3,
+  ProvideSome,
+  ProvideSome2,
+  ProvideSome3,
+  UseAll,
+  UseAll2,
+  UseAll3,
+  UseSome,
+  UseSome2,
+  UseSome3,
+} from './Provide'
 
 export type FxT<F, Params extends readonly any[]> = Params extends readonly [...infer Init, infer R]
   ? Fx<Hkt<F, readonly [...Init, unknown]>, R>
@@ -124,7 +138,7 @@ export function toMonad<F extends URIS3>(
   R
 >
 
-export function toMonad<F>(M: MonadRec<F>): <E extends Hkt<F, any>, R>(fx: Fx<E, R>) => HKT<F, R>
+export function toMonad<F>(M: MonadRec<F>): <E, R>(fx: Fx<E, R>) => HKT<F, R>
 
 /**
  * Using a ChainRec instance we can create a stack-safe interpreter for do-notation
@@ -347,4 +361,80 @@ export function asks<F>(M: FromReader<F>): <A, B>(f: Arity1<A, B>) => Fx<HKT2<F,
 
 export function asks<F>(M: FromReader<F>) {
   return flow(M.fromReader, liftFx())
+}
+
+export function useSome<F extends URIS2>(
+  M: UseSome2<F> & MonadRec2<F>,
+): <A>(provided: A) => <B, T>(fx: Fx<Hkt<F, [A & B, unknown]>, T>) => Fx<Hkt<F, [B, unknown]>, T>
+export function useSome<F extends URIS3>(
+  M: UseSome3<F> & MonadRec3<F>,
+): <A>(
+  provided: A,
+) => <B, E, T>(fx: Fx<Hkt<F, [A & B, E, unknown]>, T>) => Fx<Hkt<F, [B, E, unknown]>, T>
+export function useSome<F>(
+  M: UseSome<F> & MonadRec<F>,
+): <A>(provided: A) => <B, T>(fx: Fx<HKT2<F, A & B, unknown>, T>) => Fx<HKT2<F, B, unknown>, T>
+export function useSome<F>(M: UseSome<F> & MonadRec<F>) {
+  const lift = liftFx()
+  const to = toMonad(M)
+
+  return <A>(provided: A) => <B, R>(fx: Fx<HKT2<F, A & B, unknown>, R>) =>
+    pipe(fx, to, (x) => M.useSome(provided)(x as any), lift)
+}
+
+export function provideSome<F extends URIS2>(
+  M: ProvideSome2<F> & MonadRec2<F>,
+): <A>(provided: A) => <B, T>(fx: Fx<Hkt<F, [A & B, unknown]>, T>) => Fx<Hkt<F, [B, unknown]>, T>
+export function provideSome<F extends URIS3>(
+  M: ProvideSome3<F> & MonadRec3<F>,
+): <A>(
+  provided: A,
+) => <B, E, T>(fx: Fx<Hkt<F, [A & B, E, unknown]>, T>) => Fx<Hkt<F, [B, E, unknown]>, T>
+export function provideSome<F>(
+  M: ProvideSome<F> & MonadRec<F>,
+): <A>(provided: A) => <B, T>(fx: Fx<HKT2<F, A & B, unknown>, T>) => Fx<HKT2<F, B, unknown>, T>
+export function provideSome<F>(M: ProvideSome<F> & MonadRec<F>) {
+  const lift = liftFx()
+  const to = toMonad(M)
+
+  return <A>(provided: A) => <B, R>(fx: Fx<HKT2<F, A & B, unknown>, R>) =>
+    pipe(fx, to, (x) => M.provideSome(provided)(x as any), lift)
+}
+
+export function useAll<F extends URIS2>(
+  M: UseAll2<F> & MonadRec2<F>,
+): <A>(provided: A) => <T>(fx: Fx<Hkt<F, [A, unknown]>, T>) => Fx<Hkt<F, [unknown, unknown]>, T>
+export function useAll<F extends URIS3>(
+  M: UseAll3<F> & MonadRec3<F>,
+): <A>(
+  provided: A,
+) => <E, T>(fx: Fx<Hkt<F, [A, E, unknown]>, T>) => Fx<Hkt<F, [unknown, E, unknown]>, T>
+export function useAll<F>(
+  M: UseAll<F> & MonadRec<F>,
+): <A>(provided: A) => <T>(fx: Fx<HKT2<F, A, unknown>, T>) => Fx<HKT2<F, unknown, unknown>, T>
+export function useAll<F>(M: UseAll<F> & MonadRec<F>) {
+  const lift = liftFx()
+  const to = toMonad(M)
+
+  return <A>(provided: A) => <R>(fx: Fx<HKT2<F, A, unknown>, R>) =>
+    pipe(fx, to, (x) => M.useAll(provided)(x as any), lift)
+}
+
+export function provideAll<F extends URIS2>(
+  M: ProvideAll2<F> & MonadRec2<F>,
+): <A>(provided: A) => <T>(fx: Fx<Hkt<F, [A, unknown]>, T>) => Fx<Hkt<F, [unknown, unknown]>, T>
+export function provideAll<F extends URIS3>(
+  M: ProvideAll3<F> & MonadRec3<F>,
+): <A>(
+  provided: A,
+) => <E, T>(fx: Fx<Hkt<F, [A, E, unknown]>, T>) => Fx<Hkt<F, [unknown, E, unknown]>, T>
+export function provideAll<F>(
+  M: ProvideAll<F> & MonadRec<F>,
+): <A>(provided: A) => <T>(fx: Fx<HKT2<F, A, unknown>, T>) => Fx<HKT2<F, unknown, unknown>, T>
+export function provideAll<F>(M: ProvideAll<F> & MonadRec<F>) {
+  const lift = liftFx()
+  const to = toMonad(M)
+
+  return <A>(provided: A) => <R>(fx: Fx<HKT2<F, A, unknown>, R>) =>
+    pipe(fx, to, (x) => M.provideAll(provided)(x as any), lift)
 }
