@@ -41,10 +41,6 @@ import { settable, undisposable } from './Disposable'
 import { FromResume1 } from './FromResume'
 import { run } from './Resume'
 
-export interface SchedulerEnv {
-  readonly scheduler: Scheduler
-}
-
 /**
  * Convert an IO<Disposable> into a Most.js Task
  */
@@ -116,7 +112,6 @@ export const partition = <A>(predicate: Predicate<A>) =>
 export const filterMap = <A, B>(f: (a: A) => Option<B>) => (fa: Stream<A>) => compact(map(f, fa))
 
 export const Functor: Functor1<URI> = {
-  URI,
   map,
 }
 
@@ -143,16 +138,14 @@ export const Monad: Monad1<URI> = {
 export const chainRec = <A, B>(f: (value: A) => Stream<Either<A, B>>) => (value: A): Stream<B> =>
   pipe(value, f, chain(match(chainRec(f), now)))
 
-export const ChainRecChain: ChainRec1<URI> = {
-  ...Monad,
+export const ChainRec: ChainRec1<URI> = {
   chainRec,
 }
 
 export const switchRec = <A, B>(f: (value: A) => Stream<Either<A, B>>) => (value: A): Stream<B> =>
   pipe(value, f, map(match(switchRec(f), now)), switchLatest)
 
-export const ChainRecSwitch: ChainRec1<URI> = {
-  ...Monad,
+export const SwitchRec: ChainRec1<URI> = {
   chainRec: switchRec,
 }
 
@@ -167,12 +160,10 @@ export const mergeConcurrentlyRec = (concurrency: number) => <A, B>(
   )
 
 export const getConcurrentChainRec = (concurrency: number): ChainRec1<URI> => ({
-  ...Monad,
   chainRec: mergeConcurrentlyRec(concurrency),
 })
 
 export const FromIO: FromIO1<URI> = {
-  URI,
   fromIO: (f) => Functor.map(f)(now(undefined)),
 }
 
@@ -216,7 +207,6 @@ export const Alternative: Alternative1<URI> = {
 export const zero = Alternative.zero
 
 export const Compactable: Compactable1<URI> = {
-  URI,
   compact,
   separate,
 }
@@ -232,3 +222,7 @@ export const Do: Stream<{}> = pipe(null, now, map(Object.create))
 export const bindTo = bindTo_(Functor)
 export const bind = bind_(Monad)
 export const tupled = tupled_(Functor)
+
+export interface SchedulerEnv {
+  readonly scheduler: Scheduler
+}

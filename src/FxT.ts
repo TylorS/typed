@@ -1,12 +1,14 @@
 import { Apply, Apply1, Apply2, Apply3 } from 'fp-ts/Apply'
 import { Either, left, match, right } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
-import { HKT, Kind, Kind2, Kind3, Kind4, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
+import { FromReader, FromReader2, FromReader3, FromReader3C, FromReader4 } from 'fp-ts/FromReader'
+import { flow, identity, pipe } from 'fp-ts/function'
+import { HKT, HKT2, Kind, Kind2, Kind3, Kind4, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
+import { Pointed, Pointed1, Pointed2, Pointed3, Pointed4 } from 'fp-ts/Pointed'
 import { A, U } from 'ts-toolbelt'
 
 import { Arity1 } from './function'
 import { doFx, Fx } from './Fx'
-import { ApplyVariance, Hkt } from './Hkt'
+import { ApplyVariance, Hkt, Initial } from './Hkt'
 import { MonadRec, MonadRec1, MonadRec2, MonadRec2C, MonadRec3 } from './MonadRec'
 
 export type FxT<F, Params extends readonly any[]> = Params extends readonly [...infer Init, infer R]
@@ -291,4 +293,58 @@ function chainRec_<F>(M: MonadRec<F>) {
 
     return lift(fbm) as FxT<F, [B]>
   }
+}
+
+export function of<F extends URIS>(M: Pointed1<F>): <A>(value: A) => Fx<Hkt<F, [A]>, A>
+export function of<F extends URIS2>(
+  M: Pointed2<F>,
+): <A, E = Initial<F, 'E'>>(value: A) => Fx<Hkt<F, [E, A]>, A>
+export function of<F extends URIS3>(
+  M: Pointed3<F>,
+): <A, R = Initial<F, 'R'>, E = Initial<F, 'E'>>(value: A) => Fx<Hkt<F, [R, E, A]>, A>
+export function of<F extends URIS4>(
+  M: Pointed4<F>,
+): <A, S = Initial<F, 'S'>, R = Initial<F, 'R'>, E = Initial<F, 'E'>>(
+  value: A,
+) => Fx<Hkt<F, [S, R, E, A]>, A>
+export function of<F>(M: Pointed<F>): <A>(value: A) => Fx<HKT<F, A>, A>
+
+export function of<F>(M: Pointed<F>) {
+  const lift = liftFx()
+
+  return <A>(value: A) => lift(M.of(value))
+}
+
+export function ask<F extends URIS2>(M: FromReader2<F>): <A>() => Fx<Hkt<F, [A, A]>, A>
+export function ask<F extends URIS3>(
+  M: FromReader3<F>,
+): <A>() => Fx<Hkt<F, [A, Initial<F, 'E'>, A]>, A>
+export function ask<F extends URIS3, E>(M: FromReader3C<F, E>): <A>() => Fx<Hkt<F, [A, E, A]>, A>
+export function ask<F extends URIS4>(
+  M: FromReader4<F>,
+): <A>() => Fx<Hkt<F, [Initial<F, 'S'>, A, Initial<F, 'E'>, A]>, A>
+export function ask<F>(M: FromReader<F>): <A>() => Fx<HKT2<F, A, A>, A>
+
+export function ask<F>(M: FromReader<F>) {
+  const lift = liftFx()
+
+  return () => lift(M.fromReader(identity))
+}
+
+export function asks<F extends URIS2>(
+  M: FromReader2<F>,
+): <A, B>(f: Arity1<A, B>) => Fx<Hkt<F, [A, B]>, B>
+export function asks<F extends URIS3>(
+  M: FromReader3<F>,
+): <A, B>(f: Arity1<A, B>) => Fx<Hkt<F, [A, Initial<F, 'E'>, B]>, B>
+export function asks<F extends URIS3, E>(
+  M: FromReader3C<F, E>,
+): <A, B>(f: Arity1<A, B>) => Fx<Hkt<F, [A, E, B]>, B>
+export function asks<F extends URIS4>(
+  M: FromReader4<F>,
+): <A, B>(f: Arity1<A, B>) => Fx<Hkt<F, [Initial<F, 'S'>, A, Initial<F, 'E'>, B]>, B>
+export function asks<F>(M: FromReader<F>): <A, B>(f: Arity1<A, B>) => Fx<HKT2<F, A, B>, B>
+
+export function asks<F>(M: FromReader<F>) {
+  return flow(M.fromReader, liftFx())
 }
