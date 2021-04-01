@@ -12,15 +12,15 @@ import { deepEqualsEq } from '../Eq'
 import { FromEnv, FromEnv2, FromEnv3, FromEnv4 } from '../FromEnv'
 import { Hkt } from '../Hkt'
 
-export interface FiberRef<F, Params extends readonly any[]> {
-  readonly id: FiberRefId
+export interface Ref<F, Params extends readonly any[]> {
+  readonly id: RefId
   readonly initial: Hkt<F, Params>
   readonly eq: Eq<L.Last<Params>>
 }
 
 export function createRef<F extends URIS2>(): <E, A>(
   initial: Hkt<F, [E, A]>,
-  id?: FiberRefId,
+  id?: RefId,
   eq?: Eq<A>,
 ) => Ref2<F, E, A>
 
@@ -40,14 +40,14 @@ export function createRef<F>(): <E, A>(
   initial: HKT2<F, E, A>,
   id?: PropertyKey,
   eq?: Eq<A>,
-) => FiberRef<F, [E, A]>
+) => Ref<F, [E, A]>
 
 export function createRef<F>() {
   return <Params extends readonly any[]>(
     initial: Hkt<F, Params>,
     id: PropertyKey = Symbol(),
     eq: Eq<L.Last<Params>> = deepEqualsEq,
-  ): FiberRef<F, Params> => {
+  ): Ref<F, Params> => {
     return {
       id: FiberRefId(id),
       initial,
@@ -56,39 +56,35 @@ export function createRef<F>() {
   }
 }
 
-export interface Ref2<F extends URIS2, E, A> extends FiberRef<F, [E, A]> {}
-export interface Ref3<F extends URIS3, R, E, A> extends FiberRef<F, [R, E, A]> {}
-export interface Ref4<F extends URIS4, S, R, E, A> extends FiberRef<F, [S, R, E, A]> {}
+export interface Ref2<F extends URIS2, E, A> extends Ref<F, [E, A]> {}
+export interface Ref3<F extends URIS3, R, E, A> extends Ref<F, [R, E, A]> {}
+export interface Ref4<F extends URIS4, S, R, E, A> extends Ref<F, [S, R, E, A]> {}
 
-export type FiberRefId = Branded<{ readonly FiberRefId: unique symbol }, PropertyKey>
-export const FiberRefId = Branded<FiberRefId>()
+export type RefId = Branded<{ readonly RefId: unique symbol }, PropertyKey>
+export const FiberRefId = Branded<RefId>()
 
 export interface References<F> {
-  readonly getRef: <E, A>(ref: FiberRef<F, [E, A]>) => HKT2<F, E, A>
-  readonly setRef: <A>(value: A) => <E>(ref: FiberRef<F, [E, A]>) => HKT2<F, E, A>
-  readonly deleteRef: <E, A>(ref: FiberRef<F, [E, A]>) => HKT2<F, unknown, Option<A>>
+  readonly getRef: <E, A>(ref: Ref<F, [E, A]>) => HKT2<F, E, A>
+  readonly setRef: <A>(value: A) => <E>(ref: Ref<F, [E, A]>) => HKT2<F, E, A>
+  readonly deleteRef: <E, A>(ref: Ref<F, [E, A]>) => HKT2<F, unknown, Option<A>>
 }
 
 export interface References2<F extends URIS2> {
-  readonly getRef: <E, A>(ref: FiberRef<F, [E, A]>) => Hkt<F, [E, A]>
-  readonly setRef: <A>(value: A) => <E>(ref: FiberRef<F, [E, A]>) => Hkt<F, [E, A]>
-  readonly deleteRef: <E, A>(ref: FiberRef<F, [E, A]>) => Hkt<F, [unknown, Option<A>]>
+  readonly getRef: <E, A>(ref: Ref<F, [E, A]>) => Hkt<F, [E, A]>
+  readonly setRef: <A>(value: A) => <E>(ref: Ref<F, [E, A]>) => Hkt<F, [E, A]>
+  readonly deleteRef: <E, A>(ref: Ref<F, [E, A]>) => Hkt<F, [unknown, Option<A>]>
 }
 
 export interface References3<F extends URIS3> {
-  readonly getRef: <R, E, A>(ref: FiberRef<F, [R, E, A]>) => Hkt<F, [R, E, A]>
-  readonly setRef: <A>(value: A) => <R, E>(ref: FiberRef<F, [R, E, A]>) => Hkt<F, [R, E, A]>
-  readonly deleteRef: <R, E, A>(ref: FiberRef<F, [R, E, A]>) => Hkt<F, [unknown, E, Option<A>]>
+  readonly getRef: <R, E, A>(ref: Ref<F, [R, E, A]>) => Hkt<F, [R, E, A]>
+  readonly setRef: <A>(value: A) => <R, E>(ref: Ref<F, [R, E, A]>) => Hkt<F, [R, E, A]>
+  readonly deleteRef: <R, E, A>(ref: Ref<F, [R, E, A]>) => Hkt<F, [unknown, E, Option<A>]>
 }
 
 export interface References4<F extends URIS4> {
-  readonly getRef: <S, R, E, A>(ref: FiberRef<F, [S, R, E, A]>) => Hkt<F, [S, R, E, A]>
-  readonly setRef: <A>(
-    value: A,
-  ) => <S, R, E>(ref: FiberRef<F, [S, R, E, A]>) => Hkt<F, [S, R, E, A]>
-  readonly deleteRef: <S, R, E, A>(
-    ref: FiberRef<F, [S, R, E, A]>,
-  ) => Hkt<F, [S, unknown, E, Option<A>]>
+  readonly getRef: <S, R, E, A>(ref: Ref<F, [S, R, E, A]>) => Hkt<F, [S, R, E, A]>
+  readonly setRef: <A>(value: A) => <S, R, E>(ref: Ref<F, [S, R, E, A]>) => Hkt<F, [S, R, E, A]>
+  readonly deleteRef: <S, R, E, A>(ref: Ref<F, [S, R, E, A]>) => Hkt<F, [S, unknown, E, Option<A>]>
 }
 
 export type Refs<F> = {
@@ -118,9 +114,9 @@ export function getRef<F extends URIS4>(
 ): <S, R, E, A>(ref: Ref4<F, S, R, E, A>) => Hkt<F, [S, R & Refs4<F>, E, A]>
 export function getRef<F>(
   M: FromEnv<F> & Chain<F>,
-): <E, A>(ref: FiberRef<F, [E, A]>) => HKT2<F, E & Refs<F>, A>
+): <E, A>(ref: Ref<F, [E, A]>) => HKT2<F, E & Refs<F>, A>
 export function getRef<F>(M: FromEnv<F> & Chain<F>) {
-  return <E, A>(ref: FiberRef<F, [E, A]>) =>
+  return <E, A>(ref: Ref<F, [E, A]>) =>
     pipe(M.fromEnv(E.asks((e: Refs<F>) => e.refs.getRef(ref))), M.chain(identity))
 }
 
@@ -135,9 +131,9 @@ export function setRef<F extends URIS4>(
 ): <A>(value: A) => <S, R, E>(ref: Ref4<F, S, R, E, A>) => Hkt<F, [S, R & Refs4<F>, E, A]>
 export function setRef<F>(
   M: FromEnv<F> & Chain<F>,
-): <A>(value: A) => <E>(ref: FiberRef<F, [E, A]>) => HKT2<F, E & Refs<F>, A>
+): <A>(value: A) => <E>(ref: Ref<F, [E, A]>) => HKT2<F, E & Refs<F>, A>
 export function setRef<F>(M: FromEnv<F> & Chain<F>) {
-  return <A>(value: A) => <E>(ref: FiberRef<F, [E, A]>) =>
+  return <A>(value: A) => <E>(ref: Ref<F, [E, A]>) =>
     pipe(M.fromEnv(E.asks((e: Refs<F>) => pipe(ref, e.refs.setRef(value)))), M.chain(identity))
 }
 
@@ -152,9 +148,9 @@ export function deleteRef<F extends URIS4>(
 ): <S, R, E, A>(ref: Ref4<F, S, R, E, A>) => Hkt<F, [S, Refs4<F>, E, Option<A>]>
 export function deleteRef<F>(
   M: FromEnv<F> & Chain<F>,
-): <E, A>(ref: FiberRef<F, [E, A]>) => HKT2<F, Refs<F>, Option<A>>
+): <E, A>(ref: Ref<F, [E, A]>) => HKT2<F, Refs<F>, Option<A>>
 export function deleteRef<F>(M: FromEnv<F> & Chain<F>) {
-  return <E, A>(ref: FiberRef<F, [E, A]>) =>
+  return <E, A>(ref: Ref<F, [E, A]>) =>
     pipe(M.fromEnv(E.asks((e: Refs<F>) => e.refs.deleteRef(ref))), M.chain(identity))
 }
 
@@ -172,7 +168,7 @@ export function fromKey<F extends URIS4, S = unknown, E = unknown>(
 
 export function fromKey<F>(
   M: FromReader<F>,
-): <A>(eq?: Eq<A>) => <K extends PropertyKey>(key: K) => FiberRef<F, [Readonly<Record<K, A>>, A]>
+): <A>(eq?: Eq<A>) => <K extends PropertyKey>(key: K) => Ref<F, [Readonly<Record<K, A>>, A]>
 
 export function fromKey<F>(M: FromReader<F>) {
   const create = createRef<F>()
