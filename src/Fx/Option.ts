@@ -8,9 +8,9 @@ import { Monad1 } from 'fp-ts/Monad'
 import * as O from 'fp-ts/Option'
 import { Pointed1 } from 'fp-ts/Pointed'
 
+import * as FxT from '../FxT'
+import { MonadRec1 } from '../MonadRec'
 import { Fx } from './Fx'
-import * as FxT from './FxT'
-import { MonadRec1 } from './MonadRec'
 
 const chainRec_ = <A, B>(f: (value: A) => O.Option<E.Either<A, B>>) => (value: A): O.Option<B> => {
   let option = f(value)

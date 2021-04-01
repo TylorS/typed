@@ -6,11 +6,11 @@ import { HKT2, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
 import { Option } from 'fp-ts/Option'
 import { L } from 'ts-toolbelt'
 
-import { Branded } from './Branded'
-import * as E from './Env'
-import { deepEqualsEq } from './Eq'
-import { FromEnv, FromEnv2, FromEnv3, FromEnv4 } from './FromEnv'
-import { Hkt } from './Hkt'
+import { Branded } from '../Branded'
+import * as E from '../Env'
+import { deepEqualsEq } from '../Eq'
+import { FromEnv, FromEnv2, FromEnv3, FromEnv4 } from '../FromEnv'
+import { Hkt } from '../Hkt'
 
 export interface FiberRef<F, Params extends readonly any[]> {
   readonly id: FiberRefId

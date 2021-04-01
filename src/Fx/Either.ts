@@ -8,8 +8,8 @@ import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 
+import * as FxT from '../FxT'
 import { Fx } from './Fx'
-import * as FxT from './FxT'
 
 export const of = FxT.of(E.Pointed)
 export const ap = FxT.ap({ ...E.Monad, ...E.ChainRec, ...E.Apply })

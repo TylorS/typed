@@ -1,8 +1,8 @@
 import { Chain2 } from 'fp-ts/Chain'
 import { identity } from 'fp-ts/function'
 
-import { Chain, FromReader, URI } from './Env'
-import { FromEnv2 } from './FromEnv'
+import { Chain, FromReader, URI } from '../Env'
+import { FromEnv2 } from '../FromEnv'
 import * as FR from './Ref'
 
 const E: FromEnv2<URI> & Chain2<URI> = {

@@ -1,8 +1,8 @@
 import { identity } from 'fp-ts/function'
 
-import { FromReader, URI, UseAll } from './Env'
+import { FromReader, URI, UseAll } from '../Env'
+import { FromEnv2 } from '../FromEnv'
 import * as F from './Fiber'
-import { FromEnv2 } from './FromEnv'
 
 const FromEnv: FromEnv2<URI> = {
   fromEnv: identity,

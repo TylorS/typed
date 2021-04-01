@@ -6,9 +6,9 @@ import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 
+import * as FxT from '../FxT'
+import * as R from '../ResumeEither'
 import { Fx } from './Fx'
-import * as FxT from './FxT'
-import * as R from './ResumeEither'
 
 export const of = FxT.of(R.Pointed)
 export const ap = FxT.ap({ ...R.MonadRec, ...R.Apply })

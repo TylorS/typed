@@ -6,14 +6,14 @@ import { HKT2, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
 import { Option } from 'fp-ts/Option'
 import { Refinement } from 'fp-ts/Refinement'
 
-import { Adapter } from './Adapter'
-import { Branded } from './Branded'
-import { FromEnv, FromEnv2, FromEnv3, FromEnv4 } from './FromEnv'
-import { Hkt, Initial } from './Hkt'
-import { UseAll, UseAll2, UseAll3, UseAll4 } from './Provide'
-import { Refs, Refs2, Refs3, Refs4 } from './Ref'
-import { Resume } from './Resume'
-import { ResumeOption } from './ResumeOption'
+import { Adapter } from '../Adapter'
+import { Branded } from '../Branded'
+import { FromEnv, FromEnv2, FromEnv3, FromEnv4 } from '../FromEnv'
+import { Hkt, Initial } from '../Hkt'
+import { UseAll, UseAll2, UseAll3, UseAll4 } from '../Provide'
+import { Refs, Refs2, Refs3, Refs4 } from '../Ref'
+import { Resume } from '../Resume'
+import { ResumeOption } from '../ResumeOption'
 
 export type Fiber<F, A> = Refs<F> & {
   readonly id: FiberId

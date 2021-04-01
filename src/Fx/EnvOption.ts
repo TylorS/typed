@@ -6,19 +6,19 @@ import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 
-import * as E from './Env'
+import * as E from '../EnvOption'
+import * as FxT from '../FxT'
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '../Provide'
 import { Fx } from './Fx'
-import * as FxT from './FxT'
-import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from './Provide'
 
 export const of = FxT.of(E.Pointed)
 export const ap = FxT.ap({ ...E.MonadRec, ...E.Apply })
 export const chain = FxT.chain<E.URI>()
 export const chainRec = FxT.chainRec(E.MonadRec)
-export const doEnv = FxT.getDo<E.URI>()
-export const liftEnv = FxT.liftFx<E.URI>()
+export const doEnvOption = FxT.getDo<E.URI>()
+export const liftEnvOption = FxT.liftFx<E.URI>()
 export const map = FxT.map<E.URI>()
-export const toEnv = FxT.toMonad<E.URI>(E.MonadRec)
+export const toEnvOption = FxT.toMonad<E.URI>(E.MonadRec)
 export const ask = FxT.ask(E.FromReader)
 export const asks = FxT.asks(E.FromReader)
 export const useSome = FxT.useSome({ ...E.UseSome, ...E.MonadRec })
@@ -26,10 +26,10 @@ export const useAll = FxT.useAll({ ...E.UseAll, ...E.MonadRec })
 export const provideSome = FxT.provideSome({ ...E.ProvideSome, ...E.MonadRec })
 export const provideAll = FxT.provideAll({ ...E.ProvideAll, ...E.MonadRec })
 
-export const URI = '@typed/fp/Fx/Env'
+export const URI = '@typed/fp/Fx/EnvOption'
 export type URI = typeof URI
 
-export interface FxEither<E, A> extends Fx<E.Env<E, unknown>, A> {}
+export interface FxEither<E, A> extends Fx<E.EnvOption<E, unknown>, A> {}
 
 declare module 'fp-ts/HKT' {
   export interface URItoKind2<E, A> {

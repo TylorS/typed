@@ -6,27 +6,27 @@ import { Functor1 } from 'fp-ts/Functor'
 import { Monad1 } from 'fp-ts/Monad'
 import { Pointed1 } from 'fp-ts/Pointed'
 
+import * as FxT from '../FxT'
+import * as R from '../ResumeOption'
 import { Fx } from './Fx'
-import * as FxT from './FxT'
-import * as R from './Resume'
 
 export const of = FxT.of(R.Pointed)
 export const ap = FxT.ap({ ...R.MonadRec, ...R.Apply })
 export const chain = FxT.chain<R.URI>()
 export const chainRec = FxT.chainRec<R.URI>(R.MonadRec)
-export const doResume = FxT.getDo<R.URI>()
-export const liftResume = FxT.liftFx<R.URI>()
+export const doResumeOption = FxT.getDo<R.URI>()
+export const liftResumeOption = FxT.liftFx<R.URI>()
 export const map = FxT.map<R.URI>()
-export const toResume = FxT.toMonad<R.URI>(R.MonadRec)
+export const toResumeOption = FxT.toMonad<R.URI>(R.MonadRec)
 
-export const URI = '@typed/fp/Fx/Resume'
+export const URI = '@typed/fp/Fx/ResumeOption'
 export type URI = typeof URI
 
-export interface FxResume<A> extends Fx<R.Resume<unknown>, A> {}
+export interface FxResumeOption<A> extends Fx<R.ResumeOption<unknown>, A> {}
 
 declare module 'fp-ts/HKT' {
   export interface URItoKind<A> {
-    [URI]: FxResume<A>
+    [URI]: FxResumeOption<A>
   }
 }
 

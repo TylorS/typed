@@ -3,30 +3,30 @@ import { Apply1 } from 'fp-ts/Apply'
 import { Chain1 } from 'fp-ts/Chain'
 import { ChainRec1 } from 'fp-ts/ChainRec'
 import { Functor1 } from 'fp-ts/Functor'
+import * as E from 'fp-ts/IO'
 import { Monad1 } from 'fp-ts/Monad'
 import { Pointed1 } from 'fp-ts/Pointed'
 
+import * as FxT from '../FxT'
 import { Fx } from './Fx'
-import * as FxT from './FxT'
-import * as R from './ResumeOption'
 
-export const of = FxT.of(R.Pointed)
-export const ap = FxT.ap({ ...R.MonadRec, ...R.Apply })
-export const chain = FxT.chain<R.URI>()
-export const chainRec = FxT.chainRec<R.URI>(R.MonadRec)
-export const doResumeOption = FxT.getDo<R.URI>()
-export const liftResumeOption = FxT.liftFx<R.URI>()
-export const map = FxT.map<R.URI>()
-export const toResumeOption = FxT.toMonad<R.URI>(R.MonadRec)
+export const of = FxT.of(E.Pointed)
+export const ap = FxT.ap({ ...E.Monad, ...E.ChainRec, ...E.Apply })
+export const chain = FxT.chain<E.URI>()
+export const chainRec = FxT.chainRec({ ...E.Monad, ...E.ChainRec })
+export const doIO = FxT.getDo<E.URI>()
+export const liftIO = FxT.liftFx<E.URI>()
+export const map = FxT.map<E.URI>()
+export const toIO = FxT.toMonad<E.URI>({ ...E.Monad, ...E.ChainRec })
 
-export const URI = '@typed/fp/Fx/ResumeOption'
+export const URI = '@typed/fp/Fx/IO'
 export type URI = typeof URI
 
-export interface FxResumeOption<A> extends Fx<R.ResumeOption<unknown>, A> {}
+export interface FxIO<A> extends Fx<E.IO<unknown>, A> {}
 
 declare module 'fp-ts/HKT' {
   export interface URItoKind<A> {
-    [URI]: FxResumeOption<A>
+    [URI]: FxIO<A>
   }
 }
 

@@ -6,10 +6,10 @@ import { Functor3 } from 'fp-ts/Functor'
 import { Monad3 } from 'fp-ts/Monad'
 import { Pointed3 } from 'fp-ts/Pointed'
 
-import * as E from './EnvEither'
+import * as E from '../EnvEither'
+import * as FxT from '../FxT'
+import { Provide3, ProvideAll3, ProvideSome3, UseAll3, UseSome3 } from '../Provide'
 import { Fx } from './Fx'
-import * as FxT from './FxT'
-import { Provide3, ProvideAll3, ProvideSome3, UseAll3, UseSome3 } from './Provide'
 
 export const of = FxT.of(E.Pointed)
 export const ap = FxT.ap({ ...E.MonadRec, ...E.Apply })

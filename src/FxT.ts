@@ -7,7 +7,7 @@ import { Pointed, Pointed1, Pointed2, Pointed3, Pointed4 } from 'fp-ts/Pointed'
 import { A, U } from 'ts-toolbelt'
 
 import { Arity1 } from './function'
-import { doFx, Fx } from './Fx'
+import { doFx, Fx } from './Fx/Fx'
 import { ApplyVariance, Hkt, Initial } from './Hkt'
 import { MonadRec, MonadRec1, MonadRec2, MonadRec2C, MonadRec3 } from './MonadRec'
 import {
