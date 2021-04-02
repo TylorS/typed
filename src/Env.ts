@@ -139,10 +139,10 @@ export const useSome = <E1>(provided: E1) => <E2, A>(env: Env<E1 & E2, A>): Env<
 export const provideSome = <E1>(provided: E1) => <E2, A>(env: Env<E1 & E2, A>): Env<E2, A> => (e) =>
   env({ ...provided, ...e })
 
-export const useAll = <E1>(provided: E1) => <A>(env: Env<E1, A>): Env<never, A> => () =>
+export const useAll = <E1>(provided: E1) => <A>(env: Env<E1, A>): Env<unknown, A> => () =>
   env(provided)
 
-export const provideAll = <E1>(provided: E1) => <A>(env: Env<E1, A>): Env<never, A> => (e) =>
+export const provideAll = <E1>(provided: E1) => <A>(env: Env<E1, A>): Env<unknown, A> => (e) =>
   env({ ...provided, ...((e as any) ?? {}) })
 
 export const UseSome: UseSome2<URI> = {
