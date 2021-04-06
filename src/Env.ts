@@ -7,7 +7,7 @@ import { Either } from 'fp-ts/Either'
 import { FromIO2 } from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
 import { FromTask2 } from 'fp-ts/FromTask'
-import { constant, Lazy } from 'fp-ts/function'
+import { constant, identity, Lazy, pipe } from 'fp-ts/function'
 import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
@@ -34,6 +34,18 @@ export const ap: <R, A>(fa: Env<R, A>) => <B>(fab: Env<R, Arity1<A, B>>) => Env<
 export const chain: <A, R, B>(f: (a: A) => Env<R, B>) => (ma: Env<R, A>) => Env<R, B> = RT.chain(
   R.Chain,
 )
+
+export const chainFirst = <A, R, B>(f: (a: A) => Env<R, B>) => (ma: Env<R, A>): Env<R, A> =>
+  pipe(
+    ma,
+    chain((a) =>
+      pipe(
+        a,
+        f,
+        chain(() => of(a)),
+      ),
+    ),
+  )
 
 export const fromReader: <R, A>(ma: Re.Reader<R, A>) => Env<R, A> = RT.fromReader(R.Pointed)
 
@@ -83,6 +95,8 @@ export const Chain: Chain2<URI> = {
   ...Functor,
   chain,
 }
+
+export const flatten = chain(identity) as <E1, E2, A>(env: Env<E1, Env<E2, A>>) => Env<E1 & E2, A>
 
 export const Monad: Monad2<URI> = {
   ...Chain,
