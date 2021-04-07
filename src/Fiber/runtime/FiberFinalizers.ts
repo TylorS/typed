@@ -9,7 +9,8 @@ import { createRef, getRef, setRef } from '../../Ref'
 import { Resume } from '../../Resume'
 import { withFiberRefs } from '../Fiber'
 
-// A callback that accepts the return value of the fiber it is being run for
+// A callback that accepts the return value of the fiber it is being run for, none if it
+// is being aborted.
 export type Finalizer = (returnValue: Option<Either<Error, unknown>>) => Resume<unknown>
 
 export const FiberFinalizers = createRef(fromIO((): ReadonlyArray<Finalizer> => []))
