@@ -1,6 +1,14 @@
 import { Either } from 'fp-ts/Either'
 
-export type Status<A> = Queued | Running | Failed | Paused | Aborted | Finished<A> | Completed<A>
+export type Status<A> =
+  | Queued
+  | Running
+  | Failed
+  | Paused
+  | Aborting
+  | Aborted
+  | Finished<A>
+  | Completed<A>
 
 /**
  * The initial state a fiber starts before running
@@ -30,6 +38,13 @@ export type Failed = {
  */
 export type Paused = {
   readonly type: 'paused'
+}
+
+/**
+ * The state of a fiber when it has been aborted but has finalizers to run first.
+ */
+export type Aborting = {
+  readonly type: 'aborting'
 }
 
 /**
