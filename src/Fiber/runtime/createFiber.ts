@@ -31,18 +31,18 @@ export function createFiber<A>(
   refs: References = createReferences(),
 ): Fiber<A> {
   const id = FiberId(Symbol())
-  const [sendEvent, statusEvents] = create<Status<A>>()
+  const statusEvents = create<Status<A>>()
   const scheduledTask = asap(
     createCallbackTask(
       () =>
         pipe(
           {},
-          start(fiber, sendEvent),
+          start(fiber),
           R.chain(() => env({ currentFiber: fiber, scheduler })),
-          R.chain((a) => pipe({}, finish(fiber, a, sendEvent))),
+          R.chain((a) => pipe({}, finish(fiber, a))),
           R.exec,
         ),
-      (error) => pipe({}, fail(fiber, error, sendEvent), R.exec),
+      (error) => pipe({}, fail(fiber, error), R.exec),
     ),
     scheduler,
   )
@@ -55,17 +55,17 @@ export function createFiber<A>(
     },
     statusEvents,
     refs,
-    pause: (resume) => pipe(pause(fiber, sendEvent), R.run(resume)),
+    pause: (resume) => pipe(pause(fiber), R.run(resume)),
     get play() {
       return pipe(
-        play(fiber, sendEvent),
+        play(fiber),
         R.chain(() => pipe({ currentFiber: fiber }, getFiberStatus<A>())),
       )
     },
     get abort() {
       return pipe(
         {},
-        abort(fiber, scheduledTask, sendEvent),
+        abort(fiber, scheduledTask),
         R.chain(() => pipe({ currentFiber: fiber }, getFiberStatus<A>())),
       )
     },

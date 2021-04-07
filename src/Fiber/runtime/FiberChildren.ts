@@ -9,22 +9,22 @@ import { Fiber, withFiberRefs } from '../Fiber'
 import { FiberId } from '../FiberId'
 
 export const FiberChildren = createRef(
-  fromIO((): ReadonlyMap<FiberId, Fiber<unknown>> => new Map()),
+  fromIO((): ReadonlyMap<FiberId, Fiber<any>> => new Map()),
   undefined,
   getEq(EqStrict, EqStrict),
 )
 
 export const getFiberChildren = pipe(FiberChildren, getRef, withFiberRefs)
 
-export const setFiberChildren = (fibers: ReadonlyMap<FiberId, Fiber<unknown>>) =>
+export const setFiberChildren = (fibers: ReadonlyMap<FiberId, Fiber<any>>) =>
   pipe(FiberChildren, setRef(fibers), withFiberRefs)
 
 export const modifyFiberChildren = (
-  f: Arity1<ReadonlyMap<FiberId, Fiber<unknown>>, ReadonlyMap<FiberId, Fiber<unknown>>>,
+  f: Arity1<ReadonlyMap<FiberId, Fiber<any>>, ReadonlyMap<FiberId, Fiber<any>>>,
 ) => pipe(getFiberChildren, chain(flow(f, setFiberChildren)))
 
-export const addChild = (fiber: Fiber<unknown>) =>
+export const addChild = (fiber: Fiber<any>) =>
   modifyFiberChildren((map) => new Map([...map, [fiber.id, fiber]]))
 
-export const removeChild = (fiber: Fiber<unknown>) =>
+export const removeChild = (fiber: Fiber<any>) =>
   modifyFiberChildren((map) => new Map([...map].filter((x) => x[0] !== fiber.id)))

@@ -6,35 +6,32 @@ import { none } from 'fp-ts/Option'
 import { useSome } from '../../../Env'
 import { doEnv, toEnv } from '../../../Fx/Env'
 import { zip } from '../../../Resume'
-import { CurrentFiber, Fiber } from '../../Fiber'
+import { CurrentFiber, Fiber, sendStatus } from '../../Fiber'
 import { Status } from '../../Status'
 import { FiberDisposable } from '../FiberDisposable'
 import { FiberFinalizers } from '../FiberFinalizers'
 import { setFiberStatus } from '../FiberStatus'
 
-export function abort<A>(
-  fiber: Fiber<A>,
-  disposable: Disposable,
-  onEvent: (status: Status<A>) => void,
-) {
+export function abort<A>(fiber: Fiber<A>, disposable: Disposable) {
   const fx = doEnv(function* (_) {
+    // Cancel all the synchronously cancellable resources
+    disposeBoth(yield* _(fiber.refs.getRef(FiberDisposable)), disposable).dispose()
+
+    // Check for any registered finalizers which should run before changing status to aborted
     const finalizers = yield* _(fiber.refs.getRef(FiberFinalizers))
 
     if (finalizers.length > 0) {
       const status: Status<A> = { type: 'aborting' }
 
       yield* _(setFiberStatus(status))
-      onEvent(status)
-
+      yield* _(sendStatus(status))
       yield* _(() => zip(finalizers.map((f) => f(none))))
     }
-
-    disposeBoth(yield* _(fiber.refs.getRef(FiberDisposable)), disposable).dispose()
 
     const status: Status<A> = { type: 'aborted' }
 
     yield* _(setFiberStatus(status))
-    onEvent(status)
+    yield* _(sendStatus(status))
   })
 
   return pipe(

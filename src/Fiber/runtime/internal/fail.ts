@@ -3,21 +3,20 @@ import { pipe } from 'fp-ts/function'
 
 import { useSome } from '../../../Env'
 import { doEnv, toEnv } from '../../../Fx/Env'
-import { CurrentFiber, Fiber } from '../../Fiber'
+import { CurrentFiber, Fiber, sendStatus } from '../../Fiber'
 import { Status } from '../../Status'
 import { setFiberReturnValue } from '../FiberReturnValue'
 import { setFiberStatus } from '../FiberStatus'
 import { complete } from './complete'
 
-export function fail<A>(fiber: Fiber<A>, error: Error, onEvent: (status: Status<A>) => void) {
+export function fail<A>(fiber: Fiber<A>, error: Error) {
   const fx = doEnv(function* (_) {
     const status: Status<A> = { type: 'failed', error }
 
     yield* _(setFiberStatus(status))
     yield* _(setFiberReturnValue(left(error)))
-    yield* _(complete(fiber, onEvent as (status: Status<unknown>) => void))
-
-    onEvent(status)
+    yield* _(sendStatus(status))
+    yield* _(complete(fiber))
   })
 
   return pipe(

@@ -67,7 +67,7 @@ function joinFiber<A>(fiber: Fiber<A>, scheduler: Scheduler): R.Resume<Either<Er
 
       return R.async((resume) => {
         const disposable = settable()
-        const streamDisposable = fiber.statusEvents.run(
+        const streamDisposable = fiber.statusEvents[1].run(
           {
             event: (_, status) =>
               pipe(

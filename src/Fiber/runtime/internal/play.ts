@@ -2,15 +2,14 @@ import { disposeBoth } from '@most/disposable'
 import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 
-import { useSome } from '../../../Env'
 import { doEnv, toEnv } from '../../../Fx/Env'
 import { async } from '../../../Resume'
-import { CurrentFiber, Fiber } from '../../Fiber'
+import { Fiber, sendStatus } from '../../Fiber'
 import { Status } from '../../Status'
 import { getFiberStatus, setFiberStatus } from '../FiberStatus'
 import { getFiberPause } from './FiberPause'
 
-export function play<A>(fiber: Fiber<A>, onEvent: (status: Status<A>) => void) {
+export function play<A>(fiber: Fiber<A>) {
   const fx = doEnv(function* (_) {
     const s = yield* _(getFiberStatus<A>())
     const option = yield* _(getFiberPause)
@@ -21,11 +20,10 @@ export function play<A>(fiber: Fiber<A>, onEvent: (status: Status<A>) => void) {
 
     const status: Status<A> = { type: 'running' }
     yield* _(setFiberStatus(status))
-
-    onEvent(status)
+    yield* _(sendStatus(status))
 
     yield* _(() => async<void>((r) => disposeBoth(option.value(), r())))
   })
 
-  return pipe(fx, toEnv, useSome<CurrentFiber>({ currentFiber: fiber }))({})
+  return pipe({ currentFiber: fiber }, toEnv(fx))
 }

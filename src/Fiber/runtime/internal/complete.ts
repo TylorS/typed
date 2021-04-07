@@ -4,7 +4,7 @@ import { isNone } from 'fp-ts/Option'
 import { Env, useSome } from '../../../Env'
 import { doEnv, toEnv } from '../../../Fx/Env'
 import { zip } from '../../../Resume'
-import { CurrentFiber, Fiber } from '../../Fiber'
+import { CurrentFiber, Fiber, sendStatus } from '../../Fiber'
 import { Status } from '../../Status'
 import { getFiberChildren } from '../FiberChildren'
 import { FiberFinalizers } from '../FiberFinalizers'
@@ -14,13 +14,10 @@ import { setFiberStatus } from '../FiberStatus'
 const isTerminal = (status: Status<any>): boolean =>
   status.type === 'aborted' || status.type === 'completed'
 
-export function complete(
-  fiber: Fiber<unknown>,
-  onEvent: (status: Status<unknown>) => void,
-): Env<unknown, void> {
+export function complete<A>(fiber: Fiber<A>): Env<unknown, void> {
   const fx = doEnv(function* (_) {
     const children = yield* _(getFiberChildren)
-    const returnValue = yield* _(getFiberReturnValue())
+    const returnValue = yield* _(getFiberReturnValue<A>())
     const childStatuses = yield* _(() => zip(Array.from(children.values()).map((c) => c.status)))
 
     // Not ready to be completed
@@ -36,11 +33,10 @@ export function complete(
       yield* _(pipe(FiberFinalizers, fiber.refs.setRef(unsafeCoerce([]))))
     }
 
-    const status: Status<unknown> = { type: 'completed', value: returnValue.value }
+    const status: Status<A> = { type: 'completed', value: returnValue.value }
 
     yield* _(setFiberStatus(status))
-
-    onEvent(status)
+    yield* _(sendStatus(status))
 
     if (isNone(fiber.parent)) {
       return
@@ -53,7 +49,7 @@ export function complete(
       return
     }
 
-    yield* _(complete(parent, onEvent))
+    yield* _(complete(parent))
   })
 
   return pipe(

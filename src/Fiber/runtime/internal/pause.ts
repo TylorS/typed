@@ -1,18 +1,14 @@
 import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 
-import { undisposable } from '../../../Disposable'
 import { doResume, toResume } from '../../../Fx/Resume'
 import * as R from '../../../Resume'
-import { Fiber } from '../../Fiber'
+import { Fiber, sendStatus } from '../../Fiber'
 import { Status } from '../../Status'
 import { setFiberStatus } from '../FiberStatus'
 import { setFiberPause } from './FiberPause'
 
-export const pause = <A>(
-  fiber: Fiber<A>,
-  onEvent: (event: Status<A>) => void,
-): R.Resume<Status<unknown>> => {
+export const pause = <A>(fiber: Fiber<A>): R.Resume<Status<unknown>> => {
   const fx = doResume(function* (_) {
     // Can not pause a fiber with no parent
     if (isNone(fiber.parent)) {
@@ -34,7 +30,8 @@ export const pause = <A>(
           { currentFiber: fiber },
           setFiberPause(r),
           R.chain(() => pipe({ currentFiber: fiber }, setFiberStatus(status))),
-          R.run(undisposable(() => onEvent(status))),
+          R.chain(() => pipe({ currentFiber: fiber }, sendStatus(status))),
+          R.exec,
         ),
       ),
     )
