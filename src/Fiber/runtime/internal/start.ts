@@ -1,7 +1,7 @@
-import { Fiber, sendStatus } from '@fp/Fiber'
 import { doEnv, toEnv } from '@fp/Fx/Env'
 import { pipe } from 'fp-ts/function'
 
+import { Fiber, sendStatus } from '../../Fiber'
 import { Status } from '../../Status'
 import { setFiberStatus } from '../FiberStatus'
 

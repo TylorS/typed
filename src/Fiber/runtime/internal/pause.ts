@@ -1,9 +1,9 @@
-import { Fiber, sendStatus } from '@fp/Fiber'
 import { doResume, toResume } from '@fp/Fx/Resume'
 import * as R from '@fp/Resume'
 import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 
+import { Fiber, sendStatus } from '../../Fiber'
 import { Status } from '../../Status'
 import { setFiberStatus } from '../FiberStatus'
 import { setFiberPause } from './FiberPause'

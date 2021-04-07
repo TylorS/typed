@@ -1,4 +1,3 @@
-import { Fiber, sendStatus } from '@fp/Fiber'
 import { doEnv, toEnv } from '@fp/Fx/Env'
 import { zip } from '@fp/Resume'
 import { disposeBoth } from '@most/disposable'
@@ -6,6 +5,7 @@ import { Disposable } from '@most/types'
 import { pipe } from 'fp-ts/function'
 import { none } from 'fp-ts/Option'
 
+import { Fiber, sendStatus } from '../../Fiber'
 import { Status } from '../../Status'
 import { FiberDisposable } from '../FiberDisposable'
 import { FiberFinalizers } from '../FiberFinalizers'

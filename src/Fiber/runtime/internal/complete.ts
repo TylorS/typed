@@ -1,9 +1,9 @@
-import { Fiber, sendStatus } from '@fp/Fiber'
 import { doEnv, toEnv } from '@fp/Fx/Env'
 import { Resume, zip } from '@fp/Resume'
 import { pipe, unsafeCoerce } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 
+import { Fiber, sendStatus } from '../../Fiber'
 import { Status } from '../../Status'
 import { getFiberChildren } from '../FiberChildren'
 import { FiberFinalizers } from '../FiberFinalizers'
