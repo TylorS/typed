@@ -1,6 +1,7 @@
 import { disposeBoth } from '@most/disposable'
 import { Disposable } from '@most/types'
 import { pipe } from 'fp-ts/function'
+import { none } from 'fp-ts/Option'
 
 import { useSome } from '../../../Env'
 import { doEnv, toEnv } from '../../../Fx/Env'
@@ -25,7 +26,7 @@ export function abort<A>(
       yield* _(setFiberStatus(status))
       onEvent(status)
 
-      yield* _(() => zip(finalizers))
+      yield* _(() => zip(finalizers.map((f) => f(none))))
     }
 
     disposeBoth(yield* _(fiber.refs.getRef(FiberDisposable)), disposable).dispose()

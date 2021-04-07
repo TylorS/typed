@@ -3,7 +3,7 @@ import { EqStrict } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
 
 import { settable } from '../../Disposable'
-import { chainFirst, fromIO, of } from '../../Env'
+import { fromIO, map } from '../../Env'
 import { createRef, getRef } from '../../Ref'
 import { withFiberRefs } from '../Fiber'
 
@@ -14,5 +14,5 @@ export const getFiberDisposable = pipe(FiberDisposable, getRef, withFiberRefs)
 export const addDisposable = (disposable: Disposable) =>
   pipe(
     getFiberDisposable,
-    chainFirst((d) => of(d.addDisposable(disposable))),
+    map((d) => d.addDisposable(disposable)),
   )

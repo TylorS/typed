@@ -6,8 +6,8 @@ import { doResume, toResume } from '../../../Fx/Resume'
 import * as R from '../../../Resume'
 import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
-import { setFiberPause } from '../FiberPause'
 import { setFiberStatus } from '../FiberStatus'
+import { setFiberPause } from './FiberPause'
 
 export const pause = <A>(
   fiber: Fiber<A>,

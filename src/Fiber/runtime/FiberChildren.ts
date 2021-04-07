@@ -22,3 +22,9 @@ export const setFiberChildren = (fibers: ReadonlyMap<FiberId, Fiber<unknown>>) =
 export const modifyFiberChildren = (
   f: Arity1<ReadonlyMap<FiberId, Fiber<unknown>>, ReadonlyMap<FiberId, Fiber<unknown>>>,
 ) => pipe(getFiberChildren, chain(flow(f, setFiberChildren)))
+
+export const addChild = (fiber: Fiber<unknown>) =>
+  modifyFiberChildren((map) => new Map([...map, [fiber.id, fiber]]))
+
+export const removeChild = (fiber: Fiber<unknown>) =>
+  modifyFiberChildren((map) => new Map([...map].filter((x) => x[0] !== fiber.id)))

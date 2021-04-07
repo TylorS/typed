@@ -10,16 +10,33 @@ import * as R from '../../Resume'
 import { CurrentFiber, Fiber, Fork, Join, Kill } from '../Fiber'
 import { Status } from '../Status'
 import { createFiber } from './createFiber'
+import { addChild } from './FiberChildren'
 
 export function createRuntime(scheduler: Scheduler): Fork & Join & Kill {
   const Fork: Fork = {
     forkFiber: <R, A>(env: Env<R, A>, r: R, refs?: References) =>
-      R.sync(() =>
-        createFiber(
-          pipe(env, provideSome(r)),
-          fromNullable((r as Partial<CurrentFiber>).currentFiber),
-          scheduler,
-          refs,
+      pipe(
+        R.sync(() =>
+          createFiber(
+            pipe(env, provideSome(r)),
+            fromNullable((r as Partial<CurrentFiber>).currentFiber),
+            scheduler,
+            refs,
+          ),
+        ),
+        R.chain((fiber) =>
+          pipe(
+            fiber.parent,
+            match(
+              () => R.of(fiber),
+              (parent) =>
+                pipe(
+                  { currentFiber: parent },
+                  addChild(fiber),
+                  R.map(() => fiber),
+                ),
+            ),
+          ),
         ),
       ),
   }

@@ -4,9 +4,9 @@ import { pipe } from 'fp-ts/function'
 import { IO } from 'fp-ts/IO'
 import { getEq, none, Option, some } from 'fp-ts/Option'
 
-import { fromIO } from '../../Env'
-import { createRef, getRef, setRef } from '../../Ref'
-import { withFiberRefs } from '../Fiber'
+import { fromIO } from '../../../Env'
+import { createRef, getRef, setRef } from '../../../Ref'
+import { withFiberRefs } from '../../Fiber'
 
 export const FiberPause = createRef(
   fromIO((): Option<IO<Disposable>> => none),

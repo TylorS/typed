@@ -7,8 +7,8 @@ import { doEnv, toEnv } from '../../../Fx/Env'
 import { async } from '../../../Resume'
 import { CurrentFiber, Fiber } from '../../Fiber'
 import { Status } from '../../Status'
-import { getFiberPause } from '../FiberPause'
 import { getFiberStatus, setFiberStatus } from '../FiberStatus'
+import { getFiberPause } from './FiberPause'
 
 export function play<A>(fiber: Fiber<A>, onEvent: (status: Status<A>) => void) {
   const fx = doEnv(function* (_) {
