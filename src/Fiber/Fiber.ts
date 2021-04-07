@@ -17,27 +17,44 @@ import { Status } from './Status'
  *
  */
 export interface Fiber<A> extends Refs {
-  // A unique ID for this specific fiber instance
+  /**
+   * A unique ID for this specific fiber instance
+   */
   readonly id: FiberId
-  // The Fiber's parent
+
+  /**
+   * The Fiber's parent, if any
+   */
   readonly parent: Option<Fiber<unknown>>
-  // Retrieve the current status of this Fiber
+
+  /**
+   * Retrieve the current status of this Fiber
+   */
   readonly status: Resume<Status<A>>
-  // Listen to status events as the occur
+
+  /**
+   * Listen to status events as the occur
+   */
   readonly statusEvents: Adapter<Status<A>>
 
   /**
-   *
+   * Asynchronously cancels the underlying resources and runs any Finalizers that have been previously
+   * added to this Fiber.
    */
   readonly abort: Resume<Status<A>>
 
   //--------------- Cooperative Scheduling ---------------//
-  // Given a callback to use when returning to this fiber (see: pause in Fiber.ts)
-  // Will throw if the attempting to pause in the root fiber, or a fiber with a parent of None.
-  // Will throw if the fiber is not currenting have a status of "running"
+
+  /**
+   * Given a callback to use when returning to this fiber (see: pause in Fiber.ts)
+   * Will throw if the attempting to pause in the root fiber, or a fiber with a parent of None.
+   * Will throw if the fiber is not currenting have a status of "running"
+   */
   readonly pause: (resume: Arity1<Status<unknown>, Disposable>) => Disposable
-  // Continue executing Fiber from the previously provided callback using "pause".
-  // Will throw if the Fiber is not currently paused.
+  /**
+   * Continue executing Fiber from the previously provided callback using "pause".
+   * Will throw if the Fiber is not currently paused.
+   */
   readonly play: Resume<Status<A>>
 }
 
@@ -86,8 +103,8 @@ export type Kill = {
 export const kill = <A>(fiber: Fiber<A>): Env<Kill, Status<A>> => ({ killFiber }: Kill) =>
   killFiber(fiber)
 
-export type CurrentFiber<A = any> = {
-  readonly currentFiber: Fiber<A>
+export type CurrentFiber = {
+  readonly currentFiber: Fiber<any>
 }
 
 export const getCurrentFiber: Env<CurrentFiber, Fiber<unknown>> = asks(

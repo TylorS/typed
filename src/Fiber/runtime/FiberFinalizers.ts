@@ -24,4 +24,4 @@ export const modifyFiberFinalizers = (
   f: Arity1<ReadonlyArray<Finalizer>, ReadonlyArray<Finalizer>>,
 ) => pipe(getFiberFinalizers, chain(flow(f, setFiberFinalizers)))
 
-export const addFinalizer = (finalizer: Finalizer) => pipe(modifyFiberFinalizers(append(finalizer)))
+export const addFinalizer = (finalizer: Finalizer) => modifyFiberFinalizers(append(finalizer))
