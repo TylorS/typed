@@ -3,12 +3,13 @@ import { pipe } from 'fp-ts/function'
 import { none } from 'fp-ts/Option'
 
 import { Env, provideSome } from '../../Env'
+import { References } from '../../Ref'
 import { SchedulerEnv } from '../../Scheduler'
 import { CurrentFiber } from '../Fiber'
 import { createFiber } from './createFiber'
 import { createRuntime } from './createRuntime'
 
-export function runAsFiber(scheduler: Scheduler) {
+export function runAsFiber(scheduler: Scheduler, refs?: References) {
   const runtime = createRuntime(scheduler)
 
   return <A>(
@@ -17,5 +18,5 @@ export function runAsFiber(scheduler: Scheduler) {
       | Env<typeof runtime & CurrentFiber, A>
       | Env<typeof runtime & SchedulerEnv, A>
       | Env<typeof runtime & CurrentFiber & SchedulerEnv, A>,
-  ) => createFiber(pipe(env, provideSome(runtime)), none, scheduler)
+  ) => createFiber(pipe(env, provideSome(runtime)), none, scheduler, refs)
 }
