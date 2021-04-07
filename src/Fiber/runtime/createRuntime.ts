@@ -24,20 +24,7 @@ export function createRuntime(scheduler: Scheduler): Fork & Join & Kill {
             refs,
           ),
         ),
-        R.chain((fiber) =>
-          pipe(
-            fiber.parent,
-            match(
-              () => R.of(fiber),
-              (parent) =>
-                pipe(
-                  { currentFiber: parent },
-                  addChild(fiber),
-                  R.map(() => fiber),
-                ),
-            ),
-          ),
-        ),
+        R.chain(addChildToParent),
       ),
   }
 
@@ -110,4 +97,19 @@ function handleStatus<A>(status: Status<A>): Option<Either<Error, A>> {
   }
 
   return none
+}
+
+function addChildToParent<A>(fiber: Fiber<A>) {
+  return pipe(
+    fiber.parent,
+    match(
+      () => R.of(fiber),
+      (parent) =>
+        pipe(
+          { currentFiber: parent },
+          addChild(fiber),
+          R.map(() => fiber),
+        ),
+    ),
+  )
 }
