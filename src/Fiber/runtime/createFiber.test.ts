@@ -135,7 +135,7 @@ export const test = describe(`createFiber`, [
         const [timer, scheduler] = createVirtualScheduler()
         const child = doEnv(function* (_) {
           // Returns the Parent fiber's status
-          equal({ type: 'running' }, yield* _(pause))
+          equal(O.some({ type: 'running' }), yield* _(pause))
 
           return value
         })

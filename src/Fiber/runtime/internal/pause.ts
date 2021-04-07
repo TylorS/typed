@@ -1,21 +1,15 @@
 import { doResume, toResume } from '@fp/Fx/Resume'
 import * as R from '@fp/Resume'
 import { pipe } from 'fp-ts/function'
-import { isNone } from 'fp-ts/Option'
+import { isNone, none, Option, some } from 'fp-ts/Option'
 
 import { Fiber, sendStatus } from '../../Fiber'
 import { Status } from '../../Status'
 import { setFiberStatus } from '../FiberStatus'
 import { setFiberPause } from './FiberPause'
 
-export const pause = <A>(fiber: Fiber<A>): R.Resume<Status<unknown>> => {
+export const pause = <A>(fiber: Fiber<A>): R.Resume<Option<Status<unknown>>> => {
   const fx = doResume(function* (_) {
-    // Can not pause a fiber with no parent
-    if (isNone(fiber.parent)) {
-      throw new Error(`Unable to pause a fiber without a parent`)
-    }
-
-    const parent = fiber.parent.value
     const currentStatus = yield* _(fiber.status)
 
     if (currentStatus.type !== 'running') {
@@ -36,7 +30,11 @@ export const pause = <A>(fiber: Fiber<A>): R.Resume<Status<unknown>> => {
       ),
     )
 
-    return yield* _(parent.status)
+    if (isNone(fiber.parent)) {
+      return none
+    }
+
+    return some(yield* _(fiber.parent.value.status))
   })
 
   return toResume(fx)

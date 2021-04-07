@@ -1,31 +1,45 @@
 # @typed/fp
 
-`@typed/fp` is composed of many à-la-carte modules, bringing together [fp-ts](https://gcanti.github.io/fp-ts/) and [@most/core](https://mostcore.readthedocs.io/en/latest/)
-with Algebraic Effects and other useful data structures and libraries to help build frontend-focused TypeScript applications.
+`@typed/fp` is conceptually an extension [fp-ts](https://gcanti.github.io/fp-ts/), with cancelable async effects, do-notation, fiber, hooks, and more through an integration with [@most/core](https://github.com/most.js/core).
 
-## Install
+This project is under very heavy development. It is my goal to align with `fp-ts` v3 which is currently also under heavy development and once both codebases are stable I intend to make the 1.0 release.
 
-### NPM
+## TODO
 
-```sh
-# NPM
-npm i --save @typed/fp
+All of the following modules will also need corresponding Fx implementations if not 
+currently implemented.
 
-# Yarn
-yarn add @typed/fp
-```
+### Modules
 
-### Import Statement 
+- [ ] Either
+- [ ] These
+- [ ] IO
+- [ ] Reader
+- [ ] ReaderEither
+- [ ] ReaderTask
+- [ ] ReaderTaskEither
+- [ ] State
+- [ ] StateReaderTaskEither
+- [ ] Task
+- [ ] TaskEither
+- [ ] TaskOption
+- [ ] TaskThese
+- [ ] Writer
+- [ ] ResumeThese
+- [ ] EnvThese
+- [ ] 
 
-```js
-import * as fp from 'https://cdn.skypack.dev/@typed/fp'
-```
+### Libraries
 
-## Support
+- [ ] Hooks
+- [ ] Rendering
+- [ ] 
 
-At present only modern environments that support ES2019 Syntax, including newer version of Node. Lets keep the web improving! 
+### Examples
 
-## Documentation
+I'd love suggestions as to what kinds of examples would be useful! Feel free to open an
+issue, I'd like to make this more accessible than just hard API documentation.
 
-Currently generated documentation is available [here](./docs)
-
+- [ ] fp-to-the-max
+- [ ] react
+- [ ] 
