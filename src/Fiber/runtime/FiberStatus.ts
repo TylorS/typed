@@ -1,8 +1,8 @@
+import { chain, fromIO } from '@fp/Env'
+import { createRef, getRef, setRef } from '@fp/Ref'
 import { Endomorphism } from 'fp-ts/Endomorphism'
 import { pipe } from 'fp-ts/function'
 
-import { chain, fromIO } from '../../Env'
-import { createRef, getRef, setRef } from '../../Ref'
 import { withFiberRefs } from '../Fiber'
 import { Status } from '../Status'
 

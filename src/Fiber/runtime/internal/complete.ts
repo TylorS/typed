@@ -1,10 +1,9 @@
+import { Fiber, sendStatus } from '@fp/Fiber'
+import { doEnv, toEnv } from '@fp/Fx/Env'
+import { Resume, zip } from '@fp/Resume'
 import { pipe, unsafeCoerce } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 
-import { Env, useSome } from '../../../Env'
-import { doEnv, toEnv } from '../../../Fx/Env'
-import { zip } from '../../../Resume'
-import { CurrentFiber, Fiber, sendStatus } from '../../Fiber'
 import { Status } from '../../Status'
 import { getFiberChildren } from '../FiberChildren'
 import { FiberFinalizers } from '../FiberFinalizers'
@@ -14,7 +13,7 @@ import { setFiberStatus } from '../FiberStatus'
 const isTerminal = (status: Status<any>): boolean =>
   status.type === 'aborted' || status.type === 'completed'
 
-export function complete<A>(fiber: Fiber<A>): Env<unknown, void> {
+export function complete<A>(fiber: Fiber<A>): Resume<void> {
   const fx = doEnv(function* (_) {
     const children = yield* _(getFiberChildren)
     const returnValue = yield* _(getFiberReturnValue<A>())
@@ -49,12 +48,8 @@ export function complete<A>(fiber: Fiber<A>): Env<unknown, void> {
       return
     }
 
-    yield* _(complete(parent))
+    yield* _(() => complete(parent))
   })
 
-  return pipe(
-    fx,
-    toEnv,
-    useSome<CurrentFiber>({ currentFiber: fiber }),
-  )
+  return pipe({ currentFiber: fiber }, toEnv(fx))
 }

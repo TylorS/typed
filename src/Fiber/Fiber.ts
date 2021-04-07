@@ -1,12 +1,11 @@
-import { Disposable } from '@most/types'
 import { Either } from 'fp-ts/Either'
-import { Option } from 'fp-ts/Option'
+import { pipe } from 'fp-ts/function'
+import { isNone, Option } from 'fp-ts/Option'
 
 import { Adapter } from '../Adapter'
 import { asks, Env } from '../Env'
-import { Arity1 } from '../function'
 import { References, Refs } from '../Ref'
-import { async, fromIO, Resume } from '../Resume'
+import { chain, fromIO, Resume, sync } from '../Resume'
 import { SchedulerEnv } from '../Scheduler'
 import { FiberId } from './FiberId'
 import { Status } from './Status'
@@ -43,13 +42,15 @@ export interface Fiber<A> extends Refs {
   readonly abort: Resume<Status<A>>
 
   //--------------- Cooperative Scheduling ---------------//
+  // In the current implementation it is no usually going to make sense to call these
+  // directly yourself, but to instead use the provided pause/play functions.
 
   /**
    * Given a callback to use when returning to this fiber (see: pause in Fiber.ts)
    * Will throw if the attempting to pause in the root fiber, or a fiber with a parent of None.
    * Will throw if the fiber is not currenting have a status of "running"
    */
-  readonly pause: (resume: Arity1<Status<unknown>, Disposable>) => Disposable
+  readonly pause: Resume<Status<unknown>>
   /**
    * Continue executing Fiber from the previously provided callback using "pause".
    * Will throw if the Fiber is not currently paused.
@@ -120,8 +121,19 @@ export const withFiberRefs = <E, A>(env: Env<E & Refs, A>): Env<E & CurrentFiber
     refs: e.currentFiber.refs,
   })
 
-export const pause: Env<CurrentFiber, Status<unknown>> = (e) =>
-  async((r) => e.currentFiber.pause(r))
+export const pause: Env<CurrentFiber, Status<unknown>> = (e) => e.currentFiber.pause
+
+export const play = <A>(fiber: Fiber<A>): Env<CurrentFiber, Status<A>> => (e) =>
+  pipe(
+    sync(() => {
+      if (isNone(fiber.parent) || fiber.parent.value.id !== e.currentFiber.id) {
+        throw new Error(
+          `Unable to play a non-child fiber ${fiber.id.toString()} from ${e.currentFiber.id.toString()}`,
+        )
+      }
+    }),
+    chain(() => fiber.play),
+  )
 
 export const sendStatus = <A>(status: Status<A>): Env<CurrentFiber, void> => (e) =>
   fromIO(() => e.currentFiber.statusEvents[0](status))

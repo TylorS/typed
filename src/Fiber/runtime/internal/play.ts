@@ -1,10 +1,10 @@
+import { Fiber, sendStatus } from '@fp/Fiber'
+import { doEnv, toEnv } from '@fp/Fx/Env'
+import { async } from '@fp/Resume'
 import { disposeBoth } from '@most/disposable'
 import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 
-import { doEnv, toEnv } from '../../../Fx/Env'
-import { async } from '../../../Resume'
-import { Fiber, sendStatus } from '../../Fiber'
 import { Status } from '../../Status'
 import { getFiberStatus, setFiberStatus } from '../FiberStatus'
 import { getFiberPause } from './FiberPause'

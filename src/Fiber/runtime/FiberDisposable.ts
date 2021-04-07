@@ -1,10 +1,10 @@
+import { settable } from '@fp/Disposable'
+import { fromIO, map } from '@fp/Env'
+import { createRef, getRef } from '@fp/Ref'
 import { Disposable } from '@most/types'
 import { EqStrict } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
 
-import { settable } from '../../Disposable'
-import { fromIO, map } from '../../Env'
-import { createRef, getRef } from '../../Ref'
 import { withFiberRefs } from '../Fiber'
 
 export const FiberDisposable = createRef(fromIO(settable), undefined, EqStrict)

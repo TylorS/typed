@@ -1,14 +1,14 @@
+import { create } from '@fp/Adapter'
+import { Env } from '@fp/Env'
+import { createReferences, References } from '@fp/Ref'
+import * as R from '@fp/Resume'
+import { SchedulerEnv } from '@fp/Scheduler'
+import { createCallbackTask } from '@fp/Stream'
 import { asap } from '@most/scheduler'
 import { Scheduler } from '@most/types'
 import { pipe } from 'fp-ts/function'
 import { Option } from 'fp-ts/Option'
 
-import { create } from '../../Adapter'
-import { Env } from '../../Env'
-import { createReferences, References } from '../../Ref'
-import * as R from '../../Resume'
-import { SchedulerEnv } from '../../Scheduler'
-import { createCallbackTask } from '../../Stream'
 import { CurrentFiber, Fiber } from '../Fiber'
 import { FiberId } from '../FiberId'
 import { Status } from '../Status'
@@ -20,6 +20,8 @@ import { pause } from './internal/pause'
 import { play } from './internal/play'
 import { start } from './internal/start'
 
+let fiberCount = 0
+
 export function createFiber<A>(
   env:
     | Env<unknown, A>
@@ -30,44 +32,39 @@ export function createFiber<A>(
   scheduler: Scheduler,
   refs: References = createReferences(),
 ): Fiber<A> {
-  const id = FiberId(Symbol())
+  const id = FiberId(Symbol(`Fiber${fiberCount++}`))
   const statusEvents = create<Status<A>>()
   const scheduledTask = asap(
     createCallbackTask(
       () =>
         pipe(
-          {},
-          start(fiber),
+          fiber,
+          start,
           R.chain(() => env({ currentFiber: fiber, scheduler })),
-          R.chain((a) => pipe({}, finish(fiber, a))),
+          R.chain((a) => finish(fiber, a)),
           R.exec,
         ),
-      (error) => pipe({}, fail(fiber, error), R.exec),
+      (error) => pipe(fail(fiber, error), R.exec),
     ),
     scheduler,
   )
+
+  const getStatus = () => pipe({ currentFiber: fiber }, getFiberStatus<A>())
 
   const fiber: Fiber<A> = {
     id,
     parent,
     get status() {
-      return pipe({ currentFiber: fiber }, getFiberStatus<A>())
+      return getStatus()
     },
     statusEvents,
     refs,
-    pause: (resume) => pipe(pause(fiber), R.run(resume)),
+    pause: R.async((resume) => pipe(fiber, pause, R.run(resume))),
     get play() {
-      return pipe(
-        play(fiber),
-        R.chain(() => pipe({ currentFiber: fiber }, getFiberStatus<A>())),
-      )
+      return pipe(fiber, play, R.chain(getStatus))
     },
     get abort() {
-      return pipe(
-        {},
-        abort(fiber, scheduledTask),
-        R.chain(() => pipe({ currentFiber: fiber }, getFiberStatus<A>())),
-      )
+      return pipe(abort(fiber, scheduledTask), R.chain(getStatus))
     },
   }
 

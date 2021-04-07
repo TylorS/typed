@@ -1,10 +1,10 @@
+import { chain, fromIO } from '@fp/Env'
+import { Arity1 } from '@fp/function'
+import { createRef, getRef, setRef } from '@fp/Ref'
 import { EqStrict } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
 import { getEq } from 'fp-ts/ReadonlyMap'
 
-import { chain, fromIO } from '../../Env'
-import { Arity1 } from '../../function'
-import { createRef, getRef, setRef } from '../../Ref'
 import { Fiber, withFiberRefs } from '../Fiber'
 import { FiberId } from '../FiberId'
 

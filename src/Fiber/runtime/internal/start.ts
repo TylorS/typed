@@ -1,8 +1,7 @@
+import { Fiber, sendStatus } from '@fp/Fiber'
+import { doEnv, toEnv } from '@fp/Fx/Env'
 import { pipe } from 'fp-ts/function'
 
-import { useSome } from '../../../Env'
-import { doEnv, toEnv } from '../../../Fx/Env'
-import { CurrentFiber, Fiber, sendStatus } from '../../Fiber'
 import { Status } from '../../Status'
 import { setFiberStatus } from '../FiberStatus'
 
@@ -14,9 +13,5 @@ export function start<A>(fiber: Fiber<A>) {
     yield* _(sendStatus(status))
   })
 
-  return pipe(
-    fx,
-    toEnv,
-    useSome<CurrentFiber>({ currentFiber: fiber }),
-  )
+  return pipe({ currentFiber: fiber }, toEnv(fx))
 }

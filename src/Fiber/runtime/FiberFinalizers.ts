@@ -1,12 +1,12 @@
+import { chain, fromIO } from '@fp/Env'
+import { Arity1 } from '@fp/function'
+import { createRef, getRef, setRef } from '@fp/Ref'
+import { Resume } from '@fp/Resume'
 import { Either } from 'fp-ts/Either'
 import { flow, pipe } from 'fp-ts/function'
 import { Option } from 'fp-ts/Option'
 import { append } from 'fp-ts/ReadonlyArray'
 
-import { chain, fromIO } from '../../Env'
-import { Arity1 } from '../../function'
-import { createRef, getRef, setRef } from '../../Ref'
-import { Resume } from '../../Resume'
 import { withFiberRefs } from '../Fiber'
 
 // A callback that accepts the return value of the fiber it is being run for, none if it

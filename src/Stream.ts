@@ -22,7 +22,7 @@ import { Apply1 } from 'fp-ts/Apply'
 import { bind as bind_ } from 'fp-ts/Chain'
 import { ChainRec1 } from 'fp-ts/ChainRec'
 import { Compactable1 } from 'fp-ts/Compactable'
-import { Either, isLeft, isRight, Left, left, match, Right, right } from 'fp-ts/Either'
+import { Either, isLeft, isRight, left, match, right } from 'fp-ts/Either'
 import { Filterable1 } from 'fp-ts/Filterable'
 import { FromIO1 } from 'fp-ts/FromIO'
 import { FromTask1 } from 'fp-ts/FromTask'
@@ -97,8 +97,16 @@ export const compact = <A>(stream: Stream<Option<A>>): Stream<A> =>
  */
 export const separate = <A, B>(stream: Stream<Either<A, B>>): Separated<Stream<A>, Stream<B>> => {
   const s = multicast(stream)
-  const left = map((l: Left<A>) => l.left, filter(isLeft, s))
-  const right = map((r: Right<B>) => r.right, filter(isRight, s))
+  const left = pipe(
+    s,
+    filter(isLeft),
+    map((l) => l.left),
+  )
+  const right = pipe(
+    s,
+    filter(isRight),
+    map((r) => r.right),
+  )
 
   return { left, right }
 }
@@ -182,8 +190,9 @@ export const FromResume: FromResume1<URI> = {
   fromResume: (resume) =>
     newStream((sink, scheduler) =>
       asap(
-        createCallbackTask(() =>
-          pipe(resume, run(undisposable((a) => sink.event(scheduler.currentTime(), a)))),
+        createCallbackTask(
+          () => pipe(resume, run(undisposable((a) => sink.event(scheduler.currentTime(), a)))),
+          (error) => sink.error(scheduler.currentTime(), error),
         ),
         scheduler,
       ),
