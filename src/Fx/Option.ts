@@ -1,48 +1,24 @@
+import { MonadRec } from '@fp/Option'
 import { Applicative1 } from 'fp-ts/Applicative'
 import { Apply1 } from 'fp-ts/Apply'
 import { Chain1 } from 'fp-ts/Chain'
 import { ChainRec1 } from 'fp-ts/ChainRec'
-import * as E from 'fp-ts/Either'
 import { Functor1 } from 'fp-ts/Functor'
 import { Monad1 } from 'fp-ts/Monad'
 import * as O from 'fp-ts/Option'
 import { Pointed1 } from 'fp-ts/Pointed'
 
 import * as FxT from '../FxT'
-import { MonadRec1 } from '../MonadRec'
 import { Fx } from './Fx'
 
-const chainRec_ = <A, B>(f: (value: A) => O.Option<E.Either<A, B>>) => (value: A): O.Option<B> => {
-  let option = f(value)
-
-  while (O.isSome(option)) {
-    if (E.isRight(option.value)) {
-      return O.some(option.value.right)
-    }
-
-    option = f(option.value.left)
-  }
-
-  return option
-}
-
-const ChainRec_: ChainRec1<O.URI> = {
-  chainRec: chainRec_,
-}
-
-const MonadRec_: MonadRec1<O.URI> = {
-  ...O.Monad,
-  ...ChainRec_,
-}
-
 export const of = FxT.of(O.Pointed)
-export const ap = FxT.ap({ ...MonadRec_, ...O.Apply })
+export const ap = FxT.ap({ ...MonadRec, ...O.Apply })
 export const chain = FxT.chain<O.URI>()
-export const chainRec = FxT.chainRec(MonadRec_)
+export const chainRec = FxT.chainRec(MonadRec)
 export const doOption = FxT.getDo<O.URI>()
 export const liftOption = FxT.liftFx<O.URI>()
 export const map = FxT.map<O.URI>()
-export const toOption = FxT.toMonad<O.URI>(MonadRec_)
+export const toOption = FxT.toMonad<O.URI>(MonadRec)
 
 export const URI = '@typed/fp/Fx/Option'
 export type URI = typeof URI
