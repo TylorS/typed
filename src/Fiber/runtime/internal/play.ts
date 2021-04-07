@@ -2,13 +2,13 @@ import { disposeBoth } from '@most/disposable'
 import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 
-import { useSome } from '../../Env'
-import { doEnv, toEnv } from '../../Fx/Env'
-import { async } from '../../Resume'
-import { CurrentFiber, Fiber } from '../Fiber'
-import { Status } from '../Status'
-import { getFiberPause } from './FiberPause'
-import { getFiberStatus, setFiberStatus } from './FiberStatus'
+import { useSome } from '../../../Env'
+import { doEnv, toEnv } from '../../../Fx/Env'
+import { async } from '../../../Resume'
+import { CurrentFiber, Fiber } from '../../Fiber'
+import { Status } from '../../Status'
+import { getFiberPause } from '../FiberPause'
+import { getFiberStatus, setFiberStatus } from '../FiberStatus'
 
 export function play<A>(fiber: Fiber<A>, onEvent: (status: Status<A>) => void) {
   const fx = doEnv(function* (_) {

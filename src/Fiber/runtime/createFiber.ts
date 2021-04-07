@@ -12,13 +12,13 @@ import { createCallbackTask } from '../../Stream'
 import { CurrentFiber, Fiber } from '../Fiber'
 import { FiberId } from '../FiberId'
 import { Status } from '../Status'
-import { abort } from './abort'
-import { fail } from './fail'
 import { getFiberStatus } from './FiberStatus'
-import { finish } from './finish'
-import { pause } from './pause'
-import { play } from './play'
-import { start } from './start'
+import { abort } from './internal/abort'
+import { fail } from './internal/fail'
+import { finish } from './internal/finish'
+import { pause } from './internal/pause'
+import { play } from './internal/play'
+import { start } from './internal/start'
 
 export function createFiber<A>(
   env:
@@ -46,7 +46,6 @@ export function createFiber<A>(
     ),
     scheduler,
   )
-  const dispose = () => pipe({}, abort(fiber, scheduledTask, sendEvent), R.exec)
 
   const fiber: Fiber<A> = {
     id,
@@ -56,15 +55,20 @@ export function createFiber<A>(
     },
     statusEvents,
     refs,
-    dispose,
     pause: (resume) => pipe(pause(fiber, sendEvent), R.run(resume)),
-    play: R.async((resume) =>
-      pipe(
+    get play() {
+      return pipe(
         play(fiber, sendEvent),
-        R.chain(() => getFiberStatus<A>()({ currentFiber: fiber })),
-        R.run(resume),
-      ),
-    ),
+        R.chain(() => pipe({ currentFiber: fiber }, getFiberStatus<A>())),
+      )
+    },
+    get abort() {
+      return pipe(
+        {},
+        abort(fiber, scheduledTask, sendEvent),
+        R.chain(() => pipe({ currentFiber: fiber }, getFiberStatus<A>())),
+      )
+    },
   }
 
   return fiber

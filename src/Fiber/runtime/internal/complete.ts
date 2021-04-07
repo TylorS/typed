@@ -1,14 +1,14 @@
 import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 
-import { Env, useSome } from '../../Env'
-import { doEnv, toEnv } from '../../Fx/Env'
-import { zip } from '../../Resume'
-import { CurrentFiber, Fiber } from '../Fiber'
-import { Status } from '../Status'
-import { getFiberChildren } from './FiberChildren'
-import { getFiberReturnValue } from './FiberReturnValue'
-import { setFiberStatus } from './FiberStatus'
+import { Env, useSome } from '../../../Env'
+import { doEnv, toEnv } from '../../../Fx/Env'
+import { zip } from '../../../Resume'
+import { CurrentFiber, Fiber } from '../../Fiber'
+import { Status } from '../../Status'
+import { getFiberChildren } from '../FiberChildren'
+import { getFiberReturnValue } from '../FiberReturnValue'
+import { setFiberStatus } from '../FiberStatus'
 
 const isTerminal = (status: Status<any>): boolean =>
   status.type === 'aborted' || status.type === 'completed'

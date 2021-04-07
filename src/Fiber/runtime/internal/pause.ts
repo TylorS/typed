@@ -1,13 +1,13 @@
 import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 
-import { undisposable } from '../../Disposable'
-import { doResume, toResume } from '../../Fx/Resume'
-import * as R from '../../Resume'
-import { Fiber } from '../Fiber'
-import { Status } from '../Status'
-import { setFiberPause } from './FiberPause'
-import { setFiberStatus } from './FiberStatus'
+import { undisposable } from '../../../Disposable'
+import { doResume, toResume } from '../../../Fx/Resume'
+import * as R from '../../../Resume'
+import { Fiber } from '../../Fiber'
+import { Status } from '../../Status'
+import { setFiberPause } from '../FiberPause'
+import { setFiberStatus } from '../FiberStatus'
 
 export const pause = <A>(
   fiber: Fiber<A>,

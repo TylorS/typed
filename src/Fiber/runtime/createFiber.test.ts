@@ -8,7 +8,7 @@ import { doEnv, toEnv } from '../../Fx/Env'
 import { createReferences, RefValue } from '../../Ref'
 import * as R from '../../Resume'
 import { delay } from '../../Scheduler'
-import { Fiber, fork, pause, play } from '../Fiber'
+import { Fiber, fork, pause } from '../Fiber'
 import { Status } from '../Status'
 import { createFiber } from './createFiber'
 import { FiberChildren } from './FiberChildren'
@@ -151,7 +151,7 @@ export const test = describe(`createFiber`, [
 
             equal({ type: 'paused' }, yield* _(() => fiber.status))
 
-            equal({ type: 'completed', value: right(value) }, yield* pipe(fiber, play, _))
+            equal({ type: 'completed', value: right(value) }, yield* _(() => fiber.play))
 
             done()
           } catch (error) {
