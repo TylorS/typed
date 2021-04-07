@@ -3,22 +3,29 @@ import { isNone } from 'fp-ts/Option'
 
 import { Env, useSome } from '../../Env'
 import { doEnv, toEnv } from '../../Fx/Env'
+import { zip } from '../../Resume'
 import { CurrentFiber, Fiber } from '../Fiber'
 import { Status } from '../Status'
 import { getFiberChildren } from './FiberChildren'
 import { getFiberReturnValue } from './FiberReturnValue'
 import { setFiberStatus } from './FiberStatus'
 
+const isTerminal = (status: Status<any>): boolean =>
+  status.type === 'aborted' || status.type === 'completed'
+
 export function complete(
   fiber: Fiber<unknown>,
   onEvent: (status: Status<unknown>) => void,
 ): Env<unknown, void> {
+  console.log(fiber)
+
   const fx = doEnv(function* (_) {
     const children = yield* _(getFiberChildren)
     const returnValue = yield* _(getFiberReturnValue())
+    const childStatuses = yield* _(() => zip(Array.from(children.values()).map((c) => c.status)))
 
     // Not ready to be completed
-    if (children.size > 0 || isNone(returnValue)) {
+    if (!childStatuses.every(isTerminal) || isNone(returnValue)) {
       return
     }
 
@@ -35,7 +42,7 @@ export function complete(
     const parent = fiber.parent.value
     const parentStatus = yield* _(() => parent.status)
 
-    if (parentStatus.type === 'aborted' || parentStatus.type === 'completed') {
+    if (isTerminal(parentStatus)) {
       return
     }
 

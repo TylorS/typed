@@ -1,15 +1,15 @@
 import { asap } from '@most/scheduler'
-import { constVoid, pipe } from 'fp-ts/function'
+import { Scheduler } from '@most/types'
+import { pipe } from 'fp-ts/function'
 import { Option } from 'fp-ts/Option'
 
 import { create } from '../../Adapter'
-import { undisposable } from '../../Disposable'
-import { asks, chain, Env } from '../../Env'
-import { doEnv, toEnv } from '../../Fx/Env'
-import { createReferences } from '../../Ref'
+import { Env } from '../../Env'
+import { createReferences, References } from '../../Ref'
 import * as R from '../../Resume'
-import { createCallbackTask, SchedulerEnv } from '../../Stream'
-import { Fiber } from '../Fiber'
+import { SchedulerEnv } from '../../Scheduler'
+import { createCallbackTask } from '../../Stream'
+import { CurrentFiber, Fiber } from '../Fiber'
 import { FiberId } from '../FiberId'
 import { Status } from '../Status'
 import { abort } from './abort'
@@ -20,61 +20,52 @@ import { pause } from './pause'
 import { play } from './play'
 import { start } from './start'
 
-const exec = R.run(undisposable(constVoid))
-
 export function createFiber<A>(
-  resume: R.Resume<A>,
+  env:
+    | Env<unknown, A>
+    | Env<CurrentFiber, A>
+    | Env<SchedulerEnv, A>
+    | Env<CurrentFiber & SchedulerEnv, A>,
   parent: Option<Fiber<unknown>>,
-): Env<SchedulerEnv, Fiber<A>> {
-  const fx = doEnv(function* (_) {
-    const id = FiberId(Symbol())
-    const [sendEvent, statusEvents] = create<Status<A>>()
-    const refs = createReferences()
-    const scheduler = yield* _(asks((e: SchedulerEnv) => e.scheduler))
-    const scheduledTask = asap(
-      createCallbackTask(
-        () =>
-          pipe(
-            {},
-            start(fiber, sendEvent),
-            R.chain(() => resume),
-            R.chain((a) => pipe({}, finish(fiber, a, sendEvent))),
-            exec,
-          ),
-        (error) => pipe({}, fail(fiber, error, sendEvent), exec),
-      ),
-      scheduler,
-    )
-    const dispose = () => pipe({}, abort(fiber, scheduledTask, sendEvent), exec)
-
-    const currentFiber = {
-      get currentFiber() {
-        return fiber
-      },
-    }
-
-    const status = getFiberStatus<A>()(currentFiber)
-
-    const fiber: Fiber<A> = {
-      id,
-      parent,
-      status,
-      statusEvents,
-      refs,
-      dispose,
-      pause: (resume) => pipe(pause(fiber, sendEvent), R.run(resume)),
-      play: pipe(
-        currentFiber,
+  scheduler: Scheduler,
+  refs: References = createReferences(),
+): Fiber<A> {
+  const id = FiberId(Symbol())
+  const [sendEvent, statusEvents] = create<Status<A>>()
+  const scheduledTask = asap(
+    createCallbackTask(
+      () =>
         pipe(
-          sendEvent,
-          play,
-          chain(() => () => fiber.status),
+          {},
+          start(fiber, sendEvent),
+          R.chain(() => env({ currentFiber: fiber, scheduler })),
+          R.chain((a) => pipe({}, finish(fiber, a, sendEvent))),
+          R.exec,
         ),
+      (error) => pipe({}, fail(fiber, error, sendEvent), R.exec),
+    ),
+    scheduler,
+  )
+  const dispose = () => pipe({}, abort(fiber, scheduledTask, sendEvent), R.exec)
+
+  const fiber: Fiber<A> = {
+    id,
+    parent,
+    get status() {
+      return pipe({ currentFiber: fiber }, getFiberStatus<A>())
+    },
+    statusEvents,
+    refs,
+    dispose,
+    pause: (resume) => pipe(pause(fiber, sendEvent), R.run(resume)),
+    play: R.async((resume) =>
+      pipe(
+        play(fiber, sendEvent),
+        R.chain(() => getFiberStatus<A>()({ currentFiber: fiber })),
+        R.run(resume),
       ),
-    }
+    ),
+  }
 
-    return fiber
-  })
-
-  return toEnv(fx)
+  return fiber
 }

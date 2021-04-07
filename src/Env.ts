@@ -13,11 +13,12 @@ import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
+import { traverse } from 'fp-ts/ReadonlyArray'
 
 import * as FRe from './FromResume'
 import { FromResume2 } from './FromResume'
 import { Arity1 } from './function'
-import { Kind } from './Hkt'
+import { Intersect, Kind } from './Hkt'
 import { MonadRec2 } from './MonadRec'
 import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from './Provide'
 import * as R from './Resume'
@@ -26,6 +27,9 @@ import * as R from './Resume'
  * Env is specialization of Reader<R, Resume<A>>
  */
 export interface Env<R, A> extends Kind<[Re.URI, R.URI], [R, A]> {}
+
+export type GetRequirements<A> = A extends Env<infer R, any> ? R : never
+export type GetValue<A> = A extends Env<any, infer R> ? R : never
 
 export const ap: <R, A>(fa: Env<R, A>) => <B>(fab: Env<R, Arity1<A, B>>) => Env<R, B> = RT.ap(
   R.Apply,
@@ -195,3 +199,9 @@ export const fromReaderK = FR.fromReaderK(FromReader)
 export const chainFirstResumeK = FRe.chainFirstResumeK(FromResume, Chain)
 export const chainResumeK = FRe.chainResumeK(FromResume, Chain)
 export const fromResumeK = FRe.fromResumeK(FromResume)
+
+export const zip = traverse(Applicative)(<E, A>(x: Env<E, A>) => x)
+
+export const zipW = (zip as unknown) as <A extends ReadonlyArray<Env<any, any>>>(
+  envs: A,
+) => Env<Intersect<{ [K in keyof A]: GetRequirements<A[K]> }>, { [K in keyof A]: GetValue<A[K]> }>

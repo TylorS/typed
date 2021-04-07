@@ -40,6 +40,7 @@
     "fast-glob": "^3.2.5",
     "husky": "^6.0.0",
     "lint-staged": "^10.5.4",
+    "most-virtual-scheduler": "^1.0.0",
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
     "ts-morph": "^10.0.2",

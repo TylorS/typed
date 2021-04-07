@@ -14,7 +14,7 @@ import {
   take,
 } from '@most/core'
 import { asap } from '@most/scheduler'
-import { Disposable, Scheduler, Stream, Task as MostTask } from '@most/types'
+import { Disposable, Stream, Task as MostTask } from '@most/types'
 import { Alt1 } from 'fp-ts/Alt'
 import { Alternative1 } from 'fp-ts/Alternative'
 import { Applicative1 } from 'fp-ts/Applicative'
@@ -222,7 +222,3 @@ export const Do: Stream<{}> = pipe(null, now, map(Object.create))
 export const bindTo = bindTo_(Functor)
 export const bind = bind_(Monad)
 export const tupled = tupled_(Functor)
-
-export interface SchedulerEnv {
-  readonly scheduler: Scheduler
-}

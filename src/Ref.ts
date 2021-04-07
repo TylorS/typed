@@ -14,6 +14,10 @@ export interface Ref<E, A> {
   readonly eq: Eq<A>
 }
 
+export type RefEnv<A> = A extends Ref<infer R, any> ? R : never
+
+export type RefValue<A> = A extends Ref<any, infer R> ? R : never
+
 export function createRef<E, A>(
   initial: E.Env<E, A>,
   id: PropertyKey = Symbol(),
@@ -30,10 +34,11 @@ export type RefId = Branded<{ readonly RefId: unique symbol }, PropertyKey>
 export const RefId = Branded<RefId>()
 
 export interface References {
+  readonly references: ReadonlyMap<RefId, unknown>
+  readonly events: Stream<RefEvent<unknown>>
   readonly getRef: <E, A>(ref: Ref<E, A>) => E.Env<E, A>
   readonly setRef: <A>(value: A) => <E>(ref: Ref<E, A>) => E.Env<E, A>
   readonly deleteRef: <E, A>(ref: Ref<E, A>) => E.Env<unknown, Option<A>>
-  readonly events: Stream<RefEvent<unknown>>
 }
 
 export type Refs = {
@@ -91,21 +96,9 @@ export type RefDeleted = {
   readonly id: RefId
 }
 
-export function createReferences(): References {
+export function createReferences(refs: Iterable<readonly [RefId, unknown]> = []): References {
+  const references = new Map(refs)
   const [sendEvent, events] = create<RefEvent<unknown>>()
-  const references = new Map<RefId, unknown>()
-
-  const createIfNotExists = (id: RefId) => <E, A>(env: E.Env<E, A>) => {
-    const hasRef = references.has(id)
-
-    return pipe(
-      env,
-      E.chainFirst((value) => E.fromIO(() => !hasRef && references.set(id, value))),
-      E.chainFirst((value) =>
-        E.fromIO<void, E>(() => !hasRef && sendEvent({ type: 'created', id, value })),
-      ),
-    )
-  }
 
   function getRef<E, A>(ref: Ref<E, A>): E.Env<E, A> {
     const { id } = ref
@@ -114,11 +107,15 @@ export function createReferences(): References {
       return E.of<A, E>(references.get(id)! as A)
     }
 
-    return pipe(ref.initial, createIfNotExists(id))
+    return pipe(
+      ref.initial,
+      E.chainFirst((value) => E.fromIO(() => references.set(id, value))),
+      E.chainFirst((value) => E.fromIO<void, E>(() => sendEvent({ type: 'created', id, value }))),
+    )
   }
 
   function setRef<A>(value: A) {
-    return <E>(ref: Ref<E, A>) =>
+    return <E>(ref: Ref<E, A>): E.Env<E, A> =>
       pipe(
         ref,
         getRef,
@@ -126,14 +123,14 @@ export function createReferences(): References {
         E.chainFirst((previousValue) =>
           E.fromIO<void, E>(
             () =>
-              !ref.eq.equals(previousValue)(value) &&
+              !pipe(value, ref.eq.equals(previousValue)) &&
               sendEvent({ type: 'updated', id: ref.id, previousValue, value }),
           ),
         ),
       )
   }
 
-  function deleteRef<E, A>(ref: Ref<E, A>) {
+  function deleteRef<E, A>(ref: Ref<E, A>): E.Env<unknown, Option<A>> {
     const { id } = ref
 
     if (!references.has(id)) {
@@ -150,9 +147,10 @@ export function createReferences(): References {
   }
 
   return {
+    references,
+    events,
     getRef,
     setRef,
     deleteRef,
-    events,
   }
 }

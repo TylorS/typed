@@ -4,7 +4,7 @@ import { constVoid, pipe } from 'fp-ts/function'
 import { fromNullable, isSome, match, none, Option, some } from 'fp-ts/Option'
 
 import { settable } from '../../Disposable'
-import { Env } from '../../Env'
+import { Env, provideSome } from '../../Env'
 import * as R from '../../Resume'
 import { CurrentFiber, Fiber, Fork, Join, Kill } from '../Fiber'
 import { Status } from '../Status'
@@ -13,7 +13,13 @@ import { createFiber } from './createFiber'
 export function createRuntime(scheduler: Scheduler): Fork & Join & Kill {
   const Fork: Fork = {
     forkFiber: <R, A>(env: Env<R, A>, r: R) =>
-      createFiber(env(r), fromNullable((r as Partial<CurrentFiber>).currentFiber))({ scheduler }),
+      R.sync(() =>
+        createFiber(
+          pipe(env, provideSome(r)),
+          fromNullable((r as Partial<CurrentFiber>).currentFiber),
+          scheduler,
+        ),
+      ),
   }
 
   const Join: Join = {

@@ -8,7 +8,11 @@ import { withFiberRefs } from '../Fiber'
 
 export const FIBER_RETURN_VALUE = Symbol('FiberReturnValue')
 
-export const FiberReturnValue = <A>() => createRef(fromIO((): Option<Either<Error, A>> => none))
+export const FiberReturnValue = <A>() =>
+  createRef(
+    fromIO((): Option<Either<Error, A>> => none),
+    FIBER_RETURN_VALUE,
+  )
 
 export const getFiberReturnValue = <A>() => pipe(FiberReturnValue<A>(), getRef, withFiberRefs)
 

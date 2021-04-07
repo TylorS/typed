@@ -14,9 +14,10 @@ export function fail<A>(fiber: Fiber<A>, error: Error, onEvent: (status: Status<
     const status: Status<A> = { type: 'failed', error }
 
     yield* _(setFiberStatus(status))
-    onEvent(status)
     yield* _(setFiberReturnValue(left(error)))
     yield* _(complete(fiber, onEvent as (status: Status<unknown>) => void))
+
+    onEvent(status)
   })
 
   return pipe(

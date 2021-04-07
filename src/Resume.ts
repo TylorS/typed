@@ -7,15 +7,16 @@ import { ChainRec1 } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
 import { FromIO1 } from 'fp-ts/FromIO'
 import { FromTask1 } from 'fp-ts/FromTask'
-import { constant, flow, pipe } from 'fp-ts/function'
+import { constant, constVoid, flow, pipe } from 'fp-ts/function'
 import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/Functor'
 import { IO } from 'fp-ts/IO'
 import { Monad1 } from 'fp-ts/Monad'
 import { isNone, none, Option, some } from 'fp-ts/Option'
 import { Pointed1 } from 'fp-ts/Pointed'
+import * as RA from 'fp-ts/ReadonlyArray'
 import { Task } from 'fp-ts/Task'
 
-import { disposeBoth, disposeNone, settable } from './Disposable'
+import { disposeBoth, disposeNone, settable, undisposable } from './Disposable'
 import { Arity1 } from './function'
 import { MonadRec1 } from './MonadRec'
 
@@ -104,6 +105,10 @@ export const ap = <A>(fa: Resume<A>) => <B>(fab: Resume<Arity1<A, B>>): Resume<B
 
 export const run = <A>(f: Arity1<A, Disposable>) => (resume: Resume<A>): Disposable =>
   isAsync(resume) ? resume.resume(f) : f(resume.resume())
+
+export const start = <A>(f: Arity1<A, any>) => run(undisposable(f))
+
+export const exec = start(constVoid)
 
 export const chain = <A, B>(f: Arity1<A, Resume<B>>) => (resume: Resume<A>): Resume<B> =>
   isSync(resume) ? f(resume.resume()) : async((r) => resume.resume(flow(f, run(r))))
@@ -231,3 +236,5 @@ export const Do: Resume<{}> = sync(() => Object.create(null))
 export const bindTo = bindTo_(Functor)
 export const bind = bind_(Monad)
 export const tupled = tupled_(Functor)
+
+export const zip = RA.traverse(Applicative)(<A>(x: Resume<A>) => x)

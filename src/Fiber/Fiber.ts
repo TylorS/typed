@@ -6,6 +6,7 @@ import { asks, Env } from '../Env'
 import { Arity1 } from '../function'
 import { Refs } from '../Ref'
 import { async, Resume } from '../Resume'
+import { SchedulerEnv } from '../Scheduler'
 import { FiberId } from './FiberId'
 import { Status } from './Status'
 
@@ -23,6 +24,8 @@ export type Fork = {
   readonly forkFiber: {
     <R, A>(env: Env<R, A>, requirements: R): Resume<Fiber<A>>
     <R, A>(env: Env<R & CurrentFiber, A>, requirements: R): Resume<Fiber<A>>
+    <R, A>(env: Env<R & SchedulerEnv, A>, requirements: R): Resume<Fiber<A>>
+    <R, A>(env: Env<R & CurrentFiber & SchedulerEnv, A>, requirements: R): Resume<Fiber<A>>
   }
 }
 
@@ -56,7 +59,10 @@ export const getParent: Env<CurrentFiber, Option<Fiber<unknown>>> = asks(
 )
 
 export const withFiberRefs = <E, A>(env: Env<E & Refs, A>): Env<E & CurrentFiber, A> => (e) =>
-  env({ ...e, refs: e.currentFiber.refs })
+  env({
+    ...e,
+    refs: e.currentFiber.refs,
+  })
 
 export const pause: Env<CurrentFiber, Status<unknown>> = (e) =>
   async((r) => e.currentFiber.pause(r))
