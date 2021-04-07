@@ -14,7 +14,6 @@ import { Status } from './Status'
 /**
  * A Fiber is a reference to a an asynchronous workflow which can be canceled.
  * Fiber has its own set of references for reading/writing data it needs.
- *
  */
 export interface Fiber<A> extends Refs {
   /**
@@ -33,7 +32,7 @@ export interface Fiber<A> extends Refs {
   readonly status: Resume<Status<A>>
 
   /**
-   * Listen to status events as the occur
+   * Send/Receive status events
    */
   readonly statusEvents: Adapter<Status<A>>
 
