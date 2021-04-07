@@ -9,6 +9,10 @@ import { CurrentFiber } from '../Fiber'
 import { createFiber } from './createFiber'
 import { createRuntime } from './createRuntime'
 
+/**
+ * Intended to be used to create the root of your application. If you are creating additional
+ * fibers and they should have an associated parent Fiber, please use fork() instead.
+ */
 export function runAsFiber(scheduler: Scheduler, refs?: References) {
   const runtime = createRuntime(scheduler)
 

@@ -1,5 +1,6 @@
+import { Disposable } from '@most/types'
 import { Either } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
+import { constVoid, pipe } from 'fp-ts/function'
 import { isSome, Option } from 'fp-ts/Option'
 
 import { Adapter } from '../Adapter'
@@ -58,19 +59,9 @@ export interface Fiber<A> extends Refs {
   readonly play: Resume<Status<A>>
 }
 
-export type Fork = {
-  readonly forkFiber: {
-    <R, A>(env: Env<R, A>, requirements: R, refs?: References): Resume<Fiber<A>>
-    <R, A>(env: Env<R & CurrentFiber, A>, requirements: R, refs?: References): Resume<Fiber<A>>
-    <R, A>(env: Env<R & SchedulerEnv, A>, requirements: R, refs?: References): Resume<Fiber<A>>
-    <R, A>(
-      env: Env<R & CurrentFiber & SchedulerEnv, A>,
-      requirements: R,
-      refs?: References,
-    ): Resume<Fiber<A>>
-  }
-}
-
+/**
+ * Creates a new Fiber invocation
+ */
 export function fork<R, A>(hkt: Env<R, A>, refs?: References): Env<Fork & R, Fiber<A>>
 export function fork<R, A>(
   hkt: Env<R & CurrentFiber, A>,
@@ -89,51 +80,103 @@ export function fork<R, A>(hkt: Env<R, A>, refs?: References): Env<Fork & R, Fib
   return (e: Fork & R) => e.forkFiber(hkt, e, refs)
 }
 
+export type Fork = {
+  readonly forkFiber: {
+    <R, A>(env: Env<R, A>, requirements: R, refs?: References): Resume<Fiber<A>>
+    <R, A>(env: Env<R & CurrentFiber, A>, requirements: R, refs?: References): Resume<Fiber<A>>
+    <R, A>(env: Env<R & SchedulerEnv, A>, requirements: R, refs?: References): Resume<Fiber<A>>
+    <R, A>(
+      env: Env<R & CurrentFiber & SchedulerEnv, A>,
+      requirements: R,
+      refs?: References,
+    ): Resume<Fiber<A>>
+  }
+}
+
+/**
+ * Wait for the completion of a Fiber
+ */
+export const join = <A>(fiber: Fiber<A>): Env<Join, Either<Error, A>> => ({ joinFiber }: Join) =>
+  joinFiber(fiber)
+
 export type Join = {
   readonly joinFiber: <A>(fiber: Fiber<A>) => Resume<Either<Error, A>>
 }
 
-export const join = <A>(fiber: Fiber<A>): Env<Join, Either<Error, A>> => ({ joinFiber }: Join) =>
-  joinFiber(fiber)
+/**
+ * Cancel the current fiber, running any finalizers required before returning the resulting status.
+ */
+export const kill = <A>(fiber: Fiber<A>): Env<Kill, Status<A>> => ({ killFiber }: Kill) =>
+  killFiber(fiber)
 
 export type Kill = {
   readonly killFiber: <A>(fiber: Fiber<A>) => Resume<Status<A>>
 }
 
-export const kill = <A>(fiber: Fiber<A>): Env<Kill, Status<A>> => ({ killFiber }: Kill) =>
-  killFiber(fiber)
-
-export type CurrentFiber = {
-  readonly currentFiber: Fiber<any>
-}
-
+/**
+ * Get access the the fiber context currently running within
+ */
 export const getCurrentFiber: Env<CurrentFiber, Fiber<unknown>> = asks(
   (e: CurrentFiber) => e.currentFiber,
 )
 
+/**
+ * Get access to the parent fiber context
+ */
 export const getParent: Env<CurrentFiber, Option<Fiber<unknown>>> = asks(
   (e: CurrentFiber) => e.currentFiber.parent,
 )
 
+/**
+ * Run a Refs requiring Env using the references from the current Fiber.
+ */
 export const withFiberRefs = <E, A>(env: Env<E & Refs, A>): Env<E & CurrentFiber, A> => (e) =>
   env({
     ...e,
     refs: e.currentFiber.refs,
   })
 
+/**
+ * Pauses the current fiber. If there is no parent fiber None will be returned. If there is a parent
+ * a Some of the parent's status will be returned upon playing the fiber again.
+ */
 export const pause: Env<CurrentFiber, Option<Status<unknown>>> = (e) => e.currentFiber.pause
 
+/**
+ * Restart a currently paused Fiber
+ */
 export const play = <A>(fiber: Fiber<A>): Env<CurrentFiber, Status<A>> => (e) =>
   pipe(
     sync(() => {
       if (isSome(fiber.parent) && fiber.parent.value.id !== e.currentFiber.id) {
         throw new Error(
-          `Unable to play a non-child fiber ${fiber.id.toString()} from ${e.currentFiber.id.toString()}`,
+          `Attempted to resume Fiber (${fiber.id.toString()}) from Fiber ${e.currentFiber.id.toString()} which is not the same as the parent Fiber ${fiber.parent.value.id.toString()}`,
         )
       }
     }),
     chain(() => fiber.play),
   )
 
+/**
+ * Send a status event for the current fiber. You really shouldn't need this unless your are
+ * implmenting your own runtime, so use wisely!
+ */
 export const sendStatus = <A>(status: Status<A>): Env<CurrentFiber, void> => (e) =>
   fromIO(() => e.currentFiber.statusEvents[0](status))
+
+/**
+ * Create a listener for status event changes.
+ */
+export const listenToStatusEvents = <A>(
+  f: (status: Status<A>) => void,
+): Env<CurrentFiber & SchedulerEnv, Disposable> => (e) =>
+  fromIO(() =>
+    e.currentFiber.statusEvents[1].run(
+      { event: (_, s) => f(s), error: constVoid, end: constVoid },
+      e.scheduler,
+    ),
+  )
+
+export type CurrentFiber = {
+  readonly currentFiber: Fiber<any>
+}

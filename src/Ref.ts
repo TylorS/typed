@@ -8,6 +8,12 @@ import { Branded } from './Branded'
 import * as E from './Env'
 import { deepEqualsEq } from './Eq'
 
+/**
+ * A reference to a value. When attempting to retrieve a Ref's value using
+ * `getRef`, and the value is not available, Ref.initial will be used to seed that value
+ * and be returned. A Ref is deliberately separate from the environment in which you retrieve the
+ * value so that Refs can be reused in various contexts without needing a new RefId.
+ */
 export interface Ref<E, A> {
   readonly id: RefId
   readonly initial: E.Env<E, A>
@@ -18,9 +24,10 @@ export type RefEnv<A> = A extends Ref<infer R, any> ? R : never
 
 export type RefValue<A> = A extends Ref<any, infer R> ? R : never
 
+let refId = 0
 export function createRef<E, A>(
   initial: E.Env<E, A>,
-  id: PropertyKey = Symbol(),
+  id: PropertyKey = Symbol(`Ref${refId++}`),
   eq: Eq<A> = deepEqualsEq,
 ): Ref<E, A> {
   return {
