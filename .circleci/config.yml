@@ -73,7 +73,7 @@ orbs:
         steps:
           - with-workspace:
               steps:
-                - run: npm run test:lint
+                - run: npm run lint
 
 
       test-workspace:
@@ -85,7 +85,7 @@ orbs:
         steps:
           - with-workspace:
               steps:
-                - run: npm run test:code
+                - run: npm run unit-test
 
       audit-workspace:
         parameters:
