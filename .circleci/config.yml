@@ -24,6 +24,7 @@ orbs:
               include-branch-in-cache-key: false
               cache-version: v2
               cache-key: package-lock.json
+          - run: npm run build
           - persist_to_workspace:
               root: ./
               paths:
