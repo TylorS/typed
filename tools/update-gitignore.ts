@@ -7,6 +7,7 @@ import { compiledFiles, MODULES, readRelativeFile, ROOT_DIR, ROOT_FILES } from '
 
 const GITIGNORE = join(ROOT_DIR, '.gitignore')
 const GITIGNORE_TEMPLATE = readRelativeFile(__dirname, '.gitignore-template')
+const TSX_REGEX = /.tsx?$/
 
 function updateGitIgnore(template: string, modules: ReadonlyArray<string>) {
   return (
@@ -16,7 +17,7 @@ function updateGitIgnore(template: string, modules: ReadonlyArray<string>) {
         (acc: ReadonlyArray<string>, file) => [...acc, ...compiledFiles(file)],
         [],
       ),
-      ...modules.map((m) => `/${m}/`),
+      ...modules.map((m) => `/${m.replace(TSX_REGEX, '')}/`),
     ].join(EOL) + EOL
   )
 }

@@ -1,5 +1,5 @@
 import * as fastGlob from 'fast-glob'
-import { readdirSync, readFileSync, statSync } from 'fs'
+import { readdirSync, readFileSync } from 'fs'
 import { dirname, isAbsolute, join } from 'path'
 
 export const ROOT_DIR = dirname(__dirname)
@@ -19,7 +19,7 @@ export function parseName(name: string): string {
 
 export const MODULES: ReadonlyArray<string> = readdirSync(SOURCE_DIR)
   .sort()
-  .filter((path) => statSync(join(SOURCE_DIR, path)).isDirectory())
+  .filter((x) => x !== 'internal.ts' && x !== 'index.ts')
 
 export function getRelativeFile(directory: string, fileName: string) {
   return join(directory, fileName)

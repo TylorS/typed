@@ -15,31 +15,33 @@ const BROWSER_TEST_REGEX = /.browser-test.tsx?$/g
 MODULES.forEach(createExportTemplate)
 
 MODULES.forEach((name) =>
-  readAllFiles(join(SOURCE_DIR, name))
-    .filter((file) => extname(file) === '.ts')
-    .forEach((file) => createPackageFor(name, file)),
+  readAllFiles(join(SOURCE_DIR, name)).forEach((file) =>
+    createPackageFor(name.replace(TS_REGEX, ''), file),
+  ),
 )
 
 function createExportTemplate(name: string) {
-  const directory = join(ROOT_DIR, name)
+  const directory = join(ROOT_DIR, name).replace(TS_REGEX, '')
 
   mkdir(directory)
 
   const packageJsonPath = join(directory, 'package.json')
-  const main = `../cjs/${name}/exports.js`
-  const types = `../cjs/${name}/exports.d.ts`
-  const module = `../esm/${name}/exports.d.ts`
+  const main = `../cjs/${name}/index.js`
+  const types = `../cjs/${name}/index.d.ts`
+  const module = `../esm/${name}/index.d.ts`
   const packageJsonContents = JSON.parse(createPkgJson(main, types, module))
-
-  if (name === 'node') {
-    delete packageJsonContents.browser
-  }
 
   writeFileSync(packageJsonPath, JSON.stringify(packageJsonContents, null, 2) + '\n')
 }
 
-function readAllFiles(directory: string): ReadonlyArray<string> {
-  const contents = readdirSync(directory).map((n) => join(directory, n))
+function readAllFiles(directoryOrFile: string): ReadonlyArray<string> {
+  const isFile = statSync(directoryOrFile).isFile()
+
+  if (isFile) {
+    return [directoryOrFile]
+  }
+
+  const contents = readdirSync(directoryOrFile).map((n) => join(directoryOrFile, n))
   const fileNames = contents
     .filter((p) => statSync(p).isFile())
     .filter((p) => shouldCreatePackageFor(basename(p)))
@@ -48,14 +50,15 @@ function readAllFiles(directory: string): ReadonlyArray<string> {
   return [...fileNames, ...directoryNames.flatMap(readAllFiles)]
 }
 
-function createPackageFor(name: string, filePath: string) {
+function createPackageFor(moduleName: string, filePath: string) {
+  const name = basename(moduleName, extname(moduleName))
   const moduleDir = join(ROOT_DIR, name)
   const srcDir = join(SOURCE_DIR, name)
   const cjsDir = join(ROOT_DIR, 'cjs', name)
   const esmDir = join(ROOT_DIR, 'esm', name)
   const relativeSrcPath = relative(srcDir, filePath)
   const relativePath = relativeSrcPath.replace(TS_REGEX, '')
-  const modulePath = join(moduleDir, relativePath)
+  const modulePath = join(moduleDir, relativePath).replace(TS_REGEX, '')
   const jsonPath = join(modulePath, 'package.json')
   const cjsPath = join(cjsDir, relativePath)
   const typesPath = join(cjsDir, relativePath)
@@ -66,10 +69,6 @@ function createPackageFor(name: string, filePath: string) {
   const module = relative(modulePath, esmPath) + '.js'
 
   const json = JSON.parse(createPkgJson(main, types, module))
-
-  if (name === 'node') {
-    delete json.browser
-  }
 
   mkdir(modulePath)
 

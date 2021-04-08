@@ -3,7 +3,9 @@ import rimraf from 'rimraf'
 
 import { compiledFiles, MODULES, ROOT_DIR, ROOT_FILES } from './common'
 
+const TSX_REGEX = /.tsx?$/
+
 ROOT_FILES.flatMap(compiledFiles).forEach((f) => rimraf.sync(f.replace('/', '')))
-MODULES.map((m) => join(ROOT_DIR, m)).forEach((d) => rimraf.sync(d))
+MODULES.map((m) => join(ROOT_DIR, m)).forEach((d) => rimraf.sync(d.replace(TSX_REGEX, '')))
 
 rimraf.sync(join(ROOT_DIR, 'build'))

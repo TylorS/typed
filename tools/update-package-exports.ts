@@ -8,28 +8,38 @@ import { findFilePaths, MODULES, ROOT_DIR, SOURCE_DIR } from './common'
 const packageJsonPath = path.join(ROOT_DIR, 'package.json')
 const packageJsonContents = fs.readFileSync(packageJsonPath).toString()
 const packageJson = JSON.parse(packageJsonContents)
+const TSX_REGEX = /.tsx?$/
 
 packageJson.exports = createExports()
 
-fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + `\n`)
+fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2).trim() + `\n`)
 
 type ExportMap = { require: string; import: string }
 
 export function createExports() {
   const exports: Record<string, ExportMap> = {
     '.': {
-      require: './cjs/exports.js',
-      import: './esm/exports.js',
+      require: './cjs/index.js',
+      import: './esm/index.js',
     },
   }
 
   for (const module of MODULES) {
+    const sourceDir = path.join(SOURCE_DIR, module)
+    const isDirectory = fs.statSync(sourceDir).isDirectory()
+    const name = module.replace(TSX_REGEX, '')
+
     exports[`./${module}`] = {
-      require: './' + path.join('cjs', module, 'exports.js'),
-      import: './' + path.join('esm', module, 'exports.js'),
+      require:
+        './' + (isDirectory ? path.join('cjs', name, 'index.js') : path.join('cjs', `${name}.js`)),
+      import:
+        './' + (isDirectory ? path.join('esm', name, 'index.js') : path.join('esm', `${name}.js`)),
     }
 
-    const sourceDir = path.join(SOURCE_DIR, module)
+    if (!isDirectory) {
+      continue
+    }
+
     const filePaths = findFilePaths(sourceDir, [
       '!**/*.browser-test.ts',
       '!**/*.test.ts',
@@ -45,11 +55,11 @@ export function createExports() {
 
       const jsPath = relativePath.replace('.ts', '.js')
       const map: ExportMap = {
-        require: './' + path.join('cjs', module, jsPath),
-        import: './' + path.join('esm', module, jsPath),
+        require: './' + path.join('cjs', name, jsPath),
+        import: './' + path.join('esm', name, jsPath),
       }
 
-      exports[`./${module}/${relativePath.replace('.ts', '')}`] = map
+      exports[`./${name}/${relativePath.replace(TSX_REGEX, '')}`] = map
     }
   }
 

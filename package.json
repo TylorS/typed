@@ -55,14 +55,10 @@
     "build": "npm run check:ts-patch && npm run build:typescript && concurrently 'npm:build:packages' 'npm:update:package-exports'",
     "build:packages": "ts-node ./tools/build-packages",
     "build:typescript": "concurrently 'npm:build:typescript:cjs' 'npm:build:typescript:esm'",
-    "build:typescript:cjs": "tsc -b ./src/tsconfig.cjs.json --incremental",
-    "build:typescript:esm": "tsc -b ./src/tsconfig.esm.json --incremental",
+    "build:typescript:cjs": "rimraf cjs && tsc -P ./tsconfig.cjs.json",
+    "build:typescript:esm": "rimraf esm && tsc -P ./tsconfig.esm.json",
     "check:ts-patch": "ts-node ./tools/checkTsPatchIsActive",
-    "clean": "concurrently 'npm:clean:build' 'npm:clean:typescript'",
-    "clean:build": "ts-node ./tools/cleanup",
-    "clean:typescript": "concurrently 'npm:clean:typescript:cjs' 'npm:clean:typescript:esm'",
-    "clean:typescript:cjs": "npm run build:typescript:cjs -- --clean",
-    "clean:typescript:esm": "npm run build:typescript:esm -- --clean",
+    "clean": "ts-node ./tools/cleanup",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
     "lint-staged": "lint-staged",
     "unit-test": "typed-test",
@@ -76,8 +72,8 @@
     "preversion": "npm test && npm run update && npm run build",
     "postversion": "npm publish --access=public",
     "watch": "npm run check:ts-patch && concurrently 'npm:watch:cjs' 'npm:watch:esm'",
-    "watch:cjs": "tsc-watch -b tsconfig.cjs.json --incremental --onSuccess 'npm run build:packages'",
-    "watch:esm": "tsc-watch -b tsconfig.esm.json --incremental --onSuccess 'npm run update:package-exports'"
+    "watch:cjs": "tsc-watch -P tsconfig.cjs.json --onSuccess 'npm run build:packages'",
+    "watch:esm": "tsc-watch -P tsconfig.esm.json --onSuccess 'npm run update:package-exports'"
   },
   "repository": {
     "type": "git",
@@ -98,1552 +94,236 @@
   "*---*---*GENERATED*---*---*": "",
   "exports": {
     ".": {
-      "require": "./cjs/exports.js",
-      "import": "./esm/exports.js"
+      "require": "./cjs/index.js",
+      "import": "./esm/index.js"
     },
-    "./Console": {
-      "require": "./cjs/Console/exports.js",
-      "import": "./esm/Console/exports.js"
+    "./Adapter.ts": {
+      "require": "./cjs/Adapter.js",
+      "import": "./esm/Adapter.js"
     },
-    "./Console/exports": {
-      "require": "./cjs/Console/exports.js",
-      "import": "./esm/Console/exports.js"
+    "./Branded.ts": {
+      "require": "./cjs/Branded.js",
+      "import": "./esm/Branded.js"
     },
-    "./DiGraph": {
-      "require": "./cjs/DiGraph/exports.js",
-      "import": "./esm/DiGraph/exports.js"
+    "./Disposable.ts": {
+      "require": "./cjs/Disposable.js",
+      "import": "./esm/Disposable.js"
     },
-    "./DiGraph/DiGraph": {
-      "require": "./cjs/DiGraph/DiGraph.js",
-      "import": "./esm/DiGraph/DiGraph.js"
+    "./Env.ts": {
+      "require": "./cjs/Env.js",
+      "import": "./esm/Env.js"
     },
-    "./DiGraph/addEdge": {
-      "require": "./cjs/DiGraph/addEdge.js",
-      "import": "./esm/DiGraph/addEdge.js"
+    "./EnvEither.ts": {
+      "require": "./cjs/EnvEither.js",
+      "import": "./esm/EnvEither.js"
     },
-    "./DiGraph/addVertice": {
-      "require": "./cjs/DiGraph/addVertice.js",
-      "import": "./esm/DiGraph/addVertice.js"
+    "./EnvOption.ts": {
+      "require": "./cjs/EnvOption.js",
+      "import": "./esm/EnvOption.js"
     },
-    "./DiGraph/exports": {
-      "require": "./cjs/DiGraph/exports.js",
-      "import": "./esm/DiGraph/exports.js"
-    },
-    "./DiGraph/fromDependencyMap": {
-      "require": "./cjs/DiGraph/fromDependencyMap.js",
-      "import": "./esm/DiGraph/fromDependencyMap.js"
-    },
-    "./DiGraph/getAncestors": {
-      "require": "./cjs/DiGraph/getAncestors.js",
-      "import": "./esm/DiGraph/getAncestors.js"
-    },
-    "./DiGraph/getCircularDependencies": {
-      "require": "./cjs/DiGraph/getCircularDependencies.js",
-      "import": "./esm/DiGraph/getCircularDependencies.js"
-    },
-    "./DiGraph/getDependencies": {
-      "require": "./cjs/DiGraph/getDependencies.js",
-      "import": "./esm/DiGraph/getDependencies.js"
-    },
-    "./DiGraph/getDependents": {
-      "require": "./cjs/DiGraph/getDependents.js",
-      "import": "./esm/DiGraph/getDependents.js"
-    },
-    "./DiGraph/getDescendants": {
-      "require": "./cjs/DiGraph/getDescendants.js",
-      "import": "./esm/DiGraph/getDescendants.js"
-    },
-    "./DiGraph/getEntrypoints": {
-      "require": "./cjs/DiGraph/getEntrypoints.js",
-      "import": "./esm/DiGraph/getEntrypoints.js"
-    },
-    "./DiGraph/getStronglyConnectedComponents": {
-      "require": "./cjs/DiGraph/getStronglyConnectedComponents.js",
-      "import": "./esm/DiGraph/getStronglyConnectedComponents.js"
-    },
-    "./DiGraph/removeEdge": {
-      "require": "./cjs/DiGraph/removeEdge.js",
-      "import": "./esm/DiGraph/removeEdge.js"
-    },
-    "./DiGraph/removeVertice": {
-      "require": "./cjs/DiGraph/removeVertice.js",
-      "import": "./esm/DiGraph/removeVertice.js"
-    },
-    "./DiGraph/toDependencyMap": {
-      "require": "./cjs/DiGraph/toDependencyMap.js",
-      "import": "./esm/DiGraph/toDependencyMap.js"
-    },
-    "./DiGraph/toDependentGraph": {
-      "require": "./cjs/DiGraph/toDependentGraph.js",
-      "import": "./esm/DiGraph/toDependentGraph.js"
-    },
-    "./Disposable": {
-      "require": "./cjs/Disposable/exports.js",
-      "import": "./esm/Disposable/exports.js"
-    },
-    "./Disposable/exports": {
-      "require": "./cjs/Disposable/exports.js",
-      "import": "./esm/Disposable/exports.js"
-    },
-    "./Effect": {
-      "require": "./cjs/Effect/exports.js",
-      "import": "./esm/Effect/exports.js"
-    },
-    "./Effect/Effect": {
-      "require": "./cjs/Effect/Effect.js",
-      "import": "./esm/Effect/Effect.js"
-    },
-    "./Effect/ap": {
-      "require": "./cjs/Effect/ap.js",
-      "import": "./esm/Effect/ap.js"
-    },
-    "./Effect/ask": {
-      "require": "./cjs/Effect/ask.js",
-      "import": "./esm/Effect/ask.js"
-    },
-    "./Effect/chain": {
-      "require": "./cjs/Effect/chain.js",
-      "import": "./esm/Effect/chain.js"
-    },
-    "./Effect/doEffect": {
-      "require": "./cjs/Effect/doEffect.js",
-      "import": "./esm/Effect/doEffect.js"
-    },
-    "./Effect/exports": {
-      "require": "./cjs/Effect/exports.js",
-      "import": "./esm/Effect/exports.js"
-    },
-    "./Effect/failures": {
-      "require": "./cjs/Effect/failures.js",
-      "import": "./esm/Effect/failures.js"
-    },
-    "./Effect/forever": {
-      "require": "./cjs/Effect/forever.js",
-      "import": "./esm/Effect/forever.js"
-    },
-    "./Effect/fp-ts": {
-      "require": "./cjs/Effect/fp-ts.js",
-      "import": "./esm/Effect/fp-ts.js"
-    },
-    "./Effect/fromReader": {
-      "require": "./cjs/Effect/fromReader.js",
-      "import": "./esm/Effect/fromReader.js"
-    },
-    "./Effect/fromReaderTask": {
-      "require": "./cjs/Effect/fromReaderTask.js",
-      "import": "./esm/Effect/fromReaderTask.js"
-    },
-    "./Effect/fromTask": {
-      "require": "./cjs/Effect/fromTask.js",
-      "import": "./esm/Effect/fromTask.js"
-    },
-    "./Effect/lazy": {
-      "require": "./cjs/Effect/lazy.js",
-      "import": "./esm/Effect/lazy.js"
-    },
-    "./Effect/map": {
-      "require": "./cjs/Effect/map.js",
-      "import": "./esm/Effect/map.js"
-    },
-    "./Effect/memo": {
-      "require": "./cjs/Effect/memo.js",
-      "import": "./esm/Effect/memo.js"
-    },
-    "./Effect/provide": {
-      "require": "./cjs/Effect/provide.js",
-      "import": "./esm/Effect/provide.js"
-    },
-    "./Effect/provideWith": {
-      "require": "./cjs/Effect/provideWith.js",
-      "import": "./esm/Effect/provideWith.js"
-    },
-    "./Effect/race": {
-      "require": "./cjs/Effect/race.js",
-      "import": "./esm/Effect/race.js"
-    },
-    "./Effect/runEffect": {
-      "require": "./cjs/Effect/runEffect.js",
-      "import": "./esm/Effect/runEffect.js"
-    },
-    "./Effect/toEnv": {
-      "require": "./cjs/Effect/toEnv.js",
-      "import": "./esm/Effect/toEnv.js"
-    },
-    "./Effect/toPromise": {
-      "require": "./cjs/Effect/toPromise.js",
-      "import": "./esm/Effect/toPromise.js"
-    },
-    "./Effect/toReaderTask": {
-      "require": "./cjs/Effect/toReaderTask.js",
-      "import": "./esm/Effect/toReaderTask.js"
-    },
-    "./Effect/zip": {
-      "require": "./cjs/Effect/zip.js",
-      "import": "./esm/Effect/zip.js"
-    },
-    "./Effect/zipObj": {
-      "require": "./cjs/Effect/zipObj.js",
-      "import": "./esm/Effect/zipObj.js"
+    "./Eq.ts": {
+      "require": "./cjs/Eq.js",
+      "import": "./esm/Eq.js"
     },
     "./Fiber": {
-      "require": "./cjs/Fiber/exports.js",
-      "import": "./esm/Fiber/exports.js"
+      "require": "./cjs/Fiber/index.js",
+      "import": "./esm/Fiber/index.js"
     },
     "./Fiber/Fiber": {
       "require": "./cjs/Fiber/Fiber.js",
       "import": "./esm/Fiber/Fiber.js"
     },
-    "./Fiber/FiberEnv": {
-      "require": "./cjs/Fiber/FiberEnv.js",
-      "import": "./esm/Fiber/FiberEnv.js"
+    "./Fiber/FiberId": {
+      "require": "./cjs/Fiber/FiberId.js",
+      "import": "./esm/Fiber/FiberId.js"
     },
-    "./Fiber/exports": {
-      "require": "./cjs/Fiber/exports.js",
-      "import": "./esm/Fiber/exports.js"
+    "./Fiber/Status": {
+      "require": "./cjs/Fiber/Status.js",
+      "import": "./esm/Fiber/Status.js"
     },
-    "./Fiber/runAsFiber": {
-      "require": "./cjs/Fiber/runAsFiber.js",
-      "import": "./esm/Fiber/runAsFiber.js"
+    "./Fiber/index": {
+      "require": "./cjs/Fiber/index.js",
+      "import": "./esm/Fiber/index.js"
     },
-    "./Fiber/createFiber/FiberManager": {
-      "require": "./cjs/Fiber/createFiber/FiberManager.js",
-      "import": "./esm/Fiber/createFiber/FiberManager.js"
+    "./Fiber/runtime/FiberChildren": {
+      "require": "./cjs/Fiber/runtime/FiberChildren.js",
+      "import": "./esm/Fiber/runtime/FiberChildren.js"
     },
-    "./Fiber/createFiber/InfoChangeManager": {
-      "require": "./cjs/Fiber/createFiber/InfoChangeManager.js",
-      "import": "./esm/Fiber/createFiber/InfoChangeManager.js"
+    "./Fiber/runtime/FiberDisposable": {
+      "require": "./cjs/Fiber/runtime/FiberDisposable.js",
+      "import": "./esm/Fiber/runtime/FiberDisposable.js"
     },
-    "./Fiber/createFiber/createFiber": {
-      "require": "./cjs/Fiber/createFiber/createFiber.js",
-      "import": "./esm/Fiber/createFiber/createFiber.js"
+    "./Fiber/runtime/FiberFinalizers": {
+      "require": "./cjs/Fiber/runtime/FiberFinalizers.js",
+      "import": "./esm/Fiber/runtime/FiberFinalizers.js"
     },
-    "./Fiber/createFiber/exports": {
-      "require": "./cjs/Fiber/createFiber/exports.js",
-      "import": "./esm/Fiber/createFiber/exports.js"
+    "./Fiber/runtime/FiberReturnValue": {
+      "require": "./cjs/Fiber/runtime/FiberReturnValue.js",
+      "import": "./esm/Fiber/runtime/FiberReturnValue.js"
     },
-    "./Future": {
-      "require": "./cjs/Future/exports.js",
-      "import": "./esm/Future/exports.js"
+    "./Fiber/runtime/FiberStatus": {
+      "require": "./cjs/Fiber/runtime/FiberStatus.js",
+      "import": "./esm/Fiber/runtime/FiberStatus.js"
     },
-    "./Future/exports": {
-      "require": "./cjs/Future/exports.js",
-      "import": "./esm/Future/exports.js"
+    "./Fiber/runtime/createFiber": {
+      "require": "./cjs/Fiber/runtime/createFiber.js",
+      "import": "./esm/Fiber/runtime/createFiber.js"
+    },
+    "./Fiber/runtime/createRuntime": {
+      "require": "./cjs/Fiber/runtime/createRuntime.js",
+      "import": "./esm/Fiber/runtime/createRuntime.js"
+    },
+    "./Fiber/runtime/index": {
+      "require": "./cjs/Fiber/runtime/index.js",
+      "import": "./esm/Fiber/runtime/index.js"
+    },
+    "./Fiber/runtime/runAsFiber": {
+      "require": "./cjs/Fiber/runtime/runAsFiber.js",
+      "import": "./esm/Fiber/runtime/runAsFiber.js"
+    },
+    "./Fiber/runtime/internal/FiberPause": {
+      "require": "./cjs/Fiber/runtime/internal/FiberPause.js",
+      "import": "./esm/Fiber/runtime/internal/FiberPause.js"
+    },
+    "./Fiber/runtime/internal/abort": {
+      "require": "./cjs/Fiber/runtime/internal/abort.js",
+      "import": "./esm/Fiber/runtime/internal/abort.js"
+    },
+    "./Fiber/runtime/internal/complete": {
+      "require": "./cjs/Fiber/runtime/internal/complete.js",
+      "import": "./esm/Fiber/runtime/internal/complete.js"
+    },
+    "./Fiber/runtime/internal/fail": {
+      "require": "./cjs/Fiber/runtime/internal/fail.js",
+      "import": "./esm/Fiber/runtime/internal/fail.js"
+    },
+    "./Fiber/runtime/internal/finish": {
+      "require": "./cjs/Fiber/runtime/internal/finish.js",
+      "import": "./esm/Fiber/runtime/internal/finish.js"
+    },
+    "./Fiber/runtime/internal/pause": {
+      "require": "./cjs/Fiber/runtime/internal/pause.js",
+      "import": "./esm/Fiber/runtime/internal/pause.js"
+    },
+    "./Fiber/runtime/internal/play": {
+      "require": "./cjs/Fiber/runtime/internal/play.js",
+      "import": "./esm/Fiber/runtime/internal/play.js"
+    },
+    "./Fiber/runtime/internal/start": {
+      "require": "./cjs/Fiber/runtime/internal/start.js",
+      "import": "./esm/Fiber/runtime/internal/start.js"
+    },
+    "./FromEnv.ts": {
+      "require": "./cjs/FromEnv.js",
+      "import": "./esm/FromEnv.js"
+    },
+    "./FromResume.ts": {
+      "require": "./cjs/FromResume.js",
+      "import": "./esm/FromResume.js"
     },
     "./Fx": {
-      "require": "./cjs/Fx/exports.js",
-      "import": "./esm/Fx/exports.js"
+      "require": "./cjs/Fx/index.js",
+      "import": "./esm/Fx/index.js"
+    },
+    "./Fx/Either": {
+      "require": "./cjs/Fx/Either.js",
+      "import": "./esm/Fx/Either.js"
+    },
+    "./Fx/Env": {
+      "require": "./cjs/Fx/Env.js",
+      "import": "./esm/Fx/Env.js"
+    },
+    "./Fx/EnvEither": {
+      "require": "./cjs/Fx/EnvEither.js",
+      "import": "./esm/Fx/EnvEither.js"
+    },
+    "./Fx/EnvOption": {
+      "require": "./cjs/Fx/EnvOption.js",
+      "import": "./esm/Fx/EnvOption.js"
     },
     "./Fx/Fx": {
       "require": "./cjs/Fx/Fx.js",
       "import": "./esm/Fx/Fx.js"
     },
-    "./Fx/FxT": {
-      "require": "./cjs/Fx/FxT.js",
-      "import": "./esm/Fx/FxT.js"
-    },
-    "./Fx/createFxToMonad": {
-      "require": "./cjs/Fx/createFxToMonad.js",
-      "import": "./esm/Fx/createFxToMonad.js"
-    },
-    "./Fx/createStackSafeFxToMonad": {
-      "require": "./cjs/Fx/createStackSafeFxToMonad.js",
-      "import": "./esm/Fx/createStackSafeFxToMonad.js"
-    },
-    "./Fx/doFx": {
-      "require": "./cjs/Fx/doFx.js",
-      "import": "./esm/Fx/doFx.js"
-    },
-    "./Fx/exports": {
-      "require": "./cjs/Fx/exports.js",
-      "import": "./esm/Fx/exports.js"
-    },
-    "./Fx/fromIO": {
-      "require": "./cjs/Fx/fromIO.js",
-      "import": "./esm/Fx/fromIO.js"
-    },
-    "./Fx/liftFx": {
-      "require": "./cjs/Fx/liftFx.js",
-      "import": "./esm/Fx/liftFx.js"
-    },
-    "./Fx/pure": {
-      "require": "./cjs/Fx/pure.js",
-      "import": "./esm/Fx/pure.js"
-    },
-    "./Key": {
-      "require": "./cjs/Key/exports.js",
-      "import": "./esm/Key/exports.js"
-    },
-    "./Key/exports": {
-      "require": "./cjs/Key/exports.js",
-      "import": "./esm/Key/exports.js"
-    },
-    "./Patch": {
-      "require": "./cjs/Patch/exports.js",
-      "import": "./esm/Patch/exports.js"
-    },
-    "./Patch/NamespaceRenderers": {
-      "require": "./cjs/Patch/NamespaceRenderers.js",
-      "import": "./esm/Patch/NamespaceRenderers.js"
-    },
-    "./Patch/Patch": {
-      "require": "./cjs/Patch/Patch.js",
-      "import": "./esm/Patch/Patch.js"
-    },
-    "./Patch/RenderRef": {
-      "require": "./cjs/Patch/RenderRef.js",
-      "import": "./esm/Patch/RenderRef.js"
-    },
-    "./Patch/Renderer": {
-      "require": "./cjs/Patch/Renderer.js",
-      "import": "./esm/Patch/Renderer.js"
-    },
-    "./Patch/createWhenIdleProvider": {
-      "require": "./cjs/Patch/createWhenIdleProvider.js",
-      "import": "./esm/Patch/createWhenIdleProvider.js"
-    },
-    "./Patch/exports": {
-      "require": "./cjs/Patch/exports.js",
-      "import": "./esm/Patch/exports.js"
-    },
-    "./Patch/patchOnRaf": {
-      "require": "./cjs/Patch/patchOnRaf.js",
-      "import": "./esm/Patch/patchOnRaf.js"
-    },
-    "./Patch/useLazyLoad": {
-      "require": "./cjs/Patch/useLazyLoad.js",
-      "import": "./esm/Patch/useLazyLoad.js"
-    },
-    "./Patch/handlers/IdleScheduler": {
-      "require": "./cjs/Patch/handlers/IdleScheduler.js",
-      "import": "./esm/Patch/handlers/IdleScheduler.js"
-    },
-    "./Patch/handlers/createPatchNamespace": {
-      "require": "./cjs/Patch/handlers/createPatchNamespace.js",
-      "import": "./esm/Patch/handlers/createPatchNamespace.js"
-    },
-    "./Patch/handlers/createRenderHandlers": {
-      "require": "./cjs/Patch/handlers/createRenderHandlers.js",
-      "import": "./esm/Patch/handlers/createRenderHandlers.js"
-    },
-    "./Patch/handlers/createWhenIdleHandlers": {
-      "require": "./cjs/Patch/handlers/createWhenIdleHandlers.js",
-      "import": "./esm/Patch/handlers/createWhenIdleHandlers.js"
-    },
-    "./Patch/handlers/exports": {
-      "require": "./cjs/Patch/handlers/exports.js",
-      "import": "./esm/Patch/handlers/exports.js"
-    },
-    "./Patch/handlers/namespaceCompleted": {
-      "require": "./cjs/Patch/handlers/namespaceCompleted.js",
-      "import": "./esm/Patch/handlers/namespaceCompleted.js"
-    },
-    "./Patch/handlers/namespaceDeleted": {
-      "require": "./cjs/Patch/handlers/namespaceDeleted.js",
-      "import": "./esm/Patch/handlers/namespaceDeleted.js"
-    },
-    "./Path": {
-      "require": "./cjs/Path/exports.js",
-      "import": "./esm/Path/exports.js"
-    },
-    "./Path/exports": {
-      "require": "./cjs/Path/exports.js",
-      "import": "./esm/Path/exports.js"
-    },
-    "./Queue": {
-      "require": "./cjs/Queue/exports.js",
-      "import": "./esm/Queue/exports.js"
-    },
-    "./Queue/FifoQueue": {
-      "require": "./cjs/Queue/FifoQueue.js",
-      "import": "./esm/Queue/FifoQueue.js"
-    },
-    "./Queue/LifoQueue": {
-      "require": "./cjs/Queue/LifoQueue.js",
-      "import": "./esm/Queue/LifoQueue.js"
-    },
-    "./Queue/Queue": {
-      "require": "./cjs/Queue/Queue.js",
-      "import": "./esm/Queue/Queue.js"
-    },
-    "./Queue/exports": {
-      "require": "./cjs/Queue/exports.js",
-      "import": "./esm/Queue/exports.js"
-    },
-    "./RemoteData": {
-      "require": "./cjs/RemoteData/exports.js",
-      "import": "./esm/RemoteData/exports.js"
-    },
-    "./RemoteData/Failure": {
-      "require": "./cjs/RemoteData/Failure.js",
-      "import": "./esm/RemoteData/Failure.js"
-    },
-    "./RemoteData/Progress": {
-      "require": "./cjs/RemoteData/Progress.js",
-      "import": "./esm/RemoteData/Progress.js"
-    },
-    "./RemoteData/RefreshingFailure": {
-      "require": "./cjs/RemoteData/RefreshingFailure.js",
-      "import": "./esm/RemoteData/RefreshingFailure.js"
-    },
-    "./RemoteData/RefreshingSuccess": {
-      "require": "./cjs/RemoteData/RefreshingSuccess.js",
-      "import": "./esm/RemoteData/RefreshingSuccess.js"
-    },
-    "./RemoteData/RemoteData": {
-      "require": "./cjs/RemoteData/RemoteData.js",
-      "import": "./esm/RemoteData/RemoteData.js"
-    },
-    "./RemoteData/Success": {
-      "require": "./cjs/RemoteData/Success.js",
-      "import": "./esm/RemoteData/Success.js"
-    },
-    "./RemoteData/ap": {
-      "require": "./cjs/RemoteData/ap.js",
-      "import": "./esm/RemoteData/ap.js"
-    },
-    "./RemoteData/chain": {
-      "require": "./cjs/RemoteData/chain.js",
-      "import": "./esm/RemoteData/chain.js"
-    },
-    "./RemoteData/enums": {
-      "require": "./cjs/RemoteData/enums.js",
-      "import": "./esm/RemoteData/enums.js"
-    },
-    "./RemoteData/exports": {
-      "require": "./cjs/RemoteData/exports.js",
-      "import": "./esm/RemoteData/exports.js"
-    },
-    "./RemoteData/fold": {
-      "require": "./cjs/RemoteData/fold.js",
-      "import": "./esm/RemoteData/fold.js"
-    },
-    "./RemoteData/getEq": {
-      "require": "./cjs/RemoteData/getEq.js",
-      "import": "./esm/RemoteData/getEq.js"
-    },
-    "./RemoteData/getOrElse": {
-      "require": "./cjs/RemoteData/getOrElse.js",
-      "import": "./esm/RemoteData/getOrElse.js"
-    },
-    "./RemoteData/hasFailed": {
-      "require": "./cjs/RemoteData/hasFailed.js",
-      "import": "./esm/RemoteData/hasFailed.js"
-    },
-    "./RemoteData/hasNoData": {
-      "require": "./cjs/RemoteData/hasNoData.js",
-      "import": "./esm/RemoteData/hasNoData.js"
-    },
-    "./RemoteData/instance": {
-      "require": "./cjs/RemoteData/instance.js",
-      "import": "./esm/RemoteData/instance.js"
-    },
-    "./RemoteData/isDoneLoading": {
-      "require": "./cjs/RemoteData/isDoneLoading.js",
-      "import": "./esm/RemoteData/isDoneLoading.js"
-    },
-    "./RemoteData/isFailure": {
-      "require": "./cjs/RemoteData/isFailure.js",
-      "import": "./esm/RemoteData/isFailure.js"
-    },
-    "./RemoteData/isLoading": {
-      "require": "./cjs/RemoteData/isLoading.js",
-      "import": "./esm/RemoteData/isLoading.js"
-    },
-    "./RemoteData/isRefreshing": {
-      "require": "./cjs/RemoteData/isRefreshing.js",
-      "import": "./esm/RemoteData/isRefreshing.js"
-    },
-    "./RemoteData/isRefreshingFailure": {
-      "require": "./cjs/RemoteData/isRefreshingFailure.js",
-      "import": "./esm/RemoteData/isRefreshingFailure.js"
-    },
-    "./RemoteData/isRefreshingSuccess": {
-      "require": "./cjs/RemoteData/isRefreshingSuccess.js",
-      "import": "./esm/RemoteData/isRefreshingSuccess.js"
-    },
-    "./RemoteData/isSuccess": {
-      "require": "./cjs/RemoteData/isSuccess.js",
-      "import": "./esm/RemoteData/isSuccess.js"
-    },
-    "./RemoteData/isSuccessful": {
-      "require": "./cjs/RemoteData/isSuccessful.js",
-      "import": "./esm/RemoteData/isSuccessful.js"
-    },
-    "./RemoteData/map": {
-      "require": "./cjs/RemoteData/map.js",
-      "import": "./esm/RemoteData/map.js"
-    },
-    "./RemoteData/mapLeft": {
-      "require": "./cjs/RemoteData/mapLeft.js",
-      "import": "./esm/RemoteData/mapLeft.js"
-    },
-    "./RemoteData/toLoading": {
-      "require": "./cjs/RemoteData/toLoading.js",
-      "import": "./esm/RemoteData/toLoading.js"
-    },
-    "./RemoteData/toOption": {
-      "require": "./cjs/RemoteData/toOption.js",
-      "import": "./esm/RemoteData/toOption.js"
-    },
-    "./Resume": {
-      "require": "./cjs/Resume/exports.js",
-      "import": "./esm/Resume/exports.js"
-    },
-    "./Resume/Async": {
-      "require": "./cjs/Resume/Async.js",
-      "import": "./esm/Resume/Async.js"
-    },
-    "./Resume/AsyncEither": {
-      "require": "./cjs/Resume/AsyncEither.js",
-      "import": "./esm/Resume/AsyncEither.js"
-    },
-    "./Resume/Resume": {
-      "require": "./cjs/Resume/Resume.js",
-      "import": "./esm/Resume/Resume.js"
-    },
-    "./Resume/Sync": {
-      "require": "./cjs/Resume/Sync.js",
-      "import": "./esm/Resume/Sync.js"
-    },
-    "./Resume/ap": {
-      "require": "./cjs/Resume/ap.js",
-      "import": "./esm/Resume/ap.js"
-    },
-    "./Resume/chain": {
-      "require": "./cjs/Resume/chain.js",
-      "import": "./esm/Resume/chain.js"
-    },
-    "./Resume/exports": {
-      "require": "./cjs/Resume/exports.js",
-      "import": "./esm/Resume/exports.js"
-    },
-    "./Resume/map": {
-      "require": "./cjs/Resume/map.js",
-      "import": "./esm/Resume/map.js"
-    },
-    "./Resume/run": {
-      "require": "./cjs/Resume/run.js",
-      "import": "./esm/Resume/run.js"
-    },
-    "./Scheduler": {
-      "require": "./cjs/Scheduler/exports.js",
-      "import": "./esm/Scheduler/exports.js"
-    },
-    "./Scheduler/SchedulerEnv": {
-      "require": "./cjs/Scheduler/SchedulerEnv.js",
-      "import": "./esm/Scheduler/SchedulerEnv.js"
-    },
-    "./Scheduler/createCallbackTask": {
-      "require": "./cjs/Scheduler/createCallbackTask.js",
-      "import": "./esm/Scheduler/createCallbackTask.js"
-    },
-    "./Scheduler/exports": {
-      "require": "./cjs/Scheduler/exports.js",
-      "import": "./esm/Scheduler/exports.js"
-    },
-    "./Scheduler/VirtualTimer/Timeline": {
-      "require": "./cjs/Scheduler/VirtualTimer/Timeline.js",
-      "import": "./esm/Scheduler/VirtualTimer/Timeline.js"
-    },
-    "./Scheduler/VirtualTimer/VirtualClock": {
-      "require": "./cjs/Scheduler/VirtualTimer/VirtualClock.js",
-      "import": "./esm/Scheduler/VirtualTimer/VirtualClock.js"
-    },
-    "./Scheduler/VirtualTimer/VirtualTimer": {
-      "require": "./cjs/Scheduler/VirtualTimer/VirtualTimer.js",
-      "import": "./esm/Scheduler/VirtualTimer/VirtualTimer.js"
-    },
-    "./Scheduler/VirtualTimer/createVirtualScheduler": {
-      "require": "./cjs/Scheduler/VirtualTimer/createVirtualScheduler.js",
-      "import": "./esm/Scheduler/VirtualTimer/createVirtualScheduler.js"
-    },
-    "./Scheduler/VirtualTimer/exports": {
-      "require": "./cjs/Scheduler/VirtualTimer/exports.js",
-      "import": "./esm/Scheduler/VirtualTimer/exports.js"
-    },
-    "./Shared": {
-      "require": "./cjs/Shared/exports.js",
-      "import": "./esm/Shared/exports.js"
-    },
-    "./Shared/exports": {
-      "require": "./cjs/Shared/exports.js",
-      "import": "./esm/Shared/exports.js"
-    },
-    "./Shared/Ref/NamespaceRefs": {
-      "require": "./cjs/Shared/Ref/NamespaceRefs.js",
-      "import": "./esm/Shared/Ref/NamespaceRefs.js"
-    },
-    "./Shared/Ref/Ref": {
-      "require": "./cjs/Shared/Ref/Ref.js",
-      "import": "./esm/Shared/Ref/Ref.js"
-    },
-    "./Shared/Ref/exports": {
-      "require": "./cjs/Shared/Ref/exports.js",
-      "import": "./esm/Shared/Ref/exports.js"
-    },
-    "./Shared/Ref/getSharedRef": {
-      "require": "./cjs/Shared/Ref/getSharedRef.js",
-      "import": "./esm/Shared/Ref/getSharedRef.js"
-    },
-    "./Shared/State/NamespaceStates": {
-      "require": "./cjs/Shared/State/NamespaceStates.js",
-      "import": "./esm/Shared/State/NamespaceStates.js"
-    },
-    "./Shared/State/State": {
-      "require": "./cjs/Shared/State/State.js",
-      "import": "./esm/Shared/State/State.js"
-    },
-    "./Shared/State/exports": {
-      "require": "./cjs/Shared/State/exports.js",
-      "import": "./esm/Shared/State/exports.js"
-    },
-    "./Shared/State/getSharedState": {
-      "require": "./cjs/Shared/State/getSharedState.js",
-      "import": "./esm/Shared/State/getSharedState.js"
-    },
-    "./Shared/common/EqsOf": {
-      "require": "./cjs/Shared/common/EqsOf.js",
-      "import": "./esm/Shared/common/EqsOf.js"
-    },
-    "./Shared/common/addToSet": {
-      "require": "./cjs/Shared/common/addToSet.js",
-      "import": "./esm/Shared/common/addToSet.js"
-    },
-    "./Shared/common/strictMap": {
-      "require": "./cjs/Shared/common/strictMap.js",
-      "import": "./esm/Shared/common/strictMap.js"
-    },
-    "./Shared/context/NamespaceChildren": {
-      "require": "./cjs/Shared/context/NamespaceChildren.js",
-      "import": "./esm/Shared/context/NamespaceChildren.js"
-    },
-    "./Shared/context/NamespaceConsumers": {
-      "require": "./cjs/Shared/context/NamespaceConsumers.js",
-      "import": "./esm/Shared/context/NamespaceConsumers.js"
-    },
-    "./Shared/context/NamespaceParent": {
-      "require": "./cjs/Shared/context/NamespaceParent.js",
-      "import": "./esm/Shared/context/NamespaceParent.js"
-    },
-    "./Shared/context/NamespaceProviders": {
-      "require": "./cjs/Shared/context/NamespaceProviders.js",
-      "import": "./esm/Shared/context/NamespaceProviders.js"
-    },
-    "./Shared/context/addToTree": {
-      "require": "./cjs/Shared/context/addToTree.js",
-      "import": "./esm/Shared/context/addToTree.js"
-    },
-    "./Shared/context/exports": {
-      "require": "./cjs/Shared/context/exports.js",
-      "import": "./esm/Shared/context/exports.js"
-    },
-    "./Shared/context/useContext": {
-      "require": "./cjs/Shared/context/useContext.js",
-      "import": "./esm/Shared/context/useContext.js"
-    },
-    "./Shared/context/useContextReducer": {
-      "require": "./cjs/Shared/context/useContextReducer.js",
-      "import": "./esm/Shared/context/useContextReducer.js"
-    },
-    "./Shared/context/useContextState": {
-      "require": "./cjs/Shared/context/useContextState.js",
-      "import": "./esm/Shared/context/useContextState.js"
-    },
-    "./Shared/context/withProvider": {
-      "require": "./cjs/Shared/context/withProvider.js",
-      "import": "./esm/Shared/context/withProvider.js"
-    },
-    "./Shared/core/exports": {
-      "require": "./cjs/Shared/core/exports.js",
-      "import": "./esm/Shared/core/exports.js"
-    },
-    "./Shared/createSharedEnvProvider/SharedEventHandler": {
-      "require": "./cjs/Shared/createSharedEnvProvider/SharedEventHandler.js",
-      "import": "./esm/Shared/createSharedEnvProvider/SharedEventHandler.js"
-    },
-    "./Shared/createSharedEnvProvider/createSharedEnv": {
-      "require": "./cjs/Shared/createSharedEnvProvider/createSharedEnv.js",
-      "import": "./esm/Shared/createSharedEnvProvider/createSharedEnv.js"
-    },
-    "./Shared/createSharedEnvProvider/createSharedEnvProvider": {
-      "require": "./cjs/Shared/createSharedEnvProvider/createSharedEnvProvider.js",
-      "import": "./esm/Shared/createSharedEnvProvider/createSharedEnvProvider.js"
-    },
-    "./Shared/createSharedEnvProvider/defaultHandlers": {
-      "require": "./cjs/Shared/createSharedEnvProvider/defaultHandlers.js",
-      "import": "./esm/Shared/createSharedEnvProvider/defaultHandlers.js"
-    },
-    "./Shared/createSharedEnvProvider/exports": {
-      "require": "./cjs/Shared/createSharedEnvProvider/exports.js",
-      "import": "./esm/Shared/createSharedEnvProvider/exports.js"
-    },
-    "./Shared/createSharedEnvProvider/provideSharedEnv": {
-      "require": "./cjs/Shared/createSharedEnvProvider/provideSharedEnv.js",
-      "import": "./esm/Shared/createSharedEnvProvider/provideSharedEnv.js"
-    },
-    "./Shared/global/Global": {
-      "require": "./cjs/Shared/global/Global.js",
-      "import": "./esm/Shared/global/Global.js"
-    },
-    "./Shared/global/exports": {
-      "require": "./cjs/Shared/global/exports.js",
-      "import": "./esm/Shared/global/exports.js"
-    },
-    "./Shared/global/usingGlobal": {
-      "require": "./cjs/Shared/global/usingGlobal.js",
-      "import": "./esm/Shared/global/usingGlobal.js"
-    },
-    "./Shared/hooks/NamespacePosition": {
-      "require": "./cjs/Shared/hooks/NamespacePosition.js",
-      "import": "./esm/Shared/hooks/NamespacePosition.js"
-    },
-    "./Shared/hooks/NamespaceSymbols": {
-      "require": "./cjs/Shared/hooks/NamespaceSymbols.js",
-      "import": "./esm/Shared/hooks/NamespaceSymbols.js"
-    },
-    "./Shared/hooks/exports": {
-      "require": "./cjs/Shared/hooks/exports.js",
-      "import": "./esm/Shared/hooks/exports.js"
-    },
-    "./Shared/hooks/getNextPosition": {
-      "require": "./cjs/Shared/hooks/getNextPosition.js",
-      "import": "./esm/Shared/hooks/getNextPosition.js"
-    },
-    "./Shared/hooks/getNextSymbol": {
-      "require": "./cjs/Shared/hooks/getNextSymbol.js",
-      "import": "./esm/Shared/hooks/getNextSymbol.js"
-    },
-    "./Shared/hooks/listenToSharedEvent": {
-      "require": "./cjs/Shared/hooks/listenToSharedEvent.js",
-      "import": "./esm/Shared/hooks/listenToSharedEvent.js"
-    },
-    "./Shared/hooks/listenToSharedUpdates": {
-      "require": "./cjs/Shared/hooks/listenToSharedUpdates.js",
-      "import": "./esm/Shared/hooks/listenToSharedUpdates.js"
-    },
-    "./Shared/hooks/resetPosition": {
-      "require": "./cjs/Shared/hooks/resetPosition.js",
-      "import": "./esm/Shared/hooks/resetPosition.js"
-    },
-    "./Shared/hooks/useDepChange": {
-      "require": "./cjs/Shared/hooks/useDepChange.js",
-      "import": "./esm/Shared/hooks/useDepChange.js"
-    },
-    "./Shared/hooks/useDiffList": {
-      "require": "./cjs/Shared/hooks/useDiffList.js",
-      "import": "./esm/Shared/hooks/useDiffList.js"
-    },
-    "./Shared/hooks/useDisposable": {
-      "require": "./cjs/Shared/hooks/useDisposable.js",
-      "import": "./esm/Shared/hooks/useDisposable.js"
-    },
-    "./Shared/hooks/useEffect": {
-      "require": "./cjs/Shared/hooks/useEffect.js",
-      "import": "./esm/Shared/hooks/useEffect.js"
-    },
-    "./Shared/hooks/useFirstRun": {
-      "require": "./cjs/Shared/hooks/useFirstRun.js",
-      "import": "./esm/Shared/hooks/useFirstRun.js"
-    },
-    "./Shared/hooks/useListEffect": {
-      "require": "./cjs/Shared/hooks/useListEffect.js",
-      "import": "./esm/Shared/hooks/useListEffect.js"
-    },
-    "./Shared/hooks/useMemo": {
-      "require": "./cjs/Shared/hooks/useMemo.js",
-      "import": "./esm/Shared/hooks/useMemo.js"
-    },
-    "./Shared/hooks/useOneOf": {
-      "require": "./cjs/Shared/hooks/useOneOf.js",
-      "import": "./esm/Shared/hooks/useOneOf.js"
-    },
-    "./Shared/hooks/useReducer": {
-      "require": "./cjs/Shared/hooks/useReducer.js",
-      "import": "./esm/Shared/hooks/useReducer.js"
-    },
-    "./Shared/hooks/useRef": {
-      "require": "./cjs/Shared/hooks/useRef.js",
-      "import": "./esm/Shared/hooks/useRef.js"
-    },
-    "./Shared/hooks/useState": {
-      "require": "./cjs/Shared/hooks/useState.js",
-      "import": "./esm/Shared/hooks/useState.js"
-    },
-    "./Shared/hooks/useStream": {
-      "require": "./cjs/Shared/hooks/useStream.js",
-      "import": "./esm/Shared/hooks/useStream.js"
-    },
-    "./Shared/map/SharedMap": {
-      "require": "./cjs/Shared/map/SharedMap.js",
-      "import": "./esm/Shared/map/SharedMap.js"
-    },
-    "./Shared/map/createMap": {
-      "require": "./cjs/Shared/map/createMap.js",
-      "import": "./esm/Shared/map/createMap.js"
-    },
-    "./Shared/map/deleteKey": {
-      "require": "./cjs/Shared/map/deleteKey.js",
-      "import": "./esm/Shared/map/deleteKey.js"
-    },
-    "./Shared/map/exports": {
-      "require": "./cjs/Shared/map/exports.js",
-      "import": "./esm/Shared/map/exports.js"
-    },
-    "./Shared/map/fromMap": {
-      "require": "./cjs/Shared/map/fromMap.js",
-      "import": "./esm/Shared/map/fromMap.js"
-    },
-    "./Shared/map/getKey": {
-      "require": "./cjs/Shared/map/getKey.js",
-      "import": "./esm/Shared/map/getKey.js"
-    },
-    "./Shared/map/getKeyOrCreate": {
-      "require": "./cjs/Shared/map/getKeyOrCreate.js",
-      "import": "./esm/Shared/map/getKeyOrCreate.js"
-    },
-    "./Shared/map/hasKey": {
-      "require": "./cjs/Shared/map/hasKey.js",
-      "import": "./esm/Shared/map/hasKey.js"
-    },
-    "./Shared/map/setKey": {
-      "require": "./cjs/Shared/map/setKey.js",
-      "import": "./esm/Shared/map/setKey.js"
-    },
-    "./Shared/map/toKeyValueStorage": {
-      "require": "./cjs/Shared/map/toKeyValueStorage.js",
-      "import": "./esm/Shared/map/toKeyValueStorage.js"
-    },
-    "./Shared/map/withMutations": {
-      "require": "./cjs/Shared/map/withMutations.js",
-      "import": "./esm/Shared/map/withMutations.js"
-    },
-    "./Shared/map/wrapMap": {
-      "require": "./cjs/Shared/map/wrapMap.js",
-      "import": "./esm/Shared/map/wrapMap.js"
-    },
-    "./Shared/memoNamespace/exports": {
-      "require": "./cjs/Shared/memoNamespace/exports.js",
-      "import": "./esm/Shared/memoNamespace/exports.js"
-    },
-    "./Shared/memoNamespace/memoNamespace": {
-      "require": "./cjs/Shared/memoNamespace/memoNamespace.js",
-      "import": "./esm/Shared/memoNamespace/memoNamespace.js"
-    },
-    "./Shared/memoNamespace/withMemo": {
-      "require": "./cjs/Shared/memoNamespace/withMemo.js",
-      "import": "./esm/Shared/memoNamespace/withMemo.js"
-    },
-    "./Shared/set/SharedSet": {
-      "require": "./cjs/Shared/set/SharedSet.js",
-      "import": "./esm/Shared/set/SharedSet.js"
-    },
-    "./Shared/set/addValue": {
-      "require": "./cjs/Shared/set/addValue.js",
-      "import": "./esm/Shared/set/addValue.js"
-    },
-    "./Shared/set/createSet": {
-      "require": "./cjs/Shared/set/createSet.js",
-      "import": "./esm/Shared/set/createSet.js"
-    },
-    "./Shared/set/deleteValue": {
-      "require": "./cjs/Shared/set/deleteValue.js",
-      "import": "./esm/Shared/set/deleteValue.js"
-    },
-    "./Shared/set/exports": {
-      "require": "./cjs/Shared/set/exports.js",
-      "import": "./esm/Shared/set/exports.js"
-    },
-    "./Shared/set/fromSet": {
-      "require": "./cjs/Shared/set/fromSet.js",
-      "import": "./esm/Shared/set/fromSet.js"
-    },
-    "./Shared/set/hasValue": {
-      "require": "./cjs/Shared/set/hasValue.js",
-      "import": "./esm/Shared/set/hasValue.js"
-    },
-    "./Shared/set/withMutations": {
-      "require": "./cjs/Shared/set/withMutations.js",
-      "import": "./esm/Shared/set/withMutations.js"
-    },
-    "./Shared/set/wrapSet": {
-      "require": "./cjs/Shared/set/wrapSet.js",
-      "import": "./esm/Shared/set/wrapSet.js"
-    },
-    "./Shared/core/constructors/createShared": {
-      "require": "./cjs/Shared/core/constructors/createShared.js",
-      "import": "./esm/Shared/core/constructors/createShared.js"
-    },
-    "./Shared/core/constructors/exports": {
-      "require": "./cjs/Shared/core/constructors/exports.js",
-      "import": "./esm/Shared/core/constructors/exports.js"
-    },
-    "./Shared/core/constructors/fromEq": {
-      "require": "./cjs/Shared/core/constructors/fromEq.js",
-      "import": "./esm/Shared/core/constructors/fromEq.js"
-    },
-    "./Shared/core/constructors/fromKey": {
-      "require": "./cjs/Shared/core/constructors/fromKey.js",
-      "import": "./esm/Shared/core/constructors/fromKey.js"
-    },
-    "./Shared/core/disposables/NamespaceDisposable": {
-      "require": "./cjs/Shared/core/disposables/NamespaceDisposable.js",
-      "import": "./esm/Shared/core/disposables/NamespaceDisposable.js"
-    },
-    "./Shared/core/disposables/addDisposable": {
-      "require": "./cjs/Shared/core/disposables/addDisposable.js",
-      "import": "./esm/Shared/core/disposables/addDisposable.js"
-    },
-    "./Shared/core/disposables/disposeNamespace": {
-      "require": "./cjs/Shared/core/disposables/disposeNamespace.js",
-      "import": "./esm/Shared/core/disposables/disposeNamespace.js"
-    },
-    "./Shared/core/disposables/exports": {
-      "require": "./cjs/Shared/core/disposables/exports.js",
-      "import": "./esm/Shared/core/disposables/exports.js"
-    },
-    "./Shared/core/events/NamespaceEvent": {
-      "require": "./cjs/Shared/core/events/NamespaceEvent.js",
-      "import": "./esm/Shared/core/events/NamespaceEvent.js"
-    },
-    "./Shared/core/events/SharedEvent": {
-      "require": "./cjs/Shared/core/events/SharedEvent.js",
-      "import": "./esm/Shared/core/events/SharedEvent.js"
-    },
-    "./Shared/core/events/SharedEventEnv": {
-      "require": "./cjs/Shared/core/events/SharedEventEnv.js",
-      "import": "./esm/Shared/core/events/SharedEventEnv.js"
-    },
-    "./Shared/core/events/SharedValueEvent": {
-      "require": "./cjs/Shared/core/events/SharedValueEvent.js",
-      "import": "./esm/Shared/core/events/SharedValueEvent.js"
-    },
-    "./Shared/core/events/exports": {
-      "require": "./cjs/Shared/core/events/exports.js",
-      "import": "./esm/Shared/core/events/exports.js"
-    },
-    "./Shared/core/model/Namespace": {
-      "require": "./cjs/Shared/core/model/Namespace.js",
-      "import": "./esm/Shared/core/model/Namespace.js"
-    },
-    "./Shared/core/model/Shared": {
-      "require": "./cjs/Shared/core/model/Shared.js",
-      "import": "./esm/Shared/core/model/Shared.js"
-    },
-    "./Shared/core/model/SharedKey": {
-      "require": "./cjs/Shared/core/model/SharedKey.js",
-      "import": "./esm/Shared/core/model/SharedKey.js"
-    },
-    "./Shared/core/model/SharedKeyStore": {
-      "require": "./cjs/Shared/core/model/SharedKeyStore.js",
-      "import": "./esm/Shared/core/model/SharedKeyStore.js"
-    },
-    "./Shared/core/model/exports": {
-      "require": "./cjs/Shared/core/model/exports.js",
-      "import": "./esm/Shared/core/model/exports.js"
-    },
-    "./Shared/core/services/CurrentNamespaceEnv": {
-      "require": "./cjs/Shared/core/services/CurrentNamespaceEnv.js",
-      "import": "./esm/Shared/core/services/CurrentNamespaceEnv.js"
-    },
-    "./Shared/core/services/NamespaceKeyStoresEnv": {
-      "require": "./cjs/Shared/core/services/NamespaceKeyStoresEnv.js",
-      "import": "./esm/Shared/core/services/NamespaceKeyStoresEnv.js"
-    },
-    "./Shared/core/services/SharedEnv": {
-      "require": "./cjs/Shared/core/services/SharedEnv.js",
-      "import": "./esm/Shared/core/services/SharedEnv.js"
-    },
-    "./Shared/core/services/deleteKeyStore": {
-      "require": "./cjs/Shared/core/services/deleteKeyStore.js",
-      "import": "./esm/Shared/core/services/deleteKeyStore.js"
-    },
-    "./Shared/core/services/deleteShared": {
-      "require": "./cjs/Shared/core/services/deleteShared.js",
-      "import": "./esm/Shared/core/services/deleteShared.js"
-    },
-    "./Shared/core/services/exports": {
-      "require": "./cjs/Shared/core/services/exports.js",
-      "import": "./esm/Shared/core/services/exports.js"
-    },
-    "./Shared/core/services/getCurrentNamespace": {
-      "require": "./cjs/Shared/core/services/getCurrentNamespace.js",
-      "import": "./esm/Shared/core/services/getCurrentNamespace.js"
-    },
-    "./Shared/core/services/getDeleteNamespace": {
-      "require": "./cjs/Shared/core/services/getDeleteNamespace.js",
-      "import": "./esm/Shared/core/services/getDeleteNamespace.js"
-    },
-    "./Shared/core/services/getKeyStore": {
-      "require": "./cjs/Shared/core/services/getKeyStore.js",
-      "import": "./esm/Shared/core/services/getKeyStore.js"
-    },
-    "./Shared/core/services/getKeyStores": {
-      "require": "./cjs/Shared/core/services/getKeyStores.js",
-      "import": "./esm/Shared/core/services/getKeyStores.js"
-    },
-    "./Shared/core/services/getOrCreate": {
-      "require": "./cjs/Shared/core/services/getOrCreate.js",
-      "import": "./esm/Shared/core/services/getOrCreate.js"
-    },
-    "./Shared/core/services/getShared": {
-      "require": "./cjs/Shared/core/services/getShared.js",
-      "import": "./esm/Shared/core/services/getShared.js"
-    },
-    "./Shared/core/services/hasShared": {
-      "require": "./cjs/Shared/core/services/hasShared.js",
-      "import": "./esm/Shared/core/services/hasShared.js"
-    },
-    "./Shared/core/services/modifyShared": {
-      "require": "./cjs/Shared/core/services/modifyShared.js",
-      "import": "./esm/Shared/core/services/modifyShared.js"
-    },
-    "./Shared/core/services/runWithNamespace": {
-      "require": "./cjs/Shared/core/services/runWithNamespace.js",
-      "import": "./esm/Shared/core/services/runWithNamespace.js"
-    },
-    "./Shared/core/services/setShared": {
-      "require": "./cjs/Shared/core/services/setShared.js",
-      "import": "./esm/Shared/core/services/setShared.js"
-    },
-    "./Shared/core/services/usingNamespace": {
-      "require": "./cjs/Shared/core/services/usingNamespace.js",
-      "import": "./esm/Shared/core/services/usingNamespace.js"
-    },
-    "./Shared/core/services/withCurrentNamespace": {
-      "require": "./cjs/Shared/core/services/withCurrentNamespace.js",
-      "import": "./esm/Shared/core/services/withCurrentNamespace.js"
-    },
-    "./Shared/core/services/withShared": {
-      "require": "./cjs/Shared/core/services/withShared.js",
-      "import": "./esm/Shared/core/services/withShared.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/exports": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/exports.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/exports.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/guards": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/guards.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/guards.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/context/contextHandlers": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/context/contextHandlers.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/context/contextHandlers.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/context/exports": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/context/exports.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/context/exports.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/context/namespaceDeleted": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/context/namespaceDeleted.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/context/namespaceStarted": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/context/namespaceStarted.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/context/namespaceStarted.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/context/sharedValueDeleted.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/context/sharedValueUpdated": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/context/sharedValueUpdated.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/context/sharedValueUpdated.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/core/coreHandlers": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/core/coreHandlers.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/core/coreHandlers.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/core/exports": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/core/exports.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/core/exports.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/core/namspaceDeleted": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/core/namspaceDeleted.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/core/namspaceDeleted.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/hooks/exports": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/hooks/exports.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/hooks/exports.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/hooks/hooksHandlers": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/hooks/hooksHandlers.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/hooks/hooksHandlers.js"
-    },
-    "./Shared/createSharedEnvProvider/handlers/hooks/namespaceStarted": {
-      "require": "./cjs/Shared/createSharedEnvProvider/handlers/hooks/namespaceStarted.js",
-      "import": "./esm/Shared/createSharedEnvProvider/handlers/hooks/namespaceStarted.js"
-    },
-    "./Storage": {
-      "require": "./cjs/Storage/exports.js",
-      "import": "./esm/Storage/exports.js"
-    },
-    "./Storage/KeyValueStorage": {
-      "require": "./cjs/Storage/KeyValueStorage.js",
-      "import": "./esm/Storage/KeyValueStorage.js"
-    },
-    "./Storage/dom": {
-      "require": "./cjs/Storage/dom.js",
-      "import": "./esm/Storage/dom.js"
-    },
-    "./Storage/exports": {
-      "require": "./cjs/Storage/exports.js",
-      "import": "./esm/Storage/exports.js"
-    },
-    "./Storage/proxyStorage": {
-      "require": "./cjs/Storage/proxyStorage.js",
-      "import": "./esm/Storage/proxyStorage.js"
-    },
-    "./Storage/scopeStorage": {
-      "require": "./cjs/Storage/scopeStorage.js",
-      "import": "./esm/Storage/scopeStorage.js"
-    },
-    "./Storage/serverStorage": {
-      "require": "./cjs/Storage/serverStorage.js",
-      "import": "./esm/Storage/serverStorage.js"
-    },
-    "./Storage/indexedDb/IndexedDbFactoryEnv": {
-      "require": "./cjs/Storage/indexedDb/IndexedDbFactoryEnv.js",
-      "import": "./esm/Storage/indexedDb/IndexedDbFactoryEnv.js"
-    },
-    "./Storage/indexedDb/IndexedDbStoreTransaction": {
-      "require": "./cjs/Storage/indexedDb/IndexedDbStoreTransaction.js",
-      "import": "./esm/Storage/indexedDb/IndexedDbStoreTransaction.js"
-    },
-    "./Storage/indexedDb/createIndexedDb": {
-      "require": "./cjs/Storage/indexedDb/createIndexedDb.js",
-      "import": "./esm/Storage/indexedDb/createIndexedDb.js"
-    },
-    "./Storage/indexedDb/createReadTransaction": {
-      "require": "./cjs/Storage/indexedDb/createReadTransaction.js",
-      "import": "./esm/Storage/indexedDb/createReadTransaction.js"
-    },
-    "./Storage/indexedDb/createWriteTransaction": {
-      "require": "./cjs/Storage/indexedDb/createWriteTransaction.js",
-      "import": "./esm/Storage/indexedDb/createWriteTransaction.js"
-    },
-    "./Storage/indexedDb/exports": {
-      "require": "./cjs/Storage/indexedDb/exports.js",
-      "import": "./esm/Storage/indexedDb/exports.js"
-    },
-    "./Storage/indexedDb/idbRequestToResume": {
-      "require": "./cjs/Storage/indexedDb/idbRequestToResume.js",
-      "import": "./esm/Storage/indexedDb/idbRequestToResume.js"
-    },
-    "./Storage/indexedDb/openDatabase": {
-      "require": "./cjs/Storage/indexedDb/openDatabase.js",
-      "import": "./esm/Storage/indexedDb/openDatabase.js"
-    },
-    "./Stream": {
-      "require": "./cjs/Stream/exports.js",
-      "import": "./esm/Stream/exports.js"
-    },
-    "./Stream/exports": {
-      "require": "./cjs/Stream/exports.js",
-      "import": "./esm/Stream/exports.js"
-    },
-    "./Uri": {
-      "require": "./cjs/Uri/exports.js",
-      "import": "./esm/Uri/exports.js"
-    },
-    "./Uri/exports": {
-      "require": "./cjs/Uri/exports.js",
-      "import": "./esm/Uri/exports.js"
-    },
-    "./Uuid": {
-      "require": "./cjs/Uuid/exports.js",
-      "import": "./esm/Uuid/exports.js"
-    },
-    "./Uuid/common": {
-      "require": "./cjs/Uuid/common.js",
-      "import": "./esm/Uuid/common.js"
-    },
-    "./Uuid/exports": {
-      "require": "./cjs/Uuid/exports.js",
-      "import": "./esm/Uuid/exports.js"
-    },
-    "./Uuid/uuid4/exports": {
-      "require": "./cjs/Uuid/uuid4/exports.js",
-      "import": "./esm/Uuid/uuid4/exports.js"
-    },
-    "./Uuid/uuid4/uuid4": {
-      "require": "./cjs/Uuid/uuid4/uuid4.js",
-      "import": "./esm/Uuid/uuid4/uuid4.js"
-    },
-    "./browser": {
-      "require": "./cjs/browser/exports.js",
-      "import": "./esm/browser/exports.js"
-    },
-    "./browser/HistoryEnv": {
-      "require": "./cjs/browser/HistoryEnv.js",
-      "import": "./esm/browser/HistoryEnv.js"
-    },
-    "./browser/RafEnv": {
-      "require": "./cjs/browser/RafEnv.js",
-      "import": "./esm/browser/RafEnv.js"
-    },
-    "./browser/UuidEnv": {
-      "require": "./cjs/browser/UuidEnv.js",
-      "import": "./esm/browser/UuidEnv.js"
-    },
-    "./browser/WhenIdleEnv": {
-      "require": "./cjs/browser/WhenIdleEnv.js",
-      "import": "./esm/browser/WhenIdleEnv.js"
-    },
-    "./browser/exports": {
-      "require": "./cjs/browser/exports.js",
-      "import": "./esm/browser/exports.js"
-    },
-    "./common": {
-      "require": "./cjs/common/exports.js",
-      "import": "./esm/common/exports.js"
-    },
-    "./common/And": {
-      "require": "./cjs/common/And.js",
-      "import": "./esm/common/And.js"
-    },
-    "./common/Args": {
-      "require": "./cjs/common/Args.js",
-      "import": "./esm/common/Args.js"
-    },
-    "./common/ConsList": {
-      "require": "./cjs/common/ConsList.js",
-      "import": "./esm/common/ConsList.js"
-    },
-    "./common/DropNever": {
-      "require": "./cjs/common/DropNever.js",
-      "import": "./esm/common/DropNever.js"
-    },
-    "./common/Include": {
-      "require": "./cjs/common/Include.js",
-      "import": "./esm/common/Include.js"
-    },
-    "./common/Or": {
-      "require": "./cjs/common/Or.js",
-      "import": "./esm/common/Or.js"
-    },
-    "./common/TupleFromUnion": {
-      "require": "./cjs/common/TupleFromUnion.js",
-      "import": "./esm/common/TupleFromUnion.js"
-    },
-    "./common/deepEqualsEq": {
-      "require": "./cjs/common/deepEqualsEq.js",
-      "import": "./esm/common/deepEqualsEq.js"
-    },
-    "./common/exports": {
-      "require": "./cjs/common/exports.js",
-      "import": "./esm/common/exports.js"
-    },
-    "./common/functionName": {
-      "require": "./cjs/common/functionName.js",
-      "import": "./esm/common/functionName.js"
-    },
-    "./common/includesWith": {
-      "require": "./cjs/common/includesWith.js",
-      "import": "./esm/common/includesWith.js"
-    },
-    "./common/isBrowser": {
-      "require": "./cjs/common/isBrowser.js",
-      "import": "./esm/common/isBrowser.js"
-    },
-    "./common/typeOf": {
-      "require": "./cjs/common/typeOf.js",
-      "import": "./esm/common/typeOf.js"
-    },
-    "./common/types": {
-      "require": "./cjs/common/types.js",
-      "import": "./esm/common/types.js"
-    },
-    "./dom": {
-      "require": "./cjs/dom/exports.js",
-      "import": "./esm/dom/exports.js"
-    },
-    "./dom/exports": {
-      "require": "./cjs/dom/exports.js",
-      "import": "./esm/dom/exports.js"
-    },
-    "./dom/raf": {
-      "require": "./cjs/dom/raf.js",
-      "import": "./esm/dom/raf.js"
-    },
-    "./dom/whenIdle": {
-      "require": "./cjs/dom/whenIdle.js",
-      "import": "./esm/dom/whenIdle.js"
-    },
-    "./history": {
-      "require": "./cjs/history/exports.js",
-      "import": "./esm/history/exports.js"
-    },
-    "./history/HistoryEnv": {
-      "require": "./cjs/history/HistoryEnv.js",
-      "import": "./esm/history/HistoryEnv.js"
-    },
-    "./history/exports": {
-      "require": "./cjs/history/exports.js",
-      "import": "./esm/history/exports.js"
-    },
-    "./history/pushPath": {
-      "require": "./cjs/history/pushPath.js",
-      "import": "./esm/history/pushPath.js"
-    },
-    "./history/pushUri": {
-      "require": "./cjs/history/pushUri.js",
-      "import": "./esm/history/pushUri.js"
-    },
-    "./history/scopeHistoryEnv": {
-      "require": "./cjs/history/scopeHistoryEnv.js",
-      "import": "./esm/history/scopeHistoryEnv.js"
-    },
-    "./history/useLocation": {
-      "require": "./cjs/history/useLocation.js",
-      "import": "./esm/history/useLocation.js"
-    },
-    "./http": {
-      "require": "./cjs/http/exports.js",
-      "import": "./esm/http/exports.js"
-    },
-    "./http/FetchHttpEnv": {
-      "require": "./cjs/http/FetchHttpEnv.js",
-      "import": "./esm/http/FetchHttpEnv.js"
-    },
-    "./http/HttpEnv": {
-      "require": "./cjs/http/HttpEnv.js",
-      "import": "./esm/http/HttpEnv.js"
-    },
-    "./http/HttpHeaders": {
-      "require": "./cjs/http/HttpHeaders.js",
-      "import": "./esm/http/HttpHeaders.js"
-    },
-    "./http/HttpMethod": {
-      "require": "./cjs/http/HttpMethod.js",
-      "import": "./esm/http/HttpMethod.js"
-    },
-    "./http/HttpRequest": {
-      "require": "./cjs/http/HttpRequest.js",
-      "import": "./esm/http/HttpRequest.js"
-    },
-    "./http/HttpResponse": {
-      "require": "./cjs/http/HttpResponse.js",
-      "import": "./esm/http/HttpResponse.js"
-    },
-    "./http/exports": {
-      "require": "./cjs/http/exports.js",
-      "import": "./esm/http/exports.js"
-    },
-    "./http/http": {
-      "require": "./cjs/http/http.js",
-      "import": "./esm/http/http.js"
-    },
-    "./http/withHttpManagement": {
-      "require": "./cjs/http/withHttpManagement.js",
-      "import": "./esm/http/withHttpManagement.js"
-    },
-    "./http/zipIterables": {
-      "require": "./cjs/http/zipIterables.js",
-      "import": "./esm/http/zipIterables.js"
-    },
-    "./io": {
-      "require": "./cjs/io/exports.js",
-      "import": "./esm/io/exports.js"
-    },
-    "./io/Decoder": {
-      "require": "./cjs/io/Decoder.js",
-      "import": "./esm/io/Decoder.js"
-    },
-    "./io/Eq": {
-      "require": "./cjs/io/Eq.js",
-      "import": "./esm/io/Eq.js"
-    },
-    "./io/Guard": {
-      "require": "./cjs/io/Guard.js",
-      "import": "./esm/io/Guard.js"
-    },
-    "./io/JsonCodec": {
-      "require": "./cjs/io/JsonCodec.js",
-      "import": "./esm/io/JsonCodec.js"
-    },
-    "./io/JsonSchema": {
-      "require": "./cjs/io/JsonSchema.js",
-      "import": "./esm/io/JsonSchema.js"
-    },
-    "./io/TypedSchema": {
-      "require": "./cjs/io/TypedSchema.js",
-      "import": "./esm/io/TypedSchema.js"
-    },
-    "./io/TypedSchemable": {
-      "require": "./cjs/io/TypedSchemable.js",
-      "import": "./esm/io/TypedSchemable.js"
-    },
-    "./io/exports": {
-      "require": "./cjs/io/exports.js",
-      "import": "./esm/io/exports.js"
-    },
-    "./io/interpreter": {
-      "require": "./cjs/io/interpreter.js",
-      "import": "./esm/io/interpreter.js"
-    },
-    "./lambda": {
-      "require": "./cjs/lambda/exports.js",
-      "import": "./esm/lambda/exports.js"
-    },
-    "./lambda/exports": {
-      "require": "./cjs/lambda/exports.js",
-      "import": "./esm/lambda/exports.js"
-    },
-    "./logging": {
-      "require": "./cjs/logging/exports.js",
-      "import": "./esm/logging/exports.js"
-    },
-    "./logging/LoggerEffect": {
-      "require": "./cjs/logging/LoggerEffect.js",
-      "import": "./esm/logging/LoggerEffect.js"
-    },
-    "./logging/exports": {
-      "require": "./cjs/logging/exports.js",
-      "import": "./esm/logging/exports.js"
-    },
-    "./logic": {
-      "require": "./cjs/logic/exports.js",
-      "import": "./esm/logic/exports.js"
-    },
-    "./logic/all": {
-      "require": "./cjs/logic/all.js",
-      "import": "./esm/logic/all.js"
-    },
-    "./logic/allPass": {
-      "require": "./cjs/logic/allPass.js",
-      "import": "./esm/logic/allPass.js"
-    },
-    "./logic/and": {
-      "require": "./cjs/logic/and.js",
-      "import": "./esm/logic/and.js"
-    },
-    "./logic/any": {
-      "require": "./cjs/logic/any.js",
-      "import": "./esm/logic/any.js"
-    },
-    "./logic/anyPass": {
-      "require": "./cjs/logic/anyPass.js",
-      "import": "./esm/logic/anyPass.js"
-    },
-    "./logic/complement": {
-      "require": "./cjs/logic/complement.js",
-      "import": "./esm/logic/complement.js"
-    },
-    "./logic/cond": {
-      "require": "./cjs/logic/cond.js",
-      "import": "./esm/logic/cond.js"
-    },
-    "./logic/equals": {
-      "require": "./cjs/logic/equals.js",
-      "import": "./esm/logic/equals.js"
-    },
-    "./logic/exec": {
-      "require": "./cjs/logic/exec.js",
-      "import": "./esm/logic/exec.js"
-    },
-    "./logic/exports": {
-      "require": "./cjs/logic/exports.js",
-      "import": "./esm/logic/exports.js"
-    },
-    "./logic/greaterThan": {
-      "require": "./cjs/logic/greaterThan.js",
-      "import": "./esm/logic/greaterThan.js"
-    },
-    "./logic/greaterThanOrEqual": {
-      "require": "./cjs/logic/greaterThanOrEqual.js",
-      "import": "./esm/logic/greaterThanOrEqual.js"
-    },
-    "./logic/ifElse": {
-      "require": "./cjs/logic/ifElse.js",
-      "import": "./esm/logic/ifElse.js"
-    },
-    "./logic/is": {
-      "require": "./cjs/logic/is.js",
-      "import": "./esm/logic/is.js"
-    },
-    "./logic/isObject": {
-      "require": "./cjs/logic/isObject.js",
-      "import": "./esm/logic/isObject.js"
-    },
-    "./logic/json": {
-      "require": "./cjs/logic/json.js",
-      "import": "./esm/logic/json.js"
-    },
-    "./logic/lessThan": {
-      "require": "./cjs/logic/lessThan.js",
-      "import": "./esm/logic/lessThan.js"
-    },
-    "./logic/lessThanOrEqual": {
-      "require": "./cjs/logic/lessThanOrEqual.js",
-      "import": "./esm/logic/lessThanOrEqual.js"
-    },
-    "./logic/negate": {
-      "require": "./cjs/logic/negate.js",
-      "import": "./esm/logic/negate.js"
-    },
-    "./logic/oneOf": {
-      "require": "./cjs/logic/oneOf.js",
-      "import": "./esm/logic/oneOf.js"
-    },
-    "./logic/or": {
-      "require": "./cjs/logic/or.js",
-      "import": "./esm/logic/or.js"
-    },
-    "./logic/propEq": {
-      "require": "./cjs/logic/propEq.js",
-      "import": "./esm/logic/propEq.js"
-    },
-    "./logic/propOr": {
-      "require": "./cjs/logic/propOr.js",
-      "import": "./esm/logic/propOr.js"
-    },
-    "./logic/regexTest": {
-      "require": "./cjs/logic/regexTest.js",
-      "import": "./esm/logic/regexTest.js"
-    },
-    "./logic/toggleOrSet": {
-      "require": "./cjs/logic/toggleOrSet.js",
-      "import": "./esm/logic/toggleOrSet.js"
-    },
-    "./logic/types": {
-      "require": "./cjs/logic/types.js",
-      "import": "./esm/logic/types.js"
-    },
-    "./node": {
-      "require": "./cjs/node/exports.js",
-      "import": "./esm/node/exports.js"
-    },
-    "./node/RafEnv": {
-      "require": "./cjs/node/RafEnv.js",
-      "import": "./esm/node/RafEnv.js"
-    },
-    "./node/UuidEnv": {
-      "require": "./cjs/node/UuidEnv.js",
-      "import": "./esm/node/UuidEnv.js"
-    },
-    "./node/WhenIdleEnv": {
-      "require": "./cjs/node/WhenIdleEnv.js",
-      "import": "./esm/node/WhenIdleEnv.js"
-    },
-    "./node/exports": {
-      "require": "./cjs/node/exports.js",
-      "import": "./esm/node/exports.js"
-    },
-    "./node/HistoryEnv/ServerHistory": {
-      "require": "./cjs/node/HistoryEnv/ServerHistory.js",
-      "import": "./esm/node/HistoryEnv/ServerHistory.js"
-    },
-    "./node/HistoryEnv/ServerLocation": {
-      "require": "./cjs/node/HistoryEnv/ServerLocation.js",
-      "import": "./esm/node/HistoryEnv/ServerLocation.js"
-    },
-    "./node/HistoryEnv/createHistoryEnv": {
-      "require": "./cjs/node/HistoryEnv/createHistoryEnv.js",
-      "import": "./esm/node/HistoryEnv/createHistoryEnv.js"
-    },
-    "./node/HistoryEnv/exports": {
-      "require": "./cjs/node/HistoryEnv/exports.js",
-      "import": "./esm/node/HistoryEnv/exports.js"
+    "./Fx/IO": {
+      "require": "./cjs/Fx/IO.js",
+      "import": "./esm/Fx/IO.js"
+    },
+    "./Fx/IOEither": {
+      "require": "./cjs/Fx/IOEither.js",
+      "import": "./esm/Fx/IOEither.js"
+    },
+    "./Fx/Option": {
+      "require": "./cjs/Fx/Option.js",
+      "import": "./esm/Fx/Option.js"
+    },
+    "./Fx/Resume": {
+      "require": "./cjs/Fx/Resume.js",
+      "import": "./esm/Fx/Resume.js"
+    },
+    "./Fx/ResumeEither": {
+      "require": "./cjs/Fx/ResumeEither.js",
+      "import": "./esm/Fx/ResumeEither.js"
+    },
+    "./Fx/ResumeOption": {
+      "require": "./cjs/Fx/ResumeOption.js",
+      "import": "./esm/Fx/ResumeOption.js"
+    },
+    "./Fx/index": {
+      "require": "./cjs/Fx/index.js",
+      "import": "./esm/Fx/index.js"
+    },
+    "./FxT.ts": {
+      "require": "./cjs/FxT.js",
+      "import": "./esm/FxT.js"
+    },
+    "./Hkt.ts": {
+      "require": "./cjs/Hkt.js",
+      "import": "./esm/Hkt.js"
+    },
+    "./IOEither.ts": {
+      "require": "./cjs/IOEither.js",
+      "import": "./esm/IOEither.js"
+    },
+    "./MonadRec.ts": {
+      "require": "./cjs/MonadRec.js",
+      "import": "./esm/MonadRec.js"
+    },
+    "./Option.ts": {
+      "require": "./cjs/Option.js",
+      "import": "./esm/Option.js"
+    },
+    "./Provide.ts": {
+      "require": "./cjs/Provide.js",
+      "import": "./esm/Provide.js"
+    },
+    "./Ref.ts": {
+      "require": "./cjs/Ref.js",
+      "import": "./esm/Ref.js"
+    },
+    "./Resume.ts": {
+      "require": "./cjs/Resume.js",
+      "import": "./esm/Resume.js"
+    },
+    "./ResumeEither.ts": {
+      "require": "./cjs/ResumeEither.js",
+      "import": "./esm/ResumeEither.js"
+    },
+    "./ResumeOption.ts": {
+      "require": "./cjs/ResumeOption.js",
+      "import": "./esm/ResumeOption.js"
+    },
+    "./Scheduler.ts": {
+      "require": "./cjs/Scheduler.js",
+      "import": "./esm/Scheduler.js"
+    },
+    "./Stream.ts": {
+      "require": "./cjs/Stream.js",
+      "import": "./esm/Stream.js"
+    },
+    "./function.ts": {
+      "require": "./cjs/function.js",
+      "import": "./esm/function.js"
     }
   }
 }
