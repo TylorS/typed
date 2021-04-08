@@ -110,8 +110,8 @@ workflows:
       - node/test-workspace:
           requires:
             - node/build-workspace
-      - node/audit-workspace:
-          requires:
-            - node/build-workspace
+      # - node/audit-workspace:
+      #     requires:
+      #       - node/build-workspace
 
 
