@@ -102,15 +102,13 @@ workflows:
   version: 2.1
   build-test-deploy:
     jobs:
-      - node/build-workspace:
-          context: typed-fp
+      - node/build-workspace
       - node/lint-workspace:
           requires:
             - node/build-workspace
       - node/test-workspace:
           requires:
             - node/build-workspace
-          context: typed-fp
       - node/audit-workspace:
           requires:
             - node/build-workspace
