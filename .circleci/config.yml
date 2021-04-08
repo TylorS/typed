@@ -1,102 +1,118 @@
 version: 2.1
+description: Provide common CircleCI patterns used within Seasoned node projects
 
-executors:
-  custom-executor:
-    docker:
-      - image: circleci/node:lts-browsers
+orbs:
+  node:
+    orbs:
+      node: circleci/node@2.0.3
+    executors:
+      node:
+        parameters:
+          version:
+            type: string
+            default: lts
+        docker:
+          - image: circleci/node:<<parameters.version>>
 
-jobs:
-  install:
-    executor: custom-executor
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - node-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
-            - node-v1-{{ .Branch }}-
-            - node-v1-
-      - run:
-          name: Installing local dependencies
-          command: npm ci
-      - save_cache:
-          key: node-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
-          paths:
-            - node_modules
-      - persist_to_workspace:
-          root: /home/circleci
-          paths:
-            - ./src
-            - ./tools
-            - ./node_modules
+    commands:
+      build-workspace:
+        description: Run build steps and persist to workspace
+        steps:
+          - checkout
+          - node/install-packages:
+              with-cache: true
+              include-branch-in-cache-key: false
+              cache-version: v2
+              cache-key: package-lock.json
+          - persist_to_workspace:
+              root: ./
+              paths:
+                - ./*
 
-  build:
-    executor: custom-executor
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /home/circleci
-      - run:
-          name: Build Package
-          command: |
-            pwd
-            npm run build
+      with-workspace:
+        description: Run commands with workspace attached
+        parameters:
+          steps:
+            type: steps
+        steps:
+          - attach_workspace:
+              at: ./
+          - steps: << parameters.steps >>
 
-  test:
-    executor: custom-executor
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /home/circleci
-      - run:
-          name: Test
-          command: npm run unit-test
+      audit:
+        steps:
+          - run: |
+                pwd
+                ls
+                npm version
+                for n in {1..5}; do
+                  audit=`npm --color always audit -uction 2>&1`
+                  echo "$audit"
+                  if [[ "$audit" != *"ENOAUDIT"* ]]; then
+                    break
+                  fi
+                done
 
-  lint:
-    executor: custom-executor
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /home/circleci
-      - run:
-          name: Lint
-          command: npm run lint
+    jobs:
+      build-workspace:
+        parameters:
+          executor:
+            type: string
+            default: node
+        executor: <<parameters.executor>>
+        steps:
+          - build-workspace
 
-  audit:
-    executor: custom-executor
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /home/circleci
-      - run:
-          name: Audit root
-          command: |
-            pwd
-            ls
+      lint-workspace:
+        parameters:
+          executor:
+            type: string
+            default: node
+        executor: <<parameters.executor>>
+        steps:
+          - with-workspace:
+              steps:
+                - run: npm run test:lint
 
-            npm version
 
-            for n in {1..5}; do
-              audit=`npm --color always audit --production 2>&1`
-              echo "$audit"
-              if [[ "$audit" != *"ENOAUDIT"* ]]; then
-                break
-              fi
-            done
+      test-workspace:
+        parameters:
+          executor:
+            type: string
+            default: node
+        executor: <<parameters.executor>>
+        steps:
+          - with-workspace:
+              steps:
+                - run: npm run test:code
+
+      audit-workspace:
+        parameters:
+          executor:
+            type: string
+            default: node
+        executor: <<parameters.executor>>
+        steps:
+          - with-workspace:
+              steps:
+                - audit
+
 
 workflows:
-  version: 2
-  test:
+  version: 2.1
+  build-test-deploy:
     jobs:
-      - install
-      - build:
+      - node/build-workspace:
+          context: typed-fp
+      - node/lint-workspace:
           requires:
-            - install
-      - test:
+            - node/build-workspace
+      - node/test-workspace:
           requires:
-            - install
-      - lint:
+            - node/build-workspace
+          context: typed-fp
+      - node/audit-workspace:
           requires:
-            - install
-      - audit:
-          requires:
-            - install
+            - node/build-workspace
+
+
