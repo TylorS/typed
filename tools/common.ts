@@ -19,7 +19,7 @@ export function parseName(name: string): string {
 
 export const MODULES: ReadonlyArray<string> = readdirSync(SOURCE_DIR)
   .sort()
-  .filter((x) => x !== 'internal.ts' && x !== 'index.ts')
+  .filter((x) => x !== 'internal.ts' && x !== 'index.ts' && !x.endsWith('.test.ts'))
 
 export function getRelativeFile(directory: string, fileName: string) {
   return join(directory, fileName)
