@@ -19,17 +19,17 @@
     "ts-toolbelt": "^9.6.0"
   },
   "peerDependencies": {
-    "tslib": "^2.1.0"
+    "tslib": "^2.2.0"
   },
   "devDependencies": {
     "@typed/test": "^9.5.0",
     "@types/node": "^14.14.37",
     "@types/rimraf": "^3.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.20.0",
-    "@typescript-eslint/parser": "^4.20.0",
+    "@typescript-eslint/eslint-plugin": "^4.21.0",
+    "@typescript-eslint/parser": "^4.21.0",
     "@zerollup/ts-transform-paths": "^1.7.18",
     "@zoltu/typescript-transformer-append-js-extension": "^1.0.1",
-    "concurrently": "^6.0.0",
+    "concurrently": "^6.0.1",
     "eslint": "^7.23.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-import-resolver-custom-alias": "^1.2.0",
@@ -47,8 +47,8 @@
     "ts-node": "^9.1.1",
     "ts-patch": "^1.3.2",
     "tsc-watch": "^4.2.9",
-    "tslib": "^2.1.0",
-    "typescript": "^4.2.3"
+    "tslib": "^2.2.0",
+    "typescript": "^4.2.4"
   },
   "scripts": {
     "--maintenance--": "",
@@ -97,31 +97,31 @@
       "require": "./cjs/index.js",
       "import": "./esm/index.js"
     },
-    "./Adapter.ts": {
+    "./Adapter": {
       "require": "./cjs/Adapter.js",
       "import": "./esm/Adapter.js"
     },
-    "./Branded.ts": {
+    "./Branded": {
       "require": "./cjs/Branded.js",
       "import": "./esm/Branded.js"
     },
-    "./Disposable.ts": {
+    "./Disposable": {
       "require": "./cjs/Disposable.js",
       "import": "./esm/Disposable.js"
     },
-    "./Env.ts": {
+    "./Env": {
       "require": "./cjs/Env.js",
       "import": "./esm/Env.js"
     },
-    "./EnvEither.ts": {
+    "./EnvEither": {
       "require": "./cjs/EnvEither.js",
       "import": "./esm/EnvEither.js"
     },
-    "./EnvOption.ts": {
+    "./EnvOption": {
       "require": "./cjs/EnvOption.js",
       "import": "./esm/EnvOption.js"
     },
-    "./Eq.ts": {
+    "./Eq": {
       "require": "./cjs/Eq.js",
       "import": "./esm/Eq.js"
     },
@@ -140,10 +140,6 @@
     "./Fiber/Status": {
       "require": "./cjs/Fiber/Status.js",
       "import": "./esm/Fiber/Status.js"
-    },
-    "./Fiber/index": {
-      "require": "./cjs/Fiber/index.js",
-      "import": "./esm/Fiber/index.js"
     },
     "./Fiber/runtime/FiberChildren": {
       "require": "./cjs/Fiber/runtime/FiberChildren.js",
@@ -173,7 +169,7 @@
       "require": "./cjs/Fiber/runtime/createRuntime.js",
       "import": "./esm/Fiber/runtime/createRuntime.js"
     },
-    "./Fiber/runtime/index": {
+    "./Fiber/runtime": {
       "require": "./cjs/Fiber/runtime/index.js",
       "import": "./esm/Fiber/runtime/index.js"
     },
@@ -213,11 +209,11 @@
       "require": "./cjs/Fiber/runtime/internal/start.js",
       "import": "./esm/Fiber/runtime/internal/start.js"
     },
-    "./FromEnv.ts": {
+    "./FromEnv": {
       "require": "./cjs/FromEnv.js",
       "import": "./esm/FromEnv.js"
     },
-    "./FromResume.ts": {
+    "./FromResume": {
       "require": "./cjs/FromResume.js",
       "import": "./esm/FromResume.js"
     },
@@ -257,6 +253,10 @@
       "require": "./cjs/Fx/Option.js",
       "import": "./esm/Fx/Option.js"
     },
+    "./Fx/Reader": {
+      "require": "./cjs/Fx/Reader.js",
+      "import": "./esm/Fx/Reader.js"
+    },
     "./Fx/Resume": {
       "require": "./cjs/Fx/Resume.js",
       "import": "./esm/Fx/Resume.js"
@@ -269,59 +269,59 @@
       "require": "./cjs/Fx/ResumeOption.js",
       "import": "./esm/Fx/ResumeOption.js"
     },
-    "./Fx/index": {
-      "require": "./cjs/Fx/index.js",
-      "import": "./esm/Fx/index.js"
-    },
-    "./FxT.ts": {
+    "./FxT": {
       "require": "./cjs/FxT.js",
       "import": "./esm/FxT.js"
     },
-    "./Hkt.ts": {
+    "./Hkt": {
       "require": "./cjs/Hkt.js",
       "import": "./esm/Hkt.js"
     },
-    "./IOEither.ts": {
+    "./IOEither": {
       "require": "./cjs/IOEither.js",
       "import": "./esm/IOEither.js"
     },
-    "./MonadRec.ts": {
+    "./MonadRec": {
       "require": "./cjs/MonadRec.js",
       "import": "./esm/MonadRec.js"
     },
-    "./Option.ts": {
+    "./Option": {
       "require": "./cjs/Option.js",
       "import": "./esm/Option.js"
     },
-    "./Provide.ts": {
+    "./Provide": {
       "require": "./cjs/Provide.js",
       "import": "./esm/Provide.js"
     },
-    "./Ref.ts": {
+    "./Reader": {
+      "require": "./cjs/Reader.js",
+      "import": "./esm/Reader.js"
+    },
+    "./Ref": {
       "require": "./cjs/Ref.js",
       "import": "./esm/Ref.js"
     },
-    "./Resume.ts": {
+    "./Resume": {
       "require": "./cjs/Resume.js",
       "import": "./esm/Resume.js"
     },
-    "./ResumeEither.ts": {
+    "./ResumeEither": {
       "require": "./cjs/ResumeEither.js",
       "import": "./esm/ResumeEither.js"
     },
-    "./ResumeOption.ts": {
+    "./ResumeOption": {
       "require": "./cjs/ResumeOption.js",
       "import": "./esm/ResumeOption.js"
     },
-    "./Scheduler.ts": {
+    "./Scheduler": {
       "require": "./cjs/Scheduler.js",
       "import": "./esm/Scheduler.js"
     },
-    "./Stream.ts": {
+    "./Stream": {
       "require": "./cjs/Stream.js",
       "import": "./esm/Stream.js"
     },
-    "./function.ts": {
+    "./function": {
       "require": "./cjs/function.js",
       "import": "./esm/function.js"
     }

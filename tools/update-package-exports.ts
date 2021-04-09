@@ -9,6 +9,7 @@ const packageJsonPath = path.join(ROOT_DIR, 'package.json')
 const packageJsonContents = fs.readFileSync(packageJsonPath).toString()
 const packageJson = JSON.parse(packageJsonContents)
 const TSX_REGEX = /.tsx?$/
+const INDEX_REGEX = /\/?index$/
 
 packageJson.exports = createExports()
 
@@ -29,7 +30,7 @@ export function createExports() {
     const isDirectory = fs.statSync(sourceDir).isDirectory()
     const name = module.replace(TSX_REGEX, '')
 
-    exports[`./${module}`] = {
+    exports[`./${name}`] = {
       require:
         './' + (isDirectory ? path.join('cjs', name, 'index.js') : path.join('cjs', `${name}.js`)),
       import:
@@ -59,7 +60,9 @@ export function createExports() {
         import: './' + path.join('esm', name, jsPath),
       }
 
-      exports[`./${name}/${relativePath.replace(TSX_REGEX, '')}`] = map
+      const relativeName = relativePath.replace(TSX_REGEX, '').replace(INDEX_REGEX, '')
+
+      exports[`./${name}${relativeName ? `/${relativeName}` : ''}`] = map
     }
   }
 

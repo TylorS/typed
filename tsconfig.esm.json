@@ -52,6 +52,7 @@
     "MonadRec",
     "Option",
     "Provide",
+    "Reader",
     "Ref",
     "Resume",
     "ResumeEither",

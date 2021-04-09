@@ -11,9 +11,6 @@ currently implemented.
 
 ### Modules
 
-- [ ] Either
-- [ ] These
-- [ ] IO
 - [ ] Reader
 - [ ] ReaderEither
 - [ ] ReaderTask

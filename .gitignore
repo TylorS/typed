@@ -80,6 +80,7 @@ snowpack.key
 /MonadRec/
 /Option/
 /Provide/
+/Reader/
 /Ref/
 /Resume/
 /ResumeEither/
