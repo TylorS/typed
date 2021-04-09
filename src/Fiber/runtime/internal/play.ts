@@ -4,8 +4,9 @@ import { disposeBoth } from '@most/disposable'
 import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 
-import { Fiber, sendStatus } from '../../Fiber'
+import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
+import { sendStatus } from '../FiberSendEvent'
 import { getFiberStatus, setFiberStatus } from '../FiberStatus'
 import { getFiberPause } from './FiberPause'
 

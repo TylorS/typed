@@ -12,6 +12,7 @@ import { Option } from 'fp-ts/Option'
 import { CurrentFiber, Fiber } from '../Fiber'
 import { FiberId } from '../FiberId'
 import { Status } from '../Status'
+import { FiberSendStatus } from './FiberSendEvent'
 import { getFiberStatus } from './FiberStatus'
 import { abort } from './internal/abort'
 import { fail } from './internal/fail'
@@ -33,13 +34,15 @@ export function createFiber<A>(
   refs: References = createReferences(),
 ): Fiber<A> {
   const id = FiberId(Symbol(`Fiber${fiberCount++}`))
-  const statusEvents = create<Status<A>>()
+  const [sendEvent, statusEvents] = create<Status<A>>()
+  const sendEventRef = FiberSendStatus<A>(sendEvent)
+
   const scheduledTask = asap(
     createCallbackTask(
       () =>
         pipe(
           fiber,
-          start,
+          start(sendEventRef),
           R.chain(() => env({ currentFiber: fiber, scheduler })),
           R.chain((a) => finish(fiber, a)),
           R.exec,

@@ -1,9 +1,8 @@
-import { Disposable } from '@most/types'
+import { Disposable, Stream } from '@most/types'
 import { Either } from 'fp-ts/Either'
 import { constVoid, pipe } from 'fp-ts/function'
 import { isSome, Option } from 'fp-ts/Option'
 
-import { Adapter } from '../Adapter'
 import { asks, Env } from '../Env'
 import { References, Refs } from '../Ref'
 import { chain, fromIO, Resume, sync } from '../Resume'
@@ -34,7 +33,7 @@ export interface Fiber<A> extends Refs {
   /**
    * Send/Receive status events
    */
-  readonly statusEvents: Adapter<Status<A>>
+  readonly statusEvents: Stream<Status<A>>
 
   /**
    * Asynchronously cancels the underlying resources and runs any Finalizers that have been previously
@@ -158,20 +157,13 @@ export const play = <A>(fiber: Fiber<A>): Env<CurrentFiber, Status<A>> => (e) =>
   )
 
 /**
- * Send a status event for the current fiber. You really shouldn't need this unless your are
- * implmenting your own runtime, so use wisely!
- */
-export const sendStatus = <A>(status: Status<A>): Env<CurrentFiber, void> => (e) =>
-  fromIO(() => e.currentFiber.statusEvents[0](status))
-
-/**
  * Create a listener for status event changes.
  */
 export const listenToStatusEvents = <A>(
   f: (status: Status<A>) => void,
 ): Env<CurrentFiber & SchedulerEnv, Disposable> => (e) =>
   fromIO(() =>
-    e.currentFiber.statusEvents[1].run(
+    e.currentFiber.statusEvents.run(
       { event: (_, s) => f(s), error: constVoid, end: constVoid },
       e.scheduler,
     ),

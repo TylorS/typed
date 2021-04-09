@@ -1,14 +1,15 @@
 import { doEnv, toEnv } from '@fp/Fx/Env'
 import { Resume, zip } from '@fp/Resume'
-import { pipe, unsafeCoerce } from 'fp-ts/function'
+import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 
-import { Fiber, sendStatus } from '../../Fiber'
+import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
 import { getFiberChildren } from '../FiberChildren'
-import { FiberFinalizers } from '../FiberFinalizers'
 import { getFiberReturnValue } from '../FiberReturnValue'
+import { sendStatus } from '../FiberSendEvent'
 import { setFiberStatus } from '../FiberStatus'
+import { finalize } from './finalize'
 
 const isTerminal = (status: Status<any>): boolean =>
   status.type === 'aborted' || status.type === 'completed'
@@ -24,13 +25,8 @@ export function complete<A>(fiber: Fiber<A>): Resume<void> {
       return
     }
 
-    const finalizers = yield* _(fiber.refs.getRef(FiberFinalizers))
-
-    // If there are finalizers make sure they run
-    if (finalizers.length > 0) {
-      yield* _(() => zip(finalizers.map((f) => f(returnValue))))
-      yield* _(pipe(FiberFinalizers, fiber.refs.setRef(unsafeCoerce([]))))
-    }
+    // Check for any registered finalizers which should run before changing status to aborted
+    yield* _(finalize(fiber))
 
     const status: Status<A> = { type: 'completed', value: returnValue.value }
 

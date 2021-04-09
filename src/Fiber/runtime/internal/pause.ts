@@ -3,8 +3,9 @@ import * as R from '@fp/Resume'
 import { pipe } from 'fp-ts/function'
 import { isNone, none, Option, some } from 'fp-ts/Option'
 
-import { Fiber, sendStatus } from '../../Fiber'
+import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
+import { sendStatus } from '../FiberSendEvent'
 import { setFiberStatus } from '../FiberStatus'
 import { setFiberPause } from './FiberPause'
 
