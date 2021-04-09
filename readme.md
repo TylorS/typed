@@ -15,7 +15,7 @@ currently implemented.
 - [x] ReaderEither
 - [x] ReaderTask
 - [x] ReaderTaskEither
-- [ ] State
+- [x] State
 - [ ] StateReaderTaskEither
 - [ ] Task
 - [ ] TaskEither
