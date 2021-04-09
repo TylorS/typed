@@ -6,19 +6,20 @@ import { Functor3 } from 'fp-ts/Functor'
 import { Monad3 } from 'fp-ts/Monad'
 import { Pointed3 } from 'fp-ts/Pointed'
 
-import * as E from '../ReaderEither'
+import * as E from '../ReaderTaskEither'
 import * as FxT from '../FxT'
 import { Provide3, ProvideAll3, ProvideSome3, UseAll3, UseSome3 } from '../Provide'
 import { Fx } from './Fx'
 
 export const of = FxT.of(E.Pointed)
-export const ap = FxT.ap({ ...E.MonadRec, ...E.Apply })
+export const ap = FxT.ap({ ...E.MonadRec, ...E.ApplyPar })
+export const apSeq = FxT.ap({ ...E.MonadRec, ...E.ApplySeq })
 export const chain = FxT.chain<E.URI>()
 export const chainRec = FxT.chainRec(E.MonadRec)
-export const doReaderEither = FxT.getDo<E.URI>()
-export const liftReaderEither = FxT.liftFx<E.URI>()
+export const doReaderTaskEither = FxT.getDo<E.URI>()
+export const liftReaderTaskEither = FxT.liftFx<E.URI>()
 export const map = FxT.map<E.URI>()
-export const toReaderEither = FxT.toMonad<E.URI>(E.MonadRec)
+export const toReaderTaskEither = FxT.toMonad<E.URI>(E.MonadRec)
 export const ask = FxT.ask(E.FromReader)
 export const asks = FxT.asks(E.FromReader)
 export const useSome = FxT.useSome({ ...E.UseSome, ...E.MonadRec })
@@ -26,14 +27,14 @@ export const useAll = FxT.useAll({ ...E.UseAll, ...E.MonadRec })
 export const provideSome = FxT.provideSome({ ...E.ProvideSome, ...E.MonadRec })
 export const provideAll = FxT.provideAll({ ...E.ProvideAll, ...E.MonadRec })
 
-export const URI = '@typed/fp/Fx/ReaderEither'
+export const URI = '@typed/fp/Fx/ReaderTaskEither'
 export type URI = typeof URI
 
-export interface FxReaderEither<R, E, A> extends Fx<E.ReaderEither<R, E, unknown>, A> {}
+export interface FxReaderTaskEither<R, E, A> extends Fx<E.ReaderTaskEither<R, E, unknown>, A> {}
 
 declare module 'fp-ts/HKT' {
   export interface URItoKind3<R, E, A> {
-    [URI]: FxReaderEither<R, E, A>
+    [URI]: FxReaderTaskEither<R, E, A>
   }
 }
 

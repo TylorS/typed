@@ -19,7 +19,7 @@ currently implemented.
 - [x] StateReaderTaskEither
 - [x] Task
 - [x] TaskEither
-- [ ] TaskOption
+- [x] TaskOption
 - [ ] TaskThese
 - [ ] Writer
 - [ ] ResumeThese
