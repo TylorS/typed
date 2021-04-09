@@ -4,9 +4,9 @@ import { Apply2 } from 'fp-ts/Apply'
 import { bind as bind_, Chain2 } from 'fp-ts/Chain'
 import { ChainRec2 } from 'fp-ts/ChainRec'
 import { Either } from 'fp-ts/Either'
-import { FromIO2 } from 'fp-ts/FromIO'
+import * as FIO from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
-import { FromTask2 } from 'fp-ts/FromTask'
+import * as FT from 'fp-ts/FromTask'
 import { constant, identity, Lazy, pipe } from 'fp-ts/function'
 import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
@@ -131,14 +131,14 @@ export const Alt: Alt2<URI> = {
 
 export const alt = Alt.alt
 
-export const FromIO: FromIO2<URI> = {
+export const FromIO: FIO.FromIO2<URI> = {
   URI,
   fromIO: fromReader,
 }
 
 export const fromIO = FromIO.fromIO
 
-export const FromTask: FromTask2<URI> = {
+export const FromTask: FT.FromTask2<URI> = {
   ...FromIO,
   fromTask: (task) => () => R.fromTask(task),
 }
@@ -199,6 +199,14 @@ export const fromReaderK = FR.fromReaderK(FromReader)
 export const chainFirstResumeK = FRe.chainFirstResumeK(FromResume, Chain)
 export const chainResumeK = FRe.chainResumeK(FromResume, Chain)
 export const fromResumeK = FRe.fromResumeK(FromResume)
+
+export const chainFirstTaskK = FT.chainFirstTaskK(FromTask, Chain)
+export const chainTaskK = FT.chainTaskK(FromTask, Chain)
+export const fromTaskK = FT.fromTaskK(FromTask)
+
+export const chainFirstIOK = FIO.chainFirstIOK(FromIO, Chain)
+export const chainIOK = FIO.chainIOK(FromIO, Chain)
+export const fromIOK = FIO.fromIOK(FromIO)
 
 export const zip = traverse(Applicative)(<E, A>(x: Env<E, A>) => x)
 

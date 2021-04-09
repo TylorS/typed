@@ -5,6 +5,8 @@ import { Apply1 } from 'fp-ts/Apply'
 import { bind as bind_, Chain1 } from 'fp-ts/Chain'
 import { ChainRec1 } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
+import * as FIO from 'fp-ts/FromIO'
+import * as FT from 'fp-ts/FromTask'
 import { FromIO1 } from 'fp-ts/FromIO'
 import { FromTask1 } from 'fp-ts/FromTask'
 import { constant, constVoid, flow, pipe } from 'fp-ts/function'
@@ -238,3 +240,11 @@ export const bind = bind_(Monad)
 export const tupled = tupled_(Functor)
 
 export const zip = RA.traverse(Applicative)(<A>(x: Resume<A>) => x)
+
+export const chainFirstTaskK = FT.chainFirstTaskK(FromTask, Chain)
+export const chainTaskK = FT.chainTaskK(FromTask, Chain)
+export const fromTaskK = FT.fromTaskK(FromTask)
+
+export const chainFirstIOK = FIO.chainFirstIOK(FromIO, Chain)
+export const chainIOK = FIO.chainIOK(FromIO, Chain)
+export const fromIOK = FIO.fromIOK(FromIO)

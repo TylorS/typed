@@ -11,26 +11,62 @@ currently implemented.
 
 ### Modules
 
-- [x] Reader
-- [x] ReaderEither
-- [x] ReaderTask
-- [x] ReaderTaskEither
-- [x] State
-- [x] StateReaderTaskEither
-- [x] Task
-- [x] TaskEither
-- [x] TaskOption
-- [-] TaskThese
-- [-] Writer
-- [-] ResumeThese
-- [-] EnvThese
-- [ ] StateEnvEither
+- [ ] These
+- [ ] ResumeThese
+- [ ] EnvThese
+- [ ] Writer
+- [ ] NonEmptyArray
+- [ ] ReadonlyNonEmptyArray
+- [ ] ReadonlyArray
 
 ### Libraries
 
 - [ ] Hooks
 - [ ] Rendering
-- [ ] 
+
+### Conversions
+
+I need to make sure we can interop with as many types as possible, so for all the types that can implement these interfaces we'll want to make sure all of the kliesi arrows are 
+implemented as well.
+
+- [ ] FromEither
+- [ ] FromIO
+- [ ] FromTask
+- [ ] FromReader
+- [ ] FromState 
+- [ ] FromResume 
+- [ ] FromEnv 
+- [ ] FromThese 
+
+### Derivable Implementations
+
+We'll want to make sure that all of the derivable functions given a type-class are available, including missing instances of those type-classes.
+
+- [ ] Alt 
+- [ ] Alternative 
+- [ ] Apply 
+- [ ] Bifunctor 
+- [ ] Category 
+- [ ] Chain 
+- [ ] Choice 
+- [ ] Compactable 
+- [ ] Contravariant 
+- [ ] Filterable 
+- [ ] Foldable 
+- [ ] Functor 
+- [ ] Invariant 
+- [ ] Monad 
+- [ ] Monoid 
+- [ ] Ord 
+- [ ] Profunctor 
+- [ ] Semigroup 
+- [ ] Semigroupoid
+- [ ] Separated
+- [ ] Show
+- [ ] Strong
+- [ ] Traversable
+- [ ] Unfoldable
+- [ ] Witherable
 
 ### Examples
 
@@ -39,4 +75,5 @@ issue, I'd like to make this more accessible than just hard API documentation.
 
 - [ ] fp-to-the-max
 - [ ] react
+- [ ] uhtml
 - [ ] 
