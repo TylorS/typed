@@ -1,6 +1,7 @@
-import * as S from 'fp-ts/State'
-import * as E from 'fp-ts/Either'
 import { ChainRec2 } from 'fp-ts/ChainRec'
+import * as E from 'fp-ts/Either'
+import * as S from 'fp-ts/State'
+
 import { MonadRec2 } from './MonadRec'
 
 export const chainRec = <A, S, B>(f: (value: A) => S.State<S, E.Either<A, B>>) => (

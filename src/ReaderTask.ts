@@ -2,8 +2,9 @@ import { ChainRec2 } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as RT from 'fp-ts/ReaderTask'
+
 import { MonadRec2 } from './MonadRec'
-import { UseSome2, UseAll2, ProvideSome2, ProvideAll2, Provide2 } from './Provide'
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from './Provide'
 
 export const chainRec = <A, R, B>(f: (value: A) => RT.ReaderTask<R, E.Either<A, B>>) => (
   value: A,

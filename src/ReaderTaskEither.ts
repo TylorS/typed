@@ -1,11 +1,12 @@
-import * as RT from './ReaderTask'
-import * as RTE from 'fp-ts/ReaderTaskEither'
+import { ChainRec3 } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
+import * as RTE from 'fp-ts/ReaderTaskEither'
+
 import { swapEithers } from './internal'
-import { ChainRec3 } from 'fp-ts/ChainRec'
 import { MonadRec3 } from './MonadRec'
 import { Provide3, ProvideAll3, ProvideSome3, UseAll3, UseSome3 } from './Provide'
+import * as RT from './ReaderTask'
 
 export const chainRec = <A, R, E, B>(
   f: (value: A) => RTE.ReaderTaskEither<R, E, E.Either<A, B>>,

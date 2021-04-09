@@ -1,8 +1,9 @@
-import * as SRTE from 'fp-ts/StateReaderTaskEither'
-import * as E from 'fp-ts/Either'
-import { Arity1 } from './function'
-import { pipe } from 'fp-ts/function'
 import { ChainRec4 } from 'fp-ts/ChainRec'
+import * as E from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
+import * as SRTE from 'fp-ts/StateReaderTaskEither'
+
+import { Arity1 } from './function'
 import { MonadRec4 } from './MonadRec'
 import { Provide4, ProvideAll4, ProvideSome4, UseAll4, UseSome4 } from './Provide'
 

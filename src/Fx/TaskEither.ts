@@ -6,8 +6,8 @@ import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 
-import * as E from '../TaskEither'
 import * as FxT from '../FxT'
+import * as E from '../TaskEither'
 import { Fx } from './Fx'
 
 export const of = FxT.of(E.Pointed)
