@@ -16,7 +16,7 @@ currently implemented.
 - [x] ReaderTask
 - [x] ReaderTaskEither
 - [x] State
-- [ ] StateReaderTaskEither
+- [x] StateReaderTaskEither
 - [ ] Task
 - [ ] TaskEither
 - [ ] TaskOption
@@ -24,7 +24,7 @@ currently implemented.
 - [ ] Writer
 - [ ] ResumeThese
 - [ ] EnvThese
-- [ ] 
+- [ ] StateEnvEither
 
 ### Libraries
 

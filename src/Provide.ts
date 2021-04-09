@@ -9,7 +9,7 @@ import { ApplyVariance, Hkt } from './Hkt'
  */
 export interface Provide<F> {
   readonly provideSome: <A>(provided: A) => <B, C>(hkt: HKT2<F, A & B, C>) => HKT2<F, B, C>
-  readonly provideAll: <A>(provided: A) => <B>(hkt: HKT2<F, Partial<A>, B>) => HKT2<F, never, B>
+  readonly provideAll: <A>(provided: A) => <B>(hkt: HKT2<F, Partial<A>, B>) => HKT2<F, unknown, B>
   readonly useSome: Provide<F>['provideSome']
   readonly useAll: Provide<F>['provideAll']
 }
@@ -21,7 +21,7 @@ export interface UseAll<F> extends Pick<Provide<F>, 'useAll'> {}
 
 export interface Provide2<F extends URIS2> {
   readonly provideSome: <A>(provided: A) => <B, C>(hkt: Hkt<F, [A & B, C]>) => Hkt<F, [B, C]>
-  readonly provideAll: <A>(provided: A) => <B>(hkt: Hkt<F, [Partial<A>, B]>) => Hkt<F, [never, B]>
+  readonly provideAll: <A>(provided: A) => <B>(hkt: Hkt<F, [Partial<A>, B]>) => Hkt<F, [unknown, B]>
   readonly useSome: Provide2<F>['provideSome']
   readonly useAll: Provide2<F>['provideAll']
 }
@@ -37,7 +37,7 @@ export interface Provide3<F extends URIS3> {
   ) => <B, E, C>(hkt: Hkt<F, [A & B, E, C]>) => Hkt<F, [B, E, C]>
   readonly provideAll: <A>(
     provided: A,
-  ) => <E, B>(hkt: Hkt<F, [Partial<A>, E, B]>) => Hkt<F, [never, E, B]>
+  ) => <E, B>(hkt: Hkt<F, [Partial<A>, E, B]>) => Hkt<F, [unknown, E, B]>
   readonly useSome: Provide3<F>['provideSome']
   readonly useAll: Provide3<F>['provideAll']
 }
@@ -51,7 +51,7 @@ export interface Provide3C<F extends URIS3, E> {
   readonly provideSome: <A>(provided: A) => <B, C>(hkt: Hkt<F, [A & B, E, C]>) => Hkt<F, [B, E, C]>
   readonly provideAll: <A>(
     provided: A,
-  ) => <B>(hkt: Hkt<F, [Partial<A>, E, B]>) => Hkt<F, [never, E, B]>
+  ) => <B>(hkt: Hkt<F, [Partial<A>, E, B]>) => Hkt<F, [unknown, E, B]>
   readonly useSome: Provide3C<F, E>['provideSome']
   readonly useAll: Provide3C<F, E>['provideAll']
 }
@@ -67,9 +67,9 @@ export interface Provide4<F extends URIS4> {
   ) => <S, B, E, C>(hkt: Hkt<F, [S, A & B, E, C]>) => Hkt<F, [S, B, E, C]>
   readonly provideAll: <A>(
     provided: A,
-  ) => <S, E, B>(hkt: Hkt<F, [S, Partial<A>, E, B]>) => Hkt<F, [S, never, E, B]>
-  readonly useSome: Provide3<F>['provideSome']
-  readonly useAll: Provide3<F>['provideAll']
+  ) => <S, E, B>(hkt: Hkt<F, [S, Partial<A>, E, B]>) => Hkt<F, [S, unknown, E, B]>
+  readonly useSome: Provide4<F>['provideSome']
+  readonly useAll: Provide4<F>['provideAll']
 }
 
 export interface ProvideSome4<F extends URIS4> extends Pick<Provide4<F>, 'provideSome'> {}
@@ -102,7 +102,7 @@ export function useSomeWith<F extends URIS3>(
 ): <R1, E1, A>(provider: Hkt<F, [R1, E1, A]>) => Provider3<F, A, R1, E1>
 
 export function useSomeWith<F extends URIS4>(
-  M: UseSome3<F> & Chain3<F>,
+  M: UseSome4<F> & Chain4<F>,
 ): <S1, R1, E1, A>(provider: Hkt<F, [S1, R1, E1, A]>) => Provider4<F, A, R1, S1, E1>
 
 export function useSomeWith<F>(
@@ -126,7 +126,7 @@ export function provideSomeWith<F extends URIS3>(
 ): <R1, E1, A>(provider: Hkt<F, [R1, E1, A]>) => Provider3<F, A, R1, E1>
 
 export function provideSomeWith<F extends URIS4>(
-  M: ProvideSome3<F> & Chain3<F>,
+  M: ProvideSome4<F> & Chain4<F>,
 ): <S1, R1, E1, A>(provider: Hkt<F, [S1, R1, E1, A]>) => Provider4<F, A, R1, S1, E1>
 
 export function provideSomeWith<F>(

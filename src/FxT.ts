@@ -1,4 +1,4 @@
-import { Apply, Apply1, Apply2, Apply3 } from 'fp-ts/Apply'
+import { Apply, Apply1, Apply2, Apply3, Apply4 } from 'fp-ts/Apply'
 import { Either, left, match, right } from 'fp-ts/Either'
 import { FromReader, FromReader2, FromReader3, FromReader3C, FromReader4 } from 'fp-ts/FromReader'
 import { flow, identity, pipe } from 'fp-ts/function'
@@ -9,20 +9,24 @@ import { A, U } from 'ts-toolbelt'
 import { Arity1 } from './function'
 import { doFx, Fx } from './Fx/Fx'
 import { ApplyVariance, Hkt, Initial } from './Hkt'
-import { MonadRec, MonadRec1, MonadRec2, MonadRec2C, MonadRec3 } from './MonadRec'
+import { MonadRec, MonadRec1, MonadRec2, MonadRec2C, MonadRec3, MonadRec4 } from './MonadRec'
 import {
   ProvideAll,
   ProvideAll2,
   ProvideAll3,
+  ProvideAll4,
   ProvideSome,
   ProvideSome2,
   ProvideSome3,
+  ProvideSome4,
   UseAll,
   UseAll2,
   UseAll3,
+  UseAll4,
   UseSome,
   UseSome2,
   UseSome3,
+  UseSome4,
 } from './Provide'
 
 export type FxT<F, Params extends readonly any[]> = Params extends readonly [...infer Init, infer R]
@@ -110,8 +114,13 @@ export function getDo<F>() {
 }
 
 type Kind2E<F extends URIS2, E> = [E] extends [Kind2<F, infer R, any>] ? R : never
+
 type Kind3E<F extends URIS3, E> = [E] extends [Kind3<F, any, infer R, any>] ? R : never
 type Kind3R<F extends URIS3, E> = [E] extends [Kind3<F, infer R, any, any>] ? R : never
+
+type Kind4E<F extends URIS4, E> = [E] extends [Kind4<F, any, any, infer R, any>] ? R : never
+type Kind4R<F extends URIS4, E> = [E] extends [Kind4<F, any, infer R, any, any>] ? R : never
+type Kind4S<F extends URIS4, E> = [E] extends [Kind4<F, infer R, any, any, any>] ? R : never
 
 export function toMonad<F extends URIS>(
   M: MonadRec1<F>,
@@ -135,6 +144,18 @@ export function toMonad<F extends URIS3>(
   F,
   ApplyVariance<F, 'R', U.ListOf<Kind3R<F, E>>>,
   ApplyVariance<F, 'E', U.ListOf<Kind3E<F, E>>>,
+  R
+>
+
+export function toMonad<F extends URIS4>(
+  M: MonadRec4<F>,
+): <E extends Kind4<F, any, any, any, any>, R>(
+  fx: Fx<E, R>,
+) => Kind4<
+  F,
+  ApplyVariance<F, 'S', U.ListOf<Kind4S<F, E>>>,
+  ApplyVariance<F, 'R', U.ListOf<Kind4R<F, E>>>,
+  ApplyVariance<F, 'E', U.ListOf<Kind4E<F, E>>>,
   R
 >
 
@@ -264,6 +285,22 @@ export function ap<F extends URIS3>(
   fab: FxT<F, [R2, E2, Arity1<A, B>]>,
 ) => FxT<F, [ApplyVariance<F, 'R', [R1, R2]>, ApplyVariance<F, 'E', [E1, E2]>, B]>
 
+export function ap<F extends URIS4>(
+  M: MonadRec4<F> & Apply4<F>,
+): <S1, R1, E1, A>(
+  fa: FxT<F, [S1, R1, E1, A]>,
+) => <S2, R2, E2, B>(
+  fab: FxT<F, [S2, R2, E2, Arity1<A, B>]>,
+) => FxT<
+  F,
+  [
+    ApplyVariance<F, 'S', [S1, S2]>,
+    ApplyVariance<F, 'R', [R1, R2]>,
+    ApplyVariance<F, 'E', [E1, E2]>,
+    B,
+  ]
+>
+
 export function ap<F>(
   M: MonadRec<F> & Apply<F>,
 ): <A>(fa: FxT<F, [A]>) => <B>(fab: FxT<F, [Arity1<A, B>]>) => FxT<F, [B]>
@@ -279,6 +316,7 @@ export function ap<F>(M: MonadRec<F> & Apply<F>) {
 export function chainRec<F extends URIS>(M: MonadRec1<F>): ChainRecFxT<F>
 export function chainRec<F extends URIS2>(M: MonadRec2<F>): ChainRecFxT<F>
 export function chainRec<F extends URIS3>(M: MonadRec3<F>): ChainRecFxT<F>
+export function chainRec<F extends URIS4>(M: MonadRec4<F>): ChainRecFxT<F>
 export function chainRec<F>(M: MonadRec<F>): ChainRecFxT<F> {
   return chainRec_(M) as ChainRecFxT<F>
 }
@@ -287,6 +325,8 @@ export type ChainRecFxT<F> = F extends URIS2
   ? <A, E, B>(f: Arity1<A, FxT<F, [E, Either<A, B>]>>) => (a: A) => FxT<F, [E, B]>
   : F extends URIS3
   ? <A, R, E, B>(f: Arity1<A, FxT<F, [R, E, Either<A, B>]>>) => (a: A) => FxT<F, [R, E, B]>
+  : F extends URIS4
+  ? <A, S, R, E, B>(f: Arity1<A, FxT<F, [S, R, E, Either<A, B>]>>) => (a: A) => FxT<F, [S, R, E, B]>
   : <A, B>(f: Arity1<A, FxT<F, [Either<A, B>]>>) => (a: A) => FxT<F, [B]>
 
 function chainRec_<F>(M: MonadRec<F>) {
@@ -371,6 +411,11 @@ export function useSome<F extends URIS3>(
 ): <A>(
   provided: A,
 ) => <B, E, T>(fx: Fx<Hkt<F, [A & B, E, unknown]>, T>) => Fx<Hkt<F, [B, E, unknown]>, T>
+export function useSome<F extends URIS4>(
+  M: UseSome4<F> & MonadRec4<F>,
+): <A>(
+  provided: A,
+) => <B, S, E, T>(fx: Fx<Hkt<F, [S, A & B, E, unknown]>, T>) => Fx<Hkt<F, [S, B, E, unknown]>, T>
 export function useSome<F>(
   M: UseSome<F> & MonadRec<F>,
 ): <A>(provided: A) => <B, T>(fx: Fx<HKT2<F, A & B, unknown>, T>) => Fx<HKT2<F, B, unknown>, T>
@@ -390,6 +435,11 @@ export function provideSome<F extends URIS3>(
 ): <A>(
   provided: A,
 ) => <B, E, T>(fx: Fx<Hkt<F, [A & B, E, unknown]>, T>) => Fx<Hkt<F, [B, E, unknown]>, T>
+export function provideSome<F extends URIS4>(
+  M: ProvideSome4<F> & MonadRec4<F>,
+): <A>(
+  provided: A,
+) => <B, S, E, T>(fx: Fx<Hkt<F, [S, A & B, E, unknown]>, T>) => Fx<Hkt<F, [S, B, E, unknown]>, T>
 export function provideSome<F>(
   M: ProvideSome<F> & MonadRec<F>,
 ): <A>(provided: A) => <B, T>(fx: Fx<HKT2<F, A & B, unknown>, T>) => Fx<HKT2<F, B, unknown>, T>
@@ -409,6 +459,11 @@ export function useAll<F extends URIS3>(
 ): <A>(
   provided: A,
 ) => <E, T>(fx: Fx<Hkt<F, [A, E, unknown]>, T>) => Fx<Hkt<F, [unknown, E, unknown]>, T>
+export function useAll<F extends URIS4>(
+  M: UseAll4<F> & MonadRec4<F>,
+): <A>(
+  provided: A,
+) => <S, E, T>(fx: Fx<Hkt<F, [S, A, E, unknown]>, T>) => Fx<Hkt<F, [S, unknown, E, unknown]>, T>
 export function useAll<F>(
   M: UseAll<F> & MonadRec<F>,
 ): <A>(provided: A) => <T>(fx: Fx<HKT2<F, A, unknown>, T>) => Fx<HKT2<F, unknown, unknown>, T>
@@ -428,6 +483,11 @@ export function provideAll<F extends URIS3>(
 ): <A>(
   provided: A,
 ) => <E, T>(fx: Fx<Hkt<F, [A, E, unknown]>, T>) => Fx<Hkt<F, [unknown, E, unknown]>, T>
+export function provideAll<F extends URIS4>(
+  M: ProvideAll4<F> & MonadRec4<F>,
+): <A>(
+  provided: A,
+) => <S, E, T>(fx: Fx<Hkt<F, [S, A, E, unknown]>, T>) => Fx<Hkt<F, [S, unknown, E, unknown]>, T>
 export function provideAll<F>(
   M: ProvideAll<F> & MonadRec<F>,
 ): <A>(provided: A) => <T>(fx: Fx<HKT2<F, A, unknown>, T>) => Fx<HKT2<F, unknown, unknown>, T>
