@@ -61,7 +61,7 @@ export interface VarianceMap {
   readonly IOEither: V<E, Covariant>
   readonly Reader: V<E, Contravariant>
   readonly ReaderEither: V<R, Contravariant> & V<E, Covariant>
-  readonly ReaderTask: V<R, Contravariant>
+  readonly ReaderTask: V<E, Contravariant>
   readonly ReaderTaskEither: V<R, Contravariant> & V<E, Covariant>
   readonly StateReaderTaskEither: V<R, Contravariant> & V<E, Covariant>
   readonly TaskEither: V<E, Covariant>
