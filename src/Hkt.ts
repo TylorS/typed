@@ -77,9 +77,7 @@ export type ApplyVariance<
   ? VarianceMap[F] extends V<P, infer R>
     ? R extends Covariant
       ? T[number]
-      : R extends Contravariant
-      ? Intersect<T>
-      : T[0]
+      : Intersect<T>
     : T[0]
   : T[0]
 
