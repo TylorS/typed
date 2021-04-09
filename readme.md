@@ -18,7 +18,7 @@ currently implemented.
 - [x] State
 - [x] StateReaderTaskEither
 - [x] Task
-- [ ] TaskEither
+- [x] TaskEither
 - [ ] TaskOption
 - [ ] TaskThese
 - [ ] Writer
