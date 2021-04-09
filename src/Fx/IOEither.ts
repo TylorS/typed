@@ -13,6 +13,7 @@ import { Fx } from './Fx'
 
 export const of = FxT.of(IOE.Pointed)
 export const ap = FxT.ap({ ...MonadRec, ...IOE.ApplicativePar })
+export const apSeq = FxT.ap({ ...MonadRec, ...IOE.ApplicativeSeq })
 export const chain = FxT.chain<IOE.URI>()
 export const chainRec = FxT.chainRec(MonadRec)
 export const doEnv = FxT.getDo<IOE.URI>()

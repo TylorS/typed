@@ -12,6 +12,7 @@ import { Fx } from './Fx'
 
 export const of = FxT.of(R.Pointed)
 export const ap = FxT.ap({ ...R.MonadRec, ...R.ApplicativePar })
+export const apSeq = FxT.ap({ ...R.MonadRec, ...R.ApplicativeSeq })
 export const chain = FxT.chain<R.URI>()
 export const chainRec = FxT.chainRec<R.URI>(R.MonadRec)
 export const doReaderTask = FxT.getDo<R.URI>()
