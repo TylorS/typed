@@ -11,8 +11,8 @@ currently implemented.
 
 ### Modules
 
-- [ ] Reader
-- [ ] ReaderEither
+- [x] Reader
+- [x] ReaderEither
 - [ ] ReaderTask
 - [ ] ReaderTaskEither
 - [ ] State

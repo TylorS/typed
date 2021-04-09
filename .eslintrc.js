@@ -20,7 +20,7 @@ module.exports = {
     'simple-import-sort/exports': 'error',
     'import/no-unresolved': 'off', // Allow TS to do this checking,
     'import/no-cycle': ['error', { maxDepth: Infinity }],
-    'import/namespace': ['error', { allowComputed: true }],
+    'import/namespace': ['warning', { allowComputed: true }],
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
