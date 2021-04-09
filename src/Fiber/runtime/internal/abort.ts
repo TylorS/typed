@@ -6,7 +6,7 @@ import { pipe } from 'fp-ts/function'
 import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
 import { FiberDisposable } from '../FiberDisposable'
-import { sendStatus } from '../FiberSendEvent'
+import { sendStatus } from './FiberSendEvent'
 import { setFiberStatus } from '../FiberStatus'
 import { finalize } from './finalize'
 

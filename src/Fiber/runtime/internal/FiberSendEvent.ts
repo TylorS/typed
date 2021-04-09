@@ -2,8 +2,8 @@ import { map, of } from '@fp/Env'
 import { createRef, getRef, Ref } from '@fp/Ref'
 import { constVoid, pipe } from 'fp-ts/function'
 
-import { withFiberRefs } from '../Fiber'
-import { Status } from '../Status'
+import { withFiberRefs } from '../../Fiber'
+import { Status } from '../../Status'
 
 export const FIBER_SEND_EVENT = Symbol('FiberSendEvent')
 

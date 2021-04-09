@@ -5,7 +5,7 @@ import { isNone, none, Option, some } from 'fp-ts/Option'
 
 import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
-import { sendStatus } from '../FiberSendEvent'
+import { sendStatus } from './FiberSendEvent'
 import { setFiberStatus } from '../FiberStatus'
 import { setFiberPause } from './FiberPause'
 

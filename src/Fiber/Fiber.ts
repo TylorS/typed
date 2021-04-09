@@ -31,7 +31,7 @@ export interface Fiber<A> extends Refs {
   readonly status: Resume<Status<A>>
 
   /**
-   * Send/Receive status events
+   * Listen to status events as they occur
    */
   readonly statusEvents: Stream<Status<A>>
 
