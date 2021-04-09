@@ -13,7 +13,7 @@ currently implemented.
 
 - [x] Reader
 - [x] ReaderEither
-- [ ] ReaderTask
+- [x] ReaderTask
 - [ ] ReaderTaskEither
 - [ ] State
 - [ ] StateReaderTaskEither
