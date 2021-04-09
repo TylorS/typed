@@ -257,6 +257,18 @@
       "require": "./cjs/Fx/Reader.js",
       "import": "./esm/Fx/Reader.js"
     },
+    "./Fx/ReaderEither": {
+      "require": "./cjs/Fx/ReaderEither.js",
+      "import": "./esm/Fx/ReaderEither.js"
+    },
+    "./Fx/ReaderTask": {
+      "require": "./cjs/Fx/ReaderTask.js",
+      "import": "./esm/Fx/ReaderTask.js"
+    },
+    "./Fx/ReaderTaskEither": {
+      "require": "./cjs/Fx/ReaderTaskEither.js",
+      "import": "./esm/Fx/ReaderTaskEither.js"
+    },
     "./Fx/Resume": {
       "require": "./cjs/Fx/Resume.js",
       "import": "./esm/Fx/Resume.js"
@@ -268,6 +280,30 @@
     "./Fx/ResumeOption": {
       "require": "./cjs/Fx/ResumeOption.js",
       "import": "./esm/Fx/ResumeOption.js"
+    },
+    "./Fx/State": {
+      "require": "./cjs/Fx/State.js",
+      "import": "./esm/Fx/State.js"
+    },
+    "./Fx/StateEnvEither": {
+      "require": "./cjs/Fx/StateEnvEither.js",
+      "import": "./esm/Fx/StateEnvEither.js"
+    },
+    "./Fx/StateReaderTaskEither": {
+      "require": "./cjs/Fx/StateReaderTaskEither.js",
+      "import": "./esm/Fx/StateReaderTaskEither.js"
+    },
+    "./Fx/Task": {
+      "require": "./cjs/Fx/Task.js",
+      "import": "./esm/Fx/Task.js"
+    },
+    "./Fx/TaskEither": {
+      "require": "./cjs/Fx/TaskEither.js",
+      "import": "./esm/Fx/TaskEither.js"
+    },
+    "./Fx/TaskOption": {
+      "require": "./cjs/Fx/TaskOption.js",
+      "import": "./esm/Fx/TaskOption.js"
     },
     "./FxT": {
       "require": "./cjs/FxT.js",
@@ -297,6 +333,18 @@
       "require": "./cjs/Reader.js",
       "import": "./esm/Reader.js"
     },
+    "./ReaderEither": {
+      "require": "./cjs/ReaderEither.js",
+      "import": "./esm/ReaderEither.js"
+    },
+    "./ReaderTask": {
+      "require": "./cjs/ReaderTask.js",
+      "import": "./esm/ReaderTask.js"
+    },
+    "./ReaderTaskEither": {
+      "require": "./cjs/ReaderTaskEither.js",
+      "import": "./esm/ReaderTaskEither.js"
+    },
     "./Ref": {
       "require": "./cjs/Ref.js",
       "import": "./esm/Ref.js"
@@ -317,9 +365,33 @@
       "require": "./cjs/Scheduler.js",
       "import": "./esm/Scheduler.js"
     },
+    "./State": {
+      "require": "./cjs/State.js",
+      "import": "./esm/State.js"
+    },
+    "./StateEnvEither": {
+      "require": "./cjs/StateEnvEither.js",
+      "import": "./esm/StateEnvEither.js"
+    },
+    "./StateReaderTaskEither": {
+      "require": "./cjs/StateReaderTaskEither.js",
+      "import": "./esm/StateReaderTaskEither.js"
+    },
     "./Stream": {
       "require": "./cjs/Stream.js",
       "import": "./esm/Stream.js"
+    },
+    "./Task": {
+      "require": "./cjs/Task.js",
+      "import": "./esm/Task.js"
+    },
+    "./TaskEither": {
+      "require": "./cjs/TaskEither.js",
+      "import": "./esm/TaskEither.js"
+    },
+    "./TaskOption": {
+      "require": "./cjs/TaskOption.js",
+      "import": "./esm/TaskOption.js"
     },
     "./function": {
       "require": "./cjs/function.js",
