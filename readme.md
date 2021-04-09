@@ -20,10 +20,10 @@ currently implemented.
 - [x] Task
 - [x] TaskEither
 - [x] TaskOption
-- [ ] TaskThese
-- [ ] Writer
-- [ ] ResumeThese
-- [ ] EnvThese
+- [-] TaskThese
+- [-] Writer
+- [-] ResumeThese
+- [-] EnvThese
 - [ ] StateEnvEither
 
 ### Libraries

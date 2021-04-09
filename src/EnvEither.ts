@@ -6,10 +6,10 @@ import { Chain3 } from 'fp-ts/Chain'
 import { ChainRec3 } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
 import * as ET from 'fp-ts/EitherT'
-import { FromIO3 } from 'fp-ts/FromIO'
+import * as FEi from 'fp-ts/FromEither'
+import * as FIO from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
-import { FromReader3 } from 'fp-ts/FromReader'
-import { FromTask3 } from 'fp-ts/FromTask'
+import * as FT from 'fp-ts/FromTask'
 import { flow, pipe } from 'fp-ts/function'
 import { Functor3 } from 'fp-ts/Functor'
 import { Monad3 } from 'fp-ts/Monad'
@@ -18,14 +18,12 @@ import { Semigroup } from 'fp-ts/Semigroup'
 
 import * as Env from './Env'
 import * as FE from './FromEnv'
-import { FromEnv3 } from './FromEnv'
 import * as FRe from './FromResume'
-import { FromResume3 } from './FromResume'
 import { Kind } from './Hkt'
 import { swapEithers } from './internal'
 import { MonadRec3 } from './MonadRec'
 import { Provide3, ProvideAll3, ProvideSome3, UseAll3, UseSome3 } from './Provide'
-import { Resume } from './Resume'
+import { Resume, sync } from './Resume'
 
 export interface EnvEither<R, E, A> extends Kind<[Env.URI, E.URI], [R, E, A]> {}
 
@@ -118,32 +116,39 @@ export const MonadRec: MonadRec3<URI> = {
   chainRec,
 }
 
-export const FromIO: FromIO3<URI> = {
+export const fromEither = <E, A, R = unknown>(e: E.Either<E, A>): EnvEither<R, E, A> => () =>
+  sync(() => e)
+
+export const FromEither: FEi.FromEither3<URI> = {
+  fromEither,
+}
+
+export const FromIO: FIO.FromIO3<URI> = {
   fromIO: flow(Env.fromIO, Env.map(E.right)),
 }
 
 export const fromIO = FromIO.fromIO
 
-export const FromTask: FromTask3<URI> = {
+export const FromTask: FT.FromTask3<URI> = {
   ...FromIO,
   fromTask: flow(Env.fromTask, Env.map(E.right)),
 }
 
 export const fromTask = FromTask.fromTask
 
-export const FromResume: FromResume3<URI> = {
+export const FromResume: FRe.FromResume3<URI> = {
   fromResume: <A, R>(resume: Resume<A>) => pipe(Env.fromResume<A, R>(resume), Env.map(E.right)),
 }
 
 export const fromResume = FromResume.fromResume
 
-export const FromReader: FromReader3<URI> = {
+export const FromReader: FR.FromReader3<URI> = {
   fromReader: flow(Env.fromReader, Env.map(E.right)),
 }
 
 export const fromReader = FromReader.fromReader
 
-export const FromEnv: FromEnv3<URI> = {
+export const FromEnv: FE.FromEnv3<URI> = {
   fromEnv,
 }
 
@@ -187,3 +192,19 @@ export const fromResumeK = FRe.fromResumeK(FromResume)
 export const chainEnvK = FE.chainEnvK(FromEnv, Chain)
 export const chainFirstEnvK = FE.chainFirstEnvK(FromEnv, Chain)
 export const fromEnvK = FE.fromEnvK(FromEnv)
+
+export const chainFirstTaskK = FT.chainFirstTaskK(FromTask, Chain)
+export const chainTaskK = FT.chainTaskK(FromTask, Chain)
+export const fromTaskK = FT.fromTaskK(FromTask)
+
+export const chainFirstIOK = FIO.chainFirstIOK(FromTask, Chain)
+export const chainIOK = FIO.chainIOK(FromTask, Chain)
+export const fromIOK = FIO.fromIOK(FromTask)
+
+export const chainEitherK = FEi.chainEitherK(FromEither, Chain)
+export const chainOptionK = FEi.chainOptionK(FromEither, Chain)
+export const filterOrElse = FEi.filterOrElse(FromEither, Chain)
+export const fromEitherK = FEi.fromEitherK(FromEither)
+export const fromOption = FEi.fromOption(FromEither)
+export const fromOptionK = FEi.fromOptionK(FromEither)
+export const fromPredicate = FEi.fromPredicate(FromEither)
