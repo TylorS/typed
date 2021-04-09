@@ -1,22 +1,17 @@
 import * as MA from '@most/adapter'
 import * as M from '@most/core'
 import { Stream } from '@most/types'
-import { Contravariant2 } from 'fp-ts/Contravariant'
 import { flow } from 'fp-ts/function'
 import { Functor2 } from 'fp-ts/Functor'
 import { Predicate } from 'fp-ts/Predicate'
 import { Refinement } from 'fp-ts/Refinement'
 
-export const ContravariantURI = '@most/adapter/contravariant'
-export type ContravariantURI = typeof ContravariantURI
-
-export const CovariantURI = '@most/adapter/covariant'
-export type CovariantURI = typeof CovariantURI
+export const URI = '@most/adapter'
+export type URI = typeof URI
 
 declare module 'fp-ts/HKT' {
   export interface URItoKind2<E, A> {
-    [ContravariantURI]: Adapter<A, E>
-    [CovariantURI]: Adapter<E, A>
+    [URI]: Adapter<E, A>
   }
 }
 
@@ -56,10 +51,6 @@ export function filter<A>(f: Predicate<A>): <C>(adapter: Adapter<C, A>) => Adapt
   return adapt(M.filter(f))
 }
 
-export const Contravariant: Contravariant2<ContravariantURI> = {
-  contramap,
-}
-
-export const Functor: Functor2<CovariantURI> = {
+export const Functor: Functor2<URI> = {
   map,
 }

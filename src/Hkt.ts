@@ -88,8 +88,8 @@ export type Initial<F, P extends Param> = F extends keyof VarianceMap
     ? R extends Covariant
       ? never
       : unknown
-    : unknown
-  : unknown
+    : any
+  : any
 
 export type Intersect<A extends readonly any[], R = unknown> = A extends readonly [
   infer Head,
