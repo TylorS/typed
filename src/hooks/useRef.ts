@@ -1,30 +1,20 @@
 import { Env, map } from '@fp/Env'
-import { alwaysEqualsEq } from '@fp/Eq'
+import { pipe } from '@fp/function'
 import { Do } from '@fp/Fx/Env'
 import { createRef, getRef } from '@fp/Ref'
-import { pipe } from 'cjs/function'
-import { contramap, Eq } from 'fp-ts/Eq'
 
-import { getNextSymbol } from './internal/getNextSymbol'
+import { getNextSymbol } from './internal/HookSymbols'
 
 export interface MutableRef<A> {
   current: A
 }
 
-export function useRef<E, A>(initial: Env<E, A>, eq: Eq<A> = alwaysEqualsEq) {
+const mutableRef = <A>(current: A): MutableRef<A> => ({ current })
+
+export function useRef<E, A>(initial: Env<E, A>) {
   return Do(function* (_) {
     const symbol = yield* _(getNextSymbol)
-    const ref = createRef(
-      pipe(
-        initial,
-        map((a): MutableRef<A> => ({ current: a })),
-      ),
-      symbol,
-      pipe(
-        eq,
-        contramap((r) => r.current),
-      ),
-    )
+    const ref = createRef(pipe(initial, map(mutableRef)), symbol)
 
     return yield* _(getRef(ref))
   })

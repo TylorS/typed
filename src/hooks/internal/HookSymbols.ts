@@ -6,10 +6,14 @@ import { EqStrict } from 'fp-ts/Eq'
 import { Eq } from 'fp-ts/number'
 import * as RM from 'fp-ts/ReadonlyMap'
 
-import { getNextIndex } from './getNextIndex'
+import { getNextIndex } from './HookIndex'
 
 const upsert = RM.upsertAt(Eq)
 
+/**
+ * An map from HookIndex to Symbol to ensure hooks are unable to collide
+ * with user-defined references.
+ */
 export const HookSymbols = createRef(
   fromIO((): ReadonlyMap<number, symbol> => new Map<number, symbol>()),
   Symbol('HookSymbols'),

@@ -20,5 +20,5 @@ export const useEq = <A>(value: A, eq: Eq<A>, firstRun = true) =>
 
     ref.current = some(value)
 
-    return !isEqual
+    return isEqual
   })
