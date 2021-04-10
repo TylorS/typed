@@ -1,6 +1,6 @@
 import { Alt2 } from 'fp-ts/Alt'
 import { Applicative2 } from 'fp-ts/Applicative'
-import { Apply2 } from 'fp-ts/Apply'
+import * as Ap from 'fp-ts/Apply'
 import { bind as bind_, Chain2 } from 'fp-ts/Chain'
 import { ChainRec2 } from 'fp-ts/ChainRec'
 import { Either } from 'fp-ts/Either'
@@ -35,9 +35,9 @@ export const ap: <R, A>(fa: Env<R, A>) => <B>(fab: Env<R, Arity1<A, B>>) => Env<
   R.Apply,
 )
 
-export const chain: <A, R, B>(f: (a: A) => Env<R, B>) => (ma: Env<R, A>) => Env<R, B> = RT.chain(
-  R.Chain,
-)
+export const chain = RT.chain(R.Chain) as <A, R1, B>(
+  f: (a: A) => Env<R1, B>,
+) => <R2>(ma: Env<R2, A>) => Env<R1 & R2, B>
 
 export const chainFirst = <A, R, B>(f: (a: A) => Env<R, B>) => (ma: Env<R, A>): Env<R, A> =>
   pipe(
@@ -85,10 +85,15 @@ export const Functor: Functor2<URI> = {
   map,
 }
 
-export const Apply: Apply2<URI> = {
+export const Apply: Ap.Apply2<URI> = {
   ...Functor,
   ap,
 }
+
+export const apS = Ap.apS(Apply)
+export const apT = Ap.apT(Apply)
+export const apFirst = Ap.apFirst(Apply)
+export const apSecond = Ap.apSecond(Apply)
 
 export const Applicative: Applicative2<URI> = {
   ...Apply,
