@@ -43,6 +43,11 @@ export interface Fiber<A> extends Refs {
    */
   readonly abort: Resume<Status<A>>
 
+  /**
+   * Clone a Fiber, creating a new Fiber using the same effect and resources.
+   */
+  readonly clone: (options?: CloneOptions) => Resume<Fiber<A>>
+
   //--------------- Cooperative Scheduling ---------------//
   // In the current implementation it is no usually going to make sense to call these
   // directly yourself, but to instead use the provided pause/play functions.
@@ -58,6 +63,11 @@ export interface Fiber<A> extends Refs {
    * Will throw if the Fiber is not currently paused.
    */
   readonly play: Resume<Status<A>>
+}
+
+export type CloneOptions = {
+  readonly inheritRefs?: boolean
+  readonly parent?: Fiber<unknown>
 }
 
 /**

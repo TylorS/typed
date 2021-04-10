@@ -7,9 +7,9 @@ import { createCallbackTask } from '@fp/Stream'
 import { asap } from '@most/scheduler'
 import { Scheduler } from '@most/types'
 import { pipe } from 'fp-ts/function'
-import { Option } from 'fp-ts/Option'
+import * as O from 'fp-ts/Option'
 
-import { CurrentFiber, Fiber } from '../Fiber'
+import { CloneOptions, CurrentFiber, Fiber } from '../Fiber'
 import { FiberId } from '../FiberId'
 import { Status } from '../Status'
 import { getFiberStatus } from './FiberStatus'
@@ -29,7 +29,7 @@ export function createFiber<A>(
     | Env<CurrentFiber, A>
     | Env<SchedulerEnv, A>
     | Env<CurrentFiber & SchedulerEnv, A>,
-  parent: Option<Fiber<unknown>>,
+  parent: O.Option<Fiber<unknown>>,
   scheduler: Scheduler,
   refs: References = createReferences(),
 ): Fiber<A> {
@@ -69,6 +69,19 @@ export function createFiber<A>(
     get abort() {
       return pipe(abort(fiber, scheduledTask), R.chain(getStatus))
     },
+    clone: (options: CloneOptions = {}) =>
+      R.sync(() =>
+        createFiber(
+          env,
+          pipe(
+            options.parent,
+            O.fromNullable,
+            O.alt(() => parent),
+          ),
+          scheduler,
+          options.inheritRefs ? refs : undefined,
+        ),
+      ),
   }
 
   return fiber
