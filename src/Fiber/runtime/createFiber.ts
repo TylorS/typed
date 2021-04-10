@@ -21,7 +21,13 @@ import { pause } from './internal/pause'
 import { play } from './internal/play'
 import { start } from './internal/start'
 
-let fiberCount = 0
+export type FiberOptions = {
+  readonly scheduler: Scheduler
+
+  readonly parent?: Fiber<unknown>
+  readonly refs?: References
+  readonly id?: PropertyKey
+}
 
 export function createFiber<A>(
   env:
@@ -29,11 +35,11 @@ export function createFiber<A>(
     | Env<CurrentFiber, A>
     | Env<SchedulerEnv, A>
     | Env<CurrentFiber & SchedulerEnv, A>,
-  parent: O.Option<Fiber<unknown>>,
-  scheduler: Scheduler,
-  refs: References = createReferences(),
+  options: FiberOptions,
 ): Fiber<A> {
-  const id = FiberId(Symbol(`Fiber${fiberCount++}`))
+  const { scheduler, refs = createReferences() } = options
+  const parent = O.fromNullable(options.parent)
+  const id = FiberId(options.id ?? Symbol(`Fiber`))
   const [sendEvent, statusEvents] = create<Status<A>>()
   const sendEventRef = FiberSendStatus<A>(sendEvent)
 
@@ -71,16 +77,16 @@ export function createFiber<A>(
     },
     clone: (options: CloneOptions = {}) =>
       R.sync(() =>
-        createFiber(
-          env,
-          pipe(
+        createFiber(env, {
+          scheduler,
+          refs: options.inheritRefs ? refs : undefined,
+          parent: pipe(
             options.parent,
             O.fromNullable,
             O.alt(() => parent),
+            O.toUndefined,
           ),
-          scheduler,
-          options.inheritRefs ? refs : undefined,
-        ),
+        }),
       ),
   }
 

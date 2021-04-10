@@ -1,28 +1,26 @@
 import { settable } from '@fp/Disposable'
-import { Env, provideSome } from '@fp/Env'
-import { References } from '@fp/Ref'
+import { Env, useSome } from '@fp/Env'
 import * as R from '@fp/Resume'
 import { Scheduler } from '@most/types'
 import { Either, left, right } from 'fp-ts/Either'
 import { constVoid, pipe } from 'fp-ts/function'
-import { fromNullable, isSome, match, none, Option, some } from 'fp-ts/Option'
+import { isSome, match, none, Option, some } from 'fp-ts/Option'
 
-import { CurrentFiber, Fiber, Fork, Join, Kill } from '../Fiber'
+import { CurrentFiber, Fiber, Fork, ForkOptions, Join, Kill } from '../Fiber'
 import { Status } from '../Status'
 import { createFiber } from './createFiber'
 import { addChild } from './FiberChildren'
 
 export function createRuntime(scheduler: Scheduler): Fork & Join & Kill {
   const Fork: Fork = {
-    forkFiber: <R, A>(env: Env<R, A>, r: R, refs?: References) =>
+    forkFiber: <R, A>(env: Env<R, A>, r: R, options: ForkOptions = {}) =>
       pipe(
         R.sync(() =>
-          createFiber(
-            pipe(env, provideSome(r)),
-            fromNullable((r as Partial<CurrentFiber>).currentFiber),
+          createFiber(pipe(env, useSome(r)), {
+            parent: (r as Partial<CurrentFiber>).currentFiber,
             scheduler,
-            refs,
-          ),
+            ...options,
+          }),
         ),
         R.chain(addChildToParent),
       ),

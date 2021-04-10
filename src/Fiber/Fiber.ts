@@ -73,35 +73,40 @@ export type CloneOptions = {
 /**
  * Creates a new Fiber invocation
  */
-export function fork<R, A>(hkt: Env<R, A>, refs?: References): Env<Fork & R, Fiber<A>>
+export function fork<R, A>(hkt: Env<R, A>, options?: ForkOptions): Env<Fork & R, Fiber<A>>
 export function fork<R, A>(
   hkt: Env<R & CurrentFiber, A>,
-  refs?: References,
+  options?: ForkOptions,
 ): Env<Fork & R, Fiber<A>>
 export function fork<R, A>(
   hkt: Env<R & SchedulerEnv, A>,
-  refs?: References,
+  options?: ForkOptions,
 ): Env<Fork & R, Fiber<A>>
 export function fork<R, A>(
   hkt: Env<R & CurrentFiber & SchedulerEnv, A>,
-  refs?: References,
+  options?: ForkOptions,
 ): Env<Fork & R, Fiber<A>>
 
-export function fork<R, A>(hkt: Env<R, A>, refs?: References): Env<Fork & R, Fiber<A>> {
-  return (e: Fork & R) => e.forkFiber(hkt, e, refs)
+export function fork<R, A>(hkt: Env<R, A>, options: ForkOptions = {}): Env<Fork & R, Fiber<A>> {
+  return (e: Fork & R) => e.forkFiber(hkt, e, options)
 }
 
 export type Fork = {
   readonly forkFiber: {
-    <R, A>(env: Env<R, A>, requirements: R, refs?: References): Resume<Fiber<A>>
-    <R, A>(env: Env<R & CurrentFiber, A>, requirements: R, refs?: References): Resume<Fiber<A>>
-    <R, A>(env: Env<R & SchedulerEnv, A>, requirements: R, refs?: References): Resume<Fiber<A>>
+    <R, A>(env: Env<R, A>, requirements: R, options?: ForkOptions): Resume<Fiber<A>>
+    <R, A>(env: Env<R & CurrentFiber, A>, requirements: R, options?: ForkOptions): Resume<Fiber<A>>
+    <R, A>(env: Env<R & SchedulerEnv, A>, requirements: R, options?: ForkOptions): Resume<Fiber<A>>
     <R, A>(
       env: Env<R & CurrentFiber & SchedulerEnv, A>,
       requirements: R,
-      refs?: References,
+      options?: ForkOptions,
     ): Resume<Fiber<A>>
   }
+}
+
+export type ForkOptions = {
+  readonly refs?: References
+  readonly id?: PropertyKey
 }
 
 /**
