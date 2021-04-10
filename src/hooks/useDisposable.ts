@@ -13,7 +13,7 @@ export const useDisposable = <Deps extends ReadonlyArray<any> = []>(
   eqs: { readonly [K in keyof Deps]: Eq.Eq<Deps[K]> } = RA.getEq(Eq.deepEqualsEq) as any,
 ) =>
   Do(function* (_) {
-    const ref = yield* _(useRef(fromIO(() => f())))
+    const ref = yield* _(useRef(fromIO(f)))
     const isEqual = yield* _(useEq(deps, Eq.tuple(...eqs)))
 
     if (!isEqual) {
