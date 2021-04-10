@@ -20,7 +20,7 @@ import { FromResume2 } from './FromResume'
 import { Arity1 } from './function'
 import { Intersect, Kind } from './Hkt'
 import { MonadRec2 } from './MonadRec'
-import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from './Provide'
+import * as P from './Provide'
 import * as R from './Resume'
 
 /**
@@ -168,23 +168,31 @@ export const useAll = <E1>(provided: E1) => <A>(env: Env<E1, A>): Env<unknown, A
 export const provideAll = <E1>(provided: E1) => <A>(env: Env<E1, A>): Env<unknown, A> => (e) =>
   env({ ...provided, ...((e as any) ?? {}) })
 
-export const UseSome: UseSome2<URI> = {
+export const UseSome: P.UseSome2<URI> = {
   useSome,
 }
 
-export const UseAll: UseAll2<URI> = {
+export const UseAll: P.UseAll2<URI> = {
   useAll,
 }
 
-export const ProvideSome: ProvideSome2<URI> = {
+export const ProvideSome: P.ProvideSome2<URI> = {
   provideSome,
 }
 
-export const ProvideAll: ProvideAll2<URI> = {
+export const ProvideAll: P.ProvideAll2<URI> = {
   provideAll,
 }
 
-export const Provide: Provide2<URI> = {
+export const provideAllWith = P.provideAllWith({ ...ProvideAll, ...Chain })
+export const useAllWith = P.useAllWith({ ...UseAll, ...Chain })
+export const provideSomeWith = P.provideSomeWith({ ...ProvideSome, ...Chain })
+export const useSomeWith = P.useSomeWith({ ...UseSome, ...Chain })
+
+export const askAndUse = P.askAndUse({ ...UseAll, ...Chain, ...FromReader })
+export const askAndProvide = P.askAndProvide({ ...ProvideAll, ...Chain, ...FromReader })
+
+export const Provide: P.Provide2<URI> = {
   useSome,
   useAll,
   provideSome,

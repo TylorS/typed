@@ -413,6 +413,10 @@
       "require": "./cjs/hooks/index.js",
       "import": "./esm/hooks/index.js"
     },
+    "./hooks/useDisposable": {
+      "require": "./cjs/hooks/useDisposable.js",
+      "import": "./esm/hooks/useDisposable.js"
+    },
     "./hooks/useEq": {
       "require": "./cjs/hooks/useEq.js",
       "import": "./esm/hooks/useEq.js"
@@ -420,6 +424,10 @@
     "./hooks/useFiber": {
       "require": "./cjs/hooks/useFiber.js",
       "import": "./esm/hooks/useFiber.js"
+    },
+    "./hooks/useFn": {
+      "require": "./cjs/hooks/useFn.js",
+      "import": "./esm/hooks/useFn.js"
     },
     "./hooks/useMemo": {
       "require": "./cjs/hooks/useMemo.js",

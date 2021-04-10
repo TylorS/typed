@@ -1,5 +1,7 @@
+export * from './useDisposable'
 export * from './useEq'
 export * from './useFiber'
+export * from './useFn'
 export * from './useMemo'
 export * from './useRef'
 export * from './useState'

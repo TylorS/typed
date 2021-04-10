@@ -1,6 +1,7 @@
 import { Chain, Chain2, Chain3, Chain4 } from 'fp-ts/Chain'
+import { FromReader, FromReader2, FromReader3, FromReader4 } from 'fp-ts/FromReader'
 import { pipe } from 'fp-ts/function'
-import { HKT2, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
+import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
 
 import { ApplyVariance, Hkt } from './Hkt'
 
@@ -199,4 +200,44 @@ export function provideAllWith<F>(M: ProvideAll<F> & Chain<F>) {
       provider,
       M.chain((removed) => pipe(hkt, M.provideAll(removed))),
     )
+}
+
+export function askAndUse<F extends URIS2>(
+  M: UseAll2<F> & Chain2<F> & FromReader2<F>,
+): <E, B>(hkt: Kind2<F, E, B>) => Kind2<F, unknown, B>
+
+export function askAndUse<F extends URIS3>(
+  M: UseAll3<F> & Chain3<F> & FromReader3<F>,
+): <R, E, B>(hkt: Kind3<F, R, E, B>) => Kind3<F, unknown, E, B>
+
+export function askAndUse<F extends URIS4>(
+  M: UseAll4<F> & Chain4<F> & FromReader4<F>,
+): <S, R, E, B>(hkt: Kind4<F, S, R, E, B>) => Kind4<F, S, unknown, E, B>
+
+export function askAndUse<F>(
+  M: UseAll<F> & Chain<F> & FromReader<F>,
+): <E, B>(hkt: HKT2<F, E, B>) => HKT2<F, unknown, B>
+
+export function askAndUse<F>(M: UseAll<F> & Chain<F> & FromReader<F>) {
+  return useAllWith(M)(M.fromReader(<E>(e: E) => e))
+}
+
+export function askAndProvide<F extends URIS2>(
+  M: ProvideAll2<F> & Chain2<F> & FromReader2<F>,
+): <E, B>(hkt: Kind2<F, E, B>) => Kind2<F, unknown, B>
+
+export function askAndProvide<F extends URIS3>(
+  M: ProvideAll3<F> & Chain3<F> & FromReader3<F>,
+): <R, E, B>(hkt: Kind3<F, R, E, B>) => Kind3<F, unknown, E, B>
+
+export function askAndProvide<F extends URIS4>(
+  M: ProvideAll4<F> & Chain4<F> & FromReader4<F>,
+): <S, R, E, B>(hkt: Kind4<F, S, R, E, B>) => Kind4<F, S, unknown, E, B>
+
+export function askAndProvide<F>(
+  M: ProvideAll<F> & Chain<F> & FromReader<F>,
+): <E, B>(hkt: HKT2<F, E, B>) => HKT2<F, unknown, B>
+
+export function askAndProvide<F>(M: ProvideAll<F> & Chain<F> & FromReader<F>) {
+  return provideAllWith(M)(M.fromReader(<E>(e: E) => e))
 }
