@@ -13,7 +13,7 @@ export const useMemo = <E, A, Deps extends ReadonlyArray<any> = []>(
 ) =>
   Do(function* (_) {
     const ref = yield* _(useRef(env))
-    const isEqual = yield* _(useEq(deps, Eq.tuple(...eqs), false))
+    const isEqual = yield* _(useEq(deps, Eq.tuple(...eqs)))
 
     if (!isEqual) {
       ref.current = yield* _(env)
