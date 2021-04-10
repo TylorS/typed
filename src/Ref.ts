@@ -25,10 +25,9 @@ export type RefEnv<A> = A extends Ref<infer R, any> ? R : never
 
 export type RefValue<A> = A extends Ref<any, infer R> ? R : never
 
-let refId = 0
 export function createRef<E, A>(
   initial: E.Env<E, A>,
-  id: PropertyKey = Symbol(`Ref${refId++}`),
+  id: PropertyKey = Symbol(`Ref`),
   eq: Eq<A> = deepEqualsEq,
 ): Ref<E, A> {
   return {

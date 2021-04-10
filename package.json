@@ -181,6 +181,10 @@
       "require": "./cjs/Fiber/runtime/internal/FiberPause.js",
       "import": "./esm/Fiber/runtime/internal/FiberPause.js"
     },
+    "./Fiber/runtime/internal/FiberSendEvent": {
+      "require": "./cjs/Fiber/runtime/internal/FiberSendEvent.js",
+      "import": "./esm/Fiber/runtime/internal/FiberSendEvent.js"
+    },
     "./Fiber/runtime/internal/abort": {
       "require": "./cjs/Fiber/runtime/internal/abort.js",
       "import": "./esm/Fiber/runtime/internal/abort.js"
@@ -192,6 +196,10 @@
     "./Fiber/runtime/internal/fail": {
       "require": "./cjs/Fiber/runtime/internal/fail.js",
       "import": "./esm/Fiber/runtime/internal/fail.js"
+    },
+    "./Fiber/runtime/internal/finalize": {
+      "require": "./cjs/Fiber/runtime/internal/finalize.js",
+      "import": "./esm/Fiber/runtime/internal/finalize.js"
     },
     "./Fiber/runtime/internal/finish": {
       "require": "./cjs/Fiber/runtime/internal/finish.js",
@@ -349,6 +357,10 @@
       "require": "./cjs/Ref.js",
       "import": "./esm/Ref.js"
     },
+    "./RefMap": {
+      "require": "./cjs/RefMap.js",
+      "import": "./esm/RefMap.js"
+    },
     "./Resume": {
       "require": "./cjs/Resume.js",
       "import": "./esm/Resume.js"
@@ -396,6 +408,38 @@
     "./function": {
       "require": "./cjs/function.js",
       "import": "./esm/function.js"
+    },
+    "./hooks": {
+      "require": "./cjs/hooks/index.js",
+      "import": "./esm/hooks/index.js"
+    },
+    "./hooks/useEq": {
+      "require": "./cjs/hooks/useEq.js",
+      "import": "./esm/hooks/useEq.js"
+    },
+    "./hooks/useFiber": {
+      "require": "./cjs/hooks/useFiber.js",
+      "import": "./esm/hooks/useFiber.js"
+    },
+    "./hooks/useMemo": {
+      "require": "./cjs/hooks/useMemo.js",
+      "import": "./esm/hooks/useMemo.js"
+    },
+    "./hooks/useRef": {
+      "require": "./cjs/hooks/useRef.js",
+      "import": "./esm/hooks/useRef.js"
+    },
+    "./hooks/useState": {
+      "require": "./cjs/hooks/useState.js",
+      "import": "./esm/hooks/useState.js"
+    },
+    "./hooks/internal/HookIndex": {
+      "require": "./cjs/hooks/internal/HookIndex.js",
+      "import": "./esm/hooks/internal/HookIndex.js"
+    },
+    "./hooks/internal/HookSymbols": {
+      "require": "./cjs/hooks/internal/HookSymbols.js",
+      "import": "./esm/hooks/internal/HookSymbols.js"
     }
   }
 }
