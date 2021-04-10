@@ -6,9 +6,9 @@ import { isNone } from 'fp-ts/Option'
 
 import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
-import { sendStatus } from './FiberSendEvent'
 import { getFiberStatus, setFiberStatus } from '../FiberStatus'
 import { getFiberPause } from './FiberPause'
+import { sendStatus } from './FiberSendEvent'
 
 export function play<A>(fiber: Fiber<A>) {
   const fx = doEnv(function* (_) {

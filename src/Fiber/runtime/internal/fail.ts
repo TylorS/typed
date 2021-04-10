@@ -5,9 +5,9 @@ import { pipe } from 'fp-ts/function'
 import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
 import { setFiberReturnValue } from '../FiberReturnValue'
-import { sendStatus } from './FiberSendEvent'
 import { setFiberStatus } from '../FiberStatus'
 import { complete } from './complete'
+import { sendStatus } from './FiberSendEvent'
 
 export function fail<A>(fiber: Fiber<A>, error: Error) {
   const fx = doEnv(function* (_) {

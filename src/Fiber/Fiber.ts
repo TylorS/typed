@@ -16,7 +16,7 @@ import { Status } from './Status'
  */
 export interface Fiber<A> extends Refs {
   /**
-   * A unique ID for this specific fiber instance
+   * A unique ID for this specific fiber instance. By default this will be a Symbol()
    */
   readonly id: FiberId
 
@@ -31,7 +31,9 @@ export interface Fiber<A> extends Refs {
   readonly status: Resume<Status<A>>
 
   /**
-   * Listen to status events as they occur
+   * Listen to status events as they occur. Events will occur with or without observation
+   * and will not be replayed to late observers - use .status to get the current status at
+   * any point to overcome these limitations.
    */
   readonly statusEvents: Stream<Status<A>>
 

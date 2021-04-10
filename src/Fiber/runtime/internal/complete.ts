@@ -7,8 +7,8 @@ import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
 import { getFiberChildren } from '../FiberChildren'
 import { getFiberReturnValue } from '../FiberReturnValue'
-import { sendStatus } from './FiberSendEvent'
 import { setFiberStatus } from '../FiberStatus'
+import { sendStatus } from './FiberSendEvent'
 import { finalize } from './finalize'
 
 const isTerminal = (status: Status<any>): boolean =>

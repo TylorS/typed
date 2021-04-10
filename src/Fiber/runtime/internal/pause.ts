@@ -5,9 +5,9 @@ import { isNone, none, Option, some } from 'fp-ts/Option'
 
 import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
-import { sendStatus } from './FiberSendEvent'
 import { setFiberStatus } from '../FiberStatus'
 import { setFiberPause } from './FiberPause'
+import { sendStatus } from './FiberSendEvent'
 
 export const pause = <A>(fiber: Fiber<A>): R.Resume<Option<Status<unknown>>> => {
   const fx = doResume(function* (_) {

@@ -3,8 +3,8 @@ import { pipe } from 'fp-ts/function'
 
 import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
-import { FiberSendStatusRef } from './FiberSendEvent'
 import { setFiberStatus } from '../FiberStatus'
+import { FiberSendStatusRef } from './FiberSendEvent'
 
 export function start<A>(ref: FiberSendStatusRef<A>) {
   return (fiber: Fiber<A>) => {
