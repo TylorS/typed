@@ -1,3 +1,4 @@
+import { constTrue } from 'cjs/function'
 import { Eq } from 'fp-ts/Eq'
 
 import { constant, constFalse } from './function'
@@ -5,6 +6,7 @@ import { constant, constFalse } from './function'
 const FUNCTION_NAME_REGEX = /^function\s*([\w$]+)/
 const DEFAULT_MATCH = ['', '']
 
+export const alwaysEqualsEq: Eq<any> = { equals: constant(constTrue) }
 export const neverEqualsEq: Eq<any> = { equals: constant(constFalse) }
 
 /**
@@ -196,3 +198,5 @@ function functionName(fn: Function): string {
 
   return name
 }
+
+export * from 'fp-ts/Eq'

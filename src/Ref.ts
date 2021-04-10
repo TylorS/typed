@@ -7,6 +7,7 @@ import { create } from './Adapter'
 import { Branded } from './Branded'
 import * as E from './Env'
 import { deepEqualsEq } from './Eq'
+import { Arity1 } from './function'
 
 /**
  * A reference to a value. When attempting to retrieve a Ref's value using
@@ -72,6 +73,15 @@ export function deleteRef<E, A>(ref: Ref<E, A>): E.Env<Refs, Option<A>> {
     E.asks((e: Refs) => e.refs.deleteRef(ref)),
     E.flatten,
   )
+}
+
+export function modifyRef<A>(f: Arity1<A, A>) {
+  return <E>(ref: Ref<E, A>) =>
+    pipe(
+      ref,
+      getRef,
+      E.chain((a) => pipe(ref, pipe(a, f, setRef))),
+    )
 }
 
 export function fromKey<A>(eq: Eq<A> = deepEqualsEq) {
