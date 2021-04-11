@@ -15,9 +15,6 @@ import { finalize } from './finalize'
 
 export function abort<A>(fiber: Fiber<A>, disposable: Disposable) {
   const fx = doEnv(function* (_) {
-    // Cancel all the synchronously cancelable resources
-    disposeBoth(yield* _(fiber.refs.getRef(FiberDisposable)), disposable).dispose()
-
     const children = yield* _(getFiberChildren)
     const fibers = Array.from(children.values())
 
@@ -25,6 +22,9 @@ export function abort<A>(fiber: Fiber<A>, disposable: Disposable) {
     // This should run first to allow for a finalizer to never finish to make this fiber "uncancelable"
     // and abort all children in parallel
     yield* _(zipW([finalize(fiber, true), () => zip(fibers.map((f) => f.abort))]))
+
+    // Cancel all the synchronously cancelable resources
+    disposeBoth(yield* _(fiber.refs.getRef(FiberDisposable)), disposable).dispose()
 
     // Set the new status
     const status: Status<A> = { type: 'aborted' }
