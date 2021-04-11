@@ -19,7 +19,7 @@ import { Alt1 } from 'fp-ts/Alt'
 import { Alternative1 } from 'fp-ts/Alternative'
 import { Applicative1 } from 'fp-ts/Applicative'
 import { Apply1 } from 'fp-ts/Apply'
-import { bind as bind_ } from 'fp-ts/Chain'
+import { bind as bind_, Chain1 } from 'fp-ts/Chain'
 import { ChainRec1 } from 'fp-ts/ChainRec'
 import { Compactable1 } from 'fp-ts/Compactable'
 import { Either, isLeft, isRight, left, match, right } from 'fp-ts/Either'
@@ -137,10 +137,14 @@ export const Applicative: Applicative1<URI> = {
   ...Pointed,
 }
 
-export const Monad: Monad1<URI> = {
+export const Chain: Chain1<URI> = {
   ...Functor,
-  ...Pointed,
   chain,
+}
+
+export const Monad: Monad1<URI> = {
+  ...Chain,
+  ...Pointed,
 }
 
 export const chainRec = <A, B>(f: (value: A) => Stream<Either<A, B>>) => (value: A): Stream<B> =>
@@ -238,3 +242,5 @@ export const createSink = <A>(sink: Partial<Sink<A>> = {}): Sink<A> => ({
   end: constVoid,
   ...sink,
 })
+
+export * from '@most/types'

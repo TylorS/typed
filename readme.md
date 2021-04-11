@@ -18,6 +18,11 @@ currently implemented.
 - [ ] NonEmptyArray
 - [ ] ReadonlyNonEmptyArray
 - [ ] ReadonlyArray
+- [ ] ReaderStream
+- [ ] StateStream
+- [ ] StreamEither
+- [ ] StreamOption
+- [ ] StateReaderStreamEither
 
 ### Libraries
 
