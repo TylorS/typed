@@ -5,7 +5,7 @@ import { Do } from '@fp/Fx/Env'
 import { createRef, getRef, Ref, Refs, setRef } from '@fp/Ref'
 import { Eq } from 'fp-ts/Eq'
 
-import { getNextSymbol } from './internal/HookSymbols'
+import { getNextSymbol } from './HookSymbols'
 import { useMemo } from './useMemo'
 
 export const useState = <E, A>(initial: Env<E, A>, eq: Eq<A> = deepEqualsEq) =>

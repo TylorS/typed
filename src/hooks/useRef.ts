@@ -3,7 +3,7 @@ import { pipe } from '@fp/function'
 import { Do } from '@fp/Fx/Env'
 import { createRef, getRef } from '@fp/Ref'
 
-import { getNextSymbol } from './internal/HookSymbols'
+import { getNextSymbol } from './HookSymbols'
 
 export interface MutableRef<A> {
   current: A
