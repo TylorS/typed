@@ -79,16 +79,20 @@ snowpack.key
 /IOEither/
 /MonadRec/
 /Option/
+/Patch/
 /Provide/
+/Queue/
 /Reader/
 /ReaderEither/
 /ReaderTask/
 /ReaderTaskEither/
 /Ref/
+/RefMap/
 /Resume/
 /ResumeEither/
 /ResumeOption/
 /Scheduler/
+/Shared/
 /State/
 /StateEnvEither/
 /StateReaderTaskEither/
@@ -96,4 +100,6 @@ snowpack.key
 /Task/
 /TaskEither/
 /TaskOption/
+/WeakKey/
 /function/
+/hooks/
