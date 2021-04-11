@@ -14,7 +14,7 @@ import {
   take,
 } from '@most/core'
 import { asap } from '@most/scheduler'
-import { Disposable, Stream, Task as MostTask } from '@most/types'
+import { Disposable, Sink, Stream, Task as MostTask } from '@most/types'
 import { Alt1 } from 'fp-ts/Alt'
 import { Alternative1 } from 'fp-ts/Alternative'
 import { Applicative1 } from 'fp-ts/Applicative'
@@ -26,7 +26,7 @@ import { Either, isLeft, isRight, left, match, right } from 'fp-ts/Either'
 import { Filterable1 } from 'fp-ts/Filterable'
 import { FromIO1 } from 'fp-ts/FromIO'
 import { FromTask1 } from 'fp-ts/FromTask'
-import { flow, pipe } from 'fp-ts/function'
+import { constVoid, flow, pipe } from 'fp-ts/function'
 import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/Functor'
 import { IO } from 'fp-ts/IO'
 import { Monad1 } from 'fp-ts/Monad'
@@ -231,3 +231,10 @@ export const Do: Stream<{}> = pipe(null, now, map(Object.create))
 export const bindTo = bindTo_(Functor)
 export const bind = bind_(Monad)
 export const tupled = tupled_(Functor)
+
+export const createSink = <A>(sink: Partial<Sink<A>> = {}): Sink<A> => ({
+  event: constVoid,
+  error: constVoid,
+  end: constVoid,
+  ...sink,
+})

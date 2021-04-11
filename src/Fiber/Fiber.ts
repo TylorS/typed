@@ -186,6 +186,6 @@ export const listenToStatusEvents = <A>(
     ),
   )
 
-export type CurrentFiber = {
-  readonly currentFiber: Fiber<any>
+export type CurrentFiber<A = any> = {
+  readonly currentFiber: Fiber<A>
 }

@@ -9,6 +9,12 @@ import { FiberSendStatusRef } from './FiberSendEvent'
 export function start<A>(ref: FiberSendStatusRef<A>) {
   return (fiber: Fiber<A>) => {
     const fx = doEnv(function* (_) {
+      const current = yield* _(() => fiber.status)
+
+      if (current.type !== 'queued') {
+        throw new Error(`Unable to start a fiber in status ${JSON.stringify(current)}`)
+      }
+
       // Ensures that all other handlers can access this reference to send events
       const send = yield* _(fiber.refs.getRef(ref))
 

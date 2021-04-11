@@ -150,11 +150,11 @@ export const FromTask: FT.FromTask2<URI> = {
 
 export const fromTask = FromTask.fromTask
 
-export const FromResume: FromResume2<URI> = {
-  fromResume: constant,
-}
+export const fromResume: <A, E = unknown>(resume: R.Resume<A>) => Env<E, A> = constant
 
-export const fromResume = FromResume.fromResume
+export const FromResume: FromResume2<URI> = {
+  fromResume,
+}
 
 export const useSome = <E1>(provided: E1) => <E2, A>(env: Env<E1 & E2, A>): Env<E2, A> => (e) =>
   env({ ...e, ...provided })

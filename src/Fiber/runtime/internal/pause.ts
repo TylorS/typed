@@ -21,13 +21,9 @@ export const pause = <A>(fiber: Fiber<A>): R.Resume<Option<Status<unknown>>> => 
 
     yield* _(changeStatus(status)({ currentFiber: fiber }))
 
-    console.log('paused', fiber.refs)
-
     yield* _(
       R.async<void>((r) => pipe(env, setFiberPause(r), R.exec)),
     )
-
-    console.log('continued')
 
     if (isNone(fiber.parent)) {
       return none

@@ -1,7 +1,7 @@
 import * as S from '@most/scheduler'
 import { Scheduler, Time } from '@most/types'
 
-import { Env } from './Env'
+import { asks, Env } from './Env'
 import { async } from './Resume'
 import { createCallbackTask } from './Stream'
 
@@ -17,3 +17,5 @@ export const delay = (ms: Time): Env<SchedulerEnv, Time> => ({ scheduler }) =>
       scheduler,
     ),
   )
+
+export const getScheduler = asks((e: SchedulerEnv) => e.scheduler)

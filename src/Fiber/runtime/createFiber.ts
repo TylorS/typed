@@ -73,7 +73,7 @@ export function createFiber<A>(
       return pipe(fiber, play, R.chain(getStatus))
     },
     get abort() {
-      return pipe(abort(fiber, scheduledTask), R.chain(getStatus))
+      return pipe(abort(fiber, scheduler, scheduledTask), R.chain(getStatus))
     },
     clone: (options: CloneOptions = {}) =>
       R.sync(() =>
