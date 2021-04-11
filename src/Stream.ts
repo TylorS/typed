@@ -2,6 +2,7 @@ import {
   ap,
   awaitPromises,
   chain,
+  delay,
   empty,
   filter,
   map,
@@ -148,7 +149,7 @@ export const Monad: Monad1<URI> = {
 }
 
 export const chainRec = <A, B>(f: (value: A) => Stream<Either<A, B>>) => (value: A): Stream<B> =>
-  pipe(value, f, chain(match(chainRec(f), now)))
+  pipe(value, f, delay(0), chain(match(flow(chainRec(f)), now)))
 
 export const ChainRec: ChainRec1<URI> = {
   chainRec,

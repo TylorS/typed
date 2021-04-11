@@ -59,7 +59,7 @@ declare module 'fp-ts/HKT' {
 }
 
 declare module './Hkt' {
-  export interface VarianceMap {
+  export interface UriToVariance {
     [URI]: V<R, Contravariant> & V<E, Covariant>
   }
 }
