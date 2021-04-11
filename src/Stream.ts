@@ -128,6 +128,8 @@ export const Pointed: Pointed1<URI> = {
   of: now,
 }
 
+export const of = Pointed.of
+
 export const Apply: Apply1<URI> = {
   ...Functor,
   ap,
@@ -244,4 +246,5 @@ export const createSink = <A>(sink: Partial<Sink<A>> = {}): Sink<A> => ({
   ...sink,
 })
 
+export * from '@most/core'
 export * from '@most/types'
