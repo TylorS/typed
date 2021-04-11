@@ -1,6 +1,6 @@
 import * as E from '@fp/Env'
 import * as Eq from '@fp/Eq'
-import { FunctionN } from 'cjs/function'
+import { FunctionN } from '@fp/function'
 import * as RA from 'fp-ts/ReadonlyArray'
 
 import { useMemo } from './useMemo'

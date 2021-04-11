@@ -1,4 +1,4 @@
-import { pipe } from 'cjs/function'
+import { pipe } from '@fp/function'
 import { Eq } from 'fp-ts/Eq'
 import { constant, identity } from 'fp-ts/function'
 import { match, Option } from 'fp-ts/Option'

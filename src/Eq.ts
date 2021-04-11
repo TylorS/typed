@@ -1,7 +1,5 @@
-import { constTrue } from 'cjs/function'
+import { constant, constFalse, constTrue } from '@fp/function'
 import { Eq } from 'fp-ts/Eq'
-
-import { constant, constFalse } from './function'
 
 const FUNCTION_NAME_REGEX = /^function\s*([\w$]+)/
 const DEFAULT_MATCH = ['', '']

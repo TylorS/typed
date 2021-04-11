@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function'
 
 import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
-import { setFiberStatus } from '../FiberStatus'
+import { FiberStatus } from '../FiberStatus'
 import { FiberSendStatusRef } from './FiberSendEvent'
 
 export function start<A>(ref: FiberSendStatusRef<A>) {
@@ -14,11 +14,11 @@ export function start<A>(ref: FiberSendStatusRef<A>) {
 
       const status: Status<A> = { type: 'running' }
 
-      yield* _(setFiberStatus(status))
+      yield* _(pipe(FiberStatus<A>(), fiber.refs.setRef<Status<A>>(status)))
 
       send(status)
     })
 
-    return pipe({ currentFiber: fiber }, toEnv(fx))
+    return toEnv(fx)({})
   }
 }

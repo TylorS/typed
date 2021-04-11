@@ -5,11 +5,9 @@ import { Disposable } from '@most/types'
 import { pipe } from 'fp-ts/function'
 
 import { Fiber } from '../../Fiber'
-import { Status } from '../../Status'
 import { getFiberChildren } from '../FiberChildren'
 import { FiberDisposable } from '../FiberDisposable'
-import { setFiberStatus } from '../FiberStatus'
-import { sendStatus } from './FiberSendEvent'
+import { changeStatus } from './changeStatus'
 import { finalize } from './finalize'
 
 export function abort<A>(fiber: Fiber<A>, disposable: Disposable) {
@@ -27,10 +25,7 @@ export function abort<A>(fiber: Fiber<A>, disposable: Disposable) {
     // Abort all the child fibers
     yield* _(() => zip(fibers.map((f) => f.abort)))
 
-    const status: Status<A> = { type: 'aborted' }
-
-    yield* _(setFiberStatus(status))
-    yield* _(sendStatus(status))
+    yield* _(changeStatus({ type: 'aborted' }))
   })
 
   return pipe({ currentFiber: fiber }, toEnv(fx))

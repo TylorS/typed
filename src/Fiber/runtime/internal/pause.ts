@@ -5,9 +5,8 @@ import { isNone, none, Option, some } from 'fp-ts/Option'
 
 import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
-import { setFiberStatus } from '../FiberStatus'
+import { changeStatus } from './changeStatus'
 import { setFiberPause } from './FiberPause'
-import { sendStatus } from './FiberSendEvent'
 
 export const pause = <A>(fiber: Fiber<A>): R.Resume<Option<Status<unknown>>> => {
   const fx = doResume(function* (_) {
@@ -18,18 +17,17 @@ export const pause = <A>(fiber: Fiber<A>): R.Resume<Option<Status<unknown>>> => 
     }
 
     const status: Status<A> = { type: 'paused' }
+    const env = { currentFiber: fiber }
+
+    yield* _(changeStatus(status)({ currentFiber: fiber }))
+
+    console.log('paused', fiber.refs)
 
     yield* _(
-      R.async<void>((r) =>
-        pipe(
-          { currentFiber: fiber },
-          setFiberPause(r),
-          R.chain(() => pipe({ currentFiber: fiber }, setFiberStatus(status))),
-          R.chain(() => pipe({ currentFiber: fiber }, sendStatus(status))),
-          R.exec,
-        ),
-      ),
+      R.async<void>((r) => pipe(env, setFiberPause(r), R.exec)),
     )
+
+    console.log('continued')
 
     if (isNone(fiber.parent)) {
       return none

@@ -5,17 +5,15 @@ import { pipe } from 'fp-ts/function'
 import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
 import { setFiberReturnValue } from '../FiberReturnValue'
-import { setFiberStatus } from '../FiberStatus'
+import { changeStatus } from './changeStatus'
 import { complete } from './complete'
-import { sendStatus } from './FiberSendEvent'
 
 export function fail<A>(fiber: Fiber<A>, error: Error) {
   const fx = doEnv(function* (_) {
     const status: Status<A> = { type: 'failed', error }
 
-    yield* _(setFiberStatus(status))
     yield* _(setFiberReturnValue(left(error)))
-    yield* _(sendStatus(status))
+    yield* _(changeStatus(status))
     yield* _(() => complete(fiber))
   })
 

@@ -5,10 +5,9 @@ import { pipe } from 'fp-ts/function'
 import { isNone } from 'fp-ts/Option'
 
 import { Fiber } from '../../Fiber'
-import { Status } from '../../Status'
-import { getFiberStatus, setFiberStatus } from '../FiberStatus'
+import { getFiberStatus } from '../FiberStatus'
+import { changeStatus } from './changeStatus'
 import { getFiberPause } from './FiberPause'
-import { sendStatus } from './FiberSendEvent'
 
 export function play<A>(fiber: Fiber<A>) {
   const fx = doEnv(function* (_) {
@@ -19,10 +18,7 @@ export function play<A>(fiber: Fiber<A>) {
       throw new Error(`Unable to play fiber that is not paused`)
     }
 
-    const status: Status<A> = { type: 'running' }
-    yield* _(setFiberStatus(status))
-    yield* _(sendStatus(status))
-
+    yield* _(changeStatus({ type: 'running' }))
     yield* _(() => async<void>((r) => disposeBoth(option.value(), r())))
   })
 

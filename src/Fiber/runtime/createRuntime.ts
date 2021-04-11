@@ -1,5 +1,5 @@
 import { settable } from '@fp/Disposable'
-import { Env, useSome } from '@fp/Env'
+import { Env, provideSome } from '@fp/Env'
 import * as R from '@fp/Resume'
 import { Scheduler } from '@most/types'
 import { Either, left, right } from 'fp-ts/Either'
@@ -16,7 +16,7 @@ export function createRuntime(scheduler: Scheduler): Fork & Join & Kill {
     forkFiber: <R, A>(env: Env<R, A>, r: R, options: ForkOptions = {}) =>
       pipe(
         R.sync(() =>
-          createFiber(pipe(env, useSome(r)), {
+          createFiber(pipe(env, provideSome(r)), {
             parent: (r as Partial<CurrentFiber>).currentFiber,
             scheduler,
             ...options,

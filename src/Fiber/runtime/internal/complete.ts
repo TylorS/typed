@@ -7,8 +7,7 @@ import { Fiber } from '../../Fiber'
 import { Status } from '../../Status'
 import { getFiberChildren } from '../FiberChildren'
 import { getFiberReturnValue } from '../FiberReturnValue'
-import { setFiberStatus } from '../FiberStatus'
-import { sendStatus } from './FiberSendEvent'
+import { changeStatus } from './changeStatus'
 import { finalize } from './finalize'
 
 const isTerminal = (status: Status<any>): boolean =>
@@ -30,8 +29,7 @@ export function complete<A>(fiber: Fiber<A>): Resume<void> {
 
     const status: Status<A> = { type: 'completed', value: returnValue.value }
 
-    yield* _(setFiberStatus(status))
-    yield* _(sendStatus(status))
+    yield* _(changeStatus(status))
 
     if (isNone(fiber.parent)) {
       return

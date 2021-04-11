@@ -10,7 +10,7 @@ import { constVoid, pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { createVirtualScheduler } from 'most-virtual-scheduler'
 
-import { Fiber, fork, pause } from '../Fiber'
+import { fork, pause } from '../Fiber'
 import { Status } from '../Status'
 import { createFiber } from './createFiber'
 import { FiberChildren } from './FiberChildren'
@@ -21,9 +21,8 @@ export const test = describe(`createFiber`, [
     describe(`queued`, [
       it(`creates a fiber w/ queued status`, ({ equal }) => {
         const resume = R.sync(() => 1)
-        const parent: O.Option<Fiber<unknown>> = O.none
         const [, scheduler] = createVirtualScheduler()
-        const fiber = createFiber(() => resume, parent, scheduler)
+        const fiber = createFiber(() => resume, { scheduler })
 
         pipe(fiber.status, R.start(equal({ type: 'queued' })))
       }),
@@ -33,8 +32,7 @@ export const test = describe(`createFiber`, [
       it(`starts running as soon as possible`, ({ equal }) => {
         const [timer, scheduler] = createVirtualScheduler()
         const resume = delay(100)({ scheduler })
-        const parent: O.Option<Fiber<unknown>> = O.none
-        const fiber = createFiber(() => resume, parent, scheduler)
+        const fiber = createFiber(() => resume, { scheduler })
 
         timer.progressTimeBy(1)
 
@@ -44,8 +42,7 @@ export const test = describe(`createFiber`, [
       it(`sends a running event`, ({ equal }, done) => {
         const [timer, scheduler] = createVirtualScheduler()
         const resume = delay(100)({ scheduler })
-        const parent: O.Option<Fiber<unknown>> = O.none
-        const fiber = createFiber(() => resume, parent, scheduler)
+        const fiber = createFiber(() => resume, { scheduler })
 
         runStream(fiber.statusEvents, scheduler, (status) => {
           try {
@@ -71,8 +68,7 @@ export const test = describe(`createFiber`, [
 
             return 1
           })
-          const parent: O.Option<Fiber<unknown>> = O.none
-          const fiber = createFiber(() => resume, parent, scheduler)
+          const fiber = createFiber(() => resume, { scheduler })
 
           timer.progressTimeBy(1)
 
@@ -89,8 +85,7 @@ export const test = describe(`createFiber`, [
 
             return 1
           })
-          const parent: O.Option<Fiber<unknown>> = O.none
-          const fiber = createFiber(() => resume, parent, scheduler)
+          const fiber = createFiber(() => resume, { scheduler })
           const expected: Status<number> = {
             type: 'completed',
             value: left<Error, number>(error),
@@ -116,8 +111,7 @@ export const test = describe(`createFiber`, [
           const [timer, scheduler] = createVirtualScheduler()
           const value = 1
           const resume = R.sync(() => value)
-          const parent: O.Option<Fiber<unknown>> = O.none
-          const fiber = createFiber(() => resume, parent, scheduler)
+          const fiber = createFiber(() => resume, { scheduler })
 
           timer.progressTimeBy(1)
 
@@ -130,8 +124,7 @@ export const test = describe(`createFiber`, [
           const [timer, scheduler] = createVirtualScheduler()
           const value = 1
           const resume = R.sync(() => value)
-          const parent: O.Option<Fiber<unknown>> = O.none
-          const fiber = createFiber(() => resume, parent, scheduler)
+          const fiber = createFiber(() => resume, { scheduler })
           const expected: Status<number> = { type: 'completed', value: right(value) }
 
           // Skip over running + finished events
@@ -160,14 +153,12 @@ export const test = describe(`createFiber`, [
 
             return 1
           })
-          const child = createFiber(delay(100), O.none, scheduler)
+          const child = createFiber(delay(100), { scheduler })
           const children: RefValue<typeof FiberChildren> = new Map([[child.id, child]])
-          const fiber = createFiber(
-            () => resume,
-            O.none,
+          const fiber = createFiber(() => resume, {
             scheduler,
-            createReferences([[FiberChildren.id, children]]),
-          )
+            refs: createReferences([[FiberChildren.id, children]]),
+          })
 
           const expected: Status<number> = { type: 'failed', error }
 
@@ -184,14 +175,12 @@ export const test = describe(`createFiber`, [
 
             return 1
           })
-          const child = createFiber(delay(100), O.none, scheduler)
+          const child = createFiber(delay(100), { scheduler })
           const children: RefValue<typeof FiberChildren> = new Map([[child.id, child]])
-          const fiber = createFiber(
-            () => resume,
-            O.none,
+          const fiber = createFiber(() => resume, {
             scheduler,
-            createReferences([[FiberChildren.id, children]]),
-          )
+            refs: createReferences([[FiberChildren.id, children]]),
+          })
 
           const expected: Status<number> = { type: 'failed', error }
 
@@ -217,14 +206,12 @@ export const test = describe(`createFiber`, [
           const [timer, scheduler] = createVirtualScheduler()
           const value = 1
           const resume = R.sync(() => value)
-          const child = createFiber(delay(100), O.none, scheduler)
+          const child = createFiber(delay(100), { scheduler })
           const children: RefValue<typeof FiberChildren> = new Map([[child.id, child]])
-          const fiber = createFiber(
-            () => resume,
-            O.none,
+          const fiber = createFiber(() => resume, {
             scheduler,
-            createReferences([[FiberChildren.id, children]]),
-          )
+            refs: createReferences([[FiberChildren.id, children]]),
+          })
 
           const expected: Status<number> = { type: 'finished', value }
 
@@ -237,14 +224,12 @@ export const test = describe(`createFiber`, [
           const [timer, scheduler] = createVirtualScheduler()
           const value = 1
           const resume = R.sync(() => value)
-          const child = createFiber(delay(100), O.none, scheduler)
+          const child = createFiber(delay(100), { scheduler })
           const children: RefValue<typeof FiberChildren> = new Map([[child.id, child]])
-          const fiber = createFiber(
-            () => resume,
-            O.none,
+          const fiber = createFiber(() => resume, {
             scheduler,
-            createReferences([[FiberChildren.id, children]]),
-          )
+            refs: createReferences([[FiberChildren.id, children]]),
+          })
 
           const expected: Status<number> = { type: 'finished', value }
 
@@ -269,7 +254,7 @@ export const test = describe(`createFiber`, [
         const value = 2
         const [timer, scheduler] = createVirtualScheduler()
         const child = doEnv(function* (_) {
-          // Returns the Parent fiber's status
+          // Returns the parent fiber's status
           equal(O.some({ type: 'running' }), yield* _(pause))
 
           return value
@@ -303,7 +288,7 @@ export const test = describe(`createFiber`, [
         const value = 2
         const [timer, scheduler] = createVirtualScheduler()
         const child = doEnv(function* (_) {
-          // Returns the Parent fiber's status
+          // Returns the parent fiber's status
           equal(O.some({ type: 'running' }), yield* _(pause))
 
           return value
