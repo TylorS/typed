@@ -9,24 +9,10 @@ This project is under very heavy development. It is my goal to align with `fp-ts
 All of the following modules will also need corresponding Fx implementations if not 
 currently implemented.
 
-### Modules
-
-- [ ] These
-- [ ] ResumeThese
-- [ ] EnvThese
-- [ ] Writer
-- [ ] NonEmptyArray
-- [ ] ReadonlyNonEmptyArray
-- [ ] ReadonlyArray
-- [x] ReaderStream
-- [x] ReaderStreamEither
-- [x] StreamEither
-- [x] StreamOption
-
 ### Libraries
 
-- [ ] Hooks
-- [ ] Rendering
+- [WIP] Hooks
+- [WIP] Rendering
 
 ### Conversions
 
@@ -40,7 +26,6 @@ implemented as well.
 - [ ] FromState 
 - [ ] FromResume 
 - [ ] FromEnv 
-- [ ] FromThese 
 
 ### Derivable Implementations
 
