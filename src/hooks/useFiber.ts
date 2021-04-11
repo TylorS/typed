@@ -13,25 +13,25 @@ import { useRef } from './useRef'
 export function useFiber<E, A, Deps extends ReadonlyArray<any>>(
   env: Env<E, A>,
   deps: Deps,
-  eqs: { readonly [K in keyof Deps]: Eq<Deps[K]> },
+  eqs?: { readonly [K in keyof Deps]: Eq<Deps[K]> },
 ): Env<E & Fork & Refs, Fiber<A>>
 
 export function useFiber<E, A, Deps extends ReadonlyArray<any>>(
   env: Env<E & CurrentFiber, A>,
   deps: Deps,
-  eqs: { readonly [K in keyof Deps]: Eq<Deps[K]> },
+  eqs?: { readonly [K in keyof Deps]: Eq<Deps[K]> },
 ): Env<E & Fork & Refs, Fiber<A>>
 
 export function useFiber<E, A, Deps extends ReadonlyArray<any>>(
   env: Env<E & SchedulerEnv, A>,
   deps: Deps,
-  eqs: { readonly [K in keyof Deps]: Eq<Deps[K]> },
+  eqs?: { readonly [K in keyof Deps]: Eq<Deps[K]> },
 ): Env<E & Fork & Refs, Fiber<A>>
 
 export function useFiber<E, A, Deps extends ReadonlyArray<any>>(
   env: Env<E & CurrentFiber & SchedulerEnv, A>,
   deps: Deps,
-  eqs: { readonly [K in keyof Deps]: Eq<Deps[K]> },
+  eqs?: { readonly [K in keyof Deps]: Eq<Deps[K]> },
 ): Env<E & Fork & Refs, Fiber<A>>
 
 export function useFiber<E, A, Deps extends ReadonlyArray<any>>(
