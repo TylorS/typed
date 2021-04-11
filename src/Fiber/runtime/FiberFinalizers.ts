@@ -1,27 +1,34 @@
-import { chain, fromIO } from '@fp/Env'
+import { chain, Env, fromIO } from '@fp/Env'
 import { Arity1 } from '@fp/function'
 import { createRef, getRef, setRef } from '@fp/Ref'
-import { Resume } from '@fp/Resume'
 import { Either } from 'fp-ts/Either'
 import { flow, pipe } from 'fp-ts/function'
 import { Option } from 'fp-ts/Option'
 import { append } from 'fp-ts/ReadonlyArray'
 
-import { withFiberRefs } from '../Fiber'
+import { CurrentFiber, withFiberRefs } from '../Fiber'
 
 // A callback that accepts the return value of the fiber it is being run for, none if it
 // is being aborted.
-export type Finalizer = (returnValue: Option<Either<Error, any>>) => Resume<any>
+export type Finalizer<A> = (
+  returnValue: Option<Either<Error, A>>,
+) => Env<CurrentFiber, any> | Env<unknown, any>
 
-export const FiberFinalizers = createRef(fromIO((): ReadonlyArray<Finalizer> => []))
+export const FIBER_FINALIZERS = Symbol('FiberFinalizers')
 
-export const getFiberFinalizers = pipe(FiberFinalizers, getRef, withFiberRefs)
+export const FiberFinalizers = <A>() =>
+  createRef(
+    fromIO((): ReadonlyArray<Finalizer<A>> => []),
+    FIBER_FINALIZERS,
+  )
 
-export const setFiberFinalizers = (finalizers: ReadonlyArray<Finalizer>) =>
-  pipe(FiberFinalizers, setRef(finalizers), withFiberRefs)
+export const getFiberFinalizers = <A>() => pipe(FiberFinalizers<A>(), getRef, withFiberRefs)
 
-export const modifyFiberFinalizers = (
-  f: Arity1<ReadonlyArray<Finalizer>, ReadonlyArray<Finalizer>>,
-) => pipe(getFiberFinalizers, chain(flow(f, setFiberFinalizers)))
+export const setFiberFinalizers = <A>(finalizers: ReadonlyArray<Finalizer<A>>) =>
+  pipe(FiberFinalizers<A>(), setRef(finalizers), withFiberRefs)
 
-export const addFinalizer = (finalizer: Finalizer) => modifyFiberFinalizers(append(finalizer))
+export const modifyFiberFinalizers = <A>(
+  f: Arity1<ReadonlyArray<Finalizer<A>>, ReadonlyArray<Finalizer<A>>>,
+) => pipe(getFiberFinalizers<A>(), chain(flow(f, setFiberFinalizers)))
+
+export const addFinalizer = <A>(finalizer: Finalizer<A>) => modifyFiberFinalizers(append(finalizer))

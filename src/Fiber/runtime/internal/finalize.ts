@@ -1,15 +1,15 @@
+import { zip } from '@fp/Env'
 import { doEnv, toEnv } from '@fp/Fx/Env'
-import { none } from '@fp/Option'
-import { zip } from '@fp/Resume'
 
 import { Fiber } from '../../Fiber'
 import { FiberFinalizers } from '../FiberFinalizers'
+import { FiberReturnValue } from '../FiberReturnValue'
 import { changeStatus } from './changeStatus'
 
 export const finalize = <A>(fiber: Fiber<A>, aborting = false) => {
   const fx = doEnv(function* (_) {
     // Check for any registered finalizers which should run before changing status to aborted
-    const finalizers = yield* _(fiber.refs.getRef(FiberFinalizers))
+    const finalizers = yield* _(fiber.refs.getRef(FiberFinalizers<A>()))
 
     if (finalizers.length > 0) {
       // Set the status to aborting if there are finalizers to run
@@ -17,7 +17,9 @@ export const finalize = <A>(fiber: Fiber<A>, aborting = false) => {
         yield* _(changeStatus({ type: 'aborting' }))
       }
 
-      yield* _(() => zip(finalizers.map((f) => f(none))))
+      const returnValue = yield* _(fiber.refs.getRef(FiberReturnValue<A>()))
+
+      yield* _(zip(finalizers.map((f) => f(returnValue))))
     }
   })
 
