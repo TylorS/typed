@@ -2,7 +2,7 @@ import { Env } from '@fp/Env'
 import { Resume } from '@fp/Resume'
 
 export type GetStr = {
-  getStr: Resume<string>
+  readonly getStr: Resume<string>
 }
 
 // Get input from the user

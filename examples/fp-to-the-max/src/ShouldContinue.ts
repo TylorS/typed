@@ -12,9 +12,9 @@ import { PutStr, putStr } from './putStr'
 /**
  * Track if the game should continue or not
  */
-export const ShouldContinue = R.createRef(E.of(true))
+export const ShouldContinue: R.Ref<unknown, boolean> = R.createRef(E.of<boolean>(true))
 
-export const shouldContinue = R.getRef(ShouldContinue)
+export const shouldContinue: E.Env<R.Refs, boolean> = R.getRef(ShouldContinue)
 
 // Ask to continue the game
 export const askToContinue: E.Env<R.Refs & GetStr & PutStr, boolean> = Do(function* (_) {

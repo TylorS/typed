@@ -1,3 +1,4 @@
+import { Env } from '@fp/Env'
 import { Do } from '@fp/Fx/Env'
 import * as R from '@fp/Ref'
 import { askQuestion } from 'askQuestion'
@@ -17,7 +18,9 @@ import { won } from './Wins'
 /**
  * Generate a new random int between configured min and max
  */
-export const generateNewSecret = Do(function* (_) {
+export const generateNewSecret: Env<RandomInt & PutStr & GetStr & R.Refs, number> = Do(function* (
+  _,
+) {
   const min = yield* _(getMin)
   const max = yield* _(getMax)
   const secret = yield* _(randomInt(min, max))
@@ -30,11 +33,13 @@ export const Secret: R.Ref<RandomInt & PutStr & GetStr & R.Refs, number> = R.cre
   generateNewSecret,
 )
 
-export const getSecret = R.getRef(Secret)
-export const setSecret = R.setRef_(Secret)
+export const getSecret: Env<RandomInt & PutStr & GetStr & R.Refs, number> = R.getRef(Secret)
+export const setSecret: (
+  value: number,
+) => Env<RandomInt & PutStr & GetStr & R.Refs, number> = R.setRef_(Secret)
 
 // Message to give user when guessing wrong
-export const wrongGuess = Do(function* (_) {
+export const wrongGuess: Env<RandomInt & PutStr & GetStr & R.Refs, void> = Do(function* (_) {
   const secret = yield* _(getSecret)
   const name = yield* _(getName)
 
@@ -42,17 +47,17 @@ export const wrongGuess = Do(function* (_) {
 })
 
 // Message to give user when guess is not an integer
-export const unknownGuess = putStr(`${EOL} You did not enter an integer!`)
+export const unknownGuess: Env<PutStr, void> = putStr(`${EOL} You did not enter an integer!`)
 
 // Message to give user when guessing correctly
-export const correctGuess = Do(function* (_) {
+export const correctGuess: Env<GetStr & PutStr & R.Refs, void> = Do(function* (_) {
   const name = yield* _(getName)
 
   yield* _(putStr(`${EOL}You guessed right, ${name}!`))
 })
 
 // Welcome the current user to the game
-export const welcomeToTheGame = Do(function* (_) {
+export const welcomeToTheGame: Env<GetStr & PutStr & R.Refs, void> = Do(function* (_) {
   const name = yield* _(getName)
 
   yield* _(putStr(`${EOL}Hello, ${name} welcome to the game!`))
@@ -61,7 +66,7 @@ export const welcomeToTheGame = Do(function* (_) {
 /**
  * Ask for the current secret, keeping track of wins and losses
  */
-export const askForSecret = Do(function* (_) {
+export const askForSecret: Env<RandomInt & PutStr & GetStr & R.Refs, void> = Do(function* (_) {
   const secret = yield* _(getSecret)
   const name = yield* _(getName)
   const min = yield* _(getMin)
@@ -84,7 +89,7 @@ export const askForSecret = Do(function* (_) {
 /**
  * Update the Secret value
  */
-export const updateSecret = Do(function* (_) {
+export const updateSecret: Env<RandomInt & PutStr & GetStr & R.Refs, number> = Do(function* (_) {
   const newSecret = yield* _(generateNewSecret)
 
   return yield* _(setSecret(newSecret))

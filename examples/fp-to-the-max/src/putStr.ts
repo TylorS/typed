@@ -2,7 +2,7 @@ import { Env } from '@fp/Env'
 import { Resume } from '@fp/Resume'
 
 export type PutStr = {
-  putStr: (msg: string) => Resume<void>
+  readonly putStr: (msg: string) => Resume<void>
 }
 
 /**

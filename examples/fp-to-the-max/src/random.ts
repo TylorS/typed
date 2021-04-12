@@ -2,7 +2,7 @@ import { Env } from '@fp/Env'
 import { Resume } from '@fp/Resume'
 
 export type RandomInt = {
-  randomInt: (min: number, max: number) => Resume<number>
+  readonly randomInt: (min: number, max: number) => Resume<number>
 }
 
 /**
