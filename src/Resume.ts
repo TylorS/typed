@@ -1,4 +1,4 @@
-import { Disposable } from '@most/types'
+import { Disposable, Disposable as R } from '@most/types'
 import { Alt1 } from 'fp-ts/Alt'
 import { Applicative1 } from 'fp-ts/Applicative'
 import { Apply1 } from 'fp-ts/Apply'
@@ -29,7 +29,7 @@ export interface Async<A> {
   readonly resume: AsyncResume<A>
 }
 
-export type AsyncResume<A> = (resume: (value: A) => Disposable) => Disposable
+export type AsyncResume<A> = (resume: (value: A) => R) => R
 
 export const async = <A>(resume: AsyncResume<A>): Async<A> => ({ _tag: 'async', resume })
 
@@ -105,12 +105,21 @@ export const ap = <A>(fa: Resume<A>) => <B>(fab: Resume<Arity1<A, B>>): Resume<B
   })
 }
 
-export const run = <A>(f: Arity1<A, Disposable>) => (resume: Resume<A>): Disposable =>
+export const run = <A>(f: Arity1<A, R>) => (resume: Resume<A>): R =>
   isAsync(resume) ? resume.resume(f) : f(resume.resume())
 
 export const start = <A>(f: Arity1<A, any>) => run(undisposable(f))
 
 export const exec = start(constVoid)
+
+export const toTask = <A>(resume: Resume<A>): Task<A> & Disposable => {
+  const d = settable()
+  const task = () => new Promise((resolve) => d.addDisposable(pipe(resume, start(resolve))))
+
+  ;(task as Task<A> & Disposable).dispose = d.dispose
+
+  return task as Task<A> & Disposable
+}
 
 export const chain = <A, B>(f: Arity1<A, Resume<B>>) => (resume: Resume<A>): Resume<B> =>
   isSync(resume) ? f(resume.resume()) : async((r) => resume.resume(flow(f, run(r))))

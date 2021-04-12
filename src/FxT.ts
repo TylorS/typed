@@ -167,22 +167,27 @@ export function toMonad<F>(M: MonadRec<F>): <E, R>(fx: Fx<E, R>) => HKT<F, R>
  */
 export function toMonad<F>(M: MonadRec<F>) {
   return function fxToMonad<E extends HKT<F, any>, R>(fx: Fx<E, R>): HKT<F, R> {
-    const generator = fx[Symbol.iterator]()
-    const result = generator.next()
-
-    if (result.done) {
-      return M.of(result.value)
-    }
-
     return pipe(
-      result.value,
-      M.chain(
-        M.chainRec((a) => {
-          const result = generator.next(a)
+      M.of(fx[Symbol.iterator]),
+      M.map((f) => f()),
+      M.chain((generator) => {
+        const result = generator.next()
 
-          return result.done ? pipe(result.value, right, M.of) : pipe(result.value, M.map(left))
-        }),
-      ),
+        if (result.done) {
+          return M.of(result.value)
+        }
+
+        return pipe(
+          result.value,
+          M.chain(
+            M.chainRec((a) => {
+              const result = generator.next(a)
+
+              return result.done ? pipe(result.value, right, M.of) : pipe(result.value, M.map(left))
+            }),
+          ),
+        )
+      }),
     )
   }
 }

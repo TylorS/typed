@@ -67,6 +67,14 @@ export function setRef<A>(value: A) {
     )
 }
 
+export function setRef_<E, A>(ref: Ref<E, A>) {
+  return (value: A): E.Env<E & Refs, A> =>
+    pipe(
+      E.asks((e: Refs) => pipe(ref, e.refs.setRef(value))),
+      E.flatten,
+    )
+}
+
 export function deleteRef<E, A>(ref: Ref<E, A>): E.Env<Refs, Option<A>> {
   return pipe(
     E.asks((e: Refs) => e.refs.deleteRef(ref)),
@@ -76,6 +84,15 @@ export function deleteRef<E, A>(ref: Ref<E, A>): E.Env<Refs, Option<A>> {
 
 export function modifyRef<A>(f: Arity1<A, A>) {
   return <E>(ref: Ref<E, A>) =>
+    pipe(
+      ref,
+      getRef,
+      E.chain((a) => pipe(ref, pipe(a, f, setRef))),
+    )
+}
+
+export function modifyRef_<E, A>(ref: Ref<E, A>) {
+  return (f: Arity1<A, A>) =>
     pipe(
       ref,
       getRef,
