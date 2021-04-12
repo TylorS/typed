@@ -1,7 +1,0 @@
-{
-  "main": "../cjs/Shared.js",
-  "types": "../cjs/Shared.d.ts",
-  "typings": "../cjs/Shared.d.ts",
-  "module": "../esm/Shared.js",
-  "sideEffects": false
-}

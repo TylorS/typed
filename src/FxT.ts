@@ -7,7 +7,7 @@ import { Pointed, Pointed1, Pointed2, Pointed3, Pointed4 } from 'fp-ts/Pointed'
 import { A, U } from 'ts-toolbelt'
 
 import { Arity1 } from './function'
-import { doFx, Fx } from './Fx/Fx'
+import { chain as chain_, doFx, Fx, map as map_ } from './Fx/Fx'
 import { ApplyVariance, Hkt, Initial } from './Hkt'
 import { MonadRec, MonadRec1, MonadRec2, MonadRec2C, MonadRec3, MonadRec4 } from './MonadRec'
 import {
@@ -214,13 +214,6 @@ export function map() {
   return map_
 }
 
-const map_ = <A, B>(f: (value: A) => B) => {
-  return (hkt: FxT<unknown, [A]>): FxT<unknown, [B]> =>
-    doFx(function* () {
-      return f(yield* hkt)
-    })
-}
-
 export function chain<F extends URIS>(): <A, B>(
   f: (value: A) => FxT<F, [B]>,
 ) => (fx: FxT<F, [A]>) => FxT<F, [ApplyVariance<F, 'A', [B, A]>]>
@@ -256,16 +249,6 @@ export function chain<F>(): <A, B>(f: (value: A) => FxT<F, [B]>) => (fx: FxT<F, 
 
 export function chain() {
   return chain_
-}
-
-const chain_ = <A, B>(f: (value: A) => FxT<unknown, [B]>) => {
-  return (hkt: FxT<unknown, [A]>): FxT<unknown, [B]> =>
-    doFx(function* () {
-      const a = yield* hkt
-      const b = yield* f(a as A)
-
-      return b
-    }) as FxT<unknown, [B]>
 }
 
 export function ap<F extends URIS>(
