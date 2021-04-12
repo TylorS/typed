@@ -1,4 +1,4 @@
-import { constVoid, flow } from '@fp/function'
+import { constVoid, flow, pipe } from '@fp/function'
 import * as R from '@fp/Resume'
 import { describe, given, it } from '@typed/test'
 import { askQuestion } from 'askQuestion'
@@ -10,13 +10,14 @@ export const test = describe(`askQuestion`, [
       const question = 'Whats up?'
       const answer = 'The sky!'
 
-      const env = askQuestion(question)
-      const resume = env({
-        getStr: R.of(answer),
-        putStr: flow(equal(EOL + question), () => R.sync(constVoid)),
-      })
-
-      R.start(equal(answer))(resume)
+      pipe(
+        {
+          getStr: R.of(answer),
+          putStr: flow(equal(EOL + question), () => R.sync(constVoid)),
+        },
+        askQuestion(question),
+        R.start(equal(answer)),
+      )
     }),
   ]),
 ])
