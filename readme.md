@@ -162,7 +162,7 @@ const refs: R.References = R.createReferences()
 // const refs = R.createReferences([[Count.id, 42]])
 
 // Provide the references and run the Resume
-const disposable = pipe({ refs }, addOne, R.run((n: number) => {
+const disposable = pipe({ refs }, addOne, Re.run((n: number) => {
   // Do stuff with the result
 
   return { dispose: () => { /*cancel things*/ } }
