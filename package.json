@@ -450,6 +450,10 @@
       "require": "./cjs/hooks/index.js",
       "import": "./esm/hooks/index.js"
     },
+    "./hooks/Deps": {
+      "require": "./cjs/hooks/Deps.js",
+      "import": "./esm/hooks/Deps.js"
+    },
     "./hooks/HookIndex": {
       "require": "./cjs/hooks/HookIndex.js",
       "import": "./esm/hooks/HookIndex.js"
