@@ -1,5 +1,6 @@
+import { settable } from '@fp/Disposable'
 import { createReferences, Refs } from '@fp/Ref'
-import { fromIO, fromTask, toTask } from '@fp/Resume'
+import { async, fromIO, toTask } from '@fp/Resume'
 import { log } from 'fp-ts/Console'
 import { flow, pipe } from 'fp-ts/function'
 import { randomInt } from 'fp-ts/Random'
@@ -17,23 +18,32 @@ const PutStr: PutStr = {
 }
 
 const GetStr: GetStr = {
-  getStr: fromTask(
-    () =>
-      new Promise((resolve) => {
-        const rl = createInterface({
-          input: process.stdin,
-          output: process.stdout,
-        })
-        rl.question('> ', (answer) => {
-          rl.close()
-          resolve(answer)
-        })
-      }),
-  ),
+  getStr: async((resume) => {
+    // Disposable that can be appended
+    // Useful for wrapping callback/promise-based resources in Disposable
+    const d = settable()
+
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    })
+
+    rl.question('> ', (answer) => {
+      rl.close()
+
+      // Add additional resources created
+      d.addDisposable(resume(answer))
+    })
+
+    // Allow canceling this workflow
+    d.addDisposable({ dispose: () => rl.close() })
+
+    return d
+  }),
 }
 
 const RandomInt: RandomInt = {
-  randomInt: (min, max) => fromIO(randomInt(min, max)),
+  randomInt: flow(randomInt, fromIO),
 }
 
 const Refs: Refs = {
