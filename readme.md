@@ -249,19 +249,40 @@ will automatically construct a tree of your Fibers, allowing for creating many v
 workflows while never leaking resources due to the underlying usage of `Disposable` and other cancelation
 baked into Fibers.
 
-```ts
-import * as F from '@typed/fp/Fiber'
-import * as E from '@typed/fp/Env'
-import { Do } from '@typed/fp/Fx/Do'
+Every `Fiber` has their own instances of `Refs` to allow for managing state that is localized to each 
+Fiber. This allows for creating "components" that correspond to a Fiber instance.
 
-const pror = 
+> Write More - Give examples
+
+### Hooks
+
+Hooks are a special instance of `Ref`s, where `Ref`s are actually a lower-level primitive of Hooks. Hooks in `@typed/fp` are not tied to any rendering library, and can easily be tested in isolation.
+
+With `Refs` their IDs are used to look up a given value. With `hooks`, like those found in React, this `ID` is instead generated using an incrementing index which leads to the "rules of hooks" 
+particularly where ordering matters and must be consistent. 
+
+> Write More - Give examples
+
+### Patch 
+
+Best summarized by its type signature
+
+```ts
+export interface Patch<A, B> {
+  readonly patch: (a: A, b: B) => Resume<A>
+}
 ```
 
-Every `Fiber` has their own instances of `Refs` to allow for managing state that is localized to each 
-Fiber.
+`Patch` is the basis of rendering, but is generalized to an reducer-like function returning a `Resume`.
 
+### Shared 
+
+`Shared` is a extensible abstraction which lives above `Env`, `Ref`s, `Fiber`, and `Patch` to aid in 
+creating a program which is capable of contructing a tree of components which can all be 
+effeciently patched when their references have had updates.
 
 ## TODO
+
 
 All of the following modules will also need corresponding Fx implementations if not 
 currently implemented.
@@ -317,9 +338,24 @@ We'll want to make sure that all of the derivable functions given a type-class a
 ### Examples
 
 I'd love suggestions as to what kinds of examples would be useful! Feel free to open an
-issue, I'd like to make this more accessible than just hard API documentation.
+issue, I'd like to make this more accessible to more than just FP experts
 
-- [ ] fp-to-the-max
+- [x] fp-to-the-max
 - [ ] react
 - [ ] uhtml
+
+
+### Documentation
+
+I'd love suggestions as to what kinds of documentation would be useful! Feel free to open an
+issue, I'd like to make this more accessible to more than just FP experts
+
+> Suggestions welcome!
+
+- [ ] API Documentation
+- [ ] Resume tutorial
+- [ ] Env tutorial
+- [ ] Refs tutorial
+- [ ] Fiber tutorial
+- [ ] Hooks tutorial
 - [ ] 
