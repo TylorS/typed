@@ -5,13 +5,14 @@ import * as R from '@fp/Resume'
 import { SchedulerEnv } from '@fp/Scheduler'
 import { createCallbackTask } from '@fp/Stream'
 import { asap } from '@most/scheduler'
-import { Scheduler } from '@most/types'
+import { ScheduledTask, Scheduler } from '@most/types'
 import { pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 
 import { CloneOptions, CurrentFiber, Fiber } from '../Fiber'
 import { FiberId } from '../FiberId'
 import { Status } from '../Status'
+import { addDisposable } from './FiberDisposable'
 import { getFiberStatus } from './FiberStatus'
 import { abort } from './internal/abort'
 import { fail } from './internal/fail'
@@ -42,8 +43,7 @@ export function createFiber<A>(
   const id = FiberId(options.id ?? Symbol(`Fiber`))
   const [sendEvent, statusEvents] = create<Status<A>>()
   const sendEventRef = FiberSendStatus<A>(sendEvent)
-
-  const scheduledTask = asap(
+  const scheduledTask: ScheduledTask = asap(
     createCallbackTask(
       () =>
         pipe(
@@ -73,7 +73,12 @@ export function createFiber<A>(
       return pipe(fiber, play, R.chain(getStatus))
     },
     get abort() {
-      return pipe(abort(fiber, scheduler, scheduledTask), R.chain(getStatus))
+      return pipe(
+        { currentFiber: fiber },
+        addDisposable(scheduledTask),
+        R.chain(() => abort(fiber, scheduler)),
+        R.chain(getStatus),
+      )
     },
     clone: (options: CloneOptions = {}) =>
       R.sync(() =>

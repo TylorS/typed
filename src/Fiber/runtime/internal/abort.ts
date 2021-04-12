@@ -3,8 +3,8 @@ import { awaitStatus } from '@fp/Fiber/awaitStatus'
 import { isTerminal } from '@fp/Fiber/Status'
 import { doEnv, toEnv } from '@fp/Fx/Env'
 import { zip } from '@fp/Resume'
-import { disposeBoth } from '@most/disposable'
-import { Disposable, Scheduler } from '@most/types'
+import { dispose } from '@most/disposable'
+import { Scheduler } from '@most/types'
 import { pipe } from 'fp-ts/function'
 
 import { Fiber } from '../../Fiber'
@@ -13,7 +13,7 @@ import { FiberDisposable } from '../FiberDisposable'
 import { changeStatus } from './changeStatus'
 import { finalize } from './finalize'
 
-export function abort<A>(fiber: Fiber<A>, scheduler: Scheduler, disposable: Disposable) {
+export function abort<A>(fiber: Fiber<A>, scheduler: Scheduler) {
   const fx = doEnv(function* (_) {
     const status = yield* _(() => fiber.status)
 
@@ -36,7 +36,8 @@ export function abort<A>(fiber: Fiber<A>, scheduler: Scheduler, disposable: Disp
     yield* _(finalize(fiber, true))
 
     // Cancel all the synchronously cancellable resources
-    disposeBoth(yield* _(fiber.refs.getRef(FiberDisposable)), disposable).dispose()
+    // Dispose of all other resources contained here
+    dispose(yield* _(fiber.refs.getRef(FiberDisposable)))
 
     const children = yield* _(getFiberChildren)
     const fibers = Array.from(children.values())
