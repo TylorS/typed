@@ -75,14 +75,10 @@ export const askForSecret = Do(function* (_) {
     return yield* _(unknownGuess)
   }
 
-  if (option.value == secret) {
-    yield* _(won)
+  const correct = option.value == secret
 
-    return yield* _(correctGuess)
-  }
-
-  yield* _(lost)
-  yield* _(wrongGuess)
+  yield* _(correct ? won : lost)
+  yield* _(correct ? correctGuess : wrongGuess)
 })
 
 /**
