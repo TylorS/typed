@@ -1,14 +1,30 @@
 # @typed/fp
 
-`@typed/fp` is conceptually an extension [fp-ts](https://gcanti.github.io/fp-ts/), with cancelable async effects, do-notation, fibers, state management, hooks, streams, and more. 
+`@typed/fp` is conceptually an extension [fp-ts](https://gcanti.github.io/fp-ts/), with cancelable 
+async effects, do-notation, fibers, state management, hooks, streams, and more. 
+
+Extremely modular in the same way you would expect from the `fp-ts/*` style modules and imports 
+using ES modules to ensure dead code elimination of all kinds can be highly effective all of 
+the src files can be imported directly imported as `@typed/fp/*` and both commonjs `main` and 
+esm `module` are provided for each package for maximum support.
 
 This project is under very heavy development. It is my goal to align with `fp-ts` v3 which is currently also under heavy development and once both codebases are stable I intend to make the 1.0 release.
 
 ## Features
 
 - Bridges `fp-ts` and `@most/core` ecosystems
-- [Cancelable Async Effects](#Resume)
-- [Fibers](#Fiber)
+- [Cancelable Async Effect](#resume)
+- [Fibers](#fiber)
+- [Environment-aware Effect](#env)
+- [Modular state management](#ref)
+- Stack-safe [Do-notation](#do-notation)
+  - Supports configurable variance on type parameters
+- [Hooks](#Hooks)
+- Bring your own UI library or none at all
+- No globals required
+- Branded types
+- Queues
+- ....and more TBD
 
 ## Conceptual Documentation
 
