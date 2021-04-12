@@ -1,8 +1,7 @@
 import * as E from '@fp/Env'
-import * as Eq from '@fp/Eq'
 import { FunctionN } from '@fp/function'
-import * as RA from 'fp-ts/ReadonlyArray'
 
+import { DepsArgs, getDeps } from './Deps'
 import { useMemo } from './useMemo'
 
 export const useFn = <
@@ -10,11 +9,5 @@ export const useFn = <
   Deps extends ReadonlyArray<any> = []
 >(
   f: F,
-  deps: Deps = [] as any,
-  eqs: { readonly [K in keyof Deps]: Eq.Eq<Deps[K]> } = RA.getEq(Eq.deepEqualsEq) as any,
-) =>
-  useMemo(
-    E.fromIO(() => f),
-    deps,
-    eqs,
-  )
+  ...args: DepsArgs<Deps>
+) => useMemo(E.of(f), ...getDeps(args))
