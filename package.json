@@ -362,6 +362,14 @@
       "require": "./cjs/ReaderEither.js",
       "import": "./esm/ReaderEither.js"
     },
+    "./ReaderStream": {
+      "require": "./cjs/ReaderStream.js",
+      "import": "./esm/ReaderStream.js"
+    },
+    "./ReaderStreamEither": {
+      "require": "./cjs/ReaderStreamEither.js",
+      "import": "./esm/ReaderStreamEither.js"
+    },
     "./ReaderTask": {
       "require": "./cjs/ReaderTask.js",
       "import": "./esm/ReaderTask.js"
@@ -394,10 +402,6 @@
       "require": "./cjs/Scheduler.js",
       "import": "./esm/Scheduler.js"
     },
-    "./Shared": {
-      "require": "./cjs/Shared.js",
-      "import": "./esm/Shared.js"
-    },
     "./State": {
       "require": "./cjs/State.js",
       "import": "./esm/State.js"
@@ -413,6 +417,14 @@
     "./Stream": {
       "require": "./cjs/Stream.js",
       "import": "./esm/Stream.js"
+    },
+    "./StreamEither": {
+      "require": "./cjs/StreamEither.js",
+      "import": "./esm/StreamEither.js"
+    },
+    "./StreamOption": {
+      "require": "./cjs/StreamOption.js",
+      "import": "./esm/StreamOption.js"
     },
     "./Task": {
       "require": "./cjs/Task.js",
@@ -437,6 +449,14 @@
     "./hooks": {
       "require": "./cjs/hooks/index.js",
       "import": "./esm/hooks/index.js"
+    },
+    "./hooks/HookIndex": {
+      "require": "./cjs/hooks/HookIndex.js",
+      "import": "./esm/hooks/HookIndex.js"
+    },
+    "./hooks/HookSymbols": {
+      "require": "./cjs/hooks/HookSymbols.js",
+      "import": "./esm/hooks/HookSymbols.js"
     },
     "./hooks/useDisposable": {
       "require": "./cjs/hooks/useDisposable.js",
@@ -465,14 +485,6 @@
     "./hooks/useState": {
       "require": "./cjs/hooks/useState.js",
       "import": "./esm/hooks/useState.js"
-    },
-    "./hooks/internal/HookIndex": {
-      "require": "./cjs/hooks/internal/HookIndex.js",
-      "import": "./esm/hooks/internal/HookIndex.js"
-    },
-    "./hooks/internal/HookSymbols": {
-      "require": "./cjs/hooks/internal/HookSymbols.js",
-      "import": "./esm/hooks/internal/HookSymbols.js"
     }
   }
 }

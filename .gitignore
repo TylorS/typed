@@ -84,6 +84,8 @@ snowpack.key
 /Queue/
 /Reader/
 /ReaderEither/
+/ReaderStream/
+/ReaderStreamEither/
 /ReaderTask/
 /ReaderTaskEither/
 /Ref/
@@ -92,11 +94,12 @@ snowpack.key
 /ResumeEither/
 /ResumeOption/
 /Scheduler/
-/Shared/
 /State/
 /StateEnvEither/
 /StateReaderTaskEither/
 /Stream/
+/StreamEither/
+/StreamOption/
 /Task/
 /TaskEither/
 /TaskOption/
