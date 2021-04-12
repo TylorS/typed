@@ -10,7 +10,7 @@ import { FiberId } from '../FiberId'
 
 export const FiberChildren = createRef(
   fromIO((): ReadonlyMap<FiberId, Fiber<any>> => new Map()),
-  undefined,
+  Symbol('FiberChildren'),
   getEq(EqStrict, EqStrict),
 )
 

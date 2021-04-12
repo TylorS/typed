@@ -23,7 +23,7 @@ export const createRefMap = <E, K, V>(
 export const kv = <K, V>(k: Eq<K> = deepEqualsEq, v: Eq<V> = deepEqualsEq) =>
   createRefMap(
     E.fromIO(() => new Map()),
-    undefined,
+    Symbol(`kv:RefMap`),
     k,
     v,
   )

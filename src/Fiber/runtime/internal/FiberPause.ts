@@ -10,7 +10,7 @@ import { withFiberRefs } from '../../Fiber'
 
 export const FiberPause = createRef(
   fromIO((): Option<IO<Disposable>> => none),
-  undefined,
+  Symbol('FiberPause'),
   getEq(EqStrict),
 )
 

@@ -113,7 +113,7 @@ const fx = doReader(function*(_) {
   // do things
 })
 
-// Convert's an Fx<Reader<{a: string}, _> | Reader<{b: number}>, A> to 
+// Convert's an Fx<Reader<{a: string}, {a: string}> | Reader<{b: number}, {b: number}>, A> to 
 // Reader<{a: string} & {b: number}, A>
 const reader = toReader(fx)
 ```
@@ -266,7 +266,8 @@ workflows while never leaking resources due to the underlying usage of `Disposab
 baked into Fibers.
 
 Every `Fiber` has their own instances of `Refs` to allow for managing state that is localized to each 
-Fiber. This allows for creating "components" that correspond to a Fiber instance.
+Fiber. This allows for creating "components" that correspond to a Fiber instance. Keeping track of these
+references and 
 
 > Write More - Give examples
 

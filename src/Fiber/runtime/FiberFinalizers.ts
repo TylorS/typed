@@ -1,17 +1,16 @@
 import { chain, Env, fromIO } from '@fp/Env'
 import { Arity1 } from '@fp/function'
 import { createRef, getRef, setRef } from '@fp/Ref'
-import { Either } from 'fp-ts/Either'
 import { flow, pipe } from 'fp-ts/function'
-import { Option } from 'fp-ts/Option'
 import { append } from 'fp-ts/ReadonlyArray'
 
 import { CurrentFiber, withFiberRefs } from '../Fiber'
+import { FiberReturnValue } from './FiberReturnValue'
 
 // A callback that accepts the return value of the fiber it is being run for, none if it
 // is being aborted.
 export type Finalizer<A> = (
-  returnValue: Option<Either<Error, A>>,
+  returnValue: FiberReturnValue<A>,
 ) => Env<CurrentFiber, any> | Env<unknown, any>
 
 export const FIBER_FINALIZERS = Symbol('FiberFinalizers')
