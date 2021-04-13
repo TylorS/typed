@@ -9,6 +9,7 @@ import * as FR from 'fp-ts/FromReader'
 import * as FT from 'fp-ts/FromTask'
 import { constant, identity, Lazy, pipe } from 'fp-ts/function'
 import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
+import { IO } from 'fp-ts/IO'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 import * as Re from 'fp-ts/Reader'
@@ -136,12 +137,12 @@ export const Alt: Alt2<URI> = {
 
 export const alt = Alt.alt
 
+export const fromIO = fromReader as <A, E = unknown>(fa: IO<A>) => Env<E, A>
+
 export const FromIO: FIO.FromIO2<URI> = {
   URI,
-  fromIO: fromReader,
+  fromIO,
 }
-
-export const fromIO = FromIO.fromIO
 
 export const FromTask: FT.FromTask2<URI> = {
   ...FromIO,

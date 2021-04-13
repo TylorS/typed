@@ -18,7 +18,9 @@ export const chainRec = FxT.chainRec(E.MonadRec)
 export const doEnv = FxT.getDo<E.URI>()
 export const liftEnv = FxT.liftFx<E.URI>()
 export const map = FxT.map<E.URI>()
-export const toEnv = FxT.toMonad<E.URI>(E.MonadRec)
+export const toEnv = FxT.toMonad<E.URI>(E.MonadRec) as <Y extends E.Env<any, any>, R>(
+  fx: Fx<Y, R, unknown>,
+) => [Y] extends [E.Env<infer E, any>] ? E.Env<E, R> : never
 export const ask = FxT.ask(E.FromReader)
 export const asks = FxT.asks(E.FromReader)
 export const useSome = FxT.useSome({ ...E.UseSome, ...E.MonadRec })

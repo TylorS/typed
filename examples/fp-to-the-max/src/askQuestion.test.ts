@@ -1,8 +1,9 @@
 import { constVoid, flow, pipe } from '@fp/function'
 import * as R from '@fp/Resume'
 import { describe, given, it } from '@typed/test'
-import { askQuestion } from 'askQuestion'
 import { EOL } from 'os'
+
+import { askQuestion } from './askQuestion'
 
 export const test = describe(`askQuestion`, [
   given(`a question`, [

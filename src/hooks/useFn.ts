@@ -1,4 +1,5 @@
 import * as E from '@fp/Env'
+import { CurrentFiber } from '@fp/Fiber'
 import { FunctionN } from '@fp/function'
 
 import { DepsArgs, getDeps } from './Deps'
@@ -10,4 +11,4 @@ export const useFn = <
 >(
   f: F,
   ...args: DepsArgs<Deps>
-) => useMemo(E.of(f), ...getDeps(args))
+): E.Env<CurrentFiber, F> => useMemo(E.of(f), ...getDeps(args))
