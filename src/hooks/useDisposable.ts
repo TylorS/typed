@@ -15,7 +15,7 @@ export const useDisposable = <Deps extends ReadonlyArray<any> = []>(
   withFiberRefs(
     Do(function* (_) {
       const [deps, eqs] = getDeps(args)
-      const ref = yield* _(useRef(fromIO<Disposable, unknown>(f)))
+      const ref = yield* _(useRef(fromIO<Disposable>(f)))
       const isEqual = yield* _(useEq(deps, Eq.tuple(...eqs)))
 
       if (!isEqual) {

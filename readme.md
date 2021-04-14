@@ -275,8 +275,10 @@ references and
 
 Hooks are a special instance of `Ref`s, where `Ref`s are actually a lower-level primitive of Hooks. Hooks in `@typed/fp` are not tied to any rendering library, and can easily be tested in isolation.
 
-With `Refs` their IDs are used to look up a given value. With `hooks`, like those found in React, this `ID` is instead generated using an incrementing index which leads to the "rules of hooks" 
-particularly where ordering matters and must be consistent. 
+With `Refs` their IDs are used to look up a given value. With `hooks`, like those found in React, this `ID` 
+is instead generated using an incrementing index which leads to the "rules of hooks" particularly where 
+ordering matters and must be consistent. To help with this functionality hooks have been implemented atop 
+of Fibers since they have their own copy of references and a lifecycle of their own.
 
 > Write More - Give examples
 

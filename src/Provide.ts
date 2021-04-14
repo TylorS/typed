@@ -204,40 +204,48 @@ export function provideAllWith<F>(M: ProvideAll<F> & Chain<F>) {
 
 export function askAndUse<F extends URIS2>(
   M: UseAll2<F> & Chain2<F> & FromReader2<F>,
-): <E, B>(hkt: Kind2<F, E, B>) => Kind2<F, unknown, B>
+): <E, B>(hkt: Kind2<F, E, B>) => Kind2<F, E, Kind2<F, unknown, B>>
 
 export function askAndUse<F extends URIS3>(
   M: UseAll3<F> & Chain3<F> & FromReader3<F>,
-): <R, E, B>(hkt: Kind3<F, R, E, B>) => Kind3<F, unknown, E, B>
+): <R, E, B>(hkt: Kind3<F, R, E, B>) => Kind3<F, R, E, Kind3<F, unknown, E, B>>
 
 export function askAndUse<F extends URIS4>(
   M: UseAll4<F> & Chain4<F> & FromReader4<F>,
-): <S, R, E, B>(hkt: Kind4<F, S, R, E, B>) => Kind4<F, S, unknown, E, B>
+): <S, R, E, B>(hkt: Kind4<F, S, R, E, B>) => Kind4<F, S, R, E, Kind4<F, S, unknown, E, B>>
 
 export function askAndUse<F>(
   M: UseAll<F> & Chain<F> & FromReader<F>,
-): <E, B>(hkt: HKT2<F, E, B>) => HKT2<F, unknown, B>
+): <E, B>(hkt: HKT2<F, E, B>) => HKT2<F, E, HKT2<F, unknown, B>>
 
 export function askAndUse<F>(M: UseAll<F> & Chain<F> & FromReader<F>) {
-  return useAllWith(M)(M.fromReader(<E>(e: E) => e))
+  return <E, B>(hkt: HKT2<F, E, B>) =>
+    pipe(
+      M.fromReader((e: E) => e),
+      M.map((e) => pipe(hkt, M.useAll(e))),
+    )
 }
 
 export function askAndProvide<F extends URIS2>(
   M: ProvideAll2<F> & Chain2<F> & FromReader2<F>,
-): <E, B>(hkt: Kind2<F, E, B>) => Kind2<F, unknown, B>
+): <E, B>(hkt: Kind2<F, E, B>) => Kind2<F, E, Kind2<F, unknown, B>>
 
 export function askAndProvide<F extends URIS3>(
   M: ProvideAll3<F> & Chain3<F> & FromReader3<F>,
-): <R, E, B>(hkt: Kind3<F, R, E, B>) => Kind3<F, unknown, E, B>
+): <R, E, B>(hkt: Kind3<F, R, E, B>) => Kind3<F, R, E, Kind3<F, unknown, E, B>>
 
 export function askAndProvide<F extends URIS4>(
   M: ProvideAll4<F> & Chain4<F> & FromReader4<F>,
-): <S, R, E, B>(hkt: Kind4<F, S, R, E, B>) => Kind4<F, S, unknown, E, B>
+): <S, R, E, B>(hkt: Kind4<F, S, R, E, B>) => Kind4<F, S, R, E, Kind4<F, S, unknown, E, B>>
 
 export function askAndProvide<F>(
   M: ProvideAll<F> & Chain<F> & FromReader<F>,
-): <E, B>(hkt: HKT2<F, E, B>) => HKT2<F, unknown, B>
+): <E, B>(hkt: HKT2<F, E, B>) => HKT2<F, E, HKT2<F, unknown, B>>
 
 export function askAndProvide<F>(M: ProvideAll<F> & Chain<F> & FromReader<F>) {
-  return provideAllWith(M)(M.fromReader(<E>(e: E) => e))
+  return <E, B>(hkt: HKT2<F, E, B>) =>
+    pipe(
+      M.fromReader((e: E) => e),
+      M.map((e) => pipe(hkt, M.provideAll(e))),
+    )
 }

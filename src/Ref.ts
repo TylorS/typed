@@ -143,7 +143,7 @@ export function createReferences(refs: Iterable<readonly [RefId, unknown]> = [])
     return pipe(
       ref.initial,
       E.chainFirst((value) => E.fromIO(() => references.set(id, value))),
-      E.chainFirst((value) => E.fromIO<void, E>(() => sendEvent({ type: 'created', id, value }))),
+      E.chainFirst((value) => E.fromIO(() => sendEvent({ type: 'created', id, value }))),
     )
   }
 
@@ -154,7 +154,7 @@ export function createReferences(refs: Iterable<readonly [RefId, unknown]> = [])
         getRef,
         E.chainFirst(() => E.fromIO(() => references.set(ref.id, value))),
         E.chainFirst((previousValue) =>
-          E.fromIO<void, E>(
+          E.fromIO(
             () =>
               !pipe(value, ref.eq.equals(previousValue)) &&
               sendEvent({ type: 'updated', id: ref.id, previousValue, value }),

@@ -326,6 +326,10 @@
       "require": "./cjs/FxT.js",
       "import": "./esm/FxT.js"
     },
+    "./Global": {
+      "require": "./cjs/Global.js",
+      "import": "./esm/Global.js"
+    },
     "./Hkt": {
       "require": "./cjs/Hkt.js",
       "import": "./esm/Hkt.js"
@@ -382,9 +386,21 @@
       "require": "./cjs/Ref.js",
       "import": "./esm/Ref.js"
     },
+    "./RefAdapter": {
+      "require": "./cjs/RefAdapter.js",
+      "import": "./esm/RefAdapter.js"
+    },
     "./RefMap": {
       "require": "./cjs/RefMap.js",
       "import": "./esm/RefMap.js"
+    },
+    "./RefQueue": {
+      "require": "./cjs/RefQueue.js",
+      "import": "./esm/RefQueue.js"
+    },
+    "./RefWeakMap": {
+      "require": "./cjs/RefWeakMap.js",
+      "import": "./esm/RefWeakMap.js"
     },
     "./Resume": {
       "require": "./cjs/Resume.js",
@@ -401,6 +417,34 @@
     "./Scheduler": {
       "require": "./cjs/Scheduler.js",
       "import": "./esm/Scheduler.js"
+    },
+    "./Shared": {
+      "require": "./cjs/Shared/index.js",
+      "import": "./esm/Shared/index.js"
+    },
+    "./Shared/SharedEvent": {
+      "require": "./cjs/Shared/SharedEvent.js",
+      "import": "./esm/Shared/SharedEvent.js"
+    },
+    "./Shared/SharedEvents": {
+      "require": "./cjs/Shared/SharedEvents.js",
+      "import": "./esm/Shared/SharedEvents.js"
+    },
+    "./Shared/SharedFibers": {
+      "require": "./cjs/Shared/SharedFibers.js",
+      "import": "./esm/Shared/SharedFibers.js"
+    },
+    "./Shared/SharedReferences": {
+      "require": "./cjs/Shared/SharedReferences.js",
+      "import": "./esm/Shared/SharedReferences.js"
+    },
+    "./Shared/forkShared": {
+      "require": "./cjs/Shared/forkShared.js",
+      "import": "./esm/Shared/forkShared.js"
+    },
+    "./Shared/runShared": {
+      "require": "./cjs/Shared/runShared.js",
+      "import": "./esm/Shared/runShared.js"
     },
     "./State": {
       "require": "./cjs/State.js",
@@ -438,9 +482,9 @@
       "require": "./cjs/TaskOption.js",
       "import": "./esm/TaskOption.js"
     },
-    "./WeakKey": {
-      "require": "./cjs/WeakKey.js",
-      "import": "./esm/WeakKey.js"
+    "./WeakMap": {
+      "require": "./cjs/WeakMap.js",
+      "import": "./esm/WeakMap.js"
     },
     "./function": {
       "require": "./cjs/function.js",

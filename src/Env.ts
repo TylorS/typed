@@ -40,7 +40,9 @@ export const chain = RT.chain(R.Chain) as <A, R1, B>(
   f: (a: A) => Env<R1, B>,
 ) => <R2>(ma: Env<R2, A>) => Env<R1 & R2, B>
 
-export const chainFirst = <A, R, B>(f: (a: A) => Env<R, B>) => (ma: Env<R, A>): Env<R, A> =>
+export const chainFirst = <A, R1, B>(f: (a: A) => Env<R1, B>) => <R2>(
+  ma: Env<R2, A>,
+): Env<R1 & R2, A> =>
   pipe(
     ma,
     chain((a) =>
@@ -137,7 +139,7 @@ export const Alt: Alt2<URI> = {
 
 export const alt = Alt.alt
 
-export const fromIO = fromReader as <A, E = unknown>(fa: IO<A>) => Env<E, A>
+export const fromIO = fromReader as <A>(fa: IO<A>) => Env<unknown, A>
 
 export const FromIO: FIO.FromIO2<URI> = {
   URI,

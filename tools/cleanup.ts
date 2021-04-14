@@ -1,11 +1,18 @@
-import { join } from 'path'
+import { readdirSync, statSync } from 'fs'
+import { basename, dirname, join } from 'path'
 import rimraf from 'rimraf'
 
-import { compiledFiles, MODULES, ROOT_DIR, ROOT_FILES } from './common'
-
-const TSX_REGEX = /.tsx?$/
-
-ROOT_FILES.flatMap(compiledFiles).forEach((f) => rimraf.sync(f.replace('/', '')))
-MODULES.map((m) => join(ROOT_DIR, m)).forEach((d) => rimraf.sync(d.replace(TSX_REGEX, '')))
+import { ROOT_DIR } from './common'
 
 rimraf.sync(join(ROOT_DIR, 'build'))
+rimraf.sync(join(ROOT_DIR, 'cjs'))
+rimraf.sync(join(ROOT_DIR, 'esm'))
+
+// Delete any directories that have only a package.json within them
+readdirSync(ROOT_DIR)
+  .map((p) => join(ROOT_DIR, p))
+  .filter((p) => statSync(p).isDirectory())
+  .map((dir) => readdirSync(dir).map((p) => join(dir, p)))
+  .filter((files) => files.length === 1 && basename(files[0]) === 'package.json')
+  .flat()
+  .forEach((file) => rimraf.sync(dirname(file)))
