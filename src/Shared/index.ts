@@ -1,5 +1,4 @@
 export * from './forkShared'
-export * from './runShared'
 export * from './SharedEvent'
 export * from './SharedEvents'
 export * from './SharedFibers'
