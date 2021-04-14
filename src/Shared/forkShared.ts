@@ -12,6 +12,7 @@ import {
 import { pipe } from '@fp/function'
 import { Do } from '@fp/Fx/Env'
 import { GlobalRefs } from '@fp/Global'
+import { resetIndex } from '@fp/hooks'
 import { createReferences, RefEvent } from '@fp/Ref'
 import { runStream, SchedulerEnv } from '@fp/Scheduler'
 import { createSink } from '@fp/Stream'
@@ -57,7 +58,16 @@ export function forkShared<E, A>(
       O.getOrElse(() => createReferences()),
     )
 
-    const fiber = yield* _(fork(env, { ...forkOptions, refs }))
+    const fiber = yield* _(
+      fork(
+        pipe(
+          // Ensure hook index is reset in-between uses
+          () => resetIndex({ refs }),
+          E.chain(() => env),
+        ),
+        { ...forkOptions, refs },
+      ),
+    )
 
     // Set the Fiber
     yield* _(setSharedFiber(key, fiber))

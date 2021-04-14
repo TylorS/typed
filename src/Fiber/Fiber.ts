@@ -146,11 +146,13 @@ export const getParent: Env<CurrentFiber, Option<Fiber<unknown>>> = asks(
 /**
  * Run a Refs requiring Env using the references from the current Fiber.
  */
-export const withFiberRefs = <E, A>(env: Env<E & Refs, A>): Env<E & CurrentFiber, A> => (e) =>
-  env({
-    ...e,
-    refs: e.currentFiber.refs,
-  })
+export function withFiberRefs<E, A>(env: Env<E & Refs, A>): Env<E & CurrentFiber, A> {
+  return (e) =>
+    env({
+      ...e,
+      refs: e.currentFiber.refs,
+    })
+}
 
 /**
  * Run a Refs requiring Env using the references from the provided Fiber.

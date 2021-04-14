@@ -17,10 +17,10 @@ export const withProvider = <E1, A>(ref: Ref<E1, A>) => <E2, B>(
   Do(function* (_) {
     const provider = yield* _(findProvider(ref))
 
-    return yield* _(pipe(f(ref), usingFiberRefs(provider)))
+    return yield* pipe(ref, f, usingFiberRefs(provider), _)
   })
 
-export const getContext: <E, A>(ref: Ref<E, A>) => Env<E & CurrentFiber, A> = (ref) =>
+export const getContext = <E, A>(ref: Ref<E, A>): Env<E & CurrentFiber, A> =>
   withProvider(ref)(getRef)
 
 export const setContext = <E, A>(ref: Ref<E, A>) => (value: A) => withProvider(ref)(setRef(value))

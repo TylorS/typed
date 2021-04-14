@@ -16,8 +16,7 @@ export function findProvider<E, A>(ref: Ref<E, A>) {
     const check = () =>
       _(
         pipe(
-          ref,
-          hasRef,
+          hasRef(ref),
           withFiberRefs,
           useSome<CurrentFiber>({ currentFiber: current }),
         ),
