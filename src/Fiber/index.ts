@@ -1,5 +1,7 @@
 export * from './awaitStatus'
+export * from './Context'
 export * from './Fiber'
 export * from './FiberId'
+export * from './findProvider'
 export * from './runtime'
 export * from './Status'

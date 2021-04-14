@@ -153,6 +153,17 @@ export const withFiberRefs = <E, A>(env: Env<E & Refs, A>): Env<E & CurrentFiber
   })
 
 /**
+ * Run a Refs requiring Env using the references from the provided Fiber.
+ */
+export const usingFiberRefs = (fiber: Fiber<any>) => <E, A>(env: Env<E & Refs, A>): Env<E, A> => (
+  e,
+) =>
+  env({
+    ...e,
+    refs: fiber.refs,
+  })
+
+/**
  * Pauses the current fiber. If there is no parent fiber None will be returned. If there is a parent
  * a Some of the parent's status will be returned upon playing the fiber again.
  */
