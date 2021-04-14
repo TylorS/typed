@@ -82,7 +82,7 @@ the easiest ways to begin improving any codebase.
 ### Do-Notation
 
 Do-notation is a syntax for performing effects in a way that looks a lot more like imperative code.
-`Fx` is a type-safe(!) `generator` based abstraction with allows you to utilize a Monad's `ChainRec` 
+`Fx` is a type-safe(!) generator-based abstraction with allows you to utilize a Monad's `ChainRec` 
 instance to create a stack-safe do-notation interpreter. 
 
 In addition to the syntax-related benefits, this abstraction understands variance in the 
@@ -96,6 +96,8 @@ created. Similarly if there are Either-like effects all Left values will be comb
 This variance can be configured per each higher-kinded type's URI by extending an interface. The choice
 to use this variance is for convenience of accumulating requirements at the point of definition with
 more modularity.
+
+The choice to use or not use the provided do-notation or one of the relatively 
 
 ```ts
 import { doReader, toReader } from '@typed/fp/Fx/Reader'
@@ -116,6 +118,42 @@ const fx = doReader(function*(_) {
 // Convert's an Fx<Reader<{a: string}, {a: string}> | Reader<{b: number}, {b: number}>, A> to 
 // Reader<{a: string} & {b: number}, A>
 const reader = toReader(fx)
+
+// Contrasted with fp-ts' chainW
+
+pipe(
+  R.ask<{a:string}>(),
+  R.chainW(({ a }) => pipe(
+    R.ask<{b:number}>(),
+    R.chainW(({ b }) => {
+      // do things
+    }) 
+  ))
+)
+
+// and with fp-ts' bindW syntax
+pipe(
+  R.Do,
+  R.bindW('a', R.asks((e: {a:string}) => e.a)),
+  R.bindW('b', R.asks((e: {b:number}) => e.b)),
+  R.chainW(({a, b}) => {
+    // do things
+  })
+)
+
+// A special mention since apSW uses applicatives and isn't quite the same
+// but if the Reader monad were instead an asynchronous effect like Env, the 
+// applicative instance have the chance to perform them in parallel or sequentially
+// depending on the apply instance
+pipe(
+  R.Do,
+  R.apSW('a', R.asks((e: {a:string}) => e.a)),
+  R.apSW('b', R.asks((e: {b:number}) => e.b)),
+  R.chainW(({a, b}) => {
+    // do things
+  })
+)
+
 ```
 
 ### Ref 
