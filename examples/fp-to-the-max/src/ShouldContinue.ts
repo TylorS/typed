@@ -1,38 +1,52 @@
 import * as E from '@fp/Env'
-import { pipe } from '@fp/function'
 import { Do } from '@fp/Fx/Env'
 import * as R from '@fp/Ref'
-import { formatWinsAndLosses } from 'formatWinsAndLosses'
 
 import { askQuestion } from './askQuestion'
+import { putWinsAndLosses } from './formatWinsAndLosses'
 import { GetStr } from './getStr'
 import { getName } from './Name'
-import { PutStr, putStr } from './putStr'
+import { PutStr } from './putStr'
 
 /**
  * Track if the game should continue or not
  */
 export const ShouldContinue: R.Ref<unknown, boolean> = R.createRef(E.of<boolean>(true))
 
+/**
+ * Get the current value of ShouldContinue
+ */
 export const shouldContinue: E.Env<R.Refs, boolean> = R.getRef(ShouldContinue)
 
-// Ask to continue the game
+/**
+ * Set the ShouldContinue reference
+ */
+export const setShouldContinue = R.setRef(ShouldContinue)
+
+const VALID_YES_ANSWERS = ['y', 'yes', 'sure']
+const VALID_NO_ANSWERS = ['n', 'no', 'nope']
+
+/**
+ * Ask if the current user would like to continue playing the game
+ */
 export const askToContinue: E.Env<R.Refs & GetStr & PutStr, boolean> = Do(function* (_) {
-  const winsAndLosses = yield* _(formatWinsAndLosses)
+  // Print the current score
+  yield* _(putWinsAndLosses)
 
-  yield* _(putStr(winsAndLosses))
-
+  // Ask if the user would like to continue
   const name = yield* _(getName)
   const answer = yield* _(askQuestion(`Do you want to continue, ${name}? (y/n)`))
 
-  if (answer === 'y') {
-    return yield* pipe(ShouldContinue, R.setRef(true), _)
+  // Handle yes
+  if (VALID_YES_ANSWERS.includes(answer.toLowerCase())) {
+    return yield* _(setShouldContinue(true))
   }
 
-  if (answer === 'n') {
-    return yield* pipe(ShouldContinue, R.setRef(false), _)
+  // Handle no
+  if (VALID_NO_ANSWERS.includes(answer.toLowerCase())) {
+    return yield* _(setShouldContinue(false))
   }
 
-  // 100% stack-safe recursion
+  // Try again w/ stack-safe recursion
   return yield* _(askToContinue)
 })

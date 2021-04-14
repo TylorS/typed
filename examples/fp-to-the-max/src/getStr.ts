@@ -5,5 +5,7 @@ export type GetStr = {
   readonly getStr: Resume<string>
 }
 
-// Get input from the user
+/**
+ * Read textual input from the User
+ */
 export const getStr: Env<GetStr, string> = (e) => e.getStr

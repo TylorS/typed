@@ -1,6 +1,6 @@
 import { chain, Env, fromIO } from '@fp/Env'
 import { Arity1 } from '@fp/function'
-import { createRef, getRef, setRef } from '@fp/Ref'
+import { createRef, getRef, setRef_ } from '@fp/Ref'
 import { flow, pipe } from 'fp-ts/function'
 import { append } from 'fp-ts/ReadonlyArray'
 
@@ -24,7 +24,7 @@ export const FiberFinalizers = <A>() =>
 export const getFiberFinalizers = <A>() => pipe(FiberFinalizers<A>(), getRef, withFiberRefs)
 
 export const setFiberFinalizers = <A>(finalizers: ReadonlyArray<Finalizer<A>>) =>
-  pipe(FiberFinalizers<A>(), setRef(finalizers), withFiberRefs)
+  pipe(FiberFinalizers<A>(), setRef_(finalizers), withFiberRefs)
 
 export const modifyFiberFinalizers = <A>(
   f: Arity1<ReadonlyArray<Finalizer<A>>, ReadonlyArray<Finalizer<A>>>,

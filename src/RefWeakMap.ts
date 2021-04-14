@@ -4,7 +4,7 @@ import { constant, identity } from 'fp-ts/function'
 import { match, Option } from 'fp-ts/Option'
 
 import * as E from './Env'
-import { createRef, getRef, modifyRef, Ref, Refs } from './Ref'
+import { createRef, getRef, modifyRef_, Ref, Refs } from './Ref'
 import * as WM from './WeakMap'
 
 export interface RefWeakMap<E, K extends object, V> extends Ref<E, WeakMap<K, V>> {}
@@ -30,7 +30,7 @@ export const getKv = <E, K extends object, V>(refMap: RefWeakMap<E, K, V>) => (
 export const setKv = <E, K extends object, V>(refMap: RefWeakMap<E, K, V>) => (key: K, value: V) =>
   pipe(
     refMap,
-    modifyRef((wm) => wm.set(key, value)),
+    modifyRef_((wm) => wm.set(key, value)),
     E.map(() => value),
   )
 
@@ -40,7 +40,7 @@ export const deleteKv = <E, K extends object, V>(refMap: RefWeakMap<E, K, V>) =>
     E.chainFirst(() =>
       pipe(
         refMap,
-        modifyRef((map) => pipe(map, WM.deleteAt(key), match(constant(map), identity))),
+        modifyRef_((map) => pipe(map, WM.deleteAt(key), match(constant(map), identity))),
       ),
     ),
   )

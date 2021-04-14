@@ -6,7 +6,7 @@ import * as RM from 'fp-ts/ReadonlyMap'
 
 import * as E from './Env'
 import { deepEqualsEq } from './Eq'
-import { createRef, getRef, modifyRef, Ref, Refs } from './Ref'
+import { createRef, getRef, modifyRef_, Ref, Refs } from './Ref'
 
 export interface RefMap<E, K, V> extends Ref<E, ReadonlyMap<K, V>> {
   readonly key: Eq<K>
@@ -46,7 +46,7 @@ export const getKv = <E, K, V>(refMap: RefMap<E, K, V>) => (key: K): E.Env<E & R
 export const setKv = <E, K, V>(refMap: RefMap<E, K, V>) => (key: K, value: V) =>
   pipe(
     refMap,
-    modifyRef(RM.upsertAt(refMap.key)(key, value)),
+    modifyRef_(RM.upsertAt(refMap.key)(key, value)),
     E.map(() => value),
   )
 
@@ -56,7 +56,7 @@ export const deleteKv = <E, K, V>(refMap: RefMap<E, K, V>) => (key: K) =>
     E.chainFirst(() =>
       pipe(
         refMap,
-        modifyRef((map) => pipe(map, RM.deleteAt(refMap.key)(key), match(constant(map), identity))),
+        modifyRef_((map) => pipe(map, RM.deleteAt(refMap.key)(key), match(constant(map), identity))),
       ),
     ),
   )

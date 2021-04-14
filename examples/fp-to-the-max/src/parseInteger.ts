@@ -1,5 +1,8 @@
 import { none, Option, some } from 'fp-ts/Option'
 
+/**
+ * A small helper for parsing an integer
+ */
 export function parseInteger(s: string): Option<number> {
   const i = parseInt(s, 10)
 

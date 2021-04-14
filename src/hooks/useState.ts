@@ -3,7 +3,7 @@ import { deepEqualsEq } from '@fp/Eq'
 import { CurrentFiber, withFiberRefs } from '@fp/Fiber'
 import { Arity1, constant, pipe } from '@fp/function'
 import { Do } from '@fp/Fx/Env'
-import { createRef, getRef, Ref, Refs, setRef } from '@fp/Ref'
+import { createRef, getRef, Ref, Refs, setRef_ } from '@fp/Ref'
 import { Eq } from 'fp-ts/Eq'
 
 import { getNextSymbol } from './HookSymbols'
@@ -32,7 +32,7 @@ function modifyRef<E>(env: E & Refs) {
     pipe(
       ref,
       getRef,
-      chain((a) => pipe(ref, pipe(a, update, setRef))),
+      chain((a) => pipe(ref, pipe(a, update, setRef_))),
       useAll(env),
     )
 }

@@ -1,7 +1,7 @@
 import { Env } from '@fp/Env'
 import { pipe } from '@fp/function'
 import { Do } from '@fp/Fx/Env'
-import { deleteRef, getRef, modifyRef, Ref, Refs, setRef } from '@fp/Ref'
+import { deleteRef, getRef, modifyRef_, Ref, Refs, setRef_ } from '@fp/Ref'
 import { Endomorphism } from 'fp-ts/Endomorphism'
 
 import { CurrentFiber, usingFiberRefs } from './Fiber'
@@ -23,9 +23,9 @@ export const withProvider = <E1, A>(ref: Ref<E1, A>) => <E2, B>(
 export const getContext = <E, A>(ref: Ref<E, A>): Env<E & CurrentFiber, A> =>
   withProvider(ref)(getRef)
 
-export const setContext = <E, A>(ref: Ref<E, A>) => (value: A) => withProvider(ref)(setRef(value))
+export const setContext = <E, A>(ref: Ref<E, A>) => (value: A) => withProvider(ref)(setRef_(value))
 
 export const deleteContext = <E, A>(ref: Ref<E, A>) => withProvider(ref)(deleteRef)
 
 export const modifyContext = <E, A>(ref: Ref<E, A>) => (f: Endomorphism<A>) =>
-  withProvider(ref)(modifyRef(f))
+  withProvider(ref)(modifyRef_(f))

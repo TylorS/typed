@@ -1,5 +1,5 @@
 import { chain, fromIO } from '@fp/Env'
-import { createRef, getRef, setRef } from '@fp/Ref'
+import { createRef, getRef, setRef_ } from '@fp/Ref'
 import { Endomorphism } from 'fp-ts/Endomorphism'
 import { pipe } from 'fp-ts/function'
 
@@ -16,11 +16,11 @@ export const FiberStatus = <A>() =>
 export const getFiberStatus = <A>() => pipe(FiberStatus<A>(), getRef, withFiberRefs)
 
 export const setFiberStatus = <A>(status: Status<A>) =>
-  pipe(FiberStatus<A>(), setRef(status), withFiberRefs)
+  pipe(FiberStatus<A>(), setRef_(status), withFiberRefs)
 
 export const modifyFiberStatus = <A>(f: Endomorphism<Status<A>>) =>
   pipe(
     FiberStatus<A>(),
     getRef,
-    chain((a) => pipe(FiberStatus<A>(), pipe(a, f, setRef))),
+    chain((a) => pipe(FiberStatus<A>(), pipe(a, f, setRef_))),
   )

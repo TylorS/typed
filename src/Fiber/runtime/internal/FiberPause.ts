@@ -1,5 +1,5 @@
 import { fromIO } from '@fp/Env'
-import { createRef, getRef, setRef } from '@fp/Ref'
+import { createRef, getRef, setRef_ } from '@fp/Ref'
 import { Disposable } from '@most/types'
 import { EqStrict } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
@@ -17,4 +17,4 @@ export const FiberPause = createRef(
 export const getFiberPause = pipe(FiberPause, getRef, withFiberRefs)
 
 export const setFiberPause = (resume: IO<Disposable>) =>
-  pipe(FiberPause, setRef(some(resume)), withFiberRefs)
+  pipe(FiberPause, setRef_(some(resume)), withFiberRefs)

@@ -1,6 +1,6 @@
 import { fromIO } from '@fp/Env'
 import { neverEqualsEq } from '@fp/Eq'
-import { createRef, getRef, setRef } from '@fp/Ref'
+import { createRef, getRef, setRef_ } from '@fp/Ref'
 import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
@@ -21,7 +21,7 @@ export const FiberReturnValue = <A>() =>
 export const getFiberReturnValue = <A>() => pipe(FiberReturnValue<A>(), getRef, withFiberRefs)
 
 export const setFiberReturnValue = <A>(returnValue: E.Either<Error, A>) =>
-  pipe(FiberReturnValue<A>(), setRef(O.some(returnValue)), withFiberRefs)
+  pipe(FiberReturnValue<A>(), setRef_(O.some(returnValue)), withFiberRefs)
 
 export const foldReturnValue = <A, B, C, D>(
   aborted: () => A,

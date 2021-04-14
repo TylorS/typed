@@ -28,5 +28,7 @@ export const askForMin: Env<PutStr & GetStr, number> = Do(function* (_) {
  */
 export const Min: Ref<PutStr & GetStr, number> = createRef(askForMin)
 
-// get the Minimum integer value
+/**
+ * Get the current minimum
+ */
 export const getMin: Env<PutStr & GetStr & Refs, number> = getRef(Min)
