@@ -1,7 +1,8 @@
 import { Do } from '@fp/Fx/Env'
 
-import { askForSecret, updateSecret, welcomeToTheGame } from './Secret'
+import { askForSecret, updateSecret } from './Secret'
 import { askToContinue, shouldContinue } from './ShouldContinue'
+import { welcomeToTheGame } from './welcomeToTheGame'
 
 /**
  * The lazy description of our game.

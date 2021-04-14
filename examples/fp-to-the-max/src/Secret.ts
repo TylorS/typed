@@ -65,13 +65,6 @@ export const correctGuess: Env<GetStr & PutStr & R.Refs, void> = Do(function* (_
   yield* _(putStr(`${EOL}You guessed right, ${name}!`))
 })
 
-// Welcome the current user to the game
-export const welcomeToTheGame: Env<GetStr & PutStr & R.Refs, void> = Do(function* (_) {
-  const name = yield* _(getName)
-
-  yield* _(putStr(`${EOL}Hello, ${name} welcome to the game!`))
-})
-
 /**
  * Ask for the current secret, keeping track of wins and losses
  */
