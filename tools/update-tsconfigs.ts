@@ -24,14 +24,6 @@ const BASE_PLUGINS = [
     transform: '@zerollup/ts-transform-paths',
     afterDeclarations: true,
   },
-  {
-    transform: '@zoltu/typescript-transformer-append-js-extension/output/index.js',
-    after: true,
-  },
-  {
-    transform: '@zoltu/typescript-transformer-append-js-extension/output/index.js',
-    afterDeclarations: true,
-  },
 ]
 
 const EXCLUSIONS = [

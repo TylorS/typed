@@ -450,10 +450,6 @@
       "require": "./cjs/Shared/forkShared.js",
       "import": "./esm/Shared/forkShared.js"
     },
-    "./Shared/runShared": {
-      "require": "./cjs/Shared/runShared.js",
-      "import": "./esm/Shared/runShared.js"
-    },
     "./State": {
       "require": "./cjs/State.js",
       "import": "./esm/State.js"
