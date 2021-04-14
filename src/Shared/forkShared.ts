@@ -42,13 +42,13 @@ export function forkShared<E, A>(
   return Do(function* (_) {
     const currentFiber = yield* _(getSharedFiber(key))
 
+    if (O.isSome(currentFiber) && abort) {
+      // Abort the current fiber
+      yield* _((_: unknown) => currentFiber.value.abort)
+    }
+
     // Don't create a new fiber if there is a non-terminal fiber that currently exists
     if (O.isSome(currentFiber) && !isTerminal(yield* _(() => currentFiber.value.status))) {
-      if (abort) {
-        // Abort the current fiber
-        yield* _((_: unknown) => currentFiber.value.abort)
-      }
-
       return O.none
     }
 
