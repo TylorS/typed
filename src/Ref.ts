@@ -59,6 +59,10 @@ export function getRef<E, A>(ref: Ref<E, A>): E.Env<E & Refs, A> {
   )
 }
 
+export function hasRef<E, A>(ref: Ref<E, A>): E.Env<E & Refs, boolean> {
+  return pipe(E.asks((e: Refs) => e.refs.references.has(ref.id)))
+}
+
 export function setRef<A>(value: A) {
   return <E>(ref: Ref<E, A>): E.Env<E & Refs, A> =>
     pipe(

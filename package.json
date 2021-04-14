@@ -130,6 +130,10 @@
       "require": "./cjs/Fiber/index.js",
       "import": "./esm/Fiber/index.js"
     },
+    "./Fiber/Context": {
+      "require": "./cjs/Fiber/Context.js",
+      "import": "./esm/Fiber/Context.js"
+    },
     "./Fiber/Fiber": {
       "require": "./cjs/Fiber/Fiber.js",
       "import": "./esm/Fiber/Fiber.js"
@@ -145,6 +149,10 @@
     "./Fiber/awaitStatus": {
       "require": "./cjs/Fiber/awaitStatus.js",
       "import": "./esm/Fiber/awaitStatus.js"
+    },
+    "./Fiber/findProvider": {
+      "require": "./cjs/Fiber/findProvider.js",
+      "import": "./esm/Fiber/findProvider.js"
     },
     "./Fiber/runtime/FiberChildren": {
       "require": "./cjs/Fiber/runtime/FiberChildren.js",
