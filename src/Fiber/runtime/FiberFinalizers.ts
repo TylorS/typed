@@ -1,4 +1,5 @@
 import { chain, Env, fromIO } from '@fp/Env'
+import { alwaysEqualsEq } from '@fp/Eq'
 import { Arity1 } from '@fp/function'
 import { createRef, getRef, setRef_ } from '@fp/Ref'
 import { flow, pipe } from 'fp-ts/function'
@@ -19,6 +20,7 @@ export const FiberFinalizers = <A>() =>
   createRef(
     fromIO((): ReadonlyArray<Finalizer<A>> => []),
     FIBER_FINALIZERS,
+    alwaysEqualsEq,
   )
 
 export const getFiberFinalizers = <A>() => pipe(FiberFinalizers<A>(), getRef, withFiberRefs)

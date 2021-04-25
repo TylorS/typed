@@ -1,4 +1,5 @@
 import { chain, fromIO } from '@fp/Env'
+import { alwaysEqualsEq } from '@fp/Eq'
 import { createRef, getRef, setRef_ } from '@fp/Ref'
 import { Endomorphism } from 'fp-ts/Endomorphism'
 import { pipe } from 'fp-ts/function'
@@ -11,6 +12,7 @@ export const FiberStatus = <A>() =>
   createRef(
     fromIO((): Status<A> => ({ type: 'queued' })),
     FIBER_STATUS,
+    alwaysEqualsEq,
   )
 
 export const getFiberStatus = <A>() => pipe(FiberStatus<A>(), getRef, withFiberRefs)

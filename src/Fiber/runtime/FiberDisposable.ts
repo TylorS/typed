@@ -1,15 +1,19 @@
 import { disposeBoth, settable } from '@fp/Disposable'
 import * as E from '@fp/Env'
+import { alwaysEqualsEq } from '@fp/Eq'
 import { createRef, getRef } from '@fp/Ref'
 import { Disposable } from '@most/types'
-import { EqStrict } from 'fp-ts/Eq'
 import { constVoid, pipe } from 'fp-ts/function'
 
 import { withFiberRefs } from '../Fiber'
 import { addFinalizer } from './FiberFinalizers'
 import { foldReturnValue } from './FiberReturnValue'
 
-export const FiberDisposable = createRef(E.fromIO(settable), Symbol('FiberDisposable'), EqStrict)
+export const FiberDisposable = createRef(
+  E.fromIO(settable),
+  Symbol('FiberDisposable'),
+  alwaysEqualsEq,
+)
 
 export const getFiberDisposable = pipe(FiberDisposable, getRef, withFiberRefs)
 

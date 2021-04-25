@@ -1,5 +1,5 @@
 import { fromIO } from '@fp/Env'
-import { neverEqualsEq } from '@fp/Eq'
+import { alwaysEqualsEq } from '@fp/Eq'
 import { createRef, getRef, setRef_ } from '@fp/Ref'
 import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
@@ -15,7 +15,7 @@ export const FiberReturnValue = <A>() =>
   createRef(
     fromIO((): FiberReturnValue<A> => O.none),
     FIBER_RETURN_VALUE,
-    neverEqualsEq,
+    alwaysEqualsEq,
   )
 
 export const getFiberReturnValue = <A>() => pipe(FiberReturnValue<A>(), getRef, withFiberRefs)

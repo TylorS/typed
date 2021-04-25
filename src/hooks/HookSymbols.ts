@@ -25,7 +25,11 @@ export const getNextSymbol = Do(function* (_) {
   const symbols = yield* _(getRef(HookSymbols))
 
   if (!symbols.has(index)) {
-    const updated = yield* pipe(HookSymbols, setRef_(pipe(symbols, upsert(index, Symbol(index)))), _)
+    const updated = yield* pipe(
+      HookSymbols,
+      setRef_(pipe(symbols, upsert(index, Symbol(index)))),
+      _,
+    )
 
     return updated.get(index)!
   }

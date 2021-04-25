@@ -56,7 +56,9 @@ export const deleteKv = <E, K, V>(refMap: RefMap<E, K, V>) => (key: K) =>
     E.chainFirst(() =>
       pipe(
         refMap,
-        modifyRef_((map) => pipe(map, RM.deleteAt(refMap.key)(key), match(constant(map), identity))),
+        modifyRef_((map) =>
+          pipe(map, RM.deleteAt(refMap.key)(key), match(constant(map), identity)),
+        ),
       ),
     ),
   )

@@ -3,7 +3,7 @@ import { SchedulerEnv } from '@fp/Scheduler'
 import { Scheduler } from '@most/types'
 import { pipe } from 'fp-ts/function'
 
-import { CurrentFiber, ForkOptions } from '../Fiber'
+import { CurrentFiber, Fork, ForkOptions, Join, Kill } from '../Fiber'
 import { createFiber } from './createFiber'
 import { createRuntime } from './createRuntime'
 
@@ -16,6 +16,12 @@ export function runAsFiber(scheduler: Scheduler, options: ForkOptions = {}) {
 
   return <A>(
     env:
+      | Env<Fork, A>
+      | Env<Join, A>
+      | Env<Kill, A>
+      | Env<Fork & Join, A>
+      | Env<Fork & Kill, A>
+      | Env<Join & Kill, A>
       | Env<typeof runtime, A>
       | Env<typeof runtime & CurrentFiber, A>
       | Env<typeof runtime & SchedulerEnv, A>

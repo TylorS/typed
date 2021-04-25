@@ -1,9 +1,8 @@
 import { chain, fromIO } from '@fp/Env'
+import { alwaysEqualsEq } from '@fp/Eq'
 import { Arity1 } from '@fp/function'
 import { createRef, getRef, setRef_ } from '@fp/Ref'
-import { EqStrict } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
-import { getEq } from 'fp-ts/ReadonlyMap'
 
 import { Fiber, withFiberRefs } from '../Fiber'
 import { FiberId } from '../FiberId'
@@ -11,7 +10,7 @@ import { FiberId } from '../FiberId'
 export const FiberChildren = createRef(
   fromIO((): ReadonlyMap<FiberId, Fiber<any>> => new Map()),
   Symbol('FiberChildren'),
-  getEq(EqStrict, EqStrict),
+  alwaysEqualsEq,
 )
 
 export const getFiberChildren = pipe(FiberChildren, getRef, withFiberRefs)
