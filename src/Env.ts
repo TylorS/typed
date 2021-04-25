@@ -58,7 +58,7 @@ export const fromReader: <R, A>(ma: Re.Reader<R, A>) => Env<R, A> = RT.fromReade
 
 export const map: <A, B>(f: (a: A) => B) => <R>(fa: Env<R, A>) => Env<R, B> = RT.map(R.Functor)
 
-export const of: <A, R = unknown>(a: A) => Env<R, A> = RT.of(R.Pointed)
+export const of = RT.of(R.Pointed) as <A>(a: A) => Env<unknown, A>
 
 export function chainRec<A, E, B>(f: (value: A) => Env<E, Either<A, B>>): (value: A) => Env<E, B> {
   return (value) => (env) => R.chainRec((a: A) => f(a)(env))(value)
@@ -209,6 +209,8 @@ export const tupled = tupled_(Functor)
 
 export const ask = FR.ask(FromReader)
 export const asks = FR.asks(FromReader)
+export const asksE = <R1, R2, A>(f: (r: R1) => Env<R2, A>): Env<R1 & R2, A> =>
+  pipe(asks(f), flatten)
 export const chainReaderK = FR.chainReaderK(FromReader, Chain)
 export const fromReaderK = FR.fromReaderK(FromReader)
 

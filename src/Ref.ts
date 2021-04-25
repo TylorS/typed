@@ -53,37 +53,23 @@ export type Refs = {
 }
 
 export function getRef<E, A>(ref: Ref<E, A>): E.Env<E & Refs, A> {
-  return pipe(
-    E.asks((e: Refs) => e.refs.getRef(ref)),
-    E.flatten,
-  )
+  return E.asksE((e: Refs) => e.refs.getRef(ref))
 }
 
 export function hasRef<E, A>(ref: Ref<E, A>): E.Env<E & Refs, boolean> {
-  return pipe(E.asks((e: Refs) => e.refs.references.has(ref.id)))
+  return E.asks((e: Refs) => e.refs.references.has(ref.id))
 }
 
 export function setRef<E, A>(ref: Ref<E, A>) {
-  return (value: A): E.Env<E & Refs, A> =>
-    pipe(
-      E.asks((e: Refs) => pipe(ref, e.refs.setRef(value))),
-      E.flatten,
-    )
+  return (value: A): E.Env<E & Refs, A> => E.asksE((e: Refs) => pipe(ref, e.refs.setRef(value)))
 }
 
 export function setRef_<A>(value: A) {
-  return <E>(ref: Ref<E, A>): E.Env<E & Refs, A> =>
-    pipe(
-      E.asks((e: Refs) => pipe(ref, e.refs.setRef(value))),
-      E.flatten,
-    )
+  return <E>(ref: Ref<E, A>): E.Env<E & Refs, A> => setRef(ref)(value)
 }
 
 export function deleteRef<E, A>(ref: Ref<E, A>): E.Env<Refs, Option<A>> {
-  return pipe(
-    E.asks((e: Refs) => e.refs.deleteRef(ref)),
-    E.flatten,
-  )
+  return E.asksE((e: Refs) => e.refs.deleteRef(ref))
 }
 
 export function modifyRef<E, A>(ref: Ref<E, A>) {
@@ -96,12 +82,7 @@ export function modifyRef<E, A>(ref: Ref<E, A>) {
 }
 
 export function modifyRef_<A>(f: Arity1<A, A>) {
-  return <E>(ref: Ref<E, A>) =>
-    pipe(
-      ref,
-      getRef,
-      E.chain((a) => pipe(ref, pipe(a, f, setRef_))),
-    )
+  return <E>(ref: Ref<E, A>) => modifyRef(ref)(f)
 }
 
 export function fromKey<A>(eq: Eq<A> = deepEqualsEq) {
@@ -141,7 +122,7 @@ export function createReferences(refs: Iterable<readonly [RefId, unknown]> = [])
     const { id } = ref
 
     if (references.has(id)) {
-      return E.of<A, E>(references.get(id)! as A)
+      return E.of<A>(references.get(id)! as A)
     }
 
     return pipe(
