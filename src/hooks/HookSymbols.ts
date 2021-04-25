@@ -1,8 +1,8 @@
 import { fromIO } from '@fp/Env'
+import { alwaysEqualsEq } from '@fp/Eq'
 import { pipe } from '@fp/function'
 import { Do } from '@fp/Fx/Env'
 import { createRef, getRef, setRef_ } from '@fp/Ref'
-import { EqStrict } from 'fp-ts/Eq'
 import { Eq } from 'fp-ts/number'
 import * as RM from 'fp-ts/ReadonlyMap'
 
@@ -17,7 +17,7 @@ const upsert = RM.upsertAt(Eq)
 export const HookSymbols = createRef(
   fromIO((): ReadonlyMap<number, symbol> => new Map<number, symbol>()),
   Symbol('HookSymbols'),
-  RM.getEq(EqStrict, EqStrict),
+  alwaysEqualsEq,
 )
 
 export const getNextSymbol = Do(function* (_) {
