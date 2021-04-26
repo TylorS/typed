@@ -18,7 +18,7 @@ export type GlobalRefs = {
 /**
  * Run an Env with GlobalRefs
  */
-export const withGlobalRefs: Provider2<URI, Refs, GlobalRefs> = (env) => (e) =>
+export const usingGlobalRefs: Provider2<URI, Refs, GlobalRefs> = (env) => (e) =>
   env({ ...e, refs: e[Global] })
 
 /**
