@@ -1,6 +1,6 @@
 import { Disposable, Disposable as R } from '@most/types'
 import { Alt1 } from 'fp-ts/Alt'
-import { Applicative1 } from 'fp-ts/Applicative'
+import { Applicative1, getApplicativeMonoid } from 'fp-ts/Applicative'
 import { Apply1 } from 'fp-ts/Apply'
 import { bind as bind_, Chain1 } from 'fp-ts/Chain'
 import { ChainRec1 } from 'fp-ts/ChainRec'
@@ -257,3 +257,5 @@ export const fromTaskK = FT.fromTaskK(FromTask)
 export const chainFirstIOK = FIO.chainFirstIOK(FromIO, Chain)
 export const chainIOK = FIO.chainIOK(FromIO, Chain)
 export const fromIOK = FIO.fromIOK(FromIO)
+
+export const getMonoid = getApplicativeMonoid(Applicative)

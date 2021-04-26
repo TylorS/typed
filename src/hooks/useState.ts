@@ -1,6 +1,6 @@
 import { ask, chain, Env, fromIO, useAll } from '@fp/Env'
 import { deepEqualsEq } from '@fp/Eq'
-import { CurrentFiber, withFiberRefs } from '@fp/Fiber'
+import { CurrentFiber, usingFiberRefs } from '@fp/Fiber'
 import { Arity1, constant, pipe } from '@fp/function'
 import { Do } from '@fp/Fx/Env'
 import { createRef, getRef, Ref, Refs, setRef_ } from '@fp/Ref'
@@ -13,7 +13,7 @@ export const useState = <E, A>(
   initial: Env<E, A>,
   eq: Eq<A> = deepEqualsEq,
 ): Env<CurrentFiber & E, readonly [value: A, update: (update: Arity1<A, A>) => Env<unknown, A>]> =>
-  withFiberRefs(
+  usingFiberRefs(
     Do(function* (_) {
       const symbol = yield* _(getNextSymbol)
       const ref = createRef(initial, symbol, eq)

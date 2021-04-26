@@ -4,7 +4,7 @@ import { Do } from '@fp/Fx/Env'
 import { deleteRef, getRef, modifyRef_, Ref, Refs, setRef_ } from '@fp/Ref'
 import { Endomorphism } from 'fp-ts/Endomorphism'
 
-import { CurrentFiber, usingFiberRefs } from './Fiber'
+import { CurrentFiber, withFiberRefs } from './Fiber'
 import { findProvider } from './findProvider'
 
 /**
@@ -17,7 +17,7 @@ export const withProvider = <E1, A>(ref: Ref<E1, A>) => <E2, B>(
   Do(function* (_) {
     const provider = yield* _(findProvider(ref))
 
-    return yield* pipe(ref, f, usingFiberRefs(provider), _)
+    return yield* pipe(ref, f, withFiberRefs(provider), _)
   })
 
 export const getContext = <E, A>(ref: Ref<E, A>): Env<E & CurrentFiber, A> =>

@@ -4,7 +4,7 @@ import { Arity1 } from '@fp/function'
 import { createRef, getRef, setRef_ } from '@fp/Ref'
 import { flow, pipe } from 'fp-ts/function'
 
-import { Fiber, withFiberRefs } from '../Fiber'
+import { Fiber, usingFiberRefs } from '../Fiber'
 import { FiberId } from '../FiberId'
 
 export const FiberChildren = createRef(
@@ -13,10 +13,10 @@ export const FiberChildren = createRef(
   alwaysEqualsEq,
 )
 
-export const getFiberChildren = pipe(FiberChildren, getRef, withFiberRefs)
+export const getFiberChildren = pipe(FiberChildren, getRef, usingFiberRefs)
 
 export const setFiberChildren = (fibers: ReadonlyMap<FiberId, Fiber<any>>) =>
-  pipe(FiberChildren, setRef_(fibers), withFiberRefs)
+  pipe(FiberChildren, setRef_(fibers), usingFiberRefs)
 
 export const modifyFiberChildren = (
   f: Arity1<ReadonlyMap<FiberId, Fiber<any>>, ReadonlyMap<FiberId, Fiber<any>>>,

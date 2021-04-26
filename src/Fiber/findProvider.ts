@@ -4,7 +4,7 @@ import { Do } from '@fp/Fx/Env'
 import { hasRef, Ref } from '@fp/Ref'
 import { isSome } from 'fp-ts/Option'
 
-import { CurrentFiber, getCurrentFiber, withFiberRefs } from './Fiber'
+import { CurrentFiber, getCurrentFiber, usingFiberRefs } from './Fiber'
 
 /**
  * Traverse up the part tree
@@ -17,7 +17,7 @@ export function findProvider<E, A>(ref: Ref<E, A>) {
       _(
         pipe(
           hasRef(ref),
-          withFiberRefs,
+          usingFiberRefs,
           useSome<CurrentFiber>({ currentFiber: current }),
         ),
       )

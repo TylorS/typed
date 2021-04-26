@@ -1,6 +1,6 @@
 import { Env } from '@fp/Env'
 import { Eq } from '@fp/Eq'
-import { CurrentFiber, Fiber, Fork, fork, withFiberRefs } from '@fp/Fiber'
+import { CurrentFiber, Fiber, Fork, fork, usingFiberRefs } from '@fp/Fiber'
 import { Do } from '@fp/Fx/Env'
 import { SchedulerEnv } from '@fp/Scheduler'
 import { tuple } from 'fp-ts/Eq'
@@ -37,7 +37,7 @@ export function useFiber<E, A, Deps extends ReadonlyArray<any> = []>(
   env: Env<E, A>,
   ...args: DepsArgs<Deps>
 ): Env<E & Fork & CurrentFiber, Fiber<A>> {
-  return withFiberRefs(
+  return usingFiberRefs(
     Do(function* (_) {
       const [deps, eqs] = getDeps(args)
       const ref = yield* _(useRef(fork(env)))

@@ -88,7 +88,7 @@ export function fork<R, A>(
 ): Env<Fork & R, Fiber<A>>
 
 export function fork<R, A>(hkt: Env<R, A>, options: ForkOptions = {}): Env<Fork & R, Fiber<A>> {
-  return (e: Fork & R) => e.forkFiber(hkt, e, options)
+  return (e) => e.forkFiber(hkt, e, options)
 }
 
 export type Fork = {
@@ -146,7 +146,7 @@ export const getParent: Env<CurrentFiber, Option<Fiber<unknown>>> = asks(
 /**
  * Run a Refs requiring Env using the references from the current Fiber.
  */
-export function withFiberRefs<E, A>(env: Env<E & Refs, A>): Env<E & CurrentFiber, A> {
+export function usingFiberRefs<E, A>(env: Env<E & Refs, A>): Env<E & CurrentFiber, A> {
   return (e) =>
     env({
       ...e,
@@ -157,7 +157,7 @@ export function withFiberRefs<E, A>(env: Env<E & Refs, A>): Env<E & CurrentFiber
 /**
  * Run a Refs requiring Env using the references from the provided Fiber.
  */
-export const usingFiberRefs = (fiber: Fiber<any>) => <E, A>(env: Env<E & Refs, A>): Env<E, A> => (
+export const withFiberRefs = (fiber: Fiber<any>) => <E, A>(env: Env<E & Refs, A>): Env<E, A> => (
   e,
 ) =>
   env({

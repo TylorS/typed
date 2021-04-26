@@ -6,7 +6,7 @@ import { pipe } from 'fp-ts/function'
 import { IO } from 'fp-ts/IO'
 import { none, Option, some } from 'fp-ts/Option'
 
-import { withFiberRefs } from '../../Fiber'
+import { usingFiberRefs } from '../../Fiber'
 
 export const FiberPause = createRef(
   fromIO((): Option<IO<Disposable>> => none),
@@ -14,7 +14,7 @@ export const FiberPause = createRef(
   alwaysEqualsEq,
 )
 
-export const getFiberPause = pipe(FiberPause, getRef, withFiberRefs)
+export const getFiberPause = pipe(FiberPause, getRef, usingFiberRefs)
 
 export const setFiberPause = (resume: IO<Disposable>) =>
-  pipe(FiberPause, setRef_(some(resume)), withFiberRefs)
+  pipe(FiberPause, setRef_(some(resume)), usingFiberRefs)

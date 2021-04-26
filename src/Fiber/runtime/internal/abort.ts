@@ -1,4 +1,3 @@
-import { useSome } from '@fp/Env'
 import { awaitStatus } from '@fp/Fiber/awaitStatus'
 import { isTerminal } from '@fp/Fiber/Status'
 import { doEnv, toEnv } from '@fp/Fx/Env'
@@ -23,12 +22,7 @@ export function abort<A>(fiber: Fiber<A>, scheduler: Scheduler) {
 
     // Only run abort workflow once
     if (status.type === 'aborting') {
-      return yield* _(
-        pipe(
-          awaitStatus((x) => x.type === 'aborted'),
-          useSome({ currentFiber: fiber }),
-        ),
-      )
+      return yield* _(awaitStatus((x) => x.type === 'aborted'))
     }
 
     // Check for any registered finalizers which should run before changing status to aborted

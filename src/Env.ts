@@ -1,14 +1,14 @@
-import { Alt2 } from 'fp-ts/Alt'
-import { Applicative2 } from 'fp-ts/Applicative'
+import * as FpAlt from 'fp-ts/Alt'
+import * as FpApplicative from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
-import { bind as bind_, Chain2 } from 'fp-ts/Chain'
+import * as FpChain from 'fp-ts/Chain'
 import { ChainRec2 } from 'fp-ts/ChainRec'
-import { Either } from 'fp-ts/Either'
+import * as E from 'fp-ts/Either'
 import * as FIO from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
 import * as FT from 'fp-ts/FromTask'
-import { constant, identity, Lazy, pipe } from 'fp-ts/function'
-import { bindTo as bindTo_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
+import { constant, identity, Lazy } from 'fp-ts/function'
+import { bindTo as bindTo_, flap as flap_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
 import { IO } from 'fp-ts/IO'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
@@ -40,27 +40,15 @@ export const chain = RT.chain(R.Chain) as <A, R1, B>(
   f: (a: A) => Env<R1, B>,
 ) => <R2>(ma: Env<R2, A>) => Env<R1 & R2, B>
 
-export const chainFirst = <A, R1, B>(f: (a: A) => Env<R1, B>) => <R2>(
-  ma: Env<R2, A>,
-): Env<R1 & R2, A> =>
-  pipe(
-    ma,
-    chain((a) =>
-      pipe(
-        a,
-        f,
-        chain(() => of(a)),
-      ),
-    ),
-  )
-
 export const fromReader: <R, A>(ma: Re.Reader<R, A>) => Env<R, A> = RT.fromReader(R.Pointed)
 
 export const map: <A, B>(f: (a: A) => B) => <R>(fa: Env<R, A>) => Env<R, B> = RT.map(R.Functor)
 
 export const of: <A, R = unknown>(a: A) => Env<R, A> = RT.of(R.Pointed)
 
-export function chainRec<A, E, B>(f: (value: A) => Env<E, Either<A, B>>): (value: A) => Env<E, B> {
+export function chainRec<A, E, B>(
+  f: (value: A) => Env<E, E.Either<A, B>>,
+): (value: A) => Env<E, B> {
   return (value) => (env) => R.chainRec((a: A) => f(a)(env))(value)
 }
 
@@ -88,6 +76,8 @@ export const Functor: Functor2<URI> = {
   map,
 }
 
+export const flap = flap_(Functor)
+
 export const Apply: Ap.Apply2<URI> = {
   ...Functor,
   ap,
@@ -98,15 +88,19 @@ export const apT = Ap.apT(Apply)
 export const apFirst = Ap.apFirst(Apply)
 export const apSecond = Ap.apSecond(Apply)
 
-export const Applicative: Applicative2<URI> = {
+export const Applicative: FpApplicative.Applicative2<URI> = {
   ...Apply,
   ...Pointed,
 }
 
-export const Chain: Chain2<URI> = {
+export const getMonoid = FpApplicative.getApplicativeMonoid(Applicative)
+
+export const Chain: FpChain.Chain2<URI> = {
   ...Functor,
   chain,
 }
+
+export const chainFirst = FpChain.chainFirst(Chain)
 
 export const flatten = chain(identity) as <E1, E2, A>(env: Env<E1, Env<E2, A>>) => Env<E1 & E2, A>
 
@@ -132,12 +126,16 @@ export const FromReader: FR.FromReader2<URI> = {
 export const race = <E1, A>(a: Env<E1, A>) => <E2, B>(b: Env<E2, B>): Env<E1 & E2, A | B> => (e) =>
   R.race(a(e))(b(e))
 
-export const Alt: Alt2<URI> = {
+export const Alt: FpAlt.Alt2<URI> = {
   ...Functor,
   alt: <E, A>(snd: Lazy<Env<E, A>>) => (fst: Env<E, A>) => race(fst)(snd()),
 }
 
-export const alt = Alt.alt
+export const alt = Alt.alt as <E1, A>(
+  snd: Lazy<Env<E1, A>>,
+) => <E2>(fst: Env<E2, A>) => Env<E1 & E2, A>
+
+export const altAll = FpAlt.altAll(Alt)
 
 export const fromIO = fromReader as <A>(fa: IO<A>) => Env<unknown, A>
 
@@ -204,7 +202,7 @@ export const Provide: P.Provide2<URI> = {
 
 export const Do: Env<unknown, {}> = fromIO(() => Object.create(null))
 export const bindTo = bindTo_(Functor)
-export const bind = bind_(Monad)
+export const bind = FpChain.bind(Monad)
 export const tupled = tupled_(Functor)
 
 export const ask = FR.ask(FromReader)

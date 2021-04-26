@@ -4,7 +4,7 @@ import { createRef, getRef, setRef_ } from '@fp/Ref'
 import { Endomorphism } from 'fp-ts/Endomorphism'
 import { pipe } from 'fp-ts/function'
 
-import { withFiberRefs } from '../Fiber'
+import { usingFiberRefs } from '../Fiber'
 import { Status } from '../Status'
 
 const FIBER_STATUS = Symbol('FiberStatus')
@@ -15,10 +15,10 @@ export const FiberStatus = <A>() =>
     alwaysEqualsEq,
   )
 
-export const getFiberStatus = <A>() => pipe(FiberStatus<A>(), getRef, withFiberRefs)
+export const getFiberStatus = <A>() => pipe(FiberStatus<A>(), getRef, usingFiberRefs)
 
 export const setFiberStatus = <A>(status: Status<A>) =>
-  pipe(FiberStatus<A>(), setRef_(status), withFiberRefs)
+  pipe(FiberStatus<A>(), setRef_(status), usingFiberRefs)
 
 export const modifyFiberStatus = <A>(f: Endomorphism<Status<A>>) =>
   pipe(

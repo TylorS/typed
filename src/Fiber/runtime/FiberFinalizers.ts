@@ -5,7 +5,7 @@ import { createRef, getRef, setRef_ } from '@fp/Ref'
 import { flow, pipe } from 'fp-ts/function'
 import { append } from 'fp-ts/ReadonlyArray'
 
-import { CurrentFiber, withFiberRefs } from '../Fiber'
+import { CurrentFiber, usingFiberRefs } from '../Fiber'
 import { FiberReturnValue } from './FiberReturnValue'
 
 // A callback that accepts the return value of the fiber it is being run for, none if it
@@ -23,10 +23,10 @@ export const FiberFinalizers = <A>() =>
     alwaysEqualsEq,
   )
 
-export const getFiberFinalizers = <A>() => pipe(FiberFinalizers<A>(), getRef, withFiberRefs)
+export const getFiberFinalizers = <A>() => pipe(FiberFinalizers<A>(), getRef, usingFiberRefs)
 
 export const setFiberFinalizers = <A>(finalizers: ReadonlyArray<Finalizer<A>>) =>
-  pipe(FiberFinalizers<A>(), setRef_(finalizers), withFiberRefs)
+  pipe(FiberFinalizers<A>(), setRef_(finalizers), usingFiberRefs)
 
 export const modifyFiberFinalizers = <A>(
   f: Arity1<ReadonlyArray<Finalizer<A>>, ReadonlyArray<Finalizer<A>>>,

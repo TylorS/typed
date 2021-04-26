@@ -3,7 +3,7 @@ import { alwaysEqualsEq } from '@fp/Eq'
 import { createRef, getRef, Ref } from '@fp/Ref'
 import { constVoid, pipe } from 'fp-ts/function'
 
-import { withFiberRefs } from '../../Fiber'
+import { usingFiberRefs } from '../../Fiber'
 import { Status } from '../../Status'
 
 export const FIBER_SEND_EVENT = Symbol('FiberSendEvent')
@@ -17,5 +17,5 @@ export const sendStatus = <A>(status: Status<A>) =>
   pipe(
     getRef(FiberSendStatus<A>(constVoid)),
     map((f) => f(status)),
-    withFiberRefs,
+    usingFiberRefs,
   )

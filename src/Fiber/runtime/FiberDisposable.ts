@@ -5,7 +5,7 @@ import { createRef, getRef } from '@fp/Ref'
 import { Disposable } from '@most/types'
 import { constVoid, pipe } from 'fp-ts/function'
 
-import { withFiberRefs } from '../Fiber'
+import { usingFiberRefs } from '../Fiber'
 import { addFinalizer } from './FiberFinalizers'
 import { foldReturnValue } from './FiberReturnValue'
 
@@ -15,7 +15,7 @@ export const FiberDisposable = createRef(
   alwaysEqualsEq,
 )
 
-export const getFiberDisposable = pipe(FiberDisposable, getRef, withFiberRefs)
+export const getFiberDisposable = pipe(FiberDisposable, getRef, usingFiberRefs)
 
 export type AddDisposableOptions = {
   /**
