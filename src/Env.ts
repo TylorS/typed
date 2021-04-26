@@ -87,6 +87,7 @@ export const apS = Ap.apS(Apply)
 export const apT = Ap.apT(Apply)
 export const apFirst = Ap.apFirst(Apply)
 export const apSecond = Ap.apSecond(Apply)
+export const getSemigroup = Ap.getApplySemigroup(Apply)
 
 export const Applicative: FpApplicative.Applicative2<URI> = {
   ...Apply,
