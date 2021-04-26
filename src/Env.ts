@@ -84,9 +84,28 @@ export const Apply: Ap.Apply2<URI> = {
 }
 
 export const apS = Ap.apS(Apply)
+export const apSW = apS as <N extends string, A, E1, B>(
+  name: Exclude<N, keyof A>,
+  fb: Env<E1, B>,
+) => <E2>(
+  fa: Env<E2, A>,
+) => Env<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+
 export const apT = Ap.apT(Apply)
+export const apTW = apT as <E1, B>(
+  fb: Env<E1, B>,
+) => <E2, A extends readonly unknown[]>(fas: Env<E2, A>) => Env<E1 & E2, readonly [...A, B]>
+
 export const apFirst = Ap.apFirst(Apply)
+export const apFirstW = apFirst as <E1, B>(
+  second: Env<E1, B>,
+) => <E2, A>(first: Env<E2, A>) => Env<E1 & E2, A>
+
 export const apSecond = Ap.apSecond(Apply)
+export const apSecondW = apSecond as <E1, B>(
+  second: Env<E1, B>,
+) => <E2, A>(first: Env<E2, A>) => Env<E1 & E2, B>
+
 export const getSemigroup = Ap.getApplySemigroup(Apply)
 
 export const Applicative: FpApplicative.Applicative2<URI> = {
@@ -132,7 +151,8 @@ export const Alt: FpAlt.Alt2<URI> = {
   alt: <E, A>(snd: Lazy<Env<E, A>>) => (fst: Env<E, A>) => race(fst)(snd()),
 }
 
-export const alt = Alt.alt as <E1, A>(
+export const alt = Alt.alt
+export const altW = alt as <E1, A>(
   snd: Lazy<Env<E1, A>>,
 ) => <E2>(fst: Env<E2, A>) => Env<E1 & E2, A>
 
