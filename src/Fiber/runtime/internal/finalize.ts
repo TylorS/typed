@@ -6,6 +6,9 @@ import { FiberFinalizers } from '../FiberFinalizers'
 import { FiberReturnValue } from '../FiberReturnValue'
 import { changeStatus } from './changeStatus'
 
+/**
+ * @internal
+ */
 export const finalize = <A>(fiber: Fiber<A>, aborting = false) => {
   const fx = doEnv(function* (_) {
     // Check for any registered finalizers which should run before changing status to aborted

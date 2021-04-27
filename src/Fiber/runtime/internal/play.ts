@@ -9,6 +9,9 @@ import { getFiberStatus } from '../FiberStatus'
 import { changeStatus } from './changeStatus'
 import { getFiberPause } from './FiberPause'
 
+/**
+ * @internal
+ */
 export function play<A>(fiber: Fiber<A>) {
   const fx = doEnv(function* (_) {
     const s = yield* _(getFiberStatus<A>())

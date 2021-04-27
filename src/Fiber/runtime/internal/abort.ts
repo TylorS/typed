@@ -12,6 +12,9 @@ import { FiberDisposable } from '../FiberDisposable'
 import { changeStatus } from './changeStatus'
 import { finalize } from './finalize'
 
+/**
+ * @internal
+ */
 export function abort<A>(fiber: Fiber<A>, scheduler: Scheduler) {
   const fx = doEnv(function* (_) {
     const status = yield* _(() => fiber.status)

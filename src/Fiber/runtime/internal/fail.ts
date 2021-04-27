@@ -10,6 +10,9 @@ import { setFiberReturnValue } from '../FiberReturnValue'
 import { changeStatus } from './changeStatus'
 import { complete } from './complete'
 
+/**
+ * @internal
+ */
 export function fail<A>(fiber: Fiber<A>, error: Error) {
   const fx = doEnv(function* (_) {
     const current = yield* _(() => fiber.status)

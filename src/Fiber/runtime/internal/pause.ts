@@ -8,6 +8,9 @@ import { Status } from '../../Status'
 import { changeStatus } from './changeStatus'
 import { setFiberPause } from './FiberPause'
 
+/**
+ * @internal
+ */
 export const pause = <A>(fiber: Fiber<A>): R.Resume<Option<Status<unknown>>> => {
   const fx = doResume(function* (_) {
     const currentStatus = yield* _(fiber.status)

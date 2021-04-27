@@ -6,6 +6,9 @@ import { Status } from '../../Status'
 import { FiberStatus } from '../FiberStatus'
 import { FiberSendStatusRef } from './FiberSendEvent'
 
+/**
+ * @internal
+ */
 export function start<A>(ref: FiberSendStatusRef<A>) {
   return (fiber: Fiber<A>) => {
     const fx = doEnv(function* (_) {

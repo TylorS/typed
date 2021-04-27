@@ -5,6 +5,9 @@ import { isTerminal, Status } from '../../Status'
 import { setFiberStatus } from '../FiberStatus'
 import { sendStatus } from './FiberSendEvent'
 
+/**
+ * @internal
+ */
 export const changeStatus = <A>(status: Status<A>) =>
   toEnv(
     doEnv(function* (_) {

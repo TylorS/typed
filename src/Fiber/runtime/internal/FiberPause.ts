@@ -8,6 +8,9 @@ import { none, Option, some } from 'fp-ts/Option'
 
 import { usingFiberRefs } from '../../Fiber'
 
+/**
+ * @internal
+ */
 export const FiberPause = createRef(
   fromIO((): Option<IO<Disposable>> => none),
   Symbol('FiberPause'),

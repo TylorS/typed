@@ -8,6 +8,9 @@ import { setFiberReturnValue } from '../FiberReturnValue'
 import { changeStatus } from './changeStatus'
 import { complete } from './complete'
 
+/**
+ * @internal
+ */
 export function finish<A>(fiber: Fiber<A>, value: A) {
   const fx = doEnv(function* (_) {
     const current = yield* _(() => fiber.status)
