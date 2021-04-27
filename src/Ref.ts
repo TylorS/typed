@@ -55,7 +55,7 @@ export type Refs = {
 export function getRef<E, A>(ref: Ref<E, A>): E.Env<E & Refs, A> {
   return pipe(
     E.asks((e: Refs) => e.refs.getRef(ref)),
-    E.flatten,
+    E.flattenW,
   )
 }
 
@@ -67,7 +67,7 @@ export function setRef<E, A>(ref: Ref<E, A>) {
   return (value: A): E.Env<E & Refs, A> =>
     pipe(
       E.asks((e: Refs) => pipe(ref, e.refs.setRef(value))),
-      E.flatten,
+      E.flattenW,
     )
 }
 
@@ -75,7 +75,7 @@ export function setRef_<A>(value: A) {
   return <E>(ref: Ref<E, A>): E.Env<E & Refs, A> =>
     pipe(
       E.asks((e: Refs) => pipe(ref, e.refs.setRef(value))),
-      E.flatten,
+      E.flattenW,
     )
 }
 
@@ -146,8 +146,8 @@ export function createReferences(refs: Iterable<readonly [RefId, unknown]> = [])
 
     return pipe(
       ref.initial,
-      E.chainFirst((value) => E.fromIO(() => references.set(id, value))),
-      E.chainFirst((value) => E.fromIO(() => sendEvent({ type: 'created', id, value }))),
+      E.chainFirstW((value) => E.fromIO(() => references.set(id, value))),
+      E.chainFirstW((value) => E.fromIO(() => sendEvent({ type: 'created', id, value }))),
     )
   }
 
@@ -156,8 +156,8 @@ export function createReferences(refs: Iterable<readonly [RefId, unknown]> = [])
       pipe(
         ref,
         getRef,
-        E.chainFirst(() => E.fromIO(() => references.set(ref.id, value))),
-        E.chainFirst((previousValue) =>
+        E.chainFirstW(() => E.fromIO(() => references.set(ref.id, value))),
+        E.chainFirstW((previousValue) =>
           E.fromIO(
             () =>
               !pipe(value, ref.eq.equals(previousValue)) &&

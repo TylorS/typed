@@ -23,6 +23,7 @@ import { Intersect, Kind } from './Hkt'
 import { MonadRec2 } from './MonadRec'
 import * as P from './Provide'
 import * as R from './Resume'
+import { Task } from './Task'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>
@@ -121,8 +122,12 @@ export const Chain: FpChain.Chain2<URI> = {
 }
 
 export const chainFirst = FpChain.chainFirst(Chain)
+export const chainFirstW = chainFirst as <A, E1, B>(
+  f: (a: A) => Env<E1, B>,
+) => <E2>(first: Env<E2, A>) => Env<E1 & E2, A>
 
-export const flatten = chain(identity) as <E1, E2, A>(env: Env<E1, Env<E2, A>>) => Env<E1 & E2, A>
+export const flattenW = chain(identity) as <E1, E2, A>(env: Env<E1, Env<E2, A>>) => Env<E1 & E2, A>
+export const flatten = chain(identity) as <E, A>(env: Env<E, Env<E, A>>) => Env<E, A>
 
 export const Monad: Monad2<URI> = {
   ...Chain,
@@ -143,12 +148,15 @@ export const FromReader: FR.FromReader2<URI> = {
   fromReader: (reader) => (e) => R.sync(() => reader(e)),
 }
 
-export const race = <E1, A>(a: Env<E1, A>) => <E2, B>(b: Env<E2, B>): Env<E1 & E2, A | B> => (e) =>
+export const raceW = <E1, A>(a: Env<E1, A>) => <E2, B>(b: Env<E2, B>): Env<E1 & E2, A | B> => (e) =>
+  R.race(a(e))(b(e))
+
+export const race = <E, A>(a: Env<E, A>) => <B>(b: Env<E, B>): Env<E, A | B> => (e) =>
   R.race(a(e))(b(e))
 
 export const Alt: FpAlt.Alt2<URI> = {
   ...Functor,
-  alt: <E, A>(snd: Lazy<Env<E, A>>) => (fst: Env<E, A>) => race(fst)(snd()),
+  alt: <E, A>(snd: Lazy<Env<E, A>>) => (fst: Env<E, A>) => raceW(fst)(snd()),
 }
 
 export const alt = Alt.alt
@@ -170,7 +178,7 @@ export const FromTask: FT.FromTask2<URI> = {
   fromTask: (task) => () => R.fromTask(task),
 }
 
-export const fromTask = FromTask.fromTask
+export const fromTask = FromTask.fromTask as <A, E = unknown>(fa: Task<A>) => Env<E, A>
 
 export const fromResume: <A, E = unknown>(resume: R.Resume<A>) => Env<E, A> = constant
 
