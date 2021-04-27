@@ -1,12 +1,15 @@
-import { Env } from '@fp/Env'
+import { Env, fromIO } from '@fp/Env'
 import { Eq } from '@fp/Eq'
 import { CurrentFiber, Fiber, Fork, fork, usingFiberRefs } from '@fp/Fiber'
 import { Do } from '@fp/Fx/Env'
+import { createReferences } from '@fp/Ref'
 import { SchedulerEnv } from '@fp/Scheduler'
 import { tuple } from 'fp-ts/Eq'
 
 import { DepsArgs, getDeps } from './Deps'
+import { resetIndex } from './HookIndex'
 import { useEq } from './useEq'
+import { useMemo } from './useMemo'
 import { useRef } from './useRef'
 
 export function useFiber<E, A, Deps extends ReadonlyArray<any>>(
@@ -40,16 +43,18 @@ export function useFiber<E, A, Deps extends ReadonlyArray<any> = []>(
   return usingFiberRefs(
     Do(function* (_) {
       const [deps, eqs] = getDeps(args)
-      const ref = yield* _(useRef(fork(env)))
+      const refs = yield* _(useMemo(fromIO(() => createReferences())))
+      const fiberRef = yield* _(useRef(fork(env, { refs })))
       const isEqual = yield* _(useEq(deps, tuple(...eqs)))
 
       if (!isEqual) {
-        yield* _(() => ref.current.abort)
+        yield* _(() => fiberRef.current.abort)
+        yield* _(() => resetIndex({ refs }))
 
-        ref.current = yield* _(fork(env))
+        fiberRef.current = yield* _(fork(env, { refs }))
       }
 
-      return ref.current
+      return fiberRef.current
     }),
   )
 }
