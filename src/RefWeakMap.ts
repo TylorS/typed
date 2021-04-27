@@ -23,20 +23,23 @@ export const fromId = <K extends object, V>() => <Id extends PropertyKey>(id: Id
     id,
   )
 
-export const getKv = <E, K extends object, V>(refMap: RefWeakMap<E, K, V>) => (
+export const lookup = <E, K extends object, V>(refMap: RefWeakMap<E, K, V>) => (
   key: K,
 ): E.Env<E & Refs, Option<V>> => pipe(refMap, getRef, E.map(WM.lookup(key)))
 
-export const setKv = <E, K extends object, V>(refMap: RefWeakMap<E, K, V>) => (key: K, value: V) =>
+export const insertAt = <E, K extends object, V>(refMap: RefWeakMap<E, K, V>) => (
+  key: K,
+  value: V,
+) =>
   pipe(
     refMap,
     modifyRef_((wm) => wm.set(key, value)),
     E.map(() => value),
   )
 
-export const deleteKv = <E, K extends object, V>(refMap: RefWeakMap<E, K, V>) => (key: K) =>
+export const deleteAt = <E, K extends object, V>(refMap: RefWeakMap<E, K, V>) => (key: K) =>
   pipe(
-    pipe(key, getKv(refMap)),
+    pipe(key, lookup(refMap)),
     E.chainFirst(() =>
       pipe(
         refMap,

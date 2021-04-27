@@ -40,19 +40,20 @@ export const fromId = <K, V>(k: Eq<K> = deepEqualsEq, v: Eq<V> = deepEqualsEq) =
     v,
   )
 
-export const getKv = <E, K, V>(refMap: RefMap<E, K, V>) => (key: K): E.Env<E & Refs, Option<V>> =>
+export const lookup = <E, K, V>(refMap: RefMap<E, K, V>) => (key: K): E.Env<E & Refs, Option<V>> =>
   pipe(refMap, getRef, E.map(RM.lookup(refMap.key)(key)))
 
-export const setKv = <E, K, V>(refMap: RefMap<E, K, V>) => (key: K, value: V) =>
+export const upsertAt = <E, K, V>(refMap: RefMap<E, K, V>) => (key: K, value: V) =>
   pipe(
     refMap,
     modifyRef_(RM.upsertAt(refMap.key)(key, value)),
     E.map(() => value),
   )
 
-export const deleteKv = <E, K, V>(refMap: RefMap<E, K, V>) => (key: K) =>
+export const deleteAt = <E, K, V>(refMap: RefMap<E, K, V>) => (key: K) =>
   pipe(
-    pipe(key, getKv(refMap)),
+    key,
+    lookup(refMap),
     E.chainFirst(() =>
       pipe(
         refMap,
