@@ -12,6 +12,8 @@ import { useEq } from './useEq'
 import { useMemo } from './useMemo'
 import { useRef } from './useRef'
 
+const useRefs = useMemo(fromIO(createReferences))
+
 export function useFiber<E, A, Deps extends ReadonlyArray<any>>(
   env: Env<E, A>,
   deps?: Deps,
@@ -43,7 +45,7 @@ export function useFiber<E, A, Deps extends ReadonlyArray<any> = []>(
   return usingFiberRefs(
     Do(function* (_) {
       const [deps, eqs] = getDeps(args)
-      const refs = yield* _(useMemo(fromIO(() => createReferences())))
+      const refs = yield* _(useRefs)
       const fiberRef = yield* _(useRef(fork(env, { refs })))
       const isEqual = yield* _(useEq(deps, tuple(...eqs)))
 
