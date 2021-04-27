@@ -64,12 +64,14 @@ snowpack.key
 /exports.js
 /exports.js.map
 /Adapter/
+/AsyncData/
 /Branded/
 /Disposable/
 /Env/
 /EnvEither/
 /EnvOption/
 /Eq/
+/Fail/
 /Fiber/
 /FromEnv/
 /FromResume/
@@ -98,7 +100,6 @@ snowpack.key
 /ResumeEither/
 /ResumeOption/
 /Scheduler/
-/Shared/
 /State/
 /StateEnvEither/
 /StateReaderTaskEither/
