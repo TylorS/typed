@@ -1,3 +1,4 @@
+export * as asyncData from './AsyncData'
 export * as either from './Either'
 export * as env from './Env'
 export * as envEither from './EnvEither'

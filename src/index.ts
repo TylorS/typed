@@ -1,4 +1,5 @@
 export * as adapter from './Adapter'
+export * as asyncData from './AsyncData'
 export * as branded from './Branded'
 export * as disposable from './Disposable'
 export * as env from './Env'
