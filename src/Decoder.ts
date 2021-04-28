@@ -499,6 +499,7 @@ const composeDecodeResultK = <I, O>(
     ),
   )
 
+/* Errors */
 export type DecodeErrors = readonly [DecodeError, ...DecodeError[]]
 
 export const isDecodeErrors = (errors: readonly DecodeError[]): errors is DecodeErrors =>
@@ -684,7 +685,7 @@ function stringifyForest(indentation: string, forest: Forest<string>): string {
   return r
 }
 
-// Example
+/* Examples */
 const d1 = union(string, number, boolean)
 const f1 = decode(d1)
 
