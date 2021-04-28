@@ -1,9 +1,8 @@
+import { brand, Branded } from '@fp/Branded'
 import * as fn from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as RA from 'fp-ts/ReadonlyArray'
 import { Refinement } from 'fp-ts/Refinement'
-
-import { brand, Branded } from './Branded'
 
 /** AST */
 
