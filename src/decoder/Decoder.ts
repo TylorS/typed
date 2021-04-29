@@ -28,12 +28,25 @@ export type BuiltinD =
   | StringD
   | NumberD
   | BooleanD
-  | UnionD<readonly [BuiltinD, ...BuiltinD[]]>
-  | StructD<{ readonly [key: string]: BuiltinD }>
   | NullD<BuiltinD>
   | UndefinedD<BuiltinD>
+  | UnionD<BuiltinDecoders>
+  | StructD<RR.ReadonlyRecord<string, BuiltinD>>
+
+export type DecodeError<E> =
+  | StringE
+  | NumberE
+  | NaNE
+  | BooleanE
+  | NullE
+  | UndefinedE
+  | MemberE<E>
+  | KeyE<E>
+  | MissingKey
+  | UnexpectedKey
 
 export type BuiltinDecoders = RNEA.ReadonlyNonEmptyArray<BuiltinD>
+export type DecodeErrors<E> = RNEA.ReadonlyNonEmptyArray<DecodeError<E>>
 
 export type TagOf<A> = A extends Decoder<any, any, any, infer R> ? R : never
 export type InputOf<A> = A extends Decoder<infer R, any, any, TagOf<A>> ? R : never
@@ -45,20 +58,6 @@ const tagIs = (tag: string) => <A extends { readonly _tag: string }>(tagged: A) 
 
 const isDecoder = <A extends BuiltinD>(tag: A['_tag']) => (decoder: BuiltinD): decoder is A =>
   decoder._tag === tag
-
-export type DecodeErrors<E> = RNEA.ReadonlyNonEmptyArray<DecodeError<E>>
-
-export type DecodeError<E> =
-  | StringE
-  | NumberE
-  | NaNE
-  | BooleanE
-  | MemberE<E>
-  | KeyE<E>
-  | MissingKey
-  | UnexpectedKey
-  | NullE
-  | UndefinedE
 
 interface InputE<I, Tag> {
   readonly _tag: Tag
@@ -168,7 +167,7 @@ export const isUnexpectedKeyE = <E>(error: DecodeError<E>): error is UnexpectedK
 
 export interface StructD<P>
   extends Decoder<
-    Readonly<Record<PropertyKey, unknown>>,
+    RR.ReadonlyRecord<string, unknown>,
     KeyE<ErrorOf<P[keyof P]>> | UnexpectedKey | MissingKey,
     {
       readonly [K in keyof P]: OutputOf<P[K]>
@@ -180,12 +179,14 @@ export interface StructD<P>
 
 export const isStructD = (
   decoder: BuiltinD,
-): decoder is StructD<Readonly<Record<string, BuiltinD>>> => pipe(decoder, tagIs('struct'))
+): decoder is StructD<RR.ReadonlyRecord<string, BuiltinD>> => pipe(decoder, tagIs('struct'))
 
-export const struct = <P extends Readonly<Record<string, BuiltinD>>>(props: P): StructD<P> =>
+export const struct = <P extends RR.ReadonlyRecord<string, BuiltinD>>(props: P): StructD<P> =>
   C.make({ _tag: 'struct', props })
 
-export const intersection = <SS extends ReadonlyArray<StructD<Readonly<Record<string, BuiltinD>>>>>(
+export const intersection = <
+  SS extends ReadonlyArray<StructD<RR.ReadonlyRecord<string, BuiltinD>>>
+>(
   ...structs: SS
 ): StructD<
   O.MergeAll<{}, { readonly [K in keyof SS]: SS[K] extends StructD<infer P> ? P : unknown }>
@@ -279,8 +280,8 @@ const decodeUnion = <I, E, O>(compiled: ReadonlyArray<Decode<any, E, any>>): Dec
 }
 
 const decodeStruct = <E, O>(
-  members: Readonly<Record<string, BuiltinD>>,
-): Decode<Readonly<Record<PropertyKey, unknown>>, E, O> => {
+  members: RR.ReadonlyRecord<string, BuiltinD>,
+): Decode<RR.ReadonlyRecord<string, unknown>, E, O> => {
   const expectedKeys = keysOf(members)
   const decoders: Record<string, Decode<any, any, any>> = Object.fromEntries(
     expectedKeys.map((key) => [key, decode(members[key])]),
@@ -378,4 +379,4 @@ export const absolveWhen = <O>(f: (value: O) => boolean) => <I, E>(
   )
 
 // Helps to create a strict decoder which will fail on any unexpected keys
-export const strict = condemnWhen((error) => error._tag === 'unexpectedKey')
+export const strictKeys = condemnWhen((error) => error._tag === 'unexpectedKey')
