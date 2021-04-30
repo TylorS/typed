@@ -97,7 +97,15 @@ This variance can be configured per each higher-kinded type's URI by extending a
 to use this variance is for convenience of accumulating requirements at the point of definition with
 more modularity.
 
-The choice to use or not use the provided do-notation or one of the relatively 
+The choice to use or not use the provided do-notation or one of the relatively straightforward variants from fp-ts is
+entirely up to you, and is not required in order to use the tools contained within. It _does_ add a dependency on
+various `Monad` + `ChainRec` instances which shouldn't be too big a deal in most cases if you're already using these types. 
+`fp-ts` does not currently implement `ChainRec` for most of its modules, so at times there are `@typed/fp/*` libraries which 
+mirror `fp-ts` intentionally like `@typed/fp/Reader` or `@typed/fp/Task`. These modules re-export `fp-ts/*` from them for 
+convenience with namespace imports, but otherwise they generally add the minimal amount to implement `ChainRec` and potentially 
+other type-classes added within this library like `MonadRec`(Monad + ChainRec), and `UseSome`/`ProvideSome` (see `Provide.ts`) which add 
+and remove requirements from the environment for a Reader-like effect.
+
 
 ```ts
 import { doReader, toReader } from '@typed/fp/Fx/Reader'
@@ -332,22 +340,13 @@ export interface Patch<A, B> {
 
 `Patch` is the basis of rendering, but is generalized to an reducer-like function returning a `Resume`.
 
-### Shared 
-
-`Shared` is a extensible abstraction which lives above `Env`, `Ref`s, `Fiber`, and `Patch` to aid in 
-creating a program which is capable of contructing a tree of components which can all be 
-effeciently patched when their references have had updates.
-
 ## TODO
 
-
-All of the following modules will also need corresponding Fx implementations if not 
-currently implemented.
-
-### Libraries
-
-- [WIP] Hooks
-- [WIP] Rendering
+At a high-level I'm still trying to figure out what pieces to the puzzle work above `Patch` and `Hooks` to provide a bring-your-own-renderer 
+style experience. I've had a couple of POCs now and it's very possible, I've had it working with and without queues + requestIdleCallback for 
+cooperative scheduling, but I haven't been happy with the implementation yet. I'm pretty interested in exploring a static site generator style experience
+using [Islands Architecture](https://jasonformat.com/islands-architecture/) where each island corresponds to a `Fiber` process with a while-loop performing 
+patches when there's changes to its state. I've been considering having a "global" parent Fiber to all of these "island" Fibers, in which to configure how to lazy-load islands when they're about to be on screen, hovered over, etc, and share "global" state that continues to be unit-testable.
 
 ### Conversions
 
