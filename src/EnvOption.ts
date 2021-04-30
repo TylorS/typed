@@ -21,12 +21,11 @@ import * as FE from './FromEnv'
 import { FromEnv2 } from './FromEnv'
 import * as FRe from './FromResume'
 import { FromResume2 } from './FromResume'
-import { Kind } from './Hkt'
 import { MonadRec2 } from './MonadRec'
 import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from './Provide'
 import { Resume } from './Resume'
 
-export type EnvOption<E, A> = Kind<[E.URI, O.URI], [E, A]>
+export interface EnvOption<E, A> extends E.Env<E, O.Option<A>> {}
 
 export const alt = OT.alt(E.Monad)
 export const ap = OT.ap(E.Apply)

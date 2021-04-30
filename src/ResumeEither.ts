@@ -12,12 +12,11 @@ import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 import { Semigroup } from 'fp-ts/Semigroup'
 
-import { Kind } from './Hkt'
 import { swapEithers } from './internal'
 import { MonadRec2 } from './MonadRec'
 import * as R from './Resume'
 
-export type ResumeEither<E, A> = Kind<[R.URI, E.URI], [E, A]>
+export type ResumeEither<E, A> = R.Resume<E.Either<E, A>>
 
 export const alt = ET.alt(R.Monad)
 export const altValidation = <A>(semigroup: Semigroup<A>) => ET.altValidation(R.Monad, semigroup)

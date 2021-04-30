@@ -1,5 +1,4 @@
 import * as H from 'fp-ts/HKT'
-import { L, N } from 'ts-toolbelt'
 
 /**
  * Union of all the fp-ts URIs
@@ -95,27 +94,3 @@ export type Intersect<A extends readonly any[], R = unknown> = A extends readonl
 ]
   ? Intersect<Tail, R & Head>
   : R
-
-/**
- * Kind is able to combine multiple Uris and a list of parameters and
- * creates the combined type of all values. Useful for creating transformers.
- */
-export type Kind<
-  Uris extends readonly any[],
-  Params extends readonly any[]
-> = Uris extends readonly [any, ...infer Tail]
-  ? Hkt<
-      Uris[0],
-      Tail extends []
-        ? Params
-        : [
-            ...L.Take<Params, N.Sub<UriToLength<Uris[0], Params>, 1>>,
-            Kind<
-              Tail,
-              UriToLength<Uris[0], Params> extends 1
-                ? Params
-                : L.Drop<Params, N.Sub<UriToLength<Uris[0], Params>, 1>>
-            >,
-          ]
-    >
-  : never

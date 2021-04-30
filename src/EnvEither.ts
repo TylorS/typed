@@ -22,13 +22,12 @@ import { Task } from 'fp-ts/Task'
 import * as Env from './Env'
 import * as FE from './FromEnv'
 import * as FRe from './FromResume'
-import { Kind } from './Hkt'
 import { swapEithers } from './internal'
 import { MonadRec3 } from './MonadRec'
 import * as P from './Provide'
 import { Resume, sync } from './Resume'
 
-export interface EnvEither<R, E, A> extends Kind<[Env.URI, E.URI], [R, E, A]> {}
+export interface EnvEither<R, E, A> extends Env.Env<R, E.Either<E, A>> {}
 
 export const alt = ET.alt(Env.Monad)
 export const altValidation = <A>(semigroup: Semigroup_.Semigroup<A>) =>

@@ -17,14 +17,10 @@ This project is under very heavy development. It is my goal to align with `fp-ts
 - [Fibers](#fiber)
 - [Environment-aware Effect](#env)
 - [Modular state management](#ref)
-- Stack-safe [Do-notation](#do-notation)
-  - Supports configurable variance on type parameters
+- Stack-safe [Do-notation](#do-notation) w/ support for variance
 - [Hooks](#Hooks)
-- Bring your own UI library or none at all
-- No globals required
-- Branded types
+- Globals free
 - Queues
-- ....and more TBD
 
 ## Conceptual Documentation
 
@@ -71,7 +67,7 @@ type Dispsoable = {
 
 ### Env 
 
-`Env` is the core of the higher-level modules like [`Fiber`](#Fiber) and is a `ReaderT` of `Resume`, but to be honest being used so much, I didn't like writing `ReaderReader<A>` and chose to shorten to `Env` for the 
+`Env` is the core of the higher-level modules like [`Fiber`](#Fiber) and is a `ReaderT` of `Resume`, but to be honest being used so much, I didn't like writing `ReaderResume<A>` and chose to shorten to `Env` for the 
 "environmental" quality Reader provides. Combining Reader and Resume allows for creating APIs that are 
 capable of utilizing dependency injection for its configurability and testability.  
 

@@ -19,7 +19,7 @@ import { traverse } from 'fp-ts/ReadonlyArray'
 import * as FRe from './FromResume'
 import { FromResume2 } from './FromResume'
 import { Arity1 } from './function'
-import { Intersect, Kind } from './Hkt'
+import { Intersect } from './Hkt'
 import { MonadRec2 } from './MonadRec'
 import * as P from './Provide'
 import * as R from './Resume'
@@ -28,7 +28,7 @@ import { Task } from './Task'
 /**
  * Env is specialization of Reader<R, Resume<A>>
  */
-export interface Env<R, A> extends Kind<[Re.URI, R.URI], [R, A]> {}
+export interface Env<R, A> extends Re.Reader<R, R.Resume<A>> {}
 
 export type GetRequirements<A> = A extends Env<infer R, any> ? R : never
 export type GetValue<A> = A extends Env<any, infer R> ? R : never

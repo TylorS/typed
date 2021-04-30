@@ -12,11 +12,10 @@ import * as O from 'fp-ts/Option'
 import * as OT from 'fp-ts/OptionT'
 import { Pointed1 } from 'fp-ts/Pointed'
 
-import { Kind } from './Hkt'
 import { MonadRec1 } from './MonadRec'
 import * as R from './Resume'
 
-export type ResumeOption<A> = Kind<[R.URI, O.URI], [A]>
+export type ResumeOption<A> = R.Resume<O.Option<A>>
 
 export const alt = OT.alt(R.Monad)
 export const ap = OT.ap(R.Apply)
