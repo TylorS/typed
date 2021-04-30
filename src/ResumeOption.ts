@@ -68,23 +68,17 @@ export const Chain: Chain1<URI> = {
   chain,
 }
 
-export const chainRec = <A, B>(f: (value: A) => ResumeOption<E.Either<A, B>>) => (
-  value: A,
-): ResumeOption<B> =>
-  pipe(
-    value,
-    R.chainRec((a) =>
-      pipe(
-        a,
-        f,
-        R.map((oe) => {
-          if (O.isNone(oe)) {
-            return E.right(oe)
-          }
+export const chainRec = <A, B>(f: (value: A) => ResumeOption<E.Either<A, B>>) =>
+  R.chainRec(
+    flow(
+      f,
+      R.map((oe) => {
+        if (O.isNone(oe)) {
+          return E.right(oe)
+        }
 
-          return pipe(oe.value, E.map(O.some))
-        }),
-      ),
+        return pipe(oe.value, E.map(O.some))
+      }),
     ),
   )
 

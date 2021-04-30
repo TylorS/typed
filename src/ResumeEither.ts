@@ -6,7 +6,7 @@ import { Chain2 } from 'fp-ts/Chain'
 import { ChainRec2 } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
 import * as ET from 'fp-ts/EitherT'
-import { flow, pipe } from 'fp-ts/function'
+import { flow } from 'fp-ts/function'
 import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
@@ -71,7 +71,7 @@ export const Chain: Chain2<URI> = {
 }
 
 export const ChainRec: ChainRec2<URI> = {
-  chainRec: (f) => (a) => pipe(a, R.chainRec(flow(f, R.map(swapEithers)))),
+  chainRec: (f) => R.chainRec(flow(f, R.map(swapEithers))),
 }
 
 export const chainRec = ChainRec.chainRec
