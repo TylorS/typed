@@ -66,3 +66,12 @@ export const ChainRec: ChainRec2<URI> = {
 export const FromEither: FromEither2<URI> = {
   fromEither: liftEither,
 }
+
+const x = doEither(function* (_) {
+  const a = yield* _(E.right<number, Error>(1))
+  const b = yield* _(E.right<number, null>(2))
+
+  return a + b
+})
+
+const y = toEither(x)

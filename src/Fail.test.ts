@@ -5,6 +5,7 @@ import { pipe } from 'fp-ts/function'
 import { of } from './Env'
 import { catchError, throwError } from './Fail'
 import { Do } from './Fx/Env'
+import { createRef } from './Ref'
 import { async, exec } from './Resume'
 
 export const test = describe(__filename, [
@@ -44,6 +45,8 @@ export const test = describe(__filename, [
 
   describe(catchError.name, [
     it(`can provide a `, ({ equal }, done) => {
+      const ref = createRef(E.)
+
       const key = 'foo' as const
       const error = new Error('failure')
       const throwFoo = throwError(key)
