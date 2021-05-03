@@ -1,7 +1,7 @@
 import { Disposable } from '@most/types'
 import { Eq, tuple } from 'fp-ts/Eq'
 import { FunctionN, identity, pipe } from 'fp-ts/function'
-import { match } from 'fp-ts/Option'
+import * as O from 'fp-ts/Option'
 import * as RM from 'fp-ts/ReadonlyMap'
 
 export type ArgsOf<A> = A extends FunctionN<infer R, any> ? R : never
@@ -23,7 +23,7 @@ export const memoize = <A extends readonly any[]>(
     pipe(
       cache,
       lookup(args),
-      match(() => {
+      O.match(() => {
         const x = f(...args)
 
         cache.set(args, x)
@@ -35,6 +35,23 @@ export const memoize = <A extends readonly any[]>(
   memoized.dispose = () => cache.clear()
 
   return memoized as F & Disposable
+}
+
+export const memoizeOnce = <F extends (...args: readonly any[]) => any>(f: F): F => {
+  let memoed: O.Option<ReturnType<F>> = O.none
+  const memoized = (...args: ArgsOf<F>) =>
+    pipe(
+      memoed,
+      O.match(() => {
+        const x = f(...args)
+
+        memoed = O.some(x)
+
+        return x
+      }, identity),
+    )
+
+  return memoized as F
 }
 
 export * from 'fp-ts/function'

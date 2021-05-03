@@ -5,6 +5,7 @@ import * as TH from 'fp-ts/These'
 import { L, U } from 'ts-toolbelt'
 
 import * as DE from './DecodeError'
+import { memoizeOnce } from './function'
 import { Intersect } from './Hkt'
 
 export type NonEmptyArray<A> = readonly [A, ...A[]]
@@ -31,12 +32,12 @@ export type Decode<R, I, E, O> = R.Reader<R, (input: I) => TH.These<DE.DecodeErr
 /**
  * Standard decoder with full control
  */
-export interface DecodeD<R, I, E, O> extends Ast<'identity', R, I, E, O> {
+export interface DecodeD<R, I, E, O> extends Ast<'decode', R, I, E, O> {
   readonly decode: Decode<R, I, E, O>
 }
 
 export const make = <R, I, E, O>(decode: Decode<R, I, E, O>): DecodeD<R, I, E, O> =>
-  C.make({ _tag: 'identity', decode })
+  C.make({ _tag: 'decode', decode })
 
 export interface RefineD<I, E, O extends I>
   extends Ast<
@@ -95,6 +96,32 @@ export const unknownArrayE = <I>(input: I) => DE.leafE(input, UnknownArrayE)
 export const unknownArray = refine(unknownArrayE, (x): x is ReadonlyArray<unknown> =>
   Array.isArray(x),
 )
+
+export type Primitive = string | number | boolean | undefined | null
+
+export interface ExactlyE<A extends Primitive> {
+  readonly _tag: 'exactly'
+  readonly expected: A
+}
+
+export const exactlyE = <A extends Primitive>(expected: A): ExactlyE<A> => ({
+  _tag: 'exactly',
+  expected,
+})
+
+export const exactly = <A extends Primitive>(expected: A) =>
+  refine(
+    (i) => DE.leafE(i, exactlyE(expected)),
+    (i): i is A => i === expected,
+  )
+
+export const oneOf = <A extends NonEmptyArray<Primitive>>(
+  ...[f, ...rest]: A
+): UnionD<
+  {
+    readonly [K in keyof A]: RefineD<unknown, ExactlyE<A[K] extends Primitive ? A[K] : never>, A[K]>
+  }
+> => union(exactly(f), ...rest.map(exactly)) as any
 
 export interface ComposeD<M extends NonEmptyArray<Ast<any, any, any, any, any>>>
   extends Ast<
@@ -201,4 +228,4 @@ export interface LazyD<D extends Ast<any, any, any, any, any>>
 }
 
 export const lazy = <D extends Ast<any, any, any, any, any>>(f: () => D): LazyD<D> =>
-  C.make({ _tag: 'lazy', f })
+  C.make({ _tag: 'lazy', f: memoizeOnce(f) })
