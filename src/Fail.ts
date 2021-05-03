@@ -33,9 +33,12 @@ export const catchErrorW = <Key extends PropertyKey>(key: Key) => <E, R1, A>(
 
 export const catchError = catchErrorW as <Key extends PropertyKey>(
   key: Key,
-) => <E, R, A>(
-  onError: (err: E) => Env<R, A>,
-) => (env: Env<Fail<Key, E>, A> | Env<R & Fail<Key, E>, A>) => Env<R, A>
+) => {
+  <E, R1, A>(onError: (err: E) => Env<R1, A>): {
+    <R2>(env: Env<R2 & Fail<Key, E>, A>): Env<R1 & R2, A>
+    (env: Env<Fail<Key, E>, A>): Env<R1, A>
+  }
+}
 
 export const attempt = <Key extends PropertyKey>(key: Key) => <R, E, B>(
   env: Env<R & Fail<Key, E>, B>,

@@ -74,13 +74,7 @@ export const test = describe(__filename, [
         }
       })
 
-      pipe(
-        {
-          [key]: (_) => async(() => disposeNone()),
-        },
-        test,
-        exec,
-      )
+      pipe({}, test, exec)
     }),
   ]),
 ])
