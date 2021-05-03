@@ -2,6 +2,8 @@ import { Env } from '@fp/Env'
 import * as Eq from '@fp/Eq'
 import { CurrentFiber, usingFiberRefs } from '@fp/Fiber'
 import { Do } from '@fp/Fx/Env'
+import { getRef, setRef } from '@fp/Ref'
+import { pipe } from 'cjs/function'
 
 import { DepsArgs, getDeps } from './Deps'
 import { useEq } from './useEq'
@@ -18,9 +20,9 @@ export const useMemo = <E, A, Deps extends ReadonlyArray<any> = []>(
       const isEqual = yield* _(useEq(deps, Eq.tuple(...eqs)))
 
       if (!isEqual) {
-        ref.current = yield* _(env)
+        yield* pipe(yield* _(env), setRef(ref), _)
       }
 
-      return ref.current
+      return yield* _(getRef(ref))
     }),
   )

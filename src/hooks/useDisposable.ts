@@ -2,7 +2,9 @@ import { Env, fromIO } from '@fp/Env'
 import * as Eq from '@fp/Eq'
 import { CurrentFiber, usingFiberRefs } from '@fp/Fiber'
 import { Do } from '@fp/Fx/Env'
+import { getRef, setRef } from '@fp/Ref'
 import { Disposable } from '@most/types'
+import { pipe } from 'cjs/function'
 
 import { DepsArgs, getDeps } from './Deps'
 import { useEq } from './useEq'
@@ -19,10 +21,13 @@ export const useDisposable = <Deps extends ReadonlyArray<any> = []>(
       const isEqual = yield* _(useEq(deps, Eq.tuple(...eqs)))
 
       if (!isEqual) {
-        ref.current.dispose()
-        ref.current = f()
+        const current = yield* _(getRef(ref))
+
+        current.dispose()
+
+        return yield* _(pipe(f(), setRef(ref)))
       }
 
-      return ref.current
+      return yield* _(getRef(ref))
     }),
   )
