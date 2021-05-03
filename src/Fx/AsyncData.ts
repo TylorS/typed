@@ -22,7 +22,7 @@ export const toAsyncData = FxT.toMonad<E.URI>({ ...E.Monad, ...E.ChainRec })
 export const URI = '@typed/fp/Fx/AsyncData'
 export type URI = typeof URI
 
-export interface FxAsyncData<E, A> extends Fx<E.AsyncData<E, unknown>, A> {}
+export interface FxAsyncData<E, A> extends Fx<E.AsyncData<E, any>, A> {}
 
 declare module 'fp-ts/HKT' {
   export interface URItoKind2<E, A> {
