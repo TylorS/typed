@@ -43,7 +43,7 @@ export const test = describe(__filename, [
   ]),
 
   describe(catchError.name, [
-    it(`can provide a `, ({ equal }, done) => {
+    it(`can provide a error handler`, ({ equal }, done) => {
       const key = 'foo' as const
       const error = new Error('failure')
       const throwFoo = throwError(key)
