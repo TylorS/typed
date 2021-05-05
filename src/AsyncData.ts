@@ -2,7 +2,7 @@ import * as Applicative_ from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
 import * as C from 'fp-ts/Chain'
 import { ChainRec2 } from 'fp-ts/ChainRec'
-import { Either, isLeft } from 'fp-ts/Either'
+import { Either, isRight } from 'fp-ts/Either'
 import * as F from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import * as O from 'fp-ts/Option'
@@ -223,17 +223,13 @@ export const chainRec = <A, E, B>(f: (value: A) => AsyncData<E, Either<A, B>>) =
   while (isAsyncSuccess(data)) {
     const either = data.value
 
-    if (isLeft(either)) {
-      data = f(either.left)
-
-      continue
+    if (isRight(either)) {
+      return isRefreshingSuccess(data)
+        ? refreshingSuccess(either.right, data.progress)
+        : success(either.right)
     }
 
-    if (isRefreshingSuccess(data)) {
-      return refreshingSuccess(either.right, data.progress)
-    }
-
-    return success(either.right)
+    data = f(either.left)
   }
 
   return data
