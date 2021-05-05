@@ -1,12 +1,10 @@
 import { Env } from '@fp/Env'
-import * as Eq from '@fp/Eq'
 import { CurrentFiber, usingFiberRefs } from '@fp/Fiber'
 import { Do } from '@fp/Fx/Env'
 import { getRef, setRef } from '@fp/Ref'
 import { pipe } from 'cjs/function'
 
-import { DepsArgs, getDeps } from './Deps'
-import { useEq } from './useEq'
+import { DepsArgs, useDeps } from './Deps'
 import { useRef } from './useRef'
 
 export const useMemo = <E, A, Deps extends ReadonlyArray<any> = []>(
@@ -15,9 +13,8 @@ export const useMemo = <E, A, Deps extends ReadonlyArray<any> = []>(
 ): Env<E & CurrentFiber, A> =>
   usingFiberRefs(
     Do(function* (_) {
-      const [deps, eqs] = getDeps(args)
       const ref = yield* _(useRef(env))
-      const isEqual = yield* _(useEq(deps, Eq.tuple(...eqs)))
+      const isEqual = yield* _(useDeps(...args))
 
       if (!isEqual) {
         yield* pipe(yield* _(env), setRef(ref), _)
