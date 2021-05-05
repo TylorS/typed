@@ -12,12 +12,12 @@ import * as FR from 'fp-ts/FromReader'
 import * as FT from 'fp-ts/FromTask'
 import { flow, pipe } from 'fp-ts/function'
 import * as Functor_ from 'fp-ts/Functor'
-import { IO } from 'fp-ts/IO'
+import * as IO from 'fp-ts/IO'
 import * as Monad_ from 'fp-ts/Monad'
 import * as Pointed_ from 'fp-ts/Pointed'
 import { Reader } from 'fp-ts/Reader'
 import * as Semigroup_ from 'fp-ts/Semigroup'
-import { Task } from 'fp-ts/Task'
+import * as T from 'fp-ts/Task'
 
 import * as Env from './Env'
 import * as FE from './FromEnv'
@@ -146,7 +146,9 @@ export const FromIO: FIO.FromIO3<URI> = {
   fromIO: flow(Env.fromIO, Env.map(E.right)),
 }
 
-export const fromIO = FromIO.fromIO as <A, R = unknown, E = never>(fa: IO<A>) => EnvEither<R, E, A>
+export const fromIO = FromIO.fromIO as <A, R = unknown, E = never>(
+  fa: IO.IO<A>,
+) => EnvEither<R, E, A>
 
 export const FromTask: FT.FromTask3<URI> = {
   ...FromIO,
@@ -154,7 +156,7 @@ export const FromTask: FT.FromTask3<URI> = {
 }
 
 export const fromTask = FromTask.fromTask as <A, R = unknown, E = never>(
-  fa: Task<A>,
+  fa: T.Task<A>,
 ) => EnvEither<R, E, A>
 
 export const FromResume: FRe.FromResume3<URI> = {

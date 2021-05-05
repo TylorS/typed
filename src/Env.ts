@@ -7,14 +7,15 @@ import * as E from 'fp-ts/Either'
 import * as FIO from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
 import * as FT from 'fp-ts/FromTask'
-import { constant, identity, Lazy } from 'fp-ts/function'
+import { constant, flow, identity, Lazy } from 'fp-ts/function'
 import { bindTo as bindTo_, flap as flap_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
-import { IO } from 'fp-ts/IO'
+import * as IO from 'fp-ts/IO'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
 import { traverse } from 'fp-ts/ReadonlyArray'
+import * as Task from 'fp-ts/Task'
 
 import * as FRe from './FromResume'
 import { FromResume2 } from './FromResume'
@@ -23,7 +24,6 @@ import { Intersect } from './Hkt'
 import { MonadRec2 } from './MonadRec'
 import * as P from './Provide'
 import * as R from './Resume'
-import { Task } from './Task'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>
@@ -46,6 +46,15 @@ export const fromReader: <R, A>(ma: Re.Reader<R, A>) => Env<R, A> = RT.fromReade
 export const map: <A, B>(f: (a: A) => B) => <R>(fa: Env<R, A>) => Env<R, B> = RT.map(R.Functor)
 
 export const of: <A, R = unknown>(a: A) => Env<R, A> = RT.of(R.Pointed)
+
+export const asksIOK: <R, A>(f: (r: R) => IO.IO<A>) => Env<R, A> = RT.fromNaturalTransformation<
+  IO.URI,
+  R.URI
+>(R.fromIO)
+
+export const asksTaskK: <R, A>(
+  f: (r: R) => Task.Task<A>,
+) => Env<R, A> = RT.fromNaturalTransformation<Task.URI, R.URI>(R.fromTask)
 
 export function chainRec<A, E, B>(
   f: (value: A) => Env<E, E.Either<A, B>>,
@@ -166,7 +175,7 @@ export const altW = alt as <E1, A>(
 
 export const altAll = FpAlt.altAll(Alt)
 
-export const fromIO = fromReader as <A>(fa: IO<A>) => Env<unknown, A>
+export const fromIO = fromReader as <A>(fa: IO.IO<A>) => Env<unknown, A>
 
 export const FromIO: FIO.FromIO2<URI> = {
   URI,
@@ -178,7 +187,7 @@ export const FromTask: FT.FromTask2<URI> = {
   fromTask: (task) => () => R.fromTask(task),
 }
 
-export const fromTask = FromTask.fromTask as <A, E = unknown>(fa: Task<A>) => Env<E, A>
+export const fromTask = FromTask.fromTask as <A, E = unknown>(fa: Task.Task<A>) => Env<E, A>
 
 export const fromResume: <A, E = unknown>(resume: R.Resume<A>) => Env<E, A> = constant
 
@@ -236,6 +245,7 @@ export const tupled = tupled_(Functor)
 
 export const ask = FR.ask(FromReader)
 export const asks = FR.asks(FromReader)
+export const asksE: <R, E, A>(f: (r: R) => Env<E, A>) => Env<R & E, A> = flow(asks, flattenW)
 export const chainReaderK = FR.chainReaderK(FromReader, Chain)
 export const fromReaderK = FR.fromReaderK(FromReader)
 

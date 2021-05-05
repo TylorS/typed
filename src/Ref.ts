@@ -1,6 +1,6 @@
 import { Stream } from '@most/types'
 import { Eq } from 'fp-ts/Eq'
-import { pipe } from 'fp-ts/function'
+import { flow, pipe } from 'fp-ts/function'
 import { none, Option, some } from 'fp-ts/Option'
 
 import { create } from './Adapter'
@@ -21,10 +21,19 @@ export interface Ref<E, A> {
   readonly eq: Eq<A>
 }
 
+/**
+ * Extracts the Environment required to run a reference within
+ */
 export type RefEnv<A> = A extends Ref<infer R, any> ? R : never
 
+/**
+ * Extracts the value a Reference will eventually be holding.
+ */
 export type RefValue<A> = A extends Ref<any, infer R> ? R : never
 
+/**
+ * Create a new Ref instance
+ */
 export function createRef<E, A>(
   initial: E.Env<E, A>,
   id: PropertyKey = Symbol(`Ref`),
@@ -37,14 +46,49 @@ export function createRef<E, A>(
   }
 }
 
+/**
+ * Lets us distinguish RefId's from any other kind of string | number | boolean
+ */
 export type RefId = Branded<{ readonly RefId: unique symbol }, PropertyKey>
+
+/**
+ * Lets us construct RefIds
+ */
 export const RefId = Branded<RefId>()
 
+/**
+ * References is an interface which has a sync or asynchronous implementation of a
+ * key-value pairs, with get/set/delete/has capabilities as well a @most/core Stream
+ * that allows a subscriber to listen in realtime what changes are occuring to the references.
+ */
 export interface References {
-  readonly references: ReadonlyMap<RefId, unknown>
+  /**
+   * A @most/core stream containing all of the happening within the References
+   */
   readonly events: Stream<RefEvent<unknown>>
+
+  /**
+   * Get the current value of a Ref, possibly executing the initial effect
+   * associated with that Ref and sending a RefCreated event.
+   */
   readonly getRef: <E, A>(ref: Ref<E, A>) => E.Env<E, A>
+
+  /**
+   * Check if a reference is currently stored in the environment.
+   */
+  readonly hasRef: <E, A>(ref: Ref<E, A>) => E.Env<E, boolean>
+
+  /**
+   * Set the value of a Ref, the provided Eq instance contained within the
+   * Ref to determine if it should send a corresponding RefUpdated event
+   * with the previous and current value.
+   */
   readonly setRef: <A>(value: A) => <E>(ref: Ref<E, A>) => E.Env<E, A>
+  /**
+   * Deletes references to a current value with a Ref, if it exists a Some of
+   * that value will be returned signalling a deletion has occurred or a None
+   * in the event the reference does not exist.
+   */
   readonly deleteRef: <E, A>(ref: Ref<E, A>) => E.Env<unknown, Option<A>>
 }
 
@@ -53,55 +97,31 @@ export type Refs = {
 }
 
 export function getRef<E, A>(ref: Ref<E, A>): E.Env<E & Refs, A> {
-  return pipe(
-    E.asks((e: Refs) => e.refs.getRef(ref)),
-    E.flattenW,
-  )
+  return E.asksE((e: Refs) => e.refs.getRef(ref))
 }
 
 export function hasRef<E, A>(ref: Ref<E, A>): E.Env<E & Refs, boolean> {
-  return pipe(E.asks((e: Refs) => e.refs.references.has(ref.id)))
+  return E.asksE((e: Refs) => e.refs.hasRef(ref))
 }
 
 export function setRef<E, A>(ref: Ref<E, A>) {
-  return (value: A): E.Env<E & Refs, A> =>
-    pipe(
-      E.asks((e: Refs) => pipe(ref, e.refs.setRef(value))),
-      E.flattenW,
-    )
+  return (value: A): E.Env<E & Refs, A> => E.asksE((e: Refs) => pipe(ref, e.refs.setRef(value)))
 }
 
 export function setRef_<A>(value: A) {
-  return <E>(ref: Ref<E, A>): E.Env<E & Refs, A> =>
-    pipe(
-      E.asks((e: Refs) => pipe(ref, e.refs.setRef(value))),
-      E.flattenW,
-    )
+  return <E>(ref: Ref<E, A>): E.Env<E & Refs, A> => setRef(ref)(value)
 }
 
 export function deleteRef<E, A>(ref: Ref<E, A>): E.Env<Refs, Option<A>> {
-  return pipe(
-    E.asks((e: Refs) => e.refs.deleteRef(ref)),
-    E.flatten,
-  )
+  return E.asksE((e: Refs) => e.refs.deleteRef(ref))
 }
 
 export function modifyRef<E, A>(ref: Ref<E, A>) {
-  return (f: Arity1<A, A>) =>
-    pipe(
-      ref,
-      getRef,
-      E.chain((a) => pipe(ref, pipe(a, f, setRef_))),
-    )
+  return (f: Arity1<A, A>) => pipe(ref, getRef, E.chain(flow(f, setRef(ref))))
 }
 
 export function modifyRef_<A>(f: Arity1<A, A>) {
-  return <E>(ref: Ref<E, A>) =>
-    pipe(
-      ref,
-      getRef,
-      E.chain((a) => pipe(ref, pipe(a, f, setRef_))),
-    )
+  return <E>(ref: Ref<E, A>) => modifyRef(ref)(f)
 }
 
 export function fromKey<A>(eq: Eq<A> = deepEqualsEq) {
@@ -133,6 +153,9 @@ export type RefDeleted = {
   readonly id: RefId
 }
 
+/**
+ * Creates a simple in-memory implementation of References
+ */
 export function createReferences(refs: Iterable<readonly [RefId, unknown]> = []): References {
   const references = new Map(refs)
   const [sendEvent, events] = create<RefEvent<unknown>>()
@@ -140,53 +163,64 @@ export function createReferences(refs: Iterable<readonly [RefId, unknown]> = [])
   function getRef<E, A>(ref: Ref<E, A>): E.Env<E, A> {
     const { id } = ref
 
+    // If there's a value already just grab it
     if (references.has(id)) {
       return E.of<A, E>(references.get(id)! as A)
     }
 
     return pipe(
+      // Get the initial value
       ref.initial,
-      E.chainFirstW((value) => E.fromIO(() => references.set(id, value))),
-      E.chainFirstW((value) => E.fromIO(() => sendEvent({ type: 'created', id, value }))),
+      // Set that value
+      E.chainFirstIOK((value) => () => references.set(id, value)),
+      // Send and event
+      E.chainFirstIOK((value) => () => sendEvent({ type: 'created', id, value })),
     )
+  }
+
+  function hasRef<E, A>(ref: Ref<E, A>): E.Env<E, boolean> {
+    return E.fromIO(() => references.has(ref.id))
   }
 
   function setRef<A>(value: A) {
     return <E>(ref: Ref<E, A>): E.Env<E, A> =>
       pipe(
         ref,
-        getRef,
-        E.chainFirstW(() => E.fromIO(() => references.set(ref.id, value))),
-        E.chainFirstW((previousValue) =>
-          E.fromIO(
-            () =>
-              !pipe(value, ref.eq.equals(previousValue)) &&
-              sendEvent({ type: 'updated', id: ref.id, previousValue, value }),
-          ),
+        getRef, // Get the current value
+        E.chainFirstIOK(() => () => references.set(ref.id, value)), // Set the new value
+        E.chainFirstIOK((previousValue) => () =>
+          !pipe(value, ref.eq.equals(previousValue)) && // Compare them and send an updated event
+          sendEvent({ type: 'updated', id: ref.id, previousValue, value }),
         ),
+        E.map(() => value),
       )
   }
 
   function deleteRef<E, A>(ref: Ref<E, A>): E.Env<unknown, Option<A>> {
     const { id } = ref
 
+    // If we don't have that id return None
     if (!references.has(id)) {
       return E.of(none)
     }
 
+    // Get the current value to return later
     const value = some(references.get(id)! as A)
 
     return pipe(
+      // Delete the reference
       E.fromIO(() => references.delete(id)),
-      E.chainFirst(() => E.fromIO(() => sendEvent({ type: 'deleted', id }))),
+      // Send an event
+      E.chainFirstIOK(() => () => sendEvent({ type: 'deleted', id })),
+      // Return the previously set value`
       E.map(() => value),
     )
   }
 
   return {
-    references,
     events,
     getRef,
+    hasRef,
     setRef,
     deleteRef,
   }
