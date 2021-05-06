@@ -2,7 +2,7 @@ import { Env } from '@fp/Env'
 import { CurrentFiber, usingFiberRefs } from '@fp/Fiber'
 import { Do } from '@fp/Fx/Env'
 import { getRef, setRef } from '@fp/Ref'
-import { pipe } from 'cjs/function'
+import { pipe } from 'fp-ts/function'
 
 import { DepsArgs, useDeps } from './Deps'
 import { useRef } from './useRef'

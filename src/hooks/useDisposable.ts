@@ -3,7 +3,7 @@ import { CurrentFiber, usingFiberRefs } from '@fp/Fiber'
 import { Do } from '@fp/Fx/Env'
 import { getRef, setRef } from '@fp/Ref'
 import { Disposable } from '@most/types'
-import { pipe } from 'cjs/function'
+import { pipe } from 'fp-ts/function'
 
 import { DepsArgs, useDeps } from './Deps'
 import { useRef } from './useRef'
