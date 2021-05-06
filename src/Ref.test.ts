@@ -142,8 +142,6 @@ function itRefEvent(
     const test = Do(function* (lift) {
       try {
         yield* f(lift)
-
-        done()
       } catch (e) {
         done(e)
       }
