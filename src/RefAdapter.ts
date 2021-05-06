@@ -23,7 +23,7 @@ export const sendEvent = <E, A, B>(adapter: RefAdapter<E, A, B>) => (
   pipe(
     adapter,
     getRef,
-    E.chain((a) => E.fromIO(() => a[0](event))),
+    E.chainIOK((a) => () => a[0](event)),
   )
 
 export const getSendEvent = <E, A, B>(

@@ -248,7 +248,10 @@ export const bindTo = bindTo_(Functor)
 export const bind = bind_(Monad)
 export const tupled = tupled_(Functor)
 
-export const zip = RA.traverse(Applicative)(<A>(x: Resume<A>) => x)
+export const traverseReadonlyArray = RA.traverse(Applicative)
+export const traverseReadonlyArrayWithIndex = RA.traverseWithIndex(Applicative)
+
+export const zip = traverseReadonlyArray(<A>(x: Resume<A>) => x)
 
 export const chainFirstTaskK = FT.chainFirstTaskK(FromTask, Chain)
 export const chainTaskK = FT.chainTaskK(FromTask, Chain)
