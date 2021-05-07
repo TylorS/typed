@@ -4,7 +4,6 @@
   "description": "Data Structures and Resources for fp-ts",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
-  "browser": "./build/index.js",
   "types": "./cjs/index.d.ts",
   "typings": "./cjs/index.d.ts",
   "sideEffects": false,
