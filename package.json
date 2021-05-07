@@ -1,6 +1,6 @@
 {
   "name": "@typed/fp",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Data Structures and Resources for fp-ts",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
@@ -68,7 +68,7 @@
     "update:package-exports": "ts-node ./tools/update-package-exports",
     "precommit": "concurrently 'npm:update' 'npm:lint-staged'",
     "preversion": "npm test && npm run update && npm run build",
-    "postversion": "npm publish --access=public",
+    "postversion": "npm publish --access=public && git push && git push --tags",
     "watch": "npm run check:ts-patch && concurrently 'npm:watch:cjs' 'npm:watch:esm'",
     "watch:cjs": "tsc-watch -P tsconfig.cjs.json --onSuccess 'npm run build:packages'",
     "watch:esm": "tsc-watch -P tsconfig.esm.json --onSuccess 'npm run update:package-exports'"
