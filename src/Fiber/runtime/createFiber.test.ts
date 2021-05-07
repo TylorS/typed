@@ -31,8 +31,7 @@ export const test = describe(`createFiber`, [
     describe(`running`, [
       it(`starts running as soon as possible`, ({ equal }) => {
         const [timer, scheduler] = createVirtualScheduler()
-        const resume = delay(100)({ scheduler })
-        const fiber = createFiber(() => resume, { scheduler })
+        const fiber = createFiber(delay(100), { scheduler })
 
         timer.progressTimeBy(1)
 
@@ -41,8 +40,7 @@ export const test = describe(`createFiber`, [
 
       it(`sends a running event`, ({ equal }, done) => {
         const [timer, scheduler] = createVirtualScheduler()
-        const resume = delay(100)({ scheduler })
-        const fiber = createFiber(() => resume, { scheduler })
+        const fiber = createFiber(delay(100), { scheduler })
 
         runStream(fiber.statusEvents, scheduler, (status) => {
           try {
