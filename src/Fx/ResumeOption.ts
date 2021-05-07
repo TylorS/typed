@@ -1,3 +1,4 @@
+import { flow } from 'cjs/function'
 import { Applicative1 } from 'fp-ts/Applicative'
 import { Apply1 } from 'fp-ts/Apply'
 import { Chain1 } from 'fp-ts/Chain'
@@ -18,6 +19,7 @@ export const doResumeOption = FxT.getDo<R.URI>()
 export const liftResumeOption = FxT.liftFx<R.URI>()
 export const map = FxT.map<R.URI>()
 export const toResumeOption = FxT.toMonad<R.URI>(R.MonadRec)
+export const Do = flow(doResumeOption, toResumeOption)
 
 export const URI = '@typed/fp/Fx/ResumeOption'
 export type URI = typeof URI

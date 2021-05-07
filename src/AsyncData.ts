@@ -7,11 +7,15 @@ import * as F from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import * as O from 'fp-ts/Option'
 import * as P from 'fp-ts/Pointed'
+import * as RA from 'fp-ts/ReadonlyArray'
 
 import * as FN from './function'
 import { MonadRec2 } from './MonadRec'
 
 export type AsyncData<E, A> = NoData | Loading | AsyncFailure<E> | AsyncSuccess<A>
+
+export type GetError<A> = [A] extends [AsyncData<infer R, any>] ? R : never
+export type GetValue<A> = [A] extends [AsyncData<any, infer R>] ? R : never
 
 export interface NoData {
   readonly _tag: 'noData'
@@ -156,6 +160,12 @@ declare module 'fp-ts/HKT' {
   }
 }
 
+declare module './Hkt' {
+  export interface UriToVariance {
+    [URI]: V<E, Covariant>
+  }
+}
+
 export const of = <A, E = never>(value: A): AsyncData<E, A> => success(value)
 
 export const Pointed: P.Pointed2<URI> = {
@@ -238,3 +248,11 @@ export const chainRec = <A, E, B>(f: (value: A) => AsyncData<E, Either<A, B>>) =
 export const ChainRec: ChainRec2<URI> = { chainRec }
 
 export const MonadRec: MonadRec2<URI> = { ...Monad, chainRec }
+
+export const traverseReadonlyArray = RA.traverse(Applicative)
+export const traverseReadonlyArrayWithIndex = RA.traverseWithIndex(Applicative)
+
+export const zip = traverseReadonlyArray(<E, A>(data: AsyncData<E, A>) => data)
+export const zipW = zip as <A extends readonly AsyncData<any, any>[]>(
+  ta: A,
+) => AsyncData<GetError<A[number]>, { readonly [K in keyof A]: GetValue<A[K]> }>

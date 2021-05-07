@@ -1,3 +1,4 @@
+import { flow } from 'cjs/function'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { Chain2 } from 'fp-ts/Chain'
@@ -19,6 +20,7 @@ export const doState = FxT.getDo<S.URI>()
 export const liftState = FxT.liftFx<S.URI>()
 export const map = FxT.map<S.URI>()
 export const toState = FxT.toMonad<S.URI>(S.MonadRec)
+export const Do = flow(doState, toState)
 
 export const URI = '@typed/fp/Fx/State'
 export type URI = typeof URI

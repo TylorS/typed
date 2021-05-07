@@ -1,3 +1,4 @@
+import { flow } from '@fp/function'
 import { Applicative3 } from 'fp-ts/Applicative'
 import { Apply3 } from 'fp-ts/Apply'
 import { Chain3 } from 'fp-ts/Chain'
@@ -25,6 +26,7 @@ export const useSome = FxT.useSome({ ...E.UseSome, ...E.MonadRec })
 export const useAll = FxT.useAll({ ...E.UseAll, ...E.MonadRec })
 export const provideSome = FxT.provideSome({ ...E.ProvideSome, ...E.MonadRec })
 export const provideAll = FxT.provideAll({ ...E.ProvideAll, ...E.MonadRec })
+export const Do = flow(doEnvEither, toEnvEither)
 
 export const URI = '@typed/fp/Fx/EnvEither'
 export type URI = typeof URI

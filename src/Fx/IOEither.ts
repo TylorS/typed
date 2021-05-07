@@ -1,3 +1,4 @@
+import { flow } from '@fp/function'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { Chain2 } from 'fp-ts/Chain'
@@ -16,10 +17,11 @@ export const ap = FxT.ap({ ...MonadRec, ...IOE.ApplicativePar })
 export const apSeq = FxT.ap({ ...MonadRec, ...IOE.ApplicativeSeq })
 export const chain = FxT.chain<IOE.URI>()
 export const chainRec = FxT.chainRec(MonadRec)
-export const doEnv = FxT.getDo<IOE.URI>()
+export const doIOEither = FxT.getDo<IOE.URI>()
 export const liftIOEither = FxT.liftFx<IOE.URI>()
 export const map = FxT.map<IOE.URI>()
 export const toIOEither = FxT.toMonad<IOE.URI>(MonadRec)
+export const Do = flow(doIOEither, toIOEither)
 
 export const URI = '@typed/fp/Fx/IOEither'
 export type URI = typeof URI

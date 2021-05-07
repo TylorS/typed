@@ -14,10 +14,15 @@ export const of = FxT.of(E.Pointed)
 export const ap = FxT.ap({ ...E.Monad, ...E.ChainRec, ...E.Apply })
 export const chain = FxT.chain<E.URI>()
 export const chainRec = FxT.chainRec<E.URI>({ ...E.Monad, ...E.ChainRec })
-export const doAsyncData = FxT.getDo<E.URI>()
+export const doAsyncData: <Y extends E.AsyncData<any, any>, R, N = unknown>(
+  f: (lift: FxT.LiftFx2<E.URI>) => Generator<Y, R, N>,
+) => Fx<Y, R, N> = FxT.getDo<E.URI>()
 export const liftAsyncData = FxT.liftFx<E.URI>()
 export const map = FxT.map<E.URI>()
 export const toAsyncData = FxT.toMonad<E.URI>({ ...E.Monad, ...E.ChainRec })
+export const Do = <Y extends E.AsyncData<any, any>, R, N = unknown>(
+  f: (lift: FxT.LiftFx2<E.URI>) => Generator<Y, R, N>,
+) => toAsyncData(doAsyncData(f))
 
 export const URI = '@typed/fp/Fx/AsyncData'
 export type URI = typeof URI

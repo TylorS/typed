@@ -1,4 +1,5 @@
 import { MonadRec } from '@fp/Option'
+import { flow } from 'cjs/function'
 import { Applicative1 } from 'fp-ts/Applicative'
 import { Apply1 } from 'fp-ts/Apply'
 import { Chain1 } from 'fp-ts/Chain'
@@ -19,6 +20,7 @@ export const doOption = FxT.getDo<O.URI>()
 export const liftOption = FxT.liftFx<O.URI>()
 export const map = FxT.map<O.URI>()
 export const toOption = FxT.toMonad<O.URI>(MonadRec)
+export const Do = flow(doOption, toOption)
 
 export const URI = '@typed/fp/Fx/Option'
 export type URI = typeof URI

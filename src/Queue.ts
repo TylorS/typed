@@ -16,20 +16,10 @@ export interface Queue<A> {
  */
 export function createQueue<A>(initial: ReadonlyArray<A> = []): Queue<A> {
   const queue = [...initial]
-
-  function enqueue(...values: ReadonlyArray<A>) {
-    return R.sync(() => queue.push(...values))
-  }
-
-  function enqueueFirst(...values: ReadonlyArray<A>) {
-    return R.sync(() => queue.unshift(...values))
-  }
-
+  const enqueue = (...values: ReadonlyArray<A>) => R.sync(() => queue.push(...values))
+  const enqueueFirst = (...values: ReadonlyArray<A>) => R.sync(() => queue.unshift(...values))
   const dequeue = R.sync<Option<A>>(() => (queue.length > 0 ? some(queue.shift()!) : none))
-
-  const peek = R.sync(() => {
-    return queue.length > 0 ? some(queue[0]) : none
-  })
+  const peek = R.sync(() => (queue.length > 0 ? some(queue[0]) : none))
 
   return {
     enqueue,

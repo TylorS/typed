@@ -1,4 +1,5 @@
 import { Provide4, ProvideAll4, ProvideSome4, UseAll4, UseSome4 } from '@fp/Provide'
+import { flow } from 'cjs/function'
 import { Applicative4 } from 'fp-ts/Applicative'
 import { Apply4 } from 'fp-ts/Apply'
 import { Chain4 } from 'fp-ts/Chain'
@@ -25,6 +26,7 @@ export const useSome = FxT.useSome({ ...SRTE.UseSome, ...SRTE.MonadRec })
 export const useAll = FxT.useAll({ ...SRTE.UseAll, ...SRTE.MonadRec })
 export const provideSome = FxT.provideSome({ ...SRTE.ProvideSome, ...SRTE.MonadRec })
 export const provideAll = FxT.provideAll({ ...SRTE.ProvideAll, ...SRTE.MonadRec })
+export const Do = flow(doStateReaderTaskEither, toStateReaderTaskEither)
 
 export const URI = '@typed/fp/Fx/StateReaderTaskEither'
 export type URI = typeof URI

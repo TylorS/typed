@@ -1,3 +1,4 @@
+import { flow } from 'cjs/function'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { Chain2 } from 'fp-ts/Chain'
@@ -26,6 +27,7 @@ export const useSome = FxT.useSome({ ...R.UseSome, ...R.MonadRec })
 export const useAll = FxT.useAll({ ...R.UseAll, ...R.MonadRec })
 export const provideSome = FxT.provideSome({ ...R.ProvideSome, ...R.MonadRec })
 export const provideAll = FxT.provideAll({ ...R.ProvideAll, ...R.MonadRec })
+export const Do = flow(doReader, toReader)
 
 export const URI = '@typed/fp/Fx/Reader'
 export type URI = typeof URI

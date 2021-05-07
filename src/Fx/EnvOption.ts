@@ -1,3 +1,4 @@
+import { flow } from '@fp/function'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { Chain2 } from 'fp-ts/Chain'
@@ -25,15 +26,16 @@ export const useSome = FxT.useSome({ ...E.UseSome, ...E.MonadRec })
 export const useAll = FxT.useAll({ ...E.UseAll, ...E.MonadRec })
 export const provideSome = FxT.provideSome({ ...E.ProvideSome, ...E.MonadRec })
 export const provideAll = FxT.provideAll({ ...E.ProvideAll, ...E.MonadRec })
+export const Do = flow(doEnvOption, toEnvOption)
 
 export const URI = '@typed/fp/Fx/EnvOption'
 export type URI = typeof URI
 
-export interface FxEither<E, A> extends Fx<E.EnvOption<E, unknown>, A> {}
+export interface FxEnvOption<E, A> extends Fx<E.EnvOption<E, unknown>, A> {}
 
 declare module 'fp-ts/HKT' {
   export interface URItoKind2<E, A> {
-    [URI]: FxEither<E, A>
+    [URI]: FxEnvOption<E, A>
   }
 }
 

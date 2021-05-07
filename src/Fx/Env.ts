@@ -1,3 +1,4 @@
+import { flow } from '@fp/function'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { Chain2 } from 'fp-ts/Chain'
@@ -27,9 +28,7 @@ export const useSome = FxT.useSome({ ...E.UseSome, ...E.MonadRec })
 export const useAll = FxT.useAll({ ...E.UseAll, ...E.MonadRec })
 export const provideSome = FxT.provideSome({ ...E.ProvideSome, ...E.MonadRec })
 export const provideAll = FxT.provideAll({ ...E.ProvideAll, ...E.MonadRec })
-export const Do = <Y extends E.Env<any, any>, R, N = unknown>(
-  f: (lift: FxT.LiftFx2<E.URI>) => Generator<Y, R, N>,
-) => toEnv(doEnv(f))
+export const Do = flow(doEnv, toEnv)
 
 export const URI = '@typed/fp/Fx/Env'
 export type URI = typeof URI
