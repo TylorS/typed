@@ -2,7 +2,7 @@ import { Disposable, Disposable as R } from '@most/types'
 import { Alt1 } from 'fp-ts/Alt'
 import { Applicative1, getApplicativeMonoid } from 'fp-ts/Applicative'
 import { Apply1 } from 'fp-ts/Apply'
-import { bind as bind_, Chain1 } from 'fp-ts/Chain'
+import * as Ch from 'fp-ts/Chain'
 import { ChainRec1 } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
 import * as FIO from 'fp-ts/FromIO'
@@ -216,10 +216,12 @@ export const Applicative: Applicative1<URI> = {
   ...Pointed,
 }
 
-export const Chain: Chain1<URI> = {
+export const Chain: Ch.Chain1<URI> = {
   ...Functor,
   chain,
 }
+
+export const chainFirst = Ch.chainFirst(Chain)
 
 export const Monad: Monad1<URI> = {
   ...Chain,
@@ -255,7 +257,7 @@ export const FromTask: FromTask1<URI> = {
 
 export const Do: Resume<{}> = sync(() => Object.create(null))
 export const bindTo = bindTo_(Functor)
-export const bind = bind_(Monad)
+export const bind = Ch.bind(Monad)
 export const tupled = tupled_(Functor)
 
 export const traverseReadonlyArray = RA.traverse(Applicative)

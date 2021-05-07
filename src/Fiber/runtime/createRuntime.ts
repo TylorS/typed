@@ -1,15 +1,17 @@
 import { settable } from '@fp/Disposable'
 import { Env, provideSome } from '@fp/Env'
 import * as R from '@fp/Resume'
+import { disposeNone } from '@most/disposable'
 import { Scheduler } from '@most/types'
-import { Either, left, right } from 'fp-ts/Either'
+import * as Ei from 'fp-ts/Either'
 import { constVoid, pipe } from 'fp-ts/function'
-import { isSome, match, none, Option, some } from 'fp-ts/Option'
+import * as O from 'fp-ts/Option'
 
 import { CurrentFiber, Fiber, Fork, ForkOptions, Join, Kill } from '../Fiber'
 import { Status } from '../Status'
 import { createFiber } from './createFiber'
 import { addChild } from './FiberChildren'
+import { changeStatus } from './internal/changeStatus'
 
 export function createRuntime(scheduler: Scheduler): Fork & Join & Kill {
   const Fork: Fork = {
@@ -27,7 +29,33 @@ export function createRuntime(scheduler: Scheduler): Fork & Join & Kill {
   }
 
   const Join: Join = {
-    joinFiber: (fiber) => joinFiber(fiber, scheduler),
+    joinFiber: (fiber) =>
+      pipe(
+        fiber.parent,
+        O.matchW(
+          () => {
+            throw new Error(`Unable to join Fiber with no parent`)
+          },
+          (parentFiber) =>
+            pipe(
+              joinFiber(fiber, scheduler),
+              R.chain(
+                Ei.matchW(
+                  (status) =>
+                    pipe(
+                      // Have parent fiber adopt the status of the child and stop
+                      {
+                        currentFiber: parentFiber,
+                      },
+                      changeStatus(status),
+                      R.chain(() => R.async<never>(() => disposeNone())),
+                    ),
+                  R.of,
+                ),
+              ),
+            ),
+        ),
+      ),
   }
 
   const Kill: Kill = {
@@ -41,12 +69,12 @@ export function createRuntime(scheduler: Scheduler): Fork & Join & Kill {
   }
 }
 
-function joinFiber<A>(fiber: Fiber<A>, scheduler: Scheduler): R.Resume<Either<Error, A>> {
+function joinFiber<A>(fiber: Fiber<A>, scheduler: Scheduler): R.Resume<Ei.Either<Status<A>, A>> {
   return pipe(
     fiber.status,
     R.map(handleStatus),
     R.chain((currentStatus) => {
-      if (isSome(currentStatus)) {
+      if (O.isSome(currentStatus)) {
         return R.of(currentStatus.value)
       }
 
@@ -58,7 +86,7 @@ function joinFiber<A>(fiber: Fiber<A>, scheduler: Scheduler): R.Resume<Either<Er
               pipe(
                 status,
                 handleStatus,
-                match(constVoid, (e) => {
+                O.match(constVoid, (e) => {
                   streamDisposable.dispose()
                   disposable.addDisposable(resume(e))
                 }),
@@ -77,30 +105,34 @@ function joinFiber<A>(fiber: Fiber<A>, scheduler: Scheduler): R.Resume<Either<Er
   )
 }
 
-function handleStatus<A>(status: Status<A>): Option<Either<Error, A>> {
+function handleStatus<A>(status: Status<A>): O.Option<Ei.Either<Status<A>, A>> {
   if (status.type === 'completed') {
-    return pipe(status.value, some)
+    return pipe(
+      status.value,
+      Ei.mapLeft(() => status),
+      O.some,
+    )
   }
 
   if (status.type === 'finished') {
-    return pipe(status.value, right, some)
+    return pipe(status.value, Ei.right, O.some)
   }
 
   if (status.type === 'failed') {
-    return pipe(status.error, left, some)
+    return pipe(status, Ei.left, O.some)
   }
 
   if (status.type === 'aborted') {
-    return pipe(new Error('Aborted'), left, some)
+    return pipe(status, Ei.left, O.some)
   }
 
-  return none
+  return O.none
 }
 
 function addChildToParent<A>(fiber: Fiber<A>) {
   return pipe(
     fiber.parent,
-    match(
+    O.match(
       () => R.of(fiber),
       (parent) =>
         pipe(
