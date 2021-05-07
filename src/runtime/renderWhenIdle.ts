@@ -59,4 +59,6 @@ export const renderWhenIdle = <E, A, B>(env: E.Env<E, A>, initial: B, options?: 
         currentStatus = yield* _(() => current.status)
       }
     }
+
+    return rendered
   })
