@@ -1,5 +1,4 @@
 import { Disposable, Stream } from '@most/types'
-import { Either } from 'fp-ts/Either'
 import { constVoid, pipe } from 'fp-ts/function'
 import { isSome, Option } from 'fp-ts/Option'
 
@@ -112,11 +111,10 @@ export type ForkOptions = {
 /**
  * Wait for the completion of a Fiber
  */
-export const join = <A>(fiber: Fiber<A>): Env<Join, Either<Error, A>> => ({ joinFiber }: Join) =>
-  joinFiber(fiber)
+export const join = <A>(fiber: Fiber<A>): Env<Join, A> => ({ joinFiber }: Join) => joinFiber(fiber)
 
 export type Join = {
-  readonly joinFiber: <A>(fiber: Fiber<A>) => Resume<Either<Error, A>>
+  readonly joinFiber: <A>(fiber: Fiber<A>) => Resume<A>
 }
 
 /**
