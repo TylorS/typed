@@ -12,7 +12,7 @@ export interface Queue<A> {
 }
 
 /**
- * Creates a synchronous in-memory queue
+ * Creates a synchronous, mutable, in-memory queue
  */
 export function createQueue<A>(initial: ReadonlyArray<A> = []): Queue<A> {
   const queue = [...initial]
@@ -30,7 +30,7 @@ export function createQueue<A>(initial: ReadonlyArray<A> = []): Queue<A> {
 }
 
 /**
- * Creates a synchronous in-memory stack
+ * Creates a synchronous, mutable, in-memory stack
  */
 export function createStack<A>(initial: ReadonlyArray<A> = []): Queue<A> {
   const queue = createQueue(initial)
