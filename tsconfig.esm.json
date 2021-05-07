@@ -28,7 +28,6 @@
     "index.js.map",
     "index.d.ts.map",
     "Adapter",
-    "AsyncData",
     "Branded",
     "Disposable",
     "Env",

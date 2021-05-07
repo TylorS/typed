@@ -100,10 +100,6 @@
       "require": "./cjs/Adapter.js",
       "import": "./esm/Adapter.js"
     },
-    "./AsyncData": {
-      "require": "./cjs/AsyncData.js",
-      "import": "./esm/AsyncData.js"
-    },
     "./Branded": {
       "require": "./cjs/Branded.js",
       "import": "./esm/Branded.js"
@@ -251,10 +247,6 @@
     "./Fx": {
       "require": "./cjs/Fx/index.js",
       "import": "./esm/Fx/index.js"
-    },
-    "./Fx/AsyncData": {
-      "require": "./cjs/Fx/AsyncData.js",
-      "import": "./esm/Fx/AsyncData.js"
     },
     "./Fx/Either": {
       "require": "./cjs/Fx/Either.js",
