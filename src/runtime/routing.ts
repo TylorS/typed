@@ -3,9 +3,7 @@
 import { ReaderOption } from '@fp/ReaderOption'
 import { none, some } from 'fp-ts/Option'
 import * as ptr from 'path-to-regexp'
-
-// since `infer T` does not retain its contextual types.
-export type Cast<A, B> = A extends B ? A : B
+import { A, N } from 'ts-toolbelt'
 
 // Template for parameters
 export type Param<A extends string> = `:${A}`
@@ -13,15 +11,15 @@ export type Param<A extends string> = `:${A}`
 export const param = <A extends string>(param: A): Param<A> => `:${param}` as Param<A>
 
 // Template for optional path parts
-export type Maybe<A extends string> = `${A}?`
+export type Optional<A extends string> = `${A}?`
 
-export const maybe = <A extends string>(param: A): Maybe<A> => `${param}?` as Maybe<A>
+export const optional = <A extends string>(param: A): Optional<A> => `${param}?` as Optional<A>
 
 // Construct a custom prefix
 export type Prefix<P extends string, A extends string> = `{${P}${A}}`
 
-export const prefix = <P extends string, A extends string>(prefix: P, param: Param<A>) =>
-  `{${prefix}${param}}` as Prefix<P, Param<A>>
+export const prefix = <P extends string, A extends Param<string> | Unnamed>(prefix: P, param: A) =>
+  `{${prefix}${param}}` as Prefix<P, A>
 
 // Construct query params
 export type QueryParam<K extends string, V extends string> = `` extends V ? K : `${K}=${V}`
@@ -46,15 +44,19 @@ export type QueryParams<
   R extends string = ``
 > = Q extends readonly [infer Head, ...infer Tail]
   ? QueryParams<
-      Cast<Tail, readonly QueryParam<any, any>[]>,
-      `` extends R ? `\\?${Cast<Head, string>}` : `${R}&${Cast<Head, string>}`
+      A.Cast<Tail, readonly QueryParam<any, any>[]>,
+      `` extends R ? `\\?${A.Cast<Head, string>}` : `${R}&${A.Cast<Head, string>}`
     >
   : R
 
 export const queryParams = <P extends readonly [QueryParam<any, any>, ...QueryParam<any, any>]>(
   ...params: P
-): QueryParams<P> => `\\\\?${params.join('&')}` as QueryParams<P>
+): QueryParams<P> => `\\?${params.join('&')}` as QueryParams<P>
 
+export const unnamed = `(.*)` as const
+export type Unnamed = typeof unnamed
+
+// Remove forward slashes prefixes recursively
 export type RemoveLeadingSlash<A> = A extends `/${infer R}` ? RemoveLeadingSlash<R> : A
 
 export const removeLeadingSlash = <A extends string>(a: A): RemoveLeadingSlash<A> => {
@@ -72,16 +74,12 @@ export type PathJoin<A extends ReadonlyArray<string>> = A extends readonly [
   infer Head,
   ...infer Tail
 ]
-  ? `${PathJoinHead<Cast<Head, string>>}${PathJoinNext<
-      PathJoin<Cast<Tail, ReadonlyArray<string>>>
+  ? `${FormatPart<A.Cast<Head, string>>}${FormatPart<
+      PathJoin<A.Cast<Tail, ReadonlyArray<string>>>
     >}`
   : ``
 
-export type PathJoinHead<P extends string> = P extends `/${infer R}`
-  ? `/${RemoveLeadingSlash<R>}`
-  : `/${P}`
-
-export type PathJoinNext<P extends string> = `` extends P
+export type FormatPart<P extends string> = `` extends P
   ? P
   : RemoveLeadingSlash<P> extends `\\?${infer _}`
   ? RemoveLeadingSlash<P>
@@ -95,16 +93,22 @@ export const pathJoin = <P extends ReadonlyArray<string>>(...parts: P): PathJoin
   }
 
   const [head, ...tail] = parts
-  const next = pathJoin(...tail)
-  const nextPostfix = `${
-    next.startsWith('{') || next.startsWith('\\?') || next === ''
-      ? next
-      : `/${removeLeadingSlash(next)}`
-  }`
 
-  return `${
-    head.startsWith('/') ? `/${removeLeadingSlash(head)}` : head
-  }${nextPostfix}` as PathJoin<P>
+  return `${formatPart(head)}${formatPart(pathJoin(...tail))}` as PathJoin<P>
+}
+
+export const formatPart = (trimmed: string) => {
+  trimmed = removeLeadingSlash(trimmed)
+
+  if (trimmed.startsWith('{')) {
+    return trimmed
+  }
+
+  if (trimmed.startsWith('\\?')) {
+    return trimmed
+  }
+
+  return trimmed === '' ? '' : `/${trimmed}`
 }
 
 // Convert a path back into a tuple of path parts
@@ -118,28 +122,35 @@ export type PathToParts<P> = P extends `${infer Head}/${infer Tail}`
   ? []
   : [P]
 
-export type PartsToParams<A extends ReadonlyArray<string>> = Intersect<
-  {
-    [K in keyof A]: PartToParam<Cast<A[K], string>>
-  }
->
-
-export type Intersect<A extends readonly any[], R = unknown> = A extends readonly [
+export type PartsToParams<A extends ReadonlyArray<string>, AST = {}> = A extends readonly [
   infer Head,
   ...infer Tail
 ]
-  ? Intersect<Tail, R & Head>
-  : R
+  ? PartsToParams<A.Cast<Tail, readonly string[]>, AST & PartToParam<A.Cast<Head, string>, AST>>
+  : AST
 
-export type PartToParam<A extends string> = A extends `${infer _}${Param<infer R>}}?`
+export type PartToParam<A extends string, AST> = A extends Unnamed
+  ? {
+      readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]: string
+    }
+  : A extends `${infer _}${Param<infer R>}}?`
   ? { readonly [K in R]?: string }
   : A extends `${infer _}${Param<infer R>}}`
   ? { readonly [K in R]?: string }
   : A extends `${infer _}${Param<infer R>}?`
   ? { readonly [K in R]?: string }
+  : A extends `${infer _}${Param<infer R>}+`
+  ? { readonly [K in R]: readonly [string, ...string[]] }
+  : A extends `${infer _}${Param<infer R>}*`
+  ? { readonly [K in R]: readonly string[] }
   : A extends `${infer _}${Param<infer R>}`
   ? { readonly [K in R]: string }
   : {}
+
+// Increments up from I until it finds an index that is not taken
+export type FindNextIndex<AST, I extends number = 0> = I extends keyof AST
+  ? FindNextIndex<AST, N.Add<I, 1>>
+  : I
 
 // Extract the parameters out of a path
 export type ParamsOf<A extends string> = PartsToParams<PathToParts<A>>
@@ -156,8 +167,7 @@ export interface Route<P extends string> extends Prism<string, ParamsOf<P>> {
 }
 
 export const createRoute = <P extends string>(path: P): Route<P> => {
-  const matchPath = ptr.match(path)
-  const createPath = ptr.compile(path)
+  const matchPath = ptr.match<ParamsOf<P>>(path)
 
   return {
     type: 'route',
@@ -165,8 +175,8 @@ export const createRoute = <P extends string>(path: P): Route<P> => {
     getOption: (s) => {
       const match = matchPath(s)
 
-      return !match ? none : some(match.params! as ParamsOf<P>)
+      return !match ? none : some(match.params)
     },
-    reverseGet: (params) => createPath(params as object),
+    reverseGet: ptr.compile<ParamsOf<P>>(path),
   }
 }
