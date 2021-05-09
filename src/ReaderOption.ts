@@ -8,7 +8,7 @@ import * as Ei from 'fp-ts/Either'
 import { FromIO2 } from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
 import { FromReader2 } from 'fp-ts/FromReader'
-import { flow, pipe } from 'fp-ts/function'
+import { flow, Lazy, pipe } from 'fp-ts/function'
 import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import * as O from 'fp-ts/Option'
@@ -22,18 +22,24 @@ import * as R from './Reader'
 export interface ReaderOption<E, A> extends R.Reader<E, O.Option<A>> {}
 
 export const alt = OT.alt(R.Monad)
+export const altW = OT.alt(R.Monad) as <E1, A>(
+  second: Lazy<R.Reader<E1, O.Option<A>>>,
+) => <E2, B>(first: R.Reader<E2, O.Option<B>>) => R.Reader<E1 & E2, O.Option<A | B>>
 export const ap = OT.ap(R.Apply)
 export const chain = OT.chain(R.Monad)
 export const chainNullableK = OT.chainNullableK(R.Monad)
 export const chainOptionK = OT.chainOptionK(R.Monad)
 export const fromEither = OT.fromEither(R.Monad)
-export const fromEnv = OT.fromF(R.Monad)
+export const fromReader = OT.fromF(R.Monad)
 export const fromNullable = OT.fromNullable(R.Pointed)
 export const fromNullableK = OT.fromNullableK(R.Pointed)
 export const fromOptionK = OT.fromOptionK(R.Pointed)
 export const fromPredicate = OT.fromPredicate(R.Pointed)
 export const getOrElse = OT.getOrElse(R.Functor)
 export const getOrElseE = OT.getOrElseE(R.Monad)
+export const getOrElseEW = OT.getOrElseE(R.Monad) as <E1, A>(
+  onNone: Lazy<R.Reader<E1, A>>,
+) => <E2, B>(fa: R.Reader<E2, O.Option<B>>) => R.Reader<E1 & E2, A | B>
 export const map = OT.map(R.Functor)
 export const match = OT.match(R.Functor)
 export const matchE = OT.matchE(R.Chain)
@@ -123,13 +129,13 @@ export const Alternative: Alternative2<URI> = {
 }
 
 export const FromIO: FromIO2<URI> = {
-  fromIO: flow(R.FromReader.fromReader, R.map(O.some)),
+  fromIO: fromReader,
 }
 
 export const fromIO = FromIO.fromIO
 
 export const FromReader: FromReader2<URI> = {
-  fromReader: flow(R.FromReader.fromReader, R.map(O.some)),
+  fromReader,
 }
 
 export const UseSome: UseSome2<URI> = {
