@@ -49,6 +49,12 @@ declare module 'fp-ts/HKT' {
   }
 }
 
+declare module './Hkt' {
+  export interface UriToVariance {
+    [URI]: V<E, Contravariant>
+  }
+}
+
 export const Pointed: Pointed2<URI> = {
   of: flow(O.some, R.of),
 }
