@@ -1,7 +1,6 @@
 import { Env } from '@fp/Env'
 import { CurrentFiber, usingFiberRefs } from '@fp/Fiber'
 import { Do } from '@fp/Fx/Env'
-import { getRef, setRef } from '@fp/Ref'
 import { pipe } from 'fp-ts/function'
 
 import { DepsArgs, useDeps } from './Deps'
@@ -17,9 +16,9 @@ export const useMemo = <E, A, Deps extends ReadonlyArray<any> = []>(
       const isEqual = yield* _(useDeps(...args))
 
       if (!isEqual) {
-        yield* pipe(yield* _(env), setRef(ref), _)
+        yield* pipe(yield* _(env), ref.set, _)
       }
 
-      return yield* _(getRef(ref))
+      return yield* _(ref.get)
     }),
   )

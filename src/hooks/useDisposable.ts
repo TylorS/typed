@@ -1,9 +1,7 @@
 import { Env, fromIO } from '@fp/Env'
 import { CurrentFiber, usingFiberRefs } from '@fp/Fiber'
 import { Do } from '@fp/Fx/Env'
-import { getRef, setRef } from '@fp/Ref'
 import { Disposable } from '@most/types'
-import { pipe } from 'fp-ts/function'
 
 import { DepsArgs, useDeps } from './Deps'
 import { useRef } from './useRef'
@@ -18,13 +16,13 @@ export const useDisposable = <Deps extends ReadonlyArray<any> = []>(
       const isEqual = yield* _(useDeps(...args))
 
       if (!isEqual) {
-        const current = yield* _(getRef(ref))
+        const current = yield* _(ref.get)
 
         current.dispose()
 
-        return yield* _(pipe(f(), setRef(ref)))
+        return yield* _(ref.set(f()))
       }
 
-      return yield* _(getRef(ref))
+      return yield* _(ref.get)
     }),
   )

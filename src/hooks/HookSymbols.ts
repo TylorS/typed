@@ -2,7 +2,7 @@ import { fromIO } from '@fp/Env'
 import { alwaysEqualsEq } from '@fp/Eq'
 import { pipe } from '@fp/function'
 import { Do } from '@fp/Fx/Env'
-import { createRef, getRef, setRef_ } from '@fp/Ref'
+import { createRef } from '@fp/Ref'
 import { Eq } from 'fp-ts/number'
 import * as RM from 'fp-ts/ReadonlyMap'
 
@@ -22,14 +22,10 @@ export const HookSymbols = createRef(
 
 export const getNextSymbol = Do(function* (_) {
   const index = yield* _(getNextIndex)
-  const symbols = yield* _(getRef(HookSymbols))
+  const symbols = yield* _(HookSymbols.get)
 
   if (!symbols.has(index)) {
-    const updated = yield* pipe(
-      HookSymbols,
-      setRef_(pipe(symbols, upsert(index, Symbol(index)))),
-      _,
-    )
+    const updated = yield* pipe(symbols, upsert(index, Symbol(index)), HookSymbols.set, _)
 
     return updated.get(index)!
   }

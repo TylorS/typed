@@ -34,7 +34,7 @@ export type RefValue<A> = A extends Ref<any, infer R> ? R : never
 /**
  * Create a new Ref instance
  */
-export function createRef<E, A>(
+export function makeRef<E, A>(
   initial: E.Env<E, A>,
   id: PropertyKey = Symbol(`Ref`),
   eq: Eq<A> = deepEqualsEq,
@@ -225,3 +225,24 @@ export function createReferences(refs: Iterable<readonly [RefId, unknown]> = [])
     deleteRef,
   }
 }
+
+export interface WrappedRef<E, A> extends Ref<E, A> {
+  readonly get: E.Env<E & Refs, A>
+  readonly has: E.Env<E & Refs, boolean>
+  readonly set: (value: A) => E.Env<E & Refs, A>
+  readonly modify: (f: Arity1<A, A>) => E.Env<E & Refs, A>
+  readonly delete: E.Env<Refs, Option<A>>
+}
+
+export function wrapRef<E, A>(ref: Ref<E, A>): WrappedRef<E, A> {
+  return {
+    ...ref,
+    get: getRef(ref),
+    has: hasRef(ref),
+    set: setRef(ref),
+    modify: modifyRef(ref),
+    delete: deleteRef(ref),
+  } as const
+}
+
+export const createRef = flow(makeRef, wrapRef)

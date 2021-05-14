@@ -74,19 +74,19 @@ export const ChainRec: ChainRec2<URI> = {
 }
 
 export const UseSome: UseSome2<URI> = {
-  useSome: useSome,
+  useSome,
 }
 
 export const UseAll: UseAll2<URI> = {
-  useAll: useAll,
+  useAll,
 }
 
 export const ProvideSome: ProvideSome2<URI> = {
-  provideSome: provideSome,
+  provideSome,
 }
 
 export const ProvideAll: ProvideAll2<URI> = {
-  provideAll: provideAll,
+  provideAll,
 }
 
 export const Provide: Provide2<URI> = {

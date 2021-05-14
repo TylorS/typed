@@ -1,20 +1,22 @@
 import { of } from '@fp/Env'
 import { alwaysEqualsEq } from '@fp/Eq'
-import { pipe } from '@fp/function'
 import { Do } from '@fp/Fx/Env'
-import { createRef, getRef, setRef_ } from '@fp/Ref'
+import { createRef } from '@fp/Ref'
+import { increment } from 'fp-ts/function'
+
+const INITIAL = 0
 
 /**
  * The current index at which to find a hook references
  */
-export const HookIndex = createRef(of(0), Symbol('HookIndex'), alwaysEqualsEq)
+export const HookIndex = createRef(of(INITIAL), Symbol('HookIndex'), alwaysEqualsEq)
 
 export const getNextIndex = Do(function* (_) {
-  const index = yield* _(getRef(HookIndex))
+  const index = yield* _(HookIndex.get)
 
-  yield* pipe(HookIndex, setRef_(index + 1), _)
+  yield* _(HookIndex.modify(increment))
 
   return index
 })
 
-export const resetIndex = pipe(HookIndex, setRef_(0))
+export const resetIndex = HookIndex.set(INITIAL)
