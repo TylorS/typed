@@ -5,13 +5,13 @@ import * as R from '@fp/Ref'
 import { askQuestion } from './askQuestion'
 import { putWinsAndLosses } from './formatWinsAndLosses'
 import { GetStr } from './getStr'
-import { getName } from './Name'
+import { Name } from './Name'
 import { PutStr } from './putStr'
 
 /**
  * Track if the game should continue or not
  */
-export const ShouldContinue: R.Ref<unknown, boolean> = R.createRef(E.of<boolean>(true))
+export const ShouldContinue = R.createRef(E.of<boolean>(true))
 
 /**
  * Get the current value of ShouldContinue
@@ -34,7 +34,7 @@ export const askToContinue: E.Env<R.Refs & GetStr & PutStr, boolean> = Do(functi
   yield* _(putWinsAndLosses)
 
   // Ask if the user would like to continue
-  const name = yield* _(getName)
+  const name = yield* _(Name.get)
   const answer = yield* _(askQuestion(`Do you want to continue, ${name}? (y/n)`))
 
   // Handle yes

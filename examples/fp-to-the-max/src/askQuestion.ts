@@ -1,13 +1,14 @@
+import { Env } from '@fp/Env'
 import { Do } from '@fp/Fx/Env'
 import { EOL } from 'os'
 
-import { getStr } from './getStr'
-import { putStr } from './putStr'
+import { GetStr, getStr } from './getStr'
+import { PutStr, putStr } from './putStr'
 
 /**
  * Ask the User a question
  */
-export const askQuestion = (question: string) =>
+export const askQuestion = (question: string): Env<GetStr & PutStr, string> =>
   Do(function* (_) {
     yield* _(putStr(EOL + question))
 
