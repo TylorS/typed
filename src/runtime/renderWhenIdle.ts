@@ -1,12 +1,12 @@
 import * as E from '@fp/Env'
 import * as F from '@fp/Fiber'
+import { Fiber } from '@fp/Fiber'
 import { pipe } from '@fp/function'
 import { Do } from '@fp/Fx/Env'
-import { resetIndex, useDisposable } from '@fp/hooks'
+import { resetIndex } from '@fp/hooks'
+import { useStream } from '@fp/hooks/useStream'
 import { patch } from '@fp/Patch'
 import { createReferences } from '@fp/Ref'
-import { SchedulerEnv } from '@fp/Scheduler'
-import { createSink } from '@fp/Stream'
 
 import { whenIdle, WhenIdleOptions } from './whenIdle'
 
@@ -16,39 +16,29 @@ import { whenIdle, WhenIdleOptions } from './whenIdle'
  */
 export const renderWhenIdle = <E, A, B>(env: E.Env<E, A>, initial: B, options?: WhenIdleOptions) =>
   Do(function* (_) {
-    const current = yield* _(F.getCurrentFiber)
     const refs = createReferences()
     const main = pipe(
-      // Always reset hooks index before running
       resetIndex,
-      F.usingFiberRefs,
       E.chain(() => env),
+      F.usingFiberRefs,
     )
-
-    let fiber = yield* _(F.fork(main, { refs }))
-    let rendered = yield* _(F.join(fiber))
-    let patched = yield* _(patch(initial, rendered))
-    let currentStatus = yield* _(() => current.status)
-    let hasBeenUpdated = false
-
-    const { scheduler } = yield* _(E.ask<SchedulerEnv>())
 
     yield* _(
-      useDisposable(() =>
-        refs.events.run(
-          createSink({
-            event: (_, x) => {
-              if (x.type === 'updated' || x.type === 'deleted') {
-                hasBeenUpdated = true
-              }
-            },
-          }),
-          scheduler,
-        ),
-      ),
+      useStream(refs.events, {
+        event: (_, x) => {
+          if (x.type === 'updated' || x.type === 'deleted') {
+            hasBeenUpdated = true
+          }
+        },
+      }),
     )
 
-    while (!F.isTerminal(currentStatus)) {
+    let fiber: Fiber<A>
+    let rendered: unknown
+    let patched = initial
+    let hasBeenUpdated = true
+
+    while (true) {
       const deadline = yield* _(whenIdle(options))
 
       while (hasBeenUpdated && (deadline.timeRemaining() > 0 || deadline.didTimeout)) {
@@ -56,9 +46,6 @@ export const renderWhenIdle = <E, A, B>(env: E.Env<E, A>, initial: B, options?: 
         fiber = yield* _(F.fork(main, { refs }))
         rendered = yield* _(F.join(fiber))
         patched = yield* _(patch(patched, rendered))
-        currentStatus = yield* _(() => current.status)
       }
     }
-
-    return rendered
   })
