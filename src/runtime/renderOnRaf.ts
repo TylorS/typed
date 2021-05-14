@@ -19,8 +19,8 @@ export const renderWhenIdle = <E, A, B>(env: E.Env<E, A>, initial: B) =>
     const refs = createReferences()
     const main = pipe(
       resetIndex,
-      F.usingFiberRefs,
       E.chain(() => env),
+      F.usingFiberRefs,
     )
 
     yield* _(
