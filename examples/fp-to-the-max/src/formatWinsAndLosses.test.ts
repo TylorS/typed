@@ -27,7 +27,7 @@ export const test = describe(`formatWinsAndLosses`, [
 
       const [timer, scheduler] = createVirtualScheduler()
 
-      pipe(test, F.withFiberRefs, F.runAsFiber(scheduler))
+      pipe(test, F.usingFiberRefs, F.runAsFiber(scheduler))
 
       timer.progressTimeBy(1)
     }),

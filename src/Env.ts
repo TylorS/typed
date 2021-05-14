@@ -1,4 +1,4 @@
-import * as FpAlt from 'fp-ts/Alt'
+import * as E from 'fp-ts/Alt'
 import * as FpApplicative from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
 import * as FpChain from 'fp-ts/Chain'
@@ -163,7 +163,7 @@ export const raceW = <E1, A>(a: Env<E1, A>) => <E2, B>(b: Env<E2, B>): Env<E1 & 
 export const race = <E, A>(a: Env<E, A>) => <B>(b: Env<E, B>): Env<E, A | B> => (e) =>
   R.race(a(e))(b(e))
 
-export const Alt: FpAlt.Alt2<URI> = {
+export const Alt: E.Alt2<URI> = {
   ...Functor,
   alt: <E, A>(snd: Lazy<Env<E, A>>) => (fst: Env<E, A>) => raceW(fst)(snd()),
 }
@@ -173,7 +173,7 @@ export const altW = alt as <E1, A>(
   snd: Lazy<Env<E1, A>>,
 ) => <E2>(fst: Env<E2, A>) => Env<E1 & E2, A>
 
-export const altAll = FpAlt.altAll(Alt)
+export const altAll = E.altAll(Alt)
 
 export const fromIO = fromReader as <A>(fa: IO.IO<A>) => Env<unknown, A>
 

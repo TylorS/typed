@@ -30,9 +30,7 @@ const GetStr: GetStr = {
 
     rl.question('> ', (answer) => {
       rl.close()
-
-      // Add additional resources created
-      d.addDisposable(resume(answer))
+      resume(answer)
     })
 
     // Allow canceling this workflow
