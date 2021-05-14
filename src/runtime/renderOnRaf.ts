@@ -38,7 +38,7 @@ export const renderOnRaf = <E, A, B>(env: E.Env<E, A>, initial: B) =>
         refs.events.run(
           createSink({
             event: (_, x) => {
-              if (x.type === 'updated') {
+              if (x.type === 'updated' || x.type === 'deleted') {
                 hasBeenUpdated = true
               }
             },
