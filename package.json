@@ -1,6 +1,6 @@
 {
   "name": "@typed/fp",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Data Structures and Resources for fp-ts",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
@@ -507,13 +507,17 @@
       "require": "./cjs/hooks/useMemo.js",
       "import": "./esm/hooks/useMemo.js"
     },
+    "./hooks/useOp": {
+      "require": "./cjs/hooks/useOp.js",
+      "import": "./esm/hooks/useOp.js"
+    },
     "./hooks/useRef": {
       "require": "./cjs/hooks/useRef.js",
       "import": "./esm/hooks/useRef.js"
     },
-    "./hooks/useState": {
-      "require": "./cjs/hooks/useState.js",
-      "import": "./esm/hooks/useState.js"
+    "./hooks/useStream": {
+      "require": "./cjs/hooks/useStream.js",
+      "import": "./esm/hooks/useStream.js"
     }
   }
 }
