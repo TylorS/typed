@@ -7,7 +7,7 @@ import { useMemo } from './useMemo'
 
 export const useFn = <
   F extends FunctionN<readonly any[], any>,
-  Deps extends ReadonlyArray<any> = []
+  Deps extends ReadonlyArray<any> = [],
 >(
   f: F,
   ...args: DepsArgs<Deps>

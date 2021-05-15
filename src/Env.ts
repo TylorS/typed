@@ -52,9 +52,8 @@ export const asksIOK: <R, A>(f: (r: R) => IO.IO<A>) => Env<R, A> = RT.fromNatura
   R.URI
 >(R.fromIO)
 
-export const asksTaskK: <R, A>(
-  f: (r: R) => Task.Task<A>,
-) => Env<R, A> = RT.fromNaturalTransformation<Task.URI, R.URI>(R.fromTask)
+export const asksTaskK: <R, A>(f: (r: R) => Task.Task<A>) => Env<R, A> =
+  RT.fromNaturalTransformation<Task.URI, R.URI>(R.fromTask)
 
 export function chainRec<A, E, B>(
   f: (value: A) => Env<E, E.Either<A, B>>,
@@ -157,15 +156,24 @@ export const FromReader: FR.FromReader2<URI> = {
   fromReader: (reader) => (e) => R.sync(() => reader(e)),
 }
 
-export const raceW = <E1, A>(a: Env<E1, A>) => <E2, B>(b: Env<E2, B>): Env<E1 & E2, A | B> => (e) =>
-  R.race(a(e))(b(e))
+export const raceW =
+  <E1, A>(a: Env<E1, A>) =>
+  <E2, B>(b: Env<E2, B>): Env<E1 & E2, A | B> =>
+  (e) =>
+    R.race(a(e))(b(e))
 
-export const race = <E, A>(a: Env<E, A>) => <B>(b: Env<E, B>): Env<E, A | B> => (e) =>
-  R.race(a(e))(b(e))
+export const race =
+  <E, A>(a: Env<E, A>) =>
+  <B>(b: Env<E, B>): Env<E, A | B> =>
+  (e) =>
+    R.race(a(e))(b(e))
 
 export const Alt: FpAlt.Alt2<URI> = {
   ...Functor,
-  alt: <E, A>(snd: Lazy<Env<E, A>>) => (fst: Env<E, A>) => raceW(fst)(snd()),
+  alt:
+    <E, A>(snd: Lazy<Env<E, A>>) =>
+    (fst: Env<E, A>) =>
+      raceW(fst)(snd()),
 }
 
 export const alt = Alt.alt
@@ -195,17 +203,29 @@ export const FromResume: FromResume2<URI> = {
   fromResume,
 }
 
-export const useSome = <E1>(provided: E1) => <E2, A>(env: Env<E1 & E2, A>): Env<E2, A> => (e) =>
-  env({ ...e, ...provided })
+export const useSome =
+  <E1>(provided: E1) =>
+  <E2, A>(env: Env<E1 & E2, A>): Env<E2, A> =>
+  (e) =>
+    env({ ...e, ...provided })
 
-export const provideSome = <E1>(provided: E1) => <E2, A>(env: Env<E1 & E2, A>): Env<E2, A> => (e) =>
-  env({ ...provided, ...e })
+export const provideSome =
+  <E1>(provided: E1) =>
+  <E2, A>(env: Env<E1 & E2, A>): Env<E2, A> =>
+  (e) =>
+    env({ ...provided, ...e })
 
-export const useAll = <E1>(provided: E1) => <A>(env: Env<E1, A>): Env<unknown, A> => () =>
-  env(provided)
+export const useAll =
+  <E1>(provided: E1) =>
+  <A>(env: Env<E1, A>): Env<unknown, A> =>
+  () =>
+    env(provided)
 
-export const provideAll = <E1>(provided: E1) => <A>(env: Env<E1, A>): Env<unknown, A> => (e) =>
-  env({ ...provided, ...((e as any) ?? {}) })
+export const provideAll =
+  <E1>(provided: E1) =>
+  <A>(env: Env<E1, A>): Env<unknown, A> =>
+  (e) =>
+    env({ ...provided, ...((e as any) ?? {}) })
 
 export const UseSome: P.UseSome2<URI> = {
   useSome,
@@ -263,6 +283,6 @@ export const fromIOK = FIO.fromIOK(FromIO)
 
 export const zip = traverse(Applicative)(<E, A>(x: Env<E, A>) => x)
 
-export const zipW = (zip as unknown) as <A extends ReadonlyArray<Env<any, any>>>(
+export const zipW = zip as unknown as <A extends ReadonlyArray<Env<any, any>>>(
   envs: A,
 ) => Env<Intersect<{ [K in keyof A]: GetRequirements<A[K]> }>, { [K in keyof A]: GetValue<A[K]> }>

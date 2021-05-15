@@ -68,17 +68,14 @@ export interface UriToVariance {
   readonly These: V<E, Covariant>
 }
 
-export type ApplyVariance<
-  F,
-  P extends Param,
-  T extends readonly any[]
-> = F extends keyof UriToVariance
-  ? UriToVariance[F] extends V<P, infer R>
-    ? R extends Covariant
-      ? T[number]
-      : Intersect<T>
+export type ApplyVariance<F, P extends Param, T extends readonly any[]> =
+  F extends keyof UriToVariance
+    ? UriToVariance[F] extends V<P, infer R>
+      ? R extends Covariant
+        ? T[number]
+        : Intersect<T>
+      : T[0]
     : T[0]
-  : T[0]
 
 export type Initial<F, P extends Param> = F extends keyof UriToVariance
   ? UriToVariance[F] extends V<P, infer R>
