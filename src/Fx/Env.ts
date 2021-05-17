@@ -4,12 +4,16 @@ import { Apply2 } from 'fp-ts/Apply'
 import { Chain2 } from 'fp-ts/Chain'
 import { ChainRec2 } from 'fp-ts/ChainRec'
 import { Functor2 } from 'fp-ts/Functor'
+import * as IO from 'fp-ts/IO'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
+import * as R from 'fp-ts/Reader'
+import * as T from 'fp-ts/Task'
 
 import * as E from '../Env'
 import * as FxT from '../FxT'
 import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '../Provide'
+import * as Re from '../Resume'
 import { Fx } from './Fx'
 
 export const of = FxT.of(E.Pointed)
@@ -22,13 +26,17 @@ export const map = FxT.map<E.URI>()
 export const toEnv = FxT.toMonad<E.URI>(E.MonadRec) as <Y extends E.Env<any, any>, R>(
   fx: Fx<Y, R, unknown>,
 ) => [Y] extends [E.Env<infer E, any>] ? E.Env<E, R> : never
-export const ask = FxT.ask(E.FromReader)
-export const asks = FxT.asks(E.FromReader)
+export const Do = flow(doEnv, toEnv)
+
 export const useSome = FxT.useSome({ ...E.UseSome, ...E.MonadRec })
 export const useAll = FxT.useAll({ ...E.UseAll, ...E.MonadRec })
 export const provideSome = FxT.provideSome({ ...E.ProvideSome, ...E.MonadRec })
 export const provideAll = FxT.provideAll({ ...E.ProvideAll, ...E.MonadRec })
-export const Do = flow(doEnv, toEnv)
+export const fromIO = FxT.fromNaturalTransformation<IO.URI, E.URI>(E.fromIO)
+export const fromResume = FxT.fromNaturalTransformation<Re.URI, E.URI>(E.fromResume)
+export const fromTask = FxT.fromNaturalTransformation<T.URI, E.URI>(E.fromTask)
+export const asks = FxT.fromNaturalTransformation<R.URI, E.URI>(E.fromReader)
+export const ask = FxT.ask(E.FromReader)
 
 export const URI = '@typed/fp/Fx/Env'
 export type URI = typeof URI

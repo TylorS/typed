@@ -118,13 +118,13 @@ export const Monad: Monad_.Monad3<URI> = {
   ...Pointed,
 }
 
-export const chainRec = <A, R, E, B>(f: (value: A) => EnvEither<R, E, E.Either<A, B>>) => (
-  a: A,
-): EnvEither<R, E, B> =>
-  pipe(
-    a,
-    Env.chainRec((x) => pipe(x, f, Env.map(swapEithers))),
-  )
+export const chainRec =
+  <A, R, E, B>(f: (value: A) => EnvEither<R, E, E.Either<A, B>>) =>
+  (a: A): EnvEither<R, E, B> =>
+    pipe(
+      a,
+      Env.chainRec((x) => pipe(x, f, Env.map(swapEithers))),
+    )
 
 export const ChainRec: ChainRec_.ChainRec3<URI> = {
   chainRec,
@@ -135,8 +135,10 @@ export const MonadRec: MonadRec3<URI> = {
   chainRec,
 }
 
-export const fromEither = <E, A, R = unknown>(e: E.Either<E, A>): EnvEither<R, E, A> => () =>
-  sync(() => e)
+export const fromEither =
+  <E, A, R = unknown>(e: E.Either<E, A>): EnvEither<R, E, A> =>
+  () =>
+    sync(() => e)
 
 export const FromEither: FEi.FromEither3<URI> = {
   fromEither,

@@ -14,7 +14,7 @@ import { raf } from './raf'
  * Runs the provided effect anytime there are Ref updates, and will use the provided Patch instance
  * to provide updates.
  */
-export const renderWhenIdle = <E, A, B>(env: E.Env<E, A>, initial: B) =>
+export const renderOnRaf = <E, A, B>(env: E.Env<E, A>, initial: B) =>
   Do(function* (_) {
     const refs = createReferences()
     const main = pipe(
@@ -22,6 +22,11 @@ export const renderWhenIdle = <E, A, B>(env: E.Env<E, A>, initial: B) =>
       E.chain(() => env),
       F.usingFiberRefs,
     )
+
+    let fiber: Fiber<A>
+    let rendered: A
+    let patched = initial
+    let hasBeenUpdated = true
 
     yield* _(
       useStream(refs.events, {
@@ -32,11 +37,6 @@ export const renderWhenIdle = <E, A, B>(env: E.Env<E, A>, initial: B) =>
         },
       }),
     )
-
-    let fiber: Fiber<A>
-    let rendered: unknown
-    let patched = initial
-    let hasBeenUpdated = true
 
     while (true) {
       if (hasBeenUpdated) {

@@ -29,27 +29,26 @@ export const chain = RT.chain(S.Chain) as <A, R1, B>(
   f: (a: A) => ReaderStream<R1, B>,
 ) => <R2>(ma: ReaderStream<R2, A>) => ReaderStream<R1 & R2, B>
 
-export const chainFirst = <A, R, B>(f: (a: A) => ReaderStream<R, B>) => (
-  ma: ReaderStream<R, A>,
-): ReaderStream<R, A> =>
-  pipe(
-    ma,
-    chain((a) =>
-      pipe(
-        a,
-        f,
-        chain(() => of(a)),
+export const chainFirst =
+  <A, R, B>(f: (a: A) => ReaderStream<R, B>) =>
+  (ma: ReaderStream<R, A>): ReaderStream<R, A> =>
+    pipe(
+      ma,
+      chain((a) =>
+        pipe(
+          a,
+          f,
+          chain(() => of(a)),
+        ),
       ),
-    ),
-  )
+    )
 
 export const fromReader: <R, A>(ma: Re.Reader<R, A>) => ReaderStream<R, A> = RT.fromReader(
   S.Pointed,
 )
 
-export const map: <A, B>(
-  f: (a: A) => B,
-) => <R>(fa: ReaderStream<R, A>) => ReaderStream<R, B> = RT.map(S.Functor)
+export const map: <A, B>(f: (a: A) => B) => <R>(fa: ReaderStream<R, A>) => ReaderStream<R, B> =
+  RT.map(S.Functor)
 
 export const of: <A, R = unknown>(a: A) => ReaderStream<R, A> = RT.of(S.Pointed)
 

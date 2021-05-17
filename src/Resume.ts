@@ -57,60 +57,64 @@ export const isSync = <A>(resume: Resume<A>): resume is Sync<A> => resume._tag =
 
 export const isAsync = <A>(resume: Resume<A>): resume is Async<A> => resume._tag === 'async'
 
-export const ap = <A>(fa: Resume<A>) => <B>(fab: Resume<Arity1<A, B>>): Resume<B> => {
-  if (isSync(fa) && isSync(fab)) {
-    return sync(() => fab.resume()(fa.resume()))
-  }
+export const ap =
+  <A>(fa: Resume<A>) =>
+  <B>(fab: Resume<Arity1<A, B>>): Resume<B> => {
+    if (isSync(fa) && isSync(fab)) {
+      return sync(() => fab.resume()(fa.resume()))
+    }
 
-  // Concurrently
-  return async((resume) => {
-    const disposable = settable()
+    // Concurrently
+    return async((resume) => {
+      const disposable = settable()
 
-    let ab: Option<Arity1<A, B>> = isSync(fab) ? some(fab.resume()) : none
-    let a: Option<A> = isSync(fa) ? some(fa.resume()) : none
+      let ab: Option<Arity1<A, B>> = isSync(fab) ? some(fab.resume()) : none
+      let a: Option<A> = isSync(fa) ? some(fa.resume()) : none
 
-    function onReady() {
-      if (isNone(ab) || isNone(a)) {
+      function onReady() {
+        if (isNone(ab) || isNone(a)) {
+          return disposeNone()
+        }
+
+        if (!disposable.isDisposed()) {
+          return disposable.addDisposable(resume(ab.value(a.value)))
+        }
+
         return disposeNone()
       }
 
-      if (!disposable.isDisposed()) {
-        return disposable.addDisposable(resume(ab.value(a.value)))
+      if (isAsync(fab)) {
+        disposable.addDisposable(
+          fab.resume((f) => {
+            ab = some(f)
+
+            return onReady()
+          }),
+        )
       }
 
-      return disposeNone()
-    }
+      if (isAsync(fa)) {
+        disposable.addDisposable(
+          fa.resume((x) => {
+            a = some(x)
 
-    if (isAsync(fab)) {
-      disposable.addDisposable(
-        fab.resume((f) => {
-          ab = some(f)
+            return onReady()
+          }),
+        )
+      }
 
-          return onReady()
-        }),
-      )
-    }
+      return disposable
+    })
+  }
 
-    if (isAsync(fa)) {
-      disposable.addDisposable(
-        fa.resume((x) => {
-          a = some(x)
-
-          return onReady()
-        }),
-      )
-    }
-
-    return disposable
-  })
-}
-
-export const run = <A>(f: Arity1<A, R>) => (resume: Resume<A>): R =>
-  isAsync(resume) ? resume.resume(f) : f(resume.resume())
+export const run =
+  <A>(f: Arity1<A, R>) =>
+  (resume: Resume<A>): R =>
+    isAsync(resume) ? resume.resume(f) : f(resume.resume())
 
 export const start = <A>(f: Arity1<A, any>) => run(undisposable(f))
 
-export const exec = start(constVoid)
+export const exec = start<any>(constVoid)
 
 export const toTask = <A>(resume: Resume<A>): Task<A> & Disposable => {
   const d = settable()
@@ -121,60 +125,66 @@ export const toTask = <A>(resume: Resume<A>): Task<A> & Disposable => {
   return task as Task<A> & Disposable
 }
 
-export const chain = <A, B>(f: Arity1<A, Resume<B>>) => (resume: Resume<A>): Resume<B> =>
-  isSync(resume) ? f(resume.resume()) : async((r) => resume.resume(flow(f, run(r))))
+export const chain =
+  <A, B>(f: Arity1<A, Resume<B>>) =>
+  (resume: Resume<A>): Resume<B> =>
+    isSync(resume) ? f(resume.resume()) : async((r) => resume.resume(flow(f, run(r))))
 
 export const of = flow(constant, sync)
 
-export const chainRec = <A, B>(f: Arity1<A, Resume<E.Either<A, B>>>) => (value: A): Resume<B> => {
-  let resume = f(value)
+export const chainRec =
+  <A, B>(f: Arity1<A, Resume<E.Either<A, B>>>) =>
+  (value: A): Resume<B> => {
+    let resume = f(value)
 
-  while (isSync(resume)) {
-    const either = resume.resume()
+    while (isSync(resume)) {
+      const either = resume.resume()
 
-    if (E.isRight(either)) {
-      return of(either.right)
+      if (E.isRight(either)) {
+        return of(either.right)
+      }
+
+      resume = f(either.left)
     }
 
-    resume = f(either.left)
+    // Recursion is okay because Resume SHOULD be asynchronous
+    return pipe(resume, chain(E.match(chainRec(f), of)))
   }
 
-  // Recursion is okay because Resume SHOULD be asynchronous
-  return pipe(resume, chain(E.match(chainRec(f), of)))
-}
+export const race =
+  <A>(ra: Resume<A>) =>
+  <B>(rb: Resume<B>): Resume<A | B> => {
+    if (isSync(rb)) {
+      return rb
+    }
 
-export const race = <A>(ra: Resume<A>) => <B>(rb: Resume<B>): Resume<A | B> => {
-  if (isSync(rb)) {
-    return rb
+    if (isSync(ra)) {
+      return ra
+    }
+
+    return async((resume) => {
+      const aDisposableLazy = settable()
+      const bDisposable = pipe(
+        rb,
+        run((b) => {
+          aDisposableLazy.dispose()
+          return resume(b)
+        }),
+      )
+
+      const aDisposable = pipe(
+        ra,
+        run((a) => {
+          bDisposable.dispose()
+          return resume(a)
+        }),
+      )
+
+      aDisposableLazy.addDisposable(aDisposable)
+
+      return disposeBoth(bDisposable, aDisposable)
+    })
   }
-
-  if (isSync(ra)) {
-    return ra
-  }
-
-  return async((resume) => {
-    const aDisposableLazy = settable()
-    const bDisposable = pipe(
-      rb,
-      run((b) => {
-        aDisposableLazy.dispose()
-        return resume(b)
-      }),
-    )
-
-    const aDisposable = pipe(
-      ra,
-      run((a) => {
-        bDisposable.dispose()
-        return resume(a)
-      }),
-    )
-
-    aDisposableLazy.addDisposable(aDisposable)
-
-    return disposeBoth(bDisposable, aDisposable)
-  })
-}
 
 export const URI = '@typed/fp/Resume'
 export type URI = typeof URI

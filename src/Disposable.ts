@@ -70,10 +70,10 @@ import { ArgsOf } from './function'
 /**
  * Wrap a non-Disposable function into a Disposable-returning function
  */
-export const undisposable = <F extends FunctionN<readonly any[], any>>(fn: F) => (
-  ...args: ArgsOf<F>
-): Disposable => {
-  fn(...args)
+export const undisposable =
+  <F extends FunctionN<readonly any[], any>>(fn: F) =>
+  (...args: ArgsOf<F>): Disposable => {
+    fn(...args)
 
-  return disposeNone()
-}
+    return disposeNone()
+  }

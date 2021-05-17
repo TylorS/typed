@@ -23,8 +23,8 @@ export interface ReaderOption<E, A> extends R.Reader<E, O.Option<A>> {}
 
 export const alt = OT.alt(R.Monad)
 export const altW = OT.alt(R.Monad) as <E1, A>(
-  second: Lazy<R.Reader<E1, O.Option<A>>>,
-) => <E2, B>(first: R.Reader<E2, O.Option<B>>) => R.Reader<E1 & E2, O.Option<A | B>>
+  second: Lazy<ReaderOption<E1, A>>,
+) => <E2, B>(first: ReaderOption<E2, B>) => ReaderOption<E1 & E2, A | B>
 export const ap = OT.ap(R.Apply)
 export const chain = OT.chain(R.Monad)
 export const chainNullableK = OT.chainNullableK(R.Monad)
@@ -39,7 +39,7 @@ export const getOrElse = OT.getOrElse(R.Functor)
 export const getOrElseE = OT.getOrElseE(R.Monad)
 export const getOrElseEW = OT.getOrElseE(R.Monad) as <E1, A>(
   onNone: Lazy<R.Reader<E1, A>>,
-) => <E2, B>(fa: R.Reader<E2, O.Option<B>>) => R.Reader<E1 & E2, A | B>
+) => <E2, B>(fa: ReaderOption<E2, B>) => R.Reader<E1 & E2, A | B>
 export const map = OT.map(R.Functor)
 export const match = OT.match(R.Functor)
 export const matchE = OT.matchE(R.Chain)
@@ -84,25 +84,25 @@ export const Chain: Chain2<URI> = {
   chain,
 }
 
-export const chainRec = <A, E, B>(f: (value: A) => ReaderOption<E, Ei.Either<A, B>>) => (
-  value: A,
-): ReaderOption<E, B> =>
-  pipe(
-    value,
-    R.chainRec((a) =>
-      pipe(
-        a,
-        f,
-        R.map((oe) => {
-          if (O.isNone(oe)) {
-            return Ei.right(oe)
-          }
+export const chainRec =
+  <A, E, B>(f: (value: A) => ReaderOption<E, Ei.Either<A, B>>) =>
+  (value: A): ReaderOption<E, B> =>
+    pipe(
+      value,
+      R.chainRec((a) =>
+        pipe(
+          a,
+          f,
+          R.map((oe) => {
+            if (O.isNone(oe)) {
+              return Ei.right(oe)
+            }
 
-          return pipe(oe.value, Ei.map(O.some))
-        }),
+            return pipe(oe.value, Ei.map(O.some))
+          }),
+        ),
       ),
-    ),
-  )
+    )
 
 export const ChainRec: ChainRec2<URI> = {
   chainRec,
@@ -166,6 +166,8 @@ export const asks = FR.asks(FromReader)
 export const chainReaderK = FR.chainReaderK(FromReader, Chain)
 export const chainFirstReaderK = FR.chainFirstReaderK(FromReader, Chain)
 export const fromReaderK = FR.fromReaderK(FromReader)
-export const local = <A, B>(f: (a: A) => B) => <C>(ro: ReaderOption<B, C>): ReaderOption<A, C> => (
-  a,
-) => ro(f(a))
+export const local =
+  <A, B>(f: (a: A) => B) =>
+  <C>(ro: ReaderOption<B, C>): ReaderOption<A, C> =>
+  (a) =>
+    ro(f(a))

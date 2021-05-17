@@ -51,8 +51,9 @@ export function fromEnvK<F>(
 ): <A extends readonly any[], E, B>(f: (...args: A) => Env<E, B>) => (...args: A) => Hkt<F, [E, B]>
 
 export function fromEnvK<F>(F: FromEnv<F>) {
-  return <A extends readonly any[], E, B>(f: (...args: A) => Env<E, B>) => (...args: A) =>
-    F.fromEnv(f(...args))
+  return <A extends readonly any[], E, B>(f: (...args: A) => Env<E, B>) =>
+    (...args: A) =>
+      F.fromEnv(f(...args))
 }
 
 export function chainEnvK<F extends URIS2>(

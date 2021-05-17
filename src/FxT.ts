@@ -3,6 +3,25 @@ import { Either, left, match, right } from 'fp-ts/Either'
 import { FromReader, FromReader2, FromReader3, FromReader3C, FromReader4 } from 'fp-ts/FromReader'
 import { flow, identity, pipe } from 'fp-ts/function'
 import { HKT, HKT2, Kind, Kind2, Kind3, Kind4, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
+import {
+  NaturalTransformation,
+  NaturalTransformation11,
+  NaturalTransformation12,
+  NaturalTransformation12C,
+  NaturalTransformation13,
+  NaturalTransformation13C,
+  NaturalTransformation14,
+  NaturalTransformation14C,
+  NaturalTransformation21,
+  NaturalTransformation22,
+  NaturalTransformation22C,
+  NaturalTransformation23,
+  NaturalTransformation23C,
+  NaturalTransformation23R,
+  NaturalTransformation24,
+  NaturalTransformation33,
+  NaturalTransformation34,
+} from 'fp-ts/NaturalTransformation'
 import { Pointed, Pointed1, Pointed2, Pointed3, Pointed4 } from 'fp-ts/Pointed'
 import { A, U } from 'ts-toolbelt'
 
@@ -88,7 +107,7 @@ export function getDo<F extends URIS2, E = any>(): <Y extends Kind2<F, E, any>, 
 export function getDo<F extends URIS3, R = any, E = any>(): <
   Y extends Kind3<F, R, E, any>,
   Z,
-  N = unknown
+  N = unknown,
 >(
   f: (lift: LiftFx3<F>) => Generator<Y, Z, N>,
 ) => Fx<Y, Z, N>
@@ -96,7 +115,7 @@ export function getDo<F extends URIS3, R = any, E = any>(): <
 export function getDo<F extends URIS4, S = any, R = any, E = any>(): <
   Y extends Kind4<F, S, R, E, any>,
   Z,
-  N = unknown
+  N = unknown,
 >(
   f: (lift: LiftFx4<F>) => Generator<Y, Z, N>,
 ) => Fx<Y, Z, N>
@@ -297,8 +316,9 @@ export function ap<F>(M: MonadRec<F> & Apply<F>) {
   const lift = liftFx()
   const to = toMonad(M)
 
-  return <A>(fa: FxT<F, [A]>) => <B>(fab: FxT<F, [Arity1<A, B>]>): FxT<F, [B]> =>
-    pipe(fab, to, pipe(fa, to, M.ap), lift) as FxT<F, [B]>
+  return <A>(fa: FxT<F, [A]>) =>
+    <B>(fab: FxT<F, [Arity1<A, B>]>): FxT<F, [B]> =>
+      pipe(fab, to, pipe(fa, to, M.ap), lift) as FxT<F, [B]>
 }
 
 export function chainRec<F extends URIS>(M: MonadRec1<F>): ChainRecFxT<F>
@@ -321,20 +341,21 @@ function chainRec_<F>(M: MonadRec<F>) {
   const to = toMonad(M)
   const lift = liftFx()
 
-  return <A, B>(f: Arity1<A, FxT<F, [Either<A, B>]>>) => (a: A): FxT<F, [B]> => {
-    const fbm = pipe(
-      f(a),
-      to,
-      M.chain(
-        match(
-          M.chainRec((a) => pipe(a, f, to)),
-          M.of,
+  return <A, B>(f: Arity1<A, FxT<F, [Either<A, B>]>>) =>
+    (a: A): FxT<F, [B]> => {
+      const fbm = pipe(
+        f(a),
+        to,
+        M.chain(
+          match(
+            M.chainRec((a) => pipe(a, f, to)),
+            M.of,
+          ),
         ),
-      ),
-    )
+      )
 
-    return lift(fbm) as FxT<F, [B]>
-  }
+      return lift(fbm) as FxT<F, [B]>
+    }
 }
 
 export function of<F extends URIS>(M: Pointed1<F>): <A>(value: A) => Fx<Hkt<F, [A]>, A>
@@ -373,24 +394,6 @@ export function ask<F>(M: FromReader<F>) {
   return () => lift(M.fromReader(identity))
 }
 
-export function asks<F extends URIS2>(
-  M: FromReader2<F>,
-): <A, B>(f: Arity1<A, B>) => Fx<Hkt<F, [A, B]>, B>
-export function asks<F extends URIS3>(
-  M: FromReader3<F>,
-): <A, B>(f: Arity1<A, B>) => Fx<Hkt<F, [A, Initial<F, 'E'>, B]>, B>
-export function asks<F extends URIS3, E>(
-  M: FromReader3C<F, E>,
-): <A, B>(f: Arity1<A, B>) => Fx<Hkt<F, [A, E, B]>, B>
-export function asks<F extends URIS4>(
-  M: FromReader4<F>,
-): <A, B>(f: Arity1<A, B>) => Fx<Hkt<F, [Initial<F, 'S'>, A, Initial<F, 'E'>, B]>, B>
-export function asks<F>(M: FromReader<F>): <A, B>(f: Arity1<A, B>) => Fx<HKT2<F, A, B>, B>
-
-export function asks<F>(M: FromReader<F>) {
-  return flow(M.fromReader, liftFx())
-}
-
 export function useSome<F extends URIS2>(
   M: UseSome2<F> & MonadRec2<F>,
 ): <A>(provided: A) => <B, T>(fx: Fx<Hkt<F, [A & B, unknown]>, T>) => Fx<Hkt<F, [B, unknown]>, T>
@@ -411,8 +414,9 @@ export function useSome<F>(M: UseSome<F> & MonadRec<F>) {
   const lift = liftFx()
   const to = toMonad(M)
 
-  return <A>(provided: A) => <B, R>(fx: Fx<HKT2<F, A & B, unknown>, R>) =>
-    pipe(fx, to, (x) => M.useSome(provided)(x as any), lift)
+  return <A>(provided: A) =>
+    <B, R>(fx: Fx<HKT2<F, A & B, unknown>, R>) =>
+      pipe(fx, to, (x) => M.useSome(provided)(x as any), lift)
 }
 
 export function provideSome<F extends URIS2>(
@@ -435,8 +439,9 @@ export function provideSome<F>(M: ProvideSome<F> & MonadRec<F>) {
   const lift = liftFx()
   const to = toMonad(M)
 
-  return <A>(provided: A) => <B, R>(fx: Fx<HKT2<F, A & B, unknown>, R>) =>
-    pipe(fx, to, (x) => M.provideSome(provided)(x as any), lift)
+  return <A>(provided: A) =>
+    <B, R>(fx: Fx<HKT2<F, A & B, unknown>, R>) =>
+      pipe(fx, to, (x) => M.provideSome(provided)(x as any), lift)
 }
 
 export function useAll<F extends URIS2>(
@@ -459,8 +464,9 @@ export function useAll<F>(M: UseAll<F> & MonadRec<F>) {
   const lift = liftFx()
   const to = toMonad(M)
 
-  return <A>(provided: A) => <R>(fx: Fx<HKT2<F, A, unknown>, R>) =>
-    pipe(fx, to, (x) => M.useAll(provided)(x as any), lift)
+  return <A>(provided: A) =>
+    <R>(fx: Fx<HKT2<F, A, unknown>, R>) =>
+      pipe(fx, to, (x) => M.useAll(provided)(x as any), lift)
 }
 
 export function provideAll<F extends URIS2>(
@@ -483,6 +489,83 @@ export function provideAll<F>(M: ProvideAll<F> & MonadRec<F>) {
   const lift = liftFx()
   const to = toMonad(M)
 
-  return <A>(provided: A) => <R>(fx: Fx<HKT2<F, A, unknown>, R>) =>
-    pipe(fx, to, (x) => M.provideAll(provided)(x as any), lift)
+  return <A>(provided: A) =>
+    <R>(fx: Fx<HKT2<F, A, unknown>, R>) =>
+      pipe(fx, to, (x) => M.provideAll(provided)(x as any), lift)
+}
+
+export function fromNaturalTransformation<F extends URIS, G extends URIS>(
+  transformation: NaturalTransformation11<F, G>,
+): <A>(fa: Kind<F, A>) => Fx<Kind<G, A>, A>
+
+export function fromNaturalTransformation<F extends URIS, G extends URIS2>(
+  transformation: NaturalTransformation12<F, G>,
+): <A, E = Initial<G, 'E'>>(fa: Kind<F, A>) => Fx<Kind2<G, E, A>, A>
+
+export function fromNaturalTransformation<F extends URIS, G extends URIS2, E>(
+  transformation: NaturalTransformation12C<F, G, E>,
+): <A>(fa: Kind<F, A>) => Fx<Kind2<G, E, A>, A>
+
+export function fromNaturalTransformation<F extends URIS, G extends URIS3>(
+  transformation: NaturalTransformation13<F, G>,
+): <A, R = Initial<G, 'R'>, E = Initial<G, 'E'>>(fa: Kind<F, A>) => Fx<Kind3<G, R, E, A>, A>
+
+export function fromNaturalTransformation<F extends URIS, G extends URIS3, E>(
+  transformation: NaturalTransformation13C<F, G, E>,
+): <A, R = Initial<G, 'R'>>(fa: Kind<F, A>) => Fx<Kind3<G, R, E, A>, A>
+
+export function fromNaturalTransformation<F extends URIS, G extends URIS4>(
+  transformation: NaturalTransformation14<F, G>,
+): <A, S = Initial<G, 'S'>, R = Initial<G, 'R'>, E = Initial<G, 'E'>>(
+  fa: Kind<F, A>,
+) => Fx<Kind4<G, S, R, E, A>, A>
+
+export function fromNaturalTransformation<F extends URIS, G extends URIS4, E>(
+  transformation: NaturalTransformation14C<F, G, E>,
+): <A, S = Initial<G, 'S'>, R = Initial<G, 'R'>>(fa: Kind<F, A>) => Fx<Kind4<G, S, R, E, A>, A>
+
+export function fromNaturalTransformation<F extends URIS2, G extends URIS>(
+  transformation: NaturalTransformation21<F, G>,
+): <E, A>(fa: Kind2<F, E, A>) => Fx<Kind<G, A>, A>
+
+export function fromNaturalTransformation<F extends URIS2, G extends URIS2>(
+  transformation: NaturalTransformation22<F, G>,
+): <E, A>(fa: Kind2<F, E, A>) => Fx<Kind2<G, E, A>, A>
+
+export function fromNaturalTransformation<F extends URIS2, G extends URIS2, E>(
+  transformation: NaturalTransformation22C<F, G, E>,
+): <A>(fa: Kind2<F, E, A>) => Fx<Kind2<G, E, A>, A>
+
+export function fromNaturalTransformation<F extends URIS2, G extends URIS3>(
+  transformation: NaturalTransformation23<F, G> | NaturalTransformation23R<F, G>,
+): <E, A, R = Initial<G, 'R'>>(fa: Kind2<F, E, A>) => Fx<Kind3<G, R, E, A>, A>
+
+export function fromNaturalTransformation<F extends URIS2, G extends URIS3, E>(
+  transformation: NaturalTransformation23C<F, G, E>,
+): <A, R = Initial<G, 'R'>>(fa: Kind2<F, E, A>) => Fx<Kind3<G, R, E, A>, A>
+
+export function fromNaturalTransformation<F extends URIS2, G extends URIS4>(
+  transformation: NaturalTransformation24<F, G>,
+): <E, A, S = Initial<G, 'S'>, R = Initial<G, 'R'>>(
+  fa: Kind2<F, E, A>,
+) => Fx<Kind4<G, S, R, E, A>, A>
+
+// here
+
+export function fromNaturalTransformation<F extends URIS3, G extends URIS3>(
+  transformation: NaturalTransformation33<F, G>,
+): <R, E, A>(fa: Kind3<F, R, E, A>) => Fx<Kind3<G, R, E, A>, A>
+
+export function fromNaturalTransformation<F extends URIS3, G extends URIS4>(
+  transformation: NaturalTransformation34<F, G>,
+): <R, E, A, S = Initial<G, 'S'>>(fa: Kind3<F, R, E, A>) => Fx<Kind4<G, S, R, E, A>, A>
+
+export function fromNaturalTransformation<F, G>(
+  transformation: NaturalTransformation<F, G>,
+): <A>(fa: HKT<F, A>) => Fx<HKT<G, A>, A>
+
+export function fromNaturalTransformation<F, G>(
+  transformation: NaturalTransformation<F, G>,
+): <A>(fa: HKT<F, A>) => Fx<HKT<G, A>, A> {
+  return flow(transformation, liftFx()) as any
 }

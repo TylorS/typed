@@ -2,7 +2,7 @@ import * as E from '@fp/Env'
 import { alwaysEqualsEq } from '@fp/Eq'
 import { CurrentFiber, Fiber, getCurrentFiber, usingFiberRefs } from '@fp/Fiber'
 import { Do } from '@fp/Fx/Env'
-import { createRef, WrappedRef } from '@fp/Ref'
+import { createRefMap, WrappedRefMap } from '@fp/RefMap'
 import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
 
@@ -14,21 +14,22 @@ import { getNextSymbol } from './HookSymbols'
  * or indirectly. It makes use of getNextSymbol to create a Ref dynamically using
  * a memoizable symbol kept by index.
  */
-export function useRef<E = unknown, A = any>(
-  initial: E.Env<E, A>,
-  eq: Eq<A> = alwaysEqualsEq,
-): E.Env<CurrentFiber & E, WrappedRef<unknown, E, A>> {
+export function useRefMap<E = unknown, K = any, V = any>(
+  initial: E.Env<E, ReadonlyMap<K, V>>,
+  key: Eq<K> = alwaysEqualsEq,
+  value: Eq<V> = alwaysEqualsEq,
+): E.Env<CurrentFiber & E, WrappedRefMap<unknown, E, K, V>> {
   return usingFiberRefs(
     Do(function* (_) {
       const map = yield* _(HookRefs.get)
       const symbol = yield* _(getNextSymbol)
 
       if (map.has(symbol)) {
-        return map.get(symbol)! as WrappedRef<unknown, E, A>
+        return map.get(symbol)! as WrappedRefMap<unknown, E, K, V>
       }
 
       const currentFiber = yield* _(getCurrentFiber)
-      const ref = createFiberRef(currentFiber, initial, symbol, eq)
+      const ref = createFiberRefMap(currentFiber, initial, symbol, key, value)
 
       map.set(symbol, ref)
 
@@ -37,13 +38,14 @@ export function useRef<E = unknown, A = any>(
   )
 }
 
-function createFiberRef<E, A>(
+const createFiberRefMap = <E, K, V>(
   currentFiber: Fiber<unknown>,
-  initial: E.Env<E, A>,
+  initial: E.Env<E, ReadonlyMap<K, V>>,
   id?: PropertyKey | undefined,
-  eq?: Eq<A> | undefined,
-): WrappedRef<unknown, E, A> {
-  const ref = createRef(initial, id, eq)
+  key?: Eq<K> | undefined,
+  value?: Eq<V> | undefined,
+): WrappedRefMap<unknown, E, K, V> => {
+  const ref = createRefMap(initial, id, key, value)
   const provideFiber = E.useSome<CurrentFiber>({ currentFiber })
 
   return {
@@ -53,5 +55,8 @@ function createFiberRef<E, A>(
     set: flow(ref.set, usingFiberRefs, provideFiber),
     modify: flow(ref.modify, usingFiberRefs, provideFiber),
     delete: pipe(ref.delete, usingFiberRefs, provideFiber),
+    lookup: flow(ref.lookup, usingFiberRefs, provideFiber),
+    upsertAt: flow(ref.upsertAt, usingFiberRefs, provideFiber),
+    deleteAt: flow(ref.deleteAt, usingFiberRefs, provideFiber),
   }
 }

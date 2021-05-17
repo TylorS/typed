@@ -82,46 +82,45 @@ export const Monad: Monad4<URI> = {
   ...Pointed,
 }
 
-export const chainRec = <A, S, R, E, B>(f: (a: A) => StateEnvEither<S, R, E, E.Either<A, B>>) => (
-  value: A,
-) => (s: S) => (r: R): R.Resume<E.Either<E, readonly [B, S]>> => {
-  let resume = f(value)(s)(r)
+export const chainRec =
+  <A, S, R, E, B>(f: (a: A) => StateEnvEither<S, R, E, E.Either<A, B>>) =>
+  (value: A) =>
+  (s: S) =>
+  (r: R): R.Resume<E.Either<E, readonly [B, S]>> => {
+    let resume = f(value)(s)(r)
 
-  while (R.isSync(resume)) {
-    const either = resume.resume()
+    while (R.isSync(resume)) {
+      const either = resume.resume()
 
-    if (E.isLeft(either)) {
-      return R.of(either)
+      if (E.isLeft(either)) {
+        return R.of(either)
+      }
+
+      const result = either.right
+      s = result[1]
+
+      if (E.isRight(result[0])) {
+        return R.of(E.right([result[0].right, s]))
+      }
+
+      resume = f(result[0].left)(s)(r)
     }
 
-    const result = either.right
-    s = result[1]
-
-    if (E.isRight(result[0])) {
-      return R.of(E.right([result[0].right, s]))
-    }
-
-    resume = f(result[0].left)(s)(r)
-  }
-
-  return pipe(
-    resume,
-    R.chain((e) =>
-      E.isLeft(e)
-        ? R.of(e)
-        : pipe(
-            e.right[0],
-            E.matchW(
-              (a) => chainRec(f)(a)(e.right[1])(r),
-              (b) =>
-                R.of(
-                  E.right<readonly [B, S], E>([b, e.right[1]]),
-                ),
+    return pipe(
+      resume,
+      R.chain((e) =>
+        E.isLeft(e)
+          ? R.of(e)
+          : pipe(
+              e.right[0],
+              E.matchW(
+                (a) => chainRec(f)(a)(e.right[1])(r),
+                (b) => R.of(E.right<readonly [B, S], E>([b, e.right[1]])),
+              ),
             ),
-          ),
-    ),
-  )
-}
+      ),
+    )
+  }
 
 export const ChainRec: ChainRec4<URI> = {
   chainRec,
@@ -218,21 +217,33 @@ export const gets = FS.gets(FromState)
 export const modify = FS.modify(FromState)
 export const put = FS.put(FromState)
 
-export const useSome = <R1>(provided: R1) => <S, R2, E, A>(
-  srte: StateEnvEither<S, R1 & R2, E, A>,
-): StateEnvEither<S, R2, E, A> => (s) => (r) => srte(s)({ ...r, ...provided })
+export const useSome =
+  <R1>(provided: R1) =>
+  <S, R2, E, A>(srte: StateEnvEither<S, R1 & R2, E, A>): StateEnvEither<S, R2, E, A> =>
+  (s) =>
+  (r) =>
+    srte(s)({ ...r, ...provided })
 
-export const provideSome = <R1>(provided: R1) => <S, R2, E, A>(
-  srte: StateEnvEither<S, R1 & R2, E, A>,
-): StateEnvEither<S, R2, E, A> => (s) => (r) => srte(s)({ ...provided, ...r })
+export const provideSome =
+  <R1>(provided: R1) =>
+  <S, R2, E, A>(srte: StateEnvEither<S, R1 & R2, E, A>): StateEnvEither<S, R2, E, A> =>
+  (s) =>
+  (r) =>
+    srte(s)({ ...provided, ...r })
 
-export const useAll = <R>(provided: R) => <S, E, A>(
-  srte: StateEnvEither<S, R, E, A>,
-): StateEnvEither<S, unknown, E, A> => (s) => () => srte(s)(provided)
+export const useAll =
+  <R>(provided: R) =>
+  <S, E, A>(srte: StateEnvEither<S, R, E, A>): StateEnvEither<S, unknown, E, A> =>
+  (s) =>
+  () =>
+    srte(s)(provided)
 
-export const provideAll = <R>(provided: R) => <S, E, A>(
-  srte: StateEnvEither<S, R, E, A>,
-): StateEnvEither<S, unknown, E, A> => (s) => (r) => srte(s)({ ...provided, ...(r as {}) })
+export const provideAll =
+  <R>(provided: R) =>
+  <S, E, A>(srte: StateEnvEither<S, R, E, A>): StateEnvEither<S, unknown, E, A> =>
+  (s) =>
+  (r) =>
+    srte(s)({ ...provided, ...(r as {}) })
 
 export const UseSome: UseSome4<URI> = {
   useSome,
