@@ -1,7 +1,6 @@
 import * as E from '@fp/Env'
 import { alwaysEqualsEq } from '@fp/Eq'
-import { CurrentFiber, Fiber, getCurrentFiber, usingFiberRefs } from '@fp/Fiber'
-import { Do } from '@fp/Fx/Env'
+import { CurrentFiber, DoF, Fiber, getCurrentFiber, usingFiberRefs } from '@fp/Fiber'
 import { createRefMap, WrappedRefMap } from '@fp/RefMap'
 import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
@@ -19,23 +18,21 @@ export function useRefMap<E = unknown, K = any, V = any>(
   key: Eq<K> = alwaysEqualsEq,
   value: Eq<V> = alwaysEqualsEq,
 ): E.Env<CurrentFiber & E, WrappedRefMap<unknown, E, K, V>> {
-  return usingFiberRefs(
-    Do(function* (_) {
-      const map = yield* _(HookRefs.get)
-      const symbol = yield* _(getNextSymbol)
+  return DoF(function* (_) {
+    const map = yield* _(HookRefs.get)
+    const symbol = yield* _(getNextSymbol)
 
-      if (map.has(symbol)) {
-        return map.get(symbol)! as WrappedRefMap<unknown, E, K, V>
-      }
+    if (map.has(symbol)) {
+      return map.get(symbol)! as WrappedRefMap<unknown, E, K, V>
+    }
 
-      const currentFiber = yield* _(getCurrentFiber)
-      const ref = createFiberRefMap(currentFiber, initial, symbol, key, value)
+    const currentFiber = yield* _(getCurrentFiber)
+    const ref = createFiberRefMap(currentFiber, initial, symbol, key, value)
 
-      map.set(symbol, ref)
+    map.set(symbol, ref)
 
-      return ref
-    }),
-  )
+    return ref
+  })
 }
 
 const createFiberRefMap = <E, K, V>(

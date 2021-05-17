@@ -1,6 +1,5 @@
 import * as E from '@fp/Env'
-import { CurrentFiber, Fiber, getCurrentFiber } from '@fp/Fiber'
-import { Do } from '@fp/Fx/Env'
+import { CurrentFiber, DoF, Fiber, getCurrentFiber } from '@fp/Fiber'
 import { Ref } from '@fp/Ref'
 import { isSome } from 'fp-ts/Option'
 
@@ -9,7 +8,7 @@ import { isSome } from 'fp-ts/Option'
  * Context API.
  */
 export function findProvider<E, A>(ref: Ref<E, A>): E.Env<CurrentFiber & E, Fiber<unknown>> {
-  return Do(function* (_) {
+  return DoF(function* (_) {
     let cursor = yield* _(getCurrentFiber)
     let hasReference = yield* _(cursor.refs.hasRef(ref))
 
