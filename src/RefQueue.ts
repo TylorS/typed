@@ -3,9 +3,9 @@ import { EqStrict } from 'fp-ts/Eq'
 
 import * as E from './Env'
 import { Queue } from './Queue'
-import { createRef, getRef, Ref, Refs } from './Ref'
+import { createRef, getRef, Refs, WrappedRef } from './Ref'
 
-export interface RefQueue<E, A> extends Ref<E, Queue<A>> {}
+export interface RefQueue<E, A> extends WrappedRef<Refs, E, Queue<A>> {}
 
 export const createRefQueue = <E, A>(
   initial: E.Env<E, Queue<A>>,

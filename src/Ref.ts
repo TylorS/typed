@@ -66,6 +66,7 @@ export interface References {
    * A @most/core stream containing all of the happening within the References
    */
   readonly events: Stream<RefEvent<unknown>>
+  readonly sendEvent: (event: RefEvent<unknown>) => void
 
   /**
    * Get the current value of a Ref, possibly executing the initial effect
@@ -122,15 +123,6 @@ export function modifyRef<E, A>(ref: Ref<E, A>) {
 
 export function modifyRef_<A>(f: Arity1<A, A>) {
   return <E>(ref: Ref<E, A>) => modifyRef(ref)(f)
-}
-
-export function fromKey<A>(eq: Eq<A> = deepEqualsEq) {
-  return <K extends PropertyKey>(key: K): Ref<Readonly<Record<K, A>>, A> =>
-    createRef(
-      E.fromReader((e: Readonly<Record<K, A>>) => e[key]),
-      RefId(key),
-      eq,
-    )
 }
 
 export type RefEvent<A> = RefCreated<A> | RefUpdated<A> | RefDeleted
@@ -220,6 +212,7 @@ export function createReferences(refs: Iterable<readonly [RefId, unknown]> = [])
 
   return {
     events,
+    sendEvent,
     getRef,
     hasRef,
     setRef,
@@ -227,15 +220,15 @@ export function createReferences(refs: Iterable<readonly [RefId, unknown]> = [])
   }
 }
 
-export interface WrappedRef<E, A> extends Ref<E, A> {
-  readonly get: E.Env<E & Refs, A>
-  readonly has: E.Env<E & Refs, boolean>
-  readonly set: (value: A) => E.Env<E & Refs, A>
-  readonly modify: (f: Arity1<A, A>) => E.Env<E & Refs, A>
-  readonly delete: E.Env<Refs, Option<A>>
+export interface WrappedRef<R, E, A> extends Ref<E, A> {
+  readonly get: E.Env<E & R, A>
+  readonly has: E.Env<E & R, boolean>
+  readonly set: (value: A) => E.Env<E & R, A>
+  readonly modify: (f: Arity1<A, A>) => E.Env<E & R, A>
+  readonly delete: E.Env<R, Option<A>>
 }
 
-export function wrapRef<E, A>(ref: Ref<E, A>): WrappedRef<E, A> {
+export function wrapRef<E, A>(ref: Ref<E, A>): WrappedRef<Refs, E, A> {
   return {
     ...ref,
     get: getRef(ref),
@@ -247,3 +240,12 @@ export function wrapRef<E, A>(ref: Ref<E, A>): WrappedRef<E, A> {
 }
 
 export const createRef = flow(makeRef, wrapRef)
+
+export function fromKey<A>(eq: Eq<A> = deepEqualsEq) {
+  return <K extends PropertyKey>(key: K): WrappedRef<Refs, Readonly<Record<K, A>>, A> =>
+    createRef(
+      E.fromReader((e: Readonly<Record<K, A>>) => e[key]),
+      RefId(key),
+      eq,
+    )
+}

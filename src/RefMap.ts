@@ -1,42 +1,24 @@
 import { pipe } from '@fp/function'
 import { Eq } from 'fp-ts/Eq'
-import { constant, identity } from 'fp-ts/function'
+import { constant, flow, identity } from 'fp-ts/function'
 import { match, Option } from 'fp-ts/Option'
 import * as RM from 'fp-ts/ReadonlyMap'
 
 import * as E from './Env'
 import { deepEqualsEq } from './Eq'
-import { createRef, getRef, modifyRef_, Ref, Refs } from './Ref'
+import { createRef, getRef, modifyRef_, Refs, WrappedRef } from './Ref'
 
-export interface RefMap<E, K, V> extends Ref<E, ReadonlyMap<K, V>> {
+export interface RefMap<E, K, V> extends WrappedRef<Refs, E, ReadonlyMap<K, V>> {
   readonly key: Eq<K>
   readonly value: Eq<V>
 }
 
-export const createRefMap = <E, K, V>(
+export const makeRefMap = <E, K, V>(
   initial: E.Env<E, ReadonlyMap<K, V>>,
   id: PropertyKey = Symbol(`RefMap`),
   key: Eq<K> = deepEqualsEq,
   value: Eq<V> = deepEqualsEq,
 ): RefMap<E, K, V> => ({ ...createRef(initial, id, RM.getEq(key, value)), key, value })
-
-export const kv = <K, V>(k: Eq<K> = deepEqualsEq, v: Eq<V> = deepEqualsEq) =>
-  createRefMap(
-    E.fromIO(() => new Map()),
-    Symbol(`kv:RefMap`),
-    k,
-    v,
-  )
-
-export const fromId =
-  <K, V>(k: Eq<K> = deepEqualsEq, v: Eq<V> = deepEqualsEq) =>
-  <Id extends PropertyKey>(id: Id) =>
-    createRefMap(
-      E.asks((e: Readonly<Record<Id, ReadonlyMap<K, V>>>) => e[id]),
-      id,
-      k,
-      v,
-    )
 
 export const lookup =
   <E, K, V>(refMap: RefMap<E, K, V>) =>
@@ -66,4 +48,37 @@ export const deleteAt =
           ),
         ),
       ),
+    )
+
+export interface WrappedRefMap<R, E, K, V> extends RefMap<E, K, V> {
+  readonly lookup: (key: K) => E.Env<R & E, Option<V>>
+  readonly upsertAt: (key: K, value: V) => E.Env<R & E, V>
+  readonly deleteAt: (key: K) => E.Env<R & E, Option<V>>
+}
+
+export const wrapRefMap = <E, K, V>(refMap: RefMap<E, K, V>): WrappedRefMap<Refs, E, K, V> => ({
+  ...refMap,
+  lookup: lookup(refMap),
+  upsertAt: upsertAt(refMap),
+  deleteAt: deleteAt(refMap),
+})
+
+export const createRefMap = flow(makeRefMap, wrapRefMap)
+
+export const kv = <K, V>(k: Eq<K> = deepEqualsEq, v: Eq<V> = deepEqualsEq) =>
+  createRefMap(
+    E.fromIO(() => new Map()),
+    Symbol(`kv:RefMap`),
+    k,
+    v,
+  )
+
+export const fromId =
+  <K, V>(k: Eq<K> = deepEqualsEq, v: Eq<V> = deepEqualsEq) =>
+  <Id extends PropertyKey>(id: Id) =>
+    createRefMap(
+      E.asks((e: Readonly<Record<Id, ReadonlyMap<K, V>>>) => e[id]),
+      id,
+      k,
+      v,
     )

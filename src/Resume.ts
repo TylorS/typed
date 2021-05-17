@@ -114,7 +114,7 @@ export const run =
 
 export const start = <A>(f: Arity1<A, any>) => run(undisposable(f))
 
-export const exec = start(constVoid)
+export const exec = start<any>(constVoid)
 
 export const toTask = <A>(resume: Resume<A>): Task<A> & Disposable => {
   const d = settable()

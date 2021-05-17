@@ -4,10 +4,10 @@ import { constant, identity } from 'fp-ts/function'
 import { match, Option } from 'fp-ts/Option'
 
 import * as E from './Env'
-import { createRef, getRef, modifyRef_, Ref, Refs } from './Ref'
+import { createRef, getRef, modifyRef_, Refs, WrappedRef } from './Ref'
 import * as WM from './WeakMap'
 
-export interface RefWeakMap<E, K extends object, V> extends Ref<E, WeakMap<K, V>> {}
+export interface RefWeakMap<E, K extends object, V> extends WrappedRef<Refs, E, WeakMap<K, V>> {}
 
 export const createRefWeakMap = <E, K extends object, V>(
   initial: E.Env<E, WeakMap<K, V>> = E.fromIO(() => new Map()),
