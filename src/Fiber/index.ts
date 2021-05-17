@@ -1,4 +1,6 @@
 export * from './awaitStatus'
+export * from './createFiberRef'
+export * from './DoF'
 export * from './Fiber'
 export * from './FiberId'
 export * from './runtime'

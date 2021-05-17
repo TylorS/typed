@@ -1,7 +1,6 @@
 import { Env, fromIO } from '@fp/Env'
 import { Eq } from '@fp/Eq'
-import { CurrentFiber, Fiber, Fork, fork, usingFiberRefs } from '@fp/Fiber'
-import { Do } from '@fp/Fx/Env'
+import { CurrentFiber, DoF, Fiber, Fork, fork } from '@fp/Fiber'
 import { createReferences } from '@fp/Ref'
 import { SchedulerEnv } from '@fp/Scheduler'
 import { pipe } from 'fp-ts/function'
@@ -41,24 +40,22 @@ export function useFiber<E, A, Deps extends ReadonlyArray<any> = []>(
   env: Env<E, A>,
   ...args: DepsArgs<Deps>
 ): Env<E & Fork & CurrentFiber, Fiber<A>> {
-  return usingFiberRefs(
-    Do(function* (_) {
-      const refs = yield* _(useRefs)
-      const fiberRef = yield* pipe(fork(env, { refs }), useRef, _)
-      const isEqual = yield* _(useDeps(...args))
+  return DoF(function* (_) {
+    const refs = yield* _(useRefs)
+    const fiberRef = yield* pipe(fork(env, { refs }), useRef, _)
+    const isEqual = yield* _(useDeps(...args))
 
-      if (!isEqual) {
-        const current = yield* _(fiberRef.get)
+    if (!isEqual) {
+      const current = yield* _(fiberRef.get)
 
-        yield* _(() => current.abort)
-        yield* _(() => resetIndex({ refs }))
+      yield* _(() => current.abort)
+      yield* _(() => resetIndex({ refs }))
 
-        const next = yield* _(fork(env, { refs }))
+      const next = yield* _(fork(env, { refs }))
 
-        yield* _(fiberRef.set(next))
-      }
+      yield* _(fiberRef.set(next))
+    }
 
-      return yield* _(fiberRef.get)
-    }),
-  )
+    return yield* _(fiberRef.get)
+  })
 }

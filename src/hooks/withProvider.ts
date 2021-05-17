@@ -1,6 +1,5 @@
 import { Env } from '@fp/Env'
-import { Fiber, getCurrentFiber } from '@fp/Fiber'
-import { Do } from '@fp/Fx/Env'
+import { DoF, Fiber, getCurrentFiber } from '@fp/Fiber'
 import { Ref } from '@fp/Ref'
 
 import { findProvider } from './findProvider'
@@ -10,7 +9,7 @@ export function withProvider<E1, A, E2, B>(
   ref: Ref<E1, A>,
   f: (provider: Fiber<unknown>) => Env<E2, B>,
 ) {
-  return Do(function* (_) {
+  return DoF(function* (_) {
     const provider = yield* _(findProvider(ref))
     const current = yield* _(getCurrentFiber)
 

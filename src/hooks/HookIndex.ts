@@ -1,6 +1,6 @@
 import { of } from '@fp/Env'
 import { alwaysEqualsEq } from '@fp/Eq'
-import { Do } from '@fp/Fx/Env'
+import { DoF } from '@fp/Fiber'
 import { createRef } from '@fp/Ref'
 import { increment } from 'fp-ts/function'
 
@@ -11,7 +11,7 @@ const INITIAL = 0
  */
 export const HookIndex = createRef(of(INITIAL), Symbol('HookIndex'), alwaysEqualsEq)
 
-export const getNextIndex = Do(function* (_) {
+export const getNextIndex = DoF(function* (_) {
   const index = yield* _(HookIndex.get)
 
   yield* _(HookIndex.modify(increment))
