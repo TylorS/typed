@@ -7,7 +7,7 @@ import { isSome } from 'fp-ts/Option'
  * Traverse up the Fiber tree to find the closest provider of a Reference. Similar to React's
  * Context API.
  */
-export function findProvider<E, A>(ref: Ref<E, A>): E.Env<CurrentFiber & E, Fiber<unknown>> {
+export function findProvider<E, A>(ref: Ref<E, A>): E.Env<CurrentFiber, Fiber<unknown>> {
   return DoF(function* (_) {
     let cursor = yield* _(getCurrentFiber)
     let hasReference = yield* _(cursor.refs.hasRef(ref))

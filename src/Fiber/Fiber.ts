@@ -48,18 +48,18 @@ export interface Fiber<A> extends Refs {
   readonly clone: (options?: CloneOptions) => Resume<Fiber<A>>
 
   //--------------- Cooperative Scheduling ---------------//
-  // In the current implementation it is no usually going to make sense to call these
+  // In the current implementation it is not usually going to make sense to call these
   // directly yourself, but to instead use the provided pause/play functions.
 
   /**
-   * Given a callback to use when returning to this fiber (see: pause in Fiber.ts)
-   * Will throw if the attempting to pause in the root fiber, or a fiber with a parent of None.
-   * Will throw if the fiber is not currenting have a status of "running"
+   * Pause the execution of this fiber. Will return the status of the parent fiber.
    */
   readonly pause: Resume<Option<Status<unknown>>>
+
   /**
-   * Continue executing Fiber from the previously provided callback using "pause".
-   * Will throw if the Fiber is not currently paused.
+   * Continue executing the Fiber from a previous invocation of "pause".
+   * Will throw if the Fiber is not currently paused. Returns the status of the
+   * Fiber.
    */
   readonly play: Resume<Status<A>>
 }

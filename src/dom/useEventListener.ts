@@ -11,37 +11,37 @@ export type EventListenerOrEventListenerObject<A = Event, That = EventTarget> =
 
 export function useEventListener<
   Element extends HTMLElementTagNameMap[keyof HTMLElementTagNameMap],
-  Event extends keyof HTMLElementTagNameMap,
-  Events = HTMLElementTagNameMap,
+  Event extends keyof Events,
+  Events = HTMLElementEventMap,
 >(
   target: Element,
   type: Event,
-  listener: EventListenerOrEventListenerObject<HTMLElementTagNameMap[Event], Element>,
+  listener: EventListenerOrEventListenerObject<Events[Event], Element>,
   options?: AddEventListenerOptions,
 ): Env<CurrentFiber, Disposable>
 
 export function useEventListener<
   Element extends SVGElementTagNameMap[keyof SVGElementTagNameMap],
-  Event extends keyof SVGElementTagNameMap,
-  Events = SVGElementTagNameMap,
+  Event extends keyof Events,
+  Events = SVGElementEventMap,
 >(
   target: Element,
   type: Event,
-  listener: EventListenerOrEventListenerObject<SVGElementTagNameMap[Event], Element>,
+  listener: EventListenerOrEventListenerObject<Events[Event], Element>,
   options?: AddEventListenerOptions,
 ): Env<CurrentFiber, Disposable>
 
-export function useEventListener<Event extends keyof DocumentEventMap>(
+export function useEventListener<Event extends keyof Events, Events = DocumentEventMap>(
   target: Document,
   type: Event,
-  listener: EventListenerOrEventListenerObject<DocumentEventMap[Event], Document>,
+  listener: EventListenerOrEventListenerObject<Events[Event], Document>,
   options?: AddEventListenerOptions,
 ): Env<CurrentFiber, Disposable>
 
-export function useEventListener<Event extends keyof WindowEventMap>(
+export function useEventListener<Event extends keyof Events, Events = WindowEventMap>(
   target: Window,
   type: Event,
-  listener: EventListenerOrEventListenerObject<WindowEventMap[Event], Window>,
+  listener: EventListenerOrEventListenerObject<Events[Event], Window>,
   options?: AddEventListenerOptions,
 ): Env<CurrentFiber, Disposable>
 

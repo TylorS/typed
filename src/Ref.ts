@@ -77,7 +77,7 @@ export interface References {
   /**
    * Check if a reference is currently stored in the environment.
    */
-  readonly hasRef: <E, A>(ref: Ref<E, A>) => E.Env<E, boolean>
+  readonly hasRef: <E, A>(ref: Ref<E, A>) => E.Env<unknown, boolean>
 
   /**
    * Set the value of a Ref, the provided Eq instance contained within the
@@ -170,7 +170,7 @@ export function createReferences(refs: Iterable<readonly [RefId, unknown]> = [])
     )
   }
 
-  function hasRef<E, A>(ref: Ref<E, A>): E.Env<E, boolean> {
+  function hasRef<E, A>(ref: Ref<E, A>): E.Env<unknown, boolean> {
     return E.fromIO(() => references.has(ref.id))
   }
 
