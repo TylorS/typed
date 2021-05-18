@@ -6,6 +6,9 @@ import { Refs } from '@fp/Ref'
 
 import { CurrentFiber, usingFiberRefs } from './Fiber'
 
+/**
+ * A special instance of Do notation which will replace Refs for CurrentFiber.
+ */
 export const DoF = flow(doEnv, toEnv, usingFiberRefs) as <
   Y extends E.Env<any, any> | E.Env<Refs, any>,
   R,
