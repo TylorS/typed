@@ -111,10 +111,7 @@ export type ForkOptions = {
 /**
  * Wait for the completion of a Fiber
  */
-export const join =
-  <A>(fiber: Fiber<A>): Env<Join, A> =>
-  ({ joinFiber }: Join) =>
-    joinFiber(fiber)
+export const join = <A>(fiber: Fiber<A>): Env<Join, A> => ({ joinFiber }: Join) => joinFiber(fiber)
 
 export type Join = {
   readonly joinFiber: <A>(fiber: Fiber<A>) => Resume<A>
@@ -123,10 +120,8 @@ export type Join = {
 /**
  * Cancel the current fiber, running any finalizers required before returning the resulting status.
  */
-export const kill =
-  <A>(fiber: Fiber<A>): Env<Kill, Status<A>> =>
-  ({ killFiber }: Kill) =>
-    killFiber(fiber)
+export const kill = <A>(fiber: Fiber<A>): Env<Kill, Status<A>> => ({ killFiber }: Kill) =>
+  killFiber(fiber)
 
 export type Kill = {
   readonly killFiber: <A>(fiber: Fiber<A>) => Resume<Status<A>>
@@ -160,14 +155,13 @@ export function usingFiberRefs<E, A>(env: Env<E & Refs, A>): Env<E & CurrentFibe
 /**
  * Run a Refs requiring Env using the references from the provided Fiber.
  */
-export const withFiberRefs =
-  (fiber: Fiber<any>) =>
-  <E, A>(env: Env<E & Refs, A>): Env<E, A> =>
-  (e) =>
-    env({
-      ...e,
-      refs: fiber.refs,
-    })
+export const withFiberRefs = (fiber: Fiber<any>) => <E, A>(env: Env<E & Refs, A>): Env<E, A> => (
+  e,
+) =>
+  env({
+    ...e,
+    refs: fiber.refs,
+  })
 
 /**
  * Pauses the current fiber. If there is no parent fiber None will be returned. If there is a parent
@@ -178,32 +172,30 @@ export const pause: Env<CurrentFiber, Option<Status<unknown>>> = (e) => e.curren
 /**
  * Restart a currently paused Fiber
  */
-export const play =
-  <A>(fiber: Fiber<A>): Env<CurrentFiber, Status<A>> =>
-  (e) =>
-    pipe(
-      sync(() => {
-        if (isSome(fiber.parent) && fiber.parent.value.id !== e.currentFiber.id) {
-          throw new Error(
-            `Attempted to resume Fiber (${fiber.id.toString()}) from Fiber ${e.currentFiber.id.toString()} which is not the same as the parent Fiber ${fiber.parent.value.id.toString()}`,
-          )
-        }
-      }),
-      chain(() => fiber.play),
-    )
+export const play = <A>(fiber: Fiber<A>): Env<CurrentFiber, Status<A>> => (e) =>
+  pipe(
+    sync(() => {
+      if (isSome(fiber.parent) && fiber.parent.value.id !== e.currentFiber.id) {
+        throw new Error(
+          `Attempted to resume Fiber (${fiber.id.toString()}) from Fiber ${e.currentFiber.id.toString()} which is not the same as the parent Fiber ${fiber.parent.value.id.toString()}`,
+        )
+      }
+    }),
+    chain(() => fiber.play),
+  )
 
 /**
  * Create a listener for status event changes.
  */
-export const listenToStatusEvents =
-  <A>(f: (status: Status<A>) => void): Env<CurrentFiber & SchedulerEnv, Disposable> =>
-  (e) =>
-    fromIO(() =>
-      e.currentFiber.statusEvents.run(
-        { event: (_, s) => f(s), error: constVoid, end: constVoid },
-        e.scheduler,
-      ),
-    )
+export const listenToStatusEvents = <A>(
+  f: (status: Status<A>) => void,
+): Env<CurrentFiber & SchedulerEnv, Disposable> => (e) =>
+  fromIO(() =>
+    e.currentFiber.statusEvents.run(
+      { event: (_, s) => f(s), error: constVoid, end: constVoid },
+      e.scheduler,
+    ),
+  )
 
 export type CurrentFiber<A = any> = {
   readonly currentFiber: Fiber<A>

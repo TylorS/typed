@@ -14,7 +14,13 @@ export function findProvider<E, A>(ref: Ref<E, A>) {
     let current = yield* _(getCurrentFiber)
 
     const check = () =>
-      _(pipe(hasRef(ref), usingFiberRefs, useSome<CurrentFiber>({ currentFiber: current })))
+      _(
+        pipe(
+          hasRef(ref),
+          usingFiberRefs,
+          useSome<CurrentFiber>({ currentFiber: current }),
+        ),
+      )
 
     let has: boolean = yield* check()
 

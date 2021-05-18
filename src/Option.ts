@@ -4,21 +4,21 @@ import * as O from 'fp-ts/Option'
 
 import { MonadRec1 } from './MonadRec'
 
-export const chainRec =
-  <A, B>(f: (value: A) => O.Option<E.Either<A, B>>) =>
-  (value: A): O.Option<B> => {
-    let option = f(value)
+export const chainRec = <A, B>(f: (value: A) => O.Option<E.Either<A, B>>) => (
+  value: A,
+): O.Option<B> => {
+  let option = f(value)
 
-    while (O.isSome(option)) {
-      if (E.isRight(option.value)) {
-        return O.some(option.value.right)
-      }
-
-      option = f(option.value.left)
+  while (O.isSome(option)) {
+    if (E.isRight(option.value)) {
+      return O.some(option.value.right)
     }
 
-    return option
+    option = f(option.value.left)
   }
+
+  return option
+}
 
 export const ChainRec: ChainRec1<O.URI> = {
   chainRec,

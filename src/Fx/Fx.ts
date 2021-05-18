@@ -80,12 +80,10 @@ declare module 'fp-ts/HKT' {
   }
 }
 
-export const map =
-  <A, B>(f: (value: A) => B) =>
-  <E>(fa: Fx<E, A>): Fx<E, B> =>
-    doFx(function* () {
-      return f(yield* fa)
-    })
+export const map = <A, B>(f: (value: A) => B) => <E>(fa: Fx<E, A>): Fx<E, B> =>
+  doFx(function* () {
+    return f(yield* fa)
+  })
 
 export const Functor: Functor2<URI> = {
   URI,
@@ -98,14 +96,14 @@ export const Pointed: Pointed2<URI> = {
   of,
 }
 
-export const chain =
-  <A, E1, B>(f: (value: A) => Fx<E1, B>) =>
-  <E2>(fa: Fx<E2, A>): Fx<E1 | E2, B> =>
-    doFx(function* () {
-      const a = yield* fa
+export const chain = <A, E1, B>(f: (value: A) => Fx<E1, B>) => <E2>(
+  fa: Fx<E2, A>,
+): Fx<E1 | E2, B> =>
+  doFx(function* () {
+    const a = yield* fa
 
-      return yield* f(a)
-    })
+    return yield* f(a)
+  })
 
 export const Monad: Monad2<URI> = {
   ...Pointed,
@@ -113,18 +111,16 @@ export const Monad: Monad2<URI> = {
   chain,
 }
 
-export const chainRec =
-  <A, E, B>(f: (value: A) => Fx<E, Either<A, B>>) =>
-  (value: A): Fx<E, B> =>
-    doFx(function* () {
-      let either = yield* f(value)
+export const chainRec = <A, E, B>(f: (value: A) => Fx<E, Either<A, B>>) => (value: A): Fx<E, B> =>
+  doFx(function* () {
+    let either = yield* f(value)
 
-      while (isLeft(either)) {
-        either = yield* f(either.left)
-      }
+    while (isLeft(either)) {
+      either = yield* f(either.left)
+    }
 
-      return either.right
-    })
+    return either.right
+  })
 
 export const ChainRec: ChainRec2<URI> = {
   URI,

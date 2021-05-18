@@ -6,6 +6,7 @@ import { flow } from 'fp-ts/function'
 import { Functor3 } from 'fp-ts/Functor'
 import { Monad3 } from 'fp-ts/Monad'
 import { Pointed3 } from 'fp-ts/Pointed'
+import * as R from 'fp-ts/Reader'
 
 import * as FxT from '../FxT'
 import { Provide3, ProvideAll3, ProvideSome3, UseAll3, UseSome3 } from '../Provide'
@@ -21,7 +22,7 @@ export const liftReaderEither = FxT.liftFx<E.URI>()
 export const map = FxT.map<E.URI>()
 export const toReaderEither = FxT.toMonad<E.URI>(E.MonadRec)
 export const ask = FxT.ask(E.FromReader)
-export const asks = FxT.asks(E.FromReader)
+export const asks = FxT.fromNaturalTransformation<R.URI, E.URI>(E.fromReader)
 export const useSome = FxT.useSome({ ...E.UseSome, ...E.MonadRec })
 export const useAll = FxT.useAll({ ...E.UseAll, ...E.MonadRec })
 export const provideSome = FxT.provideSome({ ...E.ProvideSome, ...E.MonadRec })

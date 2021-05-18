@@ -112,18 +112,13 @@ export const separate = <A, B>(stream: Stream<Either<A, B>>): Separated<Stream<A
   return { left, right }
 }
 
-export const partitionMap =
-  <A, B, C>(f: (a: A) => Either<B, C>) =>
-  (fa: Stream<A>) =>
-    separate(map(f, fa))
+export const partitionMap = <A, B, C>(f: (a: A) => Either<B, C>) => (fa: Stream<A>) =>
+  separate(map(f, fa))
 
 export const partition = <A>(predicate: Predicate<A>) =>
   partitionMap((a: A) => (predicate(a) ? right(a) : left(a)))
 
-export const filterMap =
-  <A, B>(f: (a: A) => Option<B>) =>
-  (fa: Stream<A>) =>
-    compact(map(f, fa))
+export const filterMap = <A, B>(f: (a: A) => Option<B>) => (fa: Stream<A>) => compact(map(f, fa))
 
 export const Functor: Functor1<URI> = {
   map,
@@ -155,34 +150,29 @@ export const Monad: Monad1<URI> = {
   ...Pointed,
 }
 
-export const chainRec =
-  <A, B>(f: (value: A) => Stream<Either<A, B>>) =>
-  (value: A): Stream<B> =>
-    pipe(value, f, delay(0), chain(match(flow(chainRec(f)), now)))
+export const chainRec = <A, B>(f: (value: A) => Stream<Either<A, B>>) => (value: A): Stream<B> =>
+  pipe(value, f, delay(0), chain(match(flow(chainRec(f)), now)))
 
 export const ChainRec: ChainRec1<URI> = {
   chainRec,
 }
 
-export const switchRec =
-  <A, B>(f: (value: A) => Stream<Either<A, B>>) =>
-  (value: A): Stream<B> =>
-    pipe(value, f, map(match(switchRec(f), now)), switchLatest)
+export const switchRec = <A, B>(f: (value: A) => Stream<Either<A, B>>) => (value: A): Stream<B> =>
+  pipe(value, f, map(match(switchRec(f), now)), switchLatest)
 
 export const SwitchRec: ChainRec1<URI> = {
   chainRec: switchRec,
 }
 
-export const mergeConcurrentlyRec =
-  (concurrency: number) =>
-  <A, B>(f: (value: A) => Stream<Either<A, B>>) =>
-  (value: A): Stream<B> =>
-    pipe(
-      value,
-      f,
-      map(match(mergeConcurrentlyRec(concurrency)(f), now)),
-      mergeConcurrently(concurrency),
-    )
+export const mergeConcurrentlyRec = (concurrency: number) => <A, B>(
+  f: (value: A) => Stream<Either<A, B>>,
+) => (value: A): Stream<B> =>
+  pipe(
+    value,
+    f,
+    map(match(mergeConcurrentlyRec(concurrency)(f), now)),
+    mergeConcurrently(concurrency),
+  )
 
 export const getConcurrentChainRec = (concurrency: number): ChainRec1<URI> => ({
   chainRec: mergeConcurrentlyRec(concurrency),

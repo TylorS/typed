@@ -7,6 +7,7 @@ import { flow } from 'fp-ts/function'
 import { Functor4 } from 'fp-ts/Functor'
 import { Monad4 } from 'fp-ts/Monad'
 import { Pointed4 } from 'fp-ts/Pointed'
+import * as R from 'fp-ts/Reader'
 
 import * as FxT from '../FxT'
 import * as SEE from '../StateEnvEither'
@@ -21,7 +22,13 @@ export const liftStateEnvEither = FxT.liftFx<SEE.URI>()
 export const map = FxT.map<SEE.URI>()
 export const toStateEnvEither = FxT.toMonad<SEE.URI>(SEE.MonadRec)
 export const ask = FxT.ask(SEE.FromReader)
-export const asks = FxT.asks(SEE.FromReader)
+export const asks = FxT.fromNaturalTransformation<R.URI, SEE.URI>(SEE.FromReader.fromReader)
+export const fromEither = FxT.fromNaturalTransformation(SEE.FromEither.fromEither)
+export const fromEnv = FxT.fromNaturalTransformation(SEE.FromEnv.fromEnv)
+export const fromIO = FxT.fromNaturalTransformation(SEE.FromIO.fromIO)
+export const fromResume = FxT.fromNaturalTransformation(SEE.FromResume.fromResume)
+export const fromState = FxT.fromNaturalTransformation(SEE.FromState.fromState)
+export const fromTask = FxT.fromNaturalTransformation(SEE.FromTask.fromTask)
 export const useSome = FxT.useSome({ ...SEE.UseSome, ...SEE.MonadRec })
 export const useAll = FxT.useAll({ ...SEE.UseAll, ...SEE.MonadRec })
 export const provideSome = FxT.provideSome({ ...SEE.ProvideSome, ...SEE.MonadRec })

@@ -17,14 +17,14 @@ export function createRefAdapter<A>(id: PropertyKey = Symbol(`RefAdapter`)) {
   )
 }
 
-export const sendEvent =
-  <E, A, B>(adapter: RefAdapter<E, A, B>) =>
-  (event: A): E.Env<E & Refs, void> =>
-    pipe(
-      adapter,
-      getRef,
-      E.chainIOK((a) => () => a[0](event)),
-    )
+export const sendEvent = <E, A, B>(adapter: RefAdapter<E, A, B>) => (
+  event: A,
+): E.Env<E & Refs, void> =>
+  pipe(
+    adapter,
+    getRef,
+    E.chainIOK((a) => () => a[0](event)),
+  )
 
 export const getSendEvent = <E, A, B>(
   adapter: RefAdapter<E, A, B>,
@@ -35,15 +35,15 @@ export const getSendEvent = <E, A, B>(
     E.map((a) => a[0]),
   )
 
-export const listenToEvents =
-  <E, A, B>(adapter: RefAdapter<E, A, B>) =>
-  (sink: Readonly<Partial<Sink<B>>>): E.Env<E & Refs & SchedulerEnv, Disposable> =>
-    Do(function* (_) {
-      const [, stream] = yield* _(getRef(adapter))
-      const scheduler = yield* _(getScheduler)
+export const listenToEvents = <E, A, B>(adapter: RefAdapter<E, A, B>) => (
+  sink: Readonly<Partial<Sink<B>>>,
+): E.Env<E & Refs & SchedulerEnv, Disposable> =>
+  Do(function* (_) {
+    const [, stream] = yield* _(getRef(adapter))
+    const scheduler = yield* _(getScheduler)
 
-      return stream.run(createSink(sink), scheduler)
-    })
+    return stream.run(createSink(sink), scheduler)
+  })
 
 export const getListenToEvents = <E, A, B>(
   adapter: RefAdapter<E, A, B>,

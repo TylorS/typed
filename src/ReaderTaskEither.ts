@@ -8,13 +8,13 @@ import { MonadRec3 } from './MonadRec'
 import { Provide3, ProvideAll3, ProvideSome3, UseAll3, UseSome3 } from './Provide'
 import * as RT from './ReaderTask'
 
-export const chainRec =
-  <A, R, E, B>(f: (value: A) => RTE.ReaderTaskEither<R, E, E.Either<A, B>>) =>
-  (value: A): RTE.ReaderTaskEither<R, E, B> =>
-    pipe(
-      value,
-      RT.chainRec((a) => pipe(a, f, RT.map(swapEithers))),
-    )
+export const chainRec = <A, R, E, B>(
+  f: (value: A) => RTE.ReaderTaskEither<R, E, E.Either<A, B>>,
+) => (value: A): RTE.ReaderTaskEither<R, E, B> =>
+  pipe(
+    value,
+    RT.chainRec((a) => pipe(a, f, RT.map(swapEithers))),
+  )
 
 export const ChainRec: ChainRec3<RTE.URI> = {
   chainRec,

@@ -76,7 +76,6 @@ snowpack.key
 /FromResume/
 /Fx/
 /FxT/
-/Global/
 /Hkt/
 /IOEither/
 /MonadRec/
@@ -86,6 +85,7 @@ snowpack.key
 /Queue/
 /Reader/
 /ReaderEither/
+/ReaderOption/
 /ReaderStream/
 /ReaderStreamEither/
 /ReaderTask/
@@ -109,5 +109,6 @@ snowpack.key
 /TaskEither/
 /TaskOption/
 /WeakMap/
+/dom/
 /function/
 /hooks/

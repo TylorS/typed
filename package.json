@@ -51,7 +51,7 @@
   },
   "scripts": {
     "--maintenance--": "",
-    "build": "npm run check:ts-patch && npm run build:typescript && concurrently 'npm:build:packages' 'npm:update:package-exports'",
+    "build": "concurrently npm:clean npm:check:ts-patch && npm run build:typescript && concurrently 'npm:build:packages' 'npm:update:package-exports'",
     "build:packages": "ts-node ./tools/build-packages",
     "build:typescript": "concurrently 'npm:build:typescript:cjs' 'npm:build:typescript:esm'",
     "build:typescript:cjs": "rimraf cjs && tsc -P ./tsconfig.cjs.json",
@@ -136,9 +136,17 @@
       "require": "./cjs/Fiber/Context.js",
       "import": "./esm/Fiber/Context.js"
     },
+    "./Fiber/DoF": {
+      "require": "./cjs/Fiber/DoF.js",
+      "import": "./esm/Fiber/DoF.js"
+    },
     "./Fiber/Fiber": {
       "require": "./cjs/Fiber/Fiber.js",
       "import": "./esm/Fiber/Fiber.js"
+    },
+    "./Fiber/FiberEvent": {
+      "require": "./cjs/Fiber/FiberEvent.js",
+      "import": "./esm/Fiber/FiberEvent.js"
     },
     "./Fiber/FiberId": {
       "require": "./cjs/Fiber/FiberId.js",
@@ -151,6 +159,10 @@
     "./Fiber/awaitStatus": {
       "require": "./cjs/Fiber/awaitStatus.js",
       "import": "./esm/Fiber/awaitStatus.js"
+    },
+    "./Fiber/createFiberRef": {
+      "require": "./cjs/Fiber/createFiberRef.js",
+      "import": "./esm/Fiber/createFiberRef.js"
     },
     "./Fiber/findProvider": {
       "require": "./cjs/Fiber/findProvider.js",
@@ -288,6 +300,10 @@
       "require": "./cjs/Fx/ReaderEither.js",
       "import": "./esm/Fx/ReaderEither.js"
     },
+    "./Fx/ReaderOption": {
+      "require": "./cjs/Fx/ReaderOption.js",
+      "import": "./esm/Fx/ReaderOption.js"
+    },
     "./Fx/ReaderTask": {
       "require": "./cjs/Fx/ReaderTask.js",
       "import": "./esm/Fx/ReaderTask.js"
@@ -336,10 +352,6 @@
       "require": "./cjs/FxT.js",
       "import": "./esm/FxT.js"
     },
-    "./Global": {
-      "require": "./cjs/Global.js",
-      "import": "./esm/Global.js"
-    },
     "./Hkt": {
       "require": "./cjs/Hkt.js",
       "import": "./esm/Hkt.js"
@@ -375,6 +387,10 @@
     "./ReaderEither": {
       "require": "./cjs/ReaderEither.js",
       "import": "./esm/ReaderEither.js"
+    },
+    "./ReaderOption": {
+      "require": "./cjs/ReaderOption.js",
+      "import": "./esm/ReaderOption.js"
     },
     "./ReaderStream": {
       "require": "./cjs/ReaderStream.js",
@@ -468,6 +484,42 @@
       "require": "./cjs/WeakMap.js",
       "import": "./esm/WeakMap.js"
     },
+    "./dom": {
+      "require": "./cjs/dom/index.js",
+      "import": "./esm/dom/index.js"
+    },
+    "./dom/env": {
+      "require": "./cjs/dom/env.js",
+      "import": "./esm/dom/env.js"
+    },
+    "./dom/querySelector": {
+      "require": "./cjs/dom/querySelector.js",
+      "import": "./esm/dom/querySelector.js"
+    },
+    "./dom/raf": {
+      "require": "./cjs/dom/raf.js",
+      "import": "./esm/dom/raf.js"
+    },
+    "./dom/renderOnRaf": {
+      "require": "./cjs/dom/renderOnRaf.js",
+      "import": "./esm/dom/renderOnRaf.js"
+    },
+    "./dom/useEventListener": {
+      "require": "./cjs/dom/useEventListener.js",
+      "import": "./esm/dom/useEventListener.js"
+    },
+    "./dom/useHistory": {
+      "require": "./cjs/dom/useHistory.js",
+      "import": "./esm/dom/useHistory.js"
+    },
+    "./dom/useWindowSize": {
+      "require": "./cjs/dom/useWindowSize.js",
+      "import": "./esm/dom/useWindowSize.js"
+    },
+    "./dom/whenIdle": {
+      "require": "./cjs/dom/whenIdle.js",
+      "import": "./esm/dom/whenIdle.js"
+    },
     "./function": {
       "require": "./cjs/function.js",
       "import": "./esm/function.js"
@@ -484,9 +536,25 @@
       "require": "./cjs/hooks/HookIndex.js",
       "import": "./esm/hooks/HookIndex.js"
     },
+    "./hooks/HookRefs": {
+      "require": "./cjs/hooks/HookRefs.js",
+      "import": "./esm/hooks/HookRefs.js"
+    },
     "./hooks/HookSymbols": {
       "require": "./cjs/hooks/HookSymbols.js",
       "import": "./esm/hooks/HookSymbols.js"
+    },
+    "./hooks/findProvider": {
+      "require": "./cjs/hooks/findProvider.js",
+      "import": "./esm/hooks/findProvider.js"
+    },
+    "./hooks/useBoolean": {
+      "require": "./cjs/hooks/useBoolean.js",
+      "import": "./esm/hooks/useBoolean.js"
+    },
+    "./hooks/useContext": {
+      "require": "./cjs/hooks/useContext.js",
+      "import": "./esm/hooks/useContext.js"
     },
     "./hooks/useDisposable": {
       "require": "./cjs/hooks/useDisposable.js",
@@ -516,9 +584,17 @@
       "require": "./cjs/hooks/useRef.js",
       "import": "./esm/hooks/useRef.js"
     },
+    "./hooks/useRefMap": {
+      "require": "./cjs/hooks/useRefMap.js",
+      "import": "./esm/hooks/useRefMap.js"
+    },
     "./hooks/useStream": {
       "require": "./cjs/hooks/useStream.js",
       "import": "./esm/hooks/useStream.js"
+    },
+    "./hooks/withProvider": {
+      "require": "./cjs/hooks/withProvider.js",
+      "import": "./esm/hooks/withProvider.js"
     }
   }
 }

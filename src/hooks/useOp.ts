@@ -13,11 +13,7 @@ export function useOp<Op extends (...args: readonly any[]) => E.Env<any, any>>(
 > {
   return E.asksE((e: E.GetRequirements<ReturnType<Op>>) =>
     useMemo(
-      E.fromIO(
-        () =>
-          (...args: ArgsOf<Op>) =>
-            op(...args)(e),
-      ),
+      E.fromIO(() => (...args: ArgsOf<Op>) => op(...args)(e)),
       [e],
     ),
   )

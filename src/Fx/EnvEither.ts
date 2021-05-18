@@ -10,6 +10,7 @@ import { Pointed3 } from 'fp-ts/Pointed'
 import * as E from '../EnvEither'
 import * as FxT from '../FxT'
 import { Provide3, ProvideAll3, ProvideSome3, UseAll3, UseSome3 } from '../Provide'
+import * as R from '../Reader'
 import { Fx } from './Fx'
 
 export const of = FxT.of(E.Pointed)
@@ -21,7 +22,7 @@ export const liftEnvEither = FxT.liftFx<E.URI>()
 export const map = FxT.map<E.URI>()
 export const toEnvEither = FxT.toMonad<E.URI>(E.MonadRec)
 export const ask = FxT.ask(E.FromReader)
-export const asks = FxT.asks(E.FromReader)
+export const asks = FxT.fromNaturalTransformation<R.URI, E.URI>(E.fromReader)
 export const useSome = FxT.useSome({ ...E.UseSome, ...E.MonadRec })
 export const useAll = FxT.useAll({ ...E.UseAll, ...E.MonadRec })
 export const provideSome = FxT.provideSome({ ...E.ProvideSome, ...E.MonadRec })

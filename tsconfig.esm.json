@@ -40,7 +40,6 @@
     "FromResume",
     "Fx",
     "FxT",
-    "Global",
     "Hkt",
     "IOEither",
     "MonadRec",
@@ -50,6 +49,7 @@
     "Queue",
     "Reader",
     "ReaderEither",
+    "ReaderOption",
     "ReaderStream",
     "ReaderStreamEither",
     "ReaderTask",
@@ -73,6 +73,7 @@
     "TaskEither",
     "TaskOption",
     "WeakMap",
+    "dom",
     "function",
     "hooks"
   ],

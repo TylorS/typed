@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
-const prettierConfig = require('./.prettierrc.js')
-
 // eslint-disable-next-line no-undef
 module.exports = {
   root: true,
@@ -12,10 +9,10 @@ module.exports = {
     'plugin:import/errors',
     'plugin:import/warnings',
     'plugin:import/typescript',
-    'prettier',
+    'plugin:prettier/recommended',
   ],
   rules: {
-    'prettier/prettier': ['error', prettierConfig],
+    'prettier/prettier': ['error'],
     'simple-import-sort/imports': 'error',
     'simple-import-sort/exports': 'error',
     'import/no-unresolved': 'off', // Allow TS to do this checking,

@@ -8,14 +8,13 @@ import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from './Provid
 
 export * from 'fp-ts/Reader'
 
-export const chainRec =
-  <A, R, B>(f: (value: A) => R.Reader<R, E.Either<A, B>>) =>
-  (value: A): R.Reader<R, B> =>
-  (r) =>
-    pipe(
-      value,
-      tailRec((a: A) => f(a)(r)),
-    )
+export const chainRec = <A, R, B>(f: (value: A) => R.Reader<R, E.Either<A, B>>) => (
+  value: A,
+): R.Reader<R, B> => (r) =>
+  pipe(
+    value,
+    tailRec((a: A) => f(a)(r)),
+  )
 
 export const ChainRec: ChainRec2<R.URI> = {
   chainRec,
@@ -26,29 +25,21 @@ export const MonadRec: MonadRec2<R.URI> = {
   chainRec,
 }
 
-export const useSome =
-  <R1>(provided: R1) =>
-  <R2, A>(reader: R.Reader<R1 & R2, A>): R.Reader<R2, A> =>
-  (e) =>
-    reader({ ...e, ...provided })
+export const useSome = <R1>(provided: R1) => <R2, A>(
+  reader: R.Reader<R1 & R2, A>,
+): R.Reader<R2, A> => (e) => reader({ ...e, ...provided })
 
-export const provideSome =
-  <R1>(provided: R1) =>
-  <R2, A>(reader: R.Reader<R1 & R2, A>): R.Reader<R2, A> =>
-  (e) =>
-    reader({ ...provided, ...e })
+export const provideSome = <R1>(provided: R1) => <R2, A>(
+  reader: R.Reader<R1 & R2, A>,
+): R.Reader<R2, A> => (e) => reader({ ...provided, ...e })
 
-export const useAll =
-  <R1>(provided: R1) =>
-  <A>(reader: R.Reader<R1, A>): R.Reader<unknown, A> =>
-  () =>
-    reader(provided)
+export const useAll = <R1>(provided: R1) => <A>(
+  reader: R.Reader<R1, A>,
+): R.Reader<unknown, A> => () => reader(provided)
 
-export const provideAll =
-  <R1>(provided: R1) =>
-  <A>(reader: R.Reader<R1, A>): R.Reader<unknown, A> =>
-  (e) =>
-    reader({ ...provided, ...((e as any) ?? {}) })
+export const provideAll = <R1>(provided: R1) => <A>(
+  reader: R.Reader<R1, A>,
+): R.Reader<unknown, A> => (e) => reader({ ...provided, ...((e as any) ?? {}) })
 
 export const UseSome: UseSome2<R.URI> = {
   useSome,

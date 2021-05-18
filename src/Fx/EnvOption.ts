@@ -6,6 +6,7 @@ import { ChainRec2 } from 'fp-ts/ChainRec'
 import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
+import * as R from 'fp-ts/Reader'
 
 import * as E from '../EnvOption'
 import * as FxT from '../FxT'
@@ -21,7 +22,7 @@ export const liftEnvOption = FxT.liftFx<E.URI>()
 export const map = FxT.map<E.URI>()
 export const toEnvOption = FxT.toMonad<E.URI>(E.MonadRec)
 export const ask = FxT.ask(E.FromReader)
-export const asks = FxT.asks(E.FromReader)
+export const asks = FxT.fromNaturalTransformation<R.URI, E.URI>(E.FromReader.fromReader)
 export const useSome = FxT.useSome({ ...E.UseSome, ...E.MonadRec })
 export const useAll = FxT.useAll({ ...E.UseAll, ...E.MonadRec })
 export const provideSome = FxT.provideSome({ ...E.ProvideSome, ...E.MonadRec })
