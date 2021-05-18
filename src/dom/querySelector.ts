@@ -1,4 +1,5 @@
 import * as E from '@fp/Env'
+import { identity } from '@fp/function'
 import { fromNullable } from 'fp-ts/Option'
 
 import { RootElementEnv } from './env'
@@ -9,4 +10,4 @@ export const querySelector = <S extends string>(selector: S) =>
 export const querySelectorAll = <S extends string>(selector: S) =>
   E.asks((e: RootElementEnv) => toReadonly(Array.from(e.rootElement.querySelectorAll(selector))))
 
-const toReadonly = <A>(array: Array<A>): ReadonlyArray<A> => array
+const toReadonly: <A>(array: Array<A>) => ReadonlyArray<A> = identity
