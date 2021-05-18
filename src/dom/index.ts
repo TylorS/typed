@@ -1,4 +1,5 @@
 export * from './env'
+export * from './querySelector'
 export * from './raf'
 export * from './renderOnRaf'
 export * from './useEventListener'

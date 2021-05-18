@@ -15,7 +15,8 @@
     "@most/scheduler": "^1.3.0",
     "@most/types": "^1.1.0",
     "fp-ts": "^3.0.0-alpha.17",
-    "ts-toolbelt": "^9.6.0"
+    "ts-toolbelt": "^9.6.0",
+    "typed-query-selector": "^2.6.0"
   },
   "peerDependencies": {
     "tslib": "^2.2.0"
