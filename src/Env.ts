@@ -45,7 +45,7 @@ export const fromReader: <R, A>(ma: Re.Reader<R, A>) => Env<R, A> = RT.fromReade
 
 export const map: <A, B>(f: (a: A) => B) => <R>(fa: Env<R, A>) => Env<R, B> = RT.map(R.Functor)
 
-export const of: <A, R = unknown>(a: A) => Env<R, A> = RT.of(R.Pointed)
+export const of: <A>(a: A) => Env<unknown, A> = RT.of(R.Pointed)
 
 export const asksIOK: <R, A>(f: (r: R) => IO.IO<A>) => Env<R, A> = RT.fromNaturalTransformation<
   IO.URI,

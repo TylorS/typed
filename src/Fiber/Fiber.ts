@@ -1,8 +1,8 @@
 import { Disposable, Stream } from '@most/types'
-import { constVoid, pipe } from 'fp-ts/function'
+import { constVoid, flow, pipe } from 'fp-ts/function'
 import { isSome, Option } from 'fp-ts/Option'
 
-import { asks, Env } from '../Env'
+import * as E from '../Env'
 import { References, Refs } from '../Ref'
 import { chain, fromIO, Resume, sync } from '../Resume'
 import { SchedulerEnv } from '../Scheduler'
@@ -72,31 +72,35 @@ export type CloneOptions = {
 /**
  * Creates a new Fiber invocation
  */
-export function fork<R, A>(hkt: Env<R, A>, options?: ForkOptions): Env<Fork & R, Fiber<A>>
+export function fork<R, A>(hkt: E.Env<R, A>, options?: ForkOptions): E.Env<Fork & R, Fiber<A>>
 export function fork<R, A>(
-  hkt: Env<R & CurrentFiber, A>,
+  hkt: E.Env<R & CurrentFiber, A>,
   options?: ForkOptions,
-): Env<Fork & R, Fiber<A>>
+): E.Env<Fork & R, Fiber<A>>
 export function fork<R, A>(
-  hkt: Env<R & SchedulerEnv, A>,
+  hkt: E.Env<R & SchedulerEnv, A>,
   options?: ForkOptions,
-): Env<Fork & R, Fiber<A>>
+): E.Env<Fork & R, Fiber<A>>
 export function fork<R, A>(
-  hkt: Env<R & CurrentFiber & SchedulerEnv, A>,
+  hkt: E.Env<R & CurrentFiber & SchedulerEnv, A>,
   options?: ForkOptions,
-): Env<Fork & R, Fiber<A>>
+): E.Env<Fork & R, Fiber<A>>
 
-export function fork<R, A>(hkt: Env<R, A>, options: ForkOptions = {}): Env<Fork & R, Fiber<A>> {
+export function fork<R, A>(hkt: E.Env<R, A>, options: ForkOptions = {}): E.Env<Fork & R, Fiber<A>> {
   return (e) => e.forkFiber(hkt, e, options)
 }
 
 export type Fork = {
   readonly forkFiber: {
-    <R, A>(env: Env<R, A>, requirements: R, options?: ForkOptions): Resume<Fiber<A>>
-    <R, A>(env: Env<R & CurrentFiber, A>, requirements: R, options?: ForkOptions): Resume<Fiber<A>>
-    <R, A>(env: Env<R & SchedulerEnv, A>, requirements: R, options?: ForkOptions): Resume<Fiber<A>>
+    <R, A>(env: E.Env<R, A>, requirements: R, options?: ForkOptions): Resume<Fiber<A>>
+    <R, A>(env: E.Env<R & CurrentFiber, A>, requirements: R, options?: ForkOptions): Resume<
+      Fiber<A>
+    >
+    <R, A>(env: E.Env<R & SchedulerEnv, A>, requirements: R, options?: ForkOptions): Resume<
+      Fiber<A>
+    >
     <R, A>(
-      env: Env<R & CurrentFiber & SchedulerEnv, A>,
+      env: E.Env<R & CurrentFiber & SchedulerEnv, A>,
       requirements: R,
       options?: ForkOptions,
     ): Resume<Fiber<A>>
@@ -111,16 +115,24 @@ export type ForkOptions = {
 /**
  * Wait for the completion of a Fiber
  */
-export const join = <A>(fiber: Fiber<A>): Env<Join, A> => ({ joinFiber }: Join) => joinFiber(fiber)
+export const join = <A>(fiber: Fiber<A>): E.Env<Join, A> => ({ joinFiber }: Join) =>
+  joinFiber(fiber)
 
 export type Join = {
   readonly joinFiber: <A>(fiber: Fiber<A>) => Resume<A>
 }
 
+export const forkJoin = flow(fork, E.chain(join)) as {
+  <R, A>(hkt: E.Env<R, A>, options?: ForkOptions): E.Env<Fork & R, A>
+  <R, A>(hkt: E.Env<R & CurrentFiber, A>, options?: ForkOptions): E.Env<Fork & R, A>
+  <R, A>(hkt: E.Env<R & SchedulerEnv, A>, options?: ForkOptions): E.Env<Fork & R, A>
+  <R, A>(hkt: E.Env<R & CurrentFiber & SchedulerEnv, A>, options?: ForkOptions): E.Env<Fork & R, A>
+}
+
 /**
  * Cancel the current fiber, running any finalizers required before returning the resulting status.
  */
-export const kill = <A>(fiber: Fiber<A>): Env<Kill, Status<A>> => ({ killFiber }: Kill) =>
+export const kill = <A>(fiber: Fiber<A>): E.Env<Kill, Status<A>> => ({ killFiber }: Kill) =>
   killFiber(fiber)
 
 export type Kill = {
@@ -130,21 +142,21 @@ export type Kill = {
 /**
  * Get access the the fiber context currently running within
  */
-export const getCurrentFiber: Env<CurrentFiber, Fiber<unknown>> = asks(
+export const getCurrentFiber: E.Env<CurrentFiber, Fiber<unknown>> = E.asks(
   (e: CurrentFiber) => e.currentFiber,
 )
 
 /**
  * Get access to the parent fiber context
  */
-export const getParent: Env<CurrentFiber, Option<Fiber<unknown>>> = asks(
+export const getParent: E.Env<CurrentFiber, Option<Fiber<unknown>>> = E.asks(
   (e: CurrentFiber) => e.currentFiber.parent,
 )
 
 /**
  * Run a Refs requiring Env using the references from the current Fiber.
  */
-export function usingFiberRefs<E, A>(env: Env<E & Refs, A>): Env<E & CurrentFiber, A> {
+export function usingFiberRefs<E, A>(env: E.Env<E & Refs, A>): E.Env<E & CurrentFiber, A> {
   return (e) =>
     env({
       ...e,
@@ -155,9 +167,9 @@ export function usingFiberRefs<E, A>(env: Env<E & Refs, A>): Env<E & CurrentFibe
 /**
  * Run a Refs requiring Env using the references from the provided Fiber.
  */
-export const withFiberRefs = (fiber: Fiber<any>) => <E, A>(env: Env<E & Refs, A>): Env<E, A> => (
-  e,
-) =>
+export const withFiberRefs = (fiber: Fiber<any>) => <E, A>(
+  env: E.Env<E & Refs, A> | E.Env<Refs, A>,
+): E.Env<E, A> => (e) =>
   env({
     ...e,
     refs: fiber.refs,
@@ -167,12 +179,12 @@ export const withFiberRefs = (fiber: Fiber<any>) => <E, A>(env: Env<E & Refs, A>
  * Pauses the current fiber. If there is no parent fiber None will be returned. If there is a parent
  * a Some of the parent's status will be returned upon playing the fiber again.
  */
-export const pause: Env<CurrentFiber, Option<Status<unknown>>> = (e) => e.currentFiber.pause
+export const pause: E.Env<CurrentFiber, Option<Status<unknown>>> = (e) => e.currentFiber.pause
 
 /**
  * Restart a currently paused Fiber
  */
-export const play = <A>(fiber: Fiber<A>): Env<CurrentFiber, Status<A>> => (e) =>
+export const play = <A>(fiber: Fiber<A>): E.Env<CurrentFiber, Status<A>> => (e) =>
   pipe(
     sync(() => {
       if (isSome(fiber.parent) && fiber.parent.value.id !== e.currentFiber.id) {
@@ -189,7 +201,7 @@ export const play = <A>(fiber: Fiber<A>): Env<CurrentFiber, Status<A>> => (e) =>
  */
 export const listenToStatusEvents = <A>(
   f: (status: Status<A>) => void,
-): Env<CurrentFiber & SchedulerEnv, Disposable> => (e) =>
+): E.Env<CurrentFiber & SchedulerEnv, Disposable> => (e) =>
   fromIO(() =>
     e.currentFiber.statusEvents.run(
       { event: (_, s) => f(s), error: constVoid, end: constVoid },

@@ -1,4 +1,6 @@
+import { Eq } from 'fp-ts/Eq'
 import { constant, unsafeCoerce } from 'fp-ts/function'
+import { Ord } from 'fp-ts/Ord'
 
 /**
  * Construct a branded type. It remains compatible with the underlying type A, but
@@ -27,3 +29,8 @@ export type BrandValue<A> = A extends Branded<BrandOf<A>, infer R> ? R : never
  * Construct a branded type.
  */
 export const brand: <B extends Branded<any, any>>(value: BrandValue<B>) => B = unsafeCoerce
+
+export const getEq = <A extends Branded<any, any>>(eq: Eq<BrandValue<A>>): Eq<A> => eq as Eq<A>
+
+export const getOrd = <A extends Branded<any, any>>(ord: Ord<BrandValue<A>>): Ord<A> =>
+  ord as Ord<A>

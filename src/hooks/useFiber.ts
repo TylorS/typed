@@ -1,61 +1,54 @@
-import { Env, fromIO } from '@fp/Env'
+import * as E from '@fp/Env'
 import { Eq } from '@fp/Eq'
-import { CurrentFiber, DoF, Fiber, Fork, fork } from '@fp/Fiber'
-import { createReferences } from '@fp/Ref'
-import { SchedulerEnv } from '@fp/Scheduler'
+import { CurrentFiber, DoF, Fiber, Fork, fork, usingFiberRefs } from '@fp/Fiber'
+import { References } from '@fp/Ref'
 import { pipe } from 'fp-ts/function'
 
-import { DepsArgs, useDeps } from './Deps'
+import { useDeps } from './Deps'
 import { resetIndex } from './HookIndex'
-import { useMemo } from './useMemo'
 import { useRef } from './useRef'
 
-const useRefs = useMemo(fromIO(createReferences))
-
-export function useFiber<E, A, Deps extends ReadonlyArray<any>>(
-  env: Env<E, A>,
-  deps?: Deps,
-  eqs?: { readonly [K in keyof Deps]: Eq<Deps[K]> },
-): Env<E & Fork & CurrentFiber, Fiber<A>>
-
-export function useFiber<E, A, Deps extends ReadonlyArray<any>>(
-  env: Env<E & CurrentFiber, A>,
-  deps?: Deps,
-  eqs?: { readonly [K in keyof Deps]: Eq<Deps[K]> },
-): Env<E & Fork & CurrentFiber, Fiber<A>>
-
-export function useFiber<E, A, Deps extends ReadonlyArray<any>>(
-  env: Env<E & SchedulerEnv, A>,
-  deps?: Deps,
-  eqs?: { readonly [K in keyof Deps]: Eq<Deps[K]> },
-): Env<E & Fork & CurrentFiber, Fiber<A>>
-
-export function useFiber<E, A, Deps extends ReadonlyArray<any>>(
-  env: Env<E & CurrentFiber & SchedulerEnv, A>,
-  deps?: Deps,
-  eqs?: { readonly [K in keyof Deps]: Eq<Deps[K]> },
-): Env<E & Fork & CurrentFiber, Fiber<A>>
-
 export function useFiber<E, A, Deps extends ReadonlyArray<any> = []>(
-  env: Env<E, A>,
-  ...args: DepsArgs<Deps>
-): Env<E & Fork & CurrentFiber, Fiber<A>> {
+  env: E.Env<E, A>,
+  options: UseFiberOptions<Deps> = {},
+): E.Env<E & Fork & CurrentFiber, Fiber<A>> {
+  const { deps, eqs, refs, id = Symbol('UseFiber'), abort = true } = options
+
   return DoF(function* (_) {
-    const refs = yield* _(useRefs)
-    const fiberRef = yield* pipe(fork(env, { refs }), useRef, _)
-    const isEqual = yield* _(useDeps(...args))
+    const fiberRef = yield* pipe(
+      fork(
+        pipe(
+          resetIndex,
+          E.chain(() => env),
+          usingFiberRefs,
+        ),
+        { refs, id },
+      ),
+      useRef,
+      _,
+    )
+    const isEqual = yield* _(useDeps(deps, eqs))
 
     if (!isEqual) {
       const current = yield* _(fiberRef.get)
 
-      yield* _(() => current.abort)
-      yield* _(() => resetIndex({ refs }))
+      if (abort) {
+        yield* _(() => current.abort)
+      }
 
-      const next = yield* _(fork(env, { refs }))
+      const next = yield* _(() => current.clone({ inheritRefs: true }))
 
-      yield* _(fiberRef.set(next))
+      return yield* _(fiberRef.set(next))
     }
 
     return yield* _(fiberRef.get)
   })
+}
+
+export type UseFiberOptions<Deps extends ReadonlyArray<any>> = {
+  readonly deps?: Deps
+  readonly eqs?: { readonly [K in keyof Deps]: Eq<Deps[K]> }
+  readonly refs?: References
+  readonly id?: PropertyKey
+  readonly abort?: boolean
 }

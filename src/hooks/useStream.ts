@@ -7,5 +7,5 @@ import { useDisposable } from './useDisposable'
 
 export const useStream = <A>(stream: Stream<A>, sink: Partial<Sink<A>> = {}) =>
   E.asksE((e: SchedulerEnv) =>
-    useDisposable(() => stream.run(createSink(sink), e.scheduler), [stream]),
+    useDisposable(() => stream.run(createSink(sink), e.scheduler), [stream, sink]),
   )

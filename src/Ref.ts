@@ -8,6 +8,7 @@ import { Branded } from './Branded'
 import * as E from './Env'
 import { deepEqualsEq } from './Eq'
 import { Arity1 } from './function'
+import { Resume, sync } from './Resume'
 
 /**
  * A reference to a value. When attempting to retrieve a Ref's value using
@@ -85,12 +86,19 @@ export interface References {
    * with the previous and current value.
    */
   readonly setRef: <A>(value: A) => <E>(ref: Ref<E, A>) => E.Env<E, A>
+
   /**
    * Deletes references to a current value with a Ref, if it exists a Some of
    * that value will be returned signalling a deletion has occurred or a None
    * in the event the reference does not exist.
    */
   readonly deleteRef: <E, A>(ref: Ref<E, A>) => E.Env<unknown, Option<A>>
+
+  /**
+   * Creates a clone of your references if supports this behavior. A None will
+   * be returned if it is not supported, Some<References> otherwise.
+   */
+  readonly clone: Resume<Option<References>>
 }
 
 export type Refs = {
@@ -216,6 +224,7 @@ export function createReferences(refs: Iterable<readonly [RefId, unknown]> = [])
     hasRef,
     setRef,
     deleteRef,
+    clone: sync(() => some(createReferences([...references]))),
   }
 }
 

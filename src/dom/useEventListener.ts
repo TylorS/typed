@@ -64,5 +64,5 @@ export function useEventListener(
     return {
       dispose: () => target.removeEventListener(type, listener, options),
     }
-  }, [target, listener, options])
+  }, [target, type, listener, options])
 }

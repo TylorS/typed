@@ -81,17 +81,22 @@ export function createFiber<A>(
       )
     },
     clone: (options: CloneOptions = {}) =>
-      R.sync(() =>
-        createFiber(env, {
-          scheduler,
-          refs: options.inheritRefs ? refs : undefined,
-          parent: pipe(
-            options.parent,
-            O.fromNullable,
-            O.alt(() => parent),
-            O.toUndefined,
+      pipe(
+        options.inheritRefs ? refs.clone : R.of(O.none),
+        R.chain((option) =>
+          R.sync(() =>
+            createFiber(env, {
+              scheduler,
+              refs: pipe(option, O.toUndefined),
+              parent: pipe(
+                options.parent,
+                O.fromNullable,
+                O.alt(() => parent),
+                O.toUndefined,
+              ),
+            }),
           ),
-        }),
+        ),
       ),
   }
 

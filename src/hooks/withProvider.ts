@@ -17,7 +17,7 @@ export function withProvider<E1, A, E2, B>(
     yield* _(
       useStream(provider.refs.events, {
         event: (_, event) => {
-          if (event.type === 'updated' || (event.type === 'deleted' && event.id === ref.id)) {
+          if (event.type !== 'created' && event.id === ref.id) {
             current.refs.sendEvent(event)
           }
         },
