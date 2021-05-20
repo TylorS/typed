@@ -81,7 +81,7 @@ export const renderOnRaf = <E, A, B>(
           }
         }),
         {
-          deps: [options],
+          deps: [refs, id],
         },
       ),
     )
