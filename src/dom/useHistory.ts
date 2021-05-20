@@ -46,10 +46,10 @@ export const useHistory = <A = unknown>() =>
     return {
       push,
       replace,
-      back,
-      forward,
+      back: back(),
+      forward: forward(),
       go,
-      getState,
+      getState: getState(),
     } as const
   })
 
