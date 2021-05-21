@@ -165,7 +165,7 @@ export function createReferences(refs: Iterable<readonly [RefId, unknown]> = [])
 
     // If there's a value already just grab it
     if (references.has(id)) {
-      return E.of<A, E>(references.get(id)! as A)
+      return E.of(references.get(id)! as A)
     }
 
     return pipe(
