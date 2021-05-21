@@ -1,12 +1,30 @@
 import * as E from '@fp/Env'
 import { CurrentFiber, Fiber, usingFiberRefs } from '@fp/Fiber'
 import { Arity1, flow, pipe } from '@fp/function'
-import { deleteRef, getRef, hasRef, makeRef, modifyRef, Ref, setRef } from '@fp/Ref'
+import { deleteRef, getRef, hasRef, makeRef, modifyRef, Ref, setRef, WrappedRef } from '@fp/Ref'
 import { SchedulerEnv } from '@fp/Scheduler'
-import { Option } from 'fp-ts/Option'
 
 import { findProvider } from './findProvider'
+import { useReplicateRefEvents } from './useReplicateRefEvents'
 import { withProvider } from './withProvider'
+
+/**
+ * Gets and Subscribes to future updates regarding a Reference
+ */
+export const useContext = <E, A>(ref: Ref<E, A>) =>
+  withProvider(ref, (currentFiber) =>
+    pipe(
+      useReplicateRefEvents(currentFiber, ref),
+      E.chain(() =>
+        pipe(
+          ref,
+          getRef,
+          usingFiberRefs,
+          E.useSome<CurrentFiber>({ currentFiber }),
+        ),
+      ),
+    ),
+  )
 
 export const getContext = <E, A>(ref: Ref<E, A>) =>
   withProvider(ref, (currentFiber) =>
@@ -62,17 +80,17 @@ export const deleteContext = <E, A>(ref: Ref<E, A>) =>
     ),
   )
 
-export interface ContextRef<E, A> {
-  readonly get: E.Env<E & SchedulerEnv & CurrentFiber, A>
-  readonly has: E.Env<E & SchedulerEnv & CurrentFiber, boolean>
-  readonly set: (value: A) => E.Env<E & SchedulerEnv & CurrentFiber, A>
-  readonly modify: (f: Arity1<A, A>) => E.Env<E & SchedulerEnv & CurrentFiber, A>
-  readonly delete: E.Env<SchedulerEnv & CurrentFiber, Option<A>>
+export interface ContextRef<E, A> extends WrappedRef<CurrentFiber, E, A> {
+  readonly use: E.Env<E & CurrentFiber & SchedulerEnv, A>
   readonly provider: E.Env<CurrentFiber, Fiber<unknown>>
 }
 
 export function wrapContext<E, A>(ref: Ref<E, A>): ContextRef<E, A> {
   return {
+    id: ref.id,
+    initial: ref.initial,
+    eq: ref.eq,
+    use: useContext(ref),
     get: getContext(ref),
     has: hasContext(ref),
     set: setContext(ref),

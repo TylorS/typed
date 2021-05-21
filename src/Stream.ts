@@ -239,12 +239,13 @@ export const bindTo = bindTo_(Functor)
 export const bind = bind_(Monad)
 export const tupled = tupled_(Functor)
 
-export const createSink = <A>(sink: Partial<Sink<A>> = {}): Sink<A> => ({
+const emptySink: Sink<any> = {
   event: constVoid,
   error: constVoid,
   end: constVoid,
-  ...sink,
-})
+}
+
+export const createSink = <A>(sink: Partial<Sink<A>> = {}): Sink<A> => ({ ...emptySink, ...sink })
 
 export * from '@most/core'
 export * from '@most/types'

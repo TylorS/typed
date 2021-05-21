@@ -1,5 +1,6 @@
 import { Env, fromIO } from '@fp/Env'
-import { CurrentFiber, DoF } from '@fp/Fiber'
+import { addDisposable, CurrentFiber, DoF } from '@fp/Fiber'
+import { dispose, disposeAll } from '@most/disposable'
 import { Disposable } from '@most/types'
 
 import { DepsArgs, useDeps } from './Deps'
@@ -14,11 +15,13 @@ export const useDisposable = <Deps extends ReadonlyArray<any> = []>(
     const isEqual = yield* _(useDeps(...args))
 
     if (!isEqual) {
-      const current = yield* _(ref.get)
+      dispose(yield* _(ref.get))
 
-      current.dispose()
+      const userDisposable = f()
+      const fiberDisposable = yield* _(addDisposable(userDisposable))
+      const disposable = disposeAll([userDisposable, fiberDisposable])
 
-      return yield* _(ref.set(f()))
+      return yield* _(ref.set(disposable))
     }
 
     return yield* _(ref.get)

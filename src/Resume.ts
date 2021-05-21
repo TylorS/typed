@@ -24,6 +24,8 @@ import { MonadRec1 } from './MonadRec'
 
 export type Resume<A> = Sync<A> | Async<A>
 
+export type GetValue<A> = [A] extends [Resume<infer R>] ? R : never
+
 export interface Async<A> {
   readonly _tag: 'async'
   readonly resume: AsyncResume<A>

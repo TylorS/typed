@@ -4,12 +4,8 @@ import { Do, liftEnv } from '@fp/Fx/Env'
 import { createContext, useOp } from '@fp/hooks'
 import { fromNullable } from 'fp-ts/Option'
 
-import { HistoryEnv, LocationEnv } from './env'
-
-export const Location = createContext(
-  E.asks((e: LocationEnv) => e.location),
-  Symbol('Location'),
-)
+import { HistoryEnv } from './env'
+import { Location } from './Location'
 
 const forceLocationUpdate = liftEnv(Location.modify(identity))
 
@@ -17,22 +13,6 @@ export const History = createContext(
   E.asks((e: HistoryEnv) => e.history),
   Symbol('History'),
 )
-
-export const useLocation = Do(function* (_) {
-  const location = yield* _(Location.get)
-
-  return {
-    hash: location.hash,
-    host: location.host,
-    hostname: location.hostname,
-    href: location.href,
-    origin: location.origin,
-    pathname: location.pathname,
-    port: location.port,
-    protocol: location.protocol,
-    search: location.search,
-  } as const
-})
 
 export const useHistory = <A = unknown>() =>
   Do(function* (_) {
