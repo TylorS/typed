@@ -1,7 +1,7 @@
 import * as E from '@fp/Env'
 import { alwaysEqualsEq } from '@fp/Eq'
 import { createFiberRef, CurrentFiber, DoF, getCurrentFiber } from '@fp/Fiber'
-import { WrappedRef } from '@fp/Ref'
+import { URef } from '@fp/Ref'
 import { Eq } from 'fp-ts/Eq'
 
 import { HookRefs } from './HookRefs'
@@ -15,13 +15,13 @@ import { getNextSymbol } from './HookSymbols'
 export function useRef<E = unknown, A = any>(
   initial: E.Env<E, A>,
   eq: Eq<A> = alwaysEqualsEq,
-): E.Env<CurrentFiber & E, WrappedRef<unknown, E, A>> {
+): E.Env<CurrentFiber & E, URef<E, A>> {
   return DoF(function* (_) {
     const map = yield* _(HookRefs.get)
     const symbol = yield* _(getNextSymbol)
 
     if (map.has(symbol)) {
-      return map.get(symbol)! as WrappedRef<unknown, E, A>
+      return map.get(symbol)! as URef<E, A>
     }
 
     const currentFiber = yield* _(getCurrentFiber)

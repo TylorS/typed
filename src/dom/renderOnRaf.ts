@@ -2,86 +2,65 @@ import * as E from '@fp/Env'
 import * as F from '@fp/Fiber'
 import { pipe } from '@fp/function'
 import { liftEnv as _ } from '@fp/Fx/Env'
-import { resetIndex, useFiber, useMemo, useRef, useStream } from '@fp/hooks'
+import * as H from '@fp/hooks'
 import * as P from '@fp/Patch'
-import { createReferences, RefEvent } from '@fp/Ref'
-import { exec } from '@fp/Resume'
-import { createSink } from '@fp/Stream'
+import { WrappedRef } from '@fp/Ref'
+import * as R from '@fp/Resume'
+import { not } from 'fp-ts/Refinement'
 
-import * as R from './raf'
+import { raf } from './raf'
 
-const raf = _(R.raf)
+const useHasBeenUpdatedRef = _(H.useRef(E.of(true)))
+const usePatchedRef = <A>(initial: A) => _(H.useRef(E.of(initial)))
 
 /**
  * Runs the provided effect anytime there are Ref updates, and will use the provided Patch instance
  * to provide updates.
  */
-export const renderOnRaf = <E, A, B>(env: E.Env<E, A>, initial: B, options: F.ForkOptions = {}) =>
+export const useRenderOnRaf = <E, A, B, Deps extends readonly any[]>(
+  env: E.Env<E, A>,
+  initial: B,
+  options?: H.UseFiberOptions<Deps>,
+) =>
   F.DoF(function* () {
-    const refs = yield* _(
-      useMemo(
-        E.fromIO(() => options.refs ?? createReferences()),
-        [options.refs],
-      ),
+    const Patched = yield* usePatchedRef<B>(initial)
+    const HasBeenUpdated = yield* useHasBeenUpdatedRef
+    const fiber: F.Fiber<B> = yield* _(
+      H.useFiber(renderOnRaf(env, Patched, HasBeenUpdated), options),
     )
-
-    const id = yield* _(
-      useMemo(
-        E.fromIO(() => options.id ?? Symbol(`RenderOnRaf::Main`)),
-        [options.id],
-      ),
-    )
-
-    const Patched = yield* _(useRef(E.of(initial)))
-    const HasBeenUpdated = yield* _(useRef(E.of(true)))
-
-    const sink = yield* _(
-      useMemo(
-        E.fromIO(() =>
-          createSink({
-            event: (_, event: RefEvent<unknown>) => {
-              if (event.type !== 'created') {
-                pipe({}, HasBeenUpdated.set(true), exec)
-              }
-            },
-          }),
-        ),
-      ),
-    )
-
-    yield* _(useStream(refs.events, sink))
 
     yield* _(
-      useFiber(
-        F.DoF(function* () {
-          const main = F.forkJoin(
-            pipe(
-              resetIndex,
-              E.chain(() => env),
-              F.usingFiberRefs,
-            ),
-            { refs, id },
-          )
-
-          while (true) {
-            if (yield* _(HasBeenUpdated.get)) {
-              yield* _(HasBeenUpdated.set(false))
-
-              const current = yield* _(Patched.get)
-              const next = yield* _(main)
-              const patched = yield* _(P.patch(current, next))
-
-              yield* _(Patched.set(patched))
-            }
-
-            yield* raf
-          }
-        }),
-        {
-          deps: [refs, id],
-        },
-      ),
+      H.useStream(fiber.refs.events, {
+        event: yield* _(H.useMemo(E.fromIO(() => HasBeenUpdated.set(true)))),
+      }),
     )
+
+    return yield* _(Patched.get)
+  })
+
+export const renderOnRaf = <E1, A, E2, E3, B, E4, E5>(
+  main: E.Env<E1, A>,
+  Patched: WrappedRef<E2, E3, B>,
+  HasBeenUpdated: WrappedRef<E4, E5, boolean>,
+) =>
+  F.DoF(function* (_) {
+    const fiber = yield* _(F.getCurrentFiber)
+    const shouldContinue = _(() => pipe(fiber.status, R.map(not(F.isTerminal))))
+    const shouldRender = _(HasBeenUpdated.get)
+    const isRendering = _(HasBeenUpdated.set(false))
+
+    while (yield* shouldContinue) {
+      if (yield* shouldRender) {
+        yield* _(raf)
+        yield* isRendering
+
+        const current = yield* _(Patched.get)
+        const next = yield* _(main)
+        const patched = yield* _(P.patch(current, next))
+
+        yield* _(Patched.set(patched))
+      }
+    }
 
     return yield* _(Patched.get)
   })

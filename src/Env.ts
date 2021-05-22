@@ -1,3 +1,5 @@
+import { disposeNone } from '@most/disposable'
+import { Disposable } from '@most/types'
 import * as Alt_ from 'fp-ts/Alt'
 import * as FpApplicative from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
@@ -7,7 +9,7 @@ import * as E from 'fp-ts/Either'
 import * as FIO from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
 import * as FT from 'fp-ts/FromTask'
-import { constant, flow, identity, Lazy } from 'fp-ts/function'
+import { constant, flow, identity, Lazy, pipe } from 'fp-ts/function'
 import { bindTo as bindTo_, flap as flap_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
 import * as IO from 'fp-ts/IO'
 import { Monad2 } from 'fp-ts/Monad'
@@ -266,3 +268,9 @@ export const zip = traverse(Applicative)(<E, A>(x: Env<E, A>) => x)
 export const zipW = (zip as unknown) as <A extends ReadonlyArray<Env<any, any>>>(
   envs: A,
 ) => Env<Intersect<{ [K in keyof A]: GetRequirements<A[K]> }>, { [K in keyof A]: GetValue<A[K]> }>
+
+export const runWith = <A>(f: (value: A) => Disposable) => <E>(requirements: E) => (
+  env: Env<E, A>,
+): Disposable => pipe(requirements, env, R.run(f))
+
+export const execWith = runWith(disposeNone)

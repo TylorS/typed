@@ -236,6 +236,8 @@ export interface WrappedRef<R, E, A> extends Ref<E, A> {
   readonly delete: E.Env<R, Option<A>>
 }
 
+export interface URef<E, A> extends WrappedRef<unknown, E, A> {}
+
 export function wrapRef<E, A>(ref: Ref<E, A>): WrappedRef<Refs, E, A> {
   return {
     ...ref,
