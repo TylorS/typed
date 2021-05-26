@@ -9,7 +9,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@typed/test": "^9.5.0",
     "most-virtual-scheduler": "^1.0.0",

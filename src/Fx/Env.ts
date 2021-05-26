@@ -41,11 +41,23 @@ export const ask = FxT.ask(E.FromReader)
 export const URI = '@typed/fp/Fx/Env'
 export type URI = typeof URI
 
-export interface FxEither<E, A> extends Fx<E.Env<E, unknown>, A> {}
+export interface FxEnv<E, A> extends Fx<E.Env<E, unknown>, A> {}
+
+export type GetRequirements<A> = A extends (...args: readonly any[]) => any
+  ? GetRequirements<ReturnType<A>>
+  : A extends FxEnv<infer E, any>
+  ? E
+  : never
+
+export type GetValue<A> = A extends (...args: readonly any[]) => any
+  ? GetValue<ReturnType<A>>
+  : A extends FxEnv<any, infer R>
+  ? R
+  : never
 
 declare module 'fp-ts/HKT' {
   export interface URItoKind2<E, A> {
-    [URI]: FxEither<E, A>
+    [URI]: FxEnv<E, A>
   }
 }
 

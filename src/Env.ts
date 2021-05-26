@@ -33,6 +33,7 @@ import * as R from './Resume'
 export interface Env<R, A> extends Re.Reader<R, R.Resume<A>> {}
 
 export type GetRequirements<A> = A extends Env<infer R, any> ? R : never
+
 export type GetValue<A> = A extends Env<any, infer R> ? R : never
 
 export const ap: <R, A>(fa: Env<R, A>) => <B>(fab: Env<R, Arity1<A, B>>) => Env<R, B> = RT.ap(

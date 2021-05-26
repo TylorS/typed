@@ -1,11 +1,12 @@
 import { Branded, BrandValue } from '@fp/Branded'
 import * as E from '@fp/Env'
-import { CurrentFiber } from '@fp/Fiber'
+import { CurrentFiber, DoF } from '@fp/Fiber'
 import { AnyFn, ArgsOf } from '@fp/function'
 import * as R from '@fp/Resume'
 import { FunctionN } from 'fp-ts/function'
 
 import { useMemo } from './useMemo'
+import { useMutableRef } from './useMutableRef'
 
 export function useOp<F extends AnyFn<E.Env<any, any>>>(
   op: F,
@@ -13,12 +14,12 @@ export function useOp<F extends AnyFn<E.Env<any, any>>>(
   CurrentFiber & E.GetRequirements<ReturnType<F>>,
   F extends Op<infer _, infer R> ? R : FunctionN<ArgsOf<F>, R.Resume<E.GetValue<ReturnType<F>>>>
 > {
-  return E.asksE((e: E.GetRequirements<ReturnType<F>>) =>
-    useMemo(
-      E.fromIO(() => (...args: ArgsOf<F>) => op(...args)(e)),
-      [e],
-    ),
-  ) as F extends Op<infer _, infer R>
+  return DoF(function* (_) {
+    const e = yield* _(E.ask<E.GetRequirements<ReturnType<F>>>())
+    const f = yield* _(useMutableRef(E.of(op)))
+
+    return yield* _(useMemo(E.fromIO(() => (...args: ArgsOf<F>) => f.current(...args)(e))))
+  }) as F extends Op<infer _, infer R>
     ? R
     : FunctionN<ArgsOf<F>, R.Resume<E.GetValue<ReturnType<F>>>>
 }

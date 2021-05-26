@@ -1,17 +1,22 @@
 import * as E from '@fp/Env'
 import * as F from '@fp/Fiber'
+import { CurrentFiber } from '@fp/Fiber'
 import { pipe } from '@fp/function'
 import { liftEnv as _ } from '@fp/Fx/Env'
 import * as H from '@fp/hooks'
+import { useRef } from '@fp/hooks'
+import { useSink } from '@fp/hooks/useSink'
 import * as P from '@fp/Patch'
 import { WrappedRef } from '@fp/Ref'
 import * as R from '@fp/Resume'
+import { SchedulerEnv } from '@fp/Scheduler'
+import { Eq, EqStrict } from 'fp-ts/Eq'
 import { not } from 'fp-ts/Refinement'
 
-import { raf } from './raf'
+import { Raf, raf } from './raf'
 
-const useHasBeenUpdatedRef = _(H.useRef(E.of(true)))
-const usePatchedRef = <A>(initial: A) => _(H.useRef(E.of(initial)))
+const refOf = <A>(value: A, eq?: Eq<A>) => _(useRef(E.of(value), eq))
+const useHasBeenUpdatedRef = refOf(true)
 
 /**
  * Runs the provided effect anytime there are Ref updates, and will use the provided Patch instance
@@ -20,20 +25,13 @@ const usePatchedRef = <A>(initial: A) => _(H.useRef(E.of(initial)))
 export const useRenderOnRaf = <E, A, B, Deps extends readonly any[]>(
   env: E.Env<E, A>,
   initial: B,
-  options?: H.UseFiberOptions<Deps>,
+  options?: H.UseFiberOptions<Deps> & { readonly patchedEq?: Eq<B> },
 ) =>
   F.DoF(function* () {
-    const Patched = yield* usePatchedRef<B>(initial)
+    const Patched = yield* refOf<B>(initial, options?.patchedEq ?? EqStrict)
     const HasBeenUpdated = yield* useHasBeenUpdatedRef
-    const fiber: F.Fiber<B> = yield* _(
-      H.useFiber(renderOnRaf(env, Patched, HasBeenUpdated), options),
-    )
 
-    yield* _(
-      H.useStream(fiber.refs.events, {
-        event: yield* _(H.useMemo(E.fromIO(() => HasBeenUpdated.set(true)))),
-      }),
-    )
+    yield* _(H.useFiber(renderOnRaf(env, Patched, HasBeenUpdated), options))
 
     return yield* _(Patched.get)
   })
@@ -42,12 +40,16 @@ export const renderOnRaf = <E1, A, E2, E3, B, E4, E5>(
   main: E.Env<E1, A>,
   Patched: WrappedRef<E2, E3, B>,
   HasBeenUpdated: WrappedRef<E4, E5, boolean>,
-) =>
+): E.Env<CurrentFiber & SchedulerEnv & Raf & P.Patch<B, A> & E1 & E2 & E3 & E4 & E5, B> =>
   F.DoF(function* (_) {
     const fiber = yield* _(F.getCurrentFiber)
     const shouldContinue = _(() => pipe(fiber.status, R.map(not(F.isTerminal))))
     const shouldRender = _(HasBeenUpdated.get)
     const isRendering = _(HasBeenUpdated.set(false))
+
+    const sink = yield* _(useSink(HasBeenUpdated.set(true)))
+
+    yield* _(H.useStream(fiber.refs.events, sink))
 
     while (yield* shouldContinue) {
       if (yield* shouldRender) {

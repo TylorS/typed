@@ -1,4 +1,4 @@
-import 'typed-query-selector/strict'
+import 'typed-query-selector'
 
 export type WindowEnv = {
   readonly window: Window
