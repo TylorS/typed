@@ -1,6 +1,6 @@
 {
   "name": "@typed/fp",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Data Structures and Resources for fp-ts",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
@@ -489,6 +489,14 @@
       "require": "./cjs/dom/index.js",
       "import": "./esm/dom/index.js"
     },
+    "./dom/History": {
+      "require": "./cjs/dom/History.js",
+      "import": "./esm/dom/History.js"
+    },
+    "./dom/Location": {
+      "require": "./cjs/dom/Location.js",
+      "import": "./esm/dom/Location.js"
+    },
     "./dom/env": {
       "require": "./cjs/dom/env.js",
       "import": "./esm/dom/env.js"
@@ -509,9 +517,9 @@
       "require": "./cjs/dom/useEventListener.js",
       "import": "./esm/dom/useEventListener.js"
     },
-    "./dom/useHistory": {
-      "require": "./cjs/dom/useHistory.js",
-      "import": "./esm/dom/useHistory.js"
+    "./dom/useRenderOnRaf": {
+      "require": "./cjs/dom/useRenderOnRaf.js",
+      "import": "./esm/dom/useRenderOnRaf.js"
     },
     "./dom/useWindowSize": {
       "require": "./cjs/dom/useWindowSize.js",
@@ -537,6 +545,10 @@
       "require": "./cjs/hooks/HookIndex.js",
       "import": "./esm/hooks/HookIndex.js"
     },
+    "./hooks/HookProviders": {
+      "require": "./cjs/hooks/HookProviders.js",
+      "import": "./esm/hooks/HookProviders.js"
+    },
     "./hooks/HookRefs": {
       "require": "./cjs/hooks/HookRefs.js",
       "import": "./esm/hooks/HookRefs.js"
@@ -556,6 +568,10 @@
     "./hooks/useContext": {
       "require": "./cjs/hooks/useContext.js",
       "import": "./esm/hooks/useContext.js"
+    },
+    "./hooks/useDefaultValue": {
+      "require": "./cjs/hooks/useDefaultValue.js",
+      "import": "./esm/hooks/useDefaultValue.js"
     },
     "./hooks/useDisposable": {
       "require": "./cjs/hooks/useDisposable.js",
@@ -577,6 +593,10 @@
       "require": "./cjs/hooks/useMemo.js",
       "import": "./esm/hooks/useMemo.js"
     },
+    "./hooks/useMutableRef": {
+      "require": "./cjs/hooks/useMutableRef.js",
+      "import": "./esm/hooks/useMutableRef.js"
+    },
     "./hooks/useOp": {
       "require": "./cjs/hooks/useOp.js",
       "import": "./esm/hooks/useOp.js"
@@ -588,6 +608,14 @@
     "./hooks/useRefMap": {
       "require": "./cjs/hooks/useRefMap.js",
       "import": "./esm/hooks/useRefMap.js"
+    },
+    "./hooks/useReplicateRefEvents": {
+      "require": "./cjs/hooks/useReplicateRefEvents.js",
+      "import": "./esm/hooks/useReplicateRefEvents.js"
+    },
+    "./hooks/useSink": {
+      "require": "./cjs/hooks/useSink.js",
+      "import": "./esm/hooks/useSink.js"
     },
     "./hooks/useStream": {
       "require": "./cjs/hooks/useStream.js",
