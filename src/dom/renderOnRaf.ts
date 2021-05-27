@@ -5,7 +5,7 @@ import { pipe } from '@fp/function'
 import * as H from '@fp/hooks'
 import { useSink } from '@fp/hooks/useSink'
 import * as P from '@fp/Patch'
-import { WrappedRef } from '@fp/Ref'
+import { RefEvent, WrappedRef } from '@fp/Ref'
 import * as R from '@fp/Resume'
 import { SchedulerEnv } from '@fp/Scheduler'
 import { not } from 'fp-ts/Refinement'
@@ -22,14 +22,16 @@ export const renderOnRaf = <E1, A, E2, E3, B, E4, E5>(
     const shouldContinue = _(() => pipe(fiber.status, R.map(not(F.isTerminal))))
     const shouldRender = _(HasBeenUpdated.get)
     const isRendering = _(HasBeenUpdated.set(false))
-
-    const sink = yield* _(useSink(HasBeenUpdated.set(true)))
+    const sink = yield* _(
+      useSink((_, event: RefEvent<unknown>) =>
+        HasBeenUpdated.modify((b) => (event.type === 'created' ? b : true)),
+      ),
+    )
 
     yield* _(H.useStream(fiber.refs.events, sink))
 
     while (yield* shouldContinue) {
       if (yield* shouldRender) {
-        yield* _(raf)
         yield* isRendering
 
         const next = yield* _(main)
@@ -38,6 +40,8 @@ export const renderOnRaf = <E1, A, E2, E3, B, E4, E5>(
 
         yield* _(Patched.set(patched))
       }
+
+      yield* _(raf)
     }
 
     return yield* _(Patched.get)
