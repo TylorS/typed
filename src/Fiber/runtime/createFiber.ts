@@ -1,11 +1,12 @@
 import { create } from '@fp/Adapter'
+import { settable } from '@fp/Disposable'
 import { Env } from '@fp/Env'
 import { createReferences, References } from '@fp/Ref'
 import * as R from '@fp/Resume'
 import { SchedulerEnv } from '@fp/Scheduler'
 import { createCallbackTask } from '@fp/Stream'
 import { asap } from '@most/scheduler'
-import { ScheduledTask, Scheduler } from '@most/types'
+import { Scheduler } from '@most/types'
 import { pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 
@@ -43,20 +44,7 @@ export function createFiber<A>(
   const id = FiberId(options.id ?? Symbol(`Fiber`))
   const [sendEvent, statusEvents] = create<Status<A>>()
   const sendEventRef = FiberSendStatus<A>(sendEvent)
-  const scheduledTask: ScheduledTask = asap(
-    createCallbackTask(
-      () =>
-        pipe(
-          fiber,
-          start(sendEventRef),
-          R.chain(() => env({ currentFiber: fiber, scheduler })),
-          R.chain((a) => finish(fiber, a)),
-          R.exec,
-        ),
-      (error) => pipe(fail(fiber, error), R.exec),
-    ),
-    scheduler,
-  )
+  const disposable = settable()
 
   const getStatus = () => pipe({ currentFiber: fiber }, getFiberStatus<A>())
 
@@ -75,7 +63,7 @@ export function createFiber<A>(
     get abort() {
       return pipe(
         { currentFiber: fiber },
-        addDisposable(scheduledTask),
+        addDisposable(disposable),
         R.chain(() => abort(fiber, scheduler)),
         R.chain(getStatus),
       )
@@ -98,6 +86,26 @@ export function createFiber<A>(
           ),
         ),
       ),
+  }
+
+  const resume = env({ currentFiber: fiber, scheduler })
+  const effect = () =>
+    pipe(
+      fiber,
+      start(sendEventRef),
+      R.chain(() => resume),
+      R.chain((a) => finish(fiber, a)),
+      R.exec,
+    )
+  const onError = (error: Error) => pipe(fail(fiber, error), R.exec)
+
+  // Schedule sync effects to run on the next tick
+  if (R.isSync(resume)) {
+    disposable.addDisposable(asap(createCallbackTask(effect, onError), scheduler))
+  }
+
+  if (R.isAsync(resume)) {
+    disposable.addDisposable(effect())
   }
 
   return fiber
