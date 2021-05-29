@@ -1,3 +1,6 @@
+import { disposeBoth, disposeNone, settable, undisposable } from '@fp/Disposable'
+import { Arity1 } from '@fp/function'
+import { MonadRec1 } from '@fp/MonadRec'
 import { Disposable, Disposable as R } from '@most/types'
 import { Alt1 } from 'fp-ts/Alt'
 import { Applicative1, getApplicativeMonoid } from 'fp-ts/Applicative'
@@ -17,10 +20,6 @@ import { isNone, none, Option, some } from 'fp-ts/Option'
 import { Pointed1 } from 'fp-ts/Pointed'
 import * as RA from 'fp-ts/ReadonlyArray'
 import { Task } from 'fp-ts/Task'
-
-import { disposeBoth, disposeNone, settable, undisposable } from './Disposable'
-import { Arity1 } from './function'
-import { MonadRec1 } from './MonadRec'
 
 export type Resume<A> = Sync<A> | Async<A>
 

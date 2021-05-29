@@ -1,3 +1,6 @@
+import * as FxT from '@fp/FxT'
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '@fp/Provide'
+import * as E from '@fp/ReaderOption'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { Chain2 } from 'fp-ts/Chain'
@@ -8,9 +11,6 @@ import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 import * as R from 'fp-ts/Reader'
 
-import * as FxT from '../FxT'
-import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '../Provide'
-import * as E from '../ReaderOption'
 import { Fx } from './Fx'
 
 export const of = FxT.of(E.Pointed)

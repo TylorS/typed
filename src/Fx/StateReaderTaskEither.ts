@@ -1,4 +1,6 @@
+import * as FxT from '@fp/FxT'
 import { Provide4, ProvideAll4, ProvideSome4, UseAll4, UseSome4 } from '@fp/Provide'
+import * as SRTE from '@fp/StateReaderTaskEither'
 import { Applicative4 } from 'fp-ts/Applicative'
 import { Apply4 } from 'fp-ts/Apply'
 import { Chain4 } from 'fp-ts/Chain'
@@ -8,8 +10,6 @@ import { Functor4 } from 'fp-ts/Functor'
 import { Monad4 } from 'fp-ts/Monad'
 import { Pointed4 } from 'fp-ts/Pointed'
 
-import * as FxT from '../FxT'
-import * as SRTE from '../StateReaderTaskEither'
 import { Fx } from './Fx'
 
 export const of = FxT.of(SRTE.Pointed)

@@ -1,3 +1,11 @@
+import * as E from '@fp/Env'
+import * as FE from '@fp/FromEnv'
+import { FromEnv2 } from '@fp/FromEnv'
+import * as FRe from '@fp/FromResume'
+import { FromResume2 } from '@fp/FromResume'
+import { MonadRec2 } from '@fp/MonadRec'
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '@fp/Provide'
+import { Resume } from '@fp/Resume'
 import { Alt2 } from 'fp-ts/Alt'
 import { Alternative2 } from 'fp-ts/Alternative'
 import { Applicative2 } from 'fp-ts/Applicative'
@@ -15,15 +23,6 @@ import { Monad2 } from 'fp-ts/Monad'
 import * as O from 'fp-ts/Option'
 import * as OT from 'fp-ts/OptionT'
 import { Pointed2 } from 'fp-ts/Pointed'
-
-import * as E from './Env'
-import * as FE from './FromEnv'
-import { FromEnv2 } from './FromEnv'
-import * as FRe from './FromResume'
-import { FromResume2 } from './FromResume'
-import { MonadRec2 } from './MonadRec'
-import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from './Provide'
-import { Resume } from './Resume'
 
 export interface EnvOption<E, A> extends E.Env<E, O.Option<A>> {}
 

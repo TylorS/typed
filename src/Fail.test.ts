@@ -1,11 +1,10 @@
+import { of } from '@fp/Env'
+import { catchError, throwError } from '@fp/Fail'
+import { Do } from '@fp/Fx/Env'
+import { async, exec } from '@fp/Resume'
 import { disposeNone } from '@most/disposable'
 import { describe, it } from '@typed/test'
 import { pipe } from 'fp-ts/function'
-
-import { of } from './Env'
-import { catchError, throwError } from './Fail'
-import { Do } from './Fx/Env'
-import { async, exec } from './Resume'
 
 export const test = describe(__filename, [
   describe(throwError.name, [

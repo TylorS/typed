@@ -1,3 +1,10 @@
+import * as Env from '@fp/Env'
+import * as FE from '@fp/FromEnv'
+import * as FRe from '@fp/FromResume'
+import { swapEithers } from '@fp/internal'
+import { MonadRec3 } from '@fp/MonadRec'
+import * as P from '@fp/Provide'
+import { Resume, sync } from '@fp/Resume'
 import * as Alt_ from 'fp-ts/Alt'
 import * as Applicative_ from 'fp-ts/Applicative'
 import * as Apply_ from 'fp-ts/Apply'
@@ -18,14 +25,6 @@ import * as Pointed_ from 'fp-ts/Pointed'
 import { Reader } from 'fp-ts/Reader'
 import * as Semigroup_ from 'fp-ts/Semigroup'
 import * as T from 'fp-ts/Task'
-
-import * as Env from './Env'
-import * as FE from './FromEnv'
-import * as FRe from './FromResume'
-import { swapEithers } from './internal'
-import { MonadRec3 } from './MonadRec'
-import * as P from './Provide'
-import { Resume, sync } from './Resume'
 
 export interface EnvEither<R, E, A> extends Env.Env<R, E.Either<E, A>> {}
 
@@ -61,7 +60,7 @@ declare module 'fp-ts/HKT' {
   }
 }
 
-declare module './Hkt' {
+declare module '@fp/Hkt' {
   export interface UriToVariance {
     [URI]: V<R, Contravariant> & V<E, Covariant>
   }

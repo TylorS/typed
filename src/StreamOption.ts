@@ -1,3 +1,5 @@
+import { MonadRec1 } from '@fp/MonadRec'
+import * as S from '@fp/Stream'
 import { Applicative1 } from 'fp-ts/Applicative'
 import { Apply1 } from 'fp-ts/Apply'
 import { Chain1 } from 'fp-ts/Chain'
@@ -9,9 +11,6 @@ import { Monad1 } from 'fp-ts/Monad'
 import * as O from 'fp-ts/Option'
 import * as OT from 'fp-ts/OptionT'
 import { Pointed1 } from 'fp-ts/Pointed'
-
-import { MonadRec1 } from './MonadRec'
-import * as S from './Stream'
 
 export interface StreamOption<A> extends S.Stream<O.Option<A>> {}
 

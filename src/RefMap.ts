@@ -1,12 +1,11 @@
+import * as E from '@fp/Env'
+import { deepEqualsEq } from '@fp/Eq'
 import { pipe } from '@fp/function'
+import { createRef, getRef, modifyRef_, Refs, WrappedRef } from '@fp/Ref'
 import { Eq } from 'fp-ts/Eq'
 import { constant, flow, identity } from 'fp-ts/function'
 import { match, Option } from 'fp-ts/Option'
 import * as RM from 'fp-ts/ReadonlyMap'
-
-import * as E from './Env'
-import { deepEqualsEq } from './Eq'
-import { createRef, getRef, modifyRef_, Refs, WrappedRef } from './Ref'
 
 export interface RefMap<E, K, V> extends WrappedRef<Refs, E, ReadonlyMap<K, V>> {
   readonly key: Eq<K>

@@ -1,3 +1,6 @@
+import { swapEithers } from '@fp/internal'
+import { MonadRec2 } from '@fp/MonadRec'
+import * as R from '@fp/Resume'
 import { Alt2 } from 'fp-ts/Alt'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
@@ -11,10 +14,6 @@ import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 import { Semigroup } from 'fp-ts/Semigroup'
-
-import { swapEithers } from './internal'
-import { MonadRec2 } from './MonadRec'
-import * as R from './Resume'
 
 export type ResumeEither<E, A> = R.Resume<E.Either<E, A>>
 
@@ -49,7 +48,7 @@ declare module 'fp-ts/HKT' {
   }
 }
 
-declare module './Hkt' {
+declare module '@fp/Hkt' {
   export interface UriToVariance {
     [URI]: V<E, Covariant>
   }

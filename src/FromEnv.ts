@@ -1,3 +1,5 @@
+import * as E from '@fp/Env'
+import { ApplyVariance, Hkt } from '@fp/Hkt'
 import { Chain, Chain2, Chain3, Chain4, chainFirst } from 'fp-ts/Chain'
 import { flow } from 'fp-ts/function'
 import { HKT, HKT2, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
@@ -7,9 +9,6 @@ import {
   NaturalTransformation23RC,
   NaturalTransformation24R,
 } from 'fp-ts/NaturalTransformation'
-
-import * as E from './Env'
-import { ApplyVariance, Hkt } from './Hkt'
 
 export type FromEnv<F> = {
   readonly URI?: F

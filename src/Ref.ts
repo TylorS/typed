@@ -1,14 +1,13 @@
+import { create } from '@fp/Adapter'
+import { Branded } from '@fp/Branded'
+import * as E from '@fp/Env'
+import { deepEqualsEq } from '@fp/Eq'
+import { Arity1 } from '@fp/function'
+import { Resume, sync } from '@fp/Resume'
 import { Stream } from '@most/types'
 import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
 import { none, Option, some } from 'fp-ts/Option'
-
-import { create } from './Adapter'
-import { Branded } from './Branded'
-import * as E from './Env'
-import { deepEqualsEq } from './Eq'
-import { Arity1 } from './function'
-import { Resume, sync } from './Resume'
 
 /**
  * A reference to a value. When attempting to retrieve a Ref's value using

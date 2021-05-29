@@ -1,3 +1,6 @@
+import { MonadRec2 } from '@fp/MonadRec'
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '@fp/Provide'
+import * as R from '@fp/Reader'
 import { Alt2 } from 'fp-ts/Alt'
 import { Alternative2 } from 'fp-ts/Alternative'
 import { Applicative2 } from 'fp-ts/Applicative'
@@ -14,10 +17,6 @@ import { Monad2 } from 'fp-ts/Monad'
 import * as O from 'fp-ts/Option'
 import * as OT from 'fp-ts/OptionT'
 import { Pointed2 } from 'fp-ts/Pointed'
-
-import { MonadRec2 } from './MonadRec'
-import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from './Provide'
-import * as R from './Reader'
 
 export interface ReaderOption<E, A> extends R.Reader<E, O.Option<A>> {}
 
@@ -55,7 +54,7 @@ declare module 'fp-ts/HKT' {
   }
 }
 
-declare module './Hkt' {
+declare module '@fp/Hkt' {
   export interface UriToVariance {
     [URI]: V<E, Contravariant>
   }

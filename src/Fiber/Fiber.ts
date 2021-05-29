@@ -1,11 +1,11 @@
+import * as E from '@fp/Env'
+import { References, Refs } from '@fp/Ref'
+import { chain, fromIO, Resume, sync } from '@fp/Resume'
+import { SchedulerEnv } from '@fp/Scheduler'
 import { Disposable, Stream } from '@most/types'
 import { constVoid, flow, pipe } from 'fp-ts/function'
 import { isSome, Option } from 'fp-ts/Option'
 
-import * as E from '../Env'
-import { References, Refs } from '../Ref'
-import { chain, fromIO, Resume, sync } from '../Resume'
-import { SchedulerEnv } from '../Scheduler'
 import { FiberId } from './FiberId'
 import { Status } from './Status'
 

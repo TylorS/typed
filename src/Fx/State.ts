@@ -1,3 +1,5 @@
+import * as FxT from '@fp/FxT'
+import * as S from '@fp/State'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { Chain2 } from 'fp-ts/Chain'
@@ -8,8 +10,6 @@ import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 
-import * as FxT from '../FxT'
-import * as S from '../State'
 import { Fx } from './Fx'
 
 export const of = FxT.of(S.Pointed)

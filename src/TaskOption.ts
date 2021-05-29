@@ -1,9 +1,8 @@
+import { MonadRec1 } from '@fp/MonadRec'
 import { ChainRec1 } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as TO from 'fp-ts/TaskOption'
-
-import { MonadRec1 } from './MonadRec'
 
 export const chainRec = <A, B>(f: (value: A) => TO.TaskOption<E.Either<A, B>>) => (
   value: A,

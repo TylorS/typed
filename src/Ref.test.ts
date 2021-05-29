@@ -1,14 +1,13 @@
+import * as E from '@fp/Env'
+import { alwaysEqualsEq } from '@fp/Eq'
 import { ArgsOf, pipe } from '@fp/function'
+import { Do } from '@fp/Fx/Env'
+import { LiftFx2 } from '@fp/FxT'
+import { createRef, createReferences, deleteRef, getRef, RefEvent, Refs, setRef } from '@fp/Ref'
+import { exec } from '@fp/Resume'
 import { createSink } from '@fp/Stream'
 import { Assertions, describe, it } from '@typed/test'
 import { createVirtualScheduler } from 'most-virtual-scheduler'
-
-import * as E from './Env'
-import { alwaysEqualsEq } from './Eq'
-import { Do } from './Fx/Env'
-import { LiftFx2 } from './FxT'
-import { createRef, createReferences, deleteRef, getRef, RefEvent, Refs, setRef } from './Ref'
-import { exec } from './Resume'
 
 const initial = 1
 const ref = createRef(E.of(initial))

@@ -1,3 +1,6 @@
+import { settable, undisposable } from '@fp/Disposable'
+import { FromResume1 } from '@fp/FromResume'
+import { run } from '@fp/Resume'
 import {
   ap,
   awaitPromises,
@@ -37,10 +40,6 @@ import { Pointed1 } from 'fp-ts/Pointed'
 import { Predicate } from 'fp-ts/Predicate'
 import { Separated } from 'fp-ts/Separated'
 import { Task } from 'fp-ts/Task'
-
-import { settable, undisposable } from './Disposable'
-import { FromResume1 } from './FromResume'
-import { run } from './Resume'
 
 /**
  * Convert an IO<Disposable> into a Most.js Task

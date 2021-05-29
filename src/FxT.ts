@@ -1,3 +1,25 @@
+import { Arity1 } from '@fp/function'
+import { chain as chain_, doFx, Fx, map as map_ } from '@fp/Fx/Fx'
+import { ApplyVariance, Hkt, Initial } from '@fp/Hkt'
+import { MonadRec, MonadRec1, MonadRec2, MonadRec2C, MonadRec3, MonadRec4 } from '@fp/MonadRec'
+import {
+  ProvideAll,
+  ProvideAll2,
+  ProvideAll3,
+  ProvideAll4,
+  ProvideSome,
+  ProvideSome2,
+  ProvideSome3,
+  ProvideSome4,
+  UseAll,
+  UseAll2,
+  UseAll3,
+  UseAll4,
+  UseSome,
+  UseSome2,
+  UseSome3,
+  UseSome4,
+} from '@fp/Provide'
 import { Apply, Apply1, Apply2, Apply3, Apply4 } from 'fp-ts/Apply'
 import { Either, left, match, right } from 'fp-ts/Either'
 import { FromReader, FromReader2, FromReader3, FromReader3C, FromReader4 } from 'fp-ts/FromReader'
@@ -26,29 +48,6 @@ import {
 } from 'fp-ts/NaturalTransformation'
 import { Pointed, Pointed1, Pointed2, Pointed3, Pointed4 } from 'fp-ts/Pointed'
 import { A, U } from 'ts-toolbelt'
-
-import { Arity1 } from './function'
-import { chain as chain_, doFx, Fx, map as map_ } from './Fx/Fx'
-import { ApplyVariance, Hkt, Initial } from './Hkt'
-import { MonadRec, MonadRec1, MonadRec2, MonadRec2C, MonadRec3, MonadRec4 } from './MonadRec'
-import {
-  ProvideAll,
-  ProvideAll2,
-  ProvideAll3,
-  ProvideAll4,
-  ProvideSome,
-  ProvideSome2,
-  ProvideSome3,
-  ProvideSome4,
-  UseAll,
-  UseAll2,
-  UseAll3,
-  UseAll4,
-  UseSome,
-  UseSome2,
-  UseSome3,
-  UseSome4,
-} from './Provide'
 
 export type FxT<F, Params extends readonly any[]> = Params extends readonly [...infer Init, infer R]
   ? Fx<Hkt<F, readonly [...Init, unknown]>, R>

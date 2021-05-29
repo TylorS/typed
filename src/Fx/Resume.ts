@@ -1,3 +1,5 @@
+import * as FxT from '@fp/FxT'
+import * as R from '@fp/Resume'
 import { Applicative1 } from 'fp-ts/Applicative'
 import { Apply1 } from 'fp-ts/Apply'
 import { Chain1 } from 'fp-ts/Chain'
@@ -7,8 +9,6 @@ import { Functor1 } from 'fp-ts/Functor'
 import { Monad1 } from 'fp-ts/Monad'
 import { Pointed1 } from 'fp-ts/Pointed'
 
-import * as FxT from '../FxT'
-import * as R from '../Resume'
 import { Fx } from './Fx'
 
 export const of = FxT.of(R.Pointed)

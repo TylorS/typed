@@ -1,8 +1,8 @@
+import * as E from '@fp/Env'
 import { DoF } from '@fp/Fiber'
 import { SchedulerEnv } from '@fp/Scheduler'
 import { Sink, Stream } from '@most/types'
 
-import * as E from '../Env'
 import { useDisposable } from './useDisposable'
 import { useMutableRef } from './useMutableRef'
 

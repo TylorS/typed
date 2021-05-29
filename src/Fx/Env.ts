@@ -1,4 +1,8 @@
+import * as E from '@fp/Env'
 import { flow } from '@fp/function'
+import * as FxT from '@fp/FxT'
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '@fp/Provide'
+import * as Re from '@fp/Resume'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { Chain2 } from 'fp-ts/Chain'
@@ -10,10 +14,6 @@ import { Pointed2 } from 'fp-ts/Pointed'
 import * as R from 'fp-ts/Reader'
 import * as T from 'fp-ts/Task'
 
-import * as E from '../Env'
-import * as FxT from '../FxT'
-import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '../Provide'
-import * as Re from '../Resume'
 import { Fx } from './Fx'
 
 export const of = FxT.of(E.Pointed)

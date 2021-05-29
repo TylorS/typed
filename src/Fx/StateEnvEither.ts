@@ -1,4 +1,6 @@
+import * as FxT from '@fp/FxT'
 import { Provide4, ProvideAll4, ProvideSome4, UseAll4, UseSome4 } from '@fp/Provide'
+import * as SEE from '@fp/StateEnvEither'
 import { Applicative4 } from 'fp-ts/Applicative'
 import { Apply4 } from 'fp-ts/Apply'
 import { Chain4 } from 'fp-ts/Chain'
@@ -9,8 +11,6 @@ import { Monad4 } from 'fp-ts/Monad'
 import { Pointed4 } from 'fp-ts/Pointed'
 import * as R from 'fp-ts/Reader'
 
-import * as FxT from '../FxT'
-import * as SEE from '../StateEnvEither'
 import { Fx } from './Fx'
 
 export const of = FxT.of(SEE.Pointed)

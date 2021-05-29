@@ -1,11 +1,10 @@
+import * as E from '@fp/Env'
 import { pipe } from '@fp/function'
+import { createRef, getRef, modifyRef_, Refs, WrappedRef } from '@fp/Ref'
+import * as WM from '@fp/WeakMap'
 import { EqStrict } from 'fp-ts/Eq'
 import { constant, identity } from 'fp-ts/function'
 import { match, Option } from 'fp-ts/Option'
-
-import * as E from './Env'
-import { createRef, getRef, modifyRef_, Refs, WrappedRef } from './Ref'
-import * as WM from './WeakMap'
 
 export interface RefWeakMap<E, K extends object, V> extends WrappedRef<Refs, E, WeakMap<K, V>> {}
 

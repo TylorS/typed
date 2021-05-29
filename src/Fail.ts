@@ -1,9 +1,8 @@
+import { Env, map, of } from '@fp/Env'
+import { async, Resume, start } from '@fp/Resume'
 import { Disposable } from '@most/types'
 import { Either, left, right } from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
-
-import { Env, map, of } from './Env'
-import { async, Resume, start } from './Resume'
 
 export type Fail<Key extends PropertyKey, E> = Readonly<Record<Key, (e: E) => Resume<never>>>
 

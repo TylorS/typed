@@ -1,9 +1,8 @@
+import * as E from '@fp/Env'
 import { pipe } from '@fp/function'
+import { Queue } from '@fp/Queue'
+import { createRef, getRef, Refs, WrappedRef } from '@fp/Ref'
 import { EqStrict } from 'fp-ts/Eq'
-
-import * as E from './Env'
-import { Queue } from './Queue'
-import { createRef, getRef, Refs, WrappedRef } from './Ref'
 
 export interface RefQueue<E, A> extends WrappedRef<Refs, E, Queue<A>> {}
 

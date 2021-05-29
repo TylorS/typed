@@ -1,3 +1,4 @@
+import * as FxT from '@fp/FxT'
 import { MonadRec } from '@fp/Option'
 import { Applicative1 } from 'fp-ts/Applicative'
 import { Apply1 } from 'fp-ts/Apply'
@@ -9,7 +10,6 @@ import { Monad1 } from 'fp-ts/Monad'
 import * as O from 'fp-ts/Option'
 import { Pointed1 } from 'fp-ts/Pointed'
 
-import * as FxT from '../FxT'
 import { Fx } from './Fx'
 
 export const of = FxT.of(O.Pointed)

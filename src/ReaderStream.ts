@@ -1,3 +1,6 @@
+import { Arity1, pipe } from '@fp/function'
+import { MonadRec2 } from '@fp/MonadRec'
+import * as S from '@fp/Stream'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { Chain2 } from 'fp-ts/Chain'
@@ -8,10 +11,6 @@ import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
-
-import { Arity1, pipe } from './function'
-import { MonadRec2 } from './MonadRec'
-import * as S from './Stream'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>
@@ -68,7 +67,7 @@ declare module 'fp-ts/HKT' {
   }
 }
 
-declare module './Hkt' {
+declare module '@fp/Hkt' {
   export interface UriToVariance {
     [URI]: V<E, Contravariant>
   }

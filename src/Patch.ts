@@ -1,5 +1,5 @@
-import { Env } from './Env'
-import { Resume } from './Resume'
+import { Env } from '@fp/Env'
+import { Resume } from '@fp/Resume'
 
 export interface Patch<A, B> {
   readonly patch: (a: A, b: B) => Resume<A>

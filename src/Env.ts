@@ -1,3 +1,10 @@
+import * as FRe from '@fp/FromResume'
+import { FromResume2 } from '@fp/FromResume'
+import { Arity1 } from '@fp/function'
+import { Intersect } from '@fp/Hkt'
+import { MonadRec2 } from '@fp/MonadRec'
+import * as P from '@fp/Provide'
+import * as R from '@fp/Resume'
 import { disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
 import * as Alt_ from 'fp-ts/Alt'
@@ -18,14 +25,6 @@ import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
 import { traverse } from 'fp-ts/ReadonlyArray'
 import * as Task from 'fp-ts/Task'
-
-import * as FRe from './FromResume'
-import { FromResume2 } from './FromResume'
-import { Arity1 } from './function'
-import { Intersect } from './Hkt'
-import { MonadRec2 } from './MonadRec'
-import * as P from './Provide'
-import * as R from './Resume'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>
@@ -76,7 +75,7 @@ declare module 'fp-ts/HKT' {
   }
 }
 
-declare module './Hkt' {
+declare module '@fp/Hkt' {
   export interface UriToVariance {
     [URI]: V<E, Contravariant>
   }
