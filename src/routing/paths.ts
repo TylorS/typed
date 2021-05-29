@@ -72,13 +72,10 @@ export type PathJoin<A extends ReadonlyArray<string>> = A extends readonly [
   ? `${FormatPart<A.Cast<Head, string>>}${PathJoin<A.Cast<Tail, ReadonlyArray<string>>>}`
   : ``
 
-export type FormatPart<P extends string> = `` extends P
-  ? P
-  : RemoveLeadingSlash<P> extends `\\?${infer _}`
-  ? RemoveLeadingSlash<P>
-  : RemoveLeadingSlash<P> extends `{${infer _}`
-  ? RemoveLeadingSlash<P>
-  : `/${RemoveLeadingSlash<P>}`
+// Extract the parameters out of a path
+export type ParamsOf<A extends string> = Compact<PartsToParams<PathToParts<A>>>
+
+export type QueryParamsOf<P extends string> = Compact<QueryToParams<PathToQuery<P>>>
 
 export const pathJoin = <P extends ReadonlyArray<string>>(...parts: P): PathJoin<P> => {
   if (parts.length === 0) {
@@ -90,19 +87,27 @@ export const pathJoin = <P extends ReadonlyArray<string>>(...parts: P): PathJoin
   return `${formatPart(head)}${pathJoin(...tail)}` as PathJoin<P>
 }
 
-export const formatPart = (trimmed: string) => {
-  trimmed = removeLeadingSlash(trimmed)
+export const formatPart = (part: string) => {
+  part = removeLeadingSlash(part)
 
-  if (trimmed.startsWith('{')) {
-    return trimmed
+  if (part.startsWith('{')) {
+    return part
   }
 
-  if (trimmed.startsWith('\\?')) {
-    return trimmed
+  if (part.startsWith('\\?')) {
+    return part
   }
 
-  return trimmed === '' ? '' : `/${trimmed}`
+  return part === '' ? '' : `/${part}`
 }
+
+export type FormatPart<P extends string> = `` extends P
+  ? P
+  : RemoveLeadingSlash<P> extends `\\?${infer _}`
+  ? RemoveLeadingSlash<P>
+  : RemoveLeadingSlash<P> extends `{${infer _}`
+  ? RemoveLeadingSlash<P>
+  : `/${RemoveLeadingSlash<P>}`
 
 // Convert a path back into a tuple of path parts
 export type PathToParts<P> = P extends `${infer Head}\\?${infer Tail}`
@@ -155,21 +160,7 @@ export type QueryParamsToParts<
   ? QueryParamsToParts<Tail, QueryParamsToParts<Head, R>>
   : readonly [...R, QueryParamValue<Q>]
 
-type QueryParamValue<K extends string> = K extends `${infer _}=${infer R}` ? R : string
-
-// Increments up from I until it finds an index that is not taken
-export type FindNextIndex<AST, I extends number = 0> = I extends keyof AST
-  ? FindNextIndex<AST, N.Add<I, 1>>
-  : I
-
-// Extract the parameters out of a path
-export type ParamsOf<A extends string> = Compact<PartsToParams<PathToParts<A>>>
-
-export type QueryParamsOf<P extends string> = Compact<QueryToParams<PathToQuery<P>>>
-
-type PathToQuery<P extends string> = P extends `${infer _}\\${infer Q}` ? Q : ``
-
-type QueryToParams<Q extends string, AST = {}> = Q extends `${infer Head}&${infer Tail}`
+export type QueryToParams<Q extends string, AST = {}> = Q extends `${infer Head}&${infer Tail}`
   ? QueryToParams<Tail, QueryToParams<Head, AST>>
   : Q extends `?${infer K}`
   ? QueryToParams<K, AST>
@@ -178,6 +169,15 @@ type QueryToParams<Q extends string, AST = {}> = Q extends `${infer Head}&${infe
   : Q extends `${infer K}`
   ? AST & QueryParamAst<K>
   : AST
+
+// Increments up from I until it finds an index that is not taken
+type FindNextIndex<AST, I extends number = 0> = I extends keyof AST
+  ? FindNextIndex<AST, N.Add<I, 1>>
+  : I
+
+type QueryParamValue<K extends string> = K extends `${infer _}=${infer R}` ? R : string
+
+type PathToQuery<P extends string> = P extends `${infer _}\\${infer Q}` ? Q : ``
 
 type QueryParamAst<K extends string> = Readonly<Record<QueryParamAstKey<K>, QueryParamAstValue<K>>>
 
@@ -190,35 +190,3 @@ type QueryParamAstValue<K extends string> = K extends `${infer _}=${infer R}`
   : string
 
 type Compact<A> = { readonly [K in keyof A]: A[K] }
-
-// Type-level tests
-declare const check: <_ extends 1>() => true
-
-type Path = '/foo/:bar/(.*)\\?d=:foo?&e=(.*)'
-type Parts = PathToParts<Path>
-type Params = ParamsOf<Path>
-type QueryParamsP = QueryParamsOf<Path>
-
-check<A.Equals<Parts, readonly ['foo', Param<'bar'>, Unnamed, '\\?d=:foo?&e=(.*)']>>()
-
-check<
-  A.Equals<
-    Params,
-    {
-      readonly bar: string
-      readonly 0: string
-      readonly foo?: string | undefined
-      readonly 1: string
-    }
-  >
->()
-
-check<
-  A.Equals<
-    QueryParamsP,
-    {
-      readonly d?: string
-      readonly e: string
-    }
-  >
->()

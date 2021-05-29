@@ -60,7 +60,7 @@
     "clean": "ts-node ./tools/cleanup",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
     "lint-staged": "lint-staged",
-    "unit-test": "typed-test",
+    "unit-test": "typed-test --typeCheck",
     "test": "concurrently npm:lint npm:unit-test npm:typecheck",
     "test:watch": "npm test -- --watch",
     "typecheck": "tsc -P ./tsconfig.esm.json --noEmit",
