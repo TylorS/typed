@@ -1,7 +1,7 @@
 import * as E from '@fp/Env'
 import { Eq } from '@fp/Eq'
 import { flow, pipe } from '@fp/function'
-import { createRef, WrappedRef } from '@fp/Ref'
+import { createRef, URef } from '@fp/Ref'
 
 import { CurrentFiber, Fiber, usingFiberRefs } from './Fiber'
 
@@ -13,7 +13,7 @@ export function createFiberRef<E, A>(
   initial: E.Env<E, A>,
   id?: PropertyKey | undefined,
   eq?: Eq<A> | undefined,
-): WrappedRef<unknown, E, A> {
+): URef<E, A> {
   const ref = createRef(initial, id, eq)
   const provideFiber = E.useSome<CurrentFiber>({ currentFiber })
 

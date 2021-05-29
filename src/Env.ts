@@ -9,7 +9,7 @@ import * as E from 'fp-ts/Either'
 import * as FIO from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
 import * as FT from 'fp-ts/FromTask'
-import { constant, flow, identity, Lazy, pipe } from 'fp-ts/function'
+import * as FN from 'fp-ts/function'
 import { bindTo as bindTo_, flap as flap_, Functor2, tupled as tupled_ } from 'fp-ts/Functor'
 import * as IO from 'fp-ts/IO'
 import { Monad2 } from 'fp-ts/Monad'
@@ -47,6 +47,8 @@ export const chain = RT.chain(R.Chain) as <A, R1, B>(
 export const fromReader: <R, A>(ma: Re.Reader<R, A>) => Env<R, A> = RT.fromReader(R.Pointed)
 
 export const map: <A, B>(f: (a: A) => B) => <R>(fa: Env<R, A>) => Env<R, B> = RT.map(R.Functor)
+
+export const constant = FN.flow(FN.constant, map)
 
 export const of: <A>(a: A) => Env<unknown, A> = RT.of(R.Pointed)
 
@@ -138,8 +140,10 @@ export const chainFirstW = chainFirst as <A, E1, B>(
   f: (a: A) => Env<E1, B>,
 ) => <E2>(first: Env<E2, A>) => Env<E1 & E2, A>
 
-export const flattenW = chain(identity) as <E1, E2, A>(env: Env<E1, Env<E2, A>>) => Env<E1 & E2, A>
-export const flatten = chain(identity) as <E, A>(env: Env<E, Env<E, A>>) => Env<E, A>
+export const flattenW = chain(FN.identity) as <E1, E2, A>(
+  env: Env<E1, Env<E2, A>>,
+) => Env<E1 & E2, A>
+export const flatten = chain(FN.identity) as <E, A>(env: Env<E, Env<E, A>>) => Env<E, A>
 
 export const Monad: Monad2<URI> = {
   ...Chain,
@@ -168,12 +172,12 @@ export const race = <E, A>(a: Env<E, A>) => <B>(b: Env<E, B>): Env<E, A | B> => 
 
 export const Alt: Alt_.Alt2<URI> = {
   ...Functor,
-  alt: <E, A>(snd: Lazy<Env<E, A>>) => (fst: Env<E, A>) => raceW(fst)(snd()),
+  alt: <E, A>(snd: FN.Lazy<Env<E, A>>) => (fst: Env<E, A>) => raceW(fst)(snd()),
 }
 
 export const alt = Alt.alt
 export const altW = alt as <E1, A>(
-  snd: Lazy<Env<E1, A>>,
+  snd: FN.Lazy<Env<E1, A>>,
 ) => <E2>(fst: Env<E2, A>) => Env<E1 & E2, A>
 
 export const altAll = Alt_.altAll(Alt)
@@ -192,7 +196,7 @@ export const FromTask: FT.FromTask2<URI> = {
 
 export const fromTask = FromTask.fromTask as <A, E = unknown>(fa: Task.Task<A>) => Env<E, A>
 
-export const fromResume: <A, E = unknown>(resume: R.Resume<A>) => Env<E, A> = constant
+export const fromResume: <A, E = unknown>(resume: R.Resume<A>) => Env<E, A> = FN.constant
 
 export const FromResume: FromResume2<URI> = {
   fromResume,
@@ -248,7 +252,7 @@ export const tupled = tupled_(Functor)
 
 export const ask = FR.ask(FromReader)
 export const asks = FR.asks(FromReader)
-export const asksE: <R, E, A>(f: (r: R) => Env<E, A>) => Env<R & E, A> = flow(asks, flattenW)
+export const asksE: <R, E, A>(f: (r: R) => Env<E, A>) => Env<R & E, A> = FN.flow(asks, flattenW)
 export const chainReaderK = FR.chainReaderK(FromReader, Chain)
 export const fromReaderK = FR.fromReaderK(FromReader)
 
@@ -272,6 +276,6 @@ export const zipW = (zip as unknown) as <A extends ReadonlyArray<Env<any, any>>>
 
 export const runWith = <A>(f: (value: A) => Disposable) => <E>(requirements: E) => (
   env: Env<E, A>,
-): Disposable => pipe(requirements, env, R.run(f))
+): Disposable => FN.pipe(requirements, env, R.run(f))
 
 export const execWith = runWith(disposeNone)

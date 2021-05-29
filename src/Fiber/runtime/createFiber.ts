@@ -1,7 +1,7 @@
 import { create } from '@fp/Adapter'
 import { settable } from '@fp/Disposable'
 import { Env } from '@fp/Env'
-import { createReferences, References } from '@fp/Ref'
+import { createReferences } from '@fp/Ref'
 import * as R from '@fp/Resume'
 import { SchedulerEnv } from '@fp/Scheduler'
 import { createCallbackTask } from '@fp/Stream'
@@ -10,7 +10,7 @@ import { Scheduler } from '@most/types'
 import { pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 
-import { CloneOptions, CurrentFiber, Fiber } from '../Fiber'
+import { CloneOptions, CurrentFiber, Fiber, ForkOptions } from '../Fiber'
 import { FiberId } from '../FiberId'
 import { Status } from '../Status'
 import { addDisposable } from './FiberDisposable'
@@ -23,12 +23,9 @@ import { pause } from './internal/pause'
 import { play } from './internal/play'
 import { start } from './internal/start'
 
-export type FiberOptions = {
+export type FiberOptions = ForkOptions & {
   readonly scheduler: Scheduler
-
   readonly parent?: Fiber<unknown>
-  readonly refs?: References
-  readonly id?: PropertyKey
 }
 
 export function createFiber<A>(
@@ -71,6 +68,12 @@ export function createFiber<A>(
     clone: (options: CloneOptions = {}) =>
       pipe(
         options.inheritRefs ? refs.clone : R.of(O.none),
+        R.chainFirst(
+          O.matchW(
+            () => R.of(void 0),
+            (refs) => (options.withRefs ? options.withRefs({ refs }) : R.of(void 0)),
+          ),
+        ),
         R.chain((option) =>
           R.sync(() =>
             createFiber(env, {
@@ -93,6 +96,7 @@ export function createFiber<A>(
     pipe(
       fiber,
       start(sendEventRef),
+      R.chain(() => (options.withRefs ? options.withRefs({ refs }) : R.of(void 0))),
       R.chain(() => resume),
       R.chain((a) => finish(fiber, a)),
       R.exec,

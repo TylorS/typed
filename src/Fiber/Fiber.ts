@@ -67,6 +67,7 @@ export interface Fiber<A> extends Refs {
 export type CloneOptions = {
   readonly inheritRefs?: boolean
   readonly parent?: Fiber<unknown>
+  readonly withRefs?: E.Env<Refs, any>
 }
 
 /**
@@ -110,6 +111,7 @@ export type Fork = {
 export type ForkOptions = {
   readonly refs?: References
   readonly id?: PropertyKey
+  readonly withRefs?: E.Env<Refs, any>
 }
 
 /**

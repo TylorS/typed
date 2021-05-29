@@ -15,4 +15,8 @@ export const DoF = flow(doEnv, toEnv, usingFiberRefs) as <
   N = unknown
 >(
   f: (lift: FxT.LiftFx2<'@typed/fp/Env'>) => Generator<Y, R, N>,
-) => [Y] extends [E.Env<infer E & Refs, any>] ? E.Env<E & CurrentFiber, R> : never
+) => [Y] extends [E.Env<Refs, any>]
+  ? E.Env<CurrentFiber, R>
+  : [Y] extends [E.Env<infer E & Refs, any>]
+  ? E.Env<E & CurrentFiber, R>
+  : never
