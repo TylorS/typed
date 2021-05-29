@@ -103,14 +103,7 @@ export function createFiber<A>(
     )
   const onError = (error: Error) => pipe(fail(fiber, error), R.exec)
 
-  // Schedule sync effects to run on the next tick
-  if (R.isSync(resume)) {
-    disposable.addDisposable(asap(createCallbackTask(effect, onError), scheduler))
-  }
-
-  if (R.isAsync(resume)) {
-    disposable.addDisposable(effect())
-  }
+  disposable.addDisposable(asap(createCallbackTask(effect, onError), scheduler))
 
   return fiber
 }
