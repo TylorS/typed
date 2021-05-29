@@ -1,5 +1,5 @@
 import { Env, map, of } from '@fp/Env'
-import { async, Resume, start } from '@fp/Resume'
+import { async, Resume, run } from '@fp/Resume'
 import { Disposable } from '@most/types'
 import { Either, left, right } from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
@@ -24,9 +24,9 @@ export const catchErrorW = <Key extends PropertyKey>(key: Key) => <E, R1, A>(
 ) => <R2, B>(env: Env<Fail<Key, E>, B> | Env<R2 & Fail<Key, E>, B>): Env<R1 & R2, A | B> => (r) =>
   async((resume) =>
     pipe(
-      { ...r, ...createFail(key, (e: E) => pipe(r, onError(e), start(resume))) },
+      { ...r, ...createFail(key, (e: E) => pipe(r, onError(e), run(resume))) },
       env,
-      start(resume),
+      run(resume),
     ),
   )
 
