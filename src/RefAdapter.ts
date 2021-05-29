@@ -6,10 +6,11 @@ import { ContextRef, createContext } from '@fp/hooks'
 import { getScheduler, SchedulerEnv } from '@fp/Scheduler'
 import { createSink } from '@fp/Stream'
 import { Disposable, Sink } from '@most/types'
+import { flow } from 'fp-ts/function'
 
 export interface RefAdapter<A, B = A> extends ContextRef<unknown, Adapter<A, B>> {}
 
-export function createRefAdapter<A>(id: PropertyKey = Symbol(`RefAdapter`)): RefAdapter<A> {
+export function makeRefAdapter<A>(id: PropertyKey = Symbol(`RefAdapter`)): RefAdapter<A> {
   return createContext(E.fromIO<Adapter<A>>(create), id)
 }
 
@@ -48,3 +49,27 @@ export const listenToEvents = <A, B>(adapter: RefAdapter<A, B>) => (
     getListenToEvents,
     E.map((f) => f(sink)),
   )
+
+export interface WrappedRefAdapter<A, B = A> extends RefAdapter<A, B> {
+  readonly getSendEvent: E.Env<CurrentFiber, (event: A) => void>
+  readonly sendEvent: (event: A) => E.Env<CurrentFiber, void>
+  readonly getListenToEvents: E.Env<
+    CurrentFiber & SchedulerEnv,
+    (sink: Readonly<Partial<Sink<B>>>) => Disposable
+  >
+  readonly listenToEvents: (
+    sink: Readonly<Partial<Sink<B>>>,
+  ) => E.Env<CurrentFiber & SchedulerEnv, Disposable>
+}
+
+export function wrapRefAdapter<A, B>(adapter: RefAdapter<A, B>): WrappedRefAdapter<A, B> {
+  return {
+    ...adapter,
+    getSendEvent: getSendEvent(adapter),
+    sendEvent: sendEvent(adapter),
+    getListenToEvents: getListenToEvents(adapter),
+    listenToEvents: listenToEvents(adapter),
+  }
+}
+
+export const createRefAdapter = flow(makeRefAdapter, wrapRefAdapter)
