@@ -1,6 +1,6 @@
 import * as E from '@fp/Env'
 import { Eq } from '@fp/Eq'
-import { CurrentFiber, DoF, Fiber, Fork, fork, usingFiberRefs } from '@fp/Fiber'
+import { CurrentFiber, DoF, Fiber, Fork, fork } from '@fp/Fiber'
 import { References } from '@fp/Ref'
 import { pipe } from 'fp-ts/function'
 
@@ -15,18 +15,7 @@ export function useFiber<E, A, Deps extends ReadonlyArray<any> = []>(
   const { deps, eqs, refs, id = Symbol('UseFiber'), abort = true } = options
 
   return DoF(function* (_) {
-    const fiberRef = yield* pipe(
-      fork(
-        pipe(
-          resetIndex,
-          E.chain(() => env),
-          usingFiberRefs,
-        ),
-        { refs, id },
-      ),
-      useRef,
-      _,
-    )
+    const fiberRef = yield* pipe(fork(env, { refs, id, withRefs: resetIndex }), useRef, _)
     const isEqual = yield* _(useDeps(deps, eqs))
 
     if (!isEqual) {
@@ -36,7 +25,7 @@ export function useFiber<E, A, Deps extends ReadonlyArray<any> = []>(
         yield* _(() => current.abort)
       }
 
-      const next = yield* _(() => current.clone({ inheritRefs: true }))
+      const next = yield* _(() => current.clone({ inheritRefs: true, withRefs: resetIndex }))
 
       return yield* _(fiberRef.set(next))
     }
