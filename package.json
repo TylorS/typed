@@ -169,6 +169,10 @@
       "require": "./cjs/Fiber/findProvider.js",
       "import": "./esm/Fiber/findProvider.js"
     },
+    "./Fiber/forever": {
+      "require": "./cjs/Fiber/forever.js",
+      "import": "./esm/Fiber/forever.js"
+    },
     "./Fiber/runtime/FiberChildren": {
       "require": "./cjs/Fiber/runtime/FiberChildren.js",
       "import": "./esm/Fiber/runtime/FiberChildren.js"
@@ -501,6 +505,10 @@
       "require": "./cjs/dom/env.js",
       "import": "./esm/dom/env.js"
     },
+    "./dom/patching": {
+      "require": "./cjs/dom/patching.js",
+      "import": "./esm/dom/patching.js"
+    },
     "./dom/querySelector": {
       "require": "./cjs/dom/querySelector.js",
       "import": "./esm/dom/querySelector.js"
@@ -509,17 +517,9 @@
       "require": "./cjs/dom/raf.js",
       "import": "./esm/dom/raf.js"
     },
-    "./dom/renderOnRaf": {
-      "require": "./cjs/dom/renderOnRaf.js",
-      "import": "./esm/dom/renderOnRaf.js"
-    },
     "./dom/useEventListener": {
       "require": "./cjs/dom/useEventListener.js",
       "import": "./esm/dom/useEventListener.js"
-    },
-    "./dom/useRenderOnRaf": {
-      "require": "./cjs/dom/useRenderOnRaf.js",
-      "import": "./esm/dom/useRenderOnRaf.js"
     },
     "./dom/useWindowSize": {
       "require": "./cjs/dom/useWindowSize.js",
@@ -588,6 +588,10 @@
     "./hooks/useFn": {
       "require": "./cjs/hooks/useFn.js",
       "import": "./esm/hooks/useFn.js"
+    },
+    "./hooks/useHasUpdated": {
+      "require": "./cjs/hooks/useHasUpdated.js",
+      "import": "./esm/hooks/useHasUpdated.js"
     },
     "./hooks/useMemo": {
       "require": "./cjs/hooks/useMemo.js",
