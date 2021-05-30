@@ -48,16 +48,14 @@ export type PartToParam<A extends string, AST> = A extends `\\${infer R}`
   ? { readonly [K in R]: string }
   : {}
 
-export type QueryParamsToParts<
-  Q extends string,
-  R extends ReadonlyArray<string>
-> = Q extends `\\?${infer Q}`
-  ? QueryParamsToParts<Q, R>
-  : Q extends `?${infer Q}`
-  ? QueryParamsToParts<Q, R>
-  : Q extends `${infer Head}&${infer Tail}`
-  ? QueryParamsToParts<Tail, QueryParamsToParts<Head, R>>
-  : readonly [...R, QueryParamValue<Q>]
+export type QueryParamsToParts<Q extends string, R extends ReadonlyArray<string>> =
+  Q extends `\\?${infer Q}`
+    ? QueryParamsToParts<Q, R>
+    : Q extends `?${infer Q}`
+    ? QueryParamsToParts<Q, R>
+    : Q extends `${infer Head}&${infer Tail}`
+    ? QueryParamsToParts<Tail, QueryParamsToParts<Head, R>>
+    : readonly [...R, QueryParamValue<Q>]
 
 export type QueryToParams<Q extends string, AST = {}> = Q extends `${infer Head}&${infer Tail}`
   ? QueryToParams<Tail, QueryToParams<Head, AST>>

@@ -3,17 +3,18 @@ import { ChainRec2 } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
 import * as S from 'fp-ts/State'
 
-export const chainRec = <A, S, B>(f: (value: A) => S.State<S, E.Either<A, B>>) => (
-  value: A,
-): S.State<S, B> => (s) => {
-  let result = f(value)(s)
+export const chainRec =
+  <A, S, B>(f: (value: A) => S.State<S, E.Either<A, B>>) =>
+  (value: A): S.State<S, B> =>
+  (s) => {
+    let result = f(value)(s)
 
-  while (E.isLeft(result[0])) {
-    result = f(value)(result[1])
+    while (E.isLeft(result[0])) {
+      result = f(value)(result[1])
+    }
+
+    return [result[0].right, result[1]]
   }
-
-  return [result[0].right, result[1]]
-}
 
 export const ChainRec: ChainRec2<S.URI> = {
   chainRec,

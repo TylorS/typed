@@ -27,46 +27,36 @@ const getRefUsingFiber = <E, A>(ref: R.Ref<E, A>, currentFiber: F.Fiber<unknown>
 
 export const hasContext = <E, A>(ref: R.Ref<E, A>) =>
   withProvider(ref, (currentFiber) =>
-    pipe(
-      ref,
-      R.hasRef,
-      F.usingFiberRefs,
-      E.useSome<F.CurrentFiber>({ currentFiber }),
-    ),
+    pipe(ref, R.hasRef, F.usingFiberRefs, E.useSome<F.CurrentFiber>({ currentFiber })),
   )
 
-export const setContext = <E, A>(ref: R.Ref<E, A>) => (value: A) =>
-  withProvider(ref, (currentFiber) =>
-    pipe(
-      value,
-      R.setRef(ref),
-      F.usingFiberRefs,
-      E.useSome<F.CurrentFiber>({ currentFiber }),
-    ),
-  )
+export const setContext =
+  <E, A>(ref: R.Ref<E, A>) =>
+  (value: A) =>
+    withProvider(ref, (currentFiber) =>
+      pipe(value, R.setRef(ref), F.usingFiberRefs, E.useSome<F.CurrentFiber>({ currentFiber })),
+    )
 
-export const setContext_ = <A>(value: A) => <E>(ref: R.Ref<E, A>) => setContext(ref)(value)
+export const setContext_ =
+  <A>(value: A) =>
+  <E>(ref: R.Ref<E, A>) =>
+    setContext(ref)(value)
 
-export const modifyContext = <E, A>(ref: R.Ref<E, A>) => (f: Arity1<A, A>) =>
-  withProvider(ref, (currentFiber) =>
-    pipe(
-      f,
-      R.modifyRef(ref),
-      F.usingFiberRefs,
-      E.useSome<F.CurrentFiber>({ currentFiber }),
-    ),
-  )
+export const modifyContext =
+  <E, A>(ref: R.Ref<E, A>) =>
+  (f: Arity1<A, A>) =>
+    withProvider(ref, (currentFiber) =>
+      pipe(f, R.modifyRef(ref), F.usingFiberRefs, E.useSome<F.CurrentFiber>({ currentFiber })),
+    )
 
-export const modifyContext_ = <A>(f: Arity1<A, A>) => <E>(ref: R.Ref<E, A>) => modifyContext(ref)(f)
+export const modifyContext_ =
+  <A>(f: Arity1<A, A>) =>
+  <E>(ref: R.Ref<E, A>) =>
+    modifyContext(ref)(f)
 
 export const deleteContext = <E, A>(ref: R.Ref<E, A>) =>
   withProvider(ref, (currentFiber) =>
-    pipe(
-      ref,
-      R.deleteRef,
-      F.usingFiberRefs,
-      E.useSome<F.CurrentFiber>({ currentFiber }),
-    ),
+    pipe(ref, R.deleteRef, F.usingFiberRefs, E.useSome<F.CurrentFiber>({ currentFiber })),
   )
 
 export interface ContextRef<E, A> extends R.WrappedRef<F.CurrentFiber, E, A> {

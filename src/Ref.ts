@@ -187,9 +187,10 @@ export function createReferences(refs: Iterable<readonly [RefId, unknown]> = [])
         ref,
         getRef, // Get the current value
         E.chainFirstIOK(() => () => references.set(ref.id, value)), // Set the new value
-        E.chainFirstIOK((previousValue) => () =>
-          !pipe(value, ref.eq.equals(previousValue)) && // Compare them and send an updated event
-          sendEvent({ type: 'updated', id: ref.id, previousValue, value }),
+        E.chainFirstIOK(
+          (previousValue) => () =>
+            !pipe(value, ref.eq.equals(previousValue)) && // Compare them and send an updated event
+            sendEvent({ type: 'updated', id: ref.id, previousValue, value }),
         ),
         E.map(() => value),
       )

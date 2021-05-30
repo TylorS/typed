@@ -4,24 +4,22 @@ import { FindNextIndex, PathToParts } from './Params'
 import { Optional, Param, PathJoin, QueryParam, Unnamed } from './paths'
 
 // Interpolations
-export type Interpolate<
-  P extends string,
-  Params extends {}
-> = P extends `${infer Head}\\?${infer Tail}`
-  ? PathJoin<
-      InterpolateWithQueryParams<
-        SplitQueryParams<Tail>,
-        Params,
-        InpterpolateParts<PathToParts<Head>, Params>
-      >[0]
-    >
-  : PathJoin<InpterpolateParts<PathToParts<P>, Params>[0]>
+export type Interpolate<P extends string, Params extends {}> =
+  P extends `${infer Head}\\?${infer Tail}`
+    ? PathJoin<
+        InterpolateWithQueryParams<
+          SplitQueryParams<Tail>,
+          Params,
+          InpterpolateParts<PathToParts<Head>, Params>
+        >[0]
+      >
+    : PathJoin<InpterpolateParts<PathToParts<P>, Params>[0]>
 
 export type InpterpolateParts<
   Parts extends readonly any[],
   Params extends {},
   R extends readonly any[] = [],
-  AST = {}
+  AST = {},
 > = Parts extends readonly [infer H, ...infer T]
   ? InpterpolatePartsWithNext<T, Params, R, InterpolatePart<H, Params, AST>>
   : readonly [R, AST]
@@ -30,7 +28,7 @@ export type InpterpolatePartsWithNext<
   Parts extends readonly any[],
   Params extends {},
   R extends readonly any[],
-  Next extends readonly [any, any]
+  Next extends readonly [any, any],
 > = InpterpolateParts<Parts, Params, readonly [...R, Next[0]], Next[1]>
 
 export type InterpolatePart<P, Params, AST> = P extends Optional<Param<infer R>>
@@ -56,7 +54,7 @@ type InterpolateWithQueryParams<
   Q extends readonly string[],
   Params,
   Previous extends readonly [any, any],
-  First extends boolean = true
+  First extends boolean = true,
 > = Q extends readonly [infer Head, ...infer Tail]
   ? InterpolateWithQueryParams<
       A.Cast<Tail, readonly string[]>,
@@ -70,7 +68,7 @@ export type InterpolateQueryParamPart<
   Part,
   Params,
   Previous extends readonly [readonly string[], any],
-  First extends boolean
+  First extends boolean,
 > = Part extends QueryParam<infer K, infer V>
   ? InterpolateQueryParamPartWithKey<
       First extends true ? `?${K}` : `&${K}`,
@@ -82,7 +80,7 @@ export type InterpolateQueryParamPart<
 type InterpolateQueryParamPartWithKey<
   K extends string,
   Parts extends readonly string[],
-  Previous extends readonly [string, any]
+  Previous extends readonly [string, any],
 > = [[...Parts, `${K}=${Previous[0]}`], Previous[1]]
 
 type SplitQueryParams<P extends string> = P extends `${infer Head}&${infer Tail}`

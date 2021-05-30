@@ -16,17 +16,16 @@ export function useReplicateRefEvents<E, A>(provider: Fiber<unknown>, ref: Ref<E
   })
 }
 
-const onEvent = <E, A>(refs: References, ref: Ref<E, A>, f: () => Disposable) => (
-  _: Time,
-  event: RefEvent<unknown>,
-) =>
-  fromIO(() => {
-    if (event.id === ref.id) {
-      refs.sendEvent(event)
+const onEvent =
+  <E, A>(refs: References, ref: Ref<E, A>, f: () => Disposable) =>
+  (_: Time, event: RefEvent<unknown>) =>
+    fromIO(() => {
+      if (event.id === ref.id) {
+        refs.sendEvent(event)
 
-      // Stop listening if the parent reference is deleted
-      if (event.type === 'deleted') {
-        f().dispose()
+        // Stop listening if the parent reference is deleted
+        if (event.type === 'deleted') {
+          f().dispose()
+        }
       }
-    }
-  })
+    })

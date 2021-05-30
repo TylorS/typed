@@ -74,8 +74,9 @@ export function fromResumeK<F>(
 ): <A extends readonly any[], B>(f: (...args: A) => R.Resume<B>) => (...args: A) => Hkt<F, [B]>
 
 export function fromResumeK<F>(F: FromResume<F>) {
-  return <A extends readonly any[], B>(f: (...args: A) => R.Resume<B>) => (...args: A): HKT<F, B> =>
-    F.fromResume(f(...args))
+  return <A extends readonly any[], B>(f: (...args: A) => R.Resume<B>) =>
+    (...args: A): HKT<F, B> =>
+      F.fromResume(f(...args))
 }
 
 export function chainResumeK<F extends URIS>(

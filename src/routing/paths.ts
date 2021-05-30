@@ -34,15 +34,13 @@ export type OneOrMore<A extends string> = `${Param<A>}+`
 export const oneOrMore = <A extends string>(param: A): OneOrMore<A> => `${param}+` as OneOrMore<A>
 
 // Creates the path-to-regexp syntax for query parameters
-export type QueryParams<
-  Q extends readonly QueryParam<any, any>[],
-  R extends string = ``
-> = Q extends readonly [infer Head, ...infer Tail]
-  ? QueryParams<
-      A.Cast<Tail, readonly QueryParam<any, any>[]>,
-      `` extends R ? `\\?${A.Cast<Head, string>}` : `${R}&${A.Cast<Head, string>}`
-    >
-  : R
+export type QueryParams<Q extends readonly QueryParam<any, any>[], R extends string = ``> =
+  Q extends readonly [infer Head, ...infer Tail]
+    ? QueryParams<
+        A.Cast<Tail, readonly QueryParam<any, any>[]>,
+        `` extends R ? `\\?${A.Cast<Head, string>}` : `${R}&${A.Cast<Head, string>}`
+      >
+    : R
 
 export const queryParams = <P extends readonly [QueryParam<any, any>, ...QueryParam<any, any>]>(
   ...params: P

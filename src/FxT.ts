@@ -108,7 +108,7 @@ export function getDo<F extends URIS2, E = any>(): <Y extends Kind2<F, E, any>, 
 export function getDo<F extends URIS3, R = any, E = any>(): <
   Y extends Kind3<F, R, E, any>,
   Z,
-  N = unknown
+  N = unknown,
 >(
   f: (lift: LiftFx3<F>) => Generator<Y, Z, N>,
 ) => Fx<Y, Z, N>
@@ -116,7 +116,7 @@ export function getDo<F extends URIS3, R = any, E = any>(): <
 export function getDo<F extends URIS4, S = any, R = any, E = any>(): <
   Y extends Kind4<F, S, R, E, any>,
   Z,
-  N = unknown
+  N = unknown,
 >(
   f: (lift: LiftFx4<F>) => Generator<Y, Z, N>,
 ) => Fx<Y, Z, N>
@@ -317,8 +317,9 @@ export function ap<F>(M: MonadRec<F> & Apply<F>) {
   const lift = liftFx()
   const to = toMonad(M)
 
-  return <A>(fa: FxT<F, [A]>) => <B>(fab: FxT<F, [Arity1<A, B>]>): FxT<F, [B]> =>
-    pipe(fab, to, pipe(fa, to, M.ap), lift) as FxT<F, [B]>
+  return <A>(fa: FxT<F, [A]>) =>
+    <B>(fab: FxT<F, [Arity1<A, B>]>): FxT<F, [B]> =>
+      pipe(fab, to, pipe(fa, to, M.ap), lift) as FxT<F, [B]>
 }
 
 export function chainRec<F extends URIS>(M: MonadRec1<F>): ChainRecFxT<F>
@@ -341,20 +342,21 @@ function chainRec_<F>(M: MonadRec<F>) {
   const to = toMonad(M)
   const lift = liftFx()
 
-  return <A, B>(f: Arity1<A, FxT<F, [Either<A, B>]>>) => (a: A): FxT<F, [B]> => {
-    const fbm = pipe(
-      f(a),
-      to,
-      M.chain(
-        match(
-          M.chainRec((a) => pipe(a, f, to)),
-          M.of,
+  return <A, B>(f: Arity1<A, FxT<F, [Either<A, B>]>>) =>
+    (a: A): FxT<F, [B]> => {
+      const fbm = pipe(
+        f(a),
+        to,
+        M.chain(
+          match(
+            M.chainRec((a) => pipe(a, f, to)),
+            M.of,
+          ),
         ),
-      ),
-    )
+      )
 
-    return lift(fbm) as FxT<F, [B]>
-  }
+      return lift(fbm) as FxT<F, [B]>
+    }
 }
 
 export function of<F extends URIS>(M: Pointed1<F>): <A>(value: A) => Fx<Hkt<F, [A]>, A>
@@ -413,8 +415,9 @@ export function useSome<F>(M: UseSome<F> & MonadRec<F>) {
   const lift = liftFx()
   const to = toMonad(M)
 
-  return <A>(provided: A) => <B, R>(fx: Fx<HKT2<F, A & B, unknown>, R>) =>
-    pipe(fx, to, (x) => M.useSome(provided)(x as any), lift)
+  return <A>(provided: A) =>
+    <B, R>(fx: Fx<HKT2<F, A & B, unknown>, R>) =>
+      pipe(fx, to, (x) => M.useSome(provided)(x as any), lift)
 }
 
 export function provideSome<F extends URIS2>(
@@ -437,8 +440,9 @@ export function provideSome<F>(M: ProvideSome<F> & MonadRec<F>) {
   const lift = liftFx()
   const to = toMonad(M)
 
-  return <A>(provided: A) => <B, R>(fx: Fx<HKT2<F, A & B, unknown>, R>) =>
-    pipe(fx, to, (x) => M.provideSome(provided)(x as any), lift)
+  return <A>(provided: A) =>
+    <B, R>(fx: Fx<HKT2<F, A & B, unknown>, R>) =>
+      pipe(fx, to, (x) => M.provideSome(provided)(x as any), lift)
 }
 
 export function useAll<F extends URIS2>(
@@ -461,8 +465,9 @@ export function useAll<F>(M: UseAll<F> & MonadRec<F>) {
   const lift = liftFx()
   const to = toMonad(M)
 
-  return <A>(provided: A) => <R>(fx: Fx<HKT2<F, A, unknown>, R>) =>
-    pipe(fx, to, (x) => M.useAll(provided)(x as any), lift)
+  return <A>(provided: A) =>
+    <R>(fx: Fx<HKT2<F, A, unknown>, R>) =>
+      pipe(fx, to, (x) => M.useAll(provided)(x as any), lift)
 }
 
 export function provideAll<F extends URIS2>(
@@ -485,8 +490,9 @@ export function provideAll<F>(M: ProvideAll<F> & MonadRec<F>) {
   const lift = liftFx()
   const to = toMonad(M)
 
-  return <A>(provided: A) => <R>(fx: Fx<HKT2<F, A, unknown>, R>) =>
-    pipe(fx, to, (x) => M.provideAll(provided)(x as any), lift)
+  return <A>(provided: A) =>
+    <R>(fx: Fx<HKT2<F, A, unknown>, R>) =>
+      pipe(fx, to, (x) => M.provideAll(provided)(x as any), lift)
 }
 
 export function fromNaturalTransformation<F extends URIS, G extends URIS>(

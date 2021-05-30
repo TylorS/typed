@@ -10,14 +10,16 @@ export interface SchedulerEnv {
   readonly scheduler: Scheduler
 }
 
-export const delay = (ms: Time): Env<SchedulerEnv, Time> => ({ scheduler }) =>
-  async((resume) =>
-    S.delay(
-      ms,
-      createCallbackTask(() => resume(scheduler.currentTime())),
-      scheduler,
-    ),
-  )
+export const delay =
+  (ms: Time): Env<SchedulerEnv, Time> =>
+  ({ scheduler }) =>
+    async((resume) =>
+      S.delay(
+        ms,
+        createCallbackTask(() => resume(scheduler.currentTime())),
+        scheduler,
+      ),
+    )
 
 export const getScheduler = asks((e: SchedulerEnv) => e.scheduler)
 

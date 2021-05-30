@@ -110,11 +110,12 @@ export function useSomeWith<F>(
 ): <E1, A>(provider: HKT2<F, E1, A>) => Provider<F, A, E1>
 
 export function useSomeWith<F>(M: UseSome<F> & Chain<F>) {
-  return <E1, A>(provider: HKT2<F, E1, A>) => <E2, B>(hkt: HKT2<F, A & E2, B>) =>
-    pipe(
-      provider,
-      M.chain((removed) => pipe(hkt, M.useSome(removed))),
-    )
+  return <E1, A>(provider: HKT2<F, E1, A>) =>
+    <E2, B>(hkt: HKT2<F, A & E2, B>) =>
+      pipe(
+        provider,
+        M.chain((removed) => pipe(hkt, M.useSome(removed))),
+      )
 }
 
 export function provideSomeWith<F extends URIS2>(
@@ -134,11 +135,12 @@ export function provideSomeWith<F>(
 ): <E1, A>(provider: HKT2<F, E1, A>) => Provider<F, A, E1>
 
 export function provideSomeWith<F>(M: ProvideSome<F> & Chain<F>) {
-  return <E1, A>(provider: HKT2<F, E1, A>) => <E2, B>(hkt: HKT2<F, A & E2, B>) =>
-    pipe(
-      provider,
-      M.chain((removed) => pipe(hkt, M.provideSome(removed))),
-    )
+  return <E1, A>(provider: HKT2<F, E1, A>) =>
+    <E2, B>(hkt: HKT2<F, A & E2, B>) =>
+      pipe(
+        provider,
+        M.chain((removed) => pipe(hkt, M.provideSome(removed))),
+      )
 }
 
 export function useAllWith<F extends URIS2>(
@@ -164,11 +166,12 @@ export function useAllWith<F>(
 ): <R, A>(provider: HKT2<F, R, A>) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, R, B>
 
 export function useAllWith<F>(M: UseAll<F> & Chain<F>) {
-  return <R, A>(provider: HKT2<F, R, A>) => <B>(hkt: HKT2<F, A, B>) =>
-    pipe(
-      provider,
-      M.chain((removed) => pipe(hkt, M.useAll(removed))),
-    )
+  return <R, A>(provider: HKT2<F, R, A>) =>
+    <B>(hkt: HKT2<F, A, B>) =>
+      pipe(
+        provider,
+        M.chain((removed) => pipe(hkt, M.useAll(removed))),
+      )
 }
 
 export function provideAllWith<F extends URIS2>(
@@ -194,11 +197,12 @@ export function provideAllWith<F>(
 ): <R, A>(provider: HKT2<F, R, A>) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, R, B>
 
 export function provideAllWith<F>(M: ProvideAll<F> & Chain<F>) {
-  return <R, A>(provider: HKT2<F, R, A>) => <B>(hkt: HKT2<F, A, B>) =>
-    pipe(
-      provider,
-      M.chain((removed) => pipe(hkt, M.provideAll(removed))),
-    )
+  return <R, A>(provider: HKT2<F, R, A>) =>
+    <B>(hkt: HKT2<F, A, B>) =>
+      pipe(
+        provider,
+        M.chain((removed) => pipe(hkt, M.provideAll(removed))),
+      )
 }
 
 export function askAndUse<F extends URIS2>(

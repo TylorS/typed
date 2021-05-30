@@ -23,9 +23,7 @@ export const getFiberReturnValue = <A>() => pipe(FiberReturnValue<A>(), getRef, 
 export const setFiberReturnValue = <A>(returnValue: E.Either<Error, A>) =>
   pipe(FiberReturnValue<A>(), setRef_(O.some(returnValue)), usingFiberRefs)
 
-export const foldReturnValue = <A, B, C, D>(
-  aborted: () => A,
-  failure: (error: Error) => B,
-  success: (value: C) => D,
-) => (returnValue: FiberReturnValue<C>): A | B | D =>
-  pipe(returnValue, O.matchW(aborted, E.matchW(failure, success)))
+export const foldReturnValue =
+  <A, B, C, D>(aborted: () => A, failure: (error: Error) => B, success: (value: C) => D) =>
+  (returnValue: FiberReturnValue<C>): A | B | D =>
+    pipe(returnValue, O.matchW(aborted, E.matchW(failure, success)))

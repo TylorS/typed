@@ -83,25 +83,25 @@ export const Chain: Chain2<URI> = {
   chain,
 }
 
-export const chainRec = <A, E, B>(f: (value: A) => ReaderOption<E, Ei.Either<A, B>>) => (
-  value: A,
-): ReaderOption<E, B> =>
-  pipe(
-    value,
-    R.chainRec((a) =>
-      pipe(
-        a,
-        f,
-        R.map((oe) => {
-          if (O.isNone(oe)) {
-            return Ei.right(oe)
-          }
+export const chainRec =
+  <A, E, B>(f: (value: A) => ReaderOption<E, Ei.Either<A, B>>) =>
+  (value: A): ReaderOption<E, B> =>
+    pipe(
+      value,
+      R.chainRec((a) =>
+        pipe(
+          a,
+          f,
+          R.map((oe) => {
+            if (O.isNone(oe)) {
+              return Ei.right(oe)
+            }
 
-          return pipe(oe.value, Ei.map(O.some))
-        }),
+            return pipe(oe.value, Ei.map(O.some))
+          }),
+        ),
       ),
-    ),
-  )
+    )
 
 export const ChainRec: ChainRec2<URI> = {
   chainRec,
@@ -165,6 +165,8 @@ export const asks = FR.asks(FromReader)
 export const chainReaderK = FR.chainReaderK(FromReader, Chain)
 export const chainFirstReaderK = FR.chainFirstReaderK(FromReader, Chain)
 export const fromReaderK = FR.fromReaderK(FromReader)
-export const local = <A, B>(f: (a: A) => B) => <C>(ro: ReaderOption<B, C>): ReaderOption<A, C> => (
-  a,
-) => ro(f(a))
+export const local =
+  <A, B>(f: (a: A) => B) =>
+  <C>(ro: ReaderOption<B, C>): ReaderOption<A, C> =>
+  (a) =>
+    ro(f(a))

@@ -18,7 +18,15 @@ export function useOp<F extends AnyFn<E.Env<any, any>>>(
     const e = yield* _(E.ask<E.GetRequirements<ReturnType<F>>>())
     const f = yield* _(useMutableRef(E.of(op)))
 
-    return yield* _(useMemo(E.fromIO(() => (...args: ArgsOf<F>) => f.current(...args)(e))))
+    return yield* _(
+      useMemo(
+        E.fromIO(
+          () =>
+            (...args: ArgsOf<F>) =>
+              f.current(...args)(e),
+        ),
+      ),
+    )
   }) as F extends Op<infer _, infer R>
     ? R
     : FunctionN<ArgsOf<F>, R.Resume<E.GetValue<ReturnType<F>>>>
@@ -36,8 +44,7 @@ export type Op<F, G> = Branded<{ readonly Op: G }, F>
  * const foo = Op<<A>(value: A) => R.Resume<A>>()(E.of)
  * const useFoo = useOp(foo)
  */
-export const Op = <G extends AnyFn<R.Resume<any>>>() => <
-  F extends (...args: ArgsOf<G>) => E.Env<any, R.GetValue<ReturnType<G>>>
->(
-  f: F,
-) => Branded<Op<F, G>>()(f as BrandValue<Op<F, G>>)
+export const Op =
+  <G extends AnyFn<R.Resume<any>>>() =>
+  <F extends (...args: ArgsOf<G>) => E.Env<any, R.GetValue<ReturnType<G>>>>(f: F) =>
+    Branded<Op<F, G>>()(f as BrandValue<Op<F, G>>)

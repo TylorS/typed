@@ -12,7 +12,7 @@ export type EventListenerOrEventListenerObject<A = Event, That = EventTarget> =
 export function useEventListener<
   Element extends HTMLElementTagNameMap[keyof HTMLElementTagNameMap],
   Event extends keyof Events,
-  Events = HTMLElementEventMap
+  Events = HTMLElementEventMap,
 >(
   target: Element,
   type: Event,
@@ -23,7 +23,7 @@ export function useEventListener<
 export function useEventListener<
   Element extends SVGElementTagNameMap[keyof SVGElementTagNameMap],
   Event extends keyof Events,
-  Events = SVGElementEventMap
+  Events = SVGElementEventMap,
 >(
   target: Element,
   type: Event,

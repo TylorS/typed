@@ -75,7 +75,8 @@
     "WeakMap",
     "dom",
     "function",
-    "hooks"
+    "hooks",
+    "routing"
   ],
   "files": [],
   "include": [

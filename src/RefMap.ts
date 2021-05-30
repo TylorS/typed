@@ -19,29 +19,35 @@ export const makeRefMap = <E, K, V>(
   value: Eq<V> = deepEqualsEq,
 ): RefMap<E, K, V> => ({ ...createRef(initial, id, RM.getEq(key, value)), key, value })
 
-export const lookup = <E, K, V>(refMap: RefMap<E, K, V>) => (key: K): E.Env<E & Refs, Option<V>> =>
-  pipe(refMap, getRef, E.map(RM.lookup(refMap.key)(key)))
+export const lookup =
+  <E, K, V>(refMap: RefMap<E, K, V>) =>
+  (key: K): E.Env<E & Refs, Option<V>> =>
+    pipe(refMap, getRef, E.map(RM.lookup(refMap.key)(key)))
 
-export const upsertAt = <E, K, V>(refMap: RefMap<E, K, V>) => (key: K, value: V) =>
-  pipe(
-    refMap,
-    modifyRef_(RM.upsertAt(refMap.key)(key, value)),
-    E.map(() => value),
-  )
+export const upsertAt =
+  <E, K, V>(refMap: RefMap<E, K, V>) =>
+  (key: K, value: V) =>
+    pipe(
+      refMap,
+      modifyRef_(RM.upsertAt(refMap.key)(key, value)),
+      E.map(() => value),
+    )
 
-export const deleteAt = <E, K, V>(refMap: RefMap<E, K, V>) => (key: K) =>
-  pipe(
-    key,
-    lookup(refMap),
-    E.chainFirst(() =>
-      pipe(
-        refMap,
-        modifyRef_((map) =>
-          pipe(map, RM.deleteAt(refMap.key)(key), match(constant(map), identity)),
+export const deleteAt =
+  <E, K, V>(refMap: RefMap<E, K, V>) =>
+  (key: K) =>
+    pipe(
+      key,
+      lookup(refMap),
+      E.chainFirst(() =>
+        pipe(
+          refMap,
+          modifyRef_((map) =>
+            pipe(map, RM.deleteAt(refMap.key)(key), match(constant(map), identity)),
+          ),
         ),
       ),
-    ),
-  )
+    )
 
 export interface WrappedRefMap<R, E, K, V> extends RefMap<E, K, V> {
   readonly lookup: (key: K) => E.Env<R & E, Option<V>>
@@ -66,14 +72,12 @@ export const kv = <K, V>(k: Eq<K> = deepEqualsEq, v: Eq<V> = deepEqualsEq) =>
     v,
   )
 
-export const fromId = <K, V>(k: Eq<K> = deepEqualsEq, v: Eq<V> = deepEqualsEq) => <
-  Id extends PropertyKey
->(
-  id: Id,
-) =>
-  createRefMap(
-    E.asks((e: Readonly<Record<Id, ReadonlyMap<K, V>>>) => e[id]),
-    id,
-    k,
-    v,
-  )
+export const fromId =
+  <K, V>(k: Eq<K> = deepEqualsEq, v: Eq<V> = deepEqualsEq) =>
+  <Id extends PropertyKey>(id: Id) =>
+    createRefMap(
+      E.asks((e: Readonly<Record<Id, ReadonlyMap<K, V>>>) => e[id]),
+      id,
+      k,
+      v,
+    )

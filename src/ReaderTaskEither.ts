@@ -7,13 +7,13 @@ import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 
-export const chainRec = <A, R, E, B>(
-  f: (value: A) => RTE.ReaderTaskEither<R, E, E.Either<A, B>>,
-) => (value: A): RTE.ReaderTaskEither<R, E, B> =>
-  pipe(
-    value,
-    RT.chainRec((a) => pipe(a, f, RT.map(swapEithers))),
-  )
+export const chainRec =
+  <A, R, E, B>(f: (value: A) => RTE.ReaderTaskEither<R, E, E.Either<A, B>>) =>
+  (value: A): RTE.ReaderTaskEither<R, E, B> =>
+    pipe(
+      value,
+      RT.chainRec((a) => pipe(a, f, RT.map(swapEithers))),
+    )
 
 export const ChainRec: ChainRec3<RTE.URI> = {
   chainRec,

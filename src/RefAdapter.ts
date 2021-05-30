@@ -22,14 +22,14 @@ export const getSendEvent = <A, B>(
     E.map((a) => a[0]),
   )
 
-export const sendEvent = <A, B>(adapter: RefAdapter<A, B>) => (
-  event: A,
-): E.Env<CurrentFiber, void> =>
-  pipe(
-    adapter,
-    getSendEvent,
-    E.chainIOK((f) => () => f(event)),
-  )
+export const sendEvent =
+  <A, B>(adapter: RefAdapter<A, B>) =>
+  (event: A): E.Env<CurrentFiber, void> =>
+    pipe(
+      adapter,
+      getSendEvent,
+      E.chainIOK((f) => () => f(event)),
+    )
 
 export const getListenToEvents = <A, B>(
   adapter: RefAdapter<A, B>,
@@ -41,14 +41,14 @@ export const getListenToEvents = <A, B>(
     return (sink: Readonly<Partial<Sink<B>>>) => stream.run(createSink(sink), scheduler)
   })
 
-export const listenToEvents = <A, B>(adapter: RefAdapter<A, B>) => (
-  sink: Readonly<Partial<Sink<B>>>,
-): E.Env<CurrentFiber & SchedulerEnv, Disposable> =>
-  pipe(
-    adapter,
-    getListenToEvents,
-    E.map((f) => f(sink)),
-  )
+export const listenToEvents =
+  <A, B>(adapter: RefAdapter<A, B>) =>
+  (sink: Readonly<Partial<Sink<B>>>): E.Env<CurrentFiber & SchedulerEnv, Disposable> =>
+    pipe(
+      adapter,
+      getListenToEvents,
+      E.map((f) => f(sink)),
+    )
 
 export interface WrappedRefAdapter<A, B = A> extends RefAdapter<A, B> {
   readonly getSendEvent: E.Env<CurrentFiber, (event: A) => void>

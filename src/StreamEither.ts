@@ -89,13 +89,13 @@ export const Monad: Monad2<URI> = {
   ...Pointed,
 }
 
-export const chainRec = <A, E, B>(f: (value: A) => StreamEither<E, E.Either<A, B>>) => (
-  a: A,
-): StreamEither<E, B> =>
-  pipe(
-    a,
-    S.chainRec((x) => pipe(x, f, S.map(swapEithers))),
-  )
+export const chainRec =
+  <A, E, B>(f: (value: A) => StreamEither<E, E.Either<A, B>>) =>
+  (a: A): StreamEither<E, B> =>
+    pipe(
+      a,
+      S.chainRec((x) => pipe(x, f, S.map(swapEithers))),
+    )
 
 export const ChainRec: ChainRec2<URI> = {
   chainRec,
