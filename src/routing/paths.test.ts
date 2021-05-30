@@ -2,25 +2,19 @@ import { describe, given, it } from '@typed/test'
 import { A } from 'ts-toolbelt'
 
 import {
+  Interpolate,
   optional,
-  Param,
   param,
   ParamsOf,
   pathJoin,
-  PathToParts,
   queryParam,
   queryParams,
   QueryParamsOf,
-  Unnamed,
   unnamed,
 } from '.'
 
-const path = pathJoin(
-  'foo',
-  param('bar'),
-  unnamed,
-  queryParams(queryParam('d', optional(param('foo'))), queryParam('e', unnamed)),
-)
+const query = queryParams(queryParam('d', optional(param('foo'))), queryParam('e', unnamed))
+const path = pathJoin('foo', param('bar'), unnamed, query)
 
 export const test = describe('pathJoin', [
   given(`Path Parts`, [
@@ -33,14 +27,14 @@ export const test = describe('pathJoin', [
 // Type-level tests
 declare const check: <_ extends 1>() => true
 
+type Path = typeof path
+type Params = ParamsOf<Path>
+type QueryParams = QueryParamsOf<Path>
+
+type Input = { bar: '1'; 0: '2'; foo: '3'; 1: '4' }
+type Interpolated = Interpolate<Path, Input>
+
 if (typeof check !== 'undefined') {
-  type Path = typeof path
-  type Parts = PathToParts<Path>
-  type Params = ParamsOf<Path>
-  type QueryParamsP = QueryParamsOf<Path>
-
-  check<A.Equals<Parts, readonly ['foo', Param<'bar'>, Unnamed, '\\?d=:foo?&e=(.*)']>>()
-
   check<
     A.Equals<
       Params,
@@ -55,11 +49,13 @@ if (typeof check !== 'undefined') {
 
   check<
     A.Equals<
-      QueryParamsP,
+      QueryParams,
       {
         readonly d?: string
         readonly e: string
       }
     >
   >()
+
+  check<A.Equals<Interpolated, '/foo/1/2?d=3&e=4'>>()
 }
