@@ -1,6 +1,6 @@
 {
   "name": "@typed/fp",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Data Structures and Resources for fp-ts",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
@@ -628,6 +628,26 @@
     "./hooks/withProvider": {
       "require": "./cjs/hooks/withProvider.js",
       "import": "./esm/hooks/withProvider.js"
+    },
+    "./routing": {
+      "require": "./cjs/routing/index.js",
+      "import": "./esm/routing/index.js"
+    },
+    "./routing/Interpolate": {
+      "require": "./cjs/routing/Interpolate.js",
+      "import": "./esm/routing/Interpolate.js"
+    },
+    "./routing/Params": {
+      "require": "./cjs/routing/Params.js",
+      "import": "./esm/routing/Params.js"
+    },
+    "./routing/Route": {
+      "require": "./cjs/routing/Route.js",
+      "import": "./esm/routing/Route.js"
+    },
+    "./routing/paths": {
+      "require": "./cjs/routing/paths.js",
+      "import": "./esm/routing/paths.js"
     }
   }
 }
