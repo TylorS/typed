@@ -10,16 +10,13 @@ import { useOp } from './useOp'
 const constPure = constant(E.of(void 0))
 
 export function useSink<A, E1, E2, E3>(
-  event: (time: Time, event: A) => E.Env<E1, any> = constPure,
-  error: (time: Time, error: Error) => E.Env<E2, any> = constPure,
-  end: (time: Time) => E.Env<E3, any> = constPure,
+  sink: EnvSink<A, E1, E2, E3>,
 ): E.Env<CurrentFiber & E1 & E2 & E3, Sink<A>> {
   return DoF(function* (_) {
-    const event_ = yield* _(useOp(event))
-    const error_ = yield* _(useOp(error))
-    const end_ = yield* _(useOp(end))
+    const event_ = yield* _(useOp(sink.event ?? constPure))
+    const error_ = yield* _(useOp(sink.error ?? constPure))
+    const end_ = yield* _(useOp(sink.end ?? constPure))
 
-    // TODO: Should there be a way to track all of the disposables created in this Sink?
     return yield* _(
       useMemo(
         E.fromIO(
@@ -32,4 +29,10 @@ export function useSink<A, E1, E2, E3>(
       ),
     )
   })
+}
+
+export type EnvSink<A, E1, E2, E3> = {
+  readonly event?: (time: Time, event: A) => E.Env<E1, any>
+  readonly error?: (time: Time, error: Error) => E.Env<E2, any>
+  readonly end?: (time: Time) => E.Env<E3, any>
 }

@@ -9,7 +9,11 @@ import { useStream } from './useStream'
 export function useReplicateRefEvents<E, A>(provider: Fiber<unknown>, ref: Ref<E, A>) {
   return DoF(function* (_) {
     const current = yield* _(getCurrentFiber)
-    const sink = yield* _(useSink(onEvent(current.refs, ref, () => disposable)))
+    const sink = yield* _(
+      useSink({
+        event: onEvent(current.refs, ref, () => disposable),
+      }),
+    )
     const disposable: Disposable = yield* _(useStream(provider.refs.events, sink))
 
     return disposable

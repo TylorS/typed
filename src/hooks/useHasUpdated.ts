@@ -15,9 +15,10 @@ export const useHasUpdated = (
     const [hasBeenUpdated, toggle] = yield* _(useBoolean(true))
 
     const sink = yield* _(
-      useSink((_, event: RefEvent<unknown>) =>
-        event.type === 'created' ? E.of(void 0) : E.fromResume(toggle(true)),
-      ),
+      useSink({
+        event: (_, event: RefEvent<unknown>) =>
+          event.type === 'created' ? E.of(void 0) : E.fromResume(toggle(true)),
+      }),
     )
 
     yield* _(useStream(events, sink))

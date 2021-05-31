@@ -2,6 +2,7 @@ import * as E from 'fp-ts/Either'
 
 /**
  * Helpful for creatin ChainRec instances for Either-based types.
+ * @private
  */
 export const swapEithers = <E, A, B>(
   either: E.Either<E, E.Either<A, B>>,
