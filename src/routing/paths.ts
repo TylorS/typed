@@ -26,12 +26,12 @@ export const queryParam = <K extends string, V extends string>(key: K, value: V)
 export type ZeroOrMore<A extends string> = `${Param<A>}*`
 
 export const zeroOrMore = <A extends string>(param: A): ZeroOrMore<A> =>
-  `${param}*` as ZeroOrMore<A>
+  `:${param}*` as ZeroOrMore<A>
 
 export type OneOrMore<A extends string> = `${Param<A>}+`
 
 // one or more path parts will be matched to this param
-export const oneOrMore = <A extends string>(param: A): OneOrMore<A> => `${param}+` as OneOrMore<A>
+export const oneOrMore = <A extends string>(param: A): OneOrMore<A> => `:${param}+` as OneOrMore<A>
 
 // Creates the path-to-regexp syntax for query parameters
 export type QueryParams<Q extends readonly QueryParam<any, any>[], R extends string = ``> =
