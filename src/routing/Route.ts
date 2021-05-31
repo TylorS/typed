@@ -11,17 +11,25 @@ export interface Route<P extends string> {
   readonly createPath: <A extends ParamsOf<P>>(params: A) => Interpolate<P, A>
 }
 
-export function createRoute<P extends string>(path: P): Route<P> {
-  const parse = ptr.match(path)
-  const toPath = ptr.compile(path)
+export function createRoute<P extends string>(path: P, options: RouteOptions = {}): Route<P> {
+  const parse = ptr.match<ParamsOf<P>>(path, options.match)
+  const toPath = ptr.compile<ParamsOf<P>>(path, options.compile)
 
   return {
     path,
     match: (path: string) => {
       const match = parse(path)
 
-      return !match ? none : some(match.params as ParamsOf<P>)
+      return !match ? none : some(match.params)
     },
-    createPath: (params) => toPath(params) as Interpolate<P, typeof params>,
+    createPath: toPath as Route<P>['createPath'],
   }
 }
+
+export type RouteOptions = {
+  readonly match?: MatchOptions
+  readonly compile?: CompileOptions
+}
+
+export type MatchOptions = ptr.TokensToRegexpOptions & ptr.RegexpToFunctionOptions
+export type CompileOptions = ptr.TokensToFunctionOptions
