@@ -133,10 +133,6 @@
       "require": "./cjs/Fiber/index.js",
       "import": "./esm/Fiber/index.js"
     },
-    "./Fiber/Context": {
-      "require": "./cjs/Fiber/Context.js",
-      "import": "./esm/Fiber/Context.js"
-    },
     "./Fiber/DoF": {
       "require": "./cjs/Fiber/DoF.js",
       "import": "./esm/Fiber/DoF.js"
@@ -164,10 +160,6 @@
     "./Fiber/createFiberRef": {
       "require": "./cjs/Fiber/createFiberRef.js",
       "import": "./esm/Fiber/createFiberRef.js"
-    },
-    "./Fiber/findProvider": {
-      "require": "./cjs/Fiber/findProvider.js",
-      "import": "./esm/Fiber/findProvider.js"
     },
     "./Fiber/forever": {
       "require": "./cjs/Fiber/forever.js",
