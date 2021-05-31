@@ -11,6 +11,8 @@ export interface Route<P extends string> {
   readonly createPath: <A extends ParamsOf<P>>(params: A) => Interpolate<P, A>
 }
 
+// TODO: Should we make route a Prism when monocle is ready for v3?
+
 export function createRoute<P extends string>(path: P, options: RouteOptions = {}): Route<P> {
   const parse = ptr.match<ParamsOf<P>>(path, options.match)
   const toPath = ptr.compile<ParamsOf<P>>(path, options.compile)
