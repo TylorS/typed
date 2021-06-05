@@ -18,7 +18,7 @@ import {
   take,
 } from '@most/core'
 import { asap } from '@most/scheduler'
-import { Disposable, Sink, Stream, Task as MostTask } from '@most/types'
+import { Disposable, Sink, Stream, Task as MostTask, Time } from '@most/types'
 import { Alt1 } from 'fp-ts/Alt'
 import { Alternative1 } from 'fp-ts/Alternative'
 import { Applicative1 } from 'fp-ts/Applicative'
@@ -32,7 +32,6 @@ import { FromIO1 } from 'fp-ts/FromIO'
 import { FromTask1 } from 'fp-ts/FromTask'
 import { constVoid, flow, pipe } from 'fp-ts/function'
 import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/Functor'
-import { IO } from 'fp-ts/IO'
 import { Monad1 } from 'fp-ts/Monad'
 import { Monoid } from 'fp-ts/Monoid'
 import { isSome, Option, Some } from 'fp-ts/Option'
@@ -41,16 +40,21 @@ import { Predicate } from 'fp-ts/Predicate'
 import { Separated } from 'fp-ts/Separated'
 import { Task } from 'fp-ts/Task'
 
+import { Arity1 } from './function'
+
 /**
  * Convert an IO<Disposable> into a Most.js Task
  */
-export function createCallbackTask(cb: IO<Disposable>, onError?: (error: Error) => void): MostTask {
+export function createCallbackTask(
+  cb: Arity1<Time, Disposable>,
+  onError?: (error: Error) => void,
+): MostTask {
   const disposable = settable()
 
   return {
-    run() {
+    run(t) {
       if (!disposable.isDisposed()) {
-        disposable.addDisposable(cb())
+        disposable.addDisposable(cb(t))
       }
     },
     error(_, e) {

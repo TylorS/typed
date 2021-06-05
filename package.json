@@ -103,10 +103,6 @@
       "require": "./cjs/Adapter.js",
       "import": "./esm/Adapter.js"
     },
-    "./Branded": {
-      "require": "./cjs/Branded.js",
-      "import": "./esm/Branded.js"
-    },
     "./Disposable": {
       "require": "./cjs/Disposable.js",
       "import": "./esm/Disposable.js"
@@ -130,122 +126,6 @@
     "./Fail": {
       "require": "./cjs/Fail.js",
       "import": "./esm/Fail.js"
-    },
-    "./Fiber": {
-      "require": "./cjs/Fiber/index.js",
-      "import": "./esm/Fiber/index.js"
-    },
-    "./Fiber/DoF": {
-      "require": "./cjs/Fiber/DoF.js",
-      "import": "./esm/Fiber/DoF.js"
-    },
-    "./Fiber/Fiber": {
-      "require": "./cjs/Fiber/Fiber.js",
-      "import": "./esm/Fiber/Fiber.js"
-    },
-    "./Fiber/FiberEvent": {
-      "require": "./cjs/Fiber/FiberEvent.js",
-      "import": "./esm/Fiber/FiberEvent.js"
-    },
-    "./Fiber/FiberId": {
-      "require": "./cjs/Fiber/FiberId.js",
-      "import": "./esm/Fiber/FiberId.js"
-    },
-    "./Fiber/Status": {
-      "require": "./cjs/Fiber/Status.js",
-      "import": "./esm/Fiber/Status.js"
-    },
-    "./Fiber/awaitStatus": {
-      "require": "./cjs/Fiber/awaitStatus.js",
-      "import": "./esm/Fiber/awaitStatus.js"
-    },
-    "./Fiber/createFiberRef": {
-      "require": "./cjs/Fiber/createFiberRef.js",
-      "import": "./esm/Fiber/createFiberRef.js"
-    },
-    "./Fiber/forever": {
-      "require": "./cjs/Fiber/forever.js",
-      "import": "./esm/Fiber/forever.js"
-    },
-    "./Fiber/runtime/FiberChildren": {
-      "require": "./cjs/Fiber/runtime/FiberChildren.js",
-      "import": "./esm/Fiber/runtime/FiberChildren.js"
-    },
-    "./Fiber/runtime/FiberDisposable": {
-      "require": "./cjs/Fiber/runtime/FiberDisposable.js",
-      "import": "./esm/Fiber/runtime/FiberDisposable.js"
-    },
-    "./Fiber/runtime/FiberFinalizers": {
-      "require": "./cjs/Fiber/runtime/FiberFinalizers.js",
-      "import": "./esm/Fiber/runtime/FiberFinalizers.js"
-    },
-    "./Fiber/runtime/FiberReturnValue": {
-      "require": "./cjs/Fiber/runtime/FiberReturnValue.js",
-      "import": "./esm/Fiber/runtime/FiberReturnValue.js"
-    },
-    "./Fiber/runtime/FiberStatus": {
-      "require": "./cjs/Fiber/runtime/FiberStatus.js",
-      "import": "./esm/Fiber/runtime/FiberStatus.js"
-    },
-    "./Fiber/runtime/createFiber": {
-      "require": "./cjs/Fiber/runtime/createFiber.js",
-      "import": "./esm/Fiber/runtime/createFiber.js"
-    },
-    "./Fiber/runtime/createRuntime": {
-      "require": "./cjs/Fiber/runtime/createRuntime.js",
-      "import": "./esm/Fiber/runtime/createRuntime.js"
-    },
-    "./Fiber/runtime": {
-      "require": "./cjs/Fiber/runtime/index.js",
-      "import": "./esm/Fiber/runtime/index.js"
-    },
-    "./Fiber/runtime/runAsFiber": {
-      "require": "./cjs/Fiber/runtime/runAsFiber.js",
-      "import": "./esm/Fiber/runtime/runAsFiber.js"
-    },
-    "./Fiber/runtime/internal/FiberPause": {
-      "require": "./cjs/Fiber/runtime/internal/FiberPause.js",
-      "import": "./esm/Fiber/runtime/internal/FiberPause.js"
-    },
-    "./Fiber/runtime/internal/FiberSendEvent": {
-      "require": "./cjs/Fiber/runtime/internal/FiberSendEvent.js",
-      "import": "./esm/Fiber/runtime/internal/FiberSendEvent.js"
-    },
-    "./Fiber/runtime/internal/abort": {
-      "require": "./cjs/Fiber/runtime/internal/abort.js",
-      "import": "./esm/Fiber/runtime/internal/abort.js"
-    },
-    "./Fiber/runtime/internal/changeStatus": {
-      "require": "./cjs/Fiber/runtime/internal/changeStatus.js",
-      "import": "./esm/Fiber/runtime/internal/changeStatus.js"
-    },
-    "./Fiber/runtime/internal/complete": {
-      "require": "./cjs/Fiber/runtime/internal/complete.js",
-      "import": "./esm/Fiber/runtime/internal/complete.js"
-    },
-    "./Fiber/runtime/internal/fail": {
-      "require": "./cjs/Fiber/runtime/internal/fail.js",
-      "import": "./esm/Fiber/runtime/internal/fail.js"
-    },
-    "./Fiber/runtime/internal/finalize": {
-      "require": "./cjs/Fiber/runtime/internal/finalize.js",
-      "import": "./esm/Fiber/runtime/internal/finalize.js"
-    },
-    "./Fiber/runtime/internal/finish": {
-      "require": "./cjs/Fiber/runtime/internal/finish.js",
-      "import": "./esm/Fiber/runtime/internal/finish.js"
-    },
-    "./Fiber/runtime/internal/pause": {
-      "require": "./cjs/Fiber/runtime/internal/pause.js",
-      "import": "./esm/Fiber/runtime/internal/pause.js"
-    },
-    "./Fiber/runtime/internal/play": {
-      "require": "./cjs/Fiber/runtime/internal/play.js",
-      "import": "./esm/Fiber/runtime/internal/play.js"
-    },
-    "./Fiber/runtime/internal/start": {
-      "require": "./cjs/Fiber/runtime/internal/start.js",
-      "import": "./esm/Fiber/runtime/internal/start.js"
     },
     "./FromEnv": {
       "require": "./cjs/FromEnv.js",
@@ -367,17 +247,9 @@
       "require": "./cjs/Option.js",
       "import": "./esm/Option.js"
     },
-    "./Patch": {
-      "require": "./cjs/Patch.js",
-      "import": "./esm/Patch.js"
-    },
     "./Provide": {
       "require": "./cjs/Provide.js",
       "import": "./esm/Provide.js"
-    },
-    "./Queue": {
-      "require": "./cjs/Queue.js",
-      "import": "./esm/Queue.js"
     },
     "./Reader": {
       "require": "./cjs/Reader.js",
@@ -406,26 +278,6 @@
     "./ReaderTaskEither": {
       "require": "./cjs/ReaderTaskEither.js",
       "import": "./esm/ReaderTaskEither.js"
-    },
-    "./Ref": {
-      "require": "./cjs/Ref.js",
-      "import": "./esm/Ref.js"
-    },
-    "./RefAdapter": {
-      "require": "./cjs/RefAdapter.js",
-      "import": "./esm/RefAdapter.js"
-    },
-    "./RefMap": {
-      "require": "./cjs/RefMap.js",
-      "import": "./esm/RefMap.js"
-    },
-    "./RefQueue": {
-      "require": "./cjs/RefQueue.js",
-      "import": "./esm/RefQueue.js"
-    },
-    "./RefWeakMap": {
-      "require": "./cjs/RefWeakMap.js",
-      "import": "./esm/RefWeakMap.js"
     },
     "./Resume": {
       "require": "./cjs/Resume.js",
@@ -479,169 +331,9 @@
       "require": "./cjs/TaskOption.js",
       "import": "./esm/TaskOption.js"
     },
-    "./WeakMap": {
-      "require": "./cjs/WeakMap.js",
-      "import": "./esm/WeakMap.js"
-    },
-    "./dom": {
-      "require": "./cjs/dom/index.js",
-      "import": "./esm/dom/index.js"
-    },
-    "./dom/History": {
-      "require": "./cjs/dom/History.js",
-      "import": "./esm/dom/History.js"
-    },
-    "./dom/Location": {
-      "require": "./cjs/dom/Location.js",
-      "import": "./esm/dom/Location.js"
-    },
-    "./dom/env": {
-      "require": "./cjs/dom/env.js",
-      "import": "./esm/dom/env.js"
-    },
-    "./dom/patching": {
-      "require": "./cjs/dom/patching.js",
-      "import": "./esm/dom/patching.js"
-    },
-    "./dom/querySelector": {
-      "require": "./cjs/dom/querySelector.js",
-      "import": "./esm/dom/querySelector.js"
-    },
-    "./dom/raf": {
-      "require": "./cjs/dom/raf.js",
-      "import": "./esm/dom/raf.js"
-    },
-    "./dom/useEventListener": {
-      "require": "./cjs/dom/useEventListener.js",
-      "import": "./esm/dom/useEventListener.js"
-    },
-    "./dom/useWindowSize": {
-      "require": "./cjs/dom/useWindowSize.js",
-      "import": "./esm/dom/useWindowSize.js"
-    },
-    "./dom/whenIdle": {
-      "require": "./cjs/dom/whenIdle.js",
-      "import": "./esm/dom/whenIdle.js"
-    },
     "./function": {
       "require": "./cjs/function.js",
       "import": "./esm/function.js"
-    },
-    "./hooks": {
-      "require": "./cjs/hooks/index.js",
-      "import": "./esm/hooks/index.js"
-    },
-    "./hooks/Deps": {
-      "require": "./cjs/hooks/Deps.js",
-      "import": "./esm/hooks/Deps.js"
-    },
-    "./hooks/HookIndex": {
-      "require": "./cjs/hooks/HookIndex.js",
-      "import": "./esm/hooks/HookIndex.js"
-    },
-    "./hooks/HookProviders": {
-      "require": "./cjs/hooks/HookProviders.js",
-      "import": "./esm/hooks/HookProviders.js"
-    },
-    "./hooks/HookRefs": {
-      "require": "./cjs/hooks/HookRefs.js",
-      "import": "./esm/hooks/HookRefs.js"
-    },
-    "./hooks/HookSymbols": {
-      "require": "./cjs/hooks/HookSymbols.js",
-      "import": "./esm/hooks/HookSymbols.js"
-    },
-    "./hooks/findProvider": {
-      "require": "./cjs/hooks/findProvider.js",
-      "import": "./esm/hooks/findProvider.js"
-    },
-    "./hooks/useBoolean": {
-      "require": "./cjs/hooks/useBoolean.js",
-      "import": "./esm/hooks/useBoolean.js"
-    },
-    "./hooks/useContext": {
-      "require": "./cjs/hooks/useContext.js",
-      "import": "./esm/hooks/useContext.js"
-    },
-    "./hooks/useDefaultValue": {
-      "require": "./cjs/hooks/useDefaultValue.js",
-      "import": "./esm/hooks/useDefaultValue.js"
-    },
-    "./hooks/useDisposable": {
-      "require": "./cjs/hooks/useDisposable.js",
-      "import": "./esm/hooks/useDisposable.js"
-    },
-    "./hooks/useEq": {
-      "require": "./cjs/hooks/useEq.js",
-      "import": "./esm/hooks/useEq.js"
-    },
-    "./hooks/useFiber": {
-      "require": "./cjs/hooks/useFiber.js",
-      "import": "./esm/hooks/useFiber.js"
-    },
-    "./hooks/useFn": {
-      "require": "./cjs/hooks/useFn.js",
-      "import": "./esm/hooks/useFn.js"
-    },
-    "./hooks/useHasUpdated": {
-      "require": "./cjs/hooks/useHasUpdated.js",
-      "import": "./esm/hooks/useHasUpdated.js"
-    },
-    "./hooks/useMemo": {
-      "require": "./cjs/hooks/useMemo.js",
-      "import": "./esm/hooks/useMemo.js"
-    },
-    "./hooks/useMutableRef": {
-      "require": "./cjs/hooks/useMutableRef.js",
-      "import": "./esm/hooks/useMutableRef.js"
-    },
-    "./hooks/useOp": {
-      "require": "./cjs/hooks/useOp.js",
-      "import": "./esm/hooks/useOp.js"
-    },
-    "./hooks/useRef": {
-      "require": "./cjs/hooks/useRef.js",
-      "import": "./esm/hooks/useRef.js"
-    },
-    "./hooks/useRefMap": {
-      "require": "./cjs/hooks/useRefMap.js",
-      "import": "./esm/hooks/useRefMap.js"
-    },
-    "./hooks/useReplicateRefEvents": {
-      "require": "./cjs/hooks/useReplicateRefEvents.js",
-      "import": "./esm/hooks/useReplicateRefEvents.js"
-    },
-    "./hooks/useSink": {
-      "require": "./cjs/hooks/useSink.js",
-      "import": "./esm/hooks/useSink.js"
-    },
-    "./hooks/useStream": {
-      "require": "./cjs/hooks/useStream.js",
-      "import": "./esm/hooks/useStream.js"
-    },
-    "./hooks/withProvider": {
-      "require": "./cjs/hooks/withProvider.js",
-      "import": "./esm/hooks/withProvider.js"
-    },
-    "./routing": {
-      "require": "./cjs/routing/index.js",
-      "import": "./esm/routing/index.js"
-    },
-    "./routing/Interpolate": {
-      "require": "./cjs/routing/Interpolate.js",
-      "import": "./esm/routing/Interpolate.js"
-    },
-    "./routing/Params": {
-      "require": "./cjs/routing/Params.js",
-      "import": "./esm/routing/Params.js"
-    },
-    "./routing/Route": {
-      "require": "./cjs/routing/Route.js",
-      "import": "./esm/routing/Route.js"
-    },
-    "./routing/paths": {
-      "require": "./cjs/routing/paths.js",
-      "import": "./esm/routing/paths.js"
     }
   }
 }
