@@ -234,6 +234,26 @@ export function map() {
   return map_
 }
 
+export function constant<F extends URIS>(): <B>(value: B) => <A>(fx: FxT<F, [A]>) => FxT<F, [B]>
+
+export function constant<F extends URIS2>(): <B>(
+  value: B,
+) => <E, A>(fx: FxT<F, [E, A]>) => FxT<F, [E, B]>
+
+export function constant<F extends URIS3>(): <B>(
+  value: B,
+) => <R, E, A>(fx: FxT<F, [R, E, A]>) => FxT<F, [R, E, B]>
+
+export function constant<F extends URIS4>(): <B>(
+  value: B,
+) => <S, R, E, A>(fx: FxT<F, [S, R, E, A]>) => FxT<F, [S, R, E, B]>
+
+export function constant<F>(): <B>(value: B) => <A>(fx: FxT<F, [A]>) => FxT<F, [B]>
+
+export function constant() {
+  return <B>(value: B) => map_(() => value)
+}
+
 export function chain<F extends URIS>(): <A, B>(
   f: (value: A) => FxT<F, [B]>,
 ) => (fx: FxT<F, [A]>) => FxT<F, [ApplyVariance<F, 'A', [B, A]>]>
@@ -570,4 +590,111 @@ export function fromNaturalTransformation<F, G>(
   transformation: NaturalTransformation<F, G>,
 ): <A>(fa: HKT<F, A>) => Fx<HKT<G, A>, A> {
   return flow(transformation, liftFx<G>() as LiftFxHKT<G>)
+}
+
+export function fromNaturalTransformationK<F extends URIS, G extends URIS>(
+  transformation: NaturalTransformation11<F, G>,
+): <Args extends readonly any[], A>(
+  f: (...args: Args) => Kind<F, A>,
+) => (...args: Args) => Fx<Kind<G, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS, G extends URIS2>(
+  transformation: NaturalTransformation12<F, G>,
+): <Args extends readonly any[], A, E = Initial<G, 'E'>>(
+  f: (...args: Args) => Kind<F, A>,
+) => (...args: Args) => Fx<Kind2<G, E, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS, G extends URIS2, E>(
+  transformation: NaturalTransformation12C<F, G, E>,
+): <Args extends readonly any[], A>(
+  f: (...args: Args) => Kind<F, A>,
+) => (...args: Args) => Fx<Kind2<G, E, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS, G extends URIS3>(
+  transformation: NaturalTransformation13<F, G>,
+): <Args extends readonly any[], A, R = Initial<G, 'R'>, E = Initial<G, 'E'>>(
+  f: (...args: Args) => Kind<F, A>,
+) => (...args: Args) => Fx<Kind3<G, R, E, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS, G extends URIS3, E>(
+  transformation: NaturalTransformation13C<F, G, E>,
+): <Args extends readonly any[], A, R = Initial<G, 'R'>>(
+  f: (...args: Args) => Kind<F, A>,
+) => (...args: Args) => Fx<Kind3<G, R, E, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS, G extends URIS4>(
+  transformation: NaturalTransformation14<F, G>,
+): <Args extends readonly any[], A, S = Initial<G, 'S'>, R = Initial<G, 'R'>, E = Initial<G, 'E'>>(
+  f: (...args: Args) => Kind<F, A>,
+) => (...args: Args) => Fx<Kind4<G, S, R, E, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS, G extends URIS4, E>(
+  transformation: NaturalTransformation14C<F, G, E>,
+): <Args extends readonly any[], A, S = Initial<G, 'S'>, R = Initial<G, 'R'>>(
+  f: (...args: Args) => Kind<F, A>,
+) => (...args: Args) => Fx<Kind4<G, S, R, E, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS2, G extends URIS>(
+  transformation: NaturalTransformation21<F, G>,
+): <Args extends readonly any[], E, A>(
+  f: (...args: Args) => Kind2<F, E, A>,
+) => (...args: Args) => Fx<Kind<G, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS2, G extends URIS2>(
+  transformation: NaturalTransformation22<F, G>,
+): <Args extends readonly any[], E, A>(
+  f: (...args: Args) => Kind2<F, E, A>,
+) => (...args: Args) => Fx<Kind2<G, E, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS2, G extends URIS2, E>(
+  transformation: NaturalTransformation22C<F, G, E>,
+): <Args extends readonly any[], A>(
+  f: (...args: Args) => Kind2<F, E, A>,
+) => (...args: Args) => Fx<Kind2<G, E, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS2, G extends URIS3>(
+  transformation: NaturalTransformation23<F, G> | NaturalTransformation23R<F, G>,
+): <Args extends readonly any[], E, A, R = Initial<G, 'R'>>(
+  f: (...args: Args) => Kind2<F, E, A>,
+) => (...args: Args) => Fx<Kind3<G, R, E, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS2, G extends URIS3, E>(
+  transformation: NaturalTransformation23C<F, G, E>,
+): <Args extends readonly any[], A, R = Initial<G, 'R'>>(
+  f: (...args: Args) => Kind2<F, E, A>,
+) => (...args: Args) => Fx<Kind3<G, R, E, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS2, G extends URIS4>(
+  transformation:
+    | NaturalTransformation24<F, G>
+    | NaturalTransformation24R<F, G>
+    | NaturalTransformation24S<F, G>,
+): <Args extends readonly any[], E, A, S = Initial<G, 'S'>, R = Initial<G, 'R'>>(
+  f: (...args: Args) => Kind2<F, E, A>,
+) => (...args: Args) => Fx<Kind4<G, S, R, E, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS3, G extends URIS3>(
+  transformation: NaturalTransformation33<F, G>,
+): <Args extends readonly any[], R, E, A>(
+  f: (...args: Args) => Kind3<F, R, E, A>,
+) => (...args: Args) => Fx<Kind3<G, R, E, A>, A>
+
+export function fromNaturalTransformationK<F extends URIS3, G extends URIS4>(
+  transformation: NaturalTransformation34<F, G>,
+): <Args extends readonly any[], R, E, A, S = Initial<G, 'S'>>(
+  f: (...args: Args) => Kind3<F, R, E, A>,
+) => (...args: Args) => Fx<Kind4<G, S, R, E, A>, A>
+
+export function fromNaturalTransformationK<F, G>(
+  transformation: NaturalTransformation<F, G>,
+): <Args extends readonly any[], A>(
+  f: (...args: Args) => HKT<F, A>,
+) => (...args: Args) => Fx<HKT<G, A>, A>
+
+export function fromNaturalTransformationK<F, G>(transformation: NaturalTransformation<F, G>) {
+  const transform = fromNaturalTransformation(transformation)
+
+  return <Args extends readonly any[], A>(f: (...args: Args) => HKT<F, A>) =>
+    (...args: Args): Fx<HKT<G, A>, A> =>
+      transform(f(...args))
 }
