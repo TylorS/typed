@@ -554,8 +554,6 @@ export function fromNaturalTransformation<F extends URIS2, G extends URIS4>(
   fa: Kind2<F, E, A>,
 ) => Fx<Kind4<G, S, R, E, A>, A>
 
-// here
-
 export function fromNaturalTransformation<F extends URIS3, G extends URIS3>(
   transformation: NaturalTransformation33<F, G>,
 ): <R, E, A>(fa: Kind3<F, R, E, A>) => Fx<Kind3<G, R, E, A>, A>
@@ -571,5 +569,5 @@ export function fromNaturalTransformation<F, G>(
 export function fromNaturalTransformation<F, G>(
   transformation: NaturalTransformation<F, G>,
 ): <A>(fa: HKT<F, A>) => Fx<HKT<G, A>, A> {
-  return flow(transformation, liftFx()) as any
+  return flow(transformation, liftFx<G>() as LiftFxHKT<G>)
 }
