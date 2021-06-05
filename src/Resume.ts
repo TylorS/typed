@@ -78,10 +78,10 @@ export const ap =
         }
 
         if (!disposable.isDisposed()) {
-          return disposable.addDisposable(resume(ab.value(a.value)))
+          disposable.addDisposable(resume(ab.value(a.value)))
         }
 
-        return disposeNone()
+        return disposable
       }
 
       if (isAsync(fab)) {
