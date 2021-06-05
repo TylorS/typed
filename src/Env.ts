@@ -1,6 +1,6 @@
 import * as FRe from '@fp/FromResume'
 import { FromResume2 } from '@fp/FromResume'
-import { Arity1 } from '@fp/function'
+import { ArgsOf, Arity1 } from '@fp/function'
 import { Intersect } from '@fp/Hkt'
 import { MonadRec2 } from '@fp/MonadRec'
 import * as P from '@fp/Provide'
@@ -31,9 +31,17 @@ import * as Task from 'fp-ts/Task'
  */
 export interface Env<R, A> extends Re.Reader<R, R.Resume<A>> {}
 
-export type GetRequirements<A> = A extends Env<infer R, any> ? R : never
+export type GetRequirements<A> = A extends Env<infer R, any>
+  ? R
+  : A extends FN.FunctionN<any, Env<infer R, any>>
+  ? R
+  : never
 
-export type GetValue<A> = A extends Env<any, infer R> ? R : never
+export type GetValue<A> = A extends Env<any, infer R>
+  ? R
+  : A extends FN.FunctionN<any, Env<any, infer R>>
+  ? R
+  : never
 
 export const ap: <R, A>(fa: Env<R, A>) => <B>(fab: Env<R, Arity1<A, B>>) => Env<R, B> = RT.ap(
   R.Apply,
@@ -300,3 +308,33 @@ export const runWith =
     FN.pipe(requirements, env, R.run(f))
 
 export const execWith = runWith(disposeNone)
+
+/**
+ * Construct an Env to a lazily-defined Env-based effect that must be provided later.
+ * Does not support functions which require type-parameters as they will resolve to unknown, due
+ * to limitations in TS.
+ */
+export const op =
+  <F extends (...args: readonly any[]) => Env<any, any>>() =>
+  <K extends PropertyKey>(
+    key: K,
+  ): {
+    (...args: ArgsOf<F>): Env<
+      GetRequirements<ReturnType<F>> & { readonly [_ in K]: F },
+      GetValue<ReturnType<F>>
+    >
+    readonly key: K
+  } => {
+    function operation(
+      ...args: ArgsOf<F>
+    ): Env<GetRequirements<ReturnType<F>> & { readonly [_ in K]: F }, GetValue<ReturnType<F>>> {
+      return FN.pipe(
+        ask<{ readonly [_ in K]: F }>(),
+        chain((e) => e[key](...args)),
+      )
+    }
+
+    operation.key = key
+
+    return operation
+  }
