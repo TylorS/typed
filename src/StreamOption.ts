@@ -29,7 +29,7 @@ export const getOrElse = OT.getOrElse(S.Functor)
 export const getOrElseE = OT.getOrElseE(S.Monad)
 export const map = OT.map(S.Functor)
 export const match = OT.match(S.Functor)
-export const matchE = OT.matchE(S.Chain)
+export const matchE = OT.matchE(S.CH)
 export const some = OT.some(S.Pointed)
 export const zero = OT.zero(S.Pointed)
 

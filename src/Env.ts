@@ -57,7 +57,9 @@ export const map: <A, B>(f: (a: A) => B) => <R>(fa: Env<R, A>) => Env<R, B> = RT
 
 export const constant = FN.flow(FN.constant, map)
 
-export const of: <A>(a: A) => Env<unknown, A> = RT.of(R.Pointed)
+export type Of<A> = Env<unknown, A>
+
+export const of: <A>(a: A) => Of<A> = RT.of(R.Pointed)
 
 export const asksIOK: <R, A>(f: (r: R) => IO.IO<A>) => Env<R, A> = RT.fromNaturalTransformation<
   IO.URI,
@@ -275,11 +277,17 @@ export const Provide: P.Provide2<URI> = {
 export const Do: Env<unknown, {}> = fromIO(() => Object.create(null))
 export const bindTo = bindTo_(Functor)
 export const bind = FpChain.bind(Monad)
+export const bindW = FpChain.bind(Monad) as <N extends string, A, E1, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => Env<E1, B>,
+) => <E2>(
+  ma: Env<E2, A>,
+) => Env<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 export const tupled = tupled_(Functor)
 
 export const ask = FR.ask(FromReader)
 export const asks = FR.asks(FromReader)
-export const asksE: <R, E, A>(f: (r: R) => Env<E, A>) => Env<R & E, A> = FN.flow(asks, flattenW)
+export const asksE: <R, E, A>(f: (r: R) => Env<E, A>) => Env<E & R, A> = FN.flow(asks, flattenW)
 export const chainReaderK = FR.chainReaderK(FromReader, Chain)
 export const fromReaderK = FR.fromReaderK(FromReader)
 
@@ -312,7 +320,7 @@ export const execWith = runWith(disposeNone)
 /**
  * Construct an Env to a lazily-defined Env-based effect that must be provided later.
  * Does not support functions which require type-parameters as they will resolve to unknown, due
- * to limitations in TS.
+ * to limitations in TS, if you need this maybe @see asksE
  */
 export const op =
   <F extends (...args: readonly any[]) => Env<any, any>>() =>

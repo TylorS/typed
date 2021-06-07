@@ -1,5 +1,5 @@
 import { settable, undisposable } from '@fp/Disposable'
-import { FromResume1 } from '@fp/FromResume'
+import * as FRe from '@fp/FromResume'
 import { run } from '@fp/Resume'
 import {
   ap,
@@ -19,11 +19,11 @@ import {
 } from '@most/core'
 import { asap } from '@most/scheduler'
 import { Disposable, Sink, Stream, Task as MostTask, Time } from '@most/types'
-import { Alt1 } from 'fp-ts/Alt'
+import * as Alt_ from 'fp-ts/Alt'
 import { Alternative1 } from 'fp-ts/Alternative'
-import { Applicative1 } from 'fp-ts/Applicative'
-import { Apply1 } from 'fp-ts/Apply'
-import { bind as bind_, Chain1 } from 'fp-ts/Chain'
+import * as App from 'fp-ts/Applicative'
+import * as Ap from 'fp-ts/Apply'
+import * as CH from 'fp-ts/Chain'
 import { ChainRec1 } from 'fp-ts/ChainRec'
 import { Compactable1 } from 'fp-ts/Compactable'
 import { Either, isLeft, isRight, left, match, right } from 'fp-ts/Either'
@@ -138,20 +138,31 @@ export const Pointed: Pointed1<URI> = {
 
 export const of = Pointed.of
 
-export const Apply: Apply1<URI> = {
+export const Apply: Ap.Apply1<URI> = {
   ...Functor,
   ap,
 }
 
-export const Applicative: Applicative1<URI> = {
+export const apFirst = Ap.apFirst(Apply)
+export const apS = Ap.apS(Apply)
+export const apSecond = Ap.apSecond(Apply)
+export const apT = Ap.apT(Apply)
+export const getApplySemigroup = Ap.getApplySemigroup(Apply)
+
+export const Applicative: App.Applicative1<URI> = {
   ...Apply,
   ...Pointed,
 }
 
-export const Chain: Chain1<URI> = {
+export const getApplicativeMonoid = App.getApplicativeMonoid(Applicative)
+
+export const Chain: CH.Chain1<URI> = {
   ...Functor,
   chain,
 }
+
+export const chainFirst = CH.chainFirst(Chain)
+export const bind = CH.bind(Chain)
 
 export const Monad: Monad1<URI> = {
   ...Chain,
@@ -206,7 +217,7 @@ export const FromTask: FromTask1<URI> = {
 
 export const fromTask = FromTask.fromTask
 
-export const FromResume: FromResume1<URI> = {
+export const FromResume: FRe.FromResume1<URI> = {
   fromResume: (resume) =>
     newStream((sink, scheduler) =>
       asap(
@@ -221,7 +232,7 @@ export const FromResume: FromResume1<URI> = {
 
 export const fromResume = FromResume.fromResume
 
-export const Alt: Alt1<URI> = {
+export const Alt: Alt_.Alt1<URI> = {
   ...Functor,
   alt: (f) => (fa) => take(1, merge(fa, f())), // race the 2 streams
 }
@@ -249,7 +260,6 @@ export const Filterable: Filterable1<URI> = {
 
 export const Do: Stream<{}> = pipe(null, now, map(Object.create))
 export const bindTo = bindTo_(Functor)
-export const bind = bind_(Monad)
 export const tupled = tupled_(Functor)
 
 const emptySink: Sink<any> = {
