@@ -2,10 +2,13 @@ import * as E from '@fp/Env'
 import { deepEqualsEq } from '@fp/Eq'
 import { Do } from '@fp/Fx/Env'
 import * as O from '@fp/Option'
+import { Disposable, Scheduler } from 'cjs/Stream'
 import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
+import { fst, snd } from 'fp-ts/Tuple2'
 
 import * as A from './Adapter'
+import { createSink } from './Stream'
 
 export interface Ref<E, A> extends Eq<A> {
   readonly id: PropertyKey
@@ -67,7 +70,24 @@ export interface Events {
   readonly refEvents: Adapter
 }
 
-export type Refs = Get & Has & Set & Remove & Events
+export const getAdapter = E.asks((e: Events) => e.refEvents)
+
+export const getSendEvent = pipe(getAdapter, E.map(fst))
+export const getRefEvents = pipe(getAdapter, E.map(snd))
+
+export interface ListenToRef {
+  readonly listenToRef: <E, A>(
+    ref: Ref<E, A>,
+    f: (event: Event<E, A>) => void,
+  ) => E.Env<E, Disposable>
+}
+
+export const listenToRef =
+  <E, A>(ref: Ref<E, A>) =>
+  (f: (event: Event<E, A>) => void) =>
+    E.asksE((e: ListenToRef) => e.listenToRef(ref, f))
+
+export type Refs = Get & Has & Set & Remove & Events & ListenToRef
 
 export interface Wrapped<E, A, R = unknown> extends Ref<E, A> {
   readonly get: E.Env<R & E & Get, A>
@@ -112,23 +132,37 @@ export interface Removed<E, A> {
   readonly ref: Ref<E, A>
 }
 
-export function refs(options: RefsOptions = {}): Refs {
-  const { initial = [], adapter = A.create() } = options
+export function refs(options: RefsOptions): Refs {
+  const { scheduler, initial = [], refEvents = A.create() } = options
   const references = new Map(initial)
-  const sendEvent = createSendEvent(references, adapter)
+  const sendEvent = createSendEvent(references, refEvents)
 
   return {
     ...makeGetRef(references, sendEvent),
     ...makeHasRef(references),
     ...makeSetRef(references, sendEvent),
     ...makeDeleteRef(references, sendEvent),
-    refEvents: adapter,
+    listenToRef: (ref, event) =>
+      E.fromIO(() =>
+        refEvents[1].run(
+          createSink({
+            event: (_, x) => {
+              if (x.ref.id === ref.id) {
+                event(x)
+              }
+            },
+          }),
+          scheduler,
+        ),
+      ),
+    refEvents,
   }
 }
 
 export type RefsOptions = {
+  readonly scheduler: Scheduler
   readonly initial?: Iterable<readonly [any, any]>
-  readonly adapter?: Adapter
+  readonly refEvents?: Adapter
 }
 
 function createSendEvent(references: Map<any, any>, [push]: Adapter) {
