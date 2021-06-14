@@ -16,6 +16,7 @@ import * as FEi from 'fp-ts/FromEither'
 import * as FIO from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
 import * as FT from 'fp-ts/FromTask'
+import { Lazy } from 'fp-ts/function'
 import * as F from 'fp-ts/Functor'
 import { Monad3 } from 'fp-ts/Monad'
 import { Pointed3 } from 'fp-ts/Pointed'
@@ -33,22 +34,48 @@ export type GetLeft<A> = A extends ReaderStreamEither<any, infer R, any> ? R : n
 export type GetRight<A> = A extends ReaderStreamEither<any, any, infer R> ? R : never
 
 export const ap = RT.ap(SE.Apply)
+export const apW = ap as <R1, E, A>(
+  fa: Re.Reader<R1, SE.StreamEither<E, A>>,
+) => <R2, B>(
+  fab: Re.Reader<R2, SE.StreamEither<E, (a: A) => B>>,
+) => Re.Reader<R1 & R2, SE.StreamEither<E, B>>
 export const chain = RT.chain(SE.Chain)
+export const chainW = chain as <A, R1, E, B>(
+  f: (a: A) => Re.Reader<R1, SE.StreamEither<E, B>>,
+) => <R2>(ma: Re.Reader<R2, SE.StreamEither<E, A>>) => Re.Reader<R1 & R2, SE.StreamEither<E, B>>
 export const fromReader = RT.fromReader(SE.Pointed)
 export const map = RT.map(SE.Functor)
 export const of = RT.of(SE.Pointed)
 
 export const alt = ET.alt(RS.Monad)
+export const altW = alt as <R1, E, A>(
+  second: Lazy<RS.ReaderStream<R1, Ei.Either<E, A>>>,
+) => <R2>(first: RS.ReaderStream<R2, Ei.Either<E, A>>) => RS.ReaderStream<R1 & R2, Ei.Either<E, A>>
 export const altValidation = <A>(semigroup: Semigroup<A>) => ET.altValidation(RS.Monad, semigroup)
 export const bimap = ET.bimap(RS.Functor)
 export const bracket = ET.bracket(RS.Monad)
+export const bracketW = bracket as <R1, E, A, R2, B, R3>(
+  acquire: RS.ReaderStream<R1, Ei.Either<E, A>>,
+  use: (a: A) => RS.ReaderStream<R2, Ei.Either<E, B>>,
+  release: (a: A, e: Ei.Either<E, B>) => RS.ReaderStream<R3, Ei.Either<E, void>>,
+) => RS.ReaderStream<R1 & R2 & R3, Ei.Either<E, B>>
 export const getOrElse = ET.getOrElse(RS.Monad)
 export const getOrElseE = ET.getOrElseE(RS.Monad)
+export const getOrElseEW = getOrElseE as <E, R1, A>(
+  onLeft: (e: E) => RS.ReaderStream<R1, A>,
+) => <R2>(ma: RS.ReaderStream<R2, Ei.Either<E, A>>) => RS.ReaderStream<R1 & R2, A>
 export const left = ET.left(RS.Monad)
 export const fromReaderStreamL = ET.leftF(RS.Monad)
 export const mapLeft = ET.mapLeft(RS.Monad)
 export const match = ET.match(RS.Monad)
 export const matchE = ET.matchE(RS.Monad)
+export const matchEW = match as <E, R1, B, A, R2>(
+  onLeft: (e: E) => RS.ReaderStream<R1, B>,
+  onRight: (a: A) => RS.ReaderStream<R2, B>,
+) => <R3>(
+  ma: RS.ReaderStream<R3, Ei.Either<E, A>>,
+) => RS.ReaderStream<R1 & R2 & R3, Ei.Either<E, B>>
+
 export const orElse = ET.orElse(RS.Monad)
 export const orElseFirst = ET.orElseFirst(RS.Monad)
 export const orLeft = ET.orLeft(RS.Monad)
