@@ -74,6 +74,6 @@ export const createFailure =
       throw: throwError(name),
       catchW: catchErrorW(name),
       catch: catchError(name),
-      attempt: attempt(name),
-    } as Failure<K, E>
+      attempt: attempt(name) as Failure<K, E>['attempt'],
+    }
   }

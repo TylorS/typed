@@ -1,15 +1,27 @@
 import { MonadRec3 } from '@fp/MonadRec'
+import * as RS from '@fp/ReaderStream'
+import { never } from '@fp/Stream'
 import * as SE from '@fp/StreamEither'
-import { Applicative3 } from 'fp-ts/Applicative'
-import { Apply3 } from 'fp-ts/Apply'
-import { Chain3 } from 'fp-ts/Chain'
+import { flow } from 'cjs/function'
+import * as ALT from 'fp-ts/Alt'
+import * as ALTERNATIVE from 'fp-ts/Alternative'
+import * as App from 'fp-ts/Applicative'
+import * as Ap from 'fp-ts/Apply'
+import * as Bi from 'fp-ts/Bifunctor'
+import * as Ch from 'fp-ts/Chain'
 import { ChainRec3 } from 'fp-ts/ChainRec'
-import { Either } from 'fp-ts/Either'
-import { Functor3 } from 'fp-ts/Functor'
+import * as Ei from 'fp-ts/Either'
+import * as ET from 'fp-ts/EitherT'
+import * as FEi from 'fp-ts/FromEither'
+import * as FIO from 'fp-ts/FromIO'
+import * as FR from 'fp-ts/FromReader'
+import * as FT from 'fp-ts/FromTask'
+import * as F from 'fp-ts/Functor'
 import { Monad3 } from 'fp-ts/Monad'
 import { Pointed3 } from 'fp-ts/Pointed'
 import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
+import { Semigroup } from 'fp-ts/Semigroup'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>
@@ -25,6 +37,25 @@ export const chain = RT.chain(SE.Chain)
 export const fromReader = RT.fromReader(SE.Pointed)
 export const map = RT.map(SE.Functor)
 export const of = RT.of(SE.Pointed)
+
+export const alt = ET.alt(RS.Monad)
+export const altValidation = <A>(semigroup: Semigroup<A>) => ET.altValidation(RS.Monad, semigroup)
+export const bimap = ET.bimap(RS.Functor)
+export const bracket = ET.bracket(RS.Monad)
+export const getOrElse = ET.getOrElse(RS.Monad)
+export const getOrElseE = ET.getOrElseE(RS.Monad)
+export const left = ET.left(RS.Monad)
+export const fromReaderStreamL = ET.leftF(RS.Monad)
+export const mapLeft = ET.mapLeft(RS.Monad)
+export const match = ET.match(RS.Monad)
+export const matchE = ET.matchE(RS.Monad)
+export const orElse = ET.orElse(RS.Monad)
+export const orElseFirst = ET.orElseFirst(RS.Monad)
+export const orLeft = ET.orLeft(RS.Monad)
+export const right = ET.right(RS.Monad)
+export const fromReaderStream = ET.rightF(RS.Monad)
+export const swap = ET.swap(RS.Functor)
+export const toUnion = ET.toUnion(RS.Functor)
 
 export const URI = '@typed/fp/ReaderStreamEither'
 export type URI = typeof URI
@@ -45,24 +76,45 @@ export const Pointed: Pointed3<URI> = {
   of,
 }
 
-export const Functor: Functor3<URI> = {
+export const Functor: F.Functor3<URI> = {
   map,
 }
 
-export const Apply: Apply3<URI> = {
+export const bindTo = F.bindTo(Functor)
+export const flap = F.flap(Functor)
+export const tupled = F.tupled(Functor)
+
+export const Bifunctor: Bi.Bifunctor3<URI> = {
+  ...Functor,
+  bimap,
+  mapLeft,
+}
+
+export const Apply: Ap.Apply3<URI> = {
   ...Functor,
   ap,
 }
 
-export const Applicative: Applicative3<URI> = {
+export const apFirst = Ap.apFirst(Apply)
+export const apS = Ap.apS(Apply)
+export const apSecond = Ap.apSecond(Apply)
+export const apT = Ap.apT(Apply)
+export const getApplySemigroup = Ap.getApplySemigroup(Apply)
+
+export const Applicative: App.Applicative3<URI> = {
   ...Apply,
   ...Pointed,
 }
 
-export const Chain: Chain3<URI> = {
+export const getApplicativeMonoid = App.getApplicativeMonoid(Applicative)
+
+export const Chain: Ch.Chain3<URI> = {
   ...Functor,
   chain,
 }
+
+export const bind = Ch.bind(Chain)
+export const chainFirst = Ch.chainFirst(Chain)
 
 export const Monad: Monad3<URI> = {
   ...Chain,
@@ -70,7 +122,7 @@ export const Monad: Monad3<URI> = {
 }
 
 export function chainRec<A, R, E, B>(
-  f: (value: A) => ReaderStreamEither<R, E, Either<A, B>>,
+  f: (value: A) => ReaderStreamEither<R, E, Ei.Either<A, B>>,
 ): (value: A) => ReaderStreamEither<R, E, B> {
   return (value) => (env) => SE.chainRec((a: A) => f(a)(env))(value)
 }
@@ -83,3 +135,60 @@ export const MonadRec: MonadRec3<URI> = {
   ...Monad,
   chainRec,
 }
+
+export const Alt: ALT.Alt3<URI> = {
+  ...Functor,
+  alt,
+}
+
+export const altAll = ALT.altAll(Alt)
+
+export const zero: ReaderStreamEither<unknown, never, any> = () => never()
+
+export const Alternative: ALTERNATIVE.Alternative3<URI> = {
+  ...Alt,
+  zero: () => zero,
+}
+
+export const FromEither: FEi.FromEither3<URI> = {
+  fromEither: RS.of,
+}
+
+export const fromEither = FromEither.fromEither
+export const chainEitherK = FEi.chainEitherK(FromEither, Chain)
+export const chainOptionK = FEi.chainOptionK(FromEither, Chain)
+export const filterOrElse = FEi.filterOrElse(FromEither, Chain)
+export const fromEitherK = FEi.fromEitherK(FromEither)
+export const fromOption = FEi.fromOption(FromEither)
+export const fromOptionK = FEi.fromOptionK(FromEither)
+export const fromPredicate = FEi.fromPredicate(FromEither)
+
+export const FromReader: FR.FromReader3<URI> = {
+  fromReader,
+}
+
+export const ask = FR.ask(FromReader)
+export const asks = FR.asks(FromReader)
+export const chainFirstReaderK = FR.chainFirstReaderK(FromReader, Chain)
+export const chainReaderK = FR.chainReaderK(FromReader, Chain)
+export const fromReaderK = FR.fromReaderK(FromReader)
+
+export const FromIO: FIO.FromIO3<URI> = {
+  fromIO: flow(RS.fromIO, fromReaderStream),
+}
+
+export const fromIO = FromIO.fromIO
+export const chainFirstIOK = FIO.chainFirstIOK(FromIO, Chain)
+export const chainIOK = FIO.chainIOK(FromIO, Chain)
+export const fromIOK = FIO.fromIOK(FromIO)
+
+export const FromTask: FT.FromTask3<URI> = {
+  ...FromIO,
+  fromTask: flow(RS.fromTask, fromReaderStream),
+}
+
+export const fromTask = FromTask.fromTask
+
+export const chainFirstTaskK = FT.chainFirstTaskK(FromTask, Chain)
+export const chainTaskK = FT.chainTaskK(FromTask, Chain)
+export const fromTaskK = FT.fromTaskK(FromTask)

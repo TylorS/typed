@@ -1,22 +1,7 @@
-import { settable, undisposable } from '@fp/Disposable'
+import { settable } from '@fp/Disposable'
 import * as FRe from '@fp/FromResume'
-import { run } from '@fp/Resume'
-import {
-  ap,
-  awaitPromises,
-  chain,
-  delay,
-  empty,
-  filter,
-  map,
-  merge,
-  mergeConcurrently,
-  multicast,
-  newStream,
-  now,
-  switchLatest,
-  take,
-} from '@most/core'
+import { start } from '@fp/Resume'
+import * as M from '@most/core'
 import { asap } from '@most/scheduler'
 import { Disposable, Sink, Stream, Task as MostTask, Time } from '@most/types'
 import * as Alt_ from 'fp-ts/Alt'
@@ -85,8 +70,8 @@ declare module 'fp-ts/HKT' {
  */
 export const getMonoid = <A>(): Monoid<Stream<A>> => {
   return {
-    concat: merge,
-    empty: empty(),
+    concat: M.merge,
+    empty: M.empty(),
   }
 }
 
@@ -94,22 +79,22 @@ export const getMonoid = <A>(): Monoid<Stream<A>> => {
  * Filter Option's from within a Stream
  */
 export const compact = <A>(stream: Stream<Option<A>>): Stream<A> =>
-  map((s: Some<A>) => s.value, filter(isSome, stream))
+  M.map((s: Some<A>) => s.value, M.filter(isSome, stream))
 
 /**
  * Separate left and right values
  */
 export const separate = <A, B>(stream: Stream<Either<A, B>>): Separated<Stream<A>, Stream<B>> => {
-  const s = multicast(stream)
+  const s = M.multicast(stream)
   const left = pipe(
     s,
-    filter(isLeft),
-    map((l) => l.left),
+    M.filter(isLeft),
+    M.map((l) => l.left),
   )
   const right = pipe(
     s,
-    filter(isRight),
-    map((r) => r.right),
+    M.filter(isRight),
+    M.map((r) => r.right),
   )
 
   return { left, right }
@@ -118,7 +103,7 @@ export const separate = <A, B>(stream: Stream<Either<A, B>>): Separated<Stream<A
 export const partitionMap =
   <A, B, C>(f: (a: A) => Either<B, C>) =>
   (fa: Stream<A>) =>
-    separate(map(f, fa))
+    separate(M.map(f, fa))
 
 export const partition = <A>(predicate: Predicate<A>) =>
   partitionMap((a: A) => (predicate(a) ? right(a) : left(a)))
@@ -126,21 +111,21 @@ export const partition = <A>(predicate: Predicate<A>) =>
 export const filterMap =
   <A, B>(f: (a: A) => Option<B>) =>
   (fa: Stream<A>) =>
-    compact(map(f, fa))
+    compact(M.map(f, fa))
 
 export const Functor: Functor1<URI> = {
-  map,
+  map: M.map,
 }
 
 export const Pointed: Pointed1<URI> = {
-  of: now,
+  of: M.now,
 }
 
 export const of = Pointed.of
 
 export const Apply: Ap.Apply1<URI> = {
   ...Functor,
-  ap,
+  ap: M.ap,
 }
 
 export const apFirst = Ap.apFirst(Apply)
@@ -158,7 +143,7 @@ export const getApplicativeMonoid = App.getApplicativeMonoid(Applicative)
 
 export const Chain: CH.Chain1<URI> = {
   ...Functor,
-  chain,
+  chain: M.chain,
 }
 
 export const chainFirst = CH.chainFirst(Chain)
@@ -172,7 +157,7 @@ export const Monad: Monad1<URI> = {
 export const chainRec =
   <A, B>(f: (value: A) => Stream<Either<A, B>>) =>
   (value: A): Stream<B> =>
-    pipe(value, f, delay(0), chain(match(flow(chainRec(f)), now)))
+    pipe(value, f, M.delay(0), M.chain(match(flow(chainRec(f)), M.now)))
 
 export const ChainRec: ChainRec1<URI> = {
   chainRec,
@@ -181,7 +166,7 @@ export const ChainRec: ChainRec1<URI> = {
 export const switchRec =
   <A, B>(f: (value: A) => Stream<Either<A, B>>) =>
   (value: A): Stream<B> =>
-    pipe(value, f, map(match(switchRec(f), now)), switchLatest)
+    pipe(value, f, M.map(match(switchRec(f), M.now)), M.switchLatest)
 
 export const SwitchRec: ChainRec1<URI> = {
   chainRec: switchRec,
@@ -194,8 +179,8 @@ export const mergeConcurrentlyRec =
     pipe(
       value,
       f,
-      map(match(mergeConcurrentlyRec(concurrency)(f), now)),
-      mergeConcurrently(concurrency),
+      M.map(match(mergeConcurrentlyRec(concurrency)(f), M.now)),
+      M.mergeConcurrently(concurrency),
     )
 
 export const getConcurrentChainRec = (concurrency: number): ChainRec1<URI> => ({
@@ -203,26 +188,30 @@ export const getConcurrentChainRec = (concurrency: number): ChainRec1<URI> => ({
 })
 
 export const FromIO: FromIO1<URI> = {
-  fromIO: (f) => Functor.map(f)(now(undefined)),
+  fromIO: (f) => Functor.map(f)(M.now(undefined)),
 }
 
 export const fromIO = FromIO.fromIO
 
-const applyTask = <A>(task: Task<A>): Stream<Promise<A>> => ap(now(task), now(void 0))
+const applyTask = <A>(task: Task<A>): Stream<Promise<A>> => M.ap(M.now(task), M.now(void 0))
 
 export const FromTask: FromTask1<URI> = {
   ...FromIO,
-  fromTask: flow(applyTask, awaitPromises),
+  fromTask: flow(applyTask, M.awaitPromises),
 }
 
 export const fromTask = FromTask.fromTask
 
 export const FromResume: FRe.FromResume1<URI> = {
   fromResume: (resume) =>
-    newStream((sink, scheduler) =>
+    M.newStream((sink, scheduler) =>
       asap(
         createCallbackTask(
-          () => pipe(resume, run(undisposable((a) => sink.event(scheduler.currentTime(), a)))),
+          () =>
+            pipe(
+              resume,
+              start((a) => sink.event(scheduler.currentTime(), a)),
+            ),
           (error) => sink.error(scheduler.currentTime(), error),
         ),
         scheduler,
@@ -234,14 +223,14 @@ export const fromResume = FromResume.fromResume
 
 export const Alt: Alt_.Alt1<URI> = {
   ...Functor,
-  alt: (f) => (fa) => take(1, merge(fa, f())), // race the 2 streams
+  alt: (f) => (fa) => M.take(1, M.merge(fa, f())), // race the 2 streams
 }
 
 export const race = Alt.alt
 
 export const Alternative: Alternative1<URI> = {
   ...Alt,
-  zero: empty,
+  zero: M.empty,
 }
 
 export const zero = Alternative.zero
@@ -255,10 +244,10 @@ export const Filterable: Filterable1<URI> = {
   partitionMap,
   partition,
   filterMap,
-  filter,
+  filter: M.filter,
 }
 
-export const Do: Stream<{}> = pipe(null, now, map(Object.create))
+export const Do: Stream<{}> = pipe(null, M.now, M.map(Object.create))
 export const bindTo = bindTo_(Functor)
 export const tupled = tupled_(Functor)
 

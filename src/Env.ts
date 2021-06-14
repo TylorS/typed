@@ -47,7 +47,13 @@ export const ap: <R, A>(fa: Env<R, A>) => <B>(fab: Env<R, Arity1<A, B>>) => Env<
   R.Apply,
 )
 
-export const chain = RT.chain(R.Chain) as <A, R1, B>(
+export const apW = RT.ap(R.Apply) as <R1, A>(
+  fa: Env<R1, A>,
+) => <R2, B>(fab: Env<R2, Arity1<A, B>>) => Env<R1 & R2, B>
+
+export const chain = RT.chain(R.Chain)
+
+export const chainW = RT.chain(R.Chain) as <A, R1, B>(
   f: (a: A) => Env<R1, B>,
 ) => <R2>(ma: Env<R2, A>) => Env<R1 & R2, B>
 
@@ -267,6 +273,11 @@ export const useSomeWith = P.useSomeWith({ ...UseSome, ...Chain })
 export const askAndUse = P.askAndUse({ ...UseAll, ...Chain, ...FromReader })
 export const askAndProvide = P.askAndProvide({ ...ProvideAll, ...Chain, ...FromReader })
 
+export const toResume = FN.flow(
+  askAndUse,
+  map((e) => e({})),
+)
+
 export const Provide: P.Provide2<URI> = {
   useSome,
   useAll,
@@ -315,7 +326,7 @@ export const runWith =
   (env: Env<E, A>): Disposable =>
     FN.pipe(requirements, env, R.run(f))
 
-export const execWith = runWith(disposeNone)
+export const execWith = runWith<any>(disposeNone)
 
 /**
  * Construct an Env to a lazily-defined Env-based effect that must be provided later.

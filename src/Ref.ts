@@ -2,20 +2,18 @@ import * as E from '@fp/Env'
 import { deepEqualsEq } from '@fp/Eq'
 import { Do } from '@fp/Fx/Env'
 import * as O from '@fp/Option'
-import { Disposable, Scheduler } from 'cjs/Stream'
 import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
 import { fst, snd } from 'fp-ts/Tuple2'
 
 import * as A from './Adapter'
-import { createSink } from './Stream'
 
 export interface Ref<E, A> extends Eq<A> {
   readonly id: PropertyKey
   readonly initial: E.Env<E, A>
 }
 
-export interface Of<A> extends Ref<{}, A> {}
+export interface Of<A> extends Ref<unknown, A> {}
 
 export function make<E, A>(
   initial: E.Env<E, A>,
@@ -73,21 +71,12 @@ export interface Events {
 export const getAdapter = E.asks((e: Events) => e.refEvents)
 
 export const getSendEvent = pipe(getAdapter, E.map(fst))
+
+export const sendEvent = <E, A>(event: Event<E, A>) => pipe(getSendEvent, E.apW(E.of(event)))
+
 export const getRefEvents = pipe(getAdapter, E.map(snd))
 
-export interface ListenToRef {
-  readonly listenToRef: <E, A>(
-    ref: Ref<E, A>,
-    f: (event: Event<E, A>) => void,
-  ) => E.Env<E, Disposable>
-}
-
-export const listenToRef =
-  <E, A>(ref: Ref<E, A>) =>
-  (f: (event: Event<E, A>) => void) =>
-    E.asksE((e: ListenToRef) => e.listenToRef(ref, f))
-
-export type Refs = Get & Has & Set & Remove & Events & ListenToRef
+export type Refs = Get & Has & Set & Remove & Events
 
 export interface Wrapped<E, A, R = unknown> extends Ref<E, A> {
   readonly get: E.Env<R & E & Get, A>
@@ -99,7 +88,9 @@ export interface Wrapped<E, A, R = unknown> extends Ref<E, A> {
 
 export function wrap<E, A>(ref: Ref<E, A>): Wrapped<E, A> {
   return {
-    ...ref,
+    id: ref.id,
+    initial: ref.initial,
+    equals: ref.equals,
     get: get(ref),
     has: has(ref),
     set: set(ref),
@@ -132,8 +123,8 @@ export interface Removed<E, A> {
   readonly ref: Ref<E, A>
 }
 
-export function refs(options: RefsOptions): Refs {
-  const { scheduler, initial = [], refEvents = A.create() } = options
+export function refs(options: RefsOptions = {}): Refs {
+  const { initial = [], refEvents = A.create() } = options
   const references = new Map(initial)
   const sendEvent = createSendEvent(references, refEvents)
 
@@ -142,25 +133,11 @@ export function refs(options: RefsOptions): Refs {
     ...makeHasRef(references),
     ...makeSetRef(references, sendEvent),
     ...makeDeleteRef(references, sendEvent),
-    listenToRef: (ref, event) =>
-      E.fromIO(() =>
-        refEvents[1].run(
-          createSink({
-            event: (_, x) => {
-              if (x.ref.id === ref.id) {
-                event(x)
-              }
-            },
-          }),
-          scheduler,
-        ),
-      ),
-    refEvents,
+    refEvents: [sendEvent, refEvents[1]],
   }
 }
 
 export type RefsOptions = {
-  readonly scheduler: Scheduler
   readonly initial?: Iterable<readonly [any, any]>
   readonly refEvents?: Adapter
 }

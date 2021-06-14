@@ -113,8 +113,9 @@ export class WeakRefMap<K, V extends object> implements Map<K, V> {
   [Symbol.toStringTag]: 'WeakRefMap'
 
   readonly addFinalizer = (key: K, finalizer: () => void) => {
-    const finalizers = [...(this.weakRefFinalizers.get(key) ?? []), finalizer]
+    const finalizers =
+      this.weakRefFinalizers.get(key) ?? this.weakRefFinalizers.set(key, []).get(key)!
 
-    this.weakRefFinalizers.set(key, finalizers)
+    finalizers.push(finalizer)
   }
 }

@@ -1,7 +1,7 @@
 export * as string from './string'
 export * as struct from './struct'
 export * as adapter from '@fp/Adapter'
-export * as const from '@fp/Const'
+export * as branded from '@fp/Branded'
 export * as disposable from '@fp/Disposable'
 export * as env from '@fp/Env'
 export * as envEither from '@fp/EnvEither'

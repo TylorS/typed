@@ -117,13 +117,20 @@ export const start = <A>(f: Arity1<A, any>) => run(undisposable(f))
 
 export const exec = start<any>(constVoid)
 
-export const toTask = <A>(resume: Resume<A>): Task<A> & Disposable => {
-  const d = settable()
-  const task = () => new Promise((resolve) => d.addDisposable(pipe(resume, start(resolve))))
+export type DisposableTask<A> = () => DisposablePromise<A>
+export type DisposablePromise<A> = Promise<A> & Disposable
 
-  ;(task as Task<A> & Disposable).dispose = d.dispose
+export const toTask = <A>(resume: Resume<A>): DisposableTask<A> => {
+  const task = () => {
+    const d = settable()
+    const p = new Promise<A>((resolve) => d.addDisposable(pipe(resume, start(resolve))))
 
-  return task as Task<A> & Disposable
+    ;(p as Promise<A> & Disposable).dispose = () => d.dispose()
+
+    return p as Promise<A> & Disposable
+  }
+
+  return task
 }
 
 export const chain =
