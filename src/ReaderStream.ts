@@ -1,9 +1,10 @@
 import * as FE from '@fp/FromEnv'
 import * as FRe from '@fp/FromResume'
+import * as FS from '@fp/FromStream'
 import { Arity1 } from '@fp/function'
 import { MonadRec2 } from '@fp/MonadRec'
 import * as S from '@fp/Stream'
-import { flow } from 'cjs/function'
+import { constant, flow, pipe } from 'cjs/function'
 import * as App from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
 import * as Ch from 'fp-ts/Chain'
@@ -15,8 +16,10 @@ import * as FT from 'fp-ts/FromTask'
 import * as F from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
+import { Predicate } from 'fp-ts/Predicate'
 import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
+import { Refinement } from 'fp-ts/Refinement'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>
@@ -34,6 +37,11 @@ export const apW = ap as <R1, A>(
 
 export const chain = RT.chain(S.Chain)
 export const chainW = chain as <A, R1, B>(
+  f: (a: A) => ReaderStream<R1, B>,
+) => <R2>(ma: ReaderStream<R2, A>) => ReaderStream<R1 & R2, B>
+
+export const switchLatest = RT.chain(S.Switch)
+export const switchLatestW = switchLatest as <A, R1, B>(
   f: (a: A) => ReaderStream<R1, B>,
 ) => <R2>(ma: ReaderStream<R2, A>) => ReaderStream<R1 & R2, B>
 
@@ -154,7 +162,6 @@ export const FromResume: FRe.FromResume2<URI> = {
 }
 
 export const fromResume = FromResume.fromResume
-
 export const chainFirstResumeK = FRe.chainFirstResumeK(FromResume, Chain)
 export const chainResumeK = FRe.chainResumeK(FromResume, Chain)
 export const fromResumeK = FRe.fromResumeK(FromResume)
@@ -173,7 +180,6 @@ export const FromIO: FIO.FromIO2<URI> = {
 }
 
 export const fromIO = FromIO.fromIO
-
 export const chainFirstIOK = FIO.chainFirstIOK(FromIO, Chain)
 export const chainIOK = FIO.chainIOK(FromIO, Chain)
 export const fromIOK = FIO.fromIOK(FromIO)
@@ -184,7 +190,28 @@ export const FromTask: FT.FromTask2<URI> = {
 }
 
 export const fromTask = FromTask.fromTask
-
 export const chainFirstTaskK = FT.chainFirstTaskK(FromTask, Chain)
 export const chainTaskK = FT.chainTaskK(FromTask, Chain)
 export const fromTaskK = FT.fromTaskK(FromTask)
+
+export const FromStream: FS.FromStream2<URI> = {
+  fromStream: constant,
+}
+
+export const fromStream = FromStream.fromStream
+export const chainFirstStreamK = FS.chainFirstStreamK(FromStream, Chain)
+export const chainStreamK = FS.chainStreamK(FromStream, Chain)
+export const fromStreamK = FS.fromStreamK(FromStream)
+
+export function filter<A, B extends A>(
+  refinement: Refinement<A, B>,
+): <E>(rs: ReaderStream<E, A>) => ReaderStream<E, B>
+export function filter<A>(
+  predicate: Predicate<A>,
+): <E>(rs: ReaderStream<E, A>) => ReaderStream<E, A>
+
+export function filter<A>(predicate: Predicate<A>) {
+  return <E>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
+    (r) =>
+      pipe(r, rs, S.filter(predicate))
+}
