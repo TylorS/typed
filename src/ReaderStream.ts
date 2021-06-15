@@ -40,8 +40,11 @@ export const chainW = chain as <A, R1, B>(
   f: (a: A) => ReaderStream<R1, B>,
 ) => <R2>(ma: ReaderStream<R2, A>) => ReaderStream<R1 & R2, B>
 
-export const switchLatest = RT.chain(S.Switch)
-export const switchLatestW = switchLatest as <A, R1, B>(
+export const switchMap = RT.chain<S.URI>({
+  map: S.map,
+  chain: (f) => flow(S.map(f), S.switchLatest),
+})
+export const switchMapW = switchMap as <A, R1, B>(
   f: (a: A) => ReaderStream<R1, B>,
 ) => <R2>(ma: ReaderStream<R2, A>) => ReaderStream<R1 & R2, B>
 
