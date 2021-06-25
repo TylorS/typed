@@ -5,7 +5,7 @@ import { Chain2 } from 'fp-ts/Chain'
 import { ChainRec2 } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
 import { FromEither2 } from 'fp-ts/FromEither'
-import { flow } from 'fp-ts/function'
+import { flow, Lazy, pipe } from 'fp-ts/function'
 import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
@@ -21,6 +21,16 @@ export const liftEither = FxT.liftFx<E.URI>()
 export const map = FxT.map<E.URI>()
 export const toEither = FxT.toMonad<E.URI>({ ...E.Monad, ...E.ChainRec })
 export const Do = flow(doEither, toEither)
+
+export const alt =
+  <E, A>(second: Lazy<E.Either<E, A>>) =>
+  (first: E.Either<E, A>): FxEither<E, A> =>
+    pipe(first, E.alt(second), liftEither)
+
+export const altW =
+  <E1, A>(second: Lazy<E.Either<E1, A>>) =>
+  <E2, B>(first: E.Either<E2, B>): FxEither<E1 | E2, A | B> =>
+    pipe(first, E.altW(second), liftEither)
 
 export const URI = '@typed/fp/Fx/Either'
 export type URI = typeof URI
