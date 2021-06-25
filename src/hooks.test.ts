@@ -1,7 +1,6 @@
 import * as E from '@fp/Env'
 import { pipe } from '@fp/function'
 import * as S from '@fp/Stream'
-import { runEffects } from '@fp/Stream'
 import { newDefaultScheduler } from '@most/scheduler'
 import { describe, given, it } from '@typed/test'
 
@@ -13,22 +12,18 @@ export const test = describe(`hooks`, [
     given(`a Env using Refs`, [
       it(`converts this to a stream`, async ({ equal }) => {
         const value = 0
-        const ref = Ref.create(E.fromTask(async () => value))
-        const scheduler = newDefaultScheduler()
-        const main = withHooks(ref.get)
+        const ref = Ref.create(E.of(value))
         const refs = Ref.refs()
+        const [sendEvent] = refs.refEvents
 
         const expected = [value, value + 1, value + 2]
-        const actual: number[] = []
-        const stream = pipe(
+        const actual = await pipe(
           refs,
-          main,
-          S.tap((e) => actual.push(e)),
+          withHooks(ref.get),
           S.take(expected.length),
-          S.tap((n) => refs.refEvents[0]({ _tag: 'Updated', ref, previousValue: n, value: n + 1 })),
+          S.tap((n) => sendEvent({ _tag: 'Updated', ref, previousValue: n, value: n + 1 })),
+          S.collectEvents(newDefaultScheduler()),
         )
-
-        await runEffects(stream, scheduler)
 
         equal(expected, actual)
       }),

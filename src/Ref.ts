@@ -1,11 +1,9 @@
 import * as E from '@fp/Env'
-import { alwaysEqualsEq, deepEqualsEq } from '@fp/Eq'
+import { deepEqualsEq } from '@fp/Eq'
 import { Do } from '@fp/Fx/Env'
 import * as O from '@fp/Option'
 import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
-import { isSome } from 'fp-ts/Option'
-import { lookup } from 'fp-ts/ReadonlyMap'
 import { fst, snd } from 'fp-ts/Tuple2'
 
 import * as A from './Adapter'
@@ -220,36 +218,5 @@ function makeDeleteRef(
         E.chainFirstIOK(() => () => sendEvent({ _tag: 'Removed', ref })),
       )
     },
-  }
-}
-
-/**
- * Creates a map
- */
-export function memo<B>() {
-  return <A>(eq: Eq<A>, id?: PropertyKey) => {
-    const ref = create(
-      E.fromIO(() => new Map<A, B>()),
-      id,
-      alwaysEqualsEq,
-    )
-
-    const find = lookup(eq)
-
-    return <E>(value: A, orCreate: E.Env<E, B>) =>
-      Do(function* (_) {
-        const memoized = yield* _(ref.get)
-        const memoed = pipe(memoized, find(value))
-
-        if (isSome(memoed)) {
-          return memoed.value
-        }
-
-        const created = yield* _(orCreate)
-
-        memoized.set(value, created)
-
-        return created
-      })
   }
 }

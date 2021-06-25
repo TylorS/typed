@@ -3,7 +3,7 @@ import * as FRe from '@fp/FromResume'
 import * as R from '@fp/Resume'
 import * as M from '@most/core'
 import { asap } from '@most/scheduler'
-import { Disposable, Sink, Stream, Task as MostTask, Time } from '@most/types'
+import { Disposable, Scheduler, Sink, Stream, Task as MostTask, Time } from '@most/types'
 import * as Alt_ from 'fp-ts/Alt'
 import { Alternative1 } from 'fp-ts/Alternative'
 import * as App from 'fp-ts/Applicative'
@@ -259,6 +259,17 @@ const emptySink: Sink<any> = {
 }
 
 export const createSink = <A>(sink: Partial<Sink<A>> = {}): Sink<A> => ({ ...emptySink, ...sink })
+
+export const collectEvents =
+  (scheduler: Scheduler) =>
+  <A>(stream: Stream<A>) => {
+    const events: A[] = []
+
+    return M.runEffects(
+      M.tap((a) => events.push(a), stream),
+      scheduler,
+    ).then(() => events as readonly A[])
+  }
 
 export * from '@most/core'
 export * from '@most/types'
