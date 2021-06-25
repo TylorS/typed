@@ -135,6 +135,12 @@ export const chainFirstW = chainFirst as <A, E1, B>(
   f: (a: A) => ReaderStream<E1, B>,
 ) => <E2>(first: ReaderStream<E2, A>) => ReaderStream<E1 & E2, A>
 export const bind = Ch.bind(Chain)
+export const bindW = bind as <N extends string, A, E1, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => ReaderStream<E1, B>,
+) => <E2>(
+  ma: ReaderStream<E2, A>,
+) => ReaderStream<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 
 export const Monad: Monad2<URI> = {
   ...Chain,
@@ -187,6 +193,8 @@ export const chainFirstIOK = FIO.chainFirstIOK(FromIO, Chain)
 export const chainIOK = FIO.chainIOK(FromIO, Chain)
 export const fromIOK = FIO.fromIOK(FromIO)
 
+export const Do = fromIO(() => Object.create(null))
+
 export const FromTask: FT.FromTask2<URI> = {
   ...FromIO,
   fromTask: (task) => () => S.fromTask(task),
@@ -218,3 +226,32 @@ export function filter<A>(predicate: Predicate<A>) {
     (r) =>
       pipe(r, rs, S.filter(predicate))
 }
+
+export function merge<E, A>(a: ReaderStream<E, A>) {
+  return (b: ReaderStream<E, A>): ReaderStream<E, A> =>
+    (r) =>
+      pipe(a(r), S.merge(b(r)))
+}
+
+export function concatMap<A, E1>(f: (value: A) => ReaderStream<E1, A>) {
+  return <E2>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, A> =>
+    (r) =>
+      pipe(
+        r,
+        rs,
+        S.concatMap((a) => pipe(r, f(a))),
+      )
+}
+
+export const recoverWith =
+  <E1, A>(f: (error: Error) => ReaderStream<E1, A>) =>
+  <E2>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, A> =>
+  (r) =>
+    pipe(
+      r,
+      rs,
+      S.recoverWith((e) => pipe(r, f(e))),
+    )
+
+export const empty = fromStreamK(S.empty)
+export const never = fromStreamK(S.never)

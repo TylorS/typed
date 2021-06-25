@@ -97,6 +97,32 @@ function lift_<F, A>(hkt: HKT<F, A>): Fx<typeof hkt, A> {
   }
 }
 
+export function liftFxK<Args extends readonly any[], F extends URIS, A>(
+  f: (...args: Args) => Kind<F, A>,
+): (...args: Args) => Fx<ReturnType<typeof f>, A>
+
+export function liftFxK<Args extends readonly any[], F extends URIS2, E, A>(
+  f: (...args: Args) => Kind2<F, E, A>,
+): (...args: Args) => Fx<ReturnType<typeof f>, A>
+
+export function liftFxK<Args extends readonly any[], F extends URIS3, R, E, A>(
+  f: (...args: Args) => Kind3<F, R, E, A>,
+): (...args: Args) => Fx<ReturnType<typeof f>, A>
+
+export function liftFxK<Args extends readonly any[], F extends URIS4, S, R, E, A>(
+  f: (...args: Args) => Kind4<F, S, R, E, A>,
+): (...args: Args) => Fx<ReturnType<typeof f>, A>
+
+export function liftFxK<Args extends readonly any[], F, A>(
+  f: (...args: Args) => HKT<F, A>,
+): (...args: Args) => Fx<ReturnType<typeof f>, A>
+
+export function liftFxK<Args extends readonly any[], F, A>(
+  f: (...args: Args) => HKT<F, A>,
+): (...args: Args) => Fx<ReturnType<typeof f>, A> {
+  return (...args) => lift_(f(...args))
+}
+
 export function getDo<F extends URIS>(): <Y extends Kind<F, any>, R, N = unknown>(
   f: (lift: LiftFx1<F>) => Generator<Y, R, N>,
 ) => Fx<Y, R, N>

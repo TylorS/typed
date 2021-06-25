@@ -1,6 +1,6 @@
 import { settable } from '@fp/Disposable'
 import * as FRe from '@fp/FromResume'
-import { start } from '@fp/Resume'
+import * as R from '@fp/Resume'
 import * as M from '@most/core'
 import { asap } from '@most/scheduler'
 import { Disposable, Sink, Stream, Task as MostTask, Time } from '@most/types'
@@ -204,19 +204,20 @@ export const fromTask = FromTask.fromTask
 
 export const FromResume: FRe.FromResume1<URI> = {
   fromResume: (resume) =>
-    M.newStream((sink, scheduler) =>
-      asap(
-        createCallbackTask(
-          () =>
-            pipe(
-              resume,
-              start((a) => sink.event(scheduler.currentTime(), a)),
-            ),
-          (error) => sink.error(scheduler.currentTime(), error),
-        ),
-        scheduler,
-      ),
-    ),
+    M.newStream((sink, scheduler) => {
+      const run = () =>
+        pipe(
+          resume,
+          R.start((a) => {
+            sink.event(scheduler.currentTime(), a)
+            sink.end(scheduler.currentTime())
+          }),
+        )
+
+      const onError = (error: Error) => sink.error(scheduler.currentTime(), error)
+
+      return asap(createCallbackTask(run, onError), scheduler)
+    }),
 }
 
 export const fromResume = FromResume.fromResume
