@@ -1,7 +1,7 @@
 # @typed/fp
 
 `@typed/fp` is conceptually an extension [fp-ts](https://gcanti.github.io/fp-ts/), with cancelable 
-async effects, do-notation, fibers, state management, hooks, streams, and more. 
+async effects, do-notation, state management, hooks, streams, and more. 
 
 Extremely modular in the same way you would expect from the `fp-ts/*` style modules and imports 
 using ES modules to ensure dead code elimination of all kinds can be highly effective all of 
@@ -14,11 +14,9 @@ This project is under very heavy development. It is my goal to align with `fp-ts
 
 - Bridges `fp-ts` and `@most/core` ecosystems
 - [Cancelable Async Effect](#resume)
-- [Fibers](#fiber)
-- [Environment-aware Effect](#env)
-- [Modular state management](#ref)
-- Stack-safe [Do-notation](#do-notation) w/ support for variance
-- [Hooks](#Hooks)
+- [Testable State Management](#ref)
+- [Stack-safe Do-notation](#do-notation) w/ support for variance
+- [Hooks](#hooks)
 - Globals free
 - Queues
 
@@ -67,7 +65,7 @@ type Dispsoable = {
 
 ### Env 
 
-`Env` is the core of the higher-level modules like [`Fiber`](#Fiber) and is a `ReaderT` of `Resume`, but to be honest being used so much, I didn't like writing `ReaderResume<A>` and chose to shorten to `Env` for the 
+`Env` is the core of the higher-level modules like [`Ref`](#ref) and [`hooks`](#hooks) and is a `ReaderT` of `Resume`, but to be honest being used so much, I didn't like writing `ReaderResume<A>` and chose to shorten to `Env` for the 
 "environmental" quality Reader provides. Combining Reader and Resume allows for creating APIs that are 
 capable of utilizing dependency injection for its configurability and testability.  
 
@@ -170,26 +168,18 @@ The provided implementation will also send events containing all of the creation
 in realtime.
 
 ```ts
-import * as R from '@typed/fp/Ref'
+import * as Ref from '@typed/fp/Ref'
 import * as E from '@typed/fp/Env'
-import * as Re from '@typed/fp/Resume'
+import * as R from '@typed/fp/Resume'
 import { Do } from '@typed/fp/Fx/Env'
 import * as N from 'fp-ts/number'
 import { pipe } from 'fp-ts/function'
 
-// Create a reference needing nothing from the environment
-// and references a number. The second parameter is optional and is the key to use
-// otherwise it will create its own Symbol() for randomness. The third parameter is
-// an Eq instance which will configure which an update event will be triggered when 
-// trying to update the references value.
-const Count: R.Ref<unknown, number> = R.createRef(E.of(0), Symbol('Count'), N.Eq)
-
-// Potentially use something asynchronous and uses an environmental resource, this additional 
-// Resource would be added to the environemnt with any calls to getRef/setRef/deleteRef/modifyRef calls.
-// const Count: R.Ref<unknown, number> = R.createRef(E.of(0), Symbol('Count'), N.Eq)
+// Create a reference using Env for a starting value.
+const Count = Ref.create(E.of(0))
 
 // Create a workflow using references
-const addOne: E.Env<R.Refs, number> = Do(function*(_) {
+const addOne: E.Env<Ref.Refs, number> = Do(function*(_) {
   // Get the current value
   const count: number = yield* _(R.getRef(Count))
   // Add 1
@@ -198,120 +188,19 @@ const addOne: E.Env<R.Refs, number> = Do(function*(_) {
   return countPlusOne
 })
 
-const refs: R.References = R.createReferences()
+const refs: R.Refs = Ref.refs()
 // Optionally provide default values, uses the Reference's Id by providing an interval of key-values.
 // Convenient for testing specific values
 // const refs = R.createReferences([[Count.id, 42]])
 
 // Provide the references and run the Resume
-const disposable = pipe({ refs }, addOne, Re.run((n: number) => {
+const disposable = pipe(refs, addOne, R.start((n: number) => {
   // Do stuff with the result
-
-  return { dispose: () => { /*cancel things*/ } }
 }))
 
 // Clean up any resources created and/or async effects
 disposable.dispose()
 ```
-
-### Fiber
-
-`Fiber`s build upon `Env` to overlay a unix thread-like model atop. Sometimes called coroutines 
-or green threads these constructs allow for a single thread to cooperate for what work should 
-be done with what priority. In some ways a `Fiber` is like a `Promise` (w/ cancelation still) an `Env` can be transformed into. 
-
-Fibers can be inspected for what status they are currently in. There is a `most` `Stream` available 
-from each Fiber to listen to the status changes as they occur. 
-
-<details>
-  <summary>Status TypeScript Defintion</summary>
-
-```ts
-export type Status<A> =
-  | Queued
-  | Running
-  | Failed
-  | Paused
-  | Aborting
-  | Aborted
-  | Finished<A>
-  | Completed<A>
-
-/**
- * The initial state a fiber starts before running
- */
-export type Queued = {
-  readonly type: 'queued'
-}
-
-/**
- * The state of a fiber when it begins running its computations
- */
-export type Running = {
-  readonly type: 'running'
-}
-
-/**
- * The state of a fiber when it has failed, but it still has uninterruptable child
- * fibers.
- */
-export type Failed = {
-  readonly type: 'failed'
-  readonly error: Error
-}
-
-/**
- * The state of a fiber when it has chosen to yield to its parent
- */
-export type Paused = {
-  readonly type: 'paused'
-}
-
-/**
- * The state of a fiber when it has been aborted but is running finalizers
- */
-export type Aborting = {
-  readonly type: 'aborting'
-}
-
-/**
- * The state of a fiber when it has been aborted
- */
-export type Aborted = {
-  readonly type: 'aborted'
-}
-
-/**
- * The state of a fiber when it has computed a value, but still has child
- * fibers executing
- */
-export type Finished<A> = {
-  readonly type: 'finished'
-  readonly value: A
-}
-
-/**
- * The state of a fiber when it and all of its children have completed
- */
-export type Completed<A> = {
-  readonly type: 'completed'
-  readonly value: Either<Error, A>
-}
-```
-
-</details>
-<br/>
-
-To start your `Env`-based application using Fibers you'll use the `runAsFiber` API. Generally this API should be used once per application. Within your application however, the `fork` API is preferred. Fork 
-will automatically construct a tree of your Fibers, allowing for creating many various asynchronous 
-workflows while never leaking resources due to the underlying usage of `Disposable` and other cancelation
-baked into Fibers.
-
-Every `Fiber` has their own instances of `Refs` to allow for managing state that is localized to each 
-Fiber. This allows for creating "components" that correspond to a Fiber instance. Keeping track of these
-references and 
-
-> Write More - Give examples
 
 ### Hooks
 
@@ -320,93 +209,15 @@ Hooks are a special instance of `Ref`s, where `Ref`s are actually a lower-level 
 With `Refs` their IDs are used to look up a given value. With `hooks`, like those found in React, this `ID` 
 is instead generated using an incrementing index which leads to the "rules of hooks" particularly where 
 ordering matters and must be consistent. To help with this functionality hooks have been implemented atop 
-of Fibers since they have their own copy of references and a lifecycle of their own.
-
-> Write More - Give examples
-
-### Patch 
-
-Best summarized by its type signature
+of Streams since they have a lifecycle of their own.
 
 ```ts
-export interface Patch<A, B> {
-  readonly patch: (a: A, b: B) => Resume<A>
-}
+import * as Ref from '@typed/fp/Ref'
+import * as E from '@typed/fp/Env'
+import * as RS from '@typed/fp/ReaderStream'
+import * as H from '@typed/fp/hooks'
+
+const Component: E.Env<E & Ref.Refs, HTMLElement> = ...
+
+const stream: RS.ReaderStream<E & Ref.Refs, HTMLElement> = H.withHooks(Component)
 ```
-
-`Patch` is the basis of rendering, but is generalized to an reducer-like function returning a `Resume`.
-
-## TODO
-
-At a high-level I'm still trying to figure out what pieces to the puzzle work above `Patch` and `Hooks` to provide a bring-your-own-renderer 
-style experience. I've had a couple of POCs now and it's very possible, I've had it working with and without queues + requestIdleCallback for 
-cooperative scheduling, but I haven't been happy with the implementation yet. I'm pretty interested in exploring a static site generator style experience
-using [Islands Architecture](https://jasonformat.com/islands-architecture/) where each island corresponds to a `Fiber` process with a while-loop performing 
-patches when there's changes to its state. I've been considering having a "global" parent Fiber to all of these "island" Fibers, in which to configure how to lazy-load islands when they're about to be on screen, hovered over, etc, and share "global" state that continues to be unit-testable.
-
-### Conversions
-
-I need to make sure we can interop with as many types as possible, so for all the types that can implement these interfaces we'll want to make sure all of the kliesi arrows are 
-implemented as well.
-
-- [ ] FromEither
-- [ ] FromIO
-- [ ] FromTask
-- [ ] FromReader
-- [ ] FromState 
-- [ ] FromResume 
-- [ ] FromEnv 
-
-### Derivable Implementations
-
-We'll want to make sure that all of the derivable functions given a type-class are available, including missing instances of those type-classes.
-
-- [ ] Alt 
-- [ ] Alternative 
-- [ ] Apply 
-- [ ] Bifunctor 
-- [ ] Category 
-- [ ] Chain 
-- [ ] Choice 
-- [ ] Compactable 
-- [ ] Contravariant 
-- [ ] Filterable 
-- [ ] Foldable 
-- [ ] Functor 
-- [ ] Invariant 
-- [ ] Monad 
-- [ ] Monoid 
-- [ ] Ord 
-- [ ] Profunctor 
-- [ ] Semigroup 
-- [ ] Semigroupoid
-- [ ] Separated
-- [ ] Show
-- [ ] Strong
-- [ ] Traversable
-- [ ] Unfoldable
-- [ ] Witherable
-
-### Examples
-
-I'd love suggestions as to what kinds of examples would be useful! Feel free to open an
-issue, I'd like to make this more accessible to more than just FP experts
-
-- [x] fp-to-the-max
-- [ ] react
-- [ ] uhtml
-
-### Documentation
-
-I'd love suggestions as to what kinds of documentation would be useful! Feel free to open an
-issue, I'd like to make this more accessible to more than just FP experts
-
-> Suggestions welcome!
-
-- [ ] API Documentation
-- [ ] Resume tutorial
-- [ ] Env tutorial
-- [ ] Refs tutorial
-- [ ] Fiber tutorial
-- [ ] Hooks tutorial
-- [ ] 
