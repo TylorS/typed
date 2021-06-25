@@ -31,13 +31,13 @@ import * as Task from 'fp-ts/Task'
  */
 export interface Env<R, A> extends Re.Reader<R, R.Resume<A>> {}
 
-export type GetRequirements<A> = A extends Env<infer R, any>
+export type RequirementsOf<A> = A extends Env<infer R, any>
   ? R
   : A extends FN.FunctionN<any, Env<infer R, any>>
   ? R
   : never
 
-export type GetValue<A> = A extends Env<any, infer R>
+export type ValueOf<A> = A extends Env<any, infer R>
   ? R
   : A extends FN.FunctionN<any, Env<any, infer R>>
   ? R
@@ -318,7 +318,7 @@ export const zip = traverse(Applicative)(<E, A>(x: Env<E, A>) => x)
 
 export const zipW = zip as unknown as <A extends ReadonlyArray<Env<any, any>>>(
   envs: A,
-) => Env<Intersect<{ [K in keyof A]: GetRequirements<A[K]> }>, { [K in keyof A]: GetValue<A[K]> }>
+) => Env<Intersect<{ [K in keyof A]: RequirementsOf<A[K]> }>, { [K in keyof A]: ValueOf<A[K]> }>
 
 export const runWith =
   <A>(f: (value: A) => Disposable) =>
@@ -339,14 +339,14 @@ export const op =
     key: K,
   ): {
     (...args: ArgsOf<F>): Env<
-      GetRequirements<ReturnType<F>> & { readonly [_ in K]: F },
-      GetValue<ReturnType<F>>
+      RequirementsOf<ReturnType<F>> & { readonly [_ in K]: F },
+      ValueOf<ReturnType<F>>
     >
     readonly key: K
   } => {
     function operation(
       ...args: ArgsOf<F>
-    ): Env<GetRequirements<ReturnType<F>> & { readonly [_ in K]: F }, GetValue<ReturnType<F>>> {
+    ): Env<RequirementsOf<ReturnType<F>> & { readonly [_ in K]: F }, ValueOf<ReturnType<F>>> {
       return FN.pipe(
         ask<{ readonly [_ in K]: F }>(),
         chain((e) => e[key](...args)),

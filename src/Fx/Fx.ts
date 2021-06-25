@@ -28,7 +28,7 @@ export interface Fx<Effects, Result, Next = unknown> {
 /**
  * Extract the effects being performed within an Fx
  */
-export type GetEffects<A> = A extends Fx<infer R, any, any>
+export type EffectsOf<A> = A extends Fx<infer R, any, any>
   ? IsNever<R> extends false
     ? R
     : unknown
@@ -39,16 +39,16 @@ type IsNever<A> = A.Equals<[never], [A]> extends 1 ? true : false
 /**
  * Extract the result being performed within an Fx
  */
-export type GetResult<A> = A extends Fx<any, infer R, any> ? R : never
+export type ResultOf<A> = A extends Fx<any, infer R, any> ? R : never
 
 /**
  * Extract the values being returned to the internal Fx
  */
-export type GetNext<A> = A extends Fx<any, any, infer R> ? R : never
+export type NextOf<A> = A extends Fx<any, any, infer R> ? R : never
 
 export function doFx<G extends Generator<any, any, any>>(
   generatorFn: () => G,
-): Fx<GetEffects<G>, GetResult<G>, GetNext<G>> {
+): Fx<EffectsOf<G>, ResultOf<G>, NextOf<G>> {
   return {
     [Symbol.iterator]: generatorFn,
   }

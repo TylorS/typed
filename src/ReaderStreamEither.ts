@@ -29,9 +29,9 @@ import { Semigroup } from 'fp-ts/Semigroup'
  */
 export interface ReaderStreamEither<R, E, A> extends Re.Reader<R, SE.StreamEither<E, A>> {}
 
-export type GetRequirements<A> = A extends ReaderStreamEither<infer R, any, any> ? R : never
-export type GetLeft<A> = A extends ReaderStreamEither<any, infer R, any> ? R : never
-export type GetRight<A> = A extends ReaderStreamEither<any, any, infer R> ? R : never
+export type RequirementsOf<A> = A extends ReaderStreamEither<infer R, any, any> ? R : never
+export type LeftOf<A> = A extends ReaderStreamEither<any, infer R, any> ? R : never
+export type RightOf<A> = A extends ReaderStreamEither<any, any, infer R> ? R : never
 
 export const ap = RT.ap(SE.Apply)
 export const apW = ap as <R1, E, A>(

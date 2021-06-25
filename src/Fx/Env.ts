@@ -55,9 +55,9 @@ export type URI = typeof URI
 
 export interface FxEnv<E, A> extends Fx<E.Env<E, unknown>, A> {}
 
-export type GetRequirements<A> = A extends FxEnv<infer E, any> ? E : never
+export type RequirementsOf<A> = A extends FxEnv<infer E, any> ? E : never
 
-export type GetValue<A> = A extends FxEnv<any, infer R> ? R : never
+export type ValueOf<A> = A extends FxEnv<any, infer R> ? R : never
 
 declare module 'fp-ts/HKT' {
   export interface URItoKind2<E, A> {
@@ -188,7 +188,7 @@ export const zipW = <Fxs extends ReadonlyArray<FxEnv<any, any>>>(fxs: Fxs) =>
   liftEnv(
     E.zipW(
       fxs.map(toEnv) as any as {
-        readonly [K in keyof Fxs]: E.Env<GetRequirements<Fxs[K]>, GetValue<Fxs[K]>>
+        readonly [K in keyof Fxs]: E.Env<RequirementsOf<Fxs[K]>, ValueOf<Fxs[K]>>
       },
     ),
   )
@@ -197,7 +197,7 @@ export const zip = <Fxs extends ReadonlyArray<FxEnv<any, any>>>(fxs: Fxs) =>
   liftEnv(
     E.zip(
       fxs.map(toEnv) as any as {
-        readonly [K in keyof Fxs]: E.Env<GetRequirements<Fxs[K]>, GetValue<Fxs[K]>>
+        readonly [K in keyof Fxs]: E.Env<RequirementsOf<Fxs[K]>, ValueOf<Fxs[K]>>
       },
     ),
   )

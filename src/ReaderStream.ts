@@ -26,8 +26,8 @@ import { Refinement } from 'fp-ts/Refinement'
  */
 export interface ReaderStream<R, A> extends Re.Reader<R, S.Stream<A>> {}
 
-export type GetRequirements<A> = A extends ReaderStream<infer R, any> ? R : never
-export type GetValue<A> = A extends ReaderStream<any, infer R> ? R : never
+export type RequirementsOf<A> = A extends ReaderStream<infer R, any> ? R : never
+export type ValueOf<A> = A extends ReaderStream<any, infer R> ? R : never
 
 export const ap = RT.ap(S.Apply)
 
