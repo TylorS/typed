@@ -4,6 +4,7 @@ import * as S from '@fp/Stream'
 import { newDefaultScheduler } from '@most/scheduler'
 import { describe, given, it } from '@typed/test'
 
+import { settable } from './Disposable'
 import { withHooks } from './hooks'
 import * as Ref from './Ref'
 
@@ -18,9 +19,8 @@ export const test = describe(`hooks`, [
 
         const expected = [value, value + 1, value + 2]
         const actual = await pipe(
-          refs,
+          { ...refs, refDisposable: settable() },
           withHooks(ref.get),
-          S.switchLatest,
           S.take(expected.length),
           S.tap((n) => sendEvent({ _tag: 'Updated', ref, previousValue: n, value: n + 1 })),
           S.collectEvents(newDefaultScheduler()),

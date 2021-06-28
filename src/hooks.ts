@@ -1,5 +1,5 @@
 import * as E from '@fp/Env'
-import { alwaysEqualsEq, Eq } from '@fp/Eq'
+import { alwaysEqualsEq, deepEqualsEq, Eq } from '@fp/Eq'
 import { flow, increment, pipe } from '@fp/function'
 import { Do } from '@fp/Fx/Env'
 import * as N from '@fp/number'
@@ -7,8 +7,11 @@ import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
 import * as S from '@fp/Stream'
 import { EqStrict } from 'fp-ts/Eq'
-import { isSome } from 'fp-ts/Option'
-import { lookup } from 'fp-ts/ReadonlyMap'
+import * as O from 'fp-ts/Option'
+import * as RM from 'fp-ts/ReadonlyMap'
+
+import { RefDisposable } from './RefDisposable'
+import { WeakRefMap } from './WeakRefMap'
 
 const INITIAL_HOOK_INDEX = 0
 
@@ -78,28 +81,49 @@ const createHookRef = <E, A>(
   })
 }
 
-export const withHooks = <E, A>(
-  env: E.Env<E, A>,
-): RS.ReaderStream<E & Ref.Events & Ref.Set, S.Stream<A>> => {
+export const withHooks = <E, A>(env: E.Env<E, A>): RS.ReaderStream<E & Ref.Refs, A> => {
   const main = Do(function* (_) {
     yield* _(resetId)
 
-    const value = yield* _(env)
-
-    return value
+    return yield* _(env)
   })
 
-  return (e: E & Ref.Events & Ref.Set): S.Stream<S.Stream<A>> => {
-    const make = () => pipe(e, main, S.fromResume)
+  return pipe(
+    RefDisposable.get,
+    RS.fromEnv,
+    RS.chainW((disposable) =>
+      pipe(
+        Ref.getRefEvents,
+        RS.fromEnv,
+        RS.chainStreamK((x) => x),
+        RS.filter((x: Ref.Event<any, any>) => x._tag !== 'Created'),
+        RS.withStream(S.startWith<unknown>(null)), // Ensure an initial sampling
+        RS.chainW(() => RS.ask<E & Ref.Refs>()),
+        RS.map((e) => pipe(e, main, S.fromResume)),
+        RS.withStream(flow(S.sampleLatest, S.onDispose(disposable), S.multicast)),
+      ),
+    ),
+  )
+}
 
+export const keyed =
+  <K>(Eq: Eq<K> = deepEqualsEq) =>
+  <V, E, A>(getKey: (value: V) => K, f: (value: V, refs: Ref.Refs) => E.Env<E, A>) =>
+  (values: ReadonlyArray<V>): RS.ReaderStream<E & Ref.Refs, ReadonlyArray<A>> => {
     return pipe(
-      e.refEvents[1],
-      S.filter((x: Ref.Event<any, any>) => x._tag !== 'Created'),
-      S.map(make),
-      S.startWith(make()),
+      Do(function* (_) {
+        const ref = yield* _(useRef(E.fromIO(() => new WeakRefMap<K, Ref.Refs>())))
+        const getOrCreateRefs = getOrCreate<Ref.Refs>()(Eq, ref.id)
+        const refs = yield* _(
+          E.zipW(values.map((v) => getOrCreateRefs(getKey(v), E.fromIO(Ref.refs)))),
+        )
+
+        return values.map((v, i) => pipe(f(v, refs[i]), withHooks))
+      }),
+      RS.fromEnv,
+      RS.switchMapW(RS.combineAll),
     )
   }
-}
 
 function getOrCreate<B>() {
   return <A>(keyEq: Eq<A>, refId?: PropertyKey) => {
@@ -109,14 +133,14 @@ function getOrCreate<B>() {
       alwaysEqualsEq,
     )
 
-    const find = lookup(keyEq)
+    const find = RM.lookup(keyEq)
 
     return <E>(key: A, orCreate: E.Env<E, B>) =>
       Do(function* (_) {
         const memoized = yield* _(ref.get)
         const memoed = pipe(memoized, find(key))
 
-        if (isSome(memoed)) {
+        if (O.isSome(memoed)) {
           return memoed.value
         }
 
