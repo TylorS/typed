@@ -20,6 +20,7 @@ export const test = describe(`hooks`, [
         const actual = await pipe(
           refs,
           withHooks(ref.get),
+          S.switchLatest,
           S.take(expected.length),
           S.tap((n) => sendEvent({ _tag: 'Updated', ref, previousValue: n, value: n + 1 })),
           S.collectEvents(newDefaultScheduler()),

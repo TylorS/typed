@@ -78,23 +78,27 @@ const createHookRef = <E, A>(
   })
 }
 
-export const withHooks = <E, A>(env: E.Env<E, A>): RS.ReaderStream<E & Ref.Events & Ref.Set, A> => {
+export const withHooks = <E, A>(
+  env: E.Env<E, A>,
+): RS.ReaderStream<E & Ref.Events & Ref.Set, S.Stream<A>> => {
   const main = Do(function* (_) {
     yield* _(resetId)
 
-    return yield* _(env)
+    const value = yield* _(env)
+
+    return value
   })
 
-  return pipe(
-    RS.fromEnv(main),
-    RS.merge((e: E & Ref.Events & Ref.Set) =>
-      pipe(
-        e.refEvents[1],
-        S.filter((x: Ref.Event<any, any>) => x._tag !== 'Created'),
-        S.chain(() => pipe(e, main, S.fromResume)),
-      ),
-    ),
-  )
+  return (e: E & Ref.Events & Ref.Set): S.Stream<S.Stream<A>> => {
+    const make = () => pipe(e, main, S.fromResume)
+
+    return pipe(
+      e.refEvents[1],
+      S.filter((x: Ref.Event<any, any>) => x._tag !== 'Created'),
+      S.map(make),
+      S.startWith(make()),
+    )
+  }
 }
 
 function getOrCreate<B>() {
