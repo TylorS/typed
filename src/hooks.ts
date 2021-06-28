@@ -6,7 +6,6 @@ import * as N from '@fp/number'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
 import * as S from '@fp/Stream'
-import { EqStrict } from 'fp-ts/Eq'
 import * as O from 'fp-ts/Option'
 import * as RM from 'fp-ts/ReadonlyMap'
 
@@ -19,30 +18,19 @@ const HookIndex = Ref.create(E.of(INITIAL_HOOK_INDEX), Symbol('HookIndex'), alwa
 
 const incrementIndex = HookIndex.update(flow(increment, E.of))
 
-const getOrCreateHookId = getOrCreate<symbol>()(N.Eq, Symbol('HookIds'))
-
-const getOrCreateHookRef = getOrCreate<Ref.Wrapped<any, any>>()(
-  EqStrict as Eq<symbol>,
-  Symbol('HookRefs'),
-)
+const getOrCreateHookRef = getOrCreate<Ref.Wrapped<any, any>>()(N.Eq, Symbol('HookRefs'))
 
 // Get the next ID to use
-export const getNextId = Do(function* (_) {
+export const getHookIndex = Do(function* (_) {
   const currentIndex = yield* _(HookIndex.get)
-  const id = yield* _(
-    getOrCreateHookId(
-      currentIndex,
-      E.fromIO(() => Symbol(currentIndex)),
-    ),
-  )
 
   yield* _(incrementIndex)
 
-  return id
+  return currentIndex
 })
 
 // Reset hook index to support re-rendering or similar workflows.
-export const resetId = HookIndex.set(INITIAL_HOOK_INDEX)
+export const resetIndex = HookIndex.set(INITIAL_HOOK_INDEX)
 
 // The basis for creating all other hooks-related functionality as it replaces the mechanism for
 // generating a Ref's ID to being based on an index that leads to React's "rules of hooks" where order
@@ -52,21 +40,21 @@ export const useRef = <E, A>(
   eq: Eq<A> = alwaysEqualsEq,
 ): E.Env<Ref.Refs, Ref.Wrapped<E, A>> =>
   Do(function* (_) {
-    const id = yield* _(getNextId)
+    const index = yield* _(getHookIndex)
 
-    return yield* _(getOrCreateHookRef(id, createHookRef(id, initial, eq)))
+    return yield* _(getOrCreateHookRef(index, createHookRef(index, initial, eq)))
   })
 
 // Creates a Reference which is scoped explicity to the environment in which it was created in.
 const createHookRef = <E, A>(
-  id: symbol,
+  index: number,
   initial: E.Env<E, A>,
   eq: Eq<A>,
 ): E.Env<Ref.Refs, Ref.Wrapped<E, A>> => {
   return Do(function* (_) {
     const { getRef, hasRef, setRef, removeRef, refEvents } = yield* _(E.ask<Ref.Refs>())
     const refs: Ref.Refs = { getRef, hasRef, setRef, removeRef, refEvents }
-    const ref = Ref.create(initial, id, eq)
+    const ref = Ref.create(initial, Symbol(index), eq)
 
     return {
       id: ref.id,
@@ -81,12 +69,19 @@ const createHookRef = <E, A>(
   })
 }
 
+/**
+ * Makes it possible to sample an Env<E, A> anytime there is an update/delete event
+ * within a given Ref.Refs environment.
+ */
 export const withHooks = <E, A>(env: E.Env<E, A>): RS.ReaderStream<E & Ref.Refs, A> => {
-  const main = Do(function* (_) {
-    yield* _(resetId)
+  const main = flow(
+    Do(function* (_) {
+      yield* _(resetIndex)
 
-    return yield* _(env)
-  })
+      return yield* _(env)
+    }),
+    S.fromResume,
+  )
 
   return pipe(
     RefDisposable.get,
@@ -99,26 +94,43 @@ export const withHooks = <E, A>(env: E.Env<E, A>): RS.ReaderStream<E & Ref.Refs,
         RS.filter((x: Ref.Event<any, any>) => x._tag !== 'Created'),
         RS.withStream(S.startWith<unknown>(null)), // Ensure an initial sampling
         RS.chainW(() => RS.ask<E & Ref.Refs>()),
-        RS.map((e) => pipe(e, main, S.fromResume)),
+        RS.map(main),
         RS.withStream(flow(S.sampleLatest, S.onDispose(disposable), S.multicast)),
       ),
     ),
   )
 }
 
+/**
+ * Helps to construct
+ */
 export const keyed =
   <K>(Eq: Eq<K> = deepEqualsEq) =>
-  <V, E, A>(getKey: (value: V) => K, f: (value: V, refs: Ref.Refs) => E.Env<E, A>) =>
+  <V, E, A>(
+    getKey: (value: V, index: number) => K,
+    f: (value: V, refs: Ref.Refs, key: K) => E.Env<E, A>,
+  ) =>
   (values: ReadonlyArray<V>): RS.ReaderStream<E & Ref.Refs, ReadonlyArray<A>> => {
     return pipe(
       Do(function* (_) {
         const ref = yield* _(useRef(E.fromIO(() => new WeakRefMap<K, Ref.Refs>())))
         const getOrCreateRefs = getOrCreate<Ref.Refs>()(Eq, ref.id)
-        const refs = yield* _(
-          E.zipW(values.map((v) => getOrCreateRefs(getKey(v), E.fromIO(Ref.refs)))),
-        )
 
-        return values.map((v, i) => pipe(f(v, refs[i]), withHooks))
+        // TODO: Can/Should we create a Stream combinator which is capable of zipping together
+        // a list of streams by ID without disposing/re-subscribing
+
+        return yield* _(
+          E.zipW(
+            values.map((v, i) => {
+              const k = getKey(v, i)
+
+              return pipe(
+                getOrCreateRefs(k, E.fromIO(Ref.refs)),
+                E.map((e) => pipe(f(v, e, k), withHooks)),
+              )
+            }),
+          ),
+        )
       }),
       RS.fromEnv,
       RS.switchMapW(RS.combineAll),
