@@ -335,7 +335,7 @@ class SampleLatestSink<A> implements types.Sink<types.Stream<A>>, types.Disposab
     }
   }
 
-  event(t: types.Time, stream: types.Stream<A>) {
+  event = (t: types.Time, stream: types.Stream<A>) => {
     this.latest = O.some(stream)
 
     if (this.sampling) {
@@ -348,12 +348,12 @@ class SampleLatestSink<A> implements types.Sink<types.Stream<A>>, types.Disposab
     this.disposable = stream.run(this.innerSink, schedulerRelativeTo(t, this.scheduler))
   }
 
-  error(t: types.Time, e: Error) {
+  error = (t: types.Time, e: Error) => {
     this.dispose()
     this.sink.error(t, e)
   }
 
-  end(_: types.Time) {
+  end = (_: types.Time) => {
     this.finished = true
   }
 
