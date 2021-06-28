@@ -4,14 +4,13 @@ import * as S from '@fp/Stream'
 import { newDefaultScheduler } from '@most/scheduler'
 import { describe, given, it } from '@typed/test'
 
-import { settable } from './Disposable'
 import { withHooks } from './hooks'
 import * as Ref from './Ref'
 
 export const test = describe(`hooks`, [
   describe(`withHooks`, [
     given(`a Env using Refs`, [
-      it(`converts this to a stream`, async ({ equal }) => {
+      it(`converts this to a Stream`, async ({ equal }) => {
         const value = 0
         const ref = Ref.create(E.of(value))
         const refs = Ref.refs()
@@ -19,7 +18,7 @@ export const test = describe(`hooks`, [
 
         const expected = [value, value + 1, value + 2]
         const actual = await pipe(
-          { ...refs, refDisposable: settable() },
+          refs,
           withHooks(ref.get),
           S.take(expected.length),
           S.tap((n) => sendEvent({ _tag: 'Updated', ref, previousValue: n, value: n + 1 })),
