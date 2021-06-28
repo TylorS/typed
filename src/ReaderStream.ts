@@ -2,6 +2,7 @@ import * as FE from '@fp/FromEnv'
 import * as FRe from '@fp/FromResume'
 import * as FS from '@fp/FromStream'
 import { Arity1, constant, flow, pipe } from '@fp/function'
+import { Intersect } from '@fp/Hkt'
 import { MonadRec2 } from '@fp/MonadRec'
 import * as S from '@fp/Stream'
 import * as App from 'fp-ts/Applicative'
@@ -20,13 +21,15 @@ import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
 import { Refinement } from 'fp-ts/Refinement'
 
+import * as P from './Provide'
+
 /**
  * Env is specialization of Reader<R, Resume<A>>
  */
 export interface ReaderStream<R, A> extends Re.Reader<R, S.Stream<A>> {}
 
-export type RequirementsOf<A> = A extends ReaderStream<infer R, any> ? R : never
-export type ValueOf<A> = A extends ReaderStream<any, infer R> ? R : never
+export type RequirementsOf<A> = [A] extends [ReaderStream<infer R, any>] ? R : never
+export type ValueOf<A> = [A] extends [ReaderStream<any, infer R>] ? R : never
 
 export const ap = RT.ap(S.Apply)
 
@@ -254,3 +257,80 @@ export const recoverWith =
 
 export const empty = fromStreamK(S.empty)
 export const never = fromStreamK(S.never)
+
+export const provideSome =
+  <E1>(provided: E1) =>
+  <E2, A>(rs: ReaderStream<E1 & E2, A>): ReaderStream<E2, A> =>
+  (e2) =>
+    rs({ ...provided, ...e2 })
+
+export const useSome =
+  <E1>(provided: E1) =>
+  <E2, A>(rs: ReaderStream<E1 & E2, A>): ReaderStream<E2, A> =>
+  (e2) =>
+    rs({ ...e2, ...provided })
+
+export const provideAll =
+  <E1>(provided: E1) =>
+  <A>(rs: ReaderStream<E1, A>): ReaderStream<unknown, A> =>
+  (e2) =>
+    rs({ ...provided, ...(e2 as any) })
+
+export const useAll =
+  <E1>(provided: E1) =>
+  <A>(rs: ReaderStream<E1, A>): ReaderStream<unknown, A> =>
+  () =>
+    rs(provided)
+
+export const ProvideSome: P.ProvideSome2<URI> = {
+  provideSome,
+}
+
+export const UseSome: P.UseSome2<URI> = {
+  useSome,
+}
+
+export const ProvideAll: P.ProvideAll2<URI> = {
+  provideAll,
+}
+
+export const UseAll: P.UseAll2<URI> = {
+  useAll,
+}
+
+export const Provide: P.Provide2<URI> = {
+  provideAll,
+  provideSome,
+  useAll,
+  useSome,
+}
+
+export const askAndProvide = P.askAndProvide({ ...ProvideAll, ...Chain, ...FromReader })
+export const askAndUse = P.askAndUse({ ...UseAll, ...Chain, ...FromReader })
+export const provideAllWith = P.provideAllWith({ ...ProvideAll, ...Chain })
+export const provideSomeWith = P.provideSomeWith({ ...ProvideSome, ...Chain })
+export const useAllWith = P.useAllWith({ ...UseAll, ...Chain })
+export const useSomeWith = P.useSomeWith({ ...UseSome, ...Chain })
+
+export const combine =
+  <A, B, C>(f: (a: A, b: B) => C) =>
+  <E1>(rsa: ReaderStream<E1, A>) =>
+  <E2>(rsb: ReaderStream<E2, B>): ReaderStream<E1 & E2, C> =>
+  (e) =>
+    S.combine(f, rsa(e), rsb(e))
+
+export const combineAll =
+  <A extends readonly ReaderStream<any, any>[]>(
+    rss: A,
+  ): ReaderStream<
+    Intersect<{ readonly [K in keyof A]: RequirementsOf<A[K]> }>,
+    { readonly [K in keyof A]: ValueOf<A[K]> }
+  > =>
+  (e: Intersect<{ readonly [K in keyof A]: RequirementsOf<A[K]> }>) =>
+    S.combineAll(rss.map((rs) => rs(e)))
+
+export const withStream =
+  <A, B>(f: (stream: S.Stream<A>) => S.Stream<B>) =>
+  <E>(rs: ReaderStream<E, A>): ReaderStream<E, B> =>
+  (e) =>
+    pipe(e, rs, f)
