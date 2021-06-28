@@ -1,9 +1,10 @@
-import { settable } from '@fp/Disposable'
+import { disposeBoth, settable } from '@fp/Disposable'
 import * as FRe from '@fp/FromResume'
 import * as R from '@fp/Resume'
 import * as M from '@most/core'
-import { asap } from '@most/scheduler'
-import { Disposable, Scheduler, Sink, Stream, Task as MostTask, Time } from '@most/types'
+import { disposeNone } from '@most/disposable'
+import { asap, schedulerRelativeTo } from '@most/scheduler'
+import * as types from '@most/types'
 import * as Alt_ from 'fp-ts/Alt'
 import { Alternative1 } from 'fp-ts/Alternative'
 import * as App from 'fp-ts/Applicative'
@@ -19,7 +20,7 @@ import { constVoid, flow, pipe } from 'fp-ts/function'
 import { bindTo as bindTo_, Functor1, tupled as tupled_ } from 'fp-ts/Functor'
 import { Monad1 } from 'fp-ts/Monad'
 import { Monoid } from 'fp-ts/Monoid'
-import { isSome, Option, Some } from 'fp-ts/Option'
+import * as O from 'fp-ts/Option'
 import { Pointed1 } from 'fp-ts/Pointed'
 import { Predicate } from 'fp-ts/Predicate'
 import { Separated } from 'fp-ts/Separated'
@@ -27,13 +28,17 @@ import { Task } from 'fp-ts/Task'
 
 import { Arity1 } from './function'
 
+export type Stream<A> = types.Stream<A>
+
+export type ValueOf<A> = [A] extends [Stream<infer R>] ? R : never
+
 /**
  * Convert an IO<Disposable> into a Most.js Task
  */
 export function createCallbackTask(
-  cb: Arity1<Time, Disposable>,
+  cb: Arity1<types.Time, types.Disposable>,
   onError?: (error: Error) => void,
-): MostTask {
+): types.Task {
   const disposable = settable()
 
   return {
@@ -61,14 +66,14 @@ export type URI = typeof URI
 
 declare module 'fp-ts/HKT' {
   interface URItoKind<A> {
-    [URI]: Stream<A>
+    [URI]: types.Stream<A>
   }
 }
 
 /**
  * Create a Stream monoid where concat is a parallel merge.
  */
-export const getMonoid = <A>(): Monoid<Stream<A>> => {
+export const getMonoid = <A>(): Monoid<types.Stream<A>> => {
   return {
     concat: M.merge,
     empty: M.empty(),
@@ -78,13 +83,15 @@ export const getMonoid = <A>(): Monoid<Stream<A>> => {
 /**
  * Filter Option's from within a Stream
  */
-export const compact = <A>(stream: Stream<Option<A>>): Stream<A> =>
-  M.map((s: Some<A>) => s.value, M.filter(isSome, stream))
+export const compact = <A>(stream: types.Stream<O.Option<A>>): types.Stream<A> =>
+  M.map((s: O.Some<A>) => s.value, M.filter(O.isSome, stream))
 
 /**
  * Separate left and right values
  */
-export const separate = <A, B>(stream: Stream<Either<A, B>>): Separated<Stream<A>, Stream<B>> => {
+export const separate = <A, B>(
+  stream: types.Stream<Either<A, B>>,
+): Separated<types.Stream<A>, types.Stream<B>> => {
   const s = M.multicast(stream)
   const left = pipe(
     s,
@@ -102,15 +109,15 @@ export const separate = <A, B>(stream: Stream<Either<A, B>>): Separated<Stream<A
 
 export const partitionMap =
   <A, B, C>(f: (a: A) => Either<B, C>) =>
-  (fa: Stream<A>) =>
+  (fa: types.Stream<A>) =>
     separate(M.map(f, fa))
 
 export const partition = <A>(predicate: Predicate<A>) =>
   partitionMap((a: A) => (predicate(a) ? right(a) : left(a)))
 
 export const filterMap =
-  <A, B>(f: (a: A) => Option<B>) =>
-  (fa: Stream<A>) =>
+  <A, B>(f: (a: A) => O.Option<B>) =>
+  (fa: types.Stream<A>) =>
     compact(M.map(f, fa))
 
 export const Functor: Functor1<URI> = {
@@ -155,8 +162,8 @@ export const Monad: Monad1<URI> = {
 }
 
 export const chainRec =
-  <A, B>(f: (value: A) => Stream<Either<A, B>>) =>
-  (value: A): Stream<B> =>
+  <A, B>(f: (value: A) => types.Stream<Either<A, B>>) =>
+  (value: A): types.Stream<B> =>
     pipe(value, f, M.delay(0), M.chain(match(flow(chainRec(f)), M.now)))
 
 export const ChainRec: ChainRec1<URI> = {
@@ -164,8 +171,8 @@ export const ChainRec: ChainRec1<URI> = {
 }
 
 export const switchRec =
-  <A, B>(f: (value: A) => Stream<Either<A, B>>) =>
-  (value: A): Stream<B> =>
+  <A, B>(f: (value: A) => types.Stream<Either<A, B>>) =>
+  (value: A): types.Stream<B> =>
     pipe(value, f, M.map(match(switchRec(f), M.now)), M.switchLatest)
 
 export const SwitchRec: ChainRec1<URI> = {
@@ -174,8 +181,8 @@ export const SwitchRec: ChainRec1<URI> = {
 
 export const mergeConcurrentlyRec =
   (concurrency: number) =>
-  <A, B>(f: (value: A) => Stream<Either<A, B>>) =>
-  (value: A): Stream<B> =>
+  <A, B>(f: (value: A) => types.Stream<Either<A, B>>) =>
+  (value: A): types.Stream<B> =>
     pipe(
       value,
       f,
@@ -193,7 +200,7 @@ export const FromIO: FromIO1<URI> = {
 
 export const fromIO = FromIO.fromIO
 
-const applyTask = <A>(task: Task<A>): Stream<Promise<A>> => M.ap(M.now(task), M.now(void 0))
+const applyTask = <A>(task: Task<A>): types.Stream<Promise<A>> => M.ap(M.now(task), M.now(void 0))
 
 export const FromTask: FromTask1<URI> = {
   ...FromIO,
@@ -248,21 +255,24 @@ export const Filterable: Filterable1<URI> = {
   filter: M.filter,
 }
 
-export const Do: Stream<{}> = pipe(null, M.now, M.map(Object.create))
+export const Do: types.Stream<{}> = pipe(null, M.now, M.map(Object.create))
 export const bindTo = bindTo_(Functor)
 export const tupled = tupled_(Functor)
 
-const emptySink: Sink<any> = {
+const emptySink: types.Sink<any> = {
   event: constVoid,
   error: constVoid,
   end: constVoid,
 }
 
-export const createSink = <A>(sink: Partial<Sink<A>> = {}): Sink<A> => ({ ...emptySink, ...sink })
+export const createSink = <A>(sink: Partial<types.Sink<A>> = {}): types.Sink<A> => ({
+  ...emptySink,
+  ...sink,
+})
 
 export const collectEvents =
-  (scheduler: Scheduler) =>
-  <A>(stream: Stream<A>) => {
+  (scheduler: types.Scheduler) =>
+  <A>(stream: types.Stream<A>) => {
     const events: A[] = []
 
     return M.runEffects(
@@ -270,6 +280,89 @@ export const collectEvents =
       scheduler,
     ).then(() => events as readonly A[])
   }
+
+export const onDispose =
+  (disposable: types.Disposable) =>
+  <A>(stream: types.Stream<A>): types.Stream<A> =>
+    M.newStream((sink, scheduler) => disposeBoth(stream.run(sink, scheduler), disposable))
+
+export const combineAll = <A extends readonly types.Stream<any>[]>(
+  streams: A,
+): types.Stream<{ readonly [K in keyof A]: ValueOf<A[K]> }> =>
+  pipe(streams as any, M.combineArray(Array)) as any
+
+export const sampleLatest = <A>(stream: types.Stream<types.Stream<A>>): types.Stream<A> =>
+  new SampleLatest(stream)
+
+class SampleLatest<A> implements types.Stream<A> {
+  constructor(readonly stream: types.Stream<types.Stream<A>>) {}
+
+  run(sink: types.Sink<A>, scheduler: types.Scheduler) {
+    const s = new SampleLatestSink(sink, scheduler)
+
+    return disposeBoth(this.stream.run(s, scheduler), s)
+  }
+}
+
+class SampleLatestSink<A> implements types.Sink<types.Stream<A>>, types.Disposable {
+  protected latest: O.Option<types.Stream<A>> = O.none
+  protected disposable: types.Disposable = disposeNone()
+  protected sampling = false
+  protected shouldResample = false
+  protected finished = false
+  protected innerSink: types.Sink<A>
+
+  constructor(readonly sink: types.Sink<A>, readonly scheduler: types.Scheduler) {
+    this.innerSink = {
+      event: (t, a) => sink.event(t, a),
+      error: (t, e) => this.error(t, e),
+      end: (t) => {
+        this.sampling = false
+
+        if (this.shouldResample && O.isSome(this.latest)) {
+          this.shouldResample = false
+
+          this.event(scheduler.currentTime(), this.latest.value)
+
+          return
+        }
+
+        if (this.finished) {
+          this.dispose()
+          sink.end(t)
+        }
+      },
+    }
+  }
+
+  event(t: types.Time, stream: types.Stream<A>) {
+    this.latest = O.some(stream)
+
+    if (this.sampling) {
+      this.shouldResample = true
+
+      return
+    }
+
+    this.sampling = true
+    this.disposable = stream.run(this.innerSink, schedulerRelativeTo(t, this.scheduler))
+  }
+
+  error(t: types.Time, e: Error) {
+    this.dispose()
+    this.sink.error(t, e)
+  }
+
+  end(_: types.Time) {
+    this.finished = true
+  }
+
+  dispose = () => {
+    this.disposable.dispose()
+    this.sampling = false
+    this.shouldResample = false
+  }
+}
 
 export * from '@most/core'
 export * from '@most/types'
