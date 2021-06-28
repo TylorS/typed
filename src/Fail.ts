@@ -67,7 +67,7 @@ export interface Failure<K extends string, E> {
   readonly attempt: <R, B>(env: Env<Fail<K, E>, B> | Env<R & Fail<K, E>, B>) => Env<R, Either<E, B>>
 }
 
-export const createFailure =
+export const named =
   <E>() =>
   <K extends string>(name: K): Failure<K, E> => {
     return {
