@@ -1,10 +1,12 @@
 import { settable } from '@fp/Disposable'
 import * as E from '@fp/Env'
 import { Do } from '@fp/Fx/Env'
-import * as Ref from '@fp/Ref'
+import * as R from '@fp/Ref'
 import { Disposable } from '@most/types'
 
-export const RefDisposable = Ref.create(E.fromIO(settable), Symbol('RefDisposable'))
+export const RefDisposable = R.create(E.fromIO(settable), Symbol('RefDisposable'))
+
+export const { get, has, set, update, remove, ...Ref } = RefDisposable
 
 export const add = (disposable: Disposable) =>
   Do(function* (_) {
