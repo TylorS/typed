@@ -5,12 +5,11 @@ import { Do } from '@fp/Fx/Env'
 import * as N from '@fp/number'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
+import * as RefDisposable from '@fp/RefDisposable'
 import * as S from '@fp/Stream'
+import { WeakRefMap } from '@fp/WeakRefMap'
 import * as O from 'fp-ts/Option'
 import * as RM from 'fp-ts/ReadonlyMap'
-
-import { RefDisposable } from './RefDisposable'
-import { WeakRefMap } from './WeakRefMap'
 
 const INITIAL_HOOK_INDEX = 0
 

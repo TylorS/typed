@@ -4,9 +4,9 @@ import { Do } from '@fp/Fx/Env'
 import * as R from '@fp/Ref'
 import { Disposable } from '@most/types'
 
-export const RefDisposable = R.create(E.fromIO(settable), Symbol('RefDisposable'))
+const RefDisposable = R.create(E.fromIO(settable), Symbol('RefDisposable'))
 
-export const { get, has, set, update, remove, ...Ref } = RefDisposable
+export const { get, has, set, update, remove, id, initial, equals } = RefDisposable
 
 export const add = (disposable: Disposable) =>
   Do(function* (_) {
