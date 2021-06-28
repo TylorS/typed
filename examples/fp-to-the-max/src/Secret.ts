@@ -32,7 +32,7 @@ export const generateNewSecret: E.Env<RandomInt & PutStr & GetStr & R.Refs, numb
 /**
  * A reference to keep the the secret number the current user is meant to guess
  */
-export const Secret = R.createRef(generateNewSecret)
+export const Secret = R.create(generateNewSecret)
 
 // Message to give user when guessing wrong
 export const wrongGuess = Do(function* (_) {

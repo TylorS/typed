@@ -1,11 +1,11 @@
 import * as E from '@fp/Env'
-import { increment } from '@fp/function'
-import { createRef, Refs } from '@fp/Ref'
+import { flow, increment } from '@fp/function'
+import * as Ref from '@fp/Ref'
 
 /**
  * Track Wins
  */
-export const Wins = createRef(E.of(0))
+export const Wins = Ref.create(E.of(0))
 
 // Increment wins by 1
-export const won: E.Env<Refs, number> = Wins.modify(increment)
+export const won: E.Env<Ref.Refs, number> = Wins.update(flow(increment, E.of))

@@ -1,6 +1,6 @@
 import { Env } from '@fp/Env'
 import { Do } from '@fp/Fx/Env'
-import { createRef } from '@fp/Ref'
+import * as Ref from '@fp/Ref'
 import { askQuestion } from 'askQuestion'
 import { isNone } from 'fp-ts/Option'
 
@@ -26,4 +26,4 @@ export const askForMin: Env<PutStr & GetStr, number> = Do(function* (_) {
 /**
  * Reference to the Minimum number value
  */
-export const Min = createRef(askForMin)
+export const Min = Ref.create(askForMin)

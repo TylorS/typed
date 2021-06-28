@@ -1,5 +1,5 @@
 import { settable } from '@fp/Disposable'
-import { createReferences, Refs } from '@fp/Ref'
+import * as Ref from '@fp/Ref'
 import { async, fromIO, toTask } from '@fp/Resume'
 import { log } from 'fp-ts/Console'
 import { flow, pipe } from 'fp-ts/function'
@@ -44,14 +44,10 @@ const RandomInt: RandomInt = {
   randomInt: flow(randomInt, fromIO),
 }
 
-const Refs: Refs = {
-  refs: createReferences(),
-}
-
 // Provide resource and convert to a Task
 const main = pipe(
   {
-    ...Refs,
+    ...Ref.refs(),
     ...PutStr,
     ...GetStr,
     ...RandomInt,

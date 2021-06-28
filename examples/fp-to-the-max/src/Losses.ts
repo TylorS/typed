@@ -1,11 +1,11 @@
 import * as E from '@fp/Env'
-import { increment } from '@fp/function'
-import { createRef, Refs } from '@fp/Ref'
+import { flow, increment } from '@fp/function'
+import * as Ref from '@fp/Ref'
 
 /**
  * Track the number of losses
  */
-export const Losses = createRef(E.of(0))
+export const Losses = Ref.create(E.of(0))
 
 // Add one to the number of losses
-export const lost: E.Env<Refs, number> = Losses.modify(increment)
+export const lost: E.Env<Ref.Refs, number> = Losses.update(flow(increment, E.of))

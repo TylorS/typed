@@ -8,5 +8,7 @@ export type RandomInt = {
 /**
  * Get a random integer between a min and max
  */
-export const randomInt = (min: number, max: number): Env<RandomInt, number> => (e) =>
-  e.randomInt(min, max)
+export const randomInt =
+  (min: number, max: number): Env<RandomInt, number> =>
+  (e) =>
+    e.randomInt(min, max)

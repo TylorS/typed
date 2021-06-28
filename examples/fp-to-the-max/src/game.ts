@@ -1,7 +1,7 @@
 import { Do } from '@fp/Fx/Env'
 
 import { askForSecret, updateSecret } from './Secret'
-import { askToContinue, shouldContinue } from './ShouldContinue'
+import { askToContinue, ShouldContinue } from './ShouldContinue'
 import { welcomeToTheGame } from './welcomeToTheGame'
 
 /**
@@ -12,7 +12,7 @@ export const game = Do(function* (_) {
   yield* _(welcomeToTheGame)
 
   // Continue as long as the user would like to play
-  while (yield* _(shouldContinue)) {
+  while (yield* _(ShouldContinue.get)) {
     // Randomize the secret to guess
     yield* _(updateSecret)
     // Ask player for their guess of the secret

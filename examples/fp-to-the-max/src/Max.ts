@@ -1,6 +1,6 @@
 import { Env } from '@fp/Env'
 import { Do } from '@fp/Fx/Env'
-import { createRef } from '@fp/Ref'
+import * as Ref from '@fp/Ref'
 import { askQuestion } from 'askQuestion'
 import { isNone } from 'fp-ts/Option'
 
@@ -26,4 +26,4 @@ export const askForMax: Env<PutStr & GetStr, number> = Do(function* (_) {
 /**
  * The Max integer to use when generating a random integer
  */
-export const Max = createRef(askForMax)
+export const Max = Ref.create(askForMax)

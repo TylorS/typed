@@ -8,4 +8,7 @@ export type PutStr = {
 /**
  * Write a message to the user
  */
-export const putStr = (msg: string): Env<PutStr, void> => (e) => e.putStr(msg)
+export const putStr =
+  (msg: string): Env<PutStr, void> =>
+  (e) =>
+    e.putStr(msg)
