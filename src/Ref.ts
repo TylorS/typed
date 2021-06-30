@@ -19,11 +19,14 @@ export type EnvOf<A> = [A] extends [Ref<infer R, any>] ? R : never
 
 export type ValueOf<A> = [A] extends [Ref<any, infer R>] ? R : never
 
-export function make<E, A>(
-  initial: E.Env<E, A>,
-  id: PropertyKey = Symbol(),
-  eq: Eq<A> = deepEqualsEq,
-): Ref<E, A> {
+export type RefOptions<A> = {
+  readonly eq?: Eq<A>
+  readonly id?: PropertyKey
+}
+
+export function make<E, A>(initial: E.Env<E, A>, options: RefOptions<A> = {}): Ref<E, A> {
+  const { eq = deepEqualsEq, id = Symbol() } = options
+
   return {
     id,
     initial,
@@ -82,12 +85,12 @@ export const getRefEvents = pipe(getAdapter, E.map(snd))
 
 export type Refs = Get & Has & Set & Remove & Events
 
-export interface Wrapped<E, A, R = unknown> extends Ref<E, A> {
-  readonly get: E.Env<R & E & Get, A>
-  readonly has: E.Env<R & Has, boolean>
-  readonly set: (value: A) => E.Env<R & E & Set, A>
-  readonly update: <E2>(f: (value: A) => E.Env<E2, A>) => E.Env<R & E & Get & E2 & Set, A>
-  readonly remove: E.Env<R & E & Remove, O.Option<A>>
+export interface Wrapped<E, A> extends Ref<E, A> {
+  readonly get: E.Env<E & Get, A>
+  readonly has: E.Env<Has, boolean>
+  readonly set: (value: A) => E.Env<E & Set, A>
+  readonly update: <E2>(f: (value: A) => E.Env<E2, A>) => E.Env<E & Get & E2 & Set, A>
+  readonly remove: E.Env<E & Remove, O.Option<A>>
 }
 
 export function wrap<E, A>(ref: Ref<E, A>): Wrapped<E, A> {
@@ -102,6 +105,81 @@ export function wrap<E, A>(ref: Ref<E, A>): Wrapped<E, A> {
     remove: remove(ref),
   } as const
 }
+
+export const WrappedURI = '@typed/fp/Wrapped'
+export type WrappedURI = typeof WrappedURI
+
+declare module 'fp-ts/HKT' {
+  export interface URItoKind2<E, A> {
+    [WrappedURI]: Wrapped<E, A>
+  }
+}
+
+declare module '@fp/Hkt' {
+  export interface UriToVariance {
+    [WrappedURI]: V<E, Contravariant>
+  }
+}
+
+export const provideSome =
+  <E1>(provided: E1) =>
+  <E2, A>(ref: Wrapped<E1 & E2, A>): Wrapped<E2, A> => {
+    return {
+      id: ref.id,
+      equals: ref.equals,
+      initial: pipe(ref.initial, E.provideSome(provided)),
+      get: pipe(ref.get, E.provideSome(provided)),
+      has: pipe(ref.has, E.provideSome(provided)),
+      set: flow(ref.set, E.provideSome(provided)),
+      update: flow(ref.update, E.provideSome(provided)),
+      remove: pipe(ref.remove, E.provideSome(provided)),
+    }
+  }
+
+export const provideAll =
+  <E>(provided: E) =>
+  <A>(ref: Wrapped<E, A>): Wrapped<unknown, A> => {
+    return {
+      id: ref.id,
+      equals: ref.equals,
+      initial: pipe(ref.initial, E.provideAll(provided)),
+      get: pipe(ref.get, E.provideSome(provided)),
+      has: pipe(ref.has, E.provideSome(provided)),
+      set: flow(ref.set, E.provideSome(provided)),
+      update: flow(ref.update, E.provideSome(provided)),
+      remove: pipe(ref.remove, E.provideSome(provided)),
+    }
+  }
+
+export const useSome =
+  <E1>(provided: E1) =>
+  <E2, A>(ref: Wrapped<E1 & E2, A>): Wrapped<E2, A> => {
+    return {
+      id: ref.id,
+      equals: ref.equals,
+      initial: pipe(ref.initial, E.useSome(provided)),
+      get: pipe(ref.get, E.useSome(provided)),
+      has: pipe(ref.has, E.useSome(provided)),
+      set: flow(ref.set, E.useSome(provided)),
+      update: flow(ref.update, E.useSome(provided)),
+      remove: pipe(ref.remove, E.useSome(provided)),
+    }
+  }
+
+export const useAll =
+  <E1>(provided: E1) =>
+  <A>(ref: Wrapped<E1, A>): Wrapped<unknown, A> => {
+    return {
+      id: ref.id,
+      equals: ref.equals,
+      initial: pipe(ref.initial, E.useAll(provided)),
+      get: pipe(ref.get, E.useSome(provided)),
+      has: pipe(ref.has, E.useSome(provided)),
+      set: flow(ref.set, E.useSome(provided)),
+      update: flow(ref.update, E.useSome(provided)),
+      remove: pipe(ref.remove, E.useSome(provided)),
+    }
+  }
 
 export const create = flow(make, wrap)
 

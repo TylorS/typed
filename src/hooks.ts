@@ -6,22 +6,25 @@ import * as N from '@fp/number'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
 import * as RefDisposable from '@fp/RefDisposable'
+import * as RefMap from '@fp/RefMap'
 import * as S from '@fp/Stream'
-import * as O from 'fp-ts/Option'
-import * as RM from 'fp-ts/ReadonlyMap'
 
 const INITIAL_HOOK_INDEX = 0
 
-const HookIndex = Ref.create(E.of(INITIAL_HOOK_INDEX), Symbol('HookIndex'), alwaysEqualsEq)
+const HookIndex = Ref.create(E.of(INITIAL_HOOK_INDEX), {
+  id: Symbol('HookIndex'),
+  eq: alwaysEqualsEq,
+})
 
 const incrementIndex = HookIndex.update(flow(increment, E.of))
 
-const getOrCreateHookRef = getOrCreate<Ref.Wrapped<any, any>>()(
-  N.Eq,
-  Ref.create(
-    E.fromIO(() => new Map()),
-    Symbol('HookRefs'),
-  ),
+const HookRefs = RefMap.create(
+  E.fromIO(() => new Map<number, Ref.Wrapped<any, any>>()),
+  {
+    id: Symbol('HookRefs'),
+    keyEq: N.Eq,
+    eq: alwaysEqualsEq,
+  },
 )
 
 // Get the next ID to use
@@ -46,35 +49,27 @@ export const useRef = <E, A>(
   Do(function* (_) {
     const index = yield* _(getHookIndex)
 
-    return yield* _(getOrCreateHookRef(index, createHookRef(index, initial, eq)))
+    return yield* _(HookRefs.getOrCreate(index, createHookRef(index, initial, eq)))
   })
 
 // Creates a Reference which is scoped explicity to the environment in which it was created in.
 const createHookRef = <E, A>(
-  index: number,
+  id: PropertyKey,
   initial: E.Env<E, A>,
   eq: Eq<A>,
-): E.Env<Ref.Refs, Ref.Wrapped<E, A>> => {
-  return Do(function* (_) {
-    const { getRef, hasRef, setRef, removeRef, refEvents } = yield* _(E.ask<Ref.Refs>())
-    const refs: Ref.Refs = { getRef, hasRef, setRef, removeRef, refEvents }
-    const ref = Ref.create(initial, Symbol(index), eq)
-
-    return {
-      id: ref.id,
-      initial: ref.initial,
-      equals: ref.equals,
-      get: pipe(ref.get, E.useSome(refs)),
-      has: pipe(ref.has, E.useSome(refs)),
-      set: flow(ref.set, E.useSome(refs)),
-      update: flow(ref.update, E.useSome(refs)),
-      remove: pipe(ref.remove, E.useSome(refs)),
-    }
-  })
-}
-
-export const getRefEvents: RS.ReaderStream<Ref.Refs, Ref.Event<any, any>> = (e: Ref.Refs) =>
-  e.refEvents[1]
+): E.Env<Ref.Refs, Ref.Wrapped<E, A>> =>
+  pipe(
+    E.asks(
+      ({ getRef, hasRef, setRef, removeRef, refEvents }: Ref.Refs): Ref.Refs => ({
+        getRef,
+        hasRef,
+        setRef,
+        removeRef,
+        refEvents,
+      }),
+    ),
+    E.map((refs) => pipe(Ref.create(initial, { eq, id }), Ref.useSome(refs))),
+  )
 
 /**
  * Makes it possible to sample an Env<E, A> anytime there is an update/delete event
@@ -82,16 +77,26 @@ export const getRefEvents: RS.ReaderStream<Ref.Refs, Ref.Event<any, any>> = (e: 
  */
 export const withHooks = <E, A>(main: E.Env<E, A>): RS.ReaderStream<E & Ref.Refs, A> =>
   pipe(
-    getRefEvents,
-    RS.filter((x: Ref.Event<any, any>) => x._tag !== 'Created'),
-    RS.startWith<unknown>(null), // Ensure an initial sampling
-    RS.sampleLatestEnv(
-      Do(function* (_) {
-        // Ensure HookIndex is reset upon each invocation
-        yield* _(resetIndex)
+    E.Do,
+    E.apSW('refEvents', Ref.getRefEvents),
+    E.apSW('disposable', RefDisposable.get),
+    RS.fromEnv,
+    RS.chainW(({ refEvents, disposable }) =>
+      pipe(
+        refEvents,
+        S.filter((x: Ref.Event<any, any>) => x._tag !== 'Created'),
+        S.startWith<unknown>(null), // Ensure an initial sampling
+        RS.fromStream,
+        RS.sampleLatestEnv(
+          Do(function* (_) {
+            // Ensure HookIndex is reset upon each invocation
+            yield* _(resetIndex)
 
-        return yield* _(main)
-      }),
+            return yield* _(main)
+          }),
+        ),
+        RS.withStream(S.onDispose(disposable)),
+      ),
     ),
   )
 
@@ -102,43 +107,5 @@ export const mergeMapWithHooks = <V>(Eq: Eq<V> = deepEqualsEq) => {
   const mergeMap = RS.mergeMapWhen(Eq)
 
   return <E1, A>(f: (value: V) => E.Env<E1 & Ref.Refs, A>) =>
-    <E2>(
-      values: RS.ReaderStream<E2, ReadonlyArray<V>>,
-    ): RS.ReaderStream<E1 & E2 & Ref.Refs, ReadonlyArray<A>> => {
-      return pipe(
-        values,
-        mergeMap((value) =>
-          pipe(
-            RefDisposable.get,
-            RS.fromEnv,
-            RS.chainW((disposable) =>
-              pipe(value, f, withHooks, RS.withStream(S.onDispose(disposable))),
-            ),
-            RS.useSome(Ref.refs()),
-          ),
-        ),
-      )
-    }
-}
-
-function getOrCreate<B>() {
-  return <A, E, C extends Map<A, B>>(keyEq: Eq<A>, ref: Ref.Wrapped<E, C>) => {
-    const find = RM.lookup(keyEq)
-
-    return <E>(key: A, orCreate: E.Env<E, B>) =>
-      Do(function* (_) {
-        const memoized = yield* _(ref.get)
-        const memoed = pipe(memoized, find(key))
-
-        if (O.isSome(memoed)) {
-          return memoed.value
-        }
-
-        const created = yield* _(orCreate)
-
-        memoized.set(key, created)
-
-        return created
-      })
-  }
+    mergeMap(flow(f, withHooks, RS.useSomeWith(RS.fromIO(Ref.refs))))
 }

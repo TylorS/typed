@@ -3,8 +3,12 @@ import * as E from '@fp/Env'
 import { Do } from '@fp/Fx/Env'
 import * as R from '@fp/Ref'
 import { Disposable } from '@most/types'
+import { EqStrict } from 'fp-ts/Eq'
 
-const RefDisposable = R.create(E.fromIO(settable), Symbol('RefDisposable'))
+const RefDisposable = R.create(E.fromIO(settable), {
+  eq: EqStrict,
+  id: Symbol('RefDisposable'),
+})
 
 export const { get, has, set, update, remove, id, initial, equals } = RefDisposable
 

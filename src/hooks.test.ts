@@ -33,7 +33,7 @@ export const test = describe(`hooks`, [
         equal(expected, actual)
       }),
 
-      it(`converts this to a Stream`, async ({ equal }) => {
+      it(`converts self-updating component to a Stream`, async ({ equal }) => {
         const value = 0
         const scheduler = Sc.newDefaultScheduler()
         const refs = Ref.refs()
