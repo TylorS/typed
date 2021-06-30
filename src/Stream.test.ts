@@ -61,4 +61,26 @@ export const test = describe(`Stream`, [
       }),
     ]),
   ]),
+
+  describe(S.mergeMapWhen.name, [
+    it(`subscribes to added values and unsubscribes to removed values`, async ({ equal }) => {
+      const byNumber = S.mergeMapWhen<number>()((x) => mergeArray([S.now(x), S.at(100, x + 1)]))
+
+      const values = await pipe(
+        mergeArray([S.now([1, 2, 3]), S.at(200, [3, 2, 1]), S.at(400, [1, 3])]),
+        byNumber,
+        S.collectEvents(newDefaultScheduler()),
+      )
+
+      equal(
+        [
+          [1, 2, 3],
+          [2, 3, 4],
+          [4, 3, 2],
+          [2, 4],
+        ],
+        values,
+      )
+    }),
+  ]),
 ])

@@ -10,6 +10,7 @@ import * as Ap from 'fp-ts/Apply'
 import * as Ch from 'fp-ts/Chain'
 import { ChainRec2 } from 'fp-ts/ChainRec'
 import { Either } from 'fp-ts/Either'
+import { Eq } from 'fp-ts/Eq'
 import * as FIO from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
 import * as FT from 'fp-ts/FromTask'
@@ -195,7 +196,7 @@ export const chainFirstIOK = FIO.chainFirstIOK(FromIO, Chain)
 export const chainIOK = FIO.chainIOK(FromIO, Chain)
 export const fromIOK = FIO.fromIOK(FromIO)
 
-export const Do = fromIO(() => Object.create(null))
+export const Do = fromIO((): {} => Object.create(null))
 
 export const FromTask: FT.FromTask2<URI> = {
   ...FromIO,
@@ -326,11 +327,23 @@ export const combineAll =
     Intersect<{ readonly [K in keyof A]: RequirementsOf<A[K]> }>,
     { readonly [K in keyof A]: ValueOf<A[K]> }
   > =>
-  (e: Intersect<{ readonly [K in keyof A]: RequirementsOf<A[K]> }>) =>
+  (e) =>
     S.combineAll(rss.map((rs) => rs(e)))
 
 export const withStream =
-  <A, B>(f: (stream: S.Stream<A>) => S.Stream<B>) =>
-  <E>(rs: ReaderStream<E, A>): ReaderStream<E, B> =>
+  <A, B>(f: (stream: S.Stream<A>) => B) =>
+  <E>(rs: ReaderStream<E, A>): Re.Reader<E, B> =>
   (e) =>
     pipe(e, rs, f)
+
+export const mergeMapWhen =
+  <V>(Eq: Eq<V>) =>
+  <E1, A>(f: (value: V) => ReaderStream<E1, A>) =>
+  <E2>(rs: ReaderStream<E2, ReadonlyArray<V>>): ReaderStream<E1 & E2, ReadonlyArray<A>> =>
+  (e) =>
+    withStream(S.mergeMapWhen(Eq)((v) => f(v)(e)))(rs)(e)
+
+export const tap = <A>(f: (value: A) => any) => withStream(S.tap(f))
+
+export const take = (n: number) => withStream(S.take(n))
+export const skip = (n: number) => withStream(S.skip(n))
