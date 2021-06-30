@@ -95,7 +95,7 @@ export const withHooks = <E, A>(main: E.Env<E, A>): RS.ReaderStream<E & Ref.Refs
             return yield* _(main)
           }),
         ),
-        RS.withStream(S.onDispose(disposable)),
+        RS.onDispose(disposable),
       ),
     ),
   )

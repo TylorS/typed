@@ -381,3 +381,7 @@ export const sampleLatestEnv =
       S.map(() => S.fromResume(env(e))),
       S.sampleLatest,
     )
+
+export const onDispose = (
+  disposable: S.Disposable,
+): (<E, A>(rs: ReaderStream<E, A>) => ReaderStream<E, A>) => withStream(S.onDispose(disposable))
