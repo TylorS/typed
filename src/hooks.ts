@@ -7,7 +7,6 @@ import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
 import * as RefDisposable from '@fp/RefDisposable'
 import * as S from '@fp/Stream'
-import { WeakRefMap } from '@fp/WeakRefMap'
 import * as O from 'fp-ts/Option'
 import * as RM from 'fp-ts/ReadonlyMap'
 
@@ -96,15 +95,10 @@ export const withHooks = <E, A>(main: E.Env<E, A>): RS.ReaderStream<E & Ref.Refs
     ),
   )
 
-const HookRefs = Ref.create(E.fromIO(() => new WeakRefMap<any, Ref.Refs>()))
-const getOrCreateRefs = getOrCreate<Ref.Refs>()
-
 /**
- * Helps to construct
+ * Helps to construct a stream graph from a list that all samples
  */
 export const mergeMapWithHooks = <V>(Eq: Eq<V> = deepEqualsEq) => {
-  const getOrCreate = getOrCreateRefs(Eq, HookRefs)
-  const getRefs = (value: V) => getOrCreate(value, E.fromIO(Ref.refs))
   const mergeMap = RS.mergeMapWhen(Eq)
 
   return <E1, A>(f: (value: V) => E.Env<E1 & Ref.Refs, A>) =>
@@ -115,14 +109,12 @@ export const mergeMapWithHooks = <V>(Eq: Eq<V> = deepEqualsEq) => {
         values,
         mergeMap((value) =>
           pipe(
-            RS.Do,
-            RS.bindW('refs', () => pipe(value, getRefs, RS.fromEnv)),
-            RS.bindW('disposable', ({ refs }) =>
-              pipe(RefDisposable.get, E.useSome(refs), RS.fromEnv),
+            RefDisposable.get,
+            RS.fromEnv,
+            RS.chainW((disposable) =>
+              pipe(value, f, withHooks, RS.withStream(S.onDispose(disposable))),
             ),
-            RS.chainW(({ refs, disposable }) =>
-              pipe(value, f, withHooks, RS.useSome(refs), RS.withStream(S.onDispose(disposable))),
-            ),
+            RS.useSome(Ref.refs()),
           ),
         ),
       )
