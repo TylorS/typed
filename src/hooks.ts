@@ -8,7 +8,6 @@ import * as Ref from '@fp/Ref'
 import * as RefDisposable from '@fp/RefDisposable'
 import * as S from '@fp/Stream'
 import { WeakRefMap } from '@fp/WeakRefMap'
-import { identity } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as RM from 'fp-ts/ReadonlyMap'
 
@@ -69,37 +68,27 @@ const createHookRef = <E, A>(
   })
 }
 
+export const getRefEvents: RS.ReaderStream<Ref.Refs, Ref.Event<any, any>> = (e: Ref.Refs) =>
+  e.refEvents[1]
+
 /**
  * Makes it possible to sample an Env<E, A> anytime there is an update/delete event
  * within a given Ref.Refs environment.
  */
-export const withHooks = <E, A>(main: E.Env<E, A>): RS.ReaderStream<E & Ref.Refs, A> => {
-  const updateEvents = pipe(
-    Ref.getRefEvents,
-    RS.fromEnv,
-    RS.chainStreamK(identity),
+export const withHooks = <E, A>(main: E.Env<E, A>): RS.ReaderStream<E & Ref.Refs, A> =>
+  pipe(
+    getRefEvents,
     RS.filter((x: Ref.Event<any, any>) => x._tag !== 'Created'),
-    RS.withStream(S.startWith<unknown>(null)), // Ensure an initial sampling
-  )
+    RS.startWith<unknown>(null), // Ensure an initial sampling
+    RS.sampleLatestEnv(
+      Do(function* (_) {
+        // Ensure HookIndex is reset upon each invocation
+        yield* _(resetIndex)
 
-  const sampleMain = flow(
-    RS.chainW(() => RS.ask<E & Ref.Refs>()),
-    RS.map(
-      flow(
-        Do(function* (_) {
-          // Ensure HookIndex is reset upon each invocation
-          yield* _(resetIndex)
-
-          return yield* _(main)
-        }),
-        S.fromResume,
-      ),
+        return yield* _(main)
+      }),
     ),
-    RS.withStream(flow(S.sampleLatest, S.multicast)),
   )
-
-  return sampleMain(updateEvents)
-}
 
 const HookRefs = Ref.create(E.fromIO(() => new WeakRefMap<any, Ref.Refs>()))
 const getOrCreateRefs = getOrCreate<Ref.Refs>()
