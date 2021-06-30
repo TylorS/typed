@@ -6,7 +6,6 @@ import * as Sc from '@most/scheduler'
 import { describe, given, it } from '@typed/test'
 import { Eq } from 'fp-ts/number'
 
-import { Do } from './Fx/Env'
 import { mergeMapWithHooks, useRef, withHooks } from './hooks'
 import * as Ref from './Ref'
 import * as RefDisposable from './RefDisposable'
@@ -37,21 +36,21 @@ export const test = describe(`hooks`, [
         const value = 0
         const scheduler = Sc.newDefaultScheduler()
         const refs = Ref.refs()
-        const Component = Do(function* (_) {
-          const ref = yield* _(useRef(E.of(value), Eq))
-          const increment = yield* _(E.askAndUse(ref.set(value + 1)))
 
-          yield* _(
+        const Component = pipe(
+          E.Do,
+          E.bindW('ref', () => useRef(E.of(value), Eq)),
+          E.bindW('increment', ({ ref }) => E.askAndUse(ref.set(value + 1))),
+          E.chainFirstW(({ increment }) =>
             RefDisposable.add(
               Sc.asap(
                 S.createCallbackTask(() => pipe({}, increment, exec)),
                 scheduler,
               ),
             ),
-          )
-
-          return yield* _(ref.get)
-        })
+          ),
+          E.chainW(({ ref }) => ref.get),
+        )
 
         const values = await pipe(refs, withHooks(Component), S.take(2), S.collectEvents(scheduler))
 
@@ -64,29 +63,22 @@ export const test = describe(`hooks`, [
     it(`converts this to a Stream`, async ({ equal }) => {
       const scheduler = Sc.newDefaultScheduler()
       const Component = (x: number) =>
-        Do(function* (_) {
-          const ref = yield* _(
-            useRef(
-              E.fromIO<number>(() => x),
-              Eq,
-            ),
-          )
-
-          if (x === 3) {
-            const increment = yield* _(E.askAndUse(ref.set(x + 1)))
-
-            yield* _(
-              RefDisposable.add(
-                Sc.asap(
-                  S.createCallbackTask(() => pipe({}, increment, exec)),
-                  scheduler,
-                ),
-              ),
-            )
-          }
-
-          return yield* _(ref.get)
-        })
+        pipe(
+          E.Do,
+          E.bindW('ref', () => useRef(E.of(x), Eq)),
+          E.bindW('increment', ({ ref }) => E.askAndUse(ref.set(x + 1))),
+          E.chainFirstW(({ increment }) =>
+            x === 3
+              ? RefDisposable.add(
+                  Sc.asap(
+                    S.createCallbackTask(() => pipe({}, increment, exec)),
+                    scheduler,
+                  ),
+                )
+              : E.of(null),
+          ),
+          E.chainW(({ ref }) => ref.get),
+        )
 
       const values = await pipe(
         S.mergeArray([S.now([1, 2, 3]), S.at(200, [2, 3, 1]), S.at(400, [3, 2])]),

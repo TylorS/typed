@@ -14,11 +14,9 @@ This project is under very heavy development. It is my goal to align with `fp-ts
 
 - Bridges `fp-ts` and `@most/core` ecosystems
 - [Cancelable Async Effect](#resume)
-- [Testable State Management](#ref)
-- [Stack-safe Do-notation](#do-notation) w/ support for variance
+- [State Management](#ref)
 - [Hooks](#hooks)
-- Globals free
-- Queues
+- Free of globals
 
 ## Conceptual Documentation
 
@@ -72,91 +70,6 @@ capable of utilizing dependency injection for its configurability and testabilit
 While designing application APIs it is often better to describe the logic of your system separate from 
 the implementation details. `Env`, or rather `Reader` helps you accomplish this through the [Dependency Inversion Principle](https://stackify.com/dependency-inversion-principle/). This principle is one of 
 the easiest ways to begin improving any codebase.
-
-### Do-Notation
-
-Do-notation is a syntax for performing effects in a way that looks a lot more like imperative code.
-`Fx` is a type-safe(!) generator-based abstraction with allows you to utilize a Monad's `ChainRec` 
-instance to create a stack-safe do-notation interpreter. 
-
-In addition to the syntax-related benefits, this abstraction understands variance in the 
-type-parameters of all of the built-in fp-ts types and all within this library. If you've ever used 
-a `*W` API from `fp-ts` like `chainW/matchW` or similar, then you might already understand what this 
-means. If you use do-notation with a Reader-like monad if 1 uses an environment of `{a: string}` and 2
-uses an environment of `{b: number}` something like the below you'll end up with a Reader-like effect
-needing an environment of `{a: string} & {b:number}`, or an intersection of all requirements will be 
-created. Similarly if there are Either-like effects all Left values will be combined into a union.
-
-This variance can be configured per each higher-kinded type's URI by extending an interface. The choice
-to use this variance is for convenience of accumulating requirements at the point of definition with
-more modularity.
-
-The choice to use or not use the provided do-notation or one of the relatively straightforward variants from fp-ts is
-entirely up to you, and is not required in order to use the tools contained within. It _does_ add a dependency on
-various `Monad` + `ChainRec` instances which shouldn't be too big a deal in most cases if you're already using these types. 
-`fp-ts` does not currently implement `ChainRec` for most of its modules, so at times there are `@typed/fp/*` libraries which 
-mirror `fp-ts` intentionally like `@typed/fp/Reader` or `@typed/fp/Task`. These modules re-export `fp-ts/*` from them for 
-convenience with namespace imports, but otherwise they generally add the minimal amount to implement `ChainRec` and potentially 
-other type-classes added within this library like `MonadRec`(Monad + ChainRec), and `UseSome`/`ProvideSome` (see `Provide.ts`) which add 
-and remove requirements from the environment for a Reader-like effect.
-
-
-```ts
-import { doReader, toReader } from '@typed/fp/Fx/Reader'
-import * as R from 'fp-ts/Reader'
-
-/** 
- * all do* APIs provide a function to lift that effect into an Fx for type-safety 
- * since generator's return value can be strictly known at compile time unlike yields. 
- * By convention I've been using _ as the reference here for this lift function.
- */
-const fx = doReader(function*(_) {
-  const { a } = yield* _(R.ask<{a: string}>())
-  const { b } = yield* _(R.ask<{b: number}>())
-
-  // do things
-})
-
-// Convert's an Fx<Reader<{a: string}, {a: string}> | Reader<{b: number}, {b: number}>, A> to 
-// Reader<{a: string} & {b: number}, A>
-const reader = toReader(fx)
-
-// Contrasted with fp-ts' chainW
-
-pipe(
-  R.ask<{a:string}>(),
-  R.chainW(({ a }) => pipe(
-    R.ask<{b:number}>(),
-    R.chainW(({ b }) => {
-      // do things
-    }) 
-  ))
-)
-
-// and with fp-ts' bindW syntax
-pipe(
-  R.Do,
-  R.bindW('a', R.asks((e: {a:string}) => e.a)),
-  R.bindW('b', R.asks((e: {b:number}) => e.b)),
-  R.chainW(({a, b}) => {
-    // do things
-  })
-)
-
-// A special mention since apSW uses applicatives and isn't quite the same
-// but if the Reader monad were instead an asynchronous effect like Env, the 
-// applicative instance have the chance to perform them in parallel or sequentially
-// depending on the apply instance
-pipe(
-  R.Do,
-  R.apSW('a', R.asks((e: {a:string}) => e.a)),
-  R.apSW('b', R.asks((e: {b:number}) => e.b)),
-  R.chainW(({a, b}) => {
-    // do things
-  })
-)
-
-```
 
 ### Ref 
 

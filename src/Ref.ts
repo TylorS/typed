@@ -1,6 +1,5 @@
 import * as E from '@fp/Env'
 import { deepEqualsEq } from '@fp/Eq'
-import { Do } from '@fp/Fx/Env'
 import * as O from '@fp/Option'
 import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
@@ -58,12 +57,7 @@ export interface Set {
 export const update =
   <E1, A>(ref: Ref<E1, A>) =>
   <E2>(f: (value: A) => E.Env<E2, A>) =>
-    Do(function* (_) {
-      const current = yield* _(get(ref))
-      const updated = yield* _(f(current))
-
-      return yield* _(set(ref)(updated))
-    })
+    pipe(ref, get, E.chainW(f), E.chainW(set(ref)))
 
 export const remove = <E, A>(ref: Ref<E, A>) => E.asksE((e: Remove) => e.removeRef(ref))
 

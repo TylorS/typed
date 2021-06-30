@@ -1,7 +1,6 @@
 import * as E from '@fp/Env'
 import { alwaysEqualsEq, deepEqualsEq, Eq } from '@fp/Eq'
 import { flow, increment, pipe } from '@fp/function'
-import { Do } from '@fp/Fx/Env'
 import * as N from '@fp/number'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
@@ -28,13 +27,10 @@ const HookRefs = RefMap.create(
 )
 
 // Get the next ID to use
-export const getHookIndex = Do(function* (_) {
-  const currentIndex = yield* _(HookIndex.get)
-
-  yield* _(incrementIndex)
-
-  return currentIndex
-})
+export const getHookIndex = pipe(
+  HookIndex.get,
+  E.chainFirst(() => incrementIndex),
+)
 
 // Reset hook index to support re-rendering or similar workflows.
 export const resetIndex = HookIndex.set(INITIAL_HOOK_INDEX)
@@ -46,11 +42,10 @@ export const useRef = <E, A>(
   initial: E.Env<E, A>,
   eq: Eq<A> = alwaysEqualsEq,
 ): E.Env<Ref.Refs, Ref.Wrapped<E, A>> =>
-  Do(function* (_) {
-    const index = yield* _(getHookIndex)
-
-    return yield* _(HookRefs.getOrCreate(index, createHookRef(index, initial, eq)))
-  })
+  pipe(
+    getHookIndex,
+    E.chainW((index) => HookRefs.getOrCreate(index, createHookRef(index, initial, eq))),
+  )
 
 // Creates a Reference which is scoped explicity to the environment in which it was created in.
 const createHookRef = <E, A>(
@@ -88,12 +83,10 @@ export const withHooks = <E, A>(main: E.Env<E, A>): RS.ReaderStream<E & Ref.Refs
         S.startWith<unknown>(null), // Ensure an initial sampling
         RS.fromStream,
         RS.sampleLatestEnv(
-          Do(function* (_) {
-            // Ensure HookIndex is reset upon each invocation
-            yield* _(resetIndex)
-
-            return yield* _(main)
-          }),
+          pipe(
+            resetIndex,
+            E.chainW(() => main),
+          ),
         ),
         RS.onDispose(disposable),
       ),

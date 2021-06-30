@@ -1,10 +1,9 @@
-import { of } from '@fp/Env'
+import * as E from '@fp/Env'
 import { catchError, throwError } from '@fp/Fail'
-import { Do } from '@fp/Fx/Env'
-import { async, exec } from '@fp/Resume'
+import { async, exec, start } from '@fp/Resume'
 import { disposeNone } from '@most/disposable'
 import { describe, it } from '@typed/test'
-import { pipe } from 'fp-ts/function'
+import { flow, pipe } from 'fp-ts/function'
 
 export const test = describe(__filename, [
   describe(throwError.name, [
@@ -12,14 +11,6 @@ export const test = describe(__filename, [
       const key = 'foo' as const
       const error = new Error('failure')
       const fail = throwError(key)(error)
-      const test = Do(function* (_) {
-        // eslint-disable-next-line no-constant-condition
-        if (true) {
-          return yield* _(fail)
-        }
-
-        return 1
-      })
 
       pipe(
         {
@@ -35,7 +26,7 @@ export const test = describe(__filename, [
               return disposeNone()
             }),
         },
-        test,
+        fail,
         exec,
       )
     }),
@@ -48,32 +39,20 @@ export const test = describe(__filename, [
       const throwFoo = throwError(key)
       const catchFoo = catchError(key)
       const expected = 42
-      const willFail = Do(function* (_) {
-        // eslint-disable-next-line no-constant-condition
-        if (true) {
-          return yield* _(throwFoo(error))
-        }
 
-        return 1
-      })
-
-      const test = Do(function* (_) {
-        try {
-          const actual = yield* pipe(
-            willFail,
-            catchFoo(() => of(expected)),
-            _,
-          )
-
-          equal(expected, actual)
-
-          done()
-        } catch (e) {
-          done(e)
-        }
-      })
-
-      pipe({}, test, exec)
+      try {
+        pipe(
+          {},
+          pipe(
+            throwFoo(error),
+            catchFoo(() => E.of(expected)),
+            E.chainFirst(flow(equal(expected), E.of)),
+          ),
+          start(() => done()),
+        )
+      } catch (e) {
+        done(e)
+      }
     }),
   ]),
 ])
