@@ -15,17 +15,6 @@ const ESM_BUILD_PATH = join(ROOT_DIR, 'esm')
 const CJS_BUILD_PATH = join(ROOT_DIR, 'cjs')
 const TSX_REGX = /.tsx?$/
 
-const BASE_PLUGINS = [
-  {
-    transform: '@zerollup/ts-transform-paths',
-    after: true,
-  },
-  {
-    transform: '@zerollup/ts-transform-paths',
-    afterDeclarations: true,
-  },
-]
-
 const EXCLUSIONS = [
   'examples',
   'node_modules',
@@ -71,8 +60,8 @@ async function updateBuildConfig(path: string, moduleType: ModuleType) {
     json.include = ['src']
     json.compilerOptions =
       moduleType === 'esm'
-        ? { outDir: relative(directory, ESM_BUILD_PATH), module: 'esnext', plugins: BASE_PLUGINS }
-        : { outDir: relative(directory, CJS_BUILD_PATH), module: 'commonjs', plugins: BASE_PLUGINS }
+        ? { outDir: relative(directory, ESM_BUILD_PATH), module: 'esnext', plugins: [] }
+        : { outDir: relative(directory, CJS_BUILD_PATH), module: 'commonjs', plugins: [] }
 
     json.references = []
     json.exclude = EXCLUSIONS

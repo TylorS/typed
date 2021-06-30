@@ -3,16 +3,7 @@
   "compilerOptions": {
     "outDir": "esm",
     "module": "esnext",
-    "plugins": [
-      {
-        "transform": "@zerollup/ts-transform-paths",
-        "after": true
-      },
-      {
-        "transform": "@zerollup/ts-transform-paths",
-        "afterDeclarations": true
-      }
-    ]
+    "plugins": []
   },
   "exclude": [
     "examples",
@@ -28,6 +19,7 @@
     "index.js.map",
     "index.d.ts.map",
     "Adapter",
+    "Branded",
     "Disposable",
     "Env",
     "EnvEither",
@@ -36,8 +28,7 @@
     "Fail",
     "FromEnv",
     "FromResume",
-    "Fx",
-    "FxT",
+    "FromStream",
     "Hkt",
     "IOEither",
     "MonadRec",
@@ -50,6 +41,9 @@
     "ReaderStreamEither",
     "ReaderTask",
     "ReaderTaskEither",
+    "Ref",
+    "RefDisposable",
+    "RefMap",
     "Resume",
     "ResumeEither",
     "ResumeOption",
@@ -63,7 +57,12 @@
     "Task",
     "TaskEither",
     "TaskOption",
-    "function"
+    "WeakRefMap",
+    "function",
+    "hooks",
+    "number",
+    "string",
+    "struct"
   ],
   "files": [],
   "include": [

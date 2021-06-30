@@ -64,6 +64,7 @@ snowpack.key
 /exports.js
 /exports.js.map
 /Adapter/
+/Branded/
 /Disposable/
 /Env/
 /EnvEither/
@@ -72,8 +73,7 @@ snowpack.key
 /Fail/
 /FromEnv/
 /FromResume/
-/Fx/
-/FxT/
+/FromStream/
 /Hkt/
 /IOEither/
 /MonadRec/
@@ -86,6 +86,9 @@ snowpack.key
 /ReaderStreamEither/
 /ReaderTask/
 /ReaderTaskEither/
+/Ref/
+/RefDisposable/
+/RefMap/
 /Resume/
 /ResumeEither/
 /ResumeOption/
@@ -99,4 +102,9 @@ snowpack.key
 /Task/
 /TaskEither/
 /TaskOption/
+/WeakRefMap/
 /function/
+/hooks/
+/number/
+/string/
+/struct/
