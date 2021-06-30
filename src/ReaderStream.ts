@@ -363,12 +363,19 @@ export const mergeMapWhen =
 
 export const tap = <A>(f: (value: A) => any) => withStream(S.tap(f))
 
-export const take = (n: number) => withStream(S.take(n))
-export const skip = (n: number) => withStream(S.skip(n))
+export const take: (n: number) => <E, A>(rs: ReaderStream<E, A>) => ReaderStream<E, A> = flow(
+  S.take,
+  withStream,
+)
+
+export const skip: (n: number) => <E, A>(rs: ReaderStream<E, A>) => ReaderStream<E, A> = flow(
+  S.skip,
+  withStream,
+)
 
 export const startWith =
   <A>(value: A) =>
-  <E, B>(stream: ReaderStream<E, B>) =>
+  <E, B>(stream: ReaderStream<E, B>): ReaderStream<E, A | B> =>
     withStream(S.startWith<A | B>(value))(stream)
 
 export const sampleLatest =
