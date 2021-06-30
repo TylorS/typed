@@ -17,7 +17,13 @@ const HookIndex = Ref.create(E.of(INITIAL_HOOK_INDEX), Symbol('HookIndex'), alwa
 
 const incrementIndex = HookIndex.update(flow(increment, E.of))
 
-const getOrCreateHookRef = getOrCreate<Ref.Wrapped<any, any>>()(N.Eq)
+const getOrCreateHookRef = getOrCreate<Ref.Wrapped<any, any>>()(
+  N.Eq,
+  Ref.create(
+    E.fromIO(() => new Map()),
+    Symbol('HookRefs'),
+  ),
+)
 
 // Get the next ID to use
 export const getHookIndex = Do(function* (_) {
@@ -97,7 +103,7 @@ const getOrCreateRefs = getOrCreate<Ref.Refs>()
  * Helps to construct
  */
 export const mergeMapWithHooks = <V>(Eq: Eq<V> = deepEqualsEq) => {
-  const getOrCreate = getOrCreateRefs(Eq, HookRefs as any)
+  const getOrCreate = getOrCreateRefs(Eq, HookRefs)
   const getRefs = (value: V) => getOrCreate(value, E.fromIO(Ref.refs))
   const mergeMap = RS.mergeMapWhen(Eq)
 
@@ -124,14 +130,7 @@ export const mergeMapWithHooks = <V>(Eq: Eq<V> = deepEqualsEq) => {
 }
 
 function getOrCreate<B>() {
-  return <A>(
-    keyEq: Eq<A>,
-    ref = Ref.create(
-      E.fromIO(() => new Map<A, B>()),
-      undefined,
-      alwaysEqualsEq,
-    ),
-  ) => {
+  return <A, E, C extends Map<A, B>>(keyEq: Eq<A>, ref: Ref.Wrapped<E, C>) => {
     const find = RM.lookup(keyEq)
 
     return <E>(key: A, orCreate: E.Env<E, B>) =>
