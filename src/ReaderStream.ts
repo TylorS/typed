@@ -254,6 +254,12 @@ export function merge<E, A>(a: ReaderStream<E, A>) {
       pipe(a(r), S.merge(b(r)))
 }
 
+export function mergeArray<A extends ReadonlyArray<ReaderStream<any, any>>>(
+  streams: A,
+): ReaderStream<Intersect<{ readonly [K in keyof A]: RequirementsOf<A[K]> }>, ValueOf<A[number]>> {
+  return (r) => S.mergeArray(streams.map((rs) => rs(r)))
+}
+
 export function concatMap<A, E1>(f: (value: A) => ReaderStream<E1, A>) {
   return <E2>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, A> =>
     (r) =>
@@ -400,3 +406,11 @@ export const sampleLatestEnv =
 export const onDispose = (
   disposable: S.Disposable,
 ): (<E, A>(rs: ReaderStream<E, A>) => ReaderStream<E, A>) => withStream(S.onDispose(disposable))
+
+export const collectEvents =
+  (scheduler: S.Scheduler) =>
+  <E, A>(rs: ReaderStream<E, A>): Re.Reader<E, Promise<readonly A[]>> =>
+    pipe(rs, withStream(S.collectEvents(scheduler)))
+
+export const now = flow(S.now, fromStream)
+export const at = flow(S.at, fromStream)

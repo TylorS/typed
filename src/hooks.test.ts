@@ -80,13 +80,16 @@ export const test = describe(`hooks`, () => {
           E.chainW(({ ref }) => ref.get),
         )
 
-      const values = await pipe(
-        S.mergeArray([S.now([1, 2, 3]), S.at(10, [2, 3, 1]), S.at(20, [3, 2])]),
-        RS.fromStream,
-        mergeMapWithHooks(Eq)(Component),
+      const mergeN = mergeMapWithHooks(Eq)
+
+      const program = pipe(
+        RS.mergeArray([RS.now([1, 2, 3]), RS.at(10, [2, 3, 1]), RS.at(20, [3, 2])] as const),
+        mergeN(Component),
         RS.take(4),
-        RS.withStream(S.collectEvents(scheduler)),
-      )(Ref.refs())
+        RS.collectEvents(scheduler),
+      )
+
+      const values = await program(Ref.refs())
 
       deepStrictEqual(values, [
         [1, 2, 3],
