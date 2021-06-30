@@ -15,13 +15,16 @@ import * as FIO from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
 import * as FT from 'fp-ts/FromTask'
 import * as F from 'fp-ts/Functor'
+import { IO } from 'fp-ts/IO'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 import { Predicate } from 'fp-ts/Predicate'
 import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
 import { Refinement } from 'fp-ts/Refinement'
+import { Task } from 'fp-ts/Task'
 
+import { Env } from './Env'
 import * as P from './Provide'
 
 /**
@@ -217,6 +220,21 @@ export const chainFirstStreamK = FS.chainFirstStreamK(FromStream, Chain)
 export const chainStreamK = FS.chainStreamK(FromStream, Chain)
 export const fromStreamK = FS.fromStreamK(FromStream)
 
+export const asksEnv =
+  <E1, E2, B>(f: (e1: E1) => Env<E2, B>): ReaderStream<E1 & E2, B> =>
+  (r) =>
+    pipe(r, f(r), S.fromResume)
+
+export const asksIO =
+  <E1, B>(f: (e1: E1) => IO<B>): ReaderStream<E1, B> =>
+  (r) =>
+    pipe(r, f, S.fromIO)
+
+export const asksTask =
+  <E1, B>(f: (e1: E1) => Task<B>): ReaderStream<E1, B> =>
+  (r) =>
+    pipe(r, f, S.fromTask)
+
 export function filter<A, B extends A>(
   refinement: Refinement<A, B>,
 ): <E>(rs: ReaderStream<E, A>) => ReaderStream<E, B>
@@ -347,3 +365,19 @@ export const tap = <A>(f: (value: A) => any) => withStream(S.tap(f))
 
 export const take = (n: number) => withStream(S.take(n))
 export const skip = (n: number) => withStream(S.skip(n))
+
+export const startWith =
+  <A>(value: A) =>
+  <E, B>(stream: ReaderStream<E, B>) =>
+    withStream(S.startWith<A | B>(value))(stream)
+
+export const sampleLatestEnv =
+  <E1, A>(env: Env<E1, A>) =>
+  <E2, B>(rs: ReaderStream<E2, B>): ReaderStream<E1 & E2, A> =>
+  (e) =>
+    pipe(
+      e,
+      rs,
+      S.map(() => S.fromResume(env(e))),
+      S.sampleLatest,
+    )
