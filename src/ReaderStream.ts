@@ -371,15 +371,23 @@ export const startWith =
   <E, B>(stream: ReaderStream<E, B>) =>
     withStream(S.startWith<A | B>(value))(stream)
 
-export const sampleLatestEnv =
-  <E1, A>(env: Env<E1, A>) =>
-  <E2, B>(rs: ReaderStream<E2, B>): ReaderStream<E1 & E2, A> =>
+export const sampleLatest =
+  <E1, E2, A>(rs: ReaderStream<E1, ReaderStream<E2, A>>): ReaderStream<E1 & E2, A> =>
   (e) =>
     pipe(
       e,
       rs,
-      S.map(() => S.fromResume(env(e))),
+      S.map((rs) => rs(e)),
       S.sampleLatest,
+    )
+
+export const sampleLatestEnv =
+  <E1, A>(env: Env<E1, A>) =>
+  <E2, B>(rs: ReaderStream<E2, B>): ReaderStream<E1 & E2, A> =>
+    pipe(
+      rs,
+      map(() => fromEnv(env)),
+      sampleLatest,
     )
 
 export const onDispose = (
