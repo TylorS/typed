@@ -4,25 +4,30 @@ import * as S from '@fp/Stream'
 import { runEffects, tap } from '@fp/Stream'
 import { mergeArray } from '@most/core'
 import { newDefaultScheduler } from '@most/scheduler'
-import { describe, given, it } from '@typed/test'
+import { deepStrictEqual } from 'assert'
 
-export const test = describe(`Stream`, [
-  describe(`fromResume`, [
-    given(`a Resume<A>`, [
-      it(`returns a Stream<A> of that value`, async ({ equal }) => {
+export const test = describe(`Stream`, () => {
+  describe(`fromResume`, () => {
+    describe(`given a Resume<A>`, () => {
+      it(`returns a Stream<A> of that value`, async () => {
         const value = 1
-        const stream = pipe(value, R.of, S.fromResume, tap(equal(value)))
+        const stream = pipe(
+          value,
+          R.of,
+          S.fromResume,
+          tap((x) => deepStrictEqual(x, value)),
+        )
 
         await runEffects(stream, newDefaultScheduler())
-      }),
-    ]),
-  ]),
+      })
+    })
+  })
 
-  describe(S.sampleLatest.name, [
-    given(`Stream<Stream<A>>`, [
-      it(`subscribes to only one stream at a time`, async ({ equal }) => {
+  describe(S.sampleLatest.name, () => {
+    describe(`given, Stream<Stream<A>>`, () => {
+      it(`subscribes to only one stream at a time`, async () => {
         let subscriptions = 0
-        const increment = 10
+        const increment = 1
         const numberOfItems = 10
         const delay = increment * numberOfItems
 
@@ -33,9 +38,9 @@ export const test = describe(`Stream`, [
                 i * increment,
                 pipe(
                   S.at(delay, i + 1),
-                  S.tap(() => equal(1, ++subscriptions)),
+                  S.tap(() => deepStrictEqual(++subscriptions, 1)),
                   S.concatMap(() => {
-                    equal(0, --subscriptions)
+                    deepStrictEqual(--subscriptions, 0)
 
                     return S.empty()
                   }),
@@ -46,10 +51,10 @@ export const test = describe(`Stream`, [
         )
 
         await pipe(stream, S.sampleLatest, S.collectEvents(newDefaultScheduler()))
-      }),
+      })
 
-      it(`resamples when ongoing stream completes`, async ({ equal }) => {
-        const increment = 10
+      it(`resamples when ongoing stream completes`, async () => {
+        const increment = 1
         const numberOfItems = 10
         const delay = increment * numberOfItems
         const stream = mergeArray(
@@ -57,30 +62,27 @@ export const test = describe(`Stream`, [
         )
         const actual = await pipe(stream, S.sampleLatest, S.collectEvents(newDefaultScheduler()))
 
-        equal([1, numberOfItems], actual)
-      }),
-    ]),
-  ]),
+        deepStrictEqual(actual, [1, numberOfItems])
+      })
+    })
+  })
 
-  describe(S.mergeMapWhen.name, [
-    it(`subscribes to added values and unsubscribes to removed values`, async ({ equal }) => {
-      const byNumber = S.mergeMapWhen<number>()((x) => mergeArray([S.now(x), S.at(100, x + 1)]))
+  describe(S.mergeMapWhen.name, () => {
+    it(`subscribes to added values and unsubscribes to removed values`, async () => {
+      const byNumber = S.mergeMapWhen<number>()((x) => mergeArray([S.now(x), S.at(5, x + 1)]))
 
       const values = await pipe(
-        mergeArray([S.now([1, 2, 3]), S.at(200, [3, 2, 1]), S.at(400, [1, 3])]),
+        mergeArray([S.now([1, 2, 3]), S.at(10, [3, 2, 1]), S.at(20, [1, 3])]),
         byNumber,
         S.collectEvents(newDefaultScheduler()),
       )
 
-      equal(
-        [
-          [1, 2, 3],
-          [2, 3, 4],
-          [4, 3, 2],
-          [2, 4],
-        ],
-        values,
-      )
-    }),
-  ]),
-])
+      deepStrictEqual(values, [
+        [1, 2, 3],
+        [2, 3, 4],
+        [4, 3, 2],
+        [2, 4],
+      ])
+    })
+  })
+})

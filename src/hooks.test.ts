@@ -3,7 +3,7 @@ import { pipe } from '@fp/function'
 import * as RS from '@fp/ReaderStream'
 import * as S from '@fp/Stream'
 import * as Sc from '@most/scheduler'
-import { describe, given, it } from '@typed/test'
+import { deepStrictEqual } from 'assert'
 import { Eq } from 'fp-ts/number'
 
 import { mergeMapWithHooks, useRef, withHooks } from './hooks'
@@ -11,10 +11,10 @@ import * as Ref from './Ref'
 import * as RefDisposable from './RefDisposable'
 import { exec } from './Resume'
 
-export const test = describe(`hooks`, [
-  describe(withHooks.name, [
-    given(`a Env using Refs`, [
-      it(`converts this to a Stream`, async ({ equal }) => {
+export const test = describe(`hooks`, () => {
+  describe(withHooks.name, () => {
+    describe(`given a Env using Refs`, () => {
+      it(`converts this to a Stream`, async () => {
         const value = 0
         const ref = Ref.create(E.of(value))
         const refs = Ref.refs()
@@ -29,10 +29,10 @@ export const test = describe(`hooks`, [
           S.collectEvents(Sc.newDefaultScheduler()),
         )
 
-        equal(expected, actual)
-      }),
+        deepStrictEqual(actual, expected)
+      })
 
-      it(`converts self-updating component to a Stream`, async ({ equal }) => {
+      it(`converts self-updating component to a Stream`, async () => {
         const value = 0
         const scheduler = Sc.newDefaultScheduler()
         const refs = Ref.refs()
@@ -54,13 +54,13 @@ export const test = describe(`hooks`, [
 
         const values = await pipe(refs, withHooks(Component), S.take(2), S.collectEvents(scheduler))
 
-        equal([value, value + 1], values)
-      }),
-    ]),
-  ]),
+        deepStrictEqual(values, [value, value + 1])
+      })
+    })
+  })
 
-  describe(mergeMapWithHooks.name, [
-    it(`converts this to a Stream`, async ({ equal }) => {
+  describe(mergeMapWithHooks.name, () => {
+    it(`converts this to a Stream`, async () => {
       const scheduler = Sc.newDefaultScheduler()
       const Component = (x: number) =>
         pipe(
@@ -81,22 +81,19 @@ export const test = describe(`hooks`, [
         )
 
       const values = await pipe(
-        S.mergeArray([S.now([1, 2, 3]), S.at(200, [2, 3, 1]), S.at(400, [3, 2])]),
+        S.mergeArray([S.now([1, 2, 3]), S.at(10, [2, 3, 1]), S.at(20, [3, 2])]),
         RS.fromStream,
         mergeMapWithHooks(Eq)(Component),
         RS.take(4),
         RS.withStream(S.collectEvents(scheduler)),
       )(Ref.refs())
 
-      equal(
-        [
-          [1, 2, 3],
-          [1, 2, 4],
-          [2, 4, 1],
-          [4, 2],
-        ],
-        values,
-      )
-    }),
-  ]),
-])
+      deepStrictEqual(values, [
+        [1, 2, 3],
+        [1, 2, 4],
+        [2, 4, 1],
+        [4, 2],
+      ])
+    })
+  })
+})
