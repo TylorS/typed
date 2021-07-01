@@ -2,10 +2,14 @@ import * as E from '@fp/Env'
 import { deepEqualsEq, Eq } from '@fp/Eq'
 import { pipe } from '@fp/function'
 import * as O from '@fp/Option'
+import { disposeBoth, disposeNone } from '@most/disposable'
 import { not } from 'fp-ts/Predicate'
 
 import { useRef } from './hooks'
 import * as Ref from './Ref'
+import * as RefDisposable from './RefDisposable'
+import { exec } from './Resume'
+import { delay, SchedulerEnv } from './Scheduler'
 
 /**
  * @typed/fp/use is a collection of functions built atop of useRef + hooks. Anytime they
@@ -53,5 +57,51 @@ export const useMemo = <E, A, B = null>(
     E.apSW('changed', useEq(dep, eq)),
     E.apSW('ref', useRef(env)),
     E.chainFirstW(({ ref, changed }) => (changed ? ref.update(() => env) : E.of(null))),
+    E.chainW(({ ref }) => ref.get),
+  )
+
+/**
+ * Execute an Env using a dependency to track when to run an update. Without
+ * providing a dep your effect will only run once. Your effect will be added
+ * a delay(0) to ensure it runs in the next event loop.
+ */
+export const useEffect = <E, A, B>(
+  effect: E.Env<E, A>,
+  dep: B = null as any as B,
+  eq: Eq<B> = deepEqualsEq,
+) =>
+  pipe(
+    E.Do,
+    E.apSW('changed', useEq(dep, eq)),
+    E.apSW('ref', useRef(E.fromIO(disposeNone))),
+    E.apSW('refDisposable', RefDisposable.get),
+    E.apSW('requirements', E.ask<E & SchedulerEnv>()),
+    E.bindW('current', ({ ref }) => ref.get),
+    E.chainFirstW(({ changed, current, ref, requirements }) =>
+      changed
+        ? pipe(
+            E.fromIO(() => current.dispose()),
+            E.chainW(() =>
+              E.fromIO(() =>
+                pipe(
+                  requirements,
+                  pipe(
+                    delay(0),
+                    E.chainW(() => effect),
+                  ),
+                  exec,
+                ),
+              ),
+            ),
+            E.chainW((next) =>
+              pipe(
+                RefDisposable.add(next),
+                E.map((d) => disposeBoth(d, next)),
+              ),
+            ),
+            E.chainW(ref.set),
+          )
+        : E.of(null),
+    ),
     E.chainW(({ ref }) => ref.get),
   )

@@ -62,7 +62,8 @@
     "hooks",
     "number",
     "string",
-    "struct"
+    "struct",
+    "use"
   ],
   "files": [],
   "include": [

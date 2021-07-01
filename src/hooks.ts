@@ -74,7 +74,7 @@ export const withHooks = <E, A>(main: E.Env<E, A>): RS.ReaderStream<E & Ref.Refs
   pipe(
     E.Do,
     E.apSW('refEvents', Ref.getRefEvents),
-    E.apSW('disposable', RefDisposable.get),
+    E.apSW('refDisposable', RefDisposable.get),
     RS.fromEnv,
     RS.chainW(({ refEvents, disposable }) =>
       pipe(

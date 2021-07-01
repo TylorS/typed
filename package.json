@@ -273,6 +273,10 @@
     "./struct": {
       "require": "./cjs/struct.js",
       "import": "./esm/struct.js"
+    },
+    "./use": {
+      "require": "./cjs/use.js",
+      "import": "./esm/use.js"
     }
   }
 }
