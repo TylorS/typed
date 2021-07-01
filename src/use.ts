@@ -54,8 +54,8 @@ export const useMemo = <E, A, B = null>(
 ): E.Env<E & Ref.Refs, A> =>
   pipe(
     E.Do,
-    E.apSW('changed', useEq(dep, eq)),
-    E.apSW('ref', useRef(env)),
+    E.bindW('changed', () => useEq(dep, eq)),
+    E.bindW('ref', () => useRef(env)),
     E.chainFirstW(({ ref, changed }) => (changed ? ref.update(() => env) : E.of(null))),
     E.chainW(({ ref }) => ref.get),
   )
@@ -72,34 +72,35 @@ export const useEffect = <E, A, B>(
 ) =>
   pipe(
     E.Do,
-    E.apSW('changed', useEq(dep, eq)),
-    E.apSW('ref', useRef(E.fromIO(disposeNone))),
-    E.apSW('refDisposable', RefDisposable.get),
-    E.apSW('requirements', E.ask<E & SchedulerEnv>()),
+    E.bindW('changed', () => useEq(dep, eq)),
+    E.bindW('ref', () => useRef(E.fromIO(disposeNone))),
     E.bindW('current', ({ ref }) => ref.get),
+    E.bindW('refDisposable', () => RefDisposable.get),
+    E.bindW('requirements', () => E.ask<E & SchedulerEnv>()),
     E.chainFirstW(({ changed, current, ref, requirements }) =>
       changed
         ? pipe(
-            E.fromIO(() => current.dispose()),
-            E.chainW(() =>
-              E.fromIO(() =>
+            E.fromIO(() => {
+              current.dispose() // Dispose of the current
+
+              // Execute our effect
+              return pipe(
+                requirements,
                 pipe(
-                  requirements,
-                  pipe(
-                    delay(0),
-                    E.chainW(() => effect),
-                  ),
-                  exec,
+                  delay(0),
+                  E.chainW(() => effect),
                 ),
-              ),
-            ),
+                exec,
+              )
+            }),
             E.chainW((next) =>
+              // Keep track of all the resources
               pipe(
                 RefDisposable.add(next),
                 E.map((d) => disposeBoth(d, next)),
+                E.chainW(ref.set),
               ),
             ),
-            E.chainW(ref.set),
           )
         : E.of(null),
     ),

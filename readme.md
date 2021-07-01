@@ -1,22 +1,19 @@
 # @typed/fp
 
-`@typed/fp` is conceptually an extension [fp-ts](https://gcanti.github.io/fp-ts/), with cancelable 
-async effects, do-notation, state management, hooks, streams, and more. 
-
-Extremely modular in the same way you would expect from the `fp-ts/*` style modules and imports 
-using ES modules to ensure dead code elimination of all kinds can be highly effective all of 
-the src files can be imported directly imported as `@typed/fp/*` and both commonjs `main` and 
-esm `module` are provided for each package for maximum support.
+`@typed/fp` is conceptually an extension of [fp-ts](https://gcanti.github.io/fp-ts/), with cancelable 
+async effects, [streams](https://github.com/mostjs/core), state management, hooks, and more. 
 
 This project is under very heavy development. It is my goal to align with `fp-ts` v3 which is currently also under heavy development and once both codebases are stable I intend to make the 1.0 release.
 
 ## Features
 
-- Bridges `fp-ts` and `@most/core` ecosystems
+- [`@most/core`](https://github.com/mostjs/core) Streams
 - [Cancelable Async Effect](#resume)
 - [State Management](#ref)
 - [Hooks](#hooks)
 - Free of globals
+- Testable
+
 
 ## Conceptual Documentation
 
@@ -124,13 +121,51 @@ is instead generated using an incrementing index which leads to the "rules of ho
 ordering matters and must be consistent. To help with this functionality hooks have been implemented atop 
 of Streams since they have a lifecycle of their own.
 
+Hooks allow for a user of `Ref` to program their state management using relatively imperative looking code that deals with single instances of time and lift those into a `Stream` of values over time.
+
 ```ts
-import * as Ref from '@typed/fp/Ref'
 import * as E from '@typed/fp/Env'
-import * as RS from '@typed/fp/ReaderStream'
 import * as H from '@typed/fp/hooks'
+import * as RS from '@typed/fp/ReaderStream'
+import * as Ref from '@typed/fp/Ref'
+import * as S from '@typed/fp/Scheduler'
+import * as U from '@typed/fp/use'
+import { left } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
 
-const Component: E.Env<E & Ref.Refs, HTMLElement> = ...
 
-const stream: RS.ReaderStream<E & Ref.Refs, HTMLElement> = H.withHooks(Component)
+// Create a Reference
+const Count = Ref.create(E.of(0))
+
+// Increment Count every second forever
+const countUpForever = pipe(
+  Count.get,
+  E.chainW(
+    E.chainRec((a) =>
+      pipe(
+        S.delay(1000),
+        E.chainW(() => Count.set(a + 1)),
+        E.map(left),
+      ),
+    ),
+  ),
+)
+
+// Render something using the current Count
+const renderCount = (count: number): A => { ... }
+
+const Component: E.Env<Ref.Refs & S.SchedulerEnv, A> = pipe(
+  E.Do,
+  // Returns a Disposable instance that can be used to clean up
+  E.bindW('disposable', () => U.useEffect(countUpForever)),
+  // Get the current value of Count
+  E.bindW('count', () => Count.get)
+  // Render something
+  E.map(({ count }) => renderCount(count)),
+)
+
+// Creates a Stream the samples your Component everytime there is a RefUpdated or RefDeleted event
+// in the given Ref.Refs environment it is being run within.
+const stream: RS.ReaderStream<Ref.Refs & S.SchedulerEnv, A> = H.withHooks(Component)
+
 ```
