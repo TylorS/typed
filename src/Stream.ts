@@ -368,9 +368,9 @@ class SampleLatestSink<A> implements types.Sink<types.Stream<A>>, types.Disposab
 }
 
 /**
- * Using the provided Eq chainWith conditionally applies a Kliesli arrow
+ * Using the provided Eq mergeMapWhen conditionally applies a Kliesli arrow
  * to the values within an Array when they are added and any values removed
- * from the array will be
+ * from the array will be disposed of immediately.
  */
 export const mergeMapWhen =
   <V>(Eq: Eq<V> = deepEqualsEq) =>
