@@ -269,7 +269,8 @@ function makeSetRef(references: Map<any, any>, sendEvent: (event: Event<any, any
   return {
     setRef(ref, value) {
       return pipe(
-        getRef(ref),
+        ref,
+        getRef,
         E.chainFirstIOK(
           (previousValue) => () => sendEvent({ _tag: 'Updated', ref, previousValue, value }),
         ),
@@ -286,7 +287,7 @@ function makeDeleteRef(
   return {
     removeRef(ref) {
       return pipe(
-        E.fromIO(() => O.fromNullable(references.get(ref.id))),
+        E.fromIO(() => (references.has(ref.id) ? O.some(references.get(ref.id)) : O.none)),
         E.chainFirstIOK(() => () => sendEvent({ _tag: 'Removed', ref })),
       )
     },
