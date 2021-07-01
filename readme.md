@@ -81,7 +81,6 @@ in realtime.
 import * as Ref from '@typed/fp/Ref'
 import * as E from '@typed/fp/Env'
 import * as R from '@typed/fp/Resume'
-import { Do } from '@typed/fp/Fx/Env'
 import * as N from 'fp-ts/number'
 import { pipe } from 'fp-ts/function'
 
@@ -89,17 +88,14 @@ import { pipe } from 'fp-ts/function'
 const Count = Ref.create(E.of(0))
 
 // Create a workflow using references
-const addOne: E.Env<Ref.Refs, number> = Do(function*(_) {
-  // Get the current value
-  const count: number = yield* _(R.getRef(Count))
-  // Add 1
-  const countPlusOne: number = yield* _(pipe(Count, R.modifyRef(x => x + 1)))
-
-  return countPlusOne
-})
+const addOne: E.Env<Ref.Refs, number> = pipe(
+  Count.get, // Get the current value
+  E.chainW(current => Count.set(current + 1)) // Increment by 1
+)
 
 const refs: R.Refs = Ref.refs()
-// Optionally provide default values, uses the Reference's Id by providing an interval of key-values.
+
+// Optionally provide default values.
 // Convenient for testing specific values
 // const refs = R.createReferences([[Count.id, 42]])
 
@@ -164,8 +160,8 @@ const Component: E.Env<Ref.Refs & S.SchedulerEnv, A> = pipe(
   E.map(({ count }) => renderCount(count)),
 )
 
-// Creates a Stream the samples your Component everytime there is a RefUpdated or RefDeleted event
-// in the given Ref.Refs environment it is being run within.
+// Creates a ReaderStream the samples your Component everytime there is a Reference that has been
+// updated or deleted
 const stream: RS.ReaderStream<Ref.Refs & S.SchedulerEnv, A> = H.withHooks(Component)
 
 ```
