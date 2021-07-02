@@ -5,13 +5,15 @@ import * as FS from '@fp/FromStream'
 import { Arity1, constant, flow, pipe } from '@fp/function'
 import { Intersect } from '@fp/Hkt'
 import { MonadRec2 } from '@fp/MonadRec'
+import * as O from '@fp/Option'
 import * as P from '@fp/Provide'
 import * as S from '@fp/Stream'
+import { SeedValue } from '@most/core/dist/combinator/loop'
 import * as App from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
 import * as Ch from 'fp-ts/Chain'
 import { ChainRec2 } from 'fp-ts/ChainRec'
-import { Either } from 'fp-ts/Either'
+import { Either, isLeft, isRight } from 'fp-ts/Either'
 import { Eq } from 'fp-ts/Eq'
 import * as FIO from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
@@ -20,11 +22,14 @@ import * as F from 'fp-ts/Functor'
 import { IO } from 'fp-ts/IO'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
-import { Predicate } from 'fp-ts/Predicate'
+import { not, Predicate } from 'fp-ts/Predicate'
 import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
 import { Refinement } from 'fp-ts/Refinement'
+import { Separated } from 'fp-ts/Separated'
 import { Task } from 'fp-ts/Task'
+
+import { deepEqualsEq } from './Eq'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>
@@ -282,6 +287,8 @@ export const recoverWith =
 export const empty = fromStreamK(S.empty)
 export const never = fromStreamK(S.never)
 
+export const periodic = fromStreamK(S.periodic)
+
 export const provideSome =
   <E1>(provided: E1) =>
   <E2, A>(rs: ReaderStream<E1 & E2, A>): ReaderStream<E2, A> =>
@@ -418,3 +425,164 @@ export const scan =
   <A, B>(f: (acc: A, value: B) => A, seed: A) =>
   <E>(rs: ReaderStream<E, B>): ReaderStream<E, A> =>
     pipe(rs, withStream(S.scan(f, seed)))
+
+export const skipRepeatsWith =
+  <A>(Eq: Eq<A>) =>
+  <E>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
+    pipe(rs, withStream(S.skipRepeatsWith((a, b) => Eq.equals(a)(b))))
+
+export const skipRepeats: <E, A>(rs: ReaderStream<E, A>) => ReaderStream<E, A> =
+  skipRepeatsWith(deepEqualsEq)
+
+export const compact: <E, A>(rs: ReaderStream<E, O.Option<A>>) => ReaderStream<E, A> = withStream(
+  S.compact,
+)
+
+export const continueWith =
+  <E1, A>(f: () => ReaderStream<E1, A>) =>
+  <E2, B>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, A | B> =>
+  (e) =>
+    pipe(
+      e,
+      rs,
+      S.continueWith(() => f()(e)),
+    )
+
+export const debounce =
+  (delay: S.Time) =>
+  <E, A>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
+    pipe(rs, withStream(S.debounce(delay)))
+
+export const delay =
+  (delay: S.Time) =>
+  <E, A>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
+    pipe(rs, withStream(S.delay(delay)))
+
+export const join =
+  <E1, E2, A>(rs: ReaderStream<E1, ReaderStream<E2, A>>): ReaderStream<E1 & E2, A> =>
+  (e) =>
+    pipe(
+      e,
+      rs,
+      S.chain((f) => f(e)),
+    )
+
+export const during =
+  <E1, E2>(timeWindow: ReaderStream<E1, ReaderStream<E2, any>>) =>
+  <E3, A>(values: ReaderStream<E3, A>): ReaderStream<E1 & E2 & E3, A> =>
+  (e) =>
+    pipe(e, values, S.during<A>(join(timeWindow)(e)))
+
+export const filterMap =
+  <A, B>(f: (a: A) => O.Option<B>) =>
+  <E>(fa: ReaderStream<E, A>): ReaderStream<E, B> =>
+    pipe(fa, withStream(S.filterMap(f)))
+
+export const loop =
+  <A, B, C>(f: (a: A, b: B) => SeedValue<A, C>, seed: A) =>
+  <E>(fa: ReaderStream<E, B>): ReaderStream<E, C> =>
+  (e) =>
+    pipe(e, fa, S.loop(f, seed))
+
+export const mergeConcurrently =
+  (concurrency: number) =>
+  <E1, E2, A>(rs: ReaderStream<E1, ReaderStream<E2, A>>): ReaderStream<E1 & E2, A> =>
+  (e) =>
+    pipe(
+      e,
+      rs,
+      S.mergeMapConcurrently((rs) => rs(e), concurrency),
+    )
+
+export const multicast = flow(S.multicast, fromStream)
+
+export const partition =
+  <A>(predicate: Predicate<A>) =>
+  <E>(fa: ReaderStream<E, A>): Separated<ReaderStream<E, A>, ReaderStream<E, A>> => ({
+    left: pipe(fa, filter(not(predicate))),
+    right: pipe(fa, filter(predicate)),
+  })
+
+export const partitionMap =
+  <A, B, C>(f: (a: A) => Either<B, C>) =>
+  <E>(fa: ReaderStream<E, A>): Separated<ReaderStream<E, B>, ReaderStream<E, C>> => ({
+    left: pipe(
+      fa,
+      map(f),
+      filter(isLeft),
+      map((x) => x.left),
+    ),
+    right: pipe(
+      fa,
+      map(f),
+      filter(isRight),
+      map((x) => x.right),
+    ),
+  })
+
+export const race =
+  <E1, A>(second: ReaderStream<E1, A>) =>
+  <E2, B>(first: ReaderStream<E2, B>): ReaderStream<E1 & E2, A | B> =>
+  (e) =>
+    pipe(
+      e,
+      first,
+      S.race<A | B>(() => second(e)),
+    )
+
+export const separate = <E, A, B>(rs: ReaderStream<E, Either<A, B>>) =>
+  pipe(
+    rs,
+    partitionMap((e) => e),
+  )
+
+export const since =
+  <E1>(timeWindow: ReaderStream<E1, any>) =>
+  <E2, A>(values: ReaderStream<E2, A>): ReaderStream<E1 & E2, A> =>
+  (e) =>
+    pipe(e, values, S.since<A>(timeWindow(e)))
+
+export const skipAfter =
+  <A>(p: (a: A) => boolean) =>
+  <E>(s: ReaderStream<E, A>): ReaderStream<E, A> =>
+    pipe(s, withStream(S.skipAfter(p)))
+
+export const skipWhile =
+  <A>(p: (a: A) => boolean) =>
+  <E>(s: ReaderStream<E, A>): ReaderStream<E, A> =>
+    pipe(s, withStream(S.skipWhile(p)))
+
+export const slice =
+  (skip: number, take: number) =>
+  <E, A>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
+    pipe(rs, withStream(S.slice(skip, take)))
+
+export const switchLatest =
+  <E1, E2, A>(rs: ReaderStream<E1, ReaderStream<E2, A>>): ReaderStream<E1 & E2, A> =>
+  (e) =>
+    pipe(
+      e,
+      rs,
+      S.map((f) => f(e)),
+      S.switchLatest,
+    )
+
+export const takeWhile =
+  <A>(p: (a: A) => boolean) =>
+  <E>(s: ReaderStream<E, A>): ReaderStream<E, A> =>
+    pipe(s, withStream(S.takeWhile(p)))
+
+export const throttle =
+  (period: number) =>
+  <E, A>(s: ReaderStream<E, A>): ReaderStream<E, A> =>
+    pipe(s, withStream(S.throttle(period)))
+
+export const throwError = fromStreamK(S.throwError)
+
+export const until =
+  <E1>(timeWindow: ReaderStream<E1, any>) =>
+  <E2, A>(values: ReaderStream<E2, A>): ReaderStream<E1 & E2, A> =>
+  (e) =>
+    pipe(e, values, S.until<A>(timeWindow(e)))
+
+export const zero = flow(S.zero, fromStream)
