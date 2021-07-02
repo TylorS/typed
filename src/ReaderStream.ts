@@ -1,9 +1,11 @@
+import { Env } from '@fp/Env'
 import * as FE from '@fp/FromEnv'
 import * as FRe from '@fp/FromResume'
 import * as FS from '@fp/FromStream'
 import { Arity1, constant, flow, pipe } from '@fp/function'
 import { Intersect } from '@fp/Hkt'
 import { MonadRec2 } from '@fp/MonadRec'
+import * as P from '@fp/Provide'
 import * as S from '@fp/Stream'
 import * as App from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
@@ -23,9 +25,6 @@ import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
 import { Refinement } from 'fp-ts/Refinement'
 import { Task } from 'fp-ts/Task'
-
-import { Env } from './Env'
-import * as P from './Provide'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>
@@ -414,3 +413,8 @@ export const collectEvents =
 
 export const now = flow(S.now, fromStream)
 export const at = flow(S.at, fromStream)
+
+export const scan =
+  <A, B>(f: (acc: A, value: B) => A, seed: A) =>
+  <E>(rs: ReaderStream<E, B>): ReaderStream<E, A> =>
+    pipe(rs, withStream(S.scan(f, seed)))

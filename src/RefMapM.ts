@@ -11,20 +11,20 @@ import { Predicate } from 'fp-ts/Predicate'
 import * as RM from 'fp-ts/ReadonlyMap'
 import { Refinement } from 'fp-ts/Refinement'
 
-export interface RefMap<E, K, V> extends Ref.Wrapped<E, ReadonlyMap<K, V>> {
+export interface RefMapM<E, K, V> extends Ref.Wrapped<E, Map<K, V>> {
   readonly keyEq: Eq<K>
   readonly valueEq: Eq<V>
 }
 
-export type RefMapOptions<K, V> = Ref.RefOptions<ReadonlyMap<K, V>> & {
+export type RefMapOptions<K, V> = Ref.RefOptions<Map<K, V>> & {
   readonly keyEq?: Eq<K>
   readonly valueEq?: Eq<V>
 }
 
 export const make = <E, K, V>(
-  initial: E.Env<E, ReadonlyMap<K, V>>,
+  initial: E.Env<E, Map<K, V>>,
   options: RefMapOptions<K, V> = {},
-): RefMap<E, K, V> => {
+): RefMapM<E, K, V> => {
   const {
     id,
     keyEq = deepEqualsEq,
@@ -47,9 +47,8 @@ export const kv = <K, V>(keyEq: Eq<K> = deepEqualsEq, valueEq: Eq<V> = deepEqual
     { keyEq, valueEq },
   )
 
-export const getOrCreate = <E1, K, V>(M: RefMap<E1, K, V>) => {
+export const getOrCreate = <E1, K, V>(M: RefMapM<E1, K, V>) => {
   const find = RM.lookup(M.keyEq)
-  const upsert = RM.upsertAt(M.keyEq)
 
   return <E2>(k: K, orCreate: E.Env<E2, V>) =>
     pipe(
@@ -63,7 +62,7 @@ export const getOrCreate = <E1, K, V>(M: RefMap<E1, K, V>) => {
             () =>
               pipe(
                 orCreate,
-                E.chainFirstW((a) => pipe(map, upsert(k, a), M.set)),
+                E.map((a) => (map.set(k, a), a)),
               ),
             E.of,
           ),
@@ -72,64 +71,54 @@ export const getOrCreate = <E1, K, V>(M: RefMap<E1, K, V>) => {
     )
 }
 
-export const upsertAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
-  const upsert = RM.upsertAt(M.keyEq)
-
-  return (k: K, v: V) => M.update(flow(upsert(k, v), E.of))
+export const upsertAt = <E1, K, V>(M: RefMapM<E1, K, V>) => {
+  return (k: K, v: V) => M.update(flow(upsertAt_(k, v), E.of))
 }
 
-export const lookup = <E1, K, V>(M: RefMap<E1, K, V>) => {
+export const lookup = <E1, K, V>(M: RefMapM<E1, K, V>) => {
   const find = RM.lookup(M.keyEq)
 
   return (k: K) => pipe(M.get, E.map(find(k)))
 }
 
-export const deleteAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
-  const del = RM.deleteAt(M.keyEq)
+export const deleteAt = <E1, K, V>(M: RefMapM<E1, K, V>) => {
+  const del = deleteAt_(M.keyEq)
 
-  return (k: K) =>
-    M.update((current) =>
-      pipe(
-        current,
-        del(k),
-        O.matchW(() => current, identity),
-        E.of,
-      ),
-    )
+  return (k: K) => M.update((current) => pipe(current, del(k), E.of))
 }
 
-export const elem = <E1, K, V>(M: RefMap<E1, K, V>) => {
+export const elem = <E1, K, V>(M: RefMapM<E1, K, V>) => {
   const find = RM.elem(M.valueEq)
 
   return (v: V) => pipe(M.get, E.map(find(v)))
 }
 
-export const filter = <E1, K, V>(M: RefMap<E1, K, V>) => {
-  function filterM<V2 extends V>(r: Refinement<V, V2>): E.Env<E1 & Ref.Refs, ReadonlyMap<K, V>>
-  function filterM(r: Predicate<V>): E.Env<E1 & Ref.Refs, ReadonlyMap<K, V>>
-  function filterM(r: Predicate<V>): E.Env<E1 & Ref.Refs, ReadonlyMap<K, V>> {
-    return pipe(M.get, E.map(RM.filter(r)), E.chainW(M.set))
+export const filter = <E1, K, V>(M: RefMapM<E1, K, V>) => {
+  function filterM<V2 extends V>(r: Refinement<V, V2>): E.Env<E1 & Ref.Refs, Map<K, V>>
+  function filterM(r: Predicate<V>): E.Env<E1 & Ref.Refs, Map<K, V>>
+  function filterM(r: Predicate<V>): E.Env<E1 & Ref.Refs, Map<K, V>> {
+    return pipe(M.get, E.map(filter_(r)))
   }
 
   return filterM
 }
 
-export const insertAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
-  const insert = RM.insertAt(M.keyEq)
+export const insertAt = <E1, K, V>(M: RefMapM<E1, K, V>) => {
+  const insert = insert_(M.keyEq)
 
   return (k: K, v: V) =>
     M.update((m) =>
       pipe(
         m,
         insert(k, v),
-        O.getOrElse(() => m),
+        O.matchW(() => m, identity),
         E.of,
       ),
     )
 }
 
-export const modifyAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
-  const modify = RM.modifyAt(M.keyEq)
+export const modifyAt = <E1, K, V>(M: RefMapM<E1, K, V>) => {
+  const modify = modify_(M.keyEq)
 
   return (k: K, v: Endomorphism<V>) =>
     M.update((m) =>
@@ -142,53 +131,45 @@ export const modifyAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
     )
 }
 
-export const updateAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
-  const update = RM.updateAt(M.keyEq)
+export const updateAt = <E1, K, V>(M: RefMapM<E1, K, V>) => {
+  const f = modifyAt(M)
 
-  return (k: K, v: V) =>
-    M.update((m) =>
-      pipe(
-        m,
-        update(k, v),
-        O.getOrElse(() => m),
-        E.of,
-      ),
-    )
+  return (k: K, v: V) => f(k, () => v)
 }
 
 export const keys =
   <K>(O: Ord<K>) =>
-  <E, V>(M: RefMap<E, K, V>) =>
+  <E, V>(M: RefMapM<E, K, V>) =>
     pipe(M.get, E.map(RM.keys(O)))
 
-export const size = <E, K, V>(M: RefMap<E, K, V>) => pipe(M.get, E.map(RM.size))
+export const size = <E, K, V>(M: RefMapM<E, K, V>) => pipe(M.get, E.map(RM.size))
 
 export const toReadonlyArray =
   <K>(O: Ord<K>) =>
-  <E, V>(M: RefMap<E, K, V>) =>
+  <E, V>(M: RefMapM<E, K, V>) =>
     pipe(M.get, E.map(RM.toReadonlyArray(O)))
 
 export const values =
   <V>(O: Ord<V>) =>
-  <E, K>(M: RefMap<E, K, V>) =>
+  <E, K>(M: RefMapM<E, K, V>) =>
     pipe(M.get, E.map(RM.values(O)))
 
-export interface Wrapped<E, K, V> extends RefMap<E, K, V> {
+export interface Wrapped<E, K, V> extends RefMapM<E, K, V> {
   readonly getOrCreate: <E2>(k: K, orCreate: E.Env<E2, V>) => E.Env<E & Ref.Set & E2 & Ref.Get, V>
-  readonly upsertAt: (k: K, v: V) => E.Env<E & Ref.Get & Ref.Set, ReadonlyMap<K, V>>
+  readonly upsertAt: (k: K, v: V) => E.Env<E & Ref.Get & Ref.Set, Map<K, V>>
   readonly lookup: (k: K) => E.Env<E & Ref.Get, O.Option<V>>
   readonly elem: (v: V) => E.Env<E & Ref.Get, boolean>
   readonly filter: {
-    <V2 extends V>(r: Refinement<V, V2>): E.Env<E & Ref.Refs, ReadonlyMap<K, V>>
-    (r: Predicate<V>): E.Env<E & Ref.Refs, ReadonlyMap<K, V>>
+    <V2 extends V>(r: Refinement<V, V2>): E.Env<E & Ref.Refs, Map<K, V>>
+    (r: Predicate<V>): E.Env<E & Ref.Refs, Map<K, V>>
   }
-  readonly insertAt: (k: K, v: V) => E.Env<E & Ref.Get & Ref.Set, ReadonlyMap<K, V>>
-  readonly updateAt: (k: K, v: V) => E.Env<E & Ref.Get & Ref.Set, ReadonlyMap<K, V>>
-  readonly modifyAt: (k: K, v: Endomorphism<V>) => E.Env<E & Ref.Get & Ref.Set, ReadonlyMap<K, V>>
-  readonly deleteAt: (k: K) => E.Env<E & Ref.Get & Ref.Set, ReadonlyMap<K, V>>
+  readonly insertAt: (k: K, v: V) => E.Env<E & Ref.Get & Ref.Set, Map<K, V>>
+  readonly updateAt: (k: K, v: V) => E.Env<E & Ref.Get & Ref.Set, Map<K, V>>
+  readonly modifyAt: (k: K, v: Endomorphism<V>) => E.Env<E & Ref.Get & Ref.Set, Map<K, V>>
+  readonly deleteAt: (k: K) => E.Env<E & Ref.Get & Ref.Set, Map<K, V>>
 }
 
-export function wrap<E, K, V>(M: RefMap<E, K, V>): Wrapped<E, K, V> {
+export function wrap<E, K, V>(M: RefMapM<E, K, V>): Wrapped<E, K, V> {
   return {
     ...M,
     getOrCreate: getOrCreate(M),
@@ -254,7 +235,7 @@ export const provideAll: <E>(
 export const useAll: <E>(provided: E) => <K, V>(ref: Wrapped<E, K, V>) => Wrapped<unknown, K, V> =
   useSome
 
-export const WrappedURI = '@typed/fp/RefMap'
+export const WrappedURI = '@typed/fp/RefMapM'
 export type WrappedURI = typeof WrappedURI
 
 declare module 'fp-ts/HKT' {
@@ -290,4 +271,63 @@ export const Provide: P.Provide3<WrappedURI> = {
   useAll,
   provideSome,
   provideAll,
+}
+
+// Internal helpers
+
+const upsertAt_ =
+  <K, V>(k: K, v: V) =>
+  (map: Map<K, V>): Map<K, V> => {
+    map.set(k, v)
+
+    return map
+  }
+
+const deleteAt_ =
+  <K>(Eq: Eq<K>) =>
+  <V>(k: K) =>
+  (map: Map<K, V>): Map<K, V> => {
+    for (const key of map.keys()) {
+      if (Eq.equals(key)(k)) {
+        map.delete(key)
+      }
+    }
+
+    return map
+  }
+
+const filter_ =
+  <V>(predicate: Predicate<V>) =>
+  <K>(map: Map<K, V>): Map<K, V> => {
+    for (const [key, value] of map) {
+      if (!predicate(value)) {
+        map.delete(key)
+      }
+    }
+
+    return map
+  }
+
+const insert_ = <K>(Eq: Eq<K>) => {
+  const find = RM.lookup(Eq)
+
+  return <V>(k: K, v: V) =>
+    (map: Map<K, V>): O.Option<Map<K, V>> =>
+      pipe(
+        map,
+        find(k),
+        O.map(() => map.set(k, v)),
+      )
+}
+
+const modify_ = <K>(Eq: Eq<K>) => {
+  const find = RM.lookup(Eq)
+
+  return <V>(k: K, f: Endomorphism<V>) =>
+    (map: Map<K, V>): O.Option<Map<K, V>> =>
+      pipe(
+        map,
+        find(k),
+        O.map((v) => map.set(k, f(v))),
+      )
 }

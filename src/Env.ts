@@ -357,3 +357,13 @@ export const op =
 
     return operation
   }
+
+export const toResumeK = <Args extends readonly any[], E, A>(envK: (...args: Args) => Env<E, A>) =>
+  FN.pipe(
+    ask<E>(),
+    map(
+      (e) =>
+        (...args: Args) =>
+          FN.pipe(e, envK(...args)),
+    ),
+  )

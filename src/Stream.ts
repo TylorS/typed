@@ -1,5 +1,7 @@
 import { disposeBoth, settable } from '@fp/Disposable'
+import { deepEqualsEq } from '@fp/Eq'
 import * as FRe from '@fp/FromResume'
+import { Arity1 } from '@fp/function'
 import * as R from '@fp/Resume'
 import * as M from '@most/core'
 import { disposeAll, disposeNone } from '@most/disposable'
@@ -28,9 +30,6 @@ import * as RA from 'fp-ts/ReadonlyArray'
 import { lookup } from 'fp-ts/ReadonlyMap'
 import { Separated } from 'fp-ts/Separated'
 import { Task } from 'fp-ts/Task'
-
-import { deepEqualsEq } from './Eq'
-import { Arity1 } from './function'
 
 export type Stream<A> = types.Stream<A>
 
@@ -431,9 +430,9 @@ class MergeMapWhenSink<V, A> implements types.Sink<ReadonlyArray<V>> {
     this.disposable = this.emitIfReady()
   }
 
-  error = (t: types.Time, x: Error) => {
+  error = (t: types.Time, error: Error) => {
     this.dispose()
-    this.sink.error(t, x)
+    this.sink.error(t, error)
   }
 
   end = (t: types.Time) => {

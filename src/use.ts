@@ -1,15 +1,16 @@
+import { settable } from '@fp/Disposable'
 import * as E from '@fp/Env'
 import { deepEqualsEq, Eq } from '@fp/Eq'
 import { pipe } from '@fp/function'
+import { useRef } from '@fp/hooks'
 import * as O from '@fp/Option'
+import * as Ref from '@fp/Ref'
+import * as RefDisposable from '@fp/RefDisposable'
+import * as R from '@fp/Resume'
+import { delay, SchedulerEnv } from '@fp/Scheduler'
+import { Disposable } from '@fp/Stream'
 import { disposeBoth, disposeNone } from '@most/disposable'
 import { not } from 'fp-ts/Predicate'
-
-import { useRef } from './hooks'
-import * as Ref from './Ref'
-import * as RefDisposable from './RefDisposable'
-import { exec } from './Resume'
-import { delay, SchedulerEnv } from './Scheduler'
 
 /**
  * @typed/fp/use is a collection of functions built atop of useRef + hooks. Anytime they
@@ -90,7 +91,7 @@ export const useEffect = <E, A, B>(
                   delay(0),
                   E.chainW(() => effect),
                 ),
-                exec,
+                R.exec,
               )
             }),
             E.chainW((next) =>
@@ -106,3 +107,34 @@ export const useEffect = <E, A, B>(
     ),
     E.chainW(({ ref }) => ref.get),
   )
+
+/**
+ * Converts an Env-returning function into a Disposable returning function
+ * by supplying the surrounding environment and tracking the Disposable using
+ * RefDisposable. This can be useful when converting workflows into something that
+ * can be called in an event handler.
+ */
+export function useOp<A extends ReadonlyArray<any>, E1, B, E2>(
+  f: (...args: A) => E.Env<E1, B>,
+  onValue: (value: B) => E.Env<E2, any> = E.of,
+): E.Env<E1 & E2 & Ref.Refs, (...args: A) => Disposable> {
+  return pipe(
+    E.Do,
+    E.bindW('refDisposable', () => RefDisposable.get),
+    E.apSW('resumeF', E.toResumeK(f)),
+    E.apSW('resumeV', E.toResumeK(onValue)),
+    E.map(({ resumeF, resumeV, refDisposable }) => (...args: A) => {
+      const d2Lazy = settable()
+      const d1 = pipe(
+        resumeF(...args),
+        R.chain(resumeV),
+        R.start(() => d2Lazy.dispose()),
+      )
+      const d2 = refDisposable.addDisposable(d1)
+
+      d2Lazy.addDisposable(d2)
+
+      return disposeBoth(d1, d2Lazy)
+    }),
+  )
+}

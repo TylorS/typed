@@ -1,15 +1,14 @@
 import * as E from '@fp/Env'
 import { pipe } from '@fp/function'
+import { mergeMapWithHooks, useRef, withHooks } from '@fp/hooks'
 import * as RS from '@fp/ReaderStream'
+import * as Ref from '@fp/Ref'
+import * as RefDisposable from '@fp/RefDisposable'
+import { exec } from '@fp/Resume'
 import * as S from '@fp/Stream'
 import * as Sc from '@most/scheduler'
 import { deepStrictEqual } from 'assert'
 import { Eq } from 'fp-ts/number'
-
-import { mergeMapWithHooks, useRef, withHooks } from './hooks'
-import * as Ref from './Ref'
-import * as RefDisposable from './RefDisposable'
-import { exec } from './Resume'
 
 export const test = describe(`hooks`, () => {
   describe(withHooks.name, () => {

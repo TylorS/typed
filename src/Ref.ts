@@ -1,11 +1,11 @@
+import * as A from '@fp/Adapter'
 import * as E from '@fp/Env'
 import { deepEqualsEq } from '@fp/Eq'
 import * as O from '@fp/Option'
+import * as P from '@fp/Provide'
 import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
 import { fst, snd } from 'fp-ts/Tuple2'
-
-import * as A from './Adapter'
 
 export interface Ref<E, A> extends Eq<A> {
   readonly id: PropertyKey
@@ -100,21 +100,6 @@ export function wrap<E, A>(ref: Ref<E, A>): Wrapped<E, A> {
   } as const
 }
 
-export const WrappedURI = '@typed/fp/Wrapped'
-export type WrappedURI = typeof WrappedURI
-
-declare module 'fp-ts/HKT' {
-  export interface URItoKind2<E, A> {
-    [WrappedURI]: Wrapped<E, A>
-  }
-}
-
-declare module '@fp/Hkt' {
-  export interface UriToVariance {
-    [WrappedURI]: V<E, Contravariant>
-  }
-}
-
 export const provideSome =
   <E1>(provided: E1) =>
   <E2, A>(ref: Wrapped<E1 & E2, A>): Wrapped<E2, A> => {
@@ -130,20 +115,8 @@ export const provideSome =
     }
   }
 
-export const provideAll =
-  <E>(provided: E) =>
-  <A>(ref: Wrapped<E, A>): Wrapped<unknown, A> => {
-    return {
-      id: ref.id,
-      equals: ref.equals,
-      initial: pipe(ref.initial, E.provideAll(provided)),
-      get: pipe(ref.get, E.provideSome(provided)),
-      has: pipe(ref.has, E.provideSome(provided)),
-      set: flow(ref.set, E.provideSome(provided)),
-      update: flow(ref.update, E.provideSome(provided)),
-      remove: pipe(ref.remove, E.provideSome(provided)),
-    }
-  }
+export const provideAll: <E>(provided: E) => <A>(ref: Wrapped<E, A>) => Wrapped<unknown, A> =
+  provideSome
 
 export const useSome =
   <E1>(provided: E1) =>
@@ -160,20 +133,45 @@ export const useSome =
     }
   }
 
-export const useAll =
-  <E1>(provided: E1) =>
-  <A>(ref: Wrapped<E1, A>): Wrapped<unknown, A> => {
-    return {
-      id: ref.id,
-      equals: ref.equals,
-      initial: pipe(ref.initial, E.useAll(provided)),
-      get: pipe(ref.get, E.useSome(provided)),
-      has: pipe(ref.has, E.useSome(provided)),
-      set: flow(ref.set, E.useSome(provided)),
-      update: flow(ref.update, E.useSome(provided)),
-      remove: pipe(ref.remove, E.useSome(provided)),
-    }
+export const useAll: <E1>(provided: E1) => <A>(ref: Wrapped<E1, A>) => Wrapped<unknown, A> = useSome
+
+export const WrappedURI = '@typed/fp/Ref'
+export type WrappedURI = typeof WrappedURI
+
+declare module 'fp-ts/HKT' {
+  export interface URItoKind2<E, A> {
+    [WrappedURI]: Wrapped<E, A>
   }
+}
+
+declare module '@fp/Hkt' {
+  export interface UriToVariance {
+    [WrappedURI]: V<E, Contravariant>
+  }
+}
+
+export const UseSome: P.UseSome2<WrappedURI> = {
+  useSome,
+}
+
+export const UseAll: P.UseAll2<WrappedURI> = {
+  useAll,
+}
+
+export const ProvideSome: P.ProvideSome2<WrappedURI> = {
+  provideSome,
+}
+
+export const ProvideAll: P.ProvideAll2<WrappedURI> = {
+  provideAll,
+}
+
+export const Provide: P.Provide2<WrappedURI> = {
+  useSome,
+  useAll,
+  provideSome,
+  provideAll,
+}
 
 export const create = flow(make, wrap)
 
