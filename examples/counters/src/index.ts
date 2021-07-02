@@ -11,8 +11,8 @@ import { range } from 'fp-ts/ReadonlyNonEmptyArray'
 import { html, render, Renderable } from 'uhtml'
 
 /**
- * This is an example of using hooks to create a homogenous list of
- * isolated Ref.Refs environments
+ * This is an example of using hooks to render a dynamically-sized
+ * set of Counters with their own internal state separate from any other Counters.
  */
 
 const rootElement: HTMLElement | null = document.getElementById('app')
