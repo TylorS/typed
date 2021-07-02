@@ -198,6 +198,10 @@
       "require": "./cjs/RefMap.js",
       "import": "./esm/RefMap.js"
     },
+    "./RefMapM": {
+      "require": "./cjs/RefMapM.js",
+      "import": "./esm/RefMapM.js"
+    },
     "./Resume": {
       "require": "./cjs/Resume.js",
       "import": "./esm/Resume.js"
