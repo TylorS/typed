@@ -345,7 +345,7 @@ export const combine =
 
 export const combineAll =
   <A extends readonly ReaderStream<any, any>[]>(
-    rss: A,
+    ...rss: A
   ): ReaderStream<
     Intersect<{ readonly [K in keyof A]: RequirementsOf<A[K]> }>,
     { readonly [K in keyof A]: ValueOf<A[K]> }
