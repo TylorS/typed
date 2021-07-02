@@ -13,8 +13,10 @@ import * as App from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
 import * as Ch from 'fp-ts/Chain'
 import { ChainRec2 } from 'fp-ts/ChainRec'
+import { Compactable2 } from 'fp-ts/Compactable'
 import { Either, isLeft, isRight } from 'fp-ts/Either'
 import { Eq } from 'fp-ts/Eq'
+import * as Filterable_ from 'fp-ts/Filterable'
 import * as FIO from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
 import * as FT from 'fp-ts/FromTask'
@@ -586,3 +588,15 @@ export const until =
     pipe(e, values, S.until<A>(timeWindow(e)))
 
 export const zero = flow(S.zero, fromStream)
+
+export const Filterable: Filterable_.Filterable2<URI> = {
+  partitionMap,
+  partition,
+  filterMap,
+  filter,
+}
+
+export const Compactable: Compactable2<URI> = {
+  compact,
+  separate,
+}
