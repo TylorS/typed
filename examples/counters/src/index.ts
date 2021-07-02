@@ -57,7 +57,7 @@ const Header = F.pipe(`Number Of Counters`, Counter, H.withHooks)
 // based on the current count
 const Counters = F.pipe(
   Count.get,
-  E.map((count) => range(0, count)),
+  E.map((count) => (count === 0 ? [] : range(1, count))),
   H.withHooks,
   H.mergeMapWithHooks(N.Eq)(F.flow(String, Counter)),
 )
