@@ -65,12 +65,12 @@ export const test = describe(`hooks`, () => {
         pipe(
           E.Do,
           E.bindW('ref', () => useRef(E.of(x), Eq)),
-          E.bindW('increment', ({ ref }) => E.askAndUse(ref.set(x + 1))),
+          E.bindW('increment', ({ ref }) => E.toResume(ref.set(x + 1))),
           E.chainFirstW(({ increment }) =>
             x === 3
               ? RefDisposable.add(
                   Sc.asap(
-                    S.createCallbackTask(() => pipe({}, increment, exec)),
+                    S.createCallbackTask(() => pipe(increment, exec)),
                     scheduler,
                   ),
                 )
