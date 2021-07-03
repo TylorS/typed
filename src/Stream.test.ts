@@ -7,7 +7,7 @@ import { newDefaultScheduler } from '@most/scheduler'
 import { deepStrictEqual } from 'assert'
 
 export const test = describe(`Stream`, () => {
-  describe(`fromResume`, () => {
+  describe(S.fromResume.name, () => {
     describe(`given a Resume<A>`, () => {
       it(`returns a Stream<A> of that value`, async () => {
         const value = 1
