@@ -60,17 +60,18 @@ export const test = describe(`hooks`, () => {
 
   describe(mergeMapWithHooks.name, () => {
     it(`converts this to a Stream`, async () => {
+      const period = 10
       const scheduler = Sc.newDefaultScheduler()
       const Component = (x: number) =>
         pipe(
           E.Do,
           E.bindW('ref', () => useRef(E.of(x), Eq)),
-          E.bindW('increment', ({ ref }) => E.toResume(ref.set(x + 1))),
+          E.bindW('increment', ({ ref }) => E.askAndUse(ref.set(x + 1))),
           E.chainFirstW(({ increment }) =>
             x === 3
               ? RefDisposable.add(
                   Sc.asap(
-                    S.createCallbackTask(() => pipe(increment, exec)),
+                    S.createCallbackTask(() => pipe({}, increment, exec)),
                     scheduler,
                   ),
                 )
@@ -81,21 +82,27 @@ export const test = describe(`hooks`, () => {
 
       const mergeN = mergeMapWithHooks(Eq)
 
+      const expected = [
+        [1, 2, 3],
+        [1, 2, 4],
+        [2, 4, 1],
+        [4, 2],
+      ]
+
       const program = pipe(
-        RS.mergeArray([RS.now([1, 2, 3]), RS.at(10, [2, 3, 1]), RS.at(20, [3, 2])] as const),
+        RS.mergeArray([
+          RS.now([1, 2, 3]),
+          RS.at(period * 2, [2, 3, 1]),
+          RS.at(period * 3, [3, 2]),
+        ] as const),
         mergeN(Component),
-        RS.take(4),
+        RS.take(expected.length),
         RS.collectEvents(scheduler),
       )
 
       const values = await program(Ref.refs())
 
-      deepStrictEqual(values, [
-        [1, 2, 3],
-        [1, 2, 4],
-        [2, 4, 1],
-        [4, 2],
-      ])
+      deepStrictEqual(values, expected)
     })
   })
 })

@@ -254,8 +254,8 @@ export function filter<A>(predicate: Predicate<A>) {
       pipe(r, rs, S.filter(predicate))
 }
 
-export function merge<E, A>(a: ReaderStream<E, A>) {
-  return (b: ReaderStream<E, A>): ReaderStream<E, A> =>
+export function merge<E1, A>(a: ReaderStream<E1, A>) {
+  return <E2, B>(b: ReaderStream<E2, B>): ReaderStream<E1 & E2, A | B> =>
     (r) =>
       pipe(a(r), S.merge(b(r)))
 }
@@ -375,7 +375,10 @@ export const mergeMapWhen =
   (e) =>
     withStream(S.mergeMapWhen(Eq)((v) => f(v)(e)))(rs)(e)
 
-export const tap = <A>(f: (value: A) => any) => withStream(S.tap(f))
+export const tap =
+  <A>(f: (value: A) => any) =>
+  <E>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
+    pipe(rs, withStream(S.tap(f)))
 
 export const take: (n: number) => <E, A>(rs: ReaderStream<E, A>) => ReaderStream<E, A> = flow(
   S.take,

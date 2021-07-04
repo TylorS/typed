@@ -30,19 +30,10 @@ const HookRefs = RefMap.create(
   },
 )
 
-const HookRefMaps = RefMap.create(
+const HookRefMaps = RefMapM.create(
   E.fromIO(() => new Map<number, RefMap.Wrapped<any, any, any>>()),
   {
     id: Symbol('HookRefMaps'),
-    keyEq: N.Eq,
-    eq: alwaysEqualsEq,
-  },
-)
-
-const HookRefMapMs = RefMap.create(
-  E.fromIO(() => new Map<number, RefMapM.Wrapped<any, any, any>>()),
-  {
-    id: Symbol('HookRefMapMs'),
     keyEq: N.Eq,
     eq: alwaysEqualsEq,
   },
@@ -82,20 +73,6 @@ export const useRefMap = <E, K, V>(
     ),
   )
 
-export const useRefMapM = <E, K, V>(
-  initial: E.Env<E, Map<K, V>>,
-  options: Omit<RefMap.RefMapOptions<K, V>, 'id'> = {},
-): E.Env<Ref.Refs, RefMapM.Wrapped<E, K, V>> =>
-  pipe(
-    getHookIndex,
-    E.chainW((index) =>
-      HookRefMapMs.getOrCreate(
-        index,
-        createHookRefMapM(initial, { ...options, id: Symbol(index) }),
-      ),
-    ),
-  )
-
 const getRefsStrict = E.asks(
   ({ getRef, hasRef, setRef, removeRef, refEvents }: Ref.Refs): Ref.Refs => ({
     getRef,
@@ -125,15 +102,6 @@ const createHookRefMap = <E, K, V>(
     E.map((refs) => pipe(RefMap.create(initial, options), RefMap.useSome(refs))),
   )
 
-const createHookRefMapM = <E, K, V>(
-  initial: E.Env<E, Map<K, V>>,
-  options: RefMap.RefMapOptions<K, V>,
-): E.Env<Ref.Refs, RefMapM.Wrapped<E, K, V>> =>
-  pipe(
-    getRefsStrict,
-    E.map((refs) => pipe(RefMapM.create(initial, options), RefMapM.useSome(refs))),
-  )
-
 const notIsCreated = not(
   (x: Ref.Event<any, any>): x is Ref.Created<any, any> => x._tag == 'Created',
 )
@@ -145,7 +113,10 @@ const notIsCreated = not(
 export const withHooks = <E, A>(main: E.Env<E, A>): RS.ReaderStream<E & Ref.Refs, A> =>
   pipe(
     E.Do,
-    E.apSW('refEvents', Ref.getRefEvents),
+    E.apSW(
+      'refEvents',
+      E.asks((e: Ref.Events) => e.refEvents[1]),
+    ),
     E.apSW('refDisposable', RefDisposable.get),
     RS.fromEnv,
     RS.chainW(({ refEvents, refDisposable }) =>

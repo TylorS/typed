@@ -3,6 +3,7 @@ import * as E from '@fp/Env'
 import { deepEqualsEq } from '@fp/Eq'
 import * as O from '@fp/Option'
 import * as P from '@fp/Provide'
+import * as RS from '@fp/ReaderStream'
 import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
 import { fst, snd } from 'fp-ts/Tuple2'
@@ -75,7 +76,14 @@ export const getSendEvent = pipe(getAdapter, E.map(fst))
 
 export const sendEvent = <E, A>(event: Event<E, A>) => pipe(getSendEvent, E.apW(E.of(event)))
 
-export const getRefEvents = pipe(getAdapter, E.map(snd))
+export const getRefEvents: RS.ReaderStream<Events, Event<any, any>> = (e: Events) =>
+  snd(e.refEvents)
+
+export const listenTo = <E, A>(ref: Ref<E, A>): RS.ReaderStream<Events, Event<E, A>> =>
+  pipe(
+    getRefEvents,
+    RS.filter((x) => x.ref.id === ref.id),
+  )
 
 export type Refs = Get & Has & Set & Remove & Events
 
@@ -85,6 +93,7 @@ export interface Wrapped<E, A> extends Ref<E, A> {
   readonly set: (value: A) => E.Env<E & Set, A>
   readonly update: <E2>(f: (value: A) => E.Env<E2, A>) => E.Env<E & Get & E2 & Set, A>
   readonly remove: E.Env<E & Remove, O.Option<A>>
+  readonly listen: RS.ReaderStream<Events, Event<E, A>>
 }
 
 export function wrap<E, A>(ref: Ref<E, A>): Wrapped<E, A> {
@@ -97,6 +106,7 @@ export function wrap<E, A>(ref: Ref<E, A>): Wrapped<E, A> {
     set: set(ref),
     update: update(ref),
     remove: remove(ref),
+    listen: listenTo(ref),
   } as const
 }
 
@@ -112,6 +122,7 @@ export const provideSome =
       set: flow(ref.set, E.provideSome(provided)),
       update: flow(ref.update, E.provideSome(provided)),
       remove: pipe(ref.remove, E.provideSome(provided)),
+      listen: pipe(ref.listen, RS.provideSome(provided)),
     }
   }
 
@@ -130,6 +141,7 @@ export const useSome =
       set: flow(ref.set, E.useSome(provided)),
       update: flow(ref.update, E.useSome(provided)),
       remove: pipe(ref.remove, E.useSome(provided)),
+      listen: pipe(ref.listen, RS.useSome(provided)),
     }
   }
 
@@ -185,6 +197,9 @@ export interface Created<E, A> {
   readonly value: A
 }
 
+export const isCreated = <E, A>(event: Event<E, A>): event is Created<E, A> =>
+  event._tag === 'Created'
+
 export interface Updated<E, A> {
   readonly _tag: 'Updated'
   readonly ref: Ref<E, A>
@@ -192,10 +207,40 @@ export interface Updated<E, A> {
   readonly value: A
 }
 
+export const isUpdated = <E, A>(event: Event<E, A>): event is Updated<E, A> =>
+  event._tag === 'Updated'
+
 export interface Removed<E, A> {
   readonly _tag: 'Removed'
   readonly ref: Ref<E, A>
 }
+
+export const isRemoved = <E, A>(event: Event<E, A>): event is Removed<E, A> =>
+  event._tag === 'Removed'
+
+export const matchW =
+  <A, B, C, D, E>(
+    onCreated: (value: A, ref: Ref<B, A>) => C,
+    onUpdated: (previousValue: A, value: A, ref: Ref<B, A>) => D,
+    onDeleted: (ref: Ref<B, A>) => E,
+  ) =>
+  (event: Event<B, A>): C | D | E => {
+    if (event._tag === 'Updated') {
+      return onUpdated(event.previousValue, event.value, event.ref)
+    }
+
+    if (event._tag === 'Created') {
+      return onCreated(event.value, event.ref)
+    }
+
+    return onDeleted(event.ref)
+  }
+
+export const match: <A, B, C>(
+  onCreated: (value: A, ref: Ref<B, A>) => C,
+  onUpdated: (previousValue: A, value: A, ref: Ref<B, A>) => C,
+  onDeleted: (ref: Ref<B, A>) => C,
+) => (event: Event<B, A>) => C = matchW
 
 export function refs(options: RefsOptions = {}): Refs {
   const { initial = [], refEvents = A.create() } = options
