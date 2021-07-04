@@ -130,6 +130,33 @@ export const apTW = apT as <E1, B>(
 ) => ReaderStream<E1 & E2, readonly [...A, B]>
 export const getApplySemigroup = Ap.getApplySemigroup(Apply)
 
+export const apSEnv: <N extends string, A, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: Env<E, B>,
+) => (
+  fa: ReaderStream<E, A>,
+) => ReaderStream<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = (name, fb) =>
+  apS(name, pipe(fb, fromEnv))
+
+export const apSEnvW = apSEnv as <N extends string, A, E1, B>(
+  name: Exclude<N, keyof A>,
+  fb: Env<E1, B>,
+) => <E2>(
+  fa: ReaderStream<E2, A>,
+) => ReaderStream<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+
+export const apTEnvW: <E1, B>(
+  fb: Env<E1, B>,
+) => <E2, A extends readonly unknown[]>(
+  fas: ReaderStream<E2, A>,
+) => ReaderStream<E1 & E2, readonly [...A, B]> = (fb) => pipe(fb, fromEnv, apTW)
+
+export const apTEnv: <E, B>(
+  fb: Env<E, B>,
+) => <A extends readonly unknown[]>(
+  fas: ReaderStream<E, A>,
+) => ReaderStream<E, readonly [...A, B]> = apTEnvW
+
 export const Applicative: App.Applicative2<URI> = {
   ...Apply,
   ...Pointed,
@@ -153,6 +180,24 @@ export const bindW = bind as <N extends string, A, E1, B>(
 ) => <E2>(
   ma: ReaderStream<E2, A>,
 ) => ReaderStream<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+
+export const bindEnv: <N extends string, A, E, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => Env<E, B>,
+) => (
+  ma: ReaderStream<E, A>,
+) => ReaderStream<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = (name, f) =>
+  bind(name, flow(f, fromEnv))
+
+export const bindEnvW: <N extends string, A, E1, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => Env<E1, B>,
+) => <E2>(
+  ma: ReaderStream<E2, A>,
+) => ReaderStream<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = (
+  name,
+  f,
+) => bindW(name, flow(f, fromEnv))
 
 export const Monad: Monad2<URI> = {
   ...Chain,
