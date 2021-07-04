@@ -273,11 +273,6 @@ export const useSomeWith = P.useSomeWith({ ...UseSome, ...Chain })
 export const askAndUse = P.askAndUse({ ...UseAll, ...Chain, ...FromReader })
 export const askAndProvide = P.askAndProvide({ ...ProvideAll, ...Chain, ...FromReader })
 
-export const toResume = FN.flow(
-  askAndUse,
-  map((e) => e({})),
-)
-
 export const Provide: P.Provide2<URI> = {
   useSome,
   useAll,
