@@ -151,7 +151,7 @@ export function useEnvK<A extends ReadonlyArray<any>, E1, B, E2>(
   )
 }
 
-export function useReaderStream<E, A, B>(
+export function useReaderStream<E, A, B = null>(
   rs: RS.ReaderStream<E, A>,
   dep: B = null as any as B,
   eq: Eq<B> = deepEqualsEq,
@@ -160,4 +160,12 @@ export function useReaderStream<E, A, B>(
     E.ask<E & Ref.Refs & SchedulerEnv>(),
     E.chainW((r) => useDisposable(() => rs(r).run(S.createSink(), r.scheduler), dep, eq)),
   )
+}
+
+export function useStream<A, B = null>(
+  s: S.Stream<A>,
+  dep: B = null as any as B,
+  eq: Eq<B> = deepEqualsEq,
+): E.Env<Ref.Refs & SchedulerEnv, S.Disposable> {
+  return useReaderStream(() => s, dep, eq)
 }
