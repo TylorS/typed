@@ -4,14 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register src/index.ts",
-    "test": "typed-test 'src/**/*.test.ts'"
+    "start": "node -r esbuild-register -r tsconfig-paths/register src/fp-to-the-max.ts"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@typed/test": "^9.5.0",
+    "esbuild-register": "^2.6.0",
     "most-virtual-scheduler": "^1.0.0",
     "ts-node": "^9.1.1",
     "tsconfig-paths": "^3.9.0",

@@ -31,9 +31,9 @@ import * as Task from 'fp-ts/Task'
  */
 export interface Env<R, A> extends Re.Reader<R, R.Resume<A>> {}
 
-export type RequirementsOf<A> = A extends Env<infer R, any>
+export type RequirementsOf<A> = [A] extends [Env<infer R, any>]
   ? R
-  : A extends FN.FunctionN<any, Env<infer R, any>>
+  : [A] extends [FN.FunctionN<any, Env<infer R, any>>]
   ? R
   : never
 
@@ -75,10 +75,18 @@ export const asksIOK: <R, A>(f: (r: R) => IO.IO<A>) => Env<R, A> = RT.fromNatura
 export const asksTaskK: <R, A>(f: (r: R) => Task.Task<A>) => Env<R, A> =
   RT.fromNaturalTransformation<Task.URI, R.URI>(R.fromTask)
 
-export function chainRec<A, E, B>(
-  f: (value: A) => Env<E, E.Either<A, B>>,
-): (value: A) => Env<E, B> {
-  return (value) => (env) => R.chainRec((a: A) => f(a)(env))(value)
+export function chainRec<F extends (value: any) => Env<any, E.Either<any, any>>>(
+  f: F,
+): (
+  value: ArgsOf<F>[0],
+) => Env<
+  RequirementsOf<ReturnType<F>>,
+  [ValueOf<ReturnType<F>>] extends [E.Either<any, infer R>] ? R : never
+> {
+  return (value) => (env) =>
+    R.chainRec((a: [ValueOf<ReturnType<F>>] extends [E.Either<any, infer R>] ? R : never) =>
+      f(a)(env),
+    )(value)
 }
 
 export const URI = '@typed/fp/Env'
@@ -272,6 +280,11 @@ export const useSomeWith = P.useSomeWith({ ...UseSome, ...Chain })
 
 export const askAndUse = P.askAndUse({ ...UseAll, ...Chain, ...FromReader })
 export const askAndProvide = P.askAndProvide({ ...ProvideAll, ...Chain, ...FromReader })
+
+export const toResume = FN.flow(
+  askAndUse,
+  map((e) => e({})),
+)
 
 export const Provide: P.Provide2<URI> = {
   useSome,
