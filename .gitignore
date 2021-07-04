@@ -64,6 +64,7 @@ snowpack.key
 /exports.js
 /exports.js.map
 /Adapter/
+/AsyncData/
 /Branded/
 /Disposable/
 /Env/
@@ -103,7 +104,6 @@ snowpack.key
 /Task/
 /TaskEither/
 /TaskOption/
-/WeakRefMap/
 /function/
 /hooks/
 /number/

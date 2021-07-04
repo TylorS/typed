@@ -98,6 +98,10 @@
       "require": "./cjs/Adapter.js",
       "import": "./esm/Adapter.js"
     },
+    "./AsyncData": {
+      "require": "./cjs/AsyncData.js",
+      "import": "./esm/AsyncData.js"
+    },
     "./Branded": {
       "require": "./cjs/Branded.js",
       "import": "./esm/Branded.js"
@@ -253,10 +257,6 @@
     "./TaskOption": {
       "require": "./cjs/TaskOption.js",
       "import": "./esm/TaskOption.js"
-    },
-    "./WeakRefMap": {
-      "require": "./cjs/WeakRefMap.js",
-      "import": "./esm/WeakRefMap.js"
     },
     "./function": {
       "require": "./cjs/function.js",
