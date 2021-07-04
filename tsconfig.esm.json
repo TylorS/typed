@@ -43,6 +43,7 @@
     "ReaderTask",
     "ReaderTaskEither",
     "Ref",
+    "RefAdapter",
     "RefDisposable",
     "RefMap",
     "RefMapM",
