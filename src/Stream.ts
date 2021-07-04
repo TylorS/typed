@@ -232,6 +232,10 @@ export const FromResume: FRe.FromResume1<URI> = {
 
 export const fromResume = FromResume.fromResume
 
+export const chainFirstResumeK = FRe.chainFirstResumeK(FromResume, Chain)
+export const chainResumeK = FRe.chainResumeK(FromResume, Chain)
+export const fromResumeK = FRe.fromResumeK(FromResume)
+
 export const Alt: Alt_.Alt1<URI> = {
   ...Functor,
   alt: (f) => (fa) => M.take(1, M.merge(fa, f())), // race the 2 streams

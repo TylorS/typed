@@ -39,8 +39,8 @@ const decrement: E.Env<Ref.Refs, number> = Count.update(
 const Counter = (label: string): E.Env<Ref.Refs, Renderable> =>
   F.pipe(
     E.Do,
-    E.bindW('inc', () => U.useOp(() => increment)),
-    E.bindW('dec', () => U.useOp(() => decrement)),
+    E.bindW('inc', () => U.useEnvK(() => increment)),
+    E.bindW('dec', () => U.useEnvK(() => decrement)),
     E.bindW('count', () => Count.get),
     E.map(
       ({ inc, dec, count }) => html`<div>

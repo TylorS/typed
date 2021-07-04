@@ -4,11 +4,12 @@ import { deepEqualsEq, Eq } from '@fp/Eq'
 import { pipe } from '@fp/function'
 import { useRef } from '@fp/hooks'
 import * as O from '@fp/Option'
+import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
 import * as RefDisposable from '@fp/RefDisposable'
 import * as R from '@fp/Resume'
 import { delay, SchedulerEnv } from '@fp/Scheduler'
-import { Disposable } from '@fp/Stream'
+import * as S from '@fp/Stream'
 import { disposeBoth, disposeNone } from '@most/disposable'
 import { not } from 'fp-ts/Predicate'
 
@@ -61,41 +62,22 @@ export const useMemo = <E, A, B = null>(
     E.chainW(({ ref }) => ref.get),
   )
 
-/**
- * Execute an Env using a dependency to track when to run an update. Without
- * providing a dep your effect will only run once. Your effect will be added
- * a delay(0) to ensure it runs in the next event loop.
- */
-export const useEffect = <E, A, B>(
-  effect: E.Env<E, A>,
-  dep: B = null as any as B,
-  eq: Eq<B> = deepEqualsEq,
-) =>
-  pipe(
+export const useDisposable = <A>(
+  f: () => S.Disposable,
+  dep: A = null as any as A,
+  eq: Eq<A> = deepEqualsEq,
+): E.Env<Ref.Refs, S.Disposable> => {
+  return pipe(
     E.Do,
     E.bindW('changed', () => useEq(dep, eq)),
     E.bindW('ref', () => useRef(E.fromIO(disposeNone))),
     E.bindW('current', ({ ref }) => ref.get),
-    E.bindW('refDisposable', () => RefDisposable.get),
-    E.bindW('requirements', () => E.ask<E & SchedulerEnv>()),
-    E.chainFirstW(({ changed, current, ref, requirements }) =>
+    E.chainFirstW(({ changed, current, ref }) =>
       changed
         ? pipe(
-            E.fromIO(() => {
-              current.dispose() // Dispose of the current
-
-              // Execute our effect
-              return pipe(
-                requirements,
-                pipe(
-                  delay(0),
-                  E.chainW(() => effect),
-                ),
-                R.exec,
-              )
-            }),
+            E.fromIO(() => current.dispose()),
+            E.chainW(() => E.fromIO(f)),
             E.chainW((next) =>
-              // Keep track of all the resources
               pipe(
                 RefDisposable.add(next),
                 E.map((d) => disposeBoth(d, next)),
@@ -107,6 +89,36 @@ export const useEffect = <E, A, B>(
     ),
     E.chainW(({ ref }) => ref.get),
   )
+}
+
+/**
+ * Execute an Env using a dependency to track when to run an update. Without
+ * providing a dep your effect will only run once. Your effect will be added
+ * a delay(0) to ensure it runs in the next event loop.
+ */
+export const useEffect = <E, A, B>(
+  effect: E.Env<E, A>,
+  dep: B = null as any as B,
+  eq: Eq<B> = deepEqualsEq,
+) =>
+  pipe(
+    E.ask<E & SchedulerEnv>(),
+    E.chainW((r) =>
+      useDisposable(
+        () =>
+          pipe(
+            r,
+            pipe(
+              delay(0),
+              E.chainW(() => effect),
+            ),
+            R.exec,
+          ),
+        dep,
+        eq,
+      ),
+    ),
+  )
 
 /**
  * Converts an Env-returning function into a Disposable returning function
@@ -114,10 +126,10 @@ export const useEffect = <E, A, B>(
  * RefDisposable. This can be useful when converting workflows into something that
  * can be called in an event handler.
  */
-export function useOp<A extends ReadonlyArray<any>, E1, B, E2>(
+export function useEnvK<A extends ReadonlyArray<any>, E1, B, E2>(
   f: (...args: A) => E.Env<E1, B>,
   onValue: (value: B) => E.Env<E2, any> = E.of,
-): E.Env<E1 & E2 & Ref.Refs, (...args: A) => Disposable> {
+): E.Env<E1 & E2 & Ref.Refs, (...args: A) => S.Disposable> {
   return pipe(
     E.Do,
     E.bindW('refDisposable', () => RefDisposable.get),
@@ -136,5 +148,16 @@ export function useOp<A extends ReadonlyArray<any>, E1, B, E2>(
 
       return disposeBoth(d1, d2Lazy)
     }),
+  )
+}
+
+export function useReaderStream<E, A, B>(
+  rs: RS.ReaderStream<E, A>,
+  dep: B = null as any as B,
+  eq: Eq<B> = deepEqualsEq,
+): E.Env<E & Ref.Refs & SchedulerEnv, S.Disposable> {
+  return pipe(
+    E.ask<E & Ref.Refs & SchedulerEnv>(),
+    E.chainW((r) => useDisposable(() => rs(r).run(S.createSink(), r.scheduler), dep, eq)),
   )
 }

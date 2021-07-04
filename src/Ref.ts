@@ -6,6 +6,7 @@ import * as P from '@fp/Provide'
 import * as RS from '@fp/ReaderStream'
 import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
+import { not } from 'fp-ts/Refinement'
 import { fst, snd } from 'fp-ts/Tuple2'
 
 export interface Ref<E, A> extends Eq<A> {
@@ -85,6 +86,14 @@ export const listenTo = <E, A>(ref: Ref<E, A>): RS.ReaderStream<Events, Event<E,
     RS.filter((x) => x.ref.id === ref.id),
   )
 
+export const listenToValues = <E, A>(ref: Ref<E, A>): RS.ReaderStream<Events, A> =>
+  pipe(
+    getRefEvents,
+    RS.filter((x): x is Event<E, A> => x.ref.id === ref.id),
+    RS.filter(not(isRemoved)),
+    RS.map((e) => e.value),
+  )
+
 export type Refs = Get & Has & Set & Remove & Events
 
 export interface Wrapped<E, A> extends Ref<E, A> {
@@ -94,6 +103,7 @@ export interface Wrapped<E, A> extends Ref<E, A> {
   readonly update: <E2>(f: (value: A) => E.Env<E2, A>) => E.Env<E & Get & E2 & Set, A>
   readonly remove: E.Env<E & Remove, O.Option<A>>
   readonly listen: RS.ReaderStream<Events, Event<E, A>>
+  readonly values: RS.ReaderStream<Events, A>
 }
 
 export function wrap<E, A>(ref: Ref<E, A>): Wrapped<E, A> {
@@ -107,6 +117,7 @@ export function wrap<E, A>(ref: Ref<E, A>): Wrapped<E, A> {
     update: update(ref),
     remove: remove(ref),
     listen: listenTo(ref),
+    values: listenToValues(ref),
   } as const
 }
 
@@ -123,6 +134,7 @@ export const provideSome =
       update: flow(ref.update, E.provideSome(provided)),
       remove: pipe(ref.remove, E.provideSome(provided)),
       listen: pipe(ref.listen, RS.provideSome(provided)),
+      values: pipe(ref.values, RS.provideSome(provided)),
     }
   }
 
@@ -142,6 +154,7 @@ export const useSome =
       update: flow(ref.update, E.useSome(provided)),
       remove: pipe(ref.remove, E.useSome(provided)),
       listen: pipe(ref.listen, RS.useSome(provided)),
+      values: pipe(ref.values, RS.useSome(provided)),
     }
   }
 

@@ -544,7 +544,8 @@ export const mergeConcurrently =
       S.mergeMapConcurrently((rs) => rs(e), concurrency),
     )
 
-export const multicast = flow(S.multicast, fromStream)
+export const multicast = <E, A>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
+  pipe(rs, withStream(S.multicast))
 
 export const partition =
   <A>(predicate: Predicate<A>) =>
