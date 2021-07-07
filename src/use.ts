@@ -2,7 +2,7 @@ import { settable } from '@fp/Disposable'
 import * as E from '@fp/Env'
 import { deepEqualsEq, Eq } from '@fp/Eq'
 import { pipe } from '@fp/function'
-import { useRef } from '@fp/hooks'
+import * as H from '@fp/hooks'
 import * as O from '@fp/Option'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
@@ -13,6 +13,7 @@ import * as S from '@fp/Stream'
 import { disposeBoth, disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
 import { not } from 'fp-ts/Predicate'
+import * as RM from 'fp-ts/ReadonlyMap'
 
 /**
  * @typed/fp/use is a collection of functions built atop of useRef + hooks. Anytime they
@@ -26,7 +27,7 @@ import { not } from 'fp-ts/Predicate'
 export const useEq = <A>(value: A, Eq: Eq<A>, firstRun = true): E.Env<Ref.Refs, boolean> =>
   pipe(
     E.Do,
-    E.bindW('ref', () => useRef(E.of<O.Option<A>>(O.none))),
+    E.bindW('ref', () => H.useRef(E.of<O.Option<A>>(O.none))),
     E.bindW('previous', ({ ref }) => ref.get),
     E.bindW('changed', ({ previous }) =>
       pipe(
@@ -58,7 +59,7 @@ export const useMemo = <E, A, B = null>(
   pipe(
     E.Do,
     E.bindW('changed', () => useEq(dep, eq)),
-    E.bindW('ref', () => useRef(env)),
+    E.bindW('ref', () => H.useRef(env)),
     E.chainFirstW(({ ref, changed }) => (changed ? ref.update(() => env) : E.of(null))),
     E.chainW(({ ref }) => ref.get),
   )
@@ -71,7 +72,7 @@ export const useDisposable = <A>(
   return pipe(
     E.Do,
     E.bindW('changed', () => useEq(dep, eq)),
-    E.bindW('ref', () => useRef(E.fromIO(disposeNone))),
+    E.bindW('ref', () => H.useRef(E.fromIO(disposeNone))),
     E.bindW('current', ({ ref }) => ref.get),
     E.chainFirstW(({ changed, current, ref }) =>
       changed
@@ -183,4 +184,46 @@ export function useStream<A, B = null>(
   eq: Eq<B> = deepEqualsEq,
 ): E.Env<Ref.Refs & SchedulerEnv, S.Disposable> {
   return useReaderStream(() => s, dep, eq)
+}
+
+// Keeps track of a mutable set of References. Useful for building combinators for higher-order hooks.
+export const useKeyedRefs = <K>(
+  Eq: Eq<K>,
+): E.Env<Ref.Refs, readonly [(key: K) => Ref.Refs, (key: K) => S.Disposable]> => {
+  const find = RM.lookup(Eq)
+
+  return pipe(
+    E.Do,
+    E.bindW('ref', () => H.useRef(E.fromIO(() => new Map<K, Ref.Refs>()))),
+    E.bindW('references', ({ ref }) => ref.get),
+    E.bindW('findRefs', ({ references }) =>
+      E.of((key: K) =>
+        pipe(
+          references,
+          find(key),
+          O.getOrElseW(() => {
+            const refs = Ref.refs()
+
+            references.set(key, refs)
+
+            return refs
+          }),
+        ),
+      ),
+    ),
+    E.bindW('deleteRefs', ({ references }) =>
+      E.of(
+        (key: K): S.Disposable => ({
+          dispose: () => {
+            references.forEach((_, k) => {
+              if (Eq.equals(k)(key)) {
+                references.delete(k)
+              }
+            })
+          },
+        }),
+      ),
+    ),
+    E.map(({ findRefs, deleteRefs }) => [findRefs, deleteRefs] as const),
+  )
 }

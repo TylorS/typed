@@ -1,7 +1,6 @@
 import * as E from '@fp/Env'
 import { pipe } from '@fp/function'
-import { exhaustAllWithHooks, useRef, withHooks } from '@fp/hooks'
-import * as RS from '@fp/ReaderStream'
+import { useRef, withHooks } from '@fp/hooks'
 import * as Ref from '@fp/Ref'
 import * as RefDisposable from '@fp/RefDisposable'
 import { exec } from '@fp/Resume'
@@ -55,54 +54,6 @@ export const test = describe(`hooks`, () => {
 
         deepStrictEqual(values, [value, value + 1])
       })
-    })
-  })
-
-  describe(exhaustAllWithHooks.name, () => {
-    it(`converts this to a Stream`, async () => {
-      const period = 10
-      const scheduler = Sc.newDefaultScheduler()
-      const Component = (x: number) =>
-        pipe(
-          E.Do,
-          E.bindW('ref', () => useRef(E.of(x), Eq)),
-          E.bindW('increment', ({ ref }) => E.askAndUse(ref.set(x + 1))),
-          E.chainFirstW(({ increment }) =>
-            x === 3
-              ? RefDisposable.add(
-                  Sc.asap(
-                    S.createCallbackTask(() => pipe({}, increment, exec)),
-                    scheduler,
-                  ),
-                )
-              : E.of(null),
-          ),
-          E.chainW(({ ref }) => ref.get),
-        )
-
-      const mergeN = exhaustAllWithHooks(Eq)
-
-      const expected = [
-        [1, 2, 3],
-        [1, 2, 4],
-        [2, 4, 1],
-        [4, 2],
-      ]
-
-      const program = pipe(
-        RS.mergeArray([
-          RS.now([1, 2, 3]),
-          RS.at(period * 2, [2, 3, 1]),
-          RS.at(period * 3, [3, 2]),
-        ] as const),
-        mergeN(Component),
-        RS.take(expected.length),
-        RS.collectEvents(scheduler),
-      )
-
-      const values = await program(Ref.refs())
-
-      deepStrictEqual(values, expected)
     })
   })
 })
