@@ -187,9 +187,7 @@ export function useStream<A, B = null>(
 }
 
 // Keeps track of a mutable set of References. Useful for building combinators for higher-order hooks.
-export const useKeyedRefs = <K>(
-  Eq: Eq<K>,
-): E.Env<Ref.Refs, readonly [(key: K) => Ref.Refs, (key: K) => S.Disposable]> => {
+export const useKeyedRefs = <K>(Eq: Eq<K>) => {
   const find = RM.lookup(Eq)
 
   return pipe(
@@ -224,6 +222,6 @@ export const useKeyedRefs = <K>(
         }),
       ),
     ),
-    E.map(({ findRefs, deleteRefs }) => [findRefs, deleteRefs] as const),
+    E.map(({ findRefs, deleteRefs }) => ({ findRefs, deleteRefs } as const)),
   )
 }
