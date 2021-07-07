@@ -102,9 +102,7 @@ const createHookRefMap = <E, K, V>(
     E.map((refs) => pipe(RefMap.create(initial, options), RefMap.useSome(refs))),
   )
 
-const notIsCreated = not(
-  (x: Ref.Event<any, any>): x is Ref.Created<any, any> => x._tag == 'Created',
-)
+const notIsCreated = not(Ref.isCreated)
 
 /**
  * Makes it possible to sample an Env<E, A> anytime there is an update/delete event
@@ -179,8 +177,8 @@ const useHooksReferences = <V>(Eq: Eq<V>) => {
  * Helps to construct a stream graph from a list that all samples the provided Env-returning
  * function when a new value is seen, providing each with a unique Ref.Refs environment.
  */
-export const mergeMapWithHooks = <V>(Eq: Eq<V> = deepEqualsEq) => {
-  const mergeMap = RS.mergeMapWhen(Eq)
+export const exhaustAllWithHooks = <V>(Eq: Eq<V> = deepEqualsEq) => {
+  const mergeMap = RS.exhaustAllWhen(Eq)
   const useRefs = RS.fromEnv(useHooksReferences(Eq))
 
   return <E1, A>(f: (value: V) => E.Env<E1 & Ref.Refs, A>) =>

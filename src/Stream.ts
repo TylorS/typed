@@ -294,24 +294,24 @@ export const onDispose =
     M.newStream((sink, scheduler) => disposeBoth(stream.run(sink, scheduler), disposable))
 
 export const combineAll = <A extends readonly types.Stream<any>[]>(
-  streams: A,
+  ...streams: A
 ): types.Stream<{ readonly [K in keyof A]: ValueOf<A[K]> }> =>
   pipe(streams as any, M.combineArray(Array)) as any
 
-export const sampleLatest = <A>(stream: types.Stream<types.Stream<A>>): types.Stream<A> =>
-  new SampleLatest(stream)
+export const exhaust = <A>(stream: types.Stream<types.Stream<A>>): types.Stream<A> =>
+  new Exhaust(stream)
 
-class SampleLatest<A> implements types.Stream<A> {
+class Exhaust<A> implements types.Stream<A> {
   constructor(readonly stream: types.Stream<types.Stream<A>>) {}
 
   run(sink: types.Sink<A>, scheduler: types.Scheduler) {
-    const s = new SampleLatestSink(sink, scheduler)
+    const s = new ExhaustSink(sink, scheduler)
 
     return disposeBoth(this.stream.run(s, scheduler), s)
   }
 }
 
-class SampleLatestSink<A> implements types.Sink<types.Stream<A>>, types.Disposable {
+class ExhaustSink<A> implements types.Sink<types.Stream<A>>, types.Disposable {
   protected latest: O.Option<types.Stream<A>> = O.none
   protected disposable: types.Disposable = disposeNone()
   protected sampling = false
@@ -375,13 +375,13 @@ class SampleLatestSink<A> implements types.Sink<types.Stream<A>>, types.Disposab
  * to the values within an Array when they are added and any values removed
  * from the array will be disposed of immediately.
  */
-export const mergeMapWhen =
+export const exhaustAllWhen =
   <V>(Eq: Eq<V> = deepEqualsEq) =>
   <A>(f: (value: V) => types.Stream<A>) =>
   (values: Stream<ReadonlyArray<V>>): Stream<ReadonlyArray<A>> =>
-    new MergeMapWhen(Eq, f, values)
+    new ExhaustAllWhen(Eq, f, values)
 
-class MergeMapWhen<V, A> implements types.Stream<ReadonlyArray<A>> {
+class ExhaustAllWhen<V, A> implements types.Stream<ReadonlyArray<A>> {
   constructor(
     readonly Eq: Eq<V>,
     readonly f: (getValue: V) => types.Stream<A>,
@@ -389,13 +389,13 @@ class MergeMapWhen<V, A> implements types.Stream<ReadonlyArray<A>> {
   ) {}
 
   run(sink: types.Sink<ReadonlyArray<A>>, scheduler: types.Scheduler): types.Disposable {
-    const s = new MergeMapWhenSink(sink, scheduler, this)
+    const s = new ExhaustAllWhenSink(sink, scheduler, this)
 
     return disposeBoth(this.values.run(s, scheduler), s)
   }
 }
 
-class MergeMapWhenSink<V, A> implements types.Sink<ReadonlyArray<V>> {
+class ExhaustAllWhenSink<V, A> implements types.Sink<ReadonlyArray<V>> {
   readonly disposables = new Map<V, types.Disposable>()
   readonly values = new Map<V, A>()
 
@@ -411,7 +411,7 @@ class MergeMapWhenSink<V, A> implements types.Sink<ReadonlyArray<V>> {
   constructor(
     readonly sink: types.Sink<ReadonlyArray<A>>,
     readonly scheduler: types.Scheduler,
-    readonly source: MergeMapWhen<V, A>,
+    readonly source: ExhaustAllWhen<V, A>,
   ) {
     this.findDisposable = (k: V) => lookup(source.Eq)(k)(this.disposables)
     this.findValue = (k: V) => lookup(source.Eq)(k)(this.values)

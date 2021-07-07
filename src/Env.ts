@@ -61,6 +61,18 @@ export const fromReader: <R, A>(ma: Re.Reader<R, A>) => Env<R, A> = RT.fromReade
 
 export const map: <A, B>(f: (a: A) => B) => <R>(fa: Env<R, A>) => Env<R, B> = RT.map(R.Functor)
 
+export const tap =
+  <A>(f: (a: A) => any) =>
+  <R>(fa: Env<R, A>): Env<R, A> =>
+    FN.pipe(
+      fa,
+      map((a) => {
+        f(a)
+
+        return a
+      }),
+    )
+
 export const constant = FN.flow(FN.constant, map)
 
 export type Of<A> = Env<unknown, A>

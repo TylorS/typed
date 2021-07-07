@@ -1,6 +1,6 @@
 import * as E from '@fp/Env'
 import { pipe } from '@fp/function'
-import { mergeMapWithHooks, useRef, withHooks } from '@fp/hooks'
+import { exhaustAllWithHooks, useRef, withHooks } from '@fp/hooks'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
 import * as RefDisposable from '@fp/RefDisposable'
@@ -58,7 +58,7 @@ export const test = describe(`hooks`, () => {
     })
   })
 
-  describe(mergeMapWithHooks.name, () => {
+  describe(exhaustAllWithHooks.name, () => {
     it(`converts this to a Stream`, async () => {
       const period = 10
       const scheduler = Sc.newDefaultScheduler()
@@ -80,7 +80,7 @@ export const test = describe(`hooks`, () => {
           E.chainW(({ ref }) => ref.get),
         )
 
-      const mergeN = mergeMapWithHooks(Eq)
+      const mergeN = exhaustAllWithHooks(Eq)
 
       const expected = [
         [1, 2, 3],

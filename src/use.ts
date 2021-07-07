@@ -11,6 +11,7 @@ import * as R from '@fp/Resume'
 import { delay, SchedulerEnv } from '@fp/Scheduler'
 import * as S from '@fp/Stream'
 import { disposeBoth, disposeNone } from '@most/disposable'
+import { Disposable } from '@most/types'
 import { not } from 'fp-ts/Predicate'
 
 /**
@@ -150,6 +151,20 @@ export function useEnvK<A extends ReadonlyArray<any>, E1, B, E2>(
     }),
   )
 }
+
+export const bindEnvK =
+  <N extends string, A, Args extends readonly any[], E1, B, E2>(
+    name: Exclude<N, keyof A>,
+    f: (...args: Args) => E.Env<E1, B>,
+    onValue?: (value: B) => E.Env<E2, any>,
+  ) =>
+  <E3>(
+    ma: E.Env<E3, A>,
+  ): E.Env<
+    E1 & E2 & E3 & Ref.Refs,
+    { readonly [K in N | keyof A]: K extends keyof A ? A[K] : () => Disposable }
+  > =>
+    E.bindW(name, () => useEnvK((...args: Args) => f(...args), onValue))(ma)
 
 export function useReaderStream<E, A, B = null>(
   rs: RS.ReaderStream<E, A>,

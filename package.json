@@ -198,6 +198,10 @@
       "require": "./cjs/RefAdapter.js",
       "import": "./esm/RefAdapter.js"
     },
+    "./RefArray": {
+      "require": "./cjs/RefArray.js",
+      "import": "./esm/RefArray.js"
+    },
     "./RefDisposable": {
       "require": "./cjs/RefDisposable.js",
       "import": "./esm/RefDisposable.js"

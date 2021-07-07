@@ -405,7 +405,7 @@ export const combineAll =
     { readonly [K in keyof A]: ValueOf<A[K]> }
   > =>
   (e) =>
-    S.combineAll(rss.map((rs) => rs(e)))
+    S.combineAll(...rss.map((rs) => rs(e)))
 
 export const withStream =
   <A, B>(f: (stream: S.Stream<A>) => B) =>
@@ -413,12 +413,12 @@ export const withStream =
   (e) =>
     pipe(e, rs, f)
 
-export const mergeMapWhen =
+export const exhaustAllWhen =
   <V>(Eq: Eq<V>) =>
   <E1, A>(f: (value: V) => ReaderStream<E1, A>) =>
   <E2>(rs: ReaderStream<E2, ReadonlyArray<V>>): ReaderStream<E1 & E2, ReadonlyArray<A>> =>
   (e) =>
-    withStream(S.mergeMapWhen(Eq)((v) => f(v)(e)))(rs)(e)
+    withStream(S.exhaustAllWhen(Eq)((v) => f(v)(e)))(rs)(e)
 
 export const tap =
   <A>(f: (value: A) => any) =>
@@ -447,7 +447,7 @@ export const sampleLatest =
       e,
       rs,
       S.map((rs) => rs(e)),
-      S.sampleLatest,
+      S.exhaust,
     )
 
 export const sampleLatestEnv =
