@@ -413,13 +413,6 @@ export const withStream =
   (e) =>
     pipe(e, rs, f)
 
-export const exhaustAllWhen =
-  <V>(Eq: Eq<V>) =>
-  <E1, A>(f: (value: V) => ReaderStream<E1, A>) =>
-  <E2>(rs: ReaderStream<E2, ReadonlyArray<V>>): ReaderStream<E1 & E2, ReadonlyArray<A>> =>
-  (e) =>
-    withStream(S.exhaustAllWhen(Eq)((v) => f(v)(e)))(rs)(e)
-
 export const tap =
   <A>(f: (value: A) => any) =>
   <E>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
@@ -440,24 +433,37 @@ export const startWith =
   <E, B>(stream: ReaderStream<E, B>): ReaderStream<E, A | B> =>
     withStream(S.startWith<A | B>(value))(stream)
 
-export const sampleLatest =
+export const exhaustLatest =
   <E1, E2, A>(rs: ReaderStream<E1, ReaderStream<E2, A>>): ReaderStream<E1 & E2, A> =>
   (e) =>
     pipe(
       e,
       rs,
-      S.map((rs) => rs(e)),
-      S.exhaust,
+      S.exhaustMapLatest((rs) => rs(e)),
     )
 
-export const sampleLatestEnv =
+export const exhaustMapLatest =
+  <A, E1, B>(f: (value: A) => ReaderStream<E1, B>) =>
+  <E2>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, B> =>
+  (e) =>
+    pipe(
+      e,
+      rs,
+      S.exhaustMapLatest((a) => f(a)(e)),
+    )
+
+export const exhaustLatestEnv =
   <E1, A>(env: Env<E1, A>) =>
   <E2, B>(rs: ReaderStream<E2, B>): ReaderStream<E1 & E2, A> =>
     pipe(
       rs,
-      map(() => fromEnv(env)),
-      sampleLatest,
+      exhaustMapLatest(() => fromEnv(env)),
     )
+
+export const exhaustMapLatestEnv =
+  <A, E1, B>(f: (value: A) => Env<E1, B>) =>
+  <E2>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, B> =>
+    pipe(rs, exhaustMapLatest(flow(f, fromEnv)))
 
 export const onDispose = (
   disposable: S.Disposable,

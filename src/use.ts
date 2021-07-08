@@ -10,9 +10,10 @@ import * as RefDisposable from '@fp/RefDisposable'
 import * as R from '@fp/Resume'
 import { delay, SchedulerEnv } from '@fp/Scheduler'
 import * as S from '@fp/Stream'
-import { disposeBoth, disposeNone } from '@most/disposable'
+import { disposeAll, disposeBoth, disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
 import { not } from 'fp-ts/Predicate'
+import * as RA from 'fp-ts/ReadonlyArray'
 import * as RM from 'fp-ts/ReadonlyMap'
 
 /**
@@ -224,4 +225,31 @@ export const useKeyedRefs = <K>(Eq: Eq<K>) => {
     ),
     E.map(({ findRefs, deleteRefs }) => ({ findRefs, deleteRefs } as const)),
   )
+}
+
+export const useListEnvK = <A>(Eq: Eq<A> = deepEqualsEq) => {
+  const diffArray = RA.difference(Eq)
+  const useRefs = useKeyedRefs(Eq)
+
+  return <E, B>(f: (a: A) => E.Env<E & Ref.Refs, B>) =>
+    (values: ReadonlyArray<A>): E.Env<E & Ref.Refs, ReadonlyArray<B>> =>
+      pipe(
+        useRefs,
+        E.bindW('previousRef', () => H.useRef(E.of<ReadonlyArray<A>>([]))),
+        E.bindW('previous', ({ previousRef }) => previousRef.get),
+        E.bindW('removed', ({ previous }) => pipe(previous, diffArray(values), E.of)),
+        E.chainFirstW(({ removed, findRefs }) =>
+          pipe(
+            removed,
+            RA.map((v) => RefDisposable.dispose(findRefs(v))),
+            R.zip,
+            E.fromResume,
+          ),
+        ),
+        E.chainFirstW(({ removed, deleteRefs }) =>
+          E.fromIO(() => pipe(removed, RA.map(deleteRefs), disposeAll).dispose()),
+        ),
+        E.chainFirstW(({ previousRef }) => previousRef.set(values)),
+        E.chainW(({ findRefs }) => E.zip(values.map((v) => pipe(v, f, E.useSome(findRefs(v)))))),
+      )
 }
