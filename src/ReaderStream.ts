@@ -1,4 +1,4 @@
-import { Env } from '@fp/Env'
+import * as E from '@fp/Env'
 import * as FE from '@fp/FromEnv'
 import * as FRe from '@fp/FromResume'
 import * as FS from '@fp/FromStream'
@@ -132,7 +132,7 @@ export const getApplySemigroup = Ap.getApplySemigroup(Apply)
 
 export const apSEnv: <N extends string, A, E, B>(
   name: Exclude<N, keyof A>,
-  fb: Env<E, B>,
+  fb: E.Env<E, B>,
 ) => (
   fa: ReaderStream<E, A>,
 ) => ReaderStream<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = (name, fb) =>
@@ -140,19 +140,19 @@ export const apSEnv: <N extends string, A, E, B>(
 
 export const apSEnvW = apSEnv as <N extends string, A, E1, B>(
   name: Exclude<N, keyof A>,
-  fb: Env<E1, B>,
+  fb: E.Env<E1, B>,
 ) => <E2>(
   fa: ReaderStream<E2, A>,
 ) => ReaderStream<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 
 export const apTEnvW: <E1, B>(
-  fb: Env<E1, B>,
+  fb: E.Env<E1, B>,
 ) => <E2, A extends readonly unknown[]>(
   fas: ReaderStream<E2, A>,
 ) => ReaderStream<E1 & E2, readonly [...A, B]> = (fb) => pipe(fb, fromEnv, apTW)
 
 export const apTEnv: <E, B>(
-  fb: Env<E, B>,
+  fb: E.Env<E, B>,
 ) => <A extends readonly unknown[]>(
   fas: ReaderStream<E, A>,
 ) => ReaderStream<E, readonly [...A, B]> = apTEnvW
@@ -183,7 +183,7 @@ export const bindW = bind as <N extends string, A, E1, B>(
 
 export const bindEnv: <N extends string, A, E, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => Env<E, B>,
+  f: (a: A) => E.Env<E, B>,
 ) => (
   ma: ReaderStream<E, A>,
 ) => ReaderStream<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = (name, f) =>
@@ -191,7 +191,7 @@ export const bindEnv: <N extends string, A, E, B>(
 
 export const bindEnvW: <N extends string, A, E1, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => Env<E1, B>,
+  f: (a: A) => E.Env<E1, B>,
 ) => <E2>(
   ma: ReaderStream<E2, A>,
 ) => ReaderStream<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = (
@@ -272,7 +272,7 @@ export const chainStreamK = FS.chainStreamK(FromStream, Chain)
 export const fromStreamK = FS.fromStreamK(FromStream)
 
 export const asksEnv =
-  <E1, E2, B>(f: (e1: E1) => Env<E2, B>): ReaderStream<E1 & E2, B> =>
+  <E1, E2, B>(f: (e1: E1) => E.Env<E2, B>): ReaderStream<E1 & E2, B> =>
   (r) =>
     pipe(r, f(r), S.fromResume)
 
@@ -453,7 +453,7 @@ export const exhaustMapLatest =
     )
 
 export const exhaustLatestEnv =
-  <E1, A>(env: Env<E1, A>) =>
+  <E1, A>(env: E.Env<E1, A>) =>
   <E2, B>(rs: ReaderStream<E2, B>): ReaderStream<E1 & E2, A> =>
     pipe(
       rs,
@@ -461,7 +461,7 @@ export const exhaustLatestEnv =
     )
 
 export const exhaustMapLatestEnv =
-  <A, E1, B>(f: (value: A) => Env<E1, B>) =>
+  <A, E1, B>(f: (value: A) => E.Env<E1, B>) =>
   <E2>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, B> =>
     pipe(rs, exhaustMapLatest(flow(f, fromEnv)))
 
