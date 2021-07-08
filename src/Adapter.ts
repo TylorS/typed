@@ -61,7 +61,7 @@ export const Functor: Functor2<URI> = {
   map,
 }
 
-export const Contravariant: Profunctor2<URI> = {
+export const Profunctor: Profunctor2<URI> = {
   ...Functor,
   promap,
 }
