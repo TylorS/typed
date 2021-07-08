@@ -16,17 +16,17 @@ import { Show } from 'fp-ts/Show'
 
 import { deepEqualsEq } from './Eq'
 
-export type AsyncData<A> = NoData | Loading | Refresh<A> | Replete<A>
+export type Data<A> = NoData | Loading | Refresh<A> | Replete<A>
 
-export type Value<A> = [A] extends [AsyncData<infer R>] ? R : never
+export type Value<A> = [A] extends [Data<infer R>] ? R : never
 
-export const isNoData = <A>(data: AsyncData<A>): data is NoData => data._tag === 'NoData'
+export const isNoData = <A>(data: Data<A>): data is NoData => data._tag === 'NoData'
 
-export const isLoading = <A>(data: AsyncData<A>): data is Loading => data._tag === 'Loading'
+export const isLoading = <A>(data: Data<A>): data is Loading => data._tag === 'Loading'
 
-export const isRefresh = <A>(data: AsyncData<A>): data is Refresh<A> => data._tag === 'Refresh'
+export const isRefresh = <A>(data: Data<A>): data is Refresh<A> => data._tag === 'Refresh'
 
-export const isReplete = <A>(data: AsyncData<A>): data is Replete<A> => data._tag === 'Replete'
+export const isReplete = <A>(data: Data<A>): data is Replete<A> => data._tag === 'Replete'
 
 export interface NoData {
   readonly _tag: 'NoData'
@@ -102,7 +102,7 @@ export const matchW =
     onRefresh: (value: C, progress: O.Option<Progress>) => D,
     onReplete: (value: C) => E,
   ) =>
-  (data: AsyncData<C>): A | B | D | E => {
+  (data: Data<C>): A | B | D | E => {
     switch (data._tag) {
       case 'NoData':
         return onNoData()
@@ -121,7 +121,7 @@ export const match3W =
     onLoading: (progress: O.Option<Progress>) => B,
     onRefreshOrReplete: (value: C) => D,
   ) =>
-  (data: AsyncData<C>): A | B | D => {
+  (data: Data<C>): A | B | D => {
     switch (data._tag) {
       case 'NoData':
         return onNoData()
@@ -138,15 +138,15 @@ export const match: <A, B>(
   onLoading: () => A,
   onRefresh: (value: B) => A,
   onReplete: (value: B) => A,
-) => (data: AsyncData<B>) => A = matchW
+) => (data: Data<B>) => A = matchW
 
-export const toLoading = <A>(data: AsyncData<A>): AsyncData<A> =>
+export const toLoading = <A>(data: Data<A>): Data<A> =>
   pipe(data, matchW(Loading, Loading, Refresh, Refresh))
 
-export const fromNullable = <A>(a: A | null | undefined): AsyncData<A> =>
+export const fromNullable = <A>(a: A | null | undefined): Data<A> =>
   a === null || a === undefined ? NoData : Replete(a)
 
-export const getShow = <A>(S: Show<A>): Show<AsyncData<A>> => ({
+export const getShow = <A>(S: Show<A>): Show<Data<A>> => ({
   show: matchW(
     constant('NoData'),
     O.matchW(
@@ -165,7 +165,7 @@ export const getShow = <A>(S: Show<A>): Show<AsyncData<A>> => ({
   ),
 })
 
-export const getEq = <A>(S: Eq<A>): Eq<AsyncData<A>> => {
+export const getEq = <A>(S: Eq<A>): Eq<Data<A>> => {
   const OptionProgressEq = O.getEq(Progress)
 
   return {
@@ -182,13 +182,13 @@ export const getEq = <A>(S: Eq<A>): Eq<AsyncData<A>> => {
   }
 }
 
-export const getSemigroup = <A>(S: Semigroup<A>): Semigroup<AsyncData<A>> => {
+export const getSemigroup = <A>(S: Semigroup<A>): Semigroup<Data<A>> => {
   const OptionProgressSemigroup = O.getMonoid(Progress)
 
   return {
     concat:
-      (secondD: AsyncData<A>) =>
-      (firstD: AsyncData<A>): AsyncData<A> =>
+      (secondD: Data<A>) =>
+      (firstD: Data<A>): Data<A> =>
         pipe(
           firstD,
           matchW(
@@ -229,48 +229,48 @@ export const getSemigroup = <A>(S: Semigroup<A>): Semigroup<AsyncData<A>> => {
   }
 }
 
-export const getMonoid = <A>(S: Semigroup<A>): Monoid<AsyncData<A>> => ({
+export const getMonoid = <A>(S: Semigroup<A>): Monoid<Data<A>> => ({
   ...getSemigroup(S),
   empty: NoData,
 })
 
 export const getOrElse =
   <A>(onInitial: () => A, onPending: () => A) =>
-  (ma: AsyncData<A>): A =>
+  (ma: Data<A>): A =>
     match<A, A>(onInitial, onPending, identity, identity)(ma)
 
 export const elem =
   <A>(E: Eq<A>) =>
   (a: A) =>
-  (ma: AsyncData<A>): boolean =>
+  (ma: Data<A>): boolean =>
     matchW(constFalse, constFalse, E.equals(a), E.equals(a))(ma)
 
 export const exists =
   <A>(predicate: Predicate<A>) =>
-  (ma: AsyncData<A>): boolean =>
+  (ma: Data<A>): boolean =>
     pipe(ma, matchW(constFalse, constFalse, predicate, predicate))
 
-export const of = <A>(value: A): AsyncData<A> => Replete(value)
+export const of = <A>(value: A): Data<A> => Replete(value)
 
 export const map =
   <A, B>(f: (value: A) => B) =>
-  (data: AsyncData<A>): AsyncData<B> =>
+  (data: Data<A>): Data<B> =>
     pipe(
       data,
       matchW(constant(NoData), Loading, (a, p) => Refresh(f(a), p), flow(f, Replete)),
     )
 
 export const chain =
-  <A, B>(f: (value: A) => AsyncData<B>) =>
-  (data: AsyncData<A>): AsyncData<B> =>
+  <A, B>(f: (value: A) => Data<B>) =>
+  (data: Data<A>): Data<B> =>
     pipe(data, matchW(constant(NoData), Loading, f, f))
 
-export const URI = '@typed/fp/AsyncData'
+export const URI = '@typed/fp/Data'
 export type URI = typeof URI
 
 declare module 'fp-ts/HKT' {
   export interface URItoKind<A> {
-    [URI]: AsyncData<A>
+    [URI]: Data<A>
   }
 }
 
@@ -319,8 +319,8 @@ export const Monad: Monad1<URI> = {
 }
 
 export const alt =
-  <A>(f: Lazy<AsyncData<A>>) =>
-  <B>(b: AsyncData<B>): AsyncData<A | B> =>
+  <A>(f: Lazy<Data<A>>) =>
+  <B>(b: Data<B>): Data<A | B> =>
     pipe(b, matchW(f, f, Refresh, Replete))
 
 export const Alt: AD.Alt1<URI> = {
@@ -330,20 +330,20 @@ export const Alt: AD.Alt1<URI> = {
 
 export const altAll = AD.altAll(Alt)
 
-export const zero = <A>(): AsyncData<A> => NoData
+export const zero = <A>(): Data<A> => NoData
 
 export const Alternative: Alternative_.Alternative1<URI> = {
   ...Alt,
   zero,
 }
 
-export const fromOption = <A>(option: O.Option<A>): AsyncData<A> =>
+export const fromOption = <A>(option: O.Option<A>): Data<A> =>
   pipe(
     option,
     O.matchW(() => NoData, Replete),
   )
 
-export const toOption = <A>(data: AsyncData<A>): O.Option<A> =>
+export const toOption = <A>(data: Data<A>): O.Option<A> =>
   pipe(
     data,
     matchW(

@@ -1,5 +1,6 @@
 export * as adapter from '@fp/Adapter'
 export * as branded from '@fp/Branded'
+export * as data from '@fp/Data'
 export * as disposable from '@fp/Disposable'
 export * as env from '@fp/Env'
 export * as envEither from '@fp/EnvEither'
