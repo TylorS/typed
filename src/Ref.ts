@@ -1,6 +1,7 @@
 import * as A from '@fp/Adapter'
 import * as E from '@fp/Env'
 import { deepEqualsEq } from '@fp/Eq'
+import { Intersect } from '@fp/Hkt'
 import * as O from '@fp/Option'
 import * as P from '@fp/Provide'
 import * as RS from '@fp/ReaderStream'
@@ -8,6 +9,7 @@ import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
 import { not } from 'fp-ts/Refinement'
 import { fst, snd } from 'fp-ts/Tuple2'
+import { Cast } from 'ts-toolbelt/out/Any/Cast'
 
 export interface Ref<E, A> extends Eq<A> {
   readonly id: PropertyKey
@@ -349,3 +351,39 @@ function makeDeleteRef(
     },
   }
 }
+
+/**
+ * Creates a union of Envs for all the possible combinations for Ref environments.
+ */
+export type Env<E, A> = E.Env<E, A> | GetEnv<CombinationsOf<E, [Get, Has, Set, Remove, Events]>, A>
+
+type CombinationsOf<E, A extends readonly any[]> = A extends readonly [infer S1, ...infer SS]
+  ? GetCombinationsOf<E, S1, SS>
+  : readonly []
+
+type GetCombinationsOf<
+  E,
+  S1,
+  SS extends readonly any[],
+  C extends ReadonlyArray<ReadonlyArray<any>> = CombinationsOf<E, SS>,
+> = SS extends readonly []
+  ? readonly [readonly [E, S1], ...C]
+  : readonly [
+      readonly [E, S1],
+      ...{
+        readonly [K in keyof C]: readonly [S1, ...Cast<C[K], readonly any[]>]
+      },
+      ...C
+    ]
+
+type GetEnv<
+  Combos extends ReadonlyArray<ReadonlyArray<any>>,
+  A,
+  R = never,
+> = Combos extends readonly [infer H, ...infer T]
+  ? GetEnv<
+      Cast<T, ReadonlyArray<ReadonlyArray<any>>>,
+      A,
+      R | E.Env<Intersect<Cast<H, readonly any[]>>, A>
+    >
+  : R
