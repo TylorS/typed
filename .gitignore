@@ -64,8 +64,8 @@ snowpack.key
 /exports.js
 /exports.js.map
 /Adapter/
-/AsyncData/
 /Branded/
+/Data/
 /Disposable/
 /Env/
 /EnvEither/
