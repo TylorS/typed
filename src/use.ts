@@ -10,10 +10,9 @@ import * as RefDisposable from '@fp/RefDisposable'
 import * as R from '@fp/Resume'
 import { delay, SchedulerEnv } from '@fp/Scheduler'
 import * as S from '@fp/Stream'
-import { disposeAll, disposeBoth, disposeNone } from '@most/disposable'
+import { disposeBoth, disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
 import { not } from 'fp-ts/Predicate'
-import * as RA from 'fp-ts/ReadonlyArray'
 import * as RM from 'fp-ts/ReadonlyMap'
 
 /**
@@ -227,29 +226,30 @@ export const useKeyedRefs = <K>(Eq: Eq<K>) => {
   )
 }
 
-export const useListEnvK = <A>(Eq: Eq<A> = deepEqualsEq) => {
-  const diffArray = RA.difference(Eq)
-  const useRefs = useKeyedRefs(Eq)
+const getRefsStrict = E.asks(
+  ({ getRef, hasRef, setRef, removeRef, refEvents }: Ref.Refs): Ref.Refs => ({
+    getRef,
+    hasRef,
+    setRef,
+    removeRef,
+    refEvents,
+  }),
+)
 
-  return <E, B>(f: (a: A) => E.Env<E & Ref.Refs, B>) =>
-    (values: ReadonlyArray<A>): E.Env<E & Ref.Refs, ReadonlyArray<B>> =>
-      pipe(
-        useRefs,
-        E.bindW('previousRef', () => H.useRef(E.of<ReadonlyArray<A>>([]))),
-        E.bindW('previous', ({ previousRef }) => previousRef.get),
-        E.bindW('removed', ({ previous }) => pipe(previous, diffArray(values), E.of)),
-        E.chainFirstW(({ removed, findRefs }) =>
-          pipe(
-            removed,
-            RA.map((v) => RefDisposable.dispose(findRefs(v))),
-            R.zip,
-            E.fromResume,
-          ),
+export const withHooks =
+  <A, E1, B>(f: (value: A) => Ref.Env<E1, B>) =>
+  <E2>(rs: RS.ReaderStream<E2, A>): RS.ReaderStream<E1 & E2 & Ref.Refs, B> =>
+    pipe(
+      E.Do,
+      E.bindW('refs', () => getRefsStrict),
+      E.bindW('refDisposable', () => RefDisposable.get),
+      RS.fromEnv,
+      RS.switchMapW(({ refs, refDisposable }) =>
+        pipe(
+          rs,
+          RS.chainFirst(() => RS.fromStream(refs.refEvents[1])),
+          RS.exhaustMapLatestEnv(f),
+          RS.onDispose(refDisposable),
         ),
-        E.chainFirstW(({ removed, deleteRefs }) =>
-          E.fromIO(() => pipe(removed, RA.map(deleteRefs), disposeAll).dispose()),
-        ),
-        E.chainFirstW(({ previousRef }) => previousRef.set(values)),
-        E.chainW(({ findRefs }) => E.zip(values.map((v) => pipe(v, f, E.useSome(findRefs(v)))))),
-      )
-}
+      ),
+    )
