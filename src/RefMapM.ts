@@ -16,14 +16,14 @@ export interface RefMapM<E, K, V> extends Ref.Wrapped<E, Map<K, V>> {
   readonly valueEq: Eq<V>
 }
 
-export type RefMapOptions<K, V> = Ref.RefOptions<Map<K, V>> & {
+export type RefMapMOptions<K, V> = Ref.RefOptions<Map<K, V>> & {
   readonly keyEq?: Eq<K>
   readonly valueEq?: Eq<V>
 }
 
 export const make = <E, K, V>(
   initial: E.Env<E, Map<K, V>>,
-  options: RefMapOptions<K, V> = {},
+  options: RefMapMOptions<K, V> = {},
 ): RefMapM<E, K, V> => {
   const {
     id,

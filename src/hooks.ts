@@ -3,6 +3,7 @@ import { alwaysEqualsEq, Eq } from '@fp/Eq'
 import { flow, increment, pipe } from '@fp/function'
 import * as N from '@fp/number'
 import * as Ref from '@fp/Ref'
+import * as RefArray from '@fp/RefArray'
 import * as RefMap from '@fp/RefMap'
 import * as RefMapM from '@fp/RefMapM'
 
@@ -16,27 +17,9 @@ const HookIndex = Ref.create(E.of(INITIAL_HOOK_INDEX), {
 const incrementIndex = HookIndex.update(flow(increment, E.of))
 
 const HookRefs = RefMapM.create(
-  E.fromIO(() => new Map<number, Ref.Wrapped<any, any>>()),
+  E.fromIO(() => new Map<number, any>()),
   {
     id: Symbol('HookRefs'),
-    keyEq: N.Eq,
-    eq: alwaysEqualsEq,
-  },
-)
-
-const HookRefMaps = RefMapM.create(
-  E.fromIO(() => new Map<number, RefMap.Wrapped<any, any, any>>()),
-  {
-    id: Symbol('HookRefMaps'),
-    keyEq: N.Eq,
-    eq: alwaysEqualsEq,
-  },
-)
-
-const HookRefMapMs = RefMapM.create(
-  E.fromIO(() => new Map<number, RefMapM.Wrapped<any, any, any>>()),
-  {
-    id: Symbol('HookRefMaps'),
     keyEq: N.Eq,
     eq: alwaysEqualsEq,
   },
@@ -72,21 +55,29 @@ export const useRefMap = <E, K, V>(
   pipe(
     getHookIndex,
     E.chainW((index) =>
-      HookRefMaps.getOrCreate(index, createHookRefMap(initial, { ...options, id: Symbol(index) })),
+      HookRefs.getOrCreate(index, createHookRefMap(initial, { ...options, id: Symbol(index) })),
     ),
   )
 
 export const useRefMapM = <E, K, V>(
   initial: E.Env<E, Map<K, V>>,
-  options: Omit<RefMapM.RefMapOptions<K, V>, 'id'> = {},
+  options: Omit<RefMapM.RefMapMOptions<K, V>, 'id'> = {},
 ): E.Env<Ref.Refs, RefMapM.Wrapped<E, K, V>> =>
   pipe(
     getHookIndex,
     E.chainW((index) =>
-      HookRefMapMs.getOrCreate(
-        index,
-        createHookRefMapM(initial, { ...options, id: Symbol(index) }),
-      ),
+      HookRefs.getOrCreate(index, createHookRefMapM(initial, { ...options, id: Symbol(index) })),
+    ),
+  )
+
+export const useRefArray = <E, A>(
+  initial: E.Env<E, ReadonlyArray<A>>,
+  options: RefArray.RefArrayOptions<A>,
+): E.Env<Ref.Refs, RefArray.Wrapped<E, A>> =>
+  pipe(
+    getHookIndex,
+    E.chainW((index) =>
+      HookRefs.getOrCreate(index, createHookRefArray(initial, { ...options, id: Symbol(index) })),
     ),
   )
 
@@ -121,9 +112,18 @@ const createHookRefMap = <E, K, V>(
 
 const createHookRefMapM = <E, K, V>(
   initial: E.Env<E, Map<K, V>>,
-  options: RefMapM.RefMapOptions<K, V>,
+  options: RefMapM.RefMapMOptions<K, V>,
 ): E.Env<Ref.Refs, RefMapM.Wrapped<E, K, V>> =>
   pipe(
     getRefsStrict,
     E.map((refs) => pipe(RefMapM.create(initial, options), RefMapM.useSome(refs))),
+  )
+
+const createHookRefArray = <E, A>(
+  initial: E.Env<E, ReadonlyArray<A>>,
+  options: RefArray.RefArrayOptions<A>,
+): E.Env<Ref.Refs, RefArray.Wrapped<E, A>> =>
+  pipe(
+    getRefsStrict,
+    E.map((refs) => pipe(RefArray.create(initial, options), RefArray.useSome(refs))),
   )
