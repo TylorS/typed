@@ -125,6 +125,11 @@ const createHookRefArray = <E, A>(
     E.map((refs) => pipe(RefArray.create(initial, options), RefArray.useSome(refs))),
   )
 
+/**
+ * Helper to listen to a Stream of values and interal Ref events
+ * and apply them to an Env-returning function to the latest input and keeps track
+ * of disposable resources.
+ */
 export const withHooks =
   <A>(Eq: Eq<A> = deepEqualsEq) =>
   <E1, B>(f: (value: A) => Ref.Env<E1, B>) =>
@@ -138,8 +143,8 @@ export const withHooks =
           // Allows skipping "props" updates
           RS.skipRepeatsWith(Eq),
           // Ensure we sample when internal state has been updated
-          RS.chainFirstW(() =>
-            pipe(Ref.getRefEvents, RS.filter(not(Ref.isCreated)), RS.startWith(null)),
+          RS.switchMapW((a) =>
+            pipe(Ref.getRefEvents, RS.filter(not(Ref.isCreated)), RS.constant(a), RS.startWith(a)),
           ),
           RS.exhaustMapLatestEnv((a) =>
             pipe(
@@ -154,9 +159,21 @@ export const withHooks =
       ),
     )
 
+/**
+ * Helps to manage a list of sibling components by ensuring each value receives
+ * its own unique set of Refs.
+ *
+ * Using the provided keyEq, useHooksArray will use this to keep track of separate Refs
+ * instances for a given value. Defaults to a deep equality checking.
+ *
+ * Using the provided valueEq useHooksArray will use this Eq to determine if it can skip
+ * a re-render. Defaults to the provided keyEq, but can be used to customize the behaviors
+ * separately.
+ */
 export const useHooksArray =
   <A>(keyEq: Eq<A> = deepEqualsEq, valueEq: Eq<A> = keyEq) =>
   <E1, B>(f: (value: A) => Ref.Env<E1, B>) => {
+    const useRefs = RS.fromEnv(useKeyedRefs(EqStrict as Eq<S.Stream<A>>))
     const keyed = S.keyed(keyEq)
     const withHooksF = withHooks(valueEq)(f)
     const mergeEq = tuple(
@@ -175,8 +192,7 @@ export const useHooksArray =
       ): RS.ReaderStream<E1 & E2 & Ref.Refs, readonly B[]> =>
       (e) =>
         pipe(
-          useKeyedRefs(EqStrict as Eq<S.Stream<A>>),
-          RS.fromEnv,
+          useRefs,
           RS.chainStreamK(({ findRefs, deleteRefs }) =>
             pipe(
               e,
@@ -189,13 +205,9 @@ export const useHooksArray =
         )(e)
   }
 
-// Always do an initial sampling of Envs
-// Separate each Env with separate Refs
-// Discard previously created resources when no longer needed
-// Sample an Env everytime there's a Ref Event
-// Sample an Env each time there values update
-
-// Keeps track of a mutable set of References. Useful for building combinators for higher-order hooks.
+/**
+ * Keeps track of a mutable set of References. Useful for building combinators for higher-order hooks.
+ */
 export const useKeyedRefs = <K>(Eq: Eq<K>) => {
   const find = RM.lookup(Eq)
 

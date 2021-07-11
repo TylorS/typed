@@ -3,7 +3,7 @@ import { deepEqualsEq } from '@fp/Eq'
 import * as FE from '@fp/FromEnv'
 import * as FRe from '@fp/FromResume'
 import * as FS from '@fp/FromStream'
-import { Arity1, constant, flow, pipe } from '@fp/function'
+import * as FN from '@fp/function'
 import { Intersect } from '@fp/Hkt'
 import { MonadRec2 } from '@fp/MonadRec'
 import * as O from '@fp/Option'
@@ -44,7 +44,7 @@ export const ap = RT.ap(S.Apply)
 
 export const apW = ap as <R1, A>(
   fa: ReaderStream<R1, A>,
-) => <R2, B>(fab: ReaderStream<R2, Arity1<A, B>>) => ReaderStream<R1 & R2, B>
+) => <R2, B>(fab: ReaderStream<R2, FN.Arity1<A, B>>) => ReaderStream<R1 & R2, B>
 
 export const chain = RT.chain(S.Chain)
 export const chainW = chain as <A, R1, B>(
@@ -53,7 +53,7 @@ export const chainW = chain as <A, R1, B>(
 
 export const switchMap = RT.chain<S.URI>({
   map: S.map,
-  chain: (f) => flow(S.map(f), S.switchLatest),
+  chain: (f) => FN.flow(S.map(f), S.switchLatest),
 })
 export const switchMapW = switchMap as <A, R1, B>(
   f: (a: A) => ReaderStream<R1, B>,
@@ -65,6 +65,8 @@ export const fromReader: <R, A>(ma: Re.Reader<R, A>) => ReaderStream<R, A> = RT.
 
 export const map: <A, B>(f: (a: A) => B) => <R>(fa: ReaderStream<R, A>) => ReaderStream<R, B> =
   RT.map(S.Functor)
+
+export const constant = <B>(b: B) => map(() => b)
 
 export const of: <A, R = unknown>(a: A) => ReaderStream<R, A> = RT.of(S.Pointed)
 
@@ -129,7 +131,7 @@ export const apSEnv: <N extends string, A, E, B>(
 ) => (
   fa: ReaderStream<E, A>,
 ) => ReaderStream<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = (name, fb) =>
-  apS(name, pipe(fb, fromEnv))
+  apS(name, FN.pipe(fb, fromEnv))
 
 export const apSEnvW = apSEnv as <N extends string, A, E1, B>(
   name: Exclude<N, keyof A>,
@@ -142,7 +144,7 @@ export const apTEnvW: <E1, B>(
   fb: E.Env<E1, B>,
 ) => <E2, A extends readonly unknown[]>(
   fas: ReaderStream<E2, A>,
-) => ReaderStream<E1 & E2, readonly [...A, B]> = (fb) => pipe(fb, fromEnv, apTW)
+) => ReaderStream<E1 & E2, readonly [...A, B]> = (fb) => FN.pipe(fb, fromEnv, apTW)
 
 export const apTEnv: <E, B>(
   fb: E.Env<E, B>,
@@ -180,7 +182,7 @@ export const bindEnv: <N extends string, A, E, B>(
 ) => (
   ma: ReaderStream<E, A>,
 ) => ReaderStream<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = (name, f) =>
-  bind(name, flow(f, fromEnv))
+  bind(name, FN.flow(f, fromEnv))
 
 export const bindEnvW: <N extends string, A, E1, B>(
   name: Exclude<N, keyof A>,
@@ -190,7 +192,7 @@ export const bindEnvW: <N extends string, A, E1, B>(
 ) => ReaderStream<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = (
   name,
   f,
-) => bindW(name, flow(f, fromEnv))
+) => bindW(name, FN.flow(f, fromEnv))
 
 export const Monad: Monad2<URI> = {
   ...Chain,
@@ -226,7 +228,7 @@ export const chainResumeK = FRe.chainResumeK(FromResume, Chain)
 export const fromResumeK = FRe.fromResumeK(FromResume)
 
 export const FromEnv: FE.FromEnv2<URI> = {
-  fromEnv: (env) => flow(env, S.fromResume),
+  fromEnv: (env) => FN.flow(env, S.fromResume),
 }
 
 export const fromEnv = FromEnv.fromEnv
@@ -256,7 +258,7 @@ export const chainTaskK = FT.chainTaskK(FromTask, Chain)
 export const fromTaskK = FT.fromTaskK(FromTask)
 
 export const FromStream: FS.FromStream2<URI> = {
-  fromStream: constant,
+  fromStream: FN.constant,
 }
 
 export const fromStream = FromStream.fromStream
@@ -267,17 +269,17 @@ export const fromStreamK = FS.fromStreamK(FromStream)
 export const asksEnv =
   <E1, E2, B>(f: (e1: E1) => E.Env<E2, B>): ReaderStream<E1 & E2, B> =>
   (r) =>
-    pipe(r, f(r), S.fromResume)
+    FN.pipe(r, f(r), S.fromResume)
 
 export const asksIO =
   <E1, B>(f: (e1: E1) => IO<B>): ReaderStream<E1, B> =>
   (r) =>
-    pipe(r, f, S.fromIO)
+    FN.pipe(r, f, S.fromIO)
 
 export const asksTask =
   <E1, B>(f: (e1: E1) => Task<B>): ReaderStream<E1, B> =>
   (r) =>
-    pipe(r, f, S.fromTask)
+    FN.pipe(r, f, S.fromTask)
 
 export function filter<A, B extends A>(
   refinement: Refinement<A, B>,
@@ -289,13 +291,13 @@ export function filter<A>(
 export function filter<A>(predicate: Predicate<A>) {
   return <E>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
     (r) =>
-      pipe(r, rs, S.filter(predicate))
+      FN.pipe(r, rs, S.filter(predicate))
 }
 
 export function merge<E1, A>(a: ReaderStream<E1, A>) {
   return <E2, B>(b: ReaderStream<E2, B>): ReaderStream<E1 & E2, A | B> =>
     (r) =>
-      pipe(a(r), S.merge(b(r)))
+      FN.pipe(a(r), S.merge(b(r)))
 }
 
 export function mergeArray<A extends ReadonlyArray<ReaderStream<any, any>>>(
@@ -307,10 +309,10 @@ export function mergeArray<A extends ReadonlyArray<ReaderStream<any, any>>>(
 export function concatMap<A, E1>(f: (value: A) => ReaderStream<E1, A>) {
   return <E2>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, A> =>
     (r) =>
-      pipe(
+      FN.pipe(
         r,
         rs,
-        S.concatMap((a) => pipe(r, f(a))),
+        S.concatMap((a) => FN.pipe(r, f(a))),
       )
 }
 
@@ -318,10 +320,10 @@ export const recoverWith =
   <E1, A>(f: (error: Error) => ReaderStream<E1, A>) =>
   <E2>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, A> =>
   (r) =>
-    pipe(
+    FN.pipe(
       r,
       rs,
-      S.recoverWith((e) => pipe(r, f(e))),
+      S.recoverWith((e) => FN.pipe(r, f(e))),
     )
 
 export const empty = fromStreamK(S.empty)
@@ -404,19 +406,19 @@ export const withStream =
   <A, B>(f: (stream: S.Stream<A>) => B) =>
   <E>(rs: ReaderStream<E, A>): Re.Reader<E, B> =>
   (e) =>
-    pipe(e, rs, f)
+    FN.pipe(e, rs, f)
 
 export const tap =
   <A>(f: (value: A) => any) =>
   <E>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
-    pipe(rs, withStream(S.tap(f)))
+    FN.pipe(rs, withStream(S.tap(f)))
 
-export const take: (n: number) => <E, A>(rs: ReaderStream<E, A>) => ReaderStream<E, A> = flow(
+export const take: (n: number) => <E, A>(rs: ReaderStream<E, A>) => ReaderStream<E, A> = FN.flow(
   S.take,
   withStream,
 )
 
-export const skip: (n: number) => <E, A>(rs: ReaderStream<E, A>) => ReaderStream<E, A> = flow(
+export const skip: (n: number) => <E, A>(rs: ReaderStream<E, A>) => ReaderStream<E, A> = FN.flow(
   S.skip,
   withStream,
 )
@@ -429,7 +431,7 @@ export const startWith =
 export const exhaustLatest =
   <E1, E2, A>(rs: ReaderStream<E1, ReaderStream<E2, A>>): ReaderStream<E1 & E2, A> =>
   (e) =>
-    pipe(
+    FN.pipe(
       e,
       rs,
       S.exhaustMapLatest((rs) => rs(e)),
@@ -439,7 +441,7 @@ export const exhaustMapLatest =
   <A, E1, B>(f: (value: A) => ReaderStream<E1, B>) =>
   <E2>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, B> =>
   (e) =>
-    pipe(
+    FN.pipe(
       e,
       rs,
       S.exhaustMapLatest((a) => f(a)(e)),
@@ -448,7 +450,7 @@ export const exhaustMapLatest =
 export const exhaustLatestEnv =
   <E1, A>(env: E.Env<E1, A>) =>
   <E2, B>(rs: ReaderStream<E2, B>): ReaderStream<E1 & E2, A> =>
-    pipe(
+    FN.pipe(
       rs,
       exhaustMapLatest(() => fromEnv(env)),
     )
@@ -456,7 +458,7 @@ export const exhaustLatestEnv =
 export const exhaustMapLatestEnv =
   <A, E1, B>(f: (value: A) => E.Env<E1, B>) =>
   <E2>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, B> =>
-    pipe(rs, exhaustMapLatest(flow(f, fromEnv)))
+    FN.pipe(rs, exhaustMapLatest(FN.flow(f, fromEnv)))
 
 export const onDispose = (
   disposable: S.Disposable,
@@ -465,20 +467,20 @@ export const onDispose = (
 export const collectEvents =
   (scheduler: S.Scheduler) =>
   <E, A>(rs: ReaderStream<E, A>): Re.Reader<E, Promise<readonly A[]>> =>
-    pipe(rs, withStream(S.collectEvents(scheduler)))
+    FN.pipe(rs, withStream(S.collectEvents(scheduler)))
 
-export const now = flow(S.now, fromStream)
-export const at = flow(S.at, fromStream)
+export const now = FN.flow(S.now, fromStream)
+export const at = FN.flow(S.at, fromStream)
 
 export const scan =
   <A, B>(f: (acc: A, value: B) => A, seed: A) =>
   <E>(rs: ReaderStream<E, B>): ReaderStream<E, A> =>
-    pipe(rs, withStream(S.scan(f, seed)))
+    FN.pipe(rs, withStream(S.scan(f, seed)))
 
 export const skipRepeatsWith =
   <A>(Eq: Eq<A>) =>
   <E>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
-    pipe(rs, withStream(S.skipRepeatsWith((a, b) => Eq.equals(a)(b))))
+    FN.pipe(rs, withStream(S.skipRepeatsWith((a, b) => Eq.equals(a)(b))))
 
 export const skipRepeats: <E, A>(rs: ReaderStream<E, A>) => ReaderStream<E, A> =
   skipRepeatsWith(deepEqualsEq)
@@ -491,7 +493,7 @@ export const continueWith =
   <E1, A>(f: () => ReaderStream<E1, A>) =>
   <E2, B>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, A | B> =>
   (e) =>
-    pipe(
+    FN.pipe(
       e,
       rs,
       S.continueWith(() => f()(e)),
@@ -500,17 +502,17 @@ export const continueWith =
 export const debounce =
   (delay: S.Time) =>
   <E, A>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
-    pipe(rs, withStream(S.debounce(delay)))
+    FN.pipe(rs, withStream(S.debounce(delay)))
 
 export const delay =
   (delay: S.Time) =>
   <E, A>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
-    pipe(rs, withStream(S.delay(delay)))
+    FN.pipe(rs, withStream(S.delay(delay)))
 
 export const join =
   <E1, E2, A>(rs: ReaderStream<E1, ReaderStream<E2, A>>): ReaderStream<E1 & E2, A> =>
   (e) =>
-    pipe(
+    FN.pipe(
       e,
       rs,
       S.chain((f) => f(e)),
@@ -520,49 +522,49 @@ export const during =
   <E1, E2>(timeWindow: ReaderStream<E1, ReaderStream<E2, any>>) =>
   <E3, A>(values: ReaderStream<E3, A>): ReaderStream<E1 & E2 & E3, A> =>
   (e) =>
-    pipe(e, values, S.during<A>(join(timeWindow)(e)))
+    FN.pipe(e, values, S.during<A>(join(timeWindow)(e)))
 
 export const filterMap =
   <A, B>(f: (a: A) => O.Option<B>) =>
   <E>(fa: ReaderStream<E, A>): ReaderStream<E, B> =>
-    pipe(fa, withStream(S.filterMap(f)))
+    FN.pipe(fa, withStream(S.filterMap(f)))
 
 export const loop =
   <A, B, C>(f: (a: A, b: B) => SeedValue<A, C>, seed: A) =>
   <E>(fa: ReaderStream<E, B>): ReaderStream<E, C> =>
   (e) =>
-    pipe(e, fa, S.loop(f, seed))
+    FN.pipe(e, fa, S.loop(f, seed))
 
 export const mergeConcurrently =
   (concurrency: number) =>
   <E1, E2, A>(rs: ReaderStream<E1, ReaderStream<E2, A>>): ReaderStream<E1 & E2, A> =>
   (e) =>
-    pipe(
+    FN.pipe(
       e,
       rs,
       S.mergeMapConcurrently((rs) => rs(e), concurrency),
     )
 
 export const multicast = <E, A>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
-  pipe(rs, withStream(S.multicast))
+  FN.pipe(rs, withStream(S.multicast))
 
 export const partition =
   <A>(predicate: Predicate<A>) =>
   <E>(fa: ReaderStream<E, A>): Separated<ReaderStream<E, A>, ReaderStream<E, A>> => ({
-    left: pipe(fa, filter(not(predicate))),
-    right: pipe(fa, filter(predicate)),
+    left: FN.pipe(fa, filter(not(predicate))),
+    right: FN.pipe(fa, filter(predicate)),
   })
 
 export const partitionMap =
   <A, B, C>(f: (a: A) => Either<B, C>) =>
   <E>(fa: ReaderStream<E, A>): Separated<ReaderStream<E, B>, ReaderStream<E, C>> => ({
-    left: pipe(
+    left: FN.pipe(
       fa,
       map(f),
       filter(isLeft),
       map((x) => x.left),
     ),
-    right: pipe(
+    right: FN.pipe(
       fa,
       map(f),
       filter(isRight),
@@ -574,14 +576,14 @@ export const race =
   <E1, A>(second: ReaderStream<E1, A>) =>
   <E2, B>(first: ReaderStream<E2, B>): ReaderStream<E1 & E2, A | B> =>
   (e) =>
-    pipe(
+    FN.pipe(
       e,
       first,
       S.race<A | B>(() => second(e)),
     )
 
 export const separate = <E, A, B>(rs: ReaderStream<E, Either<A, B>>) =>
-  pipe(
+  FN.pipe(
     rs,
     partitionMap((e) => e),
   )
@@ -590,27 +592,27 @@ export const since =
   <E1>(timeWindow: ReaderStream<E1, any>) =>
   <E2, A>(values: ReaderStream<E2, A>): ReaderStream<E1 & E2, A> =>
   (e) =>
-    pipe(e, values, S.since<A>(timeWindow(e)))
+    FN.pipe(e, values, S.since<A>(timeWindow(e)))
 
 export const skipAfter =
   <A>(p: (a: A) => boolean) =>
   <E>(s: ReaderStream<E, A>): ReaderStream<E, A> =>
-    pipe(s, withStream(S.skipAfter(p)))
+    FN.pipe(s, withStream(S.skipAfter(p)))
 
 export const skipWhile =
   <A>(p: (a: A) => boolean) =>
   <E>(s: ReaderStream<E, A>): ReaderStream<E, A> =>
-    pipe(s, withStream(S.skipWhile(p)))
+    FN.pipe(s, withStream(S.skipWhile(p)))
 
 export const slice =
   (skip: number, take: number) =>
   <E, A>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
-    pipe(rs, withStream(S.slice(skip, take)))
+    FN.pipe(rs, withStream(S.slice(skip, take)))
 
 export const switchLatest =
   <E1, E2, A>(rs: ReaderStream<E1, ReaderStream<E2, A>>): ReaderStream<E1 & E2, A> =>
   (e) =>
-    pipe(
+    FN.pipe(
       e,
       rs,
       S.map((f) => f(e)),
@@ -620,12 +622,12 @@ export const switchLatest =
 export const takeWhile =
   <A>(p: (a: A) => boolean) =>
   <E>(s: ReaderStream<E, A>): ReaderStream<E, A> =>
-    pipe(s, withStream(S.takeWhile(p)))
+    FN.pipe(s, withStream(S.takeWhile(p)))
 
 export const throttle =
   (period: number) =>
   <E, A>(s: ReaderStream<E, A>): ReaderStream<E, A> =>
-    pipe(s, withStream(S.throttle(period)))
+    FN.pipe(s, withStream(S.throttle(period)))
 
 export const throwError = fromStreamK(S.throwError)
 
@@ -633,9 +635,9 @@ export const until =
   <E1>(timeWindow: ReaderStream<E1, any>) =>
   <E2, A>(values: ReaderStream<E2, A>): ReaderStream<E1 & E2, A> =>
   (e) =>
-    pipe(e, values, S.until<A>(timeWindow(e)))
+    FN.pipe(e, values, S.until<A>(timeWindow(e)))
 
-export const zero = flow(S.zero, fromStream)
+export const zero = FN.flow(S.zero, fromStream)
 
 export const Filterable: Filterable_.Filterable2<URI> = {
   partitionMap,
