@@ -188,12 +188,6 @@ declare module 'fp-ts/HKT' {
   }
 }
 
-declare module '@fp/Hkt' {
-  export interface UriToVariance {
-    [WrappedURI]: V<E, Contravariant>
-  }
-}
-
 export const UseSome: P.UseSome2<WrappedURI> = {
   useSome,
 }

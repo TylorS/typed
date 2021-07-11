@@ -93,12 +93,6 @@ declare module 'fp-ts/HKT' {
   }
 }
 
-declare module '@fp/Hkt' {
-  export interface UriToVariance {
-    [URI]: V<R, Contravariant> & V<E, Covariant>
-  }
-}
-
 export const Pointed: Pointed3<URI> = {
   of,
 }
