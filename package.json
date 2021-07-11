@@ -102,6 +102,10 @@
       "require": "./cjs/Branded.js",
       "import": "./esm/Branded.js"
     },
+    "./Context": {
+      "require": "./cjs/Context.js",
+      "import": "./esm/Context.js"
+    },
     "./Data": {
       "require": "./cjs/Data.js",
       "import": "./esm/Data.js"
