@@ -3,7 +3,7 @@ import * as FRe from '@fp/FromResume'
 import { Arity1 } from '@fp/function'
 import * as R from '@fp/Resume'
 import * as M from '@most/core'
-import { disposeNone } from '@most/disposable'
+import { disposeAll, disposeNone } from '@most/disposable'
 import { asap, schedulerRelativeTo } from '@most/scheduler'
 import * as types from '@most/types'
 import * as Alt_ from 'fp-ts/Alt'
@@ -14,6 +14,7 @@ import * as CH from 'fp-ts/Chain'
 import { ChainRec1 } from 'fp-ts/ChainRec'
 import { Compactable1 } from 'fp-ts/Compactable'
 import { Either, isLeft, isRight, left, match, right } from 'fp-ts/Either'
+import { Eq } from 'fp-ts/Eq'
 import { Filterable1 } from 'fp-ts/Filterable'
 import { FromIO1 } from 'fp-ts/FromIO'
 import { FromTask1 } from 'fp-ts/FromTask'
@@ -24,8 +25,12 @@ import { Monoid } from 'fp-ts/Monoid'
 import * as O from 'fp-ts/Option'
 import { Pointed1 } from 'fp-ts/Pointed'
 import { Predicate } from 'fp-ts/Predicate'
+import * as RA from 'fp-ts/ReadonlyArray'
+import { lookup } from 'fp-ts/ReadonlyMap'
 import { Separated } from 'fp-ts/Separated'
 import { Task } from 'fp-ts/Task'
+
+import { deepEqualsEq } from './Eq'
 
 export type Stream<A> = types.Stream<A>
 
@@ -368,6 +373,127 @@ class ExhaustLatestSink<A> implements types.Sink<types.Stream<A>>, types.Disposa
     this.disposable.dispose()
     this.sampling = false
     this.shouldResample = false
+  }
+}
+
+/**
+ * Using the provided Eq mergeMapWhen conditionally applies a Kliesli arrow
+ * to the values within an Array when they are added and any values removed
+ * from the array will be disposed of immediately.
+ */
+export const mergeMapWhen =
+  <V>(Eq: Eq<V> = deepEqualsEq) =>
+  <A>(f: (value: V) => types.Stream<A>) =>
+  (values: Stream<ReadonlyArray<V>>): Stream<ReadonlyArray<A>> =>
+    new MergeMapWhen(Eq, f, values)
+
+class MergeMapWhen<V, A> implements types.Stream<ReadonlyArray<A>> {
+  constructor(
+    readonly Eq: Eq<V>,
+    readonly f: (getValue: V) => types.Stream<A>,
+    readonly values: Stream<ReadonlyArray<V>>,
+  ) {}
+
+  run(sink: types.Sink<ReadonlyArray<A>>, scheduler: types.Scheduler): types.Disposable {
+    const s = new MergeMapWhenSink(sink, scheduler, this)
+
+    return disposeBoth(this.values.run(s, scheduler), s)
+  }
+}
+
+class MergeMapWhenSink<V, A> implements types.Sink<ReadonlyArray<V>> {
+  readonly disposables = new Map<V, types.Disposable>()
+  readonly values = new Map<V, A>()
+
+  readonly findDifference: (second: readonly V[]) => (first: readonly V[]) => readonly V[]
+  readonly findDisposable: (k: V) => O.Option<types.Disposable>
+  readonly findValue: (k: V) => O.Option<A>
+
+  current: ReadonlyArray<V> = []
+  finished = false
+  referenceCount = 0
+  disposable: types.Disposable = disposeNone()
+
+  constructor(
+    readonly sink: types.Sink<ReadonlyArray<A>>,
+    readonly scheduler: types.Scheduler,
+    readonly source: MergeMapWhen<V, A>,
+  ) {
+    this.findDisposable = (k: V) => lookup(source.Eq)(k)(this.disposables)
+    this.findValue = (k: V) => lookup(source.Eq)(k)(this.values)
+    this.findDifference = RA.difference(source.Eq)
+  }
+
+  event = (t: types.Time, values: ReadonlyArray<V>) => {
+    const removed = pipe(this.current, this.findDifference(values))
+    const added = pipe(values, this.findDifference(this.current))
+
+    this.current = values
+
+    // Clean up all the removed keys
+    pipe(removed, RA.map(this.findDisposable), RA.compact, disposeAll).dispose()
+    removed.forEach((r) => this.values.delete(r))
+
+    // Subscribe to all the newly added values
+    added.forEach((a) => this.disposables.set(a, this.runInner(t, a)))
+
+    this.disposable = this.emitIfReady()
+  }
+
+  error = (t: types.Time, error: Error) => {
+    this.dispose()
+    this.sink.error(t, error)
+  }
+
+  end = (t: types.Time) => {
+    this.finished = true
+    this.endIfReady(t)
+  }
+
+  dispose = () => {
+    this.finished = true
+    this.disposables.forEach((d) => d.dispose())
+    this.disposables.clear()
+    this.values.clear()
+    this.current = []
+  }
+
+  runInner = (t: types.Time, v: V) =>
+    this.source.f(v).run(this.innerSink(v), schedulerRelativeTo(t, this.scheduler))
+
+  innerSink = (v: V): types.Sink<A> => {
+    this.referenceCount++
+
+    return {
+      event: (_, a) => {
+        this.values.set(v, a)
+
+        this.disposable.dispose()
+        this.disposable = this.emitIfReady()
+      },
+      error: (t, e) => this.error(t, e),
+      end: (t) => {
+        this.referenceCount--
+        this.endIfReady(t)
+      },
+    }
+  }
+
+  emitIfReady = (): types.Disposable => {
+    const values = pipe(this.current, RA.map(this.findValue), RA.compact)
+
+    if (values.length === this.current.length) {
+      return asap(M.propagateEventTask(values, this.sink), this.scheduler)
+    }
+
+    return disposeNone()
+  }
+
+  endIfReady = (t: types.Time) => {
+    if (this.finished && this.referenceCount === 0) {
+      this.sink.end(t)
+      this.dispose()
+    }
   }
 }
 

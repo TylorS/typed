@@ -1,6 +1,5 @@
 import * as E from '@fp/Env'
 import * as H from '@fp/hooks'
-import * as N from '@fp/number'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
 import * as S from '@fp/Stream'
@@ -54,17 +53,18 @@ const Counter = (label: string): E.Env<Ref.Refs, Renderable> =>
 // Creates a Counter to keep track of the total number of Counters
 const Header: RS.ReaderStream<Ref.Refs, Renderable> = F.pipe(
   `Number Of Counters`,
-  Counter,
-  H.withHooks,
+  RS.of,
+  H.withHooks<string>()(Counter),
 )
 
 // Create a list of Counters with their own isolated Ref.Refs for state management
 // based on the current count
 const Counters: RS.ReaderStream<Ref.Refs, ReadonlyArray<Renderable>> = F.pipe(
   Count.get,
-  E.map((count) => (count === 0 ? [] : range(1, count))),
-  H.withHooks,
-  H.mergeMapWithHooks(N.Eq)(F.flow(String, Counter)),
+  RS.fromEnv,
+  RS.merge(Count.values),
+  RS.map((count): ReadonlyArray<number> => (count === 0 ? [] : range(1, count))),
+  H.withHooksArray<number>()(F.flow(String, Counter)),
 )
 
 // Combines Counters with a Header that is also just a Counter and renders on each update
