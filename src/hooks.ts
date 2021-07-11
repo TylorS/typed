@@ -125,6 +125,8 @@ const createHookRefArray = <E, A>(
     E.map((refs) => pipe(RefArray.create(initial, options), RefArray.useSome(refs))),
   )
 
+const hookUpdates = pipe(Ref.getRefEvents, RS.filter(not(Ref.isCreated)))
+
 /**
  * Helper to listen to a Stream of values and interal Ref events
  * and apply them to an Env-returning function to the latest input and keeps track
@@ -143,9 +145,7 @@ export const withHooks =
           // Allows skipping "props" updates
           RS.skipRepeatsWith(Eq),
           // Ensure we sample when internal state has been updated
-          RS.switchMapW((a) =>
-            pipe(Ref.getRefEvents, RS.filter(not(Ref.isCreated)), RS.constant(a), RS.startWith(a)),
-          ),
+          RS.switchMapW((a) => pipe(hookUpdates, RS.constant(a), RS.startWith(a))),
           RS.exhaustMapLatestEnv((a) =>
             pipe(
               // Reset Hook Index on each invocation
