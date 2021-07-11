@@ -8,14 +8,11 @@ import * as RefArray from '@fp/RefArray'
 import * as RefDisposable from '@fp/RefDisposable'
 import * as RefMap from '@fp/RefMap'
 import * as RefMapM from '@fp/RefMapM'
-import { exec } from '@fp/Resume'
 import * as S from '@fp/Stream'
-import { disposeAll, disposeBoth, disposeNone } from '@most/disposable'
-import { asap, schedulerRelativeTo } from '@most/scheduler'
+import { EqStrict, tuple } from 'fp-ts/Eq'
 import * as O from 'fp-ts/Option'
 import { not } from 'fp-ts/Predicate'
-import * as RA from 'fp-ts/ReadonlyArray'
-import { lookup } from 'fp-ts/ReadonlyMap'
+import * as RM from 'fp-ts/ReadonlyMap'
 
 const INITIAL_HOOK_INDEX = 0
 
@@ -157,156 +154,84 @@ export const withHooks =
       ),
     )
 
-export const withHooksArray =
-  <A>(Eq: Eq<A> = deepEqualsEq) =>
-  <E1, B>(f: (value: A) => Ref.Env<E1, B>) =>
-  <E2>(rs: RS.ReaderStream<E2, readonly A[]>): RS.ReaderStream<E1 & E2 & Ref.Refs, readonly B[]> =>
-  (e) =>
-    new WithHooksArray(Eq, f, rs, e)
-
-class WithHooksArray<E1, E2, A, B> implements S.Stream<readonly B[]> {
-  constructor(
-    readonly Eq: Eq<A>,
-    readonly f: (value: A) => Ref.Env<E1, B>,
-    readonly rs: RS.ReaderStream<E2, readonly A[]>,
-    readonly r: E1 & E2 & Ref.Refs,
-  ) {}
-
-  run(sink: S.Sink<readonly B[]>, scheduler: S.Scheduler): S.Disposable {
-    const s = new WithHooksArraySink(this, sink, scheduler)
-
-    return disposeBoth(s, this.rs(this.r).run(s, scheduler))
-  }
-}
-
-class WithHooksArraySink<E1, E2, A, B> implements S.Sink<readonly A[]>, S.Disposable {
-  readonly disposables = new Map<A, S.Disposable>()
-  readonly references = new Map<A, Ref.Refs>()
-  readonly values = new Map<A, B>()
-
-  readonly findDifference: (second: readonly A[]) => (first: readonly A[]) => readonly A[]
-  readonly findDisposable: (k: A) => O.Option<S.Disposable>
-  readonly findRefs: (k: A) => O.Option<Ref.Refs>
-
-  protected current: ReadonlyArray<A> = []
-  protected disposable: S.Disposable = disposeNone()
-  protected finished = false
-  protected referenceCount = 0
-  protected parentRefs: Ref.Refs
-
-  constructor(
-    readonly host: WithHooksArray<E1, E2, A, B>,
-    readonly sink: S.Sink<readonly B[]>,
-    readonly scheduler: S.Scheduler,
-  ) {
-    this.findDisposable = (k: A) => lookup(host.Eq)(k)(this.disposables)
-    this.findRefs = (k: A) => lookup(host.Eq)(k)(this.references)
-    this.findDifference = RA.difference(host.Eq)
-    this.parentRefs = {
-      getRef: host.r.getRef,
-      hasRef: host.r.hasRef,
-      setRef: host.r.setRef,
-      removeRef: host.r.removeRef,
-      refEvents: host.r.refEvents,
-      parentRefs: host.r.parentRefs,
-    }
-  }
-
-  event = (t: S.Time, values: readonly A[]) => {
-    const removed = pipe(this.current, this.findDifference(values))
-    const added = pipe(values, this.findDifference(this.current))
-
-    this.current = values
-
-    // Clean up all the removed keys
-    pipe(removed, RA.map(this.findDisposable), RA.compact, disposeAll).dispose()
-    removed.forEach((r) => {
-      this.values.delete(r)
-      this.references.delete(r)
-    })
-
-    // Subscribe to all the newly added values
-    added.forEach((a) => this.disposables.set(a, this.runInner(t, a)))
-
-    this.disposable = this.emitIfReady()
-  }
-
-  error = (t: S.Time, error: Error) => {
-    this.dispose()
-    this.sink.error(t, error)
-  }
-
-  end = (t: S.Time) => {
-    this.finished = true
-    this.endIfReady(t)
-  }
-
-  dispose = () => {
-    this.finished = true
-    this.disposables.forEach((d) => d.dispose())
-    this.disposables.clear()
-    this.values.clear()
-    this.current = []
-  }
-
-  runInner = (t: S.Time, a: A): S.Disposable => {
-    const refs = this.getRefs(a)
-
-    return pipe(refs.refEvents[1], S.filter(not(Ref.isCreated))).run(
-      this.innerSink(),
-      schedulerRelativeTo(t, this.scheduler),
+export const useHooksArray =
+  <A>(keyEq: Eq<A> = deepEqualsEq, valueEq: Eq<A> = keyEq) =>
+  <E1, B>(f: (value: A) => Ref.Env<E1, B>) => {
+    const keyed = S.keyed(keyEq)
+    const withHooksF = withHooks(valueEq)(f)
+    const mergeEq = tuple(
+      EqStrict as Eq<S.Stream<A>>,
+      EqStrict as Eq<Ref.Refs>,
+      // We don't want these to unsubscribe/resubscribe if these change
+      alwaysEqualsEq as Eq<S.Disposable>,
+      alwaysEqualsEq as Eq<E1>,
     )
-  }
-
-  innerSink = (): S.Sink<unknown> => {
-    this.referenceCount++
-
-    return {
-      event: () => {
-        this.disposable.dispose()
-        this.disposable = this.emitIfReady()
-      },
-      error: (t, e) => this.error(t, e),
-      end: (t) => {
-        this.referenceCount--
-        this.endIfReady(t)
-      },
-    }
-  }
-
-  getRefs = (k: A) =>
-    pipe(
-      k,
-      this.findRefs,
-      O.getOrElseW(() => {
-        const r = Ref.refs({ parentRefs: this.parentRefs })
-
-        this.references.set(k, r)
-
-        return r
-      }),
+    const mergeMap = S.mergeMapWhen(mergeEq)(([s, refs, d, e1]) =>
+      pipe(s, RS.fromStream, withHooksF, RS.onDispose(d))({ ...e1, ...refs }),
     )
 
-  // TODO: How to make this more effecient??
-  // Can we keep a map of current values and only sample those that do not currently have values?
-  emitIfReady = () => {
-    const env = pipe(
-      this.current,
-      RA.map((a) => pipe(a, this.host.f, E.useSome(this.getRefs(a)))),
-      E.zipW,
-      E.chainW((values) => E.fromIO(() => this.sink.event(this.scheduler.currentTime(), values))),
-    )
-
-    return asap(
-      S.createCallbackTask(() => exec(env(this.host.r))),
-      this.scheduler,
-    )
+    return <E2>(
+        rs: RS.ReaderStream<E2, readonly A[]>,
+      ): RS.ReaderStream<E1 & E2 & Ref.Refs, readonly B[]> =>
+      (e) =>
+        pipe(
+          useKeyedRefs(EqStrict as Eq<S.Stream<A>>),
+          RS.fromEnv,
+          RS.chainStreamK(({ findRefs, deleteRefs }) =>
+            pipe(
+              e,
+              rs,
+              keyed,
+              S.map((streams) => streams.map((s) => [s, findRefs(s), deleteRefs(s), e] as const)),
+              mergeMap,
+            ),
+          ),
+        )(e)
   }
 
-  endIfReady = (t: S.Time) => {
-    if (this.finished && this.referenceCount === 0) {
-      this.sink.end(t)
-      this.dispose()
-    }
-  }
+// Always do an initial sampling of Envs
+// Separate each Env with separate Refs
+// Discard previously created resources when no longer needed
+// Sample an Env everytime there's a Ref Event
+// Sample an Env each time there values update
+
+// Keeps track of a mutable set of References. Useful for building combinators for higher-order hooks.
+export const useKeyedRefs = <K>(Eq: Eq<K>) => {
+  const find = RM.lookup(Eq)
+
+  return pipe(
+    E.Do,
+    E.bindW('parentRefs', () => Ref.getRefs),
+    E.bindW('ref', () => useRef(E.fromIO(() => new Map<K, Ref.Refs>()))),
+    E.bindW('references', ({ ref }) => ref.get),
+    E.bindW('findRefs', ({ references, parentRefs }) =>
+      E.of((key: K) =>
+        pipe(
+          references,
+          find(key),
+          O.getOrElseW(() => {
+            const refs = Ref.refs({ parentRefs })
+
+            references.set(key, refs)
+
+            return refs
+          }),
+        ),
+      ),
+    ),
+    E.bindW('deleteRefs', ({ references }) =>
+      E.of(
+        (key: K): S.Disposable => ({
+          dispose: () => {
+            references.forEach((_, k) => {
+              if (Eq.equals(k)(key)) {
+                references.delete(k)
+              }
+            })
+          },
+        }),
+      ),
+    ),
+    E.map(({ findRefs, deleteRefs }) => ({ findRefs, deleteRefs } as const)),
+  )
 }

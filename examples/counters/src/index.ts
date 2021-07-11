@@ -64,12 +64,14 @@ const Counters: RS.ReaderStream<Ref.Refs, ReadonlyArray<Renderable>> = F.pipe(
   RS.fromEnv,
   RS.merge(Count.values),
   RS.map((count): ReadonlyArray<number> => (count === 0 ? [] : range(1, count))),
-  H.withHooksArray<number>()(F.flow(String, Counter)),
+  H.useHooksArray<number>()(F.flow(String, Counter)),
 )
 
 // Combines Counters with a Header that is also just a Counter and renders on each update
 const Main: RS.ReaderStream<Ref.Refs, HTMLElement> = F.pipe(
-  RS.combineAll(Header, Counters),
+  Header,
+  RS.tupled,
+  RS.apT(Counters),
   RS.map(([header, counters]) => html`<div>${header} ${counters}</div>`),
   RS.scan(render, rootElement),
 )

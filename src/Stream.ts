@@ -26,10 +26,12 @@ import * as O from 'fp-ts/Option'
 import { Pointed1 } from 'fp-ts/Pointed'
 import { Predicate } from 'fp-ts/Predicate'
 import * as RA from 'fp-ts/ReadonlyArray'
-import { lookup } from 'fp-ts/ReadonlyMap'
+import * as RM from 'fp-ts/ReadonlyMap'
 import { Separated } from 'fp-ts/Separated'
 import { Task } from 'fp-ts/Task'
+import { fst, snd } from 'fp-ts/Tuple2'
 
+import { Adapter, create } from './Adapter'
 import { deepEqualsEq } from './Eq'
 
 export type Stream<A> = types.Stream<A>
@@ -419,8 +421,8 @@ class MergeMapWhenSink<V, A> implements types.Sink<ReadonlyArray<V>> {
     readonly scheduler: types.Scheduler,
     readonly source: MergeMapWhen<V, A>,
   ) {
-    this.findDisposable = (k: V) => lookup(source.Eq)(k)(this.disposables)
-    this.findValue = (k: V) => lookup(source.Eq)(k)(this.values)
+    this.findDisposable = (k: V) => RM.lookup(source.Eq)(k)(this.disposables)
+    this.findValue = (k: V) => RM.lookup(source.Eq)(k)(this.values)
     this.findDifference = RA.difference(source.Eq)
   }
 
@@ -437,7 +439,7 @@ class MergeMapWhenSink<V, A> implements types.Sink<ReadonlyArray<V>> {
     // Subscribe to all the newly added values
     added.forEach((a) => this.disposables.set(a, this.runInner(t, a)))
 
-    this.disposable = this.emitIfReady()
+    this.emitIfReady()
   }
 
   error = (t: types.Time, error: Error) => {
@@ -468,8 +470,7 @@ class MergeMapWhenSink<V, A> implements types.Sink<ReadonlyArray<V>> {
       event: (_, a) => {
         this.values.set(v, a)
 
-        this.disposable.dispose()
-        this.disposable = this.emitIfReady()
+        this.emitIfReady()
       },
       error: (t, e) => this.error(t, e),
       end: (t) => {
@@ -479,14 +480,12 @@ class MergeMapWhenSink<V, A> implements types.Sink<ReadonlyArray<V>> {
     }
   }
 
-  emitIfReady = (): types.Disposable => {
+  emitIfReady = () => {
     const values = pipe(this.current, RA.map(this.findValue), RA.compact)
 
     if (values.length === this.current.length) {
-      return asap(M.propagateEventTask(values, this.sink), this.scheduler)
+      this.sink.event(this.scheduler.currentTime(), values)
     }
-
-    return disposeNone()
   }
 
   endIfReady = (t: types.Time) => {
@@ -494,6 +493,99 @@ class MergeMapWhenSink<V, A> implements types.Sink<ReadonlyArray<V>> {
       this.sink.end(t)
       this.dispose()
     }
+  }
+}
+
+export const keyed =
+  <A>(Eq: Eq<A>) =>
+  (stream: Stream<ReadonlyArray<A>>): Stream<ReadonlyArray<Stream<A>>> =>
+    new Keyed<A>(Eq, stream)
+
+class Keyed<A> implements Stream<ReadonlyArray<Stream<A>>> {
+  constructor(readonly Eq: Eq<A>, readonly stream: Stream<ReadonlyArray<A>>) {}
+
+  run(sink: types.Sink<ReadonlyArray<Stream<A>>>, scheduler: types.Scheduler): types.Disposable {
+    const s = new KeyedSink(this.Eq, sink, scheduler)
+
+    return disposeBoth(s, this.stream.run(s, scheduler))
+  }
+}
+
+class KeyedSink<A> implements types.Sink<ReadonlyArray<A>>, types.Disposable {
+  adapters = new Map<A, readonly [values: Adapter<A>, endSignal: Adapter<null>]>()
+
+  current: readonly A[] = []
+  findDifference: (second: readonly A[]) => (first: readonly A[]) => readonly A[]
+  findAdapter: (
+    k: A,
+  ) => O.Option<
+    readonly [
+      values: readonly [(event: A) => void, types.Stream<A>],
+      endSignal: readonly [(event: null) => void, types.Stream<null>],
+    ]
+  >
+
+  constructor(
+    readonly Eq: Eq<A>,
+    readonly sink: types.Sink<ReadonlyArray<Stream<A>>>,
+    readonly scheduler: types.Scheduler,
+  ) {
+    this.findDifference = RA.difference(Eq)
+    this.findAdapter = (k: A) => RM.lookup(Eq)(k)(this.adapters)
+  }
+
+  event = (t: types.Time, values: readonly A[]) => {
+    // Clean up after any removed values
+    const removed = pipe(this.current, this.findDifference(values))
+
+    removed.forEach((r) => {
+      // Send the end signal
+      this.getAdapter(r)[1][0](null)
+
+      // Delete
+      this.adapters.delete(r)
+    })
+
+    this.current = values
+
+    // Emit our latest set of streams
+    this.sink.event(
+      t,
+      values.map((a) => pipe(a, this.getAdapter, fst, snd)),
+    )
+
+    values.forEach((a) => pipe(a, this.getAdapter, fst, fst)(a))
+  }
+
+  getAdapter = (k: A) => {
+    return pipe(
+      k,
+      this.findAdapter,
+      O.getOrElseW(() => {
+        const endSignal = create<null>()
+        const values = create<A, A>(flow(M.startWith(k), M.until<A>(endSignal[1]), M.multicast))
+        const adapter = [values, endSignal] as const
+
+        this.adapters.set(k, adapter)
+
+        return adapter
+      }),
+    )
+  }
+
+  error = (t: types.Time, err: Error) => {
+    this.dispose()
+    this.sink.error(t, err)
+  }
+
+  end = (t: types.Time) => {
+    this.dispose()
+    this.sink.end(t)
+  }
+
+  dispose = () => {
+    this.current = []
+    this.adapters.clear()
   }
 }
 

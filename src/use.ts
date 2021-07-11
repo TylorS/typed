@@ -13,7 +13,6 @@ import * as S from '@fp/Stream'
 import { disposeBoth, disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
 import { not } from 'fp-ts/Predicate'
-import * as RM from 'fp-ts/ReadonlyMap'
 
 /**
  * @typed/fp/use is a collection of functions built atop of useRef + hooks. Anytime they
@@ -184,45 +183,4 @@ export function useStream<A, B = null>(
   eq: Eq<B> = deepEqualsEq,
 ): E.Env<Ref.Refs & SchedulerEnv, S.Disposable> {
   return useReaderStream(() => s, dep, eq)
-}
-
-// Keeps track of a mutable set of References. Useful for building combinators for higher-order hooks.
-export const useKeyedRefs = <K>(Eq: Eq<K>) => {
-  const find = RM.lookup(Eq)
-
-  return pipe(
-    E.Do,
-    E.bindW('parentRefs', () => Ref.getRefs),
-    E.bindW('ref', () => H.useRef(E.fromIO(() => new Map<K, Ref.Refs>()))),
-    E.bindW('references', ({ ref }) => ref.get),
-    E.bindW('findRefs', ({ references, parentRefs }) =>
-      E.of((key: K) =>
-        pipe(
-          references,
-          find(key),
-          O.getOrElseW(() => {
-            const refs = Ref.refs({ parentRefs })
-
-            references.set(key, refs)
-
-            return refs
-          }),
-        ),
-      ),
-    ),
-    E.bindW('deleteRefs', ({ references }) =>
-      E.of(
-        (key: K): S.Disposable => ({
-          dispose: () => {
-            references.forEach((_, k) => {
-              if (Eq.equals(k)(key)) {
-                references.delete(k)
-              }
-            })
-          },
-        }),
-      ),
-    ),
-    E.map(({ findRefs, deleteRefs }) => ({ findRefs, deleteRefs } as const)),
-  )
 }

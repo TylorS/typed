@@ -368,7 +368,9 @@ function makeDeleteRef(
 /**
  * Creates a union of Envs for all the possible combinations for Ref environments.
  */
-export type Env<E, A> = E.Env<E, A> | GetEnv<CombinationsOf<E, [Get, Has, Set, Remove, Events]>, A>
+export type Env<E, A> =
+  | E.Env<E, A>
+  | GetEnv<CombinationsOf<E, [Get, Has, Set, Remove, Events, ParentRefs]>, A>
 
 type CombinationsOf<E, A extends readonly any[]> = A extends readonly [infer S1, ...infer SS]
   ? GetCombinationsOf<E, S1, SS>
@@ -389,14 +391,6 @@ type GetCombinationsOf<
       ...C
     ]
 
-type GetEnv<
-  Combos extends ReadonlyArray<ReadonlyArray<any>>,
-  A,
-  R = never,
-> = Combos extends readonly [infer H, ...infer T]
-  ? GetEnv<
-      Cast<T, ReadonlyArray<ReadonlyArray<any>>>,
-      A,
-      R | E.Env<Intersect<Cast<H, readonly any[]>>, A>
-    >
-  : R
+type GetEnv<Combos extends ReadonlyArray<ReadonlyArray<any>>, A> = {
+  readonly [K in keyof Combos]: E.Env<Intersect<Cast<Combos[K], readonly any[]>>, A>
+}[number]
