@@ -69,9 +69,7 @@ const Counters: RS.ReaderStream<Ref.Refs, ReadonlyArray<Renderable>> = F.pipe(
 
 // Combines Counters with a Header that is also just a Counter and renders on each update
 const Main: RS.ReaderStream<Ref.Refs, HTMLElement> = F.pipe(
-  Header,
-  RS.tupled,
-  RS.apT(Counters),
+  RS.combineAll(Header, Counters),
   RS.map(([header, counters]) => html`<div>${header} ${counters}</div>`),
   RS.scan(render, rootElement),
 )
