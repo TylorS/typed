@@ -6,7 +6,7 @@ import { deepStrictEqual, ok } from 'assert'
 import { pipe } from 'fp-ts/function'
 import { describe, it } from 'mocha'
 
-export const test = describe(__filename, () => {
+describe(__filename, () => {
   describe(throwError.name, () => {
     it(`places the requirement to handle an error in the environment`, (done) => {
       const key = 'foo' as const

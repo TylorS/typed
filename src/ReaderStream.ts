@@ -1,4 +1,5 @@
 import * as E from '@fp/Env'
+import { deepEqualsEq } from '@fp/Eq'
 import * as FE from '@fp/FromEnv'
 import * as FRe from '@fp/FromResume'
 import * as FS from '@fp/FromStream'
@@ -30,8 +31,6 @@ import * as RT from 'fp-ts/ReaderT'
 import { Refinement } from 'fp-ts/Refinement'
 import { Separated } from 'fp-ts/Separated'
 import { Task } from 'fp-ts/Task'
-
-import { deepEqualsEq } from './Eq'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>

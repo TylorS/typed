@@ -1,3 +1,4 @@
+import { deepEqualsEq } from '@fp/Eq'
 import * as AD from 'fp-ts/Alt'
 import * as Alternative_ from 'fp-ts/Alternative'
 import * as App from 'fp-ts/Applicative'
@@ -13,8 +14,6 @@ import { Pointed1 } from 'fp-ts/Pointed'
 import { Predicate } from 'fp-ts/Predicate'
 import { Semigroup } from 'fp-ts/Semigroup'
 import { Show } from 'fp-ts/Show'
-
-import { deepEqualsEq } from './Eq'
 
 export type Data<A> = NoData | Loading | Refresh<A> | Replete<A>
 

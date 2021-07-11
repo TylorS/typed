@@ -155,18 +155,18 @@ export const values =
     pipe(M.get, E.map(RM.values(O)))
 
 export interface Wrapped<E, K, V> extends RefMapM<E, K, V> {
-  readonly getOrCreate: <E2>(k: K, orCreate: E.Env<E2, V>) => E.Env<E & Ref.Set & E2 & Ref.Get, V>
-  readonly upsertAt: (k: K, v: V) => E.Env<E & Ref.Get & Ref.Set, Map<K, V>>
-  readonly lookup: (k: K) => E.Env<E & Ref.Get, O.Option<V>>
-  readonly elem: (v: V) => E.Env<E & Ref.Get, boolean>
+  readonly getOrCreate: <E2>(k: K, orCreate: E.Env<E2, V>) => E.Env<E & E2 & Ref.Refs, V>
+  readonly upsertAt: (k: K, v: V) => E.Env<E & Ref.Refs, Map<K, V>>
+  readonly lookup: (k: K) => E.Env<E & Ref.Refs, O.Option<V>>
+  readonly elem: (v: V) => E.Env<E & Ref.Refs, boolean>
   readonly filter: {
     <V2 extends V>(r: Refinement<V, V2>): E.Env<E & Ref.Refs, Map<K, V>>
     (r: Predicate<V>): E.Env<E & Ref.Refs, Map<K, V>>
   }
-  readonly insertAt: (k: K, v: V) => E.Env<E & Ref.Get & Ref.Set, Map<K, V>>
-  readonly updateAt: (k: K, v: V) => E.Env<E & Ref.Get & Ref.Set, Map<K, V>>
-  readonly modifyAt: (k: K, v: Endomorphism<V>) => E.Env<E & Ref.Get & Ref.Set, Map<K, V>>
-  readonly deleteAt: (k: K) => E.Env<E & Ref.Get & Ref.Set, Map<K, V>>
+  readonly insertAt: (k: K, v: V) => E.Env<E & Ref.Refs, Map<K, V>>
+  readonly updateAt: (k: K, v: V) => E.Env<E & Ref.Refs, Map<K, V>>
+  readonly modifyAt: (k: K, v: Endomorphism<V>) => E.Env<E & Ref.Refs, Map<K, V>>
+  readonly deleteAt: (k: K) => E.Env<E & Ref.Refs, Map<K, V>>
 }
 
 export function wrap<E, K, V>(M: RefMapM<E, K, V>): Wrapped<E, K, V> {

@@ -41,17 +41,17 @@ export const of = <A>(memberEq: Eq<A> = deepEqualsEq) =>
 
 export const append =
   <E, A>(ra: RefArray<E, A>) =>
-  (value: A): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+  (value: A): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update(flow(RA.append(value), E.of))
 
 export const concat =
   <E, A>(ra: RefArray<E, A>) =>
-  (end: ReadonlyArray<A>): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+  (end: ReadonlyArray<A>): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update(flow(RA.concat(end), E.of))
 
 export const deleteAt =
   <E, A>(ra: RefArray<E, A>) =>
-  (index: number): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+  (index: number): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update((list) =>
       pipe(
         list,
@@ -63,12 +63,12 @@ export const deleteAt =
 
 export const filter =
   <E, A>(ra: RefArray<E, A>) =>
-  (p: Predicate<A>): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+  (p: Predicate<A>): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update(flow(RA.filter(p), E.of))
 
 export const insertAt =
   <E, A>(ra: RefArray<E, A>) =>
-  (index: number, value: A): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+  (index: number, value: A): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update((list) =>
       pipe(
         list,
@@ -80,7 +80,7 @@ export const insertAt =
 
 export const modifyAt =
   <E, A>(ra: RefArray<E, A>) =>
-  (index: number, f: Endomorphism<A>): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+  (index: number, f: Endomorphism<A>): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update((list) =>
       pipe(
         list,
@@ -92,35 +92,35 @@ export const modifyAt =
 
 export const prepend =
   <E, A>(ra: RefArray<E, A>) =>
-  (value: A): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+  (value: A): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update(flow(RA.prepend(value), E.of))
 
-export const reverse = <E, A>(ra: RefArray<E, A>): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+export const reverse = <E, A>(ra: RefArray<E, A>): E.Env<E & Ref.Refs, readonly A[]> =>
   ra.update(flow(RA.reverse, E.of))
 
 export const rotate =
   <E, A>(ra: RefArray<E, A>) =>
-  (n: number): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+  (n: number): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update(flow(RA.rotate(n), E.of))
 
 export const sort =
   <E, A>(ra: RefArray<E, A>) =>
-  (O: Ord<A>): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+  (O: Ord<A>): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update(flow(RA.sort(O), E.of))
 
 export const sortBy =
   <E, A>(ra: RefArray<E, A>) =>
-  (O: readonly Ord<A>[]): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+  (O: readonly Ord<A>[]): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update(flow(RA.sortBy(O), E.of))
 
 export const uniq =
   <E, A>(ra: RefArray<E, A>) =>
-  (Eq: Eq<A>): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+  (Eq: Eq<A>): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update(flow(RA.uniq(Eq), E.of))
 
 export const updateAt =
   <E, A>(ra: RefArray<E, A>) =>
-  (index: number, a: A): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+  (index: number, a: A): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update((list) =>
       pipe(
         list,
@@ -132,27 +132,24 @@ export const updateAt =
 
 export const endoMap =
   <E, A>(ra: RefArray<E, A>) =>
-  (f: Endomorphism<A>): E.Env<E & Ref.Get & Ref.Set, readonly A[]> =>
+  (f: Endomorphism<A>): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update(flow(RA.map(f), E.of))
 
 export interface Wrapped<E, A> extends RefArray<E, A> {
-  readonly append: (value: A) => E.Env<E & Ref.Get & Ref.Set, readonly A[]>
-  readonly concat: (end: ReadonlyArray<A>) => E.Env<E & Ref.Get & Ref.Set, readonly A[]>
-  readonly deleteAt: (index: number) => E.Env<E & Ref.Get & Ref.Set, readonly A[]>
-  readonly endoMap: (f: Endomorphism<A>) => E.Env<E & Ref.Get & Ref.Set, readonly A[]>
-  readonly filter: (p: Predicate<A>) => E.Env<E & Ref.Get & Ref.Set, readonly A[]>
-  readonly insertAt: (index: number, value: A) => E.Env<E & Ref.Get & Ref.Set, readonly A[]>
-  readonly modifyAt: (
-    index: number,
-    f: Endomorphism<A>,
-  ) => E.Env<E & Ref.Get & Ref.Set, readonly A[]>
-  readonly prepend: (value: A) => E.Env<E & Ref.Get & Ref.Set, readonly A[]>
-  readonly reverse: E.Env<E & Ref.Get & Ref.Set, readonly A[]>
-  readonly rotate: (n: number) => E.Env<E & Ref.Get & Ref.Set, readonly A[]>
-  readonly sort: (O: Ord<A>) => E.Env<E & Ref.Get & Ref.Set, readonly A[]>
-  readonly sortBy: (Ors: readonly Ord<A>[]) => E.Env<E & Ref.Get & Ref.Set, readonly A[]>
-  readonly uniq: (E: Eq<A>) => E.Env<E & Ref.Get & Ref.Set, readonly A[]>
-  readonly updateAt: (index: number, a: A) => E.Env<E & Ref.Get & Ref.Set, readonly A[]>
+  readonly append: (value: A) => E.Env<E & Ref.Refs, readonly A[]>
+  readonly concat: (end: ReadonlyArray<A>) => E.Env<E & Ref.Refs, readonly A[]>
+  readonly deleteAt: (index: number) => E.Env<E & Ref.Refs, readonly A[]>
+  readonly endoMap: (f: Endomorphism<A>) => E.Env<E & Ref.Refs, readonly A[]>
+  readonly filter: (p: Predicate<A>) => E.Env<E & Ref.Refs, readonly A[]>
+  readonly insertAt: (index: number, value: A) => E.Env<E & Ref.Refs, readonly A[]>
+  readonly modifyAt: (index: number, f: Endomorphism<A>) => E.Env<E & Ref.Refs, readonly A[]>
+  readonly prepend: (value: A) => E.Env<E & Ref.Refs, readonly A[]>
+  readonly reverse: E.Env<E & Ref.Refs, readonly A[]>
+  readonly rotate: (n: number) => E.Env<E & Ref.Refs, readonly A[]>
+  readonly sort: (O: Ord<A>) => E.Env<E & Ref.Refs, readonly A[]>
+  readonly sortBy: (Ors: readonly Ord<A>[]) => E.Env<E & Ref.Refs, readonly A[]>
+  readonly uniq: (E: Eq<A>) => E.Env<E & Ref.Refs, readonly A[]>
+  readonly updateAt: (index: number, a: A) => E.Env<E & Ref.Refs, readonly A[]>
 }
 
 export function wrap<E, A>(M: RefArray<E, A>): Wrapped<E, A> {

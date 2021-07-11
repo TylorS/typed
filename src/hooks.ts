@@ -1,11 +1,14 @@
 import * as E from '@fp/Env'
-import { alwaysEqualsEq, Eq } from '@fp/Eq'
+import { alwaysEqualsEq, deepEqualsEq, Eq } from '@fp/Eq'
 import { flow, increment, pipe } from '@fp/function'
 import * as N from '@fp/number'
+import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
 import * as RefArray from '@fp/RefArray'
+import * as RefDisposable from '@fp/RefDisposable'
 import * as RefMap from '@fp/RefMap'
 import * as RefMapM from '@fp/RefMapM'
+import { not } from 'fp-ts/Predicate'
 
 const INITIAL_HOOK_INDEX = 0
 
@@ -81,23 +84,13 @@ export const useRefArray = <E, A>(
     ),
   )
 
-const getRefsStrict = E.asks(
-  ({ getRef, hasRef, setRef, removeRef, refEvents }: Ref.Refs): Ref.Refs => ({
-    getRef,
-    hasRef,
-    setRef,
-    removeRef,
-    refEvents,
-  }),
-)
-
 // Creates a Reference which is scoped explicity to the environment in which it was created in.
 const createHookRef = <E, A>(
   initial: E.Env<E, A>,
   options: Ref.RefOptions<A>,
 ): E.Env<Ref.Refs, Ref.Wrapped<E, A>> =>
   pipe(
-    getRefsStrict,
+    Ref.getRefs,
     E.map((refs) => pipe(Ref.create(initial, options), Ref.useSome(refs))),
   )
 
@@ -106,7 +99,7 @@ const createHookRefMap = <E, K, V>(
   options: RefMap.RefMapOptions<K, V>,
 ): E.Env<Ref.Refs, RefMap.Wrapped<E, K, V>> =>
   pipe(
-    getRefsStrict,
+    Ref.getRefs,
     E.map((refs) => pipe(RefMap.create(initial, options), RefMap.useSome(refs))),
   )
 
@@ -115,7 +108,7 @@ const createHookRefMapM = <E, K, V>(
   options: RefMapM.RefMapMOptions<K, V>,
 ): E.Env<Ref.Refs, RefMapM.Wrapped<E, K, V>> =>
   pipe(
-    getRefsStrict,
+    Ref.getRefs,
     E.map((refs) => pipe(RefMapM.create(initial, options), RefMapM.useSome(refs))),
   )
 
@@ -124,6 +117,35 @@ const createHookRefArray = <E, A>(
   options: RefArray.RefArrayOptions<A>,
 ): E.Env<Ref.Refs, RefArray.Wrapped<E, A>> =>
   pipe(
-    getRefsStrict,
+    Ref.getRefs,
     E.map((refs) => pipe(RefArray.create(initial, options), RefArray.useSome(refs))),
   )
+
+export const withHooks =
+  <A>(Eq: Eq<A> = deepEqualsEq) =>
+  <E1, B>(f: (value: A) => Ref.Env<E1, B>) =>
+  <E2>(rs: RS.ReaderStream<E2, A>): RS.ReaderStream<E1 & E2 & Ref.Refs, B> =>
+    pipe(
+      RefDisposable.get,
+      RS.fromEnv,
+      RS.switchMapW((refDisposable) =>
+        pipe(
+          rs,
+          // Allows skipping "props" updates
+          RS.skipRepeatsWith(Eq),
+          // Ensure we sample when internal state has been updated
+          RS.chainFirstW(() =>
+            pipe(Ref.getRefEvents, RS.filter(not(Ref.isCreated)), RS.startWith(null)),
+          ),
+          RS.exhaustMapLatestEnv((a) =>
+            pipe(
+              // Reset Hook Index on each invocation
+              resetIndex,
+              E.chainW(() => f(a)),
+            ),
+          ),
+          // Cleanup when we're all finished
+          RS.onDispose(refDisposable),
+        ),
+      ),
+    )

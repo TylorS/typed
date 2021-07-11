@@ -44,7 +44,7 @@
     "tsc-watch": "^4.4.0",
     "tsconfig-paths": "^3.9.0",
     "tslib": "^2.3.0",
-    "typescript": "^4.3.4"
+    "typescript": "^4.4.0-beta"
   },
   "scripts": {
     "build": "concurrently npm:clean && npm run build:typescript && concurrently 'npm:build:packages' 'npm:update:package-exports'",

@@ -96,16 +96,33 @@ export const listenToValues = <E, A>(ref: Ref<E, A>): RS.ReaderStream<Events, A>
     RS.map((e) => e.value),
   )
 
-export type Refs = Get & Has & Set & Remove & Events
+export interface ParentRefs {
+  readonly parentRefs: O.Option<Refs>
+}
+
+export const getParentRefs = E.asks((e: ParentRefs) => e.parentRefs)
+
+export type Refs = Get & Has & Set & Remove & Events & ParentRefs
+
+export const getRefs = E.asks(
+  ({ getRef, hasRef, setRef, removeRef, refEvents, parentRefs }: Refs): Refs => ({
+    getRef,
+    hasRef,
+    setRef,
+    removeRef,
+    refEvents,
+    parentRefs,
+  }),
+)
 
 export interface Wrapped<E, A> extends Ref<E, A> {
-  readonly get: E.Env<E & Get, A>
-  readonly has: E.Env<Has, boolean>
-  readonly set: (value: A) => E.Env<E & Set, A>
-  readonly update: <E2>(f: (value: A) => E.Env<E2, A>) => E.Env<E & Get & E2 & Set, A>
-  readonly remove: E.Env<E & Remove, O.Option<A>>
-  readonly listen: RS.ReaderStream<Events, Event<E, A>>
-  readonly values: RS.ReaderStream<Events, A>
+  readonly get: E.Env<E & Refs, A>
+  readonly has: E.Env<Refs, boolean>
+  readonly set: (value: A) => E.Env<E & Refs, A>
+  readonly update: <E2>(f: (value: A) => E.Env<E2, A>) => E.Env<E & E2 & Refs, A>
+  readonly remove: E.Env<E & Refs, O.Option<A>>
+  readonly listen: RS.ReaderStream<Refs, Event<E, A>>
+  readonly values: RS.ReaderStream<Refs, A>
 }
 
 export function wrap<E, A>(ref: Ref<E, A>): Wrapped<E, A> {
@@ -267,6 +284,7 @@ export function refs(options: RefsOptions = {}): Refs {
     ...makeHasRef(references),
     ...makeSetRef(references, sendEvent),
     ...makeDeleteRef(references, sendEvent),
+    parentRefs: O.fromNullable(options.parentRefs),
     refEvents: [sendEvent, refEvents[1]],
   }
 }
@@ -274,6 +292,7 @@ export function refs(options: RefsOptions = {}): Refs {
 export type RefsOptions = {
   readonly initial?: Iterable<readonly [any, any]>
   readonly refEvents?: Adapter
+  readonly parentRefs?: Refs
 }
 
 function createSendEvent(references: Map<any, any>, [push]: Adapter) {

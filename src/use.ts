@@ -192,15 +192,16 @@ export const useKeyedRefs = <K>(Eq: Eq<K>) => {
 
   return pipe(
     E.Do,
+    E.bindW('parentRefs', () => Ref.getRefs),
     E.bindW('ref', () => H.useRef(E.fromIO(() => new Map<K, Ref.Refs>()))),
     E.bindW('references', ({ ref }) => ref.get),
-    E.bindW('findRefs', ({ references }) =>
+    E.bindW('findRefs', ({ references, parentRefs }) =>
       E.of((key: K) =>
         pipe(
           references,
           find(key),
           O.getOrElseW(() => {
-            const refs = Ref.refs()
+            const refs = Ref.refs({ parentRefs })
 
             references.set(key, refs)
 
@@ -225,31 +226,3 @@ export const useKeyedRefs = <K>(Eq: Eq<K>) => {
     E.map(({ findRefs, deleteRefs }) => ({ findRefs, deleteRefs } as const)),
   )
 }
-
-const getRefsStrict = E.asks(
-  ({ getRef, hasRef, setRef, removeRef, refEvents }: Ref.Refs): Ref.Refs => ({
-    getRef,
-    hasRef,
-    setRef,
-    removeRef,
-    refEvents,
-  }),
-)
-
-export const withHooks =
-  <A, E1, B>(f: (value: A) => Ref.Env<E1, B>) =>
-  <E2>(rs: RS.ReaderStream<E2, A>): RS.ReaderStream<E1 & E2 & Ref.Refs, B> =>
-    pipe(
-      E.Do,
-      E.bindW('refs', () => getRefsStrict),
-      E.bindW('refDisposable', () => RefDisposable.get),
-      RS.fromEnv,
-      RS.switchMapW(({ refs, refDisposable }) =>
-        pipe(
-          rs,
-          RS.chainFirst(() => RS.fromStream(refs.refEvents[1])),
-          RS.exhaustMapLatestEnv(f),
-          RS.onDispose(refDisposable),
-        ),
-      ),
-    )
