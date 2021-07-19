@@ -10,6 +10,7 @@ import * as O from '@fp/Option'
 import * as P from '@fp/Provide'
 import * as S from '@fp/Stream'
 import { SeedValue } from '@most/core/dist/combinator/loop'
+import * as H from '@most/hold'
 import * as App from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
 import * as Ch from 'fp-ts/Chain'
@@ -21,6 +22,7 @@ import * as Filterable_ from 'fp-ts/Filterable'
 import * as FIO from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
 import * as FT from 'fp-ts/FromTask'
+import { pipe } from 'fp-ts/function'
 import * as F from 'fp-ts/Functor'
 import { IO } from 'fp-ts/IO'
 import { Monad2 } from 'fp-ts/Monad'
@@ -31,6 +33,10 @@ import * as RT from 'fp-ts/ReaderT'
 import { Refinement } from 'fp-ts/Refinement'
 import { Separated } from 'fp-ts/Separated'
 import { Task } from 'fp-ts/Task'
+
+import { settable } from './Disposable'
+import { async } from './Resume'
+import { SchedulerEnv } from './Scheduler'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>
@@ -58,6 +64,12 @@ export const switchMap = RT.chain<S.URI>({
 export const switchMapW = switchMap as <A, R1, B>(
   f: (a: A) => ReaderStream<R1, B>,
 ) => <R2>(ma: ReaderStream<R2, A>) => ReaderStream<R1 & R2, B>
+
+export const switchFirst =
+  <R1, A>(second: ReaderStream<R1, A>) =>
+  <R2, B>(first: ReaderStream<R2, B>): ReaderStream<R1 & R2, B> =>
+  (r) =>
+    pipe(first, withStream(S.switchFirst(second(r))))(r)
 
 export const fromReader: <R, A>(ma: Re.Reader<R, A>) => ReaderStream<R, A> = RT.fromReader(
   S.Pointed,
@@ -298,6 +310,12 @@ export function merge<E1, A>(a: ReaderStream<E1, A>) {
   return <E2, B>(b: ReaderStream<E2, B>): ReaderStream<E1 & E2, A | B> =>
     (r) =>
       FN.pipe(a(r), S.merge(b(r)))
+}
+
+export function mergeFirst<E1, A>(a: ReaderStream<E1, A>) {
+  return <E2, B>(b: ReaderStream<E2, B>): ReaderStream<E1 & E2, B> =>
+    (r) =>
+      FN.pipe(FN.pipe(a(r), S.constant(O.none)), S.merge(FN.pipe(b(r), S.map(O.some))), S.compact)
 }
 
 export function mergeArray<A extends ReadonlyArray<ReaderStream<any, any>>>(
@@ -650,3 +668,37 @@ export const Compactable: Compactable2<URI> = {
   compact,
   separate,
 }
+
+export const keyed =
+  <A>(Eq: Eq<A>) =>
+  <E>(rs: ReaderStream<E, readonly A[]>): ReaderStream<E, readonly S.Stream<A>[]> =>
+    pipe(rs, withStream(S.keyed(Eq)))
+
+export const mergeMapWhen =
+  <V>(Eq: Eq<V> = deepEqualsEq) =>
+  <E1, A>(f: (value: V) => ReaderStream<E1, A>) =>
+  <E2>(values: ReaderStream<E2, ReadonlyArray<V>>): ReaderStream<E1 & E2, ReadonlyArray<A>> =>
+  (e) =>
+    pipe(values, withStream(S.mergeMapWhen(Eq)((v) => f(v)(e))))(e)
+
+/**
+ * Listens to the next value of a stream.
+ */
+export const toEnv =
+  <E, A>(rs: ReaderStream<E, A>): E.Env<E & SchedulerEnv, A> =>
+  (e) =>
+    async((resume) => {
+      const disposable = settable()
+
+      disposable.addDisposable(
+        pipe(e, rs, S.take(1)).run(
+          S.createSink({ event: (_, x) => disposable.addDisposable(resume(x)) }),
+          e.scheduler,
+        ),
+      )
+
+      return disposable
+    })
+
+export const hold = <E, A>(rs: ReaderStream<E, A>): ReaderStream<E, A> =>
+  pipe(rs, withStream(H.hold))

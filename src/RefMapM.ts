@@ -41,12 +41,6 @@ export const make = <E, K, V>(
   }
 }
 
-export const kv = <K, V>(keyEq: Eq<K> = deepEqualsEq, valueEq: Eq<V> = deepEqualsEq) =>
-  make(
-    E.fromIO(() => new Map()),
-    { keyEq, valueEq },
-  )
-
 export const getOrCreate = <E1, K, V>(M: RefMapM<E1, K, V>) => {
   const find = RM.lookup(M.keyEq)
 
@@ -185,6 +179,14 @@ export function wrap<E, K, V>(M: RefMapM<E, K, V>): Wrapped<E, K, V> {
 }
 
 export const create = flow(make, wrap)
+
+export type KeyValueOptions<K, V> = Omit<RefMapMOptions<K, V>, 'eq'>
+
+export const kv = <K, V>(options: KeyValueOptions<K, V> = {}) =>
+  create(
+    E.fromIO(() => new Map()),
+    options,
+  )
 
 export const useSome =
   <E1>(provided: E1) =>

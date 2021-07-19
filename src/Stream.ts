@@ -589,5 +589,14 @@ class KeyedSink<A> implements types.Sink<ReadonlyArray<A>>, types.Disposable {
   }
 }
 
+export const switchFirst =
+  <A>(second: Stream<A>) =>
+  <B>(first: Stream<B>): Stream<B> =>
+    pipe(
+      first,
+      M.map((a) => pipe(second, M.constant(a), M.startWith(a))),
+      M.switchLatest,
+    )
+
 export * from '@most/core'
 export * from '@most/types'

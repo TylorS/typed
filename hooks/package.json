@@ -1,0 +1,7 @@
+{
+  "main": "../cjs/hooks.js",
+  "types": "../cjs/hooks.d.ts",
+  "typings": "../cjs/hooks.d.ts",
+  "module": "../esm/hooks.js",
+  "sideEffects": false
+}

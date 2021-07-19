@@ -73,6 +73,15 @@ export const tap =
       }),
     )
 
+export const tapEnv =
+  <R>(f: (a: R) => any) =>
+  <A>(fa: Env<R, A>): Env<R, A> =>
+  (r) => {
+    f(r)
+
+    return fa(r)
+  }
+
 export const constant = FN.flow(FN.constant, map)
 
 export type Of<A> = Env<unknown, A>

@@ -1,9 +1,8 @@
 import * as E from '@fp/Env'
-import * as H from '@fp/hooks'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
+import * as RefL from '@fp/RefL'
 import * as S from '@fp/Stream'
-import * as U from '@fp/use'
 import { newDefaultScheduler } from '@most/scheduler'
 import * as F from 'fp-ts/function'
 import { range } from 'fp-ts/ReadonlyNonEmptyArray'
@@ -38,8 +37,8 @@ const decrement: E.Env<Ref.Refs, number> = Count.update(
 const Counter = (label: string): E.Env<Ref.Refs, Renderable> =>
   F.pipe(
     E.Do,
-    E.bindW('inc', () => U.useEnvK(() => increment)),
-    E.bindW('dec', () => U.useEnvK(() => decrement)),
+    E.bindW('inc', () => RefL.useEnvK(() => increment)),
+    E.bindW('dec', () => RefL.useEnvK(() => decrement)),
     E.bindW('count', () => Count.get),
     E.map(
       ({ inc, dec, count }) => html`<div>
@@ -51,18 +50,12 @@ const Counter = (label: string): E.Env<Ref.Refs, Renderable> =>
   )
 
 // Creates a Counter to keep track of the total number of Counters
-const Header: RS.ReaderStream<Ref.Refs, Renderable> = F.pipe(
-  `Number Of Counters`,
-  RS.of,
-  H.withHooks<string>()(Counter),
-)
+const Header: E.Env<Ref.Refs, Renderable> = F.pipe(`Number Of Counters`, Counter)
 
 // Create a list of Counters with their own isolated Ref.Refs for state management
 // based on the current count
 const Counters: RS.ReaderStream<Ref.Refs, ReadonlyArray<Renderable>> = F.pipe(
-  Count.get,
-  RS.fromEnv,
-  RS.merge(Count.values),
+  Count.values,
   RS.map((count): ReadonlyArray<number> => (count === 0 ? [] : range(1, count))),
   H.useHooksArray<number>()(F.flow(String, Counter)),
 )

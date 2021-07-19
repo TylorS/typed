@@ -1,139 +1,122 @@
-import { settable } from '@fp/Disposable'
-import * as E from '@fp/Env'
-import { deepEqualsEq, Eq } from '@fp/Eq'
-import { pipe } from '@fp/function'
-import * as H from '@fp/hooks'
-import * as O from '@fp/Option'
-import * as RS from '@fp/ReaderStream'
-import * as Ref from '@fp/Ref'
-import * as RefDisposable from '@fp/RefDisposable'
-import * as R from '@fp/Resume'
-import { delay, SchedulerEnv } from '@fp/Scheduler'
-import * as S from '@fp/Stream'
 import { disposeBoth, disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
+import { EqStrict } from 'fp-ts/Eq'
+import { flow, pipe } from 'fp-ts/function'
+import * as O from 'fp-ts/Option'
 import { not } from 'fp-ts/Predicate'
+import * as RA from 'fp-ts/ReadonlyArray'
+
+import { create } from './Adapter'
+import { settable } from './Disposable'
+import * as E from './Env'
+import { alwaysEqualsEq, deepEqualsEq, Eq, neverEqualsEq } from './Eq'
+import * as RS from './ReaderStream'
+import * as Ref from './Ref'
+import * as RefDisposable from './RefDisposable'
+import * as RefMapM from './RefMapM'
+import * as R from './Resume'
+import { delay, SchedulerEnv } from './Scheduler'
+import * as S from './Stream'
 
 /**
- * @typed/fp/use is a collection of functions built atop of useRef + hooks. Anytime they
- * are used they are subject to the "rules of hooks" where order matters and you are not
- * able to nest hooks inside of one another without special consideration (e.g. using hooks inside of useMemo).
+ * Use Refs to check if a value has changed between invocations
  */
+export const useEq = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
+  const ref = Ref.make(E.of<O.Option<A>>(O.none), { eq: alwaysEqualsEq })
 
-/**
- * Use an Eq instance to track if a value has changed over time.
- */
-export const useEq = <A>(value: A, Eq: Eq<A>, firstRun = true): E.Env<Ref.Refs, boolean> =>
-  pipe(
-    E.Do,
-    E.bindW('ref', () => H.useRef(E.of<O.Option<A>>(O.none))),
-    E.bindW('previous', ({ ref }) => ref.get),
-    E.bindW('changed', ({ previous }) =>
-      pipe(
-        previous,
-        O.matchW(() => firstRun, not(Eq.equals(value))),
-        E.of,
-      ),
-    ),
-    E.chainW(({ previous, changed, ref }) =>
-      pipe(
-        previous,
-        O.matchW(
-          () => E.of(changed),
-          () => pipe(value, O.some, ref.set, E.constant(changed)),
+  return (value: A): E.Env<Ref.Set & Ref.Get, boolean> =>
+    pipe(
+      E.Do,
+      E.bindW('previous', () => Ref.get(ref)),
+      E.bindW('changed', ({ previous }) =>
+        pipe(
+          previous,
+          O.matchW(() => true, not(Eq.equals(value))),
+          E.of,
         ),
       ),
-    ),
-  )
-
-/**
- * Memoize the value of a computation using a dependency to track when to run an update. Without
- * providing a dep your computation will only run once.
- */
-export const useMemo = <E, A, B = null>(
-  env: E.Env<E, A>,
-  dep: B = null as any as B,
-  eq: Eq<B> = deepEqualsEq,
-): E.Env<E & Ref.Refs, A> =>
-  pipe(
-    E.Do,
-    E.bindW('changed', () => useEq(dep, eq)),
-    E.bindW('ref', () => H.useRef(env)),
-    E.chainFirstW(({ ref, changed }) => (changed ? ref.update(() => env) : E.of(null))),
-    E.chainW(({ ref }) => ref.get),
-  )
-
-export const useDisposable = <A>(
-  f: () => S.Disposable,
-  dep: A = null as any as A,
-  eq: Eq<A> = deepEqualsEq,
-): E.Env<Ref.Refs, S.Disposable> => {
-  return pipe(
-    E.Do,
-    E.bindW('changed', () => useEq(dep, eq)),
-    E.bindW('ref', () => H.useRef(E.fromIO(disposeNone))),
-    E.bindW('current', ({ ref }) => ref.get),
-    E.chainFirstW(({ changed, current, ref }) =>
-      changed
-        ? pipe(
-            E.fromIO(() => current.dispose()),
-            E.chainW(() => E.fromIO(f)),
-            E.chainW((next) =>
-              pipe(
-                RefDisposable.add(next),
-                E.map((d) => disposeBoth(d, next)),
-                E.chainW(ref.set),
-              ),
-            ),
-          )
-        : E.of(null),
-    ),
-    E.chainW(({ ref }) => ref.get),
-  )
+      E.chainW(({ previous, changed }) =>
+        pipe(
+          previous,
+          O.matchW(
+            () => E.of(changed),
+            () => pipe(value, O.some, Ref.set(ref), E.constant(changed)),
+          ),
+        ),
+      ),
+    )
 }
 
-/**
- * Execute an Env using a dependency to track when to run an update. Without
- * providing a dep your effect will only run once. Your effect will be added
- * a delay(0) to ensure it runs in the next event loop.
- */
-export const useEffect = <E, A, B>(
-  effect: E.Env<E, A>,
-  dep: B = null as any as B,
-  eq: Eq<B> = deepEqualsEq,
-) =>
-  pipe(
-    E.ask<E & SchedulerEnv>(),
-    E.chainW((r) =>
-      useDisposable(
-        () =>
-          pipe(
-            r,
-            pipe(
-              delay(0),
-              E.chainW(() => effect),
-            ),
-            R.exec,
-          ),
-        dep,
-        eq,
-      ),
-    ),
-  )
+export const useMemo = <E, A, B = void>(env: E.Env<E, A>, Eq: Eq<B> = deepEqualsEq) => {
+  const ref = Ref.make(env, { eq: alwaysEqualsEq })
+  const changed = useEq(Eq)
 
-/**
- * Converts an Env-returning function into a Disposable returning function
- * by supplying the surrounding environment and tracking the Disposable using
- * RefDisposable. This can be useful when converting workflows into something that
- * can be called in an event handler.
- */
+  return (value: B) =>
+    pipe(
+      value,
+      changed,
+      E.chainFirstW((changed) => (changed ? Ref.update(ref)(() => env) : E.of(null))),
+      E.chainW(() => Ref.get(ref)),
+    )
+}
+
+export const useDisposable = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
+  const ref = Ref.make(E.fromIO(disposeNone), { eq: alwaysEqualsEq })
+  const changed = useEq(Eq)
+
+  return (f: () => Disposable, value: A): E.Env<Ref.Set & Ref.Get, Disposable> =>
+    pipe(
+      E.Do,
+      E.bindW('changed', () => changed(value)),
+      E.bindW('current', () => Ref.get(ref)),
+      E.chainW(({ changed, current }) =>
+        changed
+          ? pipe(
+              E.fromIO(() => current.dispose()),
+              E.chainW(() => E.fromIO(f)),
+              E.chainW((next) =>
+                pipe(
+                  RefDisposable.add(next),
+                  E.map((d) => disposeBoth(d, next)),
+                  E.chainW(Ref.set(ref)),
+                ),
+              ),
+            )
+          : E.of(current),
+      ),
+    )
+}
+
+export const useEffect = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
+  const use = useDisposable(Eq)
+
+  return <E>(env: E.Env<E, any>, value: A) =>
+    pipe(
+      E.ask<E & SchedulerEnv>(),
+      E.chainW((r) =>
+        use(
+          () =>
+            pipe(
+              r,
+              pipe(
+                delay(0),
+                E.chainW(() => env),
+              ),
+              R.exec,
+            ),
+          value,
+        ),
+      ),
+    )
+}
+
 export function useEnvK<A extends ReadonlyArray<any>, E1, B, E2>(
   f: (...args: A) => E.Env<E1, B>,
   onValue: (value: B) => E.Env<E2, any> = E.of,
-): E.Env<E1 & E2 & Ref.Refs, (...args: A) => S.Disposable> {
+): E.Env<E1 & E2 & Ref.Refs, (...args: A) => Disposable> {
   return pipe(
     E.Do,
-    E.bindW('refDisposable', () => RefDisposable.get),
+    E.apSW('refDisposable', RefDisposable.get),
     E.apSW('resumeF', E.toResumeK(f)),
     E.apSW('resumeV', E.toResumeK(onValue)),
     E.map(({ resumeF, resumeV, refDisposable }) => (...args: A) => {
@@ -166,21 +149,83 @@ export const bindEnvK =
   > =>
     E.bindW(name, () => useEnvK((...args: Args) => f(...args), onValue))(ma)
 
-export function useReaderStream<E, A, B = null>(
-  rs: RS.ReaderStream<E, A>,
-  dep: B = null as any as B,
-  eq: Eq<B> = deepEqualsEq,
-): E.Env<E & Ref.Refs & SchedulerEnv, S.Disposable> {
-  return pipe(
-    E.ask<E & Ref.Refs & SchedulerEnv>(),
-    E.chainW((r) => useDisposable(() => rs(r).run(S.createSink(), r.scheduler), dep, eq)),
-  )
+export const useReaderStream = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
+  const use = useDisposable(Eq)
+
+  return <E, B>(rs: RS.ReaderStream<E, B>, dep: A) =>
+    pipe(
+      E.ask<E & Ref.Refs & SchedulerEnv>(),
+      E.chainW((r) => use(() => rs(r).run(S.createSink(), r.scheduler), dep)),
+    )
 }
 
-export function useStream<A, B = null>(
-  s: S.Stream<A>,
-  dep: B = null as any as B,
-  eq: Eq<B> = deepEqualsEq,
-): E.Env<Ref.Refs & SchedulerEnv, S.Disposable> {
-  return useReaderStream(() => s, dep, eq)
+export const useStream = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
+  const use = useReaderStream(Eq)
+
+  return <B>(stream: S.Stream<B>, dep: A) => use(() => stream, dep)
+}
+
+export const useKeyedRefs = <A>(Eq: Eq<A>) => {
+  const ref = RefMapM.kv({ keyEq: Eq, valueEq: EqStrict as Eq<Ref.Refs> })
+
+  const remove = (value: A) =>
+    pipe(
+      ref.lookup(value),
+      E.chainFirstW(
+        O.matchW(
+          () => E.of(false),
+          (refs) => pipe(RefDisposable.dispose, E.useAll(refs), E.constant(true)),
+        ),
+      ),
+    )
+
+  const createRefs = (value: A) =>
+    pipe(
+      Ref.getRefs,
+      E.map((parentRefs) => Ref.refs({ parentRefs })),
+      // Ensure removed from RefMap when RefDisposable is disposed of
+      E.chainFirstW((refs) =>
+        pipe(
+          RefDisposable.add({ dispose: () => pipe(refs, remove(value), R.exec) }),
+          E.useSome(refs),
+        ),
+      ),
+    )
+
+  return (value: A): E.Env<Ref.Refs, Ref.Refs> => ref.getOrCreate(value, createRefs(value))
+}
+
+export const useRefsArray = <A, E, B>(f: (value: A) => E.Env<E, B>, Eq: Eq<A>) => {
+  const findRefs = useKeyedRefs(Eq)
+  const needsUpdate = Ref.set(Ref.make(E.of(false), { eq: neverEqualsEq }))(true)
+  const useRS = useReaderStream()
+  const useEff = useEffect()
+  const mergeMap = RS.mergeMapWhen(deepEqualsEq as Eq<S.Stream<A>>)((s) =>
+    pipe(
+      s,
+      RS.fromStream,
+      RS.switchMapW((a) =>
+        pipe(
+          a,
+          findRefs,
+          RS.fromEnv,
+          RS.switchMapW((refs) => pipe(Ref.getRefEvents, RS.useSome(refs))),
+          RS.tap((x) => console.log(x)),
+          RS.chainEnvK(() => needsUpdate),
+        ),
+      ),
+      RefDisposable.disposeOfRefs,
+    ),
+  )
+
+  const [send, stream] = create(flow(S.keyed(Eq)))
+
+  return (values: readonly A[]): E.Env<E & Ref.Refs & SchedulerEnv, readonly B[]> =>
+    pipe(
+      values,
+      RA.map((a) => pipe(a, f, E.useSomeWith(findRefs(a)))),
+      E.zipW,
+      E.chainFirstW(() => pipe(stream, RS.fromStream, mergeMap, useRS)),
+      E.chainFirstW(() => useEff(E.fromIO(() => send(values)))),
+    )
 }

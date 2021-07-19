@@ -88,12 +88,13 @@ export const listenTo = <E, A>(ref: Ref<E, A>): RS.ReaderStream<Events, Event<E,
     RS.filter((x) => x.ref.id === ref.id),
   )
 
-export const listenToValues = <E, A>(ref: Ref<E, A>): RS.ReaderStream<Events, A> =>
+export const listenToValues = <E, A>(ref: Ref<E, A>): RS.ReaderStream<E & Get & Events, A> =>
   pipe(
     getRefEvents,
     RS.filter((x): x is Event<E, A> => x.ref.id === ref.id),
     RS.filter(not(isRemoved)),
     RS.map((e) => e.value),
+    RS.merge(RS.fromEnv(get(ref))),
   )
 
 export interface ParentRefs {
@@ -122,7 +123,7 @@ export interface Wrapped<E, A> extends Ref<E, A> {
   readonly update: <E2>(f: (value: A) => E.Env<E2, A>) => E.Env<E & E2 & Refs, A>
   readonly remove: E.Env<E & Refs, O.Option<A>>
   readonly listen: RS.ReaderStream<Refs, Event<E, A>>
-  readonly values: RS.ReaderStream<Refs, A>
+  readonly values: RS.ReaderStream<E & Refs, A>
 }
 
 export function wrap<E, A>(ref: Ref<E, A>): Wrapped<E, A> {
@@ -372,6 +373,13 @@ export type Env<E, A> =
   | E.Env<E, A>
   | GetEnv<CombinationsOf<E, [Get, Has, Set, Remove, Events, ParentRefs]>, A>
 
+/**
+ * Creates a union of ReaderStreams for all the possible combinations for Ref environments.
+ */
+export type ReaderStream<E, A> =
+  | RS.ReaderStream<E, A>
+  | GetReaderStream<CombinationsOf<E, [Get, Has, Set, Remove, Events, ParentRefs]>, A>
+
 type CombinationsOf<E, A extends readonly any[]> = A extends readonly [infer S1, ...infer SS]
   ? GetCombinationsOf<E, S1, SS>
   : readonly []
@@ -394,3 +402,18 @@ type GetCombinationsOf<
 type GetEnv<Combos extends ReadonlyArray<ReadonlyArray<any>>, A> = {
   readonly [K in keyof Combos]: E.Env<Intersect<Cast<Combos[K], readonly any[]>>, A>
 }[number]
+
+type GetReaderStream<Combos extends ReadonlyArray<ReadonlyArray<any>>, A> = {
+  readonly [K in keyof Combos]: RS.ReaderStream<Intersect<Cast<Combos[K], readonly any[]>>, A>
+}[number]
+
+/**
+ * Sample an Env each time references have been updated
+ */
+export const sample = <E, A>(env: Env<E, A>): RS.ReaderStream<E & Refs, A> =>
+  pipe(
+    getRefEvents,
+    RS.filter(not(isCreated)),
+    RS.startWith(null),
+    RS.exhaustMapLatestEnv(() => env),
+  )

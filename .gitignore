@@ -63,9 +63,11 @@ snowpack.key
 /exports.d.ts.map
 /exports.js
 /exports.js.map
+/.DS_Store/
 /Adapter/
 /Branded/
 /Context/
+/ContextArray/
 /Data/
 /Disposable/
 /Env/
@@ -108,7 +110,6 @@ snowpack.key
 /TaskEither/
 /TaskOption/
 /function/
-/hooks/
 /number/
 /string/
 /struct/
