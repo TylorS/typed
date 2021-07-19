@@ -18,7 +18,6 @@
     "index.d.ts",
     "index.js.map",
     "index.d.ts.map",
-    ".DS_Store",
     "Adapter",
     "Branded",
     "Context",

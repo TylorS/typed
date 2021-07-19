@@ -1,7 +1,7 @@
 # @typed/fp
 
 `@typed/fp` is conceptually an extension of [fp-ts](https://gcanti.github.io/fp-ts/), with cancelable 
-async effects, [streams](https://github.com/mostjs/core), state management, hooks, and more. 
+async effects, [streams](https://github.com/mostjs/core), state management, and more. 
 
 This project is under very heavy development. It is my goal to align with `fp-ts` v3 which is currently also under heavy development and once both codebases are stable I intend to make the 1.0 release.
 
@@ -10,7 +10,6 @@ This project is under very heavy development. It is my goal to align with `fp-ts
 - [`@most/core`](https://github.com/mostjs/core) Streams
 - [Cancelable Async Effect](#resume)
 - [State Management](#ref)
-- [Hooks](#hooks)
 - Free of globals
 - Testable
 
@@ -60,7 +59,7 @@ type Dispsoable = {
 
 ### Env 
 
-`Env` is the core of the higher-level modules like [`Ref`](#ref) and [`hooks`](#hooks) and is a `ReaderT` of `Resume`, but to be honest being used so much, I didn't like writing `ReaderResume<A>` and chose to shorten to `Env` for the 
+`Env` is the core of the higher-level modules like [`Ref`](#ref) and is a `ReaderT` of `Resume`, but to be honest being used so much, I didn't like writing `ReaderResume<A>` and chose to shorten to `Env` for the 
 "environmental" quality Reader provides. Combining Reader and Resume allows for creating APIs that are 
 capable of utilizing dependency injection for its configurability and testability.  
 
@@ -106,62 +105,4 @@ const disposable = pipe(refs, addOne, R.start((n: number) => {
 
 // Clean up any resources created and/or async effects
 disposable.dispose()
-```
-
-### Hooks
-
-Hooks are a special instance of `Ref`s, where `Ref`s are actually a lower-level primitive of Hooks. Hooks in `@typed/fp` are not tied to any rendering library, and can easily be tested in isolation.
-
-With `Refs` their IDs are used to look up a given value. With `hooks`, like those found in React, this `ID` 
-is instead generated using an incrementing index which leads to the "rules of hooks" particularly where 
-ordering matters and must be consistent. To help with this functionality hooks have been implemented atop 
-of Streams since they have a lifecycle of their own.
-
-Hooks allow for a user of `Ref` to program their state management using relatively imperative looking code that deals with single instances of time and lift those into a `Stream` of values over time.
-
-```ts
-import * as E from '@typed/fp/Env'
-import * as H from '@typed/fp/hooks'
-import * as RS from '@typed/fp/ReaderStream'
-import * as Ref from '@typed/fp/Ref'
-import * as S from '@typed/fp/Scheduler'
-import * as U from '@typed/fp/use'
-import { left } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
-
-
-// Create a Reference
-const Count = Ref.create(E.of(0))
-
-// Increment Count every second forever
-const countUpForever = pipe(
-  Count.get,
-  E.chainW(
-    E.chainRec((a) =>
-      pipe(
-        S.delay(1000),
-        E.chainW(() => Count.set(a + 1)),
-        E.map(left),
-      ),
-    ),
-  ),
-)
-
-// Render something using the current Count
-const renderCount = (count: number): A => { ... }
-
-const Component: E.Env<Ref.Refs & S.SchedulerEnv, A> = pipe(
-  E.Do,
-  // Returns a Disposable instance that can be used to clean up
-  E.bindW('disposable', () => U.useEffect(countUpForever)),
-  // Get the current value of Count
-  E.bindW('count', () => Count.get)
-  // Render something
-  E.map(({ count }) => renderCount(count)),
-)
-
-// Creates a ReaderStream the samples your Component everytime there is a Reference that has been
-// updated or deleted
-const stream: RS.ReaderStream<Ref.Refs & S.SchedulerEnv, A> = H.withHooks(Component)
-
 ```

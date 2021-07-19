@@ -95,10 +95,6 @@
       "require": "./cjs/index.js",
       "import": "./esm/index.js"
     },
-    "./.DS_Store": {
-      "require": "./cjs/.DS_Store.js",
-      "import": "./esm/.DS_Store.js"
-    },
     "./Adapter": {
       "require": "./cjs/Adapter.js",
       "import": "./esm/Adapter.js"
