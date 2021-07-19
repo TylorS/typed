@@ -1,7 +1,6 @@
 import { settable } from '@fp/Disposable'
 import * as E from '@fp/Env'
 import * as Ref from '@fp/Ref'
-import { disposeBoth } from '@most/disposable'
 import { Disposable } from '@most/types'
 import { EqStrict } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
