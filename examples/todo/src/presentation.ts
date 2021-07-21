@@ -104,7 +104,7 @@ const useTodoItem = (todo: Todo) =>
     U.bindEnvK('submit', (event: HTMLInputElementEvent) =>
       pipe(
         updateTodoDescription(todo, event.target.value),
-        E.chainFirstW(() => E.fromIO(() => (event.target.value = ''))),
+        E.chainFirstW(() => deselectTodo),
       ),
     ),
     U.bindEnvK('handleEdit', (event: HTMLInputElementEvent) =>
