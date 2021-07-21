@@ -51,7 +51,7 @@ const Counter = (label: string): E.Env<Ref.Refs, Renderable> =>
   )
 
 // Creates a Counter to keep track of the total number of Counters
-const Header = Ref.sample(Counter(`Number Of Counters`))
+const Header: RS.ReaderStream<Ref.Refs, Renderable> = Ref.sample(Counter(`Number Of Counters`))
 
 // Create a list of Counters with their own isolated Ref.Refs for state management
 // based on the current count

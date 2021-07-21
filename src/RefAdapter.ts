@@ -5,9 +5,9 @@ import * as Ref from '@fp/Ref'
 import { flow, pipe } from 'fp-ts/function'
 import { fst, snd } from 'fp-ts/Tuple2'
 
-export interface RefAdapter<E, A, B = A> extends Ref.Ref<E, A.Adapter<A, B>> {}
+export interface RefAdapter<E, A, B = A> extends Ref.Wrapped<E, A.Adapter<A, B>> {}
 
-export const make = Ref.make as <E, A, B = A>(
+export const make = Ref.create as <E, A, B = A>(
   initial: E.Env<E, A.Adapter<A, B>>,
   options?: Ref.RefOptions<A.Adapter<A, B>>,
 ) => RefAdapter<E, A, B>
@@ -44,7 +44,7 @@ export function listenToEvents<E1, A, B = A>(ra: RefAdapter<E1, A, B>) {
 export interface Wrapped<E, A, B = A> extends RefAdapter<E, A, B> {
   readonly send: (event: A) => E.Env<E & Ref.Get, void>
   readonly getSend: E.Env<E & Ref.Get, (event: A) => void>
-  readonly listen: <E2, C>(f: (value: B) => E.Env<E2, C>) => RS.ReaderStream<E & E2 & Ref.Get, C>
+  readonly onEvent: <E2, C>(f: (value: B) => E.Env<E2, C>) => RS.ReaderStream<E & E2 & Ref.Get, C>
 }
 
 export function wrap<E, A, B>(ra: RefAdapter<E, A, B>): Wrapped<E, A, B> {
@@ -52,7 +52,7 @@ export function wrap<E, A, B>(ra: RefAdapter<E, A, B>): Wrapped<E, A, B> {
     ...ra,
     send: sendEvent(ra),
     getSend: getSendEvent(ra),
-    listen: listenToEvents(ra),
+    onEvent: listenToEvents(ra),
   }
 }
 

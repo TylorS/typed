@@ -9,12 +9,6 @@ import { Todo, TodoId } from './domain'
 
 const TODOS_KEY = 'todos'
 
-export const createTodoFromDescription = (description: string): Todo => ({
-  id: TodoId(psuedoRandomUuid()),
-  description,
-  completed: false,
-})
-
 export const ALL_HASH = '#/'
 export const ACTIVE_HASH = '#/active'
 export const COMPLETED_HASH = '#/completed'
@@ -50,6 +44,12 @@ export const updateFilterOnHashChange = F.pipe(
   RS.fromStream,
   RS.chainEnvK(CurrentFilter.set),
 )
+
+export const createTodoFromDescription = (description: string): Todo => ({
+  id: TodoId(psuedoRandomUuid()),
+  description,
+  completed: false,
+})
 
 export const psuedoRandomUuid = () =>
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {

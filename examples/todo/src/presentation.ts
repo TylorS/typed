@@ -1,6 +1,6 @@
 import * as E from '@fp/Env'
 import * as U from '@fp/use'
-import * as F from 'fp-ts/function'
+import { flow, pipe } from 'fp-ts/function'
 import * as RA from 'fp-ts/ReadonlyArray'
 import { ACTIVE_HASH, ALL_HASH, COMPLETED_HASH } from 'infrastructure'
 import { html } from 'uhtml'
@@ -30,10 +30,10 @@ type HTMLInputElementEvent = Event & {
 const ENTER_KEY = 13
 const ESCAPE_KEY = 27
 
-const Header = F.pipe(
+const Header = pipe(
   U.useEnvK((event: HTMLInputElementEvent) =>
     event.which === ENTER_KEY
-      ? F.pipe(
+      ? pipe(
           createNewTodo(event.target.value),
           E.chainW(() =>
             E.fromIO(() => {
@@ -56,7 +56,7 @@ const Header = F.pipe(
   ),
 )
 
-const Footer = F.pipe(
+const Footer = pipe(
   E.Do,
   E.bindW('currentFilter', () => getCurrentFilter),
   E.bindW('numActive', () => getNumActiveTodos),
@@ -92,7 +92,7 @@ const Footer = F.pipe(
 )
 
 const useTodoItem = (todo: Todo) =>
-  F.pipe(
+  pipe(
     E.Do,
     E.bindW('todo', () => E.of(todo)),
     E.bindW('isEditing', () => isSelectedTodo(todo)),
@@ -102,14 +102,14 @@ const useTodoItem = (todo: Todo) =>
     U.bindEnvK('remove', () => removeTodoById(todo.id)),
     U.bindEnvK('select', () => selectTodo(todo)),
     U.bindEnvK('submit', (event: HTMLInputElementEvent) =>
-      F.pipe(
+      pipe(
         updateTodoDescription(todo, event.target.value),
         E.chainFirstW(() => E.fromIO(() => (event.target.value = ''))),
       ),
     ),
     U.bindEnvK('handleEdit', (event: HTMLInputElementEvent) =>
       event.which === ESCAPE_KEY
-        ? F.pipe(deselectTodo, E.constant(void 0))
+        ? pipe(deselectTodo, E.constant(void 0))
         : E.fromIO(() => (event.which === ENTER_KEY ? event.target.blur() : void 0)),
     ),
   )
@@ -142,13 +142,13 @@ const todoItemTemplate = ({
       : ''}
   </li>`
 
-const TodoItem = F.flow(useTodoItem, E.map(todoItemTemplate))
+const TodoItem = flow(useTodoItem, E.map(todoItemTemplate))
 
-const useTodoApp = F.pipe(
+const useTodoApp = pipe(
   E.Do,
   E.bindW('header', () => Header),
   E.bindW('footer', () => Footer),
-  E.bindW('todos', () => F.pipe(getTodos, E.chainW(F.flow(RA.map(TodoItem), E.zipW)))),
+  E.bindW('todos', () => pipe(getTodos, E.chainW(flow(RA.map(TodoItem), E.zipW)))),
   E.bindW('numCompleted', () => getNumCompletedTodos),
   U.bindEnvK('toggleAll', (ev: HTMLInputElementEvent) => toggleAll(ev.target.checked)),
 )
@@ -160,7 +160,7 @@ const todoAppTemplate = ({
   numCompleted,
   toggleAll,
 }: E.ValueOf<typeof useTodoApp>) => html` ${header}
-${F.pipe(
+${pipe(
   todos,
   RA.matchW(
     () => '',
@@ -182,4 +182,4 @@ ${F.pipe(
 )}
 ${footer}`
 
-export const TodoApp = F.pipe(useTodoApp, E.map(todoAppTemplate))
+export const TodoApp = pipe(useTodoApp, E.map(todoAppTemplate))

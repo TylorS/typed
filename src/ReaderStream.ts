@@ -449,34 +449,23 @@ export const startWith =
 export const exhaustLatest =
   <E1, E2, A>(rs: ReaderStream<E1, ReaderStream<E2, A>>): ReaderStream<E1 & E2, A> =>
   (e) =>
-    FN.pipe(
-      e,
-      rs,
-      S.exhaustMapLatest((rs) => rs(e)),
-    )
+    S.exhaustMapLatest((rs: ReaderStream<E2, A>) => rs(e))(rs(e))
 
 export const exhaustMapLatest =
   <A, E1, B>(f: (value: A) => ReaderStream<E1, B>) =>
   <E2>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, B> =>
   (e) =>
-    FN.pipe(
-      e,
-      rs,
-      S.exhaustMapLatest((a) => f(a)(e)),
-    )
+    S.exhaustMapLatest((a: A) => f(a)(e))(rs(e))
 
 export const exhaustLatestEnv =
   <E1, A>(env: E.Env<E1, A>) =>
   <E2, B>(rs: ReaderStream<E2, B>): ReaderStream<E1 & E2, A> =>
-    FN.pipe(
-      rs,
-      exhaustMapLatest(() => fromEnv(env)),
-    )
+    exhaustMapLatest(() => fromEnv(env))(rs)
 
 export const exhaustMapLatestEnv =
   <A, E1, B>(f: (value: A) => E.Env<E1, B>) =>
   <E2>(rs: ReaderStream<E2, A>): ReaderStream<E1 & E2, B> =>
-    FN.pipe(rs, exhaustMapLatest(FN.flow(f, fromEnv)))
+    exhaustMapLatest((a: A) => fromEnv(f(a)))(rs)
 
 export const onDispose = (
   disposable: S.Disposable,

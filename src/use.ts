@@ -4,12 +4,10 @@ import { EqStrict } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { not } from 'fp-ts/Predicate'
-import * as RA from 'fp-ts/ReadonlyArray'
 
-import { create } from './Adapter'
 import { settable } from './Disposable'
 import * as E from './Env'
-import { alwaysEqualsEq, deepEqualsEq, Eq, neverEqualsEq } from './Eq'
+import { alwaysEqualsEq, deepEqualsEq, Eq } from './Eq'
 import * as RS from './ReaderStream'
 import * as Ref from './Ref'
 import * as RefDisposable from './RefDisposable'
@@ -22,7 +20,10 @@ import * as S from './Stream'
  * Use Refs to check if a value has changed between invocations
  */
 export const useEq = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
-  const ref = Ref.make(E.of<O.Option<A>>(O.none), { eq: alwaysEqualsEq })
+  const ref = Ref.make(E.of<O.Option<A>>(O.none), {
+    eq: alwaysEqualsEq,
+    id: Symbol('useEq::Previous'),
+  })
 
   return (value: A): E.Env<Ref.Set & Ref.Get, boolean> =>
     pipe(
@@ -48,7 +49,7 @@ export const useEq = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
 }
 
 export const useMemo = <E, A, B = void>(env: E.Env<E, A>, Eq: Eq<B> = deepEqualsEq) => {
-  const ref = Ref.make(env, { eq: alwaysEqualsEq })
+  const ref = Ref.make(env, { eq: alwaysEqualsEq, id: Symbol('useMemo::Value') })
   const changed = useEq(Eq)
 
   return (value: B) =>
@@ -61,7 +62,10 @@ export const useMemo = <E, A, B = void>(env: E.Env<E, A>, Eq: Eq<B> = deepEquals
 }
 
 export const useDisposable = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
-  const ref = Ref.make(E.fromIO(disposeNone), { eq: alwaysEqualsEq })
+  const ref = Ref.make(E.fromIO(disposeNone), {
+    eq: alwaysEqualsEq,
+    id: Symbol('useDisposable::Disposable'),
+  })
   const changed = useEq(Eq)
 
   return (f: () => Disposable, value: A): E.Env<Ref.Set & Ref.Get, Disposable> =>
@@ -107,6 +111,21 @@ export const useEffect = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
           value,
         ),
       ),
+    )
+}
+
+export const useWithPrevious = <A>() => {
+  const previousRef = Ref.make(E.of<O.Option<A>>(O.none), {
+    eq: alwaysEqualsEq,
+    id: Symbol(`useWithPrevious::Previous`),
+  })
+
+  return <B>(f: (previous: O.Option<A>, value: A) => B, value: A) =>
+    pipe(
+      previousRef,
+      Ref.get,
+      E.map((previous) => f(previous, value)),
+      E.chainFirstW(() => pipe(value, O.some, Ref.set(previousRef))),
     )
 }
 
@@ -166,66 +185,65 @@ export const useStream = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
 }
 
 export const useKeyedRefs = <A>(Eq: Eq<A>) => {
-  const ref = RefMapM.kv({ keyEq: Eq, valueEq: EqStrict as Eq<Ref.Refs> })
-
-  const remove = (value: A) =>
-    pipe(
-      ref.lookup(value),
-      E.chainFirstW(
-        O.matchW(
-          () => E.of(false),
-          (refs) => pipe(RefDisposable.dispose, E.useAll(refs), E.constant(true)),
-        ),
-      ),
-    )
-
-  const createRefs = (value: A) =>
-    pipe(
-      Ref.getRefs,
-      E.map((parentRefs) => Ref.refs({ parentRefs })),
-      // Ensure removed from RefMap when RefDisposable is disposed of
-      E.chainFirstW((refs) =>
-        pipe(
-          RefDisposable.add({ dispose: () => pipe(refs, remove(value), R.exec) }),
-          E.useSome(refs),
-        ),
-      ),
-    )
-
-  return (value: A): E.Env<Ref.Refs, Ref.Refs> => ref.getOrCreate(value, createRefs(value))
-}
-
-export const useRefsArray = <A, E, B>(f: (value: A) => E.Env<E, B>, Eq: Eq<A>) => {
-  const findRefs = useKeyedRefs(Eq)
-  const needsUpdate = Ref.set(Ref.make(E.of(false), { eq: neverEqualsEq }))(true)
-  const useRS = useReaderStream()
-  const useEff = useEffect()
-  const mergeMap = RS.mergeMapWhen(deepEqualsEq as Eq<S.Stream<A>>)((s) =>
-    pipe(
-      s,
-      RS.fromStream,
-      RS.switchMapW((a) =>
-        pipe(
-          a,
-          findRefs,
-          RS.fromEnv,
-          RS.switchMapW((refs) => pipe(Ref.getRefEvents, RS.useSome(refs))),
-          RS.tap((x) => console.log(x)),
-          RS.chainEnvK(() => needsUpdate),
-        ),
-      ),
-      RefDisposable.disposeOfRefs,
-    ),
+  const refs = RefMapM.create(
+    E.fromIO(() => new Map<A, Ref.Refs>()),
+    { keyEq: Eq, eq: alwaysEqualsEq },
   )
 
-  const [send, stream] = create(flow(S.keyed(Eq)))
+  return pipe(
+    E.Do,
+    E.apSW('parentRefs', Ref.getRefs),
+    E.bindW('createRefs', ({ parentRefs }) =>
+      E.of((value: A) => {
+        const r = Ref.refs({ parentRefs })
 
-  return (values: readonly A[]): E.Env<E & Ref.Refs & SchedulerEnv, readonly B[]> =>
+        return pipe(refs.upsertAt(value, r), E.constant(r))
+      }),
+    ),
+    E.bindW('findRefs', ({ createRefs }) =>
+      E.of((value: A) => refs.getOrCreate(value, createRefs(value))),
+    ),
+    E.bindW('deleteRefs', ({ parentRefs }) =>
+      E.of(
+        (value: A): S.Disposable => ({
+          dispose: () =>
+            pipe(
+              parentRefs,
+              refs.deleteAt(value),
+              R.chain(() => RefDisposable.dispose(parentRefs)),
+              R.exec,
+            ),
+        }),
+      ),
+    ),
+    E.map(({ findRefs, deleteRefs }) => ({ findRefs, deleteRefs } as const)),
+  )
+}
+
+export const useRefsArray = <A, E1, B>(f: (value: A) => E.Env<E1, B>, Eq: Eq<A>) => {
+  const useRefs = useKeyedRefs(EqStrict as Eq<S.Stream<A>>)
+  const mergeMap = RS.mergeMapWhen(EqStrict as Eq<S.Stream<A>>)
+
+  return <E2>(
+    stream: RS.ReaderStream<E2, readonly A[]>,
+  ): RS.ReaderStream<E1 & E2 & Ref.Refs, readonly B[]> =>
     pipe(
-      values,
-      RA.map((a) => pipe(a, f, E.useSomeWith(findRefs(a)))),
-      E.zipW,
-      E.chainFirstW(() => pipe(stream, RS.fromStream, mergeMap, useRS)),
-      E.chainFirstW(() => useEff(E.fromIO(() => send(values)))),
+      useRefs,
+      RS.fromEnv,
+      RS.switchMapW(({ findRefs, deleteRefs }) =>
+        pipe(
+          stream,
+          RS.keyed(Eq),
+          mergeMap((s) =>
+            pipe(
+              s,
+              RS.fromStream,
+              RS.switchMapW(flow(f, Ref.sample)),
+              RS.onDispose(deleteRefs(s)),
+              RS.useSomeWith(RS.fromEnv(findRefs(s))),
+            ),
+          ),
+        ),
+      ),
     )
 }

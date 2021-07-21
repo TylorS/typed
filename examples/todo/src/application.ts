@@ -2,7 +2,7 @@ import * as E from '@fp/Env'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
 import * as RefArray from '@fp/RefArray'
-import * as F from 'fp-ts/function'
+import { flow, pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as RA from 'fp-ts/ReadonlyArray'
 
@@ -21,10 +21,10 @@ export const CurrentFilter = Ref.create(getCurrentFilter)
 export const SelectedTodo = Ref.create(E.of<O.Option<TodoId>>(O.none))
 
 export const isSelectedTodo = (todo: Todo) =>
-  F.pipe(
+  pipe(
     SelectedTodo.get,
     E.map(
-      F.flow(
+      flow(
         O.map((selectedId) => selectedId === todo.id),
         O.getOrElseW(() => false),
       ),
@@ -53,36 +53,31 @@ export const updateTodoDescription = (todo: Todo, description: string) =>
 export const updateTodoCompleted = (todo: Todo, completed: boolean) =>
   Todos.endoMap((t) => (t.id === todo.id ? { ...t, completed } : t))
 
-export const createNewTodo = F.flow(createTodo, E.chainW(Todos.append))
+export const createNewTodo = flow(createTodo, E.chainW(Todos.append))
 
-export const getTodos = F.pipe(
-  E.zipW([Todos.get, CurrentFilter.get] as const),
-  E.map(([todos, filter]) => filterTodos(filter, todos)),
-)
+export const filterTodos =
+  (filter: TodoFilter) =>
+  (todos: readonly Todo[]): readonly Todo[] => {
+    if (filter === 'active') {
+      return todos.filter(isActiveTodo)
+    }
 
-export const filterTodos = (filter: TodoFilter, todos: readonly Todo[]): readonly Todo[] => {
-  if (filter === 'active') {
-    return todos.filter(isActiveTodo)
+    if (filter === 'completed') {
+      return todos.filter(isCompletedTodo)
+    }
+
+    return todos
   }
 
-  if (filter === 'completed') {
-    return todos.filter(isCompletedTodo)
-  }
+export const getTodos = pipe(filterTodos, E.of, E.apW(CurrentFilter.get), E.apW(Todos.get))
 
-  return todos
-}
+export const getNumActiveTodos = pipe(Todos.get, E.map(flow(RA.filter(isActiveTodo), RA.size)))
 
-export const getNumActiveTodos = F.pipe(Todos.get, E.map(F.flow(RA.filter(isActiveTodo), RA.size)))
-
-export const getNumCompletedTodos = F.pipe(
+export const getNumCompletedTodos = pipe(
   Todos.get,
-  E.map(F.flow(RA.filter(isCompletedTodo), RA.size)),
+  E.map(flow(RA.filter(isCompletedTodo), RA.size)),
 )
 
 export const saveTodos = E.op<(todos: readonly Todo[]) => E.Of<void>>()('saveTodos')
 
-export const saveTodosOnChange = F.pipe(
-  Todos.values,
-  RS.tap((x) => console.log(x)),
-  RS.chainEnvK(saveTodos),
-)
+export const saveTodosOnChange = pipe(Todos.values, RS.chainEnvK(saveTodos))

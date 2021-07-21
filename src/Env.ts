@@ -343,6 +343,8 @@ export const zipW = zip as unknown as <A extends ReadonlyArray<Env<any, any>>>(
   envs: A,
 ) => Env<Intersect<{ [K in keyof A]: RequirementsOf<A[K]> }>, { [K in keyof A]: ValueOf<A[K]> }>
 
+export const combineAll = <A extends ReadonlyArray<Env<any, any>>>(...envs: A) => zipW(envs)
+
 export const runWith =
   <A>(f: (value: A) => Disposable) =>
   <E>(requirements: E) =>

@@ -107,10 +107,6 @@
       "require": "./cjs/Context.js",
       "import": "./esm/Context.js"
     },
-    "./ContextArray": {
-      "require": "./cjs/ContextArray.js",
-      "import": "./esm/ContextArray.js"
-    },
     "./Data": {
       "require": "./cjs/Data.js",
       "import": "./esm/Data.js"
