@@ -408,7 +408,7 @@ type GetReaderStream<Combos extends ReadonlyArray<ReadonlyArray<any>>, A> = {
 }[number]
 
 /**
- * Sample an Env each time references have been updated
+ * Sample an Env with the latest references when updates have occured.
  */
 export const sample = <E, A>(env: Env<E, A>): RS.ReaderStream<E & Refs, A> =>
   pipe(
