@@ -1,41 +1,45 @@
 import * as E from '@fp/Env'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
-import { runEffects } from '@fp/Stream'
+import { runEffects, Stream } from '@fp/Stream'
 import { newDefaultScheduler } from '@most/scheduler'
 import * as F from 'fp-ts/function'
 import { render } from 'uhtml'
 
-import * as A from './application'
-import * as I from './infrastructure'
-import * as P from './presentation'
+import { saveTodosOnChange } from './application'
+import {
+  createTodoFromDescription,
+  getCurrentFilterFromLocation,
+  loadTodosFromStorage,
+  saveTodosToStorage,
+  updateFilterOnHashChange,
+} from './infrastructure'
+import { TodoApp } from './presentation'
 
-const rootElement = document.querySelector('.todoapp')
+const rootElement = document.querySelector<HTMLElement>('.todoapp')
 
 if (!rootElement) {
   throw new Error(`Unable to find root element .todoapp`)
 }
 
 const Main = F.pipe(
-  P.TodoApp,
+  TodoApp,
   Ref.sample, // Sample our TodoApp everytime there is a Ref update
   RS.scan(render, rootElement), // Render
-  // Additional stream-based effects
-  RS.mergeFirst(A.saveTodosOnChange),
-  RS.mergeFirst(I.updateFilterOnHashChange),
+  // Additional effects
+  RS.mergeFirst(saveTodosOnChange),
+  RS.mergeFirst(updateFilterOnHashChange),
 )
 
-const scheduler = newDefaultScheduler()
-
-const stream = Main({
+const stream: Stream<HTMLElement> = Main({
   ...Ref.refs(),
-  loadTodos: () => E.fromIO(I.loadTodosFromStorage),
-  saveTodos: I.saveTodosToStorage,
-  getCurrentFilter: () => E.fromIO(I.getCurrentFilterFromLocation),
-  createTodo: F.flow(I.createTodoFromDescription, E.of),
+  loadTodos: () => E.fromIO(loadTodosFromStorage),
+  saveTodos: saveTodosToStorage,
+  getCurrentFilter: () => E.fromIO(getCurrentFilterFromLocation),
+  createTodo: F.flow(createTodoFromDescription, E.of),
 })
 
-runEffects(stream, scheduler).catch((error) => {
+runEffects(stream, newDefaultScheduler()).catch((error) => {
   console.error(error)
 
   throw error

@@ -2,15 +2,10 @@ import * as A from '@fp/Adapter'
 import * as E from '@fp/Env'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
-import { flow, pipe } from 'fp-ts/function'
+import { pipe } from 'fp-ts/function'
 import { fst, snd } from 'fp-ts/Tuple2'
 
 export interface RefAdapter<E, A, B = A> extends Ref.Wrapped<E, A.Adapter<A, B>> {}
-
-export const make = Ref.create as <E, A, B = A>(
-  initial: E.Env<E, A.Adapter<A, B>>,
-  options?: Ref.RefOptions<A.Adapter<A, B>>,
-) => RefAdapter<E, A, B>
 
 export function sendEvent<E, A, B = A>(ra: RefAdapter<E, A, B>) {
   return (event: A) =>
@@ -55,11 +50,3 @@ export function wrap<E, A, B>(ra: RefAdapter<E, A, B>): Wrapped<E, A, B> {
     onEvent: listenToEvents(ra),
   }
 }
-
-export const create = flow(make, wrap)
-
-export const of = <A>(opts: Ref.RefOptions<A.Adapter<A>> = {}) =>
-  create(
-    E.fromIO(() => A.create<A>()),
-    opts,
-  )

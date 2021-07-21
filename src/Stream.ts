@@ -598,5 +598,10 @@ export const switchFirst =
       M.switchLatest,
     )
 
+export function mergeFirst<A>(a: Stream<A>) {
+  return <B>(b: Stream<B>): Stream<B> =>
+    pipe(pipe(a, M.constant(O.none)), M.merge(pipe(b, M.map(O.some))), compact)
+}
+
 export * from '@most/core'
 export * from '@most/types'

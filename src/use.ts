@@ -185,9 +185,12 @@ export const useStream = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
 }
 
 export const useKeyedRefs = <A>(Eq: Eq<A>) => {
-  const refs = RefMapM.create(
-    E.fromIO(() => new Map<A, Ref.Refs>()),
-    { keyEq: Eq, eq: alwaysEqualsEq },
+  const refs = pipe(
+    Ref.create(
+      E.fromIO(() => new Map<A, Ref.Refs>()),
+      { eq: alwaysEqualsEq },
+    ),
+    RefMapM.create(Eq, EqStrict as Eq<Ref.Refs>),
   )
 
   return pipe(

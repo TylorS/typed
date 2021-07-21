@@ -1,5 +1,4 @@
 import * as E from '@fp/Env'
-import { deepEqualsEq } from '@fp/Eq'
 import * as P from '@fp/Provide'
 import * as Ref from '@fp/Ref'
 import { Endomorphism } from 'fp-ts/Endomorphism'
@@ -16,36 +15,12 @@ export interface RefMap<E, K, V> extends Ref.Wrapped<E, ReadonlyMap<K, V>> {
   readonly valueEq: Eq<V>
 }
 
-export type RefMapOptions<K, V> = Ref.RefOptions<ReadonlyMap<K, V>> & {
-  readonly keyEq?: Eq<K>
-  readonly valueEq?: Eq<V>
-}
-
-export const make = <E, K, V>(
-  initial: E.Env<E, ReadonlyMap<K, V>>,
-  options: RefMapOptions<K, V> = {},
-): RefMap<E, K, V> => {
-  const {
-    id,
-    keyEq = deepEqualsEq,
-    valueEq = deepEqualsEq,
-    eq = RM.getEq(keyEq, valueEq),
-  } = options
-
-  const ref = Ref.create(initial, { id, eq })
-
-  return {
-    ...ref,
-    keyEq,
-    valueEq,
-  }
-}
-
-export const kv = <K, V>(keyEq: Eq<K> = deepEqualsEq, valueEq: Eq<V> = deepEqualsEq) =>
-  make(
-    E.fromIO(() => new Map()),
-    { keyEq, valueEq },
-  )
+/**
+ * Helps to lift a Wrapped value into a RefMap
+ */
+export const lift =
+  <K, V>(keyEq: Eq<K>, valueEq: Eq<V>) =>
+  <E>(ref: Ref.Wrapped<E, ReadonlyMap<K, V>>): RefMap<E, K, V> => ({ ...ref, keyEq, valueEq })
 
 export const getOrCreate = <E1, K, V>(M: RefMap<E1, K, V>) => {
   const find = RM.lookup(M.keyEq)
@@ -203,7 +178,11 @@ export function wrap<E, K, V>(M: RefMap<E, K, V>): Wrapped<E, K, V> {
   }
 }
 
-export const create = flow(make, wrap)
+export const create = <K, V>(
+  keyEq: Eq<K>,
+  valueEq: Eq<V>,
+): (<E>(ref: Ref.Wrapped<E, ReadonlyMap<K, V>>) => Wrapped<E, K, V>) =>
+  flow(lift(keyEq, valueEq), wrap)
 
 export const useSome =
   <E1>(provided: E1) =>

@@ -315,7 +315,7 @@ export function merge<E1, A>(a: ReaderStream<E1, A>) {
 export function mergeFirst<E1, A>(a: ReaderStream<E1, A>) {
   return <E2, B>(b: ReaderStream<E2, B>): ReaderStream<E1 & E2, B> =>
     (r) =>
-      FN.pipe(FN.pipe(a(r), S.constant(O.none)), S.merge(FN.pipe(b(r), S.map(O.some))), S.compact)
+      FN.pipe(r, b, S.mergeFirst(a(r)))
 }
 
 export function mergeArray<A extends ReadonlyArray<ReaderStream<any, any>>>(

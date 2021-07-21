@@ -1,10 +1,13 @@
 import * as E from '@fp/Env'
+import * as Eq from '@fp/Eq'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
 import * as RefArray from '@fp/RefArray'
+import * as B from 'fp-ts/boolean'
 import { flow, pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as RA from 'fp-ts/ReadonlyArray'
+import * as S from 'fp-ts/string'
 
 import { createTodo, isActiveTodo, isCompletedTodo, Todo, TodoId } from './domain'
 
@@ -39,7 +42,10 @@ export const deselectTodo = SelectedTodo.set(O.none)
 
 export const loadTodos = E.op<() => E.Of<readonly Todo[]>>()('loadTodos')()
 
-export const Todos = RefArray.create(loadTodos)
+export const Todos = pipe(
+  Ref.create(loadTodos),
+  RefArray.create(Eq.struct({ id: S.Eq, description: S.Eq, completed: B.Eq })),
+)
 
 export const clearCompleted = Todos.filter(isActiveTodo)
 

@@ -1,5 +1,4 @@
 import * as E from '@fp/Env'
-import { deepEqualsEq } from '@fp/Eq'
 import * as P from '@fp/Provide'
 import * as Ref from '@fp/Ref'
 import { Endomorphism } from 'fp-ts/Endomorphism'
@@ -14,28 +13,12 @@ export interface RefArray<E, A> extends Ref.Wrapped<E, ReadonlyArray<A>> {
   readonly memberEq: Eq<A>
 }
 
-export type RefArrayOptions<A> = Ref.RefOptions<ReadonlyArray<A>> & {
-  readonly memberEq?: Eq<A>
-}
-
-export const make = <E, A>(
-  initial: E.Env<E, ReadonlyArray<A>>,
-  options: RefArrayOptions<A> = {},
-): RefArray<E, A> => {
-  const { id, memberEq = deepEqualsEq, eq = RA.getEq(memberEq) } = options
-  const ref = Ref.create(initial, { id, eq })
-
-  return {
-    ...ref,
-    memberEq,
-  }
-}
-
-export const of = <A>(memberEq: Eq<A> = deepEqualsEq) =>
-  create(
-    E.fromIO(() => []),
-    { memberEq },
-  )
+/**
+ * Helps to lift a Ref into a RefArray with a memberEq
+ */
+export const lift =
+  <A>(memberEq: Eq<A>) =>
+  <E>(ref: Ref.Wrapped<E, ReadonlyArray<A>>): RefArray<E, A> => ({ ...ref, memberEq })
 
 /* Modifies the underlying State */
 
@@ -172,7 +155,9 @@ export function wrap<E, A>(M: RefArray<E, A>): Wrapped<E, A> {
   }
 }
 
-export const create = flow(make, wrap)
+export const create = <A>(
+  memberEq: Eq<A>,
+): (<E>(ref: Ref.Wrapped<E, ReadonlyArray<A>>) => Wrapped<E, A>) => flow(lift(memberEq), wrap)
 
 export const useSome =
   <E1>(provided: E1) =>
