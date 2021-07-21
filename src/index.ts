@@ -1,7 +1,6 @@
 export * as adapter from '@fp/Adapter'
 export * as branded from '@fp/Branded'
 export * as context from '@fp/Context'
-export * as contextArray from '@fp/ContextArray'
 export * as data from '@fp/Data'
 export * as disposable from '@fp/Disposable'
 export * as env from '@fp/Env'
