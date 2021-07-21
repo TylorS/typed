@@ -1,9 +1,10 @@
-import * as E from '@fp/Env'
-import * as O from '@fp/Option'
-import * as RS from '@fp/ReaderStream'
-import * as Ref from '@fp/Ref'
 import { left, right } from 'fp-ts/Either'
 import { flow, pipe } from 'fp-ts/function'
+
+import * as E from './Env'
+import * as O from './Option'
+import * as RS from './ReaderStream'
+import * as Ref from './Ref'
 
 /**
  * Context is an alternative implementation of Ref.Wrapped, which will traverse

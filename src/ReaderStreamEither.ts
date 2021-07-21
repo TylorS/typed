@@ -1,8 +1,3 @@
-import { flow } from '@fp/function'
-import { MonadRec3 } from '@fp/MonadRec'
-import * as RS from '@fp/ReaderStream'
-import { never } from '@fp/Stream'
-import * as SE from '@fp/StreamEither'
 import * as ALT from 'fp-ts/Alt'
 import * as ALTERNATIVE from 'fp-ts/Alternative'
 import * as App from 'fp-ts/Applicative'
@@ -23,6 +18,12 @@ import { Pointed3 } from 'fp-ts/Pointed'
 import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
 import { Semigroup } from 'fp-ts/Semigroup'
+
+import { flow } from './function'
+import { MonadRec3 } from './MonadRec'
+import * as RS from './ReaderStream'
+import { never } from './Stream'
+import * as SE from './StreamEither'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>

@@ -1,4 +1,4 @@
-import { unsafeCoerce } from '@fp/function'
+import { unsafeCoerce } from './function'
 
 export type BrandOf<A> = A extends Branded<infer _, infer R> ? R : never
 export type ValueOf<A> = A extends infer E & { readonly __brand__?: BrandOf<A> } ? E : never

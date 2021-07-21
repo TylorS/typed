@@ -1,6 +1,3 @@
-import * as E from '@fp/Env'
-import * as P from '@fp/Provide'
-import * as Ref from '@fp/Ref'
 import { Endomorphism } from 'fp-ts/Endomorphism'
 import { Eq } from 'fp-ts/Eq'
 import { flow, identity, pipe } from 'fp-ts/function'
@@ -9,6 +6,10 @@ import { Ord } from 'fp-ts/Ord'
 import { Predicate } from 'fp-ts/Predicate'
 import * as RM from 'fp-ts/ReadonlyMap'
 import { Refinement } from 'fp-ts/Refinement'
+
+import * as E from './Env'
+import * as P from './Provide'
+import * as Ref from './Ref'
 
 export interface RefMap<E, K, V> extends Ref.Wrapped<E, ReadonlyMap<K, V>> {
   readonly keyEq: Eq<K>

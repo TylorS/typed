@@ -1,11 +1,11 @@
-import { settable } from '@fp/Disposable'
-import * as E from '@fp/Env'
-import * as Ref from '@fp/Ref'
 import { Disposable } from '@most/types'
 import { EqStrict } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
 
+import { settable } from './Disposable'
+import * as E from './Env'
 import * as RS from './ReaderStream'
+import * as Ref from './Ref'
 
 const RefDisposable = Ref.make(E.fromIO(settable), {
   eq: EqStrict,

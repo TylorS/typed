@@ -1,10 +1,11 @@
-import * as E from '@fp/Env'
-import { asks, Env } from '@fp/Env'
-import { pipe } from '@fp/function'
-import { async } from '@fp/Resume'
-import { createCallbackTask } from '@fp/Stream'
 import * as S from '@most/scheduler'
 import { Scheduler, Sink, Stream, Time } from '@most/types'
+
+import * as E from './Env'
+import { asks, Env } from './Env'
+import { pipe } from './function'
+import { async } from './Resume'
+import { createCallbackTask } from './Stream'
 
 export interface SchedulerEnv {
   readonly scheduler: Scheduler

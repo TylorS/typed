@@ -1,5 +1,3 @@
-import { MonadRec1 } from '@fp/MonadRec'
-import * as R from '@fp/Resume'
 import { Alt1 } from 'fp-ts/Alt'
 import { Alternative1 } from 'fp-ts/Alternative'
 import { Applicative1 } from 'fp-ts/Applicative'
@@ -13,6 +11,9 @@ import { Monad1 } from 'fp-ts/Monad'
 import * as O from 'fp-ts/Option'
 import * as OT from 'fp-ts/OptionT'
 import { Pointed1 } from 'fp-ts/Pointed'
+
+import { MonadRec1 } from './MonadRec'
+import * as R from './Resume'
 
 export type ResumeOption<A> = R.Resume<O.Option<A>>
 

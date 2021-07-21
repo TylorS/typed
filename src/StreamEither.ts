@@ -1,7 +1,3 @@
-import { flow, pipe } from '@fp/function'
-import { swapEithers } from '@fp/internal'
-import { MonadRec2 } from '@fp/MonadRec'
-import * as S from '@fp/Stream'
 import { now } from '@most/core'
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
@@ -14,6 +10,11 @@ import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 import { Semigroup } from 'fp-ts/Semigroup'
+
+import { flow, pipe } from './function'
+import { swapEithers } from './internal'
+import { MonadRec2 } from './MonadRec'
+import * as S from './Stream'
 
 export interface StreamEither<E, A> extends S.Stream<E.Either<E, A>> {}
 

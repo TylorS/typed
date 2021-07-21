@@ -1,15 +1,16 @@
-import * as A from '@fp/Adapter'
-import * as E from '@fp/Env'
-import { deepEqualsEq } from '@fp/Eq'
-import { Intersect } from '@fp/Hkt'
-import * as O from '@fp/Option'
-import * as P from '@fp/Provide'
-import * as RS from '@fp/ReaderStream'
 import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
 import { not } from 'fp-ts/Refinement'
 import { fst, snd } from 'fp-ts/Tuple2'
 import { Cast } from 'ts-toolbelt/out/Any/Cast'
+
+import * as A from './Adapter'
+import * as E from './Env'
+import { deepEqualsEq } from './Eq'
+import { Intersect } from './Hkt'
+import * as O from './Option'
+import * as P from './Provide'
+import * as RS from './ReaderStream'
 
 export interface Ref<E, A> extends Eq<A> {
   readonly id: PropertyKey

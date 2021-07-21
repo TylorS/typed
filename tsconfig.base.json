@@ -2,11 +2,6 @@
   "compilerOptions": {
     "rootDir": "./src",
     "baseUrl": "./",
-    "paths": {
-      "@fp/*": [
-        "./src/*"
-      ]
-    },
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "declarationMap": true,

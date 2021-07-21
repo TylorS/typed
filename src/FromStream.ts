@@ -1,5 +1,3 @@
-import { Hkt } from '@fp/Hkt'
-import * as S from '@fp/Stream'
 import { Chain, Chain1, Chain2, Chain3, Chain4, chainFirst } from 'fp-ts/Chain'
 import { flow } from 'fp-ts/function'
 import { HKT, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
@@ -12,6 +10,9 @@ import {
   NaturalTransformation14,
   NaturalTransformation14C,
 } from 'fp-ts/NaturalTransformation'
+
+import { Hkt } from './Hkt'
+import * as S from './Stream'
 
 export type FromStream<F> = {
   readonly URI?: F

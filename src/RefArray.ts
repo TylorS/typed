@@ -1,6 +1,3 @@
-import * as E from '@fp/Env'
-import * as P from '@fp/Provide'
-import * as Ref from '@fp/Ref'
 import { Endomorphism } from 'fp-ts/Endomorphism'
 import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
@@ -8,6 +5,10 @@ import * as O from 'fp-ts/Option'
 import { Ord } from 'fp-ts/Ord'
 import { Predicate } from 'fp-ts/Predicate'
 import * as RA from 'fp-ts/ReadonlyArray'
+
+import * as E from './Env'
+import * as P from './Provide'
+import * as Ref from './Ref'
 
 export interface RefArray<E, A> extends Ref.Wrapped<E, ReadonlyArray<A>> {
   readonly memberEq: Eq<A>

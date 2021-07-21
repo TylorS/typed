@@ -1,11 +1,12 @@
-import { swapEithers } from '@fp/internal'
-import { MonadRec3 } from '@fp/MonadRec'
-import { Provide3, ProvideAll3, ProvideSome3, UseAll3, UseSome3 } from '@fp/Provide'
-import * as R from '@fp/Reader'
 import { ChainRec3 } from 'fp-ts/ChainRec'
 import { Either } from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as RE from 'fp-ts/ReaderEither'
+
+import { swapEithers } from './internal'
+import { MonadRec3 } from './MonadRec'
+import { Provide3, ProvideAll3, ProvideSome3, UseAll3, UseSome3 } from './Provide'
+import * as R from './Reader'
 
 export const chainRec =
   <A, R, E, B>(f: (a: A) => RE.ReaderEither<R, E, Either<A, B>>) =>

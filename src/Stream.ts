@@ -1,7 +1,3 @@
-import { disposeBoth, settable } from '@fp/Disposable'
-import * as FRe from '@fp/FromResume'
-import { Arity1 } from '@fp/function'
-import * as R from '@fp/Resume'
 import * as M from '@most/core'
 import { disposeAll, disposeNone } from '@most/disposable'
 import { asap, schedulerRelativeTo } from '@most/scheduler'
@@ -32,7 +28,11 @@ import { Task } from 'fp-ts/Task'
 import { fst, snd } from 'fp-ts/Tuple2'
 
 import { Adapter, create } from './Adapter'
+import { disposeBoth, settable } from './Disposable'
 import { deepEqualsEq } from './Eq'
+import * as FRe from './FromResume'
+import { Arity1 } from './function'
+import * as R from './Resume'
 
 export type Stream<A> = types.Stream<A>
 

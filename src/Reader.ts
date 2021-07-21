@@ -1,9 +1,10 @@
-import { pipe } from '@fp/function'
-import { MonadRec2 } from '@fp/MonadRec'
-import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from '@fp/Provide'
 import { ChainRec2, tailRec } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
 import * as R from 'fp-ts/Reader'
+
+import { pipe } from './function'
+import { MonadRec2 } from './MonadRec'
+import { Provide2, ProvideAll2, ProvideSome2, UseAll2, UseSome2 } from './Provide'
 
 export * from 'fp-ts/Reader'
 

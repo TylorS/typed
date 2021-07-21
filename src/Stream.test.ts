@@ -1,10 +1,11 @@
-import { pipe } from '@fp/function'
-import * as R from '@fp/Resume'
-import * as S from '@fp/Stream'
-import { runEffects, tap } from '@fp/Stream'
 import { mergeArray } from '@most/core'
 import { newDefaultScheduler } from '@most/scheduler'
 import { deepStrictEqual } from 'assert'
+
+import { pipe } from './function'
+import * as R from './Resume'
+import * as S from './Stream'
+import { runEffects, tap } from './Stream'
 
 export const test = describe(`Stream`, () => {
   describe(S.fromResume.name, () => {

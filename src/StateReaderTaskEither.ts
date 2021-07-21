@@ -1,10 +1,11 @@
-import { Arity1 } from '@fp/function'
-import { MonadRec4 } from '@fp/MonadRec'
-import { Provide4, ProvideAll4, ProvideSome4, UseAll4, UseSome4 } from '@fp/Provide'
 import { ChainRec4 } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as SRTE from 'fp-ts/StateReaderTaskEither'
+
+import { Arity1 } from './function'
+import { MonadRec4 } from './MonadRec'
+import { Provide4, ProvideAll4, ProvideSome4, UseAll4, UseSome4 } from './Provide'
 
 export const chainRec =
   <A, S, R, E, B>(f: Arity1<A, SRTE.StateReaderTaskEither<S, R, E, E.Either<A, B>>>) =>

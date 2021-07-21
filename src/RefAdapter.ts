@@ -1,9 +1,10 @@
-import * as A from '@fp/Adapter'
-import * as E from '@fp/Env'
-import * as RS from '@fp/ReaderStream'
-import * as Ref from '@fp/Ref'
 import { pipe } from 'fp-ts/function'
 import { fst, snd } from 'fp-ts/Tuple2'
+
+import * as A from './Adapter'
+import * as E from './Env'
+import * as RS from './ReaderStream'
+import * as Ref from './Ref'
 
 export interface RefAdapter<E, A, B = A> extends Ref.Wrapped<E, A.Adapter<A, B>> {}
 
