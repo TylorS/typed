@@ -51,12 +51,13 @@ export const useEq = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
 export const useMemo = <E, A, B = void>(env: E.Env<E, A>, Eq: Eq<B> = deepEqualsEq) => {
   const ref = Ref.make(env, { eq: alwaysEqualsEq, id: Symbol('useMemo::Value') })
   const changed = useEq(Eq)
+  const updateRef = Ref.update(ref)(() => env)
 
   return (value: B) =>
     pipe(
       value,
       changed,
-      E.chainFirstW((changed) => (changed ? Ref.update(ref)(() => env) : E.of(null))),
+      E.chainFirstW((changed) => (changed ? updateRef : E.of(null))),
       E.chainW(() => Ref.get(ref)),
     )
 }
@@ -200,11 +201,11 @@ export const useKeyedRefs = <A>(Eq: Eq<A>) => {
       E.of((value: A) => {
         const r = Ref.refs({ parentRefs })
 
-        return pipe(refs.upsertAt(value, r), E.constant(r))
+        return pipe(refs.upsertAt(value, r), E.constant(r), E.useSome(parentRefs))
       }),
     ),
-    E.bindW('findRefs', ({ createRefs }) =>
-      E.of((value: A) => refs.getOrCreate(value, createRefs(value))),
+    E.bindW('findRefs', ({ createRefs, parentRefs }) =>
+      E.of((value: A) => pipe(refs.getOrCreate(value, createRefs(value)), E.useSome(parentRefs))),
     ),
     E.bindW('deleteRefs', ({ parentRefs }) =>
       E.of(
