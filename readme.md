@@ -101,7 +101,7 @@ if (!rootElement) {
 
 // Creates a Reference to keep our Count
 // It requires no resources and tracks a number
-const Count: Ref.Wrapped<unknown, number> = Ref.create(E.of(0))
+const Count: Ref.Reference<unknown, number> = Ref.create(E.of(0))
 
 // Actions to update our Count Reference - easily tested
 const increment: E.Env<Ref.Refs, number> = Count.update(F.flow(F.increment, E.of))
