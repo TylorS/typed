@@ -47,6 +47,10 @@ export const matchE = OT.matchE(RS.Chain)
 export const some = OT.some(RS.Pointed)
 export const zero = OT.zero(RS.Pointed)
 
+export const getOrElseW = OT.getOrElse(RS.Functor) as <A>(
+  onNone: Lazy<A>,
+) => <E, B>(fa: RS.ReaderStream<E, O.Option<B>>) => RS.ReaderStream<E, A | B>
+
 export const getOrElseEW = getOrElseE as <E1, A>(
   onNone: Lazy<RS.ReaderStream<E1, A>>,
 ) => <E2>(fa: RS.ReaderStream<E2, O.Option<A>>) => RS.ReaderStream<E1 & E2, A>

@@ -1,6 +1,7 @@
 import * as E from '@fp/Env'
 import * as Eq from '@fp/Eq'
 import * as RS from '@fp/ReaderStream'
+import * as RSO from '@fp/ReaderStreamOption'
 import * as Ref from '@fp/Ref'
 import * as RefArray from '@fp/RefArray'
 import * as B from 'fp-ts/boolean'
@@ -88,6 +89,6 @@ export const saveTodos = E.op<(todos: readonly Todo[]) => E.Of<void>>()('saveTod
 
 export const saveTodosOnChange = pipe(
   Todos.values,
-  RS.map(O.getOrElse(() => [])),
+  RSO.getOrElseW((): readonly Todo[] => []),
   RS.chainEnvK(saveTodos),
 )
