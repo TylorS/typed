@@ -19,7 +19,9 @@ import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
 import { Semigroup } from 'fp-ts/Semigroup'
 
-import * as FS from './/FromStream'
+import * as FE from './FromEnv'
+import * as FRe from './FromResume'
+import * as FS from './FromStream'
 import { flow } from './function'
 import { MonadRec3 } from './MonadRec'
 import * as RS from './ReaderStream'
@@ -224,3 +226,27 @@ export const fromStream = FromStream.fromStream
 export const chainFirstStreamK = FS.chainFirstStreamK(FromStream, Chain)
 export const chainStreamK = FS.chainStreamK(FromStream, Chain)
 export const fromStreamK = FS.fromStreamK(FromStream)
+
+export const FromResume: FRe.FromResume3<URI> = {
+  fromResume: flow(
+    RS.fromResume,
+    RS.map((x) => Ei.right(x)),
+  ),
+}
+
+export const fromResume = FromResume.fromResume
+export const chainFirstResumeK = FRe.chainFirstResumeK(FromResume, Chain)
+export const chainResumeK = FRe.chainResumeK(FromResume, Chain)
+export const fromResumeK = FRe.fromResumeK(FromResume)
+
+export const FromEnv: FE.FromEnv3<URI> = {
+  fromEnv: flow(
+    RS.fromEnv,
+    RS.map((x) => Ei.right(x)),
+  ),
+}
+
+export const fromEnv = FromEnv.fromEnv
+export const chainFirstEnvK = FE.chainFirstEnvK(FromEnv, Chain)
+export const chainEnvK = FE.chainEnvK(FromEnv, Chain)
+export const fromEnvK = FE.fromEnvK(FromEnv)
