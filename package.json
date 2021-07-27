@@ -111,6 +111,14 @@
       "require": "./cjs/Data.js",
       "import": "./esm/Data.js"
     },
+    "./DataEither": {
+      "require": "./cjs/DataEither.js",
+      "import": "./esm/DataEither.js"
+    },
+    "./DataOption": {
+      "require": "./cjs/DataOption.js",
+      "import": "./esm/DataOption.js"
+    },
     "./Disposable": {
       "require": "./cjs/Disposable.js",
       "import": "./esm/Disposable.js"
@@ -186,6 +194,10 @@
     "./ReaderStreamEither": {
       "require": "./cjs/ReaderStreamEither.js",
       "import": "./esm/ReaderStreamEither.js"
+    },
+    "./ReaderStreamOption": {
+      "require": "./cjs/ReaderStreamOption.js",
+      "import": "./esm/ReaderStreamOption.js"
     },
     "./ReaderTask": {
       "require": "./cjs/ReaderTask.js",

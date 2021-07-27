@@ -67,6 +67,8 @@ snowpack.key
 /Branded/
 /Context/
 /Data/
+/DataEither/
+/DataOption/
 /Disposable/
 /Env/
 /EnvEither/
@@ -86,6 +88,7 @@ snowpack.key
 /ReaderOption/
 /ReaderStream/
 /ReaderStreamEither/
+/ReaderStreamOption/
 /ReaderTask/
 /ReaderTaskEither/
 /Ref/
