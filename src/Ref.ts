@@ -89,12 +89,13 @@ export const listenTo = <E, A>(ref: Ref<E, A>): RS.ReaderStream<Events, Event<E,
     RS.filter((x) => x.ref.id === ref.id),
   )
 
-export const listenToValues = <E, A>(ref: Ref<E, A>): RS.ReaderStream<E & Get & Events, A> =>
+export const listenToValues = <E, A>(
+  ref: Ref<E, A>,
+): RS.ReaderStream<E & Get & Events, O.Option<A>> =>
   pipe(
     getRefEvents,
     RS.filter((x): x is Event<E, A> => x.ref.id === ref.id),
-    RS.filter(not(isRemoved)),
-    RS.map((e) => e.value),
+    RS.map((e) => (isRemoved(e) ? O.none : O.some(e.value))),
     RS.merge(RS.fromEnv(get(ref))),
   )
 
@@ -124,7 +125,7 @@ export interface Wrapped<E, A> extends Ref<E, A> {
   readonly update: <E2>(f: (value: A) => E.Env<E2, A>) => E.Env<E & E2 & Refs, A>
   readonly remove: E.Env<E & Refs, O.Option<A>>
   readonly listen: RS.ReaderStream<Refs, Event<E, A>>
-  readonly values: RS.ReaderStream<E & Refs, A>
+  readonly values: RS.ReaderStream<E & Refs, O.Option<A>>
 }
 
 export function wrap<E, A>(ref: Ref<E, A>): Wrapped<E, A> {

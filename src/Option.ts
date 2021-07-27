@@ -1,4 +1,4 @@
-import { ChainRec1 } from 'fp-ts/ChainRec'
+import { ChainRec1 as O } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
 import * as O from 'fp-ts/Option'
 
@@ -20,7 +20,7 @@ export const chainRec =
     return option
   }
 
-export const ChainRec: ChainRec1<O.URI> = {
+export const ChainRec: O<O.URI> = {
   chainRec,
 }
 

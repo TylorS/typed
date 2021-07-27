@@ -169,13 +169,32 @@ export const bindEnvK =
   > =>
     E.bindW(name, () => useEnvK((...args: Args) => f(...args), onValue))(ma)
 
-export const useReaderStream = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
+export const useReaderStream = <A = void, B = unknown>(
+  Eq: Eq<A> = deepEqualsEq,
+  valueEq: Eq<B> = deepEqualsEq,
+) => {
   const use = useDisposable(Eq)
+  const ref = Ref.make(E.of<O.Option<B>>(O.none), { eq: O.getEq(valueEq) })
 
-  return <E, B>(rs: RS.ReaderStream<E, B>, dep: A) =>
+  return <E, C extends B>(
+    rs: RS.ReaderStream<E, C>,
+    dep: A,
+  ): E.Env<E & Ref.Refs & SchedulerEnv, O.Option<C>> =>
     pipe(
       E.ask<E & Ref.Refs & SchedulerEnv>(),
-      E.chainW((r) => use(() => rs(r).run(S.createSink(), r.scheduler), dep)),
+      E.chainW((r) =>
+        use(
+          () =>
+            rs(r).run(
+              S.createSink({
+                event: (_, value: C) => pipe(value, O.some, Ref.set(ref), E.execWith(r)),
+              }),
+              r.scheduler,
+            ),
+          dep,
+        ),
+      ),
+      E.chainW(() => Ref.get(ref) as E.Env<Ref.Refs, O.Option<C>>),
     )
 }
 

@@ -62,7 +62,9 @@ export function listenTo<E, A>(ref: Ref.Ref<E, A>): RS.ReaderStream<Ref.Refs, Re
   return pipe(ref, findProviderRefs, RS.fromEnv, RS.chainStreamK(Ref.listenTo(ref)))
 }
 
-export function listenToValues<E, A>(ref: Ref.Ref<E, A>): RS.ReaderStream<E & Ref.Refs, A> {
+export function listenToValues<E, A>(
+  ref: Ref.Ref<E, A>,
+): RS.ReaderStream<E & Ref.Refs, O.Option<A>> {
   return pipe(
     ref,
     findProviderRefs,

@@ -76,33 +76,68 @@ that will provide the default value lazily when first asked for or after being d
 The provided implementation will also send events containing all of the creations/updates/deletes occuring
 in realtime.
 
+Here's a small counter example to show how one might use Ref to create a simple counter application.
+
 ```ts
-import * as Ref from '@typed/fp/Ref'
-import * as E from '@typed/fp/Env'
-import * as R from '@typed/fp/Resume'
-import * as N from 'fp-ts/number'
-import { pipe } from 'fp-ts/function'
+import * as E from '@fp/Env'
+import * as RS from '@fp/ReaderStream'
+import * as Ref from '@fp/Ref'
+import * as S from '@fp/Stream'
+import * as U from '@fp/use'
+import { newDefaultScheduler } from '@most/scheduler'
+import * as F from 'fp-ts/function'
+import { html, render, Renderable } from 'uhtml'
 
-// Create a reference using Env for a starting value.
-const Count = Ref.create(E.of(0))
+/**
+ * This is an example of using hooks to render a dynamically-sized
+ * set of Counters with their own internal state separate from any other Counters.
+ */
 
-// Create a workflow using references
-const addOne: E.Env<Ref.Refs, number> = pipe(
-  Count.get, // Get the current value
-  E.chainW(current => Count.set(current + 1)) // Increment by 1
+const rootElement: HTMLElement | null = document.getElementById('app')
+
+if (!rootElement) {
+  throw new Error('Unable to find element by #app')
+}
+
+// Creates a Reference to keep our Count
+// It requires no resources and tracks a number
+const Count: Ref.Wrapped<unknown, number> = Ref.create(E.of(0))
+
+// Actions to update our Count Reference - easily tested
+const increment: E.Env<Ref.Refs, number> = Count.update(F.flow(F.increment, E.of))
+
+const decrement: E.Env<Ref.Refs, number> = Count.update(
+  F.flow(
+    F.decrement,
+    E.of,
+    E.map((x) => Math.max(0, x)),
+  ),
 )
 
-const refs: R.Refs = Ref.refs()
+// Creates a component which represents our counter
+const Counter: E.Env<Ref.Refs, Renderable> = F.pipe(
+  E.Do,
+  U.bindEnvK('dec', () => decrement),
+  U.bindEnvK('inc', () => increment),
+  E.bindW('count', () => Count.get),
+  E.map(
+    ({ dec, inc, count }) => html`<div>
+      <button onclick=${dec}>Decrement</button>
+      <span>Count: ${count}</span>
+      <button onclick=${inc}>Increment</button>
+    </div>`,
+  ),
+)
 
-// Optionally provide default values.
-// Convenient for testing specific values
-// const refs = R.createReferences([[Count.id, 42]])
+const Main: RS.ReaderStream<Ref.Refs, HTMLElement> = F.pipe(
+  Counter,
+  Ref.sample, // Sample our Counter everytime there is a Ref update.
+  RS.scan(render, rootElement), // Render our application using 'uhtml'
+)
 
-// Provide the references and run the Resume
-const disposable = pipe(refs, addOne, R.start((n: number) => {
-  // Do stuff with the result
-}))
+// Provide Main with its required resources
+const stream: S.Stream<HTMLElement> = Main(Ref.refs())
 
-// Clean up any resources created and/or async effects
-disposable.dispose()
+// Execute our Stream with a default scheduler
+S.runEffects(stream, newDefaultScheduler()).catch((error) => console.error(error))
 ```

@@ -1,4 +1,5 @@
 import * as E from '@fp/Env'
+import * as O from '@fp/Option'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
 import * as S from '@fp/Stream'
@@ -10,7 +11,7 @@ import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import { html, render, Renderable } from 'uhtml'
 
 /**
- * This is an example of using hooks to render a dynamically-sized
+ * This is an example of using Ref to render a dynamically-sized
  * set of Counters with their own internal state separate from any other Counters.
  */
 
@@ -51,13 +52,22 @@ const Counter = (label: string): E.Env<Ref.Refs, Renderable> =>
   )
 
 // Creates a Counter to keep track of the total number of Counters
-const Header: RS.ReaderStream<Ref.Refs, Renderable> = Ref.sample(Counter(`Number Of Counters`))
+const Header: RS.ReaderStream<Ref.Refs, Renderable> = F.pipe(
+  `Number Of Counters`,
+  Counter,
+  Ref.sample,
+)
 
 // Create a list of Counters with their own isolated Ref.Refs for state management
 // based on the current count
 const Counters: RS.ReaderStream<Ref.Refs, readonly Renderable[]> = F.pipe(
   Count.values,
-  RS.map((count): ReadonlyArray<number> => (count === 0 ? [] : RNEA.range(1, count))),
+  RS.map(
+    O.match(
+      (): ReadonlyArray<number> => [],
+      (count) => (count === 0 ? [] : RNEA.range(1, count)),
+    ),
+  ),
   U.useRefsArray(F.flow(String, Counter), N.Eq),
 )
 
