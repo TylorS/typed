@@ -103,6 +103,7 @@ snowpack.key
 /Scheduler/
 /State/
 /StateEnvEither/
+/StateReaderStreamEither/
 /StateReaderTaskEither/
 /Stream/
 /StreamEither/

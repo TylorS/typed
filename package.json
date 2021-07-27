@@ -255,6 +255,10 @@
       "require": "./cjs/StateEnvEither.js",
       "import": "./esm/StateEnvEither.js"
     },
+    "./StateReaderStreamEither": {
+      "require": "./cjs/StateReaderStreamEither.js",
+      "import": "./esm/StateReaderStreamEither.js"
+    },
     "./StateReaderTaskEither": {
       "require": "./cjs/StateReaderTaskEither.js",
       "import": "./esm/StateReaderTaskEither.js"
