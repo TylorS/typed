@@ -86,4 +86,8 @@ export const getNumCompletedTodos = pipe(
 
 export const saveTodos = E.op<(todos: readonly Todo[]) => E.Of<void>>()('saveTodos')
 
-export const saveTodosOnChange = pipe(Todos.values, RS.chainEnvK(saveTodos))
+export const saveTodosOnChange = pipe(
+  Todos.values,
+  RS.map(O.getOrElse(() => [])),
+  RS.chainEnvK(saveTodos),
+)

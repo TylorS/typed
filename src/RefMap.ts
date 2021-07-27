@@ -11,7 +11,7 @@ import * as E from './Env'
 import * as P from './Provide'
 import * as Ref from './Ref'
 
-export interface RefMap<E, K, V> extends Ref.Wrapped<E, ReadonlyMap<K, V>> {
+export interface RefMap<E, K, V> extends Ref.Reference<E, ReadonlyMap<K, V>> {
   readonly keyEq: Eq<K>
   readonly valueEq: Eq<V>
 }
@@ -21,7 +21,7 @@ export interface RefMap<E, K, V> extends Ref.Wrapped<E, ReadonlyMap<K, V>> {
  */
 export const lift =
   <K, V>(keyEq: Eq<K>, valueEq: Eq<V>) =>
-  <E>(ref: Ref.Wrapped<E, ReadonlyMap<K, V>>): RefMap<E, K, V> => ({ ...ref, keyEq, valueEq })
+  <E>(ref: Ref.Reference<E, ReadonlyMap<K, V>>): RefMap<E, K, V> => ({ ...ref, keyEq, valueEq })
 
 export const getOrCreate = <E1, K, V>(M: RefMap<E1, K, V>) => {
   const find = RM.lookup(M.keyEq)
@@ -149,7 +149,7 @@ export const values =
   <E, K>(M: RefMap<E, K, V>) =>
     pipe(M.get, E.map(RM.values(O)))
 
-export interface Wrapped<E, K, V> extends RefMap<E, K, V> {
+export interface ReferenceMap<E, K, V> extends RefMap<E, K, V> {
   readonly getOrCreate: <E2>(k: K, orCreate: E.Env<E2, V>) => E.Env<E & E2 & Ref.Refs, V>
   readonly upsertAt: (k: K, v: V) => E.Env<E & Ref.Refs, ReadonlyMap<K, V>>
   readonly lookup: (k: K) => E.Env<E & Ref.Refs, O.Option<V>>
@@ -164,7 +164,7 @@ export interface Wrapped<E, K, V> extends RefMap<E, K, V> {
   readonly deleteAt: (k: K) => E.Env<E & Ref.Refs, ReadonlyMap<K, V>>
 }
 
-export function wrap<E, K, V>(M: RefMap<E, K, V>): Wrapped<E, K, V> {
+export function toReferenceMap<E, K, V>(M: RefMap<E, K, V>): ReferenceMap<E, K, V> {
   return {
     ...M,
     getOrCreate: getOrCreate(M),
@@ -182,12 +182,12 @@ export function wrap<E, K, V>(M: RefMap<E, K, V>): Wrapped<E, K, V> {
 export const create = <K, V>(
   keyEq: Eq<K>,
   valueEq: Eq<V>,
-): (<E>(ref: Ref.Wrapped<E, ReadonlyMap<K, V>>) => Wrapped<E, K, V>) =>
-  flow(lift(keyEq, valueEq), wrap)
+): (<E>(ref: Ref.Reference<E, ReadonlyMap<K, V>>) => ReferenceMap<E, K, V>) =>
+  flow(lift(keyEq, valueEq), toReferenceMap)
 
 export const useSome =
   <E1>(provided: E1) =>
-  <E2, K, V>(ref: Wrapped<E1 & E2, K, V>): Wrapped<E2, K, V> => {
+  <E2, K, V>(ref: ReferenceMap<E1 & E2, K, V>): ReferenceMap<E2, K, V> => {
     const provide = E.useSome(provided)
 
     return {
@@ -208,7 +208,7 @@ export const useSome =
 
 export const provideSome =
   <E1>(provided: E1) =>
-  <E2, K, V>(ref: Wrapped<E1 & E2, K, V>): Wrapped<E2, K, V> => {
+  <E2, K, V>(ref: ReferenceMap<E1 & E2, K, V>): ReferenceMap<E2, K, V> => {
     const provide = E.provideSome(provided)
 
     return {
@@ -229,37 +229,38 @@ export const provideSome =
 
 export const provideAll: <E>(
   provided: E,
-) => <K, V>(ref: Wrapped<E, K, V>) => Wrapped<unknown, K, V> = provideSome
+) => <K, V>(ref: ReferenceMap<E, K, V>) => ReferenceMap<unknown, K, V> = provideSome
 
-export const useAll: <E>(provided: E) => <K, V>(ref: Wrapped<E, K, V>) => Wrapped<unknown, K, V> =
-  useSome
+export const useAll: <E>(
+  provided: E,
+) => <K, V>(ref: ReferenceMap<E, K, V>) => ReferenceMap<unknown, K, V> = useSome
 
-export const WrappedURI = '@typed/fp/RefMap'
-export type WrappedURI = typeof WrappedURI
+export const URI = '@typed/fp/ReferenceMap'
+export type URI = typeof URI
 
 declare module 'fp-ts/HKT' {
   export interface URItoKind3<R, E, A> {
-    [WrappedURI]: Wrapped<R, E, A>
+    [URI]: ReferenceMap<R, E, A>
   }
 }
 
-export const UseSome: P.UseSome3<WrappedURI> = {
+export const UseSome: P.UseSome3<URI> = {
   useSome,
 }
 
-export const UseAll: P.UseAll3<WrappedURI> = {
+export const UseAll: P.UseAll3<URI> = {
   useAll,
 }
 
-export const ProvideSome: P.ProvideSome3<WrappedURI> = {
+export const ProvideSome: P.ProvideSome3<URI> = {
   provideSome,
 }
 
-export const ProvideAll: P.ProvideAll3<WrappedURI> = {
+export const ProvideAll: P.ProvideAll3<URI> = {
   provideAll,
 }
 
-export const Provide: P.Provide3<WrappedURI> = {
+export const Provide: P.Provide3<URI> = {
   useSome,
   useAll,
   provideSome,

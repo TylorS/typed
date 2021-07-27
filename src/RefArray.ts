@@ -10,7 +10,7 @@ import * as E from './Env'
 import * as P from './Provide'
 import * as Ref from './Ref'
 
-export interface RefArray<E, A> extends Ref.Wrapped<E, ReadonlyArray<A>> {
+export interface RefArray<E, A> extends Ref.Reference<E, ReadonlyArray<A>> {
   readonly memberEq: Eq<A>
 }
 
@@ -19,7 +19,7 @@ export interface RefArray<E, A> extends Ref.Wrapped<E, ReadonlyArray<A>> {
  */
 export const lift =
   <A>(memberEq: Eq<A>) =>
-  <E>(ref: Ref.Wrapped<E, ReadonlyArray<A>>): RefArray<E, A> => ({ ...ref, memberEq })
+  <E>(ref: Ref.Reference<E, ReadonlyArray<A>>): RefArray<E, A> => ({ ...ref, memberEq })
 
 /* Modifies the underlying State */
 
@@ -119,7 +119,7 @@ export const endoMap =
   (f: Endomorphism<A>): E.Env<E & Ref.Refs, readonly A[]> =>
     ra.update(flow(RA.map(f), E.of))
 
-export interface Wrapped<E, A> extends RefArray<E, A> {
+export interface ReferenceArray<E, A> extends RefArray<E, A> {
   readonly append: (value: A) => E.Env<E & Ref.Refs, readonly A[]>
   readonly concat: (end: ReadonlyArray<A>) => E.Env<E & Ref.Refs, readonly A[]>
   readonly deleteAt: (index: number) => E.Env<E & Ref.Refs, readonly A[]>
@@ -136,7 +136,7 @@ export interface Wrapped<E, A> extends RefArray<E, A> {
   readonly updateAt: (index: number, a: A) => E.Env<E & Ref.Refs, readonly A[]>
 }
 
-export function wrap<E, A>(M: RefArray<E, A>): Wrapped<E, A> {
+export function toReferenceArray<E, A>(M: RefArray<E, A>): ReferenceArray<E, A> {
   return {
     ...M,
     append: append(M),
@@ -158,11 +158,12 @@ export function wrap<E, A>(M: RefArray<E, A>): Wrapped<E, A> {
 
 export const create = <A>(
   memberEq: Eq<A>,
-): (<E>(ref: Ref.Wrapped<E, ReadonlyArray<A>>) => Wrapped<E, A>) => flow(lift(memberEq), wrap)
+): (<E>(ref: Ref.Reference<E, ReadonlyArray<A>>) => ReferenceArray<E, A>) =>
+  flow(lift(memberEq), toReferenceArray)
 
 export const useSome =
   <E1>(provided: E1) =>
-  <E2, A>(ref: Wrapped<E1 & E2, A>): Wrapped<E2, A> => {
+  <E2, A>(ref: ReferenceArray<E1 & E2, A>): ReferenceArray<E2, A> => {
     const provide = E.useSome(provided)
 
     return {
@@ -187,7 +188,7 @@ export const useSome =
 
 export const provideSome =
   <E1>(provided: E1) =>
-  <E2, A>(ref: Wrapped<E1 & E2, A>): Wrapped<E2, A> => {
+  <E2, A>(ref: ReferenceArray<E1 & E2, A>): ReferenceArray<E2, A> => {
     const provide = E.provideSome(provided)
 
     return {
@@ -210,37 +211,40 @@ export const provideSome =
     }
   }
 
-export const provideAll: <E>(provided: E) => <A>(ref: Wrapped<E, A>) => Wrapped<unknown, A> =
-  provideSome
+export const provideAll: <E>(
+  provided: E,
+) => <A>(ref: ReferenceArray<E, A>) => ReferenceArray<unknown, A> = provideSome
 
-export const useAll: <E>(provided: E) => <A>(ref: Wrapped<E, A>) => Wrapped<unknown, A> = useSome
+export const useAll: <E>(
+  provided: E,
+) => <A>(ref: ReferenceArray<E, A>) => ReferenceArray<unknown, A> = useSome
 
-export const WrappedURI = '@typed/fp/RefArray'
-export type WrappedURI = typeof WrappedURI
+export const URI = '@typed/fp/ReferenceArray'
+export type URI = typeof URI
 
 declare module 'fp-ts/HKT' {
   export interface URItoKind2<E, A> {
-    [WrappedURI]: Wrapped<E, A>
+    [URI]: ReferenceArray<E, A>
   }
 }
 
-export const UseSome: P.UseSome2<WrappedURI> = {
+export const UseSome: P.UseSome2<URI> = {
   useSome,
 }
 
-export const UseAll: P.UseAll2<WrappedURI> = {
+export const UseAll: P.UseAll2<URI> = {
   useAll,
 }
 
-export const ProvideSome: P.ProvideSome2<WrappedURI> = {
+export const ProvideSome: P.ProvideSome2<URI> = {
   provideSome,
 }
 
-export const ProvideAll: P.ProvideAll2<WrappedURI> = {
+export const ProvideAll: P.ProvideAll2<URI> = {
   provideAll,
 }
 
-export const Provide: P.Provide2<WrappedURI> = {
+export const Provide: P.Provide2<URI> = {
   useSome,
   useAll,
   provideSome,

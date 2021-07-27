@@ -118,7 +118,7 @@ export const getRefs = E.asks(
   }),
 )
 
-export interface Wrapped<E, A> extends Ref<E, A> {
+export interface Reference<E, A> extends Ref<E, A> {
   readonly get: E.Env<E & Refs, A>
   readonly has: E.Env<Refs, boolean>
   readonly set: (value: A) => E.Env<E & Refs, A>
@@ -128,7 +128,7 @@ export interface Wrapped<E, A> extends Ref<E, A> {
   readonly values: RS.ReaderStream<E & Refs, O.Option<A>>
 }
 
-export function wrap<E, A>(ref: Ref<E, A>): Wrapped<E, A> {
+export function toReference<E, A>(ref: Ref<E, A>): Reference<E, A> {
   return {
     id: ref.id,
     initial: ref.initial,
@@ -145,7 +145,7 @@ export function wrap<E, A>(ref: Ref<E, A>): Wrapped<E, A> {
 
 export const provideSome =
   <E1>(provided: E1) =>
-  <E2, A>(ref: Wrapped<E1 & E2, A>): Wrapped<E2, A> => {
+  <E2, A>(ref: Reference<E1 & E2, A>): Reference<E2, A> => {
     return {
       id: ref.id,
       equals: ref.equals,
@@ -160,12 +160,12 @@ export const provideSome =
     }
   }
 
-export const provideAll: <E>(provided: E) => <A>(ref: Wrapped<E, A>) => Wrapped<unknown, A> =
+export const provideAll: <E>(provided: E) => <A>(ref: Reference<E, A>) => Reference<unknown, A> =
   provideSome
 
 export const useSome =
   <E1>(provided: E1) =>
-  <E2, A>(ref: Wrapped<E1 & E2, A>): Wrapped<E2, A> => {
+  <E2, A>(ref: Reference<E1 & E2, A>): Reference<E2, A> => {
     return {
       id: ref.id,
       equals: ref.equals,
@@ -180,41 +180,42 @@ export const useSome =
     }
   }
 
-export const useAll: <E1>(provided: E1) => <A>(ref: Wrapped<E1, A>) => Wrapped<unknown, A> = useSome
+export const useAll: <E1>(provided: E1) => <A>(ref: Reference<E1, A>) => Reference<unknown, A> =
+  useSome
 
-export const WrappedURI = '@typed/fp/Ref'
-export type WrappedURI = typeof WrappedURI
+export const URI = '@typed/fp/Ref'
+export type URI = typeof URI
 
 declare module 'fp-ts/HKT' {
   export interface URItoKind2<E, A> {
-    [WrappedURI]: Wrapped<E, A>
+    [URI]: Reference<E, A>
   }
 }
 
-export const UseSome: P.UseSome2<WrappedURI> = {
+export const UseSome: P.UseSome2<URI> = {
   useSome,
 }
 
-export const UseAll: P.UseAll2<WrappedURI> = {
+export const UseAll: P.UseAll2<URI> = {
   useAll,
 }
 
-export const ProvideSome: P.ProvideSome2<WrappedURI> = {
+export const ProvideSome: P.ProvideSome2<URI> = {
   provideSome,
 }
 
-export const ProvideAll: P.ProvideAll2<WrappedURI> = {
+export const ProvideAll: P.ProvideAll2<URI> = {
   provideAll,
 }
 
-export const Provide: P.Provide2<WrappedURI> = {
+export const Provide: P.Provide2<URI> = {
   useSome,
   useAll,
   provideSome,
   provideAll,
 }
 
-export const create = flow(make, wrap)
+export const create = flow(make, toReference)
 
 export type Adapter = A.Adapter<Event<any, any>>
 
@@ -224,6 +225,7 @@ export interface Created<E, A> {
   readonly _tag: 'Created'
   readonly ref: Ref<E, A>
   readonly value: A
+  readonly refs: O.Option<Refs>
 }
 
 export const isCreated = <E, A>(event: Event<E, A>): event is Created<E, A> =>
@@ -234,6 +236,7 @@ export interface Updated<E, A> {
   readonly ref: Ref<E, A>
   readonly previousValue: A
   readonly value: A
+  readonly refs: O.Option<Refs>
 }
 
 export const isUpdated = <E, A>(event: Event<E, A>): event is Updated<E, A> =>
@@ -242,6 +245,7 @@ export const isUpdated = <E, A>(event: Event<E, A>): event is Updated<E, A> =>
 export interface Removed<E, A> {
   readonly _tag: 'Removed'
   readonly ref: Ref<E, A>
+  readonly refs: O.Option<Refs>
 }
 
 export const isRemoved = <E, A>(event: Event<E, A>): event is Removed<E, A> =>
@@ -323,7 +327,7 @@ function makeGetRef(references: Map<any, any>, sendEvent: (event: Event<any, any
 
       return pipe(
         ref.initial,
-        E.chainFirstIOK((value) => () => sendEvent({ _tag: 'Created', ref, value })),
+        E.chainFirstIOK((value) => () => sendEvent({ _tag: 'Created', ref, value, refs: O.none })),
       )
     },
   }
@@ -346,7 +350,8 @@ function makeSetRef(references: Map<any, any>, sendEvent: (event: Event<any, any
         ref,
         getRef,
         E.chainFirstIOK(
-          (previousValue) => () => sendEvent({ _tag: 'Updated', ref, previousValue, value }),
+          (previousValue) => () =>
+            sendEvent({ _tag: 'Updated', ref, previousValue, value, refs: O.none }),
         ),
         E.constant(value),
       )
@@ -362,7 +367,7 @@ function makeDeleteRef(
     removeRef(ref) {
       return pipe(
         E.fromIO(() => (references.has(ref.id) ? O.some(references.get(ref.id)) : O.none)),
-        E.chainFirstIOK(() => () => sendEvent({ _tag: 'Removed', ref })),
+        E.chainFirstIOK(() => () => sendEvent({ _tag: 'Removed', ref, refs: O.none })),
       )
     },
   }

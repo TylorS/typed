@@ -23,7 +23,7 @@ if (!rootElement) {
 
 // Creates a Reference to keep our Count
 // It requires no resources and tracks a number
-const Count: Ref.Wrapped<unknown, number> = Ref.create(E.of(0))
+const Count: Ref.Reference<unknown, number> = Ref.create(E.of(0))
 
 // Actions to update our Count Reference - easily tested
 const increment: E.Env<Ref.Refs, number> = Count.update(F.flow(F.increment, E.of))
@@ -68,7 +68,7 @@ const Counters: RS.ReaderStream<Ref.Refs, readonly Renderable[]> = F.pipe(
       (count) => (count === 0 ? [] : RNEA.range(1, count)),
     ),
   ),
-  U.useRefsArray(F.flow(String, Counter), N.Eq),
+  U.useRefs(F.flow(String, Counter), N.Eq),
 )
 
 // Combines Counters with a Header that is also just a Counter and renders on each update

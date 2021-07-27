@@ -23,6 +23,7 @@ export const add = (disposable: Disposable) =>
 export const dispose = pipe(
   Ref.get(RefDisposable),
   E.map((s) => s.dispose()),
+  E.chainFirstW(() => Ref.remove(RefDisposable)),
 )
 
 export const disposeOfRefs = <E, A>(rs: RS.ReaderStream<E, A>): RS.ReaderStream<E & Ref.Get, A> =>

@@ -3,6 +3,7 @@ import * as Alternative_ from 'fp-ts/Alternative'
 import * as App from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
 import * as Ch from 'fp-ts/Chain'
+import { Either, isRight } from 'fp-ts/Either'
 import { Eq } from 'fp-ts/Eq'
 import { constant, constFalse, flow, identity, Lazy, pipe } from 'fp-ts/function'
 import * as F from 'fp-ts/Functor'
@@ -151,7 +152,7 @@ export const getShow = <A>(S: Show<A>): Show<Data<A>> => ({
     constant('NoData'),
     O.matchW(
       () => `Loading`,
-      (p) => `Loading<${Progress.show(p)}>`,
+      (p) => `Loading(${Progress.show(p)})`,
     ),
     (v, p) =>
       pipe(
@@ -176,7 +177,7 @@ export const getEq = <A>(S: Eq<A>): Eq<Data<A>> => {
           () => isNoData(b),
           (p) => isLoading(b) && OptionProgressEq.equals(p)(b.progress),
           (a, p) => isRefresh(b) && S.equals(a)(b.value) && OptionProgressEq.equals(p)(b.progress),
-          (a) => isRefresh(b) && S.equals(a)(b.value),
+          (a) => isReplete(b) && S.equals(a)(b.value),
         ),
       ),
   }
@@ -243,12 +244,12 @@ export const elem =
   <A>(E: Eq<A>) =>
   (a: A) =>
   (ma: Data<A>): boolean =>
-    matchW(constFalse, constFalse, E.equals(a), E.equals(a))(ma)
+    match3W(constFalse, constFalse, E.equals(a))(ma)
 
 export const exists =
   <A>(predicate: Predicate<A>) =>
   (ma: Data<A>): boolean =>
-    pipe(ma, matchW(constFalse, constFalse, predicate, predicate))
+    pipe(ma, match3W(constFalse, constFalse, predicate))
 
 export const of = <A>(value: A): Data<A> => Replete(value)
 
@@ -318,6 +319,22 @@ export const Monad: Monad1<URI> = {
   ...Pointed,
 }
 
+export const chainRec =
+  <A, B>(f: (value: A) => Data<Either<A, B>>) =>
+  (value: A): Data<B> => {
+    let data = f(value)
+
+    while (!isNoData(data) && !isLoading(data)) {
+      if (isRight(data.value)) {
+        return Replete(data.value.right)
+      }
+
+      data = f(data.value.left)
+    }
+
+    return data
+  }
+
 export const alt =
   <A>(f: Lazy<Data<A>>) =>
   <B>(b: Data<B>): Data<A | B> =>
@@ -359,4 +376,3 @@ export const toOption = <A>(data: Data<A>): O.Option<A> =>
 // Traversable
 // Compactable
 // Filterable
-// FromEither

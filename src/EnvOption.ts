@@ -9,7 +9,7 @@ import { FromIO2 } from 'fp-ts/FromIO'
 import * as FR from 'fp-ts/FromReader'
 import { FromReader2 } from 'fp-ts/FromReader'
 import { FromTask2 } from 'fp-ts/FromTask'
-import { flow, pipe } from 'fp-ts/function'
+import { flow, Lazy, pipe } from 'fp-ts/function'
 import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import * as O from 'fp-ts/Option'
@@ -45,6 +45,10 @@ export const match = OT.match(E.Functor)
 export const matchE = OT.matchE(E.Chain)
 export const some = OT.some(E.Pointed)
 export const zero = OT.zero(E.Pointed)
+
+export const getOrElseEW = getOrElseE as <E1, A>(
+  onNone: Lazy<E.Env<E1, A>>,
+) => <E2>(fa: E.Env<E2, O.Option<A>>) => E.Env<E1 & E2, A>
 
 export const URI = '@typed/fp/EnvOption'
 export type URI = typeof URI

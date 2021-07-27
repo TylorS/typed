@@ -19,10 +19,11 @@ import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
 import { Semigroup } from 'fp-ts/Semigroup'
 
+import * as FS from './/FromStream'
 import { flow } from './function'
 import { MonadRec3 } from './MonadRec'
 import * as RS from './ReaderStream'
-import { never } from './Stream'
+import * as S from './Stream'
 import * as SE from './StreamEither'
 
 /**
@@ -165,7 +166,7 @@ export const Alt: ALT.Alt3<URI> = {
 
 export const altAll = ALT.altAll(Alt)
 
-export const zero: ReaderStreamEither<unknown, never, any> = () => never()
+export const zero: ReaderStreamEither<unknown, never, any> = S.empty
 
 export const Alternative: ALTERNATIVE.Alternative3<URI> = {
   ...Alt,
@@ -214,3 +215,12 @@ export const fromTask = FromTask.fromTask
 export const chainFirstTaskK = FT.chainFirstTaskK(FromTask, Chain)
 export const chainTaskK = FT.chainTaskK(FromTask, Chain)
 export const fromTaskK = FT.fromTaskK(FromTask)
+
+export const FromStream: FS.FromStream3<URI> = {
+  fromStream: flow(RS.fromStream, RS.map(Ei.right)),
+}
+
+export const fromStream = FromStream.fromStream
+export const chainFirstStreamK = FS.chainFirstStreamK(FromStream, Chain)
+export const chainStreamK = FS.chainStreamK(FromStream, Chain)
+export const fromStreamK = FS.fromStreamK(FromStream)

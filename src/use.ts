@@ -62,7 +62,7 @@ export const useMemo = <E, A, B = void>(env: E.Env<E, A>, Eq: Eq<B> = deepEquals
     )
 }
 
-export const useDisposable = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
+export const useDisposable = <A = void>(Eq: Eq<A> = deepEqualsEq, switchLatest = false) => {
   const ref = Ref.make(E.fromIO(disposeNone), {
     eq: alwaysEqualsEq,
     id: Symbol('useDisposable::Disposable'),
@@ -77,11 +77,12 @@ export const useDisposable = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
       E.chainW(({ changed, current }) =>
         changed
           ? pipe(
-              E.fromIO(() => current.dispose()),
+              E.fromIO(() => (switchLatest ? current.dispose() : null)),
               E.chainW(() => E.fromIO(f)),
               E.chainW((next) =>
                 pipe(
-                  RefDisposable.add(next),
+                  next,
+                  RefDisposable.add,
                   E.map((d) => disposeBoth(d, next)),
                   E.chainW(Ref.set(ref)),
                 ),
@@ -243,16 +244,15 @@ export const useKeyedRefs = <A>(Eq: Eq<A>) => {
   )
 }
 
-export const useRefsArray = <A, E1, B>(f: (value: A) => E.Env<E1, B>, Eq: Eq<A>) => {
-  const useRefs = useKeyedRefs(EqStrict as Eq<S.Stream<A>>)
+export const useRefsStream = <A, E1, B>(f: (value: A) => RS.ReaderStream<E1, B>, Eq: Eq<A>) => {
+  const use = RS.fromEnv(useKeyedRefs(EqStrict as Eq<S.Stream<A>>))
   const mergeMap = RS.mergeMapWhen(EqStrict as Eq<S.Stream<A>>)
 
   return <E2>(
     stream: RS.ReaderStream<E2, readonly A[]>,
   ): RS.ReaderStream<E1 & E2 & Ref.Refs, readonly B[]> =>
     pipe(
-      useRefs,
-      RS.fromEnv,
+      use,
       RS.switchMapW(({ findRefs, deleteRefs }) =>
         pipe(
           stream,
@@ -261,7 +261,7 @@ export const useRefsArray = <A, E1, B>(f: (value: A) => E.Env<E1, B>, Eq: Eq<A>)
             pipe(
               s,
               RS.fromStream,
-              RS.switchMapW(flow(f, Ref.sample)),
+              RS.switchMapW(f),
               RS.onDispose(deleteRefs(s)),
               RS.useSomeWith(RS.fromEnv(findRefs(s))),
             ),
@@ -270,3 +270,6 @@ export const useRefsArray = <A, E1, B>(f: (value: A) => E.Env<E1, B>, Eq: Eq<A>)
       ),
     )
 }
+
+export const useRefs = <A, E1, B>(f: (value: A) => E.Env<E1, B>, Eq: Eq<A>) =>
+  useRefsStream(flow(f, Ref.sample), Eq)

@@ -1,4 +1,4 @@
-import { SeedValue } from '@most/core/dist/combinator/loop'
+import { SeedValue as RS } from '@most/core/dist/combinator/loop'
 import * as H from '@most/hold'
 import * as App from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
@@ -537,7 +537,7 @@ export const filterMap =
     FN.pipe(fa, withStream(S.filterMap(f)))
 
 export const loop =
-  <A, B, C>(f: (a: A, b: B) => SeedValue<A, C>, seed: A) =>
+  <A, B, C>(f: (a: A, b: B) => RS<A, C>, seed: A) =>
   <E>(fa: ReaderStream<E, B>): ReaderStream<E, C> =>
   (e) =>
     FN.pipe(e, fa, S.loop(f, seed))

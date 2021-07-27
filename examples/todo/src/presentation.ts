@@ -2,7 +2,6 @@ import * as E from '@fp/Env'
 import * as U from '@fp/use'
 import { flow, pipe } from 'fp-ts/function'
 import * as RA from 'fp-ts/ReadonlyArray'
-import { ACTIVE_HASH, ALL_HASH, COMPLETED_HASH } from 'infrastructure'
 import { html } from 'uhtml'
 
 import {
@@ -21,6 +20,7 @@ import {
   updateTodoDescription,
 } from './application'
 import { Todo } from './domain'
+import { ACTIVE_HASH, ALL_HASH, COMPLETED_HASH } from './infrastructure'
 
 type HTMLInputElementEvent = Event & {
   readonly which: number
