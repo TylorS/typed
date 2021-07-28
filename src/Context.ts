@@ -1,5 +1,4 @@
 import { left, right } from 'fp-ts/Either'
-import { EqStrict } from 'fp-ts/Eq'
 import { flow, identity, pipe } from 'fp-ts/function'
 
 import * as E from './Env'
@@ -55,8 +54,8 @@ export function listenToValues<E, A>(
  * updates from Ancestor.
  */
 export function use<E, A>(ref: Ref.Ref<E, A>): E.Env<E & Ref.Refs & SchedulerEnv, A> {
-  const useValues = useReaderStream(EqStrict)
-  const useReplicateEvents = useReaderStream(EqStrict)
+  const useValues = useReaderStream()
+  const useReplicateEvents = useReaderStream()
 
   return pipe(
     E.Do,
@@ -64,7 +63,7 @@ export function use<E, A>(ref: Ref.Ref<E, A>): E.Env<E & Ref.Refs & SchedulerEnv
     E.bindW('providerRefs', () => findProviderRefs(ref)),
     E.bindW('value', ({ providerRefs }) =>
       pipe(
-        useValues(pipe(ref, Ref.listenToValues, RS.useSome(providerRefs)), ref.id),
+        useValues(pipe(ref, Ref.listenToValues, RS.useSome(providerRefs))),
         EO.chainOptionK(identity),
         EO.getOrElseEW(() => get(ref)),
       ),
@@ -79,7 +78,6 @@ export function use<E, A>(ref: Ref.Ref<E, A>): E.Env<E & Ref.Refs & SchedulerEnv
             pipe({ ...event, refs: O.some(providerRefs) }, Ref.sendEvent, E.useSome(currentRefs)),
           ),
         ),
-        ref.id,
       ),
     ),
     E.map(({ value }) => value),
