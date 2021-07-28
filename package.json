@@ -119,6 +119,10 @@
       "require": "./cjs/DataOption.js",
       "import": "./esm/DataOption.js"
     },
+    "./DataT": {
+      "require": "./cjs/DataT.js",
+      "import": "./esm/DataT.js"
+    },
     "./Disposable": {
       "require": "./cjs/Disposable.js",
       "import": "./esm/Disposable.js"

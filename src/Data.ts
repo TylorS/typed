@@ -29,6 +29,9 @@ export const isRefresh = <A>(data: Data<A>): data is Refresh<A> => data._tag ===
 
 export const isReplete = <A>(data: Data<A>): data is Replete<A> => data._tag === 'Replete'
 
+export const hasValue = <A>(data: Data<A>): data is Refresh<A> | Replete<A> =>
+  isRefresh(data) || isReplete(data)
+
 export interface NoData {
   readonly _tag: 'NoData'
 }
