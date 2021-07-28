@@ -3,7 +3,8 @@
 `@typed/fp` is conceptually an extension of [fp-ts](https://gcanti.github.io/fp-ts/), with cancelable 
 async effects, [streams](https://github.com/mostjs/core), state management, and more. 
 
-This project is under very heavy development. It is my goal to align with `fp-ts` v3 which is currently also under heavy development and once both codebases are stable I intend to make the 1.0 release.
+This project is under heavy development. We intend to align with `fp-ts` v3. A 1.0 release will be made
+once both codebases are stable.
 
 ## Features
 
@@ -16,24 +17,17 @@ This project is under very heavy development. It is my goal to align with `fp-ts
 
 ## Conceptual Documentation
 
-As with `fp-ts`' own documentation, it is not strictly a goal to explain functional programming as whole
-though it is a goal to provide more than just hard API documentation and some thing might be mentioned.
-This will take a much longer time to get to. For now, I'm just sort of using this README as way to stream
-my thoughts somewhere visible. I don't feel too close to finished, but some of the core things are
-starting to form and I'd like to get their ideas written down.
+As with `fp-ts`' own documentation, it is not strictly a goal to explain functional programming as a whole, though it is a goal to provide more than just hard API documentation. For now, I'm just using this README as a way to stream my thoughts somewhere visible. Some core things are coming together 
+already.
 
 ### Resume
 
-Resume is a possibly synchronous or possibly asynchronous effect type. Conceptually you can think
-of Resume as a union between the `IO` monad and the `Task` (Promise-based) monad w/ cancelation. The 
-`Disposable` interface is borrowed from `@most/core`'s internal types and makes it easy to interop 
-resource cancelation throughout the codebase and yours as well. This will also allow reusing the 
-`@most/scheduler` package for providing extremely consistent time-based scheduling consistent with any
-other most-based workflows you have. 
+`Resume` is a possibly synchronous or asynchronous effect type. Conceptually you can think
+of `Resume` as a union between the `IO` and `Task` monads w/ cancelation. The 
+`Disposable` interface is borrowed from `@most/core`'s internal types and makes it easy to interoperate. Using Disposable makes it easy to reuse the `@most/scheduler` package for providing scheduling consistent with any other most-based workflows you have. 
 
 The beauty of `Resume` is that it can do work as fast as possible without delay. Sync when possible but
-async when needed allows you to unify your sync/async workflows using a single monad w/ easy interop with 
-your existing IO/Task allowing for cancelation where needed.
+async when needed allows you to unify your sync/async workflows using a single monad w/ easy interop with your existing IO/Task allowing for cancelation when required.
 
 ```ts
 import { IO } from 'fp-ts/IO'
@@ -52,7 +46,7 @@ type Async<A> = {
 }
 
 // From @most/types
-type Dispsoable = {
+type Disposable = {
   readonly dispose: () => void 
 }
 ```
@@ -60,23 +54,18 @@ type Dispsoable = {
 ### Env 
 
 `Env` is the core of the higher-level modules like [`Ref`](#ref) and is a `ReaderT` of `Resume`, but to be honest being used so much, I didn't like writing `ReaderResume<A>` and chose to shorten to `Env` for the 
-"environmental" quality Reader provides. Combining Reader and Resume allows for creating APIs that are 
-capable of utilizing dependency injection for its configurability and testability.  
+"environmental" quality Reader provides. Combining Reader and Resume allows for creating APIs that are capable of utilizing dependency injection for their configuration and testability while still combining the sync/async workflows.
 
-While designing application APIs it is often better to describe the logic of your system separate from 
-the implementation details. `Env`, or rather `Reader` helps you accomplish this through the [Dependency Inversion Principle](https://stackify.com/dependency-inversion-principle/). This principle is one of 
+While designing application APIs it is often better to describe the logic of your system separate from the implementation details. `Env`, or rather `Reader` helps you accomplish this through the [Dependency Inversion Principle](https://stackify.com/dependency-inversion-principle/). This principle is one of 
 the easiest ways to begin improving any codebase.
 
 ### Ref 
 
-`Ref` is an abstraction for managing state using `Env`. It exposes an extensible get/set/delete
-API for managing keys (string|number|symbol) to values. Every `Ref` is connected to an `Env`
-that will provide the default value lazily when first asked for or after being deleted previously.
+`Ref` is an abstraction for managing state-based applications using `Env`. It exposes an extensible get/set/delete API for managing keys to values. Every `Ref` is connected to an `Env` that will provide the default value lazily when first asked for or after being deleted previously.
 
-The provided implementation will also send events containing all of the creations/updates/deletes occuring
-in realtime.
+The provided implementation will also send events containing all of the creations/updates/deletes occurring in real-time.
 
-Here's a small counter example to show how one might use Ref to create a simple counter application.
+Here's a small example of a Counter application to show how one might use Ref to create a simple counter application.
 
 ```ts
 import * as E from '@fp/Env'
@@ -87,11 +76,6 @@ import * as U from '@fp/use'
 import { newDefaultScheduler } from '@most/scheduler'
 import * as F from 'fp-ts/function'
 import { html, render, Renderable } from 'uhtml'
-
-/**
- * This is an example of using hooks to render a dynamically-sized
- * set of Counters with their own internal state separate from any other Counters.
- */
 
 const rootElement: HTMLElement | null = document.getElementById('app')
 
