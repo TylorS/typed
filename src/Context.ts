@@ -11,7 +11,7 @@ import { SchedulerEnv } from './Scheduler'
 import { useReaderStream } from './use'
 
 /**
- * Context is an alternative implementation of Ref.Wrapped, which will traverse
+ * Context is an alternative implementation of Ref.Reference, which will traverse
  * up the tree of Refs until it finds the closest parent, or the current Refs, that contains
  * a value for the given Ref ID. If no parent Refs have any value the root-most Refs will be chosen
  * as the home.
@@ -62,9 +62,9 @@ export function use<E, A>(ref: Ref.Ref<E, A>): E.Env<E & Ref.Refs & SchedulerEnv
     E.Do,
     E.bind('currentRefs', () => Ref.getRefs),
     E.bindW('providerRefs', () => findProviderRefs(ref)),
-    E.bindW('value', () =>
+    E.bindW('value', ({ providerRefs }) =>
       pipe(
-        useValues(listenToValues(ref), ref.id),
+        useValues(pipe(ref, Ref.listenToValues, RS.useSome(providerRefs)), ref.id),
         EO.chainOptionK(identity),
         EO.getOrElseEW(() => get(ref)),
       ),
@@ -73,7 +73,8 @@ export function use<E, A>(ref: Ref.Ref<E, A>): E.Env<E & Ref.Refs & SchedulerEnv
       useReplicateEvents(
         pipe(
           ref,
-          listenTo,
+          Ref.listenTo,
+          RS.useSome(providerRefs),
           RS.chainEnvK((event) =>
             pipe({ ...event, refs: O.some(providerRefs) }, Ref.sendEvent, E.useSome(currentRefs)),
           ),
