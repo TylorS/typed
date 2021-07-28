@@ -297,25 +297,43 @@ export type RefsOptions = {
 }
 
 function createSendEvent(references: Map<any, any>, [push]: Adapter) {
-  return (event: Event<any, any>) => {
-    switch (event._tag) {
-      case 'Created':
-        references.set(event.ref.id, event.value)
-        push(event)
-        break
-      case 'Updated':
-        references.set(event.ref.id, event.value)
+  const updateReferences = (event: Event<any, any>) => {
+    if (event._tag === 'Created' || event._tag === 'Updated') {
+      references.set(event.ref.id, event.value)
 
-        if (!event.ref.equals(event.previousValue)(event.value)) {
-          push(event)
-        }
-        break
-      case 'Removed':
-        references.delete(event.ref.id)
-        push(event)
-        break
+      return
+    }
+
+    references.delete(event.ref.id)
+  }
+
+  const sendEvent = (event: Event<any, any>) => {
+    if (event._tag === 'Created' || event._tag === 'Removed') {
+      return push(event)
+    }
+
+    // Only send update events when they have changed
+    if (!event.ref.equals(event.previousValue)(event.value)) {
+      return push(event)
     }
   }
+
+  return (event: Event<any, any>) =>
+    pipe(
+      event.refs,
+      O.matchW(
+        // Only update our local references when event.refs is None
+        // as this indicates the event originates from within our current Refs environment.
+        () => {
+          updateReferences(event)
+          sendEvent(event)
+        },
+        // When event.refs is Some<Refs>, the event originated from another set of references.
+        // We only replicate the event such that a descendant Refs can be re-sampled when it subscribes to
+        // a Ref from an Ancestor's environment.
+        () => sendEvent(event),
+      ),
+    )
 }
 
 function makeGetRef(references: Map<any, any>, sendEvent: (event: Event<any, any>) => void): Get {
