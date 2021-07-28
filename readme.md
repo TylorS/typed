@@ -68,11 +68,11 @@ The provided implementation will also send events containing all of the creation
 Here's a small example of a Counter application to show how one might use Ref to create a simple counter application.
 
 ```ts
-import * as E from '@fp/Env'
-import * as RS from '@fp/ReaderStream'
-import * as Ref from '@fp/Ref'
-import * as S from '@fp/Stream'
-import * as U from '@fp/use'
+import * as E from '@typed/fp/Env'
+import * as RS from '@typed/fp/ReaderStream'
+import * as Ref from '@typed/fp/Ref'
+import * as S from '@typed/fp/Stream'
+import * as U from '@typed/fp/use'
 import { newDefaultScheduler } from '@most/scheduler'
 import * as F from 'fp-ts/function'
 import { html, render, Renderable } from 'uhtml'
