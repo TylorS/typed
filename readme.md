@@ -24,7 +24,7 @@ already.
 
 `Resume` is a possibly synchronous or asynchronous effect type. Conceptually you can think
 of `Resume` as a union between the `IO` and `Task` monads w/ cancelation. The 
-`Disposable` interface is borrowed from `@most/core`'s internal types and makes it easy to interoperate. Using Disposable makes it easy to reuse the `@most/scheduler` package for providing scheduling consistent with any other most-based workflows you have. 
+`Disposable` interface is borrowed from `@most/core`'s internal types and makes it easy to interoperate. Using `Disposable` makes it easy to reuse the `@most/scheduler` package for providing scheduling consistent with any other most-based workflows you have. 
 
 The beauty of `Resume` is that it can do work as fast as possible without delay. Sync when possible but
 async when needed allows you to unify your sync/async workflows using a single monad w/ easy interop with your existing IO/Task allowing for cancelation when required.
@@ -53,10 +53,10 @@ type Disposable = {
 
 ### Env 
 
-`Env` is the core of the higher-level modules like [`Ref`](#ref) and is a `ReaderT` of `Resume`, but to be honest being used so much, I didn't like writing `ReaderResume<A>` and chose to shorten to `Env` for the 
-"environmental" quality Reader provides. Combining Reader and Resume allows for creating APIs that are capable of utilizing dependency injection for their configuration and testability while still combining the sync/async workflows.
+`Env` is the core of the higher-level modules like [`Ref`](#ref) and is a `ReaderT` of `Resume`; but to be honest, being used so much, I didn't like writing `ReaderResume<E, A>` and chose to shorten to `Env<E, A>` for the 
+"environmental" quality Reader provides. Combining Reader and Resume allows for creating APIs capable of utilizing dependency injection for their configuration and testability while still combining your sync/async workflows.
 
-While designing application APIs it is often better to describe the logic of your system separate from the implementation details. `Env`, or rather `Reader` helps you accomplish this through the [Dependency Inversion Principle](https://stackify.com/dependency-inversion-principle/). This principle is one of 
+While designing application APIs it is often better to describe the logic of your system separate from the implementation details. `Env` or rather `Reader` helps you accomplish this through the [Dependency Inversion Principle](https://stackify.com/dependency-inversion-principle/). This principle is one of 
 the easiest ways to begin improving any codebase.
 
 ### Ref 
