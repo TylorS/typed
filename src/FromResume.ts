@@ -10,7 +10,7 @@ import {
   NaturalTransformation14,
 } from 'fp-ts/NaturalTransformation'
 
-import { Hkt } from './Hkt'
+import { Hkt } from './HKT'
 import * as R from './Resume'
 
 export type FromResume<F> = {

@@ -11,7 +11,7 @@ import {
   NaturalTransformation14C,
 } from 'fp-ts/NaturalTransformation'
 
-import { Hkt } from './Hkt'
+import { Hkt } from './HKT'
 import * as S from './Stream'
 
 export type FromStream<F> = {

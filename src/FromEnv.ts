@@ -9,7 +9,7 @@ import {
 } from 'fp-ts/NaturalTransformation'
 
 import * as E from './Env'
-import { ApplyVariance, Hkt, Initial } from './Hkt'
+import { ApplyVariance, Hkt, Initial } from './HKT'
 import * as Provide from './Provide'
 
 export type FromEnv<F> = {

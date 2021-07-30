@@ -84,6 +84,7 @@ snowpack.key
 /IOEither/
 /MonadRec/
 /Option/
+/Progress/
 /Provide/
 /Reader/
 /ReaderEither/

@@ -3,7 +3,7 @@ import { FromReader, FromReader2, FromReader3, FromReader4 } from 'fp-ts/FromRea
 import { pipe } from 'fp-ts/function'
 import { HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
 
-import { ApplyVariance, Hkt } from './Hkt'
+import { ApplyVariance, Hkt } from './HKT'
 
 /**
  * Type-class for providing some or all of the requirements.

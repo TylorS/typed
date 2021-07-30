@@ -7,7 +7,7 @@ import { Cast } from 'ts-toolbelt/out/Any/Cast'
 import * as A from './Adapter'
 import * as E from './Env'
 import { deepEqualsEq } from './Eq'
-import { Intersect } from './Hkt'
+import { Intersect } from './HKT'
 import * as O from './Option'
 import * as P from './Provide'
 import * as RS from './ReaderStream'
@@ -89,21 +89,11 @@ export const listenTo = <E, A>(ref: Ref<E, A>): RS.ReaderStream<Events, Event<E,
     RS.filter((x) => x.ref.id === ref.id),
   )
 
-export const listenToValues = <E, A>(
-  ref: Ref<E, A>,
-): RS.ReaderStream<E & Get & Events, O.Option<A>> =>
+export const listenToValues = <E, A>(ref: Ref<E, A>): RS.ReaderStream<E & Events, O.Option<A>> =>
   pipe(
     ref,
-    get,
-    RS.fromEnv,
-    RS.map(O.some),
-    RS.continueWith(() =>
-      pipe(
-        getRefEvents,
-        RS.filter((x): x is Event<E, A> => x.ref.id === ref.id),
-        RS.map((e) => (isRemoved(e) ? O.none : O.some(e.value))),
-      ),
-    ),
+    listenTo,
+    RS.map((e) => (isRemoved(e) ? O.none : O.some(e.value))),
   )
 
 export interface ParentRefs {

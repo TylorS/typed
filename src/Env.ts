@@ -22,7 +22,7 @@ import * as Task from 'fp-ts/Task'
 import * as FRe from './FromResume'
 import { FromResume2 } from './FromResume'
 import { ArgsOf, Arity1 } from './function'
-import { Intersect } from './Hkt'
+import { Intersect } from './HKT'
 import { MonadRec2 } from './MonadRec'
 import * as P from './Provide'
 import * as R from './Resume'
@@ -117,6 +117,12 @@ export type URI = typeof URI
 declare module 'fp-ts/HKT' {
   export interface URItoKind2<E, A> {
     [URI]: Env<E, A>
+  }
+}
+
+declare module './HKT' {
+  export interface URItoVariance {
+    [URI]: V<E, Contravariant>
   }
 }
 

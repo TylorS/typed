@@ -3,19 +3,25 @@ import * as Alternative_ from 'fp-ts/Alternative'
 import * as App from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
 import * as Ch from 'fp-ts/Chain'
-import { Either, isRight } from 'fp-ts/Either'
+import { Compactable1 } from 'fp-ts/Compactable'
+import * as Ei from 'fp-ts/Either'
 import { Eq } from 'fp-ts/Eq'
+import { Filterable1 } from 'fp-ts/Filterable'
+import { Foldable1 } from 'fp-ts/Foldable'
 import { constant, constFalse, flow, identity, Lazy, pipe } from 'fp-ts/function'
 import * as F from 'fp-ts/Functor'
+import { HKT } from 'fp-ts/HKT'
 import { Monad1 } from 'fp-ts/Monad'
 import { Monoid } from 'fp-ts/Monoid'
 import * as O from 'fp-ts/Option'
 import { Pointed1 } from 'fp-ts/Pointed'
 import { Predicate } from 'fp-ts/Predicate'
 import { Semigroup } from 'fp-ts/Semigroup'
+import { Separated } from 'fp-ts/Separated'
 import { Show } from 'fp-ts/Show'
+import { Traversable1 } from 'fp-ts/Traversable'
 
-import { deepEqualsEq } from './Eq'
+import * as P from './Progress'
 
 export type Data<A> = NoData | Loading | Refresh<A> | Replete<A>
 
@@ -40,53 +46,26 @@ export const noData: NoData = { _tag: 'NoData' }
 
 export interface Loading {
   readonly _tag: 'Loading'
-  readonly progress: O.Option<Progress>
+  readonly progress: O.Option<P.Progress>
 }
 
-export const loading = (progress: O.Option<Progress> = O.none): Loading => ({
+export const loading: Loading = {
   _tag: 'Loading',
-  progress,
-})
-
-export interface Progress {
-  readonly loaded: number
-  readonly total: O.Option<number>
+  progress: O.none,
 }
 
-export const progress = (loaded: number, total: O.Option<number> = O.none): Progress => ({
-  loaded,
-  total,
+export const fromProgress = (progress: P.Progress): Loading => ({
+  _tag: 'Loading',
+  progress: O.some(progress),
 })
-
-progress.show = (p: Progress): string =>
-  pipe(
-    p.total,
-    O.matchW(
-      () => `${p.loaded}`,
-      () => `${p.loaded}/${p.total}`,
-    ),
-  )
-
-progress.equals = (s: Progress) => (f: Progress) => deepEqualsEq.equals(s)(f)
-
-progress.concat =
-  (s: Progress) =>
-  (f: Progress): Progress =>
-    pipe(
-      O.Do,
-      O.apS('sTotal', s.total),
-      O.apS('fTotal', f.total),
-      O.map(({ sTotal, fTotal }) => progress(f.loaded + s.loaded, O.some(fTotal + sTotal))),
-      O.getOrElse(() => progress(f.loaded + s.loaded)),
-    )
 
 export interface Refresh<A> {
   readonly _tag: 'Refresh'
   readonly value: A
-  readonly progress: O.Option<Progress>
+  readonly progress: O.Option<P.Progress>
 }
 
-export const refresh = <A>(value: A, progress: O.Option<Progress> = O.none): Refresh<A> => ({
+export const refresh = <A>(value: A, progress: O.Option<P.Progress> = O.none): Refresh<A> => ({
   _tag: 'Refresh',
   value,
   progress,
@@ -102,8 +81,8 @@ export const replete = <A>(value: A): Replete<A> => ({ _tag: 'Replete', value })
 export const matchW =
   <A, B, C, D, E>(
     onNoData: () => A,
-    onLoading: (progress: O.Option<Progress>) => B,
-    onRefresh: (value: C, progress: O.Option<Progress>) => D,
+    onLoading: (progress: O.Option<P.Progress>) => B,
+    onRefresh: (value: C, progress: O.Option<P.Progress>) => D,
     onReplete: (value: C) => E,
   ) =>
   (data: Data<C>): A | B | D | E => {
@@ -122,7 +101,7 @@ export const matchW =
 export const match3W =
   <A, B, C, D>(
     onNoData: () => A,
-    onLoading: (progress: O.Option<Progress>) => B,
+    onLoading: (progress: O.Option<P.Progress>) => B,
     onRefreshOrReplete: (value: C) => D,
   ) =>
   (data: Data<C>): A | B | D => {
@@ -145,7 +124,18 @@ export const match: <A, B>(
 ) => (data: Data<B>) => A = matchW
 
 export const toLoading = <A>(data: Data<A>): Data<A> =>
-  pipe(data, matchW(loading, loading, refresh, refresh))
+  pipe(
+    data,
+    matchW(
+      () => loading,
+      flow(
+        O.map(fromProgress),
+        O.getOrElse(() => loading),
+      ),
+      refresh,
+      refresh,
+    ),
+  )
 
 export const fromNullable = <A>(a: A | null | undefined): Data<A> =>
   a === null || a === undefined ? noData : replete(a)
@@ -155,14 +145,14 @@ export const getShow = <A>(S: Show<A>): Show<Data<A>> => ({
     constant('NoData'),
     O.matchW(
       () => `Loading`,
-      (p) => `Loading(${progress.show(p)})`,
+      (p) => `Loading(${P.Show.show(p)})`,
     ),
     (v, p) =>
       pipe(
         p,
         O.matchW(
           () => `Refresh(${S.show(v)})`,
-          (p) => `Refresh(${S.show(v)}, ${progress.show(p)})`,
+          (p) => `Refresh(${S.show(v)}, ${P.Show.show(p)})`,
         ),
       ),
     (v) => `Replete(${S.show(v)})`,
@@ -170,7 +160,7 @@ export const getShow = <A>(S: Show<A>): Show<Data<A>> => ({
 })
 
 export const getEq = <A>(S: Eq<A>): Eq<Data<A>> => {
-  const OptionProgressEq = O.getEq(progress)
+  const OptionProgressEq = O.getEq(P.Eq)
 
   return {
     equals: (a) => (b) =>
@@ -187,7 +177,7 @@ export const getEq = <A>(S: Eq<A>): Eq<Data<A>> => {
 }
 
 export const getSemigroup = <A>(S: Semigroup<A>): Semigroup<Data<A>> => {
-  const OptionProgressSemigroup = O.getMonoid(progress)
+  const OptionProgressSemigroup = O.getMonoid(P.Semigroup)
 
   return {
     concat:
@@ -239,9 +229,14 @@ export const getMonoid = <A>(S: Semigroup<A>): Monoid<Data<A>> => ({
 })
 
 export const getOrElse =
-  <A>(onInitial: () => A, onPending: () => A) =>
+  <A>(onInitial: () => A, onLoading: (progress: O.Option<P.Progress>) => A) =>
   (ma: Data<A>): A =>
-    match<A, A>(onInitial, onPending, identity, identity)(ma)
+    match3W(onInitial, onLoading, identity)(ma)
+
+export const getOrElseW =
+  <A, B>(onInitial: () => A, onLoading: (progress: O.Option<P.Progress>) => B) =>
+  <C>(ma: Data<C>): A | B | C =>
+    match3W(onInitial, onLoading, identity)(ma)
 
 export const elem =
   <A>(E: Eq<A>) =>
@@ -261,13 +256,31 @@ export const map =
   (data: Data<A>): Data<B> =>
     pipe(
       data,
-      matchW(constant(noData), loading, (a, p) => refresh(f(a), p), flow(f, replete)),
+      matchW(
+        constant(noData),
+        flow(
+          O.map(fromProgress),
+          O.getOrElse(() => loading),
+        ),
+        (a, p) => refresh(f(a), p),
+        flow(f, replete),
+      ),
     )
 
 export const chain =
   <A, B>(f: (value: A) => Data<B>) =>
   (data: Data<A>): Data<B> =>
-    pipe(data, matchW(constant(noData), loading, f, f))
+    pipe(
+      data,
+      match3W(
+        constant(noData),
+        flow(
+          O.map(fromProgress),
+          O.getOrElse(() => loading),
+        ),
+        f,
+      ),
+    )
 
 export const URI = '@typed/fp/Data'
 export type URI = typeof URI
@@ -323,12 +336,12 @@ export const Monad: Monad1<URI> = {
 }
 
 export const chainRec =
-  <A, B>(f: (value: A) => Data<Either<A, B>>) =>
+  <A, B>(f: (value: A) => Data<Ei.Either<A, B>>) =>
   (value: A): Data<B> => {
     let data = f(value)
 
     while (!isNoData(data) && !isLoading(data)) {
-      if (isRight(data.value)) {
+      if (Ei.isRight(data.value)) {
         return replete(data.value.right)
       }
 
@@ -374,8 +387,94 @@ export const toOption = <A>(data: Data<A>): O.Option<A> =>
     ),
   )
 
-// TODO
-// Foldable
-// Traversable
-// Compactable
-// Filterable
+export function foldMap<M>(M: Monoid<M>): <A>(f: (a: A) => M) => (fa: Data<A>) => M {
+  return (f) => (fa) =>
+    pipe(
+      fa,
+      match3W(
+        () => M.empty,
+        () => M.empty,
+        f,
+      ),
+    )
+}
+
+export const reduce =
+  <A, B>(seed: A, f: (acc: A, value: B) => A) =>
+  (data: Data<B>): A =>
+    pipe(
+      data,
+      match3W(constant(seed), constant(seed), (b) => f(seed, b)),
+    )
+
+export const reduceRight =
+  <A, B>(seed: A, f: (value: B, acc: A) => A) =>
+  (data: Data<B>): A =>
+    pipe(
+      data,
+      match3W(constant(seed), constant(seed), (b) => f(b, seed)),
+    )
+
+export const Foldable: Foldable1<URI> = {
+  reduce,
+  foldMap,
+  reduceRight,
+}
+
+export function traverse<F>(F: App.Applicative<F>) {
+  return <A, B>(f: (value: A) => HKT<F, B>) =>
+    (data: Data<A>): HKT<F, Data<B>> =>
+      pipe(
+        data,
+        matchW(
+          () => F.of(noData),
+          O.matchW(
+            () => F.of(loading),
+            (p) => F.of(fromProgress(p)),
+          ),
+          (a, progress) =>
+            pipe(
+              a,
+              f,
+              F.map((b) => refresh(b, progress)),
+            ),
+          flow(f, F.map(replete)),
+        ),
+      )
+}
+
+export const Traversable: Traversable1<URI> = {
+  ...Functor,
+  traverse,
+}
+
+export const compact = <A>(dataOption: Data<O.Option<A>>): Data<A> =>
+  pipe(dataOption, chain(O.matchW(() => noData, replete)))
+
+export const separate = <E, A>(dataEither: Data<Ei.Either<E, A>>): Separated<Data<E>, Data<A>> => {
+  return {
+    left: pipe(dataEither, chain(Ei.matchW(replete, () => noData))),
+    right: pipe(dataEither, chain(Ei.matchW(() => noData, replete))),
+  }
+}
+
+export const Compactable: Compactable1<URI> = {
+  compact,
+  separate,
+}
+
+export const partitionMap: Filterable1<URI>['partitionMap'] = (f) => (fa) =>
+  pipe(fa, map(f), separate)
+
+export const partition = flow(Ei.fromPredicate, partitionMap) as Filterable1<URI>['partition']
+
+export const filterMap: Filterable1<URI>['filterMap'] = (f) => (fa) => pipe(fa, map(f), compact)
+
+export const filter = flow(O.fromPredicate, filterMap) as Filterable1<URI>['filter']
+
+export const Filterable: Filterable1<URI> = {
+  partitionMap,
+  partition,
+  filterMap,
+  filter,
+}

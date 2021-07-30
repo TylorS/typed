@@ -179,6 +179,10 @@
       "require": "./cjs/Option.js",
       "import": "./esm/Option.js"
     },
+    "./Progress": {
+      "require": "./cjs/Progress.js",
+      "import": "./esm/Progress.js"
+    },
     "./Provide": {
       "require": "./cjs/Provide.js",
       "import": "./esm/Provide.js"
