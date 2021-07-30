@@ -36,6 +36,10 @@ export const ap = ET.ap(Env.Apply)
 export const bimap = ET.bimap(Env.Functor)
 export const bracket = ET.bracket(Env.Monad)
 export const chain = ET.chain(Env.Monad)
+export const chainW = chain as <A, ME1, E, B>(
+  f: (a: A) => Env.Env<ME1, E.Either<E, B>>,
+) => <ME2>(ma: Env.Env<ME2, E.Either<E, A>>) => Env.Env<ME1 & ME2, E.Either<E, B>>
+
 export const getOrElse = ET.getOrElse(Env.Monad)
 export const getOrElseE = ET.getOrElseE(Env.Monad)
 export const left = ET.left(Env.Monad)
@@ -58,6 +62,12 @@ export type URI = typeof URI
 declare module 'fp-ts/HKT' {
   export interface URItoKind3<R, E, A> {
     [URI]: EnvEither<R, E, A>
+  }
+}
+
+declare module './HKT' {
+  export interface URItoVariance {
+    [URI]: V<R, Contravariant>
   }
 }
 

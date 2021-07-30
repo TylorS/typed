@@ -131,6 +131,10 @@
       "require": "./cjs/Env.js",
       "import": "./esm/Env.js"
     },
+    "./EnvData": {
+      "require": "./cjs/EnvData.js",
+      "import": "./esm/EnvData.js"
+    },
     "./EnvEither": {
       "require": "./cjs/EnvEither.js",
       "import": "./esm/EnvEither.js"

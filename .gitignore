@@ -72,6 +72,7 @@ snowpack.key
 /DataT/
 /Disposable/
 /Env/
+/EnvData/
 /EnvEither/
 /EnvOption/
 /Eq/
