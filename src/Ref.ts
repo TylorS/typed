@@ -93,10 +93,17 @@ export const listenToValues = <E, A>(
   ref: Ref<E, A>,
 ): RS.ReaderStream<E & Get & Events, O.Option<A>> =>
   pipe(
-    getRefEvents,
-    RS.filter((x): x is Event<E, A> => x.ref.id === ref.id),
-    RS.map((e) => (isRemoved(e) ? O.none : O.some(e.value))),
-    RS.merge(RS.fromEnv(get(ref))),
+    ref,
+    get,
+    RS.fromEnv,
+    RS.map(O.some),
+    RS.continueWith(() =>
+      pipe(
+        getRefEvents,
+        RS.filter((x): x is Event<E, A> => x.ref.id === ref.id),
+        RS.map((e) => (isRemoved(e) ? O.none : O.some(e.value))),
+      ),
+    ),
   )
 
 export interface ParentRefs {

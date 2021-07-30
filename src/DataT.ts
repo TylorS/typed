@@ -31,7 +31,7 @@ export function noData<F extends URIS2, E = Initial<F, 'E'>>(P: Pointed2<F>): Ki
 export function noData<F extends URIS>(P: Pointed1<F>): Kind<F, D.NoData>
 export function noData<F>(P: Pointed<F>): HKT<F, D.NoData>
 export function noData<F>(P: Pointed<F>) {
-  return P.of(D.NoData)
+  return P.of(D.noData)
 }
 
 export function loading<
@@ -51,7 +51,7 @@ export function loading<F extends URIS>(
 ): (progress?: O.Option<D.Progress>) => Kind<F, D.Loading>
 export function loading<F>(P: Pointed<F>): (progress?: O.Option<D.Progress>) => HKT<F, D.Loading>
 export function loading<F>(P: Pointed<F>) {
-  return flow(D.Loading, P.of)
+  return flow(D.loading, P.of)
 }
 
 export function refresh<F extends URIS4>(
@@ -88,7 +88,7 @@ export function refresh<F>(
   P: Pointed<F>,
 ): <A>(value: A, progress?: O.Option<D.Progress> | undefined) => HKT<F, D.Refresh<A>>
 export function refresh<F>(P: Pointed<F>) {
-  return flow(D.Refresh, P.of)
+  return flow(D.refresh, P.of)
 }
 
 export function replete<F extends URIS4>(
@@ -111,7 +111,7 @@ export function replete<F extends URIS2>(
 export function replete<F extends URIS>(P: Pointed1<F>): <A>(value: A) => Kind<F, D.Replete<A>>
 export function replete<F>(P: Pointed<F>): <A>(value: A) => HKT<F, D.Replete<A>>
 export function replete<F>(P: Pointed<F>) {
-  return flow(D.Replete, P.of)
+  return flow(D.replete, P.of)
 }
 
 export function repleteF<F extends URIS4>(
@@ -134,7 +134,7 @@ export function repleteF<F extends URIS>(
 ): <A>(fa: Kind<F, A>) => Kind<F, D.Replete<A>>
 export function repleteF<F>(F: Functor.Functor<F>): <A>(fa: HKT<F, A>) => HKT<F, D.Replete<A>>
 export function repleteF<F>(F: Functor.Functor<F>) {
-  return <A>(fa: HKT<F, A>) => pipe(fa, F.map(D.Replete))
+  return <A>(fa: HKT<F, A>) => pipe(fa, F.map(D.replete))
 }
 
 export function map<F extends URIS4>(

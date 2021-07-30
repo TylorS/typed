@@ -119,7 +119,7 @@ export const MonadRec: MonadRec2<URI> = {
   chainRec,
 }
 
-export const fromEither = <E, A>(e: Ei.Either<E, A>): DataEither<E, A> => D.Replete(e)
+export const fromEither = <E, A>(e: Ei.Either<E, A>): DataEither<E, A> => D.replete(e)
 
 export const FromEither: FEi.FromEither2<URI> = {
   fromEither,

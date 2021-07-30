@@ -55,7 +55,7 @@ export interface V<P extends Param, V extends Variance> {
  * A type-level map meant be extended, just like URItoKind*, to specify the
  * variance that should apply. If none is specified the default is to be strict.
  */
-export interface UriToVariance {
+export interface URItoVariance {
   readonly Either: V<E, Covariant>
   readonly IOEither: V<E, Covariant>
   readonly Reader: V<E, Contravariant>
@@ -72,16 +72,16 @@ export type ApplyVariance<
   F,
   P extends Param,
   T extends readonly any[],
-> = F extends keyof UriToVariance
-  ? UriToVariance[F] extends V<P, infer R>
+> = F extends keyof URItoVariance
+  ? URItoVariance[F] extends V<P, infer R>
     ? R extends Covariant
       ? T[number]
       : Intersect<T>
     : T[0]
   : T[0]
 
-export type Initial<F, P extends Param> = F extends keyof UriToVariance
-  ? UriToVariance[F] extends V<P, infer R>
+export type Initial<F, P extends Param> = F extends keyof URItoVariance
+  ? URItoVariance[F] extends V<P, infer R>
     ? R extends Covariant
       ? never
       : unknown

@@ -403,6 +403,11 @@ export const provideSomeWith = P.provideSomeWith({ ...ProvideSome, ...Chain })
 export const useAllWith = P.useAllWith({ ...UseAll, ...Chain })
 export const useSomeWith = P.useSomeWith({ ...UseSome, ...Chain })
 
+export const provideSomeWithEnv = FE.provideSomeWithEnv({ ...FromEnv, ...ProvideSome, ...Chain })
+export const provideAllWithEnv = FE.provideAllWithEnv({ ...FromEnv, ...ProvideAll, ...Chain })
+export const useSomeWithEnv = FE.useSomeWithEnv({ ...FromEnv, ...UseSome, ...Chain })
+export const useAllWithEnv = FE.useAllWithEnv({ ...FromEnv, ...UseAll, ...Chain })
+
 export const combine =
   <A, B, C>(f: (a: A, b: B) => C) =>
   <E1>(rsa: ReaderStream<E1, A>) =>

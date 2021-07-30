@@ -36,14 +36,14 @@ export interface NoData {
   readonly _tag: 'NoData'
 }
 
-export const NoData: NoData = { _tag: 'NoData' }
+export const noData: NoData = { _tag: 'NoData' }
 
 export interface Loading {
   readonly _tag: 'Loading'
   readonly progress: O.Option<Progress>
 }
 
-export const Loading = (progress: O.Option<Progress> = O.none): Loading => ({
+export const loading = (progress: O.Option<Progress> = O.none): Loading => ({
   _tag: 'Loading',
   progress,
 })
@@ -53,12 +53,12 @@ export interface Progress {
   readonly total: O.Option<number>
 }
 
-export const Progress = (loaded: number, total: O.Option<number> = O.none): Progress => ({
+export const progress = (loaded: number, total: O.Option<number> = O.none): Progress => ({
   loaded,
   total,
 })
 
-Progress.show = (p: Progress): string =>
+progress.show = (p: Progress): string =>
   pipe(
     p.total,
     O.matchW(
@@ -67,17 +67,17 @@ Progress.show = (p: Progress): string =>
     ),
   )
 
-Progress.equals = (s: Progress) => (f: Progress) => deepEqualsEq.equals(s)(f)
+progress.equals = (s: Progress) => (f: Progress) => deepEqualsEq.equals(s)(f)
 
-Progress.concat =
+progress.concat =
   (s: Progress) =>
   (f: Progress): Progress =>
     pipe(
       O.Do,
       O.apS('sTotal', s.total),
       O.apS('fTotal', f.total),
-      O.map(({ sTotal, fTotal }) => Progress(f.loaded + s.loaded, O.some(fTotal + sTotal))),
-      O.getOrElse(() => Progress(f.loaded + s.loaded)),
+      O.map(({ sTotal, fTotal }) => progress(f.loaded + s.loaded, O.some(fTotal + sTotal))),
+      O.getOrElse(() => progress(f.loaded + s.loaded)),
     )
 
 export interface Refresh<A> {
@@ -86,7 +86,7 @@ export interface Refresh<A> {
   readonly progress: O.Option<Progress>
 }
 
-export const Refresh = <A>(value: A, progress: O.Option<Progress> = O.none): Refresh<A> => ({
+export const refresh = <A>(value: A, progress: O.Option<Progress> = O.none): Refresh<A> => ({
   _tag: 'Refresh',
   value,
   progress,
@@ -97,7 +97,7 @@ export interface Replete<A> {
   readonly value: A
 }
 
-export const Replete = <A>(value: A): Replete<A> => ({ _tag: 'Replete', value })
+export const replete = <A>(value: A): Replete<A> => ({ _tag: 'Replete', value })
 
 export const matchW =
   <A, B, C, D, E>(
@@ -145,24 +145,24 @@ export const match: <A, B>(
 ) => (data: Data<B>) => A = matchW
 
 export const toLoading = <A>(data: Data<A>): Data<A> =>
-  pipe(data, matchW(Loading, Loading, Refresh, Refresh))
+  pipe(data, matchW(loading, loading, refresh, refresh))
 
 export const fromNullable = <A>(a: A | null | undefined): Data<A> =>
-  a === null || a === undefined ? NoData : Replete(a)
+  a === null || a === undefined ? noData : replete(a)
 
 export const getShow = <A>(S: Show<A>): Show<Data<A>> => ({
   show: matchW(
     constant('NoData'),
     O.matchW(
       () => `Loading`,
-      (p) => `Loading(${Progress.show(p)})`,
+      (p) => `Loading(${progress.show(p)})`,
     ),
     (v, p) =>
       pipe(
         p,
         O.matchW(
           () => `Refresh(${S.show(v)})`,
-          (p) => `Refresh(${S.show(v)}, ${Progress.show(p)})`,
+          (p) => `Refresh(${S.show(v)}, ${progress.show(p)})`,
         ),
       ),
     (v) => `Replete(${S.show(v)})`,
@@ -170,7 +170,7 @@ export const getShow = <A>(S: Show<A>): Show<Data<A>> => ({
 })
 
 export const getEq = <A>(S: Eq<A>): Eq<Data<A>> => {
-  const OptionProgressEq = O.getEq(Progress)
+  const OptionProgressEq = O.getEq(progress)
 
   return {
     equals: (a) => (b) =>
@@ -187,7 +187,7 @@ export const getEq = <A>(S: Eq<A>): Eq<Data<A>> => {
 }
 
 export const getSemigroup = <A>(S: Semigroup<A>): Semigroup<Data<A>> => {
-  const OptionProgressSemigroup = O.getMonoid(Progress)
+  const OptionProgressSemigroup = O.getMonoid(progress)
 
   return {
     concat:
@@ -203,8 +203,8 @@ export const getSemigroup = <A>(S: Semigroup<A>): Semigroup<Data<A>> => {
                 matchW(
                   constant(firstD),
                   constant(firstD),
-                  (second, sp) => Refresh(second, OptionProgressSemigroup.concat(sp)(fp)),
-                  Refresh,
+                  (second, sp) => refresh(second, OptionProgressSemigroup.concat(sp)(fp)),
+                  refresh,
                 ),
               ),
             (first, fp) =>
@@ -214,8 +214,8 @@ export const getSemigroup = <A>(S: Semigroup<A>): Semigroup<Data<A>> => {
                   constant(firstD),
                   constant(firstD),
                   (second, sp) =>
-                    Refresh(pipe(first, S.concat(second)), OptionProgressSemigroup.concat(sp)(fp)),
-                  (second) => Refresh(pipe(first, S.concat(second)), fp),
+                    refresh(pipe(first, S.concat(second)), OptionProgressSemigroup.concat(sp)(fp)),
+                  (second) => refresh(pipe(first, S.concat(second)), fp),
                 ),
               ),
             (first) =>
@@ -223,9 +223,9 @@ export const getSemigroup = <A>(S: Semigroup<A>): Semigroup<Data<A>> => {
                 secondD,
                 matchW(
                   constant(firstD),
-                  (sp) => Refresh(first, sp),
-                  (second, sp) => Refresh(pipe(first, S.concat(second)), sp),
-                  (second) => Replete(pipe(first, S.concat(second))),
+                  (sp) => refresh(first, sp),
+                  (second, sp) => refresh(pipe(first, S.concat(second)), sp),
+                  (second) => replete(pipe(first, S.concat(second))),
                 ),
               ),
           ),
@@ -235,7 +235,7 @@ export const getSemigroup = <A>(S: Semigroup<A>): Semigroup<Data<A>> => {
 
 export const getMonoid = <A>(S: Semigroup<A>): Monoid<Data<A>> => ({
   ...getSemigroup(S),
-  empty: NoData,
+  empty: noData,
 })
 
 export const getOrElse =
@@ -254,20 +254,20 @@ export const exists =
   (ma: Data<A>): boolean =>
     pipe(ma, match3W(constFalse, constFalse, predicate))
 
-export const of = <A>(value: A): Data<A> => Replete(value)
+export const of = <A>(value: A): Data<A> => replete(value)
 
 export const map =
   <A, B>(f: (value: A) => B) =>
   (data: Data<A>): Data<B> =>
     pipe(
       data,
-      matchW(constant(NoData), Loading, (a, p) => Refresh(f(a), p), flow(f, Replete)),
+      matchW(constant(noData), loading, (a, p) => refresh(f(a), p), flow(f, replete)),
     )
 
 export const chain =
   <A, B>(f: (value: A) => Data<B>) =>
   (data: Data<A>): Data<B> =>
-    pipe(data, matchW(constant(NoData), Loading, f, f))
+    pipe(data, matchW(constant(noData), loading, f, f))
 
 export const URI = '@typed/fp/Data'
 export type URI = typeof URI
@@ -329,7 +329,7 @@ export const chainRec =
 
     while (!isNoData(data) && !isLoading(data)) {
       if (isRight(data.value)) {
-        return Replete(data.value.right)
+        return replete(data.value.right)
       }
 
       data = f(data.value.left)
@@ -341,7 +341,7 @@ export const chainRec =
 export const alt =
   <A>(f: Lazy<Data<A>>) =>
   <B>(b: Data<B>): Data<A | B> =>
-    pipe(b, matchW(f, f, Refresh, Replete))
+    pipe(b, matchW(f, f, refresh, replete))
 
 export const Alt: AD.Alt1<URI> = {
   ...Functor,
@@ -350,7 +350,7 @@ export const Alt: AD.Alt1<URI> = {
 
 export const altAll = AD.altAll(Alt)
 
-export const zero = <A>(): Data<A> => NoData
+export const zero = <A>(): Data<A> => noData
 
 export const Alternative: Alternative_.Alternative1<URI> = {
   ...Alt,
@@ -360,7 +360,7 @@ export const Alternative: Alternative_.Alternative1<URI> = {
 export const fromOption = <A>(option: O.Option<A>): Data<A> =>
   pipe(
     option,
-    O.matchW(() => NoData, Replete),
+    O.matchW(() => noData, replete),
   )
 
 export const toOption = <A>(data: Data<A>): O.Option<A> =>
