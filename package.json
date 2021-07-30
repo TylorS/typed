@@ -163,9 +163,9 @@
       "require": "./cjs/FromStream.js",
       "import": "./esm/FromStream.js"
     },
-    "./Hkt": {
-      "require": "./cjs/Hkt.js",
-      "import": "./esm/Hkt.js"
+    "./HKT": {
+      "require": "./cjs/HKT.js",
+      "import": "./esm/HKT.js"
     },
     "./IOEither": {
       "require": "./cjs/IOEither.js",
