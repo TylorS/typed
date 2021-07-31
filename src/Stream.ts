@@ -14,28 +14,20 @@
  *
  * It's simple architecture, and it's
  * [always-async guarantee](https://mostcore.readthedocs.io/en/latest/concepts.html#always-async),
- * which is fantastic for modularity, allows for it's
- * [`Scheduler`](https://mostcore.readthedocs.io/en/latest/api.html#most-scheduler) to be the only
+ * which is fantastic for modularity BTW, allows for it's
+ * [Scheduler](https://mostcore.readthedocs.io/en/latest/api.html#most-scheduler) to be the only
  * place in the codebase to require a `try/catch`. This ensures that a much greater portion of the
  * stream graph can be inlined by the optimizing compiler your JS is running within. This `Scheduler`
  * can be reused to inject _time_ into your applications like any other dependency, with packages like
  * [most-virtual-scheduler](https://github.com/mostjs-community/virtual-scheduler) allowing you to
  * control time imperatively for your time-precise tests with millisecond accuracy. This could also
  * allow you to create a React-like framework where you avoid starting non-blocking async workflows
- * (think useEffect) by utilizing a virtual scheduler on the server but then utilizing most's default
+ *  -- think useEffect -- by utilizing a virtual scheduler on the server but then utilizing most's default
  * scheduler to utilize `performance.now()` for millisecond accuracy with monotonic, referentially
  * transparent, time in the browser.
  *
  * See the [@most/core Documentation](https://mostcore.readthedocs.io/en/latest/) for the remaining API
  * exposed by this module. Both @most/core + @most/types are re-exported from this module
- *
- * ```ts
- * import * as M from '@most/core'
- *
- * const input = pipe(stream, M.map(f), M.map(g))
- * // transformed to effectively at time of construction
- * const output = pipe(stream, M.map(flow(f, g)))
- * ```
  *
  * @since 0.9.2
  */
