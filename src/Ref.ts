@@ -1,3 +1,7 @@
+/**
+ * Ref is an abstraction for key-value pairs utilizing Env.
+ * @since 0.9.2
+ */
 import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
 import { not } from 'fp-ts/Refinement'
@@ -12,22 +16,46 @@ import * as O from './Option'
 import * as P from './Provide'
 import * as RS from './ReaderStream'
 
+/**
+ * @since 0.9.2
+ * @category Model
+ */
 export interface Ref<E, A> extends Eq<A> {
   readonly id: PropertyKey
   readonly initial: E.Env<E, A>
 }
 
+/**
+ * @since 0.9.2
+ * @category Model
+ */
 export interface Of<A> extends Ref<unknown, A> {}
 
+/**
+ * @since 0.9.2
+ * @category Type-level
+ */
 export type EnvOf<A> = [A] extends [Ref<infer R, any>] ? R : never
 
+/**
+ * @since 0.9.2
+ * @category Type-level
+ */
 export type ValueOf<A> = [A] extends [Ref<any, infer R>] ? R : never
 
+/**
+ * @since 0.9.2
+ * @category Options
+ */
 export type RefOptions<A> = {
   readonly eq?: Eq<A>
   readonly id?: PropertyKey
 }
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export function make<E, A>(initial: E.Env<E, A>, options: RefOptions<A> = {}): Ref<E, A> {
   const { eq = deepEqualsEq, id = Symbol() } = options
 
@@ -38,57 +66,121 @@ export function make<E, A>(initial: E.Env<E, A>, options: RefOptions<A> = {}): R
   }
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const get = <E, A>(ref: Ref<E, A>) => E.asksE((e: Get) => e.getRef(ref))
 
+/**
+ * @since 0.9.2
+ * @category Environment
+ */
 export interface Get {
   readonly getRef: <E, A>(ref: Ref<E, A>) => E.Env<E, A>
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const has = <E, A>(ref: Ref<E, A>) => E.asksE((e: Has) => e.hasRef(ref))
 
+/**
+ * @since 0.9.2
+ * @category Environment
+ */
 export interface Has {
   readonly hasRef: <E, A>(ref: Ref<E, A>) => E.Of<boolean>
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const set =
   <E, A>(ref: Ref<E, A>) =>
   (value: A) =>
     E.asksE((e: Set) => e.setRef(ref, value))
 
+/**
+ * @since 0.9.2
+ * @category Environment
+ */
 export interface Set {
   readonly setRef: <E, A>(ref: Ref<E, A>, value: A) => E.Env<E, A>
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const update =
   <E1, A>(ref: Ref<E1, A>) =>
   <E2>(f: (value: A) => E.Env<E2, A>) =>
     pipe(ref, get, E.chainW(f), E.chainW(set(ref)))
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const remove = <E, A>(ref: Ref<E, A>) => E.asksE((e: Remove) => e.removeRef(ref))
 
+/**
+ * @since 0.9.2
+ * @category Environment
+ */
 export interface Remove {
   readonly removeRef: <E, A>(ref: Ref<E, A>) => E.Env<E, O.Option<A>>
 }
 
+/**
+ * @since 0.9.2
+ * @category Environment
+ */
 export interface Events {
   readonly refEvents: Adapter
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const getAdapter = E.asks((e: Events) => e.refEvents)
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const getSendEvent = pipe(getAdapter, E.map(fst))
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const sendEvent = <E, A>(event: Event<E, A>) => pipe(getSendEvent, E.apW(E.of(event)))
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const getRefEvents: RS.ReaderStream<Events, Event<any, any>> = (e: Events) =>
   snd(e.refEvents)
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const listenTo = <E, A>(ref: Ref<E, A>): RS.ReaderStream<Events, Event<E, A>> =>
   pipe(
     getRefEvents,
     RS.filter((x) => x.ref.id === ref.id),
   )
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const listenToValues = <E, A>(ref: Ref<E, A>): RS.ReaderStream<E & Events, O.Option<A>> =>
   pipe(
     ref,
@@ -96,14 +188,30 @@ export const listenToValues = <E, A>(ref: Ref<E, A>): RS.ReaderStream<E & Events
     RS.map((e) => (isRemoved(e) ? O.none : O.some(e.value))),
   )
 
+/**
+ * @since 0.9.2
+ * @category Environment
+ */
 export interface ParentRefs {
   readonly parentRefs: O.Option<Refs>
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const getParentRefs = E.asks((e: ParentRefs) => e.parentRefs)
 
+/**
+ * @since 0.9.2
+ * @category Environment
+ */
 export type Refs = Get & Has & Set & Remove & Events & ParentRefs
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const getRefs = E.asks(
   ({ getRef, hasRef, setRef, removeRef, refEvents, parentRefs }: Refs): Refs => ({
     getRef,
@@ -115,6 +223,10 @@ export const getRefs = E.asks(
   }),
 )
 
+/**
+ * @since 0.9.2
+ * @category Model
+ */
 export interface Reference<E, A> extends Ref<E, A> {
   readonly get: E.Env<E & Refs, A>
   readonly has: E.Env<Refs, boolean>
@@ -125,6 +237,10 @@ export interface Reference<E, A> extends Ref<E, A> {
   readonly values: RS.ReaderStream<E & Refs, O.Option<A>>
 }
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export function toReference<E, A>(ref: Ref<E, A>): Reference<E, A> {
   return {
     id: ref.id,
@@ -140,6 +256,10 @@ export function toReference<E, A>(ref: Ref<E, A>): Reference<E, A> {
   } as const
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const provideSome =
   <E1>(provided: E1) =>
   <E2, A>(ref: Reference<E1 & E2, A>): Reference<E2, A> => {
@@ -157,9 +277,17 @@ export const provideSome =
     }
   }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const provideAll: <E>(provided: E) => <A>(ref: Reference<E, A>) => Reference<unknown, A> =
   provideSome
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const useSome =
   <E1>(provided: E1) =>
   <E2, A>(ref: Reference<E1 & E2, A>): Reference<E2, A> => {
@@ -177,10 +305,22 @@ export const useSome =
     }
   }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const useAll: <E1>(provided: E1) => <A>(ref: Reference<E1, A>) => Reference<unknown, A> =
   useSome
 
+/**
+ * @since 0.9.2
+ * @category URI
+ */
 export const URI = '@typed/fp/Ref'
+/**
+ * @since 0.9.2
+ * @category URI
+ */
 export type URI = typeof URI
 
 declare module 'fp-ts/HKT' {
@@ -189,22 +329,42 @@ declare module 'fp-ts/HKT' {
   }
 }
 
+/**
+ * @since 0.9.2
+ * @category Instance
+ */
 export const UseSome: P.UseSome2<URI> = {
   useSome,
 }
 
+/**
+ * @since 0.9.2
+ * @category Instance
+ */
 export const UseAll: P.UseAll2<URI> = {
   useAll,
 }
 
+/**
+ * @since 0.9.2
+ * @category Instance
+ */
 export const ProvideSome: P.ProvideSome2<URI> = {
   provideSome,
 }
 
+/**
+ * @since 0.9.2
+ * @category Instance
+ */
 export const ProvideAll: P.ProvideAll2<URI> = {
   provideAll,
 }
 
+/**
+ * @since 0.9.2
+ * @category Instance
+ */
 export const Provide: P.Provide2<URI> = {
   useSome,
   useAll,
@@ -212,12 +372,28 @@ export const Provide: P.Provide2<URI> = {
   provideAll,
 }
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export const create = flow(make, toReference)
 
+/**
+ * @since 0.9.2
+ * @category Model
+ */
 export type Adapter = A.Adapter<Event<any, any>>
 
+/**
+ * @since 0.9.2
+ * @category Model
+ */
 export type Event<E, A> = Created<E, A> | Updated<E, A> | Removed<E, A>
 
+/**
+ * @since 0.9.2
+ * @category Model
+ */
 export interface Created<E, A> {
   readonly _tag: 'Created'
   readonly ref: Ref<E, A>
@@ -225,9 +401,17 @@ export interface Created<E, A> {
   readonly refs: O.Option<Refs>
 }
 
+/**
+ * @since 0.9.2
+ * @category Refinement
+ */
 export const isCreated = <E, A>(event: Event<E, A>): event is Created<E, A> =>
   event._tag === 'Created'
 
+/**
+ * @since 0.9.2
+ * @category Model
+ */
 export interface Updated<E, A> {
   readonly _tag: 'Updated'
   readonly ref: Ref<E, A>
@@ -236,18 +420,34 @@ export interface Updated<E, A> {
   readonly refs: O.Option<Refs>
 }
 
+/**
+ * @since 0.9.2
+ * @category Refinment
+ */
 export const isUpdated = <E, A>(event: Event<E, A>): event is Updated<E, A> =>
   event._tag === 'Updated'
 
+/**
+ * @since 0.9.2
+ * @category Model
+ */
 export interface Removed<E, A> {
   readonly _tag: 'Removed'
   readonly ref: Ref<E, A>
   readonly refs: O.Option<Refs>
 }
 
+/**
+ * @since 0.9.2
+ * @category Refinment
+ */
 export const isRemoved = <E, A>(event: Event<E, A>): event is Removed<E, A> =>
   event._tag === 'Removed'
 
+/**
+ * @since 0.9.2
+ * @category Deconstructor
+ */
 export const matchW =
   <A, B, C, D, E>(
     onCreated: (value: A, ref: Ref<B, A>) => C,
@@ -266,12 +466,20 @@ export const matchW =
     return onDeleted(event.ref)
   }
 
+/**
+ * @since 0.9.2
+ * @category Deconstructor
+ */
 export const match: <A, B, C>(
   onCreated: (value: A, ref: Ref<B, A>) => C,
   onUpdated: (previousValue: A, value: A, ref: Ref<B, A>) => C,
   onDeleted: (ref: Ref<B, A>) => C,
 ) => (event: Event<B, A>) => C = matchW
 
+/**
+ * @since 0.9.2
+ * @category Environment Constructor
+ */
 export function refs(options: RefsOptions = {}): Refs {
   const { initial = [], refEvents = A.create() } = options
   const references = new Map(initial)
@@ -287,6 +495,10 @@ export function refs(options: RefsOptions = {}): Refs {
   }
 }
 
+/**
+ * @since 0.9.2
+ * @category Options
+ */
 export type RefsOptions = {
   readonly initial?: Iterable<readonly [any, any]>
   readonly refEvents?: Adapter
@@ -390,6 +602,8 @@ function makeDeleteRef(
 
 /**
  * Creates a union of Envs for all the possible combinations for Ref environments.
+ * @since 0.9.2
+ * @category Type-level
  */
 export type Env<E, A> =
   | E.Env<E, A>
@@ -397,6 +611,8 @@ export type Env<E, A> =
 
 /**
  * Creates a union of ReaderStreams for all the possible combinations for Ref environments.
+ * @since 0.9.2
+ * @category Type-level
  */
 export type ReaderStream<E, A> =
   | RS.ReaderStream<E, A>
@@ -431,6 +647,8 @@ type GetReaderStream<Combos extends ReadonlyArray<ReadonlyArray<any>>, A> = {
 
 /**
  * Sample an Env with the latest references when updates have occured.
+ * @since 0.9.2
+ * @category Combinator
  */
 export const sample = <E, A>(env: Env<E, A>): RS.ReaderStream<E & Refs, A> =>
   pipe(

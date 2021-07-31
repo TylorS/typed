@@ -1,3 +1,8 @@
+/**
+ * RefMap is an abstraction over @see Ref to provide additional functionality for
+ * working with ReadonlyMap
+ * @since 0.9.2
+ */
 import { Endomorphism } from 'fp-ts/Endomorphism'
 import { Eq } from 'fp-ts/Eq'
 import { flow, identity, pipe } from 'fp-ts/function'
@@ -11,18 +16,28 @@ import * as E from './Env'
 import * as P from './Provide'
 import * as Ref from './Ref'
 
+/**
+ * @since 0.9.2
+ * @category Model
+ */
 export interface RefMap<E, K, V> extends Ref.Reference<E, ReadonlyMap<K, V>> {
   readonly keyEq: Eq<K>
   readonly valueEq: Eq<V>
 }
 
 /**
- * Helps to lift a Wrapped value into a RefMap
+ * Helps to lift a Reference value into a RefMap
+ * @since 0.9.2
+ * @category Constructor
  */
 export const lift =
   <K, V>(keyEq: Eq<K>, valueEq: Eq<V>) =>
   <E>(ref: Ref.Reference<E, ReadonlyMap<K, V>>): RefMap<E, K, V> => ({ ...ref, keyEq, valueEq })
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const getOrCreate = <E1, K, V>(M: RefMap<E1, K, V>) => {
   const find = RM.lookup(M.keyEq)
   const upsert = RM.upsertAt(M.keyEq)
@@ -48,18 +63,30 @@ export const getOrCreate = <E1, K, V>(M: RefMap<E1, K, V>) => {
     )
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const upsertAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
   const upsert = RM.upsertAt(M.keyEq)
 
   return (k: K, v: V) => M.update(flow(upsert(k, v), E.of))
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const lookup = <E1, K, V>(M: RefMap<E1, K, V>) => {
   const find = RM.lookup(M.keyEq)
 
   return (k: K) => pipe(M.get, E.map(find(k)))
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const deleteAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
   const del = RM.deleteAt(M.keyEq)
 
@@ -74,12 +101,20 @@ export const deleteAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
     )
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const elem = <E1, K, V>(M: RefMap<E1, K, V>) => {
   const find = RM.elem(M.valueEq)
 
   return (v: V) => pipe(M.get, E.map(find(v)))
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const filter = <E1, K, V>(M: RefMap<E1, K, V>) => {
   function filterM<V2 extends V>(r: Refinement<V, V2>): E.Env<E1 & Ref.Refs, ReadonlyMap<K, V>>
   function filterM(r: Predicate<V>): E.Env<E1 & Ref.Refs, ReadonlyMap<K, V>>
@@ -90,6 +125,10 @@ export const filter = <E1, K, V>(M: RefMap<E1, K, V>) => {
   return filterM
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const insertAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
   const insert = RM.insertAt(M.keyEq)
 
@@ -104,6 +143,10 @@ export const insertAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
     )
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const modifyAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
   const modify = RM.modifyAt(M.keyEq)
 
@@ -118,6 +161,10 @@ export const modifyAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
     )
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const updateAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
   const update = RM.updateAt(M.keyEq)
 
@@ -132,23 +179,43 @@ export const updateAt = <E1, K, V>(M: RefMap<E1, K, V>) => {
     )
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const keys =
   <K>(O: Ord<K>) =>
   <E, V>(M: RefMap<E, K, V>) =>
     pipe(M.get, E.map(RM.keys(O)))
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const size = <E, K, V>(M: RefMap<E, K, V>) => pipe(M.get, E.map(RM.size))
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const toReadonlyArray =
   <K>(O: Ord<K>) =>
   <E, V>(M: RefMap<E, K, V>) =>
     pipe(M.get, E.map(RM.toReadonlyArray(O)))
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const values =
   <V>(O: Ord<V>) =>
   <E, K>(M: RefMap<E, K, V>) =>
     pipe(M.get, E.map(RM.values(O)))
 
+/**
+ * @since 0.9.2
+ * @category Model
+ */
 export interface ReferenceMap<E, K, V> extends RefMap<E, K, V> {
   readonly getOrCreate: <E2>(k: K, orCreate: E.Env<E2, V>) => E.Env<E & E2 & Ref.Refs, V>
   readonly upsertAt: (k: K, v: V) => E.Env<E & Ref.Refs, ReadonlyMap<K, V>>
@@ -164,6 +231,10 @@ export interface ReferenceMap<E, K, V> extends RefMap<E, K, V> {
   readonly deleteAt: (k: K) => E.Env<E & Ref.Refs, ReadonlyMap<K, V>>
 }
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export function toReferenceMap<E, K, V>(M: RefMap<E, K, V>): ReferenceMap<E, K, V> {
   return {
     ...M,
@@ -179,12 +250,20 @@ export function toReferenceMap<E, K, V>(M: RefMap<E, K, V>): ReferenceMap<E, K, 
   }
 }
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export const create = <K, V>(
   keyEq: Eq<K>,
   valueEq: Eq<V>,
 ): (<E>(ref: Ref.Reference<E, ReadonlyMap<K, V>>) => ReferenceMap<E, K, V>) =>
   flow(lift(keyEq, valueEq), toReferenceMap)
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const useSome =
   <E1>(provided: E1) =>
   <E2, K, V>(ref: ReferenceMap<E1 & E2, K, V>): ReferenceMap<E2, K, V> => {
@@ -206,6 +285,10 @@ export const useSome =
     }
   }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const provideSome =
   <E1>(provided: E1) =>
   <E2, K, V>(ref: ReferenceMap<E1 & E2, K, V>): ReferenceMap<E2, K, V> => {
@@ -227,15 +310,31 @@ export const provideSome =
     }
   }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const provideAll: <E>(
   provided: E,
 ) => <K, V>(ref: ReferenceMap<E, K, V>) => ReferenceMap<unknown, K, V> = provideSome
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const useAll: <E>(
   provided: E,
 ) => <K, V>(ref: ReferenceMap<E, K, V>) => ReferenceMap<unknown, K, V> = useSome
 
+/**
+ * @since 0.9.2
+ * @category URI
+ */
 export const URI = '@typed/fp/ReferenceMap'
+/**
+ * @since 0.9.2
+ * @category URI
+ */
 export type URI = typeof URI
 
 declare module 'fp-ts/HKT' {
@@ -244,22 +343,42 @@ declare module 'fp-ts/HKT' {
   }
 }
 
+/**
+ * @since 0.9.2
+ * @category Instance
+ */
 export const UseSome: P.UseSome3<URI> = {
   useSome,
 }
 
+/**
+ * @since 0.9.2
+ * @category Instance
+ */
 export const UseAll: P.UseAll3<URI> = {
   useAll,
 }
 
+/**
+ * @since 0.9.2
+ * @category Instance
+ */
 export const ProvideSome: P.ProvideSome3<URI> = {
   provideSome,
 }
 
+/**
+ * @since 0.9.2
+ * @category Instance
+ */
 export const ProvideAll: P.ProvideAll3<URI> = {
   provideAll,
 }
 
+/**
+ * @since 0.9.2
+ * @category Instance
+ */
 export const Provide: P.Provide3<URI> = {
   useSome,
   useAll,

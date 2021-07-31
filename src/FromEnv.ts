@@ -1,3 +1,9 @@
+/**
+ * FromEnv is a Typeclass which represents the Natural Transformation from an Env into another
+ * effect.
+ *
+ * @since 0.9.2
+ */
 import { Chain, Chain2, Chain3, Chain4, chainFirst } from 'fp-ts/Chain'
 import { flow } from 'fp-ts/function'
 import { HKT, HKT2, Kind2, Kind3, Kind4, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
@@ -12,31 +18,55 @@ import * as E from './Env'
 import { ApplyVariance, Hkt, Initial } from './HKT'
 import * as Provide from './Provide'
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export type FromEnv<F> = {
   readonly URI?: F
   readonly fromEnv: <E, A>(env: E.Env<E, A>) => HKT2<F, E, A>
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export type FromEnv2<F extends URIS2> = {
   readonly URI?: F
   readonly fromEnv: NaturalTransformation22<E.URI, F>
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export type FromEnv3<F extends URIS3> = {
   readonly URI?: F
   readonly fromEnv: NaturalTransformation23R<E.URI, F>
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export type FromEnv3C<F extends URIS3, E> = {
   readonly URI?: F
   readonly fromEnv: NaturalTransformation23RC<E.URI, F, E>
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export type FromEnv4<F extends URIS4> = {
   readonly URI?: F
   readonly fromEnv: NaturalTransformation24R<E.URI, F>
 }
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export function fromEnvK<F extends URIS2>(
   F: FromEnv2<F>,
 ): <A extends readonly any[], R, B>(
@@ -67,6 +97,10 @@ export function fromEnvK<F>(F: FromEnv<F>) {
       F.fromEnv(f(...args))
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function chainEnvK<F extends URIS2>(
   F: FromEnv2<F>,
   C: Chain2<F>,
@@ -102,6 +136,10 @@ export function chainEnvK<F>(
   return (f) => C.chain(flow(f, F.fromEnv) as any)
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function chainFirstEnvK<F extends URIS2>(
   F: FromEnv2<F>,
   C: Chain2<F>,
@@ -139,6 +177,10 @@ export function chainFirstEnvK<F>(
   return (f) => chainF(flow(f, F.fromEnv) as any)
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function provideSomeWithEnv<F extends URIS4>(
   F: FromEnv4<F> & Provide.ProvideSome4<F> & Chain4<F>,
 ): <E, A>(resume: E.Env<E, A>) => Provide.Provider4<F, A, E, Initial<F, 'S'>, Initial<F, 'E'>>
@@ -155,6 +197,10 @@ export function provideSomeWithEnv<F>(F: FromEnv<F> & Provide.ProvideSome<F> & C
   return flow(F.fromEnv, Provide.provideSomeWith(F))
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function provideAllWithEnv<F extends URIS4>(
   F: FromEnv4<F> & Provide.ProvideAll4<F> & Chain4<F>,
 ): <R, A>(resume: E.Env<R, A>) => <S, E, B>(hkt: Kind4<F, S, A, E, B>) => Kind4<F, S, R, E, B>
@@ -171,6 +217,10 @@ export function provideAllWithEnv<F>(F: FromEnv<F> & Provide.ProvideAll<F> & Cha
   return flow(F.fromEnv, Provide.provideAllWith(F))
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function useSomeWithEnv<F extends URIS4>(
   F: FromEnv4<F> & Provide.UseSome4<F> & Chain4<F>,
 ): <E, A>(resume: E.Env<E, A>) => Provide.Provider4<F, A, E, Initial<F, 'S'>, Initial<F, 'E'>>
@@ -187,6 +237,10 @@ export function useSomeWithEnv<F>(F: FromEnv<F> & Provide.UseSome<F> & Chain<F>)
   return flow(F.fromEnv, Provide.useSomeWith(F))
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function useAllWithEnv<F extends URIS4>(
   F: FromEnv4<F> & Provide.UseAll4<F> & Chain4<F>,
 ): <R, A>(resume: E.Env<R, A>) => <S, E, B>(hkt: Kind4<F, S, A, E, B>) => Kind4<F, S, R, E, B>

@@ -1,3 +1,9 @@
+/**
+ * @typed/fp/use is the only non-referentially transparent module in @typed/fp. It is built atop
+ * of @see Ref to enable many common workflows. If you're coming from a React background, it is
+ * pretty similar to hooks, but the only constraint is that is should be declared once at the top of the scope of your module.
+ * @since 0.9.2
+ */
 import { disposeBoth, disposeNone } from '@most/disposable'
 import { Disposable } from '@most/types'
 import { EqStrict } from 'fp-ts/Eq'
@@ -18,6 +24,8 @@ import * as S from './Stream'
 
 /**
  * Use Refs to check if a value has changed between invocations
+ * @since 0.9.2
+ * @category Use
  */
 export const useEq = <A = void>(Eq: Eq<A> = deepEqualsEq, initial = true) => {
   const ref = Ref.make(E.of<O.Option<A>>(O.none), {
@@ -48,6 +56,10 @@ export const useEq = <A = void>(Eq: Eq<A> = deepEqualsEq, initial = true) => {
     )
 }
 
+/**
+ * @since 0.9.2
+ * @category Use
+ */
 export const useMemo = <E, A, B = void>(env: E.Env<E, A>, Eq: Eq<B> = deepEqualsEq) => {
   const ref = Ref.make(env, { eq: alwaysEqualsEq, id: Symbol('useMemo::Value') })
   const changed = useEq(Eq)
@@ -60,6 +72,10 @@ export const useMemo = <E, A, B = void>(env: E.Env<E, A>, Eq: Eq<B> = deepEquals
   )
 }
 
+/**
+ * @since 0.9.2
+ * @category Use
+ */
 export const useDisposable = <A = void>(Eq: Eq<A> = deepEqualsEq, switchLatest = false) => {
   const ref = Ref.make(E.fromIO(disposeNone), {
     eq: alwaysEqualsEq,
@@ -91,6 +107,10 @@ export const useDisposable = <A = void>(Eq: Eq<A> = deepEqualsEq, switchLatest =
     )
 }
 
+/**
+ * @since 0.9.2
+ * @category Use
+ */
 export const useEffect = <A = void>(Eq: Eq<A> = deepEqualsEq, switchLatest = false) => {
   const use = useDisposable(Eq, switchLatest)
 
@@ -114,6 +134,10 @@ export const useEffect = <A = void>(Eq: Eq<A> = deepEqualsEq, switchLatest = fal
     )
 }
 
+/**
+ * @since 0.9.2
+ * @category Use
+ */
 export const useWithPrevious = <A>() => {
   const previousRef = Ref.make(E.of<O.Option<A>>(O.none), {
     eq: alwaysEqualsEq,
@@ -129,6 +153,10 @@ export const useWithPrevious = <A>() => {
     )
 }
 
+/**
+ * @since 0.9.2
+ * @category Use
+ */
 export function useEnvK<A extends ReadonlyArray<any>, E1, B, E2>(
   f: (...args: A) => E.Env<E1, B>,
   onValue: (value: B) => E.Env<E2, any> = E.of,
@@ -154,6 +182,10 @@ export function useEnvK<A extends ReadonlyArray<any>, E1, B, E2>(
   )
 }
 
+/**
+ * @since 0.9.2
+ * @category Use
+ */
 export const bindEnvK =
   <N extends string, A, Args extends readonly any[], E1, B, E2>(
     name: Exclude<N, keyof A>,
@@ -168,6 +200,10 @@ export const bindEnvK =
   > =>
     E.bindW(name, () => useEnvK(f, onValue))(ma)
 
+/**
+ * @since 0.9.2
+ * @category Use
+ */
 export const useReaderStream = <A = void, B = unknown>(
   Eq: Eq<A> = deepEqualsEq,
   valueEq: Eq<B> = deepEqualsEq,
@@ -197,12 +233,20 @@ export const useReaderStream = <A = void, B = unknown>(
     )
 }
 
+/**
+ * @since 0.9.2
+ * @category Use
+ */
 export const useStream = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
   const use = useReaderStream(Eq)
 
   return <B>(stream: S.Stream<B>, dep: A) => use(() => stream, dep)
 }
 
+/**
+ * @since 0.9.2
+ * @category Use
+ */
 export const useKeyedRefs = <A>(Eq: Eq<A>) => {
   const refs = pipe(
     Ref.create(
@@ -242,6 +286,10 @@ export const useKeyedRefs = <A>(Eq: Eq<A>) => {
   )
 }
 
+/**
+ * @since 0.9.2
+ * @category Use
+ */
 export const useRefsStream = <A, E1, B>(f: (value: A) => RS.ReaderStream<E1, B>, Eq: Eq<A>) => {
   const use = RS.fromEnv(useKeyedRefs(EqStrict as Eq<S.Stream<A>>))
   const mergeMap = RS.mergeMapWhen(EqStrict as Eq<S.Stream<A>>)
@@ -269,5 +317,9 @@ export const useRefsStream = <A, E1, B>(f: (value: A) => RS.ReaderStream<E1, B>,
     )
 }
 
+/**
+ * @since 0.9.2
+ * @category Use
+ */
 export const useRefs = <A, E1, B>(f: (value: A) => E.Env<E1, B>, Eq: Eq<A>) =>
   useRefsStream(flow(f, Ref.sample), Eq)

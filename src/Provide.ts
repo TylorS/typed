@@ -1,3 +1,9 @@
+/**
+ * Provide is a Typeclass to represent the ability to add/remove requirements from Reader-like
+ * effects such as @see Env or @see ReaderStream.
+ *
+ * @since 0.9.2
+ */
 import { Chain, Chain2, Chain3, Chain4 } from 'fp-ts/Chain'
 import { FromReader, FromReader2, FromReader3, FromReader4 } from 'fp-ts/FromReader'
 import { pipe } from 'fp-ts/function'
@@ -8,6 +14,10 @@ import { ApplyVariance, Hkt } from './HKT'
 /**
  * Type-class for providing some or all of the requirements.
  */
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface Provide<F> {
   readonly provideSome: <A>(provided: A) => <B, C>(hkt: HKT2<F, A & B, C>) => HKT2<F, B, C>
   readonly provideAll: <A>(provided: A) => <B>(hkt: HKT2<F, Partial<A>, B>) => HKT2<F, unknown, B>
@@ -15,11 +25,31 @@ export interface Provide<F> {
   readonly useAll: Provide<F>['provideAll']
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface ProvideSome<F> extends Pick<Provide<F>, 'provideSome'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface ProvideAll<F> extends Pick<Provide<F>, 'provideAll'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface UseSome<F> extends Pick<Provide<F>, 'useSome'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface UseAll<F> extends Pick<Provide<F>, 'useAll'> {}
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface Provide2<F extends URIS2> {
   readonly provideSome: <A>(provided: A) => <B, C>(hkt: Hkt<F, [A & B, C]>) => Hkt<F, [B, C]>
   readonly provideAll: <A>(provided: A) => <B>(hkt: Hkt<F, [Partial<A>, B]>) => Hkt<F, [unknown, B]>
@@ -27,11 +57,31 @@ export interface Provide2<F extends URIS2> {
   readonly useAll: Provide2<F>['provideAll']
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface ProvideSome2<F extends URIS2> extends Pick<Provide2<F>, 'provideSome'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface ProvideAll2<F extends URIS2> extends Pick<Provide2<F>, 'provideAll'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface UseSome2<F extends URIS2> extends Pick<Provide2<F>, 'useSome'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface UseAll2<F extends URIS2> extends Pick<Provide2<F>, 'useAll'> {}
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface Provide3<F extends URIS3> {
   readonly provideSome: <A>(
     provided: A,
@@ -43,11 +93,31 @@ export interface Provide3<F extends URIS3> {
   readonly useAll: Provide3<F>['provideAll']
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface ProvideSome3<F extends URIS3> extends Pick<Provide3<F>, 'provideSome'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface ProvideAll3<F extends URIS3> extends Pick<Provide3<F>, 'provideAll'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface UseSome3<F extends URIS3> extends Pick<Provide3<F>, 'useSome'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface UseAll3<F extends URIS3> extends Pick<Provide3<F>, 'useAll'> {}
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface Provide3C<F extends URIS3, E> {
   readonly provideSome: <A>(provided: A) => <B, C>(hkt: Hkt<F, [A & B, E, C]>) => Hkt<F, [B, E, C]>
   readonly provideAll: <A>(
@@ -57,11 +127,31 @@ export interface Provide3C<F extends URIS3, E> {
   readonly useAll: Provide3C<F, E>['provideAll']
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface ProvideSome3C<F extends URIS3, E> extends Pick<Provide3C<F, E>, 'provideSome'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface ProvideAll3C<F extends URIS3, E> extends Pick<Provide3C<F, E>, 'provideAll'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface UseSome3C<F extends URIS3, E> extends Pick<Provide3C<F, E>, 'useSome'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface UseAll3C<F extends URIS3, E> extends Pick<Provide3C<F, E>, 'useAll'> {}
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface Provide4<F extends URIS4> {
   readonly provideSome: <A>(
     provided: A,
@@ -73,27 +163,63 @@ export interface Provide4<F extends URIS4> {
   readonly useAll: Provide4<F>['provideAll']
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface ProvideSome4<F extends URIS4> extends Pick<Provide4<F>, 'provideSome'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface ProvideAll4<F extends URIS4> extends Pick<Provide4<F>, 'provideAll'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface UseSome4<F extends URIS4> extends Pick<Provide4<F>, 'useSome'> {}
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export interface UseAll4<F extends URIS4> extends Pick<Provide4<F>, 'useAll'> {}
 
+/**
+ * @since 0.9.2
+ * @category Type-level
+ */
 export type Provider<F, Removed, Added> = <E, A>(
   hkt: Hkt<F, [Removed & E, A]>,
 ) => Hkt<F, [Added & E, A]>
 
+/**
+ * @since 0.9.2
+ * @category Type-level
+ */
 export type Provider2<F extends URIS2, Removed, Added> = <E, A>(
   hkt: Hkt<F, [Removed & E, A]>,
 ) => Hkt<F, [Added & E, A]>
 
+/**
+ * @since 0.9.2
+ * @category Type-level
+ */
 export type Provider3<F extends URIS3, Removed, Added, E1> = <R, E2, A>(
   hkt: Hkt<F, [Removed & R, E2, A]>,
 ) => Hkt<F, [Added & R, ApplyVariance<F, 'E', [E1, E2]>, A]>
 
+/**
+ * @since 0.9.2
+ * @category Type-level
+ */
 export type Provider4<F extends URIS4, Removed, Added, S1, E1> = <S2, R, E2, A>(
   hkt: Hkt<F, [S2, Removed & R, E2, A]>,
 ) => Hkt<F, [ApplyVariance<F, 'S', [S1, S2]>, Added & R, ApplyVariance<F, 'E', [E1, E2]>, A]>
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function useSomeWith<F extends URIS2>(
   M: UseSome2<F> & Chain2<F>,
 ): <E1, A>(provider: Hkt<F, [E1, A]>) => Provider2<F, A, E1>
@@ -119,6 +245,10 @@ export function useSomeWith<F>(M: UseSome<F> & Chain<F>) {
       )
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function provideSomeWith<F extends URIS2>(
   M: ProvideSome2<F> & Chain2<F>,
 ): <E1, A>(provider: Hkt<F, [E1, A]>) => Provider2<F, A, E1>
@@ -144,6 +274,10 @@ export function provideSomeWith<F>(M: ProvideSome<F> & Chain<F>) {
       )
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function useAllWith<F extends URIS2>(
   M: UseAll2<F> & Chain2<F>,
 ): <R, A>(provider: Hkt<F, [R, A]>) => <B>(hkt: Hkt<F, [A, B]>) => Hkt<F, [R, B]>
@@ -175,6 +309,10 @@ export function useAllWith<F>(M: UseAll<F> & Chain<F>) {
       )
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function provideAllWith<F extends URIS2>(
   M: ProvideAll2<F> & Chain2<F>,
 ): <R, A>(provider: Hkt<F, [R, A]>) => <B>(hkt: Hkt<F, [A, B]>) => Hkt<F, [R, B]>
@@ -206,6 +344,10 @@ export function provideAllWith<F>(M: ProvideAll<F> & Chain<F>) {
       )
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function askAndUse<F extends URIS2>(
   M: UseAll2<F> & Chain2<F> & FromReader2<F>,
 ): <E, B>(hkt: Kind2<F, E, B>) => Kind2<F, E, Kind2<F, unknown, B>>
@@ -230,6 +372,10 @@ export function askAndUse<F>(M: UseAll<F> & Chain<F> & FromReader<F>) {
     )
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function askAndProvide<F extends URIS2>(
   M: ProvideAll2<F> & Chain2<F> & FromReader2<F>,
 ): <E, B>(hkt: Kind2<F, E, B>) => Kind2<F, E, Kind2<F, unknown, B>>

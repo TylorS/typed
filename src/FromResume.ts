@@ -1,3 +1,9 @@
+/**
+ * FromEnv is a Typeclass which represents the Natural Transformation from a Resume into another
+ * effect.
+ *
+ * @since 0.9.2
+ */
 import { Chain, Chain1, Chain2, Chain3, Chain4, chainFirst } from 'fp-ts/Chain'
 import { flow } from 'fp-ts/function'
 import { HKT, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/HKT'
@@ -13,41 +19,73 @@ import {
 import { Hkt } from './HKT'
 import * as R from './Resume'
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export type FromResume<F> = {
   readonly URI?: F
   readonly fromResume: <A>(resume: R.Resume<A>) => HKT<F, A>
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export type FromResume1<F extends URIS> = {
   readonly URI?: F
   readonly fromResume: NaturalTransformation11<R.URI, F>
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export type FromResume2<F extends URIS2> = {
   readonly URI?: F
   readonly fromResume: NaturalTransformation12<R.URI, F>
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export type FromResume2C<F extends URIS2, E> = {
   readonly URI?: F
   readonly fromResume: NaturalTransformation12C<R.URI, F, E>
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export type FromResume3<F extends URIS3> = {
   readonly URI?: F
   readonly fromResume: NaturalTransformation13<R.URI, F>
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export type FromResume3C<F extends URIS3, E> = {
   readonly URI?: F
   readonly fromResume: NaturalTransformation13C<R.URI, F, E>
 }
 
+/**
+ * @since 0.9.2
+ * @category Typeclass
+ */
 export type FromResume4<F extends URIS4> = {
   readonly URI?: F
   readonly fromResume: NaturalTransformation14<R.URI, F>
 }
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export function fromResumeK<F extends URIS>(
   F: FromResume1<F>,
 ): <A extends readonly any[], B>(f: (...args: A) => R.Resume<B>) => (...args: A) => Hkt<F, [B]>
@@ -80,6 +118,10 @@ export function fromResumeK<F>(F: FromResume<F>) {
       F.fromResume(f(...args))
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function chainResumeK<F extends URIS>(
   F: FromResume1<F>,
   C: Chain1<F>,
@@ -114,6 +156,10 @@ export function chainResumeK<F>(
   return (f) => C.chain(flow(f, F.fromResume))
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function chainFirstResumeK<F extends URIS>(
   F: FromResume1<F>,
   C: Chain1<F>,

@@ -1,3 +1,8 @@
+/**
+ * DataT is a collection of transformers than can lift your effect types
+ * to use Data to represent asynchronous loading.
+ * @since 0.9.2
+ */
 import * as Apply from 'fp-ts/Apply'
 import * as Chain from 'fp-ts/Chain'
 import { flow, Lazy, pipe } from 'fp-ts/function'
@@ -19,6 +24,10 @@ import * as D from './Data'
 import { ApplyVariance, Initial } from './HKT'
 import { Progress } from './Progress'
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export function noData<
   F extends URIS4,
   S = Initial<F, 'S'>,
@@ -35,6 +44,10 @@ export function noData<F>(P: Pointed<F>) {
   return P.of(D.noData)
 }
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export function loading<
   F extends URIS4,
   S = Initial<F, 'S'>,
@@ -53,6 +66,10 @@ export function loading<F>(P: Pointed<F>) {
   return P.of(D.loading)
 }
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export function fromProgress<
   F extends URIS4,
   S = Initial<F, 'S'>,
@@ -73,6 +90,10 @@ export function fromProgress<F>(P: Pointed<F>) {
   return flow(D.fromProgress, P.of)
 }
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export function refresh<F extends URIS4>(
   P: Pointed4<F>,
 ): <A, S = Initial<F, 'S'>, R = Initial<F, 'R'>, E = Initial<F, 'E'>>(
@@ -104,6 +125,10 @@ export function refresh<F>(P: Pointed<F>) {
   return flow(D.refresh, P.of)
 }
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export function replete<F extends URIS4>(
   P: Pointed4<F>,
 ): <A, S = Initial<F, 'S'>, R = Initial<F, 'R'>, E = Initial<F, 'E'>>(
@@ -127,6 +152,10 @@ export function replete<F>(P: Pointed<F>) {
   return flow(D.replete, P.of)
 }
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export function repleteF<F extends URIS4>(
   F: Functor.Functor4<F>,
 ): <S, R, E, A>(fa: Kind4<F, S, R, E, A>) => Kind4<F, S, R, E, D.Replete<A>>
@@ -150,6 +179,10 @@ export function repleteF<F>(F: Functor.Functor<F>) {
   return F.map(D.replete)
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function map<F extends URIS4>(
   F: Functor.Functor4<F>,
 ): <A, B>(
@@ -177,6 +210,10 @@ export function map<F>(F: Functor.Functor<F>) {
   return Functor.map(F, D.Functor)
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function ap<F extends URIS4>(
   F: Apply.Apply4<F>,
 ): <S1, R1, E1, A>(
@@ -226,6 +263,10 @@ export function ap<F>(F: Apply.Apply<F>) {
   return Apply.ap(F, D.Apply)
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function chain<F extends URIS4>(
   M: Monad.Monad4<F>,
 ): <A, S1, R1, E1, B>(
@@ -266,6 +307,10 @@ export function chain<F>(M: Monad.Monad<F>) {
       )
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function alt<M extends URIS4>(
   M: Monad.Monad4<M>,
 ): <S1, R1, E1, A>(
@@ -303,6 +348,10 @@ export function alt<M>(
   return (second) => M.chain((e) => (D.hasValue(e) ? M.of(e) : second()))
 }
 
+/**
+ * @since 0.9.2
+ * @category Deconstructor
+ */
 export function match<F extends URIS4>(
   F: Functor.Functor4<F>,
 ): <A, B>(
@@ -347,6 +396,10 @@ export function match<F>(F: Functor.Functor<F>) {
   return flow(D.match, F.map)
 }
 
+/**
+ * @since 0.9.2
+ * @category Deconstructor
+ */
 export function matchW<F extends URIS4>(
   F: Functor.Functor4<F>,
 ): <A, B, C, D, E>(
@@ -391,6 +444,10 @@ export function matchW<F>(F: Functor.Functor<F>) {
   return flow(D.matchW, F.map)
 }
 
+/**
+ * @since 0.9.2
+ * @category Deconstructor
+ */
 export function match3W<F extends URIS4>(
   F: Functor.Functor4<F>,
 ): <A, B, C, D>(
@@ -430,6 +487,10 @@ export function match3W<F>(F: Functor.Functor<F>) {
   return flow(D.match3W, F.map)
 }
 
+/**
+ * @since 0.9.2
+ * @category Deconstructor
+ */
 export function matchE<F extends URIS4>(
   C: Chain.Chain4<F>,
 ): <S1, R1, E1, A, S2, R2, E2, B, S3, R3, E3, S4, R4, E4>(
@@ -496,6 +557,10 @@ export function matchE<F>(C: Chain.Chain<F>) {
       pipe(data, C.chain(D.matchW(onNoData, onLoading, onRefresh, onReplete)))
 }
 
+/**
+ * @since 0.9.2
+ * @category Deconstructor
+ */
 export function matchEW<F extends URIS4>(
   C: Chain.Chain4<F>,
 ): <S1, R1, E1, A, S2, R2, E2, B, C, S3, R3, E3, D, S4, R4, E4, E>(
@@ -567,6 +632,10 @@ export function matchEW<F>(C: Chain.Chain<F>) {
       )
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function getOrElse<F extends URIS4>(
   F: Functor.Functor4<F>,
 ): <A>(
@@ -606,6 +675,10 @@ export function getOrElse<F>(
   return flow(D.getOrElse, F.map)
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export function getOrElseW<F extends URIS4>(
   F: Functor.Functor4<F>,
 ): <A, B>(

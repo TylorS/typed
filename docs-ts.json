@@ -1,0 +1,13 @@
+{
+  "srcDir": "./src",
+  "outDir": "./docs",
+  "enableSearch": true,
+  "enforceDescriptions": false,
+  "enforceExamples": false,
+  "enforceVersion": true,
+  "exclude": [
+    "src/index.ts",
+    "src/internal.ts",
+    "src/*.test.ts"
+  ]
+}

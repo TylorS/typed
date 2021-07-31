@@ -1,3 +1,9 @@
+/**
+ * Eq instances for some common scenarios including deep equality.
+ *
+ * @since 0.9.2
+ */
+
 import { Eq } from 'fp-ts/Eq'
 
 import { constant, constFalse, constTrue } from './function'
@@ -5,13 +11,23 @@ import { constant, constFalse, constTrue } from './function'
 const FUNCTION_NAME_REGEX = /^function\s*([\w$]+)/
 const DEFAULT_MATCH = ['', '']
 
+/**
+ * @since 0.9.2
+ * @category Instance
+ */
 export const alwaysEqualsEq: Eq<any> = { equals: constant(constTrue) }
+
+/**
+ * @since 0.9.2
+ * @category Instance
+ */
 export const neverEqualsEq: Eq<any> = { equals: constant(constFalse) }
 
 /**
  * A deep-equality Eq instance.
  * Supports Reference equality, all JavaScript Primitives including `RegExp`, `Set` and `Map`.
- * @Eq
+ * @since 0.9.2
+ * @category Instance
  */
 export const deepEqualsEq: Eq<unknown> = { equals }
 

@@ -1,8 +1,15 @@
+/**
+ * @typed/fp/internal is a place for shared code that doesn't belong in the public API
+ * @internal
+ * @since 0.9.2
+ */
 import * as E from 'fp-ts/Either'
 
 /**
  * Helpful for creatin ChainRec instances for Either-based types.
- * @private
+ * @internal
+ * @since 0.9.2
+ * @category Combinator
  */
 export const swapEithers = <E, A, B>(
   either: E.Either<E, E.Either<A, B>>,

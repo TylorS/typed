@@ -1,3 +1,8 @@
+/**
+ * Disposable is an interface for representing resources which can be synchronously
+ * disposed of.
+ * @since 0.9.2
+ */
 export * from '@most/disposable'
 
 /**
@@ -11,6 +16,8 @@ import { Disposable } from '@most/types'
 /**
  * A Disposable that works in a more imperative manner.
  * Can be useful when coercing external libraries or using promises.
+ * @since 0.9.2
+ * @category Model
  */
 export interface SettableDisposable extends Disposable {
   readonly addDisposable: (disposable: Disposable) => Disposable
@@ -21,6 +28,8 @@ const NONE = disposeNone()
 
 /**
  * Construct a SettableDisposable
+ * @since 0.9.2
+ * @category Constructor
  */
 export function settable(): SettableDisposable {
   let disposed = false
@@ -69,6 +78,8 @@ import { ArgsOf } from './function'
 
 /**
  * Wrap a non-Disposable function into a Disposable-returning function
+ * @since 0.9.2
+ * @category Combinator
  */
 export const undisposable =
   <F extends FunctionN<readonly any[], any>>(fn: F) =>

@@ -1,3 +1,9 @@
+/**
+ * Fail is an Env-based abstraction for a try/catch style API
+ * which is based on continuations to provide type-safe errors
+ * with distinct channels to help separate errors that originate from different places.
+ * @since 0.9.2
+ */
 import { Disposable } from '@most/types'
 import { Either, left, right } from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
@@ -6,8 +12,16 @@ import { Env, map, of } from './Env'
 import { async, Resume, run } from './Resume'
 import { make } from './struct'
 
+/**
+ * @since 0.9.2
+ * @category Model
+ */
 export type Fail<Key extends PropertyKey, E> = Readonly<Record<Key, (e: E) => Resume<never>>>
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export const throwError =
   <Key extends PropertyKey>(key: Key) =>
   <E>(err: E): Env<Fail<Key, E>, never> =>
@@ -19,6 +33,10 @@ const createFailEnv = <Key extends PropertyKey, E>(
   resume: (e: E) => Disposable,
 ): Fail<Key, E> => make(key, (e: E) => async<never>(() => resume(e)))
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const catchErrorW =
   <Key extends PropertyKey>(key: Key) =>
   <E, R1, A>(onError: (err: E) => Env<R1, A>) =>
@@ -32,6 +50,10 @@ export const catchErrorW =
       ),
     )
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const catchError = catchErrorW as <Key extends PropertyKey>(
   key: Key,
 ) => {
@@ -41,6 +63,10 @@ export const catchError = catchErrorW as <Key extends PropertyKey>(
   }
 }
 
+/**
+ * @since 0.9.2
+ * @category Combinator
+ */
 export const attempt =
   <Key extends PropertyKey>(key: Key) =>
   <R, E, B>(env: Env<Fail<Key, E>, B> | Env<R & Fail<Key, E>, B>): Env<R, Either<E, B>> =>
@@ -50,6 +76,10 @@ export const attempt =
       catchErrorW(key)((e: E) => of(left(e))),
     )
 
+/**
+ * @since 0.9.2
+ * @category Model
+ */
 export interface Failure<K extends string, E> {
   readonly throw: (err: E) => Env<Fail<K, E>, never>
 
@@ -67,6 +97,10 @@ export interface Failure<K extends string, E> {
   readonly attempt: <R, B>(env: Env<Fail<K, E>, B> | Env<R & Fail<K, E>, B>) => Env<R, Either<E, B>>
 }
 
+/**
+ * @since 0.9.2
+ * @category Constructor
+ */
 export const named =
   <E>() =>
   <K extends string>(name: K): Failure<K, E> => {
