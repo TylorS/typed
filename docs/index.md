@@ -26,3 +26,7 @@ once both codebases are stable.
 - Resource-safe
 - Resilient
 - Deeply integrated with [fp-ts](https://gcanti.github.io/fp-ts/)
+
+## API Documentation
+
+The API documentation can be found [here](./modules/index.md)
