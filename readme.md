@@ -26,11 +26,16 @@ once both codebases are stable.
 
 - [`@most/core`](https://github.com/mostjs/core) [Streams](#streams)
 - [Cancelable Async Effect](#resume---typedfpresume)
-- [State Management](#streams)
-- Free of globals
-- Easy to Test
+- [Dependency Injection](#env---typedfpenv)
+- [State Management](#ref---typedfpref)
+- Testable, Free of globals
+- Type-Safe
+- Composable
+- Concurrent
+- Asynchronous
+- Resource-safe
+- Resilient
 - Deeply integrated with [fp-ts](https://gcanti.github.io/fp-ts/)
-- Decoupled from any view library
 
 ## Conceptual Documentation
 
