@@ -110,7 +110,7 @@ At the intersection of the previously posed questions is [Ref](#ref---typedfpref
 your application, and you will be able to use it to express your application over time.
 
 You will be able to compose pull-based workflows with push-based workflows as required to construct
-more complex systems. Concurrent React will never reach the level of control over most-based stream
+more complex systems. Concurrent React will never reach the level of control over a most-based stream
 graph. Recover from errors with ease, throttle and debounce naturally, all while never leaking
 resources.
 
