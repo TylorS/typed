@@ -1,3 +1,19 @@
+- [@typed/fp](#typedfp)
+  - [Features](#features)
+  - [Conceptual Documentation](#conceptual-documentation)
+    - [Where's this coming from and where's it going?](#wheres-this-coming-from-and-wheres-it-going)
+      - [Some Background](#some-background)
+        - [Push-based Reactive Programming](#push-based-reactive-programming)
+        - [Relationship with React](#relationship-with-react)
+      - [Where things are going](#where-things-are-going)
+        - [Push-Pull Reactive Programming w/ Ref](#push-pull-reactive-programming-w-ref)
+        - [Domain-Driven Design and Layered Architecture](#domain-driven-design-and-layered-architecture)
+  - [Core Libraries](#core-libraries)
+    - [Stream - @typed/fp/Stream](#stream---typedfpstream)
+    - [Resume - @typed/fp/Resume](#resume---typedfpresume)
+    - [Env - @typed/fp/Env](#env---typedfpenv)
+    - [Ref - @typed/fp/Ref](#ref---typedfpref)
+
 # @typed/fp
 
 `@typed/fp` is conceptually an extension of [fp-ts](https://gcanti.github.io/fp-ts/), with
@@ -84,7 +100,9 @@ I started wondering...
 **Can I use push-based reactive programming provide better combinators for dealing with systems over
 time?**
 
-### Push-Pull Reactive Programming w/ Ref
+#### Where things are going
+
+##### Push-Pull Reactive Programming w/ Ref
 
 At the intersection of the previously posed questions is [Ref](#ref---typedfpref).
 
@@ -96,26 +114,29 @@ more complex systems. Concurrent React will never reach the level of control ove
 graph. Recover from errors with ease, throttle and debounce naturally, all while never leaking
 resources.
 
-### Domain-Driven Design and Layered Architecture
+##### Domain-Driven Design and Layered Architecture
 
 Over the past 3 or 4 years I've been toying with many variations of functional programming and
 layered architectures inspired by
 [Domain-Driven Design](https://www.domainlanguage.com/wp-content/uploads/2016/05/DDD_Reference_2015-03.pdf).
 
 With the combination of [Ref](#ref---typedfpref), the sync/async Reader effect
-[Env](#env---typedfpenv), and [Streams](#stream---typedfpstream), you can build functional applications that are
-also fundamentally designed for unit testing with unique blend of declarative and denotative
-programming that I've found to be a wonderful companion to DDD and all of the various domain-centric
-architectures such as _onion_, _hexagonal_ (ports and adapters), clean architecture, or any other
-variations of these layered architectures.
+[Env](#env---typedfpenv), and [Streams](#stream---typedfpstream), you can build functional
+applications that are also fundamentally designed for unit testing with unique blend of declarative
+and denotative programming that I've found to be a wonderful companion to DDD and all of the various
+domain-centric architectures such as _onion_, _hexagonal_ (ports and adapters), clean architecture,
+or any other variations of these layered architectures.
 
 Personally it's been a amazing to see products come together utilizing Domain Modeling to rule out
 bad states from applications with structures like Option or Either, to see all state-based workflows
-become decoupled and unit tested. to use data structures like `Reader` or [Env](#env---typedfpenv) to exemplify
-the [Dependency Inversion Principle](https://alexnault.dev/dependency-inversion-principle-in-functional-typescript) in
-your layered architectures. 
+become decoupled and unit tested. to use data structures like `Reader` or [Env](#env---typedfpenv)
+to exemplify the
+[Dependency Inversion Principle](https://alexnault.dev/dependency-inversion-principle-in-functional-typescript)
+in your layered architectures.
 
-This is the future of @typed/fp: to exemplify push-pull reactive programming, backed by the mathematical roots of functional programming, to compose domain-centric applicaton's that rigourously separate concerns at the architectural level.
+This is the future of @typed/fp: to exemplify push-pull reactive programming, backed by the
+mathematical roots of functional programming, to compose domain-centric applicaton's that
+rigourously separate concerns at the architectural level.
 
 ## Core Libraries
 
@@ -196,8 +217,8 @@ while still combining your sync/async workflows.
 
 While designing application APIs it is often better to describe the logic of your system separate
 from the implementation details. `Env` or rather `Reader` helps you accomplish this through the
-[Dependency Inversion Principle](https://alexnault.dev/dependency-inversion-principle-in-functional-typescript). This
-principle is one of the easiest ways to begin improving any codebase.
+[Dependency Inversion Principle](https://alexnault.dev/dependency-inversion-principle-in-functional-typescript).
+This principle is one of the easiest ways to begin improving any codebase.
 
 ### Ref - @typed/fp/Ref
 
