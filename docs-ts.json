@@ -1,7 +1,6 @@
 {
   "srcDir": "./src",
   "outDir": "./docs",
-  "theme": "pages-themes/hacker",
   "enableSearch": true,
   "enforceDescriptions": false,
   "enforceExamples": false,
