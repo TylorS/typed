@@ -1,5 +1,5 @@
 /**
- * `Ref` is an abstraction for managing state-based applications using @see Env. It exposes an extensible
+ * `Ref` is an abstraction for managing state-based applications using [Env](./Env.ts.md). It exposes an extensible
  * get/set/delete API for managing keys to values. Every `Ref` is connected to an `Env` that will
  * provide the default value lazily when first asked for or after being deleted previously.
  *

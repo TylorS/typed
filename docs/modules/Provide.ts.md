@@ -6,8 +6,8 @@ parent: Modules
 
 ## Provide overview
 
-Provide is a Typeclass to represent the ability to add/remove requirements from Reader-like
-effects such as @see Env or @see ReaderStream.
+Provide is a Typeclass to represent the ability to add/remove requirements from Reader-like effects
+such as [Env](./Env.ts.md) or [ReaderStream](./ReaderStream.ts.md).
 
 Added in v0.9.2
 
@@ -64,16 +64,16 @@ Added in v0.9.2
 
 ```ts
 export declare function askAndProvide<F extends URIS2>(
-  M: ProvideAll2<F> & Chain2<F> & FromReader2<F>
+  M: ProvideAll2<F> & Chain2<F> & FromReader2<F>,
 ): <E, B>(hkt: Kind2<F, E, B>) => Kind2<F, E, Kind2<F, unknown, B>>
 export declare function askAndProvide<F extends URIS3>(
-  M: ProvideAll3<F> & Chain3<F> & FromReader3<F>
+  M: ProvideAll3<F> & Chain3<F> & FromReader3<F>,
 ): <R, E, B>(hkt: Kind3<F, R, E, B>) => Kind3<F, R, E, Kind3<F, unknown, E, B>>
 export declare function askAndProvide<F extends URIS4>(
-  M: ProvideAll4<F> & Chain4<F> & FromReader4<F>
+  M: ProvideAll4<F> & Chain4<F> & FromReader4<F>,
 ): <S, R, E, B>(hkt: Kind4<F, S, R, E, B>) => Kind4<F, S, R, E, Kind4<F, S, unknown, E, B>>
 export declare function askAndProvide<F>(
-  M: ProvideAll<F> & Chain<F> & FromReader<F>
+  M: ProvideAll<F> & Chain<F> & FromReader<F>,
 ): <E, B>(hkt: HKT2<F, E, B>) => HKT2<F, E, HKT2<F, unknown, B>>
 ```
 
@@ -85,16 +85,16 @@ Added in v0.9.2
 
 ```ts
 export declare function askAndUse<F extends URIS2>(
-  M: UseAll2<F> & Chain2<F> & FromReader2<F>
+  M: UseAll2<F> & Chain2<F> & FromReader2<F>,
 ): <E, B>(hkt: Kind2<F, E, B>) => Kind2<F, E, Kind2<F, unknown, B>>
 export declare function askAndUse<F extends URIS3>(
-  M: UseAll3<F> & Chain3<F> & FromReader3<F>
+  M: UseAll3<F> & Chain3<F> & FromReader3<F>,
 ): <R, E, B>(hkt: Kind3<F, R, E, B>) => Kind3<F, R, E, Kind3<F, unknown, E, B>>
 export declare function askAndUse<F extends URIS4>(
-  M: UseAll4<F> & Chain4<F> & FromReader4<F>
+  M: UseAll4<F> & Chain4<F> & FromReader4<F>,
 ): <S, R, E, B>(hkt: Kind4<F, S, R, E, B>) => Kind4<F, S, R, E, Kind4<F, S, unknown, E, B>>
 export declare function askAndUse<F>(
-  M: UseAll<F> & Chain<F> & FromReader<F>
+  M: UseAll<F> & Chain<F> & FromReader<F>,
 ): <E, B>(hkt: HKT2<F, E, B>) => HKT2<F, E, HKT2<F, unknown, B>>
 ```
 
@@ -106,22 +106,22 @@ Added in v0.9.2
 
 ```ts
 export declare function provideAllWith<F extends URIS2>(
-  M: ProvideAll2<F> & Chain2<F>
+  M: ProvideAll2<F> & Chain2<F>,
 ): <R, A>(provider: Hkt<F, [R, A]>) => <B>(hkt: Hkt<F, [A, B]>) => Hkt<F, [R, B]>
 export declare function provideAllWith<F extends URIS3>(
-  M: ProvideAll3<F> & Chain3<F>
+  M: ProvideAll3<F> & Chain3<F>,
 ): <R, E1, A>(
-  provider: Hkt<F, [R, E1, A]>
+  provider: Hkt<F, [R, E1, A]>,
 ) => <E2, B>(hkt: Hkt<F, [A, E2, B]>) => Hkt<F, [R, ApplyVariance<F, 'E', [E1, E2]>, B]>
 export declare function provideAllWith<F extends URIS4>(
-  M: ProvideAll4<F> & Chain4<F>
+  M: ProvideAll4<F> & Chain4<F>,
 ): <S1, R, E1, A>(
-  provider: Hkt<F, [S1, R, E1, A]>
+  provider: Hkt<F, [S1, R, E1, A]>,
 ) => <S2, E2, B>(
-  hkt: Hkt<F, [S2, A, E2, B]>
+  hkt: Hkt<F, [S2, A, E2, B]>,
 ) => Hkt<F, [ApplyVariance<F, 'S', [S1, S2]>, R, ApplyVariance<F, 'E', [E1, E2]>, B]>
 export declare function provideAllWith<F>(
-  M: ProvideAll<F> & Chain<F>
+  M: ProvideAll<F> & Chain<F>,
 ): <R, A>(provider: HKT2<F, R, A>) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, R, B>
 ```
 
@@ -133,16 +133,16 @@ Added in v0.9.2
 
 ```ts
 export declare function provideSomeWith<F extends URIS2>(
-  M: ProvideSome2<F> & Chain2<F>
+  M: ProvideSome2<F> & Chain2<F>,
 ): <E1, A>(provider: Hkt<F, [E1, A]>) => Provider2<F, A, E1>
 export declare function provideSomeWith<F extends URIS3>(
-  M: ProvideSome3<F> & Chain3<F>
+  M: ProvideSome3<F> & Chain3<F>,
 ): <R1, E1, A>(provider: Hkt<F, [R1, E1, A]>) => Provider3<F, A, R1, E1>
 export declare function provideSomeWith<F extends URIS4>(
-  M: ProvideSome4<F> & Chain4<F>
+  M: ProvideSome4<F> & Chain4<F>,
 ): <S1, R1, E1, A>(provider: Hkt<F, [S1, R1, E1, A]>) => Provider4<F, A, R1, S1, E1>
 export declare function provideSomeWith<F>(
-  M: ProvideSome<F> & Chain<F>
+  M: ProvideSome<F> & Chain<F>,
 ): <E1, A>(provider: HKT2<F, E1, A>) => Provider<F, A, E1>
 ```
 
@@ -154,22 +154,22 @@ Added in v0.9.2
 
 ```ts
 export declare function useAllWith<F extends URIS2>(
-  M: UseAll2<F> & Chain2<F>
+  M: UseAll2<F> & Chain2<F>,
 ): <R, A>(provider: Hkt<F, [R, A]>) => <B>(hkt: Hkt<F, [A, B]>) => Hkt<F, [R, B]>
 export declare function useAllWith<F extends URIS3>(
-  M: UseAll3<F> & Chain3<F>
+  M: UseAll3<F> & Chain3<F>,
 ): <R, E1, A>(
-  provider: Hkt<F, [R, E1, A]>
+  provider: Hkt<F, [R, E1, A]>,
 ) => <E2, B>(hkt: Hkt<F, [A, E2, B]>) => Hkt<F, [R, ApplyVariance<F, 'E', [E1, E2]>, B]>
 export declare function useAllWith<F extends URIS4>(
-  M: UseAll4<F> & Chain4<F>
+  M: UseAll4<F> & Chain4<F>,
 ): <S1, R, E1, A>(
-  provider: Hkt<F, [S1, R, E1, A]>
+  provider: Hkt<F, [S1, R, E1, A]>,
 ) => <S2, E2, B>(
-  hkt: Hkt<F, [S2, A, E2, B]>
+  hkt: Hkt<F, [S2, A, E2, B]>,
 ) => Hkt<F, [ApplyVariance<F, 'S', [S1, S2]>, R, ApplyVariance<F, 'E', [E1, E2]>, B]>
 export declare function useAllWith<F>(
-  M: UseAll<F> & Chain<F>
+  M: UseAll<F> & Chain<F>,
 ): <R, A>(provider: HKT2<F, R, A>) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, R, B>
 ```
 
@@ -181,16 +181,16 @@ Added in v0.9.2
 
 ```ts
 export declare function useSomeWith<F extends URIS2>(
-  M: UseSome2<F> & Chain2<F>
+  M: UseSome2<F> & Chain2<F>,
 ): <E1, A>(provider: Hkt<F, [E1, A]>) => Provider2<F, A, E1>
 export declare function useSomeWith<F extends URIS3>(
-  M: UseSome3<F> & Chain3<F>
+  M: UseSome3<F> & Chain3<F>,
 ): <R1, E1, A>(provider: Hkt<F, [R1, E1, A]>) => Provider3<F, A, R1, E1>
 export declare function useSomeWith<F extends URIS4>(
-  M: UseSome4<F> & Chain4<F>
+  M: UseSome4<F> & Chain4<F>,
 ): <S1, R1, E1, A>(provider: Hkt<F, [S1, R1, E1, A]>) => Provider4<F, A, R1, S1, E1>
 export declare function useSomeWith<F>(
-  M: UseSome<F> & Chain<F>
+  M: UseSome<F> & Chain<F>,
 ): <E1, A>(provider: HKT2<F, E1, A>) => Provider<F, A, E1>
 ```
 
@@ -203,7 +203,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export type Provider<F, Removed, Added> = <E, A>(hkt: Hkt<F, [Removed & E, A]>) => Hkt<F, [Added & E, A]>
+export type Provider<F, Removed, Added> = <E, A>(
+  hkt: Hkt<F, [Removed & E, A]>,
+) => Hkt<F, [Added & E, A]>
 ```
 
 Added in v0.9.2
@@ -213,7 +215,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export type Provider2<F extends URIS2, Removed, Added> = <E, A>(hkt: Hkt<F, [Removed & E, A]>) => Hkt<F, [Added & E, A]>
+export type Provider2<F extends URIS2, Removed, Added> = <E, A>(
+  hkt: Hkt<F, [Removed & E, A]>,
+) => Hkt<F, [Added & E, A]>
 ```
 
 Added in v0.9.2
@@ -224,7 +228,7 @@ Added in v0.9.2
 
 ```ts
 export type Provider3<F extends URIS3, Removed, Added, E1> = <R, E2, A>(
-  hkt: Hkt<F, [Removed & R, E2, A]>
+  hkt: Hkt<F, [Removed & R, E2, A]>,
 ) => Hkt<F, [Added & R, ApplyVariance<F, 'E', [E1, E2]>, A]>
 ```
 
@@ -236,7 +240,7 @@ Added in v0.9.2
 
 ```ts
 export type Provider4<F extends URIS4, Removed, Added, S1, E1> = <S2, R, E2, A>(
-  hkt: Hkt<F, [S2, Removed & R, E2, A]>
+  hkt: Hkt<F, [S2, Removed & R, E2, A]>,
 ) => Hkt<F, [ApplyVariance<F, 'S', [S1, S2]>, Added & R, ApplyVariance<F, 'E', [E1, E2]>, A]>
 ```
 
@@ -280,8 +284,12 @@ Added in v0.9.2
 
 ```ts
 export interface Provide3<F extends URIS3> {
-  readonly provideSome: <A>(provided: A) => <B, E, C>(hkt: Hkt<F, [A & B, E, C]>) => Hkt<F, [B, E, C]>
-  readonly provideAll: <A>(provided: A) => <E, B>(hkt: Hkt<F, [Partial<A>, E, B]>) => Hkt<F, [unknown, E, B]>
+  readonly provideSome: <A>(
+    provided: A,
+  ) => <B, E, C>(hkt: Hkt<F, [A & B, E, C]>) => Hkt<F, [B, E, C]>
+  readonly provideAll: <A>(
+    provided: A,
+  ) => <E, B>(hkt: Hkt<F, [Partial<A>, E, B]>) => Hkt<F, [unknown, E, B]>
   readonly useSome: Provide3<F>['provideSome']
   readonly useAll: Provide3<F>['provideAll']
 }
@@ -296,7 +304,9 @@ Added in v0.9.2
 ```ts
 export interface Provide3C<F extends URIS3, E> {
   readonly provideSome: <A>(provided: A) => <B, C>(hkt: Hkt<F, [A & B, E, C]>) => Hkt<F, [B, E, C]>
-  readonly provideAll: <A>(provided: A) => <B>(hkt: Hkt<F, [Partial<A>, E, B]>) => Hkt<F, [unknown, E, B]>
+  readonly provideAll: <A>(
+    provided: A,
+  ) => <B>(hkt: Hkt<F, [Partial<A>, E, B]>) => Hkt<F, [unknown, E, B]>
   readonly useSome: Provide3C<F, E>['provideSome']
   readonly useAll: Provide3C<F, E>['provideAll']
 }
@@ -310,8 +320,12 @@ Added in v0.9.2
 
 ```ts
 export interface Provide4<F extends URIS4> {
-  readonly provideSome: <A>(provided: A) => <S, B, E, C>(hkt: Hkt<F, [S, A & B, E, C]>) => Hkt<F, [S, B, E, C]>
-  readonly provideAll: <A>(provided: A) => <S, E, B>(hkt: Hkt<F, [S, Partial<A>, E, B]>) => Hkt<F, [S, unknown, E, B]>
+  readonly provideSome: <A>(
+    provided: A,
+  ) => <S, B, E, C>(hkt: Hkt<F, [S, A & B, E, C]>) => Hkt<F, [S, B, E, C]>
+  readonly provideAll: <A>(
+    provided: A,
+  ) => <S, E, B>(hkt: Hkt<F, [S, Partial<A>, E, B]>) => Hkt<F, [S, unknown, E, B]>
   readonly useSome: Provide4<F>['provideSome']
   readonly useAll: Provide4<F>['provideAll']
 }

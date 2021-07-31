@@ -1,5 +1,5 @@
 /**
- * ResumeOption is an Option of @see Resume
+ * ResumeOption is an OptionT of [Resume](./Resume.ts.md)
  * @since 0.9.2
  */
 import { Alt1 } from 'fp-ts/Alt'

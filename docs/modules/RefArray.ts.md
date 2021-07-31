@@ -6,8 +6,8 @@ parent: Modules
 
 ## RefArray overview
 
-RefArray is an abstraction over @see Ref to
-provide some additional functionality for working with Arrays.
+RefArray is an abstraction over [Ref](./Ref.ts.md) to provide some additional functionality for
+working with Arrays.
 
 Added in v0.9.2
 
@@ -61,8 +61,10 @@ Added in v0.9.2
 
 ```ts
 export declare const append: <E, A>(
-  ra: RefArray<E, A>
-) => (value: A) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
+  ra: RefArray<E, A>,
+) => (
+  value: A,
+) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
 Added in v0.9.2
@@ -73,9 +75,9 @@ Added in v0.9.2
 
 ```ts
 export declare const concat: <E, A>(
-  ra: RefArray<E, A>
+  ra: RefArray<E, A>,
 ) => (
-  end: readonly A[]
+  end: readonly A[],
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
@@ -87,8 +89,10 @@ Added in v0.9.2
 
 ```ts
 export declare const deleteAt: <E, A>(
-  ra: RefArray<E, A>
-) => (index: number) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
+  ra: RefArray<E, A>,
+) => (
+  index: number,
+) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
 Added in v0.9.2
@@ -99,9 +103,9 @@ Added in v0.9.2
 
 ```ts
 export declare const endoMap: <E, A>(
-  ra: RefArray<E, A>
+  ra: RefArray<E, A>,
 ) => (
-  f: Endomorphism<A>
+  f: Endomorphism<A>,
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
@@ -113,9 +117,9 @@ Added in v0.9.2
 
 ```ts
 export declare const filter: <E, A>(
-  ra: RefArray<E, A>
+  ra: RefArray<E, A>,
 ) => (
-  p: Predicate<A>
+  p: Predicate<A>,
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
@@ -127,10 +131,10 @@ Added in v0.9.2
 
 ```ts
 export declare const insertAt: <E, A>(
-  ra: RefArray<E, A>
+  ra: RefArray<E, A>,
 ) => (
   index: number,
-  value: A
+  value: A,
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
@@ -142,10 +146,10 @@ Added in v0.9.2
 
 ```ts
 export declare const modifyAt: <E, A>(
-  ra: RefArray<E, A>
+  ra: RefArray<E, A>,
 ) => (
   index: number,
-  f: Endomorphism<A>
+  f: Endomorphism<A>,
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
@@ -157,8 +161,10 @@ Added in v0.9.2
 
 ```ts
 export declare const prepend: <E, A>(
-  ra: RefArray<E, A>
-) => (value: A) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
+  ra: RefArray<E, A>,
+) => (
+  value: A,
+) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
 Added in v0.9.2
@@ -168,7 +174,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const provideAll: <E>(provided: E) => <A>(ref: ReferenceArray<E, A>) => ReferenceArray<unknown, A>
+export declare const provideAll: <E>(
+  provided: E,
+) => <A>(ref: ReferenceArray<E, A>) => ReferenceArray<unknown, A>
 ```
 
 Added in v0.9.2
@@ -179,7 +187,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideSome: <E1>(
-  provided: E1
+  provided: E1,
 ) => <E2, A>(ref: ReferenceArray<E1 & E2, A>) => ReferenceArray<E2, A>
 ```
 
@@ -191,7 +199,7 @@ Added in v0.9.2
 
 ```ts
 export declare const reverse: <E, A>(
-  ra: RefArray<E, A>
+  ra: RefArray<E, A>,
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
@@ -203,8 +211,10 @@ Added in v0.9.2
 
 ```ts
 export declare const rotate: <E, A>(
-  ra: RefArray<E, A>
-) => (n: number) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
+  ra: RefArray<E, A>,
+) => (
+  n: number,
+) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
 Added in v0.9.2
@@ -215,8 +225,10 @@ Added in v0.9.2
 
 ```ts
 export declare const sort: <E, A>(
-  ra: RefArray<E, A>
-) => (O: Ord<A>) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
+  ra: RefArray<E, A>,
+) => (
+  O: Ord<A>,
+) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
 Added in v0.9.2
@@ -227,9 +239,9 @@ Added in v0.9.2
 
 ```ts
 export declare const sortBy: <E, A>(
-  ra: RefArray<E, A>
+  ra: RefArray<E, A>,
 ) => (
-  O: readonly Ord<A>[]
+  O: readonly Ord<A>[],
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
@@ -241,8 +253,10 @@ Added in v0.9.2
 
 ```ts
 export declare const uniq: <E, A>(
-  ra: RefArray<E, A>
-) => (Eq: Eq<A>) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
+  ra: RefArray<E, A>,
+) => (
+  Eq: Eq<A>,
+) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
 Added in v0.9.2
@@ -253,10 +267,10 @@ Added in v0.9.2
 
 ```ts
 export declare const updateAt: <E, A>(
-  ra: RefArray<E, A>
+  ra: RefArray<E, A>,
 ) => (
   index: number,
-  a: A
+  a: A,
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly A[]>
 ```
 
@@ -267,7 +281,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const useAll: <E>(provided: E) => <A>(ref: ReferenceArray<E, A>) => ReferenceArray<unknown, A>
+export declare const useAll: <E>(
+  provided: E,
+) => <A>(ref: ReferenceArray<E, A>) => ReferenceArray<unknown, A>
 ```
 
 Added in v0.9.2
@@ -277,7 +293,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const useSome: <E1>(provided: E1) => <E2, A>(ref: ReferenceArray<E1 & E2, A>) => ReferenceArray<E2, A>
+export declare const useSome: <E1>(
+  provided: E1,
+) => <E2, A>(ref: ReferenceArray<E1 & E2, A>) => ReferenceArray<E2, A>
 ```
 
 Added in v0.9.2
@@ -289,7 +307,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const create: <A>(memberEq: Eq<A>) => <E>(ref: Ref.Reference<E, readonly A[]>) => ReferenceArray<E, A>
+export declare const create: <A>(
+  memberEq: Eq<A>,
+) => <E>(ref: Ref.Reference<E, readonly A[]>) => ReferenceArray<E, A>
 ```
 
 Added in v0.9.2
@@ -299,7 +319,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const lift: <A>(memberEq: Eq<A>) => <E>(ref: Ref.Reference<E, readonly A[]>) => RefArray<E, A>
+export declare const lift: <A>(
+  memberEq: Eq<A>,
+) => <E>(ref: Ref.Reference<E, readonly A[]>) => RefArray<E, A>
 ```
 
 Added in v0.9.2

@@ -1,5 +1,5 @@
 /**
- * RefArray is an abstraction over @see Ref to
+ * RefArray is an abstraction over [Ref](./Ref.ts.md) to
  * provide some additional functionality for working with Arrays.
  * @since 0.9.2
  */

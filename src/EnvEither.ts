@@ -1,5 +1,5 @@
 /**
- * EnvEither is an @see EitherT of @see Env
+ * EnvEither is an EitherT of [Env](./Env.ts.md)
  * @since 0.9.2
  */
 import * as Alt_ from 'fp-ts/Alt'

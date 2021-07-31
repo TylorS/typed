@@ -1,5 +1,5 @@
 /**
- * RefDisposable is an abstraction over @see Ref to keep track of
+ * RefDisposable is an abstraction over [Ref](./Ref.ts.md) to keep track of
  * all resources created within the context of a particular instance of Refs.
  * @since 0.9.2
  */

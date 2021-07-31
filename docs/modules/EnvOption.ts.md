@@ -6,7 +6,7 @@ parent: Modules
 
 ## EnvOption overview
 
-EnvOption is an @see OptionT of @see Env
+EnvOption is an OptionT of [Env](./Env.ts.md)
 
 Added in v0.9.2
 
@@ -88,7 +88,7 @@ Added in v0.9.2
 
 ```ts
 export declare const alt: <E, A>(
-  second: Lazy<E.Env<E, O.Option<A>>>
+  second: Lazy<E.Env<E, O.Option<A>>>,
 ) => (first: E.Env<E, O.Option<A>>) => E.Env<E, O.Option<A>>
 ```
 
@@ -100,7 +100,7 @@ Added in v0.9.2
 
 ```ts
 export declare const ap: <E, A>(
-  fa: E.Env<E, O.Option<A>>
+  fa: E.Env<E, O.Option<A>>,
 ) => <B>(fab: E.Env<E, O.Option<(a: A) => B>>) => E.Env<E, O.Option<B>>
 ```
 
@@ -112,7 +112,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chain: <A, E, B>(
-  f: (a: A) => E.Env<E, O.Option<B>>
+  f: (a: A) => E.Env<E, O.Option<B>>,
 ) => (ma: E.Env<E, O.Option<A>>) => E.Env<E, O.Option<B>>
 ```
 
@@ -124,7 +124,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainEnvK: <A, R1, B>(
-  f: (value: A) => E.Env<R1, B>
+  f: (value: A) => E.Env<R1, B>,
 ) => <R2>(hkt: EnvOption<R2, A>) => EnvOption<R1, B>
 ```
 
@@ -136,7 +136,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstEnvK: <A, R1, B>(
-  f: (value: A) => E.Env<R1, B>
+  f: (value: A) => E.Env<R1, B>,
 ) => <R2>(hkt: EnvOption<R2, A>) => EnvOption<R1, A>
 ```
 
@@ -148,7 +148,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstResumeK: <A, B>(
-  f: (value: A) => Resume<B>
+  f: (value: A) => Resume<B>,
 ) => <E>(hkt: EnvOption<E, A>) => EnvOption<E, A>
 ```
 
@@ -160,7 +160,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainNullableK: <A, B>(
-  f: (a: A) => B | null | undefined
+  f: (a: A) => B | null | undefined,
 ) => <E>(ma: E.Env<E, O.Option<A>>) => E.Env<E, O.Option<NonNullable<B>>>
 ```
 
@@ -172,7 +172,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainOptionK: <A, B>(
-  f: (a: A) => O.Option<B>
+  f: (a: A) => O.Option<B>,
 ) => <E>(ma: E.Env<E, O.Option<A>>) => E.Env<E, O.Option<B>>
 ```
 
@@ -183,7 +183,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainReaderK: <A, R, B>(f: (a: A) => Reader<R, B>) => (ma: EnvOption<R, A>) => EnvOption<R, B>
+export declare const chainReaderK: <A, R, B>(
+  f: (a: A) => Reader<R, B>,
+) => (ma: EnvOption<R, A>) => EnvOption<R, B>
 ```
 
 Added in v0.9.2
@@ -194,7 +196,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, E, B>(
-  f: (value: A) => EnvOption<E, Ei.Either<A, B>>
+  f: (value: A) => EnvOption<E, Ei.Either<A, B>>,
 ) => (value: A) => EnvOption<E, B>
 ```
 
@@ -205,7 +207,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainResumeK: <A, B>(f: (value: A) => Resume<B>) => <E>(hkt: EnvOption<E, A>) => EnvOption<E, B>
+export declare const chainResumeK: <A, B>(
+  f: (value: A) => Resume<B>,
+) => <E>(hkt: EnvOption<E, A>) => EnvOption<E, B>
 ```
 
 Added in v0.9.2
@@ -216,7 +220,7 @@ Added in v0.9.2
 
 ```ts
 export declare const getOrElseEW: <E1, A>(
-  onNone: Lazy<E.Env<E1, A>>
+  onNone: Lazy<E.Env<E1, A>>,
 ) => <E2>(fa: E.Env<E2, O.Option<A>>) => E.Env<E1 & E2, A>
 ```
 
@@ -227,7 +231,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const map: <A, B>(f: (a: A) => B) => <E>(fa: E.Env<E, O.Option<A>>) => E.Env<E, O.Option<B>>
+export declare const map: <A, B>(
+  f: (a: A) => B,
+) => <E>(fa: E.Env<E, O.Option<A>>) => E.Env<E, O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -279,7 +285,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromEnvK: <A, R, B>(f: (...args: A) => E.Env<R, B>) => (...args: A) => EnvOption<R, B>
+export declare const fromEnvK: <A, R, B>(
+  f: (...args: A) => E.Env<R, B>,
+) => (...args: A) => EnvOption<R, B>
 ```
 
 Added in v0.9.2
@@ -310,7 +318,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromNullableK: <A, B>(
-  f: (...a: A) => B | null | undefined
+  f: (...a: A) => B | null | undefined,
 ) => <E>(...a: A) => E.Env<E, O.Option<NonNullable<B>>>
 ```
 
@@ -321,7 +329,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromOptionK: <A, B>(f: (...a: A) => O.Option<B>) => <E>(...a: A) => E.Env<E, O.Option<B>>
+export declare const fromOptionK: <A, B>(
+  f: (...a: A) => O.Option<B>,
+) => <E>(...a: A) => E.Env<E, O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -344,7 +354,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromReaderK: <A, R, B>(f: (...a: A) => Reader<R, B>) => (...a: A) => EnvOption<R, B>
+export declare const fromReaderK: <A, R, B>(
+  f: (...a: A) => Reader<R, B>,
+) => (...a: A) => EnvOption<R, B>
 ```
 
 Added in v0.9.2
@@ -364,7 +376,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromResumeK: <A, B>(f: (...args: A) => Resume<B>) => <E>(...args: A) => EnvOption<E, B>
+export declare const fromResumeK: <A, B>(
+  f: (...args: A) => Resume<B>,
+) => <E>(...args: A) => EnvOption<E, B>
 ```
 
 Added in v0.9.2
@@ -406,7 +420,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getOrElseE: <E, A>(onNone: Lazy<E.Env<E, A>>) => (fa: E.Env<E, O.Option<A>>) => E.Env<E, A>
+export declare const getOrElseE: <E, A>(
+  onNone: Lazy<E.Env<E, A>>,
+) => (fa: E.Env<E, O.Option<A>>) => E.Env<E, A>
 ```
 
 Added in v0.9.2
@@ -418,7 +434,7 @@ Added in v0.9.2
 ```ts
 export declare const match: <B, A>(
   onNone: () => B,
-  onSome: (a: A) => B
+  onSome: (a: A) => B,
 ) => <E>(ma: E.Env<E, O.Option<A>>) => E.Env<E, B>
 ```
 
@@ -431,7 +447,7 @@ Added in v0.9.2
 ```ts
 export declare const matchE: <E, B, A>(
   onNone: () => E.Env<E, B>,
-  onSome: (a: A) => E.Env<E, B>
+  onSome: (a: A) => E.Env<E, B>,
 ) => (ma: E.Env<E, O.Option<A>>) => E.Env<E, B>
 ```
 
@@ -444,7 +460,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getOrElse: <A>(onNone: Lazy<A>) => <E>(fa: E.Env<E, O.Option<A>>) => E.Env<E, A>
+export declare const getOrElse: <A>(
+  onNone: Lazy<A>,
+) => <E>(fa: E.Env<E, O.Option<A>>) => E.Env<E, A>
 ```
 
 Added in v0.9.2

@@ -1,5 +1,5 @@
 /**
- * RefMap is an abstraction over @see Ref to provide additional functionality for
+ * RefMap is an abstraction over [Ref](./Ref.ts.md) to provide additional functionality for
  * working with ReadonlyMap
  * @since 0.9.2
  */

@@ -3,7 +3,7 @@
  * and execute Synchronous and Asynchronous operations with the same effect. This
  * is the basis of many of the higher-level APIs like Ref.
  *
- * `Env` is the core of the higher-level modules like @see Ref and is a `ReaderT` of `Resume`; but
+ * `Env` is the core of the higher-level modules like [Ref](./Ref.ts.md) and is a `ReaderT` of [Resume](./Resume.ts.md); but
  * to be honest, being used so much, I didn't like writing `ReaderResume<E, A>` and chose to shorten to
  * `Env<E, A>` for the "environmental" quality Reader provides. Combining Reader and Resume allows for
  * creating APIs capable of utilizing dependency injection for their configuration and testability
@@ -784,7 +784,7 @@ export const execWith = runWith<any>(disposeNone)
 /**
  * Construct an Env to a lazily-defined Env-based effect that must be provided later.
  * Does not support functions which require type-parameters as they will resolve to unknown, due
- * to limitations in TS, if you need this maybe @see asksE
+ * to limitations in TS, if you need this maybe use [asksE](#askse)
  * @since 0.9.2
  * @category Constructor
  */

@@ -1,6 +1,6 @@
 /**
  * Provide is a Typeclass to represent the ability to add/remove requirements from Reader-like
- * effects such as @see Env or @see ReaderStream.
+ * effects such as [Env](./Env.ts.md) or [ReaderStream](./ReaderStream.ts.md).
  *
  * @since 0.9.2
  */

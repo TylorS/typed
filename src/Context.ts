@@ -1,5 +1,5 @@
 /**
- * Context is built atop of @see Reference layering on the capability to traverse
+ * Context is built atop of Reference layering on the capability to traverse
  * up to ancestor environments to share state amongst multiple components.
  *
  * @since 0.9.2

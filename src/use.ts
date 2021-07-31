@@ -1,6 +1,6 @@
 /**
  * @typed/fp/use is the only non-referentially transparent module in @typed/fp. It is built atop
- * of @see Ref to enable many common workflows. If you're coming from a React background, it is
+ * of [Ref](./Ref.ts.md) to enable many common workflows. If you're coming from a React background, it is
  * pretty similar to hooks, but the only constraint is that is should be declared once at the top of the scope of your module.
  * @since 0.9.2
  */

@@ -6,8 +6,8 @@ parent: Modules
 
 ## RefMap overview
 
-RefMap is an abstraction over @see Ref to provide additional functionality for
-working with ReadonlyMap
+RefMap is an abstraction over [Ref](./Ref.ts.md) to provide additional functionality for working
+with ReadonlyMap
 
 Added in v0.9.2
 
@@ -60,8 +60,13 @@ Added in v0.9.2
 
 ```ts
 export declare const deleteAt: <E1, K, V>(
-  M: RefMap<E1, K, V>
-) => (k: K) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, ReadonlyMap<K, V>>
+  M: RefMap<E1, K, V>,
+) => (
+  k: K,
+) => E.Env<
+  E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs,
+  ReadonlyMap<K, V>
+>
 ```
 
 Added in v0.9.2
@@ -72,8 +77,10 @@ Added in v0.9.2
 
 ```ts
 export declare const elem: <E1, K, V>(
-  M: RefMap<E1, K, V>
-) => (v: V) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, boolean>
+  M: RefMap<E1, K, V>,
+) => (
+  v: V,
+) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, boolean>
 ```
 
 Added in v0.9.2
@@ -84,7 +91,7 @@ Added in v0.9.2
 
 ```ts
 export declare const filter: <E1, K, V>(
-  M: RefMap<E1, K, V>
+  M: RefMap<E1, K, V>,
 ) => {
   <V2 extends V>(r: Refinement<V, V2>): E.Env<
     E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs,
@@ -105,10 +112,10 @@ Added in v0.9.2
 
 ```ts
 export declare const getOrCreate: <E1, K, V>(
-  M: RefMap<E1, K, V>
+  M: RefMap<E1, K, V>,
 ) => <E2>(
   k: K,
-  orCreate: E.Env<E2, V>
+  orCreate: E.Env<E2, V>,
 ) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs & E2, V>
 ```
 
@@ -120,11 +127,14 @@ Added in v0.9.2
 
 ```ts
 export declare const insertAt: <E1, K, V>(
-  M: RefMap<E1, K, V>
+  M: RefMap<E1, K, V>,
 ) => (
   k: K,
-  v: V
-) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, ReadonlyMap<K, V>>
+  v: V,
+) => E.Env<
+  E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs,
+  ReadonlyMap<K, V>
+>
 ```
 
 Added in v0.9.2
@@ -135,9 +145,9 @@ Added in v0.9.2
 
 ```ts
 export declare const keys: <K>(
-  O: Ord<K>
+  O: Ord<K>,
 ) => <E, V>(
-  M: RefMap<E, K, V>
+  M: RefMap<E, K, V>,
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly K[]>
 ```
 
@@ -149,8 +159,10 @@ Added in v0.9.2
 
 ```ts
 export declare const lookup: <E1, K, V>(
-  M: RefMap<E1, K, V>
-) => (k: K) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, O.Option<V>>
+  M: RefMap<E1, K, V>,
+) => (
+  k: K,
+) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, O.Option<V>>
 ```
 
 Added in v0.9.2
@@ -161,11 +173,14 @@ Added in v0.9.2
 
 ```ts
 export declare const modifyAt: <E1, K, V>(
-  M: RefMap<E1, K, V>
+  M: RefMap<E1, K, V>,
 ) => (
   k: K,
-  v: Endomorphism<V>
-) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, ReadonlyMap<K, V>>
+  v: Endomorphism<V>,
+) => E.Env<
+  E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs,
+  ReadonlyMap<K, V>
+>
 ```
 
 Added in v0.9.2
@@ -175,7 +190,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const provideAll: <E>(provided: E) => <K, V>(ref: ReferenceMap<E, K, V>) => ReferenceMap<unknown, K, V>
+export declare const provideAll: <E>(
+  provided: E,
+) => <K, V>(ref: ReferenceMap<E, K, V>) => ReferenceMap<unknown, K, V>
 ```
 
 Added in v0.9.2
@@ -186,7 +203,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideSome: <E1>(
-  provided: E1
+  provided: E1,
 ) => <E2, K, V>(ref: ReferenceMap<E1 & E2, K, V>) => ReferenceMap<E2, K, V>
 ```
 
@@ -198,7 +215,7 @@ Added in v0.9.2
 
 ```ts
 export declare const size: <E, K, V>(
-  M: RefMap<E, K, V>
+  M: RefMap<E, K, V>,
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, number>
 ```
 
@@ -210,10 +227,13 @@ Added in v0.9.2
 
 ```ts
 export declare const toReadonlyArray: <K>(
-  O: Ord<K>
+  O: Ord<K>,
 ) => <E, V>(
-  M: RefMap<E, K, V>
-) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly (readonly [K, V])[]>
+  M: RefMap<E, K, V>,
+) => E.Env<
+  E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs,
+  readonly (readonly [K, V])[]
+>
 ```
 
 Added in v0.9.2
@@ -224,11 +244,14 @@ Added in v0.9.2
 
 ```ts
 export declare const updateAt: <E1, K, V>(
-  M: RefMap<E1, K, V>
+  M: RefMap<E1, K, V>,
 ) => (
   k: K,
-  v: V
-) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, ReadonlyMap<K, V>>
+  v: V,
+) => E.Env<
+  E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs,
+  ReadonlyMap<K, V>
+>
 ```
 
 Added in v0.9.2
@@ -239,11 +262,14 @@ Added in v0.9.2
 
 ```ts
 export declare const upsertAt: <E1, K, V>(
-  M: RefMap<E1, K, V>
+  M: RefMap<E1, K, V>,
 ) => (
   k: K,
-  v: V
-) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, ReadonlyMap<K, V>>
+  v: V,
+) => E.Env<
+  E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs,
+  ReadonlyMap<K, V>
+>
 ```
 
 Added in v0.9.2
@@ -253,7 +279,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const useAll: <E>(provided: E) => <K, V>(ref: ReferenceMap<E, K, V>) => ReferenceMap<unknown, K, V>
+export declare const useAll: <E>(
+  provided: E,
+) => <K, V>(ref: ReferenceMap<E, K, V>) => ReferenceMap<unknown, K, V>
 ```
 
 Added in v0.9.2
@@ -264,7 +292,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useSome: <E1>(
-  provided: E1
+  provided: E1,
 ) => <E2, K, V>(ref: ReferenceMap<E1 & E2, K, V>) => ReferenceMap<E2, K, V>
 ```
 
@@ -276,9 +304,9 @@ Added in v0.9.2
 
 ```ts
 export declare const values: <V>(
-  O: Ord<V>
+  O: Ord<V>,
 ) => <E, K>(
-  M: RefMap<E, K, V>
+  M: RefMap<E, K, V>,
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly V[]>
 ```
 
@@ -293,7 +321,7 @@ Added in v0.9.2
 ```ts
 export declare const create: <K, V>(
   keyEq: Eq<K>,
-  valueEq: Eq<V>
+  valueEq: Eq<V>,
 ) => <E>(ref: Ref.Reference<E, ReadonlyMap<K, V>>) => ReferenceMap<E, K, V>
 ```
 
@@ -308,7 +336,7 @@ Helps to lift a Reference value into a RefMap
 ```ts
 export declare const lift: <K, V>(
   keyEq: Eq<K>,
-  valueEq: Eq<V>
+  valueEq: Eq<V>,
 ) => <E>(ref: Ref.Reference<E, ReadonlyMap<K, V>>) => RefMap<E, K, V>
 ```
 

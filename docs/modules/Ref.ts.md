@@ -6,9 +6,9 @@ parent: Modules
 
 ## Ref overview
 
-`Ref` is an abstraction for managing state-based applications using @see Env. It exposes an extensible
-get/set/delete API for managing keys to values. Every `Ref` is connected to an `Env` that will
-provide the default value lazily when first asked for or after being deleted previously.
+`Ref` is an abstraction for managing state-based applications using [Env](./Env.ts.md). It exposes
+an extensible get/set/delete API for managing keys to values. Every `Ref` is connected to an `Env`
+that will provide the default value lazily when first asked for or after being deleted previously.
 
 The provided implementation will also send events containing all of the creations/updates/deletes
 occurring in real-time.
@@ -43,8 +43,8 @@ const decrement: E.Env<Ref.Refs, number> = Count.update(
   F.flow(
     F.decrement,
     E.of,
-    E.map((x) => Math.max(0, x))
-  )
+    E.map((x) => Math.max(0, x)),
+  ),
 )
 
 // Creates a component which represents our counter
@@ -58,14 +58,14 @@ const Counter: E.Env<Ref.Refs, Renderable> = F.pipe(
       <button onclick=${dec}>Decrement</button>
       <span>Count: ${count}</span>
       <button onclick=${inc}>Increment</button>
-    </div>`
-  )
+    </div>`,
+  ),
 )
 
 const Main: RS.ReaderStream<Ref.Refs, HTMLElement> = F.pipe(
   Counter,
   Ref.sample, // Sample our Counter everytime there is a Ref update.
-  RS.scan(render, rootElement) // Render our application using 'uhtml'
+  RS.scan(render, rootElement), // Render our application using 'uhtml'
 )
 
 // Provide Main with its required resources
@@ -178,7 +178,10 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getAdapter: E.Env<Events, readonly [(event: Event<any, any>) => void, Stream<Event<any, any>>]>
+export declare const getAdapter: E.Env<
+  Events,
+  readonly [(event: Event<any, any>) => void, Stream<Event<any, any>>]
+>
 ```
 
 Added in v0.9.2
@@ -248,7 +251,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const listenToValues: <E, A>(ref: Ref<E, A>) => RS.ReaderStream<E & Events, O.Option<A>>
+export declare const listenToValues: <E, A>(
+  ref: Ref<E, A>,
+) => RS.ReaderStream<E & Events, O.Option<A>>
 ```
 
 Added in v0.9.2
@@ -258,7 +263,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const provideAll: <E>(provided: E) => <A>(ref: Reference<E, A>) => Reference<unknown, A>
+export declare const provideAll: <E>(
+  provided: E,
+) => <A>(ref: Reference<E, A>) => Reference<unknown, A>
 ```
 
 Added in v0.9.2
@@ -268,7 +275,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const provideSome: <E1>(provided: E1) => <E2, A>(ref: Reference<E1 & E2, A>) => Reference<E2, A>
+export declare const provideSome: <E1>(
+  provided: E1,
+) => <E2, A>(ref: Reference<E1 & E2, A>) => Reference<E2, A>
 ```
 
 Added in v0.9.2
@@ -291,7 +300,7 @@ Sample an Env with the latest references when updates have occured.
 
 ```ts
 export declare const sample: <E, A>(
-  env: Env<E, A>
+  env: Env<E, A>,
 ) => RS.ReaderStream<E & Get & Has & Set & Remove & Events & ParentRefs, A>
 ```
 
@@ -323,7 +332,7 @@ Added in v0.9.2
 
 ```ts
 export declare const update: <E1, A>(
-  ref: Ref<E1, A>
+  ref: Ref<E1, A>,
 ) => <E2>(f: (value: A) => E.Env<E2, A>) => E.Env<E1 & Set & E2 & Get, A>
 ```
 
@@ -334,7 +343,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const useAll: <E1>(provided: E1) => <A>(ref: Reference<E1, A>) => Reference<unknown, A>
+export declare const useAll: <E1>(
+  provided: E1,
+) => <A>(ref: Reference<E1, A>) => Reference<unknown, A>
 ```
 
 Added in v0.9.2
@@ -344,7 +355,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const useSome: <E1>(provided: E1) => <E2, A>(ref: Reference<E1 & E2, A>) => Reference<E2, A>
+export declare const useSome: <E1>(
+  provided: E1,
+) => <E2, A>(ref: Reference<E1 & E2, A>) => Reference<E2, A>
 ```
 
 Added in v0.9.2
@@ -356,7 +369,10 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const create: <E, A>(initial: E.Env<E, A>, options?: RefOptions<A> | undefined) => Reference<E, A>
+export declare const create: <E, A>(
+  initial: E.Env<E, A>,
+  options?: RefOptions<A> | undefined,
+) => Reference<E, A>
 ```
 
 Added in v0.9.2
@@ -391,7 +407,7 @@ Added in v0.9.2
 export declare const match: <A, B, C>(
   onCreated: (value: A, ref: Ref<B, A>) => C,
   onUpdated: (previousValue: A, value: A, ref: Ref<B, A>) => C,
-  onDeleted: (ref: Ref<B, A>) => C
+  onDeleted: (ref: Ref<B, A>) => C,
 ) => (event: Event<B, A>) => C
 ```
 
@@ -405,7 +421,7 @@ Added in v0.9.2
 export declare const matchW: <A, B, C, D, E>(
   onCreated: (value: A, ref: Ref<B, A>) => C,
   onUpdated: (previousValue: A, value: A, ref: Ref<B, A>) => D,
-  onDeleted: (ref: Ref<B, A>) => E
+  onDeleted: (ref: Ref<B, A>) => E,
 ) => (event: Event<B, A>) => C | D | E
 ```
 
@@ -737,7 +753,9 @@ Creates a union of Envs for all the possible combinations for Ref environments.
 **Signature**
 
 ```ts
-export type Env<E, A> = E.Env<E, A> | GetEnv<CombinationsOf<E, [Get, Has, Set, Remove, Events, ParentRefs]>, A>
+export type Env<E, A> =
+  | E.Env<E, A>
+  | GetEnv<CombinationsOf<E, [Get, Has, Set, Remove, Events, ParentRefs]>, A>
 ```
 
 Added in v0.9.2

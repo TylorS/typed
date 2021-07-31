@@ -1,5 +1,5 @@
 /**
- * EnvOption is an @see OptionT of @see Env
+ * EnvOption is an OptionT of [Env](./Env.ts.md)
  *
  * @since 0.9.2
  */

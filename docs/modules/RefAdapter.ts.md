@@ -6,7 +6,7 @@ parent: Modules
 
 ## RefAdapter overview
 
-RefAdapter is an abstraction over @see Ref and @see Adapter
+RefAdapter is an abstraction over [Ref](./Ref.ts.md) and [Adapter](./Adapter.ts.md)
 
 Added in v0.9.2
 
@@ -65,7 +65,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare function toReferenceAdapter<E, A, B>(ra: RefAdapter<E, A, B>): ReferenceAdapter<E, A, B>
+export declare function toReferenceAdapter<E, A, B>(
+  ra: RefAdapter<E, A, B>,
+): ReferenceAdapter<E, A, B>
 ```
 
 Added in v0.9.2

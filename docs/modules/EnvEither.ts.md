@@ -6,7 +6,7 @@ parent: Modules
 
 ## EnvEither overview
 
-EnvEither is an @see EitherT of @see Env
+EnvEither is an EitherT of [Env](./Env.ts.md)
 
 Added in v0.9.2
 
@@ -124,7 +124,7 @@ Added in v0.9.2
 
 ```ts
 export declare const alt: <ME, E, A>(
-  second: Lazy<Env.Env<ME, E.Either<E, A>>>
+  second: Lazy<Env.Env<ME, E.Either<E, A>>>,
 ) => (first: Env.Env<ME, E.Either<E, A>>) => Env.Env<ME, E.Either<E, A>>
 ```
 
@@ -136,7 +136,7 @@ Added in v0.9.2
 
 ```ts
 export declare const ap: <FE, E, A>(
-  fa: Env.Env<FE, E.Either<E, A>>
+  fa: Env.Env<FE, E.Either<E, A>>,
 ) => <B>(fab: Env.Env<FE, E.Either<E, (a: A) => B>>) => Env.Env<FE, E.Either<E, B>>
 ```
 
@@ -148,7 +148,7 @@ Added in v0.9.2
 
 ```ts
 export declare const apFirst: <R, E, B>(
-  second: EnvEither<R, E, B>
+  second: EnvEither<R, E, B>,
 ) => <A>(first: EnvEither<R, E, A>) => EnvEither<R, E, A>
 ```
 
@@ -161,8 +161,10 @@ Added in v0.9.2
 ```ts
 export declare const apS: <N, A, R, E, B>(
   name: Exclude<N, keyof A>,
-  fb: EnvEither<R, E, B>
-) => (fa: EnvEither<R, E, A>) => EnvEither<R, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  fb: EnvEither<R, E, B>,
+) => (
+  fa: EnvEither<R, E, A>,
+) => EnvEither<R, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.9.2
@@ -173,7 +175,7 @@ Added in v0.9.2
 
 ```ts
 export declare const apSecond: <R, E, B>(
-  second: EnvEither<R, E, B>
+  second: EnvEither<R, E, B>,
 ) => <A>(first: EnvEither<R, E, A>) => EnvEither<R, E, B>
 ```
 
@@ -185,7 +187,7 @@ Added in v0.9.2
 
 ```ts
 export declare const apT: <R, E, B>(
-  fb: EnvEither<R, E, B>
+  fb: EnvEither<R, E, B>,
 ) => <A>(fas: EnvEither<R, E, A>) => EnvEither<R, E, readonly [...A, B]>
 ```
 
@@ -196,7 +198,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const askAndProvide: <R, E, B>(hkt: EnvEither<R, E, B>) => EnvEither<R, E, EnvEither<unknown, E, B>>
+export declare const askAndProvide: <R, E, B>(
+  hkt: EnvEither<R, E, B>,
+) => EnvEither<R, E, EnvEither<unknown, E, B>>
 ```
 
 Added in v0.9.2
@@ -206,7 +210,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const askAndUse: <R, E, B>(hkt: EnvEither<R, E, B>) => EnvEither<R, E, EnvEither<unknown, E, B>>
+export declare const askAndUse: <R, E, B>(
+  hkt: EnvEither<R, E, B>,
+) => EnvEither<R, E, EnvEither<unknown, E, B>>
 ```
 
 Added in v0.9.2
@@ -218,7 +224,7 @@ Added in v0.9.2
 ```ts
 export declare const bimap: <E, G, A, B>(
   f: (e: E) => G,
-  g: (a: A) => B
+  g: (a: A) => B,
 ) => <FE>(fea: Env.Env<FE, E.Either<E, A>>) => Env.Env<FE, E.Either<G, B>>
 ```
 
@@ -231,8 +237,10 @@ Added in v0.9.2
 ```ts
 export declare const bind: <N, A, R, E, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => EnvEither<R, E, B>
-) => (ma: EnvEither<R, E, A>) => EnvEither<R, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  f: (a: A) => EnvEither<R, E, B>,
+) => (
+  ma: EnvEither<R, E, A>,
+) => EnvEither<R, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.9.2
@@ -243,7 +251,7 @@ Added in v0.9.2
 
 ```ts
 export declare const bindTo: <N>(
-  name: N
+  name: N,
 ) => <R, E, A>(fa: EnvEither<R, E, A>) => EnvEither<R, E, { readonly [K in N]: A }>
 ```
 
@@ -257,7 +265,7 @@ Added in v0.9.2
 export declare const bracket: <ME, E, A, B>(
   acquire: Env.Env<ME, E.Either<E, A>>,
   use: (a: A) => Env.Env<ME, E.Either<E, B>>,
-  release: (a: A, e: E.Either<E, B>) => Env.Env<ME, E.Either<E, void>>
+  release: (a: A, e: E.Either<E, B>) => Env.Env<ME, E.Either<E, void>>,
 ) => Env.Env<ME, E.Either<E, B>>
 ```
 
@@ -269,7 +277,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chain: <A, ME, E, B>(
-  f: (a: A) => Env.Env<ME, E.Either<E, B>>
+  f: (a: A) => Env.Env<ME, E.Either<E, B>>,
 ) => (ma: Env.Env<ME, E.Either<E, A>>) => Env.Env<ME, E.Either<E, B>>
 ```
 
@@ -281,7 +289,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainEitherK: <A, E, B>(
-  f: (a: A) => E.Either<E, B>
+  f: (a: A) => E.Either<E, B>,
 ) => <R>(ma: EnvEither<R, E, A>) => EnvEither<R, E, B>
 ```
 
@@ -293,7 +301,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainEnvK: <A, R1, B>(
-  f: (value: A) => Env.Env<R1, B>
+  f: (value: A) => Env.Env<R1, B>,
 ) => <R2, E>(hkt: EnvEither<R2, E, A>) => EnvEither<R1 & R2, E, B>
 ```
 
@@ -305,7 +313,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirst: <A, R1, E, B>(
-  f: (a: A) => EnvEither<R1, E, B>
+  f: (a: A) => EnvEither<R1, E, B>,
 ) => <R2>(first: EnvEither<R2, E, A>) => EnvEither<R1 & R2, E, A>
 ```
 
@@ -317,7 +325,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstEnvK: <A, R1, B>(
-  f: (value: A) => Env.Env<R1, B>
+  f: (value: A) => Env.Env<R1, B>,
 ) => <R2, E>(hkt: EnvEither<R2, E, A>) => EnvEither<R1 & R2, E, A>
 ```
 
@@ -329,7 +337,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstIOK: <A, B>(
-  f: (a: A) => IO.IO<B>
+  f: (a: A) => IO.IO<B>,
 ) => <R, E>(first: EnvEither<R, E, A>) => EnvEither<R, E, A>
 ```
 
@@ -341,7 +349,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstResumeK: <A, B>(
-  f: (value: A) => Resume<B>
+  f: (value: A) => Resume<B>,
 ) => <R, E>(hkt: EnvEither<R, E, A>) => EnvEither<R, E, A>
 ```
 
@@ -353,7 +361,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstTaskK: <A, B>(
-  f: (a: A) => T.Task<B>
+  f: (a: A) => T.Task<B>,
 ) => <R, E>(first: EnvEither<R, E, A>) => EnvEither<R, E, A>
 ```
 
@@ -364,7 +372,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainIOK: <A, B>(f: (a: A) => IO.IO<B>) => <R, E>(first: EnvEither<R, E, A>) => EnvEither<R, E, B>
+export declare const chainIOK: <A, B>(
+  f: (a: A) => IO.IO<B>,
+) => <R, E>(first: EnvEither<R, E, A>) => EnvEither<R, E, B>
 ```
 
 Added in v0.9.2
@@ -375,7 +385,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainOptionK: <E>(
-  onNone: Lazy<E>
+  onNone: Lazy<E>,
 ) => <A, B>(f: (a: A) => Option<B>) => <R>(ma: EnvEither<R, E, A>) => EnvEither<R, E, B>
 ```
 
@@ -387,7 +397,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainReaderK: <A, R, B>(
-  f: (a: A) => Reader<R, B>
+  f: (a: A) => Reader<R, B>,
 ) => <E>(ma: EnvEither<R, E, A>) => EnvEither<R, E, B>
 ```
 
@@ -399,7 +409,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, R, E, B>(
-  f: (value: A) => EnvEither<R, E, E.Either<A, B>>
+  f: (value: A) => EnvEither<R, E, E.Either<A, B>>,
 ) => (a: A) => EnvEither<R, E, B>
 ```
 
@@ -411,7 +421,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainResumeK: <A, B>(
-  f: (value: A) => Resume<B>
+  f: (value: A) => Resume<B>,
 ) => <R, E>(hkt: EnvEither<R, E, A>) => EnvEither<R, E, B>
 ```
 
@@ -423,7 +433,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainTaskK: <A, B>(
-  f: (a: A) => T.Task<B>
+  f: (a: A) => T.Task<B>,
 ) => <R, E>(first: EnvEither<R, E, A>) => EnvEither<R, E, B>
 ```
 
@@ -435,7 +445,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainW: <A, ME1, E, B>(
-  f: (a: A) => Env.Env<ME1, E.Either<E, B>>
+  f: (a: A) => Env.Env<ME1, E.Either<E, B>>,
 ) => <ME2>(ma: Env.Env<ME2, E.Either<E, A>>) => Env.Env<ME1 & ME2, E.Either<E, B>>
 ```
 
@@ -447,8 +457,12 @@ Added in v0.9.2
 
 ```ts
 export declare const filterOrElse: {
-  <A, B, E>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R>(ma: EnvEither<R, E, A>) => EnvEither<R, E, B>
-  <A, E>(predicate: Predicate<A>, onFalse: (a: A) => E): <R, B>(mb: EnvEither<R, E, B>) => EnvEither<R, E, B>
+  <A, B, E>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R>(
+    ma: EnvEither<R, E, A>,
+  ) => EnvEither<R, E, B>
+  <A, E>(predicate: Predicate<A>, onFalse: (a: A) => E): <R, B>(
+    mb: EnvEither<R, E, B>,
+  ) => EnvEither<R, E, B>
 }
 ```
 
@@ -459,7 +473,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const flap: <A>(a: A) => <R, E, B>(fab: EnvEither<R, E, (a: A) => B>) => EnvEither<R, E, B>
+export declare const flap: <A>(
+  a: A,
+) => <R, E, B>(fab: EnvEither<R, E, (a: A) => B>) => EnvEither<R, E, B>
 ```
 
 Added in v0.9.2
@@ -469,7 +485,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getOrElse: <E, A>(onLeft: (e: E) => A) => <FE>(ma: Env.Env<FE, E.Either<E, A>>) => Env.Env<FE, A>
+export declare const getOrElse: <E, A>(
+  onLeft: (e: E) => A,
+) => <FE>(ma: Env.Env<FE, E.Either<E, A>>) => Env.Env<FE, A>
 ```
 
 Added in v0.9.2
@@ -480,7 +498,7 @@ Added in v0.9.2
 
 ```ts
 export declare const getOrElseE: <E, ME, A>(
-  onLeft: (e: E) => Env.Env<ME, A>
+  onLeft: (e: E) => Env.Env<ME, A>,
 ) => (ma: Env.Env<ME, E.Either<E, A>>) => Env.Env<ME, A>
 ```
 
@@ -492,7 +510,7 @@ Added in v0.9.2
 
 ```ts
 export declare const map: <A, B>(
-  f: (a: A) => B
+  f: (a: A) => B,
 ) => <FE, E>(fa: Env.Env<FE, E.Either<E, A>>) => Env.Env<FE, E.Either<E, B>>
 ```
 
@@ -504,7 +522,7 @@ Added in v0.9.2
 
 ```ts
 export declare const mapLeft: <E, G>(
-  f: (e: E) => G
+  f: (e: E) => G,
 ) => <FE, A>(fea: Env.Env<FE, E.Either<E, A>>) => Env.Env<FE, E.Either<G, A>>
 ```
 
@@ -516,7 +534,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orElseFirst: <E, ME, B>(
-  onLeft: (e: E) => Env.Env<ME, E.Either<E, B>>
+  onLeft: (e: E) => Env.Env<ME, E.Either<E, B>>,
 ) => <A>(ma: Env.Env<ME, E.Either<E, A>>) => Env.Env<ME, E.Either<E, A>>
 ```
 
@@ -528,7 +546,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orLeft: <E1, ME, E2>(
-  onLeft: (e: E1) => Env.Env<ME, E2>
+  onLeft: (e: E1) => Env.Env<ME, E2>,
 ) => <A>(fa: Env.Env<ME, E.Either<E1, A>>) => Env.Env<ME, E.Either<E2, A>>
 ```
 
@@ -540,7 +558,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideAllWith: <R, E1, A>(
-  provider: EnvEither<R, E1, A>
+  provider: EnvEither<R, E1, A>,
 ) => <E2, B>(hkt: EnvEither<A, E2, B>) => EnvEither<R, E1, B>
 ```
 
@@ -552,7 +570,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideSomeWith: <R1, E1, A>(
-  provider: EnvEither<R1, E1, A>
+  provider: EnvEither<R1, E1, A>,
 ) => P.Provider3<'@typed/fp/EnvEither', A, R1, E1>
 ```
 
@@ -563,7 +581,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const swap: <FE, E, A>(ma: Env.Env<FE, E.Either<E, A>>) => Env.Env<FE, E.Either<A, E>>
+export declare const swap: <FE, E, A>(
+  ma: Env.Env<FE, E.Either<E, A>>,
+) => Env.Env<FE, E.Either<A, E>>
 ```
 
 Added in v0.9.2
@@ -584,7 +604,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useAllWith: <R, E1, A>(
-  provider: EnvEither<R, E1, A>
+  provider: EnvEither<R, E1, A>,
 ) => <E2, B>(hkt: EnvEither<A, E2, B>) => EnvEither<R, E1, B>
 ```
 
@@ -596,7 +616,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useSomeWith: <R1, E1, A>(
-  provider: EnvEither<R1, E1, A>
+  provider: EnvEither<R1, E1, A>,
 ) => P.Provider3<'@typed/fp/EnvEither', A, R1, E1>
 ```
 
@@ -639,7 +659,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromEitherK: <A, E, B>(f: (...a: A) => E.Either<E, B>) => <R>(...a: A) => EnvEither<R, E, B>
+export declare const fromEitherK: <A, E, B>(
+  f: (...a: A) => E.Either<E, B>,
+) => <R>(...a: A) => EnvEither<R, E, B>
 ```
 
 Added in v0.9.2
@@ -659,7 +681,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromEnvK: <A, R, B>(f: (...args: A) => Env.Env<R, B>) => <E>(...args: A) => EnvEither<R, E, B>
+export declare const fromEnvK: <A, R, B>(
+  f: (...args: A) => Env.Env<R, B>,
+) => <E>(...args: A) => EnvEither<R, E, B>
 ```
 
 Added in v0.9.2
@@ -689,7 +713,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromIOK: <A, B>(f: (...a: A) => IO.IO<B>) => <R, E>(...a: A) => EnvEither<R, E, B>
+export declare const fromIOK: <A, B>(
+  f: (...a: A) => IO.IO<B>,
+) => <R, E>(...a: A) => EnvEither<R, E, B>
 ```
 
 Added in v0.9.2
@@ -699,7 +725,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromOption: <E>(onNone: Lazy<E>) => NaturalTransformation13C<'Option', '@typed/fp/EnvEither', E>
+export declare const fromOption: <E>(
+  onNone: Lazy<E>,
+) => NaturalTransformation13C<'Option', '@typed/fp/EnvEither', E>
 ```
 
 Added in v0.9.2
@@ -710,7 +738,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromOptionK: <E>(
-  onNone: Lazy<E>
+  onNone: Lazy<E>,
 ) => <A, B>(f: (...a: A) => Option<B>) => <R>(...a: A) => EnvEither<R, E, B>
 ```
 
@@ -744,7 +772,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromReaderK: <A, R, B>(f: (...a: A) => Reader<R, B>) => <E>(...a: A) => EnvEither<R, E, B>
+export declare const fromReaderK: <A, R, B>(
+  f: (...a: A) => Reader<R, B>,
+) => <E>(...a: A) => EnvEither<R, E, B>
 ```
 
 Added in v0.9.2
@@ -764,7 +794,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromResumeK: <A, B>(f: (...args: A) => Resume<B>) => <R, E>(...args: A) => EnvEither<R, E, B>
+export declare const fromResumeK: <A, B>(
+  f: (...args: A) => Resume<B>,
+) => <R, E>(...args: A) => EnvEither<R, E, B>
 ```
 
 Added in v0.9.2
@@ -784,7 +816,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromTaskK: <A, B>(f: (...a: A) => T.Task<B>) => <R, E>(...a: A) => EnvEither<R, E, B>
+export declare const fromTaskK: <A, B>(
+  f: (...a: A) => T.Task<B>,
+) => <R, E>(...a: A) => EnvEither<R, E, B>
 ```
 
 Added in v0.9.2
@@ -828,7 +862,7 @@ Added in v0.9.2
 ```ts
 export declare const match: <E, B, A>(
   onLeft: (e: E) => B,
-  onRight: (a: A) => B
+  onRight: (a: A) => B,
 ) => <FE>(ma: Env.Env<FE, E.Either<E, A>>) => Env.Env<FE, B>
 ```
 
@@ -841,7 +875,7 @@ Added in v0.9.2
 ```ts
 export declare const matchE: <E, ME, B, A>(
   onLeft: (e: E) => Env.Env<ME, B>,
-  onRight: (a: A) => Env.Env<ME, B>
+  onRight: (a: A) => Env.Env<ME, B>,
 ) => (ma: Env.Env<ME, E.Either<E, A>>) => Env.Env<ME, B>
 ```
 
@@ -853,7 +887,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orElse: <E1, ME, E2, A>(
-  onLeft: (e: E1) => Env.Env<ME, E.Either<E2, A>>
+  onLeft: (e: E1) => Env.Env<ME, E.Either<E2, A>>,
 ) => (ma: Env.Env<ME, E.Either<E1, A>>) => Env.Env<ME, E.Either<E2, A>>
 ```
 
@@ -1101,9 +1135,9 @@ Added in v0.9.2
 
 ```ts
 export declare const altValidation: <A>(
-  semigroup: Semigroup_.Semigroup<A>
+  semigroup: Semigroup_.Semigroup<A>,
 ) => <ME, A>(
-  second: Lazy<Env.Env<ME, E.Either<A, A>>>
+  second: Lazy<Env.Env<ME, E.Either<A, A>>>,
 ) => (first: Env.Env<ME, E.Either<A, A>>) => Env.Env<ME, E.Either<A, A>>
 ```
 
@@ -1114,7 +1148,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getSemigroup: <A, R, E>(S: Semigroup_.Semigroup<A>) => Semigroup_.Semigroup<EnvEither<R, E, A>>
+export declare const getSemigroup: <A, R, E>(
+  S: Semigroup_.Semigroup<A>,
+) => Semigroup_.Semigroup<EnvEither<R, E, A>>
 ```
 
 Added in v0.9.2

@@ -1,5 +1,5 @@
 /**
- * RefAdapter is an abstraction over @see Ref and @see Adapter
+ * RefAdapter is an abstraction over [Ref](./Ref.ts.md) and [Adapter](./Adapter.ts.md)
  * @since 0.9.2
  */
 import { pipe } from 'fp-ts/function'

@@ -1,5 +1,5 @@
 /**
- * RefMapM is an abstraction over @see Ref to provide additional functionality for
+ * RefMapM is an abstraction over [Ref](./Ref.ts.md) to provide additional functionality for
  * working with a mutable Map
  * @since 0.9.2
  */

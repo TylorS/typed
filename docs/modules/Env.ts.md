@@ -6,15 +6,15 @@ parent: Modules
 
 ## Env overview
 
-Env is a ReaderT of Resume. Capable of utilizing Dependency Injection from Reader,
-and execute Synchronous and Asynchronous operations with the same effect. This
-is the basis of many of the higher-level APIs like Ref.
+Env is a ReaderT of Resume. Capable of utilizing Dependency Injection from Reader, and execute
+Synchronous and Asynchronous operations with the same effect. This is the basis of many of the
+higher-level APIs like Ref.
 
-`Env` is the core of the higher-level modules like @see Ref and is a `ReaderT` of `Resume`; but
-to be honest, being used so much, I didn't like writing `ReaderResume<E, A>` and chose to shorten to
-`Env<E, A>` for the "environmental" quality Reader provides. Combining Reader and Resume allows for
-creating APIs capable of utilizing dependency injection for their configuration and testability
-while still combining your sync/async workflows.
+`Env` is the core of the higher-level modules like [Ref](./Ref.ts.md) and is a `ReaderT` of
+[Resume](./Resume.ts.md); but to be honest, being used so much, I didn't like writing
+`ReaderResume<E, A>` and chose to shorten to `Env<E, A>` for the "environmental" quality Reader
+provides. Combining Reader and Resume allows for creating APIs capable of utilizing dependency
+injection for their configuration and testability while still combining your sync/async workflows.
 
 While designing application APIs it is often better to describe the logic of your system separate
 from the implementation details. `Env` or rather `Reader` helps you accomplish this through the
@@ -172,7 +172,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const altW: <E1, A>(snd: FN.Lazy<Env<E1, A>>) => <E2>(fst: Env<E2, A>) => Env<E1 & E2, A>
+export declare const altW: <E1, A>(
+  snd: FN.Lazy<Env<E1, A>>,
+) => <E2>(fst: Env<E2, A>) => Env<E1 & E2, A>
 ```
 
 Added in v0.9.2
@@ -202,7 +204,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const apFirstW: <E1, B>(second: Env<E1, B>) => <E2, A>(first: Env<E2, A>) => Env<E1 & E2, A>
+export declare const apFirstW: <E1, B>(
+  second: Env<E1, B>,
+) => <E2, A>(first: Env<E2, A>) => Env<E1 & E2, A>
 ```
 
 Added in v0.9.2
@@ -214,7 +218,7 @@ Added in v0.9.2
 ```ts
 export declare const apS: <N, A, E, B>(
   name: Exclude<N, keyof A>,
-  fb: Env<E, B>
+  fb: Env<E, B>,
 ) => (fa: Env<E, A>) => Env<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
@@ -227,8 +231,10 @@ Added in v0.9.2
 ```ts
 export declare const apSW: <N extends string, A, E1, B>(
   name: Exclude<N, keyof A>,
-  fb: Env<E1, B>
-) => <E2>(fa: Env<E2, A>) => Env<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  fb: Env<E1, B>,
+) => <E2>(
+  fa: Env<E2, A>,
+) => Env<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.9.2
@@ -248,7 +254,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const apSecondW: <E1, B>(second: Env<E1, B>) => <E2, A>(first: Env<E2, A>) => Env<E1 & E2, B>
+export declare const apSecondW: <E1, B>(
+  second: Env<E1, B>,
+) => <E2, A>(first: Env<E2, A>) => Env<E1 & E2, B>
 ```
 
 Added in v0.9.2
@@ -269,7 +277,7 @@ Added in v0.9.2
 
 ```ts
 export declare const apTW: <E1, B>(
-  fb: Env<E1, B>
+  fb: Env<E1, B>,
 ) => <E2, A extends readonly unknown[]>(fas: Env<E2, A>) => Env<E1 & E2, readonly [...A, B]>
 ```
 
@@ -280,7 +288,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const apW: <R1, A>(fa: Env<R1, A>) => <R2, B>(fab: Env<R2, Arity1<A, B>>) => Env<R1 & R2, B>
+export declare const apW: <R1, A>(
+  fa: Env<R1, A>,
+) => <R2, B>(fab: Env<R2, Arity1<A, B>>) => Env<R1 & R2, B>
 ```
 
 Added in v0.9.2
@@ -312,7 +322,7 @@ Added in v0.9.2
 ```ts
 export declare const bind: <N, A, E, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => Env<E, B>
+  f: (a: A) => Env<E, B>,
 ) => (ma: Env<E, A>) => Env<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
@@ -323,7 +333,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const bindTo: <N>(name: N) => <E, A>(fa: Env<E, A>) => Env<E, { readonly [K in N]: A }>
+export declare const bindTo: <N>(
+  name: N,
+) => <E, A>(fa: Env<E, A>) => Env<E, { readonly [K in N]: A }>
 ```
 
 Added in v0.9.2
@@ -335,8 +347,10 @@ Added in v0.9.2
 ```ts
 export declare const bindW: <N extends string, A, E1, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => Env<E1, B>
-) => <E2>(ma: Env<E2, A>) => Env<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  f: (a: A) => Env<E1, B>,
+) => <E2>(
+  ma: Env<E2, A>,
+) => Env<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.9.2
@@ -347,7 +361,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chain: <A, R, B>(
-  f: (a: A) => Re.Reader<R, R.Resume<B>>
+  f: (a: A) => Re.Reader<R, R.Resume<B>>,
 ) => (ma: Re.Reader<R, R.Resume<A>>) => Re.Reader<R, R.Resume<B>>
 ```
 
@@ -358,7 +372,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainFirst: <A, E, B>(f: (a: A) => Env<E, B>) => (first: Env<E, A>) => Env<E, A>
+export declare const chainFirst: <A, E, B>(
+  f: (a: A) => Env<E, B>,
+) => (first: Env<E, A>) => Env<E, A>
 ```
 
 Added in v0.9.2
@@ -368,7 +384,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainFirstIOK: <A, B>(f: (a: A) => IO.IO<B>) => <E>(first: Env<E, A>) => Env<E, A>
+export declare const chainFirstIOK: <A, B>(
+  f: (a: A) => IO.IO<B>,
+) => <E>(first: Env<E, A>) => Env<E, A>
 ```
 
 Added in v0.9.2
@@ -378,7 +396,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainFirstResumeK: <A, B>(f: (value: A) => R.Resume<B>) => <E>(hkt: Env<E, A>) => Env<E, A>
+export declare const chainFirstResumeK: <A, B>(
+  f: (value: A) => R.Resume<B>,
+) => <E>(hkt: Env<E, A>) => Env<E, A>
 ```
 
 Added in v0.9.2
@@ -388,7 +408,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainFirstTaskK: <A, B>(f: (a: A) => Task.Task<B>) => <E>(first: Env<E, A>) => Env<E, A>
+export declare const chainFirstTaskK: <A, B>(
+  f: (a: A) => Task.Task<B>,
+) => <E>(first: Env<E, A>) => Env<E, A>
 ```
 
 Added in v0.9.2
@@ -398,7 +420,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainFirstW: <A, E1, B>(f: (a: A) => Env<E1, B>) => <E2>(first: Env<E2, A>) => Env<E1 & E2, A>
+export declare const chainFirstW: <A, E1, B>(
+  f: (a: A) => Env<E1, B>,
+) => <E2>(first: Env<E2, A>) => Env<E1 & E2, A>
 ```
 
 Added in v0.9.2
@@ -418,7 +442,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainReaderK: <A, R, B>(f: (a: A) => Re.Reader<R, B>) => (ma: Env<R, A>) => Env<R, B>
+export declare const chainReaderK: <A, R, B>(
+  f: (a: A) => Re.Reader<R, B>,
+) => (ma: Env<R, A>) => Env<R, B>
 ```
 
 Added in v0.9.2
@@ -429,10 +455,13 @@ Added in v0.9.2
 
 ```ts
 export declare function chainRec<F extends (value: any) => Env<any, E.Either<any, any>>>(
-  f: F
+  f: F,
 ): (
-  value: ArgsOf<F>[0]
-) => Env<RequirementsOf<ReturnType<F>>, [ValueOf<ReturnType<F>>] extends [E.Either<any, infer R>] ? R : never>
+  value: ArgsOf<F>[0],
+) => Env<
+  RequirementsOf<ReturnType<F>>,
+  [ValueOf<ReturnType<F>>] extends [E.Either<any, infer R>] ? R : never
+>
 ```
 
 Added in v0.9.2
@@ -442,7 +471,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainResumeK: <A, B>(f: (value: A) => R.Resume<B>) => <E>(hkt: Env<E, A>) => Env<E, B>
+export declare const chainResumeK: <A, B>(
+  f: (value: A) => R.Resume<B>,
+) => <E>(hkt: Env<E, A>) => Env<E, B>
 ```
 
 Added in v0.9.2
@@ -452,7 +483,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainTaskK: <A, B>(f: (a: A) => Task.Task<B>) => <E>(first: Env<E, A>) => Env<E, B>
+export declare const chainTaskK: <A, B>(
+  f: (a: A) => Task.Task<B>,
+) => <E>(first: Env<E, A>) => Env<E, B>
 ```
 
 Added in v0.9.2
@@ -462,7 +495,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainW: <A, R1, B>(f: (a: A) => Env<R1, B>) => <R2>(ma: Env<R2, A>) => Env<R1 & R2, B>
+export declare const chainW: <A, R1, B>(
+  f: (a: A) => Env<R1, B>,
+) => <R2>(ma: Env<R2, A>) => Env<R1 & R2, B>
 ```
 
 Added in v0.9.2
@@ -474,7 +509,10 @@ Added in v0.9.2
 ```ts
 export declare const combineAll: <A extends readonly Env<any, any>[]>(
   ...envs: A
-) => Env<Intersect<{ [K in keyof A]: RequirementsOf<A[K]> }, unknown>, { [K in keyof A]: ValueOf<A[K]> }>
+) => Env<
+  Intersect<{ [K in keyof A]: RequirementsOf<A[K]> }, unknown>,
+  { [K in keyof A]: ValueOf<A[K]> }
+>
 ```
 
 Added in v0.9.2
@@ -564,7 +602,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const provideSomeWith: <E1, A>(provider: Env<E1, A>) => P.Provider2<'@typed/fp/Env', A, E1>
+export declare const provideSomeWith: <E1, A>(
+  provider: Env<E1, A>,
+) => P.Provider2<'@typed/fp/Env', A, E1>
 ```
 
 Added in v0.9.2
@@ -625,7 +665,7 @@ Added in v0.9.2
 
 ```ts
 export declare const toResumeK: <Args extends readonly any[], E, A>(
-  envK: (...args: Args) => Env<E, A>
+  envK: (...args: Args) => Env<E, A>,
 ) => Env<E, (...args: Args) => R.Resume<A>>
 ```
 
@@ -676,7 +716,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const useSomeWith: <E1, A>(provider: Env<E1, A>) => P.Provider2<'@typed/fp/Env', A, E1>
+export declare const useSomeWith: <E1, A>(
+  provider: Env<E1, A>,
+) => P.Provider2<'@typed/fp/Env', A, E1>
 ```
 
 Added in v0.9.2
@@ -697,8 +739,11 @@ Added in v0.9.2
 
 ```ts
 export declare const zipW: <A extends readonly Env<any, any>[]>(
-  envs: A
-) => Env<Intersect<{ [K in keyof A]: RequirementsOf<A[K]> }, unknown>, { [K in keyof A]: ValueOf<A[K]> }>
+  envs: A,
+) => Env<
+  Intersect<{ [K in keyof A]: RequirementsOf<A[K]> }, unknown>,
+  { [K in keyof A]: ValueOf<A[K]> }
+>
 ```
 
 Added in v0.9.2
@@ -800,7 +845,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromReaderK: <A, R, B>(f: (...a: A) => Re.Reader<R, B>) => (...a: A) => Env<R, B>
+export declare const fromReaderK: <A, R, B>(
+  f: (...a: A) => Re.Reader<R, B>,
+) => (...a: A) => Env<R, B>
 ```
 
 Added in v0.9.2
@@ -820,7 +867,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromResumeK: <A, B>(f: (...args: A) => R.Resume<B>) => <E>(...args: A) => Env<E, B>
+export declare const fromResumeK: <A, B>(
+  f: (...args: A) => R.Resume<B>,
+) => <E>(...args: A) => Env<E, B>
 ```
 
 Added in v0.9.2
@@ -857,18 +906,21 @@ Added in v0.9.2
 
 ## op
 
-Construct an Env to a lazily-defined Env-based effect that must be provided later.
-Does not support functions which require type-parameters as they will resolve to unknown, due
-to limitations in TS, if you need this maybe @see asksE
+Construct an Env to a lazily-defined Env-based effect that must be provided later. Does not support
+functions which require type-parameters as they will resolve to unknown, due to limitations in TS,
+if you need this maybe use [asksE](#askse)
 
 **Signature**
 
 ```ts
 export declare const op: <F extends (...args: readonly any[]) => Env<any, any>>() => <
-  K extends string | number | symbol
+  K extends string | number | symbol,
 >(
-  key: K
-) => { (...args: ArgsOf<F>): Env<{ readonly [_ in K]: F }, ValueOf<ReturnType<F>>>; readonly key: K }
+  key: K,
+) => {
+  (...args: ArgsOf<F>): Env<{ readonly [_ in K]: F }, ValueOf<ReturnType<F>>>
+  readonly key: K
+}
 ```
 
 Added in v0.9.2
@@ -890,7 +942,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const runWith: <A>(f: (value: A) => Disposable) => <E>(requirements: E) => (env: Env<E, A>) => Disposable
+export declare const runWith: <A>(
+  f: (value: A) => Disposable,
+) => <E>(requirements: E) => (env: Env<E, A>) => Disposable
 ```
 
 Added in v0.9.2
@@ -1112,7 +1166,11 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export type ValueOf<A> = A extends Env<any, infer R> ? R : A extends FN.FunctionN<any, Env<any, infer R>> ? R : never
+export type ValueOf<A> = A extends Env<any, infer R>
+  ? R
+  : A extends FN.FunctionN<any, Env<any, infer R>>
+  ? R
+  : never
 ```
 
 Added in v0.9.2
