@@ -1,13 +1,6 @@
 - [@typed/fp](#typedfp)
   - [Features](#features)
-  - [Conceptual Documentation](#conceptual-documentation)
-    - [Where's this coming from and where's it going?](#wheres-this-coming-from-and-wheres-it-going)
-      - [Some Background](#some-background)
-        - [Push-based Reactive Programming](#push-based-reactive-programming)
-        - [Relationship with React](#relationship-with-react)
-      - [Where things are going](#where-things-are-going)
-        - [Push-Pull Reactive Programming w/ Ref](#push-pull-reactive-programming-w-ref)
-        - [Domain-Driven Design and Layered Architecture](#domain-driven-design-and-layered-architecture)
+  - [Documentation](#documentation)
   - [Core Libraries](#core-libraries)
     - [Stream - @typed/fp/Stream](#stream---typedfpstream)
     - [Resume - @typed/fp/Resume](#resume---typedfpresume)
@@ -36,6 +29,11 @@ once both codebases are stable.
 - Resource-safe
 - Resilient
 - Deeply integrated with [fp-ts](https://gcanti.github.io/fp-ts/)
+
+## Documentation
+
+Navigate over to [https://typed-fp.org](https://typed-fp.org) for the API documentation. More to
+come over time. If something doesn't make sense, please open a github issue.
 
 ## Core Libraries
 
