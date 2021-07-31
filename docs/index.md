@@ -14,10 +14,10 @@ once both codebases are stable.
 
 ## Features
 
-- [`@most/core`](https://github.com/mostjs/core) [Streams](#streams)
-- [Cancelable Async Effect](#resume---typedfpresume)
-- [Dependency Injection](#env---typedfpenv)
-- [State Management](#ref---typedfpref)
+- [`@most/core`](https://github.com/mostjs/core) [Streams](./modules/Stream.ts.md)
+- [Cancelable Async Effect](./modules/Resume.ts.md)
+- [Dependency Injection](./modules/Env.ts.md)
+- [State Management](./modules/Ref.ts.md)
 - Testable, Free of globals
 - Type-Safe
 - Composable
