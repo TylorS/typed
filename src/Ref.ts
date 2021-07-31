@@ -422,7 +422,7 @@ export interface Updated<E, A> {
 
 /**
  * @since 0.9.2
- * @category Refinment
+ * @category Refinement
  */
 export const isUpdated = <E, A>(event: Event<E, A>): event is Updated<E, A> =>
   event._tag === 'Updated'
@@ -439,7 +439,7 @@ export interface Removed<E, A> {
 
 /**
  * @since 0.9.2
- * @category Refinment
+ * @category Refinement
  */
 export const isRemoved = <E, A>(event: Event<E, A>): event is Removed<E, A> =>
   event._tag === 'Removed'
