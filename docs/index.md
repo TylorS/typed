@@ -36,6 +36,10 @@ have a look at our [Concepts](./concepts.md) document.
 
 [API Documentation Found Here](./modules/index.md)
 
+## Examples
+
+[Examples Found Here](./examples.md)
+
 ## Community
 
 If you're interested in chatting with me about the project come on over and join us on

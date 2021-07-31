@@ -26,6 +26,10 @@ once both codebases are stable.
 Navigate over to [https://typed-fp.org](https://typed-fp.org) for all our documentation. More to
 come over time. If something doesn't make sense, please open a github issue.
 
+## Examples
+
+[Examples Found Here](./docs/examples.md)
+
 ## Community
 
 If you're interested in chatting with me about the project come on over and join us on
