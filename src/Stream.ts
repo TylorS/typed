@@ -2,6 +2,38 @@
  * @typed/fp/Stream is an extension of @most/core with additional
  * fp-ts instances as well as additional combinators for interoperation with other data
  * structures in @typed/fp.
+ *
+ * A large goal of @typed/fp is to expand the `fp-ts` ecosystem to include
+ * [`@most/core`](https://github.com/mostjs/core) for a Reactive programming style, including
+ * derivatives such as `ReaderStream`, `ReaderStreamEither`, `StateReaderStreamEither` and a few
+ * others. It's the fastest push-based reactive library in JS period. The performance characteristics
+ * are due to it's architecture of getting out of the way of the computations you need to perform. It's
+ * also the first experience I had with FP. For instance, Most utilizes `Functor` laws to remove
+ * unneeded machinery through function composition improving runtime performance amongst other
+ * optimizations.
+ *
+ * ```ts
+ * import * as M from '@most/core'
+ *
+ * const input = pipe(stream, M.map(f), M.map(g))
+ * // transformed to effectively at time of construction
+ * const output = pipe(stream, M.map(flow(f, g)))
+ * ```
+ *
+ * It's simple architecture, and it's
+ * [always-async guarantee](https://mostcore.readthedocs.io/en/latest/concepts.html#always-async),
+ * which is fantastic for modularity, but it also allows for it's
+ * [`Scheduler`](https://mostcore.readthedocs.io/en/latest/api.html#most-scheduler) to be the only
+ * place in the codebase to require a `try/catch`. This ensures that a much greater portion of the
+ * stream graph can be inlined by the optimizing compiler your JS is running within. This `Scheduler`
+ * can be reused to inject time into your applications like any other dependency, with packages like
+ * [most-virtual-scheduler](https://github.com/mostjs-community/virtual-scheduler) allowing you to
+ * control time imperatively for your time-precise tests with millisecond accuracy. This could also
+ * allow you to create a React-like framework where you avoid starting non-blocking async workflows
+ * (think useEffect) by utilizing a virtual scheduler on the server but then utilizing most's default
+ * scheduler to utilize `performance.now()` for millisecond accuracy with monotonic, referentially
+ * transparent, time in the browser.
+ *
  * @since 0.9.2
  */
 import * as S from '@most/core'

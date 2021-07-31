@@ -6,8 +6,15 @@ parent: Modules
 
 ## Resume overview
 
-Resume is an effect that is conceptually a union between IO and Task. However, it retains the
-ability to be canceled utilizing the share @see Disposable interface from @most/core.
+`Resume` is a possibly synchronous or asynchronous effect type. Conceptually you can think of
+`Resume` as a union between the `IO` and `Task` monads w/ cancelation. The `Disposable` interface is
+borrowed from `@most/core`'s internal types and makes it easy to interoperate. Using `Disposable`
+makes it easy to reuse the `@most/scheduler` package for providing scheduling consistent with any
+other most-based workflows you have.
+
+The beauty of `Resume` is that it can do work as fast as possible without delay. Sync when possible
+but async when needed allows you to unify your sync/async workflows using a single monad w/ easy
+interop with your existing IO/Task allowing for cancelation when required.
 
 Added in v0.9.2
 

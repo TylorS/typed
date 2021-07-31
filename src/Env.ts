@@ -3,6 +3,17 @@
  * and execute Synchronous and Asynchronous operations with the same effect. This
  * is the basis of many of the higher-level APIs like Ref.
  *
+ * `Env` is the core of the higher-level modules like @see Ref and is a `ReaderT` of `Resume`; but
+ * to be honest, being used so much, I didn't like writing `ReaderResume<E, A>` and chose to shorten to
+ * `Env<E, A>` for the "environmental" quality Reader provides. Combining Reader and Resume allows for
+ * creating APIs capable of utilizing dependency injection for their configuration and testability
+ * while still combining your sync/async workflows.
+ *
+ * While designing application APIs it is often better to describe the logic of your system separate
+ * from the implementation details. `Env` or rather `Reader` helps you accomplish this through the
+ * [Dependency Inversion Principle](https://alexnault.dev/dependency-inversion-principle-in-functional-typescript).
+ * This principle is one of the easiest ways to begin improving any codebase.
+ *
  * @since 0.9.2
  */
 import { disposeNone } from '@most/disposable'

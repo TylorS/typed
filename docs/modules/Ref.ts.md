@@ -6,7 +6,85 @@ parent: Modules
 
 ## Ref overview
 
-Ref is an abstraction for key-value pairs utilizing Env.
+`Ref` is an abstraction for managing state-based applications using @see Env. It exposes an
+extensible get/set/delete API for managing keys to values. Every `Ref` is connected to an `Env` that
+will provide the default value lazily when first asked for or after being deleted previously.
+
+The provided implementation will also send events containing all of the creations/updates/deletes
+occurring in real-time.
+
+Here's a small example of a Counter application to show how one might use Ref to create a simple
+counter application.
+
+```ts
+import * as E from '@typed/fp/Env'
+import * as RS from '@typed/fp/ReaderStream'
+import * as Ref from '@typed/fp/Ref'
+import * as S from '@typed/fp/Stream'
+import * as U from '@typed/fp/use'
+import { newDefaultScheduler } from '@most/scheduler'
+import * as F from 'fp-ts/function'
+import { html, render, Renderable } from 'uhtml'
+
+const rootElement: HTMLElement | null = document.getElementById('app')
+
+if (!rootElement) {
+  throw new Error('Unable to find element by #app')
+}
+
+// Creates a Reference to keep our Count
+// It requires no resources and tracks a number
+const Count: Ref.Reference<unknown, number> = Ref.create(E.of(0))
+
+// Actions to update our Count Reference - easily tested
+const increment: E.Env<Ref.Refs, number> = Count.update(F.flow(F.increment, E.of))
+
+const decrement: E.Env<Ref.Refs, number> = Count.update(
+  F.flow(
+    F.decrement,
+    E.of,
+    E.map((x) => Math.max(0, x)),
+  ),
+)
+
+// Creates a component which represents our counter
+const Counter: E.Env<Ref.Refs, Renderable> = F.pipe(
+  E.Do,
+  U.bindEnvK('dec', () => decrement),
+  U.bindEnvK('inc', () => increment),
+  E.bindW('count', () => Count.get),
+  E.map(
+    ({ dec, inc, count }) => html`<div>
+      <button onclick=${dec}>Decrement</button>
+      <span>Count: ${count}</span>
+      <button onclick=${inc}>Increment</button>
+    </div>`,
+  ),
+)
+
+const Main: RS.ReaderStream<Ref.Refs, HTMLElement> = F.pipe(
+  Counter,
+  Ref.sample, // Sample our Counter everytime there is a Ref update.
+  RS.scan(render, rootElement), // Render our application using 'uhtml'
+)
+
+// Provide Main with its required resources
+const stream: S.Stream<HTMLElement> = Main(Ref.refs())
+
+// Execute our Stream with a default scheduler
+S.runEffects(stream, newDefaultScheduler()).catch((error) => console.error(error))
+```
+
+It is likely worth noting that, by default, `Ref.make` is not referentially transparent. It will
+automatically generate a unique `Symbol()` on each invocation for the `Ref.id`. If you need
+referential transparency, be sure to provide your own `id`. This also applies to `Ref.create` and
+the `Context.create`.
+
+```ts
+const myRef = Ref.make(initial, {
+  id: 'MyId',
+})
+```
 
 Added in v0.9.2
 
