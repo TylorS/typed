@@ -7,3 +7,4 @@ search_enabled: true
 aux_links:
   '@typed/fp on GitHub':
     - 'https://github.com/TylorS/typed-fp#readme'
+theme: jekyll-theme-hacker
