@@ -265,6 +265,7 @@ export const listenToValues = <E, A>(ref: Ref<E, A>): RS.ReaderStream<E & Events
     ref,
     listenTo,
     RS.map((e) => (isRemoved(e) ? O.none : O.some(e.value))),
+    RS.startWith(O.none),
   )
 
 /**
