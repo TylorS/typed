@@ -1,5 +1,5 @@
 /**
- * ResumeEither is an Either of @see Resume
+ * ResumeEither is an Either of [Resume](./Resume.ts.md)
  * @since 0.9.2
  */
 import { Alt2 } from 'fp-ts/Alt'

@@ -16,7 +16,7 @@ once both codebases are stable.
 
 ## Features
 
-- [`@most/core`](https://github.com/mostjs/core) [Streams](./Stream.ts.md)
+- [Streams](./Stream.ts.md)
 - [Cancelable Async Effect](./Resume.ts.md)
 - [Dependency Injection](./Env.ts.md)
 - [State Management](./Ref.ts.md)
@@ -35,3 +35,8 @@ once both codebases are stable.
 - [Env](./Env.ts.md)
 - [Stream](./Stream.ts.md)
 - [Ref](./Ref.ts.md)
+
+## Related Documentation
+
+- [FP-TS](https://gcanti.github.io/fp-ts/)
+- [@most/core](https://mostcore.readthedocs.io/en/latest/)

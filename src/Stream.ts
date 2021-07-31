@@ -1,34 +1,19 @@
 /**
- * @typed/fp/Stream is an extension of @most/core with additional
+ * Stream is an extension of @most/core with additional
  * fp-ts instances as well as additional combinators for interoperation with other data
- * structures in @typed/fp.
+ * structures in @typed/fp and fp-ts.
  *
  * A large goal of @typed/fp is to expand the `fp-ts` ecosystem to include
- * [`@most/core`](https://github.com/mostjs/core) for a Reactive programming style, including
- * derivatives such as [ReaderStream](./ReaderStream.ts.md), [ReaderStreamEither](./ReaderStreamEither.ts.md), [StateReaderStreamEither](./StateReaderStreamEither.ts.md) and a few
- * others. It's the fastest push-based reactive library in JS period. The performance characteristics
- * are due to it's architecture of getting out of the way of the computations you need to perform. It's
- * also the first experience I had with FP. For instance, Most utilizes `Functor` laws to remove
- * unneeded machinery through function composition improving runtime performance amongst other
- * optimizations.
- *
- * It's simple architecture, and it's
- * [always-async guarantee](https://mostcore.readthedocs.io/en/latest/concepts.html#always-async),
- * which is fantastic for modularity BTW, allows for it's
- * [Scheduler](https://mostcore.readthedocs.io/en/latest/api.html#most-scheduler) to be the only
- * place in the codebase to require a `try/catch`. This ensures that a much greater portion of the
- * stream graph can be inlined by the optimizing compiler your JS is running within. This `Scheduler`
- * can be reused to inject _time_ into your applications like any other dependency, with packages like
- * [most-virtual-scheduler](https://github.com/mostjs-community/virtual-scheduler) allowing you to
- * control time imperatively for your time-precise tests with millisecond accuracy. This could also
- * allow you to create a React-like framework where you avoid starting non-blocking async workflows
- *  -- think useEffect -- by utilizing a virtual scheduler on the server but then utilizing most's default
- * scheduler to utilize `performance.now()` for millisecond accuracy with monotonic, referentially
- * transparent, time in the browser.
+ * [@most/core](https://github.com/mostjs/core) for a Reactive programming style, including
+ * derivatives such as [ReaderStream](./ReaderStream.ts.md), [ReaderStreamEither](./ReaderStreamEither.ts.md),
+ * [StateReaderStreamEither](./StateReaderStreamEither.ts.md) and a few others. It's the fastest push-based
+ * reactive library in JS period. The performance characteristics are due to it's architecture of getting out of
+ * the way of the computations you need to perform. It's also the first experience I had with FP. For instance,
+ * Most utilizes `Functor` laws to remove unneeded machinery through function composition improving runtime
+ * performance amongst other optimizations.
  *
  * See the [@most/core Documentation](https://mostcore.readthedocs.io/en/latest/) for the remaining API
  * exposed by this module. Both @most/core + @most/types are re-exported from this module
- *
  * @since 0.9.2
  */
 import * as S from '@most/core'

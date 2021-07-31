@@ -6,6 +6,22 @@ parent: Modules
 
 ## Stream overview
 
+Stream is an extension of @most/core with additional
+fp-ts instances as well as additional combinators for interoperation with other data
+structures in @typed/fp and fp-ts.
+
+A large goal of @typed/fp is to expand the `fp-ts` ecosystem to include
+[@most/core](https://github.com/mostjs/core) for a Reactive programming style, including
+derivatives such as [ReaderStream](./ReaderStream.ts.md), [ReaderStreamEither](./ReaderStreamEither.ts.md),
+[StateReaderStreamEither](./StateReaderStreamEither.ts.md) and a few others. It's the fastest push-based
+reactive library in JS period. The performance characteristics are due to it's architecture of getting out of
+the way of the computations you need to perform. It's also the first experience I had with FP. For instance,
+Most utilizes `Functor` laws to remove unneeded machinery through function composition improving runtime
+performance amongst other optimizations.
+
+See the [@most/core Documentation](https://mostcore.readthedocs.io/en/latest/) for the remaining API
+exposed by this module. Both @most/core + @most/types are re-exported from this module
+
 Added in v0.9.2
 
 ---

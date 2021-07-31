@@ -6,7 +6,7 @@ parent: Modules
 
 ## ResumeEither overview
 
-ResumeEither is an Either of @see Resume
+ResumeEither is an Either of [Resume](./Resume.ts.md)
 
 Added in v0.9.2
 
