@@ -6,7 +6,8 @@ nav_order: 1
 # @typed/fp
 
 `@typed/fp` is conceptually an extension of [fp-ts](https://gcanti.github.io/fp-ts/), with
-cancelable async effects, [streams](https://github.com/mostjs/core), state management, and more.
+[cancelable async effects](./modules/Resume.ts.md), [streams](https://github.com/mostjs/core),
+[state management](./modules/Ref.ts.md), and more.
 
 This project is under heavy development. We intend to align with `fp-ts` v3. A 1.0 will be released
 once both codebases are stable.

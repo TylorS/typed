@@ -70,7 +70,6 @@ Added in v0.9.2
   - [RefsOptions (type alias)](#refsoptions-type-alias)
 - [Refinement](#refinement)
   - [isCreated](#iscreated)
-- [Refinment](#refinment)
   - [isRemoved](#isremoved)
   - [isUpdated](#isupdated)
 - [Type-level](#type-level)
@@ -646,8 +645,6 @@ export declare const isCreated: <E, A>(event: Event<E, A>) => event is Created<E
 ```
 
 Added in v0.9.2
-
-# Refinment
 
 ## isRemoved
 
