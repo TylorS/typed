@@ -112,7 +112,7 @@ over time?**
 At the intersection of the previously posed questions is [Ref](#ref---typedfpref).
 
 `Ref` is 100% decoupled from any view library. You can utilize it to sample the current state of
-your application. Tou will be able to use it to express your application over time.
+your application. You will be able to use it to express your application over time.
 
 You will be able to compose pull-based workflows with push-based workflows as required to construct
 more complex systems. Concurrent React will never reach the level of control over a most-based
