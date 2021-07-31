@@ -86,14 +86,14 @@ I was also looking into providing
 [React Fiber](https://www.velotio.com/engineering-blog/react-fiber-algorithm)? I considered doing
 everything pull-based like [ZIO](https://zio.dev/) or
 [Effect-TS](https://github.com/Effect-TS/core). Both are amazing libraries with brilliant authors
-doing great things. I totally considered ditching my library just to work with `Effect-TS` instead
-and consolidate efforts.
+doing great things. I totally considered ditching my library to work with `Effect-TS` instead and
+consolidate efforts.
 
-Fibers are really cool concurrency primitives. Generally they have their own isolated bits of state.
-Every React component, class or functional, is backed by a Fiber to give it local state. Fibers
-require a lot of considerations to be really powerful. However, while I started to continue
-implementing while continuing my own versions (how I learn) I realized a lot of machinery had to be
-built in order to express concepts that stretched over time.
+Fibers are cool concurrency primitives. Generally, they have their isolated bits of state. Every
+React component, class or functional, is backed by a Fiber to keep each component's state. Fibers
+require a lot of considerations to orchestrate in complex ways. In addition to Fibers' inherent
+complexity, they often layer on more concepts to deal with various async workflows that occur over
+time.
 
 I started wondering...
 
@@ -107,43 +107,44 @@ over time?**
 At the intersection of the previously posed questions is [Ref](#ref---typedfpref).
 
 `Ref` is 100% decoupled from any view library. You can utilize it to sample the current state of
-your application, and you will be able to use it to express your application over time.
+your application. Tou will be able to use it to express your application over time.
 
 You will be able to compose pull-based workflows with push-based workflows as required to construct
 more complex systems. Concurrent React will never reach the level of control over a most-based
-stream graph. Recover from errors with ease, throttle and debounce naturally, all while never
-leaking resources.
+stream graph. Recover from errors with ease, throttle/debounce naturally, all while never leaking
+resources.
 
 ##### Domain-Driven Design and Layered Architecture
 
-Over the past 3 or 4 years I've been toying with many variations of functional programming and
+Over the past 3 or 4 years, I've been toying with many variations of functional programming and
 layered architectures inspired by
 [Domain-Driven Design](https://www.domainlanguage.com/wp-content/uploads/2016/05/DDD_Reference_2015-03.pdf).
 
 With the combination of [Ref](#ref---typedfpref), the sync/async Reader effect
 [Env](#env---typedfpenv), and [Streams](#stream---typedfpstream), you can build functional
-applications that are also fundamentally designed for unit testing with unique blend of declarative
-and denotative programming that I've found to be a wonderful companion to DDD and all of the various
-domain-centric architectures such as _onion_, _hexagonal_ (ports and adapters), clean architecture,
-or any other variations of these layered architectures.
+applications that are also fundamentally designed for unit testing with a unique blend of
+declarative and denotative programming that I've found to be a wonderful companion to DDD and all of
+the various domain-centric architectures such as _onion_, _hexagonal_ (ports and adapters), clean
+architecture, or any other variations of these layered architectures.
 
-Personally it's been a amazing to see products come together utilizing Domain Modeling to rule out
+Personally, it's been amazing to see products come together utilizing Domain Modeling to rule out
 bad states from applications with structures like Option or Either, to see all state-based workflows
-become decoupled and unit tested, to use data structures like `Reader` or [Env](#env---typedfpenv)
-to exemplify the
+become decoupled and fully unit tested, to use data structures like `Reader` or
+[Env](#env---typedfpenv) to exemplify the
 [Dependency Inversion Principle](https://alexnault.dev/dependency-inversion-principle-in-functional-typescript)
 in your layered architectures.
 
 The Dependency Inversion Principle allows you to separate the _what_ to do from the _how_ to do it.
-In other words, it helps you to separate concerns or push side-effects to the bounds of your system.
+In other words, it helps you to separate concerns or push side effects to the bounds of your system.
 When paired with Functional Programming, the
 [Open-Closed Principle](https://en.wikipedia.org/wiki/Open%E2%80%93closed_principle) **_just
-happen_** to allow you to modify the behavior of your applications without changing your algorithms.
-This will enable you to easily share code between runtimes, like Node or the browser.
+happens_** to allow you to modify the behavior of your applications without changing your
+algorithms. The Open-Closed Principle will enable you to easily share code between runtimes, like
+Node.js or the browser.
 
-This is the future of @typed/fp; to exemplify push-pull reactive programming, backed by the
-mathematical roots of functional programming, to compose domain-centric applicaton's that
-rigourously separate concerns at the architectural level.
+This is the future of `@typed/fp`; to exemplify push-pull reactive programming, backed by the
+mathematical roots of functional programming, to compose domain-centric application's that
+rigorously separate concerns at an architectural level.
 
 ## Core Libraries
 
