@@ -27,9 +27,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainRec: <A, B>(
-  f: (value: A) => TO.TaskOption<E.Either<A, B>>,
-) => (value: A) => TO.TaskOption<B>
+export declare const chainRec: <A, B>(f: (value: A) => TO.TaskOption<E.Either<A, B>>) => (value: A) => TO.TaskOption<B>
 ```
 
 Added in v0.9.2

@@ -1,8 +1,3 @@
-- [@typed/fp](#typedfp)
-  - [Features](#features)
-  - [Documentation](#documentation)
-  - [Community](#community)
-
 # @typed/fp
 
 `@typed/fp` is conceptually an extension of [fp-ts](https://gcanti.github.io/fp-ts/), with

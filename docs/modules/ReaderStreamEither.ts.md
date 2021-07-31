@@ -6,9 +6,9 @@ parent: Modules
 
 ## ReaderStreamEither overview
 
-ReaderStreamEither is an EitherT of ReaderStream, allowing for you to represent your application
-over time with Stream, with support for branching/error-handling through Either, and dependency
-injection from Reader.
+ReaderStreamEither is an EitherT of ReaderStream, allowing for you to
+represent your application over time with Stream, with support for branching/error-handling
+through Either, and dependency injection from Reader.
 
 Added in v0.9.2
 
@@ -137,7 +137,7 @@ Added in v0.9.2
 
 ```ts
 export declare const alt: <ME, E, A>(
-  second: Lazy<RS.ReaderStream<ME, Ei.Either<E, A>>>,
+  second: Lazy<RS.ReaderStream<ME, Ei.Either<E, A>>>
 ) => (first: RS.ReaderStream<ME, Ei.Either<E, A>>) => RS.ReaderStream<ME, Ei.Either<E, A>>
 ```
 
@@ -149,7 +149,7 @@ Added in v0.9.2
 
 ```ts
 export declare const altAll: <R, E, A>(
-  startWith: ReaderStreamEither<R, E, A>,
+  startWith: ReaderStreamEither<R, E, A>
 ) => (as: readonly ReaderStreamEither<R, E, A>[]) => ReaderStreamEither<R, E, A>
 ```
 
@@ -161,7 +161,7 @@ Added in v0.9.2
 
 ```ts
 export declare const altW: <R1, E, A>(
-  second: Lazy<RS.ReaderStream<R1, Ei.Either<E, A>>>,
+  second: Lazy<RS.ReaderStream<R1, Ei.Either<E, A>>>
 ) => <R2>(first: RS.ReaderStream<R2, Ei.Either<E, A>>) => RS.ReaderStream<R1 & R2, Ei.Either<E, A>>
 ```
 
@@ -173,7 +173,7 @@ Added in v0.9.2
 
 ```ts
 export declare const ap: <R, E, A>(
-  fa: Re.Reader<R, SE.StreamEither<E, A>>,
+  fa: Re.Reader<R, SE.StreamEither<E, A>>
 ) => <B>(fab: Re.Reader<R, SE.StreamEither<E, (a: A) => B>>) => Re.Reader<R, SE.StreamEither<E, B>>
 ```
 
@@ -185,7 +185,7 @@ Added in v0.9.2
 
 ```ts
 export declare const apFirst: <R, E, B>(
-  second: ReaderStreamEither<R, E, B>,
+  second: ReaderStreamEither<R, E, B>
 ) => <A>(first: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, A>
 ```
 
@@ -198,9 +198,9 @@ Added in v0.9.2
 ```ts
 export declare const apS: <N, A, R, E, B>(
   name: Exclude<N, keyof A>,
-  fb: ReaderStreamEither<R, E, B>,
+  fb: ReaderStreamEither<R, E, B>
 ) => (
-  fa: ReaderStreamEither<R, E, A>,
+  fa: ReaderStreamEither<R, E, A>
 ) => ReaderStreamEither<R, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
@@ -212,7 +212,7 @@ Added in v0.9.2
 
 ```ts
 export declare const apSecond: <R, E, B>(
-  second: ReaderStreamEither<R, E, B>,
+  second: ReaderStreamEither<R, E, B>
 ) => <A>(first: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, B>
 ```
 
@@ -224,7 +224,7 @@ Added in v0.9.2
 
 ```ts
 export declare const apT: <R, E, B>(
-  fb: ReaderStreamEither<R, E, B>,
+  fb: ReaderStreamEither<R, E, B>
 ) => <A>(fas: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, readonly [...A, B]>
 ```
 
@@ -236,10 +236,8 @@ Added in v0.9.2
 
 ```ts
 export declare const apW: <R1, E, A>(
-  fa: Re.Reader<R1, SE.StreamEither<E, A>>,
-) => <R2, B>(
-  fab: Re.Reader<R2, SE.StreamEither<E, (a: A) => B>>,
-) => Re.Reader<R1 & R2, SE.StreamEither<E, B>>
+  fa: Re.Reader<R1, SE.StreamEither<E, A>>
+) => <R2, B>(fab: Re.Reader<R2, SE.StreamEither<E, (a: A) => B>>) => Re.Reader<R1 & R2, SE.StreamEither<E, B>>
 ```
 
 Added in v0.9.2
@@ -251,7 +249,7 @@ Added in v0.9.2
 ```ts
 export declare const bimap: <E, G, A, B>(
   f: (e: E) => G,
-  g: (a: A) => B,
+  g: (a: A) => B
 ) => <FE>(fea: RS.ReaderStream<FE, Ei.Either<E, A>>) => RS.ReaderStream<FE, Ei.Either<G, B>>
 ```
 
@@ -264,9 +262,9 @@ Added in v0.9.2
 ```ts
 export declare const bind: <N, A, R, E, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => ReaderStreamEither<R, E, B>,
+  f: (a: A) => ReaderStreamEither<R, E, B>
 ) => (
-  ma: ReaderStreamEither<R, E, A>,
+  ma: ReaderStreamEither<R, E, A>
 ) => ReaderStreamEither<R, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
@@ -278,10 +276,8 @@ Added in v0.9.2
 
 ```ts
 export declare const bindTo: <N>(
-  name: N,
-) => <R, E, A>(
-  fa: ReaderStreamEither<R, E, A>,
-) => ReaderStreamEither<R, E, { readonly [K in N]: A }>
+  name: N
+) => <R, E, A>(fa: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, { readonly [K in N]: A }>
 ```
 
 Added in v0.9.2
@@ -294,7 +290,7 @@ Added in v0.9.2
 export declare const bracket: <ME, E, A, B>(
   acquire: RS.ReaderStream<ME, Ei.Either<E, A>>,
   use: (a: A) => RS.ReaderStream<ME, Ei.Either<E, B>>,
-  release: (a: A, e: Ei.Either<E, B>) => RS.ReaderStream<ME, Ei.Either<E, void>>,
+  release: (a: A, e: Ei.Either<E, B>) => RS.ReaderStream<ME, Ei.Either<E, void>>
 ) => RS.ReaderStream<ME, Ei.Either<E, B>>
 ```
 
@@ -308,7 +304,7 @@ Added in v0.9.2
 export declare const bracketW: <R1, E, A, R2, B, R3>(
   acquire: RS.ReaderStream<R1, Ei.Either<E, A>>,
   use: (a: A) => RS.ReaderStream<R2, Ei.Either<E, B>>,
-  release: (a: A, e: Ei.Either<E, B>) => RS.ReaderStream<R3, Ei.Either<E, void>>,
+  release: (a: A, e: Ei.Either<E, B>) => RS.ReaderStream<R3, Ei.Either<E, void>>
 ) => RS.ReaderStream<R1 & R2 & R3, Ei.Either<E, B>>
 ```
 
@@ -320,7 +316,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chain: <A, R, E, B>(
-  f: (a: A) => Re.Reader<R, SE.StreamEither<E, B>>,
+  f: (a: A) => Re.Reader<R, SE.StreamEither<E, B>>
 ) => (ma: Re.Reader<R, SE.StreamEither<E, A>>) => Re.Reader<R, SE.StreamEither<E, B>>
 ```
 
@@ -332,7 +328,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainEitherK: <A, E, B>(
-  f: (a: A) => Ei.Either<E, B>,
+  f: (a: A) => Ei.Either<E, B>
 ) => <R>(ma: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, B>
 ```
 
@@ -344,7 +340,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainEnvK: <A, R1, B>(
-  f: (value: A) => Env<R1, B>,
+  f: (value: A) => Env<R1, B>
 ) => <R2, E>(hkt: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1, E, B>
 ```
 
@@ -356,7 +352,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirst: <A, R, E, B>(
-  f: (a: A) => ReaderStreamEither<R, E, B>,
+  f: (a: A) => ReaderStreamEither<R, E, B>
 ) => (first: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, A>
 ```
 
@@ -368,7 +364,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstEnvK: <A, R1, B>(
-  f: (value: A) => Env<R1, B>,
+  f: (value: A) => Env<R1, B>
 ) => <R2, E>(hkt: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1, E, A>
 ```
 
@@ -380,7 +376,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstIOK: <A, B>(
-  f: (a: A) => IO<B>,
+  f: (a: A) => IO<B>
 ) => <R, E>(first: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, A>
 ```
 
@@ -392,7 +388,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstReaderK: <A, R, B>(
-  f: (a: A) => Re.Reader<R, B>,
+  f: (a: A) => Re.Reader<R, B>
 ) => <E>(ma: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, A>
 ```
 
@@ -404,7 +400,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstResumeK: <A, B>(
-  f: (value: A) => Resume<B>,
+  f: (value: A) => Resume<B>
 ) => <R, E>(hkt: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, A>
 ```
 
@@ -416,7 +412,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstStreamK: <A, B>(
-  f: (value: A) => S.Stream<B>,
+  f: (value: A) => S.Stream<B>
 ) => <R, E>(hkt: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, A>
 ```
 
@@ -428,7 +424,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstTaskK: <A, B>(
-  f: (a: A) => Task<B>,
+  f: (a: A) => Task<B>
 ) => <R, E>(first: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, A>
 ```
 
@@ -440,7 +436,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainIOK: <A, B>(
-  f: (a: A) => IO<B>,
+  f: (a: A) => IO<B>
 ) => <R, E>(first: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, B>
 ```
 
@@ -452,10 +448,8 @@ Added in v0.9.2
 
 ```ts
 export declare const chainOptionK: <E>(
-  onNone: Lazy<E>,
-) => <A, B>(
-  f: (a: A) => Option<B>,
-) => <R>(ma: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, B>
+  onNone: Lazy<E>
+) => <A, B>(f: (a: A) => Option<B>) => <R>(ma: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, B>
 ```
 
 Added in v0.9.2
@@ -466,7 +460,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainReaderK: <A, R, B>(
-  f: (a: A) => Re.Reader<R, B>,
+  f: (a: A) => Re.Reader<R, B>
 ) => <E>(ma: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, B>
 ```
 
@@ -478,7 +472,7 @@ Added in v0.9.2
 
 ```ts
 export declare function chainRec<A, R, E, B>(
-  f: (value: A) => ReaderStreamEither<R, E, Ei.Either<A, B>>,
+  f: (value: A) => ReaderStreamEither<R, E, Ei.Either<A, B>>
 ): (value: A) => ReaderStreamEither<R, E, B>
 ```
 
@@ -490,7 +484,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainResumeK: <A, B>(
-  f: (value: A) => Resume<B>,
+  f: (value: A) => Resume<B>
 ) => <R, E>(hkt: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, B>
 ```
 
@@ -502,7 +496,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainStreamK: <A, B>(
-  f: (value: A) => S.Stream<B>,
+  f: (value: A) => S.Stream<B>
 ) => <R, E>(hkt: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, B>
 ```
 
@@ -514,7 +508,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainTaskK: <A, B>(
-  f: (a: A) => Task<B>,
+  f: (a: A) => Task<B>
 ) => <R, E>(first: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, B>
 ```
 
@@ -526,7 +520,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainW: <A, R1, E, B>(
-  f: (a: A) => Re.Reader<R1, SE.StreamEither<E, B>>,
+  f: (a: A) => Re.Reader<R1, SE.StreamEither<E, B>>
 ) => <R2>(ma: Re.Reader<R2, SE.StreamEither<E, A>>) => Re.Reader<R1 & R2, SE.StreamEither<E, B>>
 ```
 
@@ -539,10 +533,10 @@ Added in v0.9.2
 ```ts
 export declare const filterOrElse: {
   <A, B, E>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R>(
-    ma: ReaderStreamEither<R, E, A>,
+    ma: ReaderStreamEither<R, E, A>
   ) => ReaderStreamEither<R, E, B>
   <A, E>(predicate: Predicate<A>, onFalse: (a: A) => E): <R, B>(
-    mb: ReaderStreamEither<R, E, B>,
+    mb: ReaderStreamEither<R, E, B>
   ) => ReaderStreamEither<R, E, B>
 }
 ```
@@ -555,7 +549,7 @@ Added in v0.9.2
 
 ```ts
 export declare const flap: <A>(
-  a: A,
+  a: A
 ) => <R, E, B>(fab: ReaderStreamEither<R, E, (a: A) => B>) => ReaderStreamEither<R, E, B>
 ```
 
@@ -567,7 +561,7 @@ Added in v0.9.2
 
 ```ts
 export declare const getOrElse: <E, A>(
-  onLeft: (e: E) => A,
+  onLeft: (e: E) => A
 ) => <FE>(ma: RS.ReaderStream<FE, Ei.Either<E, A>>) => RS.ReaderStream<FE, A>
 ```
 
@@ -579,7 +573,7 @@ Added in v0.9.2
 
 ```ts
 export declare const getOrElseE: <E, ME, A>(
-  onLeft: (e: E) => RS.ReaderStream<ME, A>,
+  onLeft: (e: E) => RS.ReaderStream<ME, A>
 ) => (ma: RS.ReaderStream<ME, Ei.Either<E, A>>) => RS.ReaderStream<ME, A>
 ```
 
@@ -591,7 +585,7 @@ Added in v0.9.2
 
 ```ts
 export declare const getOrElseEW: <E, R1, A>(
-  onLeft: (e: E) => RS.ReaderStream<R1, A>,
+  onLeft: (e: E) => RS.ReaderStream<R1, A>
 ) => <R2>(ma: RS.ReaderStream<R2, Ei.Either<E, A>>) => RS.ReaderStream<R1 & R2, A>
 ```
 
@@ -603,7 +597,7 @@ Added in v0.9.2
 
 ```ts
 export declare const map: <A, B>(
-  f: (a: A) => B,
+  f: (a: A) => B
 ) => <R, E>(fa: Re.Reader<R, SE.StreamEither<E, A>>) => Re.Reader<R, SE.StreamEither<E, B>>
 ```
 
@@ -615,7 +609,7 @@ Added in v0.9.2
 
 ```ts
 export declare const mapLeft: <E, G>(
-  f: (e: E) => G,
+  f: (e: E) => G
 ) => <FE, A>(fea: RS.ReaderStream<FE, Ei.Either<E, A>>) => RS.ReaderStream<FE, Ei.Either<G, A>>
 ```
 
@@ -627,7 +621,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orElse: <E1, ME, E2, A>(
-  onLeft: (e: E1) => RS.ReaderStream<ME, Ei.Either<E2, A>>,
+  onLeft: (e: E1) => RS.ReaderStream<ME, Ei.Either<E2, A>>
 ) => (ma: RS.ReaderStream<ME, Ei.Either<E1, A>>) => RS.ReaderStream<ME, Ei.Either<E2, A>>
 ```
 
@@ -639,7 +633,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orElseFirst: <E, ME, B>(
-  onLeft: (e: E) => RS.ReaderStream<ME, Ei.Either<E, B>>,
+  onLeft: (e: E) => RS.ReaderStream<ME, Ei.Either<E, B>>
 ) => <A>(ma: RS.ReaderStream<ME, Ei.Either<E, A>>) => RS.ReaderStream<ME, Ei.Either<E, A>>
 ```
 
@@ -651,7 +645,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orLeft: <E1, ME, E2>(
-  onLeft: (e: E1) => RS.ReaderStream<ME, E2>,
+  onLeft: (e: E1) => RS.ReaderStream<ME, E2>
 ) => <A>(fa: RS.ReaderStream<ME, Ei.Either<E1, A>>) => RS.ReaderStream<ME, Ei.Either<E2, A>>
 ```
 
@@ -662,9 +656,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const swap: <FE, E, A>(
-  ma: RS.ReaderStream<FE, Ei.Either<E, A>>,
-) => RS.ReaderStream<FE, Ei.Either<A, E>>
+export declare const swap: <FE, E, A>(ma: RS.ReaderStream<FE, Ei.Either<E, A>>) => RS.ReaderStream<FE, Ei.Either<A, E>>
 ```
 
 Added in v0.9.2
@@ -674,9 +666,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const toUnion: <FE, E, A>(
-  fa: RS.ReaderStream<FE, Ei.Either<E, A>>,
-) => RS.ReaderStream<FE, E | A>
+export declare const toUnion: <FE, E, A>(fa: RS.ReaderStream<FE, Ei.Either<E, A>>) => RS.ReaderStream<FE, E | A>
 ```
 
 Added in v0.9.2
@@ -686,9 +676,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const tupled: <R, E, A>(
-  fa: ReaderStreamEither<R, E, A>,
-) => ReaderStreamEither<R, E, readonly [A]>
+export declare const tupled: <R, E, A>(fa: ReaderStreamEither<R, E, A>) => ReaderStreamEither<R, E, readonly [A]>
 ```
 
 Added in v0.9.2
@@ -731,7 +719,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromEitherK: <A, E, B>(
-  f: (...a: A) => Ei.Either<E, B>,
+  f: (...a: A) => Ei.Either<E, B>
 ) => <R>(...a: A) => ReaderStreamEither<R, E, B>
 ```
 
@@ -742,10 +730,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromEnv: NaturalTransformation23R<
-  '@typed/fp/Env',
-  '@typed/fp/ReaderStreamEither'
->
+export declare const fromEnv: NaturalTransformation23R<'@typed/fp/Env', '@typed/fp/ReaderStreamEither'>
 ```
 
 Added in v0.9.2
@@ -755,9 +740,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromEnvK: <A, R, B>(
-  f: (...args: A) => Env<R, B>,
-) => <E>(...args: A) => ReaderStreamEither<R, E, B>
+export declare const fromEnvK: <A, R, B>(f: (...args: A) => Env<R, B>) => <E>(...args: A) => ReaderStreamEither<R, E, B>
 ```
 
 Added in v0.9.2
@@ -777,9 +760,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromIOK: <A, B>(
-  f: (...a: A) => IO<B>,
-) => <R, E>(...a: A) => ReaderStreamEither<R, E, B>
+export declare const fromIOK: <A, B>(f: (...a: A) => IO<B>) => <R, E>(...a: A) => ReaderStreamEither<R, E, B>
 ```
 
 Added in v0.9.2
@@ -790,7 +771,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromOption: <E>(
-  onNone: Lazy<E>,
+  onNone: Lazy<E>
 ) => NaturalTransformation13C<'Option', '@typed/fp/ReaderStreamEither', E>
 ```
 
@@ -802,7 +783,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromOptionK: <E>(
-  onNone: Lazy<E>,
+  onNone: Lazy<E>
 ) => <A, B>(f: (...a: A) => Option<B>) => <R>(...a: A) => ReaderStreamEither<R, E, B>
 ```
 
@@ -826,9 +807,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromReader: <R, A, E>(
-  ma: Re.Reader<R, A>,
-) => Re.Reader<R, SE.StreamEither<E, A>>
+export declare const fromReader: <R, A, E>(ma: Re.Reader<R, A>) => Re.Reader<R, SE.StreamEither<E, A>>
 ```
 
 Added in v0.9.2
@@ -839,7 +818,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromReaderK: <A, R, B>(
-  f: (...a: A) => Re.Reader<R, B>,
+  f: (...a: A) => Re.Reader<R, B>
 ) => <E>(...a: A) => ReaderStreamEither<R, E, B>
 ```
 
@@ -850,9 +829,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromReaderStream: <FE, A, E>(
-  fa: RS.ReaderStream<FE, A>,
-) => RS.ReaderStream<FE, Ei.Either<E, A>>
+export declare const fromReaderStream: <FE, A, E>(fa: RS.ReaderStream<FE, A>) => RS.ReaderStream<FE, Ei.Either<E, A>>
 ```
 
 Added in v0.9.2
@@ -862,9 +839,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromReaderStreamL: <FE, E, A>(
-  fe: RS.ReaderStream<FE, E>,
-) => RS.ReaderStream<FE, Ei.Either<E, A>>
+export declare const fromReaderStreamL: <FE, E, A>(fe: RS.ReaderStream<FE, E>) => RS.ReaderStream<FE, Ei.Either<E, A>>
 ```
 
 Added in v0.9.2
@@ -874,10 +849,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromResume: NaturalTransformation13<
-  '@typed/fp/Resume',
-  '@typed/fp/ReaderStreamEither'
->
+export declare const fromResume: NaturalTransformation13<'@typed/fp/Resume', '@typed/fp/ReaderStreamEither'>
 ```
 
 Added in v0.9.2
@@ -888,7 +860,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromResumeK: <A, B>(
-  f: (...args: A) => Resume<B>,
+  f: (...args: A) => Resume<B>
 ) => <R, E>(...args: A) => ReaderStreamEither<R, E, B>
 ```
 
@@ -899,10 +871,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromStream: NaturalTransformation13<
-  '@most/core/Stream',
-  '@typed/fp/ReaderStreamEither'
->
+export declare const fromStream: NaturalTransformation13<'@most/core/Stream', '@typed/fp/ReaderStreamEither'>
 ```
 
 Added in v0.9.2
@@ -913,7 +882,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromStreamK: <A, B>(
-  f: (...args: A) => S.Stream<B>,
+  f: (...args: A) => S.Stream<B>
 ) => <R, E>(...args: A) => ReaderStreamEither<R, E, B>
 ```
 
@@ -934,9 +903,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromTaskK: <A, B>(
-  f: (...a: A) => Task<B>,
-) => <R, E>(...a: A) => ReaderStreamEither<R, E, B>
+export declare const fromTaskK: <A, B>(f: (...a: A) => Task<B>) => <R, E>(...a: A) => ReaderStreamEither<R, E, B>
 ```
 
 Added in v0.9.2
@@ -990,7 +957,7 @@ Added in v0.9.2
 ```ts
 export declare const match: <E, B, A>(
   onLeft: (e: E) => B,
-  onRight: (a: A) => B,
+  onRight: (a: A) => B
 ) => <FE>(ma: RS.ReaderStream<FE, Ei.Either<E, A>>) => RS.ReaderStream<FE, B>
 ```
 
@@ -1003,7 +970,7 @@ Added in v0.9.2
 ```ts
 export declare const matchE: <E, ME, B, A>(
   onLeft: (e: E) => RS.ReaderStream<ME, B>,
-  onRight: (a: A) => RS.ReaderStream<ME, B>,
+  onRight: (a: A) => RS.ReaderStream<ME, B>
 ) => (ma: RS.ReaderStream<ME, Ei.Either<E, A>>) => RS.ReaderStream<ME, B>
 ```
 
@@ -1016,10 +983,8 @@ Added in v0.9.2
 ```ts
 export declare const matchEW: <E, R1, B, A, R2>(
   onLeft: (e: E) => RS.ReaderStream<R1, B>,
-  onRight: (a: A) => RS.ReaderStream<R2, B>,
-) => <R3>(
-  ma: RS.ReaderStream<R3, Ei.Either<E, A>>,
-) => RS.ReaderStream<R1 & R2 & R3, Ei.Either<E, B>>
+  onRight: (a: A) => RS.ReaderStream<R2, B>
+) => <R3>(ma: RS.ReaderStream<R3, Ei.Either<E, A>>) => RS.ReaderStream<R1 & R2 & R3, Ei.Either<E, B>>
 ```
 
 Added in v0.9.2
@@ -1261,9 +1226,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getApplicativeMonoid: <A, R, E>(
-  M: Monoid<A>,
-) => Monoid<ReaderStreamEither<R, E, A>>
+export declare const getApplicativeMonoid: <A, R, E>(M: Monoid<A>) => Monoid<ReaderStreamEither<R, E, A>>
 ```
 
 Added in v0.9.2
@@ -1276,9 +1239,9 @@ Added in v0.9.2
 
 ```ts
 export declare const altValidation: <A>(
-  semigroup: Semigroup<A>,
+  semigroup: Semigroup<A>
 ) => <ME, A>(
-  second: Lazy<RS.ReaderStream<ME, Ei.Either<A, A>>>,
+  second: Lazy<RS.ReaderStream<ME, Ei.Either<A, A>>>
 ) => (first: RS.ReaderStream<ME, Ei.Either<A, A>>) => RS.ReaderStream<ME, Ei.Either<A, A>>
 ```
 
@@ -1289,9 +1252,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getApplySemigroup: <A, R, E>(
-  S: Semigroup<A>,
-) => Semigroup<ReaderStreamEither<R, E, A>>
+export declare const getApplySemigroup: <A, R, E>(S: Semigroup<A>) => Semigroup<ReaderStreamEither<R, E, A>>
 ```
 
 Added in v0.9.2

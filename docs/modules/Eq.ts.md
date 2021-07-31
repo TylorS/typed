@@ -35,8 +35,8 @@ Added in v0.9.2
 
 ## deepEqualsEq
 
-A deep-equality Eq instance. Supports Reference equality, all JavaScript Primitives including
-`RegExp`, `Set` and `Map`.
+A deep-equality Eq instance.
+Supports Reference equality, all JavaScript Primitives including `RegExp`, `Set` and `Map`.
 
 **Signature**
 

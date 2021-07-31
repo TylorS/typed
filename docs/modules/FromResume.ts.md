@@ -40,25 +40,23 @@ Added in v0.9.2
 ```ts
 export declare function chainFirstResumeK<F extends URIS>(
   F: FromResume1<F>,
-  C: Chain1<F>,
+  C: Chain1<F>
 ): <A, B>(f: (value: A) => R.Resume<B>) => (hkt: Hkt<F, [A]>) => Hkt<F, [A]>
 export declare function chainFirstResumeK<F extends URIS2>(
   F: FromResume2<F>,
-  C: Chain2<F>,
+  C: Chain2<F>
 ): <A, B>(f: (value: A) => R.Resume<B>) => <E>(hkt: Hkt<F, [E, A]>) => Hkt<F, [E, A]>
 export declare function chainFirstResumeK<F extends URIS3>(
   F: FromResume3<F>,
-  C: Chain3<F>,
+  C: Chain3<F>
 ): <A, B>(f: (value: A) => R.Resume<B>) => <R, E>(hkt: Hkt<F, [R, E, A]>) => Hkt<F, [R, E, A]>
 export declare function chainFirstResumeK<F extends URIS4>(
   F: FromResume4<F>,
-  C: Chain4<F>,
-): <A, B>(
-  f: (value: A) => R.Resume<B>,
-) => <S, R, E>(hkt: Hkt<F, [S, R, E, A]>) => Hkt<F, [S, R, E, A]>
+  C: Chain4<F>
+): <A, B>(f: (value: A) => R.Resume<B>) => <S, R, E>(hkt: Hkt<F, [S, R, E, A]>) => Hkt<F, [S, R, E, A]>
 export declare function chainFirstResumeK<F>(
   F: FromResume<F>,
-  C: Chain<F>,
+  C: Chain<F>
 ): <A, B>(f: (value: A) => R.Resume<B>) => (hkt: Hkt<F, [A]>) => Hkt<F, [A]>
 ```
 
@@ -71,25 +69,23 @@ Added in v0.9.2
 ```ts
 export declare function chainResumeK<F extends URIS>(
   F: FromResume1<F>,
-  C: Chain1<F>,
+  C: Chain1<F>
 ): <A, B>(f: (value: A) => R.Resume<B>) => (hkt: Hkt<F, [A]>) => Hkt<F, [B]>
 export declare function chainResumeK<F extends URIS2>(
   F: FromResume2<F>,
-  C: Chain2<F>,
+  C: Chain2<F>
 ): <A, B>(f: (value: A) => R.Resume<B>) => <E>(hkt: Hkt<F, [E, A]>) => Hkt<F, [E, B]>
 export declare function chainResumeK<F extends URIS3>(
   F: FromResume3<F>,
-  C: Chain3<F>,
+  C: Chain3<F>
 ): <A, B>(f: (value: A) => R.Resume<B>) => <R, E>(hkt: Hkt<F, [R, E, A]>) => Hkt<F, [R, E, B]>
 export declare function chainResumeK<F extends URIS4>(
   F: FromResume4<F>,
-  C: Chain4<F>,
-): <A, B>(
-  f: (value: A) => R.Resume<B>,
-) => <S, R, E>(hkt: Hkt<F, [S, R, E, A]>) => Hkt<F, [S, R, E, B]>
+  C: Chain4<F>
+): <A, B>(f: (value: A) => R.Resume<B>) => <S, R, E>(hkt: Hkt<F, [S, R, E, A]>) => Hkt<F, [S, R, E, B]>
 export declare function chainResumeK<F>(
   F: FromResume<F>,
-  C: Chain<F>,
+  C: Chain<F>
 ): <A, B>(f: (value: A) => R.Resume<B>) => (hkt: Hkt<F, [A]>) => Hkt<F, [B]>
 ```
 
@@ -103,25 +99,19 @@ Added in v0.9.2
 
 ```ts
 export declare function fromResumeK<F extends URIS>(
-  F: FromResume1<F>,
+  F: FromResume1<F>
 ): <A extends readonly any[], B>(f: (...args: A) => R.Resume<B>) => (...args: A) => Hkt<F, [B]>
 export declare function fromResumeK<F extends URIS2>(
-  F: FromResume2<F>,
-): <A extends readonly any[], B>(
-  f: (...args: A) => R.Resume<B>,
-) => <E>(...args: A) => Hkt<F, [E, B]>
+  F: FromResume2<F>
+): <A extends readonly any[], B>(f: (...args: A) => R.Resume<B>) => <E>(...args: A) => Hkt<F, [E, B]>
 export declare function fromResumeK<F extends URIS3>(
-  F: FromResume3<F>,
-): <A extends readonly any[], B>(
-  f: (...args: A) => R.Resume<B>,
-) => <R, E>(...args: A) => Hkt<F, [R, E, B]>
+  F: FromResume3<F>
+): <A extends readonly any[], B>(f: (...args: A) => R.Resume<B>) => <R, E>(...args: A) => Hkt<F, [R, E, B]>
 export declare function fromResumeK<F extends URIS4>(
-  F: FromResume4<F>,
-): <A extends readonly any[], B>(
-  f: (...args: A) => R.Resume<B>,
-) => <S, R, E>(...args: A) => Hkt<F, [S, R, E, B]>
+  F: FromResume4<F>
+): <A extends readonly any[], B>(f: (...args: A) => R.Resume<B>) => <S, R, E>(...args: A) => Hkt<F, [S, R, E, B]>
 export declare function fromResumeK<F>(
-  F: FromResume<F>,
+  F: FromResume<F>
 ): <A extends readonly any[], B>(f: (...args: A) => R.Resume<B>) => (...args: A) => Hkt<F, [B]>
 ```
 

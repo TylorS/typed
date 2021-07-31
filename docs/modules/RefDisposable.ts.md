@@ -6,8 +6,8 @@ parent: Modules
 
 ## RefDisposable overview
 
-RefDisposable is an abstraction over @see Ref to keep track of all resources created within the
-context of a particular instance of Refs.
+RefDisposable is an abstraction over @see Ref to keep track of
+all resources created within the context of a particular instance of Refs.
 
 Added in v0.9.2
 

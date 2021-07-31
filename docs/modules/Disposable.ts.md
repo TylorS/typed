@@ -6,7 +6,8 @@ parent: Modules
 
 ## Disposable overview
 
-Disposable is an interface for representing resources which can be synchronously disposed of.
+Disposable is an interface for representing resources which can be synchronously
+disposed of.
 
 Added in v0.9.2
 
@@ -33,7 +34,7 @@ Wrap a non-Disposable function into a Disposable-returning function
 
 ```ts
 export declare const undisposable: <F extends FunctionN<readonly any[], any>>(
-  fn: F,
+  fn: F
 ) => (...args: ArgsOf<F>) => Disposable
 ```
 
@@ -57,8 +58,8 @@ Added in v0.9.2
 
 ## SettableDisposable (interface)
 
-A Disposable that works in a more imperative manner. Can be useful when coercing external libraries
-or using promises.
+A Disposable that works in a more imperative manner.
+Can be useful when coercing external libraries or using promises.
 
 **Signature**
 

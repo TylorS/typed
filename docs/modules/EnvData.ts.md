@@ -68,7 +68,7 @@ Added in v0.9.2
 
 ```ts
 export declare const alt: <E1, A>(
-  second: Lazy<E.Env<E1, D.Data<A>>>,
+  second: Lazy<E.Env<E1, D.Data<A>>>
 ) => <E2>(first: E.Env<E2, D.Data<A>>) => E.Env<E1 & E2, D.Data<A>>
 ```
 
@@ -80,7 +80,7 @@ Added in v0.9.2
 
 ```ts
 export declare const ap: <E1, A>(
-  fa: E.Env<E1, D.Data<A>>,
+  fa: E.Env<E1, D.Data<A>>
 ) => <E2, B>(fab: E.Env<E2, D.Data<(a: A) => B>>) => E.Env<E1 & E2, D.Data<B>>
 ```
 
@@ -91,9 +91,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const apFirst: <E, B>(
-  second: EnvData<E, B>,
-) => <A>(first: EnvData<E, A>) => EnvData<E, A>
+export declare const apFirst: <E, B>(second: EnvData<E, B>) => <A>(first: EnvData<E, A>) => EnvData<E, A>
 ```
 
 Added in v0.9.2
@@ -105,10 +103,8 @@ Added in v0.9.2
 ```ts
 export declare const apS: <N, A, E, B>(
   name: Exclude<N, keyof A>,
-  fb: EnvData<E, B>,
-) => (
-  fa: EnvData<E, A>,
-) => EnvData<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  fb: EnvData<E, B>
+) => (fa: EnvData<E, A>) => EnvData<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.9.2
@@ -118,9 +114,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const apSecond: <E, B>(
-  second: EnvData<E, B>,
-) => <A>(first: EnvData<E, A>) => EnvData<E, B>
+export declare const apSecond: <E, B>(second: EnvData<E, B>) => <A>(first: EnvData<E, A>) => EnvData<E, B>
 ```
 
 Added in v0.9.2
@@ -130,9 +124,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const apT: <E, B>(
-  fb: EnvData<E, B>,
-) => <A>(fas: EnvData<E, A>) => EnvData<E, readonly [...A, B]>
+export declare const apT: <E, B>(fb: EnvData<E, B>) => <A>(fas: EnvData<E, A>) => EnvData<E, readonly [...A, B]>
 ```
 
 Added in v0.9.2
@@ -144,10 +136,8 @@ Added in v0.9.2
 ```ts
 export declare const bind: <N, A, E, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => EnvData<E, B>,
-) => (
-  ma: EnvData<E, A>,
-) => EnvData<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  f: (a: A) => EnvData<E, B>
+) => (ma: EnvData<E, A>) => EnvData<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.9.2
@@ -157,9 +147,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const bindTo: <N>(
-  name: N,
-) => <E, A>(fa: EnvData<E, A>) => EnvData<E, { readonly [K in N]: A }>
+export declare const bindTo: <N>(name: N) => <E, A>(fa: EnvData<E, A>) => EnvData<E, { readonly [K in N]: A }>
 ```
 
 Added in v0.9.2
@@ -170,7 +158,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chain: <A, E1, B>(
-  f: (value: A) => E.Env<E1, D.Data<B>>,
+  f: (value: A) => E.Env<E1, D.Data<B>>
 ) => <E2>(fa: E.Env<E2, D.Data<A>>) => E.Env<E1 & E2, D.Data<B>>
 ```
 
@@ -181,9 +169,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainFirst: <A, E, B>(
-  f: (a: A) => EnvData<E, B>,
-) => (first: EnvData<E, A>) => EnvData<E, A>
+export declare const chainFirst: <A, E, B>(f: (a: A) => EnvData<E, B>) => (first: EnvData<E, A>) => EnvData<E, A>
 ```
 
 Added in v0.9.2
@@ -205,7 +191,7 @@ Added in v0.9.2
 ```ts
 export declare const getOrElse: <A>(
   onNoData: () => A,
-  onLoading: (progress: Option<Progress>) => A,
+  onLoading: (progress: Option<Progress>) => A
 ) => <E>(ma: E.Env<E, D.Data<A>>) => E.Env<E, A>
 ```
 
@@ -216,9 +202,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const map: <A, B>(
-  f: (a: A) => B,
-) => <E>(fa: E.Env<E, D.Data<A>>) => E.Env<E, D.Data<B>>
+export declare const map: <A, B>(f: (a: A) => B) => <E>(fa: E.Env<E, D.Data<A>>) => E.Env<E, D.Data<B>>
 ```
 
 Added in v0.9.2
@@ -270,10 +254,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const refresh: <A, E>(
-  value: A,
-  progress?: None | Some<Progress> | undefined,
-) => E.Env<E, D.Refresh<A>>
+export declare const refresh: <A, E>(value: A, progress?: None | Some<Progress> | undefined) => E.Env<E, D.Refresh<A>>
 ```
 
 Added in v0.9.2
@@ -309,7 +290,7 @@ export declare const match: <A, B>(
   onNoData: () => A,
   onLoading: (progress: Option<Progress>) => A,
   onRefresh: (value: B, progress: Option<Progress>) => A,
-  onReplete: (value: B) => A,
+  onReplete: (value: B) => A
 ) => <E>(fa: E.Env<E, D.Data<B>>) => E.Env<E, A>
 ```
 
@@ -323,7 +304,7 @@ Added in v0.9.2
 export declare const match3W: <A, B, C, D>(
   onNoData: () => A,
   onLoading: (progress: Option<Progress>) => B,
-  onReplete: (value: C) => D,
+  onReplete: (value: C) => D
 ) => <E>(fa: E.Env<E, D.Data<C>>) => E.Env<E, A | B | D>
 ```
 
@@ -338,7 +319,7 @@ export declare const matchE: <E1, A, E2, B, E3, E4>(
   onNoData: () => E.Env<E1, A>,
   onLoading: (progress: Option<Progress>) => E.Env<E2, A>,
   onRefresh: (value: B, progress: Option<Progress>) => E.Env<E3, A>,
-  onReplete: (value: B) => E.Env<E4, A>,
+  onReplete: (value: B) => E.Env<E4, A>
 ) => <E5>(data: E.Env<E5, D.Data<B>>) => E.Env<E1 & E2 & E3 & E4 & E5, A>
 ```
 
@@ -353,7 +334,7 @@ export declare const matchEW: <E1, A, E2, B, C, E3, D, E4, E>(
   onNoData: () => E.Env<E1, A>,
   onLoading: (progress: Option<Progress>) => E.Env<E2, B>,
   onRefresh: (value: C, progress: Option<Progress>) => E.Env<E3, D>,
-  onReplete: (value: C) => E.Env<E4, E>,
+  onReplete: (value: C) => E.Env<E4, E>
 ) => <E5>(data: E.Env<E5, D.Data<C>>) => E.Env<E1 & E2 & E3 & E4 & E5, A | B | D | E>
 ```
 
@@ -368,7 +349,7 @@ export declare const matchW: <A, B, C, D, E>(
   onNoData: () => A,
   onLoading: (progress: Option<Progress>) => B,
   onRefresh: (value: C, progress: Option<Progress>) => D,
-  onReplete: (value: C) => E,
+  onReplete: (value: C) => E
 ) => <EF>(fa: E.Env<EF, D.Data<C>>) => E.Env<E, A | B | D | E>
 ```
 

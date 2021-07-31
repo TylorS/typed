@@ -6,8 +6,8 @@ parent: Modules
 
 ## StateEnvEither overview
 
-StateEnvEither is a StateT of EnvEither. Resume-based altenative to StateReaderTaskEither that
-support cancelation.
+StateEnvEither is a StateT of EnvEither. Resume-based altenative to
+StateReaderTaskEither that support cancelation.
 
 Added in v0.9.2
 
@@ -102,10 +102,8 @@ Added in v0.9.2
 
 ```ts
 export declare const ap: <S, R, E, A>(
-  fa: ST.StateT3<'@typed/fp/EnvEither', S, R, E, A>,
-) => <B>(
-  fab: ST.StateT3<'@typed/fp/EnvEither', S, R, E, (a: A) => B>,
-) => ST.StateT3<'@typed/fp/EnvEither', S, R, E, B>
+  fa: ST.StateT3<'@typed/fp/EnvEither', S, R, E, A>
+) => <B>(fab: ST.StateT3<'@typed/fp/EnvEither', S, R, E, (a: A) => B>) => ST.StateT3<'@typed/fp/EnvEither', S, R, E, B>
 ```
 
 Added in v0.9.2
@@ -116,10 +114,8 @@ Added in v0.9.2
 
 ```ts
 export declare const chain: <A, S, R, E, B>(
-  f: (a: A) => ST.StateT3<'@typed/fp/EnvEither', S, R, E, B>,
-) => (
-  ma: ST.StateT3<'@typed/fp/EnvEither', S, R, E, A>,
-) => ST.StateT3<'@typed/fp/EnvEither', S, R, E, B>
+  f: (a: A) => ST.StateT3<'@typed/fp/EnvEither', S, R, E, B>
+) => (ma: ST.StateT3<'@typed/fp/EnvEither', S, R, E, A>) => ST.StateT3<'@typed/fp/EnvEither', S, R, E, B>
 ```
 
 Added in v0.9.2
@@ -130,7 +126,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainEitherK: <A, E, B>(
-  f: (a: A) => E.Either<E, B>,
+  f: (a: A) => E.Either<E, B>
 ) => <S, R>(ma: StateEnvEither<S, R, E, A>) => StateEnvEither<S, R, E, B>
 ```
 
@@ -142,7 +138,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainEnvK: <A, R1, B>(
-  f: (value: A) => Env<R1, B>,
+  f: (value: A) => Env<R1, B>
 ) => <S, R2, E>(hkt: StateEnvEither<S, R2, E, A>) => StateEnvEither<S, R1, E, B>
 ```
 
@@ -154,7 +150,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstEnvK: <A, R1, B>(
-  f: (value: A) => Env<R1, B>,
+  f: (value: A) => Env<R1, B>
 ) => <S, R2, E>(hkt: StateEnvEither<S, R2, E, A>) => StateEnvEither<S, R1, E, A>
 ```
 
@@ -166,7 +162,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstIOK: <A, B>(
-  f: (a: A) => IO<B>,
+  f: (a: A) => IO<B>
 ) => <S, R, E>(first: StateEnvEither<S, R, E, A>) => StateEnvEither<S, R, E, A>
 ```
 
@@ -178,7 +174,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstResumeK: <A, B>(
-  f: (value: A) => R.Resume<B>,
+  f: (value: A) => R.Resume<B>
 ) => <S, R, E>(hkt: StateEnvEither<S, R, E, A>) => StateEnvEither<S, R, E, A>
 ```
 
@@ -190,7 +186,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstTaskK: <A, B>(
-  f: (a: A) => Task<B>,
+  f: (a: A) => Task<B>
 ) => <S, R, E>(first: StateEnvEither<S, R, E, A>) => StateEnvEither<S, R, E, A>
 ```
 
@@ -202,7 +198,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainIOK: <A, B>(
-  f: (a: A) => IO<B>,
+  f: (a: A) => IO<B>
 ) => <S, R, E>(first: StateEnvEither<S, R, E, A>) => StateEnvEither<S, R, E, B>
 ```
 
@@ -214,10 +210,8 @@ Added in v0.9.2
 
 ```ts
 export declare const chainOptionK: <E>(
-  onNone: Lazy<E>,
-) => <A, B>(
-  f: (a: A) => Option<B>,
-) => <S, R>(ma: StateEnvEither<S, R, E, A>) => StateEnvEither<S, R, E, B>
+  onNone: Lazy<E>
+) => <A, B>(f: (a: A) => Option<B>) => <S, R>(ma: StateEnvEither<S, R, E, A>) => StateEnvEither<S, R, E, B>
 ```
 
 Added in v0.9.2
@@ -228,7 +222,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainReaderK: <A, R, B>(
-  f: (a: A) => Reader<R, B>,
+  f: (a: A) => Reader<R, B>
 ) => <S, E>(ma: StateEnvEither<S, R, E, A>) => StateEnvEither<S, R, E, B>
 ```
 
@@ -240,7 +234,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, S, R, E, B>(
-  f: (a: A) => StateEnvEither<S, R, E, E.Either<A, B>>,
+  f: (a: A) => StateEnvEither<S, R, E, E.Either<A, B>>
 ) => (value: A) => (s: S) => (r: R) => R.Resume<E.Either<E, readonly [B, S]>>
 ```
 
@@ -252,7 +246,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainResumeK: <A, B>(
-  f: (value: A) => R.Resume<B>,
+  f: (value: A) => R.Resume<B>
 ) => <S, R, E>(hkt: StateEnvEither<S, R, E, A>) => StateEnvEither<S, R, E, B>
 ```
 
@@ -264,7 +258,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainStateK: <A, S, B>(
-  f: (a: A) => State<S, B>,
+  f: (a: A) => State<S, B>
 ) => <R, E>(ma: StateEnvEither<S, R, E, A>) => StateEnvEither<S, R, E, B>
 ```
 
@@ -276,7 +270,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainTaskK: <A, B>(
-  f: (a: A) => Task<B>,
+  f: (a: A) => Task<B>
 ) => <S, R, E>(first: StateEnvEither<S, R, E, A>) => StateEnvEither<S, R, E, B>
 ```
 
@@ -288,7 +282,7 @@ Added in v0.9.2
 
 ```ts
 export declare const evaluate: <S>(
-  s: S,
+  s: S
 ) => <R, E, A>(ma: ST.StateT3<'@typed/fp/EnvEither', S, R, E, A>) => EE.EnvEither<R, E, A>
 ```
 
@@ -300,7 +294,7 @@ Added in v0.9.2
 
 ```ts
 export declare const execute: <S>(
-  s: S,
+  s: S
 ) => <R, E, A>(ma: ST.StateT3<'@typed/fp/EnvEither', S, R, E, A>) => EE.EnvEither<R, E, S>
 ```
 
@@ -313,10 +307,10 @@ Added in v0.9.2
 ```ts
 export declare const filterOrElse: {
   <A, B, E>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <S, R>(
-    ma: StateEnvEither<S, R, E, A>,
+    ma: StateEnvEither<S, R, E, A>
   ) => StateEnvEither<S, R, E, B>
   <A, E>(predicate: Predicate<A>, onFalse: (a: A) => E): <S, R, B>(
-    mb: StateEnvEither<S, R, E, B>,
+    mb: StateEnvEither<S, R, E, B>
   ) => StateEnvEither<S, R, E, B>
 }
 ```
@@ -329,10 +323,8 @@ Added in v0.9.2
 
 ```ts
 export declare const map: <A, B>(
-  f: (a: A) => B,
-) => <S, R, E>(
-  fa: ST.StateT3<'@typed/fp/EnvEither', S, R, E, A>,
-) => ST.StateT3<'@typed/fp/EnvEither', S, R, E, B>
+  f: (a: A) => B
+) => <S, R, E>(fa: ST.StateT3<'@typed/fp/EnvEither', S, R, E, A>) => ST.StateT3<'@typed/fp/EnvEither', S, R, E, B>
 ```
 
 Added in v0.9.2
@@ -353,7 +345,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideAll: <R>(
-  provided: R,
+  provided: R
 ) => <S, E, A>(srte: StateEnvEither<S, R, E, A>) => StateEnvEither<S, unknown, E, A>
 ```
 
@@ -365,7 +357,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideSome: <R1>(
-  provided: R1,
+  provided: R1
 ) => <S, R2, E, A>(srte: StateEnvEither<S, R1 & R2, E, A>) => StateEnvEither<S, R2, E, A>
 ```
 
@@ -387,7 +379,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useAll: <R>(
-  provided: R,
+  provided: R
 ) => <S, E, A>(srte: StateEnvEither<S, R, E, A>) => StateEnvEither<S, unknown, E, A>
 ```
 
@@ -399,7 +391,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useSome: <R1>(
-  provided: R1,
+  provided: R1
 ) => <S, R2, E, A>(srte: StateEnvEither<S, R1 & R2, E, A>) => StateEnvEither<S, R2, E, A>
 ```
 
@@ -432,9 +424,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromEither: <E, A, S = unknown, R = unknown>(
-  either: E.Either<E, A>,
-) => StateEnvEither<S, R, E, A>
+export declare const fromEither: <E, A, S = unknown, R = unknown>(either: E.Either<E, A>) => StateEnvEither<S, R, E, A>
 ```
 
 Added in v0.9.2
@@ -445,7 +435,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromEitherK: <A, E, B>(
-  f: (...a: A) => E.Either<E, B>,
+  f: (...a: A) => E.Either<E, B>
 ) => <S, R>(...a: A) => StateEnvEither<S, R, E, B>
 ```
 
@@ -456,9 +446,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromEnv: <R, A, S = unknown, E = never>(
-  env: Env<R, A>,
-) => StateEnvEither<S, R, E, A>
+export declare const fromEnv: <R, A, S = unknown, E = never>(env: Env<R, A>) => StateEnvEither<S, R, E, A>
 ```
 
 Added in v0.9.2
@@ -469,7 +457,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromEnvEither: <R, E, A, S>(
-  ma: EE.EnvEither<R, E, A>,
+  ma: EE.EnvEither<R, E, A>
 ) => ST.StateT3<'@typed/fp/EnvEither', S, R, E, A>
 ```
 
@@ -481,7 +469,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromEnvK: <A, R, B>(
-  f: (...args: A) => Env<R, B>,
+  f: (...args: A) => Env<R, B>
 ) => <S, E>(...args: A) => StateEnvEither<S, R, E, B>
 ```
 
@@ -492,9 +480,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromIO: <A, S = unknown, R = unknown, E = never>(
-  io: IO<A>,
-) => StateEnvEither<S, R, E, A>
+export declare const fromIO: <A, S = unknown, R = unknown, E = never>(io: IO<A>) => StateEnvEither<S, R, E, A>
 ```
 
 Added in v0.9.2
@@ -504,9 +490,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromIOK: <A, B>(
-  f: (...a: A) => IO<B>,
-) => <S, R, E>(...a: A) => StateEnvEither<S, R, E, B>
+export declare const fromIOK: <A, B>(f: (...a: A) => IO<B>) => <S, R, E>(...a: A) => StateEnvEither<S, R, E, B>
 ```
 
 Added in v0.9.2
@@ -517,7 +501,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromOption: <E>(
-  onNone: Lazy<E>,
+  onNone: Lazy<E>
 ) => NaturalTransformation14C<'Option', '@typed/fp/StateEnvEither', E>
 ```
 
@@ -529,7 +513,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromOptionK: <E>(
-  onNone: Lazy<E>,
+  onNone: Lazy<E>
 ) => <A, B>(f: (...a: A) => Option<B>) => <S, R>(...a: A) => StateEnvEither<S, R, E, B>
 ```
 
@@ -553,9 +537,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromReader: <R, A, S = unknown, E = never>(
-  reader: Reader<R, A>,
-) => StateEnvEither<S, R, E, A>
+export declare const fromReader: <R, A, S = unknown, E = never>(reader: Reader<R, A>) => StateEnvEither<S, R, E, A>
 ```
 
 Added in v0.9.2
@@ -566,7 +548,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromReaderK: <A, R, B>(
-  f: (...a: A) => Reader<R, B>,
+  f: (...a: A) => Reader<R, B>
 ) => <S, E>(...a: A) => StateEnvEither<S, R, E, B>
 ```
 
@@ -578,7 +560,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromResume: <A, S = unknown, R = unknown, E = never>(
-  resume: R.Resume<A>,
+  resume: R.Resume<A>
 ) => StateEnvEither<S, R, E, A>
 ```
 
@@ -590,7 +572,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromResumeK: <A, B>(
-  f: (...args: A) => R.Resume<B>,
+  f: (...args: A) => R.Resume<B>
 ) => <S, R, E>(...args: A) => StateEnvEither<S, R, E, B>
 ```
 
@@ -601,9 +583,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromState: <S, A, R, E>(
-  sa: State<S, A>,
-) => ST.StateT3<'@typed/fp/EnvEither', S, R, E, A>
+export declare const fromState: <S, A, R, E>(sa: State<S, A>) => ST.StateT3<'@typed/fp/EnvEither', S, R, E, A>
 ```
 
 Added in v0.9.2
@@ -613,9 +593,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromStateK: <A, S, B>(
-  f: (...a: A) => State<S, B>,
-) => <R, E>(...a: A) => StateEnvEither<S, R, E, B>
+export declare const fromStateK: <A, S, B>(f: (...a: A) => State<S, B>) => <R, E>(...a: A) => StateEnvEither<S, R, E, B>
 ```
 
 Added in v0.9.2
@@ -625,9 +603,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromTask: <A, S = unknown, R = unknown, E = never>(
-  io: Task<A>,
-) => StateEnvEither<S, R, E, A>
+export declare const fromTask: <A, S = unknown, R = unknown, E = never>(io: Task<A>) => StateEnvEither<S, R, E, A>
 ```
 
 Added in v0.9.2
@@ -637,9 +613,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromTaskK: <A, B>(
-  f: (...a: A) => Task<B>,
-) => <S, R, E>(...a: A) => StateEnvEither<S, R, E, B>
+export declare const fromTaskK: <A, B>(f: (...a: A) => Task<B>) => <S, R, E>(...a: A) => StateEnvEither<S, R, E, B>
 ```
 
 Added in v0.9.2

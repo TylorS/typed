@@ -37,7 +37,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, R, E, B>(
-  f: (value: A) => RTE.ReaderTaskEither<R, E, E.Either<A, B>>,
+  f: (value: A) => RTE.ReaderTaskEither<R, E, E.Either<A, B>>
 ) => (value: A) => RTE.ReaderTaskEither<R, E, B>
 ```
 
@@ -49,7 +49,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideAll: <A>(
-  provided: A,
+  provided: A
 ) => <E, B>(hkt: RTE.ReaderTaskEither<Partial<A>, E, B>) => RTE.ReaderTaskEither<unknown, E, B>
 ```
 
@@ -61,7 +61,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideSome: <A>(
-  provided: A,
+  provided: A
 ) => <B, E, C>(hkt: RTE.ReaderTaskEither<A & B, E, C>) => RTE.ReaderTaskEither<B, E, C>
 ```
 
@@ -73,7 +73,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useAll: <A>(
-  provided: A,
+  provided: A
 ) => <E, B>(hkt: RTE.ReaderTaskEither<Partial<A>, E, B>) => RTE.ReaderTaskEither<unknown, E, B>
 ```
 
@@ -85,7 +85,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useSome: <A>(
-  provided: A,
+  provided: A
 ) => <B, E, C>(hkt: RTE.ReaderTaskEither<A & B, E, C>) => RTE.ReaderTaskEither<B, E, C>
 ```
 

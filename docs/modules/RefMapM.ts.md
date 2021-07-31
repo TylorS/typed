@@ -6,8 +6,8 @@ parent: Modules
 
 ## RefMapM overview
 
-RefMapM is an abstraction over @see Ref to provide additional functionality for working with a
-mutable Map
+RefMapM is an abstraction over @see Ref to provide additional functionality for
+working with a mutable Map
 
 Added in v0.9.2
 
@@ -60,10 +60,8 @@ Added in v0.9.2
 
 ```ts
 export declare const deleteAt: <E1, K, V>(
-  M: RefMapM<E1, K, V>,
-) => (
-  k: K,
-) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, Map<K, V>>
+  M: RefMapM<E1, K, V>
+) => (k: K) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, Map<K, V>>
 ```
 
 Added in v0.9.2
@@ -74,10 +72,8 @@ Added in v0.9.2
 
 ```ts
 export declare const elem: <E1, K, V>(
-  M: RefMapM<E1, K, V>,
-) => (
-  v: V,
-) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, boolean>
+  M: RefMapM<E1, K, V>
+) => (v: V) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, boolean>
 ```
 
 Added in v0.9.2
@@ -88,16 +84,13 @@ Added in v0.9.2
 
 ```ts
 export declare const filter: <E1, K, V>(
-  M: RefMapM<E1, K, V>,
+  M: RefMapM<E1, K, V>
 ) => {
   <V2 extends V>(r: Refinement<V, V2>): E.Env<
     E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs,
     Map<K, V>
   >
-  (r: Predicate<V>): E.Env<
-    E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs,
-    Map<K, V>
-  >
+  (r: Predicate<V>): E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, Map<K, V>>
 }
 ```
 
@@ -109,10 +102,10 @@ Added in v0.9.2
 
 ```ts
 export declare const getOrCreate: <E1, K, V>(
-  M: RefMapM<E1, K, V>,
+  M: RefMapM<E1, K, V>
 ) => <E2>(
   k: K,
-  orCreate: E.Env<E2, V>,
+  orCreate: E.Env<E2, V>
 ) => E.Env<E2 & E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, V>
 ```
 
@@ -124,11 +117,8 @@ Added in v0.9.2
 
 ```ts
 export declare const insertAt: <E1, K, V>(
-  M: RefMapM<E1, K, V>,
-) => (
-  k: K,
-  v: V,
-) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, Map<K, V>>
+  M: RefMapM<E1, K, V>
+) => (k: K, v: V) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, Map<K, V>>
 ```
 
 Added in v0.9.2
@@ -139,9 +129,9 @@ Added in v0.9.2
 
 ```ts
 export declare const keys: <K>(
-  O: Ord<K>,
+  O: Ord<K>
 ) => <E, V>(
-  M: RefMapM<E, K, V>,
+  M: RefMapM<E, K, V>
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly K[]>
 ```
 
@@ -153,10 +143,8 @@ Added in v0.9.2
 
 ```ts
 export declare const lookup: <E1, K, V>(
-  M: RefMapM<E1, K, V>,
-) => (
-  k: K,
-) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, O.Option<V>>
+  M: RefMapM<E1, K, V>
+) => (k: K) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, O.Option<V>>
 ```
 
 Added in v0.9.2
@@ -167,10 +155,10 @@ Added in v0.9.2
 
 ```ts
 export declare const modifyAt: <E1, K, V>(
-  M: RefMapM<E1, K, V>,
+  M: RefMapM<E1, K, V>
 ) => (
   k: K,
-  v: Endomorphism<V>,
+  v: Endomorphism<V>
 ) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, Map<K, V>>
 ```
 
@@ -181,9 +169,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const provideAll: <E>(
-  provided: E,
-) => <K, V>(ref: ReferenceMapM<E, K, V>) => ReferenceMapM<unknown, K, V>
+export declare const provideAll: <E>(provided: E) => <K, V>(ref: ReferenceMapM<E, K, V>) => ReferenceMapM<unknown, K, V>
 ```
 
 Added in v0.9.2
@@ -194,7 +180,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideSome: <E1>(
-  provided: E1,
+  provided: E1
 ) => <E2, K, V>(ref: ReferenceMapM<E1 & E2, K, V>) => ReferenceMapM<E2, K, V>
 ```
 
@@ -206,7 +192,7 @@ Added in v0.9.2
 
 ```ts
 export declare const size: <E, K, V>(
-  M: RefMapM<E, K, V>,
+  M: RefMapM<E, K, V>
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, number>
 ```
 
@@ -218,13 +204,10 @@ Added in v0.9.2
 
 ```ts
 export declare const toReadonlyArray: <K>(
-  O: Ord<K>,
+  O: Ord<K>
 ) => <E, V>(
-  M: RefMapM<E, K, V>,
-) => E.Env<
-  E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs,
-  readonly (readonly [K, V])[]
->
+  M: RefMapM<E, K, V>
+) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly (readonly [K, V])[]>
 ```
 
 Added in v0.9.2
@@ -235,11 +218,8 @@ Added in v0.9.2
 
 ```ts
 export declare const updateAt: <E1, K, V>(
-  M: RefMapM<E1, K, V>,
-) => (
-  k: K,
-  v: V,
-) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, Map<K, V>>
+  M: RefMapM<E1, K, V>
+) => (k: K, v: V) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, Map<K, V>>
 ```
 
 Added in v0.9.2
@@ -250,11 +230,8 @@ Added in v0.9.2
 
 ```ts
 export declare const upsertAt: <E1, K, V>(
-  M: RefMapM<E1, K, V>,
-) => (
-  k: K,
-  v: V,
-) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, Map<K, V>>
+  M: RefMapM<E1, K, V>
+) => (k: K, v: V) => E.Env<E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, Map<K, V>>
 ```
 
 Added in v0.9.2
@@ -264,9 +241,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const useAll: <E>(
-  provided: E,
-) => <K, V>(ref: ReferenceMapM<E, K, V>) => ReferenceMapM<unknown, K, V>
+export declare const useAll: <E>(provided: E) => <K, V>(ref: ReferenceMapM<E, K, V>) => ReferenceMapM<unknown, K, V>
 ```
 
 Added in v0.9.2
@@ -277,7 +252,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useSome: <E1>(
-  provided: E1,
+  provided: E1
 ) => <E2, K, V>(ref: ReferenceMapM<E1 & E2, K, V>) => ReferenceMapM<E2, K, V>
 ```
 
@@ -289,9 +264,9 @@ Added in v0.9.2
 
 ```ts
 export declare const values: <V>(
-  O: Ord<V>,
+  O: Ord<V>
 ) => <E, K>(
-  M: RefMapM<E, K, V>,
+  M: RefMapM<E, K, V>
 ) => E.Env<E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs, readonly V[]>
 ```
 
@@ -306,7 +281,7 @@ Added in v0.9.2
 ```ts
 export declare const create: <K, V>(
   keyEq: Eq<K>,
-  valueEq: Eq<V>,
+  valueEq: Eq<V>
 ) => <E>(ref: Ref.Reference<E, Map<K, V>>) => ReferenceMapM<E, K, V>
 ```
 
@@ -321,7 +296,7 @@ Helps to lift a Reference value into a RefMapM
 ```ts
 export declare const lift: <K, V>(
   keyEq: Eq<K>,
-  valueEq: Eq<V>,
+  valueEq: Eq<V>
 ) => <E>(ref: Ref.Reference<E, Map<K, V>>) => RefMapM<E, K, V>
 ```
 

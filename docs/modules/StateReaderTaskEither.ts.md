@@ -37,7 +37,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, S, R, E, B>(
-  f: Arity1<A, SRTE.StateReaderTaskEither<S, R, E, E.Either<A, B>>>,
+  f: Arity1<A, SRTE.StateReaderTaskEither<S, R, E, E.Either<A, B>>>
 ) => (value: A) => SRTE.StateReaderTaskEither<S, R, E, B>
 ```
 
@@ -49,10 +49,8 @@ Added in v0.9.2
 
 ```ts
 export declare const provideAll: <R>(
-  provided: R,
-) => <S, E, A>(
-  srte: SRTE.StateReaderTaskEither<S, R, E, A>,
-) => SRTE.StateReaderTaskEither<S, unknown, E, A>
+  provided: R
+) => <S, E, A>(srte: SRTE.StateReaderTaskEither<S, R, E, A>) => SRTE.StateReaderTaskEither<S, unknown, E, A>
 ```
 
 Added in v0.9.2
@@ -63,10 +61,8 @@ Added in v0.9.2
 
 ```ts
 export declare const provideSome: <R1>(
-  provided: R1,
-) => <S, R2, E, A>(
-  srte: SRTE.StateReaderTaskEither<S, R1 & R2, E, A>,
-) => SRTE.StateReaderTaskEither<S, R2, E, A>
+  provided: R1
+) => <S, R2, E, A>(srte: SRTE.StateReaderTaskEither<S, R1 & R2, E, A>) => SRTE.StateReaderTaskEither<S, R2, E, A>
 ```
 
 Added in v0.9.2
@@ -77,10 +73,8 @@ Added in v0.9.2
 
 ```ts
 export declare const useAll: <R>(
-  provided: R,
-) => <S, E, A>(
-  srte: SRTE.StateReaderTaskEither<S, R, E, A>,
-) => SRTE.StateReaderTaskEither<S, unknown, E, A>
+  provided: R
+) => <S, E, A>(srte: SRTE.StateReaderTaskEither<S, R, E, A>) => SRTE.StateReaderTaskEither<S, unknown, E, A>
 ```
 
 Added in v0.9.2
@@ -91,10 +85,8 @@ Added in v0.9.2
 
 ```ts
 export declare const useSome: <R1>(
-  provided: R1,
-) => <S, R2, E, A>(
-  srte: SRTE.StateReaderTaskEither<S, R1 & R2, E, A>,
-) => SRTE.StateReaderTaskEither<S, R2, E, A>
+  provided: R1
+) => <S, R2, E, A>(srte: SRTE.StateReaderTaskEither<S, R1 & R2, E, A>) => SRTE.StateReaderTaskEither<S, R2, E, A>
 ```
 
 Added in v0.9.2

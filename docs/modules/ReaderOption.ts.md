@@ -80,7 +80,7 @@ Added in v0.9.2
 
 ```ts
 export declare const alt: <E, A>(
-  second: Lazy<R.Reader<E, O.Option<A>>>,
+  second: Lazy<R.Reader<E, O.Option<A>>>
 ) => (first: R.Reader<E, O.Option<A>>) => R.Reader<E, O.Option<A>>
 ```
 
@@ -92,7 +92,7 @@ Added in v0.9.2
 
 ```ts
 export declare const altW: <E1, A>(
-  second: Lazy<ReaderOption<E1, A>>,
+  second: Lazy<ReaderOption<E1, A>>
 ) => <E2, B>(first: ReaderOption<E2, B>) => ReaderOption<E1 & E2, A | B>
 ```
 
@@ -104,7 +104,7 @@ Added in v0.9.2
 
 ```ts
 export declare const ap: <E, A>(
-  fa: R.Reader<E, O.Option<A>>,
+  fa: R.Reader<E, O.Option<A>>
 ) => <B>(fab: R.Reader<E, O.Option<(a: A) => B>>) => R.Reader<E, O.Option<B>>
 ```
 
@@ -116,7 +116,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chain: <A, E, B>(
-  f: (a: A) => R.Reader<E, O.Option<B>>,
+  f: (a: A) => R.Reader<E, O.Option<B>>
 ) => (ma: R.Reader<E, O.Option<A>>) => R.Reader<E, O.Option<B>>
 ```
 
@@ -128,7 +128,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstReaderK: <A, R, B>(
-  f: (a: A) => R.Reader<R, B>,
+  f: (a: A) => R.Reader<R, B>
 ) => (ma: ReaderOption<R, A>) => ReaderOption<R, A>
 ```
 
@@ -140,7 +140,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainNullableK: <A, B>(
-  f: (a: A) => B | null | undefined,
+  f: (a: A) => B | null | undefined
 ) => <E>(ma: R.Reader<E, O.Option<A>>) => R.Reader<E, O.Option<NonNullable<B>>>
 ```
 
@@ -152,7 +152,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainOptionK: <A, B>(
-  f: (a: A) => O.Option<B>,
+  f: (a: A) => O.Option<B>
 ) => <E>(ma: R.Reader<E, O.Option<A>>) => R.Reader<E, O.Option<B>>
 ```
 
@@ -164,7 +164,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainReaderK: <A, R, B>(
-  f: (a: A) => R.Reader<R, B>,
+  f: (a: A) => R.Reader<R, B>
 ) => (ma: ReaderOption<R, A>) => ReaderOption<R, B>
 ```
 
@@ -176,7 +176,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, E, B>(
-  f: (value: A) => ReaderOption<E, Ei.Either<A, B>>,
+  f: (value: A) => ReaderOption<E, Ei.Either<A, B>>
 ) => (value: A) => ReaderOption<E, B>
 ```
 
@@ -187,9 +187,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const local: <A, B>(
-  f: (a: A) => B,
-) => <C>(ro: ReaderOption<B, C>) => ReaderOption<A, C>
+export declare const local: <A, B>(f: (a: A) => B) => <C>(ro: ReaderOption<B, C>) => ReaderOption<A, C>
 ```
 
 Added in v0.9.2
@@ -199,9 +197,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const map: <A, B>(
-  f: (a: A) => B,
-) => <E>(fa: R.Reader<E, O.Option<A>>) => R.Reader<E, O.Option<B>>
+export declare const map: <A, B>(f: (a: A) => B) => <E>(fa: R.Reader<E, O.Option<A>>) => R.Reader<E, O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -264,7 +260,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromNullableK: <A, B>(
-  f: (...a: A) => B | null | undefined,
+  f: (...a: A) => B | null | undefined
 ) => <E>(...a: A) => R.Reader<E, O.Option<NonNullable<B>>>
 ```
 
@@ -275,9 +271,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromOptionK: <A, B>(
-  f: (...a: A) => O.Option<B>,
-) => <E>(...a: A) => R.Reader<E, O.Option<B>>
+export declare const fromOptionK: <A, B>(f: (...a: A) => O.Option<B>) => <E>(...a: A) => R.Reader<E, O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -310,9 +304,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromReaderK: <A, R, B>(
-  f: (...a: A) => R.Reader<R, B>,
-) => (...a: A) => ReaderOption<R, B>
+export declare const fromReaderK: <A, R, B>(f: (...a: A) => R.Reader<R, B>) => (...a: A) => ReaderOption<R, B>
 ```
 
 Added in v0.9.2
@@ -345,7 +337,7 @@ Added in v0.9.2
 
 ```ts
 export declare const getOrElseE: <E, A>(
-  onNone: Lazy<R.Reader<E, A>>,
+  onNone: Lazy<R.Reader<E, A>>
 ) => (fa: R.Reader<E, O.Option<A>>) => R.Reader<E, A>
 ```
 
@@ -358,9 +350,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getOrElse: <A>(
-  onNone: Lazy<A>,
-) => <E>(fa: R.Reader<E, O.Option<A>>) => R.Reader<E, A>
+export declare const getOrElse: <A>(onNone: Lazy<A>) => <E>(fa: R.Reader<E, O.Option<A>>) => R.Reader<E, A>
 ```
 
 Added in v0.9.2
@@ -371,7 +361,7 @@ Added in v0.9.2
 
 ```ts
 export declare const getOrElseEW: <E1, A>(
-  onNone: Lazy<R.Reader<E1, A>>,
+  onNone: Lazy<R.Reader<E1, A>>
 ) => <E2, B>(fa: ReaderOption<E2, B>) => R.Reader<E1 & E2, A | B>
 ```
 
@@ -384,7 +374,7 @@ Added in v0.9.2
 ```ts
 export declare const match: <B, A>(
   onNone: () => B,
-  onSome: (a: A) => B,
+  onSome: (a: A) => B
 ) => <E>(ma: R.Reader<E, O.Option<A>>) => R.Reader<E, B>
 ```
 
@@ -397,7 +387,7 @@ Added in v0.9.2
 ```ts
 export declare const matchE: <E, B, A>(
   onNone: () => R.Reader<E, B>,
-  onSome: (a: A) => R.Reader<E, B>,
+  onSome: (a: A) => R.Reader<E, B>
 ) => (ma: R.Reader<E, O.Option<A>>) => R.Reader<E, B>
 ```
 

@@ -65,9 +65,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare function toReferenceAdapter<E, A, B>(
-  ra: RefAdapter<E, A, B>,
-): ReferenceAdapter<E, A, B>
+export declare function toReferenceAdapter<E, A, B>(ra: RefAdapter<E, A, B>): ReferenceAdapter<E, A, B>
 ```
 
 Added in v0.9.2

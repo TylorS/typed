@@ -27,9 +27,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainRec: <A, S, B>(
-  f: (value: A) => S.State<S, E.Either<A, B>>,
-) => (value: A) => S.State<S, B>
+export declare const chainRec: <A, S, B>(f: (value: A) => S.State<S, E.Either<A, B>>) => (value: A) => S.State<S, B>
 ```
 
 Added in v0.9.2

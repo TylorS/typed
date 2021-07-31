@@ -63,7 +63,7 @@ Added in v0.9.2
 
 ```ts
 export declare const alt: <A>(
-  second: Lazy<R.Resume<O.Option<A>>>,
+  second: Lazy<R.Resume<O.Option<A>>>
 ) => (first: R.Resume<O.Option<A>>) => R.Resume<O.Option<A>>
 ```
 
@@ -75,7 +75,7 @@ Added in v0.9.2
 
 ```ts
 export declare const ap: <A>(
-  fa: R.Resume<O.Option<A>>,
+  fa: R.Resume<O.Option<A>>
 ) => <B>(fab: R.Resume<O.Option<(a: A) => B>>) => R.Resume<O.Option<B>>
 ```
 
@@ -87,7 +87,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chain: <A, B>(
-  f: (a: A) => R.Resume<O.Option<B>>,
+  f: (a: A) => R.Resume<O.Option<B>>
 ) => (ma: R.Resume<O.Option<A>>) => R.Resume<O.Option<B>>
 ```
 
@@ -99,7 +99,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainNullableK: <A, B>(
-  f: (a: A) => B | null | undefined,
+  f: (a: A) => B | null | undefined
 ) => (ma: R.Resume<O.Option<A>>) => R.Resume<O.Option<NonNullable<B>>>
 ```
 
@@ -111,7 +111,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainOptionK: <A, B>(
-  f: (a: A) => O.Option<B>,
+  f: (a: A) => O.Option<B>
 ) => (ma: R.Resume<O.Option<A>>) => R.Resume<O.Option<B>>
 ```
 
@@ -123,7 +123,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, B>(
-  f: (value: A) => R.Resume<O.Option<E.Either<A, B>>>,
+  f: (value: A) => R.Resume<O.Option<E.Either<A, B>>>
 ) => (value: A) => R.Resume<O.Option<B>>
 ```
 
@@ -134,9 +134,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const map: <A, B>(
-  f: (a: A) => B,
-) => (fa: R.Resume<O.Option<A>>) => R.Resume<O.Option<B>>
+export declare const map: <A, B>(f: (a: A) => B) => (fa: R.Resume<O.Option<A>>) => R.Resume<O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -169,7 +167,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromNullableK: <A, B>(
-  f: (...a: A) => B | null | undefined,
+  f: (...a: A) => B | null | undefined
 ) => (...a: A) => R.Resume<O.Option<NonNullable<B>>>
 ```
 
@@ -180,9 +178,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromOptionK: <A, B>(
-  f: (...a: A) => O.Option<B>,
-) => (...a: A) => R.Resume<O.Option<B>>
+export declare const fromOptionK: <A, B>(f: (...a: A) => O.Option<B>) => (...a: A) => R.Resume<O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -247,9 +243,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getOrElseE: <A>(
-  onNone: Lazy<R.Resume<A>>,
-) => (fa: R.Resume<O.Option<A>>) => R.Resume<A>
+export declare const getOrElseE: <A>(onNone: Lazy<R.Resume<A>>) => (fa: R.Resume<O.Option<A>>) => R.Resume<A>
 ```
 
 Added in v0.9.2
@@ -259,10 +253,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const match: <B, A>(
-  onNone: () => B,
-  onSome: (a: A) => B,
-) => (ma: R.Resume<O.Option<A>>) => R.Resume<B>
+export declare const match: <B, A>(onNone: () => B, onSome: (a: A) => B) => (ma: R.Resume<O.Option<A>>) => R.Resume<B>
 ```
 
 Added in v0.9.2
@@ -274,7 +265,7 @@ Added in v0.9.2
 ```ts
 export declare const matchE: <B, A>(
   onNone: () => R.Resume<B>,
-  onSome: (a: A) => R.Resume<B>,
+  onSome: (a: A) => R.Resume<B>
 ) => (ma: R.Resume<O.Option<A>>) => R.Resume<B>
 ```
 

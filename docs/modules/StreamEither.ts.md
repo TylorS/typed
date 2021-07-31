@@ -66,7 +66,7 @@ Added in v0.9.2
 
 ```ts
 export declare const alt: <E, A>(
-  second: Lazy<Stream<E.Either<E, A>>>,
+  second: Lazy<Stream<E.Either<E, A>>>
 ) => (first: Stream<E.Either<E, A>>) => Stream<E.Either<E, A>>
 ```
 
@@ -78,7 +78,7 @@ Added in v0.9.2
 
 ```ts
 export declare const ap: <E, A>(
-  fa: Stream<E.Either<E, A>>,
+  fa: Stream<E.Either<E, A>>
 ) => <B>(fab: Stream<E.Either<E, (a: A) => B>>) => Stream<E.Either<E, B>>
 ```
 
@@ -91,7 +91,7 @@ Added in v0.9.2
 ```ts
 export declare const bimap: <E, G, A, B>(
   f: (e: E) => G,
-  g: (a: A) => B,
+  g: (a: A) => B
 ) => (fea: Stream<E.Either<E, A>>) => Stream<E.Either<G, B>>
 ```
 
@@ -105,7 +105,7 @@ Added in v0.9.2
 export declare const bracket: <E, A, B>(
   acquire: Stream<E.Either<E, A>>,
   use: (a: A) => Stream<E.Either<E, B>>,
-  release: (a: A, e: E.Either<E, B>) => Stream<E.Either<E, void>>,
+  release: (a: A, e: E.Either<E, B>) => Stream<E.Either<E, void>>
 ) => Stream<E.Either<E, B>>
 ```
 
@@ -117,7 +117,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chain: <A, E, B>(
-  f: (a: A) => Stream<E.Either<E, B>>,
+  f: (a: A) => Stream<E.Either<E, B>>
 ) => (ma: Stream<E.Either<E, A>>) => Stream<E.Either<E, B>>
 ```
 
@@ -129,7 +129,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, E, B>(
-  f: (value: A) => StreamEither<E, E.Either<A, B>>,
+  f: (value: A) => StreamEither<E, E.Either<A, B>>
 ) => (a: A) => StreamEither<E, B>
 ```
 
@@ -140,9 +140,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getOrElse: <E, A>(
-  onLeft: (e: E) => A,
-) => (ma: Stream<E.Either<E, A>>) => Stream<A>
+export declare const getOrElse: <E, A>(onLeft: (e: E) => A) => (ma: Stream<E.Either<E, A>>) => Stream<A>
 ```
 
 Added in v0.9.2
@@ -152,9 +150,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getOrElseE: <E, A>(
-  onLeft: (e: E) => Stream<A>,
-) => (ma: Stream<E.Either<E, A>>) => Stream<A>
+export declare const getOrElseE: <E, A>(onLeft: (e: E) => Stream<A>) => (ma: Stream<E.Either<E, A>>) => Stream<A>
 ```
 
 Added in v0.9.2
@@ -164,9 +160,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const map: <A, B>(
-  f: (a: A) => B,
-) => <E>(fa: Stream<E.Either<E, A>>) => Stream<E.Either<E, B>>
+export declare const map: <A, B>(f: (a: A) => B) => <E>(fa: Stream<E.Either<E, A>>) => Stream<E.Either<E, B>>
 ```
 
 Added in v0.9.2
@@ -176,9 +170,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const mapLeft: <E, G>(
-  f: (e: E) => G,
-) => <A>(fea: Stream<E.Either<E, A>>) => Stream<E.Either<G, A>>
+export declare const mapLeft: <E, G>(f: (e: E) => G) => <A>(fea: Stream<E.Either<E, A>>) => Stream<E.Either<G, A>>
 ```
 
 Added in v0.9.2
@@ -190,7 +182,7 @@ Added in v0.9.2
 ```ts
 export declare const match: <E, B, A>(
   onLeft: (e: E) => B,
-  onRight: (a: A) => B,
+  onRight: (a: A) => B
 ) => (ma: Stream<E.Either<E, A>>) => Stream<B>
 ```
 
@@ -203,7 +195,7 @@ Added in v0.9.2
 ```ts
 export declare const matchE: <E, B, A>(
   onLeft: (e: E) => Stream<B>,
-  onRight: (a: A) => Stream<B>,
+  onRight: (a: A) => Stream<B>
 ) => (ma: Stream<E.Either<E, A>>) => Stream<B>
 ```
 
@@ -215,7 +207,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orElse: <E1, E2, A>(
-  onLeft: (e: E1) => Stream<E.Either<E2, A>>,
+  onLeft: (e: E1) => Stream<E.Either<E2, A>>
 ) => (ma: Stream<E.Either<E1, A>>) => Stream<E.Either<E2, A>>
 ```
 
@@ -227,7 +219,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orElseFirst: <E, B>(
-  onLeft: (e: E) => Stream<E.Either<E, B>>,
+  onLeft: (e: E) => Stream<E.Either<E, B>>
 ) => <A>(ma: Stream<E.Either<E, A>>) => Stream<E.Either<E, A>>
 ```
 
@@ -239,7 +231,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orLeft: <E1, E2>(
-  onLeft: (e: E1) => Stream<E2>,
+  onLeft: (e: E1) => Stream<E2>
 ) => <A>(fa: Stream<E.Either<E1, A>>) => Stream<E.Either<E2, A>>
 ```
 
@@ -429,10 +421,8 @@ Added in v0.9.2
 
 ```ts
 export declare const altValidation: <A>(
-  semigroup: Semigroup<A>,
-) => <A>(
-  second: Lazy<Stream<E.Either<A, A>>>,
-) => (first: Stream<E.Either<A, A>>) => Stream<E.Either<A, A>>
+  semigroup: Semigroup<A>
+) => <A>(second: Lazy<Stream<E.Either<A, A>>>) => (first: Stream<E.Either<A, A>>) => Stream<E.Either<A, A>>
 ```
 
 Added in v0.9.2

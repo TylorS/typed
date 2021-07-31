@@ -6,9 +6,9 @@ parent: Modules
 
 ## Fail overview
 
-Fail is an Env-based abstraction for a try/catch style API which is based on continuations to
-provide type-safe errors with distinct channels to help separate errors that originate from
-different places.
+Fail is an Env-based abstraction for a try/catch style API
+which is based on continuations to provide type-safe errors
+with distinct channels to help separate errors that originate from different places.
 
 Added in v0.9.2
 
@@ -37,11 +37,11 @@ Added in v0.9.2
 
 ```ts
 export declare const attempt: <Key extends string | number | symbol>(
-  key: Key,
+  key: Key
 ) => <R, E, B>(
   env:
     | Env<Readonly<Record<Key, (e: E) => Resume<never>>>, B>
-    | Env<R & Readonly<Record<Key, (e: E) => Resume<never>>>, B>,
+    | Env<R & Readonly<Record<Key, (e: E) => Resume<never>>>, B>
 ) => Env<R, Either<E, B>>
 ```
 
@@ -53,14 +53,14 @@ Added in v0.9.2
 
 ```ts
 export declare const catchError: <Key extends string | number | symbol>(
-  key: Key,
+  key: Key
 ) => <E, R1, A>(
-  onError: (err: E) => Env<R1, A>,
+  onError: (err: E) => Env<R1, A>
 ) => {
   <R2>(
     env:
       | Env<Readonly<Record<Key, (e: E) => Resume<never>>>, A>
-      | Env<R2 & Readonly<Record<Key, (e: E) => Resume<never>>>, A>,
+      | Env<R2 & Readonly<Record<Key, (e: E) => Resume<never>>>, A>
   ): Env<R1 & R2, A>
   (env: Env<Readonly<Record<Key, (e: E) => Resume<never>>>, A>): Env<R1, A>
 }
@@ -74,13 +74,13 @@ Added in v0.9.2
 
 ```ts
 export declare const catchErrorW: <Key extends string | number | symbol>(
-  key: Key,
+  key: Key
 ) => <E, R1, A>(
-  onError: (err: E) => Env<R1, A>,
+  onError: (err: E) => Env<R1, A>
 ) => <R2, B>(
   env:
     | Env<Readonly<Record<Key, (e: E) => Resume<never>>>, B>
-    | Env<R2 & Readonly<Record<Key, (e: E) => Resume<never>>>, B>,
+    | Env<R2 & Readonly<Record<Key, (e: E) => Resume<never>>>, B>
 ) => Env<R1 & R2, A | B>
 ```
 
@@ -104,7 +104,7 @@ Added in v0.9.2
 
 ```ts
 export declare const throwError: <Key extends string | number | symbol>(
-  key: Key,
+  key: Key
 ) => <E>(err: E) => Env<Readonly<Record<Key, (e: E) => Resume<never>>>, never>
 ```
 
@@ -131,11 +131,11 @@ export interface Failure<K extends string, E> {
   readonly throw: (err: E) => Env<Fail<K, E>, never>
 
   readonly catchW: <R1, A>(
-    onError: (err: E) => Env<R1, A>,
+    onError: (err: E) => Env<R1, A>
   ) => <R2, B>(env: Env<Fail<K, E>, B> | Env<R2 & Fail<K, E>, B>) => Env<R1 & R2, A | B>
 
   readonly catch: <R1, A>(
-    onError: (err: E) => Env<R1, A>,
+    onError: (err: E) => Env<R1, A>
   ) => {
     <R2>(env: Env<Fail<K, E>, A> | Env<R2 & Fail<K, E>, A>): Env<R1 & R2, A>
     (env: Env<Fail<K, E>, A>): Env<R1, A>

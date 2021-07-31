@@ -89,9 +89,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const apFirst: <B>(
-  second: types.Stream<B>,
-) => <A>(first: types.Stream<A>) => types.Stream<A>
+export declare const apFirst: <B>(second: types.Stream<B>) => <A>(first: types.Stream<A>) => types.Stream<A>
 ```
 
 Added in v0.9.2
@@ -103,10 +101,8 @@ Added in v0.9.2
 ```ts
 export declare const apS: <N, A, B>(
   name: Exclude<N, keyof A>,
-  fb: types.Stream<B>,
-) => (
-  fa: types.Stream<A>,
-) => types.Stream<{ readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  fb: types.Stream<B>
+) => (fa: types.Stream<A>) => types.Stream<{ readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.9.2
@@ -116,9 +112,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const apSecond: <B>(
-  second: types.Stream<B>,
-) => <A>(first: types.Stream<A>) => types.Stream<B>
+export declare const apSecond: <B>(second: types.Stream<B>) => <A>(first: types.Stream<A>) => types.Stream<B>
 ```
 
 Added in v0.9.2
@@ -128,9 +122,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const apT: <B>(
-  fb: types.Stream<B>,
-) => <A>(fas: types.Stream<A>) => types.Stream<readonly [...A, B]>
+export declare const apT: <B>(fb: types.Stream<B>) => <A>(fas: types.Stream<A>) => types.Stream<readonly [...A, B]>
 ```
 
 Added in v0.9.2
@@ -142,10 +134,8 @@ Added in v0.9.2
 ```ts
 export declare const bind: <N, A, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => types.Stream<B>,
-) => (
-  ma: types.Stream<A>,
-) => types.Stream<{ readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  f: (a: A) => types.Stream<B>
+) => (ma: types.Stream<A>) => types.Stream<{ readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.9.2
@@ -155,9 +145,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const bindTo: <N>(
-  name: N,
-) => <A>(fa: types.Stream<A>) => types.Stream<{ [K in N]: A }>
+export declare const bindTo: <N>(name: N) => <A>(fa: types.Stream<A>) => types.Stream<{ [K in N]: A }>
 ```
 
 Added in v0.9.2
@@ -167,9 +155,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainFirst: <A, B>(
-  f: (a: A) => types.Stream<B>,
-) => (first: types.Stream<A>) => types.Stream<A>
+export declare const chainFirst: <A, B>(f: (a: A) => types.Stream<B>) => (first: types.Stream<A>) => types.Stream<A>
 ```
 
 Added in v0.9.2
@@ -180,7 +166,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstResumeK: <A, B>(
-  f: (value: A) => R.Resume<B>,
+  f: (value: A) => R.Resume<B>
 ) => (hkt: types.Stream<A>) => types.Stream<A>
 ```
 
@@ -191,9 +177,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainRec: <A, B>(
-  f: (value: A) => types.Stream<Either<A, B>>,
-) => (value: A) => types.Stream<B>
+export declare const chainRec: <A, B>(f: (value: A) => types.Stream<Either<A, B>>) => (value: A) => types.Stream<B>
 ```
 
 Added in v0.9.2
@@ -203,9 +187,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainResumeK: <A, B>(
-  f: (value: A) => R.Resume<B>,
-) => (hkt: types.Stream<A>) => types.Stream<B>
+export declare const chainResumeK: <A, B>(f: (value: A) => R.Resume<B>) => (hkt: types.Stream<A>) => types.Stream<B>
 ```
 
 Added in v0.9.2
@@ -216,7 +198,7 @@ Added in v0.9.2
 
 ```ts
 export declare const collectEvents: (
-  scheduler: types.Scheduler,
+  scheduler: types.Scheduler
 ) => <A>(stream: types.Stream<A>) => Promise<readonly A[]>
 ```
 
@@ -260,7 +242,7 @@ Added in v0.9.2
 
 ```ts
 export declare const exhaustMapLatest: <A, B>(
-  f: (value: A) => types.Stream<B>,
+  f: (value: A) => types.Stream<B>
 ) => (stream: types.Stream<A>) => types.Stream<B>
 ```
 
@@ -271,9 +253,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const filterMap: <A, B>(
-  f: (a: A) => O.Option<B>,
-) => (fa: types.Stream<A>) => types.Stream<B>
+export declare const filterMap: <A, B>(f: (a: A) => O.Option<B>) => (fa: types.Stream<A>) => types.Stream<B>
 ```
 
 Added in v0.9.2
@@ -283,9 +263,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const keyed: <A>(
-  Eq: Eq<A>,
-) => (stream: Stream<readonly A[]>) => Stream<readonly Stream<A>[]>
+export declare const keyed: <A>(Eq: Eq<A>) => (stream: Stream<readonly A[]>) => Stream<readonly Stream<A>[]>
 ```
 
 Added in v0.9.2
@@ -296,7 +274,7 @@ Added in v0.9.2
 
 ```ts
 export declare const mergeConcurrentlyRec: (
-  concurrency: number,
+  concurrency: number
 ) => <A, B>(f: (value: A) => types.Stream<Either<A, B>>) => (value: A) => types.Stream<B>
 ```
 
@@ -314,14 +292,15 @@ Added in v0.9.2
 
 ## mergeMapWhen
 
-Using the provided Eq mergeMapWhen conditionally applies a Kliesli arrow to the values within an
-Array when they are added and any values removed from the array will be disposed of immediately
+Using the provided Eq mergeMapWhen conditionally applies a Kliesli arrow
+to the values within an Array when they are added and any values removed
+from the array will be disposed of immediately
 
 **Signature**
 
 ```ts
 export declare const mergeMapWhen: <V>(
-  Eq?: Eq<V>,
+  Eq?: Eq<V>
 ) => <A>(f: (value: V) => types.Stream<A>) => (values: Stream<readonly V[]>) => Stream<readonly A[]>
 ```
 
@@ -332,9 +311,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const onDispose: (
-  disposable: types.Disposable,
-) => <A>(stream: types.Stream<A>) => types.Stream<A>
+export declare const onDispose: (disposable: types.Disposable) => <A>(stream: types.Stream<A>) => types.Stream<A>
 ```
 
 Added in v0.9.2
@@ -345,7 +322,7 @@ Added in v0.9.2
 
 ```ts
 export declare const partition: <A>(
-  predicate: Predicate<A>,
+  predicate: Predicate<A>
 ) => (fa: types.Stream<A>) => Separated<types.Stream<A>, types.Stream<A>>
 ```
 
@@ -357,7 +334,7 @@ Added in v0.9.2
 
 ```ts
 export declare const partitionMap: <A, B, C>(
-  f: (a: A) => Either<B, C>,
+  f: (a: A) => Either<B, C>
 ) => (fa: types.Stream<A>) => Separated<types.Stream<B>, types.Stream<C>>
 ```
 
@@ -368,9 +345,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const race: <A>(
-  second: Lazy<types.Stream<A>>,
-) => (first: types.Stream<A>) => types.Stream<A>
+export declare const race: <A>(second: Lazy<types.Stream<A>>) => (first: types.Stream<A>) => types.Stream<A>
 ```
 
 Added in v0.9.2
@@ -380,9 +355,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const separate: <A, B>(
-  stream: types.Stream<Either<A, B>>,
-) => Separated<types.Stream<A>, types.Stream<B>>
+export declare const separate: <A, B>(stream: types.Stream<Either<A, B>>) => Separated<types.Stream<A>, types.Stream<B>>
 ```
 
 Added in v0.9.2
@@ -402,9 +375,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const switchRec: <A, B>(
-  f: (value: A) => types.Stream<Either<A, B>>,
-) => (value: A) => types.Stream<B>
+export declare const switchRec: <A, B>(f: (value: A) => types.Stream<Either<A, B>>) => (value: A) => types.Stream<B>
 ```
 
 Added in v0.9.2
@@ -440,7 +411,7 @@ Convert an IO<Disposable> into a Most.js Task
 ```ts
 export declare function createCallbackTask(
   cb: Arity1<types.Time, types.Disposable>,
-  onError?: (error: Error) => void,
+  onError?: (error: Error) => void
 ): types.Task
 ```
 
@@ -481,9 +452,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromResumeK: <A, B>(
-  f: (...args: A) => R.Resume<B>,
-) => (...args: A) => types.Stream<B>
+export declare const fromResumeK: <A, B>(f: (...args: A) => R.Resume<B>) => (...args: A) => types.Stream<B>
 ```
 
 Added in v0.9.2

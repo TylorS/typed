@@ -28,7 +28,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, E, B>(
-  f: (value: A) => TE.TaskEither<E, E.Either<A, B>>,
+  f: (value: A) => TE.TaskEither<E, E.Either<A, B>>
 ) => (value: A) => TE.TaskEither<E, B>
 ```
 
