@@ -5,11 +5,14 @@ nav_order: 4
 
 # Examples
 
-If you head over to our Github, you'll find a growing number of [examples](../examples).
+## Github
+
+You'll find a growing number of [examples on Github](https://github.com/TylorS/typed-fp/examples).
 
 ## CodeSandbox
 
-For those of the examples which run in a browser a corresponding CodeSandbox can be found.
+For those of the examples which run in a browser a corresponding CodeSandbox can be generally be
+found here.
 
 - [Counter](https://codesandbox.io/s/eager-leavitt-9tft6?file=/src/index.ts) : Basic Counter
   Application
