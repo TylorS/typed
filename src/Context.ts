@@ -65,7 +65,7 @@ export function use<E, A>(ref: Ref.Ref<E, A>): E.Env<E & Ref.Refs & SchedulerEnv
       pipe(
         useValues(pipe(ref, Ref.listenToValues, RS.useSome(providerRefs))),
         EO.chainOptionK(identity),
-        EO.getOrElseEW(() => get(ref)),
+        EO.getOrElseEW(() => pipe(ref, Ref.get, E.useSome(providerRefs))),
       ),
     ),
     E.chainFirstW(({ currentRefs, providerRefs }) =>

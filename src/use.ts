@@ -19,7 +19,7 @@ import * as S from './Stream'
 /**
  * Use Refs to check if a value has changed between invocations
  */
-export const useEq = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
+export const useEq = <A = void>(Eq: Eq<A> = deepEqualsEq, initial = true) => {
   const ref = Ref.make(E.of<O.Option<A>>(O.none), {
     eq: alwaysEqualsEq,
     id: Symbol('useEq::Previous'),
@@ -32,7 +32,7 @@ export const useEq = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
       E.bindW('changed', ({ previous }) =>
         pipe(
           previous,
-          O.matchW(() => true, not(Eq.equals(value))),
+          O.matchW(() => initial, not(Eq.equals(value))),
           E.of,
         ),
       ),
@@ -53,13 +53,11 @@ export const useMemo = <E, A, B = void>(env: E.Env<E, A>, Eq: Eq<B> = deepEquals
   const changed = useEq(Eq)
   const updateRef = Ref.update(ref)(() => env)
 
-  return (value: B) =>
-    pipe(
-      value,
-      changed,
-      E.chainFirstW((changed) => (changed ? updateRef : E.of(null))),
-      E.chainW(() => Ref.get(ref)),
-    )
+  return flow(
+    changed,
+    E.chainFirstW((changed) => (changed ? updateRef : E.of(null))),
+    E.chainW(() => Ref.get(ref)),
+  )
 }
 
 export const useDisposable = <A = void>(Eq: Eq<A> = deepEqualsEq, switchLatest = false) => {
@@ -93,8 +91,8 @@ export const useDisposable = <A = void>(Eq: Eq<A> = deepEqualsEq, switchLatest =
     )
 }
 
-export const useEffect = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
-  const use = useDisposable(Eq)
+export const useEffect = <A = void>(Eq: Eq<A> = deepEqualsEq, switchLatest = false) => {
+  const use = useDisposable(Eq, switchLatest)
 
   return <E>(env: E.Env<E, any>, value: A) =>
     pipe(
@@ -168,7 +166,7 @@ export const bindEnvK =
     E1 & E2 & E3 & Ref.Refs,
     { readonly [K in N | keyof A]: K extends keyof A ? A[K] : () => Disposable }
   > =>
-    E.bindW(name, () => useEnvK((...args: Args) => f(...args), onValue))(ma)
+    E.bindW(name, () => useEnvK(f, onValue))(ma)
 
 export const useReaderStream = <A = void, B = unknown>(
   Eq: Eq<A> = deepEqualsEq,
