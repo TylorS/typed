@@ -27,6 +27,11 @@ once both codebases are stable.
 - Resilient
 - Deeply integrated with [fp-ts](https://gcanti.github.io/fp-ts/)
 
+## Conceptual Documentation
+
+If you're interested in some ramblings from me, about why this project exists and where it's going,
+have a look at our [Concepts](./concepts.md) document.
+
 ## API Documentation
 
-The API documentation can be found [here](./modules/index.md)
+[API Documentation Found Here](./modules/index.md)
