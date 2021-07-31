@@ -97,7 +97,7 @@ built in order to express concepts that stretched over time.
 
 I started wondering...
 
-**Can I use push-based reactive programming provide better combinators for dealing with systems over
+**Can I use push-based reactive programming to provide better combinators for dealing with systems over
 time?**
 
 #### Where things are going
