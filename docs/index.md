@@ -35,3 +35,8 @@ have a look at our [Concepts](./concepts.md) document.
 ## API Documentation
 
 [API Documentation Found Here](./modules/index.md)
+
+## Community
+
+If you're interested in chatting with me about the project come on over and join us on
+[Discord](https://discord.gg/kpPHEvkaAv).
