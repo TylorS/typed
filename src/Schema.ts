@@ -106,7 +106,15 @@ export function create<A>(schema: WithUnionRefineSchema<A>): WithUnionRefineSche
  * @since 0.9.4
  * @category Type-level
  */
-export type TypeOf<S> = S extends Schema<infer A> ? A : never
+export type TypeOf<S> = S extends Schema<infer A>
+  ? A
+  : S extends WithRefineSchema<infer A>
+  ? A
+  : S extends WithUnionSchema<infer A>
+  ? A
+  : S extends WithUnionRefineSchema<infer A>
+  ? A
+  : never
 
 /**
  * @since 0.9.5
