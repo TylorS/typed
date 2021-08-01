@@ -1,6 +1,6 @@
 ---
 title: Eq.ts
-nav_order: 16
+nav_order: 17
 parent: Modules
 ---
 

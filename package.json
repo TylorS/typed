@@ -157,6 +157,10 @@
       "require": "./cjs/EnvOption.js",
       "import": "./esm/EnvOption.js"
     },
+    "./EnvThese": {
+      "require": "./cjs/EnvThese.js",
+      "import": "./esm/EnvThese.js"
+    },
     "./Eq": {
       "require": "./cjs/Eq.js",
       "import": "./esm/Eq.js"

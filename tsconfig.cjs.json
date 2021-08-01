@@ -32,6 +32,7 @@
     "EnvData",
     "EnvEither",
     "EnvOption",
+    "EnvThese",
     "Eq",
     "Fail",
     "FromEnv",
