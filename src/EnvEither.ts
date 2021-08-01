@@ -261,10 +261,29 @@ export const Apply: Apply_.Apply3<URI> = {
 export const apFirst = Apply_.apFirst(Apply)
 
 /**
+ * @since 0.9.10
+ * @category Combinator
+ */
+export const apFirstW = Apply_.apFirst(Apply) as <R1, E, B>(
+  second: EnvEither<R1, E, B>,
+) => <R2, A>(first: EnvEither<R2, E, A>) => EnvEither<R1 & R2, E, A>
+
+/**
  * @since 0.9.2
  * @category Combinator
  */
 export const apS = Apply_.apS(Apply)
+
+/**
+ * @since 0.9.10
+ * @category Combinator
+ */
+export const apSW = apS as <N extends string, A, R1, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: EnvEither<R1, E, B>,
+) => <R2>(
+  fa: EnvEither<R2, E, A>,
+) => EnvEither<R1 & R2, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 
 /**
  * @since 0.9.2
@@ -273,10 +292,28 @@ export const apS = Apply_.apS(Apply)
 export const apSecond = Apply_.apSecond(Apply)
 
 /**
+ * @since 0.9.10
+ * @category Combinator
+ */
+export const apSecondW = apSecond as <R1, E, B>(
+  second: EnvEither<R1, E, B>,
+) => <R2, A>(first: EnvEither<R2, E, A>) => EnvEither<R1 & R2, E, B>
+
+/**
  * @since 0.9.2
  * @category Combinator
  */
 export const apT = Apply_.apT(Apply)
+
+/**
+ * @since 0.9.10
+ * @category Combinator
+ */
+export const apTW = apT as <R1, E, B>(
+  fb: EnvEither<R1, E, B>,
+) => <R2, A extends readonly unknown[]>(
+  fas: EnvEither<R2, E, A>,
+) => EnvEither<R1 & R2, E, readonly [...A, B]>
 
 /**
  * @since 0.9.2
