@@ -4,9 +4,16 @@
  * @since 0.9.2
  */
 
-import { Eq } from 'fp-ts/Eq'
+import * as B from 'fp-ts/boolean'
+import * as Eq from 'fp-ts/Eq'
+import * as N from 'fp-ts/number'
+import * as RA from 'fp-ts/ReadonlyArray'
+import * as RR from 'fp-ts/ReadonlyRecord'
+import * as S from 'fp-ts/string'
 
+import * as D from './Decoder'
 import { constant, constFalse, constTrue } from './function'
+import { Schemable1, WithUnknownContainers1 } from './Schemable'
 
 const FUNCTION_NAME_REGEX = /^function\s*([\w$]+)/
 const DEFAULT_MATCH = ['', '']
@@ -15,13 +22,13 @@ const DEFAULT_MATCH = ['', '']
  * @since 0.9.2
  * @category Instance
  */
-export const alwaysEqualsEq: Eq<any> = { equals: constant(constTrue) }
+export const alwaysEqualsEq: Eq.Eq<any> = { equals: constant(constTrue) }
 
 /**
  * @since 0.9.2
  * @category Instance
  */
-export const neverEqualsEq: Eq<any> = { equals: constant(constFalse) }
+export const neverEqualsEq: Eq.Eq<any> = { equals: constant(constFalse) }
 
 /**
  * A deep-equality Eq instance.
@@ -29,7 +36,7 @@ export const neverEqualsEq: Eq<any> = { equals: constant(constFalse) }
  * @since 0.9.2
  * @category Instance
  */
-export const deepEqualsEq: Eq<unknown> = { equals }
+export const deepEqualsEq: Eq.Eq<unknown> = { equals }
 
 function equals(a: any) {
   return (b: any) => _equals(a, b)
@@ -212,6 +219,192 @@ function functionName(fn: Function): string {
   const [, name] = String(fn).match(FUNCTION_NAME_REGEX) || DEFAULT_MATCH
 
   return name
+}
+
+// TODO: move to io-ts-contrib in v3
+
+// -------------------------------------------------------------------------------------
+// primitives
+// -------------------------------------------------------------------------------------
+
+/**
+ * @category primitives
+ * @since 2.2.2
+ */
+export const string: Eq.Eq<string> = S.Eq
+
+/**
+ * @category primitives
+ * @since 2.2.2
+ */
+export const number: Eq.Eq<number> = N.Eq
+
+/**
+ * @category primitives
+ * @since 2.2.2
+ */
+export const boolean: Eq.Eq<boolean> = B.Eq
+
+/**
+ * @category primitives
+ * @since 2.2.2
+ */
+export const UnknownArray: Eq.Eq<ReadonlyArray<unknown>> = Eq.fromEquals(
+  (second) => (first) => first.length === second.length,
+)
+
+/**
+ * @category primitives
+ * @since 2.2.2
+ */
+export const UnknownRecord: Eq.Eq<Readonly<Record<string, unknown>>> = Eq.fromEquals(
+  (second) => (first) => {
+    for (const k in first) {
+      if (!(k in second)) {
+        return false
+      }
+    }
+    for (const k in second) {
+      if (!(k in first)) {
+        return false
+      }
+    }
+    return true
+  },
+)
+
+// -------------------------------------------------------------------------------------
+// combinators
+// -------------------------------------------------------------------------------------
+
+/**
+ * @category combinators
+ * @since 2.2.2
+ */
+export const nullable = <A>(or: Eq.Eq<A>): Eq.Eq<null | A> =>
+  Eq.fromEquals(
+    (second) => (first) =>
+      first === null || second === null ? first === second : or.equals(second)(first),
+  )
+
+/**
+ * @category combinators
+ * @since 2.2.2
+ */
+export const tuple: <A extends ReadonlyArray<unknown>>(
+  ...components: { [K in keyof A]: Eq.Eq<A[K]> }
+) => Eq.Eq<A> = Eq.tuple
+
+/**
+ * @category combinators
+ * @since 2.2.15
+ */
+export const struct: <A>(
+  properties: { [K in keyof A]: Eq.Eq<A[K]> },
+) => Eq.Eq<{ [K in keyof A]: A[K] }> = Eq.struct
+
+/**
+ * @category combinators
+ * @since 2.2.2
+ */
+export const partial = <A>(
+  properties: { [K in keyof A]: Eq.Eq<A[K]> },
+): Eq.Eq<Partial<{ [K in keyof A]: A[K] }>> =>
+  Eq.fromEquals((second) => (first) => {
+    for (const k in properties) {
+      const xk = first[k]
+      const yk = second[k]
+      if (!(xk === undefined || yk === undefined ? xk === yk : properties[k].equals(xk!)(yk!))) {
+        return false
+      }
+    }
+    return true
+  })
+
+/**
+ * @category combinators
+ * @since 2.2.2
+ */
+export const array: <A>(item: Eq.Eq<A>) => Eq.Eq<Array<A>> = RA.getEq
+
+/**
+ * @category combinators
+ * @since 2.2.2
+ */
+export const record: <A>(codomain: Eq.Eq<A>) => Eq.Eq<Record<string, A>> = RR.getEq
+
+/**
+ * @category combinators
+ * @since 2.2.2
+ */
+export const intersect =
+  <B>(right: Eq.Eq<B>) =>
+  <A>(left: Eq.Eq<A>): Eq.Eq<A & B> =>
+    Eq.fromEquals((second) => (first) => left.equals(second)(first) && right.equals(second)(first))
+
+/**
+ * @category combinators
+ * @since 2.2.2
+ */
+export function lazy<A>(f: () => Eq.Eq<A>): Eq.Eq<A> {
+  const get = D.memoize<void, Eq.Eq<A>>(f)
+  return {
+    equals: (second) => (first) => get().equals(second)(first),
+  }
+}
+
+/**
+ * @category combinators
+ * @since 2.2.2
+ */
+export const sum = <T extends string>(
+  tag: T,
+): (<A>(members: { [K in keyof A]: Eq.Eq<A[K] & Record<T, K>> }) => Eq.Eq<A[keyof A]>) => {
+  return (members: Record<string, Eq.Eq<any>>) =>
+    Eq.fromEquals((second: Record<string, any>) => (first: Record<string, any>) => {
+      const ftag = first[tag]
+      return ftag === second[tag] && members[ftag].equals(second)(first)
+    })
+}
+
+// -------------------------------------------------------------------------------------
+// instances
+// -------------------------------------------------------------------------------------
+
+declare module 'fp-ts/HKT' {
+  interface URItoKind<A> {
+    readonly '@typed/fp/ToEq': Eq.Eq<A>
+  }
+}
+
+/**
+ * @category instances
+ * @since 0.9.4
+ */
+export const Schemable: Schemable1<'@typed/fp/ToEq'> = {
+  URI: '@typed/fp/ToEq',
+  string,
+  number,
+  boolean,
+  literal: () => Eq.EqStrict,
+  tuple,
+  struct,
+  partial,
+  array,
+  record,
+  nullable,
+  intersect,
+  lazy: (_, f) => lazy(f),
+  sum,
+}
+
+/**
+ * @category instances
+ * @since 0.9.4
+ */
+export const WithUnknownContainers: WithUnknownContainers1<'@typed/fp/ToEq'> = {
+  UnknownArray,
+  UnknownRecord,
 }
 
 export * from 'fp-ts/Eq'
