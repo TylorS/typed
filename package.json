@@ -58,7 +58,7 @@
     "clean": "node -r esbuild-register ./tools/cleanup",
     "docs": "npx docs-ts",
     "lint": "concurrently npm:lint:ts npm:lint:markdown",
-    "lint:markdown": "prettier  --write --parser markdown --prose-wrap always *.md",
+    "lint:markdown": "prettier  --write --parser markdown --prose-wrap always *.md docs/**/*.md",
     "lint:ts": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
     "lint-staged": "lint-staged",
     "unit-test": "mocha -r esbuild-register -r tsconfig-paths/register 'src/**/*.test.ts'",

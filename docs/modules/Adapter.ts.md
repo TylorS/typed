@@ -6,8 +6,8 @@ parent: Modules
 
 ## Adapter overview
 
-Adapter is based on [@most/adapter](https://github.com/mostjs/adapter), and adds
-some fp-ts instances.
+Adapter is based on [@most/adapter](https://github.com/mostjs/adapter), and adds some fp-ts
+instances.
 
 Added in v0.9.2
 
@@ -44,8 +44,11 @@ Apply a stream transformation to an Adapter
 
 ```ts
 export declare const adapt: <A, B>(
-  f: (stream: Stream<A>) => Stream<B>
-) => <C>([send, stream]: readonly [(event: C) => void, Stream<A>]) => readonly [(event: C) => void, Stream<B>]
+  f: (stream: Stream<A>) => Stream<B>,
+) => <C>([send, stream]: readonly [(event: C) => void, Stream<A>]) => readonly [
+  (event: C) => void,
+  Stream<B>,
+]
 ```
 
 Added in v0.9.2
@@ -55,7 +58,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare function filter<A, B extends A>(f: Refinement<A, B>): <C>(adapter: Adapter<C, A>) => Adapter<C, B>
+export declare function filter<A, B extends A>(
+  f: Refinement<A, B>,
+): <C>(adapter: Adapter<C, A>) => Adapter<C, B>
 export declare function filter<A>(f: Predicate<A>): <C>(adapter: Adapter<C, A>) => Adapter<C, A>
 ```
 
@@ -88,7 +93,7 @@ Added in v0.9.2
 ```ts
 export declare const promap: <B, A, C, D>(
   f: (value: B) => A,
-  g: (value: C) => D
+  g: (value: C) => D,
 ) => (adapter: readonly [(event: A) => void, Stream<C>]) => readonly [(event: B) => void, Stream<D>]
 ```
 

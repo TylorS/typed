@@ -31,7 +31,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const Branded: <A extends unknown>() => <E extends ValueOf<A>>(e: E) => Branded<E, BrandOf<A>>
+export declare const Branded: <A extends unknown>() => <E extends ValueOf<A>>(
+  e: E,
+) => Branded<E, BrandOf<A>>
 ```
 
 Added in v0.9.2
