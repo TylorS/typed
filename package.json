@@ -57,7 +57,7 @@
     "build:typescript:cjs": "rimraf cjs && tsc -P ./tsconfig.cjs.json",
     "build:typescript:esm": "rimraf esm && tsc -P ./tsconfig.esm.json",
     "clean": "node -r esbuild-register ./tools/cleanup",
-    "docs": "npx docs-ts",
+    "docs": "npx docs-ts && git add . && git commit -m 'docs: rebuild docs'",
     "lint": "concurrently npm:lint:ts npm:lint:markdown",
     "lint:markdown": "prettier  --write --parser markdown --prose-wrap always *.md docs/**/*.md",
     "lint:ts": "eslint src --ext .js,.jsx,.ts,.tsx --fix",

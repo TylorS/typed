@@ -18,9 +18,13 @@ Added in v0.9.2
   - [alt](#alt)
   - [ap](#ap)
   - [apFirst](#apfirst)
+  - [apFirstW](#apfirstw)
   - [apS](#aps)
+  - [apSW](#apsw)
   - [apSecond](#apsecond)
+  - [apSecondW](#apsecondw)
   - [apT](#apt)
+  - [apTW](#aptw)
   - [askAndProvide](#askandprovide)
   - [askAndUse](#askanduse)
   - [bimap](#bimap)
@@ -154,6 +158,18 @@ export declare const apFirst: <R, E, B>(
 
 Added in v0.9.2
 
+## apFirstW
+
+**Signature**
+
+```ts
+export declare const apFirstW: <R1, E, B>(
+  second: EnvEither<R1, E, B>,
+) => <R2, A>(first: EnvEither<R2, E, A>) => EnvEither<R1 & R2, E, A>
+```
+
+Added in v0.9.10
+
 ## apS
 
 **Signature**
@@ -169,6 +185,21 @@ export declare const apS: <N, A, R, E, B>(
 
 Added in v0.9.2
 
+## apSW
+
+**Signature**
+
+```ts
+export declare const apSW: <N extends string, A, R1, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: EnvEither<R1, E, B>,
+) => <R2>(
+  fa: EnvEither<R2, E, A>,
+) => EnvEither<R1 & R2, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.9.10
+
 ## apSecond
 
 **Signature**
@@ -181,6 +212,18 @@ export declare const apSecond: <R, E, B>(
 
 Added in v0.9.2
 
+## apSecondW
+
+**Signature**
+
+```ts
+export declare const apSecondW: <R1, E, B>(
+  second: EnvEither<R1, E, B>,
+) => <R2, A>(first: EnvEither<R2, E, A>) => EnvEither<R1 & R2, E, B>
+```
+
+Added in v0.9.10
+
 ## apT
 
 **Signature**
@@ -192,6 +235,20 @@ export declare const apT: <R, E, B>(
 ```
 
 Added in v0.9.2
+
+## apTW
+
+**Signature**
+
+```ts
+export declare const apTW: <R1, E, B>(
+  fb: EnvEither<R1, E, B>,
+) => <R2, A extends readonly unknown[]>(
+  fas: EnvEither<R2, E, A>,
+) => EnvEither<R1 & R2, E, readonly [...A, B]>
+```
+
+Added in v0.9.10
 
 ## askAndProvide
 
