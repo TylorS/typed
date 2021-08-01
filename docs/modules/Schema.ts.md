@@ -218,7 +218,15 @@ Added in v0.9.5
 **Signature**
 
 ```ts
-export type TypeOf<S> = S extends Schema<infer A> ? A : never
+export type TypeOf<S> = S extends Schema<infer A>
+  ? A
+  : S extends WithRefineSchema<infer A>
+  ? A
+  : S extends WithUnionSchema<infer A>
+  ? A
+  : S extends WithUnionRefineSchema<infer A>
+  ? A
+  : never
 ```
 
 Added in v0.9.4
