@@ -105,30 +105,8 @@ export interface Schemable2C<S extends URIS2, E> {
   ) => <A>(members: { [K in keyof A]: Kind2<S, E, A[K] & Record<T, K>> }) => Kind2<S, E, A[keyof A]>
   readonly lazy: <A>(id: string, f: () => Kind2<S, E, A>) => Kind2<S, E, A>
   readonly branded: <A extends Branded<any, any>>(item: Kind2<S, E, ValueOf<A>>) => Kind2<S, E, A>
-}
-
-/**
- * @since 0.9.4
- */
-export interface WithUnknownContainers<S> {
-  readonly UnknownArray: HKT<S, Array<unknown>>
-  readonly UnknownRecord: HKT<S, Record<string, unknown>>
-}
-
-/**
- * @since 0.9.4
- */
-export interface WithUnknownContainers1<S extends URIS> {
-  readonly UnknownArray: Kind<S, Array<unknown>>
-  readonly UnknownRecord: Kind<S, Record<string, unknown>>
-}
-
-/**
- * @since 0.9.4
- */
-export interface WithUnknownContainers2C<S extends URIS2, E> {
-  readonly UnknownArray: Kind2<S, E, Array<unknown>>
-  readonly UnknownRecord: Kind2<S, E, Record<string, unknown>>
+  readonly unknownArray: Kind2<S, E, Array<unknown>>
+  readonly unknownRecord: Kind2<S, E, Record<string, unknown>>
 }
 
 /**
