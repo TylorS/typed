@@ -92,7 +92,7 @@ export const matchEW = TT.matchE(E.Chain) as <E, R, B, A, C, D>(
   onLeft: (e: E) => E.Env<R, B>,
   onRight: (a: A) => E.Env<R, C>,
   onBoth: (e: E, a: A) => E.Env<R, D>,
-) => (ma: E.Env<R, TH.These<E, A>>) => E.Env<R, TH.These<E, B | C | D>>
+) => (ma: E.Env<R, TH.These<E, A>>) => E.Env<R, B | C | D>
 
 /**
  * @since 0.9.7
