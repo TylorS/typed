@@ -37,6 +37,7 @@
     "FromEnv",
     "FromResume",
     "FromStream",
+    "Guard",
     "HKT",
     "IOEither",
     "MonadRec",

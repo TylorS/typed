@@ -82,6 +82,7 @@ snowpack.key
 /FromEnv/
 /FromResume/
 /FromStream/
+/Guard/
 /HKT/
 /IOEither/
 /MonadRec/

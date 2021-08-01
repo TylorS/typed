@@ -176,6 +176,10 @@
       "require": "./cjs/FromStream.js",
       "import": "./esm/FromStream.js"
     },
+    "./Guard": {
+      "require": "./cjs/Guard.js",
+      "import": "./esm/Guard.js"
+    },
     "./HKT": {
       "require": "./cjs/HKT.js",
       "import": "./esm/HKT.js"
