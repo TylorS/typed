@@ -1,6 +1,6 @@
 ---
 title: TaskOption.ts
-nav_order: 55
+nav_order: 62
 parent: Modules
 ---
 
@@ -27,7 +27,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainRec: <A, B>(f: (value: A) => TO.TaskOption<E.Either<A, B>>) => (value: A) => TO.TaskOption<B>
+export declare const chainRec: <A, B>(
+  f: (value: A) => TO.TaskOption<E.Either<A, B>>,
+) => (value: A) => TO.TaskOption<B>
 ```
 
 Added in v0.9.2

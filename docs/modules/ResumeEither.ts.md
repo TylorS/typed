@@ -1,6 +1,6 @@
 ---
 title: ResumeEither.ts
-nav_order: 41
+nav_order: 46
 parent: Modules
 ---
 
@@ -68,7 +68,7 @@ Added in v0.9.2
 
 ```ts
 export declare const alt: <E, A>(
-  second: Lazy<R.Resume<E.Either<E, A>>>
+  second: Lazy<R.Resume<E.Either<E, A>>>,
 ) => (first: R.Resume<E.Either<E, A>>) => R.Resume<E.Either<E, A>>
 ```
 
@@ -80,7 +80,7 @@ Added in v0.9.2
 
 ```ts
 export declare const ap: <E, A>(
-  fa: R.Resume<E.Either<E, A>>
+  fa: R.Resume<E.Either<E, A>>,
 ) => <B>(fab: R.Resume<E.Either<E, (a: A) => B>>) => R.Resume<E.Either<E, B>>
 ```
 
@@ -93,7 +93,7 @@ Added in v0.9.2
 ```ts
 export declare const bimap: <E, G, A, B>(
   f: (e: E) => G,
-  g: (a: A) => B
+  g: (a: A) => B,
 ) => (fea: R.Resume<E.Either<E, A>>) => R.Resume<E.Either<G, B>>
 ```
 
@@ -107,7 +107,7 @@ Added in v0.9.2
 export declare const bracket: <E, A, B>(
   acquire: R.Resume<E.Either<E, A>>,
   use: (a: A) => R.Resume<E.Either<E, B>>,
-  release: (a: A, e: E.Either<E, B>) => R.Resume<E.Either<E, void>>
+  release: (a: A, e: E.Either<E, B>) => R.Resume<E.Either<E, void>>,
 ) => R.Resume<E.Either<E, B>>
 ```
 
@@ -119,7 +119,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chain: <A, E, B>(
-  f: (a: A) => R.Resume<E.Either<E, B>>
+  f: (a: A) => R.Resume<E.Either<E, B>>,
 ) => (ma: R.Resume<E.Either<E, A>>) => R.Resume<E.Either<E, B>>
 ```
 
@@ -131,7 +131,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, E, B>(
-  f: (a: A) => R.Resume<E.Either<E, E.Either<A, B>>>
+  f: (a: A) => R.Resume<E.Either<E, E.Either<A, B>>>,
 ) => (a: A) => R.Resume<E.Either<E, B>>
 ```
 
@@ -142,7 +142,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getOrElse: <E, A>(onLeft: (e: E) => A) => (ma: R.Resume<E.Either<E, A>>) => R.Resume<A>
+export declare const getOrElse: <E, A>(
+  onLeft: (e: E) => A,
+) => (ma: R.Resume<E.Either<E, A>>) => R.Resume<A>
 ```
 
 Added in v0.9.2
@@ -152,7 +154,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getOrElseE: <E, A>(onLeft: (e: E) => R.Resume<A>) => (ma: R.Resume<E.Either<E, A>>) => R.Resume<A>
+export declare const getOrElseE: <E, A>(
+  onLeft: (e: E) => R.Resume<A>,
+) => (ma: R.Resume<E.Either<E, A>>) => R.Resume<A>
 ```
 
 Added in v0.9.2
@@ -162,7 +166,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const map: <A, B>(f: (a: A) => B) => <E>(fa: R.Resume<E.Either<E, A>>) => R.Resume<E.Either<E, B>>
+export declare const map: <A, B>(
+  f: (a: A) => B,
+) => <E>(fa: R.Resume<E.Either<E, A>>) => R.Resume<E.Either<E, B>>
 ```
 
 Added in v0.9.2
@@ -172,7 +178,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const mapLeft: <E, G>(f: (e: E) => G) => <A>(fea: R.Resume<E.Either<E, A>>) => R.Resume<E.Either<G, A>>
+export declare const mapLeft: <E, G>(
+  f: (e: E) => G,
+) => <A>(fea: R.Resume<E.Either<E, A>>) => R.Resume<E.Either<G, A>>
 ```
 
 Added in v0.9.2
@@ -193,7 +201,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orElse: <E1, E2, A>(
-  onLeft: (e: E1) => R.Resume<E.Either<E2, A>>
+  onLeft: (e: E1) => R.Resume<E.Either<E2, A>>,
 ) => (ma: R.Resume<E.Either<E1, A>>) => R.Resume<E.Either<E2, A>>
 ```
 
@@ -205,7 +213,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orElseFirst: <E, B>(
-  onLeft: (e: E) => R.Resume<E.Either<E, B>>
+  onLeft: (e: E) => R.Resume<E.Either<E, B>>,
 ) => <A>(ma: R.Resume<E.Either<E, A>>) => R.Resume<E.Either<E, A>>
 ```
 
@@ -217,7 +225,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orLeft: <E1, E2>(
-  onLeft: (e: E1) => R.Resume<E2>
+  onLeft: (e: E1) => R.Resume<E2>,
 ) => <A>(fa: R.Resume<E.Either<E1, A>>) => R.Resume<E.Either<E2, A>>
 ```
 
@@ -294,7 +302,7 @@ Added in v0.9.2
 ```ts
 export declare const match: <E, B, A>(
   onLeft: (e: E) => B,
-  onRight: (a: A) => B
+  onRight: (a: A) => B,
 ) => (ma: R.Resume<E.Either<E, A>>) => R.Resume<B>
 ```
 
@@ -307,7 +315,7 @@ Added in v0.9.2
 ```ts
 export declare const matchE: <E, B, A>(
   onLeft: (e: E) => R.Resume<B>,
-  onRight: (a: A) => R.Resume<B>
+  onRight: (a: A) => R.Resume<B>,
 ) => (ma: R.Resume<E.Either<E, A>>) => R.Resume<B>
 ```
 
@@ -435,8 +443,10 @@ Added in v0.9.2
 
 ```ts
 export declare const altValidation: <A>(
-  semigroup: Semigroup<A>
-) => <A>(second: Lazy<R.Resume<E.Either<A, A>>>) => (first: R.Resume<E.Either<A, A>>) => R.Resume<E.Either<A, A>>
+  semigroup: Semigroup<A>,
+) => <A>(
+  second: Lazy<R.Resume<E.Either<A, A>>>,
+) => (first: R.Resume<E.Either<A, A>>) => R.Resume<E.Either<A, A>>
 ```
 
 Added in v0.9.2

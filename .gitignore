@@ -70,6 +70,8 @@ snowpack.key
 /DataEither/
 /DataOption/
 /DataT/
+/DecodeError/
+/Decoder/
 /Disposable/
 /Env/
 /EnvData/
@@ -80,6 +82,7 @@ snowpack.key
 /FromEnv/
 /FromResume/
 /FromStream/
+/Guard/
 /HKT/
 /IOEither/
 /MonadRec/
@@ -104,6 +107,7 @@ snowpack.key
 /ResumeEither/
 /ResumeOption/
 /Scheduler/
+/Schemable/
 /State/
 /StateEnvEither/
 /StateReaderStreamEither/
@@ -114,7 +118,10 @@ snowpack.key
 /Task/
 /TaskEither/
 /TaskOption/
+/browser/
 /function/
+/http/
+/node/
 /number/
 /string/
 /struct/

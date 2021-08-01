@@ -1,21 +1,54 @@
-/**
- * **This module is experimental**
- *
- * @since 0.9.4
- */
-import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/HKT'
-import { Refinement } from 'fp-ts/Refinement'
+---
+title: Schemable.ts
+nav_order: 50
+parent: Modules
+---
 
-import { Branded, ValueOf } from './Branded'
+## Schemable overview
 
-/**
- * @since 0.9.4
- */
+**This module is experimental**
+
+Added in v0.9.4
+
+---
+
+<h2 class="text-delta">Table of contents</h2>
+
+- [utils](#utils)
+  - [Literal (type alias)](#literal-type-alias)
+  - [Schemable (interface)](#schemable-interface)
+  - [Schemable1 (interface)](#schemable1-interface)
+  - [Schemable2C (interface)](#schemable2c-interface)
+  - [WithRefine (interface)](#withrefine-interface)
+  - [WithRefine1 (interface)](#withrefine1-interface)
+  - [WithRefine2C (interface)](#withrefine2c-interface)
+  - [WithUnion (interface)](#withunion-interface)
+  - [WithUnion1 (interface)](#withunion1-interface)
+  - [WithUnion2C (interface)](#withunion2c-interface)
+  - [WithUnknownContainers (interface)](#withunknowncontainers-interface)
+  - [WithUnknownContainers1 (interface)](#withunknowncontainers1-interface)
+  - [WithUnknownContainers2C (interface)](#withunknowncontainers2c-interface)
+  - [memoize](#memoize)
+
+---
+
+# utils
+
+## Literal (type alias)
+
+**Signature**
+
+```ts
 export type Literal = string | number | boolean | null
+```
 
-/**
- * @since 0.9.4
- */
+Added in v0.9.4
+
+## Schemable (interface)
+
+**Signature**
+
+```ts
 export interface Schemable<S> {
   readonly URI: S
   readonly literal: <A extends readonly [Literal, ...Array<Literal>]>(
@@ -44,10 +77,15 @@ export interface Schemable<S> {
 
   readonly branded: <A extends Branded<any, any>>(item: HKT<S, ValueOf<A>>) => HKT<S, A>
 }
+```
 
-/**
- * @since 0.9.4
- */
+Added in v0.9.4
+
+## Schemable1 (interface)
+
+**Signature**
+
+```ts
 export interface Schemable1<S extends URIS> {
   readonly URI: S
   readonly literal: <A extends readonly [Literal, ...Array<Literal>]>(
@@ -75,10 +113,15 @@ export interface Schemable1<S extends URIS> {
   readonly lazy: <A>(id: string, f: () => Kind<S, A>) => Kind<S, A>
   readonly branded: <A extends Branded<any, any>>(item: Kind<S, ValueOf<A>>) => Kind<S, A>
 }
+```
 
-/**
- * @since 0.9.4
- */
+Added in v0.9.4
+
+## Schemable2C (interface)
+
+**Signature**
+
+```ts
 export interface Schemable2C<S extends URIS2, E> {
   readonly URI: S
   readonly literal: <A extends readonly [Literal, ...Array<Literal>]>(
@@ -106,119 +149,142 @@ export interface Schemable2C<S extends URIS2, E> {
   readonly lazy: <A>(id: string, f: () => Kind2<S, E, A>) => Kind2<S, E, A>
   readonly branded: <A extends Branded<any, any>>(item: Kind2<S, E, ValueOf<A>>) => Kind2<S, E, A>
 }
+```
 
-/**
- * @since 0.9.4
- */
-export interface WithUnknownContainers<S> {
-  readonly UnknownArray: HKT<S, Array<unknown>>
-  readonly UnknownRecord: HKT<S, Record<string, unknown>>
-}
+Added in v0.9.4
 
-/**
- * @since 0.9.4
- */
-export interface WithUnknownContainers1<S extends URIS> {
-  readonly UnknownArray: Kind<S, Array<unknown>>
-  readonly UnknownRecord: Kind<S, Record<string, unknown>>
-}
+## WithRefine (interface)
 
-/**
- * @since 0.9.4
- */
-export interface WithUnknownContainers2C<S extends URIS2, E> {
-  readonly UnknownArray: Kind2<S, E, Array<unknown>>
-  readonly UnknownRecord: Kind2<S, E, Record<string, unknown>>
-}
+**Signature**
 
-/**
- * @since 0.9.4
- */
-export interface WithUnion<S> {
-  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
-    ...members: { readonly [K in keyof A]: HKT<S, A[K]> }
-  ) => HKT<S, A[number]>
-}
-
-/**
- * @since 0.9.4
- */
-export interface WithUnion1<S extends URIS> {
-  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
-    ...members: { readonly [K in keyof A]: Kind<S, A[K]> }
-  ) => Kind<S, A[number]>
-}
-
-/**
- * @since 0.9.4
- */
-export interface WithUnion2C<S extends URIS2, E> {
-  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
-    ...members: { readonly [K in keyof A]: Kind2<S, E, A[K]> }
-  ) => Kind2<S, E, A[number]>
-}
-
-/**
- * @since 0.9.4
- */
+```ts
 export interface WithRefine<S> {
   readonly refine: <A, B extends A>(
     refinement: Refinement<A, B>,
     id: string,
   ) => (from: HKT<S, A>) => HKT<S, B>
 }
+```
 
-/**
- * @since 0.9.4
- */
+Added in v0.9.4
+
+## WithRefine1 (interface)
+
+**Signature**
+
+```ts
 export interface WithRefine1<S extends URIS> {
   readonly refine: <A, B extends A>(
     refinement: Refinement<A, B>,
     id: string,
   ) => (from: Kind<S, A>) => Kind<S, B>
 }
+```
 
-/**
- * @since 0.9.4
- */
+Added in v0.9.4
+
+## WithRefine2C (interface)
+
+**Signature**
+
+```ts
 export interface WithRefine2C<S extends URIS2, E> {
   readonly refine: <A, B extends A>(
     refinement: Refinement<A, B>,
     id: string,
   ) => (from: Kind2<S, E, A>) => Kind2<S, E, B>
 }
+```
 
-/**
- * @since 0.9.4
- */
-export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
-  const cache = new Map()
-  return (a) => {
-    if (!cache.has(a)) {
-      const b = f(a)
-      cache.set(a, b)
-      return b
-    }
-    return cache.get(a)
-  }
+Added in v0.9.4
+
+## WithUnion (interface)
+
+**Signature**
+
+```ts
+export interface WithUnion<S> {
+  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
+    ...members: { readonly [K in keyof A]: HKT<S, A[K]> }
+  ) => HKT<S, A[number]>
 }
+```
 
-// -------------------------------------------------------------------------------------
-// utils
-// -------------------------------------------------------------------------------------
+Added in v0.9.4
 
-const typeOf = (x: unknown): string => (x === null ? 'null' : typeof x)
+## WithUnion1 (interface)
 
-/**
- * @internal
- */
-export const intersect_ = <A, B>(a: A, b: B): A & B => {
-  if (a !== undefined && b !== undefined) {
-    const tx = typeOf(a)
-    const ty = typeOf(b)
-    if (tx === 'object' || ty === 'object') {
-      return Object.assign({}, a, b)
-    }
-  }
-  return b as any
+**Signature**
+
+```ts
+export interface WithUnion1<S extends URIS> {
+  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
+    ...members: { readonly [K in keyof A]: Kind<S, A[K]> }
+  ) => Kind<S, A[number]>
 }
+```
+
+Added in v0.9.4
+
+## WithUnion2C (interface)
+
+**Signature**
+
+```ts
+export interface WithUnion2C<S extends URIS2, E> {
+  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
+    ...members: { readonly [K in keyof A]: Kind2<S, E, A[K]> }
+  ) => Kind2<S, E, A[number]>
+}
+```
+
+Added in v0.9.4
+
+## WithUnknownContainers (interface)
+
+**Signature**
+
+```ts
+export interface WithUnknownContainers<S> {
+  readonly UnknownArray: HKT<S, Array<unknown>>
+  readonly UnknownRecord: HKT<S, Record<string, unknown>>
+}
+```
+
+Added in v0.9.4
+
+## WithUnknownContainers1 (interface)
+
+**Signature**
+
+```ts
+export interface WithUnknownContainers1<S extends URIS> {
+  readonly UnknownArray: Kind<S, Array<unknown>>
+  readonly UnknownRecord: Kind<S, Record<string, unknown>>
+}
+```
+
+Added in v0.9.4
+
+## WithUnknownContainers2C (interface)
+
+**Signature**
+
+```ts
+export interface WithUnknownContainers2C<S extends URIS2, E> {
+  readonly UnknownArray: Kind2<S, E, Array<unknown>>
+  readonly UnknownRecord: Kind2<S, E, Record<string, unknown>>
+}
+```
+
+Added in v0.9.4
+
+## memoize
+
+**Signature**
+
+```ts
+export declare function memoize<A, B>(f: (a: A) => B): (a: A) => B
+```
+
+Added in v0.9.4

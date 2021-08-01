@@ -1,6 +1,6 @@
 ---
 title: StreamOption.ts
-nav_order: 50
+nav_order: 57
 parent: Modules
 ---
 
@@ -59,7 +59,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const alt: <A>(second: Lazy<Stream<O.Option<A>>>) => (first: Stream<O.Option<A>>) => Stream<O.Option<A>>
+export declare const alt: <A>(
+  second: Lazy<Stream<O.Option<A>>>,
+) => (first: Stream<O.Option<A>>) => Stream<O.Option<A>>
 ```
 
 Added in v0.9.2
@@ -69,7 +71,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const ap: <A>(fa: Stream<O.Option<A>>) => <B>(fab: Stream<O.Option<(a: A) => B>>) => Stream<O.Option<B>>
+export declare const ap: <A>(
+  fa: Stream<O.Option<A>>,
+) => <B>(fab: Stream<O.Option<(a: A) => B>>) => Stream<O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -79,7 +83,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chain: <A, B>(f: (a: A) => Stream<O.Option<B>>) => (ma: Stream<O.Option<A>>) => Stream<O.Option<B>>
+export declare const chain: <A, B>(
+  f: (a: A) => Stream<O.Option<B>>,
+) => (ma: Stream<O.Option<A>>) => Stream<O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -90,7 +96,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainNullableK: <A, B>(
-  f: (a: A) => B | null | undefined
+  f: (a: A) => B | null | undefined,
 ) => (ma: Stream<O.Option<A>>) => Stream<O.Option<NonNullable<B>>>
 ```
 
@@ -101,7 +107,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainOptionK: <A, B>(f: (a: A) => O.Option<B>) => (ma: Stream<O.Option<A>>) => Stream<O.Option<B>>
+export declare const chainOptionK: <A, B>(
+  f: (a: A) => O.Option<B>,
+) => (ma: Stream<O.Option<A>>) => Stream<O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -111,7 +119,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainRec: <A, B>(f: (value: A) => StreamOption<Ei.Either<A, B>>) => (value: A) => StreamOption<B>
+export declare const chainRec: <A, B>(
+  f: (value: A) => StreamOption<Ei.Either<A, B>>,
+) => (value: A) => StreamOption<B>
 ```
 
 Added in v0.9.2
@@ -131,7 +141,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getOrElseE: <A>(onNone: Lazy<Stream<A>>) => (fa: Stream<O.Option<A>>) => Stream<A>
+export declare const getOrElseE: <A>(
+  onNone: Lazy<Stream<A>>,
+) => (fa: Stream<O.Option<A>>) => Stream<A>
 ```
 
 Added in v0.9.2
@@ -151,7 +163,10 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const match: <B, A>(onNone: () => B, onSome: (a: A) => B) => (ma: Stream<O.Option<A>>) => Stream<B>
+export declare const match: <B, A>(
+  onNone: () => B,
+  onSome: (a: A) => B,
+) => (ma: Stream<O.Option<A>>) => Stream<B>
 ```
 
 Added in v0.9.2
@@ -163,7 +178,7 @@ Added in v0.9.2
 ```ts
 export declare const matchE: <B, A>(
   onNone: () => Stream<B>,
-  onSome: (a: A) => Stream<B>
+  onSome: (a: A) => Stream<B>,
 ) => (ma: Stream<O.Option<A>>) => Stream<B>
 ```
 
@@ -197,7 +212,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromNullableK: <A, B>(
-  f: (...a: A) => B | null | undefined
+  f: (...a: A) => B | null | undefined,
 ) => (...a: A) => Stream<O.Option<NonNullable<B>>>
 ```
 
@@ -208,7 +223,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromOptionK: <A, B>(f: (...a: A) => O.Option<B>) => (...a: A) => Stream<O.Option<B>>
+export declare const fromOptionK: <A, B>(
+  f: (...a: A) => O.Option<B>,
+) => (...a: A) => Stream<O.Option<B>>
 ```
 
 Added in v0.9.2

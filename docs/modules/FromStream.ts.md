@@ -1,6 +1,6 @@
 ---
 title: FromStream.ts
-nav_order: 17
+nav_order: 20
 parent: Modules
 ---
 
@@ -41,23 +41,25 @@ Added in v0.9.2
 ```ts
 export declare function chainFirstStreamK<F extends URIS>(
   F: FromStream1<F>,
-  C: Chain1<F>
+  C: Chain1<F>,
 ): <A, B>(f: (value: A) => S.Stream<B>) => (hkt: Hkt<F, [A]>) => Hkt<F, [A]>
 export declare function chainFirstStreamK<F extends URIS2>(
   F: FromStream2<F>,
-  C: Chain2<F>
+  C: Chain2<F>,
 ): <A, B>(f: (value: A) => S.Stream<B>) => <E>(hkt: Hkt<F, [E, A]>) => Hkt<F, [E, A]>
 export declare function chainFirstStreamK<F extends URIS3>(
   F: FromStream3<F>,
-  C: Chain3<F>
+  C: Chain3<F>,
 ): <A, B>(f: (value: A) => S.Stream<B>) => <R, E>(hkt: Hkt<F, [R, E, A]>) => Hkt<F, [R, E, A]>
 export declare function chainFirstStreamK<F extends URIS4>(
   F: FromStream4<F>,
-  C: Chain4<F>
-): <A, B>(f: (value: A) => S.Stream<B>) => <S, R, E>(hkt: Hkt<F, [S, R, E, A]>) => Hkt<F, [S, R, E, A]>
+  C: Chain4<F>,
+): <A, B>(
+  f: (value: A) => S.Stream<B>,
+) => <S, R, E>(hkt: Hkt<F, [S, R, E, A]>) => Hkt<F, [S, R, E, A]>
 export declare function chainFirstStreamK<F>(
   F: FromStream<F>,
-  C: Chain<F>
+  C: Chain<F>,
 ): <A, B>(f: (value: A) => S.Stream<B>) => (hkt: Hkt<F, [A]>) => Hkt<F, [A]>
 ```
 
@@ -70,23 +72,25 @@ Added in v0.9.2
 ```ts
 export declare function chainStreamK<F extends URIS>(
   F: FromStream1<F>,
-  C: Chain1<F>
+  C: Chain1<F>,
 ): <A, B>(f: (value: A) => S.Stream<B>) => (hkt: Hkt<F, [A]>) => Hkt<F, [B]>
 export declare function chainStreamK<F extends URIS2>(
   F: FromStream2<F>,
-  C: Chain2<F>
+  C: Chain2<F>,
 ): <A, B>(f: (value: A) => S.Stream<B>) => <E>(hkt: Hkt<F, [E, A]>) => Hkt<F, [E, B]>
 export declare function chainStreamK<F extends URIS3>(
   F: FromStream3<F>,
-  C: Chain3<F>
+  C: Chain3<F>,
 ): <A, B>(f: (value: A) => S.Stream<B>) => <R, E>(hkt: Hkt<F, [R, E, A]>) => Hkt<F, [R, E, B]>
 export declare function chainStreamK<F extends URIS4>(
   F: FromStream4<F>,
-  C: Chain4<F>
-): <A, B>(f: (value: A) => S.Stream<B>) => <S, R, E>(hkt: Hkt<F, [S, R, E, A]>) => Hkt<F, [S, R, E, B]>
+  C: Chain4<F>,
+): <A, B>(
+  f: (value: A) => S.Stream<B>,
+) => <S, R, E>(hkt: Hkt<F, [S, R, E, A]>) => Hkt<F, [S, R, E, B]>
 export declare function chainStreamK<F>(
   F: FromStream<F>,
-  C: Chain<F>
+  C: Chain<F>,
 ): <A, B>(f: (value: A) => S.Stream<B>) => (hkt: Hkt<F, [A]>) => Hkt<F, [B]>
 ```
 
@@ -100,19 +104,25 @@ Added in v0.9.2
 
 ```ts
 export declare function fromStreamK<F extends URIS>(
-  F: FromStream1<F>
+  F: FromStream1<F>,
 ): <A extends readonly any[], B>(f: (...args: A) => S.Stream<B>) => (...args: A) => Hkt<F, [B]>
 export declare function fromStreamK<F extends URIS2>(
-  F: FromStream2<F>
-): <A extends readonly any[], B>(f: (...args: A) => S.Stream<B>) => <E>(...args: A) => Hkt<F, [E, B]>
+  F: FromStream2<F>,
+): <A extends readonly any[], B>(
+  f: (...args: A) => S.Stream<B>,
+) => <E>(...args: A) => Hkt<F, [E, B]>
 export declare function fromStreamK<F extends URIS3>(
-  F: FromStream3<F>
-): <A extends readonly any[], B>(f: (...args: A) => S.Stream<B>) => <R, E>(...args: A) => Hkt<F, [R, E, B]>
+  F: FromStream3<F>,
+): <A extends readonly any[], B>(
+  f: (...args: A) => S.Stream<B>,
+) => <R, E>(...args: A) => Hkt<F, [R, E, B]>
 export declare function fromStreamK<F extends URIS4>(
-  F: FromStream4<F>
-): <A extends readonly any[], B>(f: (...args: A) => S.Stream<B>) => <S, R, E>(...args: A) => Hkt<F, [S, R, E, B]>
+  F: FromStream4<F>,
+): <A extends readonly any[], B>(
+  f: (...args: A) => S.Stream<B>,
+) => <S, R, E>(...args: A) => Hkt<F, [S, R, E, B]>
 export declare function fromStreamK<F>(
-  F: FromStream<F>
+  F: FromStream<F>,
 ): <A extends readonly any[], B>(f: (...args: A) => S.Stream<B>) => (...args: A) => Hkt<F, [B]>
 ```
 

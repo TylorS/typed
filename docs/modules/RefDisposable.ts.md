@@ -1,6 +1,6 @@
 ---
 title: RefDisposable.ts
-nav_order: 37
+nav_order: 42
 parent: Modules
 ---
 

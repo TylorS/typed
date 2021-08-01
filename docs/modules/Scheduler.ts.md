@@ -1,6 +1,6 @@
 ---
 title: Scheduler.ts
-nav_order: 43
+nav_order: 48
 parent: Modules
 ---
 
@@ -39,7 +39,10 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const runStream: <A>(sink: Sink<A>, stream: Stream<A>) => E.Env<SchedulerEnv, Disposable>
+export declare const runStream: <A>(
+  sink: Sink<A>,
+  stream: Stream<A>,
+) => E.Env<SchedulerEnv, Disposable>
 ```
 
 Added in v0.9.2

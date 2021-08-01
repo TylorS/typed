@@ -1,6 +1,6 @@
 ---
 title: HKT.ts
-nav_order: 19
+nav_order: 22
 parent: Modules
 ---
 
@@ -50,7 +50,11 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export type ApplyVariance<F, P extends Param, T extends readonly any[]> = F extends keyof URItoVariance
+export type ApplyVariance<
+  F,
+  P extends Param,
+  T extends readonly any[],
+> = F extends keyof URItoVariance
   ? URItoVariance[F] extends V<P, infer R>
     ? R extends Covariant
       ? T[number]
@@ -93,8 +97,8 @@ Added in v0.9.2
 
 ## Hkt (type alias)
 
-Universal type for using all of fp-ts' internal kinds.
-Initially intended for helping to create your own type-classes
+Universal type for using all of fp-ts' internal kinds. Initially intended for helping to create your
+own type-classes
 
 **Signature**
 
@@ -139,7 +143,10 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export type Intersect<A extends readonly any[], R = unknown> = A extends readonly [infer Head, ...infer Tail]
+export type Intersect<A extends readonly any[], R = unknown> = A extends readonly [
+  infer Head,
+  ...infer Tail
+]
   ? Intersect<Tail, R & Head>
   : R
 ```
@@ -178,8 +185,8 @@ Added in v0.9.2
 
 ## URItoVariance (interface)
 
-A type-level map meant be extended, just like URItoKind\*, to specify the
-variance that should apply. If none is specified the default is to be strict.
+A type-level map meant be extended, just like URItoKind\*, to specify the variance that should
+apply. If none is specified the default is to be strict.
 
 **Signature**
 

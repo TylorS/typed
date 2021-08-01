@@ -1,13 +1,13 @@
 ---
 title: Data.ts
-nav_order: 4
+nav_order: 5
 parent: Modules
 ---
 
 ## Data overview
 
-Data is an ADT which allows you to represent all the states involved in loading a
-piece of data asynchronously.
+Data is an ADT which allows you to represent all the states involved in loading a piece of data
+asynchronously.
 
 Added in v0.9.2
 
@@ -151,7 +151,7 @@ Added in v0.9.2
 ```ts
 export declare const apS: <N, A, B>(
   name: Exclude<N, keyof A>,
-  fb: Data<B>
+  fb: Data<B>,
 ) => (fa: Data<A>) => Data<{ readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
@@ -184,7 +184,7 @@ Added in v0.9.2
 ```ts
 export declare const bind: <N, A, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => Data<B>
+  f: (a: A) => Data<B>,
 ) => (ma: Data<A>) => Data<{ readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
@@ -225,7 +225,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainRec: <A, B>(f: (value: A) => Data<Ei.Either<A, B>>) => (value: A) => Data<B>
+export declare const chainRec: <A, B>(
+  f: (value: A) => Data<Ei.Either<A, B>>,
+) => (value: A) => Data<B>
 ```
 
 Added in v0.9.2
@@ -307,7 +309,7 @@ Added in v0.9.2
 ```ts
 export declare const getOrElse: <A>(
   onInitial: () => A,
-  onLoading: (progress: O.Option<P.Progress>) => A
+  onLoading: (progress: O.Option<P.Progress>) => A,
 ) => (ma: Data<A>) => A
 ```
 
@@ -320,7 +322,7 @@ Added in v0.9.2
 ```ts
 export declare const getOrElseW: <A, B>(
   onInitial: () => A,
-  onLoading: (progress: O.Option<P.Progress>) => B
+  onLoading: (progress: O.Option<P.Progress>) => B,
 ) => <C>(ma: Data<C>) => A | B | C
 ```
 
@@ -352,7 +354,7 @@ Added in v0.9.2
 
 ```ts
 export declare const partitionMap: <A, B, C>(
-  f: (a: A) => Ei.Either<B, C>
+  f: (a: A) => Ei.Either<B, C>,
 ) => (fa: Data<A>) => Separated<Data<B>, Data<C>>
 ```
 
@@ -363,7 +365,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const separate: <E, A>(dataEither: Data<Ei.Either<E, A>>) => Separated<Data<E>, Data<A>>
+export declare const separate: <E, A>(
+  dataEither: Data<Ei.Either<E, A>>,
+) => Separated<Data<E>, Data<A>>
 ```
 
 Added in v0.9.2
@@ -491,7 +495,7 @@ export declare const match: <A, B>(
   onNoData: () => A,
   onLoading: () => A,
   onRefresh: (value: B) => A,
-  onReplete: (value: B) => A
+  onReplete: (value: B) => A,
 ) => (data: Data<B>) => A
 ```
 
@@ -505,7 +509,7 @@ Added in v0.9.2
 export declare const match3W: <A, B, C, D>(
   onNoData: () => A,
   onLoading: (progress: O.Option<P.Progress>) => B,
-  onRefreshOrReplete: (value: C) => D
+  onRefreshOrReplete: (value: C) => D,
 ) => (data: Data<C>) => A | B | D
 ```
 
@@ -520,7 +524,7 @@ export declare const matchW: <A, B, C, D, E>(
   onNoData: () => A,
   onLoading: (progress: O.Option<P.Progress>) => B,
   onRefresh: (value: C, progress: O.Option<P.Progress>) => D,
-  onReplete: (value: C) => E
+  onReplete: (value: C) => E,
 ) => (data: Data<C>) => A | B | D | E
 ```
 
@@ -541,7 +545,10 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const reduceRight: <A, B>(seed: A, f: (value: B, acc: A) => A) => (data: Data<B>) => A
+export declare const reduceRight: <A, B>(
+  seed: A,
+  f: (value: B, acc: A) => A,
+) => (data: Data<B>) => A
 ```
 
 Added in v0.9.2

@@ -1,13 +1,13 @@
 ---
 title: DataOption.ts
-nav_order: 6
+nav_order: 7
 parent: Modules
 ---
 
 ## DataOption overview
 
-DataOption is an ADT which allows you to represent all the states involved in loading a
-piece of data asynchronously which might exist.
+DataOption is an ADT which allows you to represent all the states involved in loading a piece of
+data asynchronously which might exist.
 
 Added in v0.9.2
 
@@ -63,7 +63,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const alt: <A>(second: Lazy<D.Data<O.Option<A>>>) => (first: D.Data<O.Option<A>>) => D.Data<O.Option<A>>
+export declare const alt: <A>(
+  second: Lazy<D.Data<O.Option<A>>>,
+) => (first: D.Data<O.Option<A>>) => D.Data<O.Option<A>>
 ```
 
 Added in v0.9.2
@@ -73,7 +75,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const ap: <A>(fa: D.Data<O.Option<A>>) => <B>(fab: D.Data<O.Option<(a: A) => B>>) => D.Data<O.Option<B>>
+export declare const ap: <A>(
+  fa: D.Data<O.Option<A>>,
+) => <B>(fab: D.Data<O.Option<(a: A) => B>>) => D.Data<O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -83,7 +87,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chain: <A, B>(f: (a: A) => D.Data<O.Option<B>>) => (ma: D.Data<O.Option<A>>) => D.Data<O.Option<B>>
+export declare const chain: <A, B>(
+  f: (a: A) => D.Data<O.Option<B>>,
+) => (ma: D.Data<O.Option<A>>) => D.Data<O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -94,7 +100,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainNullableK: <A, B>(
-  f: (a: A) => B | null | undefined
+  f: (a: A) => B | null | undefined,
 ) => (ma: D.Data<O.Option<A>>) => D.Data<O.Option<NonNullable<B>>>
 ```
 
@@ -105,7 +111,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainOptionK: <A, B>(f: (a: A) => O.Option<B>) => (ma: D.Data<O.Option<A>>) => D.Data<O.Option<B>>
+export declare const chainOptionK: <A, B>(
+  f: (a: A) => O.Option<B>,
+) => (ma: D.Data<O.Option<A>>) => D.Data<O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -116,7 +124,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, B>(
-  f: (value: A) => D.Data<O.Option<E.Either<A, B>>>
+  f: (value: A) => D.Data<O.Option<E.Either<A, B>>>,
 ) => (value: A) => D.Data<O.Option<B>>
 ```
 
@@ -137,7 +145,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getOrElseE: <A>(onNone: Lazy<D.Data<A>>) => (fa: D.Data<O.Option<A>>) => D.Data<A>
+export declare const getOrElseE: <A>(
+  onNone: Lazy<D.Data<A>>,
+) => (fa: D.Data<O.Option<A>>) => D.Data<A>
 ```
 
 Added in v0.9.2
@@ -190,7 +200,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromNullableK: <A, B>(
-  f: (...a: A) => B | null | undefined
+  f: (...a: A) => B | null | undefined,
 ) => (...a: A) => D.Data<O.Option<NonNullable<B>>>
 ```
 
@@ -201,7 +211,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromOptionK: <A, B>(f: (...a: A) => O.Option<B>) => (...a: A) => D.Data<O.Option<B>>
+export declare const fromOptionK: <A, B>(
+  f: (...a: A) => O.Option<B>,
+) => (...a: A) => D.Data<O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -246,7 +258,10 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const match: <B, A>(onNone: () => B, onSome: (a: A) => B) => (ma: D.Data<O.Option<A>>) => D.Data<B>
+export declare const match: <B, A>(
+  onNone: () => B,
+  onSome: (a: A) => B,
+) => (ma: D.Data<O.Option<A>>) => D.Data<B>
 ```
 
 Added in v0.9.2
@@ -258,7 +273,7 @@ Added in v0.9.2
 ```ts
 export declare const matchE: <B, A>(
   onNone: () => D.Data<B>,
-  onSome: (a: A) => D.Data<B>
+  onSome: (a: A) => D.Data<B>,
 ) => (ma: D.Data<O.Option<A>>) => D.Data<B>
 ```
 

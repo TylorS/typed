@@ -1,5 +1,5 @@
 /**
- * Eq instances for some common scenarios including deep equality.
+ * Eq Instance for some common scenarios including deep equality.
  *
  * @since 0.9.2
  */
@@ -11,8 +11,8 @@ import * as RA from 'fp-ts/ReadonlyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as S from 'fp-ts/string'
 
-import * as D from './Decoder'
 import { constant, constFalse, constTrue } from './function'
+import { memoize } from './internal'
 import { Schemable1, WithUnknownContainers1 } from './Schemable'
 
 const FUNCTION_NAME_REGEX = /^function\s*([\w$]+)/
@@ -274,11 +274,11 @@ export const UnknownRecord: Eq.Eq<Readonly<Record<string, unknown>>> = Eq.fromEq
 )
 
 // -------------------------------------------------------------------------------------
-// combinators
+// Combinator
 // -------------------------------------------------------------------------------------
 
 /**
- * @category combinators
+ * @category Combinator
  * @since 2.2.2
  */
 export const nullable = <A>(or: Eq.Eq<A>): Eq.Eq<null | A> =>
@@ -288,7 +288,7 @@ export const nullable = <A>(or: Eq.Eq<A>): Eq.Eq<null | A> =>
   )
 
 /**
- * @category combinators
+ * @category Combinator
  * @since 2.2.2
  */
 export const tuple: <A extends ReadonlyArray<unknown>>(
@@ -296,7 +296,7 @@ export const tuple: <A extends ReadonlyArray<unknown>>(
 ) => Eq.Eq<A> = Eq.tuple
 
 /**
- * @category combinators
+ * @category Combinator
  * @since 2.2.15
  */
 export const struct: <A>(
@@ -304,7 +304,7 @@ export const struct: <A>(
 ) => Eq.Eq<{ [K in keyof A]: A[K] }> = Eq.struct
 
 /**
- * @category combinators
+ * @category Combinator
  * @since 2.2.2
  */
 export const partial = <A>(
@@ -322,19 +322,19 @@ export const partial = <A>(
   })
 
 /**
- * @category combinators
+ * @category Combinator
  * @since 2.2.2
  */
 export const array: <A>(item: Eq.Eq<A>) => Eq.Eq<Array<A>> = RA.getEq
 
 /**
- * @category combinators
+ * @category Combinator
  * @since 2.2.2
  */
 export const record: <A>(codomain: Eq.Eq<A>) => Eq.Eq<Record<string, A>> = RR.getEq
 
 /**
- * @category combinators
+ * @category Combinator
  * @since 2.2.2
  */
 export const intersect =
@@ -343,18 +343,18 @@ export const intersect =
     Eq.fromEquals((second) => (first) => left.equals(second)(first) && right.equals(second)(first))
 
 /**
- * @category combinators
+ * @category Combinator
  * @since 2.2.2
  */
 export function lazy<A>(f: () => Eq.Eq<A>): Eq.Eq<A> {
-  const get = D.memoize<void, Eq.Eq<A>>(f)
+  const get = memoize<void, Eq.Eq<A>>(f)
   return {
     equals: (second) => (first) => get().equals(second)(first),
   }
 }
 
 /**
- * @category combinators
+ * @category Combinator
  * @since 2.2.2
  */
 export const sum = <T extends string>(
@@ -367,10 +367,6 @@ export const sum = <T extends string>(
     })
 }
 
-// -------------------------------------------------------------------------------------
-// instances
-// -------------------------------------------------------------------------------------
-
 declare module 'fp-ts/HKT' {
   interface URItoKind<A> {
     readonly '@typed/fp/ToEq': Eq.Eq<A>
@@ -378,7 +374,7 @@ declare module 'fp-ts/HKT' {
 }
 
 /**
- * @category instances
+ * @category Instance
  * @since 0.9.4
  */
 export const Schemable: Schemable1<'@typed/fp/ToEq'> = {
@@ -396,10 +392,11 @@ export const Schemable: Schemable1<'@typed/fp/ToEq'> = {
   intersect,
   lazy: (_, f) => lazy(f),
   sum,
+  branded: (e) => e as any,
 }
 
 /**
- * @category instances
+ * @category Instance
  * @since 0.9.4
  */
 export const WithUnknownContainers: WithUnknownContainers1<'@typed/fp/ToEq'> = {

@@ -26,3 +26,15 @@ export const swapEithers = <E, A, B>(
 
   return E.right(e)
 }
+
+export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
+  const cache = new Map()
+  return (a) => {
+    if (!cache.has(a)) {
+      const b = f(a)
+      cache.set(a, b)
+      return b
+    }
+    return cache.get(a)
+  }
+}

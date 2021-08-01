@@ -1,6 +1,6 @@
 ---
 title: IOEither.ts
-nav_order: 20
+nav_order: 24
 parent: Modules
 ---
 
@@ -28,7 +28,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, E, B>(
-  f: (value: A) => IOE.IOEither<E, Either<A, B>>
+  f: (value: A) => IOE.IOEither<E, Either<A, B>>,
 ) => (value: A) => IOE.IOEither<E, B>
 ```
 

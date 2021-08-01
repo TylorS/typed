@@ -15,6 +15,7 @@
     "@most/scheduler": "^1.3.0",
     "@most/types": "^1.1.0",
     "fp-ts": "^3.0.0-alpha.17",
+    "node-fetch": "^2.6.1",
     "ts-toolbelt": "^9.6.0"
   },
   "peerDependencies": {
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@types/mocha": "^8.2.2",
     "@types/node": "^15.12.5",
+    "@types/node-fetch": "^2.5.12",
     "@types/rimraf": "^3.0.0",
     "@typescript-eslint/eslint-plugin": "^4.28.1",
     "@typescript-eslint/parser": "^4.28.1",
@@ -126,6 +128,14 @@
       "require": "./cjs/DataT.js",
       "import": "./esm/DataT.js"
     },
+    "./DecodeError": {
+      "require": "./cjs/DecodeError.js",
+      "import": "./esm/DecodeError.js"
+    },
+    "./Decoder": {
+      "require": "./cjs/Decoder.js",
+      "import": "./esm/Decoder.js"
+    },
     "./Disposable": {
       "require": "./cjs/Disposable.js",
       "import": "./esm/Disposable.js"
@@ -165,6 +175,10 @@
     "./FromStream": {
       "require": "./cjs/FromStream.js",
       "import": "./esm/FromStream.js"
+    },
+    "./Guard": {
+      "require": "./cjs/Guard.js",
+      "import": "./esm/Guard.js"
     },
     "./HKT": {
       "require": "./cjs/HKT.js",
@@ -262,6 +276,10 @@
       "require": "./cjs/Scheduler.js",
       "import": "./esm/Scheduler.js"
     },
+    "./Schemable": {
+      "require": "./cjs/Schemable.js",
+      "import": "./esm/Schemable.js"
+    },
     "./State": {
       "require": "./cjs/State.js",
       "import": "./esm/State.js"
@@ -302,9 +320,21 @@
       "require": "./cjs/TaskOption.js",
       "import": "./esm/TaskOption.js"
     },
+    "./browser": {
+      "require": "./cjs/browser.js",
+      "import": "./esm/browser.js"
+    },
     "./function": {
       "require": "./cjs/function.js",
       "import": "./esm/function.js"
+    },
+    "./http": {
+      "require": "./cjs/http.js",
+      "import": "./esm/http.js"
+    },
+    "./node": {
+      "require": "./cjs/node.js",
+      "import": "./esm/node.js"
     },
     "./number": {
       "require": "./cjs/number.js",

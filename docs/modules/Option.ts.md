@@ -1,6 +1,6 @@
 ---
 title: Option.ts
-nav_order: 23
+nav_order: 28
 parent: Modules
 ---
 
@@ -27,7 +27,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainRec: <A, B>(f: (value: A) => O.Option<E.Either<A, B>>) => (value: A) => O.Option<B>
+export declare const chainRec: <A, B>(
+  f: (value: A) => O.Option<E.Either<A, B>>,
+) => (value: A) => O.Option<B>
 ```
 
 Added in v0.9.2

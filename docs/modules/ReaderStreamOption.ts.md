@@ -1,14 +1,13 @@
 ---
 title: ReaderStreamOption.ts
-nav_order: 31
+nav_order: 36
 parent: Modules
 ---
 
 ## ReaderStreamOption overview
 
-ReaderStreamEither is an Option of ReaderStream, allowing for you to
-represent your application over time with Stream, with support for Optionality
-through Option, and dependency injection from Reader.
+ReaderStreamEither is an Option of ReaderStream, allowing for you to represent your application over
+time with Stream, with support for Optionality through Option, and dependency injection from Reader.
 
 Added in v0.9.2
 
@@ -107,7 +106,7 @@ Added in v0.9.2
 
 ```ts
 export declare const alt: <E, A>(
-  second: Lazy<RS.ReaderStream<E, O.Option<A>>>
+  second: Lazy<RS.ReaderStream<E, O.Option<A>>>,
 ) => (first: RS.ReaderStream<E, O.Option<A>>) => RS.ReaderStream<E, O.Option<A>>
 ```
 
@@ -119,7 +118,7 @@ Added in v0.9.2
 
 ```ts
 export declare const ap: <E, A>(
-  fa: RS.ReaderStream<E, O.Option<A>>
+  fa: RS.ReaderStream<E, O.Option<A>>,
 ) => <B>(fab: RS.ReaderStream<E, O.Option<(a: A) => B>>) => RS.ReaderStream<E, O.Option<B>>
 ```
 
@@ -131,7 +130,7 @@ Added in v0.9.2
 
 ```ts
 export declare const askAndProvide: <E, B>(
-  hkt: ReaderStreamOption<E, B>
+  hkt: ReaderStreamOption<E, B>,
 ) => ReaderStreamOption<E, ReaderStreamOption<unknown, B>>
 ```
 
@@ -143,7 +142,7 @@ Added in v0.9.2
 
 ```ts
 export declare const askAndUse: <E, B>(
-  hkt: ReaderStreamOption<E, B>
+  hkt: ReaderStreamOption<E, B>,
 ) => ReaderStreamOption<E, ReaderStreamOption<unknown, B>>
 ```
 
@@ -155,7 +154,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chain: <A, E, B>(
-  f: (a: A) => RS.ReaderStream<E, O.Option<B>>
+  f: (a: A) => RS.ReaderStream<E, O.Option<B>>,
 ) => (ma: RS.ReaderStream<E, O.Option<A>>) => RS.ReaderStream<E, O.Option<B>>
 ```
 
@@ -167,7 +166,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainEnvK: <A, R1, B>(
-  f: (value: A) => Env<R1, B>
+  f: (value: A) => Env<R1, B>,
 ) => <R2>(hkt: ReaderStreamOption<R2, A>) => ReaderStreamOption<R1, B>
 ```
 
@@ -179,7 +178,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstEnvK: <A, R1, B>(
-  f: (value: A) => Env<R1, B>
+  f: (value: A) => Env<R1, B>,
 ) => <R2>(hkt: ReaderStreamOption<R2, A>) => ReaderStreamOption<R1, A>
 ```
 
@@ -191,7 +190,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstResumeK: <A, B>(
-  f: (value: A) => Resume<B>
+  f: (value: A) => Resume<B>,
 ) => <E>(hkt: ReaderStreamOption<E, A>) => ReaderStreamOption<E, A>
 ```
 
@@ -203,7 +202,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirstStreamK: <A, B>(
-  f: (value: A) => Stream<B>
+  f: (value: A) => Stream<B>,
 ) => <E>(hkt: ReaderStreamOption<E, A>) => ReaderStreamOption<E, A>
 ```
 
@@ -215,7 +214,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainNullableK: <A, B>(
-  f: (a: A) => B | null | undefined
+  f: (a: A) => B | null | undefined,
 ) => <E>(ma: RS.ReaderStream<E, O.Option<A>>) => RS.ReaderStream<E, O.Option<NonNullable<B>>>
 ```
 
@@ -227,7 +226,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainOptionK: <A, B>(
-  f: (a: A) => O.Option<B>
+  f: (a: A) => O.Option<B>,
 ) => <E>(ma: RS.ReaderStream<E, O.Option<A>>) => RS.ReaderStream<E, O.Option<B>>
 ```
 
@@ -239,7 +238,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainReaderK: <A, R, B>(
-  f: (a: A) => Reader<R, B>
+  f: (a: A) => Reader<R, B>,
 ) => (ma: ReaderStreamOption<R, A>) => ReaderStreamOption<R, B>
 ```
 
@@ -251,7 +250,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, E, B>(
-  f: (value: A) => ReaderStreamOption<E, Ei.Either<A, B>>
+  f: (value: A) => ReaderStreamOption<E, Ei.Either<A, B>>,
 ) => (value: A) => ReaderStreamOption<E, B>
 ```
 
@@ -263,7 +262,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainResumeK: <A, B>(
-  f: (value: A) => Resume<B>
+  f: (value: A) => Resume<B>,
 ) => <E>(hkt: ReaderStreamOption<E, A>) => ReaderStreamOption<E, B>
 ```
 
@@ -275,7 +274,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainStreamK: <A, B>(
-  f: (value: A) => Stream<B>
+  f: (value: A) => Stream<B>,
 ) => <E>(hkt: ReaderStreamOption<E, A>) => ReaderStreamOption<E, B>
 ```
 
@@ -287,7 +286,7 @@ Added in v0.9.2
 
 ```ts
 export declare const map: <A, B>(
-  f: (a: A) => B
+  f: (a: A) => B,
 ) => <E>(fa: RS.ReaderStream<E, O.Option<A>>) => RS.ReaderStream<E, O.Option<B>>
 ```
 
@@ -299,7 +298,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideAll: <A>(
-  provided: A
+  provided: A,
 ) => <B>(hkt: ReaderStreamOption<Partial<A>, B>) => ReaderStreamOption<unknown, B>
 ```
 
@@ -311,7 +310,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideAllWith: <R, A>(
-  provider: ReaderStreamOption<R, A>
+  provider: ReaderStreamOption<R, A>,
 ) => <B>(hkt: ReaderStreamOption<A, B>) => ReaderStreamOption<R, B>
 ```
 
@@ -323,7 +322,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideSome: <A>(
-  provided: A
+  provided: A,
 ) => <B, C>(hkt: ReaderStreamOption<A & B, C>) => ReaderStreamOption<B, C>
 ```
 
@@ -335,7 +334,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideSomeWith: <E1, A>(
-  provider: ReaderStreamOption<E1, A>
+  provider: ReaderStreamOption<E1, A>,
 ) => P.Provider2<'@typed/fp/ReaderStreamOption', A, E1>
 ```
 
@@ -347,7 +346,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useAll: <A>(
-  provided: A
+  provided: A,
 ) => <B>(hkt: ReaderStreamOption<Partial<A>, B>) => ReaderStreamOption<unknown, B>
 ```
 
@@ -359,7 +358,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useAllWith: <R, A>(
-  provider: ReaderStreamOption<R, A>
+  provider: ReaderStreamOption<R, A>,
 ) => <B>(hkt: ReaderStreamOption<A, B>) => ReaderStreamOption<R, B>
 ```
 
@@ -370,7 +369,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const useSome: <A>(provided: A) => <B, C>(hkt: ReaderStreamOption<A & B, C>) => ReaderStreamOption<B, C>
+export declare const useSome: <A>(
+  provided: A,
+) => <B, C>(hkt: ReaderStreamOption<A & B, C>) => ReaderStreamOption<B, C>
 ```
 
 Added in v0.9.2
@@ -381,7 +382,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useSomeWith: <E1, A>(
-  provider: ReaderStreamOption<E1, A>
+  provider: ReaderStreamOption<E1, A>,
 ) => P.Provider2<'@typed/fp/ReaderStreamOption', A, E1>
 ```
 
@@ -424,7 +425,10 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromEnv: NaturalTransformation22<'@typed/fp/Env', '@typed/fp/ReaderStreamOption'>
+export declare const fromEnv: NaturalTransformation22<
+  '@typed/fp/Env',
+  '@typed/fp/ReaderStreamOption'
+>
 ```
 
 Added in v0.9.2
@@ -434,7 +438,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromEnvK: <A, R, B>(f: (...args: A) => Env<R, B>) => (...args: A) => ReaderStreamOption<R, B>
+export declare const fromEnvK: <A, R, B>(
+  f: (...args: A) => Env<R, B>,
+) => (...args: A) => ReaderStreamOption<R, B>
 ```
 
 Added in v0.9.2
@@ -465,7 +471,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromNullableK: <A, B>(
-  f: (...a: A) => B | null | undefined
+  f: (...a: A) => B | null | undefined,
 ) => <E>(...a: A) => RS.ReaderStream<E, O.Option<NonNullable<B>>>
 ```
 
@@ -476,7 +482,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromOptionK: <A, B>(f: (...a: A) => O.Option<B>) => <E>(...a: A) => RS.ReaderStream<E, O.Option<B>>
+export declare const fromOptionK: <A, B>(
+  f: (...a: A) => O.Option<B>,
+) => <E>(...a: A) => RS.ReaderStream<E, O.Option<B>>
 ```
 
 Added in v0.9.2
@@ -509,7 +517,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromReaderK: <A, R, B>(f: (...a: A) => Reader<R, B>) => (...a: A) => ReaderStreamOption<R, B>
+export declare const fromReaderK: <A, R, B>(
+  f: (...a: A) => Reader<R, B>,
+) => (...a: A) => ReaderStreamOption<R, B>
 ```
 
 Added in v0.9.2
@@ -519,7 +529,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromReaderStream: <E, A>(ma: RS.ReaderStream<E, A>) => RS.ReaderStream<E, O.Option<A>>
+export declare const fromReaderStream: <E, A>(
+  ma: RS.ReaderStream<E, A>,
+) => RS.ReaderStream<E, O.Option<A>>
 ```
 
 Added in v0.9.2
@@ -529,7 +541,10 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromResume: NaturalTransformation12<'@typed/fp/Resume', '@typed/fp/ReaderStreamOption'>
+export declare const fromResume: NaturalTransformation12<
+  '@typed/fp/Resume',
+  '@typed/fp/ReaderStreamOption'
+>
 ```
 
 Added in v0.9.2
@@ -539,7 +554,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromResumeK: <A, B>(f: (...args: A) => Resume<B>) => <E>(...args: A) => ReaderStreamOption<E, B>
+export declare const fromResumeK: <A, B>(
+  f: (...args: A) => Resume<B>,
+) => <E>(...args: A) => ReaderStreamOption<E, B>
 ```
 
 Added in v0.9.2
@@ -549,7 +566,10 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromStream: NaturalTransformation12<'@most/core/Stream', '@typed/fp/ReaderStreamOption'>
+export declare const fromStream: NaturalTransformation12<
+  '@most/core/Stream',
+  '@typed/fp/ReaderStreamOption'
+>
 ```
 
 Added in v0.9.2
@@ -559,7 +579,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromStreamK: <A, B>(f: (...args: A) => Stream<B>) => <E>(...args: A) => ReaderStreamOption<E, B>
+export declare const fromStreamK: <A, B>(
+  f: (...args: A) => Stream<B>,
+) => <E>(...args: A) => ReaderStreamOption<E, B>
 ```
 
 Added in v0.9.2
@@ -602,7 +624,7 @@ Added in v0.9.2
 
 ```ts
 export declare const getOrElse: <A>(
-  onNone: Lazy<A>
+  onNone: Lazy<A>,
 ) => <E>(fa: RS.ReaderStream<E, O.Option<A>>) => RS.ReaderStream<E, A>
 ```
 
@@ -614,7 +636,7 @@ Added in v0.9.2
 
 ```ts
 export declare const getOrElseE: <E, A>(
-  onNone: Lazy<RS.ReaderStream<E, A>>
+  onNone: Lazy<RS.ReaderStream<E, A>>,
 ) => (fa: RS.ReaderStream<E, O.Option<A>>) => RS.ReaderStream<E, A>
 ```
 
@@ -626,7 +648,7 @@ Added in v0.9.2
 
 ```ts
 export declare const getOrElseEW: <E1, A>(
-  onNone: Lazy<RS.ReaderStream<E1, A>>
+  onNone: Lazy<RS.ReaderStream<E1, A>>,
 ) => <E2>(fa: RS.ReaderStream<E2, O.Option<A>>) => RS.ReaderStream<E1 & E2, A>
 ```
 
@@ -638,7 +660,7 @@ Added in v0.9.2
 
 ```ts
 export declare const getOrElseW: <A>(
-  onNone: Lazy<A>
+  onNone: Lazy<A>,
 ) => <E, B>(fa: RS.ReaderStream<E, O.Option<B>>) => RS.ReaderStream<E, A | B>
 ```
 
@@ -651,7 +673,7 @@ Added in v0.9.2
 ```ts
 export declare const match: <B, A>(
   onNone: () => B,
-  onSome: (a: A) => B
+  onSome: (a: A) => B,
 ) => <E>(ma: RS.ReaderStream<E, O.Option<A>>) => RS.ReaderStream<E, B>
 ```
 
@@ -664,7 +686,7 @@ Added in v0.9.2
 ```ts
 export declare const matchE: <E, B, A>(
   onNone: () => RS.ReaderStream<E, B>,
-  onSome: (a: A) => RS.ReaderStream<E, B>
+  onSome: (a: A) => RS.ReaderStream<E, B>,
 ) => (ma: RS.ReaderStream<E, O.Option<A>>) => RS.ReaderStream<E, B>
 ```
 

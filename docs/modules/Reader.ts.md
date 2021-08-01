@@ -1,6 +1,6 @@
 ---
 title: Reader.ts
-nav_order: 26
+nav_order: 31
 parent: Modules
 ---
 
@@ -36,7 +36,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainRec: <A, R, B>(f: (value: A) => R.Reader<R, E.Either<A, B>>) => (value: A) => R.Reader<R, B>
+export declare const chainRec: <A, R, B>(
+  f: (value: A) => R.Reader<R, E.Either<A, B>>,
+) => (value: A) => R.Reader<R, B>
 ```
 
 Added in v0.9.2
@@ -46,7 +48,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const provideAll: <R1>(provided: R1) => <A>(reader: R.Reader<R1, A>) => R.Reader<unknown, A>
+export declare const provideAll: <R1>(
+  provided: R1,
+) => <A>(reader: R.Reader<R1, A>) => R.Reader<unknown, A>
 ```
 
 Added in v0.9.2
@@ -56,7 +60,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const provideSome: <R1>(provided: R1) => <R2, A>(reader: R.Reader<R1 & R2, A>) => R.Reader<R2, A>
+export declare const provideSome: <R1>(
+  provided: R1,
+) => <R2, A>(reader: R.Reader<R1 & R2, A>) => R.Reader<R2, A>
 ```
 
 Added in v0.9.2
@@ -66,7 +72,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const useAll: <R1>(provided: R1) => <A>(reader: R.Reader<R1, A>) => R.Reader<unknown, A>
+export declare const useAll: <R1>(
+  provided: R1,
+) => <A>(reader: R.Reader<R1, A>) => R.Reader<unknown, A>
 ```
 
 Added in v0.9.2
@@ -76,7 +84,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const useSome: <R1>(provided: R1) => <R2, A>(reader: R.Reader<R1 & R2, A>) => R.Reader<R2, A>
+export declare const useSome: <R1>(
+  provided: R1,
+) => <R2, A>(reader: R.Reader<R1 & R2, A>) => R.Reader<R2, A>
 ```
 
 Added in v0.9.2

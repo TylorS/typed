@@ -1,6 +1,6 @@
 ---
 title: ReaderTask.ts
-nav_order: 32
+nav_order: 37
 parent: Modules
 ---
 
@@ -37,7 +37,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, R, B>(
-  f: (value: A) => RT.ReaderTask<R, E.Either<A, B>>
+  f: (value: A) => RT.ReaderTask<R, E.Either<A, B>>,
 ) => (value: A) => RT.ReaderTask<R, B>
 ```
 
@@ -49,7 +49,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideAll: <R1>(
-  provided: R1
+  provided: R1,
 ) => <A>(readerTask: RT.ReaderTask<R1, A>) => RT.ReaderTask<unknown, A>
 ```
 
@@ -61,7 +61,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideSome: <R1>(
-  provided: R1
+  provided: R1,
 ) => <R2, A>(readerTask: RT.ReaderTask<R1 & R2, A>) => RT.ReaderTask<R2, A>
 ```
 
@@ -72,7 +72,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const useAll: <R1>(provided: R1) => <A>(readerTask: RT.ReaderTask<R1, A>) => RT.ReaderTask<unknown, A>
+export declare const useAll: <R1>(
+  provided: R1,
+) => <A>(readerTask: RT.ReaderTask<R1, A>) => RT.ReaderTask<unknown, A>
 ```
 
 Added in v0.9.2
@@ -83,7 +85,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useSome: <R1>(
-  provided: R1
+  provided: R1,
 ) => <R2, A>(readerTask: RT.ReaderTask<R1 & R2, A>) => RT.ReaderTask<R2, A>
 ```
 

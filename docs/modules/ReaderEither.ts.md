@@ -1,6 +1,6 @@
 ---
 title: ReaderEither.ts
-nav_order: 27
+nav_order: 32
 parent: Modules
 ---
 
@@ -37,7 +37,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, R, E, B>(
-  f: (a: A) => RE.ReaderEither<R, E, Either<A, B>>
+  f: (a: A) => RE.ReaderEither<R, E, Either<A, B>>,
 ) => (value: A) => RE.ReaderEither<R, E, B>
 ```
 
@@ -49,7 +49,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideAll: <R1>(
-  provided: R1
+  provided: R1,
 ) => <E, A>(reader: RE.ReaderEither<R1, E, A>) => RE.ReaderEither<unknown, E, A>
 ```
 
@@ -61,7 +61,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideSome: <R1>(
-  provided: R1
+  provided: R1,
 ) => <R2, E, A>(reader: RE.ReaderEither<R1 & R2, E, A>) => RE.ReaderEither<R2, E, A>
 ```
 
@@ -73,7 +73,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useAll: <R1>(
-  provided: R1
+  provided: R1,
 ) => <E, A>(reader: RE.ReaderEither<R1, E, A>) => RE.ReaderEither<unknown, E, A>
 ```
 
@@ -85,7 +85,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useSome: <R1>(
-  provided: R1
+  provided: R1,
 ) => <R2, E, A>(reader: RE.ReaderEither<R1 & R2, E, A>) => RE.ReaderEither<R2, E, A>
 ```
 

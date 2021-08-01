@@ -1,13 +1,13 @@
 ---
 title: DataEither.ts
-nav_order: 5
+nav_order: 6
 parent: Modules
 ---
 
 ## DataEither overview
 
-DataEither is an ADT which allows you to represent all the states involved in loading a
-piece of data asynchronously which might fail.
+DataEither is an ADT which allows you to represent all the states involved in loading a piece of
+data asynchronously which might fail.
 
 Added in v0.9.2
 
@@ -87,7 +87,7 @@ Added in v0.9.2
 
 ```ts
 export declare const alt: <E, A>(
-  second: Lazy<D.Data<Ei.Either<E, A>>>
+  second: Lazy<D.Data<Ei.Either<E, A>>>,
 ) => (first: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, A>>
 ```
 
@@ -99,7 +99,7 @@ Added in v0.9.2
 
 ```ts
 export declare const ap: <E, A>(
-  fa: D.Data<Ei.Either<E, A>>
+  fa: D.Data<Ei.Either<E, A>>,
 ) => <B>(fab: D.Data<Ei.Either<E, (a: A) => B>>) => D.Data<Ei.Either<E, B>>
 ```
 
@@ -111,7 +111,7 @@ Added in v0.9.2
 
 ```ts
 export declare const apFirst: <E, B>(
-  second: D.Data<Ei.Either<E, B>>
+  second: D.Data<Ei.Either<E, B>>,
 ) => <A>(first: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, A>>
 ```
 
@@ -124,9 +124,9 @@ Added in v0.9.2
 ```ts
 export declare const apS: <N, A, E, B>(
   name: Exclude<N, keyof A>,
-  fb: D.Data<Ei.Either<E, B>>
+  fb: D.Data<Ei.Either<E, B>>,
 ) => (
-  fa: D.Data<Ei.Either<E, A>>
+  fa: D.Data<Ei.Either<E, A>>,
 ) => D.Data<Ei.Either<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>>
 ```
 
@@ -138,7 +138,7 @@ Added in v0.9.2
 
 ```ts
 export declare const apSecond: <E, B>(
-  second: D.Data<Ei.Either<E, B>>
+  second: D.Data<Ei.Either<E, B>>,
 ) => <A>(first: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, B>>
 ```
 
@@ -150,7 +150,7 @@ Added in v0.9.2
 
 ```ts
 export declare const apT: <E, B>(
-  fb: D.Data<Ei.Either<E, B>>
+  fb: D.Data<Ei.Either<E, B>>,
 ) => <A>(fas: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, readonly [...A, B]>>
 ```
 
@@ -163,7 +163,7 @@ Added in v0.9.2
 ```ts
 export declare const bimap: <E, G, A, B>(
   f: (e: E) => G,
-  g: (a: A) => B
+  g: (a: A) => B,
 ) => (fea: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<G, B>>
 ```
 
@@ -176,9 +176,9 @@ Added in v0.9.2
 ```ts
 export declare const bind: <N, A, E, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => D.Data<Ei.Either<E, B>>
+  f: (a: A) => D.Data<Ei.Either<E, B>>,
 ) => (
-  ma: D.Data<Ei.Either<E, A>>
+  ma: D.Data<Ei.Either<E, A>>,
 ) => D.Data<Ei.Either<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>>
 ```
 
@@ -190,7 +190,7 @@ Added in v0.9.2
 
 ```ts
 export declare const bindTo: <N>(
-  name: N
+  name: N,
 ) => <E, A>(fa: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, { readonly [K in N]: A }>>
 ```
 
@@ -204,7 +204,7 @@ Added in v0.9.2
 export declare const bracket: <E, A, B>(
   acquire: D.Data<Ei.Either<E, A>>,
   use: (a: A) => D.Data<Ei.Either<E, B>>,
-  release: (a: A, e: Ei.Either<E, B>) => D.Data<Ei.Either<E, void>>
+  release: (a: A, e: Ei.Either<E, B>) => D.Data<Ei.Either<E, void>>,
 ) => D.Data<Ei.Either<E, B>>
 ```
 
@@ -216,7 +216,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chain: <A, E, B>(
-  f: (a: A) => D.Data<Ei.Either<E, B>>
+  f: (a: A) => D.Data<Ei.Either<E, B>>,
 ) => (ma: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, B>>
 ```
 
@@ -228,7 +228,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainEitherK: <A, E, B>(
-  f: (a: A) => Ei.Either<E, B>
+  f: (a: A) => Ei.Either<E, B>,
 ) => (ma: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, B>>
 ```
 
@@ -240,7 +240,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainFirst: <A, E, B>(
-  f: (a: A) => D.Data<Ei.Either<E, B>>
+  f: (a: A) => D.Data<Ei.Either<E, B>>,
 ) => (first: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, A>>
 ```
 
@@ -252,7 +252,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainOptionK: <E>(
-  onNone: Lazy<E>
+  onNone: Lazy<E>,
 ) => <A, B>(f: (a: A) => Option<B>) => (ma: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, B>>
 ```
 
@@ -264,7 +264,7 @@ Added in v0.9.2
 
 ```ts
 export declare const chainRec: <A, E, B>(
-  f: (value: A) => D.Data<Ei.Either<E, Ei.Either<A, B>>>
+  f: (value: A) => D.Data<Ei.Either<E, Ei.Either<A, B>>>,
 ) => (a: A) => D.Data<Ei.Either<E, B>>
 ```
 
@@ -277,9 +277,11 @@ Added in v0.9.2
 ```ts
 export declare const filterOrElse: {
   <A, B, E>(refinement: Refinement<A, B>, onFalse: (a: A) => E): (
-    ma: D.Data<Ei.Either<E, A>>
+    ma: D.Data<Ei.Either<E, A>>,
   ) => D.Data<Ei.Either<E, B>>
-  <A, E>(predicate: Predicate<A>, onFalse: (a: A) => E): <B>(mb: D.Data<Ei.Either<E, B>>) => D.Data<Ei.Either<E, B>>
+  <A, E>(predicate: Predicate<A>, onFalse: (a: A) => E): <B>(
+    mb: D.Data<Ei.Either<E, B>>,
+  ) => D.Data<Ei.Either<E, B>>
 }
 ```
 
@@ -290,7 +292,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const flap: <A>(a: A) => <E, B>(fab: D.Data<Ei.Either<E, (a: A) => B>>) => D.Data<Ei.Either<E, B>>
+export declare const flap: <A>(
+  a: A,
+) => <E, B>(fab: D.Data<Ei.Either<E, (a: A) => B>>) => D.Data<Ei.Either<E, B>>
 ```
 
 Added in v0.9.2
@@ -300,7 +304,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromEitherK: <A, E, B>(f: (...a: A) => Ei.Either<E, B>) => (...a: A) => D.Data<Ei.Either<E, B>>
+export declare const fromEitherK: <A, E, B>(
+  f: (...a: A) => Ei.Either<E, B>,
+) => (...a: A) => D.Data<Ei.Either<E, B>>
 ```
 
 Added in v0.9.2
@@ -310,7 +316,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const fromOption: <E>(onNone: Lazy<E>) => NaturalTransformation12C<'Option', '@typed/fp/DataEither', E>
+export declare const fromOption: <E>(
+  onNone: Lazy<E>,
+) => NaturalTransformation12C<'Option', '@typed/fp/DataEither', E>
 ```
 
 Added in v0.9.2
@@ -321,7 +329,7 @@ Added in v0.9.2
 
 ```ts
 export declare const fromOptionK: <E>(
-  onNone: Lazy<E>
+  onNone: Lazy<E>,
 ) => <A, B>(f: (...a: A) => Option<B>) => (...a: A) => D.Data<Ei.Either<E, B>>
 ```
 
@@ -345,7 +353,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getOrElse: <E, A>(onLeft: (e: E) => A) => (ma: D.Data<Ei.Either<E, A>>) => D.Data<A>
+export declare const getOrElse: <E, A>(
+  onLeft: (e: E) => A,
+) => (ma: D.Data<Ei.Either<E, A>>) => D.Data<A>
 ```
 
 Added in v0.9.2
@@ -355,7 +365,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getOrElseE: <E, A>(onLeft: (e: E) => D.Data<A>) => (ma: D.Data<Ei.Either<E, A>>) => D.Data<A>
+export declare const getOrElseE: <E, A>(
+  onLeft: (e: E) => D.Data<A>,
+) => (ma: D.Data<Ei.Either<E, A>>) => D.Data<A>
 ```
 
 Added in v0.9.2
@@ -365,7 +377,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const map: <A, B>(f: (a: A) => B) => <E>(fa: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, B>>
+export declare const map: <A, B>(
+  f: (a: A) => B,
+) => <E>(fa: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, B>>
 ```
 
 Added in v0.9.2
@@ -375,7 +389,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const mapLeft: <E, G>(f: (e: E) => G) => <A>(fea: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<G, A>>
+export declare const mapLeft: <E, G>(
+  f: (e: E) => G,
+) => <A>(fea: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<G, A>>
 ```
 
 Added in v0.9.2
@@ -387,7 +403,7 @@ Added in v0.9.2
 ```ts
 export declare const match: <E, B, A>(
   onLeft: (e: E) => B,
-  onRight: (a: A) => B
+  onRight: (a: A) => B,
 ) => (ma: D.Data<Ei.Either<E, A>>) => D.Data<B>
 ```
 
@@ -400,7 +416,7 @@ Added in v0.9.2
 ```ts
 export declare const matchE: <E, B, A>(
   onLeft: (e: E) => D.Data<B>,
-  onRight: (a: A) => D.Data<B>
+  onRight: (a: A) => D.Data<B>,
 ) => (ma: D.Data<Ei.Either<E, A>>) => D.Data<B>
 ```
 
@@ -412,7 +428,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orElse: <E1, E2, A>(
-  onLeft: (e: E1) => D.Data<Ei.Either<E2, A>>
+  onLeft: (e: E1) => D.Data<Ei.Either<E2, A>>,
 ) => (ma: D.Data<Ei.Either<E1, A>>) => D.Data<Ei.Either<E2, A>>
 ```
 
@@ -424,7 +440,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orElseFirst: <E, B>(
-  onLeft: (e: E) => D.Data<Ei.Either<E, B>>
+  onLeft: (e: E) => D.Data<Ei.Either<E, B>>,
 ) => <A>(ma: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, A>>
 ```
 
@@ -436,7 +452,7 @@ Added in v0.9.2
 
 ```ts
 export declare const orLeft: <E1, E2>(
-  onLeft: (e: E1) => D.Data<E2>
+  onLeft: (e: E1) => D.Data<E2>,
 ) => <A>(fa: D.Data<Ei.Either<E1, A>>) => D.Data<Ei.Either<E2, A>>
 ```
 
@@ -477,7 +493,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const tupled: <E, A>(fa: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, readonly [A]>>
+export declare const tupled: <E, A>(
+  fa: D.Data<Ei.Either<E, A>>,
+) => D.Data<Ei.Either<E, readonly [A]>>
 ```
 
 Added in v0.9.2
@@ -666,8 +684,10 @@ Added in v0.9.2
 
 ```ts
 export declare const altValidation: <A>(
-  semigroup: Semigroup_.Semigroup<A>
-) => <A>(second: Lazy<D.Data<Ei.Either<A, A>>>) => (first: D.Data<Ei.Either<A, A>>) => D.Data<Ei.Either<A, A>>
+  semigroup: Semigroup_.Semigroup<A>,
+) => <A>(
+  second: Lazy<D.Data<Ei.Either<A, A>>>,
+) => (first: D.Data<Ei.Either<A, A>>) => D.Data<Ei.Either<A, A>>
 ```
 
 Added in v0.9.2
@@ -677,7 +697,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const getSemigroup: <A, E>(S: Semigroup_.Semigroup<A>) => Semigroup_.Semigroup<D.Data<Ei.Either<E, A>>>
+export declare const getSemigroup: <A, E>(
+  S: Semigroup_.Semigroup<A>,
+) => Semigroup_.Semigroup<D.Data<Ei.Either<E, A>>>
 ```
 
 Added in v0.9.2

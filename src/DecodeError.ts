@@ -1,463 +1,157 @@
 /**
- * **This module is experimental**
- *
- * This is a clone of io-ts with support for fp-ts v3
- *
- * A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
- *
+ * DecodeError representation of the various errors that might occur while decoding.
  * @since 0.9.4
  */
-import { flow } from 'fp-ts/function'
+import { flow, pipe } from 'fp-ts/function'
+import * as RA from 'fp-ts/ReadonlyArray'
 import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
-
-// -------------------------------------------------------------------------------------
-// model
-// -------------------------------------------------------------------------------------
+import { Semigroup } from 'fp-ts/Semigroup'
+import * as T from 'fp-ts/Tree'
 
 /**
- * @category model
+ * @category Model
  * @since 0.9.4
  */
-export interface RequiredKeyE<K, E> {
-  readonly _tag: 'RequiredKeyE'
-  readonly key: K
-  readonly error: E
+export interface Leaf {
+  readonly _tag: 'Leaf'
+  readonly actual: unknown
+  readonly error: string
 }
 
 /**
- * @category model
+ * @category Model
  * @since 0.9.4
  */
-export interface OptionalKeyE<K, E> {
-  readonly _tag: 'OptionalKeyE'
-  readonly key: K
-  readonly error: E
+export interface Key {
+  readonly _tag: 'Key'
+  readonly key: string
+  readonly errors: DecodeErrors
 }
 
 /**
- * @category model
+ * @category Model
  * @since 0.9.4
  */
-export interface RequiredIndexE<I, E> {
-  readonly _tag: 'RequiredIndexE'
-  readonly index: I
-  readonly error: E
+export interface MissingKeys {
+  readonly _tag: 'MissingKeys'
+  readonly keys: readonly [string, ...string[]]
 }
 
 /**
- * @category model
+ * @category Model
  * @since 0.9.4
  */
-export interface OptionalIndexE<I, E> {
-  readonly _tag: 'OptionalIndexE'
-  readonly index: I
-  readonly error: E
+export interface UnexpectedKeys {
+  readonly _tag: 'UnexpectedKeys'
+  readonly keys: readonly [string, ...string[]]
 }
 
 /**
- * @category model
+ * @category Model
  * @since 0.9.4
  */
-export interface LazyE<E> {
-  readonly _tag: 'LazyE'
+export interface Index {
+  readonly _tag: 'Index'
+  readonly index: number
+  readonly errors: DecodeErrors
+}
+
+/**
+ * @category Model
+ * @since 0.9.4
+ */
+export interface MissingIndexes {
+  readonly _tag: 'MissingIndexes'
+  readonly indexes: readonly [number, ...number[]]
+}
+
+/**
+ * @category Model
+ * @since 0.9.4
+ */
+export interface UnexpectedIndexes {
+  readonly _tag: 'UnexpectedIndexes'
+  readonly indexes: readonly [number, ...number[]]
+}
+
+/**
+ * @category Model
+ * @since 0.9.4
+ */
+export interface Member {
+  readonly _tag: 'Member'
+  readonly index: number
+  readonly errors: DecodeErrors
+}
+
+/**
+ * @category Model
+ * @since 0.9.4
+ */
+export interface Lazy {
+  readonly _tag: 'Lazy'
   readonly id: string
-  readonly error: E
+  readonly errors: DecodeErrors
 }
 
 /**
- * @category model
- * @since 0.9.4
+ * @category Model
+ * @since 2.2.9
  */
-export interface MemberE<M, E> {
-  readonly _tag: 'MemberE'
-  readonly member: M
-  readonly error: E
+export interface Wrap {
+  readonly _tag: 'Wrap'
+  readonly error: string
+  readonly errors: DecodeErrors
 }
 
 /**
- * @category model
+ * @category Model
  * @since 0.9.4
  */
-export interface LeafE<E> {
-  readonly _tag: 'LeafE'
-  readonly error: E
-}
+export type DecodeError =
+  | Leaf
+  | Key
+  | MissingKeys
+  | UnexpectedKeys
+  | Index
+  | MissingIndexes
+  | UnexpectedIndexes
+  | Member
+  | Lazy
+  | Wrap
 
 /**
- * @category model
  * @since 0.9.4
+ * @categeory Model
  */
-export interface TagE {
-  readonly _tag: 'TagE'
-  readonly tag: string
-  readonly literals: ReadonlyArray<string>
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface TagLE extends LeafE<TagE> {}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface NullableE<E> {
-  readonly _tag: 'NullableE'
-  readonly error: E
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface PrevE<E> {
-  readonly _tag: 'PrevE'
-  readonly error: E
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface NextE<E> {
-  readonly _tag: 'NextE'
-  readonly error: E
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface MissingIndexesE {
-  readonly _tag: 'MissingIndexesE'
-  readonly indexes: ReadonlyNonEmptyArray<number>
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface UnexpectedIndexesE {
-  readonly _tag: 'UnexpectedIndexesE'
-  readonly indexes: ReadonlyNonEmptyArray<number>
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface SumE<E> {
-  readonly _tag: 'SumE'
-  readonly error: E
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface MessageE {
-  readonly _tag: 'MessageE'
-  readonly message: string
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface MessageLE extends LeafE<MessageE> {}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface MissingKeysE {
-  readonly _tag: 'MissingKeysE'
-  readonly keys: ReadonlyNonEmptyArray<string>
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface UnexpectedKeysE {
-  readonly _tag: 'UnexpectedKeysE'
-  readonly keys: ReadonlyNonEmptyArray<string>
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface CompoundE<E> {
-  readonly _tag: 'CompoundE'
-  readonly name: string
-  readonly errors: ReadonlyNonEmptyArray<E>
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface StringE {
-  readonly _tag: 'StringE'
-  readonly actual: unknown
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface StringLE extends LeafE<StringE> {}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface NumberE {
-  readonly _tag: 'NumberE'
-  readonly actual: unknown
-}
-/**
- * @category model
- * @since 0.9.4
- */
-export interface NumberLE extends LeafE<NumberE> {}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface NaNE {
-  readonly _tag: 'NaNE'
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface NaNLE extends LeafE<NaNE> {}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface InfinityE {
-  readonly _tag: 'InfinityE'
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface InfinityLE extends LeafE<InfinityE> {}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface BooleanE {
-  readonly _tag: 'BooleanE'
-  readonly actual: unknown
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface BooleanLE extends LeafE<BooleanE> {}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface UnknownArrayE {
-  readonly _tag: 'UnknownArrayE'
-  readonly actual: unknown
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface UnknownArrayLE extends LeafE<UnknownArrayE> {}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface UnknownRecordE {
-  readonly _tag: 'UnknownRecordE'
-  readonly actual: unknown
-}
-/**
- * @category model
- * @since 0.9.4
- */
-export interface UnknownRecordLE extends LeafE<UnknownRecordE> {}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export type Literal = string | number | boolean | null | undefined | symbol
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface LiteralE<A extends Literal> {
-  readonly _tag: 'LiteralE'
-  readonly literals: ReadonlyNonEmptyArray<A>
-  readonly actual: unknown
-}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export interface LiteralLE<A extends Literal> extends LeafE<LiteralE<A>> {}
-
-// -------------------------------------------------------------------------------------
-// constructors
-// -------------------------------------------------------------------------------------
+export type DecodeErrors = ReadonlyNonEmptyArray<DecodeError>
 
 /**
  * @category constructors
  * @since 0.9.4
  */
-export const requiredKeyE = <K, E>(key: K, error: E): RequiredKeyE<K, E> => ({
-  _tag: 'RequiredKeyE',
+export const leaf = (actual: unknown, error: string): DecodeError => ({
+  _tag: 'Leaf',
+  actual,
+  error,
+})
+
+/**
+ * @category constructors
+ * @since 0.9.4
+ */
+export const key = (key: string, errors: DecodeErrors): DecodeError => ({
+  _tag: 'Key',
   key,
-  error,
+  errors,
 })
 
 /**
  * @category constructors
  * @since 0.9.4
  */
-export const optionalKeyE = <K, E>(key: K, error: E): OptionalKeyE<K, E> => ({
-  _tag: 'OptionalKeyE',
-  key,
-  error,
-})
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const requiredIndexE = <I, E>(index: I, error: E): RequiredIndexE<I, E> => ({
-  _tag: 'RequiredIndexE',
-  index,
-  error,
-})
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const optionalIndexE = <I, E>(index: I, error: E): OptionalIndexE<I, E> => ({
-  _tag: 'OptionalIndexE',
-  index,
-  error,
-})
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const lazyE = <E>(id: string, error: E): LazyE<E> => ({ _tag: 'LazyE', id, error })
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const memberE = <M, E>(member: M, error: E): MemberE<M, E> => ({
-  _tag: 'MemberE',
-  member,
-  error,
-})
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const leafE = <E>(error: E): LeafE<E> => ({ _tag: 'LeafE', error })
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const tagLE = (tag: string, literals: ReadonlyArray<string>): TagLE =>
-  leafE({ _tag: 'TagE', tag, literals })
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const nullableE = <E>(error: E): NullableE<E> => ({ _tag: 'NullableE', error })
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const prevE = <E>(error: E): PrevE<E> => ({ _tag: 'PrevE', error })
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const nextE = <E>(error: E): NextE<E> => ({ _tag: 'NextE', error })
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const missingIndexesE = (indexes: ReadonlyNonEmptyArray<number>): MissingIndexesE => ({
-  _tag: 'MissingIndexesE',
-  indexes,
-})
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const unexpectedIndexesE = (indexes: ReadonlyNonEmptyArray<number>): UnexpectedIndexesE => ({
-  _tag: 'UnexpectedIndexesE',
-  indexes,
-})
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const sumE = <E>(error: E): SumE<E> => ({
-  _tag: 'SumE',
-  error,
-})
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const messageE = (message: string): MessageE => ({
-  _tag: 'MessageE',
-  message,
-})
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const messageLE: (message: string) => MessageLE = flow(messageE, leafE)
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const missingKeysE = (keys: ReadonlyNonEmptyArray<string>): MissingKeysE => ({
-  _tag: 'MissingKeysE',
+export const missingKeys = (keys: readonly [string, ...string[]]): DecodeError => ({
+  _tag: 'MissingKeys',
   keys,
 })
 
@@ -465,8 +159,8 @@ export const missingKeysE = (keys: ReadonlyNonEmptyArray<string>): MissingKeysE 
  * @category constructors
  * @since 0.9.4
  */
-export const unexpectedKeysE = (keys: ReadonlyNonEmptyArray<string>): UnexpectedKeysE => ({
-  _tag: 'UnexpectedKeysE',
+export const unexpectedKeys = (keys: readonly [string, ...string[]]): DecodeError => ({
+  _tag: 'UnexpectedKeys',
   keys,
 })
 
@@ -474,221 +168,156 @@ export const unexpectedKeysE = (keys: ReadonlyNonEmptyArray<string>): Unexpected
  * @category constructors
  * @since 0.9.4
  */
-export const compoundE =
-  (name: string) =>
-  <E>(errors: ReadonlyNonEmptyArray<E>): CompoundE<E> => ({
-    _tag: 'CompoundE',
-    name,
-    errors,
-  })
+export const index = (index: number, errors: DecodeErrors): DecodeError => ({
+  _tag: 'Index',
+  index,
+  errors,
+})
 
 /**
  * @category constructors
  * @since 0.9.4
  */
-export const unionE = compoundE('union')
+export const missingIndexes = (indexes: readonly [number, ...number[]]): DecodeError => ({
+  _tag: 'MissingIndexes',
+  indexes,
+})
 
 /**
  * @category constructors
  * @since 0.9.4
  */
-export const structE = compoundE('struct')
+export const unexpectedIndexes = (indexes: readonly [number, ...number[]]): DecodeError => ({
+  _tag: 'UnexpectedIndexes',
+  indexes,
+})
 
 /**
  * @category constructors
  * @since 0.9.4
  */
-export const partialE = compoundE('partial')
+export const member = (index: number, errors: DecodeErrors): DecodeError => ({
+  _tag: 'Member',
+  index,
+  errors,
+})
 
 /**
  * @category constructors
  * @since 0.9.4
  */
-export const recordE = compoundE('record')
+export const lazy = (id: string, errors: DecodeErrors): DecodeError => ({
+  _tag: 'Lazy',
+  id,
+  errors,
+})
 
 /**
  * @category constructors
- * @since 0.9.4
+ * @since 2.2.9
  */
-export const tupleE = compoundE('tuple')
+export const wrap = (error: string, errors: DecodeErrors): DecodeError => ({
+  _tag: 'Wrap',
+  error,
+  errors,
+})
 
 /**
- * @category constructors
+ * @category destructors
  * @since 0.9.4
  */
-export const arrayE = compoundE('array')
+export const match = <R>(patterns: {
+  Leaf: (input: unknown, error: string) => R
+  Key: (key: string, errors: DecodeErrors) => R
+  MissingKeys: (keys: readonly [string, ...string[]]) => R
+  UnexpectedKeys: (keys: readonly [string, ...string[]]) => R
+  Index: (index: number, errors: DecodeErrors) => R
+  MissingIndexes: (indexes: readonly [number, ...number[]]) => R
+  UnexpectedIndexes: (keys: readonly [number, ...number[]]) => R
+  Member: (index: number, errors: DecodeErrors) => R
+  Lazy: (id: string, errors: DecodeErrors) => R
+  Wrap: (error: string, errors: DecodeErrors) => R
+}): ((e: DecodeError) => R) => {
+  const f = (e: DecodeError): R => {
+    switch (e._tag) {
+      case 'Leaf':
+        return patterns.Leaf(e.actual, e.error)
+      case 'Key':
+        return patterns.Key(e.key, e.errors)
+      case 'MissingKeys':
+        return patterns.MissingKeys(e.keys)
+      case 'UnexpectedKeys':
+        return patterns.UnexpectedKeys(e.keys)
+      case 'Index':
+        return patterns.Index(e.index, e.errors)
+      case 'MissingIndexes':
+        return patterns.MissingIndexes(e.indexes)
+      case 'UnexpectedIndexes':
+        return patterns.UnexpectedIndexes(e.indexes)
+      case 'Member':
+        return patterns.Member(e.index, e.errors)
+      case 'Lazy':
+        return patterns.Lazy(e.id, e.errors)
+      case 'Wrap':
+        return patterns.Wrap(e.error, e.errors)
+    }
+  }
+  return f
+}
 
 /**
- * @category constructors
+ * @category Typeclass Constructor
  * @since 0.9.4
  */
-export const compositionE = compoundE('composition')
+export function getSemigroup(): Semigroup<DecodeErrors> {
+  return RA.getSemigroup<DecodeError>() as any as Semigroup<DecodeErrors>
+}
 
 /**
- * @category constructors
+ * @category Deconstructor
  * @since 0.9.4
  */
-export const intersectionE = compoundE('intersection')
+export const drawError = flow(toTree, T.drawTree)
 
 /**
- * @category constructors
+ * @category Deconstructor
  * @since 0.9.4
  */
-export const stringLE = (actual: unknown): StringLE => leafE({ _tag: 'StringE', actual })
+export const drawErrors = flow(RA.map(flow(toTree, T.drawTree)), (ss) => ss.join(''))
 
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const numberLE = (actual: unknown): NumberLE => leafE({ _tag: 'NumberE', actual })
+function toForest(errors: DecodeErrors): T.Forest<string> {
+  return errors.map(toTree)
+}
 
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const naNLE: NaNLE = leafE({ _tag: 'NaNE' })
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const infinityLE: InfinityLE = leafE({ _tag: 'InfinityE' })
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const booleanLE = (actual: unknown): BooleanLE => leafE({ _tag: 'BooleanE', actual })
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const unknownArrayLE = (actual: unknown): UnknownArrayLE =>
-  leafE({
-    _tag: 'UnknownArrayE',
-    actual,
-  })
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const unknownRecordLE = (actual: unknown): UnknownRecordLE =>
-  leafE({
-    _tag: 'UnknownRecordE',
-    actual,
-  })
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const literalLE = <A extends Literal>(
-  actual: unknown,
-  literals: ReadonlyNonEmptyArray<A>,
-): LiteralLE<A> =>
-  leafE({
-    _tag: 'LiteralE',
-    actual,
-    literals,
-  })
-
-// -------------------------------------------------------------------------------------
-// DecodeError
-// -------------------------------------------------------------------------------------
-
-// recursive helpers to please ts@3.5
-/**
- * @category model
- * @since 0.9.4
- */
-export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
-/**
- * @category model
- * @since 0.9.4
- */
-export interface PrevRE<E> extends PrevE<DecodeError<E>> {}
-/**
- * @category model
- * @since 0.9.4
- */
-export interface NextRE<E> extends NextE<DecodeError<E>> {}
-/**
- * @category model
- * @since 0.9.4
- */
-export interface RequiredKeyRE<E> extends RequiredKeyE<string, DecodeError<E>> {}
-/**
- * @category model
- * @since 0.9.4
- */
-export interface OptionalKeyRE<E> extends OptionalKeyE<string, DecodeError<E>> {}
-/**
- * @category model
- * @since 0.9.4
- */
-export interface RequiredIndexRE<E> extends RequiredIndexE<string | number, DecodeError<E>> {}
-/**
- * @category model
- * @since 0.9.4
- */
-export interface OptionalIndexRE<E> extends OptionalIndexE<number, DecodeError<E>> {}
-/**
- * @category model
- * @since 0.9.4
- */
-export interface MemberRE<E> extends MemberE<string | number, DecodeError<E>> {}
-/**
- * @category model
- * @since 0.9.4
- */
-export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
-/**
- * @category model
- * @since 0.9.4
- */
-export interface SumRE<E> extends SumE<DecodeError<E>> {}
-/**
- * @category model
- * @since 0.9.4
- */
-export interface CompoundRE<E> extends CompoundE<DecodeError<E>> {}
-
-/**
- * @category model
- * @since 0.9.4
- */
-export type DecodeError<E> =
-  | UnexpectedKeysE
-  | MissingKeysE
-  | UnexpectedIndexesE
-  | MissingIndexesE
-  | LeafE<E>
-  | NullableRE<E>
-  | PrevRE<E>
-  | NextRE<E>
-  | RequiredKeyRE<E>
-  | OptionalKeyRE<E>
-  | RequiredIndexRE<E>
-  | OptionalIndexRE<E>
-  | MemberRE<E>
-  | LazyRE<E>
-  | SumRE<E>
-  | CompoundRE<E>
-
-/**
- * @category model
- * @since 0.9.4
- */
-export type BuiltinE =
-  | StringE
-  | NumberE
-  | BooleanE
-  | UnknownRecordE
-  | UnknownArrayE
-  | LiteralE<Literal>
-  | MessageE
-  | NaNE
-  | InfinityE
-  | TagE
+function toTree(error: DecodeError): T.Tree<string> {
+  return pipe(
+    error,
+    match({
+      Leaf: (i, error) => T.of(`Expected ${error} but received ${JSON.stringify(i)}`),
+      Key: (key, errors) => ({ value: `Key ${key}`, forest: toForest(errors) }),
+      MissingKeys: (keys) => ({ value: `MissingKeys`, forest: pipe(keys, RA.map(T.of)) }),
+      UnexpectedKeys: (keys) => ({ value: `UnexpectedKeys`, forest: pipe(keys, RA.map(T.of)) }),
+      Index: (Index, errors) => ({ value: `Index ${Index}`, forest: toForest(errors) }),
+      MissingIndexes: (indexes) => ({
+        value: `Missing indexes`,
+        forest: pipe(indexes, RA.map(flow(String, T.of))),
+      }),
+      UnexpectedIndexes: (indexes) => ({
+        value: `Undexpected Indexes`,
+        forest: pipe(indexes, RA.map(flow(String, T.of))),
+      }),
+      Member: (index, errors) => ({
+        value: `${index}`,
+        forest: toForest(errors),
+      }),
+      Lazy: (id, errors) => ({
+        value: id,
+        forest: toForest(errors),
+      }),
+      Wrap: (error, errors) => ({
+        value: error,
+        forest: toForest(errors),
+      }),
+    }),
+  )
+}

@@ -1,1468 +1,647 @@
 /**
- * **This module is experimental**
- *
- * This is a clone of io-ts with support for fp-ts v3.
- *
- * A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
- *
+ * Decoder is a data structure for representing runtime representations of your types.
  * @since 0.9.4
  */
-import { Bifunctor3 } from 'fp-ts/Bifunctor'
-import { flow, Lazy, pipe } from 'fp-ts/function'
-import { Functor3 } from 'fp-ts/Functor'
-import { NonEmptyArray } from 'fp-ts/NonEmptyArray'
-import * as O from 'fp-ts/Option'
+import * as App from 'fp-ts/Applicative'
+import * as Ap from 'fp-ts/Apply'
+import * as Ch from 'fp-ts/Chain'
+import * as Ei from 'fp-ts/Either'
+import * as F from 'fp-ts/Functor'
+import { IO } from 'fp-ts/IO'
+import { Monad2 } from 'fp-ts/Monad'
+import * as N from 'fp-ts/number'
+import { Pointed2 } from 'fp-ts/Pointed'
+import { not, Predicate } from 'fp-ts/Predicate'
 import * as RA from 'fp-ts/ReadonlyArray'
-import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
-import * as TH from 'fp-ts/These'
+import { concatW } from 'fp-ts/ReadonlyNonEmptyArray'
+import { Refinement } from 'fp-ts/Refinement'
+import * as S from 'fp-ts/string'
+import { getAssignSemigroup } from 'fp-ts/struct'
+import * as T from 'fp-ts/These'
 
 import * as DE from './DecodeError'
-import { Schemable2C, WithUnion2C, WithUnknownContainers2C } from './Schemable'
-
-import These = TH.These
-import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
-
-// -------------------------------------------------------------------------------------
-// model
-// -------------------------------------------------------------------------------------
+import { pipe } from './function'
+import { make } from './struct'
 
 /**
- * @category model
+ * @category Model
  * @since 0.9.4
  */
-export interface Decoder<I, E, A> {
-  readonly decode: (i: I) => These<E, A>
+export interface Decoder<I, O> {
+  readonly decode: (input: I) => T.These<DE.DecodeErrors, O>
 }
 
-// -------------------------------------------------------------------------------------
-// instances
-// -------------------------------------------------------------------------------------
-
 /**
- * @category instances
+ * @category Type-level
  * @since 0.9.4
  */
-export const URI = 'io-ts/Decoder2'
+export type InputOf<A> = [A] extends [Decoder<infer I, any>] ? I : never
 
 /**
- * @category instances
+ * @category Type-level
+ * @since 0.9.4
+ */
+export type OutputOf<A> = [A] extends [Decoder<any, infer O>] ? O : never
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export function fromRefinement<I, O extends I>(
+  refinement: Refinement<I, O>,
+  expected: string,
+): Decoder<I, O> {
+  return {
+    decode: (i) => (refinement(i) ? T.right(i) : T.left([DE.leaf(i, expected)])),
+  }
+}
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export const string = fromRefinement((x: unknown): x is string => typeof x === 'string', 'string')
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export const number = fromRefinement((x: unknown): x is number => typeof x === 'number', 'number')
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export const boolean = fromRefinement(
+  (x: unknown): x is boolean => typeof x === 'boolean',
+  'boolean',
+)
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export const union =
+  <I, O1>(second: Decoder<I, O1>) =>
+  <O2>(first: Decoder<I, O2>): Decoder<I, O1 | O2> => {
+    const { concat } = DE.getSemigroup()
+
+    return {
+      decode: (i) =>
+        pipe(
+          i,
+          first.decode,
+          T.mapLeft((errors) => [DE.member(0, errors)] as const),
+          T.matchW(
+            (e1) =>
+              pipe(
+                i,
+                second.decode,
+                T.mapLeft((errors) => [DE.member(1, errors)] as const),
+                T.matchW(
+                  (e2) => pipe(e1, concat(e2), T.left),
+                  T.right,
+                  (e2, a) => T.both(pipe(e1, concat(e2)), a),
+                ),
+              ),
+            T.right,
+            (e1, o1) =>
+              pipe(
+                i,
+                second.decode,
+                T.mapLeft((errors) => [DE.member(1, errors)] as const),
+                T.matchW(
+                  (e2) => T.both(pipe(e1, concat(e2)), o1),
+                  T.right,
+                  (e2) => T.both(pipe(e1, concat(e2)), o1),
+                ),
+              ),
+          ),
+        ) as T.These<DE.DecodeErrors, O1 | O2>,
+    }
+  }
+
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const nullable = union(fromRefinement((x): x is null => x === null, 'null'))
+
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const optional = union(fromRefinement((x): x is undefined => x === undefined, 'undefined'))
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export const unknownArray = fromRefinement<unknown, ReadonlyArray<unknown>>(
+  Array.isArray,
+  'Array<unknown>',
+)
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export const unknownRecord = fromRefinement<unknown, { readonly [key: string]: unknown }>(
+  (x): x is { readonly [key: string]: unknown } =>
+    !!x && !Array.isArray(x) && typeof x === 'object',
+  'Record<string, unknown>',
+)
+
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const compose =
+  <A, O>(second: Decoder<A, O>) =>
+  <I>(first: Decoder<I, A>): Decoder<I, O> => {
+    const { chain } = T.getChain(DE.getSemigroup())
+
+    return {
+      decode: (i) => pipe(i, first.decode, chain(second.decode)),
+    }
+  }
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export const fromArray = <I, O>(member: Decoder<I, O>): Decoder<readonly I[], readonly O[]> => {
+  const { concat } = T.getSemigroup(DE.getSemigroup(), RA.getSemigroup<O>())
+
+  return {
+    decode: (inputs) => {
+      const [first, ...rest] = inputs.map((input, index) =>
+        pipe(
+          input,
+          member.decode,
+          T.mapLeft((e): DE.DecodeErrors => [DE.index(index, e)] as const),
+          T.map((o): readonly O[] => [o]),
+        ),
+      )
+
+      return rest.reduce((acc, x) => pipe(x, concat(acc)), first)
+    },
+  }
+}
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export const array = <I, O>(member: Decoder<I, O>) => pipe(fromArray(member), compose(unknownArray))
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export const fromStruct = <A extends { readonly [key: string]: Decoder<unknown, any> }>(
+  properties: A,
+): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]: OutputOf<A[K]> }> => {
+  type O = { readonly [K in keyof A]: OutputOf<A[K]> }
+
+  const { concat } = T.getSemigroup(DE.getSemigroup(), getAssignSemigroup<any>())
+
+  return {
+    decode: (i) => {
+      const expectedKeys = Object.keys(properties)
+      const remainingKeys = expectedKeys.filter((k) => k in i)
+      const [first, ...rest] = remainingKeys.map((k) =>
+        pipe(
+          properties[k].decode(i[k]),
+          T.mapLeft((e): DE.DecodeErrors => [DE.key(k, e)] as const),
+          T.map((o: O[keyof O]) => make(k, o)),
+        ),
+      )
+      const result = rest.reduce((acc, x) => pipe(x, concat(acc)), first)
+
+      return result as T.These<DE.DecodeErrors, O>
+    },
+  }
+}
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export function missingKeys<A extends { readonly [key: string]: Decoder<unknown, any> }>(
+  properties: A,
+): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]: OutputOf<A[K]> }> {
+  type O = { readonly [K in keyof A]: OutputOf<A[K]> }
+  const diff = RA.difference(S.Eq)
+
+  return {
+    decode: (i) => {
+      const expectedKeys = Object.keys(properties)
+      const actualKeys = Object.keys(i)
+      const missingKeys = pipe(expectedKeys, diff(actualKeys))
+      const result = RA.isNonEmpty(missingKeys)
+        ? T.both([DE.missingKeys([missingKeys[0], ...missingKeys.slice(1)])] as const, i as O)
+        : T.right(i as O)
+
+      return result
+    },
+  }
+}
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export function unexpectedKeys<A extends { readonly [key: string]: Decoder<unknown, any> }>(
+  properties: A,
+): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]: OutputOf<A[K]> }> {
+  type O = { readonly [K in keyof A]: OutputOf<A[K]> }
+  const diff = RA.difference(S.Eq)
+
+  return {
+    decode: (i) => {
+      const expectedKeys = Object.keys(properties)
+      const actualKeys = Object.keys(i)
+      const unexpectedKeys = pipe(actualKeys, diff(expectedKeys))
+      const result = RA.isNonEmpty(unexpectedKeys)
+        ? T.both(
+            [DE.unexpectedKeys([unexpectedKeys[0], ...unexpectedKeys.slice(1)])] as const,
+            i as O,
+          )
+        : T.right(i as O)
+
+      return result
+    },
+  }
+}
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export function struct<A extends { readonly [key: string]: Decoder<unknown, any> }>(
+  properties: A,
+): Decoder<unknown, { readonly [K in keyof A]: OutputOf<A[K]> }> {
+  return pipe(
+    unknownRecord,
+    compose(missingKeys(properties)),
+    compose(unexpectedKeys(properties)),
+    compose(fromStruct(properties)),
+  )
+}
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export function fromTuple<A extends readonly [Decoder<any, any>, ...Decoder<any, any>[]]>(
+  ...tuple: A
+): Decoder<readonly unknown[], { readonly [K in keyof A]: OutputOf<A[K]> }> {
+  type O = { readonly [K in keyof A]: OutputOf<A[K]> }
+
+  const { concat } = T.getSemigroup(DE.getSemigroup(), RA.getSemigroup<O>())
+
+  return {
+    decode: (input) => {
+      const [first, ...rest] = tuple.map((d, i) =>
+        pipe(
+          d.decode(input[i]),
+          T.mapLeft((errors): DE.DecodeErrors => [DE.index(i, errors)]),
+          T.map((o): readonly O[] => [o]),
+        ),
+      )
+      const result = rest.reduce((acc, x) => pipe(x, concat(acc)), first)
+
+      return result as T.These<DE.DecodeErrors, O>
+    },
+  }
+}
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export function missingIndexes<A extends readonly [Decoder<any, any>, ...Decoder<any, any>[]]>(
+  ...tuple: A
+): Decoder<readonly unknown[], readonly unknown[]> {
+  const diff = RA.difference(N.Eq)
+
+  return {
+    decode: (i) => {
+      const expectedKeys = Object.keys(tuple).map(parseFloat)
+      const actualKeys = Object.keys(i).map(parseFloat)
+      const missingKeys = pipe(expectedKeys, diff(actualKeys))
+      const result = RA.isNonEmpty(missingKeys)
+        ? T.both([DE.missingIndexes([missingKeys[0], ...missingKeys.slice(1)])] as const, i)
+        : T.right(i)
+
+      return result
+    },
+  }
+}
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export function unexpectedIndexes<A extends readonly [Decoder<any, any>, ...Decoder<any, any>[]]>(
+  ...tuple: A
+): Decoder<readonly unknown[], readonly unknown[]> {
+  const diff = RA.difference(S.Eq)
+
+  return {
+    decode: (i) => {
+      const expectedKeys = Object.keys(tuple)
+      const actualKeys = Object.keys(i)
+      const unexpectedKeys = pipe(actualKeys, diff(expectedKeys))
+      const result = RA.isNonEmpty(unexpectedKeys)
+        ? T.both([DE.unexpectedKeys([unexpectedKeys[0], ...unexpectedKeys.slice(1)])] as const, i)
+        : T.right(i)
+
+      return result
+    },
+  }
+}
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export function tuple<A extends readonly [Decoder<any, any>, ...Decoder<any, any>[]]>(
+  ...tuple: A
+): Decoder<unknown, { readonly [K in keyof A]: OutputOf<A[K]> }> {
+  return pipe(
+    unknownArray,
+    compose(missingIndexes(...tuple)),
+    compose(unexpectedIndexes(...tuple)),
+    compose(fromTuple(...tuple)),
+  ) as Decoder<unknown, { readonly [K in keyof A]: OutputOf<A[K]> }>
+}
+
+/**
+ * @category URI
+ * @since 0.9.4
+ */
+export const URI = '@typed/fp/Decoder'
+/**
+ * @category URI
  * @since 0.9.4
  */
 export type URI = typeof URI
 
 declare module 'fp-ts/HKT' {
-  interface URItoKind3<R, E, A> {
-    readonly [URI]: Decoder<R, E, A>
+  export interface URItoKind2<E, A> {
+    [URI]: Decoder<E, A>
   }
 }
 
 /**
- * @category meta
+ * @category Constructor
  * @since 0.9.4
  */
-export interface MapD<D, B> extends Decoder<InputOf<D>, ErrorOf<D>, B> {
-  readonly _tag: 'MapD'
-  readonly decoder: D
-  readonly map: (a: TypeOf<D>) => B
-}
+export const of = <A>(value: A): Decoder<unknown, A> => ({
+  decode: () => T.right(value),
+})
 
 /**
- * @category instance operations
+ * @category Combinator
  * @since 0.9.4
  */
-export function map<D extends AnyD, B>(f: (a: TypeOf<D>) => B): (decoder: D) => MapD<D, B>
-export function map<A, B>(
-  f: (a: A) => B,
-): <I, E>(decoder: Decoder<I, E, A>) => MapD<typeof decoder, B> {
-  return (decoder) => ({
-    _tag: 'MapD',
-    decode: flow(decoder.decode, TH.map(f)),
-    decoder,
-    map: f,
+export const map =
+  <A, B>(f: (value: A) => B) =>
+  <I>(decoder: Decoder<I, A>): Decoder<I, B> => ({
+    decode: (i) => pipe(i, decoder.decode, T.map(f)),
   })
-}
 
 /**
- * @category instances
+ * @category Combinator
  * @since 0.9.4
  */
-export const Functor: Functor3<URI> = {
-  URI,
-  map: (f) => (fa) => pipe(fa, map(f)),
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface MapLeftD<D, E> extends Decoder<InputOf<D>, E, TypeOf<D>> {
-  readonly _tag: 'MapLeftD'
-  readonly decoder: D
-  readonly mapLeft: (de: ErrorOf<D>) => E
-}
-
-/**
- * @category instance operations
- * @since 0.9.4
- */
-export function mapLeft<D extends AnyD, E>(f: (e: ErrorOf<D>) => E): (decoder: D) => MapLeftD<D, E>
-export function mapLeft<E1, I, E2>(
-  f: (e: E1) => E2,
-): <A>(decoder: Decoder<I, E1, A>) => MapLeftD<typeof decoder, E2> {
-  return (decoder) => ({
-    _tag: 'MapLeftD',
-    decode: flow(decoder.decode, TH.mapLeft(f)),
-    decoder,
-    mapLeft: f,
-  })
-}
-
-/**
- * @category instances
- * @since 0.9.4
- */
-export const Bifunctor: Bifunctor3<URI> = {
-  URI,
-  mapLeft: (f) => (fa) => pipe(fa, mapLeft(f)),
-  bimap: (f, g) => (fea) => pipe(fea, mapLeft(f), map(g)),
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface IdentityD<A> extends Decoder<A, never, A> {
-  readonly _tag: 'IdentityD'
-}
-
-/**
- * @category instance operations
- * @since 0.9.4
- */
-export const id = <A = never>(): IdentityD<A> => ({
-  _tag: 'IdentityD',
-  decode: TH.right,
-})
-
-/**
- * @since 0.9.4
- */
-export interface CompositionE<P, N>
-  extends DE.CompoundE<DE.PrevE<ErrorOf<P>> | DE.NextE<ErrorOf<N>>> {}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface CompositionD<P, N> extends Decoder<InputOf<P>, CompositionE<P, N>, TypeOf<N>> {
-  readonly _tag: 'CompositionD'
-  readonly prev: P
-  readonly next: N
-}
-
-/**
- * @category instance operations
- * @since 0.9.4
- */
-export function compose<P extends AnyD, N extends Decoder<TypeOf<P>, any, any>>(
-  next: N,
-): (prev: P) => CompositionD<P, N>
-export function compose<A, E2, B>(
-  next: Decoder<A, E2, B>,
-): <I, E1>(prev: Decoder<I, E1, A>) => CompositionD<typeof prev, typeof next> {
-  return (prev) => ({
-    _tag: 'CompositionD',
-    prev,
-    next,
-    decode: flow(
-      prev.decode,
-      TH.matchW(
-        (e1) => failure(DE.compositionE([DE.prevE(e1)])),
-        (a) =>
-          pipe(
-            next.decode(a),
-            TH.mapLeft((e) => DE.compositionE([DE.nextE(e)])),
-          ),
-        (w1, a) =>
-          pipe(
-            next.decode(a),
-            TH.matchW(
-              (e2) => failure(DE.compositionE([DE.prevE(w1), DE.nextE(e2)])),
-              (b) => warning(DE.compositionE([DE.prevE(w1)]), b),
-              (w2, b) => warning(DE.compositionE([DE.prevE(w1), DE.nextE(w2)]), b),
-            ),
-          ),
-      ),
-    ),
-  })
-}
-
-declare module 'fp-ts/HKT' {
-  interface URItoKind2<E, A> {
-    readonly '@typed/fp/ToDecoder': Decoder<unknown, E, A>
-  }
-}
-
-// TODO: move to io-ts-contrib in v3
-
-/**
- * @category instances
- * @since 0.9.4
- */
-export const getSchemable = <E = never>(): Schemable2C<
-  '@typed/fp/ToDecoder',
-  DE.DecodeError<E | DE.BuiltinE>
-> => {
-  return {
-    URI: '@typed/fp/ToDecoder',
-    _E: undefined as any,
-    literal,
-    string,
-    number,
-    boolean,
-    tuple,
-    struct: struct as any,
-    partial: partial as any,
-    array,
-    record,
-    nullable,
-    intersect,
-    lazy,
-    sum: sum as any,
-  }
-}
-
-/**
- * @category instances
- * @since 0.9.4
- */
-export const getWithUnknownContainers = <E = never>(): WithUnknownContainers2C<
-  '@typed/fp/ToDecoder',
-  DE.DecodeError<E | DE.BuiltinE>
-> => ({
-  UnknownArray,
-  UnknownRecord,
-})
-
-/**
- * @category instances
- * @since 0.9.4
- */
-export const getWithUnion = <E = never>(): WithUnion2C<
-  '@typed/fp/ToDecoder',
-  DE.DecodeError<E | DE.BuiltinE>
-> => ({
-  union: union as any,
-})
-
-// -------------------------------------------------------------------------------------
-// DecodeError
-// -------------------------------------------------------------------------------------
-
-/**
- * @category DecodeError
- * @since 0.9.4
- */
-export const success = TH.right
-
-/**
- * @category DecodeError
- * @since 0.9.4
- */
-export const failure = TH.left
-
-/**
- * @category DecodeError
- * @since 0.9.4
- */
-export const warning = TH.both
-
-// -------------------------------------------------------------------------------------
-// primitives
-// -------------------------------------------------------------------------------------
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface stringUD extends Decoder<unknown, DE.StringLE, string> {
-  readonly _tag: 'stringUD'
-}
-
-const isString = (u: unknown): u is string => typeof u === 'string'
-
-/**
- * @category primitives
- * @since 0.9.4
- */
-export const string: stringUD = {
-  _tag: 'stringUD',
-  decode: (u) => (isString(u) ? success(u) : failure(DE.stringLE(u))),
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface numberUD extends Decoder<unknown, DE.NumberLE | DE.NaNLE | DE.InfinityLE, number> {
-  readonly _tag: 'numberUD'
-}
-
-const isNumber = (u: unknown): u is number => typeof u === 'number'
-
-/**
- * @category primitives
- * @since 0.9.4
- */
-export const number: numberUD = {
-  _tag: 'numberUD',
-  decode: (u) =>
-    isNumber(u)
-      ? isNaN(u)
-        ? warning(DE.naNLE, u)
-        : isFinite(u)
-        ? success(u)
-        : warning(DE.infinityLE, u)
-      : failure(DE.numberLE(u)),
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface booleanUD extends Decoder<unknown, DE.BooleanLE, boolean> {
-  readonly _tag: 'booleanUD'
-}
-
-const isBoolean = (u: unknown): u is boolean => typeof u === 'boolean'
-
-/**
- * @category primitives
- * @since 0.9.4
- */
-export const boolean: booleanUD = {
-  _tag: 'booleanUD',
-  decode: (u) => (isBoolean(u) ? success(u) : failure(DE.booleanLE(u))),
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface UnknownArrayUD extends Decoder<unknown, DE.UnknownArrayLE, Array<unknown>> {
-  readonly _tag: 'UnknownArrayUD'
-}
-
-/**
- * @category primitives
- * @since 0.9.4
- */
-export const UnknownArray: UnknownArrayUD = {
-  _tag: 'UnknownArrayUD',
-  decode: (u) => (Array.isArray(u) ? success(u) : failure(DE.unknownArrayLE(u))),
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface UnknownRecordUD
-  extends Decoder<unknown, DE.UnknownRecordLE, Record<string, unknown>> {
-  readonly _tag: 'UnknownRecordUD'
-}
-
-const isUnknownRecord = (u: unknown): u is Record<string, unknown> =>
-  u !== null && typeof u === 'object' && !Array.isArray(u)
-
-/**
- * @category primitives
- * @since 0.9.4
- */
-export const UnknownRecord: UnknownRecordUD = {
-  _tag: 'UnknownRecordUD',
-  decode: (u) => (isUnknownRecord(u) ? success(u) : failure(DE.unknownRecordLE(u))),
-}
-
-// -------------------------------------------------------------------------------------
-// constructors
-// -------------------------------------------------------------------------------------
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface LiteralD<A extends ReadonlyNonEmptyArray<DE.Literal>>
-  extends Decoder<unknown, DE.LiteralLE<A[number]>, A[number]> {
-  readonly _tag: 'LiteralD'
-  readonly literals: A
-}
-
-const isLiteral =
-  <A extends ReadonlyNonEmptyArray<DE.Literal>>(...literals: A) =>
-  (u: unknown): u is A[number] =>
-    literals.findIndex((literal) => literal === u) !== -1
-
-/**
- * @category constructors
- * @since 0.9.4
- */
-export const literal = <A extends ReadonlyNonEmptyArray<DE.Literal>>(
-  ...literals: A
-): LiteralD<A> => {
-  const is = isLiteral(...literals)
-  return {
-    _tag: 'LiteralD',
-    literals,
-    decode: (u) => (is(u) ? success(u) : failure(DE.literalLE(u, literals))),
-  }
-}
-
-// -------------------------------------------------------------------------------------
-// decoder combinators
-// -------------------------------------------------------------------------------------
-
-/**
- * @since 0.9.4
- */
-export interface FromStructE<Properties>
-  extends DE.CompoundE<
-    {
-      readonly [K in keyof Properties]: DE.RequiredKeyE<K, ErrorOf<Properties[K]>>
-    }[keyof Properties]
-  > {}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface FromStructD<Properties>
-  extends Decoder<
-    { [K in keyof Properties]: InputOf<Properties[K]> },
-    FromStructE<Properties>,
-    { [K in keyof Properties]: TypeOf<Properties[K]> }
-  > {
-  readonly _tag: 'FromStructD'
-  readonly properties: Properties
-}
-
-/**
- * @category combinators
- * @since 2.2.15
- */
-export const fromStruct = <Properties extends Record<string, AnyD>>(
-  properties: Properties,
-): FromStructD<Properties> => ({
-  _tag: 'FromStructD',
-  properties,
-  decode: (ur) => {
-    const es: Array<DE.RequiredKeyE<string, ErrorOf<Properties[keyof Properties]>>> = []
-    const ar: any = {}
-    let isBoth = true
-    for (const k in properties) {
-      const de = properties[k].decode(ur[k])
-      if (TH.isLeft(de)) {
-        isBoth = false
-        es.push(DE.requiredKeyE(k, de.left))
-      } else if (TH.isRight(de)) {
-        ar[k] = de.right
-      } else {
-        es.push(DE.requiredKeyE(k, de.left))
-        ar[k] = de.right
-      }
-    }
-    return RA.isNonEmpty(es)
-      ? isBoth
-        ? warning(DE.structE(es), ar)
-        : failure(DE.structE(es))
-      : success(ar)
-  },
-})
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface UnexpectedKeysD<Properties>
-  extends Decoder<
-    Record<string, unknown>,
-    DE.UnexpectedKeysE,
-    Partial<{ [K in keyof Properties]: unknown }>
-  > {
-  readonly _tag: 'UnexpectedKeysD'
-  readonly properties: Properties
-}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export const unexpectedKeys = <Properties extends Record<string, unknown>>(
-  properties: Properties,
-): UnexpectedKeysD<Properties> => {
-  return {
-    _tag: 'UnexpectedKeysD',
-    properties,
-    decode: (ur) => {
-      const es: Array<string> = []
-      const out: any = {}
-      for (const k in properties) {
-        if (k in ur) {
-          out[k] = ur[k]
-        }
-      }
-      for (const k in ur) {
-        if (!(k in out)) {
-          es.push(k)
-        }
-      }
-      return RA.isNonEmpty(es) ? warning(DE.unexpectedKeysE(es), out) : success(ur)
-    },
-  }
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface MissingKeysD<Properties>
-  extends Decoder<
-    Partial<{ [K in keyof Properties]: unknown }>,
-    DE.MissingKeysE,
-    { [K in keyof Properties]: unknown }
-  > {
-  readonly _tag: 'MissingKeysD'
-  readonly properties: Properties
-}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export const missingKeys = <Properties extends Record<string, unknown>>(
-  properties: Properties,
-): MissingKeysD<Properties> => {
-  return {
-    _tag: 'MissingKeysD',
-    properties,
-    decode: (r) => {
-      const es: Array<string> = []
-      for (const k in properties) {
-        if (!(k in r)) {
-          es.push(k)
-        }
-      }
-      return RA.isNonEmpty(es) ? failure(DE.missingKeysE(es)) : success(r as any)
-    },
-  }
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface StructD<Properties>
-  extends CompositionD<
-    CompositionD<
-      CompositionD<UnknownRecordUD, UnexpectedKeysD<Properties>>,
-      MissingKeysD<Properties>
-    >,
-    FromStructD<Properties>
-  > {}
-
-/**
- * @category combinators
- * @since 2.2.15
- */
-export function struct<Properties extends Record<string, AnyUD>>(
-  properties: Properties,
-): StructD<Properties>
-export function struct(properties: Record<string, AnyUD>): StructD<typeof properties> {
-  return pipe(
-    UnknownRecord, // unknown -> Record<string, unknown>
-    compose(unexpectedKeys(properties)), // Record<string, unknown> -> { a?: unknown, b?: unknown, ... }
-    compose(missingKeys(properties)), // { a?: unknown, b?: unknown, ... } -> { a: unknown, b: unknown, ..., }
-    compose(fromStruct(properties)), // { a: unknown, b: unknown, ..., } -> { a: string, b: number, ... }
-  )
-}
-
-/**
- * @since 0.9.4
- */
-export interface FromPartialE<Properties>
-  extends DE.CompoundE<
-    {
-      readonly [K in keyof Properties]: DE.OptionalKeyE<K, ErrorOf<Properties[K]>>
-    }[keyof Properties]
-  > {}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface FromPartialD<Properties>
-  extends Decoder<
-    Partial<{ [K in keyof Properties]: InputOf<Properties[K]> }>,
-    FromPartialE<Properties>,
-    Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
-  > {
-  readonly _tag: 'FromPartialD'
-  readonly properties: Properties
-}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export const fromPartial = <Properties extends Record<string, AnyD>>(
-  properties: Properties,
-): FromPartialD<Properties> => ({
-  _tag: 'FromPartialD',
-  properties,
-  decode: (ur) => {
-    const es: Array<DE.OptionalKeyE<string, ErrorOf<Properties[keyof Properties]>>> = []
-    const ar: any = {}
-    let isBoth = true
-    for (const k in properties) {
-      if (!(k in ur)) {
-        continue
-      }
-      if (ur[k] === undefined) {
-        ar[k] = undefined
-        continue
-      }
-      const de = properties[k].decode(ur[k])
-      if (TH.isLeft(de)) {
-        isBoth = false
-        es.push(DE.optionalKeyE(k, de.left))
-      } else if (TH.isRight(de)) {
-        ar[k] = de.right
-      } else {
-        es.push(DE.optionalKeyE(k, de.left))
-        ar[k] = de.right
-      }
-    }
-    return RA.isNonEmpty(es)
-      ? isBoth
-        ? warning(DE.partialE(es), ar)
-        : failure(DE.partialE(es))
-      : success(ar)
-  },
-})
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface PartialD<Properties>
-  extends CompositionD<
-    CompositionD<UnknownRecordUD, UnexpectedKeysD<Properties>>,
-    FromPartialD<Properties>
-  > {}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export function partial<Properties extends Record<string, AnyUD>>(
-  properties: Properties,
-): PartialD<Properties>
-export function partial(properties: Record<string, AnyUD>): PartialD<typeof properties> {
-  return pipe(UnknownRecord, compose(unexpectedKeys(properties)), compose(fromPartial(properties)))
-}
-
-/**
- * @since 0.9.4
- */
-export interface FromTupleE<Components extends ReadonlyArray<unknown>>
-  extends DE.CompoundE<
-    { [K in keyof Components]: DE.RequiredIndexE<K, ErrorOf<Components[K]>> }[number]
-  > {}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface FromTupleD<Components extends ReadonlyArray<unknown>>
-  extends Decoder<
-    { readonly [K in keyof Components]: InputOf<Components[K]> },
-    FromTupleE<Components>,
-    { [K in keyof Components]: TypeOf<Components[K]> }
-  > {
-  readonly _tag: 'FromTupleD'
-  readonly components: Components
-}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
-  ...components: Components
-): FromTupleD<Components> => ({
-  _tag: 'FromTupleD',
-  components,
-  decode: (us) => {
-    const es: Array<DE.RequiredIndexE<number, ErrorOf<Components[number]>>> = []
-    const as: any = []
-    let isBoth = true
-    for (let index = 0; index < components.length; index++) {
-      const de = components[index].decode(us[index])
-      if (TH.isLeft(de)) {
-        isBoth = false
-        es.push(DE.requiredIndexE(index, de.left))
-      } else if (TH.isRight(de)) {
-        as[index] = de.right
-      } else {
-        es.push(DE.requiredIndexE(index, de.left))
-        as[index] = de.right
-      }
-    }
-    return RA.isNonEmpty(es)
-      ? isBoth
-        ? warning(DE.tupleE(es), as)
-        : failure(DE.tupleE(es))
-      : success(as)
-  },
-})
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface UnexpectedIndexesD<Components>
-  extends Decoder<Array<unknown>, DE.UnexpectedIndexesE, { [K in keyof Components]?: unknown }> {
-  readonly _tag: 'UnexpectedIndexesD'
-  readonly components: Components
-}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export const unexpectedIndexes = <Components extends ReadonlyArray<unknown>>(
-  ...components: Components
-): UnexpectedIndexesD<Components> => {
-  return {
-    _tag: 'UnexpectedIndexesD',
-    components,
-    decode: (us) => {
-      const es: Array<number> = []
-      for (let index = components.length; index < us.length; index++) {
-        es.push(index)
-      }
-      return RA.isNonEmpty(es)
-        ? warning(DE.unexpectedIndexesE(es), us.slice(0, components.length) as any)
-        : success(us)
-    },
-  }
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface MissingIndexesD<Components>
-  extends Decoder<
-    { readonly [K in keyof Components]?: unknown },
-    DE.MissingIndexesE,
-    { [K in keyof Components]: unknown }
-  > {
-  readonly _tag: 'MissingIndexesD'
-  readonly components: Components
-}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export const missingIndexes = <Components extends ReadonlyArray<unknown>>(
-  ...components: Components
-): MissingIndexesD<Components> => {
-  return {
-    _tag: 'MissingIndexesD',
-    components,
-    decode: (us) => {
-      const es: Array<number> = []
-      const len = us.length
-      for (let index = 0; index < components.length; index++) {
-        if (len <= index) {
-          es.push(index)
-        }
-      }
-      return RA.isNonEmpty(es) ? failure(DE.missingIndexesE(es)) : success(us as any)
-    },
-  }
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface TupleD<Components extends ReadonlyArray<unknown>>
-  extends CompositionD<
-    CompositionD<
-      CompositionD<UnknownArrayUD, UnexpectedIndexesD<Components>>,
-      MissingIndexesD<Components>
-    >,
-    FromTupleD<Components>
-  > {}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export function tuple<Components extends ReadonlyArray<AnyUD>>(
-  ...cs: Components
-): TupleD<Components>
-export function tuple(...cs: ReadonlyArray<AnyUD>): TupleD<typeof cs> {
-  return pipe(
-    UnknownArray, // unknown -> Array<unknown>
-    compose(unexpectedIndexes(...cs)), // Array<unknown> -> [unknown?, unknown?, ...]
-    compose(missingIndexes(...cs)), // [unknown?, unknown?, ...] -> [unknown, unknown, ...]
-    compose(fromTuple(...cs)), // [unknown, unknown, ...] -> [string, number, ...]
-  )
-}
-
-/**
- * @since 0.9.4
- */
-export interface FromArrayE<Item> extends DE.CompoundE<DE.OptionalIndexE<number, ErrorOf<Item>>> {}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface FromArrayD<Item>
-  extends Decoder<Array<InputOf<Item>>, FromArrayE<Item>, Array<TypeOf<Item>>> {
-  readonly _tag: 'FromArrayD'
-  readonly item: Item
-}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export function fromArray<Item extends AnyD>(item: Item): FromArrayD<Item>
-export function fromArray<I, E, A>(item: Decoder<I, E, A>): FromArrayD<typeof item> {
-  return {
-    _tag: 'FromArrayD',
-    item,
-    decode: (us) => {
-      const es: Array<DE.OptionalIndexE<number, E>> = []
-      const as: Array<A> = []
-      let isBoth = true
-      for (let index = 0; index < us.length; index++) {
-        const de = item.decode(us[index])
-        if (TH.isLeft(de)) {
-          isBoth = false
-          es.push(DE.optionalIndexE(index, de.left))
-        } else if (TH.isRight(de)) {
-          as[index] = de.right
-        } else {
-          es.push(DE.optionalIndexE(index, de.left))
-          as[index] = de.right
-        }
-      }
-      if (RA.isNonEmpty(es)) {
-        return isBoth ? warning(DE.arrayE(es), as) : failure(DE.arrayE(es))
-      }
-      return success(as)
-    },
-  }
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface ArrayD<Item> extends CompositionD<UnknownArrayUD, FromArrayD<Item>> {}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export function array<Item extends AnyUD>(item: Item): ArrayD<Item>
-export function array<E, A>(item: Decoder<unknown, E, A>): ArrayD<typeof item> {
-  return pipe(UnknownArray, compose(fromArray(item)))
-}
-
-/**
- * @since 0.9.4
- */
-export interface FromRecordE<Codomain>
-  extends DE.CompoundE<DE.OptionalKeyE<string, ErrorOf<Codomain>>> {}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface FromRecordD<Codomain>
-  extends Decoder<
-    Record<string, InputOf<Codomain>>,
-    FromRecordE<Codomain>,
-    Record<string, TypeOf<Codomain>>
-  > {
-  readonly _tag: 'FromRecordD'
-  readonly codomain: Codomain
-}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export function fromRecord<Codomain extends AnyD>(codomain: Codomain): FromRecordD<Codomain>
-export function fromRecord<I, E, A>(codomain: Decoder<I, E, A>): FromRecordD<typeof codomain> {
-  return {
-    _tag: 'FromRecordD',
-    codomain,
-    decode: (i) => {
-      const es: Array<DE.OptionalKeyE<string, E>> = []
-      const r: Record<string, A> = {}
-      let isBoth = true
-      for (const k in i) {
-        const de = codomain.decode(i[k])
-        if (TH.isLeft(de)) {
-          isBoth = false
-          es.push(DE.optionalKeyE(k, de.left))
-        } else if (TH.isRight(de)) {
-          r[k] = de.right
-        } else {
-          es.push(DE.optionalKeyE(k, de.left))
-          r[k] = de.right
-        }
-      }
-      if (RA.isNonEmpty(es)) {
-        return isBoth ? warning(DE.recordE(es), r) : failure(DE.recordE(es))
-      }
-      return success(r)
-    },
-  }
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface RecordD<Codomain> extends CompositionD<UnknownRecordUD, FromRecordD<Codomain>> {}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export function record<Codomain extends AnyUD>(codomain: Codomain): RecordD<Codomain>
-export function record<E, A>(codomain: Decoder<unknown, E, A>): RecordD<typeof codomain> {
-  return pipe(UnknownRecord, compose(fromRecord(codomain)))
-}
-
-/**
- * @since 0.9.4
- */
-export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I,
-) => void
-  ? I
-  : never
-
-/**
- * @since 0.9.4
- */
-export interface UnionE<Members extends ReadonlyNonEmptyArray<AnyD>>
-  extends DE.CompoundE<{ [K in keyof Members]: DE.MemberE<K, ErrorOf<Members[K]>> }[number]> {}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface UnionD<Members extends ReadonlyNonEmptyArray<AnyD>>
-  extends Decoder<
-    UnionToIntersection<InputOf<Members[number]>>,
-    UnionE<Members>,
-    TypeOf<Members[keyof Members]>
-  > {
-  readonly _tag: 'UnionD'
-  readonly members: Members
-}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export function union<Members extends ReadonlyNonEmptyArray<AnyD>>(
-  ...members: Members
-): UnionD<Members> {
-  return {
-    _tag: 'UnionD',
-    members,
-    decode: (i) => {
-      const de = members[0].decode(i)
-      if (TH.isLeft(de)) {
-        const es: NonEmptyArray<DE.MemberE<number, ErrorOf<Members[number]>>> = [
-          DE.memberE('0' as any, de.left),
-        ]
-        for (let m = 1; m < members.length; m++) {
-          const de = members[m].decode(i)
-          if (TH.isLeft(de)) {
-            es.push(DE.memberE(String(m) as any, de.left))
-          } else {
-            return pipe(
-              de,
-              TH.mapLeft((e) => {
-                es.push(DE.memberE(String(m) as any, e))
-                return DE.unionE(es)
-              }),
-            )
-          }
-        }
-        return failure(DE.unionE(es))
-      } else {
-        return pipe(
-          de,
-          TH.mapLeft((e) => DE.unionE([DE.memberE('0' as any, e)])),
-        )
-      }
-    },
-  }
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface NullableD<D>
-  extends Decoder<null | InputOf<D>, DE.NullableE<ErrorOf<D>>, null | TypeOf<D>> {
-  readonly _tag: 'NullableD'
-  readonly or: D
-}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export function nullable<D extends AnyD>(or: D): NullableD<D> {
-  return {
-    _tag: 'NullableD',
-    or,
-    decode: (i) => (i === null ? success(null) : pipe(or.decode(i), TH.mapLeft(DE.nullableE))),
-  }
-}
-
-/**
- * @since 0.9.4
- */
-export interface IntersectE<F, S>
-  extends DE.CompoundE<DE.MemberE<0, ErrorOf<F>> | DE.MemberE<1, ErrorOf<S>>> {}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface IntersectD<F, S>
-  extends Decoder<InputOf<F> & InputOf<S>, IntersectE<F, S>, TypeOf<F> & TypeOf<S>> {
-  readonly _tag: 'IntersectD'
-  readonly first: F
-  readonly second: S
-}
-
-type Prunable = ReadonlyArray<string>
-
-/* istanbul ignore next */
-const collectPrunable = <E>(de: DE.DecodeError<E>): Prunable => {
-  const go = (de: DE.DecodeError<E>): Prunable => {
-    switch (de._tag) {
-      case 'CompoundE':
-        return pipe(de.errors, RA.chain(go))
-      case 'LazyE':
-      case 'MemberE':
-      case 'NextE':
-      case 'NullableE':
-      case 'PrevE':
-      case 'SumE':
-        return go(de.error)
-      case 'LeafE':
-      case 'MissingIndexesE':
-      case 'MissingKeysE':
-        return RA.empty
-      case 'OptionalIndexE':
-        return go(de.error).map((s) => String(de.index) + '.' + s)
-      case 'OptionalKeyE':
-        return go(de.error).map((s) => de.key + '.' + s)
-      case 'RequiredIndexE':
-        return go(de.error).map((s) => String(de.index) + '.' + s)
-      case 'RequiredKeyE':
-        return go(de.error).map((s) => de.key + '.' + s)
-      case 'UnexpectedIndexesE':
-        return de.indexes.map(String)
-      case 'UnexpectedKeysE':
-        return de.keys
-    }
-  }
-  return go(de)
-}
-
-/* istanbul ignore next */
-const prune = (
-  prunable: Prunable,
-  anticollision: string,
-): (<E>(de: DE.DecodeError<E>) => O.Option<DE.DecodeError<E>>) => {
-  const go = <E>(de: DE.DecodeError<E>): O.Option<DE.DecodeError<E>> => {
-    switch (de._tag) {
-      case 'CompoundE':
-        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), (pdes) =>
-          RA.isNonEmpty(pdes) ? O.some(DE.compoundE(de.name)(pdes)) : O.none,
-        )
-      case 'SumE':
-        return pipe(de.error, prune(prunable, anticollision), O.map(DE.sumE))
-      case 'NextE':
-        return pipe(de.error, prune(prunable, anticollision), O.map(DE.nextE))
-      case 'NullableE':
-        return pipe(de.error, prune(prunable, anticollision), O.map(DE.nullableE))
-      case 'PrevE':
-        return pipe(de.error, prune(prunable, anticollision), O.map(DE.prevE))
-      case 'LazyE':
-        return pipe(
-          de.error,
-          prune(prunable, anticollision),
-          O.map((pde) => DE.lazyE(de.id, pde)),
-        )
-      case 'LeafE':
-      case 'MissingIndexesE':
-      case 'MissingKeysE':
-        return O.some(de)
-      case 'MemberE':
-        return pipe(
-          de.error,
-          prune(prunable, anticollision),
-          O.map((pde) => DE.memberE(de.member, pde)),
-        )
-      case 'OptionalIndexE': {
-        return pipe(
-          de.error,
-          prune(prunable, anticollision + de.index + '.'),
-          O.map((pde) => DE.optionalIndexE(de.index, pde)),
-        )
-      }
-      case 'OptionalKeyE': {
-        return pipe(
-          de.error,
-          prune(prunable, anticollision + de.key + '.'),
-          O.map((pde) => DE.optionalKeyE(de.key, pde)),
-        )
-      }
-      case 'RequiredIndexE': {
-        return pipe(
-          de.error,
-          prune(prunable, anticollision + de.index + '.'),
-          O.map((pde) => DE.requiredIndexE(de.index, pde)),
-        )
-      }
-      case 'RequiredKeyE': {
-        return pipe(
-          de.error,
-          prune(prunable, anticollision + de.key + '.'),
-          O.map((pde) => DE.requiredKeyE(de.key, pde)),
-        )
-      }
-      case 'UnexpectedIndexesE': {
-        const pindexes = de.indexes.filter(
-          (index) => prunable.indexOf(anticollision + String(index)) !== -1,
-        )
-        return RA.isNonEmpty(pindexes) ? O.some(DE.unexpectedIndexesE(pindexes)) : O.none
-      }
-      case 'UnexpectedKeysE': {
-        const pkeys = de.keys.filter((key) => prunable.indexOf(anticollision + key) !== -1)
-        return RA.isNonEmpty(pkeys) ? O.some(DE.unexpectedKeysE(pkeys)) : O.none
-      }
-    }
-  }
-  return go
-}
-
-const emptyString = ''
-
-const pruneAllUnexpected: <E>(de: DE.DecodeError<E>) => O.Option<DE.DecodeError<E>> = prune(
-  RA.empty,
-  emptyString,
-)
-
-const pruneDifference = <E1, E2>(
-  de1: DE.DecodeError<E1>,
-  de2: DE.DecodeError<E2>,
-): O.Option<
-  DE.CompoundE<DE.MemberE<0, DE.DecodeError<E1>> | DE.MemberE<1, DE.DecodeError<E2>>>
-> => {
-  const pde1 = pipe(de1, prune(collectPrunable(de2), emptyString))
-  const pde2 = pipe(de2, prune(collectPrunable(de1), emptyString))
-  if (O.isSome(pde1)) {
-    return O.isSome(pde2)
-      ? O.some(DE.intersectionE([DE.memberE(0, pde1.value), DE.memberE(1, pde2.value)]))
-      : O.some(DE.intersectionE([DE.memberE(0, pde1.value)]))
-  }
-  return O.isSome(pde2) ? O.some(DE.intersectionE([DE.memberE(1, pde2.value)])) : O.none
-}
-
-/** @internal */
-export const intersect_ = <A, B>(a: A, b: B): A & B => {
-  if (isUnknownRecord(a) && isUnknownRecord(b)) {
-    const out: any = { ...(a as any) }
-    for (const k in b) {
-      if (!(k in out)) {
-        out[k] = b[k]
-      } else {
-        out[k] = intersect_(out[k], b[k] as any)
-      }
-    }
-    return out
-  } else if (Array.isArray(a) && Array.isArray(b)) {
-    const out: any = a.slice()
-    for (let i = 0; i < b.length; i++) {
-      if (i >= a.length) {
-        out[i] = b[i]
-      } else {
-        out[i] = intersect_(out[i], b[i])
-      }
-    }
-    return out
-  }
-  return b as any
-}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export function intersect<S extends Decoder<any, DE.DecodeError<any>, any>>(
-  second: S,
-): <F extends Decoder<any, DE.DecodeError<any>, any>>(first: F) => IntersectD<F, S>
-export function intersect<I2, E2, A2>(
-  second: Decoder<I2, DE.DecodeError<E2>, A2>,
-): <I1, E1, A1>(
-  first: Decoder<I1, DE.DecodeError<E1>, A1>,
-) => IntersectD<typeof first, typeof second> {
-  return <I1, E1, A1>(
-    first: Decoder<I1, DE.DecodeError<E1>, A1>,
-  ): IntersectD<typeof first, typeof second> => ({
-    _tag: 'IntersectD',
-    first,
-    second,
-    decode: (i) => {
-      const out: These<
-        DE.CompoundE<DE.MemberE<0, DE.DecodeError<E1>> | DE.MemberE<1, DE.DecodeError<E2>>>,
-        A1 & A2
-      > = pipe(
-        first.decode(i),
-        TH.matchW(
-          (de1) =>
-            pipe(
-              second.decode(i),
-              TH.matchW(
-                (de2) => failure(DE.intersectionE([DE.memberE(0, de1), DE.memberE(1, de2)])),
-                () => failure(DE.intersectionE([DE.memberE(0, de1)])),
-                (de2) => {
-                  const pde2 = pruneAllUnexpected(de2)
-                  return O.isSome(pde2)
-                    ? failure(DE.intersectionE([DE.memberE(0, de1), DE.memberE(1, pde2.value)]))
-                    : failure(DE.intersectionE([DE.memberE(0, de1)]))
-                },
-              ),
-            ),
-          (a1) =>
-            pipe(
-              second.decode(i),
-              TH.matchW(
-                (de2) => failure(DE.intersectionE([DE.memberE(1, de2)])),
-                (a2) => success(intersect_(a1, a2)),
-                (de2, a2) => {
-                  const pde2 = pruneAllUnexpected(de2)
-                  return O.isSome(pde2)
-                    ? warning(DE.intersectionE([DE.memberE(1, pde2.value)]), intersect_(a1, a2))
-                    : success(intersect_(a1, a2))
-                },
-              ),
-            ),
-          (de1, a1) =>
-            pipe(
-              second.decode(i),
-              TH.matchW(
-                (de2) => {
-                  const pde1 = pruneAllUnexpected(de1)
-                  return O.isSome(pde1)
-                    ? failure(DE.intersectionE([DE.memberE(0, pde1.value), DE.memberE(1, de2)]))
-                    : failure(DE.intersectionE([DE.memberE(1, de2)]))
-                },
-                (a2) => {
-                  const pde1 = pruneAllUnexpected(de1)
-                  return O.isSome(pde1)
-                    ? warning(DE.intersectionE([DE.memberE(0, pde1.value)]), intersect_(a1, a2))
-                    : success(intersect_(a1, a2))
-                },
-                (de2, a2) => {
-                  const difference = pruneDifference(de1, de2)
-                  return O.isSome(difference)
-                    ? warning(difference.value, intersect_(a1, a2))
-                    : success(intersect_(a1, a2))
-                },
-              ),
-            ),
-        ),
-      )
-      return out
-    },
-  })
-}
-
-/**
- * @category meta
- * @since 0.9.4
- */
-export interface LazyD<I, E, A> extends Decoder<I, DE.LazyE<E>, A> {
-  readonly _tag: 'LazyD'
-  readonly id: string
-  readonly f: Lazy<Decoder<I, E, A>>
-}
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export const lazy = <I, E, A>(id: string, f: Lazy<Decoder<I, E, A>>): LazyD<I, E, A> => {
-  const get = memoize<void, Decoder<I, E, A>>(f)
-  return {
-    _tag: 'LazyD',
-    id,
-    f,
+export function condemnWhen(predicate: Predicate<DE.DecodeError>) {
+  return <I, A>(decoder: Decoder<I, A>): Decoder<I, A> => ({
     decode: (i) =>
       pipe(
-        get().decode(i),
-        TH.mapLeft((e) => DE.lazyE(id, e)),
+        i,
+        decoder.decode,
+        T.matchW(T.left, T.right, (errors, a): T.These<DE.DecodeErrors, A> => {
+          const { left: absolved, right: condemned } = pipe(
+            errors,
+            RA.map(Ei.fromPredicate(predicate)),
+            RA.separate,
+          )
+
+          return RA.isNonEmpty(condemned)
+            ? T.left(condemned)
+            : RA.isNonEmpty(absolved)
+            ? T.both(absolved, a)
+            : T.right(a)
+        }),
       ),
-  }
+  })
 }
 
 /**
+ * @category Combinator
  * @since 0.9.4
  */
-export interface FromSumE<Members>
-  extends DE.SumE<{ [K in keyof Members]: DE.MemberE<K, ErrorOf<Members[K]>> }[keyof Members]> {}
+export const condemn = condemnWhen(() => true)
 
 /**
- * @category meta
+ * @category Combinator
  * @since 0.9.4
  */
-export interface FromSumD<T extends string, Members>
-  extends Decoder<
-    InputOf<Members[keyof Members]>,
-    DE.TagLE | FromSumE<Members>,
-    TypeOf<Members[keyof Members]>
-  > {
-  readonly _tag: 'FromSumD'
-  readonly tag: T
-  readonly members: Members
+export function absolveWhen(predicate: Predicate<DE.DecodeError>) {
+  return <I, A>(decoder: Decoder<I, A>): Decoder<I, A> => ({
+    decode: (i) =>
+      pipe(
+        i,
+        decoder.decode,
+        T.matchW(T.left, T.right, (errors, a): T.These<DE.DecodeErrors, A> => {
+          const { left: condemned, right: absolved } = pipe(
+            errors,
+            RA.map(Ei.fromPredicate(not(predicate))),
+            RA.separate,
+          )
+
+          return RA.isNonEmpty(absolved)
+            ? T.right(a)
+            : RA.isNonEmpty(condemned)
+            ? T.both(condemned, a)
+            : T.right(a)
+        }),
+      ),
+  })
 }
 
 /**
- * @category combinators
+ * @category Combinator
  * @since 0.9.4
  */
-export function fromSum<T extends string>(
-  tag: T,
-): <Members extends Record<string, AnyD>>(members: Members) => FromSumD<T, Members>
-export function fromSum<T extends string>(
-  tag: T,
-): <I extends Record<T, string>, E, A>(
-  members: Record<I[T], Decoder<I, E, A>>,
-) => FromSumD<T, typeof members> {
-  return <I extends Record<T, string>, E, A>(
-    members: Record<I[T], Decoder<I, E, A>>,
-  ): FromSumD<T, typeof members> => {
-    const literals = Object.keys(members)
-    return {
-      _tag: 'FromSumD',
-      tag,
-      members,
-      decode: (i: I) => {
-        const v = i[tag]
-        const member: Decoder<I, E, A> = members[v]
-        if (member) {
-          return pipe(
-            member.decode(i),
-            TH.mapLeft((e) => DE.sumE(DE.memberE(v, e))),
-          ) as any
-        }
-        return failure(DE.tagLE(tag, literals))
-      },
-    }
-  }
+export const absolve = absolveWhen(() => true)
+
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const condemnUnexpectedKeys = condemnWhen((d) => d._tag === 'UnexpectedKeys')
+
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const condemmMissingKeys = condemnWhen((d) => d._tag === 'MissingKeys')
+
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const strict = condemnWhen((d) => d._tag === 'UnexpectedKeys' || d._tag === 'MissingKeys')
+
+/**
+ * @category Instance
+ * @since 0.9.4
+ */
+export const Pointed: Pointed2<URI> = {
+  of,
 }
 
 /**
- * @category meta
+ * @category Instance
  * @since 0.9.4
  */
-export interface SumD<T extends string, Members>
-  extends CompositionD<UnionD<[UnknownRecordUD, UnknownArrayUD]>, FromSumD<T, Members>> {}
-
-//                    tagged objects --v             v-- tagged tuples
-const UnknownRecordArray = union(UnknownRecord, UnknownArray)
-
-/**
- * @category combinators
- * @since 0.9.4
- */
-export function sum<T extends string>(
-  tag: T,
-): <Members extends Record<string, AnyUD>>(members: Members) => SumD<T, Members>
-export function sum<T extends string>(
-  tag: T,
-): <E, A>(members: Record<string, Decoder<unknown, E, A>>) => SumD<T, typeof members> {
-  const fromSumTag = fromSum(tag)
-  return (members) => pipe(UnknownRecordArray, compose(fromSumTag(members)))
-}
-
-// -------------------------------------------------------------------------------------
-// utils
-// -------------------------------------------------------------------------------------
-
-/**
- * @since 0.9.4
- */
-export interface AnyD extends Decoder<any, any, any> {}
-
-/**
- * @since 0.9.4
- */
-export interface AnyUD extends Decoder<unknown, any, any> {}
-
-/**
- * @since 0.9.4
- */
-export type InputOf<D> = D extends Decoder<infer I, any, any> ? I : never
-
-/**
- * @since 0.9.4
- */
-export type ErrorOf<D> = D extends Decoder<any, infer E, any> ? E : never
-
-/**
- * @since 0.9.4
- */
-export type TypeOf<D> = D extends Decoder<any, any, infer A> ? A : never
-
-/**
- * @since 0.9.4
- */
-export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
-  const cache = new Map()
-  return (a) => {
-    if (!cache.has(a)) {
-      const b = f(a)
-      cache.set(a, b)
-      return b
-    }
-    return cache.get(a)
-  }
+export const Functor: F.Functor2<URI> = {
+  map,
 }
 
 /**
+ * @category Combinator
  * @since 0.9.4
  */
-export const message = DE.messageLE
+export const bindTo = F.bindTo(Functor)
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const flap = F.flap(Functor)
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const tupled = F.tupled(Functor)
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export const fromIO = <A>(io: IO<A>): Decoder<unknown, {}> => ({
+  decode: () => T.right(io()),
+})
+
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const chain =
+  <A, I, B>(f: (a: A) => Decoder<I, B>) =>
+  (decoder: Decoder<I, A>): Decoder<I, B> => ({
+    decode: (i) =>
+      pipe(
+        i,
+        decoder.decode,
+        T.matchW(
+          T.left,
+          (a) => f(a).decode(i),
+          (errors, a) => pipe(i, f(a).decode, T.mapLeft(concatW(errors))),
+        ),
+      ),
+  })
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export const Chain: Ch.Chain2<URI> = {
+  map,
+  chain,
+}
+
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const ap = Ch.ap(Chain)
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const chainFirst = Ch.chainFirst(Chain)
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const bind = Ch.bind(Chain)
+
+/**
+ * @category Instance
+ * @since 0.9.4
+ */
+export const Apply: Ap.Apply2<URI> = {
+  map,
+  ap,
+}
+
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const apFirst = Ap.apFirst(Apply)
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const apS = Ap.apS(Apply)
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const apSecond = Ap.apSecond(Apply)
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const apT = Ap.apT(Apply)
+/**
+ * @category Typeclass Constructor
+ * @since 0.9.4
+ */
+export const getApplySemigroup = Ap.getApplySemigroup(Apply)
+
+/**
+ * @category Instance
+ * @since 0.9.4
+ */
+export const Applicative: App.Applicative2<URI> = {
+  of,
+  ...Apply,
+}
+
+/**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const getApplicativeMonoid = App.getApplicativeMonoid(Applicative)
+
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
+export const Do: Decoder<unknown, {}> = fromIO(() => Object.create(null))
+
+/**
+ * @category Instance
+ * @since 0.9.4
+ */
+export const Monad: Monad2<URI> = {
+  ...Pointed,
+  ...Chain,
+}

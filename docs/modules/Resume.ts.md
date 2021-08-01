@@ -1,6 +1,6 @@
 ---
 title: Resume.ts
-nav_order: 40
+nav_order: 45
 parent: Modules
 ---
 
@@ -104,7 +104,7 @@ Added in v0.9.2
 ```ts
 export declare const bind: <N, A, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => Resume<B>
+  f: (a: A) => Resume<B>,
 ) => (ma: Resume<A>) => Resume<{ readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
@@ -155,7 +155,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainFirstTaskK: <A, B>(f: (a: A) => Task<B>) => (first: Resume<A>) => Resume<A>
+export declare const chainFirstTaskK: <A, B>(
+  f: (a: A) => Task<B>,
+) => (first: Resume<A>) => Resume<A>
 ```
 
 Added in v0.9.2
@@ -175,7 +177,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainRec: <A, B>(f: Arity1<A, Resume<E.Either<A, B>>>) => (value: A) => Resume<B>
+export declare const chainRec: <A, B>(
+  f: Arity1<A, Resume<E.Either<A, B>>>,
+) => (value: A) => Resume<B>
 ```
 
 Added in v0.9.2
@@ -215,7 +219,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const traverseReadonlyArray: <A, B>(f: (a: A) => Resume<B>) => (ta: readonly A[]) => Resume<readonly B[]>
+export declare const traverseReadonlyArray: <A, B>(
+  f: (a: A) => Resume<B>,
+) => (ta: readonly A[]) => Resume<readonly B[]>
 ```
 
 Added in v0.9.2
@@ -226,7 +232,7 @@ Added in v0.9.2
 
 ```ts
 export declare const traverseReadonlyArrayWithIndex: <A, B>(
-  f: (i: number, a: A) => Resume<B>
+  f: (i: number, a: A) => Resume<B>,
 ) => (ta: readonly A[]) => Resume<readonly B[]>
 ```
 
