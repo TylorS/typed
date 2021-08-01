@@ -283,7 +283,7 @@ export const drawError = flow(toTree, T.drawTree)
  * @category Deconstructor
  * @since 0.9.4
  */
-export const drawErrors = flow(RA.map(flow(toTree, T.drawTree)), (ss) => ss.join(''))
+export const drawErrors = flow(RA.map(flow(toTree, T.drawTree)), (ss) => ss.join('\n'))
 
 function toForest(errors: DecodeErrors): T.Forest<string> {
   return errors.map(toTree)
