@@ -8,6 +8,7 @@ import * as Ch from 'fp-ts/Chain'
 import * as Ei from 'fp-ts/Either'
 import * as F from 'fp-ts/Functor'
 import { IO } from 'fp-ts/IO'
+import { Json } from 'fp-ts/Json'
 import { Monad2 } from 'fp-ts/Monad'
 import * as N from 'fp-ts/number'
 import { Pointed2 } from 'fp-ts/Pointed'
@@ -767,3 +768,23 @@ export const WithRefine: WithRefine2C<URI, unknown> = {
  * @since 0.9.5
  */
 export const refine = WithRefine.refine
+
+/**
+ * @category Decoder
+ * @since 0.9.5
+ */
+export const jsonParseFromString: Decoder<string, Json> = {
+  decode: (i) => {
+    try {
+      return T.right(JSON.parse(i) as Json)
+    } catch (e) {
+      return T.left([DE.leaf(i, `Json`)])
+    }
+  },
+}
+
+/**
+ * @category Decoder
+ * @since 0.9.5
+ */
+export const jsonParse = pipe(string, compose(jsonParseFromString))
