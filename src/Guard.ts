@@ -54,11 +54,11 @@ export const literal = <A extends readonly [Literal, ...Array<Literal>]>(
 })
 
 // -------------------------------------------------------------------------------------
-// primitives
+// Decoder
 // -------------------------------------------------------------------------------------
 
 /**
- * @category primitives
+ * @category Decoder
  * @since 0.9.5
  */
 export const string: Guard<unknown, string> = {
@@ -68,7 +68,7 @@ export const string: Guard<unknown, string> = {
 /**
  * Note: `NaN` is excluded.
  *
- * @category primitives
+ * @category Decoder
  * @since 0.9.5
  */
 export const number: Guard<unknown, number> = {
@@ -76,7 +76,7 @@ export const number: Guard<unknown, number> = {
 }
 
 /**
- * @category primitives
+ * @category Decoder
  * @since 0.9.5
  */
 export const boolean: Guard<unknown, boolean> = {
@@ -84,7 +84,15 @@ export const boolean: Guard<unknown, boolean> = {
 }
 
 /**
- * @category primitives
+ * @category Decoder
+ * @since 0.9.5
+ */
+export const date: Guard<unknown, Date> = {
+  is: (u: unknown): u is Date => u instanceof Date,
+}
+
+/**
+ * @category Decoder
  * @since 0.9.5
  */
 export const unknownArray: Guard<unknown, Array<unknown>> = {
@@ -92,7 +100,7 @@ export const unknownArray: Guard<unknown, Array<unknown>> = {
 }
 
 /**
- * @category primitives
+ * @category Decoder
  * @since 0.9.5
  */
 export const unknownRecord: Guard<unknown, Record<string, unknown>> = {
@@ -339,6 +347,7 @@ export const Schemable: Schemable1<URI> = {
   string,
   number,
   boolean,
+  date,
   nullable,
   struct,
   record,

@@ -24,6 +24,7 @@ export interface Schemable<S> {
   readonly string: HKT<S, string>
   readonly number: HKT<S, number>
   readonly boolean: HKT<S, boolean>
+  readonly date: HKT<S, Date>
   readonly nullable: <A>(or: HKT<S, A>) => HKT<S, null | A>
   readonly struct: <A>(
     properties: { [K in keyof A]: HKT<S, A[K]> },
@@ -56,6 +57,7 @@ export interface Schemable1<S extends URIS> {
   readonly string: Kind<S, string>
   readonly number: Kind<S, number>
   readonly boolean: Kind<S, boolean>
+  readonly date: Kind<S, Date>
   readonly nullable: <A>(or: Kind<S, A>) => Kind<S, null | A>
   readonly struct: <A>(
     properties: { [K in keyof A]: Kind<S, A[K]> },
@@ -86,6 +88,7 @@ export interface Schemable2C<S extends URIS2, E> {
   readonly string: Kind2<S, E, string>
   readonly number: Kind2<S, E, number>
   readonly boolean: Kind2<S, E, boolean>
+  readonly date: Kind2<S, E, Date>
   readonly nullable: <A>(or: Kind2<S, E, A>) => Kind2<S, E, null | A>
   readonly optional: <A>(or: Kind2<S, E, A>) => Kind2<S, E, undefined | A>
   readonly struct: <A>(

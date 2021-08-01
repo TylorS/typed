@@ -2,6 +2,7 @@
  * Decoder is a data structure for representing runtime representations of your types.
  * @since 0.9.4
  */
+import { parseISO } from 'date-fns'
 import * as App from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
 import * as Ch from 'fp-ts/Chain'
@@ -20,6 +21,7 @@ import * as S from 'fp-ts/string'
 import * as T from 'fp-ts/These'
 
 import * as DE from './DecodeError'
+import { leaf } from './DecodeError'
 import { pipe } from './function'
 import { memoize } from './internal'
 import { Literal, Schemable2C, WithRefine2C, WithUnion2C } from './Schemable'
@@ -81,6 +83,37 @@ export const boolean = fromRefinement(
 )
 
 /**
+ * @category Decoder
+ * @since 0.9.5
+ */
+export const dateFromISOString: Decoder<string, Date> = {
+  decode: (i) => {
+    const date = parseISO(i)
+    const time = date.getTime()
+
+    if (Number.isNaN(time)) {
+      return T.left([leaf(i, `dateFromISOString`)])
+    }
+
+    return T.right(date)
+  },
+}
+
+/**
+ * @category Instance
+ * @since 0.9.5
+ */
+export const WithRefine: WithRefine2C<URI, unknown> = {
+  refine: (refinment, id) => (from) => pipe(from, compose(fromRefinement(refinment, id))),
+}
+
+/**
+ * @category Combinator
+ * @since 0.9.5
+ */
+export const refine = WithRefine.refine
+
+/**
  * @category Constructor
  * @since 0.9.4
  */
@@ -123,6 +156,14 @@ export const union =
         ) as T.These<DE.DecodeErrors, O1 | O2>,
     }
   }
+
+export const isDate = (x: unknown): x is Date => x instanceof Date
+
+/**
+ * @category Constructor
+ * @since 0.9.6
+ */
+export const date = pipe(string, refine(isDate, 'Date'), union(fromRefinement(isDate, 'Date')))
 
 export const sum =
   <T extends string>(tag: T) =>
@@ -733,6 +774,7 @@ export const Schemable: Schemable2C<URI, unknown> = {
   string,
   number,
   boolean,
+  date,
   nullable,
   optional,
   struct: struct as Schemable2C<URI, unknown>['struct'],
@@ -754,20 +796,6 @@ export const Schemable: Schemable2C<URI, unknown> = {
 export const WithUnion: WithUnion2C<URI, unknown> = {
   union,
 }
-
-/**
- * @category Instance
- * @since 0.9.5
- */
-export const WithRefine: WithRefine2C<URI, unknown> = {
-  refine: (refinment, id) => (from) => pipe(from, compose(fromRefinement(refinment, id))),
-}
-
-/**
- * @category Combinator
- * @since 0.9.5
- */
-export const refine = WithRefine.refine
 
 /**
  * @category Decoder

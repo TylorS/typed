@@ -5,6 +5,7 @@
  */
 
 import * as B from 'fp-ts/boolean'
+import * as D from 'fp-ts/Date'
 import * as Eq from 'fp-ts/Eq'
 import * as N from 'fp-ts/number'
 import * as RA from 'fp-ts/ReadonlyArray'
@@ -392,6 +393,7 @@ export const Schemable: Schemable1<'@typed/fp/ToEq'> = {
   string,
   number,
   boolean,
+  date: D.Eq,
   literal: () => Eq.EqStrict,
   tuple,
   struct,
