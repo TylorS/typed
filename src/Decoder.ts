@@ -16,11 +16,13 @@ import * as RA from 'fp-ts/ReadonlyArray'
 import { concatW } from 'fp-ts/ReadonlyNonEmptyArray'
 import { Refinement } from 'fp-ts/Refinement'
 import * as S from 'fp-ts/string'
-import { getAssignSemigroup } from 'fp-ts/struct'
 import * as T from 'fp-ts/These'
 
 import * as DE from './DecodeError'
 import { pipe } from './function'
+import { memoize } from './internal'
+import { Literal, Schemable2C, WithRefine2C, WithUnion2C } from './Schemable'
+import * as St from './struct'
 import { make } from './struct'
 
 /**
@@ -121,6 +123,33 @@ export const union =
     }
   }
 
+export const sum =
+  <T extends string>(tag: T) =>
+  <A>(
+    members: { [K in keyof A]: Decoder<unknown, A[K] & Record<T, K>> },
+  ): Decoder<unknown, A[keyof A]> => {
+    return {
+      decode: (i) =>
+        pipe(
+          i,
+          struct(St.make(tag, literal(...Object.keys(members)))).decode,
+          T.matchW(
+            T.left,
+            (a) => members[a[tag] as keyof A].decode(a),
+            ([first, ...rest], a) =>
+              pipe(
+                members[a[tag] as keyof A].decode(a),
+                T.mapLeft((e) => [first, ...rest, ...e]),
+              ),
+          ),
+        ),
+    }
+  }
+
+export const literal = <A extends readonly Literal[]>(
+  ...literals: A
+): Decoder<unknown, A[number]> =>
+  fromRefinement((x): x is A[number] => literals.includes(x as any), literals.join(' | '))
 /**
  * @category Combinator
  * @since 0.9.4
@@ -170,7 +199,9 @@ export const compose =
  * @category Constructor
  * @since 0.9.4
  */
-export const fromArray = <I, O>(member: Decoder<I, O>): Decoder<readonly I[], readonly O[]> => {
+export const fromArray = <O>(
+  member: Decoder<unknown, O>,
+): Decoder<readonly unknown[], readonly O[]> => {
   const { concat } = T.getSemigroup(DE.getSemigroup(), RA.getSemigroup<O>())
 
   return {
@@ -193,7 +224,8 @@ export const fromArray = <I, O>(member: Decoder<I, O>): Decoder<readonly I[], re
  * @category Constructor
  * @since 0.9.4
  */
-export const array = <I, O>(member: Decoder<I, O>) => pipe(fromArray(member), compose(unknownArray))
+export const array = <O>(member: Decoder<unknown, O>) =>
+  pipe(unknownArray, compose(fromArray(member)))
 
 /**
  * @category Constructor
@@ -204,7 +236,7 @@ export const fromStruct = <A extends { readonly [key: string]: Decoder<unknown, 
 ): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]: OutputOf<A[K]> }> => {
   type O = { readonly [K in keyof A]: OutputOf<A[K]> }
 
-  const { concat } = T.getSemigroup(DE.getSemigroup(), getAssignSemigroup<any>())
+  const { concat } = T.getSemigroup(DE.getSemigroup(), St.getAssignSemigroup<any>())
 
   return {
     decode: (i) => {
@@ -290,29 +322,51 @@ export function struct<A extends { readonly [key: string]: Decoder<unknown, any>
   )
 }
 
+export function fromRecord<A>(
+  decoder: Decoder<unknown, A>,
+): Decoder<Readonly<Record<string, unknown>>, Readonly<Record<string, A>>> {
+  const { concat } = T.getSemigroup(DE.getSemigroup(), St.getAssignSemigroup<any>())
+
+  return {
+    decode: (i) => {
+      const results = Object.entries(i).map(([key, value]) =>
+        pipe(
+          value,
+          decoder.decode,
+          T.mapLeft((errors): DE.DecodeErrors => [DE.key(key, errors)]),
+          T.map((b) => ({ [key]: b })),
+        ),
+      )
+
+      return results.reduce((acc, x) => pipe(x, concat(acc)), T.of(Object.create(null)))
+    },
+  }
+}
+
+export const record = <O>(codomain: Decoder<unknown, O>) =>
+  pipe(unknownRecord, compose(fromRecord(codomain)))
+
 /**
  * @category Constructor
  * @since 0.9.4
  */
-export function fromTuple<A extends readonly [Decoder<any, any>, ...Decoder<any, any>[]]>(
-  ...tuple: A
-): Decoder<readonly unknown[], { readonly [K in keyof A]: OutputOf<A[K]> }> {
-  type O = { readonly [K in keyof A]: OutputOf<A[K]> }
-
-  const { concat } = T.getSemigroup(DE.getSemigroup(), RA.getSemigroup<O>())
+export function fromTuple<A extends readonly unknown[]>(
+  ...components: { readonly [K in keyof A]: Decoder<unknown, A[K]> }
+): Decoder<readonly unknown[], A> {
+  const { concat } = T.getSemigroup(DE.getSemigroup(), RA.getSemigroup<unknown>())
 
   return {
     decode: (input) => {
-      const [first, ...rest] = tuple.map((d, i) =>
+      const [first, ...rest] = components.map((d, i) =>
         pipe(
           d.decode(input[i]),
           T.mapLeft((errors): DE.DecodeErrors => [DE.index(i, errors)]),
-          T.map((o): readonly O[] => [o]),
+          T.map((o): readonly unknown[] => [o]),
         ),
       )
       const result = rest.reduce((acc, x) => pipe(x, concat(acc)), first)
 
-      return result as T.These<DE.DecodeErrors, O>
+      return result as T.These<DE.DecodeErrors, A>
     },
   }
 }
@@ -321,14 +375,14 @@ export function fromTuple<A extends readonly [Decoder<any, any>, ...Decoder<any,
  * @category Constructor
  * @since 0.9.4
  */
-export function missingIndexes<A extends readonly [Decoder<any, any>, ...Decoder<any, any>[]]>(
-  ...tuple: A
+export function missingIndexes<A extends readonly unknown[]>(
+  ...components: { readonly [K in keyof A]: Decoder<unknown, A[K]> }
 ): Decoder<readonly unknown[], readonly unknown[]> {
   const diff = RA.difference(N.Eq)
 
   return {
     decode: (i) => {
-      const expectedKeys = Object.keys(tuple).map(parseFloat)
+      const expectedKeys = Object.keys(components).map(parseFloat)
       const actualKeys = Object.keys(i).map(parseFloat)
       const missingKeys = pipe(expectedKeys, diff(actualKeys))
       const result = RA.isNonEmpty(missingKeys)
@@ -344,14 +398,14 @@ export function missingIndexes<A extends readonly [Decoder<any, any>, ...Decoder
  * @category Constructor
  * @since 0.9.4
  */
-export function unexpectedIndexes<A extends readonly [Decoder<any, any>, ...Decoder<any, any>[]]>(
-  ...tuple: A
+export function unexpectedIndexes<A extends readonly unknown[]>(
+  ...components: { readonly [K in keyof A]: Decoder<unknown, A[K]> }
 ): Decoder<readonly unknown[], readonly unknown[]> {
   const diff = RA.difference(S.Eq)
 
   return {
     decode: (i) => {
-      const expectedKeys = Object.keys(tuple)
+      const expectedKeys = Object.keys(components)
       const actualKeys = Object.keys(i)
       const unexpectedKeys = pipe(actualKeys, diff(expectedKeys))
       const result = RA.isNonEmpty(unexpectedKeys)
@@ -367,15 +421,37 @@ export function unexpectedIndexes<A extends readonly [Decoder<any, any>, ...Deco
  * @category Constructor
  * @since 0.9.4
  */
-export function tuple<A extends readonly [Decoder<any, any>, ...Decoder<any, any>[]]>(
-  ...tuple: A
-): Decoder<unknown, { readonly [K in keyof A]: OutputOf<A[K]> }> {
+export function tuple<A extends readonly unknown[]>(
+  ...components: { readonly [K in keyof A]: Decoder<unknown, A[K]> }
+): Decoder<unknown, A> {
   return pipe(
     unknownArray,
-    compose(missingIndexes(...tuple)),
-    compose(unexpectedIndexes(...tuple)),
-    compose(fromTuple(...tuple)),
-  ) as Decoder<unknown, { readonly [K in keyof A]: OutputOf<A[K]> }>
+    compose(missingIndexes(...components)),
+    compose(unexpectedIndexes(...components)),
+    compose(fromTuple<A>(...components)),
+  )
+}
+
+export const intersect =
+  <A, B>(second: Decoder<A, B>) =>
+  <C, D>(first: Decoder<C, D>): Decoder<A & C, B & D> => {
+    const { concat } = T.getSemigroup(DE.getSemigroup(), St.getAssignSemigroup<any>())
+
+    return {
+      decode: (i) => concat(second.decode(i))(first.decode(i)),
+    }
+  }
+
+export const lazy = <I, O>(id: string, f: () => Decoder<I, O>): Decoder<I, O> => {
+  const get = memoize((_: void) => f())
+
+  return {
+    decode: (i) =>
+      pipe(
+        get().decode(i),
+        T.mapLeft((errors) => [DE.lazy(id, errors)]),
+      ),
+  }
 }
 
 /**
@@ -645,3 +721,49 @@ export const Monad: Monad2<URI> = {
   ...Pointed,
   ...Chain,
 }
+
+/**
+ * @category Instance
+ * @since 0.9.5
+ */
+export const Schemable: Schemable2C<URI, unknown> = {
+  URI,
+  literal,
+  string,
+  number,
+  boolean,
+  nullable,
+  optional,
+  struct: struct as Schemable2C<URI, unknown>['struct'],
+  record,
+  array,
+  tuple: tuple as Schemable2C<URI, unknown>['tuple'],
+  intersect,
+  sum,
+  lazy,
+  branded: ((d) => d) as Schemable2C<URI, unknown>['branded'],
+  unknownArray,
+  unknownRecord,
+}
+
+/**
+ * @category Instance
+ * @since 0.9.5
+ */
+export const WithUnion: WithUnion2C<URI, unknown> = {
+  union,
+}
+
+/**
+ * @category Instance
+ * @since 0.9.5
+ */
+export const WithRefine: WithRefine2C<URI, unknown> = {
+  refine: (refinment, id) => (from) => pipe(from, compose(fromRefinement(refinment, id))),
+}
+
+/**
+ * @category Combinator
+ * @since 0.9.5
+ */
+export const refine = WithRefine.refine

@@ -13,7 +13,7 @@ import * as S from 'fp-ts/string'
 
 import { constant, constFalse, constTrue } from './function'
 import { memoize } from './internal'
-import { Schemable1, WithUnknownContainers1 } from './Schemable'
+import { Schemable1 } from './Schemable'
 
 const FUNCTION_NAME_REGEX = /^function\s*([\w$]+)/
 const DEFAULT_MATCH = ['', '']
@@ -229,35 +229,35 @@ function functionName(fn: Function): string {
 
 /**
  * @category primitives
- * @since 2.2.2
+ * @since 0.9.5
  */
 export const string: Eq.Eq<string> = S.Eq
 
 /**
  * @category primitives
- * @since 2.2.2
+ * @since 0.9.5
  */
 export const number: Eq.Eq<number> = N.Eq
 
 /**
  * @category primitives
- * @since 2.2.2
+ * @since 0.9.5
  */
 export const boolean: Eq.Eq<boolean> = B.Eq
 
 /**
  * @category primitives
- * @since 2.2.2
+ * @since 0.9.5
  */
-export const UnknownArray: Eq.Eq<ReadonlyArray<unknown>> = Eq.fromEquals(
+export const unknownArray: Eq.Eq<ReadonlyArray<unknown>> = Eq.fromEquals(
   (second) => (first) => first.length === second.length,
 )
 
 /**
  * @category primitives
- * @since 2.2.2
+ * @since 0.9.5
  */
-export const UnknownRecord: Eq.Eq<Readonly<Record<string, unknown>>> = Eq.fromEquals(
+export const unknownRecord: Eq.Eq<Readonly<Record<string, unknown>>> = Eq.fromEquals(
   (second) => (first) => {
     for (const k in first) {
       if (!(k in second)) {
@@ -279,7 +279,7 @@ export const UnknownRecord: Eq.Eq<Readonly<Record<string, unknown>>> = Eq.fromEq
 
 /**
  * @category Combinator
- * @since 2.2.2
+ * @since 0.9.5
  */
 export const nullable = <A>(or: Eq.Eq<A>): Eq.Eq<null | A> =>
   Eq.fromEquals(
@@ -289,7 +289,17 @@ export const nullable = <A>(or: Eq.Eq<A>): Eq.Eq<null | A> =>
 
 /**
  * @category Combinator
- * @since 2.2.2
+ * @since 0.9.5
+ */
+export const optional = <A>(or: Eq.Eq<A>): Eq.Eq<undefined | A> =>
+  Eq.fromEquals(
+    (second) => (first) =>
+      first === undefined || second === undefined ? first === second : or.equals(second)(first),
+  )
+
+/**
+ * @category Combinator
+ * @since 0.9.5
  */
 export const tuple: <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: Eq.Eq<A[K]> }
@@ -305,7 +315,7 @@ export const struct: <A>(
 
 /**
  * @category Combinator
- * @since 2.2.2
+ * @since 0.9.5
  */
 export const partial = <A>(
   properties: { [K in keyof A]: Eq.Eq<A[K]> },
@@ -323,19 +333,19 @@ export const partial = <A>(
 
 /**
  * @category Combinator
- * @since 2.2.2
+ * @since 0.9.5
  */
 export const array: <A>(item: Eq.Eq<A>) => Eq.Eq<Array<A>> = RA.getEq
 
 /**
  * @category Combinator
- * @since 2.2.2
+ * @since 0.9.5
  */
 export const record: <A>(codomain: Eq.Eq<A>) => Eq.Eq<Record<string, A>> = RR.getEq
 
 /**
  * @category Combinator
- * @since 2.2.2
+ * @since 0.9.5
  */
 export const intersect =
   <B>(right: Eq.Eq<B>) =>
@@ -344,7 +354,7 @@ export const intersect =
 
 /**
  * @category Combinator
- * @since 2.2.2
+ * @since 0.9.5
  */
 export function lazy<A>(f: () => Eq.Eq<A>): Eq.Eq<A> {
   const get = memoize<void, Eq.Eq<A>>(f)
@@ -355,7 +365,7 @@ export function lazy<A>(f: () => Eq.Eq<A>): Eq.Eq<A> {
 
 /**
  * @category Combinator
- * @since 2.2.2
+ * @since 0.9.5
  */
 export const sum = <T extends string>(
   tag: T,
@@ -385,7 +395,6 @@ export const Schemable: Schemable1<'@typed/fp/ToEq'> = {
   literal: () => Eq.EqStrict,
   tuple,
   struct,
-  partial,
   array,
   record,
   nullable,
@@ -393,15 +402,8 @@ export const Schemable: Schemable1<'@typed/fp/ToEq'> = {
   lazy: (_, f) => lazy(f),
   sum,
   branded: (e) => e as any,
-}
-
-/**
- * @category Instance
- * @since 0.9.4
- */
-export const WithUnknownContainers: WithUnknownContainers1<'@typed/fp/ToEq'> = {
-  UnknownArray,
-  UnknownRecord,
+  unknownArray,
+  unknownRecord,
 }
 
 export * from 'fp-ts/Eq'
