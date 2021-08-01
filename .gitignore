@@ -82,7 +82,6 @@ snowpack.key
 /FromEnv/
 /FromResume/
 /FromStream/
-/Guard/
 /HKT/
 /IOEither/
 /MonadRec/
@@ -107,6 +106,7 @@ snowpack.key
 /ResumeEither/
 /ResumeOption/
 /Scheduler/
+/Schema/
 /Schemable/
 /State/
 /StateEnvEither/

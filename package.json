@@ -176,10 +176,6 @@
       "require": "./cjs/FromStream.js",
       "import": "./esm/FromStream.js"
     },
-    "./Guard": {
-      "require": "./cjs/Guard.js",
-      "import": "./esm/Guard.js"
-    },
     "./HKT": {
       "require": "./cjs/HKT.js",
       "import": "./esm/HKT.js"
@@ -275,6 +271,10 @@
     "./Scheduler": {
       "require": "./cjs/Scheduler.js",
       "import": "./esm/Scheduler.js"
+    },
+    "./Schema": {
+      "require": "./cjs/Schema.js",
+      "import": "./esm/Schema.js"
     },
     "./Schemable": {
       "require": "./cjs/Schemable.js",
