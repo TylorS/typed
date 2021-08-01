@@ -1,6 +1,6 @@
 ---
 title: Schemable.ts
-nav_order: 50
+nav_order: 51
 parent: Modules
 ---
 
@@ -25,9 +25,6 @@ Added in v0.9.4
   - [WithUnion (interface)](#withunion-interface)
   - [WithUnion1 (interface)](#withunion1-interface)
   - [WithUnion2C (interface)](#withunion2c-interface)
-  - [WithUnknownContainers (interface)](#withunknowncontainers-interface)
-  - [WithUnknownContainers1 (interface)](#withunknowncontainers1-interface)
-  - [WithUnknownContainers2C (interface)](#withunknowncontainers2c-interface)
   - [memoize](#memoize)
 
 ---
@@ -57,13 +54,12 @@ export interface Schemable<S> {
   readonly string: HKT<S, string>
   readonly number: HKT<S, number>
   readonly boolean: HKT<S, boolean>
+  readonly date: HKT<S, Date>
   readonly nullable: <A>(or: HKT<S, A>) => HKT<S, null | A>
   readonly struct: <A>(
     properties: { [K in keyof A]: HKT<S, A[K]> },
   ) => HKT<S, { [K in keyof A]: A[K] }>
-  readonly partial: <A>(
-    properties: { [K in keyof A]: HKT<S, A[K]> },
-  ) => HKT<S, Partial<{ [K in keyof A]: A[K] }>>
+
   readonly record: <A>(codomain: HKT<S, A>) => HKT<S, Record<string, A>>
   readonly array: <A>(item: HKT<S, A>) => HKT<S, Array<A>>
   readonly tuple: <A extends ReadonlyArray<unknown>>(
@@ -76,6 +72,8 @@ export interface Schemable<S> {
   readonly lazy: <A>(id: string, f: () => HKT<S, A>) => HKT<S, A>
 
   readonly branded: <A extends Branded<any, any>>(item: HKT<S, ValueOf<A>>) => HKT<S, A>
+  readonly unknownArray: HKT<S, Array<unknown>>
+  readonly unknownRecord: HKT<S, Record<string, unknown>>
 }
 ```
 
@@ -94,13 +92,11 @@ export interface Schemable1<S extends URIS> {
   readonly string: Kind<S, string>
   readonly number: Kind<S, number>
   readonly boolean: Kind<S, boolean>
+  readonly date: Kind<S, Date>
   readonly nullable: <A>(or: Kind<S, A>) => Kind<S, null | A>
   readonly struct: <A>(
     properties: { [K in keyof A]: Kind<S, A[K]> },
   ) => Kind<S, { [K in keyof A]: A[K] }>
-  readonly partial: <A>(
-    properties: { [K in keyof A]: Kind<S, A[K]> },
-  ) => Kind<S, Partial<{ [K in keyof A]: A[K] }>>
   readonly record: <A>(codomain: Kind<S, A>) => Kind<S, Record<string, A>>
   readonly array: <A>(item: Kind<S, A>) => Kind<S, Array<A>>
   readonly tuple: <A extends ReadonlyArray<unknown>>(
@@ -112,6 +108,8 @@ export interface Schemable1<S extends URIS> {
   ) => <A>(members: { [K in keyof A]: Kind<S, A[K] & Record<T, K>> }) => Kind<S, A[keyof A]>
   readonly lazy: <A>(id: string, f: () => Kind<S, A>) => Kind<S, A>
   readonly branded: <A extends Branded<any, any>>(item: Kind<S, ValueOf<A>>) => Kind<S, A>
+  readonly unknownArray: Kind<S, Array<unknown>>
+  readonly unknownRecord: Kind<S, Record<string, unknown>>
 }
 ```
 
@@ -130,16 +128,15 @@ export interface Schemable2C<S extends URIS2, E> {
   readonly string: Kind2<S, E, string>
   readonly number: Kind2<S, E, number>
   readonly boolean: Kind2<S, E, boolean>
+  readonly date: Kind2<S, E, Date>
   readonly nullable: <A>(or: Kind2<S, E, A>) => Kind2<S, E, null | A>
+  readonly optional: <A>(or: Kind2<S, E, A>) => Kind2<S, E, undefined | A>
   readonly struct: <A>(
     properties: { [K in keyof A]: Kind2<S, E, A[K]> },
   ) => Kind2<S, E, { [K in keyof A]: A[K] }>
-  readonly partial: <A>(
-    properties: { [K in keyof A]: Kind2<S, E, A[K]> },
-  ) => Kind2<S, E, Partial<{ [K in keyof A]: A[K] }>>
   readonly record: <A>(codomain: Kind2<S, E, A>) => Kind2<S, E, Record<string, A>>
-  readonly array: <A>(item: Kind2<S, E, A>) => Kind2<S, E, Array<A>>
-  readonly tuple: <A extends ReadonlyArray<unknown>>(
+  readonly array: <A>(item: Kind2<S, E, A>) => Kind2<S, E, ReadonlyArray<A>>
+  readonly tuple: <A extends readonly unknown[]>(
     ...components: { readonly [K in keyof A]: Kind2<S, E, A[K]> }
   ) => Kind2<S, E, A>
   readonly intersect: <B>(right: Kind2<S, E, B>) => <A>(left: Kind2<S, E, A>) => Kind2<S, E, A & B>
@@ -148,6 +145,8 @@ export interface Schemable2C<S extends URIS2, E> {
   ) => <A>(members: { [K in keyof A]: Kind2<S, E, A[K] & Record<T, K>> }) => Kind2<S, E, A[keyof A]>
   readonly lazy: <A>(id: string, f: () => Kind2<S, E, A>) => Kind2<S, E, A>
   readonly branded: <A extends Branded<any, any>>(item: Kind2<S, E, ValueOf<A>>) => Kind2<S, E, A>
+  readonly unknownArray: Kind2<S, E, ReadonlyArray<unknown>>
+  readonly unknownRecord: Kind2<S, E, Record<string, unknown>>
 }
 ```
 
@@ -204,9 +203,7 @@ Added in v0.9.4
 
 ```ts
 export interface WithUnion<S> {
-  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
-    ...members: { readonly [K in keyof A]: HKT<S, A[K]> }
-  ) => HKT<S, A[number]>
+  readonly union: <A>(second: HKT<S, A>) => <B>(first: HKT<S, B>) => HKT<S, A | B>
 }
 ```
 
@@ -218,9 +215,7 @@ Added in v0.9.4
 
 ```ts
 export interface WithUnion1<S extends URIS> {
-  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
-    ...members: { readonly [K in keyof A]: Kind<S, A[K]> }
-  ) => Kind<S, A[number]>
+  readonly union: <A>(second: Kind<S, A>) => <B>(first: Kind<S, B>) => Kind<S, A | B>
 }
 ```
 
@@ -232,48 +227,7 @@ Added in v0.9.4
 
 ```ts
 export interface WithUnion2C<S extends URIS2, E> {
-  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
-    ...members: { readonly [K in keyof A]: Kind2<S, E, A[K]> }
-  ) => Kind2<S, E, A[number]>
-}
-```
-
-Added in v0.9.4
-
-## WithUnknownContainers (interface)
-
-**Signature**
-
-```ts
-export interface WithUnknownContainers<S> {
-  readonly UnknownArray: HKT<S, Array<unknown>>
-  readonly UnknownRecord: HKT<S, Record<string, unknown>>
-}
-```
-
-Added in v0.9.4
-
-## WithUnknownContainers1 (interface)
-
-**Signature**
-
-```ts
-export interface WithUnknownContainers1<S extends URIS> {
-  readonly UnknownArray: Kind<S, Array<unknown>>
-  readonly UnknownRecord: Kind<S, Record<string, unknown>>
-}
-```
-
-Added in v0.9.4
-
-## WithUnknownContainers2C (interface)
-
-**Signature**
-
-```ts
-export interface WithUnknownContainers2C<S extends URIS2, E> {
-  readonly UnknownArray: Kind2<S, E, Array<unknown>>
-  readonly UnknownRecord: Kind2<S, E, Record<string, unknown>>
+  readonly union: <A>(second: Kind2<S, E, A>) => <B>(first: Kind2<S, E, B>) => Kind2<S, E, A | B>
 }
 ```
 

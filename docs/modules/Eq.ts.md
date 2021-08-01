@@ -19,6 +19,7 @@ Added in v0.9.2
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
+  - [optional](#optional)
   - [partial](#partial)
   - [record](#record)
   - [struct](#struct)
@@ -26,16 +27,15 @@ Added in v0.9.2
   - [tuple](#tuple)
 - [Instance](#instance)
   - [Schemable](#schemable)
-  - [WithUnknownContainers](#withunknowncontainers)
   - [alwaysEqualsEq](#alwaysequalseq)
   - [deepEqualsEq](#deepequalseq)
   - [neverEqualsEq](#neverequalseq)
 - [primitives](#primitives)
-  - [UnknownArray](#unknownarray)
-  - [UnknownRecord](#unknownrecord)
   - [boolean](#boolean)
   - [number](#number)
   - [string](#string)
+  - [unknownArray](#unknownarray)
+  - [unknownRecord](#unknownrecord)
 
 ---
 
@@ -49,7 +49,7 @@ Added in v0.9.2
 export declare const array: <A>(item: Eq.Eq<A>) => Eq.Eq<A[]>
 ```
 
-Added in v2.2.2
+Added in v0.9.5
 
 ## intersect
 
@@ -59,7 +59,7 @@ Added in v2.2.2
 export declare const intersect: <B>(right: Eq.Eq<B>) => <A>(left: Eq.Eq<A>) => Eq.Eq<A & B>
 ```
 
-Added in v2.2.2
+Added in v0.9.5
 
 ## lazy
 
@@ -69,7 +69,7 @@ Added in v2.2.2
 export declare function lazy<A>(f: () => Eq.Eq<A>): Eq.Eq<A>
 ```
 
-Added in v2.2.2
+Added in v0.9.5
 
 ## nullable
 
@@ -79,7 +79,17 @@ Added in v2.2.2
 export declare const nullable: <A>(or: Eq.Eq<A>) => Eq.Eq<A | null>
 ```
 
-Added in v2.2.2
+Added in v0.9.5
+
+## optional
+
+**Signature**
+
+```ts
+export declare const optional: <A>(or: Eq.Eq<A>) => Eq.Eq<A | undefined>
+```
+
+Added in v0.9.5
 
 ## partial
 
@@ -91,7 +101,7 @@ export declare const partial: <A>(
 ) => Eq.Eq<Partial<{ [K in keyof A]: A[K] }>>
 ```
 
-Added in v2.2.2
+Added in v0.9.5
 
 ## record
 
@@ -101,7 +111,7 @@ Added in v2.2.2
 export declare const record: <A>(codomain: Eq.Eq<A>) => Eq.Eq<Record<string, A>>
 ```
 
-Added in v2.2.2
+Added in v0.9.5
 
 ## struct
 
@@ -125,7 +135,7 @@ export declare const sum: <T extends string>(
 ) => <A>(members: { [K in keyof A]: Eq.Eq<A[K] & Record<T, K>> }) => Eq.Eq<A[keyof A]>
 ```
 
-Added in v2.2.2
+Added in v0.9.5
 
 ## tuple
 
@@ -137,7 +147,7 @@ export declare const tuple: <A extends readonly unknown[]>(
 ) => Eq.Eq<A>
 ```
 
-Added in v2.2.2
+Added in v0.9.5
 
 # Instance
 
@@ -147,16 +157,6 @@ Added in v2.2.2
 
 ```ts
 export declare const Schemable: Schemable1<'@typed/fp/ToEq'>
-```
-
-Added in v0.9.4
-
-## WithUnknownContainers
-
-**Signature**
-
-```ts
-export declare const WithUnknownContainers: WithUnknownContainers1<'@typed/fp/ToEq'>
 ```
 
 Added in v0.9.4
@@ -196,26 +196,6 @@ Added in v0.9.2
 
 # primitives
 
-## UnknownArray
-
-**Signature**
-
-```ts
-export declare const UnknownArray: Eq.Eq<readonly unknown[]>
-```
-
-Added in v2.2.2
-
-## UnknownRecord
-
-**Signature**
-
-```ts
-export declare const UnknownRecord: Eq.Eq<Readonly<Record<string, unknown>>>
-```
-
-Added in v2.2.2
-
 ## boolean
 
 **Signature**
@@ -224,7 +204,7 @@ Added in v2.2.2
 export declare const boolean: Eq.Eq<boolean>
 ```
 
-Added in v2.2.2
+Added in v0.9.5
 
 ## number
 
@@ -234,7 +214,7 @@ Added in v2.2.2
 export declare const number: Eq.Eq<number>
 ```
 
-Added in v2.2.2
+Added in v0.9.5
 
 ## string
 
@@ -244,4 +224,24 @@ Added in v2.2.2
 export declare const string: Eq.Eq<string>
 ```
 
-Added in v2.2.2
+Added in v0.9.5
+
+## unknownArray
+
+**Signature**
+
+```ts
+export declare const unknownArray: Eq.Eq<readonly unknown[]>
+```
+
+Added in v0.9.5
+
+## unknownRecord
+
+**Signature**
+
+```ts
+export declare const unknownRecord: Eq.Eq<Readonly<Record<string, unknown>>>
+```
+
+Added in v0.9.5

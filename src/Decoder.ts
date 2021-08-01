@@ -157,6 +157,10 @@ export const union =
     }
   }
 
+/**
+ * @category Refinement
+ * @since 0.9.6
+ */
 export const isDate = (x: unknown): x is Date => x instanceof Date
 
 /**
@@ -165,6 +169,10 @@ export const isDate = (x: unknown): x is Date => x instanceof Date
  */
 export const date = pipe(string, refine(isDate, 'Date'), union(fromRefinement(isDate, 'Date')))
 
+/**
+ * @category Constructor
+ * @since 0.9.6
+ */
 export const sum =
   <T extends string>(tag: T) =>
   <A>(
@@ -188,6 +196,10 @@ export const sum =
     }
   }
 
+/**
+ * @category Constructor
+ * @since 0.9.6
+ */
 export const literal = <A extends readonly Literal[]>(
   ...literals: A
 ): Decoder<unknown, A[number]> =>
@@ -364,6 +376,10 @@ export function struct<A extends { readonly [key: string]: Decoder<unknown, any>
   )
 }
 
+/**
+ * @category Constructor
+ * @since 0.9.4
+ */
 export function fromRecord<A>(
   decoder: Decoder<unknown, A>,
 ): Decoder<Readonly<Record<string, unknown>>, Readonly<Record<string, A>>> {
@@ -385,6 +401,10 @@ export function fromRecord<A>(
   }
 }
 
+/**
+ * @category Constructor
+ * @since 0.9.6
+ */
 export const record = <O>(codomain: Decoder<unknown, O>) =>
   pipe(unknownRecord, compose(fromRecord(codomain)))
 
@@ -474,6 +494,10 @@ export function tuple<A extends readonly unknown[]>(
   )
 }
 
+/**
+ * @category Combinator
+ * @since 0.9.6
+ */
 export const intersect =
   <A, B>(second: Decoder<A, B>) =>
   <C, D>(first: Decoder<C, D>): Decoder<A & C, B & D> => {
@@ -484,6 +508,10 @@ export const intersect =
     }
   }
 
+/**
+ * @category Constructor
+ * @since 0.9.6
+ */
 export const lazy = <I, O>(id: string, f: () => Decoder<I, O>): Decoder<I, O> => {
   const get = memoize((_: void) => f())
 

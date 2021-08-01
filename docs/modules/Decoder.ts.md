@@ -33,9 +33,11 @@ Added in v0.9.4
   - [condemnWhen](#condemnwhen)
   - [flap](#flap)
   - [getApplicativeMonoid](#getapplicativemonoid)
+  - [intersect](#intersect)
   - [map](#map)
   - [nullable](#nullable)
   - [optional](#optional)
+  - [refine](#refine)
   - [strict](#strict)
   - [tupled](#tupled)
 - [Constructor](#constructor)
@@ -43,31 +45,46 @@ Added in v0.9.4
   - [Do](#do)
   - [array](#array)
   - [boolean](#boolean)
+  - [date](#date)
   - [fromArray](#fromarray)
   - [fromIO](#fromio)
+  - [fromRecord](#fromrecord)
   - [fromRefinement](#fromrefinement)
   - [fromStruct](#fromstruct)
   - [fromTuple](#fromtuple)
+  - [lazy](#lazy)
+  - [literal](#literal)
   - [missingIndexes](#missingindexes)
   - [missingKeys](#missingkeys)
   - [number](#number)
   - [of](#of)
+  - [record](#record)
   - [string](#string)
   - [struct](#struct)
+  - [sum](#sum)
   - [tuple](#tuple)
   - [unexpectedIndexes](#unexpectedindexes)
   - [unexpectedKeys](#unexpectedkeys)
   - [union](#union)
   - [unknownArray](#unknownarray)
   - [unknownRecord](#unknownrecord)
+- [Decoder](#decoder)
+  - [dateFromISOString](#datefromisostring)
+  - [jsonParse](#jsonparse)
+  - [jsonParseFromString](#jsonparsefromstring)
 - [Instance](#instance)
   - [Applicative](#applicative)
   - [Apply](#apply)
   - [Functor](#functor)
   - [Monad](#monad)
   - [Pointed](#pointed)
+  - [Schemable](#schemable)
+  - [WithRefine](#withrefine)
+  - [WithUnion](#withunion)
 - [Model](#model)
   - [Decoder (interface)](#decoder-interface)
+- [Refinement](#refinement)
+  - [isDate](#isdate)
 - [Type-level](#type-level)
   - [InputOf (type alias)](#inputof-type-alias)
   - [OutputOf (type alias)](#outputof-type-alias)
@@ -287,6 +304,18 @@ export declare const getApplicativeMonoid: <A, E>(M: Monoid<A>) => Monoid<Decode
 
 Added in v0.9.4
 
+## intersect
+
+**Signature**
+
+```ts
+export declare const intersect: <A, B>(
+  second: Decoder<A, B>,
+) => <C, D>(first: Decoder<C, D>) => Decoder<A & C, B & D>
+```
+
+Added in v0.9.6
+
 ## map
 
 **Signature**
@@ -316,6 +345,19 @@ export declare const optional: <O2>(first: Decoder<unknown, O2>) => Decoder<unkn
 ```
 
 Added in v0.9.4
+
+## refine
+
+**Signature**
+
+```ts
+export declare const refine: <A, B>(
+  refinement: Refinement<A, B>,
+  id: string,
+) => (from: Decoder<unknown, A>) => Decoder<unknown, B>
+```
+
+Added in v0.9.5
 
 ## strict
 
@@ -364,9 +406,7 @@ Added in v0.9.4
 **Signature**
 
 ```ts
-export declare const array: <I, O>(
-  member: Decoder<I, O>,
-) => Decoder<readonly I[], readonly unknown[]>
+export declare const array: <O>(member: Decoder<unknown, O>) => Decoder<unknown, readonly O[]>
 ```
 
 Added in v0.9.4
@@ -381,12 +421,24 @@ export declare const boolean: Decoder<unknown, boolean>
 
 Added in v0.9.4
 
+## date
+
+**Signature**
+
+```ts
+export declare const date: Decoder<unknown, Date>
+```
+
+Added in v0.9.6
+
 ## fromArray
 
 **Signature**
 
 ```ts
-export declare const fromArray: <I, O>(member: Decoder<I, O>) => Decoder<readonly I[], readonly O[]>
+export declare const fromArray: <O>(
+  member: Decoder<unknown, O>,
+) => Decoder<readonly unknown[], readonly O[]>
 ```
 
 Added in v0.9.4
@@ -397,6 +449,18 @@ Added in v0.9.4
 
 ```ts
 export declare const fromIO: <A>(io: IO<A>) => Decoder<unknown, {}>
+```
+
+Added in v0.9.4
+
+## fromRecord
+
+**Signature**
+
+```ts
+export declare function fromRecord<A>(
+  decoder: Decoder<unknown, A>,
+): Decoder<Readonly<Record<string, unknown>>, Readonly<Record<string, A>>>
 ```
 
 Added in v0.9.4
@@ -431,21 +495,43 @@ Added in v0.9.4
 **Signature**
 
 ```ts
-export declare function fromTuple<A extends readonly [Decoder<any, any>, ...Decoder<any, any>[]]>(
-  ...tuple: A
-): Decoder<readonly unknown[], { readonly [K in keyof A]: OutputOf<A[K]> }>
+export declare function fromTuple<A extends readonly unknown[]>(
+  ...components: { readonly [K in keyof A]: Decoder<unknown, A[K]> }
+): Decoder<readonly unknown[], A>
 ```
 
 Added in v0.9.4
+
+## lazy
+
+**Signature**
+
+```ts
+export declare const lazy: <I, O>(id: string, f: () => Decoder<I, O>) => Decoder<I, O>
+```
+
+Added in v0.9.6
+
+## literal
+
+**Signature**
+
+```ts
+export declare const literal: <A extends readonly Literal[]>(
+  ...literals: A
+) => Decoder<unknown, A[number]>
+```
+
+Added in v0.9.6
 
 ## missingIndexes
 
 **Signature**
 
 ```ts
-export declare function missingIndexes<
-  A extends readonly [Decoder<any, any>, ...Decoder<any, any>[]],
->(...tuple: A): Decoder<readonly unknown[], readonly unknown[]>
+export declare function missingIndexes<A extends readonly unknown[]>(
+  ...components: { readonly [K in keyof A]: Decoder<unknown, A[K]> }
+): Decoder<readonly unknown[], readonly unknown[]>
 ```
 
 Added in v0.9.4
@@ -482,6 +568,18 @@ export declare const of: <A>(value: A) => Decoder<unknown, A>
 
 Added in v0.9.4
 
+## record
+
+**Signature**
+
+```ts
+export declare const record: <O>(
+  codomain: Decoder<unknown, O>,
+) => Decoder<unknown, Readonly<Record<string, O>>>
+```
+
+Added in v0.9.6
+
 ## string
 
 **Signature**
@@ -504,14 +602,28 @@ export declare function struct<A extends { readonly [key: string]: Decoder<unkno
 
 Added in v0.9.4
 
+## sum
+
+**Signature**
+
+```ts
+export declare const sum: <T extends string>(
+  tag: T,
+) => <A>(
+  members: { [K in keyof A]: Decoder<unknown, A[K] & Record<T, K>> },
+) => Decoder<unknown, A[keyof A]>
+```
+
+Added in v0.9.6
+
 ## tuple
 
 **Signature**
 
 ```ts
-export declare function tuple<A extends readonly [Decoder<any, any>, ...Decoder<any, any>[]]>(
-  ...tuple: A
-): Decoder<unknown, { readonly [K in keyof A]: OutputOf<A[K]> }>
+export declare function tuple<A extends readonly unknown[]>(
+  ...components: { readonly [K in keyof A]: Decoder<unknown, A[K]> }
+): Decoder<unknown, A>
 ```
 
 Added in v0.9.4
@@ -521,9 +633,9 @@ Added in v0.9.4
 **Signature**
 
 ```ts
-export declare function unexpectedIndexes<
-  A extends readonly [Decoder<any, any>, ...Decoder<any, any>[]],
->(...tuple: A): Decoder<readonly unknown[], readonly unknown[]>
+export declare function unexpectedIndexes<A extends readonly unknown[]>(
+  ...components: { readonly [K in keyof A]: Decoder<unknown, A[K]> }
+): Decoder<readonly unknown[], readonly unknown[]>
 ```
 
 Added in v0.9.4
@@ -571,6 +683,38 @@ export declare const unknownRecord: Decoder<unknown, { readonly [key: string]: u
 ```
 
 Added in v0.9.4
+
+# Decoder
+
+## dateFromISOString
+
+**Signature**
+
+```ts
+export declare const dateFromISOString: Decoder<string, Date>
+```
+
+Added in v0.9.5
+
+## jsonParse
+
+**Signature**
+
+```ts
+export declare const jsonParse: Decoder<unknown, Json>
+```
+
+Added in v0.9.5
+
+## jsonParseFromString
+
+**Signature**
+
+```ts
+export declare const jsonParseFromString: Decoder<string, Json>
+```
+
+Added in v0.9.5
 
 # Instance
 
@@ -624,6 +768,36 @@ export declare const Pointed: Pointed2<'@typed/fp/Decoder'>
 
 Added in v0.9.4
 
+## Schemable
+
+**Signature**
+
+```ts
+export declare const Schemable: Schemable2C<'@typed/fp/Decoder', unknown>
+```
+
+Added in v0.9.5
+
+## WithRefine
+
+**Signature**
+
+```ts
+export declare const WithRefine: WithRefine2C<'@typed/fp/Decoder', unknown>
+```
+
+Added in v0.9.5
+
+## WithUnion
+
+**Signature**
+
+```ts
+export declare const WithUnion: WithUnion2C<'@typed/fp/Decoder', unknown>
+```
+
+Added in v0.9.5
+
 # Model
 
 ## Decoder (interface)
@@ -637,6 +811,18 @@ export interface Decoder<I, O> {
 ```
 
 Added in v0.9.4
+
+# Refinement
+
+## isDate
+
+**Signature**
+
+```ts
+export declare const isDate: (x: unknown) => x is Date
+```
+
+Added in v0.9.6
 
 # Type-level
 
