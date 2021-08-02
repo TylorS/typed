@@ -108,7 +108,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const useKeyedRefs: <A>(Eq: Eq<A>) => E.Env<
+export declare const useKeyedRefs: <A>(
+  Eq: Eq<A>,
+) => E.Env<
   Ref.Refs,
   {
     readonly findRefs: (value: A) => E.Env<unknown, Ref.Refs>
