@@ -1,4 +1,5 @@
 import { deepStrictEqual } from 'assert'
+import { right } from 'fp-ts/These'
 import { describe } from 'mocha'
 
 import * as D from './Decoder'
@@ -14,6 +15,6 @@ describe(__filename, () => {
       body: D.string,
     })
 
-    deepStrictEqual(PostEmailBody.decode({}), {})
+    deepStrictEqual(PostEmailBody.decode({}), right({}))
   })
 })
