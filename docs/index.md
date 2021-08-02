@@ -18,7 +18,8 @@ once both codebases are stable.
 - [Cancelable Async Effect](./modules/Resume.ts.md)
 - [Dependency Injection](./modules/Env.ts.md)
 - [State Management](./modules/Ref.ts.md)
-- Testable, Free of globals
+- Testable
+- Free of globals
 - Type-Safe
 - Composable
 - Concurrent
