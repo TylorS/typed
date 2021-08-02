@@ -39,6 +39,7 @@ Added in v0.9.2
   - [chainFirstIOK](#chainfirstiok)
   - [chainFirstResumeK](#chainfirstresumek)
   - [chainFirstTaskK](#chainfirsttaskk)
+  - [chainFirstW](#chainfirstw)
   - [chainIOK](#chainiok)
   - [chainOptionK](#chainoptionk)
   - [chainReaderK](#chainreaderk)
@@ -369,9 +370,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const chainFirst: <A, R1, E, B>(
-  f: (a: A) => EnvEither<R1, E, B>,
-) => <R2>(first: EnvEither<R2, E, A>) => EnvEither<R1 & R2, E, A>
+export declare const chainFirst: <A, R, E, B>(
+  f: (a: A) => EnvEither<R, E, B>,
+) => (first: EnvEither<R, E, A>) => EnvEither<R, E, A>
 ```
 
 Added in v0.9.2
@@ -423,6 +424,18 @@ export declare const chainFirstTaskK: <A, B>(
 ```
 
 Added in v0.9.2
+
+## chainFirstW
+
+**Signature**
+
+```ts
+export declare const chainFirstW: <A, R1, E1, B>(
+  f: (a: A) => EnvEither<R1, E1, B>,
+) => <R2, E2>(first: EnvEither<R2, E2, A>) => EnvEither<R1 & R2, E1 | E2, A>
+```
+
+Added in v0.9.11
 
 ## chainIOK
 
