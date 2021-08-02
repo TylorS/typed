@@ -8,11 +8,10 @@ once both codebases are stable.
 
 ## Features
 
-- [`@most/core`](https://github.com/mostjs/core)
-  [Streams](https://typed-fp.org/modules/Stream.ts.md)
-- [Cancelable Async Effect](https://typed-fp.org/modules/Resume.ts.md)
-- [Dependency Injection](https://typed-fp.org/modules/Env.ts.md)
-- [State Management](https://typed-fp.org/modules/Ref.ts.md)
+- [`@most/core`](https://github.com/mostjs/core) [Streams](https://typed-fp.org/modules/Stream.ts)
+- [Cancelable Async Effect](https://typed-fp.org/modules/Resume.ts)
+- [Dependency Injection](https://typed-fp.org/modules/Env.ts)
+- [State Management](https://typed-fp.org/modules/Ref.ts)
 - Testable
 - Free of globals
 - Type-Safe
