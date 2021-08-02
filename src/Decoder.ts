@@ -260,7 +260,7 @@ export const fromArray = <O>(
 
   return {
     decode: (inputs) => {
-      const [first, ...rest] = inputs.map((input, index) =>
+      const array = inputs.map((input, index) =>
         pipe(
           input,
           member.decode,
@@ -269,7 +269,7 @@ export const fromArray = <O>(
         ),
       )
 
-      return rest.reduce((acc, x) => pipe(x, concat(acc)), first)
+      return array.reduce((acc, x) => pipe(x, concat(acc)), T.right([]))
     },
   }
 }
@@ -296,14 +296,14 @@ export const fromStruct = <A extends { readonly [key: string]: Decoder<unknown, 
     decode: (i) => {
       const expectedKeys = Object.keys(properties)
       const remainingKeys = expectedKeys.filter((k) => k in i)
-      const [first, ...rest] = remainingKeys.map((k) =>
+      const struct = remainingKeys.map((k) =>
         pipe(
           properties[k].decode(i[k]),
           T.mapLeft((e): DE.DecodeErrors => [DE.key(k, e)] as const),
           T.map((o: O[keyof O]) => make(k, o)),
         ),
       )
-      const result = rest.reduce((acc, x) => pipe(x, concat(acc)), first)
+      const result = struct.reduce((acc, x) => pipe(x, concat(acc)), T.right({}))
 
       return result as T.These<DE.DecodeErrors, O>
     },
@@ -419,14 +419,14 @@ export function fromTuple<A extends readonly unknown[]>(
 
   return {
     decode: (input) => {
-      const [first, ...rest] = components.map((d, i) =>
+      const tuple = components.map((d, i) =>
         pipe(
           d.decode(input[i]),
           T.mapLeft((errors): DE.DecodeErrors => [DE.index(i, errors)]),
           T.map((o): readonly unknown[] => [o]),
         ),
       )
-      const result = rest.reduce((acc, x) => pipe(x, concat(acc)), first)
+      const result = tuple.reduce((acc, x) => pipe(x, concat(acc)), T.right([]))
 
       return result as T.These<DE.DecodeErrors, A>
     },
