@@ -62,6 +62,20 @@ export function fromRefinement<I, O extends I>(
 }
 
 /**
+ * @category Combinator
+ * @since 0.9.4
+ */
+export const compose =
+  <A, O>(second: Decoder<A, O>) =>
+  <I>(first: Decoder<I, A>): Decoder<I, O> => {
+    const { chain } = T.getChain(DE.getSemigroup())
+
+    return {
+      decode: (i) => pipe(i, first.decode, chain(second.decode)),
+    }
+  }
+
+/**
  * @category Constructor
  * @since 0.9.4
  */
@@ -234,20 +248,6 @@ export const unknownRecord = fromRefinement<unknown, { readonly [key: string]: u
     !!x && !Array.isArray(x) && typeof x === 'object',
   'Record<string, unknown>',
 )
-
-/**
- * @category Combinator
- * @since 0.9.4
- */
-export const compose =
-  <A, O>(second: Decoder<A, O>) =>
-  <I>(first: Decoder<I, A>): Decoder<I, O> => {
-    const { chain } = T.getChain(DE.getSemigroup())
-
-    return {
-      decode: (i) => pipe(i, first.decode, chain(second.decode)),
-    }
-  }
 
 /**
  * @category Constructor
