@@ -349,9 +349,17 @@ export const bind = Chain_.bind(Chain)
  * @since 0.9.2
  * @category Combinator
  */
-export const chainFirst = Chain_.chainFirst(Chain) as <A, R1, E, B>(
-  f: (a: A) => EnvEither<R1, E, B>,
-) => <R2>(first: EnvEither<R2, E, A>) => EnvEither<R1 & R2, E, A>
+export const chainFirst = Chain_.chainFirst(Chain) as <A, R, E, B>(
+  f: (a: A) => EnvEither<R, E, B>,
+) => (first: EnvEither<R, E, A>) => EnvEither<R, E, A>
+
+/**
+ * @since 0.9.11
+ * @category Combinator
+ */
+export const chainFirstW = Chain_.chainFirst(Chain) as <A, R1, E1, B>(
+  f: (a: A) => EnvEither<R1, E1, B>,
+) => <R2, E2>(first: EnvEither<R2, E2, A>) => EnvEither<R1 & R2, E1 | E2, A>
 
 /**
  * @since 0.9.2
