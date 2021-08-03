@@ -23,7 +23,7 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH'
  * @since 0.9.4
  */
 export interface HttpResponse {
-  readonly response: unknown
+  readonly body: unknown
   readonly status: number
   readonly headers: HttpHeaders
 }

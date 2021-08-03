@@ -49,7 +49,7 @@ function httpFetchRequest(
 
       const httpResponse: http.HttpResponse = {
         status: response.status,
-        response: await response.json().catch(() => response.text()),
+        body: await response.json().catch(() => response.text()),
         headers,
       }
 
