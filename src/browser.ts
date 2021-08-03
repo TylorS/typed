@@ -46,12 +46,9 @@ function httpFetchRequest(
         headers[key] = value
       })
 
-      const responseText = await response.text()
-
       const httpResponse: http.HttpResponse = {
         status: response.status,
-        statusText: response.statusText,
-        responseText,
+        response: await response.json().catch(() => response.text()),
         headers,
       }
 

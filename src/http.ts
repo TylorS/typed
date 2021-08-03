@@ -23,9 +23,8 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH'
  * @since 0.9.4
  */
 export interface HttpResponse {
-  readonly responseText: string
+  readonly response: unknown
   readonly status: number
-  readonly statusText: string
   readonly headers: HttpHeaders
 }
 
@@ -50,4 +49,4 @@ export const http =
  * @category Environment
  * @since 0.9.4
  */
-export type HttpEnv = E.RequirementsOf<typeof http>
+export type HttpEnv = {}

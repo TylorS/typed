@@ -1,6 +1,4 @@
 /**
- * **This module is experimental**
- *
  * @since 0.9.4
  */
 import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/HKT'
