@@ -170,6 +170,12 @@ declare module 'fp-ts/HKT' {
   }
 }
 
+declare module './HKT' {
+  export interface URItoVariance {
+    [URI]: V<E, Covariant>
+  }
+}
+
 /**
  * @since 0.9.2
  * @category Constructor

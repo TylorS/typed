@@ -242,6 +242,12 @@ declare module 'fp-ts/HKT' {
   }
 }
 
+declare module './HKT' {
+  export interface URItoVariance {
+    [URI]: V<R, Contravariant> & V<E, Covariant>
+  }
+}
+
 /**
  * @since 0.9.2
  * @category Instance

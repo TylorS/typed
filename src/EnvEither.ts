@@ -37,6 +37,8 @@ import { Resume, sync } from './Resume'
  */
 export interface EnvEither<R, E, A> extends Env.Env<R, E.Either<E, A>> {}
 
+export interface Of<E, A> extends EnvEither<unknown, E, A> {}
+
 /**
  * @since 0.9.2
  * @category Combinator
@@ -192,7 +194,7 @@ declare module 'fp-ts/HKT' {
 
 declare module './HKT' {
   export interface URItoVariance {
-    [URI]: V<R, Contravariant>
+    [URI]: V<R, Contravariant> & V<E, Covariant>
   }
 }
 
@@ -634,6 +636,30 @@ export const chainFirstEnvK = FE.chainFirstEnvK(FromEnv, Chain)
  * @category Constructor
  */
 export const fromEnvK = FE.fromEnvK(FromEnv)
+
+/**
+ * @since 0.9.15
+ * @category Combinator
+ */
+export const provideAllWithEnv = FE.provideAllWithEnv({ ...FromEnv, ...ProvideAll, ...Chain })
+
+/**
+ * @since 0.9.15
+ * @category Combinator
+ */
+export const provideSomeWithEnv = FE.provideSomeWithEnv({ ...FromEnv, ...ProvideSome, ...Chain })
+
+/**
+ * @since 0.9.15
+ * @category Combinator
+ */
+export const useAllWithEnv = FE.useAllWithEnv({ ...FromEnv, ...UseAll, ...Chain })
+
+/**
+ * @since 0.9.15
+ * @category Combinator
+ */
+export const useSomeWithEnv = FE.useSomeWithEnv({ ...FromEnv, ...UseSome, ...Chain })
 
 /**
  * @since 0.9.2

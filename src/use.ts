@@ -216,8 +216,7 @@ export const useReaderStream = <A = void, B = unknown>(
     dep: A,
   ): E.Env<E & Ref.Refs & SchedulerEnv, O.Option<C>> =>
     pipe(
-      E.ask<E & Ref.Refs & SchedulerEnv>(),
-      E.chainW((r) =>
+      E.asksE((r: E & Ref.Refs & SchedulerEnv) =>
         use(
           () =>
             rs(r).run(
@@ -275,8 +274,10 @@ export const useKeyedRefs = <A>(Eq: Eq<A>) => {
           dispose: () =>
             pipe(
               parentRefs,
-              refs.deleteAt(value),
-              R.chain(() => RefDisposable.dispose(parentRefs)),
+              refs.get,
+              R.map((refs) => refs.get(value)),
+              R.chainFirst(() => pipe(parentRefs, refs.deleteAt(value))),
+              R.chain((refs) => (refs ? RefDisposable.dispose(refs) : R.of(null))),
               R.exec,
             ),
         }),

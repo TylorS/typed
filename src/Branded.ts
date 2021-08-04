@@ -21,7 +21,7 @@ export type ValueOf<A> = A extends infer E & { readonly __brand__?: BrandOf<A> }
  * @since 0.9.2
  * @category Model
  */
-export type Branded<E, A> = E & { readonly __brand__?: A }
+export type Branded<E, A> = E & { readonly __brand__: A }
 
 /**
  * @since 0.9.2

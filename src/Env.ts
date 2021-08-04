@@ -134,19 +134,6 @@ export const tap =
  * @since 0.9.2
  * @category Combinator
  */
-export const tapEnv =
-  <R>(f: (a: R) => any) =>
-  <A>(fa: Env<R, A>): Env<R, A> =>
-  (r) => {
-    f(r)
-
-    return fa(r)
-  }
-
-/**
- * @since 0.9.2
- * @category Combinator
- */
 export const constant = FN.flow(FN.constant, map)
 
 /**
