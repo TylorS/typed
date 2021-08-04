@@ -15,7 +15,7 @@ export type BrandOf<A> = A extends Branded<infer _, infer R> ? R : never
  * @since 0.9.2
  * @category Type-level
  */
-export type ValueOf<A> = A extends infer E & { readonly __brand__?: BrandOf<A> } ? E : never
+export type ValueOf<A> = A extends infer E & { readonly __brand__: BrandOf<A> } ? E : never
 
 /**
  * @since 0.9.2

@@ -45,7 +45,7 @@ export const loadTodos = E.op<() => E.Of<readonly Todo[]>>()('loadTodos')()
 
 export const Todos = pipe(
   Ref.create(loadTodos),
-  RefArray.create(Eq.struct({ id: S.Eq, description: S.Eq, completed: B.Eq })),
+  RefArray.create(Eq.struct<Todo>({ id: S.Eq, description: S.Eq, completed: B.Eq })),
 )
 
 export const clearCompleted = Todos.filter(isActiveTodo)
