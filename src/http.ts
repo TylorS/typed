@@ -49,4 +49,4 @@ export const http =
  * @category Environment
  * @since 0.9.4
  */
-export type HttpEnv = {}
+export type HttpEnv = E.RequirementsOf<typeof http>
