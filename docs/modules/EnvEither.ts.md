@@ -56,11 +56,15 @@ Added in v0.9.2
   - [orElseFirst](#orelsefirst)
   - [orLeft](#orleft)
   - [provideAllWith](#provideallwith)
+  - [provideAllWithEnv](#provideallwithenv)
   - [provideSomeWith](#providesomewith)
+  - [provideSomeWithEnv](#providesomewithenv)
   - [swap](#swap)
   - [tupled](#tupled)
   - [useAllWith](#useallwith)
+  - [useAllWithEnv](#useallwithenv)
   - [useSomeWith](#usesomewith)
+  - [useSomeWithEnv](#usesomewithenv)
 - [Constructor](#constructor)
   - [ask](#ask)
   - [asks](#asks)
@@ -112,6 +116,7 @@ Added in v0.9.2
   - [UseSome](#usesome)
 - [Model](#model)
   - [EnvEither (interface)](#enveither-interface)
+  - [Of (interface)](#of-interface)
 - [Typeclass Constructor](#typeclass-constructor)
   - [altValidation](#altvalidation)
   - [getSemigroup](#getsemigroup)
@@ -629,10 +634,22 @@ Added in v0.9.2
 ```ts
 export declare const provideAllWith: <R, E1, A>(
   provider: EnvEither<R, E1, A>,
-) => <E2, B>(hkt: EnvEither<A, E2, B>) => EnvEither<R, E1, B>
+) => <E2, B>(hkt: EnvEither<A, E2, B>) => EnvEither<R, E1 | E2, B>
 ```
 
 Added in v0.9.2
+
+## provideAllWithEnv
+
+**Signature**
+
+```ts
+export declare const provideAllWithEnv: <R, A>(
+  resume: Env.Env<R, A>,
+) => <E, B>(hkt: EnvEither<A, E, B>) => EnvEither<R, E, B>
+```
+
+Added in v0.9.15
 
 ## provideSomeWith
 
@@ -645,6 +662,18 @@ export declare const provideSomeWith: <R1, E1, A>(
 ```
 
 Added in v0.9.2
+
+## provideSomeWithEnv
+
+**Signature**
+
+```ts
+export declare const provideSomeWithEnv: <E, A>(
+  resume: Env.Env<E, A>,
+) => P.Provider3<'@typed/fp/EnvEither', A, E, never>
+```
+
+Added in v0.9.15
 
 ## swap
 
@@ -675,10 +704,22 @@ Added in v0.9.2
 ```ts
 export declare const useAllWith: <R, E1, A>(
   provider: EnvEither<R, E1, A>,
-) => <E2, B>(hkt: EnvEither<A, E2, B>) => EnvEither<R, E1, B>
+) => <E2, B>(hkt: EnvEither<A, E2, B>) => EnvEither<R, E1 | E2, B>
 ```
 
 Added in v0.9.2
+
+## useAllWithEnv
+
+**Signature**
+
+```ts
+export declare const useAllWithEnv: <R, A>(
+  resume: Env.Env<R, A>,
+) => <E, B>(hkt: EnvEither<A, E, B>) => EnvEither<R, E, B>
+```
+
+Added in v0.9.15
 
 ## useSomeWith
 
@@ -691,6 +732,18 @@ export declare const useSomeWith: <R1, E1, A>(
 ```
 
 Added in v0.9.2
+
+## useSomeWithEnv
+
+**Signature**
+
+```ts
+export declare const useSomeWithEnv: <E, A>(
+  resume: Env.Env<E, A>,
+) => P.Provider3<'@typed/fp/EnvEither', A, E, never>
+```
+
+Added in v0.9.15
 
 # Constructor
 
@@ -1196,6 +1249,16 @@ export interface EnvEither<R, E, A> extends Env.Env<R, E.Either<E, A>> {}
 ```
 
 Added in v0.9.2
+
+## Of (interface)
+
+**Signature**
+
+```ts
+export interface Of<E, A> extends EnvEither<unknown, E, A> {}
+```
+
+Added in v0.10.0
 
 # Typeclass Constructor
 

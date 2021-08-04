@@ -345,7 +345,7 @@ Added in v0.9.2
 ```ts
 export declare const chainEnvK: <A, R1, B>(
   f: (value: A) => Env<R1, B>,
-) => <R2, E>(hkt: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1, E, B>
+) => <R2, E>(hkt: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1 & R2, E, B>
 ```
 
 Added in v0.9.2
@@ -369,7 +369,7 @@ Added in v0.9.2
 ```ts
 export declare const chainFirstEnvK: <A, R1, B>(
   f: (value: A) => Env<R1, B>,
-) => <R2, E>(hkt: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1, E, A>
+) => <R2, E>(hkt: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1 & R2, E, A>
 ```
 
 Added in v0.9.2

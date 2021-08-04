@@ -88,9 +88,8 @@ Added in v0.9.4
 
 ```ts
 export interface HttpResponse {
-  readonly responseText: string
+  readonly body: unknown
   readonly status: number
-  readonly statusText: string
   readonly headers: HttpHeaders
 }
 ```

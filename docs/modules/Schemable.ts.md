@@ -6,8 +6,6 @@ parent: Modules
 
 ## Schemable overview
 
-**This module is experimental**
-
 Added in v0.9.4
 
 ---

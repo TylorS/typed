@@ -37,6 +37,10 @@ import { Resume, sync } from './Resume'
  */
 export interface EnvEither<R, E, A> extends Env.Env<R, E.Either<E, A>> {}
 
+/**
+ * @since 0.10.0
+ * @category Model
+ */
 export interface Of<E, A> extends EnvEither<unknown, E, A> {}
 
 /**

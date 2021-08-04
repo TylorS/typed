@@ -72,7 +72,6 @@ Added in v0.9.2
   - [race](#race)
   - [raceW](#racew)
   - [tap](#tap)
-  - [tapEnv](#tapenv)
   - [toResume](#toresume)
   - [toResumeK](#toresumek)
   - [tupled](#tupled)
@@ -635,16 +634,6 @@ Added in v0.9.2
 
 ```ts
 export declare const tap: <A>(f: (a: A) => any) => <R>(fa: Env<R, A>) => Env<R, A>
-```
-
-Added in v0.9.2
-
-## tapEnv
-
-**Signature**
-
-```ts
-export declare const tapEnv: <R>(f: (a: R) => any) => <A>(fa: Env<R, A>) => Env<R, A>
 ```
 
 Added in v0.9.2

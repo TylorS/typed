@@ -45,7 +45,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export type Branded<E, A> = E & { readonly __brand__?: A }
+export type Branded<E, A> = E & { readonly __brand__: A }
 ```
 
 Added in v0.9.2
@@ -67,7 +67,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export type ValueOf<A> = A extends infer E & { readonly __brand__?: BrandOf<A> } ? E : never
+export type ValueOf<A> = A extends infer E & { readonly __brand__: BrandOf<A> } ? E : never
 ```
 
 Added in v0.9.2
