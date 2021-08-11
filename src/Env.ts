@@ -34,6 +34,7 @@ import { Monad2 } from 'fp-ts/Monad'
 import { Pointed2 } from 'fp-ts/Pointed'
 import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
+import * as RA from 'fp-ts/ReadonlyArray'
 import { traverse } from 'fp-ts/ReadonlyArray'
 import * as Task from 'fp-ts/Task'
 
@@ -44,6 +45,7 @@ import { Intersect } from './HKT'
 import { MonadRec2 } from './MonadRec'
 import * as P from './Provide'
 import * as R from './Resume'
+import * as St from './struct'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>
@@ -752,6 +754,27 @@ export const zipW = zip as unknown as <A extends ReadonlyArray<Env<any, any>>>(
  */
 export const combineAll = <A extends ReadonlyArray<Env<any, any>>>(...envs: A) => zipW(envs)
 
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
+export const combineStruct = <Props extends Readonly<Record<string, Env<any, any>>>>(
+  props: Props,
+) =>
+  FN.pipe(
+    combineAll(
+      ...FN.pipe(
+        Object.entries(props),
+        RA.map(([k, env]) =>
+          FN.pipe(
+            env,
+            map((v) => St.make(k, v)),
+          ),
+        ),
+      ),
+    ),
+    map((o) => Object.assign({}, ...o) as { readonly [K in keyof Props]: ValueOf<Props[K]> }),
+  )
 /**
  * @since 0.9.2
  * @category Execution

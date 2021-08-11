@@ -23,6 +23,7 @@ import { Pointed2 } from 'fp-ts/Pointed'
 import { not, Predicate } from 'fp-ts/Predicate'
 import * as Re from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderT'
+import * as RA from 'fp-ts/ReadonlyArray'
 import { Refinement } from 'fp-ts/Refinement'
 import { Separated } from 'fp-ts/Separated'
 import { Task } from 'fp-ts/Task'
@@ -41,6 +42,7 @@ import * as P from './Provide'
 import { async } from './Resume'
 import { SchedulerEnv } from './Scheduler'
 import * as S from './Stream'
+import * as St from './struct'
 
 /**
  * Env is specialization of Reader<R, Resume<A>>
@@ -883,6 +885,28 @@ export const combineAll =
   > =>
   (e) =>
     S.combineAll(...rss.map((rs) => rs(e)))
+
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
+export const combineStruct = <Props extends Readonly<Record<string, ReaderStream<any, any>>>>(
+  props: Props,
+) =>
+  pipe(
+    combineAll(
+      ...pipe(
+        Object.entries(props),
+        RA.map(([k, stream]) =>
+          pipe(
+            stream,
+            map((v) => St.make(k, v)),
+          ),
+        ),
+      ),
+    ),
+    map((o) => Object.assign({}, ...o) as { readonly [K in keyof Props]: ValueOf<Props[K]> }),
+  )
 
 /**
  * @since 0.9.2

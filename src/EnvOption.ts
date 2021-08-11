@@ -6,7 +6,7 @@
 import { Alt2 } from 'fp-ts/Alt'
 import { Alternative2 } from 'fp-ts/Alternative'
 import { Applicative2 } from 'fp-ts/Applicative'
-import { Apply2 } from 'fp-ts/Apply'
+import * as Ap from 'fp-ts/Apply'
 import { Chain2 } from 'fp-ts/Chain'
 import { ChainRec2 } from 'fp-ts/ChainRec'
 import * as Ei from 'fp-ts/Either'
@@ -46,6 +46,11 @@ export const alt = OT.alt(E.Monad)
  * @category Combinator
  */
 export const ap = OT.ap(E.Apply)
+
+export const apW = ap as <E1, A>(
+  fa: E.Env<E1, O.Option<A>>,
+) => <E2, B>(fab: E.Env<E2, O.Option<(a: A) => B>>) => E.Env<E1 & E2, O.Option<B>>
+
 /**
  * @since 0.9.2
  * @category Combinator
@@ -179,10 +184,37 @@ export const Functor: Functor2<URI> = {
  * @since 0.9.2
  * @category Instance
  */
-export const Apply: Apply2<URI> = {
+export const Apply: Ap.Apply2<URI> = {
   ...Functor,
   ap,
 }
+
+export const apFirst = Ap.apFirst(Apply)
+export const apFirstW = apFirst as <E1, B>(
+  second: EnvOption<E1, B>,
+) => <E2, A>(first: EnvOption<E2, A>) => EnvOption<E1 & E2, A>
+
+export const apS = Ap.apS(Apply)
+export const apSW = apS as <N extends string, A, E1, B>(
+  name: Exclude<N, keyof A>,
+  fb: EnvOption<E1, B>,
+) => <E2>(
+  fa: EnvOption<E2, A>,
+) => EnvOption<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+
+export const apSecond = Ap.apSecond(Apply)
+export const apSecondW = apSecond as <E1, B>(
+  second: EnvOption<E1, B>,
+) => <E2, A>(first: EnvOption<E2, A>) => EnvOption<E1 & E2, B>
+
+export const apT = Ap.apT(Apply)
+export const apTW = apT as <E1, B>(
+  fb: EnvOption<E1, B>,
+) => <E2, A extends readonly unknown[]>(
+  fas: EnvOption<E2, A>,
+) => EnvOption<E1 & E2, readonly [...A, B]>
+
+export const getApplySemigroup = Ap.getApplySemigroup(Apply)
 
 /**
  * @since 0.9.2

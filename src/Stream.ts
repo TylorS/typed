@@ -16,7 +16,7 @@
  * exposed by this module. Both @most/core + @most/types are re-exported from this module
  * @since 0.9.2
  */
-import * as S from '@most/core'
+import * as M from '@most/core'
 import { disposeAll, disposeNone } from '@most/disposable'
 import { asap, schedulerRelativeTo } from '@most/scheduler'
 import * as types from '@most/types'
@@ -51,6 +51,7 @@ import { deepEqualsEq } from './Eq'
 import * as FRe from './FromResume'
 import { Arity1 } from './function'
 import * as R from './Resume'
+import * as S from './struct'
 
 /**
  * @since 0.9.2
@@ -121,8 +122,8 @@ declare module 'fp-ts/HKT' {
  */
 export const getMonoid = <A>(): Monoid<types.Stream<A>> => {
   return {
-    concat: S.merge,
-    empty: S.empty(),
+    concat: M.merge,
+    empty: M.empty(),
   }
 }
 
@@ -134,7 +135,7 @@ export const getMonoid = <A>(): Monoid<types.Stream<A>> => {
  * @category Combinator
  */
 export const compact = <A>(stream: types.Stream<O.Option<A>>): types.Stream<A> =>
-  S.map((s: O.Some<A>) => s.value, S.filter(O.isSome, stream))
+  M.map((s: O.Some<A>) => s.value, M.filter(O.isSome, stream))
 
 /**
  * Separate left and right values
@@ -146,16 +147,16 @@ export const compact = <A>(stream: types.Stream<O.Option<A>>): types.Stream<A> =
 export const separate = <A, B>(
   stream: types.Stream<Either<A, B>>,
 ): Separated<types.Stream<A>, types.Stream<B>> => {
-  const s = S.multicast(stream)
+  const s = M.multicast(stream)
   const left = pipe(
     s,
-    S.filter(isLeft),
-    S.map((l) => l.left),
+    M.filter(isLeft),
+    M.map((l) => l.left),
   )
   const right = pipe(
     s,
-    S.filter(isRight),
-    S.map((r) => r.right),
+    M.filter(isRight),
+    M.map((r) => r.right),
   )
 
   return { left, right }
@@ -168,7 +169,7 @@ export const separate = <A, B>(
 export const partitionMap =
   <A, B, C>(f: (a: A) => Either<B, C>) =>
   (fa: types.Stream<A>) =>
-    separate(S.map(f, fa))
+    separate(M.map(f, fa))
 
 /**
  * @since 0.9.2
@@ -184,14 +185,14 @@ export const partition = <A>(predicate: Predicate<A>) =>
 export const filterMap =
   <A, B>(f: (a: A) => O.Option<B>) =>
   (fa: types.Stream<A>) =>
-    compact(S.map(f, fa))
+    compact(M.map(f, fa))
 
 /**
  * @since 0.9.2
  * @category Instance
  */
 export const Functor: Functor1<URI> = {
-  map: S.map,
+  map: M.map,
 }
 
 /**
@@ -199,7 +200,7 @@ export const Functor: Functor1<URI> = {
  * @category Instance
  */
 export const Pointed: Pointed1<URI> = {
-  of: S.now,
+  of: M.now,
 }
 
 /**
@@ -214,7 +215,7 @@ export const of = Pointed.of
  */
 export const Apply: Ap.Apply1<URI> = {
   ...Functor,
-  ap: S.ap,
+  ap: M.ap,
 }
 
 /**
@@ -264,7 +265,7 @@ export const getApplicativeMonoid = App.getApplicativeMonoid(Applicative)
  */
 export const Chain: CH.Chain1<URI> = {
   ...Functor,
-  chain: S.chain,
+  chain: M.chain,
 }
 
 /**
@@ -294,7 +295,7 @@ export const Monad: Monad1<URI> = {
 export const chainRec =
   <A, B>(f: (value: A) => types.Stream<Either<A, B>>) =>
   (value: A): types.Stream<B> =>
-    pipe(value, f, S.delay(0), S.chain(match(flow(chainRec(f)), S.now)))
+    pipe(value, f, M.delay(0), M.chain(match(flow(chainRec(f)), M.now)))
 
 /**
  * @since 0.9.2
@@ -311,7 +312,7 @@ export const ChainRec: ChainRec1<URI> = {
 export const switchRec =
   <A, B>(f: (value: A) => types.Stream<Either<A, B>>) =>
   (value: A): types.Stream<B> =>
-    pipe(value, f, S.map(match(switchRec(f), S.now)), S.switchLatest)
+    pipe(value, f, M.map(match(switchRec(f), M.now)), M.switchLatest)
 
 /**
  * @since 0.9.2
@@ -332,8 +333,8 @@ export const mergeConcurrentlyRec =
     pipe(
       value,
       f,
-      S.map(match(mergeConcurrentlyRec(concurrency)(f), S.now)),
-      S.mergeConcurrently(concurrency),
+      M.map(match(mergeConcurrentlyRec(concurrency)(f), M.now)),
+      M.mergeConcurrently(concurrency),
     )
 
 /**
@@ -349,7 +350,7 @@ export const getConcurrentChainRec = (concurrency: number): ChainRec1<URI> => ({
  * @category Instance
  */
 export const FromIO: FromIO1<URI> = {
-  fromIO: (f) => Functor.map(f)(S.now(undefined)),
+  fromIO: (f) => Functor.map(f)(M.now(undefined)),
 }
 
 /**
@@ -358,7 +359,7 @@ export const FromIO: FromIO1<URI> = {
  */
 export const fromIO = FromIO.fromIO
 
-const applyTask = <A>(task: Task<A>): types.Stream<Promise<A>> => S.ap(S.now(task), S.now(void 0))
+const applyTask = <A>(task: Task<A>): types.Stream<Promise<A>> => M.ap(M.now(task), M.now(void 0))
 
 /**
  * @since 0.9.2
@@ -366,7 +367,7 @@ const applyTask = <A>(task: Task<A>): types.Stream<Promise<A>> => S.ap(S.now(tas
  */
 export const FromTask: FromTask1<URI> = {
   ...FromIO,
-  fromTask: flow(applyTask, S.awaitPromises),
+  fromTask: flow(applyTask, M.awaitPromises),
 }
 
 /**
@@ -381,7 +382,7 @@ export const fromTask = FromTask.fromTask
  */
 export const FromResume: FRe.FromResume1<URI> = {
   fromResume: (resume) =>
-    S.newStream((sink, scheduler) => {
+    M.newStream((sink, scheduler) => {
       const run = () =>
         pipe(
           resume,
@@ -425,7 +426,7 @@ export const fromResumeK = FRe.fromResumeK(FromResume)
  */
 export const Alt: Alt_.Alt1<URI> = {
   ...Functor,
-  alt: (f) => (fa) => S.take(1, S.merge(fa, f())), // race the 2 streams
+  alt: (f) => (fa) => M.take(1, M.merge(fa, f())), // race the 2 streams
 }
 
 /**
@@ -440,7 +441,7 @@ export const race = Alt.alt
  */
 export const Alternative: Alternative1<URI> = {
   ...Alt,
-  zero: S.empty,
+  zero: M.empty,
 }
 
 /**
@@ -466,14 +467,14 @@ export const Filterable: Filterable1<URI> = {
   partitionMap,
   partition,
   filterMap,
-  filter: S.filter,
+  filter: M.filter,
 }
 
 /**
  * @since 0.9.2
  * @category Constructor
  */
-export const Do: types.Stream<{}> = pipe(null, S.now, S.map(Object.create))
+export const Do: types.Stream<{}> = pipe(null, M.now, M.map(Object.create))
 /**
  * @since 0.9.2
  * @category Combinator
@@ -509,8 +510,8 @@ export const collectEvents =
   <A>(stream: types.Stream<A>) => {
     const events: A[] = []
 
-    return S.runEffects(
-      S.tap((a) => events.push(a), stream),
+    return M.runEffects(
+      M.tap((a) => events.push(a), stream),
       scheduler,
     ).then(() => events as readonly A[])
   }
@@ -522,7 +523,7 @@ export const collectEvents =
 export const onDispose =
   (disposable: types.Disposable) =>
   <A>(stream: types.Stream<A>): types.Stream<A> =>
-    S.newStream((sink, scheduler) => disposeBoth(stream.run(sink, scheduler), disposable))
+    M.newStream((sink, scheduler) => disposeBoth(stream.run(sink, scheduler), disposable))
 
 /**
  * @since 0.9.2
@@ -531,7 +532,27 @@ export const onDispose =
 export const combineAll = <A extends readonly types.Stream<any>[]>(
   ...streams: A
 ): types.Stream<{ readonly [K in keyof A]: ValueOf<A[K]> }> =>
-  pipe(streams as any, S.combineArray(Array)) as any
+  pipe(streams as any, M.combineArray(Array)) as any
+
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
+export const combineStruct = <A>(streams: { readonly [K in keyof A]: types.Stream<A[K]> }) =>
+  pipe(
+    combineAll(
+      ...pipe(
+        Object.entries<Stream<any>>(streams),
+        RA.map(([k, stream]) =>
+          pipe(
+            stream,
+            M.map((v) => S.make(k, v)),
+          ),
+        ),
+      ),
+    ),
+    M.map((o) => Object.assign({}, ...o) as A),
+  )
 
 /**
  * @since 0.9.2
@@ -547,7 +568,7 @@ export const exhaustLatest = <A>(stream: types.Stream<types.Stream<A>>): types.S
 export const exhaustMapLatest =
   <A, B>(f: (value: A) => types.Stream<B>) =>
   (stream: types.Stream<A>) =>
-    pipe(stream, S.map(f), exhaustLatest)
+    pipe(stream, M.map(f), exhaustLatest)
 
 class ExhaustLatest<A> implements types.Stream<A> {
   constructor(readonly stream: types.Stream<types.Stream<A>>) {}
@@ -809,7 +830,7 @@ class KeyedSink<A> implements types.Sink<ReadonlyArray<A>>, types.Disposable {
       this.findAdapter,
       O.getOrElseW(() => {
         const endSignal = create<null>()
-        const values = create<A, A>(flow(S.startWith(k), S.until<A>(endSignal[1]), S.multicast))
+        const values = create<A, A>(flow(M.startWith(k), M.until<A>(endSignal[1]), M.multicast))
         const adapter = [values, endSignal] as const
 
         this.adapters.set(k, adapter)
@@ -844,8 +865,8 @@ export const switchFirst =
   <B>(first: Stream<B>): Stream<B> =>
     pipe(
       first,
-      S.map((a) => pipe(second, S.constant(a), S.startWith(a))),
-      S.switchLatest,
+      M.map((a) => pipe(second, M.constant(a), M.startWith(a))),
+      M.switchLatest,
     )
 
 /**
@@ -854,7 +875,7 @@ export const switchFirst =
  */
 export function mergeFirst<A>(a: Stream<A>) {
   return <B>(b: Stream<B>): Stream<B> =>
-    pipe(pipe(a, S.constant(O.none)), S.merge(pipe(b, S.map(O.some))), compact)
+    pipe(pipe(a, M.constant(O.none)), M.merge(pipe(b, M.map(O.some))), compact)
 }
 
 export * from '@most/core'
