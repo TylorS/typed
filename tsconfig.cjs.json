@@ -57,6 +57,7 @@
     "ReaderTaskEither",
     "Ref",
     "RefAdapter",
+    "RefArray",
     "RefDisposable",
     "Resume",
     "ResumeEither",
