@@ -66,6 +66,7 @@ snowpack.key
 /Adapter/
 /Branded/
 /Context/
+/Context2/
 /Data/
 /DataEither/
 /DataOption/
@@ -81,11 +82,13 @@ snowpack.key
 /Eq/
 /Fail/
 /FromEnv/
+/FromKV/
 /FromResume/
 /FromStream/
 /Guard/
 /HKT/
 /IOEither/
+/KV/
 /MonadRec/
 /Option/
 /Progress/
@@ -99,6 +102,7 @@ snowpack.key
 /ReaderTask/
 /ReaderTaskEither/
 /Ref/
+/Ref2/
 /RefAdapter/
 /RefArray/
 /RefDisposable/
@@ -128,3 +132,4 @@ snowpack.key
 /string/
 /struct/
 /use/
+/use2/

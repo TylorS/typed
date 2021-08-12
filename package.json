@@ -113,6 +113,10 @@
       "require": "./cjs/Context.js",
       "import": "./esm/Context.js"
     },
+    "./Context2": {
+      "require": "./cjs/Context2.js",
+      "import": "./esm/Context2.js"
+    },
     "./Data": {
       "require": "./cjs/Data.js",
       "import": "./esm/Data.js"
@@ -173,6 +177,10 @@
       "require": "./cjs/FromEnv.js",
       "import": "./esm/FromEnv.js"
     },
+    "./FromKV": {
+      "require": "./cjs/FromKV.js",
+      "import": "./esm/FromKV.js"
+    },
     "./FromResume": {
       "require": "./cjs/FromResume.js",
       "import": "./esm/FromResume.js"
@@ -192,6 +200,10 @@
     "./IOEither": {
       "require": "./cjs/IOEither.js",
       "import": "./esm/IOEither.js"
+    },
+    "./KV": {
+      "require": "./cjs/KV.js",
+      "import": "./esm/KV.js"
     },
     "./MonadRec": {
       "require": "./cjs/MonadRec.js",
@@ -244,6 +256,10 @@
     "./Ref": {
       "require": "./cjs/Ref.js",
       "import": "./esm/Ref.js"
+    },
+    "./Ref2": {
+      "require": "./cjs/Ref2.js",
+      "import": "./esm/Ref2.js"
     },
     "./RefAdapter": {
       "require": "./cjs/RefAdapter.js",
@@ -360,6 +376,10 @@
     "./use": {
       "require": "./cjs/use.js",
       "import": "./esm/use.js"
+    },
+    "./use2": {
+      "require": "./cjs/use2.js",
+      "import": "./esm/use2.js"
     }
   }
 }
