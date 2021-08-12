@@ -618,9 +618,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const useKeyedEnvs: <A>(
-  Eq: Eq<A>,
-) => E.Env<
+export declare const useKeyedEnvs: <A>(Eq: Eq<A>) => E.Env<
   Env<any>,
   {
     readonly findRefs: (value: A) => E.Env<Get<symbol>, Env<any>>
