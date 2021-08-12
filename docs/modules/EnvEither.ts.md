@@ -30,6 +30,7 @@ Added in v0.9.2
   - [bimap](#bimap)
   - [bind](#bind)
   - [bindTo](#bindto)
+  - [bindW](#bindw)
   - [bracket](#bracket)
   - [chain](#chain)
   - [chainEitherK](#chaineitherk)
@@ -66,6 +67,7 @@ Added in v0.9.2
   - [useSomeWith](#usesomewith)
   - [useSomeWithEnv](#usesomewithenv)
 - [Constructor](#constructor)
+  - [Do](#do)
   - [ask](#ask)
   - [asks](#asks)
   - [fromEither](#fromeither)
@@ -319,6 +321,21 @@ export declare const bindTo: <N>(
 ```
 
 Added in v0.9.2
+
+## bindW
+
+**Signature**
+
+```ts
+export declare const bindW: <N extends string, A, R1, E, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => EnvEither<R1, E, B>,
+) => <R2>(
+  ma: EnvEither<R2, E, A>,
+) => EnvEither<R1 & R2, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.11.1
 
 ## bracket
 
@@ -746,6 +763,16 @@ export declare const useSomeWithEnv: <E, A>(
 Added in v0.9.15
 
 # Constructor
+
+## Do
+
+**Signature**
+
+```ts
+export declare const Do: EnvEither<unknown, never, {}>
+```
+
+Added in v0.11.1
 
 ## ask
 
