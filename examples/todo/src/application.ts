@@ -1,14 +1,11 @@
 import * as E from '@fp/Env'
-import * as Eq from '@fp/Eq'
 import * as RS from '@fp/ReaderStream'
 import * as RSO from '@fp/ReaderStreamOption'
 import * as Ref from '@fp/Ref'
 import * as RefArray from '@fp/RefArray'
-import * as B from 'fp-ts/boolean'
 import { flow, pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as RA from 'fp-ts/ReadonlyArray'
-import * as S from 'fp-ts/string'
 
 import { createTodo, isActiveTodo, isCompletedTodo, Todo, TodoId } from './domain'
 
@@ -18,11 +15,11 @@ export type TodoFilter = 'all' | 'active' | 'completed'
 
 export const getCurrentFilter = E.op<() => E.Of<TodoFilter>>()('getCurrentFilter')()
 
-export const CurrentFilter = Ref.create(getCurrentFilter)
+export const CurrentFilter = Ref.kv(getCurrentFilter)
 
 // Currently selected Todo
 
-export const SelectedTodo = Ref.create(E.of<O.Option<TodoId>>(O.none))
+export const SelectedTodo = Ref.kv(E.of<O.Option<TodoId>>(O.none))
 
 export const isSelectedTodo = (todo: Todo) =>
   pipe(
@@ -43,24 +40,38 @@ export const deselectTodo = SelectedTodo.set(O.none)
 
 export const loadTodos = E.op<() => E.Of<readonly Todo[]>>()('loadTodos')()
 
-export const Todos = pipe(
-  Ref.create(loadTodos),
-  RefArray.create(Eq.struct<Todo>({ id: S.Eq, description: S.Eq, completed: B.Eq })),
-)
+export const Todos = Ref.kv(loadTodos)
 
-export const clearCompleted = Todos.filter(isActiveTodo)
+export const clearCompleted = pipe(Todos, RefArray.filter(isActiveTodo))
 
-export const removeTodoById = (id: TodoId) => Todos.filter((todo) => todo.id !== id)
+export const removeTodoById = (id: TodoId) =>
+  pipe(
+    Todos,
+    RefArray.filter((todo) => todo.id !== id),
+  )
 
-export const toggleAll = (completed: boolean) => Todos.endoMap((todo) => ({ ...todo, completed }))
+export const toggleAll = (completed: boolean) =>
+  pipe(
+    Todos,
+    RefArray.endoMap((todo) => ({ ...todo, completed })),
+  )
 
 export const updateTodoDescription = (todo: Todo, description: string) =>
-  Todos.endoMap((t) => (t.id === todo.id ? { ...t, description } : t))
+  pipe(
+    Todos,
+    RefArray.endoMap((t) => (t.id === todo.id ? { ...t, description } : t)),
+  )
 
 export const updateTodoCompleted = (todo: Todo, completed: boolean) =>
-  Todos.endoMap((t) => (t.id === todo.id ? { ...t, completed } : t))
+  pipe(
+    Todos,
+    RefArray.endoMap((t) => (t.id === todo.id ? { ...t, completed } : t)),
+  )
 
-export const createNewTodo = flow(createTodo, E.chainW(Todos.append))
+export const createNewTodo = flow(
+  createTodo,
+  E.chainW((todo) => pipe(Todos, RefArray.append(todo))),
+)
 
 export const filterTodos =
   (filter: TodoFilter) =>

@@ -47,6 +47,10 @@ export const alt = OT.alt(E.Monad)
  */
 export const ap = OT.ap(E.Apply)
 
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
 export const apW = ap as <E1, A>(
   fa: E.Env<E1, O.Option<A>>,
 ) => <E2, B>(fab: E.Env<E2, O.Option<(a: A) => B>>) => E.Env<E1 & E2, O.Option<B>>
@@ -189,12 +193,29 @@ export const Apply: Ap.Apply2<URI> = {
   ap,
 }
 
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
 export const apFirst = Ap.apFirst(Apply)
+
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
 export const apFirstW = apFirst as <E1, B>(
   second: EnvOption<E1, B>,
 ) => <E2, A>(first: EnvOption<E2, A>) => EnvOption<E1 & E2, A>
 
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
 export const apS = Ap.apS(Apply)
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
 export const apSW = apS as <N extends string, A, E1, B>(
   name: Exclude<N, keyof A>,
   fb: EnvOption<E1, B>,
@@ -202,18 +223,38 @@ export const apSW = apS as <N extends string, A, E1, B>(
   fa: EnvOption<E2, A>,
 ) => EnvOption<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
 export const apSecond = Ap.apSecond(Apply)
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
 export const apSecondW = apSecond as <E1, B>(
   second: EnvOption<E1, B>,
 ) => <E2, A>(first: EnvOption<E2, A>) => EnvOption<E1 & E2, B>
 
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
 export const apT = Ap.apT(Apply)
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
 export const apTW = apT as <E1, B>(
   fb: EnvOption<E1, B>,
 ) => <E2, A extends readonly unknown[]>(
   fas: EnvOption<E2, A>,
 ) => EnvOption<E1 & E2, readonly [...A, B]>
 
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
 export const getApplySemigroup = Ap.getApplySemigroup(Apply)
 
 /**

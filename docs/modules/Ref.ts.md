@@ -1,160 +1,74 @@
 ---
 title: Ref.ts
-nav_order: 41
+nav_order: 43
 parent: Modules
 ---
 
 ## Ref overview
 
-`Ref` is an abstraction for managing state-based applications using [Env](./Env.ts.md). It exposes
-an extensible get/set/delete API for managing keys to values. Every `Ref` is connected to an `Env`
-that will provide the default value lazily when first asked for or after being deleted previously.
+`Ref` is an abstraction for managing state-based applications using [Env](./Env.ts.md).
 
 The provided implementation will also send events containing all of the creations/updates/deletes
 occurring in real-time.
 
-Here's a small example of a Counter application to show how one might use Ref to create a simple
-counter application.
-
-```ts
-import * as E from '@typed/fp/Env'
-import * as RS from '@typed/fp/ReaderStream'
-import * as Ref from '@typed/fp/Ref'
-import * as S from '@typed/fp/Stream'
-import * as U from '@typed/fp/use'
-import { newDefaultScheduler } from '@most/scheduler'
-import * as F from 'fp-ts/function'
-import { html, render, Renderable } from 'uhtml'
-
-const rootElement: HTMLElement | null = document.getElementById('app')
-
-if (!rootElement) {
-  throw new Error('Unable to find element by #app')
-}
-
-// Creates a Reference to keep our Count
-// It requires no resources and tracks a number
-const Count: Ref.Reference<unknown, number> = Ref.create(E.of(0))
-
-// Actions to update our Count Reference - easily tested
-const increment: E.Env<Ref.Refs, number> = Count.update(F.flow(F.increment, E.of))
-
-const decrement: E.Env<Ref.Refs, number> = Count.update(
-  F.flow(
-    F.decrement,
-    E.of,
-    E.map((x) => Math.max(0, x)),
-  ),
-)
-
-// Creates a component which represents our counter
-const Counter: E.Env<Ref.Refs, Renderable> = F.pipe(
-  E.Do,
-  U.bindEnvK('dec', () => decrement),
-  U.bindEnvK('inc', () => increment),
-  E.bindW('count', () => Count.get),
-  E.map(
-    ({ dec, inc, count }) => html`<div>
-      <button onclick=${dec}>Decrement</button>
-      <span>Count: ${count}</span>
-      <button onclick=${inc}>Increment</button>
-    </div>`,
-  ),
-)
-
-const Main: RS.ReaderStream<Ref.Refs, HTMLElement> = F.pipe(
-  Counter,
-  Ref.sample, // Sample our Counter everytime there is a Ref update.
-  RS.scan(render, rootElement), // Render our application using 'uhtml'
-)
-
-// Provide Main with its required resources
-const stream: S.Stream<HTMLElement> = Main(Ref.refs())
-
-// Execute our Stream with a default scheduler
-S.runEffects(stream, newDefaultScheduler()).catch((error) => console.error(error))
-```
-
-It is likely worth noting that, by default, `Ref.make` is not referentially transparent. It will
-automatically generate a unique `Symbol()` on each invocation for the `Ref.id`. If you need
-referential transparency, be sure to provide your own `id`. This also applies to `Ref.create` and
-the `Context.create`.
-
-```ts
-const myRef = Ref.make(initial, {
-  id: 'MyId',
-})
-```
-
-Added in v0.9.2
+Added in v0.11.0
 
 ---
 
 <h2 class="text-delta">Table of contents</h2>
 
 - [Combinator](#combinator)
-  - [get](#get)
-  - [getAdapter](#getadapter)
-  - [getParentRefs](#getparentrefs)
-  - [getRefEvents](#getrefevents)
-  - [getRefs](#getrefs)
-  - [getSendEvent](#getsendevent)
-  - [has](#has)
-  - [listenTo](#listento)
-  - [listenToValues](#listentovalues)
+  - [ap](#ap)
+  - [apFirst](#apfirst)
+  - [apFirstW](#apfirstw)
+  - [apS](#aps)
+  - [apSW](#apsw)
+  - [apSecond](#apsecond)
+  - [apSecondW](#apsecondw)
+  - [apT](#apt)
+  - [apTW](#aptw)
+  - [chainEnvK](#chainenvk)
+  - [chainFirstEnvK](#chainfirstenvk)
+  - [chainFirstIOK](#chainfirstiok)
+  - [chainFirstReaderK](#chainfirstreaderk)
+  - [chainFirstResumeK](#chainfirstresumek)
+  - [chainFirstTaskK](#chainfirsttaskk)
+  - [chainIOK](#chainiok)
+  - [chainReaderK](#chainreaderk)
+  - [chainResumeK](#chainresumek)
+  - [chainTaskK](#chaintaskk)
+  - [combineStruct](#combinestruct)
+  - [compose](#compose)
+  - [local](#local)
+  - [map](#map)
+  - [promap](#promap)
   - [provideAll](#provideall)
   - [provideSome](#providesome)
-  - [remove](#remove)
-  - [sample](#sample)
-  - [sendEvent](#sendevent)
-  - [set](#set)
-  - [update](#update)
   - [useAll](#useall)
   - [useSome](#usesome)
 - [Constructor](#constructor)
-  - [create](#create)
-  - [make](#make)
-  - [toReference](#toreference)
-- [Deconstructor](#deconstructor)
-  - [match](#match)
-  - [matchW](#matchw)
-- [Environment](#environment)
-  - [Events (interface)](#events-interface)
-  - [Get (interface)](#get-interface)
-  - [Has (interface)](#has-interface)
-  - [ParentRefs (interface)](#parentrefs-interface)
-  - [Refs (type alias)](#refs-type-alias)
-  - [Remove (interface)](#remove-interface)
-  - [Set (interface)](#set-interface)
-- [Environment Constructor](#environment-constructor)
-  - [refs](#refs)
+  - [fromKV](#fromkv)
+  - [kv](#kv)
 - [Instance](#instance)
+  - [Apply](#apply)
+  - [Functor](#functor)
+  - [Profunctor](#profunctor)
   - [Provide](#provide)
   - [ProvideAll](#provideall)
   - [ProvideSome](#providesome)
+  - [Semigroupoid](#semigroupoid)
   - [UseAll](#useall)
   - [UseSome](#usesome)
+- [Instance Constructor](#instance-constructor)
+  - [getFromKV](#getfromkv)
 - [Model](#model)
-  - [Adapter (type alias)](#adapter-type-alias)
-  - [Created (interface)](#created-interface)
-  - [Event (type alias)](#event-type-alias)
-  - [Of (interface)](#of-interface)
   - [Ref (interface)](#ref-interface)
-  - [Reference (interface)](#reference-interface)
-  - [Removed (interface)](#removed-interface)
-  - [Updated (interface)](#updated-interface)
-- [Options](#options)
-  - [RefOptions (type alias)](#refoptions-type-alias)
-  - [RefsOptions (type alias)](#refsoptions-type-alias)
-- [Refinement](#refinement)
-  - [isCreated](#iscreated)
-  - [isRemoved](#isremoved)
-  - [isUpdated](#isupdated)
 - [Type-level](#type-level)
-  - [Env (type alias)](#env-type-alias)
-  - [EnvOf (type alias)](#envof-type-alias)
-  - [ReaderStream (type alias)](#readerstream-type-alias)
-  - [ValueOf (type alias)](#valueof-type-alias)
+  - [InputOf (type alias)](#inputof-type-alias)
+  - [OutputOf (type alias)](#outputof-type-alias)
+  - [RequirementsOf (type alias)](#requirementsof-type-alias)
+- [Typeclass Constructor](#typeclass-constructor)
+  - [getApplySemigroup](#getapplysemigroup)
 - [URI](#uri)
   - [URI](#uri-1)
   - [URI (type alias)](#uri-type-alias)
@@ -163,112 +77,284 @@ Added in v0.9.2
 
 # Combinator
 
-## get
+## ap
 
 **Signature**
 
 ```ts
-export declare const get: <E, A>(ref: Ref<E, A>) => E.Env<E & Get, A>
+export declare const ap: <E1, I, A>(
+  fa: Ref<E1, I, A>,
+) => <E2, B>(fab: Ref<E2, I, (value: A) => B>) => Ref<E1 & E2, I, B>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
-## getAdapter
+## apFirst
 
 **Signature**
 
 ```ts
-export declare const getAdapter: E.Env<
-  Events,
-  readonly [(event: Event<any, any>) => void, Stream<Event<any, any>>]
->
+export declare const apFirst: <R, E, B>(
+  second: Ref<R, E, B>,
+) => <A>(first: Ref<R, E, A>) => Ref<R, E, A>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
-## getParentRefs
+## apFirstW
 
 **Signature**
 
 ```ts
-export declare const getParentRefs: E.Env<ParentRefs, O.Option<Refs>>
+export declare const apFirstW: <R1, E, B>(
+  second: Ref<R1, E, B>,
+) => <R2, A>(first: Ref<R2, E, A>) => Ref<R1 & R2, E, A>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
-## getRefEvents
+## apS
 
 **Signature**
 
 ```ts
-export declare const getRefEvents: RS.ReaderStream<Events, Event<any, any>>
+export declare const apS: <N, A, R, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: Ref<R, E, B>,
+) => (fa: Ref<R, E, A>) => Ref<R, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
-## getRefs
+## apSW
 
 **Signature**
 
 ```ts
-export declare const getRefs: E.Env<Refs, Refs>
+export declare const apSW: <N extends string, A, R1, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: Ref<R1, E, B>,
+) => <R2>(
+  fa: Ref<R2, E, A>,
+) => Ref<R1 & R2, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
-## getSendEvent
+## apSecond
 
 **Signature**
 
 ```ts
-export declare const getSendEvent: E.Env<Events, (event: Event<any, any>) => void>
+export declare const apSecond: <R, E, B>(
+  second: Ref<R, E, B>,
+) => <A>(first: Ref<R, E, A>) => Ref<R, E, B>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
-## has
+## apSecondW
 
 **Signature**
 
 ```ts
-export declare const has: <E, A>(ref: Ref<E, A>) => E.Env<Has, boolean>
+export declare const apSecondW: <R1, E, B>(
+  second: Ref<R1, E, B>,
+) => <R2, A>(first: Ref<R2, E, A>) => Ref<R1 & R2, E, B>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
-## listenTo
+## apT
 
 **Signature**
 
 ```ts
-export declare const listenTo: <E, A>(ref: Ref<E, A>) => RS.ReaderStream<Events, Event<E, A>>
+export declare const apT: <R, E, B>(
+  fb: Ref<R, E, B>,
+) => <A>(fas: Ref<R, E, A>) => Ref<R, E, readonly [...A, B]>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
-## listenToValues
+## apTW
 
 **Signature**
 
 ```ts
-export declare const listenToValues: <E, A>(
-  ref: Ref<E, A>,
-) => RS.ReaderStream<E & Events, O.Option<A>>
+export declare const apTW: <R1, E, B>(
+  fb: Ref<R1, E, B>,
+) => <R2, A extends readonly unknown[]>(fas: Ref<R2, E, A>) => Ref<R1 & R2, E, readonly [...A, B]>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
+
+## chainEnvK
+
+**Signature**
+
+```ts
+export declare function chainEnvK<A, E1, B>(f: (value: A) => E.Env<E1, B>)
+```
+
+Added in v0.11.0
+
+## chainFirstEnvK
+
+**Signature**
+
+```ts
+export declare function chainFirstEnvK<A, E1, B>(f: (value: A) => E.Env<E1, B>)
+```
+
+Added in v0.11.0
+
+## chainFirstIOK
+
+**Signature**
+
+```ts
+export declare function chainFirstIOK<A, B>(f: (value: A) => IO<B>)
+```
+
+Added in v0.11.0
+
+## chainFirstReaderK
+
+**Signature**
+
+```ts
+export declare function chainFirstReaderK<A, E1, B>(f: (value: A) => Reader<E1, B>)
+```
+
+Added in v0.11.0
+
+## chainFirstResumeK
+
+**Signature**
+
+```ts
+export declare function chainFirstResumeK<A, B>(f: (value: A) => Resume<B>)
+```
+
+Added in v0.11.0
+
+## chainFirstTaskK
+
+**Signature**
+
+```ts
+export declare function chainFirstTaskK<A, B>(f: (value: A) => Task<B>)
+```
+
+Added in v0.11.0
+
+## chainIOK
+
+**Signature**
+
+```ts
+export declare function chainIOK<A, B>(f: (value: A) => IO<B>)
+```
+
+Added in v0.11.0
+
+## chainReaderK
+
+**Signature**
+
+```ts
+export declare function chainReaderK<A, E1, B>(f: (value: A) => Reader<E1, B>)
+```
+
+Added in v0.11.0
+
+## chainResumeK
+
+**Signature**
+
+```ts
+export declare function chainResumeK<A, B>(f: (value: A) => Resume<B>)
+```
+
+Added in v0.11.0
+
+## chainTaskK
+
+**Signature**
+
+```ts
+export declare function chainTaskK<A, B>(f: (value: A) => Task<B>)
+```
+
+Added in v0.11.0
+
+## combineStruct
+
+**Signature**
+
+```ts
+export declare function combineStruct<S extends AnyRefStruct>(
+  properties: S,
+): Ref<RefStructEnv<S>, RefStructInput<S>, RefStructOutput<S>>
+```
+
+Added in v0.11.0
+
+## compose
+
+**Signature**
+
+```ts
+export declare const compose: <E2, A, O>(
+  second: Ref<E2, A, O>,
+) => <E1, I>(first: Ref<E1, I, A>) => Ref<E1 & E2, I, O>
+```
+
+Added in v0.11.0
+
+## local
+
+**Signature**
+
+```ts
+export declare const local: <A, B>(f: (value: A) => B) => <E, C>(ref: Ref<E, B, C>) => Ref<E, A, C>
+```
+
+Added in v0.11.0
+
+## map
+
+**Signature**
+
+```ts
+export declare const map: <A, B>(f: (value: A) => B) => <E, I>(ref: Ref<E, I, A>) => Ref<E, I, B>
+```
+
+Added in v0.11.0
+
+## promap
+
+**Signature**
+
+```ts
+export declare const promap: <B, A, C, D>(
+  f: (value: B) => A,
+  g: (value: C) => D,
+) => <E>(ref: Ref<E, A, C>) => Ref<E, B, D>
+```
+
+Added in v0.11.0
 
 ## provideAll
 
 **Signature**
 
 ```ts
-export declare const provideAll: <E>(
-  provided: E,
-) => <A>(ref: Reference<E, A>) => Reference<unknown, A>
+export declare const provideAll: <E>(provided: E) => <A, B>(ref: Ref<E, A, B>) => Ref<unknown, A, B>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 ## provideSome
 
@@ -277,78 +363,20 @@ Added in v0.9.2
 ```ts
 export declare const provideSome: <E1>(
   provided: E1,
-) => <E2, A>(ref: Reference<E1 & E2, A>) => Reference<E2, A>
+) => <E2, A, B>(ref: Ref<E1 & E2, A, B>) => Ref<E2, A, B>
 ```
 
-Added in v0.9.2
-
-## remove
-
-**Signature**
-
-```ts
-export declare const remove: <E, A>(ref: Ref<E, A>) => E.Env<E & Remove, O.Option<A>>
-```
-
-Added in v0.9.2
-
-## sample
-
-Sample an Env with the latest references when updates have occured.
-
-**Signature**
-
-```ts
-export declare const sample: <E, A>(
-  env: Env<E, A>,
-) => RS.ReaderStream<E & Get & Has & Set & Remove & Events & ParentRefs, A>
-```
-
-Added in v0.9.2
-
-## sendEvent
-
-**Signature**
-
-```ts
-export declare const sendEvent: <E, A>(event: Event<E, A>) => E.Env<Events, void>
-```
-
-Added in v0.9.2
-
-## set
-
-**Signature**
-
-```ts
-export declare const set: <E, A>(ref: Ref<E, A>) => (value: A) => E.Env<E & Set, A>
-```
-
-Added in v0.9.2
-
-## update
-
-**Signature**
-
-```ts
-export declare const update: <E1, A>(
-  ref: Ref<E1, A>,
-) => <E2>(f: (value: A) => E.Env<E2, A>) => E.Env<E1 & Set & E2 & Get, A>
-```
-
-Added in v0.9.2
+Added in v0.11.0
 
 ## useAll
 
 **Signature**
 
 ```ts
-export declare const useAll: <E1>(
-  provided: E1,
-) => <A>(ref: Reference<E1, A>) => Reference<unknown, A>
+export declare const useAll: <E1>(provided: E1) => <A, B>(ref: Ref<E1, A, B>) => Ref<unknown, A, B>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 ## useSome
 
@@ -357,442 +385,204 @@ Added in v0.9.2
 ```ts
 export declare const useSome: <E1>(
   provided: E1,
-) => <E2, A>(ref: Reference<E1 & E2, A>) => Reference<E2, A>
+) => <E2, A, B>(ref: Ref<E1 & E2, A, B>) => Ref<E2, A, B>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 # Constructor
 
-## create
+## fromKV
 
 **Signature**
 
 ```ts
-export declare const create: <E, A>(
+export declare const fromKV: <K, E, A>(
+  kv: KV.KV<K, E, A>,
+) => KV.KV<K, E, A> & Ref<E & KV.Env<K>, A, A>
+```
+
+Added in v0.11.0
+
+## kv
+
+**Signature**
+
+```ts
+export declare const kv: <E, A, K = symbol>(
   initial: E.Env<E, A>,
-  options?: RefOptions<A> | undefined,
-) => Reference<E, A>
+  options?: KV.Options<K, A> | undefined,
+) => KV.KV<K, E, A> & Ref<E & KV.Env<K>, A, A>
 ```
 
-Added in v0.9.2
-
-## make
-
-**Signature**
-
-```ts
-export declare function make<E, A>(initial: E.Env<E, A>, options: RefOptions<A> = {}): Ref<E, A>
-```
-
-Added in v0.9.2
-
-## toReference
-
-**Signature**
-
-```ts
-export declare function toReference<E, A>(ref: Ref<E, A>): Reference<E, A>
-```
-
-Added in v0.9.2
-
-# Deconstructor
-
-## match
-
-**Signature**
-
-```ts
-export declare const match: <A, B, C>(
-  onCreated: (value: A, ref: Ref<B, A>) => C,
-  onUpdated: (previousValue: A, value: A, ref: Ref<B, A>) => C,
-  onDeleted: (ref: Ref<B, A>) => C,
-) => (event: Event<B, A>) => C
-```
-
-Added in v0.9.2
-
-## matchW
-
-**Signature**
-
-```ts
-export declare const matchW: <A, B, C, D, E>(
-  onCreated: (value: A, ref: Ref<B, A>) => C,
-  onUpdated: (previousValue: A, value: A, ref: Ref<B, A>) => D,
-  onDeleted: (ref: Ref<B, A>) => E,
-) => (event: Event<B, A>) => C | D | E
-```
-
-Added in v0.9.2
-
-# Environment
-
-## Events (interface)
-
-**Signature**
-
-```ts
-export interface Events {
-  readonly refEvents: Adapter
-}
-```
-
-Added in v0.9.2
-
-## Get (interface)
-
-**Signature**
-
-```ts
-export interface Get {
-  readonly getRef: <E, A>(ref: Ref<E, A>) => E.Env<E, A>
-}
-```
-
-Added in v0.9.2
-
-## Has (interface)
-
-**Signature**
-
-```ts
-export interface Has {
-  readonly hasRef: <E, A>(ref: Ref<E, A>) => E.Of<boolean>
-}
-```
-
-Added in v0.9.2
-
-## ParentRefs (interface)
-
-**Signature**
-
-```ts
-export interface ParentRefs {
-  readonly parentRefs: O.Option<Refs>
-}
-```
-
-Added in v0.9.2
-
-## Refs (type alias)
-
-**Signature**
-
-```ts
-export type Refs = Get & Has & Set & Remove & Events & ParentRefs
-```
-
-Added in v0.9.2
-
-## Remove (interface)
-
-**Signature**
-
-```ts
-export interface Remove {
-  readonly removeRef: <E, A>(ref: Ref<E, A>) => E.Env<E, O.Option<A>>
-}
-```
-
-Added in v0.9.2
-
-## Set (interface)
-
-**Signature**
-
-```ts
-export interface Set {
-  readonly setRef: <E, A>(ref: Ref<E, A>, value: A) => E.Env<E, A>
-}
-```
-
-Added in v0.9.2
-
-# Environment Constructor
-
-## refs
-
-**Signature**
-
-```ts
-export declare function refs(options: RefsOptions = {}): Refs
-```
-
-Added in v0.9.2
+Added in v0.11.0
 
 # Instance
+
+## Apply
+
+**Signature**
+
+```ts
+export declare const Apply: Ap.Apply3<'@typed/fp/Ref'>
+```
+
+Added in v0.11.0
+
+## Functor
+
+**Signature**
+
+```ts
+export declare const Functor: Functor3<'@typed/fp/Ref'>
+```
+
+Added in v0.11.0
+
+## Profunctor
+
+**Signature**
+
+```ts
+export declare const Profunctor: Profunctor3<'@typed/fp/Ref'>
+```
+
+Added in v0.11.0
 
 ## Provide
 
 **Signature**
 
 ```ts
-export declare const Provide: P.Provide2<'@typed/fp/Ref'>
+export declare const Provide: P.Provide3<'@typed/fp/Ref'>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 ## ProvideAll
 
 **Signature**
 
 ```ts
-export declare const ProvideAll: P.ProvideAll2<'@typed/fp/Ref'>
+export declare const ProvideAll: P.ProvideAll3<'@typed/fp/Ref'>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 ## ProvideSome
 
 **Signature**
 
 ```ts
-export declare const ProvideSome: P.ProvideSome2<'@typed/fp/Ref'>
+export declare const ProvideSome: P.ProvideSome3<'@typed/fp/Ref'>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
+
+## Semigroupoid
+
+**Signature**
+
+```ts
+export declare const Semigroupoid: Semigroupoid3<'@typed/fp/Ref'>
+```
+
+Added in v0.11.0
 
 ## UseAll
 
 **Signature**
 
 ```ts
-export declare const UseAll: P.UseAll2<'@typed/fp/Ref'>
+export declare const UseAll: P.UseAll3<'@typed/fp/Ref'>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 ## UseSome
 
 **Signature**
 
 ```ts
-export declare const UseSome: P.UseSome2<'@typed/fp/Ref'>
+export declare const UseSome: P.UseSome3<'@typed/fp/Ref'>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
+
+# Instance Constructor
+
+## getFromKV
+
+**Signature**
+
+```ts
+export declare const getFromKV: <K>() => FKV.FromKV2<'@typed/fp/Ref', KV.Env<K>>
+```
+
+Added in v0.11.0
 
 # Model
-
-## Adapter (type alias)
-
-**Signature**
-
-```ts
-export type Adapter = A.Adapter<Event<any, any>>
-```
-
-Added in v0.9.2
-
-## Created (interface)
-
-**Signature**
-
-```ts
-export interface Created<E, A> {
-  readonly _tag: 'Created'
-  readonly ref: Ref<E, A>
-  readonly value: A
-  readonly refs: O.Option<Refs>
-}
-```
-
-Added in v0.9.2
-
-## Event (type alias)
-
-**Signature**
-
-```ts
-export type Event<E, A> = Created<E, A> | Updated<E, A> | Removed<E, A>
-```
-
-Added in v0.9.2
-
-## Of (interface)
-
-**Signature**
-
-```ts
-export interface Of<A> extends Ref<unknown, A> {}
-```
-
-Added in v0.9.2
 
 ## Ref (interface)
 
 **Signature**
 
 ```ts
-export interface Ref<E, A> extends Eq<A> {
-  readonly id: PropertyKey
-  readonly initial: E.Env<E, A>
+export interface Ref<E, I, O = I> {
+  readonly get: E.Env<E, O>
+  readonly has: E.Env<E, boolean>
+  readonly set: (input: I) => E.Env<E, O>
+  readonly update: <E2>(f: (value: O) => E.Env<E2, I>) => E.Env<E & E2, O>
+  readonly remove: E.Env<E, O.Option<O>>
+  readonly values: RS.ReaderStream<E, O.Option<O>>
 }
 ```
 
-Added in v0.9.2
-
-## Reference (interface)
-
-**Signature**
-
-```ts
-export interface Reference<E, A> extends Ref<E, A> {
-  readonly get: E.Env<E & Refs, A>
-  readonly has: E.Env<Refs, boolean>
-  readonly set: (value: A) => E.Env<E & Refs, A>
-  readonly update: <E2>(f: (value: A) => E.Env<E2, A>) => E.Env<E & E2 & Refs, A>
-  readonly remove: E.Env<E & Refs, O.Option<A>>
-  readonly listen: RS.ReaderStream<Refs, Event<E, A>>
-  readonly values: RS.ReaderStream<E & Refs, O.Option<A>>
-}
-```
-
-Added in v0.9.2
-
-## Removed (interface)
-
-**Signature**
-
-```ts
-export interface Removed<E, A> {
-  readonly _tag: 'Removed'
-  readonly ref: Ref<E, A>
-  readonly refs: O.Option<Refs>
-}
-```
-
-Added in v0.9.2
-
-## Updated (interface)
-
-**Signature**
-
-```ts
-export interface Updated<E, A> {
-  readonly _tag: 'Updated'
-  readonly ref: Ref<E, A>
-  readonly previousValue: A
-  readonly value: A
-  readonly refs: O.Option<Refs>
-}
-```
-
-Added in v0.9.2
-
-# Options
-
-## RefOptions (type alias)
-
-**Signature**
-
-```ts
-export type RefOptions<A> = {
-  readonly eq?: Eq<A>
-  readonly id?: PropertyKey
-}
-```
-
-Added in v0.9.2
-
-## RefsOptions (type alias)
-
-**Signature**
-
-```ts
-export type RefsOptions = {
-  readonly initial?: Iterable<readonly [any, any]>
-  readonly refEvents?: Adapter
-  readonly parentRefs?: Refs
-}
-```
-
-Added in v0.9.2
-
-# Refinement
-
-## isCreated
-
-**Signature**
-
-```ts
-export declare const isCreated: <E, A>(event: Event<E, A>) => event is Created<E, A>
-```
-
-Added in v0.9.2
-
-## isRemoved
-
-**Signature**
-
-```ts
-export declare const isRemoved: <E, A>(event: Event<E, A>) => event is Removed<E, A>
-```
-
-Added in v0.9.2
-
-## isUpdated
-
-**Signature**
-
-```ts
-export declare const isUpdated: <E, A>(event: Event<E, A>) => event is Updated<E, A>
-```
-
-Added in v0.9.2
+Added in v0.11.0
 
 # Type-level
 
-## Env (type alias)
-
-Creates a union of Envs for all the possible combinations for Ref environments.
+## InputOf (type alias)
 
 **Signature**
 
 ```ts
-export type Env<E, A> =
-  | E.Env<E, A>
-  | GetEnv<CombinationsOf<E, [Get, Has, Set, Remove, Events, ParentRefs]>, A>
+export type InputOf<A> = [A] extends [Ref<any, infer R, any>] ? R : never
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
-## EnvOf (type alias)
+## OutputOf (type alias)
 
 **Signature**
 
 ```ts
-export type EnvOf<A> = [A] extends [Ref<infer R, any>] ? R : never
+export type OutputOf<A> = [A] extends [Ref<any, any, infer R>] ? R : never
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
-## ReaderStream (type alias)
-
-Creates a union of ReaderStreams for all the possible combinations for Ref environments.
+## RequirementsOf (type alias)
 
 **Signature**
 
 ```ts
-export type ReaderStream<E, A> =
-  | RS.ReaderStream<E, A>
-  | GetReaderStream<CombinationsOf<E, [Get, Has, Set, Remove, Events, ParentRefs]>, A>
+export type RequirementsOf<A> = [A] extends [Ref<infer R, any, any>] ? R : never
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
-## ValueOf (type alias)
+# Typeclass Constructor
+
+## getApplySemigroup
 
 **Signature**
 
 ```ts
-export type ValueOf<A> = [A] extends [Ref<any, infer R>] ? R : never
+export declare const getApplySemigroup: <A, R, E>(S: Semigroup<A>) => Semigroup<Ref<R, E, A>>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 # URI
 
@@ -804,7 +594,7 @@ Added in v0.9.2
 export declare const URI: '@typed/fp/Ref'
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 ## URI (type alias)
 
@@ -814,4 +604,4 @@ Added in v0.9.2
 export type URI = typeof URI
 ```
 
-Added in v0.9.2
+Added in v0.11.0

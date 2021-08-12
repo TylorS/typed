@@ -1,6 +1,6 @@
 ---
 title: ReaderStream.ts
-nav_order: 36
+nav_order: 38
 parent: Modules
 ---
 
@@ -56,6 +56,7 @@ Added in v0.9.2
   - [collectEvents](#collectevents)
   - [combine](#combine)
   - [combineAll](#combineall)
+  - [combineStruct](#combinestruct)
   - [compact](#compact)
   - [concatMap](#concatmap)
   - [constant](#constant)
@@ -708,6 +709,20 @@ export declare const combineAll: <A extends readonly ReaderStream<any, any>[]>(
 ```
 
 Added in v0.9.2
+
+## combineStruct
+
+**Signature**
+
+```ts
+export declare const combineStruct: <
+  Props extends Readonly<Record<string, ReaderStream<any, any>>>,
+>(
+  props: Props,
+) => ReaderStream<unknown, { readonly [K in keyof Props]: ValueOf<Props[K]> }>
+```
+
+Added in v0.11.0
 
 ## compact
 

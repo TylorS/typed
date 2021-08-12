@@ -17,6 +17,15 @@ Added in v0.9.2
 - [Combinator](#combinator)
   - [alt](#alt)
   - [ap](#ap)
+  - [apFirst](#apfirst)
+  - [apFirstW](#apfirstw)
+  - [apS](#aps)
+  - [apSW](#apsw)
+  - [apSecond](#apsecond)
+  - [apSecondW](#apsecondw)
+  - [apT](#apt)
+  - [apTW](#aptw)
+  - [apW](#apw)
   - [chain](#chain)
   - [chainEnvK](#chainenvk)
   - [chainFirstEnvK](#chainfirstenvk)
@@ -26,6 +35,7 @@ Added in v0.9.2
   - [chainReaderK](#chainreaderk)
   - [chainRec](#chainrec)
   - [chainResumeK](#chainresumek)
+  - [getApplySemigroup](#getapplysemigroup)
   - [getOrElseEW](#getorelseew)
   - [map](#map)
 - [Constructor](#constructor)
@@ -105,6 +115,122 @@ export declare const ap: <E, A>(
 ```
 
 Added in v0.9.2
+
+## apFirst
+
+**Signature**
+
+```ts
+export declare const apFirst: <E, B>(
+  second: EnvOption<E, B>,
+) => <A>(first: EnvOption<E, A>) => EnvOption<E, A>
+```
+
+Added in v0.11.0
+
+## apFirstW
+
+**Signature**
+
+```ts
+export declare const apFirstW: <E1, B>(
+  second: EnvOption<E1, B>,
+) => <E2, A>(first: EnvOption<E2, A>) => EnvOption<E1 & E2, A>
+```
+
+Added in v0.11.0
+
+## apS
+
+**Signature**
+
+```ts
+export declare const apS: <N, A, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: EnvOption<E, B>,
+) => (
+  fa: EnvOption<E, A>,
+) => EnvOption<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.11.0
+
+## apSW
+
+**Signature**
+
+```ts
+export declare const apSW: <N extends string, A, E1, B>(
+  name: Exclude<N, keyof A>,
+  fb: EnvOption<E1, B>,
+) => <E2>(
+  fa: EnvOption<E2, A>,
+) => EnvOption<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.11.0
+
+## apSecond
+
+**Signature**
+
+```ts
+export declare const apSecond: <E, B>(
+  second: EnvOption<E, B>,
+) => <A>(first: EnvOption<E, A>) => EnvOption<E, B>
+```
+
+Added in v0.11.0
+
+## apSecondW
+
+**Signature**
+
+```ts
+export declare const apSecondW: <E1, B>(
+  second: EnvOption<E1, B>,
+) => <E2, A>(first: EnvOption<E2, A>) => EnvOption<E1 & E2, B>
+```
+
+Added in v0.11.0
+
+## apT
+
+**Signature**
+
+```ts
+export declare const apT: <E, B>(
+  fb: EnvOption<E, B>,
+) => <A>(fas: EnvOption<E, A>) => EnvOption<E, readonly [...A, B]>
+```
+
+Added in v0.11.0
+
+## apTW
+
+**Signature**
+
+```ts
+export declare const apTW: <E1, B>(
+  fb: EnvOption<E1, B>,
+) => <E2, A extends readonly unknown[]>(
+  fas: EnvOption<E2, A>,
+) => EnvOption<E1 & E2, readonly [...A, B]>
+```
+
+Added in v0.11.0
+
+## apW
+
+**Signature**
+
+```ts
+export declare const apW: <E1, A>(
+  fa: E.Env<E1, O.Option<A>>,
+) => <E2, B>(fab: E.Env<E2, O.Option<(a: A) => B>>) => E.Env<E1 & E2, O.Option<B>>
+```
+
+Added in v0.11.0
 
 ## chain
 
@@ -213,6 +339,16 @@ export declare const chainResumeK: <A, B>(
 ```
 
 Added in v0.9.2
+
+## getApplySemigroup
+
+**Signature**
+
+```ts
+export declare const getApplySemigroup: <A, E>(S: Semigroup<A>) => Semigroup<EnvOption<E, A>>
+```
+
+Added in v0.11.0
 
 ## getOrElseEW
 
@@ -504,7 +640,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const Apply: Apply2<'@typed/fp/EnvOption'>
+export declare const Apply: Ap.Apply2<'@typed/fp/EnvOption'>
 ```
 
 Added in v0.9.2

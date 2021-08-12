@@ -113,10 +113,6 @@
       "require": "./cjs/Context.js",
       "import": "./esm/Context.js"
     },
-    "./Context2": {
-      "require": "./cjs/Context2.js",
-      "import": "./esm/Context2.js"
-    },
     "./Data": {
       "require": "./cjs/Data.js",
       "import": "./esm/Data.js"
@@ -257,29 +253,13 @@
       "require": "./cjs/Ref.js",
       "import": "./esm/Ref.js"
     },
-    "./Ref2": {
-      "require": "./cjs/Ref2.js",
-      "import": "./esm/Ref2.js"
-    },
     "./RefAdapter": {
       "require": "./cjs/RefAdapter.js",
       "import": "./esm/RefAdapter.js"
     },
-    "./RefArray": {
-      "require": "./cjs/RefArray.js",
-      "import": "./esm/RefArray.js"
-    },
     "./RefDisposable": {
       "require": "./cjs/RefDisposable.js",
       "import": "./esm/RefDisposable.js"
-    },
-    "./RefMap": {
-      "require": "./cjs/RefMap.js",
-      "import": "./esm/RefMap.js"
-    },
-    "./RefMapM": {
-      "require": "./cjs/RefMapM.js",
-      "import": "./esm/RefMapM.js"
     },
     "./Resume": {
       "require": "./cjs/Resume.js",
@@ -376,10 +356,6 @@
     "./use": {
       "require": "./cjs/use.js",
       "import": "./esm/use.js"
-    },
-    "./use2": {
-      "require": "./cjs/use2.js",
-      "import": "./esm/use2.js"
     }
   }
 }

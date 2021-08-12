@@ -1,6 +1,6 @@
 ---
 title: ReaderStreamOption.ts
-nav_order: 38
+nav_order: 40
 parent: Modules
 ---
 
@@ -18,6 +18,15 @@ Added in v0.9.2
 - [Combinator](#combinator)
   - [alt](#alt)
   - [ap](#ap)
+  - [apFirst](#apfirst)
+  - [apFirstW](#apfirstw)
+  - [apS](#aps)
+  - [apSW](#apsw)
+  - [apSecond](#apsecond)
+  - [apSecondW](#apsecondw)
+  - [apT](#apt)
+  - [apTW](#aptw)
+  - [apW](#apw)
   - [askAndProvide](#askandprovide)
   - [askAndUse](#askanduse)
   - [chain](#chain)
@@ -123,6 +132,124 @@ export declare const ap: <E, A>(
 ```
 
 Added in v0.9.2
+
+## apFirst
+
+**Signature**
+
+```ts
+export declare const apFirst: <E, B>(
+  second: ReaderStreamOption<E, B>,
+) => <A>(first: ReaderStreamOption<E, A>) => ReaderStreamOption<E, A>
+```
+
+Added in v0.11.0
+
+## apFirstW
+
+**Signature**
+
+```ts
+export declare const apFirstW: <E1, B>(
+  second: ReaderStreamOption<E1, B>,
+) => <E2, A>(first: ReaderStreamOption<E2, A>) => ReaderStreamOption<E1 & E2, A>
+```
+
+Added in v0.11.0
+
+## apS
+
+**Signature**
+
+```ts
+export declare const apS: <N, A, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: ReaderStreamOption<E, B>,
+) => (
+  fa: ReaderStreamOption<E, A>,
+) => ReaderStreamOption<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.11.0
+
+## apSW
+
+**Signature**
+
+```ts
+export declare const apSW: <N extends string, A, E1, B>(
+  name: Exclude<N, keyof A>,
+  fb: ReaderStreamOption<E1, B>,
+) => <E2>(
+  fa: ReaderStreamOption<E2, A>,
+) => ReaderStreamOption<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.11.0
+
+## apSecond
+
+**Signature**
+
+```ts
+export declare const apSecond: <E, B>(
+  second: ReaderStreamOption<E, B>,
+) => <A>(first: ReaderStreamOption<E, A>) => ReaderStreamOption<E, B>
+```
+
+Added in v0.11.0
+
+## apSecondW
+
+**Signature**
+
+```ts
+export declare const apSecondW: <E1, B>(
+  second: ReaderStreamOption<E1, B>,
+) => <E2, A>(first: ReaderStreamOption<E2, A>) => ReaderStreamOption<E1 & E2, B>
+```
+
+Added in v0.11.0
+
+## apT
+
+**Signature**
+
+```ts
+export declare const apT: <E, B>(
+  fb: ReaderStreamOption<E, B>,
+) => <A>(fas: ReaderStreamOption<E, A>) => ReaderStreamOption<E, readonly [...A, B]>
+```
+
+Added in v0.11.0
+
+## apTW
+
+**Signature**
+
+```ts
+export declare const apTW: <E1, B>(
+  fb: ReaderStreamOption<E1, B>,
+) => <E2, A extends readonly unknown[]>(
+  fas: ReaderStreamOption<E2, A>,
+) => ReaderStreamOption<E1 & E2, readonly [...A, B]>
+```
+
+Added in v0.11.0
+
+## apW
+
+**Signature**
+
+```ts
+export declare const apW: <E1, A>(
+  fa: RS.ReaderStream<E1, O.Option<A>>,
+) => <E2, B>(
+  fab: RS.ReaderStream<E2, O.Option<(a: A) => B>>,
+) => RS.ReaderStream<E1 & E2, O.Option<B>>
+```
+
+Added in v0.11.0
 
 ## askAndProvide
 
@@ -729,7 +856,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const Apply: Apply2<'@typed/fp/ReaderStreamOption'>
+export declare const Apply: Ap.Apply2<'@typed/fp/ReaderStreamOption'>
 ```
 
 Added in v0.9.2

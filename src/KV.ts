@@ -7,17 +7,20 @@
  * occurring in real-time.
  * @since 0.11.0
  */
-import { Eq } from 'fp-ts/Eq'
+import { Eq, EqStrict } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
+import * as RM from 'fp-ts/ReadonlyMap'
 import { not } from 'fp-ts/Refinement'
 import { fst, snd } from 'fp-ts/Tuple2'
 
 import * as A from './Adapter'
+import * as D from './Disposable'
 import * as E from './Env'
 import * as EE from './EnvEither'
-import { deepEqualsEq } from './Eq'
+import { alwaysEqualsEq, deepEqualsEq } from './Eq'
 import * as O from './Option'
 import * as RS from './ReaderStream'
+import * as R from './Resume'
 
 /**
  * @since 0.11.0
@@ -214,7 +217,7 @@ export const listenToValues = <K, E, A>(
  * @category Environment
  */
 export interface ParentKVEnv<K> {
-  readonly parentKVEnv: O.Option<KVEnv<K>>
+  readonly parentKVEnv: O.Option<Env<K>>
 }
 
 /**
@@ -230,11 +233,11 @@ export const getParentKVs = <K>() => E.asks((e: ParentKVEnv<K>) => e.parentKVEnv
  * @since 0.11.0
  * @category Combinator
  */
-export const findKVProvider = <K, E, A>(ref: KV<K, E, A>): E.Env<KVEnv<K>, KVEnv<K>> => {
+export const findKVProvider = <K, E, A>(ref: KV<K, E, A>): E.Env<Env<K>, Env<K>> => {
   const check = pipe(
     E.Do,
     E.bindW('hasRef', () => has(ref)),
-    E.bindW('env', () => getKVEnv<K>()),
+    E.bindW('env', () => getEnv<K>()),
   )
 
   return pipe(
@@ -282,15 +285,15 @@ export const withProviderStream =
  * @since 0.11.0
  * @category Environment
  */
-export interface KVEnv<K> extends Get<K>, Has<K>, Set<K>, Remove<K>, Events<K>, ParentKVEnv<K> {}
+export interface Env<K> extends Get<K>, Has<K>, Set<K>, Remove<K>, Events<K>, ParentKVEnv<K> {}
 
 /**
  * @since 0.11.0
  * @category Combinator
  */
-export const getKVEnv = <K>() =>
+export const getEnv = <K>() =>
   E.asks(
-    ({ getKV, hasKV, setKV, removeKV, kvEvents, parentKVEnv }: KVEnv<K>): KVEnv<K> => ({
+    ({ getKV, hasKV, setKV, removeKV, kvEvents, parentKVEnv }: Env<K>): Env<K> => ({
       getKV,
       hasKV,
       setKV,
@@ -320,7 +323,7 @@ export interface Created<K, E, A> {
   readonly _tag: 'Created'
   readonly kv: KV<K, E, A>
   readonly value: A
-  readonly env: O.Option<KVEnv<K>>
+  readonly env: O.Option<Env<K>>
 }
 
 /**
@@ -339,7 +342,7 @@ export interface Updated<K, E, A> {
   readonly kv: KV<K, E, A>
   readonly previousValue: A
   readonly value: A
-  readonly env: O.Option<KVEnv<K>>
+  readonly env: O.Option<Env<K>>
 }
 
 /**
@@ -356,7 +359,7 @@ export const isUpdated = <K, E, A>(event: Event<K, E, A>): event is Updated<K, E
 export interface Removed<K, E, A> {
   readonly _tag: 'Removed'
   readonly kv: KV<K, E, A>
-  readonly env: O.Option<KVEnv<K>>
+  readonly env: O.Option<Env<K>>
 }
 
 /**
@@ -402,7 +405,7 @@ export const match: <A, K, B, C>(
  * @since 0.11.0
  * @category Environment Constructor
  */
-export function env<K = any>(options: EnvOptions<K> = {}): KVEnv<K> {
+export function env<K>(options: EnvOptions<K> = {}): Env<K> {
   const { initial = [], kvEvents = A.create() } = options
   const references = new Map(initial)
   const sendEvent = createSendEvent(references, kvEvents)
@@ -424,7 +427,7 @@ export function env<K = any>(options: EnvOptions<K> = {}): KVEnv<K> {
 export type EnvOptions<K> = {
   readonly initial?: Iterable<readonly [K, any]>
   readonly kvEvents?: Adapter<K>
-  readonly parentKVEnv?: KVEnv<K>
+  readonly parentKVEnv?: Env<K>
 }
 
 function createSendEvent<K>(references: Map<any, any>, [push]: Adapter<K>) {
@@ -533,10 +536,102 @@ function makeDeleteKV(
  * @since 0.11.0
  * @category Combinator
  */
-export const sample = <E, A>(env: E.Env<E, A>): RS.ReaderStream<E & KVEnv<any>, A> =>
+export const sample = <E, A>(env: E.Env<E, A>): RS.ReaderStream<E & Env<any>, A> =>
   pipe(
     getKVEvents(),
     RS.filter(not(isCreated)),
     RS.startWith(null),
     RS.exhaustMapLatestEnv(() => env),
   )
+
+/**
+ * A shared KV for keeping track of a context's disposable resources.
+ * @since 0.11.0
+ * @category KV
+ */
+export const Disposable = make(E.fromIO(D.settable), {
+  ...EqStrict,
+  key: Symbol('KV:Disposable'),
+})
+
+/**
+ * @since 0.11.0
+ * @category Use
+ */
+export const useKeyedEnvs = <A>(Eq: Eq<A>) => {
+  const refs = make(
+    E.fromIO(() => new Map<A, Env<any>>()),
+    alwaysEqualsEq,
+  )
+  const lookup = RM.lookup(Eq)
+
+  const getOrCreate = <E>(key: A, value: E.Env<E, Env<any>>) =>
+    pipe(
+      refs,
+      get,
+      E.chainW((m) =>
+        pipe(
+          m,
+          lookup(key),
+          O.matchW(
+            () =>
+              pipe(
+                value,
+                E.tap((x: Env<any>) => m.set(key, x)),
+              ),
+            E.of,
+          ),
+        ),
+      ),
+    )
+
+  const dispose = pipe(
+    Disposable,
+    get,
+    E.tap((d) => d.dispose()),
+    E.chainFirstW(() => remove(Disposable)),
+  )
+
+  return pipe(
+    E.Do,
+    E.apSW('parentKVEnv', getEnv<any>()),
+    E.bindW('createRefs', ({ parentKVEnv }) =>
+      E.of((key: A) => {
+        const r = env({ parentKVEnv })
+
+        return pipe(
+          refs,
+          get,
+          E.map((m) => m.set(key, r)),
+          E.constant(r),
+          E.useSome(parentKVEnv),
+        )
+      }),
+    ),
+    E.bindW('findRefs', ({ createRefs, parentKVEnv }) =>
+      E.of((value: A) => pipe(getOrCreate(value, createRefs(value)), E.useSome(parentKVEnv))),
+    ),
+    E.bindW('deleteRefs', ({ parentKVEnv }) =>
+      E.of(
+        (value: A): D.Disposable => ({
+          dispose: () =>
+            pipe(
+              parentKVEnv,
+              get(refs),
+              R.map((refs) => refs.get(value)),
+              R.chainFirst(() =>
+                pipe(
+                  refs,
+                  get,
+                  E.tap((m) => m.delete(value)),
+                )(parentKVEnv),
+              ),
+              R.chain((refs) => (refs ? dispose(refs) : R.of(null))),
+              R.exec,
+            ),
+        }),
+      ),
+    ),
+    E.map(({ findRefs, deleteRefs }) => ({ findRefs, deleteRefs } as const)),
+  )
+}

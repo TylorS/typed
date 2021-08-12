@@ -1,8 +1,8 @@
 import * as E from '@fp/Env'
 import { flow, pipe } from '@fp/function'
+import * as KV from '@fp/KV'
 import * as O from '@fp/Option'
 import * as Ref from '@fp/Ref'
-import { exec } from '@fp/Resume'
 import { log } from 'fp-ts/Console'
 import { left, right } from 'fp-ts/Either'
 import { randomInt } from 'fp-ts/Random'
@@ -17,10 +17,10 @@ const askQuestion = E.op<(question: string) => E.Of<string>>()('askQuestion')
 const putStr = E.op<(msg: string) => E.Of<void>>()('putStr')
 const random = E.op<() => E.Of<number>>()('random')()
 
-const Name = Ref.create(askQuestion(`What's your name?`))
-const ShouldContinue = Ref.create(E.of<boolean>(true))
+const Name = Ref.kv(askQuestion(`What's your name?`))
+const ShouldContinue = Ref.kv(E.of<boolean>(true))
 
-const Secret = Ref.create(random)
+const Secret = Ref.kv(random)
 
 const welcomeToTheGame = pipe(
   Name.get,
@@ -108,8 +108,9 @@ const game = pipe(
 )
 
 pipe(
-  {
-    ...Ref.refs(),
+  game,
+  E.execWith({
+    ...KV.env(),
     putStr: flow(log, E.fromIO),
     random: () => pipe(randomInt(MIN, MAX), E.fromIO),
     askQuestion: flow(
@@ -132,7 +133,5 @@ pipe(
         ),
       ),
     ),
-  },
-  game,
-  exec,
+  }),
 )

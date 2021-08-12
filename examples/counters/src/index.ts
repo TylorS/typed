@@ -1,4 +1,5 @@
 import * as E from '@fp/Env'
+import * as KV from '@fp/KV'
 import * as O from '@fp/Option'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
@@ -23,11 +24,11 @@ if (!rootElement) {
 
 // Creates a Reference to keep our Count
 // It requires no resources and tracks a number
-const Count: Ref.Reference<unknown, number> = Ref.create(E.of(0))
+const Count = Ref.kv(E.of(0))
 
 // Actions to update our Count Reference - easily tested
-const increment: E.Env<Ref.Refs, number> = Count.update(F.flow(F.increment, E.of))
-const decrement: E.Env<Ref.Refs, number> = Count.update(
+const increment: E.Env<KV.Env<symbol>, number> = Count.update(F.flow(F.increment, E.of))
+const decrement: E.Env<KV.Env<symbol>, number> = Count.update(
   F.flow(
     F.decrement,
     E.of,
@@ -36,7 +37,7 @@ const decrement: E.Env<Ref.Refs, number> = Count.update(
 )
 
 // Creates a component which represents our counter
-const Counter = (label: string): E.Env<Ref.Refs, Renderable> =>
+const Counter = (label: string): E.Env<KV.Env<symbol>, Renderable> =>
   F.pipe(
     E.Do,
     U.bindEnvK('dec', () => decrement),
@@ -52,15 +53,15 @@ const Counter = (label: string): E.Env<Ref.Refs, Renderable> =>
   )
 
 // Creates a Counter to keep track of the total number of Counters
-const Header: RS.ReaderStream<Ref.Refs, Renderable> = F.pipe(
+const Header: RS.ReaderStream<KV.Env<symbol>, Renderable> = F.pipe(
   `Number Of Counters`,
   Counter,
-  Ref.sample,
+  KV.sample,
 )
 
-// Create a list of Counters with their own isolated Ref.Refs for state management
+// Create a list of Counters with their own isolated KV.Env<symbol> for state management
 // based on the current count
-const Counters: RS.ReaderStream<Ref.Refs, readonly Renderable[]> = F.pipe(
+const Counters: RS.ReaderStream<KV.Env<symbol>, readonly Renderable[]> = F.pipe(
   Count.values,
   RS.map(
     O.match(
@@ -72,14 +73,14 @@ const Counters: RS.ReaderStream<Ref.Refs, readonly Renderable[]> = F.pipe(
 )
 
 // Combines Counters with a Header that is also just a Counter and renders on each update
-const Main: RS.ReaderStream<Ref.Refs, HTMLElement> = F.pipe(
+const Main: RS.ReaderStream<KV.Env<symbol>, HTMLElement> = F.pipe(
   RS.combineAll(Header, Counters),
   RS.map(([header, counters]) => html`${header} ${counters}`),
   RS.scan(render, rootElement),
 )
 
 // Provide Main with its required resources
-const stream: S.Stream<HTMLElement> = Main(Ref.refs())
+const stream: S.Stream<HTMLElement> = Main(KV.env())
 
 // Execute our Stream with a default scheduler
 S.runEffects(stream, newDefaultScheduler()).catch((error) => console.error(error))

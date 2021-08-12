@@ -6,27 +6,133 @@ parent: Modules
 
 ## use overview
 
-Added in v0.9.2
+Added in v0.11.0
 
 ---
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [Combinator](#combinator)
+  - [useEq](#useeq)
+  - [useEqWith](#useeqwith)
+- [Constructor](#constructor)
+  - [defaultOptionRef](#defaultoptionref)
+- [Options](#options)
+  - [UseDisposableWithOptions (type alias)](#usedisposablewithoptions-type-alias)
+  - [UseMemoWithOptions (type alias)](#usememowithoptions-type-alias)
+  - [UseReaderStreamWithOptions (type alias)](#usereaderstreamwithoptions-type-alias)
+  - [UseStreamWithOptions (type alias)](#usestreamwithoptions-type-alias)
 - [Use](#use)
   - [bindEnvK](#bindenvk)
   - [useDisposable](#usedisposable)
-  - [useEffect](#useeffect)
+  - [useDisposableWith](#usedisposablewith)
+  - [useEffectWith](#useeffectwith)
   - [useEnvK](#useenvk)
-  - [useEq](#useeq)
-  - [useKeyedRefs](#usekeyedrefs)
   - [useMemo](#usememo)
+  - [useMemoWith](#usememowith)
   - [useReaderStream](#usereaderstream)
+  - [useReaderStreamWith](#usereaderstreamwith)
   - [useRefs](#userefs)
   - [useRefsStream](#userefsstream)
   - [useStream](#usestream)
+  - [useStreamWith](#usestreamwith)
   - [useWithPrevious](#usewithprevious)
 
 ---
+
+# Combinator
+
+## useEq
+
+Use Refs to check if a value has changed between invocations
+
+**Signature**
+
+```ts
+export declare const useEq: <A>(
+  Eq?: Eq<A>,
+  initial?: boolean,
+) => (value: A) => E.Env<KV.Env<symbol>, boolean>
+```
+
+Added in v0.11.0
+
+## useEqWith
+
+Use Refs to check if a value has changed between invocations
+
+**Signature**
+
+```ts
+export declare function useEqWith<E, A = void>(ref: Ref.Ref<E, O.Option<A>>)
+```
+
+Added in v0.11.0
+
+# Constructor
+
+## defaultOptionRef
+
+Use Refs to check if a value has changed between invocations
+
+**Signature**
+
+```ts
+export declare const defaultOptionRef: <A>() => KV.KV<symbol, unknown, O.Option<A>> &
+  Ref.Ref<KV.Env<symbol>, O.Option<A>, O.Option<A>>
+```
+
+Added in v0.11.0
+
+# Options
+
+## UseDisposableWithOptions (type alias)
+
+**Signature**
+
+```ts
+export type UseDisposableWithOptions<E1, E2, A> = {
+  readonly disposable: Ref.Ref<E1, Disposable>
+  readonly changed: Ref.Ref<E2, O.Option<A>>
+}
+```
+
+Added in v0.11.0
+
+## UseMemoWithOptions (type alias)
+
+**Signature**
+
+```ts
+export type UseMemoWithOptions<E1, A, E2, B> = {
+  readonly currentValue: Ref.Ref<E1, A>
+  readonly changed: Ref.Ref<E2, O.Option<B>>
+}
+```
+
+Added in v0.11.0
+
+## UseReaderStreamWithOptions (type alias)
+
+**Signature**
+
+```ts
+export type UseReaderStreamWithOptions<E1, A, E2, E3, B> = {
+  readonly value: Ref.Ref<E1, O.Option<A>>
+} & UseDisposableWithOptions<E2, E3, B>
+```
+
+Added in v0.11.0
+
+## UseStreamWithOptions (type alias)
+
+**Signature**
+
+```ts
+export type UseStreamWithOptions<E1, A, E2, E3, B> = UseReaderStreamWithOptions<E1, A, E2, E3, B>
+```
+
+Added in v0.11.0
 
 # Use
 
@@ -42,40 +148,63 @@ export declare const bindEnvK: <N extends string, A, Args extends readonly any[]
 ) => <E3>(
   ma: E.Env<E3, A>,
 ) => E.Env<
-  E1 & E2 & E3 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs,
+  E1 & E2 & E3 & KV.Env<symbol>,
   { readonly [K in N | keyof A]: K extends keyof A ? A[K] : () => Disposable }
 >
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 ## useDisposable
 
 **Signature**
 
 ```ts
-export declare const useDisposable: <A = void>(
+export declare const useDisposable: <A>(
   Eq?: Eq<A>,
   switchLatest?: boolean,
-) => (f: () => Disposable, value: A) => E.Env<Ref.Set & Ref.Get, Disposable>
+) => (f: () => Disposable, value: A) => E.Env<KV.Env<symbol>, Disposable>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
-## useEffect
+## useDisposableWith
 
 **Signature**
 
 ```ts
-export declare const useEffect: <A = void>(
+export declare const useDisposableWith: <E1, E2, A = void>(
+  options: UseDisposableWithOptions<E1, E2, A>,
+) => (
   Eq?: Eq<A>,
   switchLatest?: boolean,
-) => <E>(env: E.Env<E, any>, value: A) => E.Env<Ref.Set & Ref.Get & E & SchedulerEnv, Disposable>
+) => (f: () => Disposable, value: A) => E.Env<E1 & E2 & KV.Env<symbol>, Disposable>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
+
+## useEffectWith
+
+**Signature**
+
+```ts
+export declare const useEffectWith: <E1, E2, A = void>(
+  options: UseDisposableWithOptions<E1, E2, A>,
+) => (
+  Eq?: Eq<A>,
+  switchLatest?: boolean,
+) => <E>(
+  env: E.Env<E, any>,
+  value: A,
+) => E.Env<E1 & E2 & KV.Env<symbol> & E & SchedulerEnv, Disposable>
+```
+
+Added in v0.11.0
 
 ## useEnvK
+
+Helps you to convert a Kliesli arrow of an Env into a function to a Disposable. Useful for UIs where
+you need to provide onClick={fn} style handlers.
 
 **Signature**
 
@@ -83,75 +212,67 @@ Added in v0.9.2
 export declare function useEnvK<A extends ReadonlyArray<any>, E1, B, E2>(
   f: (...args: A) => E.Env<E1, B>,
   onValue: (value: B) => E.Env<E2, any> = E.of,
-): E.Env<E1 & E2 & Ref.Refs, (...args: A) => Disposable>
+): E.Env<E1 & E2 & KV.Env<symbol>, (...args: A) => Disposable>
 ```
 
-Added in v0.9.2
-
-## useEq
-
-Use Refs to check if a value has changed between invocations
-
-**Signature**
-
-```ts
-export declare const useEq: <A = void>(
-  Eq?: Eq<A>,
-  initial?: boolean,
-) => (value: A) => E.Env<Ref.Set & Ref.Get, boolean>
-```
-
-Added in v0.9.2
-
-## useKeyedRefs
-
-**Signature**
-
-```ts
-export declare const useKeyedRefs: <A>(
-  Eq: Eq<A>,
-) => E.Env<
-  Ref.Refs,
-  {
-    readonly findRefs: (value: A) => E.Env<unknown, Ref.Refs>
-    readonly deleteRefs: (value: A) => S.Disposable
-  }
->
-```
-
-Added in v0.9.2
+Added in v0.11.0
 
 ## useMemo
 
 **Signature**
 
 ```ts
-export declare const useMemo: <E, A, B = void>(
+export declare const useMemo: <E, A, B>(
   env: E.Env<E, A>,
   Eq?: Eq<B>,
-) => (value: B) => E.Env<E & Ref.Get & Ref.Set, A>
+) => (value: B) => E.Env<E & KV.Env<symbol>, A>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
+
+## useMemoWith
+
+**Signature**
+
+```ts
+export declare const useMemoWith: <E1, A, E2, B>(
+  options: UseMemoWithOptions<E1, A, E2, B>,
+) => <E2>(env: E.Env<E2, A>, Eq?: Eq<B>) => (value: B) => E.Env<E1 & E2 & E2, A>
+```
+
+Added in v0.11.0
 
 ## useReaderStream
 
 **Signature**
 
 ```ts
-export declare const useReaderStream: <A = void, B = unknown>(
+export declare const useReaderStream: <A = void>(
   Eq?: Eq<A>,
-  valueEq?: Eq<B>,
-) => <E, C extends B>(
-  rs: RS.ReaderStream<E, C>,
+) => <E4, C>(
+  rs: RS.ReaderStream<E4, C>,
   dep: A,
-) => E.Env<
-  E & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs & SchedulerEnv,
-  O.Option<C>
->
+) => E.Env<KV.Env<symbol> & E4 & SchedulerEnv, O.Option<C>>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
+
+## useReaderStreamWith
+
+**Signature**
+
+```ts
+export declare const useReaderStreamWith: <E1, A, E2, E3, B = void>(
+  options: UseReaderStreamWithOptions<E1, A, E2, E3, B>,
+) => (
+  Eq?: Eq<B>,
+) => <E4, C extends A>(
+  rs: RS.ReaderStream<E4, C>,
+  dep: B,
+) => E.Env<E1 & E2 & E3 & E4 & SchedulerEnv & KV.Env<symbol>, O.Option<C>>
+```
+
+Added in v0.11.0
 
 ## useRefs
 
@@ -163,13 +284,10 @@ export declare const useRefs: <A, E1, B>(
   Eq: Eq<A>,
 ) => <E2>(
   stream: RS.ReaderStream<E2, readonly A[]>,
-) => RS.ReaderStream<
-  E1 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs & E2,
-  readonly B[]
->
+) => RS.ReaderStream<E1 & KV.Env<any> & E2, readonly B[]>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 ## useRefsStream
 
@@ -181,13 +299,10 @@ export declare const useRefsStream: <A, E1, B>(
   Eq: Eq<A>,
 ) => <E2>(
   stream: RS.ReaderStream<E2, readonly A[]>,
-) => RS.ReaderStream<
-  E1 & E2 & Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs,
-  readonly B[]
->
+) => RS.ReaderStream<E1 & E2 & KV.Env<any>, readonly B[]>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 ## useStream
 
@@ -196,26 +311,36 @@ Added in v0.9.2
 ```ts
 export declare const useStream: <A = void>(
   Eq?: Eq<A>,
-) => <B>(
-  stream: S.Stream<B>,
-  dep: A,
-) => E.Env<
-  Ref.Get & Ref.Has & Ref.Set & Ref.Remove & Ref.Events & Ref.ParentRefs & SchedulerEnv,
-  O.Option<B>
->
+) => <B>(stream: S.Stream<B>, dep: A) => E.Env<KV.Env<symbol> & SchedulerEnv, O.Option<B>>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
+
+## useStreamWith
+
+**Signature**
+
+```ts
+export declare const useStreamWith: <E1, A, E2, E3, B>(
+  options: UseReaderStreamWithOptions<E1, A, E2, E3, B>,
+) => (
+  Eq?: Eq<B>,
+) => (
+  stream: S.Stream<A>,
+  dep: B,
+) => E.Env<E1 & E2 & E3 & SchedulerEnv & KV.Env<symbol>, O.Option<A>>
+```
+
+Added in v0.11.0
 
 ## useWithPrevious
 
 **Signature**
 
 ```ts
-export declare const useWithPrevious: <A>() => <B>(
-  f: (previous: O.Option<A>, value: A) => B,
-  value: A,
-) => E.Env<Ref.Set & Ref.Get, B>
+export declare const useWithPrevious: <E, A>(
+  ref: Ref.Ref<E, O.Option<A>, O.Option<A>>,
+) => <B>(f: (previous: O.Option<A>, value: A) => B, value: A) => E.Env<E, B>
 ```
 
-Added in v0.9.2
+Added in v0.11.0

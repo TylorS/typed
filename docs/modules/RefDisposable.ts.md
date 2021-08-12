@@ -1,55 +1,82 @@
 ---
 title: RefDisposable.ts
-nav_order: 44
+nav_order: 46
 parent: Modules
 ---
 
 ## RefDisposable overview
 
-RefDisposable is an abstraction over [Ref](./Ref.ts.md) to keep track of all resources created
-within the context of a particular instance of Refs.
+RefDisposable is a collection of helpers for working with Refs that manage resources.
 
-Added in v0.9.2
+Added in v0.11.0
 
 ---
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Combinator](#combinator)
+- [Effect](#effect)
   - [add](#add)
   - [dispose](#dispose)
   - [get](#get)
+  - [remove](#remove)
+- [Ref](#ref)
+  - [RefDisposable](#refdisposable)
 
 ---
 
-# Combinator
+# Effect
 
 ## add
 
 **Signature**
 
 ```ts
-export declare const add: (disposable: Disposable) => E.Env<Ref.Get, Disposable>
+export declare const add: (disposable: Disposable) => E.Env<KV.Env<symbol>, Disposable>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 ## dispose
 
 **Signature**
 
 ```ts
-export declare const dispose: E.Env<Ref.Remove & Ref.Get, void>
+export declare const dispose: E.Env<KV.Env<symbol>, void>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 ## get
 
 **Signature**
 
 ```ts
-export declare const get: E.Env<Ref.Get, SettableDisposable>
+export declare const get: E.Env<KV.Env<symbol>, SettableDisposable>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
+
+## remove
+
+**Signature**
+
+```ts
+export declare const remove: E.Env<KV.Env<symbol>, Option<SettableDisposable>>
+```
+
+Added in v0.11.0
+
+# Ref
+
+## RefDisposable
+
+A Ref for tracking resources that can be disposed of.
+
+**Signature**
+
+```ts
+export declare const RefDisposable: KV.KV<symbol, unknown, SettableDisposable> &
+  Ref.Ref<KV.Env<symbol>, SettableDisposable, SettableDisposable>
+```
+
+Added in v0.11.0

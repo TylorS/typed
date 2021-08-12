@@ -14,6 +14,9 @@ import * as RS from './ReaderStream'
 import * as Ref from './Ref'
 
 /**
+ * RefAdapter is an abstraction of Refs that will output an Adapter to send and receive events through.
+ * It utilizes the output of its Ref instead of the input so you will not find any combinators for
+ * updating the Adapter in-place. This allows for creating a Functor + Profunctor instances
  * @since 0.11.0
  * @category Model
  */
@@ -110,10 +113,18 @@ declare module './HKT' {
   }
 }
 
+/**
+ * @since 0.11.0
+ * @category Instance
+ */
 export const Functor: Functor4<URI> = {
   map,
 }
 
+/**
+ * @since 0.11.0
+ * @category Instance
+ */
 export const Profunctor: Profunctor4<URI> = {
   map,
   promap,

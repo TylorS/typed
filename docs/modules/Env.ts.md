@@ -60,6 +60,7 @@ Added in v0.9.2
   - [chainTaskK](#chaintaskk)
   - [chainW](#chainw)
   - [combineAll](#combineall)
+  - [combineStruct](#combinestruct)
   - [constant](#constant)
   - [flap](#flap)
   - [flatten](#flatten)
@@ -515,6 +516,18 @@ export declare const combineAll: <A extends readonly Env<any, any>[]>(
 ```
 
 Added in v0.9.2
+
+## combineStruct
+
+**Signature**
+
+```ts
+export declare const combineStruct: <Props extends Readonly<Record<string, Env<any, any>>>>(
+  props: Props,
+) => Env<unknown, { readonly [K in keyof Props]: ValueOf<Props[K]> }>
+```
+
+Added in v0.11.0
 
 ## constant
 

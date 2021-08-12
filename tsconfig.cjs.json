@@ -21,7 +21,6 @@
     "Adapter",
     "Branded",
     "Context",
-    "Context2",
     "Data",
     "DataEither",
     "DataOption",
@@ -57,12 +56,8 @@
     "ReaderTask",
     "ReaderTaskEither",
     "Ref",
-    "Ref2",
     "RefAdapter",
-    "RefArray",
     "RefDisposable",
-    "RefMap",
-    "RefMapM",
     "Resume",
     "ResumeEither",
     "ResumeOption",
@@ -86,8 +81,7 @@
     "number",
     "string",
     "struct",
-    "use",
-    "use2"
+    "use"
   ],
   "files": [],
   "include": [

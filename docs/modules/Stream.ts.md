@@ -40,6 +40,7 @@ Added in v0.9.2
   - [chainResumeK](#chainresumek)
   - [collectEvents](#collectevents)
   - [combineAll](#combineall)
+  - [combineStruct](#combinestruct)
   - [compact](#compact)
   - [exhaustLatest](#exhaustlatest)
   - [exhaustMapLatest](#exhaustmaplatest)
@@ -248,6 +249,18 @@ export declare const combineAll: <A extends readonly types.Stream<any>[]>(
 ```
 
 Added in v0.9.2
+
+## combineStruct
+
+**Signature**
+
+```ts
+export declare const combineStruct: <A>(
+  streams: { readonly [K in keyof A]: types.Stream<A[K]> },
+) => types.Stream<A>
+```
+
+Added in v0.11.0
 
 ## compact
 

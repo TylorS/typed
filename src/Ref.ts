@@ -3,6 +3,7 @@
  *
  * The provided implementation will also send events containing all of the creations/updates/deletes
  * occurring in real-time.
+ * @since 0.11.0
  */
 import * as Ap from 'fp-ts/Apply'
 import * as B from 'fp-ts/boolean'
@@ -67,7 +68,7 @@ export type OutputOf<A> = [A] extends [Ref<any, any, infer R>] ? R : never
  * @since 0.11.0
  * @category URI
  */
-export const URI = '@typed/fp/Ref2'
+export const URI = '@typed/fp/Ref'
 
 /**
  * @since 0.11.0
@@ -95,7 +96,7 @@ declare module './HKT' {
  * @since 0.11.0
  * @category Constructor
  */
-export const fromKV = <K, E, A>(kv: KV.KV<K, E, A>): KV.KV<K, E, A> & Ref<E & KV.KVEnv<K>, A> => ({
+export const fromKV = <K, E, A>(kv: KV.KV<K, E, A>): KV.KV<K, E, A> & Ref<E & KV.Env<K>, A> => ({
   ...kv,
   get: KV.get(kv),
   has: KV.has(kv),
@@ -107,10 +108,16 @@ export const fromKV = <K, E, A>(kv: KV.KV<K, E, A>): KV.KV<K, E, A> & Ref<E & KV
 
 /**
  * @since 0.11.0
+ * @category Constructor
+ */
+export const kv = flow(KV.make, fromKV)
+
+/**
+ * @since 0.11.0
  * @category Instance Constructor
  */
-export const getFromKV = <K>(): FKV.FromKV2<URI, KV.KVEnv<K>> => ({
-  fromKV: fromKV as FKV.FromKV2<URI, KV.KVEnv<K>>['fromKV'],
+export const getFromKV = <K>(): FKV.FromKV2<URI, KV.Env<K>> => ({
+  fromKV: fromKV as FKV.FromKV2<URI, KV.Env<K>>['fromKV'],
 })
 
 /**
@@ -136,6 +143,10 @@ export const Functor: Functor3<URI> = {
   map,
 }
 
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
 export const local =
   <A, B>(f: (value: A) => B) =>
   <E, C>(ref: Ref<E, B, C>): Ref<E, A, C> => ({
@@ -147,16 +158,28 @@ export const local =
     values: ref.values,
   })
 
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
 export const promap =
   <B, A, C, D>(f: (value: B) => A, g: (value: C) => D) =>
   <E>(ref: Ref<E, A, C>): Ref<E, B, D> =>
     pipe(ref, local(f), map(g))
 
+/**
+ * @since 0.11.0
+ * @category Instance
+ */
 export const Profunctor: Profunctor3<URI> = {
   map,
   promap,
 }
 
+/**
+ * @since 0.11.0
+ * @category Combinator
+ */
 export const ap =
   <E1, I, A>(fa: Ref<E1, I, A>) =>
   <E2, B>(fab: Ref<E2, I, (value: A) => B>): Ref<E1 & E2, I, B> => {
@@ -173,6 +196,10 @@ export const ap =
     }
   }
 
+/**
+ * @since 0.11.0
+ * @category Instance
+ */
 export const Apply: Ap.Apply3<URI> = {
   map,
   ap,

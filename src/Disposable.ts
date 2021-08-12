@@ -11,7 +11,7 @@ export * from '@most/disposable'
  */
 
 import { disposeAll, disposeNone } from '@most/disposable'
-import { Disposable } from '@most/types'
+import * as types from '@most/types'
 
 /**
  * A Disposable that works in a more imperative manner.
@@ -19,8 +19,8 @@ import { Disposable } from '@most/types'
  * @since 0.9.2
  * @category Model
  */
-export interface SettableDisposable extends Disposable {
-  readonly addDisposable: (disposable: Disposable) => Disposable
+export interface SettableDisposable extends types.Disposable {
+  readonly addDisposable: (disposable: types.Disposable) => types.Disposable
   readonly isDisposed: () => boolean
 }
 
@@ -33,9 +33,9 @@ const NONE = disposeNone()
  */
 export function settable(): SettableDisposable {
   let disposed = false
-  const disposables: Disposable[] = []
+  const disposables: types.Disposable[] = []
 
-  function addDisposable(disposable: Disposable) {
+  function addDisposable(disposable: types.Disposable) {
     if (NONE === disposable || disposed) {
       disposable.dispose()
 
@@ -83,8 +83,15 @@ import { ArgsOf } from './function'
  */
 export const undisposable =
   <F extends FunctionN<readonly any[], any>>(fn: F) =>
-  (...args: ArgsOf<F>): Disposable => {
+  (...args: ArgsOf<F>): types.Disposable => {
     fn(...args)
 
     return disposeNone()
   }
+
+/**
+ * Re-export of @most/core's Disposable interface
+ * @since 0.11.0
+ * @category Model
+ */
+export type Disposable = types.Disposable

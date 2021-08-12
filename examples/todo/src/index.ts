@@ -1,6 +1,6 @@
 import * as E from '@fp/Env'
+import * as KV from '@fp/KV'
 import * as RS from '@fp/ReaderStream'
-import * as Ref from '@fp/Ref'
 import { runEffects, Stream } from '@fp/Stream'
 import { newDefaultScheduler } from '@most/scheduler'
 import * as F from 'fp-ts/function'
@@ -24,7 +24,7 @@ if (!rootElement) {
 
 const Main = F.pipe(
   TodoApp,
-  Ref.sample, // Sample our TodoApp everytime there is a Ref update
+  KV.sample, // Sample our TodoApp everytime there is a KV update
   RS.scan(render, rootElement), // Render
   // Additional effects
   RS.mergeFirst(saveTodosOnChange),
@@ -32,7 +32,7 @@ const Main = F.pipe(
 )
 
 const stream: Stream<HTMLElement> = Main({
-  ...Ref.refs(),
+  ...KV.env(),
   loadTodos: () => E.fromIO(loadTodosFromStorage),
   saveTodos: saveTodosToStorage,
   getCurrentFilter: () => E.fromIO(getCurrentFilterFromLocation),

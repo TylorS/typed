@@ -19,6 +19,7 @@ Added in v0.9.2
 - [Constructor](#constructor)
   - [settable](#settable)
 - [Model](#model)
+  - [Disposable (type alias)](#disposable-type-alias)
   - [SettableDisposable (interface)](#settabledisposable-interface)
 
 ---
@@ -34,7 +35,7 @@ Wrap a non-Disposable function into a Disposable-returning function
 ```ts
 export declare const undisposable: <F extends FunctionN<readonly any[], any>>(
   fn: F,
-) => (...args: ArgsOf<F>) => Disposable
+) => (...args: ArgsOf<F>) => types.Disposable
 ```
 
 Added in v0.9.2
@@ -55,6 +56,18 @@ Added in v0.9.2
 
 # Model
 
+## Disposable (type alias)
+
+Re-export of @most/core's Disposable interface
+
+**Signature**
+
+```ts
+export type Disposable = types.Disposable
+```
+
+Added in v0.11.0
+
 ## SettableDisposable (interface)
 
 A Disposable that works in a more imperative manner. Can be useful when coercing external libraries
@@ -63,8 +76,8 @@ or using promises.
 **Signature**
 
 ```ts
-export interface SettableDisposable extends Disposable {
-  readonly addDisposable: (disposable: Disposable) => Disposable
+export interface SettableDisposable extends types.Disposable {
+  readonly addDisposable: (disposable: types.Disposable) => types.Disposable
   readonly isDisposed: () => boolean
 }
 ```

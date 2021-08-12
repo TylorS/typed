@@ -1,4 +1,5 @@
 import * as E from '@fp/Env'
+import * as KV from '@fp/KV'
 import * as RS from '@fp/ReaderStream'
 import * as Ref from '@fp/Ref'
 import * as S from '@fp/Stream'
@@ -19,12 +20,12 @@ if (!rootElement) {
 
 // Creates a Reference to keep our Count
 // It requires no resources and tracks a number
-const Count: Ref.Reference<unknown, number> = Ref.create(E.of(0))
+const Count = Ref.kv(E.of(0))
 
 // Actions to update our Count Reference - easily tested
-const increment: E.Env<Ref.Refs, number> = Count.update(F.flow(F.increment, E.of))
+const increment: E.Env<KV.Env<symbol>, number> = Count.update(F.flow(F.increment, E.of))
 
-const decrement: E.Env<Ref.Refs, number> = Count.update(
+const decrement: E.Env<KV.Env<symbol>, number> = Count.update(
   F.flow(
     F.decrement,
     E.of,
@@ -33,7 +34,7 @@ const decrement: E.Env<Ref.Refs, number> = Count.update(
 )
 
 // Creates a component which represents our counter
-const Counter: E.Env<Ref.Refs, Renderable> = F.pipe(
+const Counter: E.Env<KV.Env<symbol>, Renderable> = F.pipe(
   E.Do,
   U.bindEnvK('dec', () => decrement),
   U.bindEnvK('inc', () => increment),
@@ -48,14 +49,14 @@ const Counter: E.Env<Ref.Refs, Renderable> = F.pipe(
 )
 
 // Sample our Counter everytime there is a Ref update.
-const Main: RS.ReaderStream<Ref.Refs, HTMLElement> = F.pipe(
+const Main: RS.ReaderStream<KV.Env<symbol>, HTMLElement> = F.pipe(
   Counter,
-  Ref.sample,
+  KV.sample,
   RS.scan(render, rootElement),
 )
 
 // Provide Main with its required resources
-const stream: S.Stream<HTMLElement> = Main(Ref.refs())
+const stream: S.Stream<HTMLElement> = Main(KV.env())
 
 // Execute our Stream with a default scheduler
 S.runEffects(stream, newDefaultScheduler()).catch((error) => console.error(error))

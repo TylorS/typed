@@ -1,6 +1,6 @@
 ---
 title: RefAdapter.ts
-nav_order: 42
+nav_order: 44
 parent: Modules
 ---
 
@@ -8,92 +8,164 @@ parent: Modules
 
 RefAdapter is an abstraction over [Ref](./Ref.ts.md) and [Adapter](./Adapter.ts.md)
 
-Added in v0.9.2
+Added in v0.11.0
 
 ---
 
 <h2 class="text-delta">Table of contents</h2>
 
 - [Combinator](#combinator)
+  - [getEvents](#getevents)
   - [getSendEvent](#getsendevent)
   - [listenToEvents](#listentoevents)
+  - [local](#local)
+  - [map](#map)
+  - [promap](#promap)
   - [sendEvent](#sendevent)
-- [Constructor](#constructor)
-  - [toReferenceAdapter](#toreferenceadapter)
+- [Instance](#instance)
+  - [Functor](#functor)
+  - [Profunctor](#profunctor)
 - [Model](#model)
   - [RefAdapter (interface)](#refadapter-interface)
-  - [ReferenceAdapter (interface)](#referenceadapter-interface)
+- [URI](#uri)
+  - [URI](#uri-1)
+  - [URI (type alias)](#uri-type-alias)
 
 ---
 
 # Combinator
+
+## getEvents
+
+**Signature**
+
+```ts
+export declare function getEvents<E, A, B, C>(ra: RefAdapter<E, A, B, C>): RS.ReaderStream<E, C>
+```
+
+Added in v0.11.0
 
 ## getSendEvent
 
 **Signature**
 
 ```ts
-export declare function getSendEvent<E, A, B = A>(ra: RefAdapter<E, A, B>)
+export declare function getSendEvent<E, A, B, C>(
+  ra: RefAdapter<E, A, B, C>,
+): E.Env<E, (event: B) => void>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
 ## listenToEvents
 
 **Signature**
 
 ```ts
-export declare function listenToEvents<E1, A, B = A>(ra: RefAdapter<E1, A, B>)
+export declare function listenToEvents<E1, A, B, C>(ra: RefAdapter<E1, A, B, C>)
 ```
 
-Added in v0.9.2
+Added in v0.11.0
+
+## local
+
+**Signature**
+
+```ts
+export declare function local<A, B>(f: (value: A) => B)
+```
+
+Added in v0.11.0
+
+## map
+
+**Signature**
+
+```ts
+export declare function map<A, B>(f: (value: A) => B)
+```
+
+Added in v0.11.0
+
+## promap
+
+**Signature**
+
+```ts
+export declare const promap: <B, A, C, D>(
+  f: (value: B) => A,
+  g: (value: C) => D,
+) => <E, I>(adapter: RefAdapter<E, I, A, C>) => RefAdapter<E, I, B, D>
+```
+
+Added in v0.11.0
 
 ## sendEvent
 
 **Signature**
 
 ```ts
-export declare function sendEvent<E, A, B = A>(ra: RefAdapter<E, A, B>)
+export declare function sendEvent<E, A, B, C>(ra: RefAdapter<E, A, B, C>)
 ```
 
-Added in v0.9.2
+Added in v0.11.0
 
-# Constructor
+# Instance
 
-## toReferenceAdapter
+## Functor
 
 **Signature**
 
 ```ts
-export declare function toReferenceAdapter<E, A, B>(
-  ra: RefAdapter<E, A, B>,
-): ReferenceAdapter<E, A, B>
+export declare const Functor: Functor4<'@typed/fp/RefAdapter'>
 ```
 
-Added in v0.9.2
+Added in v0.11.0
+
+## Profunctor
+
+**Signature**
+
+```ts
+export declare const Profunctor: Profunctor4<'@typed/fp/RefAdapter'>
+```
+
+Added in v0.11.0
 
 # Model
 
 ## RefAdapter (interface)
 
-**Signature**
-
-```ts
-export interface RefAdapter<E, A, B = A> extends Ref.Reference<E, A.Adapter<A, B>> {}
-```
-
-Added in v0.9.2
-
-## ReferenceAdapter (interface)
+RefAdapter is an abstraction of Refs that will output an Adapter to send and receive events through.
+It utilizes the output of its Ref instead of the input so you will not find any combinators for
+updating the Adapter in-place. This allows for creating a Functor + Profunctor instances
 
 **Signature**
 
 ```ts
-export interface ReferenceAdapter<E, A, B = A> extends RefAdapter<E, A, B> {
-  readonly send: (event: A) => E.Env<E & Ref.Get, void>
-  readonly getSend: E.Env<E & Ref.Get, (event: A) => void>
-  readonly onEvent: <E2, C>(f: (value: B) => E.Env<E2, C>) => RS.ReaderStream<E & E2 & Ref.Get, C>
-}
+export interface RefAdapter<E, I, A, B = A> extends Ref.Ref<E, I, A.Adapter<A, B>> {}
 ```
 
-Added in v0.9.2
+Added in v0.11.0
+
+# URI
+
+## URI
+
+**Signature**
+
+```ts
+export declare const URI: '@typed/fp/RefAdapter'
+```
+
+Added in v0.11.0
+
+## URI (type alias)
+
+**Signature**
+
+```ts
+export type URI = typeof URI
+```
+
+Added in v0.11.0

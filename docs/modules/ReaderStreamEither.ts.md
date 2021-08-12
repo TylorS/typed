@@ -1,6 +1,6 @@
 ---
 title: ReaderStreamEither.ts
-nav_order: 37
+nav_order: 39
 parent: Modules
 ---
 
