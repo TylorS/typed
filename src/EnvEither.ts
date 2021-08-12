@@ -352,6 +352,17 @@ export const Chain: Chain_.Chain3<URI> = {
 export const bind = Chain_.bind(Chain)
 
 /**
+ * @since 0.11.1
+ * @category Combinator
+ */
+export const bindW = bind as <N extends string, A, R1, E, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => EnvEither<R1, E, B>,
+) => <R2>(
+  ma: EnvEither<R2, E, A>,
+) => EnvEither<R1 & R2, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+
+/**
  * @since 0.9.2
  * @category Combinator
  */
@@ -742,3 +753,9 @@ export const fromOptionK = FEi.fromOptionK(FromEither)
  * @category Constructor
  */
 export const fromPredicate = FEi.fromPredicate(FromEither)
+
+/**
+ * @since 0.11.1
+ * @category Constructor
+ */
+export const Do: EnvEither<unknown, never, {}> = fromIO(() => Object.create(null))
