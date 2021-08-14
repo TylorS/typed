@@ -265,6 +265,10 @@
       "require": "./cjs/RefDisposable.js",
       "import": "./esm/RefDisposable.js"
     },
+    "./RefMap": {
+      "require": "./cjs/RefMap.js",
+      "import": "./esm/RefMap.js"
+    },
     "./Resume": {
       "require": "./cjs/Resume.js",
       "import": "./esm/Resume.js"

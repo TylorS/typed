@@ -59,6 +59,7 @@
     "RefAdapter",
     "RefArray",
     "RefDisposable",
+    "RefMap",
     "Resume",
     "ResumeEither",
     "ResumeOption",
