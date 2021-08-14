@@ -11,6 +11,7 @@ import * as O from 'fp-ts/Option'
 import { not } from 'fp-ts/Predicate'
 
 import * as E from './Env'
+import * as EO from './EnvOption'
 import { alwaysEqualsEq, deepEqualsEq, Eq, EqStrict } from './Eq'
 import * as KV from './KV'
 import * as RS from './ReaderStream'
@@ -25,8 +26,7 @@ import * as S from './Stream'
  * @since 0.11.0
  * @category Constructor
  */
-export const defaultOptionRef = <A>() =>
-  Ref.fromKV(KV.make(E.of<O.Option<A>>(O.none), alwaysEqualsEq))
+export const defaultOptionRef = <A>() => Ref.kv(E.of<O.Option<A>>(O.none), alwaysEqualsEq)
 
 /**
  * Use Refs to check if a value has changed between invocations
@@ -71,7 +71,7 @@ export const useEq = <A>(Eq: Eq<A> = deepEqualsEq, initial = true) =>
  * @category Options
  */
 export type UseMemoWithOptions<E1, A, E2, B> = {
-  readonly currentValue: Ref.Ref<E1, A>
+  readonly currentValue: Ref.Ref<E1, O.Option<A>>
   readonly changed: Ref.Ref<E2, O.Option<B>>
 }
 
@@ -81,26 +81,29 @@ export type UseMemoWithOptions<E1, A, E2, B> = {
  */
 export const useMemoWith =
   <E1, A, E2, B>(options: UseMemoWithOptions<E1, A, E2, B>) =>
-  <E2>(env: E.Env<E2, A>, Eq: Eq<B> = deepEqualsEq) => {
+  <E3>(env: E.Env<E3, A>, Eq: Eq<B> = deepEqualsEq): ((value: B) => E.Env<E1 & E2 & E3, A>) => {
     const changed = pipe(Eq, useEqWith(options.changed))
-    const updateRef = options.currentValue.update(() => env)
+    const updateRef = options.currentValue.update(() => EO.fromEnv(env))
 
     return flow(
       changed,
       E.chainFirstW((changed) => (changed ? updateRef : E.of(null))),
       E.chainW(() => options.currentValue.get),
+      EO.getOrElseEW(() => pipe(env, E.chainFirstW(flow(O.some, options.currentValue.set)))),
     )
   }
+
+const defaultUseMemoRefs = <A, B>() => ({
+  currentValue: defaultOptionRef<A>(),
+  changed: defaultOptionRef<B>(),
+})
 
 /**
  * @since 0.11.0
  * @category Use
  */
 export const useMemo = <E, A, B>(env: E.Env<E, A>, Eq: Eq<B> = deepEqualsEq) =>
-  useMemoWith({
-    currentValue: Ref.fromKV(KV.make(env, { ...alwaysEqualsEq, key: Symbol('UseMemo') })),
-    changed: defaultOptionRef<B>(),
-  })(env, Eq)
+  useMemoWith(defaultUseMemoRefs<A, B>())(env, Eq)
 
 /**
  * @since 0.11.0
@@ -145,7 +148,7 @@ export const useDisposableWith =
   }
 
 const defaultDisposableRefs = <A>() => ({
-  disposable: Ref.fromKV(KV.make(E.fromIO(disposeNone))),
+  disposable: Ref.kv(E.fromIO(disposeNone)),
   changed: defaultOptionRef<A>(),
 })
 
@@ -282,7 +285,7 @@ export const useReaderStreamWith =
   }
 
 const defaultUserReaderStreamRefs = <A, B>() => ({
-  disposable: Ref.fromKV(KV.make(E.fromIO(disposeNone))),
+  disposable: Ref.kv(E.fromIO(disposeNone)),
   changed: defaultOptionRef<A>(),
   value: defaultOptionRef<B>(),
 })
