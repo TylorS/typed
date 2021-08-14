@@ -51,12 +51,12 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const concat: <E, A>(
-  ra: RefArray<E, A>,
-) => (end: readonly A[]) => E.Env<E, readonly A[]>
+export declare const concat: <A>(
+  end: readonly A[],
+) => <E>(ra: RefArray<E, A>) => E.Env<E, readonly A[]>
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## deleteAt
 

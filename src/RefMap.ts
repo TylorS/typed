@@ -1,3 +1,7 @@
+/**
+ * RefMap is a collection of helpers for working with Refs that manage a Map.
+ * @since 0.12.0
+ */
 import { Endomorphism } from 'fp-ts/Endomorphism'
 import { Eq } from 'fp-ts/Eq'
 import * as O from 'fp-ts/Option'

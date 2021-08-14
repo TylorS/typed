@@ -62,10 +62,10 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare function listenToEvents<E1, A, B, C>(ra: RefAdapter<E1, A, B, C>)
+export declare function listenToEvents<A, E1, B>(f: (value: A) => E.Env<E1, B>)
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## local
 
@@ -105,10 +105,10 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare function sendEvent<E, A, B, C>(ra: RefAdapter<E, A, B, C>)
+export declare function sendEvent<A>(event: A)
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 # Instance
 

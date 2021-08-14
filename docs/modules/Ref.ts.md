@@ -6,10 +6,7 @@ parent: Modules
 
 ## Ref overview
 
-`Ref` is an abstraction for managing state-based applications using [Env](./Env.ts.md).
-
-The provided implementation will also send events containing all of the creations/updates/deletes
-occurring in real-time.
+`Ref` is an abstraction for managing data-driven applications using [Env](./Env.ts.md).
 
 Added in v0.11.0
 
