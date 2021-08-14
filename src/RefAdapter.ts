@@ -23,11 +23,11 @@ import * as Ref from './Ref'
 export interface RefAdapter<E, I, A, B = A> extends Ref.Ref<E, I, A.Adapter<A, B>> {}
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Combinator
  */
-export function sendEvent<E, A, B, C>(ra: RefAdapter<E, A, B, C>) {
-  return (event: B): E.Env<E, void> =>
+export function sendEvent<A>(event: A) {
+  return <E, B, C>(ra: RefAdapter<E, B, A, C>): E.Env<E, void> =>
     pipe(
       ra.get,
       E.chainIOK(
@@ -55,11 +55,11 @@ export function getEvents<E, A, B, C>(ra: RefAdapter<E, A, B, C>): RS.ReaderStre
 }
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Combinator
  */
-export function listenToEvents<E1, A, B, C>(ra: RefAdapter<E1, A, B, C>) {
-  return <E2, D>(f: (value: C) => E.Env<E2, D>): RS.ReaderStream<E1 & E2, D> =>
+export function listenToEvents<A, E1, B>(f: (value: A) => E.Env<E1, B>) {
+  return <E2, C>(ra: RefAdapter<E1, C, B, A>): RS.ReaderStream<E1 & E2, B> =>
     pipe(ra, getEvents, RS.chainEnvK(f))
 }
 

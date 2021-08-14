@@ -30,12 +30,12 @@ export const append =
     ra.update(flow(RA.append(value), E.of))
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Combinator
  */
 export const concat =
-  <E, A>(ra: RefArray<E, A>) =>
-  (end: ReadonlyArray<A>): E.Env<E, readonly A[]> =>
+  <A>(end: ReadonlyArray<A>) =>
+  <E>(ra: RefArray<E, A>): E.Env<E, readonly A[]> =>
     ra.update(flow(RA.concat(end), E.of))
 
 /**
