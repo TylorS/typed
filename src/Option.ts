@@ -31,6 +31,10 @@ export const chainRec =
     return option
   }
 
+/**
+ * @since 0.12.1
+ * @category Constructor
+ */
 export const struct = <Opts extends Readonly<Record<string, O.Option<any>>>>(
   opts: Opts,
 ): O.Option<{ readonly [K in keyof Opts]: [Opts[K]] extends [O.Option<infer R>] ? R : never }> => {

@@ -1,3 +1,7 @@
+/**
+ * These is an extension of fp-ts/These
+ * @since 0.12.1
+ */
 import * as EI from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as TH from 'fp-ts/These'

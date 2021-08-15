@@ -1,3 +1,7 @@
+/**
+ * RefData is a collection of helpers for working with Refs that manage Data.
+ * @since 0.12.1
+ */
 import { flow, pipe } from 'fp-ts/function'
 
 import * as D from './Data'

@@ -1,3 +1,7 @@
+/**
+ * RefDataEither is a collection of helpers for working with Refs that manage DataEither.
+ * @since 0.12.1
+ */
 import { flow, pipe } from 'fp-ts/function'
 
 import * as DE from './DataEither'
