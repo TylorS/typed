@@ -93,7 +93,7 @@ declare module './HKT' {
  * @since 0.11.0
  * @category Constructor
  */
-export const fromKV = <K, E, A>(kv: KV.KV<K, E, A>): KV.KV<K, E, A> & Ref<E & KV.Env<K>, A> => ({
+export const fromKV = <K, E, A>(kv: KV.KV<K, E, A>): Ref<E & KV.Env, A> & KV.KV<K, E, A> => ({
   ...kv,
   get: KV.get(kv),
   has: KV.has(kv),
@@ -110,12 +110,12 @@ export const fromKV = <K, E, A>(kv: KV.KV<K, E, A>): KV.KV<K, E, A> & Ref<E & KV
 export const kv = flow(KV.make, fromKV)
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Instance Constructor
  */
-export const getFromKV = <K>(): FKV.FromKV2<URI, KV.Env<K>> => ({
-  fromKV: fromKV as FKV.FromKV2<URI, KV.Env<K>>['fromKV'],
-})
+export const FromKV: FKV.FromKV2<URI, KV.Env> = {
+  fromKV,
+}
 
 /**
  * @since 0.11.0
@@ -489,7 +489,7 @@ export function chainFirstTaskK<A, B>(f: (value: A) => Task<B>) {
  * @since 0.11.0
  * @category Combinator
  */
-export function combineStruct<S extends AnyRefStruct>(
+export function struct<S extends AnyRefStruct>(
   properties: S,
 ): Ref<RefStructEnv<S>, RefStructInput<S>, RefStructOutput<S>> {
   const entries = Object.entries(properties)

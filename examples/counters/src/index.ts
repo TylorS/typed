@@ -27,8 +27,8 @@ if (!rootElement) {
 const Count = Ref.kv(E.of(0))
 
 // Actions to update our Count Reference - easily tested
-const increment: E.Env<KV.Env<symbol>, number> = Count.update(F.flow(F.increment, E.of))
-const decrement: E.Env<KV.Env<symbol>, number> = Count.update(
+const increment: E.Env<KV.Env, number> = Count.update(F.flow(F.increment, E.of))
+const decrement: E.Env<KV.Env, number> = Count.update(
   F.flow(
     F.decrement,
     E.of,
@@ -37,7 +37,7 @@ const decrement: E.Env<KV.Env<symbol>, number> = Count.update(
 )
 
 // Creates a component which represents our counter
-const Counter = (label: string): E.Env<KV.Env<symbol>, Renderable> =>
+const Counter = (label: string): E.Env<KV.Env, Renderable> =>
   F.pipe(
     E.Do,
     U.bindEnvK('dec', () => decrement),
@@ -53,15 +53,11 @@ const Counter = (label: string): E.Env<KV.Env<symbol>, Renderable> =>
   )
 
 // Creates a Counter to keep track of the total number of Counters
-const Header: RS.ReaderStream<KV.Env<symbol>, Renderable> = F.pipe(
-  `Number Of Counters`,
-  Counter,
-  KV.sample,
-)
+const Header: RS.ReaderStream<KV.Env, Renderable> = F.pipe(`Number Of Counters`, Counter, KV.sample)
 
-// Create a list of Counters with their own isolated KV.Env<symbol> for state management
+// Create a list of Counters with their own isolated KV.Env for state management
 // based on the current count
-const Counters: RS.ReaderStream<KV.Env<symbol>, readonly Renderable[]> = F.pipe(
+const Counters: RS.ReaderStream<KV.Env, readonly Renderable[]> = F.pipe(
   Count.values,
   RS.map(
     O.match(
@@ -69,11 +65,11 @@ const Counters: RS.ReaderStream<KV.Env<symbol>, readonly Renderable[]> = F.pipe(
       (count) => (count === 0 ? [] : RNEA.range(1, count)),
     ),
   ),
-  U.useRefs(F.flow(String, Counter), N.Eq),
+  U.useKVs(F.flow(String, Counter), N.Eq),
 )
 
 // Combines Counters with a Header that is also just a Counter and renders on each update
-const Main: RS.ReaderStream<KV.Env<symbol>, HTMLElement> = F.pipe(
+const Main: RS.ReaderStream<KV.Env, HTMLElement> = F.pipe(
   RS.combineAll(Header, Counters),
   RS.map(([header, counters]) => html`${header} ${counters}`),
   RS.scan(render, rootElement),

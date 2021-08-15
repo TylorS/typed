@@ -7,8 +7,9 @@
  * occurring in real-time.
  * @since 0.11.0
  */
+import * as B from 'fp-ts/boolean'
 import { Eq, EqStrict } from 'fp-ts/Eq'
-import { flow, pipe } from 'fp-ts/function'
+import { pipe } from 'fp-ts/function'
 import * as RM from 'fp-ts/ReadonlyMap'
 import { not } from 'fp-ts/Refinement'
 import { fst, snd } from 'fp-ts/Tuple2'
@@ -27,7 +28,7 @@ import * as R from './Resume'
  * @category Model
  */
 export interface KV<K, E, A> extends Eq<A> {
-  readonly key: K // Use function to ensure this is a covariant property
+  readonly key: K
   readonly initial: E.Env<E, A>
 }
 
@@ -88,28 +89,28 @@ export function make<E, A, K = symbol>(
  * @since 0.11.0
  * @category Combinator
  */
-export const get = <K, E, A>(kv: KV<K, E, A>) => E.asksE((e: Get<K>) => e.getKV(kv))
+export const get = <K, E, A>(kv: KV<K, E, A>) => E.asksE((e: Get) => e.getKV(kv))
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Environment
  */
-export interface Get<K> {
-  readonly getKV: <E, A>(kv: KV<K, E, A>) => E.Env<E, A>
+export interface Get {
+  readonly getKV: <K, E, A>(kv: KV<K, E, A>) => E.Env<E, A>
 }
 
 /**
  * @since 0.11.0
  * @category Combinator
  */
-export const has = <K, E, A>(kv: KV<K, E, A>) => E.asksE((e: Has<K>) => e.hasKV(kv))
+export const has = <K, E, A>(kv: KV<K, E, A>) => E.asksE((e: Has) => e.hasKV(kv))
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Environment
  */
-export interface Has<K> {
-  readonly hasKV: <E, A>(kv: KV<K, E, A>) => E.Of<boolean>
+export interface Has {
+  readonly hasKV: <K, E, A>(kv: KV<K, E, A>) => E.Of<boolean>
 }
 
 /**
@@ -119,14 +120,14 @@ export interface Has<K> {
 export const set =
   <K, E, A>(kv: KV<K, E, A>) =>
   (value: A) =>
-    E.asksE((e: Set<K>) => e.setKV(kv, value))
+    E.asksE((e: Set) => e.setKV(kv, value))
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Environment
  */
-export interface Set<K> {
-  readonly setKV: <E, A>(kv: KV<K, E, A>, value: A) => E.Env<E, A>
+export interface Set {
+  readonly setKV: <K, E, A>(kv: KV<K, E, A>, value: A) => E.Env<E, A>
 }
 
 /**
@@ -142,60 +143,56 @@ export const update =
  * @since 0.11.0
  * @category Combinator
  */
-export const remove = <K, E, A>(kv: KV<K, E, A>) => E.asksE((e: Remove<K>) => e.removeKV(kv))
+export const remove = <K, E, A>(kv: KV<K, E, A>) => E.asksE((e: Remove) => e.removeKV(kv))
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Environment
  */
-export interface Remove<K> {
-  readonly removeKV: <E, A>(kv: KV<K, E, A>) => E.Env<E, O.Option<A>>
+export interface Remove {
+  readonly removeKV: <K, E, A>(kv: KV<K, E, A>) => E.Env<E, O.Option<A>>
 }
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Environment
  */
-export interface Events<K> {
-  readonly kvEvents: Adapter<K>
+export interface Events {
+  readonly kvEvents: Adapter
 }
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Combinator
  */
-export const getAdapter = <K = any>() => E.asks((e: Events<K>) => e.kvEvents)
+export const getAdapter = E.asks((e: Events) => e.kvEvents)
 
 /**
  * @since 0.11.0
  * @category Combinator
  */
-export const getSendEvent = flow(getAdapter, E.map(fst))
+export const getSendEvent = pipe(getAdapter, E.map(fst))
 
 /**
  * @since 0.11.0
  * @category Combinator
  */
-export const sendEvent = <K, E, A>(event: Event<K, E, A>) =>
-  pipe(getSendEvent<K>(), E.apW(E.of(event)))
+export const sendEvent = <K, A>(event: Event<K, A>) => pipe(getSendEvent, E.apW(E.of(event)))
+
+/**
+ * @since 0.12.0
+ * @category Combinator
+ */
+export const getKVEvents: RS.ReaderStream<Events, Event<any, any>> = (e: Events) => snd(e.kvEvents)
 
 /**
  * @since 0.11.0
  * @category Combinator
  */
-export const getKVEvents =
-  <K>(): RS.ReaderStream<Events<K>, Event<K, any, any>> =>
-  (e: Events<K>) =>
-    snd(e.kvEvents)
-
-/**
- * @since 0.11.0
- * @category Combinator
- */
-export const listenTo = <K, E, A>(kv: KV<K, E, A>): RS.ReaderStream<Events<K>, Event<K, E, A>> =>
+export const listenTo = <K, E, A>(kv: KV<K, E, A>): RS.ReaderStream<Events, Event<K, A>> =>
   pipe(
-    getKVEvents<K>(),
-    RS.filter((x) => x.kv.key === kv.key),
+    getKVEvents,
+    RS.filter((x) => x.key === kv.key),
   )
 
 /**
@@ -204,7 +201,7 @@ export const listenTo = <K, E, A>(kv: KV<K, E, A>): RS.ReaderStream<Events<K>, E
  */
 export const listenToValues = <K, E, A>(
   kv: KV<K, E, A>,
-): RS.ReaderStream<E & Events<K>, O.Option<A>> =>
+): RS.ReaderStream<E & Events, O.Option<A>> =>
   pipe(
     kv,
     listenTo,
@@ -213,18 +210,18 @@ export const listenToValues = <K, E, A>(
   )
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Environment
  */
-export interface ParentKVEnv<K> {
-  readonly parentKVEnv: O.Option<Env<K>>
+export interface ParentKVEnv {
+  readonly parentKVEnv: O.Option<Env>
 }
 
 /**
  * @since 0.11.0
  * @category Combinator
  */
-export const getParentKVs = <K>() => E.asks((e: ParentKVEnv<K>) => e.parentKVEnv)
+export const getParentKVs = E.asks((e: ParentKVEnv) => e.parentKVEnv)
 
 /**
  * Traverse up the tree of KVEnv and parent KVEnv to find the closest KVEnv that
@@ -233,11 +230,11 @@ export const getParentKVs = <K>() => E.asks((e: ParentKVEnv<K>) => e.parentKVEnv
  * @since 0.11.0
  * @category Combinator
  */
-export const findKVProvider = <K, E, A>(ref: KV<K, E, A>): E.Env<Env<K>, Env<K>> => {
+export const findKVProvider = <K, E, A>(ref: KV<K, E, A>): E.Env<Env, Env> => {
   const check = pipe(
     E.Do,
     E.bindW('hasRef', () => has(ref)),
-    E.bindW('env', () => getEnv<K>()),
+    E.bindW('env', () => getEnv),
   )
 
   return pipe(
@@ -282,130 +279,128 @@ export const withProviderStream =
     )
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Environment
  */
-export interface Env<K> extends Get<K>, Has<K>, Set<K>, Remove<K>, Events<K>, ParentKVEnv<K> {}
+export interface Env extends Get, Has, Set, Remove, Events, ParentKVEnv {}
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Combinator
  */
-export const getEnv = <K>() =>
-  E.asks(
-    ({ getKV, hasKV, setKV, removeKV, kvEvents, parentKVEnv }: Env<K>): Env<K> => ({
-      getKV,
-      hasKV,
-      setKV,
-      removeKV,
-      kvEvents,
-      parentKVEnv,
-    }),
-  )
+export const getEnv = E.asks(
+  ({ getKV, hasKV, setKV, removeKV, kvEvents, parentKVEnv }: Env): Env => ({
+    getKV,
+    hasKV,
+    setKV,
+    removeKV,
+    kvEvents,
+    parentKVEnv,
+  }),
+)
 
 /**
  * @since 0.11.0
  * @category Model
  */
-export type Adapter<K> = A.Adapter<Event<K, any, any>>
+export type Adapter = A.Adapter<Event<any, any>>
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Model
  */
-export type Event<K, E, A> = Created<K, E, A> | Updated<K, E, A> | Removed<K, E, A>
+export type Event<K, A> = Created<K, A> | Updated<K, A> | Removed<K>
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Model
  */
-export interface Created<K, E, A> {
+export interface Created<K, A> {
   readonly _tag: 'Created'
-  readonly kv: KV<K, E, A>
+  readonly key: K
   readonly value: A
-  readonly env: O.Option<Env<K>>
+  readonly fromAncestor: boolean
 }
 
 /**
  * @since 0.11.0
  * @category Refinement
  */
-export const isCreated = <K, E, A>(event: Event<K, E, A>): event is Created<K, E, A> =>
+export const isCreated = <K, A>(event: Event<K, A>): event is Created<K, A> =>
   event._tag === 'Created'
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Model
  */
-export interface Updated<K, E, A> {
+export interface Updated<K, A> {
   readonly _tag: 'Updated'
-  readonly kv: KV<K, E, A>
+  readonly key: K
   readonly previousValue: A
   readonly value: A
-  readonly env: O.Option<Env<K>>
+  readonly fromAncestor: boolean
 }
 
 /**
  * @since 0.11.0
  * @category Refinement
  */
-export const isUpdated = <K, E, A>(event: Event<K, E, A>): event is Updated<K, E, A> =>
+export const isUpdated = <K, A>(event: Event<K, A>): event is Updated<K, A> =>
   event._tag === 'Updated'
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Model
  */
-export interface Removed<K, E, A> {
+export interface Removed<K> {
   readonly _tag: 'Removed'
-  readonly kv: KV<K, E, A>
-  readonly env: O.Option<Env<K>>
+  readonly key: K
+  readonly fromAncestor: boolean
 }
 
 /**
  * @since 0.11.0
  * @category Refinement
  */
-export const isRemoved = <K, E, A>(event: Event<K, E, A>): event is Removed<K, E, A> =>
-  event._tag === 'Removed'
+export const isRemoved = <K, A>(event: Event<K, A>): event is Removed<K> => event._tag === 'Removed'
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Deconstructor
  */
 export const matchW =
-  <A, K, B, C, D, E>(
-    onCreated: (value: A, kv: KV<K, B, A>) => C,
-    onUpdated: (previousValue: A, value: A, kv: KV<K, B, A>) => D,
-    onDeleted: (kv: KV<K, B, A>) => E,
+  <A, K, B, C, D>(
+    onCreated: (value: A, key: K) => B,
+    onUpdated: (previousValue: A, value: A, key: K) => C,
+    onDeleted: (key: K) => D,
   ) =>
-  (event: Event<K, B, A>): C | D | E => {
+  (event: Event<K, A>): B | C | D => {
     if (event._tag === 'Updated') {
-      return onUpdated(event.previousValue, event.value, event.kv)
+      return onUpdated(event.previousValue, event.value, event.key)
     }
 
     if (event._tag === 'Created') {
-      return onCreated(event.value, event.kv)
+      return onCreated(event.value, event.key)
     }
 
-    return onDeleted(event.kv)
+    return onDeleted(event.key)
   }
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Deconstructor
  */
-export const match: <A, K, B, C>(
-  onCreated: (value: A, kv: KV<K, B, A>) => C,
-  onUpdated: (previousValue: A, value: A, kv: KV<K, B, A>) => C,
-  onDeleted: (kv: KV<K, B, A>) => C,
-) => (event: Event<K, B, A>) => C = matchW
+export const match: <A, K, B>(
+  onCreated: (value: A, key: K) => B,
+  onUpdated: (previousValue: A, value: A, key: K) => B,
+  onDeleted: (key: K) => B,
+) => (event: Event<K, A>) => B = matchW
 
 /**
- * @since 0.11.0
+ * @since 0.12.0
  * @category Environment Constructor
  */
-export function env<K>(options: EnvOptions<K> = {}): Env<K> {
+export function env(options: EnvOptions = {}): Env {
   const { initial = [], kvEvents = A.create() } = options
   const references = new Map(initial)
   const sendEvent = createSendEvent(references, kvEvents)
@@ -424,56 +419,39 @@ export function env<K>(options: EnvOptions<K> = {}): Env<K> {
  * @since 0.11.0
  * @category Options
  */
-export type EnvOptions<K> = {
-  readonly initial?: Iterable<readonly [K, any]>
-  readonly kvEvents?: Adapter<K>
-  readonly parentKVEnv?: Env<K>
+export type EnvOptions = {
+  readonly initial?: Iterable<readonly [any, any]>
+  readonly kvEvents?: Adapter
+  readonly parentKVEnv?: Env
 }
 
-function createSendEvent<K>(references: Map<any, any>, [push]: Adapter<K>) {
-  const updateReferences = (event: Event<K, any, any>) => {
-    if (event._tag === 'Created' || event._tag === 'Updated') {
-      references.set(event.kv.key, event.value)
-
-      return
-    }
-
-    references.delete(event.kv.key)
-  }
-
-  const sendEvent = (event: Event<K, any, any>) => {
-    if (event._tag === 'Created' || event._tag === 'Removed') {
-      return push(event)
-    }
-
-    // Only send update events when they have changed
-    if (!event.kv.equals(event.previousValue)(event.value)) {
-      return push(event)
-    }
-  }
-
-  return (event: Event<K, any, any>) =>
+function createSendEvent<K>(references: Map<any, any>, [push]: Adapter) {
+  return (event: Event<K, any>) =>
     pipe(
-      event.env,
-      O.matchW(
-        // Only update our local references when event.env is None
-        // as this indicates the event originates from within our current KVEnv environment.
+      event.fromAncestor,
+      B.matchW(
+        // Only update our local references when event.fromAncestor is false
+        // as this indicates the event originates from within our current environment.
         () => {
-          updateReferences(event)
-          sendEvent(event)
+          if (event._tag === 'Created' || event._tag === 'Updated') {
+            references.set(event.key, event.value)
+
+            return
+          }
+
+          references.delete(event.key)
+
+          push(event)
         },
-        // When event.env is Some<KVEnv>, the event originated from another set of references.
+        // When event.fromAncestor is true, the event originated from another environment.
         // We only replicate the event such that a descendant KVEnv can be re-sampled when it subscribes to
         // a Ref from an Ancestor's environment.
-        () => sendEvent(event),
+        () => push(event),
       ),
     )
 }
 
-function makeGetKV(
-  references: Map<any, any>,
-  sendEvent: (event: Event<any, any, any>) => void,
-): Get<any> {
+function makeGetKV(references: Map<any, any>, sendEvent: (event: Event<any, any>) => void): Get {
   return {
     getKV(kv) {
       if (references.has(kv.key)) {
@@ -482,13 +460,15 @@ function makeGetKV(
 
       return pipe(
         kv.initial,
-        E.chainFirstIOK((value) => () => sendEvent({ _tag: 'Created', kv, value, env: O.none })),
+        E.chainFirstIOK(
+          (value) => () => sendEvent({ _tag: 'Created', key: kv.key, value, fromAncestor: false }),
+        ),
       )
     },
   }
 }
 
-function makeHasKV(references: Map<any, any>): Has<any> {
+function makeHasKV(references: Map<any, any>): Has {
   return {
     hasKV(kv) {
       return E.fromIO(() => references.has(kv.key))
@@ -496,10 +476,7 @@ function makeHasKV(references: Map<any, any>): Has<any> {
   }
 }
 
-function makeSetKV(
-  references: Map<any, any>,
-  sendEvent: (event: Event<any, any, any>) => void,
-): Set<any> {
+function makeSetKV(references: Map<any, any>, sendEvent: (event: Event<any, any>) => void): Set {
   const { getKV } = makeGetKV(references, sendEvent)
 
   return {
@@ -507,11 +484,21 @@ function makeSetKV(
       return pipe(
         kv,
         getKV,
+        E.map((previousValue) => [previousValue, !pipe(value, kv.equals(previousValue))] as const),
         E.chainFirstIOK(
-          (previousValue) => () =>
-            sendEvent({ _tag: 'Updated', kv, previousValue, value, env: O.none }),
+          ([previousValue, changed]) =>
+            () =>
+              // Only send event when things changed
+              changed &&
+              sendEvent({
+                _tag: 'Updated',
+                key: kv.key,
+                previousValue,
+                value,
+                fromAncestor: false,
+              }),
         ),
-        E.constant(value),
+        E.map(([previousValue, changed]) => (changed ? value : previousValue)),
       )
     },
   }
@@ -519,13 +506,15 @@ function makeSetKV(
 
 function makeDeleteKV(
   references: Map<any, any>,
-  sendEvent: (event: Event<any, any, any>) => void,
-): Remove<any> {
+  sendEvent: (event: Event<any, any>) => void,
+): Remove {
   return {
     removeKV(kv) {
       return pipe(
         E.fromIO(() => (references.has(kv.key) ? O.some(references.get(kv.key)) : O.none)),
-        E.chainFirstIOK(() => () => sendEvent({ _tag: 'Removed', kv, env: O.none })),
+        E.chainFirstIOK(
+          () => () => sendEvent({ _tag: 'Removed', key: kv.key, fromAncestor: false }),
+        ),
       )
     },
   }
@@ -536,9 +525,9 @@ function makeDeleteKV(
  * @since 0.11.0
  * @category Combinator
  */
-export const sample = <E, A>(env: E.Env<E, A>): RS.ReaderStream<E & Env<any>, A> =>
+export const sample = <E, A>(env: E.Env<E, A>): RS.ReaderStream<E & Env, A> =>
   pipe(
-    getKVEvents(),
+    getKVEvents,
     RS.filter(not(isCreated)),
     RS.startWith(null),
     RS.exhaustMapLatestEnv(() => env),
@@ -551,7 +540,7 @@ export const sample = <E, A>(env: E.Env<E, A>): RS.ReaderStream<E & Env<any>, A>
  */
 export const Disposable = make(E.fromIO(D.settable), {
   ...EqStrict,
-  key: Symbol('KV:Disposable'),
+  key: Symbol.for('@typed/fp/KV.Disposable'),
 })
 
 /**
@@ -560,12 +549,12 @@ export const Disposable = make(E.fromIO(D.settable), {
  */
 export const useKeyedEnvs = <A>(Eq: Eq<A>) => {
   const refs = make(
-    E.fromIO(() => new Map<A, Env<any>>()),
+    E.fromIO(() => new Map<A, Env>()),
     alwaysEqualsEq,
   )
   const lookup = RM.lookup(Eq)
 
-  const getOrCreate = <E>(key: A, value: E.Env<E, Env<any>>) =>
+  const getOrCreate = <E>(key: A, value: E.Env<E, Env>) =>
     pipe(
       refs,
       get,
@@ -577,7 +566,7 @@ export const useKeyedEnvs = <A>(Eq: Eq<A>) => {
             () =>
               pipe(
                 value,
-                E.tap((x: Env<any>) => m.set(key, x)),
+                E.tap((x: Env) => m.set(key, x)),
               ),
             E.of,
           ),
@@ -594,7 +583,7 @@ export const useKeyedEnvs = <A>(Eq: Eq<A>) => {
 
   return pipe(
     E.Do,
-    E.apSW('parentKVEnv', getEnv<any>()),
+    E.apSW('parentKVEnv', getEnv),
     E.bindW('createRefs', ({ parentKVEnv }) =>
       E.of((key: A) => {
         const r = env({ parentKVEnv })
@@ -609,21 +598,21 @@ export const useKeyedEnvs = <A>(Eq: Eq<A>) => {
       }),
     ),
     E.bindW('findRefs', ({ createRefs, parentKVEnv }) =>
-      E.of((value: A) => pipe(getOrCreate(value, createRefs(value)), E.useSome(parentKVEnv))),
+      E.of((key: A) => pipe(getOrCreate(key, createRefs(key)), E.useSome(parentKVEnv))),
     ),
     E.bindW('deleteRefs', ({ parentKVEnv }) =>
       E.of(
-        (value: A): D.Disposable => ({
+        (key: A): D.Disposable => ({
           dispose: () =>
             pipe(
               parentKVEnv,
               get(refs),
-              R.map((refs) => refs.get(value)),
+              R.map((refs) => refs.get(key)),
               R.chainFirst(() =>
                 pipe(
                   refs,
                   get,
-                  E.tap((m) => m.delete(value)),
+                  E.tap((m) => m.delete(key)),
                 )(parentKVEnv),
               ),
               R.chain((refs) => (refs ? dispose(refs) : R.of(null))),

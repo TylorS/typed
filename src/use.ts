@@ -123,7 +123,7 @@ export const useDisposableWith =
   (Eq: Eq<A> = deepEqualsEq, switchLatest = false) => {
     const changed = useEqWith(options.changed)(Eq)
 
-    return (f: () => Disposable, value: A): E.Env<E1 & E2 & KV.Env<symbol>, Disposable> =>
+    return (f: () => Disposable, value: A): E.Env<E1 & E2 & KV.Env, Disposable> =>
       pipe(
         E.Do,
         E.bindW('changed', () => changed(value)),
@@ -213,7 +213,7 @@ export const useWithPrevious = <E, A>(ref: Ref.Ref<E, O.Option<A>>) => {
 export function useEnvK<A extends ReadonlyArray<any>, E1, B, E2>(
   f: (...args: A) => E.Env<E1, B>,
   onValue: (value: B) => E.Env<E2, any> = E.of,
-): E.Env<E1 & E2 & KV.Env<symbol>, (...args: A) => Disposable> {
+): E.Env<E1 & E2 & KV.Env, (...args: A) => Disposable> {
   return pipe(
     E.Do,
     E.apSW('refDisposable', RefDisposable.get),
@@ -241,7 +241,7 @@ export const bindEnvK =
   <E3>(
     ma: E.Env<E3, A>,
   ): E.Env<
-    E1 & E2 & E3 & KV.Env<symbol>,
+    E1 & E2 & E3 & KV.Env,
     { readonly [K in N | keyof A]: K extends keyof A ? A[K] : () => Disposable }
   > =>
     E.bindW(name, () => useEnvK(f, onValue))(ma)
@@ -266,7 +266,7 @@ export const useReaderStreamWith =
     return <E4, C extends A>(
       rs: RS.ReaderStream<E4, C>,
       dep: B,
-    ): E.Env<E1 & E2 & E3 & E4 & SchedulerEnv & KV.Env<symbol>, O.Option<C>> =>
+    ): E.Env<E1 & E2 & E3 & E4 & SchedulerEnv & KV.Env, O.Option<C>> =>
       pipe(
         E.asksE((r: E1 & E2 & E3 & E4 & SchedulerEnv) =>
           use(
@@ -322,7 +322,7 @@ export const useStreamWith =
 export const useStream = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
   const use = useStreamWith(defaultUserReaderStreamRefs<A, any>())(Eq)
 
-  return <B>(stream: S.Stream<B>, dep: A): E.Env<KV.Env<symbol> & SchedulerEnv, O.Option<B>> =>
+  return <B>(stream: S.Stream<B>, dep: A): E.Env<KV.Env & SchedulerEnv, O.Option<B>> =>
     use(stream, dep)
 }
 
@@ -330,13 +330,13 @@ export const useStream = <A = void>(Eq: Eq<A> = deepEqualsEq) => {
  * @since 0.11.0
  * @category Use
  */
-export const useRefsStream = <A, E1, B>(f: (value: A) => RS.ReaderStream<E1, B>, Eq: Eq<A>) => {
+export const useKVStream = <A, E1, B>(f: (value: A) => RS.ReaderStream<E1, B>, Eq: Eq<A>) => {
   const use = RS.fromEnv(KV.useKeyedEnvs(EqStrict as Eq<S.Stream<A>>))
   const mergeMap = RS.mergeMapWhen(EqStrict as Eq<S.Stream<A>>)
 
   return <E2>(
     stream: RS.ReaderStream<E2, readonly A[]>,
-  ): RS.ReaderStream<E1 & E2 & KV.Env<any>, readonly B[]> =>
+  ): RS.ReaderStream<E1 & E2 & KV.Env, readonly B[]> =>
     pipe(
       use,
       RS.switchMapW(({ findRefs, deleteRefs }) =>
@@ -361,5 +361,5 @@ export const useRefsStream = <A, E1, B>(f: (value: A) => RS.ReaderStream<E1, B>,
  * @since 0.11.0
  * @category Use
  */
-export const useRefs = <A, E1, B>(f: (value: A) => E.Env<E1, B>, Eq: Eq<A>) =>
-  useRefsStream(flow(f, KV.sample), Eq)
+export const useKVs = <A, E1, B>(f: (value: A) => E.Env<E1, B>, Eq: Eq<A>) =>
+  useKVStream(flow(f, KV.sample), Eq)

@@ -400,3 +400,39 @@ export const fromOptionK = FEi.fromOptionK(FromEither)
  * @category Combinator
  */
 export const fromPredicate = FEi.fromPredicate(FromEither)
+
+/**
+ * @since 0.12.1
+ * @category Consturctor
+ */
+export const noData: DataEither<never, never> = D.noData
+
+/**
+ * @since 0.12.1
+ * @category Consturctor
+ */
+export const loading: DataEither<never, never> = D.loading
+
+/**
+ * @since 0.12.1
+ * @category Constructor
+ */
+export const fromProgress = flow(D.fromProgress, fromData)
+
+/**
+ * @since 0.12.1
+ * @category Combinator
+ */
+export const toLoading = <E, A>(de: DataEither<E, A>): DataEither<E, A> => pipe(de, D.toLoading)
+
+/**
+ * @since 0.12.1
+ * @category Constructor
+ */
+export const refresh = flow(D.refresh, fromData)
+
+/**
+ * @since 0.12.1
+ * @category Constructor
+ */
+export const replete = flow(D.replete, fromData)

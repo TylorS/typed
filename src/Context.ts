@@ -8,7 +8,6 @@ import * as E from './Env'
 import * as EO from './EnvOption'
 import { flow, identity, pipe } from './function'
 import * as KV from './KV'
-import * as O from './Option'
 import * as RS from './ReaderStream'
 import * as Ref from './Ref'
 import { SchedulerEnv } from './Scheduler'
@@ -28,7 +27,7 @@ export interface Context<E, I, O = I> extends Ref.Ref<E, I, O> {}
  */
 export const fromKV = <K, E, A>(
   kv: KV.KV<K, E, A>,
-): KV.KV<K, E, A> & Context<E & KV.Env<K> & KV.Env<symbol> & SchedulerEnv, A, A> => ({
+): Context<E & KV.Env & SchedulerEnv, A, A> & KV.KV<K, E, A> => ({
   ...kv,
   get: useKV(kv),
   has: pipe(kv, KV.has, KV.withProvider(kv)),
@@ -44,15 +43,13 @@ export const fromKV = <K, E, A>(
  * @since 0.9.2
  * @category Combinator
  */
-export function useKV<K, E, A>(
-  kv: KV.KV<K, E, A>,
-): E.Env<E & KV.Env<K> & KV.Env<symbol> & SchedulerEnv, A> {
+export function useKV<K, E, A>(kv: KV.KV<K, E, A>): E.Env<E & KV.Env & SchedulerEnv, A> {
   const useValues = useReaderStream()
   const useReplicateEvents = useReaderStream()
 
   return pipe(
     E.Do,
-    E.bindW('currentRefs', () => KV.getEnv<K>()),
+    E.bindW('currentRefs', () => KV.getEnv),
     E.bindW('providerRefs', () => KV.findKVProvider(kv)),
     E.bindW('value', ({ providerRefs }) =>
       pipe(
@@ -70,7 +67,7 @@ export function useKV<K, E, A>(
         KV.listenTo,
         RS.useSome(providerRefs),
         RS.chainEnvK((event) =>
-          pipe({ ...event, refs: O.some(providerRefs) }, KV.sendEvent, E.useSome(currentRefs)),
+          pipe({ ...event, fromAncestor: true }, KV.sendEvent, E.useSome(currentRefs)),
         ),
         useReplicateEvents,
       ),

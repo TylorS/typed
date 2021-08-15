@@ -23,9 +23,9 @@ if (!rootElement) {
 const Count = Ref.kv(E.of(0))
 
 // Actions to update our Count Reference - easily tested
-const increment: E.Env<KV.Env<symbol>, number> = Count.update(F.flow(F.increment, E.of))
+const increment: E.Env<KV.Env, number> = Count.update(F.flow(F.increment, E.of))
 
-const decrement: E.Env<KV.Env<symbol>, number> = Count.update(
+const decrement: E.Env<KV.Env, number> = Count.update(
   F.flow(
     F.decrement,
     E.of,
@@ -34,7 +34,7 @@ const decrement: E.Env<KV.Env<symbol>, number> = Count.update(
 )
 
 // Creates a component which represents our counter
-const Counter: E.Env<KV.Env<symbol>, Renderable> = F.pipe(
+const Counter: E.Env<KV.Env, Renderable> = F.pipe(
   E.Do,
   U.bindEnvK('dec', () => decrement),
   U.bindEnvK('inc', () => increment),
@@ -49,7 +49,7 @@ const Counter: E.Env<KV.Env<symbol>, Renderable> = F.pipe(
 )
 
 // Sample our Counter everytime there is a Ref update.
-const Main: RS.ReaderStream<KV.Env<symbol>, HTMLElement> = F.pipe(
+const Main: RS.ReaderStream<KV.Env, HTMLElement> = F.pipe(
   Counter,
   KV.sample,
   RS.scan(render, rootElement),

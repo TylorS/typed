@@ -1,8 +1,4 @@
 /**
- * Env is a ReaderT of Resume. Capable of utilizing Dependency Injection from Reader,
- * and execute Synchronous and Asynchronous operations with the same effect. This
- * is the basis of many of the higher-level APIs like Ref.
- *
  * `Env` is the core of the higher-level modules like [Ref](./Ref.ts.md) and is a `ReaderT` of [Resume](./Resume.ts.md); but
  * to be honest, being used so much, I didn't like writing `ReaderResume<E, A>` and chose to shorten to
  * `Env<E, A>` for the "environmental" quality Reader provides. Combining Reader and Resume allows for

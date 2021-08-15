@@ -120,11 +120,31 @@ export const map = OT.map(E.Functor)
  * @category Deconstructor
  */
 export const match = OT.match(E.Functor)
+
+/**
+ * @since 0.12.1
+ * @category Deconstructor
+ */
+export const matchW = match as <A, B, C>(
+  onNone: () => A,
+  onSome: (b: B) => C,
+) => <E>(ma: E.Env<E, O.Option<B>>) => E.Env<E, A | C>
+
 /**
  * @since 0.9.2
  * @category Deconstructor
  */
 export const matchE = OT.matchE(E.Chain)
+
+/**
+ * @since 0.12.1
+ * @category Deconstructor
+ */
+export const matchEW = matchE as <E1, A, E2, B, C>(
+  onNone: () => E.Env<E1, A>,
+  onSome: (a: B) => E.Env<E2, C>,
+) => <E3>(ma: E.Env<E3, O.Option<B>>) => E.Env<E1 & E2 & E3, A | C>
+
 /**
  * @since 0.9.2
  * @category Constructor

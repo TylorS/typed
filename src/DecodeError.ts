@@ -303,7 +303,7 @@ function toTree(error: DecodeError): T.Tree<string> {
         forest: pipe(indexes, RA.map(flow(String, T.of))),
       }),
       UnexpectedIndexes: (indexes) => ({
-        value: `Undexpected Indexes`,
+        value: `Unexpected Indexes`,
         forest: pipe(indexes, RA.map(flow(String, T.of))),
       }),
       Member: (index, errors) => ({

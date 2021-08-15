@@ -109,3 +109,28 @@ export const upsertAt = <K>(Eq: Eq<K>) => {
     return <E>(rm: RefMap<E, K, V>) => rm.update(flow(upsertAtKey, E.of))
   }
 }
+
+/**
+ * @since 0.12.1
+ * @category Combinator
+ */
+export const getOrCreate = <K>(Eq: Eq<K>) => {
+  return <E, V>(key: K, create: E.Env<E, V>) => {
+    const lookup = RM.lookup(Eq)(key)
+    const upsert = upsertAt(Eq)
+
+    return <E>(rm: RefMap<E, K, V>) =>
+      pipe(
+        rm.get,
+        E.map(lookup),
+        EO.matchEW(
+          () =>
+            pipe(
+              create,
+              E.chainFirstW((v) => pipe(rm, upsert(key, v))),
+            ),
+          (x) => E.of(x),
+        ),
+      )
+  }
+}

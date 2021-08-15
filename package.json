@@ -15,6 +15,7 @@
     "@most/scheduler": "^1.3.0",
     "@most/types": "^1.1.0",
     "date-fns": "^2.23.0",
+    "fast-deep-equal": "^3.1.3",
     "fp-ts": "^3.0.0-alpha.17",
     "node-fetch": "^2.6.1",
     "ts-toolbelt": "^9.6.0"

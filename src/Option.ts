@@ -5,9 +5,11 @@
  */
 import { ChainRec1 } from 'fp-ts/ChainRec'
 import * as E from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 
 import { MonadRec1 } from './MonadRec'
+import * as S from './struct'
 
 /**
  * @since 0.9.2
@@ -28,6 +30,27 @@ export const chainRec =
 
     return option
   }
+
+export const struct = <Opts extends Readonly<Record<string, O.Option<any>>>>(
+  opts: Opts,
+): O.Option<{ readonly [K in keyof Opts]: [Opts[K]] extends [O.Option<infer R>] ? R : never }> => {
+  const { concat } = O.getMonoid(S.getAssignSemigroup<Opts>())
+  const entries = Object.entries(opts)
+
+  return entries.reduce(
+    (acc, [k, o]) =>
+      pipe(
+        acc,
+        concat(
+          pipe(
+            o,
+            O.map((v) => S.make(k, v) as Opts),
+          ),
+        ),
+      ),
+    O.none as O.Option<any>,
+  )
+}
 
 /**
  * @since 0.9.2
