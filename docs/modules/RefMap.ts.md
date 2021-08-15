@@ -1,6 +1,6 @@
 ---
 title: RefMap.ts
-nav_order: 47
+nav_order: 49
 parent: Modules
 ---
 
@@ -18,6 +18,7 @@ Added in v0.12.0
   - [deleteAt](#deleteat)
   - [filter](#filter)
   - [filterWithIndex](#filterwithindex)
+  - [getOrCreate](#getorcreate)
   - [insertAt](#insertat)
   - [modifyAt](#modifyat)
   - [pop](#pop)
@@ -61,6 +62,18 @@ export declare function filterWithIndex<K, V>(predicate: (k: K, v: V) => boolean
 ```
 
 Added in v0.12.0
+
+## getOrCreate
+
+**Signature**
+
+```ts
+export declare const getOrCreate: <K>(
+  Eq: Eq<K>,
+) => <E, V>(key: K, create: E.Env<E, V>) => <E>(rm: RefMap<E, K, V>) => E.Env<E & E, V>
+```
+
+Added in v0.12.1
 
 ## insertAt
 

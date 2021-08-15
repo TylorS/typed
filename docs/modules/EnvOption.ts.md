@@ -59,6 +59,8 @@ Added in v0.9.2
   - [getOrElseE](#getorelsee)
   - [match](#match)
   - [matchE](#matche)
+  - [matchEW](#matchew)
+  - [matchW](#matchw)
 - [Deconstuctor](#deconstuctor)
   - [getOrElse](#getorelse)
 - [Instance](#instance)
@@ -588,6 +590,32 @@ export declare const matchE: <E, B, A>(
 ```
 
 Added in v0.9.2
+
+## matchEW
+
+**Signature**
+
+```ts
+export declare const matchEW: <E1, A, E2, B, C>(
+  onNone: () => E.Env<E1, A>,
+  onSome: (a: B) => E.Env<E2, C>,
+) => <E3>(ma: E.Env<E3, O.Option<B>>) => E.Env<E1 & E2 & E3, A | C>
+```
+
+Added in v0.12.1
+
+## matchW
+
+**Signature**
+
+```ts
+export declare const matchW: <A, B, C>(
+  onNone: () => A,
+  onSome: (b: B) => C,
+) => <E>(ma: E.Env<E, O.Option<B>>) => E.Env<E, A | C>
+```
+
+Added in v0.12.1
 
 # Deconstuctor
 

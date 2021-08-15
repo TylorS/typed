@@ -34,13 +34,13 @@ Added in v0.11.0
   - [chainReaderK](#chainreaderk)
   - [chainResumeK](#chainresumek)
   - [chainTaskK](#chaintaskk)
-  - [combineStruct](#combinestruct)
   - [compose](#compose)
   - [local](#local)
   - [map](#map)
   - [promap](#promap)
   - [provideAll](#provideall)
   - [provideSome](#providesome)
+  - [struct](#struct)
   - [useAll](#useall)
   - [useSome](#usesome)
 - [Constructor](#constructor)
@@ -57,7 +57,7 @@ Added in v0.11.0
   - [UseAll](#useall)
   - [UseSome](#usesome)
 - [Instance Constructor](#instance-constructor)
-  - [getFromKV](#getfromkv)
+  - [FromKV](#fromkv)
 - [Model](#model)
   - [Ref (interface)](#ref-interface)
 - [Type-level](#type-level)
@@ -286,18 +286,6 @@ export declare function chainTaskK<A, B>(f: (value: A) => Task<B>)
 
 Added in v0.11.0
 
-## combineStruct
-
-**Signature**
-
-```ts
-export declare function combineStruct<S extends AnyRefStruct>(
-  properties: S,
-): Ref<RefStructEnv<S>, RefStructInput<S>, RefStructOutput<S>>
-```
-
-Added in v0.11.0
-
 ## compose
 
 **Signature**
@@ -365,6 +353,18 @@ export declare const provideSome: <E1>(
 
 Added in v0.11.0
 
+## struct
+
+**Signature**
+
+```ts
+export declare function struct<S extends AnyRefStruct>(
+  properties: S,
+): Ref<RefStructEnv<S>, RefStructInput<S>, RefStructOutput<S>>
+```
+
+Added in v0.11.0
+
 ## useAll
 
 **Signature**
@@ -394,9 +394,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const fromKV: <K, E, A>(
-  kv: KV.KV<K, E, A>,
-) => KV.KV<K, E, A> & Ref<E & KV.Env<K>, A, A>
+export declare const fromKV: <K, E, A>(kv: KV.KV<K, E, A>) => Ref<E & KV.Env, A, A> & KV.KV<K, E, A>
 ```
 
 Added in v0.11.0
@@ -409,7 +407,7 @@ Added in v0.11.0
 export declare const kv: <E, A, K = symbol>(
   initial: E.Env<E, A>,
   options?: KV.Options<K, A> | undefined,
-) => KV.KV<K, E, A> & Ref<E & KV.Env<K>, A, A>
+) => Ref<E & KV.Env, A, A> & KV.KV<K, E, A>
 ```
 
 Added in v0.11.0
@@ -508,15 +506,15 @@ Added in v0.11.0
 
 # Instance Constructor
 
-## getFromKV
+## FromKV
 
 **Signature**
 
 ```ts
-export declare const getFromKV: <K>() => FKV.FromKV2<'@typed/fp/Ref', KV.Env<K>>
+export declare const FromKV: FKV.FromKV2<'@typed/fp/Ref', KV.Env>
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 # Model
 

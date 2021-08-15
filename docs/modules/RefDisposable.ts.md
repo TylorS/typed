@@ -1,6 +1,6 @@
 ---
 title: RefDisposable.ts
-nav_order: 46
+nav_order: 48
 parent: Modules
 ---
 
@@ -31,7 +31,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const add: (disposable: Disposable) => E.Env<KV.Env<symbol>, Disposable>
+export declare const add: (disposable: Disposable) => E.Env<KV.Env, Disposable>
 ```
 
 Added in v0.11.0
@@ -41,7 +41,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const dispose: E.Env<KV.Env<symbol>, void>
+export declare const dispose: E.Env<KV.Env, void>
 ```
 
 Added in v0.11.0
@@ -51,7 +51,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const get: E.Env<KV.Env<symbol>, SettableDisposable>
+export declare const get: E.Env<KV.Env, SettableDisposable>
 ```
 
 Added in v0.11.0
@@ -61,7 +61,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const remove: E.Env<KV.Env<symbol>, Option<SettableDisposable>>
+export declare const remove: E.Env<KV.Env, Option<SettableDisposable>>
 ```
 
 Added in v0.11.0
@@ -75,8 +75,8 @@ A Ref for tracking resources that can be disposed of.
 **Signature**
 
 ```ts
-export declare const RefDisposable: KV.KV<symbol, unknown, SettableDisposable> &
-  Ref.Ref<KV.Env<symbol>, SettableDisposable, SettableDisposable>
+export declare const RefDisposable: Ref.Ref<KV.Env, SettableDisposable, SettableDisposable> &
+  KV.KV<symbol, unknown, SettableDisposable>
 ```
 
 Added in v0.11.0

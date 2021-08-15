@@ -34,9 +34,7 @@ Allows subscribing to the updates ensuring the current KV receives all updates f
 **Signature**
 
 ```ts
-export declare function useKV<K, E, A>(
-  kv: KV.KV<K, E, A>,
-): E.Env<E & KV.Env<K> & KV.Env<symbol> & SchedulerEnv, A>
+export declare function useKV<K, E, A>(kv: KV.KV<K, E, A>): E.Env<E & KV.Env & SchedulerEnv, A>
 ```
 
 Added in v0.9.2
@@ -50,7 +48,7 @@ Added in v0.9.2
 ```ts
 export declare const fromKV: <K, E, A>(
   kv: KV.KV<K, E, A>,
-) => KV.KV<K, E, A> & Context<E & KV.Env<K> & KV.Env<symbol> & SchedulerEnv, A, A>
+) => Context<E & KV.Env & SchedulerEnv, A, A> & KV.KV<K, E, A>
 ```
 
 Added in v0.11.0

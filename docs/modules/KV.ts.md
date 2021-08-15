@@ -88,7 +88,7 @@ given KV. This is useful for providing a React-like Context API atop of KV.
 **Signature**
 
 ```ts
-export declare const findKVProvider: <K, E, A>(ref: KV<K, E, A>) => E.Env<Env<K>, Env<K>>
+export declare const findKVProvider: <K, E, A>(ref: KV<K, E, A>) => E.Env<Env, Env>
 ```
 
 Added in v0.11.0
@@ -98,7 +98,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const get: <K, E, A>(kv: KV<K, E, A>) => E.Env<E & Get<K>, A>
+export declare const get: <K, E, A>(kv: KV<K, E, A>) => E.Env<E & Get, A>
 ```
 
 Added in v0.11.0
@@ -108,40 +108,40 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const getAdapter: <K = any>() => E.Env<
-  Events<K>,
-  readonly [(event: Event<K, any, any>) => void, Stream<Event<K, any, any>>]
+export declare const getAdapter: E.Env<
+  Events,
+  readonly [(event: Event<any, any>) => void, Stream<Event<any, any>>]
 >
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## getEnv
 
 **Signature**
 
 ```ts
-export declare const getEnv: <K>() => E.Env<Env<K>, Env<K>>
+export declare const getEnv: E.Env<Env, Env>
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## getKVEvents
 
 **Signature**
 
 ```ts
-export declare const getKVEvents: <K>() => RS.ReaderStream<Events<K>, Event<K, any, any>>
+export declare const getKVEvents: RS.ReaderStream<Events, Event<any, any>>
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## getParentKVs
 
 **Signature**
 
 ```ts
-export declare const getParentKVs: <K>() => E.Env<ParentKVEnv<K>, O.Option<Env<K>>>
+export declare const getParentKVs: E.Env<ParentKVEnv, O.Option<Env>>
 ```
 
 Added in v0.11.0
@@ -151,10 +151,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const getSendEvent: <K = any>() => E.Env<
-  Events<K>,
-  (event: Event<K, any, any>) => void
->
+export declare const getSendEvent: E.Env<Events, (event: Event<any, any>) => void>
 ```
 
 Added in v0.11.0
@@ -164,7 +161,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const has: <K, E, A>(kv: KV<K, E, A>) => E.Env<Has<K>, boolean>
+export declare const has: <K, E, A>(kv: KV<K, E, A>) => E.Env<Has, boolean>
 ```
 
 Added in v0.11.0
@@ -174,9 +171,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const listenTo: <K, E, A>(
-  kv: KV<K, E, A>,
-) => RS.ReaderStream<Events<K>, Event<K, E, A>>
+export declare const listenTo: <K, E, A>(kv: KV<K, E, A>) => RS.ReaderStream<Events, Event<K, A>>
 ```
 
 Added in v0.11.0
@@ -188,7 +183,7 @@ Added in v0.11.0
 ```ts
 export declare const listenToValues: <K, E, A>(
   kv: KV<K, E, A>,
-) => RS.ReaderStream<E & Events<K>, O.Option<A>>
+) => RS.ReaderStream<E & Events, O.Option<A>>
 ```
 
 Added in v0.11.0
@@ -198,7 +193,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const remove: <K, E, A>(kv: KV<K, E, A>) => E.Env<E & Remove<K>, O.Option<A>>
+export declare const remove: <K, E, A>(kv: KV<K, E, A>) => E.Env<E & Remove, O.Option<A>>
 ```
 
 Added in v0.11.0
@@ -210,7 +205,7 @@ Sample an Env with the latest references when updates have occured.
 **Signature**
 
 ```ts
-export declare const sample: <E, A>(env: E.Env<E, A>) => RS.ReaderStream<E & Env<any>, A>
+export declare const sample: <E, A>(env: E.Env<E, A>) => RS.ReaderStream<E & Env, A>
 ```
 
 Added in v0.11.0
@@ -220,7 +215,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const sendEvent: <K, E, A>(event: Event<K, E, A>) => E.Env<Events<K>, void>
+export declare const sendEvent: <K, A>(event: Event<K, A>) => E.Env<Events, void>
 ```
 
 Added in v0.11.0
@@ -230,7 +225,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const set: <K, E, A>(kv: KV<K, E, A>) => (value: A) => E.Env<E & Set<K>, A>
+export declare const set: <K, E, A>(kv: KV<K, E, A>) => (value: A) => E.Env<E & Set, A>
 ```
 
 Added in v0.11.0
@@ -242,7 +237,7 @@ Added in v0.11.0
 ```ts
 export declare const update: <K, E1, A>(
   kv: KV<K, E1, A>,
-) => <E2>(f: (value: A) => E.Env<E2, A>) => E.Env<E1 & Set<K> & E2 & Get<K>, A>
+) => <E2>(f: (value: A) => E.Env<E2, A>) => E.Env<E1 & Set & E2 & Get, A>
 ```
 
 Added in v0.11.0
@@ -254,7 +249,7 @@ Added in v0.11.0
 ```ts
 export declare const withProvider: <K, E, A>(
   kv: KV<K, E, A>,
-) => <E2, B>(env: E.Env<E2, B>) => E.Env<E2 & Env<K>, B>
+) => <E2, B>(env: E.Env<E2, B>) => E.Env<E2 & Env, B>
 ```
 
 Added in v0.11.0
@@ -266,7 +261,7 @@ Added in v0.11.0
 ```ts
 export declare const withProviderStream: <K, E, A>(
   kv: KV<K, E, A>,
-) => <E2, B>(rs: RS.ReaderStream<E2, B>) => RS.ReaderStream<E2 & Env<K>, B>
+) => <E2, B>(rs: RS.ReaderStream<E2, B>) => RS.ReaderStream<E2 & Env, B>
 ```
 
 Added in v0.11.0
@@ -296,28 +291,28 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const match: <A, K, B, C>(
-  onCreated: (value: A, kv: KV<K, B, A>) => C,
-  onUpdated: (previousValue: A, value: A, kv: KV<K, B, A>) => C,
-  onDeleted: (kv: KV<K, B, A>) => C,
-) => (event: Event<K, B, A>) => C
+export declare const match: <A, K, B>(
+  onCreated: (value: A, key: K) => B,
+  onUpdated: (previousValue: A, value: A, key: K) => B,
+  onDeleted: (key: K) => B,
+) => (event: Event<K, A>) => B
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## matchW
 
 **Signature**
 
 ```ts
-export declare const matchW: <A, K, B, C, D, E>(
-  onCreated: (value: A, kv: KV<K, B, A>) => C,
-  onUpdated: (previousValue: A, value: A, kv: KV<K, B, A>) => D,
-  onDeleted: (kv: KV<K, B, A>) => E,
-) => (event: Event<K, B, A>) => C | D | E
+export declare const matchW: <A, K, B, C, D>(
+  onCreated: (value: A, key: K) => B,
+  onUpdated: (previousValue: A, value: A, key: K) => C,
+  onDeleted: (key: K) => D,
+) => (event: Event<K, A>) => B | C | D
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 # Environment
 
@@ -326,82 +321,82 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export interface Env<K> extends Get<K>, Has<K>, Set<K>, Remove<K>, Events<K>, ParentKVEnv<K> {}
+export interface Env extends Get, Has, Set, Remove, Events, ParentKVEnv {}
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## Events (interface)
 
 **Signature**
 
 ```ts
-export interface Events<K> {
-  readonly kvEvents: Adapter<K>
+export interface Events {
+  readonly kvEvents: Adapter
 }
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## Get (interface)
 
 **Signature**
 
 ```ts
-export interface Get<K> {
-  readonly getKV: <E, A>(kv: KV<K, E, A>) => E.Env<E, A>
+export interface Get {
+  readonly getKV: <K, E, A>(kv: KV<K, E, A>) => E.Env<E, A>
 }
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## Has (interface)
 
 **Signature**
 
 ```ts
-export interface Has<K> {
-  readonly hasKV: <E, A>(kv: KV<K, E, A>) => E.Of<boolean>
+export interface Has {
+  readonly hasKV: <K, E, A>(kv: KV<K, E, A>) => E.Of<boolean>
 }
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## ParentKVEnv (interface)
 
 **Signature**
 
 ```ts
-export interface ParentKVEnv<K> {
-  readonly parentKVEnv: O.Option<Env<K>>
+export interface ParentKVEnv {
+  readonly parentKVEnv: O.Option<Env>
 }
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## Remove (interface)
 
 **Signature**
 
 ```ts
-export interface Remove<K> {
-  readonly removeKV: <E, A>(kv: KV<K, E, A>) => E.Env<E, O.Option<A>>
+export interface Remove {
+  readonly removeKV: <K, E, A>(kv: KV<K, E, A>) => E.Env<E, O.Option<A>>
 }
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## Set (interface)
 
 **Signature**
 
 ```ts
-export interface Set<K> {
-  readonly setKV: <E, A>(kv: KV<K, E, A>, value: A) => E.Env<E, A>
+export interface Set {
+  readonly setKV: <K, E, A>(kv: KV<K, E, A>, value: A) => E.Env<E, A>
 }
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 # Environment Constructor
 
@@ -410,10 +405,10 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare function env<K>(options: EnvOptions<K> = {}): Env<K>
+export declare function env(options: EnvOptions = {}): Env
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 # KV
 
@@ -436,7 +431,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export type Adapter<K> = A.Adapter<Event<K, any, any>>
+export type Adapter = A.Adapter<Event<any, any>>
 ```
 
 Added in v0.11.0
@@ -446,25 +441,25 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export interface Created<K, E, A> {
+export interface Created<K, A> {
   readonly _tag: 'Created'
-  readonly kv: KV<K, E, A>
+  readonly key: K
   readonly value: A
-  readonly env: O.Option<Env<K>>
+  readonly fromAncestor: boolean
 }
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## Event (type alias)
 
 **Signature**
 
 ```ts
-export type Event<K, E, A> = Created<K, E, A> | Updated<K, E, A> | Removed<K, E, A>
+export type Event<K, A> = Created<K, A> | Updated<K, A> | Removed<K>
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## KV (interface)
 
@@ -472,7 +467,7 @@ Added in v0.11.0
 
 ```ts
 export interface KV<K, E, A> extends Eq<A> {
-  readonly key: K // Use function to ensure this is a covariant property
+  readonly key: K
   readonly initial: E.Env<E, A>
 }
 ```
@@ -494,30 +489,30 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export interface Removed<K, E, A> {
+export interface Removed<K> {
   readonly _tag: 'Removed'
-  readonly kv: KV<K, E, A>
-  readonly env: O.Option<Env<K>>
+  readonly key: K
+  readonly fromAncestor: boolean
 }
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 ## Updated (interface)
 
 **Signature**
 
 ```ts
-export interface Updated<K, E, A> {
+export interface Updated<K, A> {
   readonly _tag: 'Updated'
-  readonly kv: KV<K, E, A>
+  readonly key: K
   readonly previousValue: A
   readonly value: A
-  readonly env: O.Option<Env<K>>
+  readonly fromAncestor: boolean
 }
 ```
 
-Added in v0.11.0
+Added in v0.12.0
 
 # Options
 
@@ -526,10 +521,10 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export type EnvOptions<K> = {
-  readonly initial?: Iterable<readonly [K, any]>
-  readonly kvEvents?: Adapter<K>
-  readonly parentKVEnv?: Env<K>
+export type EnvOptions = {
+  readonly initial?: Iterable<readonly [any, any]>
+  readonly kvEvents?: Adapter
+  readonly parentKVEnv?: Env
 }
 ```
 
@@ -554,7 +549,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const isCreated: <K, E, A>(event: Event<K, E, A>) => event is Created<K, E, A>
+export declare const isCreated: <K, A>(event: Event<K, A>) => event is Created<K, A>
 ```
 
 Added in v0.11.0
@@ -564,7 +559,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const isRemoved: <K, E, A>(event: Event<K, E, A>) => event is Removed<K, E, A>
+export declare const isRemoved: <K, A>(event: Event<K, A>) => event is Removed<K>
 ```
 
 Added in v0.11.0
@@ -574,7 +569,7 @@ Added in v0.11.0
 **Signature**
 
 ```ts
-export declare const isUpdated: <K, E, A>(event: Event<K, E, A>) => event is Updated<K, E, A>
+export declare const isUpdated: <K, A>(event: Event<K, A>) => event is Updated<K, A>
 ```
 
 Added in v0.11.0
@@ -621,11 +616,8 @@ Added in v0.11.0
 export declare const useKeyedEnvs: <A>(
   Eq: Eq<A>,
 ) => E.Env<
-  Env<any>,
-  {
-    readonly findRefs: (value: A) => E.Env<Get<symbol>, Env<any>>
-    readonly deleteRefs: (value: A) => D.Disposable
-  }
+  Env,
+  { readonly findRefs: (key: A) => E.Env<Get, Env>; readonly deleteRefs: (key: A) => D.Disposable }
 >
 ```
 

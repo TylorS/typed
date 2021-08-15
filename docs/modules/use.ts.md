@@ -1,6 +1,6 @@
 ---
 title: use.ts
-nav_order: 66
+nav_order: 69
 parent: Modules
 ---
 
@@ -28,12 +28,12 @@ Added in v0.11.0
   - [useDisposableWith](#usedisposablewith)
   - [useEffectWith](#useeffectwith)
   - [useEnvK](#useenvk)
+  - [useKVStream](#usekvstream)
+  - [useKVs](#usekvs)
   - [useMemo](#usememo)
   - [useMemoWith](#usememowith)
   - [useReaderStream](#usereaderstream)
   - [useReaderStreamWith](#usereaderstreamwith)
-  - [useRefs](#userefs)
-  - [useRefsStream](#userefsstream)
   - [useStream](#usestream)
   - [useStreamWith](#usestreamwith)
   - [useWithPrevious](#usewithprevious)
@@ -52,7 +52,7 @@ Use Refs to check if a value has changed between invocations
 export declare const useEq: <A>(
   Eq?: Eq<A>,
   initial?: boolean,
-) => (value: A) => E.Env<KV.Env<symbol>, boolean>
+) => (value: A) => E.Env<KV.Env, boolean>
 ```
 
 Added in v0.11.0
@@ -78,8 +78,8 @@ Use Refs to check if a value has changed between invocations
 **Signature**
 
 ```ts
-export declare const defaultOptionRef: <A>() => KV.KV<symbol, unknown, O.Option<A>> &
-  Ref.Ref<KV.Env<symbol>, O.Option<A>, O.Option<A>>
+export declare const defaultOptionRef: <A>() => Ref.Ref<KV.Env, O.Option<A>, O.Option<A>> &
+  KV.KV<symbol, unknown, O.Option<A>>
 ```
 
 Added in v0.11.0
@@ -105,7 +105,7 @@ Added in v0.11.0
 
 ```ts
 export type UseMemoWithOptions<E1, A, E2, B> = {
-  readonly currentValue: Ref.Ref<E1, A>
+  readonly currentValue: Ref.Ref<E1, O.Option<A>>
   readonly changed: Ref.Ref<E2, O.Option<B>>
 }
 ```
@@ -148,7 +148,7 @@ export declare const bindEnvK: <N extends string, A, Args extends readonly any[]
 ) => <E3>(
   ma: E.Env<E3, A>,
 ) => E.Env<
-  E1 & E2 & E3 & KV.Env<symbol>,
+  E1 & E2 & E3 & KV.Env,
   { readonly [K in N | keyof A]: K extends keyof A ? A[K] : () => Disposable }
 >
 ```
@@ -163,7 +163,7 @@ Added in v0.11.0
 export declare const useDisposable: <A>(
   Eq?: Eq<A>,
   switchLatest?: boolean,
-) => (f: () => Disposable, value: A) => E.Env<KV.Env<symbol>, Disposable>
+) => (f: () => Disposable, value: A) => E.Env<KV.Env, Disposable>
 ```
 
 Added in v0.11.0
@@ -178,7 +178,7 @@ export declare const useDisposableWith: <E1, E2, A = void>(
 ) => (
   Eq?: Eq<A>,
   switchLatest?: boolean,
-) => (f: () => Disposable, value: A) => E.Env<E1 & E2 & KV.Env<symbol>, Disposable>
+) => (f: () => Disposable, value: A) => E.Env<E1 & E2 & KV.Env, Disposable>
 ```
 
 Added in v0.11.0
@@ -193,10 +193,7 @@ export declare const useEffectWith: <E1, E2, A = void>(
 ) => (
   Eq?: Eq<A>,
   switchLatest?: boolean,
-) => <E>(
-  env: E.Env<E, any>,
-  value: A,
-) => E.Env<E1 & E2 & KV.Env<symbol> & E & SchedulerEnv, Disposable>
+) => <E>(env: E.Env<E, any>, value: A) => E.Env<E1 & E2 & KV.Env & E & SchedulerEnv, Disposable>
 ```
 
 Added in v0.11.0
@@ -212,7 +209,37 @@ you need to provide onClick={fn} style handlers.
 export declare function useEnvK<A extends ReadonlyArray<any>, E1, B, E2>(
   f: (...args: A) => E.Env<E1, B>,
   onValue: (value: B) => E.Env<E2, any> = E.of,
-): E.Env<E1 & E2 & KV.Env<symbol>, (...args: A) => Disposable>
+): E.Env<E1 & E2 & KV.Env, (...args: A) => Disposable>
+```
+
+Added in v0.11.0
+
+## useKVStream
+
+**Signature**
+
+```ts
+export declare const useKVStream: <A, E1, B>(
+  f: (value: A) => RS.ReaderStream<E1, B>,
+  Eq: Eq<A>,
+) => <E2>(
+  stream: RS.ReaderStream<E2, readonly A[]>,
+) => RS.ReaderStream<E1 & E2 & KV.Env, readonly B[]>
+```
+
+Added in v0.11.0
+
+## useKVs
+
+**Signature**
+
+```ts
+export declare const useKVs: <A, E1, B>(
+  f: (value: A) => E.Env<E1, B>,
+  Eq: Eq<A>,
+) => <E2>(
+  stream: RS.ReaderStream<E2, readonly A[]>,
+) => RS.ReaderStream<E1 & KV.Env & E2, readonly B[]>
 ```
 
 Added in v0.11.0
@@ -225,7 +252,7 @@ Added in v0.11.0
 export declare const useMemo: <E, A, B>(
   env: E.Env<E, A>,
   Eq?: Eq<B>,
-) => (value: B) => E.Env<E & KV.Env<symbol>, A>
+) => (value: B) => E.Env<KV.Env & E, A>
 ```
 
 Added in v0.11.0
@@ -237,7 +264,7 @@ Added in v0.11.0
 ```ts
 export declare const useMemoWith: <E1, A, E2, B>(
   options: UseMemoWithOptions<E1, A, E2, B>,
-) => <E2>(env: E.Env<E2, A>, Eq?: Eq<B>) => (value: B) => E.Env<E1 & E2 & E2, A>
+) => <E3>(env: E.Env<E3, A>, Eq?: Eq<B>) => (value: B) => E.Env<E1 & E2 & E3, A>
 ```
 
 Added in v0.11.0
@@ -249,10 +276,7 @@ Added in v0.11.0
 ```ts
 export declare const useReaderStream: <A = void>(
   Eq?: Eq<A>,
-) => <E4, C>(
-  rs: RS.ReaderStream<E4, C>,
-  dep: A,
-) => E.Env<KV.Env<symbol> & E4 & SchedulerEnv, O.Option<C>>
+) => <E4, C>(rs: RS.ReaderStream<E4, C>, dep: A) => E.Env<KV.Env & E4 & SchedulerEnv, O.Option<C>>
 ```
 
 Added in v0.11.0
@@ -269,37 +293,7 @@ export declare const useReaderStreamWith: <E1, A, E2, E3, B = void>(
 ) => <E4, C extends A>(
   rs: RS.ReaderStream<E4, C>,
   dep: B,
-) => E.Env<E1 & E2 & E3 & E4 & SchedulerEnv & KV.Env<symbol>, O.Option<C>>
-```
-
-Added in v0.11.0
-
-## useRefs
-
-**Signature**
-
-```ts
-export declare const useRefs: <A, E1, B>(
-  f: (value: A) => E.Env<E1, B>,
-  Eq: Eq<A>,
-) => <E2>(
-  stream: RS.ReaderStream<E2, readonly A[]>,
-) => RS.ReaderStream<E1 & KV.Env<any> & E2, readonly B[]>
-```
-
-Added in v0.11.0
-
-## useRefsStream
-
-**Signature**
-
-```ts
-export declare const useRefsStream: <A, E1, B>(
-  f: (value: A) => RS.ReaderStream<E1, B>,
-  Eq: Eq<A>,
-) => <E2>(
-  stream: RS.ReaderStream<E2, readonly A[]>,
-) => RS.ReaderStream<E1 & E2 & KV.Env<any>, readonly B[]>
+) => E.Env<E1 & E2 & E3 & E4 & SchedulerEnv & KV.Env, O.Option<C>>
 ```
 
 Added in v0.11.0
@@ -311,7 +305,7 @@ Added in v0.11.0
 ```ts
 export declare const useStream: <A = void>(
   Eq?: Eq<A>,
-) => <B>(stream: S.Stream<B>, dep: A) => E.Env<KV.Env<symbol> & SchedulerEnv, O.Option<B>>
+) => <B>(stream: S.Stream<B>, dep: A) => E.Env<KV.Env & SchedulerEnv, O.Option<B>>
 ```
 
 Added in v0.11.0
@@ -325,10 +319,7 @@ export declare const useStreamWith: <E1, A, E2, E3, B>(
   options: UseReaderStreamWithOptions<E1, A, E2, E3, B>,
 ) => (
   Eq?: Eq<B>,
-) => (
-  stream: S.Stream<A>,
-  dep: B,
-) => E.Env<E1 & E2 & E3 & SchedulerEnv & KV.Env<symbol>, O.Option<A>>
+) => (stream: S.Stream<A>, dep: B) => E.Env<E1 & E2 & E3 & SchedulerEnv & KV.Env, O.Option<A>>
 ```
 
 Added in v0.11.0

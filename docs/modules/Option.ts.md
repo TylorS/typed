@@ -14,6 +14,8 @@ Added in v0.9.2
 
 - [Combinator](#combinator)
   - [chainRec](#chainrec)
+- [Constructor](#constructor)
+  - [struct](#struct)
 - [Typeclass](#typeclass)
   - [ChainRec](#chainrec)
   - [MonadRec](#monadrec)
@@ -33,6 +35,20 @@ export declare const chainRec: <A, B>(
 ```
 
 Added in v0.9.2
+
+# Constructor
+
+## struct
+
+**Signature**
+
+```ts
+export declare const struct: <Opts extends Readonly<Record<string, O.Option<any>>>>(
+  opts: Opts,
+) => O.Option<{ readonly [K in keyof Opts]: [Opts[K]] extends [O.Option<infer R>] ? R : never }>
+```
+
+Added in v0.12.1
 
 # Typeclass
 

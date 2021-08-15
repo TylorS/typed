@@ -1,6 +1,6 @@
 ---
 title: TaskEither.ts
-nav_order: 64
+nav_order: 66
 parent: Modules
 ---
 

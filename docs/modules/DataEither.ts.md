@@ -48,14 +48,21 @@ Added in v0.9.2
   - [orLeft](#orleft)
   - [right](#right)
   - [swap](#swap)
+  - [toLoading](#toloading)
   - [toUnion](#tounion)
   - [tupled](#tupled)
 - [Constructor](#constructor)
   - [fromData](#fromdata)
   - [fromDataL](#fromdatal)
   - [fromEither](#fromeither)
+  - [fromProgress](#fromprogress)
   - [left](#left)
   - [of](#of)
+  - [refresh](#refresh)
+  - [replete](#replete)
+- [Consturctor](#consturctor)
+  - [loading](#loading)
+  - [noData](#nodata)
 - [Instance](#instance)
   - [Alt](#alt)
   - [Applicative](#applicative)
@@ -478,6 +485,16 @@ export declare const swap: <E, A>(ma: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Eith
 
 Added in v0.9.2
 
+## toLoading
+
+**Signature**
+
+```ts
+export declare const toLoading: <E, A>(de: D.Data<Ei.Either<E, A>>) => D.Data<Ei.Either<E, A>>
+```
+
+Added in v0.12.1
+
 ## toUnion
 
 **Signature**
@@ -532,6 +549,16 @@ export declare const fromEither: <E, A>(e: Ei.Either<E, A>) => D.Data<Ei.Either<
 
 Added in v0.9.2
 
+## fromProgress
+
+**Signature**
+
+```ts
+export declare const fromProgress: (progress: Progress) => D.Data<Ei.Either<never, unknown>>
+```
+
+Added in v0.12.1
+
 ## left
 
 **Signature**
@@ -551,6 +578,51 @@ export declare const of: <A, E = never>(a: A) => D.Data<Ei.Either<E, A>>
 ```
 
 Added in v0.9.2
+
+## refresh
+
+**Signature**
+
+```ts
+export declare const refresh: <A>(
+  value: A,
+  progress?: None | Some<Progress> | undefined,
+) => D.Data<Ei.Either<never, A>>
+```
+
+Added in v0.12.1
+
+## replete
+
+**Signature**
+
+```ts
+export declare const replete: <A>(value: A) => D.Data<Ei.Either<never, A>>
+```
+
+Added in v0.12.1
+
+# Consturctor
+
+## loading
+
+**Signature**
+
+```ts
+export declare const loading: D.Data<Ei.Either<never, never>>
+```
+
+Added in v0.12.1
+
+## noData
+
+**Signature**
+
+```ts
+export declare const noData: D.Data<Ei.Either<never, never>>
+```
+
+Added in v0.12.1
 
 # Instance
 
