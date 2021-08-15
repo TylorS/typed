@@ -103,6 +103,8 @@ snowpack.key
 /Ref/
 /RefAdapter/
 /RefArray/
+/RefData/
+/RefDataEither/
 /RefDisposable/
 /RefMap/
 /Resume/
@@ -121,6 +123,7 @@ snowpack.key
 /Task/
 /TaskEither/
 /TaskOption/
+/These/
 /browser/
 /function/
 /http/

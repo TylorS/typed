@@ -262,6 +262,14 @@
       "require": "./cjs/RefArray.js",
       "import": "./esm/RefArray.js"
     },
+    "./RefData": {
+      "require": "./cjs/RefData.js",
+      "import": "./esm/RefData.js"
+    },
+    "./RefDataEither": {
+      "require": "./cjs/RefDataEither.js",
+      "import": "./esm/RefDataEither.js"
+    },
     "./RefDisposable": {
       "require": "./cjs/RefDisposable.js",
       "import": "./esm/RefDisposable.js"
@@ -333,6 +341,10 @@
     "./TaskOption": {
       "require": "./cjs/TaskOption.js",
       "import": "./esm/TaskOption.js"
+    },
+    "./These": {
+      "require": "./cjs/These.js",
+      "import": "./esm/These.js"
     },
     "./browser": {
       "require": "./cjs/browser.js",
