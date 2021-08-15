@@ -5,10 +5,12 @@
  */
 import * as Ei from 'fp-ts/Either'
 
+import { Adapter } from './Adapter'
 import * as D from './Disposable'
 import * as E from './Env'
 import * as http from './http'
 import * as R from './Resume'
+import { newStream } from './Stream'
 
 /**
  * @category Environment
@@ -65,4 +67,36 @@ function httpFetchRequest(
 
     return disposable
   })
+}
+
+/**
+ * Constructs an Adapter that utilizes a BroadcastChannel to communicate messages across
+ * all scripts of the same origin, including workers.
+ *
+ * _Note:_ An error will occur, and the stream will fail, if you send events which cannot be
+ * structurally cloned. See
+ * https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
+ * @category Constructor
+ * @since 0.12.2
+ */
+export const broadcastChannel = <A>(name: string): Adapter<A> => {
+  const channel = new BroadcastChannel(name)
+  const send = (event: A) => channel.postMessage(event)
+  const stream = newStream<A>((sink, scheduler) => {
+    const onMessage = (event: MessageEvent<A>) => sink.event(scheduler.currentTime(), event.data)
+    const onMessageError = (event: MessageEvent<Error>) =>
+      sink.error(scheduler.currentTime(), event.data)
+
+    channel.addEventListener('message', onMessage)
+    channel.addEventListener('messageerror', onMessageError)
+
+    return {
+      dispose: () => {
+        channel.removeEventListener('message', onMessage)
+        channel.removeEventListener('messageerror', onMessageError)
+      },
+    }
+  })
+
+  return [send, stream]
 }
