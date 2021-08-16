@@ -887,10 +887,10 @@ export const combineAll =
     S.combineAll(...rss.map((rs) => rs(e)))
 
 /**
- * @since 0.11.0
+ * @since 0.13.2
  * @category Combinator
  */
-export const combineStruct = <Props extends Readonly<Record<string, ReaderStream<any, any>>>>(
+export const struct = <Props extends Readonly<Record<string, ReaderStream<any, any>>>>(
   props: Props,
 ) =>
   pipe(
