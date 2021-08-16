@@ -435,11 +435,9 @@ function createSendEvent<K>(references: Map<any, any>, [push]: Adapter) {
         () => {
           if (event._tag === 'Created' || event._tag === 'Updated') {
             references.set(event.key, event.value)
-
-            return
+          } else {
+            references.delete(event.key)
           }
-
-          references.delete(event.key)
 
           push(event)
         },
