@@ -18,7 +18,6 @@ import * as RA from 'fp-ts/ReadonlyArray'
 import { concatW } from 'fp-ts/ReadonlyNonEmptyArray'
 import { Refinement } from 'fp-ts/Refinement'
 import * as S from 'fp-ts/string'
-import * as T from 'fp-ts/These'
 
 import * as DE from './DecodeError'
 import { leaf } from './DecodeError'
@@ -27,6 +26,7 @@ import { memoize } from './internal'
 import { Literal, Schemable2C, WithRefine2C, WithUnion2C } from './Schemable'
 import * as St from './struct'
 import { make } from './struct'
+import * as T from './These'
 
 /**
  * @category Model
@@ -848,3 +848,43 @@ export const jsonParseFromString: Decoder<string, Json> = {
  * @since 0.9.5
  */
 export const jsonParse = pipe(string, compose(jsonParseFromString))
+
+/**
+ * Throw if not a valid decoder. Absolves optional errors
+ * @category Interpreter
+ * @since 0.9.5
+ */
+export const assert =
+  <I, O>(decoder: Decoder<I, O>) =>
+  (i: I): O =>
+    pipe(
+      i,
+      decoder.decode,
+      T.absolve,
+      Ei.matchW(
+        (errors) => {
+          throw new Error(DE.drawErrors(errors))
+        },
+        (o) => o,
+      ),
+    )
+
+/**
+ * Throw if not a valid decoder. Condemns optional errors
+ * @category Interpreter
+ * @since 0.9.5
+ */
+export const assertStrict =
+  <I, O>(decoder: Decoder<I, O>) =>
+  (i: I): O =>
+    pipe(
+      i,
+      decoder.decode,
+      T.condemn,
+      Ei.matchW(
+        (errors) => {
+          throw new Error(DE.drawErrors(errors))
+        },
+        (o) => o,
+      ),
+    )
