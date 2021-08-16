@@ -141,20 +141,13 @@ export const queryRootElement = <E extends HTMLElement>(selector: string) =>
  * @category DOM
  * @since 0.13.2
  */
-export const patchKVOnRaf =
+export const patchKV =
   <A>(patch: (element: HTMLElement, renderable: A) => HTMLElement, selector: string) =>
-  <E>(env: E.Env<E, A>) =>
+  <E>(env: E.Env<E, A>): RS.ReaderStream<E & DocumentEnv & KV.Env, HTMLElement> =>
     pipe(
       getRootElement,
       RS.fromEnv,
-      RS.switchMapW((rootElement) =>
-        pipe(
-          raf,
-          E.chainW(() => env),
-          KV.sample,
-          RS.scan(patch, rootElement),
-        ),
-      ),
+      RS.switchMapW((rootElement) => pipe(env, KV.sample, RS.scan(patch, rootElement))),
       RS.provideSomeWithEnv(queryRootElement(selector)),
     )
 
@@ -164,21 +157,27 @@ export const patchKVOnRaf =
  * @category DOM
  * @since 0.13.2
  */
+export const patchKVOnRaf =
+  <A>(patch: (element: HTMLElement, renderable: A) => HTMLElement, selector: string) =>
+  <E>(env: E.Env<E, A>): RS.ReaderStream<E & DocumentEnv & KV.Env & RafEnv, HTMLElement> =>
+    pipe(
+      raf,
+      E.chainW(() => env),
+      patchKV(patch, selector),
+    )
+/**
+ * Common setup for rendering an application into an element queried from the DOM
+ * utilizing requestAnimationFrame.
+ * @category DOM
+ * @since 0.13.2
+ */
 export const patchKVWhenIdle =
   <A>(patch: (element: HTMLElement, renderable: A) => HTMLElement, selector: string) =>
-  <E>(env: E.Env<E, A>) =>
+  <E>(env: E.Env<E, A>): RS.ReaderStream<E & DocumentEnv & KV.Env & WhenIdleEnv, HTMLElement> =>
     pipe(
-      getRootElement,
-      RS.fromEnv,
-      RS.switchMapW((rootElement) =>
-        pipe(
-          whenIdle,
-          E.chainW(() => env),
-          KV.sample,
-          RS.scan(patch, rootElement),
-        ),
-      ),
-      RS.provideSomeWithEnv(queryRootElement(selector)),
+      whenIdle,
+      E.chainW(() => env),
+      patchKV(patch, selector),
     )
 
 /**

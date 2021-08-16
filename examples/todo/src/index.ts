@@ -1,3 +1,5 @@
+import { rafEnv } from '@fp/browser'
+import * as DOM from '@fp/dom'
 import * as E from '@fp/Env'
 import * as KV from '@fp/KV'
 import * as RS from '@fp/ReaderStream'
@@ -16,22 +18,16 @@ import {
 } from './infrastructure'
 import { TodoApp } from './presentation'
 
-const rootElement = document.querySelector<HTMLElement>('.todoapp')
-
-if (!rootElement) {
-  throw new Error(`Unable to find root element .todoapp`)
-}
-
 const Main = F.pipe(
   TodoApp,
-  KV.sample, // Sample our TodoApp everytime there is a KV update
-  RS.scan(render, rootElement), // Render
-  // Additional effects
+  DOM.patchKV(render, '.todoapp'),
   RS.mergeFirst(saveTodosOnChange),
   RS.mergeFirst(updateFilterOnHashChange),
 )
 
 const stream: Stream<HTMLElement> = Main({
+  document,
+  ...rafEnv,
   ...KV.env(),
   loadTodos: () => E.fromIO(loadTodosFromStorage),
   saveTodos: saveTodosToStorage,

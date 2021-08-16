@@ -1,3 +1,4 @@
+import * as DOM from '@fp/dom'
 import * as E from '@fp/Env'
 import * as KV from '@fp/KV'
 import * as RS from '@fp/ReaderStream'
@@ -7,16 +8,6 @@ import * as U from '@fp/use'
 import { newDefaultScheduler } from '@most/scheduler'
 import * as F from 'fp-ts/function'
 import { html, render, Renderable } from 'uhtml'
-
-/**
- * This is an example of using Ref to model a Counter over time.
- */
-
-const rootElement: HTMLElement | null = document.getElementById('app')
-
-if (!rootElement) {
-  throw new Error('Unable to find element by #app')
-}
 
 // Creates a Reference to keep our Count
 // It requires no resources and tracks a number
@@ -49,14 +40,13 @@ const Counter: E.Env<KV.Env, Renderable> = F.pipe(
 )
 
 // Sample our Counter everytime there is a Ref update.
-const Main: RS.ReaderStream<KV.Env, HTMLElement> = F.pipe(
+const Main: RS.ReaderStream<KV.Env & DOM.DocumentEnv, HTMLElement> = F.pipe(
   Counter,
-  KV.sample,
-  RS.scan(render, rootElement),
+  DOM.patchKV(render, '#app'),
 )
 
 // Provide Main with its required resources
-const stream: S.Stream<HTMLElement> = Main(KV.env())
+const stream: S.Stream<HTMLElement> = Main({ document, ...KV.env() })
 
 // Execute our Stream with a default scheduler
 S.runEffects(stream, newDefaultScheduler()).catch((error) => console.error(error))
