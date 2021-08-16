@@ -3,7 +3,6 @@
  * are best used with implementations specificall for the browser.
  * @since 0.9.4
  */
-import { constVoid, pipe } from 'cjs/function'
 import * as Ei from 'fp-ts/Either'
 import * as O from 'fp-ts/Option'
 
@@ -11,6 +10,7 @@ import { Adapter } from './Adapter'
 import * as D from './Disposable'
 import * as E from './Env'
 import * as EO from './EnvOption'
+import { constVoid, pipe } from './function'
 import * as http from './http'
 import * as KV from './KV'
 import * as RS from './ReaderStream'
