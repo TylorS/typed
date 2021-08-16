@@ -18,6 +18,7 @@ Added in v0.13.2
   - [getLocation](#getlocation)
   - [getRootElement](#getrootelement)
   - [getWindow](#getwindow)
+  - [patchKV](#patchkv)
   - [patchKVOnRaf](#patchkvonraf)
   - [patchKVWhenIdle](#patchkvwhenidle)
   - [queryRootElement](#queryrootelement)
@@ -103,6 +104,22 @@ export declare const getWindow: E.Env<WindowEnv, Window>
 
 Added in v0.13.2
 
+## patchKV
+
+Common setup for rendering an application into an element queried from the DOM utilizing
+requestAnimationFrame.
+
+**Signature**
+
+```ts
+export declare const patchKV: <A>(
+  patch: (element: HTMLElement, renderable: A) => HTMLElement,
+  selector: string,
+) => <E>(env: E.Env<E, A>) => RS.ReaderStream<E & DocumentEnv & KV.Env, HTMLElement>
+```
+
+Added in v0.13.2
+
 ## patchKVOnRaf
 
 Common setup for rendering an application into an element queried from the DOM utilizing
@@ -114,7 +131,7 @@ requestAnimationFrame.
 export declare const patchKVOnRaf: <A>(
   patch: (element: HTMLElement, renderable: A) => HTMLElement,
   selector: string,
-) => <E>(env: E.Env<E, A>) => RS.ReaderStream<DocumentEnv & E & RafEnv & KV.Env, HTMLElement>
+) => <E>(env: E.Env<E, A>) => RS.ReaderStream<E & DocumentEnv & KV.Env & RafEnv, HTMLElement>
 ```
 
 Added in v0.13.2
@@ -130,7 +147,7 @@ requestAnimationFrame.
 export declare const patchKVWhenIdle: <A>(
   patch: (element: HTMLElement, renderable: A) => HTMLElement,
   selector: string,
-) => <E>(env: E.Env<E, A>) => RS.ReaderStream<DocumentEnv & E & WhenIdleEnv & KV.Env, HTMLElement>
+) => <E>(env: E.Env<E, A>) => RS.ReaderStream<E & DocumentEnv & KV.Env & WhenIdleEnv, HTMLElement>
 ```
 
 Added in v0.13.2
