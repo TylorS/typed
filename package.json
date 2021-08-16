@@ -375,6 +375,10 @@
       "require": "./cjs/browser.js",
       "import": "./esm/browser.js"
     },
+    "./dom": {
+      "require": "./cjs/dom.js",
+      "import": "./esm/dom.js"
+    },
     "./function": {
       "require": "./cjs/function.js",
       "import": "./esm/function.js"

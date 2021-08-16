@@ -1,3 +1,7 @@
+/**
+ * @typed/fp/dom is a collection of abstractions for working with the DOM
+ * @since 0.13.2
+ */
 import * as E from './Env'
 import * as EO from './EnvOption'
 import { constVoid, pipe } from './function'

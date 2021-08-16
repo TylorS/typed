@@ -156,8 +156,9 @@ export const write = fromPromiseK(fs.promises.write)
 export const writeFile = fromPromiseK(fs.promises.writeFile)
 
 /**
- * An implementation of the `History` interface.
- * @name ServerHistory
+ * An in-memory implementation of `History`.
+ * @category In-Memory Mock
+ * @since 0.13.2
  */
 export class ServerHistory implements History {
   // Does not affect behavior
@@ -232,7 +233,8 @@ const HTTP_DEFAULT_PORT = '80'
 
 /**
  * An in-memory implementation of `Location`.
- * @name ServerLocation
+ * @category In-Memory Mock
+ * @since 0.13.2
  */
 export class ServerLocation implements Location {
   get ancestorOrigins(): DOMStringList {
@@ -390,7 +392,8 @@ const HREF_REGEX =
 /**
  * ParsedHref JSON data structure
  * @name ParsedHref
- * @type
+ * @category Model
+ * @since 0.13.2
  */
 export type ParsedHref = {
   readonly href: string
@@ -411,8 +414,9 @@ export type ParsedHref = {
 
 /**
  * Parses an href into JSON.
- * @name parseHref(href: string): ParsedHref
- */
+ * @category Parser
+ * @since 0.13.2
+ * */
 export function parseHref(href: string): ParsedHref {
   const matches = HREF_REGEX.exec(href) as RegExpExecArray
 
@@ -461,6 +465,8 @@ const keyCount = keys.length
 /**
  * Create A History Environment that works in browser and non-browser environments
  * @param href :: initial href to use
+ * @category Environment
+ * @since 0.13.2
  */
 export function createHistoryEnv(href = '/'): HistoryEnv & LocationEnv {
   const serverLocation = new ServerLocation(href)
