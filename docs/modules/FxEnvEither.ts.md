@@ -30,6 +30,10 @@ Added in v0.13.0
 - [Constructor](#constructor)
   - [ask](#ask)
   - [asks](#asks)
+  - [fromEither](#fromeither)
+  - [fromEnv](#fromenv)
+  - [fromIO](#fromio)
+  - [fromOption](#fromoption)
   - [fromReader](#fromreader)
   - [liftEnvEither](#liftenveither)
   - [of](#of)
@@ -68,10 +72,10 @@ Added in v0.13.0
 
 ```ts
 export declare const ap: <R1, E1, A>(
-  fa: Fx<E.EnvEither<R1, E1, unknown>, A, unknown>,
+  fa: Fx<EE.EnvEither<R1, E1, unknown>, A, unknown>,
 ) => <R2, E2, B>(
-  fab: Fx<E.EnvEither<R2, E2, unknown>, Arity1<A, B>, unknown>,
-) => Fx<E.EnvEither<R1 & R2, E1 | E2, unknown>, B, unknown>
+  fab: Fx<EE.EnvEither<R2, E2, unknown>, Arity1<A, B>, unknown>,
+) => Fx<EE.EnvEither<R1 & R2, E1 | E2, unknown>, B, unknown>
 ```
 
 Added in v0.13.0
@@ -106,10 +110,10 @@ Added in v0.13.0
 
 ```ts
 export declare const chain: <A, R1, E1, B>(
-  f: (value: A) => Fx<E.EnvEither<R1, E1, unknown>, B, unknown>,
+  f: (value: A) => Fx<EE.EnvEither<R1, E1, unknown>, B, unknown>,
 ) => <R2, E2>(
-  fx: Fx<E.EnvEither<R2, E2, unknown>, A, unknown>,
-) => Fx<E.EnvEither<R1 & R2, E1 | E2, unknown>, B, unknown>
+  fx: Fx<EE.EnvEither<R2, E2, unknown>, A, unknown>,
+) => Fx<EE.EnvEither<R1 & R2, E1 | E2, unknown>, B, unknown>
 ```
 
 Added in v0.13.0
@@ -120,8 +124,8 @@ Added in v0.13.0
 
 ```ts
 export declare const chainRec: <A, R, E, B>(
-  f: Arity1<A, Fx<E.EnvEither<R, E, unknown>, Either<A, B>, unknown>>,
-) => (a: A) => Fx<E.EnvEither<R, E, unknown>, B, unknown>
+  f: Arity1<A, Fx<EE.EnvEither<R, E, unknown>, EI.Either<A, B>, unknown>>,
+) => (a: A) => Fx<EE.EnvEither<R, E, unknown>, B, unknown>
 ```
 
 Added in v0.13.0
@@ -134,8 +138,8 @@ Added in v0.13.0
 export declare const map: <A, B>(
   f: (value: A) => B,
 ) => <R, E>(
-  fx: Fx<E.EnvEither<R, E, unknown>, A, unknown>,
-) => Fx<E.EnvEither<R, E, unknown>, B, unknown>
+  fx: Fx<EE.EnvEither<R, E, unknown>, A, unknown>,
+) => Fx<EE.EnvEither<R, E, unknown>, B, unknown>
 ```
 
 Added in v0.13.0
@@ -148,8 +152,8 @@ Added in v0.13.0
 export declare const provideAll: <A>(
   provided: A,
 ) => <E, T>(
-  fx: Fx<E.EnvEither<A, E, unknown>, T, unknown>,
-) => Fx<E.EnvEither<unknown, E, unknown>, T, unknown>
+  fx: Fx<EE.EnvEither<A, E, unknown>, T, unknown>,
+) => Fx<EE.EnvEither<unknown, E, unknown>, T, unknown>
 ```
 
 Added in v0.13.0
@@ -174,8 +178,8 @@ Added in v0.13.0
 export declare const provideSome: <A>(
   provided: A,
 ) => <B, E, T>(
-  fx: Fx<E.EnvEither<A & B, E, unknown>, T, unknown>,
-) => Fx<E.EnvEither<B, E, unknown>, T, unknown>
+  fx: Fx<EE.EnvEither<A & B, E, unknown>, T, unknown>,
+) => Fx<EE.EnvEither<B, E, unknown>, T, unknown>
 ```
 
 Added in v0.13.0
@@ -200,8 +204,8 @@ Added in v0.13.0
 export declare const useAll: <A>(
   provided: A,
 ) => <E, T>(
-  fx: Fx<E.EnvEither<A, E, unknown>, T, unknown>,
-) => Fx<E.EnvEither<unknown, E, unknown>, T, unknown>
+  fx: Fx<EE.EnvEither<A, E, unknown>, T, unknown>,
+) => Fx<EE.EnvEither<unknown, E, unknown>, T, unknown>
 ```
 
 Added in v0.13.0
@@ -226,8 +230,8 @@ Added in v0.13.0
 export declare const useSome: <A>(
   provided: A,
 ) => <B, E, T>(
-  fx: Fx<E.EnvEither<A & B, E, unknown>, T, unknown>,
-) => Fx<E.EnvEither<B, E, unknown>, T, unknown>
+  fx: Fx<EE.EnvEither<A & B, E, unknown>, T, unknown>,
+) => Fx<EE.EnvEither<B, E, unknown>, T, unknown>
 ```
 
 Added in v0.13.0
@@ -251,7 +255,7 @@ Added in v0.13.0
 **Signature**
 
 ```ts
-export declare const ask: <A>() => Fx<E.EnvEither<A, never, A>, A, unknown>
+export declare const ask: <A>() => Fx<EE.EnvEither<A, never, A>, A, unknown>
 ```
 
 Added in v0.13.0
@@ -261,10 +265,54 @@ Added in v0.13.0
 **Signature**
 
 ```ts
-export declare const asks: <E, A, R>(fa: R.Reader<E, A>) => Fx<E.EnvEither<R, E, A>, A, unknown>
+export declare const asks: <E, A, R>(fa: R.Reader<E, A>) => Fx<EE.EnvEither<R, E, A>, A, unknown>
 ```
 
 Added in v0.13.0
+
+## fromEither
+
+**Signature**
+
+```ts
+export declare const fromEither: <E, A, R>(
+  fa: EI.Either<E, A>,
+) => Fx<EE.EnvEither<R, E, A>, A, unknown>
+```
+
+Added in v0.13.1
+
+## fromEnv
+
+**Signature**
+
+```ts
+export declare const fromEnv: <E, A, R>(fa: E.Env<E, A>) => Fx<EE.EnvEither<R, E, A>, A, unknown>
+```
+
+Added in v0.13.1
+
+## fromIO
+
+**Signature**
+
+```ts
+export declare const fromIO: <A, R, E>(fa: IO.IO<A>) => Fx<EE.EnvEither<R, E, A>, A, unknown>
+```
+
+Added in v0.13.1
+
+## fromOption
+
+**Signature**
+
+```ts
+export declare const fromOption: <E>(
+  lazy: Lazy<E>,
+) => <A, R>(fa: Option<A>) => Fx<EE.EnvEither<R, E, A>, A, unknown>
+```
+
+Added in v0.13.1
 
 ## fromReader
 
@@ -273,7 +321,7 @@ Added in v0.13.0
 ```ts
 export declare const fromReader: <R, A, E = never>(
   fa: R.Reader<R, A>,
-) => Fx<E.EnvEither<R, E, A>, A, unknown>
+) => Fx<EE.EnvEither<R, E, A>, A, unknown>
 ```
 
 Added in v0.13.0
@@ -293,7 +341,7 @@ Added in v0.13.0
 **Signature**
 
 ```ts
-export declare const of: <A, R, E>(value: A) => Fx<E.EnvEither<R, E, A>, A, unknown>
+export declare const of: <A, R, E>(value: A) => Fx<EE.EnvEither<R, E, A>, A, unknown>
 ```
 
 Added in v0.13.0
@@ -451,11 +499,11 @@ Added in v0.13.0
 **Signature**
 
 ```ts
-export declare const Do: <Y extends E.EnvEither<any, any, any>, Z, N = unknown>(
+export declare const Do: <Y extends EE.EnvEither<any, any, any>, Z, N = unknown>(
   f: (lift: FxT.LiftFx3<'@typed/fp/EnvEither'>) => Generator<Y, Z, N>,
-) => E.EnvEither<
-  Intersect<ListOf<[Y] extends [E.EnvEither<infer R, any, any>] ? R : never>, unknown>,
-  ListOf<[Y] extends [E.EnvEither<any, infer R, any>] ? R : never>[number],
+) => EE.EnvEither<
+  Intersect<ListOf<[Y] extends [EE.EnvEither<infer R, any, any>] ? R : never>, unknown>,
+  ListOf<[Y] extends [EE.EnvEither<any, infer R, any>] ? R : never>[number],
   Z
 >
 ```
@@ -469,9 +517,9 @@ Added in v0.13.0
 ```ts
 export declare const toEnvEither: <E, R>(
   fx: Fx<E, R, unknown>,
-) => E.EnvEither<
-  Intersect<ListOf<[E] extends [E.EnvEither<infer R, any, any>] ? R : never>, unknown>,
-  ListOf<[E] extends [E.EnvEither<any, infer R, any>] ? R : never>[number],
+) => EE.EnvEither<
+  Intersect<ListOf<[E] extends [EE.EnvEither<infer R, any, any>] ? R : never>, unknown>,
+  ListOf<[E] extends [EE.EnvEither<any, infer R, any>] ? R : never>[number],
   R
 >
 ```
@@ -485,7 +533,7 @@ Added in v0.13.0
 **Signature**
 
 ```ts
-export interface FxEnvEither<R, E, A> extends Fx<E.EnvEither<R, E, unknown>, A> {}
+export interface FxEnvEither<R, E, A> extends Fx<EE.EnvEither<R, E, unknown>, A> {}
 ```
 
 Added in v0.13.0

@@ -63,12 +63,12 @@ Added in v0.12.0
 **Signature**
 
 ```ts
-export declare const deleteAt: <E, A>(
-  ra: RefArray<E, A>,
-) => (index: number) => E.Env<E, readonly A[]>
+export declare const deleteAt: (
+  index: number,
+) => <E, A>(ra: RefArray<E, A>) => E.Env<E, readonly A[]>
 ```
 
-Added in v0.11.0
+Added in v0.14.0
 
 ## endoMap
 

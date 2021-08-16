@@ -916,9 +916,7 @@ Construct an EnvEither from a Promise returning function.
 **Signature**
 
 ```ts
-export declare const fromPromise: <A>(
-  f: Lazy<Promise<A>>,
-) => EnvEither<unknown, never, E.Either<unknown, A>>
+export declare const fromPromise: <A>(f: Lazy<Promise<A>>) => Env.Env<unknown, E.Either<unknown, A>>
 ```
 
 Added in v0.12.2
@@ -932,7 +930,7 @@ Construct an EnvEither from a Promise returning function.
 ```ts
 export declare const fromPromiseK: <A extends readonly any[], B>(
   f: (...args: A) => Promise<B>,
-) => (...args: A) => EnvEither<unknown, never, E.Either<unknown, B>>
+) => (...args: A) => Env.Env<unknown, E.Either<unknown, B>>
 ```
 
 Added in v0.12.2

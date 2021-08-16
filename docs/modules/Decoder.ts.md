@@ -81,6 +81,9 @@ Added in v0.9.4
   - [Schemable](#schemable)
   - [WithRefine](#withrefine)
   - [WithUnion](#withunion)
+- [Interpreter](#interpreter)
+  - [assert](#assert)
+  - [assertStrict](#assertstrict)
 - [Model](#model)
   - [Decoder (interface)](#decoder-interface)
 - [Refinement](#refinement)
@@ -249,7 +252,7 @@ Added in v0.9.4
 **Signature**
 
 ```ts
-export declare const condemmMissingKeys: <I, A>(decoder: Decoder<I, A>) => Decoder<I, A>
+export declare const condemmMissingKeys: <I, A>(decoder: Decoder<I, A>) => Decoder<I, Required<A>>
 ```
 
 Added in v0.9.4
@@ -364,7 +367,7 @@ Added in v0.9.5
 **Signature**
 
 ```ts
-export declare const strict: <I, A>(decoder: Decoder<I, A>) => Decoder<I, A>
+export declare const strict: <I, A>(decoder: Decoder<I, A>) => Decoder<I, Required<A>>
 ```
 
 Added in v0.9.4
@@ -485,7 +488,10 @@ Added in v0.9.4
 ```ts
 export declare const fromStruct: <A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-) => Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]: OutputOf<A[K]> }>
+) => Decoder<
+  Readonly<Record<string, unknown>>,
+  { readonly [K in keyof A]?: OutputOf<A[K]> | undefined }
+>
 ```
 
 Added in v0.9.4
@@ -543,7 +549,7 @@ Added in v0.9.4
 ```ts
 export declare function missingKeys<A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]: OutputOf<A[K]> }>
+): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]?: OutputOf<A[K]> }>
 ```
 
 Added in v0.9.4
@@ -597,7 +603,7 @@ Added in v0.9.4
 ```ts
 export declare function struct<A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<unknown, { readonly [K in keyof A]: OutputOf<A[K]> }>
+): Decoder<unknown, { readonly [K in keyof A]?: OutputOf<A[K]> }>
 ```
 
 Added in v0.9.4
@@ -647,7 +653,7 @@ Added in v0.9.4
 ```ts
 export declare function unexpectedKeys<A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]: OutputOf<A[K]> }>
+): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]?: OutputOf<A[K]> }>
 ```
 
 Added in v0.9.4
@@ -794,6 +800,32 @@ Added in v0.9.5
 
 ```ts
 export declare const WithUnion: WithUnion2C<'@typed/fp/Decoder', unknown>
+```
+
+Added in v0.9.5
+
+# Interpreter
+
+## assert
+
+Throw if not a valid decoder. Absolves optional errors
+
+**Signature**
+
+```ts
+export declare const assert: <I, O>(decoder: Decoder<I, O>) => (i: I) => O
+```
+
+Added in v0.9.5
+
+## assertStrict
+
+Throw if not a valid decoder. Condemns optional errors
+
+**Signature**
+
+```ts
+export declare const assertStrict: <I, O>(decoder: Decoder<I, O>) => (i: I) => O
 ```
 
 Added in v0.9.5
