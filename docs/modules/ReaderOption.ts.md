@@ -1,6 +1,6 @@
 ---
 title: ReaderOption.ts
-nav_order: 37
+nav_order: 42
 parent: Modules
 ---
 
@@ -27,8 +27,19 @@ Added in v0.9.2
   - [local](#local)
   - [map](#map)
 - [Constructor](#constructor)
+  - [altAll](#altall)
+  - [apFirst](#apfirst)
+  - [apFirstW](#apfirstw)
+  - [apS](#aps)
+  - [apSW](#apsw)
+  - [apSecond](#apsecond)
+  - [apSecondW](#apsecondw)
+  - [apT](#apt)
+  - [apTW](#aptw)
   - [ask](#ask)
   - [asks](#asks)
+  - [bind](#bind)
+  - [chainFirst](#chainfirst)
   - [fromEither](#fromeither)
   - [fromIO](#fromio)
   - [fromNullable](#fromnullable)
@@ -44,8 +55,10 @@ Added in v0.9.2
 - [Deconstructor](#deconstructor)
   - [getOrElse](#getorelse)
   - [getOrElseEW](#getorelseew)
+  - [getOrElseW](#getorelsew)
   - [match](#match)
   - [matchE](#matche)
+  - [matchEW](#matchew)
 - [Instance](#instance)
   - [Alt](#alt)
   - [Alternative](#alternative)
@@ -66,6 +79,8 @@ Added in v0.9.2
   - [UseSome](#usesome)
 - [Model](#model)
   - [ReaderOption (interface)](#readeroption-interface)
+- [Typeclass Instance](#typeclass-instance)
+  - [getApplySemigroup](#getapplysemigroup)
 - [URI](#uri)
   - [URI](#uri-1)
   - [URI (type alias)](#uri-type-alias)
@@ -208,6 +223,122 @@ Added in v0.9.2
 
 # Constructor
 
+## altAll
+
+**Signature**
+
+```ts
+export declare const altAll: <E, A>(
+  startWith: ReaderOption<E, A>,
+) => (as: readonly ReaderOption<E, A>[]) => ReaderOption<E, A>
+```
+
+Added in v0.12.2
+
+## apFirst
+
+**Signature**
+
+```ts
+export declare const apFirst: <E, B>(
+  second: ReaderOption<E, B>,
+) => <A>(first: ReaderOption<E, A>) => ReaderOption<E, A>
+```
+
+Added in v0.12.2
+
+## apFirstW
+
+**Signature**
+
+```ts
+export declare const apFirstW: <E1, B>(
+  second: ReaderOption<E1, B>,
+) => <E2, A>(first: ReaderOption<E2, A>) => ReaderOption<E1 & E2, A>
+```
+
+Added in v0.12.2
+
+## apS
+
+**Signature**
+
+```ts
+export declare const apS: <N, A, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: ReaderOption<E, B>,
+) => (
+  fa: ReaderOption<E, A>,
+) => ReaderOption<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.12.2
+
+## apSW
+
+**Signature**
+
+```ts
+export declare const apSW: <N extends string, A, E1, B>(
+  name: Exclude<N, keyof A>,
+  fb: ReaderOption<E1, B>,
+) => <E2>(
+  fa: ReaderOption<E2, A>,
+) => ReaderOption<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.12.2
+
+## apSecond
+
+**Signature**
+
+```ts
+export declare const apSecond: <E, B>(
+  second: ReaderOption<E, B>,
+) => <A>(first: ReaderOption<E, A>) => ReaderOption<E, B>
+```
+
+Added in v0.12.2
+
+## apSecondW
+
+**Signature**
+
+```ts
+export declare const apSecondW: <E1, B>(
+  second: ReaderOption<E1, B>,
+) => <E2, A>(first: ReaderOption<E2, A>) => ReaderOption<E1 & E2, B>
+```
+
+Added in v0.12.2
+
+## apT
+
+**Signature**
+
+```ts
+export declare const apT: <E, B>(
+  fb: ReaderOption<E, B>,
+) => <A>(fas: ReaderOption<E, A>) => ReaderOption<E, readonly [...A, B]>
+```
+
+Added in v0.12.2
+
+## apTW
+
+**Signature**
+
+```ts
+export declare const apTW: <E1, B>(
+  fb: ReaderOption<E1, B>,
+) => <E2, A extends readonly unknown[]>(
+  fas: ReaderOption<E2, A>,
+) => ReaderOption<E1 & E2, readonly [...A, B]>
+```
+
+Added in v0.12.2
+
 ## ask
 
 **Signature**
@@ -227,6 +358,33 @@ export declare const asks: <R, A>(f: (r: R) => A) => ReaderOption<R, A>
 ```
 
 Added in v0.9.2
+
+## bind
+
+**Signature**
+
+```ts
+export declare const bind: <N, A, E, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => ReaderOption<E, B>,
+) => (
+  ma: ReaderOption<E, A>,
+) => ReaderOption<E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.12.2
+
+## chainFirst
+
+**Signature**
+
+```ts
+export declare const chainFirst: <A, E, B>(
+  f: (a: A) => ReaderOption<E, B>,
+) => (first: ReaderOption<E, A>) => ReaderOption<E, A>
+```
+
+Added in v0.12.2
 
 ## fromEither
 
@@ -377,6 +535,18 @@ export declare const getOrElseEW: <E1, A>(
 
 Added in v0.9.2
 
+## getOrElseW
+
+**Signature**
+
+```ts
+export declare const getOrElseW: <A>(
+  onNone: Lazy<A>,
+) => <E, B>(fa: R.Reader<E, O.Option<B>>) => R.Reader<E, A | B>
+```
+
+Added in v0.13.0
+
 ## match
 
 **Signature**
@@ -403,6 +573,19 @@ export declare const matchE: <E, B, A>(
 
 Added in v0.9.2
 
+## matchEW
+
+**Signature**
+
+```ts
+export declare const matchEW: <E1, B, A, E2, C>(
+  onNone: () => R.Reader<E1, B>,
+  onSome: (a: A) => R.Reader<E2, C>,
+) => <E3>(ma: R.Reader<E3, O.Option<A>>) => R.Reader<E1 & E2 & E3, B | C>
+```
+
+Added in v0.13.0
+
 # Instance
 
 ## Alt
@@ -410,7 +593,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const Alt: Alt2<'@typed/fp/ReaderOption'>
+export declare const Alt: Alt_.Alt2<'@typed/fp/ReaderOption'>
 ```
 
 Added in v0.9.2
@@ -440,7 +623,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const Apply: Apply2<'@typed/fp/ReaderOption'>
+export declare const Apply: Ap.Apply2<'@typed/fp/ReaderOption'>
 ```
 
 Added in v0.9.2
@@ -450,7 +633,7 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const Chain: Chain2<'@typed/fp/ReaderOption'>
+export declare const Chain: CH.Chain2<'@typed/fp/ReaderOption'>
 ```
 
 Added in v0.9.2
@@ -586,6 +769,18 @@ export interface ReaderOption<E, A> extends R.Reader<E, O.Option<A>> {}
 ```
 
 Added in v0.9.2
+
+# Typeclass Instance
+
+## getApplySemigroup
+
+**Signature**
+
+```ts
+export declare const getApplySemigroup: <A, E>(S: Semigroup<A>) => Semigroup<ReaderOption<E, A>>
+```
+
+Added in v0.12.2
 
 # URI
 

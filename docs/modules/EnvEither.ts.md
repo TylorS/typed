@@ -80,6 +80,8 @@ Added in v0.9.2
   - [fromOption](#fromoption)
   - [fromOptionK](#fromoptionk)
   - [fromPredicate](#frompredicate)
+  - [fromPromise](#frompromise)
+  - [fromPromiseK](#frompromisek)
   - [fromReader](#fromreader)
   - [fromReaderK](#fromreaderk)
   - [fromResume](#fromresume)
@@ -906,6 +908,34 @@ export declare const fromPredicate: {
 ```
 
 Added in v0.9.2
+
+## fromPromise
+
+Construct an EnvEither from a Promise returning function.
+
+**Signature**
+
+```ts
+export declare const fromPromise: <A>(
+  f: Lazy<Promise<A>>,
+) => EnvEither<unknown, never, E.Either<unknown, A>>
+```
+
+Added in v0.12.2
+
+## fromPromiseK
+
+Construct an EnvEither from a Promise returning function.
+
+**Signature**
+
+```ts
+export declare const fromPromiseK: <A extends readonly any[], B>(
+  f: (...args: A) => Promise<B>,
+) => (...args: A) => EnvEither<unknown, never, E.Either<unknown, B>>
+```
+
+Added in v0.12.2
 
 ## fromReader
 

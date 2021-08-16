@@ -1,6 +1,6 @@
 ---
 title: Ref.ts
-nav_order: 43
+nav_order: 48
 parent: Modules
 ---
 
@@ -36,8 +36,10 @@ Added in v0.11.0
   - [chainTaskK](#chaintaskk)
   - [compose](#compose)
   - [local](#local)
+  - [localE](#locale)
   - [map](#map)
   - [promap](#promap)
+  - [promapE](#promape)
   - [provideAll](#provideall)
   - [provideSome](#providesome)
   - [struct](#struct)
@@ -308,6 +310,18 @@ export declare const local: <A, B>(f: (value: A) => B) => <E, C>(ref: Ref<E, B, 
 
 Added in v0.11.0
 
+## localE
+
+**Signature**
+
+```ts
+export declare const localE: <A, E1, B>(
+  f: (value: A) => E.Env<E1, B>,
+) => <E2, C>(ref: Ref<E2, B, C>) => Ref<E1 & E2, A, C>
+```
+
+Added in v0.12.2
+
 ## map
 
 **Signature**
@@ -330,6 +344,19 @@ export declare const promap: <B, A, C, D>(
 ```
 
 Added in v0.11.0
+
+## promapE
+
+**Signature**
+
+```ts
+export declare const promapE: <B, E1, A, C, E2, D>(
+  f: (value: B) => E.Env<E1, A>,
+  g: (value: C) => E.Env<E2, D>,
+) => <E3>(ref: Ref<E3, A, C>) => Ref<E1 & E2 & E3, B, D>
+```
+
+Added in v0.12.2
 
 ## provideAll
 
