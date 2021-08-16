@@ -159,8 +159,9 @@ export const writeFile = fromPromiseK(fs.promises.writeFile)
  * An in-memory implementation of `History`.
  * @category In-Memory Mock
  * @since 0.13.2
+ * @internal
  */
-export class ServerHistory implements History {
+class ServerHistory implements History {
   // Does not affect behavior
   public scrollRestoration: ScrollRestoration = 'auto'
 
@@ -235,8 +236,9 @@ const HTTP_DEFAULT_PORT = '80'
  * An in-memory implementation of `Location`.
  * @category In-Memory Mock
  * @since 0.13.2
+ * @internal
  */
-export class ServerLocation implements Location {
+class ServerLocation implements Location {
   get ancestorOrigins(): DOMStringList {
     return [] as any as DOMStringList
   }

@@ -1,6 +1,6 @@
 ---
 title: node.ts
-nav_order: 34
+nav_order: 35
 parent: Modules
 ---
 
@@ -14,6 +14,7 @@ Added in v0.9.4
 
 - [Environment](#environment)
   - [HttpEnv](#httpenv)
+  - [createHistoryEnv](#createhistoryenv)
 - [FS](#fs)
   - [chmod](#chmod)
   - [copyFile](#copyfile)
@@ -29,6 +30,10 @@ Added in v0.9.4
   - [unlink](#unlink)
   - [write](#write)
   - [writeFile](#writefile)
+- [Model](#model)
+  - [ParsedHref (type alias)](#parsedhref-type-alias)
+- [Parser](#parser)
+  - [parseHref](#parsehref)
 
 ---
 
@@ -48,6 +53,18 @@ export declare const HttpEnv: {
 ```
 
 Added in v0.9.4
+
+## createHistoryEnv
+
+Create A History Environment that works in browser and non-browser environments
+
+**Signature**
+
+```ts
+export declare function createHistoryEnv(href = '/'): HistoryEnv & LocationEnv
+```
+
+Added in v0.13.2
 
 # FS
 
@@ -281,3 +298,46 @@ export declare const writeFile: (
 ```
 
 Added in v0.13.1
+
+# Model
+
+## ParsedHref (type alias)
+
+ParsedHref JSON data structure
+
+**Signature**
+
+```ts
+export type ParsedHref = {
+  readonly href: string
+  readonly protocol: string
+  readonly host: string
+  readonly userInfo: string
+  readonly username: string
+  readonly password: string
+  readonly hostname: string
+  readonly port: string
+  readonly relative: string
+  readonly pathname: string
+  readonly directory: string
+  readonly file: string
+  readonly search: string
+  readonly hash: string
+}
+```
+
+Added in v0.13.2
+
+# Parser
+
+## parseHref
+
+Parses an href into JSON.
+
+**Signature**
+
+```ts
+export declare function parseHref(href: string): ParsedHref
+```
+
+Added in v0.13.2
