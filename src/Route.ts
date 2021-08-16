@@ -111,16 +111,13 @@ export type OneOf<Routes extends readonly [Route<string>, ...Route<string>[]]> =
 // Should always be dead-code eliminated
 
 const query = queryParams(queryParam('d', optional(param('foo'))), queryParam('e', unnamed))
-const path = pathJoin('foo', param('bar'), optional(prefix('-', param('baz'))), unnamed, query)
+const path = pathJoin('foo', param('bar'), optional(prefix('~', param('baz'))), unnamed, query)
 
 declare const check: <_ extends 1>() => true
 
 type Path_ = typeof path
 type Params_ = ParamsOf<Path_>
 type QueryParams_ = QueryParamsOf<Path_>
-
-type Input_ = { bar: '1'; 0: '2'; foo: '3'; 1: '4' }
-type Interpolated_ = Interpolate<Path_, Input_>
 
 check<
   A.Equals<
@@ -145,4 +142,11 @@ check<
   >
 >()
 
-check<A.Equals<Interpolated_, '/foo/1/2?d=3&e=4'>>()
+check<
+  A.Equals<
+    Interpolate<Path_, { bar: '1'; 0: '2'; foo: '3'; 1: '4'; baz: 'asdf' }>,
+    '/foo/1~asdf/2?d=3&e=4'
+  >
+>()
+
+check<A.Equals<Interpolate<Path_, { bar: '1'; 0: '2'; foo: '3'; 1: '4' }>, '/foo/1/2?d=3&e=4'>>()
