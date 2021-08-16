@@ -287,7 +287,7 @@ export const array = <O>(member: Decoder<unknown, O>) =>
  */
 export const fromStruct = <A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]: OutputOf<A[K]> }> => {
+): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]?: OutputOf<A[K]> }> => {
   type O = { readonly [K in keyof A]: OutputOf<A[K]> }
 
   const { concat } = T.getSemigroup(DE.getSemigroup(), St.getAssignSemigroup<any>())
@@ -316,7 +316,7 @@ export const fromStruct = <A extends { readonly [key: string]: Decoder<unknown, 
  */
 export function missingKeys<A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]: OutputOf<A[K]> }> {
+): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]?: OutputOf<A[K]> }> {
   type O = { readonly [K in keyof A]: OutputOf<A[K]> }
   const diff = RA.difference(S.Eq)
 
@@ -340,7 +340,7 @@ export function missingKeys<A extends { readonly [key: string]: Decoder<unknown,
  */
 export function unexpectedKeys<A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]: OutputOf<A[K]> }> {
+): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]?: OutputOf<A[K]> }> {
   type O = { readonly [K in keyof A]: OutputOf<A[K]> }
   const diff = RA.difference(S.Eq)
 
@@ -367,7 +367,7 @@ export function unexpectedKeys<A extends { readonly [key: string]: Decoder<unkno
  */
 export function struct<A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<unknown, { readonly [K in keyof A]: OutputOf<A[K]> }> {
+): Decoder<unknown, { readonly [K in keyof A]?: OutputOf<A[K]> }> {
   return pipe(
     unknownRecord,
     compose(missingKeys(properties)),
@@ -635,13 +635,17 @@ export const condemnUnexpectedKeys = condemnWhen((d) => d._tag === 'UnexpectedKe
  * @category Combinator
  * @since 0.9.4
  */
-export const condemmMissingKeys = condemnWhen((d) => d._tag === 'MissingKeys')
+export const condemmMissingKeys = condemnWhen((d) => d._tag === 'MissingKeys') as <I, A>(
+  decoder: Decoder<I, A>,
+) => Decoder<I, Required<A>>
 
 /**
  * @category Combinator
  * @since 0.9.4
  */
-export const strict = condemnWhen((d) => d._tag === 'UnexpectedKeys' || d._tag === 'MissingKeys')
+export const strict = condemnWhen(
+  (d) => d._tag === 'UnexpectedKeys' || d._tag === 'MissingKeys',
+) as <I, A>(decoder: Decoder<I, A>) => Decoder<I, Required<A>>
 
 /**
  * @category Instance
