@@ -4,10 +4,12 @@
  * @since 0.9.4
  */
 import * as Ei from 'fp-ts/Either'
+import * as fs from 'fs'
 import fetch from 'node-fetch'
 
 import * as D from './Disposable'
 import * as E from './Env'
+import { fromPromiseK } from './EnvEither'
 import * as http from './http'
 import * as R from './Resume'
 
@@ -67,3 +69,87 @@ function httpFetchRequest(
     return disposable
   })
 }
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const chmod = fromPromiseK(fs.promises.chmod)
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const copyFile = fromPromiseK(fs.promises.copyFile)
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const link = fromPromiseK(fs.promises.link)
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const mkdir = fromPromiseK(fs.promises.mkdir)
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const read = fromPromiseK(fs.promises.read)
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const readFile = fromPromiseK(fs.promises.readFile)
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const readdir = fromPromiseK(fs.promises.readdir)
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const rm = fromPromiseK(fs.promises.rm)
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const rmdir = fromPromiseK(fs.promises.rmdir)
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const stat = fromPromiseK(fs.promises.stat)
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const symlink = fromPromiseK(fs.promises.symlink)
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const unlink = fromPromiseK(fs.promises.unlink)
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const write = fromPromiseK(fs.promises.write)
+
+/**
+ * @category FS
+ * @since 0.13.1
+ */
+export const writeFile = fromPromiseK(fs.promises.writeFile)
