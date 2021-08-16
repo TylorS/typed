@@ -166,16 +166,32 @@ export const whenIdleEnv: WhenIdleEnv = {
   }),
 }
 
+/**
+ * @category Environment
+ * @since 0.13.2
+ */
 export type RafEnv = {
   readonly raf: Resume<number>
 }
 
+/**
+ * @category Effect
+ * @since 0.13.2
+ */
 export const raf: E.Env<RafEnv, number> = (e: RafEnv) => e.raf
 
+/**
+ * @category Environment
+ * @since 0.13.2
+ */
 export type WhenIdleEnv = {
   readonly whenIdle: Resume<IdleDeadline>
 }
 
+/**
+ * @category Effect
+ * @since 0.13.2
+ */
 export const whenIdle: E.Env<WhenIdleEnv, IdleDeadline> = (e: WhenIdleEnv) => e.whenIdle
 
 /**
