@@ -39,12 +39,12 @@ export const concat =
     ra.update(flow(RA.concat(end), E.of))
 
 /**
- * @since 0.11.0
+ * @since 0.14.0
  * @category Combinator
  */
 export const deleteAt =
-  <E, A>(ra: RefArray<E, A>) =>
-  (index: number): E.Env<E, readonly A[]> =>
+  (index: number) =>
+  <E, A>(ra: RefArray<E, A>): E.Env<E, readonly A[]> =>
     ra.update((list) =>
       pipe(
         list,
