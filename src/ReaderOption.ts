@@ -2,11 +2,11 @@
  * ReaderOption is an OptionT of fp-ts/Reader
  * @since 0.9.2
  */
-import { Alt2 } from 'fp-ts/Alt'
+import * as Alt_ from 'fp-ts/Alt'
 import { Alternative2 } from 'fp-ts/Alternative'
 import { Applicative2 } from 'fp-ts/Applicative'
-import { Apply2 } from 'fp-ts/Apply'
-import { Chain2 } from 'fp-ts/Chain'
+import * as Ap from 'fp-ts/Apply'
+import * as CH from 'fp-ts/Chain'
 import { ChainRec2 } from 'fp-ts/ChainRec'
 import * as Ei from 'fp-ts/Either'
 import { FromIO2 } from 'fp-ts/FromIO'
@@ -96,6 +96,15 @@ export const fromPredicate = OT.fromPredicate(R.Pointed)
  * @category Deconstructor
  */
 export const getOrElse = OT.getOrElse(R.Functor)
+
+/**
+ * @since 0.13.0
+ * @category Deconstructor
+ */
+export const getOrElseW = getOrElse as <A>(
+  onNone: Lazy<A>,
+) => <E, B>(fa: R.Reader<E, O.Option<B>>) => R.Reader<E, A | B>
+
 /**
  * @since 0.9.2
  * @category Deconsructor
@@ -123,6 +132,16 @@ export const match = OT.match(R.Functor)
  * @category Deconstructor
  */
 export const matchE = OT.matchE(R.Chain)
+
+/**
+ * @since 0.13.0
+ * @category Deconstructor
+ */
+export const matchEW = matchE as <E1, B, A, E2, C>(
+  onNone: () => R.Reader<E1, B>,
+  onSome: (a: A) => R.Reader<E2, C>,
+) => <E3>(ma: R.Reader<E3, O.Option<A>>) => R.Reader<E1 & E2 & E3, B | C>
+
 /**
  * @since 0.9.2
  * @category Constructor
@@ -177,10 +196,77 @@ export const Functor: Functor2<URI> = {
  * @since 0.9.2
  * @category Instance
  */
-export const Apply: Apply2<URI> = {
+export const Apply: Ap.Apply2<URI> = {
   ...Functor,
   ap,
 }
+
+/**
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const apFirst = Ap.apFirst(Apply)
+
+/**
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const apFirstW = apFirst as <E1, B>(
+  second: ReaderOption<E1, B>,
+) => <E2, A>(first: ReaderOption<E2, A>) => ReaderOption<E1 & E2, A>
+
+/**
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const apS = Ap.apS(Apply)
+
+/**
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const apSW = apS as <N extends string, A, E1, B>(
+  name: Exclude<N, keyof A>,
+  fb: ReaderOption<E1, B>,
+) => <E2>(
+  fa: ReaderOption<E2, A>,
+) => ReaderOption<E1 & E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+
+/**
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const apSecond = Ap.apSecond(Apply)
+
+/**
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const apSecondW = apSecond as <E1, B>(
+  second: ReaderOption<E1, B>,
+) => <E2, A>(first: ReaderOption<E2, A>) => ReaderOption<E1 & E2, B>
+
+/**
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const apT = Ap.apT(Apply)
+
+/**
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const apTW = apT as <E1, B>(
+  fb: ReaderOption<E1, B>,
+) => <E2, A extends readonly unknown[]>(
+  fas: ReaderOption<E2, A>,
+) => ReaderOption<E1 & E2, readonly [...A, B]>
+
+/**
+ * @since 0.12.2
+ * @category Typeclass Instance
+ */
+export const getApplySemigroup = Ap.getApplySemigroup(Apply)
 
 /**
  * @since 0.9.2
@@ -195,10 +281,22 @@ export const Applicative: Applicative2<URI> = {
  * @since 0.9.2
  * @category Instance
  */
-export const Chain: Chain2<URI> = {
+export const Chain: CH.Chain2<URI> = {
   ...Functor,
   chain,
 }
+
+/**
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const bind = CH.bind(Chain)
+
+/**
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const chainFirst = CH.chainFirst(Chain)
 
 /**
  * @since 0.9.2
@@ -254,10 +352,16 @@ export const MonadRec: MonadRec2<URI> = {
  * @since 0.9.2
  * @category Instance
  */
-export const Alt: Alt2<URI> = {
+export const Alt: Alt_.Alt2<URI> = {
   ...Functor,
   alt,
 }
+
+/**
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const altAll = Alt_.altAll(Alt)
 
 /**
  * @since 0.9.2

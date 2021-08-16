@@ -156,6 +156,21 @@ export const local =
   })
 
 /**
+ * @since 0.12.2
+ * @category Combinator
+ */
+export const localE =
+  <A, E1, B>(f: (value: A) => E.Env<E1, B>) =>
+  <E2, C>(ref: Ref<E2, B, C>): Ref<E1 & E2, A, C> => ({
+    get: ref.get,
+    has: ref.has,
+    set: flow(f, E.chainW(ref.set)),
+    update: (g) => ref.update(flow(g, E.chainW(f))),
+    remove: ref.remove,
+    values: ref.values,
+  })
+
+/**
  * @since 0.11.0
  * @category Combinator
  */
@@ -163,6 +178,15 @@ export const promap =
   <B, A, C, D>(f: (value: B) => A, g: (value: C) => D) =>
   <E>(ref: Ref<E, A, C>): Ref<E, B, D> =>
     pipe(ref, local(f), map(g))
+
+/**
+ * @since 0.12.2
+ * @category Combinator
+ */
+export const promapE =
+  <B, E1, A, C, E2, D>(f: (value: B) => E.Env<E1, A>, g: (value: C) => E.Env<E2, D>) =>
+  <E3>(ref: Ref<E3, A, C>): Ref<E1 & E2 & E3, B, D> =>
+    pipe(ref, localE(f), chainEnvK(g))
 
 /**
  * @since 0.11.0

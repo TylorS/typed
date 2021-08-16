@@ -100,3 +100,27 @@ export const broadcastChannel = <A>(name: string): Adapter<A> => {
 
   return [send, stream]
 }
+
+/**
+ * Utilize the Crypto API to generate 8-bit numbers
+ * @category Constructor
+ * @since 0.12.2
+ */
+export const random8Bits = (count: number): E.Of<readonly number[]> =>
+  E.fromIO(() => [...crypto.getRandomValues(new Uint8Array(count))] as const)
+
+/**
+ * Utilize the Crypto API to generate 16-bit numbers
+ * @category Constructor
+ * @since 0.12.2
+ */
+export const random16Bits = (count: number): E.Of<readonly number[]> =>
+  E.fromIO(() => [...crypto.getRandomValues(new Uint16Array(count))] as const)
+
+/**
+ * Utilize the Crypto API to generate 32-bit numbers
+ * @category Constructor
+ * @since 0.12.2
+ */
+export const random32Bits = (count: number): E.Of<readonly number[]> =>
+  E.fromIO(() => [...crypto.getRandomValues(new Uint32Array(count))] as const)

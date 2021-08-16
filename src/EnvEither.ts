@@ -22,6 +22,7 @@ import * as Pointed_ from 'fp-ts/Pointed'
 import { Reader } from 'fp-ts/Reader'
 import * as Semigroup_ from 'fp-ts/Semigroup'
 import * as T from 'fp-ts/Task'
+import { tryCatch } from 'fp-ts/TaskEither'
 
 import * as Env from './Env'
 import * as FE from './FromEnv'
@@ -759,3 +760,20 @@ export const fromPredicate = FEi.fromPredicate(FromEither)
  * @category Constructor
  */
 export const Do: EnvEither<unknown, never, {}> = fromIO(() => Object.create(null))
+
+/**
+ * Construct an EnvEither from a Promise returning function.
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const fromPromise = flow(tryCatch, fromTask)
+
+/**
+ * Construct an EnvEither from a Promise returning function.
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const fromPromiseK =
+  <A extends readonly any[], B>(f: (...args: A) => Promise<B>) =>
+  (...args: A) =>
+    fromPromise(() => f(...args))
