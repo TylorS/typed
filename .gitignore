@@ -84,12 +84,17 @@ snowpack.key
 /FromKV/
 /FromResume/
 /FromStream/
+/Fx/
+/FxEnv/
+/FxEnvEither/
+/FxT/
 /Guard/
 /HKT/
 /IOEither/
 /KV/
 /MonadRec/
 /Option/
+/Path/
 /Progress/
 /Provide/
 /Reader/
@@ -110,6 +115,7 @@ snowpack.key
 /Resume/
 /ResumeEither/
 /ResumeOption/
+/Route/
 /Scheduler/
 /Schema/
 /Schemable/

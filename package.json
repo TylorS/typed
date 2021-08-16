@@ -187,6 +187,22 @@
       "require": "./cjs/FromStream.js",
       "import": "./esm/FromStream.js"
     },
+    "./Fx": {
+      "require": "./cjs/Fx.js",
+      "import": "./esm/Fx.js"
+    },
+    "./FxEnv": {
+      "require": "./cjs/FxEnv.js",
+      "import": "./esm/FxEnv.js"
+    },
+    "./FxEnvEither": {
+      "require": "./cjs/FxEnvEither.js",
+      "import": "./esm/FxEnvEither.js"
+    },
+    "./FxT": {
+      "require": "./cjs/FxT.js",
+      "import": "./esm/FxT.js"
+    },
     "./Guard": {
       "require": "./cjs/Guard.js",
       "import": "./esm/Guard.js"
@@ -210,6 +226,10 @@
     "./Option": {
       "require": "./cjs/Option.js",
       "import": "./esm/Option.js"
+    },
+    "./Path": {
+      "require": "./cjs/Path.js",
+      "import": "./esm/Path.js"
     },
     "./Progress": {
       "require": "./cjs/Progress.js",
@@ -290,6 +310,10 @@
     "./ResumeOption": {
       "require": "./cjs/ResumeOption.js",
       "import": "./esm/ResumeOption.js"
+    },
+    "./Route": {
+      "require": "./cjs/Route.js",
+      "import": "./esm/Route.js"
     },
     "./Scheduler": {
       "require": "./cjs/Scheduler.js",
