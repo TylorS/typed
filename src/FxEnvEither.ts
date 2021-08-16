@@ -1,3 +1,8 @@
+/**
+ * @typed/fp/FxEnvEither is a generator-based do-notation for EnvEither.
+ *
+ * @since 0.13.0
+ */
 import { Applicative3 } from 'fp-ts/Applicative'
 import { Apply3 } from 'fp-ts/Apply'
 import { Chain3 } from 'fp-ts/Chain'
@@ -222,6 +227,10 @@ export const Provide: P.Provide3<URI> = {
  */
 export const fromReader = flow(E.fromReader, liftEnvEither)
 
+/**
+ * @since 0.13.0
+ * @category Instance
+ */
 export const FromReader: FromReader3<URI> = {
   fromReader,
 }

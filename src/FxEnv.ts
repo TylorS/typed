@@ -1,3 +1,8 @@
+/**
+ * @typed/fp/FxEnv is a generator-based do-notation for Env.
+ *
+ * @since 0.13.0
+ */
 import { Applicative2 } from 'fp-ts/Applicative'
 import * as Ap from 'fp-ts/Apply'
 import * as Ch from 'fp-ts/Chain'
@@ -101,7 +106,7 @@ export const fromResume = FxT.fromNaturalTransformation<Re.URI, E.URI>(E.fromRes
  */
 export const fromTask = FxT.fromNaturalTransformation<T.URI, E.URI>(E.fromTask)
 /**
- * @category Constructor
+ * @category ConstructorfromReader
  * @since 0.13.0
  */
 export const asks = FxT.fromNaturalTransformation<R.URI, E.URI>(E.fromReader)
@@ -328,6 +333,10 @@ export const Provide: P.Provide2<URI> = {
  */
 export const fromReader = flow(E.fromReader, liftEnv)
 
+/**
+ * @category Instance
+ * @since 0.13.0
+ */
 export const FromReader: FromReader2<URI> = {
   fromReader,
 }

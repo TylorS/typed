@@ -1,9 +1,15 @@
+/**
+ * @typed/fp/Path is a collection of helpers for constructing paths that follow
+ * the path-to-regexp syntax and type-level combinators for parsing that syntax and
+ * for interpolating values.
+ * @since 0.13.0
+ */
 import { A, N } from 'ts-toolbelt'
 
 /* Start Region: Parameter DSL */
 
-// Template for parameters
 /**
+ * Template for parameters
  * @category Model
  * @since 0.13.0
  */
@@ -15,8 +21,8 @@ export type Param<A extends string> = `:${A}`
  */
 export const param = <A extends string>(param: A): Param<A> => `:${param}` as Param<A>
 
-// Template for optional path parts
 /**
+ * Template for optional path parts
  * @category Model
  * @since 0.13.0
  */
@@ -28,8 +34,8 @@ export type Optional<A extends string> = `${A}?`
  */
 export const optional = <A extends string>(param: A): Optional<A> => `${param}?` as Optional<A>
 
-// Construct a custom prefix
 /**
+ *  Construct a custom prefix
  * @category Model
  * @since 0.13.0
  */
@@ -42,18 +48,23 @@ export type Prefix<P extends string, A extends string> = `{${P}${A}}`
 export const prefix = <P extends string, A extends Param<string> | Unnamed>(prefix: P, param: A) =>
   `{${prefix}${param}}` as Prefix<P, A>
 
-// Construct query params
 /**
+ * Construct query params
  * @category Model
  * @since 0.13.0
  */
 export type QueryParam<K extends string, V extends string> = `` extends V ? K : `${K}=${V}`
 
+/**
+ * Construct query params
+ * @category Constructor
+ * @since 0.13.0
+ */
 export const queryParam = <K extends string, V extends string>(key: K, value: V) =>
   `${key}=${value}` as QueryParam<K, V>
 
-// zero or more path parts will be matched to this param
 /**
+ * zero or more path parts will be matched to this param
  * @category Model
  * @since 0.13.0
  */
@@ -72,15 +83,15 @@ export const zeroOrMore = <A extends string>(param: A): ZeroOrMore<A> =>
  */
 export type OneOrMore<A extends string> = `${Param<A>}+`
 
-// one or more path parts will be matched to this param
 /**
+ * one or more path parts will be matched to this param
  * @category Constructor
  * @since 0.13.0
  */
 export const oneOrMore = <A extends string>(param: A): OneOrMore<A> => `:${param}+` as OneOrMore<A>
 
-// Creates the path-to-regexp syntax for query parameters
 /**
+ *  Creates the path-to-regexp syntax for query parameters
  * @category Model
  * @since 0.13.0
  */
@@ -114,8 +125,8 @@ export const unnamed = `(.*)` as const
  */
 export type Unnamed = typeof unnamed
 
-// Composes other path parts into a single path
 /**
+ * Composes other path parts into a single path
  * @category Type-level
  * @since 0.13.0
  */
@@ -140,8 +151,8 @@ export const pathJoin = <P extends ReadonlyArray<string>>(...parts: P): PathJoin
   return `${formatPart(head)}${pathJoin(...tail)}` as PathJoin<P>
 }
 
-// Formats a piece of a path
 /**
+ * Formats a piece of a path
  * @category Combinator
  * @since 0.13.0
  */
@@ -173,13 +184,17 @@ export type FormatPart<P extends string> = `` extends P
   ? P
   : `/${RemoveLeadingSlash<P>}`
 
-// Remove forward slashes prefixes recursively
 /**
+ * Remove forward slashes prefixes recursively
  * @category Type-level
  * @since 0.13.0
  */
 export type RemoveLeadingSlash<A> = A extends `/${infer R}` ? RemoveLeadingSlash<R> : A
 
+/**
+ * @category Combinator
+ * @since 0.13.0
+ */
 export const removeLeadingSlash = <A extends string>(a: A): RemoveLeadingSlash<A> => {
   let s = a.slice()
 

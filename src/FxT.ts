@@ -1,3 +1,9 @@
+/**
+ * @typed/fp/FxT is a transformer for creating Do-notation compatible versions of
+ * other data types.
+ *
+ * @since 0.13.0
+ */
 import { Apply, Apply1, Apply2, Apply3, Apply4 } from 'fp-ts/Apply'
 import { Either, left, match, right } from 'fp-ts/Either'
 import { FromReader, FromReader2, FromReader3, FromReader3C, FromReader4 } from 'fp-ts/FromReader'

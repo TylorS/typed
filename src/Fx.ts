@@ -1,3 +1,8 @@
+/**
+ * @typed/fp/Fx is a generator-based do-notation for single-shot data types.
+ *
+ * @since 0.13.0
+ */
 import { Applicative2 } from 'fp-ts/Applicative'
 import { Apply2 } from 'fp-ts/Apply'
 import { ap as ap_ } from 'fp-ts/Chain'
@@ -55,6 +60,11 @@ export type GetResult<A> = A extends Fx<any, infer R, any> ? R : never
  */
 export type GetNext<A> = A extends Fx<any, any, infer R> ? R : never
 
+/**
+ * Extract the values being returned to the internal Fx
+ * @category Combinator
+ * @since 0.13.0
+ */
 export function doFx<G extends Generator<any, any, any>>(
   generatorFn: () => G,
 ): Fx<GetEffects<G>, GetResult<G>, GetNext<G>> {

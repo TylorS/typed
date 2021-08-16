@@ -1,6 +1,7 @@
 /**
  * This DSL represents all of the standard syntax for path-to-regexp (e.g. used in express.js and many other libs)
  * but does not cover the fancier regex validations that are techincally possible.
+ * @since 0.13.0
  */
 import { pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
