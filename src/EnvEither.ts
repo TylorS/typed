@@ -766,7 +766,7 @@ export const Do: EnvEither<unknown, never, {}> = fromIO(() => Object.create(null
  * @since 0.12.2
  * @category Constructor
  */
-export const fromPromise = flow(tryCatch, fromTask)
+export const fromPromise = flow(tryCatch, Env.fromTask)
 
 /**
  * Construct an EnvEither from a Promise returning function.
