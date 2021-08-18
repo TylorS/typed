@@ -82,6 +82,7 @@ snowpack.key
 /Fail/
 /FromEnv/
 /FromKV/
+/FromReaderStream/
 /FromResume/
 /FromStream/
 /Fx/

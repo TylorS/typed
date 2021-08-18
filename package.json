@@ -180,6 +180,10 @@
       "require": "./cjs/FromKV.js",
       "import": "./esm/FromKV.js"
     },
+    "./FromReaderStream": {
+      "require": "./cjs/FromReaderStream.js",
+      "import": "./esm/FromReaderStream.js"
+    },
     "./FromResume": {
       "require": "./cjs/FromResume.js",
       "import": "./esm/FromResume.js"
