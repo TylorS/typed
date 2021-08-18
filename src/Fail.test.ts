@@ -16,19 +16,17 @@ describe(__filename, () => {
 
       pipe(
         {
-          failures: {
-            [key]: (e) =>
-              async<never>(() => {
-                try {
-                  ok(error === e, 'Should throw expected error')
-                  done()
-                } catch (err) {
-                  done(err)
-                }
+          [key]: (e) =>
+            async<never>(() => {
+              try {
+                ok(error === e, 'Should throw expected error')
+                done()
+              } catch (err) {
+                done(err)
+              }
 
-                return disposeNone()
-              }),
-          },
+              return disposeNone()
+            }),
         },
         fail,
         exec,
