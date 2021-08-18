@@ -38,3 +38,5 @@ export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
     return cache.get(a)
   }
 }
+
+export type UndoPartial<A> = [A] extends [Partial<infer R>] ? R : never

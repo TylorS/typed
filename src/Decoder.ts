@@ -22,7 +22,7 @@ import * as S from 'fp-ts/string'
 import * as DE from './DecodeError'
 import { leaf } from './DecodeError'
 import { pipe } from './function'
-import { memoize } from './internal'
+import { memoize, UndoPartial } from './internal'
 import { Literal, Schemable2C, WithRefine2C, WithUnion2C } from './Schemable'
 import * as St from './struct'
 import { make } from './struct'
@@ -287,7 +287,10 @@ export const array = <O>(member: Decoder<unknown, O>) =>
  */
 export const fromStruct = <A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]?: OutputOf<A[K]> }> => {
+): Decoder<
+  Readonly<Record<string, unknown>>,
+  Partial<{ readonly [K in keyof A]: OutputOf<A[K]> }>
+> => {
   type O = { readonly [K in keyof A]: OutputOf<A[K]> }
 
   const { concat } = T.getSemigroup(DE.getSemigroup(), St.getAssignSemigroup<any>())
@@ -316,8 +319,11 @@ export const fromStruct = <A extends { readonly [key: string]: Decoder<unknown, 
  */
 export function missingKeys<A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]?: OutputOf<A[K]> }> {
-  type O = { readonly [K in keyof A]: OutputOf<A[K]> }
+): Decoder<
+  Readonly<Record<string, unknown>>,
+  Partial<{ readonly [K in keyof A]: OutputOf<A[K]> }>
+> {
+  type O = Partial<{ readonly [K in keyof A]: OutputOf<A[K]> }>
   const diff = RA.difference(S.Eq)
 
   return {
@@ -340,7 +346,10 @@ export function missingKeys<A extends { readonly [key: string]: Decoder<unknown,
  */
 export function unexpectedKeys<A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]?: OutputOf<A[K]> }> {
+): Decoder<
+  Readonly<Record<string, unknown>>,
+  Partial<{ readonly [K in keyof A]: OutputOf<A[K]> }>
+> {
   type O = { readonly [K in keyof A]: OutputOf<A[K]> }
   const diff = RA.difference(S.Eq)
 
@@ -367,7 +376,7 @@ export function unexpectedKeys<A extends { readonly [key: string]: Decoder<unkno
  */
 export function struct<A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<unknown, { readonly [K in keyof A]?: OutputOf<A[K]> }> {
+): Decoder<unknown, Partial<{ readonly [K in keyof A]: OutputOf<A[K]> }>> {
   return pipe(
     unknownRecord,
     compose(missingKeys(properties)),
@@ -637,7 +646,7 @@ export const condemnUnexpectedKeys = condemnWhen((d) => d._tag === 'UnexpectedKe
  */
 export const condemmMissingKeys = condemnWhen((d) => d._tag === 'MissingKeys') as <I, A>(
   decoder: Decoder<I, A>,
-) => Decoder<I, Required<A>>
+) => Decoder<I, UndoPartial<A>>
 
 /**
  * @category Combinator
@@ -645,7 +654,7 @@ export const condemmMissingKeys = condemnWhen((d) => d._tag === 'MissingKeys') a
  */
 export const strict = condemnWhen(
   (d) => d._tag === 'UnexpectedKeys' || d._tag === 'MissingKeys',
-) as <I, A>(decoder: Decoder<I, A>) => Decoder<I, Required<A>>
+) as <I, A>(decoder: Decoder<I, A>) => Decoder<I, UndoPartial<A>>
 
 /**
  * @category Instance
