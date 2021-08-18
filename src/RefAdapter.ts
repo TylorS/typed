@@ -59,7 +59,7 @@ export function getEvents<E, A, B, C>(ra: RefAdapter<E, A, B, C>): RS.ReaderStre
  * @category Combinator
  */
 export function listenToEvents<A, E1, B>(f: (value: A) => E.Env<E1, B>) {
-  return <E2, C>(ra: RefAdapter<E1, C, B, A>): RS.ReaderStream<E1 & E2, B> =>
+  return <E2, C>(ra: RefAdapter<E2, C, B, A>): RS.ReaderStream<E1 & E2, B> =>
     pipe(ra, getEvents, RS.chainEnvK(f))
 }
 
@@ -128,4 +128,17 @@ export const Functor: Functor4<URI> = {
 export const Profunctor: Profunctor4<URI> = {
   map,
   promap,
+}
+
+/**
+ * @since 0.13.5
+ * @category Instance
+ */
+export function wrap<E, I, A, B>(ra: RefAdapter<E, I, A, B>) {
+  return {
+    ...ra,
+    sendEvent: (event: A) => pipe(ra, sendEvent(event)),
+    getSendEvent: getSendEvent(ra),
+    listenToEvents: <E2>(f: (value: B) => E.Env<E2, A>) => pipe(ra, listenToEvents(f)),
+  } as const
 }
