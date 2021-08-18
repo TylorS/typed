@@ -11,7 +11,7 @@ import * as KV from './KV'
 import * as RS from './ReaderStream'
 import * as Ref from './Ref'
 import { SchedulerEnv } from './Scheduler'
-import { useReaderStream } from './use'
+import { useReaderStream } from './Use'
 
 /**
  * Context is an extensions of Ref which traverse up in context to find the closest environment

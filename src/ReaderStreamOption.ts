@@ -25,6 +25,7 @@ import { Pointed2 } from 'fp-ts/Pointed'
 
 import * as FE from './FromEnv'
 import { FromEnv2 } from './FromEnv'
+import * as FRS from './FromReaderStream'
 import * as FRe from './FromResume'
 import { FromResume2 } from './FromResume'
 import * as FS from './FromStream'
@@ -65,6 +66,15 @@ export const apW = ap as <E1, A>(
  * @category Combinator
  */
 export const chain = OT.chain(RS.Monad)
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const chainW = chain as <A, E1, B>(
+  f: (a: A) => RS.ReaderStream<E1, O.Option<B>>,
+) => <E2>(ma: RS.ReaderStream<E2, O.Option<A>>) => RS.ReaderStream<E1 & E2, O.Option<B>>
+
 /**
  * @since 0.9.2
  * @category Combinator
@@ -110,6 +120,7 @@ export const fromPredicate = OT.fromPredicate(RS.Pointed)
  * @category Deconstructor
  */
 export const getOrElse = OT.getOrElse(RS.Functor)
+
 /**
  * @since 0.9.2
  * @category Deconstructor
@@ -575,6 +586,46 @@ export const chainFirstEnvK = FE.chainFirstEnvK(FromEnv, Chain)
 export const fromEnvK = FE.fromEnvK(FromEnv)
 
 /**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const provideAllWithEnv = FE.provideAllWithEnv({
+  ...FromEnv,
+  ...ProvideAll,
+  ...Chain,
+})
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const provideSomeWithEnv = FE.provideSomeWithEnv({
+  ...FromEnv,
+  ...ProvideSome,
+  ...Chain,
+})
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const useSomeWithEnv = FE.useSomeWithEnv({
+  ...FromEnv,
+  ...UseSome,
+  ...Chain,
+})
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const useAllWithEnv = FE.useAllWithEnv({
+  ...FromEnv,
+  ...UseAll,
+  ...Chain,
+})
+
+/**
  * @since 0.9.2
  * @category Instance
  */
@@ -603,3 +654,67 @@ export const chainStreamK = FS.chainStreamK(FromStream, Chain)
  * @category Constructor
  */
 export const fromStreamK = FS.fromStreamK(FromStream)
+
+/**
+ * @since 0.13.9
+ * @category Instance
+ */
+export const FromReaderStream: FRS.FromReaderStream2<URI> = {
+  fromReaderStream,
+}
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const chainFirstReaderStreamK = FRS.chainFirstReaderStreamK(FromReaderStream, Chain)
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const chainReaderStreamK = FRS.chainReaderStreamK(FromReaderStream, Chain)
+/**
+ * @since 0.13.9
+ * @category Constructor
+ */
+export const fromReaderStreamK = FRS.fromReaderStreamK(FromReaderStream)
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const provideAllWithReaderStream = FRS.provideAllWithReaderStream({
+  ...FromReaderStream,
+  ...ProvideAll,
+  ...Chain,
+})
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const provideSomeWithReaderStream = FRS.provideSomeWithReaderStream({
+  ...FromReaderStream,
+  ...ProvideSome,
+  ...Chain,
+})
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const useSomeWithReaderStream = FRS.useSomeWithReaderStream({
+  ...FromReaderStream,
+  ...UseSome,
+  ...Chain,
+})
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const useAllWithReaderStream = FRS.useAllWithReaderStream({
+  ...FromReaderStream,
+  ...UseAll,
+  ...Chain,
+})

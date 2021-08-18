@@ -15,7 +15,7 @@ import * as RS from './ReaderStream'
 import { Resume } from './Resume'
 import { SchedulerEnv } from './Scheduler'
 import * as S from './Stream'
-import { useReaderStream } from './use'
+import { useReaderStream } from './Use'
 
 /**
  * @category Environment
