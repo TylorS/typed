@@ -67,6 +67,7 @@
     "RefDataEither",
     "RefDisposable",
     "RefMap",
+    "RefMapM",
     "Resume",
     "ResumeEither",
     "ResumeOption",
