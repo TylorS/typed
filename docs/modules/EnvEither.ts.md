@@ -664,7 +664,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideAllWithEnv: <R, A>(
-  resume: Env.Env<R, A>,
+  env: Env.Env<R, A>,
 ) => <E, B>(hkt: EnvEither<A, E, B>) => EnvEither<R, E, B>
 ```
 
@@ -688,7 +688,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideSomeWithEnv: <E, A>(
-  resume: Env.Env<E, A>,
+  env: Env.Env<E, A>,
 ) => P.Provider3<'@typed/fp/EnvEither', A, E, never>
 ```
 
@@ -734,7 +734,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useAllWithEnv: <R, A>(
-  resume: Env.Env<R, A>,
+  env: Env.Env<R, A>,
 ) => <E, B>(hkt: EnvEither<A, E, B>) => EnvEither<R, E, B>
 ```
 
@@ -758,7 +758,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useSomeWithEnv: <E, A>(
-  resume: Env.Env<E, A>,
+  env: Env.Env<E, A>,
 ) => P.Provider3<'@typed/fp/EnvEither', A, E, never>
 ```
 

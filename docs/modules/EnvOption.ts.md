@@ -359,7 +359,7 @@ Added in v0.11.0
 ```ts
 export declare const getOrElseEW: <E1, A>(
   onNone: Lazy<E.Env<E1, A>>,
-) => <E2>(fa: E.Env<E2, O.Option<A>>) => E.Env<E1 & E2, A>
+) => <E2, B>(fa: E.Env<E2, O.Option<B>>) => E.Env<E1 & E2, A | B>
 ```
 
 Added in v0.9.2

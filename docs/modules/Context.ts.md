@@ -20,6 +20,7 @@ Added in v0.11.0
   - [useKV](#usekv)
 - [Constructor](#constructor)
   - [fromKV](#fromkv)
+  - [kv](#kv)
 - [utils](#utils)
   - [Context (interface)](#context-interface)
 
@@ -52,6 +53,19 @@ export declare const fromKV: <K, E, A>(
 ```
 
 Added in v0.11.0
+
+## kv
+
+**Signature**
+
+```ts
+export declare const kv: <E, A, K = symbol>(
+  initial: E.Env<E, A>,
+  options?: KV.Options<K, A> | undefined,
+) => Context<E & KV.Env & SchedulerEnv, A, A> & KV.KV<K, E, A>
+```
+
+Added in v0.13.7
 
 # utils
 

@@ -1066,7 +1066,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideAllWithEnv: <E, A>(
-  resume: E.Env<E, A>,
+  env: E.Env<E, A>,
 ) => <B>(hkt: ReaderStream<A, B>) => ReaderStream<E, B>
 ```
 
@@ -1102,7 +1102,7 @@ Added in v0.9.2
 
 ```ts
 export declare const provideSomeWithEnv: <E, A>(
-  resume: E.Env<E, A>,
+  env: E.Env<E, A>,
 ) => P.Provider2<'@typed/fp/ReaderStream', A, E>
 ```
 
@@ -1418,7 +1418,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useAllWithEnv: <E, A>(
-  resume: E.Env<E, A>,
+  env: E.Env<E, A>,
 ) => <B>(hkt: ReaderStream<A, B>) => ReaderStream<E, B>
 ```
 
@@ -1454,7 +1454,7 @@ Added in v0.9.2
 
 ```ts
 export declare const useSomeWithEnv: <E, A>(
-  resume: E.Env<E, A>,
+  env: E.Env<E, A>,
 ) => P.Provider2<'@typed/fp/ReaderStream', A, E>
 ```
 

@@ -25,7 +25,7 @@ Added in v0.11.0
   - [getAdapter](#getadapter)
   - [getEnv](#getenv)
   - [getKVEvents](#getkvevents)
-  - [getParentKVs](#getparentkvs)
+  - [getParentEnv](#getparentenv)
   - [getSendEvent](#getsendevent)
   - [has](#has)
   - [listenTo](#listento)
@@ -47,7 +47,7 @@ Added in v0.11.0
   - [Events (interface)](#events-interface)
   - [Get (interface)](#get-interface)
   - [Has (interface)](#has-interface)
-  - [ParentKVEnv (interface)](#parentkvenv-interface)
+  - [ParentEnv (interface)](#parentenv-interface)
   - [Remove (interface)](#remove-interface)
   - [Set (interface)](#set-interface)
 - [Environment Constructor](#environment-constructor)
@@ -136,12 +136,12 @@ export declare const getKVEvents: RS.ReaderStream<Events, Event<any, any>>
 
 Added in v0.12.0
 
-## getParentKVs
+## getParentEnv
 
 **Signature**
 
 ```ts
-export declare const getParentKVs: E.Env<ParentKVEnv, O.Option<Env>>
+export declare const getParentEnv: E.Env<ParentEnv, O.Option<Env>>
 ```
 
 Added in v0.11.0
@@ -321,7 +321,7 @@ Added in v0.12.0
 **Signature**
 
 ```ts
-export interface Env extends Get, Has, Set, Remove, Events, ParentKVEnv {}
+export interface Env extends Get, Has, Set, Remove, Events, ParentEnv {}
 ```
 
 Added in v0.12.0
@@ -362,12 +362,12 @@ export interface Has {
 
 Added in v0.12.0
 
-## ParentKVEnv (interface)
+## ParentEnv (interface)
 
 **Signature**
 
 ```ts
-export interface ParentKVEnv {
+export interface ParentEnv {
   readonly parentKVEnv: O.Option<Env>
 }
 ```
@@ -524,7 +524,7 @@ Added in v0.12.0
 export type EnvOptions = {
   readonly initial?: Iterable<readonly [any, any]>
   readonly kvEvents?: Adapter
-  readonly parentKVEnv?: Env
+  readonly parentEnv?: Env
 }
 ```
 

@@ -25,6 +25,7 @@ Added in v0.11.0
 - [Instance](#instance)
   - [Functor](#functor)
   - [Profunctor](#profunctor)
+  - [wrap](#wrap)
 - [Model](#model)
   - [RefAdapter (interface)](#refadapter-interface)
 - [URI](#uri)
@@ -131,6 +132,16 @@ export declare const Profunctor: Profunctor4<'@typed/fp/RefAdapter'>
 ```
 
 Added in v0.11.0
+
+## wrap
+
+**Signature**
+
+```ts
+export declare function wrap<E, I, A, B>(ra: RefAdapter<E, I, A, B>)
+```
+
+Added in v0.13.5
 
 # Model
 

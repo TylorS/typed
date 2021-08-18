@@ -825,7 +825,7 @@ Throw if not a valid decoder. Condemns optional errors
 **Signature**
 
 ```ts
-export declare const assertStrict: <I, O>(decoder: Decoder<I, O>) => (i: I) => O
+export declare const assertStrict: <I, O>(decoder: Decoder<I, O>) => (i: I) => Required<O>
 ```
 
 Added in v0.9.5

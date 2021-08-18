@@ -6,7 +6,7 @@ parent: Modules
 
 ## RefMap overview
 
-RefMap is a collection of helpers for working with Refs that manage a Map.
+RefMap is a collection of helpers for working with Refs that manage a ReadonlyMap.
 
 Added in v0.12.0
 
@@ -70,7 +70,7 @@ Added in v0.12.0
 ```ts
 export declare const getOrCreate: <K>(
   Eq: Eq<K>,
-) => <E, V>(key: K, create: E.Env<E, V>) => <E>(rm: RefMap<E, K, V>) => E.Env<E & E, V>
+) => <E1, V>(key: K, create: E.Env<E1, V>) => <E2>(rm: RefMap<E2, K, V>) => E.Env<E2 & E1, V>
 ```
 
 Added in v0.12.1

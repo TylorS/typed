@@ -120,16 +120,16 @@ Added in v0.9.2
 ```ts
 export declare function provideAllWithEnv<F extends URIS4>(
   F: FromEnv4<F> & Provide.ProvideAll4<F> & Chain4<F>,
-): <R, A>(resume: E.Env<R, A>) => <S, E, B>(hkt: Kind4<F, S, A, E, B>) => Kind4<F, S, R, E, B>
+): <R, A>(env: E.Env<R, A>) => <S, E, B>(hkt: Kind4<F, S, A, E, B>) => Kind4<F, S, R, E, B>
 export declare function provideAllWithEnv<F extends URIS3>(
   F: FromEnv3<F> & Provide.ProvideAll3<F> & Chain3<F>,
-): <R, A>(resume: E.Env<R, A>) => <E, B>(hkt: Kind3<F, A, E, B>) => Kind3<F, R, E, B>
+): <R, A>(env: E.Env<R, A>) => <E, B>(hkt: Kind3<F, A, E, B>) => Kind3<F, R, E, B>
 export declare function provideAllWithEnv<F extends URIS2>(
   F: FromEnv2<F> & Provide.ProvideAll2<F> & Chain2<F>,
-): <E, A>(resume: E.Env<E, A>) => <B>(hkt: Kind2<F, A, B>) => Kind2<F, E, B>
+): <E, A>(env: E.Env<E, A>) => <B>(hkt: Kind2<F, A, B>) => Kind2<F, E, B>
 export declare function provideAllWithEnv<F>(
   F: FromEnv<F> & Provide.ProvideAll<F> & Chain<F>,
-): <E, A>(resume: E.Env<E, A>) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, E, B>
+): <E, A>(env: E.Env<E, A>) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, E, B>
 ```
 
 Added in v0.9.2
@@ -141,16 +141,16 @@ Added in v0.9.2
 ```ts
 export declare function provideSomeWithEnv<F extends URIS4>(
   F: FromEnv4<F> & Provide.ProvideSome4<F> & Chain4<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider4<F, A, E, Initial<F, 'S'>, Initial<F, 'E'>>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider4<F, A, E, Initial<F, 'S'>, Initial<F, 'E'>>
 export declare function provideSomeWithEnv<F extends URIS3>(
   F: FromEnv3<F> & Provide.ProvideSome3<F> & Chain3<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider3<F, A, E, Initial<F, 'E'>>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider3<F, A, E, Initial<F, 'E'>>
 export declare function provideSomeWithEnv<F extends URIS2>(
   F: FromEnv2<F> & Provide.ProvideSome2<F> & Chain2<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider2<F, A, E>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider2<F, A, E>
 export declare function provideSomeWithEnv<F>(
   F: FromEnv<F> & Provide.ProvideSome<F> & Chain<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider<F, A, E>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider<F, A, E>
 ```
 
 Added in v0.9.2
@@ -162,16 +162,16 @@ Added in v0.9.2
 ```ts
 export declare function useAllWithEnv<F extends URIS4>(
   F: FromEnv4<F> & Provide.UseAll4<F> & Chain4<F>,
-): <R, A>(resume: E.Env<R, A>) => <S, E, B>(hkt: Kind4<F, S, A, E, B>) => Kind4<F, S, R, E, B>
+): <R, A>(env: E.Env<R, A>) => <S, E, B>(hkt: Kind4<F, S, A, E, B>) => Kind4<F, S, R, E, B>
 export declare function useAllWithEnv<F extends URIS3>(
   F: FromEnv3<F> & Provide.UseAll3<F> & Chain3<F>,
-): <R, A>(resume: E.Env<R, A>) => <E, B>(hkt: Kind3<F, A, E, B>) => Kind3<F, R, E, B>
+): <R, A>(env: E.Env<R, A>) => <E, B>(hkt: Kind3<F, A, E, B>) => Kind3<F, R, E, B>
 export declare function useAllWithEnv<F extends URIS2>(
   F: FromEnv2<F> & Provide.UseAll2<F> & Chain2<F>,
-): <E, A>(resume: E.Env<E, A>) => <B>(hkt: Kind2<F, A, B>) => Kind2<F, E, B>
+): <E, A>(env: E.Env<E, A>) => <B>(hkt: Kind2<F, A, B>) => Kind2<F, E, B>
 export declare function useAllWithEnv<F>(
   F: FromEnv<F> & Provide.UseAll<F> & Chain<F>,
-): <E, A>(resume: E.Env<E, A>) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, E, B>
+): <E, A>(env: E.Env<E, A>) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, E, B>
 ```
 
 Added in v0.9.2
@@ -183,16 +183,16 @@ Added in v0.9.2
 ```ts
 export declare function useSomeWithEnv<F extends URIS4>(
   F: FromEnv4<F> & Provide.UseSome4<F> & Chain4<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider4<F, A, E, Initial<F, 'S'>, Initial<F, 'E'>>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider4<F, A, E, Initial<F, 'S'>, Initial<F, 'E'>>
 export declare function useSomeWithEnv<F extends URIS3>(
   F: FromEnv3<F> & Provide.UseSome3<F> & Chain3<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider3<F, A, E, Initial<F, 'E'>>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider3<F, A, E, Initial<F, 'E'>>
 export declare function useSomeWithEnv<F extends URIS2>(
   F: FromEnv2<F> & Provide.UseSome2<F> & Chain2<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider2<F, A, E>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider2<F, A, E>
 export declare function useSomeWithEnv<F>(
   F: FromEnv<F> & Provide.UseSome<F> & Chain<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider<F, A, E>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider<F, A, E>
 ```
 
 Added in v0.9.2
