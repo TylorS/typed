@@ -1,5 +1,5 @@
 /**
- * RefMap is a collection of helpers for working with Refs that manage a Map.
+ * RefMap is a collection of helpers for working with Refs that manage a ReadonlyMap.
  * @since 0.12.0
  */
 import { Endomorphism } from 'fp-ts/Endomorphism'
@@ -115,11 +115,11 @@ export const upsertAt = <K>(Eq: Eq<K>) => {
  * @category Combinator
  */
 export const getOrCreate = <K>(Eq: Eq<K>) => {
-  return <E, V>(key: K, create: E.Env<E, V>) => {
+  return <E1, V>(key: K, create: E.Env<E1, V>) => {
     const lookup = RM.lookup(Eq)(key)
     const upsert = upsertAt(Eq)
 
-    return <E>(rm: RefMap<E, K, V>) =>
+    return <E2>(rm: RefMap<E2, K, V>) =>
       pipe(
         rm.get,
         E.map(lookup),
@@ -129,7 +129,7 @@ export const getOrCreate = <K>(Eq: Eq<K>) => {
               create,
               E.chainFirstW((v) => pipe(rm, upsert(key, v))),
             ),
-          (x) => E.of(x),
+          E.of,
         ),
       )
   }

@@ -213,7 +213,7 @@ export const listenToValues = <K, E, A>(
  * @since 0.12.0
  * @category Environment
  */
-export interface ParentKVEnv {
+export interface ParentEnv {
   readonly parentKVEnv: O.Option<Env>
 }
 
@@ -221,7 +221,7 @@ export interface ParentKVEnv {
  * @since 0.11.0
  * @category Combinator
  */
-export const getParentKVs = E.asks((e: ParentKVEnv) => e.parentKVEnv)
+export const getParentEnv = E.asks((e: ParentEnv) => e.parentKVEnv)
 
 /**
  * Traverse up the tree of KVEnv and parent KVEnv to find the closest KVEnv that
@@ -282,7 +282,7 @@ export const withProviderStream =
  * @since 0.12.0
  * @category Environment
  */
-export interface Env extends Get, Has, Set, Remove, Events, ParentKVEnv {}
+export interface Env extends Get, Has, Set, Remove, Events, ParentEnv {}
 
 /**
  * @since 0.12.0
@@ -410,7 +410,7 @@ export function env(options: EnvOptions = {}): Env {
     ...makeHasKV(references),
     ...makeSetKV(references, sendEvent),
     ...makeDeleteKV(references, sendEvent),
-    parentKVEnv: O.fromNullable(options.parentKVEnv),
+    parentKVEnv: O.fromNullable(options.parentEnv),
     kvEvents: [sendEvent, kvEvents[1]],
   }
 }
@@ -422,7 +422,7 @@ export function env(options: EnvOptions = {}): Env {
 export type EnvOptions = {
   readonly initial?: Iterable<readonly [any, any]>
   readonly kvEvents?: Adapter
-  readonly parentKVEnv?: Env
+  readonly parentEnv?: Env
 }
 
 function createSendEvent<K>(references: Map<any, any>, [push]: Adapter) {
@@ -581,29 +581,29 @@ export const useKeyedEnvs = <A>(Eq: Eq<A>) => {
 
   return pipe(
     E.Do,
-    E.apSW('parentKVEnv', getEnv),
-    E.bindW('createRefs', ({ parentKVEnv }) =>
+    E.apSW('parentEnv', getEnv),
+    E.bindW('createRefs', ({ parentEnv }) =>
       E.of((key: A) => {
-        const r = env({ parentKVEnv })
+        const r = env({ parentEnv })
 
         return pipe(
           refs,
           get,
           E.map((m) => m.set(key, r)),
           E.constant(r),
-          E.useSome(parentKVEnv),
+          E.useSome(parentEnv),
         )
       }),
     ),
-    E.bindW('findRefs', ({ createRefs, parentKVEnv }) =>
-      E.of((key: A) => pipe(getOrCreate(key, createRefs(key)), E.useSome(parentKVEnv))),
+    E.bindW('findRefs', ({ createRefs, parentEnv }) =>
+      E.of((key: A) => pipe(getOrCreate(key, createRefs(key)), E.useSome(parentEnv))),
     ),
-    E.bindW('deleteRefs', ({ parentKVEnv }) =>
+    E.bindW('deleteRefs', ({ parentEnv }) =>
       E.of(
         (key: A): D.Disposable => ({
           dispose: () =>
             pipe(
-              parentKVEnv,
+              parentEnv,
               get(refs),
               R.map((refs) => refs.get(key)),
               R.chainFirst(() =>
@@ -611,7 +611,7 @@ export const useKeyedEnvs = <A>(Eq: Eq<A>) => {
                   refs,
                   get,
                   E.tap((m) => m.delete(key)),
-                )(parentKVEnv),
+                )(parentEnv),
               ),
               R.chain((refs) => (refs ? dispose(refs) : R.of(null))),
               R.exec,

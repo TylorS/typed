@@ -261,6 +261,10 @@ export type PartToParam<A extends string, AST> = A extends `\\${infer R}`
   ? {
       readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]: string
     }
+  : A extends `${infer _}${Unnamed}}?`
+  ? { readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]?: string }
+  : A extends `${infer _}${Unnamed}}`
+  ? { readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]: string }
   : A extends `${infer _}${Param<infer R>}}?`
   ? { readonly [K in R]?: string }
   : A extends `${infer _}${Param<infer R>}}`
@@ -364,7 +368,27 @@ export type InpterpolateParts<
   R extends readonly any[] = [],
   AST = {},
 > = Parts extends readonly [infer H, ...infer T]
-  ? H extends Optional<Prefix<infer Pre, Param<infer P>>>
+  ? H extends Optional<Prefix<infer Pre, Unnamed>>
+    ? FindNextIndex<AST> extends keyof Params
+      ? InpterpolateParts<
+          T,
+          Params,
+          AppendPrefix<R, Pre, `${A.Cast<Params[FindNextIndex<AST>], string | number>}`>,
+          AST & Record<H, Params[FindNextIndex<AST>]>
+        >
+      : InpterpolateParts<T, Params, R, AST>
+    : H extends Prefix<infer Pre, Unnamed>
+    ? InpterpolateParts<
+        T,
+        Params,
+        AppendPrefix<
+          R,
+          Pre,
+          `${A.Cast<Params[A.Cast<FindNextIndex<AST>, keyof Params>], string | number>}`
+        >,
+        AST & Record<H, Params[A.Cast<FindNextIndex<AST>, keyof Params>]>
+      >
+    : H extends Optional<Prefix<infer Pre, Param<infer P>>>
     ? P extends keyof Params
       ? InpterpolateParts<
           T,
@@ -415,7 +439,7 @@ export type InpterpolatePartsWithNext<
 export type InterpolatePart<P, Params, AST> = P extends Optional<Param<infer R>>
   ? R extends keyof Params
     ? readonly [Params[R], AST & Record<R, Params[R]>]
-    : readonly [P, AST]
+    : readonly ['', AST]
   : P extends Param<infer R>
   ? R extends keyof Params
     ? readonly [Params[R], AST & Record<R, Params[R]>]
@@ -452,8 +476,8 @@ type InterpolateWithQueryParams<
   ? InterpolateWithQueryParams<
       A.Cast<Tail, readonly string[]>,
       Params,
-      InterpolateQueryParamPart<Head, Params, Previous, First>,
-      false
+      InterpolateQueryParamPart<Head, Params, Previous, First>[0],
+      InterpolateQueryParamPart<Head, Params, Previous, First>[1]
     >
   : Previous
 
@@ -470,15 +494,19 @@ export type InterpolateQueryParamPart<
   ? InterpolateQueryParamPartWithKey<
       First extends true ? `?${K}` : `&${K}`,
       Previous[0],
-      InterpolatePart<V, Params, Previous[1]>
+      InterpolatePart<V, Params, Previous[1]>,
+      First
     >
-  : readonly [[...Previous[0], Part], Previous[1]]
+  : readonly [[[...Previous[0], Part], Previous[1]], false]
 
 type InterpolateQueryParamPartWithKey<
   K extends string,
   Parts extends readonly string[],
   Previous extends readonly [string, any],
-> = [[...Parts, `${K}=${Previous[0]}`], Previous[1]]
+  First extends boolean,
+> = '' extends Previous[0]
+  ? [[Parts, Previous[1]], First]
+  : [[[...Parts, `${K}=${Previous[0]}`], Previous[1]], false]
 
 type SplitQueryParams<P extends string> = P extends `${infer Head}&${infer Tail}`
   ? readonly [Head, ...SplitQueryParams<Tail>]
