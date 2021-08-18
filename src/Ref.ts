@@ -604,13 +604,7 @@ export function struct<S extends AnyRefStruct>(
 
 type AnyRefStruct = Readonly<Record<string, Ref<any, any, any>>>
 
-type RefStructEnv<S extends AnyRefStruct> = Intersect<
-  U.ListOf<
-    {
-      [K in keyof S]: E.RequirementsOf<S[K]>
-    }[keyof S]
-  >
->
+type RefStructEnv<A extends AnyRefStruct> = Intersect<U.ListOf<RequirementsOf<A[keyof A]>>>
 
 type RefStructInput<S extends AnyRefStruct> = {
   readonly [K in keyof S]: InputOf<S[K]>
