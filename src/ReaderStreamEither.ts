@@ -27,10 +27,12 @@ import * as RT from 'fp-ts/ReaderT'
 import { Semigroup } from 'fp-ts/Semigroup'
 
 import * as FE from './FromEnv'
+import * as FRS from './FromReaderStream'
 import * as FRe from './FromResume'
 import * as FS from './FromStream'
 import { flow } from './function'
 import { MonadRec3 } from './MonadRec'
+import * as P from './Provide'
 import * as RS from './ReaderStream'
 import * as S from './Stream'
 import * as SE from './StreamEither'
@@ -304,21 +306,65 @@ export const Apply: Ap.Apply3<URI> = {
  * @category Combinator
  */
 export const apFirst = Ap.apFirst(Apply)
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const apFirstW = apFirst as <R1, E, B>(
+  second: ReaderStreamEither<R1, E, B>,
+) => <R2, A>(first: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1 & R2, E, A>
+
 /**
  * @since 0.9.2
  * @category Combinator
  */
 export const apS = Ap.apS(Apply)
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const apSW = apS as <N extends string, A, R1, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: ReaderStreamEither<R1, E, B>,
+) => <R2>(fa: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<
+  R1 & R2,
+  E,
+  {
+    readonly [K in keyof A | N]: K extends keyof A ? A[K] : B
+  }
+>
 /**
  * @since 0.9.2
  * @category Combinator
  */
 export const apSecond = Ap.apSecond(Apply)
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const apScondW = apFirst as <R1, E, B>(
+  second: ReaderStreamEither<R1, E, B>,
+) => <R2, A>(first: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1 & R2, E, B>
+
 /**
  * @since 0.9.2
  * @category Combinator
  */
 export const apT = Ap.apT(Apply)
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const apTW = apT as <R1, E, B>(
+  fb: ReaderStreamEither<R1, E, B>,
+) => <R2, A extends readonly unknown[]>(
+  fas: ReaderStreamEither<R2, E, A>,
+) => ReaderStreamEither<R1 & R2, E, readonly [...A, B]>
+
 /**
  * @since 0.9.2
  * @category Typeclass Constructor
@@ -359,6 +405,14 @@ export const bind = Ch.bind(Chain)
  * @category Combinator
  */
 export const chainFirst = Ch.chainFirst(Chain)
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const chainFirstW = chainFirst as <A, R1, E, B>(
+  f: (a: A) => ReaderStreamEither<R1, E, B>,
+) => <R2>(first: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1 & R2, E, A>
 
 /**
  * @since 0.9.2
@@ -503,6 +557,14 @@ export const chainFirstReaderK = FR.chainFirstReaderK(FromReader, Chain)
  * @category Combinator
  */
 export const chainReaderK = FR.chainReaderK(FromReader, Chain)
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const chainReaderKW = chainReaderK as <A, R1, B>(
+  f: (a: A) => Re.Reader<R1, B>,
+) => <R2, E>(ma: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1 & R2, E, B>
 /**
  * @since 0.9.2
  * @category Constructor
@@ -661,3 +723,147 @@ export const chainEnvK = FE.chainEnvK(FromEnv, Chain)
  * @category Constructor
  */
 export const fromEnvK = FE.fromEnvK(FromEnv)
+
+/**
+ * @since 0.13.9
+ * @category Instance
+ */
+export const ProvideAll: P.ProvideAll3<URI> = {
+  provideAll: RS.provideAll,
+}
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const provideAll = ProvideAll.provideAll
+
+/**
+ * @since 0.13.9
+ * @category Instance
+ */
+export const ProvideSome: P.ProvideSome3<URI> = {
+  provideSome: RS.provideSome,
+}
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const provideSome = ProvideSome.provideSome
+
+/**
+ * @since 0.13.9
+ * @category Instance
+ */
+export const UseAll: P.UseAll3<URI> = {
+  useAll: RS.useAll,
+}
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const useAll = UseAll.useAll
+
+/**
+ * @since 0.13.9
+ * @category Instance
+ */
+export const UseSome: P.UseSome3<URI> = {
+  useSome: RS.useSome,
+}
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const useSome = UseSome.useSome
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const provideAllWithEnv = FE.provideAllWithEnv({ ...FromEnv, ...ProvideAll, ...Chain })
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const provideSomeWithEnv = FE.provideSomeWithEnv({ ...FromEnv, ...ProvideSome, ...Chain })
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const useSomeWithEnv = FE.useSomeWithEnv({ ...FromEnv, ...UseSome, ...Chain })
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const useAllWithEnv = FE.useAllWithEnv({ ...FromEnv, ...UseAll, ...Chain })
+
+/**
+ * @since 0.13.9
+ * @category Instance
+ */
+export const FromReaderStream: FRS.FromReaderStream3<URI> = {
+  fromReaderStream,
+}
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const chainFirstReaderStreamK = FRS.chainFirstReaderStreamK(FromReaderStream, Chain)
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const chainReaderStreamK = FRS.chainReaderStreamK(FromReaderStream, Chain)
+/**
+ * @since 0.13.9
+ * @category Constructor
+ */
+export const fromReaderStreamK = FRS.fromReaderStreamK(FromReaderStream)
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const provideAllWithReaderStream = FRS.provideAllWithReaderStream({
+  ...FromReaderStream,
+  ...ProvideAll,
+  ...Chain,
+})
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const provideSomeWithReaderStream = FRS.provideSomeWithReaderStream({
+  ...FromReaderStream,
+  ...ProvideSome,
+  ...Chain,
+})
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const useSomeWithReaderStream = FRS.useSomeWithReaderStream({
+  ...FromReaderStream,
+  ...UseSome,
+  ...Chain,
+})
+
+/**
+ * @since 0.13.9
+ * @category Combinator
+ */
+export const useAllWithReaderStream = FRS.useAllWithReaderStream({
+  ...FromReaderStream,
+  ...UseAll,
+  ...Chain,
+})
