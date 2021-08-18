@@ -139,6 +139,7 @@ export function wrap<E, I, A, B>(ra: RefAdapter<E, I, A, B>) {
     ...ra,
     sendEvent: (event: A) => pipe(ra, sendEvent(event)),
     getSendEvent: getSendEvent(ra),
+    events: getEvents(ra),
     listenToEvents: <E2>(f: (value: B) => E.Env<E2, A>) => pipe(ra, listenToEvents(f)),
   } as const
 }
