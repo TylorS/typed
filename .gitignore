@@ -132,6 +132,7 @@ snowpack.key
 /TaskEither/
 /TaskOption/
 /These/
+/Use/
 /browser/
 /dom/
 /function/
@@ -140,4 +141,3 @@ snowpack.key
 /number/
 /string/
 /struct/
-/use/

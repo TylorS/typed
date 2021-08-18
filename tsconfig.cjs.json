@@ -87,6 +87,7 @@
     "TaskEither",
     "TaskOption",
     "These",
+    "Use",
     "browser",
     "dom",
     "function",
@@ -94,8 +95,7 @@
     "node",
     "number",
     "string",
-    "struct",
-    "use"
+    "struct"
   ],
   "files": [],
   "include": [

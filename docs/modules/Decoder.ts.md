@@ -252,7 +252,9 @@ Added in v0.9.4
 **Signature**
 
 ```ts
-export declare const condemmMissingKeys: <I, A>(decoder: Decoder<I, A>) => Decoder<I, Required<A>>
+export declare const condemmMissingKeys: <I, A>(
+  decoder: Decoder<I, A>,
+) => Decoder<I, UndoPartial<A>>
 ```
 
 Added in v0.9.4
@@ -367,7 +369,7 @@ Added in v0.9.5
 **Signature**
 
 ```ts
-export declare const strict: <I, A>(decoder: Decoder<I, A>) => Decoder<I, Required<A>>
+export declare const strict: <I, A>(decoder: Decoder<I, A>) => Decoder<I, UndoPartial<A>>
 ```
 
 Added in v0.9.4
@@ -490,7 +492,7 @@ export declare const fromStruct: <A extends { readonly [key: string]: Decoder<un
   properties: A,
 ) => Decoder<
   Readonly<Record<string, unknown>>,
-  { readonly [K in keyof A]?: OutputOf<A[K]> | undefined }
+  Partial<{ readonly [K in keyof A]: OutputOf<A[K]> }>
 >
 ```
 
@@ -549,7 +551,7 @@ Added in v0.9.4
 ```ts
 export declare function missingKeys<A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]?: OutputOf<A[K]> }>
+): Decoder<Readonly<Record<string, unknown>>, Partial<{ readonly [K in keyof A]: OutputOf<A[K]> }>>
 ```
 
 Added in v0.9.4
@@ -603,7 +605,7 @@ Added in v0.9.4
 ```ts
 export declare function struct<A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<unknown, { readonly [K in keyof A]?: OutputOf<A[K]> }>
+): Decoder<unknown, Partial<{ readonly [K in keyof A]: OutputOf<A[K]> }>>
 ```
 
 Added in v0.9.4
@@ -653,7 +655,7 @@ Added in v0.9.4
 ```ts
 export declare function unexpectedKeys<A extends { readonly [key: string]: Decoder<unknown, any> }>(
   properties: A,
-): Decoder<Readonly<Record<string, unknown>>, { readonly [K in keyof A]?: OutputOf<A[K]> }>
+): Decoder<Readonly<Record<string, unknown>>, Partial<{ readonly [K in keyof A]: OutputOf<A[K]> }>>
 ```
 
 Added in v0.9.4

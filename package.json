@@ -380,6 +380,10 @@
       "require": "./cjs/These.js",
       "import": "./esm/These.js"
     },
+    "./Use": {
+      "require": "./cjs/Use.js",
+      "import": "./esm/Use.js"
+    },
     "./browser": {
       "require": "./cjs/browser.js",
       "import": "./esm/browser.js"
@@ -411,10 +415,6 @@
     "./struct": {
       "require": "./cjs/struct.js",
       "import": "./esm/struct.js"
-    },
-    "./use": {
-      "require": "./cjs/use.js",
-      "import": "./esm/use.js"
     }
   }
 }

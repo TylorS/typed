@@ -1,6 +1,6 @@
 ---
 title: ReaderStreamEither.ts
-nav_order: 45
+nav_order: 46
 parent: Modules
 ---
 
@@ -22,9 +22,13 @@ Added in v0.9.2
   - [altW](#altw)
   - [ap](#ap)
   - [apFirst](#apfirst)
+  - [apFirstW](#apfirstw)
   - [apS](#aps)
+  - [apSW](#apsw)
+  - [apScondW](#apscondw)
   - [apSecond](#apsecond)
   - [apT](#apt)
+  - [apTW](#aptw)
   - [apW](#apw)
   - [bimap](#bimap)
   - [bind](#bind)
@@ -38,12 +42,16 @@ Added in v0.9.2
   - [chainFirstEnvK](#chainfirstenvk)
   - [chainFirstIOK](#chainfirstiok)
   - [chainFirstReaderK](#chainfirstreaderk)
+  - [chainFirstReaderStreamK](#chainfirstreaderstreamk)
   - [chainFirstResumeK](#chainfirstresumek)
   - [chainFirstStreamK](#chainfirststreamk)
   - [chainFirstTaskK](#chainfirsttaskk)
+  - [chainFirstW](#chainfirstw)
   - [chainIOK](#chainiok)
   - [chainOptionK](#chainoptionk)
   - [chainReaderK](#chainreaderk)
+  - [chainReaderKW](#chainreaderkw)
+  - [chainReaderStreamK](#chainreaderstreamk)
   - [chainRec](#chainrec)
   - [chainResumeK](#chainresumek)
   - [chainStreamK](#chainstreamk)
@@ -59,9 +67,21 @@ Added in v0.9.2
   - [orElse](#orelse)
   - [orElseFirst](#orelsefirst)
   - [orLeft](#orleft)
+  - [provideAll](#provideall)
+  - [provideAllWithEnv](#provideallwithenv)
+  - [provideAllWithReaderStream](#provideallwithreaderstream)
+  - [provideSome](#providesome)
+  - [provideSomeWithEnv](#providesomewithenv)
+  - [provideSomeWithReaderStream](#providesomewithreaderstream)
   - [swap](#swap)
   - [toUnion](#tounion)
   - [tupled](#tupled)
+  - [useAll](#useall)
+  - [useAllWithEnv](#useallwithenv)
+  - [useAllWithReaderStream](#useallwithreaderstream)
+  - [useSome](#usesome)
+  - [useSomeWithEnv](#usesomewithenv)
+  - [useSomeWithReaderStream](#usesomewithreaderstream)
 - [Constructor](#constructor)
   - [ask](#ask)
   - [asks](#asks)
@@ -77,6 +97,7 @@ Added in v0.9.2
   - [fromReader](#fromreader)
   - [fromReaderK](#fromreaderk)
   - [fromReaderStream](#fromreaderstream)
+  - [fromReaderStreamK](#fromreaderstreamk)
   - [fromReaderStreamL](#fromreaderstreaml)
   - [fromResume](#fromresume)
   - [fromResumeK](#fromresumek)
@@ -104,6 +125,7 @@ Added in v0.9.2
   - [FromEnv](#fromenv)
   - [FromIO](#fromio)
   - [FromReader](#fromreader)
+  - [FromReaderStream](#fromreaderstream)
   - [FromResume](#fromresume)
   - [FromStream](#fromstream)
   - [FromTask](#fromtask)
@@ -111,6 +133,10 @@ Added in v0.9.2
   - [Monad](#monad)
   - [MonadRec](#monadrec)
   - [Pointed](#pointed)
+  - [ProvideAll](#provideall)
+  - [ProvideSome](#providesome)
+  - [UseAll](#useall)
+  - [UseSome](#usesome)
 - [Model](#model)
   - [ReaderStreamEither (interface)](#readerstreameither-interface)
 - [Type-level](#type-level)
@@ -191,6 +217,18 @@ export declare const apFirst: <R, E, B>(
 
 Added in v0.9.2
 
+## apFirstW
+
+**Signature**
+
+```ts
+export declare const apFirstW: <R1, E, B>(
+  second: ReaderStreamEither<R1, E, B>,
+) => <R2, A>(first: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1 & R2, E, A>
+```
+
+Added in v0.13.9
+
 ## apS
 
 **Signature**
@@ -205,6 +243,33 @@ export declare const apS: <N, A, R, E, B>(
 ```
 
 Added in v0.9.2
+
+## apSW
+
+**Signature**
+
+```ts
+export declare const apSW: <N extends string, A, R1, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: ReaderStreamEither<R1, E, B>,
+) => <R2>(
+  fa: ReaderStreamEither<R2, E, A>,
+) => ReaderStreamEither<R1 & R2, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.13.9
+
+## apScondW
+
+**Signature**
+
+```ts
+export declare const apScondW: <R1, E, B>(
+  second: ReaderStreamEither<R1, E, B>,
+) => <R2, A>(first: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1 & R2, E, B>
+```
+
+Added in v0.13.9
 
 ## apSecond
 
@@ -229,6 +294,20 @@ export declare const apT: <R, E, B>(
 ```
 
 Added in v0.9.2
+
+## apTW
+
+**Signature**
+
+```ts
+export declare const apTW: <R1, E, B>(
+  fb: ReaderStreamEither<R1, E, B>,
+) => <R2, A extends readonly unknown[]>(
+  fas: ReaderStreamEither<R2, E, A>,
+) => ReaderStreamEither<R1 & R2, E, readonly [...A, B]>
+```
+
+Added in v0.13.9
 
 ## apW
 
@@ -398,6 +477,18 @@ export declare const chainFirstReaderK: <A, R, B>(
 
 Added in v0.9.2
 
+## chainFirstReaderStreamK
+
+**Signature**
+
+```ts
+export declare const chainFirstReaderStreamK: <A, R1, B>(
+  f: (value: A) => RS.ReaderStream<R1, B>,
+) => <R2, E>(hkt: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1 & R2, E, A>
+```
+
+Added in v0.13.9
+
 ## chainFirstResumeK
 
 **Signature**
@@ -433,6 +524,18 @@ export declare const chainFirstTaskK: <A, B>(
 ```
 
 Added in v0.9.2
+
+## chainFirstW
+
+**Signature**
+
+```ts
+export declare const chainFirstW: <A, R1, E, B>(
+  f: (a: A) => ReaderStreamEither<R1, E, B>,
+) => <R2>(first: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1 & R2, E, A>
+```
+
+Added in v0.13.9
 
 ## chainIOK
 
@@ -471,6 +574,30 @@ export declare const chainReaderK: <A, R, B>(
 ```
 
 Added in v0.9.2
+
+## chainReaderKW
+
+**Signature**
+
+```ts
+export declare const chainReaderKW: <A, R1, B>(
+  f: (a: A) => Re.Reader<R1, B>,
+) => <R2, E>(ma: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1 & R2, E, B>
+```
+
+Added in v0.13.9
+
+## chainReaderStreamK
+
+**Signature**
+
+```ts
+export declare const chainReaderStreamK: <A, R1, B>(
+  f: (value: A) => RS.ReaderStream<R1, B>,
+) => <R2, E>(hkt: ReaderStreamEither<R2, E, A>) => ReaderStreamEither<R1 & R2, E, B>
+```
+
+Added in v0.13.9
 
 ## chainRec
 
@@ -657,6 +784,78 @@ export declare const orLeft: <E1, ME, E2>(
 
 Added in v0.9.2
 
+## provideAll
+
+**Signature**
+
+```ts
+export declare const provideAll: <A>(
+  provided: A,
+) => <E, B>(hkt: ReaderStreamEither<Partial<A>, E, B>) => ReaderStreamEither<unknown, E, B>
+```
+
+Added in v0.13.9
+
+## provideAllWithEnv
+
+**Signature**
+
+```ts
+export declare const provideAllWithEnv: <R, A>(
+  env: Env<R, A>,
+) => <E, B>(hkt: ReaderStreamEither<A, E, B>) => ReaderStreamEither<R, E, B>
+```
+
+Added in v0.13.9
+
+## provideAllWithReaderStream
+
+**Signature**
+
+```ts
+export declare const provideAllWithReaderStream: <R, A>(
+  stream: RS.ReaderStream<R, A>,
+) => <E, B>(hkt: ReaderStreamEither<A, E, B>) => ReaderStreamEither<R, E, B>
+```
+
+Added in v0.13.9
+
+## provideSome
+
+**Signature**
+
+```ts
+export declare const provideSome: <A>(
+  provided: A,
+) => <B, E, C>(hkt: ReaderStreamEither<A & B, E, C>) => ReaderStreamEither<B, E, C>
+```
+
+Added in v0.13.9
+
+## provideSomeWithEnv
+
+**Signature**
+
+```ts
+export declare const provideSomeWithEnv: <E, A>(
+  env: Env<E, A>,
+) => P.Provider3<'@typed/fp/ReaderStreamEither', A, E, never>
+```
+
+Added in v0.13.9
+
+## provideSomeWithReaderStream
+
+**Signature**
+
+```ts
+export declare const provideSomeWithReaderStream: <E, A>(
+  stream: RS.ReaderStream<E, A>,
+) => P.Provider3<'@typed/fp/ReaderStreamEither', A, E, never>
+```
+
+Added in v0.13.9
+
 ## swap
 
 **Signature**
@@ -692,6 +891,78 @@ export declare const tupled: <R, E, A>(
 ```
 
 Added in v0.9.2
+
+## useAll
+
+**Signature**
+
+```ts
+export declare const useAll: <A>(
+  provided: A,
+) => <E, B>(hkt: ReaderStreamEither<Partial<A>, E, B>) => ReaderStreamEither<unknown, E, B>
+```
+
+Added in v0.13.9
+
+## useAllWithEnv
+
+**Signature**
+
+```ts
+export declare const useAllWithEnv: <R, A>(
+  env: Env<R, A>,
+) => <E, B>(hkt: ReaderStreamEither<A, E, B>) => ReaderStreamEither<R, E, B>
+```
+
+Added in v0.13.9
+
+## useAllWithReaderStream
+
+**Signature**
+
+```ts
+export declare const useAllWithReaderStream: <R, A>(
+  stream: RS.ReaderStream<R, A>,
+) => <E, B>(hkt: ReaderStreamEither<A, E, B>) => ReaderStreamEither<R, E, B>
+```
+
+Added in v0.13.9
+
+## useSome
+
+**Signature**
+
+```ts
+export declare const useSome: <A>(
+  provided: A,
+) => <B, E, C>(hkt: ReaderStreamEither<A & B, E, C>) => ReaderStreamEither<B, E, C>
+```
+
+Added in v0.13.9
+
+## useSomeWithEnv
+
+**Signature**
+
+```ts
+export declare const useSomeWithEnv: <E, A>(
+  env: Env<E, A>,
+) => P.Provider3<'@typed/fp/ReaderStreamEither', A, E, never>
+```
+
+Added in v0.13.9
+
+## useSomeWithReaderStream
+
+**Signature**
+
+```ts
+export declare const useSomeWithReaderStream: <E, A>(
+  stream: RS.ReaderStream<E, A>,
+) => P.Provider3<'@typed/fp/ReaderStreamEither', A, E, never>
+```
+
+Added in v0.13.9
 
 # Constructor
 
@@ -856,6 +1127,18 @@ export declare const fromReaderStream: <FE, A, E>(
 ```
 
 Added in v0.9.2
+
+## fromReaderStreamK
+
+**Signature**
+
+```ts
+export declare const fromReaderStreamK: <A, R, B>(
+  f: (...args: A) => RS.ReaderStream<R, B>,
+) => <E>(...args: A) => ReaderStreamEither<R, E, B>
+```
+
+Added in v0.13.9
 
 ## fromReaderStreamL
 
@@ -1136,6 +1419,16 @@ export declare const FromReader: FR.FromReader3<'@typed/fp/ReaderStreamEither'>
 
 Added in v0.9.2
 
+## FromReaderStream
+
+**Signature**
+
+```ts
+export declare const FromReaderStream: FRS.FromReaderStream3<'@typed/fp/ReaderStreamEither'>
+```
+
+Added in v0.13.9
+
 ## FromResume
 
 **Signature**
@@ -1205,6 +1498,46 @@ export declare const Pointed: Pointed3<'@typed/fp/ReaderStreamEither'>
 ```
 
 Added in v0.9.2
+
+## ProvideAll
+
+**Signature**
+
+```ts
+export declare const ProvideAll: P.ProvideAll3<'@typed/fp/ReaderStreamEither'>
+```
+
+Added in v0.13.9
+
+## ProvideSome
+
+**Signature**
+
+```ts
+export declare const ProvideSome: P.ProvideSome3<'@typed/fp/ReaderStreamEither'>
+```
+
+Added in v0.13.9
+
+## UseAll
+
+**Signature**
+
+```ts
+export declare const UseAll: P.UseAll3<'@typed/fp/ReaderStreamEither'>
+```
+
+Added in v0.13.9
+
+## UseSome
+
+**Signature**
+
+```ts
+export declare const UseSome: P.UseSome3<'@typed/fp/ReaderStreamEither'>
+```
+
+Added in v0.13.9
 
 # Model
 

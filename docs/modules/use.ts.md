@@ -1,10 +1,10 @@
 ---
-title: use.ts
-nav_order: 77
+title: Use.ts
+nav_order: 78
 parent: Modules
 ---
 
-## use overview
+## Use overview
 
 Added in v0.11.0
 
