@@ -1,4 +1,3 @@
-import { rafEnv } from '@fp/browser'
 import * as DOM from '@fp/dom'
 import * as E from '@fp/Env'
 import * as KV from '@fp/KV'
@@ -20,14 +19,16 @@ import { TodoApp } from './presentation'
 
 const Main = F.pipe(
   TodoApp,
-  DOM.patchKV(render, '.todoapp'),
+  KV.sample,
+  DOM.patch(render),
+  RS.useSomeWithEnv(DOM.queryRootElement('.todoapp')),
   RS.mergeFirst(saveTodosOnChange),
   RS.mergeFirst(updateFilterOnHashChange),
 )
 
 const stream: Stream<HTMLElement> = Main({
   document,
-  ...rafEnv,
+  ...DOM.QueryRootElementFailure.criticalExpection((e) => e.message),
   ...KV.env(),
   loadTodos: () => E.fromIO(loadTodosFromStorage),
   saveTodos: saveTodosToStorage,

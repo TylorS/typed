@@ -1,3 +1,4 @@
+import * as DOM from '@fp/dom'
 import * as E from '@fp/Env'
 import * as KV from '@fp/KV'
 import * as O from '@fp/Option'
@@ -69,14 +70,19 @@ const Counters: RS.ReaderStream<KV.Env, readonly Renderable[]> = F.pipe(
 )
 
 // Combines Counters with a Header that is also just a Counter and renders on each update
-const Main: RS.ReaderStream<KV.Env, HTMLElement> = F.pipe(
+const Main = F.pipe(
   RS.combineAll(Header, Counters),
   RS.map(([header, counters]) => html`${header} ${counters}`),
-  RS.scan(render, rootElement),
+  DOM.patch(render),
+  RS.useSomeWithEnv(DOM.queryRootElement('#app')),
 )
 
 // Provide Main with its required resources
-const stream: S.Stream<HTMLElement> = Main(KV.env())
+const stream: S.Stream<HTMLElement> = Main({
+  document,
+  ...DOM.QueryRootElementFailure.criticalExpection((e) => e.message),
+  ...KV.env(),
+})
 
 // Execute our Stream with a default scheduler
 S.runEffects(stream, newDefaultScheduler()).catch((error) => console.error(error))

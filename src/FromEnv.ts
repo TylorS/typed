@@ -183,16 +183,16 @@ export function chainFirstEnvK<F>(
  */
 export function provideSomeWithEnv<F extends URIS4>(
   F: FromEnv4<F> & Provide.ProvideSome4<F> & Chain4<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider4<F, A, E, Initial<F, 'S'>, Initial<F, 'E'>>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider4<F, A, E, Initial<F, 'S'>, Initial<F, 'E'>>
 export function provideSomeWithEnv<F extends URIS3>(
   F: FromEnv3<F> & Provide.ProvideSome3<F> & Chain3<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider3<F, A, E, Initial<F, 'E'>>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider3<F, A, E, Initial<F, 'E'>>
 export function provideSomeWithEnv<F extends URIS2>(
   F: FromEnv2<F> & Provide.ProvideSome2<F> & Chain2<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider2<F, A, E>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider2<F, A, E>
 export function provideSomeWithEnv<F>(
   F: FromEnv<F> & Provide.ProvideSome<F> & Chain<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider<F, A, E>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider<F, A, E>
 export function provideSomeWithEnv<F>(F: FromEnv<F> & Provide.ProvideSome<F> & Chain<F>) {
   return flow(F.fromEnv, Provide.provideSomeWith(F))
 }
@@ -203,16 +203,16 @@ export function provideSomeWithEnv<F>(F: FromEnv<F> & Provide.ProvideSome<F> & C
  */
 export function provideAllWithEnv<F extends URIS4>(
   F: FromEnv4<F> & Provide.ProvideAll4<F> & Chain4<F>,
-): <R, A>(resume: E.Env<R, A>) => <S, E, B>(hkt: Kind4<F, S, A, E, B>) => Kind4<F, S, R, E, B>
+): <R, A>(env: E.Env<R, A>) => <S, E, B>(hkt: Kind4<F, S, A, E, B>) => Kind4<F, S, R, E, B>
 export function provideAllWithEnv<F extends URIS3>(
   F: FromEnv3<F> & Provide.ProvideAll3<F> & Chain3<F>,
-): <R, A>(resume: E.Env<R, A>) => <E, B>(hkt: Kind3<F, A, E, B>) => Kind3<F, R, E, B>
+): <R, A>(env: E.Env<R, A>) => <E, B>(hkt: Kind3<F, A, E, B>) => Kind3<F, R, E, B>
 export function provideAllWithEnv<F extends URIS2>(
   F: FromEnv2<F> & Provide.ProvideAll2<F> & Chain2<F>,
-): <E, A>(resume: E.Env<E, A>) => <B>(hkt: Kind2<F, A, B>) => Kind2<F, E, B>
+): <E, A>(env: E.Env<E, A>) => <B>(hkt: Kind2<F, A, B>) => Kind2<F, E, B>
 export function provideAllWithEnv<F>(
   F: FromEnv<F> & Provide.ProvideAll<F> & Chain<F>,
-): <E, A>(resume: E.Env<E, A>) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, E, B>
+): <E, A>(env: E.Env<E, A>) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, E, B>
 export function provideAllWithEnv<F>(F: FromEnv<F> & Provide.ProvideAll<F> & Chain<F>) {
   return flow(F.fromEnv, Provide.provideAllWith(F))
 }
@@ -223,16 +223,16 @@ export function provideAllWithEnv<F>(F: FromEnv<F> & Provide.ProvideAll<F> & Cha
  */
 export function useSomeWithEnv<F extends URIS4>(
   F: FromEnv4<F> & Provide.UseSome4<F> & Chain4<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider4<F, A, E, Initial<F, 'S'>, Initial<F, 'E'>>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider4<F, A, E, Initial<F, 'S'>, Initial<F, 'E'>>
 export function useSomeWithEnv<F extends URIS3>(
   F: FromEnv3<F> & Provide.UseSome3<F> & Chain3<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider3<F, A, E, Initial<F, 'E'>>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider3<F, A, E, Initial<F, 'E'>>
 export function useSomeWithEnv<F extends URIS2>(
   F: FromEnv2<F> & Provide.UseSome2<F> & Chain2<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider2<F, A, E>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider2<F, A, E>
 export function useSomeWithEnv<F>(
   F: FromEnv<F> & Provide.UseSome<F> & Chain<F>,
-): <E, A>(resume: E.Env<E, A>) => Provide.Provider<F, A, E>
+): <E, A>(env: E.Env<E, A>) => Provide.Provider<F, A, E>
 export function useSomeWithEnv<F>(F: FromEnv<F> & Provide.UseSome<F> & Chain<F>) {
   return flow(F.fromEnv, Provide.useSomeWith(F))
 }
@@ -243,16 +243,16 @@ export function useSomeWithEnv<F>(F: FromEnv<F> & Provide.UseSome<F> & Chain<F>)
  */
 export function useAllWithEnv<F extends URIS4>(
   F: FromEnv4<F> & Provide.UseAll4<F> & Chain4<F>,
-): <R, A>(resume: E.Env<R, A>) => <S, E, B>(hkt: Kind4<F, S, A, E, B>) => Kind4<F, S, R, E, B>
+): <R, A>(env: E.Env<R, A>) => <S, E, B>(hkt: Kind4<F, S, A, E, B>) => Kind4<F, S, R, E, B>
 export function useAllWithEnv<F extends URIS3>(
   F: FromEnv3<F> & Provide.UseAll3<F> & Chain3<F>,
-): <R, A>(resume: E.Env<R, A>) => <E, B>(hkt: Kind3<F, A, E, B>) => Kind3<F, R, E, B>
+): <R, A>(env: E.Env<R, A>) => <E, B>(hkt: Kind3<F, A, E, B>) => Kind3<F, R, E, B>
 export function useAllWithEnv<F extends URIS2>(
   F: FromEnv2<F> & Provide.UseAll2<F> & Chain2<F>,
-): <E, A>(resume: E.Env<E, A>) => <B>(hkt: Kind2<F, A, B>) => Kind2<F, E, B>
+): <E, A>(env: E.Env<E, A>) => <B>(hkt: Kind2<F, A, B>) => Kind2<F, E, B>
 export function useAllWithEnv<F>(
   F: FromEnv<F> & Provide.UseAll<F> & Chain<F>,
-): <E, A>(resume: E.Env<E, A>) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, E, B>
+): <E, A>(env: E.Env<E, A>) => <B>(hkt: HKT2<F, A, B>) => HKT2<F, E, B>
 export function useAllWithEnv<F>(F: FromEnv<F> & Provide.UseAll<F> & Chain<F>) {
   return flow(F.fromEnv, Provide.useAllWith(F))
 }

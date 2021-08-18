@@ -2,12 +2,13 @@
  * @typed/fp/dom is a collection of abstractions for working with the DOM
  * @since 0.13.2
  */
-import * as tqs from 'typed-query-selector/parser'
+import { A } from 'ts-toolbelt'
+import { ParseSelector } from 'typed-query-selector/parser'
 
 import * as E from './Env'
 import * as EO from './EnvOption'
 import * as Fail from './Fail'
-import { flow, pipe } from './function'
+import { ArgsOf, pipe } from './function'
 import * as KV from './KV'
 import * as O from './Option'
 import * as RS from './ReaderStream'
@@ -96,143 +97,81 @@ export const getDocument = E.asks((e: DocumentEnv) => e.document)
  * @category Environment
  * @since 0.13.2
  */
-export type RootElementEnv<El extends HTMLElement = HTMLElement> = { readonly rootElement: El }
+export type RootElementEnv = { readonly rootElement: Element }
 
 /**
  * @category DOM
  * @since 0.13.2
  */
-export const getRootElement = <El extends HTMLElement = HTMLElement>() =>
-  E.asks((e: RootElementEnv<El>) => e.rootElement)
+export const getRootElement = E.asks((e: RootElementEnv) => e.rootElement)
 
 /**
  * @category DOM
  * @since 0.13.2
  */
-export const querySelector = <S extends string>(selector: S) =>
-  pipe(
-    getRootElement(),
-    E.chainW((el) =>
-      E.fromIO(() => O.fromNullable(el.querySelector<tqs.ParseSelector<S, Element>>(selector))),
-    ),
-  )
+export const querySelector =
+  <S extends string>(selector: S) =>
+  <N extends ParentNode>(el: N) =>
+    O.fromNullable(el.querySelector<ParseSelector<S, A.Cast<N, Element>>>(selector))
 
 /**
  * @category DOM
  * @since 0.13.2
  */
-export const querySelectorAll = <S extends string>(selector: S) =>
-  pipe(
-    getRootElement(),
-    E.chainW((el) =>
-      E.fromIO((): readonly tqs.ParseSelector<S, Element>[] =>
-        Array.from(el.querySelectorAll<tqs.ParseSelector<S, Element>>(selector)),
-      ),
-    ),
-  )
+export const querySelectorAll =
+  <S extends string>(selector: S) =>
+  <N extends ParentNode>(el: N) =>
+    Array.from(el.querySelectorAll(selector)) as readonly ParseSelector<S, Element>[]
 
 /**
  * A Failure used to represent being unable to query for our RootElement
  * @category Failure
- * @since 0.13.2
+ * @since 0.13.4
  */
-export const QueryRootElementError = Fail.named<{
+export const QueryRootElementFailure = Fail.named<{
   readonly selector: string
   readonly message: string
 }>()('@typed/fp/dom/QueryRootElementError')
+
+/**
+ * A Failure used to represent being unable to query for our RootElement
+ * @category Environment
+ * @since 0.13.4
+ */
+export type QueryRootElementFailure = Fail.EnvOf<typeof QueryRootElementFailure>
 
 /**
  * Provide the root element to your application by querying for an element in the document
  * @category DOM
  * @since 0.13.2
  */
-export const queryRootElement = <S extends string>(selector: S) =>
+export const queryRootElement = (selector: string) =>
   pipe(
     getDocument,
-    E.map((d) => O.fromNullable(d.querySelector<tqs.ParseSelector<S, HTMLElement>>(selector))),
-    EO.map((rootElement): RootElementEnv<tqs.ParseSelector<S, HTMLElement>> => ({ rootElement })),
-    EO.getOrElseEW(
-      (): E.Env<Fail.EnvOf<typeof QueryRootElementError>, RootElementEnv> =>
-        QueryRootElementError.throw({
-          selector,
-          message: `Unable to find root element by selector ${selector}!`,
-        }),
+    E.map(querySelector(selector)),
+    EO.map((rootElement): RootElementEnv => ({ rootElement })),
+    EO.getOrElseEW(() =>
+      QueryRootElementFailure.throw({
+        selector,
+        message: `Unable to find root element by selector ${selector}!`,
+      }),
     ),
   )
 
 /**
- * @category Provider
- * @since 0.13.4
- */
-export const provideRootElement = flow(queryRootElement, E.provideSomeWith)
-
-/**
- * @category Provider
- * @since 0.13.4
- */
-export const useRootElement = flow(queryRootElement, E.useSomeWith)
-
-/**
- * Common setup for rendering an application into an element queried from the DOM
- * utilizing requestAnimationFrame.
+ * Common setup for rendering an application into an element
  * @category DOM
- * @since 0.13.2
+ * @since 0.13.4
  */
-export const patchKV =
-  <S extends string, A>(
-    selector: S,
-    patch: (
-      element: tqs.ParseSelector<S, HTMLElement>,
-      renderable: A,
-    ) => tqs.ParseSelector<S, HTMLElement>,
-  ) =>
-  <E>(env: E.Env<E, A>) =>
+export const patch =
+  <Patch extends (element: any, renderable: any) => any>(patch: Patch) =>
+  <E>(
+    stream: RS.ReaderStream<E, ArgsOf<Patch>[1]>,
+  ): RS.ReaderStream<E & KV.Env & RootElementEnv & QueryRootElementFailure, ArgsOf<Patch>[0]> =>
     pipe(
-      getRootElement<tqs.ParseSelector<S, HTMLElement>>(),
+      getRootElement,
       RS.fromEnv,
-      RS.switchMapW((rootElement) => pipe(env, KV.sample, RS.scan(patch, rootElement))),
-      RS.provideSomeWithEnv(queryRootElement<S>(selector)),
-    )
-
-/**
- * Common setup for rendering an application into an element queried from the DOM
- * utilizing requestAnimationFrame.
- * @category DOM
- * @since 0.13.2
- */
-export const patchKVOnRaf =
-  <S extends string, A>(
-    selector: S,
-    patch: (
-      element: tqs.ParseSelector<S, HTMLElement>,
-      renderable: A,
-    ) => tqs.ParseSelector<S, HTMLElement>,
-  ) =>
-  <E>(env: E.Env<E, A>) =>
-    pipe(
-      raf,
-      E.chainW(() => env),
-      patchKV(selector, patch),
-    )
-/**
- * Common setup for rendering an application into an element queried from the DOM
- * utilizing requestAnimationFrame.
- * @category DOM
- * @since 0.13.2
- */
-export const patchKVWhenIdle =
-  <S extends string, A>(
-    selector: S,
-    patch: (
-      element: tqs.ParseSelector<S, HTMLElement>,
-      renderable: A,
-    ) => tqs.ParseSelector<S, HTMLElement>,
-  ) =>
-  <E>(env: E.Env<E, A>) =>
-    pipe(
-      whenIdle,
-      E.chainW(() => env),
-      patchKV(selector, patch),
+      RS.switchMapW((rootElement) => pipe(stream, RS.scan(patch, rootElement))),
     )
 
 /**

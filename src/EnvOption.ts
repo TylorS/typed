@@ -162,7 +162,7 @@ export const zero = OT.zero(E.Pointed)
  */
 export const getOrElseEW = getOrElseE as <E1, A>(
   onNone: Lazy<E.Env<E1, A>>,
-) => <E2>(fa: E.Env<E2, O.Option<A>>) => E.Env<E1 & E2, A>
+) => <E2, B>(fa: E.Env<E2, O.Option<B>>) => E.Env<E1 & E2, A | B>
 
 /**
  * @since 0.9.2

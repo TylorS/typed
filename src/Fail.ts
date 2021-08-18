@@ -9,8 +9,7 @@ import { Either, left, right } from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 
 import { undisposable } from './Disposable'
-import { Env, map, of, URI } from './Env'
-import { Provider2 } from './Provide'
+import { Env, map, of } from './Env'
 import { async, Resume, run } from './Resume'
 import { make } from './struct'
 
@@ -19,7 +18,7 @@ import { make } from './struct'
  * @category Model
  */
 export type Fail<Key extends PropertyKey, E> = {
-  readonly failures: { readonly [_ in Key]: (e: E) => Resume<never> }
+  readonly [_ in Key]: (e: E) => Resume<never>
 }
 /**
  * @since 0.9.2
@@ -29,20 +28,12 @@ export const throwError =
   <Key extends PropertyKey>(key: Key) =>
   <E>(err: E): Env<Fail<Key, E>, never> =>
   (e) =>
-    e.failures[key](err)
+    e[key](err)
 
-const createFailEnv = <Key extends PropertyKey, E, R>(
+const createFailEnv = <Key extends PropertyKey, E>(
   key: Key,
   resume: (e: E) => Disposable,
-  r: R,
-): R & Fail<Key, E> => {
-  const e = make(key, (e: E) => async<never>(() => resume(e)))
-
-  return {
-    ...r,
-    failures: (r as any).failures ? { ...e, ...(r as any).failures } : e,
-  }
-}
+): Fail<Key, E> => make(key, (e: E) => async<never>(() => resume(e)))
 
 /**
  * @since 0.9.2
@@ -55,7 +46,7 @@ export const catchErrorW =
   (r) =>
     async((resume) =>
       pipe(
-        createFailEnv(key, (e: E) => pipe(r, onError(e), run(resume)), r),
+        { ...r, ...createFailEnv(key, (e: E) => pipe(r, onError(e), run(resume))) },
         env,
         run(resume),
       ),
@@ -91,21 +82,16 @@ export const attempt =
  * Creates a Provider for an Error which will throw an Exception.
  * Reserve this only for *critical* application errors
  * @since 0.13.4
- * @category Provider
+ * @category Environment
  */
 export const criticalExpection =
-  <E>() =>
-  <K extends PropertyKey>(key: K): Provider2<URI, Fail<K, E>, unknown> =>
-  (env) =>
-  (r) =>
-    env(
-      createFailEnv(
-        key,
-        undisposable((e) => {
-          throw e
-        }),
-        r,
-      ),
+  <K extends PropertyKey>(key: K) =>
+  <E>(f: (error: E) => string): Fail<K, E> =>
+    createFailEnv(
+      key,
+      undisposable((e: E) => {
+        throw new Error(f(e))
+      }),
     )
 
 /**
@@ -128,7 +114,7 @@ export interface Failure<K extends PropertyKey, E> {
 
   readonly attempt: <R, B>(env: Env<Fail<K, E>, B> | Env<R & Fail<K, E>, B>) => Env<R, Either<E, B>>
 
-  readonly criticalExpection: Provider2<URI, Fail<K, E>, unknown>
+  readonly criticalExpection: (f: (error: E) => string) => Fail<K, E>
 }
 
 /**
@@ -143,7 +129,7 @@ export const named =
       catchW: catchErrorW(name),
       catch: catchError(name),
       attempt: attempt(name) as Failure<K, E>['attempt'],
-      criticalExpection: criticalExpection<E>()(name),
+      criticalExpection: criticalExpection(name),
     }
   }
 

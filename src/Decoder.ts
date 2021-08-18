@@ -876,7 +876,7 @@ export const assert =
  */
 export const assertStrict =
   <I, O>(decoder: Decoder<I, O>) =>
-  (i: I): O =>
+  (i: I): Required<O> =>
     pipe(
       i,
       decoder.decode,
@@ -885,6 +885,6 @@ export const assertStrict =
         (errors) => {
           throw new Error(DE.drawErrors(errors))
         },
-        (o) => o,
+        (o) => o as Required<O>,
       ),
     )

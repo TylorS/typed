@@ -7,16 +7,16 @@ import * as S from '@fp/Stream'
 import * as U from '@fp/use'
 import { newDefaultScheduler } from '@most/scheduler'
 import * as F from 'fp-ts/function'
-import { html, render, Renderable } from 'uhtml'
+import { html, render } from 'uhtml'
 
 // Creates a Reference to keep our Count
 // It requires no resources and tracks a number
 const Count = Ref.kv(E.of(0))
 
 // Actions to update our Count Reference - easily tested
-const increment: E.Env<KV.Env, number> = Count.update(F.flow(F.increment, E.of))
+const increment = Count.update(F.flow(F.increment, E.of))
 
-const decrement: E.Env<KV.Env, number> = Count.update(
+const decrement = Count.update(
   F.flow(
     F.decrement,
     E.of,
@@ -25,7 +25,7 @@ const decrement: E.Env<KV.Env, number> = Count.update(
 )
 
 // Creates a component which represents our counter
-const Counter: E.Env<KV.Env, Renderable> = F.pipe(
+const Counter = F.pipe(
   E.Do,
   U.bindEnvK('dec', () => decrement),
   U.bindEnvK('inc', () => increment),
@@ -39,14 +39,22 @@ const Counter: E.Env<KV.Env, Renderable> = F.pipe(
   ),
 )
 
-// Sample our Counter everytime there is a Ref update.
-const Main: RS.ReaderStream<KV.Env & DOM.DocumentEnv, HTMLElement> = F.pipe(
+// Render our Counter everytime there is a KV/Ref update.
+const Main = F.pipe(
   Counter,
-  DOM.patchKV(render, '#app'),
+  KV.sample,
+  DOM.patch(render),
+  RS.useSomeWithEnv(DOM.queryRootElement('#app')),
 )
 
 // Provide Main with its required resources
-const stream: S.Stream<HTMLElement> = Main({ document, ...KV.env() })
+const stream = Main({
+  document,
+  // Throw if we're unable to find root element
+  ...DOM.QueryRootElementFailure.criticalExpection((e) => e.message),
+  // Provider an in-memory implementation of KV
+  ...KV.env(),
+})
 
 // Execute our Stream with a default scheduler
 S.runEffects(stream, newDefaultScheduler()).catch((error) => console.error(error))
