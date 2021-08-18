@@ -75,3 +75,9 @@ export function useKV<K, E, A>(kv: KV.KV<K, E, A>): E.Env<E & KV.Env & Scheduler
     E.map(({ value }) => value),
   )
 }
+
+/**
+ * @since 0.13.7
+ * @category Constructor
+ */
+export const kv = flow(KV.make, fromKV)
