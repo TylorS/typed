@@ -1,5 +1,5 @@
 import * as E from '@fp/Env'
-import * as U from '@fp/use'
+import * as U from '@fp/Use'
 import { flow, pipe } from 'fp-ts/function'
 import * as RA from 'fp-ts/ReadonlyArray'
 import { html } from 'uhtml'
