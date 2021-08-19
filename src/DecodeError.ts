@@ -1,5 +1,6 @@
 /**
  * DecodeError representation of the various errors that might occur while decoding.
+ * *Note*: This will be deprecated in favor of a version of io-ts which support fp-ts v3
  * @since 0.9.4
  */
 import { flow, pipe } from 'fp-ts/function'

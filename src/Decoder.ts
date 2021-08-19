@@ -1,5 +1,7 @@
 /**
  * Decoder is a data structure for representing runtime representations of your types.
+ *
+ * *Note*: This will be deprecated in favor of a version of io-ts which support fp-ts v3
  * @since 0.9.4
  */
 import { parseISO } from 'date-fns'
