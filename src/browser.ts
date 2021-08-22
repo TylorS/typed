@@ -119,7 +119,7 @@ export const broadcastChannel = <A extends StructurallyClonable>(name: string): 
     }
   })
 
-  return [send, stream]
+  return [send, S.multicast(stream)]
 }
 
 /**
