@@ -50,6 +50,7 @@
     "IOEither",
     "KV",
     "MonadRec",
+    "MutableRef",
     "Option",
     "Path",
     "Progress",

@@ -232,6 +232,10 @@
       "require": "./cjs/MonadRec.js",
       "import": "./esm/MonadRec.js"
     },
+    "./MutableRef": {
+      "require": "./cjs/MutableRef.js",
+      "import": "./esm/MutableRef.js"
+    },
     "./Option": {
       "require": "./cjs/Option.js",
       "import": "./esm/Option.js"

@@ -95,6 +95,7 @@ snowpack.key
 /IOEither/
 /KV/
 /MonadRec/
+/MutableRef/
 /Option/
 /Path/
 /Progress/
