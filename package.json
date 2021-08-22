@@ -144,6 +144,10 @@
       "require": "./cjs/Disposable.js",
       "import": "./esm/Disposable.js"
     },
+    "./Encoder": {
+      "require": "./cjs/Encoder.js",
+      "import": "./esm/Encoder.js"
+    },
     "./Env": {
       "require": "./cjs/Env.js",
       "import": "./esm/Env.js"

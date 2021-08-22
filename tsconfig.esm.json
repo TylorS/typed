@@ -28,6 +28,7 @@
     "DecodeError",
     "Decoder",
     "Disposable",
+    "Encoder",
     "Env",
     "EnvData",
     "EnvEither",

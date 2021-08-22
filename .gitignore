@@ -73,6 +73,7 @@ snowpack.key
 /DecodeError/
 /Decoder/
 /Disposable/
+/Encoder/
 /Env/
 /EnvData/
 /EnvEither/
