@@ -112,6 +112,10 @@
       "require": "./cjs/Branded.js",
       "import": "./esm/Branded.js"
     },
+    "./Codec": {
+      "require": "./cjs/Codec.js",
+      "import": "./esm/Codec.js"
+    },
     "./Context": {
       "require": "./cjs/Context.js",
       "import": "./esm/Context.js"

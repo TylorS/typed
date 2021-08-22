@@ -20,6 +20,7 @@
     "index.d.ts.map",
     "Adapter",
     "Branded",
+    "Codec",
     "Context",
     "Data",
     "DataEither",
