@@ -3,7 +3,7 @@
  *
  * @since 0.14.1
  */
-import { pipe } from 'fp-ts/function'
+import { constant, pipe } from 'fp-ts/function'
 
 import * as E from './Env'
 import * as Ref from './Ref'
@@ -48,23 +48,6 @@ export function get<E, A>(ref: MutableRef<E, A>): E.Env<E, A> {
  * @since 0.14.1
  * @category Combinator
  */
-export function set<A>(value: A) {
-  return <E>(ref: MutableRef<E, A>): E.Env<E, { current: A }> => {
-    return pipe(
-      ref.update((r) =>
-        E.fromIO(() => {
-          r.current = value
-          return r
-        }),
-      ),
-    )
-  }
-}
-
-/**
- * @since 0.14.1
- * @category Combinator
- */
 export function update<A, E1>(f: (value: A) => E.Env<E1, A>) {
   return <E2>(ref: MutableRef<E2, A>): E.Env<E1 & E2, { current: A }> => {
     return pipe(
@@ -80,4 +63,13 @@ export function update<A, E1>(f: (value: A) => E.Env<E1, A>) {
       ),
     )
   }
+}
+
+/**
+ * @since 0.14.1
+ * @category Combinator
+ */
+export function set<A>(value: A) {
+  return <E>(ref: MutableRef<E, A>): E.Env<E, { current: A }> =>
+    pipe(ref, update(constant(E.of(value))))
 }
