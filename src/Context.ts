@@ -5,9 +5,9 @@
  * @since 0.11.0
  */
 import * as E from './Env'
-import * as EO from './EnvOption'
-import { flow, identity, pipe } from './function'
+import { flow, pipe } from './function'
 import * as KV from './KV'
+import * as O from './Option'
 import * as RS from './ReaderStream'
 import * as Ref from './Ref'
 import { SchedulerEnv } from './Scheduler'
@@ -52,14 +52,7 @@ export function useKV<K, E, A>(kv: KV.KV<K, E, A>): E.Env<E & KV.Env & Scheduler
     E.bindW('currentRefs', () => KV.getEnv),
     E.bindW('providerRefs', () => KV.findKVProvider(kv)),
     E.bindW('value', ({ providerRefs }) =>
-      pipe(
-        kv,
-        KV.listenToValues,
-        RS.useSome(providerRefs),
-        useValues,
-        EO.chainOptionK(identity),
-        EO.getOrElseEW(() => pipe(kv, KV.get, E.useSome(providerRefs))),
-      ),
+      pipe(kv, KV.listenToValues, RS.useSome(providerRefs), useValues),
     ),
     E.chainFirstW(({ currentRefs, providerRefs }) =>
       pipe(
@@ -72,7 +65,14 @@ export function useKV<K, E, A>(kv: KV.KV<K, E, A>): E.Env<E & KV.Env & Scheduler
         useReplicateEvents,
       ),
     ),
-    E.map(({ value }) => value),
+    E.chainW(({ value, providerRefs }) =>
+      pipe(
+        value,
+        O.flatten,
+        O.map(E.of),
+        O.getOrElseW(() => pipe(kv, KV.get, E.useSome(providerRefs))),
+      ),
+    ),
   )
 }
 
