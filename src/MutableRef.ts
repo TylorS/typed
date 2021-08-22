@@ -1,7 +1,7 @@
 /**
  * MutableRef
  *
- * @since 0.14.2
+ * @since 0.14.1
  */
 import { pipe } from 'fp-ts/function'
 
@@ -9,7 +9,7 @@ import * as E from './Env'
 import * as Ref from './Ref'
 
 /**
- * @since 0.14.2
+ * @since 0.14.1
  * @category Model
  */
 export interface MutableRef<E, A>
@@ -21,7 +21,7 @@ export interface MutableRef<E, A>
   > {}
 
 /**
- * @since 0.14.2
+ * @since 0.14.1
  * @category Constructor
  */
 export function current<A>(): { current: A | undefined }
@@ -34,7 +34,7 @@ export function current<A = undefined>(current?: A): { current: typeof current }
 }
 
 /**
- * @since 0.14.2
+ * @since 0.14.1
  * @category Combinator
  */
 export function get<E, A>(ref: MutableRef<E, A>): E.Env<E, A> {
@@ -45,7 +45,7 @@ export function get<E, A>(ref: MutableRef<E, A>): E.Env<E, A> {
 }
 
 /**
- * @since 0.14.2
+ * @since 0.14.1
  * @category Combinator
  */
 export function set<A>(value: A) {
@@ -62,7 +62,7 @@ export function set<A>(value: A) {
 }
 
 /**
- * @since 0.14.2
+ * @since 0.14.1
  * @category Combinator
  */
 export function update<A, E1>(f: (value: A) => E.Env<E1, A>) {

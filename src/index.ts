@@ -1,5 +1,6 @@
 export * as adapter from './Adapter'
 export * as branded from './Branded'
+export * as codec from './Codec'
 export * as context from './Context'
 export * as data from './Data'
 export * as dataEither from './DataEither'

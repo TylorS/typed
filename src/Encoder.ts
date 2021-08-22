@@ -91,7 +91,7 @@ export function record<O, A>(
  * @category Combinator
  * @since 0.14.1
  */
-export function array<O, A>(item: Encoder<O, A>): Encoder<Array<O>, Array<A>> {
+export function array<O, A>(item: Encoder<O, A>): Encoder<ReadonlyArray<O>, ReadonlyArray<A>> {
   return {
     encode: (as) => as.map(item.encode),
   }

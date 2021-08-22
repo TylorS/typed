@@ -116,18 +116,21 @@ export const dateFromISOString: Decoder<string, Date> = {
 }
 
 /**
+ * @category Combinator
+ * @since 0.9.5
+ */
+export const refine =
+  <A, B extends A>(refinement: Refinement<A, B>, id: string) =>
+  <I>(from: Decoder<I, A>): Decoder<I, B> =>
+    pipe(from, compose(fromRefinement(refinement, id)))
+
+/**
  * @category Instance
  * @since 0.9.5
  */
 export const WithRefine: WithRefine2C<URI, unknown> = {
-  refine: (refinment, id) => (from) => pipe(from, compose(fromRefinement(refinment, id))),
+  refine: refine as WithRefine2C<URI, unknown>['refine'],
 }
-
-/**
- * @category Combinator
- * @since 0.9.5
- */
-export const refine = WithRefine.refine
 
 /**
  * @category Constructor
@@ -220,11 +223,17 @@ export const literal = <A extends readonly Literal[]>(
   ...literals: A
 ): Decoder<unknown, A[number]> =>
   fromRefinement((x): x is A[number] => literals.includes(x as any), literals.join(' | '))
+
 /**
  * @category Combinator
  * @since 0.9.4
  */
-export const nullable = union(fromRefinement((x): x is null => x === null, 'null'))
+export const nullable = union(fromRefinement((x: unknown): x is null => x === null, 'null')) as <
+  I,
+  O,
+>(
+  first: Decoder<I, O>,
+) => Decoder<I | null, O | null>
 
 /**
  * @category Combinator
@@ -255,9 +264,7 @@ export const unknownRecord = fromRefinement<unknown, { readonly [key: string]: u
  * @category Constructor
  * @since 0.9.4
  */
-export const fromArray = <O>(
-  member: Decoder<unknown, O>,
-): Decoder<readonly unknown[], readonly O[]> => {
+export const fromArray = <I, O>(member: Decoder<I, O>): Decoder<readonly I[], readonly O[]> => {
   const { concat } = T.getSemigroup(DE.getSemigroup(), RA.getSemigroup<O>())
 
   return {
@@ -391,9 +398,9 @@ export function struct<A extends { readonly [key: string]: Decoder<unknown, any>
  * @category Constructor
  * @since 0.9.4
  */
-export function fromRecord<A>(
-  decoder: Decoder<unknown, A>,
-): Decoder<Readonly<Record<string, unknown>>, Readonly<Record<string, A>>> {
+export function fromRecord<I, A>(
+  decoder: Decoder<I, A>,
+): Decoder<Readonly<Record<string, I>>, Readonly<Record<string, A>>> {
   const { concat } = T.getSemigroup(DE.getSemigroup(), St.getAssignSemigroup<any>())
 
   return {
