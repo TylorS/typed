@@ -70,6 +70,26 @@ function httpFetchRequest(
   })
 }
 
+export type StructurallyClonable =
+  | string
+  | number
+  | boolean
+  | Date
+  | RegExp
+  | Blob
+  | File
+  | FileList
+  | ArrayBuffer
+  | ArrayBufferView
+  | ImageBitmap
+  | ImageData
+  | ReadonlySet<StructurallyClonable>
+  | Set<StructurallyClonable>
+  | ReadonlyMap<StructurallyClonable, StructurallyClonable>
+  | Map<StructurallyClonable, StructurallyClonable>
+  | readonly StructurallyClonable[]
+  | { readonly [key: PropertyKey]: StructurallyClonable }
+
 /**
  * Constructs an Adapter that utilizes a BroadcastChannel to communicate messages across
  * all scripts of the same origin, including workers.
@@ -80,7 +100,7 @@ function httpFetchRequest(
  * @category Constructor
  * @since 0.12.2
  */
-export const broadcastChannel = <A>(name: string): Adapter<A> => {
+export const broadcastChannel = <A extends StructurallyClonable>(name: string): Adapter<A> => {
   const channel = new BroadcastChannel(name)
   const send = (event: A) => channel.postMessage(event)
   const stream = S.newStream<A>((sink, scheduler) => {
