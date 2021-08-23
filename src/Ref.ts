@@ -14,8 +14,11 @@ import { Reader } from 'fp-ts/Reader'
 import * as RA from 'fp-ts/ReadonlyArray'
 import { Semigroupoid3 } from 'fp-ts/Semigroupoid'
 import { Task } from 'fp-ts/Task'
+import * as TH from 'fp-ts/These'
 import { U } from 'ts-toolbelt'
 
+import * as C from './Codec'
+import * as DE from './DecodeError'
 import * as E from './Env'
 import * as EO from './EnvOption'
 import * as FKV from './FromKV'
@@ -612,4 +615,24 @@ type RefStructInput<S extends AnyRefStruct> = {
 
 type RefStructOutput<S extends AnyRefStruct> = {
   readonly [K in keyof S]: OutputOf<S[K]>
+}
+
+/**
+ * @since 0.15.0
+ * @category Combinator
+ */
+export function applyCodec<I, O, A>(codec: C.Codec<I, O, A>) {
+  return <E, B extends I>(ref: Ref<E, O, B>): Ref<E, A, TH.These<DE.DecodeErrors, A>> => {
+    const get = pipe(ref.get, E.map(codec.decode))
+    const set = (a: A) => pipe(a, codec.encode, ref.set, E.map(codec.decode))
+
+    return {
+      get,
+      has: ref.has,
+      set,
+      update: (f) => pipe(get, E.chainW(f), E.chainW(set)),
+      remove: pipe(ref.remove, EO.map(codec.decode)),
+      values: pipe(ref.values, RSO.map(codec.decode)),
+    }
+  }
 }

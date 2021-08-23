@@ -22,7 +22,7 @@ import * as Pointed_ from 'fp-ts/Pointed'
 import { Reader } from 'fp-ts/Reader'
 import * as Semigroup_ from 'fp-ts/Semigroup'
 import * as T from 'fp-ts/Task'
-import { tryCatch } from 'fp-ts/TaskEither'
+import * as TE from 'fp-ts/TaskEither'
 
 import * as Env from './Env'
 import * as FE from './FromEnv'
@@ -30,7 +30,7 @@ import * as FRe from './FromResume'
 import { swapEithers } from './internal'
 import { MonadRec3 } from './MonadRec'
 import * as P from './Provide'
-import { Resume, sync } from './Resume'
+import * as R from './Resume'
 
 /**
  * @since 0.9.2
@@ -424,7 +424,7 @@ export const MonadRec: MonadRec3<URI> = {
 export const fromEither =
   <E, A, R = unknown>(e: E.Either<E, A>): EnvEither<R, E, A> =>
   () =>
-    sync(() => e)
+    R.sync(() => e)
 
 /**
  * @since 0.9.2
@@ -472,7 +472,7 @@ export const fromTask = FromTask.fromTask as <A, R = unknown, E = never>(
  * @category Instance
  */
 export const FromResume: FRe.FromResume3<URI> = {
-  fromResume: <A, R>(resume: Resume<A>) => pipe(Env.fromResume<A, R>(resume), Env.map(E.right)),
+  fromResume: <A, R>(resume: R.Resume<A>) => pipe(Env.fromResume<A, R>(resume), Env.map(E.right)),
 }
 
 /**
@@ -766,7 +766,7 @@ export const Do: EnvEither<unknown, never, {}> = fromIO(() => Object.create(null
  * @since 0.12.2
  * @category Constructor
  */
-export const fromPromise = flow(tryCatch, Env.fromTask)
+export const fromPromise = flow(TE.tryCatch, Env.fromTask)
 
 /**
  * Construct an EnvEither from a Promise returning function.
@@ -777,3 +777,30 @@ export const fromPromiseK =
   <A extends readonly any[], B>(f: (...args: A) => Promise<B>) =>
   (...args: A) =>
     fromPromise(() => f(...args))
+
+/**
+ * Construct an EnvEither from a Promise returning function.
+ * @since 0.12.2
+ * @category Constructor
+ */
+export const tryCatch =
+  <A>(resume: R.Resume<A>): EnvEither<unknown, unknown, A> =>
+  () => {
+    if (R.isSync(resume)) {
+      return R.sync(() => {
+        try {
+          return E.right(resume.resume())
+        } catch (e) {
+          return E.left(e)
+        }
+      })
+    }
+
+    return R.async((k) => {
+      try {
+        return resume.resume(flow(E.right, k))
+      } catch (e) {
+        return pipe(e, E.left, k)
+      }
+    })
+  }

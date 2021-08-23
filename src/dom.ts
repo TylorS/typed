@@ -224,17 +224,18 @@ export const useEventListener = <E1, Target extends EventTarget, EventName exten
     getEventListener,
     EO.chainEnvK((target) =>
       use(
-        pipe(
-          S.newStream<Ev>((sink, scheduler) => {
-            const listener = (ev: unknown) => sink.event(scheduler.currentTime(), ev as Ev)
+        (r: E2) =>
+          pipe(
+            S.newStream<Resume<A>>((sink, scheduler) => {
+              const listener = (ev: unknown) =>
+                sink.event(scheduler.currentTime(), pipe(r, onEvent(ev as Ev)))
 
-            target.addEventListener(eventName, listener)
+              target.addEventListener(eventName, listener)
 
-            return { dispose: () => target.removeEventListener(eventName, listener) }
-          }),
-          RS.fromStream,
-          RS.chainEnvK(onEvent),
-        ),
+              return { dispose: () => target.removeEventListener(eventName, listener) }
+            }),
+            S.mergeMapConcurrently(S.fromResume, 1),
+          ),
         target,
       ),
     ),
@@ -244,42 +245,27 @@ export const useEventListener = <E1, Target extends EventTarget, EventName exten
 
 /**
  * @category Use
- * @since 0.13.2
+ * @since 0.15.0
  */
-export const usePopstate = () =>
-  pipe(
-    useEventListener(pipe(getWindow, EO.fromEnv), 'popstate', () => getState),
-    EO.getOrElseEW(() => getState),
-  )
+export const usePopstate = pipe(
+  useEventListener(pipe(getWindow, EO.fromEnv), 'popstate', () => getState),
+  EO.getOrElseEW(() => getState),
+)
 
 /**
  * @category Use
- * @since 0.13.2
+ * @since 0.15.0
  */
-export const useHashChange = () =>
-  pipe(
-    useEventListener(pipe(getWindow, EO.fromEnv), 'hashchange', () => getHash),
-    EO.getOrElseEW(() => getHash),
-  )
+export const useHashChange = pipe(
+  useEventListener(pipe(getWindow, EO.fromEnv), 'hashchange', () => getHash),
+  EO.getOrElseEW(() => getHash),
+)
 
 /**
  * @category Use
- * @since 0.13.2
+ * @since 0.15.0
  */
-export const useWhenUrlChanges = <E, A>(env: E.Env<E, A>) =>
-  pipe(env, E.apFirstW(usePopstate()), E.apFirstW(useHashChange()))
-
-/**
- * @category Use
- * @since 0.13.2
- */
-export const useLocation = useWhenUrlChanges(getLocation)
-
-/**
- * @category Use
- * @since 0.13.2
- */
-export const useHistory = useWhenUrlChanges(getHistory)
+export const useLocation = pipe(getLocation, E.apFirstW(usePopstate), E.apFirstW(useHashChange))
 
 /**
  * @category History
