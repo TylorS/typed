@@ -1,14 +1,12 @@
 {
   "name": "@typed/fp",
   "version": "0.14.0",
-  "description": "Data Structures and Resources for fp-ts",
-  "main": "./cjs/index.js",
-  "module": "./esm/index.js",
-  "types": "./cjs/index.d.ts",
-  "typings": "./cjs/index.d.ts",
+  "description": "Resource-Safe concurrency primitives w/ fp-ts integration",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "typings": "./lib/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "fast-deep-equal": "^3.1.3",
     "fp-ts": "^2.11.1",
     "io-ts": "^2.2.16",
     "ts-toolbelt": "^9.6.0"
@@ -18,61 +16,32 @@
   },
   "devDependencies": {
     "@types/mocha": "^9.0.0",
-    "@types/node": "^16.7.1",
-    "@types/node-fetch": "^2.5.12",
-    "@types/rimraf": "^3.0.2",
-    "@typescript-eslint/eslint-plugin": "^4.29.3",
-    "@typescript-eslint/parser": "^4.29.3",
-    "concurrently": "^6.2.1",
-    "esbuild": "^0.12.23",
+    "@types/node": "^16.7.12",
+    "@typescript-eslint/eslint-plugin": "^4.30.0",
+    "esbuild": "^0.12.25",
     "esbuild-register": "^3.0.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
+    "eslint-config-standard-with-typescript": "^21.0.1",
     "eslint-import-resolver-custom-alias": "^1.2.0",
     "eslint-import-resolver-typescript": "^2.4.0",
-    "eslint-plugin-import": "^2.24.1",
-    "eslint-plugin-prettier": "^3.4.1",
+    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
-    "fast-glob": "^3.2.7",
-    "husky": "^7.0.1",
+    "husky": "^7.0.2",
     "lint-staged": "^11.1.2",
-    "mocha": "^9.1.0",
-    "most-virtual-scheduler": "^1.0.0",
-    "prettier": "^2.3.2",
-    "rimraf": "^3.0.2",
-    "tsc-watch": "^4.5.0",
+    "mocha": "^9.1.1",
     "tsconfig-paths": "^3.11.0",
     "tslib": "^2.3.1",
     "typescript": "^4.4.2"
   },
   "scripts": {
-    "build": "concurrently npm:clean && npm run build:typescript && concurrently 'npm:build:packages' 'npm:update:package-exports'",
-    "build:packages": "node -r esbuild-register ./tools/build-packages",
-    "build:typescript": "concurrently 'npm:build:typescript:cjs' 'npm:build:typescript:esm'",
-    "build:typescript:cjs": "rimraf cjs && tsc -P ./tsconfig.cjs.json",
-    "build:typescript:esm": "rimraf esm && tsc -P ./tsconfig.esm.json",
-    "clean": "node -r esbuild-register ./tools/cleanup",
-    "docs": "npx docs-ts && git add . && git commit -m 'docs: rebuild docs'",
-    "lint": "concurrently npm:lint:ts npm:lint:markdown",
-    "lint:markdown": "prettier  --write --parser markdown --prose-wrap always *.md docs/**/*.md",
-    "lint:ts": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
-    "lint-staged": "lint-staged",
-    "unit-test": "mocha -r esbuild-register -r tsconfig-paths/register 'src/**/*.test.ts'",
-    "unit-test:watch": "npm run unit-test -- --watch",
-    "test": "concurrently npm:lint npm:unit-test npm:typecheck",
-    "test:watch": "concurrently npm:unit-test:watch npm:typecheck:watch",
-    "typecheck": "tsc -P ./tsconfig.esm.json --noEmit",
-    "typecheck:watch": "npm run typecheck -- --watch --preserveWatchOutput",
-    "update": "concurrently 'npm:update:gitignore' 'npm:update:tsconfig' 'npm:update:package-exports'",
-    "update:gitignore": "node -r esbuild-register ./tools/update-gitignore",
-    "update:tsconfig": "node -r esbuild-register ./tools/update-tsconfigs",
-    "update:package-exports": "node -r esbuild-register ./tools/update-package-exports",
-    "precommit": "concurrently 'npm:update' 'npm:lint-staged'",
-    "preversion": "npm test && npm run update && npm run build",
-    "postversion": "npm publish --access=public && git push && git push --tags",
-    "watch": "concurrently 'npm:watch:cjs' 'npm:watch:esm'",
-    "watch:cjs": "tsc-watch -P tsconfig.cjs.json --onSuccess 'npm run build:packages'",
-    "watch:esm": "tsc-watch -P tsconfig.esm.json --onSuccess 'npm run update:package-exports'"
+    "build:ts": "node ./node_modules/.bin/tsc -P tsconfig.build.json",
+    "eslint": "eslint --config .eslintrc.cjs --ext .ts src",
+    "eslint:fix": "npm run eslint -- --fix",
+    "mocha": "mocha -r esbuild-register -r tsconfig-paths/register 'src/**/*.test.ts'"
   },
   "repository": {
     "type": "git",
@@ -81,344 +50,17 @@
   "keywords": [
     "TypeScript",
     "Typed",
-    "fp-ts",
-    "fp"
+    "FP",
+    "Higher-Kinded Types",
+    "Effect",
+    "Stream",
+    "Concurrent",
+    "Fault-Tolerant"
   ],
   "author": "Tylor Steinberger <tlsteinberger167@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/TylorS/typed-fp/issues"
   },
-  "homepage": "https://github.com/TylorS/typed-fp#readme",
-  "*---*---*GENERATED*---*---*": "",
-  "exports": {
-    ".": {
-      "require": "./cjs/index.js",
-      "import": "./esm/index.js"
-    },
-    "./Adapter": {
-      "require": "./cjs/Adapter.js",
-      "import": "./esm/Adapter.js"
-    },
-    "./Branded": {
-      "require": "./cjs/Branded.js",
-      "import": "./esm/Branded.js"
-    },
-    "./Codec": {
-      "require": "./cjs/Codec.js",
-      "import": "./esm/Codec.js"
-    },
-    "./Context": {
-      "require": "./cjs/Context.js",
-      "import": "./esm/Context.js"
-    },
-    "./Data": {
-      "require": "./cjs/Data.js",
-      "import": "./esm/Data.js"
-    },
-    "./DataEither": {
-      "require": "./cjs/DataEither.js",
-      "import": "./esm/DataEither.js"
-    },
-    "./DataOption": {
-      "require": "./cjs/DataOption.js",
-      "import": "./esm/DataOption.js"
-    },
-    "./DataT": {
-      "require": "./cjs/DataT.js",
-      "import": "./esm/DataT.js"
-    },
-    "./DecodeError": {
-      "require": "./cjs/DecodeError.js",
-      "import": "./esm/DecodeError.js"
-    },
-    "./Decoder": {
-      "require": "./cjs/Decoder.js",
-      "import": "./esm/Decoder.js"
-    },
-    "./Disposable": {
-      "require": "./cjs/Disposable.js",
-      "import": "./esm/Disposable.js"
-    },
-    "./Encoder": {
-      "require": "./cjs/Encoder.js",
-      "import": "./esm/Encoder.js"
-    },
-    "./Env": {
-      "require": "./cjs/Env.js",
-      "import": "./esm/Env.js"
-    },
-    "./EnvData": {
-      "require": "./cjs/EnvData.js",
-      "import": "./esm/EnvData.js"
-    },
-    "./EnvEither": {
-      "require": "./cjs/EnvEither.js",
-      "import": "./esm/EnvEither.js"
-    },
-    "./EnvOption": {
-      "require": "./cjs/EnvOption.js",
-      "import": "./esm/EnvOption.js"
-    },
-    "./EnvThese": {
-      "require": "./cjs/EnvThese.js",
-      "import": "./esm/EnvThese.js"
-    },
-    "./Eq": {
-      "require": "./cjs/Eq.js",
-      "import": "./esm/Eq.js"
-    },
-    "./Fail": {
-      "require": "./cjs/Fail.js",
-      "import": "./esm/Fail.js"
-    },
-    "./FromEnv": {
-      "require": "./cjs/FromEnv.js",
-      "import": "./esm/FromEnv.js"
-    },
-    "./FromKV": {
-      "require": "./cjs/FromKV.js",
-      "import": "./esm/FromKV.js"
-    },
-    "./FromReaderStream": {
-      "require": "./cjs/FromReaderStream.js",
-      "import": "./esm/FromReaderStream.js"
-    },
-    "./FromResume": {
-      "require": "./cjs/FromResume.js",
-      "import": "./esm/FromResume.js"
-    },
-    "./FromStream": {
-      "require": "./cjs/FromStream.js",
-      "import": "./esm/FromStream.js"
-    },
-    "./Fx": {
-      "require": "./cjs/Fx.js",
-      "import": "./esm/Fx.js"
-    },
-    "./FxEnv": {
-      "require": "./cjs/FxEnv.js",
-      "import": "./esm/FxEnv.js"
-    },
-    "./FxEnvEither": {
-      "require": "./cjs/FxEnvEither.js",
-      "import": "./esm/FxEnvEither.js"
-    },
-    "./FxT": {
-      "require": "./cjs/FxT.js",
-      "import": "./esm/FxT.js"
-    },
-    "./Guard": {
-      "require": "./cjs/Guard.js",
-      "import": "./esm/Guard.js"
-    },
-    "./HKT": {
-      "require": "./cjs/HKT.js",
-      "import": "./esm/HKT.js"
-    },
-    "./IOEither": {
-      "require": "./cjs/IOEither.js",
-      "import": "./esm/IOEither.js"
-    },
-    "./KV": {
-      "require": "./cjs/KV.js",
-      "import": "./esm/KV.js"
-    },
-    "./MonadRec": {
-      "require": "./cjs/MonadRec.js",
-      "import": "./esm/MonadRec.js"
-    },
-    "./MutableRef": {
-      "require": "./cjs/MutableRef.js",
-      "import": "./esm/MutableRef.js"
-    },
-    "./Option": {
-      "require": "./cjs/Option.js",
-      "import": "./esm/Option.js"
-    },
-    "./Path": {
-      "require": "./cjs/Path.js",
-      "import": "./esm/Path.js"
-    },
-    "./Progress": {
-      "require": "./cjs/Progress.js",
-      "import": "./esm/Progress.js"
-    },
-    "./Provide": {
-      "require": "./cjs/Provide.js",
-      "import": "./esm/Provide.js"
-    },
-    "./Reader": {
-      "require": "./cjs/Reader.js",
-      "import": "./esm/Reader.js"
-    },
-    "./ReaderEither": {
-      "require": "./cjs/ReaderEither.js",
-      "import": "./esm/ReaderEither.js"
-    },
-    "./ReaderOption": {
-      "require": "./cjs/ReaderOption.js",
-      "import": "./esm/ReaderOption.js"
-    },
-    "./ReaderStream": {
-      "require": "./cjs/ReaderStream.js",
-      "import": "./esm/ReaderStream.js"
-    },
-    "./ReaderStreamEither": {
-      "require": "./cjs/ReaderStreamEither.js",
-      "import": "./esm/ReaderStreamEither.js"
-    },
-    "./ReaderStreamOption": {
-      "require": "./cjs/ReaderStreamOption.js",
-      "import": "./esm/ReaderStreamOption.js"
-    },
-    "./ReaderTask": {
-      "require": "./cjs/ReaderTask.js",
-      "import": "./esm/ReaderTask.js"
-    },
-    "./ReaderTaskEither": {
-      "require": "./cjs/ReaderTaskEither.js",
-      "import": "./esm/ReaderTaskEither.js"
-    },
-    "./Ref": {
-      "require": "./cjs/Ref.js",
-      "import": "./esm/Ref.js"
-    },
-    "./RefAdapter": {
-      "require": "./cjs/RefAdapter.js",
-      "import": "./esm/RefAdapter.js"
-    },
-    "./RefArray": {
-      "require": "./cjs/RefArray.js",
-      "import": "./esm/RefArray.js"
-    },
-    "./RefData": {
-      "require": "./cjs/RefData.js",
-      "import": "./esm/RefData.js"
-    },
-    "./RefDataEither": {
-      "require": "./cjs/RefDataEither.js",
-      "import": "./esm/RefDataEither.js"
-    },
-    "./RefDisposable": {
-      "require": "./cjs/RefDisposable.js",
-      "import": "./esm/RefDisposable.js"
-    },
-    "./RefMap": {
-      "require": "./cjs/RefMap.js",
-      "import": "./esm/RefMap.js"
-    },
-    "./RefMapM": {
-      "require": "./cjs/RefMapM.js",
-      "import": "./esm/RefMapM.js"
-    },
-    "./Resume": {
-      "require": "./cjs/Resume.js",
-      "import": "./esm/Resume.js"
-    },
-    "./ResumeEither": {
-      "require": "./cjs/ResumeEither.js",
-      "import": "./esm/ResumeEither.js"
-    },
-    "./ResumeOption": {
-      "require": "./cjs/ResumeOption.js",
-      "import": "./esm/ResumeOption.js"
-    },
-    "./Route": {
-      "require": "./cjs/Route.js",
-      "import": "./esm/Route.js"
-    },
-    "./Scheduler": {
-      "require": "./cjs/Scheduler.js",
-      "import": "./esm/Scheduler.js"
-    },
-    "./Schema": {
-      "require": "./cjs/Schema.js",
-      "import": "./esm/Schema.js"
-    },
-    "./Schemable": {
-      "require": "./cjs/Schemable.js",
-      "import": "./esm/Schemable.js"
-    },
-    "./State": {
-      "require": "./cjs/State.js",
-      "import": "./esm/State.js"
-    },
-    "./StateEnvEither": {
-      "require": "./cjs/StateEnvEither.js",
-      "import": "./esm/StateEnvEither.js"
-    },
-    "./StateReaderStreamEither": {
-      "require": "./cjs/StateReaderStreamEither.js",
-      "import": "./esm/StateReaderStreamEither.js"
-    },
-    "./StateReaderTaskEither": {
-      "require": "./cjs/StateReaderTaskEither.js",
-      "import": "./esm/StateReaderTaskEither.js"
-    },
-    "./Stream": {
-      "require": "./cjs/Stream.js",
-      "import": "./esm/Stream.js"
-    },
-    "./StreamEither": {
-      "require": "./cjs/StreamEither.js",
-      "import": "./esm/StreamEither.js"
-    },
-    "./StreamOption": {
-      "require": "./cjs/StreamOption.js",
-      "import": "./esm/StreamOption.js"
-    },
-    "./Task": {
-      "require": "./cjs/Task.js",
-      "import": "./esm/Task.js"
-    },
-    "./TaskEither": {
-      "require": "./cjs/TaskEither.js",
-      "import": "./esm/TaskEither.js"
-    },
-    "./TaskOption": {
-      "require": "./cjs/TaskOption.js",
-      "import": "./esm/TaskOption.js"
-    },
-    "./These": {
-      "require": "./cjs/These.js",
-      "import": "./esm/These.js"
-    },
-    "./Use": {
-      "require": "./cjs/Use.js",
-      "import": "./esm/Use.js"
-    },
-    "./browser": {
-      "require": "./cjs/browser.js",
-      "import": "./esm/browser.js"
-    },
-    "./dom": {
-      "require": "./cjs/dom.js",
-      "import": "./esm/dom.js"
-    },
-    "./function": {
-      "require": "./cjs/function.js",
-      "import": "./esm/function.js"
-    },
-    "./http": {
-      "require": "./cjs/http.js",
-      "import": "./esm/http.js"
-    },
-    "./node": {
-      "require": "./cjs/node.js",
-      "import": "./esm/node.js"
-    },
-    "./number": {
-      "require": "./cjs/number.js",
-      "import": "./esm/number.js"
-    },
-    "./string": {
-      "require": "./cjs/string.js",
-      "import": "./esm/string.js"
-    },
-    "./struct": {
-      "require": "./cjs/struct.js",
-      "import": "./esm/struct.js"
-    }
-  }
+  "homepage": "https://github.com/TylorS/typed-fp#readme"
 }

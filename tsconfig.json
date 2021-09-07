@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "./"
+    "module": "commonjs"
   },
   "include": [
     "./src/*.ts",
@@ -9,8 +9,7 @@
     "./tools/*.ts"
   ],
   "exclude": [
-    "./cjs",
-    "./esm",
+    "./lib",
     "./node_modules"
   ]
 }
