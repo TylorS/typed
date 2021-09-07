@@ -7,5 +7,5 @@ import { InterruptableStatusInstruction } from './Interrupts'
 export type Instruction<R, E, A> =
   | Effects<R, E, A>
   | FiberInstruction<any, E, A>
-  | FiberRefInstruction<unknown, A>
+  | FiberRefInstruction<any, A>
   | InterruptableStatusInstruction

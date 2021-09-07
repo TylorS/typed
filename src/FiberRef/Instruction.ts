@@ -1,5 +1,4 @@
 import { Eq } from 'fp-ts/Eq'
-import { Magma } from 'fp-ts/Magma'
 
 import { instr } from '@/internal'
 
@@ -7,7 +6,7 @@ import { FiberRef } from './FiberRef'
 
 export type FiberRefInstruction<A, B> = MakeFiberRef<B> | ModifyFiberRef<A, B>
 
-export interface MakeFiberRefOptions<A> extends Partial<Eq<A>>, Partial<Magma<A>> {}
+export interface MakeFiberRefOptions<A> extends Partial<Eq<A>> {}
 
 export class MakeFiberRef<A> extends instr('MakeFiberRef')<unknown, never, FiberRef<A>> {
   constructor(readonly initial: A, readonly options: MakeFiberRefOptions<A> = {}) {

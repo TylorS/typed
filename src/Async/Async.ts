@@ -2,7 +2,6 @@ import { Either, left, right } from 'fp-ts/Either'
 import { flow } from 'fp-ts/function'
 
 import { Disposable, disposeNone } from '@/Disposable'
-import { NoReq } from '@/internal'
 
 export interface Async<R, E, A> {
   readonly type: 'Async'
@@ -39,10 +38,10 @@ function once<R, E, A>(runAsync: Async<R, E, A>['runAsync']): Async<R, E, A>['ru
 
 export const fromCb = <E, A>(
   run: (cb: (either: Either<E, A>) => void) => Disposable,
-): Async<NoReq, E, A> => Async((_, cb) => run(cb))
+): Async<unknown, E, A> => Async((_, cb) => run(cb))
 
-export const fromCbRight = <A>(run: (cb: (a: A) => void) => Disposable): Async<NoReq, never, A> =>
+export const fromCbRight = <A>(run: (cb: (a: A) => void) => Disposable): Async<unknown, never, A> =>
   fromCb((cb) => run(flow(right, cb)))
 
-export const fromCbLeft = <E>(run: (cb: (e: E) => void) => Disposable): Async<NoReq, E, never> =>
+export const fromCbLeft = <E>(run: (cb: (e: E) => void) => Disposable): Async<unknown, E, never> =>
   fromCb((cb) => run(flow(left, cb)))
