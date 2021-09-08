@@ -1,4 +1,4 @@
-import type { FiberId } from '@/Fiber'
+import { Semigroup } from 'fp-ts/lib/Semigroup'
 
 export type Cause<E> = Empty | Died | Interrupted | Expected<E> | Then<E> | Both<E>
 
@@ -30,13 +30,11 @@ export function isDied<E>(cause: Cause<E>): cause is Died {
 
 export interface Interrupted {
   readonly _tag: 'Interrupted'
-  readonly fiberId: FiberId
 }
 
-export const Interrupted = (fiberId: FiberId): Interrupted => ({
+export const Interrupted: Interrupted = {
   _tag: 'Interrupted',
-  fiberId,
-})
+}
 
 export function isInterrupted<E>(cause: Cause<E>): cause is Interrupted {
   return cause._tag === 'Interrupted'
@@ -62,7 +60,7 @@ export interface Then<E> {
   readonly right: Cause<E>
 }
 
-export const Then = <E>(left: Cause<E>, right: Cause<E>): Then<E> => ({
+export const Then = <E1, E2>(left: Cause<E1>, right: Cause<E2>): Then<E1 | E2> => ({
   _tag: 'Then',
   left,
   right,
@@ -78,7 +76,7 @@ export interface Both<E> {
   readonly right: Cause<E>
 }
 
-export const Both = <E>(left: Cause<E>, right: Cause<E>): Both<E> => ({
+export const Both = <E1, E2>(left: Cause<E1>, right: Cause<E2>): Both<E1 | E2> => ({
   _tag: 'Both',
   left,
   right,
@@ -92,7 +90,7 @@ export const match =
   <A, B, C, E, D, F, G>(
     onEmpty: () => A,
     onDied: (error: unknown) => B,
-    onInterrupted: (fiberId: FiberId) => C,
+    onInterrupted: () => C,
     onExpected: (error: E) => D,
     onThen: (left: Cause<E>, right: Cause<E>) => F,
     onBoth: (left: Cause<E>, right: Cause<E>) => G,
@@ -104,7 +102,7 @@ export const match =
       case 'Died':
         return onDied(cause.error)
       case 'Interrupted':
-        return onInterrupted(cause.fiberId)
+        return onInterrupted()
       case 'Expected':
         return onExpected(cause.error)
       case 'Then':
@@ -113,3 +111,30 @@ export const match =
         return onBoth(cause.left, cause.right)
     }
   }
+
+export const concatBoth =
+  <E2>(second: Cause<E2>) =>
+  <E1>(first: Cause<E1>): Cause<E1 | E2> =>
+    Both(first, second)
+
+export const concatThen =
+  <E2>(second: Cause<E2>) =>
+  <E1>(first: Cause<E1>): Cause<E1 | E2> =>
+    Then(first, second)
+
+export const URI = '@typed/fp/Cause'
+export type URI = typeof URI
+
+declare module 'fp-ts/HKT' {
+  export interface URItoKind<A> {
+    [URI]: Cause<A>
+  }
+}
+
+export const getBothSemigroup = <E>(): Semigroup<Cause<E>> => ({
+  concat: (x, y) => concatBoth(y)(x),
+})
+
+export const getThenSemigroup = <E>(): Semigroup<Cause<E>> => ({
+  concat: (x, y) => concatThen(y)(x),
+})

@@ -5,7 +5,7 @@ import { Disposable, disposeNone } from '@/Disposable'
 
 export interface Async<R, E, A> {
   readonly type: 'Async'
-  readonly runAsync: (requirements: R, cb: (either: Either<E, A>) => void) => Disposable
+  readonly runAsync: (requirements: R, cb: (either: Either<E, A>) => void) => Disposable<any>
 }
 
 export type RequirementsOf<A> = [A] extends [Async<infer R, any, any>] ? R : never
@@ -21,7 +21,7 @@ export const Async = <R, E, A>(runAsync: Async<R, E, A>['runAsync']): Async<R, E
 
 // Ensure that any Async can only resolve once
 function once<R, E, A>(runAsync: Async<R, E, A>['runAsync']): Async<R, E, A>['runAsync'] {
-  return (r, cb): Disposable => {
+  return (r, cb): Disposable<any> => {
     let ran = false
 
     return runAsync(r, (either) => {
@@ -36,12 +36,13 @@ function once<R, E, A>(runAsync: Async<R, E, A>['runAsync']): Async<R, E, A>['ru
   }
 }
 
-export const fromCb = <E, A>(
-  run: (cb: (either: Either<E, A>) => void) => Disposable,
+export const fromCbEither = <E, A>(
+  run: (cb: (either: Either<E, A>) => void) => Disposable<any>,
 ): Async<unknown, E, A> => Async((_, cb) => run(cb))
 
-export const fromCbRight = <A>(run: (cb: (a: A) => void) => Disposable): Async<unknown, never, A> =>
-  fromCb((cb) => run(flow(right, cb)))
+export const fromCb = <A>(run: (cb: (a: A) => void) => Disposable<any>): Async<unknown, never, A> =>
+  fromCbEither((cb) => run(flow(right, cb)))
 
-export const fromCbLeft = <E>(run: (cb: (e: E) => void) => Disposable): Async<unknown, E, never> =>
-  fromCb((cb) => run(flow(left, cb)))
+export const fromCbL = <E>(
+  run: (cb: (e: E) => void) => Disposable<any>,
+): Async<unknown, E, never> => fromCbEither((cb) => run(flow(left, cb)))

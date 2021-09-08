@@ -1,3 +1,4 @@
+import * as AP from 'fp-ts/Apply'
 import * as Either from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 
@@ -5,6 +6,7 @@ import { Async } from '@/Async'
 import * as AR from '@/AtomicReference'
 import { AtomicReference } from '@/AtomicReference'
 import * as C from '@/Cause'
+import { Cause, getBothSemigroup } from '@/Cause'
 import { settable, SettableDisposable } from '@/Disposable'
 import { DeepEqual } from '@/Eq'
 import * as Exit from '@/Exit'
@@ -24,20 +26,25 @@ export function runFiber<R>(requirements: R, scope: Scope<R> = makeEmptyScope<R>
 function runFiber_<R, E, A>(fx: Fx<R, E, A>, scope: AtomicReference<Scope<R>>): Fiber<R, E, A> {
   const id = unsafeFiberId()
   const outer = settable()
-  const { complete, fail, interruptable, interruptAs, getDescriptor } = makeFiberState<R, E, A>(
+
+  const { complete, interruptable, dispose, getDescriptor } = makeFiberState<R, E, A>(
     id,
     scope,
     outer,
   )
-  const promise = runFx_(fx, interruptable, scope, outer)
-    .then(async (exit) => await complete(exit, Either.isLeft(exit) && C.isInterrupted(exit.left)))
-    .catch(fail)
 
   const fiber: Fiber<R, E, A> = {
     id,
     descriptor: getDescriptor,
-    await: promise,
-    interruptAs,
+    exit: runFx_(fx, interruptable, scope, outer).then(
+      async (exit) =>
+        await complete(exit, {
+          _tag: 'Running',
+          interruptible: false,
+          interrupting: false,
+        }),
+    ),
+    dispose,
   }
 
   return fiber
@@ -47,7 +54,7 @@ async function runFx_<R, E, A>(
   fx: Fx<R, E, A>,
   interruptable: Interruptable,
   scope: AtomicReference<Scope<R>>,
-  disposable: SettableDisposable,
+  disposable: SettableDisposable<any>,
 ): Promise<Exit.Exit<E, A>> {
   try {
     const gen = fx[Symbol.iterator]()
@@ -64,7 +71,7 @@ async function interpretFx_<R, E, A>(
   result: IteratorResult<Instruction<R, E, any>, A>,
   interruptable: Interruptable,
   scope: AtomicReference<Scope<R>>,
-  outer: SettableDisposable,
+  outer: SettableDisposable<any>,
 ): Promise<Exit.Exit<E, A>> {
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   while (!result.done) {
@@ -111,7 +118,7 @@ async function interpretFx_<R, E, A>(
       }
 
       case 'PromiseInstruction': {
-        result = generator.next(await instruction.effect)
+        result = generator.next(await instruction.effect())
 
         break
       }
@@ -140,23 +147,25 @@ async function interpretFx_<R, E, A>(
         break
       }
 
-      case 'Suspend': {
-        await generator.next(await interruptable.suspend(instruction.resume))
-
-        break
-      }
-
       case 'InterruptibleStatus': {
-        interruptable.isInterruptable.set(instruction.isInterruptible)
+        if (interruptable.isInterruptable.get) {
+          interruptable.isInterruptable.set(instruction.isInterruptible)
+        }
 
-        result = generator.next(instruction.isInterruptible)
+        if (interruptable.isInterruptable.get) {
+          // Allow interrupters to continue on the next tick
+          void Promise.resolve().then(interruptable.complete)
+        }
+
+        result = generator.next(interruptable.isInterruptable.get)
 
         break
       }
 
       case 'Fork': {
-        const local = new AtomicReference(forkScope(scope.get))
-        const fiber = runFiber_(instruction.fx, local)
+        const fiber = runFiber_(instruction.fx, new AtomicReference(forkScope(scope.get)))
+
+        outer.add(fiber)
 
         result = generator.next(fiber)
 
@@ -165,11 +174,10 @@ async function interpretFx_<R, E, A>(
 
       case 'Join': {
         const fiber = instruction.fiber
-        const descriptor = fiber.descriptor()
 
-        scope.set(joinScope(scope.get, descriptor.scope))
+        const exit = await fiber.exit
 
-        const exit = await fiber.await
+        joinScope(scope, fiber.descriptor().scope)
 
         if (Either.isLeft(exit)) {
           return exit
@@ -187,7 +195,7 @@ async function interpretFx_<R, E, A>(
       }
 
       case 'Provide': {
-        const updatedScope = new AtomicReference(
+        const local = new AtomicReference(
           updateRequirements(
             {
               ...scope.get.requirements,
@@ -199,7 +207,7 @@ async function interpretFx_<R, E, A>(
 
         const inner = settable()
         const { dispose } = outer.add(inner)
-        const exit = await runFx_(instruction.fx, interruptable, updatedScope, inner)
+        const exit = await runFx_(instruction.fx, interruptable, local, inner)
 
         if (Either.isLeft(exit)) {
           return exit
@@ -218,7 +226,7 @@ async function interpretFx_<R, E, A>(
           instruction.options.equals ?? DeepEqual.equals,
         )
 
-        scope.get.references.set(fiberRef.id, fiberRef.initial)
+        scope.get.references.set(fiberRef.id, new AtomicReference(fiberRef.initial))
 
         result = generator.next(fiberRef)
 
@@ -226,13 +234,81 @@ async function interpretFx_<R, E, A>(
       }
 
       case 'ModifyFiberRef': {
-        result = generator.next(
+        const local = scope.get
+        const fiberRef = instruction.fiberRef
+        const id = fiberRef.id
+
+        if (!local.references.has(id)) {
+          local.references.set(id, new AtomicReference(fiberRef.initial))
+        }
+
+        const inner = settable()
+        const { dispose } = outer.add(inner)
+
+        const exit = await runFx_(
           pipe(
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            scope.get.references.get(instruction.fiberRef.id)!,
-            AR.modify(instruction.fiberRef)(instruction.modify),
+            local.references.get(id)!,
+            AR.modify(instruction.modify),
           ),
+          interruptable,
+          scope,
+          outer,
         )
+
+        if (Either.isLeft(exit)) {
+          return exit
+        }
+
+        await dispose()
+
+        result = generator.next(exit.right)
+
+        break
+      }
+
+      case 'Zip': {
+        const exit = await zipFx_<R, E>(instruction.fxs, interruptable, scope, outer)
+
+        if (Either.isLeft(exit)) {
+          return exit
+        }
+
+        result = generator.next(exit.right)
+
+        break
+      }
+
+      case 'Race': {
+        const exit = await raceFx_<R, E, any>(instruction.fxs, interruptable, scope, outer)
+
+        if (Either.isLeft(exit)) {
+          return exit
+        }
+
+        result = generator.next(exit.right)
+
+        break
+      }
+
+      case 'OrElse': {
+        const exit = await runFx_(instruction.fx, interruptable, scope, outer)
+
+        if (Either.isLeft(exit) && exit.left._tag === 'Expected') {
+          const alt = await runFx_(instruction.orElse(exit.left.error), interruptable, scope, outer)
+
+          if (Either.isRight(alt)) {
+            result = generator.next(alt.right)
+
+            break
+          }
+        }
+
+        if (Either.isLeft(exit)) {
+          return exit
+        }
+
+        result = generator.next(exit.right)
 
         break
       }
@@ -245,7 +321,7 @@ async function interpretFx_<R, E, A>(
 async function trackAsyncResources<R, E, A>(
   async: Async<R, E, A>,
   requirements: R,
-  outer: SettableDisposable,
+  outer: SettableDisposable<any>,
 ): Promise<Either.Either<E, A>> {
   const inner = settable()
   const { dispose } = outer.add(inner)
@@ -261,7 +337,7 @@ async function trackAsyncResources<R, E, A>(
 function makeFiberState<R, E, A>(
   id: FiberId,
   scope: AtomicReference<Scope<R>>,
-  outer: SettableDisposable,
+  outer: SettableDisposable<any>,
 ) {
   const isInterruptible = new AtomicReference(true)
 
@@ -273,47 +349,28 @@ function makeFiberState<R, E, A>(
     },
   })
 
-  const interruptable = new Interruptable(async (cb) => {
-    return await new Promise((resolve) => {
-      status.set({
-        _tag: 'Suspended',
-        previous: status.get,
-        get interruptible() {
-          return isInterruptible.get
-        },
-      })
-
-      cb(resolve)
-    })
-  }, isInterruptible)
+  const interruptable = new Interruptable(isInterruptible)
 
   function getDescriptor(): FiberDescriptor<R, E, A> {
     return {
       id,
-      get isInterruptible() {
-        return isInterruptible.get
-      },
-      get status() {
-        return status.get
-      },
-      get scope() {
-        return scope.get
-      },
+      isInterruptible: isInterruptible.get,
+      status: status.get,
+      scope: scope.get,
     }
   }
 
-  async function complete(exit: Exit.Exit<E, A>, interrupting: boolean): Promise<Exit.Exit<E, A>> {
+  async function complete(
+    exit: Exit.Exit<E, A>,
+    nextStatus: FiberStatus<E, A>,
+  ): Promise<Exit.Exit<E, A>> {
     const currentStatus = status.get
 
     if (currentStatus._tag === 'Completed' || currentStatus._tag === 'Failed') {
       return exit
     }
 
-    status.set({
-      _tag: interrupting ? 'Finishing' : 'Running',
-      interrupting,
-      interruptible: false,
-    })
+    status.set(nextStatus)
 
     await Promise.all([outer.dispose(), interruptable.dispose()])
 
@@ -328,11 +385,7 @@ function makeFiberState<R, E, A>(
     return exit
   }
 
-  async function fail(error: unknown): Promise<Exit.Exit<E, A>> {
-    return await complete(Either.left(C.Died(error)), true)
-  }
-
-  async function interruptAs(id: FiberId): Promise<Exit.Exit<E, A>> {
+  async function dispose(): Promise<Exit.Exit<E, A>> {
     const s = status.get
 
     if (s._tag === 'Completed') {
@@ -344,30 +397,30 @@ function makeFiberState<R, E, A>(
     }
 
     if (s.interruptible) {
-      return await complete(Either.left(C.Interrupted(id)), true)
+      return await complete(Either.left(C.Interrupted), {
+        _tag: 'Running',
+        interruptible: false,
+        interrupting: true,
+      })
     }
 
     await interruptable.await()
 
-    return await interruptAs(id)
+    return await dispose()
   }
 
   return {
     interruptable,
     getDescriptor,
     complete,
-    fail,
-    interruptAs,
+    dispose,
   } as const
 }
 
 class Interruptable {
   private readonly interrupters: Set<() => void> = new Set()
 
-  constructor(
-    readonly suspend: (resume: (cb: () => void) => void) => Promise<void>,
-    readonly isInterruptable: AtomicReference<boolean>,
-  ) {}
+  constructor(readonly isInterruptable: AtomicReference<boolean>) {}
 
   readonly await = async (): Promise<void> =>
     await new Promise<void>((resolve) => this.interrupters.add(resolve))
@@ -377,4 +430,94 @@ class Interruptable {
   readonly dispose = (): void => {
     this.interrupters.clear()
   }
+}
+
+async function zipFx_<R, E>(
+  fxs: ReadonlyArray<Fx<R, any, any>>,
+  interruptable: Interruptable,
+  scope: AtomicReference<Scope<R>>,
+  outer: SettableDisposable<any>,
+): Promise<Exit.Exit<E, readonly any[]>> {
+  const current = settable()
+
+  const { dispose } = outer.add(current)
+
+  const exit = await new Promise<Exit.Exit<E, readonly any[]>>((resolve, reject) => {
+    let values = Array(fxs.length)
+    let referenceCount = fxs.length
+
+    function complete(x: Exit.Exit<any, any>, index: number): void {
+      referenceCount--
+
+      if (Either.isLeft(x)) {
+        values = []
+
+        return resolve(x)
+      }
+
+      values[index] = x.right
+
+      if (referenceCount === 0) {
+        resolve(Either.right(values))
+      }
+    }
+
+    void Promise.all(
+      fxs.map(
+        async (fx, i) =>
+          await runFx_(fx, interruptable, scope, current).then((e) => complete(e, i)),
+      ),
+    ).catch(reject)
+  })
+
+  await Promise.all([current.dispose(), dispose()])
+
+  return exit
+}
+
+async function raceFx_<R, E, A>(
+  fxs: ReadonlyArray<Fx<R, any, any>>,
+  interruptable: Interruptable,
+  scope: AtomicReference<Scope<R>>,
+  outer: SettableDisposable<any>,
+): Promise<Exit.Exit<E, A>> {
+  const current = settable()
+
+  const { dispose } = outer.add(current)
+
+  const exit = await new Promise<Exit.Exit<E, A>>((resolve, reject) => {
+    const causes: Array<Cause<E>> = []
+    let referenceCount = fxs.length
+
+    const validation = Either.getApplicativeValidation(getBothSemigroup<E>())
+    const { concat: concatErrors } = AP.getApplySemigroup(validation)({
+      concat: (): unknown => undefined,
+    })
+
+    function complete(x: Exit.Exit<any, any>): void {
+      referenceCount--
+
+      if (Either.isLeft(x)) {
+        causes.push(x.left)
+
+        if (referenceCount === 0) {
+          const [f, ...rest] = causes.map(Either.left)
+
+          resolve(rest.reduce(concatErrors, f) as Exit.Exit<E, A>)
+        }
+
+        return
+      }
+
+      resolve(x)
+    }
+
+    void Promise.all(
+      fxs.map(async (fx) => await runFx_(fx, interruptable, scope, current).then(complete)),
+    ).catch(reject)
+  })
+
+  await Promise.all([current.dispose(), dispose()])
+
+  return exit
 }

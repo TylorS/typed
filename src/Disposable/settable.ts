@@ -2,33 +2,35 @@ import { none, Option, some } from 'fp-ts/Option'
 
 import { Disposable } from './Disposable'
 
-export interface SettableDisposable extends Disposable {
-  readonly add: (disposable: Disposable) => Disposable
+export interface SettableDisposable<A> extends Disposable<readonly A[]> {
+  readonly add: (disposable: Disposable<A>) => Disposable<void>
   readonly isDisposed: () => boolean
 }
 
-export function settable(): SettableDisposable {
+export function settable<A>(): SettableDisposable<A> {
   let isDisposed = false
   let isDisposing = false
 
   const check = (): boolean => isDisposed || isDisposing
 
-  const disposables: Set<Disposable> = new Set()
+  const disposables: Set<Disposable<A>> = new Set()
 
-  async function dispose(): Promise<void> {
+  async function dispose(): Promise<readonly A[]> {
     if (isDisposed) {
-      return
+      return []
     }
 
     isDisposing = true
-    await Promise.all(Array.from(disposables).map((d) => d.dispose()))
+    const values = await Promise.all(Array.from(disposables).map((d) => d.dispose()))
     disposables.clear()
     isDisposing = false
 
     isDisposed = true
+
+    return values
   }
 
-  function add(d: Disposable): Disposable {
+  function add(d: Disposable<A>): Disposable<void> {
     if (check()) {
       throw new Error(`Unable to add a Disposable after disposed.`)
     }
@@ -49,7 +51,7 @@ export function settable(): SettableDisposable {
   }
 }
 
-export function addIfNotDisposed(disposable: Disposable) {
-  return (settable: SettableDisposable): Option<Disposable> =>
+export function addIfNotDisposed<A>(disposable: Disposable<A>) {
+  return (settable: SettableDisposable<A>): Option<Disposable<void>> =>
     settable.isDisposed() ? none : some(settable.add(disposable))
 }

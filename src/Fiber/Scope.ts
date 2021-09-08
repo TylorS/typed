@@ -1,7 +1,9 @@
+import { pipe } from 'fp-ts/lib/function'
 import { none, Option, some } from 'fp-ts/Option'
 
-import { AtomicReference } from '@/AtomicReference'
+import { AtomicReference, update } from '@/AtomicReference'
 import { FiberRefId } from '@/FiberRef'
+import { fromIO, Pure } from '@/Fx'
 
 export interface Scope<R> {
   readonly requirements: R
@@ -28,16 +30,28 @@ export function forkScope<R>(parent: Scope<R>): Scope<R> {
   }
 }
 
-export function joinScope<R, R2>(parent: Scope<R>, forked: Scope<R2>): Scope<R & R2> {
-  return {
-    ...parent,
-    children: new Set(Array.from(parent.children).filter((x) => x !== forked)),
-    references: new Map([...parent.references, ...forked.references]),
-    requirements: {
-      ...parent.requirements,
-      ...forked.requirements,
-    },
-  }
+export function joinScope<R, R2>(
+  parentRef: AtomicReference<Scope<R>>,
+  forked: Scope<R2>,
+): Pure<Scope<R & R2>> {
+  const scope = pipe(
+    parentRef,
+    update((parent) =>
+      fromIO(() => {
+        return {
+          ...parent,
+          children: new Set(Array.from(parent.children).filter((x) => x !== forked)),
+          references: new Map([...parent.references, ...forked.references]),
+          requirements: {
+            ...parent.requirements,
+            ...forked.requirements,
+          },
+        }
+      }),
+    ),
+  )
+
+  return scope as Pure<Scope<R & R2>>
 }
 
 export function updateRequirements<R, R1>(requirements: R, scope: Scope<R1>): Scope<R> {

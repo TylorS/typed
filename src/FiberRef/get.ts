@@ -1,11 +1,14 @@
-import { flow } from 'fp-ts/function'
-import { fst } from 'fp-ts/ReadonlyTuple'
+import { constant, flow } from 'fp-ts/function'
+import { snd } from 'fp-ts/ReadonlyTuple'
 
-import { map, Pure } from '@/Fx'
+import { fromIO, map, Pure } from '@/Fx'
 
 import { FiberRef } from './FiberRef'
 import { modify } from './modify'
 
-const toTuple = <A>(x: A): readonly [A, A] => [x, x]
+const toTuple = <A>(a: A): readonly [A, A] => [a, a]
 
-export const get: <A>(ref: FiberRef<A>) => Pure<A> = flow(modify(toTuple), map(fst))
+export const get: <A>(ref: FiberRef<A>) => Pure<A> = flow(
+  modify(flow(toTuple, constant, fromIO)),
+  map(snd),
+)

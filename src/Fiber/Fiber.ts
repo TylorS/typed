@@ -1,11 +1,12 @@
 import { IO } from 'fp-ts/IO'
 
+import { Disposable } from '@/Disposable'
 import { Exit } from '@/Exit'
 
 import { FiberDescriptor } from './FiberDescriptor'
 import { FiberId } from './FiberId'
 
-export interface Fiber<R, E, A> {
+export interface Fiber<R, E, A> extends Disposable<Exit<E, A>> {
   /**
    * Unique references for a Fiber
    */
@@ -19,10 +20,5 @@ export interface Fiber<R, E, A> {
   /**
    * Await for the Exit of this fiber
    */
-  readonly await: Promise<Exit<E, A>>
-
-  /**
-   * Interrupt this Fiber
-   */
-  readonly interruptAs: (id: FiberId) => Promise<Exit<E, A>>
+  readonly exit: Promise<Exit<E, A>>
 }

@@ -1,13 +1,13 @@
 import { Disposable } from './Disposable'
 
-export async function dispose(disposable: Disposable): Promise<void> {
+export async function dispose<A>(disposable: Disposable<A>): Promise<A> {
   return await disposable.dispose()
 }
 
-export function disposeAll(disposables: readonly Disposable[]): Disposable {
+export function disposeAll<A>(disposables: ReadonlyArray<Disposable<A>>): Disposable<readonly A[]> {
   return {
     dispose: async () => {
-      await Promise.all(disposables.map((d) => d.dispose()))
+      return await Promise.all(disposables.map((d) => d.dispose()))
     },
   }
 }

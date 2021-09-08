@@ -6,6 +6,12 @@ export interface Fx<R, E, A> {
   readonly [Symbol.iterator]: () => Generator<Instruction<R, E, any>, A>
 }
 
+export type RequirementsOf<T> = FxOf<T> extends Fx<infer R, any, any> ? R : never
+
+export type ErrorOf<T> = FxOf<T> extends Fx<any, infer R, any> ? R : never
+
+export type ValueOf<T> = FxOf<T> extends Fx<any, any, infer R> ? R : never
+
 export function Fx<F extends () => Generator<Instruction<any, any, any>, any>>(f: F): FxOf<F> {
   return {
     [Symbol.iterator]: f,

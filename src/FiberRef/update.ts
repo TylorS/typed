@@ -3,13 +3,11 @@ import { snd } from 'fp-ts/ReadonlyTuple'
 
 import { Fx, map } from '@/Fx'
 
-import type { AtomicReference } from './AtomicReference'
+import { FiberRef } from './FiberRef'
 import { modify } from './modify'
 
 const toNullTuple = <A>(a: A) => [null, a] as const
 
-export function update<A, R, E>(
-  f: (value: A) => Fx<R, E, A>,
-): (ref: AtomicReference<A>) => Fx<R, E, A> {
+export function update<A, R, E>(f: (a: A) => Fx<R, E, A>): (ref: FiberRef<A>) => Fx<R, E, A> {
   return flow(modify(flow(f, map(toNullTuple))), map(snd))
 }

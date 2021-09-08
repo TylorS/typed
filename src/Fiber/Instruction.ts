@@ -7,8 +7,8 @@ import { Fiber } from './Fiber'
 export type FiberInstruction<R, E, A> =
   | ForkInstruction<R, E, A>
   | JoinInstruction<unknown, E, A>
-  | SuspendInstruction<E, A>
-  | DisposableInstruction
+  | DisposableInstruction<any>
+  | InterruptableStatusInstruction
 
 export class ForkInstruction<R, E, A> extends instr('Fork')<R, never, Fiber<R, E, A>> {
   constructor(readonly fx: Fx<R, E, A>) {
@@ -22,14 +22,22 @@ export class JoinInstruction<R, E, A> extends instr('Join')<unknown, E, A> {
   }
 }
 
-export class SuspendInstruction<E, A> extends instr('Suspend')<unknown, E, A> {
-  constructor(readonly resume: (cb: (value: A) => void) => Disposable) {
+export class DisposableInstruction<A> extends instr('Disposable')<
+  unknown,
+  never,
+  Disposable<void>
+> {
+  constructor(readonly disposable: Disposable<A>) {
     super()
   }
 }
 
-export class DisposableInstruction extends instr('Disposable')<unknown, never, Disposable> {
-  constructor(readonly disposable: Disposable) {
+export class InterruptableStatusInstruction extends instr('InterruptibleStatus')<
+  unknown,
+  never,
+  boolean
+> {
+  constructor(readonly isInterruptible: boolean) {
     super()
   }
 }

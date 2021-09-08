@@ -7,7 +7,7 @@
     "./src/*.ts",
     "./src/**/*.ts",
     "./tools/*.ts"
-  ],
+, "src/Async/index.ts"  ],
   "exclude": [
     "./lib",
     "./node_modules"

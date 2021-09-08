@@ -1,6 +1,6 @@
 import { pipe } from 'fp-ts/lib/function'
 
-import { fromCbRight } from '@/Async'
+import { fromCb } from '@/Async'
 import { disposeNone } from '@/Disposable'
 import { chain, fromAsync, Fx } from '@/Fx'
 
@@ -14,7 +14,7 @@ function _await<R, E, A>(future: Future<R, E, A>): Fx<R, E, A> {
       return state.fx
     case 'Pending':
       return pipe(
-        fromCbRight<Fx<R, E, A>>((cb) => {
+        fromCb<Fx<R, E, A>>((cb) => {
           const state = future.state.get
 
           if (state._tag === 'Done') {
