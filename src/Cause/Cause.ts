@@ -1,4 +1,4 @@
-import { Semigroup } from 'fp-ts/lib/Semigroup'
+import { Semigroup } from 'fp-ts/Semigroup'
 
 export type Cause<E> = Empty | Died | Interrupted | Expected<E> | Then<E> | Both<E>
 
