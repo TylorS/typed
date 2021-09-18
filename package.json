@@ -7,8 +7,6 @@
   "typings": "./lib/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "fp-ts": "^2.11.1",
-    "io-ts": "^2.2.16",
     "ts-toolbelt": "^9.6.0"
   },
   "peerDependencies": {

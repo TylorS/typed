@@ -1,3 +1,3 @@
-export * from './Disposable'
-export * from './dispose'
-export * from './settable'
+export interface Disposable {
+  readonly dispose: () => unknown | Promise<unknown>
+}
