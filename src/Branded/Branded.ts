@@ -1,12 +1,28 @@
-export type Branded<T, Brand> = T & { readonly __not_available_at_runtime__: Brand }
+import { unsafeCoerce } from 'fp-ts/lib/function'
+import { none, Option, some } from 'fp-ts/Option'
+import { Predicate } from 'fp-ts/Predicate'
 
-export type BrandOf<A> = '__not_available_at_runtime__' extends keyof A
-  ? A['__not_available_at_runtime__']
-  : never
+export type Branded<T, Brand extends Readonly<Record<PropertyKey, any>>> = T & {
+  readonly BRAND: {
+    readonly __not_available_at_runtime__: Brand
+  }
+}
 
-export type TypeOf<A> = A extends Branded<infer T, BrandOf<A>> ? T : never
+export type BrandOf<T> = [T] extends [Branded<unknown, infer Brand>] ? Brand : never
+
+export type TypeOf<A> = [A] extends [Branded<infer T, BrandOf<A>>] ? T : never
 
 export const Branded =
-  <B extends Branded<any, any>>() =>
-  <T extends TypeOf<B>>(type: T): Branded<T, BrandOf<B>> =>
-    type as Branded<T, BrandOf<B>>
+  <T extends Branded<any, any>>() =>
+  <A extends TypeOf<T>>(value: A): Branded<A, BrandOf<T>> =>
+    unsafeCoerce(value)
+
+export const fromPredicate =
+  <T extends Branded<any, any>>(predicate: Predicate<TypeOf<T>>) =>
+  <A extends TypeOf<T>>(value: A): Option<Branded<A, BrandOf<T>>> =>
+    predicate(value) ? some(Branded<T>()(value)) : none
+
+export type Combine<L extends Branded<any, any>, R extends Branded<any, any>> = Branded<
+  TypeOf<L> & TypeOf<R>,
+  BrandOf<L> & BrandOf<R>
+>

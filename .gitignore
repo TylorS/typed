@@ -37,12 +37,12 @@ jspm_packages
 .node_repl_history
 
 # generated files
-build
-dist
-esm
-cjs
-umd
-lib
+/build
+/dist
+/esm
+/cjs
+/umd
+/lib
 .tmp
 .cache-loader
 
