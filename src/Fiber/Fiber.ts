@@ -14,10 +14,9 @@ export interface Fiber<A> extends Cancelable {
  */
 export type FiberId = Branded<PropertyKey, { readonly FiberId: unique symbol }>
 export const FiberId = fromAssertion<FiberId>((x) => {
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  if (typeof x === 'symbol' && !x.description) {
-    throw new Error(
-      `Only accepts Symbols with a description for your developer experience during debugging.`,
-    )
+  if (typeof x === 'symbol' && x.description === undefined) {
+    return false
   }
+
+  return true
 })

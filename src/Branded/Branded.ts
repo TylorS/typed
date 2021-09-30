@@ -23,7 +23,7 @@ export const fromPredicate =
     predicate(value) ? some(Branded<T>()(value)) : none
 
 export const fromAssertion =
-  <T extends Branded<any, any>>(predicate: (type: unknown) => asserts type is T) =>
+  <T extends Branded<any, any>>(predicate: Predicate<TypeOf<T>>) =>
   <A extends TypeOf<T>>(value: A): Branded<A, BrandOf<T>> => {
     predicate(value)
 
