@@ -1,49 +1,55 @@
 import * as Either from 'fp-ts/Either'
+import { flow } from 'fp-ts/function'
 
 import { Cancelable } from '@/Cancelable'
 import { match } from '@/Cause'
 import { Exit } from '@/Exit'
 
+import { DefaultRuntime } from './DefaultRuntime'
 import { Fx, OutputOf } from './Fx'
-import { Runtime } from './Runtime'
 import { Scope } from './Scope'
 
-export function runFxToExit<R, E, A>(
-  fx: Fx<R, E, A>,
+export function runMainToExit<R, A>(
+  fx: Fx<R, A>,
   requirements: R,
-  onExit: (exit: Exit<E, A>) => void,
-  scope: Scope = new Scope(),
+  onExit: (exit: Exit<A>) => void,
+  scope: Scope,
 ): Cancelable {
-  return new Runtime(fx).runMain(scope, requirements, onExit)
+  return new DefaultRuntime().runMain<R, A>(fx, scope, requirements, onExit)
 }
 
-export function runPromiseExit<R>(reqirements: R, scope?: Scope) {
-  return async <E, A>(fx: Fx<R, E, A>): Promise<Exit<E, A>> =>
-    await new Promise((resolve) => runFxToExit(fx, reqirements, resolve, scope))
-}
-
-export async function runMain<F extends Fx<unknown, any, any>>(
+export async function runMainPromise<F extends Fx<unknown, any>>(
   fx: F,
-  scope: Scope = new Scope(),
+  scope: Scope,
 ): Promise<OutputOf<F>> {
   return await new Promise((resolve, reject) => {
-    runFxToExit(
-      fx,
-      {},
-      Either.matchW(
-        match(
-          (expected) => reject(new Error(`Expected error: ${JSON.stringify(expected, null, 2)}`)),
-          (unexpected) =>
-            reject(
-              unexpected instanceof Error
-                ? unexpected
-                : new Error(`Unexpected: ${JSON.stringify(unexpected, null, 2)}`),
-            ),
-          () => reject(new Error('Canceled')),
-        ),
-        resolve,
-      ),
-      scope,
-    )
+    runMainToExit(fx, {}, Either.matchW(flow(encodeError, reject), resolve), scope)
   })
 }
+
+export function runToExit<R, A>(
+  fx: Fx<R, A>,
+  requirements: R,
+  onExit: (exit: Exit<A>) => void,
+  scope: Scope,
+): Cancelable {
+  return new DefaultRuntime().runFx(fx, scope, requirements, onExit)
+}
+
+export async function runPromise<F extends Fx<unknown, any>>(
+  fx: F,
+  scope: Scope,
+): Promise<OutputOf<F>> {
+  return await new Promise((resolve, reject) => {
+    runToExit(fx, {}, Either.matchW(flow(encodeError, reject), resolve), scope)
+  })
+}
+
+const encodeError = match(
+  (unexpected) =>
+    unexpected instanceof Error
+      ? unexpected
+      : new Error(`Unexpected: ${JSON.stringify(unexpected, null, 2)}`),
+
+  () => new Error('Canceled'),
+)

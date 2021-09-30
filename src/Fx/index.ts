@@ -1,1 +1,5 @@
+export * from './Computations'
 export * from './Fx'
+export * from './Instruction'
+export * from './runFxToExit'
+export * from './Scope'

@@ -1,34 +1,29 @@
-import { Cancelable, cancelAll } from '@/Cancelable'
-import { Settable } from '@/Cancelable/settable'
+import { Option } from 'fp-ts/Option'
 
-export class Scope {
-  public references: Map<any, any>
-  #resources: Settable = new Settable()
+import { Cancelable } from '@/Cancelable'
+import { FiberRef } from '@/FiberRef'
 
-  constructor(options: ScopeOptions = {}) {
-    this.references = options.references ?? new Map()
-  }
+import * as Fx from './Fx'
 
-  readonly cloneReferences = (): Map<any, any> => new Map(this.references)
+export interface Scope extends Cancelable {
+  // References
+  readonly references: FiberLocalState<any, any>
+  readonly cloneReferences: () => FiberLocalState<any, any>
+  readonly inheritRefs: (toInherit: FiberLocalState<any, any>) => void
+  readonly getFiberRef: <A>(ref: FiberRef<A>) => Fx.Fx<unknown, A>
+  readonly updateFiberRef: <A, R>(ref: FiberRef<A>, f: (value: A) => Fx.Fx<R, A>) => Fx.Fx<R, A>
+  readonly deleteFiberRef: <A>(ref: FiberRef<A>) => Fx.Fx<unknown, Option<A>>
 
-  readonly inheritRefs = (...toInherit: ReadonlyArray<Map<any, any>>): void => {
-    this.references = new Map(combineMaps(this.references, ...toInherit))
-  }
-
-  readonly trackResources = (...cancelables: readonly Cancelable[]): Cancelable =>
-    cancelAll(...cancelables.map((c) => this.#resources.add(c)))
-
-  readonly close = (): void | Promise<void> => this.#resources.cancel()
-
-  readonly isClosed = (): boolean => this.#resources.isCanceled()
+  // Resources
+  readonly cancel: Cancelable['cancel']
+  readonly trackResources: (...cancelables: readonly Cancelable[]) => Cancelable
+  readonly isClosed: () => boolean
 }
 
-export interface ScopeOptions {
-  readonly references?: Map<any, any>
-}
+export interface FiberLocalState<K, V> extends Map<K, FiberRefState<V>> {}
 
-function* combineMaps(...maps: ReadonlyArray<Map<any, any>>): Iterable<[any, any]> {
-  for (const map of maps) {
-    yield* map
-  }
+export interface FiberRefState<A> {
+  readonly value: A
+  readonly fork: (a: A) => A
+  readonly join: (left: A, right: A) => A
 }

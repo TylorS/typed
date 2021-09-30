@@ -3,11 +3,11 @@ import { left, right } from 'fp-ts/Either'
 import { describe } from 'mocha'
 
 import { Uncancelable } from '@/Cancelable'
-import { expected, interrupted } from '@/Cause'
+import { interrupted, unexpected } from '@/Cause'
 
-import * as Fx from './Fx'
-import { Runtime } from './Runtime'
-import { Scope } from './Scope'
+import * as Fx from '.'
+import { DefaultRuntime } from './DefaultRuntime'
+import { DefaultScope } from './DefaultScope'
 
 describe(__filename, () => {
   describe('Runtime', () => {
@@ -16,10 +16,10 @@ describe(__filename, () => {
         it('returns the value', () => {
           const value = 1
           const fx = Fx.fromInstruction(new Fx.Success(value))
-          const runtime = new Runtime(fx)
-          const scope = new Scope()
+          const runtime = new DefaultRuntime()
+          const scope = new DefaultScope()
 
-          runtime.runMain(scope, {}, (exit) => {
+          runtime.runMain(fx, scope, {}, (exit) => {
             deepStrictEqual(exit, right(value))
           })
         })
@@ -31,10 +31,10 @@ describe(__filename, () => {
           const fx = Fx.fromInstruction(
             new Fx.Access((r: { a: number }) => Fx.fromInstruction(new Fx.Success(r.a))),
           )
-          const runtime = new Runtime(fx)
-          const scope = new Scope()
+          const runtime = new DefaultRuntime()
+          const scope = new DefaultScope()
 
-          runtime.runMain(scope, { a }, (exit) => {
+          runtime.runMain(fx, scope, { a }, (exit) => {
             deepStrictEqual(exit, right(a))
           })
         })
@@ -42,13 +42,13 @@ describe(__filename, () => {
 
       describe(Fx.FromExit.name, () => {
         it('allows exiting early', () => {
-          const exit = left(expected(42))
+          const exit = left(unexpected(42))
           const fx = Fx.fromInstruction(new Fx.FromExit(exit))
-          const runtime = new Runtime(fx)
-          const scope = new Scope()
+          const runtime = new DefaultRuntime()
+          const scope = new DefaultScope()
 
-          runtime.runMain(scope, {}, (actual) => {
-            deepStrictEqual(actual, expected)
+          runtime.runMain(fx, scope, {}, (actual) => {
+            deepStrictEqual(actual, exit)
           })
         })
       })
@@ -58,10 +58,10 @@ describe(__filename, () => {
           const value = 42
 
           const fx = Fx.fromInstruction(new Fx.FromIO(() => value))
-          const runtime = new Runtime(fx)
-          const scope = new Scope()
+          const runtime = new DefaultRuntime()
+          const scope = new DefaultScope()
 
-          runtime.runMain(scope, {}, (actual) => {
+          runtime.runMain(fx, scope, {}, (actual) => {
             deepStrictEqual(actual, right(value))
           })
         })
@@ -72,10 +72,10 @@ describe(__filename, () => {
           const value = Math.random()
 
           const fx = Fx.fromInstruction(new Fx.FromPromise(async () => value))
-          const runtime = new Runtime(fx)
-          const scope = new Scope()
+          const runtime = new DefaultRuntime()
+          const scope = new DefaultScope()
 
-          runtime.runMain(scope, {}, (actual) => {
+          runtime.runMain(fx, scope, {}, (actual) => {
             deepStrictEqual(actual, right(value))
             done()
           })
@@ -89,10 +89,10 @@ describe(__filename, () => {
               async () => await new Promise((resolve) => setTimeout(resolve, 1000, value)),
             ),
           )
-          const runtime = new Runtime(fx)
-          const scope = new Scope()
+          const runtime = new DefaultRuntime()
+          const scope = new DefaultScope()
 
-          const { cancel } = runtime.runMain(scope, {}, (actual) => {
+          const { cancel } = runtime.runMain(fx, scope, {}, (actual) => {
             try {
               deepStrictEqual(actual, left(interrupted))
               done()
@@ -111,10 +111,10 @@ describe(__filename, () => {
           // eslint-disable-next-line no-sequences
           const fx = Fx.fromInstruction(new Fx.FromAsync((cb) => (cb(value), Uncancelable)))
 
-          const runtime = new Runtime(fx)
-          const scope = new Scope()
+          const runtime = new DefaultRuntime()
+          const scope = new DefaultScope()
 
-          runtime.runMain(scope, {}, (actual) => {
+          runtime.runMain(fx, scope, {}, (actual) => {
             try {
               deepStrictEqual(actual, right(value))
               done()
@@ -133,10 +133,10 @@ describe(__filename, () => {
               return { cancel: () => clearTimeout(id) }
             }),
           )
-          const runtime = new Runtime(fx)
-          const scope = new Scope()
+          const runtime = new DefaultRuntime()
+          const scope = new DefaultScope()
 
-          const { cancel } = runtime.runMain(scope, {}, (actual) => {
+          const { cancel } = runtime.runMain(fx, scope, {}, (actual) => {
             try {
               deepStrictEqual(actual, left(interrupted))
               done()
@@ -150,62 +150,17 @@ describe(__filename, () => {
       })
     })
 
-    describe(Fx.Fold.name, () => {
-      it('allows handling expected errors', (done) => {
-        const fx = Fx.fromInstruction(
-          new Fx.FromExit<Error, string>(left(expected(new Error('foo')))),
-        )
-        const onLeft = (e: Error): Fx.Fx<unknown, Error, string> =>
-          Fx.fromInstruction(new Fx.Success(e.message))
-        const onRight = (): Fx.Fx<unknown, Error, string> =>
-          Fx.fromInstruction(new Fx.Success('unexpected'))
-
-        const fold = Fx.fromInstruction(new Fx.Fold(fx, onLeft, onRight))
-
-        const runtime = new Runtime(fold)
-        const scope = new Scope()
-
-        const { cancel } = runtime.runMain(scope, {}, (actual) => {
-          deepStrictEqual(actual, right('foo'))
-          done()
-        })
-
-        cancel()?.catch(done)
-      })
-
-      it('allows handling next value', (done) => {
-        const fx = Fx.fromInstruction<unknown, Error, string>(new Fx.Success<string>('initial'))
-        const onLeft = (e: Error): Fx.Fx<unknown, Error, string> =>
-          Fx.fromInstruction(new Fx.Success(e.message))
-        const onRight = (): Fx.Fx<unknown, Error, string> =>
-          Fx.fromInstruction(new Fx.Success('expected'))
-
-        const fold = Fx.fromInstruction(new Fx.Fold(fx, onLeft, onRight))
-
-        const runtime = new Runtime(fold)
-        const scope = new Scope()
-
-        const { cancel } = runtime.runMain(scope, {}, (actual) => {
-          deepStrictEqual(actual, right('expected'))
-          done()
-        })
-
-        cancel()?.catch(done)
-      })
-    })
-
     describe(Fx.FlatMap.name, () => {
       it('allows handling next value', (done) => {
-        const fx = Fx.fromInstruction(new Fx.Success<number>(1))
-        const onRight = (n: number): Fx.Fx<unknown, Error, number> =>
-          Fx.fromInstruction(new Fx.Success(n + 1))
+        const fx = Fx.of(1)
+        const onRight = (n: number): Fx.Fx<unknown, number> => Fx.of(n + 1)
 
         const fold = Fx.fromInstruction(new Fx.FlatMap(fx, onRight))
 
-        const runtime = new Runtime(fold)
-        const scope = new Scope()
+        const runtime = new DefaultRuntime()
+        const scope = new DefaultScope()
 
-        const { cancel } = runtime.runMain(scope, {}, (actual) => {
+        const { cancel } = runtime.runMain(fold, scope, {}, (actual) => {
           deepStrictEqual(actual, right(2))
           done()
         })
@@ -217,17 +172,12 @@ describe(__filename, () => {
     describe(Fx.Parallel.name, () => {
       describe('given multiple Fxs', () => {
         it('runs them all in parallel', (done) => {
-          const fx = Fx.fromInstruction<unknown, any, [number, number]>(
-            new Fx.Parallel(
-              Fx.fromInstruction<unknown, any, number>(new Fx.Success<number>(1)),
-              Fx.fromInstruction<unknown, any, number>(new Fx.Success<number>(2)),
-            ),
-          )
+          const fx = Fx.zip(Fx.of(1), Fx.of(2))
 
-          const runtime = new Runtime(fx)
-          const scope = new Scope()
+          const runtime = new DefaultRuntime()
+          const scope = new DefaultScope()
 
-          runtime.runMain(scope, {}, (actual) => {
+          runtime.runMain(fx, scope, {}, (actual) => {
             deepStrictEqual(actual, right([1, 2]))
             done()
           })
@@ -238,21 +188,17 @@ describe(__filename, () => {
     describe(Fx.Race.name, () => {
       describe('given multiple Fxs', () => {
         it('returns the winning values', (done) => {
-          const fx = Fx.fromInstruction<unknown, any, number>(
-            new Fx.Race(
-              Fx.fromInstruction(new Fx.Success<number>(1)),
-              Fx.fromInstruction(
-                new Fx.FromPromise<number>(
-                  async () => await new Promise((resolve) => setTimeout(resolve, 1000, 2)),
-                ),
-              ),
+          const fx = Fx.race(
+            Fx.of(1),
+            Fx.fromPromise<number>(
+              async () => await new Promise((resolve) => setTimeout(resolve, 1000, 2)),
             ),
           )
 
-          const runtime = new Runtime(fx)
-          const scope = new Scope()
+          const runtime = new DefaultRuntime()
+          const scope = new DefaultScope()
 
-          runtime.runMain(scope, {}, (actual) => {
+          runtime.runMain(fx, scope, {}, (actual) => {
             deepStrictEqual(actual, right(1))
             done()
           })
