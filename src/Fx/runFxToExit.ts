@@ -51,5 +51,5 @@ const encodeError = match(
       ? unexpected
       : new Error(`Unexpected: ${JSON.stringify(unexpected, null, 2)}`),
 
-  () => new Error('Canceled'),
+  () => new Error('Interrupted'),
 )

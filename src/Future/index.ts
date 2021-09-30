@@ -73,7 +73,7 @@ export function listen<A>(future: Future<A>): Fx.Fx<unknown, Exit<A>> {
             return Uncancelable
           }
 
-          return Fx.runToExit(listen(future), {} as unknown, cb, scope)
+          return Fx.runToExit(listen(future), {}, cb, scope)
         })
 
         return E.flatten(exit)
