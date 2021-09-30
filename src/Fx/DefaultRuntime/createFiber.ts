@@ -1,4 +1,4 @@
-import { constant } from 'fp-ts/lib/function'
+import { constant } from 'fp-ts/function'
 
 import { Settable } from '@/Cancelable/settable'
 import { Exit } from '@/Exit'

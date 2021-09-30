@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
-import { constVoid } from 'fp-ts/function'
-import { none, Option, some } from 'fp-ts/lib/Option'
+import { none, Option, some } from 'fp-ts/Option'
 
 import { Cancelable, cancelAll } from '@/Cancelable'
 import { Settable } from '@/Cancelable/settable'
@@ -8,7 +7,7 @@ import { FiberRef } from '@/FiberRef/FiberRef'
 
 import { fromIO } from '../Computations'
 import { Fx } from '../Fx'
-import { FiberLocalState, Scope } from '../Scope'
+import { FiberLocalState, FiberRefState, Scope } from '../Scope'
 
 export class DefaultScope implements Scope {
   public references: FiberLocalState<any, any>
@@ -23,7 +22,7 @@ export class DefaultScope implements Scope {
 
   readonly inheritRefs = (toInherit: FiberLocalState<any, any>): void => {
     if (toInherit.size === 0) {
-      return constVoid()
+      return
     }
 
     toInherit.forEach((incoming, key) => {
@@ -92,12 +91,6 @@ export class DefaultScope implements Scope {
       return current
     })
   }
-}
-
-export interface FiberRefState<A> {
-  readonly value: A
-  readonly fork: (a: A) => A
-  readonly join: (left: A, right: A) => A
 }
 
 export interface ScopeOptions {
