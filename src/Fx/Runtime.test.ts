@@ -7,7 +7,7 @@ import { interrupted, unexpected } from '@/Cause'
 
 import * as Fx from '.'
 import { DefaultRuntime } from './DefaultRuntime'
-import { DefaultScope } from './DefaultScope'
+import { DefaultScope } from './DefaultRuntime/DefaultScope'
 
 describe(__filename, () => {
   describe('Runtime', () => {

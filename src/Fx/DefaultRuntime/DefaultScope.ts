@@ -6,9 +6,9 @@ import { Cancelable, cancelAll } from '@/Cancelable'
 import { Settable } from '@/Cancelable/settable'
 import { FiberRef } from '@/FiberRef/FiberRef'
 
-import { fromIO } from './Computations'
-import { Fx } from './Fx'
-import { FiberLocalState, Scope } from './Scope'
+import { fromIO } from '../Computations'
+import { Fx } from '../Fx'
+import { FiberLocalState, Scope } from '../Scope'
 
 export class DefaultScope implements Scope {
   public references: FiberLocalState<any, any>
