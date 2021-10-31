@@ -1,2 +1,6 @@
 export * from './Fiber'
-export * from './FiberInstruction'
+export * from './FiberId'
+export * from './makeFiber'
+export * from './map'
+export * from './mapFx'
+export * from './Runtime'

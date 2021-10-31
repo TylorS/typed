@@ -1,3 +1,3 @@
-import { Cancelable } from '@/Cancelable'
+import { Disposable } from '@/Disposable'
 
-export type Async<A> = (cb: (value: A) => void) => Cancelable
+export type Async<A> = (cb: (a: A) => void) => Disposable

@@ -1,12 +1,11 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": "./src",
-    "outDir": "./lib",
-    "module": "node12"
+    "outDir": "./lib"
   },
   "include": [
-    "src",
+    "src"
   ],
   "exclude": [
     "lib",

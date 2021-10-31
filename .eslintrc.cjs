@@ -26,7 +26,7 @@ module.exports = {
         alias: {
           '@/': './src',
         },
-        extensions: ['.ts', '.tsx'],
+        extensions: ['.ts', '.tsx', '.mts', '.mtsx'],
       },
     },
   },

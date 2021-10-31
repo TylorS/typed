@@ -1,25 +1,21 @@
-import { Instruction } from './Instruction'
+import type { Effect } from '@/Effect'
+import type { Instruction } from '@/Fiber/Instruction'
 
-export interface Fx<R, A> {
-  readonly [Symbol.iterator]: () => Generator<Instruction<R, any>, A>
-}
+export interface Fx<R, A> extends Effect<Instruction<R, any>, A, any> {}
 
-export type Of<A> = Fx<unknown, A>
+export type RequirementsOf<T> = T extends Fx<infer R, any> ? R : never
 
-export type RequirementsOf<T> = FxOf<T> extends Fx<infer R, any> ? R : unknown
+export type OutputOf<T> = T extends Fx<any, infer R> ? R : never
 
-export type OutputOf<T> = FxOf<T> extends Fx<any, infer A> ? A : never
+export interface Of<A> extends Fx<unknown, A> {}
 
-export type FxOf<G> = G extends Fx<infer R, infer A>
+export const Fx = <G extends Generator<Instruction<any, any>, any, any>>(g: () => G): FxFrom<G> =>
+  ({
+    [Symbol.iterator]: g,
+  } as unknown as FxFrom<G>)
+
+export type FxFrom<T> = T extends Fx<infer R, infer A>
   ? Fx<R, A>
-  : G extends (...args: readonly any[]) => infer R
-  ? FxOf<R>
+  : T extends (...args: readonly any[]) => infer R
+  ? FxFrom<R>
   : never
-
-export function Fx<G extends Generator<Instruction<any, any>, any>>(
-  generatorFunction: () => G,
-): FxOf<G> {
-  return {
-    [Symbol.iterator]: generatorFunction,
-  } as unknown as FxOf<G>
-}

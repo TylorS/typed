@@ -7,6 +7,7 @@
   "typings": "./lib/index.d.ts",
   "sideEffects": false,
   "dependencies": {
+    "fp-ts": "^3.0.0-alpha.19",
     "ts-toolbelt": "^9.6.0"
   },
   "peerDependencies": {
@@ -28,16 +29,15 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
-    "fp-ts": "^2.11.2",
     "husky": "^7.0.2",
     "lint-staged": "^11.1.2",
     "mocha": "^9.1.1",
     "tsconfig-paths": "^3.11.0",
     "tslib": "^2.3.1",
-    "typescript": "npm:@typescript-deploys/pr-build@4.5.0-pr-45774-2"
+    "typescript": "^4.4.4"
   },
   "scripts": {
-    "build:ts": "node ./node_modules/.bin/tsc -P tsconfig.build.json",
+    "build:ts": "tsc -P tsconfig.build.json",
     "eslint": "eslint --config .eslintrc.cjs --ext .ts src",
     "eslint:fix": "npm run eslint -- --fix",
     "mocha": "mocha -r esbuild-register -r tsconfig-paths/register 'src/**/*.test.ts'"

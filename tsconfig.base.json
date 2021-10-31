@@ -1,6 +1,7 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "rootDir": "./",
+    "rootDir": "./src",
     "baseUrl": "./src",
     "allowSyntheticDefaultImports": true,
     "declaration": true,
@@ -9,7 +10,6 @@
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
     "isolatedModules": true,
-    "moduleResolution": "Node",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noUnusedLocals": true,
