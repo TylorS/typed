@@ -54,6 +54,8 @@ export class BinaryEncoder<Constructors extends ReadonlyArray<CustomConstructor<
         return this.serializeBigInt(item)
       case 'boolean':
         return this.serializeBoolean(item)
+      case 'undefined':
+        return this.serializeUndefined(item)
       case 'object': {
         if (item === null) {
           return this.serializeNull(item)
@@ -62,35 +64,27 @@ export class BinaryEncoder<Constructors extends ReadonlyArray<CustomConstructor<
         const { constructor } = Object.getPrototypeOf(item)
 
         switch (constructor) {
-          case RegExp:
-            return this.serializeRegExp(item as RegExp)
-          case Date:
-            return this.serializeDate(item as Date)
+          case Object:
+            return this.serializeRecord(item as any)
           case Array:
             return this.serializeArray(item as any)
-          case Set:
-            return this.serializeSet(item as any)
           case Map:
             return this.serializeMap(item as any)
+          case Set:
+            return this.serializeSet(item as any)
+          case Date:
+            return this.serializeDate(item as Date)
+          case RegExp:
+            return this.serializeRegExp(item as RegExp)
           default: {
-            const n = this.serializeCustom(item as any)
-
-            if (n !== null) {
-              return n
-            }
-
-            return this.serializeRecord(item as any)
+            return this.serializeCustom(item as any, () => this.serializeRecord(item as any))
           }
         }
       }
 
-      case 'undefined': {
-        return this.serializeUndefined(item)
-      }
-
       default: {
         // Should only happen on Functions
-        throw new TypeError(`Unsupported Type: ${JSON.stringify(item)}`)
+        throw new TypeError(`Unsupported Type (${typeof item}): ${JSON.stringify(item)}`)
       }
     }
   }
@@ -300,9 +294,9 @@ export class BinaryEncoder<Constructors extends ReadonlyArray<CustomConstructor<
     return this.serializeUInt(offset)
   }
 
-  private serializeCustom(item: unknown): number | null {
+  private serializeCustom<A>(item: unknown, fallback: () => A): number | A {
     if (!this.options.constructors) {
-      return null
+      return fallback()
     }
 
     for (const { id, is, encode } of this.options.constructors) {
@@ -317,7 +311,7 @@ export class BinaryEncoder<Constructors extends ReadonlyArray<CustomConstructor<
       }
     }
 
-    return null
+    return fallback()
   }
   /* #endregion */
 
