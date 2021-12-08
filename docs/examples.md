@@ -7,7 +7,7 @@ nav_order: 4
 
 ## Github
 
-You'll find a growing number of [examples on Github](https://github.com/TylorS/typed-fp/examples).
+You'll find a growing number of [examples on Github](https://github.com/TylorS/typed-fp/tree/development/examples).
 
 ## CodeSandbox
 
