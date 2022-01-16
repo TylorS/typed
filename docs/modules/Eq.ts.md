@@ -96,9 +96,9 @@ Added in v0.9.5
 **Signature**
 
 ```ts
-export declare const partial: <A>(
-  properties: { [K in keyof A]: Eq.Eq<A[K]> },
-) => Eq.Eq<Partial<{ [K in keyof A]: A[K] }>>
+export declare const partial: <A>(properties: { [K in keyof A]: Eq.Eq<A[K]> }) => Eq.Eq<
+  Partial<{ [K in keyof A]: A[K] }>
+>
 ```
 
 Added in v0.9.5
@@ -118,9 +118,9 @@ Added in v0.9.5
 **Signature**
 
 ```ts
-export declare const struct: <A>(
-  properties: { [K in keyof A]: Eq.Eq<A[K]> },
-) => Eq.Eq<{ [K in keyof A]: A[K] }>
+export declare const struct: <A>(properties: { [K in keyof A]: Eq.Eq<A[K]> }) => Eq.Eq<{
+  [K in keyof A]: A[K]
+}>
 ```
 
 Added in v2.2.15

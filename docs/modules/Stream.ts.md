@@ -255,9 +255,9 @@ Added in v0.9.2
 **Signature**
 
 ```ts
-export declare const combineStruct: <A>(
-  streams: { readonly [K in keyof A]: types.Stream<A[K]> },
-) => types.Stream<A>
+export declare const combineStruct: <A>(streams: {
+  readonly [K in keyof A]: types.Stream<A[K]>
+}) => types.Stream<A>
 ```
 
 Added in v0.11.0

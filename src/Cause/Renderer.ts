@@ -1,9 +1,19 @@
-import { Cause } from './Cause'
+import { pipe } from 'fp-ts/function'
+import { matchW, none, Option, some } from 'fp-ts/Option'
+
+import { prettyFiberId } from '@/FiberId'
+import * as Sync from '@/Sync'
+import { prettyTrace, Trace } from '@/Trace'
+
+import { Cause, Disposed, Expected, Unexpected } from './Cause'
 
 export interface Renderer<E> {
   readonly renderError: (error: E) => Lines
   readonly renderUnknown: (error: unknown) => Lines
+  readonly renderTrace: TraceRenderer
 }
+
+export type TraceRenderer = (trace: Trace) => string
 
 /**
  * Each item in the array represents a newline
@@ -50,23 +60,83 @@ export function Parallel(all: readonly Sequential[]): Parallel {
   }
 }
 
-export function renderCauseToSequential<E>(cause: Cause<E>, renderer: Renderer<E>): Sequential {
-  switch (cause.type) {
-    case 'Disposed':
-      return Sequential([Failure([`Disposed.`])])
-    case 'Expected':
-      return Sequential([
-        Failure(['An expected error has occurred.', '', ...renderer.renderError(cause.error)]),
-      ])
-    case 'Unexpected':
-      return Sequential([
-        Failure(['An unexpected error has occurred.', '', ...renderer.renderUnknown(cause.error)]),
-      ])
-    case 'Then':
-      return Sequential(linearSegments(cause, renderer))
-    case 'Both':
-      return Sequential([Parallel(parrallelSegments(cause, renderer))])
-  }
+export function renderDisposed<E>(
+  cause: Disposed,
+  trace: Option<Trace>,
+  renderer: Renderer<E>,
+): Sequential {
+  return Sequential([
+    Failure([
+      `Disposed by Fiber ${prettyFiberId(cause.fiberId)}.`,
+      '',
+      ...renderTrace(trace, renderer),
+    ]),
+  ])
+}
+
+export function renderExpected<E>(cause: Expected<E>, trace: Option<Trace>, renderer: Renderer<E>) {
+  return Sequential([
+    Failure([
+      'An expected error has occurred.',
+      '',
+      ...renderer.renderError(cause.error),
+      ...renderTrace(trace, renderer),
+    ]),
+  ])
+}
+
+export function renderUnexpected<E>(
+  cause: Unexpected,
+  trace: Option<Trace>,
+  renderer: Renderer<E>,
+) {
+  return Sequential([
+    Failure([
+      'An unexpected error has occurred.',
+      '',
+      ...renderer.renderUnknown(cause.error),
+      ...renderTrace(trace, renderer),
+    ]),
+  ])
+}
+
+export function renderCauseToSequential<E>(
+  cause: Cause<E>,
+  renderer: Renderer<E>,
+): Sync.Sync<Sequential> {
+  return Sync.Sync(function* () {
+    switch (cause.type) {
+      case 'Disposed':
+        return renderDisposed(cause, none, renderer)
+      case 'Expected':
+        return renderExpected(cause, none, renderer)
+      case 'Unexpected':
+        return renderUnexpected(cause, none, renderer)
+      case 'Then':
+        return Sequential(linearSegments(cause, renderer))
+      case 'Both':
+        return Sequential([Parallel(parrallelSegments(cause, renderer))])
+      case 'Traced': {
+        switch (cause.cause.type) {
+          case 'Expected':
+            return renderExpected(cause.cause, some(cause.trace), renderer)
+          case 'Unexpected':
+            return renderUnexpected(cause.cause, some(cause.trace), renderer)
+          case 'Disposed':
+            return renderDisposed(cause.cause, some(cause.trace), renderer)
+          default: {
+            return Sequential([
+              Failure([
+                'An error was rethrown with a new trace.',
+                ...renderTrace(some(cause.trace), renderer),
+              ]),
+              ...(yield* renderCauseToSequential(cause.cause, renderer)).all,
+            ])
+          }
+        }
+      }
+    }
+  })
 }
 
 export function linearSegments<E>(cause: Cause<E>, renderer: Renderer<E>): readonly Step[] {
@@ -74,7 +144,7 @@ export function linearSegments<E>(cause: Cause<E>, renderer: Renderer<E>): reado
     case 'Then':
       return [...linearSegments(cause.left, renderer), ...linearSegments(cause.right, renderer)]
     default:
-      return renderCauseToSequential(cause, renderer).all
+      return Sync.run(renderCauseToSequential(cause, renderer)).all
   }
 }
 
@@ -89,12 +159,22 @@ export function parrallelSegments<E>(
         ...parrallelSegments(cause.right, renderer),
       ]
     default:
-      return [renderCauseToSequential(cause, renderer)]
+      return [Sync.run(renderCauseToSequential(cause, renderer))]
   }
 }
 
 export function renderError(error: Error): Lines {
   return lines(error.stack !== undefined ? error.stack : String(error))
+}
+
+export function renderTrace<E>(trace: Option<Trace>, renderer: Renderer<E>): Lines {
+  return pipe(
+    trace,
+    matchW(
+      () => [],
+      (trace) => lines(renderer.renderTrace(trace)),
+    ),
+  )
 }
 
 export function lines(s: string): Lines {
@@ -140,7 +220,7 @@ export function format(segment: Segment): Lines {
 }
 
 export function prettyLines<E>(cause: Cause<E>, renderer: Renderer<E>): Lines {
-  const s = renderCauseToSequential(cause, renderer)
+  const s = Sync.run(renderCauseToSequential(cause, renderer))
 
   if (s.all.length === 1 && s.all[0].type === 'Failure') {
     return s.all[0].lines
@@ -158,10 +238,11 @@ export function defaultErrorToLines(error: unknown): Lines {
 export const defaultRenderer: Renderer<unknown> = {
   renderError: defaultErrorToLines,
   renderUnknown: defaultErrorToLines,
+  renderTrace: prettyTrace,
 }
 
 export function prettyPrint<E>(cause: Cause<E>, renderer: Renderer<E> = defaultRenderer): string {
   const lines = prettyLines(cause, renderer)
 
-  return `\n${lines.join('\n')}`
+  return `\n${lines.join('\n')}`.trimRight()
 }

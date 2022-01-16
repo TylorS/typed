@@ -138,9 +138,10 @@ Added in v0.9.5
 **Signature**
 
 ```ts
-export declare const partial: <A>(
-  properties: { [K in keyof A]: Guard<unknown, A[K]> },
-) => Guard<unknown, Partial<{ [K in keyof A]: A[K] }>>
+export declare const partial: <A>(properties: { [K in keyof A]: Guard<unknown, A[K]> }) => Guard<
+  unknown,
+  Partial<{ [K in keyof A]: A[K] }>
+>
 ```
 
 Added in v0.9.5
@@ -182,9 +183,10 @@ Added in v0.9.5
 **Signature**
 
 ```ts
-export declare const struct: <A>(
-  properties: { [K in keyof A]: Guard<unknown, A[K]> },
-) => Guard<unknown, { [K in keyof A]: A[K] }>
+export declare const struct: <A>(properties: { [K in keyof A]: Guard<unknown, A[K]> }) => Guard<
+  unknown,
+  { [K in keyof A]: A[K] }
+>
 ```
 
 Added in v2.2.15
@@ -196,9 +198,10 @@ Added in v2.2.15
 ```ts
 export declare const sum: <T extends string>(
   tag: T,
-) => <A>(
-  members: { [K in keyof A]: Guard<unknown, A[K] & Record<T, K>> },
-) => Guard<unknown, A[keyof A]>
+) => <A>(members: { [K in keyof A]: Guard<unknown, A[K] & Record<T, K>> }) => Guard<
+  unknown,
+  A[keyof A]
+>
 ```
 
 Added in v0.9.5
@@ -244,9 +247,10 @@ Use `struct` instead.
 **Signature**
 
 ```ts
-export declare const type: <A>(
-  properties: { [K in keyof A]: Guard<unknown, A[K]> },
-) => Guard<unknown, { [K in keyof A]: A[K] }>
+export declare const type: <A>(properties: { [K in keyof A]: Guard<unknown, A[K]> }) => Guard<
+  unknown,
+  { [K in keyof A]: A[K] }
+>
 ```
 
 Added in v0.9.5

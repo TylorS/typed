@@ -617,9 +617,10 @@ Added in v0.9.4
 ```ts
 export declare const sum: <T extends string>(
   tag: T,
-) => <A>(
-  members: { [K in keyof A]: Decoder<unknown, A[K] & Record<T, K>> },
-) => Decoder<unknown, A[keyof A]>
+) => <A>(members: { [K in keyof A]: Decoder<unknown, A[K] & Record<T, K>> }) => Decoder<
+  unknown,
+  A[keyof A]
+>
 ```
 
 Added in v0.9.6

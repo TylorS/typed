@@ -1,5 +1,7 @@
 import { deepStrictEqual } from 'assert'
 
+import { makeFiberId, prettyFiberId } from '@/FiberId'
+
 import { Expected } from '.'
 import { Both, Disposed, Then, Unexpected } from './Cause'
 import { prettyPrint } from './Renderer'
@@ -26,7 +28,12 @@ describe(__filename, () => {
 
     describe('Disposed', () => {
       it('renders the expected output', () => {
-        deepStrictEqual(prettyPrint(Disposed), `\nDisposed.`)
+        const fiberId = makeFiberId(0, 0)
+
+        deepStrictEqual(
+          prettyPrint(Disposed(fiberId)),
+          `\nDisposed by Fiber ${prettyFiberId(fiberId)}.`,
+        )
       })
     })
     describe('Both', () => {

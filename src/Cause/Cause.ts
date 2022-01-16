@@ -1,7 +1,10 @@
+import { FiberId } from '@/FiberId'
+import { Trace } from '@/Trace/Trace'
+
 /**
  * Union type to represent the ways in which a Fiber can exit unsuccessfully.
  */
-export type Cause<E> = Expected<E> | Unexpected | Disposed | Both<E> | Then<E>
+export type Cause<E> = Expected<E> | Unexpected | Disposed | Both<E> | Then<E> | Traced<E>
 
 /**
  * An unexpected Error is one that has been thown using the `throw` keyword
@@ -36,14 +39,16 @@ export const Unexpected = (error: unknown): Unexpected => ({ type: 'Unexpected',
  */
 export interface Disposed {
   readonly type: 'Disposed'
+  readonly fiberId: FiberId
 }
 
 /**
  * A singleton instance of Disposed
  */
-export const Disposed: Disposed = {
+export const Disposed = (fiberId: FiberId): Disposed => ({
   type: 'Disposed',
-}
+  fiberId,
+})
 
 export interface Both<E> {
   readonly type: 'Both'
@@ -69,17 +74,24 @@ export const Then = <L, R>(left: Cause<L>, right: Cause<R>): Then<L | R> => ({
   right,
 })
 
+export interface Traced<E> {
+  readonly type: 'Traced'
+  readonly trace: Trace
+  readonly cause: Cause<E>
+}
+
 /**
  * Pattern match over a Cause
  */
-export function match<E, A, B, C, D, F>(
+export function match<E, A, B, C, D, F, G>(
   onExpected: (error: E) => A,
   onUnexpected: (error: unknown) => B,
   onDisposed: () => C,
   onBoth: (left: Cause<E>, right: Cause<E>) => D,
   onThen: (left: Cause<E>, right: Cause<E>) => F,
+  onTraced: (trace: Trace, cause: Cause<E>) => G,
 ) {
-  return (cause: Cause<E>): A | B | C | D | F => {
+  return (cause: Cause<E>): A | B | C | D | F | G => {
     switch (cause.type) {
       case 'Expected':
         return onExpected(cause.error)
@@ -91,6 +103,8 @@ export function match<E, A, B, C, D, F>(
         return onBoth(cause.left, cause.right)
       case 'Then':
         return onThen(cause.left, cause.right)
+      case 'Traced':
+        return onTraced(cause.trace, cause.cause)
       default:
         throw new Error(`Unexpcted Cause ${JSON.stringify(cause, null, 2)}`)
     }
@@ -109,6 +123,8 @@ export function isCause(error: unknown): error is Cause<unknown> {
 /**
  * Type-guard for determining if an error is an Unexpected Cause
  */
+export function isExpected<E, A>(error: Cause<E>): error is Expected<E>
+export function isExpected(error: unknown): error is Expected<unknown>
 export function isExpected(error: unknown): error is Expected<unknown> {
   return isObject(error) && error?.type === 'Expected'
 }
@@ -116,6 +132,8 @@ export function isExpected(error: unknown): error is Expected<unknown> {
 /**
  * Type-guard for determining if an error is an Unexpected Cause
  */
+export function isUnexpected<E>(error: Cause<E>): error is Unexpected
+export function isUnexpected(error: unknown): error is Unexpected
 export function isUnexpected(error: unknown): error is Unexpected {
   return isObject(error) && error?.type === 'Unexpected'
 }
@@ -123,6 +141,8 @@ export function isUnexpected(error: unknown): error is Unexpected {
 /**
  * Type-guard for determining if an error is an Disposed Cause
  */
+export function isDisposed<E>(error: Cause<E>): error is Disposed
+export function isDisposed(error: unknown): error is Disposed
 export function isDisposed(error: unknown): error is Disposed {
   return isObject(error) && error?.type === 'Disposed'
 }
@@ -130,6 +150,8 @@ export function isDisposed(error: unknown): error is Disposed {
 /**
  * Type-guard for determining if an error is an Then Cause
  */
+export function isThen<E>(error: Cause<E>): error is Then<E>
+export function isThen(error: unknown): error is Then<unknown>
 export function isThen(error: unknown): error is Then<unknown> {
   return isObject(error) && error?.type === 'Then'
 }
@@ -137,6 +159,8 @@ export function isThen(error: unknown): error is Then<unknown> {
 /**
  * Type-guard for determining if an error is an Both Cause
  */
+export function isBoth<E>(error: Cause<E>): error is Both<E>
+export function isBoth(error: unknown): error is Both<unknown>
 export function isBoth(error: unknown): error is Both<unknown> {
   return isObject(error) && error?.type === 'Both'
 }
