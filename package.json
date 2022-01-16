@@ -87,5 +87,343 @@
   "bugs": {
     "url": "https://github.com/TylorS/typed-fp/issues"
   },
-  "homepage": "https://github.com/TylorS/typed-fp#readme"
+  "homepage": "https://github.com/TylorS/typed-fp#readme",
+  "exports": {
+    ".": {
+      "require": "./cjs/index.js",
+      "import": "./esm/index.js"
+    },
+    "./Branded": {
+      "require": "./cjs/Branded/index.js",
+      "import": "./esm/Branded/index.js"
+    },
+    "./Branded/Branded": {
+      "require": "./cjs/Branded/Branded.js",
+      "import": "./esm/Branded/Branded.js"
+    },
+    "./Cause": {
+      "require": "./cjs/Cause/index.js",
+      "import": "./esm/Cause/index.js"
+    },
+    "./Cause/Cause": {
+      "require": "./cjs/Cause/Cause.js",
+      "import": "./esm/Cause/Cause.js"
+    },
+    "./Cause/Renderer": {
+      "require": "./cjs/Cause/Renderer.js",
+      "import": "./esm/Cause/Renderer.js"
+    },
+    "./Cause/Semigroup": {
+      "require": "./cjs/Cause/Semigroup.js",
+      "import": "./esm/Cause/Semigroup.js"
+    },
+    "./Clock": {
+      "require": "./cjs/Clock/index.js",
+      "import": "./esm/Clock/index.js"
+    },
+    "./Clock/Clock": {
+      "require": "./cjs/Clock/Clock.js",
+      "import": "./esm/Clock/Clock.js"
+    },
+    "./Context": {
+      "require": "./cjs/Context/index.js",
+      "import": "./esm/Context/index.js"
+    },
+    "./Context/Context": {
+      "require": "./cjs/Context/Context.js",
+      "import": "./esm/Context/Context.js"
+    },
+    "./Disposable": {
+      "require": "./cjs/Disposable/index.js",
+      "import": "./esm/Disposable/index.js"
+    },
+    "./Disposable/Disposable": {
+      "require": "./cjs/Disposable/Disposable.js",
+      "import": "./esm/Disposable/Disposable.js"
+    },
+    "./Effect": {
+      "require": "./cjs/Effect/index.js",
+      "import": "./esm/Effect/index.js"
+    },
+    "./Effect/Access": {
+      "require": "./cjs/Effect/Access.js",
+      "import": "./esm/Effect/Access.js"
+    },
+    "./Effect/Chain": {
+      "require": "./cjs/Effect/Chain.js",
+      "import": "./esm/Effect/Chain.js"
+    },
+    "./Effect/Effect": {
+      "require": "./cjs/Effect/Effect.js",
+      "import": "./esm/Effect/Effect.js"
+    },
+    "./Effect/FromExit": {
+      "require": "./cjs/Effect/FromExit.js",
+      "import": "./esm/Effect/FromExit.js"
+    },
+    "./Effect/FromIO": {
+      "require": "./cjs/Effect/FromIO.js",
+      "import": "./esm/Effect/FromIO.js"
+    },
+    "./Effect/FromPromise": {
+      "require": "./cjs/Effect/FromPromise.js",
+      "import": "./esm/Effect/FromPromise.js"
+    },
+    "./Effect/FromTuple": {
+      "require": "./cjs/Effect/FromTuple.js",
+      "import": "./esm/Effect/FromTuple.js"
+    },
+    "./Effect/GetContext": {
+      "require": "./cjs/Effect/GetContext.js",
+      "import": "./esm/Effect/GetContext.js"
+    },
+    "./Effect/GetScope": {
+      "require": "./cjs/Effect/GetScope.js",
+      "import": "./esm/Effect/GetScope.js"
+    },
+    "./Effect/Instruction": {
+      "require": "./cjs/Effect/Instruction.js",
+      "import": "./esm/Effect/Instruction.js"
+    },
+    "./Effect/Lazy": {
+      "require": "./cjs/Effect/Lazy.js",
+      "import": "./esm/Effect/Lazy.js"
+    },
+    "./Effect/Match": {
+      "require": "./cjs/Effect/Match.js",
+      "import": "./esm/Effect/Match.js"
+    },
+    "./Effect/Provide": {
+      "require": "./cjs/Effect/Provide.js",
+      "import": "./esm/Effect/Provide.js"
+    },
+    "./Effect/Race": {
+      "require": "./cjs/Effect/Race.js",
+      "import": "./esm/Effect/Race.js"
+    },
+    "./Effect/Refine": {
+      "require": "./cjs/Effect/Refine.js",
+      "import": "./esm/Effect/Refine.js"
+    },
+    "./Effect/Result": {
+      "require": "./cjs/Effect/Result.js",
+      "import": "./esm/Effect/Result.js"
+    },
+    "./Effect/Suspend": {
+      "require": "./cjs/Effect/Suspend.js",
+      "import": "./esm/Effect/Suspend.js"
+    },
+    "./Effect/Trace": {
+      "require": "./cjs/Effect/Trace.js",
+      "import": "./esm/Effect/Trace.js"
+    },
+    "./Effect/TracingStatus": {
+      "require": "./cjs/Effect/TracingStatus.js",
+      "import": "./esm/Effect/TracingStatus.js"
+    },
+    "./Eq": {
+      "require": "./cjs/Eq/index.js",
+      "import": "./esm/Eq/index.js"
+    },
+    "./Eq/DeepEquals": {
+      "require": "./cjs/Eq/DeepEquals.js",
+      "import": "./esm/Eq/DeepEquals.js"
+    },
+    "./Exit": {
+      "require": "./cjs/Exit/index.js",
+      "import": "./esm/Exit/index.js"
+    },
+    "./Exit/Exit": {
+      "require": "./cjs/Exit/Exit.js",
+      "import": "./esm/Exit/Exit.js"
+    },
+    "./Fiber": {
+      "require": "./cjs/Fiber/index.js",
+      "import": "./esm/Fiber/index.js"
+    },
+    "./Fiber/Fiber": {
+      "require": "./cjs/Fiber/Fiber.js",
+      "import": "./esm/Fiber/Fiber.js"
+    },
+    "./Fiber/Instruction": {
+      "require": "./cjs/Fiber/Instruction.js",
+      "import": "./esm/Fiber/Instruction.js"
+    },
+    "./Fiber/InstructionProcessor": {
+      "require": "./cjs/Fiber/InstructionProcessor.js",
+      "import": "./esm/Fiber/InstructionProcessor.js"
+    },
+    "./Fiber/InstructionTree": {
+      "require": "./cjs/Fiber/InstructionTree.js",
+      "import": "./esm/Fiber/InstructionTree.js"
+    },
+    "./Fiber/Processor": {
+      "require": "./cjs/Fiber/Processor.js",
+      "import": "./esm/Fiber/Processor.js"
+    },
+    "./Fiber/Runtime": {
+      "require": "./cjs/Fiber/Runtime.js",
+      "import": "./esm/Fiber/Runtime.js"
+    },
+    "./Fiber/defaultProcessors": {
+      "require": "./cjs/Fiber/defaultProcessors.js",
+      "import": "./esm/Fiber/defaultProcessors.js"
+    },
+    "./Fiber/fromProcessor": {
+      "require": "./cjs/Fiber/fromProcessor.js",
+      "import": "./esm/Fiber/fromProcessor.js"
+    },
+    "./Fiber/lazyProcessors": {
+      "require": "./cjs/Fiber/lazyProcessors.js",
+      "import": "./esm/Fiber/lazyProcessors.js"
+    },
+    "./Fiber/processAccess": {
+      "require": "./cjs/Fiber/processAccess.js",
+      "import": "./esm/Fiber/processAccess.js"
+    },
+    "./Fiber/processChain": {
+      "require": "./cjs/Fiber/processChain.js",
+      "import": "./esm/Fiber/processChain.js"
+    },
+    "./Fiber/processFromExit": {
+      "require": "./cjs/Fiber/processFromExit.js",
+      "import": "./esm/Fiber/processFromExit.js"
+    },
+    "./Fiber/processFromIO": {
+      "require": "./cjs/Fiber/processFromIO.js",
+      "import": "./esm/Fiber/processFromIO.js"
+    },
+    "./Fiber/processFromPromise": {
+      "require": "./cjs/Fiber/processFromPromise.js",
+      "import": "./esm/Fiber/processFromPromise.js"
+    },
+    "./Fiber/processFromTuple": {
+      "require": "./cjs/Fiber/processFromTuple.js",
+      "import": "./esm/Fiber/processFromTuple.js"
+    },
+    "./Fiber/processGetContext": {
+      "require": "./cjs/Fiber/processGetContext.js",
+      "import": "./esm/Fiber/processGetContext.js"
+    },
+    "./Fiber/processGetScope": {
+      "require": "./cjs/Fiber/processGetScope.js",
+      "import": "./esm/Fiber/processGetScope.js"
+    },
+    "./Fiber/processLazy": {
+      "require": "./cjs/Fiber/processLazy.js",
+      "import": "./esm/Fiber/processLazy.js"
+    },
+    "./Fiber/processMatch": {
+      "require": "./cjs/Fiber/processMatch.js",
+      "import": "./esm/Fiber/processMatch.js"
+    },
+    "./Fiber/processProvide": {
+      "require": "./cjs/Fiber/processProvide.js",
+      "import": "./esm/Fiber/processProvide.js"
+    },
+    "./Fiber/processRace": {
+      "require": "./cjs/Fiber/processRace.js",
+      "import": "./esm/Fiber/processRace.js"
+    },
+    "./Fiber/processRefine": {
+      "require": "./cjs/Fiber/processRefine.js",
+      "import": "./esm/Fiber/processRefine.js"
+    },
+    "./Fiber/processResult": {
+      "require": "./cjs/Fiber/processResult.js",
+      "import": "./esm/Fiber/processResult.js"
+    },
+    "./Fiber/processSuspend": {
+      "require": "./cjs/Fiber/processSuspend.js",
+      "import": "./esm/Fiber/processSuspend.js"
+    },
+    "./Fiber/processTrace": {
+      "require": "./cjs/Fiber/processTrace.js",
+      "import": "./esm/Fiber/processTrace.js"
+    },
+    "./Fiber/processTracingStatus": {
+      "require": "./cjs/Fiber/processTracingStatus.js",
+      "import": "./esm/Fiber/processTracingStatus.js"
+    },
+    "./FiberId": {
+      "require": "./cjs/FiberId/index.js",
+      "import": "./esm/FiberId/index.js"
+    },
+    "./FiberRef": {
+      "require": "./cjs/FiberRef/index.js",
+      "import": "./esm/FiberRef/index.js"
+    },
+    "./FiberRef/FiberRef": {
+      "require": "./cjs/FiberRef/FiberRef.js",
+      "import": "./esm/FiberRef/FiberRef.js"
+    },
+    "./Fx": {
+      "require": "./cjs/Fx/index.js",
+      "import": "./esm/Fx/index.js"
+    },
+    "./Fx/Fx": {
+      "require": "./cjs/Fx/Fx.js",
+      "import": "./esm/Fx/Fx.js"
+    },
+    "./Layer": {
+      "require": "./cjs/Layer/index.js",
+      "import": "./esm/Layer/index.js"
+    },
+    "./Magma": {
+      "require": "./cjs/Magma/index.js",
+      "import": "./esm/Magma/index.js"
+    },
+    "./MutableRef": {
+      "require": "./cjs/MutableRef/index.js",
+      "import": "./esm/MutableRef/index.js"
+    },
+    "./MutableRef/Counter": {
+      "require": "./cjs/MutableRef/Counter.js",
+      "import": "./esm/MutableRef/Counter.js"
+    },
+    "./MutableRef/MutableRef": {
+      "require": "./cjs/MutableRef/MutableRef.js",
+      "import": "./esm/MutableRef/MutableRef.js"
+    },
+    "./Ref": {
+      "require": "./cjs/Ref/index.js",
+      "import": "./esm/Ref/index.js"
+    },
+    "./Scheduler": {
+      "require": "./cjs/Scheduler/index.js",
+      "import": "./esm/Scheduler/index.js"
+    },
+    "./Scope": {
+      "require": "./cjs/Scope/index.js",
+      "import": "./esm/Scope/index.js"
+    },
+    "./Scope/Scope": {
+      "require": "./cjs/Scope/Scope.js",
+      "import": "./esm/Scope/Scope.js"
+    },
+    "./Scope/extendScope": {
+      "require": "./cjs/Scope/extendScope.js",
+      "import": "./esm/Scope/extendScope.js"
+    },
+    "./Stream": {
+      "require": "./cjs/Stream/index.js",
+      "import": "./esm/Stream/index.js"
+    },
+    "./Sync": {
+      "require": "./cjs/Sync/index.js",
+      "import": "./esm/Sync/index.js"
+    },
+    "./Sync/Sync": {
+      "require": "./cjs/Sync/Sync.js",
+      "import": "./esm/Sync/Sync.js"
+    },
+    "./Trace": {
+      "require": "./cjs/Trace/index.js",
+      "import": "./esm/Trace/index.js"
+    },
+    "./Trace/Trace": {
+      "require": "./cjs/Trace/Trace.js",
+      "import": "./esm/Trace/Trace.js"
+    }
+  }
 }
