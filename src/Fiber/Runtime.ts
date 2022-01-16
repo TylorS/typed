@@ -82,7 +82,16 @@ export class Runtime<R> {
     // Default to lazy-loading processors on-demand
     const processors = this.options.processors ?? defaultProcessors
 
-    return new InstructionProcessor(fx, this.resources, context, scope, processors, parentTrace)
+    return new InstructionProcessor(
+      fx,
+      this.resources,
+      context,
+      scope,
+      processors,
+      parentTrace,
+      this.options.shouldTrace,
+      this.options.maxOps,
+    )
   }
 }
 
@@ -94,19 +103,21 @@ export interface RuntimeOptions {
   readonly renderer?: Renderer<any>
   readonly reportError?: (cause: Cause<any>) => void
   readonly processors?: Processors
+  readonly shouldTrace?: boolean
+  readonly maxOps?: number
 }
 
-export const currentRuntime = <R>() =>
+export const currentRuntime = <R>(options: RuntimeOptions = {}) =>
   Fx(function* () {
     const r = yield* ask<R>()
     const context = yield* getContext
     const scope = yield* getScope<any>()
     const parentTrace = yield* getTrace
 
-    return new Runtime(r, { context, scope, parentTrace })
+    return new Runtime(r, { context, scope, parentTrace, ...options })
   })
 
-export const isolatedRuntime = <R>() =>
+export const isolatedRuntime = <R>(options: RuntimeOptions = {}) =>
   Fx(function* () {
     const r = yield* ask<R>()
     const context = yield* getContext
@@ -119,6 +130,7 @@ export const isolatedRuntime = <R>() =>
       sequenceNumber: context.sequenceNumber,
       renderer: context.renderer,
       reportError: context.reportFailure,
+      ...options,
     })
   })
 

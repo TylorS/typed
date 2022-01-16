@@ -193,6 +193,8 @@ export class InstructionProcessor<R, E, A> implements D.Disposable {
             scope,
             this.processors,
             this.shouldTrace ? some(this.captureTrace()) : this.parentTrace,
+            this.shouldTrace,
+            this.maxOps,
           )
 
           runtime.addObserver(onExit)
