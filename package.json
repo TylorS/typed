@@ -345,6 +345,10 @@
       "require": "./cjs/Fiber/processTracingStatus.js",
       "import": "./esm/Fiber/processTracingStatus.js"
     },
+    "./Fiber/withMaxOps": {
+      "require": "./cjs/Fiber/withMaxOps.js",
+      "import": "./esm/Fiber/withMaxOps.js"
+    },
     "./FiberId": {
       "require": "./cjs/FiberId/index.js",
       "import": "./esm/FiberId/index.js"
