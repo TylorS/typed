@@ -17,6 +17,10 @@ import { processSuspend } from './processSuspend'
 import { processTrace } from './processTrace'
 import { processTracingStatus } from './processTracingStatus'
 
+/**
+ * Instance of Processors that is NOT lazy-loaded, and will add all processors to your bundles
+ * synchronously and completely.
+ */
 export const eagerProcessors: Processors = {
   Access: processAccess,
   Chain: processChain,

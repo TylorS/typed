@@ -269,13 +269,13 @@
       "require": "./cjs/Fiber/defaultProcessors.js",
       "import": "./esm/Fiber/defaultProcessors.js"
     },
+    "./Fiber/eagerProcessors": {
+      "require": "./cjs/Fiber/eagerProcessors.js",
+      "import": "./esm/Fiber/eagerProcessors.js"
+    },
     "./Fiber/fromProcessor": {
       "require": "./cjs/Fiber/fromProcessor.js",
       "import": "./esm/Fiber/fromProcessor.js"
-    },
-    "./Fiber/lazyProcessors": {
-      "require": "./cjs/Fiber/lazyProcessors.js",
-      "import": "./esm/Fiber/lazyProcessors.js"
     },
     "./Fiber/processAccess": {
       "require": "./cjs/Fiber/processAccess.js",

@@ -12,6 +12,11 @@ const inProgress = new WeakMap<
   Promise<Processor<any, any, any>>
 >()
 
+/**
+ * The Default Processors are lazy-loaded as each processor is required by the running program to avoid
+ * adding to your bundle for features you do not use. There will be some overhead in requesting each processor
+ * asynchronously initially, but are then memoized for performance.
+ */
 export const defaultProcessors: Processors = {
   Access: lazyLoad<'Access'>(() => import('./processAccess').then((m) => m.processAccess)),
   Chain: lazyLoad<'Chain'>(() => import('./processChain').then((m) => m.processChain)),
