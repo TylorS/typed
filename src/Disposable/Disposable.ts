@@ -47,14 +47,13 @@ function disposeAllSync(disposables: ReadonlyArray<Disposable>): Disposable {
 }
 
 export class DisposableQueue implements Disposable {
-  #numberOfAsync = 0
   #queue: Set<Disposable> = new Set()
   #isDisposed = false
 
   isDisposed = () => this.#isDisposed
 
   get #isAsync() {
-    return this.#numberOfAsync > 0
+    return Array.from(this.#queue).some(checkIsAsync)
   }
 
   get dispose() {
@@ -80,16 +79,13 @@ export class DisposableQueue implements Disposable {
 
   add = (d: Disposable): Disposable => {
     if (this.#isDisposed) {
-      return none
+      return d
     }
 
-    const incrementAmount = checkIsAsync(d) ? 1 : 0
     this.#queue.add(d)
-    this.#numberOfAsync += incrementAmount
 
     return sync(() => {
       this.#queue.delete(d)
-      this.#numberOfAsync -= incrementAmount
     })
   }
 }

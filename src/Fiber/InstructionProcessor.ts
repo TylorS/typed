@@ -323,7 +323,6 @@ export class InstructionProcessor<R, E, A> implements D.Disposable {
     }
 
     this.node = undefined
-    this.exited = true
   }
 
   private addExecutionTrace(trace: string) {

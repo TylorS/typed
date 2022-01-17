@@ -1,12 +1,15 @@
 import { Processors } from './InstructionProcessor'
 import { processAccess } from './processAccess'
 import { processChain } from './processChain'
+import { processFork } from './processFork'
+import { processFromAsync } from './processFromAsync'
 import { processFromExit } from './processFromExit'
 import { processFromIO } from './processFromIO'
 import { processFromPromise } from './processFromPromise'
 import { processFromTuple } from './processFromTuple'
 import { processGetContext } from './processGetContext'
 import { processGetScope } from './processGetScope'
+import { processJoin } from './processJoin'
 import { processLazy } from './processLazy'
 import { processMatch } from './processMatch'
 import { processProvide } from './processProvide'
@@ -24,12 +27,15 @@ import { processTracingStatus } from './processTracingStatus'
 export const eagerProcessors: Processors = {
   Access: processAccess,
   Chain: processChain,
+  Fork: processFork,
+  FromAsync: processFromAsync,
   FromIO: processFromIO,
   FromExit: processFromExit,
   FromPromise: processFromPromise,
   FromTuple: processFromTuple,
   GetContext: processGetContext,
   GetScope: processGetScope,
+  Join: processJoin,
   Lazy: processLazy,
   Match: processMatch,
   Provide: processProvide,

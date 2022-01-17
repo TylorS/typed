@@ -7,6 +7,8 @@ import { InstructionProcessor } from './InstructionProcessor'
 export const fromProcessor = <R, E, A>(processor: InstructionProcessor<R, E, A>): Fiber<E, A> => ({
   type: 'RuntimeFiber',
   exit: makeExit(processor),
+  inheritRefs: processor.context.locals.inherit,
+  dispose: processor.dispose,
 })
 
 function makeExit<R, E, A>(processor: InstructionProcessor<R, E, A>): Fiber<E, A>['exit'] {

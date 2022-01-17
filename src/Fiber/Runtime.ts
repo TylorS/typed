@@ -15,6 +15,7 @@ import { MutableRef } from '@/MutableRef'
 import { extendScope, LocalScope, Scope } from '@/Scope'
 import { Trace } from '@/Trace'
 
+// eslint-disable-next-line import/no-cycle
 import { defaultProcessors } from './defaultProcessors'
 import { Fiber } from './Fiber'
 import { fromProcessor } from './fromProcessor'
@@ -69,7 +70,7 @@ export class Runtime<R> {
       procesor.processNow()
     })
 
-  private makeProcessor = <E, A>(fx: Fx<R, E, A>) => {
+  readonly makeProcessor = <E, A>(fx: Fx<R, E, A>) => {
     const context =
       this.options.context ??
       make<E>({
@@ -82,7 +83,7 @@ export class Runtime<R> {
     // Default to lazy-loading processors on-demand
     const processors = this.options.processors ?? defaultProcessors
 
-    return new InstructionProcessor(
+    return new InstructionProcessor<R, E, A>(
       fx,
       this.resources,
       context,
@@ -107,21 +108,21 @@ export interface RuntimeOptions {
   readonly maxOps?: number
 }
 
-export const currentRuntime = <R>(options: RuntimeOptions = {}) =>
+export const currentRuntime = <R, E = never>(options: RuntimeOptions = {}) =>
   Fx(function* () {
     const r = yield* ask<R>()
-    const context = yield* getContext
-    const scope = yield* getScope<any>()
+    const context = yield* getContext<E>()
+    const scope = yield* getScope<E>()
     const parentTrace = yield* getTrace
 
     return new Runtime(r, { context, scope, parentTrace, ...options })
   })
 
-export const isolatedRuntime = <R>(options: RuntimeOptions = {}) =>
+export const isolatedRuntime = <R, E = never>(options: RuntimeOptions = {}) =>
   Fx(function* () {
     const r = yield* ask<R>()
-    const context = yield* getContext
-    const scope = yield* getScope<any>()
+    const context = yield* getContext<E>()
+    const scope = yield* getScope<E>()
     const parentTrace = yield* getTrace
 
     return new Runtime(r, {

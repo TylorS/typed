@@ -1,6 +1,6 @@
 import { Effect, ErrorOf, ResourcesOf } from '@/Effect'
 
-export interface Fx<R, E, A> {
+export interface Fx<R, E, A> extends Effect<R, E, A> {
   readonly [Symbol.iterator]: () => Generator<Effect<R, E, any>, A>
 }
 
@@ -13,7 +13,7 @@ export function Fx<G extends Generator<any, any, any> | Generator<never, any, an
 ): Fx<FxResources<G>, FxError<G>, FxOutput<G>> {
   return {
     [Symbol.iterator]: f,
-  } as const
+  } as unknown as Fx<FxResources<G>, FxError<G>, FxOutput<G>>
 }
 
 export type FxResources<T> = [T] extends [Generator<infer Y, any, any>] ? ResourcesOf<Y> : unknown

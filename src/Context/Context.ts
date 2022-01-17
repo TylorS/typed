@@ -1,12 +1,16 @@
 import { Cause, defaultRenderer, prettyPrint, Renderer } from '@/Cause'
 import { FiberId, makeFiberId } from '@/FiberId'
+import { FiberRefLocals } from '@/FiberRef'
 import { increment, MutableRef } from '@/MutableRef'
+import { Scheduler } from '@/Scheduler'
 
 export interface Context<E> {
   readonly fiberId: FiberId
   readonly renderer: Renderer<E>
   readonly reportFailure: (cause: Cause<E>) => void
   readonly sequenceNumber: MutableRef<number>
+  readonly scheduler: Scheduler
+  readonly locals: FiberRefLocals
 }
 
 export interface ContextOptions<E> extends Partial<Context<E>> {}

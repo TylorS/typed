@@ -20,6 +20,11 @@ const inProgress = new WeakMap<
 export const defaultProcessors: Processors = {
   Access: lazyLoad<'Access'>(() => import('./processAccess').then((m) => m.processAccess)),
   Chain: lazyLoad<'Chain'>(() => import('./processChain').then((m) => m.processChain)),
+  // eslint-disable-next-line import/no-cycle
+  Fork: lazyLoad<'Fork'>(() => import('./processFork').then((m) => m.processFork)),
+  FromAsync: lazyLoad<'FromAsync'>(() =>
+    import('./processFromAsync').then((m) => m.processFromAsync),
+  ),
   FromExit: lazyLoad<'FromExit'>(() => import('./processFromExit').then((m) => m.processFromExit)),
   FromIO: lazyLoad<'FromIO'>(() => import('./processFromIO').then((m) => m.processFromIO)),
   FromPromise: lazyLoad<'FromPromise'>(() =>
@@ -32,6 +37,7 @@ export const defaultProcessors: Processors = {
     import('./processGetContext').then((m) => m.processGetContext),
   ),
   GetScope: lazyLoad<'GetScope'>(() => import('./processGetScope').then((m) => m.processGetScope)),
+  Join: lazyLoad<'Join'>(() => import('./processJoin').then((m) => m.processJoin)),
   Lazy: lazyLoad<'Lazy'>(() => import('./processLazy').then((m) => m.processLazy)),
   Match: lazyLoad<'Match'>(() => import('./processMatch').then((m) => m.processMatch)),
   Provide: lazyLoad<'Provide'>(() => import('./processProvide').then((m) => m.processProvide)),
