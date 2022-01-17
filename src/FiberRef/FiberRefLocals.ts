@@ -162,7 +162,7 @@ export function makeFiberRefLocals(
   const fork = Fx.Fx(function* () {
     const forked = yield* forkRefs(refs)
 
-    return makeFiberRefLocals(forked, events)
+    return makeFiberRefLocals(forked)
   })
 
   const inherit = Fx.Fx(function* () {
