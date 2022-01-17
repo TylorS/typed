@@ -137,7 +137,7 @@ export function makeFiberRefLocals(
         return none
       }
 
-      const current: A = yield* join(refs.get(fiberRef)!)
+      const current: A = yield* fromExit(yield* refs.get(fiberRef)!.exit)
 
       refs.delete(fiberRef)
 
@@ -167,7 +167,7 @@ export function makeFiberRefLocals(
 
   const inherit = Fx.Fx(function* () {
     for (const [fiberRef, fiber] of refs) {
-      const local = yield* join(fiber)
+      const local = yield* fromExit(yield* fiber.exit)
       const { locals } = yield* getContext<never>()
 
       yield* locals.update(fiberRef, (current) => Fx.of(fiberRef.Magma.concat(local)(current)))
@@ -194,7 +194,7 @@ export function forkRefs(refs: FiberRefMap) {
     const forked: FiberRefMap = new Map()
 
     for (const [fiberRef, fiber] of refs) {
-      const local = yield* join(fiber)
+      const local = yield* fromExit(yield* fiber.exit)
       const option = fiberRef.fork(local)
 
       if (isSome(option)) {
