@@ -141,6 +141,10 @@
       "require": "./cjs/Context/Context.js",
       "import": "./esm/Context/Context.js"
     },
+    "./Context/contextToOptions": {
+      "require": "./cjs/Context/contextToOptions.js",
+      "import": "./esm/Context/contextToOptions.js"
+    },
     "./Disposable": {
       "require": "./cjs/Disposable/index.js",
       "import": "./esm/Disposable/index.js"
