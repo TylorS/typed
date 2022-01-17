@@ -1,4 +1,4 @@
-import { fromExit } from '@/Effect/FromExit'
+import { join } from '@/Effect/Join'
 import { Fx } from '@/Fx'
 
 import { currentRuntime } from './Runtime'
@@ -13,9 +13,6 @@ export const withMaxOps =
     Fx(function* () {
       const runtime = yield* currentRuntime<R>({ maxOps })
       const fiber = runtime.runFiber(fx)
-      const exit = yield* fiber.exit
 
-      // TODO: Inherit Refs
-
-      return yield* fromExit(exit)
+      return yield* join(fiber)
     })

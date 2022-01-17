@@ -15,6 +15,8 @@ import {
   TupleResources,
 } from '@/Effect'
 import { Exit } from '@/Exit'
+import { Fiber } from '@/Fiber/Fiber'
+import { RuntimeOptions } from '@/Fiber/Runtime'
 import { FiberId } from '@/FiberId'
 import { Scope } from '@/Scope'
 import { Trace } from '@/Trace'
@@ -83,6 +85,8 @@ export const result: <R, E, A>(
 
 export const suspend: (trace?: string) => Of<void> = E.suspend
 
+export const trace: Of<Trace> = E.getTrace
+
 export const traceable: <R, E, A>(fx: Fx<R, E, A>, trace?: string | undefined) => Fx<R, E, A> =
   E.traceable
 
@@ -100,3 +104,11 @@ export const untraceable: <R, E, A>(fx: Fx<R, E, A>, trace?: string | undefined)
   E.untraceable
 
 export const never = fromAsync<never>(Async(() => none))
+
+export const fork: <R, E, A>(
+  fx: Fx<R, E, A>,
+  runtimeOptions?: RuntimeOptions,
+) => Fx<R, never, Fiber<E, A>> = E.fork
+
+export const join: <E, A>(fx: Fiber<E, A>, runtimeOptions?: RuntimeOptions) => Fx<unknown, E, A> =
+  E.join
