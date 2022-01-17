@@ -1,11 +1,13 @@
-import { isLeft } from 'fp-ts/Either'
-import { isSome, Option, some } from 'fp-ts/Option'
+/* eslint-disable @typescript-eslint/no-this-alias */
+import { isLeft, left } from 'fp-ts/Either'
+import { isSome, none, Option, some } from 'fp-ts/Option'
 
-import { isDisposed } from '@/Cause'
-import { Context } from '@/Context'
+import { Traced } from '@/Cause'
+import * as Context from '@/Context'
+import { contextToOptions } from '@/Context'
 import * as D from '@/Disposable'
 import { fromIO } from '@/Effect/FromIO'
-import { disposed, Exit, success } from '@/Exit'
+import { disposed, Exit, success, unexpected } from '@/Exit'
 import { Fx } from '@/Fx'
 import { LocalScope } from '@/Scope'
 import { SourceLocation, Trace, TraceElement } from '@/Trace'
@@ -36,7 +38,7 @@ export class InstructionProcessor<R, E, A> implements D.Disposable {
   constructor(
     readonly fx: Fx<R, E, A>,
     readonly resources: R,
-    readonly context: Context<E>,
+    readonly context: Context.Context<E>,
     readonly scope: LocalScope<E, A>,
     readonly processors: Processors,
     readonly parentTrace: Option<Trace>,
@@ -66,7 +68,7 @@ export class InstructionProcessor<R, E, A> implements D.Disposable {
 
   processNow() {
     let ops = 0
-    while (this.node && !this.scope.released && !this.exited) {
+    while (this.node && !this.exited) {
       if (ops++ < this.maxOps) {
         this.processNode(this.node)
       } else {
@@ -118,7 +120,18 @@ export class InstructionProcessor<R, E, A> implements D.Disposable {
   }
 
   private processGenerator(node: GeneratorNode<R, E>) {
-    const result = node.generator[node.method](node.next)
+    let result: IteratorResult<Instruction<R, E>, any>
+
+    try {
+      result = node.generator[node.method](node.next) as IteratorResult<Instruction<R, E>, any>
+    } catch (e) {
+      this.node = {
+        type: 'Exit',
+        exit: unexpected(e),
+      }
+
+      return
+    }
 
     if (!result.done) {
       // Reset the generator method to next
@@ -162,7 +175,8 @@ export class InstructionProcessor<R, E, A> implements D.Disposable {
 
     // Notify observers of completion
     const exitCode = this.scope.exit.get()
-    if (this.scope.released && isSome(exitCode)) {
+
+    if (isSome(exitCode)) {
       this.done(exitCode.value)
     }
   }
@@ -177,7 +191,22 @@ export class InstructionProcessor<R, E, A> implements D.Disposable {
     >
 
     if (this.shouldTrace && instruction.trace) {
-      this.addExecutionTrace(instruction.trace)
+      switch (instruction.type) {
+        case 'FromTuple':
+        case 'Chain':
+        case 'Fork':
+        case 'Match':
+        case 'Provide':
+        case 'Race':
+        case 'Result': {
+          this.addStackTrace(`${instruction.type}: ${instruction.trace}`)
+          break
+        }
+        default: {
+          this.addExecutionTrace(instruction.trace)
+          break
+        }
+      }
     }
 
     try {
@@ -189,10 +218,10 @@ export class InstructionProcessor<R, E, A> implements D.Disposable {
           const runtime = new InstructionProcessor(
             instruction,
             resources,
-            context,
+            Context.make(contextToOptions(context)),
             scope,
             this.processors,
-            this.shouldTrace ? some(this.captureTrace()) : this.parentTrace,
+            this.shouldTrace ? some(this.captureTrace()) : none,
             this.shouldTrace,
             this.maxOps,
           )
@@ -289,20 +318,19 @@ export class InstructionProcessor<R, E, A> implements D.Disposable {
   }
 
   // TODO: Handle Status
+  // TODO: Track interrupting
   private processExit(node: ExitNode<E, A>) {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
 
-    if (isLeft(node.exit) && isDisposed(node.exit)) {
-      // TODO: Track interrupting
-    }
+    const exit =
+      this.shouldTrace && isLeft(node.exit)
+        ? left(Traced(this.captureTrace(), node.exit.left))
+        : node.exit
 
     this.node = {
       type: 'Generator',
       generator: (function* () {
-        const released = yield* that.scope.close(node.exit)
-
-        that.exited = true
+        const released = yield* that.scope.close(exit)
 
         if (!released) {
           that.scope.ensure((exit) => fromIO(() => that.done(exit)))
@@ -315,6 +343,8 @@ export class InstructionProcessor<R, E, A> implements D.Disposable {
 
   // TODO: Handle Status
   private done(exit: Exit<E, A>) {
+    this.exited = true
+
     if (isLeft(exit) && this.observers.size === 0) {
       this.context.reportFailure(exit.left)
     } else {
@@ -326,6 +356,10 @@ export class InstructionProcessor<R, E, A> implements D.Disposable {
   }
 
   private addExecutionTrace(trace: string) {
+    this.executionTraces.unshift(new SourceLocation(trace))
+  }
+
+  private addStackTrace(trace: string) {
     this.executionTraces.unshift(new SourceLocation(trace))
   }
 }

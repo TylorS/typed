@@ -23,14 +23,15 @@ import { Trace } from '@/Trace'
 
 import { EFx, Fx, Of, RFx } from './Fx'
 
-export const access = <R, R2, E, A>(f: (r: R) => Fx<R2, E, A>): Fx<R & R2, E, A> => E.access(f)
-export const ask = <R>(): RFx<R, R> => E.ask<R>()
-export const asks = <R, A>(f: (r: R) => A): RFx<R, A> => E.asks(f)
+export const access = <R, R2, E, A>(f: (r: R) => Fx<R2, E, A>, trace?: string): Fx<R & R2, E, A> =>
+  E.access(f, trace)
+export const ask = <R>(trace?: string): RFx<R, R> => E.ask<R>(trace)
+export const asks = <R, A>(f: (r: R) => A, trace?: string): RFx<R, A> => E.asks(f, trace)
 
 export const chain =
-  <A, R2, E2, B>(f: (a: A) => Fx<R2, E2, B>) =>
+  <A, R2, E2, B>(f: (a: A) => Fx<R2, E2, B>, trace?: string) =>
   <R, E>(fx: Fx<R, E, A>) =>
-    E.chain(f)(fx)
+    E.chain(f, trace)(fx)
 
 export const disposed: <E = never, A = never>(
   id: FiberId,

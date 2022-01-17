@@ -1,7 +1,7 @@
 import { isRight } from 'fp-ts/Either'
 
 import { Provide } from '@/Effect/Provide'
-import { extendScope } from '@/Scope'
+import { extendScope } from '@/Scope/extendScope'
 
 import { Instruction } from './Instruction'
 import { InstructionProcessor } from './InstructionProcessor'

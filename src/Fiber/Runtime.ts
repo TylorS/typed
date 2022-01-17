@@ -3,7 +3,7 @@ import { fromNullable } from 'fp-ts/Option'
 import { Equals } from 'ts-toolbelt/out/Any/Equals'
 
 import { Cause, prettyPrint, Renderer } from '@/Cause'
-import { Context, make } from '@/Context'
+import { Context, contextToOptions, make } from '@/Context'
 import { Disposable } from '@/Disposable'
 import { ask } from '@/Effect/Access'
 import { getContext } from '@/Effect/GetContext'
@@ -71,14 +71,14 @@ export class Runtime<R> {
     })
 
   readonly makeProcessor = <E, A>(fx: Fx<R, E, A>) => {
-    const context =
-      this.options.context ??
-      make<E>({
-        sequenceNumber: this.options.sequenceNumber,
-        renderer: this.options.renderer,
-        reportFailure: this.options.reportError,
-      })
-    const scope = this.options.scope ? extendScope(this.options.scope) : new LocalScope()
+    const context = this.options.context
+      ? make<E>(contextToOptions(this.options.context))
+      : make<E>({
+          sequenceNumber: this.options.sequenceNumber,
+          renderer: this.options.renderer,
+          reportFailure: this.options.reportError,
+        })
+    const scope = this.options.scope ? extendScope(this.options.scope) : new LocalScope<E, A>()
     const parentTrace = fromNullable(this.options.parentTrace)
     // Default to lazy-loading processors on-demand
     const processors = this.options.processors ?? defaultProcessors

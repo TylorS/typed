@@ -73,7 +73,6 @@ export class LocalScope<E, A> {
   readonly release = () => {
     const that = this
 
-    // eslint-disable-next-line require-yield
     return Fx(function* () {
       const optionExit = that.exit.get()
 
@@ -93,6 +92,8 @@ export class LocalScope<E, A> {
 
         that.exit.set(some(finalExit))
       }
+
+      that.isReleased = true
 
       return true
     })

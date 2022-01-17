@@ -80,6 +80,12 @@ export interface Traced<E> {
   readonly cause: Cause<E>
 }
 
+export const Traced = <E>(trace: Trace, cause: Cause<E>): Traced<E> => ({
+  type: 'Traced',
+  trace,
+  cause,
+})
+
 /**
  * Pattern match over a Cause
  */
