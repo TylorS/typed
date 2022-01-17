@@ -63,6 +63,7 @@ snowpack.key
 /exports.d.ts.map
 /exports.js
 /exports.js.map
+/Async/
 /Branded/
 /Cause/
 /Clock/
@@ -74,6 +75,7 @@ snowpack.key
 /Fiber/
 /FiberId/
 /FiberRef/
+/Future/
 /Fx/
 /Layer/
 /Magma/
@@ -81,6 +83,8 @@ snowpack.key
 /Ref/
 /Scheduler/
 /Scope/
+/Sink/
 /Stream/
+/Subject/
 /Sync/
 /Trace/
