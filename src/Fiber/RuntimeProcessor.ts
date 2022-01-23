@@ -49,7 +49,9 @@ export class RuntimeProcessor<E, A> implements Disposable {
       this.processNode(this.node)
     }
 
-    this.suspendedStatus()
+    if (this.currentStatus.type === 'Running') {
+      this.suspendedStatus()
+    }
   }
 
   processLater() {
