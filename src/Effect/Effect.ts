@@ -1,5 +1,12 @@
 import { Equals } from 'ts-toolbelt/out/Any/Equals'
 
+/**
+ * Effect is a placeholder which helps us out with accurate type inference for each Type Parameter
+ * utilized by Fx. R is contravariant, and E + A are both covariant.
+ *
+ * If you're here from the Fx definition, @see Instruction from the Fiber module for what really occurs
+ * beneath the hood of Fx.
+ */
 export interface Effect<R, E, A> {
   readonly _R: (resources: R) => void
   readonly _E: () => E
