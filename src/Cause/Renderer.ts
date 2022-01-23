@@ -278,3 +278,9 @@ export function prettyPrint<E>(cause: Cause<E>, renderer: Renderer<E> = defaultR
 
   return `\n${lines.join('\n')}`.trimRight()
 }
+
+export function prettyStringify(x: unknown, depth = 2): string {
+  const replacement = '\n'.padEnd(1 + depth, ' ')
+
+  return JSON.stringify(x, null, 2).replace(/\n/g, replacement)
+}

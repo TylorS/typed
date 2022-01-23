@@ -11,7 +11,7 @@ import * as Fx from './Fx'
 import { runTraceExit } from './run'
 
 describe(__filename, () => {
-  it.only('captures errors', async () => {
+  it('captures errors', async () => {
     const test = Fx.Fx(function* () {
       const { a } = yield* ask<{ a: number }>('a')
       const { b } = yield* ask<{ b: number }>('b')

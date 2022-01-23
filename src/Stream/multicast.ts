@@ -82,6 +82,7 @@ export class MulticastDisposable<R, E, A> implements Disposable {
               operator: this.multicast.operator,
               time: o.context.scheduler.getCurrentTime(),
               cause: Disposed(o.context.fiberId),
+              fiberId: o.context.fiberId,
             }),
           ),
         )
@@ -103,6 +104,7 @@ export class MulticastDisposable<R, E, A> implements Disposable {
             operator: this.multicast.operator,
             time: o.context.scheduler.getCurrentTime(),
             cause: Disposed(o.context.fiberId),
+            fiberId: o.context.fiberId,
           }),
         ),
       )

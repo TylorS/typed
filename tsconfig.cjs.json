@@ -42,6 +42,7 @@
     "Stream",
     "Subject",
     "Sync",
+    "Timer",
     "Trace"
   ],
   "files": [],

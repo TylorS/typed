@@ -14,6 +14,7 @@ export function empty<E = never, A = never>(): Stream<unknown, E, A> {
           operator: 'empty',
           time: context.scheduler.getCurrentTime(),
           trace: none,
+          fiberId: context.fiberId,
         }),
       ),
       resources,

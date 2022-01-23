@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function'
 import { getOrElse, isSome, Option, some } from 'fp-ts/Option'
 import { Required } from 'ts-toolbelt/out/Object/Required'
 
-import { prettyPrint } from '@/Cause'
+import { prettyPrint, prettyStringify } from '@/Cause'
 import { Context } from '@/Context'
 import { Disposable, DisposableQueue, sync, withRemove } from '@/Disposable'
 import { Effect, FromExit, fromIO, Provide } from '@/Effect'
@@ -203,13 +203,13 @@ function formatFromExit<E, A>({ input }: FromExit<E, A>, context: Context<E>) {
     input,
     match(
       (cause) => `Failure<${prettyPrint(cause, context.renderer).replace(/\n/g, '\n  ')}>`,
-      (a) => `Success<${JSON.stringify(a).replace(/\n/g, '\n  ')}>`,
+      (a) => `Success<${prettyStringify(a)}>`,
     ),
   )
 }
 
 export function formatProvide<R, E, A>({ input }: Provide<R, E, A>) {
-  return `Provide => ${JSON.stringify(input.resources).replace(/\n/g, '\n  ')}`
+  return `Provide => ${prettyStringify(input)}`
 }
 
 export function addTrace(trace: string | undefined, str: string): string {
@@ -217,5 +217,5 @@ export function addTrace(trace: string | undefined, str: string): string {
     return str
   }
 
-  return `${str} :: ${trace}`
+  return `${trace} :: ${str}`
 }

@@ -145,6 +145,14 @@
       "require": "./cjs/Context/contextToOptions.js",
       "import": "./esm/Context/contextToOptions.js"
     },
+    "./Context/forkContext": {
+      "require": "./cjs/Context/forkContext.js",
+      "import": "./esm/Context/forkContext.js"
+    },
+    "./Context/make": {
+      "require": "./cjs/Context/make.js",
+      "import": "./esm/Context/make.js"
+    },
     "./Disposable": {
       "require": "./cjs/Disposable/index.js",
       "import": "./esm/Disposable/index.js"
@@ -164,6 +172,10 @@
     "./Effect/Chain": {
       "require": "./cjs/Effect/Chain.js",
       "import": "./esm/Effect/Chain.js"
+    },
+    "./Effect/Drain": {
+      "require": "./cjs/Effect/Drain.js",
+      "import": "./esm/Effect/Drain.js"
     },
     "./Effect/Effect": {
       "require": "./cjs/Effect/Effect.js",
@@ -281,10 +293,6 @@
       "require": "./cjs/Fiber/InstructionProcessor.js",
       "import": "./esm/Fiber/InstructionProcessor.js"
     },
-    "./Fiber/InstructionTree": {
-      "require": "./cjs/Fiber/InstructionTree.js",
-      "import": "./esm/Fiber/InstructionTree.js"
-    },
     "./Fiber/Processor": {
       "require": "./cjs/Fiber/Processor.js",
       "import": "./esm/Fiber/Processor.js"
@@ -293,17 +301,21 @@
       "require": "./cjs/Fiber/Runtime.js",
       "import": "./esm/Fiber/Runtime.js"
     },
-    "./Fiber/defaultProcessors": {
-      "require": "./cjs/Fiber/defaultProcessors.js",
-      "import": "./esm/Fiber/defaultProcessors.js"
+    "./Fiber/RuntimeInstruction": {
+      "require": "./cjs/Fiber/RuntimeInstruction.js",
+      "import": "./esm/Fiber/RuntimeInstruction.js"
+    },
+    "./Fiber/RuntimeProcessor": {
+      "require": "./cjs/Fiber/RuntimeProcessor.js",
+      "import": "./esm/Fiber/RuntimeProcessor.js"
     },
     "./Fiber/eagerProcessors": {
       "require": "./cjs/Fiber/eagerProcessors.js",
       "import": "./esm/Fiber/eagerProcessors.js"
     },
-    "./Fiber/fromProcessor": {
-      "require": "./cjs/Fiber/fromProcessor.js",
-      "import": "./esm/Fiber/fromProcessor.js"
+    "./Fiber/fromInstructionProcessor": {
+      "require": "./cjs/Fiber/fromInstructionProcessor.js",
+      "import": "./esm/Fiber/fromInstructionProcessor.js"
     },
     "./Fiber/of": {
       "require": "./cjs/Fiber/of.js",
@@ -316,6 +328,10 @@
     "./Fiber/processChain": {
       "require": "./cjs/Fiber/processChain.js",
       "import": "./esm/Fiber/processChain.js"
+    },
+    "./Fiber/processDrain": {
+      "require": "./cjs/Fiber/processDrain.js",
+      "import": "./esm/Fiber/processDrain.js"
     },
     "./Fiber/processFork": {
       "require": "./cjs/Fiber/processFork.js",
@@ -377,9 +393,9 @@
       "require": "./cjs/Fiber/processResult.js",
       "import": "./esm/Fiber/processResult.js"
     },
-    "./Fiber/processSuspend": {
-      "require": "./cjs/Fiber/processSuspend.js",
-      "import": "./esm/Fiber/processSuspend.js"
+    "./Fiber/processSuspsend": {
+      "require": "./cjs/Fiber/processSuspsend.js",
+      "import": "./esm/Fiber/processSuspsend.js"
     },
     "./Fiber/processTrace": {
       "require": "./cjs/Fiber/processTrace.js",
@@ -388,10 +404,6 @@
     "./Fiber/processTracingStatus": {
       "require": "./cjs/Fiber/processTracingStatus.js",
       "import": "./esm/Fiber/processTracingStatus.js"
-    },
-    "./Fiber/withMaxOps": {
-      "require": "./cjs/Fiber/withMaxOps.js",
-      "import": "./esm/Fiber/withMaxOps.js"
     },
     "./FiberId": {
       "require": "./cjs/FiberId/index.js",
@@ -457,6 +469,22 @@
       "require": "./cjs/Fx/Fx.js",
       "import": "./esm/Fx/Fx.js"
     },
+    "./Fx/ensureDisposable": {
+      "require": "./cjs/Fx/ensureDisposable.js",
+      "import": "./esm/Fx/ensureDisposable.js"
+    },
+    "./Fx/forkDaemon": {
+      "require": "./cjs/Fx/forkDaemon.js",
+      "import": "./esm/Fx/forkDaemon.js"
+    },
+    "./Fx/run": {
+      "require": "./cjs/Fx/run.js",
+      "import": "./esm/Fx/run.js"
+    },
+    "./Fx/uninterruptable": {
+      "require": "./cjs/Fx/uninterruptable.js",
+      "import": "./esm/Fx/uninterruptable.js"
+    },
     "./Layer": {
       "require": "./cjs/Layer/index.js",
       "import": "./esm/Layer/index.js"
@@ -501,6 +529,10 @@
       "require": "./cjs/Scope/index.js",
       "import": "./esm/Scope/index.js"
     },
+    "./Scope/InterruptableStatus": {
+      "require": "./cjs/Scope/InterruptableStatus.js",
+      "import": "./esm/Scope/InterruptableStatus.js"
+    },
     "./Scope/Scope": {
       "require": "./cjs/Scope/Scope.js",
       "import": "./esm/Scope/Scope.js"
@@ -525,6 +557,18 @@
       "require": "./cjs/Stream/Stream.js",
       "import": "./esm/Stream/Stream.js"
     },
+    "./Stream/collectEvents": {
+      "require": "./cjs/Stream/collectEvents.js",
+      "import": "./esm/Stream/collectEvents.js"
+    },
+    "./Stream/drain": {
+      "require": "./cjs/Stream/drain.js",
+      "import": "./esm/Stream/drain.js"
+    },
+    "./Stream/empty": {
+      "require": "./cjs/Stream/empty.js",
+      "import": "./esm/Stream/empty.js"
+    },
     "./Stream/fromFx": {
       "require": "./cjs/Stream/fromFx.js",
       "import": "./esm/Stream/fromFx.js"
@@ -536,6 +580,10 @@
     "./Stream/multicast": {
       "require": "./cjs/Stream/multicast.js",
       "import": "./esm/Stream/multicast.js"
+    },
+    "./Stream/tap": {
+      "require": "./cjs/Stream/tap.js",
+      "import": "./esm/Stream/tap.js"
     },
     "./Subject": {
       "require": "./cjs/Subject/index.js",
@@ -556,6 +604,10 @@
     "./Sync/Sync": {
       "require": "./cjs/Sync/Sync.js",
       "import": "./esm/Sync/Sync.js"
+    },
+    "./Timer": {
+      "require": "./cjs/Timer/index.js",
+      "import": "./esm/Timer/index.js"
     },
     "./Trace": {
       "require": "./cjs/Trace/index.js",

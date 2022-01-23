@@ -1,4 +1,5 @@
 import { Time } from '@/Clock'
+import { EventElement } from '@/Sink'
 
 import { Stream } from './Stream'
 
@@ -12,6 +13,24 @@ export const tap =
           ...sink,
           event: (event) => {
             f(event.value)
+
+            return sink.event(event)
+          },
+        },
+        ...rest,
+      ),
+  })
+
+export const tapEvent =
+  <A>(f: (value: EventElement<A>) => any) =>
+  <R, E>(stream: Stream<R, E, A>): Stream<R, E, A> => ({
+    run: (resources, sink, ...rest) =>
+      stream.run(
+        resources,
+        {
+          ...sink,
+          event: (event) => {
+            f(event)
 
             return sink.event(event)
           },

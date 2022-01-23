@@ -58,7 +58,10 @@ export class Runtime<R, E> {
       )
 
       runtime.addObserver(
-        match((cause) => reject(prettyPrint(cause, processor.context.renderer)), resolve),
+        match(
+          (cause) => reject(new Error(prettyPrint(cause, processor.context.renderer))),
+          resolve,
+        ),
       )
       runtime.processNow()
 

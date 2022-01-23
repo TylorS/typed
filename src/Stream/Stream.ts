@@ -2,7 +2,8 @@ import { identity, pipe } from 'fp-ts/function'
 import { isSome, match, none, Option, some } from 'fp-ts/Option'
 import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
 
-import { prettyPrint } from '@/Cause'
+import { prettyPrint, prettyStringify } from '@/Cause'
+import { Time } from '@/Clock'
 import { Context } from '@/Context'
 import { Disposable } from '@/Disposable'
 import { Scope } from '@/Scope'
@@ -85,11 +86,7 @@ export function makeEventTrace<E, A>(
     context.fiberId,
     [
       new SourceLocation(
-        `Event (${event.time}) :: ${event.operator} :: ${JSON.stringify(
-          event.value,
-          null,
-          2,
-        ).replace(/\n/g, '\n  ')}`,
+        `${event.operator} Event (${prettyTime(event.time)}) :: ${prettyStringify(event.value, 2)}`,
       ),
     ],
     concatAncsestor(parentTrace, event.trace),
@@ -105,7 +102,7 @@ export function makeErrorTrace<E>(
     context.fiberId,
     [
       new SourceLocation(
-        `Error (${event.time}) :: ${event.operator} :: ${prettyPrint(
+        `${event.operator} Error (${prettyTime(event.time)}) :: ${prettyPrint(
           event.cause,
           context.renderer,
         ).replace(/\n/g, '\n  ')}`,
@@ -122,9 +119,13 @@ export function makeEndTrace<E>(
 ): Trace {
   return new Trace(
     context.fiberId,
-    [new SourceLocation(`End (${event.time}) :: ${event.operator}`)],
+    [new SourceLocation(`${event.operator} End (${prettyTime(event.time)})`)],
     concatAncsestor(parentTrace, event.trace),
   )
+}
+
+function prettyTime(time: Time) {
+  return new Date(time).toISOString()
 }
 
 function concatAncsestor(parentTrace: Option<Trace>, childTrace: Option<Trace>): Option<Trace> {

@@ -20,11 +20,24 @@ export function makeFromFxOperator(operator: string) {
           const time = context.scheduler.getCurrentTime()
 
           if (isLeft(exit)) {
-            return sink.error({ type: 'Error', operator, time, cause: exit.left })
+            return sink.error({
+              type: 'Error',
+              operator,
+              time,
+              cause: exit.left,
+              fiberId: context.fiberId,
+            })
           }
 
-          tryEvent(sink, { type: 'Event', operator, time, value: exit.right, trace: none })
-          tryEnd(sink, { type: 'End', operator, time, trace: none })
+          tryEvent(sink, {
+            type: 'Event',
+            operator,
+            time,
+            value: exit.right,
+            trace: none,
+            fiberId: context.fiberId,
+          })
+          tryEnd(sink, { type: 'End', operator, time, trace: none, fiberId: context.fiberId })
         }),
         resources,
         context,
