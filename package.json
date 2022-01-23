@@ -317,6 +317,10 @@
       "require": "./cjs/Fiber/fromInstructionProcessor.js",
       "import": "./esm/Fiber/fromInstructionProcessor.js"
     },
+    "./Fiber/lazyProcessors": {
+      "require": "./cjs/Fiber/lazyProcessors.js",
+      "import": "./esm/Fiber/lazyProcessors.js"
+    },
     "./Fiber/of": {
       "require": "./cjs/Fiber/of.js",
       "import": "./esm/Fiber/of.js"
@@ -393,9 +397,9 @@
       "require": "./cjs/Fiber/processResult.js",
       "import": "./esm/Fiber/processResult.js"
     },
-    "./Fiber/processSuspsend": {
-      "require": "./cjs/Fiber/processSuspsend.js",
-      "import": "./esm/Fiber/processSuspsend.js"
+    "./Fiber/processSuspend": {
+      "require": "./cjs/Fiber/processSuspend.js",
+      "import": "./esm/Fiber/processSuspend.js"
     },
     "./Fiber/processTrace": {
       "require": "./cjs/Fiber/processTrace.js",

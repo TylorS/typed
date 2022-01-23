@@ -49,6 +49,7 @@ export function lazyLoadProcessor<T extends InstructionType, E, A>(
       const p = await (fetching.has(f) ? fetching.get(f)! : fetching.set(f, f()).get(f)!)
 
       memoized.set(f, p)
+      fetching.delete(f)
 
       return p(instr, processor)
     })
