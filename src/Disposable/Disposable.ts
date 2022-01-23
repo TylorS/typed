@@ -26,7 +26,7 @@ export function dispose(d: SyncDisposable): any
 export function dispose(d: AsyncDisposable): Promise<any>
 export function dispose(d: Disposable): any | Promise<any>
 export function dispose(d: Disposable): any | Promise<any> {
-  return d.dispose[1]()
+  return d === none ? undefined : d.dispose[1]()
 }
 
 export const checkIsAsync = (d: Disposable): d is AsyncDisposable => d.dispose[0] === 'Async'
@@ -87,5 +87,17 @@ export class DisposableQueue implements Disposable {
     return sync(() => {
       this.#queue.delete(d)
     })
+  }
+}
+
+export function withRemove(f: (remove: () => void) => Disposable) {
+  return (dispsosable: DisposableQueue): Disposable => {
+    const inner = new DisposableQueue()
+    const outer = dispsosable.add(inner)
+    const remove = () => dispose(outer)
+
+    inner.add(f(remove))
+
+    return disposeAll([inner, outer])
   }
 }

@@ -1,6 +1,6 @@
-import { Processors } from './InstructionProcessor'
 import { processAccess } from './processAccess'
 import { processChain } from './processChain'
+import { processDrain } from './processDrain'
 import { processFork } from './processFork'
 import { processFromAsync } from './processFromAsync'
 import { processFromExit } from './processFromExit'
@@ -12,25 +12,23 @@ import { processGetScope } from './processGetScope'
 import { processJoin } from './processJoin'
 import { processLazy } from './processLazy'
 import { processMatch } from './processMatch'
+import { Processors } from './Processor'
 import { processProvide } from './processProvide'
 import { processRace } from './processRace'
 import { processRefine } from './processRefine'
 import { processResult } from './processResult'
-import { processSuspend } from './processSuspend'
+import { processSuspend } from './processSuspsend'
 import { processTrace } from './processTrace'
 import { processTracingStatus } from './processTracingStatus'
 
-/**
- * Instance of Processors that is NOT lazy-loaded, and will add all processors to your bundles
- * synchronously and completely.
- */
 export const eagerProcessors: Processors = {
   Access: processAccess,
   Chain: processChain,
+  Drain: processDrain,
   Fork: processFork,
   FromAsync: processFromAsync,
-  FromIO: processFromIO,
   FromExit: processFromExit,
+  FromIO: processFromIO,
   FromPromise: processFromPromise,
   FromTuple: processFromTuple,
   GetContext: processGetContext,

@@ -1,11 +1,10 @@
 import * as O from 'fp-ts/Option'
 
-import { Cause, Unexpected } from '@/Cause'
-import { Time } from '@/Clock'
+import { Unexpected } from '@/Cause'
 import * as D from '@/Disposable'
 import { dispose } from '@/Disposable'
 import { fromIO } from '@/Effect'
-import { tryEvent } from '@/Sink'
+import { EndElement, ErrorElement, EventElement, tryEvent } from '@/Sink'
 
 import { Multicast, MulticastObserver } from './multicast'
 import { StreamRun } from './Stream'
@@ -15,32 +14,32 @@ export class Hold<R, E, A> extends Multicast<R, E, A> {
   protected pendingObservers: Array<MulticastObserver<R, E, A>> = []
   protected task: D.Disposable = D.none
 
-  run: StreamRun<R, E, A> = (resources, sink, context, scope) => {
-    const observer: MulticastObserver<R, E, A> = { resources, sink, context, scope }
+  run: StreamRun<R, E, A> = (resources, sink, context, scope, tracer) => {
+    const observer: MulticastObserver<R, E, A> = { resources, sink, context, scope, tracer }
 
     if (this.shouldScheduleFlush()) {
       this.scheduleFlush(observer)
     }
 
-    return super.run(resources, sink, context, scope)
+    return super.run(resources, sink, context, scope, tracer)
   }
 
-  event(time: Time, value: A) {
+  event(event: EventElement<A>) {
     this.flushPending()
-    this.lastValue = O.some(value)
+    this.lastValue = O.some(event.value)
 
-    return super.event(time, value)
+    return super.event(event)
   }
 
-  error(time: Time, cause: Cause<E>) {
+  error(event: ErrorElement<E>) {
     this.flushPending()
 
-    return super.error(time, cause)
+    return super.error(event)
   }
 
-  end(time: Time) {
+  end(event: EndElement) {
     this.flushPending()
-    return super.end(time)
+    return super.end(event)
   }
 
   protected shouldScheduleFlush() {
@@ -58,7 +57,12 @@ export class Hold<R, E, A> extends Multicast<R, E, A> {
         observer.scope,
       )
     } catch (e) {
-      this.error(observer.context.scheduler.getCurrentTime(), Unexpected(e))
+      this.error({
+        type: 'Error',
+        operator: this.operator,
+        time: observer.context.scheduler.getCurrentTime(),
+        cause: Unexpected(e),
+      })
     }
   }
 
@@ -68,7 +72,17 @@ export class Hold<R, E, A> extends Multicast<R, E, A> {
       const observers = this.pendingObservers
       this.pendingObservers = []
 
-      observers.forEach((o) => tryEvent(o.sink, o.context.scheduler.getCurrentTime(), value))
+      observers.forEach((o) => {
+        const event: EventElement<A> = {
+          type: 'Event',
+          operator: this.operator,
+          time: o.context.scheduler.getCurrentTime(),
+          value,
+          trace: O.none,
+        }
+
+        tryEvent(o.sink, o.tracer.makeTrace(event))
+      })
     }
   }
 }

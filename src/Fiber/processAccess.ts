@@ -1,18 +1,12 @@
-import { Access } from '@/Effect/Access'
+import { Access } from '@/Effect'
 
-import { Instruction } from './Instruction'
 import { InstructionProcessor } from './InstructionProcessor'
-import { GeneratorNode } from './InstructionTree'
-import { ResumeNode } from './Processor'
+import { ProcessorInstruction } from './Processor'
 
 export const processAccess = <R, R2, E, A>(
-  access: Access<R, R2, E, A>,
-  previous: GeneratorNode<R & R2, E>,
+  instruction: Access<R, R2, E, A>,
   processor: InstructionProcessor<R & R2, E, any>,
-) =>
-  new ResumeNode({
-    type: 'Generator',
-    generator: (access.input(processor.resources) as Instruction<R2, E>)[Symbol.iterator](),
-    method: 'next',
-    previous,
-  })
+): ProcessorInstruction<R2, E, A> => ({
+  type: 'Fx',
+  fx: instruction.input(processor.resources),
+})

@@ -10,6 +10,8 @@ export function complete<R, E, A>(fx: Fx<R, E, A>) {
       case 'Done':
         return future
       case 'Pending': {
+        future.state.set({ type: 'Done', fx })
+
         state.listeners.forEach((f) => f(fx))
         state.listeners.clear()
 

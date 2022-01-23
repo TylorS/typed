@@ -1,27 +1,53 @@
+import { none, some } from 'fp-ts/Option'
+
 import { Cause } from '@/Cause'
 import { Context } from '@/Context'
 import { sync } from '@/Disposable'
 import { Scope } from '@/Scope'
 import { Sink, tryEnd, tryEvent } from '@/Sink'
 import * as Stream from '@/Stream'
+import { Tracer } from '@/Stream'
+import { SourceLocation, Trace } from '@/Trace'
 
 export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, A> {
   protected observers: Set<Stream.MulticastObserver<R, E, A>> = new Set()
 
+  constructor(readonly name: string = 'Subject') {}
+
   readonly event = (a: A): void => {
     Array.from(this.observers).forEach((o) =>
-      tryEvent(o.sink, o.context.scheduler.getCurrentTime(), a),
+      tryEvent(o.sink, {
+        type: 'Event',
+        operator: this.name,
+        time: o.context.scheduler.getCurrentTime(),
+        value: a,
+        trace: some(new Trace(o.context.fiberId, [new SourceLocation(this.name)], none)),
+      }),
     )
   }
 
   readonly error = (cause: Cause<E>): void => {
     Array.from(this.observers).forEach((o) =>
-      o.sink.error(o.context.scheduler.getCurrentTime(), cause),
+      o.sink.error(
+        o.tracer.makeTrace({
+          type: 'Error',
+          operator: this.name,
+          time: o.context.scheduler.getCurrentTime(),
+          cause,
+        }),
+      ),
     )
   }
 
   readonly end = (): void => {
-    Array.from(this.observers).forEach((o) => tryEnd(o.sink, o.context.scheduler.getCurrentTime()))
+    Array.from(this.observers).forEach((o) =>
+      tryEnd(o.sink, {
+        type: 'End',
+        operator: this.name,
+        time: o.context.scheduler.getCurrentTime(),
+        trace: none,
+      }),
+    )
   }
 
   readonly sink: SubjectSink<E, A> = {
@@ -30,8 +56,14 @@ export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, 
     end: this.end,
   }
 
-  readonly run = (resources: R, sink: Sink<E, A>, context: Context<E>, scope: Scope<E, any>) => {
-    const observer: Stream.MulticastObserver<R, E, A> = { resources, sink, context, scope }
+  readonly run = (
+    resources: R,
+    sink: Sink<E, A>,
+    context: Context<E>,
+    scope: Scope<E, any>,
+    tracer: Tracer<E>,
+  ) => {
+    const observer: Stream.MulticastObserver<R, E, A> = { resources, sink, context, scope, tracer }
 
     this.observers.add(observer)
 

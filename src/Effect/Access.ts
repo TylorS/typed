@@ -1,17 +1,13 @@
 import { flow } from 'fp-ts/function'
 
-import { Effect } from './Effect'
+import type { Fx } from '@/Fx'
+
 import { of } from './FromExit'
 import { instr } from './Instruction'
 
-export class Access<R, R2, E, A> extends instr('Access')<
-  (r: R) => Effect<R2, E, A>,
-  R & R2,
-  E,
-  A
-> {}
+export class Access<R, R2, E, A> extends instr('Access')<(r: R) => Fx<R2, E, A>, R & R2, E, A> {}
 
-export const access = <R, R2, E, A>(access: (r: R) => Effect<R2, E, A>, trace?: string) =>
+export const access = <R, R2, E, A>(access: (r: R) => Fx<R2, E, A>, trace?: string) =>
   new Access(access, trace)
 
 export const ask = <R>(trace?: string) => access((r: R) => of(r), trace)

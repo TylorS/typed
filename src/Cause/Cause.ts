@@ -1,3 +1,6 @@
+import { pipe } from 'fp-ts/function'
+import * as O from 'fp-ts/Option'
+
 import { FiberId } from '@/FiberId'
 import { Trace } from '@/Trace/Trace'
 
@@ -85,6 +88,17 @@ export const Traced = <E>(trace: Trace, cause: Cause<E>): Traced<E> => ({
   trace,
   cause,
 })
+
+export const addParentTrace =
+  (trace: O.Option<Trace>) =>
+  <E>(cause: Cause<E>): Cause<E> =>
+    pipe(
+      trace,
+      O.match(
+        () => cause,
+        (t) => Traced(t, cause),
+      ),
+    )
 
 /**
  * Pattern match over a Cause

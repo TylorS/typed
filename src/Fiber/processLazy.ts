@@ -1,13 +1,8 @@
-import { Lazy } from '@/Effect/Lazy'
+import { Lazy } from '@/Effect'
 
-import { Instruction } from './Instruction'
-import { GeneratorNode } from './InstructionTree'
-import { ResumeNode } from './Processor'
+import { FxInstruction } from './Processor'
 
-export const processLazy = <R, E, A>(lazy: Lazy<R, E, A>, previous: GeneratorNode<R, E>) =>
-  new ResumeNode({
-    type: 'Generator',
-    generator: (lazy.input() as Instruction<R, E>)[Symbol.iterator](),
-    method: 'next',
-    previous,
-  })
+export const processLazy = <R, E, A>(instruction: Lazy<R, E, A>): FxInstruction<R, E, A> => ({
+  type: 'Fx',
+  fx: instruction.input(),
+})

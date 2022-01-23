@@ -1,11 +1,9 @@
-import { GetContext } from '@/Effect/GetContext'
+import { GetContext } from '@/Effect'
 
 import { InstructionProcessor } from './InstructionProcessor'
-import { GeneratorNode } from './InstructionTree'
-import { ResumeSync } from './Processor'
+import { ResumeSync } from './RuntimeInstruction'
 
-export const processGetContext = <E, R>(
+export const processGetContext = <E, R, A>(
   _: GetContext<E>,
-  _previous: GeneratorNode<R, E>,
-  runtime: InstructionProcessor<R, E, any>,
-) => new ResumeSync(runtime.context)
+  processor: InstructionProcessor<R, E, A>,
+) => new ResumeSync(processor.context)

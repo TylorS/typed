@@ -1,7 +1,8 @@
 import { makeFiberId } from '@/FiberId'
 import { increment } from '@/MutableRef'
 
-import { Context, ContextOptions } from './Context'
+import { Context } from './Context'
+import { ContextOptions } from './make'
 
 export const contextToOptions = <E>(context: Context<E>): ContextOptions<E> => ({
   fiberId: makeFiberId(increment(context.sequenceNumber)),

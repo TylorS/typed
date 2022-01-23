@@ -1,30 +1,43 @@
-import { ok } from 'assert'
-import { isLeft } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
+import { deepStrictEqual, ok } from 'assert'
+import { isLeft, isRight } from 'fp-ts/Either'
 import { describe } from 'mocha'
 
 import { prettyPrint } from '@/Cause'
-import { eagerProcessors, runMainExit } from '@/Fiber'
+import { fromExit } from '@/Effect'
+import { result } from '@/Effect/Result'
 
-import * as Fx from '.'
+import { ask } from './Effect'
+import * as Fx from './Fx'
+import { runTraceExit } from './run'
 
-describe.only(__filename, () => {
-  it('logs helpful errors based on traces', async () => {
+describe(__filename, () => {
+  it.only('captures errors', async () => {
     const test = Fx.Fx(function* () {
-      const { a } = yield* Fx.ask<{ a: number }>('a')
-      const { b } = yield* Fx.ask<{ b: number }>('b')
+      const { a } = yield* ask<{ a: number }>('a')
+      const { b } = yield* ask<{ b: number }>('b')
 
       throw new Error('test')
 
       return a + b
     })
 
-    const exit = await runMainExit(pipe(test, Fx.provideAll({ a: 1, b: 2 })), {
-      processors: eagerProcessors,
-    })
+    const exit = await runTraceExit(test, { a: 1, b: 2 })
 
     ok(isLeft(exit))
+    console.info(prettyPrint(exit.left))
+  })
 
-    console.log(prettyPrint(exit.left))
+  it('result + fromExit are duals', async () => {
+    const test = Fx.Fx(function* () {
+      const a = yield* fromExit(yield* result(ask<{ a: number }>('a')))
+      const b = yield* fromExit(yield* result(ask<{ b: number }>('b')))
+
+      return { ...a, ...b }
+    })
+
+    const exit = await runTraceExit(test, { a: 1, b: 2 })
+
+    ok(isRight(exit))
+    deepStrictEqual(exit.right, { a: 1, b: 2 })
   })
 })

@@ -1,21 +1,19 @@
-import { fromExit } from '@/Effect/FromExit'
-import { Join } from '@/Effect/Join'
+import { isRight } from 'fp-ts/Either'
+
+import { fromExit, Join } from '@/Effect'
 import { Fx } from '@/Fx'
 
-import { GeneratorNode } from './InstructionTree'
-import { ResumeNode } from './Processor'
+import { FxInstruction } from './Processor'
 
-export const processJoin = <E, A, R>(join: Join<E, A>, previous: GeneratorNode<R, E>) =>
-  new ResumeNode({
-    type: 'Generator',
-    generator: Fx(function* () {
-      const exit = yield* join.input.exit
-      const a = yield* fromExit(exit)
+export const processJoin = <E, A>(instruction: Join<E, A>): FxInstruction<unknown, E, A> => ({
+  type: 'Fx',
+  fx: Fx(function* () {
+    const exit = yield* instruction.input.exit
 
-      yield* join.input.inheritRefs
+    if (isRight(exit)) {
+      yield* instruction.input.inheritRefs
+    }
 
-      return a
-    })[Symbol.iterator](),
-    method: 'next',
-    previous,
-  })
+    return yield* fromExit(exit, instruction.trace)
+  }),
+})

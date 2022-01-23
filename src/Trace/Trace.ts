@@ -7,7 +7,6 @@ export class Trace {
   constructor(
     readonly fiberId: FiberId,
     readonly executionTrace: ReadonlyArray<TraceElement>,
-    readonly stackTrace: ReadonlyArray<TraceElement>,
     readonly parentTrace: Option<Trace>,
   ) {}
 }
@@ -39,33 +38,32 @@ export function prettyTrace(trace: Trace): string {
 
 export function prettyTraceSafe(trace: Trace): Sync.Sync<string> {
   return Sync.Sync(function* () {
-    const stackWithLocation = trace.stackTrace.filter(isSourceLocation)
     const executionsWithLocation = trace.executionTrace.filter(isSourceLocation)
 
     const isRootFiber = isSome(trace.parentTrace)
       ? trace.parentTrace.value.fiberId === trace.fiberId
       : trace.fiberId.sequenceNumber === 0
 
-    const stackPrint =
-      stackWithLocation.length > 0
-        ? isRootFiber
-          ? []
-          : [
-              `Fiber: ${prettyFiberId(trace.fiberId)} was supposed to continue to:`,
-              '',
-              ...stackWithLocation.map((e) => `  a future continuation at ${e.location}`),
-            ]
-        : [`Fiber: ${prettyFiberId(trace.fiberId)} was supposed to continue to: <empty trace>`]
+    const stackPrint = isRootFiber
+      ? []
+      : isSome(trace.parentTrace)
+      ? [
+          `Fiber: ${prettyFiberId(trace.fiberId)} was supposed to continue to Fiber #${
+            trace.parentTrace.value.fiberId.sequenceNumber
+          }`,
+        ]
+      : []
 
     const execPrint =
       executionsWithLocation.length > 0
-        ? isRootFiber
-          ? []
-          : [
-              `Fiber: ${prettyFiberId(trace.fiberId)} Execution trace:`,
-              '',
-              ...executionsWithLocation.map((a) => `  ${a.location}`),
-            ]
+        ? [
+            `Fiber: ${prettyFiberId(trace.fiberId)} Execution trace:`,
+            '',
+            ...executionsWithLocation.flatMap((a, i) => [
+              ...(i === 0 ? [] : ['']),
+              `  ${a.location}`,
+            ]),
+          ]
         : [`Fiber: ${prettyFiberId(trace.fiberId)} Execution trace: <empty trace>`]
 
     const ancestry = yield* getAncestry(trace)
@@ -84,7 +82,11 @@ export function prettyTraceSafe(trace: Trace): Sync.Sync<string> {
 const getAncestry = (trace: Trace) =>
   Sync.Sync(function* () {
     if (isNone(trace.parentTrace)) {
-      return [`Fiber: ${prettyFiberId(trace.fiberId)} was spawned by: <empty trace>`]
+      return [
+        `Fiber: ${prettyFiberId(trace.fiberId)} was spawned${
+          trace.fiberId.sequenceNumber === 0 ? `.` : ` by: <empty trace>`
+        }`,
+      ]
     }
 
     if (trace.parentTrace.value.fiberId === trace.fiberId) {

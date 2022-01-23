@@ -18,6 +18,8 @@ export class FiberRef<R, E, A> {
     new FiberRef(initial, options.Eq ?? DeepEquals, options.Magma ?? Second, options.fork ?? some)
 }
 
+export const make = FiberRef.make
+
 export interface FiberRefOptions<A> {
   readonly Eq?: Eq<A>
   readonly Magma?: Magma<A>

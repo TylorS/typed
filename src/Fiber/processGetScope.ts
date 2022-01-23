@@ -1,11 +1,9 @@
-import { GetScope } from '@/Effect/GetScope'
+import { GetScope } from '@/Effect'
 
 import { InstructionProcessor } from './InstructionProcessor'
-import { GeneratorNode } from './InstructionTree'
-import { ResumeSync } from './Processor'
+import { ResumeSync } from './RuntimeInstruction'
 
-export const processGetScope = <E, R>(
-  _: GetScope<E, any>,
-  _previous: GeneratorNode<R, E>,
-  runtime: InstructionProcessor<R, E, any>,
-) => new ResumeSync(runtime.scope)
+export const processGetScope = <E, A, R>(
+  _: GetScope<E, A>,
+  processor: InstructionProcessor<R, E, any>,
+) => new ResumeSync(processor.context)

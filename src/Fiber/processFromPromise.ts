@@ -1,17 +1,6 @@
-import { DisposableQueue } from '@/Disposable'
-import { FromPromise } from '@/Effect/FromPromise'
-import { unexpected } from '@/Exit'
+import { FromPromise } from '@/Effect'
 
-import { ResumeDeferred, ResumeNode, ResumeSync } from './Processor'
+import { ResumePromise } from './RuntimeInstruction'
 
 export const processFromPromise = <A>(instruction: FromPromise<A>) =>
-  new ResumeDeferred((cb) => {
-    const disposable = new DisposableQueue()
-
-    instruction
-      .input()
-      .then((a) => !disposable.isDisposed() && cb(new ResumeSync(a)))
-      .catch((error) => cb(new ResumeNode({ type: 'Exit', exit: unexpected(error) })))
-
-    return disposable
-  })
+  new ResumePromise(instruction.input)

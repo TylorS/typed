@@ -1,2 +1,6 @@
 export * from './Effect'
+export * from './ensureDisposable'
+export * from './forkDaemon'
 export * from './Fx'
+export * from './run'
+export * from './uninterruptable'

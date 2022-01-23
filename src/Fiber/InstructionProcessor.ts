@@ -1,369 +1,221 @@
-/* eslint-disable @typescript-eslint/no-this-alias */
-import { isLeft, left } from 'fp-ts/Either'
-import { isSome, none, Option, some } from 'fp-ts/Option'
+import { isLeft, match } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
+import { getOrElse, isSome, Option, some } from 'fp-ts/Option'
+import { Required } from 'ts-toolbelt/out/Object/Required'
 
-import { Traced } from '@/Cause'
-import * as Context from '@/Context'
-import { contextToOptions } from '@/Context'
-import * as D from '@/Disposable'
-import { fromIO } from '@/Effect/FromIO'
-import { disposed, Exit, success, unexpected } from '@/Exit'
+import { prettyPrint } from '@/Cause'
+import { Context } from '@/Context'
+import { Disposable, DisposableQueue, sync, withRemove } from '@/Disposable'
+import { Effect, FromExit, fromIO, Provide } from '@/Effect'
+import { Exit, success, unexpected } from '@/Exit'
 import { Fx } from '@/Fx'
-import { LocalScope } from '@/Scope'
+import { extendScope, LocalScope } from '@/Scope'
 import { SourceLocation, Trace, TraceElement } from '@/Trace'
 
 import { Instruction } from './Instruction'
+import { Processor, ProcessorInstruction, Processors } from './Processor'
+import type { RuntimeOptions } from './Runtime'
 import {
-  ExitNode,
-  GeneratorNode,
-  InitialNode,
-  InstructionNode,
-  InstructionTree,
-} from './InstructionTree'
-import { Processor, Resume, ResumeAsync, ResumeDeferred } from './Processor'
+  ResumeAsync,
+  ResumePromise,
+  RuntimeInstruction,
+  RuntimeIterable,
+} from './RuntimeInstruction'
 
-export type Processors = {
-  readonly [K in Instruction<any, any>['type']]: Processor<any, any, K>
-}
-
-// TODO: Report the current status of running
-export class InstructionProcessor<R, E, A> implements D.Disposable {
-  private node: InstructionTree<R, E, any> | undefined
-  private observers: Set<(exit: Exit<E, A>) => void> = new Set()
-  private disposables: D.DisposableQueue = new D.DisposableQueue()
-  private exited = false
-  private executionTraces: Array<TraceElement> = []
-  private stackTraces: Array<TraceElement> = []
+export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E, A>> {
+  readonly executionTraces: Array<TraceElement> = []
+  protected disposables: DisposableQueue = new DisposableQueue()
+  protected ops = 0
 
   constructor(
     readonly fx: Fx<R, E, A>,
     readonly resources: R,
-    readonly context: Context.Context<E>,
+    readonly context: Context<E>,
     readonly scope: LocalScope<E, A>,
     readonly processors: Processors,
     readonly parentTrace: Option<Trace>,
-    readonly shouldTrace: boolean = true,
+    readonly shouldTrace: boolean,
     readonly maxOps: number = 2048,
-  ) {
-    this.node = {
-      type: 'Initial',
+  ) {}
+
+  *[Symbol.iterator]() {
+    try {
+      const generator = this.fx[Symbol.iterator]()
+      const value = yield* this.run(generator, generator.next())
+      return yield* this.release(success(value))
+    } catch (e) {
+      return yield* this.release(unexpected(e))
+    }
+  }
+
+  readonly captureStackTrace = () =>
+    new Trace(this.context.fiberId, this.executionTraces.slice(), this.parentTrace)
+
+  readonly trackDisposable = (f: (remove: () => void) => Disposable): Disposable =>
+    pipe(this.disposables, withRemove(f))
+
+  readonly extend = <R2, B>(
+    fx: Fx<R2, E, B>,
+    resources: R2,
+    shouldTrace: boolean = this.shouldTrace,
+  ) =>
+    new InstructionProcessor(
       fx,
-    }
+      resources,
+      this.context,
+      extendScope(this.scope),
+      this.processors,
+      this.shouldTrace ? some(this.captureStackTrace()) : this.parentTrace,
+      shouldTrace,
+      this.maxOps,
+    )
 
-    this.disposables.add(
-      D.async(
-        () =>
-          new Promise<Exit<E, A>>((resolve) => {
-            if (!this.scope.open) {
-              return
-            }
+  readonly fork = <B>(fx: Fx<R, E, B>, options: Required<RuntimeOptions<E>, 'context'>) => {
+    const shouldTrace = options.shouldTrace ?? this.shouldTrace
+    const maxOps = options.maxOps ?? this.maxOps
+    const processors = options.processors ?? this.processors
 
-            this.addObserver(resolve)
-            this.node = { type: 'Exit', exit: disposed(this.context.fiberId) }
-            this.processNow()
-          }),
-      ),
+    return new InstructionProcessor(
+      fx,
+      this.resources,
+      options.context,
+      extendScope(options.scope ?? this.scope),
+      processors,
+      shouldTrace ? some(this.captureStackTrace()) : this.parentTrace,
+      shouldTrace ?? true,
+      maxOps,
     )
   }
 
-  processNow() {
-    let ops = 0
-    while (this.node && !this.exited) {
-      if (ops++ < this.maxOps) {
-        this.processNode(this.node)
-      } else {
-        this.processLater()
-        break
-      }
+  protected addTrace(instruction: Instruction<R, E>) {
+    this.executionTraces.push(formatInstruction(instruction, this.context))
+  }
+
+  protected *release(exit: Exit<E, A>): RuntimeIterable<E, Exit<E, A>> {
+    const releaseGenerator = this.scope.close(exit)[Symbol.iterator]()
+    const released = yield* this.run(releaseGenerator, releaseGenerator.next())
+
+    if (!released) {
+      const exit = yield new ResumeAsync<Exit<E, A>>((cb) => {
+        const option = this.scope.ensure((exit) => fromIO(() => cb(exit)))
+
+        return sync(() => isSome(option) && this.scope.cancel(option.value))
+      })
+
+      return exit as Exit<E, A>
     }
+
+    return pipe(
+      this.scope.exit.get(),
+      getOrElse(() => exit),
+    )
   }
 
-  processLater() {
-    void Promise.resolve().then(() => {
-      this.processNow()
-    })
-  }
+  protected *run<A>(
+    generator: Generator<Effect<R, E, any>, A>,
+    result: IteratorResult<Effect<R, E, any>, A>,
+    returned = false,
+  ): RuntimeIterable<E, A> {
+    while (!result.done) {
+      const instr = result.value as Instruction<R, E>
 
-  addObserver(observer: (exit: Exit<E, A>) => void): D.Disposable {
-    this.observers.add(observer)
+      const processor = this.processors[instr.type] as Processor<typeof instr['type'], R, E>
 
-    return D.sync(() => this.observers.delete(observer))
-  }
-
-  captureTrace = () =>
-    new Trace(this.context.fiberId, this.executionTraces, this.stackTraces, this.parentTrace)
-
-  get dispose() {
-    return this.disposables.dispose
-  }
-
-  private processNode(node: InstructionTree<R, E, any>) {
-    switch (node.type) {
-      case 'Initial':
-        return this.processInitial(node)
-      case 'Generator':
-        return this.processGenerator(node)
-      case 'Instruction':
-        return this.processInstruction(node)
-      case 'Exit':
-        return this.processExit(node)
-    }
-  }
-
-  private processInitial(node: InitialNode<R, E>) {
-    this.node = {
-      type: 'Generator',
-      generator: iterator(node.fx),
-      previous: node,
-      method: 'next',
-    }
-  }
-
-  private processGenerator(node: GeneratorNode<R, E>) {
-    let result: IteratorResult<Instruction<R, E>, any>
-
-    try {
-      result = node.generator[node.method](node.next) as IteratorResult<Instruction<R, E>, any>
-    } catch (e) {
-      this.node = {
-        type: 'Exit',
-        exit: unexpected(e),
+      if (this.shouldTrace) {
+        this.addTrace(instr)
       }
 
-      return
-    }
-
-    if (!result.done) {
-      // Reset the generator method to next
-      node.method = 'next'
-
-      this.node = {
-        type: 'Instruction',
-        instruction: result.value as Instruction<R, E>,
-        previous: node,
+      try {
+        result = generator.next(yield* this.handleProcessorInstruction(processor(instr, this)))
+      } catch (e) {
+        result = generator.throw(e)
       }
 
-      return
-    }
-
-    // Allow any finally clauses to run any additional effects
-    if (node.method !== 'return') {
-      node.method = 'return'
-      node.next = result.value
-
-      return
-    }
-
-    // Continue running the generator
-    if (node.previous.type === 'Generator') {
-      node.previous.next = result.value
-
-      this.node = node.previous
-
-      return
-    }
-
-    // Begin the exit process
-    if (node.previous.type === 'Initial') {
-      this.node = {
-        type: 'Exit',
-        exit: success(result.value),
+      // Suspend to other fibers running
+      if (++this.ops > this.maxOps) {
+        this.ops = 0
+        yield new ResumePromise(Promise.resolve)
       }
-
-      return
     }
 
-    // Notify observers of completion
-    const exitCode = this.scope.exit.get()
-
-    if (isSome(exitCode)) {
-      this.done(exitCode.value)
+    // Allow any finally clauses to run
+    if (!returned) {
+      yield* this.run(generator, generator.return(result.value), true)
     }
+
+    return result.value
   }
 
-  private processInstruction(node: InstructionNode<R, E>) {
-    const { instruction, previous } = node
+  protected *handleProcessorInstruction<A>(
+    processorInstruction: ProcessorInstruction<R, E, A>,
+  ): Generator<RuntimeInstruction<E>, any> {
+    switch (processorInstruction.type) {
+      case 'Fx': {
+        const nested = processorInstruction.fx[Symbol.iterator]()
 
-    const processor = this.processors[instruction.type] as Processor<
-      R,
-      E,
-      typeof instruction['type']
-    >
+        return yield* this.run(nested, nested.next())
+      }
+      case 'Result': {
+        const exit = yield* processorInstruction.processor
 
-    if (this.shouldTrace && instruction.trace) {
-      switch (instruction.type) {
-        case 'FromTuple':
-        case 'Chain':
-        case 'Fork':
-        case 'Match':
-        case 'Provide':
-        case 'Race':
-        case 'Result': {
-          this.addStackTrace(`${instruction.type}: ${instruction.trace}`)
+        this.executionTraces.unshift(...processorInstruction.processor.executionTraces)
+
+        return exit
+      }
+      case 'Scoped': {
+        const exit = yield* processorInstruction.processor
+
+        this.executionTraces.unshift(...processorInstruction.processor.executionTraces)
+
+        if (isLeft(exit)) {
+          yield { type: 'Exit', exit }
+
           break
         }
-        default: {
-          this.addExecutionTrace(instruction.trace)
-          break
-        }
+
+        return exit.right
       }
-    }
+      case 'Deferred': {
+        const nested = processorInstruction.fx[Symbol.iterator]()
+        const instruction = yield* this.run(nested, nested.next())
 
-    try {
-      const resume = processor(
-        instruction,
-        previous,
-        this,
-        (instruction, resources, context, scope, onExit) => {
-          const runtime = new InstructionProcessor(
-            instruction,
-            resources,
-            Context.make(contextToOptions(context)),
-            scope,
-            this.processors,
-            this.shouldTrace ? some(this.captureTrace()) : none,
-            this.shouldTrace,
-            this.maxOps,
-          )
-
-          runtime.addObserver(onExit)
-          runtime.processNow()
-
-          return runtime
-        },
-      )
-
-      this.processResume(resume, previous)
-    } catch (e) {
-      previous.next = e
-      previous.method = 'throw'
-
-      this.node = previous
-    }
-  }
-
-  private processResume(resume: Resume<R, E, any>, previous: GeneratorNode<R, E>) {
-    const shouldContinue = this.node === undefined
-
-    switch (resume.type) {
-      case 'Sync': {
-        previous.next = resume.value
-        this.node = previous
-
-        break
+        return yield* this.handleProcessorInstruction(instruction)
       }
-      case 'Async': {
-        return this.processResumeAsync(resume, previous)
-      }
-      case 'Node': {
-        this.node = resume.node
-        break
-      }
-      case 'Deferred':
-        return this.processResumeDeferred(resume, previous)
+      default:
+        return (yield processorInstruction) as A
     }
-
-    if (shouldContinue) {
-      this.processNow()
-    }
-  }
-
-  private processResumeAsync(resume: ResumeAsync<any>, previous: GeneratorNode<R, E>) {
-    // Break the current while-loop
-    this.node = undefined
-
-    const inner = new D.DisposableQueue()
-    const disposable = this.disposables.add(inner)
-
-    inner.add(
-      resume.run(async (value) => {
-        try {
-          // Cleanup after ourselves
-          await D.dispose(disposable)
-          previous.next = value
-          this.node = previous
-          this.processNow()
-        } catch (e) {
-          previous.next = e
-          previous.method = 'throw'
-          this.node = previous
-          this.processNow()
-        }
-      }),
-    )
-  }
-
-  private processResumeDeferred(resume: ResumeDeferred<R, E, any>, previous: GeneratorNode<R, E>) {
-    // Break the current while-loop
-    this.node = undefined
-
-    const inner = new D.DisposableQueue()
-    const disposable = this.disposables.add(inner)
-
-    inner.add(
-      resume.defer(async (resume) => {
-        try {
-          // Cleanup after ourselves
-          await D.dispose(disposable)
-
-          this.processResume(resume, previous)
-        } catch (e) {
-          previous.next = e
-          previous.method = 'throw'
-          this.node = previous
-          this.processNow()
-        }
-      }),
-    )
-  }
-
-  // TODO: Handle Status
-  // TODO: Track interrupting
-  private processExit(node: ExitNode<E, A>) {
-    const that = this
-
-    const exit =
-      this.shouldTrace && isLeft(node.exit)
-        ? left(Traced(this.captureTrace(), node.exit.left))
-        : node.exit
-
-    this.node = {
-      type: 'Generator',
-      generator: (function* () {
-        const released = yield* that.scope.close(exit)
-
-        if (!released) {
-          that.scope.ensure((exit) => fromIO(() => that.done(exit)))
-        }
-      })(),
-      method: 'next',
-      previous: node,
-    }
-  }
-
-  // TODO: Handle Status
-  private done(exit: Exit<E, A>) {
-    this.exited = true
-
-    if (isLeft(exit) && this.observers.size === 0) {
-      this.context.reportFailure(exit.left)
-    } else {
-      this.observers.forEach((f) => f(exit))
-      this.observers.clear()
-    }
-
-    this.node = undefined
-  }
-
-  private addExecutionTrace(trace: string) {
-    this.executionTraces.unshift(new SourceLocation(trace))
-  }
-
-  private addStackTrace(trace: string) {
-    this.executionTraces.unshift(new SourceLocation(trace))
   }
 }
 
-function iterator<Y, R, N>(fx: { readonly [Symbol.iterator]: () => Generator<Y, R, N> }) {
-  return fx[Symbol.iterator]()
+export function formatInstruction<R, E>(instruction: Instruction<R, E>, context: Context<E>) {
+  switch (instruction.type) {
+    case 'FromExit':
+      return new SourceLocation(addTrace(instruction.trace, formatFromExit(instruction, context)))
+    case 'Provide':
+      return new SourceLocation(addTrace(instruction.trace, formatProvide(instruction)))
+    default:
+      return new SourceLocation(addTrace(instruction.trace, instruction.type))
+  }
+}
+
+function formatFromExit<E, A>({ input }: FromExit<E, A>, context: Context<E>) {
+  return pipe(
+    input,
+    match(
+      (cause) => `Failure<${prettyPrint(cause, context.renderer).replace(/\n/g, '\n  ')}>`,
+      (a) => `Success<${JSON.stringify(a).replace(/\n/g, '\n  ')}>`,
+    ),
+  )
+}
+
+export function formatProvide<R, E, A>({ input }: Provide<R, E, A>) {
+  return `Provide => ${JSON.stringify(input.resources).replace(/\n/g, '\n  ')}`
+}
+
+export function addTrace(trace: string | undefined, str: string): string {
+  if (trace === undefined) {
+    return str
+  }
+
+  return `${str} :: ${trace}`
 }

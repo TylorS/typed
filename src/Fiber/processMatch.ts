@@ -1,45 +1,28 @@
 import { isRight } from 'fp-ts/Either'
 
 import { isExpected } from '@/Cause'
-import { Match } from '@/Effect/Match'
-import { extendScope } from '@/Scope'
+import { Match, result } from '@/Effect'
+import { fromCause, Fx } from '@/Fx'
 
-import { Instruction } from './Instruction'
 import { InstructionProcessor } from './InstructionProcessor'
-import { GeneratorNode } from './InstructionTree'
-import { ResumeDeferred, ResumeNode, ResumeSync, RunInstruction } from './Processor'
+import { FxInstruction } from './Processor'
 
 export const processMatch = <R, E, A, R2, E2, B, R3, E3, C>(
-  match: Match<R, E, A, R2, E2, B, R3, E3, C>,
-  previous: GeneratorNode<R & R2 & R3, E>,
-  runtime: InstructionProcessor<R & R2 & R3, E | E2 | E3, any>,
-  run: RunInstruction,
-) =>
-  new ResumeDeferred<R & R2 & R3, E | E2 | E3, B | C>((cb) =>
-    run(
-      match.input.effect as Instruction<R, E>,
-      runtime.resources,
-      runtime.context,
-      extendScope(runtime.scope),
-      (exit) => {
-        if (isRight(exit)) {
-          return cb(new ResumeSync(exit.right))
-        }
+  instruction: Match<R, E, A, R2, E2, B, R3, E3, C>,
+  _: InstructionProcessor<R & R2 & R3, E | E2 | E3, any>,
+): FxInstruction<R & R2 & R3, E | E2 | E3, B | C> => ({
+  type: 'Fx',
+  fx: Fx(function* () {
+    const exit = yield* result(instruction.input.fx)
 
-        if (isExpected(exit.left)) {
-          return cb(
-            new ResumeNode<R & R2 & R3, E | E2 | E3>({
-              type: 'Generator',
-              generator: (
-                match.input.onLeft(exit.left.error) as Instruction<R & R2 & R3, E | E2 | E3>
-              )[Symbol.iterator](),
-              method: 'next',
-              previous,
-            }),
-          )
-        }
+    if (isRight(exit)) {
+      return yield* instruction.input.onRight(exit.right)
+    }
 
-        return new ResumeNode({ type: 'Exit', exit })
-      },
-    ),
-  )
+    if (isExpected(exit.left)) {
+      return yield* instruction.input.onLeft(exit.left.error)
+    }
+
+    return yield* fromCause(exit.left, instruction.trace)
+  }),
+})

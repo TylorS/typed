@@ -1,50 +1,40 @@
 import { disposeAll } from '@/Disposable'
-import { Effect } from '@/Effect'
-import { FromTuple, TupleErrors, TupleOutput } from '@/Effect/FromTuple'
-import { both, Exit } from '@/Exit'
-import { extendScope } from '@/Scope'
+import { FromTuple, TupleErrors, TupleResources } from '@/Effect'
+import { Exit } from '@/Exit'
+import { Fx } from '@/Fx'
 
-import { Instruction } from './Instruction'
 import { InstructionProcessor } from './InstructionProcessor'
-import { GeneratorNode } from './InstructionTree'
-import { ResumeAsync, ResumeSync, RunInstruction } from './Processor'
+import { ResumeAsync } from './RuntimeInstruction'
+import { RuntimeProcessor } from './RuntimeProcessor'
 
-export const processFromTuple = <
-  Effects extends ReadonlyArray<Effect<any, any, any> | Effect<any, never, any>>,
-  R,
-  E,
->(
-  instruction: FromTuple<Effects>,
-  _previous: GeneratorNode<R, E>,
-  runtime: InstructionProcessor<any, any, any>,
-  run: RunInstruction,
+export const processFromTuple = <FX extends ReadonlyArray<Fx<any, any, any> | Fx<any, never, any>>>(
+  tuple: FromTuple<FX>,
+  processor: InstructionProcessor<TupleResources<FX>, TupleErrors<FX>, any>,
 ) =>
-  instruction.input.length === 0
-    ? new ResumeSync([])
-    : new ResumeAsync<Exit<TupleErrors<Effects>, TupleOutput<Effects>>>((cb) => {
-        const exits: Array<Exit<any, any>> = Array(instruction.input.length)
-        let remaining = instruction.input.length
+  new ResumeAsync((cb) => {
+    const exits: Array<Exit<any, any>> = Array(tuple.input.length)
+    let remaining = tuple.input.length
 
-        function onComplete(exit: Exit<any, any>, idx: number) {
-          exits[idx] = exit
+    function onComplete(exit: Exit<any, any>, index: number) {
+      exits[index] = exit
 
-          if (--remaining === 0) {
-            const [first, ...rest] = exits
-            const exit = rest.reduce(both, first)
+      if (--remaining === 0) {
+        cb(exits)
+      }
+    }
 
-            cb(exit)
-          }
-        }
-
-        return disposeAll(
-          instruction.input.map((instr, idx) =>
-            run(
-              instr as Instruction<R, E>,
-              runtime.resources,
-              runtime.context,
-              extendScope(runtime.scope),
-              (exit) => onComplete(exit, idx),
-            ),
-          ),
+    return disposeAll(
+      tuple.input.map((fx, i) => {
+        const runtime = new RuntimeProcessor(
+          processor.extend(fx, processor.resources),
+          processor.captureStackTrace,
+          processor.shouldTrace,
         )
-      })
+
+        runtime.addObserver((exit) => onComplete(exit, i))
+        runtime.processNow()
+
+        return runtime
+      }),
+    )
+  })

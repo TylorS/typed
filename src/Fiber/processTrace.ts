@@ -1,11 +1,7 @@
-import { Trace } from '@/Effect/Trace'
+import { Trace } from '@/Effect'
 
 import { InstructionProcessor } from './InstructionProcessor'
-import { GeneratorNode } from './InstructionTree'
-import { ResumeSync } from './Processor'
+import { ResumeSync } from './RuntimeInstruction'
 
-export const processTrace = <R, E>(
-  _trace: Trace,
-  _previous: GeneratorNode<R, E>,
-  processor: InstructionProcessor<R, E, any>,
-) => new ResumeSync(processor.captureTrace())
+export const processTrace = <R, E>(_: Trace, processor: InstructionProcessor<R, E, any>) =>
+  new ResumeSync(processor.captureStackTrace())

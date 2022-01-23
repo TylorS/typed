@@ -1,8 +1,9 @@
-import { Effect } from './Effect'
+import type { Fx } from '@/Fx'
+
 import { instr } from './Instruction'
 
 export class Provide<R, E, A> extends instr('Provide')<
-  { readonly effect: Effect<R, E, A>; readonly resources: R },
+  { readonly fx: Fx<R, E, A>; readonly resources: R },
   unknown,
   E,
   A
@@ -10,5 +11,5 @@ export class Provide<R, E, A> extends instr('Provide')<
 
 export const provide =
   <R>(resources: R, trace?: string) =>
-  <E, A>(effect: Effect<R, E, A>) =>
-    new Provide({ effect, resources }, trace)
+  <E, A>(fx: Fx<R, E, A>) =>
+    new Provide({ fx, resources }, trace)

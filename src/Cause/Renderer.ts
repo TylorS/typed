@@ -106,12 +106,12 @@ export function renderCauseToSequential<E>(
 ): Sync.Sync<Sequential> {
   return Sync.Sync(function* () {
     switch (cause.type) {
-      case 'Disposed':
-        return renderDisposed(cause, none, renderer)
       case 'Expected':
         return renderExpected(cause, none, renderer)
       case 'Unexpected':
         return renderUnexpected(cause, none, renderer)
+      case 'Disposed':
+        return renderDisposed(cause, none, renderer)
       case 'Then':
         return Sequential(linearSegments(cause, renderer))
       case 'Both':
@@ -125,16 +125,45 @@ export function renderCauseToSequential<E>(
           case 'Disposed':
             return renderDisposed(cause.cause, some(cause.trace), renderer)
           default: {
+            const { all }: Sequential = yield* renderCauseToSequential(cause.cause, renderer)
+            const rendered = renderTrace(some(cause.trace), renderer)
+
             return Sequential([
-              Failure([
-                'An error was rethrown with a new trace.',
-                ...renderTrace(some(cause.trace), renderer),
-              ]),
-              ...(yield* renderCauseToSequential(cause.cause, renderer)).all,
+              ...(rendered.every((x) => Sync.run(includes(all, x)))
+                ? []
+                : [Failure(['An error was rethrown with a new trace.', ...rendered])]),
+              ...all,
             ])
           }
         }
       }
+    }
+  })
+}
+
+function includes(steps: ReadonlyArray<Step>, value: string): Sync.Sync<boolean> {
+  return Sync.Sync(function* () {
+    // Reverse steps as this will usually be at the bottom of the previous section
+    for (const step of steps.slice().reverse()) {
+      if (yield* stepIncludes(step, value)) {
+        return true
+      }
+    }
+
+    return false
+  })
+}
+
+function stepIncludes(step: Step, value: string): Sync.Sync<boolean> {
+  return Sync.Sync(function* () {
+    switch (step.type) {
+      case 'Failure':
+        return step.lines.includes(value)
+      case 'Parallel':
+        return yield* includes(
+          step.all.flatMap((s) => s.all),
+          value,
+        )
     }
   })
 }
@@ -183,7 +212,10 @@ export function lines(s: string): Lines {
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function renderString(u: any): string {
-  return u?.toString?.() ?? JSON.stringify(u, null, 2)
+  const s = u?.toString?.()
+  const shouldJsonify = !s || s.trim().startsWith('[object')
+
+  return shouldJsonify ? JSON.stringify(u, null, 2) : s
 }
 
 export function prefixBlock(lines: Lines, headPrefix: string, tailPrefix: string): Lines {

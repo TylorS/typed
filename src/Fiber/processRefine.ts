@@ -1,39 +1,23 @@
-import { isRight } from 'fp-ts/Either'
+import { isLeft } from 'fp-ts/Either'
 
 import { isUnexpected } from '@/Cause'
-import { Refine } from '@/Effect/Refine'
-import * as Exit from '@/Exit'
-import { extendScope } from '@/Scope'
+import { fromExit, Refine, result } from '@/Effect'
+import { expected } from '@/Exit'
+import { Fx } from '@/Fx'
 
-import { Instruction } from './Instruction'
-import { InstructionProcessor } from './InstructionProcessor'
-import { GeneratorNode } from './InstructionTree'
-import { ResumeDeferred, ResumeNode, ResumeSync, RunInstruction } from './Processor'
+import { FxInstruction } from './Processor'
 
 export const processRefine = <R, E, A, E2>(
-  refine: Refine<R, E, A, E2>,
-  _previous: GeneratorNode<R, E | E2>,
-  processor: InstructionProcessor<R, E | E2, any>,
-  run: RunInstruction,
-) =>
-  new ResumeDeferred<R, E | E2, A>((cb) =>
-    run(
-      refine.input.effect as Instruction<R, E>,
-      processor.resources,
-      processor.context,
-      extendScope(processor.scope),
-      (exit) => {
-        if (isRight(exit)) {
-          return cb(new ResumeSync(exit.right))
-        }
+  instr: Refine<R, E, A, E2>,
+): FxInstruction<R, E | E2, A> => ({
+  type: 'Fx',
+  fx: Fx(function* () {
+    const exit = yield* result(instr.input.fx, instr.trace)
+    const refined =
+      isLeft(exit) && isUnexpected(exit.left) && instr.input.refinement(exit.left.error)
+        ? expected(exit.left.error)
+        : exit
 
-        if (isUnexpected(exit.left) && refine.input.refinement(exit.left.error)) {
-          return cb(
-            new ResumeNode({ type: 'Exit', exit: Exit.expected(exit.left.error as E | E2) }),
-          )
-        }
-
-        return cb(new ResumeNode({ type: 'Exit', exit: exit as Exit.Exit<E | E2, A> }))
-      },
-    ),
-  )
+    return yield* fromExit<E | E2, A>(refined, instr.trace)
+  }),
+})

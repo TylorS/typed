@@ -1,52 +1,59 @@
-import { Context } from '@/Context'
-import { Disposable } from '@/Disposable'
-import { Exit } from '@/Exit'
+import { U } from 'ts-toolbelt'
+
 import { Fx } from '@/Fx'
-import { LocalScope } from '@/Scope'
 
-import type { FindInstruction, Instruction } from './Instruction'
+import { Instruction } from './Instruction'
 import type { InstructionProcessor } from './InstructionProcessor'
-import type { GeneratorNode, InstructionTree } from './InstructionTree'
+import { RuntimeInstruction } from './RuntimeInstruction'
 
-export type Processor<R, E, Type extends Instruction<any, any>['type']> = (
-  instruction: FindInstruction<Type, R, E>,
-  previous: GeneratorNode<R, E>,
+export type InstructionType = Instruction<any, any>['type']
+
+export type FindInstruction<T extends InstructionType, R, E> = FindInstructionFromList<
+  T,
+  U.ListOf<Instruction<R, E>>
+>
+
+export type FindInstructionFromList<
+  T extends InstructionType,
+  Instructions extends ReadonlyArray<Instruction<any, any>>,
+> = {
+  readonly [K in keyof Instructions]: Instructions[K] extends { readonly type: T }
+    ? Instructions[K]
+    : never
+}[number]
+
+export type Processors = {
+  readonly [K in InstructionType]: Processor<K, any, any>
+}
+
+export type Processor<T extends InstructionType, R, E> = (
+  instruction: FindInstruction<T, R, E>,
   processor: InstructionProcessor<R, E, any>,
-  run: RunInstruction,
-) => Resume<R, E, any>
+) => ProcessorInstruction<R, E, any>
 
-export type RunInstruction = <R2, E2, A>(
-  instruction: Fx<R2, E2, A>,
-  resources: R2,
-  context: Context<E2>,
-  scope: LocalScope<E2, A>,
-  onExit: (exit: Exit<E2, A>) => void,
-) => Disposable
+export type ProcessorInstruction<R, E, A> =
+  | RuntimeInstruction<E>
+  | FxInstruction<R, E, A>
+  | ResultInstruction<R, E, A>
+  | ScopedInstruction<R, E, A>
+  | DeferredInstruction<R, E, A>
 
-export type Resume<R, E, A> =
-  | ResumeSync<A>
-  | ResumeAsync<A>
-  | ResumeDeferred<R, E, A>
-  | ResumeNode<R, E>
-
-export class ResumeSync<A> {
-  readonly type = 'Sync'
-  constructor(readonly value: A) {}
+export interface FxInstruction<R, E, A> {
+  readonly type: 'Fx'
+  readonly fx: Fx<R, E, A>
 }
 
-export class ResumeAsync<A> {
-  readonly type = 'Async'
-  constructor(readonly run: (cb: (value: A) => void) => Disposable) {}
+export interface ResultInstruction<R, E, A> {
+  readonly type: 'Result'
+  readonly processor: InstructionProcessor<R, E, A>
 }
 
-export class ResumeDeferred<R, E, A> {
-  readonly type = 'Deferred'
-
-  constructor(readonly defer: (cb: (resume: Resume<R, E, A>) => void) => Disposable) {}
+export interface ScopedInstruction<R, E, A> {
+  readonly type: 'Scoped'
+  readonly processor: InstructionProcessor<R, E, A>
 }
 
-export class ResumeNode<R, E> {
-  readonly type = 'Node'
-
-  constructor(readonly node: InstructionTree<R, E, any>) {}
+export interface DeferredInstruction<R, E, A> {
+  readonly type: 'Deferred'
+  readonly fx: Fx<R, E, ProcessorInstruction<R, E, A>>
 }

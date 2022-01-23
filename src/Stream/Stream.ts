@@ -1,11 +1,13 @@
-import { IO } from 'fp-ts/IO'
+import { identity, pipe } from 'fp-ts/function'
+import { isSome, match, none, Option, some } from 'fp-ts/Option'
+import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
 
-import { Unexpected } from '@/Cause'
+import { prettyPrint } from '@/Cause'
 import { Context } from '@/Context'
 import { Disposable } from '@/Disposable'
-import * as FromIO from '@/Effect/FromIO'
 import { Scope } from '@/Scope'
-import { Sink } from '@/Sink'
+import { EndElement, ErrorElement, EventElement, Sink, SinkTraceElement } from '@/Sink'
+import { SourceLocation, Trace } from '@/Trace'
 
 export interface Stream<R, E, A> {
   readonly run: StreamRun<R, E, A>
@@ -19,49 +21,155 @@ export type StreamRun<R, E, A> = (
   resources: R,
   sink: Sink<E, A>,
   context: Context<E>,
-  scope: Scope<E, any>,
+  scope: Scope<E, void>,
+  tracer: Tracer<E>,
 ) => Disposable
 
-export const make = <R, E, A>(run: StreamRun<R, E, A>): Stream<R, E, A> => ({
-  run,
+/**
+ * Helps deal with adding traces to your events
+ */
+export const make = <R, E, A>(
+  run: (resources: R, sink: Sink<E, A>, context: Context<E>, scope: Scope<E, void>) => Disposable,
+): Stream<R, E, A> => ({
+  run: (resources, sink, context, scope, tracer) =>
+    run(
+      resources,
+      {
+        event: (event) => sink.event(tracer.makeTrace(event)),
+        error: (event) => sink.error(tracer.makeTrace(event)),
+        end: (event) => sink.end(tracer.makeTrace(event)),
+      },
+      context,
+      scope,
+    ),
 })
 
-export const withInputs = <R, E, A>(
-  f: (resources: R, sink: Sink<E, A>, context: Context<E>, scope: Scope<E, any>) => A,
-  trace?: string,
-): Stream<R, E, A> =>
-  make((resources, sink, context, scope) =>
-    fromIO<A, E>(() => f(resources, sink, context, scope), trace).run(
-      resources,
-      sink,
-      context,
-      scope,
+export interface Tracer<E> {
+  readonly makeTrace: {
+    <A>(event: EventElement<A>): EventElement<A>
+    <E>(event: ErrorElement<E>): ErrorElement<E>
+    (event: EndElement): EndElement
+    <A>(event: SinkTraceElement<E, A>): SinkTraceElement<E, A>
+  }
+}
+
+export function makeTracer<E>(
+  context: Context<E>,
+  shouldTrace = true,
+  parentTrace: Option<Trace> = none,
+): Tracer<E> {
+  if (!shouldTrace) {
+    return { makeTrace: identity }
+  }
+
+  return {
+    makeTrace: (<A>(event: SinkTraceElement<E, A>) => {
+      switch (event.type) {
+        case 'Event':
+          return { ...event, trace: some(makeEventTrace(context, event, parentTrace)) }
+        case 'Error':
+          return { ...event, trace: some(makeErrorTrace(context, event, parentTrace)) }
+        case 'End':
+          return { ...event, trace: some(makeEndTrace(context, event, parentTrace)) }
+      }
+    }) as Tracer<E>['makeTrace'],
+  }
+}
+
+export function makeEventTrace<E, A>(
+  context: Context<E>,
+  event: EventElement<A>,
+  parentTrace: Option<Trace> = none,
+): Trace {
+  return new Trace(
+    context.fiberId,
+    [
+      new SourceLocation(
+        `Event (${event.time}) :: ${event.operator} :: ${JSON.stringify(
+          event.value,
+          null,
+          2,
+        ).replace(/\n/g, '\n  ')}`,
+      ),
+    ],
+    concatAncsestor(parentTrace, event.trace),
+  )
+}
+
+export function makeErrorTrace<E>(
+  context: Context<E>,
+  event: ErrorElement<E>,
+  parentTrace: Option<Trace> = none,
+): Trace {
+  return new Trace(
+    context.fiberId,
+    [
+      new SourceLocation(
+        `Error (${event.time}) :: ${event.operator} :: ${prettyPrint(
+          event.cause,
+          context.renderer,
+        ).replace(/\n/g, '\n  ')}`,
+      ),
+    ],
+    parentTrace,
+  )
+}
+
+export function makeEndTrace<E>(
+  context: Context<E>,
+  event: EndElement,
+  parentTrace: Option<Trace> = none,
+): Trace {
+  return new Trace(
+    context.fiberId,
+    [new SourceLocation(`End (${event.time}) :: ${event.operator}`)],
+    concatAncsestor(parentTrace, event.trace),
+  )
+}
+
+function concatAncsestor(parentTrace: Option<Trace>, childTrace: Option<Trace>): Option<Trace> {
+  return pipe(
+    parentTrace,
+    match(
+      () => childTrace,
+      (parent) =>
+        pipe(
+          childTrace,
+          match(
+            () => parent,
+            (t) => prependAncestor(t, parent),
+          ),
+          some,
+        ),
     ),
   )
+}
 
-export const ask = <R>(trace?: string): Stream<R, never, R> => withInputs((r) => r, trace)
+function prependAncestor(trace: Trace, anscestor: Trace): Trace {
+  return listToTrace(traceToList(trace, anscestor))
+}
 
-export const asks = <R, A>(f: (r: R) => A, trace?: string): Stream<R, never, A> =>
-  withInputs((r) => f(r), trace)
+function traceToList(trace: Trace, ancestor: Trace): ReadonlyNonEmptyArray<Trace> {
+  const traces: [Trace, ...Trace[]] = [{ ...trace, parentTrace: none }]
 
-export const getContext = <E = never>(trace?: string): Stream<unknown, E, Context<E>> =>
-  withInputs((_resources, _sink, context) => context, trace)
+  let current = trace
 
-export const fromIO = <A, E = never>(io: IO<A>, trace?: string): EStream<E, A> =>
-  make<unknown, E, A>((resources, sink, context, scope) =>
-    context.scheduler.asap(
-      FromIO.fromIO(() => {
-        const time = context.scheduler.getCurrentTime()
+  while (isSome(current.parentTrace)) {
+    const trace = current.parentTrace.value
 
-        try {
-          sink.event(time, io())
-          sink.end(time)
-        } catch (e) {
-          sink.error(context.scheduler.getCurrentTime(), Unexpected(e))
-        }
-      }, trace),
-      resources,
-      context,
-      scope,
-    ),
-  )
+    traces.push({ ...trace, parentTrace: none })
+
+    current = trace
+  }
+
+  traces.push(ancestor)
+
+  return traces
+}
+
+function listToTrace(traces: ReadonlyNonEmptyArray<Trace>): Trace {
+  return traces.reduceRight((parentTrace, trace) => ({
+    ...trace,
+    parentTrace: some(parentTrace),
+  }))
+}

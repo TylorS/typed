@@ -30,8 +30,8 @@ export const asks = <R, A>(f: (r: R) => A, trace?: string): RFx<R, A> => E.asks(
 
 export const chain =
   <A, R2, E2, B>(f: (a: A) => Fx<R2, E2, B>, trace?: string) =>
-  <R, E>(fx: Fx<R, E, A>) =>
-    E.chain(f, trace)(fx)
+  <R, E>(fx: Fx<R, E, A>): Fx<R & R2, E | E2, B> =>
+    E.chain(f, trace)(fx) as Fx<R & R2, E | E2, B>
 
 export const disposed: <E = never, A = never>(
   id: FiberId,
@@ -51,7 +51,7 @@ export const fromExit: <E, A>(exit: Exit<E, A>, trace?: string | undefined) => E
 export const fromCause = <E>(cause: Cause<E>, trace?: string | undefined): EFx<E, never> =>
   E.fromExit<E, never>(left(cause), trace)
 
-export const fromIO: <A>(io: IO<A>, trace?: string | undefined) => Of<A> = E.fromIO
+export const fromIO: <A, E = never>(io: IO<A>, trace?: string | undefined) => EFx<E, A> = E.fromIO
 
 export const fromPromise: <A>(f: () => Promise<A>, trace?: string | undefined) => Of<A> =
   E.fromPromise
@@ -108,8 +108,10 @@ export const never = fromAsync<never>(Async(() => none))
 
 export const fork: <R, E, A>(
   fx: Fx<R, E, A>,
-  runtimeOptions?: RuntimeOptions,
+  runtimeOptions?: RuntimeOptions<E>,
 ) => Fx<R, never, Fiber<E, A>> = E.fork
 
-export const join: <E, A>(fx: Fiber<E, A>, runtimeOptions?: RuntimeOptions) => Fx<unknown, E, A> =
-  E.join
+export const join: <E, A>(
+  fx: Fiber<E, A>,
+  runtimeOptions?: RuntimeOptions<E>,
+) => Fx<unknown, E, A> = E.join

@@ -1,76 +1,69 @@
-import { isLeft, isRight, left } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
 
-import { Both, Cause, Then, Unexpected } from '@/Cause'
-import { dispose, disposeAll } from '@/Disposable'
-import { Effect } from '@/Effect'
-import { Race } from '@/Effect/Race'
+import { dispose } from '@/Disposable'
+import {
+  fromExit,
+  fromPromise,
+  of,
+  Race,
+  RaceErrors,
+  RaceOutput,
+  RaceResources,
+  tuple,
+} from '@/Effect'
 import { Exit } from '@/Exit'
-import { extendScope } from '@/Scope'
+import { complete, pending, wait } from '@/Future'
+import { Fx } from '@/Fx'
 
-import { Instruction } from './Instruction'
 import { InstructionProcessor } from './InstructionProcessor'
-import { GeneratorNode } from './InstructionTree'
-import { ResumeDeferred, ResumeNode, ResumeSync, RunInstruction } from './Processor'
+import { FxInstruction } from './Processor'
+import { RuntimeProcessor } from './RuntimeProcessor'
 
-export const processRace = <
-  Effects extends ReadonlyArray<Effect<any, any, any> | Effect<any, never, any>>,
-  R,
-  E,
->(
-  instruction: Race<Effects>,
-  _previous: GeneratorNode<R, E>,
-  runtime: InstructionProcessor<any, any, any>,
-  run: RunInstruction,
-) =>
-  instruction.input.length === 0
-    ? new ResumeSync([])
-    : new ResumeDeferred((cb) => {
-        const causes: Array<Cause<any>> = Array(instruction.input.length)
+export const processRace = <FX extends ReadonlyArray<Fx<any, any, any> | Fx<any, never, any>>>(
+  instr: Race<FX>,
+  processor: InstructionProcessor<RaceResources<FX>, RaceErrors<FX>, any>,
+): FxInstruction<RaceResources<FX>, RaceErrors<FX>, RaceOutput<FX>> => ({
+  type: 'Fx',
+  fx: Fx(function* () {
+    let deleteCount = 0
+    const future = pending<unknown, never, Exit<any, any>>()
 
-        let remaining = instruction.input.length
-        let deleted = 0
+    // Run each Fx
+    const runtimes = instr.input.map((fx, i) => {
+      const runtime = new RuntimeProcessor(
+        processor.extend(fx, processor.resources),
+        processor.captureStackTrace,
+        processor.shouldTrace,
+      )
 
-        const disposables = instruction.input.map((instr, idx) =>
-          run(
-            instr as Instruction<R, E>,
-            runtime.resources,
-            runtime.context,
-            extendScope(runtime.scope),
-            (exit) => onComplete(exit, idx),
-          ),
-        )
+      // Don't start Fx if another Sync Fx has already won
+      if (future.state.get().type === 'Done') {
+        return runtime
+      }
 
-        function onComplete(exit: Exit<any, any>, idx: number) {
-          if (isLeft(exit)) {
-            causes.push(exit.left)
-          }
-
-          disposables.slice(idx - deleted)
-          deleted++
-          remaining--
-
-          if (isRight(exit)) {
-            return onSuccess(exit.right)
-          }
-
-          if (remaining === 0) {
-            const exit = left(causes.reduce(Both))
-
-            cb(new ResumeNode({ type: 'Exit', exit }))
-          }
+      runtime.addObserver((exit) => {
+        // Remove finished Fx from the list to be disposed
+        // Guard is here in case runtimes has not finished being defined when a Sync Fx completes.
+        if (typeof runtimes !== 'undefined') {
+          runtimes.splice(i - deleteCount++, 1)
         }
 
-        async function onSuccess(value: any) {
-          try {
-            await dispose(disposeAll(disposables))
-
-            cb(new ResumeSync(value))
-          } catch (e) {
-            const cause = causes.length > 0 ? causes.reduce(Then, Unexpected(e)) : Unexpected(e)
-
-            cb(new ResumeNode({ type: 'Exit', exit: left(cause) }))
-          }
-        }
-
-        return disposeAll(disposables)
+        // Responde with the winner
+        pipe(future, complete(of(exit, instr.trace)))
       })
+
+      runtime.processNow()
+
+      return runtime
+    })
+
+    // Wait for a winner
+    const exit = yield* wait(future)
+
+    // Cleanup all other Fx
+    yield* tuple(runtimes.map((r) => fromPromise(async () => dispose(r))))
+
+    // Return the Result
+    return yield* fromExit(exit, instr.trace)
+  }),
+})

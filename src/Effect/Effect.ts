@@ -1,9 +1,9 @@
 import { Equals } from 'ts-toolbelt/out/Any/Equals'
 
-export abstract class Effect<R, E, A> {
-  readonly _R!: (resources: R) => void
-  readonly _E!: () => E
-  readonly _A!: () => A
+export interface Effect<R, E, A> {
+  readonly _R: (resources: R) => void
+  readonly _E: () => E
+  readonly _A: () => A
 }
 
 export interface REffect<R, A> extends Effect<R, never, A> {}

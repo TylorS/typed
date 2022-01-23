@@ -1,5 +1,6 @@
 export * from './Access'
 export * from './Chain'
+export * from './Drain'
 export * from './Effect'
 export * from './Fork'
 export * from './FromAsync'

@@ -7,7 +7,7 @@
     "./src/*.ts",
     "./src/**/*.ts",
     "./tools/*.ts"
-  ],
+, "src/Fiber/InstructionProcessor.ts"  ],
   "exclude": [
     "./cjs",
     "./esm",

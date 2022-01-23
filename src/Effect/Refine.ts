@@ -1,9 +1,11 @@
+import { Fx } from '@/Fx'
+
 import { Effect } from './Effect'
 import { instr } from './Instruction'
 
 export class Refine<R, E, A, E2> extends instr('Refine')<
   {
-    readonly effect: Effect<R, E, A>
+    readonly fx: Fx<R, E, A>
     readonly refinement: (error: unknown) => error is E2
   },
   R,
@@ -13,5 +15,5 @@ export class Refine<R, E, A, E2> extends instr('Refine')<
 
 export const refine =
   <E2>(refinement: (error: unknown) => error is E2, trace?: string) =>
-  <R, E, A>(effect: Effect<R, E, A>): Effect<R, E | E2, A> =>
-    new Refine({ effect, refinement }, trace)
+  <R, E, A>(fx: Fx<R, E, A>): Effect<R, E | E2, A> =>
+    new Refine({ fx, refinement }, trace)

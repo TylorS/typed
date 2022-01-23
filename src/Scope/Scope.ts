@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 import * as Either from 'fp-ts/Either'
-import { isNone, none, Option, some } from 'fp-ts/Option'
+import { isNone, isSome, none, Option, some } from 'fp-ts/Option'
 
 import { Branded } from '@/Branded'
-import { tuple } from '@/Effect/FromTuple'
+import { fromIO } from '@/Effect'
 import { result } from '@/Effect/Result'
 import * as Exit from '@/Exit'
-import { Fx, Of } from '@/Fx'
+import { of } from '@/Fx/Effect'
+import { Fx, Of } from '@/Fx/Fx'
 import { decrement, increment, MutableRef } from '@/MutableRef'
+
+import { InterruptableStatus } from './InterruptableStatus'
 
 export type Scope<E, A> = LocalScope<E, A> | GlobalScope
 
@@ -20,6 +23,7 @@ export class LocalScope<E, A> {
   readonly type = 'LocalScope'
   readonly exit = MutableRef.make<Option<Exit.Exit<E, A>>>(none)
   readonly refCount: RefCount = new RefCount()
+  readonly interruptableStatus: InterruptableStatus = new InterruptableStatus()
 
   private finalizers = new Map<FinalizerKey, Finalizer>()
   private isReleased = false
@@ -56,6 +60,24 @@ export class LocalScope<E, A> {
     if (scope === this || scope.type === 'GlobalScope') {
       return true
     }
+
+    if (this.open && scope.open) {
+      scope.refCount.increment()
+
+      const key = this.ensure(scope.release)
+
+      scope.ensure(() =>
+        fromIO(() => {
+          if (isSome(key)) {
+            this.cancel(key.value)
+          }
+        }),
+      )
+
+      return true
+    }
+
+    return false
   }
 
   readonly close = (exit: Exit.Exit<E, A>): Of<boolean> => {
@@ -76,26 +98,27 @@ export class LocalScope<E, A> {
     return Fx(function* () {
       const optionExit = that.exit.get()
 
-      if (that.refCount.decrement() > 0 || isNone(optionExit) || that.finalizers.size === 0) {
+      if (that.refCount.decrement() > 0 || isNone(optionExit)) {
         return false
       }
 
-      const currentExit = optionExit.value
-      const fxs = Array.from(that.finalizers.values()).map((f) => result(f(currentExit)))
-      const finalizerExits = yield* tuple(fxs)
-      const finalizerExit = finalizerExits.reduce(Exit.then)
+      if (that.finalizers.size > 0) {
+        const currentExit = optionExit.value
+        const finalizers = Array.from(that.finalizers.values())
+        const finalizerExits: Exit.Exit<any, any>[] = []
 
-      if (Either.isLeft(finalizerExit)) {
-        const finalExit: Exit.Exit<E, A> = Either.isLeft(currentExit)
-          ? Exit.then(currentExit, finalizerExit)
-          : finalizerExit
+        for (const finalizer of finalizers) {
+          finalizerExits.push(yield* result(finalizer(currentExit)))
+        }
 
-        that.exit.set(some(finalExit))
+        const finalizerExit = finalizerExits.reduce(Exit.then, currentExit)
+
+        if (Either.isLeft(finalizerExit)) {
+          that.exit.set(some(finalizerExit))
+        }
       }
 
-      that.isReleased = true
-
-      return true
+      return (that.isReleased = true)
     })
   }
 }
@@ -104,23 +127,21 @@ export class GlobalScope {
   readonly type = 'GlobalScope'
   readonly open = true
   readonly released = false
-
   readonly extend = <E2, B>(scope: Scope<E2, B>) =>
     scope.type === 'GlobalScope' ? true : scope.open ? (scope.refCount.increment(), true) : false
-
   readonly ensure = (_finalizer: Finalizer): Option<FinalizerKey> => none
   readonly cancel = (_key: FinalizerKey) => false
   readonly close = <E, A>(_exit: Exit.Exit<E, A>) => this.release
-  // eslint-disable-next-line require-yield
-  readonly release = Fx(function* () {
-    return false
-  })
+  readonly release = of(false)
 }
 
-class RefCount {
+// Since GlobalScope is entirely stateless, we only need one instance
+export const globalScope = new GlobalScope()
+
+export class RefCount {
   private count = MutableRef.make(0)
 
-  readonly get = () => this.count
+  readonly get = () => this.count.get()
   readonly increment = () => increment(this.count)
   readonly decrement = () => decrement(this.count)
 }

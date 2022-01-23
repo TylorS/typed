@@ -3,7 +3,7 @@ import { Time } from '@/Clock'
 export class Timeline<A> {
   private readonly timeSlots: Array<TimeSlot<A>>
 
-  constructor() {
+  constructor(readonly onUpdated: () => void) {
     this.timeSlots = []
   }
 
@@ -17,6 +17,7 @@ export class Timeline<A> {
 
   readonly add = (time: Time, a: A): void => {
     insertByTime(time, a, this.timeSlots)
+    this.onUpdated()
   }
 
   readonly remove = (time: Time, a: A): boolean => {
@@ -32,6 +33,8 @@ export class Timeline<A> {
         if (events.length === 0) {
           this.timeSlots.splice(i, 1)
         }
+
+        this.onUpdated()
 
         return true
       }

@@ -1,0 +1,254 @@
+import { isLeft, left } from 'fp-ts/Either'
+import { isNone, isSome, none, Option, some } from 'fp-ts/Option'
+
+import { Traced } from '@/Cause'
+import { Disposable, DisposableQueue, dispose, disposeAll, sync } from '@/Disposable'
+import { Exit, then, unexpected } from '@/Exit'
+import { Trace } from '@/Trace'
+
+import { Status } from './Fiber'
+import { RuntimeGenerator, RuntimeInstruction, RuntimeIterable } from './RuntimeInstruction'
+
+export class RuntimeProcessor<E, A> implements Disposable {
+  protected node: RuntimeInstructionTree<E, A> | undefined = undefined
+  protected observers: Set<(exit: Exit<E, A>) => void> = new Set()
+  protected exited: Option<Exit<E, A>> = none
+  protected disposable: DisposableQueue = new DisposableQueue()
+  // TODO: Manage the current status
+  protected currentStatus!: Status
+
+  constructor(
+    iterable: RuntimeIterable<E, Exit<E, A>>,
+    readonly captureStackTrace: () => Trace,
+    readonly shouldTrace: boolean,
+  ) {
+    this.node = {
+      type: 'Initial',
+      iterable,
+    }
+  }
+
+  get status() {
+    return this.currentStatus
+  }
+
+  get dispose() {
+    return this.disposable['dispose']
+  }
+
+  processNow() {
+    while (this.node && isNone(this.exited)) {
+      this.processNode(this.node)
+    }
+  }
+
+  processLater() {
+    if (this.node) {
+      const node = this.node
+      this.node = undefined
+
+      Promise.resolve().then(() => {
+        this.node = node
+        this.processNow()
+      })
+    }
+  }
+
+  addObserver(observer: (exit: Exit<E, A>) => void): Disposable {
+    const current = this.exited
+
+    if (isSome(current)) {
+      const d = new DisposableQueue()
+
+      Promise.resolve().then(() => {
+        if (!d.isDisposed()) {
+          observer(current.value)
+        }
+      })
+
+      return d
+    }
+
+    this.observers.add(observer)
+
+    return sync(() => this.observers.delete(observer))
+  }
+
+  protected processNode(node: RuntimeInstructionTree<E, A>) {
+    switch (node.type) {
+      case 'Initial':
+        return this.processInitial(node)
+      case 'Generator':
+        return this.processGenerator(node)
+      case 'Instruction':
+        return this.processInstruction(node)
+      case 'Exit':
+        return this.processExit(node)
+    }
+  }
+
+  protected processInitial(node: InitialNode<E, A>) {
+    this.node = {
+      type: 'Generator',
+      generator: node.iterable[Symbol.iterator](),
+      previous: node,
+    }
+  }
+
+  protected processGenerator(node: GeneratorNode<E, A>) {
+    const result = node.generator.next(node.next)
+
+    if (!result.done) {
+      const instruction = result.value
+
+      this.node = {
+        type: 'Instruction',
+        instruction,
+        previous: node,
+      }
+
+      return
+    }
+
+    if (node.previous.type === 'Initial') {
+      this.node = {
+        type: 'Exit',
+        exit: result.value,
+      }
+
+      return
+    }
+
+    node.previous.next = result.value
+    this.node = node.previous
+  }
+
+  protected processInstruction(node: InstructionNode<E, A>) {
+    const { instruction, previous } = node
+
+    switch (instruction.type) {
+      case 'Sync': {
+        previous.next = instruction.value
+        this.node = previous
+
+        return
+      }
+
+      case 'Promise': {
+        this.node = undefined
+        const inner = new DisposableQueue()
+        const disposable = this.disposable.add(inner)
+
+        instruction
+          .promise()
+          .then(async (a) => {
+            try {
+              await dispose(disposeAll([inner, disposable]))
+
+              previous.next = a
+
+              this.node = previous
+            } catch (e) {
+              this.node = {
+                type: 'Exit',
+                exit: unexpected(e),
+              }
+            }
+
+            this.processNow()
+          })
+          .catch(async (error) => {
+            try {
+              await dispose(disposeAll([inner, disposable]))
+
+              this.node = {
+                type: 'Exit',
+                exit: unexpected(error),
+              }
+            } catch (e) {
+              this.node = {
+                type: 'Exit',
+                exit: then(unexpected(error), unexpected(e)),
+              }
+            }
+
+            this.processNow()
+          })
+
+        break
+      }
+
+      case 'Async': {
+        this.node = undefined
+        const inner = new DisposableQueue()
+        const disposable = this.disposable.add(inner)
+
+        inner.add(
+          instruction.async(async (a) => {
+            try {
+              await dispose(disposeAll([inner, disposable]))
+
+              previous.next = a
+
+              this.node = previous
+            } catch (e) {
+              this.node = {
+                type: 'Exit',
+                exit: unexpected(e),
+              }
+            }
+
+            this.processNow()
+          }),
+        )
+
+        break
+      }
+
+      case 'Exit': {
+        this.node = instruction
+
+        break
+      }
+    }
+  }
+
+  protected processExit(node: ExitNode<E, A>) {
+    const exit =
+      this.shouldTrace && isLeft(node.exit)
+        ? left(Traced(this.captureStackTrace(), node.exit.left))
+        : node.exit
+    this.exited = some(exit)
+    this.observers.forEach((o) => o(exit))
+    this.observers.clear()
+  }
+}
+
+export type RuntimeInstructionTree<E, A> =
+  | InitialNode<E, A>
+  | GeneratorNode<E, A>
+  | InstructionNode<E, A>
+  | ExitNode<E, A>
+
+export type InitialNode<E, A> = {
+  readonly type: 'Initial'
+  readonly iterable: RuntimeIterable<E, Exit<E, A>>
+}
+
+export type GeneratorNode<E, A> = {
+  readonly type: 'Generator'
+  readonly generator: RuntimeGenerator<E, any>
+  readonly previous: GeneratorNode<E, A> | InitialNode<E, A>
+  next?: any
+}
+
+export type InstructionNode<E, A> = {
+  readonly type: 'Instruction'
+  readonly instruction: RuntimeInstruction<E>
+  readonly previous: GeneratorNode<E, A>
+}
+
+export type ExitNode<E, A> = {
+  readonly type: 'Exit'
+  readonly exit: Exit<E, A>
+}

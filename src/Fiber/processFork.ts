@@ -1,22 +1,30 @@
-import { Fork } from '@/Effect/Fork'
-import { extendScope } from '@/Scope'
+import { forkContext } from '@/Context/forkContext'
+import { Fork } from '@/Effect'
+import { Fx } from '@/Fx'
 
+import { fromInstructionProcessor } from './fromInstructionProcessor'
 import { InstructionProcessor } from './InstructionProcessor'
-import { GeneratorNode } from './InstructionTree'
-import { ResumeSync } from './Processor'
-// eslint-disable-next-line import/no-cycle
-import { Runtime } from './Runtime'
+import { DeferredInstruction } from './Processor'
+import { ResumeSync } from './RuntimeInstruction'
 
 export const processFork = <R, E, A>(
-  fork: Fork<R, E, A>,
-  _previous: GeneratorNode<R, E>,
+  instruction: Fork<R, E, A>,
   processor: InstructionProcessor<R, E, any>,
-) => {
-  const runtime = new Runtime(processor.resources, {
-    context: processor.context,
-    ...fork.input.runtimeOptions,
-    scope: extendScope(fork.input.runtimeOptions?.scope ?? processor.scope),
-  })
+): DeferredInstruction<R, E, A> => ({
+  type: 'Deferred',
+  fx: Fx(function* () {
+    const context =
+      instruction.input.runtimeOptions?.context ?? (yield* forkContext(processor.context))
+    const scope = instruction.input.runtimeOptions?.scope ?? processor.scope
 
-  return new ResumeSync(runtime.runFiber(fork.input.fx))
-}
+    return new ResumeSync(
+      fromInstructionProcessor(
+        processor.fork(instruction.input.fx, {
+          ...instruction.input.runtimeOptions,
+          scope,
+          context,
+        }),
+      ),
+    )
+  }),
+})

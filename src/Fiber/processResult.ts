@@ -1,22 +1,12 @@
-import { Result } from '@/Effect/Result'
+import { Result } from '@/Effect'
 
-import { Instruction } from './Instruction'
 import { InstructionProcessor } from './InstructionProcessor'
-import { GeneratorNode } from './InstructionTree'
-import { ResumeDeferred, ResumeSync, RunInstruction } from './Processor'
+import { ResultInstruction } from './Processor'
 
 export const processResult = <R, E, A>(
-  match: Result<R, E, A>,
-  _previousNode: GeneratorNode<R, E>,
-  runtime: InstructionProcessor<R, E, any>,
-  run: RunInstruction,
-) =>
-  new ResumeDeferred((cb) =>
-    run(
-      match.input as Instruction<R, E>,
-      runtime.resources,
-      runtime.context,
-      runtime.scope,
-      (exit) => cb(new ResumeSync(exit)),
-    ),
-  )
+  instruction: Result<R, E, A>,
+  processor: InstructionProcessor<R, E, any>,
+): ResultInstruction<R, E, A> => ({
+  type: 'Result',
+  processor: processor.extend(instruction.input, processor.resources),
+})

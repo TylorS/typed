@@ -1,18 +1,15 @@
-import { isRight } from 'fp-ts/Either'
+import { left, match } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
 
-import { FromExit } from '@/Effect/FromExit'
+import { FromExit } from '@/Effect'
 
-import { ResumeNode, ResumeSync } from './Processor'
+import { ResumeExit, ResumeSync, RuntimeInstruction } from './RuntimeInstruction'
 
-export const processFromExit = <E, A>(instruction: FromExit<E, A>) => {
-  const exit = instruction.input
-
-  if (isRight(exit)) {
-    return new ResumeSync(exit.right)
-  }
-
-  return new ResumeNode({
-    type: 'Exit',
-    exit,
-  })
-}
+export const processFromExit = <E, A>(instruction: FromExit<E, A>) =>
+  pipe(
+    instruction.input,
+    match(
+      (cause): RuntimeInstruction<E> => new ResumeExit(left(cause)),
+      (value) => new ResumeSync(value),
+    ),
+  )
