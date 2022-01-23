@@ -114,7 +114,6 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
   protected *run<A>(
     generator: Generator<Effect<R, E, any>, A>,
     result: IteratorResult<Effect<R, E, any>, A>,
-    returned = false,
   ): RuntimeIterable<E, A> {
     while (!result.done) {
       const instr = result.value as Instruction<R, E>
@@ -137,12 +136,6 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
         yield new ResumePromise(Promise.resolve)
       }
     }
-
-    // Allow any finally clauses to run
-    if (!returned) {
-      yield* this.run(generator, generator.return(result.value), true)
-    }
-
     return result.value
   }
 
