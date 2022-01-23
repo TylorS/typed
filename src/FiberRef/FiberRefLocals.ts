@@ -94,7 +94,7 @@ export function makeFiberRefLocals(
       const queue = getOrCreateQueue(fiberRef)
 
       // Continue immediately if nothing in the Queue
-      if (queue.count++ == 0) {
+      if (queue.count++ === 0) {
         return [yield* get(fiberRef), queue] as const
       }
 
