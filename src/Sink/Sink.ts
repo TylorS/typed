@@ -79,21 +79,17 @@ export function formatSinkTraceElement<E, A>(element: SinkTraceElement<E, A>): s
 }
 
 export function formatEventElement<A>(element: EventElement<A>): string {
-  const formatted = `${element.operator} Event (${new Date(
-    element.time,
-  ).toISOString()}): ${prettyStringify(element.value)}`
+  const formatted = `${element.operator} Event (${element.time}): ${prettyStringify(element.value)}`
 
   return prettyTrace(new Trace(element.fiberId, [new SourceLocation(formatted)], element.trace))
 }
 
 export function formatErrorElement<E>(element: ErrorElement<E>): string {
-  return `${element.operator} Error (${new Date(element.time).toLocaleDateString()}): ${prettyPrint(
-    element.cause,
-  )}`
+  return `${element.operator} Error (${element.time}): ${prettyPrint(element.cause)}`
 }
 
 export function formatEndElement(element: EndElement): string {
-  const formatted = `${element.operator} End (${new Date(element.time).toLocaleDateString()})`
+  const formatted = `${element.operator} End (${element.time})`
 
   return prettyTrace(new Trace(element.fiberId, [new SourceLocation(formatted)], element.trace))
 }
