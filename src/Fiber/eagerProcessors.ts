@@ -17,7 +17,7 @@ import { processProvide } from './processProvide'
 import { processRace } from './processRace'
 import { processRefine } from './processRefine'
 import { processResult } from './processResult'
-import { processSuspend } from './processSuspsend'
+import { processSuspend } from './processSuspend'
 import { processTrace } from './processTrace'
 import { processTracingStatus } from './processTracingStatus'
 
