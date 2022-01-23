@@ -1,9 +1,11 @@
-import { isLeft, left } from 'fp-ts/Either'
+import { isLeft, left, match } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
 import { isNone, isSome, none, Option, some } from 'fp-ts/Option'
 
 import { Traced } from '@/Cause'
 import { Disposable, DisposableQueue, dispose, disposeAll, sync } from '@/Disposable'
 import { Exit, then, unexpected } from '@/Exit'
+import { InterruptableStatus } from '@/Scope/InterruptableStatus'
 import { Trace } from '@/Trace'
 
 import { Status } from './Fiber'
@@ -14,18 +16,20 @@ export class RuntimeProcessor<E, A> implements Disposable {
   protected observers: Set<(exit: Exit<E, A>) => void> = new Set()
   protected exited: Option<Exit<E, A>> = none
   protected disposable: DisposableQueue = new DisposableQueue()
-  // TODO: Manage the current status
   protected currentStatus!: Status
 
   constructor(
-    iterable: RuntimeIterable<E, Exit<E, A>>,
+    readonly iterable: RuntimeIterable<E, Exit<E, A>>,
     readonly captureStackTrace: () => Trace,
     readonly shouldTrace: boolean,
+    readonly interruptableStatus: InterruptableStatus,
   ) {
     this.node = {
       type: 'Initial',
       iterable,
     }
+
+    this.suspendedStatus()
   }
 
   get status() {
@@ -38,8 +42,14 @@ export class RuntimeProcessor<E, A> implements Disposable {
 
   processNow() {
     while (this.node && isNone(this.exited)) {
+      if (this.currentStatus.type === 'Suspended') {
+        this.runningStatus()
+      }
+
       this.processNode(this.node)
     }
+
+    this.suspendedStatus()
   }
 
   processLater() {
@@ -214,6 +224,14 @@ export class RuntimeProcessor<E, A> implements Disposable {
   }
 
   protected processExit(node: ExitNode<E, A>) {
+    this.currentStatus = pipe(
+      node.exit,
+      match(
+        (): Status => ({ type: 'Failed' }),
+        (): Status => ({ type: 'Completed' }),
+      ),
+    )
+
     const exit =
       this.shouldTrace && isLeft(node.exit)
         ? left(Traced(this.captureStackTrace(), node.exit.left))
@@ -221,6 +239,28 @@ export class RuntimeProcessor<E, A> implements Disposable {
     this.exited = some(exit)
     this.observers.forEach((o) => o(exit))
     this.observers.clear()
+  }
+
+  protected suspendedStatus() {
+    const { interruptableStatus } = this
+
+    this.currentStatus = {
+      type: 'Suspended',
+      get isInterruptible() {
+        return interruptableStatus.isInterruptable
+      },
+    }
+  }
+
+  protected runningStatus() {
+    const { interruptableStatus } = this
+
+    this.currentStatus = {
+      type: 'Running',
+      get isInterruptible() {
+        return interruptableStatus.isInterruptable
+      },
+    }
   }
 }
 
