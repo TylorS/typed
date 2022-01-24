@@ -1,3 +1,4 @@
+import { WithinContext } from '@/Effect'
 import type { Access } from '@/Effect/Access'
 import type { Chain } from '@/Effect/Chain'
 import type { Drain } from '@/Effect/Drain'
@@ -43,6 +44,7 @@ export type Instruction<R, E> =
   | Suspend
   | Trace
   | TracingStatus<R, E, any>
+  | WithinContext<R, E, any>
 
 export type FindInstruction<Type extends Instruction<R, E>['type'], R, E> = {
   Access: Access<R, R, E, any>
@@ -66,4 +68,5 @@ export type FindInstruction<Type extends Instruction<R, E>['type'], R, E> = {
   Suspend: Suspend
   Trace: Trace
   TracingStatus: TracingStatus<R, E, any>
+  WithinContext: WithinContext<R, E, any>
 }[Type]

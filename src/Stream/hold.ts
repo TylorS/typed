@@ -7,12 +7,16 @@ import { fromIO } from '@/Effect'
 import { EndElement, ErrorElement, EventElement, tryEvent } from '@/Sink'
 
 import { Multicast, MulticastObserver } from './multicast'
-import { StreamRun } from './Stream'
+import { Stream, StreamRun } from './Stream'
 
 export class Hold<R, E, A> extends Multicast<R, E, A> {
   protected lastValue: O.Option<A> = O.none
   protected pendingObservers: Array<MulticastObserver<R, E, A>> = []
   protected task: D.Disposable = D.none
+
+  constructor(readonly stream: Stream<R, E, A>, readonly operator: string = 'hold') {
+    super(stream, operator)
+  }
 
   run: StreamRun<R, E, A> = (resources, sink, context, scope, tracer) => {
     const observer: MulticastObserver<R, E, A> = { resources, sink, context, scope, tracer }

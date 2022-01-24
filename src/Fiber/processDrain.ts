@@ -53,6 +53,7 @@ function makeDrainSink<R, E, A>(
         nested,
         processor.captureStackTrace,
         processor.shouldTrace,
+        scope.interruptableStatus,
       )
 
       runtime.addObserver((exit) => {

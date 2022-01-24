@@ -1,26 +1,10 @@
-import { U } from 'ts-toolbelt'
-
 import { Fx } from '@/Fx'
 
-import { Instruction } from './Instruction'
+import { FindInstruction, Instruction } from './Instruction'
 import type { InstructionProcessor } from './InstructionProcessor'
 import { RuntimeInstruction } from './RuntimeInstruction'
 
 export type InstructionType = Instruction<any, any>['type']
-
-export type FindInstruction<T extends InstructionType, R, E> = FindInstructionFromList<
-  T,
-  U.ListOf<Instruction<R, E>>
->
-
-export type FindInstructionFromList<
-  T extends InstructionType,
-  Instructions extends ReadonlyArray<Instruction<any, any>>,
-> = {
-  readonly [K in keyof Instructions]: Instructions[K] extends { readonly type: T }
-    ? Instructions[K]
-    : never
-}[number]
 
 export type Processors = {
   readonly [K in InstructionType]: Processor<K, any, any>

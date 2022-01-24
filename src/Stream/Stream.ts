@@ -1,13 +1,21 @@
 import { identity, pipe } from 'fp-ts/function'
-import { isSome, match, none, Option, some } from 'fp-ts/Option'
-import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
+import { none, Option, some } from 'fp-ts/Option'
 
-import { prettyPrint, prettyStringify } from '@/Cause'
-import { Time } from '@/Clock'
+import { addParentTrace } from '@/Cause'
 import { Context } from '@/Context'
 import { Disposable } from '@/Disposable'
-import { Scope } from '@/Scope'
-import { EndElement, ErrorElement, EventElement, Sink, SinkTraceElement } from '@/Sink'
+import { FiberId } from '@/FiberId'
+import { LocalScope } from '@/Scope'
+import {
+  EndElement,
+  ErrorElement,
+  EventElement,
+  formatEndElement,
+  formatErrorElement,
+  formatEventElement,
+  Sink,
+  SinkTraceElement,
+} from '@/Sink'
 import { SourceLocation, Trace } from '@/Trace'
 
 export interface Stream<R, E, A> {
@@ -22,7 +30,7 @@ export type StreamRun<R, E, A> = (
   resources: R,
   sink: Sink<E, A>,
   context: Context<E>,
-  scope: Scope<E, void>,
+  scope: LocalScope<E, void>,
   tracer: Tracer<E>,
 ) => Disposable
 
@@ -30,7 +38,13 @@ export type StreamRun<R, E, A> = (
  * Helps deal with adding traces to your events
  */
 export const make = <R, E, A>(
-  run: (resources: R, sink: Sink<E, A>, context: Context<E>, scope: Scope<E, void>) => Disposable,
+  run: (
+    resources: R,
+    sink: Sink<E, A>,
+    context: Context<E>,
+    scope: LocalScope<E, void>,
+    tracer: Tracer<E>,
+  ) => Disposable,
 ): Stream<R, E, A> => ({
   run: (resources, sink, context, scope, tracer) =>
     run(
@@ -42,10 +56,12 @@ export const make = <R, E, A>(
       },
       context,
       scope,
+      tracer,
     ),
 })
 
 export interface Tracer<E> {
+  readonly shouldTrace: boolean
   readonly makeTrace: {
     <A>(event: EventElement<A>): EventElement<A>
     <E>(event: ErrorElement<E>): ErrorElement<E>
@@ -56,121 +72,74 @@ export interface Tracer<E> {
 
 export function makeTracer<E>(
   context: Context<E>,
-  shouldTrace = true,
+  shouldTrace = false,
   parentTrace: Option<Trace> = none,
 ): Tracer<E> {
   if (!shouldTrace) {
-    return { makeTrace: identity }
+    return { makeTrace: identity, shouldTrace }
   }
 
   return {
+    shouldTrace,
     makeTrace: (<A>(event: SinkTraceElement<E, A>) => {
       switch (event.type) {
         case 'Event':
-          return { ...event, trace: some(makeEventTrace(context, event, parentTrace)) }
+          return {
+            ...event,
+            trace: some(makeEventTrace(context.fiberId, formatEventElement(event), parentTrace)),
+          }
         case 'Error':
-          return { ...event, trace: some(makeErrorTrace(context, event, parentTrace)) }
+          return {
+            ...event,
+            trace: some(makeEventTrace(context.fiberId, formatErrorElement(event), parentTrace)),
+          }
         case 'End':
-          return { ...event, trace: some(makeEndTrace(context, event, parentTrace)) }
+          return {
+            ...event,
+            trace: some(makeEventTrace(context.fiberId, formatEndElement(event), parentTrace)),
+          }
       }
     }) as Tracer<E>['makeTrace'],
   }
 }
 
-export function makeEventTrace<E, A>(
-  context: Context<E>,
-  event: EventElement<A>,
-  parentTrace: Option<Trace> = none,
-): Trace {
-  return new Trace(
-    context.fiberId,
-    [
-      new SourceLocation(
-        `${event.operator} Event (${prettyTime(event.time)}) :: ${prettyStringify(event.value, 2)}`,
-      ),
-    ],
-    concatAncsestor(parentTrace, event.trace),
-  )
-}
+export function addOperator(operator: string) {
+  return <E>(tracer: Tracer<E>): Tracer<E> => {
+    if (!tracer.shouldTrace) {
+      return tracer
+    }
 
-export function makeErrorTrace<E>(
-  context: Context<E>,
-  event: ErrorElement<E>,
-  parentTrace: Option<Trace> = none,
-): Trace {
-  return new Trace(
-    context.fiberId,
-    [
-      new SourceLocation(
-        `${event.operator} Error (${prettyTime(event.time)}) :: ${prettyPrint(
-          event.cause,
-          context.renderer,
-        ).replace(/\n/g, '\n  ')}`,
-      ),
-    ],
-    parentTrace,
-  )
-}
+    return {
+      shouldTrace: true,
+      makeTrace: (<A>(event: SinkTraceElement<E, A>): SinkTraceElement<E, A> => {
+        const current = tracer.makeTrace(event)
 
-export function makeEndTrace<E>(
-  context: Context<E>,
-  event: EndElement,
-  parentTrace: Option<Trace> = none,
-): Trace {
-  return new Trace(
-    context.fiberId,
-    [new SourceLocation(`${event.operator} End (${prettyTime(event.time)})`)],
-    concatAncsestor(parentTrace, event.trace),
-  )
-}
-
-function prettyTime(time: Time) {
-  return new Date(time).toISOString()
-}
-
-function concatAncsestor(parentTrace: Option<Trace>, childTrace: Option<Trace>): Option<Trace> {
-  return pipe(
-    parentTrace,
-    match(
-      () => childTrace,
-      (parent) =>
-        pipe(
-          childTrace,
-          match(
-            () => parent,
-            (t) => prependAncestor(t, parent),
-          ),
-          some,
-        ),
-    ),
-  )
-}
-
-function prependAncestor(trace: Trace, anscestor: Trace): Trace {
-  return listToTrace(traceToList(trace, anscestor))
-}
-
-function traceToList(trace: Trace, ancestor: Trace): ReadonlyNonEmptyArray<Trace> {
-  const traces: [Trace, ...Trace[]] = [{ ...trace, parentTrace: none }]
-
-  let current = trace
-
-  while (isSome(current.parentTrace)) {
-    const trace = current.parentTrace.value
-
-    traces.push({ ...trace, parentTrace: none })
-
-    current = trace
+        switch (current.type) {
+          case 'Event':
+            return {
+              ...current,
+              trace: some(makeEventTrace(current.fiberId, operator, current.trace)),
+            }
+          case 'Error':
+            return {
+              ...current,
+              cause: pipe(
+                current.cause,
+                addParentTrace(some(makeEventTrace(current.fiberId, operator))),
+              ),
+            }
+          case 'End':
+            return { ...current, trace: some(makeEventTrace(current.fiberId, operator)) }
+        }
+      }) as Tracer<E>['makeTrace'],
+    }
   }
-
-  traces.push(ancestor)
-
-  return traces
 }
 
-function listToTrace(traces: ReadonlyNonEmptyArray<Trace>): Trace {
-  return traces.reduceRight((parentTrace, trace) => ({
-    ...trace,
-    parentTrace: some(parentTrace),
-  }))
+export function makeEventTrace(
+  fiberId: FiberId,
+  trace: string,
+  parentTrace: Option<Trace> = none,
+): Trace {
+  return new Trace(fiberId, [new SourceLocation(trace)], parentTrace)
 }

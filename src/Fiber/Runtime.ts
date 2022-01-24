@@ -40,6 +40,7 @@ export class Runtime<R, E> {
       processor,
       processor.captureStackTrace,
       processor.shouldTrace,
+      processor.scope.interruptableStatus,
     )
 
     runtime.addObserver(onExit)
@@ -55,6 +56,7 @@ export class Runtime<R, E> {
         processor,
         processor.captureStackTrace,
         processor.shouldTrace,
+        processor.scope.interruptableStatus,
       )
 
       runtime.addObserver(
@@ -78,6 +80,7 @@ export class Runtime<R, E> {
         processor,
         processor.captureStackTrace,
         processor.shouldTrace,
+        processor.scope.interruptableStatus,
       )
 
       runtime.addObserver(resolve)
@@ -103,7 +106,7 @@ export class Runtime<R, E> {
       options.scope ? extendScope(options.scope) : new LocalScope(),
       options.processors ?? eagerProcessors,
       options.parentTrace ?? none,
-      options.shouldTrace ?? true,
+      options.shouldTrace ?? false,
       options.maxOps ?? 2048,
     )
   }
@@ -137,9 +140,11 @@ export const runMainDisposable = <E, A>(
     processor,
     processor.captureStackTrace,
     processor.shouldTrace,
+    processor.scope.interruptableStatus,
   )
 
   runtime.addObserver(onExit)
+  runtime.processLater()
 
   return runtime
 }

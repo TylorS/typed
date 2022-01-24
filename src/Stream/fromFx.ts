@@ -37,6 +37,7 @@ export function makeFromFxOperator(operator: string) {
             trace: none,
             fiberId: context.fiberId,
           })
+
           tryEnd(sink, { type: 'End', operator, time, trace: none, fiberId: context.fiberId })
         }),
         resources,

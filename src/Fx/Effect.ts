@@ -115,3 +115,8 @@ export const join: <E, A>(
   fx: Fiber<E, A>,
   runtimeOptions?: RuntimeOptions<E>,
 ) => Fx<unknown, E, A> = E.join
+
+export const withinContext: <E>(
+  context: Context<E>,
+  trace?: string | undefined,
+) => <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = E.withinContext
