@@ -261,6 +261,10 @@
       "require": "./cjs/Effect/TracingStatus.js",
       "import": "./esm/Effect/TracingStatus.js"
     },
+    "./Effect/WithinContext": {
+      "require": "./cjs/Effect/WithinContext.js",
+      "import": "./esm/Effect/WithinContext.js"
+    },
     "./Eq": {
       "require": "./cjs/Eq/index.js",
       "import": "./esm/Eq/index.js"
@@ -316,6 +320,10 @@
     "./Fiber/fromInstructionProcessor": {
       "require": "./cjs/Fiber/fromInstructionProcessor.js",
       "import": "./esm/Fiber/fromInstructionProcessor.js"
+    },
+    "./Fiber/getRootContext": {
+      "require": "./cjs/Fiber/getRootContext.js",
+      "import": "./esm/Fiber/getRootContext.js"
     },
     "./Fiber/lazyProcessors": {
       "require": "./cjs/Fiber/lazyProcessors.js",
@@ -433,6 +441,10 @@
       "require": "./cjs/FiberRef/get.js",
       "import": "./esm/FiberRef/get.js"
     },
+    "./FiberRef/has": {
+      "require": "./cjs/FiberRef/has.js",
+      "import": "./esm/FiberRef/has.js"
+    },
     "./FiberRef/set": {
       "require": "./cjs/FiberRef/set.js",
       "import": "./esm/FiberRef/set.js"
@@ -481,9 +493,17 @@
       "require": "./cjs/Fx/forkDaemon.js",
       "import": "./esm/Fx/forkDaemon.js"
     },
+    "./Fx/forkJoin": {
+      "require": "./cjs/Fx/forkJoin.js",
+      "import": "./esm/Fx/forkJoin.js"
+    },
     "./Fx/run": {
       "require": "./cjs/Fx/run.js",
       "import": "./esm/Fx/run.js"
+    },
+    "./Fx/transactional": {
+      "require": "./cjs/Fx/transactional.js",
+      "import": "./esm/Fx/transactional.js"
     },
     "./Fx/uninterruptable": {
       "require": "./cjs/Fx/uninterruptable.js",
@@ -492,6 +512,14 @@
     "./Layer": {
       "require": "./cjs/Layer/index.js",
       "import": "./esm/Layer/index.js"
+    },
+    "./Layer/Layer": {
+      "require": "./cjs/Layer/Layer.js",
+      "import": "./esm/Layer/Layer.js"
+    },
+    "./Layer/Layers": {
+      "require": "./cjs/Layer/Layers.js",
+      "import": "./esm/Layer/Layers.js"
     },
     "./Magma": {
       "require": "./cjs/Magma/index.js",
@@ -512,6 +540,10 @@
     "./Ref": {
       "require": "./cjs/Ref/index.js",
       "import": "./esm/Ref/index.js"
+    },
+    "./Ref/Ref": {
+      "require": "./cjs/Ref/Ref.js",
+      "import": "./esm/Ref/Ref.js"
     },
     "./Scheduler": {
       "require": "./cjs/Scheduler/index.js",
@@ -561,6 +593,10 @@
       "require": "./cjs/Stream/Stream.js",
       "import": "./esm/Stream/Stream.js"
     },
+    "./Stream/chain": {
+      "require": "./cjs/Stream/chain.js",
+      "import": "./esm/Stream/chain.js"
+    },
     "./Stream/collectEvents": {
       "require": "./cjs/Stream/collectEvents.js",
       "import": "./esm/Stream/collectEvents.js"
@@ -588,6 +624,10 @@
     "./Stream/tap": {
       "require": "./cjs/Stream/tap.js",
       "import": "./esm/Stream/tap.js"
+    },
+    "./Stream/withinContext": {
+      "require": "./cjs/Stream/withinContext.js",
+      "import": "./esm/Stream/withinContext.js"
     },
     "./Subject": {
       "require": "./cjs/Subject/index.js",

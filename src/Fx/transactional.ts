@@ -1,9 +1,15 @@
 import { isRight } from 'fp-ts/Either'
 
+import { Exit } from '@/Exit'
+
 import { fork } from './Effect'
 import { Fx } from './Fx'
 
-export const transactional = <R, E, A>(fx: Fx<R, E, A>) =>
+/**
+ * Runs an Fx in an forked Context to allow FiberRefs to be adjusted in isolated
+ * and if successful, merges them back into the parent Context.
+ */
+export const transactional = <R, E, A>(fx: Fx<R, E, A>): Fx<R, never, Exit<E, A>> =>
   Fx(function* () {
     const fiber = yield* fork(fx)
     const exit = yield* fiber.exit
