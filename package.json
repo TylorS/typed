@@ -417,6 +417,10 @@
       "require": "./cjs/Fiber/processTracingStatus.js",
       "import": "./esm/Fiber/processTracingStatus.js"
     },
+    "./Fiber/processWithinContext": {
+      "require": "./cjs/Fiber/processWithinContext.js",
+      "import": "./esm/Fiber/processWithinContext.js"
+    },
     "./FiberId": {
       "require": "./cjs/FiberId/index.js",
       "import": "./esm/FiberId/index.js"
