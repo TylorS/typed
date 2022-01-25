@@ -3,7 +3,7 @@ import { none, some } from 'fp-ts/Option'
 import { Cause } from '@/Cause'
 import { Context } from '@/Context'
 import { sync } from '@/Disposable'
-import { Scope } from '@/Scope'
+import { LocalScope } from '@/Scope'
 import { Sink, tryEnd, tryEvent } from '@/Sink'
 import * as Stream from '@/Stream'
 import { Tracer } from '@/Stream'
@@ -17,6 +17,7 @@ export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, 
   readonly event = (a: A): void => {
     Array.from(this.observers).forEach((o) =>
       tryEvent(o.sink, {
+        fiberId: o.context.fiberId,
         type: 'Event',
         operator: this.name,
         time: o.context.scheduler.getCurrentTime(),
@@ -30,6 +31,7 @@ export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, 
     Array.from(this.observers).forEach((o) =>
       o.sink.error(
         o.tracer.makeTrace({
+          fiberId: o.context.fiberId,
           type: 'Error',
           operator: this.name,
           time: o.context.scheduler.getCurrentTime(),
@@ -42,6 +44,7 @@ export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, 
   readonly end = (): void => {
     Array.from(this.observers).forEach((o) =>
       tryEnd(o.sink, {
+        fiberId: o.context.fiberId,
         type: 'End',
         operator: this.name,
         time: o.context.scheduler.getCurrentTime(),
@@ -60,7 +63,7 @@ export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, 
     resources: R,
     sink: Sink<E, A>,
     context: Context<E>,
-    scope: Scope<E, any>,
+    scope: LocalScope<E, any>,
     tracer: Tracer<E>,
   ) => {
     const observer: Stream.MulticastObserver<R, E, A> = { resources, sink, context, scope, tracer }

@@ -80,6 +80,7 @@ export function makeDelay(
       processor,
       processor.captureStackTrace,
       processor.shouldTrace,
+      processor.scope.interruptableStatus,
     )
     const future = pending<R, E, A>()
 
@@ -132,6 +133,7 @@ export function makePeriodic(
         processor,
         processor.captureStackTrace,
         processor.shouldTrace,
+        processor.scope.interruptableStatus,
       )
       const future = pending<R, E, A>()
 

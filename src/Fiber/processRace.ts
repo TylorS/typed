@@ -34,6 +34,7 @@ export const processRace = <FX extends ReadonlyArray<Fx<any, any, any> | Fx<any,
         processor.extend(fx, processor.resources),
         processor.captureStackTrace,
         processor.shouldTrace,
+        processor.scope.interruptableStatus,
       )
 
       // Don't start Fx if another Sync Fx has already won

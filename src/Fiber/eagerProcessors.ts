@@ -20,6 +20,7 @@ import { processResult } from './processResult'
 import { processSuspend } from './processSuspend'
 import { processTrace } from './processTrace'
 import { processTracingStatus } from './processTracingStatus'
+import { processWithinContext } from './processWithinContext'
 
 export const eagerProcessors: Processors = {
   Access: processAccess,
@@ -43,4 +44,5 @@ export const eagerProcessors: Processors = {
   Suspend: processSuspend,
   Trace: processTrace,
   TracingStatus: processTracingStatus,
+  WithinContext: processWithinContext,
 }

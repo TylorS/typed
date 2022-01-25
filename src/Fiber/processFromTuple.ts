@@ -29,6 +29,7 @@ export const processFromTuple = <FX extends ReadonlyArray<Fx<any, any, any> | Fx
           processor.extend(fx, processor.resources),
           processor.captureStackTrace,
           processor.shouldTrace,
+          processor.scope.interruptableStatus,
         )
 
         runtime.addObserver((exit) => onComplete(exit, i))

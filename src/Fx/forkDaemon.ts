@@ -9,5 +9,5 @@ import { Fx } from './Fx'
  */
 export const forkDaemon = <R, E, A>(
   fx: Fx<R, E, A>,
-  options?: Omit<RuntimeOptions, 'scope'>,
+  options?: Omit<RuntimeOptions<E>, 'scope'>,
 ): Fx<R, never, Fiber<E, A>> => fork(fx, { ...options, scope: globalScope })

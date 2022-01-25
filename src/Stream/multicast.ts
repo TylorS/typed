@@ -1,7 +1,7 @@
 import { Disposed } from '@/Cause'
 import { Context } from '@/Context'
 import { async, checkIsSync, Disposable, dispose, none, sync } from '@/Disposable'
-import { Scope } from '@/Scope'
+import { LocalScope } from '@/Scope'
 import { EndElement, ErrorElement, EventElement, Sink, tryEnd, tryEvent } from '@/Sink'
 
 import { Stream, StreamRun, Tracer } from './Stream'
@@ -14,7 +14,7 @@ export type MulticastObserver<R, E, A> = {
   readonly resources: R
   readonly sink: Sink<E, A>
   readonly context: Context<E>
-  readonly scope: Scope<E, any>
+  readonly scope: LocalScope<E, any>
   readonly tracer: Tracer<E>
 }
 

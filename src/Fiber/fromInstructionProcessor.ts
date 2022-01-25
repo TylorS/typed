@@ -13,6 +13,7 @@ export function fromInstructionProcessor<R, E, A>(
     processor,
     processor.captureStackTrace,
     processor.shouldTrace,
+    processor.scope.interruptableStatus,
   )
   const fiber: Fiber<E, A> = {
     type: 'RuntimeFiber',

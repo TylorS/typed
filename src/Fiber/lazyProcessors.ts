@@ -29,6 +29,9 @@ export const lazyProcessors: Processors = {
   TracingStatus: lazyLoadProcessor(() =>
     import('./processTracingStatus').then((m) => m.processTracingStatus),
   ),
+  WithinContext: lazyLoadProcessor(() =>
+    import('./processWithinContext').then((m) => m.processWithinContext),
+  ),
 }
 
 const memoized = new WeakMap<() => Promise<Processor<any, any, any>>, Processor<any, any, any>>()
