@@ -118,18 +118,20 @@ export function addOperator(operator: string) {
           case 'Event':
             return {
               ...current,
+              operator,
               trace: some(makeEventTrace(current.fiberId, operator, current.trace)),
             }
           case 'Error':
             return {
               ...current,
+              operator,
               cause: pipe(
                 current.cause,
                 addParentTrace(some(makeEventTrace(current.fiberId, operator))),
               ),
             }
           case 'End':
-            return { ...current, trace: some(makeEventTrace(current.fiberId, operator)) }
+            return { ...current, operator, trace: some(makeEventTrace(current.fiberId, operator)) }
         }
       }) as Tracer<E>['makeTrace'],
     }
