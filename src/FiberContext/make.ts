@@ -6,13 +6,13 @@ import { makeFiberRefLocals } from '@/FiberRef'
 import { increment, MutableRef } from '@/MutableRef'
 import type { Scheduler } from '@/Scheduler/Scheduler'
 
-import { Context } from './Context'
+import { FiberContext } from './FiberContext'
 
-export interface ContextOptions<E> extends Partial<Context<E>> {
+export interface FiberContextOptions<E> extends Partial<FiberContext<E>> {
   readonly scheduler: Scheduler
 }
 
-export function make<E>(options: ContextOptions<E>): Context<E> {
+export function make<E>(options: FiberContextOptions<E>): FiberContext<E> {
   const sequenceNumber = options.sequenceNumber ?? MutableRef.make(0)
   const fiberId = options.fiberId ?? makeFiberId(increment(sequenceNumber))
   const renderer = options.renderer ?? defaultRenderer

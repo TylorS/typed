@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
-import * as Either from 'fp-ts/Either'
 import { isNone, isSome, none, Option, some } from 'fp-ts/Option'
 
 import { Branded } from '@/Branded'
 import { fromIO } from '@/Effect'
-import { result } from '@/Effect/Result'
 import * as Exit from '@/Exit'
 import { of } from '@/Fx/Effect'
 import { Fx, Of } from '@/Fx/Fx'
@@ -61,7 +59,7 @@ export class LocalScope<E, A> {
       return true
     }
 
-    if (this.open && scope.open) {
+    if (!this.released && !scope.released) {
       scope.refCount.increment()
 
       const key = this.ensure(scope.release)
@@ -105,16 +103,9 @@ export class LocalScope<E, A> {
       if (that.finalizers.size > 0) {
         const currentExit = optionExit.value
         const finalizers = Array.from(that.finalizers.values())
-        const finalizerExits: Exit.Exit<any, any>[] = []
 
         for (const finalizer of finalizers) {
-          finalizerExits.push(yield* result(finalizer(currentExit)))
-        }
-
-        const finalizerExit = finalizerExits.reduce(Exit.then, currentExit)
-
-        if (Either.isLeft(finalizerExit)) {
-          that.exit.set(some(finalizerExit))
+          yield* finalizer(currentExit)
         }
       }
 

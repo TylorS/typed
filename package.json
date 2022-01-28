@@ -133,26 +133,6 @@
       "require": "./cjs/Clock/Clock.js",
       "import": "./esm/Clock/Clock.js"
     },
-    "./Context": {
-      "require": "./cjs/Context/index.js",
-      "import": "./esm/Context/index.js"
-    },
-    "./Context/Context": {
-      "require": "./cjs/Context/Context.js",
-      "import": "./esm/Context/Context.js"
-    },
-    "./Context/contextToOptions": {
-      "require": "./cjs/Context/contextToOptions.js",
-      "import": "./esm/Context/contextToOptions.js"
-    },
-    "./Context/forkContext": {
-      "require": "./cjs/Context/forkContext.js",
-      "import": "./esm/Context/forkContext.js"
-    },
-    "./Context/make": {
-      "require": "./cjs/Context/make.js",
-      "import": "./esm/Context/make.js"
-    },
     "./Disposable": {
       "require": "./cjs/Disposable/index.js",
       "import": "./esm/Disposable/index.js"
@@ -421,6 +401,26 @@
       "require": "./cjs/Fiber/processWithinContext.js",
       "import": "./esm/Fiber/processWithinContext.js"
     },
+    "./FiberContext": {
+      "require": "./cjs/FiberContext/index.js",
+      "import": "./esm/FiberContext/index.js"
+    },
+    "./FiberContext/FiberContext": {
+      "require": "./cjs/FiberContext/FiberContext.js",
+      "import": "./esm/FiberContext/FiberContext.js"
+    },
+    "./FiberContext/contextToOptions": {
+      "require": "./cjs/FiberContext/contextToOptions.js",
+      "import": "./esm/FiberContext/contextToOptions.js"
+    },
+    "./FiberContext/forkContext": {
+      "require": "./cjs/FiberContext/forkContext.js",
+      "import": "./esm/FiberContext/forkContext.js"
+    },
+    "./FiberContext/make": {
+      "require": "./cjs/FiberContext/make.js",
+      "import": "./esm/FiberContext/make.js"
+    },
     "./FiberId": {
       "require": "./cjs/FiberId/index.js",
       "import": "./esm/FiberId/index.js"
@@ -560,6 +560,10 @@
     "./Scheduler/Timeline": {
       "require": "./cjs/Scheduler/Timeline.js",
       "import": "./esm/Scheduler/Timeline.js"
+    },
+    "./Scheduler/accountForTimeDrift": {
+      "require": "./cjs/Scheduler/accountForTimeDrift.js",
+      "import": "./esm/Scheduler/accountForTimeDrift.js"
     },
     "./Scheduler/make": {
       "require": "./cjs/Scheduler/make.js",

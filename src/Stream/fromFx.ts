@@ -11,11 +11,11 @@ export const fromFx = makeFromFxOperator('fromFx')
 
 export function makeFromFxOperator(operator: string) {
   return <R, E, A>(fx: Fx.Fx<R, E, A>): Stream<R, E, A> => {
-    return make((resources, sink, context, scope) =>
-      context.scheduler.asap(
+    return make((sink, context) =>
+      context.fiberContext.scheduler.asap(
         Fx.Fx(function* () {
           const exit = yield* Fx.result(fx)
-          const time = context.scheduler.getCurrentTime()
+          const time = context.fiberContext.scheduler.getCurrentTime()
 
           if (isLeft(exit)) {
             return sink.error({
@@ -23,7 +23,7 @@ export function makeFromFxOperator(operator: string) {
               operator,
               time,
               cause: exit.left,
-              fiberId: context.fiberId,
+              fiberId: context.fiberContext.fiberId,
             })
           }
 
@@ -33,14 +33,18 @@ export function makeFromFxOperator(operator: string) {
             time,
             value: exit.right,
             trace: none,
-            fiberId: context.fiberId,
+            fiberId: context.fiberContext.fiberId,
           })
 
-          tryEnd(sink, { type: 'End', operator, time, trace: none, fiberId: context.fiberId })
+          tryEnd(sink, {
+            type: 'End',
+            operator,
+            time,
+            trace: none,
+            fiberId: context.fiberContext.fiberId,
+          })
         }),
-        resources,
         context,
-        scope,
       ),
     )
   }

@@ -9,9 +9,9 @@ export const increment = (ref: MutableRef<number>) => {
 }
 
 export const decrement = (ref: MutableRef<number>) => {
-  const i = ref.get()
+  const i = ref.get() - 1
 
-  ref.set(i - 1)
+  ref.set(i)
 
   return i
 }

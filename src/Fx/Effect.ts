@@ -3,7 +3,6 @@ import { IO } from 'fp-ts/IO'
 
 import { Async } from '@/Async'
 import { Cause } from '@/Cause'
-import { Context } from '@/Context'
 import { none } from '@/Disposable'
 import * as E from '@/Effect'
 import {
@@ -17,6 +16,7 @@ import {
 import { Exit } from '@/Exit'
 import { Fiber } from '@/Fiber/Fiber'
 import { RuntimeOptions } from '@/Fiber/Runtime'
+import { FiberContext } from '@/FiberContext'
 import { FiberId } from '@/FiberId'
 import { Scope } from '@/Scope'
 import { Trace } from '@/Trace'
@@ -56,7 +56,7 @@ export const fromIO: <A, E = never>(io: IO<A>, trace?: string | undefined) => EF
 export const fromPromise: <A>(f: () => Promise<A>, trace?: string | undefined) => Of<A> =
   E.fromPromise
 
-export const getContext: <E>(trace?: string) => EFx<E, Context<E>> = E.getContext
+export const getContext: <E>(trace?: string) => EFx<E, FiberContext<E>> = E.getContext
 
 export const getScope: <E>(trace?: string) => EFx<E, Scope<E, any>> = E.getScope
 
@@ -117,6 +117,6 @@ export const join: <E, A>(
 ) => Fx<unknown, E, A> = E.join
 
 export const withinContext: <E>(
-  context: Context<E>,
+  context: FiberContext<E>,
   trace?: string | undefined,
 ) => <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = E.withinContext

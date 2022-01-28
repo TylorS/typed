@@ -18,14 +18,14 @@ export class Hold<R, E, A> extends Multicast<R, E, A> {
     super(stream, operator)
   }
 
-  run: StreamRun<R, E, A> = (resources, sink, context, scope, tracer) => {
-    const observer: MulticastObserver<R, E, A> = { resources, sink, context, scope, tracer }
+  run: StreamRun<R, E, A> = (sink, context) => {
+    const observer: MulticastObserver<R, E, A> = { sink, context }
 
     if (this.shouldScheduleFlush()) {
       this.scheduleFlush(observer)
     }
 
-    return super.run(resources, sink, context, scope, tracer)
+    return super.run(sink, context)
   }
 
   event(event: EventElement<A>) {
@@ -54,19 +54,17 @@ export class Hold<R, E, A> extends Multicast<R, E, A> {
     try {
       await dispose(this.task)
 
-      this.task = observer.context.scheduler.asap(
+      this.task = observer.context.fiberContext.scheduler.asap(
         fromIO(() => this.flushPending()),
-        observer.resources,
         observer.context,
-        observer.scope,
       )
     } catch (e) {
       this.error({
         type: 'Error',
         operator: this.operator,
-        time: observer.context.scheduler.getCurrentTime(),
+        time: observer.context.fiberContext.scheduler.getCurrentTime(),
         cause: Unexpected(e),
-        fiberId: observer.context.fiberId,
+        fiberId: observer.context.fiberContext.fiberId,
       })
     }
   }
@@ -81,13 +79,13 @@ export class Hold<R, E, A> extends Multicast<R, E, A> {
         const event: EventElement<A> = {
           type: 'Event',
           operator: this.operator,
-          time: o.context.scheduler.getCurrentTime(),
+          time: o.context.fiberContext.scheduler.getCurrentTime(),
           value,
           trace: O.none,
-          fiberId: o.context.fiberId,
+          fiberId: o.context.fiberContext.fiberId,
         }
 
-        tryEvent(o.sink, o.tracer.makeTrace(event))
+        tryEvent(o.sink, event)
       })
     }
   }

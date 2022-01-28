@@ -6,12 +6,12 @@ import { FiberRefLocals } from '@/FiberRef'
 import { MutableRef } from '@/MutableRef'
 import * as Scheduler from '@/Scheduler'
 
-export interface Context<E> {
+export interface FiberContext<E> {
   readonly fiberId: FiberId
   readonly renderer: Renderer<E>
   readonly reportFailure: (cause: Cause<E>) => void
   readonly sequenceNumber: MutableRef<number>
   readonly scheduler: Scheduler.Scheduler
   readonly locals: FiberRefLocals
-  readonly parent: Option<Context<any>>
+  readonly parent: Option<FiberContext<any>>
 }

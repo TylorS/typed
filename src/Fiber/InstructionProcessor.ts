@@ -4,10 +4,10 @@ import { getOrElse, isSome, Option, some } from 'fp-ts/Option'
 import { Required } from 'ts-toolbelt/out/Object/Required'
 
 import { prettyPrint, prettyStringify } from '@/Cause'
-import { Context } from '@/Context'
 import { Disposable, DisposableQueue, sync, withRemove } from '@/Disposable'
 import { Effect, FromExit, fromIO, Provide } from '@/Effect'
 import { Exit, success, unexpected } from '@/Exit'
+import { FiberContext } from '@/FiberContext'
 import { Fx } from '@/Fx'
 import { extendScope, LocalScope } from '@/Scope'
 import { SourceLocation, Trace, TraceElement } from '@/Trace'
@@ -22,38 +22,55 @@ import {
   RuntimeIterable,
 } from './RuntimeInstruction'
 
+/**
+ * InstructionProcessor is the main workhorse for interpreting Fx's instructions into a Generator
+ * of RuntimeInstructions. It tracks when to yield to other Fibers
+ */
 export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E, A>> {
   readonly executionTraces: Array<TraceElement> = []
   protected disposables: DisposableQueue = new DisposableQueue()
-  protected ops = 0
+  protected opCount = 0
+  protected releasing = false
 
   constructor(
     readonly fx: Fx<R, E, A>,
     readonly resources: R,
-    readonly context: Context<E>,
+    readonly fiberContext: FiberContext<E>,
     readonly scope: LocalScope<E, A>,
     readonly processors: Processors,
     readonly parentTrace: Option<Trace>,
     readonly shouldTrace: boolean,
-    readonly maxOps: number = 2048,
+    readonly maxOpCount: number = 2048,
   ) {}
 
   *[Symbol.iterator]() {
     try {
       const generator = this.fx[Symbol.iterator]()
       const value = yield* this.run(generator, generator.next())
+
       return yield* this.release(success(value))
     } catch (e) {
       return yield* this.release(unexpected(e))
     }
   }
 
+  /**
+   * Capture the current Trace
+   */
   readonly captureStackTrace = () =>
-    new Trace(this.context.fiberId, this.executionTraces.slice(), this.parentTrace)
+    new Trace(this.fiberContext.fiberId, this.executionTraces.slice(), this.parentTrace)
 
+  /**
+   * Helper for keeping track of a Disposable that will remove itself once some effect has
+   * completed.
+   */
   readonly trackDisposable = (f: (remove: () => void) => Disposable): Disposable =>
     pipe(this.disposables, withRemove(f))
 
+  /**
+   * Extend this InstructionProcessor's Scope, provides a potentially different resources,
+   * and allows configuing part of that stack that does (not) trace execution.
+   */
   readonly extend = <R2, B>(
     fx: Fx<R2, E, B>,
     resources: R2,
@@ -62,17 +79,20 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
     new InstructionProcessor(
       fx,
       resources,
-      this.context,
+      this.fiberContext,
       extendScope(this.scope),
       this.processors,
       this.shouldTrace ? some(this.captureStackTrace()) : this.parentTrace,
       shouldTrace,
-      this.maxOps,
+      this.maxOpCount,
     )
 
+  /**
+   * Forks the InstructionProcessor with fully customizable runtime.
+   */
   readonly fork = <B>(fx: Fx<R, E, B>, options: Required<RuntimeOptions<E>, 'context'>) => {
     const shouldTrace = options.shouldTrace ?? this.shouldTrace
-    const maxOps = options.maxOps ?? this.maxOps
+    const maxOps = options.maxOps ?? this.maxOpCount
     const processors = options.processors ?? this.processors
 
     return new InstructionProcessor(
@@ -82,19 +102,28 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
       extendScope(options.scope ?? this.scope),
       processors,
       shouldTrace ? some(this.captureStackTrace()) : this.parentTrace,
-      shouldTrace ?? true,
+      shouldTrace,
       maxOps,
     )
   }
 
+  /**
+   * Appends traces
+   */
   protected addTrace(instruction: Instruction<R, E>) {
-    this.executionTraces.push(formatInstruction(instruction, this.context))
+    this.executionTraces.push(formatInstruction(instruction, this.fiberContext))
   }
 
+  /**
+   * Releases the current Scope
+   */
   protected *release(exit: Exit<E, A>): RuntimeIterable<E, Exit<E, A>> {
+    this.releasing = true
+
     const releaseGenerator = this.scope.close(exit)[Symbol.iterator]()
     const released = yield* this.run(releaseGenerator, releaseGenerator.next())
 
+    // If we couldn't release the scope, wait for this scope to close.
     if (!released) {
       const exit = yield new ResumeAsync<Exit<E, A>>((cb) => {
         const option = this.scope.ensure((exit) => fromIO(() => cb(exit)))
@@ -102,8 +131,12 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
         return sync(() => isSome(option) && this.scope.cancel(option.value))
       })
 
+      this.releasing = false
+
       return exit as Exit<E, A>
     }
+
+    this.releasing = false
 
     return pipe(
       this.scope.exit.get(),
@@ -111,6 +144,9 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
     )
   }
 
+  /**
+   * Run a Generator of Fx Instructions.
+   */
   protected *run<A>(
     generator: Generator<Effect<R, E, any>, A>,
     result: IteratorResult<Effect<R, E, any>, A>,
@@ -131,23 +167,33 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
       }
 
       // Suspend to other fibers running
-      if (++this.ops > this.maxOps) {
-        this.ops = 0
-        yield new ResumePromise(Promise.resolve)
+      if (++this.opCount > this.maxOpCount) {
+        this.opCount = 0 // Reset the count
+        yield new ResumePromise(Promise.resolve) // Yield to other fibers cooperatively
       }
     }
+
     return result.value
   }
 
+  /**
+   * Interpret ProcessorInstruction instructions.
+   */
   protected *handleProcessorInstruction<A>(
     processorInstruction: ProcessorInstruction<R, E, A>,
   ): Generator<RuntimeInstruction<E>, any> {
     switch (processorInstruction.type) {
+      /**
+       * Handle nested Fx
+       */
       case 'Fx': {
         const nested = processorInstruction.fx[Symbol.iterator]()
 
         return yield* this.run(nested, nested.next())
       }
+      /**
+       * Get the Exit value of an Fx
+       */
       case 'Result': {
         const exit = yield* processorInstruction.processor
 
@@ -155,6 +201,9 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
 
         return exit
       }
+      /**
+       * Runs a InstructionProcessor which has extended/forked our Scope.
+       */
       case 'Scoped': {
         const exit = yield* processorInstruction.processor
 
@@ -168,19 +217,25 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
 
         return exit.right
       }
+      /**
+       * Runs an Fx which returns a new ProcessorInstruction
+       */
       case 'Deferred': {
         const nested = processorInstruction.fx[Symbol.iterator]()
         const instruction = yield* this.run(nested, nested.next())
 
         return yield* this.handleProcessorInstruction(instruction)
       }
+      /**
+       * Yield all RuntimeInstructions
+       */
       default:
         return (yield processorInstruction) as A
     }
   }
 }
 
-export function formatInstruction<R, E>(instruction: Instruction<R, E>, context: Context<E>) {
+export function formatInstruction<R, E>(instruction: Instruction<R, E>, context: FiberContext<E>) {
   switch (instruction.type) {
     case 'FromExit':
       return new SourceLocation(addTrace(instruction.trace, formatFromExit(instruction, context)))
@@ -191,7 +246,7 @@ export function formatInstruction<R, E>(instruction: Instruction<R, E>, context:
   }
 }
 
-function formatFromExit<E, A>({ input }: FromExit<E, A>, context: Context<E>) {
+function formatFromExit<E, A>({ input }: FromExit<E, A>, context: FiberContext<E>) {
   return pipe(
     input,
     match(

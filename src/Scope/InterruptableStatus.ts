@@ -33,10 +33,7 @@ export class InterruptableStatus {
       return
     }
 
-    if (this.isInterruptable) {
-      this._isAskingToInterrupt = true
-      this._hasInterrupted = true
-    }
+    this._isAskingToInterrupt = true
 
     await new Promise<void>((resolve) => {
       this._isAskingToInterrupt = true

@@ -1,5 +1,5 @@
 import { pipe } from 'fp-ts/function'
-import { Option } from 'fp-ts/Option'
+import { isSome, Option } from 'fp-ts/Option'
 
 import { addParentTrace, Cause, prettyPrint, prettyStringify, Unexpected } from '@/Cause'
 import { Time } from '@/Clock'
@@ -79,9 +79,13 @@ export function formatSinkTraceElement<E, A>(element: SinkTraceElement<E, A>): s
 }
 
 export function formatEventElement<A>(element: EventElement<A>): string {
-  const formatted = `${element.operator} Event (${element.time}): ${prettyStringify(element.value)}`
+  const formatted = `  ${element.operator} Event (${element.time}): ${prettyStringify(
+    element.value,
+  )}`
 
-  return prettyTrace(new Trace(element.fiberId, [new SourceLocation(formatted)], element.trace))
+  return isSome(element.trace)
+    ? formatted + prettyTrace(element.trace.value).replace(/\n/g, '\n  ')
+    : formatted
 }
 
 export function formatErrorElement<E>(element: ErrorElement<E>): string {

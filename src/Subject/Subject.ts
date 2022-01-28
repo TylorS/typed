@@ -1,8 +1,8 @@
 import { none, some } from 'fp-ts/Option'
 
 import { Cause } from '@/Cause'
-import { Context } from '@/Context'
 import { sync } from '@/Disposable'
+import { FiberContext } from '@/FiberContext'
 import { LocalScope } from '@/Scope'
 import { Sink, tryEnd, tryEvent } from '@/Sink'
 import * as Stream from '@/Stream'
@@ -62,7 +62,7 @@ export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, 
   readonly run = (
     resources: R,
     sink: Sink<E, A>,
-    context: Context<E>,
+    context: FiberContext<E>,
     scope: LocalScope<E, any>,
     tracer: Tracer<E>,
   ) => {

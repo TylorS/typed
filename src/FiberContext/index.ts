@@ -1,3 +1,3 @@
-export * from './Context'
 export * from './contextToOptions'
+export * from './FiberContext'
 export * from './make'

@@ -1,14 +1,13 @@
 import { left, match } from 'fp-ts/Either'
 import { constVoid, pipe } from 'fp-ts/function'
-import { isSome, some } from 'fp-ts/Option'
+import { isSome } from 'fp-ts/Option'
 
 import { prettyPrint } from '@/Cause'
 import { DisposableQueue, dispose, sync } from '@/Disposable'
 import { Drain, fromPromise } from '@/Effect'
-import { Exit, success } from '@/Exit'
-import { extendScope, LocalScope } from '@/Scope'
+import { Exit } from '@/Exit'
+import { LocalScope } from '@/Scope'
 import { Sink } from '@/Sink'
-import { makeTracer } from '@/Stream'
 
 import { InstructionProcessor } from './InstructionProcessor'
 import { ResumeSync } from './RuntimeInstruction'
@@ -20,23 +19,9 @@ export const processDrain = <R, E, A>(
 ) => {
   const inner = new DisposableQueue()
   const key = processor.scope.ensure(() => fromPromise(async () => dispose(inner)))
-  const scope = extendScope(processor.scope)
 
   inner.add(sync(() => isSome(key) && processor.scope.cancel(key.value)))
-
-  inner.add(
-    drain.input.run(
-      processor.resources,
-      makeDrainSink(processor, scope),
-      processor.context,
-      scope,
-      makeTracer(
-        processor.context,
-        processor.shouldTrace,
-        processor.shouldTrace ? some(processor.captureStackTrace()) : processor.parentTrace,
-      ),
-    ),
-  )
+  inner.add(drain.input.run(makeDrainSink(processor, processor.scope), processor))
 
   return new ResumeSync(inner)
 }
@@ -51,16 +36,16 @@ function makeDrainSink<R, E, A>(
       const nested = processor.extend(fx, processor.resources)
       const runtime = new RuntimeProcessor(
         nested,
-        processor.captureStackTrace,
-        processor.shouldTrace,
-        scope.interruptableStatus,
+        nested.captureStackTrace,
+        nested.shouldTrace,
+        nested.scope.interruptableStatus,
       )
 
       runtime.addObserver((exit) => {
         pipe(
           exit,
           match(
-            (cause) => console.error(prettyPrint(cause, processor.context.renderer)),
+            (cause) => console.error(prettyPrint(cause, processor.fiberContext.renderer)),
             constVoid,
           ),
         )
@@ -68,7 +53,7 @@ function makeDrainSink<R, E, A>(
         remove()
       })
 
-      runtime.processLater()
+      runtime.processNow()
 
       return runtime
     })
@@ -76,6 +61,6 @@ function makeDrainSink<R, E, A>(
   return {
     event: constVoid,
     error: (event) => close(left(event.cause)),
-    end: () => close(success(void 0)),
+    end: constVoid,
   }
 }

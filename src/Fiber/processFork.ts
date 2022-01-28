@@ -1,5 +1,5 @@
-import { forkContext } from '@/Context/forkContext'
 import { Fork } from '@/Effect'
+import { forkContext } from '@/FiberContext/forkContext'
 import { Fx } from '@/Fx'
 
 import { fromInstructionProcessor } from './fromInstructionProcessor'
@@ -14,16 +14,15 @@ export const processFork = <R, E, A>(
   type: 'Deferred',
   fx: Fx(function* () {
     const context =
-      instruction.input.runtimeOptions?.context ?? (yield* forkContext(processor.context))
-    const scope = instruction.input.runtimeOptions?.scope ?? processor.scope
+      instruction.input.runtimeOptions?.context ?? (yield* forkContext(processor.fiberContext))
 
     return new ResumeSync(
       fromInstructionProcessor(
         processor.fork(instruction.input.fx, {
           ...instruction.input.runtimeOptions,
-          scope,
           context,
         }),
+        (r) => r.processLater(),
       ),
     )
   }),

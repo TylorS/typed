@@ -30,11 +30,12 @@ export const processRace = <FX extends ReadonlyArray<Fx<any, any, any> | Fx<any,
 
     // Run each Fx
     const runtimes = instr.input.map((fx, i) => {
+      const nested = processor.extend(fx, processor.resources)
       const runtime = new RuntimeProcessor(
-        processor.extend(fx, processor.resources),
-        processor.captureStackTrace,
-        processor.shouldTrace,
-        processor.scope.interruptableStatus,
+        nested,
+        nested.captureStackTrace,
+        nested.shouldTrace,
+        nested.scope.interruptableStatus,
       )
 
       // Don't start Fx if another Sync Fx has already won

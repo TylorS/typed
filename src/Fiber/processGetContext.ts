@@ -6,4 +6,4 @@ import { ResumeSync } from './RuntimeInstruction'
 export const processGetContext = <E, R, A>(
   _: GetContext<E>,
   processor: InstructionProcessor<R, E, A>,
-) => new ResumeSync(processor.context)
+) => new ResumeSync(processor.fiberContext)

@@ -1,10 +1,10 @@
 import { makeFiberId } from '@/FiberId'
 import { increment } from '@/MutableRef'
 
-import { Context } from './Context'
-import { ContextOptions } from './make'
+import { FiberContext } from './FiberContext'
+import { FiberContextOptions } from './make'
 
-export const contextToOptions = <E>(context: Context<E>): ContextOptions<E> => ({
+export const contextToOptions = <E>(context: FiberContext<E>): FiberContextOptions<E> => ({
   fiberId: makeFiberId(increment(context.sequenceNumber)),
   renderer: context.renderer,
   reportFailure: context.reportFailure,

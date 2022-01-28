@@ -6,9 +6,8 @@ import { Stream } from './Stream'
 export const tap =
   <A>(f: (value: A) => any) =>
   <R, E>(stream: Stream<R, E, A>): Stream<R, E, A> => ({
-    run: (resources, sink, ...rest) =>
+    run: (sink, context) =>
       stream.run(
-        resources,
         {
           ...sink,
           event: (event) => {
@@ -17,16 +16,15 @@ export const tap =
             return sink.event(event)
           },
         },
-        ...rest,
+        context,
       ),
   })
 
 export const tapEvent =
   <A>(f: (value: EventElement<A>) => any) =>
   <R, E>(stream: Stream<R, E, A>): Stream<R, E, A> => ({
-    run: (resources, sink, ...rest) =>
+    run: (sink, context) =>
       stream.run(
-        resources,
         {
           ...sink,
           event: (event) => {
@@ -35,16 +33,15 @@ export const tapEvent =
             return sink.event(event)
           },
         },
-        ...rest,
+        context,
       ),
   })
 
 export const tapEnd =
   (f: (time: Time) => any) =>
   <R, E, A>(stream: Stream<R, E, A>): Stream<R, E, A> => ({
-    run: (resources, sink, context, scope, tracer) =>
+    run: (sink, context) =>
       stream.run(
-        resources,
         {
           ...sink,
           end: (event) => {
@@ -54,7 +51,5 @@ export const tapEnd =
           },
         },
         context,
-        scope,
-        tracer,
       ),
   })

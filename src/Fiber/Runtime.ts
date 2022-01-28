@@ -2,10 +2,10 @@ import { match } from 'fp-ts/Either'
 import { none, Option } from 'fp-ts/Option'
 
 import { prettyPrint } from '@/Cause'
-import * as Context from '@/Context'
 import { Disposable } from '@/Disposable'
 import { ask, getContext, getScope } from '@/Effect'
 import { Exit } from '@/Exit'
+import * as Context from '@/FiberContext'
 import { makeFiberRefLocals } from '@/FiberRef'
 import { EFx, Fx } from '@/Fx'
 import * as Scheduler from '@/Scheduler'
@@ -18,8 +18,8 @@ import { InstructionProcessor } from './InstructionProcessor'
 import { Processors } from './Processor'
 import { RuntimeProcessor } from './RuntimeProcessor'
 
-export interface RuntimeOptions<E> extends Partial<Context.ContextOptions<E>> {
-  readonly context?: Context.Context<E>
+export interface RuntimeOptions<E> extends Partial<Context.FiberContextOptions<E>> {
+  readonly context?: Context.FiberContext<E>
   readonly scope?: Scope<E, any>
   readonly processors?: Processors
   readonly parentTrace?: Option<Trace>
@@ -61,13 +61,11 @@ export class Runtime<R, E> {
 
       runtime.addObserver(
         match(
-          (cause) => reject(new Error(prettyPrint(cause, processor.context.renderer))),
+          (cause) => reject(new Error(prettyPrint(cause, processor.fiberContext.renderer))),
           resolve,
         ),
       )
       runtime.processNow()
-
-      return processor
     })
 
   readonly runPromiseExit = <E, B>(
@@ -85,12 +83,13 @@ export class Runtime<R, E> {
 
       runtime.addObserver(resolve)
       runtime.processNow()
-
-      return processor
     })
 
   readonly runFiber = <E, B>(fx: Fx<R, E, B>, options: RuntimeOptions<E> = {}) =>
-    fromInstructionProcessor(this.makeProcessor(fx, options))
+    fromInstructionProcessor(
+      this.makeProcessor(fx, options),
+      (r) => r.processLater() /* Always start the processor asynchronously */,
+    )
 
   readonly makeProcessor = <E, B>(
     fx: Fx<R, E, B>,
@@ -102,7 +101,10 @@ export class Runtime<R, E> {
       fx,
       this.resources,
       options.context ??
-        Context.make<E>({ ...options, scheduler: options.scheduler ?? Scheduler.make() }),
+        Context.make<E>({
+          ...options,
+          scheduler: options.scheduler ?? Scheduler.make({ runtimeOptions: { shouldTrace: true } }),
+        }),
       options.scope ? extendScope(options.scope) : new LocalScope(),
       options.processors ?? eagerProcessors,
       options.parentTrace ?? none,

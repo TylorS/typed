@@ -6,20 +6,18 @@ import { tryEnd } from '@/Sink'
 import { make, Stream } from './Stream'
 
 export function empty<E = never, A = never>(): Stream<unknown, E, A> {
-  return make((resources, sink, context, scope) =>
-    context.scheduler.asap(
+  return make((sink, context) =>
+    context.fiberContext.scheduler.asap(
       fromIO(() =>
         tryEnd(sink, {
           type: 'End',
           operator: 'empty',
-          time: context.scheduler.getCurrentTime(),
+          time: context.fiberContext.scheduler.getCurrentTime(),
           trace: none,
-          fiberId: context.fiberId,
+          fiberId: context.fiberContext.fiberId,
         }),
       ),
-      resources,
       context,
-      scope,
     ),
   )
 }

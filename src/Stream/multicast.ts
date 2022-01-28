@@ -1,21 +1,16 @@
 import { Disposed } from '@/Cause'
-import { Context } from '@/Context'
 import { async, checkIsSync, Disposable, dispose, none, sync } from '@/Disposable'
-import { LocalScope } from '@/Scope'
 import { EndElement, ErrorElement, EventElement, Sink, tryEnd, tryEvent } from '@/Sink'
 
-import { Stream, StreamRun, Tracer } from './Stream'
+import { Stream, StreamContext, StreamRun } from './Stream'
 
 export function multicast<R, E, A>(stream: Stream<R, E, A>): Stream<R, E, A> {
   return new Multicast(stream)
 }
 
 export type MulticastObserver<R, E, A> = {
-  readonly resources: R
   readonly sink: Sink<E, A>
-  readonly context: Context<E>
-  readonly scope: LocalScope<E, any>
-  readonly tracer: Tracer<E>
+  readonly context: StreamContext<R, E>
 }
 
 export class Multicast<R, E, A> implements Stream<R, E, A>, Sink<E, A> {
@@ -24,8 +19,8 @@ export class Multicast<R, E, A> implements Stream<R, E, A>, Sink<E, A> {
 
   constructor(readonly stream: Stream<R, E, A>, readonly operator: string = 'multicast') {}
 
-  run: StreamRun<R, E, A> = (resources, sink, context, scope, tracer) => {
-    const observer = { resources, sink, context, scope, tracer }
+  run: StreamRun<R, E, A> = (sink, context) => {
+    const observer = { sink, context }
 
     this.observers.push(observer)
 
@@ -37,25 +32,19 @@ export class Multicast<R, E, A> implements Stream<R, E, A>, Sink<E, A> {
   }
 
   private start(observer: MulticastObserver<R, E, A>) {
-    this.disposable = this.run(
-      observer.resources,
-      this,
-      observer.context,
-      observer.scope,
-      observer.tracer,
-    )
+    this.disposable = this.run(this, observer.context)
   }
 
   event(event: EventElement<A>) {
-    this.observers.forEach((o) => tryEvent(o.sink, o.tracer.makeTrace(event)))
+    this.observers.forEach((o) => tryEvent(o.sink, event))
   }
 
   error(event: ErrorElement<E>) {
-    this.observers.forEach((o) => o.sink.error(o.tracer.makeTrace(event)))
+    this.observers.forEach((o) => o.sink.error(event))
   }
 
   end(event: EndElement) {
-    this.observers.forEach((o) => tryEnd(o.sink, o.tracer.makeTrace(event)))
+    this.observers.forEach((o) => tryEnd(o.sink, event))
   }
 }
 
@@ -76,15 +65,13 @@ export class MulticastDisposable<R, E, A> implements Disposable {
       return sync(() => {
         // Notify remaining of dispose
         this.multicast.observers.forEach((o) =>
-          o.sink.error(
-            o.tracer.makeTrace({
-              type: 'Error',
-              operator: this.multicast.operator,
-              time: o.context.scheduler.getCurrentTime(),
-              cause: Disposed(o.context.fiberId),
-              fiberId: o.context.fiberId,
-            }),
-          ),
+          o.sink.error({
+            type: 'Error',
+            operator: this.multicast.operator,
+            time: o.context.fiberContext.scheduler.getCurrentTime(),
+            cause: Disposed(o.context.fiberContext.fiberId),
+            fiberId: o.context.fiberContext.fiberId,
+          }),
         )
 
         dispose(this.disposeObserver())
@@ -98,15 +85,13 @@ export class MulticastDisposable<R, E, A> implements Disposable {
     return async(async () => {
       // Notify remaining of dispose
       this.multicast.observers.forEach((o) =>
-        o.sink.error(
-          o.tracer.makeTrace({
-            type: 'Error',
-            operator: this.multicast.operator,
-            time: o.context.scheduler.getCurrentTime(),
-            cause: Disposed(o.context.fiberId),
-            fiberId: o.context.fiberId,
-          }),
-        ),
+        o.sink.error({
+          type: 'Error',
+          operator: this.multicast.operator,
+          time: o.context.fiberContext.scheduler.getCurrentTime(),
+          cause: Disposed(o.context.fiberContext.fiberId),
+          fiberId: o.context.fiberContext.fiberId,
+        }),
       )
 
       dispose(this.disposeObserver())

@@ -40,9 +40,7 @@ export function prettyTraceSafe(trace: Trace): Sync.Sync<string> {
   return Sync.Sync(function* () {
     const executionsWithLocation = trace.executionTrace.filter(isSourceLocation)
 
-    const isRootFiber = isSome(trace.parentTrace)
-      ? trace.parentTrace.value.fiberId === trace.fiberId
-      : trace.fiberId.sequenceNumber === 0
+    const isRootFiber = trace.fiberId.sequenceNumber === 0
 
     const stackPrint = isRootFiber
       ? []

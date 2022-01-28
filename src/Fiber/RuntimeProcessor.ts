@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function'
 import { isNone, isSome, none, Option, some } from 'fp-ts/Option'
 
 import { Traced } from '@/Cause'
-import { Disposable, DisposableQueue, dispose, disposeAll, sync } from '@/Disposable'
+import { async, Disposable, DisposableQueue, dispose, disposeAll, sync } from '@/Disposable'
 import { Exit, then, unexpected } from '@/Exit'
 import { InterruptableStatus } from '@/Scope/InterruptableStatus'
 import { Trace } from '@/Trace'
@@ -11,11 +11,17 @@ import { Trace } from '@/Trace'
 import { Status } from './Fiber'
 import { RuntimeGenerator, RuntimeInstruction, RuntimeIterable } from './RuntimeInstruction'
 
+/**
+ * The RuntimeProcessor is where all of our asynchrony and per-instruction Disposables are kept.
+ * RuntimeProcessor takes a RuntimeIterable (like InstructionProcessor) and handles all of the asynchrony
+ * via RuntimeInstructions. It handles the pausing/playing of an Fx, tracking the status of the running Fx,
+ * and notification of all observers upon exit.
+ */
 export class RuntimeProcessor<E, A> implements Disposable {
   protected node: RuntimeInstructionTree<E, A> | undefined = undefined
   protected observers: Set<(exit: Exit<E, A>) => void> = new Set()
   protected exited: Option<Exit<E, A>> = none
-  protected disposable: DisposableQueue = new DisposableQueue()
+  protected queue: DisposableQueue = new DisposableQueue()
   protected currentStatus!: Status
 
   constructor(
@@ -36,9 +42,15 @@ export class RuntimeProcessor<E, A> implements Disposable {
     return this.currentStatus
   }
 
-  get dispose() {
-    return this.disposable['dispose']
-  }
+  dispose = async(async () => {
+    const { interruptableStatus } = this
+
+    if (!interruptableStatus.isInterruptable) {
+      await interruptableStatus.waitToInterrupt()
+    }
+
+    await dispose(this.queue)
+  }).dispose
 
   processNow() {
     while (this.node && isNone(this.exited)) {
@@ -149,7 +161,7 @@ export class RuntimeProcessor<E, A> implements Disposable {
       case 'Promise': {
         this.node = undefined
         const inner = new DisposableQueue()
-        const disposable = this.disposable.add(inner)
+        const disposable = this.queue.add(inner)
 
         instruction
           .promise()
@@ -193,12 +205,12 @@ export class RuntimeProcessor<E, A> implements Disposable {
       case 'Async': {
         this.node = undefined
         const inner = new DisposableQueue()
-        const disposable = this.disposable.add(inner)
 
+        inner.add(this.queue.add(inner))
         inner.add(
           instruction.async(async (a) => {
             try {
-              await dispose(disposeAll([inner, disposable]))
+              await dispose(inner)
 
               previous.next = a
 
