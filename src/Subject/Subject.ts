@@ -1,13 +1,10 @@
-import { none, some } from 'fp-ts/Option'
+import { none } from 'fp-ts/Option'
 
 import { Cause } from '@/Cause'
 import { sync } from '@/Disposable'
-import { FiberContext } from '@/FiberContext'
-import { LocalScope } from '@/Scope'
 import { Sink, tryEnd, tryEvent } from '@/Sink'
 import * as Stream from '@/Stream'
-import { Tracer } from '@/Stream'
-import { SourceLocation, Trace } from '@/Trace'
+import { StreamContext } from '@/Stream'
 
 export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, A> {
   protected observers: Set<Stream.MulticastObserver<R, E, A>> = new Set()
@@ -17,37 +14,35 @@ export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, 
   readonly event = (a: A): void => {
     Array.from(this.observers).forEach((o) =>
       tryEvent(o.sink, {
-        fiberId: o.context.fiberId,
+        fiberId: o.context.fiberContext.fiberId,
         type: 'Event',
         operator: this.name,
-        time: o.context.scheduler.getCurrentTime(),
+        time: o.context.fiberContext.scheduler.getCurrentTime(),
         value: a,
-        trace: some(new Trace(o.context.fiberId, [new SourceLocation(this.name)], none)),
+        trace: none,
       }),
     )
   }
 
   readonly error = (cause: Cause<E>): void => {
     Array.from(this.observers).forEach((o) =>
-      o.sink.error(
-        o.tracer.makeTrace({
-          fiberId: o.context.fiberId,
-          type: 'Error',
-          operator: this.name,
-          time: o.context.scheduler.getCurrentTime(),
-          cause,
-        }),
-      ),
+      o.sink.error({
+        type: 'Error',
+        fiberId: o.context.fiberContext.fiberId,
+        operator: this.name,
+        time: o.context.fiberContext.scheduler.getCurrentTime(),
+        cause,
+      }),
     )
   }
 
   readonly end = (): void => {
     Array.from(this.observers).forEach((o) =>
       tryEnd(o.sink, {
-        fiberId: o.context.fiberId,
         type: 'End',
+        fiberId: o.context.fiberContext.fiberId,
         operator: this.name,
-        time: o.context.scheduler.getCurrentTime(),
+        time: o.context.fiberContext.scheduler.getCurrentTime(),
         trace: none,
       }),
     )
@@ -59,14 +54,8 @@ export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, 
     end: this.end,
   }
 
-  readonly run = (
-    resources: R,
-    sink: Sink<E, A>,
-    context: FiberContext<E>,
-    scope: LocalScope<E, any>,
-    tracer: Tracer<E>,
-  ) => {
-    const observer: Stream.MulticastObserver<R, E, A> = { resources, sink, context, scope, tracer }
+  readonly run = (sink: Sink<E, A>, context: StreamContext<R, E>) => {
+    const observer: Stream.MulticastObserver<R, E, A> = { sink, context }
 
     this.observers.add(observer)
 
