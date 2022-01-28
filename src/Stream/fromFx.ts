@@ -7,9 +7,7 @@ import { tryEnd, tryEvent } from '@/Sink'
 
 import { make, Stream } from './Stream'
 
-export function fromFx<R, E, A>(fx: Fx.Fx<R, E, A>, operator = 'fromFx'): Stream<R, E, A> {
-  return makeFromFxOperator(operator)(fx)
-}
+export const fromFx = makeFromFxOperator('fromFx')
 
 export function makeFromFxOperator(operator: string) {
   return <R, E, A>(fx: Fx.Fx<R, E, A>): Stream<R, E, A> => {
