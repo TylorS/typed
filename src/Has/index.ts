@@ -20,3 +20,7 @@ export function has<Name extends string, A>(
     [HAS]: { [service]: implementation },
   } as Has<Name, A>
 }
+
+export function from<Name extends string, A>(service: Service<Name, A>) {
+  return (has: Has<Name, A>): A => (has[HAS] as any)[service]
+}
