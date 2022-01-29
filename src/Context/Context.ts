@@ -1,4 +1,5 @@
 import { flow, pipe } from 'fp-ts/function'
+import { Option } from 'fp-ts/Option'
 
 import * as FiberRef from '@/FiberRef'
 import { findProvider } from '@/FiberRef'
@@ -8,7 +9,8 @@ import * as Stream from '@/Stream'
 
 /**
  * Context is a special instance of Ref which will use the FiberContext tree to find where to
- * share state within.
+ * share state within, traveling up the tree until finding the first FiberContext to hold that FiberRef.
+ * If no FiberContext holds a reference, the root-most FiberContext will be utilized.
  */
 export interface Context<R, E, A> extends Ref.Ref<R, E, A> {}
 
@@ -22,8 +24,14 @@ export function fromFiberRef<R, E, A>(ref: FiberRef.FiberRef<R, E, A>): Context<
     delete: pipe(ref, FiberRef.delete, withProvider(ref)),
     values: pipe(
       Stream.fromFx(findProvider(ref)),
-      Stream.chain((c) => pipe(values, Stream.withinContext(c as any))),
-    ) as unknown as Context<R, E, A>['values'],
+      Stream.chain((c) =>
+        pipe(
+          // Type-cast error from never to E since it's safe to never throw an Expected error.
+          values as unknown as Stream.Stream<unknown, E, Option<A>>,
+          Stream.withinContext(c, 'Context.values'),
+        ),
+      ),
+    ),
   }
 }
 

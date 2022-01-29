@@ -1,7 +1,116 @@
+import { pipe } from 'fp-ts/function'
+import { isSome, none, Option, some } from 'fp-ts/Option'
+
 import { Fiber } from '@/Fiber'
-import { fromIO } from '@/Fx'
-import { global } from '@/Ref'
+import * as Fx from '@/Fx'
+import * as Ref from '@/Ref'
 
-import { LayerId } from './Layer'
+import { Layer, LayerId } from './Layer'
 
-export const Layers = global(fromIO(() => new Map<LayerId, Fiber<any, any>>(), 'CreateLayers'))
+export const GlobalLayers = Ref.global(
+  Fx.fromIO(() => new Map<LayerId, Fiber<any, any>>(), 'CreateLayers'),
+)
+
+export const LocalLayers = Ref.make(
+  Fx.fromIO(() => new Map<LayerId, Fiber<any, any>>(), 'CreateLayers'),
+)
+
+export function getLayers<R, E, A>(layer: Layer<R, E, A>) {
+  return (layer.global ? GlobalLayers : LocalLayers).get
+}
+
+export function find<R, E, A>(layer: Layer<R, E, A>): Fx.Fx<unknown, E, Option<A>> {
+  return Fx.Fx(function* () {
+    const layers = yield* getLayers(layer)
+
+    if (layers.has(layer.id)) {
+      const fiber = layers.get(layer.id) as Fiber<E, A>
+      const exit = yield* fiber.exit
+
+      return some(yield* Fx.fromExit(exit))
+    }
+
+    return none
+  })
+}
+
+/**
+ * Get the currently memoized Service implementation for a given Layer, otherwise
+ * Construct a
+ */
+export function get<R, E, A>(layer: Layer<R, E, A>): Fx.Fx<R, E, A> {
+  const { id } = layer
+
+  return Fx.Fx(function* () {
+    const current = yield* find(layer)
+
+    if (isSome(current)) {
+      return current.value
+    }
+
+    const layers = yield* getLayers(layer)
+    const fiber = yield* Fx.fork(layer.provider)
+
+    layers.set(id, fiber)
+
+    return yield* Fx.join(fiber)
+  })
+}
+
+/**
+ * Update a Service with a newer implementation. If it does not yet exist, it will be
+ * created first to apply your function against. If the Layer is marked to not be overridable
+ * Option.None will be returned, otherwise Option.Some will be returned containing the updated Service.
+ */
+export function update<S, R2, E2>(f: (service: S) => Fx.Fx<R2, E2, S>) {
+  return <R, E>(layer: Layer<R, E, S>): Fx.Fx<R2 & R, E | E2, Option<S>> =>
+    Fx.Fx(function* () {
+      if (!layer.overridable) {
+        return none
+      }
+
+      const current = yield* get(layer)
+      const fiber = yield* Fx.fork(f(current))
+
+      yield* pipe(
+        layer.global ? GlobalLayers : LocalLayers,
+        Ref.update((m) => Fx.fromIO(() => m.set(layer.id, fiber))),
+      )
+
+      return some(yield* Fx.join(fiber))
+    })
+}
+
+export function remove<R, E, A>(layer: Layer<R, E, A>): Fx.Of<boolean> {
+  return Fx.Fx(function* () {
+    if (!layer.overridable) {
+      return false
+    }
+
+    const layers = yield* (layer.global ? GlobalLayers : LocalLayers).get
+
+    if (layers.has(layer.id)) {
+      const fiber = layers.get(layer.id)!
+
+      layers.delete(layer.id)
+
+      yield* Fx.dispose(fiber)
+
+      return true
+    }
+
+    return false
+  })
+}
+
+export { remove as delete }
+
+export function refresh<R, E, A>(layer: Layer<R, E, A>): Fx.Fx<R, E, Option<A>> {
+  return Fx.Fx(function* () {
+    if (yield* remove(layer)) {
+      return some(yield* get(layer))
+    }
+
+    return none
+  })
+}

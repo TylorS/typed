@@ -3,9 +3,10 @@ import { constVoid, pipe } from 'fp-ts/function'
 import { isSome } from 'fp-ts/Option'
 
 import { prettyPrint } from '@/Cause'
-import { DisposableQueue, dispose, sync } from '@/Disposable'
-import { Drain, fromPromise } from '@/Effect'
+import { DisposableQueue, sync } from '@/Disposable'
+import { Drain } from '@/Effect'
 import { Exit } from '@/Exit'
+import { dispose } from '@/Fx'
 import { LocalScope } from '@/Scope'
 import { Sink } from '@/Sink'
 
@@ -18,7 +19,7 @@ export const processDrain = <R, E, A>(
   processor: InstructionProcessor<R, E, any>,
 ) => {
   const inner = new DisposableQueue()
-  const key = processor.scope.ensure(() => fromPromise(async () => dispose(inner)))
+  const key = processor.scope.ensure(() => dispose(inner))
 
   inner.add(sync(() => isSome(key) && processor.scope.cancel(key.value)))
   inner.add(drain.input.run(makeDrainSink(processor, processor.scope), processor))

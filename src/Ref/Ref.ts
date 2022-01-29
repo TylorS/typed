@@ -39,3 +39,13 @@ export function toGlobal<R, E, I, O>(ref: Ref<R, E, I, O>): Global<R, E, I, O> {
 }
 
 export const global = flow(make, toGlobal)
+
+export function update<A, R2, E2>(f: (a: A) => Fx<R2, E2, A>) {
+  return <R, E>(ref: Ref<R, E, A>): Fx<R & R2, E | E2, A> =>
+    Fx(function* () {
+      const a1 = yield* ref.get
+      const a2 = yield* f(a1)
+
+      return yield* ref.set(a2)
+    })
+}

@@ -1,33 +1,30 @@
 /**
  * Branded is a module to help you construct Branded types.
- *
- * @since 0.9.2
+
  */
 import { unsafeCoerce } from 'fp-ts/function'
 
 /**
- * @since 0.9.2
  * @category Type-level
  */
 export type BrandOf<A> = A extends Branded<infer _, infer R> ? R : never
 
 /**
- * @since 0.9.2
  * @category Type-level
  */
 export type ValueOf<A> = A extends infer E & { readonly __brand__: BrandOf<A> } ? E : never
 
 /**
- * @since 0.9.2
  * @category Model
  */
-export type Branded<E, A> = E & { readonly __brand__: A }
+export type Branded<T, Brand> = T & { readonly __brand__: Brand }
 
 /**
- * @since 0.9.2
  * @category Constructor
  */
 export const Branded =
   <A extends Branded<any, any>>() =>
   <E extends ValueOf<A>>(e: E): Branded<E, BrandOf<A>> =>
     unsafeCoerce(e)
+
+export const brand: <A extends Branded<any, any>>(value: ValueOf<A>) => A = unsafeCoerce

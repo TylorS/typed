@@ -133,6 +133,14 @@
       "require": "./cjs/Clock/Clock.js",
       "import": "./esm/Clock/Clock.js"
     },
+    "./Context": {
+      "require": "./cjs/Context/index.js",
+      "import": "./esm/Context/index.js"
+    },
+    "./Context/Context": {
+      "require": "./cjs/Context/Context.js",
+      "import": "./esm/Context/Context.js"
+    },
     "./Disposable": {
       "require": "./cjs/Disposable/index.js",
       "import": "./esm/Disposable/index.js"
@@ -441,6 +449,10 @@
       "require": "./cjs/FiberRef/delete.js",
       "import": "./esm/FiberRef/delete.js"
     },
+    "./FiberRef/findProvider": {
+      "require": "./cjs/FiberRef/findProvider.js",
+      "import": "./esm/FiberRef/findProvider.js"
+    },
     "./FiberRef/get": {
       "require": "./cjs/FiberRef/get.js",
       "import": "./esm/FiberRef/get.js"
@@ -460,6 +472,10 @@
     "./FiberRef/values": {
       "require": "./cjs/FiberRef/values.js",
       "import": "./esm/FiberRef/values.js"
+    },
+    "./FiberRef/withProvider": {
+      "require": "./cjs/FiberRef/withProvider.js",
+      "import": "./esm/FiberRef/withProvider.js"
     },
     "./Future": {
       "require": "./cjs/Future/index.js",

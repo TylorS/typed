@@ -1,19 +1,9 @@
 import { pipe } from 'fp-ts/function'
 
-import { dispose } from '@/Disposable'
-import {
-  fromExit,
-  fromPromise,
-  of,
-  Race,
-  RaceErrors,
-  RaceOutput,
-  RaceResources,
-  tuple,
-} from '@/Effect'
+import { fromExit, of, Race, RaceErrors, RaceOutput, RaceResources, tuple } from '@/Effect'
 import { Exit } from '@/Exit'
 import { complete, pending, wait } from '@/Future'
-import { Fx } from '@/Fx'
+import { dispose, Fx } from '@/Fx'
 
 import { InstructionProcessor } from './InstructionProcessor'
 import { FxInstruction } from './Processor'
@@ -63,7 +53,7 @@ export const processRace = <FX extends ReadonlyArray<Fx<any, any, any> | Fx<any,
     const exit = yield* wait(future)
 
     // Cleanup all other Fx
-    yield* tuple(runtimes.map((r) => fromPromise(async () => dispose(r))))
+    yield* tuple(runtimes.map(dispose))
 
     // Return the Result
     return yield* fromExit(exit, instr.trace)
