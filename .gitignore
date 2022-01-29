@@ -78,12 +78,14 @@ snowpack.key
 /FiberRef/
 /Future/
 /Fx/
+/Has/
 /Layer/
 /Magma/
 /MutableRef/
 /Ref/
 /Scheduler/
 /Scope/
+/Service/
 /Sink/
 /Stream/
 /Subject/

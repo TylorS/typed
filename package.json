@@ -505,6 +505,10 @@
       "require": "./cjs/Fx/Fx.js",
       "import": "./esm/Fx/Fx.js"
     },
+    "./Fx/dispose": {
+      "require": "./cjs/Fx/dispose.js",
+      "import": "./esm/Fx/dispose.js"
+    },
     "./Fx/ensureDisposable": {
       "require": "./cjs/Fx/ensureDisposable.js",
       "import": "./esm/Fx/ensureDisposable.js"
@@ -516,6 +520,14 @@
     "./Fx/forkJoin": {
       "require": "./cjs/Fx/forkJoin.js",
       "import": "./esm/Fx/forkJoin.js"
+    },
+    "./Fx/map": {
+      "require": "./cjs/Fx/map.js",
+      "import": "./esm/Fx/map.js"
+    },
+    "./Fx/provide": {
+      "require": "./cjs/Fx/provide.js",
+      "import": "./esm/Fx/provide.js"
     },
     "./Fx/run": {
       "require": "./cjs/Fx/run.js",
@@ -529,6 +541,10 @@
       "require": "./cjs/Fx/uninterruptable.js",
       "import": "./esm/Fx/uninterruptable.js"
     },
+    "./Has": {
+      "require": "./cjs/Has/index.js",
+      "import": "./esm/Has/index.js"
+    },
     "./Layer": {
       "require": "./cjs/Layer/index.js",
       "import": "./esm/Layer/index.js"
@@ -540,6 +556,18 @@
     "./Layer/Layers": {
       "require": "./cjs/Layer/Layers.js",
       "import": "./esm/Layer/Layers.js"
+    },
+    "./Layer/combine": {
+      "require": "./cjs/Layer/combine.js",
+      "import": "./esm/Layer/combine.js"
+    },
+    "./Layer/compose": {
+      "require": "./cjs/Layer/compose.js",
+      "import": "./esm/Layer/compose.js"
+    },
+    "./Layer/idOf": {
+      "require": "./cjs/Layer/idOf.js",
+      "import": "./esm/Layer/idOf.js"
     },
     "./Magma": {
       "require": "./cjs/Magma/index.js",
@@ -600,6 +628,30 @@
     "./Scope/extendScope": {
       "require": "./cjs/Scope/extendScope.js",
       "import": "./esm/Scope/extendScope.js"
+    },
+    "./Service": {
+      "require": "./cjs/Service/index.js",
+      "import": "./esm/Service/index.js"
+    },
+    "./Service/Service": {
+      "require": "./cjs/Service/Service.js",
+      "import": "./esm/Service/Service.js"
+    },
+    "./Service/access": {
+      "require": "./cjs/Service/access.js",
+      "import": "./esm/Service/access.js"
+    },
+    "./Service/get": {
+      "require": "./cjs/Service/get.js",
+      "import": "./esm/Service/get.js"
+    },
+    "./Service/implement": {
+      "require": "./cjs/Service/implement.js",
+      "import": "./esm/Service/implement.js"
+    },
+    "./Service/provide": {
+      "require": "./cjs/Service/provide.js",
+      "import": "./esm/Service/provide.js"
     },
     "./Sink": {
       "require": "./cjs/Sink/index.js",
