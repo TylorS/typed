@@ -7,7 +7,7 @@ import { Branded } from '@/Branded'
  */
 export type Service<Name extends string, A> = Branded<
   symbol,
-  { readonly Service: A; readonly ServiceName: Name }
+  { readonly ServiceName: Name; readonly Service: A }
 >
 
 export type NameOf<T> = [T] extends [Service<infer A, infer _>] ? A : never
