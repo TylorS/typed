@@ -22,9 +22,7 @@ export const collectEventElements = <R, E, A>(
       drain,
     )
 
-    const x = yield* wait(future)
-
-    return x
+    return yield* wait(future)
   })
 
 export const collectEvents = <R, E, A>(stream: Stream<R, E, A>): Fx<R, E, readonly A[]> =>
@@ -39,7 +37,5 @@ export const collectEvents = <R, E, A>(stream: Stream<R, E, A>): Fx<R, E, readon
       drain,
     )
 
-    const x = yield* wait(future)
-
-    return x
+    return yield* wait(future)
   })
