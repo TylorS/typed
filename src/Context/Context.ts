@@ -15,7 +15,8 @@ import * as Stream from '@/Stream'
 export interface Context<R, E, A> extends Ref.Ref<R, E, A> {}
 
 export function fromFiberRef<R, E, A>(ref: FiberRef.FiberRef<R, E, A>): Context<R, E, A> {
-  const values = FiberRef.values(ref)
+  // Type-cast error from never to E since it's safe to never throw an Expected error.
+  const values = FiberRef.values(ref) as unknown as Stream.Stream<unknown, E, Option<A>>
 
   return {
     get: pipe(ref, FiberRef.get, withProvider(ref)),
@@ -24,13 +25,7 @@ export function fromFiberRef<R, E, A>(ref: FiberRef.FiberRef<R, E, A>): Context<
     delete: pipe(ref, FiberRef.delete, withProvider(ref)),
     values: pipe(
       Stream.fromFx(findProvider(ref)),
-      Stream.chain((c) =>
-        pipe(
-          // Type-cast error from never to E since it's safe to never throw an Expected error.
-          values as unknown as Stream.Stream<unknown, E, Option<A>>,
-          Stream.withinContext(c, 'Context.values'),
-        ),
-      ),
+      Stream.chain((c) => pipe(values, Stream.withinContext(c, 'Context.values'))),
     ),
   }
 }
