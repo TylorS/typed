@@ -653,6 +653,10 @@
       "require": "./cjs/Service/provide.js",
       "import": "./esm/Service/provide.js"
     },
+    "./Service/update": {
+      "require": "./cjs/Service/update.js",
+      "import": "./esm/Service/update.js"
+    },
     "./Sink": {
       "require": "./cjs/Sink/index.js",
       "import": "./esm/Sink/index.js"
