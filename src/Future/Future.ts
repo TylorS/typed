@@ -1,9 +1,5 @@
-import { matchW } from 'fp-ts/Either'
-import { constant, flow, pipe } from 'fp-ts/function'
-
 import { Exit } from '@/Exit'
-import { fromCause, fromIO } from '@/Fx'
-import { Fx } from '@/Fx/Fx'
+import * as Fx from '@/Fx'
 import { MutableRef } from '@/MutableRef'
 
 export interface Future<R, E, A> {
@@ -20,7 +16,7 @@ export function fromExit<E, A>(exit: Exit<E, A>): Future<unknown, E, A> {
   return {
     state: new MutableRef<FutureState<unknown, E, A>>({
       type: 'Done',
-      fx: pipe(exit, matchW(fromCause, flow(constant, fromIO))),
+      fx: Fx.fromExit(exit),
     }),
   }
 }
@@ -29,10 +25,10 @@ export type FutureState<R, E, A> = Pending<R, E, A> | Done<R, E, A>
 
 export interface Pending<R, E, A> {
   readonly type: 'Pending'
-  readonly listeners: Set<(fx: Fx<R, E, A>) => void>
+  readonly listeners: Set<(fx: Fx.Fx<R, E, A>) => void>
 }
 
 export interface Done<R, E, A> {
   readonly type: 'Done'
-  readonly fx: Fx<R, E, A>
+  readonly fx: Fx.Fx<R, E, A>
 }
