@@ -505,10 +505,6 @@
       "require": "./cjs/Fx/Fx.js",
       "import": "./esm/Fx/Fx.js"
     },
-    "./Fx/chain": {
-      "require": "./cjs/Fx/chain.js",
-      "import": "./esm/Fx/chain.js"
-    },
     "./Fx/dispose": {
       "require": "./cjs/Fx/dispose.js",
       "import": "./esm/Fx/dispose.js"
@@ -593,6 +589,10 @@
       "require": "./cjs/Managed/with.js",
       "import": "./esm/Managed/with.js"
     },
+    "./MutableQueue": {
+      "require": "./cjs/MutableQueue/index.js",
+      "import": "./esm/MutableQueue/index.js"
+    },
     "./MutableRef": {
       "require": "./cjs/MutableRef/index.js",
       "import": "./esm/MutableRef/index.js"
@@ -605,6 +605,22 @@
       "require": "./cjs/MutableRef/MutableRef.js",
       "import": "./esm/MutableRef/MutableRef.js"
     },
+    "./Queue": {
+      "require": "./cjs/Queue/index.js",
+      "import": "./esm/Queue/index.js"
+    },
+    "./Queue/MutableQueue": {
+      "require": "./cjs/Queue/MutableQueue.js",
+      "import": "./esm/Queue/MutableQueue.js"
+    },
+    "./Queue/Queue": {
+      "require": "./cjs/Queue/Queue.js",
+      "import": "./esm/Queue/Queue.js"
+    },
+    "./Queue/QueueStrategy": {
+      "require": "./cjs/Queue/QueueStrategy.js",
+      "import": "./esm/Queue/QueueStrategy.js"
+    },
     "./Ref": {
       "require": "./cjs/Ref/index.js",
       "import": "./esm/Ref/index.js"
@@ -612,6 +628,22 @@
     "./Ref/Ref": {
       "require": "./cjs/Ref/Ref.js",
       "import": "./esm/Ref/Ref.js"
+    },
+    "./Ref/fp-ts": {
+      "require": "./cjs/Ref/fp-ts.js",
+      "import": "./esm/Ref/fp-ts.js"
+    },
+    "./Ref/map": {
+      "require": "./cjs/Ref/map.js",
+      "import": "./esm/Ref/map.js"
+    },
+    "./RefArray": {
+      "require": "./cjs/RefArray/index.js",
+      "import": "./esm/RefArray/index.js"
+    },
+    "./RefArray/RefArray": {
+      "require": "./cjs/RefArray/RefArray.js",
+      "import": "./esm/RefArray/RefArray.js"
     },
     "./Scheduler": {
       "require": "./cjs/Scheduler/index.js",

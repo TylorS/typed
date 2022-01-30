@@ -161,9 +161,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
       }
 
       try {
-        result = generator.next(
-          yield* this.handleProcessorInstruction(processor(instr as any, this)),
-        )
+        result = generator.next(yield* this.handleProcessorInstruction(processor(instr, this)))
       } catch (e) {
         result = generator.throw(e)
       }

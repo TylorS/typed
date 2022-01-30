@@ -82,8 +82,11 @@ snowpack.key
 /Layer/
 /Magma/
 /Managed/
+/MutableQueue/
 /MutableRef/
+/Queue/
 /Ref/
+/RefArray/
 /Scheduler/
 /Scope/
 /Service/

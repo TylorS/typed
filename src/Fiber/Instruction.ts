@@ -24,50 +24,27 @@ import type { Fx } from '@/Fx'
 
 export type Instruction<R, E> =
   | Access<R, R, E, any>
-  | Access<R, R, never, any>
   | Chain<R, E, any, R, E, any>
-  | Chain<R, never, any, R, never, any>
-  | Chain<R, never, any, R, E, any>
-  | Chain<R, E, any, R, never, any>
   | Drain<R, E, any>
-  | Drain<R, never, any>
   | Fork<R, E, any>
-  | Fork<R, never, any>
   | FromAsync<any>
   | FromExit<E, any>
-  | FromExit<never, any>
   | FromIO<any>
   | FromPromise<any>
-  | FromTuple<ReadonlyArray<Fx<R, E, any> | Fx<R, never, any>>>
+  | FromTuple<ReadonlyArray<Fx<R, E, any>>>
   | GetContext<E>
-  | GetContext<never>
   | GetScope<E, any>
-  | GetScope<never, any>
   | Join<E, any>
-  | Join<never, any>
   | Lazy<R, E, any>
-  | Lazy<R, never, any>
   | Match<R, E, any, R, E, any, R, E, any>
-  | Match<R, never, any, R, never, any, R, never, any>
-  | Match<R, never, any, R, E, any, R, E, any>
-  | Match<R, E, any, R, never, any, R, E, any>
-  | Match<R, E, any, R, E, any, R, never, any>
-  | Match<R, never, any, R, E, any, R, never, any>
-  | Match<R, never, any, R, never, any, R, E, any>
-  | Match<R, E, any, R, E, never, R, never, any>
   | Provide<R, E, any>
-  | Provide<R, never, any>
-  | Race<ReadonlyArray<Fx<R, E, any> | Fx<R, never, any>>>
+  | Race<ReadonlyArray<Fx<R, E, any>>>
   | Refine<R, E, any, E>
-  | Refine<R, never, any, E>
   | Result<R, E, any>
-  | Result<R, never, any>
   | Suspend
   | Trace
   | TracingStatus<R, E, any>
-  | TracingStatus<R, never, any>
   | WithinContext<R, E, any>
-  | WithinContext<R, never, any>
 
 export type FindInstruction<Type extends Instruction<R, E>['type'], R, E> = {
   Access: Access<R, R, E, any>
