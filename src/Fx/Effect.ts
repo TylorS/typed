@@ -18,7 +18,7 @@ import { Fiber } from '@/Fiber/Fiber'
 import { RuntimeOptions } from '@/Fiber/Runtime'
 import { FiberContext } from '@/FiberContext'
 import { FiberId } from '@/FiberId'
-import { Scope } from '@/Scope'
+import { LocalScope } from '@/Scope'
 import { Trace } from '@/Trace'
 
 import { EFx, Fx, Of, RFx } from './Fx'
@@ -58,7 +58,7 @@ export const fromPromise: <A>(f: () => Promise<A>, trace?: string | undefined) =
 
 export const getContext: <E>(trace?: string) => EFx<E, FiberContext<E>> = E.getContext
 
-export const getScope: <E>(trace?: string) => EFx<E, Scope<E, any>> = E.getScope
+export const getScope: <E>(trace?: string) => EFx<E, LocalScope<E, any>> = E.getScope
 
 export const getTrace: Of<Trace> = E.getTrace
 

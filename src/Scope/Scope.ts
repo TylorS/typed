@@ -12,7 +12,7 @@ import { InterruptableStatus } from './InterruptableStatus'
 
 export type Scope<E, A> = LocalScope<E, A> | GlobalScope
 
-export type Finalizer = (exit: Exit.Exit<any, any>) => Of<any>
+export type Finalizer<R = unknown, E = never> = (exit: Exit.Exit<any, any>) => Fx<R, E, any>
 
 export type FinalizerKey = Branded<symbol, 'FinalizerKey'>
 export const FinalizerKey = Branded<FinalizerKey>()
