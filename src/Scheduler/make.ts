@@ -16,18 +16,16 @@ import { Timeline } from './Timeline'
 
 export type SchedulerOptions = {
   readonly timer?: Timer
-  readonly timeline?: Timeline<FxEvent>
+  readonly timeline?: Timeline<RuntimeProcessor<any, any>>
   readonly runtimeOptions?: RuntimeOptions<any>
 }
-
-export type FxEvent = RuntimeProcessor<any, any>
 
 export function make(options: SchedulerOptions = {}): Scheduler {
   const timer = options.timer ?? makeSetTimeoutTimer(relative(DateClock))
 
   let disposable: D.Disposable = D.none
 
-  const runReadyTasks = (events: readonly FxEvent[]) =>
+  const runReadyTasks = (events: readonly RuntimeProcessor<any, any>[]) =>
     events.forEach((event) => event.processNow())
 
   const scheduleNextRun = async () => {
@@ -45,7 +43,7 @@ export function make(options: SchedulerOptions = {}): Scheduler {
     )
   }
 
-  const timeline = options.timeline ?? new Timeline<FxEvent>(scheduleNextRun)
+  const timeline = options.timeline ?? new Timeline<RuntimeProcessor<any, any>>(scheduleNextRun)
 
   return {
     getCurrentTime: timer.getCurrentTime,
@@ -66,7 +64,7 @@ export function makeAsap(options?: RuntimeOptions<any>): Scheduler['asap'] {
 
 export function makeDelay(
   clock: Clock,
-  timeline: Timeline<FxEvent>,
+  timeline: Timeline<RuntimeProcessor<any, any>>,
   options?: RuntimeOptions<any>,
 ): Scheduler['delay'] {
   return <R, E, A>(delay: number, fx: Fx.Fx<R, E, A>, context: StreamContext<R, E>) => {
@@ -85,7 +83,7 @@ export function makeDelay(
 
 export function makePeriodic(
   clock: Clock,
-  timeline: Timeline<FxEvent>,
+  timeline: Timeline<RuntimeProcessor<any, any>>,
   options?: RuntimeOptions<any>,
 ): Scheduler['periodic'] {
   return <R, E, A>(period: number, fx: Fx.Fx<R, E, A>, context: StreamContext<R, E>) => {
