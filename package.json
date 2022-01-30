@@ -721,6 +721,10 @@
       "require": "./cjs/Stream/multicast.js",
       "import": "./esm/Stream/multicast.js"
     },
+    "./Stream/periodic": {
+      "require": "./cjs/Stream/periodic.js",
+      "import": "./esm/Stream/periodic.js"
+    },
     "./Stream/tap": {
       "require": "./cjs/Stream/tap.js",
       "import": "./esm/Stream/tap.js"

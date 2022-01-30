@@ -3,7 +3,6 @@ import { flow, pipe } from 'fp-ts/function'
 import { none } from 'fp-ts/Option'
 
 import * as Fx from '@/Fx'
-import { tryEnd, tryEvent } from '@/Sink'
 
 import { make, Stream } from './Stream'
 
@@ -27,7 +26,7 @@ export function makeFromFxOperator(operator: string) {
             })
           }
 
-          tryEvent(sink, {
+          sink.event({
             type: 'Event',
             operator,
             time,
@@ -36,7 +35,7 @@ export function makeFromFxOperator(operator: string) {
             fiberId: context.fiberContext.fiberId,
           })
 
-          tryEnd(sink, {
+          sink.end({
             type: 'End',
             operator,
             time,
