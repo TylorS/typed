@@ -98,7 +98,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
     return new InstructionProcessor(
       fx,
       this.resources,
-      options.context,
+      options.fiberContext,
       extendScope(options.scope ?? this.scope),
       processors,
       shouldTrace ? some(this.captureStackTrace()) : this.parentTrace,

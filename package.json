@@ -697,6 +697,10 @@
       "require": "./cjs/Stream/chain.js",
       "import": "./esm/Stream/chain.js"
     },
+    "./Stream/chainFxK": {
+      "require": "./cjs/Stream/chainFxK.js",
+      "import": "./esm/Stream/chainFxK.js"
+    },
     "./Stream/collectEvents": {
       "require": "./cjs/Stream/collectEvents.js",
       "import": "./esm/Stream/collectEvents.js"
@@ -717,6 +721,14 @@
       "require": "./cjs/Stream/hold.js",
       "import": "./esm/Stream/hold.js"
     },
+    "./Stream/listen": {
+      "require": "./cjs/Stream/listen.js",
+      "import": "./esm/Stream/listen.js"
+    },
+    "./Stream/map": {
+      "require": "./cjs/Stream/map.js",
+      "import": "./esm/Stream/map.js"
+    },
     "./Stream/multicast": {
       "require": "./cjs/Stream/multicast.js",
       "import": "./esm/Stream/multicast.js"
@@ -728,6 +740,10 @@
     "./Stream/tap": {
       "require": "./cjs/Stream/tap.js",
       "import": "./esm/Stream/tap.js"
+    },
+    "./Stream/tapFx": {
+      "require": "./cjs/Stream/tapFx.js",
+      "import": "./esm/Stream/tapFx.js"
     },
     "./Stream/withinContext": {
       "require": "./cjs/Stream/withinContext.js",

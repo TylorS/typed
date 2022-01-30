@@ -19,7 +19,7 @@ import { Processors } from './Processor'
 import { RuntimeProcessor } from './RuntimeProcessor'
 
 export interface RuntimeOptions<E> extends Partial<Context.FiberContextOptions<E>> {
-  readonly context?: Context.FiberContext<E>
+  readonly fiberContext?: Context.FiberContext<E>
   readonly scope?: Scope<E, any>
   readonly processors?: Processors
   readonly parentTrace?: Option<Trace>
@@ -100,7 +100,7 @@ export class Runtime<R, E> {
     return new InstructionProcessor<R, E, B>(
       fx,
       this.resources,
-      options.context ??
+      options.fiberContext ??
         Context.make<E>({
           ...options,
           scheduler: options.scheduler ?? Scheduler.make({ runtimeOptions: { shouldTrace: true } }),
@@ -162,7 +162,7 @@ export const currentRuntime = <R, E>(
 
     return new Runtime(resources, {
       ...options,
-      context,
+      fiberContext: context,
       scope,
     })
   })
@@ -178,7 +178,7 @@ export const isolatedRuntime = <R, E>(
 
     return new Runtime(resources, {
       ...options,
-      context: { ...context, locals: makeFiberRefLocals() },
+      fiberContext: { ...context, locals: makeFiberRefLocals() },
       scope,
     })
   })

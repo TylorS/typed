@@ -14,13 +14,13 @@ export const processFork = <R, E, A>(
   type: 'Deferred',
   fx: Fx(function* () {
     const context =
-      instruction.input.runtimeOptions?.context ?? (yield* forkContext(processor.fiberContext))
+      instruction.input.runtimeOptions?.fiberContext ?? (yield* forkContext(processor.fiberContext))
 
     return new ResumeSync(
       fromInstructionProcessor(
         processor.fork(instruction.input.fx, {
           ...instruction.input.runtimeOptions,
-          context,
+          fiberContext: context,
         }),
         (r) => r.processLater(),
       ),

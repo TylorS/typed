@@ -7,5 +7,5 @@ export const processWithinContext = <R, E, A>(
   instr: WithinContext<R, E, A>,
 ): FxInstruction<R, E, A> => ({
   type: 'Fx',
-  fx: forkJoin(instr.input.fx, { context: instr.input.context }),
+  fx: forkJoin(instr.input.fx, { fiberContext: instr.input.context }),
 })

@@ -57,7 +57,7 @@ export function makeAsap(options?: RuntimeOptions<any>): Scheduler['asap'] {
   return (fx, context) =>
     new Runtime(context.resources, {
       ...options,
-      context: context.fiberContext,
+      fiberContext: context.fiberContext,
       scope: context.scope,
     }).runFiber(fx)
 }
@@ -71,7 +71,7 @@ export function makeDelay(
     const time = Time(clock.getCurrentTime() + delay)
     const runtime = new Runtime(context.resources, {
       ...options,
-      context: context.fiberContext,
+      fiberContext: context.fiberContext,
       scope: context.scope,
     })
     const processor = runtime.makeProcessor<E, A>(fx)
@@ -89,7 +89,7 @@ export function makePeriodic(
   return <R, E, A>(period: number, fx: Fx.Fx<R, E, A>, context: StreamContext<R, E>) => {
     const runtime = new Runtime(context.resources, {
       ...options,
-      context: context.fiberContext,
+      fiberContext: context.fiberContext,
       scope: context.scope,
     })
 
