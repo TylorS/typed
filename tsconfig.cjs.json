@@ -36,6 +36,7 @@
     "Has",
     "Layer",
     "Magma",
+    "Managed",
     "MutableRef",
     "Ref",
     "Scheduler",

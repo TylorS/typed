@@ -505,6 +505,10 @@
       "require": "./cjs/Fx/Fx.js",
       "import": "./esm/Fx/Fx.js"
     },
+    "./Fx/chain": {
+      "require": "./cjs/Fx/chain.js",
+      "import": "./esm/Fx/chain.js"
+    },
     "./Fx/dispose": {
       "require": "./cjs/Fx/dispose.js",
       "import": "./esm/Fx/dispose.js"
@@ -572,6 +576,22 @@
     "./Magma": {
       "require": "./cjs/Magma/index.js",
       "import": "./esm/Magma/index.js"
+    },
+    "./Managed": {
+      "require": "./cjs/Managed/index.js",
+      "import": "./esm/Managed/index.js"
+    },
+    "./Managed/Managed": {
+      "require": "./cjs/Managed/Managed.js",
+      "import": "./esm/Managed/Managed.js"
+    },
+    "./Managed/ReleaseMap": {
+      "require": "./cjs/Managed/ReleaseMap.js",
+      "import": "./esm/Managed/ReleaseMap.js"
+    },
+    "./Managed/with": {
+      "require": "./cjs/Managed/with.js",
+      "import": "./esm/Managed/with.js"
     },
     "./MutableRef": {
       "require": "./cjs/MutableRef/index.js",
