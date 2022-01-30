@@ -42,7 +42,7 @@ export function withManaged<A, R2, E2, B>(_with: (a: A) => Fx.Fx<R2, E2, B>) {
 
       const b = yield* _with(a)
 
-      yield* finalizer(right(a))
+      yield* finalizer(right(b))
       // Clean up if we succeed too.
       dispose()
 
