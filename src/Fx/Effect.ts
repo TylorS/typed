@@ -74,7 +74,7 @@ export const race: <FX extends ReadonlyArray<Fx<any, any, any> | Fx<any, never, 
   trace?: string,
 ) => Fx<RaceResources<FX>, RaceErrors<FX>, RaceOutput<FX>> = E.race
 
-export const refine = E.refine as unknown as <E2>(
+export const refine = E.refine as <E2>(
   refinement: (error: unknown) => error is E2,
   trace?: string | undefined,
 ) => <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E2 | E, A>

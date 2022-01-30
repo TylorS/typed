@@ -90,7 +90,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
   /**
    * Forks the InstructionProcessor with fully customizable runtime.
    */
-  readonly fork = <B>(fx: Fx<R, E, B>, options: Required<RuntimeOptions<E>, 'context'>) => {
+  readonly fork = <B>(fx: Fx<R, E, B>, options: Required<RuntimeOptions<E>, 'fiberContext'>) => {
     const shouldTrace = options.shouldTrace ?? this.shouldTrace
     const maxOps = options.maxOps ?? this.maxOpCount
     const processors = options.processors ?? this.processors
@@ -161,7 +161,9 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
       }
 
       try {
-        result = generator.next(yield* this.handleProcessorInstruction(processor(instr, this)))
+        result = generator.next(
+          yield* this.handleProcessorInstruction(processor(instr as any, this)),
+        )
       } catch (e) {
         result = generator.throw(e)
       }

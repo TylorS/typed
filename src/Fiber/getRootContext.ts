@@ -4,19 +4,20 @@ import { isSome } from 'fp-ts/Option'
 import { withinContext } from '@/Effect'
 import { Fx, getContext } from '@/Fx'
 
-export const getRootContext = Fx(function* () {
-  let context = yield* getContext<any>('getRootContext')
+export const getRootContext = <E>() =>
+  Fx(function* () {
+    let context = yield* getContext<E>('getRootContext')
 
-  while (isSome(context.parent)) {
-    context = context.parent.value
-  }
+    while (isSome(context.parent)) {
+      context = context.parent.value
+    }
 
-  return context
-})
+    return context
+  })
 
 export const withinRootContext = <R, E, A>(fx: Fx<R, E, A>) =>
   Fx(function* () {
-    const context = yield* getRootContext
+    const context = yield* getRootContext<E>()
 
     return yield* pipe(fx, withinContext(context))
   })
