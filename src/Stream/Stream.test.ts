@@ -10,7 +10,7 @@ import { chain } from './chain'
 import { collectEventElements, collectEvents } from './collectEvents'
 import { ask, of } from './fromFx'
 
-describe.only(__filename, () => {
+describe(__filename, () => {
   it('traces the stream graph in events', async () => {
     const test = Fx.Fx(function* () {
       const events = yield* pipe(ask<{ a: number }>('foo'), collectEvents)
