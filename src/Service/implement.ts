@@ -42,14 +42,16 @@ type AllResources<A> = [A] extends [Fx.Fx<infer R, infer _, infer _>]
   ? AllResources<T>
   : unknown
 
-type ExtractAllResources<T> = AllResources<T> &
-  ToIntersection<
-    U.ListOf<
-      {
-        readonly [K in keyof T]: AllResources<T>
-      }[keyof T]
-    >
-  >
+type ExtractAllResources<T> = Equals<T, never> extends 1
+  ? unknown
+  : AllResources<T> &
+      ToIntersection<
+        U.ListOf<
+          {
+            readonly [K in keyof T]: K extends keyof T ? ExtractAllResources<T[K]> : unknown
+          }[keyof T]
+        >
+      >
 
 type AllErrors<A> = [A] extends [Fx.Fx<infer _, infer R, infer _>]
   ? R
@@ -62,5 +64,5 @@ type AllErrors<A> = [A] extends [Fx.Fx<infer _, infer R, infer _>]
 type ExtractAllErrors<T> =
   | AllErrors<T>
   | {
-      readonly [K in keyof T]: AllErrors<T>
+      readonly [K in keyof T]: ExtractAllErrors<T[K]>
     }[keyof T]
