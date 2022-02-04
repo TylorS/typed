@@ -860,6 +860,10 @@
     "./Tracer": {
       "require": "./cjs/Tracer/index.js",
       "import": "./esm/Tracer/index.js"
+    },
+    "./Tracer/Tracer": {
+      "require": "./cjs/Tracer/Tracer.js",
+      "import": "./esm/Tracer/Tracer.js"
     }
   }
 }
