@@ -32,13 +32,14 @@
     "FiberId",
     "FiberRef",
     "Future",
+    "FutureQueue",
     "Fx",
     "Has",
     "Layer",
     "Magma",
     "Managed",
-    "MutableQueue",
     "MutableRef",
+    "NonEmptyArray",
     "Queue",
     "Ref",
     "RefArray",
@@ -50,7 +51,8 @@
     "Subject",
     "Sync",
     "Timer",
-    "Trace"
+    "Trace",
+    "Tracer"
   ],
   "files": [],
   "include": [

@@ -77,13 +77,14 @@ snowpack.key
 /FiberId/
 /FiberRef/
 /Future/
+/FutureQueue/
 /Fx/
 /Has/
 /Layer/
 /Magma/
 /Managed/
-/MutableQueue/
 /MutableRef/
+/NonEmptyArray/
 /Queue/
 /Ref/
 /RefArray/
@@ -96,3 +97,4 @@ snowpack.key
 /Sync/
 /Timer/
 /Trace/
+/Tracer/

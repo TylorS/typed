@@ -493,6 +493,14 @@
       "require": "./cjs/Future/wait.js",
       "import": "./esm/Future/wait.js"
     },
+    "./FutureQueue": {
+      "require": "./cjs/FutureQueue/index.js",
+      "import": "./esm/FutureQueue/index.js"
+    },
+    "./FutureQueue/FutureQueue": {
+      "require": "./cjs/FutureQueue/FutureQueue.js",
+      "import": "./esm/FutureQueue/FutureQueue.js"
+    },
     "./Fx": {
       "require": "./cjs/Fx/index.js",
       "import": "./esm/Fx/index.js"
@@ -512,6 +520,10 @@
     "./Fx/ensureDisposable": {
       "require": "./cjs/Fx/ensureDisposable.js",
       "import": "./esm/Fx/ensureDisposable.js"
+    },
+    "./Fx/forkAll": {
+      "require": "./cjs/Fx/forkAll.js",
+      "import": "./esm/Fx/forkAll.js"
     },
     "./Fx/forkDaemon": {
       "require": "./cjs/Fx/forkDaemon.js",
@@ -589,10 +601,6 @@
       "require": "./cjs/Managed/with.js",
       "import": "./esm/Managed/with.js"
     },
-    "./MutableQueue": {
-      "require": "./cjs/MutableQueue/index.js",
-      "import": "./esm/MutableQueue/index.js"
-    },
     "./MutableRef": {
       "require": "./cjs/MutableRef/index.js",
       "import": "./esm/MutableRef/index.js"
@@ -605,9 +613,21 @@
       "require": "./cjs/MutableRef/MutableRef.js",
       "import": "./esm/MutableRef/MutableRef.js"
     },
+    "./NonEmptyArray": {
+      "require": "./cjs/NonEmptyArray/index.js",
+      "import": "./esm/NonEmptyArray/index.js"
+    },
+    "./NonEmptyArray/NonEmptyArray": {
+      "require": "./cjs/NonEmptyArray/NonEmptyArray.js",
+      "import": "./esm/NonEmptyArray/NonEmptyArray.js"
+    },
     "./Queue": {
       "require": "./cjs/Queue/index.js",
       "import": "./esm/Queue/index.js"
+    },
+    "./Queue/DroppingStrategy": {
+      "require": "./cjs/Queue/DroppingStrategy.js",
+      "import": "./esm/Queue/DroppingStrategy.js"
     },
     "./Queue/MutableQueue": {
       "require": "./cjs/Queue/MutableQueue.js",
@@ -620,6 +640,30 @@
     "./Queue/QueueStrategy": {
       "require": "./cjs/Queue/QueueStrategy.js",
       "import": "./esm/Queue/QueueStrategy.js"
+    },
+    "./Queue/SlidingStrategy": {
+      "require": "./cjs/Queue/SlidingStrategy.js",
+      "import": "./esm/Queue/SlidingStrategy.js"
+    },
+    "./Queue/SuspendStrategy": {
+      "require": "./cjs/Queue/SuspendStrategy.js",
+      "import": "./esm/Queue/SuspendStrategy.js"
+    },
+    "./Queue/UnboundedStrategy": {
+      "require": "./cjs/Queue/UnboundedStrategy.js",
+      "import": "./esm/Queue/UnboundedStrategy.js"
+    },
+    "./Queue/WaitFor": {
+      "require": "./cjs/Queue/WaitFor.js",
+      "import": "./esm/Queue/WaitFor.js"
+    },
+    "./Queue/make": {
+      "require": "./cjs/Queue/make.js",
+      "import": "./esm/Queue/make.js"
+    },
+    "./Queue/map": {
+      "require": "./cjs/Queue/map.js",
+      "import": "./esm/Queue/map.js"
     },
     "./Ref": {
       "require": "./cjs/Ref/index.js",
@@ -812,6 +856,10 @@
     "./Trace/Trace": {
       "require": "./cjs/Trace/Trace.js",
       "import": "./esm/Trace/Trace.js"
+    },
+    "./Tracer": {
+      "require": "./cjs/Tracer/index.js",
+      "import": "./esm/Tracer/index.js"
     }
   }
 }
