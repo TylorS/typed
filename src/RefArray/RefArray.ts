@@ -30,7 +30,7 @@ export const map = F.map(Ref.Functor, RA.Functor) as <A, B>(
 export const mapInput =
   <A>(f: Endomorphism<A>) =>
   <R, E>(ra: RefArray<R, E, A>): Fx.Fx<R, E, readonly A[]> =>
-    pipe(ra, Ref.update(flow(RA.map(f), Fx.of)))
+    ra.update(flow(RA.map(f), Fx.of))
 
 /**
  * Append a value to the end of a RefArray
@@ -38,10 +38,7 @@ export const mapInput =
 export const append =
   <A>(value: A) =>
   <R, E>(ra: RefArray<R, E, A>): Fx.Fx<R, E, readonly A[]> =>
-    pipe(
-      ra,
-      Ref.update((as) => Fx.of([...as, value])),
-    )
+    ra.update((as) => Fx.of([...as, value]))
 
 /**
  * Prepend a value to the end of a RefArray
@@ -49,10 +46,7 @@ export const append =
 export const prepend =
   <A>(value: A) =>
   <R, E>(ra: RefArray<R, E, A>): Fx.Fx<R, E, readonly A[]> =>
-    pipe(
-      ra,
-      Ref.update((as) => Fx.of([value, ...as])),
-    )
+    ra.update((as) => Fx.of([value, ...as]))
 
 /**
  * Unshift a value from the front of the RefArray
@@ -67,7 +61,7 @@ export const unshift = <R, E, A>(ra: RefArray<R, E, A>): Fx.Fx<R, E, Option<A>> 
 
     const [first, ...rest] = values
 
-    yield* ra.set(rest)
+    yield* ra.update(() => Fx.of(rest))
 
     return some(first)
   })
@@ -85,7 +79,7 @@ export const pop = <R, E, A>(ra: RefArray<R, E, A>): Fx.Fx<R, E, Option<A>> =>
 
     const lastIndex = values.length - 1
 
-    yield* ra.set(values.slice(0, lastIndex))
+    yield* ra.update(() => Fx.of(values.slice(0, lastIndex)))
 
     return some(values[lastIndex])
   })

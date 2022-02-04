@@ -1,5 +1,7 @@
-import { Disposed } from '@/Cause'
-import { async, checkIsSync, Disposable, dispose, none, sync } from '@/Disposable'
+import { none } from 'fp-ts/Option'
+
+import * as Cause from '@/Cause'
+import * as Disposable from '@/Disposable'
 import { EndElement, ErrorElement, EventElement, Sink, tryEnd, tryEvent } from '@/Sink'
 
 import { Stream, StreamContext, StreamRun } from './Stream'
@@ -15,7 +17,7 @@ export type MulticastObserver<R, E, A> = {
 
 export class Multicast<R, E, A> implements Stream<R, E, A>, Sink<E, A> {
   observers: Array<MulticastObserver<R, E, A>> = []
-  disposable: Disposable = none
+  disposable: Disposable.Disposable = Disposable.none
 
   constructor(readonly stream: Stream<R, E, A>, readonly operator: string = 'multicast') {}
 
@@ -48,7 +50,7 @@ export class Multicast<R, E, A> implements Stream<R, E, A>, Sink<E, A> {
   }
 }
 
-export class MulticastDisposable<R, E, A> implements Disposable {
+export class MulticastDisposable<R, E, A> implements Disposable.Disposable {
   constructor(
     readonly multicast: Multicast<R, E, A>,
     readonly observer: MulticastObserver<R, E, A>,
@@ -61,49 +63,51 @@ export class MulticastDisposable<R, E, A> implements Disposable {
   }
 
   disposeMulticast() {
-    if (checkIsSync(this.multicast.disposable)) {
-      return sync(() => {
+    if (Disposable.checkIsSync(this.multicast.disposable)) {
+      return Disposable.sync(() => {
         // Notify remaining of dispose
         this.multicast.observers.forEach((o) =>
           o.sink.error({
             type: 'Error',
             operator: this.multicast.operator,
             time: o.context.fiberContext.scheduler.getCurrentTime(),
-            cause: Disposed(o.context.fiberContext.fiberId),
+            cause: Cause.Disposed(o.context.fiberContext.fiberId),
             fiberId: o.context.fiberContext.fiberId,
+            trace: none,
           }),
         )
 
-        dispose(this.disposeObserver())
+        Disposable.dispose(this.disposeObserver())
 
         if (this.multicast.observers.length === 0) {
-          dispose(this.multicast.disposable)
+          Disposable.dispose(this.multicast.disposable)
         }
       })
     }
 
-    return async(async () => {
+    return Disposable.async(async () => {
       // Notify remaining of dispose
       this.multicast.observers.forEach((o) =>
         o.sink.error({
           type: 'Error',
           operator: this.multicast.operator,
           time: o.context.fiberContext.scheduler.getCurrentTime(),
-          cause: Disposed(o.context.fiberContext.fiberId),
+          cause: Cause.Disposed(o.context.fiberContext.fiberId),
           fiberId: o.context.fiberContext.fiberId,
+          trace: none,
         }),
       )
 
-      dispose(this.disposeObserver())
+      Disposable.dispose(this.disposeObserver())
 
       if (this.multicast.observers.length === 0) {
-        return await dispose(this.multicast.disposable)
+        return await Disposable.dispose(this.multicast.disposable)
       }
     })
   }
 
   disposeObserver() {
-    return sync(() => {
+    return Disposable.sync(() => {
       const i = this.multicast.observers.findIndex((x) => x === this.observer)
 
       if (i > -1) {

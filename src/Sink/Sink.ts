@@ -1,10 +1,10 @@
 import { pipe } from 'fp-ts/function'
-import { isSome, Option } from 'fp-ts/Option'
+import { match, Option } from 'fp-ts/Option'
 
-import { addParentTrace, Cause, prettyPrint, prettyStringify, Unexpected } from '@/Cause'
+import * as Cause from '@/Cause'
 import { Time } from '@/Clock'
 import { FiberId } from '@/FiberId'
-import { prettyTrace, SourceLocation, Trace } from '@/Trace'
+import { prettyTrace, Trace } from '@/Trace'
 
 export interface Sink<E, A> {
   readonly event: (event: EventElement<A>) => void
@@ -20,8 +20,9 @@ export function tryEvent<E, A>(sink: Sink<E, A>, event: EventElement<A>) {
       type: 'Error',
       operator: event.operator,
       time: event.time,
-      cause: pipe(Unexpected(e), addParentTrace(event.trace)) as Cause<E>,
+      cause: Cause.Unexpected(e),
       fiberId: event.fiberId,
+      trace: event.trace,
     })
   }
 }
@@ -34,8 +35,9 @@ export function tryEnd<E, A>(sink: Sink<E, A>, event: EndElement) {
       type: 'Error',
       operator: event.operator,
       time: event.time,
-      cause: pipe(Unexpected(e), addParentTrace(event.trace)) as Cause<E>,
+      cause: Cause.Unexpected(e),
       fiberId: event.fiberId,
+      trace: event.trace,
     })
   }
 }
@@ -55,7 +57,8 @@ export interface ErrorElement<E> {
   readonly type: 'Error'
   readonly time: Time
   readonly operator: string
-  readonly cause: Cause<E>
+  readonly cause: Cause.Cause<E>
+  readonly trace: Option<Trace>
   readonly fiberId: FiberId
 }
 
@@ -65,6 +68,16 @@ export interface EndElement {
   readonly operator: string
   readonly trace: Option<Trace>
   readonly fiberId: FiberId
+}
+
+export function prettyPrint<E, A>(element: SinkTraceElement<E, A>, prepend = '  '): string {
+  return pipe(
+    element.trace,
+    match(
+      () => formatSinkTraceElement(element),
+      (trace) => prettyTrace(trace).replace(/\n/g, '\n' + prepend),
+    ),
+  )
 }
 
 export function formatSinkTraceElement<E, A>(element: SinkTraceElement<E, A>): string {
@@ -79,21 +92,17 @@ export function formatSinkTraceElement<E, A>(element: SinkTraceElement<E, A>): s
 }
 
 export function formatEventElement<A>(element: EventElement<A>): string {
-  const formatted = `  ${element.operator} Event (${element.time}): ${prettyStringify(
+  return `Stream Event :: ${element.operator} (${element.time}): ${Cause.prettyStringify(
     element.value,
   )}`
-
-  return isSome(element.trace)
-    ? formatted + prettyTrace(element.trace.value).replace(/\n/g, '\n  ')
-    : formatted
 }
 
 export function formatErrorElement<E>(element: ErrorElement<E>): string {
-  return `${element.operator} Error (${element.time}): ${prettyPrint(element.cause)}`
+  return `Stream Error :: ${element.operator} (${element.time}): ${Cause.prettyPrint(
+    element.cause,
+  )}`
 }
 
 export function formatEndElement(element: EndElement): string {
-  const formatted = `${element.operator} End (${element.time})`
-
-  return prettyTrace(new Trace(element.fiberId, [new SourceLocation(formatted)], element.trace))
+  return `Stream End :: ${element.operator} (${element.time})`
 }

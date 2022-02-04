@@ -9,6 +9,7 @@ import { Exit } from '@/Exit'
 import { dispose } from '@/Fx'
 import { LocalScope } from '@/Scope'
 import { Sink } from '@/Sink'
+import { Tracer } from '@/Tracer/Tracer'
 
 import { InstructionProcessor } from './InstructionProcessor'
 import { ResumeSync } from './RuntimeInstruction'
@@ -22,7 +23,14 @@ export const processDrain = <R, E, A>(
   const key = processor.scope.ensure(() => dispose(inner))
 
   inner.add(sync(() => isSome(key) && processor.scope.cancel(key.value)))
-  inner.add(drain.input.run(makeDrainSink(processor, processor.scope), processor))
+  inner.add(
+    drain.input.run(makeDrainSink(processor, processor.scope), {
+      resources: processor.resources,
+      scope: processor.scope,
+      fiberContext: processor.fiberContext,
+      tracer: new Tracer(),
+    }),
+  )
 
   return new ResumeSync(inner)
 }

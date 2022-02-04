@@ -95,7 +95,7 @@ export function make<A>(strategy: QueueStrategy<A>): Queue<unknown, never, A> {
 
     const current = yield* mutableQueue.get
 
-    yield* mutableQueue.set([])
+    yield* mutableQueue.update(() => Fx.of([]))
 
     // Let any suspended offerings resume
     for (const value of current) {
@@ -126,7 +126,7 @@ export function make<A>(strategy: QueueStrategy<A>): Queue<unknown, never, A> {
     const { fiberId } = yield* Fx.getContext()
 
     // Record the FiberId that shutdown the Queue
-    yield* shutdownBy.set(some(fiberId))
+    yield* shutdownBy.update(() => Fx.of(some(fiberId)))
 
     // Immediately dispose of all suspended Fibers
     offers.dispose(fiberId)

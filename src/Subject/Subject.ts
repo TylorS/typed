@@ -31,6 +31,7 @@ export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, 
         fiberId: o.context.fiberContext.fiberId,
         operator: this.name,
         time: o.context.fiberContext.scheduler.getCurrentTime(),
+        trace: none,
         cause,
       }),
     )

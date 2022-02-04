@@ -21,7 +21,7 @@ export function fromFiberRef<R, E, A>(ref: FiberRef.FiberRef<R, E, A>): Context<
   return {
     get: pipe(ref, FiberRef.get, withProvider(ref)),
     has: pipe(ref, FiberRef.has, withProvider(ref)),
-    set: (a) => pipe(ref, FiberRef.set(a), withProvider(ref)),
+    update: (a) => pipe(ref, FiberRef.update(a), withProvider(ref)),
     delete: pipe(ref, FiberRef.delete, withProvider(ref)),
     values: pipe(
       Stream.fromFx(findProvider(ref)),

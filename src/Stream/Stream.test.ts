@@ -2,31 +2,33 @@ import { deepStrictEqual } from 'assert'
 import { pipe } from 'fp-ts/function'
 import { describe } from 'mocha'
 
-import { Fx, runTrace } from '@/Fx'
-import { formatSinkTraceElement } from '@/Sink'
+import * as Fx from '@/Fx'
+import { prettyPrint } from '@/Sink'
 
+import { chainFxK } from '.'
 import { chain } from './chain'
 import { collectEventElements, collectEvents } from './collectEvents'
 import { ask, of } from './fromFx'
 
-describe(__filename, () => {
+describe.only(__filename, () => {
   it('traces the stream graph in events', async () => {
-    const test = Fx(function* () {
+    const test = Fx.Fx(function* () {
       const events = yield* pipe(ask<{ a: number }>('foo'), collectEvents)
 
       const elements = yield* pipe(
         ask<{ a: number }>('foo'),
-        chain((a) => of(a)),
+        chain(({ a }) => of(a)),
+        chainFxK((a) => Fx.of(a)),
         collectEventElements,
       )
 
-      console.log(elements.map((e) => formatSinkTraceElement(e)).join('\n'))
+      console.log(elements.map((e) => prettyPrint(e)).join('\n'))
 
       deepStrictEqual(events, [{ a: 1 }])
 
       return 7
     })
 
-    await runTrace(test, { a: 1 })
+    await Fx.runTrace(test, { a: 1 })
   })
 })

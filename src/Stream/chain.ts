@@ -1,5 +1,9 @@
+import { some } from 'fp-ts/Option'
+
+import { prettyStringify } from '@/Cause'
 import { Disposable, DisposableQueue, disposeAll } from '@/Disposable'
 import { EndElement, ErrorElement, EventElement, Sink } from '@/Sink'
+import { Trace, traceLocation } from '@/Trace'
 
 import { Stream, StreamContext } from './Stream'
 
@@ -32,32 +36,64 @@ class ChainSink<R2, E2, E, A, B> implements Sink<E, A>, Disposable {
   event: (event: EventElement<A>) => void = (event) => {
     const stream = this.f.call(null, event.value)
 
-    this.queue.add(stream.run(this.innerSink(), this.context as any))
+    this.queue.add(
+      stream.run(this.innerSink(event, stream?.constructor?.name), this.context as any),
+    )
   }
 
   error = (event: ErrorElement<E | E2>) => {
     this.ended = true
 
-    this.sink.error(event)
+    this.sink.error({ ...event, trace: some(this.context.tracer.error(event)) })
   }
 
   end = (event: EndElement) => {
     this.ended = true
 
     if (this.remaining === 0) {
-      this.sink.end(event)
+      this.sink.end({ ...event, trace: some(this.context.tracer.end(event)) })
     }
   }
 
-  protected innerSink(): Sink<E2, B> {
+  protected innerSink(startEvent: EventElement<A>, name = ''): Sink<E2, B> {
     this.remaining++
 
+    const parentTrace = new Trace(
+      this.context.fiberContext.fiberId,
+      [
+        traceLocation(
+          `Stream Event :: chain (${startEvent.time})${
+            name && name !== 'Object' ? ` :: ${name}` : ''
+          } :: ${prettyStringify(startEvent.value, 2)}`,
+        ),
+      ],
+      some(this.context.tracer.event(startEvent)),
+    )
+
     return {
-      event: this.sink.event,
-      error: this.error,
+      event: (event) => {
+        this.sink.event({
+          ...event,
+          trace: some(
+            this.context.tracer.prependParentTrace(parentTrace, this.context.tracer.event(event)),
+          ),
+        })
+      },
+      error: (event) =>
+        this.sink.error({
+          ...event,
+          trace: some(
+            this.context.tracer.prependParentTrace(parentTrace, this.context.tracer.error(event)),
+          ),
+        }),
       end: (event) => {
         if (--this.remaining === 0 && this.ended) {
-          this.sink.end(event)
+          this.sink.end({
+            ...event,
+            trace: some(
+              this.context.tracer.prependParentTrace(parentTrace, this.context.tracer.end(event)),
+            ),
+          })
         }
       },
     }

@@ -11,7 +11,7 @@ export const map =
   <R, E, I>(ref: Ref<R, E, I, A>): Ref<R, E, I, B> => ({
     get: pipe(ref.get, Fx.map(f)),
     has: ref.has,
-    set: flow(ref.set, Fx.map(f)),
+    update: (g) => pipe(ref.update(flow(f, g)), Fx.map(f)),
     delete: pipe(ref.delete, Fx.map(O.map(f))),
     values: pipe(ref.values, Stream.map(O.map(f))),
   })

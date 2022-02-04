@@ -1,4 +1,3 @@
-import { pipe } from 'fp-ts/function'
 import { isSome, none, Option, some } from 'fp-ts/Option'
 
 import { Fiber } from '@/Fiber'
@@ -72,9 +71,8 @@ export function update<S, R2, E2>(f: (service: S) => Fx.Fx<R2, E2, S>) {
       const current = yield* get(layer)
       const fiber = yield* Fx.fork(f(current))
 
-      yield* pipe(
-        layer.global ? GlobalLayers : LocalLayers,
-        Ref.update((m) => Fx.fromIO(() => m.set(layer.id, fiber))),
+      yield* (layer.global ? GlobalLayers : LocalLayers).update((m) =>
+        Fx.fromIO(() => m.set(layer.id, fiber)),
       )
 
       return some(yield* Fx.join(fiber))

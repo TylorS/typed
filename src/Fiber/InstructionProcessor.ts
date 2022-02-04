@@ -201,7 +201,9 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
       case 'Result': {
         const exit = yield* processorInstruction.processor
 
-        this.executionTraces.unshift(...processorInstruction.processor.executionTraces)
+        if (this.shouldTrace) {
+          this.executionTraces.unshift(...processorInstruction.processor.executionTraces.reverse())
+        }
 
         return exit
       }
@@ -211,7 +213,9 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
       case 'Scoped': {
         const exit = yield* processorInstruction.processor
 
-        this.executionTraces.unshift(...processorInstruction.processor.executionTraces)
+        if (this.shouldTrace) {
+          this.executionTraces.unshift(...processorInstruction.processor.executionTraces.reverse())
+        }
 
         if (isLeft(exit)) {
           yield { type: 'Exit', exit }
@@ -266,8 +270,8 @@ export function formatProvide<R, E, A>({ input }: Provide<R, E, A>) {
 
 export function addTrace(trace: string | undefined, str: string): string {
   if (trace === undefined) {
-    return str
+    return `Fx :: ${str}`
   }
 
-  return `${trace} :: ${str}`
+  return `Fx :: ${trace} :: ${str}`
 }

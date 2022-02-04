@@ -54,7 +54,7 @@ describe(__filename, () => {
       })
     })
 
-    describe.only('Suspended', () => {
+    describe('Suspended', () => {
       it('suspends enqueing fibers until there is capacity', async () => {
         const queue = Queue.suspend<number>(2)
         const items = [1, 2, 3, 4] as const
