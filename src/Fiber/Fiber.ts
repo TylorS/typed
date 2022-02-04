@@ -25,15 +25,31 @@ export type Suspended = {
   readonly isInterruptible: boolean
 }
 
+export const Suspended = (isInterruptible: () => boolean): Suspended => ({
+  type: 'Suspended',
+  get isInterruptible() {
+    return isInterruptible()
+  },
+})
+
 export type Running = {
   readonly type: 'Running'
   readonly isInterruptible: boolean
 }
 
-export type Failed = {
-  readonly type: 'Failed'
-}
+export const Running = (isInterruptible: () => boolean): Running => ({
+  type: 'Running',
+  get isInterruptible() {
+    return isInterruptible()
+  },
+})
 
-export type Completed = {
-  readonly type: 'Completed'
-}
+export const Failed = {
+  type: 'Failed',
+} as const
+export type Failed = typeof Failed
+
+export const Completed = {
+  type: 'Completed',
+} as const
+export type Completed = typeof Completed

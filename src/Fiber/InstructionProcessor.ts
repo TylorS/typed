@@ -41,7 +41,11 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
     readonly parentTrace: Option<Trace>,
     readonly shouldTrace: boolean,
     readonly maxOpCount: number = 2048,
-  ) {}
+  ) {
+    if (!fx) {
+      throw new Error('Unable to create without an Fx')
+    }
+  }
 
   *[Symbol.iterator]() {
     try {

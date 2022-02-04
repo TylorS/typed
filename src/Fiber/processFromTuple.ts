@@ -1,10 +1,14 @@
+import { isLeft, Right, right } from 'fp-ts/Either'
+
+import { Async } from '@/Async'
 import { disposeAll } from '@/Disposable'
-import { FromTuple, TupleErrors, TupleResources } from '@/Effect'
-import { Exit } from '@/Exit'
+import { fromAsync, fromExit, FromTuple, TupleErrors, TupleResources } from '@/Effect'
+import { both, Exit } from '@/Exit'
 import { Fx } from '@/Fx'
 
 import { InstructionProcessor } from './InstructionProcessor'
-import { ResumeAsync, ResumeSync } from './RuntimeInstruction'
+import { FxInstruction } from './Processor'
+import { ResumeSync } from './RuntimeInstruction'
 import { RuntimeProcessor } from './RuntimeProcessor'
 
 export const processFromTuple = <FX extends ReadonlyArray<Fx<any, any, any> | Fx<any, never, any>>>(
@@ -13,33 +17,46 @@ export const processFromTuple = <FX extends ReadonlyArray<Fx<any, any, any> | Fx
 ) =>
   tuple.input.length === 0
     ? new ResumeSync([])
-    : new ResumeAsync((cb) => {
-        const exits: Array<Exit<any, any>> = Array(tuple.input.length)
-        let remaining = tuple.input.length
+    : new FxInstruction(
+        Fx(function* () {
+          const exit = yield* fromAsync(
+            Async<Exit<any, any>>((cb) => {
+              const exits: Array<Exit<any, any>> = Array(tuple.input.length)
+              let remaining = tuple.input.length
 
-        function onComplete(exit: Exit<any, any>, index: number) {
-          exits[index] = exit
+              function onComplete(exit: Exit<any, any>, index: number) {
+                exits[index] = exit
 
-          if (--remaining === 0) {
-            cb(exits)
-          }
-        }
+                if (--remaining === 0) {
+                  const exit = exits.some(isLeft)
+                    ? exits.reduce(both)
+                    : right(exits.map((x) => (x as Right<any>).right))
 
-        return disposeAll(
-          tuple.input.map((fx, i) => {
-            const nested = processor.extend(fx, processor.resources)
+                  cb(exit)
+                }
+              }
 
-            const runtime = new RuntimeProcessor(
-              nested.extend(fx, nested.resources),
-              nested.captureStackTrace,
-              nested.shouldTrace,
-              nested.scope.interruptableStatus,
-            )
+              return disposeAll(
+                tuple.input.map((fx, i) => {
+                  const nested = processor.extend(fx, processor.resources)
 
-            runtime.addObserver((exit) => onComplete(exit, i))
-            runtime.processNow()
+                  const runtime = new RuntimeProcessor(
+                    nested,
+                    nested.fiberContext.fiberId,
+                    nested.captureStackTrace,
+                    nested.shouldTrace,
+                    nested.scope.interruptableStatus,
+                  )
 
-            return runtime
-          }),
-        )
-      })
+                  runtime.addObserver((exit) => onComplete(exit, i))
+                  runtime.processLater()
+
+                  return runtime
+                }),
+              )
+            }),
+          )
+
+          return yield* fromExit(exit)
+        }),
+      )

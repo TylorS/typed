@@ -37,6 +37,7 @@ function makeDrainSink<R, E, A>(
       const nested = processor.extend(fx, processor.resources)
       const runtime = new RuntimeProcessor(
         nested,
+        nested.fiberContext.fiberId,
         nested.captureStackTrace,
         nested.shouldTrace,
         nested.scope.interruptableStatus,

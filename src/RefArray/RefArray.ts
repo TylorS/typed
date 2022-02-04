@@ -89,3 +89,5 @@ export const pop = <R, E, A>(ra: RefArray<R, E, A>): Fx.Fx<R, E, Option<A>> =>
 
     return some(values[lastIndex])
   })
+
+export const size = <R, E, A, I>(ra: RefArray<R, E, A, I>) => pipe(ra.get, Fx.map(RA.size))

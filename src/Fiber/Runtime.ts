@@ -38,6 +38,7 @@ export class Runtime<R, E> {
     const processor = this.makeProcessor(fx, options)
     const runtime = new RuntimeProcessor(
       processor,
+      processor.fiberContext.fiberId,
       processor.captureStackTrace,
       processor.shouldTrace,
       processor.scope.interruptableStatus,
@@ -54,6 +55,7 @@ export class Runtime<R, E> {
       const processor = this.makeProcessor(fx, options)
       const runtime = new RuntimeProcessor(
         processor,
+        processor.fiberContext.fiberId,
         processor.captureStackTrace,
         processor.shouldTrace,
         processor.scope.interruptableStatus,
@@ -76,6 +78,7 @@ export class Runtime<R, E> {
       const processor = this.makeProcessor(fx, options)
       const runtime = new RuntimeProcessor(
         processor,
+        processor.fiberContext.fiberId,
         processor.captureStackTrace,
         processor.shouldTrace,
         processor.scope.interruptableStatus,
@@ -140,6 +143,7 @@ export const runMainDisposable = <E, A>(
   const processor = new Runtime({}, options).makeProcessor(fx)
   const runtime = new RuntimeProcessor(
     processor,
+    processor.fiberContext.fiberId,
     processor.captureStackTrace,
     processor.shouldTrace,
     processor.scope.interruptableStatus,

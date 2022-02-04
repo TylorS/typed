@@ -22,9 +22,13 @@ export interface RFx<R, A> extends Fx<R, never, A> {}
 export interface EFx<E, A> extends Fx<unknown, E, A> {}
 export interface Of<A> extends Fx<unknown, never, A> {}
 
-export function Fx<G extends Generator<any, any, any> | Generator<never, any, any>>(
-  f: () => G,
-): Fx<GeneratoResouces<G>, GeneratorError<G>, GeneratorOutput<G>> {
+export function Fx<
+  G extends
+    | Generator<any, any, any>
+    | Generator<never, any, any>
+    | Generator<any, never, any>
+    | Generator<never, never, any>,
+>(f: () => G): Fx<GeneratoResouces<G>, GeneratorError<G>, GeneratorOutput<G>> {
   return {
     [Symbol.iterator]: f,
   } as unknown as Fx<GeneratoResouces<G>, GeneratorError<G>, GeneratorOutput<G>>

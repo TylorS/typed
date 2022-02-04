@@ -22,22 +22,22 @@ export type ProcessorInstruction<R, E, A> =
   | ScopedInstruction<R, E, A>
   | DeferredInstruction<R, E, A>
 
-export interface FxInstruction<R, E, A> {
-  readonly type: 'Fx'
-  readonly fx: Fx<R, E, A>
+export class FxInstruction<R, E, A> {
+  readonly type = 'Fx'
+  constructor(readonly fx: Fx<R, E, A>) {}
 }
 
-export interface ResultInstruction<R, E, A> {
-  readonly type: 'Result'
-  readonly processor: InstructionProcessor<R, E, A>
+export class ResultInstruction<R, E, A> {
+  readonly type = 'Result'
+  constructor(readonly processor: InstructionProcessor<R, E, A>) {}
 }
 
-export interface ScopedInstruction<R, E, A> {
-  readonly type: 'Scoped'
-  readonly processor: InstructionProcessor<R, E, A>
+export class ScopedInstruction<R, E, A> {
+  readonly type = 'Scoped'
+  constructor(readonly processor: InstructionProcessor<R, E, A>) {}
 }
 
-export interface DeferredInstruction<R, E, A> {
-  readonly type: 'Deferred'
-  readonly fx: Fx<R, E, ProcessorInstruction<R, E, A>>
+export class DeferredInstruction<R, E, A> {
+  readonly type = 'Deferred'
+  constructor(readonly fx: Fx<R, E, ProcessorInstruction<R, E, A>>) {}
 }

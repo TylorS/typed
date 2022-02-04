@@ -3,12 +3,12 @@ import { isLeft, isRight } from 'fp-ts/Either'
 import { describe } from 'mocha'
 
 import { prettyPrint } from '@/Cause'
-import { fromExit } from '@/Effect'
+import { fromExit, fromIO } from '@/Effect'
 import { result } from '@/Effect/Result'
 
 import { ask } from './Effect'
 import * as Fx from './Fx'
-import { runTraceExit } from './run'
+import { runMain, runTraceExit } from './run'
 
 describe(__filename, () => {
   it('captures errors', async () => {
@@ -39,5 +39,27 @@ describe(__filename, () => {
 
     ok(isRight(exit))
     deepStrictEqual(exit.right, { a: 1, b: 2 })
+  })
+
+  it('allows utilizing try/catch', async () => {
+    const error = new Error('test')
+    // eslint-disable-next-line require-yield
+    const test = Fx.Fx(function* () {
+      try {
+        return yield* Fx.Fx(function* () {
+          return yield* fromIO(() => {
+            throw error
+
+            return 1
+          })
+        })
+      } catch (e) {
+        ok(error === e)
+
+        return 2
+      }
+    })
+
+    deepStrictEqual(await runMain(test), 2)
   })
 })

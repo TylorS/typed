@@ -1,4 +1,4 @@
-import { Equals } from 'ts-toolbelt/out/Any/Equals'
+import { Option } from 'fp-ts/Option'
 
 import { Fx, Of } from '@/Fx'
 
@@ -7,14 +7,11 @@ export interface Queue<R, E, A, R2 = R, E2 = E, B = A> {
   readonly size: Of<number>
   readonly isShutdown: Of<boolean>
   readonly shutdown: Of<void>
-  readonly enqueue: (
-    ...values: readonly A[]
-  ) => Fx<R, E, Equals<A, never> extends 1 ? false : boolean>
-  readonly dequeue: Fx<R2, E2, Equals<B, never> extends 1 ? [] : readonly B[]>
-  readonly dequeueAll: Fx<R2, E2, Equals<B, never> extends 1 ? [] : readonly B[]>
-  readonly dequeueUpTo: (
-    amount: number,
-  ) => Fx<R2, E2, Equals<B, never> extends 1 ? [] : readonly B[]>
+  readonly enqueue: (...values: readonly A[]) => Fx<R, E, boolean>
+  readonly poll: Fx<R2, E2, Option<B>>
+  readonly dequeue: Fx<R2, E2, B>
+  readonly dequeueAll: Fx<R2, E2, readonly B[]>
+  readonly dequeueUpTo: (amount: number) => Fx<R2, E2, readonly B[]>
 }
 
 /**
@@ -26,6 +23,4 @@ export interface Enqueue<R, E, A>
 /**
  * A queue that can only be dequeued.
  */
-export interface Dequeue<R, E, A> extends Omit<Queue<unknown, never, never, R, E, A>, 'enqueue'> {
-  readonly enqueue: never
-}
+export interface Dequeue<R, E, A> extends Omit<Queue<unknown, never, never, R, E, A>, 'enqueue'> {}

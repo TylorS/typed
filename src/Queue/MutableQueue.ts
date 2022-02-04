@@ -1,5 +1,6 @@
-import { empty, RefArray } from '@/RefArray'
+import * as Fx from '@/Fx'
+import * as Ref from '@/Ref'
 
-export interface MutableQueue<A> extends RefArray<unknown, never, A> {}
+export interface MutableQueue<A> extends Ref.Ref<unknown, never, A[]> {}
 
-export const makeMutableQueue: <A>() => MutableQueue<A> = empty
+export const makeMutableQueue = <A>(): MutableQueue<A> => Ref.make(Fx.of<A[]>([]))

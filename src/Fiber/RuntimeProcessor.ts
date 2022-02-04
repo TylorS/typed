@@ -4,7 +4,8 @@ import { isNone, isSome, none, Option, some } from 'fp-ts/Option'
 
 import { Traced } from '@/Cause'
 import { async, Disposable, DisposableQueue, dispose, disposeAll, sync } from '@/Disposable'
-import { Exit, then, unexpected } from '@/Exit'
+import { disposed, Exit, then, unexpected } from '@/Exit'
+import { FiberId } from '@/FiberId'
 import { InterruptableStatus } from '@/Scope/InterruptableStatus'
 import { Trace } from '@/Trace'
 
@@ -26,6 +27,7 @@ export class RuntimeProcessor<E, A> implements Disposable {
 
   constructor(
     readonly iterable: RuntimeIterable<E, Exit<E, A>>,
+    readonly fiberId: FiberId,
     readonly captureStackTrace: () => Trace,
     readonly shouldTrace: boolean,
     readonly interruptableStatus: InterruptableStatus,
@@ -36,6 +38,19 @@ export class RuntimeProcessor<E, A> implements Disposable {
     }
 
     this.suspendedStatus()
+
+    this.queue.add(
+      sync(() => {
+        if (isNone(this.exited)) {
+          this.node = {
+            type: 'Exit',
+            exit: disposed(fiberId),
+          }
+
+          this.processNow()
+        }
+      }),
+    )
   }
 
   get status() {
@@ -167,11 +182,11 @@ export class RuntimeProcessor<E, A> implements Disposable {
           .promise()
           .then(async (a) => {
             try {
-              await dispose(disposeAll([inner, disposable]))
-
               previous.next = a
 
               this.node = previous
+
+              await dispose(disposeAll([inner, disposable]))
             } catch (e) {
               this.node = {
                 type: 'Exit',
@@ -183,12 +198,12 @@ export class RuntimeProcessor<E, A> implements Disposable {
           })
           .catch(async (error) => {
             try {
-              await dispose(disposeAll([inner, disposable]))
-
               this.node = {
                 type: 'Exit',
                 exit: unexpected(error),
               }
+
+              await dispose(disposeAll([inner, disposable]))
             } catch (e) {
               this.node = {
                 type: 'Exit',
@@ -210,11 +225,11 @@ export class RuntimeProcessor<E, A> implements Disposable {
         inner.add(
           instruction.async(async (a) => {
             try {
-              await dispose(inner)
-
               previous.next = a
 
               this.node = previous
+
+              await dispose(inner)
             } catch (e) {
               this.node = {
                 type: 'Exit',

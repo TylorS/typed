@@ -1,6 +1,7 @@
 export * from './dispose'
 export * from './Effect'
 export * from './ensureDisposable'
+export * from './forkAll'
 export * from './forkDaemon'
 export * from './forkJoin'
 export * from './Fx'

@@ -14,6 +14,7 @@ export function fromInstructionProcessor<R, E, A>(
 ): Fiber<E, A> {
   const runtime = new RuntimeProcessor(
     processor,
+    processor.fiberContext.fiberId,
     processor.captureStackTrace,
     processor.shouldTrace,
     processor.scope.interruptableStatus,
