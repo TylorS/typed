@@ -28,7 +28,7 @@ export const implementFx = <Name extends string, A, R, E, B extends Extendable<A
     { id: LayerId(service) },
   )
 
-type Extendable<T> = [T] extends [(...args: infer Args) => Fx.Fx<infer R, infer E, infer A>]
+export type Extendable<T> = [T] extends [(...args: infer Args) => Fx.Fx<infer R, infer E, infer A>]
   ? (...args: Args) => Fx.Fx<Equals<R, unknown> extends 1 ? any : R, E, A>
   : [T] extends [Fx.Fx<infer R, infer E, infer A>]
   ? Fx.Fx<Equals<R, unknown> extends 1 ? any : R, E, A>
@@ -42,7 +42,7 @@ type AllResources<A> = [A] extends [Fx.Fx<infer R, infer _, infer _>]
   ? AllResources<T>
   : unknown
 
-type ExtractAllResources<T> = Equals<T, never> extends 1
+export type ExtractAllResources<T> = Equals<T, never> extends 1
   ? unknown
   : AllResources<T> &
       ToIntersection<
@@ -61,7 +61,7 @@ type AllErrors<A> = [A] extends [Fx.Fx<infer _, infer R, infer _>]
   ? AllErrors<T>
   : never
 
-type ExtractAllErrors<T> =
+export type ExtractAllErrors<T> =
   | AllErrors<T>
   | {
       readonly [K in keyof T]: ExtractAllErrors<T[K]>
