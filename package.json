@@ -857,13 +857,9 @@
       "require": "./cjs/Trace/Trace.js",
       "import": "./esm/Trace/Trace.js"
     },
-    "./Tracer": {
-      "require": "./cjs/Tracer/index.js",
-      "import": "./esm/Tracer/index.js"
-    },
-    "./Tracer/Tracer": {
-      "require": "./cjs/Tracer/Tracer.js",
-      "import": "./esm/Tracer/Tracer.js"
+    "./prettyStringify": {
+      "require": "./cjs/prettyStringify.js",
+      "import": "./esm/prettyStringify.js"
     }
   }
 }

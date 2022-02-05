@@ -52,7 +52,7 @@
     "Sync",
     "Timer",
     "Trace",
-    "Tracer"
+    "prettyStringify"
   ],
   "files": [],
   "include": [
