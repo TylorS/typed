@@ -1,6 +1,7 @@
 // TODO: update exports in package.json with all modules
 
 import fs from 'fs'
+import { EOL } from 'os'
 import path, { extname } from 'path'
 
 import { findFilePaths, MODULES, ROOT_DIR, SOURCE_DIR } from './common'
@@ -13,7 +14,7 @@ const INDEX_REGEX = /\/?index$/
 
 packageJson.exports = createExports()
 
-fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2).trim() + `\n`)
+fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2).trim() + EOL)
 
 type ExportMap = {
   require: string

@@ -6,8 +6,8 @@
   "include": [
     "./src/*.ts",
     "./src/**/*.ts",
-    "./tools/*.ts"
-, "src/Fiber/InstructionProcessor.ts"  ],
+    "./tools/*.ts",
+  ],
   "exclude": [
     "./cjs",
     "./esm",
