@@ -1,6 +1,5 @@
 import { isLeft } from 'fp-ts/Either'
 import { flow, pipe } from 'fp-ts/function'
-import { some } from 'fp-ts/Option'
 
 import * as Fx from '@/Fx'
 
@@ -13,13 +12,7 @@ export function makeFromFxOperator(operator: string) {
     return make((sink, context) =>
       context.fiberContext.scheduler.asap(
         Fx.Fx(function* () {
-          const [exit, trace] = yield* Fx.Fx(function* () {
-            const exit = yield* Fx.result(fx)
-            const trace = yield* Fx.trace
-
-            return [exit, some(trace)] as const
-          })
-
+          const exit = yield* Fx.result(fx)
           const time = context.fiberContext.scheduler.getCurrentTime()
 
           if (isLeft(exit)) {
@@ -28,7 +21,6 @@ export function makeFromFxOperator(operator: string) {
               operator,
               time,
               cause: exit.left,
-              trace,
               fiberId: context.fiberContext.fiberId,
             })
           }
@@ -38,7 +30,6 @@ export function makeFromFxOperator(operator: string) {
             operator,
             time,
             value: exit.right,
-            trace,
             fiberId: context.fiberContext.fiberId,
           })
 
@@ -46,7 +37,6 @@ export function makeFromFxOperator(operator: string) {
             type: 'End',
             operator,
             time,
-            trace,
             fiberId: context.fiberContext.fiberId,
           })
         }),

@@ -64,7 +64,6 @@ export class Hold<R, E, A> extends Multicast<R, E, A> {
         operator: this.operator,
         time: observer.context.fiberContext.scheduler.getCurrentTime(),
         cause: Unexpected(e),
-        trace: O.none,
         fiberId: observer.context.fiberContext.fiberId,
       })
     }
@@ -82,7 +81,6 @@ export class Hold<R, E, A> extends Multicast<R, E, A> {
           operator: this.operator,
           time: o.context.fiberContext.scheduler.getCurrentTime(),
           value,
-          trace: O.none,
           fiberId: o.context.fiberContext.fiberId,
         }
 

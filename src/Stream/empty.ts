@@ -1,5 +1,3 @@
-import { none } from 'fp-ts/Option'
-
 import { fromIO } from '@/Fx'
 import { tryEnd } from '@/Sink'
 
@@ -13,7 +11,6 @@ export function empty<E = never, A = never>(): Stream<unknown, E, A> {
           type: 'End',
           operator: 'empty',
           time: context.fiberContext.scheduler.getCurrentTime(),
-          trace: none,
           fiberId: context.fiberContext.fiberId,
         }),
       ),

@@ -1,5 +1,3 @@
-import { fromNullable } from 'fp-ts/Option'
-
 import { Cause } from '@/Cause'
 import { sync } from '@/Disposable'
 import { Sink, tryEnd, tryEvent } from '@/Sink'
@@ -12,7 +10,7 @@ export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, 
 
   constructor(readonly name: string = 'Subject') {}
 
-  readonly event = (a: A, trace?: Trace): void => {
+  readonly event = (a: A): void => {
     Array.from(this.observers).forEach((o) =>
       tryEvent(o.sink, {
         fiberId: o.context.fiberContext.fiberId,
@@ -20,32 +18,29 @@ export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, 
         operator: this.name,
         time: o.context.fiberContext.scheduler.getCurrentTime(),
         value: a,
-        trace: fromNullable(trace),
       }),
     )
   }
 
-  readonly error = (cause: Cause<E>, trace?: Trace): void => {
+  readonly error = (cause: Cause<E>): void => {
     Array.from(this.observers).forEach((o) =>
       o.sink.error({
         type: 'Error',
         fiberId: o.context.fiberContext.fiberId,
         operator: this.name,
         time: o.context.fiberContext.scheduler.getCurrentTime(),
-        trace: fromNullable(trace),
         cause,
       }),
     )
   }
 
-  readonly end = (trace?: Trace): void => {
+  readonly end = (): void => {
     Array.from(this.observers).forEach((o) =>
       tryEnd(o.sink, {
         type: 'End',
         fiberId: o.context.fiberContext.fiberId,
         operator: this.name,
         time: o.context.fiberContext.scheduler.getCurrentTime(),
-        trace: fromNullable(trace),
       }),
     )
   }
@@ -66,7 +61,7 @@ export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, 
 }
 
 export interface SubjectSink<E, A> {
-  readonly event: (value: A, trace?: Trace) => void
-  readonly error: (cause: Cause<E>, trace?: Trace) => void
-  readonly end: (trace?: Trace) => void
+  readonly event: (value: A, parentTrace?: Trace) => void
+  readonly error: (cause: Cause<E>, parentTrace?: Trace) => void
+  readonly end: (parentTrace?: Trace) => void
 }

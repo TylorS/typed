@@ -3,12 +3,14 @@ import { pipe } from 'fp-ts/function'
 import { getOrElse, isSome, Option, some } from 'fp-ts/Option'
 import { Required } from 'ts-toolbelt/out/Object/Required'
 
-import { prettyPrint, prettyStringify } from '@/Cause'
+import { prettyPrint } from '@/Cause'
+import { Time } from '@/Clock'
 import { Disposable, DisposableQueue, sync, withRemove } from '@/Disposable'
 import { Effect, FromExit, fromIO, Provide } from '@/Effect'
 import { Exit, success, unexpected } from '@/Exit'
 import { FiberContext } from '@/FiberContext'
 import { Fx } from '@/Fx'
+import { prettyStringify } from '@/prettyStringify'
 import { extendScope, LocalScope } from '@/Scope'
 import { SourceLocation, Trace, TraceElement } from '@/Trace'
 
@@ -115,7 +117,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
    * Appends traces
    */
   protected addTrace(instruction: Instruction<R, E>) {
-    this.executionTraces.push(formatInstruction(instruction, this.fiberContext))
+    this.executionTraces.unshift(formatInstruction(instruction, this.fiberContext))
   }
 
   /**
@@ -202,7 +204,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
         const exit = yield* processorInstruction.processor
 
         if (this.shouldTrace) {
-          this.executionTraces.unshift(...processorInstruction.processor.executionTraces.reverse())
+          this.executionTraces.unshift(...processorInstruction.processor.executionTraces)
         }
 
         return exit
@@ -244,13 +246,17 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
 }
 
 export function formatInstruction<R, E>(instruction: Instruction<R, E>, context: FiberContext<E>) {
+  const time = context.scheduler.getCurrentTime()
+
   switch (instruction.type) {
     case 'FromExit':
-      return new SourceLocation(addTrace(instruction.trace, formatFromExit(instruction, context)))
+      return new SourceLocation(
+        addTrace(time, instruction.trace, formatFromExit(instruction, context)),
+      )
     case 'Provide':
-      return new SourceLocation(addTrace(instruction.trace, formatProvide(instruction)))
+      return new SourceLocation(addTrace(time, instruction.trace, formatProvide(instruction)))
     default:
-      return new SourceLocation(addTrace(instruction.trace, instruction.type))
+      return new SourceLocation(addTrace(time, instruction.trace, instruction.type))
   }
 }
 
@@ -258,8 +264,8 @@ function formatFromExit<E, A>({ input }: FromExit<E, A>, context: FiberContext<E
   return pipe(
     input,
     match(
-      (cause) => `Failure<${prettyPrint(cause, context.renderer).replace(/\n/g, '\n  ')}>`,
-      (a) => `Success<${prettyStringify(a)}>`,
+      (cause) => `${prettyPrint(cause, context.renderer).replace(/\n/g, '\n  ')}`,
+      (a) => `${prettyStringify(a)}`,
     ),
   )
 }
@@ -268,10 +274,10 @@ export function formatProvide<R, E, A>({ input }: Provide<R, E, A>) {
   return `Provide => ${prettyStringify(input)}`
 }
 
-export function addTrace(trace: string | undefined, str: string): string {
+export function addTrace(time: Time, trace: string | undefined, str: string): string {
   if (trace === undefined) {
-    return `Fx :: ${str}`
+    return `Fx (Time: ${time}) :: ${str}`
   }
 
-  return `Fx :: ${trace} :: ${str}`
+  return `Fx (Time: ${time}) :: ${trace} :: ${str}`
 }

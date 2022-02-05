@@ -1,5 +1,3 @@
-import { none } from 'fp-ts/Option'
-
 import * as Cause from '@/Cause'
 import * as Disposable from '@/Disposable'
 import { EndElement, ErrorElement, EventElement, Sink, tryEnd, tryEvent } from '@/Sink'
@@ -73,7 +71,6 @@ export class MulticastDisposable<R, E, A> implements Disposable.Disposable {
             time: o.context.fiberContext.scheduler.getCurrentTime(),
             cause: Cause.Disposed(o.context.fiberContext.fiberId),
             fiberId: o.context.fiberContext.fiberId,
-            trace: none,
           }),
         )
 
@@ -94,7 +91,6 @@ export class MulticastDisposable<R, E, A> implements Disposable.Disposable {
           time: o.context.fiberContext.scheduler.getCurrentTime(),
           cause: Cause.Disposed(o.context.fiberContext.fiberId),
           fiberId: o.context.fiberContext.fiberId,
-          trace: none,
         }),
       )
 

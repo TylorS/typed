@@ -1,6 +1,6 @@
 import { left, match } from 'fp-ts/Either'
 import { constVoid, pipe } from 'fp-ts/function'
-import { isSome } from 'fp-ts/Option'
+import { isSome, none, some } from 'fp-ts/Option'
 
 import { prettyPrint } from '@/Cause'
 import { DisposableQueue, sync } from '@/Disposable'
@@ -9,7 +9,6 @@ import { Exit } from '@/Exit'
 import { dispose } from '@/Fx'
 import { LocalScope } from '@/Scope'
 import { Sink } from '@/Sink'
-import { Tracer } from '@/Tracer/Tracer'
 
 import { InstructionProcessor } from './InstructionProcessor'
 import { ResumeSync } from './RuntimeInstruction'
@@ -28,7 +27,7 @@ export const processDrain = <R, E, A>(
       resources: processor.resources,
       scope: processor.scope,
       fiberContext: processor.fiberContext,
-      tracer: new Tracer(),
+      parentTrace: processor.shouldTrace ? some(processor.captureStackTrace()) : none,
     }),
   )
 

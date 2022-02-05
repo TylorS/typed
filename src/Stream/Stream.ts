@@ -1,8 +1,10 @@
+import { Option } from 'fp-ts/Option'
+
 import { Disposable } from '@/Disposable'
 import { FiberContext } from '@/FiberContext'
 import { LocalScope } from '@/Scope'
 import { Sink } from '@/Sink'
-import { Tracer } from '@/Tracer/Tracer'
+import { Trace } from '@/Trace'
 
 export interface Stream<R, E, A> {
   readonly run: StreamRun<R, E, A>
@@ -18,7 +20,7 @@ export interface StreamContext<R, E> {
   readonly resources: R
   readonly fiberContext: FiberContext<E>
   readonly scope: LocalScope<E, any>
-  readonly tracer: Tracer<any>
+  readonly parentTrace: Option<Trace>
 }
 
 /**

@@ -1,5 +1,3 @@
-import { none } from 'fp-ts/Option'
-
 import { fromIO } from '@/Fx'
 
 import { make } from './Stream'
@@ -15,7 +13,6 @@ export const periodic = (period: number) =>
           operator: 'periodic',
           time: context.fiberContext.scheduler.getCurrentTime(),
           value: undefined,
-          trace: none,
         }),
       ),
       context,
