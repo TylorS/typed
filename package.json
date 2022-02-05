@@ -4,8 +4,8 @@
   "description": "Data Structures and Resources for fp-ts",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
-  "types": "./cjs/index.d.ts",
-  "typings": "./cjs/index.d.ts",
+  "types": "./esm/index.d.ts",
+  "typings": "./esm/index.d.ts",
   "sideEffects": false,
   "dependencies": {
     "fast-deep-equal": "^3.1.3",
