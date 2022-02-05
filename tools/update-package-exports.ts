@@ -15,13 +15,18 @@ packageJson.exports = createExports()
 
 fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2).trim() + `\n`)
 
-type ExportMap = { require: string; import: string }
+type ExportMap = {
+  require: string
+  import: string
+  types: string
+}
 
 export function createExports() {
   const exports: Record<string, ExportMap> = {
     '.': {
       require: './cjs/index.js',
       import: './esm/index.js',
+      types: './esm/index.d.ts',
     },
   }
 
@@ -35,6 +40,9 @@ export function createExports() {
         './' + (isDirectory ? path.join('cjs', name, 'index.js') : path.join('cjs', `${name}.js`)),
       import:
         './' + (isDirectory ? path.join('esm', name, 'index.js') : path.join('esm', `${name}.js`)),
+      types:
+        './' +
+        (isDirectory ? path.join('esm', name, 'index.d.ts') : path.join('esm', `${name}.d.ts`)),
     }
 
     if (!isDirectory) {
@@ -55,9 +63,11 @@ export function createExports() {
       }
 
       const jsPath = relativePath.replace('.ts', '.js')
+      const typesPath = relativePath.replace('.ts', '.d.ts')
       const map: ExportMap = {
         require: './' + path.join('cjs', name, jsPath),
         import: './' + path.join('esm', name, jsPath),
+        types: './' + path.join('esm', name, typesPath),
       }
 
       const relativeName = relativePath.replace(TSX_REGEX, '').replace(INDEX_REGEX, '')
