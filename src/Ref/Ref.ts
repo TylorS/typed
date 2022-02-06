@@ -5,7 +5,7 @@ import { Fx, of } from '@/Fx'
 import { Option } from '@/Option'
 import * as Stream from '@/Stream'
 
-export interface Ref<R, E, I, O = I> {
+export interface Ref<R, I, E, O = I> {
   readonly get: Fx<R, E, O>
   readonly has: Fx<R, E, boolean>
   readonly update: <R2, E2>(f: (output: O) => Fx<R2, E2, I>) => Fx<R & R2, E | E2, O>
@@ -13,13 +13,13 @@ export interface Ref<R, E, I, O = I> {
   readonly values: Stream.Stream<R, E, Option<O>>
 }
 
-export function fromFiberRef<R, E, A>(fiberRef: FiberRef.FiberRef<R, E, A>): Ref<R, E, A> {
+export function fromFiberRef<R, E, A>(fiberRef: FiberRef.FiberRef<R, E, A>): Ref<R, A, E> {
   return {
     get: FiberRef.get(fiberRef),
     has: FiberRef.has(fiberRef),
     update: (f) => pipe(fiberRef, FiberRef.update(f)),
     delete: FiberRef.delete(fiberRef),
-    values: FiberRef.values(fiberRef) as unknown as Ref<R, E, A>['values'],
+    values: FiberRef.values(fiberRef) as unknown as Ref<R, A, E>['values'],
   }
 }
 
@@ -41,10 +41,10 @@ export const global = flow(make, toGlobal)
 
 export const set =
   <I>(input: I) =>
-  <R, E, O>(ref: Ref<R, E, I, O>) =>
+  <R, E, O>(ref: Ref<R, I, E, O>) =>
     ref.update(() => of(input))
 
 export const compute =
   <O, I>(f: (output: O) => I) =>
-  <R, E>(ref: Ref<R, E, I, O>): Fx<R, E, O> =>
+  <R, E>(ref: Ref<R, I, E, O>): Fx<R, E, O> =>
     ref.update(flow(f, of))
