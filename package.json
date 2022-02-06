@@ -93,25 +93,50 @@
       "import": "./esm/Alt/index.js",
       "types": "./esm/Alt/index.d.ts"
     },
+    "./Alt/Alt": {
+      "require": "./cjs/Alt/Alt.js",
+      "import": "./esm/Alt/Alt.js",
+      "types": "./esm/Alt/Alt.d.ts"
+    },
     "./Alternative": {
       "require": "./cjs/Alternative/index.js",
       "import": "./esm/Alternative/index.js",
       "types": "./esm/Alternative/index.d.ts"
+    },
+    "./Alternative/Alternative": {
+      "require": "./cjs/Alternative/Alternative.js",
+      "import": "./esm/Alternative/Alternative.js",
+      "types": "./esm/Alternative/Alternative.d.ts"
     },
     "./Applicative": {
       "require": "./cjs/Applicative/index.js",
       "import": "./esm/Applicative/index.js",
       "types": "./esm/Applicative/index.d.ts"
     },
+    "./Applicative/Applicative": {
+      "require": "./cjs/Applicative/Applicative.js",
+      "import": "./esm/Applicative/Applicative.js",
+      "types": "./esm/Applicative/Applicative.d.ts"
+    },
     "./Apply": {
       "require": "./cjs/Apply/index.js",
       "import": "./esm/Apply/index.js",
       "types": "./esm/Apply/index.d.ts"
     },
+    "./Apply/Apply": {
+      "require": "./cjs/Apply/Apply.js",
+      "import": "./esm/Apply/Apply.js",
+      "types": "./esm/Apply/Apply.d.ts"
+    },
     "./Array": {
       "require": "./cjs/Array/index.js",
       "import": "./esm/Array/index.js",
       "types": "./esm/Array/index.d.ts"
+    },
+    "./Array/Array": {
+      "require": "./cjs/Array/Array.js",
+      "import": "./esm/Array/Array.js",
+      "types": "./esm/Array/Array.d.ts"
     },
     "./Async": {
       "require": "./cjs/Async/index.js",
@@ -143,6 +168,11 @@
       "import": "./esm/Bifunctor/index.js",
       "types": "./esm/Bifunctor/index.d.ts"
     },
+    "./Bifunctor/Bifunctor": {
+      "require": "./cjs/Bifunctor/Bifunctor.js",
+      "import": "./esm/Bifunctor/Bifunctor.js",
+      "types": "./esm/Bifunctor/Bifunctor.d.ts"
+    },
     "./Branded": {
       "require": "./cjs/Branded/index.js",
       "import": "./esm/Branded/index.js",
@@ -157,6 +187,11 @@
       "require": "./cjs/Category/index.js",
       "import": "./esm/Category/index.js",
       "types": "./esm/Category/index.d.ts"
+    },
+    "./Category/Category": {
+      "require": "./cjs/Category/Category.js",
+      "import": "./esm/Category/Category.js",
+      "types": "./esm/Category/Category.d.ts"
     },
     "./Cause": {
       "require": "./cjs/Cause/index.js",
@@ -182,6 +217,11 @@
       "require": "./cjs/Chain/index.js",
       "import": "./esm/Chain/index.js",
       "types": "./esm/Chain/index.d.ts"
+    },
+    "./Chain/Chain": {
+      "require": "./cjs/Chain/Chain.js",
+      "import": "./esm/Chain/Chain.js",
+      "types": "./esm/Chain/Chain.d.ts"
     },
     "./ChainRec": {
       "require": "./cjs/ChainRec/index.js",
@@ -247,6 +287,11 @@
       "require": "./cjs/DataThese/index.js",
       "import": "./esm/DataThese/index.js",
       "types": "./esm/DataThese/index.d.ts"
+    },
+    "./DecodeError": {
+      "require": "./cjs/DecodeError/index.js",
+      "import": "./esm/DecodeError/index.js",
+      "types": "./esm/DecodeError/index.d.ts"
     },
     "./Decoder": {
       "require": "./cjs/Decoder/index.js",
@@ -988,6 +1033,11 @@
       "import": "./esm/Monad/index.js",
       "types": "./esm/Monad/index.d.ts"
     },
+    "./Monad/Monad": {
+      "require": "./cjs/Monad/Monad.js",
+      "import": "./esm/Monad/Monad.js",
+      "types": "./esm/Monad/Monad.d.ts"
+    },
     "./Monoid": {
       "require": "./cjs/Monoid/index.js",
       "import": "./esm/Monoid/index.js",
@@ -1052,6 +1102,11 @@
       "require": "./cjs/Pointed/index.js",
       "import": "./esm/Pointed/index.js",
       "types": "./esm/Pointed/index.d.ts"
+    },
+    "./Pointed/Pointed": {
+      "require": "./cjs/Pointed/Pointed.js",
+      "import": "./esm/Pointed/Pointed.js",
+      "types": "./esm/Pointed/Pointed.d.ts"
     },
     "./Predicate": {
       "require": "./cjs/Predicate/index.js",
@@ -1322,6 +1377,11 @@
       "require": "./cjs/Semigroupoid/index.js",
       "import": "./esm/Semigroupoid/index.js",
       "types": "./esm/Semigroupoid/index.d.ts"
+    },
+    "./Semigroupoid/Semigroupoid": {
+      "require": "./cjs/Semigroupoid/Semigroupoid.js",
+      "import": "./esm/Semigroupoid/Semigroupoid.js",
+      "types": "./esm/Semigroupoid/Semigroupoid.d.ts"
     },
     "./Semiring": {
       "require": "./cjs/Semiring/index.js",
@@ -1602,6 +1662,11 @@
       "require": "./cjs/Zero/index.js",
       "import": "./esm/Zero/index.js",
       "types": "./esm/Zero/index.d.ts"
+    },
+    "./Zero/Zero": {
+      "require": "./cjs/Zero/Zero.js",
+      "import": "./esm/Zero/Zero.js",
+      "types": "./esm/Zero/Zero.d.ts"
     },
     "./boolean": {
       "require": "./cjs/boolean/index.js",
