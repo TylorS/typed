@@ -1,5 +1,4 @@
-import { Option } from 'fp-ts/Option'
-
+import { Option } from '@/Option'
 import { make, Stream } from '@/Stream'
 
 import { FiberRef } from './FiberRef'

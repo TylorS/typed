@@ -1,6 +1,5 @@
-import { pipe } from 'fp-ts/function'
-
 import { FiberId } from '@/FiberId'
+import { pipe } from '@/function'
 import { complete, Future, pending } from '@/Future'
 import { disposed, Fx } from '@/Fx'
 

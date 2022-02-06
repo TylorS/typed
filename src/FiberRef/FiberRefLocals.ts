@@ -1,13 +1,12 @@
-import { pipe } from 'fp-ts/function'
-import { isSome, none, Option, some } from 'fp-ts/Option'
-
 import { fromExit, getContext } from '@/Effect'
 import { fork as forkFiber } from '@/Effect/Fork'
 import { join } from '@/Effect/Join'
 import { Fiber } from '@/Fiber/Fiber'
 import { of as fiberFromValue } from '@/Fiber/of'
+import { pipe } from '@/function'
 import { complete, Future, pending, wait } from '@/Future'
 import * as Fx from '@/Fx'
+import { isSome, None, Option, Some } from '@/Option'
 import { Stream } from '@/Stream'
 import * as Subject from '@/Subject'
 
@@ -68,7 +67,7 @@ export function makeFiberRefLocals(
       const a = yield* join(fiber)
 
       // Send created event
-      sendEvent(fiberRef, some(a))
+      sendEvent(fiberRef, Some(a))
 
       return a
     })
@@ -119,7 +118,7 @@ export function makeFiberRefLocals(
 
       // Send an update event if the value changes
       if (!fiberRef.Eq.equals(updated)(current)) {
-        sendEvent(fiberRef, some(updated))
+        sendEvent(fiberRef, Some(updated))
       }
 
       // Continue with any additional updates
@@ -134,7 +133,7 @@ export function makeFiberRefLocals(
   const remove = <R, E, A>(fiberRef: FiberRef<R, E, A>) =>
     Fx.Fx(function* () {
       if (!refs.has(fiberRef)) {
-        return none
+        return None
       }
 
       const current: A = yield* fromExit(yield* refs.get(fiberRef)!.exit)
@@ -142,9 +141,9 @@ export function makeFiberRefLocals(
       refs.delete(fiberRef)
 
       // Send deleted event
-      sendEvent(fiberRef, none)
+      sendEvent(fiberRef, None)
 
-      return some(current)
+      return Some(current)
     })
 
   const values = <R, E, A>(fiberRef: FiberRef<R, E, A>): Stream<unknown, never, Option<A>> => {

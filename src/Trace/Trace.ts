@@ -1,6 +1,5 @@
-import { isNone, Option } from 'fp-ts/Option'
-
 import { FiberId, prettyFiberId } from '@/FiberId'
+import { isNone, Option } from '@/Option'
 import * as Sync from '@/Sync'
 
 export class Trace {

@@ -1,5 +1,4 @@
-import { pipe } from 'fp-ts/function'
-
+import { pipe } from '@/function'
 import { Fx, mergeResources, provide } from '@/Fx'
 
 import { idOf } from './idOf'

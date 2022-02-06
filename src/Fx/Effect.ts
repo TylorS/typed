@@ -1,9 +1,6 @@
-import { Either, left } from 'fp-ts/Either'
-import { IO } from 'fp-ts/IO'
-
 import { Async } from '@/Async'
 import { Cause } from '@/Cause'
-import { none } from '@/Disposable'
+import { None } from '@/Disposable'
 import * as E from '@/Effect'
 import {
   RaceErrors,
@@ -13,11 +10,13 @@ import {
   TupleOutput,
   TupleResources,
 } from '@/Effect'
+import { Either, Left } from '@/Either'
 import { Exit } from '@/Exit'
 import { Fiber } from '@/Fiber/Fiber'
 import { RuntimeOptions } from '@/Fiber/Runtime'
 import { FiberContext } from '@/FiberContext'
 import { FiberId } from '@/FiberId'
+import { IO } from '@/IO'
 import { LocalScope } from '@/Scope'
 import { Trace } from '@/Trace'
 
@@ -49,7 +48,7 @@ export const fromExit: <E, A>(exit: Exit<E, A>, trace?: string | undefined) => E
   E.fromExit
 
 export const fromCause = <E>(cause: Cause<E>, trace?: string | undefined): EFx<E, never> =>
-  E.fromExit<E, never>(left(cause), trace)
+  E.fromExit<E, never>(Left(cause), trace)
 
 export const fromIO: <A, E = never>(io: IO<A>, trace?: string | undefined) => EFx<E, A> = E.fromIO
 
@@ -104,7 +103,7 @@ export const unexpected: <E = never, A = never>(
 export const untraceable: <R, E, A>(fx: Fx<R, E, A>, trace?: string | undefined) => Fx<R, E, A> =
   E.untraceable
 
-export const never = fromAsync<never>(Async(() => none))
+export const never = fromAsync<never>(Async(() => None))
 
 export const fork: <R, E, A>(
   fx: Fx<R, E, A>,

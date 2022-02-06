@@ -1,7 +1,6 @@
-import { pipe } from 'fp-ts/function'
-
 import { withinContext } from '@/Effect'
 import { FiberContext } from '@/FiberContext'
+import { pipe } from '@/function'
 import { Fx } from '@/Fx'
 
 import { FiberRef } from './FiberRef'

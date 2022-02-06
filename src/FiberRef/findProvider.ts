@@ -1,7 +1,6 @@
-import { isSome } from 'fp-ts/Option'
-
 import { getContext } from '@/Effect'
 import { Fx } from '@/Fx'
+import { isSome } from '@/Option'
 
 import { FiberRef } from './FiberRef'
 

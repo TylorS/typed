@@ -1,9 +1,8 @@
-import { flow, pipe } from 'fp-ts/function'
-import { Option } from 'fp-ts/Option'
-
 import * as Fiber from '@/Fiber'
 import * as FiberRef from '@/FiberRef'
+import { flow, pipe } from '@/function'
 import { Fx, of } from '@/Fx'
+import { Option } from '@/Option'
 import * as Stream from '@/Stream'
 
 export interface Ref<R, E, I, O = I> {

@@ -1,7 +1,6 @@
-import { pipe } from 'fp-ts/function'
-import { matchW, none, Option, some } from 'fp-ts/Option'
-
 import { prettyFiberId } from '@/FiberId'
+import { pipe } from '@/function'
+import * as O from '@/Option'
 import * as Sync from '@/Sync'
 import { prettyTrace, Trace } from '@/Trace'
 
@@ -62,7 +61,7 @@ export function Parallel(all: readonly Sequential[]): Parallel {
 
 export function renderDisposed<E>(
   cause: Disposed,
-  trace: Option<Trace>,
+  trace: O.Option<Trace>,
   renderer: Renderer<E>,
 ): Sequential {
   return Sequential([
@@ -74,7 +73,11 @@ export function renderDisposed<E>(
   ])
 }
 
-export function renderExpected<E>(cause: Expected<E>, trace: Option<Trace>, renderer: Renderer<E>) {
+export function renderExpected<E>(
+  cause: Expected<E>,
+  trace: O.Option<Trace>,
+  renderer: Renderer<E>,
+) {
   return Sequential([
     Failure([
       'An expected error has occurred.',
@@ -87,7 +90,7 @@ export function renderExpected<E>(cause: Expected<E>, trace: Option<Trace>, rend
 
 export function renderUnexpected<E>(
   cause: Unexpected,
-  trace: Option<Trace>,
+  trace: O.Option<Trace>,
   renderer: Renderer<E>,
 ) {
   return Sequential([
@@ -107,11 +110,11 @@ export function renderCauseToSequential<E>(
   return Sync.Sync(function* () {
     switch (cause.type) {
       case 'Expected':
-        return renderExpected(cause, none, renderer)
+        return renderExpected(cause, O.None, renderer)
       case 'Unexpected':
-        return renderUnexpected(cause, none, renderer)
+        return renderUnexpected(cause, O.None, renderer)
       case 'Disposed':
-        return renderDisposed(cause, none, renderer)
+        return renderDisposed(cause, O.None, renderer)
       case 'Then':
         return Sequential(linearSegments(cause, renderer))
       case 'Both':
@@ -119,14 +122,14 @@ export function renderCauseToSequential<E>(
       case 'Traced': {
         switch (cause.cause.type) {
           case 'Expected':
-            return renderExpected(cause.cause, some(cause.trace), renderer)
+            return renderExpected(cause.cause, O.Some(cause.trace), renderer)
           case 'Unexpected':
-            return renderUnexpected(cause.cause, some(cause.trace), renderer)
+            return renderUnexpected(cause.cause, O.Some(cause.trace), renderer)
           case 'Disposed':
-            return renderDisposed(cause.cause, some(cause.trace), renderer)
+            return renderDisposed(cause.cause, O.Some(cause.trace), renderer)
           default: {
             const { all }: Sequential = yield* renderCauseToSequential(cause.cause, renderer)
-            const rendered = renderTrace(some(cause.trace), renderer)
+            const rendered = renderTrace(O.Some(cause.trace), renderer)
 
             return Sequential([
               ...(rendered.every((x) => Sync.run(includes(all, x)))
@@ -196,10 +199,10 @@ export function renderError(error: Error): Lines {
   return lines(error.stack !== undefined ? error.stack : String(error))
 }
 
-export function renderTrace<E>(trace: Option<Trace>, renderer: Renderer<E>): Lines {
+export function renderTrace<E>(trace: O.Option<Trace>, renderer: Renderer<E>): Lines {
   return pipe(
     trace,
-    matchW(
+    O.match(
       () => [],
       (trace) => lines(renderer.renderTrace(trace)),
     ),

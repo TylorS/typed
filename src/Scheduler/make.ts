@@ -1,5 +1,3 @@
-import { none, Option, some } from 'fp-ts/Option'
-
 import { Clock, DateClock, relative, Time } from '@/Clock'
 import * as D from '@/Disposable'
 import { fromInstructionProcessor } from '@/Fiber/fromInstructionProcessor'
@@ -7,6 +5,7 @@ import { Runtime, RuntimeOptions } from '@/Fiber/Runtime'
 import { RuntimeProcessor } from '@/Fiber/RuntimeProcessor'
 import * as Fx from '@/Fx'
 import { join } from '@/Fx'
+import { None, Option, Some } from '@/Option'
 import { StreamContext } from '@/Stream'
 import { makeSetTimeoutTimer, Timer } from '@/Timer'
 
@@ -23,7 +22,7 @@ export type SchedulerOptions = {
 export function make(options: SchedulerOptions = {}): Scheduler {
   const timer = options.timer ?? makeSetTimeoutTimer(relative(DateClock))
 
-  let disposable: D.Disposable = D.none
+  let disposable: D.Disposable = D.None
 
   const runReadyTasks = (events: readonly RuntimeProcessor<any, any>[]) =>
     events.forEach((event) => event.processNow())
@@ -32,7 +31,7 @@ export function make(options: SchedulerOptions = {}): Scheduler {
     await D.dispose(disposable)
 
     if (timeline.isEmpty()) {
-      disposable = D.none
+      disposable = D.None
 
       return
     }
@@ -93,10 +92,10 @@ export function makePeriodic(
       scope: context.scope,
     })
 
-    let previousTime: Option<Time> = none
+    let previousTime: Option<Time> = None
     const next = () => {
       const time = accountForTimeDrift(previousTime, clock.getCurrentTime(), period)
-      previousTime = some(time)
+      previousTime = Some(time)
       const processor = runtime.makeProcessor<E, A>(fx)
       const fiber = fromInstructionProcessor(processor, (r) => timeline.add(time, r))
 

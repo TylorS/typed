@@ -1,4 +1,4 @@
-import * as Semigroup from 'fp-ts/Semigroup'
+import * as Semigroup from '@/Semigroup'
 
 import { Both, Cause, Then } from './Cause'
 

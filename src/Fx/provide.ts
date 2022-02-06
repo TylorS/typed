@@ -1,5 +1,4 @@
-import { pipe } from 'fp-ts/function'
-
+import { pipe } from '@/function'
 import { HAS } from '@/Has'
 
 import { access, provideAll } from './Effect'

@@ -1,7 +1,6 @@
-import { isSome, none, Option, some } from 'fp-ts/Option'
-
 import { Fiber } from '@/Fiber'
 import * as Fx from '@/Fx'
+import { isSome, None, Option, Some } from '@/Option'
 import * as Ref from '@/Ref'
 
 import { Layer, LayerId } from './Layer'
@@ -26,10 +25,10 @@ export function find<R, E, A>(layer: Layer<R, E, A>): Fx.Fx<unknown, E, Option<A
       const fiber = layers.get(layer.id) as Fiber<E, A>
       const exit = yield* fiber.exit
 
-      return some(yield* Fx.fromExit(exit))
+      return Some(yield* Fx.fromExit(exit))
     }
 
-    return none
+    return None
   })
 }
 
@@ -65,7 +64,7 @@ export function update<S, R2, E2>(f: (service: S) => Fx.Fx<R2, E2, S>) {
   return <R, E>(layer: Layer<R, E, S>): Fx.Fx<R2 & R, E | E2, Option<S>> =>
     Fx.Fx(function* () {
       if (!layer.overridable) {
-        return none
+        return None
       }
 
       const current = yield* get(layer)
@@ -75,7 +74,7 @@ export function update<S, R2, E2>(f: (service: S) => Fx.Fx<R2, E2, S>) {
         Fx.fromIO(() => m.set(layer.id, fiber)),
       )
 
-      return some(yield* Fx.join(fiber))
+      return Some(yield* Fx.join(fiber))
     })
 }
 
@@ -106,9 +105,9 @@ export { remove as delete }
 export function refresh<R, E, A>(layer: Layer<R, E, A>): Fx.Fx<R, E, Option<A>> {
   return Fx.Fx(function* () {
     if (yield* remove(layer)) {
-      return some(yield* get(layer))
+      return Some(yield* get(layer))
     }
 
-    return none
+    return None
   })
 }

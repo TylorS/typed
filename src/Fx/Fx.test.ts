@@ -1,10 +1,10 @@
 import { deepStrictEqual, ok } from 'assert'
-import { isLeft, isRight } from 'fp-ts/Either'
 import { describe } from 'mocha'
 
 import { prettyPrint } from '@/Cause'
 import { fromExit, fromIO } from '@/Effect'
 import { result } from '@/Effect/Result'
+import { isLeft, isRight } from '@/Either'
 
 import { ask } from './Effect'
 import * as Fx from './Fx'
@@ -24,7 +24,7 @@ describe(__filename, () => {
     const exit = await runTraceExit(test, { a: 1, b: 2 })
 
     ok(isLeft(exit))
-    console.info(prettyPrint(exit.left))
+    console.info(prettyPrint(exit.value))
   })
 
   it('result + fromExit are duals', async () => {
@@ -38,7 +38,7 @@ describe(__filename, () => {
     const exit = await runTraceExit(test, { a: 1, b: 2 })
 
     ok(isRight(exit))
-    deepStrictEqual(exit.right, { a: 1, b: 2 })
+    deepStrictEqual(exit.value, { a: 1, b: 2 })
   })
 
   it('allows utilizing try/catch', async () => {

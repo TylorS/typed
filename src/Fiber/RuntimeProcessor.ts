@@ -1,11 +1,10 @@
-import { isLeft, left, match } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
-import { isNone, isSome, none, Option, some } from 'fp-ts/Option'
-
 import { Traced } from '@/Cause'
-import { async, Disposable, DisposableQueue, dispose, disposeAll, sync } from '@/Disposable'
+import { Async, Disposable, DisposableQueue, dispose, disposeAll, Sync } from '@/Disposable'
+import { isLeft, Left, match } from '@/Either'
 import { disposed, Exit, then, unexpected } from '@/Exit'
 import { FiberId } from '@/FiberId'
+import { pipe } from '@/function'
+import { isNone, isSome, None, Option, Some } from '@/Option'
 import { InterruptableStatus } from '@/Scope/InterruptableStatus'
 import { Trace } from '@/Trace'
 
@@ -21,7 +20,7 @@ import { RuntimeGenerator, RuntimeInstruction, RuntimeIterable } from './Runtime
 export class RuntimeProcessor<E, A> implements Disposable {
   protected node: RuntimeInstructionTree<E, A> | undefined = undefined
   protected observers: Set<(exit: Exit<E, A>) => void> = new Set()
-  protected exited: Option<Exit<E, A>> = none
+  protected exited: Option<Exit<E, A>> = None
   protected queue: DisposableQueue = new DisposableQueue()
   protected currentStatus!: Status
 
@@ -40,7 +39,7 @@ export class RuntimeProcessor<E, A> implements Disposable {
     this.suspendedStatus()
 
     this.queue.add(
-      sync(() => {
+      Sync(() => {
         if (isNone(this.exited)) {
           this.node = {
             type: 'Exit',
@@ -57,7 +56,7 @@ export class RuntimeProcessor<E, A> implements Disposable {
     return this.currentStatus
   }
 
-  dispose = async(async () => {
+  dispose = Async(async () => {
     const { interruptableStatus } = this
 
     if (!interruptableStatus.isInterruptable) {
@@ -110,7 +109,7 @@ export class RuntimeProcessor<E, A> implements Disposable {
 
     this.observers.add(observer)
 
-    return sync(() => this.observers.delete(observer))
+    return Sync(() => this.observers.delete(observer))
   }
 
   protected processNode(node: RuntimeInstructionTree<E, A>) {
@@ -263,9 +262,9 @@ export class RuntimeProcessor<E, A> implements Disposable {
 
     const exit =
       this.shouldTrace && isLeft(node.exit)
-        ? left(Traced(this.captureStackTrace(), node.exit.left))
+        ? Left(Traced(this.captureStackTrace(), node.exit.value))
         : node.exit
-    this.exited = some(exit)
+    this.exited = Some(exit)
     this.observers.forEach((o) => o(exit))
     this.observers.clear()
   }

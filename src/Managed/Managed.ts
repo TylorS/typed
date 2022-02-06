@@ -1,6 +1,5 @@
-import { pipe } from 'fp-ts/function'
-
 import { Exit } from '@/Exit'
+import { pipe } from '@/function'
 import * as Fx from '@/Fx'
 import { Finalizer } from '@/Scope'
 

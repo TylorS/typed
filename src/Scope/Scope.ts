@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
-import { isNone, isSome, none, Option, some } from 'fp-ts/Option'
-
 import { Branded } from '@/Branded'
 import { fromIO } from '@/Effect'
 import * as Exit from '@/Exit'
 import { of } from '@/Fx/Effect'
 import { Fx, Of } from '@/Fx/Fx'
 import { decrement, increment, MutableRef } from '@/MutableRef'
+import { isNone, isSome, None, Option, Some } from '@/Option'
 
 import { InterruptableStatus } from './InterruptableStatus'
 
@@ -19,7 +18,7 @@ export const FinalizerKey = Branded<FinalizerKey>()
 
 export class LocalScope<E, A> {
   readonly type = 'LocalScope'
-  readonly exit = MutableRef.make<Option<Exit.Exit<E, A>>>(none)
+  readonly exit = MutableRef.make<Option<Exit.Exit<E, A>>>(None)
   readonly refCount: RefCount = new RefCount()
   readonly interruptableStatus: InterruptableStatus = new InterruptableStatus()
 
@@ -36,14 +35,14 @@ export class LocalScope<E, A> {
 
   readonly ensure = (finalizer: Finalizer): Option<FinalizerKey> => {
     if (this.released) {
-      return none
+      return None
     }
 
     const key = FinalizerKey(Symbol())
 
     this.finalizers.set(key, finalizer)
 
-    return some(key)
+    return Some(key)
   }
 
   readonly cancel = (key: FinalizerKey): boolean => {
@@ -83,7 +82,7 @@ export class LocalScope<E, A> {
 
     return Fx(function* () {
       if (isNone(that.exit.get())) {
-        that.exit.set(some(exit))
+        that.exit.set(Some(exit))
       }
 
       return yield* that.release()
@@ -120,7 +119,7 @@ export class GlobalScope {
   readonly released = false
   readonly extend = <E2, B>(scope: Scope<E2, B>) =>
     scope.type === 'GlobalScope' ? true : scope.open ? (scope.refCount.increment(), true) : false
-  readonly ensure = (_finalizer: Finalizer): Option<FinalizerKey> => none
+  readonly ensure = (_finalizer: Finalizer): Option<FinalizerKey> => None
   readonly cancel = (_key: FinalizerKey) => false
   readonly close = <E, A>(_exit: Exit.Exit<E, A>) => this.release
   readonly release = of(false)

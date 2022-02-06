@@ -1,6 +1,5 @@
-import { none } from 'fp-ts/Option'
-
 import { Disposable, DisposableQueue, disposeAll } from '@/Disposable'
+import { None } from '@/Option'
 import { EndElement, ErrorElement, EventElement, Sink } from '@/Sink'
 
 import { Stream, StreamContext } from './Stream'
@@ -39,7 +38,7 @@ class ChainSink<R2, E2, E, A, B> implements Sink<E, A>, Disposable {
         fiberContext: this.context.fiberContext,
         scope: this.context.scope as any,
         resources: this.context.resources,
-        parentTrace: none,
+        parentTrace: None,
       }),
     )
   }

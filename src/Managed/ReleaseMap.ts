@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { pipe } from 'fp-ts/function'
-import { fromNullable, none, Option, some } from 'fp-ts/Option'
-
 import { Exit } from '@/Exit'
+import { pipe } from '@/function'
 import * as Fx from '@/Fx'
+import { fromNullable, None, Option, Some } from '@/Option'
 import { Finalizer } from '@/Scope'
 
 /**
@@ -33,7 +32,7 @@ export class ReleaseMap {
       return fromNullable(this.finalizers.get(key) as Finalizer)
     }
 
-    return none
+    return None
   }
 
   readonly release = (key: symbol, exit: Exit<any, any>): Fx.Of<Option<any>> =>
@@ -46,23 +45,23 @@ export class ReleaseMap {
 
             map.delete(key)
 
-            return some(yield* (finalizer as Finalizer)(exit))
+            return Some(yield* (finalizer as Finalizer)(exit))
           }
 
-          return none
+          return None
         }),
       ),
     )
 
   readonly remove = (key: symbol): Option<Finalizer> => {
     if (!this.finalizers.has(key)) {
-      return none
+      return None
     }
 
     const finalizer = this.finalizers.get(key)!
 
     this.finalizers.delete(key)
 
-    return some(finalizer as Finalizer)
+    return Some(finalizer as Finalizer)
   }
 }

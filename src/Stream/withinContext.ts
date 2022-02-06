@@ -1,7 +1,6 @@
-import { pipe } from 'fp-ts/function'
-
 import { getRootContext } from '@/Fiber'
 import { FiberContext } from '@/FiberContext'
+import { pipe } from '@/function'
 
 import { chain } from './chain'
 import { fromFx } from './fromFx'

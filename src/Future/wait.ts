@@ -1,5 +1,5 @@
 import { Async } from '@/Async'
-import { none, sync } from '@/Disposable'
+import { None, Sync } from '@/Disposable'
 import { fromAsync } from '@/Effect'
 import { Fx } from '@/Fx'
 
@@ -26,12 +26,12 @@ export function pendingWait<R, E, A>(future: Future<R, E, A>, trace?: string): F
           case 'Pending': {
             state.listeners.add(cb)
 
-            return sync(() => state.listeners.delete(cb))
+            return Sync(() => state.listeners.delete(cb))
           }
           case 'Done': {
             cb(state.fx)
 
-            return none
+            return None
           }
         }
       }),

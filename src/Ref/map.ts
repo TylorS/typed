@@ -1,7 +1,6 @@
-import { flow, pipe } from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
-
+import { flow, pipe } from '@/function'
 import * as Fx from '@/Fx'
+import * as O from '@/Option'
 import * as Stream from '@/Stream'
 
 import { Ref } from './Ref'

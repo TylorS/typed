@@ -1,6 +1,5 @@
-import { pipe } from 'fp-ts/function'
-
 import { Disposable } from '@/Disposable'
+import { pipe } from '@/function'
 import { Fx } from '@/Fx'
 
 import { drain } from './drain'

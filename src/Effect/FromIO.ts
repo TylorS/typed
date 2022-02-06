@@ -1,4 +1,4 @@
-import { IO } from 'fp-ts/IO'
+import { IO } from '@/IO'
 
 import { instr } from './Instruction'
 

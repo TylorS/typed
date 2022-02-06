@@ -1,5 +1,4 @@
-import { Either } from 'fp-ts/Either'
-
+import { Either } from '@/Either'
 import * as Exit from '@/Exit'
 import { FiberId } from '@/FiberId'
 

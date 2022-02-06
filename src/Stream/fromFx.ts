@@ -1,6 +1,5 @@
-import { isLeft } from 'fp-ts/Either'
-import { flow, pipe } from 'fp-ts/function'
-
+import { isLeft } from '@/Either'
+import { flow, pipe } from '@/function'
 import * as Fx from '@/Fx'
 
 import { make, Stream } from './Stream'
@@ -20,7 +19,7 @@ export function makeFromFxOperator(operator: string) {
               type: 'Error',
               operator,
               time,
-              cause: exit.left,
+              cause: exit.value,
               fiberId: context.fiberContext.fiberId,
             })
           }
@@ -29,7 +28,7 @@ export function makeFromFxOperator(operator: string) {
             type: 'Event',
             operator,
             time,
-            value: exit.right,
+            value: exit.value,
             fiberId: context.fiberContext.fiberId,
           })
 

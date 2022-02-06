@@ -1,21 +1,18 @@
-import { Eq } from 'fp-ts/Eq'
-import { Magma } from 'fp-ts/Magma'
-import { Option, some } from 'fp-ts/Option'
-
-import { DeepEquals } from '@/Eq'
+import { DeepEquals, Eq } from '@/Eq'
 import { Fx } from '@/Fx'
-import { Second } from '@/Magma'
+import { Magma, Second } from '@/Magma'
+import { Option, Some } from '@/Option'
 
 export class FiberRef<R, E, A> {
   constructor(
     readonly initial: Fx<R, E, A>,
     readonly Eq: Eq<A> = DeepEquals,
     readonly Magma: Magma<A> = Second,
-    readonly fork: (a: A) => Option<A> = some,
+    readonly fork: (a: A) => Option<A> = Some,
   ) {}
 
   static make = <R, E, A>(initial: Fx<R, E, A>, options: FiberRefOptions<A> = {}) =>
-    new FiberRef(initial, options.Eq ?? DeepEquals, options.Magma ?? Second, options.fork ?? some)
+    new FiberRef(initial, options.Eq, options.Magma, options.fork)
 }
 
 export const make = FiberRef.make

@@ -1,6 +1,5 @@
-import { pipe } from 'fp-ts/function'
-
 import { Branded } from '@/Branded'
+import { pipe } from '@/function'
 import * as Fx from '@/Fx'
 
 export interface Layer<R, E, A> {

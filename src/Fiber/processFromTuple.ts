@@ -1,8 +1,7 @@
-import { isLeft, Right, right } from 'fp-ts/Either'
-
 import { Async } from '@/Async'
 import { disposeAll } from '@/Disposable'
 import { fromAsync, fromExit, FromTuple, TupleErrors, TupleResources } from '@/Effect'
+import { isLeft, Right } from '@/Either'
 import { both, Exit } from '@/Exit'
 import { Fx } from '@/Fx'
 
@@ -30,7 +29,7 @@ export const processFromTuple = <FX extends ReadonlyArray<Fx<any, any, any> | Fx
                 if (--remaining === 0) {
                   const exit = exits.some(isLeft)
                     ? exits.reduce(both)
-                    : right(exits.map((x) => (x as Right<any>).right))
+                    : Right(exits.map((x) => (x as Right<any>).value))
 
                   cb(exit)
                 }

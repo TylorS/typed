@@ -1,4 +1,4 @@
-import * as IO from 'fp-ts/IO'
+import * as IO from '@/IO'
 
 /**
  * Sync is a small wrapper around IO w/ Generators for

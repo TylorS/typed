@@ -15,7 +15,7 @@ export type MulticastObserver<R, E, A> = {
 
 export class Multicast<R, E, A> implements Stream<R, E, A>, Sink<E, A> {
   observers: Array<MulticastObserver<R, E, A>> = []
-  disposable: Disposable.Disposable = Disposable.none
+  disposable: Disposable.Disposable = Disposable.None
 
   constructor(readonly stream: Stream<R, E, A>, readonly operator: string = 'multicast') {}
 
@@ -62,7 +62,7 @@ export class MulticastDisposable<R, E, A> implements Disposable.Disposable {
 
   disposeMulticast() {
     if (Disposable.checkIsSync(this.multicast.disposable)) {
-      return Disposable.sync(() => {
+      return Disposable.Sync(() => {
         // Notify remaining of dispose
         this.multicast.observers.forEach((o) =>
           o.sink.error({
@@ -82,7 +82,7 @@ export class MulticastDisposable<R, E, A> implements Disposable.Disposable {
       })
     }
 
-    return Disposable.async(async () => {
+    return Disposable.Async(async () => {
       // Notify remaining of dispose
       this.multicast.observers.forEach((o) =>
         o.sink.error({
@@ -103,7 +103,7 @@ export class MulticastDisposable<R, E, A> implements Disposable.Disposable {
   }
 
   disposeObserver() {
-    return Disposable.sync(() => {
+    return Disposable.Sync(() => {
       const i = this.multicast.observers.findIndex((x) => x === this.observer)
 
       if (i > -1) {

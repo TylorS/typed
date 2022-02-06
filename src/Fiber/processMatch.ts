@@ -1,7 +1,6 @@
-import { isRight } from 'fp-ts/Either'
-
 import { isExpected } from '@/Cause'
 import { Match, result } from '@/Effect'
+import { isRight } from '@/Either'
 import { fromCause, Fx } from '@/Fx'
 
 import { InstructionProcessor } from './InstructionProcessor'
@@ -16,13 +15,13 @@ export const processMatch = <R, E, A, R2, E2, B, R3, E3, C>(
     const exit = yield* result(instruction.input.fx)
 
     if (isRight(exit)) {
-      return yield* instruction.input.onRight(exit.right)
+      return yield* instruction.input.onRight(exit.value)
     }
 
-    if (isExpected(exit.left)) {
-      return yield* instruction.input.onLeft(exit.left.error)
+    if (isExpected(exit.value)) {
+      return yield* instruction.input.onLeft(exit.value.error)
     }
 
-    return yield* fromCause(exit.left, instruction.trace)
+    return yield* fromCause(exit.value, instruction.trace)
   }),
 })

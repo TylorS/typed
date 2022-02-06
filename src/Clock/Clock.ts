@@ -1,7 +1,6 @@
-import { flow } from 'fp-ts/function'
-import { IO } from 'fp-ts/IO'
-
 import { Branded } from '@/Branded'
+import { flow } from '@/function'
+import { IO } from '@/IO'
 
 export interface Clock {
   readonly getCurrentTime: IO<Time>

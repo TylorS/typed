@@ -1,8 +1,7 @@
-import { right } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
-import { isSome } from 'fp-ts/Option'
-
+import { Right } from '@/Either'
+import { pipe } from '@/function'
 import * as Fx from '@/Fx'
+import { isSome } from '@/Option'
 
 import { Managed } from './Managed'
 import { ReleaseMap } from './ReleaseMap'
@@ -42,7 +41,7 @@ export function withManaged<A, R2, E2, B>(_with: (a: A) => Fx.Fx<R2, E2, B>) {
 
       const b = yield* _with(a)
 
-      yield* finalizer(right(b))
+      yield* finalizer(Right(b))
       // Clean up if we succeed too.
       dispose()
 

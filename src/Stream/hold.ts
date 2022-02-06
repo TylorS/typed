@@ -1,18 +1,17 @@
-import * as O from 'fp-ts/Option'
-
 import { Unexpected } from '@/Cause'
 import * as D from '@/Disposable'
 import { dispose } from '@/Disposable'
 import { fromIO } from '@/Effect'
+import * as O from '@/Option'
 import { EndElement, ErrorElement, EventElement, tryEvent } from '@/Sink'
 
 import { Multicast, MulticastObserver } from './multicast'
 import { Stream, StreamRun } from './Stream'
 
 export class Hold<R, E, A> extends Multicast<R, E, A> {
-  protected lastValue: O.Option<A> = O.none
+  protected lastValue: O.Option<A> = O.None
   protected pendingObservers: Array<MulticastObserver<R, E, A>> = []
-  protected task: D.Disposable = D.none
+  protected task: D.Disposable = D.None
 
   constructor(readonly stream: Stream<R, E, A>, readonly operator: string = 'hold') {
     super(stream, operator)
@@ -30,7 +29,7 @@ export class Hold<R, E, A> extends Multicast<R, E, A> {
 
   event(event: EventElement<A>) {
     this.flushPending()
-    this.lastValue = O.some(event.value)
+    this.lastValue = O.Some(event.value)
 
     return super.event(event)
   }

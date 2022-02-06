@@ -1,10 +1,9 @@
-import { flow, pipe } from 'fp-ts/function'
-import { isSome, none, Option, some } from 'fp-ts/Option'
-
 import { FiberId } from '@/FiberId'
+import { flow, pipe } from '@/function'
 import * as Future from '@/Future'
 import * as Fx from '@/Fx'
 import { isNonEmpty } from '@/NonEmptyArray'
+import { isSome, None, Option, Some } from '@/Option'
 import * as Ref from '@/Ref'
 
 import { makeDroppingStategy } from './DroppingStrategy'
@@ -20,7 +19,7 @@ export function make<A>(strategy: QueueStrategy<A>): Queue<unknown, never, A> {
   const mutableQueue = makeMutableQueue<A>()
   const offers = makeWaitFor<A>()
   const takers = makeWaitFor<A>()
-  const shutdownBy = Ref.make(Fx.of<Option<FiberId>>(none))
+  const shutdownBy = Ref.make(Fx.of<Option<FiberId>>(None))
 
   const disposeIfShutdown = Fx.Fx(function* () {
     const disposedBy = yield* shutdownBy.get
@@ -67,10 +66,10 @@ export function make<A>(strategy: QueueStrategy<A>): Queue<unknown, never, A> {
       // Let any suspended offerings resume
       offers.next(Fx.of(value))
 
-      return some(value)
+      return Some(value)
     }
 
-    return none
+    return None
   })
 
   const dequeue = Fx.Fx(function* () {
@@ -126,7 +125,7 @@ export function make<A>(strategy: QueueStrategy<A>): Queue<unknown, never, A> {
     const { fiberId } = yield* Fx.getContext()
 
     // Record the FiberId that shutdown the Queue
-    yield* shutdownBy.update(() => Fx.of(some(fiberId)))
+    yield* shutdownBy.update(() => Fx.of(Some(fiberId)))
 
     // Immediately dispose of all suspended Fibers
     offers.dispose(fiberId)

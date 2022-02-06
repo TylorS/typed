@@ -1,5 +1,4 @@
-import { pipe } from 'fp-ts/function'
-
+import { pipe } from '@/function'
 import { complete, pending, wait } from '@/Future'
 import { Fx, of } from '@/Fx'
 import { EventElement } from '@/Sink'

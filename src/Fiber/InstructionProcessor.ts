@@ -1,15 +1,15 @@
-import { isLeft, match } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
-import { getOrElse, isSome, Option, some } from 'fp-ts/Option'
 import { Required } from 'ts-toolbelt/out/Object/Required'
 
 import { prettyPrint } from '@/Cause'
 import { Time } from '@/Clock'
-import { Disposable, DisposableQueue, sync, withRemove } from '@/Disposable'
+import { Disposable, DisposableQueue, Sync, withRemove } from '@/Disposable'
 import { Effect, FromExit, fromIO, Provide } from '@/Effect'
+import { isLeft, match } from '@/Either'
 import { Exit, success, unexpected } from '@/Exit'
 import { FiberContext } from '@/FiberContext'
+import { pipe } from '@/function'
 import { Fx } from '@/Fx'
+import { getOrElse, isSome, Option, Some } from '@/Option'
 import { prettyStringify } from '@/prettyStringify'
 import { extendScope, LocalScope } from '@/Scope'
 import { SourceLocation, Trace, TraceElement } from '@/Trace'
@@ -67,7 +67,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
     new Trace(this.fiberContext.fiberId, this.executionTraces.slice(), this.parentTrace)
 
   /**
-   * Helper for keeping track of a Disposable that will remove itself once some effect has
+   * Helper for keeping track of a Disposable that will remove itself once Some effect has
    * completed.
    */
   readonly trackDisposable = (f: (remove: () => void) => Disposable): Disposable =>
@@ -88,7 +88,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
       this.fiberContext,
       extendScope(this.scope),
       this.processors,
-      this.shouldTrace ? some(this.captureStackTrace()) : this.parentTrace,
+      this.shouldTrace ? Some(this.captureStackTrace()) : this.parentTrace,
       shouldTrace,
       this.maxOpCount,
     )
@@ -107,7 +107,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
       options.fiberContext,
       extendScope(options.scope ?? this.scope),
       processors,
-      shouldTrace ? some(this.captureStackTrace()) : this.parentTrace,
+      shouldTrace ? Some(this.captureStackTrace()) : this.parentTrace,
       shouldTrace,
       maxOps,
     )
@@ -134,7 +134,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
       const exit = yield new ResumeAsync<Exit<E, A>>((cb) => {
         const option = this.scope.ensure((exit) => fromIO(() => cb(exit)))
 
-        return sync(() => isSome(option) && this.scope.cancel(option.value))
+        return Sync(() => isSome(option) && this.scope.cancel(option.value))
       })
 
       this.releasing = false
@@ -225,7 +225,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
           break
         }
 
-        return exit.right
+        return exit.value
       }
       /**
        * Runs an Fx which returns a new ProcessorInstruction

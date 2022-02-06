@@ -1,5 +1,5 @@
 import { Cause } from '@/Cause'
-import { sync } from '@/Disposable'
+import { Sync } from '@/Disposable'
 import { Sink, tryEnd, tryEvent } from '@/Sink'
 import * as Stream from '@/Stream'
 import { StreamContext } from '@/Stream'
@@ -56,7 +56,7 @@ export class Subject<R, E, A> implements SubjectSink<E, A>, Stream.Stream<R, E, 
 
     this.observers.add(observer)
 
-    return sync(() => this.observers.delete(observer))
+    return Sync(() => this.observers.delete(observer))
   }
 }
 

@@ -1,9 +1,8 @@
-import { flow, pipe } from 'fp-ts/function'
-import { Option } from 'fp-ts/Option'
-
+import { flow, pipe } from '@/function'
 import * as Fx from '@/Fx'
 import { from, Has, has } from '@/Has'
 import * as Layer from '@/Layer'
+import { Option } from '@/Option'
 
 import { Service } from './Service'
 

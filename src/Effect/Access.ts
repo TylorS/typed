@@ -1,5 +1,4 @@
-import { flow } from 'fp-ts/function'
-
+import { flow } from '@/function'
 import type { Fx } from '@/Fx'
 
 import { of } from './FromExit'

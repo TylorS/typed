@@ -1,6 +1,5 @@
-import { Option } from 'fp-ts/Option'
-
 import { Fx, Of } from '@/Fx'
+import { Option } from '@/Option'
 
 export interface Queue<R, E, A, R2 = R, E2 = E, B = A> {
   readonly capacity: number

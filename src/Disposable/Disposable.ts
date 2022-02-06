@@ -1,4 +1,4 @@
-import { constVoid } from 'fp-ts/function'
+import { constVoid } from '@/function'
 
 export interface Disposable {
   readonly dispose: readonly ['Sync', () => any] | readonly ['Async', () => Promise<any>]
@@ -12,21 +12,21 @@ export interface AsyncDisposable {
   readonly dispose: readonly ['Async', () => Promise<any>]
 }
 
-export const sync = (dispose: () => any): SyncDisposable => ({
+export const Sync = (dispose: () => any): SyncDisposable => ({
   dispose: ['Sync', dispose],
 })
 
-export const async = (dispose: () => Promise<any>): AsyncDisposable => ({
+export const Async = (dispose: () => Promise<any>): AsyncDisposable => ({
   dispose: ['Async', dispose],
 })
 
-export const none: Disposable = sync(constVoid)
+export const None: Disposable = Sync(constVoid)
 
 export function dispose(d: SyncDisposable): any
 export function dispose(d: AsyncDisposable): Promise<any>
 export function dispose(d: Disposable): any | Promise<any>
 export function dispose(d: Disposable): any | Promise<any> {
-  return d === none ? undefined : d.dispose[1]()
+  return d === None ? undefined : d.dispose[1]()
 }
 
 export const checkIsAsync = (d: Disposable): d is AsyncDisposable => d.dispose[0] === 'Async'
@@ -37,13 +37,13 @@ export function disposeAll(disposables: ReadonlyArray<Disposable>): Disposable {
 }
 
 function disposeAllAsync(disposables: ReadonlyArray<Disposable>): Disposable {
-  return async(async () => {
+  return Async(async () => {
     await Promise.all(disposables.map(dispose))
   })
 }
 
 function disposeAllSync(disposables: ReadonlyArray<Disposable>): Disposable {
-  return sync(() => disposables.forEach(dispose))
+  return Sync(() => disposables.forEach(dispose))
 }
 
 export class DisposableQueue implements Disposable {
@@ -84,7 +84,7 @@ export class DisposableQueue implements Disposable {
 
     this.#queue.add(d)
 
-    return sync(() => {
+    return Sync(() => {
       this.#queue.delete(d)
     })
   }

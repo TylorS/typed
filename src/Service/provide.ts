@@ -1,5 +1,4 @@
-import { pipe } from 'fp-ts/function'
-
+import { pipe } from '@/function'
 import * as Fx from '@/Fx'
 import { Has, has } from '@/Has'
 

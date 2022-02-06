@@ -1,8 +1,7 @@
-import { pipe } from 'fp-ts/function'
-import { isSome } from 'fp-ts/Option'
-
 import { withinContext } from '@/Effect'
+import { pipe } from '@/function'
 import { Fx, getContext } from '@/Fx'
+import { isSome } from '@/Option'
 
 export const getRootContext = <E>() =>
   Fx(function* () {

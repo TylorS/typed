@@ -1,6 +1,5 @@
-import { unsafeCoerce } from 'fp-ts/function'
-
 import { Branded } from '@/Branded'
+import { unsafeCoerce } from '@/function'
 
 /**
  * A Service is a unique symbol branded with its name and the implementation of that Service A.

@@ -1,13 +1,12 @@
-import { match } from 'fp-ts/Either'
-import { none, Option } from 'fp-ts/Option'
-
 import { prettyPrint } from '@/Cause'
 import { Disposable } from '@/Disposable'
 import { ask, getContext, getScope } from '@/Effect'
+import { match } from '@/Either'
 import { Exit } from '@/Exit'
 import * as Context from '@/FiberContext'
 import { makeFiberRefLocals } from '@/FiberRef'
 import { EFx, Fx } from '@/Fx'
+import { None, Option } from '@/Option'
 import * as Scheduler from '@/Scheduler'
 import { extendScope, LocalScope, Scope } from '@/Scope'
 import { Trace } from '@/Trace'
@@ -110,7 +109,7 @@ export class Runtime<R, E> {
         }),
       options.scope ? extendScope(options.scope) : new LocalScope(),
       options.processors ?? eagerProcessors,
-      options.parentTrace ?? none,
+      options.parentTrace ?? None,
       options.shouldTrace ?? false,
       options.maxOps ?? 2048,
     )

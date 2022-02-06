@@ -1,7 +1,6 @@
-import { pipe } from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
-
 import { FiberId } from '@/FiberId'
+import { pipe } from '@/function'
+import * as O from '@/Option'
 import { Trace } from '@/Trace/Trace'
 
 /**

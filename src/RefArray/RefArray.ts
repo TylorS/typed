@@ -1,11 +1,10 @@
-import { Endomorphism } from 'fp-ts/Endomorphism'
-import { flow, pipe } from 'fp-ts/function'
-import * as F from 'fp-ts/Functor'
-import { none, Option, some } from 'fp-ts/Option'
-import * as RA from 'fp-ts/ReadonlyArray'
-
+import { Endomorphism } from '@/Endomorphism'
 import { FiberRefOptions } from '@/FiberRef'
+import { flow, pipe } from '@/function'
+import * as F from '@/Functor'
 import * as Fx from '@/Fx'
+import { None, Option, Some } from '@/Option'
+import * as RA from '@/ReadonlyArray'
 import * as Ref from '@/Ref'
 
 export interface RefArray<R, E, A, Input = readonly A[]>
@@ -56,14 +55,14 @@ export const unshift = <R, E, A>(ra: RefArray<R, E, A>): Fx.Fx<R, E, Option<A>> 
     const values = yield* ra.get
 
     if (values.length === 0) {
-      return none
+      return None
     }
 
     const [first, ...rest] = values
 
     yield* ra.update(() => Fx.of(rest))
 
-    return some(first)
+    return Some(first)
   })
 
 /**
@@ -74,14 +73,14 @@ export const pop = <R, E, A>(ra: RefArray<R, E, A>): Fx.Fx<R, E, Option<A>> =>
     const values = yield* ra.get
 
     if (values.length === 0) {
-      return none
+      return None
     }
 
     const lastIndex = values.length - 1
 
     yield* ra.update(() => Fx.of(values.slice(0, lastIndex)))
 
-    return some(values[lastIndex])
+    return Some(values[lastIndex])
   })
 
 export const size = <R, E, A, I>(ra: RefArray<R, E, A, I>) => pipe(ra.get, Fx.map(RA.size))

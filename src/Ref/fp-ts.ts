@@ -1,17 +1,13 @@
-import { Functor4 } from 'fp-ts/Functor'
+import * as F from '@/Functor'
+import { HKT, Params } from '@/HKT'
 
 import { map } from './map'
 import { Ref } from './Ref'
 
-export const URI = '@typed/fp/Ref'
-export type URI = '@typed/fp/Ref'
-
-declare module 'fp-ts/HKT' {
-  export interface URItoKind4<S, R, E, A> {
-    [URI]: Ref<S, R, E, A>
-  }
+export interface RefHKT extends HKT {
+  readonly type: Ref<this[Params.S], this[Params.R], this[Params.E], this[Params.A]>
 }
 
-export const Functor: Functor4<URI> = {
-  map: map,
+export const Functor: F.Functor<RefHKT> = {
+  map,
 }

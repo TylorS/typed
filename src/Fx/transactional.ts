@@ -1,5 +1,4 @@
-import { isRight } from 'fp-ts/Either'
-
+import { isRight } from '@/Either'
 import { Exit } from '@/Exit'
 
 import { fork } from './Effect'

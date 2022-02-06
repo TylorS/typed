@@ -1,9 +1,8 @@
-import { none } from 'fp-ts/Option'
-
 import { Cause, defaultRenderer, prettyPrint } from '@/Cause'
 import { makeFiberId } from '@/FiberId'
 import { makeFiberRefLocals } from '@/FiberRef'
 import { increment, MutableRef } from '@/MutableRef'
+import { None } from '@/Option'
 import type { Scheduler } from '@/Scheduler/Scheduler'
 
 import { FiberContext } from './FiberContext'
@@ -28,6 +27,6 @@ export function make<E>(options: FiberContextOptions<E>): FiberContext<E> {
     sequenceNumber,
     scheduler,
     locals,
-    parent: options.parent ?? none,
+    parent: options.parent ?? None,
   }
 }

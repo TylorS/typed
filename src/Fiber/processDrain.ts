@@ -1,12 +1,11 @@
-import { left, match } from 'fp-ts/Either'
-import { constVoid, pipe } from 'fp-ts/function'
-import { isSome, none, some } from 'fp-ts/Option'
-
 import { prettyPrint } from '@/Cause'
-import { DisposableQueue, sync } from '@/Disposable'
+import { DisposableQueue, Sync } from '@/Disposable'
 import { Drain } from '@/Effect'
+import { Left, match } from '@/Either'
 import { Exit } from '@/Exit'
+import { constVoid, pipe } from '@/function'
 import { dispose } from '@/Fx'
+import { isSome, None, Some } from '@/Option'
 import { LocalScope } from '@/Scope'
 import { Sink } from '@/Sink'
 
@@ -21,13 +20,13 @@ export const processDrain = <R, E, A>(
   const inner = new DisposableQueue()
   const key = processor.scope.ensure(() => dispose(inner))
 
-  inner.add(sync(() => isSome(key) && processor.scope.cancel(key.value)))
+  inner.add(Sync(() => isSome(key) && processor.scope.cancel(key.value)))
   inner.add(
     drain.input.run(makeDrainSink(processor, processor.scope), {
       resources: processor.resources,
       scope: processor.scope,
       fiberContext: processor.fiberContext,
-      parentTrace: processor.shouldTrace ? some(processor.captureStackTrace()) : none,
+      parentTrace: processor.shouldTrace ? Some(processor.captureStackTrace()) : None,
     }),
   )
 
@@ -69,7 +68,7 @@ function makeDrainSink<R, E, A>(
 
   return {
     event: constVoid,
-    error: (event) => close(left(event.cause)),
+    error: (event) => close(Left(event.cause)),
     end: constVoid,
   }
 }

@@ -1,5 +1,4 @@
-import { pipe } from 'fp-ts/function'
-
+import { pipe } from '@/function'
 import { Fx } from '@/Fx'
 
 import { chain } from './chain'

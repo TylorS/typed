@@ -1,8 +1,7 @@
-import { identity } from 'fp-ts/function'
-
 import { Async } from '@/Async'
 import { fromAsync, fromIO } from '@/Effect'
 import { Exit } from '@/Exit'
+import { identity } from '@/function'
 
 import { Fiber } from './Fiber'
 import { InstructionProcessor } from './InstructionProcessor'

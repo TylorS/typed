@@ -1,6 +1,5 @@
-import { isRight } from 'fp-ts/Either'
-
 import { fromExit, Join } from '@/Effect'
+import { isRight } from '@/Either'
 import { Fx } from '@/Fx'
 
 import { FxInstruction } from './Processor'

@@ -1,7 +1,7 @@
 import { deepStrictEqual } from 'assert'
-import { pipe } from 'fp-ts/function'
 import { describe } from 'mocha'
 
+import { pipe } from '@/function'
 import * as Fx from '@/Fx'
 import { formatSinkTraceElement } from '@/Sink'
 

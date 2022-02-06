@@ -1,7 +1,6 @@
-import { isLeft } from 'fp-ts/Either'
-import { isSome } from 'fp-ts/Option'
-
 import { fromIO, getScope } from '@/Effect'
+import { isLeft } from '@/Either'
+import { isSome } from '@/Option'
 
 import { Fx } from './Fx'
 

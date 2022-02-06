@@ -1,8 +1,7 @@
-import { flow, pipe } from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
-import * as RA from 'fp-ts/ReadonlyArray'
-
+import { flow, pipe } from '@/function'
 import * as Fx from '@/Fx'
+import * as O from '@/Option'
+import * as RA from '@/ReadonlyArray'
 
 import { Dequeue, Queue } from './Queue'
 
