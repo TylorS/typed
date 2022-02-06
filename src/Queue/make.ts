@@ -13,7 +13,7 @@ import { QueueStrategy } from './QueueStrategy'
 import { makeSlidingStategy } from './SlidingStrategy'
 import { makeSuspendStrategy } from './SuspendStrategy'
 import { makeUnboundedStategy } from './UnboundedStrategy'
-import { makeWaitFor } from './WaitFor'
+import { makeWaitFor, WaitFor } from './WaitFor'
 
 export function make<A>(strategy: QueueStrategy<A>): Queue<unknown, never, A> {
   const mutableQueue = makeMutableQueue<A>()
@@ -41,9 +41,7 @@ export function make<A>(strategy: QueueStrategy<A>): Queue<unknown, never, A> {
       const size = takers.size()
 
       // If there are takers waiting to dequeue a value push to them first
-      for (let i = 0; i < Math.min(size, values.length); ++i) {
-        takers.next(Fx.of(values.shift()!))
-      }
+      runRemaining(values, takers)
 
       // Offer any additional values leftover
       if (isNonEmpty(values)) {
@@ -86,7 +84,9 @@ export function make<A>(strategy: QueueStrategy<A>): Queue<unknown, never, A> {
       return value
     }
 
-    return yield* Future.wait(takers.waitFor(1)[0])
+    const [future] = takers.waitFor(1)
+
+    return yield* Future.wait(future)
   })
 
   const dequeueAll = Fx.Fx(function* () {
@@ -100,7 +100,6 @@ export function make<A>(strategy: QueueStrategy<A>): Queue<unknown, never, A> {
     for (const value of current) {
       offers.next(Fx.of(value))
     }
-
     return current
   })
 
@@ -151,3 +150,10 @@ export const unbounded = flow(makeUnboundedStategy, make)
 export const dropping = flow(makeDroppingStategy, make)
 export const sliding = flow(makeSlidingStategy, make)
 export const suspend = flow(makeSuspendStrategy, make)
+
+const runRemaining = <A>(current: A[], waitFor: WaitFor<A>) => {
+  // Let any suspended offerings resume
+  for (let i = 0; i < Math.min(current.length, waitFor.size()); ++i) {
+    waitFor.next(Fx.of(current.shift()!))
+  }
+}

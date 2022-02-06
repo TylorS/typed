@@ -203,6 +203,11 @@
       "import": "./esm/Clock/Clock.js",
       "types": "./esm/Clock/Clock.d.ts"
     },
+    "./Codec": {
+      "require": "./cjs/Codec/index.js",
+      "import": "./esm/Codec/index.js",
+      "types": "./esm/Codec/index.d.ts"
+    },
     "./Comonad": {
       "require": "./cjs/Comonad/index.js",
       "import": "./esm/Comonad/index.js",
@@ -242,6 +247,11 @@
       "require": "./cjs/DataThese/index.js",
       "import": "./esm/DataThese/index.js",
       "types": "./esm/DataThese/index.d.ts"
+    },
+    "./Decoder": {
+      "require": "./cjs/Decoder/index.js",
+      "import": "./esm/Decoder/index.js",
+      "types": "./esm/Decoder/index.d.ts"
     },
     "./Disposable": {
       "require": "./cjs/Disposable/index.js",
@@ -397,6 +407,11 @@
       "require": "./cjs/EitherT/index.js",
       "import": "./esm/EitherT/index.js",
       "types": "./esm/EitherT/index.d.ts"
+    },
+    "./Encoder": {
+      "require": "./cjs/Encoder/index.js",
+      "import": "./esm/Encoder/index.js",
+      "types": "./esm/Encoder/index.d.ts"
     },
     "./Endomorphism": {
       "require": "./cjs/Endomorphism/index.js",
@@ -1198,15 +1213,45 @@
       "import": "./esm/RefArray/RefArray.js",
       "types": "./esm/RefArray/RefArray.d.ts"
     },
+    "./RefData": {
+      "require": "./cjs/RefData/index.js",
+      "import": "./esm/RefData/index.js",
+      "types": "./esm/RefData/index.d.ts"
+    },
+    "./RefDataEither": {
+      "require": "./cjs/RefDataEither/index.js",
+      "import": "./esm/RefDataEither/index.js",
+      "types": "./esm/RefDataEither/index.d.ts"
+    },
+    "./RefDataThese": {
+      "require": "./cjs/RefDataThese/index.js",
+      "import": "./esm/RefDataThese/index.js",
+      "types": "./esm/RefDataThese/index.d.ts"
+    },
     "./RefMap": {
       "require": "./cjs/RefMap/index.js",
       "import": "./esm/RefMap/index.js",
       "types": "./esm/RefMap/index.d.ts"
     },
+    "./RefOption": {
+      "require": "./cjs/RefOption/index.js",
+      "import": "./esm/RefOption/index.js",
+      "types": "./esm/RefOption/index.d.ts"
+    },
     "./RefReadonlyMap": {
       "require": "./cjs/RefReadonlyMap/index.js",
       "import": "./esm/RefReadonlyMap/index.js",
       "types": "./esm/RefReadonlyMap/index.d.ts"
+    },
+    "./RefReadonlySet": {
+      "require": "./cjs/RefReadonlySet/index.js",
+      "import": "./esm/RefReadonlySet/index.js",
+      "types": "./esm/RefReadonlySet/index.d.ts"
+    },
+    "./RefSet": {
+      "require": "./cjs/RefSet/index.js",
+      "import": "./esm/RefSet/index.js",
+      "types": "./esm/RefSet/index.d.ts"
     },
     "./Refinement": {
       "require": "./cjs/Refinement/index.js",

@@ -1,7 +1,7 @@
 import { deepStrictEqual, ok } from 'assert'
 
 import { Completed, Suspended } from '@/Fiber'
-import { forkAll, Fx, runMain, suspend, tuple } from '@/Fx'
+import * as Fx from '@/Fx'
 
 import * as Queue from './make'
 
@@ -12,13 +12,30 @@ describe(__filename, () => {
         const queue = Queue.unbounded<number>()
         const items = [1, 2, 3, 4] as const
 
-        const test = Fx(function* () {
+        const test = Fx.Fx(function* () {
           // Returns true because all items are queueable
           ok(yield* queue.enqueue(...items))
           deepStrictEqual(yield* queue.dequeueAll, items)
         })
 
-        await runMain(test)
+        await Fx.runMain(test)
+      })
+
+      it('keeps track of any waiting dequeues', async () => {
+        const queue = Queue.unbounded<number>()
+        const items = [1, 2, 3, 4] as const
+
+        const test = Fx.Fx(function* () {
+          const fiber = yield* Fx.fork(queue.dequeue)
+
+          // Returns true because all items are queueable
+          ok(yield* queue.enqueue(...items))
+
+          deepStrictEqual(yield* Fx.join(fiber), 1)
+          deepStrictEqual(yield* queue.dequeueAll, items.slice(1))
+        })
+
+        await Fx.runMain(test)
       })
     })
 
@@ -27,14 +44,14 @@ describe(__filename, () => {
         const queue = Queue.dropping<number>(2)
         const items = [1, 2, 3, 4] as const
 
-        const test = Fx(function* () {
+        const test = Fx.Fx(function* () {
           // Returns false because not all items are queueable
           ok(!(yield* queue.enqueue(...items)))
 
           deepStrictEqual(yield* queue.dequeueAll, [1, 2])
         })
 
-        await runMain(test)
+        await Fx.runMain(test)
       })
     })
 
@@ -43,14 +60,14 @@ describe(__filename, () => {
         const queue = Queue.sliding<number>(2)
         const items = [1, 2, 3, 4] as const
 
-        const test = Fx(function* () {
+        const test = Fx.Fx(function* () {
           // Returns false because not all items are queueable
           ok(!(yield* queue.enqueue(...items)))
 
           deepStrictEqual(yield* queue.dequeueAll, [3, 4])
         })
 
-        await runMain(test)
+        await Fx.runMain(test)
       })
     })
 
@@ -59,10 +76,10 @@ describe(__filename, () => {
         const queue = Queue.suspend<number>(2)
         const items = [1, 2, 3, 4] as const
 
-        const test = Fx(function* () {
-          const fibers = yield* forkAll(items.map((i) => queue.enqueue(i)))
+        const test = Fx.Fx(function* () {
+          const fibers = yield* Fx.forkAll(items.map((i) => queue.enqueue(i)))
 
-          const getStatuses = () => tuple(fibers.map((f) => f.status))
+          const getStatuses = () => Fx.tuple(fibers.map((f) => f.status))
 
           deepStrictEqual(yield* getStatuses(), [
             Suspended(() => true),
@@ -72,7 +89,7 @@ describe(__filename, () => {
           ])
 
           // Allow the fibers to start processing
-          yield* suspend()
+          yield* Fx.suspend()
 
           deepStrictEqual(yield* getStatuses(), [
             Completed,
@@ -97,7 +114,7 @@ describe(__filename, () => {
           deepStrictEqual(yield* queue.dequeueAll, [3, 4])
         })
 
-        await runMain(test)
+        await Fx.runMain(test)
       })
     })
   })
