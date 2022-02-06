@@ -18,12 +18,6 @@ export interface HKT {
   readonly [A]: unknown
 }
 
-export type KindParams =
-  | readonly [any]
-  | readonly [any, any]
-  | readonly [any, any, any]
-  | readonly [any, any, any, any]
-
 export type Kind<T extends HKT, S, R, E, A> = (T & {
   readonly [S]: S
   readonly [R]: R
