@@ -8,7 +8,7 @@ export type HAS = typeof HAS
  */
 export interface Has<Name extends string, A> {
   readonly [HAS]: {
-    readonly [_ in Name]: A
+    readonly [_ in Name]: () => A
   }
 }
 
