@@ -1,4 +1,4 @@
-import { HKT, HKT2, HKT3, HKT4, Kind, Kind2, Kind3, Kind4, Params, TypeOf } from '@/HKT'
+import { HKT, HKT2, HKT3, HKT4, Kind, Kind2, Kind3, Kind4, Params, TypeOf } from '@/Prelude/HKT'
 
 export interface Pointed<T extends HKT> {
   readonly of: <A>(value: A) => TypeOf<Omit<T, Params.A> & { readonly [Params.A]: A }>

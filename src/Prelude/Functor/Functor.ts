@@ -18,7 +18,7 @@ import {
   Kind8,
   Kind9,
   Kind10,
-} from '@/HKT'
+} from '@/Prelude/HKT'
 
 export interface Functor<T extends HKT> {
   readonly map: <A, B>(f: (a: A) => B) => (kind: Kind<T, A>) => Kind<T, B>

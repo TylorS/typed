@@ -1,4 +1,4 @@
-import { DeepEquals } from '../src/Eq'
+import { DeepEquals } from '../src/Prelude/Eq'
 
 const hktParamNames = ['A', 'E', 'R', 'S', 'U', 'V', 'W', 'X', 'Y', 'Z'] as const
 

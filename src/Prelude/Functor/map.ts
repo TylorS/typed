@@ -1,4 +1,4 @@
-import { Unary } from '@/function'
+import { Unary } from '@/Prelude/function'
 import {
   HKT,
   HKT2,
@@ -20,7 +20,7 @@ import {
   Kind8,
   Kind9,
   Kind10,
-} from '@/HKT'
+} from '@/Prelude/HKT'
 
 import {
   Functor,
