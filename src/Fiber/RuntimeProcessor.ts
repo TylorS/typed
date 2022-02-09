@@ -1,10 +1,10 @@
 import { Traced } from '@/Cause'
 import { Async, Disposable, DisposableQueue, dispose, disposeAll, Sync } from '@/Disposable'
-import { isLeft, Left, match } from '@/Either'
 import { disposed, Exit, then, unexpected } from '@/Exit'
 import { FiberId } from '@/FiberId'
-import { pipe } from '@/function'
-import { isNone, isSome, None, Option, Some } from '@/Option'
+import { isLeft, Left, match } from '@/Prelude/Either'
+import { pipe } from '@/Prelude/function'
+import { isNone, isSome, None, Option, Some } from '@/Prelude/Option'
 import { InterruptableStatus } from '@/Scope/InterruptableStatus'
 import { Trace } from '@/Trace'
 

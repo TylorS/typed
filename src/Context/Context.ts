@@ -1,8 +1,8 @@
 import * as FiberRef from '@/FiberRef'
 import { findProvider } from '@/FiberRef'
 import { withProvider } from '@/FiberRef/withProvider'
-import { flow, pipe } from '@/function'
-import { Option } from '@/Option'
+import { flow, pipe } from '@/Prelude/function'
+import { Option } from '@/Prelude/Option'
 import * as Ref from '@/Ref'
 import * as Stream from '@/Stream'
 

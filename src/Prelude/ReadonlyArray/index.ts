@@ -1,6 +1,6 @@
-import { Unary } from '@/function'
-import * as F from '@/Functor'
-import { HKT, Params } from '@/HKT'
+import { Unary } from '@/Prelude/function'
+import * as F from '@/Prelude/Functor'
+import { HKT, Params } from '@/Prelude/HKT'
 
 export interface ReadonlyArrayHKT extends HKT {
   readonly type: ReadonlyArray<this[Params.A]>

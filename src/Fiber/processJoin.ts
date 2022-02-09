@@ -1,6 +1,6 @@
 import { fromExit, Join } from '@/Effect'
-import { isRight } from '@/Either'
 import { Fx } from '@/Fx'
+import { isRight } from '@/Prelude/Either'
 
 import { FxInstruction } from './Processor'
 

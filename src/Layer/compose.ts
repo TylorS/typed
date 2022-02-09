@@ -1,5 +1,5 @@
-import { pipe } from '@/function'
 import { Fx, mergeResources, provide } from '@/Fx'
+import { pipe } from '@/Prelude/function'
 
 import { idOf } from './idOf'
 import { Layer, LayerId } from './Layer'

@@ -1,9 +1,9 @@
 import { FiberId } from '@/FiberId'
-import { flow, pipe } from '@/function'
 import * as Future from '@/Future'
 import * as Fx from '@/Fx'
-import { isNonEmpty } from '@/NonEmptyArray'
-import { isSome, None, Option, Some } from '@/Option'
+import { flow, pipe } from '@/Prelude/function'
+import { isNonEmpty } from '@/Prelude/NonEmptyArray'
+import { isSome, None, Option, Some } from '@/Prelude/Option'
 import * as Ref from '@/Ref'
 
 import { makeDroppingStategy } from './DroppingStrategy'

@@ -1,5 +1,5 @@
 import { FiberId, prettyFiberId } from '@/FiberId'
-import { isNone, Option } from '@/Option'
+import { isNone, Option } from '@/Prelude/Option'
 import * as Sync from '@/Sync'
 
 export class Trace {

@@ -2,11 +2,11 @@ import { U } from 'ts-toolbelt'
 import { Equals } from 'ts-toolbelt/out/Any/Equals'
 
 import { ToIntersection } from '@/Effect/ToIntersection'
-import { pipe } from '@/function'
 import * as Fx from '@/Fx'
 import { Has, has } from '@/Has'
 import * as Layer from '@/Layer'
 import { LayerId } from '@/Layer'
+import { pipe } from '@/Prelude/function'
 
 import { Service } from './Service'
 

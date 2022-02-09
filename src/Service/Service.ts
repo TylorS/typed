@@ -1,5 +1,5 @@
-import { Branded } from '@/Branded'
-import { unsafeCoerce } from '@/function'
+import { Branded } from '@/Prelude/Branded'
+import { unsafeCoerce } from '@/Prelude/function'
 
 /**
  * A Service is a unique symbol branded with its name and the implementation of that Service A.

@@ -10,13 +10,13 @@ import {
   TupleOutput,
   TupleResources,
 } from '@/Effect'
-import { Either, Left } from '@/Either'
 import { Exit } from '@/Exit'
 import { Fiber } from '@/Fiber/Fiber'
 import { RuntimeOptions } from '@/Fiber/Runtime'
 import { FiberContext } from '@/FiberContext'
 import { FiberId } from '@/FiberId'
-import { IO } from '@/IO'
+import { Either, Left } from '@/Prelude/Either'
+import { IO } from '@/Prelude/IO'
 import { LocalScope } from '@/Scope'
 import { Trace } from '@/Trace'
 

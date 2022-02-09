@@ -1,6 +1,6 @@
 import { Fiber } from '@/Fiber'
 import * as Fx from '@/Fx'
-import { isSome, None, Option, Some } from '@/Option'
+import { isSome, None, Option, Some } from '@/Prelude/Option'
 import * as Ref from '@/Ref'
 
 import { Layer, LayerId } from './Layer'

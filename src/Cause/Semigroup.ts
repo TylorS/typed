@@ -1,9 +1,9 @@
-import * as Semigroup from '@/Semigroup'
+import * as Semigroup from '@/Prelude/Semigroup'
 
 import { Both, Cause, Then } from './Cause'
 
 export const SemigroupBoth: Semigroup.Semigroup<Cause<unknown>> = {
-  concat: (second) => (first) => Both(first, second),
+  concat: (second: Cause<unknown>) => (first: Cause<unknown>) => Both(first, second),
 }
 
 export const getSemigroupBoth = <E>() => SemigroupBoth as Semigroup.Semigroup<Cause<E>>

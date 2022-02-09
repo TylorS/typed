@@ -1,7 +1,7 @@
 import { withinContext } from '@/Effect'
 import { FiberContext } from '@/FiberContext'
-import { pipe } from '@/function'
 import { Fx } from '@/Fx'
+import { pipe } from '@/Prelude/function'
 
 import { FiberRef } from './FiberRef'
 import { findProvider } from './findProvider'

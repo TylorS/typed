@@ -1,8 +1,8 @@
 import { isUnexpected } from '@/Cause'
 import { fromExit, Refine, result } from '@/Effect'
-import { isLeft } from '@/Either'
 import { expected } from '@/Exit'
 import { Fx } from '@/Fx'
+import { isLeft } from '@/Prelude/Either'
 
 import { FxInstruction } from './Processor'
 

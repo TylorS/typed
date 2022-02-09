@@ -1,6 +1,6 @@
 import { FiberId } from '@/FiberId'
-import { pipe } from '@/function'
-import * as O from '@/Option'
+import { pipe } from '@/Prelude/function'
+import * as O from '@/Prelude/Option'
 import { Trace } from '@/Trace/Trace'
 
 /**

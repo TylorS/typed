@@ -1,7 +1,7 @@
 import { Async } from '@/Async'
 import { fromAsync, fromIO } from '@/Effect'
 import { Exit } from '@/Exit'
-import { identity } from '@/function'
+import { identity } from '@/Prelude/function'
 
 import { Fiber } from './Fiber'
 import { InstructionProcessor } from './InstructionProcessor'

@@ -1,7 +1,7 @@
 import { FiberId } from '@/FiberId'
-import { pipe } from '@/function'
 import { complete, Future, pending } from '@/Future'
 import { disposed, Fx } from '@/Fx'
+import { pipe } from '@/Prelude/function'
 
 /**
  * A Future Queue is a synchronously used Queue for managing Futures that need to be handled in FIFO ordering.

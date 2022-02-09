@@ -1,6 +1,6 @@
-import { pipe } from '@/function'
 import * as Fx from '@/Fx'
 import { Has, has } from '@/Has'
+import { pipe } from '@/Prelude/function'
 
 import { ExtractAllErrors, ExtractAllResources } from './implement'
 import { Service } from './Service'

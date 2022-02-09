@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
-import { Branded } from '@/Branded'
 import { fromIO } from '@/Effect'
 import * as Exit from '@/Exit'
 import { of } from '@/Fx/Effect'
 import { Fx, Of } from '@/Fx/Fx'
 import { decrement, increment, MutableRef } from '@/MutableRef'
-import { isNone, isSome, None, Option, Some } from '@/Option'
+import { Branded } from '@/Prelude/Branded'
+import { isNone, isSome, None, Option, Some } from '@/Prelude/Option'
 
 import { InterruptableStatus } from './InterruptableStatus'
 

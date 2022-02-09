@@ -1,6 +1,6 @@
-import { isLeft } from '@/Either'
-import { flow, pipe } from '@/function'
 import * as Fx from '@/Fx'
+import { isLeft } from '@/Prelude/Either'
+import { flow, pipe } from '@/Prelude/function'
 
 import { make, Stream } from './Stream'
 

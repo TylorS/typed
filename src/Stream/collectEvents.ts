@@ -1,6 +1,6 @@
-import { pipe } from '@/function'
 import { complete, pending, wait } from '@/Future'
 import { Fx, of } from '@/Fx'
+import { pipe } from '@/Prelude/function'
 import { EventElement } from '@/Sink'
 
 import { drain } from './drain'

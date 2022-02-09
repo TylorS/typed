@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
 import { describe } from 'mocha'
 
-import { pipe } from '@/function'
 import * as Fx from '@/Fx'
+import { pipe } from '@/Prelude/function'
 
 import { collectEvents } from './collectEvents'
 import { ask } from './fromFx'

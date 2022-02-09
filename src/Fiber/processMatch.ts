@@ -1,7 +1,7 @@
 import { isExpected } from '@/Cause'
 import { Match, result } from '@/Effect'
-import { isRight } from '@/Either'
 import { fromCause, Fx } from '@/Fx'
+import { isRight } from '@/Prelude/Either'
 
 import { InstructionProcessor } from './InstructionProcessor'
 import { FxInstruction } from './Processor'

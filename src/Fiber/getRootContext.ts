@@ -1,7 +1,7 @@
 import { withinContext } from '@/Effect'
-import { pipe } from '@/function'
 import { Fx, getContext } from '@/Fx'
-import { isSome } from '@/Option'
+import { pipe } from '@/Prelude/function'
+import { isSome } from '@/Prelude/Option'
 
 export const getRootContext = <E>() =>
   Fx(function* () {

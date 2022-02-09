@@ -4,7 +4,7 @@ import { describe } from 'mocha'
 import { prettyPrint } from '@/Cause'
 import { fromExit, fromIO } from '@/Effect'
 import { result } from '@/Effect/Result'
-import { isLeft, isRight } from '@/Either'
+import { isLeft, isRight } from '@/Prelude/Either'
 
 import { ask } from './Effect'
 import * as Fx from './Fx'

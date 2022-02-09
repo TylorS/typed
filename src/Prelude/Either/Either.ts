@@ -1,5 +1,5 @@
-import { Left } from '@/Left'
-import { Right } from '@/Right'
+import { Left } from '@/Prelude/Left'
+import { Right } from '@/Prelude/Right'
 
 export type Either<E, A> = Left<E> | Right<A>
 

@@ -1,5 +1,5 @@
 import { Of } from '@/Fx'
-import { NonEmptyArray } from '@/NonEmptyArray'
+import { NonEmptyArray } from '@/Prelude/NonEmptyArray'
 
 import { WaitFor } from './WaitFor'
 

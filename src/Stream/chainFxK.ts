@@ -1,5 +1,5 @@
-import { pipe } from '@/function'
 import { Fx } from '@/Fx'
+import { pipe } from '@/Prelude/function'
 
 import { chain } from './chain'
 import { fromFx } from './fromFx'

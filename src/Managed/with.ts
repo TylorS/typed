@@ -1,7 +1,7 @@
-import { Right } from '@/Either'
-import { pipe } from '@/function'
 import * as Fx from '@/Fx'
-import { isSome } from '@/Option'
+import { Right } from '@/Prelude/Either'
+import { pipe } from '@/Prelude/function'
+import { isSome } from '@/Prelude/Option'
 
 import { Managed } from './Managed'
 import { ReleaseMap } from './ReleaseMap'

@@ -1,9 +1,9 @@
 import { Disposable } from '@/Disposable'
 import * as D from '@/Effect/Drain'
-import { flow } from '@/function'
 import { Fx } from '@/Fx'
 import { chain, never } from '@/Fx/Effect'
 import { forkDaemon } from '@/Fx/forkDaemon'
+import { flow } from '@/Prelude/function'
 
 import { Stream } from './Stream'
 

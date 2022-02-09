@@ -1,5 +1,5 @@
 import { Fx, Of } from '@/Fx'
-import { Option } from '@/Option'
+import { Option } from '@/Prelude/Option'
 
 export interface Queue<R, E, A, R2 = R, E2 = E, B = A> {
   readonly capacity: number

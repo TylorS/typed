@@ -1,7 +1,7 @@
 import { Sync } from '@/Disposable'
 import * as FE from '@/Effect/FromExit'
 import { success } from '@/Exit'
-import { constVoid } from '@/function'
+import { constVoid } from '@/Prelude/function'
 
 import { Fiber, Status } from './Fiber'
 

@@ -1,6 +1,6 @@
 import { getContext } from '@/Effect'
 import { Fx } from '@/Fx'
-import { isSome } from '@/Option'
+import { isSome } from '@/Prelude/Option'
 
 import { FiberRef } from './FiberRef'
 

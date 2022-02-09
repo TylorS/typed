@@ -1,6 +1,6 @@
 import { Disposable } from '@/Disposable'
-import { pipe } from '@/function'
 import { Fx } from '@/Fx'
+import { pipe } from '@/Prelude/function'
 
 import { drain } from './drain'
 import { Stream } from './Stream'

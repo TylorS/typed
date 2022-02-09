@@ -1,6 +1,6 @@
 import { fromIO, getScope } from '@/Effect'
-import { isLeft } from '@/Either'
-import { isSome } from '@/Option'
+import { isLeft } from '@/Prelude/Either'
+import { isSome } from '@/Prelude/Option'
 
 import { Fx } from './Fx'
 

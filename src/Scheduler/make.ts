@@ -5,7 +5,7 @@ import { Runtime, RuntimeOptions } from '@/Fiber/Runtime'
 import { RuntimeProcessor } from '@/Fiber/RuntimeProcessor'
 import * as Fx from '@/Fx'
 import { join } from '@/Fx'
-import { None, Option, Some } from '@/Option'
+import { None, Option, Some } from '@/Prelude/Option'
 import { StreamContext } from '@/Stream'
 import { makeSetTimeoutTimer, Timer } from '@/Timer'
 

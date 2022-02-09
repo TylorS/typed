@@ -2,9 +2,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { Exit } from '@/Exit'
-import { pipe } from '@/function'
 import * as Fx from '@/Fx'
-import { fromNullable, None, Option, Some } from '@/Option'
+import { pipe } from '@/Prelude/function'
+import { fromNullable, None, Option, Some } from '@/Prelude/Option'
 import { Finalizer } from '@/Scope'
 
 /**

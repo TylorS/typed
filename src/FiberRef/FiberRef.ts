@@ -1,7 +1,7 @@
-import { DeepEquals, Eq } from '@/Eq'
 import { Fx } from '@/Fx'
-import { Magma, Second } from '@/Magma'
-import { Option, Some } from '@/Option'
+import { DeepEquals, Eq } from '@/Prelude/Eq'
+import { Magma, Second } from '@/Prelude/Magma'
+import { Option, Some } from '@/Prelude/Option'
 
 export class FiberRef<R, E, A> {
   constructor(

@@ -1,4 +1,4 @@
-import { constVoid } from '@/function'
+import { constVoid } from '@/Prelude/function'
 
 export interface Disposable {
   readonly dispose: readonly ['Sync', () => any] | readonly ['Async', () => Promise<any>]

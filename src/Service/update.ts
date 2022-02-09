@@ -1,8 +1,8 @@
-import { flow, pipe } from '@/function'
 import * as Fx from '@/Fx'
 import { from, Has, has } from '@/Has'
 import * as Layer from '@/Layer'
-import { Option } from '@/Option'
+import { flow, pipe } from '@/Prelude/function'
+import { Option } from '@/Prelude/Option'
 
 import { Service } from './Service'
 

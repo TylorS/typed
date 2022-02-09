@@ -1,6 +1,6 @@
 import { Disposable } from '@/Disposable'
 import { FiberContext } from '@/FiberContext'
-import { Option } from '@/Option'
+import { Option } from '@/Prelude/Option'
 import { LocalScope } from '@/Scope'
 import { Sink } from '@/Sink'
 import { Trace } from '@/Trace'

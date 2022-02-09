@@ -1,6 +1,6 @@
-import { Branded } from '@/Branded'
-import { pipe } from '@/function'
 import * as Fx from '@/Fx'
+import { Branded } from '@/Prelude/Branded'
+import { pipe } from '@/Prelude/function'
 
 export interface Layer<R, E, A> {
   readonly id: LayerId

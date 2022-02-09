@@ -1,5 +1,5 @@
-import { isRight } from '@/Either'
 import { Exit } from '@/Exit'
+import { isRight } from '@/Prelude/Either'
 
 import { fork } from './Effect'
 import { Fx } from './Fx'

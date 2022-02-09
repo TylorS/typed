@@ -1,4 +1,4 @@
-import * as M from '@/Magma'
+import * as M from '@/Prelude/Magma'
 
 export interface Semigroup<A> extends M.Magma<A> {}
 

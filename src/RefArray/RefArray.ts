@@ -1,10 +1,10 @@
-import { Endomorphism } from '@/Endomorphism'
 import { FiberRefOptions } from '@/FiberRef'
-import { flow, pipe } from '@/function'
-import * as F from '@/Functor'
 import * as Fx from '@/Fx'
-import { None, Option, Some } from '@/Option'
-import * as RA from '@/ReadonlyArray'
+import { Endomorphism } from '@/Prelude/Endomorphism'
+import { flow, pipe } from '@/Prelude/function'
+import * as F from '@/Prelude/Functor'
+import { None, Option, Some } from '@/Prelude/Option'
+import * as RA from '@/Prelude/ReadonlyArray'
 import * as Ref from '@/Ref'
 
 export interface RefArray<R, E, A, I = readonly A[]> extends Ref.Ref<R, E, I, readonly A[]> {}

@@ -2,7 +2,7 @@ import { Cause, Renderer } from '@/Cause'
 import { FiberId } from '@/FiberId'
 import { FiberRefLocals } from '@/FiberRef'
 import { MutableRef } from '@/MutableRef'
-import { Option } from '@/Option'
+import { Option } from '@/Prelude/Option'
 import * as Scheduler from '@/Scheduler'
 
 export interface FiberContext<E> {

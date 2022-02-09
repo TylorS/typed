@@ -1,6 +1,6 @@
 import { prettyFiberId } from '@/FiberId'
-import { pipe } from '@/function'
-import * as O from '@/Option'
+import { pipe } from '@/Prelude/function'
+import * as O from '@/Prelude/Option'
 import * as Sync from '@/Sync'
 import { prettyTrace, Trace } from '@/Trace'
 

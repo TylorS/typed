@@ -1,6 +1,6 @@
-import { Branded } from '@/Branded'
-import { flow } from '@/function'
-import { IO } from '@/IO'
+import { Branded } from '@/Prelude/Branded'
+import { flow } from '@/Prelude/function'
+import { IO } from '@/Prelude/IO'
 
 export interface Clock {
   readonly getCurrentTime: IO<Time>

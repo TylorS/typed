@@ -1,4 +1,4 @@
-import { Option } from '@/Option'
+import { Option } from '@/Prelude/Option'
 import { make, Stream } from '@/Stream'
 
 import { FiberRef } from './FiberRef'

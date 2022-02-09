@@ -1,6 +1,6 @@
-import { identity } from '@/function'
-import { None } from '@/None'
-import { Some } from '@/Some'
+import { identity } from '@/Prelude/function'
+import { None } from '@/Prelude/None'
+import { Some } from '@/Prelude/Some'
 
 export type Option<A> = Some<A> | None
 

@@ -1,5 +1,5 @@
-import * as F from '@/Functor'
-import { HKT4, Params } from '@/HKT'
+import * as F from '@/Prelude/Functor'
+import { HKT4, Params } from '@/Prelude/HKT'
 
 import { map } from './map'
 import { Ref } from './Ref'

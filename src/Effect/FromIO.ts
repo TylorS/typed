@@ -1,4 +1,4 @@
-import { IO } from '@/IO'
+import { IO } from '@/Prelude/IO'
 
 import { instr } from './Instruction'
 

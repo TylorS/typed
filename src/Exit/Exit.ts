@@ -1,6 +1,6 @@
 import * as C from '@/Cause'
-import * as E from '@/Either'
 import { FiberId } from '@/FiberId'
+import * as E from '@/Prelude/Either'
 
 export type Exit<E, A> = E.Either<C.Cause<E>, A>
 

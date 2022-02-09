@@ -2,7 +2,7 @@
  * Branded is a module to help you construct Branded types.
 
  */
-import { unsafeCoerce } from '@/function'
+import { unsafeCoerce } from '@/Prelude/function'
 
 /**
  * @category Type-level

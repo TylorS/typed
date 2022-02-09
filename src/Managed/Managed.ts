@@ -1,6 +1,6 @@
 import { Exit } from '@/Exit'
-import { pipe } from '@/function'
 import * as Fx from '@/Fx'
+import { pipe } from '@/Prelude/function'
 import { Finalizer } from '@/Scope'
 
 import { ReleaseMap } from './ReleaseMap'

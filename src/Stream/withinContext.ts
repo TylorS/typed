@@ -1,6 +1,6 @@
 import { getRootContext } from '@/Fiber'
 import { FiberContext } from '@/FiberContext'
-import { pipe } from '@/function'
+import { pipe } from '@/Prelude/function'
 
 import { chain } from './chain'
 import { fromFx } from './fromFx'

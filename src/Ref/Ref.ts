@@ -1,8 +1,8 @@
 import * as Fiber from '@/Fiber'
 import * as FiberRef from '@/FiberRef'
-import { flow, pipe } from '@/function'
 import { Fx, of } from '@/Fx'
-import { Option } from '@/Option'
+import { flow, pipe } from '@/Prelude/function'
+import { Option } from '@/Prelude/Option'
 import * as Stream from '@/Stream'
 
 export interface Ref<R, E, I, O = I> {

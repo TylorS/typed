@@ -1,5 +1,5 @@
-import { pipe } from '@/function'
 import { HAS } from '@/Has'
+import { pipe } from '@/Prelude/function'
 
 import { access, provideAll } from './Effect'
 import { Fx } from './Fx'

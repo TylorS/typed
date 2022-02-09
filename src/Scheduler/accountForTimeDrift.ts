@@ -1,6 +1,6 @@
 import { Time } from '@/Clock'
-import { pipe } from '@/function'
-import { match, Option } from '@/Option'
+import { pipe } from '@/Prelude/function'
+import { match, Option } from '@/Prelude/Option'
 
 export const accountForTimeDrift = (
   previous: Option<Time>,

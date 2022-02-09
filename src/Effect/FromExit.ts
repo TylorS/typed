@@ -1,6 +1,6 @@
-import { Either } from '@/Either'
 import * as Exit from '@/Exit'
 import { FiberId } from '@/FiberId'
+import { Either } from '@/Prelude/Either'
 
 import { instr } from './Instruction'
 

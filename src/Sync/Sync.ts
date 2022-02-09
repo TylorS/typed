@@ -1,4 +1,4 @@
-import * as IO from '@/IO'
+import * as IO from '@/Prelude/IO'
 
 /**
  * Sync is a small wrapper around IO w/ Generators for

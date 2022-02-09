@@ -1,6 +1,6 @@
 import { FromExit } from '@/Effect'
-import { Left, match } from '@/Either'
-import { pipe } from '@/function'
+import { Left, match } from '@/Prelude/Either'
+import { pipe } from '@/Prelude/function'
 
 import { ResumeExit, ResumeSync, RuntimeInstruction } from './RuntimeInstruction'
 

@@ -1,5 +1,5 @@
 import { Disposable } from '@/Disposable'
-import { HKT, Params } from '@/HKT'
+import { HKT, Params } from '@/Prelude/HKT'
 
 export interface Async<A> {
   readonly type: 'Async'

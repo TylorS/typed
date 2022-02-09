@@ -2,7 +2,7 @@ import { Unexpected } from '@/Cause'
 import * as D from '@/Disposable'
 import { dispose } from '@/Disposable'
 import { fromIO } from '@/Effect'
-import * as O from '@/Option'
+import * as O from '@/Prelude/Option'
 import { EndElement, ErrorElement, EventElement, tryEvent } from '@/Sink'
 
 import { Multicast, MulticastObserver } from './multicast'

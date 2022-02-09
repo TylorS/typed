@@ -1,5 +1,5 @@
-import { flow } from '@/function'
 import type { Fx } from '@/Fx'
+import { flow } from '@/Prelude/function'
 
 import { of } from './FromExit'
 import { instr } from './Instruction'

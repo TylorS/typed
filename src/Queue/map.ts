@@ -1,7 +1,7 @@
-import { flow, pipe } from '@/function'
 import * as Fx from '@/Fx'
-import * as O from '@/Option'
-import * as RA from '@/ReadonlyArray'
+import { flow, pipe } from '@/Prelude/function'
+import * as O from '@/Prelude/Option'
+import * as RA from '@/Prelude/ReadonlyArray'
 
 import { Dequeue, Queue } from './Queue'
 

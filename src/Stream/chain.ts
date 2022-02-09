@@ -1,5 +1,5 @@
 import { Disposable, DisposableQueue, disposeAll } from '@/Disposable'
-import { None } from '@/Option'
+import { None } from '@/Prelude/Option'
 import { EndElement, ErrorElement, EventElement, Sink } from '@/Sink'
 
 import { Stream, StreamContext } from './Stream'
