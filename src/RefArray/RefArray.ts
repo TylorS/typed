@@ -7,8 +7,7 @@ import { None, Option, Some } from '@/Option'
 import * as RA from '@/ReadonlyArray'
 import * as Ref from '@/Ref'
 
-export interface RefArray<R, E, A, Input = readonly A[]>
-  extends Ref.Ref<R, E, Input, readonly A[]> {}
+export interface RefArray<R, E, A, I = readonly A[]> extends Ref.Ref<R, E, I, readonly A[]> {}
 
 /**
  * Construct a RefArray that starts with an empty Array
@@ -83,4 +82,4 @@ export const pop = <R, E, A>(ra: RefArray<R, E, A>): Fx.Fx<R, E, Option<A>> =>
     return Some(values[lastIndex])
   })
 
-export const size = <R, E, A, I>(ra: RefArray<R, E, A, I>) => pipe(ra.get, Fx.map(RA.size))
+export const size = <R, E, A>(ra: RefArray<R, E, A>) => pipe(ra.get, Fx.map(RA.size))

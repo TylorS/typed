@@ -1,4 +1,4 @@
-import { Arity1 } from '@/function'
+import { Unary } from '@/function'
 import * as F from '@/Functor'
 import { HKT, Params } from '@/HKT'
 
@@ -7,7 +7,7 @@ export interface ReadonlyArrayHKT extends HKT {
 }
 
 export const map =
-  <A, B>(f: Arity1<A, B>) =>
+  <A, B>(f: Unary<A, B>) =>
   (array: ReadonlyArray<A>): ReadonlyArray<B> => {
     const next: B[] = Array(array.length)
 
@@ -18,7 +18,7 @@ export const map =
     return next
   }
 
-export const Functor: F.Functor<ReadonlyArrayHKT> = {
+export const Functor: F.Functor1<ReadonlyArrayHKT> = {
   map,
 }
 

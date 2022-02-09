@@ -63,27 +63,27 @@ export interface HKT10 extends HKT9 {
   readonly [Z]: unknown
 }
 
-export type Kind<T extends HKT, A> = (CoerceNever<T> & { readonly [A]: A })['type']
+export type Kind<T extends HKT, A> = TypeOf<T & { readonly [A]: A }>
 
-export type Kind2<T extends HKT2, E, A> = (CoerceNever<T> & {
+export type Kind2<T extends HKT2, E, A> = (T & {
   readonly [E]: E
   readonly [A]: A
 })['type']
 
-export type Kind3<T extends HKT3, R, E, A> = (CoerceNever<T> & {
+export type Kind3<T extends HKT3, R, E, A> = (T & {
   readonly [R]: R
   readonly [E]: E
   readonly [A]: A
 })['type']
 
-export type Kind4<T extends HKT4, S, R, E, A> = (CoerceNever<T> & {
+export type Kind4<T extends HKT4, S, R, E, A> = (T & {
   readonly [S]: S
   readonly [R]: R
   readonly [E]: E
   readonly [A]: A
 })['type']
 
-export type Kind5<T extends HKT5, U, S, R, E, A> = (CoerceNever<T> & {
+export type Kind5<T extends HKT5, U, S, R, E, A> = (T & {
   readonly [U]: U
   readonly [S]: S
   readonly [R]: R
@@ -91,7 +91,7 @@ export type Kind5<T extends HKT5, U, S, R, E, A> = (CoerceNever<T> & {
   readonly [A]: A
 })['type']
 
-export type Kind6<T extends HKT5, V, U, S, R, E, A> = (CoerceNever<T> & {
+export type Kind6<T extends HKT5, V, U, S, R, E, A> = (T & {
   readonly [V]: V
   readonly [U]: U
   readonly [S]: S
@@ -100,7 +100,7 @@ export type Kind6<T extends HKT5, V, U, S, R, E, A> = (CoerceNever<T> & {
   readonly [A]: A
 })['type']
 
-export type Kind7<T extends HKT5, W, V, U, S, R, E, A> = (CoerceNever<T> & {
+export type Kind7<T extends HKT5, W, V, U, S, R, E, A> = (T & {
   readonly [W]: W
   readonly [V]: V
   readonly [U]: U
@@ -110,7 +110,7 @@ export type Kind7<T extends HKT5, W, V, U, S, R, E, A> = (CoerceNever<T> & {
   readonly [A]: A
 })['type']
 
-export type Kind8<T extends HKT5, X, W, V, U, S, R, E, A> = (CoerceNever<T> & {
+export type Kind8<T extends HKT5, X, W, V, U, S, R, E, A> = (T & {
   readonly [X]: X
   readonly [W]: W
   readonly [V]: V
@@ -121,7 +121,7 @@ export type Kind8<T extends HKT5, X, W, V, U, S, R, E, A> = (CoerceNever<T> & {
   readonly [A]: A
 })['type']
 
-export type Kind9<T extends HKT5, Y, X, W, V, U, S, R, E, A> = (CoerceNever<T> & {
+export type Kind9<T extends HKT5, Y, X, W, V, U, S, R, E, A> = (T & {
   readonly [Y]: Y
   readonly [X]: X
   readonly [W]: W
@@ -133,7 +133,7 @@ export type Kind9<T extends HKT5, Y, X, W, V, U, S, R, E, A> = (CoerceNever<T> &
   readonly [A]: A
 })['type']
 
-export type Kind10<T extends HKT5, Z, Y, X, W, V, U, S, R, E, A> = (CoerceNever<T> & {
+export type Kind10<T extends HKT5, Z, Y, X, W, V, U, S, R, E, A> = (T & {
   readonly [Z]: Z
   readonly [Y]: Y
   readonly [X]: X
@@ -145,9 +145,5 @@ export type Kind10<T extends HKT5, Z, Y, X, W, V, U, S, R, E, A> = (CoerceNever<
   readonly [E]: E
   readonly [A]: A
 })['type']
-
-export type CoerceNever<T> = {
-  readonly [K in keyof T]: [T[K]] extends [never] ? unknown : T[K]
-}
 
 export type TypeOf<T> = 'type' extends keyof T ? T['type'] : never

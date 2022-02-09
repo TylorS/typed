@@ -11,7 +11,7 @@ import * as Stream from '@/Stream'
  * share state within, traveling up the tree until finding the first FiberContext to hold that FiberRef.
  * If no FiberContext holds a reference, the root-most FiberContext will be utilized.
  */
-export interface Context<R, E, A> extends Ref.Ref<R, E, A> {}
+export interface Context<R, E, I, O = I> extends Ref.Ref<R, E, I, O> {}
 
 export function fromFiberRef<R, E, A>(ref: FiberRef.FiberRef<R, E, A>): Context<R, E, A> {
   // Type-cast error from never to E since it's safe to never throw an Expected error.
