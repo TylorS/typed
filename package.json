@@ -705,6 +705,16 @@
       "import": "./esm/Prelude/index.js",
       "types": "./esm/Prelude/index.d.ts"
     },
+    "./Prelude/Array/Array": {
+      "require": "./cjs/Prelude/Array/Array.js",
+      "import": "./esm/Prelude/Array/Array.js",
+      "types": "./esm/Prelude/Array/Array.d.ts"
+    },
+    "./Prelude/Array": {
+      "require": "./cjs/Prelude/Array/index.js",
+      "import": "./esm/Prelude/Array/index.js",
+      "types": "./esm/Prelude/Array/index.d.ts"
+    },
     "./Prelude/Async/Async": {
       "require": "./cjs/Prelude/Async/Async.js",
       "import": "./esm/Prelude/Async/Async.js",
@@ -754,6 +764,16 @@
       "require": "./cjs/Prelude/Either/index.js",
       "import": "./esm/Prelude/Either/index.js",
       "types": "./esm/Prelude/Either/index.d.ts"
+    },
+    "./Prelude/Either/mapLeft": {
+      "require": "./cjs/Prelude/Either/mapLeft.js",
+      "import": "./esm/Prelude/Either/mapLeft.js",
+      "types": "./esm/Prelude/Either/mapLeft.d.ts"
+    },
+    "./Prelude/Either/match": {
+      "require": "./cjs/Prelude/Either/match.js",
+      "import": "./esm/Prelude/Either/match.js",
+      "types": "./esm/Prelude/Either/match.d.ts"
     },
     "./Prelude/Endomorphism": {
       "require": "./cjs/Prelude/Endomorphism/index.js",
@@ -874,6 +894,11 @@
       "require": "./cjs/Prelude/ReadonlyArray/index.js",
       "import": "./esm/Prelude/ReadonlyArray/index.js",
       "types": "./esm/Prelude/ReadonlyArray/index.d.ts"
+    },
+    "./Prelude/Right/Right": {
+      "require": "./cjs/Prelude/Right/Right.js",
+      "import": "./esm/Prelude/Right/Right.js",
+      "types": "./esm/Prelude/Right/Right.d.ts"
     },
     "./Prelude/Right": {
       "require": "./cjs/Prelude/Right/index.js",
