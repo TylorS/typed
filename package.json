@@ -90,51 +90,6 @@
       "import": "./esm/index.js",
       "types": "./esm/index.d.ts"
     },
-    "./Async": {
-      "require": "./cjs/Async/index.js",
-      "import": "./esm/Async/index.js",
-      "types": "./esm/Async/index.d.ts"
-    },
-    "./Async/Async": {
-      "require": "./cjs/Async/Async.js",
-      "import": "./esm/Async/Async.js",
-      "types": "./esm/Async/Async.d.ts"
-    },
-    "./AsyncEither": {
-      "require": "./cjs/AsyncEither/index.js",
-      "import": "./esm/AsyncEither/index.js",
-      "types": "./esm/AsyncEither/index.d.ts"
-    },
-    "./AsyncOption": {
-      "require": "./cjs/AsyncOption/index.js",
-      "import": "./esm/AsyncOption/index.js",
-      "types": "./esm/AsyncOption/index.d.ts"
-    },
-    "./AsyncThese": {
-      "require": "./cjs/AsyncThese/index.js",
-      "import": "./esm/AsyncThese/index.js",
-      "types": "./esm/AsyncThese/index.d.ts"
-    },
-    "./Cause": {
-      "require": "./cjs/Cause/index.js",
-      "import": "./esm/Cause/index.js",
-      "types": "./esm/Cause/index.d.ts"
-    },
-    "./Cause/Cause": {
-      "require": "./cjs/Cause/Cause.js",
-      "import": "./esm/Cause/Cause.js",
-      "types": "./esm/Cause/Cause.d.ts"
-    },
-    "./Cause/Renderer": {
-      "require": "./cjs/Cause/Renderer.js",
-      "import": "./esm/Cause/Renderer.js",
-      "types": "./esm/Cause/Renderer.d.ts"
-    },
-    "./Cause/Semigroup": {
-      "require": "./cjs/Cause/Semigroup.js",
-      "import": "./esm/Cause/Semigroup.js",
-      "types": "./esm/Cause/Semigroup.d.ts"
-    },
     "./Clock": {
       "require": "./cjs/Clock/index.js",
       "import": "./esm/Clock/index.js",
@@ -745,25 +700,20 @@
       "import": "./esm/Managed/with.js",
       "types": "./esm/Managed/with.d.ts"
     },
-    "./MutableRef": {
-      "require": "./cjs/MutableRef/index.js",
-      "import": "./esm/MutableRef/index.js",
-      "types": "./esm/MutableRef/index.d.ts"
-    },
-    "./MutableRef/Counter": {
-      "require": "./cjs/MutableRef/Counter.js",
-      "import": "./esm/MutableRef/Counter.js",
-      "types": "./esm/MutableRef/Counter.d.ts"
-    },
-    "./MutableRef/MutableRef": {
-      "require": "./cjs/MutableRef/MutableRef.js",
-      "import": "./esm/MutableRef/MutableRef.js",
-      "types": "./esm/MutableRef/MutableRef.d.ts"
-    },
     "./Prelude": {
       "require": "./cjs/Prelude/index.js",
       "import": "./esm/Prelude/index.js",
       "types": "./esm/Prelude/index.d.ts"
+    },
+    "./Prelude/Async/Async": {
+      "require": "./cjs/Prelude/Async/Async.js",
+      "import": "./esm/Prelude/Async/Async.js",
+      "types": "./esm/Prelude/Async/Async.d.ts"
+    },
+    "./Prelude/Async": {
+      "require": "./cjs/Prelude/Async/index.js",
+      "import": "./esm/Prelude/Async/index.js",
+      "types": "./esm/Prelude/Async/index.d.ts"
     },
     "./Prelude/Branded/Branded": {
       "require": "./cjs/Prelude/Branded/Branded.js",
@@ -774,6 +724,26 @@
       "require": "./cjs/Prelude/Branded/index.js",
       "import": "./esm/Prelude/Branded/index.js",
       "types": "./esm/Prelude/Branded/index.d.ts"
+    },
+    "./Prelude/Cause/Cause": {
+      "require": "./cjs/Prelude/Cause/Cause.js",
+      "import": "./esm/Prelude/Cause/Cause.js",
+      "types": "./esm/Prelude/Cause/Cause.d.ts"
+    },
+    "./Prelude/Cause/Renderer": {
+      "require": "./cjs/Prelude/Cause/Renderer.js",
+      "import": "./esm/Prelude/Cause/Renderer.js",
+      "types": "./esm/Prelude/Cause/Renderer.d.ts"
+    },
+    "./Prelude/Cause/Semigroup": {
+      "require": "./cjs/Prelude/Cause/Semigroup.js",
+      "import": "./esm/Prelude/Cause/Semigroup.js",
+      "types": "./esm/Prelude/Cause/Semigroup.d.ts"
+    },
+    "./Prelude/Cause": {
+      "require": "./cjs/Prelude/Cause/index.js",
+      "import": "./esm/Prelude/Cause/index.js",
+      "types": "./esm/Prelude/Cause/index.d.ts"
     },
     "./Prelude/Either/Either": {
       "require": "./cjs/Prelude/Either/Either.js",
@@ -794,6 +764,11 @@
       "require": "./cjs/Prelude/Eq/DeepEquals.js",
       "import": "./esm/Prelude/Eq/DeepEquals.js",
       "types": "./esm/Prelude/Eq/DeepEquals.d.ts"
+    },
+    "./Prelude/Eq/Eq": {
+      "require": "./cjs/Prelude/Eq/Eq.js",
+      "import": "./esm/Prelude/Eq/Eq.js",
+      "types": "./esm/Prelude/Eq/Eq.d.ts"
     },
     "./Prelude/Eq": {
       "require": "./cjs/Prelude/Eq/index.js",
@@ -835,16 +810,6 @@
       "import": "./esm/Prelude/HKT/index.js",
       "types": "./esm/Prelude/HKT/index.d.ts"
     },
-    "./Prelude/IO/IO": {
-      "require": "./cjs/Prelude/IO/IO.js",
-      "import": "./esm/Prelude/IO/IO.js",
-      "types": "./esm/Prelude/IO/IO.d.ts"
-    },
-    "./Prelude/IO": {
-      "require": "./cjs/Prelude/IO/index.js",
-      "import": "./esm/Prelude/IO/index.js",
-      "types": "./esm/Prelude/IO/index.d.ts"
-    },
     "./Prelude/Left": {
       "require": "./cjs/Prelude/Left/index.js",
       "import": "./esm/Prelude/Left/index.js",
@@ -854,6 +819,21 @@
       "require": "./cjs/Prelude/Magma/index.js",
       "import": "./esm/Prelude/Magma/index.js",
       "types": "./esm/Prelude/Magma/index.d.ts"
+    },
+    "./Prelude/MutableRef/Counter": {
+      "require": "./cjs/Prelude/MutableRef/Counter.js",
+      "import": "./esm/Prelude/MutableRef/Counter.js",
+      "types": "./esm/Prelude/MutableRef/Counter.d.ts"
+    },
+    "./Prelude/MutableRef/MutableRef": {
+      "require": "./cjs/Prelude/MutableRef/MutableRef.js",
+      "import": "./esm/Prelude/MutableRef/MutableRef.js",
+      "types": "./esm/Prelude/MutableRef/MutableRef.d.ts"
+    },
+    "./Prelude/MutableRef": {
+      "require": "./cjs/Prelude/MutableRef/index.js",
+      "import": "./esm/Prelude/MutableRef/index.js",
+      "types": "./esm/Prelude/MutableRef/index.d.ts"
     },
     "./Prelude/NonEmptyArray/NonEmptyArray": {
       "require": "./cjs/Prelude/NonEmptyArray/NonEmptyArray.js",
@@ -914,6 +894,16 @@
       "require": "./cjs/Prelude/Some/index.js",
       "import": "./esm/Prelude/Some/index.js",
       "types": "./esm/Prelude/Some/index.d.ts"
+    },
+    "./Prelude/Sync/Sync": {
+      "require": "./cjs/Prelude/Sync/Sync.js",
+      "import": "./esm/Prelude/Sync/Sync.js",
+      "types": "./esm/Prelude/Sync/Sync.d.ts"
+    },
+    "./Prelude/Sync": {
+      "require": "./cjs/Prelude/Sync/index.js",
+      "import": "./esm/Prelude/Sync/index.js",
+      "types": "./esm/Prelude/Sync/index.d.ts"
     },
     "./Prelude/function/FunctionN": {
       "require": "./cjs/Prelude/function/FunctionN.js",
@@ -1039,41 +1029,6 @@
       "require": "./cjs/Queue/map.js",
       "import": "./esm/Queue/map.js",
       "types": "./esm/Queue/map.d.ts"
-    },
-    "./ReaderAsync": {
-      "require": "./cjs/ReaderAsync/index.js",
-      "import": "./esm/ReaderAsync/index.js",
-      "types": "./esm/ReaderAsync/index.d.ts"
-    },
-    "./ReaderAsyncEither": {
-      "require": "./cjs/ReaderAsyncEither/index.js",
-      "import": "./esm/ReaderAsyncEither/index.js",
-      "types": "./esm/ReaderAsyncEither/index.d.ts"
-    },
-    "./ReaderAsyncThese": {
-      "require": "./cjs/ReaderAsyncThese/index.js",
-      "import": "./esm/ReaderAsyncThese/index.js",
-      "types": "./esm/ReaderAsyncThese/index.d.ts"
-    },
-    "./ReaderEither": {
-      "require": "./cjs/ReaderEither/index.js",
-      "import": "./esm/ReaderEither/index.js",
-      "types": "./esm/ReaderEither/index.d.ts"
-    },
-    "./ReaderSync": {
-      "require": "./cjs/ReaderSync/index.js",
-      "import": "./esm/ReaderSync/index.js",
-      "types": "./esm/ReaderSync/index.d.ts"
-    },
-    "./ReaderSyncEither": {
-      "require": "./cjs/ReaderSyncEither/index.js",
-      "import": "./esm/ReaderSyncEither/index.js",
-      "types": "./esm/ReaderSyncEither/index.d.ts"
-    },
-    "./ReaderSyncThese": {
-      "require": "./cjs/ReaderSyncThese/index.js",
-      "import": "./esm/ReaderSyncThese/index.js",
-      "types": "./esm/ReaderSyncThese/index.d.ts"
     },
     "./Ref": {
       "require": "./cjs/Ref/index.js",
@@ -1349,31 +1304,6 @@
       "require": "./cjs/Subject/make.js",
       "import": "./esm/Subject/make.js",
       "types": "./esm/Subject/make.d.ts"
-    },
-    "./Sync": {
-      "require": "./cjs/Sync/index.js",
-      "import": "./esm/Sync/index.js",
-      "types": "./esm/Sync/index.d.ts"
-    },
-    "./Sync/Sync": {
-      "require": "./cjs/Sync/Sync.js",
-      "import": "./esm/Sync/Sync.js",
-      "types": "./esm/Sync/Sync.d.ts"
-    },
-    "./SyncEither": {
-      "require": "./cjs/SyncEither/index.js",
-      "import": "./esm/SyncEither/index.js",
-      "types": "./esm/SyncEither/index.d.ts"
-    },
-    "./SyncOption": {
-      "require": "./cjs/SyncOption/index.js",
-      "import": "./esm/SyncOption/index.js",
-      "types": "./esm/SyncOption/index.d.ts"
-    },
-    "./SyncThese": {
-      "require": "./cjs/SyncThese/index.js",
-      "import": "./esm/SyncThese/index.js",
-      "types": "./esm/SyncThese/index.d.ts"
     },
     "./Timer": {
       "require": "./cjs/Timer/index.js",
