@@ -6,11 +6,11 @@ import * as Ref from '@/Ref'
 import { Layer, LayerId } from './Layer'
 
 export const GlobalLayers = Ref.global(
-  Fx.fromIO(() => new Map<LayerId, Fiber<any, any>>(), 'CreateLayers'),
+  Fx.fromLazy(() => new Map<LayerId, Fiber<any, any>>(), 'CreateLayers'),
 )
 
 export const LocalLayers = Ref.make(
-  Fx.fromIO(() => new Map<LayerId, Fiber<any, any>>(), 'CreateLayers'),
+  Fx.fromLazy(() => new Map<LayerId, Fiber<any, any>>(), 'CreateLayers'),
 )
 
 export function getLayers<R, E, A>(layer: Layer<R, E, A>) {
@@ -71,7 +71,7 @@ export function update<S, R2, E2>(f: (service: S) => Fx.Fx<R2, E2, S>) {
       const fiber = yield* Fx.fork(f(current))
 
       yield* (layer.global ? GlobalLayers : LocalLayers).update((m) =>
-        Fx.fromIO(() => m.set(layer.id, fiber)),
+        Fx.fromLazy(() => m.set(layer.id, fiber)),
       )
 
       return Some(yield* Fx.join(fiber))

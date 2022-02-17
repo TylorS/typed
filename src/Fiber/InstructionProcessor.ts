@@ -3,7 +3,7 @@ import { Required } from 'ts-toolbelt/out/Object/Required'
 import { prettyPrint } from '@/Cause'
 import { Time } from '@/Clock'
 import { Disposable, DisposableQueue, Sync, withRemove } from '@/Disposable'
-import { Effect, FromExit, fromIO, Provide } from '@/Effect'
+import { Effect, FromExit, fromLazy, Provide } from '@/Effect'
 import { Exit, success, unexpected } from '@/Exit'
 import { FiberContext } from '@/FiberContext'
 import { Fx } from '@/Fx'
@@ -132,7 +132,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
     // If we couldn't release the scope, wait for this scope to close.
     if (!released) {
       const exit = yield new ResumeAsync<Exit<E, A>>((cb) => {
-        const option = this.scope.ensure((exit) => fromIO(() => cb(exit)))
+        const option = this.scope.ensure((exit) => fromLazy(() => cb(exit)))
 
         return Sync(() => isSome(option) && this.scope.cancel(option.value))
       })

@@ -1,4 +1,4 @@
-import { fromIO } from '@/Fx'
+import { fromLazy } from '@/Fx'
 
 import { QueueStrategy } from './QueueStrategy'
 
@@ -9,7 +9,7 @@ export function makeUnboundedStategy<A>(): QueueStrategy<A> {
   return {
     capacity: Infinity,
     offer: (offered, queue) =>
-      fromIO(() => {
+      fromLazy(() => {
         queue.push(...offered)
 
         return true

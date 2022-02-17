@@ -16,7 +16,7 @@ import { RuntimeOptions } from '@/Fiber/Runtime'
 import { FiberContext } from '@/FiberContext'
 import { FiberId } from '@/FiberId'
 import { Either, Left } from '@/Prelude/Either'
-import { IO } from '@/Prelude/IO'
+import { Lazy } from '@/Prelude/function'
 import { LocalScope } from '@/Scope'
 import { Trace } from '@/Trace'
 
@@ -50,7 +50,8 @@ export const fromExit: <E, A>(exit: Exit<E, A>, trace?: string | undefined) => E
 export const fromCause = <E>(cause: Cause<E>, trace?: string | undefined): EFx<E, never> =>
   E.fromExit<E, never>(Left(cause), trace)
 
-export const fromIO: <A, E = never>(io: IO<A>, trace?: string | undefined) => EFx<E, A> = E.fromIO
+export const fromLazy: <A, E = never>(lazy: Lazy<A>, trace?: string | undefined) => EFx<E, A> =
+  E.fromLazy
 
 export const fromPromise: <A>(f: () => Promise<A>, trace?: string | undefined) => Of<A> =
   E.fromPromise

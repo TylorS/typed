@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
-import { fromIO } from '@/Effect'
+import { fromLazy } from '@/Effect'
 import * as Exit from '@/Exit'
 import { of } from '@/Fx/Effect'
 import { Fx, Of } from '@/Fx/Fx'
-import { decrement, increment, MutableRef } from '@/MutableRef'
 import { Branded } from '@/Prelude/Branded'
+import { decrement, increment, MutableRef } from '@/Prelude/MutableRef'
 import { isNone, isSome, None, Option, Some } from '@/Prelude/Option'
 
 import { InterruptableStatus } from './InterruptableStatus'
@@ -64,7 +64,7 @@ export class LocalScope<E, A> {
       const key = this.ensure(scope.release)
 
       scope.ensure(() =>
-        fromIO(() => {
+        fromLazy(() => {
           if (isSome(key)) {
             this.cancel(key.value)
           }

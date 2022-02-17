@@ -1,4 +1,4 @@
-import { fromIO } from '@/Fx'
+import { fromLazy } from '@/Fx'
 
 import { QueueStrategy } from './QueueStrategy'
 
@@ -10,7 +10,7 @@ export function makeSlidingStategy<A>(capacity: number): QueueStrategy<A> {
   return {
     capacity,
     offer: (offered, queue) =>
-      fromIO(() => {
+      fromLazy(() => {
         const size = queue.length
         const proposedSize = size + offered.length
         const canHandleSurplus = proposedSize <= capacity

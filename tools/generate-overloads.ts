@@ -7,8 +7,8 @@ import {
   HktReturnSignatureParam,
   HktTypeParam,
   KindNode,
-  ObjectNode,
   possibleLengths,
+  RecordNode,
   ReturnSignature,
   StaticTypeParam,
   TupleNode,
@@ -346,8 +346,8 @@ function printHktReturnSignatureParam(param: HktReturnSignatureParam) {
   switch (param.tag) {
     case 'HktReturnSignature':
       return printReturnSignature(param)
-    case 'ObjectNode':
-      return printObjectNode(param)
+    case 'RecordNode':
+      return printRecordNode(param)
     case 'TupleNode':
       return printTupleNode(param)
     default:
@@ -359,7 +359,7 @@ function printTupleNode(node: TupleNode): string {
   return `readonly [${node.values.map((value) => printValue(value)).join(', ')}]`
 }
 
-function printObjectNode(node: ObjectNode): string {
+function printRecordNode(node: RecordNode): string {
   if (node.keyParam) {
     return `{ readonly [${node.key} in ${node.keyOf ? 'keyof ' : ''}${printTypeParam(
       node.keyParam,

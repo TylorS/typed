@@ -1,7 +1,7 @@
 import { Unexpected } from '@/Cause'
 import * as D from '@/Disposable'
 import { dispose } from '@/Disposable'
-import { fromIO } from '@/Effect'
+import { fromLazy } from '@/Effect'
 import * as O from '@/Prelude/Option'
 import { EndElement, ErrorElement, EventElement, tryEvent } from '@/Sink'
 
@@ -54,7 +54,7 @@ export class Hold<R, E, A> extends Multicast<R, E, A> {
       await dispose(this.task)
 
       this.task = observer.context.fiberContext.scheduler.asap(
-        fromIO(() => this.flushPending()),
+        fromLazy(() => this.flushPending()),
         observer.context,
       )
     } catch (e) {

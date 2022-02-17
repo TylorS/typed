@@ -1,4 +1,4 @@
-import { fromIO } from '@/Fx'
+import { fromLazy } from '@/Fx'
 
 import { make } from './Stream'
 
@@ -6,7 +6,7 @@ export const periodic = (period: number) =>
   make((sink, context) =>
     context.fiberContext.scheduler.periodic(
       period,
-      fromIO(() =>
+      fromLazy(() =>
         sink.event({
           type: 'Event',
           fiberId: context.fiberContext.fiberId,

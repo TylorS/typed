@@ -74,9 +74,9 @@ export class StaticReturnSignature {
 
 export type Value = DynamicValue<readonly TypeParam[]>
 
-export class ObjectNode {
-  readonly tag = 'ObjectNode'
-  readonly id = Symbol('ObjectNode')
+export class RecordNode {
+  readonly tag = 'RecordNode'
+  readonly id = Symbol('RecordNode')
 
   constructor(
     readonly key: string,
@@ -103,7 +103,7 @@ export class DynamicValue<Params extends readonly TypeParam[]> {
   ) {}
 }
 
-export type HktReturnSignatureParam = TypeParam | ObjectNode | TupleNode | HktReturnSignature
+export type HktReturnSignatureParam = TypeParam | RecordNode | TupleNode | HktReturnSignature
 
 export class HktReturnSignature {
   readonly tag = 'HktReturnSignature'

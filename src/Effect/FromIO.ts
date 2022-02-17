@@ -1,7 +1,7 @@
-import { IO } from '@/Prelude/IO'
+import { Lazy } from '@/Prelude/function'
 
 import { instr } from './Instruction'
 
-export class FromIO<A> extends instr('FromIO')<IO<A>, unknown, never, A> {}
+export class FromLazy<A> extends instr('FromLazy')<Lazy<A>, unknown, never, A> {}
 
-export const fromIO = <A>(io: IO<A>, trace?: string) => new FromIO(io, trace)
+export const fromLazy = <A>(io: Lazy<A>, trace?: string) => new FromLazy(io, trace)

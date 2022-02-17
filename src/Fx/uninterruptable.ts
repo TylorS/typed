@@ -1,4 +1,4 @@
-import { fromIO, getScope } from '@/Effect'
+import { fromLazy, getScope } from '@/Effect'
 import { isLeft } from '@/Prelude/Either'
 import { isSome } from '@/Prelude/Option'
 
@@ -9,7 +9,7 @@ export const uninterruptable = <R, E, A>(fx: Fx<R, E, A>) =>
     const scope = yield* getScope<E>()
 
     const key = scope.ensure((exit) =>
-      fromIO(() => {
+      fromLazy(() => {
         if (isLeft(exit)) {
           scope.interruptableStatus.isInterruptable = true
         }

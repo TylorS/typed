@@ -1,5 +1,5 @@
-import { FromIO } from '@/Effect'
+import { FromLazy } from '@/Effect'
 
 import { ResumeSync } from './RuntimeInstruction'
 
-export const processFromIO = <A>(instruction: FromIO<A>) => new ResumeSync(instruction.input())
+export const processFromIO = <A>(instruction: FromLazy<A>) => new ResumeSync(instruction.input())

@@ -72,7 +72,7 @@ export function makeFiberRefLocals(
       return a
     })
 
-  const has = <R, E, A>(fiberRef: FiberRef<R, E, A>) => Fx.fromIO(() => refs.has(fiberRef))
+  const has = <R, E, A>(fiberRef: FiberRef<R, E, A>) => Fx.fromLazy(() => refs.has(fiberRef))
 
   // Allow only one update to be running at a time
   const updateQueue = new WeakMap<
@@ -124,7 +124,7 @@ export function makeFiberRefLocals(
       // Continue with any additional updates
       if (--queue.count > 0 && queue.futures.length > 0) {
         // Don't block the return of the updated value
-        yield* forkFiber(Fx.fromIO(() => pipe(queue.futures.shift()!, complete(Fx.of(updated)))))
+        yield* forkFiber(Fx.fromLazy(() => pipe(queue.futures.shift()!, complete(Fx.of(updated)))))
       }
 
       return updated

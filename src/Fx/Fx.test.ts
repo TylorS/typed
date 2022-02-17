@@ -2,7 +2,7 @@ import { deepStrictEqual, ok } from 'assert'
 import { describe } from 'mocha'
 
 import { prettyPrint } from '@/Cause'
-import { fromExit, fromIO } from '@/Effect'
+import { fromExit, fromLazy } from '@/Effect'
 import { result } from '@/Effect/Result'
 import { isLeft, isRight } from '@/Prelude/Either'
 
@@ -47,7 +47,7 @@ describe(__filename, () => {
     const test = Fx.Fx(function* () {
       try {
         return yield* Fx.Fx(function* () {
-          return yield* fromIO(() => {
+          return yield* fromLazy(() => {
             throw error
 
             return 1

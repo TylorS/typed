@@ -1,6 +1,6 @@
 import { Exit } from '@/Exit'
 import * as Fx from '@/Fx'
-import { MutableRef } from '@/MutableRef'
+import { MutableRef } from '@/Prelude/MutableRef'
 
 export interface Future<R, E, A> {
   readonly state: MutableRef<FutureState<R, E, A>>

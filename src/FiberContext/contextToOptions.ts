@@ -1,5 +1,5 @@
 import { makeFiberId } from '@/FiberId'
-import { increment } from '@/MutableRef'
+import { increment } from '@/Prelude/MutableRef'
 
 import { FiberContext } from './FiberContext'
 import { FiberContextOptions } from './make'

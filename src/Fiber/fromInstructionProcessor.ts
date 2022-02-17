@@ -1,5 +1,5 @@
 import { Async } from '@/Async'
-import { fromAsync, fromIO } from '@/Effect'
+import { fromAsync, fromLazy } from '@/Effect'
 import { Exit } from '@/Exit'
 import { identity } from '@/Prelude/function'
 
@@ -20,7 +20,7 @@ export function fromInstructionProcessor<R, E, A>(
   )
   const fiber: Fiber<E, A> = {
     type: 'RuntimeFiber',
-    status: fromIO(() => runtime.status),
+    status: fromLazy(() => runtime.status),
     exit: fromAsync(Async<Exit<E, A>>((cb) => runtime.addObserver(cb))),
     inheritRefs: processor.fiberContext.locals.inherit,
     dispose: runtime.dispose,

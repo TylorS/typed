@@ -1,9 +1,8 @@
 import { Branded } from '@/Prelude/Branded'
-import { flow } from '@/Prelude/function'
-import { IO } from '@/Prelude/IO'
+import { flow, Lazy } from '@/Prelude/function'
 
 export interface Clock {
-  readonly getCurrentTime: IO<Time>
+  readonly getCurrentTime: Lazy<Time>
 }
 
 export type Time = Branded<number, 'Time'>

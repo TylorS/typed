@@ -805,6 +805,16 @@
       "import": "./esm/Prelude/Functor/Functor.js",
       "types": "./esm/Prelude/Functor/Functor.d.ts"
     },
+    "./Prelude/Functor/bindTo": {
+      "require": "./cjs/Prelude/Functor/bindTo.js",
+      "import": "./esm/Prelude/Functor/bindTo.js",
+      "types": "./esm/Prelude/Functor/bindTo.d.ts"
+    },
+    "./Prelude/Functor/flap": {
+      "require": "./cjs/Prelude/Functor/flap.js",
+      "import": "./esm/Prelude/Functor/flap.js",
+      "types": "./esm/Prelude/Functor/flap.d.ts"
+    },
     "./Prelude/Functor": {
       "require": "./cjs/Prelude/Functor/index.js",
       "import": "./esm/Prelude/Functor/index.js",
@@ -814,6 +824,11 @@
       "require": "./cjs/Prelude/Functor/map.js",
       "import": "./esm/Prelude/Functor/map.js",
       "types": "./esm/Prelude/Functor/map.d.ts"
+    },
+    "./Prelude/Functor/tupled": {
+      "require": "./cjs/Prelude/Functor/tupled.js",
+      "import": "./esm/Prelude/Functor/tupled.js",
+      "types": "./esm/Prelude/Functor/tupled.d.ts"
     },
     "./Prelude/HKT": {
       "require": "./cjs/Prelude/HKT/index.js",

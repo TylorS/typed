@@ -5,7 +5,7 @@ import type { Drain } from '@/Effect/Drain'
 import type { Fork } from '@/Effect/Fork'
 import type { FromAsync } from '@/Effect/FromAsync'
 import type { FromExit } from '@/Effect/FromExit'
-import type { FromIO } from '@/Effect/FromIO'
+import type { FromLazy } from '@/Effect/FromIO'
 import type { FromPromise } from '@/Effect/FromPromise'
 import type { FromTuple } from '@/Effect/FromTuple'
 import type { GetContext } from '@/Effect/GetContext'
@@ -29,7 +29,7 @@ export type Instruction<R, E> =
   | Fork<R, E, any>
   | FromAsync<any>
   | FromExit<E, any>
-  | FromIO<any>
+  | FromLazy<any>
   | FromPromise<any>
   | FromTuple<ReadonlyArray<Fx<R, E, any>>>
   | GetContext<E>
@@ -53,7 +53,7 @@ export type FindInstruction<Type extends Instruction<R, E>['type'], R, E> = {
   Fork: Fork<R, E, any>
   FromAsync: FromAsync<any>
   FromExit: FromExit<E, any>
-  FromIO: FromIO<any>
+  FromIO: FromLazy<any>
   FromPromise: FromPromise<any>
   FromTuple: FromTuple<readonly Fx<R, E, any>[]>
   GetContext: GetContext<E>

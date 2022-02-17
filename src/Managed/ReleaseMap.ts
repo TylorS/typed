@@ -37,7 +37,7 @@ export class ReleaseMap {
 
   readonly release = (key: symbol, exit: Exit<any, any>): Fx.Of<Option<any>> =>
     pipe(
-      Fx.fromIO(() => this.finalizers),
+      Fx.fromLazy(() => this.finalizers),
       Fx.chain((map) =>
         Fx.Fx(function* () {
           if (map.has(key)) {

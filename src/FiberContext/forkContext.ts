@@ -1,6 +1,6 @@
 import { makeFiberId } from '@/FiberId'
 import { Fx, Of } from '@/Fx'
-import { increment } from '@/MutableRef'
+import { increment } from '@/Prelude/MutableRef'
 
 import { FiberContext } from './FiberContext'
 

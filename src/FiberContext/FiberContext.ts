@@ -1,7 +1,7 @@
 import { Cause, Renderer } from '@/Cause'
 import { FiberId } from '@/FiberId'
 import { FiberRefLocals } from '@/FiberRef'
-import { MutableRef } from '@/MutableRef'
+import { MutableRef } from '@/Prelude/MutableRef'
 import { Option } from '@/Prelude/Option'
 import * as Scheduler from '@/Scheduler'
 
