@@ -1,141 +1,29 @@
 import { DeepEquals } from '../src/Prelude/Eq'
+import {
+  DynamicValue,
+  FunctionArgument,
+  FunctionSignature,
+  HktReturnSignature,
+  HktReturnSignatureParam,
+  HktTypeParam,
+  KindNode,
+  ObjectNode,
+  possibleLengths,
+  ReturnSignature,
+  StaticTypeParam,
+  TupleNode,
+  TypeClassArgument,
+  TypeParam,
+  Value,
+} from './FunctionSignature'
 
 const hktParamNames = ['A', 'E', 'R', 'S', 'U', 'V', 'W', 'X', 'Y', 'Z'] as const
 
-const possibleLengths: ReadonlyArray<number> = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-type PossibleLength = typeof possibleLengths[number]
-
-export type TypeParam = StaticTypeParam | HktTypeParam
-
-export class StaticTypeParam {
-  readonly tag = 'StaticTypeParam'
-  readonly id = Symbol('StaticTypeParam')
-
-  constructor(readonly label: string, readonly extension?: string) {}
+export function generateOverloads(signature: FunctionSignature) {
+  return generateSignatures(signature)
+    .map((x) => printSignature(x))
+    .join('\n')
 }
-
-export class HktTypeParam {
-  readonly tag = 'HktTypeParam'
-  readonly id = Symbol('HktTypeParam')
-
-  constructor(readonly label: string, readonly size: PossibleLength = 1) {}
-}
-
-export type FunctionArgument =
-  | StaticArgument
-  | TypeClassArgument
-  | DynamicArgument<readonly TypeParam[]>
-  | KindNode
-
-export class StaticArgument {
-  readonly tag = 'StaticArgument'
-  readonly id = Symbol('StaticArgument')
-
-  constructor(readonly label: string, readonly type: string) {}
-}
-
-export class TypeClassArgument {
-  readonly tag = 'TypeClassArgument'
-  readonly id = Symbol('TypeClassArgument')
-
-  constructor(
-    readonly label: string,
-    readonly typeClass: string,
-    readonly typeParams: readonly TypeParam[],
-    readonly size: number = 1,
-  ) {}
-}
-
-export class KindNode {
-  readonly tag = 'KindNode'
-  readonly id = Symbol('KindNode')
-
-  constructor(
-    readonly label: string,
-    readonly hkt: HktTypeParam,
-    readonly params: ReadonlyArray<TypeParam | KindNode>,
-    readonly size: number = 1,
-  ) {}
-}
-
-export class DynamicArgument<Params extends readonly TypeParam[]> {
-  readonly tag = 'DynamicArgument'
-  readonly id = Symbol('DynamicArgument')
-
-  constructor(
-    readonly label: string,
-    readonly typeParams: Params,
-    readonly template: (...params: { [K in keyof Params]: string }) => string,
-  ) {}
-}
-
-export class StaticReturnSignature {
-  readonly tag = 'StaticReturnSignature'
-  readonly id = Symbol('StaticReturnSignature')
-
-  constructor(readonly type: string, readonly params: readonly TypeParam[]) {}
-}
-
-export class HktReturnSignature {
-  readonly tag = 'HktReturnSignature'
-  readonly id = Symbol('HktReturnSignature')
-
-  constructor(
-    readonly type: HktTypeParam,
-    readonly params: ReadonlyArray<TypeParam | HktReturnSignature>,
-    readonly size: number = 1,
-  ) {}
-}
-
-export type ReturnSignature = StaticReturnSignature | HktReturnSignature | FunctionSignature
-
-export class FunctionSignature {
-  readonly tag = 'FunctionSignature'
-  readonly id = Symbol('FunctionSignature')
-
-  constructor(
-    readonly exported: boolean,
-    readonly name: string,
-    readonly params: readonly TypeParam[],
-    readonly args: readonly FunctionArgument[],
-    readonly returnSignature: ReturnSignature,
-  ) {}
-}
-
-const functorFParam = new HktTypeParam('F')
-const functorGParam = new HktTypeParam('G')
-
-const functorFTypeClass = new TypeClassArgument('F', 'Functor', [functorFParam])
-const functorGFTypeClass = new TypeClassArgument('G', 'Functor', [functorGParam])
-
-const aTypeParam = new StaticTypeParam('A')
-const bTypeParam = new StaticTypeParam('B')
-
-const signature = new FunctionSignature(
-  true,
-  'map',
-  [functorFParam, functorGParam],
-  [functorFTypeClass, functorGFTypeClass],
-  new FunctionSignature(
-    false,
-    '',
-    [aTypeParam, bTypeParam],
-    [new DynamicArgument('f', [aTypeParam, bTypeParam] as const, (a, b) => `Unary<${a}, ${b}>`)],
-    new FunctionSignature(
-      false,
-      '',
-      [],
-      [new KindNode('kind', functorFParam, [new KindNode('', functorGParam, [aTypeParam])])],
-      new HktReturnSignature(functorFParam, [new HktReturnSignature(functorGParam, [bTypeParam])]),
-    ),
-  ),
-)
-
-console.log(
-  generateSignatures(signature)
-    .map((s) => printSignature(s))
-    .join('\n'),
-)
 
 function generateSignatures(signature: FunctionSignature) {
   const hktParams = signature.params.filter((x): x is HktTypeParam => x.tag === 'HktTypeParam')
@@ -211,6 +99,7 @@ function rewriteSignature(
 
   const returnSignature = rewriteReturnSignature(
     signature.returnSignature,
+    possibleLengths,
     lengths,
     additionalParams,
   )
@@ -270,12 +159,13 @@ function rewriteTypeClassArgument(
 
 function rewriteReturnSignature(
   signature: ReturnSignature,
+  possibleLengths: ReadonlyArray<number>,
   lengths: Map<symbol, number>,
   additionalParams: Map<symbol, readonly StaticTypeParam[]>,
 ): ReturnSignature {
   switch (signature.tag) {
     case 'FunctionSignature':
-      return rewriteSignature(signature, [], lengths)
+      return rewriteSignature(signature, possibleLengths, lengths)
     case 'HktReturnSignature':
       return rewriteHktReturnSignature(signature, lengths, additionalParams)
     default:
@@ -317,8 +207,8 @@ function combinations<A>(
 ): ReadonlyArray<ReadonlyArray<A>> {
   const inputs = options.slice()
 
-  if (options.length === 1) {
-    return options
+  if (inputs.length === 1) {
+    return inputs[0].map((x) => [x] as const)
   }
 
   const possiblilties: Array<ReadonlyArray<A>> = []
@@ -350,7 +240,10 @@ function printSignature(signature: FunctionSignature, isReturn = false) {
 
   str += `${signature.name}`
 
-  str += signature.params.length === 0 ? '' : `<${signature.params.map(printTypeParam).join(', ')}>`
+  str +=
+    signature.params.length === 0
+      ? ''
+      : `<${signature.params.map((param) => printTypeParam(param)).join(', ')}>`
 
   str += '('
 
@@ -363,14 +256,14 @@ function printSignature(signature: FunctionSignature, isReturn = false) {
   return str
 }
 
-function printTypeParam(param: TypeParam): string {
+function printTypeParam(param: TypeParam, printExtension = true): string {
   let str = ''
 
   str += param.label
 
   switch (param.tag) {
     case 'StaticTypeParam': {
-      if (param.extension) {
+      if (printExtension && param.extension) {
         str += ` extends ${param.extension}`
       }
 
@@ -419,7 +312,15 @@ function printArgument(arg: FunctionArgument): string {
 function printKindArgument(arg: KindNode) {
   let str = `Kind${[0, 1].includes(arg.size) ? '' : arg.size}<${arg.hkt.label}, `
 
-  str += arg.params.map((p) => (p.tag === 'KindNode' ? printKindArgument(p) : p.label)).join(', ')
+  str += arg.params
+    .map((p) =>
+      p.tag === 'KindNode'
+        ? printKindArgument(p)
+        : p.tag === 'FunctionSignature'
+        ? printSignature(p, true)
+        : p.label,
+    )
+    .join(', ')
 
   return str + '>'
 }
@@ -434,11 +335,50 @@ function printReturnSignature(signature: ReturnSignature): string {
     case 'HktReturnSignature': {
       return `Kind${[0, 1].includes(signature.size) ? '' : signature.size}<${
         signature.type.label
-      }, ${signature.params
-        .map((x) => (x.tag === 'HktReturnSignature' ? printReturnSignature(x) : printTypeParam(x)))
-        .join(', ')}>`
+      }, ${signature.params.map(printHktReturnSignatureParam).join(', ')}>`
     }
     case 'FunctionSignature':
       return printSignature(signature, true)
   }
+}
+
+function printHktReturnSignatureParam(param: HktReturnSignatureParam) {
+  switch (param.tag) {
+    case 'HktReturnSignature':
+      return printReturnSignature(param)
+    case 'ObjectNode':
+      return printObjectNode(param)
+    case 'TupleNode':
+      return printTupleNode(param)
+    default:
+      return printTypeParam(param)
+  }
+}
+
+function printTupleNode(node: TupleNode): string {
+  return `readonly [${node.values.map((value) => printValue(value)).join(', ')}]`
+}
+
+function printObjectNode(node: ObjectNode): string {
+  if (node.keyParam) {
+    return `{ readonly [${node.key} in ${node.keyOf ? 'keyof ' : ''}${printTypeParam(
+      node.keyParam,
+      false,
+    )}]: ${printValue(node.value)} }`
+  }
+
+  return `{ readonly [key: ${node.key}]: ${printValue(node.value)} }`
+}
+
+function printValue(value: Value): string {
+  switch (value.tag) {
+    case 'DynamicValue':
+      return printDynamicValue(value)
+  }
+}
+
+function printDynamicValue<Params extends readonly TypeParam[]>(
+  value: DynamicValue<Params>,
+): string {
+  return value.template(value.typeParams.map((t) => t.label))
 }
