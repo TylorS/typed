@@ -6,7 +6,7 @@ import {
   KindNode,
   StaticTypeParam,
   TypeClassArgument,
-} from '../FunctionSignature'
+} from '../OverloadAst'
 
 const functorFParam = new HktTypeParam('F')
 const functorGParam = new HktTypeParam('G')
@@ -17,7 +17,7 @@ const functorGFTypeClass = new TypeClassArgument('G', 'Functor', [functorGParam]
 const aTypeParam = new StaticTypeParam('A')
 const bTypeParam = new StaticTypeParam('B')
 
-export const signature = new FunctionSignature(
+export const node = new FunctionSignature(
   true,
   'map',
   [functorFParam, functorGParam],

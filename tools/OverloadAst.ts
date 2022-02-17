@@ -130,3 +130,16 @@ export class FunctionSignature {
     readonly returnSignature: ReturnSignature,
   ) {}
 }
+
+export class InterfaceNode {
+  readonly tag = 'InterfaceNode'
+  readonly id = Symbol('InterfaceNode')
+
+  constructor(
+    readonly name: string,
+    readonly params: readonly TypeParam[],
+    readonly properties: ReadonlyArray<readonly [key: string, value: PropertyValue]>,
+  ) {}
+}
+
+export type PropertyValue = Value | FunctionSignature

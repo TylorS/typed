@@ -2,9 +2,20 @@ import { join } from 'path'
 
 import { generateOverloads } from './generate-overloads'
 
-const filePath = join(__dirname, 'overloads', process.argv[2])
+const overloadsPath = join(__dirname, 'overloads')
+const filePaths = process.argv.slice(2).map((path) => join(overloadsPath, path))
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { signature } = require(filePath)
+filePaths.forEach((filePath, i) => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { node } = require(filePath)
 
-console.log(generateOverloads(signature))
+  if (i > 0) {
+    console.log()
+  }
+
+  console.log(generateOverloads(node))
+
+  if (i > 0) {
+    console.log()
+  }
+})

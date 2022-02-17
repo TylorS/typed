@@ -10,11 +10,11 @@ import {
   HktReturnSignature,
   HktTypeParam,
   KindNode,
-  ObjectNode,
+  RecordNode,
   StaticArgument,
   StaticTypeParam,
   TypeClassArgument,
-} from '../FunctionSignature'
+} from '../OverloadAst'
 
 const fHkt = new HktTypeParam('F')
 const functorFTypeClass = new TypeClassArgument('F', 'Functor', [fHkt])
@@ -24,14 +24,14 @@ const nameArg = new StaticArgument('name', 'N')
 const aParam = new StaticTypeParam('A')
 const kindArg = new KindNode('kind', fHkt, [aParam])
 
-const returnObject = new ObjectNode(
+const returnObject = new RecordNode(
   'K',
   new DynamicValue([aParam], (x) => x.join('')),
   nameTypeParam,
   false,
 )
 
-export const signature = new FunctionSignature(
+export const node = new FunctionSignature(
   true,
   'bindTo',
   [fHkt],

@@ -11,7 +11,7 @@ import {
   StaticTypeParam,
   TupleNode,
   TypeClassArgument,
-} from '../FunctionSignature'
+} from '../OverloadAst'
 
 const fHkt = new HktTypeParam('F')
 const functorFTypeClass = new TypeClassArgument('F', 'Functor', [fHkt])
@@ -19,7 +19,7 @@ const functorFTypeClass = new TypeClassArgument('F', 'Functor', [fHkt])
 const aTypeParam = new StaticTypeParam('A')
 const kindArg = new KindNode('kind', fHkt, [aTypeParam])
 
-export const signature = new FunctionSignature(
+export const node = new FunctionSignature(
   true,
   'tupled',
   [fHkt],

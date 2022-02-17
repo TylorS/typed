@@ -11,7 +11,7 @@ import {
   StaticReturnSignature,
   StaticTypeParam,
   TypeClassArgument,
-} from '../FunctionSignature'
+} from '../OverloadAst'
 
 const fHkt = new HktTypeParam('F')
 
@@ -26,7 +26,7 @@ const hktAB = new KindNode('kind', fHkt, [
   new FunctionSignature(false, '', [], [aArg], new StaticReturnSignature('B', [])),
 ])
 
-export const signature = new FunctionSignature(
+export const node = new FunctionSignature(
   true,
   'flap',
   [fHkt],

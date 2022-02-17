@@ -1,3 +1,5 @@
+import { Params } from '@/Prelude/HKT'
+
 import { DeepEquals } from '../src/Prelude/Eq'
 import {
   DynamicValue,
@@ -6,6 +8,7 @@ import {
   HktReturnSignature,
   HktReturnSignatureParam,
   HktTypeParam,
+  InterfaceNode,
   KindNode,
   possibleLengths,
   RecordNode,
@@ -15,21 +18,44 @@ import {
   TypeClassArgument,
   TypeParam,
   Value,
-} from './FunctionSignature'
+} from './OverloadAst'
 
-const hktParamNames = ['A', 'E', 'R', 'S', 'U', 'V', 'W', 'X', 'Y', 'Z'] as const
+const hktParamNames = [
+  Params.A,
+  Params.E,
+  Params.R,
+  Params.S,
+  Params.U,
+  Params.V,
+  Params.W,
+  Params.X,
+  Params.Y,
+  Params.Z,
+] as const
 
-export function generateOverloads(signature: FunctionSignature) {
-  return generateSignatures(signature)
-    .map((x) => printSignature(x))
-    .join('\n')
+export function generateOverloads(node: FunctionSignature | InterfaceNode) {
+  switch (node.tag) {
+    case 'FunctionSignature':
+      return generateFunctionSignatures(node)
+        .map((x) => printFunctionSignature(x))
+        .join('\n')
+    case 'InterfaceNode':
+      return uniq(generateInterfaceNodes(node).map((x) => printInterfaceNode(x))).join('\n')
+  }
 }
 
-function generateSignatures(signature: FunctionSignature) {
+export function generateInterfaceNodes(node: InterfaceNode): readonly InterfaceNode[] {
+  const hktParams = node.params.filter((x): x is HktTypeParam => x.tag === 'HktTypeParam')
+  const possiblilties = uniq(combinations<number>(hktParams.map(() => possibleLengths)))
+
+  return possiblilties.map((possibility) => rewriteInterfaceNode(node, possibility))
+}
+
+export function generateFunctionSignatures(signature: FunctionSignature) {
   const hktParams = signature.params.filter((x): x is HktTypeParam => x.tag === 'HktTypeParam')
   const possiblilties = uniq(combinations<number>(hktParams.map(() => possibleLengths)))
 
-  return possiblilties.map((possibility) => rewriteSignature(signature, possibility))
+  return possiblilties.map((possibility) => rewriteFunctionSignature(signature, possibility))
 }
 
 function uniq<A>(array: ReadonlyArray<A>): ReadonlyArray<A> {
@@ -37,21 +63,56 @@ function uniq<A>(array: ReadonlyArray<A>): ReadonlyArray<A> {
   const unique: A[] = []
 
   for (const value of array) {
-    const hasBeenSeen = !!seen.find(DeepEquals.equals(value))
-
-    if (!hasBeenSeen) {
-      seen.push(value)
-      unique.push(value)
+    if (seen.find(DeepEquals.equals(value))) {
+      continue
     }
+
+    seen.push(value)
+    unique.push(value)
   }
 
   return unique
 }
 
-function rewriteSignature(
+function rewriteInterfaceNode(
+  node: InterfaceNode,
+  possibleLengths: ReadonlyArray<number>,
+  lengths: Map<symbol, number> = new Map(),
+): InterfaceNode {
+  let i = 0
+  const shouldSetLengths = lengths.size === 0
+
+  const params = node.params.map((x) => {
+    if (x.tag !== 'HktTypeParam') {
+      return x
+    }
+
+    const index = i++
+    const size = shouldSetLengths ? possibleLengths[index] : lengths.get(x.id)!
+
+    lengths.set(x.id, size)
+
+    return { ...x, size }
+  })
+
+  return new InterfaceNode(
+    node.name,
+    params,
+    node.properties.map(
+      ([k, v]) =>
+        [
+          k,
+          v.tag === 'FunctionSignature' ? rewriteFunctionSignature(v, possibleLengths, lengths) : v,
+        ] as const,
+    ),
+  )
+}
+
+function rewriteFunctionSignature(
   signature: FunctionSignature,
   possibleLengths: ReadonlyArray<number>,
   lengths: Map<symbol, number> = new Map(),
+  existingLengths: Map<symbol, number> = new Map(),
 ): FunctionSignature {
   let i = 0
   const shouldSetLengths = lengths.size === 0
@@ -73,14 +134,14 @@ function rewriteSignature(
 
   kindNodes.forEach((node, i) => {
     const size = lengths.get(node.hkt.id)!
-    const satisfiedSize = node.params.filter(
-      (x): x is TypeParam | KindNode => x.tag !== 'HktTypeParam',
-    ).length
+    const existing = existingLengths.has(node.hkt.id) ? existingLengths.get(node.hkt.id)! : 0
+    const satisfiedSize =
+      node.params.filter((x): x is TypeParam | KindNode => x.tag !== 'HktTypeParam').length +
+      existing
 
     const args = hktParamNames
       .slice(satisfiedSize, size)
-      .reverse()
-      .map((x) => (kindNodes.length === 1 ? x : `${x}${i + 1}`))
+      .map((x) => (kindNodes.length < 2 ? x : `${x}${i + 1}`))
       .map((s) => new StaticTypeParam(s))
 
     additionalParams.set(node.hkt.id, args)
@@ -101,6 +162,7 @@ function rewriteSignature(
     signature.returnSignature,
     possibleLengths,
     lengths,
+    existingLengths,
     additionalParams,
   )
 
@@ -161,11 +223,12 @@ function rewriteReturnSignature(
   signature: ReturnSignature,
   possibleLengths: ReadonlyArray<number>,
   lengths: Map<symbol, number>,
+  existingLengths: Map<symbol, number>,
   additionalParams: Map<symbol, readonly StaticTypeParam[]>,
 ): ReturnSignature {
   switch (signature.tag) {
     case 'FunctionSignature':
-      return rewriteSignature(signature, possibleLengths, lengths)
+      return rewriteFunctionSignature(signature, possibleLengths, lengths, existingLengths)
     case 'HktReturnSignature':
       return rewriteHktReturnSignature(signature, lengths, additionalParams)
     default:
@@ -227,7 +290,7 @@ function combinations<A>(
   return possiblilties
 }
 
-function printSignature(signature: FunctionSignature, isReturn = false) {
+function printFunctionSignature(signature: FunctionSignature, isReturn = false) {
   let str = ''
 
   if (!isReturn && signature.exported) {
@@ -317,7 +380,7 @@ function printKindArgument(arg: KindNode) {
       p.tag === 'KindNode'
         ? printKindArgument(p)
         : p.tag === 'FunctionSignature'
-        ? printSignature(p, true)
+        ? printFunctionSignature(p, true)
         : p.label,
     )
     .join(', ')
@@ -338,7 +401,7 @@ function printReturnSignature(signature: ReturnSignature): string {
       }, ${signature.params.map(printHktReturnSignatureParam).join(', ')}>`
     }
     case 'FunctionSignature':
-      return printSignature(signature, true)
+      return printFunctionSignature(signature, true)
   }
 }
 
@@ -381,4 +444,40 @@ function printDynamicValue<Params extends readonly TypeParam[]>(
   value: DynamicValue<Params>,
 ): string {
   return value.template(value.typeParams.map((t) => t.label))
+}
+
+function printInterfaceNode(node: InterfaceNode): string {
+  if (node.params.length > 0) {
+    return `export interface ${getInterfaceName(node)}<${node.params
+      .map((param) => printTypeParam(param))
+      .join(', ')
+      .trim()}> {
+${printInterfaceProperties(node.properties)}
+}`
+  }
+
+  return `export interface ${node.name} {
+${printInterfaceProperties(node.properties)}
+}`
+}
+
+function getInterfaceName(node: InterfaceNode): string {
+  const hktParams = node.params.filter((x): x is HktTypeParam => x.tag === 'HktTypeParam')
+
+  return hktParams.length === 0
+    ? node.name
+    : `${node.name}${hktParams.map((p) => (p.size > 1 ? p.size : '')).join('')}`
+}
+
+function printInterfaceProperties(properties: InterfaceNode['properties']) {
+  return properties
+    .map(
+      ([key, value]) =>
+        `  readonly ${key}: ${
+          value.tag === 'FunctionSignature'
+            ? printFunctionSignature(value, true)
+            : printValue(value)
+        }`,
+    )
+    .join('\n')
 }
