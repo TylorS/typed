@@ -8,9 +8,7 @@ export const lazyProcessors: Processors = {
   Fork: lazyLoadProcessor(() => import('./processFork').then((m) => m.processFork)),
   FromAsync: lazyLoadProcessor(() => import('./processFromAsync').then((m) => m.processFromAsync)),
   FromExit: lazyLoadProcessor(() => import('./processFromExit').then((m) => m.processFromExit)),
-  FromLazy: lazyLoadProcessor(() =>
-    import('./processFromLazy').then((m) => m.processFromLazy as Processors['FromLazy']),
-  ),
+  FromLazy: lazyLoadProcessor(() => import('./processFromLazy').then((m) => m.processFromLazy)),
   FromPromise: lazyLoadProcessor(() =>
     import('./processFromPromise').then((m) => m.processFromPromise),
   ),

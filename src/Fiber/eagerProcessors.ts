@@ -29,7 +29,7 @@ export const eagerProcessors: Processors = {
   Fork: processFork,
   FromAsync: processFromAsync,
   FromExit: processFromExit,
-  FromLazy: processFromLazy as Processors['FromLazy'],
+  FromLazy: processFromLazy,
   FromPromise: processFromPromise,
   FromTuple: processFromTuple,
   GetContext: processGetContext,

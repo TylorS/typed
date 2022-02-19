@@ -175,10 +175,10 @@
       "import": "./esm/Effect/FromExit.js",
       "types": "./esm/Effect/FromExit.d.ts"
     },
-    "./Effect/FromIO": {
-      "require": "./cjs/Effect/FromIO.js",
-      "import": "./esm/Effect/FromIO.js",
-      "types": "./esm/Effect/FromIO.d.ts"
+    "./Effect/FromLazy": {
+      "require": "./cjs/Effect/FromLazy.js",
+      "import": "./esm/Effect/FromLazy.js",
+      "types": "./esm/Effect/FromLazy.d.ts"
     },
     "./Effect/FromPromise": {
       "require": "./cjs/Effect/FromPromise.js",
@@ -375,10 +375,10 @@
       "import": "./esm/Fiber/processFromExit.js",
       "types": "./esm/Fiber/processFromExit.d.ts"
     },
-    "./Fiber/processFromIO": {
-      "require": "./cjs/Fiber/processFromIO.js",
-      "import": "./esm/Fiber/processFromIO.js",
-      "types": "./esm/Fiber/processFromIO.d.ts"
+    "./Fiber/processFromLazy": {
+      "require": "./cjs/Fiber/processFromLazy.js",
+      "import": "./esm/Fiber/processFromLazy.js",
+      "types": "./esm/Fiber/processFromLazy.d.ts"
     },
     "./Fiber/processFromPromise": {
       "require": "./cjs/Fiber/processFromPromise.js",
@@ -610,6 +610,16 @@
       "import": "./esm/Fx/forkJoin.js",
       "types": "./esm/Fx/forkJoin.d.ts"
     },
+    "./Fx/getParentScope": {
+      "require": "./cjs/Fx/getParentScope.js",
+      "import": "./esm/Fx/getParentScope.js",
+      "types": "./esm/Fx/getParentScope.d.ts"
+    },
+    "./Fx/getRootScope": {
+      "require": "./cjs/Fx/getRootScope.js",
+      "import": "./esm/Fx/getRootScope.js",
+      "types": "./esm/Fx/getRootScope.d.ts"
+    },
     "./Fx/map": {
       "require": "./cjs/Fx/map.js",
       "import": "./esm/Fx/map.js",
@@ -675,6 +685,11 @@
       "import": "./esm/Layer/compose.js",
       "types": "./esm/Layer/compose.d.ts"
     },
+    "./Layer/fromManaged": {
+      "require": "./cjs/Layer/fromManaged.js",
+      "import": "./esm/Layer/fromManaged.js",
+      "types": "./esm/Layer/fromManaged.d.ts"
+    },
     "./Layer/idOf": {
       "require": "./cjs/Layer/idOf.js",
       "import": "./esm/Layer/idOf.js",
@@ -689,11 +704,6 @@
       "require": "./cjs/Managed/Managed.js",
       "import": "./esm/Managed/Managed.js",
       "types": "./esm/Managed/Managed.d.ts"
-    },
-    "./Managed/ReleaseMap": {
-      "require": "./cjs/Managed/ReleaseMap.js",
-      "import": "./esm/Managed/ReleaseMap.js",
-      "types": "./esm/Managed/ReleaseMap.d.ts"
     },
     "./Managed/with": {
       "require": "./cjs/Managed/with.js",
@@ -1175,10 +1185,30 @@
       "import": "./esm/Scope/index.js",
       "types": "./esm/Scope/index.d.ts"
     },
+    "./Scope/Finalizer": {
+      "require": "./cjs/Scope/Finalizer.js",
+      "import": "./esm/Scope/Finalizer.js",
+      "types": "./esm/Scope/Finalizer.d.ts"
+    },
+    "./Scope/GlobalScope": {
+      "require": "./cjs/Scope/GlobalScope.js",
+      "import": "./esm/Scope/GlobalScope.js",
+      "types": "./esm/Scope/GlobalScope.d.ts"
+    },
     "./Scope/InterruptableStatus": {
       "require": "./cjs/Scope/InterruptableStatus.js",
       "import": "./esm/Scope/InterruptableStatus.js",
       "types": "./esm/Scope/InterruptableStatus.d.ts"
+    },
+    "./Scope/LocalScope": {
+      "require": "./cjs/Scope/LocalScope.js",
+      "import": "./esm/Scope/LocalScope.js",
+      "types": "./esm/Scope/LocalScope.d.ts"
+    },
+    "./Scope/ReleaseMap": {
+      "require": "./cjs/Scope/ReleaseMap.js",
+      "import": "./esm/Scope/ReleaseMap.js",
+      "types": "./esm/Scope/ReleaseMap.d.ts"
     },
     "./Scope/Scope": {
       "require": "./cjs/Scope/Scope.js",

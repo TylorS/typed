@@ -53,7 +53,7 @@ export type FindInstruction<Type extends Instruction<R, E>['type'], R, E> = {
   Fork: Fork<R, E, any>
   FromAsync: FromAsync<any>
   FromExit: FromExit<E, any>
-  FromIO: FromLazy<any>
+  FromLazy: FromLazy<any>
   FromPromise: FromPromise<any>
   FromTuple: FromTuple<readonly Fx<R, E, any>[]>
   GetContext: GetContext<E>
