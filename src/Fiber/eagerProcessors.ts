@@ -4,7 +4,7 @@ import { processDrain } from './processDrain'
 import { processFork } from './processFork'
 import { processFromAsync } from './processFromAsync'
 import { processFromExit } from './processFromExit'
-import { processFromIO } from './processFromIO'
+import { processFromLazy } from './processFromLazy'
 import { processFromPromise } from './processFromPromise'
 import { processFromTuple } from './processFromTuple'
 import { processGetContext } from './processGetContext'
@@ -29,7 +29,7 @@ export const eagerProcessors: Processors = {
   Fork: processFork,
   FromAsync: processFromAsync,
   FromExit: processFromExit,
-  FromIO: processFromIO,
+  FromLazy: processFromLazy as Processors['FromLazy'],
   FromPromise: processFromPromise,
   FromTuple: processFromTuple,
   GetContext: processGetContext,

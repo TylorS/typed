@@ -1,7 +1,7 @@
-import { Async } from '@/Async'
 import { None, Sync } from '@/Disposable'
 import { fromAsync } from '@/Effect'
 import { Fx } from '@/Fx'
+import { Async } from '@/Prelude/Async'
 
 import { Future } from './Future'
 

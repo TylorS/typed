@@ -1,5 +1,5 @@
 import { WithinContext } from '@/Effect'
-import { forkJoin } from '@/Fx'
+import { forkJoin } from '@/Fx/forkJoin'
 
 import { FxInstruction } from './Processor'
 

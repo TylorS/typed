@@ -1,7 +1,8 @@
 import { fromExit, of, Race, RaceErrors, RaceOutput, RaceResources, tuple } from '@/Effect'
 import { Exit } from '@/Exit'
 import { complete, pending, wait } from '@/Future'
-import { dispose, Fx } from '@/Fx'
+import { dispose } from '@/Fx/dispose'
+import { Fx } from '@/Fx/Fx'
 import { pipe } from '@/Prelude/function'
 
 import { InstructionProcessor } from './InstructionProcessor'

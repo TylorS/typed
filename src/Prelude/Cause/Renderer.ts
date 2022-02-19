@@ -1,7 +1,7 @@
 import { prettyFiberId } from '@/FiberId'
 import { pipe } from '@/Prelude/function'
 import * as O from '@/Prelude/Option'
-import * as Sync from '@/Sync'
+import * as Sync from '@/Prelude/Sync'
 import { prettyTrace, Trace } from '@/Trace'
 
 import { Cause, Disposed, Expected, Unexpected } from './Cause'

@@ -2,9 +2,9 @@ import * as Fx from '@/Fx'
 import { Right } from '@/Prelude/Either'
 import { pipe } from '@/Prelude/function'
 import { isSome } from '@/Prelude/Option'
+import { ReleaseMap } from '@/Scope'
 
 import { Managed } from './Managed'
-import { ReleaseMap } from './ReleaseMap'
 
 /**
  * Utilize a Managed type by applying a function to the resource created. The resources
@@ -27,7 +27,7 @@ export function withManaged<A, R2, E2, B>(_with: (a: A) => Fx.Fx<R2, E2, B>) {
           const scope = yield* Fx.getScope('withManaged')
 
           // Ensure if the Fiber fails this gets cleaned up
-          const optionKey = scope.ensure(finalizer)
+          const optionKey = yield* scope.ensure(finalizer)
 
           const dispose = (): void => {
             if (isSome(optionKey)) {

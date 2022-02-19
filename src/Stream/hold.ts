@@ -1,7 +1,7 @@
-import { Unexpected } from '@/Cause'
 import * as D from '@/Disposable'
 import { dispose } from '@/Disposable'
 import { fromLazy } from '@/Effect'
+import { Unexpected } from '@/Prelude/Cause'
 import * as O from '@/Prelude/Option'
 import { EndElement, ErrorElement, EventElement, tryEvent } from '@/Sink'
 

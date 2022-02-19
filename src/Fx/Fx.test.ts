@@ -1,9 +1,9 @@
 import { deepStrictEqual, ok } from 'assert'
 import { describe } from 'mocha'
 
-import { prettyPrint } from '@/Cause'
 import { fromExit, fromLazy } from '@/Effect'
 import { result } from '@/Effect/Result'
+import { prettyPrint } from '@/Prelude/Cause'
 import { isLeft, isRight } from '@/Prelude/Either'
 
 import { ask } from './Effect'
@@ -54,6 +54,7 @@ describe(__filename, () => {
           })
         })
       } catch (e) {
+        console.error(e)
         ok(error === e)
 
         return 2

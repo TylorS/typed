@@ -6,11 +6,11 @@ import * as Ref from '@/Ref'
 import { Layer, LayerId } from './Layer'
 
 export const GlobalLayers = Ref.global(
-  Fx.fromLazy(() => new Map<LayerId, Fiber<any, any>>(), 'CreateLayers'),
+  Fx.fromLazy(() => new Map<LayerId, Fiber<any, any>>(), 'CreateGlobalLayers'),
 )
 
 export const LocalLayers = Ref.make(
-  Fx.fromLazy(() => new Map<LayerId, Fiber<any, any>>(), 'CreateLayers'),
+  Fx.fromLazy(() => new Map<LayerId, Fiber<any, any>>(), 'CreateLocalLayers'),
 )
 
 export function getLayers<R, E, A>(layer: Layer<R, E, A>) {

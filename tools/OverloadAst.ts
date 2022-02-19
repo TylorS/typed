@@ -128,6 +128,7 @@ export class FunctionSignature {
     readonly params: readonly TypeParam[],
     readonly args: readonly FunctionArgument[],
     readonly returnSignature: ReturnSignature,
+    readonly useDefaults: boolean = false,
   ) {}
 }
 

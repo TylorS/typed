@@ -2,8 +2,7 @@ import { Exit } from '@/Exit'
 import * as Fx from '@/Fx'
 import { pipe } from '@/Prelude/function'
 import { Finalizer } from '@/Scope'
-
-import { ReleaseMap } from './ReleaseMap'
+import { ReleaseMap } from '@/Scope/ReleaseMap'
 
 /**
  * A type used to help acquire resources which need to be released in the event of success or failure.

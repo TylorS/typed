@@ -1,7 +1,7 @@
-import { isUnexpected } from '@/Cause'
 import { fromExit, Refine, result } from '@/Effect'
 import { expected } from '@/Exit'
-import { Fx } from '@/Fx'
+import { Fx } from '@/Fx/Fx'
+import { isUnexpected } from '@/Prelude/Cause'
 import { isLeft } from '@/Prelude/Either'
 
 import { FxInstruction } from './Processor'

@@ -1,6 +1,6 @@
-import * as Cause from '@/Cause'
 import { Time } from '@/Clock'
 import { FiberId } from '@/FiberId'
+import * as Cause from '@/Prelude/Cause'
 import { prettyStringify } from '@/prettyStringify'
 
 export interface Sink<E, A> {

@@ -1,7 +1,7 @@
-import { Traced } from '@/Cause'
 import { Async, Disposable, DisposableQueue, dispose, disposeAll, Sync } from '@/Disposable'
 import { disposed, Exit, then, unexpected } from '@/Exit'
 import { FiberId } from '@/FiberId'
+import { Traced } from '@/Prelude/Cause'
 import { isLeft, Left, match } from '@/Prelude/Either'
 import { pipe } from '@/Prelude/function'
 import { isNone, isSome, None, Option, Some } from '@/Prelude/Option'

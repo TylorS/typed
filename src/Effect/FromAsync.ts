@@ -1,4 +1,4 @@
-import { Async } from '@/Async'
+import { Async } from '@/Prelude/Async'
 
 import { instr } from './Instruction'
 

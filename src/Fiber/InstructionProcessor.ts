@@ -1,15 +1,16 @@
 import { Required } from 'ts-toolbelt/out/Object/Required'
 
-import { prettyPrint } from '@/Cause'
 import { Time } from '@/Clock'
-import { Disposable, DisposableQueue, Sync, withRemove } from '@/Disposable'
+import { Disposable, DisposableQueue, withRemove } from '@/Disposable'
 import { Effect, FromExit, fromLazy, Provide } from '@/Effect'
 import { Exit, success, unexpected } from '@/Exit'
 import { FiberContext } from '@/FiberContext'
-import { Fx } from '@/Fx'
+import * as Future from '@/Future'
+import * as Fx from '@/Fx'
+import { prettyPrint } from '@/Prelude/Cause'
 import { isLeft, match } from '@/Prelude/Either'
 import { pipe } from '@/Prelude/function'
-import { getOrElse, isSome, Option, Some } from '@/Prelude/Option'
+import { getOrElse, Option, Some } from '@/Prelude/Option'
 import { prettyStringify } from '@/prettyStringify'
 import { extendScope, LocalScope } from '@/Scope'
 import { SourceLocation, Trace, TraceElement } from '@/Trace'
@@ -17,12 +18,7 @@ import { SourceLocation, Trace, TraceElement } from '@/Trace'
 import { Instruction } from './Instruction'
 import { Processor, ProcessorInstruction, Processors } from './Processor'
 import type { RuntimeOptions } from './Runtime'
-import {
-  ResumeAsync,
-  ResumePromise,
-  RuntimeInstruction,
-  RuntimeIterable,
-} from './RuntimeInstruction'
+import { ResumePromise, RuntimeInstruction, RuntimeIterable } from './RuntimeInstruction'
 
 /**
  * InstructionProcessor is the main workhorse for interpreting Fx's instructions into a Generator
@@ -35,7 +31,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
   protected releasing = false
 
   constructor(
-    readonly fx: Fx<R, E, A>,
+    readonly fx: Fx.Fx<R, E, A>,
     readonly resources: R,
     readonly fiberContext: FiberContext<E>,
     readonly scope: LocalScope<E, A>,
@@ -78,7 +74,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
    * and allows configuing part of that stack that does (not) trace execution.
    */
   readonly extend = <R2, B>(
-    fx: Fx<R2, E, B>,
+    fx: Fx.Fx<R2, E, B>,
     resources: R2,
     shouldTrace: boolean = this.shouldTrace,
   ) =>
@@ -96,7 +92,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
   /**
    * Forks the InstructionProcessor with fully customizable runtime.
    */
-  readonly fork = <B>(fx: Fx<R, E, B>, options: Required<RuntimeOptions<E>, 'fiberContext'>) => {
+  readonly fork = <B>(fx: Fx.Fx<R, E, B>, options: Required<RuntimeOptions<E>, 'fiberContext'>) => {
     const shouldTrace = options.shouldTrace ?? this.shouldTrace
     const maxOps = options.maxOps ?? this.maxOpCount
     const processors = options.processors ?? this.processors
@@ -131,15 +127,21 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
 
     // If we couldn't release the scope, wait for this scope to close.
     if (!released) {
-      const exit = yield new ResumeAsync<Exit<E, A>>((cb) => {
-        const option = this.scope.ensure((exit) => fromLazy(() => cb(exit)))
+      const future = Future.pending<unknown, never, Exit<E, A>>()
 
-        return Sync(() => isSome(option) && this.scope.cancel(option.value))
-      })
+      const ensureGenerator = this.scope
+        .ensure((exit) => fromLazy(() => pipe(future, Future.complete(Fx.of(exit)))))
+        [Symbol.iterator]()
+
+      yield* this.run(ensureGenerator, ensureGenerator.next())
+
+      const exitGenerator = Future.wait(future)[Symbol.iterator]()
+
+      const exit = yield* this.run(exitGenerator, exitGenerator.next())
 
       this.releasing = false
 
-      return exit as Exit<E, A>
+      return exit
     }
 
     this.releasing = false

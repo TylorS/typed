@@ -1,8 +1,9 @@
-import { prettyPrint } from '@/Cause'
-import { DisposableQueue, Sync } from '@/Disposable'
+import { Disposable, DisposableQueue, Sync } from '@/Disposable'
 import { Drain } from '@/Effect'
 import { Exit } from '@/Exit'
-import { dispose } from '@/Fx'
+import { dispose } from '@/Fx/dispose'
+import { Fx } from '@/Fx/Fx'
+import { prettyPrint } from '@/Prelude/Cause'
 import { Left, match } from '@/Prelude/Either'
 import { constVoid, pipe } from '@/Prelude/function'
 import { isSome, None, Some } from '@/Prelude/Option'
@@ -10,6 +11,7 @@ import { LocalScope } from '@/Scope'
 import { Sink } from '@/Sink'
 
 import { InstructionProcessor } from './InstructionProcessor'
+import { DeferredInstruction } from './Processor'
 import { ResumeSync } from './RuntimeInstruction'
 import { RuntimeProcessor } from './RuntimeProcessor'
 
@@ -17,20 +19,25 @@ export const processDrain = <R, E, A>(
   drain: Drain<R, E, A>,
   processor: InstructionProcessor<R, E, any>,
 ) => {
-  const inner = new DisposableQueue()
-  const key = processor.scope.ensure(() => dispose(inner))
+  return new DeferredInstruction<R, E, Disposable>(
+    Fx(function* () {
+      const inner = new DisposableQueue()
+      const key = yield* processor.scope.ensure(() => dispose(inner))
 
-  inner.add(Sync(() => isSome(key) && processor.scope.cancel(key.value)))
-  inner.add(
-    drain.input.run(makeDrainSink(processor, processor.scope), {
-      resources: processor.resources,
-      scope: processor.scope,
-      fiberContext: processor.fiberContext,
-      parentTrace: processor.shouldTrace ? Some(processor.captureStackTrace()) : None,
+      inner.add(Sync(() => isSome(key) && processor.scope.cancel(key.value)))
+
+      inner.add(
+        drain.input.run(makeDrainSink(processor, processor.scope), {
+          resources: processor.resources,
+          scope: processor.scope,
+          fiberContext: processor.fiberContext,
+          parentTrace: processor.shouldTrace ? Some(processor.captureStackTrace()) : None,
+        }),
+      )
+
+      return new ResumeSync(inner)
     }),
   )
-
-  return new ResumeSync(inner)
 }
 
 function makeDrainSink<R, E, A>(

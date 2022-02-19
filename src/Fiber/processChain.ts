@@ -1,5 +1,5 @@
 import { Chain } from '@/Effect'
-import { Fx } from '@/Fx'
+import { Fx } from '@/Fx/Fx'
 
 import { ProcessorInstruction } from './Processor'
 

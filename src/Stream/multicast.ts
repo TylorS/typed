@@ -1,5 +1,5 @@
-import * as Cause from '@/Cause'
 import * as Disposable from '@/Disposable'
+import * as Cause from '@/Prelude/Cause'
 import { EndElement, ErrorElement, EventElement, Sink, tryEnd, tryEvent } from '@/Sink'
 
 import { Stream, StreamContext, StreamRun } from './Stream'

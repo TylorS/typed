@@ -1,4 +1,4 @@
-import * as Effect from '@/Effect'
+import type * as Effect from '@/Effect'
 
 export interface Fx<R, E, A> extends Effect.Effect<R, E, A> {
   readonly [Symbol.iterator]: () => Generator<Effect.Effect<R, E, any>, A>

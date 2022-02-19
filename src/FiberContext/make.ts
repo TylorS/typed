@@ -1,6 +1,6 @@
-import { Cause, defaultRenderer, prettyPrint } from '@/Cause'
 import { makeFiberId } from '@/FiberId'
 import { makeFiberRefLocals } from '@/FiberRef'
+import { Cause, defaultRenderer, prettyPrint } from '@/Prelude/Cause'
 import { increment, MutableRef } from '@/Prelude/MutableRef'
 import { None } from '@/Prelude/Option'
 import type { Scheduler } from '@/Scheduler/Scheduler'

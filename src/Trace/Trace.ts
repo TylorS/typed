@@ -1,6 +1,6 @@
 import { FiberId, prettyFiberId } from '@/FiberId'
 import { isNone, Option } from '@/Prelude/Option'
-import * as Sync from '@/Sync'
+import * as Sync from '@/Prelude/Sync'
 
 export class Trace {
   constructor(

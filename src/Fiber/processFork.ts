@@ -1,6 +1,6 @@
 import { Fork } from '@/Effect'
 import { forkContext } from '@/FiberContext/forkContext'
-import { Fx } from '@/Fx'
+import { Fx } from '@/Fx/Fx'
 
 import { fromInstructionProcessor } from './fromInstructionProcessor'
 import { InstructionProcessor } from './InstructionProcessor'

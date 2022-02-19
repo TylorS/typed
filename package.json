@@ -760,10 +760,20 @@
       "import": "./esm/Prelude/Either/Either.js",
       "types": "./esm/Prelude/Either/Either.d.ts"
     },
+    "./Prelude/Either/HKT": {
+      "require": "./cjs/Prelude/Either/HKT.js",
+      "import": "./esm/Prelude/Either/HKT.js",
+      "types": "./esm/Prelude/Either/HKT.d.ts"
+    },
     "./Prelude/Either": {
       "require": "./cjs/Prelude/Either/index.js",
       "import": "./esm/Prelude/Either/index.js",
       "types": "./esm/Prelude/Either/index.d.ts"
+    },
+    "./Prelude/Either/map": {
+      "require": "./cjs/Prelude/Either/map.js",
+      "import": "./esm/Prelude/Either/map.js",
+      "types": "./esm/Prelude/Either/map.d.ts"
     },
     "./Prelude/Either/mapLeft": {
       "require": "./cjs/Prelude/Either/mapLeft.js",
@@ -774,6 +784,11 @@
       "require": "./cjs/Prelude/Either/match.js",
       "import": "./esm/Prelude/Either/match.js",
       "types": "./esm/Prelude/Either/match.d.ts"
+    },
+    "./Prelude/Either/of": {
+      "require": "./cjs/Prelude/Either/of.js",
+      "import": "./esm/Prelude/Either/of.js",
+      "types": "./esm/Prelude/Either/of.d.ts"
     },
     "./Prelude/Endomorphism": {
       "require": "./cjs/Prelude/Endomorphism/index.js",

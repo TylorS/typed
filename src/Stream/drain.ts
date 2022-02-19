@@ -14,6 +14,6 @@ export const drain: <R, E, A>(
 
 export const drainDaemon = flow(
   D.drain,
-  chain(() => never),
+  chain(() => never), // Allow to run forever
   forkDaemon,
 )

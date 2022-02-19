@@ -1,8 +1,8 @@
-import { Async } from '@/Async'
 import { disposeAll } from '@/Disposable'
 import { fromAsync, fromExit, FromTuple, TupleErrors, TupleResources } from '@/Effect'
 import { both, Exit } from '@/Exit'
-import { Fx } from '@/Fx'
+import { Fx } from '@/Fx/Fx'
+import { Async } from '@/Prelude/Async'
 import { isLeft, Right } from '@/Prelude/Either'
 
 import { InstructionProcessor } from './InstructionProcessor'

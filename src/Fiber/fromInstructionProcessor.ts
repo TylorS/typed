@@ -1,6 +1,6 @@
-import { Async } from '@/Async'
 import { fromAsync, fromLazy } from '@/Effect'
 import { Exit } from '@/Exit'
+import { Async } from '@/Prelude/Async'
 import { identity } from '@/Prelude/function'
 
 import { Fiber } from './Fiber'

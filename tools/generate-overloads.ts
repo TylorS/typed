@@ -38,9 +38,9 @@ export function generateOverloads(node: FunctionSignature | InterfaceNode) {
     case 'FunctionSignature':
       return generateFunctionSignatures(node)
         .map((x) => printFunctionSignature(x))
-        .join('\n')
+        .join('\n\n')
     case 'InterfaceNode':
-      return uniq(generateInterfaceNodes(node).map((x) => printInterfaceNode(x))).join('\n')
+      return uniq(generateInterfaceNodes(node).map((x) => printInterfaceNode(x))).join('\n\n')
   }
 }
 
@@ -132,25 +132,49 @@ function rewriteFunctionSignature(
 
   const additionalParams: Map<symbol, readonly StaticTypeParam[]> = new Map()
 
-  kindNodes.forEach((node, i) => {
-    const size = lengths.get(node.hkt.id)!
-    const existing = existingLengths.has(node.hkt.id) ? existingLengths.get(node.hkt.id)! : 0
+  const setAdditional = (
+    type: HktTypeParam,
+    params: KindNode['params'],
+    i: number,
+    multiple: boolean,
+  ) => {
+    if (!lengths.has(type.id)) {
+      return
+    }
+
+    const size = lengths.get(type.id)!
+    const existing = existingLengths.has(type.id) ? existingLengths.get(type.id)! : 0
     const satisfiedSize =
-      node.params.filter((x): x is TypeParam | KindNode => x.tag !== 'HktTypeParam').length +
-      existing
+      params.filter((x): x is TypeParam | KindNode => x.tag !== 'HktTypeParam').length + existing
 
     const args = hktParamNames
       .slice(satisfiedSize, size)
-      .map((x) => (kindNodes.length < 2 ? x : `${x}${i + 1}`))
-      .map((s) => new StaticTypeParam(s))
+      .map(
+        (x) =>
+          new StaticTypeParam(
+            `${multiple ? `${x}${i + 1}` : x}`,
+            `= ${type.label}['defaults'][Params.${x}]`,
+          ),
+      )
 
-    additionalParams.set(node.hkt.id, args)
-  })
+    additionalParams.set(type.id, signature.useDefaults ? args.reverse() : args)
+  }
+
+  kindNodes.forEach((node, i) => setAdditional(node.hkt, node.params, i, kindNodes.length > 1))
+
+  if (signature.returnSignature.tag === 'HktReturnSignature') {
+    setAdditional(
+      signature.returnSignature.type,
+      signature.params,
+      kindNodes.length === 0 ? 0 : kindNodes.length + 1,
+      kindNodes.length > 1,
+    )
+  }
 
   const args = signature.args.map((x) => {
     switch (x.tag) {
       case 'KindNode':
-        return rewriteKindNode(x, lengths, additionalParams)
+        return rewriteKindNode(x, lengths, signature.useDefaults, additionalParams)
       case 'TypeClassArgument':
         return rewriteTypeClassArgument(x, lengths)
       default:
@@ -168,7 +192,9 @@ function rewriteFunctionSignature(
 
   return {
     ...signature,
-    params: [...Array.from(additionalParams.values()).flat(), ...params],
+    params: signature.useDefaults
+      ? [...params, ...Array.from(additionalParams.values()).flat()]
+      : [...Array.from(additionalParams.values()).flat(), ...params],
     args,
     returnSignature,
   }
@@ -177,27 +203,32 @@ function rewriteFunctionSignature(
 function rewriteKindNode(
   x: KindNode,
   lengths: Map<symbol, number>,
+  useDefaults: boolean,
   additionalParams: Map<symbol, readonly StaticTypeParam[]>,
 ): KindNode {
   return addAdditionalKindNodeParams(
     {
       ...x,
       params: x.params.map((y) =>
-        y.tag === 'KindNode' ? rewriteKindNode(y, lengths, additionalParams) : y,
+        y.tag === 'KindNode' ? rewriteKindNode(y, lengths, useDefaults, additionalParams) : y,
       ),
       size: lengths.get(x.hkt.id)!,
     },
+    useDefaults,
     additionalParams,
   )
 }
 
 function addAdditionalKindNodeParams(
   x: KindNode,
+  useDefaults: boolean,
   additionalParams: Map<symbol, readonly StaticTypeParam[]>,
 ): KindNode {
   return {
     ...x,
-    params: [...(additionalParams.get(x.hkt.id) ?? []), ...x.params],
+    params: useDefaults
+      ? [...x.params, ...(additionalParams.get(x.hkt.id) ?? [])]
+      : [...(additionalParams.get(x.hkt.id) ?? []), ...x.params],
   }
 }
 
@@ -327,7 +358,7 @@ function printTypeParam(param: TypeParam, printExtension = true): string {
   switch (param.tag) {
     case 'StaticTypeParam': {
       if (printExtension && param.extension) {
-        str += ` extends ${param.extension}`
+        str += ` ${param.extension.startsWith('=') ? '' : 'extends '}${param.extension}`
       }
 
       break
@@ -414,7 +445,7 @@ function printHktReturnSignatureParam(param: HktReturnSignatureParam) {
     case 'TupleNode':
       return printTupleNode(param)
     default:
-      return printTypeParam(param)
+      return printTypeParam(param, false)
   }
 }
 
