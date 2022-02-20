@@ -29,7 +29,7 @@ export const processFromTuple = <FX extends ReadonlyArray<Fx<any, any, any> | Fx
                 if (--remaining === 0) {
                   const exit = exits.some(isLeft)
                     ? exits.reduce(both)
-                    : Right(exits.map((x) => (x as Right<any>).value))
+                    : Right(exits.map((x) => (x as Right<any>).right))
 
                   cb(exit)
                 }

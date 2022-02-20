@@ -15,13 +15,13 @@ export const processMatch = <R, E, A, R2, E2, B, R3, E3, C>(
     const exit = yield* result(instruction.input.fx)
 
     if (isRight(exit)) {
-      return yield* instruction.input.onRight(exit.value)
+      return yield* instruction.input.onRight(exit.right)
     }
 
-    if (isExpected(exit.value)) {
-      return yield* instruction.input.onLeft(exit.value.error)
+    if (isExpected(exit.left)) {
+      return yield* instruction.input.onLeft(exit.left.error)
     }
 
-    return yield* fromCause(exit.value, instruction.trace)
+    return yield* fromCause(exit.left, instruction.trace)
   }),
 })

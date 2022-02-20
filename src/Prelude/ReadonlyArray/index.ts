@@ -1,5 +1,5 @@
+import * as F from '@/Prelude/Covariant'
 import { Unary } from '@/Prelude/function'
-import * as F from '@/Prelude/Functor'
 import { HKT, Params } from '@/Prelude/HKT'
 
 export interface ReadonlyArrayHKT extends HKT {

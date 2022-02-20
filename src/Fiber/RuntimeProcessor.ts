@@ -262,7 +262,7 @@ export class RuntimeProcessor<E, A> implements Disposable {
 
     const exit =
       this.shouldTrace && isLeft(node.exit)
-        ? Left(Traced(this.captureStackTrace(), node.exit.value))
+        ? Left(Traced(this.captureStackTrace(), node.exit.left))
         : node.exit
     this.exited = Some(exit)
     this.observers.forEach((o) => o(exit))

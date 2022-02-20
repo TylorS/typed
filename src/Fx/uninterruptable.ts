@@ -8,7 +8,7 @@ export const uninterruptable = <R, E, A>(fx: Fx<R, E, A>) =>
   Fx(function* () {
     const scope = yield* getScope<E>()
 
-    const key = scope.ensure((exit) =>
+    const key = yield* scope.ensure((exit) =>
       fromLazy(() => {
         if (isLeft(exit)) {
           scope.interruptableStatus.isInterruptable = true

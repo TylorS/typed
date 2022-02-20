@@ -1,4 +1,4 @@
-import { Functor2 } from '../Functor'
+import { Covariant2 } from '../Covariant'
 import { Pointed2 } from '../Pointed'
 import { EitherHKT } from './Either'
 import { map } from './map'
@@ -8,6 +8,6 @@ export const Pointed: Pointed2<EitherHKT> = {
   of,
 }
 
-export const Functor: Functor2<EitherHKT> = {
+export const Covariant: Covariant2<EitherHKT> = {
   map,
 }

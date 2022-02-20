@@ -1,8 +1,8 @@
 import { FiberRefOptions } from '@/FiberRef'
 import * as Fx from '@/Fx'
+import * as F from '@/Prelude/Covariant'
 import { Endomorphism } from '@/Prelude/Endomorphism'
 import { flow, pipe } from '@/Prelude/function'
-import * as F from '@/Prelude/Functor'
 import { None, Option, Some } from '@/Prelude/Option'
 import * as RA from '@/Prelude/ReadonlyArray'
 import * as Ref from '@/Ref'
@@ -18,7 +18,7 @@ export const empty = <A>(options?: FiberRefOptions<readonly A[]>): RefArray<unkn
 /**
  * Apply a transformation to the Output values of a RefArray.
  */
-export const map = F.map(Ref.Functor, RA.Functor) as <A, B>(
+export const map = F.map(Ref.Covariant, RA.Functor) as <A, B>(
   f: (a: A) => B,
 ) => <R, E, I>(fa: RefArray<R, E, A, I>) => RefArray<R, E, B, I>
 

@@ -2,12 +2,12 @@ import { HKT, Params } from '@/Prelude/HKT'
 
 export interface Right<A> {
   readonly type: 'Right'
-  readonly value: A
+  readonly right: A
 }
 
 export const Right = <A>(value: A): Right<A> => ({
   type: 'Right',
-  value,
+  right: value,
 })
 
 export interface RightHKT extends HKT {

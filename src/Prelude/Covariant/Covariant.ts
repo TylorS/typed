@@ -22,47 +22,47 @@ import {
   Kind10,
 } from '@/Prelude/HKT'
 
-export interface Functor<T extends HKT> {
+export interface Covariant<T extends HKT> {
   readonly map: <A, B>(f: Unary<A, B>) => (kind: Kind<T, A>) => Kind<T, B>
 }
 
-export interface Functor1<T extends HKT> {
+export interface Covariant1<T extends HKT> {
   readonly map: <A, B>(f: Unary<A, B>) => (kind: Kind<T, A>) => Kind<T, B>
 }
 
-export interface Functor2<T extends HKT2> {
+export interface Covariant2<T extends HKT2> {
   readonly map: <A, B>(f: Unary<A, B>) => <E>(kind: Kind2<T, E, A>) => Kind2<T, E, B>
 }
 
-export interface Functor3<T extends HKT3> {
+export interface Covariant3<T extends HKT3> {
   readonly map: <A, B>(f: Unary<A, B>) => <R, E>(kind: Kind3<T, R, E, A>) => Kind3<T, R, E, B>
 }
 
-export interface Functor4<T extends HKT4> {
+export interface Covariant4<T extends HKT4> {
   readonly map: <A, B>(
     f: Unary<A, B>,
   ) => <S, R, E>(kind: Kind4<T, S, R, E, A>) => Kind4<T, S, R, E, B>
 }
 
-export interface Functor5<T extends HKT5> {
+export interface Covariant5<T extends HKT5> {
   readonly map: <A, B>(
     f: Unary<A, B>,
   ) => <U, S, R, E>(kind: Kind5<T, U, S, R, E, A>) => Kind5<T, U, S, R, E, B>
 }
 
-export interface Functor6<T extends HKT6> {
+export interface Covariant6<T extends HKT6> {
   readonly map: <A, B>(
     f: Unary<A, B>,
   ) => <V, U, S, R, E>(kind: Kind6<T, V, U, S, R, E, A>) => Kind6<T, V, U, S, R, E, B>
 }
 
-export interface Functor7<T extends HKT7> {
+export interface Covariant7<T extends HKT7> {
   readonly map: <A, B>(
     f: Unary<A, B>,
   ) => <W, V, U, S, R, E>(kind: Kind7<T, W, V, U, S, R, E, A>) => Kind7<T, W, V, U, S, R, E, B>
 }
 
-export interface Functor8<T extends HKT8> {
+export interface Covariant8<T extends HKT8> {
   readonly map: <A, B>(
     f: Unary<A, B>,
   ) => <X, W, V, U, S, R, E>(
@@ -70,7 +70,7 @@ export interface Functor8<T extends HKT8> {
   ) => Kind8<T, X, W, V, U, S, R, E, B>
 }
 
-export interface Functor9<T extends HKT9> {
+export interface Covariant9<T extends HKT9> {
   readonly map: <A, B>(
     f: Unary<A, B>,
   ) => <Y, X, W, V, U, S, R, E>(
@@ -78,7 +78,7 @@ export interface Functor9<T extends HKT9> {
   ) => Kind9<T, Y, X, W, V, U, S, R, E, B>
 }
 
-export interface Functor10<T extends HKT10> {
+export interface Covariant10<T extends HKT10> {
   readonly map: <A, B>(
     f: Unary<A, B>,
   ) => <Z, Y, X, W, V, U, S, R, E>(

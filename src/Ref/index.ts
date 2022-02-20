@@ -1,3 +1,3 @@
-export * from './fp-ts'
+export * from './hkt'
 export * from './map'
 export * from './Ref'

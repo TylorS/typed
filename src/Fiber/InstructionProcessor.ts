@@ -227,7 +227,7 @@ export class InstructionProcessor<R, E, A> implements RuntimeIterable<E, Exit<E,
           break
         }
 
-        return exit.value
+        return exit.right
       }
       /**
        * Runs an Fx which returns a new ProcessorInstruction

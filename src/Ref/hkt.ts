@@ -1,4 +1,4 @@
-import * as F from '@/Prelude/Functor'
+import * as F from '@/Prelude/Covariant'
 import { HKT4, Params } from '@/Prelude/HKT'
 
 import { map } from './map'
@@ -8,6 +8,6 @@ export interface RefHKT extends HKT4 {
   readonly type: Ref<this[Params.S], this[Params.R], this[Params.E], this[Params.A]>
 }
 
-export const Functor: F.Functor4<RefHKT> = {
+export const Covariant: F.Covariant<RefHKT> = {
   map,
 }

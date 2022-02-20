@@ -20,7 +20,7 @@ export const both = <E1, A, E2, B>(
   second: Exit<E2, B>,
 ): Exit<E1 | E2, A | B> => {
   if (E.isLeft(first) && E.isLeft(second)) {
-    return E.Left(C.Both(first.value, second.value))
+    return E.Left(C.Both(first.left, second.left))
   }
 
   if (E.isLeft(second)) {
@@ -35,7 +35,7 @@ export const then = <E1, A, E2, B>(
   second: Exit<E2, B>,
 ): Exit<E1 | E2, A | B> => {
   if (E.isLeft(first) && E.isLeft(second)) {
-    return E.Left(C.Then(first.value, second.value))
+    return E.Left(C.Then(first.left, second.left))
   }
 
   if (E.isLeft(second)) {
