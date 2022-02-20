@@ -24,7 +24,7 @@ describe(__filename, () => {
     const exit = await runTraceExit(test, { a: 1, b: 2 })
 
     ok(isLeft(exit))
-    console.info(prettyPrint(exit.value))
+    console.info(prettyPrint(exit.left))
   })
 
   it('result + fromExit are duals', async () => {
@@ -38,7 +38,7 @@ describe(__filename, () => {
     const exit = await runTraceExit(test, { a: 1, b: 2 })
 
     ok(isRight(exit))
-    deepStrictEqual(exit.value, { a: 1, b: 2 })
+    deepStrictEqual(exit.right, { a: 1, b: 2 })
   })
 
   it('allows utilizing try/catch', async () => {
