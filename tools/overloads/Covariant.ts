@@ -29,4 +29,4 @@ const mapFunction = new FunctionSignature(
   ),
 )
 
-export const node = new InterfaceNode('Functor', [hkt], [['map', mapFunction] as const])
+export const node = new InterfaceNode('Covariant', [hkt], [['map', mapFunction] as const])

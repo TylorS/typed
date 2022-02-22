@@ -49,10 +49,14 @@ export class KindNode {
   constructor(
     readonly label: string,
     readonly hkt: HktTypeParam,
-    readonly params: ReadonlyArray<TypeParam | KindNode | FunctionSignature>,
+    readonly params: ReadonlyArray<KindNodeParam>,
     readonly size: number = 1,
+    readonly existing: number = 0,
+    readonly reverse: boolean = false,
   ) {}
 }
+
+export type KindNodeParam = TypeParam | KindNode | FunctionSignature | Value
 
 export class DynamicArgument<Params extends readonly TypeParam[]> {
   readonly tag = 'DynamicArgument'
@@ -103,7 +107,12 @@ export class DynamicValue<Params extends readonly TypeParam[]> {
   ) {}
 }
 
-export type HktReturnSignatureParam = TypeParam | RecordNode | TupleNode | HktReturnSignature
+export type HktReturnSignatureParam =
+  | TypeParam
+  | RecordNode
+  | TupleNode
+  | HktReturnSignature
+  | Value
 
 export class HktReturnSignature {
   readonly tag = 'HktReturnSignature'
@@ -128,7 +137,9 @@ export class FunctionSignature {
     readonly params: readonly TypeParam[],
     readonly args: readonly FunctionArgument[],
     readonly returnSignature: ReturnSignature,
-    readonly useDefaults: boolean = false,
+    readonly useDefaults: boolean = true,
+    readonly reverse: boolean = false,
+    readonly existing: number = 0,
   ) {}
 }
 
@@ -140,7 +151,9 @@ export class InterfaceNode {
     readonly name: string,
     readonly params: readonly TypeParam[],
     readonly properties: ReadonlyArray<readonly [key: string, value: PropertyValue]>,
+    readonly useDefaults: boolean = true,
+    readonly reverse = false,
   ) {}
 }
 
-export type PropertyValue = Value | FunctionSignature
+export type PropertyValue = Value | KindNode | FunctionSignature

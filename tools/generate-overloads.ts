@@ -95,6 +95,20 @@ function rewriteInterfaceNode(
     return { ...x, size }
   })
 
+  const kindNodes = node.properties
+    .filter((x): x is readonly [string, KindNode] => x[1].tag === 'KindNode')
+    .map((x) => x[1])
+
+  const { additionalParams, setAdditional } = getAdditionalParams(
+    lengths,
+    node.useDefaults,
+    node.reverse,
+  )
+
+  kindNodes.forEach((node, i) =>
+    setAdditional(node.hkt, node.params, i, kindNodes.length > 1, node.existing),
+  )
+
   return new InterfaceNode(
     node.name,
     params,
@@ -102,7 +116,11 @@ function rewriteInterfaceNode(
       ([k, v]) =>
         [
           k,
-          v.tag === 'FunctionSignature' ? rewriteFunctionSignature(v, possibleLengths, lengths) : v,
+          v.tag === 'FunctionSignature'
+            ? rewriteFunctionSignature(v, possibleLengths, lengths)
+            : v.tag === 'DynamicValue'
+            ? v
+            : rewriteKindNode(v, lengths, node.reverse, additionalParams),
         ] as const,
     ),
   )
@@ -112,7 +130,6 @@ function rewriteFunctionSignature(
   signature: FunctionSignature,
   possibleLengths: ReadonlyArray<number>,
   lengths: Map<symbol, number> = new Map(),
-  existingLengths: Map<symbol, number> = new Map(),
 ): FunctionSignature {
   let i = 0
   const shouldSetLengths = lengths.size === 0
@@ -130,37 +147,15 @@ function rewriteFunctionSignature(
 
   const kindNodes = findKindNodes(signature.args)
 
-  const additionalParams: Map<symbol, readonly StaticTypeParam[]> = new Map()
+  const { additionalParams, setAdditional } = getAdditionalParams(
+    lengths,
+    signature.useDefaults,
+    signature.reverse,
+  )
 
-  const setAdditional = (
-    type: HktTypeParam,
-    params: KindNode['params'],
-    i: number,
-    multiple: boolean,
-  ) => {
-    if (!lengths.has(type.id)) {
-      return
-    }
-
-    const size = lengths.get(type.id)!
-    const existing = existingLengths.has(type.id) ? existingLengths.get(type.id)! : 0
-    const satisfiedSize =
-      params.filter((x): x is TypeParam | KindNode => x.tag !== 'HktTypeParam').length + existing
-
-    const args = hktParamNames
-      .slice(satisfiedSize, size)
-      .map(
-        (x) =>
-          new StaticTypeParam(
-            `${multiple ? `${x}${i + 1}` : x}`,
-            `= ${type.label}['defaults'][Params.${x}]`,
-          ),
-      )
-
-    additionalParams.set(type.id, signature.useDefaults ? args.reverse() : args)
-  }
-
-  kindNodes.forEach((node, i) => setAdditional(node.hkt, node.params, i, kindNodes.length > 1))
+  kindNodes.forEach((node, i) =>
+    setAdditional(node.hkt, node.params, i, kindNodes.length > 1, node.existing),
+  )
 
   if (signature.returnSignature.tag === 'HktReturnSignature') {
     setAdditional(
@@ -168,13 +163,14 @@ function rewriteFunctionSignature(
       signature.params,
       kindNodes.length === 0 ? 0 : kindNodes.length + 1,
       kindNodes.length > 1,
+      signature.returnSignature.params.length,
     )
   }
 
   const args = signature.args.map((x) => {
     switch (x.tag) {
       case 'KindNode':
-        return rewriteKindNode(x, lengths, signature.useDefaults, additionalParams)
+        return rewriteKindNode(x, lengths, signature.reverse, additionalParams)
       case 'TypeClassArgument':
         return rewriteTypeClassArgument(x, lengths)
       default:
@@ -186,13 +182,12 @@ function rewriteFunctionSignature(
     signature.returnSignature,
     possibleLengths,
     lengths,
-    existingLengths,
     additionalParams,
   )
 
   return {
     ...signature,
-    params: signature.useDefaults
+    params: signature.reverse
       ? [...params, ...Array.from(additionalParams.values()).flat()]
       : [...Array.from(additionalParams.values()).flat(), ...params],
     args,
@@ -203,32 +198,32 @@ function rewriteFunctionSignature(
 function rewriteKindNode(
   x: KindNode,
   lengths: Map<symbol, number>,
-  useDefaults: boolean,
+  reverse: boolean,
   additionalParams: Map<symbol, readonly StaticTypeParam[]>,
 ): KindNode {
   return addAdditionalKindNodeParams(
     {
       ...x,
       params: x.params.map((y) =>
-        y.tag === 'KindNode' ? rewriteKindNode(y, lengths, useDefaults, additionalParams) : y,
+        y.tag === 'KindNode' ? rewriteKindNode(y, lengths, reverse, additionalParams) : y,
       ),
       size: lengths.get(x.hkt.id)!,
     },
-    useDefaults,
+    reverse,
     additionalParams,
   )
 }
 
 function addAdditionalKindNodeParams(
   x: KindNode,
-  useDefaults: boolean,
+  reverse: boolean,
   additionalParams: Map<symbol, readonly StaticTypeParam[]>,
 ): KindNode {
   return {
     ...x,
-    params: useDefaults
-      ? [...x.params, ...(additionalParams.get(x.hkt.id) ?? [])]
-      : [...(additionalParams.get(x.hkt.id) ?? []), ...x.params],
+    params: reverse
+      ? [...x.params, ...(additionalParams.get(x.hkt.id) ?? []).slice().reverse()]
+      : [...(additionalParams.get(x.hkt.id) ?? []).slice().reverse(), ...x.params],
   }
 }
 
@@ -254,12 +249,11 @@ function rewriteReturnSignature(
   signature: ReturnSignature,
   possibleLengths: ReadonlyArray<number>,
   lengths: Map<symbol, number>,
-  existingLengths: Map<symbol, number>,
   additionalParams: Map<symbol, readonly StaticTypeParam[]>,
 ): ReturnSignature {
   switch (signature.tag) {
     case 'FunctionSignature':
-      return rewriteFunctionSignature(signature, possibleLengths, lengths, existingLengths)
+      return rewriteFunctionSignature(signature, possibleLengths, lengths)
     case 'HktReturnSignature':
       return rewriteHktReturnSignature(signature, lengths, additionalParams)
     default:
@@ -382,7 +376,7 @@ function printArgument(arg: FunctionArgument): string {
       break
     }
     case 'KindNode': {
-      str += `${arg.label}: ${printKindArgument(arg)}`
+      str += `${arg.label}: ${printKindNode(arg)}`
 
       break
     }
@@ -403,15 +397,17 @@ function printArgument(arg: FunctionArgument): string {
   return str
 }
 
-function printKindArgument(arg: KindNode) {
+function printKindNode(arg: KindNode) {
   let str = `Kind${[0, 1].includes(arg.size) ? '' : arg.size}<${arg.hkt.label}, `
 
   str += arg.params
     .map((p) =>
       p.tag === 'KindNode'
-        ? printKindArgument(p)
+        ? printKindNode(p)
         : p.tag === 'FunctionSignature'
         ? printFunctionSignature(p, true)
+        : p.tag === 'DynamicValue'
+        ? printValue(p)
         : p.label,
     )
     .join(', ')
@@ -444,6 +440,8 @@ function printHktReturnSignatureParam(param: HktReturnSignatureParam) {
       return printRecordNode(param)
     case 'TupleNode':
       return printTupleNode(param)
+    case 'DynamicValue':
+      return printValue(param)
     default:
       return printTypeParam(param, false)
   }
@@ -507,8 +505,47 @@ function printInterfaceProperties(properties: InterfaceNode['properties']) {
         `  readonly ${key}: ${
           value.tag === 'FunctionSignature'
             ? printFunctionSignature(value, true)
+            : value.tag === 'KindNode'
+            ? printKindNode(value)
             : printValue(value)
         }`,
     )
     .join('\n')
+}
+
+function getAdditionalParams(lengths: Map<symbol, number>, useDefaults: boolean, reverse: boolean) {
+  const additionalParams: Map<symbol, readonly StaticTypeParam[]> = new Map()
+
+  const setAdditional = (
+    type: HktTypeParam,
+    params: KindNode['params'],
+    i: number,
+    multiple: boolean,
+    existing: number,
+  ) => {
+    if (!lengths.has(type.id)) {
+      return
+    }
+
+    const size = lengths.get(type.id)!
+    const satisfiedSize =
+      params.filter((x): x is TypeParam | KindNode => x.tag !== 'HktTypeParam').length + existing
+
+    const args = hktParamNames
+      .slice(satisfiedSize, size)
+      .map(
+        (x) =>
+          new StaticTypeParam(
+            `${multiple ? `${x}${i + 1}` : x}`,
+            useDefaults ? `= ${type.label}['defaults'][Params.${x}]` : undefined,
+          ),
+      )
+
+    additionalParams.set(type.id, reverse ? args.reverse() : args)
+  }
+
+  return {
+    additionalParams,
+    setAdditional,
+  } as const
 }
