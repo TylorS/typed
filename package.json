@@ -654,31 +654,6 @@
       "import": "./esm/Fx/uninterruptable.js",
       "types": "./esm/Fx/uninterruptable.d.ts"
     },
-    "./FxData": {
-      "require": "./cjs/FxData/index.js",
-      "import": "./esm/FxData/index.js",
-      "types": "./esm/FxData/index.d.ts"
-    },
-    "./FxDataEither": {
-      "require": "./cjs/FxDataEither/index.js",
-      "import": "./esm/FxDataEither/index.js",
-      "types": "./esm/FxDataEither/index.d.ts"
-    },
-    "./FxDataThese": {
-      "require": "./cjs/FxDataThese/index.js",
-      "import": "./esm/FxDataThese/index.js",
-      "types": "./esm/FxDataThese/index.d.ts"
-    },
-    "./FxEither": {
-      "require": "./cjs/FxEither/index.js",
-      "import": "./esm/FxEither/index.js",
-      "types": "./esm/FxEither/index.d.ts"
-    },
-    "./FxThese": {
-      "require": "./cjs/FxThese/index.js",
-      "import": "./esm/FxThese/index.js",
-      "types": "./esm/FxThese/index.d.ts"
-    },
     "./Has": {
       "require": "./cjs/Has/index.js",
       "import": "./esm/Has/index.js",
@@ -1339,51 +1314,6 @@
       "import": "./esm/RefArray/RefArray.js",
       "types": "./esm/RefArray/RefArray.d.ts"
     },
-    "./RefData": {
-      "require": "./cjs/RefData/index.js",
-      "import": "./esm/RefData/index.js",
-      "types": "./esm/RefData/index.d.ts"
-    },
-    "./RefDataEither": {
-      "require": "./cjs/RefDataEither/index.js",
-      "import": "./esm/RefDataEither/index.js",
-      "types": "./esm/RefDataEither/index.d.ts"
-    },
-    "./RefDataThese": {
-      "require": "./cjs/RefDataThese/index.js",
-      "import": "./esm/RefDataThese/index.js",
-      "types": "./esm/RefDataThese/index.d.ts"
-    },
-    "./RefMap": {
-      "require": "./cjs/RefMap/index.js",
-      "import": "./esm/RefMap/index.js",
-      "types": "./esm/RefMap/index.d.ts"
-    },
-    "./RefOption": {
-      "require": "./cjs/RefOption/index.js",
-      "import": "./esm/RefOption/index.js",
-      "types": "./esm/RefOption/index.d.ts"
-    },
-    "./RefReadonlyMap": {
-      "require": "./cjs/RefReadonlyMap/index.js",
-      "import": "./esm/RefReadonlyMap/index.js",
-      "types": "./esm/RefReadonlyMap/index.d.ts"
-    },
-    "./RefReadonlySet": {
-      "require": "./cjs/RefReadonlySet/index.js",
-      "import": "./esm/RefReadonlySet/index.js",
-      "types": "./esm/RefReadonlySet/index.d.ts"
-    },
-    "./RefSet": {
-      "require": "./cjs/RefSet/index.js",
-      "import": "./esm/RefSet/index.js",
-      "types": "./esm/RefSet/index.d.ts"
-    },
-    "./RefT": {
-      "require": "./cjs/RefT/index.js",
-      "import": "./esm/RefT/index.js",
-      "types": "./esm/RefT/index.d.ts"
-    },
     "./Scheduler": {
       "require": "./cjs/Scheduler/index.js",
       "import": "./esm/Scheduler/index.js",
@@ -1593,6 +1523,11 @@
       "require": "./cjs/StreamEither/index.js",
       "import": "./esm/StreamEither/index.js",
       "types": "./esm/StreamEither/index.d.ts"
+    },
+    "./StreamOption": {
+      "require": "./cjs/StreamOption/index.js",
+      "import": "./esm/StreamOption/index.js",
+      "types": "./esm/StreamOption/index.d.ts"
     },
     "./StreamT": {
       "require": "./cjs/StreamT/index.js",
