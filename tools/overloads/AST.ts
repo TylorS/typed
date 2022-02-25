@@ -63,7 +63,7 @@ export class StaticTypeParam extends ast('StaticTypeParam') {
   }
 }
 
-export type FunctionParam = StaticFunctionParam | DynamicFunctionParam<readonly TypeParam[]> | Kind
+export type FunctionParam = StaticFunctionParam | DynamicFunctionParam | Kind
 
 export class StaticFunctionParam extends ast('StaticFunctionParam') {
   constructor(readonly label: string, readonly type: string) {
@@ -71,13 +71,11 @@ export class StaticFunctionParam extends ast('StaticFunctionParam') {
   }
 }
 
-export class DynamicFunctionParam<T extends readonly TypeParam[]> extends ast(
-  'DynamicFunctionParam',
-) {
+export class DynamicFunctionParam extends ast('DynamicFunctionParam') {
   constructor(
     readonly label: string,
-    readonly typeParams: T,
-    readonly template: (typeParams: T, context: Context) => string,
+    readonly typeParams: readonly TypeParam[],
+    readonly template: (typeParams: readonly string[], context: Context) => string,
   ) {
     super()
   }

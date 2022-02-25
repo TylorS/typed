@@ -1,4 +1,3 @@
-import { Unary } from '@/Prelude/function'
 import {
   HKT,
   HKT2,
@@ -21,6 +20,8 @@ import {
   Kind9,
   Kind10,
 } from '@/Prelude/HKT'
+
+import { Unary } from '../function'
 
 export interface Covariant<T extends HKT> {
   readonly map: <A, B>(f: Unary<A, B>) => (kind: Kind<T, A>) => Kind<T, B>

@@ -14,7 +14,6 @@ import {
   StaticFunctionParam,
   StaticReturn,
   StaticTypeParam,
-  TypeParam,
 } from './AST'
 import { findHKTParams } from './findHKTParams'
 
@@ -242,10 +241,7 @@ function walkStaticFunctionParam(node: StaticFunctionParam, visitors: Visitors) 
   visitors.StaticFunctionParam(node)
 }
 
-function walkDynamicFunctionParam(
-  node: DynamicFunctionParam<readonly TypeParam[]>,
-  visitors: Visitors,
-) {
+function walkDynamicFunctionParam(node: DynamicFunctionParam, visitors: Visitors) {
   visitors.DynamicFunctionParam(node)
 }
 

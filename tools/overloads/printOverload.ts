@@ -94,7 +94,10 @@ export function printFunctionParam(p: FunctionParam, context: Context): string {
     case StaticFunctionParam.tag:
       return `${p.label}: ${p.type}`
     case DynamicFunctionParam.tag:
-      return `${p.label}: ${p.template(p.typeParams, context)}`
+      return `${p.label}: ${p.template(
+        p.typeParams.map((t) => printTypeParam(t, true)),
+        context,
+      )}`
     case Kind.tag:
       return printKind(p, context)
   }

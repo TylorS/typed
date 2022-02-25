@@ -1,4 +1,4 @@
-import { DynamicFunctionParam, FunctionParam, Kind, StaticFunctionParam, TypeParam } from './AST'
+import { DynamicFunctionParam, FunctionParam, Kind, StaticFunctionParam } from './AST'
 import { Context } from './Context'
 import { generateKind } from './generateKindParams'
 import { generateTypeParams } from './generateTypeParams'
@@ -22,9 +22,9 @@ export function generateFunctionParam(param: FunctionParam, context: Context): F
 }
 
 function generateDynamicFunctionParam(
-  param: DynamicFunctionParam<readonly TypeParam[]>,
+  param: DynamicFunctionParam,
   context: Context,
-): DynamicFunctionParam<readonly TypeParam[]> {
+): DynamicFunctionParam {
   return {
     ...param,
     typeParams: generateTypeParams(param.typeParams, context),
