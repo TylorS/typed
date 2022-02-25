@@ -1,4 +1,4 @@
-import * as F from '@/Prelude/Covariant'
+import * as C from '@/Prelude/Covariant'
 import { Unary } from '@/Prelude/function'
 import { HKT, Params } from '@/Prelude/HKT'
 
@@ -18,7 +18,7 @@ export const map =
     return next
   }
 
-export const Functor: F.Functor1<ReadonlyArrayHKT> = {
+export const Covariant: C.Covariant1<ReadonlyArrayHKT> = {
   map,
 }
 

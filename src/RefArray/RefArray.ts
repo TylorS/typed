@@ -18,7 +18,7 @@ export const empty = <A>(options?: FiberRefOptions<readonly A[]>): RefArray<unkn
 /**
  * Apply a transformation to the Output values of a RefArray.
  */
-export const map = F.map(Ref.Covariant, RA.Functor) as <A, B>(
+export const map = F.map(Ref.Covariant, RA.Covariant) as <A, B>(
   f: (a: A) => B,
 ) => <R, E, I>(fa: RefArray<R, E, A, I>) => RefArray<R, E, B, I>
 
