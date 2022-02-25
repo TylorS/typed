@@ -176,4 +176,4 @@ export type Kind10<T extends HKT5, Z, Y, X, W, V, U, S, R, E, A> = (T & {
   readonly [A]: A
 })['type']
 
-export type TypeOf<T> = 'type' extends keyof T ? T['type'] : never
+export type TypeOf<T> = 'type' extends keyof T ? T['type'] : T

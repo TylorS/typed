@@ -34,47 +34,57 @@ import {
   Covariant10,
 } from './Covariant'
 
-export function tupled<F extends HKT>(
-  C: Covariant<F>,
-): <A>(kind: Kind<F, A>) => Kind<F, readonly [A]>
-export function tupled<F extends HKT>(
-  C: Covariant1<F>,
-): <A>(kind: Kind<F, A>) => Kind<F, readonly [A]>
-export function tupled<F extends HKT2>(
-  C: Covariant2<F>,
-): <E, A>(kind: Kind2<F, E, A>) => Kind2<F, E, readonly [A]>
-export function tupled<F extends HKT3>(
-  C: Covariant3<F>,
-): <R, E, A>(kind: Kind3<F, R, E, A>) => Kind3<F, R, E, readonly [A]>
-export function tupled<F extends HKT4>(
-  C: Covariant4<F>,
-): <S, R, E, A>(kind: Kind4<F, S, R, E, A>) => Kind4<F, S, R, E, readonly [A]>
-export function tupled<F extends HKT5>(
-  C: Covariant5<F>,
-): <U, S, R, E, A>(kind: Kind5<F, U, S, R, E, A>) => Kind5<F, U, S, R, E, readonly [A]>
-export function tupled<F extends HKT6>(
-  C: Covariant6<F>,
-): <V, U, S, R, E, A>(kind: Kind6<F, V, U, S, R, E, A>) => Kind6<F, V, U, S, R, E, readonly [A]>
-export function tupled<F extends HKT7>(
-  C: Covariant7<F>,
-): <W, V, U, S, R, E, A>(
-  kind: Kind7<F, W, V, U, S, R, E, A>,
-) => Kind7<F, W, V, U, S, R, E, readonly [A]>
-export function tupled<F extends HKT8>(
-  C: Covariant8<F>,
-): <X, W, V, U, S, R, E, A>(
-  kind: Kind8<F, X, W, V, U, S, R, E, A>,
-) => Kind8<F, X, W, V, U, S, R, E, readonly [A]>
-export function tupled<F extends HKT9>(
-  C: Covariant9<F>,
-): <Y, X, W, V, U, S, R, E, A>(
-  kind: Kind9<F, Y, X, W, V, U, S, R, E, A>,
-) => Kind9<F, Y, X, W, V, U, S, R, E, readonly [A]>
-export function tupled<F extends HKT10>(
-  C: Covariant10<F>,
+export function tupled<T extends HKT10>(
+  C: Covariant10<T>,
 ): <Z, Y, X, W, V, U, S, R, E, A>(
-  kind: Kind10<F, Z, Y, X, W, V, U, S, R, E, A>,
-) => Kind10<F, Z, Y, X, W, V, U, S, R, E, readonly [A]>
+  kind: Kind10<T, Z, Y, X, W, V, U, S, R, E, A>,
+) => Kind10<T, Z, Y, X, W, V, U, S, R, E, readonly [A]>
+
+export function tupled<T extends HKT9>(
+  C: Covariant9<T>,
+): <Y, X, W, V, U, S, R, E, A>(
+  kind: Kind9<T, Y, X, W, V, U, S, R, E, A>,
+) => Kind9<T, Y, X, W, V, U, S, R, E, readonly [A]>
+
+export function tupled<T extends HKT8>(
+  C: Covariant8<T>,
+): <X, W, V, U, S, R, E, A>(
+  kind: Kind8<T, X, W, V, U, S, R, E, A>,
+) => Kind8<T, X, W, V, U, S, R, E, readonly [A]>
+
+export function tupled<T extends HKT7>(
+  C: Covariant7<T>,
+): <W, V, U, S, R, E, A>(
+  kind: Kind7<T, W, V, U, S, R, E, A>,
+) => Kind7<T, W, V, U, S, R, E, readonly [A]>
+
+export function tupled<T extends HKT6>(
+  C: Covariant6<T>,
+): <V, U, S, R, E, A>(kind: Kind6<T, V, U, S, R, E, A>) => Kind6<T, V, U, S, R, E, readonly [A]>
+
+export function tupled<T extends HKT5>(
+  C: Covariant5<T>,
+): <U, S, R, E, A>(kind: Kind5<T, U, S, R, E, A>) => Kind5<T, U, S, R, E, readonly [A]>
+
+export function tupled<T extends HKT4>(
+  C: Covariant4<T>,
+): <S, R, E, A>(kind: Kind4<T, S, R, E, A>) => Kind4<T, S, R, E, readonly [A]>
+
+export function tupled<T extends HKT3>(
+  C: Covariant3<T>,
+): <R, E, A>(kind: Kind3<T, R, E, A>) => Kind3<T, R, E, readonly [A]>
+
+export function tupled<T extends HKT2>(
+  C: Covariant2<T>,
+): <E, A>(kind: Kind2<T, E, A>) => Kind2<T, E, readonly [A]>
+
+export function tupled<T extends HKT>(
+  C: Covariant1<T>,
+): <A>(kind: Kind<T, A>) => Kind<T, readonly [A]>
+
+export function tupled<T extends HKT>(
+  C: Covariant<T>,
+): <A>(kind: Kind<T, A>) => Kind<T, readonly [A]>
 
 export function tupled<F extends HKT>(C: Covariant<F>) {
   return C.map(<A>(a: A) => [a] as const)
