@@ -159,6 +159,7 @@ function defaultVisitors(): Visitors {
     StaticTypeParam: identity,
     StaticFunctionParam: identity,
     StaticReturn: identity,
+    Tuple: identity,
   }
 }
 

@@ -1,4 +1,4 @@
-import { Kind, KindParam } from './AST'
+import { Kind, KindParam, Tuple } from './AST'
 import { Context } from './Context'
 import { generateTypeParams } from './generateTypeParams'
 
@@ -17,7 +17,16 @@ export function generateKindParam(param: KindParam, context: Context): readonly 
   switch (param.tag) {
     case Kind.tag:
       return [generateKind(param, context)]
+    case Tuple.tag:
+      return [generateTuple(param, context)]
     default:
       return generateTypeParams([param], context) as readonly KindParam[]
+  }
+}
+
+export function generateTuple(tuple: Tuple, context: Context): Tuple {
+  return {
+    ...tuple,
+    members: generateKindParams(tuple.members, context),
   }
 }

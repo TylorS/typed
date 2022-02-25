@@ -7,11 +7,13 @@ import {
   HKTPlaceholder,
   Interface,
   Kind,
+  KindParam,
   KindReturn,
   Property,
   StaticFunctionParam,
   StaticReturn,
   StaticTypeParam,
+  Tuple,
   TypeParam,
 } from './AST'
 import { Context } from './Context'
@@ -122,17 +124,28 @@ export function printKindReturn(p: KindReturn, context: Context): string {
 
   return `Kind${length < 2 ? '' : length}<${p.type.name}${
     p.typeParams.length ? ', ' : ''
-  }${p.typeParams
-    .map((p) => (p.tag === Kind.tag ? printKind(p, context) : printTypeParam(p, true)))
-    .join(', ')}>`
+  }${p.typeParams.map((p) => printKindParam(p, context)).join(', ')}>`
 }
 
 export function printKind(kind: Kind, context: Context): string {
   const length = context.lengths.get(kind.type.id)!
 
-  return `Kind${length < 2 ? '' : length}<${kind.type.name}${
+  return `${kind.label}: Kind${length < 2 ? '' : length}<${kind.type.name}${
     kind.typeParams.length ? ', ' : ''
-  }${kind.typeParams
-    .map((p) => (p.tag === Kind.tag ? printKind(p, context) : printTypeParam(p, true)))
-    .join(', ')}>`
+  }${kind.typeParams.map((p) => printKindParam(p, context)).join(', ')}>`
+}
+
+function printKindParam(kindParam: KindParam, context: Context): string {
+  switch (kindParam.tag) {
+    case Kind.tag:
+      return printKind(kindParam, context)
+    case Tuple.tag:
+      return printTuple(kindParam, context)
+    default:
+      return printTypeParam(kindParam, true)
+  }
+}
+
+function printTuple(tuple: Tuple, context: Context): string {
+  return `readonly [${tuple.members.map((m) => printKindParam(m, context)).join(', ')}]`
 }
