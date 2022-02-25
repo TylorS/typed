@@ -159,6 +159,7 @@ function defaultVisitors(): Visitors {
     StaticFunctionParam: identity,
     StaticReturn: identity,
     Tuple: identity,
+    Typeclass: identity,
   }
 }
 
@@ -247,6 +248,7 @@ function walkDynamicFunctionParam(node: DynamicFunctionParam, visitors: Visitors
 
 function walkKind(node: Kind, visitors: Visitors) {
   visitors.Kind(node)
+  node.typeParams.forEach((p) => walkAst(p, visitors))
 }
 
 function walkKindReturn(node: KindReturn, visitors: Visitors) {

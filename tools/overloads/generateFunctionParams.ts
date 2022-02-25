@@ -1,7 +1,7 @@
-import { DynamicFunctionParam, FunctionParam, Kind, StaticFunctionParam } from './AST'
+import { DynamicFunctionParam, FunctionParam, Kind, StaticFunctionParam, Typeclass } from './AST'
 import { Context } from './Context'
 import { generateKind } from './generateKindParams'
-import { generateTypeParams } from './generateTypeParams'
+import { generateTypeclass, generateTypeParams } from './generateTypeParams'
 
 export function generateFunctionParams(
   params: readonly FunctionParam[],
@@ -18,6 +18,8 @@ export function generateFunctionParam(param: FunctionParam, context: Context): F
       return param
     case DynamicFunctionParam.tag:
       return generateDynamicFunctionParam(param, context)
+    case Typeclass.tag:
+      return generateTypeclass(param, context)
   }
 }
 

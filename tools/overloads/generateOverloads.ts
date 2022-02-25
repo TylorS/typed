@@ -9,7 +9,7 @@ export function generateOverloads(
 ): ReadonlyArray<readonly [FunctionSignature | Interface, Context]> {
   switch (ast.tag) {
     case FunctionSignature.tag:
-      return generateFunctionSignatureOverloads(ast)
+      return generateFunctionSignatureOverloads(ast).reverse()
     case Interface.tag:
       return generateInterfaceOverloads(ast)
   }
