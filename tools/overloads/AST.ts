@@ -2,11 +2,12 @@ import type { Context } from './Context'
 
 export type AST =
   | Interface
-  | Property
+  | InterfaceProperty
   | FunctionSignature
   | TypeParam
   | FunctionParam
   | KindParam
+  | ObjectProperty
   | FunctionReturnSignature
 
 export const ast = <T extends string>(tag: T) =>
@@ -20,13 +21,13 @@ export class Interface extends ast('Interface') {
   constructor(
     readonly name: string,
     readonly typeParams: ReadonlyArray<TypeParam>,
-    readonly properties: ReadonlyArray<Property>,
+    readonly properties: ReadonlyArray<InterfaceProperty>,
   ) {
     super()
   }
 }
 
-export class Property extends ast('Property') {
+export class InterfaceProperty extends ast('InterfaceProperty') {
   constructor(readonly name: string, readonly signature: FunctionSignature) {
     super()
   }
@@ -97,7 +98,7 @@ export class Kind extends ast('Kind') {
   }
 }
 
-export type KindParam = Exclude<TypeParam | Kind | Tuple, HKTParam>
+export type KindParam = Exclude<TypeParam | Kind | Tuple | ObjectNode, HKTParam>
 
 export type FunctionReturnSignature = FunctionSignature | KindReturn | StaticReturn
 
@@ -115,6 +116,18 @@ export class StaticReturn extends ast('StaticReturn') {
 
 export class Tuple extends ast('Tuple') {
   constructor(readonly members: ReadonlyArray<KindParam>) {
+    super()
+  }
+}
+
+export class ObjectNode extends ast('Object') {
+  constructor(readonly properties: readonly ObjectProperty[]) {
+    super()
+  }
+}
+
+export class ObjectProperty extends ast('ObjectProperty') {
+  constructor(readonly name: string, readonly param: KindParam) {
     super()
   }
 }

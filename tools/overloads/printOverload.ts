@@ -6,10 +6,11 @@ import {
   HKTParam,
   HKTPlaceholder,
   Interface,
+  InterfaceProperty,
   Kind,
   KindParam,
   KindReturn,
-  Property,
+  ObjectNode,
   StaticFunctionParam,
   StaticReturn,
   StaticTypeParam,
@@ -38,7 +39,7 @@ export function printInterface(node: Interface, context: Context): string {
 }`
 }
 
-export function printProperty(property: Property, context: Context): string {
+export function printProperty(property: InterfaceProperty, context: Context): string {
   return `readonly ${property.name}: ${printFunctionSignature(property.signature, context, true)}`
 }
 
@@ -155,6 +156,8 @@ function printKindParam(kindParam: KindParam, context: Context, printStatic: boo
       return printKind(kindParam, context, printStatic)
     case Tuple.tag:
       return printTuple(kindParam, context)
+    case ObjectNode.tag:
+      return printObjectNode(kindParam, context)
     default:
       return printTypeParam(kindParam, true)
   }
@@ -162,4 +165,10 @@ function printKindParam(kindParam: KindParam, context: Context, printStatic: boo
 
 function printTuple(tuple: Tuple, context: Context): string {
   return `readonly [${tuple.members.map((m) => printKindParam(m, context, true)).join(', ')}]`
+}
+
+function printObjectNode(node: ObjectNode, context: Context): string {
+  return `{
+    ${node.properties.map((p) => `readonly ${p.name}: ${printKindParam(p.param, context, true)}`)}
+}`
 }

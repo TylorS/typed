@@ -7,13 +7,16 @@ import {
   HKTParam,
   HKTPlaceholder,
   Interface,
+  InterfaceProperty,
   Kind,
   KindParam,
   KindReturn,
-  Property,
+  ObjectNode,
+  ObjectProperty,
   StaticFunctionParam,
   StaticReturn,
   StaticTypeParam,
+  Tuple,
 } from './AST'
 import { findHKTParams } from './findHKTParams'
 
@@ -152,9 +155,11 @@ function defaultVisitors(): Visitors {
     HKTParam: identity,
     HKTPlaceholder: identity,
     Interface: identity,
+    InterfaceProperty: identity,
     Kind: identity,
     KindReturn: identity,
-    Property: identity,
+    Object: identity,
+    ObjectProperty: identity,
     StaticTypeParam: identity,
     StaticFunctionParam: identity,
     StaticReturn: identity,
@@ -167,7 +172,7 @@ function walkAst(node: AST, visitors: Visitors) {
   switch (node.tag) {
     case Interface.tag:
       return walkInterface(node, visitors)
-    case Property.tag:
+    case InterfaceProperty.tag:
       return walkProperty(node, visitors)
     case FunctionSignature.tag:
       return walkFunctionSignature(node, visitors)
@@ -187,6 +192,12 @@ function walkAst(node: AST, visitors: Visitors) {
       return walkKindReturn(node, visitors)
     case StaticReturn.tag:
       return walkStaticReturn(node, visitors)
+    case Tuple.tag:
+      return walkTuple(node, visitors)
+    case ObjectNode.tag:
+      return walkObjectNode(node, visitors)
+    case ObjectProperty.tag:
+      return walkObjectProperty(node, visitors)
   }
 }
 
@@ -196,8 +207,8 @@ function walkInterface(node: Interface, visitors: Visitors) {
   node.properties.forEach((property) => walkProperty(property, visitors))
 }
 
-function walkProperty(node: Property, visitors: Visitors) {
-  visitors.Property(node)
+function walkProperty(node: InterfaceProperty, visitors: Visitors) {
+  visitors.InterfaceProperty(node)
   walkFunctionSignature(node.signature, visitors)
 }
 
@@ -257,4 +268,22 @@ function walkKindReturn(node: KindReturn, visitors: Visitors) {
 
 function walkStaticReturn(node: StaticReturn, visitors: Visitors) {
   visitors.StaticReturn(node)
+}
+
+function walkTuple(node: Tuple, visitors: Visitors) {
+  visitors.Tuple(node)
+
+  node.members.forEach((m) => walkAst(m, visitors))
+}
+
+function walkObjectNode(node: ObjectNode, visitors: Visitors) {
+  visitors.Object(node)
+
+  node.properties.forEach((m) => walkAst(m, visitors))
+}
+
+function walkObjectProperty(node: ObjectProperty, visitors: Visitors) {
+  visitors.ObjectProperty(node)
+
+  walkAst(node.param, visitors)
 }
