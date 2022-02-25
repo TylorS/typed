@@ -18,11 +18,14 @@
     "@types/mocha": "^8.2.3",
     "@types/node": "^15.14.9",
     "@types/node-fetch": "^2.5.12",
+    "@types/prettier": "^2.4.4",
     "@types/rimraf": "^3.0.2",
+    "@types/yargs": "^17.0.8",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
+    "clipboardy": "2.3.0",
     "concurrently": "^6.5.1",
-    "esbuild-register": "^2.6.0",
+    "esbuild-register": "^3.3.2",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-import-resolver-custom-alias": "^1.3.0",
@@ -41,7 +44,8 @@
     "tsc-watch": "^4.6.0",
     "tsconfig-paths": "^3.12.0",
     "tslib": "^2.3.1",
-    "typescript": "^4.5.5"
+    "typescript": "^4.5.5",
+    "yargs": "15.x.x"
   },
   "scripts": {
     "build": "npm run clean && npm run build:typescript && npm run update",
@@ -49,7 +53,7 @@
     "build:typescript:cjs": "rimraf cjs && tsc -P ./tsconfig.cjs.json",
     "build:typescript:esm": "rimraf esm && tsc -P ./tsconfig.esm.json",
     "clean": "node -r esbuild-register -r tsconfig-paths/register ./tools/cleanup",
-    "generate-overload": "node -r esbuild-register -r tsconfig-paths/register ./tools/generate-overloads-cli.ts",
+    "generate-overload": "ts-node -r tsconfig-paths/register ./tools/overloads/cli.ts",
     "lint": "concurrently npm:lint:ts npm:lint:markdown",
     "lint:markdown": "prettier --write --parser markdown --prose-wrap always *.md docs/**/*.md",
     "lint:ts": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
@@ -735,6 +739,11 @@
       "import": "./esm/Prelude/index.js",
       "types": "./esm/Prelude/index.d.ts"
     },
+    "./Prelude/Any": {
+      "require": "./cjs/Prelude/Any/index.js",
+      "import": "./esm/Prelude/Any/index.js",
+      "types": "./esm/Prelude/Any/index.d.ts"
+    },
     "./Prelude/Array/Array": {
       "require": "./cjs/Prelude/Array/Array.js",
       "import": "./esm/Prelude/Array/Array.js",
@@ -825,6 +834,11 @@
       "import": "./esm/Prelude/Branded/index.js",
       "types": "./esm/Prelude/Branded/index.d.ts"
     },
+    "./Prelude/Cause/Associative": {
+      "require": "./cjs/Prelude/Cause/Associative.js",
+      "import": "./esm/Prelude/Cause/Associative.js",
+      "types": "./esm/Prelude/Cause/Associative.d.ts"
+    },
     "./Prelude/Cause/Cause": {
       "require": "./cjs/Prelude/Cause/Cause.js",
       "import": "./esm/Prelude/Cause/Cause.js",
@@ -835,15 +849,15 @@
       "import": "./esm/Prelude/Cause/Renderer.js",
       "types": "./esm/Prelude/Cause/Renderer.d.ts"
     },
-    "./Prelude/Cause/Semigroup": {
-      "require": "./cjs/Prelude/Cause/Semigroup.js",
-      "import": "./esm/Prelude/Cause/Semigroup.js",
-      "types": "./esm/Prelude/Cause/Semigroup.d.ts"
-    },
     "./Prelude/Cause": {
       "require": "./cjs/Prelude/Cause/index.js",
       "import": "./esm/Prelude/Cause/index.js",
       "types": "./esm/Prelude/Cause/index.d.ts"
+    },
+    "./Prelude/Commutative": {
+      "require": "./cjs/Prelude/Commutative/index.js",
+      "import": "./esm/Prelude/Commutative/index.js",
+      "types": "./esm/Prelude/Commutative/index.d.ts"
     },
     "./Prelude/Covariant/Covariant": {
       "require": "./cjs/Prelude/Covariant/Covariant.js",

@@ -26,6 +26,10 @@ export interface Pointed<T extends HKT> {
   readonly of: <A>(value: A) => Kind<T, A>
 }
 
+export interface Pointed1<T extends HKT> {
+  readonly of: <A>(value: A) => Kind<T, A>
+}
+
 export interface Pointed2<T extends HKT2> {
   readonly of: <A, E = T['defaults'][Params.E]>(value: A) => Kind2<T, E, A>
 }
