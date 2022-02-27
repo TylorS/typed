@@ -1019,6 +1019,16 @@
       "import": "./esm/Prelude/Covariant/tupled.js",
       "types": "./esm/Prelude/Covariant/tupled.d.ts"
     },
+    "./Prelude/CovariantWithIndex/CovariantWithIndex": {
+      "require": "./cjs/Prelude/CovariantWithIndex/CovariantWithIndex.js",
+      "import": "./esm/Prelude/CovariantWithIndex/CovariantWithIndex.js",
+      "types": "./esm/Prelude/CovariantWithIndex/CovariantWithIndex.d.ts"
+    },
+    "./Prelude/CovariantWithIndex": {
+      "require": "./cjs/Prelude/CovariantWithIndex/index.js",
+      "import": "./esm/Prelude/CovariantWithIndex/index.js",
+      "types": "./esm/Prelude/CovariantWithIndex/index.d.ts"
+    },
     "./Prelude/Data/Data": {
       "require": "./cjs/Prelude/Data/Data.js",
       "import": "./esm/Prelude/Data/Data.js",
