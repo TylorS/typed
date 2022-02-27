@@ -3,8 +3,8 @@ import {
   HKTParam,
   HKTPlaceholder,
   Interface,
+  InterfaceProperty,
   KindReturn,
-  Property,
   StaticFunctionParam,
   StaticTypeParam,
 } from '../AST'
@@ -18,7 +18,7 @@ export const node = new Interface(
   'Pointed',
   [hkt],
   [
-    new Property(
+    new InterfaceProperty(
       'of',
       new FunctionSignature(
         '',

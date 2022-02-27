@@ -4,9 +4,9 @@ import {
   HKTParam,
   HKTPlaceholder,
   Interface,
+  InterfaceProperty,
   Kind,
   KindReturn,
-  Property,
   StaticTypeParam,
 } from '../AST'
 
@@ -19,7 +19,7 @@ export const node = new Interface(
   'Covariant',
   [hkt],
   [
-    new Property(
+    new InterfaceProperty(
       'map',
       new FunctionSignature(
         '',

@@ -3,9 +3,9 @@ import {
   HKTParam,
   HKTPlaceholder,
   Interface,
+  InterfaceProperty,
   Kind,
   KindReturn,
-  Property,
   StaticTypeParam,
   Tuple,
 } from '../AST'
@@ -19,7 +19,7 @@ export const node = new Interface(
   'AssociativeBoth',
   [hkt],
   [
-    new Property(
+    new InterfaceProperty(
       'both',
       new FunctionSignature(
         '',
