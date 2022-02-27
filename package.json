@@ -1224,6 +1224,16 @@
       "import": "./esm/Prelude/Reader/index.js",
       "types": "./esm/Prelude/Reader/index.d.ts"
     },
+    "./Prelude/ReaderT/ReaderT": {
+      "require": "./cjs/Prelude/ReaderT/ReaderT.js",
+      "import": "./esm/Prelude/ReaderT/ReaderT.js",
+      "types": "./esm/Prelude/ReaderT/ReaderT.d.ts"
+    },
+    "./Prelude/ReaderT": {
+      "require": "./cjs/Prelude/ReaderT/index.js",
+      "import": "./esm/Prelude/ReaderT/index.js",
+      "types": "./esm/Prelude/ReaderT/index.d.ts"
+    },
     "./Prelude/ReadonlyArray": {
       "require": "./cjs/Prelude/ReadonlyArray/index.js",
       "import": "./esm/Prelude/ReadonlyArray/index.js",
