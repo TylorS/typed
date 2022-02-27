@@ -969,6 +969,16 @@
       "import": "./esm/Prelude/Compact/index.js",
       "types": "./esm/Prelude/Compact/index.d.ts"
     },
+    "./Prelude/Compactable/Compactable": {
+      "require": "./cjs/Prelude/Compactable/Compactable.js",
+      "import": "./esm/Prelude/Compactable/Compactable.js",
+      "types": "./esm/Prelude/Compactable/Compactable.d.ts"
+    },
+    "./Prelude/Compactable": {
+      "require": "./cjs/Prelude/Compactable/index.js",
+      "import": "./esm/Prelude/Compactable/index.js",
+      "types": "./esm/Prelude/Compactable/index.d.ts"
+    },
     "./Prelude/Covariant/Covariant": {
       "require": "./cjs/Prelude/Covariant/Covariant.js",
       "import": "./esm/Prelude/Covariant/Covariant.js",
