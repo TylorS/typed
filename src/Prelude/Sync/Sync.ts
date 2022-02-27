@@ -31,3 +31,17 @@ export const run = <A>(sync: Sync<A>): A => {
 
   return result.value
 }
+
+export function forEach<A, B>(f: (value: A, index: number) => Sync<B>) {
+  return (items: ReadonlyArray<A>): Sync<ReadonlyArray<B>> => {
+    return Sync(function* () {
+      const output: B[] = []
+
+      for (let i = 0; i < items.length; ++i) {
+        output.push(yield* f(items[i], i))
+      }
+
+      return output
+    })
+  }
+}
