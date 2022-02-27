@@ -899,6 +899,16 @@
       "import": "./esm/Prelude/Commutative/index.js",
       "types": "./esm/Prelude/Commutative/index.d.ts"
     },
+    "./Prelude/CommutativeBoth/CommutativeBoth": {
+      "require": "./cjs/Prelude/CommutativeBoth/CommutativeBoth.js",
+      "import": "./esm/Prelude/CommutativeBoth/CommutativeBoth.js",
+      "types": "./esm/Prelude/CommutativeBoth/CommutativeBoth.d.ts"
+    },
+    "./Prelude/CommutativeBoth": {
+      "require": "./cjs/Prelude/CommutativeBoth/index.js",
+      "import": "./esm/Prelude/CommutativeBoth/index.js",
+      "types": "./esm/Prelude/CommutativeBoth/index.d.ts"
+    },
     "./Prelude/Covariant/Covariant": {
       "require": "./cjs/Prelude/Covariant/Covariant.js",
       "import": "./esm/Prelude/Covariant/Covariant.js",
