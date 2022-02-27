@@ -9,38 +9,40 @@ export const fromFx = makeFromFxOperator('fromFx')
 export function makeFromFxOperator(operator: string) {
   return <R, E, A>(fx: Fx.Fx<R, E, A>): Stream<R, E, A> => {
     return make((sink, context) =>
-      context.fiberContext.scheduler.asap(
-        Fx.Fx(function* () {
-          const exit = yield* Fx.result(fx)
-          const time = context.fiberContext.scheduler.getCurrentTime()
+      context.fiberContext.scheduler
+        .asap(
+          Fx.Fx(function* () {
+            const exit = yield* Fx.result(fx)
+            const time = context.fiberContext.scheduler.getCurrentTime()
 
-          if (isLeft(exit)) {
-            return sink.error({
-              type: 'Error',
+            if (isLeft(exit)) {
+              return sink.error({
+                type: 'Error',
+                operator,
+                time,
+                cause: exit.left,
+                fiberId: context.fiberContext.fiberId,
+              })
+            }
+
+            sink.event({
+              type: 'Event',
               operator,
               time,
-              cause: exit.value,
+              value: exit.right,
               fiberId: context.fiberContext.fiberId,
             })
-          }
 
-          sink.event({
-            type: 'Event',
-            operator,
-            time,
-            value: exit.value,
-            fiberId: context.fiberContext.fiberId,
-          })
-
-          sink.end({
-            type: 'End',
-            operator,
-            time,
-            fiberId: context.fiberContext.fiberId,
-          })
-        }),
-        context,
-      ),
+            sink.end({
+              type: 'End',
+              operator,
+              time,
+              fiberId: context.fiberContext.fiberId,
+            })
+          }),
+          context,
+        )
+        .dispose(context.fiberContext.fiberId),
     )
   }
 }

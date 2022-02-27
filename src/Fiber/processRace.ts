@@ -54,7 +54,7 @@ export const processRace = <FX extends ReadonlyArray<Fx<any, any, any> | Fx<any,
     const exit = yield* wait(future)
 
     // Cleanup all other Fx
-    yield* tuple(runtimes.map(dispose))
+    yield* tuple(runtimes.map((r) => dispose(r.dispose(processor.fiberContext.fiberId))))
 
     // Return the Result
     return yield* fromExit(exit, instr.trace)

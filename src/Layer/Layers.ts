@@ -91,7 +91,7 @@ export function remove<R, E, A>(layer: Layer<R, E, A>): Fx.Of<boolean> {
 
       layers.delete(layer.id)
 
-      yield* Fx.dispose(fiber)
+      yield* Fx.interrupt(fiber)
 
       return true
     }

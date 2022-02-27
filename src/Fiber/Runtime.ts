@@ -46,7 +46,7 @@ export class Runtime<R, E> {
     runtime.addObserver(onExit)
     runtime.processNow()
 
-    return runtime
+    return runtime.dispose(processor.fiberContext.fiberId)
   }
 
   readonly runPromise = <E, B>(fx: Fx<R, E, B>, options: RuntimeOptions<E> = {}): Promise<B> =>
@@ -151,7 +151,7 @@ export const runMainDisposable = <E, A>(
   runtime.addObserver(onExit)
   runtime.processLater()
 
-  return runtime
+  return runtime.dispose(processor.fiberContext.fiberId)
 }
 
 export const currentRuntime = <R, E>(

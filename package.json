@@ -639,6 +639,11 @@
       "import": "./esm/Fx/provide.js",
       "types": "./esm/Fx/provide.d.ts"
     },
+    "./Fx/provideLayer": {
+      "require": "./cjs/Fx/provideLayer.js",
+      "import": "./esm/Fx/provideLayer.js",
+      "types": "./esm/Fx/provideLayer.d.ts"
+    },
     "./Fx/run": {
       "require": "./cjs/Fx/run.js",
       "import": "./esm/Fx/run.js",

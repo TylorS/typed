@@ -1,21 +1,24 @@
 import { Disposable } from '@/Disposable'
 import { Exit } from '@/Exit'
+import { FiberId } from '@/FiberId'
 import { Of } from '@/Fx'
 
 export type Fiber<E, A> = RuntimeFiber<E, A> | SyntheticFiber<E, A>
 
-export interface RuntimeFiber<E, A> extends Disposable {
+export interface RuntimeFiber<E, A> {
   readonly type: 'RuntimeFiber'
   readonly status: Of<Status>
   readonly exit: Of<Exit<E, A>>
   readonly inheritRefs: Of<void>
+  readonly dispose: (fiberId: FiberId) => Disposable
 }
 
-export interface SyntheticFiber<E, A> extends Disposable {
+export interface SyntheticFiber<E, A> {
   readonly type: 'SyntheticFiber'
   readonly status: Of<Status>
   readonly exit: Of<Exit<E, A>>
   readonly inheritRefs: Of<void>
+  readonly dispose: (fiberId: FiberId) => Disposable
 }
 
 export type Status = Suspended | Running | Failed | Completed

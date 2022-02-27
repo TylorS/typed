@@ -50,7 +50,7 @@ export const processFromTuple = <FX extends ReadonlyArray<Fx<any, any, any> | Fx
                   runtime.addObserver((exit) => onComplete(exit, i))
                   runtime.processLater()
 
-                  return runtime
+                  return runtime.dispose(processor.fiberContext.fiberId)
                 }),
               )
             }),

@@ -53,10 +53,12 @@ export class Hold<R, E, A> extends Multicast<R, E, A> {
     try {
       await dispose(this.task)
 
-      this.task = observer.context.fiberContext.scheduler.asap(
-        fromLazy(() => this.flushPending()),
-        observer.context,
-      )
+      this.task = observer.context.fiberContext.scheduler
+        .asap(
+          fromLazy(() => this.flushPending()),
+          observer.context,
+        )
+        .dispose(observer.context.fiberContext.fiberId)
     } catch (e) {
       this.error({
         type: 'Error',

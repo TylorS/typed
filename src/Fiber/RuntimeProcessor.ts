@@ -17,7 +17,7 @@ import { RuntimeGenerator, RuntimeInstruction, RuntimeIterable } from './Runtime
  * via RuntimeInstructions. It handles the pausing/playing of an Fx, tracking the status of the running Fx,
  * and notification of all observers upon exit.
  */
-export class RuntimeProcessor<E, A> implements Disposable {
+export class RuntimeProcessor<E, A> {
   protected node: RuntimeInstructionTree<E, A> | undefined = undefined
   protected observers: Set<(exit: Exit<E, A>) => void> = new Set()
   protected exited: Option<Exit<E, A>> = None
@@ -56,15 +56,19 @@ export class RuntimeProcessor<E, A> implements Disposable {
     return this.currentStatus
   }
 
-  dispose = Async(async () => {
-    const { interruptableStatus } = this
+  dispose = (id: FiberId): Disposable =>
+    Async(async () => {
+      const { interruptableStatus } = this
 
-    if (!interruptableStatus.isInterruptable) {
-      await interruptableStatus.waitToInterrupt()
-    }
+      if (!interruptableStatus.isInterruptable) {
+        await interruptableStatus.waitToInterrupt()
+      }
 
-    await dispose(this.queue)
-  }).dispose
+      await dispose(this.queue)
+
+      this.node = { type: 'Exit', exit: disposed(id) }
+      this.processNow()
+    })
 
   processNow() {
     while (this.node && isNone(this.exited)) {

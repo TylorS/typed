@@ -10,5 +10,5 @@ export const of = <A, E = never>(value: A): Fiber<E, A> => ({
   status: FE.of<Status>({ type: 'Completed' }),
   exit: FE.of(success(value)),
   inheritRefs: FE.of(undefined),
-  ...Sync(constVoid),
+  dispose: () => Sync(constVoid),
 })

@@ -70,7 +70,7 @@ function makeDrainSink<R, E, A>(
 
       runtime.processNow()
 
-      return runtime
+      return runtime.dispose(processor.fiberContext.fiberId)
     })
 
   return {
