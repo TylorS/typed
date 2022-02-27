@@ -1104,6 +1104,16 @@
       "import": "./esm/Prelude/Either/of.js",
       "types": "./esm/Prelude/Either/of.d.ts"
     },
+    "./Prelude/EitherT/EitherT": {
+      "require": "./cjs/Prelude/EitherT/EitherT.js",
+      "import": "./esm/Prelude/EitherT/EitherT.js",
+      "types": "./esm/Prelude/EitherT/EitherT.d.ts"
+    },
+    "./Prelude/EitherT": {
+      "require": "./cjs/Prelude/EitherT/index.js",
+      "import": "./esm/Prelude/EitherT/index.js",
+      "types": "./esm/Prelude/EitherT/index.d.ts"
+    },
     "./Prelude/Endomorphism": {
       "require": "./cjs/Prelude/Endomorphism/index.js",
       "import": "./esm/Prelude/Endomorphism/index.js",
