@@ -629,6 +629,11 @@
       "import": "./esm/Fx/getRootScope.js",
       "types": "./esm/Fx/getRootScope.d.ts"
     },
+    "./Fx/interrupt": {
+      "require": "./cjs/Fx/interrupt.js",
+      "import": "./esm/Fx/interrupt.js",
+      "types": "./esm/Fx/interrupt.d.ts"
+    },
     "./Fx/map": {
       "require": "./cjs/Fx/map.js",
       "import": "./esm/Fx/map.js",
