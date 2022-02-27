@@ -789,6 +789,16 @@
       "import": "./esm/Prelude/AssociativeEither/index.js",
       "types": "./esm/Prelude/AssociativeEither/index.d.ts"
     },
+    "./Prelude/AssociativeFlatten/AssociativeFlatten": {
+      "require": "./cjs/Prelude/AssociativeFlatten/AssociativeFlatten.js",
+      "import": "./esm/Prelude/AssociativeFlatten/AssociativeFlatten.js",
+      "types": "./esm/Prelude/AssociativeFlatten/AssociativeFlatten.d.ts"
+    },
+    "./Prelude/AssociativeFlatten": {
+      "require": "./cjs/Prelude/AssociativeFlatten/index.js",
+      "import": "./esm/Prelude/AssociativeFlatten/index.js",
+      "types": "./esm/Prelude/AssociativeFlatten/index.d.ts"
+    },
     "./Prelude/Async/Async": {
       "require": "./cjs/Prelude/Async/Async.js",
       "import": "./esm/Prelude/Async/Async.js",
