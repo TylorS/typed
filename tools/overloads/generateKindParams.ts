@@ -1,4 +1,4 @@
-import { Kind, KindParam, ObjectNode, ObjectProperty, Tuple } from './AST'
+import { Kind, KindParam, ObjectNode, ObjectProperty, StaticNode, Tuple } from './AST'
 import { Context } from './Context'
 import { generateTypeParams } from './generateTypeParams'
 
@@ -21,6 +21,8 @@ export function generateKindParam(param: KindParam, context: Context): readonly 
       return [generateTuple(param, context)]
     case ObjectNode.tag:
       return [generateObjectNode(param, context)]
+    case StaticNode.tag:
+      return [param]
     default:
       return generateTypeParams([param], context) as readonly KindParam[]
   }

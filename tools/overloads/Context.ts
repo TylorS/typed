@@ -160,6 +160,7 @@ function defaultVisitors(): Visitors {
     KindReturn: identity,
     Object: identity,
     ObjectProperty: identity,
+    StaticNode: identity,
     StaticTypeParam: identity,
     StaticFunctionParam: identity,
     StaticReturn: identity,

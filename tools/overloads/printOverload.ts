@@ -12,6 +12,7 @@ import {
   KindReturn,
   ObjectNode,
   StaticFunctionParam,
+  StaticNode,
   StaticReturn,
   StaticTypeParam,
   Tuple,
@@ -158,6 +159,8 @@ function printKindParam(kindParam: KindParam, context: Context, printStatic: boo
       return printTuple(kindParam, context)
     case ObjectNode.tag:
       return printObjectNode(kindParam, context)
+    case StaticNode.tag:
+      return kindParam.type
     default:
       return printTypeParam(kindParam, true)
   }

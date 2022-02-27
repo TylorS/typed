@@ -98,7 +98,7 @@ export class Kind extends ast('Kind') {
   }
 }
 
-export type KindParam = Exclude<TypeParam | Kind | Tuple | ObjectNode, HKTParam>
+export type KindParam = Exclude<TypeParam | Kind | Tuple | ObjectNode | StaticNode, HKTParam>
 
 export type FunctionReturnSignature = FunctionSignature | KindReturn | StaticReturn
 
@@ -128,6 +128,12 @@ export class ObjectNode extends ast('Object') {
 
 export class ObjectProperty extends ast('ObjectProperty') {
   constructor(readonly name: string, readonly param: KindParam) {
+    super()
+  }
+}
+
+export class StaticNode extends ast('StaticNode') {
+  constructor(readonly type: string) {
     super()
   }
 }
