@@ -744,6 +744,16 @@
       "import": "./esm/Prelude/Any/index.js",
       "types": "./esm/Prelude/Any/index.d.ts"
     },
+    "./Prelude/Apply/Apply": {
+      "require": "./cjs/Prelude/Apply/Apply.js",
+      "import": "./esm/Prelude/Apply/Apply.js",
+      "types": "./esm/Prelude/Apply/Apply.d.ts"
+    },
+    "./Prelude/Apply": {
+      "require": "./cjs/Prelude/Apply/index.js",
+      "import": "./esm/Prelude/Apply/index.js",
+      "types": "./esm/Prelude/Apply/index.d.ts"
+    },
     "./Prelude/Array/Array": {
       "require": "./cjs/Prelude/Array/Array.js",
       "import": "./esm/Prelude/Array/Array.js",
