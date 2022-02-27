@@ -30,13 +30,21 @@ export function printOverload(node: FunctionSignature | Interface, context: Cont
   }
 }
 
-export function printInterface(node: Interface, context: Context): string {
+export function printInterface(node: Interface, context: Context, isExtension = false): string {
+  if (isExtension) {
+    return `extends ${node.name}${
+      node.typeParams.length
+        ? `<${node.typeParams.map((p) => printTypeParam(p, false)).join(', ')}>`
+        : ''
+    }`
+  }
+
   return `export interface ${node.name}${
     node.typeParams.length
       ? `<${node.typeParams.map((p) => printTypeParam(p, false)).join(', ')}>`
       : ''
-  } {
-  ${node.properties.map((p) => printProperty(p, context))}
+  }${node.extension ? `${printInterface(node.extension, context, true)} ` : ``} {
+  ${node.properties.map((p) => printProperty(p, context)).join('\n')}
 }`
 }
 

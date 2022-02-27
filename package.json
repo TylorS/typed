@@ -64,7 +64,7 @@
     "test:watch": "concurrently npm:unit-test:watch npm:typecheck:watch",
     "typecheck": "tsc -P ./tsconfig.esm.json --noEmit",
     "typecheck:watch": "npm run typecheck -- --watch --preserveWatchOutput",
-    "update": "node -r esbuild-register -r tsconfig-paths/register ./tools/update-package-exports",
+    "update": "node -r esbuild-register -r tsconfig-paths/register ./tools/update-package-exports && git commit -m 'chore: update script'",
     "precommit": "concurrently 'npm:update' 'npm:lint-staged'",
     "preversion": "npm test && npm run update && npm run build",
     "postversion": "npm publish --access=public && git push && git push --tags",
