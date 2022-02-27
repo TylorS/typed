@@ -67,7 +67,11 @@ export function printInterface(node: Interface, context: Context, isExtension = 
     return prefix + postfix
   }
 
-  const extensions = node.extensions.map((i) => printInterface(i, context, true)).join(', ')
+  const extensions = node.extensions
+    .map((i) =>
+      i.tag === Interface.tag ? printInterface(i, context, true) : printKindParam(i, context, true),
+    )
+    .join(', ')
 
   return `${prefix} extends ${extensions}${postfix}`
 }
@@ -134,7 +138,7 @@ export function printTypeParam(p: TypeParam, context: Context, printStatic: bool
     }
     case DynamicTypeParam.tag: {
       return p.template(
-        p.typeParams.map((t) => printTypeParam(t, context, true)),
+        p.params.map((t) => printKindParam(t, context, true)),
         context,
       )
     }
@@ -170,6 +174,12 @@ export function printReturnSignature(p: FunctionReturnSignature, context: Contex
       return printKindReturn(p, context)
     case TupleReturn.tag:
       return `readonly [${p.members.map((s) => printReturnSignature(s, context)).join(', ')}]`
+    case DynamicTypeParam.tag: {
+      return p.template(
+        p.params.map((t) => printKindParam(t, context, true)),
+        context,
+      )
+    }
   }
 }
 

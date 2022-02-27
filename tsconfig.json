@@ -4,9 +4,8 @@
     "rootDir": "./"
   },
   "include": [
-    "./src/*.ts",
-    "./src/**/*.ts",
-    "./tools/*.ts", "src/HKT/index.ts", "src/Functor/Functor.ts", "src/Functor/index.ts", "src/Some/index.ts",
+    "src",
+    "tools"
   ],
   "exclude": [
     "./cjs",

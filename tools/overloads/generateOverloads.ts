@@ -1,6 +1,7 @@
 import { run, Sync } from '../../src/Prelude/Sync'
 import {
   DynamicFunctionParam,
+  DynamicTypeParam,
   FunctionParam,
   FunctionReturnSignature,
   FunctionSignature,
@@ -125,6 +126,8 @@ export function generateReturnSignature(
 
         return new TupleReturn(output)
       }
+      case DynamicTypeParam.tag:
+        return yield* generateDynamicTypeParam(signature, context)
       default:
         return signature
     }
@@ -150,6 +153,11 @@ export function generateTypeParams(
         }
         case Typeclass.tag: {
           output.push(yield* generateTypeclass(p, context))
+          break
+        }
+        case DynamicTypeParam.tag: {
+          output.push(yield* generateDynamicTypeParam(p, context))
+
           break
         }
         default: {
@@ -217,6 +225,15 @@ export function generateTypeclass(p: Typeclass, context: Context): Sync<Typeclas
   })
 }
 
+export function generateDynamicTypeParam(
+  p: DynamicTypeParam,
+  context: Context,
+): Sync<DynamicTypeParam> {
+  return Sync(function* () {
+    return new DynamicTypeParam(yield* generateKindParams(p.params, context), p.template)
+  })
+}
+
 export function generateKind(param: Kind, context: Context): Sync<Kind> {
   return Sync(function* () {
     return {
@@ -250,7 +267,7 @@ export function generateKindParam(param: KindParam, context: Context): Sync<read
       case StaticNode.tag:
         return [param]
       default:
-        return yield* generateTypeParams([param], context) as readonly KindParam[]
+        return yield* generateTypeParams([param], context)
     }
   })
 }
@@ -355,10 +372,14 @@ function generateDynamicFunctionParam(
 
 export function generateInterface(node: Interface, context: Context): Sync<Interface> {
   return Sync(function* () {
-    const extensions: Interface[] = []
+    const extensions: Array<Interface | KindParam> = []
 
     for (const e of node.extensions) {
-      extensions.push(yield* generateInterface(e, context))
+      extensions.push(
+        ...(e.tag === Interface.tag
+          ? [yield* generateInterface(e, context)]
+          : yield* generateKindParam(e, context)),
+      )
     }
 
     return new Interface(

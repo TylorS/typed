@@ -25,7 +25,7 @@ export class Interface extends ast('Interface') {
     readonly name: string,
     readonly typeParams: ReadonlyArray<TypeParam>,
     readonly properties: ReadonlyArray<InterfaceProperty>,
-    readonly extensions: readonly Interface[] = [],
+    readonly extensions: ReadonlyArray<KindParam | Interface> = [],
   ) {
     super()
   }
@@ -86,7 +86,7 @@ export class Typeclass extends ast('Typeclass') {
 
 export class DynamicTypeParam extends ast('DynamicTypeParam') {
   constructor(
-    readonly typeParams: readonly TypeParam[],
+    readonly params: readonly KindParam[],
     readonly template: (typeParams: readonly string[], context: Context) => string,
   ) {
     super()
@@ -126,9 +126,14 @@ export class Kind extends ast('Kind') {
   }
 }
 
-export type KindParam = Exclude<TypeParam | Kind | Tuple | ObjectNode | StaticNode, HKTParam>
+export type KindParam = TypeParam | Kind | Tuple | ObjectNode | StaticNode
 
-export type FunctionReturnSignature = FunctionSignature | KindReturn | StaticReturn | TupleReturn
+export type FunctionReturnSignature =
+  | FunctionSignature
+  | KindReturn
+  | StaticReturn
+  | TupleReturn
+  | DynamicTypeParam
 
 export class KindReturn extends ast('KindReturn') {
   constructor(readonly type: HKTParam, readonly typeParams: ReadonlyArray<KindParam>) {

@@ -3,6 +3,7 @@ import { A, U } from 'ts-toolbelt'
 import {
   AST,
   DynamicFunctionParam,
+  DynamicTypeParam,
   FunctionSignature,
   HKTParam,
   HKTPlaceholder,
@@ -237,6 +238,8 @@ function walkAst(node: AST, visitors: Visitors) {
       return walkKindReturn(node, visitors)
     case StaticReturn.tag:
       return walkStaticReturn(node, visitors)
+    case DynamicTypeParam.tag:
+      return walkDynamicTypeParam(node, visitors)
     case Tuple.tag:
       return walkTuple(node, visitors)
     case ObjectNode.tag:
@@ -251,7 +254,8 @@ function walkAst(node: AST, visitors: Visitors) {
 function walkInterface(node: Interface, visitors: Visitors) {
   visitors.Interface(node)
   node.typeParams.forEach((typeParam) => walkAst(typeParam, visitors))
-  node.properties.forEach((property) => walkProperty(property, visitors))
+  node.extensions.forEach((e) => walkAst(e, visitors))
+  node.properties.forEach((property) => walkAst(property, visitors))
 }
 
 function walkProperty(node: InterfaceProperty, visitors: Visitors) {
@@ -263,25 +267,8 @@ function walkFunctionSignature(node: FunctionSignature, visitors: Visitors): voi
   visitors.FunctionSignature(node)
 
   node.typeParams.forEach((typeParam) => walkAst(typeParam, visitors))
-  node.functionParams.forEach((p) => {
-    switch (p.tag) {
-      case Kind.tag:
-        return walkKind(p, visitors)
-      case StaticFunctionParam.tag:
-        return walkStaticFunctionParam(p, visitors)
-      case DynamicFunctionParam.tag:
-        return walkDynamicFunctionParam(p, visitors)
-    }
-  })
-
-  switch (node.returnSignature.tag) {
-    case FunctionSignature.tag:
-      return walkFunctionSignature(node.returnSignature, visitors)
-    case KindReturn.tag:
-      return walkKindReturn(node.returnSignature, visitors)
-    case StaticReturn.tag:
-      return walkStaticReturn(node.returnSignature, visitors)
-  }
+  node.functionParams.forEach((p) => walkAst(p, visitors))
+  walkAst(node.returnSignature, visitors)
 }
 
 function walkHKTParam(node: HKTParam, visitors: Visitors) {
@@ -294,6 +281,11 @@ function walkHKTPlaceholder(node: HKTPlaceholder, visitors: Visitors) {
 
 function walkStaticTypeParam(node: StaticTypeParam, visitors: Visitors) {
   visitors.StaticTypeParam(node)
+}
+
+function walkDynamicTypeParam(node: DynamicTypeParam, visitors: Visitors) {
+  visitors.DynamicTypeParam(node)
+  node.params.forEach((t) => walkAst(t, visitors))
 }
 
 function walkStaticFunctionParam(node: StaticFunctionParam, visitors: Visitors) {
@@ -311,6 +303,7 @@ function walkKind(node: Kind, visitors: Visitors) {
 
 function walkKindReturn(node: KindReturn, visitors: Visitors) {
   visitors.KindReturn(node)
+  node.typeParams.forEach((t) => walkAst(t, visitors))
 }
 
 function walkStaticReturn(node: StaticReturn, visitors: Visitors) {
@@ -339,5 +332,6 @@ function walkTypeAlias(node: TypeAlias, visitors: Visitors) {
   visitors.TypeAlias(node)
 
   node.typeParams.forEach((t) => walkAst(t, visitors))
+
   walkAst(node.signature, visitors)
 }

@@ -1329,6 +1329,16 @@
       "import": "./esm/Prelude/These/index.js",
       "types": "./esm/Prelude/These/index.d.ts"
     },
+    "./Prelude/TheseT/TheseT": {
+      "require": "./cjs/Prelude/TheseT/TheseT.js",
+      "import": "./esm/Prelude/TheseT/TheseT.js",
+      "types": "./esm/Prelude/TheseT/TheseT.d.ts"
+    },
+    "./Prelude/TheseT": {
+      "require": "./cjs/Prelude/TheseT/index.js",
+      "import": "./esm/Prelude/TheseT/index.js",
+      "types": "./esm/Prelude/TheseT/index.d.ts"
+    },
     "./Prelude/Tree": {
       "require": "./cjs/Prelude/Tree/index.js",
       "import": "./esm/Prelude/Tree/index.js",
