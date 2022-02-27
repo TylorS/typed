@@ -70,7 +70,12 @@ export class Typeclass extends ast('Typeclass') {
   }
 }
 
-export type FunctionParam = StaticFunctionParam | DynamicFunctionParam | Kind | Typeclass
+export type FunctionParam =
+  | StaticFunctionParam
+  | DynamicFunctionParam
+  | Kind
+  | Typeclass
+  | FunctionSignature
 
 export class StaticFunctionParam extends ast('StaticFunctionParam') {
   constructor(readonly label: string, readonly type: string) {

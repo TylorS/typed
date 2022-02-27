@@ -1,5 +1,6 @@
 import { FunctionReturnSignature, FunctionSignature, KindReturn } from './AST'
 import { Context } from './Context'
+// eslint-disable-next-line import/no-cycle
 import { generateFunctionParams } from './generateFunctionParams'
 import { generateKindReturn } from './generateKindReturn'
 import { generateTypeParams } from './generateTypeParams'

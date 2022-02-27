@@ -48,11 +48,16 @@ export function printFunctionSignature(
   node: FunctionSignature,
   context: Context,
   isReturn: boolean,
+  isParam = false,
 ): string {
   let s = ''
 
-  if (!isReturn) {
-    s += `export function ${node.name}`
+  if (!isReturn && !isParam) {
+    s += `export function `
+  }
+
+  if (isParam) {
+    s += `${node.name}: `
   }
 
   if (node.typeParams.length) {
@@ -63,7 +68,7 @@ export function printFunctionSignature(
 
   s += '('
   if (node.functionParams.length) {
-    s += node.functionParams.map((p) => printFunctionParam(p, context)).join(', ')
+    s += node.functionParams.map((p) => printFunctionParam(p, context, isReturn)).join(', ')
   }
   s += ')'
 
@@ -98,7 +103,7 @@ export function printTypeParam(p: TypeParam, printStatic: boolean): string {
   }
 }
 
-export function printFunctionParam(p: FunctionParam, context: Context): string {
+export function printFunctionParam(p: FunctionParam, context: Context, isReturn: boolean): string {
   switch (p.tag) {
     case StaticFunctionParam.tag:
       return `${p.label}: ${p.type}`
@@ -112,6 +117,8 @@ export function printFunctionParam(p: FunctionParam, context: Context): string {
     case Typeclass.tag: {
       return `${p.label}: ${p.name}${p.type.size === 0 ? '' : p.type.size}<${p.type.name}>`
     }
+    case FunctionSignature.tag:
+      return printFunctionSignature(p, context, isReturn, true)
   }
 }
 

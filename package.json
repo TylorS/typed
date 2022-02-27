@@ -53,7 +53,7 @@
     "build:typescript:cjs": "rimraf cjs && tsc -P ./tsconfig.cjs.json",
     "build:typescript:esm": "rimraf esm && tsc -P ./tsconfig.esm.json",
     "clean": "node -r esbuild-register -r tsconfig-paths/register ./tools/cleanup",
-    "generate-overload": "ts-node -r tsconfig-paths/register ./tools/overloads/cli.ts",
+    "generate-overload": "node -r esbuild-register -r tsconfig-paths/register ./tools/overloads/cli.ts",
     "lint": "concurrently npm:lint:ts npm:lint:markdown",
     "lint:markdown": "prettier --write --parser markdown --prose-wrap always *.md docs/**/*.md",
     "lint:ts": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
@@ -938,6 +938,16 @@
       "require": "./cjs/Prelude/CommutativeEither/index.js",
       "import": "./esm/Prelude/CommutativeEither/index.js",
       "types": "./esm/Prelude/CommutativeEither/index.d.ts"
+    },
+    "./Prelude/Compact/Compact": {
+      "require": "./cjs/Prelude/Compact/Compact.js",
+      "import": "./esm/Prelude/Compact/Compact.js",
+      "types": "./esm/Prelude/Compact/Compact.d.ts"
+    },
+    "./Prelude/Compact": {
+      "require": "./cjs/Prelude/Compact/index.js",
+      "import": "./esm/Prelude/Compact/index.js",
+      "types": "./esm/Prelude/Compact/index.d.ts"
     },
     "./Prelude/Covariant/Covariant": {
       "require": "./cjs/Prelude/Covariant/Covariant.js",
