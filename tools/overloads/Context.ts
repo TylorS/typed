@@ -13,10 +13,12 @@ import {
   KindReturn,
   ObjectNode,
   ObjectProperty,
+  ParentNode,
   StaticFunctionParam,
   StaticReturn,
   StaticTypeParam,
   Tuple,
+  TypeAlias,
 } from './AST'
 import { findHKTParams } from './findHKTParams'
 
@@ -26,15 +28,14 @@ export interface Context {
   readonly existing: Map<symbol, readonly KindParam[]>
 }
 
-export function buildContext(
-  ast: FunctionSignature | Interface,
-  possibility: ReadonlyArray<number>,
-): Context {
+export function buildContext(ast: ParentNode, possibility: ReadonlyArray<number>): Context {
   switch (ast.tag) {
     case FunctionSignature.tag:
       return buildContextFromFunctionSignature(ast, possibility)
     case Interface.tag:
       return buildContextFromInterface(ast, possibility)
+    case TypeAlias.tag:
+      return buildContextFromTypeAlias(ast, possibility)
   }
 }
 
@@ -70,14 +71,30 @@ export function buildContextFromInterface(
   }
 }
 
-export function findExistingParameters(
-  ast: FunctionSignature | Interface,
-): Map<symbol, readonly KindParam[]> {
+export function buildContextFromTypeAlias(
+  node: TypeAlias,
+  possibility: ReadonlyArray<number>,
+): Context {
+  const hkts = findHKTParams(node.typeParams)
+  const lengths = new Map<symbol, number>(hkts.map((hkt, i) => [hkt.id, possibility[i]] as const))
+  const positions = new Map<symbol, number>(hkts.map((hkt, i) => [hkt.id, i + 1] as const))
+  const existing = findExistingParameters(node)
+
+  return {
+    lengths,
+    positions,
+    existing,
+  }
+}
+
+export function findExistingParameters(ast: ParentNode): Map<symbol, readonly KindParam[]> {
   switch (ast.tag) {
     case FunctionSignature.tag:
       return findExistingParametersForFunctionSignature(ast)
     case Interface.tag:
       return findExistingParametersForInterface(ast)
+    case TypeAlias.tag:
+      return findExistingParametersForTypeAlias(ast)
   }
 }
 
@@ -107,6 +124,30 @@ export function findExistingParametersForFunctionSignature(
 
 export function findExistingParametersForInterface(
   node: Interface,
+): Map<symbol, readonly KindParam[]> {
+  const existing = new Map<symbol, readonly KindParam[]>()
+
+  walkAst(node, {
+    ...defaultVisitors(),
+    Kind: (node) => {
+      existing.set(
+        node.type.id,
+        node.typeParams.filter((x) => x.tag !== 'HKTPlaceholder'),
+      )
+    },
+    KindReturn: (node) => {
+      existing.set(
+        node.type.id,
+        node.typeParams.filter((x) => x.tag !== 'HKTPlaceholder'),
+      )
+    },
+  })
+
+  return existing
+}
+
+export function findExistingParametersForTypeAlias(
+  node: TypeAlias,
 ): Map<symbol, readonly KindParam[]> {
   const existing = new Map<symbol, readonly KindParam[]>()
 
@@ -167,6 +208,7 @@ function defaultVisitors(): Visitors {
     StaticReturn: identity,
     Tuple: identity,
     TupleReturn: identity,
+    TypeAlias: identity,
     Typeclass: identity,
   }
 }
@@ -201,6 +243,8 @@ function walkAst(node: AST, visitors: Visitors) {
       return walkObjectNode(node, visitors)
     case ObjectProperty.tag:
       return walkObjectProperty(node, visitors)
+    case TypeAlias.tag:
+      return walkTypeAlias(node, visitors)
   }
 }
 
@@ -289,4 +333,11 @@ function walkObjectProperty(node: ObjectProperty, visitors: Visitors) {
   visitors.ObjectProperty(node)
 
   walkAst(node.param, visitors)
+}
+
+function walkTypeAlias(node: TypeAlias, visitors: Visitors) {
+  visitors.TypeAlias(node)
+
+  node.typeParams.forEach((t) => walkAst(t, visitors))
+  walkAst(node.signature, visitors)
 }

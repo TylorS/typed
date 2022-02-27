@@ -13,11 +13,13 @@ import {
   KindReturn,
   ObjectNode,
   ObjectProperty,
+  ParentNode,
   StaticFunctionParam,
   StaticNode,
   StaticTypeParam,
   Tuple,
   TupleReturn,
+  TypeAlias,
   Typeclass,
   TypeParam,
 } from './AST'
@@ -26,19 +28,21 @@ import { buildContext, Context } from './Context'
 import { findHKTParams } from './findHKTParams'
 import { findPossibilities } from './findPossibilities'
 
-export function generateOverloads(ast: FunctionSignature | Interface) {
+export function generateOverloads(ast: ParentNode) {
   return run(generateOverloadsSafe(ast))
 }
 
 export function generateOverloadsSafe(
-  ast: FunctionSignature | Interface,
-): Sync<ReadonlyArray<readonly [FunctionSignature | Interface, Context]>> {
+  ast: ParentNode,
+): Sync<ReadonlyArray<readonly [ParentNode, Context]>> {
   return Sync(function* () {
     switch (ast.tag) {
       case FunctionSignature.tag:
         return (yield* generateFunctionSignatureOverloads(ast)).reverse()
       case Interface.tag:
         return yield* generateInterfaceOverloads(ast)
+      case TypeAlias.tag:
+        return yield* generateTypeAliasOverloads(ast)
     }
   })
 }
@@ -63,12 +67,28 @@ export function generateInterfaceOverloads(node: Interface) {
   const possiblilties = findPossibilities(node)
 
   return Sync(function* () {
-    const output: Array<readonly [Interface | Interface, Context]> = []
+    const output: Array<readonly [Interface, Context]> = []
 
     for (const possiblilty of possiblilties) {
       const context = buildContext(node, possiblilty)
 
       output.push([yield* generateInterface(node, context), context])
+    }
+
+    return output
+  })
+}
+
+export function generateTypeAliasOverloads(node: TypeAlias) {
+  const possiblilties = findPossibilities(node)
+
+  return Sync(function* () {
+    const output: Array<readonly [TypeAlias, Context]> = []
+
+    for (const possiblilty of possiblilties) {
+      const context = buildContext(node, possiblilty)
+
+      output.push([yield* generateTypeAlias(node, context), context])
     }
 
     return output
@@ -342,7 +362,7 @@ export function generateInterface(node: Interface, context: Context): Sync<Inter
     }
 
     return new Interface(
-      generateInterfaceName(node, context),
+      generateTypeName(node, context),
       yield* generateTypeParams(node.typeParams, context),
       yield* generateProperties(node.properties, context),
       extensions,
@@ -350,7 +370,7 @@ export function generateInterface(node: Interface, context: Context): Sync<Inter
   })
 }
 
-function generateInterfaceName(node: Interface, context: Context): string {
+function generateTypeName(node: Interface | TypeAlias, context: Context): string {
   return `${node.name}${generatePostfix(findHKTParams(node.typeParams), context)}`
 }
 
@@ -380,6 +400,17 @@ export function generateProperty(p: InterfaceProperty, context: Context): Sync<I
     return {
       ...p,
       signature: yield* generateFunctionSignature(p.signature, context),
+    }
+  })
+}
+
+export function generateTypeAlias(node: TypeAlias, context: Context): Sync<TypeAlias> {
+  return Sync(function* () {
+    return {
+      ...node,
+      name: generateTypeName(node, context),
+      typeParams: yield* generateTypeParams(node.typeParams, context),
+      signature: yield* generateReturnSignature(node.signature, context),
     }
   })
 }

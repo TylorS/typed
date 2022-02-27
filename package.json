@@ -1219,6 +1219,16 @@
       "import": "./esm/Prelude/ReadonlyArray/index.js",
       "types": "./esm/Prelude/ReadonlyArray/index.d.ts"
     },
+    "./Prelude/Refinement/Refinement": {
+      "require": "./cjs/Prelude/Refinement/Refinement.js",
+      "import": "./esm/Prelude/Refinement/Refinement.js",
+      "types": "./esm/Prelude/Refinement/Refinement.d.ts"
+    },
+    "./Prelude/Refinement": {
+      "require": "./cjs/Prelude/Refinement/index.js",
+      "import": "./esm/Prelude/Refinement/index.js",
+      "types": "./esm/Prelude/Refinement/index.d.ts"
+    },
     "./Prelude/Refreshing/Refreshing": {
       "require": "./cjs/Prelude/Refreshing/Refreshing.js",
       "import": "./esm/Prelude/Refreshing/Refreshing.js",

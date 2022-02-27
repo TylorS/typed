@@ -1,8 +1,11 @@
 import type { Context } from './Context'
 
+export type ParentNode = FunctionSignature | Interface | TypeAlias
+
 export type AST =
   | Interface
   | InterfaceProperty
+  | TypeAlias
   | FunctionSignature
   | TypeParam
   | FunctionParam
@@ -30,6 +33,16 @@ export class Interface extends ast('Interface') {
 
 export class InterfaceProperty extends ast('InterfaceProperty') {
   constructor(readonly name: string, readonly signature: FunctionSignature) {
+    super()
+  }
+}
+
+export class TypeAlias extends ast('TypeAlias') {
+  constructor(
+    readonly name: string,
+    readonly typeParams: ReadonlyArray<TypeParam>,
+    readonly signature: FunctionReturnSignature,
+  ) {
     super()
   }
 }

@@ -12,24 +12,36 @@ import {
   KindParam,
   KindReturn,
   ObjectNode,
+  ParentNode,
   StaticFunctionParam,
   StaticNode,
   StaticReturn,
   StaticTypeParam,
   Tuple,
   TupleReturn,
+  TypeAlias,
   Typeclass,
   TypeParam,
 } from './AST'
 import { Context } from './Context'
 
-export function printOverload(node: FunctionSignature | Interface, context: Context): string {
+export function printOverload(node: ParentNode, context: Context): string {
   switch (node.tag) {
     case FunctionSignature.tag:
       return printFunctionSignature(node, context, false)
     case Interface.tag:
       return printInterface(node, context)
+    case TypeAlias.tag:
+      return printTypeAlias(node, context)
   }
+}
+
+export function printTypeAlias(node: TypeAlias, context: Context): string {
+  return `export type ${node.name}${
+    node.typeParams.length
+      ? `<${node.typeParams.map((p) => printTypeParam(p, context, false)).join(', ')}>`
+      : ''
+  } = ${printReturnSignature(node.signature, context)}`
 }
 
 export function printInterface(node: Interface, context: Context, isExtension = false): string {
