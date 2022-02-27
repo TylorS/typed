@@ -1314,6 +1314,26 @@
       "import": "./esm/Prelude/Tree/index.js",
       "types": "./esm/Prelude/Tree/index.d.ts"
     },
+    "./Prelude/Triple/Triple": {
+      "require": "./cjs/Prelude/Triple/Triple.js",
+      "import": "./esm/Prelude/Triple/Triple.js",
+      "types": "./esm/Prelude/Triple/Triple.d.ts"
+    },
+    "./Prelude/Triple": {
+      "require": "./cjs/Prelude/Triple/index.js",
+      "import": "./esm/Prelude/Triple/index.js",
+      "types": "./esm/Prelude/Triple/index.d.ts"
+    },
+    "./Prelude/Tuple/Tuple": {
+      "require": "./cjs/Prelude/Tuple/Tuple.js",
+      "import": "./esm/Prelude/Tuple/Tuple.js",
+      "types": "./esm/Prelude/Tuple/Tuple.d.ts"
+    },
+    "./Prelude/Tuple": {
+      "require": "./cjs/Prelude/Tuple/index.js",
+      "import": "./esm/Prelude/Tuple/index.js",
+      "types": "./esm/Prelude/Tuple/index.d.ts"
+    },
     "./Prelude/boolean": {
       "require": "./cjs/Prelude/boolean/index.js",
       "import": "./esm/Prelude/boolean/index.js",
