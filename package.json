@@ -769,6 +769,16 @@
       "import": "./esm/Prelude/AssociativeBoth/index.js",
       "types": "./esm/Prelude/AssociativeBoth/index.d.ts"
     },
+    "./Prelude/AssociativeCompose/AssociativeCompose": {
+      "require": "./cjs/Prelude/AssociativeCompose/AssociativeCompose.js",
+      "import": "./esm/Prelude/AssociativeCompose/AssociativeCompose.js",
+      "types": "./esm/Prelude/AssociativeCompose/AssociativeCompose.d.ts"
+    },
+    "./Prelude/AssociativeCompose": {
+      "require": "./cjs/Prelude/AssociativeCompose/index.js",
+      "import": "./esm/Prelude/AssociativeCompose/index.js",
+      "types": "./esm/Prelude/AssociativeCompose/index.d.ts"
+    },
     "./Prelude/AssociativeEither/AssociativeEither": {
       "require": "./cjs/Prelude/AssociativeEither/AssociativeEither.js",
       "import": "./esm/Prelude/AssociativeEither/AssociativeEither.js",
