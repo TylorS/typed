@@ -335,11 +335,17 @@ function generateDynamicFunctionParam(
 
 export function generateInterface(node: Interface, context: Context): Sync<Interface> {
   return Sync(function* () {
+    const extensions: Interface[] = []
+
+    for (const e of node.extensions) {
+      extensions.push(yield* generateInterface(e, context))
+    }
+
     return new Interface(
       generateInterfaceName(node, context),
       yield* generateTypeParams(node.typeParams, context),
       yield* generateProperties(node.properties, context),
-      // node.extension ? yield* generateInterface(node, context) : undefined,
+      extensions,
     )
   })
 }

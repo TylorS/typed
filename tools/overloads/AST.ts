@@ -22,7 +22,7 @@ export class Interface extends ast('Interface') {
     readonly name: string,
     readonly typeParams: ReadonlyArray<TypeParam>,
     readonly properties: ReadonlyArray<InterfaceProperty>,
-    readonly extension?: Interface,
+    readonly extensions: readonly Interface[] = [],
   ) {
     super()
   }

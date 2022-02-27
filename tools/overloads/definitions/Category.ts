@@ -27,5 +27,5 @@ export const node = new Interface(
       ),
     ),
   ],
-  AssociativeBoth,
+  [{ ...AssociativeBoth, typeParams: [hkt] }],
 )
