@@ -17,6 +17,7 @@ import {
   StaticNode,
   StaticTypeParam,
   Tuple,
+  TupleReturn,
   Typeclass,
   TypeParam,
 } from './AST'
@@ -95,6 +96,15 @@ export function generateReturnSignature(
         return yield* generateFunctionSignature(signature, context)
       case KindReturn.tag:
         return yield* generateKindReturn(signature, context)
+      case TupleReturn.tag: {
+        const output: FunctionReturnSignature[] = []
+
+        for (const s of signature.members) {
+          output.push(yield* generateReturnSignature(s, context))
+        }
+
+        return new TupleReturn(output)
+      }
       default:
         return signature
     }
@@ -135,7 +145,7 @@ export function generateTypeParams(
 
 export function generatePlaceholders(p: HKTPlaceholder, context: Context) {
   const length = context.lengths.get(p.type.id)!
-  const existing = context.existing.get(p.type.id)?.length ?? 0
+  const existing = findExistingParams(context, p.type.id)
   const position = context.positions.get(p.type.id)!
   const multiple = context.lengths.size > 1
 
@@ -155,6 +165,17 @@ export function generatePlaceholders(p: HKTPlaceholder, context: Context) {
   })
 
   return placholders
+}
+
+function findExistingParams(context: Context, id: symbol): number {
+  const params = context.existing.get(id)
+
+  if (!params) {
+    return 0
+  }
+
+  // TODO: Check if multiple values should be here
+  return params.length
 }
 
 export function generateHKTParam(p: HKTParam, context: Context): Sync<HKTParam> {

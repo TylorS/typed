@@ -45,7 +45,7 @@ export class FunctionSignature extends ast('FunctionSignature') {
   }
 }
 
-export type TypeParam = HKTParam | HKTPlaceholder | StaticTypeParam | Typeclass
+export type TypeParam = HKTParam | HKTPlaceholder | StaticTypeParam | Typeclass | DynamicTypeParam
 
 export class HKTParam extends ast('HKTParam') {
   constructor(readonly name: string, readonly size = 0) {
@@ -67,6 +67,15 @@ export class StaticTypeParam extends ast('StaticTypeParam') {
 
 export class Typeclass extends ast('Typeclass') {
   constructor(readonly label: string, readonly name: string, readonly type: HKTParam) {
+    super()
+  }
+}
+
+export class DynamicTypeParam extends ast('DynamicTypeParam') {
+  constructor(
+    readonly typeParams: readonly TypeParam[],
+    readonly template: (typeParams: readonly string[], context: Context) => string,
+  ) {
     super()
   }
 }
@@ -106,7 +115,7 @@ export class Kind extends ast('Kind') {
 
 export type KindParam = Exclude<TypeParam | Kind | Tuple | ObjectNode | StaticNode, HKTParam>
 
-export type FunctionReturnSignature = FunctionSignature | KindReturn | StaticReturn
+export type FunctionReturnSignature = FunctionSignature | KindReturn | StaticReturn | TupleReturn
 
 export class KindReturn extends ast('KindReturn') {
   constructor(readonly type: HKTParam, readonly typeParams: ReadonlyArray<KindParam>) {
@@ -140,6 +149,12 @@ export class ObjectProperty extends ast('ObjectProperty') {
 
 export class StaticNode extends ast('StaticNode') {
   constructor(readonly type: string) {
+    super()
+  }
+}
+
+export class TupleReturn extends ast('TupleReturn') {
+  constructor(readonly members: ReadonlyArray<FunctionReturnSignature>) {
     super()
   }
 }

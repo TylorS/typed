@@ -151,6 +151,7 @@ function identity<A>(value: A): A {
 function defaultVisitors(): Visitors {
   return {
     DynamicFunctionParam: identity,
+    DynamicTypeParam: identity,
     FunctionSignature: identity,
     HKTParam: identity,
     HKTPlaceholder: identity,
@@ -165,6 +166,7 @@ function defaultVisitors(): Visitors {
     StaticFunctionParam: identity,
     StaticReturn: identity,
     Tuple: identity,
+    TupleReturn: identity,
     Typeclass: identity,
   }
 }

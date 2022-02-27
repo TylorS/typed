@@ -1,5 +1,6 @@
 import {
   DynamicFunctionParam,
+  DynamicTypeParam,
   FunctionParam,
   FunctionReturnSignature,
   FunctionSignature,
@@ -16,6 +17,7 @@ import {
   StaticReturn,
   StaticTypeParam,
   Tuple,
+  TupleReturn,
   Typeclass,
   TypeParam,
 } from './AST'
@@ -34,14 +36,14 @@ export function printInterface(node: Interface, context: Context, isExtension = 
   if (isExtension) {
     return `extends ${node.name}${
       node.typeParams.length
-        ? `<${node.typeParams.map((p) => printTypeParam(p, false)).join(', ')}>`
+        ? `<${node.typeParams.map((p) => printTypeParam(p, context, false)).join(', ')}>`
         : ''
     }`
   }
 
   return `export interface ${node.name}${
     node.typeParams.length
-      ? `<${node.typeParams.map((p) => printTypeParam(p, false)).join(', ')}>`
+      ? `<${node.typeParams.map((p) => printTypeParam(p, context, false)).join(', ')}>`
       : ''
   }${node.extension ? `${printInterface(node.extension, context, true)} ` : ``} {
   ${node.properties.map((p) => printProperty(p, context)).join('\n')}
@@ -70,7 +72,7 @@ export function printFunctionSignature(
 
   if (node.typeParams.length) {
     s += '<'
-    s += node.typeParams.map((p) => printTypeParam(p, false)).join(', ')
+    s += node.typeParams.map((p) => printTypeParam(p, context, false)).join(', ')
     s += '>'
   }
 
@@ -87,7 +89,7 @@ export function printFunctionSignature(
   return s
 }
 
-export function printTypeParam(p: TypeParam, printStatic: boolean): string {
+export function printTypeParam(p: TypeParam, context: Context, printStatic: boolean): string {
   switch (p.tag) {
     case HKTParam.tag:
       return printStatic ? p.name : `${p.name} extends HKT${p.size < 2 ? '' : `${p.size}`}`
@@ -108,6 +110,12 @@ export function printTypeParam(p: TypeParam, printStatic: boolean): string {
 
       return p.defaultValue ? `${base} = ${p.defaultValue}` : base
     }
+    case DynamicTypeParam.tag: {
+      return p.template(
+        p.typeParams.map((t) => printTypeParam(t, context, true)),
+        context,
+      )
+    }
   }
 }
 
@@ -117,7 +125,7 @@ export function printFunctionParam(p: FunctionParam, context: Context, isReturn:
       return `${p.label}: ${p.type}`
     case DynamicFunctionParam.tag:
       return `${p.label}: ${p.template(
-        p.typeParams.map((t) => printTypeParam(t, true)),
+        p.typeParams.map((t) => printTypeParam(t, context, true)),
         context,
       )}`
     case Kind.tag:
@@ -135,15 +143,17 @@ export function printReturnSignature(p: FunctionReturnSignature, context: Contex
     case FunctionSignature.tag:
       return printFunctionSignature(p, context, true)
     case StaticReturn.tag:
-      return printStaticReturn(p)
+      return printStaticReturn(p, context)
     case KindReturn.tag:
       return printKindReturn(p, context)
+    case TupleReturn.tag:
+      return `readonly [${p.members.map((s) => printReturnSignature(s, context)).join(', ')}]`
   }
 }
 
-export function printStaticReturn(p: StaticReturn): string {
+export function printStaticReturn(p: StaticReturn, context: Context): string {
   if (p.params.length) {
-    return `${p.type}<${p.params.map((p) => printTypeParam(p, true)).join(', ')}>`
+    return `${p.type}<${p.params.map((p) => printTypeParam(p, context, true)).join(', ')}>`
   }
 
   return p.type
@@ -177,7 +187,7 @@ function printKindParam(kindParam: KindParam, context: Context, printStatic: boo
     case StaticNode.tag:
       return kindParam.type
     default:
-      return printTypeParam(kindParam, true)
+      return printTypeParam(kindParam, context, true)
   }
 }
 
