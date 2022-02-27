@@ -1189,6 +1189,16 @@
       "import": "./esm/Prelude/Option/index.js",
       "types": "./esm/Prelude/Option/index.d.ts"
     },
+    "./Prelude/OptionT/OptionT": {
+      "require": "./cjs/Prelude/OptionT/OptionT.js",
+      "import": "./esm/Prelude/OptionT/OptionT.js",
+      "types": "./esm/Prelude/OptionT/OptionT.d.ts"
+    },
+    "./Prelude/OptionT": {
+      "require": "./cjs/Prelude/OptionT/index.js",
+      "import": "./esm/Prelude/OptionT/index.js",
+      "types": "./esm/Prelude/OptionT/index.d.ts"
+    },
     "./Prelude/Pending": {
       "require": "./cjs/Prelude/Pending/index.js",
       "import": "./esm/Prelude/Pending/index.js",
