@@ -744,6 +744,16 @@
       "import": "./esm/Prelude/Any/index.js",
       "types": "./esm/Prelude/Any/index.d.ts"
     },
+    "./Prelude/Applicative/Applicative": {
+      "require": "./cjs/Prelude/Applicative/Applicative.js",
+      "import": "./esm/Prelude/Applicative/Applicative.js",
+      "types": "./esm/Prelude/Applicative/Applicative.d.ts"
+    },
+    "./Prelude/Applicative": {
+      "require": "./cjs/Prelude/Applicative/index.js",
+      "import": "./esm/Prelude/Applicative/index.js",
+      "types": "./esm/Prelude/Applicative/index.d.ts"
+    },
     "./Prelude/Apply/Apply": {
       "require": "./cjs/Prelude/Apply/Apply.js",
       "import": "./esm/Prelude/Apply/Apply.js",
