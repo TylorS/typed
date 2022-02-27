@@ -914,6 +914,16 @@
       "import": "./esm/Prelude/Cause/index.js",
       "types": "./esm/Prelude/Cause/index.d.ts"
     },
+    "./Prelude/ChainRec/ChainRec": {
+      "require": "./cjs/Prelude/ChainRec/ChainRec.js",
+      "import": "./esm/Prelude/ChainRec/ChainRec.js",
+      "types": "./esm/Prelude/ChainRec/ChainRec.d.ts"
+    },
+    "./Prelude/ChainRec": {
+      "require": "./cjs/Prelude/ChainRec/index.js",
+      "import": "./esm/Prelude/ChainRec/index.js",
+      "types": "./esm/Prelude/ChainRec/index.d.ts"
+    },
     "./Prelude/Commutative": {
       "require": "./cjs/Prelude/Commutative/index.js",
       "import": "./esm/Prelude/Commutative/index.js",
