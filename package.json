@@ -979,6 +979,16 @@
       "import": "./esm/Prelude/Compactable/index.js",
       "types": "./esm/Prelude/Compactable/index.d.ts"
     },
+    "./Prelude/Contravariant/Contravariant": {
+      "require": "./cjs/Prelude/Contravariant/Contravariant.js",
+      "import": "./esm/Prelude/Contravariant/Contravariant.js",
+      "types": "./esm/Prelude/Contravariant/Contravariant.d.ts"
+    },
+    "./Prelude/Contravariant": {
+      "require": "./cjs/Prelude/Contravariant/index.js",
+      "import": "./esm/Prelude/Contravariant/index.js",
+      "types": "./esm/Prelude/Contravariant/index.d.ts"
+    },
     "./Prelude/Covariant/Covariant": {
       "require": "./cjs/Prelude/Covariant/Covariant.js",
       "import": "./esm/Prelude/Covariant/Covariant.js",
