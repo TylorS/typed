@@ -64,7 +64,7 @@
     "test:watch": "concurrently npm:unit-test:watch npm:typecheck:watch",
     "typecheck": "tsc -P ./tsconfig.esm.json --noEmit",
     "typecheck:watch": "npm run typecheck -- --watch --preserveWatchOutput",
-    "update": "node -r esbuild-register -r tsconfig-paths/register ./tools/update-package-exports && git commit -m 'chore: update script'",
+    "update": "node -r esbuild-register -r tsconfig-paths/register ./tools/update-package-exports && git commit --no-verify -m 'chore: update script'",
     "precommit": "concurrently 'npm:update' 'npm:lint-staged'",
     "preversion": "npm test && npm run update && npm run build",
     "postversion": "npm publish --access=public && git push && git push --tags",
@@ -893,6 +893,16 @@
       "require": "./cjs/Prelude/Branded/index.js",
       "import": "./esm/Prelude/Branded/index.js",
       "types": "./esm/Prelude/Branded/index.d.ts"
+    },
+    "./Prelude/Category/Category": {
+      "require": "./cjs/Prelude/Category/Category.js",
+      "import": "./esm/Prelude/Category/Category.js",
+      "types": "./esm/Prelude/Category/Category.d.ts"
+    },
+    "./Prelude/Category": {
+      "require": "./cjs/Prelude/Category/index.js",
+      "import": "./esm/Prelude/Category/index.js",
+      "types": "./esm/Prelude/Category/index.d.ts"
     },
     "./Prelude/Cause/Associative": {
       "require": "./cjs/Prelude/Cause/Associative.js",
