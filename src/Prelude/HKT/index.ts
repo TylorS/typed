@@ -177,3 +177,64 @@ export type Kind10<T extends HKT5, Z, Y, X, W, V, U, S, R, E, A> = (T & {
 })['type']
 
 export type TypeOf<T> = 'type' extends keyof T ? T['type'] : T
+
+export type ParamOf<H extends HKT, T, P extends Params> = {
+  readonly [Z]: H extends HKT10
+    ? [T] extends [
+        Kind10<
+          H,
+          infer R,
+          infer _,
+          infer _,
+          infer _,
+          infer _,
+          infer _,
+          infer _,
+          infer _,
+          infer _,
+          infer _
+        >,
+      ]
+      ? R
+      : never
+    : never
+  readonly [Y]: H extends HKT9
+    ? [T] extends [
+        Kind9<H, infer R, infer _, infer _, infer _, infer _, infer _, infer _, infer _, infer _>,
+      ]
+      ? R
+      : never
+    : never
+  readonly [X]: H extends HKT8
+    ? [T] extends [Kind8<H, infer R, infer _, infer _, infer _, infer _, infer _, infer _, infer _>]
+      ? R
+      : never
+    : never
+  readonly [W]: H extends HKT7
+    ? [T] extends [Kind7<H, infer R, infer _, infer _, infer _, infer _, infer _, infer _>]
+      ? R
+      : never
+    : never
+  readonly [V]: H extends HKT6
+    ? [T] extends [Kind6<H, infer R, infer _, infer _, infer _, infer _, infer _>]
+      ? R
+      : never
+    : never
+  readonly [U]: H extends HKT5
+    ? [T] extends [Kind5<H, infer R, infer _, infer _, infer _, infer _>]
+      ? R
+      : never
+    : never
+  readonly [S]: H extends HKT4
+    ? [T] extends [Kind4<H, infer R, infer _, infer _, infer _>]
+      ? R
+      : never
+    : never
+  readonly [R]: H extends HKT3
+    ? [T] extends [Kind3<H, infer R, infer _, infer _>]
+      ? R
+      : never
+    : never
+  readonly [E]: H extends HKT2 ? ([T] extends [Kind2<H, infer R, infer _>] ? R : never) : never
+  readonly [A]: T extends Kind<H, infer R> ? R : never
+}[P]

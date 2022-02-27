@@ -11,6 +11,6 @@ export const isLeft = <E, A>(either: Either<E, A>): either is Left<E> => either.
 export const isRight = <E, A>(either: Either<E, A>): either is Right<A> => either.type === 'Right'
 
 export interface EitherHKT extends HKT2 {
-  readonly defaults: Omit<HKT2['defaults'], Params.E> & { readonly [Params.E]: never }
+  readonly defaults: HKT2['defaults'] & { readonly [Params.E]: never }
   readonly type: Either<this[Params.E], this[Params.A]>
 }

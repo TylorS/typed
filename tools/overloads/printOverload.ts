@@ -92,8 +92,8 @@ export function printFunctionSignature(
     s += `export function `
   }
 
-  if (isParam) {
-    s += `${node.name}: `
+  if (!isReturn || isParam) {
+    s += `${node.name}${isParam ? ':' : ''} `
   }
 
   if (node.typeParams.length) {
