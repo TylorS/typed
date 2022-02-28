@@ -1,4 +1,5 @@
 import {
+  CurriedPlacholder,
   DynamicFunctionParam,
   DynamicTypeParam,
   FunctionParam,
@@ -119,8 +120,9 @@ export function printTypeParam(p: TypeParam, context: Context, printStatic: bool
   switch (p.tag) {
     case HKTParam.tag:
       return printStatic ? p.name : `${p.name} extends HKT${p.size < 2 ? '' : `${p.size}`}`
-    case HKTPlaceholder.tag: // Should be replaced in Overloads with StaticTypeParams
-      return ''
+    case HKTPlaceholder.tag:
+    case CurriedPlacholder.tag:
+      return '' // Should be replaced in generateOverloads with Array<StaticTypeParam>
     case Typeclass.tag: {
       const baseName = `${p.name}${p.type.size === 0 ? '' : p.type.size}`
 

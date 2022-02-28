@@ -23,6 +23,9 @@ import {
 } from './AST'
 import { findHKTParams } from './findHKTParams'
 
+// TODO: Keep track of position of Existing Params
+// TODO: Keep track of remaining args for each HKT
+// TODO: Keep track of curried args for each HKT
 export interface Context {
   readonly lengths: Map<symbol, number>
   readonly positions: Map<symbol, number>
@@ -192,6 +195,7 @@ function identity<A>(value: A): A {
 
 function defaultVisitors(): Visitors {
   return {
+    CurriedPlacholder: identity,
     DynamicFunctionParam: identity,
     DynamicTypeParam: identity,
     FunctionSignature: identity,

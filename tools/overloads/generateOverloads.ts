@@ -1,5 +1,6 @@
-import { run, Sync } from '../../src/Prelude/Sync'
+import * as S from '../../src/Prelude/Sync'
 import {
+  CurriedPlacholder,
   DynamicFunctionParam,
   DynamicTypeParam,
   FunctionParam,
@@ -17,6 +18,7 @@ import {
   ParentNode,
   StaticFunctionParam,
   StaticNode,
+  StaticReturn,
   StaticTypeParam,
   Tuple,
   TupleReturn,
@@ -30,13 +32,13 @@ import { findHKTParams } from './findHKTParams'
 import { findPossibilities } from './findPossibilities'
 
 export function generateOverloads(ast: ParentNode) {
-  return run(generateOverloadsSafe(ast))
+  return S.run(generateOverloadsSafe(ast))
 }
 
 export function generateOverloadsSafe(
   ast: ParentNode,
-): Sync<ReadonlyArray<readonly [ParentNode, Context]>> {
-  return Sync(function* () {
+): S.Sync<ReadonlyArray<readonly [ParentNode, Context]>> {
+  return S.Sync(function* () {
     switch (ast.tag) {
       case FunctionSignature.tag:
         return (yield* generateFunctionSignatureOverloads(ast)).reverse()
@@ -51,7 +53,7 @@ export function generateOverloadsSafe(
 export function generateFunctionSignatureOverloads(signature: FunctionSignature) {
   const possiblilties = findPossibilities(signature)
 
-  return Sync(function* () {
+  return S.Sync(function* () {
     const output: Array<readonly [FunctionSignature, Context]> = []
 
     for (const possiblilty of possiblilties) {
@@ -67,7 +69,7 @@ export function generateFunctionSignatureOverloads(signature: FunctionSignature)
 export function generateInterfaceOverloads(node: Interface) {
   const possiblilties = findPossibilities(node)
 
-  return Sync(function* () {
+  return S.Sync(function* () {
     const output: Array<readonly [Interface, Context]> = []
 
     for (const possiblilty of possiblilties) {
@@ -83,7 +85,7 @@ export function generateInterfaceOverloads(node: Interface) {
 export function generateTypeAliasOverloads(node: TypeAlias) {
   const possiblilties = findPossibilities(node)
 
-  return Sync(function* () {
+  return S.Sync(function* () {
     const output: Array<readonly [TypeAlias, Context]> = []
 
     for (const possiblilty of possiblilties) {
@@ -97,7 +99,7 @@ export function generateTypeAliasOverloads(node: TypeAlias) {
 }
 
 export function generateFunctionSignature(signature: FunctionSignature, context: Context) {
-  return Sync(function* () {
+  return S.Sync(function* () {
     return new FunctionSignature(
       signature.name,
       yield* generateTypeParams(signature.typeParams, context),
@@ -110,8 +112,8 @@ export function generateFunctionSignature(signature: FunctionSignature, context:
 export function generateReturnSignature(
   signature: FunctionReturnSignature,
   context: Context,
-): Sync<FunctionReturnSignature> {
-  return Sync(function* () {
+): S.Sync<FunctionReturnSignature> {
+  return S.Sync(function* () {
     switch (signature.tag) {
       case FunctionSignature.tag:
         return yield* generateFunctionSignature(signature, context)
@@ -128,7 +130,7 @@ export function generateReturnSignature(
       }
       case DynamicTypeParam.tag:
         return yield* generateDynamicTypeParam(signature, context)
-      default:
+      case StaticReturn.tag:
         return signature
     }
   })
@@ -137,14 +139,18 @@ export function generateReturnSignature(
 export function generateTypeParams(
   params: readonly TypeParam[],
   context: Context,
-): Sync<readonly TypeParam[]> {
-  return Sync(function* () {
+): S.Sync<readonly TypeParam[]> {
+  return S.Sync(function* () {
     const output: TypeParam[] = []
 
     for (const p of params) {
       switch (p.tag) {
         case HKTPlaceholder.tag: {
-          output.push(...generatePlaceholders(p, context))
+          output.push(...generateHktPlaceholders(p, context))
+          break
+        }
+        case CurriedPlacholder.tag: {
+          output.push(...generateCurriedPlacholders(p, context))
           break
         }
         case HKTParam.tag: {
@@ -157,10 +163,9 @@ export function generateTypeParams(
         }
         case DynamicTypeParam.tag: {
           output.push(yield* generateDynamicTypeParam(p, context))
-
           break
         }
-        default: {
+        case StaticTypeParam.tag: {
           output.push(p)
           break
         }
@@ -171,7 +176,32 @@ export function generateTypeParams(
   })
 }
 
-export function generatePlaceholders(p: HKTPlaceholder, context: Context) {
+export function generateHktPlaceholders(p: HKTPlaceholder, context: Context) {
+  const length = context.lengths.get(p.type.id)!
+  const existing = findExistingParams(context, p.type.id)
+  const position = context.positions.get(p.type.id)!
+  const multiple = context.lengths.size > 1
+
+  if (length === 0) {
+    return []
+  }
+
+  const params = hktParamNames.slice(existing, length).reverse()
+  const placholders = Array.from({ length: length - existing }, (_, i) => {
+    const name = params[i]
+
+    return new StaticTypeParam(
+      multiple ? `${name}${position}` : name,
+      undefined,
+      p.useDefaults ? `${p.type.name}['defaults'][Params.${name}]` : undefined,
+    )
+  })
+
+  return placholders
+}
+
+// TODO: Make this actually work - how to represent needed information in Context ?
+export function generateCurriedPlacholders(p: CurriedPlacholder, context: Context) {
   const length = context.lengths.get(p.type.id)!
   const existing = findExistingParams(context, p.type.id)
   const position = context.positions.get(p.type.id)!
@@ -206,9 +236,9 @@ function findExistingParams(context: Context, id: symbol): number {
   return params.length
 }
 
-export function generateHKTParam(p: HKTParam, context: Context): Sync<HKTParam> {
+export function generateHKTParam(p: HKTParam, context: Context): S.Sync<HKTParam> {
   // eslint-disable-next-line require-yield
-  return Sync(function* () {
+  return S.Sync(function* () {
     return {
       ...p,
       size: context.lengths.get(p.id) ?? 0,
@@ -216,8 +246,8 @@ export function generateHKTParam(p: HKTParam, context: Context): Sync<HKTParam> 
   })
 }
 
-export function generateTypeclass(p: Typeclass, context: Context): Sync<Typeclass> {
-  return Sync(function* () {
+export function generateTypeclass(p: Typeclass, context: Context): S.Sync<Typeclass> {
+  return S.Sync(function* () {
     return {
       ...p,
       type: yield* generateHKTParam(p.type, context),
@@ -228,14 +258,14 @@ export function generateTypeclass(p: Typeclass, context: Context): Sync<Typeclas
 export function generateDynamicTypeParam(
   p: DynamicTypeParam,
   context: Context,
-): Sync<DynamicTypeParam> {
-  return Sync(function* () {
+): S.Sync<DynamicTypeParam> {
+  return S.Sync(function* () {
     return new DynamicTypeParam(yield* generateKindParams(p.params, context), p.template)
   })
 }
 
-export function generateKind(param: Kind, context: Context): Sync<Kind> {
-  return Sync(function* () {
+export function generateKind(param: Kind, context: Context): S.Sync<Kind> {
+  return S.Sync(function* () {
     return {
       ...param,
       typeParams: yield* generateKindParams(param.typeParams, context),
@@ -244,7 +274,7 @@ export function generateKind(param: Kind, context: Context): Sync<Kind> {
 }
 
 export function generateKindParams(params: readonly KindParam[], context: Context) {
-  return Sync(function* () {
+  return S.Sync(function* () {
     const output: KindParam[] = []
 
     for (const p of params) {
@@ -255,8 +285,11 @@ export function generateKindParams(params: readonly KindParam[], context: Contex
   })
 }
 
-export function generateKindParam(param: KindParam, context: Context): Sync<readonly KindParam[]> {
-  return Sync(function* () {
+export function generateKindParam(
+  param: KindParam,
+  context: Context,
+): S.Sync<readonly KindParam[]> {
+  return S.Sync(function* () {
     switch (param.tag) {
       case Kind.tag:
         return [yield* generateKind(param, context)]
@@ -272,8 +305,8 @@ export function generateKindParam(param: KindParam, context: Context): Sync<read
   })
 }
 
-export function generateTuple(tuple: Tuple, context: Context): Sync<Tuple> {
-  return Sync(function* () {
+export function generateTuple(tuple: Tuple, context: Context): S.Sync<Tuple> {
+  return S.Sync(function* () {
     return {
       ...tuple,
       members: yield* generateKindParams(tuple.members, context),
@@ -281,8 +314,8 @@ export function generateTuple(tuple: Tuple, context: Context): Sync<Tuple> {
   })
 }
 
-export function generateObjectNode(node: ObjectNode, context: Context): Sync<ObjectNode> {
-  return Sync(function* () {
+export function generateObjectNode(node: ObjectNode, context: Context): S.Sync<ObjectNode> {
+  return S.Sync(function* () {
     return {
       ...node,
       properties: yield* generateObjectProperties(node.properties, context),
@@ -291,7 +324,7 @@ export function generateObjectNode(node: ObjectNode, context: Context): Sync<Obj
 }
 
 export function generateObjectProperties(properties: readonly ObjectProperty[], context: Context) {
-  return Sync(function* () {
+  return S.Sync(function* () {
     const output: ObjectProperty[] = []
 
     for (const p of properties) {
@@ -305,8 +338,8 @@ export function generateObjectProperties(properties: readonly ObjectProperty[], 
 export function generateObjectProperty(
   property: ObjectProperty,
   context: Context,
-): Sync<ObjectProperty> {
-  return Sync(function* () {
+): S.Sync<ObjectProperty> {
+  return S.Sync(function* () {
     return {
       ...property,
       param: (yield* generateKindParam(property.param, context))[0],
@@ -314,8 +347,8 @@ export function generateObjectProperty(
   })
 }
 
-export function generateKindReturn(kind: KindReturn, context: Context): Sync<KindReturn> {
-  return Sync(function* () {
+export function generateKindReturn(kind: KindReturn, context: Context): S.Sync<KindReturn> {
+  return S.Sync(function* () {
     return {
       ...kind,
       typeParams: yield* generateKindParams(kind.typeParams, context),
@@ -326,8 +359,8 @@ export function generateKindReturn(kind: KindReturn, context: Context): Sync<Kin
 export function generateFunctionParams(
   params: readonly FunctionParam[],
   context: Context,
-): Sync<readonly FunctionParam[]> {
-  return Sync(function* () {
+): S.Sync<readonly FunctionParam[]> {
+  return S.Sync(function* () {
     const output: FunctionParam[] = []
 
     for (const p of params) {
@@ -341,8 +374,8 @@ export function generateFunctionParams(
 export function generateFunctionParam(
   param: FunctionParam,
   context: Context,
-): Sync<readonly FunctionParam[]> {
-  return Sync(function* () {
+): S.Sync<readonly FunctionParam[]> {
+  return S.Sync(function* () {
     switch (param.tag) {
       case Kind.tag:
         return [yield* generateKind(param, context)]
@@ -361,8 +394,8 @@ export function generateFunctionParam(
 function generateDynamicFunctionParam(
   param: DynamicFunctionParam,
   context: Context,
-): Sync<DynamicFunctionParam> {
-  return Sync(function* () {
+): S.Sync<DynamicFunctionParam> {
+  return S.Sync(function* () {
     return {
       ...param,
       typeParams: yield* generateTypeParams(param.typeParams, context),
@@ -370,8 +403,8 @@ function generateDynamicFunctionParam(
   })
 }
 
-export function generateInterface(node: Interface, context: Context): Sync<Interface> {
-  return Sync(function* () {
+export function generateInterface(node: Interface, context: Context): S.Sync<Interface> {
+  return S.Sync(function* () {
     const extensions: Array<Interface | KindParam> = []
 
     for (const e of node.extensions) {
@@ -404,8 +437,8 @@ function generatePostfix(hktParams: readonly HKTParam[], context: Context) {
 export function generateProperties(
   properties: readonly InterfaceProperty[],
   context: Context,
-): Sync<readonly InterfaceProperty[]> {
-  return Sync(function* () {
+): S.Sync<readonly InterfaceProperty[]> {
+  return S.Sync(function* () {
     const output: InterfaceProperty[] = []
 
     for (const p of properties) {
@@ -416,8 +449,11 @@ export function generateProperties(
   })
 }
 
-export function generateProperty(p: InterfaceProperty, context: Context): Sync<InterfaceProperty> {
-  return Sync(function* () {
+export function generateProperty(
+  p: InterfaceProperty,
+  context: Context,
+): S.Sync<InterfaceProperty> {
+  return S.Sync(function* () {
     return {
       ...p,
       signature: yield* generateFunctionSignature(p.signature, context),
@@ -425,8 +461,8 @@ export function generateProperty(p: InterfaceProperty, context: Context): Sync<I
   })
 }
 
-export function generateTypeAlias(node: TypeAlias, context: Context): Sync<TypeAlias> {
-  return Sync(function* () {
+export function generateTypeAlias(node: TypeAlias, context: Context): S.Sync<TypeAlias> {
+  return S.Sync(function* () {
     return {
       ...node,
       name: generateTypeName(node, context),

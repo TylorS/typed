@@ -58,7 +58,13 @@ export class FunctionSignature extends ast('FunctionSignature') {
   }
 }
 
-export type TypeParam = HKTParam | HKTPlaceholder | StaticTypeParam | Typeclass | DynamicTypeParam
+export type TypeParam =
+  | HKTParam
+  | HKTPlaceholder
+  | CurriedPlacholder
+  | StaticTypeParam
+  | Typeclass
+  | DynamicTypeParam
 
 export class HKTParam extends ast('HKTParam') {
   constructor(readonly name: string, readonly size = 0) {
@@ -67,6 +73,12 @@ export class HKTParam extends ast('HKTParam') {
 }
 
 export class HKTPlaceholder extends ast('HKTPlaceholder') {
+  constructor(readonly type: HKTParam, readonly useDefaults: boolean = false) {
+    super()
+  }
+}
+
+export class CurriedPlacholder extends ast('CurriedPlacholder') {
   constructor(readonly type: HKTParam, readonly useDefaults: boolean = false) {
     super()
   }
