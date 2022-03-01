@@ -800,11 +800,6 @@
       "import": "./esm/Prelude/Branded/index.js",
       "types": "./esm/Prelude/Branded/index.d.ts"
     },
-    "./Prelude/Category": {
-      "require": "./cjs/Prelude/Category/index.js",
-      "import": "./esm/Prelude/Category/index.js",
-      "types": "./esm/Prelude/Category/index.d.ts"
-    },
     "./Prelude/Cause/Cause": {
       "require": "./cjs/Prelude/Cause/Cause.js",
       "import": "./esm/Prelude/Cause/Cause.js",
@@ -1199,11 +1194,6 @@
       "require": "./cjs/Prelude/Tuple/index.js",
       "import": "./esm/Prelude/Tuple/index.js",
       "types": "./esm/Prelude/Tuple/index.d.ts"
-    },
-    "./Prelude/boolean": {
-      "require": "./cjs/Prelude/boolean/index.js",
-      "import": "./esm/Prelude/boolean/index.js",
-      "types": "./esm/Prelude/boolean/index.d.ts"
     },
     "./Prelude/function/FunctionN": {
       "require": "./cjs/Prelude/function/FunctionN.js",
