@@ -595,6 +595,11 @@
       "import": "./esm/Fx/forkJoin.js",
       "types": "./esm/Fx/forkJoin.d.ts"
     },
+    "./Fx/fromCallback": {
+      "require": "./cjs/Fx/fromCallback.js",
+      "import": "./esm/Fx/fromCallback.js",
+      "types": "./esm/Fx/fromCallback.d.ts"
+    },
     "./Fx/fromSync": {
       "require": "./cjs/Fx/fromSync.js",
       "import": "./esm/Fx/fromSync.js",
@@ -705,30 +710,10 @@
       "import": "./esm/Prelude/index.js",
       "types": "./esm/Prelude/index.d.ts"
     },
-    "./Prelude/Any": {
-      "require": "./cjs/Prelude/Any/index.js",
-      "import": "./esm/Prelude/Any/index.js",
-      "types": "./esm/Prelude/Any/index.d.ts"
-    },
-    "./Prelude/Applicative/Applicative": {
-      "require": "./cjs/Prelude/Applicative/Applicative.js",
-      "import": "./esm/Prelude/Applicative/Applicative.js",
-      "types": "./esm/Prelude/Applicative/Applicative.d.ts"
-    },
-    "./Prelude/Applicative": {
-      "require": "./cjs/Prelude/Applicative/index.js",
-      "import": "./esm/Prelude/Applicative/index.js",
-      "types": "./esm/Prelude/Applicative/index.d.ts"
-    },
-    "./Prelude/Apply/Apply": {
-      "require": "./cjs/Prelude/Apply/Apply.js",
-      "import": "./esm/Prelude/Apply/Apply.js",
-      "types": "./esm/Prelude/Apply/Apply.d.ts"
-    },
-    "./Prelude/Apply": {
-      "require": "./cjs/Prelude/Apply/index.js",
-      "import": "./esm/Prelude/Apply/index.js",
-      "types": "./esm/Prelude/Apply/index.d.ts"
+    "./Prelude/Generator": {
+      "require": "./cjs/Prelude/Generator.js",
+      "import": "./esm/Prelude/Generator.js",
+      "types": "./esm/Prelude/Generator.d.ts"
     },
     "./Prelude/Array/Array": {
       "require": "./cjs/Prelude/Array/Array.js",
@@ -739,51 +724,6 @@
       "require": "./cjs/Prelude/Array/index.js",
       "import": "./esm/Prelude/Array/index.js",
       "types": "./esm/Prelude/Array/index.d.ts"
-    },
-    "./Prelude/Associative": {
-      "require": "./cjs/Prelude/Associative/index.js",
-      "import": "./esm/Prelude/Associative/index.js",
-      "types": "./esm/Prelude/Associative/index.d.ts"
-    },
-    "./Prelude/AssociativeBoth/AssociativeBoth": {
-      "require": "./cjs/Prelude/AssociativeBoth/AssociativeBoth.js",
-      "import": "./esm/Prelude/AssociativeBoth/AssociativeBoth.js",
-      "types": "./esm/Prelude/AssociativeBoth/AssociativeBoth.d.ts"
-    },
-    "./Prelude/AssociativeBoth": {
-      "require": "./cjs/Prelude/AssociativeBoth/index.js",
-      "import": "./esm/Prelude/AssociativeBoth/index.js",
-      "types": "./esm/Prelude/AssociativeBoth/index.d.ts"
-    },
-    "./Prelude/AssociativeCompose/AssociativeCompose": {
-      "require": "./cjs/Prelude/AssociativeCompose/AssociativeCompose.js",
-      "import": "./esm/Prelude/AssociativeCompose/AssociativeCompose.js",
-      "types": "./esm/Prelude/AssociativeCompose/AssociativeCompose.d.ts"
-    },
-    "./Prelude/AssociativeCompose": {
-      "require": "./cjs/Prelude/AssociativeCompose/index.js",
-      "import": "./esm/Prelude/AssociativeCompose/index.js",
-      "types": "./esm/Prelude/AssociativeCompose/index.d.ts"
-    },
-    "./Prelude/AssociativeEither/AssociativeEither": {
-      "require": "./cjs/Prelude/AssociativeEither/AssociativeEither.js",
-      "import": "./esm/Prelude/AssociativeEither/AssociativeEither.js",
-      "types": "./esm/Prelude/AssociativeEither/AssociativeEither.d.ts"
-    },
-    "./Prelude/AssociativeEither": {
-      "require": "./cjs/Prelude/AssociativeEither/index.js",
-      "import": "./esm/Prelude/AssociativeEither/index.js",
-      "types": "./esm/Prelude/AssociativeEither/index.d.ts"
-    },
-    "./Prelude/AssociativeFlatten/AssociativeFlatten": {
-      "require": "./cjs/Prelude/AssociativeFlatten/AssociativeFlatten.js",
-      "import": "./esm/Prelude/AssociativeFlatten/AssociativeFlatten.js",
-      "types": "./esm/Prelude/AssociativeFlatten/AssociativeFlatten.d.ts"
-    },
-    "./Prelude/AssociativeFlatten": {
-      "require": "./cjs/Prelude/AssociativeFlatten/index.js",
-      "import": "./esm/Prelude/AssociativeFlatten/index.js",
-      "types": "./esm/Prelude/AssociativeFlatten/index.d.ts"
     },
     "./Prelude/Async/Async": {
       "require": "./cjs/Prelude/Async/Async.js",
@@ -860,20 +800,10 @@
       "import": "./esm/Prelude/Branded/index.js",
       "types": "./esm/Prelude/Branded/index.d.ts"
     },
-    "./Prelude/Category/Category": {
-      "require": "./cjs/Prelude/Category/Category.js",
-      "import": "./esm/Prelude/Category/Category.js",
-      "types": "./esm/Prelude/Category/Category.d.ts"
-    },
     "./Prelude/Category": {
       "require": "./cjs/Prelude/Category/index.js",
       "import": "./esm/Prelude/Category/index.js",
       "types": "./esm/Prelude/Category/index.d.ts"
-    },
-    "./Prelude/Cause/Associative": {
-      "require": "./cjs/Prelude/Cause/Associative.js",
-      "import": "./esm/Prelude/Cause/Associative.js",
-      "types": "./esm/Prelude/Cause/Associative.d.ts"
     },
     "./Prelude/Cause/Cause": {
       "require": "./cjs/Prelude/Cause/Cause.js",
@@ -899,31 +829,6 @@
       "require": "./cjs/Prelude/ChainRec/index.js",
       "import": "./esm/Prelude/ChainRec/index.js",
       "types": "./esm/Prelude/ChainRec/index.d.ts"
-    },
-    "./Prelude/Commutative": {
-      "require": "./cjs/Prelude/Commutative/index.js",
-      "import": "./esm/Prelude/Commutative/index.js",
-      "types": "./esm/Prelude/Commutative/index.d.ts"
-    },
-    "./Prelude/CommutativeBoth/CommutativeBoth": {
-      "require": "./cjs/Prelude/CommutativeBoth/CommutativeBoth.js",
-      "import": "./esm/Prelude/CommutativeBoth/CommutativeBoth.js",
-      "types": "./esm/Prelude/CommutativeBoth/CommutativeBoth.d.ts"
-    },
-    "./Prelude/CommutativeBoth": {
-      "require": "./cjs/Prelude/CommutativeBoth/index.js",
-      "import": "./esm/Prelude/CommutativeBoth/index.js",
-      "types": "./esm/Prelude/CommutativeBoth/index.d.ts"
-    },
-    "./Prelude/CommutativeEither/CommutativeEither": {
-      "require": "./cjs/Prelude/CommutativeEither/CommutativeEither.js",
-      "import": "./esm/Prelude/CommutativeEither/CommutativeEither.js",
-      "types": "./esm/Prelude/CommutativeEither/CommutativeEither.d.ts"
-    },
-    "./Prelude/CommutativeEither": {
-      "require": "./cjs/Prelude/CommutativeEither/index.js",
-      "import": "./esm/Prelude/CommutativeEither/index.js",
-      "types": "./esm/Prelude/CommutativeEither/index.d.ts"
     },
     "./Prelude/Compact/Compact": {
       "require": "./cjs/Prelude/Compact/Compact.js",
@@ -954,46 +859,6 @@
       "require": "./cjs/Prelude/Contravariant/index.js",
       "import": "./esm/Prelude/Contravariant/index.js",
       "types": "./esm/Prelude/Contravariant/index.d.ts"
-    },
-    "./Prelude/Covariant/Covariant": {
-      "require": "./cjs/Prelude/Covariant/Covariant.js",
-      "import": "./esm/Prelude/Covariant/Covariant.js",
-      "types": "./esm/Prelude/Covariant/Covariant.d.ts"
-    },
-    "./Prelude/Covariant/bindTo": {
-      "require": "./cjs/Prelude/Covariant/bindTo.js",
-      "import": "./esm/Prelude/Covariant/bindTo.js",
-      "types": "./esm/Prelude/Covariant/bindTo.d.ts"
-    },
-    "./Prelude/Covariant/flap": {
-      "require": "./cjs/Prelude/Covariant/flap.js",
-      "import": "./esm/Prelude/Covariant/flap.js",
-      "types": "./esm/Prelude/Covariant/flap.d.ts"
-    },
-    "./Prelude/Covariant": {
-      "require": "./cjs/Prelude/Covariant/index.js",
-      "import": "./esm/Prelude/Covariant/index.js",
-      "types": "./esm/Prelude/Covariant/index.d.ts"
-    },
-    "./Prelude/Covariant/map": {
-      "require": "./cjs/Prelude/Covariant/map.js",
-      "import": "./esm/Prelude/Covariant/map.js",
-      "types": "./esm/Prelude/Covariant/map.d.ts"
-    },
-    "./Prelude/Covariant/tupled": {
-      "require": "./cjs/Prelude/Covariant/tupled.js",
-      "import": "./esm/Prelude/Covariant/tupled.js",
-      "types": "./esm/Prelude/Covariant/tupled.d.ts"
-    },
-    "./Prelude/CovariantWithIndex/CovariantWithIndex": {
-      "require": "./cjs/Prelude/CovariantWithIndex/CovariantWithIndex.js",
-      "import": "./esm/Prelude/CovariantWithIndex/CovariantWithIndex.js",
-      "types": "./esm/Prelude/CovariantWithIndex/CovariantWithIndex.d.ts"
-    },
-    "./Prelude/CovariantWithIndex": {
-      "require": "./cjs/Prelude/CovariantWithIndex/index.js",
-      "import": "./esm/Prelude/CovariantWithIndex/index.js",
-      "types": "./esm/Prelude/CovariantWithIndex/index.d.ts"
     },
     "./Prelude/Data/Data": {
       "require": "./cjs/Prelude/Data/Data.js",
@@ -1029,11 +894,6 @@
       "require": "./cjs/Prelude/Either/Either.js",
       "import": "./esm/Prelude/Either/Either.js",
       "types": "./esm/Prelude/Either/Either.d.ts"
-    },
-    "./Prelude/Either/HKT": {
-      "require": "./cjs/Prelude/Either/HKT.js",
-      "import": "./esm/Prelude/Either/HKT.js",
-      "types": "./esm/Prelude/Either/HKT.d.ts"
     },
     "./Prelude/Either": {
       "require": "./cjs/Prelude/Either/index.js",
