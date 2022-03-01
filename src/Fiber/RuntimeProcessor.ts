@@ -1,6 +1,7 @@
-import { Async, Disposable, DisposableQueue, dispose, disposeAll, Sync } from '@/Disposable'
+import { Async, Disposable, DisposableQueue, dispose, Sync } from '@/Disposable'
 import { disposed, Exit, then, unexpected } from '@/Exit'
 import { FiberId } from '@/FiberId'
+import { run } from '@/Prelude/Async'
 import { Traced } from '@/Prelude/Cause'
 import { isLeft, Left, match } from '@/Prelude/Either'
 import { pipe } from '@/Prelude/function'
@@ -9,7 +10,12 @@ import { InterruptableStatus } from '@/Scope/InterruptableStatus'
 import { Trace } from '@/Trace'
 
 import { Status } from './Fiber'
-import { RuntimeGenerator, RuntimeInstruction, RuntimeIterable } from './RuntimeInstruction'
+import {
+  ResumePromise,
+  RuntimeGenerator,
+  RuntimeInstruction,
+  RuntimeIterable,
+} from './RuntimeInstruction'
 
 /**
  * The RuntimeProcessor is where all of our asynchrony and per-instruction Disposables are kept.
@@ -177,71 +183,16 @@ export class RuntimeProcessor<E, A> {
       }
 
       case 'Promise': {
-        this.node = undefined
-        const inner = new DisposableQueue()
-        const disposable = this.queue.add(inner)
-
-        instruction
-          .promise()
-          .then(async (a) => {
-            try {
-              previous.next = a
-
-              this.node = previous
-
-              await dispose(disposeAll([inner, disposable]))
-            } catch (e) {
-              this.node = {
-                type: 'Exit',
-                exit: unexpected(e),
-              }
-            }
-
-            this.processNow()
-          })
-          .catch(async (error) => {
-            try {
-              this.node = {
-                type: 'Exit',
-                exit: unexpected(error),
-              }
-
-              await dispose(disposeAll([inner, disposable]))
-            } catch (e) {
-              this.node = {
-                type: 'Exit',
-                exit: then(unexpected(error), unexpected(e)),
-              }
-            }
-
-            this.processNow()
-          })
-
-        break
+        return this.processPromise(instruction, previous, this.innerDisposable())
       }
 
       case 'Async': {
-        this.node = undefined
-        const inner = new DisposableQueue()
+        const [inner, promise] = run(instruction.async)
 
-        inner.add(this.queue.add(inner))
-        inner.add(
-          instruction.async(async (a) => {
-            try {
-              previous.next = a
-
-              this.node = previous
-
-              await dispose(inner)
-            } catch (e) {
-              this.node = {
-                type: 'Exit',
-                exit: unexpected(e),
-              }
-            }
-
-            this.processNow()
-          }),
+        return this.processPromise(
+          new ResumePromise(() => promise),
+          previous,
+          this.innerDisposable(inner),
         )
 
         break
@@ -253,6 +204,57 @@ export class RuntimeProcessor<E, A> {
         break
       }
     }
+  }
+
+  protected innerDisposable(inner: DisposableQueue = new DisposableQueue()) {
+    // Mutually track resources
+    inner.add(this.queue.add(inner))
+
+    return inner
+  }
+
+  protected processPromise<A>(
+    instruction: ResumePromise<A>,
+    previous: GeneratorNode<E, any>,
+    inner: Disposable,
+  ) {
+    this.node = undefined
+
+    instruction
+      .promise()
+      .then(async (a) => {
+        try {
+          previous.next = a
+
+          this.node = previous
+
+          await dispose(inner)
+        } catch (e) {
+          this.node = {
+            type: 'Exit',
+            exit: unexpected(e),
+          }
+        }
+
+        this.processNow()
+      })
+      .catch(async (error) => {
+        try {
+          this.node = {
+            type: 'Exit',
+            exit: unexpected(error),
+          }
+
+          await dispose(inner)
+        } catch (e) {
+          this.node = {
+            type: 'Exit',
+            exit: then(unexpected(error), unexpected(e)),
+          }
+        }
+
+        this.processNow()
+      })
   }
 
   protected processExit(node: ExitNode<E, A>) {

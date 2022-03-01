@@ -17,9 +17,9 @@ export class LocalScope<E, A> {
   readonly exit = MutableRef.make<O.Option<Exit.Exit<E, A>>>(O.None)
   readonly refCount: RefCount = new RefCount()
   readonly interruptableStatus: InterruptableStatus = new InterruptableStatus()
-
   readonly releaseMap: ReleaseMap = new ReleaseMap()
-  private isReleased = false
+
+  protected isReleased = false
 
   constructor(readonly parent: O.Option<Scope<any, any>> = O.None) {}
 

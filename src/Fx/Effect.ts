@@ -13,7 +13,7 @@ import { Fiber } from '@/Fiber/Fiber'
 import { RuntimeOptions } from '@/Fiber/Runtime'
 import { FiberContext } from '@/FiberContext'
 import { FiberId } from '@/FiberId'
-import { Async } from '@/Prelude/Async'
+import { Async, fromCallback } from '@/Prelude/Async'
 import { Cause } from '@/Prelude/Cause'
 import { Either, Left } from '@/Prelude/Either'
 import { Lazy } from '@/Prelude/function'
@@ -104,7 +104,7 @@ export const unexpected: <E = never, A = never>(
 export const untraceable: <R, E, A>(fx: Fx<R, E, A>, trace?: string | undefined) => Fx<R, E, A> =
   E.untraceable
 
-export const never = fromAsync<never>(Async(() => None))
+export const never = fromAsync<never>(fromCallback(() => None))
 
 export const fork: <R, E, A>(
   fx: Fx<R, E, A>,

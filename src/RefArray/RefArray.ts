@@ -1,6 +1,5 @@
 import { FiberRefOptions } from '@/FiberRef'
 import * as Fx from '@/Fx'
-import * as F from '@/Prelude/Covariant'
 import { Endomorphism } from '@/Prelude/Endomorphism'
 import { flow, pipe } from '@/Prelude/function'
 import { None, Option, Some } from '@/Prelude/Option'
@@ -15,12 +14,12 @@ export interface RefArray<R, E, A, I = readonly A[]> extends Ref.Ref<R, E, I, re
 export const empty = <A>(options?: FiberRefOptions<readonly A[]>): RefArray<unknown, never, A> =>
   Ref.make(Fx.of<readonly A[]>([]), options)
 
-/**
- * Apply a transformation to the Output values of a RefArray.
- */
-export const map = F.map(Ref.Covariant, RA.Covariant) as <A, B>(
-  f: (a: A) => B,
-) => <R, E, I>(fa: RefArray<R, E, A, I>) => RefArray<R, E, B, I>
+// /**
+//  * Apply a transformation to the Output values of a RefArray.
+//  */
+// export const map = F.map(Ref.Covariant, RA.Covariant) as <A, B>(
+//   f: (a: A) => B,
+// ) => <R, E, I>(fa: RefArray<R, E, A, I>) => RefArray<R, E, B, I>
 
 /**
  * Applies an Endomorphism to the underlying Array changing the underlying state.

@@ -428,6 +428,7 @@ function generateTypeName(node: Interface | TypeAlias, context: Context): string
   return `${node.name}${generatePostfix(findHKTParams(node.typeParams), context)}`
 }
 
+// TODO: Generate curried type names
 function generatePostfix(hktParams: readonly HKTParam[], context: Context) {
   return hktParams
     .map((p) => `${context.lengths.get(p.id) === 0 ? '' : context.lengths.get(p.id) ?? ''}`)

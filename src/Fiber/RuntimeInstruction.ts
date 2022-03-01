@@ -1,5 +1,5 @@
-import { Disposable } from '@/Disposable'
 import { Exit } from '@/Exit'
+import { Async } from '@/Prelude/Async'
 
 export interface RuntimeIterable<E, A> {
   readonly [Symbol.iterator]: () => RuntimeGenerator<E, A>
@@ -24,7 +24,7 @@ export class ResumePromise<A> {
 
 export class ResumeAsync<A> {
   readonly type = 'Async'
-  constructor(readonly async: (cb: (value: A) => void) => Disposable) {}
+  constructor(readonly async: Async<A>) {}
 }
 
 export class ResumeExit<E, A> {

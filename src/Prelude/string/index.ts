@@ -1,3 +1,4 @@
-import * as A from '../Associative'
-
-export const Associative: A.Associative<string> = A.Associative((x, y) => x + y)
+export const concat =
+  (second: string) =>
+  (first: string): string =>
+    first + second

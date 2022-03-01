@@ -1,7 +1,7 @@
 import { None, Sync } from '@/Disposable'
 import { fromAsync } from '@/Effect'
 import { Fx } from '@/Fx'
-import { Async } from '@/Prelude/Async'
+import { fromCallback } from '@/Prelude/Async'
 
 import { Future } from './Future'
 
@@ -19,7 +19,7 @@ export function wait<R, E, A>(future: Future<R, E, A>, trace?: string): Fx<R, E,
 export function pendingWait<R, E, A>(future: Future<R, E, A>, trace?: string): Fx<R, E, A> {
   return Fx(function* () {
     const fx = yield* fromAsync(
-      Async<Fx<R, E, A>>((cb) => {
+      fromCallback<Fx<R, E, A>>((cb) => {
         const state = future.state.get()
 
         switch (state.type) {

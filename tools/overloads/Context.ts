@@ -27,6 +27,7 @@ import { findHKTParams } from './findHKTParams'
 // TODO: Keep track of remaining args for each HKT
 // TODO: Keep track of curried args for each HKT
 export interface Context {
+  readonly tag: ParentNode['tag']
   readonly lengths: Map<symbol, number>
   readonly positions: Map<symbol, number>
   readonly existing: Map<symbol, readonly KindParam[]>
@@ -53,6 +54,7 @@ export function buildContextFromFunctionSignature(
   const existing = findExistingParameters(signature)
 
   return {
+    tag: signature.tag,
     lengths,
     positions,
     existing,
@@ -69,6 +71,7 @@ export function buildContextFromInterface(
   const existing = findExistingParameters(node)
 
   return {
+    tag: node.tag,
     lengths,
     positions,
     existing,
@@ -85,6 +88,7 @@ export function buildContextFromTypeAlias(
   const existing = findExistingParameters(node)
 
   return {
+    tag: node.tag,
     lengths,
     positions,
     existing,

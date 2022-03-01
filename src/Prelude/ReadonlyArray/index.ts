@@ -1,4 +1,3 @@
-import * as C from '@/Prelude/Covariant'
 import { Unary } from '@/Prelude/function'
 import { HKT, Params } from '@/Prelude/HKT'
 
@@ -17,9 +16,5 @@ export const map =
 
     return next
   }
-
-export const Covariant: C.Covariant1<ReadonlyArrayHKT> = {
-  map,
-}
 
 export const size = <A>(array: ReadonlyArray<A>) => array.length

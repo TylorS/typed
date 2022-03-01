@@ -9,7 +9,7 @@ export const increment = (ref: MutableRef<number>) => {
 }
 
 export const decrement = (ref: MutableRef<number>) => {
-  const i = ref.get() - 1
+  const i = Math.max(ref.get() - 1, 0)
 
   ref.set(i)
 

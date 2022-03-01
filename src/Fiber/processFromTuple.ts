@@ -2,7 +2,7 @@ import { disposeAll } from '@/Disposable'
 import { fromAsync, fromExit, FromTuple, TupleErrors, TupleResources } from '@/Effect'
 import { both, Exit } from '@/Exit'
 import { Fx } from '@/Fx/Fx'
-import { Async } from '@/Prelude/Async'
+import { fromCallback } from '@/Prelude/Async'
 import { isLeft, Right } from '@/Prelude/Either'
 
 import { InstructionProcessor } from './InstructionProcessor'
@@ -19,7 +19,7 @@ export const processFromTuple = <FX extends ReadonlyArray<Fx<any, any, any> | Fx
     : new FxInstruction(
         Fx(function* () {
           const exit = yield* fromAsync(
-            Async<Exit<any, any>>((cb) => {
+            fromCallback<Exit<any, any>>((cb) => {
               const exits: Array<Exit<any, any>> = Array(tuple.input.length)
               let remaining = tuple.input.length
 

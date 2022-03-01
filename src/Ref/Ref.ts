@@ -1,4 +1,4 @@
-import * as Fiber from '@/Fiber'
+import { withinRootContext } from '@/Fiber/getRootContext'
 import * as FiberRef from '@/FiberRef'
 import { Fx, of } from '@/Fx'
 import { flow, pipe } from '@/Prelude/function'
@@ -29,10 +29,10 @@ export interface Global<R, E, I, O = I> extends Ref<R, E, I, O> {}
 
 export function toGlobal<R, E, I, O>(ref: Ref<R, E, I, O>): Global<R, E, I, O> {
   return {
-    get: Fiber.withinRootContext(ref.get),
-    has: Fiber.withinRootContext(ref.has),
-    update: flow(ref.update, Fiber.withinRootContext),
-    delete: Fiber.withinRootContext(ref.delete),
+    get: withinRootContext(ref.get),
+    has: withinRootContext(ref.has),
+    update: flow(ref.update, withinRootContext),
+    delete: withinRootContext(ref.delete),
     values: Stream.withinRootContext(ref.values),
   }
 }

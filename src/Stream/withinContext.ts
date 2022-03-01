@@ -1,4 +1,4 @@
-import { getRootContext } from '@/Fiber'
+import { getRootContext } from '@/Fiber/getRootContext'
 import { FiberContext } from '@/FiberContext'
 import { pipe } from '@/Prelude/function'
 
