@@ -30,13 +30,13 @@ export function render<R, E>(vNode: VNode<R, E>): Fx.Fx<R | Document, E, Rendere
   }
 
   if (vNode.type === 'element') {
+    const elem = Fx.multicast(Fx.fromEffect(createElement(vNode.tag)))
     const vNodeProps = wrapElementProps(vNode.props)
     const vNodeChildren = wrapElementChildren(vNode.children)
-    const elem = Fx.fromEffect(createElement(vNode.tag))
 
     return pipe(
       Fx.combineAll([elem, vNodeProps, vNodeChildren]),
-      Fx.mapEffect(([e, p, c]) => Effect.sync(() => renderElement(e, p, c))),
+      Fx.mapEffect(([e, p, c]) => Effect.sync(() => renderElement(e, p, c))), // TODO: Separate Prop/Children updating
       Fx.skipRepeats<Rendered>(Equivalence.any),
     )
   }
