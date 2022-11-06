@@ -90,16 +90,22 @@ function unwrapValues<
     const unwrappedValues: Array<Placeholder<any>> = []
 
     for (const value of values) {
-      if (values && typeof value === 'object' && EffectURI in value) {
-        unwrappedValues.push(
-          yield* $(
-            value as Effect.Effect<
-              Placeholder.ResourcesOf<Values[number]>,
-              never,
-              Placeholder<any>
-            >,
-          ),
-        )
+      if (values && typeof value === 'object') {
+        if (EffectURI in value) {
+          unwrappedValues.push(
+            yield* $(
+              value as Effect.Effect<
+                Placeholder.ResourcesOf<Values[number]>,
+                never,
+                Placeholder<any>
+              >,
+            ),
+          )
+        } else if (Array.isArray(value)) {
+          unwrappedValues.push(yield* $<never, never, any>(unwrapValues(value) as any))
+        } else {
+          unwrappedValues.push(value as any)
+        }
       } else {
         unwrappedValues.push(value as Placeholder<any>)
       }
