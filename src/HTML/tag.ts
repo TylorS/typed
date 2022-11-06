@@ -86,31 +86,20 @@ function unwrapValues<
   Placeholder.ErrorsOf<Values[number]>,
   Array<Placeholder<any>>
 > {
-  return Effect.gen(function* ($) {
-    const unwrappedValues: Array<Placeholder<any>> = []
+  return pipe(
+    Effect.forEachPar(values, unwrapValue),
+    Effect.map((x) => Array.from(x)),
+  )
+}
 
-    for (const value of values) {
-      if (values && typeof value === 'object') {
-        if (EffectURI in value) {
-          unwrappedValues.push(
-            yield* $(
-              value as Effect.Effect<
-                Placeholder.ResourcesOf<Values[number]>,
-                never,
-                Placeholder<any>
-              >,
-            ),
-          )
-        } else if (Array.isArray(value)) {
-          unwrappedValues.push(yield* $<never, never, any>(unwrapValues(value) as any))
-        } else {
-          unwrappedValues.push(value as any)
-        }
-      } else {
-        unwrappedValues.push(value as Placeholder<any>)
-      }
+function unwrapValue(value: Placeholder<any> | Effect.Effect<any, any, Placeholder<any>>) {
+  if (value && typeof value === 'object') {
+    if (EffectURI in value) {
+      return value as Effect.Effect<any, any, Placeholder<any>>
+    } else if (Array.isArray(value)) {
+      return unwrapValues(value)
     }
+  }
 
-    return unwrappedValues
-  })
+  return Effect.succeed(value as Placeholder<any>)
 }
