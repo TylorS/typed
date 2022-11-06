@@ -6,7 +6,7 @@
   "description": "A functional programming toolkit for building applications with HKT-TS",
   "scripts": {
     "eslint": "NODE_OPTIONS=--max-old-space-size=4096 eslint --ext .ts,.js,.json,.yaml --fix --cache src",
-    "example": "vite serve src"
+    "example": "vite serve src --force"
   },
   "keywords": [
     "TypeScript",
@@ -19,16 +19,19 @@
     "@effect/core": "^0.0.16",
     "@effect/query": "^0.0.2",
     "@tsplus/stdlib": "^0.2.8",
-    "@typed/fx": "^0.0.16",
+    "@typed/fx": "^0.0.26",
+    "@webreflection/uparser": "^0.2.4",
     "lit-html": "^2.4.0",
     "path-to-regexp": "^6.2.1",
-    "ts-toolbelt": "^9.6.0"
+    "ts-toolbelt": "^9.6.0",
+    "udomdiff": "^1.1.0",
+    "uparser": "^0.2.1"
   },
   "peerDependencies": {
     "tslib": "^2.4.0"
   },
   "devDependencies": {
-    "@types/node": "^18.11.8",
+    "@types/node": "^18.11.9",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
     "eslint": "^8.26.0",

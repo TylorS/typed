@@ -34,7 +34,7 @@ export function addEventListener<T extends EventTarget, EventName extends string
   options?: boolean | AddEventListenerOptions,
 ): (target: T) => Fx.Fx<never, never, Event> {
   return (target: T): Fx.Fx<never, never, Event> =>
-    Fx.withEmitter(({ emit }) => sync(addEventListener_(target, event, emit, options)))
+    Fx.withEmitter(({ unsafeEmit }) => sync(addEventListener_(target, event, unsafeEmit, options)))
 }
 
 function addEventListener_(
