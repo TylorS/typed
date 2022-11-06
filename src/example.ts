@@ -7,13 +7,17 @@ import { RenderContext } from './HTML/RenderContext.js'
 import { render } from './HTML/render.js'
 import { html } from './HTML/tag.js'
 
+const app = document.getElementById('app') as HTMLElement
+
 const template = (name: string) => html`<h1>Hello, ${name}!</h1>`
 
 const program = pipe(
   Effect.gen(function* ($) {
-    yield* $(render(document.body, yield* $(template('foo'))))
+    const foo = yield* $(template('foo'))
+    yield* $(render(app, foo))
     yield* $(Effect.sleep(millis((3 * 1000) as any)))
-    yield* $(render(document.body, yield* $(template('bar'))))
+    const bar = yield* $(template('bar'))
+    yield* $(render(app, bar))
   }),
   RenderContext.provide('client'),
   Effect.provideService(Document.Tag, document),

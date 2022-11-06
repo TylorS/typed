@@ -1,3 +1,5 @@
+// TODO: Investigate Error types in placeholders
+
 export interface Placeholder<R = never> {
   readonly _R: (_: never) => R
 }
@@ -14,6 +16,9 @@ declare global {
   export interface Boolean extends Placeholder {}
   export interface Symbol extends Placeholder {}
   export interface BigInt extends Placeholder {}
+  export interface Function extends Placeholder {}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export interface Array<T> extends Placeholder {}
 
   export interface Node extends Placeholder {}
   export interface DocumentFragment extends Placeholder {}

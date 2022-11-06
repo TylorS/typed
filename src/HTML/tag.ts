@@ -1,9 +1,5 @@
-// HTML + SVG template tags w/ Fx output ??
-
-// Event handling w/ Effect
-// Fork lit-html vscode plugin for new features
-// for/node variants
-// Holes should be created with a reference to their Environment + Fiber Info
+// TODO: Unroll Effects in templates
+// TODO: for/node variants
 
 import * as Effect from '@effect/core/io/Effect'
 
@@ -13,17 +9,27 @@ import { Placeholder } from './Placeholder.js'
 export function html<Values extends Array<Placeholder<any>>>(
   template: TemplateStringsArray,
   ...values: Values
-): Effect.Effect<Placeholder.ResourcesOf<Values[number]>, never, Hole> {
-  return Effect.environmentWith<Placeholder.ResourcesOf<Values[number]>, Hole>(
-    (env): Hole => new Hole('html', env, template, values),
-  )
+): Effect.Effect<
+  Placeholder.ResourcesOf<Values[number]>,
+  never,
+  Hole<Placeholder.ResourcesOf<Values[number]>>
+> {
+  return Effect.environmentWith<
+    Placeholder.ResourcesOf<Values[number]>,
+    Hole<Placeholder.ResourcesOf<Values[number]>>
+  >((env) => new Hole('html', env, template, values))
 }
 
 export function svg<Values extends Array<Placeholder<any>>>(
   template: TemplateStringsArray,
   ...values: Values
-): Effect.Effect<Placeholder.ResourcesOf<Values[number]>, never, Hole> {
-  return Effect.environmentWith<Placeholder.ResourcesOf<Values[number]>, Hole>(
-    (env): Hole => new Hole('svg', env, template, values),
-  )
+): Effect.Effect<
+  Placeholder.ResourcesOf<Values[number]>,
+  never,
+  Hole<Placeholder.ResourcesOf<Values[number]>>
+> {
+  return Effect.environmentWith<
+    Placeholder.ResourcesOf<Values[number]>,
+    Hole<Placeholder.ResourcesOf<Values[number]>>
+  >((env) => new Hole('svg', env, template, values))
 }

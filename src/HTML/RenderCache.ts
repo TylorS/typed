@@ -1,14 +1,15 @@
-import { Entry } from './Entry.js'
-import { Wire } from './Wire.js'
+import { Wire } from '@webreflection/uwire'
 
-export interface RenderCache {
-  entry: Entry | null
+import { Entry } from './Entry.js'
+
+export interface RenderCache<R> {
+  entry: Entry<R> | null
   wire: Node | DocumentFragment | Wire | null
 
-  readonly stack: Array<RenderCache | null>
+  readonly stack: Array<RenderCache<unknown> | null>
 }
 
-export function RenderCache(): RenderCache {
+export function RenderCache<R>(): RenderCache<R> {
   return {
     entry: null,
     wire: null,

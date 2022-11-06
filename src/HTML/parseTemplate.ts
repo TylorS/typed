@@ -8,12 +8,12 @@ import { TemplateCache, TemplateHole } from './TemplateCache.js'
 import { createContent } from './createContent.js'
 import { createPath } from './paths.js'
 
-const PREFIX = `fphtml`
+const PREFIX = `fphtmlX`
 
 // a RegExp that helps checking nodes that cannot contain comments
 const TEXT_ONLY_NODES_REGEX = /^(?:textarea|script|style|title|plaintext|xmp)$/
 
-export function parseTemplate(hole: Hole) {
+export function parseTemplate<R>(hole: Hole<R>) {
   return Effect.gen(function* ($) {
     const isSvg = hole.type === 'svg'
     const innerHtml = instrument(hole.template, PREFIX, isSvg)
@@ -38,7 +38,7 @@ export function parseTemplate(hole: Hole) {
       // it means that there is something wrong with the template.
       if (!node) throw `bad template: ${innerHtml}`
 
-      // if the current node is a comment, and it contains isµX
+      // if the current node is a comment, and it contains fphtmlX
       // it means the update should take care of any content
       if (node.nodeType === 8) {
         // The only comments to be considered are those
@@ -49,9 +49,9 @@ export function parseTemplate(hole: Hole) {
         }
       } else {
         // if the node is not a comment, loop through all its attributes
-        // named isµX and relate attribute updates to this node and the
-        // attribute name, retrieved through node.getAttribute("isµX")
-        // the isµX attribute will be removed as irrelevant for the layout
+        // named fphtmlX and relate attribute updates to this node and the
+        // attribute name, retrieved through node.getAttribute("fphtmlX")
+        // the fphtmlX attribute will be removed as irrelevant for the layout
         // let svg = -1;
         while ((node as Element).hasAttribute(search)) {
           holes.push({
@@ -64,7 +64,7 @@ export function parseTemplate(hole: Hole) {
         }
 
         // if the node was a style, textarea, or others, check its content
-        // and if it is <!--isµX--> then update tex-only this node
+        // and if it is <!--fphtmlX--> then update tex-only this node
         if (
           TEXT_ONLY_NODES_REGEX.test((node as Element).localName) &&
           node.textContent?.trim() === `<!--${search}-->`
@@ -76,9 +76,11 @@ export function parseTemplate(hole: Hole) {
       }
     }
 
-    return {
+    const templateCache: TemplateCache = {
       content,
       holes,
-    } as TemplateCache
+    }
+
+    return templateCache
   })
 }

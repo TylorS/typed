@@ -1,21 +1,21 @@
 import * as Effect from '@effect/core/io/Effect'
+import { Wire, persistent } from '@webreflection/uwire'
 
 import { makeEntry } from './Entry.js'
 import { Hole } from './Hole.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
-import { Wire, persistent } from './Wire.js'
 
-export function render<T extends DocumentFragment | HTMLElement>(
+export function render<T extends DocumentFragment | HTMLElement, R>(
   where: T,
-  what: Hole | HTMLElement | SVGElement,
+  what: Hole<R> | HTMLElement | SVGElement,
 ): Effect.Effect<Document | RenderContext, never, T> {
   return Effect.gen(function* ($) {
     const renderCache = yield* $(RenderContext.getRenderCache)
     if (!renderCache.has(where)) {
       renderCache.set(where, RenderCache())
     }
-    const cache = renderCache.get(where) as RenderCache
+    const cache = renderCache.get(where) as RenderCache<R>
     const wire = what instanceof Hole ? yield* $(renderHole(what, cache)) : what
 
     if (wire !== cache.wire) {
@@ -24,15 +24,18 @@ export function render<T extends DocumentFragment | HTMLElement>(
       // it will eventually re-append all nodes to its fragment so that such
       // fragment can be re-appended many times in a meaningful way
       // (wires are basically persistent fragments facades with special behavior)
-      where.replaceChildren(wire.valueOf() as Node | DocumentFragment)
+      where.replaceChildren(wire.valueOf() as Node)
     }
+
+    console.log(where.childNodes)
+
     return where
   })
 }
 
-export function renderHole(
-  hole: Hole,
-  cache: RenderCache,
+export function renderHole<R>(
+  hole: Hole<R>,
+  cache: RenderCache<R>,
 ): Effect.Effect<Document | RenderContext, never, Node | Wire> {
   return Effect.gen(function* ($) {
     const length = yield* $(renderPlaceholders(hole.values, cache))
@@ -43,17 +46,25 @@ export function renderHole(
       cache.entry = entry = yield* $(makeEntry(hole))
     }
 
-    const { content, updates, wire } = entry
+    if (entry.env !== hole.env) {
+      entry.env = hole.env
+    }
 
-    for (let i = 0; i < length; i++) yield* $(updates[i](hole.values[i]))
+    const { content, updates, wire, env } = entry
+    const withEnv = Effect.provideSomeEnvironment<
+      Document | RenderContext,
+      Document | RenderContext | R
+    >((e) => e.merge(env))
+
+    for (let i = 0; i < length; i++) yield* $(withEnv(updates[i](hole.values[i])))
 
     return wire || (entry.wire = persistent(content))
   })
 }
 
-export function renderPlaceholders(
-  values: Hole['values'],
-  { stack }: RenderCache,
+export function renderPlaceholders<R>(
+  values: Hole<R>['values'],
+  { stack }: RenderCache<R>,
 ): Effect.Effect<RenderContext | Document, never, number> {
   return Effect.gen(function* ($) {
     const { length } = values
