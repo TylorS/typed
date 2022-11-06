@@ -1,9 +1,9 @@
 import * as Effect from '@effect/core/io/Effect'
 import { Env } from '@tsplus/stdlib/service/Env'
-import type { Wire } from '@webreflection/uwire'
 
 import type { Hole } from './Hole.js'
 import type { Placeholder } from './Placeholder.js'
+import type { Wire } from './Wire.js'
 import { parseUpdates } from './parseUpdates.js'
 
 export interface Entry {

@@ -3,7 +3,9 @@
 import { Effect } from '@effect/core/io/Effect'
 
 export interface Placeholder<R = never> {
-  readonly _R: (_: never) => R
+  readonly __Placeholder__: {
+    readonly _R: (_: never) => R
+  }
 }
 
 export namespace Placeholder {

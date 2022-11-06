@@ -1,6 +1,5 @@
-import { Wire } from '@webreflection/uwire'
-
 import { Entry } from './Entry.js'
+import { Wire } from './Wire.js'
 
 export interface RenderCache {
   entry: Entry | null

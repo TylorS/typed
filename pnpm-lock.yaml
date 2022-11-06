@@ -2,14 +2,12 @@ lockfileVersion: 5.4
 
 specifiers:
   '@effect/core': ^0.0.16
-  '@effect/query': ^0.0.2
   '@tsplus/stdlib': ^0.2.8
   '@typed/fx': ^0.0.26
   '@types/node': ^18.11.9
   '@typescript-eslint/eslint-plugin': ^5.42.0
   '@typescript-eslint/parser': ^5.42.0
   '@webreflection/uparser': ^0.2.4
-  '@webreflection/uwire': ^1.2.1
   eslint: ^8.27.0
   eslint-config-prettier: ^8.5.0
   eslint-import-resolver-typescript: ^3.5.2
@@ -17,8 +15,6 @@ specifiers:
   eslint-plugin-prettier: ^4.2.1
   husky: ^8.0.1
   lint-staged: ^13.0.3
-  lit-html: ^2.4.0
-  path-to-regexp: ^6.2.1
   prettier: ^2.7.1
   ts-toolbelt: ^9.6.0
   tsconfig-paths: ^4.1.0
@@ -31,13 +27,9 @@ specifiers:
 
 dependencies:
   '@effect/core': 0.0.16
-  '@effect/query': 0.0.2
   '@tsplus/stdlib': 0.2.8
   '@typed/fx': 0.0.26_c7o234nbnpuz7fnxnfuwyr2l7y
   '@webreflection/uparser': 0.2.4
-  '@webreflection/uwire': 1.2.1
-  lit-html: 2.4.0
-  path-to-regexp: 6.2.1
   ts-toolbelt: 9.6.0
   udomdiff: 1.1.0
   uparser: 0.2.1
@@ -73,22 +65,9 @@ packages:
       '@tsplus/stdlib': 0.2.8
     dev: false
 
-  /@effect/core/0.0.7:
-    resolution: {integrity: sha512-6+rmlij88xMrTR8uyazThkSh0XWoZgbqoiSNIoUrBQnQMv7I1JR4SREYI4HeBjtUerQ1qlN70Z1s8r3tQ9jHQQ==}
-    dependencies:
-      '@tsplus/stdlib': 0.2.8
-    dev: false
-
   /@effect/printer/0.0.4:
     resolution: {integrity: sha512-oTn6U9GCg01E+kYwUBs4LM6k6hVq0pA7ZAYKdj972n2LjYeqg4+We6ZqoYWH2Pw5TDHOavtIEdYqt61uUxiZgg==}
     dependencies:
-      '@tsplus/stdlib': 0.2.8
-    dev: false
-
-  /@effect/query/0.0.2:
-    resolution: {integrity: sha512-y71TzA4lmpwKmIFG+8JiJOoguJLWEmvpIY8po2K7H3XrZ6I5QsyCJX6owRP5Q9Pfcw6R4FyF5ewVvoaQWzGedQ==}
-    dependencies:
-      '@effect/core': 0.0.7
       '@tsplus/stdlib': 0.2.8
     dev: false
 
@@ -224,10 +203,6 @@ packages:
     resolution: {integrity: sha512-21cFJr9z3g5dW8B0CVI9g2O9beqaThGQ6ZFBqHfwhzLDKUxaqTIy3vnfah/UPkfOiF2pLq+tGz+W8RyCskuslw==}
     dev: true
 
-  /@types/trusted-types/2.0.2:
-    resolution: {integrity: sha512-F5DIZ36YVLE+PN+Zwws4kJogq47hNgX3Nx6WyDJ3kcplxyke3XIzB8uK5n/Lpm1HBsbGzd6nmGehL8cPekP+Tg==}
-    dev: false
-
   /@typescript-eslint/eslint-plugin/5.42.0_ofgjrzjuekeo7s3hdyz2yuzw34:
     resolution: {integrity: sha512-5TJh2AgL6+wpL8H/GTSjNb4WrjKoR2rqvFxR/DDTqYNk6uXn8BJMEcncLSpMbf/XV1aS0jAjYwn98uvVCiAywQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
@@ -359,10 +334,6 @@ packages:
 
   /@webreflection/uparser/0.2.4:
     resolution: {integrity: sha512-4cYSODHAbjsIlvlTLffaN+QiFcNSLTYkRLOrDqpK+m6Bzqyjudq/xHTiSl4/LxeijcQE48nJQuaBnJcnizXxrA==}
-    dev: false
-
-  /@webreflection/uwire/1.2.1:
-    resolution: {integrity: sha512-3FIqIFzqij5NPWKWCQKJhfcRQpfS8RHAcceFosSDDiD6WrMHRAp3QoBqYt7dfrPhJ8Fg2b6T6Ea8ttClzVkZHA==}
     dev: false
 
   /acorn-jsx/5.3.2_acorn@8.8.1:
@@ -1692,12 +1663,6 @@ packages:
       wrap-ansi: 7.0.0
     dev: true
 
-  /lit-html/2.4.0:
-    resolution: {integrity: sha512-G6qXu4JNUpY6aaF2VMfaszhO9hlWw0hOTRFDmuMheg/nDYGB+2RztUSOyrzALAbr8Nh0Y7qjhYkReh3rPnplVg==}
-    dependencies:
-      '@types/trusted-types': 2.0.2
-    dev: false
-
   /locate-path/6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
@@ -1934,10 +1899,6 @@ packages:
   /path-parse/1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
     dev: true
-
-  /path-to-regexp/6.2.1:
-    resolution: {integrity: sha512-JLyh7xT1kizaEvcaXOQwOc2/Yhw6KZOvPf1S8401UyLk86CU79LN3vl7ztXGm/pZ+YjoyAJ4rxmHwbkBXJX+yw==}
-    dev: false
 
   /path-type/4.0.0:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}

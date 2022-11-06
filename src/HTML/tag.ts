@@ -1,9 +1,8 @@
-// TODO: for/node variants
-
 import * as Effect from '@effect/core/io/Effect'
-import { EffectURI } from '@effect/core/io/Effect'
 import { pipe } from '@tsplus/stdlib/data/Function'
 import { Env } from '@tsplus/stdlib/service/Env'
+
+import { isEffect } from '../_internal.js'
 
 import { Hole } from './Hole.js'
 import { Placeholder } from './Placeholder.js'
@@ -92,13 +91,15 @@ function unwrapValues<
   )
 }
 
-function unwrapValue(value: Placeholder<any> | Effect.Effect<any, any, Placeholder<any>>) {
-  if (value && typeof value === 'object') {
-    if (EffectURI in value) {
-      return value as Effect.Effect<any, any, Placeholder<any>>
-    } else if (Array.isArray(value)) {
-      return unwrapValues(value)
-    }
+function unwrapValue(
+  value: Placeholder<any> | Effect.Effect<any, any, Placeholder<any>>,
+): Effect.Effect<any, any, Placeholder<any>> {
+  if (isEffect(value)) {
+    return value
+  }
+
+  if (Array.isArray(value)) {
+    return unwrapValues(value)
   }
 
   return Effect.succeed(value as Placeholder<any>)

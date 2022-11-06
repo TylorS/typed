@@ -15,7 +15,9 @@ export function EventHandler<T extends Event, R = never>(
 }
 
 export class EventHandlerImplementation<T extends Event, R = never> implements EventHandler<T, R> {
-  readonly _R!: (_: never) => R
+  readonly __Placeholder__!: {
+    readonly _R: (_: never) => R
+  }
 
   constructor(
     readonly handler: (event: T) => Effect<R, never, void>,

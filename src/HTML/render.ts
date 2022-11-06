@@ -1,10 +1,10 @@
 import * as Effect from '@effect/core/io/Effect'
-import { Wire, persistent } from '@webreflection/uwire'
 
 import { makeEntry } from './Entry.js'
 import { Hole } from './Hole.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
+import { Wire, persistent } from './Wire.js'
 
 export function render<T extends DocumentFragment | HTMLElement>(
   where: T,

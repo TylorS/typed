@@ -17,13 +17,9 @@
   "license": "MIT",
   "dependencies": {
     "@effect/core": "^0.0.16",
-    "@effect/query": "^0.0.2",
     "@tsplus/stdlib": "^0.2.8",
     "@typed/fx": "^0.0.26",
     "@webreflection/uparser": "^0.2.4",
-    "@webreflection/uwire": "^1.2.1",
-    "lit-html": "^2.4.0",
-    "path-to-regexp": "^6.2.1",
     "ts-toolbelt": "^9.6.0",
     "udomdiff": "^1.1.0",
     "uparser": "^0.2.1"

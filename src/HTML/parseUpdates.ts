@@ -68,7 +68,7 @@ function updateNode(comment: Comment) {
             if (!text) text = yield* $(createTextNode(''))
             text.data = String(newValue)
 
-            nodes = diffChildren(comment, nodes, [text])
+            nodes = yield* $(diffChildren(comment, nodes, [text]))
           }
           break
         // null, and undefined are used to cleanup previous content
@@ -77,7 +77,7 @@ function updateNode(comment: Comment) {
           if (newValue == undefined) {
             if (oldValue != newValue) {
               oldValue = newValue
-              nodes = diffChildren(comment, nodes, [])
+              nodes = yield* $(diffChildren(comment, nodes, []))
             }
             break
           }
@@ -85,10 +85,10 @@ function updateNode(comment: Comment) {
           if (Array.isArray(newValue)) {
             oldValue = newValue
             // arrays can be used to cleanup, if empty
-            if (newValue.length === 0) nodes = diffChildren(comment, nodes, [])
+            if (newValue.length === 0) nodes = yield* $(diffChildren(comment, nodes, []))
             // or diffed, if these contains nodes or "wires"
             else if (newValue.some((x) => typeof x === 'object'))
-              nodes = diffChildren(comment, nodes, newValue)
+              nodes = yield* $(diffChildren(comment, nodes, newValue))
             // in all other cases the content is stringified as is
             else yield* $(handleNode(String(newValue)))
             break
@@ -100,12 +100,14 @@ function updateNode(comment: Comment) {
           // is not expected one, nothing happens, as easy as that.
           if (oldValue !== newValue && 'ELEMENT_NODE' in newValue) {
             oldValue = newValue
-            nodes = diffChildren(
-              comment,
-              nodes,
-              (newValue as SVGElement).nodeType === 11
-                ? Array.from((newValue as SVGElement).childNodes)
-                : [newValue as Node],
+            nodes = yield* $(
+              diffChildren(
+                comment,
+                nodes,
+                (newValue as SVGElement).nodeType === 11
+                  ? Array.from((newValue as SVGElement).childNodes)
+                  : [newValue as Node],
+              ),
             )
           }
           break
