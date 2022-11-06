@@ -63,6 +63,12 @@ export const createRange: Effect.Effect<Document, never, Range> = Effect.service
   (d) => d.createRange(),
 )
 
+export const createAttributeNS = (
+  namespace: string | null,
+  qualifiedName: string,
+): Effect.Effect<Document, never, Attr> =>
+  Effect.serviceWith(Document.Tag, (d) => d.createAttributeNS(namespace, qualifiedName))
+
 export const getDocumentElement = Effect.serviceWith(Document.Tag, (d) => d.documentElement)
 
 export const importNode = <T extends Node>(node: T, deep?: boolean) =>

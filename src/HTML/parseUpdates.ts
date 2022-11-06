@@ -1,6 +1,6 @@
 import * as Effect from '@effect/core/io/Effect'
 
-import { createTextNode, importNode } from '../DOM/Document.js'
+import { createAttributeNS, createTextNode, importNode } from '../DOM/Document.js'
 
 import type { Entry } from './Entry.js'
 import { EventHandler, EventHandlerImplementation } from './EventHandler.js'
@@ -123,7 +123,7 @@ function updateNode(comment: Comment) {
 function updateAttribute(
   node: Element,
   templateHole: AttributeTemplateHole,
-): <R>(value: Placeholder<R>) => Effect.Effect<R, never, void> {
+): <R>(value: Placeholder<R>) => Effect.Effect<R | Document, never, void> {
   const { name } = templateHole
 
   switch (name[0]) {
@@ -152,11 +152,9 @@ function updateAttribute(
 function boolean(node: Element, key: string, oldValue = false) {
   return <R>(newValue: Placeholder<R>) =>
     Effect.sync(() => {
-      if (oldValue !== !!newValue) {
-        // when IE won't be around anymore ...
-        // node.toggleAttribute(key, oldValue = !!newValue);
-        if ((oldValue = !!newValue)) node.setAttribute(key, '')
-        else node.removeAttribute(key)
+      const b = !!newValue
+      if (oldValue !== b) {
+        node.toggleAttribute(key, (oldValue = b))
       }
     })
 }
@@ -207,10 +205,14 @@ function event(node: Element, name: string) {
 function attribute(node: Element, name: string) {
   let oldValue: Placeholder<any>,
     orphan = true
-  const attributeNode = node.ownerDocument.createAttributeNS(null, name)
+  let attributeNode: Attr
 
   return <R>(newValue: Placeholder<R>) =>
-    Effect.sync(() => {
+    Effect.gen(function* ($) {
+      if (!attributeNode) {
+        attributeNode = yield* $(createAttributeNS(null, name))
+      }
+
       if (oldValue !== newValue) {
         oldValue = newValue
         if (oldValue == undefined) {
