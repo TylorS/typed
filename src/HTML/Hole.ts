@@ -2,13 +2,13 @@ import { Env } from '@tsplus/stdlib/service/Env'
 
 import { Placeholder } from './Placeholder.js'
 
-export class Hole<R = never> implements Placeholder<R> {
-  readonly _R!: (_: never) => R
+export class Hole implements Placeholder {
+  readonly _R!: (_: never) => never
 
   constructor(
     readonly type: 'svg' | 'html',
-    readonly env: Env<R>,
+    readonly env: Env<any>,
     readonly template: TemplateStringsArray,
-    readonly values: Array<Placeholder<R>>,
+    readonly values: Array<Placeholder<any>>,
   ) {}
 }

@@ -6,16 +6,16 @@ import { Hole } from './Hole.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
 
-export function render<T extends DocumentFragment | HTMLElement, R>(
+export function render<T extends DocumentFragment | HTMLElement>(
   where: T,
-  what: Hole<R> | HTMLElement | SVGElement,
+  what: Hole | HTMLElement | SVGElement,
 ): Effect.Effect<Document | RenderContext, never, T> {
   return Effect.gen(function* ($) {
     const renderCache = yield* $(RenderContext.getRenderCache)
     if (!renderCache.has(where)) {
       renderCache.set(where, RenderCache())
     }
-    const cache = renderCache.get(where) as RenderCache<R>
+    const cache = renderCache.get(where) as RenderCache
     const wire = what instanceof Hole ? yield* $(renderHole(what, cache)) : what
 
     if (wire !== cache.wire) {
@@ -33,9 +33,9 @@ export function render<T extends DocumentFragment | HTMLElement, R>(
   })
 }
 
-export function renderHole<R>(
-  hole: Hole<R>,
-  cache: RenderCache<R>,
+export function renderHole(
+  hole: Hole,
+  cache: RenderCache,
 ): Effect.Effect<Document | RenderContext, never, Node | Wire> {
   return Effect.gen(function* ($) {
     const length = yield* $(renderPlaceholders(hole.values, cache))
@@ -53,7 +53,7 @@ export function renderHole<R>(
     const { content, updates, wire, env } = entry
     const withEnv = Effect.provideSomeEnvironment<
       Document | RenderContext,
-      Document | RenderContext | R
+      Document | RenderContext | any
     >((e) => e.merge(env))
 
     for (let i = 0; i < length; i++) yield* $(withEnv(updates[i](hole.values[i])))
@@ -62,9 +62,9 @@ export function renderHole<R>(
   })
 }
 
-export function renderPlaceholders<R>(
-  values: Hole<R>['values'],
-  { stack }: RenderCache<R>,
+export function renderPlaceholders(
+  values: Hole['values'],
+  { stack }: RenderCache,
 ): Effect.Effect<RenderContext | Document, never, number> {
   return Effect.gen(function* ($) {
     const { length } = values

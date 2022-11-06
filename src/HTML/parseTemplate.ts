@@ -13,7 +13,7 @@ const PREFIX = `fphtmlX`
 // a RegExp that helps checking nodes that cannot contain comments
 const TEXT_ONLY_NODES_REGEX = /^(?:textarea|script|style|title|plaintext|xmp)$/
 
-export function parseTemplate<R>(hole: Hole<R>) {
+export function parseTemplate(hole: Hole) {
   return Effect.gen(function* ($) {
     const isSvg = hole.type === 'svg'
     const innerHtml = instrument(hole.template, PREFIX, isSvg)

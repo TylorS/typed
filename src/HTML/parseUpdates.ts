@@ -3,7 +3,7 @@ import * as Effect from '@effect/core/io/Effect'
 import { createTextNode, importNode } from '../DOM/Document.js'
 
 import type { Entry } from './Entry.js'
-import { EventHandler } from './EventHandler.js'
+import { EventHandler, EventHandlerImplementation } from './EventHandler.js'
 import { Hole } from './Hole.js'
 import { Placeholder } from './Placeholder.js'
 import { RenderContext } from './RenderContext.js'
@@ -12,9 +12,9 @@ import { diffChildren } from './diffChildren.js'
 import { parseTemplate } from './parseTemplate.js'
 import { findPath } from './paths.js'
 
-export function parseUpdates<R>(
-  hole: Hole<R>,
-): Effect.Effect<RenderContext | Document, never, Pick<Entry<R>, 'content' | 'updates'>> {
+export function parseUpdates(
+  hole: Hole,
+): Effect.Effect<RenderContext | Document, never, Pick<Entry, 'content' | 'updates'>> {
   return Effect.gen(function* ($) {
     const cache = yield* $(RenderContext.getTemplateCache)
 
@@ -24,7 +24,7 @@ export function parseUpdates<R>(
 
     const templateCache = cache.get(hole.template) as TemplateCache
     const content = yield* $(importNode(templateCache.content, true))
-    const updates: Entry<R>['updates'] = templateCache.holes.map((templateHole) =>
+    const updates: Entry['updates'] = templateCache.holes.map((templateHole) =>
       makeUpdate(templateHole, content),
     )
 
@@ -186,7 +186,7 @@ function event(node: Element, name: string) {
         listener = undefined
       }
 
-      if (newValue instanceof EventHandler) {
+      if (newValue instanceof EventHandlerImplementation) {
         const runtime = yield* $(Effect.runtime<R>())
         listener = (ev: Event) => runtime.unsafeRunAsync(newValue.handler(ev))
         node.addEventListener(type, listener, newValue.options)

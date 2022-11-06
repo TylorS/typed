@@ -9,27 +9,17 @@ import { Placeholder } from './Placeholder.js'
 export function html<Values extends Array<Placeholder<any>>>(
   template: TemplateStringsArray,
   ...values: Values
-): Effect.Effect<
-  Placeholder.ResourcesOf<Values[number]>,
-  never,
-  Hole<Placeholder.ResourcesOf<Values[number]>>
-> {
-  return Effect.environmentWith<
-    Placeholder.ResourcesOf<Values[number]>,
-    Hole<Placeholder.ResourcesOf<Values[number]>>
-  >((env) => new Hole('html', env, template, values))
+): Effect.Effect<Placeholder.ResourcesOf<Values[number]>, never, Hole> {
+  return Effect.environmentWith<Placeholder.ResourcesOf<Values[number]>, Hole>(
+    (env) => new Hole('html', env, template, values),
+  )
 }
 
 export function svg<Values extends Array<Placeholder<any>>>(
   template: TemplateStringsArray,
   ...values: Values
-): Effect.Effect<
-  Placeholder.ResourcesOf<Values[number]>,
-  never,
-  Hole<Placeholder.ResourcesOf<Values[number]>>
-> {
-  return Effect.environmentWith<
-    Placeholder.ResourcesOf<Values[number]>,
-    Hole<Placeholder.ResourcesOf<Values[number]>>
-  >((env) => new Hole('svg', env, template, values))
+): Effect.Effect<Placeholder.ResourcesOf<Values[number]>, never, Hole> {
+  return Effect.environmentWith<Placeholder.ResourcesOf<Values[number]>, Hole>(
+    (env) => new Hole('svg', env, template, values),
+  )
 }
