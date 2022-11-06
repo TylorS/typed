@@ -27,8 +27,6 @@ export function render<T extends DocumentFragment | HTMLElement>(
       where.replaceChildren(wire.valueOf() as Node)
     }
 
-    console.log(where.childNodes)
-
     return where
   })
 }

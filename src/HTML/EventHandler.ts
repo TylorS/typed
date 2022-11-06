@@ -7,11 +7,11 @@ export interface EventHandler<T extends Event, R = never> extends Placeholder<R>
   readonly options?: boolean | EventListenerOptions
 }
 
-export function EventHandler(
-  handler: (event: Event) => Effect<never, never, void>,
+export function EventHandler<T extends Event, R = never>(
+  handler: (event: T) => Effect<R, never, void>,
   options?: boolean | EventListenerOptions,
-): EventHandler<Event, never> {
-  return new EventHandlerImplementation(handler, options)
+): EventHandler<T, R> {
+  return new EventHandlerImplementation<T, R>(handler, options)
 }
 
 export class EventHandlerImplementation<T extends Event, R = never> implements EventHandler<T, R> {

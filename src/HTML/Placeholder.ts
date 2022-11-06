@@ -1,4 +1,6 @@
-// TODO: Investigate Error types in placeholders
+// TODO: Investigate Error types in placeholders to broadcast in Fx ??
+
+import { Effect } from '@effect/core/io/Effect'
 
 export interface Placeholder<R = never> {
   readonly _R: (_: never) => R
@@ -6,7 +8,13 @@ export interface Placeholder<R = never> {
 
 export namespace Placeholder {
   /* eslint-disable @typescript-eslint/no-unused-vars */
-  export type ResourcesOf<T> = [T] extends [Placeholder<infer R>] ? R : never
+  export type ResourcesOf<T> = [T] extends [Placeholder<infer R>]
+    ? R
+    : [T] extends [Effect<infer _R, infer _E, infer _A>]
+    ? _R
+    : never
+
+  export type ErrorsOf<T> = [T] extends [Effect<infer _R, infer _E, infer _A>] ? _E : never
   /* eslint-enable @typescript-eslint/no-unused-vars */
 }
 

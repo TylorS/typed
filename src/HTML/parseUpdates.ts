@@ -144,7 +144,7 @@ function updateAttribute(
   //     return aria(node)
   // }
 
-  return attribute(node, name /*, svg*/)
+  return attribute(node, name)
 }
 
 function boolean(node: Element, key: string, oldValue = false) {
