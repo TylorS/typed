@@ -21,11 +21,7 @@ export const html = Object.assign(
   >(
     template: TemplateStringsArray,
     ...values: Values
-  ): Fx.Fx<
-    Document | RenderContext | Placeholder.ResourcesOf<Values[number]>,
-    Placeholder.ErrorsOf<Values[number]>,
-    Hole
-  > {
+  ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
     return Fx.fromFxEffect(
       Effect.environmentWith((env: Env<Placeholder.ResourcesOf<Values[number]>>) =>
         pipe(
@@ -67,11 +63,7 @@ export const svg = Object.assign(
   >(
     template: TemplateStringsArray,
     ...values: Values
-  ): Fx.Fx<
-    Document | RenderContext | Placeholder.ResourcesOf<Values[number]>,
-    Placeholder.ErrorsOf<Values[number]>,
-    Hole
-  > {
+  ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
     return Fx.fromFxEffect(
       Effect.environmentWith((env: Env<Placeholder.ResourcesOf<Values[number]>>) =>
         pipe(

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { deepStrictEqual } from 'assert'
 
 import { testClock } from '@effect/core'
@@ -16,7 +17,7 @@ import { html } from './tag.js'
 
 describe(import.meta.url, () => {
   describe(render.name, () => {
-    it('should render a simple div', async () => {
+    it('renders a simple div', async () => {
       const { document } = new happyDom.Window() as unknown as Window
 
       const delay = millis(100)
