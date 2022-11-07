@@ -7,6 +7,7 @@ import { addEventListener } from './EventTarget.js'
 
 export namespace Document {
   export const Tag: T.Tag<Document> = T.Tag<Document>()
+  export const provide = (doc: Document) => Effect.provideService(Tag, doc)
 }
 
 export const getDocument: Effect.Effect<Document, never, Document> = Effect.service(Document.Tag)

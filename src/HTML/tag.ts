@@ -102,7 +102,9 @@ function unwrapFxValues<
   Placeholder.ErrorsOf<Values[number]>,
   Array<Placeholder<any>>
 > {
-  return Fx.combineAll(values.map(unwrapFxValue)) as Fx.Fx<
+  const sampling = Fx.Subject.unsafeMake<never, void>()
+
+  return Fx.combineAll(values.map((v) => unwrapFxValue(v, sampling))) as Fx.Fx<
     Placeholder.ResourcesOf<Values[number]>,
     Placeholder.ErrorsOf<Values[number]>,
     Array<Placeholder<any>>
@@ -114,13 +116,25 @@ function unwrapFxValue(
     | Placeholder<any>
     | Effect.Effect<any, any, Placeholder<any>>
     | Fx.Fx<any, any, Placeholder<any>>,
+  sampling: Fx.Subject<never, void>,
 ): Fx.Fx<any, any, Placeholder<any>> {
   if (isFx(value)) {
-    return value
+    return pipe(
+      value,
+      Fx.tapEffect(() => sampling.emit()),
+    )
   }
 
   if (isEffect(value)) {
-    return Fx.fromEffect(value)
+    return pipe(
+      Fx.fromEffect(value),
+      Fx.continueWith(() =>
+        pipe(
+          sampling,
+          Fx.mapEffect(() => value),
+        ),
+      ),
+    )
   }
 
   if (Array.isArray(value)) {

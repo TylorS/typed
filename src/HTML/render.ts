@@ -13,6 +13,11 @@ import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
 import { Wire, persistent } from './Wire.js'
 
+export function drainInto<T extends DocumentFragment | HTMLElement>(where: T) {
+  return <R, E>(fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>) =>
+    pipe(fx, renderInto(where), Fx.runDrain)
+}
+
 export function renderInto<T extends DocumentFragment | HTMLElement>(where: T) {
   return <R, E>(
     fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>,

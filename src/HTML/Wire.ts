@@ -35,7 +35,9 @@ export const diffable = (document: Document) => (node: Node, operation: number) 
 export const persistent = (fragment: DocumentFragment): DocumentFragment | Node | Wire => {
   const { childNodes } = fragment
   const { length } = childNodes
+
   if (length < 2) return length ? childNodes[0] : fragment
+
   const nodes = Array.from(childNodes)
   const firstChild = nodes[0]
   const lastChild = nodes[length - 1]
