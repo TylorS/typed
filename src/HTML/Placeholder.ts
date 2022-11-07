@@ -10,26 +10,33 @@ export interface Placeholder<R = never> {
 
 export namespace Placeholder {
   /* eslint-disable @typescript-eslint/no-unused-vars */
-  export type ResourcesOf<T> = [T] extends [Placeholder<infer R>]
+  export type ResourcesOf<T> = [T] extends [never]
+    ? never
+    : [T] extends [Placeholder<infer R>]
     ? R
     : [T] extends [Effect<infer _R, infer _E, infer _A>]
     ? _R
     : never
 
-  export type ErrorsOf<T> = [T] extends [Effect<infer _R, infer _E, infer _A>] ? _E : never
+  export type ErrorsOf<T> = [T] extends [never]
+    ? never
+    : [T] extends [Effect<infer _R, infer _E, infer _A>]
+    ? _E
+    : never
   /* eslint-enable @typescript-eslint/no-unused-vars */
 }
 
 declare global {
+  // Builtins
   export interface String extends Placeholder {}
   export interface Number extends Placeholder {}
   export interface Boolean extends Placeholder {}
   export interface Symbol extends Placeholder {}
   export interface BigInt extends Placeholder {}
   export interface Function extends Placeholder {}
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export interface Array<T> extends Placeholder {}
+  export interface Array<T> extends Placeholder<Placeholder.ResourcesOf<T>> {}
 
+  // DOM types
   export interface Node extends Placeholder {}
   export interface DocumentFragment extends Placeholder {}
   export interface Element extends Placeholder {}

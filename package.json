@@ -6,6 +6,7 @@
   "description": "A functional programming toolkit for building applications with HKT-TS",
   "scripts": {
     "eslint": "NODE_OPTIONS=--max-old-space-size=4096 eslint --ext .ts,.js,.json,.yaml --fix --cache src",
+    "mocha": "mocha 'src/**/*.test.ts'",
     "example": "vite serve src --force"
   },
   "keywords": [
@@ -28,6 +29,8 @@
     "tslib": "^2.4.0"
   },
   "devDependencies": {
+    "@esbuild-kit/esm-loader": "^2.5.0",
+    "@types/mocha": "^10.0.0",
     "@types/node": "^18.11.9",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
@@ -36,8 +39,10 @@
     "eslint-import-resolver-typescript": "^3.5.2",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "happy-dom": "^7.6.6",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
+    "mocha": "^10.1.0",
     "prettier": "^2.7.1",
     "tsconfig-paths": "^4.1.0",
     "tslib": "^2.4.1",

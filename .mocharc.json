@@ -1,0 +1,6 @@
+{
+  "node-option": [
+    "experimental-specifier-resolution=node",
+    "loader=@esbuild-kit/esm-loader"
+  ]
+}

@@ -1,6 +1,7 @@
 import * as Effect from '@effect/core/io/Effect'
 import * as Layer from '@effect/core/io/Layer'
 import * as T from '@tsplus/stdlib/service/Tag'
+import * as Fx from '@typed/fx'
 
 import type { RenderCache } from './RenderCache.js'
 import type { TemplateCache } from './TemplateCache.js'
@@ -27,4 +28,5 @@ export namespace RenderContext {
   )
 
   export const provide = Effect.provideSomeLayer(live)
+  export const provideFx = Fx.provideSomeLayer(live)
 }

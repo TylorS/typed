@@ -1,6 +1,7 @@
 import * as Effect from '@effect/core/io/Effect'
 
 import { createAttributeNS, createTextNode, importNode } from '../DOM/Document.js'
+import { isEffect } from '../_internal.js'
 
 import type { Entry } from './Entry.js'
 import { EventHandler, EventHandlerImplementation } from './EventHandler.js'
@@ -111,9 +112,14 @@ function updateNode(comment: Comment) {
             )
           }
           break
-        case 'function':
-          yield* $(handleNode<R>(newValue(comment)))
+        case 'function': {
+          const x = newValue(comment)
+          // TODO: Add support for directives here?
+          const y = isEffect<R, never>(x) ? yield* $(x) : x
+
+          yield* $(handleNode<R>(y))
           break
+        }
       }
     })
 
