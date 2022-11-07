@@ -20,13 +20,13 @@ export function parseUpdates(
 
   const templateCache = cache.get(hole.template) as TemplateCache
   const content = document.importNode(templateCache.content, true)
-  const updates: Entry['updates'] = templateCache.holes.map((templateHole) =>
+  const updates = templateCache.holes.map((templateHole) =>
     makeUpdate(templateHole, content, document),
   )
 
   return {
     content,
-    updates,
+    updates: updates as Entry['updates'],
   }
 }
 

@@ -9,13 +9,10 @@ import { Hole } from './Hole.js'
 import { Placeholder } from './Placeholder.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
+import { Renderable } from './Renderable.js'
 import { getRenderHoleContext, renderHole } from './render.js'
 
-export function html<
-  Values extends ReadonlyArray<
-    Placeholder<any> | Effect.Effect<any, any, Placeholder<any>> | Fx.Fx<any, any, Placeholder<any>>
-  >,
->(
+export function html<Values extends ReadonlyArray<Renderable>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
@@ -29,11 +26,7 @@ export function html<
   )
 }
 
-html.node = <
-  Values extends ReadonlyArray<
-    Placeholder<any> | Effect.Effect<any, any, Placeholder<any>> | Fx.Fx<any, any, Placeholder<any>>
-  >,
->(
+html.node = <Values extends ReadonlyArray<Renderable>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -51,11 +44,7 @@ html.node = <
     ),
   )
 
-export function svg<
-  Values extends ReadonlyArray<
-    Placeholder<any> | Effect.Effect<any, any, Placeholder<any>> | Fx.Fx<any, any, Placeholder<any>>
-  >,
->(
+export function svg<Values extends ReadonlyArray<Renderable>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
@@ -69,11 +58,7 @@ export function svg<
   )
 }
 
-svg.node = <
-  Values extends ReadonlyArray<
-    Placeholder<any> | Effect.Effect<any, any, Placeholder<any>> | Fx.Fx<any, any, Placeholder<any>>
-  >,
->(
+svg.node = <Values extends ReadonlyArray<Renderable>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -91,33 +76,26 @@ svg.node = <
     ),
   )
 
-function unwrapFxValues<
-  Values extends Array<
-    Placeholder<any> | Effect.Effect<any, any, Placeholder<any>> | Fx.Fx<any, any, Placeholder<any>>
-  >,
->(
+function unwrapFxValues<Values extends Array<Renderable>>(
   values: Values,
 ): Fx.Fx<
   Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
-  Array<Placeholder<any>>
+  Array<Renderable.Value>
 > {
   const sampling = Fx.Subject.unsafeMake<never, void>()
 
   return Fx.combineAll(values.map((v) => unwrapFxValue(v, sampling))) as Fx.Fx<
     Placeholder.ResourcesOf<Values[number]>,
     Placeholder.ErrorsOf<Values[number]>,
-    Array<Placeholder<any>>
+    Array<Renderable.Value>
   >
 }
 
 function unwrapFxValue(
-  value:
-    | Placeholder<any>
-    | Effect.Effect<any, any, Placeholder<any>>
-    | Fx.Fx<any, any, Placeholder<any>>,
+  value: Renderable,
   sampling: Fx.Subject<never, void>,
-): Fx.Fx<any, any, Placeholder<any>> {
+): Fx.Fx<any, any, Renderable.Value> {
   if (isFx(value)) {
     return pipe(
       value,
@@ -138,8 +116,11 @@ function unwrapFxValue(
   }
 
   if (Array.isArray(value)) {
-    return unwrapFxValues(value)
+    return pipe(
+      unwrapFxValues(value),
+      Fx.tapEffect(() => sampling.emit()),
+    )
   }
 
-  return Fx.succeed(value as Placeholder<any>)
+  return Fx.succeed(value as Renderable.Value)
 }

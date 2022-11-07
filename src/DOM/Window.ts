@@ -7,6 +7,7 @@ import { addEventListener } from './EventTarget.js'
 
 export namespace Window {
   export const Tag: T.Tag<Window> = T.Tag<Window>()
+  export const provide = (win: Window) => Effect.provideService(Tag, win)
 }
 
 export const getWindow: Effect.Effect<Window, never, Window> = Effect.service(Window.Tag)
