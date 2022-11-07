@@ -11,11 +11,38 @@ import { html } from './HTML/tag.js'
 const Counter = Fx.fromFxEffect(
   Effect.gen(function* ($) {
     const count = yield* $(Fx.makeRefSubject(() => 0))
+    const amount = yield* $(Fx.makeRefSubject(() => 1))
 
     return html`<div>
-      <button onclick=${EventHandler(() => count.update((n) => n - 1))}>Decrement</button>
+      <button
+        onclick=${EventHandler(() =>
+          pipe(
+            amount.get,
+            Effect.flatMap((n: number) => count.update((n2) => n2 - n)),
+          ),
+        )}
+      >
+        Decrement
+      </button>
 
-      <button onclick=${EventHandler(() => count.update((n) => n + 1))}>Increment</button>
+      <button
+        onclick=${EventHandler(() =>
+          pipe(
+            amount.get,
+            Effect.flatMap((n: number) => count.update((n2) => n2 + n)),
+          ),
+        )}
+      >
+        Increment
+      </button>
+
+      <input
+        type="number"
+        value=${amount}
+        oninput=${EventHandler((e: InputEvent & { readonly currentTarget: HTMLInputElement }) =>
+          amount.set(parseFloat(e.currentTarget.value)),
+        )}
+      />
 
       <p>Count: ${count}</p>
     </div>`
