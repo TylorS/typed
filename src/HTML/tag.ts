@@ -83,6 +83,7 @@ function unwrapFxValues<Values extends Array<Renderable>>(
   Placeholder.ErrorsOf<Values[number]>,
   Array<Renderable.Value>
 > {
+  // Used to sample pull-based Effect's whenever an Fx emits a value.
   const sampling = Fx.Subject.unsafeMake<never, void>()
 
   return Fx.combineAll(values.map((v) => unwrapFxValue(v, sampling))) as Fx.Fx<
