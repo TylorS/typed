@@ -9,7 +9,7 @@ import { Hole } from './Hole.js'
 import { Placeholder } from './Placeholder.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
-import { renderHole } from './render.js'
+import { getRenderHoleContext, renderHole } from './render.js'
 
 export const html = Object.assign(
   function html<
@@ -48,8 +48,12 @@ export const html = Object.assign(
     > =>
       pipe(
         html(template, ...values),
-        Fx.mapEffect((hole) => renderHole(hole, RenderCache())),
-        Fx.map((fragment) => fragment.valueOf() as Node),
+        Fx.mapEffect((hole) =>
+          pipe(
+            getRenderHoleContext,
+            Effect.map((ctx) => renderHole(hole, RenderCache(), ctx).valueOf() as Node),
+          ),
+        ),
       ),
   },
 )
@@ -90,8 +94,12 @@ export const svg = Object.assign(
     > =>
       pipe(
         svg(template, ...values),
-        Fx.mapEffect((hole) => renderHole(hole, RenderCache())),
-        Fx.map((fragment) => fragment.valueOf() as Node),
+        Fx.mapEffect((hole) =>
+          pipe(
+            getRenderHoleContext,
+            Effect.map((ctx) => renderHole(hole, RenderCache(), ctx).valueOf() as Node),
+          ),
+        ),
       ),
   },
 )

@@ -20,8 +20,8 @@ export function RenderContext(): RenderContext {
 
 export namespace RenderContext {
   export const Tag: T.Tag<RenderContext> = T.Tag<RenderContext>()
-  export const getRenderCache = Effect.serviceWith(Tag, (x) => x.renderCache)
-  export const getTemplateCache = Effect.serviceWith(Tag, (x) => x.templateCache)
+
+  export const get = Effect.service(Tag)
 
   export const live: Layer.Layer<never, never, RenderContext> = Layer.fromEffect(Tag)(
     Effect.sync(RenderContext),

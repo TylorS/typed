@@ -1,36 +1,22 @@
-import * as Effect from '@effect/core/io/Effect'
-import { pipe } from '@tsplus/stdlib/data/Function'
-
-import { createDocumentFragment, createElement, createSvgElement } from '../DOM/Document.js'
-
 export function createContent(
   innerHtml: string,
   svg: boolean,
-): Effect.Effect<Document, never, DocumentFragment> {
-  return svg ? createSvg(innerHtml) : createHtml(innerHtml)
+  document: Document,
+): DocumentFragment {
+  return svg ? createSvg(innerHtml, document) : createHtml(innerHtml, document)
 }
 
-export function createHtml(innerHtml: string): Effect.Effect<Document, never, DocumentFragment> {
-  return pipe(
-    createElement('template'),
-    Effect.tap((t) => Effect.sync(() => (t.innerHTML = innerHtml))),
-    Effect.map((t) => t.content),
-  )
+export function createHtml(innerHtml: string, document: Document): DocumentFragment {
+  const template = document.createElement('template')
+  template.innerHTML = innerHtml
+  return template.content
 }
 
-export function createSvg(innerHtml: string): Effect.Effect<Document, never, DocumentFragment> {
-  return pipe(
-    createDocumentFragment,
-    Effect.tap((fragment) =>
-      pipe(
-        createSvgElement('svg'),
-        Effect.tap((svg) =>
-          Effect.sync(() => {
-            svg.innerHTML = innerHtml
-            fragment.append(...Array.from(svg.childNodes))
-          }),
-        ),
-      ),
-    ),
-  )
+export function createSvg(innerHtml: string, document: Document): DocumentFragment {
+  const fragment = document.createDocumentFragment()
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  svg.innerHTML = innerHtml
+  fragment.append(...Array.from(svg.childNodes))
+
+  return fragment
 }

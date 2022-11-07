@@ -12,13 +12,15 @@ import * as happyDom from 'happy-dom'
 import { Document } from '../DOM/Document.js'
 
 import { RenderContext } from './RenderContext.js'
-import { render } from './render.js'
+import { stripHoleComments } from './parseTemplate.js'
+import { render, renderInto } from './render.js'
 import { html } from './tag.js'
 
 describe(import.meta.url, () => {
   describe(render.name, () => {
     it('renders a simple div', async () => {
       const { document } = new happyDom.Window() as unknown as Window
+      const root = document.createElement('div')
 
       const delay = millis(100)
       const value = pipe(
@@ -29,33 +31,31 @@ describe(import.meta.url, () => {
 
       const test = pipe(
         Effect.gen(function* ($) {
+          // Start rendering Fiber
           yield* $(
-            pipe(
-              html`<div>Hello ${value}!</div>`,
-              Fx.scanEffect(document.body, render),
-              Fx.runDrain,
-              Effect.fork,
-            ),
+            pipe(html`<div>Hello ${value}!</div>`, renderInto(root), Fx.runDrain, Effect.fork),
           )
 
-          deepStrictEqual(document.body.innerHTML, '<div>Hello 0<!--fphtmlX0-->!</div>')
+          yield* $(Effect.yieldNow) // Allow first render to take place
+
+          deepStrictEqual(stripHoleComments(root.innerHTML), '<div>Hello 0!</div>')
 
           yield* $(testClock.adjust(delay))
 
-          deepStrictEqual(document.body.innerHTML, '<div>Hello 1<!--fphtmlX0-->!</div>')
+          deepStrictEqual(stripHoleComments(root.innerHTML), '<div>Hello 1!</div>')
 
           yield* $(testClock.adjust(delay))
 
-          deepStrictEqual(document.body.innerHTML, '<div>Hello 2<!--fphtmlX0-->!</div>')
+          deepStrictEqual(stripHoleComments(root.innerHTML), '<div>Hello 2!</div>')
 
           yield* $(testClock.adjust(delay))
 
-          deepStrictEqual(document.body.innerHTML, '<div>Hello 3<!--fphtmlX0-->!</div>')
+          deepStrictEqual(stripHoleComments(root.innerHTML), '<div>Hello 3!</div>')
 
           yield* $(testClock.adjust(delay))
 
           // Should not render after take(4)
-          deepStrictEqual(document.body.innerHTML, '<div>Hello 3<!--fphtmlX0-->!</div>')
+          deepStrictEqual(stripHoleComments(root.innerHTML), '<div>Hello 3!</div>')
         }),
         RenderContext.provide,
         Effect.provideService(Document.Tag, document),
