@@ -40,8 +40,9 @@ describe(import.meta.url, () => {
       it('should render a simple div', async () => {
         const { document } = new happyDom.Window() as unknown as Window
 
+        const delay = millis(100)
         const value: Fx.Fx<never, never, number> = pipe(
-          Fx.periodic(millis(100)),
+          Fx.periodic(delay),
           Fx.scan(0, (acc) => acc + 1),
           Fx.take(3),
         )
@@ -58,16 +59,17 @@ describe(import.meta.url, () => {
 
             deepStrictEqual(document.body.innerHTML, '<div>Hello 0<!--fphtmlX0-->!</div>')
 
-            yield* $(testClock.adjust(millis(100)))
+            yield* $(testClock.adjust(delay))
 
             deepStrictEqual(document.body.innerHTML, '<div>Hello 1<!--fphtmlX0-->!</div>')
 
-            yield* $(testClock.adjust(millis(100)))
+            yield* $(testClock.adjust(delay))
 
             deepStrictEqual(document.body.innerHTML, '<div>Hello 2<!--fphtmlX0-->!</div>')
 
-            yield* $(testClock.adjust(millis(100)))
+            yield* $(testClock.adjust(delay))
 
+            // Should not update after take(3)
             deepStrictEqual(document.body.innerHTML, '<div>Hello 2<!--fphtmlX0-->!</div>')
           }),
           RenderContext.provide,
