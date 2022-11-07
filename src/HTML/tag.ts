@@ -13,38 +13,76 @@ import { renderHole } from './render.js'
 
 export const html = Object.assign(
   function html<
-    Values extends Array<Placeholder<any> | Effect.Effect<any, any, Placeholder<any>>> = [],
+    Values extends Array<
+      | Placeholder<any>
+      | Effect.Effect<any, any, Placeholder<any>>
+      | Fx.Fx<any, any, Placeholder<any>>
+    >,
   >(
     template: TemplateStringsArray,
     ...values: Values
-  ): Effect.Effect<
-    Placeholder.ResourcesOf<Values[number]>,
+  ): Fx.Fx<
+    Document | RenderContext | Placeholder.ResourcesOf<Values[number]>,
     Placeholder.ErrorsOf<Values[number]>,
     Hole
   > {
-    return Effect.environmentWithEffect((env: Env<Placeholder.ResourcesOf<Values[number]>>) =>
-      pipe(
-        unwrapValues(values),
-        Effect.map((values) => new Hole('html', env, template, values)),
+    return Fx.fromFxEffect(
+      Effect.environmentWith((env: Env<Placeholder.ResourcesOf<Values[number]>>) =>
+        pipe(
+          unwrapFxValues(values),
+          Fx.map((values) => new Hole('html', env, template, values)),
+        ),
       ),
     )
   },
   {
-    node: <Values extends Array<Placeholder<any> | Effect.Effect<any, any, Placeholder<any>>>>(
+    node: <
+      Values extends Array<
+        | Placeholder<any>
+        | Effect.Effect<any, any, Placeholder<any>>
+        | Fx.Fx<any, any, Placeholder<any>>
+      >,
+    >(
       template: TemplateStringsArray,
       ...values: Values
-    ): Effect.Effect<
+    ): Fx.Fx<
       Document | RenderContext | Placeholder.ResourcesOf<Values[number]>,
       Placeholder.ErrorsOf<Values[number]>,
       Node
     > =>
       pipe(
         html(template, ...values),
-        Effect.flatMap((hole) => renderHole(hole, RenderCache())),
-        Effect.map((fragment) => fragment.valueOf() as Node),
+        Fx.mapEffect((hole) => renderHole(hole, RenderCache())),
+        Fx.map((fragment) => fragment.valueOf() as Node),
       ),
-
-    fx: <
+  },
+)
+export const svg = Object.assign(
+  function svg<
+    Values extends Array<
+      | Placeholder<any>
+      | Effect.Effect<any, any, Placeholder<any>>
+      | Fx.Fx<any, any, Placeholder<any>>
+    >,
+  >(
+    template: TemplateStringsArray,
+    ...values: Values
+  ): Fx.Fx<
+    Document | RenderContext | Placeholder.ResourcesOf<Values[number]>,
+    Placeholder.ErrorsOf<Values[number]>,
+    Hole
+  > {
+    return Fx.fromFxEffect(
+      Effect.environmentWith((env: Env<Placeholder.ResourcesOf<Values[number]>>) =>
+        pipe(
+          unwrapFxValues(values),
+          Fx.map((values) => new Hole('svg', env, template, values)),
+        ),
+      ),
+    )
+  },
+  {
+    node: <
       Values extends Array<
         | Placeholder<any>
         | Effect.Effect<any, any, Placeholder<any>>
@@ -54,105 +92,17 @@ export const html = Object.assign(
       template: TemplateStringsArray,
       ...values: Values
     ): Fx.Fx<
-      Document | RenderContext | Placeholder.ResourcesOf<Values[number]>,
-      Placeholder.ErrorsOf<Values[number]>,
-      Hole
-    > =>
-      Fx.fromFxEffect(
-        Effect.environmentWith((env: Env<Placeholder.ResourcesOf<Values[number]>>) =>
-          pipe(
-            unwrapFxValues(values),
-            Fx.map((values) => new Hole('html', env, template, values)),
-          ),
-        ),
-      ),
-  },
-)
-
-export const svg = Object.assign(
-  function svg<Values extends Array<Placeholder<any> | Effect.Effect<any, any, Placeholder<any>>>>(
-    template: TemplateStringsArray,
-    ...values: Values
-  ): Effect.Effect<
-    Placeholder.ResourcesOf<Values[number]>,
-    Placeholder.ErrorsOf<Values[number]>,
-    Hole
-  > {
-    return Effect.environmentWithEffect((env: Env<Placeholder.ResourcesOf<Values[number]>>) =>
-      pipe(
-        unwrapValues(values),
-        Effect.map((values) => new Hole('svg', env, template, values)),
-      ),
-    )
-  },
-  {
-    node: <Values extends Array<Placeholder<any> | Effect.Effect<any, any, Placeholder<any>>>>(
-      template: TemplateStringsArray,
-      ...values: Values
-    ): Effect.Effect<
       Document | RenderContext | Placeholder.ResourcesOf<Values[number]>,
       Placeholder.ErrorsOf<Values[number]>,
       Node
     > =>
       pipe(
         svg(template, ...values),
-        Effect.flatMap((hole) => renderHole(hole, RenderCache())),
-        Effect.map((fragment) => fragment.valueOf() as Node),
-      ),
-
-    fx: <
-      Values extends Array<
-        | Placeholder<any>
-        | Effect.Effect<any, any, Placeholder<any>>
-        | Fx.Fx<any, any, Placeholder<any>>
-      >,
-    >(
-      template: TemplateStringsArray,
-      ...values: Values
-    ): Fx.Fx<
-      Document | RenderContext | Placeholder.ResourcesOf<Values[number]>,
-      Placeholder.ErrorsOf<Values[number]>,
-      Hole
-    > =>
-      Fx.fromFxEffect(
-        Effect.environmentWith((env: Env<Placeholder.ResourcesOf<Values[number]>>) =>
-          pipe(
-            unwrapFxValues(values),
-            Fx.map((values) => new Hole('svg', env, template, values)),
-          ),
-        ),
+        Fx.mapEffect((hole) => renderHole(hole, RenderCache())),
+        Fx.map((fragment) => fragment.valueOf() as Node),
       ),
   },
 )
-
-function unwrapValues<
-  Values extends Array<Placeholder<any> | Effect.Effect<any, any, Placeholder<any>>>,
->(
-  values: Values,
-): Effect.Effect<
-  Placeholder.ResourcesOf<Values[number]>,
-  Placeholder.ErrorsOf<Values[number]>,
-  Array<Placeholder<any>>
-> {
-  return pipe(
-    Effect.forEachPar(values, unwrapValue),
-    Effect.map((x) => Array.from(x)),
-  )
-}
-
-function unwrapValue(
-  value: Placeholder<any> | Effect.Effect<any, any, Placeholder<any>>,
-): Effect.Effect<any, any, Placeholder<any>> {
-  if (isEffect(value)) {
-    return value
-  }
-
-  if (Array.isArray(value)) {
-    return unwrapValues(value)
-  }
-
-  return Effect.succeed(value as Placeholder<any>)
-}
 
 function unwrapFxValues<
   Values extends Array<

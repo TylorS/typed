@@ -1,6 +1,7 @@
 // TODO: Investigate Error types in placeholders to broadcast in Fx ??
 
 import { Effect } from '@effect/core/io/Effect'
+import { Fx } from '@typed/fx'
 
 export interface Placeholder<R = never> {
   readonly __Placeholder__: {
@@ -16,11 +17,15 @@ export namespace Placeholder {
     ? R
     : [T] extends [Effect<infer _R, infer _E, infer _A>]
     ? _R
+    : [T] extends [Fx<infer _R, infer _E, infer _A>]
+    ? _R
     : never
 
   export type ErrorsOf<T> = [T] extends [never]
     ? never
     : [T] extends [Effect<infer _R, infer _E, infer _A>]
+    ? _E
+    : [T] extends [Fx<infer _R, infer _E, infer _A>]
     ? _E
     : never
   /* eslint-enable @typescript-eslint/no-unused-vars */
