@@ -18,7 +18,7 @@ const Counter = Fx.fromFxEffect(
         onclick=${EventHandler(() =>
           pipe(
             amount.get,
-            Effect.flatMap((n: number) => count.update((n2) => n2 - n)),
+            Effect.flatMap((n) => count.update((n2) => n2 - n)),
           ),
         )}
       >
@@ -29,7 +29,7 @@ const Counter = Fx.fromFxEffect(
         onclick=${EventHandler(() =>
           pipe(
             amount.get,
-            Effect.flatMap((n: number) => count.update((n2) => n2 + n)),
+            Effect.flatMap((n) => count.update((n2) => n2 + n)),
           ),
         )}
       >
