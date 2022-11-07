@@ -17,7 +17,7 @@ const Counter = Fx.fromFxEffect(
 
       <button onclick=${EventHandler(() => count.update((n) => n + 1))}>Increment</button>
 
-      <p>Count: ${pipe(count, Fx.startWith(0))}</p>
+      <p>Count: ${count}</p>
     </div>`
   }),
 )
