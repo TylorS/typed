@@ -4,7 +4,7 @@ specifiers:
   '@effect/core': ^0.0.16
   '@esbuild-kit/esm-loader': ^2.5.0
   '@tsplus/stdlib': ^0.2.8
-  '@typed/fx': ^0.0.27
+  '@typed/fx': ^0.0.29
   '@types/mocha': ^10.0.0
   '@types/node': ^18.11.9
   '@typescript-eslint/eslint-plugin': ^5.42.1
@@ -32,7 +32,7 @@ specifiers:
 dependencies:
   '@effect/core': 0.0.16
   '@tsplus/stdlib': 0.2.8
-  '@typed/fx': 0.0.27_c7o234nbnpuz7fnxnfuwyr2l7y
+  '@typed/fx': 0.0.29_c7o234nbnpuz7fnxnfuwyr2l7y
   '@webreflection/uparser': 0.2.4
   ts-toolbelt: 9.6.0
   udomdiff: 1.1.0
@@ -195,8 +195,8 @@ packages:
     resolution: {integrity: sha512-UKAN06h9V/wUflSbOU1WwACisXEi4+PHwGqR+bwxqcClrEAA8KKTTLZ0ATMbqbVAVTudE0vW4pd5iY6vGvSFBw==}
     dev: false
 
-  /@typed/fx/0.0.27_c7o234nbnpuz7fnxnfuwyr2l7y:
-    resolution: {integrity: sha512-I9gD7NTOfdvXIN9TNdTxZrAF3zQUkn0M1YiC7T06XdwPhNDWBubjT7noh05rkeOamlgSzNxRcir0UMFYvwOv6A==}
+  /@typed/fx/0.0.29_c7o234nbnpuz7fnxnfuwyr2l7y:
+    resolution: {integrity: sha512-rtwKuNHmiBkyB2bDZ4LcAhzkFpLf/yV5Bhmr429JvrZ2ZheKh376OW+Qq25GlKItSfPMVo8wSdh1UpFHKYldFQ==}
     peerDependencies:
       tslib: ^2.4.0
       typescript: ^4.7.4
@@ -832,7 +832,7 @@ packages:
       regexp.prototype.flags: 1.4.3
       safe-regex-test: 1.0.0
       string.prototype.trimend: 1.0.6
-      string.prototype.trimstart: 1.0.5
+      string.prototype.trimstart: 1.0.6
       unbox-primitive: 1.0.2
     dev: true
 
@@ -2587,8 +2587,8 @@ packages:
       es-abstract: 1.20.4
     dev: true
 
-  /string.prototype.trimstart/1.0.5:
-    resolution: {integrity: sha512-THx16TJCGlsN0o6dl2o6ncWUsdgnLRSA23rRE5pyGBw/mLr3Ej/R2LaqCtgP8VNMGZsvMWnf9ooZPyY2bHvUFg==}
+  /string.prototype.trimstart/1.0.6:
+    resolution: {integrity: sha512-omqjMDaY92pbn5HOX7f9IccLA+U1tA9GvtU4JrodiXFfYB7jPzzHpRzpglLAjtUV6bB557zwClJezTqnAiYnQA==}
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.1.4

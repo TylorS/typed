@@ -19,7 +19,7 @@
   "dependencies": {
     "@effect/core": "^0.0.16",
     "@tsplus/stdlib": "^0.2.8",
-    "@typed/fx": "^0.0.27",
+    "@typed/fx": "^0.0.29",
     "@webreflection/uparser": "^0.2.4",
     "ts-toolbelt": "^9.6.0",
     "udomdiff": "^1.1.0",

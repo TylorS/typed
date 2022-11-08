@@ -44,6 +44,21 @@ html.node = <Values extends ReadonlyArray<Renderable>>(
     ),
   )
 
+html.effect = <Values extends ReadonlyArray<Renderable.Effect>>(
+  template: TemplateStringsArray,
+  ...values: [...Values]
+): Effect.Effect<
+  Placeholder.ResourcesOf<Values[number]>,
+  Placeholder.ErrorsOf<Values[number]>,
+  Hole
+> =>
+  Effect.environmentWithEffect((env: Env<Placeholder.ResourcesOf<Values[number]>>) =>
+    pipe(
+      unwrapEffectValues(values),
+      Effect.map((values) => new Hole('html', env, template, values)),
+    ),
+  )
+
 export function svg<Values extends ReadonlyArray<Renderable>>(
   template: TemplateStringsArray,
   ...values: [...Values]
@@ -73,6 +88,21 @@ svg.node = <Values extends ReadonlyArray<Renderable>>(
         getRenderHoleContext,
         Effect.map((ctx) => renderHole(hole, RenderCache(), ctx).valueOf() as Node),
       ),
+    ),
+  )
+
+svg.effect = <Values extends ReadonlyArray<Renderable.Effect>>(
+  template: TemplateStringsArray,
+  ...values: [...Values]
+): Effect.Effect<
+  Placeholder.ResourcesOf<Values[number]>,
+  Placeholder.ErrorsOf<Values[number]>,
+  Hole
+> =>
+  Effect.environmentWithEffect((env: Env<Placeholder.ResourcesOf<Values[number]>>) =>
+    pipe(
+      unwrapEffectValues(values),
+      Effect.map((values) => new Hole('svg', env, template, values)),
     ),
   )
 
@@ -124,4 +154,34 @@ function unwrapFxValue(
   }
 
   return Fx.succeed(value as Renderable.Value)
+}
+
+function unwrapEffectValues<Values extends Array<Renderable.Effect>>(
+  values: Values,
+): Effect.Effect<
+  Placeholder.ResourcesOf<Values[number]>,
+  Placeholder.ErrorsOf<Values[number]>,
+  Array<Renderable.Value>
+> {
+  return Effect.gen(function* ($) {
+    const output: Array<Renderable.Value> = []
+
+    for (let i = 0; i < values.length; i++) {
+      const value = values[i]
+
+      if (isEffect(value)) {
+        output.push(yield* $(value))
+        continue
+      }
+
+      if (Array.isArray(value)) {
+        output.push(yield* $(unwrapEffectValues(value)))
+        continue
+      }
+
+      output.push(value as Renderable.Value)
+    }
+
+    return output
+  })
 }
