@@ -52,7 +52,7 @@ function updateNode(comment: Comment, document: Document) {
       // primitives are handled as text content
       case 'string':
       case 'number':
-      case 'boolean':
+      case 'boolean': {
         if (oldValue !== newValue) {
           oldValue = newValue
 
@@ -62,9 +62,10 @@ function updateNode(comment: Comment, document: Document) {
           nodes = diffChildren(comment, nodes, [text], document)
         }
         break
+      }
       // null, and undefined are used to cleanup previous content
       case 'object':
-      case 'undefined':
+      case 'undefined': {
         if (newValue == undefined) {
           if (oldValue != newValue) {
             oldValue = newValue
@@ -100,10 +101,6 @@ function updateNode(comment: Comment, document: Document) {
             document,
           )
         }
-        break
-      case 'function': {
-        // TODO: Add support for Effect/Directives here?
-        handleNode<R>(newValue(comment))
         break
       }
     }
