@@ -5,12 +5,15 @@ import * as Fx from '@typed/fx'
 
 import { isEffect, isFx } from '../_internal.js'
 
+import * as Tag from './Effect.js'
 import { Hole } from './Hole.js'
 import { Placeholder } from './Placeholder.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
 import { Renderable } from './Renderable.js'
 import { getRenderHoleContext, renderHole } from './render.js'
+
+// Tag functions which only accept and return Fx
 
 export function html<Values extends ReadonlyArray<Renderable>>(
   template: TemplateStringsArray,
@@ -44,20 +47,7 @@ html.node = <Values extends ReadonlyArray<Renderable>>(
     ),
   )
 
-html.effect = <Values extends ReadonlyArray<Renderable.Effect>>(
-  template: TemplateStringsArray,
-  ...values: [...Values]
-): Effect.Effect<
-  Placeholder.ResourcesOf<Values[number]>,
-  Placeholder.ErrorsOf<Values[number]>,
-  Hole
-> =>
-  Effect.environmentWithEffect((env: Env<Placeholder.ResourcesOf<Values[number]>>) =>
-    pipe(
-      unwrapEffectValues(values),
-      Effect.map((values) => new Hole('html', env, template, values)),
-    ),
-  )
+html.effect = Tag.html
 
 export function svg<Values extends ReadonlyArray<Renderable>>(
   template: TemplateStringsArray,
@@ -91,20 +81,7 @@ svg.node = <Values extends ReadonlyArray<Renderable>>(
     ),
   )
 
-svg.effect = <Values extends ReadonlyArray<Renderable.Effect>>(
-  template: TemplateStringsArray,
-  ...values: [...Values]
-): Effect.Effect<
-  Placeholder.ResourcesOf<Values[number]>,
-  Placeholder.ErrorsOf<Values[number]>,
-  Hole
-> =>
-  Effect.environmentWithEffect((env: Env<Placeholder.ResourcesOf<Values[number]>>) =>
-    pipe(
-      unwrapEffectValues(values),
-      Effect.map((values) => new Hole('svg', env, template, values)),
-    ),
-  )
+svg.effect = Tag.svg
 
 function unwrapFxValues<Values extends Array<Renderable>>(
   values: Values,
@@ -154,34 +131,4 @@ function unwrapFxValue(
   }
 
   return Fx.succeed(value as Renderable.Value)
-}
-
-function unwrapEffectValues<Values extends Array<Renderable.Effect>>(
-  values: Values,
-): Effect.Effect<
-  Placeholder.ResourcesOf<Values[number]>,
-  Placeholder.ErrorsOf<Values[number]>,
-  Array<Renderable.Value>
-> {
-  return Effect.gen(function* ($) {
-    const output: Array<Renderable.Value> = []
-
-    for (let i = 0; i < values.length; i++) {
-      const value = values[i]
-
-      if (isEffect(value)) {
-        output.push(yield* $(value))
-        continue
-      }
-
-      if (Array.isArray(value)) {
-        output.push(yield* $(unwrapEffectValues(value)))
-        continue
-      }
-
-      output.push(value as Renderable.Value)
-    }
-
-    return output
-  })
 }

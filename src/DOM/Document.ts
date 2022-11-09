@@ -74,3 +74,81 @@ export const getDocumentElement = Effect.serviceWith(Document.Tag, (d) => d.docu
 
 export const importNode = <T extends Node>(node: T, deep?: boolean) =>
   Effect.serviceWith(Document.Tag, (d) => d.importNode(node, deep))
+
+export const updateTitle = (title: string) =>
+  pipe(
+    getDocument,
+    Effect.tap((d) => Effect.sync(() => (d.title = title))),
+    Effect.asUnit,
+  )
+
+export type MetaParams = {
+  readonly name: string
+  readonly content: string
+  readonly httpEquiv?: string
+}
+
+export const updateMeta = (params: MetaParams) =>
+  pipe(
+    getDocument,
+    Effect.flatMap((d) =>
+      Effect.sync(() => {
+        const meta =
+          d.querySelector<HTMLMetaElement>(`meta[name="${params.name}"]`) ??
+          createNewHeadElement(d, 'meta')
+
+        setAttrs(meta, params)
+
+        return meta
+      }),
+    ),
+  )
+
+export type LinkParams = {
+  readonly rel: string
+  readonly href: string
+
+  readonly crossOrigin?: 'anonymous' | 'use-credentials'
+  readonly hreflang?: string
+  readonly media?: string
+  readonly referrerPolicy?:
+    | 'no-referrer'
+    | 'no-referrer-when-downgrade'
+    | 'origin'
+    | 'origin-when-cross-origin'
+    | 'same-origin'
+    | 'strict-origin'
+    | 'strict-origin-when-cross-origin'
+    | 'unsafe-url'
+  readonly sizes?: string
+  readonly type?: string
+}
+
+export const updateLink = (params: LinkParams) =>
+  pipe(
+    getDocument,
+    Effect.flatMap((d) =>
+      Effect.sync(() => {
+        const link =
+          d.querySelector<HTMLLinkElement>(`link[rel="${params.rel}"][href="${params.href}"]`) ??
+          createNewHeadElement(d, 'link')
+
+        setAttrs(link, params)
+
+        return link
+      }),
+    ),
+  )
+
+function createNewHeadElement<T extends keyof HTMLElementTagNameMap>(
+  document: Document,
+  tagName: T,
+) {
+  const newLink = document.createElement(tagName)
+  document.head.appendChild(newLink)
+  return newLink
+}
+
+function setAttrs(element: Element, attrs: Record<string, string>) {
+  Object.entries(attrs).forEach(([key, value]) => element.setAttribute(key, value))
+}

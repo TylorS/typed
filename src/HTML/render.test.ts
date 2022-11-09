@@ -14,7 +14,7 @@ import { Document } from '../DOM/Document.js'
 import { RenderContext } from './RenderContext.js'
 import { stripHoleComments } from './parseTemplate.js'
 import { render, renderInto } from './render.js'
-import { html } from './tag.js'
+import { html } from './Fx.js'
 
 describe(import.meta.url, () => {
   describe(render.name, () => {

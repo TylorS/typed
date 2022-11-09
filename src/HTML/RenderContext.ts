@@ -27,6 +27,8 @@ export namespace RenderContext {
     Effect.sync(RenderContext),
   )
 
-  export const provide = Effect.provideSomeLayer(live)
+  export const provide: <R, E, A>(
+    effect: Effect.Effect<R, E, A>,
+  ) => Effect.Effect<Exclude<R, RenderContext>, E, A> = Effect.provideSomeLayer(live)
   export const provideFx = Fx.provideSomeLayer(live)
 }
