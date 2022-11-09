@@ -29,11 +29,9 @@ export const makeServerWindow = (options?: ServerWindowOptions): Window & Global
   return win
 }
 
-export const provideServerEnvironment = <R, E, A>(
-  effect: Effect.Effect<R | RenderContext | DOMServices, E, A>,
-) => provideServerEnvironmentWith()(effect)
-
 export const provideServerEnvironmentWith =
   (options: ServerWindowOptions = {}) =>
   <R, E, A>(effect: Effect.Effect<R | RenderContext | DOMServices, E, A>) =>
     pipe(effect, provideDOMServices(makeServerWindow(options)), RenderContext.provide)
+
+export const provideServerEnvironment = provideServerEnvironmentWith()
