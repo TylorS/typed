@@ -31,7 +31,25 @@ export namespace Fetch {
 export const fetch = (
   input: RequestInfo | URL,
   init?: Omit<RequestInit, 'signal'>,
-): Effect.Effect<Fetch, FetchError, Response> =>
+): Effect.Effect<Fetch, FetchError, Response> => fetch_((f, r) => f(r), input, init)
+
+export const fetchJson = (
+  input: RequestInfo | URL,
+  init?: Omit<RequestInit, 'signal'>,
+): Effect.Effect<Fetch, FetchError, unknown> =>
+  fetch_((f, r) => f(r).then((r) => r.json()), input, init)
+
+export const fetchText = (
+  input: RequestInfo | URL,
+  init?: Omit<RequestInit, 'signal'>,
+): Effect.Effect<Fetch, FetchError, string> =>
+  fetch_((f, r) => f(r).then((r) => r.text()), input, init)
+
+const fetch_ = <A>(
+  f: (fetch: Fetch, request: Request) => Promise<A>,
+  input: RequestInfo | URL,
+  init?: Omit<RequestInit, 'signal'>,
+): Effect.Effect<Fetch, FetchError, A> =>
   Effect.serviceWithEffect(Fetch.Tag, (fetch) =>
     Effect.suspendSucceed(() => {
       const controller = new AbortController()
@@ -39,7 +57,7 @@ export const fetch = (
 
       return pipe(
         Effect.tryCatchPromise(
-          () => fetch(request),
+          () => f(fetch, request),
           (e) => FetchError(request, e),
         ),
         Effect.onInterrupt(() => Effect.sync(() => controller.abort())),
