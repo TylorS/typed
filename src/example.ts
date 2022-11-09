@@ -32,7 +32,7 @@ const Counters: Fx.Fx<never, never, Hole> = Fx.fromFxGen(function* ($) {
   const counters = pipe(
     count,
     Fx.map((x) => Array.from(range(1, x))),
-    Fx.exhaustMapList((n) => Counter('Counter: ' + n)),
+    Fx.exhaustMapList((n) => Counter('Counter ' + n)),
   )
 
   return counterTemplate('Counters', count, counters)
