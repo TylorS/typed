@@ -6,7 +6,6 @@ import * as Fx from '@typed/fx'
 import { Document } from './DOM/Document.js'
 import { Renderable } from './HTML/Renderable.js'
 import { EventHandler, Hole, RenderContext, drainInto, html } from './HTML/index.js'
-import { Counter } from './elmish-example.js'
 
 const counterTemplate = <C extends Renderable>(
   label: string,
@@ -21,12 +20,19 @@ const counterTemplate = <C extends Renderable>(
     ${children}
   </div>`
 
+const Counter = (label: string) =>
+  Fx.fromFxGen(function* ($) {
+    const count = yield* $(Fx.makeRefSubject(() => 0))
+
+    return counterTemplate(label, count)
+  })
+
 const Counters: Fx.Fx<never, never, Hole> = Fx.fromFxGen(function* ($) {
   const count = yield* $(Fx.makeRefSubject(() => 0))
   const counters = pipe(
     count,
     Fx.map((x) => Array.from(range(1, x))),
-    Fx.exhaustMapList(() => Counter),
+    Fx.exhaustMapList((n) => Counter('Counter: ' + n)),
   )
 
   return counterTemplate('Counters', count, counters)
