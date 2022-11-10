@@ -1,20 +1,20 @@
-import * as E from '@effect/core/io/Effect'
+import * as Eff from '@effect/core/io/Effect'
 import { Fx, Subject } from '@typed/fx'
 
 import { Placeholder } from './Placeholder.js'
 
-export type Renderable =
-  | Renderable.Value
-  | E.Effect<any, any, Renderable.Value>
-  | Fx<any, any, Renderable.Value>
-  | Subject<any, Renderable.Value>
-  | readonly Renderable[]
+export type Renderable<R, E> =
+  | Renderable.Value<R>
+  | Eff.Effect<R, E, Renderable.Value<R>>
+  | Fx<R, E, Renderable.Value<R>>
+  | Subject<E, Renderable.Value<R>>
+  | readonly Renderable<R, E>[]
 
 export namespace Renderable {
-  export type Value = Placeholder<any> | null | undefined | void | readonly Renderable.Value[]
+  export type Value<R> = Placeholder<R> | null | undefined | void | readonly Renderable.Value<R>[]
 
-  export type Effect =
-    | Renderable.Value
-    | E.Effect<any, any, Renderable.Value>
-    | readonly Renderable.Effect[]
+  export type Effect<R, E> =
+    | Renderable.Value<R>
+    | Eff.Effect<R, E, Renderable.Value<R>>
+    | readonly Renderable.Effect<R, E>[]
 }

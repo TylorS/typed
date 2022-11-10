@@ -11,7 +11,7 @@ export interface Entry {
   readonly type: 'svg' | 'html'
   readonly template: TemplateStringsArray
   readonly content: DocumentFragment
-  readonly updates: ReadonlyArray<(value: Renderable, runtime: Runtime<any>) => void>
+  readonly updates: ReadonlyArray<<R>(value: Renderable.Value<R>, runtime: Runtime<R>) => void>
 
   env: Env<any>
   runtime: Runtime<any> | null

@@ -13,7 +13,7 @@ import { getRenderHoleContext, renderHole } from './render.js'
 
 // Tag functions which only accept and return Effect
 
-export function html<Values extends ReadonlyArray<Renderable.Effect>>(
+export function html<Values extends ReadonlyArray<Renderable.Effect<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -29,7 +29,7 @@ export function html<Values extends ReadonlyArray<Renderable.Effect>>(
   )
 }
 
-html.node = <Values extends ReadonlyArray<Renderable.Effect>>(
+html.node = <Values extends ReadonlyArray<Renderable.Effect<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -47,7 +47,7 @@ html.node = <Values extends ReadonlyArray<Renderable.Effect>>(
     ),
   )
 
-export function svg<Values extends ReadonlyArray<Renderable.Effect>>(
+export function svg<Values extends ReadonlyArray<Renderable.Effect<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -63,7 +63,7 @@ export function svg<Values extends ReadonlyArray<Renderable.Effect>>(
   )
 }
 
-svg.node = <Values extends ReadonlyArray<Renderable.Effect>>(
+svg.node = <Values extends ReadonlyArray<Renderable.Effect<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -81,15 +81,15 @@ svg.node = <Values extends ReadonlyArray<Renderable.Effect>>(
     ),
   )
 
-function unwrapEffectValues<Values extends Array<Renderable.Effect>>(
+function unwrapEffectValues<Values extends Array<Renderable.Effect<any, any>>>(
   values: Values,
 ): Effect.Effect<
   Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
-  Array<Renderable.Value>
+  Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>>
 > {
   return Effect.gen(function* ($) {
-    const output: Array<Renderable.Value> = []
+    const output: Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>> = []
 
     for (let i = 0; i < values.length; i++) {
       const value = values[i]
@@ -104,7 +104,7 @@ function unwrapEffectValues<Values extends Array<Renderable.Effect>>(
         continue
       }
 
-      output.push(value as Renderable.Value)
+      output.push(value as Renderable.Value<Placeholder.ResourcesOf<Values[number]>>)
     }
 
     return output

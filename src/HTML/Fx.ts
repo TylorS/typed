@@ -15,7 +15,7 @@ import { getRenderHoleContext, renderHole } from './render.js'
 
 // Tag functions which only accept and return Fx
 
-export function html<Values extends ReadonlyArray<Renderable>>(
+export function html<Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
@@ -29,7 +29,7 @@ export function html<Values extends ReadonlyArray<Renderable>>(
   )
 }
 
-html.node = <Values extends ReadonlyArray<Renderable>>(
+html.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -49,7 +49,7 @@ html.node = <Values extends ReadonlyArray<Renderable>>(
 
 html.effect = Tag.html
 
-export function svg<Values extends ReadonlyArray<Renderable>>(
+export function svg<Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
@@ -63,7 +63,7 @@ export function svg<Values extends ReadonlyArray<Renderable>>(
   )
 }
 
-svg.node = <Values extends ReadonlyArray<Renderable>>(
+svg.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -83,12 +83,12 @@ svg.node = <Values extends ReadonlyArray<Renderable>>(
 
 svg.effect = Tag.svg
 
-function unwrapFxValues<Values extends Array<Renderable>>(
+function unwrapFxValues<Values extends Array<Renderable<any, any>>>(
   values: Values,
 ): Fx.Fx<
   Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
-  Array<Renderable.Value>
+  Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>>
 > {
   // Used to sample pull-based Effect's whenever an Fx emits a value.
   const sampling = Fx.Subject.unsafeMake<never, void>()
@@ -96,14 +96,14 @@ function unwrapFxValues<Values extends Array<Renderable>>(
   return Fx.combineAll(values.map((v) => unwrapFxValue(v, sampling))) as Fx.Fx<
     Placeholder.ResourcesOf<Values[number]>,
     Placeholder.ErrorsOf<Values[number]>,
-    Array<Renderable.Value>
+    Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>>
   >
 }
 
 function unwrapFxValue(
-  value: Renderable,
+  value: Renderable<any, any>,
   sampling: Fx.Subject<never, void>,
-): Fx.Fx<any, any, Renderable.Value> {
+): Fx.Fx<any, any, Renderable.Value<any>> {
   if (isFx(value)) {
     return pipe(
       value,
@@ -130,5 +130,5 @@ function unwrapFxValue(
     )
   }
 
-  return Fx.succeed(value as Renderable.Value)
+  return Fx.succeed(value as Renderable.Value<any>)
 }

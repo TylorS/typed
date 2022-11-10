@@ -12,6 +12,6 @@ export class Hole implements Placeholder {
     readonly type: 'svg' | 'html',
     readonly env: Env<any>,
     readonly template: TemplateStringsArray,
-    readonly values: Array<Renderable.Value>,
+    readonly values: Array<Renderable.Value<any>>,
   ) {}
 }

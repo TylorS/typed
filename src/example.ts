@@ -7,7 +7,7 @@ import { Document } from './DOM/Document.js'
 import { Renderable } from './HTML/Renderable.js'
 import { EventHandler, Hole, RenderContext, drainInto, html } from './HTML/index.js'
 
-const counterTemplate = <C extends Renderable>(
+const counterTemplate = <C extends Renderable<any, any>>(
   label: string,
   count: Fx.RefSubject<never, number>,
   children?: C,
