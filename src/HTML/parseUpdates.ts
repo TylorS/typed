@@ -1,5 +1,7 @@
 import { Runtime } from '@effect/core/io/Runtime'
+import * as Maybe from '@tsplus/stdlib/data/Maybe'
 
+import { isElementRef } from './ElementRef.js'
 import type { Entry } from './Entry.js'
 import { EventHandler, EventHandlerImplementation } from './EventHandler.js'
 import { Hole } from './Hole.js'
@@ -125,14 +127,14 @@ function updateAttribute(node: Element, templateHole: AttributeTemplateHole, doc
 
   // TODO: Refs + Aria + Style support
 
-  // switch (name) {
-  //   case 'ref':
-  //     return ref(node)
-  //   case 'aria':
-  //     return aria(node)
-  //   case 'style':
-  //     return style(node)
-  // }
+  switch (name) {
+    case 'ref':
+      return ref(node)
+    // case 'aria':
+    //   return aria(node)
+    // case 'style':
+    //   return style(node)
+  }
 
   return attribute(node, name, document)
 }
@@ -149,6 +151,18 @@ function boolean(node: Element, key: string, oldValue = false) {
 function setter(node: Element, key: string) {
   return <R>(newValue: Placeholder<R>) => {
     ;(node as any)[key] = newValue
+  }
+}
+
+function ref(node: Element) {
+  let oldValue: any = null
+  return <R>(newValue: Placeholder<R>, runtime: Runtime<R>): void => {
+    console.log(node, newValue)
+    if (oldValue !== newValue && isElementRef(newValue)) {
+      oldValue = newValue
+
+      runtime.unsafeRunAsync(newValue.set(Maybe.some(node as HTMLElement)))
+    }
   }
 }
 
