@@ -16,40 +16,10 @@ export interface DomSource<Element = HTMLElement, EventMap extends {} = DefaultE
   readonly events: <T extends keyof EventMap>(
     type: T,
     options?: AddEventListenerOptions,
-  ) => Fx.Fx<never, never, EventMap[T]>
+  ) => Fx.Fx<never, never, EventMap[T] & { readonly currentTarget: Element }>
 }
 
-export namespace DomSource {
-  export const Tag = T.Tag<DomSource>()
-  export const get = Effect.service(Tag)
-  export const provide = (source: DomSource) => Effect.provideService(Tag, source)
-}
-
-export type ParseSelector<T extends string, Fallback> = [T] extends [`:root`]
-  ? Fallback
-  : Fallback extends globalThis.Element
-  ? TQS.ParseSelector<T, Fallback>
-  : Fallback
-
-export type DefaultEventMap<T> = T extends Window
-  ? WindowEventMap
-  : T extends Document
-  ? DocumentEventMap
-  : T extends HTMLVideoElement
-  ? HTMLVideoElementEventMap
-  : T extends HTMLMediaElement
-  ? HTMLMediaElementEventMap
-  : T extends HTMLElement
-  ? HTMLElementEventMap
-  : T extends SVGElement
-  ? SVGElementEventMap
-  : T extends Element
-  ? ElementEventMap
-  : Readonly<Record<string, unknown>>
-
-const ROOT_CSS_SELECTOR = `:root`
-
-export function EventDelegationDomSource<
+export function DomSource<
   Element extends globalThis.Element = HTMLElement,
   EventMap extends {} = DefaultEventMap<Element>,
 >(
@@ -65,7 +35,7 @@ export function EventDelegationDomSource<
     ): DomSource<ParseSelector<S, Element>, Ev> => {
       if (selector === ROOT_CSS_SELECTOR) return manager as any
 
-      return EventDelegationDomSource(
+      return DomSource(
         Fx.multicast(pipe(rootElement, Fx.map(findMostSpecificElement(selectors)))),
         [...selectors, selector],
       )
@@ -100,6 +70,36 @@ export function EventDelegationDomSource<
 
   return manager
 }
+
+export namespace DomSource {
+  export const Tag = T.Tag<DomSource>()
+  export const get = Effect.service(Tag)
+  export const provide = (source: DomSource) => Effect.provideService(Tag, source)
+}
+
+export type ParseSelector<T extends string, Fallback> = [T] extends [`:root`]
+  ? Fallback
+  : Fallback extends globalThis.Element
+  ? TQS.ParseSelector<T, Fallback>
+  : Fallback
+
+export type DefaultEventMap<T> = T extends Window
+  ? WindowEventMap
+  : T extends Document
+  ? DocumentEventMap
+  : T extends HTMLVideoElement
+  ? HTMLVideoElementEventMap
+  : T extends HTMLMediaElement
+  ? HTMLMediaElementEventMap
+  : T extends HTMLElement
+  ? HTMLElementEventMap
+  : T extends SVGElement
+  ? SVGElementEventMap
+  : T extends Element
+  ? ElementEventMap
+  : Readonly<Record<string, unknown>>
+
+const ROOT_CSS_SELECTOR = `:root`
 
 function findMostSpecificElement<T extends Element>(cssSelectors: ReadonlyArray<string>) {
   return function (element: Element): T {

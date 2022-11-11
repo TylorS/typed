@@ -6,20 +6,20 @@ import { millis } from '@tsplus/stdlib/data/Duration'
 import { pipe } from '@tsplus/stdlib/data/Function'
 import * as Fx from '@typed/fx'
 
-import { DomSource, EventDelegationDomSource } from './DomSource.js'
+import { DomSource } from './DomSource.js'
 
 import { makeServerWindow } from '@/Server/DomServices.js'
 
 describe(import.meta.url, () => {
   describe('query', () => {
     it('appends selectors to a DomSource with the given selector', () => {
-      const { selectors } = EventDelegationDomSource(Fx.never).query('.foo').query('.bar')
+      const { selectors } = DomSource(Fx.never).query('.foo').query('.bar')
 
       deepStrictEqual(selectors, ['.foo', '.bar'])
     })
 
     it('does not append the root selector', () => {
-      const { selectors } = EventDelegationDomSource(Fx.never).query('.foo').query(':root')
+      const { selectors } = DomSource(Fx.never).query('.foo').query(':root')
 
       deepStrictEqual(selectors, ['.foo'])
     })
@@ -30,7 +30,7 @@ describe(import.meta.url, () => {
       it(`returns a stream of elements with only the root element`, async () => {
         const win = makeServerWindow()
         const rootEl = win.document.createElement('div')
-        const sut: DomSource = EventDelegationDomSource(Fx.succeed(rootEl), [])
+        const sut: DomSource = DomSource(Fx.succeed(rootEl), [])
         const test = pipe(sut.elements, Fx.take(1), Fx.runCollect)
         const events = await Effect.unsafeRunPromise(test)
 
@@ -48,7 +48,7 @@ describe(import.meta.url, () => {
         childEl.classList.add(`foo`)
         rootEl.appendChild(childEl)
 
-        const sut: DomSource = EventDelegationDomSource(Fx.succeed(rootEl), [`.foo`])
+        const sut: DomSource = DomSource(Fx.succeed(rootEl), [`.foo`])
         const test = pipe(sut.elements, Fx.take(1), Fx.runCollect)
         const events = await Effect.unsafeRunPromise(test)
 
@@ -65,7 +65,7 @@ describe(import.meta.url, () => {
         childEl.classList.add(`foo`)
         rootEl.appendChild(childEl)
 
-        const sut: DomSource = EventDelegationDomSource(Fx.succeed(rootEl), [`.foo`])
+        const sut: DomSource = DomSource(Fx.succeed(rootEl), [`.foo`])
         const test = pipe(sut.elements, Fx.take(1), Fx.runCollect)
         const events = await Effect.unsafeRunPromise(test)
 
@@ -82,7 +82,7 @@ describe(import.meta.url, () => {
         childEl.classList.add(`foo`)
         rootEl.appendChild(childEl)
 
-        const sut: DomSource = EventDelegationDomSource(Fx.succeed(rootEl), [`.bar`])
+        const sut: DomSource = DomSource(Fx.succeed(rootEl), [`.bar`])
         const test = pipe(sut.elements, Fx.take(1), Fx.runCollect)
         const events = await Effect.unsafeRunPromise(test)
 
@@ -96,7 +96,7 @@ describe(import.meta.url, () => {
       it(`returns a stream of events of same event type`, async () => {
         const win = makeServerWindow()
         const rootEl = win.document.createElement('div')
-        const sut: DomSource = EventDelegationDomSource(Fx.succeed(rootEl), [])
+        const sut: DomSource = DomSource(Fx.succeed(rootEl), [])
         const eventType = 'click'
         const event = new win.Event(eventType)
 
