@@ -2,14 +2,12 @@ import * as E from '@effect/core/io/Effect'
 import * as T from '@tsplus/stdlib/service/Tag'
 
 export interface CurrentTarget {
-  readonly _tag: 'CurrentTarget'
   readonly currentTarget: HTMLElement
 }
 
 export namespace CurrentTarget {
   export function make(currentTarget: HTMLElement): CurrentTarget {
     return {
-      _tag: 'CurrentTarget',
       currentTarget,
     }
   }

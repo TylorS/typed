@@ -11,7 +11,7 @@ import { Navigator } from './Navigator.js'
 import { ParentElement } from './ParentElement.js'
 import { Window } from './Window.js'
 
-export type DOMServices =
+export type DomServices =
   | GlobalThis
   | Window
   | Document
@@ -21,7 +21,7 @@ export type DOMServices =
   | Navigator
   | Fetch
 
-export const makeDOMServices = (window: Window & GlobalThis): Env<DOMServices> =>
+export const makeDomServices = (window: Window & GlobalThis): Env<DomServices> =>
   Env(Window.Tag, window)
     .add(GlobalThis.Tag, window)
     .add(Document.Tag, window.document)
@@ -31,14 +31,14 @@ export const makeDOMServices = (window: Window & GlobalThis): Env<DOMServices> =
     .add(Navigator.Tag, window.navigator)
     .add(Fetch.Tag, window.fetch)
 
-export const provideDOMServices =
+export const provideDomServices =
   (window: Window & GlobalThis) =>
   <R, E, A>(
-    effect: Effect.Effect<R | DOMServices, E, A>,
-  ): Effect.Effect<Exclude<R, DOMServices>, E, A> =>
+    effect: Effect.Effect<R | DomServices, E, A>,
+  ): Effect.Effect<Exclude<R, DomServices>, E, A> =>
     pipe(
       effect,
-      Effect.provideSomeEnvironment((env: Env<Exclude<R, DOMServices>>) =>
-        (env as Env<R>).merge(makeDOMServices(window)),
+      Effect.provideSomeEnvironment((env: Env<Exclude<R, DomServices>>) =>
+        (env as Env<R>).merge(makeDomServices(window)),
       ),
     )

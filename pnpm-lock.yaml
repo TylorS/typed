@@ -4,7 +4,7 @@ specifiers:
   '@effect/core': ^0.0.16
   '@esbuild-kit/esm-loader': ^2.5.0
   '@tsplus/stdlib': ^0.2.8
-  '@typed/fx': ^0.0.29
+  '@typed/fx': ^0.0.31
   '@types/mocha': ^10.0.0
   '@types/node': ^18.11.9
   '@typescript-eslint/eslint-plugin': ^5.42.1
@@ -23,18 +23,20 @@ specifiers:
   ts-toolbelt: ^9.6.0
   tsconfig-paths: ^4.1.0
   tslib: ^2.4.1
+  typed-query-selector: ^2.8.0
   typescript: ^4.8.4
   udomdiff: ^1.1.0
   uparser: ^0.2.1
-  vite: ^3.2.3
+  vite: 3.2.3
   vite-tsconfig-paths: ^3.5.2
 
 dependencies:
   '@effect/core': 0.0.16
   '@tsplus/stdlib': 0.2.8
-  '@typed/fx': 0.0.29_c7o234nbnpuz7fnxnfuwyr2l7y
+  '@typed/fx': 0.0.31_c7o234nbnpuz7fnxnfuwyr2l7y
   '@webreflection/uparser': 0.2.4
   ts-toolbelt: 9.6.0
+  typed-query-selector: 2.8.0
   udomdiff: 1.1.0
   uparser: 0.2.1
 
@@ -195,8 +197,8 @@ packages:
     resolution: {integrity: sha512-UKAN06h9V/wUflSbOU1WwACisXEi4+PHwGqR+bwxqcClrEAA8KKTTLZ0ATMbqbVAVTudE0vW4pd5iY6vGvSFBw==}
     dev: false
 
-  /@typed/fx/0.0.29_c7o234nbnpuz7fnxnfuwyr2l7y:
-    resolution: {integrity: sha512-rtwKuNHmiBkyB2bDZ4LcAhzkFpLf/yV5Bhmr429JvrZ2ZheKh376OW+Qq25GlKItSfPMVo8wSdh1UpFHKYldFQ==}
+  /@typed/fx/0.0.31_c7o234nbnpuz7fnxnfuwyr2l7y:
+    resolution: {integrity: sha512-qffXOXOFg+y1R57AalA12BLHHVQFW8wJMMDqCWk4OIuJgZybNU58h+tljHttSfwzhWaQBwN4ZKBhdsnAGnWKXA==}
     peerDependencies:
       tslib: ^2.4.0
       typescript: ^4.7.4
@@ -2280,8 +2282,8 @@ packages:
     engines: {node: '>= 6'}
     dev: true
 
-  /postcss/8.4.18:
-    resolution: {integrity: sha512-Wi8mWhncLJm11GATDaQKobXSNEYGUHeQLiQqDFG1qQ5UTDPTEvKw0Xt5NsTpktGTwLps3ByrWsBrG0rB8YQ9oA==}
+  /postcss/8.4.19:
+    resolution: {integrity: sha512-h+pbPsyhlYj6N2ozBmHhHrs9DzGmbaarbLvWipMRO7RLS+v4onj26MPFXA5OBYFxyqYhUJK456SwDcY9H2/zsA==}
     engines: {node: ^10 || ^12 || >=14}
     dependencies:
       nanoid: 3.3.4
@@ -2806,6 +2808,10 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
+  /typed-query-selector/2.8.0:
+    resolution: {integrity: sha512-jo9NLGQ0b7sT9TK3mxzemATQqTb/uh8TRvcOK6WSwKNewALt3AA8q2m7cdpF/uUbd/cdixaBxCGe6fpzpEWbGw==}
+    dev: false
+
   /typedarray/0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
     dev: true
@@ -2883,7 +2889,7 @@ packages:
     dependencies:
       '@types/node': 18.11.9
       esbuild: 0.15.13
-      postcss: 8.4.18
+      postcss: 8.4.19
       resolve: 1.22.1
       rollup: 2.79.1
     optionalDependencies:

@@ -7,7 +7,7 @@
   "scripts": {
     "eslint": "NODE_OPTIONS=--max-old-space-size=4096 eslint --ext .ts,.js,.json,.yaml --fix --cache src",
     "mocha": "mocha 'src/**/*.test.ts'",
-    "example": "vite serve src --force"
+    "example": "vite serve src"
   },
   "keywords": [
     "TypeScript",
@@ -19,9 +19,10 @@
   "dependencies": {
     "@effect/core": "^0.0.16",
     "@tsplus/stdlib": "^0.2.8",
-    "@typed/fx": "^0.0.29",
+    "@typed/fx": "^0.0.31",
     "@webreflection/uparser": "^0.2.4",
     "ts-toolbelt": "^9.6.0",
+    "typed-query-selector": "^2.8.0",
     "udomdiff": "^1.1.0",
     "uparser": "^0.2.1"
   },
@@ -47,7 +48,7 @@
     "tsconfig-paths": "^4.1.0",
     "tslib": "^2.4.1",
     "typescript": "^4.8.4",
-    "vite": "^3.2.3",
+    "vite": "3.2.3",
     "vite-tsconfig-paths": "^3.5.2"
   }
 }

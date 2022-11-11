@@ -2,8 +2,8 @@ import * as Effect from '@effect/core/io/Effect'
 import { pipe } from '@tsplus/stdlib/data/Function'
 import * as happyDom from 'happy-dom'
 
+import { DomServices, provideDomServices } from '../DOM/DomServices.js'
 import { GlobalThis } from '../DOM/GlobalThis.js'
-import { DOMServices, provideDOMServices } from '../DOM/makeDOMServices.js'
 import { RenderContext } from '../HTML/RenderContext.js'
 
 export interface ServerWindowOptions {
@@ -31,7 +31,7 @@ export const makeServerWindow = (options?: ServerWindowOptions): Window & Global
 
 export const provideServerEnvironmentWith =
   (options: ServerWindowOptions = {}) =>
-  <R, E, A>(effect: Effect.Effect<R | RenderContext | DOMServices, E, A>) =>
-    pipe(effect, provideDOMServices(makeServerWindow(options)), RenderContext.provide)
+  <R, E, A>(effect: Effect.Effect<R | RenderContext | DomServices, E, A>) =>
+    pipe(effect, provideDomServices(makeServerWindow(options)), RenderContext.provide)
 
 export const provideServerEnvironment = provideServerEnvironmentWith()

@@ -11,7 +11,7 @@ import { getDocument } from '../DOM/Document.js'
 import { waitForElements } from './waitForElements.js'
 
 import { html, renderInto } from '@/HTML/index.js'
-import { provideServerEnvironment } from '@/Server/DOMServices.js'
+import { provideServerEnvironment } from '@/Server/DomServices.js'
 
 describe(import.meta.url, () => {
   describe(waitForElements.name, () => {

@@ -1,40 +1,22 @@
-import { sync } from '@effect/core/io/Effect'
+import * as Effect from '@effect/core/io/Effect'
 import * as Fx from '@typed/fx'
 
-export function addEventListener<T extends Document, EventName extends keyof DocumentEventMap>(
-  event: EventName,
-  options?: boolean | AddEventListenerOptions,
-): (target: T) => Fx.Fx<never, never, DocumentEventMap[EventName]>
+import type { DefaultEventMap } from './DomSource.js'
+import { withEmitter } from './withEmitter.js'
 
-export function addEventListener<T extends Window, EventName extends keyof WindowEventMap>(
+export function addEventListener<T extends EventTarget, EventName extends keyof DefaultEventMap<T>>(
   event: EventName,
   options?: boolean | AddEventListenerOptions,
-): (target: T) => Fx.Fx<never, never, WindowEventMap[EventName]>
-
-export function addEventListener<
-  T extends HTMLElement,
-  EventName extends keyof HTMLElementEventMap,
->(
-  event: EventName,
-  options?: boolean | AddEventListenerOptions,
-): (target: T) => Fx.Fx<never, never, HTMLElementEventMap[EventName]>
-
-export function addEventListener<T extends Element, EventName extends keyof ElementEventMap>(
-  event: EventName,
-  options?: boolean | AddEventListenerOptions,
-): (target: T) => Fx.Fx<never, never, ElementEventMap[EventName]>
-
-export function addEventListener<T extends EventTarget, EventName extends string>(
-  event: EventName,
-  options?: boolean | AddEventListenerOptions,
-): (target: T) => Fx.Fx<never, never, Event>
+): (target: T) => Fx.Fx<never, never, DefaultEventMap<T>[EventName]>
 
 export function addEventListener<T extends EventTarget, EventName extends string>(
   event: EventName,
   options?: boolean | AddEventListenerOptions,
 ): (target: T) => Fx.Fx<never, never, Event> {
   return (target: T): Fx.Fx<never, never, Event> =>
-    Fx.withEmitter(({ unsafeEmit }) => sync(addEventListener_(target, event, unsafeEmit, options)))
+    withEmitter(({ unsafeEmit }) =>
+      Effect.sync(addEventListener_(target, event, unsafeEmit, options)),
+    )
 }
 
 function addEventListener_(
@@ -45,7 +27,9 @@ function addEventListener_(
 ): () => void {
   target.addEventListener(event, listener, options)
 
-  return () => target.removeEventListener(event, listener, options)
+  return () => {
+    target.removeEventListener(event, listener, options)
+  }
 }
 
 export function preventDefault<R, E, A extends Event>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {

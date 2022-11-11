@@ -11,6 +11,7 @@
     "declarationMap": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
     "module": "esnext",
     "moduleResolution": "NodeNext",
