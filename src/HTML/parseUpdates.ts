@@ -157,7 +157,6 @@ function setter(node: Element, key: string) {
 function ref(node: Element) {
   let oldValue: any = null
   return <R>(newValue: Placeholder<R>, runtime: Runtime<R>): void => {
-    console.log(node, newValue)
     if (oldValue !== newValue && isElementRef(newValue)) {
       oldValue = newValue
 
