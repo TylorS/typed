@@ -75,6 +75,27 @@ export namespace DomSource {
   export const Tag = T.Tag<DomSource>()
   export const get = Effect.service(Tag)
   export const provide = (source: DomSource) => Effect.provideService(Tag, source)
+
+  export function query<
+    Element,
+    S extends string,
+    Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>,
+  >(selector: S) {
+    return <EventMap extends {}>(source: DomSource<Element, EventMap>) =>
+      source.query<S, Ev>(selector)
+  }
+
+  export function elements<Element, Ev extends {}>(source: DomSource<Element, Ev>) {
+    return source.elements
+  }
+
+  export function events<
+    Element,
+    EventMap extends Readonly<Record<T, any>>,
+    T extends keyof EventMap,
+  >(type: T, options?: AddEventListenerOptions) {
+    return (source: DomSource<Element, EventMap>) => source.events<T>(type, options)
+  }
 }
 
 export type ParseSelector<T extends string, Fallback> = [T] extends [`:root`]

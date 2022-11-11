@@ -9,8 +9,8 @@ import { run } from './run.js'
 
 const Counter = Fx.fromFxGen(function* ($) {
   const dom = yield* $(DomSource.get)
-  const decrement = pipe(dom.query('.dec').events('click'), Fx.as(-1))
-  const increment = pipe(dom.query('.inc').events('click'), Fx.as(+1))
+  const decrement = pipe(dom, DomSource.query('.dec'), DomSource.events('click'), Fx.as(-1))
+  const increment = pipe(dom, DomSource.query('.inc'), DomSource.events('click'), Fx.as(+1))
   const count = pipe(
     Fx.mergeAll([decrement, increment]),
     Fx.scan(0, (x, y) => x + y),
