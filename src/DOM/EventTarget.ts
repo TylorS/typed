@@ -2,7 +2,6 @@ import * as Effect from '@effect/core/io/Effect'
 import * as Fx from '@typed/fx'
 
 import type { DefaultEventMap } from './DomSource.js'
-import { withEmitter } from './withEmitter.js'
 
 export function addEventListener<T extends EventTarget, EventName extends keyof DefaultEventMap<T>>(
   event: EventName,
@@ -14,7 +13,7 @@ export function addEventListener<T extends EventTarget, EventName extends string
   options?: boolean | AddEventListenerOptions,
 ): (target: T) => Fx.Fx<never, never, Event> {
   return (target: T): Fx.Fx<never, never, Event> =>
-    withEmitter(({ unsafeEmit }) =>
+    Fx.withEmitter(({ unsafeEmit }) =>
       Effect.sync(addEventListener_(target, event, unsafeEmit, options)),
     )
 }

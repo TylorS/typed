@@ -4,7 +4,7 @@ specifiers:
   '@effect/core': ^0.0.16
   '@esbuild-kit/esm-loader': ^2.5.0
   '@tsplus/stdlib': ^0.2.8
-  '@typed/fx': ^0.0.31
+  '@typed/fx': ^0.0.32
   '@types/mocha': ^10.0.0
   '@types/node': ^18.11.9
   '@typescript-eslint/eslint-plugin': ^5.42.1
@@ -33,7 +33,7 @@ specifiers:
 dependencies:
   '@effect/core': 0.0.16
   '@tsplus/stdlib': 0.2.8
-  '@typed/fx': 0.0.31_c7o234nbnpuz7fnxnfuwyr2l7y
+  '@typed/fx': 0.0.32_c7o234nbnpuz7fnxnfuwyr2l7y
   '@webreflection/uparser': 0.2.4
   ts-toolbelt: 9.6.0
   typed-query-selector: 2.8.0
@@ -197,8 +197,8 @@ packages:
     resolution: {integrity: sha512-UKAN06h9V/wUflSbOU1WwACisXEi4+PHwGqR+bwxqcClrEAA8KKTTLZ0ATMbqbVAVTudE0vW4pd5iY6vGvSFBw==}
     dev: false
 
-  /@typed/fx/0.0.31_c7o234nbnpuz7fnxnfuwyr2l7y:
-    resolution: {integrity: sha512-qffXOXOFg+y1R57AalA12BLHHVQFW8wJMMDqCWk4OIuJgZybNU58h+tljHttSfwzhWaQBwN4ZKBhdsnAGnWKXA==}
+  /@typed/fx/0.0.32_c7o234nbnpuz7fnxnfuwyr2l7y:
+    resolution: {integrity: sha512-gkMS+3TwaRMz+dddKHQ/OpZHnt/0wte/dK8I29wCSR0OcR9WOgZ8K9wjkhZVyffrm1kvjnT4bFlXX0PtHWpHXg==}
     peerDependencies:
       tslib: ^2.4.0
       typescript: ^4.7.4
