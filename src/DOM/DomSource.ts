@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import * as Effect from '@effect/core/io/Effect'
 import { pipe } from '@tsplus/stdlib/data/Function'
+import { any } from '@tsplus/stdlib/prelude/Equivalence'
 import * as T from '@tsplus/stdlib/service/Tag'
 import * as Fx from '@typed/fx'
 import * as TQS from 'typed-query-selector/parser.js'
@@ -58,6 +59,7 @@ export function DomSource<
 
       const s = pipe(
         rootElement,
+        Fx.skipRepeats<Element>(any),
         Fx.switchMap(makeEventStream(selectors, type as any, options)),
         Fx.multicast,
       )

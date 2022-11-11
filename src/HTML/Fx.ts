@@ -5,12 +5,13 @@ import * as Fx from '@typed/fx'
 
 import { isEffect, isFx } from '../_internal.js'
 
-import * as Tag from './Effect.js'
+import * as EffectTag from './Effect.js'
 import { Hole } from './Hole.js'
 import { Placeholder } from './Placeholder.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
 import { Renderable } from './Renderable.js'
+import * as SimpleTag from './Simple.js'
 import { getRenderHoleContext, renderHole } from './render.js'
 
 // Tag functions which only accept and return Fx
@@ -47,7 +48,8 @@ html.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
     ),
   )
 
-html.effect = Tag.html
+html.simple = SimpleTag.html
+html.effect = EffectTag.html
 
 export function svg<Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
@@ -81,7 +83,8 @@ svg.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
     ),
   )
 
-svg.effect = Tag.svg
+svg.simple = SimpleTag.svg
+svg.effect = EffectTag.svg
 
 function unwrapFxValues<Values extends Array<Renderable<any, any>>>(
   values: Values,
