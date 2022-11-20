@@ -3,10 +3,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
+      "@typed/fp/*": [
+        "./packages/*"
       ]
     },
+    "composite": true,
     "declaration": true,
     "declarationMap": true,
     "downlevelIteration": true,

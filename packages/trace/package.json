@@ -1,0 +1,19 @@
+{
+  "name": "@typed/trace",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "nx": {}
+}

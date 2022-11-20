@@ -1,0 +1,19 @@
+{
+  "name": "@typed/cause",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "types": "./index.d.ts"
+    },
+    "./*": {
+      "import": "./*.js",
+      "types": "./*.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "nx": {}
+}

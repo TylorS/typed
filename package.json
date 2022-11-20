@@ -5,9 +5,9 @@
   "version": "1.0.0",
   "description": "A functional programming toolkit for building applications with HKT-TS",
   "scripts": {
+    "build": "tsc --build --incremental",
     "eslint": "NODE_OPTIONS=--max-old-space-size=4096 eslint --ext .ts,.js,.json,.yaml --fix --cache src",
-    "mocha": "mocha 'src/**/*.test.ts'",
-    "example": "vite serve src"
+    "mocha": "mocha 'src/**/*.test.ts'"
   },
   "keywords": [
     "TypeScript",
@@ -17,38 +17,34 @@
   "author": "Tylor Steinberger <tlsteinberger167@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@effect/core": "^0.0.16",
-    "@tsplus/stdlib": "^0.2.8",
-    "@typed/fx": "^0.0.32",
-    "@webreflection/uparser": "^0.2.4",
-    "ts-toolbelt": "^9.6.0",
-    "typed-query-selector": "^2.8.0",
-    "udomdiff": "^1.1.0",
-    "uparser": "^0.2.1"
+    "@fp-ts/core": "^0.0.8",
+    "@fp-ts/data": "^0.0.10"
   },
   "peerDependencies": {
-    "tslib": "^2.4.0"
+    "tslib": "^2.4.1"
   },
   "devDependencies": {
-    "@esbuild-kit/esm-loader": "^2.5.0",
+    "@nrwl/workspace": "^15.2.1",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.11.9",
-    "@typescript-eslint/eslint-plugin": "^5.42.1",
-    "@typescript-eslint/parser": "^5.42.1",
-    "eslint": "^8.27.0",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.43.0",
+    "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-typescript": "^3.5.2",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "happy-dom": "^7.6.7",
     "husky": "^8.0.2",
+    "lerna": "^6.0.3",
     "lint-staged": "^13.0.3",
     "mocha": "^10.1.0",
+    "nx": "^15.2.1",
     "prettier": "^2.7.1",
     "tsconfig-paths": "^4.1.0",
     "tslib": "^2.4.1",
-    "typescript": "^4.8.4",
-    "vite": "3.2.3",
-    "vite-tsconfig-paths": "^3.5.2"
-  }
+    "typescript": "^4.9.3"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

@@ -1,8 +1,16 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "./tsconfig.base.json",
-  "include": [
-    "src",
-    "tools"
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/Cause/tsconfig.json"
+    },
+    {
+      "path": "./packages/Time/tsconfig.json"
+    },
+    {
+      "path": "./packages/Trace/tsconfig.json"
+    }
   ]
 }

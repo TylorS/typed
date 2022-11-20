@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../dist/cause"
+  },
+  "include": [
+    "**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../Time/tsconfig.json"
+    },
+    {
+      "path": "../Trace/tsconfig.json"
+    }
+  ]
+}
