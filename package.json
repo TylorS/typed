@@ -5,9 +5,12 @@
   "version": "1.0.0",
   "description": "A functional programming toolkit for building applications with HKT-TS",
   "scripts": {
-    "build": "tsc --build --incremental",
-    "eslint": "NODE_OPTIONS=--max-old-space-size=4096 eslint --ext .ts,.js,.json,.yaml --fix --cache src",
-    "mocha": "mocha 'src/**/*.test.ts'"
+    "build": "nx run-many --target=build",
+    "build:affected": "nx affected --target=build",
+    "lint": "nx run-many --target=lint",
+    "lint:affected": "nx affected --target=lint",
+    "test": "nx run-many --target=test",
+    "test:affected": "nx affectednpm --target=test"
   },
   "keywords": [
     "TypeScript",
@@ -25,11 +28,12 @@
   },
   "devDependencies": {
     "@nrwl/linter": "^15.2.1",
+    "@nrwl/vite": "15.2.1",
     "@nrwl/workspace": "^15.2.1",
-    "@types/mocha": "^10.0.0",
     "@types/node": "^18.11.9",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "@typescript-eslint/parser": "^5.43.0",
+    "@vitest/ui": "^0.9.3",
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-typescript": "^3.5.2",
@@ -38,14 +42,19 @@
     "husky": "^8.0.2",
     "lerna": "^6.0.3",
     "lint-staged": "^13.0.3",
-    "mocha": "^10.1.0",
     "nx": "^15.2.1",
     "prettier": "^2.7.1",
     "tsconfig-paths": "^4.1.0",
     "tslib": "^2.4.1",
-    "typescript": "^4.9.3"
+    "typescript": "^4.9.3",
+    "vite": "^3.0.5",
+    "vite-plugin-eslint": "^1.6.0",
+    "vite-tsconfig-paths": "^3.5.2",
+    "vitest": "^0.25.1"
   },
-  "workspaces": [
-    "packages/*"
-  ]
+  "pnpm": {
+    "overrides": {
+      "tsconfig-paths": "git://github.com/IgnusG/tsconfig-paths#fce7c52ed061417dfd1dcce94721c4a94c230bab"
+    }
+  }
 }

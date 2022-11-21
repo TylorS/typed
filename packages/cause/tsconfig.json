@@ -5,7 +5,7 @@
   },
   "include": [
     "**/*.ts"
-  ],
+, "../../vite.config.ts"  ],
   "references": [
     {
       "path": "../Time/tsconfig.json"

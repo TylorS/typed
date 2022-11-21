@@ -4,13 +4,16 @@
   "files": [],
   "references": [
     {
-      "path": "./packages/Cause/tsconfig.json"
+      "path": "./packages/cause/tsconfig.json"
     },
     {
-      "path": "./packages/Time/tsconfig.json"
+      "path": "./packages/exit/tsconfig.json"
     },
     {
-      "path": "./packages/Trace/tsconfig.json"
+      "path": "./packages/time/tsconfig.json"
+    },
+    {
+      "path": "./packages/trace/tsconfig.json"
     }
   ]
 }

@@ -54,11 +54,11 @@ export interface Traced<E> {
   readonly trace: Trace
 }
 
-export const Empty: Empty = { tag: 'Empty' }
+export const Empty: Empty & Cause<never> = { tag: 'Empty' }
 
 export const isEmpty = <E>(cause: Cause<E>): cause is Empty => cause.tag === 'Empty'
 
-export const Interrupted = (time: UnixTime, by: string): Interrupted => ({
+export const Interrupted = (time: UnixTime, by: string): Interrupted & Cause<never> => ({
   tag: 'Interrupted',
   time,
   by,
@@ -67,7 +67,7 @@ export const Interrupted = (time: UnixTime, by: string): Interrupted => ({
 export const isInterrupted = <E>(cause: Cause<E>): cause is Interrupted =>
   cause.tag === 'Interrupted'
 
-export const Unexpected = (time: UnixTime, error: unknown): Unexpected => ({
+export const Unexpected = (time: UnixTime, error: unknown): Unexpected & Cause<never> => ({
   tag: 'Unexpected',
   time,
   error,
@@ -83,7 +83,10 @@ export const Expected = <E>(time: UnixTime, error: E): Expected<E> => ({
 
 export const isExpected = <E>(cause: Cause<E>): cause is Expected<E> => cause.tag === 'Expected'
 
-export const Sequential = <E, E2>(left: Cause<E>, right: Cause<E2>): Sequential<E | E2> => ({
+export const Sequential = <E = never, E2 = never>(
+  left: Cause<E>,
+  right: Cause<E2>,
+): Sequential<E | E2> => ({
   tag: 'Sequential',
   left,
   right,
@@ -92,7 +95,10 @@ export const Sequential = <E, E2>(left: Cause<E>, right: Cause<E2>): Sequential<
 export const isSequential = <E>(cause: Cause<E>): cause is Sequential<E> =>
   cause.tag === 'Sequential'
 
-export const Concurrent = <E, E2>(left: Cause<E>, right: Cause<E2>): Concurrent<E | E2> => ({
+export const Concurrent = <E = never, E2 = never>(
+  left: Cause<E>,
+  right: Cause<E2>,
+): Concurrent<E | E2> => ({
   tag: 'Concurrent',
   left,
   right,
