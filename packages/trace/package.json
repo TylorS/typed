@@ -11,9 +11,5 @@
       "types": "./*.d.ts",
       "import": "./*.js"
     }
-  },
-  "scripts": {
-    "build": "tsc --build"
-  },
-  "nx": {}
+  }
 }

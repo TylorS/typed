@@ -11,12 +11,22 @@
     "default": {
       "runner": "nx/tasks-runners/default",
       "options": {
-        "cacheableOperations": []
+        "cacheableOperations": [
+          "build",
+          "lint",
+          "test"
+        ]
       }
+    }
+  },
+  "targetDefaults": {
+    "build": {
+      "dependsOn": [
+        "^build"
+      ]
     }
   },
   "workspaceLayout": {
     "libsDir": "packages"
-  },
-  "targetDefaults": {}
+  }
 }

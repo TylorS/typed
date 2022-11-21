@@ -24,6 +24,7 @@
     "tslib": "^2.4.1"
   },
   "devDependencies": {
+    "@nrwl/linter": "^15.2.1",
     "@nrwl/workspace": "^15.2.1",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.11.9",
