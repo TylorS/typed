@@ -2,11 +2,6 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": {
-      "@typed/fp/*": [
-        "./packages/*"
-      ]
-    },
     "composite": true,
     "declaration": true,
     "declarationMap": true,
@@ -14,6 +9,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
+    "incremental": true,
     "module": "esnext",
     "moduleResolution": "NodeNext",
     "noFallthroughCasesInSwitch": true,

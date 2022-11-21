@@ -7,12 +7,12 @@
       "options": {
         "commands": [
           {
-            "command": "tsc --build"
+            "command": "tsc --build packages/time/tsconfig.build.json"
           }
         ]
       },
       "outputs": [
-        "{workspaceRoot}/dist/time"
+        "{projectRoot}/dist"
       ]
     },
     "lint": {

@@ -1,14 +1,15 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../../dist/exit"
+    "rootDir": "./src",
+    "outDir": "dist"
   },
   "include": [
-    "**/*.ts"
+    "src"
   ],
   "references": [
     {
-      "path": "../Cause/tsconfig.json"
+      "path": "../Cause/tsconfig.build.json"
     }
   ]
 }

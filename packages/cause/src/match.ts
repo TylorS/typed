@@ -1,5 +1,5 @@
-import { UnixTime } from '@typed/fp/time/index.js'
-import { Trace } from '@typed/fp/trace/index.js'
+import { UnixTime } from '@typed/time'
+import { Trace } from '@typed/trace'
 
 import { Cause } from './Cause.js'
 

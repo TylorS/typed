@@ -56,5 +56,8 @@
     "overrides": {
       "tsconfig-paths": "git://github.com/IgnusG/tsconfig-paths#fce7c52ed061417dfd1dcce94721c4a94c230bab"
     }
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

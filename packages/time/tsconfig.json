@@ -1,9 +1,10 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../../dist/time"
+    "rootDir": "./src",
+    "outDir": "dist"
   },
   "include": [
-    "**/*.ts"
+    "src"
   ]
 }

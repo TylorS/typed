@@ -37,8 +37,8 @@ jspm_packages
 .node_repl_history
 
 # generated files
-/build
-/dist
+dist
+tmp
 .tmp
 .cache-loader
 

@@ -63,10 +63,18 @@ importers:
       vitest: 0.25.2_@vitest+ui@0.9.4
 
   packages/cause:
-    specifiers: {}
+    specifiers:
+      '@typed/time': workspace:*
+      '@typed/trace': workspace:*
+    dependencies:
+      '@typed/time': link:../time
+      '@typed/trace': link:../trace
 
   packages/exit:
-    specifiers: {}
+    specifiers:
+      '@typed/cause': workspace:*
+    dependencies:
+      '@typed/cause': link:../cause
 
   packages/time:
     specifiers: {}

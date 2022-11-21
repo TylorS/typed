@@ -7,12 +7,12 @@
       "options": {
         "commands": [
           {
-            "command": "tsc --build"
+            "command": "tsc --build packages/trace/tsconfig.build.json"
           }
         ]
       },
       "outputs": [
-        "{workspaceRoot}/dist/trace"
+        "{projectRoot}/dist"
       ]
     },
     "lint": {

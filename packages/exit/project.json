@@ -7,12 +7,12 @@
       "options": {
         "commands": [
           {
-            "command": "tsc --build"
+            "command": "tsc --build packages/exit/tsconfig.build.json"
           }
         ]
       },
       "outputs": [
-        "{workspaceRoot}/dist/exit"
+        "{projectRoot}/dist"
       ]
     },
     "lint": {

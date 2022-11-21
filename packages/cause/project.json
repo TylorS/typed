@@ -7,12 +7,12 @@
       "options": {
         "commands": [
           {
-            "command": "tsc --build"
+            "command": "tsc --build packages/cause/tsconfig.build.json"
           }
         ]
       },
       "outputs": [
-        "{workspaceRoot}/dist/cause"
+        "{projectRoot}/dist"
       ]
     },
     "lint": {

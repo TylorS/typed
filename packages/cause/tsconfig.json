@@ -1,17 +1,18 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../../dist/cause"
+    "rootDir": "./src",
+    "outDir": "dist"
   },
   "include": [
-    "**/*.ts"
-, "../../vite.config.ts"  ],
+    "src"
+  ],
   "references": [
     {
-      "path": "../Time/tsconfig.json"
+      "path": "../time/tsconfig.build.json"
     },
     {
-      "path": "../Trace/tsconfig.json"
+      "path": "../trace/tsconfig.build.json"
     }
   ]
 }

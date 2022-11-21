@@ -2,7 +2,7 @@ import { deepStrictEqual } from 'assert'
 
 import { pipe } from '@fp-ts/data/Function'
 import { some } from '@fp-ts/data/Option'
-import { UnixTime } from '@typed/fp/time/index.js'
+import { UnixTime } from '@typed/time'
 import { describe, it } from 'vitest'
 
 import { Concurrent, Expected, Unexpected, isExpected } from './Cause.js'
