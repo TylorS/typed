@@ -1,0 +1,22 @@
+import { Clock, makeDateClock } from '@typed/clock'
+import { Disposable } from '@typed/disposable/Disposable'
+
+import { Timer } from './Timer.js'
+
+export function makeTimer(clock: Clock = makeDateClock()): Timer {
+  return {
+    ...clock,
+    delay: (callback, delay) => {
+      if (delay.millis < 1) {
+        const id = setImmediate(callback)
+
+        return Disposable(() => clearImmediate(id))
+      }
+
+      const id = setTimeout(callback, delay.millis)
+
+      return Disposable(() => clearTimeout(id))
+    },
+    fork: () => makeTimer(clock.fork()),
+  }
+}

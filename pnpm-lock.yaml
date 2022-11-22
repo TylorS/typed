@@ -10,6 +10,7 @@ importers:
       '@fp-ts/core': ^0.0.8
       '@fp-ts/data': ^0.0.10
       '@nrwl/linter': ^15.2.1
+      '@nrwl/nx-plugin': ^15.2.1
       '@nrwl/vite': 15.2.1
       '@nrwl/workspace': ^15.2.1
       '@types/node': ^18.11.9
@@ -38,6 +39,7 @@ importers:
       '@fp-ts/data': 0.0.10
     devDependencies:
       '@nrwl/linter': 15.2.1_bit2l4j7534kqm2unlwv3lwbju
+      '@nrwl/nx-plugin': 15.2.1_raqyqxe2sfr4ps3hx5gni6el3y
       '@nrwl/vite': 15.2.1_hmsdqwpbbofdrxaz5mcckyhqui
       '@nrwl/workspace': 15.2.1_2tdcrlle5lxz2wrxa2rwuoqjji
       '@types/node': 18.11.9
@@ -70,6 +72,15 @@ importers:
       '@typed/time': link:../time
       '@typed/trace': link:../trace
 
+  packages/clock:
+    specifiers:
+      '@typed/time': workspace:*
+    dependencies:
+      '@typed/time': link:../time
+
+  packages/disposable:
+    specifiers: {}
+
   packages/exit:
     specifiers:
       '@typed/cause': workspace:*
@@ -78,6 +89,16 @@ importers:
 
   packages/time:
     specifiers: {}
+
+  packages/timer:
+    specifiers:
+      '@typed/clock': workspace:*
+      '@typed/disposable': workspace:*
+      '@typed/time': workspace:*
+    dependencies:
+      '@typed/clock': link:../clock
+      '@typed/disposable': link:../disposable
+      '@typed/time': link:../time
 
   packages/trace:
     specifiers: {}
@@ -1718,6 +1739,30 @@ packages:
       - '@types/node'
       - debug
       - node-notifier
+      - supports-color
+      - ts-node
+      - typescript
+    dev: true
+
+  /@nrwl/nx-plugin/15.2.1_raqyqxe2sfr4ps3hx5gni6el3y:
+    resolution: {integrity: sha512-el4NGsEBRbGY50Oy1Nyg2HOXmPz4oudkf3uMmis3ewfK39l0RKJxllD/XSa+xmxDokQ4TgKmjdVqNg/iGM9RCQ==}
+    dependencies:
+      '@nrwl/devkit': 15.2.1_nx@15.2.1+typescript@4.9.3
+      '@nrwl/jest': 15.2.1_47knpnw7je7jbdnbouqvavkeo4
+      '@nrwl/js': 15.2.1_raqyqxe2sfr4ps3hx5gni6el3y
+      '@nrwl/linter': 15.2.1_bit2l4j7534kqm2unlwv3lwbju
+      dotenv: 10.0.0
+      fs-extra: 10.1.0
+      tslib: 2.4.1
+    transitivePeerDependencies:
+      - '@swc-node/register'
+      - '@swc/core'
+      - '@types/node'
+      - debug
+      - eslint
+      - node-notifier
+      - nx
+      - prettier
       - supports-color
       - ts-node
       - typescript

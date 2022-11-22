@@ -4,16 +4,25 @@
   "files": [],
   "references": [
     {
-      "path": "./packages/cause/tsconfig.json"
+      "path": "./packages/cause/tsconfig.build.json"
     },
     {
-      "path": "./packages/exit/tsconfig.json"
+      "path": "./packages/clock/tsconfig.build.json"
     },
     {
-      "path": "./packages/time/tsconfig.json"
+      "path": "./packages/disposable/tsconfig.build.json"
     },
     {
-      "path": "./packages/trace/tsconfig.json"
+      "path": "./packages/exit/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/time/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/timer/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/trace/tsconfig.build.json"
     }
   ]
 }

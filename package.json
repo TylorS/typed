@@ -10,7 +10,8 @@
     "lint": "nx run-many --target=lint",
     "lint:affected": "nx affected --target=lint",
     "test": "nx run-many --target=test",
-    "test:affected": "nx affectednpm --target=test"
+    "test:affected": "nx affectednpm --target=test",
+    "watch": "tsc --build --watch --preserveWatchOutput"
   },
   "keywords": [
     "TypeScript",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@nrwl/linter": "^15.2.1",
+    "@nrwl/nx-plugin": "^15.2.1",
     "@nrwl/vite": "15.2.1",
     "@nrwl/workspace": "^15.2.1",
     "@types/node": "^18.11.9",

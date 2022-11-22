@@ -11,6 +11,8 @@
     "default": {
       "runner": "nx/tasks-runners/default",
       "options": {
+        "parallel": true,
+        "maxParallel": "100",
         "cacheableOperations": [
           "build",
           "lint",
