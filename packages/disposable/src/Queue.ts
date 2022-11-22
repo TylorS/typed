@@ -7,6 +7,7 @@ export function Queue(): Disposable.Queue {
 
   return {
     size: () => disposables.size,
+    isDisposed: () => disposed,
     offer: (disposable: Disposable) => {
       if (disposed) {
         disposable.dispose()

@@ -95,8 +95,28 @@ importers:
     devDependencies:
       webpack: 5.75.0
 
+  packages/testing:
+    specifiers:
+      '@typed/clock': workspace:*
+      '@typed/time': workspace:*
+      '@typed/timeline': workspace:*
+      '@typed/timer': workspace:*
+    dependencies:
+      '@typed/clock': link:../clock
+      '@typed/time': link:../time
+      '@typed/timeline': link:../timeline
+      '@typed/timer': link:../timer
+
   packages/time:
     specifiers: {}
+
+  packages/timeline:
+    specifiers:
+      '@typed/disposable': workspace:*
+      '@typed/time': workspace:*
+    dependencies:
+      '@typed/disposable': link:../disposable
+      '@typed/time': link:../time
 
   packages/timer:
     specifiers:

@@ -13,6 +13,7 @@ export namespace Disposable {
 
   export interface Queue extends Disposable {
     readonly size: () => number
+    readonly isDisposed: () => boolean
     readonly offer: (disposable: Disposable) => Disposable
   }
 }
