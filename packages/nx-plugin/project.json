@@ -18,17 +18,12 @@
         ],
         "parallel": false
       },
-      "outputs": [
-        "{projectRoot}/dist",
-        "{projectRoot}/tsconfig.build.tsbuildinfo"
-      ]
+      "outputs": ["{projectRoot}/dist", "{projectRoot}/tsconfig.build.tsbuildinfo"]
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "options": {
-        "lintFilePatterns": [
-          "packages/nx-plugin/**/*.ts"
-        ]
+        "lintFilePatterns": ["packages/nx-plugin/src/**/*.ts"]
       }
     },
     "test": {

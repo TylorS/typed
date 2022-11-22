@@ -11,17 +11,12 @@
           }
         ]
       },
-      "outputs": [
-        "{projectRoot}/dist",
-        "{projectRoot}/tsconfig.build.tsbuildinfo"
-      ]
+      "outputs": ["{projectRoot}/dist", "{projectRoot}/tsconfig.build.tsbuildinfo"]
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "options": {
-        "lintFilePatterns": [
-          "packages/exit/**/*.ts"
-        ]
+        "lintFilePatterns": ["packages/exit/src/**/*.ts"]
       }
     },
     "test": {
