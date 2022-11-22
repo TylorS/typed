@@ -12,7 +12,8 @@
         ]
       },
       "outputs": [
-        "{projectRoot}/dist"
+        "{projectRoot}/dist",
+        "{projectRoot}/tsconfig.build.tsbuildinfo"
       ]
     },
     "lint": {
@@ -24,7 +25,12 @@
       }
     },
     "test": {
-      "executor": "@nrwl/vite:test"
+      "executor": "@nrwl/vite:test",
+      "configurations": {
+        "watch": {
+          "watch": true
+        }
+      }
     }
   }
 }

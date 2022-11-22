@@ -3,39 +3,42 @@
   "private": true,
   "type": "module",
   "version": "1.0.0",
-  "description": "A functional programming toolkit for building applications with HKT-TS",
-  "scripts": {
-    "build": "nx run-many --target=build",
-    "build:affected": "nx affected --target=build",
-    "lint": "nx run-many --target=lint",
-    "lint:affected": "nx affected --target=lint",
-    "test": "nx run-many --target=test",
-    "test:affected": "nx affectednpm --target=test",
-    "watch": "tsc --build --watch --preserveWatchOutput"
-  },
+  "description": "A functional programming toolkit for building applications with fp-ts v3",
   "keywords": [
     "TypeScript",
     "FP",
-    "Effect"
+    "Effects"
   ],
   "author": "Tylor Steinberger <tlsteinberger167@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "build": "nx run-many --target=build --all",
+    "build:affected": "nx affected --target=build",
+    "lint": "nx run-many --target=lint --all",
+    "lint:affected": "nx affected --target=lint",
+    "test": "nx run-many --target=test --all",
+    "test:watch": "nx run-many --target=test -c=watch",
+    "test:affected": "nx affectednpm --target=test",
+    "watch": "tsc --build --watch --preserveWatchOutput",
+    "new-package": "nx generate @typed/nx-plugin:package"
+  },
   "dependencies": {
     "@fp-ts/core": "^0.0.8",
-    "@fp-ts/data": "^0.0.10"
+    "@fp-ts/data": "^0.0.12"
   },
   "peerDependencies": {
     "tslib": "^2.4.1"
   },
   "devDependencies": {
+    "@nrwl/devkit": "^15.2.1",
     "@nrwl/linter": "^15.2.1",
     "@nrwl/nx-plugin": "^15.2.1",
     "@nrwl/vite": "15.2.1",
     "@nrwl/workspace": "^15.2.1",
     "@types/node": "^18.11.9",
-    "@typescript-eslint/eslint-plugin": "^5.43.0",
-    "@typescript-eslint/parser": "^5.43.0",
-    "@vitest/ui": "^0.9.3",
+    "@typescript-eslint/eslint-plugin": "^5.44.0",
+    "@typescript-eslint/parser": "^5.44.0",
+    "@vitest/ui": "^0.25.2",
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-typescript": "^3.5.2",
@@ -44,22 +47,19 @@
     "husky": "^8.0.2",
     "lerna": "^6.0.3",
     "lint-staged": "^13.0.3",
-    "nx": "^15.2.1",
+    "nx": "15.2.1",
     "prettier": "^2.7.1",
     "tsconfig-paths": "^4.1.0",
     "tslib": "^2.4.1",
     "typescript": "^4.9.3",
-    "vite": "^3.0.5",
-    "vite-plugin-eslint": "^1.6.0",
-    "vite-tsconfig-paths": "^3.5.2",
-    "vitest": "^0.25.1"
+    "vite": "^3.2.4",
+    "vite-plugin-eslint": "^1.8.1",
+    "vite-tsconfig-paths": "^3.6.0",
+    "vitest": "^0.25.2"
   },
   "pnpm": {
     "overrides": {
       "tsconfig-paths": "git://github.com/IgnusG/tsconfig-paths#fce7c52ed061417dfd1dcce94721c4a94c230bab"
     }
-  },
-  "workspaces": [
-    "packages/*"
-  ]
+  }
 }

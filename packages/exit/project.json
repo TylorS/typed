@@ -12,7 +12,8 @@
         ]
       },
       "outputs": [
-        "{projectRoot}/dist"
+        "{projectRoot}/dist",
+        "{projectRoot}/tsconfig.build.tsbuildinfo"
       ]
     },
     "lint": {

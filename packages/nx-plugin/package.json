@@ -1,0 +1,10 @@
+{
+  "name": "@typed/nx-plugin",
+  "private": true,
+  "version": "0.0.0",
+  "type": "commonjs",
+  "devDependencies": {
+    "webpack": "^5.0.0"
+  },
+  "generators": "generators.json"
+}

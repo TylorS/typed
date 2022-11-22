@@ -36,12 +36,6 @@
         }
       }
     ],
-    "sort-imports": [
-      "error",
-      {
-        "ignoreDeclarationSort": true
-      }
-    ],
     "import/no-unresolved": "off",
     "import/no-cycle": [
       "error",
@@ -64,4 +58,3 @@
     }
   }
 }
-

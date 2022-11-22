@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs"
+  },
+  "exclude": [
+    "src/**/files",
+    "src/**/*.test.ts"
+  ]
+}

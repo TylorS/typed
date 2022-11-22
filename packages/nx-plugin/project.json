@@ -7,9 +7,16 @@
       "options": {
         "commands": [
           {
-            "command": "tsc --build packages/cause/tsconfig.build.json"
+            "command": "tsc --build packages/nx-plugin/tsconfig.build.json"
+          },
+          {
+            "command": "cp ./packages/nx-plugin/src/generators/package/schema.json ./packages/nx-plugin/dist/generators/package"
+          },
+          {
+            "command": "cp -r packages/nx-plugin/src/generators/package/files packages/nx-plugin/dist/generators/package"
           }
-        ]
+        ],
+        "parallel": false
       },
       "outputs": [
         "{projectRoot}/dist",
@@ -20,7 +27,7 @@
       "executor": "@nrwl/linter:eslint",
       "options": {
         "lintFilePatterns": [
-          "packages/cause/**/*.ts"
+          "packages/nx-plugin/**/*.ts"
         ]
       }
     },
