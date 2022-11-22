@@ -11,7 +11,7 @@
           }
         ]
       },
-      "outputs": ["{projectRoot}/dist", "{projectRoot}/tsconfig.build.tsbuildinfo"]
+      "outputs": ["{projectRoot}/dist"]
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",

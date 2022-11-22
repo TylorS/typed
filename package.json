@@ -15,11 +15,13 @@
     "build": "nx run-many --target=build --all",
     "build:affected": "nx affected --target=build",
     "lint": "nx run-many --target=lint --all",
+    "lint:fix": "nx run-many --target=lint --all -c=fix",
     "lint:affected": "nx affected --target=lint",
     "test": "nx run-many --target=test --all",
-    "test:watch": "nx run-many --target=test -c=watch",
-    "test:affected": "nx affectednpm --target=test",
+    "test:watch": "nx run-many --target=test --all -c=watch",
+    "test:affected": "nx affected --target=test",
     "watch": "tsc --build --watch --preserveWatchOutput",
+    "~~NEEDS POSITIONAL COMMAND LINE ARGUMENT~~": "",
     "new-package": "nx generate @typed/nx-plugin:package"
   },
   "dependencies": {
