@@ -1,17 +1,17 @@
 import { Predicate, Refinement } from '@fp-ts/data/Predicate'
 
-import { Cause } from './Cause.js'
+import * as Cause from './Cause.js'
 
-export function findAll<E, E2 extends Cause.Simple<E>>(
-  refinment: Refinement<Cause.Simple<E>, E2>,
-): (cause: Cause<E>) => ReadonlyArray<E2>
+export function findAll<E, E2 extends Cause.Cause.Simple<E>>(
+  refinment: Refinement<Cause.Cause.Simple<E>, E2>,
+): (cause: Cause.Cause<E>) => ReadonlyArray<E2>
 
 export function findAll<E>(
-  predicate: Predicate<Cause.Simple<E>>,
-): (cause: Cause<E>) => ReadonlyArray<Cause.Simple<E>>
+  predicate: Predicate<Cause.Cause.Simple<E>>,
+): (cause: Cause.Cause<E>) => ReadonlyArray<Cause.Cause.Simple<E>>
 
-export function findAll<E>(predicate: Predicate<Cause.Simple<E>>) {
-  return function findAllCause(cause: Cause<E>): ReadonlyArray<Cause.Simple<E>> {
+export function findAll<E>(predicate: Predicate<Cause.Cause.Simple<E>>) {
+  return function findAllCause(cause: Cause.Cause<E>): ReadonlyArray<Cause.Cause.Simple<E>> {
     switch (cause.tag) {
       case 'Empty':
       case 'Interrupted':
@@ -26,3 +26,7 @@ export function findAll<E>(predicate: Predicate<Cause.Simple<E>>) {
     }
   }
 }
+
+export const findAllInterrupted = findAll(Cause.isInterrupted)
+export const findAllUnexpected = findAll(Cause.isUnexpected)
+export const findAllExpected = findAll(Cause.isExpected)

@@ -31,14 +31,6 @@
           "fix": true
         }
       }
-    },
-    "test": {
-      "executor": "@nrwl/vite:test",
-      "configurations": {
-        "watch": {
-          "watch": true
-        }
-      }
     }
   }
 }

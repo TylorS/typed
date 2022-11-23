@@ -1,7 +1,7 @@
-import * as vite from 'vite'
+import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
-export default vite.defineConfig({
+export default defineConfig({
   plugins: [tsconfigPaths({ root: '../../', projects: ['tsconfig.base.json'] })],
   build: {
     sourcemap: true,

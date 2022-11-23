@@ -4,23 +4,19 @@ import { Time, UnixTime } from '@typed/time'
 
 export interface Clock {
   readonly startTime: UnixTime
-  readonly time: {
-    readonly get: () => Time
-    readonly delay: (duration: Duration) => Time
-  }
-  readonly unixTime: {
-    readonly get: () => UnixTime
-    readonly delay: (duration: Duration) => UnixTime
-  }
-
+  readonly time: GetAndDelay<Time>
+  readonly unixTime: GetAndDelay<UnixTime>
   readonly fork: () => Clock
 }
 
-export const Clock = C.Tag<Clock>()
+export interface GetAndDelay<T> {
+  readonly get: () => T
+  readonly delay: (duration: Duration) => T
+}
 
-export const now = (): UnixTime => UnixTime(Date.now())
+const now = (): UnixTime => UnixTime(Date.now())
 
-export function makeDateClock(startTime: UnixTime = now()): Clock {
+export function Clock(startTime: UnixTime = now()): Clock {
   const clock: Clock = {
     startTime: UnixTime(startTime),
     time: {
@@ -31,8 +27,10 @@ export function makeDateClock(startTime: UnixTime = now()): Clock {
       get: now,
       delay: (duration) => UnixTime(now() + duration.millis),
     },
-    fork: () => makeDateClock(),
+    fork: () => Clock(),
   }
 
   return clock
 }
+
+Clock.Tag = C.Tag<Clock>()

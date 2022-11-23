@@ -86,11 +86,16 @@ export const isExpected = <E>(cause: Cause<E>): cause is Expected<E> => cause.ta
 export const Sequential = <E = never, E2 = never>(
   left: Cause<E>,
   right: Cause<E2>,
-): Sequential<E | E2> => ({
-  tag: 'Sequential',
-  left,
-  right,
-})
+): Cause<E | E2> =>
+  left.tag === 'Empty'
+    ? right
+    : right.tag === 'Empty'
+    ? left
+    : {
+        tag: 'Sequential',
+        left,
+        right,
+      }
 
 export const isSequential = <E>(cause: Cause<E>): cause is Sequential<E> =>
   cause.tag === 'Sequential'
@@ -98,11 +103,16 @@ export const isSequential = <E>(cause: Cause<E>): cause is Sequential<E> =>
 export const Concurrent = <E = never, E2 = never>(
   left: Cause<E>,
   right: Cause<E2>,
-): Concurrent<E | E2> => ({
-  tag: 'Concurrent',
-  left,
-  right,
-})
+): Cause<E | E2> =>
+  left.tag === 'Empty'
+    ? right
+    : right.tag === 'Empty'
+    ? left
+    : {
+        tag: 'Concurrent',
+        left,
+        right,
+      }
 
 export const isConcurrent = <E>(cause: Cause<E>): cause is Concurrent<E> =>
   cause.tag === 'Concurrent'
