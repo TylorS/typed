@@ -21,6 +21,7 @@
     "test:watch": "nx run-many --target=test --all -c=watch",
     "test:affected": "nx affected --target=test",
     "watch": "tsc --build --watch --preserveWatchOutput",
+    "update:packages": "tsx ./tools/updatePackages.ts",
     "update:rootTsconfig": "tsx ./tools/updateRootTsconfig.ts",
     "~~NEEDS POSITIONAL COMMAND LINE ARGUMENT~~": "",
     "new-package": "nx generate @typed/nx-plugin:package"
@@ -52,6 +53,7 @@
     "lint-staged": "^13.0.4",
     "nx": "15.2.1",
     "prettier": "^2.8.0",
+    "ts-morph": "^17.0.1",
     "tsconfig-paths": "github:IgnusG/tsconfig-paths#fce7c52ed061417dfd1dcce94721c4a94c230bab",
     "tslib": "^2.4.1",
     "tsx": "^3.12.1",
