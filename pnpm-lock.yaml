@@ -87,7 +87,16 @@ importers:
     specifiers: {}
 
   packages/effect:
-    specifiers: {}
+    specifiers:
+      '@typed/cause': workspace:*
+      '@typed/exit': workspace:*
+      '@typed/internal': workspace:*
+      '@typed/platform': workspace:*
+    dependencies:
+      '@typed/cause': link:../cause
+      '@typed/exit': link:../exit
+      '@typed/internal': link:../internal
+      '@typed/platform': link:../platform
 
   packages/exit:
     specifiers:
@@ -135,8 +144,21 @@ importers:
     devDependencies:
       webpack: 5.75.0
 
+  packages/platform:
+    specifiers:
+      '@typed/clock': workspace:*
+      '@typed/time': workspace:*
+      '@typed/timer': workspace:*
+    dependencies:
+      '@typed/clock': link:../clock
+      '@typed/time': link:../time
+      '@typed/timer': link:../timer
+
   packages/schedule:
-    specifiers: {}
+    specifiers:
+      '@typed/time': workspace:*
+    dependencies:
+      '@typed/time': link:../time
 
   packages/scheduler:
     specifiers: {}

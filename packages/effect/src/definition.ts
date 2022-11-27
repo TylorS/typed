@@ -2,6 +2,7 @@ import { identity } from '@fp-ts/data/Function'
 
 export interface Effect<R, E, A> extends Effect.Variance<R, E, A> {
   readonly [Symbol.iterator]: () => Generator<Effect<R, E, any>, A, any>
+  readonly traced: (trace?: string) => Effect<R, E, A>
 }
 
 export namespace Effect {
@@ -16,11 +17,9 @@ export namespace Effect {
     }
   }
 
-  export const Variance: Variance<any, any, any> = {
-    [TypeId]: {
-      _R: identity,
-      _E: identity,
-      _A: identity,
-    },
+  export const Variance: Variance<any, any, any>[TypeId] = {
+    _R: identity,
+    _E: identity,
+    _A: identity,
   }
 }

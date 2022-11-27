@@ -20,5 +20,10 @@
       "types": "./dist/*.d.ts"
     }
   },
-  "dependencies": {}
+  "dependencies": {
+    "@typed/cause": "workspace:*",
+    "@typed/exit": "workspace:*",
+    "@typed/internal": "workspace:*",
+    "@typed/platform": "workspace:*"
+  }
 }

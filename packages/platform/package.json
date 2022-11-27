@@ -1,5 +1,5 @@
 {
-  "name": "@typed/schedule",
+  "name": "@typed/platform",
   "version": "0.0.0",
   "type": "module",
   "main": "dist/index.js",
@@ -21,6 +21,8 @@
     }
   },
   "dependencies": {
-    "@typed/time": "workspace:*"
+    "@typed/clock": "workspace:*",
+    "@typed/time": "workspace:*",
+    "@typed/timer": "workspace:*"
   }
 }
