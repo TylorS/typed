@@ -30,6 +30,7 @@ importers:
       prettier: ^2.8.0
       tsconfig-paths: git://github.com/IgnusG/tsconfig-paths#fce7c52ed061417dfd1dcce94721c4a94c230bab
       tslib: ^2.4.1
+      tsx: ^3.12.1
       typescript: ^4.9.3
       vite: ^3.2.4
       vite-plugin-eslint: ^1.8.1
@@ -60,6 +61,7 @@ importers:
       prettier: 2.8.0
       tsconfig-paths: github.com/IgnusG/tsconfig-paths/fce7c52ed061417dfd1dcce94721c4a94c230bab
       tslib: 2.4.1
+      tsx: 3.12.1
       typescript: 4.9.3
       vite: 3.2.4_@types+node@18.11.9
       vite-plugin-eslint: 1.8.1_eslint@8.28.0+vite@3.2.4
@@ -537,6 +539,27 @@ packages:
 
   /@cush/relative/1.0.0:
     resolution: {integrity: sha512-RpfLEtTlyIxeNPGKcokS+p3BZII/Q3bYxryFRglh5H3A3T8q9fsLYm72VYAMEOOIBLEa8o93kFLiBDUWKrwXZA==}
+    dev: true
+
+  /@esbuild-kit/cjs-loader/2.4.1:
+    resolution: {integrity: sha512-lhc/XLith28QdW0HpHZvZKkorWgmCNT7sVelMHDj3HFdTfdqkwEKvT+aXVQtNAmCC39VJhunDkWhONWB7335mg==}
+    dependencies:
+      '@esbuild-kit/core-utils': 3.0.0
+      get-tsconfig: 4.2.0
+    dev: true
+
+  /@esbuild-kit/core-utils/3.0.0:
+    resolution: {integrity: sha512-TXmwH9EFS3DC2sI2YJWJBgHGhlteK0Xyu1VabwetMULfm3oYhbrsWV5yaSr2NTWZIgDGVLHbRf0inxbjXqAcmQ==}
+    dependencies:
+      esbuild: 0.15.15
+      source-map-support: 0.5.21
+    dev: true
+
+  /@esbuild-kit/esm-loader/2.5.1:
+    resolution: {integrity: sha512-UfG/KLaNGR48+C9e8cDrRowhN9u+d/aCKpnA3E3Zyevup76fIpKmzm8DWeNG40CbEN8ZN8HaEs+o63pRQrZ+Fw==}
+    dependencies:
+      '@esbuild-kit/core-utils': 3.0.0
+      get-tsconfig: 4.2.0
     dev: true
 
   /@esbuild/android-arm/0.15.15:
@@ -7903,6 +7926,17 @@ packages:
     dependencies:
       tslib: 1.14.1
       typescript: 4.9.3
+    dev: true
+
+  /tsx/3.12.1:
+    resolution: {integrity: sha512-Rcg1x+rNe7qwlP8j7kx4VjP/pJo/V57k+17hlrn6a7FuQLNwkaw5W4JF75tYornNVCxkXdSUnqlIT8JY/ttvIw==}
+    hasBin: true
+    dependencies:
+      '@esbuild-kit/cjs-loader': 2.4.1
+      '@esbuild-kit/core-utils': 3.0.0
+      '@esbuild-kit/esm-loader': 2.5.1
+    optionalDependencies:
+      fsevents: 2.3.2
     dev: true
 
   /type-check/0.4.0:

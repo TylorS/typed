@@ -21,6 +21,7 @@
     "test:watch": "nx run-many --target=test --all -c=watch",
     "test:affected": "nx affected --target=test",
     "watch": "tsc --build --watch --preserveWatchOutput",
+    "update:rootTsconfig": "tsx ./tools/updateRootTsconfig.ts",
     "~~NEEDS POSITIONAL COMMAND LINE ARGUMENT~~": "",
     "new-package": "nx generate @typed/nx-plugin:package"
   },
@@ -53,6 +54,7 @@
     "prettier": "^2.8.0",
     "tsconfig-paths": "github:IgnusG/tsconfig-paths#fce7c52ed061417dfd1dcce94721c4a94c230bab",
     "tslib": "^2.4.1",
+    "tsx": "^3.12.1",
     "typescript": "^4.9.3",
     "vite": "^3.2.4",
     "vite-plugin-eslint": "^1.8.1",

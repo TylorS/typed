@@ -10,6 +10,9 @@
       "path": "./packages/clock/tsconfig.build.json"
     },
     {
+      "path": "./packages/concurrency/tsconfig.build.json"
+    },
+    {
       "path": "./packages/disposable/tsconfig.build.json"
     },
     {
@@ -22,16 +25,34 @@
       "path": "./packages/fiber/tsconfig.build.json"
     },
     {
+      "path": "./packages/fiberRef/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/future/tsconfig.build.json"
+    },
+    {
       "path": "./packages/fx/tsconfig.build.json"
     },
     {
       "path": "./packages/internal/tsconfig.build.json"
     },
     {
+      "path": "./packages/layer/tsconfig.build.json"
+    },
+    {
       "path": "./packages/nx-plugin/tsconfig.build.json"
     },
     {
       "path": "./packages/platform/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/schedule/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/scheduler/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/scope/tsconfig.build.json"
     },
     {
       "path": "./packages/testing/tsconfig.build.json"
