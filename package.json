@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@fp-ts/core": "^0.0.8",
-    "@fp-ts/data": "^0.0.14"
+    "@fp-ts/data": "^0.0.16"
   },
   "peerDependencies": {
     "tslib": "^2.4.1"
@@ -48,9 +48,9 @@
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.2",
     "lerna": "^6.0.3",
-    "lint-staged": "^13.0.3",
+    "lint-staged": "^13.0.4",
     "nx": "15.2.1",
-    "prettier": "^2.7.1",
+    "prettier": "^2.8.0",
     "tsconfig-paths": "github:IgnusG/tsconfig-paths#fce7c52ed061417dfd1dcce94721c4a94c230bab",
     "tslib": "^2.4.1",
     "typescript": "^4.9.3",

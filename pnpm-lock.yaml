@@ -8,7 +8,7 @@ importers:
   .:
     specifiers:
       '@fp-ts/core': ^0.0.8
-      '@fp-ts/data': ^0.0.14
+      '@fp-ts/data': ^0.0.16
       '@nrwl/devkit': ^15.2.1
       '@nrwl/linter': ^15.2.1
       '@nrwl/nx-plugin': ^15.2.1
@@ -25,9 +25,9 @@ importers:
       eslint-plugin-prettier: ^4.2.1
       husky: ^8.0.2
       lerna: ^6.0.3
-      lint-staged: ^13.0.3
+      lint-staged: ^13.0.4
       nx: 15.2.1
-      prettier: ^2.7.1
+      prettier: ^2.8.0
       tsconfig-paths: git://github.com/IgnusG/tsconfig-paths#fce7c52ed061417dfd1dcce94721c4a94c230bab
       tslib: ^2.4.1
       typescript: ^4.9.3
@@ -37,13 +37,13 @@ importers:
       vitest: ^0.25.3
     dependencies:
       '@fp-ts/core': 0.0.8
-      '@fp-ts/data': 0.0.14
+      '@fp-ts/data': 0.0.16
     devDependencies:
       '@nrwl/devkit': 15.2.1_nx@15.2.1+typescript@4.9.3
       '@nrwl/linter': 15.2.1_bit2l4j7534kqm2unlwv3lwbju
-      '@nrwl/nx-plugin': 15.2.1_raqyqxe2sfr4ps3hx5gni6el3y
-      '@nrwl/vite': 15.2.1_xmpmolgpigirzo2j3ezoaeyjnm
-      '@nrwl/workspace': 15.2.1_2tdcrlle5lxz2wrxa2rwuoqjji
+      '@nrwl/nx-plugin': 15.2.1_myj2j7qfch4la7anxgnm5magha
+      '@nrwl/vite': 15.2.1_sd4xoki7yxsammxskyvw3vdhvi
+      '@nrwl/workspace': 15.2.1_wofsmz54fugxniud4rk6tn6oyu
       '@types/node': 18.11.9
       '@typescript-eslint/eslint-plugin': 5.44.0_fnsv2sbzcckq65bwfk7a5xwslu
       '@typescript-eslint/parser': 5.44.0_hsf322ms6xhhd4b5ne6lb74y4a
@@ -52,12 +52,12 @@ importers:
       eslint-config-prettier: 8.5.0_eslint@8.28.0
       eslint-import-resolver-typescript: 3.5.2_ktrec6dplf4now6nlbc6d67jee
       eslint-plugin-import: 2.26.0_vc54pluhgv7booofyyjouvuf74
-      eslint-plugin-prettier: 4.2.1_pgxuib4rd7wiymfktharf5ydt4
+      eslint-plugin-prettier: 4.2.1_cwlo2dingkvfydnaculr42urve
       husky: 8.0.2
       lerna: 6.0.3
-      lint-staged: 13.0.3
+      lint-staged: 13.0.4
       nx: 15.2.1
-      prettier: 2.7.1
+      prettier: 2.8.0
       tsconfig-paths: github.com/IgnusG/tsconfig-paths/fce7c52ed061417dfd1dcce94721c4a94c230bab
       tslib: 2.4.1
       typescript: 4.9.3
@@ -505,8 +505,8 @@ packages:
     resolution: {integrity: sha512-TcZnP2Oc5b2eJ949z81sI3wdt9GpFFufwpEb6VOIlTQTucx18xNXPWmKv+1jrDacfdDh6Q8rP9kUSRohRUz5pQ==}
     dev: false
 
-  /@fp-ts/data/0.0.14:
-    resolution: {integrity: sha512-rFEl63SkPvgUm6al1KbcBenXvKr/O7u/HQrphFeBfoVhUVgqqdMGmsjt9WWlfIeeNOU3ug7nxQJFrY1+lS5ncw==}
+  /@fp-ts/data/0.0.16:
+    resolution: {integrity: sha512-pfWpZaFHkWMQZfxoUYawahWKsuDANTgu8g4VSyE3Gv0ChprM+0f455e2i0Jy84Wyd8tumL9Fj4ff8oaCNC5d/g==}
     dependencies:
       '@fp-ts/core': 0.0.8
     dev: false
@@ -737,7 +737,7 @@ packages:
       '@types/istanbul-lib-coverage': 2.0.4
       '@types/istanbul-reports': 3.0.1
       '@types/node': 18.11.9
-      '@types/yargs': 17.0.13
+      '@types/yargs': 17.0.14
       chalk: 4.1.0
     dev: true
 
@@ -1723,13 +1723,13 @@ packages:
       - typescript
     dev: true
 
-  /@nrwl/js/15.2.1_raqyqxe2sfr4ps3hx5gni6el3y:
+  /@nrwl/js/15.2.1_myj2j7qfch4la7anxgnm5magha:
     resolution: {integrity: sha512-d/pItGaHFFYSrHjMXndzuSJWRPLNLCGHQ6E54NHtcIvVf0t+ZJ3Bz7yb7ybKYV+PhUVd6gfg7LByjzQNqHSlLg==}
     dependencies:
       '@nrwl/devkit': 15.2.1_nx@15.2.1+typescript@4.9.3
       '@nrwl/jest': 15.2.1_47knpnw7je7jbdnbouqvavkeo4
       '@nrwl/linter': 15.2.1_bit2l4j7534kqm2unlwv3lwbju
-      '@nrwl/workspace': 15.2.1_2tdcrlle5lxz2wrxa2rwuoqjji
+      '@nrwl/workspace': 15.2.1_wofsmz54fugxniud4rk6tn6oyu
       '@parcel/watcher': 2.0.4
       chalk: 4.1.0
       fast-glob: 3.2.7
@@ -1779,12 +1779,12 @@ packages:
       - typescript
     dev: true
 
-  /@nrwl/nx-plugin/15.2.1_raqyqxe2sfr4ps3hx5gni6el3y:
+  /@nrwl/nx-plugin/15.2.1_myj2j7qfch4la7anxgnm5magha:
     resolution: {integrity: sha512-el4NGsEBRbGY50Oy1Nyg2HOXmPz4oudkf3uMmis3ewfK39l0RKJxllD/XSa+xmxDokQ4TgKmjdVqNg/iGM9RCQ==}
     dependencies:
       '@nrwl/devkit': 15.2.1_nx@15.2.1+typescript@4.9.3
       '@nrwl/jest': 15.2.1_47knpnw7je7jbdnbouqvavkeo4
-      '@nrwl/js': 15.2.1_raqyqxe2sfr4ps3hx5gni6el3y
+      '@nrwl/js': 15.2.1_myj2j7qfch4la7anxgnm5magha
       '@nrwl/linter': 15.2.1_bit2l4j7534kqm2unlwv3lwbju
       dotenv: 10.0.0
       fs-extra: 10.1.0
@@ -1814,15 +1814,15 @@ packages:
       - debug
     dev: true
 
-  /@nrwl/vite/15.2.1_xmpmolgpigirzo2j3ezoaeyjnm:
+  /@nrwl/vite/15.2.1_sd4xoki7yxsammxskyvw3vdhvi:
     resolution: {integrity: sha512-UbBFBqlPQt95sQh0JJLPjE5LomiUycqs/WNDwHI0fi6OOMpHBewP+Dxr2uahiASXZOQywxvFgA8q7zFKF/7qxg==}
     peerDependencies:
       vite: ^3.2.3
       vitest: ^0.25.1
     dependencies:
       '@nrwl/devkit': 15.2.1_nx@15.2.1+typescript@4.9.3
-      '@nrwl/js': 15.2.1_raqyqxe2sfr4ps3hx5gni6el3y
-      '@nrwl/workspace': 15.2.1_2tdcrlle5lxz2wrxa2rwuoqjji
+      '@nrwl/js': 15.2.1_myj2j7qfch4la7anxgnm5magha
+      '@nrwl/workspace': 15.2.1_wofsmz54fugxniud4rk6tn6oyu
       '@swc/helpers': 0.4.14
       chalk: 4.1.0
       dotenv: 10.0.0
@@ -1842,7 +1842,7 @@ packages:
       - typescript
     dev: true
 
-  /@nrwl/workspace/15.2.1_2tdcrlle5lxz2wrxa2rwuoqjji:
+  /@nrwl/workspace/15.2.1_wofsmz54fugxniud4rk6tn6oyu:
     resolution: {integrity: sha512-nqF1gP2KuVmQCjgyrX6TECAGFldJ55KEQs6WJIBsjYvmrWvAv341VVb565IEWpPGglb2/8NhJLBMdQ0ZpLG+tg==}
     peerDependencies:
       prettier: ^2.6.2
@@ -1869,7 +1869,7 @@ packages:
       npm-run-path: 4.0.1
       nx: 15.2.1
       open: 8.4.0
-      prettier: 2.7.1
+      prettier: 2.8.0
       rxjs: 6.6.7
       semver: 7.3.4
       tmp: 0.2.1
@@ -2200,8 +2200,8 @@ packages:
     resolution: {integrity: sha512-iO9ZQHkZxHn4mSakYV0vFHAVDyEOIJQrV2uZ06HxEPcx+mt8swXoZHIbaaJ2crJYFfErySgktuTZ3BeLz+XmFA==}
     dev: true
 
-  /@types/yargs/17.0.13:
-    resolution: {integrity: sha512-9sWaruZk2JGxIQU+IhI1fhPYRcQ0UuTNuKuCW9bR5fp7qi2Llf7WDzNa17Cy7TKnh3cdxDOiyTu6gaLS0eDatg==}
+  /@types/yargs/17.0.14:
+    resolution: {integrity: sha512-9Pj7abXoW1RSTcZaL2Hk6G2XyLMlp5ECdVC/Zf2p/KBjC3srijLGgRAXOBjtFrJoIrvxdTKyKDA14bEcbxBaWw==}
     dependencies:
       '@types/yargs-parser': 21.0.0
     dev: true
@@ -2906,7 +2906,7 @@ packages:
       glob: 8.0.3
       infer-owner: 1.0.4
       lru-cache: 7.14.1
-      minipass: 3.3.4
+      minipass: 3.3.6
       minipass-collect: 1.0.2
       minipass-flush: 1.0.5
       minipass-pipeline: 1.2.4
@@ -3036,8 +3036,8 @@ packages:
     resolution: {integrity: sha512-5tK7EtrZ0N+OLFMthtqOj4fI2Jeb88C4CAZPu25LDVUgXJ0A3Js4PMGqrn0JU1W0Mh1/Z8wZzYPxqUrXeBboCQ==}
     dev: true
 
-  /ci-info/3.6.2:
-    resolution: {integrity: sha512-lVZdhvbEudris15CLytp2u6Y0p5EKfztae9Fqa189MfNmln9F33XuH69v5fvNfiRN5/0eAUz2yJL3mo+nhaRKg==}
+  /ci-info/3.7.0:
+    resolution: {integrity: sha512-2CpRNYmImPx+RXKLq6jko/L07phmS9I02TyqkcNU20GCF/GgaWvc58hPtjxDX8lPpkdwc9sNh72V9k00S7ezog==}
     engines: {node: '>=8'}
     dev: true
 
@@ -3582,8 +3582,8 @@ packages:
       tapable: 2.2.1
     dev: true
 
-  /enhanced-resolve/5.11.0:
-    resolution: {integrity: sha512-0Gcraf7gAJSQoPg+bTSXNhuzAYtXqLc4C011vb8S3B8XUSEkGYNBk20c68X9291VF4vvsCD8SPkr6Mza+DwU+g==}
+  /enhanced-resolve/5.12.0:
+    resolution: {integrity: sha512-QHTXI/sZQmko1cbDoNAa3mJ5qhWUUNAq3vR0/YiD379fWQrcfuoX1+HW2S0MTt7XmoPLapdaDKUtelUSPic7hQ==}
     engines: {node: '>=10.13.0'}
     dependencies:
       graceful-fs: 4.2.10
@@ -3923,7 +3923,7 @@ packages:
       eslint-plugin-import: '*'
     dependencies:
       debug: 4.3.4
-      enhanced-resolve: 5.11.0
+      enhanced-resolve: 5.12.0
       eslint: 8.28.0
       eslint-plugin-import: 2.26.0_vc54pluhgv7booofyyjouvuf74
       get-tsconfig: 4.2.0
@@ -3996,7 +3996,7 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-prettier/4.2.1_pgxuib4rd7wiymfktharf5ydt4:
+  /eslint-plugin-prettier/4.2.1_cwlo2dingkvfydnaculr42urve:
     resolution: {integrity: sha512-f/0rXLXUt0oFYs8ra4w49wYZBG5GKZpAYsJSm6rnYL5uVDjd+zowwMwVZHnAjf4edNrKpCDYfXDgmRE/Ak7QyQ==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
@@ -4009,7 +4009,7 @@ packages:
     dependencies:
       eslint: 8.28.0
       eslint-config-prettier: 8.5.0_eslint@8.28.0
-      prettier: 2.7.1
+      prettier: 2.8.0
       prettier-linter-helpers: 1.0.0
     dev: true
 
@@ -4372,7 +4372,7 @@ packages:
     resolution: {integrity: sha512-V/JgOLFCS+R6Vcq0slCuaeWEdNC3ouDlJMNIsacH2VtALiu9mV4LPrHc5cDl8k5aw6J8jwgWWpiTo5RYhmIzvg==}
     engines: {node: '>= 8'}
     dependencies:
-      minipass: 3.3.4
+      minipass: 3.3.6
     dev: true
 
   /fs.realpath/1.0.0:
@@ -5245,7 +5245,7 @@ packages:
       '@types/node': 18.11.9
       babel-jest: 28.1.3_@babel+core@7.20.2
       chalk: 4.1.0
-      ci-info: 3.6.2
+      ci-info: 3.7.0
       deepmerge: 4.2.2
       glob: 7.2.3
       graceful-fs: 4.2.10
@@ -5527,7 +5527,7 @@ packages:
       '@jest/types': 28.1.3
       '@types/node': 18.11.9
       chalk: 4.1.0
-      ci-info: 3.6.2
+      ci-info: 3.7.0
       graceful-fs: 4.2.10
       picomatch: 2.3.1
     dev: true
@@ -5539,7 +5539,7 @@ packages:
       '@jest/types': 28.1.3
       '@types/node': 18.11.9
       chalk: 4.1.0
-      ci-info: 3.6.2
+      ci-info: 3.7.0
       graceful-fs: 4.2.10
       picomatch: 2.3.1
     dev: true
@@ -5732,7 +5732,7 @@ packages:
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
     dependencies:
       aproba: 2.0.0
-      minipass: 3.3.4
+      minipass: 3.3.6
       npm-package-arg: 9.1.2
       npm-registry-fetch: 13.3.1
     transitivePeerDependencies:
@@ -5754,8 +5754,8 @@ packages:
       - supports-color
     dev: true
 
-  /lilconfig/2.0.5:
-    resolution: {integrity: sha512-xaYmXZtTHPAw5m+xLN8ab9C+3a8YmV3asNSPOATITbtwrfbwaLJj8h66H1WMIpALCkqsIzK3h7oQ+PdX+LQ9Eg==}
+  /lilconfig/2.0.6:
+    resolution: {integrity: sha512-9JROoBW7pobfsx+Sq2JsASvCo6Pfo6WWoUW79HuB1BCoBXD4PLWJPqDF6fNj67pqBYTbAHkE57M1kS/+L1neOg==}
     engines: {node: '>=10'}
     dev: true
 
@@ -5763,8 +5763,8 @@ packages:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
     dev: true
 
-  /lint-staged/13.0.3:
-    resolution: {integrity: sha512-9hmrwSCFroTSYLjflGI8Uk+GWAwMB4OlpU4bMJEAT5d/llQwtYKoim4bLOyLCuWFAhWEupE0vkIFqtw/WIsPug==}
+  /lint-staged/13.0.4:
+    resolution: {integrity: sha512-HxlHCXoYRsq9QCby5wFozmZW00hMs/9e3l+/dz6Qr8Kle4UH0kJTdABAbqhzG+3pcG6QjL9kz7NgGBfph+a5dw==}
     engines: {node: ^14.13.1 || >=16.0.0}
     hasBin: true
     dependencies:
@@ -5773,8 +5773,8 @@ packages:
       commander: 9.4.1
       debug: 4.3.4
       execa: 6.1.0
-      lilconfig: 2.0.5
-      listr2: 4.0.5
+      lilconfig: 2.0.6
+      listr2: 5.0.5
       micromatch: 4.0.5
       normalize-path: 3.0.0
       object-inspect: 1.12.2
@@ -5786,9 +5786,9 @@ packages:
       - supports-color
     dev: true
 
-  /listr2/4.0.5:
-    resolution: {integrity: sha512-juGHV1doQdpNT3GSTs9IUN43QJb7KHdF9uqg7Vufs/tG9VTzpFphqF4pm/ICdAABGQxsyNn9CiYA3StkI6jpwA==}
-    engines: {node: '>=12'}
+  /listr2/5.0.5:
+    resolution: {integrity: sha512-DpBel6fczu7oQKTXMekeprc0o3XDgGMkD7JNYyX+X0xbwK+xgrx9dcyKoXKqpLSUvAWfmoePS7kavniOcq3r4w==}
+    engines: {node: ^14.13.1 || >=16.0.0}
     peerDependencies:
       enquirer: '>= 2.3.0 < 3'
     peerDependenciesMeta:
@@ -5931,7 +5931,7 @@ packages:
       https-proxy-agent: 5.0.1
       is-lambda: 1.0.1
       lru-cache: 7.14.1
-      minipass: 3.3.4
+      minipass: 3.3.6
       minipass-collect: 1.0.2
       minipass-fetch: 2.1.2
       minipass-flush: 1.0.5
@@ -6058,14 +6058,14 @@ packages:
     resolution: {integrity: sha512-6T6lH0H8OG9kITm/Jm6tdooIbogG9e0tLgpY6mphXSm/A9u8Nq1ryBG+Qspiub9LjWlBPsPS3tWQ/Botq4FdxA==}
     engines: {node: '>= 8'}
     dependencies:
-      minipass: 3.3.4
+      minipass: 3.3.6
     dev: true
 
   /minipass-fetch/2.1.2:
     resolution: {integrity: sha512-LT49Zi2/WMROHYoqGgdlQIZh8mLPZmOrN2NdJjMXxYe4nkN6FUyuPuOAOedNJDrx0IRGg9+4guZewtp8hE6TxA==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
     dependencies:
-      minipass: 3.3.4
+      minipass: 3.3.6
       minipass-sized: 1.0.3
       minizlib: 2.1.2
     optionalDependencies:
@@ -6076,32 +6076,32 @@ packages:
     resolution: {integrity: sha512-JmQSYYpPUqX5Jyn1mXaRwOda1uQ8HP5KAT/oDSLCzt1BYRhQU0/hDtsB1ufZfEEzMZ9aAVmsBw8+FWsIXlClWw==}
     engines: {node: '>= 8'}
     dependencies:
-      minipass: 3.3.4
+      minipass: 3.3.6
     dev: true
 
   /minipass-json-stream/1.0.1:
     resolution: {integrity: sha512-ODqY18UZt/I8k+b7rl2AENgbWE8IDYam+undIJONvigAz8KR5GWblsFTEfQs0WODsjbSXWlm+JHEv8Gr6Tfdbg==}
     dependencies:
       jsonparse: 1.3.1
-      minipass: 3.3.4
+      minipass: 3.3.6
     dev: true
 
   /minipass-pipeline/1.2.4:
     resolution: {integrity: sha512-xuIq7cIOt09RPRJ19gdi4b+RiNvDFYe5JH+ggNvBqGqpQXcru3PcRmOZuHBKWK1Txf9+cQ+HMVN4d6z46LZP7A==}
     engines: {node: '>=8'}
     dependencies:
-      minipass: 3.3.4
+      minipass: 3.3.6
     dev: true
 
   /minipass-sized/1.0.3:
     resolution: {integrity: sha512-MbkQQ2CTiBMlA2Dm/5cY+9SWFEN8pzzOXi6rlM5Xxq0Yqbda5ZQy9sU75a673FE9ZK0Zsbr6Y5iP6u9nktfg2g==}
     engines: {node: '>=8'}
     dependencies:
-      minipass: 3.3.4
+      minipass: 3.3.6
     dev: true
 
-  /minipass/3.3.4:
-    resolution: {integrity: sha512-I9WPbWHCGu8W+6k1ZiGpPu0GkoKBeorkfKNuAFBNS1HNFJvke82sxvI5bzcCNpWPorkOO5QQ+zomzzwRxejXiw==}
+  /minipass/3.3.6:
+    resolution: {integrity: sha512-DxiNidxSEK+tHG6zOIklvNOwm3hvCrbUrdtzY74U6HKTJxvIDfOUL5W5P2Ghd3DTkhhKPYGqeNUIh5qcM4YBfw==}
     engines: {node: '>=8'}
     dependencies:
       yallist: 4.0.0
@@ -6111,7 +6111,7 @@ packages:
     resolution: {integrity: sha512-bAxsR8BVfj60DWXHE3u30oHzfl4G7khkSuPW+qvpd7jFRHm7dLxOjUk1EHACJ/hxLY8phGJ0YhYHZo7jil7Qdg==}
     engines: {node: '>= 8'}
     dependencies:
-      minipass: 3.3.4
+      minipass: 3.3.6
       yallist: 4.0.0
     dev: true
 
@@ -6371,7 +6371,7 @@ packages:
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
     dependencies:
       make-fetch-happen: 10.2.1
-      minipass: 3.3.4
+      minipass: 3.3.6
       minipass-fetch: 2.1.2
       minipass-json-stream: 1.0.1
       minizlib: 2.1.2
@@ -6666,7 +6666,7 @@ packages:
       chownr: 2.0.0
       fs-minipass: 2.1.0
       infer-owner: 1.0.4
-      minipass: 3.3.4
+      minipass: 3.3.6
       mkdirp: 1.0.4
       npm-package-arg: 9.1.2
       npm-packlist: 5.1.3
@@ -6843,8 +6843,8 @@ packages:
       fast-diff: 1.2.0
     dev: true
 
-  /prettier/2.7.1:
-    resolution: {integrity: sha512-ujppO+MkdPqoVINuDFDRLClm7D78qbDt0/NR+wp5FqEZOoTNAjPHWj17QRhu7geIHJfcNhRk1XVQmF8Bp3ye+g==}
+  /prettier/2.8.0:
+    resolution: {integrity: sha512-9Lmg8hTFZKG0Asr/kW9Bp8tJjRVluO8EJQVfY2T7FMw9T5jy4I/Uvx0Rca/XWf50QQ1/SS48+6IJWnrb+2yemA==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     dev: true
@@ -7425,7 +7425,7 @@ packages:
     resolution: {integrity: sha512-o57Wcn66jMQvfHG1FlYbWeZWW/dHZhJXjpIcTfXldXEk5nz5lStPo3mK0OJQfGR3RbZUlbISexbljkJzuEj/8Q==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
     dependencies:
-      minipass: 3.3.4
+      minipass: 3.3.6
     dev: true
 
   /stack-utils/2.0.6:
@@ -7633,7 +7633,7 @@ packages:
     dependencies:
       chownr: 2.0.0
       fs-minipass: 2.1.0
-      minipass: 3.3.4
+      minipass: 3.3.6
       minizlib: 2.1.2
       mkdirp: 1.0.4
       yallist: 4.0.0
