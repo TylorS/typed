@@ -1,4 +1,4 @@
-export class SingleShotGen<T, A> implements Generator<T, A> {
+export class SingleShotGen<T, A> implements Generator<T, A, A> {
   called = false
 
   constructor(readonly value: T) {}
