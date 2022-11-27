@@ -21,8 +21,8 @@
     }
   },
   "dependencies": {
+    "@fp-ts/data": "^0.0.16",
     "@typed/cause": "workspace:*",
-    "@typed/exit": "workspace:*",
     "@typed/internal": "workspace:*",
     "@typed/platform": "workspace:*"
   }

@@ -4,6 +4,15 @@
     "rootDir": "./src",
     "outDir": "dist"
   },
-  "include": ["src"],
-  "references": []
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": ".../disposable/tsconfig.build.json"
+    },
+    {
+      "path": ".../time/tsconfig.build.json"
+    }
+  ]
 }

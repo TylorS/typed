@@ -21,9 +21,9 @@
     }
   },
   "dependencies": {
-    "@typed/cause": "workspace:*",
-    "@typed/clock": "workspace:*",
+    "@fp-ts/data": "^0.0.16",
     "@typed/effect": "workspace:*",
+    "@typed/cause": "workspace:*",
     "@typed/time": "workspace:*"
   }
 }

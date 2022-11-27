@@ -9,13 +9,10 @@
   ],
   "references": [
     {
-      "path": "../clock/tsconfig.build.json"
+      "path": ".../exit/tsconfig.build.json"
     },
     {
-      "path": "../exit/tsconfig.build.json"
-    },
-    {
-      "path": "../time/tsconfig.build.json"
+      "path": ".../time/tsconfig.build.json"
     }
   ]
 }

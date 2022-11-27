@@ -19,5 +19,8 @@
       "import": "./dist/*.js",
       "types": "./dist/*.d.ts"
     }
+  },
+  "dependencies": {
+    "@fp-ts/data": "^0.0.16"
   }
 }

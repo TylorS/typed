@@ -9,7 +9,7 @@
   ],
   "references": [
     {
-      "path": "../cause/tsconfig.build.json"
+      "path": ".../cause/tsconfig.build.json"
     }
   ]
 }

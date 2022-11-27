@@ -20,9 +20,5 @@
       "types": "./dist/*.d.ts"
     }
   },
-  "dependencies": {
-    "@typed/clock": "workspace:*",
-    "@typed/time": "workspace:*",
-    "@typed/timer": "workspace:*"
-  }
+  "dependencies": {}
 }

@@ -21,6 +21,8 @@
     }
   },
   "dependencies": {
-    "@typed/time": "workspace:*"
+    "@fp-ts/data": "^0.0.16",
+    "@typed/time": "workspace:*",
+    "@fp-ts/core": "^0.0.8"
   }
 }

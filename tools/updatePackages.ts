@@ -27,14 +27,20 @@ for (const name of packageNames) {
   const references = new Set<string>()
 
   for (const path of filePaths) {
-    const sourceFile = project.getSourceFileOrThrow(path)
+    const sourceFile = project.getSourceFile(path)
+
+    if (!sourceFile) {
+      continue
+    }
+
     const imports = sourceFile
       .getImportStringLiterals()
-      .map((x) => x.getText())
+      .map((x) => x.getText().slice(1).slice(0, -1))
       .filter((x) => x.includes('@typed') || x.includes('@fp-ts'))
+      .sort()
 
     for (const importPath of imports) {
-      const [orgName, packageName] = importPath.split(/\/g/)
+      const [orgName, packageName] = importPath.split(/\//g)
 
       dependencies.add(`${orgName}/${packageName}`)
 

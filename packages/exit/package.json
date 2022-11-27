@@ -21,6 +21,7 @@
     }
   },
   "dependencies": {
+    "@fp-ts/data": "^0.0.16",
     "@typed/cause": "workspace:*"
   }
 }

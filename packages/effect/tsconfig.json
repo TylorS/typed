@@ -9,16 +9,13 @@
   ],
   "references": [
     {
-      "path": "../cause/tsconfig.build.json"
+      "path": ".../cause/tsconfig.build.json"
     },
     {
-      "path": "../exit/tsconfig.build.json"
+      "path": ".../internal/tsconfig.build.json"
     },
     {
-      "path": "../internal/tsconfig.build.json"
-    },
-    {
-      "path": "../platform/tsconfig.build.json"
+      "path": ".../platform/tsconfig.build.json"
     }
   ]
 }

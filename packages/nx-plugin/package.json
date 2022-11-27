@@ -6,5 +6,6 @@
   "devDependencies": {
     "webpack": "^5.0.0"
   },
-  "generators": "generators.json"
+  "generators": "generators.json",
+  "dependencies": {}
 }
