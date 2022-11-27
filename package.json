@@ -21,6 +21,7 @@
     "test:watch": "nx run-many --target=test --all -c=watch",
     "test:affected": "nx affected --target=test",
     "watch": "tsc --build --watch --preserveWatchOutput",
+    "update": "pnpm run update:rootTsconfig && pnpm run update:packages",
     "update:packages": "tsx ./tools/updatePackages.ts",
     "update:rootTsconfig": "tsx ./tools/updateRootTsconfig.ts",
     "~~NEEDS POSITIONAL COMMAND LINE ARGUMENT~~": "",

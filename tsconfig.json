@@ -40,9 +40,6 @@
       "path": "./packages/layer/tsconfig.build.json"
     },
     {
-      "path": "./packages/nx-plugin/tsconfig.build.json"
-    },
-    {
       "path": "./packages/platform/tsconfig.build.json"
     },
     {
