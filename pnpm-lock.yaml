@@ -72,75 +72,64 @@ importers:
 
   packages/cause:
     specifiers:
+      '@fp-ts/core': ^0.0.8
+      '@fp-ts/data': ^0.0.16
       '@typed/time': workspace:*
       '@typed/trace': workspace:*
     dependencies:
+      '@fp-ts/core': 0.0.8
+      '@fp-ts/data': 0.0.16
       '@typed/time': link:../time
       '@typed/trace': link:../trace
 
   packages/clock:
     specifiers:
+      '@fp-ts/data': ^0.0.16
       '@typed/time': workspace:*
     dependencies:
+      '@fp-ts/data': 0.0.16
       '@typed/time': link:../time
 
-  packages/concurrency:
-    specifiers: {}
-
   packages/disposable:
-    specifiers: {}
-
-  packages/effect:
     specifiers:
-      '@typed/cause': workspace:*
-      '@typed/exit': workspace:*
-      '@typed/internal': workspace:*
-      '@typed/platform': workspace:*
+      '@fp-ts/data': ^0.0.16
     dependencies:
-      '@typed/cause': link:../cause
-      '@typed/exit': link:../exit
-      '@typed/internal': link:../internal
-      '@typed/platform': link:../platform
+      '@fp-ts/data': 0.0.16
 
   packages/exit:
     specifiers:
+      '@fp-ts/data': ^0.0.16
       '@typed/cause': workspace:*
     dependencies:
+      '@fp-ts/data': 0.0.16
       '@typed/cause': link:../cause
-
-  packages/fiber:
-    specifiers:
-      '@typed/clock': workspace:*
-      '@typed/exit': workspace:*
-      '@typed/time': workspace:*
-    dependencies:
-      '@typed/clock': link:../clock
-      '@typed/exit': link:../exit
-      '@typed/time': link:../time
-
-  packages/fiberRef:
-    specifiers: {}
-
-  packages/future:
-    specifiers: {}
-
-  packages/fx:
-    specifiers:
-      '@typed/cause': workspace:*
-      '@typed/clock': workspace:*
-      '@typed/effect': workspace:*
-      '@typed/time': workspace:*
-    dependencies:
-      '@typed/cause': link:../cause
-      '@typed/clock': link:../clock
-      '@typed/effect': link:../effect
-      '@typed/time': link:../time
 
   packages/internal:
     specifiers: {}
 
-  packages/layer:
-    specifiers: {}
+  packages/io:
+    specifiers:
+      '@fp-ts/data': ^0.0.16
+      '@typed/cause': workspace:*
+      '@typed/clock': workspace:*
+      '@typed/disposable': workspace:*
+      '@typed/exit': workspace:*
+      '@typed/internal': workspace:*
+      '@typed/schedule': workspace:*
+      '@typed/time': workspace:*
+      '@typed/timeline': workspace:*
+      '@typed/timer': workspace:*
+    dependencies:
+      '@fp-ts/data': 0.0.16
+      '@typed/cause': link:../cause
+      '@typed/clock': link:../clock
+      '@typed/disposable': link:../disposable
+      '@typed/exit': link:../exit
+      '@typed/internal': link:../internal
+      '@typed/schedule': link:../schedule
+      '@typed/time': link:../time
+      '@typed/timeline': link:../timeline
+      '@typed/timer': link:../timer
 
   packages/nx-plugin:
     specifiers:
@@ -148,36 +137,26 @@ importers:
     devDependencies:
       webpack: 5.75.0
 
-  packages/platform:
-    specifiers:
-      '@typed/clock': workspace:*
-      '@typed/time': workspace:*
-      '@typed/timer': workspace:*
-    dependencies:
-      '@typed/clock': link:../clock
-      '@typed/time': link:../time
-      '@typed/timer': link:../timer
-
   packages/schedule:
     specifiers:
+      '@fp-ts/core': ^0.0.8
+      '@fp-ts/data': ^0.0.16
       '@typed/time': workspace:*
     dependencies:
+      '@fp-ts/core': 0.0.8
+      '@fp-ts/data': 0.0.16
       '@typed/time': link:../time
-
-  packages/scheduler:
-    specifiers: {}
-
-  packages/scope:
-    specifiers: {}
 
   packages/testing:
     specifiers:
+      '@fp-ts/data': ^0.0.16
       '@typed/clock': workspace:*
       '@typed/disposable': workspace:*
       '@typed/time': workspace:*
       '@typed/timeline': workspace:*
       '@typed/timer': workspace:*
     dependencies:
+      '@fp-ts/data': 0.0.16
       '@typed/clock': link:../clock
       '@typed/disposable': link:../disposable
       '@typed/time': link:../time
@@ -185,7 +164,10 @@ importers:
       '@typed/timer': link:../timer
 
   packages/time:
-    specifiers: {}
+    specifiers:
+      '@fp-ts/data': ^0.0.16
+    dependencies:
+      '@fp-ts/data': 0.0.16
 
   packages/timeline:
     specifiers:
@@ -197,10 +179,12 @@ importers:
 
   packages/timer:
     specifiers:
+      '@fp-ts/data': ^0.0.16
       '@typed/clock': workspace:*
       '@typed/disposable': workspace:*
       '@typed/time': workspace:*
     dependencies:
+      '@fp-ts/data': 0.0.16
       '@typed/clock': link:../clock
       '@typed/disposable': link:../disposable
       '@typed/time': link:../time

@@ -32,7 +32,7 @@ export interface Timeline<A> {
  * Make a Timeline which optionally takes a callback that will be called
  * each time an item is added or removed from the Timeline.
  */
-export function makeTimeline<A>(onUpdated?: () => void): Timeline<A> {
+export function Timeline<A>(onUpdated?: () => void): Timeline<A> {
   return new TimelineImpl(onUpdated)
 }
 

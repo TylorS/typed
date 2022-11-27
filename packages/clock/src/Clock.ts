@@ -5,7 +5,7 @@ import { Time, UnixTime } from '@typed/time'
 export interface Clock {
   readonly startTime: UnixTime
   readonly get: () => UnixTime
-  readonly delay: (duration: Duration) => UnixTime
+  readonly addDelay: (duration: Duration) => UnixTime
   readonly fork: () => Clock
 }
 
@@ -13,7 +13,7 @@ const getUnixTime = (): UnixTime => UnixTime(Date.now())
 
 const GetUnixTime = {
   get: getUnixTime,
-  delay: (duration: Duration) => UnixTime(getUnixTime() + duration.millis),
+  addDelay: (duration: Duration) => UnixTime(getUnixTime() + duration.millis),
   fork: () => Clock(),
 }
 
@@ -35,7 +35,7 @@ export function get(clock: Clock): UnixTime {
 }
 
 export function delay(duration: Duration) {
-  return (clock: Clock): UnixTime => clock.delay(duration)
+  return (clock: Clock): UnixTime => clock.addDelay(duration)
 }
 
 export function getTime(clock: Clock): Time {
@@ -43,5 +43,5 @@ export function getTime(clock: Clock): Time {
 }
 
 export function timeDelay(duration: Duration) {
-  return (clock: Clock): Time => Time(clock.delay(duration) - clock.startTime)
+  return (clock: Clock): Time => Time(clock.addDelay(duration) - clock.startTime)
 }

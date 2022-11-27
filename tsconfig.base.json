@@ -27,5 +27,9 @@
       "ES2020"
     ],
     "types": []
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "packages/*/dist"
+  ]
 }

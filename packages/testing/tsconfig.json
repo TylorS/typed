@@ -7,6 +7,9 @@
   "include": [
     "src"
   ],
+  "exclude": [
+    "dist"
+  ],
   "references": [
     {
       "path": ".../clock/tsconfig.build.json"

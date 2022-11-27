@@ -2,7 +2,7 @@ import { flow } from '@fp-ts/data/Function'
 import { getTime } from '@typed/clock'
 import { Disposable } from '@typed/disposable'
 import { Time, UnixTime } from '@typed/time'
-import { makeTimeline } from '@typed/timeline'
+import { Timeline } from '@typed/timeline'
 import { Timer } from '@typed/timer'
 
 import { makeTestClock, TestClock } from './TestClock.js'
@@ -15,7 +15,7 @@ export interface TestTimer extends Timer, TestClock {
 }
 
 export function makeTestTimer(clock: TestClock = makeTestClock(), autoRun = true): TestTimer {
-  const timeline = makeTimeline<(t: Time) => void>()
+  const timeline = Timeline<(t: Time) => void>()
   const runReadyTimers = (t: Time) => (
     timeline.getReadyTasks(UnixTime(clock.startTime + t)).forEach((f) => f(t)), t
   )
@@ -31,7 +31,7 @@ export function makeTestTimer(clock: TestClock = makeTestClock(), autoRun = true
         return Disposable.unit
       }
 
-      return timeline.add(clock.delay(delay), f)
+      return timeline.add(clock.addDelay(delay), f)
     },
     progressTimeBy: flow(clock.progressTimeBy, runReadyTimers),
     fork: () => makeTestTimer(clock.fork(), autoRun),

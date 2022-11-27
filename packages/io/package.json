@@ -1,0 +1,35 @@
+{
+  "name": "@typed/io",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./*": {
+      "import": "./dist/*.js",
+      "types": "./dist/*.d.ts"
+    },
+    "./*.js": {
+      "import": "./dist/*.js",
+      "types": "./dist/*.d.ts"
+    }
+  },
+  "dependencies": {
+    "@fp-ts/data": "^0.0.16",
+    "@typed/cause": "workspace:*",
+    "@typed/exit": "workspace:*",
+    "@typed/internal": "workspace:*",
+    "@typed/time": "workspace:*",
+    "@typed/disposable": "workspace:*",
+    "@typed/timeline": "workspace:*",
+    "@typed/timer": "workspace:*",
+    "@typed/clock": "workspace:*",
+    "@typed/schedule": "workspace:*"
+  }
+}
