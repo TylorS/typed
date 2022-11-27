@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@typed/clock": "workspace:*",
+    "@typed/disposable": "workspace:*",
     "@typed/time": "workspace:*",
     "@typed/timer": "workspace:*",
     "@typed/timeline": "workspace:*"

@@ -4,6 +4,6 @@ import { Disposable } from '@typed/disposable'
 import { Time } from '@typed/time'
 
 export interface Timer extends Clock {
-  readonly delay: (f: (time: Time) => void, delay: Duration) => Disposable
+  readonly setTimer: (f: (time: Time) => void, delay: Duration) => Disposable
   readonly fork: () => Timer
 }

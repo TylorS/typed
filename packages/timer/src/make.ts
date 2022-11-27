@@ -1,4 +1,4 @@
-import { Clock, makeDateClock } from '@typed/clock'
+import { Clock } from '@typed/clock'
 import { Disposable } from '@typed/disposable/Disposable'
 
 import { Timer } from './Timer.js'
@@ -7,10 +7,10 @@ import { Timer } from './Timer.js'
 declare const setImmediate: typeof setTimeout
 declare const clearImmediate: typeof clearTimeout
 
-export function makeTimer(clock: Clock = makeDateClock()): Timer {
+export function makeTimer(clock: Clock = Clock()): Timer {
   return {
     ...clock,
-    delay: (callback, delay) => {
+    setTimer: (callback, delay) => {
       if (delay.millis < 1) {
         const id = setImmediate(callback)
 

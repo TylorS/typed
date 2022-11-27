@@ -89,6 +89,9 @@ importers:
     dependencies:
       '@typed/cause': link:../cause
 
+  packages/internal:
+    specifiers: {}
+
   packages/nx-plugin:
     specifiers:
       webpack: ^5.0.0
@@ -98,11 +101,13 @@ importers:
   packages/testing:
     specifiers:
       '@typed/clock': workspace:*
+      '@typed/disposable': workspace:*
       '@typed/time': workspace:*
       '@typed/timeline': workspace:*
       '@typed/timer': workspace:*
     dependencies:
       '@typed/clock': link:../clock
+      '@typed/disposable': link:../disposable
       '@typed/time': link:../time
       '@typed/timeline': link:../timeline
       '@typed/timer': link:../timer
