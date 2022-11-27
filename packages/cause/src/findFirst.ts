@@ -14,7 +14,7 @@ export function findFirst<E>(
 
 export function findFirst<E>(predicate: Predicate<Cause.Cause.Simple<E>>) {
   return function findFirstCause(cause: Cause.Cause<E>): Option.Option<Cause.Cause.Simple<E>> {
-    switch (cause.tag) {
+    switch (cause._tag) {
       case 'Empty':
       case 'Interrupted':
       case 'Unexpected':

@@ -1,5 +1,5 @@
 {
-  "name": "@typed/fiber",
+  "name": "@typed/effect",
   "version": "0.0.0",
   "type": "module",
   "main": "dist/index.js",
@@ -20,9 +20,5 @@
       "types": "./dist/*.d.ts"
     }
   },
-  "dependencies": {
-    "@typed/clock": "workspace:*",
-    "@typed/exit": "workspace:*",
-    "@typed/time": "workspace:*"
-  }
+  "dependencies": {}
 }

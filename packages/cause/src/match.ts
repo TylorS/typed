@@ -19,5 +19,5 @@ export function match<E, R1, R2, R3, R4, R5, R6, R7>(matchers: {
   readonly Traced: (traced: Traced<E>) => R7
 }) {
   return (cause: Cause<E>): R1 | R2 | R3 | R4 | R5 | R6 | R7 =>
-    (matchers[cause.tag] as (c: typeof cause) => R1 | R2 | R3 | R4 | R5 | R6 | R7)(cause)
+    (matchers[cause._tag] as (c: typeof cause) => R1 | R2 | R3 | R4 | R5 | R6 | R7)(cause)
 }

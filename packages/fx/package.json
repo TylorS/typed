@@ -1,5 +1,5 @@
 {
-  "name": "@typed/fiber",
+  "name": "@typed/fx",
   "version": "0.0.0",
   "type": "module",
   "main": "dist/index.js",
@@ -21,8 +21,9 @@
     }
   },
   "dependencies": {
+    "@typed/cause": "workspace:*",
     "@typed/clock": "workspace:*",
-    "@typed/exit": "workspace:*",
+    "@typed/effect": "workspace:*",
     "@typed/time": "workspace:*"
   }
 }

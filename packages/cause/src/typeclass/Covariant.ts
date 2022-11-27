@@ -7,7 +7,7 @@ import { CauseTypeLambda } from './TypeLambda.js'
 
 const mapCauseSafe = <A, B>(cause: Cause<A>, f: (a: A) => B): safeEval.SafeEval<Cause<B>> =>
   safeEval.gen(function* (_) {
-    const tag = cause.tag
+    const tag = cause._tag
 
     if (tag === 'Expected') {
       return Expected(cause.time, f(cause.error))

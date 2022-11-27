@@ -12,7 +12,7 @@ export function findAll<E>(
 
 export function findAll<E>(predicate: Predicate<Cause.Cause.Simple<E>>) {
   return function findAllCause(cause: Cause.Cause<E>): ReadonlyArray<Cause.Cause.Simple<E>> {
-    switch (cause.tag) {
+    switch (cause._tag) {
       case 'Empty':
       case 'Interrupted':
       case 'Unexpected':

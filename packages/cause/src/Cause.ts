@@ -15,118 +15,118 @@ export namespace Cause {
 }
 
 export interface Empty {
-  readonly tag: 'Empty'
+  readonly _tag: 'Empty'
 }
 
 export interface Interrupted {
-  readonly tag: 'Interrupted'
+  readonly _tag: 'Interrupted'
   readonly time: UnixTime
   readonly by: string
 }
 
 export interface Unexpected {
-  readonly tag: 'Unexpected'
+  readonly _tag: 'Unexpected'
   readonly time: UnixTime
   readonly error: unknown
 }
 
 export interface Expected<E> {
-  readonly tag: 'Expected'
+  readonly _tag: 'Expected'
   readonly time: UnixTime
   readonly error: E
 }
 
 export interface Sequential<E> {
-  readonly tag: 'Sequential'
+  readonly _tag: 'Sequential'
   readonly left: Cause<E>
   readonly right: Cause<E>
 }
 
 export interface Concurrent<E> {
-  readonly tag: 'Concurrent'
+  readonly _tag: 'Concurrent'
   readonly left: Cause<E>
   readonly right: Cause<E>
 }
 
 export interface Traced<E> {
-  readonly tag: 'Traced'
+  readonly _tag: 'Traced'
   readonly cause: Cause<E>
   readonly executionTrace: Trace
   readonly stackTrace: Trace
 }
 
-export const Empty: Empty & Cause<never> = { tag: 'Empty' }
+export const Empty: Empty & Cause<never> = { _tag: 'Empty' }
 
-export const isEmpty = <E>(cause: Cause<E>): cause is Empty => cause.tag === 'Empty'
+export const isEmpty = <E>(cause: Cause<E>): cause is Empty => cause._tag === 'Empty'
 
 export const Interrupted = (time: UnixTime, by: string): Interrupted & Cause<never> => ({
-  tag: 'Interrupted',
+  _tag: 'Interrupted',
   time,
   by,
 })
 
 export const isInterrupted = <E>(cause: Cause<E>): cause is Interrupted =>
-  cause.tag === 'Interrupted'
+  cause._tag === 'Interrupted'
 
 export const Unexpected = (time: UnixTime, error: unknown): Unexpected & Cause<never> => ({
-  tag: 'Unexpected',
+  _tag: 'Unexpected',
   time,
   error,
 })
 
-export const isUnexpected = <E>(cause: Cause<E>): cause is Unexpected => cause.tag === 'Unexpected'
+export const isUnexpected = <E>(cause: Cause<E>): cause is Unexpected => cause._tag === 'Unexpected'
 
 export const Expected = <E>(time: UnixTime, error: E): Expected<E> => ({
-  tag: 'Expected',
+  _tag: 'Expected',
   time,
   error,
 })
 
-export const isExpected = <E>(cause: Cause<E>): cause is Expected<E> => cause.tag === 'Expected'
+export const isExpected = <E>(cause: Cause<E>): cause is Expected<E> => cause._tag === 'Expected'
 
 export const Sequential = <E = never, E2 = never>(
   left: Cause<E>,
   right: Cause<E2>,
 ): Cause<E | E2> =>
-  left.tag === 'Empty'
+  left._tag === 'Empty'
     ? right
-    : right.tag === 'Empty'
+    : right._tag === 'Empty'
     ? left
     : {
-        tag: 'Sequential',
+        _tag: 'Sequential',
         left,
         right,
       }
 
 export const isSequential = <E>(cause: Cause<E>): cause is Sequential<E> =>
-  cause.tag === 'Sequential'
+  cause._tag === 'Sequential'
 
 export const Concurrent = <E = never, E2 = never>(
   left: Cause<E>,
   right: Cause<E2>,
 ): Cause<E | E2> =>
-  left.tag === 'Empty'
+  left._tag === 'Empty'
     ? right
-    : right.tag === 'Empty'
+    : right._tag === 'Empty'
     ? left
     : {
-        tag: 'Concurrent',
+        _tag: 'Concurrent',
         left,
         right,
       }
 
 export const isConcurrent = <E>(cause: Cause<E>): cause is Concurrent<E> =>
-  cause.tag === 'Concurrent'
+  cause._tag === 'Concurrent'
 
 export const Traced = <E>(
   cause: Cause<E>,
   executionTrace: Trace,
   stackTrace: Trace,
 ): Traced<E> => ({
-  tag: 'Traced',
+  _tag: 'Traced',
   cause,
   executionTrace,
   stackTrace,
 })
 
-export const isTraced = <E>(cause: Cause<E>): cause is Traced<E> => cause.tag === 'Traced'
+export const isTraced = <E>(cause: Cause<E>): cause is Traced<E> => cause._tag === 'Traced'
