@@ -51,7 +51,8 @@ export interface Concurrent<E> {
 export interface Traced<E> {
   readonly tag: 'Traced'
   readonly cause: Cause<E>
-  readonly trace: Trace
+  readonly executionTrace: Trace
+  readonly stackTrace: Trace
 }
 
 export const Empty: Empty & Cause<never> = { tag: 'Empty' }
@@ -117,10 +118,15 @@ export const Concurrent = <E = never, E2 = never>(
 export const isConcurrent = <E>(cause: Cause<E>): cause is Concurrent<E> =>
   cause.tag === 'Concurrent'
 
-export const Traced = <E>(cause: Cause<E>, trace: Trace): Traced<E> => ({
+export const Traced = <E>(
+  cause: Cause<E>,
+  executionTrace: Trace,
+  stackTrace: Trace,
+): Traced<E> => ({
   tag: 'Traced',
   cause,
-  trace,
+  executionTrace,
+  stackTrace,
 })
 
 export const isTraced = <E>(cause: Cause<E>): cause is Traced<E> => cause.tag === 'Traced'

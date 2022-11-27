@@ -6,7 +6,7 @@ import { Cause, Concurrent, Expected, Sequential, Traced } from '../Cause.js'
 import { CauseTypeLambda } from './TypeLambda.js'
 
 const mapCauseSafe = <A, B>(cause: Cause<A>, f: (a: A) => B): safeEval.SafeEval<Cause<B>> =>
-  safeEval.gen(function* () {
+  safeEval.gen(function* (_) {
     const tag = cause.tag
 
     if (tag === 'Expected') {
@@ -14,15 +14,21 @@ const mapCauseSafe = <A, B>(cause: Cause<A>, f: (a: A) => B): safeEval.SafeEval<
     }
 
     if (tag === 'Sequential') {
-      return Sequential(yield* mapCauseSafe(cause.left, f), yield* mapCauseSafe(cause.right, f))
+      return Sequential(
+        yield* _(mapCauseSafe(cause.left, f)),
+        yield* _(mapCauseSafe(cause.right, f)),
+      )
     }
 
     if (tag === 'Concurrent') {
-      return Concurrent(yield* mapCauseSafe(cause.left, f), yield* mapCauseSafe(cause.right, f))
+      return Concurrent(
+        yield* _(mapCauseSafe(cause.left, f)),
+        yield* _(mapCauseSafe(cause.right, f)),
+      )
     }
 
     if (tag === 'Traced') {
-      return Traced(yield* mapCauseSafe(cause.cause, f), cause.trace)
+      return Traced(yield* _(mapCauseSafe(cause.cause, f)), cause.executionTrace, cause.stackTrace)
     }
 
     return cause
