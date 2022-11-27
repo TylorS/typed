@@ -89,6 +89,14 @@ importers:
     dependencies:
       '@typed/cause': link:../cause
 
+  packages/fiber:
+    specifiers:
+      '@typed/clock': workspace:*
+      '@typed/time': workspace:*
+    dependencies:
+      '@typed/clock': link:../clock
+      '@typed/time': link:../time
+
   packages/internal:
     specifiers: {}
 
