@@ -25,6 +25,7 @@
     "@typed/cause": "workspace:*",
     "@typed/exit": "workspace:*",
     "@typed/internal": "workspace:*",
+    "@typed/trace": "workspace:*",
     "@typed/time": "workspace:*",
     "@typed/disposable": "workspace:*",
     "@typed/timeline": "workspace:*",

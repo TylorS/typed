@@ -69,9 +69,9 @@ export function isResolved<R, E, A>(future: Future<R, E, A>): future is Future.R
 
 export function pending<R, E, A>(): Future<R, E, A> {
   let state: Future.State<R, E, A> = { _tag: 'Pending' }
-  const observers: Future.Observer<R, E, A>[] = []
+  let observers: Future.Observer<R, E, A>[] = []
 
-  return {
+  const future: Future<R, E, A> = {
     [Future.TypeId]: Future.Variance,
     get state() {
       return state
@@ -101,9 +101,11 @@ export function pending<R, E, A>(): Future<R, E, A> {
       state = { _tag: 'Resolved', effect }
 
       observers.forEach((o) => o(effect))
-      observers.length = 0
+      observers = []
 
       return true
     },
   }
+
+  return future
 }

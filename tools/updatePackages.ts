@@ -49,8 +49,6 @@ for (const name of packageNames) {
     for (const importPath of imports) {
       const [orgName, packageName] = importPath.split(/\//g).map((x) => x.trim())
 
-      console.log(name, packageName)
-
       if (packageName === name) {
         continue
       }

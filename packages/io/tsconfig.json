@@ -37,6 +37,9 @@
     },
     {
       "path": ".../timer/tsconfig.build.json"
+    },
+    {
+      "path": ".../trace/tsconfig.build.json"
     }
   ]
 }

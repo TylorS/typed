@@ -3,25 +3,73 @@ import { flow, identity } from '@fp-ts/data/Function'
 import { Cause, CauseError } from '@typed/cause'
 import { Exit } from '@typed/exit'
 import { SingleShotGen } from '@typed/internal'
+import * as T from '@typed/trace'
 
-import { FiberRef, isFiberRef } from '../fiberRef/fiberRef.js'
+import type { LiveFiber } from '../fiber/Fiber.js'
 import type { FiberRefs } from '../fiberRefs/fiberRefs.js'
-import { Future, isFuture } from '../future/future.js'
-import { Platform } from '../platform/index.js'
+import type { Future } from '../future/future.js'
+import type { Platform } from '../platform/index.js'
+import type { RuntimeFlags } from '../runtimeFlags/RuntimeFlags.js'
+import type { RuntimeOptions } from '../runtimeOptions/index.js'
 
 export interface Effect<R, E, A> extends Effect.Variance<R, E, A> {
   readonly [Symbol.iterator]: () => Generator<Effect<R, E, A>, A, A>
 
-  // TODO: Add ControlFlow methods
+  readonly tap: <R2, E2, B>(
+    f: (a: A) => Effect<R2, E2, B>,
+    __trace?: string,
+  ) => Effect<R | R2, E | E2, A>
+
+  readonly tapCause: <R2, E2, B>(
+    f: (a: Cause<E>) => Effect<R2, E2, B>,
+    __trace?: string,
+  ) => Effect<R | R2, E | E2, A>
+
+  readonly map: <B>(f: (a: A) => B, __trace?: string) => Effect<R, E, B>
+
+  readonly as: <B>(b: B, __trace?: string) => Effect<R, E, B>
+
+  readonly mapCause: <E2>(f: (e: Cause<E>) => Cause<E2>, __trace?: string) => Effect<R, E2, A>
+
+  readonly flatMap: <R2, E2, B>(
+    f: (a: A) => Effect<R2, E2, B>,
+    __trace?: string,
+  ) => Effect<R | R2, E | E2, B>
+
+  readonly orElseCause: <R2, E2, B>(
+    f: (e: Cause<E>) => Effect<R2, E2, B>,
+    __trace?: string,
+  ) => Effect<R | R2, E2, A | B>
+
+  readonly matchCause: <R2, E2, B, R3, E3, C>(
+    onFailure: (e: Cause<E>) => Effect<R2, E2, B>,
+    onSuccess: (a: A) => Effect<R3, E3, C>,
+    __trace?: string,
+  ) => Effect<R | R2 | R3, E2 | E3, B | C>
+
+  readonly ensuring: <R2, E2, B>(
+    finalizer: (e: Exit<E, A>) => Effect<R2, E2, B>,
+    __trace?: string,
+  ) => Effect<R | R2, E | E2, A>
+
+  readonly fork: (
+    options?: Partial<RuntimeOptions>,
+    __trace?: string,
+  ) => Effect<R, never, LiveFiber<E, A>>
 
   readonly traced: (trace?: string) => Effect<R, E, A>
+
   readonly provideContext: (context: Context.Context<R>, __trace?: string) => Effect<never, E, A>
+
   readonly provideService: <S>(
     tag: Context.Tag<S>,
     service: S,
     __trace?: string,
   ) => Effect<Exclude<R, S>, E, A>
+
   readonly provideFiberRefs: (fiberRefs: FiberRefs, __trace?: string) => Effect<R, E, A>
+
+  readonly provideRuntimeFlags: (flags: RuntimeFlags, __trace?: string) => Effect<R, E, A>
 }
 
 export function Effect<Y extends Effect<any, any, any>, R, N>(
@@ -64,6 +112,10 @@ export namespace Effect {
     }
   }
 
+  export interface Of<A> extends Effect<never, never, A> {}
+  export interface IO<E, A> extends Effect<never, E, A> {}
+  export interface RIO<R, A> extends Effect<R, never, A> {}
+
   /* eslint-disable @typescript-eslint/no-unused-vars */
   export type ResourcesOf<T> = [T] extends [never]
     ? never
@@ -91,39 +143,31 @@ export namespace Effect {
   }
 
   export interface Adapter {
-    <R>(effect: Context.Tag<R>, __trace?: string): Effect<R, never, R>
-    <R, E, A>(effect: Future<R, E, A>, __trace?: string): Effect<R, E, A>
-    <R, E, A>(effect: FiberRef<R, E, A>, __trace?: string): Effect<R, E, A>
+    <R>(effect: Context.Tag<R>, __trace?: string): Effect<R, never, R> & {
+      readonly with: <A>(f: (r: R) => A) => Effect<R, never, A>
+    }
   }
 
-  export const Adapter: Adapter = <R, E, A>(
-    tag: Context.Tag<R> | Future<R, E, A> | FiberRef<R, E, A>,
-    __trace?: string,
-  ): any => {
+  export const Adapter: Adapter = <R>(tag: Context.Tag<R>, __trace?: string): any => {
     if (Context.isTag(tag)) {
-      return new WithContext<R, never, never, R>(flow(Context.unsafeGet(tag), now)).traced(__trace)
-    }
-
-    if (isFuture<R, E, A>(tag)) {
-      return new Wait(tag).traced(__trace)
-    }
-
-    if (isFiberRef<R, E, A>(tag)) {
-      return new WithFiberRefs((refs) => refs.get(tag)).traced(__trace)
+      return Object.assign(ask(tag, __trace), {
+        with: <A>(f: (r: R) => A) =>
+          withContext((ctx) => fromLazy(() => f(Context.unsafeGet(tag)(ctx))), __trace),
+      })
     }
 
     throw new Error(`Cannot adapt ${JSON.stringify(tag, null, 2)}\n${__trace}`)
   }
 
-  // TODO: Runtime Flags, With/Provide
-  // TODO: Fork, WithCurrentFiber
-  // TODO: WithStackTrace, + types for Execution + Stack traces
-  // TODO: Platform needs a Cause Renderer
-  // TODO: ...
+  export interface Trace {
+    readonly execution: T.Trace
+    readonly stack: T.Trace
+  }
 
   export type Instruction =
     | Ensuring<any, any, any, any, any, any>
     | FlatMap<any, any, any, any, any, any>
+    | Fork<any, any, any>
     | FromCause<any>
     | FromLazy<any>
     | Lazy<any, any, any>
@@ -134,27 +178,80 @@ export namespace Effect {
     | OrElseCause<any, any, any, any, any, any>
     | ProvideContext<any, any, any>
     | ProvideFiberRefs<any, any, any>
+    | ProvideRuntimeFlags<any, any, any>
     | ProvideTrace<any, any, any>
     | Tap<any, any, any, any, any, any>
     | TapCause<any, any, any, any, any, any>
     | Wait<any, any, any>
     | WithContext<any, any, any, any>
+    | WithCurrentFiber<any, any, any>
     | WithFiberRefs<any, any, any>
     | WithPlatform<any, any, any>
+    | WithRuntimeFlags<any, any, any>
+    | WithRuntimeOptions<any, any, any>
 }
 
-export const instr = <T extends string>(tag: T) =>
+const instr = <T extends string>(tag: T) =>
   class Instr<I, R, E, A> implements Effect<R, E, A> {
     constructor(readonly input: I) {}
 
     static _tag: T = tag
     readonly _tag: T = tag;
 
-    readonly [Effect.TypeId] = Effect.Variance;
-    readonly [Symbol.iterator] = () => new SingleShotGen<this, A>(this)
+    readonly [Effect.TypeId] = Effect.Variance as Effect.Variance<R, E, A>[Effect.TypeId];
+    readonly [Symbol.iterator] = (): Generator<Effect<R, E, A>, A, A> =>
+      new SingleShotGen<Effect<R, E, A>, A>(this)
+
+    readonly tap: <R2, E2, A2>(
+      f: (a: A) => Effect<R2, E2, A2>,
+      __trace?: string,
+    ) => Effect<R | R2, E | E2, A> = (f, __trace) => new Tap([this, f]).traced(__trace)
+
+    readonly tapCause: <R2, E2, A2>(
+      f: (cause: Cause<E>) => Effect<R2, E2, A2>,
+      __trace?: string,
+    ) => Effect<R | R2, E | E2, A> = (f, __trace) => new TapCause([this, f]).traced(__trace)
+
+    readonly map: <B>(f: (a: A) => B, __trace?: string) => Effect<R, E, B> = (f, __trace) =>
+      new Map([this, f]).traced(__trace)
+
+    readonly as: <B>(b: B, __trace?: string) => Effect<R, E, B> = (b, __trace) =>
+      this.map(() => b, __trace)
+
+    readonly mapCause: <E2>(
+      f: (cause: Cause<E>) => Cause<E2>,
+      __trace?: string,
+    ) => Effect<R, E2, A> = (f, __trace) => new MapCause([this, f]).traced(__trace)
+
+    readonly flatMap = <R2, E2, B>(
+      f: (a: A) => Effect<R2, E2, B>,
+      __trace?: string,
+    ): Effect<R | R2, E | E2, B> => new FlatMap([this, f]).traced(__trace)
+
+    readonly matchCause = <R2, E2, A2, R3, E3, A3>(
+      failure: (cause: Cause<E>) => Effect<R2, E2, A2>,
+      success: (a: A) => Effect<R3, E3, A3>,
+      __trace?: string,
+    ): Effect<R | R2 | R3, E2 | E3, A2 | A3> =>
+      new MatchCause([this, failure, success]).traced(__trace)
+
+    readonly orElseCause = <R2, E2, A2>(
+      f: (cause: Cause<E>) => Effect<R2, E2, A2>,
+      __trace?: string,
+    ): Effect<R | R2, E2, A | A2> => new OrElseCause([this, f]).traced(__trace)
+
+    readonly ensuring = <R2, E2, A2>(
+      f: (exit: Exit<E, A>) => Effect<R2, E2, A2>,
+      __trace?: string,
+    ): Effect<R | R2, E | E2, A> => new Ensuring([this, f]).traced(__trace)
+
+    readonly fork = (
+      options?: Partial<RuntimeOptions>,
+      __trace?: string,
+    ): Effect<R, never, LiveFiber<E, A>> => new Fork([this, options]).traced(__trace)
 
     readonly traced = (trace?: string): Effect<R, E, A> =>
-      trace ? new ProvideTrace([this, trace]) : this
+      trace ? new ProvideTrace([this, T.custom(trace)]) : this
 
     readonly provideContext = (
       context: Context.Context<R>,
@@ -172,10 +269,20 @@ export const instr = <T extends string>(tag: T) =>
 
     readonly provideFiberRefs = (fiberRefs: FiberRefs, __trace?: string): Effect<R, E, A> =>
       new ProvideFiberRefs<R, E, A>([this, fiberRefs]).traced(__trace)
+
+    readonly provideRuntimeFlags = (flags: RuntimeFlags, __trace?: string): Effect<R, E, A> =>
+      new ProvideRuntimeFlags<R, E, A>([this, flags]).traced(__trace)
   }
 
 export class ProvideTrace<R, E, A> extends instr('ProvideTrace')<
-  readonly [Effect<R, E, A>, string],
+  readonly [Effect<R, E, A>, T.Trace],
+  R,
+  E,
+  A
+> {}
+
+export class WithEffectTrace<R, E, A> extends instr('WithEffectTrace')<
+  (trace: Effect.Trace) => Effect<R, E, A>,
   R,
   E,
   A
@@ -211,6 +318,34 @@ export class WithFiberRefs<R, E, A> extends instr('WithFiberRefs')<
 
 export class ProvideFiberRefs<R, E, A> extends instr('ProvideFiberRefs')<
   readonly [Effect<R, E, A>, FiberRefs],
+  R,
+  E,
+  A
+> {}
+
+export class WithRuntimeFlags<R, E, A> extends instr('WithRuntimeFlags')<
+  (flags: RuntimeFlags) => Effect<R, E, A>,
+  R,
+  E,
+  A
+> {}
+
+export class ProvideRuntimeFlags<R, E, A> extends instr('ProvideRuntimeFlags')<
+  readonly [Effect<R, E, A>, RuntimeFlags],
+  R,
+  E,
+  A
+> {}
+
+export class WithRuntimeOptions<R, E, A> extends instr('WithRuntimeOptions')<
+  (options: RuntimeOptions) => Effect<R, E, A>,
+  R,
+  E,
+  A
+> {}
+
+export class WithCurrentFiber<R, E, A> extends instr('WithCurrentFiber')<
+  (fiber: LiveFiber<unknown, unknown>) => Effect<R, E, A>,
   R,
   E,
   A
@@ -286,12 +421,19 @@ export class Ensuring<R, E, A, R2, E2, B> extends instr('Ensuring')<
   A
 > {}
 
+export class Fork<R, E, A> extends instr('Fork')<
+  readonly [Effect<R, E, A>, Partial<RuntimeOptions>?],
+  R,
+  never,
+  LiveFiber<E, A>
+> {}
+
 export const withPlatform = <R, E, A>(
   f: (platform: Platform) => Effect<R, E, A>,
   __trace?: string,
 ): Effect<R, E, A> => new WithPlatform(f).traced(__trace)
 
-export const provideTrace =
+export const traced =
   (trace?: string) =>
   <R, E, A>(effect: Effect<R, E, A>): Effect<R, E, A> =>
     effect.traced(trace)
@@ -301,7 +443,10 @@ export const withContext = <R = never, R2 = never, E = never, A = unknown>(
   __trace?: string,
 ): Effect<R | R2, E, A> => new WithContext(f).traced(__trace)
 
-export const ask: <R>(tag: Context.Tag<R>, __trace?: string) => Effect<R, never, R> = Effect.Adapter
+export const ask: <R>(tag: Context.Tag<R>, __trace?: string) => Effect<R, never, R> = (
+  tag,
+  __trace,
+) => withContext(flow(Context.unsafeGet(tag), now), __trace)
 
 export const provideContext =
   <R>(ctx: Context.Context<R>, __trace?: string) =>
@@ -379,3 +524,5 @@ export const ensuring =
   ): (<R>(effect: Effect<R, E, A>) => Effect<R | R2, E | E2, A>) =>
   (effect) =>
     new Ensuring([effect, f]).traced(__trace)
+
+// TODO: Race + Zip

@@ -4,6 +4,8 @@ import { Effect } from '../effect/Effect.js'
 import { FiberRef } from '../fiberRef/fiberRef.js'
 import { Fx } from '../fx/Fx.js'
 
+// TODO: Provide Effect variations of these functions
+
 export interface FiberRefs {
   readonly getReferences: () => ReadonlyMap<FiberRef<any, any, any>, any>
   readonly getOption: <R, E, A>(fiberRef: FiberRef<R, E, A>) => Option<A>

@@ -119,6 +119,7 @@ importers:
       '@typed/time': workspace:*
       '@typed/timeline': workspace:*
       '@typed/timer': workspace:*
+      '@typed/trace': workspace:*
     dependencies:
       '@fp-ts/data': 0.0.16
       '@typed/cause': link:../cause
@@ -130,6 +131,7 @@ importers:
       '@typed/time': link:../time
       '@typed/timeline': link:../timeline
       '@typed/timer': link:../timer
+      '@typed/trace': link:../trace
 
   packages/nx-plugin:
     specifiers:
