@@ -11,7 +11,15 @@ import { Platform } from '../platform/index.js'
 
 export interface Effect<R, E, A> extends Effect.Variance<R, E, A> {
   readonly [Symbol.iterator]: () => Generator<Effect<R, E, A>, A, A>
+
   readonly traced: (trace?: string) => Effect<R, E, A>
+  readonly provideContext: (context: Context.Context<R>, __trace?: string) => Effect<never, E, A>
+  readonly provideService: <S>(
+    tag: Context.Tag<S>,
+    service: S,
+    __trace?: string,
+  ) => Effect<Exclude<R, S>, E, A>
+  readonly provideFiberRefs: (fiberRefs: FiberRefs, __trace?: string) => Effect<R, E, A>
 }
 
 export function Effect<Y extends Effect<any, any, any>, R, N>(
@@ -142,8 +150,26 @@ export const instr = <T extends string>(tag: T) =>
 
     readonly [Effect.TypeId] = Effect.Variance;
     readonly [Symbol.iterator] = () => new SingleShotGen<this, A>(this)
+
     readonly traced = (trace?: string): Effect<R, E, A> =>
       trace ? new ProvideTrace([this, trace]) : this
+
+    readonly provideContext = (
+      context: Context.Context<R>,
+      __trace?: string,
+    ): Effect<never, E, A> => new ProvideContext<R, E, A>([this, context]).traced(__trace)
+
+    readonly provideService = <S>(
+      tag: Context.Tag<S>,
+      service: S,
+      __trace?: string,
+    ): Effect<Exclude<R, S>, E, A> =>
+      new WithContext((ctx: Context.Context<Exclude<R, S>>) =>
+        this.provideContext(Context.add(tag)(service)(ctx as Context.Context<R>)),
+      ).traced(__trace)
+
+    readonly provideFiberRefs = (fiberRefs: FiberRefs, __trace?: string): Effect<R, E, A> =>
+      new ProvideFiberRefs<R, E, A>([this, fiberRefs]).traced(__trace)
   }
 
 export class ProvideTrace<R, E, A> extends instr('ProvideTrace')<
@@ -337,12 +363,12 @@ export const orElseCause =
 
 export const matchCause =
   <E, R2, E2, B, A, R3, E3, C>(
-    f: (cause: Cause<E>) => Effect<R2, E2, B>,
-    g: (value: A) => Effect<R3, E3, C>,
+    onCause: (cause: Cause<E>) => Effect<R2, E2, B>,
+    onValue: (value: A) => Effect<R3, E3, C>,
     __trace?: string,
   ) =>
   <R>(effect: Effect<R, E, A>): Effect<R | R2 | R3, E2 | E3, B | C> =>
-    new MatchCause([effect, f, g]).traced(__trace)
+    new MatchCause([effect, onCause, onValue]).traced(__trace)
 
 export const ensuring =
   <E, A, R2, E2, B>(
