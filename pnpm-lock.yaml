@@ -74,11 +74,13 @@ importers:
     specifiers:
       '@fp-ts/core': ^0.0.8
       '@fp-ts/data': ^0.0.16
+      '@typed/internal': workspace:*
       '@typed/time': workspace:*
       '@typed/trace': workspace:*
     dependencies:
       '@fp-ts/core': 0.0.8
       '@fp-ts/data': 0.0.16
+      '@typed/internal': link:../internal
       '@typed/time': link:../time
       '@typed/trace': link:../trace
 

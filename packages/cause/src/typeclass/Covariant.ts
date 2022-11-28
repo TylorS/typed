@@ -28,7 +28,7 @@ const mapCauseSafe = <A, B>(cause: Cause<A>, f: (a: A) => B): safeEval.SafeEval<
     }
 
     if (tag === 'Traced') {
-      return Traced(yield* _(mapCauseSafe(cause.cause, f)), cause.executionTrace, cause.stackTrace)
+      return Traced(yield* _(mapCauseSafe(cause.cause, f)), cause.execution, cause.stack)
     }
 
     return cause
