@@ -4,7 +4,9 @@ import { Cause, CauseError } from '@typed/cause'
 import { Exit } from '@typed/exit'
 import { SingleShotGen } from '@typed/internal'
 
-import type { Future } from '../future/index.js'
+import { Fiber, isFiber } from '../fiber/Fiber.js'
+import { FiberRef, isFiberRef } from '../fiberRef/fiberRef.js'
+import { Future, isFuture } from '../future/future.js'
 import { Platform } from '../platform/index.js'
 
 export interface Effect<R, E, A> extends Effect.Variance<R, E, A> {
@@ -15,7 +17,7 @@ export interface Effect<R, E, A> extends Effect.Variance<R, E, A> {
 export function Effect<Y extends Effect<any, any, any>, R>(
   f: (adapter: Effect.Adapter) => Generator<Y, R>,
   __trace?: string,
-) {
+): Effect<Effect.ResourcesOf<Y>, Effect.ErrorsOf<Y>, R> {
   return new Lazy(() => {
     const gen = f(Effect.Adapter)
 
@@ -51,19 +53,19 @@ export namespace Effect {
   /* eslint-disable @typescript-eslint/no-unused-vars */
   export type ResourcesOf<T> = [T] extends [never]
     ? never
-    : [T] extends [Effect<infer R, infer _E, infer _A>]
+    : [T] extends [Effect.Variance<infer R, infer _E, infer _A>]
     ? R
     : never
 
   export type ErrorsOf<T> = [T] extends [never]
     ? never
-    : [T] extends [Effect<infer _R, infer E, infer _A>]
+    : [T] extends [Effect.Variance<infer _R, infer E, infer _A>]
     ? E
     : never
 
   export type ValuesOf<T> = [T] extends [never]
     ? never
-    : [T] extends [Effect<infer _R, infer _E, infer A>]
+    : [T] extends [Effect.Variance<infer _R, infer _E, infer A>]
     ? A
     : never
   /* eslint-enable @typescript-eslint/no-unused-vars */
@@ -76,10 +78,33 @@ export namespace Effect {
 
   export interface Adapter {
     <R>(effect: Context.Tag<R>, __trace?: string): Effect<R, never, R>
+    <R, E, A>(effect: Future<R, E, A>, __trace?: string): Effect<R, E, A>
+    <R, E, A>(effect: FiberRef<R, E, A>, __trace?: string): Effect<R, E, A>
+    <E, A>(effect: Fiber<E, A>, __trace?: string): Effect<never, E, A>
   }
 
-  export const Adapter: Adapter = <R>(tag: Context.Tag<R>, __trace?: string) =>
-    withContext<R, never, never, R>(flow(Context.unsafeGet(tag), now)).traced(__trace)
+  export const Adapter: Adapter = <R, E, A>(
+    tag: Context.Tag<R> | Future<R, E, A> | FiberRef<R, E, A> | Fiber<E, A>,
+    __trace?: string,
+  ): any => {
+    if (Context.isTag(tag)) {
+      return withContext<R, never, never, R>(flow(Context.unsafeGet(tag), now)).traced(__trace)
+    }
+
+    if (isFuture<R, E, A>(tag)) {
+      return wait(tag).traced(__trace)
+    }
+
+    if (isFiber<E, A>(tag)) {
+      return tag.join.traced(__trace)
+    }
+
+    if (isFiberRef(tag)) {
+      // TODO: Handle getting FiberRef
+    }
+
+    throw new Error(`Invalid adapter: ${JSON.stringify(tag, null, 2)}\n${__trace}`)
+  }
 
   export type Instruction =
     | Ensuring<any, any, any, any, any, any>
