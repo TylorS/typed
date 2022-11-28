@@ -192,7 +192,12 @@ importers:
       '@typed/time': link:../time
 
   packages/trace:
-    specifiers: {}
+    specifiers:
+      '@fp-ts/data': ^0.0.16
+      '@typed/internal': workspace:*
+    dependencies:
+      '@fp-ts/data': 0.0.16
+      '@typed/internal': link:../internal
 
 packages:
 

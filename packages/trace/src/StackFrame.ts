@@ -1,59 +1,82 @@
-import { parseChrome } from './parseChrome.js'
-import { parseGecko } from './parseGecko.js'
+import { Equal } from '@fp-ts/data/Equal'
+import { memoHash, hashAll } from '@typed/internal'
 
 export type StackFrame = InstrumentedStackFrame | RuntimeStackFrame | CustomStackFrame
 
-export interface InstrumentedStackFrame {
-  readonly tag: 'Instrumented'
+export interface InstrumentedStackFrame extends Equal {
+  readonly _tag: 'Instrumented'
   readonly file: string
   readonly method: string
   readonly line: number
   readonly column: number
 }
 
-export interface RuntimeStackFrame {
-  readonly tag: 'Runtime'
+export function InstrumentedStackFrame(
+  file: string,
+  method: string,
+  line: number,
+  column: number,
+): InstrumentedStackFrame {
+  return {
+    _tag: 'Instrumented',
+    file,
+    method,
+    line,
+    column,
+    ...memoHash(() => hashAll('Instrumented', file, method, line, column)),
+  }
+}
+
+export interface RuntimeStackFrame extends Equal {
+  readonly _tag: 'Runtime'
   readonly file: string
   readonly method: string
   readonly line: number
   readonly column: number
 }
 
-export interface CustomStackFrame {
-  readonly tag: 'Custom'
+export function RuntimeStackFrame(
+  file: string,
+  method: string,
+  line: number,
+  column: number,
+): RuntimeStackFrame {
+  return {
+    _tag: 'Runtime',
+    file,
+    method,
+    line,
+    column,
+    ...memoHash(() => hashAll('Runtime', file, method, line, column)),
+  }
+}
+
+export interface CustomStackFrame extends Equal {
+  readonly _tag: 'Custom'
   readonly trace: string
 }
 
-export function getStackFrames<E extends { stack?: string } = Error>(
-  error: E = {} as E,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  targetObject?: Function,
-): ReadonlyArray<RuntimeStackFrame> {
-  if ('captureStackTrace' in Error) {
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    ;(Error.captureStackTrace as (error: E, targetObject?: Function) => void)(error, targetObject)
+export function CustomStackFrame(trace: string): CustomStackFrame {
+  return {
+    _tag: 'Custom',
+    trace,
+    ...memoHash(() => hashAll('Custom', trace)),
+  }
+}
+
+const INSTRUMENTED_REGEX = /^.+\s.+:[0-9]+:[0-9]+$/i
+const COLON_REGEX = /:/g
+const SPACE_REGEX = /\s/
+
+export const isInstrumentedTrace = (trace: string) => INSTRUMENTED_REGEX.test(trace)
+
+export function parseCustomTrace(trace: string): StackFrame {
+  if (isInstrumentedTrace(trace)) {
+    const [methodFile, line, column] = trace.split(COLON_REGEX)
+    const [method, file] = methodFile.split(SPACE_REGEX)
+
+    return InstrumentedStackFrame(file, method, parseFloat(line), parseFloat(column))
   }
 
-  const stack = error.stack
-
-  if (!stack) {
-    return []
-  }
-
-  const stackFrames = stack
-    .split('\n')
-    .map((x) => x.trim())
-    .filter((x) => x.length !== 0)
-    .flatMap((s) => {
-      const frame = parseChrome(s) || parseGecko(s)
-
-      return frame ? [frame] : []
-    })
-
-  // Append all of the parents traces
-  if (error instanceof Error && error.cause) {
-    return [...stackFrames, ...getStackFrames(error.cause)]
-  }
-
-  return stackFrames
+  return CustomStackFrame(trace)
 }

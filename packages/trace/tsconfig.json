@@ -6,7 +6,7 @@
     "lib": [
       "DOM",
       "ES2022",
-      "ES2022.Error",
+      "ES2022.Error"
     ]
   },
   "include": [
@@ -15,5 +15,9 @@
   "exclude": [
     "dist"
   ],
-  "references": []
+  "references": [
+    {
+      "path": ".../internal/tsconfig.build.json"
+    }
+  ]
 }

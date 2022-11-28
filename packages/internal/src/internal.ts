@@ -1,3 +1,5 @@
+import { Equal, hash, hashCombine, symbolEqual, symbolHash } from '@fp-ts/data/Equal'
+
 export class SingleShotGen<T, A> implements Generator<T, A, A> {
   called = false
 
@@ -83,4 +85,27 @@ export class NonEmptyStack<T> implements Iterable<T> {
   [Symbol.iterator](): Iterator<T> {
     return this.stack[Symbol.iterator]()
   }
+}
+
+export function hashAll(...args: unknown[]): number {
+  return args.reduce((acc: number, arg) => hashCombine(hash(arg))(acc), 0)
+}
+
+export function memoHash(f: () => number): Equal {
+  let memoized: number | undefined
+
+  const getHash = () => {
+    if (memoized === undefined) {
+      memoized = f()
+    }
+
+    return memoized
+  }
+
+  const eq: Equal = {
+    [symbolHash]: getHash,
+    [symbolEqual]: (that) => hash(that) === getHash(),
+  }
+
+  return eq
 }

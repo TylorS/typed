@@ -1,6 +1,6 @@
 import * as Context from '@fp-ts/data/Context'
 import { flow, identity } from '@fp-ts/data/Function'
-import { Cause, CauseError } from '@typed/cause'
+import { Cause, CauseError, Sequential } from '@typed/cause'
 import { Exit } from '@typed/exit'
 import { SingleShotGen } from '@typed/internal'
 import * as T from '@typed/trace'
@@ -51,6 +51,8 @@ export interface Effect<R, E, A> extends Effect.Variance<R, E, A> {
     finalizer: (e: Exit<E, A>) => Effect<R2, E2, B>,
     __trace?: string,
   ) => Effect<R | R2, E | E2, A>
+
+  readonly causedBy: <E2>(cause: Cause<E2>) => Effect<R, E | E2, A>
 
   readonly fork: (
     options?: Partial<RuntimeOptions>,
@@ -244,6 +246,12 @@ const instr = <T extends string>(tag: T) =>
       f: (exit: Exit<E, A>) => Effect<R2, E2, A2>,
       __trace?: string,
     ): Effect<R | R2, E | E2, A> => new Ensuring([this, f]).traced(__trace)
+
+    readonly causedBy: <E2>(cause: Cause<E2>) => Effect<R, E | E2, A> = (cause) =>
+      this.matchCause(
+        (cause2) => fromCause(Sequential(cause2, cause)),
+        () => fromCause(cause),
+      )
 
     readonly fork = (
       options?: Partial<RuntimeOptions>,

@@ -1,47 +1,23 @@
-import { getStackFrames, StackFrame } from './StackFrame.js'
+import { parseCustomTrace, StackFrame } from './StackFrame.js'
+import { getStackFrames } from './getStackFrames.js'
 
 export type Trace = EmptyTrace | StackFrameTrace
 
 export interface EmptyTrace {
-  readonly tag: 'Empty'
+  readonly _tag: 'Empty'
 }
-export const EmptyTrace: EmptyTrace = { tag: 'Empty' }
+export const EmptyTrace: EmptyTrace = { _tag: 'Empty' }
 
 export interface StackFrameTrace {
-  readonly tag: 'StackFrame'
+  readonly _tag: 'StackFrame'
   readonly stackFrames: readonly StackFrame[]
 }
 
 export function StackFrameTrace(stackFrames: readonly StackFrame[]): StackFrameTrace {
-  return { tag: 'StackFrame', stackFrames }
+  return { _tag: 'StackFrame', stackFrames }
 }
 
-const INSTRUMENTED_REGEX = /^.+\s.+:[0-9]+:[0-9]+$/i
-
-export const isInstrumentedTrace = (trace: string) => INSTRUMENTED_REGEX.test(trace)
-
-export const custom = (trace: string): StackFrameTrace => {
-  if (!isInstrumentedTrace(trace)) {
-    return StackFrameTrace([
-      {
-        tag: 'Custom',
-        trace,
-      },
-    ])
-  }
-
-  const [methodFile, line, column] = trace.split(/:/g)
-  const [method, file] = methodFile.split(/\s/)
-  const stackFrame: StackFrame = {
-    tag: 'Instrumented',
-    file,
-    method,
-    line: parseFloat(line),
-    column: parseFloat(column),
-  }
-
-  return StackFrameTrace([stackFrame])
-}
+export const custom = (trace: string): StackFrameTrace => StackFrameTrace([parseCustomTrace(trace)])
 
 export const runtime = <E extends { stack?: string } = Error>(
   error: E,

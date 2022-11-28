@@ -1,4 +1,4 @@
-import type { RuntimeStackFrame } from './StackFrame.js'
+import { RuntimeStackFrame } from './StackFrame.js'
 
 const chromeRe =
   /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i
@@ -23,13 +23,12 @@ export function parseChrome(line: string): RuntimeStackFrame | null {
     parts[4] = submatch[3] // column
   }
 
-  return {
-    tag: 'Runtime',
-    file: !isNative ? parseRealFilename(parts[2]) : '',
-    method: parts[1] || '',
-    line: parts[3] ? +parts[3] : -1,
-    column: parts[4] ? +parts[4] : -1,
-  }
+  return RuntimeStackFrame(
+    !isNative ? parseRealFilename(parts[2]) : '',
+    parts[1] || '',
+    parts[3] ? +parts[3] : -1,
+    parts[4] ? +parts[4] : 0,
+  )
 }
 
 function parseRealFilename(s: string): string {

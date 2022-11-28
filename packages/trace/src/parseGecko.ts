@@ -1,4 +1,4 @@
-import type { RuntimeStackFrame } from './StackFrame.js'
+import { RuntimeStackFrame } from './StackFrame.js'
 
 const geckoRe =
   /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|resource|\[native).*?|[^@]*bundle)(?::(\d+))?(?::(\d+))?\s*$/i
@@ -21,11 +21,10 @@ export function parseGecko(line: string): RuntimeStackFrame | null {
     parts[5] = '-1' // no column when eval
   }
 
-  return {
-    tag: 'Runtime',
-    file: parts[3],
-    method: parts[1] || '',
-    line: parts[4] ? +parts[4] : -1,
-    column: parts[5] ? +parts[5] : 0,
-  }
+  return RuntimeStackFrame(
+    parts[3] || '',
+    parts[1] || '',
+    parts[4] ? +parts[4] : -1,
+    parts[5] ? +parts[5] : 0,
+  )
 }
