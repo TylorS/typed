@@ -1,4 +1,4 @@
-import { Effect, wait } from '../effect/definition.js'
+import { Effect, wait } from '../effect/Effect.js'
 
 import { pending } from './future.js'
 

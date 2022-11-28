@@ -1,6 +1,6 @@
 import { Option } from '@fp-ts/data/Option'
 
-import { Effect } from '../effect/definition.js'
+import { Effect } from '../effect/Effect.js'
 import { FiberRef } from '../fiberRef/fiberRef.js'
 import { Fx } from '../fx/Fx.js'
 

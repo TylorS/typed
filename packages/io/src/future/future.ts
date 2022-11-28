@@ -1,7 +1,7 @@
 import { identity } from '@fp-ts/data/Function'
 import { Disposable } from '@typed/disposable'
 
-import type { Effect } from '../effect/definition.js'
+import type { Effect } from '../effect/Effect.js'
 
 export interface Future<R, E, A> extends Future.Variance<R, E, A> {
   readonly state: Future.State<R, E, A>

@@ -4,21 +4,21 @@ import { Cause, CauseError } from '@typed/cause'
 import { Exit } from '@typed/exit'
 import { SingleShotGen } from '@typed/internal'
 
-import { Fiber, isFiber } from '../fiber/Fiber.js'
 import { FiberRef, isFiberRef } from '../fiberRef/fiberRef.js'
+import type { FiberRefs } from '../fiberRefs/fiberRefs.js'
 import { Future, isFuture } from '../future/future.js'
 import { Platform } from '../platform/index.js'
 
 export interface Effect<R, E, A> extends Effect.Variance<R, E, A> {
-  readonly [Symbol.iterator]: () => Generator<Effect<R, E, any>, A, any>
+  readonly [Symbol.iterator]: () => Generator<Effect<R, E, A>, A, A>
   readonly traced: (trace?: string) => Effect<R, E, A>
 }
 
-export function Effect<Y extends Effect<any, any, any>, R>(
-  f: (adapter: Effect.Adapter) => Generator<Y, R>,
+export function Effect<Y extends Effect<any, any, any>, R, N>(
+  f: (adapter: Effect.Adapter) => Generator<Y, R, N>,
   __trace?: string,
 ): Effect<Effect.ResourcesOf<Y>, Effect.ErrorsOf<Y>, R> {
-  return new Lazy(() => {
+  return new Lazy<Effect.ResourcesOf<Y>, Effect.ErrorsOf<Y>, R>(() => {
     const gen = f(Effect.Adapter)
 
     return new OrElseCause([
@@ -37,6 +37,10 @@ function runGen(
     ? new Now(result.value)
     : new FlatMap([result.value, (a) => runGen(gen, gen.next(a))])
 }
+
+export type ResourcesOf<T> = Effect.ResourcesOf<T>
+export type ErrorsOf<T> = Effect.ErrorsOf<T>
+export type ValueOf<T> = Effect.ValueOf<T>
 
 export namespace Effect {
   export const TypeId = Symbol('@typed/io/Effect')
@@ -63,7 +67,7 @@ export namespace Effect {
     ? E
     : never
 
-  export type ValuesOf<T> = [T] extends [never]
+  export type ValueOf<T> = [T] extends [never]
     ? never
     : [T] extends [Effect.Variance<infer _R, infer _E, infer A>]
     ? A
@@ -80,31 +84,32 @@ export namespace Effect {
     <R>(effect: Context.Tag<R>, __trace?: string): Effect<R, never, R>
     <R, E, A>(effect: Future<R, E, A>, __trace?: string): Effect<R, E, A>
     <R, E, A>(effect: FiberRef<R, E, A>, __trace?: string): Effect<R, E, A>
-    <E, A>(effect: Fiber<E, A>, __trace?: string): Effect<never, E, A>
   }
 
   export const Adapter: Adapter = <R, E, A>(
-    tag: Context.Tag<R> | Future<R, E, A> | FiberRef<R, E, A> | Fiber<E, A>,
+    tag: Context.Tag<R> | Future<R, E, A> | FiberRef<R, E, A>,
     __trace?: string,
   ): any => {
     if (Context.isTag(tag)) {
-      return withContext<R, never, never, R>(flow(Context.unsafeGet(tag), now)).traced(__trace)
+      return new WithContext<R, never, never, R>(flow(Context.unsafeGet(tag), now)).traced(__trace)
     }
 
     if (isFuture<R, E, A>(tag)) {
-      return wait(tag).traced(__trace)
+      return new Wait(tag).traced(__trace)
     }
 
-    if (isFiber<E, A>(tag)) {
-      return tag.join.traced(__trace)
+    if (isFiberRef<R, E, A>(tag)) {
+      return new WithFiberRefs((refs) => refs.get(tag)).traced(__trace)
     }
 
-    if (isFiberRef(tag)) {
-      // TODO: Handle getting FiberRef
-    }
-
-    throw new Error(`Invalid adapter: ${JSON.stringify(tag, null, 2)}\n${__trace}`)
+    throw new Error(`Cannot adapt ${JSON.stringify(tag, null, 2)}\n${__trace}`)
   }
+
+  // TODO: Runtime Flags, With/Provide
+  // TODO: Fork, WithCurrentFiber
+  // TODO: WithStackTrace, + types for Execution + Stack traces
+  // TODO: Platform needs a Cause Renderer
+  // TODO: ...
 
   export type Instruction =
     | Ensuring<any, any, any, any, any, any>
@@ -114,15 +119,17 @@ export namespace Effect {
     | Lazy<any, any, any>
     | Map<any, any, any, any>
     | MapCause<any, any, any, any>
-    | Match<any, any, any, any, any, any, any, any, any>
+    | MatchCause<any, any, any, any, any, any, any, any, any>
     | Now<any>
     | OrElseCause<any, any, any, any, any, any>
     | ProvideContext<any, any, any>
+    | ProvideFiberRefs<any, any, any>
     | ProvideTrace<any, any, any>
     | Tap<any, any, any, any, any, any>
     | TapCause<any, any, any, any, any, any>
     | Wait<any, any, any>
     | WithContext<any, any, any, any>
+    | WithFiberRefs<any, any, any>
     | WithPlatform<any, any, any>
 }
 
@@ -130,8 +137,8 @@ export const instr = <T extends string>(tag: T) =>
   class Instr<I, R, E, A> implements Effect<R, E, A> {
     constructor(readonly input: I) {}
 
-    static tag: T = tag
-    readonly tag: T = tag;
+    static _tag: T = tag
+    readonly _tag: T = tag;
 
     readonly [Effect.TypeId] = Effect.Variance;
     readonly [Symbol.iterator] = () => new SingleShotGen<this, A>(this)
@@ -163,6 +170,20 @@ export class WithContext<R, R2, E, A> extends instr('WithContext')<
 export class ProvideContext<R, E, A> extends instr('ProvideContext')<
   readonly [Effect<R, E, A>, Context.Context<R>],
   never,
+  E,
+  A
+> {}
+
+export class WithFiberRefs<R, E, A> extends instr('WithFiberRefs')<
+  (fiberRefs: FiberRefs) => Effect<R, E, A>,
+  R,
+  E,
+  A
+> {}
+
+export class ProvideFiberRefs<R, E, A> extends instr('ProvideFiberRefs')<
+  readonly [Effect<R, E, A>, FiberRefs],
+  R,
   E,
   A
 > {}
@@ -219,7 +240,7 @@ export class OrElseCause<R, E, A, R2, E2, A2> extends instr('OrElse')<
   A | A2
 > {}
 
-export class Match<R, E, A, R2, E2, B, R3, E3, C> extends instr('Match')<
+export class MatchCause<R, E, A, R2, E2, B, R3, E3, C> extends instr('Match')<
   readonly [
     Effect<R, E, A>,
     (cause: Cause<E>) => Effect<R2, E2, B>,
@@ -252,12 +273,22 @@ export const withContext = <R = never, R2 = never, E = never, A = unknown>(
   __trace?: string,
 ): Effect<R | R2, E, A> => new WithContext(f).traced(__trace)
 
-export const ask = Effect.Adapter
+export const ask: <R>(tag: Context.Tag<R>, __trace?: string) => Effect<R, never, R> = Effect.Adapter
 
 export const provideContext =
   <R>(ctx: Context.Context<R>, __trace?: string) =>
   <E, A>(effect: Effect<R, E, A>): Effect<never, E, A> =>
     new ProvideContext([effect, ctx]).traced(__trace)
+
+export const withFiberRefs = <R, E, A>(
+  f: (refs: FiberRefs) => Effect<R, E, A>,
+  __trace?: string,
+): Effect<R, E, A> => new WithFiberRefs(f).traced(__trace)
+
+export const provideFiberRefs =
+  (refs: FiberRefs, __trace?: string) =>
+  <R, E, A>(effect: Effect<R, E, A>): Effect<R, E, A> =>
+    new ProvideFiberRefs([effect, refs]).traced(__trace)
 
 export const now = <A>(value: A, __trace?: string): Effect<never, never, A> =>
   new Now(value).traced(__trace)
@@ -273,3 +304,50 @@ export const lazy = <R, E, A>(f: () => Effect<R, E, A>, __trace?: string): Effec
 
 export const wait = <R, E, A>(future: Future<R, E, A>, __trace?: string): Effect<R, E, A> =>
   new Wait(future).traced(__trace)
+
+export const tap =
+  <A, R2, E2, B>(f: (value: A) => Effect<R2, E2, B>, __trace?: string) =>
+  <R, E>(effect: Effect<R, E, A>): Effect<R | R2, E | E2, A> =>
+    new Tap([effect, f]).traced(__trace)
+
+export const map =
+  <A, B>(f: (value: A) => B, __trace?: string) =>
+  <R, E>(effect: Effect<R, E, A>): Effect<R, E, B> =>
+    new Map([effect, f]).traced(__trace)
+
+export const flatMap =
+  <A, R2, E2, B>(f: (value: A) => Effect<R2, E2, B>, __trace?: string) =>
+  <R, E>(effect: Effect<R, E, A>): Effect<R | R2, E | E2, B> =>
+    new FlatMap([effect, f]).traced(__trace)
+
+export const tapCause =
+  <E, R2, E2, B>(f: (cause: Cause<E>) => Effect<R2, E2, B>, __trace?: string) =>
+  <R, A>(effect: Effect<R, E, A>): Effect<R | R2, E | E2, A> =>
+    new TapCause([effect, f]).traced(__trace)
+
+export const mapCause =
+  <E, E2>(f: (cause: Cause<E>) => Cause<E2>, __trace?: string) =>
+  <R, A>(effect: Effect<R, E, A>): Effect<R, E2, A> =>
+    new MapCause([effect, f]).traced(__trace)
+
+export const orElseCause =
+  <E, R2, E2, A2>(f: (cause: Cause<E>) => Effect<R2, E2, A2>, __trace?: string) =>
+  <R, A>(effect: Effect<R, E, A>): Effect<R | R2, E2, A | A2> =>
+    new OrElseCause([effect, f]).traced(__trace)
+
+export const matchCause =
+  <E, R2, E2, B, A, R3, E3, C>(
+    f: (cause: Cause<E>) => Effect<R2, E2, B>,
+    g: (value: A) => Effect<R3, E3, C>,
+    __trace?: string,
+  ) =>
+  <R>(effect: Effect<R, E, A>): Effect<R | R2 | R3, E2 | E3, B | C> =>
+    new MatchCause([effect, f, g]).traced(__trace)
+
+export const ensuring =
+  <E, A, R2, E2, B>(
+    f: (exit: Exit<E, A>) => Effect<R2, E2, B>,
+    __trace?: string,
+  ): (<R>(effect: Effect<R, E, A>) => Effect<R | R2, E | E2, A>) =>
+  (effect) =>
+    new Ensuring([effect, f]).traced(__trace)

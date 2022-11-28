@@ -1,7 +1,7 @@
 import { Cause } from '@typed/cause'
 import { Time } from '@typed/time'
 
-import { Effect } from '../effect/definition.js'
+import { Effect } from '../effect/Effect.js'
 
 export interface Sink<R, E, A> {
   readonly event: (time: Time, value: A) => Effect<R, never, unknown>

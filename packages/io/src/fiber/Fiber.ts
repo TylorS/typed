@@ -1,7 +1,7 @@
 import { identity } from '@fp-ts/data/Function'
 import { Exit } from '@typed/exit'
 
-import type { Effect } from '../effect/definition.js'
+import type { Effect } from '../effect/Effect.js'
 
 import { FiberId } from './FiberId.js'
 

@@ -1,6 +1,6 @@
 import { identity } from '@fp-ts/data/Function'
 
-import { Effect } from '../effect/definition.js'
+import { Effect } from '../effect/Effect.js'
 
 import { Sink } from './Sink.js'
 
