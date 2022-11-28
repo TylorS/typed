@@ -12,6 +12,8 @@ import { Platform } from '../platform/index.js'
 export interface Effect<R, E, A> extends Effect.Variance<R, E, A> {
   readonly [Symbol.iterator]: () => Generator<Effect<R, E, A>, A, A>
 
+  // TODO: Add ControlFlow methods
+
   readonly traced: (trace?: string) => Effect<R, E, A>
   readonly provideContext: (context: Context.Context<R>, __trace?: string) => Effect<never, E, A>
   readonly provideService: <S>(
