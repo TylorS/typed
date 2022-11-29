@@ -12,9 +12,6 @@
   ],
   "references": [
     {
-      "path": ".../internal/tsconfig.build.json"
-    },
-    {
       "path": ".../time/tsconfig.build.json"
     },
     {

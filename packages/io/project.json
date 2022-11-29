@@ -7,7 +7,7 @@
       "options": {
         "commands": [
           {
-            "command": "tsc --build packages/effect/tsconfig.build.json"
+            "command": "tsc --build packages/io/tsconfig.build.json"
           }
         ]
       },
@@ -16,7 +16,7 @@
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "options": {
-        "lintFilePatterns": ["packages/effect/src/**/*.ts"]
+        "lintFilePatterns": ["packages/io/src/**/*.ts"]
       }
     },
     "test": {

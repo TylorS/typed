@@ -1,5 +1,5 @@
 import * as P from '@fp-ts/core/typeclass/Product'
-import { isNonEmpty } from 'node_modules/@fp-ts/data/ReadonlyArray.js'
+import { isNonEmpty } from '@fp-ts/data/ReadonlyArray'
 
 import { Cause, Empty } from '../Cause.js'
 

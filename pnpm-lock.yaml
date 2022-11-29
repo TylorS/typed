@@ -74,46 +74,45 @@ importers:
     specifiers:
       '@fp-ts/core': ^0.0.9
       '@fp-ts/data': ^0.0.17
-      '@typed/clock': workspace:*
-      '@typed/internal': workspace:*
       '@typed/time': workspace:*
       '@typed/trace': workspace:*
     dependencies:
       '@fp-ts/core': 0.0.9
       '@fp-ts/data': 0.0.17
-      '@typed/clock': link:../clock
-      '@typed/internal': link:../internal
       '@typed/time': link:../time
       '@typed/trace': link:../trace
 
   packages/clock:
     specifiers:
-      '@fp-ts/data': ^0.0.16
+      '@fp-ts/data': ^0.0.17
       '@typed/time': workspace:*
     dependencies:
-      '@fp-ts/data': 0.0.16
+      '@fp-ts/data': 0.0.17
       '@typed/time': link:../time
 
   packages/disposable:
     specifiers:
-      '@fp-ts/data': ^0.0.16
+      '@fp-ts/data': ^0.0.17
     dependencies:
-      '@fp-ts/data': 0.0.16
+      '@fp-ts/data': 0.0.17
 
   packages/exit:
     specifiers:
-      '@fp-ts/data': ^0.0.16
+      '@fp-ts/data': ^0.0.17
       '@typed/cause': workspace:*
     dependencies:
-      '@fp-ts/data': 0.0.16
+      '@fp-ts/data': 0.0.17
       '@typed/cause': link:../cause
 
   packages/internal:
-    specifiers: {}
+    specifiers:
+      '@fp-ts/data': ^0.0.17
+    dependencies:
+      '@fp-ts/data': 0.0.17
 
   packages/io:
     specifiers:
-      '@fp-ts/data': ^0.0.16
+      '@fp-ts/data': ^0.0.17
       '@typed/cause': workspace:*
       '@typed/clock': workspace:*
       '@typed/disposable': workspace:*
@@ -125,7 +124,7 @@ importers:
       '@typed/timer': workspace:*
       '@typed/trace': workspace:*
     dependencies:
-      '@fp-ts/data': 0.0.16
+      '@fp-ts/data': 0.0.17
       '@typed/cause': link:../cause
       '@typed/clock': link:../clock
       '@typed/disposable': link:../disposable
@@ -145,24 +144,24 @@ importers:
 
   packages/schedule:
     specifiers:
-      '@fp-ts/core': ^0.0.8
-      '@fp-ts/data': ^0.0.16
+      '@fp-ts/core': ^0.0.9
+      '@fp-ts/data': ^0.0.17
       '@typed/time': workspace:*
     dependencies:
-      '@fp-ts/core': 0.0.8
-      '@fp-ts/data': 0.0.16
+      '@fp-ts/core': 0.0.9
+      '@fp-ts/data': 0.0.17
       '@typed/time': link:../time
 
   packages/testing:
     specifiers:
-      '@fp-ts/data': ^0.0.16
+      '@fp-ts/data': ^0.0.17
       '@typed/clock': workspace:*
       '@typed/disposable': workspace:*
       '@typed/time': workspace:*
       '@typed/timeline': workspace:*
       '@typed/timer': workspace:*
     dependencies:
-      '@fp-ts/data': 0.0.16
+      '@fp-ts/data': 0.0.17
       '@typed/clock': link:../clock
       '@typed/disposable': link:../disposable
       '@typed/time': link:../time
@@ -171,9 +170,9 @@ importers:
 
   packages/time:
     specifiers:
-      '@fp-ts/data': ^0.0.16
+      '@fp-ts/data': ^0.0.17
     dependencies:
-      '@fp-ts/data': 0.0.16
+      '@fp-ts/data': 0.0.17
 
   packages/timeline:
     specifiers:
@@ -185,22 +184,20 @@ importers:
 
   packages/timer:
     specifiers:
-      '@fp-ts/data': ^0.0.16
+      '@fp-ts/data': ^0.0.17
       '@typed/clock': workspace:*
       '@typed/disposable': workspace:*
       '@typed/time': workspace:*
     dependencies:
-      '@fp-ts/data': 0.0.16
+      '@fp-ts/data': 0.0.17
       '@typed/clock': link:../clock
       '@typed/disposable': link:../disposable
       '@typed/time': link:../time
 
   packages/trace:
     specifiers:
-      '@fp-ts/data': ^0.0.16
       '@typed/internal': workspace:*
     dependencies:
-      '@fp-ts/data': 0.0.16
       '@typed/internal': link:../internal
 
 packages:
@@ -600,12 +597,6 @@ packages:
 
   /@fp-ts/core/0.0.9:
     resolution: {integrity: sha512-FuXKPHTEvvgxV3LulGJXkSpAghovh7wLxux+Pm9LKefC0gtZZQ4OajTjTK5RsQtpyKIsAn26PwdG6W6zksF/UA==}
-    dev: false
-
-  /@fp-ts/data/0.0.16:
-    resolution: {integrity: sha512-pfWpZaFHkWMQZfxoUYawahWKsuDANTgu8g4VSyE3Gv0ChprM+0f455e2i0Jy84Wyd8tumL9Fj4ff8oaCNC5d/g==}
-    dependencies:
-      '@fp-ts/core': 0.0.8
     dev: false
 
   /@fp-ts/data/0.0.17:
