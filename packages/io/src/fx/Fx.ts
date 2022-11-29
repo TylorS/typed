@@ -20,11 +20,9 @@ export namespace Fx {
     }
   }
 
-  export const Variance: Variance<any, any, any> = {
-    [TypeId]: {
-      _R: identity,
-      _E: identity,
-      _A: identity,
-    },
+  export const Variance: Variance<any, any, any>[TypeId] = {
+    _R: identity,
+    _E: identity,
+    _A: identity,
   }
 }
