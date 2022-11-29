@@ -29,13 +29,13 @@ export function callbackScheduler(
     // and schedule the new one.
     if (needToScheduleEarlierTime) {
       disposable.dispose()
-      disposable = timer.setTimer(runReadyTasks, Duration.millis(timer.get() - next))
+      disposable = timer.setTimer(runReadyTasks, Duration.millis(timer.currentTime() - next))
       nextArrival = next
     }
   }
 
   function runReadyTasks() {
-    timeline.getReadyTasks(timer.get()).forEach((f) => f())
+    timeline.getReadyTasks(timer.currentTime()).forEach((f) => f())
 
     scheduleNextRun()
   }
