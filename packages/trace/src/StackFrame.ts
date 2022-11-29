@@ -1,9 +1,8 @@
-import { Equal } from '@fp-ts/data/Equal'
 import { memoHash, hashAll } from '@typed/internal'
 
 export type StackFrame = InstrumentedStackFrame | RuntimeStackFrame | CustomStackFrame
 
-export interface InstrumentedStackFrame extends Equal {
+export interface InstrumentedStackFrame {
   readonly _tag: 'Instrumented'
   readonly file: string
   readonly method: string
@@ -23,11 +22,10 @@ export function InstrumentedStackFrame(
     method,
     line,
     column,
-    ...memoHash(() => hashAll('Instrumented', file, method, line, column)),
   }
 }
 
-export interface RuntimeStackFrame extends Equal {
+export interface RuntimeStackFrame {
   readonly _tag: 'Runtime'
   readonly file: string
   readonly method: string
@@ -51,7 +49,7 @@ export function RuntimeStackFrame(
   }
 }
 
-export interface CustomStackFrame extends Equal {
+export interface CustomStackFrame {
   readonly _tag: 'Custom'
   readonly trace: string
 }

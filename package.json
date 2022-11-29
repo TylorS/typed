@@ -28,8 +28,8 @@
     "new-package": "nx generate @typed/nx-plugin:package"
   },
   "dependencies": {
-    "@fp-ts/core": "^0.0.8",
-    "@fp-ts/data": "^0.0.16"
+    "@fp-ts/core": "^0.0.9",
+    "@fp-ts/data": "^0.0.17"
   },
   "peerDependencies": {
     "tslib": "^2.4.1"
@@ -41,8 +41,8 @@
     "@nrwl/vite": "15.2.1",
     "@nrwl/workspace": "^15.2.1",
     "@types/node": "^18.11.9",
-    "@typescript-eslint/eslint-plugin": "^5.44.0",
-    "@typescript-eslint/parser": "^5.44.0",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
     "@vitest/ui": "^0.25.3",
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.5.0",

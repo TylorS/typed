@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@fp-ts/data": "^0.0.16",
+    "@fp-ts/data": "^0.0.17",
     "@typed/clock": "workspace:*",
     "@typed/disposable": "workspace:*",
     "@typed/time": "workspace:*"

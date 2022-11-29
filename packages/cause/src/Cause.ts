@@ -1,5 +1,3 @@
-import { Equal, hashRandom } from '@fp-ts/data/Equal'
-import { memoHash, hashAll } from '@typed/internal'
 import { UnixTime } from '@typed/time'
 import { Trace } from '@typed/trace'
 
@@ -11,80 +9,80 @@ export type Cause<E> =
   | Sequential<E>
   | Concurrent<E>
   | Traced<E>
+  | Timed<E>
 
 export namespace Cause {
   export type Simple<E> = Empty | Interrupted | Unexpected | Expected<E>
+
+  export type OutputOf<T> = T extends Cause<infer E> ? E : never
 }
 
-export interface Empty extends Equal {
+export interface Empty {
   readonly _tag: 'Empty'
 }
 
-export interface Interrupted extends Equal {
+export interface Interrupted {
   readonly _tag: 'Interrupted'
-  readonly time: UnixTime
   readonly by: string
 }
 
-export interface Unexpected extends Equal {
+export interface Unexpected {
   readonly _tag: 'Unexpected'
-  readonly time: UnixTime
   readonly error: unknown
 }
 
-export interface Expected<E> extends Equal {
+export interface Expected<E> {
   readonly _tag: 'Expected'
-  readonly time: UnixTime
   readonly error: E
 }
 
-export interface Sequential<E> extends Equal {
+export interface Sequential<E> {
   readonly _tag: 'Sequential'
   readonly left: Cause<E>
   readonly right: Cause<E>
 }
 
-export interface Concurrent<E> extends Equal {
+export interface Concurrent<E> {
   readonly _tag: 'Concurrent'
   readonly left: Cause<E>
   readonly right: Cause<E>
 }
 
-export interface Traced<E> extends Equal {
+export interface Traced<E> {
   readonly _tag: 'Traced'
   readonly cause: Cause<E>
   readonly execution: Trace
   readonly stack: Trace
 }
 
-export const Empty: Empty & Cause<never> = { _tag: 'Empty', ...memoHash(() => hashRandom(Empty)) }
+export interface Timed<E> {
+  readonly _tag: 'Timed'
+  readonly cause: Cause<E>
+  readonly time: UnixTime
+}
+
+export const Empty: Empty & Cause<never> = { _tag: 'Empty' }
 
 export const isEmpty = <E>(cause: Cause<E>): cause is Empty => cause._tag === 'Empty'
 
-export const Interrupted = (time: UnixTime, by: string): Interrupted & Cause<never> => ({
+export const Interrupted = (by: string): Interrupted & Cause<never> => ({
   _tag: 'Interrupted',
-  time,
   by,
-  ...memoHash(() => hashAll('Interrupted', time, by)),
 })
 
 export const isInterrupted = <E>(cause: Cause<E>): cause is Interrupted =>
   cause._tag === 'Interrupted'
 
-export const Unexpected = (time: UnixTime, error: unknown): Unexpected & Cause<never> => ({
+export const Unexpected = (error: unknown): Unexpected & Cause<never> => ({
   _tag: 'Unexpected',
-  time,
   error,
-  ...memoHash(() => hashAll('Unexpected', time, error)),
 })
 
 export const isUnexpected = <E>(cause: Cause<E>): cause is Unexpected => cause._tag === 'Unexpected'
 
-export const Expected = <E>(time: UnixTime, error: E): Expected<E> => ({
+export const Expected = <E>(error: E): Expected<E> => ({
   _tag: 'Expected',
-  time,
   error,
-  ...memoHash(() => hashAll('Expected', time, error)),
 })
 
 export const isExpected = <E>(cause: Cause<E>): cause is Expected<E> => cause._tag === 'Expected'
@@ -101,7 +99,6 @@ export const Sequential = <E = never, E2 = never>(
         _tag: 'Sequential',
         left,
         right,
-        ...memoHash(() => hashAll('Sequential', left, right)),
       }
 
 export const isSequential = <E>(cause: Cause<E>): cause is Sequential<E> =>
@@ -119,7 +116,6 @@ export const Concurrent = <E = never, E2 = never>(
         _tag: 'Concurrent',
         left,
         right,
-        ...memoHash(() => hashAll('Concurrent', left, right)),
       }
 
 export const isConcurrent = <E>(cause: Cause<E>): cause is Concurrent<E> =>
@@ -130,7 +126,14 @@ export const Traced = <E>(cause: Cause<E>, execution: Trace, stack: Trace): Trac
   cause,
   execution,
   stack,
-  ...memoHash(() => hashAll('Traced', cause, execution, stack)),
 })
 
 export const isTraced = <E>(cause: Cause<E>): cause is Traced<E> => cause._tag === 'Traced'
+
+export const Timed = <E>(cause: Cause<E>, time: UnixTime): Timed<E> => ({
+  _tag: 'Timed',
+  cause,
+  time,
+})
+
+export const isTimed = <E>(cause: Cause<E>): cause is Timed<E> => cause._tag === 'Timed'
