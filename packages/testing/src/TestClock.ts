@@ -12,14 +12,13 @@ export function makeTestClock(startTime: UnixTime = MIN_UNIX_TIME): TestClock {
 
   const clock: TestClock = {
     startTime,
-    get: () => UnixTime(startTime + currentTime),
-    addDelay: (duration) => UnixTime(startTime + currentTime + duration.millis),
+    currentTime: () => UnixTime(startTime + currentTime),
     progressTimeBy: (duration) => {
       currentTime += duration.millis
 
       return Time(currentTime)
     },
-    fork: () => makeTestClock(clock.get()),
+    fork: () => makeTestClock(clock.currentTime()),
   }
 
   return clock
