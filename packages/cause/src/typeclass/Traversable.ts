@@ -4,7 +4,7 @@ import * as T from '@fp-ts/core/typeclass/Traversable'
 import { safeEval } from '@fp-ts/data'
 import { pipe } from '@fp-ts/data/Function'
 
-import { Cause, Concurrent, Expected, Sequential, Timed, Traced } from '../Cause.js'
+import { Cause, Concurrent, Expected, Sequential, Traced } from '../Cause.js'
 
 import { CauseTypeLambda } from './TypeLambda.js'
 
@@ -71,13 +71,7 @@ function traverseSafe<F extends TypeLambda, A, R, O, E, B>(
       case 'Traced': {
         return pipe(
           yield* $(traverseSafe(A, f, cause.cause)),
-          A.map((cause_): Cause<B> => Traced(cause_, cause.execution, cause.stack)),
-        )
-      }
-      case 'Timed': {
-        return pipe(
-          yield* $(traverseSafe(A, f, cause.cause)),
-          A.map((cause_): Cause<B> => Timed(cause_, cause.time)),
+          A.map((cause_): Cause<B> => Traced(cause_, cause.execution, cause.stack, cause.time)),
         )
       }
     }

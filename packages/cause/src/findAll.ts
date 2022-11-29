@@ -39,7 +39,6 @@ function findAllSafe<E>(
           ...(yield* $(findAllSafe(cause.right, predicate))),
         ]
       case 'Traced':
-      case 'Timed':
         return yield* $(findAllSafe(cause.cause, predicate))
     }
   })

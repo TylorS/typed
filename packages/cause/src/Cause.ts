@@ -9,7 +9,6 @@ export type Cause<E> =
   | Sequential<E>
   | Concurrent<E>
   | Traced<E>
-  | Timed<E>
 
 export namespace Cause {
   export type Simple<E> = Empty | Interrupted | Unexpected | Expected<E>
@@ -53,11 +52,6 @@ export interface Traced<E> {
   readonly cause: Cause<E>
   readonly execution: Trace
   readonly stack: Trace
-}
-
-export interface Timed<E> {
-  readonly _tag: 'Timed'
-  readonly cause: Cause<E>
   readonly time: UnixTime
 }
 
@@ -121,19 +115,17 @@ export const Concurrent = <E = never, E2 = never>(
 export const isConcurrent = <E>(cause: Cause<E>): cause is Concurrent<E> =>
   cause._tag === 'Concurrent'
 
-export const Traced = <E>(cause: Cause<E>, execution: Trace, stack: Trace): Traced<E> => ({
+export const Traced = <E>(
+  cause: Cause<E>,
+  execution: Trace,
+  stack: Trace,
+  time: UnixTime,
+): Traced<E> => ({
   _tag: 'Traced',
   cause,
   execution,
   stack,
-})
-
-export const isTraced = <E>(cause: Cause<E>): cause is Traced<E> => cause._tag === 'Traced'
-
-export const Timed = <E>(cause: Cause<E>, time: UnixTime): Timed<E> => ({
-  _tag: 'Timed',
-  cause,
   time,
 })
 
-export const isTimed = <E>(cause: Cause<E>): cause is Timed<E> => cause._tag === 'Timed'
+export const isTraced = <E>(cause: Cause<E>): cause is Traced<E> => cause._tag === 'Traced'

@@ -2,7 +2,7 @@ import { Kind, TypeLambda } from '@fp-ts/core/HKT'
 import * as C from '@fp-ts/core/typeclass/Covariant'
 import * as safeEval from '@fp-ts/data/SafeEval'
 
-import { Cause, Concurrent, Expected, Sequential, Timed, Traced } from '../Cause.js'
+import { Cause, Concurrent, Expected, Sequential, Traced } from '../Cause.js'
 
 import { CauseTypeLambda } from './TypeLambda.js'
 
@@ -29,13 +29,13 @@ const mapCauseSafe = <A, B>(cause: Cause<A>, f: (a: A) => B): safeEval.SafeEval<
     }
 
     if (tag === 'Traced') {
-      return Traced(yield* _(mapCauseSafe(cause.cause, f)), cause.execution, cause.stack)
+      return Traced(
+        yield* _(mapCauseSafe(cause.cause, f)),
+        cause.execution,
+        cause.stack,
+        cause.time,
+      )
     }
-
-    if (tag === 'Timed') {
-      return Timed(yield* _(mapCauseSafe(cause.cause, f)), cause.time)
-    }
-
     return cause
   })
 
@@ -52,10 +52,8 @@ export const asUnit: <A>(cause: Cause<A>) => Cause<void> = C.asUnit(Covariant)
 
 export const flap: <A>(a: A) => <B>(self: Cause<(a: A) => B>) => Cause<B> = C.flap(Covariant)
 
-export const imap: <A_1, B_1>(
-  to: (a: A_1) => B_1,
-  from: (b: B_1) => A_1,
-) => (self: Cause<A_1>) => Cause<B_1> = C.imap<CauseTypeLambda>(Covariant.map)
+export const imap: <A, B>(to: (a: A) => B, from: (b: B) => A) => (self: Cause<A>) => Cause<B> =
+  C.imap<CauseTypeLambda>(Covariant.map)
 
 const let_: <N extends string, A extends object, B>(
   name: Exclude<N, keyof A>,

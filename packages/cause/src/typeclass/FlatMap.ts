@@ -1,7 +1,7 @@
 import * as F from '@fp-ts/core/typeclass/FlatMap'
 import { safeEval } from '@fp-ts/data'
 
-import { Cause, Concurrent, Sequential, Timed, Traced } from '../Cause.js'
+import { Cause, Concurrent, Sequential, Traced } from '../Cause.js'
 
 import { CauseTypeLambda } from './TypeLambda.js'
 
@@ -31,11 +31,12 @@ const flatMapCauseSafe = <A, B>(
     }
 
     if (tag === 'Traced') {
-      return Traced(yield* _(flatMapCauseSafe(cause.cause, f)), cause.execution, cause.stack)
-    }
-
-    if (tag === 'Timed') {
-      return Timed(yield* _(flatMapCauseSafe(cause.cause, f)), cause.time)
+      return Traced(
+        yield* _(flatMapCauseSafe(cause.cause, f)),
+        cause.execution,
+        cause.stack,
+        cause.time,
+      )
     }
 
     return cause

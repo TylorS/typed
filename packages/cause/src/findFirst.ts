@@ -40,7 +40,6 @@ function findFirstSafe<E>(
         return Option.isSome(left) ? left : yield* $(findFirstSafe(cause.right, predicate))
       }
       case 'Traced':
-      case 'Timed':
         return yield* $(findFirstSafe(cause.cause, predicate))
     }
   })
