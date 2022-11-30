@@ -12,7 +12,7 @@
   ],
   "references": [
     {
-      "path": ".../time/tsconfig.build.json"
+      "path": "../time/tsconfig.build.json"
     }
   ]
 }

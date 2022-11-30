@@ -12,19 +12,19 @@
   ],
   "references": [
     {
-      "path": ".../clock/tsconfig.build.json"
+      "path": "../clock/tsconfig.build.json"
     },
     {
-      "path": ".../disposable/tsconfig.build.json"
+      "path": "../disposable/tsconfig.build.json"
     },
     {
-      "path": ".../time/tsconfig.build.json"
+      "path": "../time/tsconfig.build.json"
     },
     {
-      "path": ".../timeline/tsconfig.build.json"
+      "path": "../timeline/tsconfig.build.json"
     },
     {
-      "path": ".../timer/tsconfig.build.json"
+      "path": "../timer/tsconfig.build.json"
     }
   ]
 }
