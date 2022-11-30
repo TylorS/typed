@@ -7,7 +7,6 @@ export type Frame =
   | FlatMapFrame
   | MapCauseFrame
   | FlatMapCauseFrame
-  | MatchFrame
   | InterruptFrame
   | TraceFrame
   | PopFrame
@@ -31,15 +30,6 @@ export class FlatMapCauseFrame {
   readonly tag = 'FlatMapCause'
   constructor(
     readonly f: (a: Cause.Cause<any>) => Effect<any, any, any>,
-    readonly __trace?: string,
-  ) {}
-}
-
-export class MatchFrame {
-  readonly tag = 'Match'
-  constructor(
-    readonly f: (e: Cause.Cause<any>) => Effect<any, any, any>,
-    readonly g: (a: any) => Effect<any, any, any>,
     readonly __trace?: string,
   ) {}
 }

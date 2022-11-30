@@ -1,14 +1,16 @@
 export interface RuntimeFlags {
   readonly interruptStatus: boolean
   readonly shouldTrace: boolean
-  readonly maxTraceCount: number
+  readonly maxStackTraceCount: number
+  readonly maxExecutionTraceCount: number
 }
 
 export function RuntimeFlags(overrides: Partial<RuntimeFlags> = {}): RuntimeFlags {
   return {
     interruptStatus: true,
     shouldTrace: true,
-    maxTraceCount: 50,
+    maxStackTraceCount: 50,
+    maxExecutionTraceCount: 10,
     ...overrides,
   }
 }

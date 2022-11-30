@@ -15,14 +15,12 @@ const GetUnixTime = {
   fork: () => Clock(),
 }
 
-export function Clock(startTime: UnixTime = getUnixTime()): Clock {
+export const Clock = Object.assign(function Clock(startTime: UnixTime = getUnixTime()): Clock {
   return {
-    ...GetUnixTime,
     startTime,
+    ...GetUnixTime,
   }
-}
-
-export const Tag = C.Tag<Clock>()
+}, C.Tag<Clock>())
 
 export function startTime(clock: Clock): UnixTime {
   return clock.startTime

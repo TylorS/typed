@@ -5,6 +5,7 @@ import * as Cause from '@typed/cause'
 import * as C from '@typed/clock'
 import * as Disposable from '@typed/disposable'
 import { Exit } from '@typed/exit'
+import { RingBuffer } from '@typed/internal'
 
 import { getDefaultService } from './DefaultServices.js'
 import { Effect } from './Effect.js'
@@ -20,7 +21,6 @@ import {
   InterruptFrame,
   MapCauseFrame,
   MapFrame,
-  MatchFrame,
   PopFrame,
   TraceFrame,
 } from './Frame.js'
@@ -52,6 +52,7 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
   )
   protected fiberStatus: FiberStatus.FiberStatus<Errors, Output> = FiberStatus.Pending
   protected frames: Frame[] = []
+  protected executionTrace = new RingBuffer<string>(this.options.flags.maxExecutionTraceCount)
   protected instr!: I.Instruction<any, any, any> | null
   protected interruptCause: Cause.Cause<Errors> = Cause.Empty
   protected interrupting = false
@@ -152,14 +153,17 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
   // Constructors
 
   protected Of(instr: I.Of<any>) {
+    this.addExecution(instr.__trace)
     this.continueWith(instr.input)
   }
 
   protected FromCause(instr: I.FromCause<any>) {
+    this.addExecution(instr.__trace)
     this.continueWithCause(instr.input)
   }
 
   protected Sync(instr: I.Sync<any>) {
+    this.addExecution(instr.__trace)
     this.continueWith(instr.input())
   }
 
@@ -206,11 +210,13 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
     this.setInstr(effect)
   }
 
-  protected GetFiberScope() {
+  protected GetFiberScope(instr: I.GetFiberScope) {
+    this.addExecution(instr.__trace)
     this.continueWith(this.options.scope)
   }
 
-  protected GetRuntimeFlags() {
+  protected GetRuntimeFlags(instr: I.GetRuntimeFlags) {
+    this.addExecution(instr.__trace)
     this.continueWith(this.currentRuntimeFlags.current)
   }
 
@@ -222,7 +228,7 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
     // If currently interruptable, mark this spot in the stack to check for
     // interrupters of this fiber
     if (current.interruptStatus && !updated.interruptStatus) {
-      this.frames.push(new InterruptFrame(instr.__trace))
+      this.frames.push(new InterruptFrame())
     }
 
     this.currentRuntimeFlags.push(updated)
@@ -230,7 +236,8 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
     this.setInstr(effect)
   }
 
-  protected GetFiberRefs() {
+  protected GetFiberRefs(instr: I.GetFiberRefs) {
+    this.addExecution(instr.__trace)
     this.continueWith(this.currentFiberRefs.current)
   }
 
@@ -241,15 +248,19 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
     this.setInstr(effect)
   }
 
-  protected GetFiberId() {
+  protected GetFiberId(instr: I.GetFiberId) {
+    this.addExecution(instr.__trace)
     this.continueWith(this.options.id)
   }
 
-  protected GetRuntimeOptions() {
+  protected GetRuntimeOptions(instr: I.GetRuntimeOptions<any>) {
+    this.addExecution(instr.__trace)
     this.continueWith(this.getCurrentRuntimeOptions())
   }
 
   protected Fork(instr: I.Fork<any, any, any>) {
+    this.addExecution(instr.__trace)
+
     const [effect, overrides] = instr.input
     const id = Live(this.getNextId(), C.getTime(this.getScheduler()))
     const options = {
@@ -285,7 +296,7 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
 
   protected Match(instr: I.Match<any, any, any, any, any, any, any, any, any>) {
     const [effect, f, g] = instr.input
-    this.frames.push(new MatchFrame(f, g, instr.__trace))
+    this.frames.push(new FlatMapFrame(g, instr.__trace), new FlatMapCauseFrame(f))
     this.setInstr(effect)
   }
 
@@ -310,21 +321,17 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
       return this.done(Either.right(value))
     }
 
-    switch (frame.tag) {
-      case 'FlatMap':
-        return this.setInstr(frame.f(value))
-      case 'Map':
-        return this.continueWith(frame.f(value))
-      case 'Match':
-        return this.setInstr(frame.g(value))
-      case 'Pop': {
-        frame.f()
-        return this.continueWith(value)
-      }
-      case 'Interrupt': {
-        if (this.shouldInterrupt()) {
-          return this.interruptNow()
-        }
+    const tag = frame.tag
+
+    if (tag === 'FlatMap') {
+      return this.setInstr(frame.f(value))
+    } else if (tag === 'Map') {
+      value = frame.f(value)
+    } else if (tag === 'Pop') {
+      frame.f()
+    } else if (tag === 'Interrupt') {
+      if (this.shouldInterrupt()) {
+        return this.interruptNow()
       }
     }
 
@@ -338,20 +345,17 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
       return this.done(Either.left(cause))
     }
 
-    switch (frame.tag) {
-      case 'Match':
-      case 'FlatMapCause':
-        return this.setInstr(frame.f(cause))
-      case 'MapCause':
-        return this.continueWithCause(frame.f(cause))
-      case 'Pop': {
-        frame.f()
-        return this.continueWithCause(cause)
-      }
-      case 'Interrupt': {
-        if (this.shouldInterrupt()) {
-          return this.interruptNow()
-        }
+    const tag = frame.tag
+
+    if (tag === 'FlatMapCause') {
+      return this.setInstr(frame.f(cause))
+    } else if (tag === 'MapCause') {
+      cause = frame.f(cause)
+    } else if (tag === 'Pop') {
+      frame.f()
+    } else if (tag === 'Interrupt') {
+      if (this.shouldInterrupt()) {
+        return this.interruptNow()
       }
     }
 
@@ -400,6 +404,12 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
   protected addTrace(trace?: string) {
     if (this.options.flags.shouldTrace && trace) {
       this.frames.push(new TraceFrame(trace))
+    }
+  }
+
+  protected addExecution(trace?: string) {
+    if (this.options.flags.shouldTrace && trace) {
+      this.executionTrace.push(trace)
     }
   }
 
