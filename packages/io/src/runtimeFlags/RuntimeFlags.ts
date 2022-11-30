@@ -1,16 +1,22 @@
 export interface RuntimeFlags {
   readonly interruptStatus: boolean
-  readonly shouldTrace: boolean
+  readonly shouldTrackExecutionTrace: boolean
   readonly executionTraceLimit: number
+  readonly shouldTrackStackTrace: boolean
   readonly stackTraceLimit: number
 }
 
 export function RuntimeFlags(overrides: Partial<RuntimeFlags> = {}): RuntimeFlags {
   return {
-    interruptStatus: true,
-    shouldTrace: true,
-    executionTraceLimit: 10,
-    stackTraceLimit: 40,
+    ...RuntimeFlags.defaults,
     ...overrides,
   }
 }
+
+RuntimeFlags.defaults = {
+  interruptStatus: true,
+  shouldTrackExecutionTrace: true,
+  executionTraceLimit: 10,
+  shouldTrackStackTrace: true,
+  stackTraceLimit: 40,
+} satisfies RuntimeFlags

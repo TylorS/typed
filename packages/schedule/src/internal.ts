@@ -9,10 +9,12 @@ export const maxTimeSemigroup = semigroup.max(N.Order)
 export const maxTimeOptionMonoid: monoid.Monoid<O.Option<number>> = O.getMonoid(maxTimeSemigroup)
 
 export const maxDurationSemigroup = toFromDuration(maxTimeSemigroup)
-export const maxDurationOptionMonoid = O.getMonoid(maxDurationSemigroup)
+export const maxDurationOptionMonoid: monoid.Monoid<O.Option<Duration.Duration>> =
+  O.getMonoid(maxDurationSemigroup)
 
 export const minTimeSemigroup = semigroup.min(N.Order)
-export const minTimeOptionMonoid = O.getMonoid(minTimeSemigroup)
+export const minTimeOptionMonoid: monoid.Monoid<O.Option<number>> = O.getMonoid(minTimeSemigroup)
 
 export const minDurationSemigroup = toFromDuration(minTimeSemigroup)
-export const minDurationOptionMonoid = O.getMonoid(minDurationSemigroup)
+export const minDurationOptionMonoid: monoid.Monoid<O.Option<Duration.Duration>> =
+  O.getMonoid(minDurationSemigroup)

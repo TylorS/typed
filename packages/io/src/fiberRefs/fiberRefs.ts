@@ -17,4 +17,7 @@ export interface FiberRefs {
   ) => Effect<R, E, B>
   readonly delete: <R, E, A>(fiberRef: FiberRef<R, E, A>) => Effect<never, never, Option<A>>
   readonly subscribe: <R, E, A>(fiberRef: FiberRef<R, E, A>) => Fx<R, E, A>
+  readonly inherit: Effect<never, never, void>
+
+  readonly fork: () => FiberRefs
 }
