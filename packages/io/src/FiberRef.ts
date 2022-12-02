@@ -1,7 +1,7 @@
 import { SK } from '@fp-ts/data/Function'
 import { Option, some } from '@fp-ts/data/Option'
 
-import { Effect, getFiberRef } from './Effect.js'
+import { Effect, getFiberRef } from './Effect/Effect.js'
 
 export interface FiberRef<R, E, A> {
   readonly id: FiberRefId<A>

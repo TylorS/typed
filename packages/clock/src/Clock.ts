@@ -15,7 +15,7 @@ const GetUnixTime = {
   fork: () => Clock(),
 }
 
-export const Clock = Object.assign(function Clock(startTime: UnixTime = getUnixTime()): Clock {
+export const Clock = Object.assign(function makeClock(startTime: UnixTime = getUnixTime()): Clock {
   return {
     startTime,
     ...GetUnixTime,

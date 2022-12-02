@@ -1,13 +1,15 @@
 import { Context } from '@fp-ts/data/Context'
-import type { Cause } from '@typed/cause'
+import { Cause, CauseError } from '@typed/cause'
+import { SingleShotGen } from '@typed/internal'
 
-import type { Effect } from './Effect.js'
-import { FiberId } from './FiberId.js'
-import type { FiberRefs } from './FiberRefs.js'
-import type { FiberRuntime, RuntimeOptions } from './FiberRuntime.js'
-import type { FiberScope } from './FiberScope.js'
-import type { Future } from './Future.js'
-import type { RuntimeFlags } from './RuntimeFlags.js'
+import type { FiberId } from '../FiberId.js'
+import type { FiberRefs } from '../FiberRefs.js'
+import type { FiberRuntime, RuntimeOptions } from '../FiberRuntime.js'
+import type { FiberScope } from '../FiberScope.js'
+import type { Future } from '../Future.js'
+import type { RuntimeFlags } from '../RuntimeFlags.js'
+
+import { Effect } from './Effect.js'
 
 export type Instruction<R, E, A> =
   | AccessContext<R, R, E, A>
@@ -30,14 +32,12 @@ export type Instruction<R, E, A> =
   | WithFiberRefs<R, E, A>
 
 abstract class Instr<I, R, E, A> implements Effect<R, E, A> {
-  readonly _R!: (_: never) => R
-  readonly _E!: (_: never) => E
-  readonly _A!: (_: never) => A
+  readonly [Effect.TypeId]: Effect.Variance<R, E, A>[Effect.TypeId] = Effect.Variance
 
   constructor(readonly input: I, readonly __trace?: string) {}
 
-  *[Symbol.iterator](): Generator<Effect<R, E, any>, A, any> {
-    return yield this
+  [Symbol.iterator](): Generator<Effect<R, E, A>, A, A> {
+    return new SingleShotGen<this, A>(this)
   }
 }
 
@@ -171,4 +171,30 @@ export class Fork<R, E, A> extends Instr<
   FiberRuntime<R, E, A>
 > {
   readonly tag = 'Fork'
+}
+
+export function gen<Eff extends Effect<any, any, any>, A, N = unknown>(
+  f: () => Generator<Eff, A, N>,
+  __trace?: string,
+): Effect<Effect.ServicesOf<Eff>, Effect.ErrorsOf<Eff>, A> {
+  return new Lazy(() => {
+    const gen = f()
+
+    return new FlatMapCause([
+      runEffectGenerator(gen, gen.next()),
+      // TOOD: better error handling
+      (cause) => runEffectGenerator(gen, gen.throw(new CauseError(cause))),
+    ])
+  }, __trace)
+}
+
+function runEffectGenerator<Eff extends Effect<any, any, any>, A>(
+  gen: Generator<Eff, A>,
+  result: IteratorResult<Eff, A>,
+): Effect<Effect.ServicesOf<Eff>, Effect.ErrorsOf<Eff>, A> {
+  if (result.done) {
+    return new Of(result.value)
+  }
+
+  return new FlatMap([result.value, (value) => runEffectGenerator(gen, gen.next(value))])
 }

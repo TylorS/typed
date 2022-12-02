@@ -1,6 +1,6 @@
 import { Disposable } from '@typed/disposable'
 
-import { Effect, of, sync } from './Effect.js'
+import { Effect, of, sync } from './Effect/Effect.js'
 
 export interface Future<R, E, A> {
   readonly state: FutureState<R, E, A>

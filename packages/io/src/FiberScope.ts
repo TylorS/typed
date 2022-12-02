@@ -1,6 +1,6 @@
 import { Tag } from '@fp-ts/data/Context'
 
-import * as Effect from './Effect.js'
+import * as Effect from './Effect/Effect.js'
 import type { RuntimeFiber } from './Fiber.js'
 import { FiberId, None } from './FiberId.js'
 import { zipAll } from './operators.js'
@@ -39,11 +39,9 @@ export function FiberScope(id: FiberId): FiberScope {
 
 export type GlobalFiberScope = FiberScope & GLOBAL_FIBER_SCOPE
 
-export const GlobalFiberScope = Tag<GlobalFiberScope>()
-
-export function makeGlobalFiberScope(): GlobalFiberScope {
+export const GlobalFiberScope = Object.assign(function makeGlobalFiberScope(): GlobalFiberScope {
   return FiberScope(None) as GlobalFiberScope
-}
+}, Tag<GlobalFiberScope>())
 
 export interface GLOBAL_FIBER_SCOPE {
   readonly GLOBAL_FIBER_SCOPE: unique symbol

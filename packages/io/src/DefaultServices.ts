@@ -5,12 +5,12 @@ import * as C from '@typed/clock'
 import { Time, UnixTime } from '@typed/time'
 import { makeTimer } from '@typed/timer'
 
-import * as Effect from './Effect.js'
+import * as Effect from './Effect/Effect.js'
 import type { FiberRefs } from './FiberRefs.js'
-import { GlobalFiberScope, makeGlobalFiberScope } from './FiberScope.js'
-import { IdGenerator, makeIdGenerator } from './IdGenerator.js'
+import { GlobalFiberScope } from './FiberScope.js'
+import { IdGenerator } from './IdGenerator.js'
 import { Layer } from './Layer.js'
-import { Scheduler, makeScheduler } from './Scheduler.js'
+import { Scheduler } from './Scheduler.js'
 
 export type DefaultServices = Scheduler | IdGenerator | GlobalFiberScope
 
@@ -18,9 +18,9 @@ const empty = Context.empty()
 
 export const DefaultClock = C.Clock()
 export const DefaultTimer = makeTimer(DefaultClock)
-export const DefaultScheduler = makeScheduler(DefaultTimer)
-export const DefaultIdGenerator = makeIdGenerator()
-export const DefaultGlobalScope = makeGlobalFiberScope()
+export const DefaultScheduler = Scheduler(DefaultTimer)
+export const DefaultIdGenerator = IdGenerator()
+export const DefaultGlobalScope = GlobalFiberScope()
 
 export const DefaultServicesContext: Context.Context<DefaultServices> = pipe(
   empty,
@@ -37,19 +37,18 @@ export const getDefaultService = <R, S extends DefaultServices>(
   context: Context.Context<R>,
   fiberRefs: FiberRefs,
   service: Context.Tag<S>,
-): S => {
-  const contextOption = pipe(context, Context.getOption<S>(service))
-
-  if (Option.isSome(contextOption)) {
-    return contextOption.value
-  }
-
-  return pipe(
-    fiberRefs.getOption(DefaultServices),
-    Option.getOrElse(() => DefaultServicesContext),
-    Context.unsafeGet(service),
+): S =>
+  pipe(
+    context,
+    Context.getOption<S>(service),
+    Option.getOrElse(() =>
+      pipe(
+        fiberRefs.getOption(DefaultServices),
+        Option.getOrElse(() => DefaultServicesContext),
+        Context.unsafeGet(service),
+      ),
+    ),
   )
-}
 
 export const getScheduler: Effect.Effect<never, never, Scheduler> = Effect.Effect(function* () {
   const ctx = yield* Effect.context<never>()
@@ -91,4 +90,13 @@ export function forkDaemon<R, E, A>(effect: Effect.Effect<R, E, A>) {
     getGlobalFiberScope,
     Effect.flatMap((scope) => pipe(effect, Effect.forkWithOptions({ scope }))),
   )
+}
+
+export function forkDaemonWithOptions() {
+  return <R, E, A>(effect: Effect.Effect<R, E, A>) => {
+    return pipe(
+      getGlobalFiberScope,
+      Effect.flatMap((scope) => pipe(effect, Effect.forkWithOptions({ scope }))),
+    )
+  }
 }

@@ -3,7 +3,7 @@ import { isRight } from '@fp-ts/data/Either'
 import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 
-import * as Effect from './Effect.js'
+import * as Effect from './Effect/Effect.js'
 import { FiberRef, FiberRefId } from './FiberRef.js'
 import { Future, pending } from './Future.js'
 import { Lock, Semaphore, withPermit } from './Semaphore.js'
@@ -75,9 +75,7 @@ export interface FiberRefs {
   readonly join: (child: FiberRefs) => void
 }
 
-export const FiberRefs = C.Tag<FiberRefs>()
-
-export function makeFiberRefs(
+export const FiberRefs = Object.assign(function makeFiberRefs(
   references: Iterable<readonly [FiberRef<any, any, any>, any]> = [],
 ): FiberRefs {
   const valuesById = new Map<FiberRefId<any>, any>(
@@ -91,11 +89,15 @@ export function makeFiberRefs(
 
   function fiberRefScoped(id: FiberRefId<any>) {
     return <R, E, A>(effect: Effect.Effect<R, E, A>) => {
-      if (!locks.has(id)) {
-        locks.set(id, Lock())
+      if (locks.has(id)) {
+        return withPermit(locks.get(id) as Semaphore)(effect)
       }
 
-      return pipe(effect, withPermit(locks.get(id) as Semaphore))
+      const l = Lock()
+
+      locks.set(id, l)
+
+      return withPermit(l)(effect)
     }
   }
 
@@ -106,8 +108,6 @@ export function makeFiberRefs(
 
   const getOption: FiberRefs['getOption'] = (fiberRef) => {
     if (valuesById.has(fiberRef.id)) {
-      refsById.set(fiberRef.id, fiberRef)
-
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return Option.some(valuesById.get(fiberRef.id)!)
     }
@@ -117,8 +117,6 @@ export function makeFiberRefs(
 
   const initialize: FiberRefs['get'] = (fiberRef) =>
     Effect.Effect(function* () {
-      refsById.set(fiberRef.id, fiberRef)
-
       if (initializing.has(fiberRef.id)) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return yield* Effect.wait(initializing.get(fiberRef.id)!)
@@ -129,6 +127,7 @@ export function makeFiberRefs(
       const exit = yield* Effect.attempt(fiberRef.initial)
 
       if (isRight(exit)) {
+        refsById.set(fiberRef.id, fiberRef)
         valuesById.set(fiberRef.id, exit.right)
       }
 
@@ -172,18 +171,17 @@ export function makeFiberRefs(
     })
 
   const set: FiberRefs['set'] = (fiberRef, a) =>
-    pipe(
+    fiberRefScoped(fiberRef.id)(
       Effect.sync(() => {
         valuesById.set(fiberRef.id, a)
         refsById.set(fiberRef.id, fiberRef)
 
         return a
       }),
-      fiberRefScoped(fiberRef.id),
     )
 
   const delete_: FiberRefs['delete'] = (fiberRef) =>
-    pipe(
+    fiberRefScoped(fiberRef.id)(
       Effect.sync(() => {
         const option = getOption(fiberRef)
 
@@ -193,7 +191,6 @@ export function makeFiberRefs(
 
         return option
       }),
-      fiberRefScoped(fiberRef.id),
     )
 
   const inherit: FiberRefs['inherit'] = pipe(
@@ -249,4 +246,5 @@ export function makeFiberRefs(
   }
 
   return refs
-}
+},
+C.Tag<FiberRefs>())

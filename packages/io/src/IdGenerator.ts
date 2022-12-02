@@ -5,7 +5,7 @@ export interface IdGenerator {
   (): number
 }
 
-export const makeIdGenerator = (): IdGenerator => {
+export const IdGenerator = Object.assign(function makeIdGenerator(): IdGenerator {
   let id = 0
 
   function next() {
@@ -14,8 +14,4 @@ export const makeIdGenerator = (): IdGenerator => {
   next.tag = 'IdGenerator' as const
 
   return next
-}
-
-export const IdGenerator = Object.assign(Tag<IdGenerator>(), {
-  make: makeIdGenerator,
-} as const)
+}, Tag<IdGenerator>())

@@ -4,7 +4,7 @@ import * as RA from '@fp-ts/data/ReadonlyArray'
 import { Disposable } from '@typed/disposable'
 import * as Exit from '@typed/exit'
 
-import * as Effect from './Effect.js'
+import * as Effect from './Effect/Effect.js'
 import * as FiberId from './FiberId.js'
 import { Future, pending } from './Future.js'
 

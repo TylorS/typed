@@ -8,7 +8,7 @@ import { Exit } from '@typed/exit'
 import { RingBuffer } from '@typed/internal'
 
 import { getDefaultService } from './DefaultServices.js'
-import { Effect } from './Effect.js'
+import { Effect } from './Effect/Effect.js'
 import type { RuntimeFiber } from './Fiber.js'
 import { FiberId, Live } from './FiberId.js'
 import type { FiberRefs } from './FiberRefs.js'
@@ -26,10 +26,10 @@ import {
 } from './Frame.js'
 import { pending } from './Future.js'
 import { IdGenerator } from './IdGenerator.js'
-import * as I from './Instruction.js'
+import * as I from './Effect/Instruction.js'
 import type { RuntimeFlags } from './RuntimeFlags.js'
 import { Scheduler } from './Scheduler.js'
-import { NonEmptyMutableStack } from './_internal.js'
+import { NonEmptyStack } from '@typed/internal'
 
 export interface RuntimeOptions<R> {
   readonly id: FiberId
@@ -39,19 +39,22 @@ export interface RuntimeOptions<R> {
   readonly flags: RuntimeFlags
 }
 
+const combineSeq = Cause.getSequentialMonoid<any>().combine
+
 export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Errors, Output> {
   protected disposable: Disposable.Disposable.Queue = Disposable.Queue()
-  protected currentContext: NonEmptyMutableStack<Context.Context<any>> = new NonEmptyMutableStack(
+  protected currentContext: NonEmptyStack<Context.Context<any>> = new NonEmptyStack(
     this.options.context,
   )
-  protected currentFiberRefs: NonEmptyMutableStack<FiberRefs> = new NonEmptyMutableStack(
+  protected currentFiberRefs: NonEmptyStack<FiberRefs> = new NonEmptyStack(
     this.options.fiberRefs,
   )
-  protected currentRuntimeFlags: NonEmptyMutableStack<RuntimeFlags> = new NonEmptyMutableStack(
+  protected currentRuntimeFlags: NonEmptyStack<RuntimeFlags> = new NonEmptyStack(
     this.options.flags,
   )
   protected fiberStatus: FiberStatus.FiberStatus<Errors, Output> = FiberStatus.Pending
   protected frames: Frame[] = []
+  // TODO: Allow resizig RingBuffer as runtime flags are updated
   protected executionTrace = new RingBuffer<string>(this.options.flags.maxExecutionTraceCount)
   protected instr!: I.Instruction<any, any, any> | null
   protected interruptCause: Cause.Cause<Errors> = Cause.Empty
@@ -87,6 +90,12 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
   }
 
   readonly addObserver: RuntimeFiber<Errors, Output>['addObserver'] = (observer) => {
+    if (this.fiberStatus.tag === 'Done') {
+      observer(this.fiberStatus.exit)
+
+      return Disposable.Disposable.unit
+    }
+
     this.observers.push(observer)
 
     return Disposable.Disposable(() => {
@@ -98,21 +107,22 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
     })
   }
 
-  readonly interruptAs: RuntimeFiber<Errors, Output>['interruptAs'] = (id: FiberId) => {
-    this.interruptCause = pipe(
-      this.interruptCause,
-      // TODO: pretty print id
-      Cause.getSequentialMonoid<any>().combine(Cause.Interrupted(`${JSON.stringify(id)}`)),
-    )
+  readonly interruptAs: RuntimeFiber<Errors, Output>['interruptAs'] = (id: FiberId) =>
+    new I.Lazy(() => {
+      this.interruptCause = pipe(
+        this.interruptCause,
+        // TODO: pretty print id
+        combineSeq(Cause.Interrupted(`${JSON.stringify(id)}`)),
+      )
 
-    // Interrupt immediately if interruptable
-    if (this.currentRuntimeFlags.current.interruptStatus) {
-      this.continueWithCause(this.interruptCause)
-    }
+      // Interrupt immediately if interruptable
+      if (this.currentRuntimeFlags.current.interruptStatus) {
+        this.continueWithCause(this.interruptCause)
+      }
 
-    // Always wait for the exit value for synchronization
-    return this.exit
-  }
+      // Always wait for the exit value for synchronization
+      return this.exit
+    })
 
   // Only public to users of FiberRuntime directly
   public start(): boolean {
@@ -189,6 +199,11 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
     )
 
     inner.offer(this.disposable.offer(inner))
+
+    // If we didn't resume synchronously, ensure we yield to other fibers
+    if (!inner.isDisposed()) {
+      this.instr = null
+    }
   }
 
   protected Lazy(instr: I.Lazy<any, any, any>) {
@@ -380,9 +395,9 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
     const { scope } = this.options
 
     if (scope.size > 0) {
-      return this.setInstr(
-        new I.FlatMap([scope.interruptChildren, () => new I.Sync(() => this.complete(exit))]),
-      )
+      this.frames.push(new PopFrame(() => this.complete(exit)))
+
+      return this.setInstr(scope.interruptChildren)
     }
 
     this.complete(exit)

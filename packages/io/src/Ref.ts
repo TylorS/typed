@@ -1,7 +1,7 @@
 import { flow, pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 
-import * as Effect from './Effect.js'
+import * as Effect from './Effect/Effect.js'
 import * as FiberRef from './FiberRef.js'
 
 export interface Ref<R, E, I, O = I> {

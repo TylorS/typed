@@ -6,7 +6,7 @@ import { getTime } from '@typed/clock'
 import { Exit } from '@typed/exit'
 
 import { DefaultServices, DefaultServicesContext, getDefaultService } from './DefaultServices.js'
-import * as Effect from './Effect.js'
+import * as Effect from './Effect/Effect.js'
 import { Live, None } from './FiberId.js'
 import { makeFiberRefs } from './FiberRefs.js'
 import { FiberRuntime, RuntimeOptions } from './FiberRuntime.js'

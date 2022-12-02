@@ -1,6 +1,6 @@
 import { pipe } from '@fp-ts/data/Function'
 
-import * as Effect from './Effect.js'
+import * as Effect from './Effect/Effect.js'
 import { Future, pending } from './Future.js'
 import { Scope, scoped } from './Scope.js'
 import { ask } from './operators.js'

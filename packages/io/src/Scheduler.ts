@@ -7,22 +7,20 @@ import { Time, UnixTime } from '@typed/time'
 import * as Timeline from '@typed/timeline'
 import { makeTimer, Timer } from '@typed/timer'
 
-import { Effect } from './Effect.js'
+import { Effect } from './Effect/Effect.js'
 import { pending } from './Future.js'
-import { Async, Lazy } from './Instruction.js'
+import { Async, Lazy } from './Effect/Instruction.js'
 
 export interface Scheduler extends C.Clock, Disposable {
   readonly delay: <R, E, A>(effect: Effect<R, E, A>, duration: Duration.Duration) => Effect<R, E, A>
 
-  readonly schedule: <R, E, A, R2, E2>(
+  readonly schedule: <R, E, A>(
     effect: Effect<R, E, A>,
     schedule: Schedule,
-  ) => Effect<R | R2, E | E2, ScheduleState>
+  ) => Effect<R, E, ScheduleState>
 
   readonly fork: () => Scheduler
 }
-
-export const Scheduler = Tag<Scheduler>()
 
 export interface Schedule {
   readonly step: (
@@ -65,7 +63,9 @@ export interface ScheduleDone {
   readonly tag: 'Done'
 }
 
-export function makeScheduler(timer: Timer = makeTimer()): Scheduler {
+export const Scheduler = Object.assign(function makeScheduler(
+  timer: Timer = makeTimer(),
+): Scheduler {
   const [disposable, add] = callbackScheduler(timer)
 
   const delay: Scheduler['delay'] = (effect, duration) =>
@@ -117,7 +117,8 @@ export function makeScheduler(timer: Timer = makeTimer()): Scheduler {
   }
 
   return scheduler
-}
+},
+Tag<Scheduler>())
 
 class ForkScheduler implements Scheduler {
   readonly startTime: Scheduler['startTime']

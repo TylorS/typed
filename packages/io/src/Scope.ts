@@ -7,7 +7,7 @@ import { Disposable } from '@typed/disposable'
 import { Exit } from '@typed/exit'
 
 import { forkDaemon } from './DefaultServices.js'
-import * as Effect from './Effect.js'
+import * as Effect from './Effect/Effect.js'
 import { RuntimeFiber } from './Fiber.js'
 import { asksEffect, provideService } from './operators.js'
 
