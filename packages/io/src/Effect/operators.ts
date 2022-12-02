@@ -6,15 +6,15 @@ import { NonEmptyReadonlyArray } from '@fp-ts/data/ReadonlyArray'
 import { Cause } from '@typed/cause'
 import type { Exit } from '@typed/exit'
 
-import * as Fiber from '../Fiber.js'
-import { FiberId } from '../FiberId.js'
-import type { FiberRef } from '../FiberRef.js'
-import type { FiberRefs } from '../FiberRefs.js'
-import type { RuntimeOptions } from '../FiberRuntime.js'
-import type { FiberScope } from '../FiberScope.js'
-import type { Future } from '../Future.js'
-import { Layer } from '../Layer.js'
-import type { RuntimeFlags } from '../RuntimeFlags.js'
+import * as Fiber from '../Fiber/index.js'
+import { FiberId } from '../FiberId/FiberId.js'
+import type { FiberRef } from '../FiberRef/FiberRef.js'
+import type { FiberRefs } from '../FiberRefs/FiberRefs.js'
+import type { RuntimeOptions } from '../FiberRuntime/FiberRuntime.js'
+import type { FiberScope } from '../FiberScope/FiberScope.js'
+import type { Future } from '../Future/Future.js'
+import type { Layer } from '../Layer/Layer.js'
+import type { RuntimeFlags } from '../RuntimeFlags/RuntimeFlags.js'
 import { flow2 } from '../_internal.js'
 
 import { Effect } from './Effect.js'
@@ -314,10 +314,7 @@ export function zipAll<Effs extends ReadonlyArray<Effect<any, any, any>>>(
         zip(cur),
         map(([acc, x]) => [...acc, x]),
       ),
-    pipe(
-      first,
-      map((x) => [x]),
-    ),
+    tupled(first),
   ) as R
 }
 
@@ -362,4 +359,24 @@ export function interrupt<E, A>(fiber: Fiber.Fiber<E, A>) {
     getFiberId,
     flatMap((id) => fiber.interruptAs(id)),
   )
+}
+
+export function struct<Effects extends Readonly<Record<string, Effect<any, any, any>>>>(
+  effects: Effects,
+): Effect<
+  Effect.ServicesOf<Effects[string]>,
+  Effect.ErrorsOf<Effects[string]>,
+  { readonly [K in keyof Effects]: Effect.OutputOf<Effects[K]> }
+> {
+  return pipe(
+    zipAll(
+      Object.entries(effects).map(([k, effect]) =>
+        pipe(
+          effect,
+          map((v) => [k, v] as const),
+        ),
+      ),
+    ),
+    map(Object.fromEntries),
+  ) as any
 }

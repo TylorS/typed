@@ -3,10 +3,10 @@ import { isRight } from '@fp-ts/data/Either'
 import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 
-import * as Effect from './Effect/Effect.js'
-import { FiberRef, FiberRefId } from './FiberRef.js'
-import { Future, pending } from './Future.js'
-import { Lock, Semaphore, withPermit } from './Semaphore.js'
+import * as Effect from '../Effect/index.js'
+import { FiberRef, FiberRefId } from '../FiberRef/FiberRef.js'
+import { Future, pending } from '../Future/Future.js'
+import { Lock, Semaphore, withPermit } from '../Semaphore.js'
 
 export interface FiberRefs {
   /**
@@ -116,7 +116,7 @@ export const FiberRefs = Object.assign(function makeFiberRefs(
   }
 
   const initialize: FiberRefs['get'] = (fiberRef) =>
-    Effect.Effect(function* () {
+    Effect.gen(function* () {
       if (initializing.has(fiberRef.id)) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return yield* Effect.wait(initializing.get(fiberRef.id)!)

@@ -1,6 +1,6 @@
 import * as Cause from '@typed/cause'
 
-import { Effect } from './Effect/Effect.js'
+import { Effect } from '../Effect/Effect.js'
 
 export type Frame =
   | MapFrame

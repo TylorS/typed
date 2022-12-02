@@ -1,13 +1,15 @@
 import { Context } from '@fp-ts/data/Context'
+import { isLeft } from '@fp-ts/data/Either'
 import { Cause, CauseError } from '@typed/cause'
+import { Exit } from '@typed/exit'
 import { SingleShotGen } from '@typed/internal'
 
-import type { FiberId } from '../FiberId.js'
-import type { FiberRefs } from '../FiberRefs.js'
-import type { FiberRuntime, RuntimeOptions } from '../FiberRuntime.js'
-import type { FiberScope } from '../FiberScope.js'
-import type { Future } from '../Future.js'
-import type { RuntimeFlags } from '../RuntimeFlags.js'
+import type { FiberId } from '../FiberId/FiberId.js'
+import type { FiberRefs } from '../FiberRefs/FiberRefs.js'
+import type { FiberRuntime, RuntimeOptions } from '../FiberRuntime/FiberRuntime.js'
+import type { FiberScope } from '../FiberScope/FiberScope.js'
+import type { Future } from '../Future/Future.js'
+import type { RuntimeFlags } from '../RuntimeFlags/RuntimeFlags.js'
 
 import { Effect } from './Effect.js'
 
@@ -198,3 +200,12 @@ function runEffectGenerator<Eff extends Effect<any, any, any>, A>(
 
   return new FlatMap([result.value, (value) => runEffectGenerator(gen, gen.next(value))])
 }
+
+export function fromExit<E, A>(exit: Exit<E, A>, __trace?: string) {
+  return isLeft(exit) ? new FromCause(exit.left, __trace) : new Of(exit.right, __trace)
+}
+
+export const withFiberRefs =
+  (refs: FiberRefs, __trace?: string) =>
+  <R, E, A>(effect: Effect<R, E, A>): Effect<R, E, A> =>
+    new WithFiberRefs([effect, refs], __trace)

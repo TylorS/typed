@@ -1,9 +1,10 @@
 import { pipe } from '@fp-ts/data/Function'
 
+import { gen } from './Effect.js'
 import * as Effect from './Effect/Effect.js'
-import { Future, pending } from './Future.js'
-import { Scope, scoped } from './Scope.js'
-import { ask } from './operators.js'
+import { ask, flatMap, sync, wait } from './Effect/operators.js'
+import { Future, pending } from './Future/Future.js'
+import { Scope, scoped } from './Scope/Scope.js'
 
 export interface Semaphore {
   readonly maxPermits: number
@@ -16,7 +17,7 @@ export function Semaphore(maxPermits: number): Semaphore {
   let acquired = 0
   const waiting: Array<Future<Scope, never, void>> = []
 
-  const allocate = Effect.Effect(function* () {
+  const allocate = gen(function* () {
     const scope = yield* ask(Scope)
 
     if (acquired < maxPermits) {
@@ -31,10 +32,10 @@ export function Semaphore(maxPermits: number): Semaphore {
 
     waiting.push(future)
 
-    return yield* Effect.wait(future)
+    return yield* wait(future)
   })
 
-  const deallocate = Effect.sync(() => {
+  const deallocate = sync(() => {
     acquired -= 1
 
     waiting.shift()?.complete(allocate)
@@ -42,8 +43,8 @@ export function Semaphore(maxPermits: number): Semaphore {
 
   return {
     maxPermits,
-    acquiredPermits: Effect.sync(() => acquired),
-    availablePermits: Effect.sync(() => maxPermits - acquired),
+    acquiredPermits: sync(() => acquired),
+    availablePermits: sync(() => maxPermits - acquired),
     acquirePermit: allocate,
   }
 }
@@ -56,7 +57,7 @@ export function withPermit(semaphore: Semaphore) {
   return <R, E, A>(effect: Effect.Effect<R, E, A>): Effect.Effect<R, E, A> =>
     pipe(
       semaphore.acquirePermit,
-      Effect.flatMap(() => effect),
+      flatMap(() => effect),
       scoped,
     )
 }

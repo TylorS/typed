@@ -28,6 +28,27 @@ export class SingleShotGen<T, A> implements Generator<T, A, A> {
   }
 }
 
+export class OfGen<A> implements Generator<never, A, A> {
+  constructor(readonly value: A) {}
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  next(_: A): IteratorResult<never, A> {
+    return done(this.value)
+  }
+
+  return(a: A): IteratorResult<never, A> {
+    return done(a)
+  }
+
+  throw(e: unknown): IteratorResult<never, A> {
+    throw e
+  }
+
+  [Symbol.iterator](): Generator<never, A, A> {
+    return this
+  }
+}
+
 function cont<T, A>(value: T): IteratorResult<T, A> {
   return {
     done: false,

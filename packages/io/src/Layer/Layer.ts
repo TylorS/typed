@@ -1,8 +1,8 @@
 import { Context } from '@fp-ts/data/Context'
 import { identity } from '@fp-ts/data/Function'
 
-import { Effect } from './Effect/Effect.js'
-import { FiberRef } from './FiberRef.js'
+import { Effect } from '../Effect/Effect.js'
+import { FiberRef } from '../FiberRef/FiberRef.js'
 
 export interface Layer<R, E, A> extends FiberRef<R, E, Context<A>> {}
 
