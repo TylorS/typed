@@ -18,9 +18,7 @@ export interface Scope {
   readonly fork: Effect.Of<Scope>
 }
 
-export const Scope = Tag<Scope>()
-
-export function makeScope(): Scope {
+export const Scope = Object.assign(function makeScope(): Scope {
   const finalizers: Array<Finalizer> = []
   let closed = false
   let finalExit: Option.Option<Exit<any, any>> = Option.none
@@ -85,7 +83,7 @@ export function makeScope(): Scope {
     close,
     fork,
   }
-}
+}, Tag<Scope>())
 
 export interface Finalizer {
   (exit: Exit<any, any>): Effect.Of<unknown>
@@ -93,7 +91,7 @@ export interface Finalizer {
 
 export function scoped<R, E, A>(effect: Effect<R | Scope, E, A>): Effect<Exclude<R, Scope>, E, A> {
   return ops.lazy(() => {
-    const scope = makeScope()
+    const scope = Scope()
 
     return pipe(effect, ops.provideService(Scope, scope), ops.onExit(scope.close))
   })

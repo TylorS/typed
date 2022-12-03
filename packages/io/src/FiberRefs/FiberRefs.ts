@@ -6,7 +6,7 @@ import * as Option from '@fp-ts/data/Option'
 import * as Effect from '../Effect/index.js'
 import { FiberRef, FiberRefId } from '../FiberRef/FiberRef.js'
 import { Future, pending } from '../Future/Future.js'
-import { Lock, Semaphore, withPermit } from '../Semaphore.js'
+import { Lock, Semaphore, withPermit } from '../Semaphore/Semaphore.js'
 
 export interface FiberRefs {
   /**

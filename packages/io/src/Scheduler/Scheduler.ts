@@ -3,7 +3,8 @@ import * as Duration from '@fp-ts/data/Duration'
 import * as O from '@fp-ts/data/Option'
 import * as C from '@typed/clock'
 import { Disposable } from '@typed/disposable'
-import { Time, UnixTime } from '@typed/time'
+import { Schedule, ScheduleState } from '@typed/schedule'
+import { UnixTime } from '@typed/time'
 import * as Timeline from '@typed/timeline'
 import { makeTimer, Timer } from '@typed/timer'
 
@@ -20,47 +21,6 @@ export interface Scheduler extends C.Clock, Disposable {
   ) => Effect<R, E, ScheduleState>
 
   readonly fork: () => Scheduler
-}
-
-export interface Schedule {
-  readonly step: (
-    state: ScheduleState,
-    input: ScheduleInput,
-  ) => readonly [ScheduleState, ScheduleDecision]
-}
-
-export interface ScheduleInput {
-  readonly currentTime: Time
-  readonly currentDelay: O.Option<Duration.Duration>
-}
-
-export interface ScheduleState {
-  readonly startTime: Time
-  readonly iterations: number
-  readonly previousTime: O.Option<Time>
-  readonly previousDelay: O.Option<Duration.Duration>
-  readonly currentDelay: Duration.Duration
-}
-
-export namespace ScheduleState {
-  export const initial = (startTime: Time): ScheduleState => ({
-    startTime,
-    iterations: 0,
-    previousTime: O.none,
-    previousDelay: O.none,
-    currentDelay: Duration.zero,
-  })
-}
-
-export type ScheduleDecision = ScheduleContinue | ScheduleDone
-
-export interface ScheduleContinue {
-  readonly tag: 'Continue'
-  readonly delay: O.Option<Duration.Duration>
-}
-
-export interface ScheduleDone {
-  readonly tag: 'Done'
 }
 
 export const Scheduler = Object.assign(function makeScheduler(
@@ -80,28 +40,18 @@ export const Scheduler = Object.assign(function makeScheduler(
   const schedule: Scheduler['schedule'] = (effect, schedule) =>
     gen(function* () {
       const startTime = C.getTime(timer)
-      let [state, decision] = schedule.step(ScheduleState.initial(startTime), {
-        currentTime: startTime,
-        currentDelay: O.none,
-      })
+      let [state, decision] = schedule.step(ScheduleState.initial(startTime), startTime)
 
-      while (decision.tag === 'Continue') {
+      while (decision._tag === 'Continue') {
         const currentDelay = decision.delay
 
         if (O.isSome(currentDelay)) {
-          const task = new Task(effect)
-
-          add(C.delay(currentDelay.value)(timer), task.start)
-
-          yield* task.wait
+          yield* delay(effect, currentDelay.value)
         } else {
           yield* effect
         }
 
-        ;[state, decision] = schedule.step(state, {
-          currentTime: C.getTime(timer),
-          currentDelay,
-        })
+        ;[state, decision] = schedule.step(state, C.getTime(timer))
       }
 
       return state
