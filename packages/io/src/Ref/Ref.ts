@@ -1,7 +1,6 @@
 import * as Context from '@fp-ts/data/Context'
 import { flow, pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
-import { NonEmptyReadonlyArray } from '@fp-ts/data/ReadonlyArray'
 
 import * as Effect from '../Effect/index.js'
 import * as FiberRef from '../FiberRef/FiberRef.js'
@@ -65,22 +64,23 @@ export function contramapEffect<A, R2, E2, B>(f: (b: B) => Effect.Effect<R2, E2,
   })
 }
 
-export function zip<R, E, I1, O1, R2, E2, I2, O2>(
-  ref1: Ref<R, E, I1, O1>,
-  ref2: Ref<R2, E2, I2, O2>,
-): Ref<R | R2, E | E2, readonly [I1, I2], readonly [O1, O2]> {
-  return {
-    get: Effect.zip(ref2.get)(ref1.get),
-    set: ([a, b]) => Effect.zip(ref2.set(b))(ref1.set(a)),
-    delete: pipe(
-      ref1.delete,
-      Effect.zip(ref2.delete),
-      Effect.map(([a, b]) => Option.tuple(a, b)),
-    ),
+export function zip<R2, E2, I2, O2>(ref2: Ref<R2, E2, I2, O2>) {
+  return <R, E, I1, O1>(
+    ref1: Ref<R, E, I1, O1>,
+  ): Ref<R | R2, E | E2, readonly [I1, I2], readonly [O1, O2]> => {
+    return {
+      get: Effect.zip(ref2.get)(ref1.get),
+      set: ([a, b]) => Effect.zip(ref2.set(b))(ref1.set(a)),
+      delete: pipe(
+        ref1.delete,
+        Effect.zip(ref2.delete),
+        Effect.map(([a, b]) => Option.tuple(a, b)),
+      ),
+    }
   }
 }
 
-export function nonEmptyTuple<REFS extends NonEmptyReadonlyArray<Ref<any, any, any>>>(
+export function tuple<REFS extends ReadonlyArray<Ref<any, any, any>>>(
   ...refs: REFS
 ): Ref<
   ResourcesOf<REFS[number]>,
@@ -102,6 +102,31 @@ export function nonEmptyTuple<REFS extends NonEmptyReadonlyArray<Ref<any, any, a
     { readonly [K in keyof REFS]: InputOf<REFS[K]> },
     { readonly [K in keyof REFS]: OutputOf<REFS[K]> }
   >
+}
+
+export function struct<REFS extends Readonly<Record<string, Ref<any, any, any>>>>(
+  refs: REFS,
+): Ref<
+  ResourcesOf<REFS[string]>,
+  ErrorsOf<REFS[string]>,
+  { readonly [K in keyof REFS]: InputOf<REFS[K]> },
+  { readonly [K in keyof REFS]: OutputOf<REFS[K]> }
+> {
+  return {
+    get: Effect.struct(mapObject(refs, (r) => r.get)),
+    set: (values: { readonly [K in keyof REFS]: InputOf<REFS[K]> }) =>
+      Effect.struct(mapObject(refs, (r, k) => r.set(values[k]))),
+    delete: pipe(Effect.struct(mapObject(refs, (r) => r.delete)), Effect.map(Option.struct)),
+  } as Ref<
+    ResourcesOf<REFS[string]>,
+    ErrorsOf<REFS[string]>,
+    { readonly [K in keyof REFS]: InputOf<REFS[K]> },
+    { readonly [K in keyof REFS]: OutputOf<REFS[K]> }
+  >
+}
+
+function mapObject<A, B>(object: Readonly<Record<string, A>>, f: (a: A, k: string) => B) {
+  return Object.fromEntries(Object.entries(object).map(([k, v]) => [k, f(v, k)]))
 }
 
 export function provide<R>(ctx: Context.Context<R>) {

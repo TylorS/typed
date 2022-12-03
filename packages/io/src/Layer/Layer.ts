@@ -47,7 +47,7 @@ export function fromService<A>(tag: Context.Tag<A>) {
 export function merge<R2, E2, I2, B>(that: Layer<R2, E2, I2, B>) {
   return <R, E, I, A>(self: Layer<R, E, I, A>): Layer<R | R2, E | E2, readonly [I, I2], A | B> => {
     return pipe(
-      Ref.nonEmptyTuple(self, that),
+      Ref.tuple(self, that),
       Ref.map(([a, b]) => Context.merge(a)(b)),
     )
   }
