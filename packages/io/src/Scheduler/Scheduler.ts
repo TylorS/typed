@@ -4,13 +4,13 @@ import * as O from '@fp-ts/data/Option'
 import * as C from '@typed/clock'
 import { Disposable } from '@typed/disposable'
 import { Schedule, ScheduleState } from '@typed/schedule'
-import { UnixTime } from '@typed/time'
-import * as Timeline from '@typed/timeline'
 import { makeTimer, Timer } from '@typed/timer'
 
 import { Effect } from '../Effect/Effect.js'
 import { Async, gen, Lazy } from '../Effect/Instruction.js'
 import { pending } from '../Future/Future.js'
+
+import { callbackScheduler } from './callbackScheduler.js'
 
 export interface Scheduler extends C.Clock, Disposable {
   readonly delay: <R, E, A>(effect: Effect<R, E, A>, duration: Duration.Duration) => Effect<R, E, A>
@@ -95,42 +95,4 @@ class Task<R, E, A> {
   constructor(readonly effect: Effect<R, E, A>) {}
   readonly wait: Effect<R, E, A> = new Async(this.future)
   readonly start = () => this.future.complete(this.effect)
-}
-
-function callbackScheduler(
-  timer: Timer,
-): readonly [Disposable, (time: UnixTime, f: () => void) => Disposable] {
-  const timeline = Timeline.Timeline<() => void>(scheduleNextRun)
-  let disposable: Disposable = Disposable.unit
-  let nextArrival: UnixTime | null = null
-
-  function scheduleNextRun() {
-    // If the timeline is empty, lets cleanup our resources
-    if (timeline.isEmpty()) {
-      disposable.dispose()
-      nextArrival = null
-
-      return
-    }
-
-    // Get the time of the next arrival currently in the Timeline
-    const next = timeline.nextArrival()
-    const needToScheduleEarlierTime = !nextArrival || nextArrival > next
-
-    // If we need to create or schedule an earlier time, cleanup the old timer
-    // and schedule the new one.
-    if (needToScheduleEarlierTime) {
-      disposable.dispose()
-      disposable = timer.setTimer(runReadyTasks, Duration.millis(next - C.getTime(timer)))
-      nextArrival = next
-    }
-  }
-
-  function runReadyTasks() {
-    timeline.getReadyTasks(timer.currentTime()).forEach((f) => f())
-
-    scheduleNextRun()
-  }
-
-  return [Disposable(() => disposable.dispose()), timeline.add] as const
 }
