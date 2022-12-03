@@ -3,6 +3,7 @@ import { pipe, identity } from '@fp-ts/data/Function'
 
 import { Effect } from '../Effect/Effect.js'
 import * as ops from '../Effect/operators.js'
+import { FiberRef } from '../FiberRef/FiberRef.js'
 import * as Ref from '../Ref.js'
 
 export interface Layer<R, E, I, O> extends Ref.Ref<R, E, I, Context.Context<O>> {}
@@ -30,8 +31,17 @@ export function fromEffect<A>(tag: Context.Tag<A>) {
     Layer(ops.map(makeContext(tag))(effect))
 }
 
+export function fromFiberRef<A>(tag: Context.Tag<A>) {
+  return <R, E>(ref: FiberRef<R, E, A>): Layer.Effect<R, E, A> =>
+    fromEffect(tag)(ops.getFiberRef(ref))
+}
+
+export function fromRef<A>(tag: Context.Tag<A>) {
+  return <R, E, I>(ref: Ref.Ref<R, E, I, A>): Layer.Effect<R, E, A> => fromEffect(tag)(ref.get)
+}
+
 export function fromService<A>(tag: Context.Tag<A>) {
-  return (service: A): Layer.Of<A> => Layer(ops.of(makeContext(tag)(service)))
+  return (service: A): Layer.Of<A> => fromEffect(tag)(ops.of(service))
 }
 
 export function merge<R2, E2, I2, B>(that: Layer<R2, E2, I2, B>) {
