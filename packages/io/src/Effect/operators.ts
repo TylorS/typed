@@ -1,6 +1,6 @@
 import * as Context from '@fp-ts/data/Context'
 import * as Either from '@fp-ts/data/Either'
-import { pipe } from '@fp-ts/data/Function'
+import { flow, pipe } from '@fp-ts/data/Function'
 import { Option } from '@fp-ts/data/Option'
 import { NonEmptyReadonlyArray } from '@fp-ts/data/ReadonlyArray'
 import { Cause } from '@typed/cause'
@@ -13,7 +13,7 @@ import type { FiberRefs } from '../FiberRefs/FiberRefs.js'
 import type { RuntimeOptions } from '../FiberRuntime/FiberRuntime.js'
 import type { FiberScope } from '../FiberScope/FiberScope.js'
 import type { Future } from '../Future/Future.js'
-import type { Layer } from '../Layer/Layer.js'
+import type { Ref } from '../Ref/Ref.js'
 import type { RuntimeFlags } from '../RuntimeFlags/RuntimeFlags.js'
 import { flow2 } from '../_internal.js'
 
@@ -54,6 +54,13 @@ export function provide<R>(
   __trace?: string,
 ): <E, A>(effect: Effect<R, E, A>) => Effect<never, E, A> {
   return (effect) => new I.ProvideContext([effect, context], __trace)
+}
+
+export function provideSome<R0, R>(
+  f: (r0: Context.Context<R0>) => Context.Context<R>,
+  __trace?: string,
+): <E, A>(effect: Effect<R, E, A>) => Effect<Exclude<R0, R>, E, A> {
+  return (effect) => access((r0) => provide(f(r0 as Context.Context<R0>))(effect), __trace)
 }
 
 export function map<A, B>(f: (a: A) => B, __trace?: string) {
@@ -234,16 +241,11 @@ export function provideService<S>(tag: Context.Tag<S>, service: S) {
     access((env) => pipe(effect, provide(addService(env as Context.Context<R>))))
 }
 
-export function provideLayer<R2, E2, S>(layer: Layer<R2, E2, S>) {
+export function provideLayer<R2, E2, I, S>(layer: Ref<R2, E2, I, Context.Context<S>>) {
   return <R, E, A>(effect: Effect<R | S, E, A>): Effect<R2 | Exclude<R, S>, E | E2, A> =>
-    access((env) =>
-      pipe(
-        layer,
-        getFiberRef,
-        flatMap((env2) =>
-          pipe(effect, provide(Context.merge(env2)(env as Context.Context<R | R2>))),
-        ),
-      ),
+    pipe(
+      layer.get,
+      flatMap((env2) => pipe(effect, provideSome(Context.merge(env2)))),
     )
 }
 
@@ -251,7 +253,7 @@ export function asksEffect<S, R, E, A>(
   tag: Context.Tag<S>,
   f: (s: S) => Effect<R, E, A>,
 ): Effect<R | S, E, A> {
-  return access((env: Context.Context<S>) => pipe(env, Context.unsafeGet(tag), f))
+  return access(flow(Context.unsafeGet(tag), f))
 }
 
 export function ask<S>(tag: Context.Tag<S>): Effect<S, never, S> {

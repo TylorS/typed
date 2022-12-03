@@ -1,11 +1,60 @@
-import { Context } from '@fp-ts/data/Context'
-import { identity } from '@fp-ts/data/Function'
+import * as Context from '@fp-ts/data/Context'
+import { pipe, identity } from '@fp-ts/data/Function'
 
 import { Effect } from '../Effect/Effect.js'
-import { FiberRef } from '../FiberRef/FiberRef.js'
+import * as ops from '../Effect/operators.js'
+import * as Ref from '../Ref.js'
 
-export interface Layer<R, E, A> extends FiberRef<R, E, Context<A>> {}
+export interface Layer<R, E, I, O> extends Ref.Ref<R, E, I, Context.Context<O>> {}
 
-export function Layer<R, E, A>(effect: Effect<R, E, Context<A>>): Layer<R, E, A> {
-  return FiberRef(effect, { join: identity })
+export function Layer<R, E, A>(effect: Effect<R, E, Context.Context<A>>): Layer.Effect<R, E, A> {
+  return Ref.Ref(effect, { join: identity })
+}
+
+export namespace Layer {
+  export interface Effect<R, E, A> extends Layer<R, E, Context.Context<A>, A> {}
+  export interface RIO<R, A> extends Effect<R, never, A> {}
+  export interface IO<E, A> extends Effect<never, E, A> {}
+  export interface Of<A> extends IO<never, A> {}
+}
+
+const empty = Context.empty()
+
+const makeContext =
+  <T>(tag: Context.Tag<T>) =>
+  (t: T) =>
+    Context.add(tag)(t)(empty)
+
+export function fromEffect<A>(tag: Context.Tag<A>) {
+  return <R, E>(effect: Effect<R, E, A>): Layer.Effect<R, E, A> =>
+    Layer(ops.map(makeContext(tag))(effect))
+}
+
+export function fromService<A>(tag: Context.Tag<A>) {
+  return (service: A): Layer.Of<A> => Layer(ops.of(makeContext(tag)(service)))
+}
+
+export function merge<R2, E2, I2, B>(that: Layer<R2, E2, I2, B>) {
+  return <R, E, I, A>(self: Layer<R, E, I, A>): Layer<R | R2, E | E2, readonly [I, I2], A | B> => {
+    return pipe(
+      Ref.nonEmptyTuple(self, that),
+      Ref.map(([a, b]) => Context.merge(a)(b)),
+    )
+  }
+}
+
+export function provideAndMerge<R2, E2, I2, B>(that: Layer<R2, E2, I2, B>) {
+  return <R, E, I, A>(
+    self: Layer<R | B, E, I, A>,
+  ): Layer<Exclude<R, B> | R2, E | E2, readonly [I, I2], A | B> =>
+    pipe(self, merge(that), Ref.provideLayer(that))
+}
+
+export function addService<S>(
+  tag: Context.Tag<S>,
+  service: S,
+): <R, E, I, A>(
+  self: Layer<S | R, E, I, A>,
+) => Layer<Exclude<R, S>, E, readonly [I, Context.Context<S>], S | A> {
+  return provideAndMerge(fromService(tag)(service))
 }

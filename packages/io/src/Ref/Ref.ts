@@ -1,8 +1,11 @@
+import * as Context from '@fp-ts/data/Context'
 import { flow, pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
+import { NonEmptyReadonlyArray } from '@fp-ts/data/ReadonlyArray'
 
 import * as Effect from '../Effect/index.js'
 import * as FiberRef from '../FiberRef/FiberRef.js'
+import type { Layer } from '../Layer/Layer.js'
 
 export interface Ref<R, E, I, O = I> {
   readonly get: Effect.Effect<R, E, O>
@@ -25,7 +28,7 @@ export function fromFiberRef<R, E, A>(fiberRef: FiberRef.FiberRef<R, E, A>): Ref
   }
 }
 
-export const make = flow(FiberRef.FiberRef, fromFiberRef)
+export const Ref = flow(FiberRef.FiberRef, fromFiberRef)
 
 export function map<A, B>(f: (a: A) => B) {
   return <R, E, I>(ref: Ref<R, E, I, A>): Ref<R, E, I, B> => ({
@@ -59,5 +62,87 @@ export function contramapEffect<A, R2, E2, B>(f: (b: B) => Effect.Effect<R2, E2,
     get: ref.get,
     set: flow(f, Effect.flatMap(ref.set)),
     delete: ref.delete,
+  })
+}
+
+export function zip<R, E, I1, O1, R2, E2, I2, O2>(
+  ref1: Ref<R, E, I1, O1>,
+  ref2: Ref<R2, E2, I2, O2>,
+): Ref<R | R2, E | E2, readonly [I1, I2], readonly [O1, O2]> {
+  return {
+    get: Effect.zip(ref2.get)(ref1.get),
+    set: ([a, b]) => Effect.zip(ref2.set(b))(ref1.set(a)),
+    delete: pipe(
+      ref1.delete,
+      Effect.zip(ref2.delete),
+      Effect.map(([a, b]) => Option.tuple(a, b)),
+    ),
+  }
+}
+
+export function nonEmptyTuple<REFS extends NonEmptyReadonlyArray<Ref<any, any, any>>>(
+  ...refs: REFS
+): Ref<
+  ResourcesOf<REFS[number]>,
+  ErrorsOf<REFS[number]>,
+  { readonly [K in keyof REFS]: InputOf<REFS[K]> },
+  { readonly [K in keyof REFS]: OutputOf<REFS[K]> }
+> {
+  return {
+    get: Effect.zipAll(refs.map((ref) => ref.get)),
+    set: (values: readonly [InputOf<REFS[number]>]) =>
+      Effect.zipAll(refs.map((ref, i) => ref.set(values[i]))),
+    delete: pipe(
+      Effect.zipAll(refs.map((ref) => ref.delete)),
+      Effect.map((options) => Option.tuple(...options)),
+    ),
+  } as Ref<
+    ResourcesOf<REFS[number]>,
+    ErrorsOf<REFS[number]>,
+    { readonly [K in keyof REFS]: InputOf<REFS[K]> },
+    { readonly [K in keyof REFS]: OutputOf<REFS[K]> }
+  >
+}
+
+export function provide<R>(ctx: Context.Context<R>) {
+  return <E, A>(ref: Ref<R, E, A>): Ref<never, E, A> => ({
+    get: pipe(ref.get, Effect.provide(ctx)),
+    set: flow(ref.set, Effect.provide(ctx)),
+    delete: pipe(ref.delete, Effect.provide(ctx)),
+  })
+}
+
+export function provideSome<R2>(ctx: Context.Context<R2>) {
+  return <R, E, A>(ref: Ref<R | R2, E, A>): Ref<Exclude<R, R2>, E, A> => ({
+    get: pipe(ref.get, Effect.provideSome(Context.merge(ctx))),
+    set: flow(ref.set, Effect.provideSome(Context.merge(ctx))),
+    delete: pipe(ref.delete, Effect.provideSome(Context.merge(ctx))),
+  })
+}
+
+export function imap<A, B>(to: (a: A) => B, from: (b: B) => A) {
+  return <R, E>(ref: Ref<R, E, A>): Ref<R, E, B> => ({
+    get: pipe(ref.get, Effect.map(to)),
+    set: flow(from, ref.set, Effect.map(to)),
+    delete: pipe(ref.delete, Effect.map(Option.map(to))),
+  })
+}
+
+export function compose<R2, E2, I2, B>(that: Ref<R2, E2, I2, B>) {
+  return <R, E, A>(self: Ref<R, E, A, I2>): Ref<R | R2, E | E2, A, B> => ({
+    get: that.get,
+    set: flow(self.set, Effect.flatMap(that.set)),
+    delete: pipe(
+      self.delete,
+      Effect.flatMap(() => that.delete),
+    ),
+  })
+}
+
+export function provideLayer<R2, E2, I2, O2>(layer: Layer<R2, E2, I2, O2>) {
+  return <R, E, I, O>(ref: Ref<R, E, I, O>): Ref<R2 | Exclude<R, O2>, E | E2, I, O> => ({
+    get: pipe(ref.get, Effect.provideLayer(layer)),
+    set: flow(ref.set, Effect.provideLayer(layer)),
+    delete: pipe(ref.delete, Effect.provideLayer(layer)),
   })
 }
