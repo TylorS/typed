@@ -1,4 +1,3 @@
-import { Duration } from '@fp-ts/data/Duration'
 import * as Context from '@fp-ts/data/Context'
 import * as Either from '@fp-ts/data/Either'
 import { flow, pipe } from '@fp-ts/data/Function'
@@ -17,11 +16,9 @@ import type { Future } from '../Future/Future.js'
 import type { Ref } from '../Ref/Ref.js'
 import type { RuntimeFlags } from '../RuntimeFlags/RuntimeFlags.js'
 import { flow2 } from '../_internal.js'
-import {getScheduler } from '../DefaultServices/DefaultServices.js'
 
 import { Effect } from './Effect.js'
 import * as I from './Instruction.js'
-import { Schedule, ScheduleState } from '@typed/schedule'
 
 export function of<A>(a: A, __trace?: string): Effect.Of<A> {
   return new I.Of(a, __trace)
@@ -384,22 +381,4 @@ export function struct<Effects extends Readonly<Record<string, Effect<any, any, 
     ),
     map(Object.fromEntries),
   ) as any
-}
-
-export { forkDaemon, forkDaemonWithOptions, getClock, getCurrentTime, getCurrentUnixTime, getGlobalFiberScope, getIdGenerator, getScheduler } from '../DefaultServices/DefaultServices.js'
-
-export function delay(delay: Duration) {
-  return <R, E, A>(effect: Effect<R, E, A>): Effect<R, E, A> =>
-    pipe(
-      getScheduler,
-      flatMap((scheduler) => scheduler.delay(effect, delay)),
-    )
-}
-
-export function scheduled(schedule: Schedule) {
-  return <R, E, A>(effect: Effect<R, E, A>): Effect<R, E, ScheduleState> =>
-    pipe(
-      getScheduler,
-      flatMap((scheduler) => scheduler.schedule(effect, schedule)),
-    )
 }

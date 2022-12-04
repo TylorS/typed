@@ -1,9 +1,7 @@
 import * as Context from '@fp-ts/data/Context'
 import { pipe, identity } from '@fp-ts/data/Function'
 
-// WTF?
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import * as E from '../Effect/Effect.js'
+import * as Eff from '../Effect/Effect.js'
 import * as ops from '../Effect/operators.js'
 import * as F from '../FiberRef/FiberRef.js'
 import * as Ref from '../Ref.js'
@@ -12,7 +10,9 @@ export interface Layer<R, E, I, O>
   extends Ref.Ref<R, E, I, Context.Context<O>>,
     Layer.Ops<R, E, I, O> {}
 
-export function Layer<R, E, A>(effect: E.Effect<R, E, Context.Context<A>>): FromFiberRef<R, E, A> {
+export function Layer<R, E, A>(
+  effect: Eff.Effect<R, E, Context.Context<A>>,
+): FromFiberRef<R, E, A> {
   return Layer.fromRef(Ref.Ref(effect, { join: identity }))
 }
 
@@ -46,8 +46,10 @@ export namespace Layer {
     > {}
 
   export interface Ops<R, E, I, O> {
-    readonly ask: <S extends O>(tag: Context.Tag<S>) => E.Effect<R, E, S>
-    readonly provide: <R2, E2, A>(_: E.Effect<R2, E2, A>) => E.Effect<R | Exclude<R2, O>, E | E2, A>
+    readonly ask: <S extends O>(tag: Context.Tag<S>) => Eff.Effect<R, E, S>
+    readonly provide: <R2, E2, A>(
+      _: Eff.Effect<R2, E2, A>,
+    ) => Eff.Effect<R | Exclude<R2, O>, E | E2, A>
     readonly merge: <R2 = never, E2 = never, I2 = never, A = never>(
       that: Layer<R2, E2, I2, A>,
     ) => Layer<R | R2, E | E2, readonly [I, I2], O | A>
@@ -81,7 +83,7 @@ const makeContext =
     Context.add(tag)(t)(empty)
 
 export function fromEffect<A>(tag: Context.Tag<A>) {
-  return <R, E>(effect: E.Effect<R, E, A>): FromFiberRef<R, E, A> =>
+  return <R, E>(effect: Eff.Effect<R, E, A>): FromFiberRef<R, E, A> =>
     Layer(ops.map(makeContext(tag))(effect))
 }
 

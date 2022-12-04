@@ -5,7 +5,9 @@ import * as C from '@typed/clock'
 import { Time, UnixTime } from '@typed/time'
 import { Timer } from '@typed/timer'
 
-import * as Effect from '../Effect/index.js'
+import * as Effect from '../Effect/Effect.js'
+import { gen } from '../Effect/Instruction.js'
+import * as ops from '../Effect/operators.js'
 import { FiberRefs } from '../FiberRefs.js'
 import type { RuntimeOptions } from '../FiberRuntime/FiberRuntime.js'
 import { GlobalFiberScope } from '../FiberScope/FiberScope.js'
@@ -73,54 +75,49 @@ export const getDefaultFiberRef = <S extends DefaultServices>(
   return DefaultGlobalFiberScope as unknown as Layer.FromService<S>
 }
 
-export const getScheduler: Effect.Effect<never, never, Scheduler> = Effect.gen(function* () {
-  const ctx = yield* Effect.context<never>()
+export const getScheduler: Effect.Effect<never, never, Scheduler> = gen(function* () {
+  const ctx = yield* ops.context<never>()
 
   return yield* pipe(
     ctx,
     Context.getOption<Scheduler>(Scheduler),
-    Option.match(() => DefaultScheduler.ask(Scheduler), Effect.of),
+    Option.match(() => DefaultScheduler.ask(Scheduler), ops.of),
   )
 })
 
-export const getIdGenerator: Effect.Effect<never, never, IdGenerator> = Effect.gen(function* () {
-  const ctx = yield* Effect.context<never>()
+export const getIdGenerator: Effect.Effect<never, never, IdGenerator> = gen(function* () {
+  const ctx = yield* ops.context<never>()
 
   return yield* pipe(
     ctx,
     Context.getOption<IdGenerator>(IdGenerator),
-    Option.match(() => DefaultIdGenerator.ask(IdGenerator), Effect.of),
+    Option.match(() => DefaultIdGenerator.ask(IdGenerator), ops.of),
   )
 })
 
-export const getGlobalFiberScope: Effect.Effect<never, never, GlobalFiberScope> = Effect.gen(
-  function* () {
-    const ctx = yield* Effect.context<never>()
+export const getGlobalFiberScope: Effect.Effect<never, never, GlobalFiberScope> = gen(function* () {
+  const ctx = yield* ops.context<never>()
 
-    return yield* pipe(
-      ctx,
-      Context.getOption<GlobalFiberScope>(GlobalFiberScope),
-      Option.match(() => DefaultGlobalFiberScope.ask(GlobalFiberScope), Effect.of),
-    )
-  },
-)
+  return yield* pipe(
+    ctx,
+    Context.getOption<GlobalFiberScope>(GlobalFiberScope),
+    Option.match(() => DefaultGlobalFiberScope.ask(GlobalFiberScope), ops.of),
+  )
+})
 
 export const getClock: Effect.Effect<never, never, C.Clock> = getScheduler
 
-export const getCurrentTime: Effect.Effect<never, never, Time> = pipe(
-  getClock,
-  Effect.map(C.getTime),
-)
+export const getCurrentTime: Effect.Effect<never, never, Time> = pipe(getClock, ops.map(C.getTime))
 
 export const getCurrentUnixTime: Effect.Effect<never, never, UnixTime> = pipe(
   getClock,
-  Effect.map((c) => c.currentTime()),
+  ops.map((c) => c.currentTime()),
 )
 
 export function forkDaemon<R, E, A>(effect: Effect.Effect<R, E, A>) {
   return pipe(
     getGlobalFiberScope,
-    Effect.flatMap((scope) => pipe(effect, Effect.forkWithOptions({ scope }))),
+    ops.flatMap((scope) => pipe(effect, ops.forkWithOptions({ scope }))),
   )
 }
 
@@ -128,7 +125,7 @@ export function forkDaemonWithOptions<R>(options: Omit<Partial<RuntimeOptions<R>
   return <E, A>(effect: Effect.Effect<R, E, A>) => {
     return pipe(
       getGlobalFiberScope,
-      Effect.flatMap((scope) => pipe(effect, Effect.forkWithOptions({ scope, ...options }))),
+      ops.flatMap((scope) => pipe(effect, ops.forkWithOptions({ scope, ...options }))),
     )
   }
 }
