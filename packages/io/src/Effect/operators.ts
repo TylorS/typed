@@ -287,14 +287,14 @@ export const tupled: <R, E, A>(eff: Effect<R, E, A>) => Effect<R, E, readonly [A
 export function zipAll<Effs extends ReadonlyArray<Effect<any, any, any>>>(
   effects: Effs,
 ): Effect<
-  Effect.ServicesOf<Effs[number]>,
+  Effect.ResourcesOf<Effs[number]>,
   Effect.ErrorsOf<Effs[number]>,
   {
     readonly [K in keyof Effs]: Effect.OutputOf<Effs[K]>
   }
 > {
   type R = Effect<
-    Effect.ServicesOf<Effs[number]>,
+    Effect.ResourcesOf<Effs[number]>,
     Effect.ErrorsOf<Effs[number]>,
     {
       readonly [K in keyof Effs]: Effect.OutputOf<Effs[K]>
@@ -341,12 +341,12 @@ export function race<R2, E2, B>(second: Effect<R2, E2, B>) {
 export function raceAll<Effs extends NonEmptyReadonlyArray<Effect<any, any, any>>>(
   effects: Effs,
 ): Effect<
-  Effect.ServicesOf<Effs[number]>,
+  Effect.ResourcesOf<Effs[number]>,
   Effect.ErrorsOf<Effs[number]>,
   Effect.OutputOf<Effs[number]>
 > {
   type R = Effect<
-    Effect.ServicesOf<Effs[number]>,
+    Effect.ResourcesOf<Effs[number]>,
     Effect.ErrorsOf<Effs[number]>,
     Effect.OutputOf<Effs[number]>
   >
@@ -368,7 +368,7 @@ export function interrupt<E, A>(fiber: Fiber.Fiber<E, A>) {
 export function struct<Effects extends Readonly<Record<string, Effect<any, any, any>>>>(
   effects: Effects,
 ): Effect<
-  Effect.ServicesOf<Effects[string]>,
+  Effect.ResourcesOf<Effects[string]>,
   Effect.ErrorsOf<Effects[string]>,
   { readonly [K in keyof Effects]: Effect.OutputOf<Effects[K]> }
 > {

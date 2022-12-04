@@ -1,6 +1,7 @@
 import * as Context from '@fp-ts/data/Context'
 import { flow, pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
+import * as MutableRef from '@fp-ts/data/mutable/MutableRef'
 
 import * as Effect from '../Effect/index.js'
 import * as F from '../FiberRef/FiberRef.js'
@@ -30,7 +31,18 @@ export function fromFiberRef<R, E, A>(fiberRef: F.FiberRef<R, E, A>): FromFiberR
   }
 }
 
-export const Ref = flow(F.FiberRef, fromFiberRef)
+export function Ref<R, E, A>(
+  initial: Effect.Effect<R, E, A>,
+  options: F.FiberRefOptions<A> = {},
+): FromFiberRef<R, E, A> {
+  return fromFiberRef(F.FiberRef(initial, options))
+}
+
+export namespace Ref {
+  export interface Of<A> extends Ref<never, never, A> {}
+  export interface IO<E, A> extends Ref<never, E, A> {}
+  export interface RIO<R, A> extends Ref<R, never, A> {}
+}
 
 export function map<A, B>(f: (a: A) => B) {
   return <R, E, I>(ref: Ref<R, E, I, A>): Ref<R, E, I, B> => ({
@@ -173,4 +185,14 @@ export function provideLayer<R2, E2, I2, O2>(layer: Layer<R2, E2, I2, O2>) {
     set: flow(ref.set, Effect.provideLayer(layer)),
     delete: pipe(ref.delete, Effect.provideLayer(layer)),
   })
+}
+
+export function shared<A>(initial: A): Ref.Of<A> {
+  const ref = MutableRef.make(initial)
+
+  return {
+    get: Effect.sync(() => ref.get()),
+    set: (a) => Effect.sync(() => ref.setAndGet(a)),
+    delete: Effect.sync(() => Option.some(ref.getAndSet(initial))),
+  }
 }

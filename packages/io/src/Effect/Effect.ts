@@ -1,8 +1,8 @@
 import { identity } from '@fp-ts/data/Function'
 
-export interface Effect<Services, Errors, Output>
-  extends Effect.Variance<Services, Errors, Output> {
-  readonly [Symbol.iterator]: () => Generator<Effect<Services, Errors, Output>, Output, Output>
+export interface Effect<Resources, Errors, Output>
+  extends Effect.Variance<Resources, Errors, Output> {
+  readonly [Symbol.iterator]: () => Generator<Effect<Resources, Errors, Output>, Output, Output>
 }
 
 export namespace Effect {
@@ -10,7 +10,7 @@ export namespace Effect {
   export type TypeId = typeof TypeId
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export type ServicesOf<T> = [T] extends [Effect<infer R, infer _E, infer _A>] ? R : never
+  export type ResourcesOf<T> = [T] extends [Effect<infer R, infer _E, infer _A>] ? R : never
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export type ErrorsOf<T> = [T] extends [Effect<infer _R, infer E, infer _A>] ? E : never
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

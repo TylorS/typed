@@ -2,7 +2,7 @@ import { Context } from '@fp-ts/data/Context'
 import { isLeft } from '@fp-ts/data/Either'
 import { Cause, CauseError } from '@typed/cause'
 import { Exit } from '@typed/exit'
-import { SingleShotGen } from '@typed/internal'
+import { SingleShotGen, OfGen } from '@typed/internal'
 
 import type { FiberId } from '../FiberId/FiberId.js'
 import type { FiberRefs } from '../FiberRefs/FiberRefs.js'
@@ -10,6 +10,7 @@ import type { FiberRuntime, RuntimeOptions } from '../FiberRuntime/FiberRuntime.
 import type { FiberScope } from '../FiberScope/FiberScope.js'
 import type { Future } from '../Future/Future.js'
 import type { RuntimeFlags } from '../RuntimeFlags/RuntimeFlags.js'
+import { flow2 } from '../_internal.js'
 
 import { Effect } from './Effect.js'
 
@@ -30,6 +31,7 @@ export type Instruction<R, E, A> =
   | Match<R, any, any, R, E, A, R, E, A>
   | Of<A>
   | ProvideContext<any, E, A>
+  | Sync<A>
   | UpdateRuntimeFlags<R, E, A>
   | WithFiberRefs<R, E, A>
 
@@ -66,7 +68,9 @@ export class FromCause<E> extends Instr<Cause<E>, never, E, never> {
 }
 
 export class Of<A> extends Instr<A, never, never, A> {
-  readonly tag = 'Of'
+  readonly tag = 'Of';
+
+  readonly [Symbol.iterator] = () => new OfGen(this.input)
 }
 
 export class Sync<A> extends Instr<() => A, never, never, A> {
@@ -87,6 +91,10 @@ export class Map<R, E, A, B> extends Instr<readonly [Effect<R, E, A>, (a: A) => 
   ): Effect<R, E, B> {
     if ((effect as Instruction<R, E, A>).tag === 'Of') {
       return new Of(f((effect as Of<A>).input))
+    } else if ((effect as Instruction<R, E, A>).tag === 'Map') {
+      const [eff, e] = (effect as Map<R, E, A, any>).input
+
+      return new Map([eff, flow2(e, f)], __trace)
     }
 
     return new Map([effect, f], __trace)
@@ -178,7 +186,7 @@ export class Fork<R, E, A> extends Instr<
 export function gen<Eff extends Effect<any, any, any>, A, N = unknown>(
   f: () => Generator<Eff, A, N>,
   __trace?: string,
-): Effect<Effect.ServicesOf<Eff>, Effect.ErrorsOf<Eff>, A> {
+): Effect<Effect.ResourcesOf<Eff>, Effect.ErrorsOf<Eff>, A> {
   return new Lazy(() => {
     const gen = f()
 
@@ -193,7 +201,7 @@ export function gen<Eff extends Effect<any, any, any>, A, N = unknown>(
 function runEffectGenerator<Eff extends Effect<any, any, any>, A>(
   gen: Generator<Eff, A>,
   result: IteratorResult<Eff, A>,
-): Effect<Effect.ServicesOf<Eff>, Effect.ErrorsOf<Eff>, A> {
+): Effect<Effect.ResourcesOf<Eff>, Effect.ErrorsOf<Eff>, A> {
   if (result.done) {
     return new Of(result.value)
   }
@@ -201,7 +209,7 @@ function runEffectGenerator<Eff extends Effect<any, any, any>, A>(
   return new FlatMap([result.value, (value) => runEffectGenerator(gen, gen.next(value))])
 }
 
-export function fromExit<E, A>(exit: Exit<E, A>, __trace?: string) {
+export function fromExit<E, A>(exit: Exit<E, A>, __trace?: string): Effect.IO<E, A> {
   return isLeft(exit) ? new FromCause(exit.left, __trace) : new Of(exit.right, __trace)
 }
 
