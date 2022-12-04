@@ -30,9 +30,9 @@ export function fromCause<E>(cause: Cause<E>, __trace?: string): Effect<never, E
   return new I.FromCause(cause, __trace)
 }
 
-export function fromExit<E, A>(exit: Exit<E, A>, __trace?: string): Effect<never, E, A> {
-  return exit._tag === 'Right' ? of(exit.right, __trace) : fromCause(exit.left, __trace)
-}
+export const fromExit = I.fromExit
+export const withFiberRefs = I.withFiberRefs
+export const gen = I.gen
 
 export function sync<A>(f: () => A, __trace?: string): Effect.Of<A> {
   return new I.Sync(f, __trace)
@@ -203,11 +203,6 @@ export const modifyFiberRefEffect =
       flatMap((refs) => refs.modifyEffect(ref, f)),
     )
 
-export const withFiberRefs =
-  (refs: FiberRefs, __trace?: string) =>
-  <R, E, A>(effect: Effect<R, E, A>): Effect<R, E, A> =>
-    new I.WithFiberRefs([effect, refs], __trace)
-
 export const fork = <R, E, A>(
   effect: Effect<R, E, A>,
   __trace?: string,
@@ -252,16 +247,21 @@ export function provideLayer<R2, E2, I, S>(layer: Ref<R2, E2, I, Context.Context
 export function asksEffect<S, R, E, A>(
   tag: Context.Tag<S>,
   f: (s: S) => Effect<R, E, A>,
+  __trace?: string,
 ): Effect<R | S, E, A> {
-  return access(flow(Context.unsafeGet(tag), f))
+  return access(flow(Context.unsafeGet(tag), f), __trace)
 }
 
-export function ask<S>(tag: Context.Tag<S>): Effect<S, never, S> {
-  return asksEffect(tag, of)
+export function ask<S>(tag: Context.Tag<S>, __trace?: string): Effect<S, never, S> {
+  return asksEffect(tag, of, __trace)
 }
 
-export function asks<S, A>(tag: Context.Tag<S>, f: (s: S) => A): Effect<S, never, A> {
-  return asksEffect(tag, flow2(f, of))
+export function asks<S, A>(
+  tag: Context.Tag<S>,
+  f: (s: S) => A,
+  __trace?: string,
+): Effect<S, never, A> {
+  return asksEffect(tag, flow2(f, of), __trace)
 }
 
 export function zip<R2, E2, B>(second: Effect<R2, E2, B>) {
@@ -304,7 +304,9 @@ export function zipAll<Effs extends ReadonlyArray<Effect<any, any, any>>>(
   if (effects.length === 0) {
     return of([]) as R
   } else if (effects.length === 1) {
-    return pipe(effects[0], tupled) as R
+    return tupled(effects[0]) as R
+  } else if (effects.length === 2) {
+    return zip(effects[1])(effects[0]) as R
   }
 
   const [first, ...rest] = effects
@@ -381,4 +383,20 @@ export function struct<Effects extends Readonly<Record<string, Effect<any, any, 
     ),
     map(Object.fromEntries),
   ) as any
+}
+
+export function bracket<R, E, A, R2, E2, B, R3, E3>(
+  acquire: Effect<R, E, A>,
+  use: (a: A) => Effect<R2, E2, B>,
+  release: (a: A, exit: Exit<E2, B>) => Effect<R3, E3, unknown>,
+): Effect<R | R2 | R3, E | E2 | E3, B> {
+  return pipe(
+    acquire,
+    flatMap((a) =>
+      pipe(
+        use(a),
+        onExit((exit) => release(a, exit)),
+      ),
+    ),
+  )
 }
