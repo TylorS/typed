@@ -3,7 +3,7 @@ import { flow, pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 
 import * as Effect from '../Effect/index.js'
-import * as FiberRef from '../FiberRef/FiberRef.js'
+import * as F from '../FiberRef/FiberRef.js'
 import type { Layer } from '../Layer/Layer.js'
 
 export interface Ref<R, E, I, O = I> {
@@ -19,9 +19,9 @@ export type InputOf<T> = T extends Ref<infer _R, infer _E, infer I, infer _O> ? 
 export type OutputOf<T> = T extends Ref<infer _R, infer _E, infer _I, infer O> ? O : never
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
-export function fromFiberRef<R, E, A>(
-  fiberRef: FiberRef.FiberRef<R, E, A>,
-): FiberRef.FiberRef<R, E, A> & Ref<R, E, A> {
+export interface FromFiberRef<R, E, A> extends Ref<R, E, A>, F.FiberRef<R, E, A> {}
+
+export function fromFiberRef<R, E, A>(fiberRef: F.FiberRef<R, E, A>): FromFiberRef<R, E, A> {
   return {
     ...fiberRef,
     get: Effect.getFiberRef(fiberRef),
@@ -30,7 +30,7 @@ export function fromFiberRef<R, E, A>(
   }
 }
 
-export const Ref = flow(FiberRef.FiberRef, fromFiberRef)
+export const Ref = flow(F.FiberRef, fromFiberRef)
 
 export function map<A, B>(f: (a: A) => B) {
   return <R, E, I>(ref: Ref<R, E, I, A>): Ref<R, E, I, B> => ({

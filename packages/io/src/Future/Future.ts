@@ -64,6 +64,10 @@ export function pending<R, E, A>(): Future<R, E, A> {
   }
 }
 
+pending.of = <A>() => pending<never, never, A>()
+pending.io = <E, A>() => pending<never, E, A>()
+pending.rio = <R, A>() => pending<R, never, A>()
+
 export function resolved<R, E, A>(effect: Effect<R, E, A>): Future<R, E, A> {
   return {
     state: { tag: 'Resolved', effect },

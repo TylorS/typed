@@ -8,9 +8,9 @@ import { Scope, scoped } from '../Scope/Scope.js'
 
 export interface Semaphore {
   readonly maxPermits: number
-  readonly acquiredPermits: Effect.Effect<never, never, number>
-  readonly availablePermits: Effect.Effect<never, never, number>
-  readonly acquirePermit: Effect.Effect<Scope, never, void>
+  readonly acquiredPermits: Effect.Effect.Of<number>
+  readonly availablePermits: Effect.Effect.Of<number>
+  readonly acquirePermit: Effect.Effect.RIO<Scope, void>
 }
 
 export function Semaphore(maxPermits: number): Semaphore {
@@ -28,7 +28,7 @@ export function Semaphore(maxPermits: number): Semaphore {
       return
     }
 
-    const future = pending<Scope, never, void>()
+    const future = pending.rio<Scope, void>()
 
     waiting.push(future)
 

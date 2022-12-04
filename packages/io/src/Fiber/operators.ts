@@ -48,7 +48,7 @@ function zipFuture<E, A, E2, B>(
   first: RuntimeFiber<E, A>,
   second: RuntimeFiber<E2, B>,
 ): Future<never, never, Exit.Exit<E | E2, readonly [A, B]>> {
-  const future = pending<never, never, Exit.Exit<E | E2, readonly any[]>>()
+  const future = pending.of<Exit.Exit<E | E2, readonly any[]>>()
 
   let firstExit: Exit.Exit<E, readonly [A]> | null = null
   let secondExit: Exit.Exit<E2, readonly [B]> | null = null
@@ -90,7 +90,7 @@ function raceFuture<E, A, E2, B>(
   second: RuntimeFiber<E2, B>,
   shouldInterrupt: boolean,
 ): Future<never, never, Exit.Exit<E | E2, A | B>> {
-  const future = pending<never, never, Exit.Exit<E | E2, A | B>>()
+  const future = pending.of<Exit.Exit<E | E2, A | B>>()
 
   const firstDisposable = first.addObserver((exit) => onExit(exit, 0))
   const secondDisposable = second.addObserver((exit) => onExit(exit, 1))

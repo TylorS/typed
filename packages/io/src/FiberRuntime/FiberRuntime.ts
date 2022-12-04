@@ -74,7 +74,7 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
       return new I.Of(this.fiberStatus.exit)
     }
 
-    const future = pending<never, never, Exit<Errors, Output>>()
+    const future = pending.of<Exit<Errors, Output>>()
 
     this.addObserver((exit) => future.complete(new I.Of(exit)))
 
