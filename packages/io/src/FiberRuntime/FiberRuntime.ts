@@ -7,7 +7,7 @@ import * as Disposable from '@typed/disposable'
 import { Exit } from '@typed/exit'
 import { RingBuffer, NonEmptyStack } from '@typed/internal'
 
-import { getDefaultService } from '../DefaultServices/DefaultServices.js'
+import { DefaultServices, getDefaultService } from '../DefaultServices/DefaultServices.js'
 import { Effect } from '../Effect/Effect.js'
 import * as I from '../Effect/Instruction.js'
 import type { RuntimeFiber } from '../Fiber/Fiber.js'
@@ -159,22 +159,22 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
   // Constructors
 
   protected Of(instr: I.Of<any>) {
-    this.addExecution(instr.__trace)
+    this.addExecutionTrace(instr.__trace)
     this.continueWith(instr.input)
   }
 
   protected FromCause(instr: I.FromCause<any>) {
-    this.addExecution(instr.__trace)
+    this.addExecutionTrace(instr.__trace)
     this.continueWithCause(instr.input)
   }
 
   protected Sync(instr: I.Sync<any>) {
-    this.addExecution(instr.__trace)
+    this.addExecutionTrace(instr.__trace)
     this.continueWith(instr.input())
   }
 
   protected Async(instr: I.Async<any, any, any>) {
-    this.addTrace(instr.__trace)
+    this.addStackTrace(instr.__trace)
 
     const { state, addObserver } = instr.input
 
@@ -186,11 +186,16 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
     // Otherwise wait for the future to resolve
     const inner = Disposable.Queue()
 
+    let ranAsynchronously = false
+
     inner.offer(
       addObserver((effect) => {
         inner.dispose()
         this.setInstr(effect)
-        this.loop()
+
+        if (ranAsynchronously) {
+          this.loop()
+        }
       }),
     )
 
@@ -198,19 +203,20 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
 
     // If we didn't resume synchronously, ensure we yield to other fibers
     if (!inner.isDisposed()) {
+      ranAsynchronously = true
       this.instr = null
     }
   }
 
   protected Lazy(instr: I.Lazy<any, any, any>) {
-    this.addTrace(instr.__trace)
+    this.addStackTrace(instr.__trace)
     this.setInstr(instr.input())
   }
 
   // Functionality
 
   protected AccessContext(instr: I.AccessContext<any, any, any, any>) {
-    this.addTrace(instr.__trace)
+    this.addStackTrace(instr.__trace)
     this.setInstr(instr.input(this.currentContext.current))
   }
 
@@ -222,12 +228,12 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
   }
 
   protected GetFiberScope(instr: I.GetFiberScope) {
-    this.addExecution(instr.__trace)
+    this.addExecutionTrace(instr.__trace)
     this.continueWith(this.options.scope)
   }
 
   protected GetRuntimeFlags(instr: I.GetRuntimeFlags) {
-    this.addExecution(instr.__trace)
+    this.addExecutionTrace(instr.__trace)
     this.continueWith(this.currentRuntimeFlags.current)
   }
 
@@ -248,7 +254,7 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
   }
 
   protected GetFiberRefs(instr: I.GetFiberRefs) {
-    this.addExecution(instr.__trace)
+    this.addExecutionTrace(instr.__trace)
     this.continueWith(this.currentFiberRefs.current)
   }
 
@@ -260,17 +266,17 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
   }
 
   protected GetFiberId(instr: I.GetFiberId) {
-    this.addExecution(instr.__trace)
+    this.addExecutionTrace(instr.__trace)
     this.continueWith(this.options.id)
   }
 
   protected GetRuntimeOptions(instr: I.GetRuntimeOptions<any>) {
-    this.addExecution(instr.__trace)
+    this.addExecutionTrace(instr.__trace)
     this.continueWith(this.getCurrentRuntimeOptions())
   }
 
   protected Fork(instr: I.Fork<any, any, any>) {
-    this.addExecution(instr.__trace)
+    this.addExecutionTrace(instr.__trace)
 
     const [effect, overrides] = instr.input
     const id = Live(this.getNextId(), C.getTime(this.getScheduler()))
@@ -412,28 +418,28 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
     this.instr = effect as I.Instruction<any, any, any> | null
   }
 
-  protected addTrace(trace?: string) {
+  protected addStackTrace(trace?: string) {
     if (this.options.flags.shouldTrace && trace) {
       this.frames.push(new TraceFrame(trace))
     }
   }
 
-  protected addExecution(trace?: string) {
+  protected addExecutionTrace(trace?: string) {
     if (this.options.flags.shouldTrace && trace) {
       this.executionTrace.push(trace)
     }
   }
 
   protected getScheduler() {
-    return getDefaultService(this.currentContext.current, this.currentFiberRefs.current, Scheduler)
+    return this.getDefaultService(Scheduler)
   }
 
   protected getNextId() {
-    return getDefaultService(
-      this.currentContext.current,
-      this.currentFiberRefs.current,
-      IdGenerator,
-    )()
+    return this.getDefaultService(IdGenerator)()
+  }
+
+  protected getDefaultService<S extends DefaultServices>(tag: Context.Tag<S>) {
+    return getDefaultService(this.currentContext.current, this.currentFiberRefs.current, tag)
   }
 
   protected shouldInterrupt() {

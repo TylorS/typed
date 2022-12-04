@@ -1,4 +1,3 @@
-import * as Context from '@fp-ts/data/Context'
 import * as Either from '@fp-ts/data/Either'
 import { pipe } from '@fp-ts/data/Function'
 import { CauseError } from '@typed/cause'
@@ -50,7 +49,7 @@ export function Runtime<R>(options: RuntimeOptions<R>): Runtime<R> {
   const makeOptions = (overrides?: Partial<RuntimeOptions<R>>): RuntimeOptions<R> => ({
     ...options,
     ...overrides,
-    context: pipe(overrides?.context ?? options.context, Context.add(Scheduler)(scheduler.fork())),
+    context: pipe(overrides?.context ?? options.context),
     fiberRefs: overrides?.fiberRefs ?? options.fiberRefs.fork(),
   })
 

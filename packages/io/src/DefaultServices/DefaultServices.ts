@@ -3,35 +3,43 @@ import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import * as C from '@typed/clock'
 import { Time, UnixTime } from '@typed/time'
-import { makeTimer } from '@typed/timer'
+import { Timer } from '@typed/timer'
 
 import * as Effect from '../Effect/index.js'
-import type { FiberRefs } from '../FiberRefs/FiberRefs.js'
-import { RuntimeOptions } from '../FiberRuntime.js'
+import { FiberRefs } from '../FiberRefs.js'
+import type { RuntimeOptions } from '../FiberRuntime/FiberRuntime.js'
 import { GlobalFiberScope } from '../FiberScope/FiberScope.js'
 import { IdGenerator } from '../IdGenerator/IdGenerator.js'
-import { Layer } from '../Layer/Layer.js'
+import * as Layer from '../Layer/Layer.js'
 import { Scheduler } from '../Scheduler/Scheduler.js'
 
 export type DefaultServices = Scheduler | IdGenerator | GlobalFiberScope
 
-const empty = Context.empty()
+export const DefaultClock: Layer.FromService<C.Clock> = Layer.fromService(C.Clock)(C.Clock())
 
-export const DefaultClock = C.Clock()
-export const DefaultTimer = makeTimer(DefaultClock)
-export const DefaultScheduler = Scheduler(DefaultTimer)
-export const DefaultIdGenerator = IdGenerator()
-export const DefaultGlobalScope = GlobalFiberScope()
-
-export const DefaultServicesContext: Context.Context<DefaultServices> = pipe(
-  empty,
-  Context.add(Scheduler)(DefaultScheduler),
-  Context.add(IdGenerator)(DefaultIdGenerator),
-  Context.add(GlobalFiberScope)(DefaultGlobalScope),
+export const DefaultTimer: Layer.FromService<Timer> = pipe(
+  Timer(DefaultClock.service),
+  Layer.fromService(Timer),
 )
 
-export const DefaultServices: Layer<never, never, DefaultServices> = Layer(
-  Effect.of(DefaultServicesContext),
+export const DefaultScheduler: Layer.FromService<Scheduler> = pipe(
+  Scheduler(DefaultTimer.service),
+  Layer.fromService(Scheduler),
+)
+
+export const DefaultIdGenerator: Layer.FromService<IdGenerator> = Layer.fromService(IdGenerator)(
+  IdGenerator(),
+)
+
+export const DefaultGlobalFiberScope: Layer.FromService<GlobalFiberScope> = Layer.fromService(
+  GlobalFiberScope,
+)(GlobalFiberScope())
+
+export const DefaultServicesContext = pipe(
+  Context.empty(),
+  Context.add(Scheduler)(DefaultScheduler.service),
+  Context.add(IdGenerator)(DefaultIdGenerator.service),
+  Context.add(GlobalFiberScope)(DefaultGlobalFiberScope.service),
 )
 
 export const getDefaultService = <R, S extends DefaultServices>(
@@ -44,33 +52,56 @@ export const getDefaultService = <R, S extends DefaultServices>(
     Context.getOption<S>(service),
     Option.getOrElse(() =>
       pipe(
-        fiberRefs.getOption(DefaultServices),
+        fiberRefs.getOption(getDefaultFiberRef<S>(service)),
         Option.getOrElse(() => DefaultServicesContext),
         Context.unsafeGet(service),
       ),
     ),
   )
 
+export const getDefaultFiberRef = <S extends DefaultServices>(
+  tag: Context.Tag<S>,
+): Layer.FromService<S> => {
+  if (Object.is(tag, Scheduler)) {
+    return DefaultScheduler as unknown as Layer.FromService<S>
+  }
+
+  if (Object.is(tag, DefaultIdGenerator)) {
+    return DefaultIdGenerator as unknown as Layer.FromService<S>
+  }
+
+  return DefaultGlobalFiberScope as unknown as Layer.FromService<S>
+}
+
 export const getScheduler: Effect.Effect<never, never, Scheduler> = Effect.gen(function* () {
   const ctx = yield* Effect.context<never>()
-  const fiberRefs = yield* Effect.getFiberRefs
 
-  return getDefaultService(ctx, fiberRefs, Scheduler)
+  return yield* pipe(
+    ctx,
+    Context.getOption<Scheduler>(Scheduler),
+    Option.match(() => DefaultScheduler.ask(Scheduler), Effect.of),
+  )
 })
 
 export const getIdGenerator: Effect.Effect<never, never, IdGenerator> = Effect.gen(function* () {
   const ctx = yield* Effect.context<never>()
-  const fiberRefs = yield* Effect.getFiberRefs
 
-  return getDefaultService(ctx, fiberRefs, IdGenerator)
+  return yield* pipe(
+    ctx,
+    Context.getOption<IdGenerator>(IdGenerator),
+    Option.match(() => DefaultIdGenerator.ask(IdGenerator), Effect.of),
+  )
 })
 
 export const getGlobalFiberScope: Effect.Effect<never, never, GlobalFiberScope> = Effect.gen(
   function* () {
     const ctx = yield* Effect.context<never>()
-    const fiberRefs = yield* Effect.getFiberRefs
 
-    return getDefaultService(ctx, fiberRefs, GlobalFiberScope)
+    return yield* pipe(
+      ctx,
+      Context.getOption<GlobalFiberScope>(GlobalFiberScope),
+      Option.match(() => DefaultGlobalFiberScope.ask(GlobalFiberScope), Effect.of),
+    )
   },
 )
 

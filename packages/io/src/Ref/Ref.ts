@@ -19,8 +19,11 @@ export type InputOf<T> = T extends Ref<infer _R, infer _E, infer I, infer _O> ? 
 export type OutputOf<T> = T extends Ref<infer _R, infer _E, infer _I, infer O> ? O : never
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
-export function fromFiberRef<R, E, A>(fiberRef: FiberRef.FiberRef<R, E, A>): Ref<R, E, A> {
+export function fromFiberRef<R, E, A>(
+  fiberRef: FiberRef.FiberRef<R, E, A>,
+): FiberRef.FiberRef<R, E, A> & Ref<R, E, A> {
   return {
+    ...fiberRef,
     get: Effect.getFiberRef(fiberRef),
     set: (a) => Effect.setFiberRef(a)(fiberRef),
     delete: Effect.deleteFiberRef(fiberRef),
