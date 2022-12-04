@@ -75,7 +75,7 @@ for (const name of packageNames) {
   tsconfigJson.references = Array.from(references)
     .sort()
     .map((name) => ({
-      path: `.../${name}/tsconfig.build.json`,
+      path: `../${name}/tsconfig.build.json`,
     }))
 
   fs.writeFileSync(join(packageDir, 'tsconfig.json'), JSON.stringify(tsconfigJson, null, 2) + EOL)

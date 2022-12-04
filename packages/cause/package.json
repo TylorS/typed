@@ -23,7 +23,7 @@
   "dependencies": {
     "@typed/time": "workspace:*",
     "@typed/trace": "workspace:*",
-    "@fp-ts/data": "^0.0.17",
+    "@fp-ts/data": "^0.0.20",
     "@fp-ts/core": "^0.0.9"
   }
 }

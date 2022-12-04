@@ -12,7 +12,7 @@ export interface Layer<R, E, I, O>
   extends Ref.Ref<R, E, I, Context.Context<O>>,
     Layer.Ops<R, E, I, O> {}
 
-export function Layer<R, E, A>(effect: E.Effect<R, E, Context.Context<A>>): FiberRef<R, E, A> {
+export function Layer<R, E, A>(effect: E.Effect<R, E, Context.Context<A>>): FromFiberRef<R, E, A> {
   return Layer.fromRef(Ref.Ref(effect, { join: identity }))
 }
 
@@ -21,11 +21,11 @@ export interface RIO<R, A> extends Effect<R, never, A> {}
 export interface IO<E, A> extends Effect<never, E, A> {}
 export interface Of<A> extends IO<never, A> {}
 
-export interface FiberRef<R, E, A>
+export interface FromFiberRef<R, E, A>
   extends Layer<R, E, Context.Context<A>, A>,
     F.FiberRef<R, E, Context.Context<A>> {}
 
-export interface FromService<A> extends FiberRef<never, never, A> {
+export interface FromService<A> extends FromFiberRef<never, never, A> {
   readonly service: A
 }
 
@@ -81,13 +81,13 @@ const makeContext =
     Context.add(tag)(t)(empty)
 
 export function fromEffect<A>(tag: Context.Tag<A>) {
-  return <R, E>(effect: E.Effect<R, E, A>): FiberRef<R, E, A> =>
+  return <R, E>(effect: E.Effect<R, E, A>): FromFiberRef<R, E, A> =>
     Layer(ops.map(makeContext(tag))(effect))
 }
 
 export function fromFiberRef<R, E, A>(
   ref: F.FiberRef<R, E, Context.Context<A>>,
-): FiberRef<R, E, A> {
+): FromFiberRef<R, E, A> {
   return fromRef(Ref.fromFiberRef(ref))
 }
 
@@ -112,21 +112,22 @@ export function merge<R2, E2, I2, B>(that: Layer<R2, E2, I2, B>) {
   }
 }
 
-export function mergeAll<Layers extends Layer<any, any, any, any>[]>(
-  ...layers: Layers
+export function mergeAll<Layers extends readonly Layer<any, any, any, any>[]>(
+  ...layers: readonly [...Layers]
 ): Layer.MergeAll<Layers> {
   return pipe(
     Ref.tuple(...layers),
-    Ref.map(
-      (ctxs) =>
-        (ctxs.length === 0
-          ? Context.empty()
-          : ctxs.reduce((a, b) => Context.merge(a)(b))) as Context.Context<
-          Layer.OutputOf<Layers[number]>
-        >,
-    ),
+    Ref.map(mergeAllContext),
     Layer.fromRef,
-  )
+  ) as Layer.MergeAll<Layers>
+}
+
+function mergeAllContext<Ctxs extends readonly [...Context.Context<any>[]]>(
+  ctxs: Ctxs,
+): Context.Context<Context.Tags<Ctxs[number]>> {
+  return (
+    ctxs.length === 0 ? Context.empty() : ctxs.reduce((a, b) => Context.merge(b)(a))
+  ) as Context.Context<Context.Tags<Ctxs[number]>>
 }
 
 export function provideAndMerge<R2, E2, I2, B>(that: Layer<R2, E2, I2, B>) {
