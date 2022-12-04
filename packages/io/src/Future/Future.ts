@@ -9,6 +9,12 @@ export interface Future<R, E, A> {
   readonly complete: (effect: Effect<R, E, A>) => Effect<never, never, boolean>
 }
 
+export namespace Future {
+  export interface IO<E, A> extends Future<never, E, A> {}
+  export interface RIO<R, A> extends Future<R, never, A> {}
+  export interface Of<A> extends Future<never, never, A> {}
+}
+
 export interface ReadonlyFuture<R, E, A> extends Omit<Future<R, E, A>, 'complete'> {}
 
 export type State<R, E, A> = Pending | Resolved<R, E, A>
