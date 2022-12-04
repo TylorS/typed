@@ -60,11 +60,10 @@ export function provideAndMerge<R2, E2, I2, B>(that: Layer<R2, E2, I2, B>) {
     pipe(self, merge(that), Ref.provideLayer(that))
 }
 
-export function addService<S>(
-  tag: Context.Tag<S>,
-  service: S,
-): <R, E, I, A>(
-  self: Layer<S | R, E, I, A>,
-) => Layer<Exclude<R, S>, E, readonly [I, Context.Context<S>], S | A> {
-  return provideAndMerge(fromService(tag)(service))
+export function addService<S>(tag: Context.Tag<S>) {
+  return (service: S) =>
+    <R, E, I, A>(
+      self: Layer<R, E, I, A>,
+    ): Layer<Exclude<R, S>, E, readonly [I, Context.Context<S>], A | S> =>
+      pipe(self, provideAndMerge(fromService(tag)(service)))
 }
