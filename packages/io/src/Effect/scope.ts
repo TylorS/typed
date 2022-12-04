@@ -7,7 +7,7 @@ import { ask, asksEffect, context, provide, uninterruptable } from './operators.
 export function managed<R, E, A, R2>(
   acquire: Effect<R, E, A>,
   release: (a: A) => Effect<R2, never, unknown>,
-) {
+): Effect<R | R2 | Scope, E, A> {
   return uninterruptable(
     gen(function* () {
       const env = yield* context<R2>()
