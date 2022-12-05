@@ -155,7 +155,7 @@ function binarySearch<A>(t: UnixTime, sortedArray: ArrayLike<TimeSlot<A>>): numb
   return hi
 }
 
-const makeTimeslot = <A>(t: UnixTime, events: A[]): TimeSlot<A> => ({
-  time: t,
-  events: events,
+const makeTimeslot = <A>(time: UnixTime, events: A[]): TimeSlot<A> => ({
+  time,
+  events,
 })
