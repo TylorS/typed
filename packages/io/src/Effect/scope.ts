@@ -11,7 +11,7 @@ export function managed<R, E, A, R2>(
   return uninterruptable(
     gen(function* () {
       const env = yield* context<R2>()
-      const scope = yield* ask(Scope)
+      const scope: Scope = yield* ask(Scope)
       const a = yield* acquire
 
       yield* scope.addFinalizer(() => provide(env)(release(a)))

@@ -1,6 +1,6 @@
 import * as Context from '@fp-ts/data/Context'
 import * as Either from '@fp-ts/data/Either'
-import { flow, pipe } from '@fp-ts/data/Function'
+import { constVoid, flow, pipe } from '@fp-ts/data/Function'
 import { Option } from '@fp-ts/data/Option'
 import { NonEmptyReadonlyArray } from '@fp-ts/data/ReadonlyArray'
 import { Cause } from '@typed/cause'
@@ -320,6 +320,16 @@ export function zipAll<Effs extends ReadonlyArray<Effect<any, any, any>>>(
       ),
     tupled(first),
   ) as R
+}
+
+export const asUnit = <R, E, A>(effect: Effect<R, E, A>, __trace?: string): Effect<R, E, void> =>
+  pipe(effect, map(constVoid, __trace))
+
+export function zipAllUnit<Effs extends ReadonlyArray<Effect<any, any, any>>>(effects: Effs) {
+  if (effects.length === 0) return unit
+  if (effects.length === 1) return asUnit(effects[0])
+
+  return asUnit(effects.reduce((prev, curr) => flatMap(() => curr)(prev)))
 }
 
 export function race<R2, E2, B>(second: Effect<R2, E2, B>) {

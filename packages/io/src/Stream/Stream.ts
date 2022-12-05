@@ -33,6 +33,10 @@ export namespace Stream {
     _E: identity,
     _A: identity,
   }
+
+  export interface Of<A> extends Stream<never, never, A> {}
+  export interface IO<E, A> extends Stream<never, E, A> {}
+  export interface RIO<R, A> extends Stream<R, never, A> {}
 }
 
 export interface Sink<R, E, A> {
