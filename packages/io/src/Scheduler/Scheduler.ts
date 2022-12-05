@@ -4,6 +4,7 @@ import * as O from '@fp-ts/data/Option'
 import * as C from '@typed/clock'
 import { Disposable } from '@typed/disposable'
 import { Schedule, ScheduleState } from '@typed/schedule'
+import { Time } from '@typed/time'
 import { Timer } from '@typed/timer'
 
 import { Effect } from '../Effect/Effect.js'
@@ -13,6 +14,8 @@ import { pending } from '../Future/Future.js'
 import { callbackScheduler } from './callbackScheduler.js'
 
 export interface Scheduler extends C.Clock, Disposable {
+  readonly getTime: () => Time
+
   readonly delay: <R, E, A>(effect: Effect<R, E, A>, duration: Duration.Duration) => Effect<R, E, A>
 
   readonly schedule: <R, E, A>(
@@ -58,6 +61,9 @@ export const Scheduler = Object.assign(function makeScheduler(timer: Timer = Tim
   const scheduler: Scheduler = {
     startTime: timer.startTime,
     currentTime: timer.currentTime,
+    getTime() {
+      return C.getTime(timer)
+    },
     dispose: disposable.dispose,
     delay,
     schedule,
@@ -80,6 +86,10 @@ class ForkScheduler implements Scheduler {
     this.dispose = scheduler.dispose
     this.delay = scheduler.delay
     this.schedule = scheduler.schedule
+  }
+
+  getTime() {
+    return C.getTime(this.timer)
   }
 
   fork(): Scheduler {

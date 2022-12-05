@@ -31,7 +31,7 @@ export function getAndUpdate<A>(f: (a: A) => A) {
   return ops.modifyFiberRef((a: A) => [a, f(a)])
 }
 
-export function getAndUpdateEffect<R, E, A>(f: (a: A) => Effect<R, E, A>) {
+export function getAndUpdateEffect<R2, E2, A>(f: (a: A) => Effect<R2, E2, A>) {
   return ops.modifyFiberRefEffect((a: A) =>
     pipe(
       a,
