@@ -60,7 +60,7 @@ export const Scheduler = Object.assign(function makeScheduler(timer: Timer = Tim
 
   const scheduler: Scheduler = {
     startTime: timer.startTime,
-    currentTime: timer.currentTime,
+    getUnixTime: timer.getUnixTime,
     getTime() {
       return C.getTime(timer)
     },
@@ -75,14 +75,14 @@ export const Scheduler = Object.assign(function makeScheduler(timer: Timer = Tim
 
 class ForkScheduler implements Scheduler {
   readonly startTime: Scheduler['startTime']
-  readonly currentTime: Scheduler['currentTime']
+  readonly getUnixTime: Scheduler['getUnixTime']
   readonly dispose: Scheduler['dispose']
   readonly delay: Scheduler['delay']
   readonly schedule: Scheduler['schedule']
 
   constructor(readonly scheduler: Scheduler, readonly timer: Timer) {
     this.startTime = timer.startTime
-    this.currentTime = timer.currentTime
+    this.getUnixTime = timer.getUnixTime
     this.dispose = scheduler.dispose
     this.delay = scheduler.delay
     this.schedule = scheduler.schedule

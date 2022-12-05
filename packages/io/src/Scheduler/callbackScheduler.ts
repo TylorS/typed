@@ -35,7 +35,7 @@ export function callbackScheduler(
   }
 
   function runReadyTasks() {
-    timeline.getReadyTasks(timer.currentTime()).forEach((f) => f())
+    timeline.getReadyTasks(timer.getUnixTime()).forEach((f) => f())
 
     scheduleNextRun()
   }

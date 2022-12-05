@@ -4,18 +4,18 @@ import { Time, UnixTime } from '@typed/time'
 
 export interface Clock {
   readonly startTime: UnixTime
-  readonly currentTime: () => UnixTime
+  readonly getUnixTime: () => UnixTime
   readonly fork: () => Clock
 }
 
-const getUnixTime = (): UnixTime => UnixTime(Date.now())
+const now = (): UnixTime => UnixTime(Date.now())
 
 const GetUnixTime = {
-  currentTime: getUnixTime,
+  getUnixTime: now,
   fork: () => Clock(),
 }
 
-export const Clock = Object.assign(function makeClock(startTime: UnixTime = getUnixTime()): Clock {
+export const Clock = Object.assign(function makeClock(startTime: UnixTime = now()): Clock {
   return {
     startTime,
     ...GetUnixTime,
@@ -26,16 +26,16 @@ export function startTime(clock: Clock): UnixTime {
   return clock.startTime
 }
 
-export function currentTime(clock: Clock): UnixTime {
-  return clock.currentTime()
+export function getUnixTime(clock: Clock): UnixTime {
+  return clock.getUnixTime()
 }
 
 export function delay(duration: Duration) {
-  return (clock: Clock): UnixTime => UnixTime(clock.currentTime() + duration.millis)
+  return (clock: Clock): UnixTime => UnixTime(clock.getUnixTime() + duration.millis)
 }
 
 export function getTime(clock: Clock): Time {
-  return Time(clock.currentTime() - clock.startTime)
+  return Time(clock.getUnixTime() - clock.startTime)
 }
 
 export function timeDelay(duration: Duration) {

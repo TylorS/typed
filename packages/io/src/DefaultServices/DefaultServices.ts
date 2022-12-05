@@ -111,7 +111,7 @@ export const getCurrentTime: Effect.Effect<never, never, Time> = pipe(getClock, 
 
 export const getCurrentUnixTime: Effect.Effect<never, never, UnixTime> = pipe(
   getClock,
-  ops.map((c) => c.currentTime()),
+  ops.map((c) => c.getUnixTime()),
 )
 
 export function forkDaemon<R, E, A>(effect: Effect.Effect<R, E, A>) {
