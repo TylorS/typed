@@ -1,13 +1,26 @@
-import { flatMap } from '../Effect.js'
+import { Effect } from '../Effect.js'
+import { gen } from '../Effect/Instruction.js'
 
-import { Stream } from './Stream.js'
+import { Sink, Stream } from './Stream.js'
 
 export function fromArray<A extends ReadonlyArray<any>>(array: A): Stream.Of<A[number]> {
-  return Stream((sink, scheduler) => {
-    if (array.length === 0) return sink.end(scheduler.getTime())
+  return new FromArray(array)
+}
 
-    const [first, ...rest] = array.map((a) => sink.event(scheduler.getTime(), a))
+export class FromArray<A extends ReadonlyArray<any>> implements Stream.Of<A[number]> {
+  readonly [Stream.TypeId] = Stream.Variance
 
-    return rest.reduce((prev, curr) => flatMap(() => curr)(prev), first)
-  })
+  constructor(readonly array: A) {}
+
+  run<R2>(sink: Sink<R2, never, A[number]>): Effect<R2, never, unknown> {
+    const { array } = this
+
+    return gen(function* () {
+      for (let i = 0; i < array.length; ++i) {
+        yield* sink.event(array[i])
+      }
+
+      yield* sink.end
+    })
+  }
 }

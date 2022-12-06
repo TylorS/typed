@@ -9,12 +9,23 @@ export namespace Effect {
   export const TypeId = Symbol.for('@typed/io/Effect')
   export type TypeId = typeof TypeId
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export type ResourcesOf<T> = [T] extends [Effect<infer R, infer _E, infer _A>] ? R : never
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export type ErrorsOf<T> = [T] extends [Effect<infer _R, infer E, infer _A>] ? E : never
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export type OutputOf<T> = [T] extends [Effect<infer _R, infer _E, infer A>] ? A : never
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  export type ResourcesOf<T> = [T] extends [never]
+    ? never
+    : [T] extends [Effect<infer R, infer _E, infer _A>]
+    ? R
+    : never
+  export type ErrorsOf<T> = [T] extends [never]
+    ? never
+    : [T] extends [Effect<infer _R, infer E, infer _A>]
+    ? E
+    : never
+  export type OutputOf<T> = [T] extends [never]
+    ? never
+    : [T] extends [Effect<infer _R, infer _E, infer A>]
+    ? A
+    : never
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   /**
    * This is utilized to help TypeScript understand the variance of the Effect

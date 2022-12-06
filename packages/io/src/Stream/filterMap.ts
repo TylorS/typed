@@ -1,10 +1,8 @@
 import * as Option from '@fp-ts/data/Option'
 import * as Predicate from '@fp-ts/data/Predicate'
 import { Cause } from '@typed/cause'
-import { Time } from '@typed/time'
 
 import { unit } from '../Effect.js'
-import { Scheduler } from '../Scheduler.js'
 import { flow2 } from '../_internal.js'
 
 import { Sink, Stream } from './Stream.js'
@@ -26,8 +24,8 @@ class Filter<R, E, A> implements Stream<R, E, A> {
 
   constructor(readonly stream: Stream<R, E, A>, readonly predicate: Predicate.Predicate<A>) {}
 
-  run<R2>(sink: Sink<R2, E, A>, scheduler: Scheduler) {
-    return this.stream.run(new FilterSink(sink, this.predicate), scheduler)
+  run<R2>(sink: Sink<R2, E, A>) {
+    return this.stream.run(new FilterSink(sink, this.predicate))
   }
 
   static make<R, E, A>(
@@ -45,17 +43,15 @@ class Filter<R, E, A> implements Stream<R, E, A> {
 class FilterSink<R, E, A> implements Sink<R, E, A> {
   constructor(readonly sink: Sink<R, E, A>, readonly predicate: Predicate.Predicate<A>) {}
 
-  event(time: Time, a: A) {
-    return this.predicate(a) ? this.sink.event(time, a) : unit
+  event(a: A) {
+    return this.predicate(a) ? this.sink.event(a) : unit
   }
 
-  error(time: Time, e: Cause<E>) {
-    return this.sink.error(time, e)
+  error(e: Cause<E>) {
+    return this.sink.error(e)
   }
 
-  end(time: Time) {
-    return this.sink.end(time)
-  }
+  end = this.sink.end
 }
 
 class Map<R, E, A, B> implements Stream<R, E, B> {
@@ -63,20 +59,20 @@ class Map<R, E, A, B> implements Stream<R, E, B> {
 
   constructor(readonly stream: Stream<R, E, A>, readonly f: (a: A) => B) {}
 
-  run<R2>(sink: Sink<R2, E, B>, scheduler: Scheduler) {
-    return this.stream.run(new MapSink(sink, this.f), scheduler)
+  run<R2>(sink: Sink<R2, E, B>) {
+    return this.stream.run(new MapSink(sink, this.f))
   }
 
   static make<R, E, A, B>(stream: Stream<R, E, A>, f: (a: A) => B): Stream<R, E, B> {
-    if (stream instanceof Map<R, E, any, A>) {
-      return new Map(stream.stream, flow2(stream.f, f))
-    } else if (stream instanceof Filter<R, E, A>) {
-      return FilterMap.make(stream.stream, (a) =>
-        stream.predicate(a) ? Option.some(f(a)) : Option.none,
-      )
-    } else if (stream instanceof FilterMap<R, E, any, A>) {
-      return new FilterMap(stream.stream, flow2(stream.f, Option.map(f)))
-    }
+    // if (stream instanceof Map<R, E, any, A>) {
+    //   return new Map(stream.stream, flow2(stream.f, f))
+    // } else if (stream instanceof Filter<R, E, A>) {
+    //   return FilterMap.make(stream.stream, (a) =>
+    //     stream.predicate(a) ? Option.some(f(a)) : Option.none,
+    //   )
+    // } else if (stream instanceof FilterMap<R, E, any, A>) {
+    //   return new FilterMap(stream.stream, flow2(stream.f, Option.map(f)))
+    // }
 
     return new Map(stream, f)
   }
@@ -85,17 +81,14 @@ class Map<R, E, A, B> implements Stream<R, E, B> {
 class MapSink<R, E, A, B> implements Sink<R, E, A> {
   constructor(readonly sink: Sink<R, E, B>, readonly f: (a: A) => B) {}
 
-  event(time: Time, a: A) {
-    return this.sink.event(time, this.f(a))
+  event(a: A) {
+    return this.sink.event(this.f(a))
   }
 
-  error(time: Time, e: Cause<E>) {
-    return this.sink.error(time, e)
+  error(e: Cause<E>) {
+    return this.sink.error(e)
   }
-
-  end(time: Time) {
-    return this.sink.end(time)
-  }
+  end = this.sink.end
 }
 
 class FilterMap<R, E, A, B> implements Stream<R, E, B> {
@@ -103,8 +96,8 @@ class FilterMap<R, E, A, B> implements Stream<R, E, B> {
 
   constructor(readonly stream: Stream<R, E, A>, readonly f: (a: A) => Option.Option<B>) {}
 
-  run<R2>(sink: Sink<R2, E, B>, scheduler: Scheduler) {
-    return this.stream.run(new FilterMapSink(sink, this.f), scheduler)
+  run<R2>(sink: Sink<R2, E, B>) {
+    return this.stream.run(new FilterMapSink(sink, this.f))
   }
 
   static make<R, E, A, B>(stream: Stream<R, E, A>, f: (a: A) => Option.Option<B>): Stream<R, E, B> {
@@ -123,17 +116,15 @@ class FilterMap<R, E, A, B> implements Stream<R, E, B> {
 class FilterMapSink<R, E, A, B> implements Sink<R, E, A> {
   constructor(readonly sink: Sink<R, E, B>, readonly f: (a: A) => Option.Option<B>) {}
 
-  event(time: Time, a: A) {
+  event(a: A) {
     const b = this.f(a)
 
-    return Option.isSome(b) ? this.sink.event(time, b.value) : unit
+    return Option.isSome(b) ? this.sink.event(b.value) : unit
   }
 
-  error(time: Time, e: Cause<E>) {
-    return this.sink.error(time, e)
+  error(e: Cause<E>) {
+    return this.sink.error(e)
   }
 
-  end(time: Time) {
-    return this.sink.end(time)
-  }
+  end = this.sink.end
 }

@@ -325,7 +325,9 @@ export function zipAll<Effs extends ReadonlyArray<Effect<any, any, any>>>(
 export const asUnit = <R, E, A>(effect: Effect<R, E, A>, __trace?: string): Effect<R, E, void> =>
   pipe(effect, map(constVoid, __trace))
 
-export function zipAllUnit<Effs extends ReadonlyArray<Effect<any, any, any>>>(effects: Effs) {
+export function zipAllUnit<Effs extends ReadonlyArray<Effect<any, any, any>>>(
+  effects: Effs,
+): Effect<Effect.ResourcesOf<Effs[number]>, Effect.ErrorsOf<Effs[number]>, void> {
   if (effects.length === 0) return unit
   if (effects.length === 1) return asUnit(effects[0])
 
