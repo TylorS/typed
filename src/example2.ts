@@ -5,7 +5,7 @@ import * as Fx from '@typed/fx'
 import { Document } from './DOM/Document.js'
 import { DomSource } from './DOM/DomSource.js'
 import { html } from './HTML/index.js'
-import { run } from './run.js'
+import { renderDomSource } from './run.js'
 
 const Counter = Fx.fromFxGen(function* ($) {
   const dom = yield* $(DomSource.get)
@@ -23,6 +23,6 @@ const Counter = Fx.fromFxGen(function* ($) {
   </div>`
 })
 
-const main = pipe(Counter, run(document.body), Document.provide(document))
+const main = pipe(Counter, renderDomSource(document.body), Document.provide(document))
 
 Effect.unsafeRunAsync(main)

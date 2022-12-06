@@ -20,7 +20,7 @@ const Counter = Fx.fromFxGen(function* ($) {
 const program = pipe(
   Counter,
   drainInto(document.body),
-  RenderContext.provide,
+  RenderContext.provideClient,
   Document.provide(document),
 )
 

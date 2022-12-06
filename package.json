@@ -21,6 +21,7 @@
     "@tsplus/stdlib": "^0.2.8",
     "@typed/fx": "^0.0.32",
     "@webreflection/uparser": "^0.2.4",
+    "path-to-regexp": "^6.2.1",
     "ts-toolbelt": "^9.6.0",
     "typed-query-selector": "^2.8.0",
     "udomdiff": "^1.1.0",

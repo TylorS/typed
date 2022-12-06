@@ -57,7 +57,7 @@ describe(import.meta.url, () => {
           // Should not render after take(4)
           deepStrictEqual(stripHoleComments(root.innerHTML), '<div>Hello 3!</div>')
         }),
-        RenderContext.provide,
+        RenderContext.provideClient,
         Effect.provideService(Document.Tag, document),
         Effect.provideLayer(TestEnvironment),
       )

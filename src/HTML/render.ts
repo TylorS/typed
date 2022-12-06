@@ -2,6 +2,7 @@ import * as Effect from '@effect/core/io/Effect'
 import { FiberRefs } from '@effect/core/io/FiberRefs'
 import { Runtime } from '@effect/core/io/Runtime'
 import { RuntimeFlags } from '@effect/core/io/RuntimeFlags'
+import * as RuntimeFlagsPatch from '@effect/core/io/RuntimeFlags/patch'
 import { pipe } from '@tsplus/stdlib/data/Function'
 import * as Fx from '@typed/fx'
 
@@ -25,6 +26,7 @@ export function renderInto<T extends DocumentFragment | HTMLElement>(where: T) {
     pipe(
       fx,
       Fx.mapEffect((hole) => render(where, hole)),
+      Fx.withRuntimeFlags(RuntimeFlagsPatch.disable(RuntimeFlags.CooperativeYielding)),
     )
 }
 

@@ -125,7 +125,7 @@ function updateAttribute(node: Element, templateHole: AttributeTemplateHole, doc
       if (name[1] === 'n') return event(node, name)
   }
 
-  // TODO: Refs + Aria + Style support
+  // TODO: Aria + Style support
 
   switch (name) {
     case 'ref':

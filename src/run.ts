@@ -7,7 +7,7 @@ import { Hole } from './HTML/Hole.js'
 import { RenderContext } from './HTML/RenderContext.js'
 import { renderInto } from './HTML/render.js'
 
-export function run<T extends HTMLElement>(where: T) {
+export function renderDomSource<T extends HTMLElement>(where: T) {
   return <R, E>(
     what: Fx.Fx<R | DomSource, E, Hole>,
   ): Effect.Effect<Document | Exclude<R, DomSource>, E, T> =>
@@ -20,7 +20,7 @@ export function run<T extends HTMLElement>(where: T) {
         renderInto(where),
         Fx.runObserve(rootEl.emit),
         DomSource.provide(domSource),
-        RenderContext.provide,
+        RenderContext.provideClient,
         Effect.as(where),
       )
     })

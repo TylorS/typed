@@ -16,7 +16,7 @@ export interface ServerWindowOptions {
 }
 
 export const makeServerWindow = (options?: ServerWindowOptions): Window & GlobalThis => {
-  const win = new happyDom.Window(options) as any
+  const win = new happyDom.Window(options) as any as Window & GlobalThis
 
   if (options?.headHtml) {
     win.document.head.innerHTML = options.headHtml
@@ -32,6 +32,6 @@ export const makeServerWindow = (options?: ServerWindowOptions): Window & Global
 export const provideServerEnvironmentWith =
   (options: ServerWindowOptions = {}) =>
   <R, E, A>(effect: Effect.Effect<R | RenderContext | DomServices, E, A>) =>
-    pipe(effect, provideDomServices(makeServerWindow(options)), RenderContext.provide)
+    pipe(effect, provideDomServices(makeServerWindow(options)), RenderContext.provideClient)
 
 export const provideServerEnvironment = provideServerEnvironmentWith()
