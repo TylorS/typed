@@ -14,7 +14,7 @@ import { Document } from '../DOM/Document.js'
 import { RenderContext } from './RenderContext.js'
 import { stripHoleComments } from './parseTemplate.js'
 import { render, renderInto } from './render.js'
-import { html } from './Fx.js'
+import { html } from './tag/Fx.js'
 
 describe(import.meta.url, () => {
   describe(render.name, () => {
@@ -57,7 +57,7 @@ describe(import.meta.url, () => {
           // Should not render after take(4)
           deepStrictEqual(stripHoleComments(root.innerHTML), '<div>Hello 3!</div>')
         }),
-        RenderContext.provideClient,
+        RenderContext.provideServer,
         Effect.provideService(Document.Tag, document),
         Effect.provideLayer(TestEnvironment),
       )

@@ -3,26 +3,29 @@ import { pipe } from '@tsplus/stdlib/data/Function'
 import * as Fx from '@typed/fx'
 
 import { Document } from './DOM/Document.js'
-import { DomSource } from './DOM/DomSource.js'
-import { html } from './HTML/index.js'
-import { renderDomSource } from './run.js'
+import { RenderContext, drainInto, html, makeElementRef } from './HTML/index.js'
 
 const Counter = Fx.fromFxGen(function* ($) {
-  const dom = yield* $(DomSource.get)
-  const decrement = pipe(dom, DomSource.query('.dec'), DomSource.events('click'), Fx.as(-1))
-  const increment = pipe(dom, DomSource.query('.inc'), DomSource.events('click'), Fx.as(+1))
+  const ref = yield* $(makeElementRef<HTMLDivElement>())
+  const decrement = pipe(ref.query('.dec').events('click'), Fx.as(-1))
+  const increment = pipe(ref.query('.inc').events('click'), Fx.as(+1))
   const count = pipe(
     Fx.mergeAll([decrement, increment]),
     Fx.scan(0, (x, y) => x + y),
   )
 
-  return html`<div>
+  return html`<div ref=${ref}>
     <button class="dec">Decrement</button>
     <button class="inc">Increment</button>
     <p>Count: ${count}</p>
   </div>`
 })
 
-const main = pipe(Counter, renderDomSource(document.body), Document.provide(document))
+const program = pipe(
+  Counter,
+  drainInto(document.body),
+  RenderContext.provideClient,
+  Document.provide(document),
+)
 
-Effect.unsafeRunAsync(main)
+Effect.unsafeRunAsync(program)

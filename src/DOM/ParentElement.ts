@@ -3,7 +3,7 @@ import * as Maybe from '@tsplus/stdlib/data/Maybe'
 import * as T from '@tsplus/stdlib/service/Tag'
 
 export interface ParentElement {
-  readonly parentElement: ParentNode & Element
+  readonly parentElement: ParentNode & HTMLElement
 }
 
 export namespace ParentElement {
@@ -14,16 +14,18 @@ export const getParentElement: Effect.Effect<ParentElement, never, ParentElement
   ParentElement.Tag,
 )
 
-export const querySelector: <A extends Element>(
+export const querySelector: <A extends HTMLElement>(
   selector: string,
-) => Effect.Effect<ParentElement, never, Maybe.Maybe<A>> = <A extends Element>(selector: string) =>
+) => Effect.Effect<ParentElement, never, Maybe.Maybe<A>> = <A extends HTMLElement>(
+  selector: string,
+) =>
   Effect.serviceWith(ParentElement.Tag, (p) =>
     Maybe.fromNullable(p.parentElement.querySelector<A>(selector)),
   )
 
-export const querySelectorAll: <A extends Element>(
+export const querySelectorAll: <A extends HTMLElement>(
   selector: string,
-) => Effect.Effect<ParentElement, never, ReadonlyArray<A>> = <A extends Element>(
+) => Effect.Effect<ParentElement, never, ReadonlyArray<A>> = <A extends HTMLElement>(
   selector: string,
 ) =>
   Effect.serviceWith(

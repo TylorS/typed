@@ -30,5 +30,5 @@ export const getComputedStyle = (el: Element) =>
 
 export const addWindowListener = <EventName extends keyof WindowEventMap>(
   event: EventName,
-  options?: boolean | AddEventListenerOptions,
+  options?: AddEventListenerOptions,
 ) => pipe(getWindow, Fx.fromEffect, Fx.flatMap(addEventListener(event, options)))

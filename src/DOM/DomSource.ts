@@ -162,33 +162,26 @@ function makeEventStream<Ev extends Event>(
     const lastTwoCssSelectors = cssSelectors.slice(-2).join('')
 
     const ensureEventMatches = Fx.filter(
-      (event: Event) =>
+      (event: Ev) =>
         ensureMatches(cssSelector, element, event, capture) ||
         ensureMatches(lastTwoCssSelectors, element, event, capture),
     )
 
-    const event$ = pipe(
-      element,
-      addEventListener(eventType as any, options),
-      ensureEventMatches,
-    ) as Fx.Fx<never, never, Ev>
+    const event$ = pipe(element, addEventListener(eventType as any, options), ensureEventMatches)
 
-    if (capture)
-      return pipe(event$, Fx.map(findCurrentTarget(cssSelector, element))) as Fx.Fx<
-        never,
-        never,
-        Ev
-      >
+    if (capture) {
+      return pipe(event$, Fx.map(findCurrentTarget(cssSelector, element)))
+    }
 
     return event$
   }
 }
 
 function findCurrentTarget(cssSelector: string, element: Element) {
-  return function (event: Event): Event {
+  return function <E extends Event>(event: E): E {
     const isCurrentTarget = !cssSelector || element.matches(cssSelector)
 
-    if (isCurrentTarget) return cloneEvent(event, element)
+    if (isCurrentTarget) return cloneEvent(event, element) as E
 
     const nodes = element.querySelectorAll(cssSelector)
 
@@ -196,7 +189,7 @@ function findCurrentTarget(cssSelector: string, element: Element) {
       const node = nodes[i]
       const containsEventTarget = node.contains(event.target as Element)
 
-      if (containsEventTarget) return cloneEvent(event, node)
+      if (containsEventTarget) return cloneEvent(event, node) as E
     }
 
     return event

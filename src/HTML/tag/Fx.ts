@@ -3,15 +3,15 @@ import { pipe } from '@tsplus/stdlib/data/Function'
 import { Env } from '@tsplus/stdlib/service/Env'
 import * as Fx from '@typed/fx'
 
-import { isEffect, isFx } from '../_internal.js'
+import { isEffect, isFx } from '../../_internal.js'
+import { Hole } from '../Hole.js'
+import { Placeholder } from '../Placeholder.js'
+import { RenderCache } from '../RenderCache.js'
+import { RenderContext } from '../RenderContext.js'
+import { Renderable } from '../Renderable.js'
+import { getRenderHoleContext, renderHole } from '../render.js'
 
 import * as Tag from './Effect.js'
-import { Hole } from './Hole.js'
-import { Placeholder } from './Placeholder.js'
-import { RenderCache } from './RenderCache.js'
-import { RenderContext } from './RenderContext.js'
-import { Renderable } from './Renderable.js'
-import { getRenderHoleContext, renderHole } from './render.js'
 
 // Tag functions which only accept and return Fx
 

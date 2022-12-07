@@ -24,7 +24,7 @@ export const getHead: Effect.Effect<Document, never, HTMLHeadElement> = pipe(
 
 export const addDocumentListener = <EventName extends keyof DocumentEventMap>(
   event: EventName,
-  options?: boolean | AddEventListenerOptions,
+  options?: AddEventListenerOptions,
 ) => pipe(getDocument, Fx.fromEffect, Fx.flatMap(addEventListener(event, options)))
 
 export const createElement = <TagName extends keyof HTMLElementTagNameMap>(

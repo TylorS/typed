@@ -1,8 +1,8 @@
 import * as Effect from '@effect/core/io/Effect'
 import * as Layer from '@effect/core/io/Layer'
+import { pipe } from '@tsplus/stdlib/data/Function'
 import * as T from '@tsplus/stdlib/service/Tag'
 import * as Fx from '@typed/fx'
-import { pipe } from 'node_modules/@tsplus/stdlib/data/Function.js'
 
 import type { RenderCache } from './RenderCache.js'
 import type { TemplateCache } from './TemplateCache.js'

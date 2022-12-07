@@ -3,14 +3,17 @@ import * as Fx from '@typed/fx'
 
 import type { DefaultEventMap } from './DomSource.js'
 
+// TODO: dispatchEvent primitives
+// TODO: Can we use custom events to communicate between components usefully?
+
 export function addEventListener<T extends EventTarget, EventName extends keyof DefaultEventMap<T>>(
   event: EventName,
-  options?: boolean | AddEventListenerOptions,
+  options?: AddEventListenerOptions,
 ): (target: T) => Fx.Fx<never, never, DefaultEventMap<T>[EventName]>
 
 export function addEventListener<T extends EventTarget, EventName extends string>(
   event: EventName,
-  options?: boolean | AddEventListenerOptions,
+  options?: AddEventListenerOptions,
 ): (target: T) => Fx.Fx<never, never, Event> {
   return (target: T): Fx.Fx<never, never, Event> =>
     Fx.withEmitter(({ unsafeEmit }) =>
@@ -22,7 +25,7 @@ function addEventListener_(
   target: EventTarget,
   event: string,
   listener: EventListenerOrEventListenerObject,
-  options?: boolean | AddEventListenerOptions,
+  options?: AddEventListenerOptions,
 ): () => void {
   target.addEventListener(event, listener, options)
 

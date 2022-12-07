@@ -8,7 +8,7 @@ import * as Fx from '@typed/fx'
 
 import { DomSource } from './DomSource.js'
 
-import { makeServerWindow } from '@/Server/DomServices.js'
+import { makeServerWindow } from '@/Server/DOMServices.js'
 
 describe(import.meta.url, () => {
   describe('query', () => {

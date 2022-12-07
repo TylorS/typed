@@ -1,5 +1,6 @@
 export { EventHandler } from './EventHandler.js'
-export * from './Fx.js'
+export * from './ElementRef.js'
+export * from './tag/Fx.js'
 export * from './Hole.js'
 export * from './Placeholder.js'
 export * from './render.js'

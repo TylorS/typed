@@ -2,14 +2,13 @@ import * as Effect from '@effect/core/io/Effect'
 import { pipe } from '@tsplus/stdlib/data/Function'
 import { Env } from '@tsplus/stdlib/service/Env'
 
-import { isEffect } from '../_internal.js'
-
-import { Hole } from './Hole.js'
-import { Placeholder } from './Placeholder.js'
-import { RenderCache } from './RenderCache.js'
-import { RenderContext } from './RenderContext.js'
-import { Renderable } from './Renderable.js'
-import { getRenderHoleContext, renderHole } from './render.js'
+import { isEffect } from '../../_internal.js'
+import { Hole } from '../Hole.js'
+import { Placeholder } from '../Placeholder.js'
+import { RenderCache } from '../RenderCache.js'
+import { RenderContext } from '../RenderContext.js'
+import { Renderable } from '../Renderable.js'
+import { getRenderHoleContext, renderHole } from '../render.js'
 
 // Tag functions which only accept and return Effect
 
