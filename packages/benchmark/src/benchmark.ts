@@ -127,15 +127,19 @@ function buildStats(
     const max = Math.max(...durations)
 
     stats[name] = TestStats(
-      average,
-      min,
-      max,
-      initResult.endTime - initResult.startTime,
+      roundNumber(average),
+      roundNumber(min),
+      roundNumber(max),
+      roundNumber(initResult.endTime - initResult.startTime),
       -1, // Needs to be calculated later
     )
   }
 
   return stats
+}
+
+function roundNumber(n: number): number {
+  return parseFloat(n.toFixed(4))
 }
 
 function addPercentile(
@@ -153,7 +157,7 @@ function addPercentile(
       stat.min,
       stat.max,
       stat.timeToInit,
-      stat.average / fastestTime,
+      roundNumber(stat.average / fastestTime),
     )
   }
 
