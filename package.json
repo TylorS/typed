@@ -24,6 +24,7 @@
     "update": "pnpm run update:rootTsconfig && pnpm run update:packages",
     "update:packages": "tsx ./tools/updatePackages.ts",
     "update:rootTsconfig": "tsx ./tools/updateRootTsconfig.ts",
+    "perf:filter-map-reduce": "ESBK_TSCONFIG_PATH=./perf/tsconfig.json ESBK_DISABLE_CACHE=1 node --loader @esbuild-kit/esm-loader perf/cases/filter-map-reduce.ts",
     "~~NEEDS POSITIONAL COMMAND LINE ARGUMENT~~": "",
     "new-package": "nx generate @typed/nx-plugin:package"
   },
@@ -35,11 +36,17 @@
     "tslib": "^2.4.1"
   },
   "devDependencies": {
+    "@effect/core": "^0.0.16",
+    "@esbuild-kit/esm-loader": "^2.5.4",
+    "@most/core": "^1.6.1",
+    "@most/scheduler": "^1.3.0",
+    "@most/types": "^1.1.0",
     "@nrwl/devkit": "^15.2.4",
     "@nrwl/linter": "^15.2.4",
     "@nrwl/nx-plugin": "^15.2.4",
     "@nrwl/vite": "15.2.4",
     "@nrwl/workspace": "^15.2.4",
+    "@typed/fx": "^0.0.33",
     "@types/node": "^18.11.10",
     "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.45.0",
@@ -54,6 +61,7 @@
     "lint-staged": "^13.1.0",
     "nx": "15.2.4",
     "prettier": "^2.8.0",
+    "rxjs": "^7.6.0",
     "ts-morph": "^17.0.1",
     "tsconfig-paths": "github:IgnusG/tsconfig-paths#fce7c52ed061417dfd1dcce94721c4a94c230bab",
     "tslib": "^2.4.1",
