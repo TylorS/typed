@@ -2,7 +2,7 @@ import * as Effect from '@effect/core/io/Effect'
 import { RefSym } from '@effect/core/io/Ref'
 import { identity, pipe } from '@tsplus/stdlib/data/Function'
 import { Maybe, none } from '@tsplus/stdlib/data/Maybe'
-import { Fx, RefSubject, filterMap, makeRefSubject } from '@typed/fx'
+import { Fx, RefSubject, filterMap, hold, makeRefSubject } from '@typed/fx'
 
 import { DomSource } from '../DOM/DomSource.js'
 
@@ -23,7 +23,7 @@ export function makeElementRef<A extends HTMLElement = HTMLElement>(): Effect.Ef
   return pipe(
     makeRefSubject<Maybe<A>>(() => none),
     Effect.map((subject) => {
-      const element = pipe(subject, filterMap(identity))
+      const element = pipe(subject, filterMap(identity), hold)
       return {
         ...subject,
         ...DomSource(element),
@@ -36,5 +36,5 @@ export function makeElementRef<A extends HTMLElement = HTMLElement>(): Effect.Ef
 export function isElementRef<A extends HTMLElement = HTMLElement>(
   value: unknown,
 ): value is ElementRef<A> {
-  return value !== null && typeof value === 'object' && RefSym in value && 'source' in value
+  return value !== null && typeof value === 'object' && RefSym in value && 'element' in value
 }
