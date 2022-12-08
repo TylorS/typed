@@ -24,6 +24,7 @@
     "update": "pnpm run update:rootTsconfig && pnpm run update:packages",
     "update:packages": "tsx ./tools/updatePackages.ts",
     "update:rootTsconfig": "tsx ./tools/updateRootTsconfig.ts",
+    "perf:fibanocci": "ESBK_TSCONFIG_PATH=./perf/tsconfig.json ESBK_DISABLE_CACHE=1 node --loader @esbuild-kit/esm-loader perf/cases/fibanocci.ts",
     "perf:filter-map-reduce": "ESBK_TSCONFIG_PATH=./perf/tsconfig.json ESBK_DISABLE_CACHE=1 node --loader @esbuild-kit/esm-loader perf/cases/filter-map-reduce.ts",
     "~~NEEDS POSITIONAL COMMAND LINE ARGUMENT~~": "",
     "new-package": "nx generate @typed/nx-plugin:package"
