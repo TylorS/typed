@@ -5,6 +5,8 @@ import * as T from '@tsplus/stdlib/service/Tag'
 
 import { Window } from './Window.js'
 
+// TODO: Integrate with Schema/Decoder
+
 export namespace Storage {
   export const Tag: T.Tag<Storage> = T.Tag<Storage>()
 }

@@ -30,6 +30,8 @@ export interface Route<P extends string, R = never, E = never> {
 }
 
 export type PathOf<A> = [A] extends [Route<infer R, any, any>] ? R : never
+export type ResourcesOf<A> = [A] extends [Route<any, infer R, any>] ? R : never
+export type ErrorsOf<A> = [A] extends [Route<any, any, infer R>] ? R : never
 
 export function makeRoute<P extends string>(path: P): Route<P> {
   // eslint-disable-next-line import/no-named-as-default-member
@@ -110,6 +112,10 @@ export function concatRoute<P1 extends string, R, E, P2 extends string, R2, E2>(
     match,
   }
 }
+
+export const baseRoute = makeRoute('/')
+
+export const homeRoute = guard(baseRoute, (_, path) => Effect.succeed(path === '/'))
 
 /* End Region: Route */
 
