@@ -37,15 +37,19 @@ html.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
   Placeholder.ErrorsOf<Values[number]>,
   Node
 > =>
-  pipe(
-    html(template, ...values),
-    Fx.mapEffect((hole) =>
-      pipe(
-        getRenderHoleContext,
-        Effect.map((ctx) => renderHole(hole, RenderCache(), ctx).valueOf() as Node),
+  Fx.suspendSucceed(() => {
+    const cache = RenderCache()
+
+    return pipe(
+      html(template, ...values),
+      Fx.mapEffect((hole) =>
+        pipe(
+          getRenderHoleContext,
+          Effect.map((ctx) => renderHole(hole, cache, ctx).valueOf() as Node),
+        ),
       ),
-    ),
-  )
+    )
+  })
 
 html.effect = Tag.html
 
@@ -71,15 +75,18 @@ svg.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
   Placeholder.ErrorsOf<Values[number]>,
   Node
 > =>
-  pipe(
-    svg(template, ...values),
-    Fx.mapEffect((hole) =>
-      pipe(
-        getRenderHoleContext,
-        Effect.map((ctx) => renderHole(hole, RenderCache(), ctx).valueOf() as Node),
+  Fx.suspendSucceed(() => {
+    const cache = RenderCache()
+    return pipe(
+      svg(template, ...values),
+      Fx.mapEffect((hole) =>
+        pipe(
+          getRenderHoleContext,
+          Effect.map((ctx) => renderHole(hole, cache, ctx).valueOf() as Node),
+        ),
       ),
-    ),
-  )
+    )
+  })
 
 svg.effect = Tag.svg
 
@@ -117,7 +124,7 @@ function unwrapFxValue(
       Fx.continueWith(() =>
         pipe(
           sampling,
-          Fx.mapEffect(() => value),
+          Fx.exhaustMapLatest(() => Fx.fromEffect(value)),
         ),
       ),
     )
