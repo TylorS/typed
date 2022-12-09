@@ -12,7 +12,7 @@ const barRoute = makeRoute('/bar')
 const bazRoute = makeRoute('/baz')
 const quuxRoute = makeRoute('/quux/:something')
 
-const Counter = Fx.fromFxGen(function* ($) {
+const App = Fx.fromFxGen(function* ($) {
   const router = yield* $(Router.getRouter)
 
   return html`<div>
@@ -38,7 +38,7 @@ const Counter = Fx.fromFxGen(function* ($) {
 })
 
 const program = pipe(
-  Counter,
+  App,
   drainInto(document.body),
   RenderContext.provideClient,
   Effect.provideSomeLayer(Router.live),
