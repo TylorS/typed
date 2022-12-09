@@ -137,3 +137,13 @@ export const live: Layer<Location | History | Window, never, Router> = pipe(
  * Get the base Router
  */
 export const getRouter: Effect.Effect<Router, never, Router> = Effect.service(Router)
+
+export function matchAll<Matches extends ReadonlyArray<Fx.Fx<any, any, any>>>(
+  matches: (router: Router) => readonly [...Matches],
+) {
+  return Fx.fromFxGen(function* ($) {
+    const router = yield* $(getRouter)
+
+    return Fx.mergeAll(matches(router))
+  })
+}

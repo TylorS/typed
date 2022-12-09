@@ -22,7 +22,6 @@ const isAuthenticated = Effect.serviceWithEffect(AuthService, (a) => a.isAuthent
 const authRoute = guard(makeRoute('/authed'), () => isAuthenticated)
 
 const App = Fx.fromFxGen(function* ($) {
-  const router = yield* $(Router.getRouter)
   const isAuthenticated = yield* $(Fx.makeRefSubject(() => false))
 
   return html`<div>
@@ -44,7 +43,7 @@ const App = Fx.fromFxGen(function* ($) {
       )}
     </nav>
 
-    ${Fx.mergeAll([
+    ${Router.matchAll((router) => [
       router.define(homeRoute).match(() => html`<div>Select a link</div>`),
       router.define(fooRoute).match(() => html`<div>Foo</div>`),
       router.define(barRoute).match(() => html`<div>Bar</div>`),
