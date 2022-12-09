@@ -4,10 +4,10 @@ import { pipe } from '@tsplus/stdlib/data/Function'
 import { Tag } from '@tsplus/stdlib/service/Tag'
 import * as Fx from '@typed/fx'
 
-import { addEventListener } from '@/DOM/EventTarget.js'
-import { getHistory } from '@/DOM/History.js'
-import { getLocation } from '@/DOM/Location.js'
-import { getWindow } from '@/DOM/Window.js'
+import { addEventListener } from '../DOM/EventTarget.js'
+import { getHistory } from '../DOM/History.js'
+import { getLocation } from '../DOM/Location.js'
+import { getWindow } from '../DOM/Window.js'
 
 /**
  * The current path is a Service which provides the current "path" with is all
@@ -44,6 +44,29 @@ export const makeCurrentPath: Effect.Effect<Location | History | Window, never, 
         window,
         addEventListener('hashchange'),
         Fx.runObserve(() => currentPath.set(getCurrentPath(location))),
+        Effect.fork,
+      ),
+    )
+
+    yield* $(
+      pipe(
+        window.document,
+        addEventListener('click'),
+        Fx.runObserve((ev) => {
+          return Effect.sync(() => {
+            const target = ev.target as HTMLAnchorElement
+
+            if (target.tagName.toLowerCase() !== 'a') {
+              return
+            }
+
+            // TODO: Filter links we don't want to intercept
+
+            ev.preventDefault()
+
+            history.pushState(null, '', target.href)
+          })
+        }),
         Effect.fork,
       ),
     )

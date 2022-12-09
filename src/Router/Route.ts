@@ -4,34 +4,24 @@
  */
 import * as Effect from '@effect/core/io/Effect'
 import * as M from '@tsplus/stdlib/data/Maybe'
-import ptr from 'path-to-regexp'
+import * as ptr from 'path-to-regexp'
 import { A } from 'ts-toolbelt'
 
-import {
-  Interpolate,
-  ParamsOf,
-  PathJoin,
-  QueryParamsOf,
-  optional,
-  param,
-  pathJoin,
-  prefix,
-  queryParam,
-  queryParams,
-  unnamed,
-} from './Path.js'
+import * as P from './Path.js'
 
 /* Start Region: Route */
 
 export interface Route<P extends string, R = never, E = never> {
   readonly path: P
-  readonly match: (path: string) => Effect.Effect<R, E, M.Maybe<ParamsOf<P>>>
-  readonly createPath: <I extends ParamsOf<P>>(params: I) => Interpolate<P, I>
+  readonly match: (path: string) => Effect.Effect<R, E, M.Maybe<P.ParamsOf<P>>>
+  readonly createPath: <I extends P.ParamsOf<P>>(params: I) => P.Interpolate<P, I>
 }
 
 export type PathOf<A> = [A] extends [Route<infer R, any, any>] ? R : never
 export type ResourcesOf<A> = [A] extends [Route<any, infer R, any>] ? R : never
 export type ErrorsOf<A> = [A] extends [Route<any, any, infer R>] ? R : never
+
+export type ParamsOf<T> = P.ParamsOf<PathOf<T>>
 
 export function makeRoute<P extends string>(path: P): Route<P> {
   // eslint-disable-next-line import/no-named-as-default-member
@@ -43,7 +33,7 @@ export function makeRoute<P extends string>(path: P): Route<P> {
     Effect.sync(() => {
       const match = parse(input)
 
-      return !match ? M.none : M.some({ ...match.params } as unknown as ParamsOf<P>)
+      return !match ? M.none : M.some({ ...match.params } as unknown as P.ParamsOf<P>)
     })
 
   return {
@@ -55,7 +45,7 @@ export function makeRoute<P extends string>(path: P): Route<P> {
 
 export function guard<P extends string, R, E, R2, E2>(
   route: Route<P, R, E>,
-  guard: (params: ParamsOf<P>, path: string) => Effect.Effect<R2, E2, boolean>,
+  guard: (params: P.ParamsOf<P>, path: string) => Effect.Effect<R2, E2, boolean>,
 ): Route<P, R | R2, E | E2> {
   const match = (path: string) =>
     Effect.gen(function* ($) {
@@ -83,7 +73,7 @@ export function guard<P extends string, R, E, R2, E2>(
 export function concatRoute<P1 extends string, R, E, P2 extends string, R2, E2>(
   routeA: Route<P1, R, E>,
   routeB: Route<P2, R2, E2>,
-): Route<PathJoin<[P1, P2]>, R | R2, E | E2> {
+): Route<P.PathJoin<[P1, P2]>, R | R2, E | E2> {
   const match = (path: string) =>
     Effect.gen(function* ($) {
       const aParams = yield* $(routeA.match(path))
@@ -93,7 +83,7 @@ export function concatRoute<P1 extends string, R, E, P2 extends string, R2, E2>(
       }
 
       const aPath = routeA.createPath(aParams.value)
-      const remainingPath = pathJoin(path.replace(aPath, '')) || '/'
+      const remainingPath = P.pathJoin(path.replace(aPath, '')) || '/'
       const bParams = yield* $(routeB.match(remainingPath))
 
       if (M.isNone(bParams)) {
@@ -103,11 +93,11 @@ export function concatRoute<P1 extends string, R, E, P2 extends string, R2, E2>(
       return M.some({
         ...aParams.value,
         ...bParams.value,
-      } as unknown as ParamsOf<PathJoin<[P1, P2]>>)
+      } as unknown as P.ParamsOf<P.PathJoin<[P1, P2]>>)
     })
 
   return {
-    ...makeRoute(pathJoin(routeA.path, routeB.path)),
+    ...makeRoute(P.pathJoin(routeA.path, routeB.path)),
     // Save any guards by matching manually
     match,
   }
@@ -123,15 +113,18 @@ export const homeRoute = guard(baseRoute, (_, path) => Effect.succeed(path === '
 
 // Should always be dead-code eliminated
 
-const query = queryParams(queryParam('d', optional(param('foo'))), queryParam('e', unnamed))
-const path = pathJoin('test', param('bar'), optional(prefix('~', param('baz'))), query)
+const query = P.queryParams(
+  P.queryParam('d', P.optional(P.param('foo'))),
+  P.queryParam('e', P.unnamed),
+)
+const path = P.pathJoin('test', P.param('bar'), P.optional(P.prefix('~', P.param('baz'))), query)
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const check: <_ extends 1>() => true
 
 type Path_ = typeof path
-type Params_ = ParamsOf<Path_>
-type QueryParams_ = QueryParamsOf<Path_>
+type Params_ = P.ParamsOf<Path_>
+type QueryParams_ = P.QueryParamsOf<Path_>
 
 // eslint-disable-next-line no-constant-condition
 if (false) {
@@ -159,10 +152,10 @@ if (false) {
 
   check<
     A.Equals<
-      Interpolate<Path_, { foo: 'foo'; bar: 'bar'; baz: 'baz'; 0: '0' }>,
+      P.Interpolate<Path_, { foo: 'foo'; bar: 'bar'; baz: 'baz'; 0: '0' }>,
       '/test/bar~baz?d=foo&e=0'
     >
   >()
 
-  check<A.Equals<Interpolate<Path_, { bar: 'bar'; 0: '0' }>, '/test/bar?e=0'>>()
+  check<A.Equals<P.Interpolate<Path_, { bar: 'bar'; 0: '0' }>, '/test/bar?e=0'>>()
 }
