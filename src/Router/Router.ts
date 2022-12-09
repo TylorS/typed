@@ -12,7 +12,11 @@ import * as Route from './Route.js'
 export interface Router<R extends Route.Route<any, any, any> = Route.Route<string>> {
   readonly route: R
 
-  readonly params: ParamsFx<R>
+  readonly params: Fx.Fx<
+    CurrentPath.CurrentPath | Route.ResourcesOf<R>,
+    Route.ErrorsOf<R>,
+    Maybe.Maybe<Route.ParamsOf<R>>
+  >
 
   readonly match: <R2, E2, A>(
     f: (a: Route.ParamsOf<R>) => Fx.Fx<R2 | Router<R>, E2, A> | Fx.Fx<R2 | Router, E2, A>,
@@ -112,12 +116,6 @@ function makeRouterWithCurrentPath<R extends Route.Route<any, any, any>>(
   return router
 }
 
-export interface ParamsFx<R extends Route.Route<any, any, any>>
-  extends Fx.Fx<
-    CurrentPath.CurrentPath | Route.ResourcesOf<R>,
-    Route.ErrorsOf<R>,
-    Maybe.Maybe<Route.ParamsOf<R>>
-  > {}
 /**
  * Tag for the "base" router instance which utilizes the base route to allow full matching elsewhere.
  * If you require nested routers, you should use the `define` method primarily and pass it around as
