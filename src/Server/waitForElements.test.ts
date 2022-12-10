@@ -11,7 +11,7 @@ import { getDocument } from '../DOM/Document.js'
 import { waitForElements } from './waitForElements.js'
 
 import { html, renderInto } from '@/HTML/index.js'
-import { provideServerEnvironment } from '@/Server/DomServices.js'
+import { provideServerEnvironment } from '@/Server/DOMServices.js'
 
 describe(import.meta.url, () => {
   describe(waitForElements.name, () => {
@@ -49,7 +49,7 @@ describe(import.meta.url, () => {
           // Verify final render is what we expect
           notDeepStrictEqual(document.querySelector('#child'), null)
         }),
-        provideServerEnvironment,
+        provideServerEnvironment(),
       )
 
       await Effect.unsafeRunPromise(test)

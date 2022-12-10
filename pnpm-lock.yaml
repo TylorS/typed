@@ -9,7 +9,7 @@ specifiers:
   '@tsplus/stdlib': ^0.2.8
   '@typed/fx': ^0.0.35
   '@types/mocha': ^10.0.1
-  '@types/node': ^18.11.12
+  '@types/node': ^18.11.13
   '@typescript-eslint/eslint-plugin': ^5.46.0
   '@typescript-eslint/parser': ^5.46.0
   '@webreflection/uparser': ^0.2.4
@@ -51,7 +51,7 @@ dependencies:
 devDependencies:
   '@esbuild-kit/esm-loader': 2.5.4
   '@types/mocha': 10.0.1
-  '@types/node': 18.11.12
+  '@types/node': 18.11.13
   '@typescript-eslint/eslint-plugin': 5.46.0_5mle7isnkfgjmrghnnczirv6iy
   '@typescript-eslint/parser': 5.46.0_ha6vam6werchizxrnqvarmz2zu
   eslint: 8.29.0
@@ -67,7 +67,7 @@ devDependencies:
   tsconfig-paths: 4.1.1
   tslib: 2.4.1
   typescript: 4.9.4
-  vite: 4.0.0_@types+node@18.11.12
+  vite: 4.0.0_@types+node@18.11.13
   vite-tsconfig-paths: 4.0.2_csiinktybatgu6zuq6qz2yqhzq
 
 packages:
@@ -445,8 +445,8 @@ packages:
     resolution: {integrity: sha512-/fvYntiO1GeICvqbQ3doGDIP97vWmvFt83GKguJ6prmQM2iXZfFcq6YE8KteFyRtX2/h5Hf91BYvPodJKFYv5Q==}
     dev: true
 
-  /@types/node/18.11.12:
-    resolution: {integrity: sha512-FgD3NtTAKvyMmD44T07zz2fEf+OKwutgBCEVM8GcvMGVGaDktiLNTDvPwC/LUe3PinMW+X6CuLOF2Ui1mAlSXg==}
+  /@types/node/18.11.13:
+    resolution: {integrity: sha512-IASpMGVcWpUsx5xBOrxMj7Bl8lqfuTY7FKAnPmu5cHkfQVWF8GulWS1jbRqA934qZL35xh5xN/+Xe/i26Bod4w==}
     dev: true
 
   /@types/semver/7.3.13:
@@ -2865,13 +2865,13 @@ packages:
       debug: 4.3.4
       globrex: 0.1.2
       tsconfck: 2.0.1_typescript@4.9.4
-      vite: 4.0.0_@types+node@18.11.12
+      vite: 4.0.0_@types+node@18.11.13
     transitivePeerDependencies:
       - supports-color
       - typescript
     dev: true
 
-  /vite/4.0.0_@types+node@18.11.12:
+  /vite/4.0.0_@types+node@18.11.13:
     resolution: {integrity: sha512-ynad+4kYs8Jcnn8J7SacS9vAbk7eMy0xWg6E7bAhS1s79TK+D7tVFGXVZ55S7RNLRROU1rxoKlvZ/qjaB41DGA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -2896,7 +2896,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 18.11.12
+      '@types/node': 18.11.13
       esbuild: 0.16.4
       postcss: 8.4.19
       resolve: 1.22.1

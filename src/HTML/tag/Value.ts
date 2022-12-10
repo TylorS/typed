@@ -11,7 +11,7 @@ import { getRenderHoleContext, renderHole } from '../render.js'
 
 // Tag functions which only accept and return resourceful placeholders
 
-export function html<Values extends ReadonlyArray<Renderable<any, any>>>(
+export function html<Values extends ReadonlyArray<Renderable.Value<any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<Placeholder.ResourcesOf<Values[number]>, never, Hole> {
@@ -20,7 +20,7 @@ export function html<Values extends ReadonlyArray<Renderable<any, any>>>(
   )
 }
 
-html.node = <Values extends ReadonlyArray<Renderable.Value<any, any>>>(
+html.node = <Values extends ReadonlyArray<Renderable.Value<any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<Document | RenderContext | Placeholder.ResourcesOf<Values[number]>, never, Node> =>
@@ -34,7 +34,7 @@ html.node = <Values extends ReadonlyArray<Renderable.Value<any, any>>>(
     ),
   )
 
-export function svg<Values extends ReadonlyArray<Renderable.Value<any, any>>>(
+export function svg<Values extends ReadonlyArray<Renderable.Value<any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<Placeholder.ResourcesOf<Values[number]>, never, Hole> {
@@ -43,7 +43,7 @@ export function svg<Values extends ReadonlyArray<Renderable.Value<any, any>>>(
   )
 }
 
-svg.node = <Values extends ReadonlyArray<Renderable.Value<any, any>>>(
+svg.node = <Values extends ReadonlyArray<Renderable.Value<any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<Document | RenderContext | Placeholder.ResourcesOf<Values[number]>, never, Node> =>

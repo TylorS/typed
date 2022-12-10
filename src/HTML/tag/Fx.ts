@@ -95,9 +95,7 @@ function unwrapFxValues<Values extends Array<Placeholder<any, any>>>(
 ): Fx.Fx<
   Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
-  Array<
-    Renderable.Value<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>>
-  >
+  Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>>
 > {
   // Used to sample pull-based Effect's whenever an Fx emits a value.
   const sampling = Fx.Subject.unsafeMake<never, void>()
@@ -105,19 +103,14 @@ function unwrapFxValues<Values extends Array<Placeholder<any, any>>>(
   return Fx.combineAll(values.map((v) => unwrapFxValue(v, sampling))) as Fx.Fx<
     Placeholder.ResourcesOf<Values[number]>,
     Placeholder.ErrorsOf<Values[number]>,
-    Array<
-      Renderable.Value<
-        Placeholder.ResourcesOf<Values[number]>,
-        Placeholder.ErrorsOf<Values[number]>
-      >
-    >
+    Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>>
   >
 }
 
 function unwrapFxValue(
   value: Placeholder<any, any>,
   sampling: Fx.Subject<never, void>,
-): Fx.Fx<any, any, Renderable.Value<any, any>> {
+): Fx.Fx<any, any, Renderable.Value<any>> {
   if (isFx(value)) {
     return pipe(
       value,
@@ -144,7 +137,7 @@ function unwrapFxValue(
     )
   }
 
-  return Fx.succeed(value as Renderable.Value<any, any>)
+  return Fx.succeed(value as Renderable.Value<any>)
 }
 
 declare module '@effect/core/io/Effect/definition' {

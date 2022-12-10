@@ -85,26 +85,15 @@ function unwrapEffectValues<Values extends Array<Renderable<any, any>>>(
 ): Effect.Effect<
   Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
-  Array<
-    Renderable.Value<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>>
-  >
+  Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>>
 > {
   return Effect.gen(function* ($) {
-    const output: Array<
-      Renderable.Value<
-        Placeholder.ResourcesOf<Values[number]>,
-        Placeholder.ErrorsOf<Values[number]>
-      >
-    > = []
+    const output: Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>> = []
 
     for (let i = 0; i < values.length; i++) {
       const value = values[i]
 
-      if (
-        isEffect<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>>(
-          value,
-        )
-      ) {
+      if (isEffect<Placeholder.ResourcesOf<Values[number]>, never>(value)) {
         output.push(yield* $(value))
         continue
       }
@@ -114,12 +103,7 @@ function unwrapEffectValues<Values extends Array<Renderable<any, any>>>(
         continue
       }
 
-      output.push(
-        value as Renderable.Value<
-          Placeholder.ResourcesOf<Values[number]>,
-          Placeholder.ErrorsOf<Values[number]>
-        >,
-      )
+      output.push(value as Renderable.Value<Placeholder.ResourcesOf<Values[number]>>)
     }
 
     return output

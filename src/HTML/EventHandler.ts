@@ -33,6 +33,7 @@ export namespace EventHandler {
 export class EventHandlerImplementation<T extends Event, R = never> implements EventHandler<T, R> {
   readonly __Placeholder__!: {
     readonly _R: (_: never) => R
+    readonly _E: (_: never) => never
   }
 
   constructor(
