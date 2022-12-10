@@ -4,7 +4,7 @@ import { Env } from '@tsplus/stdlib/service/Env'
 
 import { Document } from './Document.js'
 import { Fetch } from './Fetch.js'
-import { GlobalThis } from './GlobalThis.js'
+import { GlobalThis, attachShadowRoots } from './GlobalThis.js'
 import { History } from './History.js'
 import { Location } from './Location.js'
 import { Navigator } from './Navigator.js'
@@ -38,6 +38,8 @@ export const provideDomServices =
   ): Effect.Effect<Exclude<R, DomServices>, E, A> =>
     pipe(
       effect,
+      // If the environment doesn't support declarative shadow-dom, polyfill by attaching shadow roots
+      Effect.tap(() => attachShadowRoots),
       Effect.provideSomeEnvironment((env: Env<Exclude<R, DomServices>>) =>
         (env as Env<R>).merge(makeDomServices(window)),
       ),
