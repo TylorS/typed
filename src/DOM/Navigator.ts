@@ -1,9 +1,9 @@
+import * as Cause from '@effect/core/io/Cause'
 import * as Effect from '@effect/core/io/Effect'
 import { pipe } from '@tsplus/stdlib/data/Function'
 import { Maybe, fromNullable } from '@tsplus/stdlib/data/Maybe'
 import * as T from '@tsplus/stdlib/service/Tag'
 import * as Fx from '@typed/fx'
-import { fail } from 'node_modules/@effect/core/io/Cause.js'
 
 import { GlobalThis } from './GlobalThis.js'
 
@@ -97,7 +97,7 @@ export const watchPosition = (
       Fx.withEmitter<never, GeolocationPositionError, GeolocationPosition>((emitter) => {
         const id = n.geolocation.watchPosition(
           emitter.unsafeEmit,
-          (e) => emitter.unsafeFailCause(fail(e)),
+          (e) => emitter.unsafeFailCause(Cause.fail(e)),
           options,
         )
 
