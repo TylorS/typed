@@ -93,11 +93,9 @@ export const routerLayer: Layer<
  */
 export const getRouter: Effect.Effect<Router, never, Router> = Effect.service(Router)
 
-export function use<R, E, A>(
-  matches: (matcher: RouteMatcher<never, never, never>) => Fx.Fx<R, E, A>,
-): Fx.Fx<R | Router, E, A> {
-  return matches(RouteMatcher<never, never, never>(new Map()))
-}
+export const empty = RouteMatcher<never, never, never>(new Map())
+
+export const { match, noMatch } = empty
 
 export interface RouteMatcher<R, E, A> {
   readonly matches: ReadonlyMap<

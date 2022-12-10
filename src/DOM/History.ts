@@ -10,10 +10,10 @@ export namespace History {
 
 export const getHistory: Effect.Effect<History, never, History> = Effect.service(History.Tag)
 
-export const pushState = (data: unknown, url: string | URL) =>
+export const pushState = (url: string | URL, data?: unknown) =>
   Effect.serviceWith(History.Tag, (h) => h.pushState(data, '', url))
 
-export const replaceState = (data: unknown, url: string | URL) =>
+export const replaceState = (url: string | URL, data?: unknown) =>
   Effect.serviceWith(History.Tag, (h) => h.replaceState(data, '', url))
 
 export const getState = Effect.serviceWith(History.Tag, (h) => h.state as unknown)
