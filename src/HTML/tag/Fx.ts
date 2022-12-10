@@ -15,7 +15,7 @@ import * as Tag from './Effect.js'
 
 // Tag functions which only accept and return Fx
 
-export function html<Values extends ReadonlyArray<Placeholder<any, any>>>(
+export function html<Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
@@ -29,7 +29,7 @@ export function html<Values extends ReadonlyArray<Placeholder<any, any>>>(
   )
 }
 
-html.node = <Values extends ReadonlyArray<Placeholder<any, any>>>(
+html.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -53,7 +53,7 @@ html.node = <Values extends ReadonlyArray<Placeholder<any, any>>>(
 
 html.effect = Tag.html
 
-export function svg<Values extends ReadonlyArray<Placeholder<any, any>>>(
+export function svg<Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
@@ -67,7 +67,7 @@ export function svg<Values extends ReadonlyArray<Placeholder<any, any>>>(
   )
 }
 
-svg.node = <Values extends ReadonlyArray<Placeholder<any, any>>>(
+svg.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -90,7 +90,7 @@ svg.node = <Values extends ReadonlyArray<Placeholder<any, any>>>(
 
 svg.effect = Tag.svg
 
-function unwrapFxValues<Values extends Array<Placeholder<any, any>>>(
+function unwrapFxValues<Values extends Array<Renderable<any, any>>>(
   values: Values,
 ): Fx.Fx<
   Placeholder.ResourcesOf<Values[number]>,
@@ -108,7 +108,7 @@ function unwrapFxValues<Values extends Array<Placeholder<any, any>>>(
 }
 
 function unwrapFxValue(
-  value: Placeholder<any, any>,
+  value: Renderable<any, any>,
   sampling: Fx.Subject<never, void>,
 ): Fx.Fx<any, any, Renderable.Value<any>> {
   if (isFx(value)) {
