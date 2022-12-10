@@ -1,5 +1,4 @@
 import * as Effect from '@effect/core/io/Effect'
-import { millis } from '@tsplus/stdlib/data/Duration'
 import { pipe } from '@tsplus/stdlib/data/Function'
 import { Tag } from '@tsplus/stdlib/service/Tag'
 import * as Fx from '@typed/fx'
