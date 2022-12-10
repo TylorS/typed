@@ -144,7 +144,7 @@ export function runRouteMatcher<R, E, A, R2, E2, B>(
     )
     const paramsSubject = yield* $(Fx.makeSubject<never, any>())
     const previousRoute = yield* $(
-      Ref.makeRef(() => undefined as Route.Route<any, any, any> | undefined),
+      Ref.makeRef((): Route.Route<any, any, any> | undefined => undefined),
     )
 
     return pipe(
