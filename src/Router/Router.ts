@@ -102,12 +102,17 @@ export const { match, noMatch } = empty
 export interface RouteMatcher<R, E, A> {
   readonly matches: ReadonlyMap<
     Route.Route<any, any, any>,
-    (params: Path.ParamsOf<string>) => Fx.Fx<R, E, A>
+    (params: Fx.Fx<never, never, Path.ParamsOf<string>>) => Fx.Fx<R, E, A>
   >
 
   readonly match: <Route extends Route.Route<any, any, any>, R2, E2, B>(
     route: Route,
     f: (params: Route.ParamsOf<Route>) => Fx.Fx<R2, E2, B>,
+  ) => RouteMatcher<R | R2 | Route.ResourcesOf<Route>, E | E2 | Route.ErrorsOf<Route>, A | B>
+
+  readonly matchFx: <Route extends Route.Route<any, any, any>, R2, E2, B>(
+    route: Route,
+    f: (params: Fx.Fx<never, never, Route.ParamsOf<Route>>) => Fx.Fx<R2, E2, B>,
   ) => RouteMatcher<R | R2 | Route.ResourcesOf<Route>, E | E2 | Route.ErrorsOf<Route>, A | B>
 
   readonly noMatch: <R2, E2, B>(
@@ -133,6 +138,11 @@ export function RouteMatcher<R, E, A>(
     match: <Route extends Route.Route<any, any, any>, R2, E2, B>(
       route: Route,
       f: (params: Route.ParamsOf<Route>) => Fx.Fx<R2, E2, B>,
+    ): RouteMatcher<R | R2 | Route.ResourcesOf<Route>, E | E2 | Route.ErrorsOf<Route>, A | B> =>
+      RouteMatcher(new Map<any, any>([...matches, [route, Fx.switchMap(f)]])),
+    matchFx: <Route extends Route.Route<any, any, any>, R2, E2, B>(
+      route: Route,
+      f: (params: Fx.Fx<never, never, Route.ParamsOf<Route>>) => Fx.Fx<R2, E2, B>,
     ): RouteMatcher<R | R2 | Route.ResourcesOf<Route>, E | E2 | Route.ErrorsOf<Route>, A | B> =>
       RouteMatcher(new Map<any, any>([...matches, [route, f]])),
     noMatch: (f) => runRouteMatcher(matcher, f),
@@ -182,7 +192,7 @@ export function runRouteMatcher<R, E, A, R2, E2, B>(
                   pipe(
                     paramsSubject,
                     Fx.startWith(params.value),
-                    Fx.switchMap(match),
+                    match,
                     Fx.provideService(Router, (yield* $(makeRouter(route))) as Router),
                     Fx.hold,
                   ),
