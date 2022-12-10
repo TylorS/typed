@@ -58,7 +58,7 @@ const App = Fx.fromFxGen(function* ($) {
     Fx.provideService(AuthService, { isAuthenticated: isAuthenticated.get }),
   )
 
-  const view = html`<div>
+  return html`<div>
     <h1>App Shell</h1>
     <nav>
       <ul>
@@ -82,8 +82,6 @@ const App = Fx.fromFxGen(function* ($) {
 
     ${childView}
   </div>`
-
-  return view
 })
 
 const program = pipe(
