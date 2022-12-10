@@ -1,5 +1,6 @@
 import * as Effect from '@effect/core/io/Effect'
 import { Layer, fromEffect } from '@effect/core/io/Layer'
+import { millis } from '@tsplus/stdlib/data/Duration'
 import { pipe } from '@tsplus/stdlib/data/Function'
 import { Tag } from '@tsplus/stdlib/service/Tag'
 import * as Fx from '@typed/fx'
@@ -27,6 +28,15 @@ export const makeCurrentPath: Effect.Effect<Location | History | Window, never, 
     const history = yield* $(getHistory)
     const window = yield* $(getWindow)
     const currentPath = yield* $(Fx.makeRefSubject(() => getCurrentPath(location)))
+
+    const runtime = yield* $(Effect.runtime<never>())
+    // TODO: When upgrading to latest Effect, use Effect.blocking for scheduling maybe?
+    const emit = Effect.gen(function* () {
+      // Allow for location to be updated by the browser
+      yield* $(Effect.sleep(millis(0)))
+      yield* $(currentPath.set(getCurrentPath(location)))
+    })
+    const unsafeEmit = () => runtime.unsafeRunAsync(emit)
 
     // Listen to PopState events and update the current path
     yield* $(
@@ -76,31 +86,31 @@ export const makeCurrentPath: Effect.Effect<Location | History | Window, never, 
     const pushStateOriginal = history.pushState.bind(history)
     history.pushState = function (state, title, url) {
       pushStateOriginal(state, title, url)
-      currentPath.unsafeEmit(getCurrentPath(location))
+      unsafeEmit()
     }
 
     const replaceStateOriginal = history.replaceState.bind(history)
     history.replaceState = function (state, title, url) {
       replaceStateOriginal(state, title, url)
-      currentPath.unsafeEmit(getCurrentPath(location))
+      unsafeEmit()
     }
 
     const goOriginal = history.go.bind(history)
     history.go = function (delta) {
       goOriginal(delta)
-      currentPath.unsafeEmit(getCurrentPath(location))
+      unsafeEmit()
     }
 
     const backOriginal = history.back.bind(history)
     history.back = function () {
       backOriginal()
-      currentPath.unsafeEmit(getCurrentPath(location))
+      unsafeEmit()
     }
 
     const forwardOriginal = history.forward.bind(history)
     history.forward = function () {
       forwardOriginal()
-      currentPath.unsafeEmit(getCurrentPath(location))
+      unsafeEmit()
     }
 
     return {

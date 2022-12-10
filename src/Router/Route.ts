@@ -15,9 +15,10 @@ export interface Route<P extends string, R = never, E = never> {
   readonly path: P
   readonly match: (path: string) => Effect.Effect<R, E, M.Maybe<P.ParamsOf<P>>>
   readonly createPath: <I extends P.ParamsOf<P>>(params: I) => P.Interpolate<P, I>
-  readonly guard: <R2, E2>(
+  readonly guard: <R2, E2, R3 = never, E3 = never>(
     guard: (params: P.ParamsOf<P>, path: string) => Effect.Effect<R2, E2, boolean>,
-  ) => Route<P, R | R2, E | E2>
+    onNoMatch?: (params: P.ParamsOf<P>, path: string) => Effect.Effect<R3, E3, unknown>,
+  ) => Route<P, R | R2 | R3, E | E2 | E3>
 }
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -53,16 +54,17 @@ export function makeRoute<P extends string>(path: P): Route<P> {
     path,
     match,
     createPath: createPath as Route<P, unknown>['createPath'],
-    guard: (p) => guard(route, p),
+    guard: (p, f) => guard(route, p, f),
   }
 
   return route
 }
 
-export function guard<P extends string, R, E, R2, E2>(
+export function guard<P extends string, R, E, R2, E2, R3 = never, E3 = never>(
   route: Route<P, R, E>,
   guard: (params: P.ParamsOf<P>, path: string) => Effect.Effect<R2, E2, boolean>,
-): Route<P, R | R2, E | E2> {
+  onNoMatch?: (params: P.ParamsOf<P>, path: string) => Effect.Effect<R3, E3, unknown>,
+): Route<P, R | R2 | R3, E | E2 | E3> {
   const match = (path: string) =>
     Effect.gen(function* ($) {
       const params = yield* $(route.match(path))
@@ -74,6 +76,10 @@ export function guard<P extends string, R, E, R2, E2>(
       const matched = yield* $(guard(params.value, path))
 
       if (!matched) {
+        if (onNoMatch) {
+          yield* $(onNoMatch(params.value, path))
+        }
+
         return M.none
       }
 

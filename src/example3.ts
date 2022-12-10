@@ -1,4 +1,5 @@
 import * as Effect from '@effect/core/io/Effect'
+import { millis } from '@tsplus/stdlib/data/Duration'
 import { pipe } from '@tsplus/stdlib/data/Function'
 import { Tag } from '@tsplus/stdlib/service/Tag'
 import * as Fx from '@typed/fx'
@@ -20,16 +21,9 @@ interface AuthService {
 }
 const AuthService = Tag<AuthService>()
 const isAuthenticated = Effect.serviceWithEffect(AuthService, (a) => a.isAuthenticated)
-const secretRoute = makeRoute('/secret').guard(() =>
-  Effect.gen(function* ($) {
-    const authenticated = yield* $(isAuthenticated)
-
-    if (!authenticated) {
-      yield* $(pushState(null, loginRoute.path))
-    }
-
-    return authenticated
-  }),
+const secretRoute = makeRoute('/secret').guard(
+  () => isAuthenticated,
+  () => pushState(null, loginRoute.path),
 )
 
 const App = Fx.fromFxGen(function* ($) {
