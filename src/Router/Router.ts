@@ -99,6 +99,8 @@ export const empty = RouteMatcher<never, never, never>(new Map())
 
 export const { match, noMatch } = empty
 
+// TODO: Allow providing resources to a route matcher
+
 export interface RouteMatcher<R, E, A> {
   readonly matches: ReadonlyMap<
     Route.Route<any, any, any>,
