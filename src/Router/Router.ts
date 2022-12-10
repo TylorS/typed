@@ -82,10 +82,11 @@ export const base: Layer<CurrentPath.CurrentPath, never, Router> = fromEffect(Ro
   makeRouter(Route.baseRoute),
 )
 
-export const live: Layer<Location | History | Window, never, Router> = pipe(
-  CurrentPath.live,
-  provideToAndMerge(base),
-)
+export const routerLayer: Layer<
+  Location | History | Window,
+  never,
+  Router | CurrentPath.CurrentPath
+> = pipe(CurrentPath.currentPathLayer, provideToAndMerge(base))
 
 /**
  * Get the base Router
@@ -104,10 +105,10 @@ export interface RouteMatcher<R, E, A> {
     (params: Path.ParamsOf<string>) => Fx.Fx<R, E, A>
   >
 
-  readonly match: <R extends Route.Route<any, any, any>, R2, E2, B>(
-    route: R,
-    f: (params: Route.ParamsOf<R>) => Fx.Fx<R2, E2, B>,
-  ) => RouteMatcher<R | R2 | Route.ResourcesOf<R>, E | E2 | Route.ErrorsOf<R>, A | B>
+  readonly match: <Route extends Route.Route<any, any, any>, R2, E2, B>(
+    route: Route,
+    f: (params: Route.ParamsOf<Route>) => Fx.Fx<R2, E2, B>,
+  ) => RouteMatcher<R | R2 | Route.ResourcesOf<Route>, E | E2 | Route.ErrorsOf<Route>, A | B>
 
   readonly noMatch: <R2, E2, B>(
     f: () => Fx.Fx<R2, E2, B>,
@@ -122,10 +123,11 @@ export function RouteMatcher<R, E, A>(
 ): RouteMatcher<R, E, A> {
   const matcher: RouteMatcher<R, E, A> = {
     matches,
-    match: <R extends Route.Route<any, any, any>, R2, E2, B>(
-      route: R,
-      f: (params: Route.ParamsOf<R>) => Fx.Fx<R2, E2, B>,
-    ) => RouteMatcher<R | R2, E | E2, A | B>(new Map<any, any>([...matches, [route, f]])),
+    match: <Route extends Route.Route<any, any, any>, R2, E2, B>(
+      route: Route,
+      f: (params: Route.ParamsOf<Route>) => Fx.Fx<R2, E2, B>,
+    ): RouteMatcher<R | R2 | Route.ResourcesOf<Route>, E | E2 | Route.ErrorsOf<Route>, A | B> =>
+      RouteMatcher(new Map<any, any>([...matches, [route, f]])),
     noMatch: (f) => runRouteMatcher(matcher, f),
   }
 
@@ -147,8 +149,6 @@ export function runRouteMatcher<R, E, A, R2, E2, B>(
       Ref.makeRef(() => undefined as Route.Route<any, any, any> | undefined),
     )
 
-    console.log(routes.map(([r]) => r.path))
-
     return pipe(
       currentPath,
       Fx.switchMap((path) =>
@@ -156,6 +156,8 @@ export function runRouteMatcher<R, E, A, R2, E2, B>(
           Effect.gen(function* ($) {
             const previous = yield* $(previousRoute.get)
             for (const [route, match] of routes) {
+              console.log(path, route.path)
+
               const params = yield* $(route.match(path))
 
               if (Maybe.isSome(params)) {

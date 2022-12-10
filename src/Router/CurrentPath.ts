@@ -112,5 +112,5 @@ function getCurrentPath(location: Location): string {
   return location.pathname + location.search + location.hash
 }
 
-export const live: Layer<Location | History | Window, never, CurrentPath> =
+export const currentPathLayer: Layer<Location | History | Window, never, CurrentPath> =
   fromEffect(CurrentPath)(makeCurrentPath)

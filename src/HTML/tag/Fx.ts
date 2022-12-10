@@ -15,7 +15,7 @@ import * as Tag from './Effect.js'
 
 // Tag functions which only accept and return Fx
 
-export function html<Values extends ReadonlyArray<Renderable<any, any>>>(
+export function html<Values extends ReadonlyArray<Placeholder<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
@@ -29,7 +29,7 @@ export function html<Values extends ReadonlyArray<Renderable<any, any>>>(
   )
 }
 
-html.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
+html.node = <Values extends ReadonlyArray<Placeholder<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -53,7 +53,7 @@ html.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
 
 html.effect = Tag.html
 
-export function svg<Values extends ReadonlyArray<Renderable<any, any>>>(
+export function svg<Values extends ReadonlyArray<Placeholder<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
@@ -67,7 +67,7 @@ export function svg<Values extends ReadonlyArray<Renderable<any, any>>>(
   )
 }
 
-svg.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
+svg.node = <Values extends ReadonlyArray<Placeholder<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -90,12 +90,14 @@ svg.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
 
 svg.effect = Tag.svg
 
-function unwrapFxValues<Values extends Array<Renderable<any, any>>>(
+function unwrapFxValues<Values extends Array<Placeholder<any, any>>>(
   values: Values,
 ): Fx.Fx<
   Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
-  Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>>
+  Array<
+    Renderable.Value<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>>
+  >
 > {
   // Used to sample pull-based Effect's whenever an Fx emits a value.
   const sampling = Fx.Subject.unsafeMake<never, void>()
@@ -103,14 +105,19 @@ function unwrapFxValues<Values extends Array<Renderable<any, any>>>(
   return Fx.combineAll(values.map((v) => unwrapFxValue(v, sampling))) as Fx.Fx<
     Placeholder.ResourcesOf<Values[number]>,
     Placeholder.ErrorsOf<Values[number]>,
-    Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>>
+    Array<
+      Renderable.Value<
+        Placeholder.ResourcesOf<Values[number]>,
+        Placeholder.ErrorsOf<Values[number]>
+      >
+    >
   >
 }
 
 function unwrapFxValue(
-  value: Renderable<any, any>,
+  value: Placeholder<any, any>,
   sampling: Fx.Subject<never, void>,
-): Fx.Fx<any, any, Renderable.Value<any>> {
+): Fx.Fx<any, any, Renderable.Value<any, any>> {
   if (isFx(value)) {
     return pipe(
       value,
@@ -137,5 +144,20 @@ function unwrapFxValue(
     )
   }
 
-  return Fx.succeed(value as Renderable.Value<any>)
+  return Fx.succeed(value as Renderable.Value<any, any>)
+}
+
+declare module '@effect/core/io/Effect/definition' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export interface Effect<R, E, A> extends Placeholder<R, E> {}
+}
+
+declare module '@typed/fx/Fx' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export interface Fx<R, E, A> extends Placeholder<R, E> {}
+}
+
+declare module '@typed/fx/Subject' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export interface Subject<E, A> extends Placeholder<never, E> {}
 }

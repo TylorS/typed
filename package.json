@@ -18,11 +18,11 @@
   "license": "MIT",
   "dependencies": {
     "@effect/core": "^0.0.16",
-    "@fp-ts/data": "^0.0.25",
+    "@fp-ts/data": "^0.0.26",
     "@fp-ts/optic": "^0.0.5",
     "@fp-ts/schema": "^0.0.5",
     "@tsplus/stdlib": "^0.2.8",
-    "@typed/fx": "^0.0.34",
+    "@typed/fx": "^0.0.35",
     "@webreflection/uparser": "^0.2.4",
     "path-to-regexp": "^6.2.1",
     "ts-toolbelt": "^9.6.0",
@@ -52,7 +52,7 @@
     "tsconfig-paths": "^4.1.1",
     "tslib": "^2.4.1",
     "typescript": "^4.9.4",
-    "vite": "3.2.5",
-    "vite-tsconfig-paths": "^4.0.1"
+    "vite": "4.0.0",
+    "vite-tsconfig-paths": "^4.0.2"
   }
 }

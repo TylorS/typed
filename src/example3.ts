@@ -4,6 +4,7 @@ import { Tag } from '@tsplus/stdlib/service/Tag'
 import * as Fx from '@typed/fx'
 
 import { provideDomServices } from './DOM/DomServices.js'
+import { pushState } from './DOM/History.js'
 import { EventHandler, RenderContext, drainInto, html } from './HTML/index.js'
 import { homeRoute, makeRoute } from './Router/Route.js'
 import * as Router from './Router/Router.js'
@@ -19,14 +20,46 @@ interface AuthService {
 }
 const AuthService = Tag<AuthService>()
 const isAuthenticated = Effect.serviceWithEffect(AuthService, (a) => a.isAuthenticated)
-const secretRoute = makeRoute('/secret').guard(() => isAuthenticated)
+const secretRoute = makeRoute('/secret').guard(() =>
+  Effect.gen(function* ($) {
+    const authenticated = yield* $(isAuthenticated)
+
+    if (!authenticated) {
+      yield* $(pushState(null, loginRoute.path))
+    }
+
+    return authenticated
+  }),
+)
 
 const App = Fx.fromFxGen(function* ($) {
   const isAuthenticated = yield* $(Fx.makeRefSubject(() => false))
 
-  return html`<div>
-    <h1>App Shell</h1>
+  const childView = pipe(
+    Router.use((router) =>
+      router
+        .match(fooRoute, () => html`<h2>Foo</h2>`)
+        .match(barRoute, () => html`<h2>Bar</h2>`)
+        .match(bazRoute, () => html`<h2>Baz</h2>`)
+        .match(quuxRoute, ({ something }) => html`<h2>Quux: ${something}</h2>`)
+        .match(
+          loginRoute,
+          () => html`<h2>Login</h2>
 
+            <p>Are you human?</p>
+
+            <button onclick=${EventHandler(() => isAuthenticated.set(true))}>Yes</button>
+            <button onclick=${EventHandler(() => isAuthenticated.set(false))}>No</button>`,
+        )
+        .match(secretRoute, () => html`<h2>Secret</h2>`)
+        .match(homeRoute, () => html`<h2>Home</h2>`)
+        .noMatch(() => html`<h2>404</h2>`),
+    ),
+    Fx.provideService(AuthService, { isAuthenticated: isAuthenticated.get }),
+  )
+
+  const view = html`<div>
+    <h1>App Shell</h1>
     <nav>
       <ul>
         <li><a href="${homeRoute.path}">Home</a></li>
@@ -47,36 +80,17 @@ const App = Fx.fromFxGen(function* ($) {
       </ul>
     </nav>
 
-    ${pipe(
-      Router.use((router) =>
-        router
-          .match(fooRoute, () => html`<h2>Foo</h2>`)
-          .match(barRoute, () => html`<h2>Bar</h2>`)
-          .match(bazRoute, () => html`<h2>Baz</h2>`)
-          .match(quuxRoute, ({ something }) => html`<h2>Quux: ${something}</h2>`)
-          .match(
-            loginRoute,
-            () => html`<h2>Login</h2>
-
-              <p>Are you human?</p>
-
-              <button onclick=${EventHandler(() => isAuthenticated.set(true))}>Yes</button>
-              <button onclick=${EventHandler(() => isAuthenticated.set(false))}>No</button>`,
-          )
-          .match(secretRoute, () => html`<h2>Secret</h2>`)
-          .match(homeRoute, () => html`<h2>Home</h2>`)
-          .noMatch(() => html`<h2>404</h2>`),
-      ),
-      Fx.provideService(AuthService, { isAuthenticated: isAuthenticated.get }),
-    )}
+    ${childView}
   </div>`
+
+  return view
 })
 
 const program = pipe(
   App,
   drainInto(document.body),
   RenderContext.provideClient,
-  Effect.provideSomeLayer(Router.live),
+  Effect.provideSomeLayer(Router.routerLayer),
   provideDomServices(window),
 )
 

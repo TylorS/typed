@@ -12,7 +12,7 @@ import { getRenderHoleContext, renderHole } from '../render.js'
 
 // Tag functions which only accept and return Effect
 
-export function html<Values extends ReadonlyArray<Renderable.Effect<any, any>>>(
+export function html<Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -28,7 +28,7 @@ export function html<Values extends ReadonlyArray<Renderable.Effect<any, any>>>(
   )
 }
 
-html.node = <Values extends ReadonlyArray<Renderable.Effect<any, any>>>(
+html.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -46,7 +46,7 @@ html.node = <Values extends ReadonlyArray<Renderable.Effect<any, any>>>(
     ),
   )
 
-export function svg<Values extends ReadonlyArray<Renderable.Effect<any, any>>>(
+export function svg<Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -62,7 +62,7 @@ export function svg<Values extends ReadonlyArray<Renderable.Effect<any, any>>>(
   )
 }
 
-svg.node = <Values extends ReadonlyArray<Renderable.Effect<any, any>>>(
+svg.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -80,32 +80,53 @@ svg.node = <Values extends ReadonlyArray<Renderable.Effect<any, any>>>(
     ),
   )
 
-function unwrapEffectValues<Values extends Array<Renderable.Effect<any, any>>>(
+function unwrapEffectValues<Values extends Array<Renderable<any, any>>>(
   values: Values,
 ): Effect.Effect<
   Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
-  Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>>
+  Array<
+    Renderable.Value<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>>
+  >
 > {
   return Effect.gen(function* ($) {
-    const output: Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>> = []
+    const output: Array<
+      Renderable.Value<
+        Placeholder.ResourcesOf<Values[number]>,
+        Placeholder.ErrorsOf<Values[number]>
+      >
+    > = []
 
     for (let i = 0; i < values.length; i++) {
       const value = values[i]
 
-      if (isEffect(value)) {
+      if (
+        isEffect<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>>(
+          value,
+        )
+      ) {
         output.push(yield* $(value))
         continue
       }
 
       if (Array.isArray(value)) {
-        output.push(yield* $(unwrapEffectValues(value)))
+        output.push(yield* $(unwrapEffectValues(value as typeof output)))
         continue
       }
 
-      output.push(value as Renderable.Value<Placeholder.ResourcesOf<Values[number]>>)
+      output.push(
+        value as Renderable.Value<
+          Placeholder.ResourcesOf<Values[number]>,
+          Placeholder.ErrorsOf<Values[number]>
+        >,
+      )
     }
 
     return output
   })
+}
+
+declare module '@effect/core/io/Effect/definition' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export interface Effect<R, E, A> extends Placeholder<R, E> {}
 }

@@ -22,8 +22,16 @@ export interface Route<P extends string, R = never, E = never> {
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export type PathOf<A> = [A] extends [Route<infer R, infer _, infer __>] ? R : never
-export type ResourcesOf<A> = [A] extends [Route<infer _, infer R, infer __>] ? R : never
-export type ErrorsOf<A> = [A] extends [Route<infer _, infer __, infer R>] ? R : never
+export type ResourcesOf<A> = [A] extends [
+  { readonly match: (path: string) => Effect.Effect<infer _R, infer _E, infer _A> },
+]
+  ? _R
+  : never
+export type ErrorsOf<A> = [A] extends [
+  { readonly match: (path: string) => Effect.Effect<infer _R, infer _E, infer _A> },
+]
+  ? _E
+  : never
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 export type ParamsOf<T> = P.ParamsOf<PathOf<T>>
