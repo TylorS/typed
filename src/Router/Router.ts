@@ -1,5 +1,6 @@
 import * as Effect from '@effect/core/io/Effect'
 import { Layer, fromEffect, provideToAndMerge } from '@effect/core/io/Layer'
+import * as Ref from '@effect/core/io/Ref'
 import { pipe } from '@tsplus/stdlib/data/Function'
 import * as Maybe from '@tsplus/stdlib/data/Maybe'
 import { Tag } from '@tsplus/stdlib/service/Tag'
@@ -16,28 +17,6 @@ export interface Router<R extends Route.Route<any, any, any> = Route.Route<strin
     CurrentPath.CurrentPath | Route.ResourcesOf<R>,
     Route.ErrorsOf<R>,
     Maybe.Maybe<Route.ParamsOf<R>>
-  >
-
-  readonly match: <R2, E2, A>(
-    f: (a: Route.ParamsOf<R>) => Fx.Fx<R2 | Router<R>, E2, A> | Fx.Fx<R2 | Router, E2, A>,
-  ) => Fx.Fx<
-    Exclude<CurrentPath.CurrentPath | Route.ResourcesOf<R> | R2, Router<R> | Router>,
-    Route.ErrorsOf<R> | E2,
-    A
-  >
-
-  readonly with: <R2, E2, A>(
-    f: (
-      a: Fx.Fx<
-        CurrentPath.CurrentPath | Route.ResourcesOf<R>,
-        Route.ErrorsOf<R>,
-        Route.ParamsOf<R>
-      >,
-    ) => Fx.Fx<R2 | Router<R>, E2, A> | Fx.Fx<R2 | Router, E2, A>,
-  ) => Fx.Fx<
-    Exclude<CurrentPath.CurrentPath | Route.ResourcesOf<R> | R2, Router<R> | Router>,
-    Route.ErrorsOf<R> | E2,
-    A
   >
 
   readonly define: <R2 extends Route.Route<any, any, any>>(
@@ -64,48 +43,23 @@ function makeRouterWithCurrentPath<R extends Route.Route<any, any, any>>(
   route: R,
   currentPath: CurrentPath.CurrentPath,
 ): Router<R> {
-  const matched = Fx.multicast(
-    pipe(
-      currentPath.currentPath,
-      Fx.switchMap((p) =>
-        Fx.fromEffect(
-          route.match(p) as Effect.Effect<
-            Route.ResourcesOf<R>,
-            Route.ErrorsOf<R>,
-            Maybe.Maybe<Route.ParamsOf<R>>
-          >,
-        ),
+  const matched = pipe(
+    currentPath.currentPath,
+    Fx.switchMap((p) =>
+      Fx.fromEffect(
+        route.match(p) as Effect.Effect<
+          Route.ResourcesOf<R>,
+          Route.ErrorsOf<R>,
+          Maybe.Maybe<Route.ParamsOf<R>>
+        >,
       ),
     ),
+    Fx.multicast,
   )
 
   const router: Router<R> = {
     route,
     params: matched as Router<R>['params'],
-    match: (<R2, E2, A>(f: (a: Route.ParamsOf<R>) => Fx.Fx<R2, E2, A>) =>
-      pipe(
-        matched,
-        Fx.switchMap((x) =>
-          Maybe.isNone(x) ? Fx.succeed(x) : pipe(f(x.value), Fx.map(Maybe.some)),
-        ),
-        Fx.filterMap((x) => x),
-        Fx.provideService(Router, router as any),
-      )) as Router<R>['match'],
-    with: (<R2, E2, A>(
-      f: (
-        a: Fx.Fx<
-          CurrentPath.CurrentPath | Route.ResourcesOf<R>,
-          Route.ErrorsOf<R>,
-          Route.ParamsOf<R>
-        >,
-      ) => Fx.Fx<CurrentPath.CurrentPath | Route.ResourcesOf<R> | R2, Route.ErrorsOf<R> | E2, A>,
-    ) =>
-      pipe(
-        matched,
-        Fx.filterMap((x) => x),
-        f,
-        Fx.provideService(Router, router as any),
-      )) as Router<R>['with'],
     define: ((route2) =>
       makeRouterWithCurrentPath(
         Route.concatRoute(route, route2),
@@ -138,12 +92,102 @@ export const live: Layer<Location | History | Window, never, Router> = pipe(
  */
 export const getRouter: Effect.Effect<Router, never, Router> = Effect.service(Router)
 
-export function matchAll<Matches extends ReadonlyArray<Fx.Fx<any, any, any>>>(
-  matches: (router: Router) => readonly [...Matches],
-) {
-  return Fx.fromFxGen(function* ($) {
-    const router = yield* $(getRouter)
+export function use<R, E, A>(
+  matches: (matcher: RouteMatcher<never, never, never>) => Fx.Fx<R, E, A>,
+): Fx.Fx<R | Router, E, A> {
+  return matches(RouteMatcher<never, never, never>(new Map()))
+}
 
-    return Fx.mergeAll(matches(router))
+export interface RouteMatcher<R, E, A> {
+  readonly matches: ReadonlyMap<
+    Route.Route<any, any, any>,
+    (params: Path.ParamsOf<string>) => Fx.Fx<R, E, A>
+  >
+
+  readonly match: <R extends Route.Route<any, any, any>, R2, E2, B>(
+    route: R,
+    f: (params: Route.ParamsOf<R>) => Fx.Fx<R2, E2, B>,
+  ) => RouteMatcher<R | R2 | Route.ResourcesOf<R>, E | E2 | Route.ErrorsOf<R>, A | B>
+
+  readonly noMatch: <R2, E2, B>(
+    f: () => Fx.Fx<R2, E2, B>,
+  ) => Fx.Fx<R | R2 | Router | CurrentPath.CurrentPath, E | E2, A | B>
+}
+
+export function RouteMatcher<R, E, A>(
+  matches: ReadonlyMap<
+    Route.Route<any, any, any>,
+    (params: Path.ParamsOf<string>) => Fx.Fx<R, E, A>
+  >,
+): RouteMatcher<R, E, A> {
+  const matcher: RouteMatcher<R, E, A> = {
+    matches,
+    match: <R extends Route.Route<any, any, any>, R2, E2, B>(
+      route: R,
+      f: (params: Route.ParamsOf<R>) => Fx.Fx<R2, E2, B>,
+    ) => RouteMatcher<R | R2, E | E2, A | B>(new Map<any, any>([...matches, [route, f]])),
+    noMatch: (f) => runRouteMatcher(matcher, f),
+  }
+
+  return matcher
+}
+
+export function runRouteMatcher<R, E, A, R2, E2, B>(
+  matcher: RouteMatcher<R, E, A>,
+  noMatch: () => Fx.Fx<R2, E2, B>,
+): Fx.Fx<R | R2 | Router | CurrentPath.CurrentPath, E | E2, A | B> {
+  return Fx.fromFxGen(function* ($) {
+    const { currentPath } = yield* $(CurrentPath.CurrentPath)
+    const router = yield* $(Router)
+    const routes = Array.from(matcher.matches).map(
+      ([route, match]) => [Route.concatRoute(router.route, route), match] as const,
+    )
+    const paramsSubject = yield* $(Fx.makeSubject<never, any>())
+    const previousRoute = yield* $(
+      Ref.makeRef(() => undefined as Route.Route<any, any, any> | undefined),
+    )
+
+    console.log(routes.map(([r]) => r.path))
+
+    return pipe(
+      currentPath,
+      Fx.switchMap((path) =>
+        Fx.fromEffect(
+          Effect.gen(function* ($) {
+            const previous = yield* $(previousRoute.get)
+            for (const [route, match] of routes) {
+              const params = yield* $(route.match(path))
+
+              if (Maybe.isSome(params)) {
+                if (previous === route) {
+                  yield* $(paramsSubject.emit(params.value))
+
+                  return Maybe.none
+                }
+
+                yield* $(previousRoute.set(route))
+
+                return Maybe.some(
+                  pipe(
+                    paramsSubject,
+                    Fx.startWith(params.value),
+                    Fx.switchMap(match),
+                    Fx.provideService(Router, (yield* $(makeRouter(route))) as Router),
+                    Fx.hold,
+                  ),
+                )
+              }
+            }
+
+            yield* $(previousRoute.set(undefined))
+
+            return Maybe.some(noMatch())
+          }),
+        ),
+      ),
+      Fx.filterMap((x: Maybe.Maybe<Fx.Fx<R | R2, E | E2, A | B>>) => x),
+      Fx.switchMap((x) => x),
+      Fx.hold,
+    )
   })
 }

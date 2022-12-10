@@ -5,7 +5,7 @@ import * as Fx from '@typed/fx'
 
 import { provideDomServices } from './DOM/DomServices.js'
 import { EventHandler, RenderContext, drainInto, html } from './HTML/index.js'
-import { guard, homeRoute, makeRoute } from './Router/Route.js'
+import { homeRoute, makeRoute } from './Router/Route.js'
 import * as Router from './Router/Router.js'
 
 const fooRoute = makeRoute('/foo')
@@ -19,7 +19,7 @@ interface AuthService {
 }
 const AuthService = Tag<AuthService>()
 const isAuthenticated = Effect.serviceWithEffect(AuthService, (a) => a.isAuthenticated)
-const authRoute = guard(makeRoute('/authed'), () => isAuthenticated)
+const secretRoute = makeRoute('/secret').guard(() => isAuthenticated)
 
 const App = Fx.fromFxGen(function* ($) {
   const isAuthenticated = yield* $(Fx.makeRefSubject(() => false))
@@ -28,41 +28,47 @@ const App = Fx.fromFxGen(function* ($) {
     <h1>App Shell</h1>
 
     <nav>
-      <a href="${homeRoute.createPath({})}">Home</a>
-      <a href="${fooRoute.createPath({})}">Foo</a>
-      <a href="${barRoute.createPath({})}">Bar</a>
-      <a href="${bazRoute.createPath({})}">Baz</a>
-      <a href="${quuxRoute.createPath({ something: 'hello' })}">Hello</a>
-      <a href="${quuxRoute.createPath({ something: 'world' })}">World</a>
-      <a href="${loginRoute.createPath({})}">Login</a>
-      ${pipe(
-        isAuthenticated,
-        Fx.switchMap((isAuthenticated) =>
-          isAuthenticated ? html`<a href="${authRoute.createPath({})}">Secret</a>` : html``,
-        ),
-      )}
+      <ul>
+        <li><a href="${homeRoute.path}">Home</a></li>
+        <li><a href="${fooRoute.path}">Foo</a></li>
+        <li><a href="${barRoute.path}">Bar</a></li>
+        <li><a href="${bazRoute.path}">Baz</a></li>
+        <li><a href="${quuxRoute.createPath({ something: 'hello' })}">Hello</a></li>
+        <li><a href="${quuxRoute.createPath({ something: 'world' })}">World</a></li>
+        <li><a href="${loginRoute.path}">Login</a></li>
+        ${pipe(
+          isAuthenticated,
+          Fx.switchMap((isAuthenticated) =>
+            isAuthenticated
+              ? html`<li><a href="${secretRoute.path}">Secret</a></li>`
+              : Fx.succeed(null),
+          ),
+        )}
+      </ul>
     </nav>
 
-    ${Router.matchAll((router) => [
-      router.define(homeRoute).match(() => html`<div>Select a link</div>`),
-      router.define(fooRoute).match(() => html`<div>Foo</div>`),
-      router.define(barRoute).match(() => html`<div>Bar</div>`),
-      router.define(bazRoute).match(() => html`<div>Baz</div>`),
-      router.define(quuxRoute).match(({ something }) => html`<div>Quux: ${something}</div>`),
-      router.define(loginRoute).match(
-        () => html`<div>
-          <h1>Login</h1>
-          <p>Are you human?</p>
+    ${pipe(
+      Router.use((router) =>
+        router
+          .match(fooRoute, () => html`<h2>Foo</h2>`)
+          .match(barRoute, () => html`<h2>Bar</h2>`)
+          .match(bazRoute, () => html`<h2>Baz</h2>`)
+          .match(quuxRoute, ({ something }) => html`<h2>Quux: ${something}</h2>`)
+          .match(
+            loginRoute,
+            () => html`<h2>Login</h2>
 
-          <button onclick=${EventHandler(() => isAuthenticated.set(true))}>Yes</button>
-          <button onclick=${EventHandler(() => isAuthenticated.set(false))}>No</button>
-        </div>`,
+              <p>Are you human?</p>
+
+              <button onclick=${EventHandler(() => isAuthenticated.set(true))}>Yes</button>
+              <button onclick=${EventHandler(() => isAuthenticated.set(false))}>No</button>`,
+          )
+          .match(secretRoute, () => html`<h2>Secret</h2>`)
+          .match(homeRoute, () => html`<h2>Home</h2>`)
+          .noMatch(() => html`<h2>404</h2>`),
       ),
-      pipe(
-        router.define(authRoute).match(() => html`<div>Secret only for humans</div>`),
-        Fx.provideService(AuthService, { isAuthenticated: isAuthenticated.get }),
-      ),
-    ])}
+      Fx.provideService(AuthService, { isAuthenticated: isAuthenticated.get }),
+    )}
   </div>`
 })
 
@@ -74,4 +80,4 @@ const program = pipe(
   provideDomServices(window),
 )
 
-Effect.unsafeRunAsync(program)
+Effect.unsafeRunPromiseExit(program).then(console.log)

@@ -150,7 +150,7 @@ export const pathJoin = <P extends ReadonlyArray<string>>(...parts: P): PathJoin
 
   const [head, ...tail] = parts
 
-  return `${formatPart(head)}${pathJoin(...tail)}` as PathJoin<P>
+  return (`${formatPart(head)}${pathJoin(...tail)}` ?? '/') as PathJoin<P>
 }
 
 /**

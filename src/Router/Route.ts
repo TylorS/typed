@@ -15,11 +15,16 @@ export interface Route<P extends string, R = never, E = never> {
   readonly path: P
   readonly match: (path: string) => Effect.Effect<R, E, M.Maybe<P.ParamsOf<P>>>
   readonly createPath: <I extends P.ParamsOf<P>>(params: I) => P.Interpolate<P, I>
+  readonly guard: <R2, E2>(
+    guard: (params: P.ParamsOf<P>, path: string) => Effect.Effect<R2, E2, boolean>,
+  ) => Route<P, R | R2, E | E2>
 }
 
-export type PathOf<A> = [A] extends [Route<infer R, any, any>] ? R : never
-export type ResourcesOf<A> = [A] extends [Route<any, infer R, any>] ? R : never
-export type ErrorsOf<A> = [A] extends [Route<any, any, infer R>] ? R : never
+/* eslint-disable @typescript-eslint/no-unused-vars */
+export type PathOf<A> = [A] extends [Route<infer R, infer _, infer __>] ? R : never
+export type ResourcesOf<A> = [A] extends [Route<infer _, infer R, infer __>] ? R : never
+export type ErrorsOf<A> = [A] extends [Route<infer _, infer __, infer R>] ? R : never
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 export type ParamsOf<T> = P.ParamsOf<PathOf<T>>
 
@@ -36,11 +41,14 @@ export function makeRoute<P extends string>(path: P): Route<P> {
       return !match ? M.none : M.some({ ...match.params } as unknown as P.ParamsOf<P>)
     })
 
-  return {
+  const route: Route<P> = {
     path,
     match,
     createPath: createPath as Route<P, unknown>['createPath'],
+    guard: (p) => guard(route, p),
   }
+
+  return route
 }
 
 export function guard<P extends string, R, E, R2, E2>(
@@ -74,6 +82,8 @@ export function concatRoute<P1 extends string, R, E, P2 extends string, R2, E2>(
   routeA: Route<P1, R, E>,
   routeB: Route<P2, R2, E2>,
 ): Route<P.PathJoin<[P1, P2]>, R | R2, E | E2> {
+  const path = (routeA.path + routeB.path).replace(/\/{1,}/g, '/').replace(/\/$/, '') || '/'
+
   const match = (path: string) =>
     Effect.gen(function* ($) {
       const aParams = yield* $(routeA.match(path))
@@ -82,7 +92,7 @@ export function concatRoute<P1 extends string, R, E, P2 extends string, R2, E2>(
         return M.none
       }
 
-      const aPath = routeA.createPath(aParams.value)
+      const aPath = routeA.createPath(aParams.value as any)
       const remainingPath = P.pathJoin(path.replace(aPath, '')) || '/'
       const bParams = yield* $(routeB.match(remainingPath))
 
@@ -97,10 +107,10 @@ export function concatRoute<P1 extends string, R, E, P2 extends string, R2, E2>(
     })
 
   return {
-    ...makeRoute(P.pathJoin(routeA.path, routeB.path)),
+    ...makeRoute(path),
     // Save any guards by matching manually
     match,
-  }
+  } as any
 }
 
 export const baseRoute = makeRoute('/')
