@@ -6,6 +6,8 @@ import * as Maybe from '@tsplus/stdlib/data/Maybe'
 import { Tag } from '@tsplus/stdlib/service/Tag'
 import * as Fx from '@typed/fx'
 
+import { pushState } from '../DOM/History.js'
+
 import * as CurrentPath from './CurrentPath.js'
 import * as Path from './Path.js'
 import * as Route from './Route.js'
@@ -111,6 +113,13 @@ export interface RouteMatcher<R, E, A> {
   readonly noMatch: <R2, E2, B>(
     f: () => Fx.Fx<R2, E2, B>,
   ) => Fx.Fx<R | R2 | Router | CurrentPath.CurrentPath, E | E2, A | B>
+
+  readonly redirect: <P extends string, R2, E2>(
+    route: Route.Route<P, R2, E2>,
+    ...[params]: [keyof Route.ParamsOf<typeof route>] extends [never]
+      ? []
+      : [Route.ParamsOf<typeof route>]
+  ) => Fx.Fx<R | Router | History | CurrentPath.CurrentPath, E, A | void>
 }
 
 export function RouteMatcher<R, E, A>(
@@ -127,6 +136,10 @@ export function RouteMatcher<R, E, A>(
     ): RouteMatcher<R | R2 | Route.ResourcesOf<Route>, E | E2 | Route.ErrorsOf<Route>, A | B> =>
       RouteMatcher(new Map<any, any>([...matches, [route, f]])),
     noMatch: (f) => runRouteMatcher(matcher, f),
+    redirect: (route, ...[params]) =>
+      runRouteMatcher(matcher, () =>
+        Fx.fromEffect(pushState(route.createPath((params || {}) as Route.ParamsOf<typeof route>))),
+      ),
   }
 
   return matcher
@@ -149,7 +162,7 @@ export function runRouteMatcher<R, E, A, R2, E2, B>(
 
     return pipe(
       currentPath,
-      Fx.switchMap((path) =>
+      Fx.exhaustMapLatest((path) =>
         Fx.fromEffect(
           Effect.gen(function* ($) {
             const previous = yield* $(previousRoute.get)
