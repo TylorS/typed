@@ -64,16 +64,46 @@ export const makeCurrentPath: Effect.Effect<Location | History | Window, never, 
         addEventListener('click'),
         Fx.runObserve((ev) => {
           return Effect.sync(() => {
-            const target = ev.target as HTMLAnchorElement
+            if (ev.which !== 1) return
+            if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return
+            if (ev.defaultPrevented) return
 
-            if (target.tagName.toLowerCase() !== 'a') {
-              return
+            let el = ev.target as Element | null
+            const eventPath = (ev as any).path || (ev.composedPath ? ev.composedPath() : null)
+
+            if (eventPath) {
+              for (let i = 0; i < eventPath.length; i++) {
+                if (
+                  !eventPath[i].nodeName ||
+                  eventPath[i].nodeName.toUpperCase() !== 'A' ||
+                  !eventPath[i].href
+                )
+                  continue
+
+                el = eventPath[i]
+                break
+              }
             }
 
-            // TODO: Filter links we don't want to intercept
+            const target = el as HTMLAnchorElement
 
+            // Ensure same origin
+            if (target.origin !== location.origin) return
+
+            // Ignore if tag has
+            // 1. "download" attribute
+            // 2. rel="external" attribute
+            if (target.hasAttribute('download') || target.getAttribute('rel') === 'external') return
+
+            // ensure non-hash for the same path
+            const link = target.getAttribute('href')
+            if ((target as HTMLAnchorElement).hash || '#' === link) return
+
+            // Check for mailto: in the href
+            if (link && link.indexOf('mailto:') > -1) return
+
+            // We made it! We'll intercept this event and update history
             ev.preventDefault()
-
             history.pushState(null, '', target.href)
           })
         }),
