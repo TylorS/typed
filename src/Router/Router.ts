@@ -154,8 +154,6 @@ export function runRouteMatcher<R, E, A, R2, E2, B>(
           Effect.gen(function* ($) {
             const previous = yield* $(previousRoute.get)
             for (const [route, match] of routes) {
-              console.log(path, route.path)
-
               const params = yield* $(route.match(path))
 
               if (Maybe.isSome(params)) {
