@@ -1,6 +1,7 @@
 import * as Effect from '@effect/core/io/Effect'
 import { Layer, fromEffect, provideToAndMerge } from '@effect/core/io/Layer'
 import * as Ref from '@effect/core/io/Ref'
+import { flow } from '@fp-ts/data/Function'
 import { pipe } from '@tsplus/stdlib/data/Function'
 import * as Maybe from '@tsplus/stdlib/data/Maybe'
 import { Tag } from '@tsplus/stdlib/service/Tag'
@@ -117,6 +118,12 @@ export interface RouteMatcher<R, E, A> {
     f: (params: Fx.Fx<never, never, Route.ParamsOf<Route>>) => Fx.Fx<R2, E2, B>,
   ) => RouteMatcher<R | R2 | Route.ResourcesOf<Route>, E | E2 | Route.ErrorsOf<Route>, A | B>
 
+  readonly provideService: <S>(tag: Tag<S>, service: S) => RouteMatcher<Exclude<R, S>, E, A>
+
+  readonly provideLayer: <R2, E2, S>(
+    layer: Layer<R2, E2, S>,
+  ) => RouteMatcher<R2 | Exclude<R, S>, E | E2, A>
+
   readonly noMatch: <R2, E2, B>(
     f: () => Fx.Fx<R2, E2, B>,
   ) => Fx.Fx<R | R2 | Router | CurrentPath.CurrentPath, E | E2, A | B>
@@ -147,6 +154,26 @@ export function RouteMatcher<R, E, A>(
       f: (params: Fx.Fx<never, never, Route.ParamsOf<Route>>) => Fx.Fx<R2, E2, B>,
     ): RouteMatcher<R | R2 | Route.ResourcesOf<Route>, E | E2 | Route.ErrorsOf<Route>, A | B> =>
       RouteMatcher(new Map<any, any>([...matches, [route, f]])),
+    provideService: <S>(tag: Tag<S>, service: S): RouteMatcher<Exclude<R, S>, E, A> =>
+      RouteMatcher(
+        new Map(
+          Array.from(matches).map(([route, match]) => [
+            route,
+            flow(match, Fx.provideService(tag, service)),
+          ]),
+        ),
+      ),
+    provideLayer: <R2, E2, S>(
+      layer: Layer<R2, E2, S>,
+    ): RouteMatcher<R2 | Exclude<R, S>, E | E2, A> =>
+      RouteMatcher(
+        new Map(
+          Array.from(matches).map(([route, match]) => [
+            route,
+            flow(match, Fx.provideSomeLayer(layer)),
+          ]),
+        ),
+      ),
     noMatch: (f) => runRouteMatcher(matcher, f),
     redirect: (route, ...[params]) =>
       runRouteMatcher(matcher, () =>
@@ -161,56 +188,57 @@ export function runRouteMatcher<R, E, A, R2, E2, B>(
   matcher: RouteMatcher<R, E, A>,
   noMatch: () => Fx.Fx<R2, E2, B>,
 ): Fx.Fx<R | R2 | Router | CurrentPath.CurrentPath, E | E2, A | B> {
-  return Fx.fromFxGen(function* ($) {
-    const { currentPath } = yield* $(CurrentPath.CurrentPath)
-    const router = yield* $(Router)
-    const routes = Array.from(matcher.matches).map(
-      ([route, match]) => [Route.concatRoute(router.route, route), match] as const,
-    )
-    const paramsSubject = yield* $(Fx.makeSubject<never, any>())
-    const previousRoute = yield* $(
-      Ref.makeRef((): Route.Route<any, any, any> | undefined => undefined),
-    )
+  return Fx.hold(
+    Fx.fromFxGen(function* ($) {
+      const { currentPath } = yield* $(CurrentPath.CurrentPath)
+      const router = yield* $(Router)
+      const routes = Array.from(matcher.matches).map(
+        ([route, match]) => [Route.concatRoute(router.route, route), match] as const,
+      )
+      const paramsSubject = yield* $(Fx.makeSubject<never, any>())
+      const previousRoute = yield* $(
+        Ref.makeRef((): Route.Route<any, any, any> | undefined => undefined),
+      )
 
-    return pipe(
-      currentPath,
-      Fx.exhaustMapLatest((path) =>
-        Fx.fromEffect(
-          Effect.gen(function* ($) {
-            const previous = yield* $(previousRoute.get)
-            for (const [route, match] of routes) {
-              const params = yield* $(route.match(path))
+      return pipe(
+        currentPath,
+        Fx.exhaustMapLatest((path) =>
+          Fx.fromEffect(
+            Effect.gen(function* ($) {
+              const previous = yield* $(previousRoute.get)
+              for (const [route, match] of routes) {
+                const params = yield* $(route.match(path))
 
-              if (Maybe.isSome(params)) {
-                if (previous === route) {
-                  yield* $(paramsSubject.emit(params.value))
+                if (Maybe.isSome(params)) {
+                  if (previous === route) {
+                    yield* $(paramsSubject.emit(params.value))
 
-                  return Maybe.none
+                    return Maybe.none
+                  }
+
+                  yield* $(previousRoute.set(route))
+
+                  return Maybe.some(
+                    pipe(
+                      paramsSubject,
+                      Fx.startWith(params.value),
+                      match,
+                      Fx.provideService(Router, (yield* $(makeRouter(route))) as Router),
+                      Fx.hold,
+                    ),
+                  )
                 }
-
-                yield* $(previousRoute.set(route))
-
-                return Maybe.some(
-                  pipe(
-                    paramsSubject,
-                    Fx.startWith(params.value),
-                    match,
-                    Fx.provideService(Router, (yield* $(makeRouter(route))) as Router),
-                    Fx.hold,
-                  ),
-                )
               }
-            }
 
-            yield* $(previousRoute.set(undefined))
+              yield* $(previousRoute.set(undefined))
 
-            return Maybe.some(noMatch())
-          }),
+              return Maybe.some(noMatch())
+            }),
+          ),
         ),
-      ),
-      Fx.filterMap((x: Maybe.Maybe<Fx.Fx<R | R2, E | E2, A | B>>) => x),
-      Fx.switchMap((x) => x),
-      Fx.hold,
-    )
-  })
+        Fx.filterMap((x: Maybe.Maybe<Fx.Fx<R | R2, E | E2, A | B>>) => x),
+        Fx.switchMap((x) => x),
+      )
+    }),
+  )
 }
