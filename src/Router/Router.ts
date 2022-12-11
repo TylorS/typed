@@ -13,6 +13,8 @@ import * as CurrentPath from './CurrentPath.js'
 import * as Path from './Path.js'
 import * as Route from './Route.js'
 
+// TODO: Router redirects should be better handled in a server environment
+
 export interface Router<R extends Route.Route<any, any, any> = Route.Route<string>> {
   readonly route: R
 
@@ -190,7 +192,7 @@ export function runRouteMatcher<R, E, A, R2, E2, B>(
 ): Fx.Fx<R | R2 | Router | CurrentPath.CurrentPath, E | E2, A | B> {
   return Fx.hold(
     Fx.fromFxGen(function* ($) {
-      const { currentPath } = yield* $(CurrentPath.CurrentPath)
+      const { currentPath } = yield* $(Effect.service(CurrentPath.CurrentPath))
       const router = yield* $(Router)
       const routes = Array.from(matcher.matches).map(
         ([route, match]) => [Route.concatRoute(router.route, route), match] as const,

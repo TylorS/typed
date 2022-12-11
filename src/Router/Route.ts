@@ -5,7 +5,7 @@
 import * as Effect from '@effect/core/io/Effect'
 import * as M from '@tsplus/stdlib/data/Maybe'
 import * as ptr from 'path-to-regexp'
-import { A } from 'ts-toolbelt'
+import type { A } from 'ts-toolbelt'
 
 import * as P from './Path.js'
 

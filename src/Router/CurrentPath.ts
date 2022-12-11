@@ -1,6 +1,5 @@
 import * as Effect from '@effect/core/io/Effect'
 import { Layer, fromEffect } from '@effect/core/io/Layer'
-import { millis } from '@tsplus/stdlib/data/Duration'
 import { pipe } from '@tsplus/stdlib/data/Function'
 import { Tag } from '@tsplus/stdlib/service/Tag'
 import * as Fx from '@typed/fx'
@@ -33,7 +32,7 @@ export const makeCurrentPath: Effect.Effect<Location | History | Window, never, 
     // TODO: When upgrading to latest Effect, use Effect.blocking for scheduling maybe?
     const emit = Effect.gen(function* () {
       // Allow for location to be updated by the browser
-      yield* $(Effect.sleep(millis(0)))
+      yield* $(Effect.yieldNow)
       yield* $(currentPath.set(getCurrentPath(location)))
     })
     const unsafeEmit = () => runtime.unsafeRunAsync(emit)
@@ -84,6 +83,8 @@ export const makeCurrentPath: Effect.Effect<Location | History | Window, never, 
                 break
               }
             }
+
+            if (el?.nodeName.toUpperCase() !== 'A') return
 
             const target = el as HTMLAnchorElement
 

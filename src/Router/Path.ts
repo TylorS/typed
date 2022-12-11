@@ -100,11 +100,11 @@ export const oneOrMore = <A extends string>(param: A): OneOrMore<A> => `:${param
 export type QueryParams<
   Q extends readonly QueryParam<any, any>[],
   R extends string = ``,
-> = Q extends readonly [infer Head, ...infer Tail]
-  ? QueryParams<
-      A.Cast<Tail, readonly QueryParam<any, any>[]>,
-      `` extends R ? `\\?${A.Cast<Head, string>}` : `${R}&${A.Cast<Head, string>}`
-    >
+> = Q extends readonly [
+  infer Head extends string,
+  ...infer Tail extends readonly QueryParam<any, any>[],
+]
+  ? QueryParams<Tail, `` extends R ? `\\?${Head}` : `${R}&${Head}`>
   : R
 
 /**
@@ -133,10 +133,10 @@ export type Unnamed = typeof unnamed
  * @since 0.13.0
  */
 export type PathJoin<A extends ReadonlyArray<string>> = A extends readonly [
-  infer Head,
-  ...infer Tail,
+  infer Head extends string,
+  ...infer Tail extends readonly string[],
 ]
-  ? `${FormatPart<A.Cast<Head, string>>}${PathJoin<A.Cast<Tail, ReadonlyArray<string>>>}`
+  ? `${FormatPart<Head>}${PathJoin<Tail>}`
   : ``
 
 /**
@@ -247,10 +247,10 @@ export type PathToParts<P> = P extends `${infer Head}\\?${infer Tail}`
  * @since 0.13.0
  */
 export type PartsToParams<A extends ReadonlyArray<string>, AST = {}> = A extends readonly [
-  infer Head,
-  ...infer Tail,
+  infer Head extends string,
+  ...infer Tail extends readonly string[],
 ]
-  ? PartsToParams<A.Cast<Tail, readonly string[]>, AST & PartToParam<A.Cast<Head, string>, AST>>
+  ? PartsToParams<Tail, AST & PartToParam<Head, AST>>
   : AST
 
 /**
@@ -419,8 +419,8 @@ export type AppendPrefix<
   R extends readonly any[],
   Pre extends string,
   P extends string,
-> = R extends readonly [...infer Init, infer L]
-  ? readonly [...Init, `${A.Cast<L, string>}${Pre}${P}`]
+> = R extends readonly [...infer Init, infer L extends string]
+  ? readonly [...Init, `${L}${Pre}${P}`]
   : R
 
 /**
@@ -456,7 +456,9 @@ export type InterpolatePart<P, Params, AST> = P extends Optional<Param<infer R>>
     : []
   : P extends Optional<Prefix<infer Pre, Param<infer R>>>
   ? R extends keyof Params
-    ? [`${Pre}${A.Cast<Params[R], string>}`, AST & Partial<Record<R, Params[R]>>]
+    ? Params[R] extends string
+      ? [`${Pre}${Params[R]}`, AST & Partial<Record<R, Params[R]>>]
+      : []
     : []
   : readonly [P, AST]
 
@@ -474,9 +476,9 @@ type InterpolateWithQueryParams<
   Params,
   Previous extends readonly [any, any],
   First extends boolean = true,
-> = Q extends readonly [infer Head, ...infer Tail]
+> = Q extends readonly [infer Head, ...infer Tail extends readonly string[]]
   ? InterpolateWithQueryParams<
-      A.Cast<Tail, readonly string[]>,
+      Tail,
       Params,
       InterpolateQueryParamPart<Head, Params, Previous, First>[0],
       InterpolateQueryParamPart<Head, Params, Previous, First>[1]

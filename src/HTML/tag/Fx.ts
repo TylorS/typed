@@ -15,7 +15,9 @@ import * as Tag from './Effect.js'
 
 // Tag functions which only accept and return Fx
 
-export function html<Values extends ReadonlyArray<Renderable<any, any>>>(
+export function html<
+  Values extends ReadonlyArray<Renderable<any, any> | Fx.Fx<any, any, Renderable.Value<any>>>,
+>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {

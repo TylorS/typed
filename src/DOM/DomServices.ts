@@ -37,9 +37,9 @@ export const provideDomServices =
     effect: Effect.Effect<R | DomServices, E, A>,
   ): Effect.Effect<Exclude<R, DomServices>, E, A> =>
     pipe(
-      effect,
       // If the environment doesn't support declarative shadow-dom, polyfill by attaching shadow roots
-      Effect.tap(() => attachShadowRoots),
+      attachShadowRoots,
+      Effect.zipRight(effect),
       Effect.provideSomeEnvironment((env: Env<Exclude<R, DomServices>>) =>
         (env as Env<R>).merge(makeDomServices(window)),
       ),
