@@ -49,25 +49,23 @@ const App = Fx.fromFxGen(function* ($) {
       </ul>
     </nav>
 
-    ${pipe(
-      Router.match(fooRoute, () => html`<h2>Foo</h2>`)
-        .match(barRoute, () => html`<h2>Bar</h2>`)
-        .match(bazRoute, () => html`<h2>Baz</h2>`)
-        .match(quuxRoute, ({ something }) => html`<h2>Quux: ${something}</h2>`)
-        .match(
-          loginRoute,
-          () => html`<h2>Login</h2>
+    ${Router.match(fooRoute, () => html`<h2>Foo</h2>`)
+      .match(barRoute, () => html`<h2>Bar</h2>`)
+      .match(bazRoute, () => html`<h2>Baz</h2>`)
+      .match(quuxRoute, ({ something }) => html`<h2>Quux: ${something}</h2>`)
+      .match(
+        loginRoute,
+        () => html`<h2>Login</h2>
 
-            <p>Are you human?</p>
+          <p>Are you human?</p>
 
-            <button onclick=${EventHandler(() => isAuthenticated.set(true))}>Yes</button>
-            <button onclick=${EventHandler(() => isAuthenticated.set(false))}>No</button>`,
-        )
-        .match(secretRoute, () => html`<h2>Secret</h2>`)
-        .match(homeRoute, () => html`<h2>Home</h2>`)
-        .noMatch(() => html`<h2>404</h2>`),
-      Fx.provideService(AuthService, { isAuthenticated: isAuthenticated.get }),
-    )}
+          <button onclick=${EventHandler(() => isAuthenticated.set(true))}>Yes</button>
+          <button onclick=${EventHandler(() => isAuthenticated.set(false))}>No</button>`,
+      )
+      .match(secretRoute, () => html`<h2>Secret</h2>`)
+      .provideService(AuthService, { isAuthenticated: isAuthenticated.get })
+      .match(homeRoute, () => html`<h2>Home</h2>`)
+      .noMatch(() => html`<h2>404</h2>`)}
   </div>`
 })
 
