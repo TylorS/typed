@@ -4,6 +4,7 @@ import { Cause, CauseError } from '@typed/cause'
 import { Exit } from '@typed/exit'
 import { SingleShotGen, OfGen } from '@typed/internal'
 
+import type { RuntimeFiber } from '../Fiber.js'
 import type { FiberId } from '../FiberId/FiberId.js'
 import type { FiberRefs } from '../FiberRefs/FiberRefs.js'
 import type { FiberRuntime, RuntimeOptions } from '../FiberRuntime/FiberRuntime.js'
@@ -42,6 +43,48 @@ abstract class Instr<I, R, E, A> implements Effect<R, E, A> {
 
   [Symbol.iterator](): Generator<Effect<R, E, A>, A, A> {
     return new SingleShotGen<this, A>(this)
+  }
+
+  map<B>(f: (a: A) => B, __trace?: string): Effect<R, E, B> {
+    return Map.make<R, E, A, B>(this, f, __trace)
+  }
+
+  mapCause<E2>(f: (e: Cause<E>) => Cause<E2>, __trace?: string): Effect<R, E2, A> {
+    return new MapCause<R, E, A, E2>([this, f], __trace)
+  }
+
+  flatMap<R2, E2, B>(f: (a: A) => Effect<R2, E2, B>, __trace?: string): Effect<R | R2, E | E2, B> {
+    return new FlatMap<R, E, A, R2, E2, B>([this, f], __trace)
+  }
+
+  flatMapCause<R2, E2, B>(
+    f: (e: Cause<E>) => Effect<R2, E2, B>,
+    __trace?: string,
+  ): Effect<R | R2, E2, A | B> {
+    return new FlatMapCause<R, E, A, R2, E2, B>([this, f], __trace)
+  }
+
+  matchCause<R2, E2, B, R3, E3, C>(
+    onFailure: (e: Cause<E>) => Effect<R2, E2, B>,
+    onSuccess: (a: A) => Effect<R3, E3, C>,
+    __trace?: string,
+  ): Effect<R | R2 | R3, E2 | E3, B | C> {
+    return new Match<R, E, A, R2, E2, B, R3, E3, C>([this, onFailure, onSuccess], __trace)
+  }
+
+  fork(
+    options?: Partial<RuntimeOptions<R>>,
+    __trace?: string,
+  ): Effect<R, never, RuntimeFiber<E, A>> {
+    return new Fork<R, E, A>([this, options], __trace)
+  }
+
+  provideContext(context: Context<R>, __trace?: string): Effect<never, E, A> {
+    return new ProvideContext([this, context], __trace)
+  }
+
+  withFiberRefs(refs: FiberRefs, __trace?: string | undefined): Effect<R, E, A> {
+    return new WithFiberRefs([this, refs], __trace)
   }
 }
 
@@ -90,7 +133,7 @@ export class Map<R, E, A, B> extends Instr<readonly [Effect<R, E, A>, (a: A) => 
     __trace?: string,
   ): Effect<R, E, B> {
     if ((effect as Instruction<R, E, A>).tag === 'Of') {
-      return new Of(f((effect as Of<A>).input))
+      return new Of(f((effect as any as Of<A>).input))
     } else if ((effect as Instruction<R, E, A>).tag === 'Map') {
       const [eff, e] = (effect as Map<R, E, A, any>).input
 
@@ -123,7 +166,7 @@ export class FlatMapCause<R, E, A, R2, E2, B> extends Instr<
   readonly [Effect<R, E, A>, (a: Cause<E>) => Effect<R2, E2, B>],
   R | R2,
   E2,
-  B
+  A | B
 > {
   readonly tag = 'FlatMapCause'
 }
@@ -187,7 +230,7 @@ export function gen<Eff extends Effect<any, any, any>, A, N = unknown>(
   f: () => Generator<Eff, A, N>,
   __trace?: string,
 ): Effect<Effect.ResourcesOf<Eff>, Effect.ErrorsOf<Eff>, A> {
-  return new Lazy(() => {
+  return new Lazy<Effect.ResourcesOf<Eff>, Effect.ErrorsOf<Eff>, A>(() => {
     const gen = f()
 
     return new FlatMapCause([
