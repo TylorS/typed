@@ -73,7 +73,7 @@ export const getDefaultFiberRef = <S extends DefaultServices>(
 }
 
 export const getScheduler: Effect.Effect<never, never, Scheduler> = gen(function* () {
-  const ctx = yield* ops.context<never>()
+  const ctx = yield* ops.getContext<never>()
 
   return yield* pipe(
     ctx,
@@ -83,7 +83,7 @@ export const getScheduler: Effect.Effect<never, never, Scheduler> = gen(function
 })
 
 export const getIdGenerator: Effect.Effect<never, never, IdGenerator> = gen(function* () {
-  const ctx = yield* ops.context<never>()
+  const ctx = yield* ops.getContext<never>()
 
   return yield* pipe(
     ctx,
@@ -93,7 +93,7 @@ export const getIdGenerator: Effect.Effect<never, never, IdGenerator> = gen(func
 })
 
 export const getGlobalFiberScope: Effect.Effect<never, never, GlobalFiberScope> = gen(function* () {
-  const ctx = yield* ops.context<never>()
+  const ctx = yield* ops.getContext<never>()
 
   return yield* pipe(
     ctx,

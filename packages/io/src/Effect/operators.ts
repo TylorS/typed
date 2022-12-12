@@ -1,6 +1,6 @@
 import * as Context from '@fp-ts/data/Context'
 import * as Either from '@fp-ts/data/Either'
-import { constVoid, flow, pipe } from '@fp-ts/data/Function'
+import { constVoid, pipe } from '@fp-ts/data/Function'
 import { Option } from '@fp-ts/data/Option'
 import { NonEmptyReadonlyArray } from '@fp-ts/data/ReadonlyArray'
 import { Cause } from '@typed/cause'
@@ -217,7 +217,7 @@ export const forkDaemonWithOptions =
   <E, A>(effect: Effect<R, E, A>): Effect<R, never, Fiber.RuntimeFiber<E, A>> =>
     effect.forkDaemon(options, __trace)
 
-export const context = <R>(): Effect<R, never, Context.Context<R>> => access(of)
+export const getContext = <R>(): Effect<R, never, Context.Context<R>> => access(of)
 
 export const ensuring =
   <E, A, R2, E2, B>(
@@ -242,7 +242,7 @@ export function asksEffect<S, R, E, A>(
   f: (s: S) => Effect<R, E, A>,
   __trace?: string,
 ): Effect<R | S, E, A> {
-  return access(flow(Context.unsafeGet(tag), f), __trace)
+  return access(flow2(Context.unsafeGet(tag), f), __trace)
 }
 
 export function ask<S>(tag: Context.Tag<S>, __trace?: string): Effect<S, never, S> {

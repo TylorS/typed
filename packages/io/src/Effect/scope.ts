@@ -3,7 +3,15 @@ import { Scope } from '../Scope.js'
 
 import { Effect } from './Effect.js'
 import { gen } from './Instruction.js'
-import { ask, asksEffect, context, getFiberId, lazy, uninterruptable, unit } from './operators.js'
+import {
+  ask,
+  asksEffect,
+  getContext,
+  getFiberId,
+  lazy,
+  uninterruptable,
+  unit,
+} from './operators.js'
 
 export function managed<R, E, A, R2>(
   acquire: Effect<R, E, A>,
@@ -11,7 +19,7 @@ export function managed<R, E, A, R2>(
 ): Effect<R | R2 | Scope, E, A> {
   return uninterruptable(
     gen(function* () {
-      const env = yield* context<R2>()
+      const env = yield* getContext<R2>()
       const scope: Scope = yield* ask(Scope)
       const a = yield* acquire
 
