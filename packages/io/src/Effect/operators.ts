@@ -249,7 +249,7 @@ export function provideService<S>(tag: Context.Tag<S>, service: S, __trace?: str
     effect.provideService(tag, service, __trace)
 }
 
-export function provideLayer<R2, E2, I, S>(layer: Layer<R2, E2, I, S>, __trace: string) {
+export function provideLayer<R2, E2, I, S>(layer: Layer<R2, E2, I, S>, __trace?: string) {
   return <R, E, A>(effect: Effect<R | S, E, A>): Effect<R2 | Exclude<R, S>, E | E2, A> =>
     effect.provideLayer(layer, __trace)
 }
