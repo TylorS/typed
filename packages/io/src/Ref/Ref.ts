@@ -144,7 +144,7 @@ function mapObject<A, B>(object: Readonly<Record<string, A>>, f: (a: A, k: strin
   return Object.fromEntries(Object.entries(object).map(([k, v]) => [k, f(v, k)]))
 }
 
-export function provide<R>(ctx: Context.Context<R>) {
+export function provideContext<R>(ctx: Context.Context<R>) {
   return <E, A>(ref: Ref<R, E, A>): Ref<never, E, A> => ({
     get: pipe(ref.get, Effect.provideContext(ctx)),
     set: flow(ref.set, Effect.provideContext(ctx)),
@@ -152,7 +152,7 @@ export function provide<R>(ctx: Context.Context<R>) {
   })
 }
 
-export function provideSome<R2>(ctx: Context.Context<R2>) {
+export function provide<R2>(ctx: Context.Context<R2>) {
   return <R, E, A>(ref: Ref<R | R2, E, A>): Ref<Exclude<R, R2>, E, A> => ({
     get: pipe(ref.get, Effect.provideSome(Context.merge(ctx))),
     set: flow(ref.set, Effect.provideSome(Context.merge(ctx))),
