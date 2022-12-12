@@ -187,12 +187,27 @@ export function provideLayer<R2, E2, I2, O2>(layer: Layer<R2, E2, I2, O2>) {
   })
 }
 
-export function shared<A>(initial: A): Ref.Of<A> {
-  const ref = MutableRef.make(initial)
+export function mutableRef<A>(init: () => A): Ref.Of<A> {
+  const ref = MutableRef.make<Option.Option<A>>(Option.none)
 
   return {
-    get: Effect.sync(() => ref.get()),
-    set: (a) => Effect.sync(() => ref.setAndGet(a)),
-    delete: Effect.sync(() => Option.some(ref.getAndSet(initial))),
+    get: Effect.sync(() => {
+      const current = ref.get()
+      if (Option.isSome(current)) {
+        return current.value
+      }
+
+      const a = init()
+
+      ref.set(Option.some(a))
+
+      return a
+    }),
+    set: (a) =>
+      Effect.sync(() => {
+        ref.set(Option.some(a))
+        return a
+      }),
+    delete: Effect.sync(() => ref.getAndSet(Option.none)),
   }
 }
