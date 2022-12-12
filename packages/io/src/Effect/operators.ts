@@ -15,7 +15,7 @@ import type { FiberScope } from '../FiberScope/FiberScope.js'
 import type { Future } from '../Future/Future.js'
 import type { Layer } from '../Layer.js'
 import type { RuntimeFlags } from '../RuntimeFlags/RuntimeFlags.js'
-import { flow2 } from '../_internal.js'
+import { flow2 } from '../_internal/flow2.js'
 
 import { Effect } from './Effect.js'
 import * as I from './Instruction.js'
@@ -31,10 +31,12 @@ export function fromCause<E>(cause: Cause<E>, __trace?: string): Effect<never, E
 }
 
 export const fromExit = I.fromExit
+
 export const withFiberRefs =
   (fiberRefs: FiberRefs, __trace?: string) =>
   <R, E, A>(effect: Effect<R, E, A>) =>
     effect.withFiberRefs(fiberRefs, __trace)
+
 export const gen = I.gen
 
 export function sync<A>(f: () => A, __trace?: string): Effect.Of<A> {
@@ -82,8 +84,7 @@ export function flatMap<A, R2, E2, B>(f: (a: A) => Effect<R2, E2, B>, __trace?: 
 }
 
 export function tap<A, R2, E2, B>(f: (a: A) => Effect<R2, E2, B>, __trace?: string) {
-  return <R, E>(eff: Effect<R, E, A>): Effect<R | R2, E | E2, A> =>
-    eff.flatMap((a) => f(a).as(a), __trace)
+  return <R, E>(eff: Effect<R, E, A>): Effect<R | R2, E | E2, A> => eff.tap(f, __trace)
 }
 
 export function matchCause<E, R2, E2, B, A, R3, E3, C>(
@@ -108,7 +109,7 @@ export function attempt<R, E, A>(
   eff: Effect<R, E, A>,
   __trace?: string,
 ): Effect<R, never, Exit<E, A>> {
-  return pipe(eff, matchCause(flow2(Either.left, of), flow2(Either.right, of), __trace))
+  return eff.matchCause(flow2(Either.left, of), flow2(Either.right, of), __trace)
 }
 
 export function flatMapCause<E, R2, E2, B>(
@@ -159,90 +160,72 @@ const getRuntimeOptions_ = new I.GetRuntimeOptions<any>()
 export const getRuntimeOptions = <R>(): Effect<R, never, RuntimeOptions<R>> => getRuntimeOptions_
 
 export const getFiberRef = <R, E, A>(ref: FiberRef<R, E, A>): Effect<R, E, A> =>
-  pipe(
-    getFiberRefs,
-    flatMap((refs) => refs.get(ref)),
-  )
+  getFiberRefs.flatMap((refs) => refs.get(ref))
 
 export const getFiberRefOption = <R, E, A>(ref: FiberRef<R, E, A>): Effect.Of<Option<A>> =>
-  pipe(
-    getFiberRefs,
-    map((refs) => refs.getOption(ref)),
-  )
+  getFiberRefs.map((refs) => refs.getOption(ref))
 
 export const setFiberRef =
   <A>(value: A) =>
   <R, E>(ref: FiberRef<R, E, A>): Effect<R, E, A> =>
-    pipe(
-      getFiberRefs,
-      flatMap((refs) => refs.set(ref, value)),
-    )
+    getFiberRefs.flatMap((refs) => refs.set(ref, value))
 
 export const updateFiberRef =
   <A>(f: (a: A) => A) =>
   <R, E>(ref: FiberRef<R, E, A>): Effect<R, E, A> =>
-    pipe(
-      getFiberRefs,
-      flatMap((refs) => refs.update(ref, f)),
-    )
+    getFiberRefs.flatMap((refs) => refs.update(ref, f))
 
 export const modifyFiberRef =
   <A, B>(f: (a: A) => readonly [B, A]) =>
   <R, E>(ref: FiberRef<R, E, A>): Effect<R, E, B> =>
-    pipe(
-      getFiberRefs,
-      flatMap((refs) => refs.modify(ref, f)),
-    )
+    getFiberRefs.flatMap((refs) => refs.modify(ref, f))
 
 export const removeFiberRef = <R, E, A>(ref: FiberRef<R, E, A>): Effect<R, E, Option<A>> =>
-  pipe(
-    getFiberRefs,
-    flatMap((refs) => refs.delete(ref)),
-  )
+  getFiberRefs.flatMap((refs) => refs.delete(ref))
 
 export { removeFiberRef as deleteFiberRef }
 
 export const updateFiberRefEffect =
   <A, R2, E2>(f: (a: A) => Effect<R2, E2, A>) =>
   <R, E>(ref: FiberRef<R, E, A>): Effect<R2 | R, E2 | E, A> =>
-    pipe(
-      getFiberRefs,
-      flatMap((refs) => refs.updateEffect(ref, f)),
-    )
+    getFiberRefs.flatMap((refs) => refs.updateEffect(ref, f))
 
 export const modifyFiberRefEffect =
   <A, R2, E2, B>(f: (a: A) => Effect<R2, E2, readonly [B, A]>) =>
   <R, E>(ref: FiberRef<R, E, A>): Effect<R2 | R, E2 | E, B> =>
-    pipe(
-      getFiberRefs,
-      flatMap((refs) => refs.modifyEffect(ref, f)),
-    )
+    getFiberRefs.flatMap((refs) => refs.modifyEffect(ref, f))
 
 export const fork = <R, E, A>(
   effect: Effect<R, E, A>,
   __trace?: string,
 ): Effect<R, never, Fiber.RuntimeFiber<E, A>> => effect.fork(undefined, __trace)
 
-export const join = <E, A>(fiber: Fiber.Fiber<E, A>, __trace?: string): Effect<never, E, A> =>
-  pipe(
-    fiber.exit,
-    tap((exit) => (Either.isRight(exit) ? fiber.inheritRefs : unit)),
-    flatMap(fromExit, __trace),
-  )
+export const forkDaemon = <R, E, A>(
+  effect: Effect<R, E, A>,
+  __trace?: string,
+): Effect<R, never, Fiber.RuntimeFiber<E, A>> => effect.forkDaemon(undefined, __trace)
+
+export const join = <E, A>(fiber: Fiber.Fiber<E, A>): Effect<never, E, A> => fiber.join
 
 export const forkWithOptions =
   <R>(options: Partial<RuntimeOptions<R>>, __trace?: string) =>
   <E, A>(effect: Effect<R, E, A>): Effect<R, never, Fiber.RuntimeFiber<E, A>> =>
     effect.fork(options, __trace)
 
+export const forkDaemonWithOptions =
+  <R>(options: Omit<Partial<RuntimeOptions<R>>, 'scope'>, __trace?: string) =>
+  <E, A>(effect: Effect<R, E, A>): Effect<R, never, Fiber.RuntimeFiber<E, A>> =>
+    effect.forkDaemon(options, __trace)
+
 export const context = <R>(): Effect<R, never, Context.Context<R>> => access(of)
 
-export const onExit =
+export const ensuring =
   <E, A, R2, E2, B>(
     f: (exit: Exit<E, A>) => Effect<R2, E2, B>,
+    __trace?: string,
   ): (<R>(effect: Effect<R, E, A>) => Effect<R | R2, E | E2, A>) =>
   (effect) =>
-    pipe(effect, attempt, tap(f), flatMap(fromExit))
+    effect.ensuring(f, __trace)
 
 export function provideService<S>(tag: Context.Tag<S>, service: S, __trace?: string) {
   return <R, E, A>(effect: Effect<R | S, E, A>): Effect<Exclude<R, S>, E, A> =>
@@ -276,18 +259,7 @@ export function asks<S, A>(
 
 export function zip<R2, E2, B>(second: Effect<R2, E2, B>) {
   return <R, E, A>(first: Effect<R, E, A>): Effect<R | R2, E | E2, readonly [A, B]> =>
-    pipe(
-      first,
-      fork,
-      flatMap((fiberF) =>
-        pipe(
-          second,
-          fork,
-          map((fiberS) => Fiber.zip(fiberS)(fiberF)),
-        ),
-      ),
-      flatMap(join),
-    )
+    first.zip(second)
 }
 
 export const tupled: <R, E, A>(eff: Effect<R, E, A>) => Effect<R, E, readonly [A]> = map(
@@ -316,7 +288,7 @@ export function zipAll<Effs extends ReadonlyArray<Effect<any, any, any>>>(
   } else if (effects.length === 1) {
     return tupled(effects[0]) as R
   } else if (effects.length === 2) {
-    return zip(effects[1])(effects[0]) as R
+    return effects[0].zip(effects[1]) as R
   }
 
   const [first, ...rest] = effects
@@ -333,7 +305,7 @@ export function zipAll<Effs extends ReadonlyArray<Effect<any, any, any>>>(
 }
 
 export const asUnit = <R, E, A>(effect: Effect<R, E, A>, __trace?: string): Effect<R, E, void> =>
-  pipe(effect, map(constVoid, __trace))
+  effect.map(constVoid, __trace)
 
 export function zipAllUnit<Effs extends ReadonlyArray<Effect<any, any, any>>>(
   effects: Effs,
@@ -345,19 +317,7 @@ export function zipAllUnit<Effs extends ReadonlyArray<Effect<any, any, any>>>(
 }
 
 export function race<R2, E2, B>(second: Effect<R2, E2, B>) {
-  return <R, E, A>(first: Effect<R, E, A>): Effect<R | R2, E | E2, A | B> =>
-    pipe(
-      first,
-      fork,
-      flatMap((fiberF) =>
-        pipe(
-          second,
-          fork,
-          map((fiberS) => Fiber.race(fiberS)(fiberF)),
-        ),
-      ),
-      flatMap(join),
-    )
+  return <R, E, A>(first: Effect<R, E, A>): Effect<R | R2, E | E2, A | B> => first.race(second)
 }
 
 export function raceAll<Effs extends NonEmptyReadonlyArray<Effect<any, any, any>>>(
@@ -377,14 +337,11 @@ export function raceAll<Effs extends NonEmptyReadonlyArray<Effect<any, any, any>
     return effects[0] as R
   }
 
-  return effects.reduce((prev, cur) => race(cur)(prev)) as R
+  return effects.reduce((prev, cur) => prev.race(cur)) as R
 }
 
 export function interrupt<E, A>(fiber: Fiber.Fiber<E, A>) {
-  return pipe(
-    getFiberId,
-    flatMap((id) => fiber.interruptAs(id)),
-  )
+  return getFiberId.flatMap((id) => fiber.interruptAs(id))
 }
 
 export function struct<Effects extends Readonly<Record<string, Effect<any, any, any>>>>(
@@ -394,17 +351,9 @@ export function struct<Effects extends Readonly<Record<string, Effect<any, any, 
   Effect.ErrorsOf<Effects[string]>,
   { readonly [K in keyof Effects]: Effect.OutputOf<Effects[K]> }
 > {
-  return pipe(
-    zipAll(
-      Object.entries(effects).map(([k, effect]) =>
-        pipe(
-          effect,
-          map((v) => [k, v] as const),
-        ),
-      ),
-    ),
-    map(Object.fromEntries),
-  ) as any
+  return zipAll(
+    Object.entries(effects).map(([k, effect]) => effect.map((v) => [k, v] as const)),
+  ).map(Object.fromEntries) as any
 }
 
 export function bracket<R, E, A, R2, E2, B, R3, E3>(
@@ -412,13 +361,5 @@ export function bracket<R, E, A, R2, E2, B, R3, E3>(
   use: (a: A) => Effect<R2, E2, B>,
   release: (a: A, exit: Exit<E2, B>) => Effect<R3, E3, unknown>,
 ): Effect<R | R2 | R3, E | E2 | E3, B> {
-  return pipe(
-    acquire,
-    flatMap((a) =>
-      pipe(
-        use(a),
-        onExit((exit) => release(a, exit)),
-      ),
-    ),
-  )
+  return acquire.flatMap((a) => use(a).ensuring((exit) => release(a, exit)))
 }

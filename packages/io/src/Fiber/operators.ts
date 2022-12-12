@@ -10,35 +10,41 @@ import { RuntimeFiber, Synthetic, SyntheticFiber } from './Fiber.js'
 
 export function zip<E2, B>(second: RuntimeFiber<E2, B>) {
   return <E1, A>(first: RuntimeFiber<E1, A>): SyntheticFiber<E1 | E2, readonly [A, B]> => {
-    return Synthetic({
+    const fiber: SyntheticFiber<E1 | E2, readonly [A, B]> = Synthetic({
       id: FiberId.Synthetic([first.id, second.id]),
       exit: new I.Async(zipFuture(first, second)),
       inheritRefs: new I.FlatMap([first.inheritRefs, () => second.inheritRefs]),
       interruptAs: (id) =>
         I.gen(function* () {
-          const f = yield* new I.Fork([new I.FlatMap([first.interruptAs(id), I.fromExit])])
-          const s = yield* new I.Fork([new I.FlatMap([second.interruptAs(id), I.fromExit])])
+          const f = yield* first.interruptAs(id).flatMap(I.fromExit).fork()
+          const s = yield* second.interruptAs(id).flatMap(I.fromExit).fork()
 
           return yield* new I.Async(zipFuture(f, s))
         }),
+      join: new I.Lazy(() => fiber.exit.tap(() => fiber.inheritRefs).flatMap(I.fromExit)),
     })
+
+    return fiber
   }
 }
 
 export function race<E2, B>(second: RuntimeFiber<E2, B>) {
   return <E1, A>(first: RuntimeFiber<E1, A>): SyntheticFiber<E1 | E2, A | B> => {
-    return Synthetic({
+    const fiber: SyntheticFiber<E1 | E2, A | B> = Synthetic({
       id: FiberId.Synthetic([first.id, second.id]),
       exit: new I.Async(raceFuture(first, second, true)),
       inheritRefs: new I.FlatMap([first.inheritRefs, () => second.inheritRefs]),
       interruptAs: (id) =>
         I.gen(function* () {
-          const f = yield* new I.Fork([new I.FlatMap([first.interruptAs(id), I.fromExit])])
-          const s = yield* new I.Fork([new I.FlatMap([second.interruptAs(id), I.fromExit])])
+          const f = yield* first.interruptAs(id).flatMap(I.fromExit).fork()
+          const s = yield* second.interruptAs(id).flatMap(I.fromExit).fork()
 
           return yield* new I.Async(raceFuture(f, s, false))
         }),
+      join: new I.Lazy(() => fiber.exit.tap(() => fiber.inheritRefs).flatMap(I.fromExit)),
     })
+
+    return fiber
   }
 }
 

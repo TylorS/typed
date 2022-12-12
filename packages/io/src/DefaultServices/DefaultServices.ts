@@ -9,7 +9,6 @@ import * as Effect from '../Effect/Effect.js'
 import { gen } from '../Effect/Instruction.js'
 import * as ops from '../Effect/operators.js'
 import { FiberRefs } from '../FiberRefs.js'
-import type { RuntimeOptions } from '../FiberRuntime/FiberRuntime.js'
 import { GlobalFiberScope } from '../FiberScope/FiberScope.js'
 import { IdGenerator } from '../IdGenerator/IdGenerator.js'
 import * as Layer from '../Layer/Layer.js'
@@ -19,14 +18,12 @@ export type DefaultServices = Scheduler | IdGenerator | GlobalFiberScope
 
 export const DefaultClock: Layer.FromService<C.Clock> = Layer.fromService(C.Clock)(C.Clock())
 
-export const DefaultTimer: Layer.FromService<Timer> = pipe(
+export const DefaultTimer: Layer.FromService<Timer> = Layer.fromService(Timer)(
   Timer(DefaultClock.service),
-  Layer.fromService(Timer),
 )
 
-export const DefaultScheduler: Layer.FromService<Scheduler> = pipe(
+export const DefaultScheduler: Layer.FromService<Scheduler> = Layer.fromService(Scheduler)(
   Scheduler(DefaultTimer.service),
-  Layer.fromService(Scheduler),
 )
 
 export const DefaultIdGenerator: Layer.FromService<IdGenerator> = Layer.fromService(IdGenerator)(
@@ -107,25 +104,8 @@ export const getGlobalFiberScope: Effect.Effect<never, never, GlobalFiberScope> 
 
 export const getClock: Effect.Effect<never, never, C.Clock> = getScheduler
 
-export const getCurrentTime: Effect.Effect<never, never, Time> = pipe(getClock, ops.map(C.getTime))
+export const getCurrentTime: Effect.Effect<never, never, Time> = getClock.map(C.getTime)
 
-export const getCurrentUnixTime: Effect.Effect<never, never, UnixTime> = pipe(
-  getClock,
-  ops.map((c) => c.getUnixTime()),
+export const getCurrentUnixTime: Effect.Effect<never, never, UnixTime> = getClock.map((c) =>
+  c.getUnixTime(),
 )
-
-export function forkDaemon<R, E, A>(effect: Effect.Effect<R, E, A>) {
-  return pipe(
-    getGlobalFiberScope,
-    ops.flatMap((scope) => pipe(effect, ops.forkWithOptions({ scope }))),
-  )
-}
-
-export function forkDaemonWithOptions<R>(options: Omit<Partial<RuntimeOptions<R>>, 'scope'>) {
-  return <E, A>(effect: Effect.Effect<R, E, A>) => {
-    return pipe(
-      getGlobalFiberScope,
-      ops.flatMap((scope) => pipe(effect, ops.forkWithOptions({ scope, ...options }))),
-    )
-  }
-}

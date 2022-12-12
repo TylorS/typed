@@ -3,7 +3,7 @@ import * as Predicate from '@fp-ts/data/Predicate'
 import { Cause } from '@typed/cause'
 
 import { unit } from '../Effect.js'
-import { flow2 } from '../_internal.js'
+import { flow2 } from '../_internal/flow2.js'
 
 import { Sink, Stream } from './Stream.js'
 
@@ -64,15 +64,15 @@ class Map<R, E, A, B> implements Stream<R, E, B> {
   }
 
   static make<R, E, A, B>(stream: Stream<R, E, A>, f: (a: A) => B): Stream<R, E, B> {
-    // if (stream instanceof Map<R, E, any, A>) {
-    //   return new Map(stream.stream, flow2(stream.f, f))
-    // } else if (stream instanceof Filter<R, E, A>) {
-    //   return FilterMap.make(stream.stream, (a) =>
-    //     stream.predicate(a) ? Option.some(f(a)) : Option.none,
-    //   )
-    // } else if (stream instanceof FilterMap<R, E, any, A>) {
-    //   return new FilterMap(stream.stream, flow2(stream.f, Option.map(f)))
-    // }
+    if (stream instanceof Map<R, E, any, A>) {
+      return new Map(stream.stream, flow2(stream.f, f))
+    } else if (stream instanceof Filter<R, E, A>) {
+      return FilterMap.make(stream.stream, (a) =>
+        stream.predicate(a) ? Option.some(f(a)) : Option.none,
+      )
+    } else if (stream instanceof FilterMap<R, E, any, A>) {
+      return new FilterMap(stream.stream, flow2(stream.f, Option.map(f)))
+    }
 
     return new Map(stream, f)
   }

@@ -6,17 +6,17 @@ import { getSequentialSemigroup } from '@typed/cause'
 import { Disposable } from '@typed/disposable'
 import { Exit } from '@typed/exit'
 
-import { forkDaemon } from '../DefaultServices/DefaultServices.js'
 import { Effect } from '../Effect/Effect.js'
 import { gen } from '../Effect/Instruction.js'
 import * as ops from '../Effect/operators.js'
-import { RuntimeFiber } from '../Fiber/Fiber.js'
 
 export interface Scope {
   readonly addFinalizer: (finalizer: Finalizer) => Effect.Of<Disposable>
   readonly close: (exit: Exit<any, any>) => Effect.Of<boolean>
   readonly fork: Effect.Of<Scope>
 }
+
+const combineSeq = getSequentialSemigroup().combine
 
 export const Scope = Object.assign(function makeScope(): Scope {
   const finalizers: Array<Finalizer> = []
@@ -26,10 +26,7 @@ export const Scope = Object.assign(function makeScope(): Scope {
   const addFinalizer: Scope['addFinalizer'] = (finalizer) =>
     ops.lazy(() =>
       closed && Option.isSome(finalExit)
-        ? pipe(
-            finalizer(finalExit.value),
-            ops.map(() => Disposable.unit),
-          )
+        ? finalizer(finalExit.value).map(() => Disposable.unit)
         : ops.sync(() => {
             finalizers.push(finalizer)
 
@@ -52,31 +49,26 @@ export const Scope = Object.assign(function makeScope(): Scope {
       finalExit = Option.some(exit)
 
       for (const finalizer of finalizers) {
-        const finalizerExit = yield* ops.attempt(finalizer(exit))
+        const finalizerExit = yield* finalizer(exit).attempt
 
         if (Either.isLeft(finalizerExit)) {
-          finalExit = pipe(
-            finalExit,
-            Option.map(Either.mapLeft(getSequentialSemigroup().combine(finalizerExit.left))),
-          )
+          finalExit = pipe(finalExit, Option.map(Either.mapLeft(combineSeq(finalizerExit.left))))
         }
       }
 
       closed = true
 
       return true
-    })
+    }).uninterruptable
 
-  const fork = ops.uninterruptable(
-    gen(function* () {
-      const child = makeScope()
-      const disposable = yield* addFinalizer((exit) => child.close(exit))
+  const fork = gen(function* () {
+    const child = makeScope()
+    const disposable = yield* addFinalizer((exit) => child.close(exit))
 
-      yield* child.addFinalizer(() => ops.sync(() => disposable.dispose()))
+    yield* child.addFinalizer(() => ops.sync(() => disposable.dispose()))
 
-      return child
-    }),
-  )
+    return child
+  }).uninterruptable
 
   return {
     addFinalizer,
@@ -87,44 +79,4 @@ export const Scope = Object.assign(function makeScope(): Scope {
 
 export interface Finalizer {
   (exit: Exit<any, any>): Effect.Of<unknown>
-}
-
-export function scoped<R, E, A>(effect: Effect<R | Scope, E, A>): Effect<Exclude<R, Scope>, E, A> {
-  return ops.lazy(() => {
-    const scope = Scope()
-
-    return pipe(effect, ops.provideService(Scope, scope), ops.onExit(scope.close))
-  })
-}
-
-export function forkScoped<R, E, A>(
-  effect: Effect<R | Scope, E, A>,
-): Effect<R | Scope, never, RuntimeFiber<E, A>> {
-  return pipe(
-    ops.asksEffect(Scope, (s) => s.fork),
-    ops.flatMap((scope) =>
-      pipe(
-        ops.getFiberId,
-        ops.flatMap((id) =>
-          pipe(
-            effect,
-            ops.provideService(Scope, scope),
-            ops.onExit(scope.close),
-            forkDaemon,
-            ops.tap((fiber) =>
-              scope.addFinalizer(() =>
-                pipe(
-                  ops.getFiberId,
-                  ops.flatMap(
-                    (childId): Effect.Of<unknown> =>
-                      childId === id ? ops.unit : fiber.interruptAs(id),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    ),
-  )
 }

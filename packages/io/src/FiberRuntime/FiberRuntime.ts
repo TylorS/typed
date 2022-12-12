@@ -10,10 +10,10 @@ import { RingBuffer, NonEmptyStack } from '@typed/internal'
 import { DefaultServices, getDefaultService } from '../DefaultServices/DefaultServices.js'
 import { Effect } from '../Effect/Effect.js'
 import * as I from '../Effect/Instruction.js'
-import type { RuntimeFiber } from '../Fiber/Fiber.js'
+import * as Fiber from '../Fiber/index.js'
 import { FiberId, Live } from '../FiberId/FiberId.js'
 import type { FiberRefs } from '../FiberRefs/FiberRefs.js'
-import { FiberScope } from '../FiberScope/FiberScope.js'
+import { FiberScope, GlobalFiberScope } from '../FiberScope/FiberScope.js'
 import * as FiberStatus from '../FiberStatus/FiberStatus.js'
 import { pending } from '../Future/Future.js'
 import { IdGenerator } from '../IdGenerator/IdGenerator.js'
@@ -41,7 +41,7 @@ export interface RuntimeOptions<R> {
 
 const combineSeq = Cause.getSequentialMonoid<any>().combine
 
-export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Errors, Output> {
+export class FiberRuntime<Services, Errors, Output> implements Fiber.RuntimeFiber<Errors, Output> {
   protected disposable: Disposable.Disposable.Queue = Disposable.Queue()
   protected currentContext: NonEmptyStack<Context.Context<any>> = new NonEmptyStack(
     this.options.context,
@@ -65,11 +65,11 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
     this.setInstr(effect)
   }
 
-  readonly tag: RuntimeFiber<Errors, Output>['tag'] = 'Runtime'
+  readonly tag: Fiber.RuntimeFiber<Errors, Output>['tag'] = 'Runtime'
 
-  readonly id: RuntimeFiber<Errors, Output>['id'] = this.options.id
+  readonly id: Fiber.RuntimeFiber<Errors, Output>['id'] = this.options.id
 
-  readonly exit: RuntimeFiber<Errors, Output>['exit'] = new I.Lazy(() => {
+  readonly exit: Fiber.RuntimeFiber<Errors, Output>['exit'] = new I.Lazy(() => {
     if (this.fiberStatus.tag === 'Done') {
       return new I.Of(this.fiberStatus.exit)
     }
@@ -81,11 +81,15 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
     return new I.Async(future)
   })
 
-  get inheritRefs(): RuntimeFiber<Errors, Output>['inheritRefs'] {
+  get inheritRefs(): Fiber.RuntimeFiber<Errors, Output>['inheritRefs'] {
     return this.currentFiberRefs.current.inherit
   }
 
-  readonly addObserver: RuntimeFiber<Errors, Output>['addObserver'] = (observer) => {
+  get join(): Fiber.RuntimeFiber<Errors, Output>['join'] {
+    return this.exit.tap(() => this.inheritRefs).flatMap(I.fromExit)
+  }
+
+  readonly addObserver: Fiber.RuntimeFiber<Errors, Output>['addObserver'] = (observer) => {
     if (this.fiberStatus.tag === 'Done') {
       observer(this.fiberStatus.exit)
 
@@ -103,7 +107,7 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
     })
   }
 
-  readonly interruptAs: RuntimeFiber<Errors, Output>['interruptAs'] = (id: FiberId) =>
+  readonly interruptAs: Fiber.RuntimeFiber<Errors, Output>['interruptAs'] = (id: FiberId) =>
     new I.Lazy(() => {
       this.interruptCause = pipe(
         this.interruptCause,
@@ -297,6 +301,39 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
     child.start()
     this.continueWith(child)
   }
+
+  ForkDaemon(instr: I.ForkDaemon<any, any, any>) {
+    return this.Fork(
+      new I.Fork([instr.input[0], { ...instr.input[1], scope: this.getGlobalFiberScope() }]),
+    )
+  }
+
+  Race(instr: I.Race<any, any, any, any, any, any>) {
+    const [first, second] = instr.input
+
+    this.setInstr(
+      first.fork().flatMap((fiberF) =>
+        second
+          .fork()
+          .map((fiberS) => Fiber.race(fiberS)(fiberF))
+          .flatMap((f) => f.join),
+      ),
+    )
+  }
+
+  Zip(instr: I.Zip<any, any, any, any, any, any>) {
+    const [first, second] = instr.input
+
+    this.setInstr(
+      first.fork().flatMap((fiberF) =>
+        second
+          .fork()
+          .map((fiberS) => Fiber.zip(fiberS)(fiberF))
+          .flatMap((f) => f.join),
+      ),
+    )
+  }
+
   // Frames
 
   protected Map(instr: I.Map<any, any, any, any>) {
@@ -436,6 +473,10 @@ export class FiberRuntime<Services, Errors, Output> implements RuntimeFiber<Erro
 
   protected getNextId() {
     return this.getDefaultService(IdGenerator)()
+  }
+
+  protected getGlobalFiberScope() {
+    return this.getDefaultService(GlobalFiberScope)
   }
 
   protected getDefaultService<S extends DefaultServices>(tag: Context.Tag<S>) {

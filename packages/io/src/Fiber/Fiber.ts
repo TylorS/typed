@@ -22,6 +22,7 @@ export interface SyntheticFiber<Errors, Output> {
   readonly exit: Effect<never, never, Exit.Exit<Errors, Output>>
   readonly inheritRefs: Effect<never, never, void>
   readonly interruptAs: (id: FiberId.FiberId) => Effect<never, never, Exit.Exit<Errors, Output>>
+  readonly join: Effect<never, Errors, Output>
 }
 
 export function Synthetic<E, A>(options: Omit<SyntheticFiber<E, A>, 'tag'>): SyntheticFiber<E, A> {

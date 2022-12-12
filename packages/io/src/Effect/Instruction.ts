@@ -14,7 +14,7 @@ import type { FiberScope } from '../FiberScope/FiberScope.js'
 import type { Future } from '../Future/Future.js'
 import type { Layer } from '../Layer/Layer.js'
 import type { RuntimeFlags } from '../RuntimeFlags/RuntimeFlags.js'
-import { flow2 } from '../_internal.js'
+import { flow2 } from '../_internal/flow2.js'
 
 import { Effect } from './Effect.js'
 
@@ -24,6 +24,7 @@ export type Instruction<R, E, A> =
   | FlatMap<R, E, any, R, E, A>
   | FlatMapCause<R, any, A, R, E, A>
   | Fork<R, E, A>
+  | ForkDaemon<R, E, A>
   | FromCause<E>
   | GetFiberId
   | GetFiberScope
@@ -38,6 +39,8 @@ export type Instruction<R, E, A> =
   | Sync<A>
   | UpdateRuntimeFlags<R, E, A>
   | WithFiberRefs<R, E, A>
+  | Race<R, E, A, R, E, A>
+  | Zip<R, E, any, R, E, any>
 
 abstract class Instr<I, R, E, A> implements Effect<R, E, A> {
   readonly [Effect.TypeId]: Effect.Variance<R, E, A>[Effect.TypeId] = Effect.Variance
@@ -165,6 +168,22 @@ abstract class Instr<I, R, E, A> implements Effect<R, E, A> {
     )
   }
 
+  race<R2, E2, A2>(
+    this: Effect<R, E, A>,
+    that: Effect<R2, E2, A2>,
+    __trace?: string,
+  ): Effect<R | R2, E | E2, A | A2> {
+    return new Race([this, that], __trace)
+  }
+
+  zip<R2, E2, A2>(
+    this: Effect<R, E, A>,
+    that: Effect<R2, E2, A2>,
+    __trace?: string,
+  ): Effect<R | R2, E | E2, readonly [A, A2]> {
+    return new Zip([this, that], __trace)
+  }
+
   get attempt(): Effect<R, never, Exit<E, A>> {
     return this.matchCause(
       (c) => new Of(left(c)),
@@ -185,6 +204,14 @@ abstract class Instr<I, R, E, A> implements Effect<R, E, A> {
     __trace?: string,
   ): Effect<R, never, RuntimeFiber<E, A>> {
     return new Fork<R, E, A>([this, options], __trace)
+  }
+
+  forkDaemon(
+    this: Effect<R, E, A>,
+    options?: Omit<Partial<RuntimeOptions<R>>, 'scope'>,
+    __trace?: string,
+  ): Effect<R, never, RuntimeFiber<E, A>> {
+    return new ForkDaemon<R, E, A>([this, options], __trace)
   }
 
   provideContext(
@@ -381,6 +408,33 @@ export class Fork<R, E, A> extends Instr<
   FiberRuntime<R, E, A>
 > {
   readonly tag = 'Fork'
+}
+
+export class ForkDaemon<R, E, A> extends Instr<
+  readonly [Effect<R, E, A>, Omit<Partial<RuntimeOptions<R>>, 'scope'>?],
+  R,
+  never,
+  FiberRuntime<R, E, A>
+> {
+  readonly tag = 'ForkDaemon'
+}
+
+export class Zip<R, E, A, R2, E2, B> extends Instr<
+  readonly [Effect<R, E, A>, Effect<R2, E2, B>],
+  R | R2,
+  E | E2,
+  readonly [A, B]
+> {
+  readonly tag = 'Zip'
+}
+
+export class Race<R, E, A, R2, E2, B> extends Instr<
+  readonly [Effect<R, E, A>, Effect<R2, E2, B>],
+  R | R2,
+  E | E2,
+  A | B
+> {
+  readonly tag = 'Race'
 }
 
 export function gen<Eff extends Effect<any, any, any>, A, N = unknown>(

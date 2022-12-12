@@ -1,7 +1,7 @@
 import * as Effect from '../Effect.js'
 import { pending } from '../Future.js'
 import { forkScoped } from '../Scope.js'
-import { flow2 } from '../_internal.js'
+import { flow2 } from '../_internal/flow2.js'
 
 import { Sink, Stream } from './Stream.js'
 

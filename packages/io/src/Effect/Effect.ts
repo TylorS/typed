@@ -87,8 +87,23 @@ export interface Effect<out Resources, out Errors, out Output>
     __trace?: string,
   ) => Effect<Resources | Resources2, Errors | Errors2, Output>
 
+  readonly race: <Resources2, Errors2, Output2>(
+    that: Effect<Resources2, Errors2, Output2>,
+    __trace?: string,
+  ) => Effect<Resources | Resources2, Errors | Errors2, Output | Output2>
+
+  readonly zip: <Resources2, Errors2, Output2>(
+    that: Effect<Resources2, Errors2, Output2>,
+    __trace?: string,
+  ) => Effect<Resources | Resources2, Errors | Errors2, readonly [Output, Output2]>
+
   readonly fork: (
     options?: Partial<RuntimeOptions<Resources>>,
+    __trace?: string,
+  ) => Effect<Resources, never, RuntimeFiber<Errors, Output>>
+
+  readonly forkDaemon: (
+    options?: Omit<Partial<RuntimeOptions<Resources>>, 'scope'>,
     __trace?: string,
   ) => Effect<Resources, never, RuntimeFiber<Errors, Output>>
 

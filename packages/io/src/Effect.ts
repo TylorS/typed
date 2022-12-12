@@ -1,5 +1,12 @@
+export {
+  getClock,
+  getCurrentTime,
+  getCurrentUnixTime,
+  getGlobalFiberScope,
+  getIdGenerator,
+  getScheduler,
+} from './DefaultServices/DefaultServices.js'
 export * from './Effect/index.js'
-export { scoped, forkScoped } from './Scope/index.js'
 export {
   runtime,
   runtimeDaemon,
