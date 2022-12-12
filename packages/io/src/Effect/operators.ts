@@ -13,7 +13,7 @@ import type { FiberRefs } from '../FiberRefs/FiberRefs.js'
 import type { RuntimeOptions } from '../FiberRuntime/FiberRuntime.js'
 import type { FiberScope } from '../FiberScope/FiberScope.js'
 import type { Future } from '../Future/Future.js'
-import type { Ref } from '../Ref/Ref.js'
+import type { Layer } from '../Layer.js'
 import type { RuntimeFlags } from '../RuntimeFlags/RuntimeFlags.js'
 import { flow2 } from '../_internal.js'
 
@@ -31,7 +31,10 @@ export function fromCause<E>(cause: Cause<E>, __trace?: string): Effect<never, E
 }
 
 export const fromExit = I.fromExit
-export const withFiberRefs = I.withFiberRefs
+export const withFiberRefs =
+  (fiberRefs: FiberRefs, __trace?: string) =>
+  <R, E, A>(effect: Effect<R, E, A>) =>
+    effect.withFiberRefs(fiberRefs, __trace)
 export const gen = I.gen
 
 export function sync<A>(f: () => A, __trace?: string): Effect.Of<A> {
@@ -49,42 +52,38 @@ export function access<R, R2, E2, A>(
   return new I.AccessContext<R, R2, E2, A>(f, __trace)
 }
 
-export function provide<R>(
+export function provideContext<R>(
   context: Context.Context<R>,
   __trace?: string,
 ): <E, A>(effect: Effect<R, E, A>) => Effect<never, E, A> {
-  return (effect) => new I.ProvideContext([effect, context], __trace)
+  return (effect) => effect.provideContext(context, __trace)
+}
+
+export function provide<S>(
+  context: Context.Context<S>,
+  __trace?: string,
+): <R, E, A>(effect: Effect<R, E, A>) => Effect<Exclude<R, S>, E, A> {
+  return (effect) => effect.provide(context, __trace)
 }
 
 export function provideSome<R0, R>(
   f: (r0: Context.Context<R0>) => Context.Context<R>,
   __trace?: string,
 ): <E, A>(effect: Effect<R, E, A>) => Effect<Exclude<R0, R>, E, A> {
-  return (effect) => access((r0) => provide(f(r0 as Context.Context<R0>))(effect), __trace)
+  return (effect) => access((r0) => effect.provideContext(f(r0 as Context.Context<R0>)), __trace)
 }
 
 export function map<A, B>(f: (a: A) => B, __trace?: string) {
-  return <R, E>(eff: Effect<R, E, A>): Effect<R, E, B> => new I.Map([eff, f], __trace)
+  return <R, E>(eff: Effect<R, E, A>): Effect<R, E, B> => eff.map(f, __trace)
 }
 
 export function flatMap<A, R2, E2, B>(f: (a: A) => Effect<R2, E2, B>, __trace?: string) {
-  return <R, E>(eff: Effect<R, E, A>): Effect<R | R2, E | E2, B> => new I.FlatMap([eff, f], __trace)
+  return <R, E>(eff: Effect<R, E, A>): Effect<R | R2, E | E2, B> => eff.flatMap(f, __trace)
 }
 
 export function tap<A, R2, E2, B>(f: (a: A) => Effect<R2, E2, B>, __trace?: string) {
   return <R, E>(eff: Effect<R, E, A>): Effect<R | R2, E | E2, A> =>
-    new I.FlatMap(
-      [
-        eff,
-        (a) =>
-          pipe(
-            a,
-            f,
-            map(() => a),
-          ),
-      ],
-      __trace,
-    )
+    eff.flatMap((a) => f(a).as(a), __trace)
 }
 
 export function matchCause<E, R2, E2, B, A, R3, E3, C>(
@@ -93,7 +92,16 @@ export function matchCause<E, R2, E2, B, A, R3, E3, C>(
   __trace?: string,
 ) {
   return <R>(eff: Effect<R, E, A>): Effect<R | R2 | R3, E2 | E3, B | C> =>
-    new I.Match<R, E, A, R2, E2, B, R3, E3, C>([eff, onCause, onValue], __trace)
+    eff.matchCause(onCause, onValue, __trace)
+}
+
+export function matchError<E, R2, E2, B, A, R3, E3, C>(
+  onError: (cause: E) => Effect<R2, E2, B>,
+  onValue: (value: A) => Effect<R3, E3, C>,
+  __trace?: string,
+) {
+  return <R>(eff: Effect<R, E, A>): Effect<R | R2 | R3, E2 | E3, B | C> =>
+    eff.matchError(onError, onValue, __trace)
 }
 
 export function attempt<R, E, A>(
@@ -107,12 +115,19 @@ export function flatMapCause<E, R2, E2, B>(
   f: (cause: Cause<E>) => Effect<R2, E2, B>,
   __trace?: string,
 ) {
-  return <R, A>(eff: Effect<R, E, A>): Effect<R | R2, E2, A | B> =>
-    new I.FlatMapCause([eff, f], __trace)
+  return <R, A>(eff: Effect<R, E, A>): Effect<R | R2, E2, A | B> => eff.flatMapCause(f, __trace)
+}
+
+export function flatMapError<E, R2, E2, B>(f: (cause: E) => Effect<R2, E2, B>, __trace?: string) {
+  return <R, A>(eff: Effect<R, E, A>): Effect<R | R2, E2, A | B> => eff.flatMapError(f, __trace)
 }
 
 export function mapCause<E, E2>(f: (cause: Cause<E>) => Cause<E2>, __trace?: string) {
-  return <R, A>(eff: Effect<R, E, A>): Effect<R, E2, A> => new I.MapCause([eff, f], __trace)
+  return <R, A>(eff: Effect<R, E, A>): Effect<R, E2, A> => eff.mapCause(f, __trace)
+}
+
+export function mapError<E, E2>(f: (cause: E) => E2, __trace?: string) {
+  return <R, A>(eff: Effect<R, E, A>): Effect<R, E2, A> => eff.mapError(f, __trace)
 }
 
 export function wait<R, E, A>(future: Future<R, E, A>): Effect<R, E, A> {
@@ -120,15 +135,15 @@ export function wait<R, E, A>(future: Future<R, E, A>): Effect<R, E, A> {
 }
 
 export function updateRuntimeFlags(f: (flags: RuntimeFlags) => RuntimeFlags, __trace?: string) {
-  return <R, E, A>(effect: Effect<R, E, A>) => new I.UpdateRuntimeFlags([effect, f], __trace)
+  return <R, E, A>(effect: Effect<R, E, A>) => effect.updateRuntimeFlags(f, __trace)
 }
 
-export function uninterruptable<R, E, A>(eff: Effect<R, E, A>, __trace?: string): Effect<R, E, A> {
-  return updateRuntimeFlags((flags) => ({ ...flags, interruptStatus: false }), __trace)(eff)
+export function uninterruptable<R, E, A>(eff: Effect<R, E, A>): Effect<R, E, A> {
+  return eff.uninterruptable
 }
 
-export function interruptable<R, E, A>(eff: Effect<R, E, A>, __trace?: string): Effect<R, E, A> {
-  return updateRuntimeFlags((flags) => ({ ...flags, interruptStatus: true }), __trace)(eff)
+export function interruptable<R, E, A>(eff: Effect<R, E, A>): Effect<R, E, A> {
+  return eff.interruptable
 }
 
 export const getFiberRefs: Effect.Of<FiberRefs> = new I.GetFiberRefs()
@@ -206,7 +221,7 @@ export const modifyFiberRefEffect =
 export const fork = <R, E, A>(
   effect: Effect<R, E, A>,
   __trace?: string,
-): Effect<R, never, Fiber.RuntimeFiber<E, A>> => new I.Fork([effect], __trace)
+): Effect<R, never, Fiber.RuntimeFiber<E, A>> => effect.fork(undefined, __trace)
 
 export const join = <E, A>(fiber: Fiber.Fiber<E, A>, __trace?: string): Effect<never, E, A> =>
   pipe(
@@ -216,9 +231,9 @@ export const join = <E, A>(fiber: Fiber.Fiber<E, A>, __trace?: string): Effect<n
   )
 
 export const forkWithOptions =
-  <R>(options: Partial<RuntimeOptions<R>>) =>
-  <E, A>(effect: Effect<R, E, A>, __trace?: string): Effect<R, never, Fiber.RuntimeFiber<E, A>> =>
-    new I.Fork([effect, options], __trace)
+  <R>(options: Partial<RuntimeOptions<R>>, __trace?: string) =>
+  <E, A>(effect: Effect<R, E, A>): Effect<R, never, Fiber.RuntimeFiber<E, A>> =>
+    effect.fork(options, __trace)
 
 export const context = <R>(): Effect<R, never, Context.Context<R>> => access(of)
 
@@ -229,19 +244,14 @@ export const onExit =
   (effect) =>
     pipe(effect, attempt, tap(f), flatMap(fromExit))
 
-export function provideService<S>(tag: Context.Tag<S>, service: S) {
-  const addService = Context.add(tag)(service)
-
+export function provideService<S>(tag: Context.Tag<S>, service: S, __trace?: string) {
   return <R, E, A>(effect: Effect<R | S, E, A>): Effect<Exclude<R, S>, E, A> =>
-    access((env) => pipe(effect, provide(addService(env as Context.Context<R>))))
+    effect.provideService(tag, service, __trace)
 }
 
-export function provideLayer<R2, E2, I, S>(layer: Ref<R2, E2, I, Context.Context<S>>) {
+export function provideLayer<R2, E2, I, S>(layer: Layer<R2, E2, I, S>, __trace: string) {
   return <R, E, A>(effect: Effect<R | S, E, A>): Effect<R2 | Exclude<R, S>, E | E2, A> =>
-    pipe(
-      layer.get,
-      flatMap((env2) => pipe(effect, provideSome(Context.merge(env2)))),
-    )
+    effect.provideLayer(layer, __trace)
 }
 
 export function asksEffect<S, R, E, A>(

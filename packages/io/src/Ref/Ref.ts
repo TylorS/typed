@@ -146,9 +146,9 @@ function mapObject<A, B>(object: Readonly<Record<string, A>>, f: (a: A, k: strin
 
 export function provide<R>(ctx: Context.Context<R>) {
   return <E, A>(ref: Ref<R, E, A>): Ref<never, E, A> => ({
-    get: pipe(ref.get, Effect.provide(ctx)),
-    set: flow(ref.set, Effect.provide(ctx)),
-    delete: pipe(ref.delete, Effect.provide(ctx)),
+    get: pipe(ref.get, Effect.provideContext(ctx)),
+    set: flow(ref.set, Effect.provideContext(ctx)),
+    delete: pipe(ref.delete, Effect.provideContext(ctx)),
   })
 }
 

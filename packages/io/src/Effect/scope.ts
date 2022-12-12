@@ -2,7 +2,7 @@ import { Scope } from '../Scope.js'
 
 import { Effect } from './Effect.js'
 import { gen } from './Instruction.js'
-import { ask, asksEffect, context, provide, uninterruptable } from './operators.js'
+import { ask, asksEffect, context, provideContext, uninterruptable } from './operators.js'
 
 export function managed<R, E, A, R2>(
   acquire: Effect<R, E, A>,
@@ -14,7 +14,7 @@ export function managed<R, E, A, R2>(
       const scope: Scope = yield* ask(Scope)
       const a = yield* acquire
 
-      yield* scope.addFinalizer(() => provide(env)(release(a)))
+      yield* scope.addFinalizer(() => provideContext(env)(release(a)))
 
       return a
     }),

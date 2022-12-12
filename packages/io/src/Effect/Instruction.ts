@@ -1,6 +1,7 @@
-import { Context } from '@fp-ts/data/Context'
+import * as Context from '@fp-ts/data/Context'
 import { isLeft } from '@fp-ts/data/Either'
-import { Cause, CauseError } from '@typed/cause'
+import { pipe } from '@fp-ts/data/Function'
+import * as Cause from '@typed/cause'
 import { Exit } from '@typed/exit'
 import { SingleShotGen, OfGen } from '@typed/internal'
 
@@ -10,6 +11,7 @@ import type { FiberRefs } from '../FiberRefs/FiberRefs.js'
 import type { FiberRuntime, RuntimeOptions } from '../FiberRuntime/FiberRuntime.js'
 import type { FiberScope } from '../FiberScope/FiberScope.js'
 import type { Future } from '../Future/Future.js'
+import type { Layer } from '../Layer/Layer.js'
 import type { RuntimeFlags } from '../RuntimeFlags/RuntimeFlags.js'
 import { flow2 } from '../_internal.js'
 
@@ -45,51 +47,143 @@ abstract class Instr<I, R, E, A> implements Effect<R, E, A> {
     return new SingleShotGen<this, A>(this)
   }
 
-  map<B>(f: (a: A) => B, __trace?: string): Effect<R, E, B> {
+  map<B>(this: Effect<R, E, A>, f: (a: A) => B, __trace?: string): Effect<R, E, B> {
     return Map.make<R, E, A, B>(this, f, __trace)
   }
 
-  mapCause<E2>(f: (e: Cause<E>) => Cause<E2>, __trace?: string): Effect<R, E2, A> {
+  as<B>(this: Effect<R, E, A>, b: B, __trace?: string): Effect<R, E, B> {
+    return this.map(() => b, __trace)
+  }
+
+  mapCause<E2>(
+    this: Effect<R, E, A>,
+    f: (e: Cause.Cause<E>) => Cause.Cause<E2>,
+    __trace?: string,
+  ): Effect<R, E2, A> {
     return new MapCause<R, E, A, E2>([this, f], __trace)
   }
 
-  flatMap<R2, E2, B>(f: (a: A) => Effect<R2, E2, B>, __trace?: string): Effect<R | R2, E | E2, B> {
+  mapError<E2>(this: Effect<R, E, A>, f: (e: E) => E2, __trace?: string): Effect<R, E2, A> {
+    return this.mapCause(Cause.map(f), __trace)
+  }
+
+  flatMap<R2, E2, B>(
+    this: Effect<R, E, A>,
+    f: (a: A) => Effect<R2, E2, B>,
+    __trace?: string,
+  ): Effect<R | R2, E | E2, B> {
     return new FlatMap<R, E, A, R2, E2, B>([this, f], __trace)
   }
 
   flatMapCause<R2, E2, B>(
-    f: (e: Cause<E>) => Effect<R2, E2, B>,
+    this: Effect<R, E, A>,
+    f: (e: Cause.Cause<E>) => Effect<R2, E2, B>,
     __trace?: string,
   ): Effect<R | R2, E2, A | B> {
     return new FlatMapCause<R, E, A, R2, E2, B>([this, f], __trace)
   }
 
+  flatMapError<Resources2, Errors2, Output2>(
+    this: Effect<R, E, A>,
+    f: (a: E) => Effect<Resources2, Errors2, Output2>,
+    __trace?: string | undefined,
+  ): Effect<R | Resources2, Errors2, A | Output2> {
+    return this.flatMapCause(
+      Cause.expectedOrCause(f, (cause) => new FromCause(cause)),
+      __trace,
+    )
+  }
+
   matchCause<R2, E2, B, R3, E3, C>(
-    onFailure: (e: Cause<E>) => Effect<R2, E2, B>,
+    this: Effect<R, E, A>,
+    onFailure: (e: Cause.Cause<E>) => Effect<R2, E2, B>,
     onSuccess: (a: A) => Effect<R3, E3, C>,
     __trace?: string,
   ): Effect<R | R2 | R3, E2 | E3, B | C> {
     return new Match<R, E, A, R2, E2, B, R3, E3, C>([this, onFailure, onSuccess], __trace)
   }
 
+  matchError<R2, E2, B, R3, E3, C>(
+    this: Effect<R, E, A>,
+    onFailure: (e: E) => Effect<R2, E2, B>,
+    onSuccess: (a: A) => Effect<R3, E3, C>,
+    __trace?: string,
+  ): Effect<R | R2 | R3, E2 | E3, B | C> {
+    return this.matchCause(
+      Cause.expectedOrCause(onFailure, (cause) => new FromCause(cause)),
+      onSuccess,
+      __trace,
+    )
+  }
+
   fork(
+    this: Effect<R, E, A>,
     options?: Partial<RuntimeOptions<R>>,
     __trace?: string,
   ): Effect<R, never, RuntimeFiber<E, A>> {
     return new Fork<R, E, A>([this, options], __trace)
   }
 
-  provideContext(context: Context<R>, __trace?: string): Effect<never, E, A> {
+  provideContext(
+    this: Effect<R, E, A>,
+    context: Context.Context<R>,
+    __trace?: string,
+  ): Effect<never, E, A> {
     return new ProvideContext([this, context], __trace)
   }
 
-  withFiberRefs(refs: FiberRefs, __trace?: string | undefined): Effect<R, E, A> {
+  provide<S>(
+    this: Effect<R, E, A>,
+    context: Context.Context<S>,
+    __trace?: string,
+  ): Effect<Exclude<R, S>, E, A> {
+    return new AccessContext(
+      (r: Context.Context<Exclude<R, S>>) =>
+        this.provideContext(pipe(r as Context.Context<R>, Context.merge(context))),
+      __trace,
+    )
+  }
+
+  provideService<S>(
+    this: Effect<R, E, A>,
+    tag: Context.Tag<S>,
+    service: S,
+    __trace?: string,
+  ): Effect<Exclude<R, S>, E, A> {
+    return this.provide(Context.add(tag)(service)(Context.empty()), __trace)
+  }
+
+  provideLayer<R2, E2, I, S>(this: Effect<R, E, A>, layer: Layer<R2, E2, I, S>, __trace?: string) {
+    return layer.get.flatMap((i) => this.provide(i), __trace)
+  }
+
+  withFiberRefs(
+    this: Effect<R, E, A>,
+    refs: FiberRefs,
+    __trace?: string | undefined,
+  ): Effect<R, E, A> {
     return new WithFiberRefs([this, refs], __trace)
+  }
+
+  updateRuntimeFlags(
+    this: Effect<R, E, A>,
+    f: (flags: RuntimeFlags) => RuntimeFlags,
+    __trace?: string,
+  ): Effect<R, E, A> {
+    return new UpdateRuntimeFlags([this, f], __trace)
+  }
+
+  get interruptable(): Effect<R, E, A> {
+    return this.updateRuntimeFlags((flags) => ({ ...flags, interruptable: true }))
+  }
+
+  get uninterruptable(): Effect<R, E, A> {
+    return this.updateRuntimeFlags((flags) => ({ ...flags, interruptable: false }))
   }
 }
 
 export class AccessContext<R, R2, E, A> extends Instr<
-  (r: Context<R>) => Effect<R2, E, A>,
+  (r: Context.Context<R>) => Effect<R2, E, A>,
   R | R2,
   E,
   A
@@ -98,7 +192,7 @@ export class AccessContext<R, R2, E, A> extends Instr<
 }
 
 export class ProvideContext<R, E, A> extends Instr<
-  readonly [Effect<R, E, A>, Context<R>],
+  readonly [Effect<R, E, A>, Context.Context<R>],
   never,
   E,
   A
@@ -106,7 +200,7 @@ export class ProvideContext<R, E, A> extends Instr<
   readonly tag = 'ProvideContext'
 }
 
-export class FromCause<E> extends Instr<Cause<E>, never, E, never> {
+export class FromCause<E> extends Instr<Cause.Cause<E>, never, E, never> {
   readonly tag = 'FromCause'
 }
 
@@ -154,7 +248,7 @@ export class FlatMap<R, E, A, R2, E2, B> extends Instr<
 }
 
 export class MapCause<R, E, A, E2> extends Instr<
-  readonly [Effect<R, E, A>, (a: Cause<E>) => Cause<E2>],
+  readonly [Effect<R, E, A>, (a: Cause.Cause<E>) => Cause.Cause<E2>],
   R,
   E2,
   A
@@ -163,7 +257,7 @@ export class MapCause<R, E, A, E2> extends Instr<
 }
 
 export class FlatMapCause<R, E, A, R2, E2, B> extends Instr<
-  readonly [Effect<R, E, A>, (a: Cause<E>) => Effect<R2, E2, B>],
+  readonly [Effect<R, E, A>, (a: Cause.Cause<E>) => Effect<R2, E2, B>],
   R | R2,
   E2,
   A | B
@@ -172,7 +266,7 @@ export class FlatMapCause<R, E, A, R2, E2, B> extends Instr<
 }
 
 export class Match<R, E, A, R2, E2, B, R3, E3, C> extends Instr<
-  readonly [Effect<R, E, A>, (e: Cause<E>) => Effect<R2, E2, B>, (a: A) => Effect<R3, E3, C>],
+  readonly [Effect<R, E, A>, (e: Cause.Cause<E>) => Effect<R2, E2, B>, (a: A) => Effect<R3, E3, C>],
   R | R2 | R3,
   E2 | E3,
   B | C
@@ -236,7 +330,7 @@ export function gen<Eff extends Effect<any, any, any>, A, N = unknown>(
     return new FlatMapCause([
       runEffectGenerator(gen, gen.next()),
       // TOOD: better error handling
-      (cause) => runEffectGenerator(gen, gen.throw(new CauseError(cause))),
+      (cause) => runEffectGenerator(gen, gen.throw(new Cause.CauseError(cause))),
     ])
   }, __trace)
 }
@@ -255,8 +349,3 @@ function runEffectGenerator<Eff extends Effect<any, any, any>, A>(
 export function fromExit<E, A>(exit: Exit<E, A>, __trace?: string): Effect.IO<E, A> {
   return isLeft(exit) ? new FromCause(exit.left, __trace) : new Of(exit.right, __trace)
 }
-
-export const withFiberRefs =
-  (refs: FiberRefs, __trace?: string) =>
-  <R, E, A>(effect: Effect<R, E, A>): Effect<R, E, A> =>
-    new WithFiberRefs([effect, refs], __trace)

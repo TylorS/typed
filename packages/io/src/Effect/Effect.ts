@@ -1,14 +1,30 @@
-import { Context } from '@fp-ts/data/Context'
+import { Context, Tag } from '@fp-ts/data/Context'
 import { identity } from '@fp-ts/data/Function'
 import type { Cause } from '@typed/cause'
 
 import type { RuntimeFiber } from '../Fiber/index.js'
 import type { FiberRefs } from '../FiberRefs.js'
 import type { RuntimeOptions } from '../FiberRuntime.js'
+import type { Layer } from '../Layer/Layer.js'
+import { RuntimeFlags } from '../RuntimeFlags.js'
+
+// TODO: CausedBy
+// TODO: tap
+// TODO: tapCause
+// TODO: tapError
+// TODO: onExit
+// TODO: attempt
+// TODO: either
+// TODO: race
+// TODO: both
+// TODO: zipLeft
+// TODO: zipRight
 
 export interface Effect<out Resources, out Errors, out Output>
   extends Effect.Variance<Resources, Errors, Output> {
   readonly [Symbol.iterator]: () => Generator<Effect<Resources, Errors, Output>, Output, Output>
+
+  readonly as: <B>(value: B, __trace?: string) => Effect<Resources, Errors, B>
 
   readonly map: <Output2>(
     f: (a: Output) => Output2,
@@ -17,6 +33,11 @@ export interface Effect<out Resources, out Errors, out Output>
 
   readonly mapCause: <Errors2>(
     f: (a: Cause<Errors>) => Cause<Errors2>,
+    __trace?: string,
+  ) => Effect<Resources, Errors2, Output>
+
+  readonly mapError: <Errors2>(
+    f: (a: Errors) => Errors2,
     __trace?: string,
   ) => Effect<Resources, Errors2, Output>
 
@@ -30,13 +51,22 @@ export interface Effect<out Resources, out Errors, out Output>
     __trace?: string,
   ) => Effect<Resources | Resources2, Errors2, Output | Output2>
 
+  readonly flatMapError: <Resources2, Errors2, Output2>(
+    f: (a: Errors) => Effect<Resources2, Errors2, Output2>,
+    __trace?: string,
+  ) => Effect<Resources | Resources2, Errors2, Output | Output2>
+
   readonly matchCause: <Resources2, Errors2, Output2, Resources3, Errors3, Output3>(
     onFailure: (cause: Cause<Errors>) => Effect<Resources2, Errors2, Output2>,
     onSuccess: (value: Output) => Effect<Resources3, Errors3, Output3>,
     __trace?: string,
   ) => Effect<Resources | Resources2 | Resources3, Errors2 | Errors3, Output2 | Output3>
 
-  // TODO: mapError/flatMapError/matchError
+  readonly matchError: <Resources2, Errors2, Output2, Resources3, Errors3, Output3>(
+    onFailure: (error: Errors) => Effect<Resources2, Errors2, Output2>,
+    onSuccess: (value: Output) => Effect<Resources3, Errors3, Output3>,
+    __trace?: string,
+  ) => Effect<Resources | Resources2 | Resources3, Errors2 | Errors3, Output2 | Output3>
 
   readonly fork: (
     options?: Partial<RuntimeOptions<Resources>>,
@@ -48,11 +78,34 @@ export interface Effect<out Resources, out Errors, out Output>
     __trace?: string,
   ) => Effect<never, Errors, Output>
 
-  // TODO: Provide service, provide Layer
+  readonly provide: <S>(
+    context: Context<S>,
+    __trace?: string,
+  ) => Effect<Exclude<Resources, S>, Errors, Output>
+
+  readonly provideService: <S>(
+    tag: Tag<S>,
+    service: S,
+    __trace?: string,
+  ) => Effect<Exclude<Resources, S>, Errors, Output>
+
+  readonly provideLayer: <R2, E2, I, S>(
+    layer: Layer<R2, E2, I, S>,
+    __trace?: string,
+  ) => Effect<R2 | Exclude<Resources, S>, Errors | E2, Output>
 
   readonly withFiberRefs: (refs: FiberRefs, __trace?: string) => Effect<Resources, Errors, Output>
 
   // TODO: Locally provide a FiberRef
+
+  readonly updateRuntimeFlags: (
+    f: (flags: RuntimeFlags) => RuntimeFlags,
+    __trace?: string,
+  ) => Effect<Resources, Errors, Output>
+
+  readonly interruptable: Effect<Resources, Errors, Output>
+
+  readonly uninterruptable: Effect<Resources, Errors, Output>
 }
 
 export namespace Effect {

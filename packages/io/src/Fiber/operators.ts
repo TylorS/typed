@@ -12,7 +12,7 @@ export function zip<E2, B>(second: RuntimeFiber<E2, B>) {
   return <E1, A>(first: RuntimeFiber<E1, A>): SyntheticFiber<E1 | E2, readonly [A, B]> => {
     return Synthetic({
       id: FiberId.Synthetic([first.id, second.id]),
-      exit: new I.Lazy(() => new I.Async(zipFuture(first, second))),
+      exit: new I.Async(zipFuture(first, second)),
       inheritRefs: new I.FlatMap([first.inheritRefs, () => second.inheritRefs]),
       interruptAs: (id) =>
         I.gen(function* () {
@@ -29,7 +29,7 @@ export function race<E2, B>(second: RuntimeFiber<E2, B>) {
   return <E1, A>(first: RuntimeFiber<E1, A>): SyntheticFiber<E1 | E2, A | B> => {
     return Synthetic({
       id: FiberId.Synthetic([first.id, second.id]),
-      exit: new I.Lazy(() => new I.Async(raceFuture(first, second, true))),
+      exit: new I.Async(raceFuture(first, second, true)),
       inheritRefs: new I.FlatMap([first.inheritRefs, () => second.inheritRefs]),
       interruptAs: (id) =>
         I.gen(function* () {
