@@ -13,15 +13,14 @@ export function runObserve<A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) 
         const future = pending.io<E | E2, void>()
 
         return pipe(
-          Effect.forkScoped(
-            stream.run(
-              Sink(
-                (a) => f(a).flatMapCause((cause) => future.complete(Effect.fromCause(cause))),
-                flow2(Effect.fromCause, future.complete),
-                future.complete(Effect.unit),
-              ),
+          stream.run(
+            Sink(
+              (a) => f(a).flatMapCause((cause) => future.complete(Effect.fromCause(cause))),
+              flow2(Effect.fromCause, future.complete),
+              future.complete(Effect.unit),
             ),
           ),
+          Effect.forkScoped,
           Effect.flatMap(() => Effect.wait(future)),
         )
       }),
