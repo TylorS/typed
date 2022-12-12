@@ -1,24 +1,14 @@
 import { Context, Tag } from '@fp-ts/data/Context'
+import { Either } from '@fp-ts/data/Either'
 import { identity } from '@fp-ts/data/Function'
 import type { Cause } from '@typed/cause'
+import { Exit } from '@typed/exit'
 
 import type { RuntimeFiber } from '../Fiber/index.js'
 import type { FiberRefs } from '../FiberRefs.js'
 import type { RuntimeOptions } from '../FiberRuntime.js'
 import type { Layer } from '../Layer/Layer.js'
 import { RuntimeFlags } from '../RuntimeFlags.js'
-
-// TODO: CausedBy
-// TODO: tap
-// TODO: tapCause
-// TODO: tapError
-// TODO: onExit
-// TODO: attempt
-// TODO: either
-// TODO: race
-// TODO: both
-// TODO: zipLeft
-// TODO: zipRight
 
 export interface Effect<out Resources, out Errors, out Output>
   extends Effect.Variance<Resources, Errors, Output> {
@@ -30,6 +20,11 @@ export interface Effect<out Resources, out Errors, out Output>
     f: (a: Output) => Output2,
     __trace?: string,
   ) => Effect<Resources, Errors, Output2>
+
+  readonly causedBy: <Errors2>(
+    cause: Cause<Errors2>,
+    __trace?: string,
+  ) => Effect<Resources, Errors | Errors2, never>
 
   readonly mapCause: <Errors2>(
     f: (a: Cause<Errors>) => Cause<Errors2>,
@@ -67,6 +62,30 @@ export interface Effect<out Resources, out Errors, out Output>
     onSuccess: (value: Output) => Effect<Resources3, Errors3, Output3>,
     __trace?: string,
   ) => Effect<Resources | Resources2 | Resources3, Errors2 | Errors3, Output2 | Output3>
+
+  readonly tap: <Resources2, Errors2, Output2>(
+    f: (a: Output) => Effect<Resources2, Errors2, Output2>,
+    __trace?: string,
+  ) => Effect<Resources | Resources2, Errors | Errors2, Output>
+
+  readonly tapCause: <Resources2, Errors2, Output2>(
+    f: (a: Cause<Errors>) => Effect<Resources2, Errors2, Output2>,
+    __trace?: string,
+  ) => Effect<Resources | Resources2, Errors | Errors2, Output>
+
+  readonly tapError: <Resources2, Errors2, Output2>(
+    f: (a: Errors) => Effect<Resources2, Errors2, Output2>,
+    __trace?: string,
+  ) => Effect<Resources | Resources2, Errors | Errors2, Output>
+
+  readonly attempt: Effect<Resources, never, Exit<Errors, Output>>
+
+  readonly either: Effect<Resources, never, Either<Errors, Output>>
+
+  readonly ensuring: <Resources2, Errors2, Output2>(
+    finalizer: (exit: Exit<Errors, Output>) => Effect<Resources2, Errors2, Output2>,
+    __trace?: string,
+  ) => Effect<Resources | Resources2, Errors | Errors2, Output>
 
   readonly fork: (
     options?: Partial<RuntimeOptions<Resources>>,

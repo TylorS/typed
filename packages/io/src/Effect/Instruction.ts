@@ -1,7 +1,8 @@
 import * as Context from '@fp-ts/data/Context'
-import { isLeft } from '@fp-ts/data/Either'
+import { Either, isLeft, left, right } from '@fp-ts/data/Either'
 import { pipe } from '@fp-ts/data/Function'
 import * as Cause from '@typed/cause'
+import { Expected, Sequential } from '@typed/cause'
 import { Exit } from '@typed/exit'
 import { SingleShotGen, OfGen } from '@typed/internal'
 
@@ -67,6 +68,18 @@ abstract class Instr<I, R, E, A> implements Effect<R, E, A> {
     return this.mapCause(Cause.map(f), __trace)
   }
 
+  causedBy<Errors2>(
+    this: Effect<R, E, A>,
+    cause: Cause.Cause<Errors2>,
+    __trace?: string | undefined,
+  ): Effect<R, E | Errors2, never> {
+    return this.matchCause(
+      (cause2) => new FromCause(Sequential(cause, cause2)),
+      () => new FromCause(cause),
+      __trace,
+    )
+  }
+
   flatMap<R2, E2, B>(
     this: Effect<R, E, A>,
     f: (a: A) => Effect<R2, E2, B>,
@@ -113,6 +126,56 @@ abstract class Instr<I, R, E, A> implements Effect<R, E, A> {
       Cause.expectedOrCause(onFailure, (cause) => new FromCause(cause)),
       onSuccess,
       __trace,
+    )
+  }
+
+  tap<R2, E2, B>(
+    this: Effect<R, E, A>,
+    f: (a: A) => Effect<R2, E2, B>,
+    __trace?: string,
+  ): Effect<R | R2, E | E2, A> {
+    return this.flatMap((a) => f(a).as(a), __trace)
+  }
+
+  tapCause<R2, E2, B>(
+    this: Effect<R, E, A>,
+    f: (e: Cause.Cause<E>) => Effect<R2, E2, B>,
+    __trace?: string,
+  ): Effect<R | R2, E | E2, A> {
+    return this.flatMapCause((e) => f(e).causedBy(e), __trace)
+  }
+
+  tapError<R2, E2, B>(
+    this: Effect<R, E, A>,
+    f: (e: E) => Effect<R2, E2, B>,
+    __trace?: string,
+  ): Effect<R | R2, E | E2, A> {
+    return this.flatMapError((e) => f(e).causedBy(Expected(e)), __trace)
+  }
+
+  ensuring<R2, E2, B>(
+    this: Effect<R, E, A>,
+    finalizer: (exit: Exit<E, A>) => Effect<R2, E2, B>,
+    __trace?: string,
+  ): Effect<R | R2, E | E2, A> {
+    return this.matchCause(
+      (cause1) => finalizer(left(cause1)).causedBy(cause1),
+      (value) => finalizer(right(value)).as(value),
+      __trace,
+    )
+  }
+
+  get attempt(): Effect<R, never, Exit<E, A>> {
+    return this.matchCause(
+      (c) => new Of(left(c)),
+      (a) => new Of(right(a)),
+    )
+  }
+
+  get either(): Effect<R, never, Either<E, A>> {
+    return this.matchError(
+      (c) => new Of(left(c)),
+      (a) => new Of(right(a)),
     )
   }
 
