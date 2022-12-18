@@ -3,7 +3,10 @@ import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref'
 import { pipe } from '@fp-ts/data/Function'
+import { FiberRefs } from 'node_modules/@effect/io/FiberRefs.js'
 import { Scope } from 'node_modules/@effect/io/Scope.js'
+
+import { forkWithFiberRefs } from './withFiberRefs.js'
 
 export class RefCounter {
   protected count = Ref.unsafeMake(this.initial)
@@ -32,17 +35,18 @@ export class RefCounter {
 
 export function withRefCounter<R, E, A, R2, E2, B>(
   initialCount: number,
-  f: (counter: RefCounter) => Effect.Effect<R, E, A>,
-  onEnd: () => Effect.Effect<R2, E2, B>,
+  f: (counter: RefCounter, refs: FiberRefs) => Effect.Effect<R, E, A>,
+  onEnd: Effect.Effect<R2, E2, B>,
 ): Effect.Effect<R | R2 | Scope, E | E2, B> {
   return Effect.gen(function* ($) {
+    const fiberRefs = yield* $(Effect.getFiberRefs())
     const deferred = yield* $(Deferred.make<never, void>())
     const counter = new RefCounter(initialCount, deferred)
-    const fiber = yield* $(Effect.forkScoped(f(counter)))
+    const fiber = yield* $(forkWithFiberRefs(fiberRefs)(f(counter, fiberRefs)))
 
     yield* $(counter.wait)
     yield* $(Fiber.interrupt(fiber))
 
-    return yield* $(onEnd())
+    return yield* $(onEnd)
   })
 }

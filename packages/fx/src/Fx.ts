@@ -57,3 +57,7 @@ export type OutputOf<T> = Fx.OutputOf<T>
 
 export type Sink<R, E, A> = Fx.Sink<R, E, A>
 export const Sink = Fx.Sink
+
+export function isFx<R, E, A>(v: unknown): v is Fx<R, E, A> {
+  return typeof v === 'object' && v != null && TypeId in v
+}
