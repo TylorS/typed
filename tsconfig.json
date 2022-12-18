@@ -4,40 +4,31 @@
   "files": [],
   "references": [
     {
-      "path": "./packages/cause/tsconfig.build.json"
+      "path": "./packages/benchmark/tsconfig.build.json"
     },
     {
-      "path": "./packages/clock/tsconfig.build.json"
+      "path": "./packages/dom/tsconfig.build.json"
     },
     {
-      "path": "./packages/disposable/tsconfig.build.json"
+      "path": "./packages/fx/tsconfig.build.json"
     },
     {
-      "path": "./packages/exit/tsconfig.build.json"
+      "path": "./packages/html/tsconfig.build.json"
     },
     {
       "path": "./packages/internal/tsconfig.build.json"
     },
     {
-      "path": "./packages/io/tsconfig.build.json"
+      "path": "./packages/node/tsconfig.build.json"
     },
     {
-      "path": "./packages/schedule/tsconfig.build.json"
+      "path": "./packages/path/tsconfig.build.json"
     },
     {
-      "path": "./packages/testing/tsconfig.build.json"
+      "path": "./packages/route/tsconfig.build.json"
     },
     {
-      "path": "./packages/time/tsconfig.build.json"
-    },
-    {
-      "path": "./packages/timeline/tsconfig.build.json"
-    },
-    {
-      "path": "./packages/timer/tsconfig.build.json"
-    },
-    {
-      "path": "./packages/trace/tsconfig.build.json"
+      "path": "./packages/router/tsconfig.build.json"
     }
   ]
 }
