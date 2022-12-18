@@ -27,32 +27,31 @@
     "perf:fibanocci": "ESBK_TSCONFIG_PATH=./perf/tsconfig.json ESBK_DISABLE_CACHE=1 node --loader @esbuild-kit/esm-loader perf/cases/fibanocci.ts",
     "perf:filter-map-reduce": "ESBK_TSCONFIG_PATH=./perf/tsconfig.json ESBK_DISABLE_CACHE=1 node --loader @esbuild-kit/esm-loader perf/cases/filter-map-reduce.ts",
     "~~NEEDS POSITIONAL COMMAND LINE ARGUMENT~~": "",
-    "new-package": "nx generate @typed/nx-plugin:package"
+    "new-package": "nx generate ./packages/nx-plugin:package"
   },
   "dependencies": {
-    "@fp-ts/core": "^0.0.9",
-    "@fp-ts/data": "^0.0.20"
+    "@effect/io": "^0.0.39",
+    "@fp-ts/core": "^0.0.11",
+    "@fp-ts/data": "^0.0.26"
   },
   "peerDependencies": {
     "tslib": "^2.4.1"
   },
   "devDependencies": {
-    "@effect/core": "^0.0.16",
     "@esbuild-kit/esm-loader": "^2.5.4",
     "@most/core": "^1.6.1",
     "@most/scheduler": "^1.3.0",
     "@most/types": "^1.1.0",
-    "@nrwl/devkit": "^15.2.4",
-    "@nrwl/linter": "^15.2.4",
-    "@nrwl/nx-plugin": "^15.2.4",
-    "@nrwl/vite": "15.2.4",
-    "@nrwl/workspace": "^15.2.4",
-    "@typed/fx": "^0.0.33",
-    "@types/node": "^18.11.10",
-    "@typescript-eslint/eslint-plugin": "^5.45.0",
-    "@typescript-eslint/parser": "^5.45.0",
-    "@vitest/ui": "^0.25.3",
-    "eslint": "^8.29.0",
+    "@nrwl/devkit": "^15.3.3",
+    "@nrwl/linter": "^15.3.3",
+    "@nrwl/nx-plugin": "^15.3.3",
+    "@nrwl/vite": "15.3.3",
+    "@nrwl/workspace": "^15.3.3",
+    "@types/node": "^18.11.17",
+    "@typescript-eslint/eslint-plugin": "^5.46.1",
+    "@typescript-eslint/parser": "^5.46.1",
+    "@vitest/ui": "^0.25.8",
+    "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-typescript": "^3.5.2",
     "eslint-plugin-import": "^2.26.0",
@@ -60,18 +59,18 @@
     "husky": "^8.0.2",
     "lerna": "^6.1.0",
     "lint-staged": "^13.1.0",
-    "nx": "15.2.4",
-    "prettier": "^2.8.0",
-    "rxjs": "^7.6.0",
+    "nx": "15.3.3",
+    "prettier": "^2.8.1",
+    "rxjs": "^7.8.0",
     "ts-morph": "^17.0.1",
     "tsconfig-paths": "github:IgnusG/tsconfig-paths#fce7c52ed061417dfd1dcce94721c4a94c230bab",
     "tslib": "^2.4.1",
     "tsx": "^3.12.1",
-    "typescript": "^4.9.3",
-    "vite": "^3.2.4",
+    "typescript": "^4.9.4",
+    "vite": "^4.0.1",
     "vite-plugin-eslint": "^1.8.1",
-    "vite-tsconfig-paths": "^3.6.0",
-    "vitest": "^0.25.3"
+    "vite-tsconfig-paths": "^4.0.3",
+    "vitest": "^0.25.8"
   },
   "pnpm": {
     "overrides": {

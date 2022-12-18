@@ -164,6 +164,8 @@ function addPercentile(
   return newStats
 }
 
+// TOOO: Return Markdown formatted table as a string
+
 export function printTestSuiteResult(result: TestSuiteResult): void {
   console.log(`Test Suite: ${result.name}`)
   console.table(result.stats)
