@@ -27,7 +27,7 @@ export namespace Fx {
 
   export type ResourcesOf<T> = [T] extends [Variance<infer R, infer _E, infer _A>] ? R : never
 
-  export type ErrorOf<T> = [T] extends [Variance<infer _R, infer E, infer _A>] ? E : never
+  export type ErrorsOf<T> = [T] extends [Variance<infer _R, infer E, infer _A>] ? E : never
 
   export type OutputOf<T> = [T] extends [Variance<infer _R, infer _E, infer A>] ? A : never
 
@@ -52,7 +52,7 @@ export const TypeId = Fx.TypeId
 export type TypeId = Fx.TypeId
 
 export type ResourcesOf<T> = Fx.ResourcesOf<T>
-export type ErrorOf<T> = Fx.ErrorOf<T>
+export type ErrorOf<T> = Fx.ErrorsOf<T>
 export type OutputOf<T> = Fx.OutputOf<T>
 
 export type Sink<R, E, A> = Fx.Sink<R, E, A>

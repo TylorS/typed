@@ -33,11 +33,9 @@ export class SliceSink<R, E, A> implements Fx.Sink<R, E, A> {
       return Effect.unit()
     }
 
-    const amount = --this.take
-
     return pipe(
       this.sink.event(a),
-      Effect.tap(() => (amount === 0 ? earlyExit : Effect.unit())),
+      Effect.tap(() => (--this.take === 0 ? earlyExit : Effect.unit())),
     )
   }
 

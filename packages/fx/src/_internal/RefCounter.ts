@@ -62,10 +62,10 @@ export function withRefCounter<R, E, A, R2, E2, B>(
   return Effect.gen(function* ($) {
     const deferred = yield* $(Deferred.make<never, void>())
     const counter = new RefCounter(initialCount, deferred)
-    const fiber = yield* $(Effect.forkScoped(f(counter)))
+
+    yield* $(Effect.forkScoped(f(counter)))
 
     yield* $(counter.wait)
-    yield* $(Fiber.interrupt(fiber))
 
     return yield* $(onEnd)
   })
