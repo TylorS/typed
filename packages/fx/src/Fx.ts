@@ -33,7 +33,7 @@ export namespace Fx {
 
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
-  export interface Sink<R, E, A> {
+  export interface Sink<out R, in E, in A> {
     readonly event: (value: A) => Effect<R, never, unknown>
     readonly error: (error: Cause<E>) => Effect<R, never, unknown>
     readonly end: Effect<R, never, unknown>

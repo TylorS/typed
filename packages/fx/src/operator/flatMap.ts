@@ -1,9 +1,9 @@
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
+import { Scope } from 'node_modules/@effect/io/Scope.js'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
-import { forkWithFiberRefs } from '../_internal/withFiberRefs.js'
 
 export function flatMap<A, R2, E2, B>(
   f: (a: A) => Fx<R2, E2, B>,
@@ -22,16 +22,18 @@ export class FlatMapFx<R, E, A, R2, E2, B>
   run<R3>(sink: Fx.Sink<R3, E | E2, B>) {
     return withRefCounter(
       1,
-      (counter, refs) =>
+      (counter) =>
         this.fx.run(
-          Fx.Sink(
+          Fx.Sink<R2 | R3 | Scope, E | E2, A>(
             (a) =>
               pipe(
                 counter.increment,
                 Effect.flatMap(() =>
-                  this.f(a).run(Fx.Sink(sink.event, sink.error, counter.decrement)),
+                  this.f(a).run(
+                    Fx.Sink<R3 | Scope, E | E2, B>(sink.event, sink.error, counter.decrement),
+                  ),
                 ),
-                forkWithFiberRefs(refs),
+                Effect.forkScoped,
               ),
             sink.error,
             counter.decrement,
