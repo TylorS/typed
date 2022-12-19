@@ -7,19 +7,19 @@ import { describe, it } from 'vitest'
 import { fromArray } from '../constructor/fromArray.js'
 import { collectAll } from '../run/collectAll.js'
 
-import { filter } from './filter.js'
+import { scan } from './scan.js'
 
 describe(import.meta.url, () => {
-  describe(filter.name, () => {
-    it('filters an Fx', async () => {
+  describe(scan.name, () => {
+    it('allows accumulating a value over time', async () => {
       const test = pipe(
-        fromArray([1, 2, 3, 4]),
-        filter((x) => x % 2 === 0),
+        fromArray([1, 2, 3]),
+        scan(0, (acc, n) => acc + n),
         collectAll,
       )
       const events = await Effect.unsafeRunPromise(test)
 
-      deepStrictEqual(events, [2, 4])
+      deepStrictEqual(events, [0, 1, 3, 6])
     })
   })
 })
