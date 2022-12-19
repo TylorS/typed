@@ -1,10 +1,10 @@
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
+import { FiberRefs } from '@effect/io/FiberRefs'
 import * as Ref from '@effect/io/Ref'
+import { Scope } from '@effect/io/Scope'
 import { pipe } from '@fp-ts/data/Function'
-import { FiberRefs } from 'node_modules/@effect/io/FiberRefs.js'
-import { Scope } from 'node_modules/@effect/io/Scope.js'
 
 import { forkWithFiberRefs } from './withFiberRefs.js'
 

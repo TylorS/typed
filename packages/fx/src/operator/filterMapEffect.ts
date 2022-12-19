@@ -32,7 +32,7 @@ export class FilterSink<R, E, A, R2, E2, B> implements Fx.Sink<R | R2, E, A> {
     readonly predicate: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>,
   ) {}
 
-  event(a: A) {
+  event = (a: A) => {
     return pipe(
       this.predicate(a),
       Effect.foldCauseEffect(this.sink.error, Option.match(Effect.unit, this.sink.event)),

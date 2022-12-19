@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
+import { Fiber } from '@effect/io/Fiber'
 import { flow } from '@fp-ts/data/Function'
-import { Fiber } from 'node_modules/@effect/io/Fiber.js'
 
 import { Fx } from '../Fx.js'
 

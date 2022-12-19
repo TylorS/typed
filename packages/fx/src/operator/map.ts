@@ -17,7 +17,7 @@ export class MapFx<R, E, A, B> extends Fx.Variance<R, E, B> implements Fx<R, E, 
 export class MapSink<R, E, A, B> implements Fx.Sink<R, E, A> {
   constructor(readonly sink: Fx.Sink<R, E, B>, readonly f: (a: A) => B) {}
 
-  event(a: A) {
+  event = (a: A) => {
     return this.sink.event(this.f(a))
   }
 

@@ -23,7 +23,7 @@ export class SliceFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A
 export class SliceSink<R, E, A> implements Fx.Sink<R, E, A> {
   constructor(readonly sink: Fx.Sink<R, E, A>, protected skip: number, protected take: number) {}
 
-  event(a: A) {
+  event = (a: A) => {
     if (this.skip > 0) {
       this.skip--
       return Effect.unit()

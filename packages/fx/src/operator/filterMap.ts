@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
+import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
-import { pipe } from 'node_modules/@fp-ts/data/Function.js'
 
 import { Fx } from '../Fx.js'
 
@@ -23,8 +23,11 @@ export class FilterMapFx<R, E, A, B> extends Fx.Variance<R, E, B> implements Fx<
 export class FilterMapSink<R, E, A, B> implements Fx.Sink<R, E, A> {
   constructor(readonly sink: Fx.Sink<R, E, B>, readonly f: (a: A) => Option.Option<B>) {}
 
-  event(a: A) {
-    return pipe(this.f(a), Option.match(Effect.unit, this.sink.event))
+  event = (a: A) => {
+    return pipe(
+      this.f(a),
+      Option.match(Effect.unit, (a) => this.sink.event(a)),
+    )
   }
 
   error = this.sink.error

@@ -1,5 +1,5 @@
 import * as Effect from '@effect/io/Effect'
-import { pipe } from 'node_modules/@fp-ts/data/Function.js'
+import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
 

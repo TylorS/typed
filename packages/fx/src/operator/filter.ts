@@ -22,7 +22,7 @@ export class FilterFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, 
 export class FilterSink<R, E, A> implements Fx.Sink<R, E, A> {
   constructor(readonly sink: Fx.Sink<R, E, A>, readonly predicate: Predicate<A>) {}
 
-  event(a: A) {
+  event = (a: A) => {
     if (this.predicate(a)) {
       return this.sink.event(a)
     }
