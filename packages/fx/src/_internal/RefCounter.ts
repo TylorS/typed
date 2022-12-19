@@ -7,7 +7,7 @@ import { Scope } from '@effect/io/Scope'
 import { millis } from '@fp-ts/data/Duration'
 import { pipe } from '@fp-ts/data/Function'
 
-const asap = pipe(
+export const asap = pipe(
   Schedule.once(),
   Schedule.delayed(() => millis(0)),
 )
