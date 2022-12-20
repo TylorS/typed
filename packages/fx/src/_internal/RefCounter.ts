@@ -1,7 +1,7 @@
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
-import * as Ref from '@effect/io/Ref/Synchronized'
+import * as Ref from '@effect/io/Ref'
 import * as Schedule from '@effect/io/Schedule'
 import { Scope } from '@effect/io/Scope'
 import { millis } from '@fp-ts/data/Duration'
@@ -22,12 +22,12 @@ export class RefCounter {
 
   readonly increment = pipe(
     this.count,
-    Ref.updateAndGetEffect((x) => Effect.sync(() => x + 1)),
+    Ref.updateAndGet((x) => x + 1),
   )
 
   readonly decrement = pipe(
     this.count,
-    Ref.updateEffect((x) => Effect.sync(() => Math.max(0, x - 1))),
+    Ref.updateAndGet((x) => Math.max(0, x - 1)),
     Effect.tap(() => this.checkShouldClose),
   )
 
@@ -35,6 +35,8 @@ export class RefCounter {
 
   private checkShouldClose = Effect.suspendSucceed(() => {
     const interrupt = this.fiber ? Fiber.interrupt(this.fiber) : Effect.unit()
+
+    this.fiber = undefined
 
     return pipe(
       interrupt,
@@ -63,9 +65,11 @@ export function withRefCounter<R, E, A, R2, E2, B>(
     const deferred = yield* $(Deferred.make<never, void>())
     const counter = new RefCounter(initialCount, deferred)
 
-    yield* $(Effect.forkScoped(f(counter)))
+    const fiber = yield* $(Effect.forkScoped(f(counter)))
 
     yield* $(counter.wait)
+
+    yield* $(Fiber.interrupt(fiber))
 
     return yield* $(onEnd)
   })
