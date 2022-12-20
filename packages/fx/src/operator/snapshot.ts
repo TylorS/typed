@@ -32,6 +32,7 @@ export class SnapshotFx<R, E, A, R2, E2, B, C>
         pipe(
           sampled,
           run((b) => pipe(ref, Ref.set(Option.some(b))), sink.error, Effect.unit()),
+          Effect.forkScoped,
         ),
       )
 
