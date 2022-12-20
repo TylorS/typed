@@ -6,23 +6,25 @@ import { pipe } from '@fp-ts/data/Function'
 import { describe, it } from 'vitest'
 
 import { at } from '../constructor/at.js'
-import { fromArray } from '../constructor/fromArray.js'
 import { collectAll } from '../run/collectAll.js'
 
-import { flatMapConcurrently } from './flatMapConcurrently.js'
 import { mergeAll } from './merge.js'
+import { raceAll } from './race.js'
 
 describe(import.meta.url, () => {
-  describe(flatMapConcurrently.name, () => {
-    it('merges inner streams with specified concurrency', async () => {
+  describe(raceAll.name, () => {
+    it('allows combining multiple streams together only emmiting when all streams have emitted at least once', async () => {
       const test = pipe(
-        fromArray([1, 2, 3, 4]),
-        flatMapConcurrently(2, (n) => mergeAll(at(millis(5), n), at(millis(10), n * n))),
+        raceAll(
+          mergeAll(at(millis(0), 1), at(millis(200), 2)),
+          mergeAll(at(millis(100), 3), at(millis(150), 4)),
+          mergeAll(at(millis(250), 5), at(millis(300), 6)),
+        ),
         collectAll,
       )
       const events = await Effect.unsafeRunPromise(test)
 
-      deepStrictEqual(events, [1, 2, 1, 4, 3, 4, 9, 16])
+      deepStrictEqual(events, [1, 2])
     })
   })
 })
