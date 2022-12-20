@@ -51,7 +51,7 @@ export class RaceAllFx<Streams extends readonly Fx<any, any, any>[]>
                   s,
                   tap(() => cleanupScopes(i)),
                   run(sink.event, sink.error, sink.end),
-                  Effect.scheduleForked(asap),
+                  Effect.scheduleForked(asap), // Schedule starts so that all Scopes can be returned *before* attempting to cleanup
                   Effect.as(scope),
                   Effect.provideService(Scope.Tag)(scope),
                 ),
