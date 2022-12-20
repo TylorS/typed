@@ -7,14 +7,14 @@ import { Fx, Sink } from '../Fx.js'
 import { never } from '../constructor/never.js'
 import { HoldFx } from '../operator/hold.js'
 
-import { Subject } from './Subject.js'
+import { isSubject, Subject } from './Subject.js'
 
 export interface HoldSubject<E, A>
   extends Fx<never, E, A>,
     Sink<never, E, A>,
     Subject.Variance<E, A>,
     HoldSubject.Variance<E, A> {
-  readonly get: Effect.Effect<never, never, Option<A>>
+  readonly value: Effect.Effect<never, never, Option<A>>
 }
 
 export namespace HoldSubject {
@@ -48,10 +48,14 @@ export namespace HoldSubject {
     };
     readonly [TypeId]: HoldSubject.Variance<E, A>[TypeId] = this[Subject.TypeId]
 
-    constructor(readonly value: MutableRef<Option<A>>) {
+    constructor(value: MutableRef<Option<A>>) {
       super(never, value)
     }
 
-    readonly get = Effect.sync(() => this.value.get())
+    readonly value = Effect.sync(() => this.current.get())
   }
+}
+
+export function isHoldSubject<E, A>(u: unknown): u is HoldSubject<E, A> {
+  return isSubject(u) && HoldSubject.TypeId in u
 }

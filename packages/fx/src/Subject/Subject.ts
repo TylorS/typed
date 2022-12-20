@@ -1,6 +1,6 @@
 import { identity } from '@fp-ts/data/Function'
 
-import { Fx, Sink } from '../Fx.js'
+import { Fx, isFx, Sink } from '../Fx.js'
 import { never } from '../constructor/never.js'
 import { MulticastFx } from '../operator/multicast.js'
 
@@ -40,4 +40,8 @@ export namespace Subject {
       super(never)
     }
   }
+}
+
+export function isSubject<E, A>(u: unknown): u is Subject<E, A> {
+  return isFx(u) && Subject.TypeId in u
 }

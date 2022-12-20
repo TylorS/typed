@@ -22,7 +22,10 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
   protected pendingSinks: Array<readonly [Fx.Sink<any, E, A>, A[]]> = []
   protected scheduledFiber: Fiber.RuntimeFiber<any, any> | undefined = undefined
 
-  constructor(readonly fx: Fx<R, E, A>, readonly value: MutableRef.MutableRef<Option.Option<A>>) {
+  constructor(
+    readonly fx: Fx<R, E, A>,
+    protected current: MutableRef.MutableRef<Option.Option<A>>,
+  ) {
     super(fx)
 
     this.event = this.event.bind(this)
@@ -31,7 +34,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
 
   run<R2>(sink: Fx.Sink<R2, E, A>) {
     return Effect.suspendSucceed(() => {
-      if (Option.isSome(this.value.get())) {
+      if (Option.isSome(this.current.get())) {
         return pipe(
           this.scheduleFlush(sink),
           Effect.flatMap(() => super.run(sink)),
@@ -76,7 +79,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
       this.pendingSinks.push([
         sink,
         pipe(
-          this.value.get(),
+          this.current.get(),
           Option.match(
             () => [],
             (a) => [a],
@@ -133,7 +136,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
   }
 
   protected addValue(a: A) {
-    this.value.set(Option.some(a))
+    this.current.set(Option.some(a))
     this.pendingSinks.forEach(([, events]) => events.push(a))
   }
 }
