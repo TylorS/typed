@@ -13,7 +13,7 @@ import { zipAll } from './zip.js'
 
 describe(import.meta.url, () => {
   describe(zipAll.name, () => {
-    it('allows combining multiple streams together only emmiting when all streams have emitted', async () => {
+    it('allows combining multiple streams together only emmiting when all streams have emitted at least once', async () => {
       const test = pipe(
         zipAll(
           mergeAll(at(millis(0), 1), at(millis(200), 2)),
@@ -24,10 +24,7 @@ describe(import.meta.url, () => {
       )
       const events = await Effect.unsafeRunPromise(test)
 
-      deepStrictEqual(events, [
-        [1, 3, 5],
-        [2, 4, 6],
-      ])
+      deepStrictEqual(events, [[2, 4, 5]])
     })
   })
 })

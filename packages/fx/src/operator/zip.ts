@@ -55,27 +55,7 @@ export class ZipAllFx<Streams extends readonly Fx<any, any, any>[]>
     return withRefCounter(
       l,
       (counter) => {
-        const buffer = new Map<number, any>()
         const results = new Map<number, any>()
-
-        const add = (i: number, a: any) => {
-          if (results.has(i)) {
-            buffer.set(i, a)
-            return
-          }
-
-          results.set(i, a)
-        }
-
-        const drainBuffer = () => {
-          results.clear()
-
-          for (const [i, a] of buffer) {
-            results.set(i, a)
-          }
-
-          buffer.clear()
-        }
 
         const emitIfReady = Effect.gen(function* ($) {
           if (results.size !== l) {
@@ -84,7 +64,7 @@ export class ZipAllFx<Streams extends readonly Fx<any, any, any>[]>
 
           const output = Array.from({ length: l }, (_, i) => results.get(i)) as any
 
-          drainBuffer()
+          results.clear()
 
           yield* $(sink.event(output))
         })
@@ -96,7 +76,7 @@ export class ZipAllFx<Streams extends readonly Fx<any, any, any>[]>
               Fx.Sink(
                 (a) =>
                   pipe(
-                    Effect.sync(() => add(i, a)),
+                    Effect.sync(() => results.set(i, a)),
                     Effect.zipRight(emitIfReady),
                   ),
                 sink.error,
