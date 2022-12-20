@@ -10,10 +10,10 @@ export function provideServiceEffect<S, R2, E2>(
   service: Effect.Effect<R2, E2, S>,
 ) {
   return <R, E, A>(self: Fx<R | S, E, A>): Fx<Exclude<R | R2, S>, E | E2, A> =>
-    new ProvideServiceFx(self, tag, service)
+    new ProvideServiceEffectFx(self, tag, service)
 }
 
-export class ProvideServiceFx<R, E, A, R2, E2, S>
+export class ProvideServiceEffectFx<R, E, A, R2, E2, S>
   extends Fx.Variance<Exclude<R | R2, S>, E | E2, A>
   implements Fx<Exclude<R | R2, S>, E | E2, A>
 {

@@ -21,11 +21,11 @@ export class FilterEffectFx<R, E, A, R2, E2>
   }
 
   run<R2>(sink: Fx.Sink<R2, E | E2, A>) {
-    return this.fx.run(new FilterSink(sink, this.predicate))
+    return this.fx.run(new FilterEffectSink(sink, this.predicate))
   }
 }
 
-export class FilterSink<R, E, A, R2, E2> implements Fx.Sink<R | R2, E, A> {
+export class FilterEffectSink<R, E, A, R2, E2> implements Fx.Sink<R | R2, E, A> {
   constructor(
     readonly sink: Fx.Sink<R, E | E2, A>,
     readonly predicate: (a: A) => Effect.Effect<R2, E2, boolean>,

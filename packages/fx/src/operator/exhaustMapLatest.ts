@@ -8,10 +8,10 @@ import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
 
 export function exhaustMapLatest<A, R2, E2, B>(f: (a: A) => Fx<R2, E2, B>) {
-  return <R, E>(fx: Fx<R, E, A>): Fx<R | R2, E | E2, B> => new ExhaustMapFx(fx, f)
+  return <R, E>(fx: Fx<R, E, A>): Fx<R | R2, E | E2, B> => new ExhaustMapLatestFx(fx, f)
 }
 
-export class ExhaustMapFx<R, E, A, R2, E2, B>
+export class ExhaustMapLatestFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E | E2, B>
   implements Fx<R | R2, E | E2, B>
 {

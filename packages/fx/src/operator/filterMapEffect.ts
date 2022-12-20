@@ -7,10 +7,10 @@ import { Fx } from '../Fx.js'
 export function filterMapEffect<A, R2, E2, B>(
   predicate: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>,
 ) {
-  return <R, E>(fx: Fx<R, E, A>): Fx<R | R2, E | E2, B> => new FilterEffectFx(fx, predicate)
+  return <R, E>(fx: Fx<R, E, A>): Fx<R | R2, E | E2, B> => new FilterMapEffectFx(fx, predicate)
 }
 
-export class FilterEffectFx<R, E, A, R2, E2, B>
+export class FilterMapEffectFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E | E2, B>
   implements Fx<R | R2, E | E2, B>
 {
@@ -22,11 +22,11 @@ export class FilterEffectFx<R, E, A, R2, E2, B>
   }
 
   run<R2>(sink: Fx.Sink<R2, E | E2, B>) {
-    return this.fx.run(new FilterSink(sink, this.predicate))
+    return this.fx.run(new FilterMapEffectSink(sink, this.predicate))
   }
 }
 
-export class FilterSink<R, E, A, R2, E2, B> implements Fx.Sink<R | R2, E, A> {
+export class FilterMapEffectSink<R, E, A, R2, E2, B> implements Fx.Sink<R | R2, E, A> {
   constructor(
     readonly sink: Fx.Sink<R, E | E2, B>,
     readonly predicate: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>,
