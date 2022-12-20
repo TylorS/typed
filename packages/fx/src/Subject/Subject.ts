@@ -2,7 +2,7 @@ import { identity } from '@fp-ts/data/Function'
 
 import { Fx, Sink } from '../Fx.js'
 import { never } from '../constructor/never.js'
-import { Multicast } from '../operator/multicast.js'
+import { MulticastFx } from '../operator/multicast.js'
 
 export interface Subject<E, A> extends Fx<never, E, A>, Sink<never, E, A>, Subject.Variance<E, A> {}
 
@@ -30,7 +30,7 @@ export namespace Subject {
     return new SubjectImpl()
   }
 
-  class SubjectImpl<E, A> extends Multicast<never, E, A> implements Subject<E, A> {
+  class SubjectImpl<E, A> extends MulticastFx<never, E, A> implements Subject<E, A> {
     readonly [TypeId]: Subject.Variance<E, A>[TypeId] = {
       _E: identity,
       _A: identity,

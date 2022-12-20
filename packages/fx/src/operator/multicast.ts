@@ -9,9 +9,9 @@ import { pipe } from '@fp-ts/data/Function'
 import { Fx } from '../Fx.js'
 import { asap } from '../_internal/RefCounter.js'
 
-export const multicast = <R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> => new Multicast(fx)
+export const multicast = <R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> => new MulticastFx(fx)
 
-export class Multicast<R, E, A>
+export class MulticastFx<R, E, A>
   extends Fx.Variance<R, E, A>
   implements Fx<R, E, A>, Fx.Sink<never, E, A>
 {
