@@ -11,7 +11,7 @@ import { map } from './map.js'
 
 describe(import.meta.url, () => {
   describe(map.name, () => {
-    it('filters and transforms an Fx', async () => {
+    it('transforms an Fx', async () => {
       const test = pipe(
         fromArray([1, 2, 3]),
         map((x) => x + 1),
