@@ -17,7 +17,7 @@ describe(import.meta.url, () => {
     it('merges inner streams with specified concurrency', async () => {
       const test = pipe(
         fromArray([1, 2, 3, 4]),
-        flatMapConcurrently(2, (n) => mergeAll(at(millis(5), n), at(millis(10), n * n))),
+        flatMapConcurrently(2, (n) => mergeAll(at(millis(50), n), at(millis(100), n * n))),
         collectAll,
       )
       const events = await Effect.unsafeRunPromise(test)

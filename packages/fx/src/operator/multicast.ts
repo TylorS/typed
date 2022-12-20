@@ -54,23 +54,31 @@ export class MulticastFx<R, E, A>
   }
 
   event(a: A) {
-    return pipe(
-      this.observers,
-      Effect.forEachDiscard((observer) => this.runEvent(a, observer)),
+    return Effect.suspendSucceed(() =>
+      pipe(
+        this.observers.slice(),
+        Effect.forEachDiscard((observer) => this.runEvent(a, observer)),
+      ),
     )
   }
 
   error(cause: Cause<E>) {
-    return pipe(
-      this.observers,
-      Effect.forEachDiscard((observer) => this.runError(cause, observer)),
+    return Effect.suspendSucceed(() =>
+      pipe(
+        this.observers.slice(),
+        Effect.forEachDiscard((observer) => this.runError(cause, observer)),
+        Effect.tap(() => this.cleanup()),
+      ),
     )
   }
 
   get end(): Effect.Effect<never, never, void> {
-    return pipe(
-      this.observers,
-      Effect.forEachDiscard((observer) => this.runEnd(observer)),
+    return Effect.suspendSucceed(() =>
+      pipe(
+        this.observers.slice(),
+        Effect.forEachDiscard((observer) => this.runEnd(observer)),
+        Effect.tap(() => this.cleanup()),
+      ),
     )
   }
 
@@ -103,6 +111,15 @@ export class MulticastFx<R, E, A>
     if (index > -1) {
       observers.splice(index, 1)
     }
+  }
+
+  protected cleanup() {
+    return this.fiber
+      ? pipe(
+          Fiber.interrupt(this.fiber),
+          Effect.tap(() => Effect.sync(() => (this.fiber = undefined))),
+        )
+      : Effect.unit()
   }
 }
 

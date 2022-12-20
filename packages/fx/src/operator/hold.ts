@@ -30,78 +30,93 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
   }
 
   run<R2>(sink: Fx.Sink<R2, E, A>) {
-    const option = this.value.get()
+    return Effect.suspendSucceed(() => {
+      if (Option.isSome(this.value.get())) {
+        return pipe(
+          this.scheduleFlush(sink),
+          Effect.flatMap(() => super.run(sink)),
+        )
+      }
 
-    if (Option.isSome(option)) {
-      return pipe(
-        this.scheduleFlush(sink, option.value),
-        Effect.flatMap(() => super.run(sink)),
-      )
-    }
-
-    return super.run(sink)
+      return super.run(sink)
+    })
   }
 
   event(a: A) {
-    this.addValue(a)
+    return Effect.suspendSucceed(() => {
+      this.addValue(a)
 
-    return pipe(
-      this.flushPending(),
-      Effect.flatMap(() => super.event(a)),
-    )
+      return pipe(
+        this.flushPending(),
+        Effect.flatMap(() => super.event(a)),
+      )
+    })
   }
 
   error(cause: Cause.Cause<E>) {
-    return pipe(
-      this.flushPending(),
-      Effect.flatMap(() => super.error(cause)),
+    return Effect.suspendSucceed(() =>
+      pipe(
+        this.flushPending(),
+        Effect.flatMap(() => super.error(cause)),
+      ),
     )
   }
 
   get end() {
-    return pipe(
-      this.flushPending(),
-      Effect.flatMap(() => super.end),
-    )
-  }
-
-  protected shouldScheduleFlush() {
-    return Option.isSome(this.value.get())
-  }
-
-  protected scheduleFlush(sink: Fx.Sink<any, E, A>, value: A) {
-    this.pendingSinks.push([sink, [value]])
-
-    const interrupt = this.scheduledFiber ? Fiber.interrupt(this.scheduledFiber) : Effect.unit()
-
-    this.scheduledFiber = undefined
-
-    return pipe(
-      interrupt,
-      Effect.flatMap(() =>
-        pipe(
-          this.flushPending(),
-          Effect.scheduleForked(asap),
-          Effect.tap((f) =>
-            Effect.sync(() => {
-              this.scheduledFiber = f
-            }),
-          ),
-        ),
+    return Effect.suspendSucceed(() =>
+      pipe(
+        this.flushPending(),
+        Effect.flatMap(() => super.end),
       ),
     )
+  }
+
+  protected scheduleFlush(sink: Fx.Sink<any, E, A>) {
+    return Effect.suspendSucceed(() => {
+      this.pendingSinks.push([
+        sink,
+        pipe(
+          this.value.get(),
+          Option.match(
+            () => [],
+            (a) => [a],
+          ),
+        ),
+      ])
+
+      const interrupt = this.scheduledFiber
+        ? Fiber.interruptFork(this.scheduledFiber)
+        : Effect.unit()
+
+      this.scheduledFiber = undefined
+
+      return pipe(
+        interrupt,
+        Effect.flatMap(() => this.flushPending()),
+        Effect.scheduleForked(asap),
+        Effect.tap((f) =>
+          Effect.sync(() => {
+            this.scheduledFiber = f
+          }),
+        ),
+      )
+    })
   }
 
   protected flushPending() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
 
-    return Effect.gen(function* ($) {
-      if (that.pendingSinks.length === 0) {
-        return
-      }
+    if (this.pendingSinks.length === 0) {
+      return Effect.unit()
+    }
 
-      for (const [sink, events] of that.pendingSinks) {
+    const pendingSinks = this.pendingSinks
+
+    this.pendingSinks = []
+
+    return Effect.gen(function* ($) {
+      for (const [sink, events] of pendingSinks) {
         const observer = that.findObserver(sink)
 
         if (!observer) continue
@@ -110,8 +125,6 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
           yield* $(that.runEvent(event, observer))
         }
       }
-
-      that.pendingSinks = []
     })
   }
 
