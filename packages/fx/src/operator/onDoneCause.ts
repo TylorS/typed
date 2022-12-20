@@ -4,11 +4,12 @@ import { pipe } from 'node_modules/@fp-ts/data/Function.js'
 
 import { Fx } from '../Fx.js'
 
-export function onDoneCause<E, R2, E2, B, A, R3, E3, C>(
+export function onDoneCause<E, R2, E2, B, R3, E3, C>(
   onCause: (cause: Cause.Cause<E>) => Effect.Effect<R2, E2, B>,
   onDone: Effect.Effect<R3, E3, C>,
 ) {
-  return <R>(fx: Fx<R, E, A>) => new OnDoneCauseFx(fx, onCause, onDone)
+  return <R, A>(fx: Fx<R, E, A>): Fx<R | R2 | R3, E | E2 | E3, A> =>
+    new OnDoneCauseFx(fx, onCause, onDone)
 }
 
 export class OnDoneCauseFx<R, E, A, R2, E2, B, R3, E3, C>
