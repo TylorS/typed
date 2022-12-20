@@ -23,7 +23,7 @@ export function run_<A, R2, E2, E, R3, E3, B, R4, E4>(
   return <R>(fx: Fx<R, E, A>): Effect.Effect<R | R2 | R3 | R4 | Scope, E2 | E3 | E4, B> =>
     Effect.gen(function* ($) {
       const deferred = yield* $(Deferred.make<E2 | E3 | E4, B>())
-      const sink = Sink<R2 | R3 | R4, E, A>(
+      const sink = Sink(
         flow(
           event,
           Effect.foldCauseEffect(

@@ -1,7 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
-import { Scope } from '@effect/io/Scope'
 import { flow, pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
@@ -34,7 +33,7 @@ export class SwitchMapFx<R, E, A, R2, E2, B>
             )
 
             return this.fx.run(
-              Fx.Sink<R2 | R3 | Scope, E | E2, A>(
+              Fx.Sink(
                 (a) =>
                   pipe(
                     refFiber,
@@ -47,7 +46,7 @@ export class SwitchMapFx<R, E, A, R2, E2, B>
                         Effect.flatMap((_: unknown) =>
                           Effect.forkScoped(
                             this.f(a).run(
-                              Fx.Sink<R3 | Scope, E | E2, B>(
+                              Fx.Sink(
                                 sink.event,
                                 flow(sink.error, Effect.zipLeft(resetRef)),
                                 pipe(counter.decrement, Effect.zipLeft(resetRef)),

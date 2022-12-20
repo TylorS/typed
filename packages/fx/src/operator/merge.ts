@@ -1,5 +1,4 @@
 import * as Effect from '@effect/io/Effect'
-import { Scope } from '@effect/io/Scope'
 import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
@@ -35,13 +34,7 @@ export class MergeAllFx<Streams extends readonly Fx<any, any, any>[]>
         pipe(
           this.streams,
           Effect.forEachParDiscard((s) =>
-            s.run(
-              Fx.Sink<R2 | Scope, Fx.ErrorsOf<Streams[number]>, Fx.OutputOf<Streams[number]>>(
-                sink.event,
-                sink.error,
-                counter.decrement,
-              ),
-            ),
+            s.run(Fx.Sink(sink.event, sink.error, counter.decrement)),
           ),
         ),
       sink.end,
