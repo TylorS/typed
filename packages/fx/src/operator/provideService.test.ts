@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
 
 import * as Effect from '@effect/io/Effect'
+import { Tag } from '@fp-ts/data/Context'
 import { pipe } from '@fp-ts/data/Function'
-import { Tag } from 'node_modules/@fp-ts/data/Context.js'
 import { describe, it } from 'vitest'
 
 import { serviceWith } from '../constructor/serviceWith.js'

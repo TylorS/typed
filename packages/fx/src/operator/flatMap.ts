@@ -1,6 +1,5 @@
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
-import { Scope } from 'node_modules/@effect/io/Scope.js'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
@@ -24,14 +23,12 @@ export class FlatMapFx<R, E, A, R2, E2, B>
       1,
       (counter) =>
         this.fx.run(
-          Fx.Sink<R2 | R3 | Scope, E | E2, A>(
+          Fx.Sink(
             (a) =>
               pipe(
                 counter.increment,
                 Effect.flatMap(() =>
-                  this.f(a).run(
-                    Fx.Sink<R3 | Scope, E | E2, B>(sink.event, sink.error, counter.decrement),
-                  ),
+                  this.f(a).run(Fx.Sink(sink.event, sink.error, counter.decrement)),
                 ),
                 Effect.forkScoped,
               ),

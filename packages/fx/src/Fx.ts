@@ -39,11 +39,11 @@ export namespace Fx {
     readonly end: Effect<R, never, unknown>
   }
 
-  export function Sink<R, E, A>(
+  export function Sink<A, R, E, R2, R3>(
     event: (value: A) => Effect<R, never, unknown>,
-    error: (error: Cause<E>) => Effect<R, never, unknown>,
-    end: Effect<R, never, unknown>,
-  ): Sink<R, E, A> {
+    error: (error: Cause<E>) => Effect<R2, never, unknown>,
+    end: Effect<R3, never, unknown>,
+  ): Sink<R | R2 | R3, E, A> {
     return { event, error, end }
   }
 }
