@@ -16,7 +16,7 @@ export class ScheduledFx<R, E, A, R2, O> extends Fx.Variance<R | R2, E, A> {
   run<R3>(sink: Fx.Sink<R3, E, A>) {
     return pipe(
       this.effect,
-      Effect.flatMap(sink.event),
+      Effect.foldCauseEffect(sink.error, sink.event),
       Effect.schedule(this.schedule),
       Effect.zipRight(sink.end),
     )
