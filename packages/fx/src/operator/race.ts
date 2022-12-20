@@ -38,6 +38,10 @@ export class RaceAllFx<Streams extends readonly Fx<any, any, any>[]>
   run<R2>(sink: Fx.Sink<R2, Fx.ErrorsOf<Streams[number]>, Fx.OutputOf<Streams[number]>>) {
     const { streams } = this
 
+    if (streams.length === 0) {
+      return sink.end
+    }
+
     return Effect.gen(function* ($) {
       const fiberId = yield* $(Effect.fiberId())
       const closeScope = Effect.forEachDiscard(Scope.close(Exit.failCause(interrupt(fiberId))))
