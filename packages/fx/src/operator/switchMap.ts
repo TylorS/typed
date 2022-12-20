@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
-import { flow, pipe } from '@fp-ts/data/Function'
+import { flow, pipe, identity } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
@@ -11,6 +11,9 @@ export function switchMap<A, R2, E2, B>(
 ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B> {
   return (fx) => new SwitchMapFx(fx, f)
 }
+
+export const switchLatest: <R, E, R2, E2, A>(fx: Fx<R, E, Fx<R2, E2, A>>) => Fx<R | R2, E | E2, A> =
+  switchMap(identity)
 
 export class SwitchMapFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E | E2, B>

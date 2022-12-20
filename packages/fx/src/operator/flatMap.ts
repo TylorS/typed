@@ -1,5 +1,5 @@
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/data/Function'
+import { identity, pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
@@ -9,6 +9,9 @@ export function flatMap<A, R2, E2, B>(
 ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B> {
   return (fx) => new FlatMapFx(fx, f)
 }
+
+export const flatten: <R, E, R2, E2, A>(fx: Fx<R, E, Fx<R2, E2, A>>) => Fx<R | R2, E | E2, A> =
+  flatMap(identity)
 
 export class FlatMapFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E | E2, B>
