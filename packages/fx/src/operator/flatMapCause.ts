@@ -8,10 +8,10 @@ import { withRefCounter } from '../_internal/RefCounter.js'
 export function flatMapCause<E, R2, E2, B>(
   f: (cause: Cause<E>) => Fx<R2, E2, B>,
 ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A | B> {
-  return (fx) => new FlatMapFx(fx, f)
+  return (fx) => new FlatMapCauseFx(fx, f)
 }
 
-export class FlatMapFx<R, E, A, R2, E2, B>
+export class FlatMapCauseFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E | E2, B>
   implements Fx<R | R2, E | E2, A | B>
 {
