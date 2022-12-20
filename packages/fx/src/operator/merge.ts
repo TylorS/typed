@@ -34,7 +34,7 @@ export class MergeAllFx<Streams extends readonly Fx<any, any, any>[]>
       (counter) =>
         pipe(
           this.streams,
-          Effect.forEachPar((s) =>
+          Effect.forEachParDiscard((s) =>
             s.run(
               Fx.Sink<R2 | Scope, Fx.ErrorsOf<Streams[number]>, Fx.OutputOf<Streams[number]>>(
                 sink.event,
