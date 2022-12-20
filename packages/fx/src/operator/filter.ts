@@ -1,7 +1,13 @@
 import * as Effect from '@effect/io/Effect'
-import { Predicate } from '@fp-ts/data/Predicate'
+import { Predicate, Refinement } from '@fp-ts/data/Predicate'
 
 import { Fx } from '../Fx.js'
+
+export function filter<A, B extends A>(
+  refinement: Refinement<A, B>,
+): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
+
+export function filter<A>(predicate: Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
 
 export function filter<A>(predicate: Predicate<A>) {
   return <R, E>(fx: Fx<R, E, A>): Fx<R, E, A> => {
