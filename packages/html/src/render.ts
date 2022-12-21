@@ -14,8 +14,9 @@ import { RenderContext } from './RenderContext.js'
 import { Wire, persistent } from './Wire.js'
 
 export function drainInto<T extends DocumentFragment | HTMLElement>(where: T) {
-  return <R, E>(fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>) =>
-    pipe(fx, renderInto(where), Fx.drain)
+  return <R, E>(
+    fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>,
+  ): Effect.Effect<R | Document | RenderContext, E, void> => pipe(fx, renderInto(where), Fx.drain)
 }
 
 export function renderInto<T extends DocumentFragment | HTMLElement>(where: T) {
@@ -39,25 +40,30 @@ export function render<T extends DocumentFragment | HTMLElement>(
 ): Effect.Effect<Document | RenderContext, never, T> {
   return pipe(
     getRenderHoleContext,
-    Effect.map((holeContext) => {
-      const { renderCache } = holeContext.renderContext
-      if (!renderCache.has(where)) {
-        renderCache.set(where, RenderCache())
-      }
-      const cache = renderCache.get(where) as RenderCache
-      const wire = what instanceof Hole ? renderHole(what, cache, holeContext) : what
+    Effect.flatMap((holeContext) =>
+      // Schedule this work to occur when the environment is not busy
+      Effect.blocking(
+        Effect.sync(() => {
+          const { renderCache } = holeContext.renderContext
+          if (!renderCache.has(where)) {
+            renderCache.set(where, RenderCache())
+          }
+          const cache = renderCache.get(where) as RenderCache
+          const wire = what instanceof Hole ? renderHole(what, cache, holeContext) : what
 
-      if (wire !== cache.wire) {
-        cache.wire = wire
-        // valueOf() simply returns the node itself, but in case it was a "wire"
-        // it will eventually re-append all nodes to its fragment so that such
-        // fragment can be re-appended many times in a meaningful way
-        // (wires are basically persistent fragments facades with special behavior)
-        where.replaceChildren(wire.valueOf() as Node)
-      }
+          if (wire !== cache.wire) {
+            cache.wire = wire
+            // valueOf() simply returns the node itself, but in case it was a "wire"
+            // it will eventually re-append all nodes to its fragment so that such
+            // fragment can be re-appended many times in a meaningful way
+            // (wires are basically persistent fragments facades with special behavior)
+            where.replaceChildren(wire.valueOf() as Node)
+          }
 
-      return where
-    }),
+          return where
+        }),
+      ),
+    ),
   )
 }
 
@@ -69,7 +75,7 @@ export interface RenderHoleContext {
 }
 
 /**
- * @interanl
+ * @internal
  */
 export const getRenderHoleContext: Effect.Effect<
   Document | RenderContext,
@@ -83,7 +89,7 @@ export const getRenderHoleContext: Effect.Effect<
 })
 
 /**
- * @interanl
+ * @internal
  */
 export function renderHole(
   hole: Hole,
