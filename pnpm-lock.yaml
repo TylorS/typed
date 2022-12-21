@@ -12,6 +12,7 @@ importers:
       '@esbuild-kit/esm-loader': ^2.5.4
       '@fp-ts/core': ^0.0.11
       '@fp-ts/data': ^0.0.26
+      '@fp-ts/schema': ^0.0.6
       '@most/core': ^1.6.1
       '@most/scheduler': ^1.3.0
       '@most/types': ^1.1.0
@@ -54,6 +55,7 @@ importers:
       '@effect/stm': 0.0.3
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.26
+      '@fp-ts/schema': 0.0.6
       '@webreflection/uparser': 0.2.4
       ts-toolbelt: 9.6.0
       typed-query-selector: 2.8.0
@@ -772,6 +774,20 @@ packages:
     resolution: {integrity: sha512-b8UyUEQtEsJj71sRrR7xtIJ2Lnppc27KgKWtoJ45gnOBUvpsnx2jkxcX0xT+ROMq0cIY6sBiSGS7sL34M4bjUA==}
     dependencies:
       '@fp-ts/core': 0.0.11
+    dev: false
+
+  /@fp-ts/data/0.0.28:
+    resolution: {integrity: sha512-GV0IZ8mNhee6znuJ3lFvqSOQO8H8KNWY9yAI7cbxX/9qbM7pyaHPFfmoyfzHpfiXGy9sd9UVVHSTgI+slRcsGQ==}
+    dependencies:
+      '@fp-ts/core': 0.0.11
+    dev: false
+
+  /@fp-ts/schema/0.0.6:
+    resolution: {integrity: sha512-LQXER4wDjbbG/OJSP8x/2nEvDeOQojzdrj4HiNjZF9ZpxOIgi3QjdzuxCRD0K/UpT6nm3jqY2VLHG+26zWmZ7g==}
+    dependencies:
+      '@fp-ts/core': 0.0.11
+      '@fp-ts/data': 0.0.28
+      fast-check: 3.4.0
     dev: false
 
   /@gar/promisify/1.1.3:
@@ -4561,6 +4577,13 @@ packages:
       tmp: 0.0.33
     dev: true
 
+  /fast-check/3.4.0:
+    resolution: {integrity: sha512-EWeu5YRzLuf5/PjLu3g6p823B4fOsGc/C8abGfEW4ZJfz1mf670TsP8CxeOuICESO88qu7YoPwKRZ2mTMRxwzg==}
+    engines: {node: '>=8.0.0'}
+    dependencies:
+      pure-rand: 5.0.5
+    dev: false
+
   /fast-deep-equal/3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
     dev: true
@@ -7289,6 +7312,10 @@ packages:
     resolution: {integrity: sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==}
     engines: {node: '>=6'}
     dev: true
+
+  /pure-rand/5.0.5:
+    resolution: {integrity: sha512-BwQpbqxSCBJVpamI6ydzcKqyFmnd5msMWUGvzXLm1aXvusbbgkbOto/EUPM00hjveJEaJtdbhUjKSzWRhQVkaw==}
+    dev: false
 
   /q/1.5.1:
     resolution: {integrity: sha512-kV/CThkXo6xyFEZUugw/+pIOywXcDbFYgSct5cT3gqlbkBE1SJdwy6UQoZvodiWF/ckQLZyDE/Bu1M6gVu5lVw==}

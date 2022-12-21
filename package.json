@@ -35,6 +35,7 @@
     "@effect/stm": "^0.0.3",
     "@fp-ts/core": "^0.0.11",
     "@fp-ts/data": "^0.0.26",
+    "@fp-ts/schema": "^0.0.6",
     "@webreflection/uparser": "^0.2.4",
     "ts-toolbelt": "^9.6.0",
     "typed-query-selector": "^2.8.0",

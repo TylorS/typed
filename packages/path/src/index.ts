@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 /**
- * @typed/fp/Path is a collection of helpers for constructing paths that follow
+ * @typed/path is a collection of helpers for constructing paths that follow
  * the path-to-regexp syntax and type-level combinators for parsing that syntax and
  * for interpolating values.
  */

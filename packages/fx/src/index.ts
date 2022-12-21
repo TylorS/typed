@@ -1,3 +1,7 @@
+/**
+ * @typed/fx is a push-based stream abstraction built atop of Effect-TS.
+ */
+
 export * from './Fx.js'
 export * from './constructor/index.js'
 export * from './operator/index.js'

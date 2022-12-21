@@ -1,7 +1,11 @@
 import * as Effect from '@effect/io/Effect'
-import * as T from '@fp-ts/data/Context'
+import * as Context from '@fp-ts/data/Context'
 import { pipe } from '@fp-ts/data/Function'
 import { Identity } from '@fp-ts/data/Identity'
+// import * as These from '@fp-ts/data/These'
+// import { DecodeError } from '@fp-ts/schema/DecodeError'
+// import { decoderFor } from '@fp-ts/schema/Decoder'
+// import * as S from '@fp-ts/schema/Schema'
 import * as Fx from '@typed/fx'
 
 // TODO: Handle progress events with readable streams
@@ -22,11 +26,29 @@ export const FetchError = (request: Request, error: unknown): FetchError => ({
   error,
 })
 
+// export interface FetchDecodeErrors {
+//   readonly _tag: 'FetchDecodeErrors'
+//   readonly request: Request
+//   readonly errors: readonly [DecodeError, ...DecodeError[]]
+// }
+
+// export const FetchDecodeErrors = (
+//   request: Request,
+//   errors: readonly [DecodeError, ...DecodeError[]],
+// ): FetchDecodeErrors => ({
+//   _tag: 'FetchDecodeErrors',
+//   request,
+//   errors,
+// })
+
 export namespace Fetch {
-  export const Tag: T.Tag<Fetch> = T.Tag<Fetch>()
+  export const Tag: Context.Tag<Fetch> = Context.Tag<Fetch>()
 
   export type Error = FetchError
   export const Error = FetchError
+
+  // export type DecodeError = FetchDecodeErrors
+  // export const DecodeError = FetchDecodeErrors
 
   export const access = Effect.serviceWith(Tag)
   export const accessEffect = Effect.serviceWithEffect(Tag)
@@ -35,39 +57,81 @@ export namespace Fetch {
   export const provide = Effect.provideService(Tag)
 }
 
-export const fetch = (
+export const fetchResponse = (
   input: RequestInfo | URL,
   init?: Omit<RequestInit, 'signal'>,
-): Effect.Effect<Fetch, FetchError, Response> => fetch_((f, r) => f(r), input, init)
+): Effect.Effect<Fetch, FetchError, Response> => fetch_((r) => r, input, init)
 
 export const fetchJson = (
   input: RequestInfo | URL,
   init?: Omit<RequestInit, 'signal'>,
-): Effect.Effect<Fetch, FetchError, unknown> =>
-  fetch_((f, r) => f(r).then((r) => r.json()), input, init)
+): Effect.Effect<Fetch, FetchError, unknown> => fetch_((r) => r.then((r) => r.json()), input, init)
 
 export const fetchText = (
   input: RequestInfo | URL,
   init?: Omit<RequestInit, 'signal'>,
-): Effect.Effect<Fetch, FetchError, string> =>
-  fetch_((f, r) => f(r).then((r) => r.text()), input, init)
+): Effect.Effect<Fetch, FetchError, string> => fetch_((r) => r.then((r) => r.text()), input, init)
 
 const fetch_ = <A>(
-  f: (fetch: Fetch, request: Request) => Promise<A>,
+  f: (p: Promise<Response>) => Promise<A>,
   input: RequestInfo | URL,
   init?: Omit<RequestInit, 'signal'>,
 ): Effect.Effect<Fetch, FetchError, A> =>
-  Effect.serviceWithEffect(Fetch.Tag)((fetch) =>
+  Fetch.accessEffect((fetch) =>
     Effect.suspendSucceed(() => {
       const controller = new AbortController()
       const request = new Request(input, { ...init, signal: controller.signal })
 
       return pipe(
         Effect.tryCatchPromise(
-          () => f(fetch, request),
+          () => f(fetch(request)),
           (e) => FetchError(request, e),
         ),
         Effect.onInterrupt(() => Effect.sync(() => controller.abort())),
       )
     }),
   )
+
+// export const fetchWith = <A>(schema: S.Schema<A>) => {
+//   const decoder = decoderFor(schema)
+
+//   return (
+//     input: RequestInfo | URL,
+//     init?: Omit<RequestInit, 'signal'>,
+//   ): Effect.Effect<Fetch, Fetch.Error | Fetch.DecodeError, A> =>
+//     Fetch.accessEffect((fetch) =>
+//       Effect.suspendSucceed(() => {
+//         const controller = new AbortController()
+//         const request = new Request(input, { ...init, signal: controller.signal })
+
+//         return pipe(
+//           Effect.tryCatchPromise(
+//             () =>
+//               fetch(request)
+//                 .then((r) => r.json())
+//                 .then(decoder.decode),
+//             (e) => FetchError(request, e),
+//           ),
+//           Effect.onInterrupt(() => Effect.sync(() => controller.abort())),
+//           Effect.flatMap(
+//             These.match(
+//               (errors) => Effect.fail(FetchDecodeErrors(request, errors)),
+//               Effect.succeed,
+//               (errors, a) =>
+//                 pipe(
+//                   // TODO: Add better logging here when DecodeErrors can be stringified nicely
+//                   Effect.log(
+//                     `Request to ${request.url} encountered some unexpected issues: ${JSON.stringify(
+//                       errors,
+//                       null,
+//                       2,
+//                     )}`,
+//                   ),
+//                   Effect.as(a),
+//                 ),
+//             ),
+//           ),
+//         )
+//       }),
+//     )
+// }
