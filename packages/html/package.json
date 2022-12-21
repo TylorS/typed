@@ -20,5 +20,8 @@
       "types": "./dist/*.d.ts"
     }
   },
-  "dependencies": {}
+  "dependencies": {
+    "@typed/dom": "workspace:*",
+    "@typed/fx": "workspace:*"
+  }
 }

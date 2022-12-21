@@ -10,7 +10,7 @@ import { asap } from '../_internal/RefCounter.js'
 
 import { MulticastFx } from './multicast.js'
 
-export function hold<R, E, A>(fx: Fx<R, E, A>) {
+export function hold<R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> {
   return new HoldFx(fx, MutableRef.make(Option.none))
 }
 
