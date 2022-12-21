@@ -1,6 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
+    "rootDir": ".",
     "baseUrl": ".",
     "composite": true,
     "declaration": true,
@@ -28,7 +29,33 @@
     ],
     "types": [
       "vite/client"
-    ]
+    ],
+    "paths": {
+      "@typed/dom/*": [
+        "packages/dom/src/*"
+      ],
+      "@typed/fx/*": [
+        "packages/fx/src/*"
+      ],
+      "@typed/html/*": [
+        "packages/html/src/*"
+      ],
+      "@typed/internal/*": [
+        "packages/internal/src/*"
+      ],
+      "@typed/node/*": [
+        "packages/node/src/*"
+      ],
+      "@typed/path/*": [
+        "packages/path/src/*"
+      ],
+      "@typed/route/*": [
+        "packages/route/src/*"
+      ],
+      "@typed/router/*": [
+        "packages/router/src/*"
+      ]
+    }
   },
   "exclude": [
     "node_modules",

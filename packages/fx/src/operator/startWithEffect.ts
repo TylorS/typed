@@ -9,7 +9,7 @@ export function startWithEffect<R, E, A>(
   return (fx) => new StartWithEffectFx(fx, effect)
 }
 
-export class StartWithEffectFx<R, E, A, R2, E2, B>
+class StartWithEffectFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E | E2, A | B>
   implements Fx<R | R2, E | E2, A | B>
 {

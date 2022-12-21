@@ -7,7 +7,7 @@ export function fromArray<A extends ReadonlyArray<any>>(array: A): Fx<never, nev
   return new FromArrayFx(array)
 }
 
-export class FromArrayFx<A extends ReadonlyArray<any>>
+class FromArrayFx<A extends ReadonlyArray<any>>
   extends Fx.Variance<never, never, A[number]>
   implements Fx<never, never, A[number]>
 {

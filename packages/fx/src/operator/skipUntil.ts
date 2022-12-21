@@ -7,7 +7,7 @@ export function skipUntil<A>(predicate: Predicate<A>) {
   return <R, E>(fx: Fx<R, E, A>): Fx<R, E, A> => new SkipUntilFx(fx, predicate)
 }
 
-export class SkipUntilFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
+class SkipUntilFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
   constructor(readonly fx: Fx<R, E, A>, readonly predicate: Predicate<A>) {
     super()
   }
@@ -17,7 +17,7 @@ export class SkipUntilFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, 
   }
 }
 
-export class SkipUntilSink<R, E, A> implements Fx.Sink<R, E, A> {
+class SkipUntilSink<R, E, A> implements Fx.Sink<R, E, A> {
   protected running = false
 
   constructor(readonly sink: Fx.Sink<R, E, A>, readonly predicate: Predicate<A>) {}

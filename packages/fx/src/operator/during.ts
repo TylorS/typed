@@ -12,7 +12,7 @@ export function during<R2, E2, R3, E3, B>(signal: Fx<R2, E2, Fx<R3, E3, B>>) {
   return <R, E, A>(fx: Fx<R, E, A>): Fx<R | R2 | R3, E | E2 | E3, A> => new DuringFx(fx, signal)
 }
 
-export class DuringFx<R, E, A, R2, E2, R3, E3, B>
+class DuringFx<R, E, A, R2, E2, R3, E3, B>
   extends Fx.Variance<R | R2 | R3, E | E2 | E3, A>
   implements Fx<R | R2 | R3, E | E2 | E3, A>
 {

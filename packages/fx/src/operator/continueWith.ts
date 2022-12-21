@@ -6,7 +6,7 @@ export function continueWith<R2, E2, B>(f: () => Fx<R2, E2, B>) {
   return <R, E, A>(fx: Fx<R, E, A>): Fx<R | R2, E | E2, A | B> => new ContinueWithFx(fx, f)
 }
 
-export class ContinueWithFx<R, E, A, R2, E2, B>
+class ContinueWithFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E | E2, A | B>
   implements Fx<R | R2, E | E2, A | B>
 {
@@ -19,7 +19,7 @@ export class ContinueWithFx<R, E, A, R2, E2, B>
   }
 }
 
-export class ContinueWithSink<R, E, A, R2, E2, B> {
+class ContinueWithSink<R, E, A, R2, E2, B> {
   constructor(readonly sink: Fx.Sink<R, E | E2, A | B>, readonly f: () => Fx<R2, E2, B>) {}
 
   event = this.sink.event

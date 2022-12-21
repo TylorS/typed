@@ -6,7 +6,7 @@ export function catchAllCause<E, R2, E2, B>(f: (cause: Cause<E>) => Fx<R2, E2, B
   return <R, A>(fx: Fx<R, E, A>): Fx<R | R2, E2, A | B> => new CatchAllCauseFx(fx, f)
 }
 
-export class CatchAllCauseFx<R, E, A, R2, E2, B>
+class CatchAllCauseFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E2, A | B>
   implements Fx<R | R2, E2, A | B>
 {
@@ -19,7 +19,7 @@ export class CatchAllCauseFx<R, E, A, R2, E2, B>
   }
 }
 
-export class CatchAllCauseSink<R, E, A, R2, E2, B> {
+class CatchAllCauseSink<R, E, A, R2, E2, B> {
   constructor(
     readonly sink: Fx.Sink<R, E2, A | B>,
     readonly f: (cause: Cause<E>) => Fx<R2, E2, B>,

@@ -13,7 +13,7 @@ export function provideServiceEffect<S, R2, E2>(
     new ProvideServiceEffectFx(self, tag, service)
 }
 
-export class ProvideServiceEffectFx<R, E, A, R2, E2, S>
+class ProvideServiceEffectFx<R, E, A, R2, E2, S>
   extends Fx.Variance<Exclude<R | R2, S>, E | E2, A>
   implements Fx<Exclude<R | R2, S>, E | E2, A>
 {

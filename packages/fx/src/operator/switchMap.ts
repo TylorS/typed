@@ -15,7 +15,7 @@ export function switchMap<A, R2, E2, B>(
 export const switchLatest: <R, E, R2, E2, A>(fx: Fx<R, E, Fx<R2, E2, A>>) => Fx<R | R2, E | E2, A> =
   switchMap(identity)
 
-export class SwitchMapFx<R, E, A, R2, E2, B>
+class SwitchMapFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E | E2, B>
   implements Fx<R | R2, E | E2, B>
 {

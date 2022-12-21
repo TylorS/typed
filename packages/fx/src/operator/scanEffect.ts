@@ -12,7 +12,7 @@ export function scanEffect<R2, E2, B, A, R3, E3>(
     new ScanEffectFx(self, seed, f)
 }
 
-export class ScanEffectFx<R, E, A, R2, E2, B, R3, E3>
+class ScanEffectFx<R, E, A, R2, E2, B, R3, E3>
   extends Fx.Variance<R | R2 | R3, E | E2 | E3, B>
   implements Fx<R | R2 | R3, E | E2 | E3, B>
 {
@@ -37,9 +37,7 @@ export class ScanEffectFx<R, E, A, R2, E2, B, R3, E3>
   }
 }
 
-export class ScanEffectSink<R, E, A, R2, E2, B, R3, E3, R4>
-  implements Fx.Sink<R | R2 | R3 | R4, E, A>
-{
+class ScanEffectSink<R, E, A, R2, E2, B, R3, E3, R4> implements Fx.Sink<R | R2 | R3 | R4, E, A> {
   protected acc: B = this.seed
   protected semaphore = TSemaphore.unsafeMake(1)
 

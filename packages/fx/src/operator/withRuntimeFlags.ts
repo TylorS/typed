@@ -8,7 +8,7 @@ export function withRuntimeFlags(patch: RuntimeFlagsPatch) {
   return <R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> => new WithRuntimeFlagsFx(fx, patch)
 }
 
-export class WithRuntimeFlagsFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
+class WithRuntimeFlagsFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
   constructor(readonly fx: Fx<R, E, A>, readonly patch: RuntimeFlagsPatch) {
     super()
   }

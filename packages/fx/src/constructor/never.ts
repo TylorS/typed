@@ -2,7 +2,7 @@ import * as Effect from '@effect/io/Effect'
 
 import { Fx, Sink } from '../Fx.js'
 
-export class NeverFx extends Fx.Variance<never, never, never> implements Fx<never, never, never> {
+class NeverFx extends Fx.Variance<never, never, never> implements Fx<never, never, never> {
   constructor() {
     super()
   }

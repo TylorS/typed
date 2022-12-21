@@ -16,7 +16,7 @@ export function skipRepeats<R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> {
   )
 }
 
-export class SkipRepeatsWithFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
+class SkipRepeatsWithFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
   constructor(readonly self: Fx<R, E, A>, readonly equals: (first: A, second: A) => boolean) {
     super()
   }

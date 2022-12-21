@@ -49,12 +49,13 @@ for (const name of packageNames) {
 
     for (const importPath of imports) {
       const [orgName, packageName] = parsePackageName(importPath)
+      const fullName = orgName ? `${orgName}/${packageName}` : packageName
 
-      if (packageName === name || builtinModules.includes(packageName)) {
+      if (packageName === name || builtinModules.includes(fullName)) {
         continue
       }
 
-      dependencies.add(orgName ? `${orgName}/${packageName}` : packageName)
+      dependencies.add(fullName)
 
       if (orgName === '@typed') {
         references.add(packageName)

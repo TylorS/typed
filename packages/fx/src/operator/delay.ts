@@ -8,7 +8,7 @@ export function delay(duration: Duration) {
   return <R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> => new DelayFx(fx, duration)
 }
 
-export class DelayFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
+class DelayFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
   constructor(readonly fx: Fx<R, E, A>, readonly duration: Duration) {
     super()
   }

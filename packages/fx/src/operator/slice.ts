@@ -10,7 +10,7 @@ export function slice(skip: number, take: number) {
   }
 }
 
-export class SliceFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
+class SliceFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
   constructor(readonly fx: Fx<R, E, A>, readonly skip: number, readonly take: number) {
     super()
   }
@@ -20,7 +20,7 @@ export class SliceFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A
   }
 }
 
-export class SliceSink<R, E, A> implements Fx.Sink<R, E, A> {
+class SliceSink<R, E, A> implements Fx.Sink<R, E, A> {
   constructor(readonly sink: Fx.Sink<R, E, A>, protected skip: number, protected take: number) {}
 
   event = (a: A) => {

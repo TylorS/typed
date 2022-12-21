@@ -10,7 +10,7 @@ export function snapshot<R2, E2, B, A, C>(sampled: Fx<R2, E2, B>, f: (b: B, a: A
   return <R, E>(fx: Fx<R, E, A>): Fx<R | R2, E | E2, C> => new SnapshotFx(fx, sampled, f)
 }
 
-export class SnapshotFx<R, E, A, R2, E2, B, C>
+class SnapshotFx<R, E, A, R2, E2, B, C>
   extends Fx.Variance<R | R2, E | E2, C>
   implements Fx<R | R2, E | E2, C>
 {

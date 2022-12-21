@@ -7,7 +7,7 @@ export function fromEffect<R, E, A>(effect: Effect.Effect<R, E, A>): Fx<R, E, A>
   return new FromEffect(effect)
 }
 
-export class FromEffect<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
+class FromEffect<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
   constructor(readonly effect: Effect.Effect<R, E, A>) {
     super()
   }

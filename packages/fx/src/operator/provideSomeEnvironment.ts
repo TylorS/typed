@@ -10,7 +10,7 @@ export function provideSomeEnvironment<R2>(context: Context.Context<R2>) {
     new ProvideSomeEnvironmentFx(self, context)
 }
 
-export class ProvideSomeEnvironmentFx<R, R2, E, A>
+class ProvideSomeEnvironmentFx<R, R2, E, A>
   extends Fx.Variance<Exclude<R, R2>, E, A>
   implements Fx<Exclude<R, R2>, E, A>
 {

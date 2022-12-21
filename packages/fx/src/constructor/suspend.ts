@@ -4,7 +4,7 @@ export function suspend<R, E, A>(f: () => Fx<R, E, A>): Fx<R, E, A> {
   return new SuspendFx(f)
 }
 
-export class SuspendFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
+class SuspendFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
   constructor(readonly f: () => Fx<R, E, A>) {
     super()
   }

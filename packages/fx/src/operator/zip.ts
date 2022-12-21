@@ -20,7 +20,7 @@ export function zip<R2, E2, B>(second: Fx<R2, E2, B>) {
   return <R, E, A>(first: Fx<R, E, A>): Fx<R | R2, E | E2, readonly [A, B]> => zipAll(first, second)
 }
 
-export class ZipAllFx<Streams extends readonly Fx<any, any, any>[]>
+class ZipAllFx<Streams extends readonly Fx<any, any, any>[]>
   extends Fx.Variance<
     Fx.ResourcesOf<Streams[number]>,
     Fx.ErrorsOf<Streams[number]>,

@@ -9,7 +9,7 @@ export function provideService<S>(tag: Context.Tag<S>, service: S) {
     new ProvideServiceFx(self, tag, service)
 }
 
-export class ProvideServiceFx<R, E, A, S>
+class ProvideServiceFx<R, E, A, S>
   extends Fx.Variance<Exclude<R, S>, E, A>
   implements Fx<Exclude<R, S>, E, A>
 {

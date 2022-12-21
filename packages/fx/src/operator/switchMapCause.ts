@@ -13,7 +13,7 @@ export function switchMapCause<E, R2, E2, B>(
   return (fx) => new SwitchMapCauseFx(fx, f)
 }
 
-export class SwitchMapCauseFx<R, E, A, R2, E2, B>
+class SwitchMapCauseFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E | E2, A | B>
   implements Fx<R | R2, E | E2, A | B>
 {

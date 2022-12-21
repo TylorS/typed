@@ -6,7 +6,7 @@ export function loop<B, A, C>(seed: B, f: (b: B, a: A) => readonly [C, B]) {
   return <R, E>(stream: Fx<R, E, A>): Fx<R, E, C> => new LoopFx(stream, seed, f)
 }
 
-export class LoopFx<R, E, A, B, C> extends Fx.Variance<R, E, C> implements Fx<R, E, C> {
+class LoopFx<R, E, A, B, C> extends Fx.Variance<R, E, C> implements Fx<R, E, C> {
   constructor(
     readonly stream: Fx<R, E, A>,
     readonly seed: B,
@@ -20,7 +20,7 @@ export class LoopFx<R, E, A, B, C> extends Fx.Variance<R, E, C> implements Fx<R,
   }
 }
 
-export class LoopSink<R, E, A, B, C> implements Fx.Sink<R, E, A> {
+class LoopSink<R, E, A, B, C> implements Fx.Sink<R, E, A> {
   protected acc: B = this.seed
 
   constructor(

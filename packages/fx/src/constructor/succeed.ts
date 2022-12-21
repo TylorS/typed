@@ -7,7 +7,7 @@ export function succeed<A>(a: A): Fx<never, never, A> {
   return new SucceedFx(a)
 }
 
-export class SucceedFx<A> extends Fx.Variance<never, never, A> implements Fx<never, never, A> {
+class SucceedFx<A> extends Fx.Variance<never, never, A> implements Fx<never, never, A> {
   constructor(private readonly a: A) {
     super()
   }

@@ -9,7 +9,7 @@ export function fromFxEffect<R, E, R2, E2, A>(
   return new FromFxEffect(effect)
 }
 
-export class FromFxEffect<R, E, R2, E2, A>
+class FromFxEffect<R, E, R2, E2, A>
   extends Fx.Variance<R | R2, E | E2, A>
   implements Fx<R | R2, E | E2, A>
 {

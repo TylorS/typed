@@ -15,7 +15,7 @@ export function filter<A>(predicate: Predicate<A>) {
   }
 }
 
-export class FilterFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
+class FilterFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
   constructor(readonly fx: Fx<R, E, A>, readonly predicate: Predicate<A>) {
     super()
   }
@@ -25,7 +25,7 @@ export class FilterFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, 
   }
 }
 
-export class FilterSink<R, E, A> implements Fx.Sink<R, E, A> {
+class FilterSink<R, E, A> implements Fx.Sink<R, E, A> {
   constructor(readonly sink: Fx.Sink<R, E, A>, readonly predicate: Predicate<A>) {}
 
   event = (a: A) => {

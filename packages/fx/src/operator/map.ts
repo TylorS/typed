@@ -4,7 +4,7 @@ export function map<A, B>(f: (a: A) => B) {
   return <R, E>(fx: Fx<R, E, A>): Fx<R, E, B> => new MapFx(fx, f)
 }
 
-export class MapFx<R, E, A, B> extends Fx.Variance<R, E, B> implements Fx<R, E, B> {
+class MapFx<R, E, A, B> extends Fx.Variance<R, E, B> implements Fx<R, E, B> {
   constructor(readonly fx: Fx<R, E, A>, readonly f: (a: A) => B) {
     super()
   }
@@ -14,7 +14,7 @@ export class MapFx<R, E, A, B> extends Fx.Variance<R, E, B> implements Fx<R, E, 
   }
 }
 
-export class MapSink<R, E, A, B> implements Fx.Sink<R, E, A> {
+class MapSink<R, E, A, B> implements Fx.Sink<R, E, A> {
   constructor(readonly sink: Fx.Sink<R, E, B>, readonly f: (a: A) => B) {}
 
   event = (a: A) => {

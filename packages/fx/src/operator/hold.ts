@@ -1,6 +1,7 @@
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
+import { Scope } from '@effect/io/Scope'
 import { pipe } from '@fp-ts/data/Function'
 import * as MutableRef from '@fp-ts/data/MutableRef'
 import * as Option from '@fp-ts/data/Option'
@@ -32,7 +33,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
     this.error = this.error.bind(this)
   }
 
-  run<R2>(sink: Fx.Sink<R2, E, A>) {
+  run<R2>(sink: Fx.Sink<R2, E, A>): Effect.Effect<Scope | R | R2, never, void> {
     return Effect.suspendSucceed(() => {
       if (Option.isSome(this.current.get())) {
         return pipe(

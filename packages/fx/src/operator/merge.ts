@@ -14,7 +14,7 @@ export function merge<R2, E2, B>(second: Fx<R2, E2, B>) {
   return <R, E, A>(first: Fx<R, E, A>): Fx<R | R2, E | E2, A | B> => new MergeAllFx([first, second])
 }
 
-export class MergeAllFx<Streams extends readonly Fx<any, any, any>[]>
+class MergeAllFx<Streams extends readonly Fx<any, any, any>[]>
   extends Fx.Variance<
     Fx.ResourcesOf<Streams[number]>,
     Fx.ErrorsOf<Streams[number]>,

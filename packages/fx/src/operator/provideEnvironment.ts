@@ -9,10 +9,7 @@ export function provideEnvironment<R>(context: Context.Context<R>) {
   return <E, A>(self: Fx<R, E, A>): Fx<never, E, A> => new ProvideEnvironmentFx(self, context)
 }
 
-export class ProvideEnvironmentFx<R, E, A>
-  extends Fx.Variance<never, E, A>
-  implements Fx<never, E, A>
-{
+class ProvideEnvironmentFx<R, E, A> extends Fx.Variance<never, E, A> implements Fx<never, E, A> {
   constructor(readonly self: Fx<R, E, A>, readonly context: Context.Context<R>) {
     super()
   }

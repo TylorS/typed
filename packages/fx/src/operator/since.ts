@@ -10,7 +10,7 @@ export function since<R2, E2, B>(signal: Fx<R2, E2, B>) {
   return <R, E, A>(fx: Fx<R, E, A>): Fx<R | R2, E | E2, A> => new SinceFx(fx, signal)
 }
 
-export class SinceFx<R, E, A, R2, E2, B>
+class SinceFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E | E2, A>
   implements Fx<R | R2, E | E2, A>
 {

@@ -3,6 +3,7 @@ import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import { RuntimeFiber } from '@effect/io/Fiber'
+import { Scope } from '@effect/io/Scope'
 import { Context } from '@fp-ts/data/Context'
 import { pipe } from '@fp-ts/data/Function'
 
@@ -25,7 +26,7 @@ export class MulticastFx<R, E, A>
     this.error = this.error.bind(this)
   }
 
-  run<R2>(sink: Fx.Sink<R2, E, A>) {
+  run<R2>(sink: Fx.Sink<R2, E, A>): Effect.Effect<R | R2 | Scope, never, void> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const { fx, observers } = this
 

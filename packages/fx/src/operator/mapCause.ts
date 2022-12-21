@@ -9,7 +9,7 @@ export function mapCause<E, E2>(
   return (fx) => new MapCauseFx(fx, f)
 }
 
-export class MapCauseFx<R, E, A, E2> extends Fx.Variance<R, E2, A> implements Fx<R, E2, A> {
+class MapCauseFx<R, E, A, E2> extends Fx.Variance<R, E2, A> implements Fx<R, E2, A> {
   constructor(readonly fx: Fx<R, E, A>, readonly f: (e: Cause<E>) => Cause<E2>) {
     super()
   }

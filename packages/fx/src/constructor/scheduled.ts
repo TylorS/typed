@@ -8,7 +8,7 @@ export function scheduled<R2, O>(schedule: Schedule<R2, any, O>) {
   return <R, E, A>(effect: Effect.Effect<R, E, A>) => new ScheduledFx(effect, schedule)
 }
 
-export class ScheduledFx<R, E, A, R2, O> extends Fx.Variance<R | R2, E, A> {
+class ScheduledFx<R, E, A, R2, O> extends Fx.Variance<R | R2, E, A> {
   constructor(readonly effect: Effect.Effect<R, E, A>, readonly schedule: Schedule<R2, any, O>) {
     super()
   }

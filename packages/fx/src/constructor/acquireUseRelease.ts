@@ -9,7 +9,7 @@ export const acquireUseRelease =
   <R3, E3, B>(use: (a: A) => Fx<R3, E3, B>): Fx<R | R2 | R3, E | E3, B> =>
     new AcquireUseReleaseFx(acquire, release, use)
 
-export class AcquireUseReleaseFx<R, E, A, R2, R3, E3, B>
+class AcquireUseReleaseFx<R, E, A, R2, R3, E3, B>
   extends Fx.Variance<R | R2 | R3, E | E3, B>
   implements Fx<R | R2 | R3, E | E3, B>
 {

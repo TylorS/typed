@@ -10,7 +10,7 @@ export function filterMap<A, B>(f: (a: A) => Option.Option<B>) {
   }
 }
 
-export class FilterMapFx<R, E, A, B> extends Fx.Variance<R, E, B> implements Fx<R, E, B> {
+class FilterMapFx<R, E, A, B> extends Fx.Variance<R, E, B> implements Fx<R, E, B> {
   constructor(readonly fx: Fx<R, E, A>, readonly f: (a: A) => Option.Option<B>) {
     super()
   }
@@ -20,7 +20,7 @@ export class FilterMapFx<R, E, A, B> extends Fx.Variance<R, E, B> implements Fx<
   }
 }
 
-export class FilterMapSink<R, E, A, B> implements Fx.Sink<R, E, A> {
+class FilterMapSink<R, E, A, B> implements Fx.Sink<R, E, A> {
   constructor(readonly sink: Fx.Sink<R, E, B>, readonly f: (a: A) => Option.Option<B>) {}
 
   event = (a: A) => {

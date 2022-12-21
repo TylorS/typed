@@ -6,7 +6,7 @@ export function fromIterable<A>(iterable: Iterable<A>): Fx<never, never, A> {
   return new FromIterableFx(iterable)
 }
 
-export class FromIterableFx<A> extends Fx.Variance<never, never, A> implements Fx<never, never, A> {
+class FromIterableFx<A> extends Fx.Variance<never, never, A> implements Fx<never, never, A> {
   constructor(readonly iterable: Iterable<A>) {
     super()
   }

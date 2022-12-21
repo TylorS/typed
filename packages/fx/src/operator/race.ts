@@ -22,7 +22,7 @@ export function race<R2, E2, B>(second: Fx<R2, E2, B>) {
   return <R, E, A>(first: Fx<R, E, A>): Fx<R | R2, E | E2, A | B> => raceAll(first, second)
 }
 
-export class RaceAllFx<Streams extends readonly Fx<any, any, any>[]>
+class RaceAllFx<Streams extends readonly Fx<any, any, any>[]>
   extends Fx.Variance<
     Fx.ResourcesOf<Streams[number]>,
     Fx.ErrorsOf<Streams[number]>,

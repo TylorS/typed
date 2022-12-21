@@ -1,6 +1,6 @@
 import { Fx, Sink } from '../Fx.js'
 
-export class EmptyFx extends Fx.Variance<never, never, never> implements Fx<never, never, never> {
+class EmptyFx extends Fx.Variance<never, never, never> implements Fx<never, never, never> {
   constructor() {
     super()
   }

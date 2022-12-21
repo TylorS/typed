@@ -12,7 +12,7 @@ export function onDoneCause<E, R2, E2, B, R3, E3, C>(
     new OnDoneCauseFx(fx, onCause, onDone)
 }
 
-export class OnDoneCauseFx<R, E, A, R2, E2, B, R3, E3, C>
+class OnDoneCauseFx<R, E, A, R2, E2, B, R3, E3, C>
   extends Fx.Variance<R | R2 | R3, E | E2 | E3, A>
   implements Fx<R | R2 | R3, E | E2 | E3, A>
 {

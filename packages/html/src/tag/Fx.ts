@@ -91,7 +91,9 @@ svg.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
 
 svg.effect = Tag.svg
 
-function unwrapFxValues<Values extends Array<Renderable<any, any>>>(
+function unwrapFxValues<
+  Values extends Array<Renderable<any, any> | Fx.Fx<any, any, Renderable.Value<any>>>,
+>(
   values: Values,
 ): Fx.Fx<
   Placeholder.ResourcesOf<Values[number]>,
@@ -109,7 +111,7 @@ function unwrapFxValues<Values extends Array<Renderable<any, any>>>(
 }
 
 function unwrapFxValue(
-  value: Renderable<any, any>,
+  value: Renderable<any, any> | Fx.Fx<any, any, Renderable.Value<any>>,
   sampling: Fx.Subject<never, void>,
 ): Fx.Fx<any, any, Renderable.Value<any>> {
   if (Fx.isFx<any, any, any>(value)) {
@@ -144,11 +146,4 @@ function unwrapFxValue(
 declare module '@effect/io/Effect' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export interface Effect<R, E, A> extends Placeholder<R, E> {}
-}
-
-declare module '@typed/fx' {
-  export namespace Fx {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    export interface Variance<R, E, A> extends Placeholder<R, E> {}
-  }
 }

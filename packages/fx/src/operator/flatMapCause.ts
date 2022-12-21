@@ -11,7 +11,7 @@ export function flatMapCause<E, R2, E2, B>(
   return (fx) => new FlatMapCauseFx(fx, f)
 }
 
-export class FlatMapCauseFx<R, E, A, R2, E2, B>
+class FlatMapCauseFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E | E2, B>
   implements Fx<R | R2, E | E2, A | B>
 {

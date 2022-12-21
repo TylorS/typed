@@ -22,6 +22,7 @@ importers:
       '@nrwl/vite': 15.3.3
       '@nrwl/workspace': ^15.3.3
       '@types/node': ^18.11.17
+      '@types/path-to-regexp': ^1.7.0
       '@typescript-eslint/eslint-plugin': ^5.46.1
       '@typescript-eslint/parser': ^5.46.1
       '@vitest/coverage-c8': ^0.26.0
@@ -36,6 +37,7 @@ importers:
       lerna: ^6.1.0
       lint-staged: ^13.1.0
       nx: 15.3.3
+      path-to-regexp: ^6.2.1
       prettier: ^2.8.1
       rxjs: ^7.8.0
       ts-morph: ^17.0.1
@@ -57,6 +59,7 @@ importers:
       '@fp-ts/data': 0.0.26
       '@fp-ts/schema': 0.0.6
       '@webreflection/uparser': 0.2.4
+      path-to-regexp: 6.2.1
       ts-toolbelt: 9.6.0
       typed-query-selector: 2.8.0
       udomdiff: 1.1.0
@@ -71,6 +74,7 @@ importers:
       '@nrwl/vite': 15.3.3_en76rwlzpqc24ssjshvz2eqlgq
       '@nrwl/workspace': 15.3.3_ahtophbrd2laqvxoyg4c2wfe7i
       '@types/node': 18.11.17
+      '@types/path-to-regexp': 1.7.0
       '@typescript-eslint/eslint-plugin': 5.46.1_mqzxmroayievgzgel6yrqgih5i
       '@typescript-eslint/parser': 5.46.1_lzzuuodtsqwxnvqeq4g4likcqa
       '@vitest/coverage-c8': 0.26.0_@vitest+ui@0.25.8
@@ -161,7 +165,16 @@ importers:
       ts-toolbelt: 9.6.0
 
   packages/route:
-    specifiers: {}
+    specifiers:
+      '@effect/io': ^0.0.39
+      '@fp-ts/data': ^0.0.26
+      '@typed/path': workspace:*
+      path-to-regexp: ^6.2.1
+    dependencies:
+      '@effect/io': 0.0.39
+      '@fp-ts/data': 0.0.26
+      '@typed/path': link:../path
+      path-to-regexp: 6.2.1
 
   packages/router:
     specifiers: {}
@@ -2482,6 +2495,13 @@ packages:
 
   /@types/parse-json/4.0.0:
     resolution: {integrity: sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==}
+    dev: true
+
+  /@types/path-to-regexp/1.7.0:
+    resolution: {integrity: sha512-ruXmJ/6LwB5L3mxUG2z3Ovi85vH9IVubXq+S9RArvMbjhbCnSLpXs0LrHQg3f0y2tKvXhWUNv7iQDySDfHSTDw==}
+    deprecated: This is a stub types definition for path-to-regexp (https://github.com/pillarjs/path-to-regexp). path-to-regexp provides its own type definitions, so you don't need @types/path-to-regexp installed!
+    dependencies:
+      path-to-regexp: 6.2.1
     dev: true
 
   /@types/prettier/2.7.1:
@@ -7139,6 +7159,9 @@ packages:
   /path-parse/1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
     dev: true
+
+  /path-to-regexp/6.2.1:
+    resolution: {integrity: sha512-JLyh7xT1kizaEvcaXOQwOc2/Yhw6KZOvPf1S8401UyLk86CU79LN3vl7ztXGm/pZ+YjoyAJ4rxmHwbkBXJX+yw==}
 
   /path-type/3.0.0:
     resolution: {integrity: sha512-T2ZUsdZFHgA3u4e5PfPbjd7HDDpxPnQb5jN0SrDsjNSuVXHJqtwTnWqG0B1jZrgmJ/7lj1EmVIByWt1gxGkWvg==}

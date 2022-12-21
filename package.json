@@ -37,6 +37,7 @@
     "@fp-ts/data": "^0.0.26",
     "@fp-ts/schema": "^0.0.6",
     "@webreflection/uparser": "^0.2.4",
+    "path-to-regexp": "^6.2.1",
     "ts-toolbelt": "^9.6.0",
     "typed-query-selector": "^2.8.0",
     "udomdiff": "^1.1.0"
@@ -55,6 +56,7 @@
     "@nrwl/vite": "15.3.3",
     "@nrwl/workspace": "^15.3.3",
     "@types/node": "^18.11.17",
+    "@types/path-to-regexp": "^1.7.0",
     "@typescript-eslint/eslint-plugin": "^5.46.1",
     "@typescript-eslint/parser": "^5.46.1",
     "@vitest/coverage-c8": "^0.26.0",

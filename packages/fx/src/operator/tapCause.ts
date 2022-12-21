@@ -8,7 +8,7 @@ export function tapCause<E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Effect.Effe
   return <R, A>(fx: Fx<R, E, A>): Fx<R | R2, E | E2, A> => new TapCauseFx(fx, f)
 }
 
-export class TapCauseFx<R, E, A, R2, E2, B>
+class TapCauseFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E | E2, A>
   implements Fx<R | R2, E | E2, A>
 {

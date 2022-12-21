@@ -9,7 +9,7 @@ export function provideSomeLayer<R2, E2, S>(layer: Layer<R2, E2, S>) {
     new ProvideSomeLayerFx(self, layer)
 }
 
-export class ProvideSomeLayerFx<R, E, A, R2, E2, S>
+class ProvideSomeLayerFx<R, E, A, R2, E2, S>
   extends Fx.Variance<Exclude<R, S> | R2, E | E2, A>
   implements Fx<Exclude<R, S> | R2, E | E2, A>
 {

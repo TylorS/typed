@@ -20,7 +20,7 @@ export function fromEmitter<E, A, R, E2>(
   return new FromEmitterFx(f)
 }
 
-export class FromEmitterFx<R, E, E2, A>
+class FromEmitterFx<R, E, E2, A>
   extends Fx.Variance<Exclude<R, Scope>, E | E2, A>
   implements Fx<Exclude<R, Scope>, E | E2, A>
 {

@@ -9,7 +9,7 @@ export function filterEffect<A, R2, E2>(predicate: (a: A) => Effect.Effect<R2, E
   }
 }
 
-export class FilterEffectFx<R, E, A, R2, E2>
+class FilterEffectFx<R, E, A, R2, E2>
   extends Fx.Variance<R | R2, E | E2, A>
   implements Fx<R | R2, E | E2, A>
 {
@@ -25,7 +25,7 @@ export class FilterEffectFx<R, E, A, R2, E2>
   }
 }
 
-export class FilterEffectSink<R, E, A, R2, E2> implements Fx.Sink<R | R2, E, A> {
+class FilterEffectSink<R, E, A, R2, E2> implements Fx.Sink<R | R2, E, A> {
   constructor(
     readonly sink: Fx.Sink<R, E | E2, A>,
     readonly predicate: (a: A) => Effect.Effect<R2, E2, boolean>,

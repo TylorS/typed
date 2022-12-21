@@ -7,7 +7,7 @@ export function uninterruptible<R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> {
   return new UninterruptibleFx(fx)
 }
 
-export class UninterruptibleFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
+class UninterruptibleFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
   constructor(readonly fx: Fx<R, E, A>) {
     super()
   }

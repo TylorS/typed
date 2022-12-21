@@ -21,7 +21,7 @@ export function combine<R2, E2, B>(second: Fx<R2, E2, B>) {
     combineAll(first, second)
 }
 
-export class CombineAllFx<Streams extends readonly Fx<any, any, any>[]>
+class CombineAllFx<Streams extends readonly Fx<any, any, any>[]>
   extends Fx.Variance<
     Fx.ResourcesOf<Streams[number]>,
     Fx.ErrorsOf<Streams[number]>,
