@@ -16,13 +16,13 @@ export interface Emitter<E, A> {
 
 export function fromEmitter<E, A, R, E2>(
   f: (emitter: Emitter<E, A>) => Effect.Effect<R | Scope, E2, void>,
-): Fx<R, E | E2, A> {
+): Fx<Exclude<R, Scope>, E | E2, A> {
   return new FromEmitterFx(f)
 }
 
 export class FromEmitterFx<R, E, E2, A>
-  extends Fx.Variance<R, E | E2, A>
-  implements Fx<R, E | E2, A>
+  extends Fx.Variance<Exclude<R, Scope>, E | E2, A>
+  implements Fx<Exclude<R, Scope>, E | E2, A>
 {
   constructor(readonly f: (emitter: Emitter<E, A>) => Effect.Effect<R | Scope, E2, void>) {
     super()
@@ -55,6 +55,6 @@ export class FromEmitterFx<R, E, E2, A>
           Exit.matchEffect(sink.error, () => sink.end),
         ),
       )
-    })
+    }) as any
   }
 }

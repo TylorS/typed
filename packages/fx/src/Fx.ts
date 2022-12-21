@@ -7,6 +7,14 @@ export interface Fx<R, E, A> extends Fx.Variance<R, E, A> {
   readonly run: <R2>(sink: Fx.Sink<R2, E, A>) => Effect<R | R2 | Scope, never, unknown>
 }
 
+export function Fx<R, E, A>(
+  run: <R2>(sink: Fx.Sink<R2, E, A>) => Effect<R | R2 | Scope, never, unknown>,
+): Fx<R, E, A> {
+  return new (class extends Fx.Variance<R, E, A> {
+    readonly run = run
+  })()
+}
+
 export namespace Fx {
   export const TypeId = Symbol.for('@typed/fx/Fx')
   export type TypeId = typeof TypeId

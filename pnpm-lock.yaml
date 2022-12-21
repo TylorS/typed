@@ -40,6 +40,7 @@ importers:
       tsconfig-paths: git://github.com/IgnusG/tsconfig-paths#fce7c52ed061417dfd1dcce94721c4a94c230bab
       tslib: ^2.4.1
       tsx: ^3.12.1
+      typed-query-selector: ^2.8.0
       typescript: ^4.9.4
       vite: ^4.0.1
       vite-plugin-eslint: ^1.8.1
@@ -50,6 +51,7 @@ importers:
       '@effect/stm': 0.0.3
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.26
+      typed-query-selector: 2.8.0
     devDependencies:
       '@esbuild-kit/esm-loader': 2.5.4
       '@most/core': 1.6.1
@@ -90,7 +92,10 @@ importers:
     specifiers: {}
 
   packages/dom:
-    specifiers: {}
+    specifiers:
+      '@typed/fx': workspace:*
+    dependencies:
+      '@typed/fx': link:../fx
 
   packages/fx:
     specifiers: {}
@@ -8210,6 +8215,10 @@ packages:
     resolution: {integrity: sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==}
     engines: {node: '>=8'}
     dev: true
+
+  /typed-query-selector/2.8.0:
+    resolution: {integrity: sha512-jo9NLGQ0b7sT9TK3mxzemATQqTb/uh8TRvcOK6WSwKNewALt3AA8q2m7cdpF/uUbd/cdixaBxCGe6fpzpEWbGw==}
+    dev: false
 
   /typedarray-to-buffer/3.1.5:
     resolution: {integrity: sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q==}
