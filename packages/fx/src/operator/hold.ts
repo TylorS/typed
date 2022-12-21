@@ -1,9 +1,9 @@
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
+import { pipe } from '@fp-ts/data/Function'
 import * as MutableRef from '@fp-ts/data/MutableRef'
 import * as Option from '@fp-ts/data/Option'
-import { pipe } from 'node_modules/@fp-ts/data/Function.js'
 
 import { Fx } from '../Fx.js'
 import { asap } from '../_internal/RefCounter.js'

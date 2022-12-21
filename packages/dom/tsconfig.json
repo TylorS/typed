@@ -4,7 +4,15 @@
     "rootDir": "./src",
     "outDir": "dist"
   },
-  "include": ["src"],
-  "exclude": ["dist"],
-  "references": []
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "dist"
+  ],
+  "references": [
+    {
+      "path": "../fx/tsconfig.build.json"
+    }
+  ]
 }

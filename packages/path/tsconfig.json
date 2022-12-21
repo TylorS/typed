@@ -4,7 +4,11 @@
     "rootDir": "./src",
     "outDir": "dist"
   },
-  "include": ["src"],
-  "exclude": ["dist"],
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "dist"
+  ],
   "references": []
 }

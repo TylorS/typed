@@ -21,6 +21,6 @@
     }
   },
   "dependencies": {
-    "@fp-ts/data": "^0.0.20"
+    "@fp-ts/data": "^0.0.26"
   }
 }

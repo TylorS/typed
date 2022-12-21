@@ -146,14 +146,9 @@ declare module '@effect/io/Effect' {
   export interface Effect<R, E, A> extends Placeholder<R, E> {}
 }
 
-declare module '@typed/fx/Fx' {
+declare module '@typed/fx' {
   export namespace Fx {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     export interface Variance<R, E, A> extends Placeholder<R, E> {}
   }
-}
-
-declare module '@typed/fx/Subject/Subject' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export interface Subject<E, A> extends Placeholder<never, E> {}
 }

@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import * as fs from 'node:fs'
+import { builtinModules } from 'node:module'
 import { EOL } from 'node:os'
 import { dirname, join } from 'node:path'
 import * as process from 'node:process'
@@ -43,17 +44,17 @@ for (const name of packageNames) {
     const imports = sourceFile
       .getImportStringLiterals()
       .map((x) => x.getText().trim().slice(1).slice(0, -1))
-      .filter((x) => x.includes('@typed') || x.includes('@fp-ts'))
+      .filter((x) => !x.startsWith('.'))
       .sort()
 
     for (const importPath of imports) {
-      const [orgName, packageName] = importPath.split(/\//g).map((x) => x.trim())
+      const [orgName, packageName] = parsePackageName(importPath)
 
-      if (packageName === name) {
+      if (packageName === name || builtinModules.includes(packageName)) {
         continue
       }
 
-      dependencies.add(`${orgName}/${packageName}`)
+      dependencies.add(orgName ? `${orgName}/${packageName}` : packageName)
 
       if (orgName === '@typed') {
         references.add(packageName)
@@ -63,8 +64,18 @@ for (const name of packageNames) {
 
   packageJson.dependencies = {}
   for (const dependency of dependencies) {
-    if (dependency in rootPackageJson.dependencies) {
-      packageJson.dependencies[dependency] = findRootPackageVersion(dependency)
+    const version = findRootPackageVersion(dependency)
+
+    if (version === null && !dependency.startsWith('@typed')) {
+      throw new Error(`Could not find package version for ${dependency} in package ${name}`)
+    }
+
+    if (version) {
+      const [versionString, depType] = version
+
+      if (depType === 'dep') {
+        packageJson.dependencies[dependency] = versionString
+      }
     } else {
       packageJson.dependencies[dependency] = 'workspace:*'
     }
@@ -99,5 +110,25 @@ function getAllFilePaths(directory: string): readonly string[] {
 }
 
 function findRootPackageVersion(name: string) {
-  return rootPackageJson.dependencies[name] as string
+  const possibleNames = [name, name.split('/')[0]]
+
+  for (const possibleName of possibleNames) {
+    if (possibleName in rootPackageJson.dependencies) {
+      return [rootPackageJson.dependencies[possibleName] as string, 'dep'] as const
+    } else if (possibleName in rootPackageJson.devDependencies) {
+      return [rootPackageJson.devDependencies[possibleName] as string, 'devdep'] as const
+    }
+  }
+
+  return null
+}
+
+function parsePackageName(importPath: string) {
+  const [orgName, packageName = ''] = importPath.split(/\//g).map((x) => x.trim())
+
+  if (packageName === '' || !orgName.startsWith('@')) {
+    return ['', orgName]
+  }
+
+  return [orgName, packageName]
 }

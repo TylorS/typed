@@ -21,6 +21,9 @@
     }
   },
   "dependencies": {
-    "@typed/fx": "workspace:*"
+    "@effect/io": "^0.0.39",
+    "@fp-ts/data": "^0.0.26",
+    "@typed/fx": "workspace:*",
+    "typed-query-selector": "^2.8.0"
   }
 }

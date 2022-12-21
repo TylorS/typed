@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
 
 import * as Effect from '@effect/io/Effect'
+import { millis } from '@fp-ts/data/Duration'
 import { pipe } from '@fp-ts/data/Function'
-import { millis } from 'node_modules/@fp-ts/data/Duration.js'
 import { describe, it } from 'vitest'
 
 import { at } from '../constructor/at.js'
