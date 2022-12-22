@@ -1,3 +1,4 @@
+import { isEffect } from '@effect/io/Effect'
 import { Runtime } from '@effect/io/Runtime'
 import * as Maybe from '@fp-ts/data/Option'
 
@@ -187,6 +188,13 @@ function event(node: Element, name: string) {
     if (newValue instanceof EventHandlerImplementation) {
       listener = (ev: Event) => runtime.unsafeRunAsync(newValue.handler(ev))
       node.addEventListener(type, listener, newValue.options)
+
+      return
+    }
+
+    if (isEffect(newValue)) {
+      listener = () => runtime.unsafeRunAsync(newValue as any)
+      node.addEventListener(type, listener)
 
       return
     }

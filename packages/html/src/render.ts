@@ -4,7 +4,7 @@ import * as RuntimeFlagsPatch from '@effect/io/Fiber/Runtime/Flags/Patch'
 import { FiberRefs } from '@effect/io/FiberRefs'
 import * as R from '@effect/io/Runtime'
 import { pipe } from '@fp-ts/data/Function'
-import { getDocument } from '@typed/dom/Document'
+import { Document, getDocument } from '@typed/dom/Document'
 import * as Fx from '@typed/fx'
 
 import { makeEntry } from './Entry.js'
@@ -12,6 +12,28 @@ import { Hole } from './Hole.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
 import { Wire, persistent } from './Wire.js'
+
+export function runBrowser<T extends DocumentFragment | HTMLElement>(where: T) {
+  return <R, E>(fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>) => {
+    return pipe(
+      fx,
+      drainInto(where),
+      Document.provide(where.ownerDocument),
+      RenderContext.provideBrowser,
+    )
+  }
+}
+
+export function runServer<T extends DocumentFragment | HTMLElement>(where: T) {
+  return <R, E>(fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>) => {
+    return pipe(
+      fx,
+      drainInto(where),
+      Document.provide(where.ownerDocument),
+      RenderContext.provideServer,
+    )
+  }
+}
 
 export function drainInto<T extends DocumentFragment | HTMLElement>(where: T) {
   return <R, E>(

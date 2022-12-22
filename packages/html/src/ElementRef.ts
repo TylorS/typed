@@ -20,7 +20,7 @@ export function makeElementRef<A extends HTMLElement = HTMLElement>(): Effect.Ef
   ElementRef<A>
 > {
   return pipe(
-    Fx.makeRefSubject<Option.Option<A>>(() => Option.none),
+    Fx.makeRef<Option.Option<A>>(() => Option.none),
     Effect.map((subject): ElementRef<A> => {
       const element: Fx.Fx<never, never, A> = pipe(subject, Fx.compact, Fx.skipRepeats, Fx.hold)
 

@@ -11,7 +11,11 @@ import { getRenderHoleContext, renderHole } from '../render.js'
 
 // Tag functions which only accept and return Effect
 
-export function html<Values extends ReadonlyArray<Renderable<any, any>>>(
+export function html<
+  Values extends ReadonlyArray<
+    Renderable<any, any> | Effect.Effect<any, any, Renderable.Value<any>>
+  >,
+>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -45,7 +49,11 @@ html.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
     ),
   )
 
-export function svg<Values extends ReadonlyArray<Renderable<any, any>>>(
+export function svg<
+  Values extends ReadonlyArray<
+    Renderable<any, any> | Effect.Effect<any, any, Renderable.Value<any>>
+  >,
+>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -61,7 +69,11 @@ export function svg<Values extends ReadonlyArray<Renderable<any, any>>>(
   )
 }
 
-svg.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
+svg.node = <
+  Values extends ReadonlyArray<
+    Renderable<any, any> | Effect.Effect<any, any, Renderable.Value<any>>
+  >,
+>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -79,7 +91,9 @@ svg.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
     ),
   )
 
-function unwrapEffectValues<Values extends Array<Renderable<any, any>>>(
+function unwrapEffectValues<
+  Values extends Array<Renderable<any, any> | Effect.Effect<any, any, Renderable.Value<any>>>,
+>(
   values: Values,
 ): Effect.Effect<
   Placeholder.ResourcesOf<Values[number]>,
@@ -101,19 +115,9 @@ function unwrapEffectValues<Values extends Array<Renderable<any, any>>>(
         continue
       }
 
-      if (Array.isArray(value)) {
-        output.push(yield* $(unwrapEffectValues(value as typeof output)))
-        continue
-      }
-
       output.push(value as Renderable.Value<Placeholder.ResourcesOf<Values[number]>>)
     }
 
     return output
   })
-}
-
-declare module '@effect/io/Effect' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export interface Effect<R, E, A> extends Placeholder<R, E> {}
 }

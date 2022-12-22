@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx'
 
+import { GlobalThis } from './GlobalThis.js'
 import type { DefaultEventMap } from './helpers.js'
 
 // TODO: dispatchEvent primitives
@@ -38,12 +38,19 @@ function addEventListener_(
 }
 
 export function preventDefault<R, E, A extends Event>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
-  return pipe(
-    fx,
-    Fx.tap((event: A) => Effect.succeed(event.preventDefault())),
-  )
+  return Fx.tap((event: A) => Effect.succeed(event.preventDefault()))(fx)
 }
 
 export function stopPropagation<R, E, A extends Event>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
   return Fx.tap((event: A) => Effect.succeed(event.stopPropagation()))(fx)
+}
+
+export function dispatchEventWith<
+  T extends EventTarget,
+  EventName extends keyof DefaultEventMap<T>,
+>(event: EventName, options?: EventInit): (target: T) => Effect.Effect<GlobalThis, never, boolean> {
+  return (target) =>
+    GlobalThis.access((globalThis) =>
+      target.dispatchEvent(new globalThis.Event(event as string, options)),
+    )
 }

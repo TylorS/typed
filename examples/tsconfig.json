@@ -1,39 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "../tsconfig.json",
-  "compilerOptions": {
-    "rootDir": "..",
-    "baseUrl": ".",
-    "paths": {
-      "@typed/dom/*": [
-        "../packages/dom/src/*"
-      ],
-      "@typed/fx/*": [
-        "../packages/fx/src/*"
-      ],
-      "@typed/html/*": [
-        "../packages/html/src/*"
-      ],
-      "@typed/internal/*": [
-        "../packages/internal/src/*"
-      ],
-      "@typed/node/*": [
-        "../packages/node/src/*"
-      ],
-      "@typed/path/*": [
-        "../packages/path/src/*"
-      ],
-      "@typed/route/*": [
-        "../packages/route/src/*"
-      ],
-      "@typed/router/*": [
-        "../packages/router/src/*"
-      ]
-    },
-    "noEmit": true
-  },
   "include": [
-    ".",
-    "../packages/*/src"
+    "."
   ]
 }

@@ -1,9 +1,8 @@
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
 
-import { Document } from '../packages/dom/dist/index.js'
 import * as Fx from '../packages/fx/dist/index.js'
-import { makeElementRef, RenderContext, drainInto, html } from '../packages/html/dist/index.js'
+import { makeElementRef, html, runBrowser } from '../packages/html/dist/index.js'
 
 const Counter = Fx.gen(function* ($) {
   const ref = yield* $(makeElementRef<HTMLDivElement>())
@@ -21,11 +20,4 @@ const Counter = Fx.gen(function* ($) {
   </div>`
 })
 
-const program = pipe(
-  Counter,
-  drainInto(document.body),
-  RenderContext.provideBrowser,
-  Document.provide(document),
-)
-
-Effect.unsafeRunAsync(program)
+pipe(Counter, runBrowser(document.body), Effect.unsafeRunAsync)

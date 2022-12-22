@@ -17,7 +17,7 @@ export interface RefSubject<A> extends HoldSubject<never, A>, Ref.Ref<A> {
   readonly delete: Effect.Effect<never, never, Option.Option<A>>
 }
 
-export function makeRefSubject<A>(
+export function makeRef<A>(
   initial: () => A,
   eq: (a: A, b: A) => boolean = equals,
 ): Effect.Effect<never, never, RefSubject<A>> {

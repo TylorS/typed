@@ -17,7 +17,7 @@ export interface SynchronizedSubject<A> extends RefSubject<A>, Synchronized.Sync
   readonly updateEffect: <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, A>) => Effect.Effect<R2, E2, A>
 }
 
-export function makeSynchronizedSubject<A>(
+export function makeSynchronized<A>(
   initial: () => A,
   eq: (a: A, b: A) => boolean = equals,
 ): Effect.Effect<never, never, SynchronizedSubject<A>> {

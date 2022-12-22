@@ -4,12 +4,13 @@ import { pipe } from '@fp-ts/data/Function'
 
 import { Document } from './Document.js'
 import { Fetch } from './Fetch.js'
-import { GlobalThis, attachShadowRoots } from './GlobalThis.js'
+import { GlobalThis } from './GlobalThis.js'
 import { History } from './History.js'
 import { Location } from './Location.js'
 import { Navigator } from './Navigator.js'
 import { ParentElement } from './ParentElement.js'
 import { Window } from './Window.js'
+import { attachShadowRoots } from './declarative-shadow-dom.js'
 
 export type DomServices =
   | GlobalThis

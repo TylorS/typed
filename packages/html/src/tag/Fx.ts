@@ -3,7 +3,6 @@ import { Context } from '@fp-ts/data/Context'
 import { pipe } from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx'
 
-import { isElementRef } from '../ElementRef.js'
 import { Hole } from '../Hole.js'
 import { Placeholder } from '../Placeholder.js'
 import { RenderCache } from '../RenderCache.js'
@@ -16,7 +15,11 @@ import * as Tag from './Effect.js'
 // Tag functions which only accept and return Fx
 
 export function html<
-  Values extends ReadonlyArray<Renderable<any, any> | Fx.Fx<any, any, Renderable.Value<any>>>,
+  Values extends ReadonlyArray<
+    | Renderable<any, any>
+    | Effect.Effect<any, any, Renderable.Value<any>>
+    | Fx.Fx<any, any, Renderable.Value<any>>
+  >,
 >(
   template: TemplateStringsArray,
   ...values: [...Values]
@@ -24,14 +27,20 @@ export function html<
   return Fx.fromFxEffect(
     Effect.environmentWith((env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
       pipe(
-        unwrapFxValues(values),
+        unwrapFxValues(template, values),
         Fx.map((values) => new Hole('html', env, template, values)),
       ),
     ),
   )
 }
 
-html.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
+html.node = <
+  Values extends ReadonlyArray<
+    | Renderable<any, any>
+    | Effect.Effect<any, any, Renderable.Value<any>>
+    | Fx.Fx<any, any, Renderable.Value<any>>
+  >,
+>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -55,21 +64,33 @@ html.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
 
 html.effect = Tag.html
 
-export function svg<Values extends ReadonlyArray<Renderable<any, any>>>(
+export function svg<
+  Values extends ReadonlyArray<
+    | Renderable<any, any>
+    | Effect.Effect<any, any, Renderable.Value<any>>
+    | Fx.Fx<any, any, Renderable.Value<any>>
+  >,
+>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
   return Fx.fromFxEffect(
     Effect.environmentWith((env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
       pipe(
-        unwrapFxValues(values),
+        unwrapFxValues(template, values),
         Fx.map((values) => new Hole('svg', env, template, values)),
       ),
     ),
   )
 }
 
-svg.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
+svg.node = <
+  Values extends ReadonlyArray<
+    | Renderable<any, any>
+    | Effect.Effect<any, any, Renderable.Value<any>>
+    | Fx.Fx<any, any, Renderable.Value<any>>
+  >,
+>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -93,8 +114,13 @@ svg.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
 svg.effect = Tag.svg
 
 function unwrapFxValues<
-  Values extends Array<Renderable<any, any> | Fx.Fx<any, any, Renderable.Value<any>>>,
+  Values extends Array<
+    | Renderable<any, any>
+    | Effect.Effect<any, any, Renderable.Value<any>>
+    | Fx.Fx<any, any, Renderable.Value<any>>
+  >,
 >(
+  template: TemplateStringsArray,
   values: Values,
 ): Fx.Fx<
   Placeholder.ResourcesOf<Values[number]>,
@@ -104,7 +130,7 @@ function unwrapFxValues<
   // Used to sample pull-based Effect's whenever an Fx emits a value.
   const sampling = Fx.Subject.unsafeMake<never, void>()
 
-  return Fx.combineAll(...values.map((v) => unwrapFxValue(v, sampling))) as Fx.Fx<
+  return Fx.combineAll(...values.map((v, i) => unwrapFxValue(template, v, i, sampling))) as Fx.Fx<
     Placeholder.ResourcesOf<Values[number]>,
     Placeholder.ErrorsOf<Values[number]>,
     Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>>
@@ -112,10 +138,15 @@ function unwrapFxValues<
 }
 
 function unwrapFxValue(
-  value: Renderable<any, any> | Fx.Fx<any, any, Renderable.Value<any>>,
+  template: TemplateStringsArray,
+  value:
+    | Renderable<any, any>
+    | Effect.Effect<any, any, Renderable.Value<any>>
+    | Fx.Fx<any, any, Renderable.Value<any>>,
+  index: number,
   sampling: Fx.Subject<never, void>,
 ): Fx.Fx<any, any, Renderable.Value<any>> {
-  if (Fx.isFx<any, any, any>(value) && !isElementRef(value)) {
+  if (Fx.isFx<any, any, any>(value) && !('element' in value)) {
     return pipe(
       value,
       Fx.tap(() => sampling.event()),
@@ -123,28 +154,22 @@ function unwrapFxValue(
   }
 
   if (Effect.isEffect(value)) {
-    return pipe(
-      Fx.fromEffect<any, any, any>(value),
-      Fx.continueWith(() =>
-        pipe(
-          sampling,
-          Fx.exhaustMapLatest(() => Fx.fromEffect<any, any, any>(value)),
-        ),
-      ),
-    )
-  }
+    const prevParts = template[index].split(/\s/g)
+    const prev = prevParts[prevParts.length - 1].trim()
 
-  if (Array.isArray(value)) {
-    return pipe(
-      unwrapFxValues(value),
-      Fx.tap(() => sampling.event()),
-    )
+    // Allow event listeners to be passed as Effects to be called when triggered
+    if (!prev.startsWith('on')) {
+      return pipe(
+        Fx.fromEffect<any, any, any>(value),
+        Fx.continueWith(() =>
+          pipe(
+            sampling,
+            Fx.exhaustMapLatest(() => Fx.fromEffect<any, any, any>(value)),
+          ),
+        ),
+      )
+    }
   }
 
   return Fx.succeed(value as Renderable.Value<any>)
-}
-
-declare module '@effect/io/Effect' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export interface Effect<R, E, A> extends Placeholder<R, E> {}
 }

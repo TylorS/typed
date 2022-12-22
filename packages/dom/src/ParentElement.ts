@@ -1,7 +1,11 @@
 import * as Effect from '@effect/io/Effect'
 import * as T from '@fp-ts/data/Context'
+import { flow } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import * as Fx from '@typed/fx'
+
+import { dispatchEventWith } from './EventTarget.js'
+import { GlobalThis } from './GlobalThis.js'
 
 export interface ParentElement {
   readonly parentElement: ParentNode & HTMLElement
@@ -35,3 +39,9 @@ export const querySelectorAll: <A extends HTMLElement>(
   ParentElement.access(
     (p): ReadonlyArray<A> => Array.from(p.parentElement.querySelectorAll<A>(selector)),
   )
+
+export const dispatchEvent = <EventName extends keyof HTMLElementEventMap>(
+  event: EventName,
+  options?: EventInit,
+): Effect.Effect<GlobalThis | ParentElement, never, boolean> =>
+  ParentElement.accessEffect(flow((p) => p.parentElement, dispatchEventWith(event, options)))
