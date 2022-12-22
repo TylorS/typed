@@ -14,6 +14,7 @@ export namespace Document {
   export const accessFx = Fx.serviceWithFx(Tag)
 
   export const provide = Effect.provideService(Tag)
+  export const provideFx = (service: Document) => Fx.provideService(Tag, service)
 }
 
 export const getDocument: Effect.Effect<Document, never, Document> = Effect.service(Document.Tag)

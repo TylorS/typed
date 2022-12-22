@@ -8,6 +8,18 @@ export type EffectAdapter = <R, E, A>(
   effect: Effect.Effect<R, E, A>,
 ) => Generator<Effect.EffectGen<R, E, A>, A, A>
 
+export type EffectGenResources<Eff> = [Eff] extends [never]
+  ? never
+  : [Eff] extends [Effect.EffectGen<infer R, any, any>]
+  ? R
+  : never
+
+export type EffectGenErrors<Eff> = [Eff] extends [never]
+  ? never
+  : [Eff] extends [Effect.EffectGen<any, infer E, any>]
+  ? E
+  : never
+
 /**
  * A helper for running a generator function that yields effects, and returns an Fx.
  * This allows using yield* to represent all of your setup, but then constructing
@@ -16,20 +28,6 @@ export type EffectAdapter = <R, E, A>(
  */
 export function gen<Eff extends Effect.EffectGen<any, any, any>, R, E, A, N = unknown>(
   f: (adapter: EffectAdapter) => Generator<Eff, Fx<R, E, A>, N>,
-): Fx<
-  | R
-  | ([Eff] extends [never]
-      ? never
-      : [Eff] extends [Effect.EffectGen<infer R, any, any>]
-      ? R
-      : never),
-  | E
-  | ([Eff] extends [never]
-      ? never
-      : [Eff] extends [Effect.EffectGen<any, infer E, any>]
-      ? E
-      : never),
-  A
-> {
+): Fx<R | EffectGenResources<Eff>, E | EffectGenErrors<Eff>, A> {
   return fromFxEffect(Effect.gen(f as any))
 }

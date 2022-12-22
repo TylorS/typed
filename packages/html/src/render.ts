@@ -17,9 +17,9 @@ export function runBrowser<T extends DocumentFragment | HTMLElement>(where: T) {
   return <R, E>(fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>) => {
     return pipe(
       fx,
-      drainInto(where),
-      Document.provide(where.ownerDocument),
-      RenderContext.provideBrowser,
+      renderInto(where),
+      Document.provideFx(where.ownerDocument),
+      RenderContext.provideBrowserFx,
     )
   }
 }
@@ -28,9 +28,9 @@ export function runServer<T extends DocumentFragment | HTMLElement>(where: T) {
   return <R, E>(fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>) => {
     return pipe(
       fx,
-      drainInto(where),
-      Document.provide(where.ownerDocument),
-      RenderContext.provideServer,
+      renderInto(where),
+      Document.provideFx(where.ownerDocument),
+      RenderContext.provideServerFx,
     )
   }
 }

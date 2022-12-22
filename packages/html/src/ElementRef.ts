@@ -3,7 +3,7 @@ import { identity, pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import { DomSource } from '@typed/dom/DomSource'
 import * as Fx from '@typed/fx'
-import { isRefSubject } from '@typed/fx'
+import { EffectAdapter, EffectGenErrors, EffectGenResources, isRefSubject } from '@typed/fx'
 
 import { Placeholder } from './Placeholder.js'
 
@@ -35,6 +35,17 @@ export function makeElementRef<A extends HTMLElement = HTMLElement>(): Effect.Ef
       }
     }),
   )
+}
+
+export function withElementRef<T extends HTMLElement = HTMLElement>() {
+  return <Eff extends Effect.EffectGen<any, any, any>, R, E, A, N = unknown>(
+    f: (adapter: EffectAdapter, ref: ElementRef<T>) => Generator<Eff, Fx.Fx<R, E, A>, N>,
+  ): Fx.Fx<R | EffectGenResources<Eff>, E | EffectGenErrors<Eff>, A> =>
+    Fx.gen(function* ($) {
+      const ref = yield* $(makeElementRef<T>())
+
+      return yield* f($, ref)
+    })
 }
 
 export function isElementRef<A extends HTMLElement = HTMLElement>(

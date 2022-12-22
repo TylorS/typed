@@ -20,4 +20,4 @@ const Counter = Fx.gen(function* ($) {
   </div>`
 })
 
-pipe(Counter, runBrowser(document.body), Effect.unsafeRunAsync)
+pipe(Counter, runBrowser(document.body), Fx.drain, Effect.unsafeRunAsync)
