@@ -9,19 +9,19 @@ import { withRefCounter } from '../_internal/RefCounter.js'
 
 export function switchMapCause<E, R2, E2, B>(
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
-): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A | B> {
+): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B> {
   return (fx) => new SwitchMapCauseFx(fx, f)
 }
 
 class SwitchMapCauseFx<R, E, A, R2, E2, B>
-  extends Fx.Variance<R | R2, E | E2, A | B>
-  implements Fx<R | R2, E | E2, A | B>
+  extends Fx.Variance<R | R2,  E2, A | B>
+  implements Fx<R | R2,  E2, A | B>
 {
   constructor(readonly fx: Fx<R, E, A>, readonly f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>) {
     super()
   }
 
-  run<R3>(sink: Fx.Sink<R3, E | E2, A | B>) {
+  run<R3>(sink: Fx.Sink<R3,  E2, A | B>) {
     return withRefCounter(
       0,
       (counter) =>

@@ -1,10 +1,11 @@
 import * as Effect from '@effect/io/Effect'
+import { context } from '@fp-ts/data'
 import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import * as P from '@typed/path'
 import * as ptr from 'path-to-regexp'
 
-export interface Route<R, E, Path extends string> {
+export interface Route<R, Path extends string> {
   /**
    * The path of the route
    */
@@ -18,32 +19,32 @@ export interface Route<R, E, Path extends string> {
   /**
    * Match a path against the route
    */
-  readonly match: (path: string) => Effect.Effect<R, E, Option.Option<P.ParamsOf<Path>>>
+  readonly match: (path: string) => Effect.Effect<R, never, Option.Option<P.ParamsOf<Path>>>
 
   /**
    * Add a guard to this Route, if the guard fails, the `onNoMatch` route will be called
    * with the params of the current route.
    */
-  readonly guard: <R2 = never, E2 = never, R3 = never, E3 = never>(
-    guard: (params: P.ParamsOf<Path>, path: string) => Effect.Effect<R2, E2, boolean>,
-    onNoMatch?: (params: P.ParamsOf<Path>, path: string) => Effect.Effect<R3, E3, unknown>,
-  ) => Route<R | R2 | R3, E | E2 | E3, Path>
+  readonly guard: <R2 = never,  R3 = never>(
+    guard: (params: P.ParamsOf<Path>, path: string) => Effect.Effect<R2, never, boolean>,
+    onNoMatch?: (params: P.ParamsOf<Path>, path: string) => Effect.Effect<R3, never, unknown>,
+  ) => Route<R | R2 | R3, Path>
 
   /**
    * Concatenate two routes together
    */
-  readonly concat: <R2, E2, Path2 extends string>(
-    route: Route<R2, E2, Path2>,
-  ) => Route<R | R2, E | E2, P.PathJoin<readonly [Path, Path2]>>
+  readonly concat: <R2, Path2 extends string>(
+    route: Route<R2, Path2>,
+  ) => Route<R | R2, P.PathJoin<readonly [Path, Path2]>>
 }
 
-export function Route<R = never, E = never, Path extends string = string>(
+export function Route<R = never, Path extends string = string>(
   path: Path,
-  match: Route<R, E, Path>['match'] = Route.makeMatch(path),
-): Route<R, E, Path> {
-  const route: Route<R, E, Path> = {
+  match: Route<R, Path>['match'] = Route.makeMatch(path),
+): Route<R, Path> {
+  const route: Route<R, Path> = {
     path,
-    make: ptr.compile(path) as Route<R, E, Path>['make'],
+    make: ptr.compile(path) as Route<R, Path>['make'],
     match,
     guard: (g, no) => pipe(route, guard(g, no)),
     concat: (r) => pipe(route, concat(r)),
@@ -66,19 +67,18 @@ export namespace Route {
 }
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-export type ResourcesOf<T> = T extends Route<infer R, infer _E, infer _A> ? R : never
-export type ErrorsOf<T> = T extends Route<infer _R, infer E, infer _A> ? E : never
-export type PathOf<T> = T extends Route<infer _R, infer _E, infer A> ? A : never
+export type ResourcesOf<T> = T extends Route<infer R, infer _A> ? R : never
+export type PathOf<T> = T extends Route<infer _R, infer A> ? A : never
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 export type ParamsOf<T> = P.ParamsOf<PathOf<T>>
 
 export const guard =
-  <Path extends string, R2, E2, R3 = never, E3 = never>(
-    guard: (params: P.ParamsOf<Path>, path: string) => Effect.Effect<R2, E2, boolean>,
-    onNoMatch?: (params: P.ParamsOf<Path>, path: string) => Effect.Effect<R3, E3, unknown>,
+  <Path extends string, R2, R3 = never>(
+    guard: (params: P.ParamsOf<Path>, path: string) => Effect.Effect<R2, never, boolean>,
+    onNoMatch?: (params: P.ParamsOf<Path>, path: string) => Effect.Effect<R3, never, unknown>,
   ) =>
-  <R, E>(route: Route<R, E, Path>) =>
+  <R>(route: Route<R, Path>) =>
     Route(route.path, (path: string) =>
       Effect.gen(function* ($) {
         const params = yield* $(route.match(path))
@@ -102,10 +102,10 @@ export const guard =
     )
 
 export const concat =
-  <R2, E2, Path2 extends string>(otherRoute: Route<R2, E2, Path2>) =>
-  <R, E, Path extends string>(
-    route: Route<R, E, Path>,
-  ): Route<R | R2, E | E2, P.PathJoin<[Path, Path2]>> => {
+  <R2, Path2 extends string>(otherRoute: Route<R2, Path2>) =>
+  <R, Path extends string>(
+    route: Route<R, Path>,
+  ): Route<R | R2, P.PathJoin<[Path, Path2]>> => {
     const concatPath = ((route.path + otherRoute.path).replace(/\/{1,}/g, '/').replace(/\/$/, '') ||
       '/') as P.PathJoin<[Path, Path2]>
 
@@ -137,3 +137,8 @@ export const concat =
 export const base = Route('/')
 
 export const home = base.guard((_, p) => Effect.succeed(p === '/'))
+
+export function provideEnvironment<R>(context: context.Context<R>) {
+  return <Path extends string>(route: Route<R, Path>): Route<never, Path> =>
+    Route(route.path, (path) => Effect.provideEnvironment(context)(route.match(path)))
+}
