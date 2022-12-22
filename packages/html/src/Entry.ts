@@ -2,7 +2,7 @@ import { Runtime } from '@effect/io/Runtime'
 import { Context } from '@fp-ts/data/Context'
 
 import type { Hole } from './Hole.js'
-import type { Renderable } from './Renderable.js'
+import { Placeholder } from './Placeholder.js'
 import { TemplateCache } from './TemplateCache.js'
 import type { Wire } from './Wire.js'
 import { parseUpdates } from './parseUpdates.js'
@@ -11,7 +11,7 @@ export interface Entry {
   readonly type: 'svg' | 'html'
   readonly template: TemplateStringsArray
   readonly content: DocumentFragment
-  readonly updates: ReadonlyArray<<R>(value: Renderable.Value<R>, runtime: Runtime<R>) => void>
+  readonly updates: ReadonlyArray<<R>(value: Placeholder<R>, runtime: Runtime<R>) => void>
 
   context: Context<any>
   runtime: Runtime<any> | null

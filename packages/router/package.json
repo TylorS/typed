@@ -20,5 +20,11 @@
       "types": "./dist/*.d.ts"
     }
   },
-  "dependencies": {}
+  "dependencies": {
+    "@fp-ts/data": "^0.0.26",
+    "@typed/fx": "workspace:*",
+    "@typed/html": "workspace:*",
+    "@typed/path": "workspace:*",
+    "@typed/route": "workspace:*"
+  }
 }

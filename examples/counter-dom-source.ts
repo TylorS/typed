@@ -1,11 +1,15 @@
-import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
 
 import * as Fx from '../packages/fx/dist/index.js'
 import { makeElementRef, html, runBrowser } from '../packages/html/dist/index.js'
 
 const Counter = Fx.gen(function* ($) {
+  // An ElementRef is a special type of RefSubject which can be passed to the `ref` attribute of
+  // an element in @typed/html. It will be populated with the element once it is mounted.
   const ref = yield* $(makeElementRef<HTMLDivElement>())
+
+  // Each ElementRef is also a DomSource which can be utilized to query for elements
+  // and events declaratively as Fx, and has a slightly better testing story.
   const inc = Fx.as(+1)(ref.query('.inc').events('click'))
   const dec = Fx.as(-1)(ref.query('.dec').events('click'))
   const count = pipe(
@@ -20,4 +24,4 @@ const Counter = Fx.gen(function* ($) {
   </div>`
 })
 
-pipe(Counter, runBrowser(document.body), Fx.drain, Effect.unsafeRunAsync)
+pipe(Counter, runBrowser(document.body), Fx.unsafeRunAsync)

@@ -1,4 +1,3 @@
-import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
 
 import * as Fx from '../packages/fx/dist/index.js'
@@ -14,4 +13,4 @@ const Counter = Fx.gen(function* ($) {
   `
 })
 
-pipe(Counter, runBrowser(document.body), Fx.drain, Effect.unsafeRunAsync)
+pipe(Counter, runBrowser(document.body), Fx.unsafeRunAsync)

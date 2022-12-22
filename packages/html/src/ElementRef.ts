@@ -1,5 +1,5 @@
 import * as Effect from '@effect/io/Effect'
-import { identity, pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import { DomSource } from '@typed/dom/DomSource'
 import * as Fx from '@typed/fx'
@@ -25,10 +25,6 @@ export function makeElementRef<A extends HTMLElement = HTMLElement>(): Effect.Ef
       const element: Fx.Fx<never, never, A> = pipe(subject, Fx.compact, Fx.skipRepeats, Fx.hold)
 
       return {
-        __Placeholder__: {
-          _R: identity,
-          _E: identity,
-        },
         ...subject,
         ...DomSource(element),
         element,

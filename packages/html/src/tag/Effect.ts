@@ -6,16 +6,11 @@ import { Hole } from '../Hole.js'
 import { Placeholder } from '../Placeholder.js'
 import { RenderCache } from '../RenderCache.js'
 import { RenderContext } from '../RenderContext.js'
-import { Renderable } from '../Renderable.js'
 import { getRenderHoleContext, renderHole } from '../render.js'
 
 // Tag functions which only accept and return Effect
 
-export function html<
-  Values extends ReadonlyArray<
-    Renderable<any, any> | Effect.Effect<any, any, Renderable.Value<any>>
-  >,
->(
+export function html<Values extends ReadonlyArray<Placeholder<any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -31,7 +26,7 @@ export function html<
   )
 }
 
-html.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
+html.node = <Values extends ReadonlyArray<Placeholder<any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -49,11 +44,7 @@ html.node = <Values extends ReadonlyArray<Renderable<any, any>>>(
     ),
   )
 
-export function svg<
-  Values extends ReadonlyArray<
-    Renderable<any, any> | Effect.Effect<any, any, Renderable.Value<any>>
-  >,
->(
+export function svg<Values extends ReadonlyArray<Placeholder<any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -69,11 +60,7 @@ export function svg<
   )
 }
 
-svg.node = <
-  Values extends ReadonlyArray<
-    Renderable<any, any> | Effect.Effect<any, any, Renderable.Value<any>>
-  >,
->(
+svg.node = <Values extends ReadonlyArray<Placeholder<any>>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Effect.Effect<
@@ -91,17 +78,15 @@ svg.node = <
     ),
   )
 
-function unwrapEffectValues<
-  Values extends Array<Renderable<any, any> | Effect.Effect<any, any, Renderable.Value<any>>>,
->(
+function unwrapEffectValues<Values extends Array<Placeholder<any>>>(
   values: Values,
 ): Effect.Effect<
   Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
-  Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>>
+  Array<any>
 > {
   return Effect.gen(function* ($) {
-    const output: Array<Renderable.Value<Placeholder.ResourcesOf<Values[number]>>> = []
+    const output: Array<any> = []
 
     for (let i = 0; i < values.length; i++) {
       const value = values[i]
@@ -115,9 +100,14 @@ function unwrapEffectValues<
         continue
       }
 
-      output.push(value as Renderable.Value<Placeholder.ResourcesOf<Values[number]>>)
+      output.push(value)
     }
 
     return output
   })
+}
+
+declare module '@effect/io/Effect' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export interface Effect<R, E, A> extends Placeholder<R, E> {}
 }

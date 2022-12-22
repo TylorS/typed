@@ -10,5 +10,18 @@
   "exclude": [
     "dist"
   ],
-  "references": []
+  "references": [
+    {
+      "path": "../fx/tsconfig.build.json"
+    },
+    {
+      "path": "../html/tsconfig.build.json"
+    },
+    {
+      "path": "../path/tsconfig.build.json"
+    },
+    {
+      "path": "../route/tsconfig.build.json"
+    }
+  ]
 }

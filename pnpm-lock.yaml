@@ -177,7 +177,18 @@ importers:
       path-to-regexp: 6.2.1
 
   packages/router:
-    specifiers: {}
+    specifiers:
+      '@fp-ts/data': ^0.0.26
+      '@typed/fx': workspace:*
+      '@typed/html': workspace:*
+      '@typed/path': workspace:*
+      '@typed/route': workspace:*
+    dependencies:
+      '@fp-ts/data': 0.0.26
+      '@typed/fx': link:../fx
+      '@typed/html': link:../html
+      '@typed/path': link:../path
+      '@typed/route': link:../route
 
 packages:
 

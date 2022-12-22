@@ -52,6 +52,8 @@ for (const name of packageNames) {
       const fullName = orgName ? `${orgName}/${packageName}` : packageName
 
       if (packageName === name || builtinModules.includes(fullName)) {
+        console.log(name, fullName)
+
         continue
       }
 
