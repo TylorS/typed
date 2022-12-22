@@ -17,7 +17,11 @@ export function addEventListener<T extends EventTarget, EventName extends string
   options?: AddEventListenerOptions,
 ): (target: T) => Fx.Fx<never, never, Event> {
   return (target: T): Fx.Fx<never, never, Event> =>
-    Fx.fromEmitter(({ emit }) => Effect.sync(addEventListener_(target, event, emit, options)))
+    Fx.fromEmitter(({ emit }) => {
+      const cleanup = addEventListener_(target, event, emit, options)
+
+      return Effect.addFinalizer(() => Effect.sync(cleanup))
+    })
 }
 
 function addEventListener_(

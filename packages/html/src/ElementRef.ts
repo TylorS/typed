@@ -37,10 +37,8 @@ export function makeElementRef<A extends HTMLElement = HTMLElement>(): Effect.Ef
   )
 }
 
-const expectedKeys = ['element', 'query', 'events', 'elements', 'selectors']
-
 export function isElementRef<A extends HTMLElement = HTMLElement>(
   value: unknown,
 ): value is ElementRef<A> {
-  return isRefSubject(value) && expectedKeys.every((key) => key in value)
+  return isRefSubject(value) && 'element' in value
 }

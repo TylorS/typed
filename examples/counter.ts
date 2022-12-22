@@ -1,8 +1,9 @@
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
-import { Document } from '@typed/dom/index.js'
-import * as Fx from '@typed/fx/index.js'
-import { EventHandler, RenderContext, drainInto, html } from '@typed/html/index.js'
+
+import { Document } from '../packages/dom/dist/index.js'
+import * as Fx from '../packages/fx/dist/index.js'
+import { EventHandler, RenderContext, drainInto, html } from '../packages/html/dist/index.js'
 
 const Counter = Fx.gen(function* ($) {
   const count = yield* $(Fx.makeRefSubject(() => 0))

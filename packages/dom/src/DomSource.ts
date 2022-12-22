@@ -137,17 +137,18 @@ function makeEventStream<Ev extends Event>(
 ) {
   return function (element: Element): Fx.Fx<never, never, Ev> {
     const { capture } = options
-
     const cssSelector = cssSelectors.join(' ')
     const lastTwoCssSelectors = cssSelectors.slice(-2).join('')
 
-    const ensureEventMatches = Fx.filter(
-      (event: Ev) =>
-        ensureMatches(cssSelector, element, event, capture) ||
-        ensureMatches(lastTwoCssSelectors, element, event, capture),
+    const event$ = pipe(
+      element,
+      addEventListener(eventType as any, options),
+      Fx.filter(
+        (event: Ev) =>
+          ensureMatches(cssSelector, element, event, capture) ||
+          ensureMatches(lastTwoCssSelectors, element, event, capture),
+      ),
     )
-
-    const event$ = pipe(element, addEventListener(eventType as any, options), ensureEventMatches)
 
     if (capture) {
       return pipe(event$, Fx.map(findCurrentTarget(cssSelector, element)))

@@ -3,6 +3,7 @@ import { Context } from '@fp-ts/data/Context'
 import { pipe } from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx'
 
+import { isElementRef } from '../ElementRef.js'
 import { Hole } from '../Hole.js'
 import { Placeholder } from '../Placeholder.js'
 import { RenderCache } from '../RenderCache.js'
@@ -114,7 +115,7 @@ function unwrapFxValue(
   value: Renderable<any, any> | Fx.Fx<any, any, Renderable.Value<any>>,
   sampling: Fx.Subject<never, void>,
 ): Fx.Fx<any, any, Renderable.Value<any>> {
-  if (Fx.isFx<any, any, any>(value)) {
+  if (Fx.isFx<any, any, any>(value) && !isElementRef(value)) {
     return pipe(
       value,
       Fx.tap(() => sampling.event()),
