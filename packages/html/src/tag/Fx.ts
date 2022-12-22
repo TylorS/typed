@@ -13,7 +13,7 @@ import * as Tag from './Effect.js'
 
 // Tag functions which only accept and return Fx
 
-export function html<Values extends Array<Placeholder<any>>>(
+export function html<Values extends Array<Placeholder<any> | undefined | null>>(
   template: TemplateStringsArray,
   ...values: Values
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
@@ -27,7 +27,7 @@ export function html<Values extends Array<Placeholder<any>>>(
   )
 }
 
-html.node = <Values extends ReadonlyArray<Placeholder<any>>>(
+html.node = <Values extends ReadonlyArray<Placeholder<any> | undefined | null>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -35,15 +35,21 @@ html.node = <Values extends ReadonlyArray<Placeholder<any>>>(
   Placeholder.ErrorsOf<Values[number]>,
   Node
 > =>
-  Fx.suspend(() => {
+  Fx.suspend<
+    Document | RenderContext | Placeholder.ResourcesOf<Values[number]>,
+    Placeholder.ErrorsOf<Values[number]>,
+    Node
+  >(() => {
     const cache = RenderCache()
 
     return pipe(
       html(template, ...values),
-      Fx.exhaustMapLatestEffect((hole) =>
-        pipe(
-          getRenderHoleContext,
-          Effect.map((ctx) => renderHole(hole, cache, ctx).valueOf() as Node),
+      Fx.switchMapEffect(
+        (hole) => (
+          pipe(
+            getRenderHoleContext,
+            Effect.map((ctx) => renderHole(hole, cache, ctx).valueOf() as Node),
+          )
         ),
       ),
     )
@@ -51,7 +57,7 @@ html.node = <Values extends ReadonlyArray<Placeholder<any>>>(
 
 html.effect = Tag.html
 
-export function svg<Values extends ReadonlyArray<Placeholder<any>>>(
+export function svg<Values extends ReadonlyArray<Placeholder<any> | undefined | null>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
@@ -65,7 +71,7 @@ export function svg<Values extends ReadonlyArray<Placeholder<any>>>(
   )
 }
 
-svg.node = <Values extends ReadonlyArray<Placeholder<any>>>(
+svg.node = <Values extends ReadonlyArray<Placeholder<any> | undefined | null>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -77,10 +83,12 @@ svg.node = <Values extends ReadonlyArray<Placeholder<any>>>(
     const cache = RenderCache()
     return pipe(
       svg(template, ...values),
-      Fx.exhaustMapLatestEffect((hole) =>
-        pipe(
-          getRenderHoleContext,
-          Effect.map((ctx) => renderHole(hole, cache, ctx).valueOf() as Node),
+      Fx.switchMapEffect(
+        (hole) => (
+          pipe(
+            getRenderHoleContext,
+            Effect.map((ctx) => renderHole(hole, cache, ctx).valueOf() as Node),
+          )
         ),
       ),
     )
@@ -88,7 +96,7 @@ svg.node = <Values extends ReadonlyArray<Placeholder<any>>>(
 
 svg.effect = Tag.svg
 
-function unwrapFxValues<Values extends Array<Placeholder<any>>>(
+function unwrapFxValues<Values extends Array<Placeholder<any> | undefined | null>>(
   template: TemplateStringsArray,
   values: Values,
 ): Fx.Fx<
@@ -108,7 +116,7 @@ function unwrapFxValues<Values extends Array<Placeholder<any>>>(
 
 function unwrapFxValue(
   template: TemplateStringsArray,
-  value: Placeholder<any>,
+  value: Placeholder<any> | undefined | null,
   index: number,
   sampling: Fx.Subject<never, void>,
 ): Fx.Fx<any, any, any> {

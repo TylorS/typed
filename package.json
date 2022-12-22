@@ -31,12 +31,12 @@
     "new-package": "nx generate ./packages/nx-plugin:package"
   },
   "dependencies": {
-    "@effect/io": "^0.0.39",
-    "@effect/stm": "^0.0.3",
-    "@fp-ts/core": "^0.0.11",
-    "@fp-ts/data": "^0.0.26",
-    "@fp-ts/schema": "^0.0.6",
-    "@webreflection/uparser": "^0.2.4",
+    "@effect/io": "~0.0.42",
+    "@effect/stm": "~0.0.5",
+    "@fp-ts/core": "~0.0.11",
+    "@fp-ts/data": "~0.0.28",
+    "@fp-ts/schema": "~0.0.6",
+    "@webreflection/uparser": "~0.2.4",
     "path-to-regexp": "^6.2.1",
     "ts-toolbelt": "^9.6.0",
     "typed-query-selector": "^2.8.0",
@@ -56,11 +56,10 @@
     "@nrwl/vite": "15.3.3",
     "@nrwl/workspace": "^15.3.3",
     "@types/node": "^18.11.17",
-    "@types/path-to-regexp": "^1.7.0",
-    "@typescript-eslint/eslint-plugin": "^5.46.1",
-    "@typescript-eslint/parser": "^5.46.1",
-    "@vitest/coverage-c8": "^0.26.0",
-    "@vitest/ui": "^0.25.8",
+    "@typescript-eslint/eslint-plugin": "^5.47.0",
+    "@typescript-eslint/parser": "^5.47.0",
+    "@vitest/coverage-c8": "^0.26.2",
+    "@vitest/ui": "^0.26.2",
     "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-typescript": "^3.5.2",
@@ -77,10 +76,10 @@
     "tslib": "^2.4.1",
     "tsx": "^3.12.1",
     "typescript": "^4.9.4",
-    "vite": "^4.0.1",
+    "vite": "^4.0.3",
     "vite-plugin-eslint": "^1.8.1",
     "vite-tsconfig-paths": "^4.0.3",
-    "vitest": "^0.25.8"
+    "vitest": "^0.26.2"
   },
   "pnpm": {
     "overrides": {

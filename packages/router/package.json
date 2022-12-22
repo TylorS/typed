@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@fp-ts/data": "^0.0.26",
+    "@fp-ts/data": "~0.0.28",
     "@typed/fx": "workspace:*",
     "@typed/html": "workspace:*",
     "@typed/path": "workspace:*",

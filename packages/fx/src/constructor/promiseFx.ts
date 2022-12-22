@@ -11,12 +11,12 @@ export const promiseFx = <R, E, A>(f: () => Promise<Fx<R, E, A>>): Fx<R, E, A> =
     ),
   )
 
-export const promiseAbortFx = <R, E, A>(
+export const promiseInterruptFx = <R, E, A>(
   f: (signal: AbortSignal) => Promise<Fx<R, E, A>>,
 ): Fx<R, E, A> =>
   Fx((sink) =>
     pipe(
-      Effect.promiseAbort(f),
+      Effect.promiseInterrupt(f),
       Effect.foldCauseEffect(sink.error, (fx) => fx.run(sink)),
     ),
   )
@@ -32,13 +32,13 @@ export const tryCatchPromiseFx = <R, E, A, E2>(
     ),
   )
 
-export const tryCatchPromiseAbortFx = <R, E, A, E2>(
+export const tryCatchPromiseInterruptFx = <R, E, A, E2>(
   f: (signal: AbortSignal) => Promise<Fx<R, E, A>>,
   onError: (u: unknown) => E2,
 ): Fx<R, E | E2, A> =>
   Fx((sink) =>
     pipe(
-      Effect.tryCatchPromiseAbort(f, onError),
+      Effect.tryCatchPromiseInterrupt(f, onError),
       Effect.foldCauseEffect(sink.error, (fx) => fx.run(sink)),
     ),
   )

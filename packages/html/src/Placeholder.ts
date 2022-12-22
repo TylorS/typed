@@ -12,7 +12,11 @@ export interface Placeholder<R = never, E = never> {
 
 export namespace Placeholder {
   /* eslint-disable @typescript-eslint/no-unused-vars */
-  export type ResourcesOf<T> = [T] extends [never]
+  export type ResourcesOf<T> = [T] extends [null]
+    ? never
+    : [T] extends [undefined]
+    ? never
+    : [T] extends [never]
     ? never
     : [T] extends [Placeholder<infer R, infer _E>]
     ? R
@@ -22,7 +26,11 @@ export namespace Placeholder {
     ? R
     : never
 
-  export type ErrorsOf<T> = [T] extends [never]
+  export type ErrorsOf<T> = [T] extends [null]
+    ? never
+    : [T] extends [undefined]
+    ? never
+    : [T] extends [never]
     ? never
     : [T] extends [Placeholder<infer _R, infer _E>]
     ? _E

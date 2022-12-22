@@ -47,7 +47,12 @@ export function renderInto<T extends DocumentFragment | HTMLElement>(where: T) {
   ): Fx.Fx<R | Document | RenderContext, E, T> =>
     pipe(
       fx,
-      Fx.exhaustMapLatestEffect((hole) => render(where, hole)),
+      Fx.exhaustMapLatestEffect<
+        Hole | HTMLElement | SVGElement,
+        R | Document | RenderContext,
+        never,
+        T
+      >((hole) => render(where, hole)),
       // Disable cooperative yielding to help ensure consistent rendering performance
       Fx.withRuntimeFlags(RuntimeFlagsPatch.disable(Flags.CooperativeYielding)),
     )

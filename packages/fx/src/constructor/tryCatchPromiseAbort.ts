@@ -5,7 +5,7 @@ import { Fx } from '../Fx.js'
 
 import { fromEffect } from './fromEffect.js'
 
-export const tryCatchPromiseAbort: <E, A>(
+export const tryCatchPromiseInterrupt: <E, A>(
   evaluate: (signal: AbortSignal) => Promise<A>,
   onReject: (reason: unknown) => E,
-) => Fx<never, E, A> = flow(Effect.tryCatchPromiseAbort, fromEffect)
+) => Fx<never, E, A> = flow(Effect.tryCatchPromiseInterrupt, fromEffect)
