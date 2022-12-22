@@ -15,7 +15,7 @@ import { flatMap } from './flatMap.js'
 import { mergeAll } from './merge.js'
 import { switchMapCause } from './switchMapCause.js'
 
-describe.only(import.meta.url, () => {
+describe(import.meta.url, () => {
   describe(switchMapCause.name, () => {
     it('allows mapping to other Fx during failures while prefering the latest stream', async () => {
       const test = pipe(

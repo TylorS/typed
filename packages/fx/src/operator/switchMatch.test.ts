@@ -9,19 +9,29 @@ import { at } from '../constructor/at.js'
 import { collectAll } from '../run/collectAll.js'
 
 import { mergeAll } from './merge.js'
-import { switchMap } from './switchMap.js'
+import { switchMatchError } from './switchMatch.js'
+import { flatten } from './flatMap.js'
+import { fail } from '../constructor/fail.js'
 
 describe(import.meta.url, () => {
-  describe(switchMap.name, () => {
+  describe(switchMatchError.name, () => {
     it('allows mapping to other Fx while prefering the latest stream', async () => {
       const test = pipe(
-        mergeAll(at(millis(0), 1), at(millis(20), 2), at(millis(40), 3)),
-        switchMap((n) => at(millis(40), n * n)),
+        mergeAll(
+          at(millis(0), 1),
+          at(millis(20), 2),
+          at(millis(40), 3),
+          pipe(at(millis(60), fail(4)), flatten),
+        ),
+        switchMatchError(
+          (n) => at(millis(60), n * n),
+          (n) => at(millis(60), n * n),
+        ),
         collectAll,
       )
       const events = await Effect.unsafeRunPromise(test)
 
-      deepStrictEqual(events, [9])
+      deepStrictEqual(events, [16])
     })
   })
 })

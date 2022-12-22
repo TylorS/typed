@@ -13,18 +13,7 @@ import { exhaustMap } from './exhaustMap.js'
 
 describe(import.meta.url, () => {
   describe(exhaustMap.name, () => {
-    it('allows chaining multiple synchronous streams, favoring the first', async () => {
-      const result = await pipe(
-        fromIterable([1, 2, 3]),
-        exhaustMap((n) => fromIterable([n, n, n])),
-        collectAll,
-        Effect.unsafeRunPromise,
-      )
-
-      deepStrictEqual(result, [1, 1, 1])
-    })
-
-    it('allows chaining multiple asynchronous streams, favoring the first', async () => {
+    it('allows chaining multiple streams, favoring the first', async () => {
       const result = await pipe(
         fromIterable([1, 2, 3]),
         exhaustMap((n) => delay(Duration.millis(10))(fromIterable([n, n, n]))),

@@ -1,4 +1,5 @@
 import * as Context from '@fp-ts/data/Context'
+import * as Duration from '@fp-ts/data/Duration'
 import * as Option from '@fp-ts/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
@@ -305,6 +306,7 @@ export function RouterMatcher<R, E, A>(
               return pipe(
                 router.currentPath.set(error.path),
                 Fx.fromEffect,
+                Fx.delay(Duration.millis(0)),
                 Fx.flatMap(() => Fx.never),
               )
             }

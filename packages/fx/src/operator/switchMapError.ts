@@ -17,8 +17,6 @@ export function switchMapError<E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>) {
     )
 }
 
-
-
 export function switchMapErrorEffect<E, R2, E2, B>(f: (error: E) => Effect.Effect<R2, E2, B>) {
   return <R, A>(fx: Fx<R, E, A>): Fx<R | R2, E2, A | B> =>
     pipe(

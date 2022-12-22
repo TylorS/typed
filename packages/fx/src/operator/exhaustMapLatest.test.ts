@@ -13,18 +13,7 @@ import { exhaustMapLatest } from './exhaustMapLatest.js'
 
 describe(import.meta.url, () => {
   describe(exhaustMapLatest.name, () => {
-    it('allows chaining multiple synchronous streams, favoring the first, replaying the latest', async () => {
-      const result = await pipe(
-        fromIterable([1, 2, 3]),
-        exhaustMapLatest((n) => fromIterable([n, n, n])),
-        collectAll,
-        Effect.unsafeRunPromise,
-      )
-
-      deepStrictEqual(result, [1, 1, 1, 3, 3, 3])
-    })
-
-    it('allows chaining multiple asynchronous streams, favoring the first, replaying the latest', async () => {
+    it('allows chaining multiple streams, favoring the first, replaying the latest', async () => {
       const result = await pipe(
         fromIterable([1, 2, 3]),
         exhaustMapLatest((n) => delay(Duration.millis(10))(fromIterable([n, n, n]))),
