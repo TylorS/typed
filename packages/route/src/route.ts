@@ -1,4 +1,5 @@
 import * as Effect from '@effect/io/Effect'
+import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import { ParamsOf, Interpolate, PathJoin, pathJoin } from '@typed/path'
 import * as ptr from 'path-to-regexp'
@@ -44,8 +45,8 @@ export function Route<R, E, Path extends string>(
     path,
     make: ptr.compile(path) as Route<R, E, Path>['make'],
     match,
-    guard: (g, no) => guard(route)(g, no),
-    concat: (r) => concat(r)(route),
+    guard: (g, no) => pipe(route, guard(g, no)),
+    concat: (r) => pipe(route, concat(r)),
   }
 
   return route
@@ -65,11 +66,11 @@ export namespace Route {
 }
 
 export const guard =
-  <R, E, Path extends string>(route: Route<R, E, Path>) =>
-  <R2, E2, R3, E3>(
+  <Path extends string, R2, E2, R3, E3>(
     guard: (params: ParamsOf<Path>) => Effect.Effect<R2, E2, boolean>,
     onNoMatch: (params: ParamsOf<Path>) => Effect.Effect<R3, E3, unknown>,
   ) =>
+  <R, E>(route: Route<R, E, Path>) =>
     Route(route.path, (path: string) =>
       Effect.gen(function* ($) {
         const params = yield* $(route.match(path))
