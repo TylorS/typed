@@ -7,7 +7,9 @@ import { runBrowser, html } from '../packages/html/dist/index.js'
 interface Example {
   readonly name: string
 }
-const Example = Tag<Example>()
+const Example = Object.assign(Tag<Example>(), {
+  with: <R, E, A>(f: (t: Example) => Fx.Fx<R, E, A>) => Fx.serviceWithFx(Example)(f),
+})
 
 const Counter = Fx.gen(function* ($) {
   const model = yield* $(Fx.makeRef(() => 0))
@@ -16,7 +18,7 @@ const Counter = Fx.gen(function* ($) {
     <button onclick=${model.update((x) => x - 1)}>Decrement</button>
     <button onclick=${model.update((x) => x + 1)}>Increment</button>
     <p>
-      ${Fx.serviceWithFx(Example)((e) =>
+      ${Example.with((e) =>
         pipe(
           model,
           Fx.map((x) => `${e.name}: ${x}`),
