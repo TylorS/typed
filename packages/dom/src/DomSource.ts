@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
-
-import * as Effect from '@effect/io/Effect'
-import * as Context from '@fp-ts/data/Context'
 import { pipe } from '@fp-ts/data/Function'
+import * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
 
 import { addEventListener } from './EventTarget.js'
@@ -23,7 +21,7 @@ export interface DomSource<Element = HTMLElement, EventMap extends {} = DefaultE
   ) => Fx.Fx<never, never, EventMap[T] & { readonly currentTarget: Element }>
 }
 
-export function DomSource<
+export const DomSource = Object.assign(function DomSource<
   Element extends globalThis.Element = HTMLElement,
   EventMap extends {} = DefaultEventMap<Element>,
 >(
@@ -73,33 +71,28 @@ export function DomSource<
   }
 
   return manager
+},
+Context.Tag<DomSource>('@typed/dom/DomSource'))
+
+export function query<
+  Element,
+  S extends string,
+  Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>,
+>(selector: S) {
+  return <EventMap extends {}>(source: DomSource<Element, EventMap>) =>
+    source.query<S, Ev>(selector)
 }
 
-export namespace DomSource {
-  export const Tag = Context.Tag<DomSource>()
-  export const get = Effect.service(Tag)
-  export const provide = Effect.provideService(Tag)
+export function elements<Element, Ev extends {}>(source: DomSource<Element, Ev>) {
+  return source.elements
+}
 
-  export function query<
-    Element,
-    S extends string,
-    Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>,
-  >(selector: S) {
-    return <EventMap extends {}>(source: DomSource<Element, EventMap>) =>
-      source.query<S, Ev>(selector)
-  }
-
-  export function elements<Element, Ev extends {}>(source: DomSource<Element, Ev>) {
-    return source.elements
-  }
-
-  export function events<
-    Element,
-    EventMap extends Readonly<Record<T, any>>,
-    T extends keyof EventMap,
-  >(type: T, options?: AddEventListenerOptions) {
-    return (source: DomSource<Element, EventMap>) => source.events<T>(type, options)
-  }
+export function events<
+  Element,
+  EventMap extends Readonly<Record<T, any>>,
+  T extends keyof EventMap,
+>(type: T, options?: AddEventListenerOptions) {
+  return (source: DomSource<Element, EventMap>) => source.events<T>(type, options)
 }
 
 function findMostSpecificElement<T extends Element>(cssSelectors: ReadonlyArray<string>) {

@@ -13,6 +13,7 @@
  *    - Type Checking generated output for production builds
  *    - Preview servers
  * - Things to think about
+ *    - How to order routes?
  *    - compile-time transposition in templates?
  *    - linting/type-checking templates better
  *    - Recommend usage of no-implicit-globals eslint config (maybe publish an eslint config?)
@@ -21,3 +22,9 @@
  *      - Only allow globalThis.Node to be returned to the Router?
  *    - Islands architecture
  */
+
+import { DomServices } from '@typed/dom'
+import { RenderContext } from '@typed/html'
+import { Router } from '@typed/router'
+
+export type IntrinsicServices = DomServices | Router | RenderContext

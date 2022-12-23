@@ -131,8 +131,15 @@ importers:
       '@typed/fx': link:../fx
       typed-query-selector: 2.8.0
 
-  packages/express:
-    specifiers: {}
+  packages/framework:
+    specifiers:
+      '@typed/dom': workspace:*
+      '@typed/html': workspace:*
+      '@typed/router': workspace:*
+    dependencies:
+      '@typed/dom': link:../dom
+      '@typed/html': link:../html
+      '@typed/router': link:../router
 
   packages/fx:
     specifiers:
@@ -150,6 +157,7 @@ importers:
     specifiers:
       '@effect/io': ~0.0.42
       '@fp-ts/data': ~0.0.30
+      '@typed/context': workspace:*
       '@typed/dom': workspace:*
       '@typed/fx': workspace:*
       '@webreflection/uparser': ~0.2.4
@@ -157,6 +165,7 @@ importers:
     dependencies:
       '@effect/io': 0.0.42
       '@fp-ts/data': 0.0.30
+      '@typed/context': link:../context
       '@typed/dom': link:../dom
       '@typed/fx': link:../fx
       '@webreflection/uparser': 0.2.4
@@ -168,22 +177,6 @@ importers:
     dependencies:
       '@fp-ts/data': 0.0.30
 
-  packages/module:
-    specifiers:
-      '@effect/io': ~0.0.42
-      '@typed/dom': workspace:*
-      '@typed/fx': workspace:*
-      '@typed/html': workspace:*
-      '@typed/route': workspace:*
-      '@typed/router': workspace:*
-    dependencies:
-      '@effect/io': 0.0.42
-      '@typed/dom': link:../dom
-      '@typed/fx': link:../fx
-      '@typed/html': link:../html
-      '@typed/route': link:../route
-      '@typed/router': link:../router
-
   packages/node:
     specifiers: {}
 
@@ -192,9 +185,6 @@ importers:
       webpack: ^5.0.0
     devDependencies:
       webpack: 5.75.0
-
-  packages/parser:
-    specifiers: {}
 
   packages/path:
     specifiers:

@@ -10,35 +10,23 @@ import * as Fx from '@typed/fx'
 import { makeEntry } from './Entry.js'
 import { Hole } from './Hole.js'
 import { RenderCache } from './RenderCache.js'
-import { RenderContext } from './RenderContext.js'
+import { Environment, RenderContext } from './RenderContext.js'
 import { Wire, persistent } from './Wire.js'
 
-export function runBrowser<T extends DocumentFragment | HTMLElement>(where: T) {
-  return <R, E>(fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>): Fx.Fx<R, E, T> => {
-    return pipe(
-      fx,
-      renderInto(where),
-      Document.provideFx(where.ownerDocument),
-      RenderContext.provideBrowserFx,
-    )
-  }
-}
+export const runBrowser = renderIn('browser')
+export const runServer = renderIn('server')
+export const runStatic = renderIn('static')
 
-export function runServer<T extends DocumentFragment | HTMLElement>(where: T) {
-  return <R, E>(fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>): Fx.Fx<R, E, T> => {
-    return pipe(
-      fx,
-      renderInto(where),
-      Document.provideFx(where.ownerDocument),
-      RenderContext.provideServerFx,
-    )
-  }
-}
-
-export function drainInto<T extends DocumentFragment | HTMLElement>(where: T) {
-  return <R, E>(
-    fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>,
-  ): Effect.Effect<R | Document | RenderContext, E, void> => pipe(fx, renderInto(where), Fx.drain)
+export function renderIn(environment: Environment) {
+  return <T extends DocumentFragment | HTMLElement>(where: T) =>
+    <R, E>(fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>): Fx.Fx<R, E, T> => {
+      return pipe(
+        fx,
+        renderInto(where),
+        Document.provideFx(where.ownerDocument),
+        RenderContext.provideFx(RenderContext(environment)),
+      )
+    }
 }
 
 export function renderInto<T extends DocumentFragment | HTMLElement>(where: T) {
@@ -47,15 +35,16 @@ export function renderInto<T extends DocumentFragment | HTMLElement>(where: T) {
   ): Fx.Fx<R | Document | RenderContext, E, T> =>
     pipe(
       fx,
-      Fx.exhaustMapLatestEffect<
-        Hole | HTMLElement | SVGElement,
-        R | Document | RenderContext,
-        never,
-        T
-      >((hole) => render(where, hole)),
+      Fx.exhaustMapLatestEffect((hole) => render(where, hole)),
       // Disable cooperative yielding to help ensure consistent rendering performance
       Fx.withRuntimeFlags(RuntimeFlagsPatch.disable(Flags.CooperativeYielding)),
     )
+}
+
+export function drainInto<T extends DocumentFragment | HTMLElement>(where: T) {
+  return <R, E>(
+    fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>,
+  ): Effect.Effect<R | Document | RenderContext, E, void> => pipe(fx, renderInto(where), Fx.drain)
 }
 
 /**
@@ -94,6 +83,9 @@ export function render<T extends DocumentFragment | HTMLElement>(
   )
 }
 
+/**
+ * @internal
+ */
 export interface RenderHoleContext {
   readonly document: Document
   readonly renderContext: RenderContext

@@ -25,6 +25,7 @@
     "@fp-ts/data": "~0.0.30",
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
+    "@typed/context": "workspace:*",
     "udomdiff": "^1.1.0",
     "@webreflection/uparser": "~0.2.4"
   }

@@ -13,7 +13,7 @@
       "path": "./packages/dom/tsconfig.build.json"
     },
     {
-      "path": "./packages/express/tsconfig.build.json"
+      "path": "./packages/framework/tsconfig.build.json"
     },
     {
       "path": "./packages/fx/tsconfig.build.json"
@@ -25,13 +25,7 @@
       "path": "./packages/internal/tsconfig.build.json"
     },
     {
-      "path": "./packages/module/tsconfig.build.json"
-    },
-    {
       "path": "./packages/node/tsconfig.build.json"
-    },
-    {
-      "path": "./packages/parser/tsconfig.build.json"
     },
     {
       "path": "./packages/path/tsconfig.build.json"

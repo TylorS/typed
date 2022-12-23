@@ -4,7 +4,21 @@
     "rootDir": "./src",
     "outDir": "dist"
   },
-  "include": ["src"],
-  "exclude": ["dist"],
-  "references": []
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "dist"
+  ],
+  "references": [
+    {
+      "path": "../dom/tsconfig.build.json"
+    },
+    {
+      "path": "../html/tsconfig.build.json"
+    },
+    {
+      "path": "../router/tsconfig.build.json"
+    }
+  ]
 }
