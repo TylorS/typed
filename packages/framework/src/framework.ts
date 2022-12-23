@@ -1,6 +1,7 @@
 /**
+ * !Allow modifying the entrypoint and expanding the Intrinsic Services
  * TODOS:
- * - Static ananlysis of your templates to determine the querySelectors to wait for server-side
+ * - Static analysis of your templates to determine the querySelectors to wait for server-side
  * - Static analysis of your files to determine the routes
  * - Static analysis of your files to determine the main for each environment
  * - Dynamic runtime for doing all of this within an ESM environment for development
@@ -13,18 +14,17 @@
  *    - Type Checking generated output for production builds
  *    - Preview servers
  * - Things to think about
+ *    - How to handle 404 / redirects? .fallback.ts ?
+ *    - How to support hybrid rendering methods?
+ *    - How to support incremental static rendering?
+ *       - Redis client backed Ref ??
  *    - How to order routes?
  *    - compile-time transposition in templates?
  *    - linting/type-checking templates better
  *    - Recommend usage of no-implicit-globals eslint config (maybe publish an eslint config?)
- *    - How to organize and construct layouts
+ *    - How to organize and construct layouts?
  *    - Consider microfrontend use cases
  *      - Only allow globalThis.Node to be returned to the Router?
- *    - Islands architecture
+ *    - Consider islands architecture
+ *      - How to handle extracting static portions of the app?
  */
-
-import { DomServices } from '@typed/dom'
-import { RenderContext } from '@typed/html'
-import { Router } from '@typed/router'
-
-export type IntrinsicServices = DomServices | Router | RenderContext

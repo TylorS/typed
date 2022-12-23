@@ -309,6 +309,16 @@ export function RouterMatcher<R, E, A>(
   return matcher
 }
 
+export namespace RouterMatcher {
+  export const empty = RouterMatcher<never, never, never>(new Map())
+
+  export const concat = <R, E, A, R2, E2, B>(
+    matcher: RouteMatcher<R, E, A>,
+    matcher2: RouteMatcher<R2, E2, B>,
+  ): RouteMatcher<R | R2, E | E2, A | B> =>
+    RouterMatcher(new Map([...matcher.routes, ...matcher2.routes]))
+}
+
 export const { matchFx, match, matchEffect } = RouterMatcher<never, never, never>(new Map())
 
 export const makeRouter: Effect.Effect<

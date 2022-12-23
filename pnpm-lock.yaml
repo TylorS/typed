@@ -133,12 +133,22 @@ importers:
 
   packages/framework:
     specifiers:
+      '@effect/io': ~0.0.42
+      '@fp-ts/data': ~0.0.30
       '@typed/dom': workspace:*
+      '@typed/fx': workspace:*
       '@typed/html': workspace:*
+      '@typed/path': workspace:*
+      '@typed/route': workspace:*
       '@typed/router': workspace:*
     dependencies:
+      '@effect/io': 0.0.42
+      '@fp-ts/data': 0.0.30
       '@typed/dom': link:../dom
+      '@typed/fx': link:../fx
       '@typed/html': link:../html
+      '@typed/path': link:../path
+      '@typed/route': link:../route
       '@typed/router': link:../router
 
   packages/fx:

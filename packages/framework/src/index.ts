@@ -1,1 +1,2 @@
-export * from './framework.js'
+export * from './IntrinsicServices.js'
+export * from './Module.js'
