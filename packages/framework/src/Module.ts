@@ -15,7 +15,7 @@ export interface Module<P extends string> {
 
 export namespace Module {
   export function make<P extends string>(
-    route: Route.Route<never, P>,
+    route: Route.Route<IntrinsicServices, P>,
     main: (params: Fx.Fx<never, never, Path.ParamsOf<P>>) => Fx.Fx<IntrinsicServices, never, Node>,
   ): Module<P> {
     return { route, main }
