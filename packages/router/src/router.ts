@@ -1,19 +1,18 @@
-import * as Context from '@fp-ts/data/Context'
-import * as Duration from '@fp-ts/data/Duration'
-import * as Option from '@fp-ts/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
+import * as Duration from '@fp-ts/data/Duration'
 import { flow, pipe } from '@fp-ts/data/Function'
+import * as Option from '@fp-ts/data/Option'
+import * as Context from '@typed/context'
+import { Location, History, addDocumentListener, addWindowListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
 import * as html from '@typed/html'
+import { Hole } from '@typed/html'
 import * as Path from '@typed/path'
 import * as Route from '@typed/route'
-import { context } from '@fp-ts/data'
-import { Hole } from '@typed/html'
-import * as dom from '@typed/dom'
 
-export interface Router<R = never, P extends string = string> {
+export interface Router<out R = never, in out P extends string = string> {
   /**
    * The base route the Router is starting from.
    */
@@ -61,80 +60,61 @@ export interface Router<R = never, P extends string = string> {
   readonly provideEnvironment: (environment: Context.Context<R>) => Router<never, P>
 }
 
-export const Tag = Context.Tag<Router>()
+export const Router = Object.assign(function makeRouter<R = never, P extends string = string>(
+  route: Route.Route<R, P>,
+  currentPath: Fx.RefSubject<string>,
+): Router<R, P> {
+  const outlet = Fx.RefSubject.unsafeMake(
+    (): Option.Option<html.Placeholder | Hole | Node> => Option.none,
+  )
 
-export const Router = Object.assign(
-  function makeRouter<R = never, P extends string = string>(
-    route: Route.Route<R, P>,
-    currentPath: Fx.RefSubject<string>,
-  ): Router<R, P> {
-    const outlet = Fx.RefSubject.unsafeMake(
-      (): Option.Option<html.Placeholder | Hole | Node> => Option.none,
-    )
+  const createPath = <R2 extends Route.Route<any, string>, P extends Route.ParamsOf<R2>>(
+    other: R2,
+    ...[params]: [keyof P] extends [never] ? [] : [P]
+  ): Effect.Effect<
+    R,
+    never,
+    Path.PathJoin<
+      [Path.Interpolate<Route.PathOf<R>, Route.ParamsOf<R>>, Path.Interpolate<Route.PathOf<R2>, P>]
+    >
+  > =>
+    Effect.gen(function* ($) {
+      const path = yield* $(currentPath.get)
+      const baseParams = yield* $(route.match(path))
 
-    const createPath = <R2 extends Route.Route<any, string>, P extends Route.ParamsOf<R2>>(
-      other: R2,
-      ...[params]: [keyof P] extends [never] ? [] : [P]
-    ): Effect.Effect<
-      R,
-      never,
-      Path.PathJoin<
-        [
-          Path.Interpolate<Route.PathOf<R>, Route.ParamsOf<R>>,
-          Path.Interpolate<Route.PathOf<R2>, P>,
-        ]
-      >
-    > =>
-      Effect.gen(function* ($) {
-        const path = yield* $(currentPath.get)
-        const fullRoute = route.concat(other)
-        const baseParams = yield* $(route.match(path))
+      if (Option.isNone(baseParams)) {
+        return yield* $(
+          Effect.dieMessage(
+            `Can not create path when the parent can not be matched.
+                Parent Route: ${route.path}
+                Current Route: ${other.path}
+                Current Path: ${path}`,
+          ),
+        )
+      }
 
-        if (Option.isNone(baseParams)) {
-          return yield* $(
-            Effect.dieMessage('Can not create a path when the parent Route is not matched'),
-          )
-        }
+      return route.concat(other).make({ ...baseParams.value, ...params } as any) as any
+    })
 
-        return fullRoute.make({ ...baseParams.value, ...params } as any) as any
-      })
-
-    const router: Router<R, P> = {
-      route,
+  const router: Router<R, P> = {
+    route,
+    currentPath,
+    params: pipe(
       currentPath,
-      params: pipe(
-        currentPath,
-        Fx.switchMapEffect(route.match),
-        Fx.compact,
-        Fx.skipRepeats,
-      ) as Router<R, P>['params'],
-      outlet,
-      createPath: createPath as Router<R, P>['createPath'],
-      define: <R2, Path2 extends string>(other: Route.Route<R2, Path2>) =>
-        makeRouter(route.concat(other), currentPath),
-      provideEnvironment: (env) => provideEnvironment(env)(router),
-    }
+      Fx.switchMapEffect(route.match),
+      Fx.compact,
+      Fx.skipRepeats,
+    ) as Router<R, P>['params'],
+    outlet,
+    createPath: createPath as Router<R, P>['createPath'],
+    define: <R2, Path2 extends string>(other: Route.Route<R2, Path2>) =>
+      makeRouter(route.concat(other), currentPath),
+    provideEnvironment: (env) => provideEnvironment(env)(router),
+  }
 
-    return router
-  },
-  Tag,
-  {
-    get: Effect.service(Tag),
-    with: Effect.serviceWith(Tag),
-    withEffect: Effect.serviceWithEffect(Tag),
-    withFx: Fx.serviceWithFx(Tag),
-    provide:
-      (currentPath: Fx.RefSubject<string>) =>
-      <R, E, A>(self: Effect.Effect<R, E, A>): Effect.Effect<Exclude<R, Router>, E, A> =>
-        Effect.provideService(Tag)(Router(Route.base as Route.Route<never, string>, currentPath))(
-          self,
-        ),
-    provideFx:
-      (currentPath: Fx.RefSubject<string>) =>
-      <R, E, A>(self: Fx.Fx<R, E, A>): Fx.Fx<Exclude<R, Router>, E, A> =>
-        Fx.provideService(Tag, Router(Route.base as Route.Route<never, string>, currentPath))(self),
-  },
-)
+  return router
+},
+Context.Tag<Router>())
 
 // TODO: Add API for configuring a loading indicator
 // TODO: Compiler should be able to attach information to each Route instance, and when available
@@ -143,7 +123,7 @@ export const Router = Object.assign(
 export interface RouteMatcher<R = never, E = never, A = unknown> {
   // Where things are actually stored immutably
   readonly routes: ReadonlyMap<
-    Route.Route<any, string>,
+    Route.Route<any, any>,
     (params: Fx.Fx<never, never, any>) => Fx.Fx<any, any, any>
   >
 
@@ -201,7 +181,7 @@ export const outlet: Fx.Fx<Router, never, html.Placeholder | null> = pipe(
 
 export const currentPath: Fx.Fx<Router, never, string> = Router.withFx((r) => r.currentPath)
 
-export function provideEnvironment<R>(environment: context.Context<R>) {
+export function provideEnvironment<R>(environment: Context.Context<R>) {
   return <P extends string>(router: Router<R, P>): Router<never, P> => {
     const provided: Router<never, P> = {
       ...router,
@@ -238,10 +218,10 @@ redirect.fx = (path: string) => Fx.fail<Redirect>(Redirect.make(path))
 
 export const redirectTo = <R, P extends string>(
   route: Route.Route<R, P>,
-  ...params: [keyof Path.ParamsOf<P>] extends [never] ? [] : [Path.ParamsOf<P>]
+  ...[params]: [keyof Path.ParamsOf<P>] extends [never] ? [] : [Path.ParamsOf<P>]
 ): Effect.Effect<Router, Redirect, never> =>
   pipe(
-    Router.withEffect((r) => r.createPath(route, ...(params as any))),
+    Router.withEffect((r) => r.createPath(route as any, params as any)),
     Effect.flatMap(redirect),
   )
 
@@ -250,7 +230,7 @@ redirectTo.fx = <R, P extends string>(
   ...params: [keyof Path.ParamsOf<P>] extends [never] ? [] : [Path.ParamsOf<P>]
 ): Fx.Fx<Router, Redirect, never> =>
   pipe(
-    Router.withEffect((r) => r.createPath(route, ...(params as any))),
+    Router.withEffect((r) => r.createPath(route as any, params as any)),
     Fx.fromEffect,
     Fx.switchMap(redirect.fx),
   )
@@ -271,7 +251,7 @@ export function RouterMatcher<R, E, A>(
       ),
     provideService: (tag, service) =>
       RouterMatcher(
-        new Map(Array.from(routes).map(([k, v]) => [k, flow(v, Fx.provideService(tag, service))])),
+        new Map(Array.from(routes).map(([k, v]) => [k, flow(v, Fx.provideService(tag)(service))])),
       ),
     provideLayer: (layer) =>
       RouterMatcher(
@@ -280,6 +260,7 @@ export function RouterMatcher<R, E, A>(
     notFound: <R2, E2, B>(f: (path: string) => Fx.Fx<R2, E2, B>) =>
       Router.withFx((router) => {
         const matchers = Array.from(routes).map(([child, f]) => {
+          // Construct *stable* references to the rendering of this componenet
           return [child, f(router.define(child).params)] as const
         })
 
@@ -299,9 +280,10 @@ export function RouterMatcher<R, E, A>(
               return f(path) as Fx.Fx<R | R2, E | E2, A | B>
             }),
           ),
-          Fx.skipRepeats,
+          Fx.skipRepeats, // Stable render references are used to avoid mounting the same component twice
           Fx.switchLatest,
           Fx.switchMapError((error) => {
+            // Intercept redirect requests and update the router
             if (Redirect.is(error)) {
               return pipe(
                 router.currentPath.set(error.path),
@@ -334,63 +316,59 @@ export const makeRouter: Effect.Effect<
   never,
   Router
 > = Effect.gen(function* ($) {
-  const runtime = yield* $(Effect.runtime<never>())
-  const location = yield* $(dom.getLocation)
-  const history = yield* $(dom.getHistory)
+  const location = yield* $(Location.get)
   const currentPath = yield* $(Fx.makeRef<string>(() => getCurrentPath(location)))
-  const router = Router(Route.base, currentPath)
 
-  const updateCurrentPath = Effect.gen(function* ($) {
-    yield* $(Effect.yieldNow()) // Allow location to be updated
-    yield* $(currentPath.set(getCurrentPath(location)))
-  })
+  // Patch history events to emit an event when the path changes
+  const historyEvents = yield* $(patchHistory)
 
-  const updatePathNow = () => runtime.unsafeRunAsync(updateCurrentPath)
-
-  // Listen to popstate events
+  // Update the current path when events occur:
+  // - click
+  // - touchend
+  // - popstate
+  // - hashchange
+  // - history events
   yield* $(
     pipe(
-      dom.addWindowListener('popstate'),
-      Fx.tap(() => updateCurrentPath),
-      Fx.drain,
-      Effect.forkScoped,
+      Fx.mergeAll(
+        pipe(
+          addDocumentListener('click'),
+          Fx.merge(addDocumentListener('touchend')),
+          Fx.filter(shouldInterceptLinkClick(location)),
+        ),
+        addWindowListener('popstate'),
+        addWindowListener('hashchange'),
+        historyEvents,
+      ),
+      Fx.debounce(Duration.millis(0)),
+      Fx.map(() => getCurrentPath(location)),
+      Fx.skipRepeats,
+      Fx.switchMapEffect((path) => currentPath.set(path)),
+      Fx.forkScoped,
     ),
   )
 
-  // Listen to hashchange events
-  yield* $(
-    pipe(
-      dom.addWindowListener('hashchange'),
-      Fx.tap(() => updateCurrentPath),
-      Fx.drain,
-      Effect.forkScoped,
-    ),
-  )
-
-  // Listen to all link clicks to intercept for path changes
-  yield* $(
-    pipe(
-      dom.addDocumentListener('click'),
-      Fx.merge(dom.addDocumentListener('touchend')),
-      Fx.filter(shouldInterceptLinkClick),
-      Fx.observe(() => updateCurrentPath),
-      Effect.forkScoped,
-    ),
-  )
-
-  // Patch history to update the currentPath when changed
-  patchHistory(history, updatePathNow)
-
-  return router as Router
+  // Make our base router
+  return Router(Route.base, currentPath) as Router
 })
 
-export const live = Layer.scoped(Router)(makeRouter)
+export const live = Router.layerSoped(makeRouter)
 
 function getCurrentPath(location: Location) {
   return location.pathname + location.search + location.hash
 }
 
-function patchHistory(history: History, updatePathNow: () => void) {
+const patchHistory = Effect.gen(function* ($) {
+  const history = yield* $(History.get)
+  const historyEvents = Fx.Subject.unsafeMake<never, void>()
+  const runtime = yield* $(Effect.runtime<never>())
+
+  patchHistory_(history, () => runtime.unsafeRunAsync(historyEvents.event()))
+
+  return historyEvents
+})
+
+function patchHistory_(history: History, sendEvent: () => void) {
   const pushState = history.pushState.bind(history)
   const replaceState = history.replaceState.bind(history)
   const go = history.go.bind(history)
@@ -399,38 +377,71 @@ function patchHistory(history: History, updatePathNow: () => void) {
 
   history.pushState = function (state, title, url) {
     pushState(state, title, url)
-    updatePathNow()
+    sendEvent()
   }
 
   history.replaceState = function (state, title, url) {
     replaceState(state, title, url)
-    updatePathNow()
+    sendEvent()
   }
 
   history.go = function (delta) {
     go(delta)
-    updatePathNow()
+    sendEvent()
   }
 
   history.back = function () {
     back()
-    updatePathNow()
+    sendEvent()
   }
 
   history.forward = function () {
     forward()
-    updatePathNow()
+    sendEvent()
   }
 }
 
-function shouldInterceptLinkClick(ev: MouseEvent | TouchEvent): boolean {
-  if (ev.which !== 1) return false
-  if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return false
-  if (ev.defaultPrevented) return false
+function shouldInterceptLinkClick(location: Location) {
+  return (ev: MouseEvent | TouchEvent): boolean => {
+    // Event Filtering
 
-  let el = ev.target as Element | null
+    // Only intercept left clicks
+    if (ev.which !== 1) return false
+    // Don't intercept modified clicks
+    if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return false
+    // Don't intercept if default prevented already
+    if (ev.defaultPrevented) return false
+
+    // Attempt to find an anchor element
+    const target = findAnchorElement(ev)
+
+    if (!target) return false
+
+    // Link Filtering
+
+    // Ensure same origin
+    if (target.origin !== location.origin) return false
+    // Don't intercept download links
+    if (target.hasAttribute('download')) return false
+    // Don't intercept links marked as external, should have full page load
+    if (target.rel === 'external') return false
+    // Don't bother with hash changes, hash change events work well
+    if (target.hash || target.href === '#') return false
+    // Don't bother with non-http(s) protocols
+    if (target.protocol && !target.protocol.startsWith('http')) return false
+
+    // We made it! We'll intercept this event and update history
+    ev.preventDefault()
+
+    return true
+  }
+}
+
+function findAnchorElement(ev: MouseEvent | TouchEvent): HTMLAnchorElement | null {
   const eventPath = (ev as any).path || (ev.composedPath ? ev.composedPath() : null)
 
+  // Attempt to find our link
+  let el = ev.target as Element | null
   if (eventPath) {
     for (let i = 0; i < eventPath.length; i++) {
       if (
@@ -445,27 +456,8 @@ function shouldInterceptLinkClick(ev: MouseEvent | TouchEvent): boolean {
     }
   }
 
-  if (el?.nodeName.toUpperCase() !== 'A') return false
+  // If it is not a link, we don't care
+  if (el?.nodeName.toUpperCase() !== 'A') return null
 
-  const target = el as HTMLAnchorElement
-
-  // Ensure same origin
-  if (target.origin !== location.origin) return false
-
-  // Ignore if tag has
-  // 1. "download" attribute
-  // 2. rel="external" attribute
-  if (target.hasAttribute('download') || target.getAttribute('rel') === 'external') return false
-
-  // ensure non-hash for the same path
-  const link = target.getAttribute('href')
-  if ((target as HTMLAnchorElement).hash || '#' === link) return false
-
-  // Check for mailto: in the href
-  if (link && link.indexOf('mailto:') > -1) return false
-
-  // We made it! We'll intercept this event and update history
-  ev.preventDefault()
-
-  return true
+  return el as HTMLAnchorElement
 }

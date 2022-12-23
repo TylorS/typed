@@ -4,7 +4,7 @@ import * as Effect from '@effect/io/Effect'
 import { getBody } from './Document.js'
 import { GlobalThis } from './GlobalThis.js'
 
-export const supportsDeclarativeShadowDom = GlobalThis.access((g) =>
+export const supportsDeclarativeShadowDom = GlobalThis.with((g) =>
   // eslint-disable-next-line no-prototype-builtins
   g.HTMLTemplateElement.prototype.hasOwnProperty('shadowRoot'),
 )

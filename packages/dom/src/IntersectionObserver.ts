@@ -7,7 +7,7 @@ import * as HashMap from '@fp-ts/data/HashMap'
 import * as Maybe from '@fp-ts/data/Option'
 import * as Fx from '@typed/fx'
 
-import { GlobalThis, getGlobalThis } from './GlobalThis.js'
+import { GlobalThis } from './GlobalThis.js'
 
 export interface IntersectionObserverManager {
   readonly get: (
@@ -25,7 +25,7 @@ export namespace IntersectionObserverManager {
 
   export const make: Effect.Effect<GlobalThis, never, IntersectionObserverManager> = Effect.gen(
     function* ($) {
-      const globalThis = yield* $(getGlobalThis)
+      const globalThis = yield* $(GlobalThis.get)
 
       // Use HashMap for value-equality checks on keys for options.
       // There will only ever be 1 observer per set of options.

@@ -1,6 +1,45 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "baseUrl": ".",
+    "paths": {
+      "@typed/context/*": [
+        "../packages/context/dist/*"
+      ],
+      "@typed/dom/*": [
+        "../packages/dom/dist/*"
+      ],
+      "@typed/express/*": [
+        "../packages/express/dist/*"
+      ],
+      "@typed/fx/*": [
+        "../packages/fx/dist/*"
+      ],
+      "@typed/html/*": [
+        "../packages/html/dist/*"
+      ],
+      "@typed/module/*": [
+        "../packages/module/dist/*"
+      ],
+      "@typed/node/*": [
+        "../packages/node/dist/*"
+      ],
+      "@typed/path/*": [
+        "../packages/path/dist/*"
+      ],
+      "@typed/route/*": [
+        "../packages/route/dist/*"
+      ],
+      "@typed/router/*": [
+        "../packages/router/dist/*"
+      ],
+      "@typed/vite-plugin/*": [
+        "../packages/vite-plugin/dist/*"
+      ]
+    }
+  },
   "include": [
     "."
   ]

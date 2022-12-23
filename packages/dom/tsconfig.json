@@ -12,6 +12,9 @@
   ],
   "references": [
     {
+      "path": "../context/tsconfig.build.json"
+    },
+    {
       "path": "../fx/tsconfig.build.json"
     }
   ]

@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
-import * as T from '@fp-ts/data/Context'
 import * as O from '@fp-ts/data/Option'
+import * as C from '@typed/context'
 import * as Fx from '@typed/fx'
 
 import { addEventListener } from './EventTarget.js'
@@ -10,33 +10,24 @@ import { Window } from './Window.js'
 
 // TODO: Integrate with Schema/Decoder
 
-export namespace Storage {
-  export const Tag: T.Tag<Storage> = T.Tag<Storage>()
-
-  export const access = Effect.serviceWith(Tag)
-  export const accessEffect = Effect.serviceWithEffect(Tag)
-  export const accessFx = Fx.serviceWithFx(Tag)
-
-  export const provide = Effect.provideService(Tag)
-}
-
-export const getStorage: Effect.Effect<Storage, never, Storage> = Effect.service(Storage.Tag)
+export interface Storage extends globalThis.Storage {}
+export const Storage = C.Tag<Storage>()
 
 export const getItem = (key: string): Effect.Effect<Storage, never, O.Option<string>> =>
-  Storage.access((s) => O.fromNullable(s.getItem(key)))
+  Storage.with((s) => O.fromNullable(s.getItem(key)))
 
 export const setItem = (key: string, value: string): Effect.Effect<Storage, never, void> =>
-  Storage.access((s) => s.setItem(key, value))
+  Storage.with((s) => s.setItem(key, value))
 
 export const removeItem = (key: string): Effect.Effect<Storage, never, void> =>
-  Storage.access((s) => s.removeItem(key))
+  Storage.with((s) => s.removeItem(key))
 
-export const sessionStorage: Layer.Layer<Window, never, Storage> = Layer.fromEffect(Storage.Tag)(
-  Window.access((w) => w.sessionStorage),
+export const sessionStorage: Layer.Layer<Window, never, Storage> = Storage.layer(
+  Window.with((w) => w.sessionStorage),
 )
 
-export const localStorage: Layer.Layer<Window, never, Storage> = Layer.fromEffect(Storage.Tag)(
-  Window.access((w) => w.localStorage),
+export const localStorage: Layer.Layer<Window, never, Storage> = Storage.layer(
+  Window.with((w) => w.localStorage),
 )
 
 /**
@@ -44,7 +35,7 @@ export const localStorage: Layer.Layer<Window, never, Storage> = Layer.fromEffec
  * to be able to replicate storage events in the same tab as well for a single source of truth, but this requires
  * the additional resources of GlobalThis and Window.
  */
-export const storageEvents = Object.assign(Window.accessFx(addEventListener('storage')), {
+export const storageEvents = Object.assign(Window.withFx(addEventListener('storage')), {
   /**
    * Send custom Storage Events for "in tab" storage changes
    */
@@ -53,9 +44,9 @@ export const storageEvents = Object.assign(Window.accessFx(addEventListener('sto
     oldValue: string | null,
     newValue: string | null,
   ): Effect.Effect<GlobalThis | Storage | Window, never, void> =>
-    GlobalThis.accessEffect((g) =>
-      Window.accessEffect((w) =>
-        Storage.accessEffect((s) =>
+    GlobalThis.withEffect((g) =>
+      Window.withEffect((w) =>
+        Storage.withEffect((s) =>
           Effect.sync(() => sendStorageEvent_(g, w, s, key, oldValue, newValue)),
         ),
       ),
@@ -64,7 +55,7 @@ export const storageEvents = Object.assign(Window.accessFx(addEventListener('sto
     key: string,
     value: string,
   ): Effect.Effect<GlobalThis | Storage | Window, never, void> =>
-    Storage.accessEffect((s) =>
+    Storage.withEffect((s) =>
       Effect.suspendSucceed(() => {
         const oldValue = s.getItem(key)
         s.setItem(key, value)
@@ -73,7 +64,7 @@ export const storageEvents = Object.assign(Window.accessFx(addEventListener('sto
       }),
     ),
   removeItem: (key: string): Effect.Effect<GlobalThis | Storage | Window, never, void> =>
-    Storage.accessEffect((s) =>
+    Storage.withEffect((s) =>
       Effect.suspendSucceed(() => {
         const oldValue = s.getItem(key)
 

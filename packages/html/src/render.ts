@@ -4,7 +4,7 @@ import * as RuntimeFlagsPatch from '@effect/io/Fiber/Runtime/Flags/Patch'
 import { FiberRefs } from '@effect/io/FiberRefs'
 import * as R from '@effect/io/Runtime'
 import { pipe } from '@fp-ts/data/Function'
-import { Document, getDocument } from '@typed/dom/Document'
+import { Document } from '@typed/dom/Document'
 import * as Fx from '@typed/fx'
 
 import { makeEntry } from './Entry.js'
@@ -14,7 +14,7 @@ import { RenderContext } from './RenderContext.js'
 import { Wire, persistent } from './Wire.js'
 
 export function runBrowser<T extends DocumentFragment | HTMLElement>(where: T) {
-  return <R, E>(fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>) => {
+  return <R, E>(fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>): Fx.Fx<R, E, T> => {
     return pipe(
       fx,
       renderInto(where),
@@ -25,7 +25,7 @@ export function runBrowser<T extends DocumentFragment | HTMLElement>(where: T) {
 }
 
 export function runServer<T extends DocumentFragment | HTMLElement>(where: T) {
-  return <R, E>(fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>) => {
+  return <R, E>(fx: Fx.Fx<R, E, Hole | HTMLElement | SVGElement>): Fx.Fx<R, E, T> => {
     return pipe(
       fx,
       renderInto(where),
@@ -109,7 +109,7 @@ export const getRenderHoleContext: Effect.Effect<
   never,
   RenderHoleContext
 > = Effect.struct({
-  document: getDocument,
+  document: Document.get,
   fiberRefs: Effect.getFiberRefs(),
   runtimeFlags: Effect.runtimeFlags(),
   renderContext: RenderContext.get,

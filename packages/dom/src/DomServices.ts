@@ -1,6 +1,7 @@
 import * as Effect from '@effect/io/Effect'
-import * as Context from '@fp-ts/data/Context'
+import * as Layer from '@effect/io/Layer'
 import { pipe } from '@fp-ts/data/Function'
+import * as C from '@typed/context'
 
 import { Document } from './Document.js'
 import { Fetch } from './Fetch.js'
@@ -22,18 +23,15 @@ export type DomServices =
   | Navigator
   | Fetch
 
-export const makeDomServices = (window: Window & GlobalThis): Context.Context<DomServices> =>
-  pipe(
-    Context.empty(),
-    Context.add(Window.Tag)(window),
-    Context.add(GlobalThis.Tag)(window),
-    Context.add(Document.Tag)(window.document),
-    Context.add(ParentElement.Tag)({ parentElement: window.document.body }),
-    Context.add(History.Tag)(window.history),
-    Context.add(Location.Tag)(window.location),
-    Context.add(Navigator.Tag)(window.navigator),
-    Context.add(Fetch.Tag)(window.fetch),
-  )
+export const makeDomServices = (window: Window, globalThis: GlobalThis): C.Context<DomServices> =>
+  Window.build(window)
+    .add(GlobalThis, globalThis)
+    .add(Document, window.document)
+    .add(ParentElement, { parentElement: window.document.body })
+    .add(History, window.history)
+    .add(Location, window.location)
+    .add(Navigator, window.navigator)
+    .add(Fetch, window.fetch).context
 
 export const provideDomServices =
   (window: Window & GlobalThis) =>
@@ -44,7 +42,11 @@ export const provideDomServices =
       // If the environment doesn't support declarative shadow-dom, polyfill by attaching shadow roots
       attachShadowRoots,
       Effect.zipRight(effect),
-      Effect.provideSomeEnvironment((env: Context.Context<Exclude<R, DomServices>>) =>
-        pipe(env as Context.Context<R>, Context.merge(makeDomServices(window))),
+      Effect.provideSomeEnvironment((env: C.Context<Exclude<R, DomServices>>) =>
+        pipe(env as C.Context<R>, C.merge(makeDomServices(window, window))),
       ),
     )
+
+export const domServices = Layer.fromEffectEnvironment(
+  Window.withEffect((w) => GlobalThis.with((g) => makeDomServices(w, g))),
+)

@@ -1,48 +1,29 @@
 import * as Effect from '@effect/io/Effect'
-import * as Layer from '@effect/io/Layer'
-import * as T from '@fp-ts/data/Context'
-import * as Fx from '@typed/fx'
-
-import { Document } from './Document.js'
+import * as C from '@typed/context'
 
 export interface Location extends globalThis.Location {}
+export const Location = C.Tag<Location>()
 
-export namespace Location {
-  export const Tag: T.Tag<Location> = T.Tag<Location>()
+export const getHref: Effect.Effect<Location, never, string> = Location.with((l) => l.href)
 
-  export const access = Effect.serviceWith(Tag)
-  export const accessEffect = Effect.serviceWithEffect(Tag)
-  export const accessFx = Fx.serviceWithFx(Tag)
+export const getOrigin = Location.with((l) => l.origin)
 
-  export const provide = Effect.provideService(Tag)
-}
+export const getProtocol = Location.with((l) => l.protocol)
 
-export const getLocation: Effect.Effect<Location, never, Location> = Effect.service(Location.Tag)
+export const getHost = Location.with((l) => l.host)
 
-export const getHref = Location.access((l) => l.href)
+export const getHostname = Location.with((l) => l.hostname)
 
-export const getOrigin = Location.access((l) => l.origin)
+export const getPort = Location.with((l) => l.port)
 
-export const getProtocol = Location.access((l) => l.protocol)
+export const getPathname = Location.with((l) => l.pathname)
 
-export const getHost = Location.access((l) => l.host)
+export const getSearch = Location.with((l) => l.search)
 
-export const getHostname = Location.access((l) => l.hostname)
+export const getHash = Location.with((l) => l.hash)
 
-export const getPort = Location.access((l) => l.port)
+export const assign = (url: string) => Location.with((l) => l.assign(url))
 
-export const getPathname = Location.access((l) => l.pathname)
+export const reload = Location.with((l) => l.reload())
 
-export const getSearch = Location.access((l) => l.search)
-
-export const getHash = Location.access((l) => l.hash)
-
-export const assign = (url: string) => Location.access((l) => l.assign(url))
-
-export const reload = Location.access((l) => l.reload())
-
-export const replace = (url: string) => Location.access((l) => l.replace(url))
-
-export const liveLocation: Layer.Layer<Document, never, Location> = Layer.fromEffect(Location.Tag)(
-  Document.access((d) => d.location),
-)
+export const replace = (url: string) => Location.with((l) => l.replace(url))

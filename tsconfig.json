@@ -7,7 +7,13 @@
       "path": "./packages/benchmark/tsconfig.build.json"
     },
     {
+      "path": "./packages/context/tsconfig.build.json"
+    },
+    {
       "path": "./packages/dom/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/express/tsconfig.build.json"
     },
     {
       "path": "./packages/fx/tsconfig.build.json"
@@ -19,7 +25,13 @@
       "path": "./packages/internal/tsconfig.build.json"
     },
     {
+      "path": "./packages/module/tsconfig.build.json"
+    },
+    {
       "path": "./packages/node/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/parser/tsconfig.build.json"
     },
     {
       "path": "./packages/path/tsconfig.build.json"
@@ -29,6 +41,9 @@
     },
     {
       "path": "./packages/router/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/vite-plugin/tsconfig.build.json"
     }
   ]
 }

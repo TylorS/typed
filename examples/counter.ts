@@ -1,7 +1,7 @@
 import { pipe } from '@fp-ts/data/Function'
 
-import * as Fx from '../packages/fx/dist/index.js'
-import { runBrowser, html } from '../packages/html/dist/index.js'
+import * as Fx from '@typed/fx/index.js'
+import { runBrowser, html } from '@typed/html/index.js'
 
 const Counter = Fx.gen(function* ($) {
   const count = yield* $(Fx.makeRef(() => 0))

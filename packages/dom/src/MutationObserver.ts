@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
 
-import { GlobalThis, getGlobalThis } from './GlobalThis.js'
+import { GlobalThis } from './GlobalThis.js'
 
 export const makeMutationObserver = (
   node: Node,
@@ -9,7 +9,7 @@ export const makeMutationObserver = (
 ): Fx.Fx<GlobalThis, never, readonly MutationRecord[]> =>
   Fx.fromEmitter((emitter) =>
     Effect.gen(function* ($) {
-      const globalThis = yield* $(getGlobalThis)
+      const globalThis = yield* $(GlobalThis.get)
 
       const observer = new globalThis.MutationObserver(emitter.emit)
 

@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url'
 
 import { Project } from 'ts-morph'
 
+// TODO: Add support for @types packages
+
 const optionalPackagesNames = process.argv.slice(2)
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
@@ -52,8 +54,6 @@ for (const name of packageNames) {
       const fullName = orgName ? `${orgName}/${packageName}` : packageName
 
       if (packageName === name || builtinModules.includes(fullName)) {
-        console.log(name, fullName)
-
         continue
       }
 

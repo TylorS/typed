@@ -1,47 +1,32 @@
 import * as Effect from '@effect/io/Effect'
-import * as T from '@fp-ts/data/Context'
-import * as Fx from '@typed/fx'
+import * as C from '@typed/context'
 
 import { addEventListener } from './EventTarget.js'
 
 export interface Document extends globalThis.Document {}
+export const Document = C.Tag<Document>()
 
-export namespace Document {
-  export const Tag: T.Tag<Document> = T.Tag<Document>()
-
-  export const access = Effect.serviceWith(Tag)
-  export const accessEffect = Effect.serviceWithEffect(Tag)
-  export const accessFx = Fx.serviceWithFx(Tag)
-
-  export const provide = Effect.provideService(Tag)
-  export const provideFx = (service: Document) => Fx.provideService(Tag, service)
-}
-
-export const getDocument: Effect.Effect<Document, never, Document> = Effect.service(Document.Tag)
-
-export const getBody: Effect.Effect<Document, never, HTMLBodyElement> = Document.access(
+export const getBody: Effect.Effect<Document, never, HTMLBodyElement> = Document.with(
   (d) => d.body as HTMLBodyElement,
 )
 
-export const getHead: Effect.Effect<Document, never, HTMLHeadElement> = Document.access(
-  (d) => d.head,
-)
+export const getHead: Effect.Effect<Document, never, HTMLHeadElement> = Document.with((d) => d.head)
 
 export const addDocumentListener = <EventName extends keyof DocumentEventMap>(
   event: EventName,
   options?: AddEventListenerOptions,
-) => Document.accessFx(addEventListener(event, options))
+) => Document.withFx(addEventListener(event, options))
 
 export const createElement = <TagName extends keyof HTMLElementTagNameMap>(
   tagName: TagName,
 ): Effect.Effect<Document, never, HTMLElementTagNameMap[TagName]> =>
-  Document.access((d) => d.createElement(tagName))
+  Document.with((d) => d.createElement(tagName))
 
 export const createElementNS = (
   namespaceURI: string,
   tagName: string,
 ): Effect.Effect<Document, never, Element> =>
-  Document.access((d) => d.createElementNS(namespaceURI, tagName))
+  Document.with((d) => d.createElementNS(namespaceURI, tagName))
 
 export const createSvgElement = <TagName extends keyof SVGElementTagNameMap>(
   tagName: TagName,
@@ -53,18 +38,18 @@ export const createSvgElement = <TagName extends keyof SVGElementTagNameMap>(
   >
 
 export const createTextNode = (data: string): Effect.Effect<Document, never, Text> =>
-  Document.access((d) => d.createTextNode(data))
+  Document.with((d) => d.createTextNode(data))
 
 export const createComment = (data: string): Effect.Effect<Document, never, Comment> =>
-  Document.access((d) => d.createComment(data))
+  Document.with((d) => d.createComment(data))
 
 export const createDocumentFragment: Effect.Effect<Document, never, DocumentFragment> =
-  Document.access((d) => d.createDocumentFragment())
+  Document.with((d) => d.createDocumentFragment())
 
 export const createTreeWalker = (root: Node, whatToShow?: number, filter?: NodeFilter | null) =>
-  Document.access((d) => d.createTreeWalker(root, whatToShow, filter))
+  Document.with((d) => d.createTreeWalker(root, whatToShow, filter))
 
-export const createRange: Effect.Effect<Document, never, Range> = Document.access((d) =>
+export const createRange: Effect.Effect<Document, never, Range> = Document.with((d) =>
   d.createRange(),
 )
 
@@ -72,15 +57,15 @@ export const createAttributeNS = (
   namespace: string | null,
   qualifiedName: string,
 ): Effect.Effect<Document, never, Attr> =>
-  Document.access((d) => d.createAttributeNS(namespace, qualifiedName))
+  Document.with((d) => d.createAttributeNS(namespace, qualifiedName))
 
-export const getDocumentElement = Document.access((d) => d.documentElement)
+export const getDocumentElement = Document.with((d) => d.documentElement)
 
 export const importNode = <T extends Node>(node: T, deep?: boolean) =>
-  Document.access((d) => d.importNode(node, deep))
+  Document.with((d) => d.importNode(node, deep))
 
 export const updateTitle = (title: string) =>
-  Document.accessEffect((d) => Effect.sync(() => (d.title = title)))
+  Document.withEffect((d) => Effect.sync(() => (d.title = title)))
 
 export type MetaParams = {
   readonly name: string
@@ -89,7 +74,7 @@ export type MetaParams = {
 }
 
 export const updateMeta = (params: MetaParams) =>
-  Document.accessEffect((d) =>
+  Document.withEffect((d) =>
     Effect.sync(() => {
       const meta =
         d.querySelector<HTMLMetaElement>(`meta[name="${params.name}"]`) ??
@@ -122,7 +107,7 @@ export type LinkParams = {
 }
 
 export const updateLink = (params: LinkParams) =>
-  Document.accessEffect((d) =>
+  Document.withEffect((d) =>
     Effect.sync(() => {
       const link =
         d.querySelector<HTMLLinkElement>(`link[rel="${params.rel}"][href="${params.href}"]`) ??

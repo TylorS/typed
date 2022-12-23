@@ -26,6 +26,9 @@
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/no-namespace": "off",
+    "no-implicit-globals": [
+      "error"
+    ],
     "import/order": [
       "error",
       {

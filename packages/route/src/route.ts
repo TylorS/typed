@@ -5,7 +5,7 @@ import * as Option from '@fp-ts/data/Option'
 import * as P from '@typed/path'
 import * as ptr from 'path-to-regexp'
 
-export interface Route<R, Path extends string> {
+export interface Route<out R, in out Path extends string> {
   /**
    * The path of the route
    */
@@ -25,7 +25,7 @@ export interface Route<R, Path extends string> {
    * Add a guard to this Route, if the guard fails, the `onNoMatch` route will be called
    * with the params of the current route.
    */
-  readonly guard: <R2 = never,  R3 = never>(
+  readonly guard: <R2 = never, R3 = never>(
     guard: (params: P.ParamsOf<Path>, path: string) => Effect.Effect<R2, never, boolean>,
     onNoMatch?: (params: P.ParamsOf<Path>, path: string) => Effect.Effect<R3, never, unknown>,
   ) => Route<R | R2 | R3, Path>
@@ -103,9 +103,7 @@ export const guard =
 
 export const concat =
   <R2, Path2 extends string>(otherRoute: Route<R2, Path2>) =>
-  <R, Path extends string>(
-    route: Route<R, Path>,
-  ): Route<R | R2, P.PathJoin<[Path, Path2]>> => {
+  <R, Path extends string>(route: Route<R, Path>): Route<R | R2, P.PathJoin<[Path, Path2]>> => {
     const concatPath = ((route.path + otherRoute.path).replace(/\/{1,}/g, '/').replace(/\/$/, '') ||
       '/') as P.PathJoin<[Path, Path2]>
 

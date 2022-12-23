@@ -24,7 +24,7 @@ export function RenderContext(environment: RenderContext['environment']): Render
 export namespace RenderContext {
   export const Tag: Context.Tag<RenderContext> = Context.Tag<RenderContext>()
 
-  export const get = Effect.service(Tag)
+  export const get = Effect.service<RenderContext>(Tag)
 
   export const browser: Layer.Layer<never, never, RenderContext> = Layer.fromEffect(Tag)(
     Effect.sync(() => RenderContext('browser')),

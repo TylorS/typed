@@ -50,7 +50,7 @@ export function dispatchEventWith<
   EventName extends keyof DefaultEventMap<T>,
 >(event: EventName, options?: EventInit): (target: T) => Effect.Effect<GlobalThis, never, boolean> {
   return (target) =>
-    GlobalThis.access((globalThis) =>
+    GlobalThis.with((globalThis) =>
       target.dispatchEvent(new globalThis.Event(event as string, options)),
     )
 }

@@ -1,15 +1,17 @@
-import { Tag } from '@fp-ts/data/Context'
-import { pipe } from '@fp-ts/data/Function'
+/// <reference types="vite/client" />
 
-import * as Fx from '../packages/fx/dist/index.js'
-import { runBrowser, html } from '../packages/html/dist/index.js'
+import { pipe } from '@fp-ts/data/Function'
+import { Tag } from '@typed/context/index.js'
+
+import * as Fx from '@typed/fx/index.js'
+import { runBrowser, html } from '@typed/html/index.js'
+
+import.meta.env
 
 interface Example {
   readonly name: string
 }
-const Example = Object.assign(Tag<Example>(), {
-  with: <R, E, A>(f: (t: Example) => Fx.Fx<R, E, A>) => Fx.serviceWithFx(Example)(f),
-})
+const Example = Tag<Example>()
 
 const Counter = Fx.gen(function* ($) {
   const model = yield* $(Fx.makeRef(() => 0))
@@ -28,9 +30,4 @@ const Counter = Fx.gen(function* ($) {
   `
 })
 
-pipe(
-  Counter,
-  runBrowser(document.body),
-  Fx.provideService(Example, { name: 'Count' }),
-  Fx.unsafeRunAsync,
-)
+pipe(Counter, runBrowser(document.body), Example.provideFx({ name: 'Counter' }), Fx.unsafeRunAsync)
