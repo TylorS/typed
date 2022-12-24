@@ -35,6 +35,7 @@ importers:
       eslint-plugin-prettier: ^4.2.1
       express: ^4.18.2
       husky: ^8.0.2
+      isbot: ^3.6.5
       lerna: ^6.1.0
       lint-staged: ^13.1.0
       nx: 15.3.3
@@ -61,6 +62,7 @@ importers:
       '@fp-ts/schema': 0.0.6
       '@webreflection/uparser': 0.2.4
       express: 4.18.2
+      isbot: 3.6.5
       path-to-regexp: 6.2.1
       ts-toolbelt: 9.6.0
       typed-query-selector: 2.8.0
@@ -133,8 +135,6 @@ importers:
 
   packages/framework:
     specifiers:
-      '@effect/io': ~0.0.42
-      '@fp-ts/data': ~0.0.30
       '@typed/dom': workspace:*
       '@typed/fx': workspace:*
       '@typed/html': workspace:*
@@ -142,8 +142,6 @@ importers:
       '@typed/route': workspace:*
       '@typed/router': workspace:*
     dependencies:
-      '@effect/io': 0.0.42
-      '@fp-ts/data': 0.0.30
       '@typed/dom': link:../dom
       '@typed/fx': link:../fx
       '@typed/html': link:../html
@@ -5782,6 +5780,11 @@ packages:
   /isarray/1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
     dev: true
+
+  /isbot/3.6.5:
+    resolution: {integrity: sha512-BchONELXt6yMad++BwGpa0oQxo/uD0keL7N15cYVf0A1oMIoNQ79OqeYdPMFWDrNhCqCbRuw9Y9F3QBjvAxZ5g==}
+    engines: {node: '>=12'}
+    dev: false
 
   /isexe/2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}

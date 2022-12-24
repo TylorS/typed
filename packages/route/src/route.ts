@@ -1,5 +1,6 @@
 import * as Effect from '@effect/io/Effect'
-import { context } from '@fp-ts/data'
+import * as Layer from '@effect/io/Layer'
+import * as Context from '@fp-ts/data/Context'
 import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import * as P from '@typed/path'
@@ -136,7 +137,17 @@ export const base = Route('/')
 
 export const home = base.guard((_, p) => Effect.succeed(p === '/'))
 
-export function provideEnvironment<R>(context: context.Context<R>) {
+export function provideEnvironment<R>(context: Context.Context<R>) {
   return <Path extends string>(route: Route<R, Path>): Route<never, Path> =>
     Route(route.path, (path) => Effect.provideEnvironment(context)(route.match(path)))
+}
+
+export function provideService<S>(tag: Context.Tag<S>, service: S) {
+  return <R, Path extends string>(route: Route<R, Path>): Route<Exclude<R, S>, Path> =>
+    Route(route.path, (path) => Effect.provideService(tag)(service)(route.match(path)))
+}
+
+export function provideLayer<R2, S>(layer: Layer.Layer<R2, never, S>) {
+  return <R, Path extends string>(route: Route<R, Path>): Route<R2 | Exclude<R, S>, Path> =>
+    Route(route.path, (path) => Effect.provideSomeLayer(layer)(route.match(path)))
 }

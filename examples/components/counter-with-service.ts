@@ -1,3 +1,4 @@
+import { Layer } from '@effect/io/Layer'
 import { pipe } from '@fp-ts/data/Function'
 import { Tag } from '@typed/context/index.js'
 
@@ -16,6 +17,7 @@ export const Counter = Fx.gen(function* ($) {
   return html`
     <button onclick=${model.update((x) => x - 1)}>Decrement</button>
     <button onclick=${model.update((x) => x + 1)}>Increment</button>
+
     <p>
       ${Example.withFx((e) =>
         pipe(
@@ -26,3 +28,5 @@ export const Counter = Fx.gen(function* ($) {
     </p>
   `
 })
+
+export const liveExample: Layer<never, never, Example> = Example.layerOf({ name: 'Live' })

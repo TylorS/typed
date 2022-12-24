@@ -17,6 +17,15 @@ export function html<Values extends Array<Placeholder<any> | undefined | null>>(
   template: TemplateStringsArray,
   ...values: Values
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
+  if (values.length === 0) {
+    return Fx.fromEffect(
+      Effect.environmentWith(
+        (env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
+          new Hole('html', env, template, values),
+      ),
+    )
+  }
+
   return Fx.fromFxEffect(
     Effect.environmentWith((env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
       pipe(
@@ -44,12 +53,10 @@ html.node = <Values extends ReadonlyArray<Placeholder<any> | undefined | null>>(
 
     return pipe(
       html(template, ...values),
-      Fx.switchMapEffect(
-        (hole) => (
-          pipe(
-            getRenderHoleContext,
-            Effect.map((ctx) => renderHole(hole, cache, ctx).valueOf() as Node),
-          )
+      Fx.switchMapEffect((hole) =>
+        pipe(
+          getRenderHoleContext,
+          Effect.map((ctx) => renderHole(hole, cache, ctx).valueOf() as Node),
         ),
       ),
     )
@@ -61,6 +68,15 @@ export function svg<Values extends ReadonlyArray<Placeholder<any> | undefined | 
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
+  if (values.length === 0) {
+    return Fx.fromEffect(
+      Effect.environmentWith(
+        (env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
+          new Hole('svg', env, template, values),
+      ),
+    )
+  }
+
   return Fx.fromFxEffect(
     Effect.environmentWith((env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
       pipe(
@@ -83,12 +99,10 @@ svg.node = <Values extends ReadonlyArray<Placeholder<any> | undefined | null>>(
     const cache = RenderCache()
     return pipe(
       svg(template, ...values),
-      Fx.switchMapEffect(
-        (hole) => (
-          pipe(
-            getRenderHoleContext,
-            Effect.map((ctx) => renderHole(hole, cache, ctx).valueOf() as Node),
-          )
+      Fx.switchMapEffect((hole) =>
+        pipe(
+          getRenderHoleContext,
+          Effect.map((ctx) => renderHole(hole, cache, ctx).valueOf() as Node),
         ),
       ),
     )

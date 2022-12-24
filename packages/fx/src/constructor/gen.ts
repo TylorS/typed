@@ -1,4 +1,5 @@
 import * as Effect from '@effect/io/Effect'
+import * as Scope from '@effect/io/Scope'
 
 import { Fx } from '../Fx.js'
 
@@ -28,6 +29,6 @@ export type EffectGenErrors<Eff> = [Eff] extends [never]
  */
 export function gen<Eff extends Effect.EffectGen<any, any, any>, R, E, A, N = unknown>(
   f: (adapter: EffectAdapter) => Generator<Eff, Fx<R, E, A>, N>,
-): Fx<R | EffectGenResources<Eff>, E | EffectGenErrors<Eff>, A> {
+): Fx<R | Exclude<EffectGenResources<Eff>, Scope.Scope>, E | EffectGenErrors<Eff>, A> {
   return fromFxEffect(Effect.gen(f as any))
 }

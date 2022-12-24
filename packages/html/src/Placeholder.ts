@@ -50,7 +50,6 @@ declare global {
   export interface Symbol extends Placeholder {}
   export interface BigInt extends Placeholder {}
   // export interface Function extends Placeholder {} // TODO: Utilize for directives??
-  export interface Array<T> extends Placeholder<Placeholder.ResourcesOf<T>> {}
 
   // DOM types
   export interface Node extends Placeholder {}

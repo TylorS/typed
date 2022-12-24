@@ -11,17 +11,14 @@
       "@typed/dom/*": [
         "../packages/dom/dist/*"
       ],
-      "@typed/express/*": [
-        "../packages/express/dist/*"
+      "@typed/framework/*": [
+        "../packages/framework/dist/*"
       ],
       "@typed/fx/*": [
         "../packages/fx/dist/*"
       ],
       "@typed/html/*": [
         "../packages/html/dist/*"
-      ],
-      "@typed/module/*": [
-        "../packages/module/dist/*"
       ],
       "@typed/node/*": [
         "../packages/node/dist/*"

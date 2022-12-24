@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import * as Effect from '@effect/io/Effect'
+import * as Fiber from '@effect/io/Fiber'
 import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
 import * as Duration from '@fp-ts/data/Duration'
@@ -8,7 +10,6 @@ import * as Context from '@typed/context'
 import { Location, History, addDocumentListener, addWindowListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
 import * as html from '@typed/html'
-import { Hole } from '@typed/html'
 import * as Path from '@typed/path'
 import * as Route from '@typed/route'
 
@@ -26,12 +27,12 @@ export interface Router<out R = never, in out P extends string = string> {
   /**
    * The current matched params of the router
    */
-  readonly params: Fx.Fx<never, never, Path.ParamsOf<P>>
+  readonly params: Fx.Fx<R, never, Path.ParamsOf<P>>
 
   /**
    * The current outlet of this Router
    */
-  readonly outlet: Fx.RefSubject<Option.Option<html.Placeholder | Hole | Node>>
+  readonly outlet: Fx.RefSubject<html.Renderable>
 
   /**
    * Helper for constructing a path from a route relative to the router.
@@ -64,9 +65,7 @@ export const Router = Object.assign(function makeRouter<R = never, P extends str
   route: Route.Route<R, P>,
   currentPath: Fx.RefSubject<string>,
 ): Router<R, P> {
-  const outlet = Fx.RefSubject.unsafeMake(
-    (): Option.Option<html.Placeholder | Hole | Node> => Option.none,
-  )
+  const outlet = Fx.RefSubject.unsafeMake((): html.Renderable => null)
 
   const createPath = <R2 extends Route.Route<any, string>, P extends Route.ParamsOf<R2>>(
     other: R2,
@@ -99,12 +98,7 @@ export const Router = Object.assign(function makeRouter<R = never, P extends str
   const router: Router<R, P> = {
     route,
     currentPath,
-    params: pipe(
-      currentPath,
-      Fx.switchMapEffect(route.match),
-      Fx.compact,
-      Fx.skipRepeats,
-    ) as Router<R, P>['params'],
+    params: pipe(currentPath, Fx.switchMapEffect(route.match), Fx.compact, Fx.skipRepeats),
     outlet,
     createPath: createPath as Router<R, P>['createPath'],
     define: <R2, Path2 extends string>(other: Route.Route<R2, Path2>) =>
@@ -120,64 +114,120 @@ Context.Tag<Router>())
 // TODO: Compiler should be able to attach information to each Route instance, and when available
 //       the APIs should read that information for the server to wait on the correct elements
 
-export interface RouteMatcher<R = never, E = never, A = unknown> {
+export interface RouteMatch<R, E, P extends string> {
+  readonly route: Route.Route<R, P>
+
+  readonly match: (params: Fx.Fx<never, never, Path.ParamsOf<P>>) => Fx.Fx<R, E, html.Renderable>
+
+  readonly layout?: Fx.Fx<R, E, html.Renderable>
+
+  readonly provideEnvironment: (environment: Context.Context<R>) => RouteMatch<never, E, P>
+
+  readonly provideService: <S>(tag: Context.Tag<S>, service: S) => RouteMatch<Exclude<R, S>, E, P>
+
+  readonly provideLayer: <R2, S>(
+    layer: Layer.Layer<R2, never, S>,
+  ) => RouteMatch<R2 | Exclude<R, S>, E, P>
+}
+
+export function RouteMatch<R, P extends string, R2, E2, R3, E3>(
+  route: Route.Route<R, P>,
+  match: (params: Fx.Fx<never, never, Path.ParamsOf<P>>) => Fx.Fx<R2, E2, html.Renderable>,
+  layout?: Fx.Fx<R3, E3, html.Renderable>,
+): RouteMatch<R | R2 | R3, E2 | E3, P> {
+  const routeMatch: RouteMatch<R | R2 | R3, E2 | E3, P> = {
+    route,
+    match,
+    layout,
+    provideEnvironment: (env) =>
+      RouteMatch(
+        Route.provideEnvironment(env)(route),
+        flow(match, Fx.provideSomeEnvironment(env)),
+        layout ? Fx.provideEnvironment(env)(layout) : undefined,
+      ),
+    provideService: (tag, service) =>
+      RouteMatch(
+        Route.provideService(tag, service)(route),
+        flow(match, Fx.provideService(tag)(service)),
+        layout ? Fx.provideService(tag)(service)(layout) : undefined,
+      ),
+    provideLayer: (layer) =>
+      RouteMatch(
+        Route.provideLayer(layer)(route),
+        flow(match, Fx.provideSomeLayer(layer)),
+        layout ? Fx.provideSomeLayer(layer)(layout) : undefined,
+      ),
+  }
+
+  return routeMatch
+}
+
+export interface RouteMatcher<R = never, E = never> {
   // Where things are actually stored immutably
-  readonly routes: ReadonlyMap<
-    Route.Route<any, any>,
-    (params: Fx.Fx<never, never, any>) => Fx.Fx<any, any, any>
-  >
+  readonly routes: ReadonlyMap<Route.Route<any, any>, RouteMatch<any, any, any>>
 
   // Add Routes
 
-  readonly match: <R2, P extends string, R3, E3, B>(
+  readonly match: <R2, P extends string, R3, E3>(
     route: Route.Route<R2, P>,
-    f: (params: Path.ParamsOf<P>) => Fx.Fx<R3, E3, B>,
-  ) => RouteMatcher<R | R2, E | E3, A | B>
+    f: (params: Path.ParamsOf<P>) => Fx.Fx<R3, E3, html.Renderable>,
+  ) => RouteMatcher<R | R2, E | E3>
 
-  readonly matchFx: <R2, P extends string, R3, E3, B>(
+  readonly matchFx: <R2, P extends string, R3, E3>(
     route: Route.Route<R2, P>,
-    f: (params: Fx.Fx<never, never, Path.ParamsOf<P>>) => Fx.Fx<R3, E3, B>,
-  ) => RouteMatcher<R | R2, E | E3, A | B>
+    f: (params: Fx.Fx<never, never, Path.ParamsOf<P>>) => Fx.Fx<R3, E3, html.Renderable>,
+  ) => RouteMatcher<R | R2, E | E3>
 
-  readonly matchEffect: <R2, P extends string, R3, E3, B>(
+  readonly matchEffect: <R2, P extends string, R3, E3>(
     route: Route.Route<R2, P>,
-    f: (params: Path.ParamsOf<P>) => Effect.Effect<R3, E3, B>,
-  ) => RouteMatcher<R | R2, E | E3, A | B>
+    f: (params: Path.ParamsOf<P>) => Effect.Effect<R3, E3, html.Renderable>,
+  ) => RouteMatcher<R | R2, E | E3>
+
+  // Add Layout
+
+  readonly withLayout: <R2, E2>(fx: Fx.Fx<R2, E2, html.Renderable>) => RouteMatcher<R | R2, E | E2>
 
   // Provide resources
 
-  readonly provideEnvironment: (environment: Context.Context<R>) => RouteMatcher<never, E, A>
+  readonly provideEnvironment: <R2>(
+    environment: Context.Context<R2>,
+  ) => RouteMatcher<Exclude<R, R2>, E>
 
   readonly provideService: <R2>(
     tag: Context.Tag<R2>,
     service: R2,
-  ) => RouteMatcher<Exclude<R, R2>, E, A>
+  ) => RouteMatcher<Exclude<R, R2>, E>
 
-  readonly provideLayer: <R2, E2, S>(
-    layer: Layer.Layer<R2, E2, S>,
-  ) => RouteMatcher<Exclude<R, S> | R2, E | E2, A>
+  readonly provideLayer: <R2, S>(
+    layer: Layer.Layer<R2, never, S>,
+  ) => RouteMatcher<Exclude<R, S> | R2, E>
 
   // Runners that turn a RouterMatcher back into an Fx.
   // Error handling should be handled after converting to an Fx for maximum flexibility.
 
-  readonly notFound: <R2, E2, B>(
-    f: (path: string) => Fx.Fx<R2, E2, B>,
-  ) => Fx.Fx<Router | R | R2, Exclude<E | E2, Redirect>, A | B>
+  readonly notFound: <R2, E2>(
+    f: (path: string) => Fx.Fx<R2, E2, html.Renderable>,
+  ) => Fx.Fx<Router | R | R2, Exclude<E | E2, Redirect>, html.Renderable>
 
-  readonly notFoundEffect: <R2, E2, B>(
-    f: (path: string) => Effect.Effect<R2, E2, B>,
-  ) => Fx.Fx<Router | R | R2, Exclude<E | E2, Redirect>, A | B>
+  readonly notFoundEffect: <R2, E2>(
+    f: (path: string) => Effect.Effect<R2, E2, html.Renderable>,
+  ) => Fx.Fx<Router | R | R2, Exclude<E | E2, Redirect>, html.Renderable>
 
   readonly redirectTo: <R2, P extends string>(
     route: Route.Route<R2, P>,
-    ...params: [keyof Path.ParamsOf<P>] extends [never] ? [] : [Path.ParamsOf<P>]
-  ) => Fx.Fx<Router | R | R2, Exclude<E, Redirect>, A>
+    ...params: [keyof Path.ParamsOf<P>] extends [never]
+      ? // eslint-disable-next-line @typescript-eslint/ban-types
+        [{}?]
+      : [(path: string) => Path.ParamsOf<P>]
+  ) => Fx.Fx<Router | R | R2, Exclude<E, Redirect>, html.Renderable>
+
+  /**
+   * @internal
+   */
+  readonly run: Fx.Fx<Router | R, Exclude<E, Redirect>, html.Renderable | null>
 }
 
-export const outlet: Fx.Fx<Router, never, html.Placeholder | null> = pipe(
-  Router.withFx((r) => r.outlet),
-  Fx.map(Option.getOrNull),
-)
+export const outlet: Fx.Fx<Router, never, html.Renderable> = Router.withFx((r) => r.outlet)
 
 export const currentPath: Fx.Fx<Router, never, string> = Router.withFx((r) => r.currentPath)
 
@@ -185,6 +235,7 @@ export function provideEnvironment<R>(environment: Context.Context<R>) {
   return <P extends string>(router: Router<R, P>): Router<never, P> => {
     const provided: Router<never, P> = {
       ...router,
+      params: pipe(router.params, Fx.provideEnvironment(environment)),
       route: Route.provideEnvironment(environment)(router.route),
       createPath: ((other, ...params) =>
         Effect.provideEnvironment(environment)(router.createPath(other, ...params))) as Router<
@@ -218,7 +269,7 @@ redirect.fx = (path: string) => Fx.fail<Redirect>(Redirect.make(path))
 
 export const redirectTo = <R, P extends string>(
   route: Route.Route<R, P>,
-  ...[params]: [keyof Path.ParamsOf<P>] extends [never] ? [] : [Path.ParamsOf<P>]
+  ...[params]: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
 ): Effect.Effect<Router, Redirect, never> =>
   pipe(
     Router.withEffect((r) => r.createPath(route as any, params as any)),
@@ -227,7 +278,7 @@ export const redirectTo = <R, P extends string>(
 
 redirectTo.fx = <R, P extends string>(
   route: Route.Route<R, P>,
-  ...params: [keyof Path.ParamsOf<P>] extends [never] ? [] : [Path.ParamsOf<P>]
+  ...params: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [(path: string) => Path.ParamsOf<P>]
 ): Fx.Fx<Router, Redirect, never> =>
   pipe(
     Router.withEffect((r) => r.createPath(route as any, params as any)),
@@ -235,51 +286,123 @@ redirectTo.fx = <R, P extends string>(
     Fx.switchMap(redirect.fx),
   )
 
-export function RouterMatcher<R, E, A>(
-  routes: RouteMatcher<R, E, A>['routes'],
-): RouteMatcher<R, E, A> {
-  const matcher: RouteMatcher<R, E, A> = {
+export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteMatcher<R, E> {
+  const matcher: RouteMatcher<R, E> = {
     routes,
-    matchFx: (route, f) => RouterMatcher(new Map(routes).set(route, f)),
-    match: (route, f) => RouterMatcher(new Map(routes).set(route, Fx.switchMap(f))),
-    matchEffect: (route, f) => RouterMatcher(new Map(routes).set(route, Fx.switchMapEffect(f))),
-    provideEnvironment: (environment) =>
-      RouterMatcher(
+    matchFx: (route, f) => RouteMatcher(new Map(routes).set(route, RouteMatch(route, f))),
+    match: (route, f) =>
+      RouteMatcher(new Map(routes).set(route, RouteMatch(route, Fx.switchMap(f)))),
+    matchEffect: (route, f) =>
+      RouteMatcher(new Map(routes).set(route, RouteMatch(route, Fx.switchMapEffect(f)))),
+    withLayout: (layout) =>
+      RouteMatcher(
         new Map(
-          Array.from(routes).map(([k, v]) => [k, flow(v, Fx.provideEnvironment(environment))]),
+          Array.from(routes).map(([k, match]) => [
+            k,
+            RouteMatch(match.route, match.match, match.layout ?? layout),
+          ]),
         ),
       ),
+    provideEnvironment: (environment) =>
+      RouteMatcher(
+        new Map(Array.from(routes).map(([k, v]) => [k, v.provideEnvironment(environment)])),
+      ),
     provideService: (tag, service) =>
-      RouterMatcher(
-        new Map(Array.from(routes).map(([k, v]) => [k, flow(v, Fx.provideService(tag)(service))])),
+      RouteMatcher(
+        new Map(Array.from(routes).map(([k, v]) => [k, v.provideService(tag, service)])),
       ),
     provideLayer: (layer) =>
-      RouterMatcher(
-        new Map(Array.from(routes).map(([k, v]) => [k, flow(v, Fx.provideLayer(layer))])),
-      ),
-    notFound: <R2, E2, B>(f: (path: string) => Fx.Fx<R2, E2, B>) =>
+      RouteMatcher(new Map(Array.from(routes).map(([k, v]) => [k, v.provideLayer(layer)]))),
+    notFound: <R2, E2>(f: (path: string) => Fx.Fx<R2, E2, html.Renderable>) =>
       Router.withFx((router) => {
-        const matchers = Array.from(routes).map(([child, f]) => {
-          // Construct *stable* references to the rendering of this componenet
-          return [child, f(router.define(child).params)] as const
+        // Create stable references to the route matchers
+        const matchers = Array.from(routes.values()).map(
+          (v) => [v, runRouteMatch(router, v)] as const,
+        )
+
+        let previousFiber: Fiber.RuntimeFiber<any, any> | undefined
+        let previousLayout: Fx.Fx<any, any, html.Renderable> | undefined
+        let previousRender: Fx.Fx<any, any, html.Renderable> | undefined
+
+        const samplePreviousValues = () => ({
+          fiber: previousFiber,
+          layout: previousLayout,
+          render: previousRender,
         })
+
+        // This function helps us to ensure shared layouts are only rendered once
+        // and the outlet content is changed
+        const verifyShouldRerender = (
+          match: RouteMatch<any, any, any>,
+          render: Fx.Fx<any, any, html.Renderable>,
+        ): Effect.Effect<any, any, Option.Option<Fx.Fx<any, any, html.Renderable>>> =>
+          Effect.gen(function* ($) {
+            const previous = samplePreviousValues()
+
+            // Update the previous values
+            previousRender = render
+            previousLayout = match.layout
+            previousFiber = undefined
+
+            // Skip rerendering if the render function is the same
+            if (previous.render === render) {
+              return Option.none
+            }
+
+            // If we have a layout, we need to render it and use the route outlet.
+            if (match.layout) {
+              // Render into the route outlet
+              previousFiber = yield* $(
+                pipe(render, Fx.observe(router.outlet.set), Effect.forkScoped),
+              )
+
+              return Option.some(match.layout)
+            }
+
+            // Interrupt the previous fiber if it exists
+            if (previous.fiber) {
+              yield* $(Fiber.interrupt(previous.fiber))
+            }
+
+            // If we don't have a layout, but we did, we need to clear the outlet
+            if (previous.layout) {
+              yield* $(router.outlet.set(null))
+            }
+
+            // Otherwise use the render function directly
+            return Option.some(render)
+          })
 
         return pipe(
           router.currentPath,
           Fx.skipRepeats,
           Fx.switchMapEffect((path) =>
             Effect.gen(function* ($) {
-              for (const [child, render] of matchers) {
-                const result = yield* $(child.match(path))
+              // Attempt to find the best match
+              for (const [match, render] of matchers) {
+                const result = yield* $(match.route.match(path))
 
                 if (Option.isSome(result)) {
-                  return render as Fx.Fx<R | R2, E | E2, A | B>
+                  return yield* $(verifyShouldRerender(match, render))
                 }
               }
 
-              return f(path) as Fx.Fx<R | R2, E | E2, A | B>
+              // If we didn't find a match, render the not found page
+
+              // cleanup any fiber
+              if (previousFiber) {
+                yield* $(Fiber.interrupt(previousFiber))
+              }
+
+              // Cleanup
+              previousFiber = undefined
+              previousLayout = undefined
+              previousRender = undefined
+
+              return Option.some(f(path))
             }),
           ),
+          Fx.compact,
           Fx.skipRepeats, // Stable render references are used to avoid mounting the same component twice
           Fx.switchLatest,
           Fx.switchMapError((error) => {
@@ -288,7 +411,6 @@ export function RouterMatcher<R, E, A>(
               return pipe(
                 router.currentPath.set(error.path),
                 Fx.fromEffect,
-                Fx.delay(Duration.millis(0)),
                 Fx.flatMap(() => Fx.never),
               )
             }
@@ -299,33 +421,30 @@ export function RouterMatcher<R, E, A>(
       }),
     notFoundEffect: (f) => matcher.notFound((path) => Fx.fromEffect(f(path))),
     redirectTo: ((route, ...params) =>
-      matcher.notFound(() => redirectTo.fx(route, ...params))) as RouteMatcher<
-      R,
-      E,
-      A
-    >['redirectTo'],
+      matcher.notFound(() => redirectTo.fx(route, ...params))) as RouteMatcher<R, E>['redirectTo'],
+    run: Fx.suspend(() => matcher.notFoundEffect(() => Effect.succeed(null))),
   }
 
   return matcher
 }
 
-export namespace RouterMatcher {
-  export const empty = RouterMatcher<never, never, never>(new Map())
+export namespace RouteMatcher {
+  export const empty = RouteMatcher<never, never>(new Map())
 
-  export const concat = <R, E, A, R2, E2, B>(
-    matcher: RouteMatcher<R, E, A>,
-    matcher2: RouteMatcher<R2, E2, B>,
-  ): RouteMatcher<R | R2, E | E2, A | B> =>
-    RouterMatcher(new Map([...matcher.routes, ...matcher2.routes]))
+  export const concat = <R, E, R2, E2>(
+    matcher: RouteMatcher<R, E>,
+    matcher2: RouteMatcher<R2, E2>,
+  ): RouteMatcher<R | R2, E | E2> => RouteMatcher(new Map([...matcher.routes, ...matcher2.routes]))
 }
 
-export const { matchFx, match, matchEffect } = RouterMatcher<never, never, never>(new Map())
+export const { matchFx, match, matchEffect } = RouteMatcher<never, never>(new Map())
 
 export const makeRouter: Effect.Effect<
   Location | History | Window | Document | Scope.Scope,
   never,
   Router
 > = Effect.gen(function* ($) {
+  const history = yield* $(History.get)
   const location = yield* $(Location.get)
   const currentPath = yield* $(Fx.makeRef<string>(() => getCurrentPath(location)))
 
@@ -345,16 +464,31 @@ export const makeRouter: Effect.Effect<
           addDocumentListener('click'),
           Fx.merge(addDocumentListener('touchend')),
           Fx.filter(shouldInterceptLinkClick(location)),
+          Fx.map((ev) => getCurrentPath(ev.target as HTMLAnchorElement)),
         ),
-        addWindowListener('popstate'),
-        addWindowListener('hashchange'),
-        historyEvents,
+        pipe(
+          Fx.mergeAll(
+            addWindowListener('popstate'),
+            addWindowListener('hashchange'),
+            historyEvents,
+          ),
+          Fx.debounce(Duration.millis(0)),
+          Fx.map(() => getCurrentPath(location)),
+        ),
       ),
-      Fx.debounce(Duration.millis(0)),
-      Fx.map(() => getCurrentPath(location)),
-      Fx.skipRepeats,
       Fx.switchMapEffect((path) => currentPath.set(path)),
       Fx.forkScoped,
+    ),
+  )
+
+  // Listen to path changes and update the current history location
+
+  yield* $(
+    pipe(
+      currentPath,
+      Fx.skipRepeats,
+      Fx.observe((path) => Effect.sync(() => history.pushState({}, '', path))),
+      Effect.forkDaemon,
     ),
   )
 
@@ -364,7 +498,7 @@ export const makeRouter: Effect.Effect<
 
 export const live = Router.layerSoped(makeRouter)
 
-function getCurrentPath(location: Location) {
+function getCurrentPath(location: Location | HTMLAnchorElement) {
   return location.pathname + location.search + location.hash
 }
 
@@ -470,4 +604,20 @@ function findAnchorElement(ev: MouseEvent | TouchEvent): HTMLAnchorElement | nul
   if (el?.nodeName.toUpperCase() !== 'A') return null
 
   return el as HTMLAnchorElement
+}
+
+function runRouteMatch<R, E, P extends string>(
+  router: Router,
+  { route, match }: RouteMatch<R, E, P>,
+): Fx.Fx<R, E, html.Renderable> {
+  return Fx.gen(function* ($) {
+    const env = yield* $(Effect.environment<R>())
+    const nestedRouter = router.define(route)
+    const params = pipe(nestedRouter.params, Fx.provideEnvironment(env))
+
+    return pipe(
+      match(params as unknown as Fx.Fx<never, never, Path.ParamsOf<P>>),
+      Router.provideFx(nestedRouter as Router),
+    )
+  })
 }

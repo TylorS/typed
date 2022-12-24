@@ -1,11 +1,11 @@
-import { Counter } from '../components/counter-with-service.js'
+import { Layer } from '@effect/io/Layer'
 
-import { html } from '@typed/html/index.js'
+import { Counter, Example, liveExample } from '../components/counter-with-service.js'
+
 import * as Route from '@typed/route/index.js'
-import * as Router from '@typed/router/index.js'
 
-export const route = Route.base
+export const route = Route.home
 
 export const main = Counter
 
-export const layout = html`<div>${Router.outlet}</div>`
+export const environment: Layer<never, never, Example> = liveExample

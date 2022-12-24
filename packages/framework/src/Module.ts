@@ -1,29 +1,39 @@
 import * as Fx from '@typed/fx'
-import * as Path from '@typed/path'
+import { Renderable } from '@typed/html'
 import * as Route from '@typed/route'
-import { matchFx, RouteMatcher } from '@typed/router'
+import * as Router from '@typed/router'
 
 import { IntrinsicServices } from './IntrinsicServices.js'
 
-export interface Module<P extends string> {
+export interface Module<out R, P extends string> {
   readonly route: Route.Route<IntrinsicServices, P>
 
-  readonly main: (
-    params: Fx.Fx<never, never, Path.ParamsOf<P>>,
-  ) => Fx.Fx<IntrinsicServices, never, Node>
+  readonly main: Module.Main<R, this['route']>
+
+  readonly meta?: Module.Meta
 }
 
 export namespace Module {
-  export function make<P extends string>(
-    route: Route.Route<IntrinsicServices, P>,
-    main: (params: Fx.Fx<never, never, Path.ParamsOf<P>>) => Fx.Fx<IntrinsicServices, never, Node>,
-  ): Module<P> {
-    return { route, main }
+  export interface Meta {
+    readonly layout?: Fx.Fx<IntrinsicServices, Router.Redirect, Renderable>
   }
 
-  export function toMatcher<Path extends string>(
-    module: Module<Path>,
-  ): RouteMatcher<IntrinsicServices, never, Node> {
-    return matchFx(module.route, module.main)
+  export interface Main<out R2, out R extends Route.Route<any, any>> {
+    (params: Fx.Fx<never, Router.Redirect, Route.ParamsOf<R>>): Fx.Fx<
+      IntrinsicServices | Route.ResourcesOf<R> | R2,
+      Router.Redirect,
+      Renderable
+    >
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export type ResourcesOf<T> = [T] extends [Module<infer R, infer _>] ? R : never
+
+  export function make<R, P extends string, R2>(
+    route: Route.Route<R | IntrinsicServices, P>,
+    main: Main<R2, typeof route>,
+    meta?: Module.Meta,
+  ): Module<R | R2, P> {
+    return { route, main, meta } as Module<R | R2, P>
   }
 }
