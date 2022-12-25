@@ -24,8 +24,10 @@
     "@typed/dom": "workspace:*",
     "@typed/html": "workspace:*",
     "@typed/router": "workspace:*",
+    "@effect/io": "~0.0.42",
     "@typed/fx": "workspace:*",
+    "@typed/route": "workspace:*",
     "@typed/path": "workspace:*",
-    "@typed/route": "workspace:*"
+    "@fp-ts/data": "~0.0.30"
   }
 }

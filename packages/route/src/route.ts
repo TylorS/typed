@@ -105,8 +105,11 @@ export const guard =
 export const concat =
   <R2, Path2 extends string>(otherRoute: Route<R2, Path2>) =>
   <R, Path extends string>(route: Route<R, Path>): Route<R | R2, P.PathJoin<[Path, Path2]>> => {
-    const concatPath = ((route.path + otherRoute.path).replace(/\/{1,}/g, '/').replace(/\/$/, '') ||
-      '/') as P.PathJoin<[Path, Path2]>
+    const concatPath = (
+      route.path === '/'
+        ? otherRoute.path
+        : (route.path + otherRoute.path).replace(/\/{1,}/g, '/').replace(/\/$/, '') || '/'
+    ) as P.PathJoin<[Path, Path2]>
 
     const concatMatch = (path: string) =>
       Effect.gen(function* ($) {

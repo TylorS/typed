@@ -110,16 +110,12 @@ export const Router = Object.assign(function makeRouter<R = never, P extends str
 },
 Context.Tag<Router>())
 
-// TODO: Add API for configuring a loading indicator
-// TODO: Compiler should be able to attach information to each Route instance, and when available
-//       the APIs should read that information for the server to wait on the correct elements
-
 export interface RouteMatch<R, E, P extends string> {
   readonly route: Route.Route<R, P>
 
-  readonly match: (params: Fx.Fx<never, never, Path.ParamsOf<P>>) => Fx.Fx<R, E, html.Renderable>
-
   readonly layout?: Fx.Fx<R, E, html.Renderable>
+
+  readonly match: (params: Fx.Fx<never, never, Path.ParamsOf<P>>) => Fx.Fx<R, E, html.Renderable>
 
   readonly provideEnvironment: (environment: Context.Context<R>) => RouteMatch<never, E, P>
 
@@ -349,6 +345,11 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
               return Option.none
             }
 
+            // Interrupt the previous fiber if it exists
+            if (previous.fiber) {
+              yield* $(Fiber.interrupt(previous.fiber))
+            }
+
             // If we have a layout, we need to render it and use the route outlet.
             if (match.layout) {
               // Render into the route outlet
@@ -357,11 +358,6 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
               )
 
               return Option.some(match.layout)
-            }
-
-            // Interrupt the previous fiber if it exists
-            if (previous.fiber) {
-              yield* $(Fiber.interrupt(previous.fiber))
             }
 
             // If we don't have a layout, but we did, we need to clear the outlet
