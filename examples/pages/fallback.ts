@@ -1,1 +1,1 @@
-export { route } from './index.js'
+export { route } from './home.js'

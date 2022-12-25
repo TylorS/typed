@@ -56,6 +56,12 @@ export namespace Main {
     return <R2>(main: Main<R2, typeof route>): Main<R2, R> => main
   }
 
+  export function lazy<R extends Route.Route<any, any>>(route: R) {
+    return <R2>(main: () => Promise<Main<R2, typeof route>>): Main<R2, R> =>
+      (params) =>
+        Fx.promiseFx(() => main().then((m) => m(params)))
+  }
+
   export function layer<R, R2 extends Route.Route<any, any>>(main: Main<R, R2>) {
     return (layer: LayerOf<typeof main>): typeof layer => layer
   }

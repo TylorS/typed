@@ -29,4 +29,5 @@ export const Counter = Fx.gen(function* ($) {
   `
 })
 
-export const liveExample: Layer<never, never, Example> = Example.layerOf({ name: 'Live' })
+export const layer: (name: string) => Layer<never, never, Example> = (name) =>
+  Example.layerOf({ name })

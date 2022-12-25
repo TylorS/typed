@@ -1,4 +1,4 @@
-import { flow, pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/data/Function'
 import {
   buildModules,
   Module,
@@ -8,7 +8,7 @@ import {
 
 import * as fallback from './pages/fallback.js'
 import * as foo from './pages/foo.js'
-import * as index from './pages/index.js'
+import * as home from './pages/home.js'
 import { layout } from './pages/layout.js'
 
 import * as Fx from '@typed/fx/index.js'
@@ -24,12 +24,8 @@ if (!parentElement) {
 }
 
 const modules = [
-  Module.make(index.route, flow(index.main, Fx.provideSomeLayer(index.environment)), {
-    layout,
-  }),
-  Module.make(foo.route, foo.main, {
-    layout,
-  }),
+  Module.make(home.route, home.main, { layout }),
+  Module.make(foo.route, foo.main, { layout }),
 ] as const
 
 pipe(
