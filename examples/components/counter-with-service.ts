@@ -12,16 +12,16 @@ export interface CounterName {
 export const CounterName = Tag<CounterName>()
 
 export const Counter = Fx.gen(function* ($) {
-  const model = yield* $(Fx.makeRef(() => 0))
+  const count = yield* $(Fx.makeRef(() => 0))
 
   return html`
-    <button onclick=${model.update((x) => x - 1)}>Decrement</button>
-    <button onclick=${model.update((x) => x + 1)}>Increment</button>
+    <button onclick=${count.update((x) => x - 1)}>Decrement</button>
+    <button onclick=${count.update((x) => x + 1)}>Increment</button>
 
     <p>
       ${CounterName.withFx((e) =>
         pipe(
-          model,
+          count,
           Fx.map((x) => `${e.name}: ${x}`),
         ),
       )}

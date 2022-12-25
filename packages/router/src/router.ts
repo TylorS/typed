@@ -555,6 +555,8 @@ function shouldInterceptLinkClick(location: Location) {
     // Attempt to find an anchor element
     const target = findAnchorElement(ev)
 
+    console.log(target)
+
     if (!target) return false
 
     // Link Filtering
@@ -578,26 +580,12 @@ function shouldInterceptLinkClick(location: Location) {
 }
 
 function findAnchorElement(ev: MouseEvent | TouchEvent): HTMLAnchorElement | null {
-  const eventPath = (ev as any).path || (ev.composedPath ? ev.composedPath() : null)
-
   // Attempt to find our link
   let el = ev.target as Element | null
-  if (eventPath) {
-    for (let i = 0; i < eventPath.length; i++) {
-      if (
-        !eventPath[i].nodeName ||
-        eventPath[i].nodeName.toUpperCase() !== 'A' ||
-        !eventPath[i].href
-      )
-        continue
 
-      el = eventPath[i]
-      break
-    }
+  while (el && el?.tagName.toUpperCase() !== 'A') {
+    el = el.parentElement || null
   }
-
-  // If it is not a link, we don't care
-  if (el?.nodeName.toUpperCase() !== 'A') return null
 
   return el as HTMLAnchorElement
 }

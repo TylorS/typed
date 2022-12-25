@@ -42,6 +42,10 @@ function runPageLikeMatchers(
 ): Fx.Fx<IntrinsicServices | Router.Router, never, Renderable> {
   const [m, fallback] = matcher
 
+  if (!fallback) {
+    return m.run
+  }
+
   return fallback.type === 'Redirect'
     ? m.redirectTo(fallback.route, fallback.params)
     : m.notFound(fallback.fallback)
@@ -71,7 +75,7 @@ function toModule(moduleLike: ModuleLike): Mutable<Module<IntrinsicServices, str
       string
     >['main'],
     meta: {
-      layout: moduleLike.layout ? toLayout(moduleLike.layout) : undefined,
+      layout: moduleLike.layout ? toLayout(moduleLike) : undefined,
     },
   }
 
@@ -176,13 +180,12 @@ function isLayoutLike(u: unknown): u is LayoutLike {
 }
 
 interface LayoutLike {
-  readonly main?: unknown
   readonly layout?: unknown
   readonly environment?: unknown
 }
 
 function toLayout(layoutLike: LayoutLike): Module.Meta['layout'] {
-  const layout = layoutLike.layout || layoutLike.main
+  const layout = layoutLike.layout
   const environment = layoutLike.environment
 
   if (!layout || !Fx.isFx(layout)) {
@@ -214,7 +217,10 @@ function isFallbackLike(u: unknown): u is FallbackLike {
   return isRedirectFallbackLike(u) || isRenderableFallbackLike(u)
 }
 
-type PageLikeMatcher = readonly [Router.RouteMatcher<IntrinsicServices, Router.Redirect>, Fallback]
+type PageLikeMatcher = readonly [
+  Router.RouteMatcher<IntrinsicServices, Router.Redirect>,
+  Fallback | null,
+]
 
 function pageLikeToMatcher(
   pageLike: PageLike,
@@ -228,9 +234,11 @@ function pageLikeToMatcher(
     throw new Error(`No fallback provided for ${pageLike.directory}`)
   }
 
-  const fallback = isRedirectFallbackLike(pageLike.fallback)
-    ? toRedirectFallback(pageLike.fallback)
-    : toRenderableFallback(pageLike.fallback, layout)
+  const fallback = pageLike.fallback
+    ? isRedirectFallbackLike(pageLike.fallback)
+      ? toRedirectFallback(pageLike.fallback)
+      : toRenderableFallback(pageLike.fallback, layout)
+    : null
 
   return [matcher, fallback]
 }
@@ -256,7 +264,7 @@ interface PageLike {
   readonly directory: string
   readonly modules: readonly ModuleLike[]
   readonly fallback?: FallbackLike
-  readonly layout?: LayoutLike
+  readonly layout?: unknown
   readonly children: readonly PageLike[]
 }
 

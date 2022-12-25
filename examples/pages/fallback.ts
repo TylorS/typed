@@ -1,5 +1,4 @@
-// Fallbacks only work at root-level directories
-// If multiple are needed, root-level sibling directories can be used.
+// A global fallback only work at the root-level directories
 
 import { html } from '@typed/html/index.js'
 
