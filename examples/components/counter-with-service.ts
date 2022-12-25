@@ -5,11 +5,11 @@ import { Tag } from '@typed/context/index.js'
 import * as Fx from '@typed/fx/index.js'
 import { html } from '@typed/html/index.js'
 
-export interface Example {
+export interface CounterName {
   readonly name: string
 }
 
-export const Example = Tag<Example>()
+export const CounterName = Tag<CounterName>()
 
 export const Counter = Fx.gen(function* ($) {
   const model = yield* $(Fx.makeRef(() => 0))
@@ -19,7 +19,7 @@ export const Counter = Fx.gen(function* ($) {
     <button onclick=${model.update((x) => x + 1)}>Increment</button>
 
     <p>
-      ${Example.withFx((e) =>
+      ${CounterName.withFx((e) =>
         pipe(
           model,
           Fx.map((x) => `${e.name}: ${x}`),
@@ -29,5 +29,5 @@ export const Counter = Fx.gen(function* ($) {
   `
 })
 
-export const layer: (name: string) => Layer<never, never, Example> = (name) =>
-  Example.layerOf({ name })
+export const layer: (name: string) => Layer<never, never, CounterName> = (name) =>
+  CounterName.layerOf({ name })

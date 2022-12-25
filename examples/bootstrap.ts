@@ -11,13 +11,13 @@ if (!parentElement) {
   throw new Error(`Could not find element with id "${parentElementId}"`)
 }
 
-const pages = import.meta.glob('./pages/**/*', { eager: true })
+const main = pipe(
+  // Import all page modules to instantiate routes
+  runPages(import.meta.glob('./pages/**/*', { eager: true })),
+  // Render application into the DOM
+  renderInto(parentElement),
+  // Provide all the framework-level services
+  provideBrowserIntrinsics(window, { parentElement }),
+)
 
-document.addEventListener('DOMContentLoaded', () => {
-  pipe(
-    runPages(pages),
-    renderInto(parentElement),
-    provideBrowserIntrinsics(window, { parentElement }),
-    Fx.unsafeRunAsync,
-  )
-})
+document.addEventListener('DOMContentLoaded', () => Fx.unsafeRunAsync(main))

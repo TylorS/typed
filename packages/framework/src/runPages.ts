@@ -1,6 +1,7 @@
+import { forkScoped } from '@effect/io/Effect'
 import { isLayer } from '@effect/io/Layer'
 import { isContext } from '@fp-ts/data/Context'
-import { flow, pipe } from '@fp-ts/data/Function'
+import { constant, flow, pipe } from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx'
 import { Renderable } from '@typed/html'
 import { Route } from '@typed/route'
@@ -28,7 +29,6 @@ const layoutRegex = /layout\.(ts|js)x?$/
 export function runPages(
   pages: Record<string, unknown>,
 ): Fx.Fx<IntrinsicServices, never, Renderable> {
-  // TODO: Hanlde nested routers better
   const organized = organizePages(pages)
   const matchers = Object.entries(organized).map(([directory, page]) =>
     pageLikeToMatcher(directoryToPageLike(directory, page)),
@@ -64,19 +64,9 @@ function toModule(moduleLike: ModuleLike): Mutable<Module<IntrinsicServices, str
     throw new Error('Invalid route: ' + JSON.stringify(moduleLike.route, null, 2))
   }
 
-  let main = moduleLike.main
-
-  if (Fx.isFx(main)) {
-    main = () => main
-  }
-
-  if (typeof main !== 'function') {
-    throw new Error('Invalid main: ' + JSON.stringify(main, null, 2))
-  }
-
-  const module: Mutable<Module<IntrinsicServices, string>> = {
+  const mod: Mutable<Module<IntrinsicServices, string>> = {
     route: moduleLike.route as Module<IntrinsicServices, string>['route'],
-    main: toMain(moduleLike.main, moduleLike.environment) as Module<
+    main: toMain(moduleLike.main || moduleLike.render, moduleLike.environment) as Module<
       IntrinsicServices,
       string
     >['main'],
@@ -85,7 +75,7 @@ function toModule(moduleLike: ModuleLike): Mutable<Module<IntrinsicServices, str
     },
   }
 
-  return module
+  return mod
 }
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] }
@@ -126,15 +116,31 @@ interface RenderableFallbackLike {
   readonly environment?: unknown
 }
 
-function toRenderableFallback(fallbackLike: RenderableFallbackLike): RenderableFallback {
-  return RenderableFallback(
-    toMain(fallbackLike.main || fallbackLike.fallback, fallbackLike.environment) as any,
-  )
+function toRenderableFallback(
+  fallbackLike: RenderableFallbackLike,
+  layout?: Module.Meta['layout'],
+): RenderableFallback {
+  const main = fallbackLike.main || fallbackLike.fallback
+  const render = toMain(main, fallbackLike.environment) as any as RenderableFallback['fallback']
+
+  if (layout) {
+    return RenderableFallback((path) =>
+      Fx.gen(function* ($) {
+        const { outlet } = yield* $(Router.Router.get)
+
+        yield* $(pipe(render(path), Fx.observe(outlet.set), forkScoped))
+
+        return layout
+      }),
+    )
+  }
+
+  return RenderableFallback(render)
 }
 
 function toMain<R extends Route<any, any>>(main: unknown, environment?: unknown) {
   if (Fx.isFx(main)) {
-    main = () => main
+    main = constant(main)
   }
 
   if (typeof main !== 'function') {
@@ -224,7 +230,7 @@ function pageLikeToMatcher(
 
   const fallback = isRedirectFallbackLike(pageLike.fallback)
     ? toRedirectFallback(pageLike.fallback)
-    : toRenderableFallback(pageLike.fallback)
+    : toRenderableFallback(pageLike.fallback, layout)
 
   return [matcher, fallback]
 }
