@@ -3,7 +3,7 @@ import * as Flags from '@effect/io/Fiber/Runtime/Flags'
 import * as RuntimeFlagsPatch from '@effect/io/Fiber/Runtime/Flags/Patch'
 import { FiberRefs } from '@effect/io/FiberRefs'
 import * as R from '@effect/io/Runtime'
-import { flow, pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/data/Function'
 import { Document } from '@typed/dom/Document'
 import * as Fx from '@typed/fx'
 
@@ -11,36 +11,15 @@ import { makeEntry } from './Entry.js'
 import { Hole } from './Hole.js'
 import { Placeholder } from './Placeholder.js'
 import { RenderCache } from './RenderCache.js'
-import { Environment, RenderContext } from './RenderContext.js'
+import { RenderContext } from './RenderContext.js'
 import { Wire, persistent } from './Wire.js'
 
 export type Renderable = Placeholder | Node | null | undefined
 
-export const runBrowser = <T extends DocumentFragment | HTMLElement>(where: T, isBot = false) =>
-  renderIn('browser', isBot)(where)
-
-export const runServer = <T extends DocumentFragment | HTMLElement>(where: T, isBot = false) =>
-  renderIn('server', isBot)(where)
-
-export const runStatic = <T extends DocumentFragment | HTMLElement>(
-  where: T,
-  isBot: boolean,
-): (<R, E>(fx: Fx.Fx<R, E, Renderable>) => Fx.Fx<R, E, string>) =>
-  flow(
-    renderIn('static', isBot)(where),
-    Fx.map((x) => x.ownerDocument.documentElement.outerHTML),
-  )
-
-export function renderIn(environment: Environment, isBot = false) {
-  return <T extends DocumentFragment | HTMLElement>(where: T) =>
-    <R, E>(fx: Fx.Fx<R, E, Renderable>): Fx.Fx<R, E, T> => {
-      return pipe(
-        fx,
-        renderInto(where),
-        Document.provideFx(where.ownerDocument),
-        RenderContext.provideFx(RenderContext(environment, isBot)),
-      )
-    }
+export function renderIn<T extends DocumentFragment | HTMLElement>(where: T) {
+  return <R, E>(fx: Fx.Fx<R, E, Renderable>): Fx.Fx<R | Document | RenderContext, E, T> => {
+    return pipe(fx, renderInto(where))
+  }
 }
 
 export function renderInto<T extends DocumentFragment | HTMLElement>(where: T) {

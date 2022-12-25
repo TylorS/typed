@@ -1,10 +1,9 @@
-import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/data/Function'
+import { flow, pipe } from '@fp-ts/data/Function'
 import {
   buildModules,
   Module,
   RedirectFallback,
-  provideIntrinsics,
+  provideBrowserIntrinsics,
 } from '@typed/framework/index.js'
 
 import * as fallback from './pages/fallback.js'
@@ -13,22 +12,29 @@ import * as index from './pages/index.js'
 import { layout } from './pages/layout.js'
 
 import * as Fx from '@typed/fx/index.js'
-import { runBrowser } from '@typed/html/render.js'
+import { renderInto } from '@typed/html/render.js'
+
+const parentElementId = 'application'
+let parentElement = document.querySelector<HTMLElement>(parentElementId)
+
+if (!parentElement) {
+  parentElement = document.createElement('div')
+  parentElement.id = parentElementId
+  document.body.appendChild(parentElement)
+}
+
+const modules = [
+  Module.make(index.route, flow(index.main, Fx.provideSomeLayer(index.environment)), {
+    layout,
+  }),
+  Module.make(foo.route, foo.main, {
+    layout,
+  }),
+] as const
 
 pipe(
-  buildModules(
-    [
-      Module.make(foo.route, () => foo.main, {
-        layout,
-      }),
-      Module.make(index.route, () => pipe(index.main, Fx.provideSomeLayer(index.environment)), {
-        layout,
-      }),
-    ],
-    RedirectFallback(fallback.route),
-  ),
-  provideIntrinsics('browser')(window, window),
-  runBrowser(document.body),
-  Fx.drain,
-  Effect.unsafeRunAsync,
+  buildModules(modules, RedirectFallback(fallback.route)),
+  renderInto(parentElement),
+  provideBrowserIntrinsics(window, { parentElement }),
+  Fx.unsafeRunAsync,
 )

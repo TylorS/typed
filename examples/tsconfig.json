@@ -4,6 +4,7 @@
   "compilerOptions": {
     "rootDir": "..",
     "baseUrl": ".",
+    "isolatedModules": false,
     "paths": {
       "@typed/context/*": [
         "../packages/context/dist/*"

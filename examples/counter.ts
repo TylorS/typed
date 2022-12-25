@@ -1,7 +1,8 @@
 import { pipe } from '@fp-ts/data/Function'
+import { provideBrowserIntrinsics } from '@typed/framework/provideIntrinsics.js'
 
 import * as Fx from '@typed/fx/index.js'
-import { runBrowser, html } from '@typed/html/index.js'
+import { html, renderInto } from '@typed/html/index.js'
 
 const Counter = Fx.gen(function* ($) {
   const count = yield* $(Fx.makeRef(() => 0))
@@ -13,4 +14,4 @@ const Counter = Fx.gen(function* ($) {
   `
 })
 
-pipe(Counter, runBrowser(document.body), Fx.unsafeRunAsync)
+pipe(Counter, renderInto(document.body), provideBrowserIntrinsics(window), Fx.unsafeRunAsync)

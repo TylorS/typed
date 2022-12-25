@@ -23,11 +23,15 @@ export type DomServices =
   | Navigator
   | Fetch
 
-export const makeDomServices = (window: Window, globalThis: GlobalThis): C.Context<DomServices> =>
+export const makeDomServices = (
+  window: Window,
+  globalThis: GlobalThis,
+  parentElement?: HTMLElement,
+): C.Context<DomServices> =>
   Window.build(window)
     .add(GlobalThis, globalThis)
     .add(Document, window.document)
-    .add(ParentElement, { parentElement: window.document.body })
+    .add(ParentElement, { parentElement: parentElement ?? window.document.body })
     .add(History, window.history)
     .add(Location, window.location)
     .add(Navigator, window.navigator)

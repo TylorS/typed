@@ -2,9 +2,10 @@
 
 import { pipe } from '@fp-ts/data/Function'
 import { Tag } from '@typed/context/index.js'
+import { provideBrowserIntrinsics } from '@typed/framework/provideIntrinsics.js'
 
 import * as Fx from '@typed/fx/index.js'
-import { runBrowser, html } from '@typed/html/index.js'
+import { html, renderInto } from '@typed/html/index.js'
 
 import.meta.env
 
@@ -30,4 +31,10 @@ const Counter = Fx.gen(function* ($) {
   `
 })
 
-pipe(Counter, runBrowser(document.body), Example.provideFx({ name: 'Counter' }), Fx.unsafeRunAsync)
+pipe(
+  Counter,
+  renderInto(document.body),
+  Example.provideFx({ name: 'Counter' }),
+  provideBrowserIntrinsics(window),
+  Fx.unsafeRunAsync,
+)

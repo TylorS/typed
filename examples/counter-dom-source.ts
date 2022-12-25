@@ -1,7 +1,8 @@
 import { pipe } from '@fp-ts/data/Function'
+import { provideBrowserIntrinsics } from '@typed/framework/provideIntrinsics.js'
 
 import * as Fx from '@typed/fx/index.js'
-import { makeElementRef, html, runBrowser } from '@typed/html/index.js'
+import { makeElementRef, html, renderInto } from '@typed/html/index.js'
 
 const Counter = Fx.gen(function* ($) {
   // An ElementRef is a special type of RefSubject which can be passed to the `ref` attribute of
@@ -24,4 +25,4 @@ const Counter = Fx.gen(function* ($) {
   </div>`
 })
 
-pipe(Counter, runBrowser(document.body), Fx.unsafeRunAsync)
+pipe(Counter, renderInto(document.body), provideBrowserIntrinsics(window), Fx.unsafeRunAsync)

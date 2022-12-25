@@ -13,7 +13,7 @@ import * as Tag from './Effect.js'
 
 // Tag functions which only accept and return Fx
 
-export function html<Values extends Array<Placeholder<any> | undefined | null>>(
+export function html<Values extends Array<Placeholder<any, any> | undefined | null>>(
   template: TemplateStringsArray,
   ...values: Values
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
@@ -36,7 +36,7 @@ export function html<Values extends Array<Placeholder<any> | undefined | null>>(
   )
 }
 
-html.node = <Values extends ReadonlyArray<Placeholder<any> | undefined | null>>(
+html.node = <Values extends ReadonlyArray<Placeholder<any, any> | undefined | null>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -64,7 +64,7 @@ html.node = <Values extends ReadonlyArray<Placeholder<any> | undefined | null>>(
 
 html.effect = Tag.html
 
-export function svg<Values extends ReadonlyArray<Placeholder<any> | undefined | null>>(
+export function svg<Values extends ReadonlyArray<Placeholder<any, any> | undefined | null>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
@@ -87,7 +87,7 @@ export function svg<Values extends ReadonlyArray<Placeholder<any> | undefined | 
   )
 }
 
-svg.node = <Values extends ReadonlyArray<Placeholder<any> | undefined | null>>(
+svg.node = <Values extends ReadonlyArray<Placeholder<any, any> | undefined | null>>(
   template: TemplateStringsArray,
   ...values: [...Values]
 ): Fx.Fx<
@@ -110,7 +110,7 @@ svg.node = <Values extends ReadonlyArray<Placeholder<any> | undefined | null>>(
 
 svg.effect = Tag.svg
 
-function unwrapFxValues<Values extends Array<Placeholder<any> | undefined | null>>(
+function unwrapFxValues<Values extends Array<Placeholder<any, any> | undefined | null>>(
   template: TemplateStringsArray,
   values: Values,
 ): Fx.Fx<
@@ -130,7 +130,7 @@ function unwrapFxValues<Values extends Array<Placeholder<any> | undefined | null
 
 function unwrapFxValue(
   template: TemplateStringsArray,
-  value: Placeholder<any> | undefined | null,
+  value: Placeholder<any, any> | undefined | null,
   index: number,
   sampling: Fx.Subject<never, void>,
 ): Fx.Fx<any, any, any> {
