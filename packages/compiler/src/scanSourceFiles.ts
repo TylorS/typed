@@ -234,8 +234,9 @@ function typeIsFx(type: Type) {
 }
 
 function typeIsLayer(type: Type) {
-  // TODO: Needs drastic improvements
-  return !!type.getProperty('build')
+  return type.getProperties().some((s) => {
+    return s.getValueDeclarationOrThrow().getSourceFile().getFilePath().includes('@effect/io/Layer')
+  })
 }
 
 function typeIsContext(type: Type) {

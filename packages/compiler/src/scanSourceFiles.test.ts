@@ -21,7 +21,7 @@ describe(import.meta.url, () => {
         ['Layout/Basic', join(examplesDirectory, 'pages/layout.ts')],
         ['Fallback/Basic', join(examplesDirectory, 'pages/fallback.ts')],
         ['Render/Basic', join(examplesDirectory, 'pages/home.ts')],
-        ['Render/Basic', join(examplesDirectory, 'pages/bar/bar.ts')],
+        ['Render/Environment', join(examplesDirectory, 'pages/bar/bar.ts')],
         ['Render/Basic', join(examplesDirectory, 'pages/foo/foo.ts')],
       ]
 

@@ -11,6 +11,7 @@ import * as typedModule0 from './pages/layout.js'
 
 import * as Fx from '@typed/fx/index.js'
 import { renderInto } from '@typed/html/index.js'
+import * as Route from '@typed/route/index.js'
 
 const parentElementId = 'application'
 const parentElement = document.getElementById(parentElementId)
@@ -21,7 +22,11 @@ if (!parentElement) {
 
 const matcher = buildModules([
   Module.make(typedModule2.route, () => typedModule2.main, { layout: typedModule0.layout }),
-  Module.make(typedModule3.route, typedModule3.main, { layout: typedModule3.layout }),
+  Module.make(
+    F.pipe(typedModule3.route, Route.provideLayer(typedModule3.environment)),
+    F.flow(typedModule3.main, Fx.provideSomeLayer(typedModule3.environment)),
+    { layout: typedModule0.layout },
+  ),
   Module.make(typedModule4.route, typedModule4.main, { layout: typedModule0.layout }),
 ])
 const main = matcher.notFound(typedModule1.fallback, { layout: typedModule0.layout })
