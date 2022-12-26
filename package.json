@@ -25,6 +25,7 @@
     "update": "pnpm run update:rootTsconfig && pnpm run update:packages",
     "update:packages": "tsx ./tools/updatePackages.ts",
     "update:rootTsconfig": "tsx ./tools/updateRootTsconfig.ts",
+    "compiler:build-browser": "node --loader @esbuild-kit/esm-loader ./packages/compiler/src/cli.ts --directory examples --environment browser --out examples/compiler-test.ts",
     "perf:fibanocci": "ESBK_TSCONFIG_PATH=./perf/tsconfig.json ESBK_DISABLE_CACHE=1 node --loader @esbuild-kit/esm-loader perf/cases/fibanocci.ts",
     "perf:filter-map-reduce": "ESBK_TSCONFIG_PATH=./perf/tsconfig.json ESBK_DISABLE_CACHE=1 node --loader @esbuild-kit/esm-loader perf/cases/filter-map-reduce.ts",
     "~~NEEDS POSITIONAL COMMAND LINE ARGUMENT~~": "",
@@ -42,7 +43,8 @@
     "path-to-regexp": "^6.2.1",
     "ts-toolbelt": "^9.6.0",
     "typed-query-selector": "^2.8.0",
-    "udomdiff": "^1.1.0"
+    "udomdiff": "^1.1.0",
+    "yargs": "^17.6.2"
   },
   "peerDependencies": {
     "tslib": "^2.4.1"
@@ -59,6 +61,7 @@
     "@nrwl/workspace": "^15.3.3",
     "@types/express": "^4.17.15",
     "@types/node": "^18.11.17",
+    "@types/yargs": "^17.0.17",
     "@typescript-eslint/eslint-plugin": "^5.47.0",
     "@typescript-eslint/parser": "^5.47.0",
     "@vitest/coverage-c8": "^0.26.2",

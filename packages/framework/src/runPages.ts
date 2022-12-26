@@ -58,7 +58,6 @@ function isModuleLike(u: unknown): u is ModuleLike {
 interface ModuleLike {
   readonly route: unknown
   readonly main?: unknown
-  readonly render?: unknown
   readonly environment?: unknown
   readonly layout?: unknown
 }
@@ -70,7 +69,7 @@ function toModule(moduleLike: ModuleLike): Mutable<Module<IntrinsicServices, str
 
   const mod: Mutable<Module<IntrinsicServices, string>> = {
     route: moduleLike.route as Module<IntrinsicServices, string>['route'],
-    main: toMain(moduleLike.main || moduleLike.render, moduleLike.environment) as Module<
+    main: toMain(moduleLike.main, moduleLike.environment) as Module<
       IntrinsicServices,
       string
     >['main'],
@@ -115,7 +114,6 @@ function toRedirectFallback(fallbackLike: RedirectFallbackLike): RedirectFallbac
 }
 
 interface RenderableFallbackLike {
-  readonly main?: unknown
   readonly fallback?: unknown
   readonly environment?: unknown
 }
@@ -124,8 +122,8 @@ function toRenderableFallback(
   fallbackLike: RenderableFallbackLike,
   layout?: Module.Meta['layout'],
 ): RenderableFallback {
-  const main = fallbackLike.main || fallbackLike.fallback
-  const render = toMain(main, fallbackLike.environment) as any as RenderableFallback['fallback']
+  const fallback = fallbackLike.fallback
+  const render = toMain(fallback, fallbackLike.environment) as any as RenderableFallback['fallback']
 
   if (layout) {
     return RenderableFallback((path) =>

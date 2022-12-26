@@ -7,6 +7,7 @@ import { Redirect, RouteMatcher } from '@typed/router'
 
 import { IntrinsicServices } from './IntrinsicServices.js'
 import { Module } from './Module.js'
+import { isFallbackFileName, isLayoutFileName } from './fileNames.js'
 
 export type Modules = ReadonlyArray<Module<never, any> | Module<any, any>>
 
@@ -74,6 +75,10 @@ export function pathCardinality(a: string, b: string): number {
   // Root route should always go to the end
   if (a === '/') return 1
   if (b === '/') return -1
+
+  // Fallback/Layout should be processed first
+  if (isFallbackFileName(a) || isLayoutFileName(a)) return -1
+  if (isFallbackFileName(b) || isLayoutFileName(b)) return 1
 
   const aLength = pathLength(a)
   const bLength = pathLength(b)
