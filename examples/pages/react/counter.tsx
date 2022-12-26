@@ -12,6 +12,7 @@ export const route = Route('/react/:counter')
 
 export const main = Main.make(route)((params) =>
   Fx.gen(function* ($) {
+    // TODO: Is there a way to make this work without creating a wrapper element?
     const container = yield* $(createElement('div'))
     const root = createRoot(container)
 
