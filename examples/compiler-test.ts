@@ -24,7 +24,7 @@ const matcher = buildModules([
   Module.make(typedModule3.route, typedModule3.main, { layout: typedModule3.layout }),
   Module.make(typedModule4.route, typedModule4.main, { layout: typedModule0.layout }),
 ])
-const main = matcher.notFound(typedModule1.fallback)
+const main = matcher.notFound(typedModule1.fallback, { layout: typedModule0.layout })
 
 const program = F.pipe(
   main,

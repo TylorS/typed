@@ -11,7 +11,7 @@ import * as Path from '@typed/path'
 import * as Route from '@typed/route'
 
 import { RouteMatch } from './RouteMatch.js'
-import { Redirect, redirectTo, Router } from './router.js'
+import { currentPath, Redirect, redirectTo, Router } from './router.js'
 
 export interface RouteMatcher<R = never, E = never> {
   // Where things are actually stored immutably
@@ -56,13 +56,15 @@ export interface RouteMatcher<R = never, E = never> {
   // Runners that turn a RouterMatcher back into an Fx.
   // Error handling should be handled after converting to an Fx for maximum flexibility.
 
-  readonly notFound: <R2, E2>(
+  readonly notFound: <R2, E2, R3 = never, E3 = never>(
     f: (path: string) => Fx.Fx<R2, E2, html.Renderable>,
-  ) => Fx.Fx<Router | R | R2, Exclude<E | E2, Redirect>, html.Renderable>
+    options?: FallbackOptions<R3, E3>,
+  ) => Fx.Fx<Router | R | R2 | R3, Exclude<E | E2 | E3, Redirect>, html.Renderable>
 
-  readonly notFoundEffect: <R2, E2>(
+  readonly notFoundEffect: <R2, E2, R3 = never, E3 = never>(
     f: (path: string) => Effect.Effect<R2, E2, html.Renderable>,
-  ) => Fx.Fx<Router | R | R2, Exclude<E | E2, Redirect>, html.Renderable>
+    options?: FallbackOptions<R3, E3>,
+  ) => Fx.Fx<Router | R | R2 | R3, Exclude<E | E2 | E3, Redirect>, html.Renderable>
 
   readonly redirectTo: <R2, P extends string>(
     route: Route.Route<R2, P>,
@@ -76,6 +78,10 @@ export interface RouteMatcher<R = never, E = never> {
    * @internal
    */
   readonly run: Fx.Fx<Router | R, Exclude<E, Redirect>, html.Renderable | null>
+}
+
+export interface FallbackOptions<R, E> {
+  readonly layout?: Fx.Fx<R, E, html.Renderable>
 }
 
 export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteMatcher<R, E> {
@@ -105,12 +111,18 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
       ),
     provideLayer: (layer) =>
       RouteMatcher(new Map(Array.from(routes).map(([k, v]) => [k, v.provideLayer(layer)]))),
-    notFound: <R2, E2>(f: (path: string) => Fx.Fx<R2, E2, html.Renderable>) =>
+    notFound: <R2, E2, R3, E3>(
+      f: (path: string) => Fx.Fx<R2, E2, html.Renderable>,
+      options?: FallbackOptions<R3, E3>,
+    ) =>
       Router.withFx((router) => {
         // Create stable references to the route matchers
         const matchers = Array.from(routes.values()).map(
           (v) => [v, runRouteMatch(router, v)] as const,
         )
+
+        const renderFallback = pipe(currentPath, Fx.switchMap(f))
+        const fallbackMatch = RouteMatch(Route.base, () => renderFallback, options?.layout)
 
         let previousFiber: Fiber.RuntimeFiber<any, any> | undefined
         let previousLayout: Fx.Fx<any, any, html.Renderable> | undefined
@@ -180,18 +192,7 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
               }
 
               // If we didn't find a match, render the not found page
-
-              // cleanup any fiber
-              if (previousFiber) {
-                yield* $(Fiber.interrupt(previousFiber))
-              }
-
-              // Cleanup
-              previousFiber = undefined
-              previousLayout = undefined
-              previousRender = undefined
-
-              return Option.some(f(path))
+              return yield* $(verifyShouldRerender(fallbackMatch, renderFallback))
             }),
           ),
           Fx.compact,

@@ -1,4 +1,3 @@
-import { forkScoped } from '@effect/io/Effect'
 import { isLayer } from '@effect/io/Layer'
 import { isContext } from '@fp-ts/data/Context'
 import { constant, flow, pipe } from '@fp-ts/data/Function'
@@ -48,7 +47,7 @@ function runPageLikeMatchers(
 
   return fallback.type === 'Redirect'
     ? m.redirectTo(fallback.route, fallback.params)
-    : m.notFound(fallback.fallback)
+    : m.notFound(fallback.fallback, { layout: fallback.layout })
 }
 
 function isModuleLike(u: unknown): u is ModuleLike {
@@ -125,19 +124,7 @@ function toRenderableFallback(
   const fallback = fallbackLike.fallback
   const render = toMain(fallback, fallbackLike.environment) as any as RenderableFallback['fallback']
 
-  if (layout) {
-    return RenderableFallback((path) =>
-      Fx.gen(function* ($) {
-        const { outlet } = yield* $(Router.Router.get)
-
-        yield* $(pipe(render(path), Fx.observe(outlet.set), forkScoped))
-
-        return layout
-      }),
-    )
-  }
-
-  return RenderableFallback(render)
+  return RenderableFallback(render, layout)
 }
 
 function toMain<R extends Route<any, any>>(main: unknown, environment?: unknown) {

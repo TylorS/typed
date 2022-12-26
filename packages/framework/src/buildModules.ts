@@ -16,14 +16,17 @@ export type Fallback = RenderableFallback | RedirectFallback<any>
 export interface RenderableFallback {
   readonly type: 'Renderable'
   readonly fallback: (path: string) => Fx<IntrinsicServices, Router.Redirect, Renderable>
+  readonly layout?: Fx<IntrinsicServices, Router.Redirect, Renderable>
 }
 
 export function RenderableFallback(
   fallback: (path: string) => Fx<IntrinsicServices, Router.Redirect, Renderable>,
+  layout?: Fx<IntrinsicServices, Router.Redirect, Renderable>,
 ): RenderableFallback {
   return {
     type: 'Renderable',
     fallback,
+    layout,
   }
 }
 
@@ -72,13 +75,17 @@ function orderModulesByRoute(modules: Modules): Modules {
 }
 
 export function pathCardinality(a: string, b: string): number {
+  // Layout should be processed first
+  if (isLayoutFileName(a)) return -1
+  if (isLayoutFileName(b)) return 1
+
+  // Fallback should be processed second
+  if (isFallbackFileName(a)) return -1
+  if (isFallbackFileName(b)) return 1
+
   // Root route should always go to the end
   if (a === '/') return 1
   if (b === '/') return -1
-
-  // Fallback/Layout should be processed first
-  if (isFallbackFileName(a) || isLayoutFileName(a)) return -1
-  if (isFallbackFileName(b) || isLayoutFileName(b)) return 1
 
   const aLength = pathLength(a)
   const bLength = pathLength(b)

@@ -61,7 +61,7 @@ function buildImportsAndModules(sourceFileModules: SourceFileModule[], relativeP
   const modules: string[] = []
 
   let layout: [LayoutSourceFileModule, string] | undefined
-  let fallback: [FallbackSourceFileModule | RedirectSourceFileModule, string] | undefined
+  let fallback: [FallbackSourceFileModule | RedirectSourceFileModule, string, string?] | undefined
 
   for (const mod of sourceFileModules) {
     const id = _id++
@@ -81,7 +81,7 @@ function buildImportsAndModules(sourceFileModules: SourceFileModule[], relativeP
       case 'Fallback/Basic':
       case 'Fallback/Environment': {
         if (!fallback) {
-          fallback = [mod, moduleName]
+          fallback = [mod, moduleName, layout?.[1]]
         } else {
           throw new Error('Only one root-level fallback module is allowed')
         }
@@ -124,26 +124,26 @@ function buildImportsAndModules(sourceFileModules: SourceFileModule[], relativeP
   return [imports, modules, fallback] as const
 }
 
-function runMatcherWithFallback([fallback, fallbackModuleName]: [
+function runMatcherWithFallback([fallback, fallbackModuleName, layoutModule]: [
   FallbackSourceFileModule | RedirectSourceFileModule,
   string,
+  string?,
 ]) {
   switch (fallback._tag) {
     case 'Redirect/Basic':
       return `matcher.redirectTo(${fallbackModuleName}.route, ${fallbackModuleName}?.params ?? {})`
-    case 'Redirect/Environment': {
+    case 'Redirect/Environment':
       return `matcher.redirectTo(${fallbackModuleName}.route.provideLayer(${fallbackModuleName}.environment), ${fallbackModuleName}?.params ?? {})`
-    }
+
     case 'Fallback/Basic':
       return `matcher.notFound(${
         fallback.isFx ? `() => ${fallbackModuleName}.fallback` : `${fallbackModuleName}.fallback`
-      })`
-    case 'Fallback/Environment': {
+      }${layoutModule ? `, {layout:${layoutModule}.layout}` : ``})`
+    case 'Fallback/Environment':
       return `matcher.notFound(${
         fallback.isFx
           ? `() => F.pipe(${fallbackModuleName}.fallback, Fx.provideSomeLayer(${fallbackModuleName}.environment))`
           : `F.flow(${fallbackModuleName}.fallback, Fx.provideSomeLayer(${fallbackModuleName}.environment))`
-      })`
-    }
+      }${layoutModule ? `, {layout:${layoutModule}.layout}` : ``})`
   }
 }
