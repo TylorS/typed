@@ -292,8 +292,6 @@ function shouldInterceptLinkClick(location: Location) {
     // Attempt to find an anchor element
     const target = findAnchorElement(ev)
 
-    console.log(target)
-
     if (!target) return false
 
     // Link Filtering
