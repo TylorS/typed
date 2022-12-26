@@ -8,6 +8,7 @@ import * as typedModule1 from './pages/fallback.js'
 import * as typedModule4 from './pages/foo/foo.js'
 import * as typedModule2 from './pages/home.js'
 import * as typedModule0 from './pages/layout.js'
+import * as typedModule5 from './pages/react/counter.jsx'
 
 import * as Fx from '@typed/fx/index.js'
 import { renderInto } from '@typed/html/index.js'
@@ -25,9 +26,10 @@ const matcher = buildModules([
   Module.make(
     F.pipe(typedModule3.route, Route.provideLayer(typedModule3.environment)),
     F.flow(typedModule3.main, Fx.provideSomeLayer(typedModule3.environment)),
-    { layout: typedModule0.layout },
+    { layout: typedModule3.layout },
   ),
   Module.make(typedModule4.route, typedModule4.main, { layout: typedModule0.layout }),
+  Module.make(typedModule5.route, typedModule5.main, { layout: typedModule0.layout }),
 ])
 const main = matcher.notFound(typedModule1.fallback, { layout: typedModule0.layout })
 

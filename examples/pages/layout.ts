@@ -18,6 +18,8 @@ export const layout = html`<div>
       <li><a href="/foo/2">Foo 2</a></li>
       <li><a href="/bar/1">Bar 1</a></li>
       <li><a href="/bar/2">Bar 2</a></li>
+      <li><a href="/react/foo">React Foo</a></li>
+      <li><a href="/react/bar">React Bar</a></li>
       <li><a href="/broken-link">Broken</a></li>
     </ul>
   </nav>

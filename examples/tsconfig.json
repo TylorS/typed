@@ -5,6 +5,7 @@
     "rootDir": "..",
     "baseUrl": ".",
     "isolatedModules": false,
+    "jsx": "react-jsx",
     "paths": {
       "@typed/context/*": [
         "../packages/context/dist/*"

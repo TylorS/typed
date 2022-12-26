@@ -14,7 +14,7 @@ import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
 import { Wire, persistent } from './Wire.js'
 
-export type Renderable = Placeholder | Node | null | undefined
+export type Renderable = Placeholder | Node | null | undefined | ReadonlyArray<Renderable>
 
 export function renderIn<T extends DocumentFragment | HTMLElement>(where: T) {
   return <R, E>(fx: Fx.Fx<R, E, Renderable>): Fx.Fx<R | Document | RenderContext, E, T> => {

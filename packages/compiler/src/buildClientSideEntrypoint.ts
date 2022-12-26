@@ -120,7 +120,11 @@ function buildImportsAndModules(sourceFileModules: SourceFileModule[], relativeP
           `Module.make(F.pipe(${moduleName}.route, Route.provideLayer(${moduleName}.environment)), F.flow(${
             mod.isFx ? `() => ${moduleName}.main` : `${moduleName}.main`
           }, Fx.provideSomeLayer(${moduleName}.environment)), ${
-            layout ? ` { layout: ${layout[1]}.layout }` : ''
+            mod.hasLayout
+              ? `{ layout: ${moduleName}.layout }`
+              : layout
+              ? ` { layout: ${layout[1]}.layout }`
+              : ''
           })`,
         )
         continue

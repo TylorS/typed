@@ -11,9 +11,13 @@ if (!parentElement) {
   throw new Error(`Could not find element with id "${parentElementId}"`)
 }
 
+const pages = import.meta.glob('./pages/**/*', { eager: true })
+
+console.log(pages)
+
 const main = pipe(
   // Import all page modules to instantiate routes
-  runPages(import.meta.glob('./pages/**/*', { eager: true })),
+  runPages(pages),
   // Render application into the DOM
   renderInto(parentElement),
   // Provide all the framework-level services
