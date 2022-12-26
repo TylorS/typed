@@ -53,8 +53,6 @@ document.addEventListener('DOMContentLoaded', () => Fx.unsafeRunAsync(program))
     { overwrite: true },
   )
 
-  console.log(entrypoint.getFullText())
-
   const diagnostics = entrypoint.getPreEmitDiagnostics()
 
   if (diagnostics.length > 0) {
