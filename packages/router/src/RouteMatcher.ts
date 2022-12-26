@@ -182,18 +182,22 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
           Fx.skipRepeats,
           Fx.switchMapEffect((path) =>
             Effect.gen(function* ($) {
-              console.log('Matching against', path, '...')
+              yield* $(Effect.logDebug(`[@typed/router] Matching path: ${path}.`))
+
               // Attempt to find the best match
               for (const [match, render] of matchers) {
-                console.log('matching', match.route.path)
+                yield* $(Effect.logDebug(`[@typed/router] Matching against: ${match.route.path}.`))
+
                 const result = yield* $(match.route.match(path))
 
                 if (Option.isSome(result)) {
-                  console.log('matched', match.route.path)
+                  yield* $(Effect.logDebug(`[@typed/router] Matched against: ${match.route.path}.`))
 
                   return yield* $(verifyShouldRerender(match, render))
                 }
               }
+
+              yield* $(Effect.logDebug(`[@typed/router] Rendering fallback.`))
 
               // If we didn't find a match, render the not found page
               return yield* $(verifyShouldRerender(fallbackMatch, renderFallback))
