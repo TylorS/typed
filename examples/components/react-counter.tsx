@@ -9,8 +9,8 @@ export const Counter = (props: CounterProps) => {
 
   return (
     <div>
-      <button onClick={() => setCount(count + 1)}>Incrrement</button>
       <button onClick={() => setCount(count - 1)}>Decrement</button>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
 
       <p>
         {props.name}: {count}
