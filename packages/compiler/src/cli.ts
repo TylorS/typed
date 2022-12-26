@@ -41,11 +41,12 @@ if (environment !== 'browser') {
 }
 
 const dir = resolve(cwd, directory)
+const outFile = resolve(cwd, out)
 const project = setupTsProject(resolve(dir, tsConfig))
 const scanned = scanSourceFiles(
   modules.map((m) => resolve(dir, m)),
   project,
 )
-const entrypoint = buildClientSideEntrypoint(scanned, project)
+const entrypoint = buildClientSideEntrypoint(scanned, project, outFile)
 
-writeFileSync(resolve(cwd, out), entrypoint.getFullText() + EOL)
+writeFileSync(outFile, entrypoint.getFullText() + EOL)
