@@ -73,12 +73,12 @@ export interface RouteMatcher<R = never, E = never> {
       ? // eslint-disable-next-line @typescript-eslint/ban-types
         [{}?]
       : [(path: string) => Path.ParamsOf<P>]
-  ) => Fx.Fx<Router | R | R2, Exclude<E, Redirect>, html.Renderable>
+  ) => Fx.Fx<Router | R | R2, E | Redirect, html.Renderable>
 
   /**
    * @internal
    */
-  readonly run: Fx.Fx<Router | R, Exclude<E, Redirect>, html.Renderable | null>
+  readonly run: Fx.Fx<Router | R, E | Redirect, html.Renderable | null>
 }
 
 export interface FallbackOptions<R, E> {
@@ -213,18 +213,6 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
             Fx.compact,
             Fx.skipRepeats, // Stable render references are used to avoid mounting the same component twice
             Fx.switchLatest,
-            Fx.switchMapError((error) => {
-              // Intercept redirect requests and update the router
-              if (Redirect.is(error)) {
-                return pipe(
-                  router.currentPath.set(error.path),
-                  Fx.fromEffect,
-                  Fx.flatMap(() => Fx.never),
-                )
-              }
-
-              return Fx.fail(error as Exclude<E | E2, Redirect>)
-            }),
           )
         }),
       ),

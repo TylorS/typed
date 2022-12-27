@@ -5,6 +5,7 @@ import * as Fx from '@typed/fx'
 import { Environment, Renderable, RenderContext } from '@typed/html'
 import { Route } from '@typed/route'
 import * as Router from '@typed/router'
+import { Redirect } from '@typed/router'
 
 import { IntrinsicServices } from './IntrinsicServices.js'
 import { Module, Main } from './Module.js'
@@ -27,7 +28,7 @@ const layoutRegex = /layout\.(ts|js)x?$/
  */
 export function runPages(
   pages: Record<string, unknown>,
-): Fx.Fx<IntrinsicServices, never, Renderable> {
+): Fx.Fx<IntrinsicServices, Redirect, Renderable> {
   return Fx.gen(function* ($) {
     const { environment } = yield* $(RenderContext.get)
 
@@ -43,7 +44,7 @@ export function runPages(
 function runPageLikeMatchers(
   matcher: PageLikeMatcher,
   environment: Environment,
-): Fx.Fx<IntrinsicServices | Router.Router, never, Renderable> {
+): Fx.Fx<IntrinsicServices | Router.Router, Redirect, Renderable> {
   const [m, fallback] = matcher
 
   if (!fallback) {

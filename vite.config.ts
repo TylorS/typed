@@ -6,7 +6,7 @@ import vavite from 'vavite'
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
-export default defineConfig(() => ({
+export default defineConfig(({ command }) => ({
   buildSteps: [
     {
       name: 'client',
@@ -33,7 +33,7 @@ export default defineConfig(() => ({
       projects: [join(__dirname, 'example', 'tsconfig.json')],
     }),
     vavite({
-      serverEntry: './example/server.ts',
+      serverEntry: command === 'serve' ? './server.ts' : './example/server.ts',
       serveClientAssetsInDev: true,
       // Don't reload when dynamically imported dependencies change
       reloadOn: 'static-deps-change',

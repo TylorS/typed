@@ -4,16 +4,19 @@ import { readFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
+import * as Cause from '@effect/io/Cause'
+import * as Exit from '@effect/io/Exit'
+import { either } from '@fp-ts/data'
 import { pipe } from '@fp-ts/data/function'
 import { makeServerWindowFromExpress, html5Doctype } from '@typed/compiler/index.js'
 import { runPages, provideServerIntrinsics } from '@typed/framework/index.js'
 import express from 'express'
 import isbot from 'isbot'
 import httpDevServer from 'vavite/http-dev-server'
-import viteDevServer from 'vavite/vite-dev-server'
 
 import * as Fx from '@typed/fx/index.js'
 import { renderInto } from '@typed/html/index.js'
+import { Redirect } from '@typed/router/router.js'
 
 const app = express()
 
@@ -24,6 +27,7 @@ if (import.meta.env.PROD) {
 }
 
 const pages = import.meta.glob('./pages/**/*', { eager: true })
+const main = runPages(pages)
 
 const directory = dirname(fileURLToPath(import.meta.url))
 
@@ -35,8 +39,9 @@ const indexHtml: string = (
   .replace(/<html.+>/, '')
   .replace('</html>', '')
 
+const prettyPrintCause = Cause.pretty()
+
 app.use(async (req, res, next) => {
-  console.time('request')
   const window = makeServerWindowFromExpress(req)
   const documentElement = window.document.documentElement
 
@@ -46,26 +51,29 @@ app.use(async (req, res, next) => {
   const application = window.document.getElementById('application')!
 
   try {
-    await pipe(
-      runPages(pages),
+    const exit: Exit.Exit<Redirect, void> = await pipe(
+      main,
       renderInto(application),
       provideServerIntrinsics(window, window, {
         parentElement: application,
         isBot: isbot(req.get('user-agent') ?? ''),
       }),
-      Fx.unsafeRunPromise,
+      Fx.unsafeRunPromiseExit,
     )
 
-    let html = html5Doctype + documentElement.outerHTML
-
-    if (viteDevServer) {
-      html = await viteDevServer.transformIndexHtml(req.url, html)
+    if (Exit.isFailure(exit)) {
+      return pipe(
+        Cause.failureOrCause(exit.cause),
+        either.match(
+          (redirect) => res.redirect(redirect.path),
+          (error) => next(new Error(prettyPrintCause(error))),
+        ),
+      )
     }
 
-    res.status(200).end(html)
-    console.timeEnd('request')
+    return res.status(200).send(html5Doctype + documentElement.outerHTML)
   } catch (e) {
-    next(e)
+    return next(e)
   }
 })
 

@@ -1,10 +1,12 @@
-import { pipe } from '@fp-ts/data/Function'
+import * as Effect from '@effect/io/Effect'
+import { flow, pipe } from '@fp-ts/data/Function'
 import { makeDomServices } from '@typed/dom/DomServices'
 import { GlobalThis } from '@typed/dom/GlobalThis'
 import { Window } from '@typed/dom/Window'
 import * as Fx from '@typed/fx'
 import { Environment, RenderContext } from '@typed/html'
 import * as Router from '@typed/router'
+import { Redirect } from '@typed/router'
 
 import { IntrinsicServices } from './IntrinsicServices.js'
 
@@ -35,8 +37,23 @@ export type IntrinsicOptions = {
   readonly isBot?: boolean
 }
 
-export function provideBrowserIntrinsics(window: Window & GlobalThis, options?: IntrinsicOptions) {
-  return provideIntrinsics({ ...options, environment: 'browser', window, globalThis: window })
+export function provideBrowserIntrinsics(
+  window: Window & GlobalThis,
+  options?: IntrinsicOptions,
+): <E, A>(fx: Fx.Fx<IntrinsicServices, E, A>) => Fx.Fx<never, Exclude<E, Redirect>, A> {
+  return flow(
+    provideIntrinsics({ ...options, environment: 'browser', window, globalThis: window }),
+    Fx.switchMapErrorEffect((e) => {
+      if (Redirect.is(e)) {
+        return pipe(
+          Effect.sync(() => window.history.pushState(null, '', e.path)),
+          Effect.flatMap(Effect.never),
+        )
+      }
+
+      return Effect.fail(e as Exclude<typeof e, Redirect>)
+    }),
+  )
 }
 
 export function provideServerIntrinsics(
