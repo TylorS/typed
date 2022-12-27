@@ -87,6 +87,7 @@ app.use(async (req, res, next) => {
 if (httpDevServer) {
   httpDevServer.on('request', app)
 } else {
-  console.log('Starting prod server')
-  app.listen(3000)
+  app.listen(3000, () => {
+    console.log('Starting prod server on port 3000')
+  })
 }
