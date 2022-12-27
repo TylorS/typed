@@ -12,6 +12,7 @@ import { pipe } from '@fp-ts/data/function'
 import { makeServerWindowFromExpress, html5Doctype } from '@typed/compiler/index.js'
 import { runPages, provideServerIntrinsics } from '@typed/framework/index.js'
 import express from 'express'
+import expressStaticGzip from 'express-static-gzip'
 import isbot from 'isbot'
 import httpDevServer from 'vavite/http-dev-server'
 
@@ -23,10 +24,21 @@ const app = express()
 const directory = dirname(fileURLToPath(import.meta.url))
 const clientDirectory = import.meta.env.PROD ? join(directory, '../client') : directory
 
+const SECOND = 1000
+const MINUTE = 60 * SECOND
+const HOUR = 60 * MINUTE
+const DAY = 24 * HOUR
+
 if (import.meta.env.PROD) {
   // TODO: Handle mapping assets to a CDN in production
-  // eslint-disable-next-line import/no-named-as-default-member
-  app.use(express.static(clientDirectory))
+  app.use(
+    expressStaticGzip(clientDirectory, {
+      serveStatic: {
+        maxAge: DAY,
+        cacheControl: true,
+      },
+    }),
+  )
 }
 
 const pages = import.meta.glob('./pages/**/*', { eager: true })

@@ -4,6 +4,7 @@ import { join } from 'path'
 
 import vavite from 'vavite'
 import { defineConfig } from 'vite'
+import viteCompression from 'vite-plugin-compression'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig(({ command }) => ({
@@ -38,6 +39,7 @@ export default defineConfig(({ command }) => ({
       // Don't reload when dynamically imported dependencies change
       reloadOn: 'static-deps-change',
     }),
+    viteCompression(),
   ],
   build: {
     manifest: true,
