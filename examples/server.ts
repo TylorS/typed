@@ -48,10 +48,7 @@ app.use(async (req, res, next) => {
   }
 })
 
-app.use((_req, res) => {
-  console.error('error')
-  res.status(500).send('Internal Server Error')
-})
+app.use((_req, res) => res.status(500).send('Internal Server Error'))
 
 app.listen(3000, () => {
   console.log('Server listening on port 3000')
