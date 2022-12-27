@@ -27,5 +27,6 @@
     "@typed/fx": "workspace:*",
     "@fp-ts/schema": "~0.0.6",
     "typed-query-selector": "^2.8.0"
-  }
+  },
+  "devDependencies": {}
 }

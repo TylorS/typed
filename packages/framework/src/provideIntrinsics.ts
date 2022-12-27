@@ -8,24 +8,35 @@ import * as Router from '@typed/router'
 
 import { IntrinsicServices } from './IntrinsicServices.js'
 
-export function provideIntrinsics(environment: Environment, isBot?: boolean) {
-  return (window: Window, globalThis: GlobalThis, parentElement?: HTMLElement) =>
-    <E, A>(fx: Fx.Fx<IntrinsicServices, E, A>): Fx.Fx<never, E, A> =>
-      pipe(
-        fx,
-        Fx.provideSomeLayer(Router.live),
-        Fx.provideSomeEnvironment(makeDomServices(window, globalThis, parentElement)),
-        RenderContext.provideFx(RenderContext(environment, isBot)),
-      )
+export interface ProvideIntrinsicsOptions {
+  readonly environment: Environment
+  readonly window: Window
+  readonly globalThis: GlobalThis
+  readonly currentPath?: Fx.RefSubject<string>
+  readonly isBot?: boolean
+  readonly parentElement?: HTMLElement
+}
+
+export function provideIntrinsics(options: ProvideIntrinsicsOptions) {
+  return <E, A>(fx: Fx.Fx<IntrinsicServices, E, A>): Fx.Fx<never, E, A> =>
+    pipe(
+      fx,
+      Fx.provideSomeLayer(Router.live(options.currentPath)),
+      Fx.provideSomeEnvironment(
+        makeDomServices(options.window, options.globalThis, options.parentElement),
+      ),
+      RenderContext.provideFx(RenderContext(options.environment, options.isBot)),
+    )
 }
 
 export type IntrinsicOptions = {
+  readonly currentPath?: Fx.RefSubject<string>
   readonly parentElement?: HTMLElement
   readonly isBot?: boolean
 }
 
 export function provideBrowserIntrinsics(window: Window & GlobalThis, options?: IntrinsicOptions) {
-  return provideIntrinsics('browser', options?.isBot)(window, window, options?.parentElement)
+  return provideIntrinsics({ ...options, environment: 'browser', window, globalThis: window })
 }
 
 export function provideServerIntrinsics(
@@ -33,7 +44,7 @@ export function provideServerIntrinsics(
   globalThis: GlobalThis,
   options?: IntrinsicOptions,
 ) {
-  return provideIntrinsics('browser', options?.isBot)(window, globalThis, options?.parentElement)
+  return provideIntrinsics({ ...options, environment: 'server', window, globalThis })
 }
 
 export function provideStaticIntrinsics(
@@ -41,5 +52,5 @@ export function provideStaticIntrinsics(
   globalThis: GlobalThis,
   options?: IntrinsicOptions,
 ) {
-  return provideIntrinsics('static', options?.isBot)(window, globalThis, options?.parentElement)
+  return provideIntrinsics({ ...options, environment: 'static', window, globalThis })
 }

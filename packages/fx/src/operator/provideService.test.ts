@@ -21,7 +21,7 @@ describe(import.meta.url, () => {
           return serviceWith(Foo)(f)
         },
         provide(foo: number) {
-          return provideService(Foo, { foo })
+          return provideService(Foo)({ foo })
         },
       })
 

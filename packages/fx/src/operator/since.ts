@@ -2,7 +2,7 @@ import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
-import { catchEarlyExit, earlyExit } from '../_internal/earlyExit.js'
+import { withEarlyExit } from '../_internal/earlyExit.js'
 
 import { filter } from './filter.js'
 
@@ -27,8 +27,10 @@ class SinceFx<R, E, A, R2, E2, B>
 
         yield* $(
           pipe(
-            signal.run(Fx.Sink(() => earlyExit, sink.error, earlyExit)),
-            catchEarlyExit(Effect.sync(() => (shouldRun = true))),
+            withEarlyExit(
+              (earlyExit) => signal.run(Fx.Sink(() => earlyExit, sink.error, earlyExit)),
+              Effect.sync(() => (shouldRun = true)),
+            ),
             Effect.forkScoped,
           ),
         )

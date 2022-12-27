@@ -24,5 +24,6 @@
     "@effect/io": "~0.0.42",
     "@fp-ts/data": "~0.0.30",
     "@typed/fx": "workspace:*"
-  }
+  },
+  "devDependencies": {}
 }

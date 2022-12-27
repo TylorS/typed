@@ -2,7 +2,7 @@ import { isLayer } from '@effect/io/Layer'
 import { isContext } from '@fp-ts/data/Context'
 import { constant, flow, pipe } from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx'
-import { Renderable } from '@typed/html'
+import { Environment, Renderable, RenderContext } from '@typed/html'
 import { Route } from '@typed/route'
 import * as Router from '@typed/router'
 
@@ -28,16 +28,21 @@ const layoutRegex = /layout\.(ts|js)x?$/
 export function runPages(
   pages: Record<string, unknown>,
 ): Fx.Fx<IntrinsicServices, never, Renderable> {
-  const organized = organizePages(pages)
-  const matchers = Object.entries(organized).map(([directory, page]) =>
-    pageLikeToMatcher(directoryToPageLike(directory, page)),
-  )
+  return Fx.gen(function* ($) {
+    const { environment } = yield* $(RenderContext.get)
 
-  return Fx.mergeAll(...matchers.map(runPageLikeMatchers))
+    const organized = organizePages(pages)
+    const matchers = Object.entries(organized).map(([directory, page]) =>
+      pageLikeToMatcher(directoryToPageLike(directory, page), environment),
+    )
+
+    return Fx.mergeAll(...matchers.map((m) => runPageLikeMatchers(m, environment)))
+  })
 }
 
 function runPageLikeMatchers(
   matcher: PageLikeMatcher,
+  environment: Environment,
 ): Fx.Fx<IntrinsicServices | Router.Router, never, Renderable> {
   const [m, fallback] = matcher
 
@@ -47,7 +52,9 @@ function runPageLikeMatchers(
 
   return fallback.type === 'Redirect'
     ? m.redirectTo(fallback.route, fallback.params)
-    : m.notFound(fallback.fallback, { layout: fallback.layout })
+    : m.notFound(flow(fallback.fallback, Fx.take(environment === 'browser' ? Infinity : 1)), {
+        layout: fallback.layout,
+      })
 }
 
 function isModuleLike(u: unknown): u is ModuleLike {
@@ -209,10 +216,13 @@ type PageLikeMatcher = readonly [
 
 function pageLikeToMatcher(
   pageLike: PageLike,
+  environment: Environment,
   parentLayout?: Module.Meta['layout'],
 ): PageLikeMatcher {
-  const { modules, layout } = buildModulesWithLayout(pageLike, parentLayout)
-  const children = pageLike.children.flatMap((p) => buildModulesWithLayout(p, layout).modules)
+  const { modules, layout } = buildModulesWithLayout(pageLike, environment, parentLayout)
+  const children = pageLike.children.flatMap(
+    (p) => buildModulesWithLayout(p, environment, layout).modules,
+  )
   const matcher = buildModules([...modules, ...children])
 
   if (!pageLike.fallback) {
@@ -228,7 +238,11 @@ function pageLikeToMatcher(
   return [matcher, fallback]
 }
 
-function buildModulesWithLayout(pageLike: PageLike, parentLayout?: Module.Meta['layout']) {
+function buildModulesWithLayout(
+  pageLike: PageLike,
+  environment: Environment,
+  parentLayout?: Module.Meta['layout'],
+) {
   const layout = pageLike.layout ? toLayout(pageLike.layout) : parentLayout
 
   return {
@@ -236,7 +250,15 @@ function buildModulesWithLayout(pageLike: PageLike, parentLayout?: Module.Meta['
       const mod = toModule(m)
 
       if (layout && !mod.meta?.layout) {
-        mod.meta = { ...mod.meta, layout }
+        mod.meta = {
+          ...mod.meta,
+          layout: environment === 'server' ? pipe(layout, Fx.take(2)) : layout,
+        }
+      }
+
+      // Hack to get something working, TODO: Statically analyze routes to determine
+      if (environment === 'server') {
+        mod.main = flow(mod.main, Fx.take(1))
       }
 
       return mod

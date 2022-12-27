@@ -25,5 +25,6 @@
     "@fp-ts/data": "~0.0.30",
     "@effect/stm": "~0.0.5",
     "@fp-ts/core": "~0.0.11"
-  }
+  },
+  "devDependencies": {}
 }

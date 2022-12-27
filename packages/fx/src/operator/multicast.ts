@@ -48,8 +48,8 @@ export class MulticastFx<R, E, A>
 
       yield* $(Deferred.await(deferred))
 
-      if (observers.length === 0 && that.fiber) {
-        yield* $(Fiber.interrupt(that.fiber))
+      if (observers.length === 0) {
+        yield* $(that.cleanup())
       }
     })
   }

@@ -15,7 +15,13 @@ export default defineConfig({
       '@typed/router/*': './packages/router/dist/*',
     },
   },
-  plugins: [tsconfigPaths({ projects: ['tsconfig.json'] })],
+  plugins: [
+    tsconfigPaths({
+      projects: process.argv[1].includes('vite-node')
+        ? ['./examples/tsconfig.json']
+        : ['tsconfig.json'],
+    }),
+  ],
   build: {
     sourcemap: true,
   },

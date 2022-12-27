@@ -4,7 +4,7 @@ import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
 import { asap } from '../_internal/RefCounter.js'
-import { catchEarlyExit, earlyExit } from '../_internal/earlyExit.js'
+import { withEarlyExit } from '../_internal/earlyExit.js'
 
 import { filter } from './filter.js'
 
@@ -23,39 +23,40 @@ class DuringFx<R, E, A, R2, E2, R3, E3, B>
   run<R3>(sink: Fx.Sink<R3, E | E2, A>) {
     const { fx, signal } = this
 
-    return pipe(
-      Effect.gen(function* ($) {
-        let shouldRun = false
+    return withEarlyExit(
+      (earlyExit) =>
+        Effect.gen(function* ($) {
+          let shouldRun = false
 
-        const fiber = yield* $(
-          Effect.scheduleForked(asap)(
-            pipe(
-              fx,
-              filter(() => shouldRun),
-            ).run(sink),
-          ),
-        )
+          const fiber = yield* $(
+            Effect.scheduleForked(asap)(
+              pipe(
+                fx,
+                filter(() => shouldRun),
+              ).run(sink),
+            ),
+          )
 
-        const signalFiber = yield* $(
-          Effect.forkScoped(
-            signal.run(
-              Fx.Sink(
-                (endSignal) =>
-                  Effect.suspendSucceed(() => {
-                    shouldRun = true
+          const signalFiber = yield* $(
+            Effect.forkScoped(
+              signal.run(
+                Fx.Sink(
+                  (endSignal) =>
+                    Effect.suspendSucceed(() => {
+                      shouldRun = true
 
-                    return endSignal.run(Fx.Sink(() => earlyExit, sink.error, earlyExit))
-                  }),
-                sink.error,
-                earlyExit,
+                      return endSignal.run(Fx.Sink(() => earlyExit, sink.error, earlyExit))
+                    }),
+                  sink.error,
+                  earlyExit,
+                ),
               ),
             ),
-          ),
-        )
+          )
 
-        yield* $(Fiber.joinAll([fiber, signalFiber]))
-      }),
-      catchEarlyExit(sink.end),
+          yield* $(Fiber.joinAll([fiber, signalFiber]))
+        }),
+      sink.end,
     )
   }
 }

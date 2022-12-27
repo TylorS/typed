@@ -22,5 +22,6 @@
   },
   "dependencies": {
     "@fp-ts/data": "~0.0.30"
-  }
+  },
+  "devDependencies": {}
 }

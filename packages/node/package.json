@@ -20,5 +20,6 @@
       "types": "./dist/*.d.ts"
     }
   },
-  "dependencies": {}
+  "dependencies": {},
+  "devDependencies": {}
 }

@@ -26,6 +26,8 @@ const readJson = (path: string) => JSON.parse(fs.readFileSync(path, 'utf-8').toS
 
 const rootPackageJson = readJson(join(root, 'package.json'))
 
+const esmBultinModules = builtinModules.map((x) => `node:${x}`)
+
 for (const name of packageNames) {
   const packageDir = join(packagesDir, name)
   const srcDir = join(packageDir, 'src')
@@ -53,7 +55,11 @@ for (const name of packageNames) {
       const [orgName, packageName] = parsePackageName(importPath)
       const fullName = orgName ? `${orgName}/${packageName}` : packageName
 
-      if (packageName === name || builtinModules.includes(fullName)) {
+      if (
+        packageName === name ||
+        builtinModules.includes(fullName) ||
+        esmBultinModules.includes(fullName)
+      ) {
         continue
       }
 
@@ -66,22 +72,9 @@ for (const name of packageNames) {
   }
 
   packageJson.dependencies = {}
+  packageJson.devDependencies = {}
   for (const dependency of dependencies) {
-    const version = findRootPackageVersion(dependency)
-
-    if (version === null && !dependency.startsWith('@typed')) {
-      throw new Error(`Could not find package version for ${dependency} in package ${name}`)
-    }
-
-    if (version) {
-      const [versionString, depType] = version
-
-      if (depType === 'dep') {
-        packageJson.dependencies[dependency] = versionString
-      }
-    } else {
-      packageJson.dependencies[dependency] = 'workspace:*'
-    }
+    checkDependency(dependency, packageJson)
   }
 
   fs.writeFileSync(join(packageDir, 'package.json'), JSON.stringify(packageJson, null, 2) + EOL)
@@ -96,6 +89,36 @@ for (const name of packageNames) {
 }
 
 spawnSync('pnpm', ['install'], { stdio: 'inherit' })
+
+function checkDependency(dependency: string, packageJson: any) {
+  const version = findRootPackageVersion(dependency)
+
+  if (version === null && !dependency.startsWith('@typed')) {
+    throw new Error(
+      `Could not find package version for ${dependency} in package ${packageJson.name}`,
+    )
+  }
+
+  if (version) {
+    const [versionString, depType] = version
+
+    if (depType === 'dep') {
+      packageJson.dependencies[dependency] = versionString
+
+      const typesVersion = findRootPackageVersion(`@types/${dependency}`)
+
+      if (typesVersion) {
+        const [typesVersionString] = typesVersion
+
+        packageJson.devDependencies[`@types/${dependency}`] = typesVersionString
+      }
+    } else {
+      packageJson.devDependencies[dependency] = versionString
+    }
+  } else if (dependency.startsWith('@typed')) {
+    packageJson.dependencies[dependency] = 'workspace:*'
+  }
+}
 
 function getAllFilePaths(directory: string): readonly string[] {
   const files = fs.readdirSync(directory)

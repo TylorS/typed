@@ -168,70 +168,72 @@ redirectTo.fx = <R, P extends string>(
     Fx.switchMap(redirect.fx),
   )
 
-export const makeRouter: Effect.Effect<
-  Location | History | Window | Document | Scope.Scope,
-  never,
-  Router
-> = Effect.gen(function* ($) {
-  const history = yield* $(History.get)
-  const location = yield* $(Location.get)
-  const currentPath = yield* $(Fx.makeRef<string>(() => getCurrentPath(location)))
+export const makeRouter = (
+  currentPath?: Fx.RefSubject<string>,
+): Effect.Effect<Location | History | Window | Document | Scope.Scope, never, Router> =>
+  Effect.gen(function* ($) {
+    const history = yield* $(History.get)
+    const location = yield* $(Location.get)
 
-  // Patch history events to emit an event when the path changes
-  const historyEvents = yield* $(patchHistory)
+    if (!currentPath) {
+      currentPath = Fx.RefSubject.unsafeMake(() => getCurrentPath(location))
+    }
 
-  // Update the current path when events occur:
-  // - click
-  // - touchend
-  // - popstate
-  // - hashchange
-  // - history events
-  yield* $(
-    pipe(
-      Fx.mergeAll(
-        pipe(
-          addDocumentListener('click'),
-          Fx.merge(addDocumentListener('touchend')),
-          Fx.filter(shouldInterceptLinkClick(location)),
-          Fx.map((ev) => getCurrentPath(ev.target as HTMLAnchorElement)),
-        ),
-        pipe(
-          Fx.mergeAll(
-            addWindowListener('popstate'),
-            addWindowListener('hashchange'),
-            historyEvents,
+    // Patch history events to emit an event when the path changes
+    const historyEvents = yield* $(patchHistory)
+
+    // Update the current path when events occur:
+    // - click
+    // - touchend
+    // - popstate
+    // - hashchange
+    // - history events
+    yield* $(
+      pipe(
+        Fx.mergeAll(
+          pipe(
+            addDocumentListener('click'),
+            Fx.merge(addDocumentListener('touchend')),
+            Fx.filter(shouldInterceptLinkClick(location)),
+            Fx.map((ev) => getCurrentPath(ev.target as HTMLAnchorElement)),
           ),
-          Fx.debounce(Duration.millis(0)),
-          Fx.map(() => getCurrentPath(location)),
+          pipe(
+            Fx.mergeAll(
+              addWindowListener('popstate'),
+              addWindowListener('hashchange'),
+              historyEvents,
+            ),
+            Fx.debounce(Duration.millis(0)),
+            Fx.map(() => getCurrentPath(location)),
+          ),
         ),
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        Fx.switchMapEffect((path) => currentPath!.set(path)),
+        Fx.forkScoped,
       ),
-      Fx.switchMapEffect((path) => currentPath.set(path)),
-      Fx.forkScoped,
-    ),
-  )
+    )
 
-  // Listen to path changes and update the current history location
+    // Listen to path changes and update the current history location
 
-  yield* $(
-    pipe(
-      currentPath,
-      Fx.skipRepeats,
-      Fx.observe((path) => Effect.sync(() => history.pushState({}, '', path))),
-      Effect.forkDaemon,
-    ),
-  )
+    yield* $(
+      pipe(
+        currentPath,
+        Fx.skipRepeats,
+        Fx.observe((path) => Effect.sync(() => history.pushState({}, '', path))),
+        Effect.forkDaemon,
+      ),
+    )
 
-  // Make our base router
-  return Router(Route.base, currentPath) as Router
-})
+    // Make our base router
+    return Router(Route.base, currentPath) as Router
+  })
 
-export const live: Layer.Layer<
-  Location | History | Window | Document,
-  never,
-  Router<never, string>
-> = Router.layerSoped(makeRouter)
+export const live = (
+  currentPath?: Fx.RefSubject<string>,
+): Layer.Layer<Location | History | Window | Document, never, Router<never, string>> =>
+  Router.layerSoped(makeRouter(currentPath))
 
-function getCurrentPath(location: Location | HTMLAnchorElement) {
+export function getCurrentPath(location: Location | HTMLAnchorElement) {
   return location.pathname + location.search + location.hash
 }
 

@@ -28,5 +28,6 @@
     "@typed/context": "workspace:*",
     "udomdiff": "^1.1.0",
     "@webreflection/uparser": "~0.2.4"
-  }
+  },
+  "devDependencies": {}
 }

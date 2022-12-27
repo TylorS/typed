@@ -21,13 +21,15 @@
     }
   },
   "dependencies": {
-    "@typed/dom": "workspace:*",
-    "@typed/html": "workspace:*",
-    "@typed/router": "workspace:*",
     "@effect/io": "~0.0.42",
     "@typed/fx": "workspace:*",
-    "@typed/route": "workspace:*",
+    "@typed/html": "workspace:*",
     "@typed/path": "workspace:*",
-    "@fp-ts/data": "~0.0.30"
-  }
+    "@typed/route": "workspace:*",
+    "@typed/router": "workspace:*",
+    "@typed/dom": "workspace:*",
+    "@fp-ts/data": "~0.0.30",
+    "@typed/context": "workspace:*"
+  },
+  "devDependencies": {}
 }

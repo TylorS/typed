@@ -1,4 +1,4 @@
-import { Main } from '@typed/framework/Module.js'
+import { Main } from '@typed/framework/index.js'
 
 import { Counter, layer } from '../../components/counter-with-service.js'
 

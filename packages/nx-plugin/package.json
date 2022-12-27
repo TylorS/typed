@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "commonjs",
   "devDependencies": {
-    "webpack": "^5.0.0"
+    "@nrwl/devkit": "^15.3.3"
   },
   "generators": "generators.json",
   "dependencies": {}
