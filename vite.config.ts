@@ -42,5 +42,6 @@ export default defineConfig(({ command }) => ({
   build: {
     manifest: true,
     sourcemap: true,
+    minify: true,
   },
 }))

@@ -8,7 +8,7 @@ import { outlet } from '@typed/router/index.js'
 // A layout module is found via any file ending in "layout.[js|ts]x?" and must export an Fx
 // at the name "layout"
 
-export const layout = html`<div>
+export const layout = html`
   <h1>Layout</h1>
 
   <nav>
@@ -25,7 +25,7 @@ export const layout = html`<div>
   </nav>
 
   ${outlet}
-</div>`
+`
 
 // ----------------------------------------------
 
