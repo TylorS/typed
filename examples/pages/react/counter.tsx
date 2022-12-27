@@ -25,9 +25,12 @@ export const main = Main.make(route)((params) =>
 
     return pipe(
       params,
+      // Render our counter anytime the route params changes
       Fx.tap(({ counter }) => Effect.sync(() => root.render(<Counter name={counter} />))),
-      Fx.as(container),
+      // Cleanup our root when unmounted
       Fx.onInterrupt(() => Effect.sync(() => root.unmount())),
+      // Anything that can be converted into an Fx of DOM nodes will work
+      Fx.as(container),
     )
   }),
 )
