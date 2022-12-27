@@ -9,6 +9,7 @@ import * as Context from '@typed/context'
 import { Location, History, addDocumentListener, addWindowListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
 import * as html from '@typed/html'
+import { RenderContext } from '@typed/html'
 import * as Path from '@typed/path'
 import * as Route from '@typed/route'
 
@@ -109,7 +110,18 @@ export const Router = Object.assign(function makeRouter<R = never, P extends str
 },
 Context.Tag<Router>())
 
-export const outlet: Fx.Fx<Router, never, html.Renderable> = Router.withFx((r) => r.outlet)
+export const outlet: Fx.Fx<RenderContext | Router, never, html.Renderable> = RenderContext.withFx(
+  ({ environment }) =>
+    Router.withFx((r) =>
+      environment === 'browser'
+        ? r.outlet
+        : pipe(
+            r.outlet,
+            Fx.skipUntil((x) => x !== null),
+            Fx.take(1),
+          ),
+    ),
+)
 
 export const currentPath: Fx.Fx<Router, never, string> = Router.withFx((r) => r.currentPath)
 

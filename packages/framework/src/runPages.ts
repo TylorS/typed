@@ -252,7 +252,7 @@ function buildModulesWithLayout(
       if (layout && !mod.meta?.layout) {
         mod.meta = {
           ...mod.meta,
-          layout: environment === 'server' ? pipe(layout, Fx.take(2)) : layout,
+          layout: environment === 'browser' ? layout : pipe(layout, Fx.take(1)),
         }
       }
 

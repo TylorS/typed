@@ -2,7 +2,7 @@ import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
 import { Main } from '@typed/framework/index.js'
 
-import { createElement } from '@typed/dom/Document.js'
+import { createElement } from '@typed/dom/index.js'
 import * as Fx from '@typed/fx/index.js'
 import { Route } from '@typed/route/Route.js'
 

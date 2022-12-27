@@ -10,6 +10,9 @@
       "@typed/context/*": [
         "../packages/context/dist/*"
       ],
+      "@typed/compiler/*": [
+        "../packages/compiler/dist/*"
+      ],
       "@typed/dom/*": [
         "../packages/dom/dist/*"
       ],
@@ -40,6 +43,7 @@
     }
   },
   "include": [
-    "."
+    ".",
+    "../packages/compiler/src/vite-dev-server.d.ts"
   ]
 }

@@ -28,8 +28,7 @@
     "@typed/route": "workspace:*",
     "@typed/router": "workspace:*",
     "@typed/dom": "workspace:*",
-    "@fp-ts/data": "~0.0.30",
-    "@typed/context": "workspace:*"
+    "@fp-ts/data": "~0.0.30"
   },
   "devDependencies": {}
 }

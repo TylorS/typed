@@ -12,9 +12,6 @@
   ],
   "references": [
     {
-      "path": "../context/tsconfig.build.json"
-    },
-    {
       "path": "../dom/tsconfig.build.json"
     },
     {

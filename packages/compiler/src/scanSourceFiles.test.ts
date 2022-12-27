@@ -1,6 +1,6 @@
-import { deepStrictEqual } from 'node:assert'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { deepStrictEqual } from 'assert'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
 
 import { Project } from 'ts-morph'
 import { describe, it } from 'vitest'

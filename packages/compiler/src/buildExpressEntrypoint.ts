@@ -10,13 +10,15 @@ import {
   SourceFileModule,
 } from './SourceFileModule.js'
 
-export function buildClientSideEntrypoint(
+export function buildExpressEntrypoint(
   sourceFileModules: SourceFileModule[],
   project: Project,
   outFile: string,
 ) {
   const [imports, modules, fallback] = buildImportsAndModules(sourceFileModules, dirname(outFile))
-  const shouldImportRoute = modules.some((x) => x.includes('provideLayer'))
+  const shouldImportRoute = sourceFileModules.some(
+    (x) => x._tag === 'Render/Environment' || x._tag === 'Redirect/Environment',
+  )
 
   const entrypoint = project.createSourceFile(
     outFile,

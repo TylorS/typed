@@ -1,6 +1,6 @@
-import { writeFileSync } from 'node:fs'
-import { EOL } from 'node:os'
-import { resolve } from 'node:path'
+import { writeFileSync } from 'fs'
+import { EOL } from 'os'
+import { resolve } from 'path'
 
 import yargs from 'yargs'
 
