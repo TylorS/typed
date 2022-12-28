@@ -5,6 +5,7 @@ import { resolve } from 'path'
 import yargs from 'yargs'
 
 import { buildClientSideEntrypoint } from './buildClientSideEntrypoint.js'
+import { buildExpressEntrypoint } from './buildExpressEntrypoint.js'
 import { scanSourceFiles } from './scanSourceFiles.js'
 import { setupTsProject } from './setupTsProject.js'
 
@@ -36,10 +37,6 @@ const { directory, modules, tsConfig, environment, out } = yargs(process.argv.sl
   .help()
   .parseSync()
 
-if (environment !== 'browser') {
-  throw new Error('Sorry, only browser environment is supported currently. Check back soon!')
-}
-
 const dir = resolve(cwd, directory)
 const outFile = resolve(cwd, out)
 const project = setupTsProject(resolve(dir, tsConfig))
@@ -47,6 +44,19 @@ const scanned = scanSourceFiles(
   modules.map((m) => resolve(dir, m)),
   project,
 )
-const entrypoint = buildClientSideEntrypoint(scanned, project, outFile)
+
+const entrypoint = buildEntryPoint()
 
 writeFileSync(outFile, entrypoint.getFullText() + EOL)
+
+function buildEntryPoint() {
+  if (environment === 'browser') {
+    return buildClientSideEntrypoint(scanned, project, outFile)
+  }
+
+  if (environment === 'server') {
+    return buildExpressEntrypoint(scanned, project, outFile)
+  }
+
+  throw new Error(`Unsupported environment: ${environment}`)
+}

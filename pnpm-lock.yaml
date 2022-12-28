@@ -28,9 +28,6 @@ importers:
       '@types/yargs': ^17.0.17
       '@typescript-eslint/eslint-plugin': ^5.47.0
       '@typescript-eslint/parser': ^5.47.0
-      '@vavite/connect': ^1.5.2
-      '@vavite/expose-vite-dev-server': ^1.5.2
-      '@vavite/reloader': ^1.5.2
       '@vitest/coverage-c8': ^0.26.2
       '@vitest/ui': ^0.26.2
       '@webreflection/uparser': ~0.2.4
@@ -74,9 +71,6 @@ importers:
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.30
       '@fp-ts/schema': 0.0.6
-      '@vavite/connect': 1.5.2_vite@4.0.3
-      '@vavite/expose-vite-dev-server': 1.5.2_vite@4.0.3
-      '@vavite/reloader': 1.5.2_vite@4.0.3
       '@webreflection/uparser': 0.2.4
       express: 4.18.2
       isbot: 3.6.5
@@ -132,31 +126,71 @@ importers:
       vite-tsconfig-paths: 4.0.3_p2fwcaxbionflq6hjivvbcsv5a
       vitest: 0.26.2_3knrsuwlsvatpixplfndty27o4
 
+  example:
+    specifiers:
+      '@typed/compiler': workspace:*
+      '@typed/context': workspace:*
+      '@typed/dom': workspace:*
+      '@typed/framework': workspace:*
+      '@typed/fx': workspace:*
+      '@typed/html': workspace:*
+      '@typed/node': workspace:*
+      '@typed/path': workspace:*
+      '@typed/route': workspace:*
+      '@typed/router': workspace:*
+      '@typed/vite-plugin': workspace:*
+    dependencies:
+      '@typed/compiler': link:../packages/compiler
+      '@typed/context': link:../packages/context
+      '@typed/dom': link:../packages/dom
+      '@typed/framework': link:../packages/framework
+      '@typed/fx': link:../packages/fx
+      '@typed/html': link:../packages/html
+      '@typed/node': link:../packages/node
+      '@typed/path': link:../packages/path
+      '@typed/route': link:../packages/route
+      '@typed/router': link:../packages/router
+      '@typed/vite-plugin': link:../packages/vite-plugin
+
   packages/benchmark:
     specifiers: {}
 
   packages/compiler:
     specifiers:
+      '@effect/io': ~0.0.42
       '@fp-ts/data': ~0.0.30
       '@typed/dom': workspace:*
       '@typed/framework': workspace:*
+      '@typed/fx': workspace:*
+      '@typed/html': workspace:*
+      '@typed/router': workspace:*
       '@types/express': ^4.17.15
       '@types/yargs': ^17.0.17
       express: ^4.18.2
       happy-dom: ^8.1.1
+      isbot: ^3.6.5
       ts-morph: ^17.0.1
+      vavite: ^1.5.2
+      vite: ^4.0.3
       yargs: ^17.6.2
     dependencies:
+      '@effect/io': 0.0.42
       '@fp-ts/data': 0.0.30
       '@typed/dom': link:../dom
       '@typed/framework': link:../framework
+      '@typed/fx': link:../fx
+      '@typed/html': link:../html
+      '@typed/router': link:../router
       express: 4.18.2
+      isbot: 3.6.5
+      vavite: 1.5.2_vite@4.0.3
       yargs: 17.6.2
     devDependencies:
       '@types/express': 4.17.15
       '@types/yargs': 17.0.17
       happy-dom: 8.1.1
       ts-morph: 17.0.1
+      vite: 4.0.3
 
   packages/context:
     specifiers:
@@ -288,7 +322,23 @@ importers:
       '@typed/route': link:../route
 
   packages/vite-plugin:
-    specifiers: {}
+    specifiers:
+      '@typed/compiler': workspace:*
+      '@typed/html': workspace:*
+      ts-morph: ^17.0.1
+      vavite: ^1.5.2
+      vite: ^4.0.3
+      vite-plugin-compression: ^0.5.1
+      vite-tsconfig-paths: ^4.0.3
+    dependencies:
+      '@typed/compiler': link:../compiler
+      '@typed/html': link:../html
+      vavite: 1.5.2_vite@4.0.3
+      vite-plugin-compression: 0.5.1_vite@4.0.3
+    devDependencies:
+      ts-morph: 17.0.1
+      vite: 4.0.3
+      vite-tsconfig-paths: 4.0.3_vite@4.0.3
 
 packages:
 
@@ -8479,6 +8529,17 @@ packages:
     resolution: {integrity: sha512-nsZd8ZeNUzukXPlJmTBwUAuABDe/9qtVDelJeT/qW0ow3ZS3BsQJtNkan1802aM9Uf68/Y8ljw86Hu0h5IUW3w==}
     dev: false
 
+  /tsconfck/2.0.2:
+    resolution: {integrity: sha512-H3DWlwKpow+GpVLm/2cpmok72pwRr1YFROV3YzAmvzfGFiC1zEM/mc9b7+1XnrxuXtEbhJ7xUSIqjPFbedp7aQ==}
+    engines: {node: ^14.13.1 || ^16 || >=18, pnpm: ^7.18.0}
+    hasBin: true
+    peerDependencies:
+      typescript: ^4.3.5
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dev: true
+
   /tsconfck/2.0.2_typescript@4.9.4:
     resolution: {integrity: sha512-H3DWlwKpow+GpVLm/2cpmok72pwRr1YFROV3YzAmvzfGFiC1zEM/mc9b7+1XnrxuXtEbhJ7xUSIqjPFbedp7aQ==}
     engines: {node: ^14.13.1 || ^16 || >=18, pnpm: ^7.18.0}
@@ -8789,6 +8850,53 @@ packages:
     transitivePeerDependencies:
       - supports-color
       - typescript
+    dev: true
+
+  /vite-tsconfig-paths/4.0.3_vite@4.0.3:
+    resolution: {integrity: sha512-gRO2Q/tOkV+9kMht5tz90+IaEKvW2zCnvwJV3tp2ruPNZOTM5rF+yXorJT4ggmAMYEaJ3nyXjx5P5jY5FwiZ+A==}
+    peerDependencies:
+      vite: '>2.0.0-0'
+    dependencies:
+      debug: 4.3.4
+      globrex: 0.1.2
+      tsconfck: 2.0.2
+      vite: 4.0.3
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: true
+
+  /vite/4.0.3:
+    resolution: {integrity: sha512-HvuNv1RdE7deIfQb8mPk51UKjqptO/4RXZ5yXSAvurd5xOckwS/gg8h9Tky3uSbnjYTgUm0hVCet1cyhKd73ZA==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': '>= 14'
+      less: '*'
+      sass: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.4.0
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      less:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+    dependencies:
+      esbuild: 0.16.10
+      postcss: 8.4.20
+      resolve: 1.22.1
+      rollup: 3.8.0
+    optionalDependencies:
+      fsevents: 2.3.2
     dev: true
 
   /vite/4.0.3_@types+node@18.11.17:

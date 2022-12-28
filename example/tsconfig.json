@@ -1,49 +1,14 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "..",
-    "baseUrl": ".",
-    "isolatedModules": false,
     "jsx": "react-jsx",
-    "paths": {
-      "@typed/context/*": [
-        "../packages/context/dist/*"
-      ],
-      "@typed/compiler/*": [
-        "../packages/compiler/dist/*"
-      ],
-      "@typed/dom/*": [
-        "../packages/dom/dist/*"
-      ],
-      "@typed/framework/*": [
-        "../packages/framework/dist/*"
-      ],
-      "@typed/fx/*": [
-        "../packages/fx/dist/*"
-      ],
-      "@typed/html/*": [
-        "../packages/html/dist/*"
-      ],
-      "@typed/node/*": [
-        "../packages/node/dist/*"
-      ],
-      "@typed/path/*": [
-        "../packages/path/dist/*"
-      ],
-      "@typed/route/*": [
-        "../packages/route/dist/*"
-      ],
-      "@typed/router/*": [
-        "../packages/router/dist/*"
-      ],
-      "@typed/vite-plugin/*": [
-        "../packages/vite-plugin/dist/*"
-      ]
-    }
+    "module": "ESNext",
+    "moduleResolution": "NodeNext"
   },
   "include": [
-    ".",
-    "../packages/compiler/src/vite-dev-server.d.ts"
+    "*.ts",
+    "pages",
+    "components"
   ]
 }

@@ -1,5 +1,5 @@
-import { html } from '@typed/html/index.js'
-import { outlet } from '@typed/router/index.js'
+import { html } from '@typed/html'
+import { outlet } from '@typed/router'
 
 // A layout is applied to all pages that don't have a layout specified in the same directory
 // or child directories. If a layout is specified in a child directory, or a module, it will be used

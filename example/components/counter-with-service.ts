@@ -1,9 +1,8 @@
 import { Layer } from '@effect/io/Layer'
 import { pipe } from '@fp-ts/data/Function'
-import { Tag } from '@typed/context/index.js'
-
-import * as Fx from '@typed/fx/index.js'
-import { html } from '@typed/html/index.js'
+import { Tag } from '@typed/context'
+import * as Fx from '@typed/fx'
+import { html } from '@typed/html'
 
 export interface CounterName {
   readonly name: string

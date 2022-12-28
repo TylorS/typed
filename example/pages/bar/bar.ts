@@ -1,10 +1,9 @@
-import { Main } from '@typed/framework/index.js'
+import { Main } from '@typed/framework'
+import { html } from '@typed/html'
+import * as Route from '@typed/route'
+import { outlet } from '@typed/router'
 
 import { Counter, layer } from '../../components/counter-with-service.js'
-
-import { html } from '@typed/html/index.js'
-import * as Route from '@typed/route/index.js'
-import { outlet } from '@typed/router/router.js'
 
 export const route = Route.Route('/bar/:bar')
 

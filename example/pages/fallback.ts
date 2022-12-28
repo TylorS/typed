@@ -1,6 +1,6 @@
 // A global fallback only work at the root-level directories
 
-import { html } from '@typed/html/index.js'
+import { html } from '@typed/html'
 
 // ** Fallback ** //
 

@@ -20,6 +20,15 @@
       "types": "./dist/*.d.ts"
     }
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "@typed/compiler": "workspace:*",
+    "@typed/html": "workspace:*",
+    "vavite": "^1.5.2",
+    "vite-plugin-compression": "^0.5.1"
+  },
+  "devDependencies": {
+    "ts-morph": "^17.0.1",
+    "vite": "^4.0.3",
+    "vite-tsconfig-paths": "^4.0.3"
+  }
 }

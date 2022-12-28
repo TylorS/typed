@@ -1,10 +1,9 @@
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
-import { Main } from '@typed/framework/index.js'
-
-import { createElement } from '@typed/dom/index.js'
-import * as Fx from '@typed/fx/index.js'
-import { Route } from '@typed/route/Route.js'
+import { createElement } from '@typed/dom'
+import { Main } from '@typed/framework'
+import * as Fx from '@typed/fx'
+import { Route } from '@typed/route'
 
 export const route = Route('/react/:counter')
 

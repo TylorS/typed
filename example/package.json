@@ -1,0 +1,17 @@
+{
+  "name": "@typed/example",
+  "type": "module",
+  "dependencies": {
+    "@typed/compiler": "workspace:*",
+    "@typed/context": "workspace:*",
+    "@typed/dom": "workspace:*",
+    "@typed/framework": "workspace:*",
+    "@typed/fx": "workspace:*",
+    "@typed/html": "workspace:*",
+    "@typed/node": "workspace:*",
+    "@typed/path": "workspace:*",
+    "@typed/route": "workspace:*",
+    "@typed/router": "workspace:*",
+    "@typed/vite-plugin": "workspace:*"
+  }
+}

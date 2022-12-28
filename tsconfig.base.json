@@ -32,29 +32,41 @@
       "vite/client"
     ],
     "paths": {
+      "@typed/compiler/*": [
+        "./packages/compiler/src/*"
+      ],
+      "@typed/context/*": [
+        "./packages/context/src/*"
+      ],
       "@typed/dom/*": [
-        "packages/dom/src/*"
+        "./packages/dom/src/*"
+      ],
+      "@typed/framework/*": [
+        "./packages/framework/src/*"
       ],
       "@typed/fx/*": [
-        "packages/fx/src/*"
+        "./packages/fx/src/*"
       ],
       "@typed/html/*": [
-        "packages/html/src/*"
+        "./packages/html/src/*"
       ],
       "@typed/internal/*": [
-        "packages/internal/src/*"
+        "./packages/internal/src/*"
       ],
       "@typed/node/*": [
-        "packages/node/src/*"
+        "./packages/node/src/*"
       ],
       "@typed/path/*": [
-        "packages/path/src/*"
+        "./packages/path/src/*"
       ],
       "@typed/route/*": [
-        "packages/route/src/*"
+        "./packages/route/src/*"
       ],
       "@typed/router/*": [
-        "packages/router/src/*"
+        "./packages/router/src/*"
+      ],
+      "@typed/vite-plugin/*": [
+        "./packages/vite/src/*-plugin"
       ]
     }
   },

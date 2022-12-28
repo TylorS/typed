@@ -1,8 +1,7 @@
 import { pipe } from '@fp-ts/data/Function'
-import { Main } from '@typed/framework/index.js'
-
-import * as Fx from '@typed/fx/index.js'
-import * as Route from '@typed/route/index.js'
+import { Main } from '@typed/framework'
+import * as Fx from '@typed/fx'
+import * as Route from '@typed/route'
 
 export const route = Route.Route('/foo/:foo')
 

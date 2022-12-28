@@ -52,17 +52,17 @@ export namespace Main {
     ? Layer.Layer<IntrinsicServices, never, Exclude<R | Route.ResourcesOf<R2>, IntrinsicServices>>
     : never
 
-  export function make<R extends Route.Route<any, any>>(route: R) {
-    return <R2>(main: Main<R2, typeof route>): Main<R2, R> => main
+  export function make<R, P extends string>(route: Route.Route<R, P>) {
+    return <R2>(main: Main<R2, typeof route>): Main<R2, typeof route> => main
   }
 
-  export function lazy<R extends Route.Route<any, any>>(route: R) {
-    return <R2>(main: () => Promise<Main<R2, typeof route>>): Main<R2, R> =>
+  export function lazy<R, P extends string>(route: Route.Route<R, P>) {
+    return <R2>(main: () => Promise<Main<R2, typeof route>>): Main<R2, typeof route> =>
       (params) =>
         Fx.promiseFx(() => main().then((m) => m(params)))
   }
 
-  export function layer<R, R2 extends Route.Route<any, any>>(main: Main<R, R2>) {
+  export function layer<M extends Main<any, any>>(main: M) {
     return (layer: LayerOf<typeof main>): typeof layer => layer
   }
 }
