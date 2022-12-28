@@ -89,6 +89,8 @@ export default function makePlugin({ directory, tsConfig, pages }: PluginOptions
         return SERVER_VIRTUAL_ID
       }
 
+      // Virtual modules have problems with resolving modules due to not having a real directory to work with
+      // thus the need to resolve them manually.
       if (importer === BROWSER_VIRTUAL_ID || importer === SERVER_VIRTUAL_ID) {
         // Re-route relative imports to source files
         if (id.startsWith('.')) {
