@@ -1,6 +1,8 @@
-import { join, resolve } from 'path'
+import { existsSync, readFileSync } from 'fs'
+import { dirname, join, resolve } from 'path'
 
 /// <reference types="vavite/vite-config" />
+
 import { setupTsProject, scanSourceFiles, buildEntryPoint } from '@typed/compiler'
 import { Environment } from '@typed/html'
 import { Project } from 'ts-morph'
@@ -21,25 +23,20 @@ const cwd = process.cwd()
 const PLUGIN_NAME = '@typed/vite-plugin'
 const BROWSER_VIRTUAL_ENTRYPOINT = 'virtual:browser-entry'
 const SERVER_VIRTUAL_ENTRYPOINT = 'virtual:server-entry'
-const BROWSER_VIRTUAL_ID = '\0' + BROWSER_VIRTUAL_ENTRYPOINT
-const SERVER_VIRTUAL_ID = '\0' + SERVER_VIRTUAL_ENTRYPOINT
-
-const buildCommands = ['build', 'multibuild']
 
 export default function makePlugin({ directory, tsConfig, pages }: PluginOptions): Plugin {
   const sourceDirectory = resolve(cwd, directory)
-
-  // Allow virtual files with relative paths to resolve from source directory
-  process.chdir(sourceDirectory)
-
   const tsConfigFilePath = resolve(sourceDirectory, tsConfig)
 
   console.info(`[${PLUGIN_NAME}]: Setting up typescript project...`)
   const project = setupTsProject(tsConfigFilePath)
 
+  const BROWSER_VIRTUAL_ID = '\0' + join(sourceDirectory, 'browser.ts')
+  const SERVER_VIRTUAL_ID = '\0' + join(sourceDirectory, 'server.ts')
+
   return {
     name: PLUGIN_NAME,
-    config(config, env) {
+    config(config) {
       if (!config.plugins) {
         config.plugins = []
       }
@@ -48,19 +45,17 @@ export default function makePlugin({ directory, tsConfig, pages }: PluginOptions
         tsconfigPaths({
           projects: [tsConfigFilePath],
         }),
+        vavite({
+          serverEntry: join(sourceDirectory, 'server.ts'),
+          serveClientAssetsInDev: true,
+        }),
         // @ts-expect-error Types don't seem to work with ESNext module resolution
         compression(),
       )
 
-      if (buildCommands.includes(env.command)) {
-        config.plugins.push(
-          vavite({
-            serverEntry: join(sourceDirectory, 'server.ts'),
-            serveClientAssetsInDev: true,
-          }),
-        )
+      // Setup vavite multi-build
 
-        // Setup vavite multi-build
+      if (!(config as any).buildSteps) {
         ;(config as any).buildSteps = [
           {
             name: 'client',
@@ -82,15 +77,10 @@ export default function makePlugin({ directory, tsConfig, pages }: PluginOptions
             },
           },
         ]
-      } else {
-        config.build = {
-          outDir: 'dist/client',
-          rollupOptions: { input: resolve(sourceDirectory, 'index.html') },
-        }
       }
     },
 
-    resolveId(id, importer) {
+    async resolveId(id, importer) {
       if (id === BROWSER_VIRTUAL_ENTRYPOINT) {
         return BROWSER_VIRTUAL_ID
       }
@@ -99,12 +89,19 @@ export default function makePlugin({ directory, tsConfig, pages }: PluginOptions
         return SERVER_VIRTUAL_ID
       }
 
-      // Re-route relative imports to source files
-      if (
-        (importer === BROWSER_VIRTUAL_ID || importer === SERVER_VIRTUAL_ID) &&
-        id.startsWith('.')
-      ) {
-        return join(sourceDirectory, id.replace(/\.js(x)?/, '.ts$1'))
+      if (importer === BROWSER_VIRTUAL_ID || importer === SERVER_VIRTUAL_ID) {
+        // Re-route relative imports to source files
+        if (id.startsWith('.')) {
+          const resolved = resolve(sourceDirectory, id.replace(/\.js(x)?/, '.ts$1'))
+
+          return resolved
+        } else {
+          // Should only be resolving a node module
+          const dir = findNodeModule(sourceDirectory, id)
+          const packageJson = JSON.parse(readFileSync(join(dir, 'package.json')).toString())
+
+          return join(dir, packageJson.module || packageJson.main)
+        }
       }
     },
 
@@ -126,7 +123,10 @@ function scanAndBuild(
   project: Project,
   environment: Environment,
 ) {
-  const scanned = scanSourceFiles(pages, project)
+  const scanned = scanSourceFiles(
+    pages.map((x) => join(dir, x)),
+    project,
+  )
   const entryPoint = buildEntryPoint(scanned, project, environment, join(dir, `${environment}.ts`))
 
   const outputFiles = entryPoint.getEmitOutput().getOutputFiles()
@@ -136,11 +136,22 @@ function scanAndBuild(
     .find((f) => f.getFilePath().endsWith('.js') || f.getFilePath().endsWith('.jsx'))!
     .getText()
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const sourceMap = outputFiles.find((f) => f.getFilePath().endsWith('.map'))!.getText()
-
   return {
     code: outputFile,
-    map: JSON.parse(sourceMap),
   }
+}
+
+function findNodeModule(dir: string, id: string) {
+  let potential = resolve(dir, 'node_modules', id)
+
+  while (dir !== '/') {
+    if (existsSync(potential)) {
+      return potential
+    }
+
+    dir = dirname(dir)
+    potential = resolve(dir, 'node_modules', id)
+  }
+
+  return id
 }

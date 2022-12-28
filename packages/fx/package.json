@@ -14,10 +14,6 @@
     "./*": {
       "import": "./dist/*.js",
       "types": "./dist/*.d.ts"
-    },
-    "./*.js": {
-      "import": "./dist/*.js",
-      "types": "./dist/*.d.ts"
     }
   },
   "dependencies": {
