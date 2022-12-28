@@ -60,12 +60,12 @@ export interface RouteMatcher<R = never, E = never> {
   readonly notFound: <R2, E2, R3 = never, E3 = never>(
     f: (path: string) => Fx.Fx<R2, E2, html.Renderable>,
     options?: FallbackOptions<R3, E3>,
-  ) => Fx.Fx<Router | R | R2 | R3, Exclude<E | E2 | E3, Redirect>, html.Renderable>
+  ) => Fx.Fx<Router | R | R2 | R3, E | E2 | E3, html.Renderable>
 
   readonly notFoundEffect: <R2, E2, R3 = never, E3 = never>(
     f: (path: string) => Effect.Effect<R2, E2, html.Renderable>,
     options?: FallbackOptions<R3, E3>,
-  ) => Fx.Fx<Router | R | R2 | R3, Exclude<E | E2 | E3, Redirect>, html.Renderable>
+  ) => Fx.Fx<Router | R | R2 | R3, E | E2 | E3, html.Renderable>
 
   readonly redirectTo: <R2, P extends string>(
     route: Route.Route<R2, P>,
