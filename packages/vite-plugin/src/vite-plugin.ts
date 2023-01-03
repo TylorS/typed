@@ -9,7 +9,6 @@ import { Project } from 'ts-morph'
 // @ts-expect-error Types don't seem to work with ESNext module resolution
 import { default as vavite } from 'vavite'
 import { Plugin } from 'vite'
-import compression from 'vite-plugin-compression'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 export interface PluginOptions {
@@ -49,8 +48,6 @@ export default function makePlugin({ directory, tsConfig, pages }: PluginOptions
           serverEntry: join(sourceDirectory, 'server.ts'),
           serveClientAssetsInDev: true,
         }),
-        // @ts-expect-error Types don't seem to work with ESNext module resolution
-        compression(),
       )
 
       // Setup vavite multi-build

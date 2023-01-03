@@ -27,6 +27,7 @@ export const runExpressApp =
           const documentElement = window.document.documentElement
 
           documentElement.innerHTML = indexHtml
+          documentElement.lang = 'en-us'
 
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const application = window.document.getElementById('application')!

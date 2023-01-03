@@ -1,6 +1,7 @@
 export * from './buildModules.js'
 export * from './fileNames.js'
 export * from './IntrinsicServices.js'
+export * from './Link.js'
 export * from './Module.js'
 export * from './provideIntrinsics.js'
 export * from './runPages.js'

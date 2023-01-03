@@ -1,3 +1,4 @@
+import { Link } from '@typed/framework'
 import { html } from '@typed/html'
 import { outlet } from '@typed/router'
 
@@ -13,14 +14,14 @@ export const layout = html`
 
   <nav>
     <ul>
-      <li><a href="/">Home</a></li>
-      <li><a href="/foo/1">Foo 1</a></li>
-      <li><a href="/foo/2">Foo 2</a></li>
-      <li><a href="/bar/1">Bar 1</a></li>
-      <li><a href="/bar/2">Bar 2</a></li>
-      <li><a href="/react/foo">React Foo</a></li>
-      <li><a href="/react/bar">React Bar</a></li>
-      <li><a href="/broken-link">Broken</a></li>
+      <li>${Link({ href: '/', label: 'Home' })}</li>
+      <li>${Link({ href: '/foo/1', label: 'Foo 1' })}</li>
+      <li>${Link({ href: '/foo/2', label: 'Foo 2' })}</li>
+      <li>${Link({ href: '/bar/1', label: 'Bar 1' })}</li>
+      <li>${Link({ href: '/bar/2', label: 'Bar 2' })}</li>
+      <li>${Link({ href: '/react/foo', label: 'React Foo' })}</li>
+      <li>${Link({ href: '/react/bar', label: 'React Bar' })}</li>
+      <li>${Link({ href: '/broken-link', label: 'Broken' })}</li>
     </ul>
   </nav>
 

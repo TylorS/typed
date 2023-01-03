@@ -16,20 +16,18 @@ import { Wire, persistent } from './Wire.js'
 
 export type Renderable = Placeholder | Node | null | undefined | ReadonlyArray<Renderable>
 
-export function renderIn<T extends DocumentFragment | HTMLElement>(where: T) {
-  return <R, E>(fx: Fx.Fx<R, E, Renderable>): Fx.Fx<R | Document | RenderContext, E, T> => {
-    return pipe(fx, renderInto(where))
-  }
-}
-
 export function renderInto<T extends DocumentFragment | HTMLElement>(where: T) {
   return <R, E>(fx: Fx.Fx<R, E, Renderable>): Fx.Fx<R | Document | RenderContext, E, T> =>
-    pipe(
-      fx,
-      Fx.exhaustMapLatestEffect((hole) => render(where, hole)),
-      // Disable cooperative yielding to help ensure consistent rendering performance
-      Fx.withRuntimeFlags(RuntimeFlagsPatch.disable(Flags.CooperativeYielding)),
-    )
+    Fx.gen(function* ($) {
+      const holeContext = yield* $(getRenderHoleContext)
+
+      return pipe(
+        fx,
+        Fx.exhaustMapLatestEffect((hole) => renderWithHoleContext(holeContext, where, hole)),
+        // Disable cooperative yielding to help ensure consistent rendering performance
+        Fx.withRuntimeFlags(RuntimeFlagsPatch.disable(Flags.CooperativeYielding)),
+      )
+    })
 }
 
 export function drainInto<T extends DocumentFragment | HTMLElement>(where: T) {
@@ -47,33 +45,36 @@ export function render<T extends DocumentFragment | HTMLElement>(
 ): Effect.Effect<Document | RenderContext, never, T> {
   return pipe(
     getRenderHoleContext,
-    Effect.flatMap((holeContext) =>
-      // Schedule this work to occur when the environment is not busy
-      Effect.blocking(
-        Effect.sync(() => {
-          const { renderCache } = holeContext.renderContext
-          if (!renderCache.has(where)) {
-            renderCache.set(where, RenderCache())
-          }
-          const cache = renderCache.get(where) as RenderCache
-          const wire = what instanceof Hole ? renderHole(what, cache, holeContext) : what
-
-          if (wire !== cache.wire) {
-            if (cache.wire && !wire) where.removeChild(cache.wire as Node)
-
-            cache.wire = wire as Wire | Node | null | undefined
-            // valueOf() simply returns the node itself, but in case it was a "wire"
-            // it will eventually re-append all nodes to its fragment so that such
-            // fragment can be re-appended many times in a meaningful way
-            // (wires are basically persistent fragments facades with special behavior)
-            if (wire) where.replaceChildren(wire.valueOf() as Node)
-          }
-
-          return where
-        }),
-      ),
-    ),
+    Effect.flatMap((holeContext) => renderWithHoleContext(holeContext, where, what)),
   )
+}
+
+function renderWithHoleContext<T extends DocumentFragment | HTMLElement>(
+  holeContext: RenderHoleContext,
+  where: T,
+  what: Renderable,
+) {
+  return Effect.sync(() => {
+    const { renderCache } = holeContext.renderContext
+    if (!renderCache.has(where)) {
+      renderCache.set(where, RenderCache())
+    }
+    const cache = renderCache.get(where) as RenderCache
+    const wire = what instanceof Hole ? renderHole(what, cache, holeContext) : what
+
+    if (wire !== cache.wire) {
+      if (cache.wire && !wire) where.removeChild(cache.wire as Node)
+
+      cache.wire = wire as Wire | Node | null | undefined
+      // valueOf() simply returns the node itself, but in case it was a "wire"
+      // it will eventually re-append all nodes to its fragment so that such
+      // fragment can be re-appended many times in a meaningful way
+      // (wires are basically persistent fragments facades with special behavior)
+      if (wire) where.replaceChildren(wire.valueOf() as Node)
+    }
+
+    return where
+  })
 }
 
 /**

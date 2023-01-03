@@ -1,4 +1,4 @@
-import { Main } from '@typed/framework'
+import { Main, Link } from '@typed/framework'
 import { html } from '@typed/html'
 import * as Route from '@typed/route'
 import { outlet } from '@typed/router'
@@ -15,9 +15,7 @@ export const layout = html`
   <div>
     <h1>Bar</h1>
 
-    <div>
-      <a href="/">Go Back</a>
-    </div>
+    <div>${Link({ href: '/', label: 'Go Back' })}</div>
 
     <main>${outlet}</main>
   </div>

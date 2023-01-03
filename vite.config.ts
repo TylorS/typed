@@ -3,6 +3,7 @@
 import { join } from 'path'
 
 import { defineConfig } from 'vite'
+import compression from 'vite-plugin-compression'
 
 import typed from './packages/vite-plugin/src/vite-plugin'
 
@@ -16,6 +17,7 @@ export default defineConfig({
       // Path to your tsconfig.json file. Can be absolute path or relative to directory above
       tsConfig: 'tsconfig.json',
     }),
+    compression(),
   ],
   build: {
     manifest: true,

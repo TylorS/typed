@@ -6,7 +6,7 @@ import * as Duration from '@fp-ts/data/Duration'
 import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import * as Context from '@typed/context'
-import { Location, History, addDocumentListener, addWindowListener } from '@typed/dom'
+import { Location, History, addWindowListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
 import * as html from '@typed/html'
 import { RenderContext } from '@typed/html'
@@ -202,23 +202,9 @@ export const makeRouter = (
     // - history events
     yield* $(
       pipe(
-        Fx.mergeAll(
-          pipe(
-            addDocumentListener('click'),
-            Fx.merge(addDocumentListener('touchend')),
-            Fx.filter(shouldInterceptLinkClick(location)),
-            Fx.map((ev) => getCurrentPath(ev.target as HTMLAnchorElement)),
-          ),
-          pipe(
-            Fx.mergeAll(
-              addWindowListener('popstate'),
-              addWindowListener('hashchange'),
-              historyEvents,
-            ),
-            Fx.debounce(Duration.millis(0)),
-            Fx.map(() => getCurrentPath(location)),
-          ),
-        ),
+        Fx.mergeAll(addWindowListener('popstate'), addWindowListener('hashchange'), historyEvents),
+        Fx.debounce(Duration.millis(0)),
+        Fx.map(() => getCurrentPath(location)),
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         Fx.switchMapEffect((path) => currentPath!.set(path)),
         Fx.forkScoped,
@@ -290,51 +276,4 @@ function patchHistory_(history: History, sendEvent: () => void) {
     forward()
     sendEvent()
   }
-}
-
-function shouldInterceptLinkClick(location: Location) {
-  return (ev: MouseEvent | TouchEvent): boolean => {
-    // Event Filtering
-
-    // Only intercept left clicks
-    if (ev.which !== 1) return false
-    // Don't intercept modified clicks
-    if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return false
-    // Don't intercept if default prevented already
-    if (ev.defaultPrevented) return false
-
-    // Attempt to find an anchor element
-    const target = findAnchorElement(ev)
-
-    if (!target) return false
-
-    // Link Filtering
-
-    // Ensure same origin
-    if (target.origin !== location.origin) return false
-    // Don't intercept download links
-    if (target.hasAttribute('download')) return false
-    // Don't intercept links marked as external, should have full page load
-    if (target.rel === 'external') return false
-    // Don't bother with hash changes, hash change events work well
-    if (target.hash || target.href === '#') return false
-    // Don't bother with non-http(s) protocols
-    if (target.protocol && !target.protocol.startsWith('http')) return false
-
-    // We made it! We'll intercept this event and update history
-    ev.preventDefault()
-
-    return true
-  }
-}
-
-function findAnchorElement(ev: MouseEvent | TouchEvent): HTMLAnchorElement | null {
-  // Attempt to find our link
-  let el = ev.target as Element | null
-
-  while (el && el?.tagName.toUpperCase() !== 'A') {
-    el = el.parentElement || null
-  }
-
-  return el as HTMLAnchorElement
 }
