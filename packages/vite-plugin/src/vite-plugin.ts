@@ -173,47 +173,18 @@ function scanAndBuild(
     pages.map((x) => join(dir, x)),
     project,
   )
-  const entryPoint = buildEntryPoint(scanned, project, environment, join(dir, `${environment}.ts`))
-
+  const filePath = join(dir, `${environment}.ts`)
+  const entryPoint = buildEntryPoint(scanned, project, environment, filePath)
   const outputFiles = entryPoint.getEmitOutput().getOutputFiles()
+  const outputFile = outputFiles.find(
+    (f) => f.getFilePath().endsWith('.js') || f.getFilePath().endsWith('.jsx'),
+  )
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const outputFile = outputFiles
-    .find((f) => f.getFilePath().endsWith('.js') || f.getFilePath().endsWith('.jsx'))!
-    .getText()
+  if (!outputFile) {
+    throw new Error(`Unable to create output for ${filePath}`)
+  }
 
   return {
-    code: outputFile,
+    code: outputFile.getText(),
   }
 }
-
-// function findNodeModule(dir: string, id: string) {
-//   let potential = resolve(dir, 'node_modules', id)
-
-//   while (dir !== '/') {
-//     if (existsSync(potential)) {
-//       return potential
-//     }
-
-//     dir = dirname(dir)
-//     potential = resolve(dir, 'node_modules', id)
-//   }
-
-//   return id
-// }
-
-// function findNodeModuleMain(id: string, path: string) {
-//   if (id === path) {
-//     return id
-//   }
-
-//   const packageJsonFilePath = join(path, 'package.json')
-
-//   if (existsSync(packageJsonFilePath)) {
-//     const packageJson = JSON.parse(readFileSync(packageJsonFilePath).toString())
-
-//     return packageJson.module || packageJson.main || packageJson.exports?.['.']
-//   }
-
-//   return path
-// }
