@@ -51,23 +51,6 @@ export default function makePlugin({ directory, tsConfig, pages }: PluginOptions
   const serverFilePath = join(sourceDirectory, 'server.ts')
   const serverExists = existsSync(serverFilePath)
 
-  const compilerOptions = project.getCompilerOptions()
-  const moduleResolutionHost = project.getModuleResolutionHost()
-  const resolveFilePath = (id: string, importer: string) => {
-    const { resolvedModule } = ts.nodeModuleNameResolver(
-      id,
-      importer,
-      compilerOptions,
-      moduleResolutionHost,
-    )
-
-    if (!resolvedModule) {
-      throw new Error(`[${PLUGIN_NAME}]: Could not resolve ${id} from ${importer}`)
-    }
-
-    return resolvedModule.resolvedFileName
-  }
-
   return {
     name: PLUGIN_NAME,
     config(config) {
@@ -142,12 +125,6 @@ export default function makePlugin({ directory, tsConfig, pages }: PluginOptions
             return tsPath
           }
         }
-
-        // Otherwise let TS attempt to resolve our module
-        return resolveFilePath(
-          id,
-          importer === SERVER_VIRTUAL_ID ? serverFilePath : join(sourceDirectory, 'browser.ts'),
-        )
       }
     },
 
