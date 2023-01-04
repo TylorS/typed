@@ -175,7 +175,8 @@ function scanAndBuild(
   )
   const filePath = join(dir, `${environment}.ts`)
   const entryPoint = buildEntryPoint(scanned, project, environment, filePath)
-  const outputFiles = entryPoint.getEmitOutput().getOutputFiles()
+  const emitOutput = entryPoint.getEmitOutput()
+  const outputFiles = emitOutput.getOutputFiles()
   const outputFile = outputFiles.find(
     (f) => f.getFilePath().endsWith('.js') || f.getFilePath().endsWith('.jsx'),
   )
