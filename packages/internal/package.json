@@ -1,6 +1,6 @@
 {
   "name": "@typed/internal",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@fp-ts/data": "~0.0.30"
+    "@fp-ts/data": "~0.0.36"
   },
   "devDependencies": {}
 }

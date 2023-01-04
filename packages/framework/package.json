@@ -1,6 +1,6 @@
 {
   "name": "@typed/framework",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -21,14 +21,14 @@
     }
   },
   "dependencies": {
-    "@effect/io": "~0.0.42",
+    "@effect/io": "~0.0.52",
     "@typed/fx": "workspace:*",
     "@typed/html": "workspace:*",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
     "@typed/router": "workspace:*",
     "@typed/dom": "workspace:*",
-    "@fp-ts/data": "~0.0.30"
+    "@fp-ts/data": "~0.0.36"
   },
   "devDependencies": {}
 }

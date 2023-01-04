@@ -1,6 +1,6 @@
 {
   "name": "@typed/vite-plugin",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -23,12 +23,11 @@
   "dependencies": {
     "@typed/compiler": "workspace:*",
     "@typed/html": "workspace:*",
-    "vavite": "^1.5.2",
-    "vite-plugin-compression": "^0.5.1"
+    "vavite": "^1.5.2"
   },
   "devDependencies": {
     "ts-morph": "^17.0.1",
-    "vite": "^4.0.3",
+    "vite": "^4.0.4",
     "vite-tsconfig-paths": "^4.0.3"
   }
 }

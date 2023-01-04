@@ -28,9 +28,6 @@
       "path": "./packages/internal/tsconfig.build.json"
     },
     {
-      "path": "./packages/node/tsconfig.build.json"
-    },
-    {
       "path": "./packages/path/tsconfig.build.json"
     },
     {

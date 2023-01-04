@@ -8,7 +8,6 @@
     "@typed/framework": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/html": "workspace:*",
-    "@typed/node": "workspace:*",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
     "@typed/router": "workspace:*",

@@ -93,7 +93,7 @@ spawnSync('pnpm', ['install'], { stdio: 'inherit' })
 function checkDependency(dependency: string, packageJson: any) {
   const version = findRootPackageVersion(dependency)
 
-  if (version === null && !dependency.startsWith('@typed')) {
+  if (version === null && !dependency.startsWith('@typed') && !dependency.startsWith('virtual:')) {
     throw new Error(
       `Could not find package version for ${dependency} in package ${packageJson.name}`,
     )
