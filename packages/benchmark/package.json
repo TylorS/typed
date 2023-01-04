@@ -19,7 +19,5 @@
       "import": "./dist/*.js",
       "types": "./dist/*.d.ts"
     }
-  },
-  "dependencies": {},
-  "devDependencies": {}
+  }
 }

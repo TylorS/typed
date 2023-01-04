@@ -25,6 +25,5 @@
     "@fp-ts/data": "~0.0.36",
     "@typed/path": "workspace:*",
     "path-to-regexp": "^6.2.1"
-  },
-  "devDependencies": {}
+  }
 }

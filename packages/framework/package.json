@@ -22,13 +22,12 @@
   },
   "dependencies": {
     "@effect/io": "~0.0.52",
+    "@fp-ts/data": "~0.0.36",
+    "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/html": "workspace:*",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
-    "@typed/router": "workspace:*",
-    "@typed/dom": "workspace:*",
-    "@fp-ts/data": "~0.0.36"
-  },
-  "devDependencies": {}
+    "@typed/router": "workspace:*"
+  }
 }
