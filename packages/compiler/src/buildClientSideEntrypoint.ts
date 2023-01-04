@@ -48,7 +48,7 @@ const program = F.pipe(
   provideBrowserIntrinsics(window, { parentElement }),
 )
 
-document.addEventListener('DOMContentLoaded', () => Fx.unsafeRunAsync(program))
+document.addEventListener('DOMContentLoaded', () => Fx.unsafeRun(program))
 `,
     { overwrite: true },
   )
