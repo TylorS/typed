@@ -194,8 +194,6 @@ export const makeRouter = (
     const historyEvents = yield* $(patchHistory)
 
     // Update the current path when events occur:
-    // - click
-    // - touchend
     // - popstate
     // - hashchange
     // - history events
@@ -208,14 +206,19 @@ export const makeRouter = (
       ),
     )
 
-    // Listen to path changes and update the current history location
-
+    // Listen to path changes and update the current history location, if necessary
     yield* $(
       pipe(
         currentPath,
         Fx.skipRepeats,
-        Fx.observe((path) => Effect.sync(() => history.pushState({}, '', path))),
-        Effect.forkDaemon,
+        Fx.observe((path) =>
+          Effect.sync(() => {
+            if (path !== getCurrentPath(location)) {
+              history.pushState({}, '', path)
+            }
+          }),
+        ),
+        Effect.forkScoped,
       ),
     )
 

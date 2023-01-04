@@ -17,11 +17,11 @@ export const route = Route.home
 // A main function is a function that takes a route's params and returns a render function.
 // The main function can ignore the params if it doesn't need them and just return an Fx, like below.
 
-export const main = html`<h1>Home</h1>`
+export const main = html`<h2>Home</h2>`
 
 // Or you can export a "render" function
 
-// export const render = html`<h1>Home</h1>
+// export const render = html`<h2>Home</h2>
 
 // ----------------------------------------------
 

@@ -1,19 +1,28 @@
-import { existsSync, readFileSync } from 'fs'
-import { dirname, join, resolve } from 'path'
+import { existsSync } from 'fs'
+import { join, resolve } from 'path'
 
 /// <reference types="vavite/vite-config" />
 
 import { setupTsProject, scanSourceFiles, buildEntryPoint } from '@typed/compiler'
 import { Environment } from '@typed/html'
-import { Project } from 'ts-morph'
+import { Project, ts } from 'ts-morph'
 // @ts-expect-error Types don't seem to work with ESNext module resolution
 import { default as vavite } from 'vavite'
 import { Plugin } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 export interface PluginOptions {
+  /**
+   * The directory in which you have your entry files. Namely an index.html file and optionally a server.ts file
+   */
   readonly directory: string
+  /**
+   * The name/path to your tsconfig.json file, relative to the directory above or absolute
+   */
   readonly tsConfig: string
+  /**
+   * File globs to scan for pages, relative to the directory above or absolute
+   */
   readonly pages: readonly string[]
 }
 
@@ -33,6 +42,32 @@ export default function makePlugin({ directory, tsConfig, pages }: PluginOptions
   const BROWSER_VIRTUAL_ID = '\0' + join(sourceDirectory, 'browser.ts')
   const SERVER_VIRTUAL_ID = '\0' + join(sourceDirectory, 'server.ts')
 
+  const indexHtmlFilePath = join(sourceDirectory, 'index.html')
+
+  if (!existsSync(indexHtmlFilePath)) {
+    throw new Error(`[${PLUGIN_NAME}]: Could not find index.html file at ${indexHtmlFilePath}`)
+  }
+
+  const serverFilePath = join(sourceDirectory, 'server.ts')
+  const serverExists = existsSync(serverFilePath)
+
+  const compilerOptions = project.getCompilerOptions()
+  const moduleResolutionHost = project.getModuleResolutionHost()
+  const resolveFilePath = (id: string, importer: string) => {
+    const { resolvedModule } = ts.nodeModuleNameResolver(
+      id,
+      importer,
+      compilerOptions,
+      moduleResolutionHost,
+    )
+
+    if (!resolvedModule) {
+      throw new Error(`[${PLUGIN_NAME}]: Could not resolve ${id} from ${importer}`)
+    }
+
+    return resolvedModule.resolvedFileName
+  }
+
   return {
     name: PLUGIN_NAME,
     config(config) {
@@ -44,15 +79,19 @@ export default function makePlugin({ directory, tsConfig, pages }: PluginOptions
         tsconfigPaths({
           projects: [tsConfigFilePath],
         }),
-        vavite({
-          serverEntry: join(sourceDirectory, 'server.ts'),
-          serveClientAssetsInDev: true,
-        }),
+        ...(serverExists
+          ? [
+              vavite({
+                serverEntry: serverFilePath,
+                serveClientAssetsInDev: true,
+              }),
+            ]
+          : []),
       )
 
       // Setup vavite multi-build
 
-      if (!(config as any).buildSteps) {
+      if (serverExists && !(config as any).buildSteps) {
         ;(config as any).buildSteps = [
           {
             name: 'client',
@@ -69,7 +108,7 @@ export default function makePlugin({ directory, tsConfig, pages }: PluginOptions
               build: {
                 ssr: true,
                 outDir: 'dist/server',
-                rollupOptions: { input: resolve(sourceDirectory, 'server.ts') },
+                rollupOptions: { input: serverFilePath },
               },
             },
           },
@@ -89,18 +128,26 @@ export default function makePlugin({ directory, tsConfig, pages }: PluginOptions
       // Virtual modules have problems with resolving modules due to not having a real directory to work with
       // thus the need to resolve them manually.
       if (importer === BROWSER_VIRTUAL_ID || importer === SERVER_VIRTUAL_ID) {
-        // Re-route relative imports to source files
+        // If a relative path, attempt to match to a source .ts(x) file
         if (id.startsWith('.')) {
-          const resolved = resolve(sourceDirectory, id.replace(/\.js(x)?/, '.ts$1'))
+          const tsPath = resolve(sourceDirectory, id.replace(/.js(x)?$/, '.ts$1'))
 
-          return resolved
-        } else {
-          // Should only be resolving a node module
-          const dir = findNodeModule(sourceDirectory, id)
-          const packageJson = JSON.parse(readFileSync(join(dir, 'package.json')).toString())
+          if (existsSync(tsPath)) {
+            return tsPath
+          }
 
-          return join(dir, packageJson.module || packageJson.main)
+          const jsPath = resolve(sourceDirectory, id)
+
+          if (existsSync(jsPath)) {
+            return tsPath
+          }
         }
+
+        // Otherwise let TS attempt to resolve our module
+        return resolveFilePath(
+          id,
+          importer === SERVER_VIRTUAL_ID ? serverFilePath : join(sourceDirectory, 'browser.ts'),
+        )
       }
     },
 
@@ -140,17 +187,33 @@ function scanAndBuild(
   }
 }
 
-function findNodeModule(dir: string, id: string) {
-  let potential = resolve(dir, 'node_modules', id)
+// function findNodeModule(dir: string, id: string) {
+//   let potential = resolve(dir, 'node_modules', id)
 
-  while (dir !== '/') {
-    if (existsSync(potential)) {
-      return potential
-    }
+//   while (dir !== '/') {
+//     if (existsSync(potential)) {
+//       return potential
+//     }
 
-    dir = dirname(dir)
-    potential = resolve(dir, 'node_modules', id)
-  }
+//     dir = dirname(dir)
+//     potential = resolve(dir, 'node_modules', id)
+//   }
 
-  return id
-}
+//   return id
+// }
+
+// function findNodeModuleMain(id: string, path: string) {
+//   if (id === path) {
+//     return id
+//   }
+
+//   const packageJsonFilePath = join(path, 'package.json')
+
+//   if (existsSync(packageJsonFilePath)) {
+//     const packageJson = JSON.parse(readFileSync(packageJsonFilePath).toString())
+
+//     return packageJson.module || packageJson.main || packageJson.exports?.['.']
+//   }
+
+//   return path
+// }

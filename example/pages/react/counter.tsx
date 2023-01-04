@@ -20,6 +20,7 @@ export const main = Main.make(route)((params) =>
     )
     // TODO: Is there a way to make this work without creating a wrapper element?
     const container = yield* $(createElement('div'))
+    container.id = 'react-root'
     const root = createRoot(container)
 
     return pipe(

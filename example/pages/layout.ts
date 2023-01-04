@@ -1,6 +1,5 @@
-import { Link } from '@typed/framework'
 import { html } from '@typed/html'
-import { outlet } from '@typed/router'
+import { Link, outlet } from '@typed/router'
 
 // A layout is applied to all pages that don't have a layout specified in the same directory
 // or child directories. If a layout is specified in a child directory, or a module, it will be used

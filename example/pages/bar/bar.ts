@@ -1,7 +1,7 @@
-import { Main, Link } from '@typed/framework'
+import { Main } from '@typed/framework'
 import { html } from '@typed/html'
 import * as Route from '@typed/route'
-import { outlet } from '@typed/router'
+import { Link, outlet } from '@typed/router'
 
 import { Counter, layer } from '../../components/counter-with-service.js'
 
@@ -15,7 +15,7 @@ export const layout = html`
   <div>
     <h1>Bar</h1>
 
-    <div>${Link({ href: '/', label: 'Go Back' })}</div>
+    <nav>${Link({ href: '/', label: 'Go Back' })}</nav>
 
     <main>${outlet}</main>
   </div>
