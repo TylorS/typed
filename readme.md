@@ -22,10 +22,7 @@ If you're interested in chatting about this project join us on [Discord](https:/
 
 ## Upcoming
 
-- Vite-based SSR/SSG plugin
-  - File-based routing
-  - Effect integration
-  - SSR, SSG, and CSR
+- Static generation of files
 - Integrations with @fp-ts/schema
 - Itegrations with @fp-ts/optic
 - 
