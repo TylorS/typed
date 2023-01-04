@@ -2,7 +2,6 @@
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
-import * as Duration from '@fp-ts/data/Duration'
 import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import * as Context from '@typed/context'
@@ -203,10 +202,8 @@ export const makeRouter = (
     yield* $(
       pipe(
         Fx.mergeAll(addWindowListener('popstate'), addWindowListener('hashchange'), historyEvents),
-        Fx.debounce(Duration.millis(0)),
-        Fx.map(() => getCurrentPath(location)),
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        Fx.switchMapEffect((path) => currentPath!.set(path)),
+        Fx.switchMapEffect(() => currentPath!.set(getCurrentPath(location))),
         Fx.forkScoped,
       ),
     )
