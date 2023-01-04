@@ -70,6 +70,12 @@ for (const name of packageNames) {
       }
     }
   }
+  
+  if (!packageJson.private) {
+    packageJson.publishConfig = {
+      access: 'public'
+    }
+  }
 
   packageJson.dependencies = {}
   packageJson.devDependencies = {}

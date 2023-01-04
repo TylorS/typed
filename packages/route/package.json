@@ -25,5 +25,10 @@
     "@fp-ts/data": "~0.0.36",
     "@typed/path": "workspace:*",
     "path-to-regexp": "^6.2.1"
-  }
+  },
+  "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {}
 }

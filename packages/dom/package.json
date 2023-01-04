@@ -22,10 +22,15 @@
   },
   "dependencies": {
     "@effect/io": "~0.0.52",
-    "@fp-ts/data": "~0.0.36",
-    "@fp-ts/schema": "~0.0.7",
     "@typed/context": "workspace:*",
+    "@fp-ts/data": "~0.0.36",
     "@typed/fx": "workspace:*",
+    "@fp-ts/schema": "~0.0.7",
     "typed-query-selector": "^2.8.0"
-  }
+  },
+  "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {}
 }
