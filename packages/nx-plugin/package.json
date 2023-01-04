@@ -6,6 +6,5 @@
   "devDependencies": {
     "@nrwl/devkit": "^15.4.4"
   },
-  "generators": "generators.json",
-  "dependencies": {}
+  "generators": "generators.json"
 }
