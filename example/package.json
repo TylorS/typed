@@ -1,6 +1,7 @@
 {
   "name": "@typed/example",
   "type": "module",
+  "private": true,
   "dependencies": {
     "@typed/compiler": "workspace:*",
     "@typed/context": "workspace:*",
