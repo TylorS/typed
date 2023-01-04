@@ -175,17 +175,10 @@ function scanAndBuild(
   )
   const filePath = join(dir, `${environment}.ts`)
   const entryPoint = buildEntryPoint(scanned, project, environment, filePath)
-  const emitOutput = entryPoint.getEmitOutput()
-  const outputFiles = emitOutput.getOutputFiles()
-  const outputFile = outputFiles.find(
-    (f) => f.getFilePath().endsWith('.js') || f.getFilePath().endsWith('.jsx'),
-  )
-
-  if (!outputFile) {
-    throw new Error(`Unable to create output for ${filePath}`)
-  }
+  const output = ts.transpileModule(entryPoint.getFullText(), { compilerOptions: project.getCompilerOptions() })
 
   return {
-    code: outputFile.getText(),
+    code: output.outputText,
+    map: output.sourceMapText,
   }
 }
