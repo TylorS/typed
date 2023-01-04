@@ -19,6 +19,11 @@ If you're interested in chatting about this project join us on [Discord](https:/
 - [Path](./packages/path) - Type-safe DSL for working with [path-to-regexp](https://github.com/pillarjs/path-to-regexp)
 - [Route](./packages/route) - Effect-based abstraction for describing a Route built on `Path`
 - [Router](./packages/router) - Fx-based abstraction for routing with `Route`
+- [Vite Plugin](./packages/vite-plugin) - Vite plugin for building CSR and SSR applications with Effect and the packages above.
+
+## Example
+
+There is currently one toy example in the example directory which will showcase the way our vite plugin works.
 
 ## Upcoming
 
