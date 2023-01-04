@@ -1,6 +1,6 @@
 {
   "name": "@typed/route",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -29,6 +29,5 @@
   "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",
   "publishConfig": {
     "access": "public"
-  },
-  "devDependencies": {}
+  }
 }
