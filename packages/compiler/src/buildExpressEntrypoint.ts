@@ -20,6 +20,7 @@ export function buildExpressEntrypoint(
 ) {
   const [imports, modules, fallback] = buildImportsAndModules(sourceFileModules, dirname(outFile))
   const shouldImportRoute = modules.some((x) => x.includes('provideLayer'))
+  const shouldImportModule = modules.length > 0
 
   const entrypoint = project.createSourceFile(
     outFile,
@@ -29,7 +30,7 @@ import { join } from 'path'
 
 import * as F from '@fp-ts/data/Function'
 import { readIndexHtml, getClientDirectory, runExpressApp } from '@typed/compiler'
-import { Module, buildModules } from '@typed/framework'
+import { ${shouldImportModule ? 'Module, ': ""}buildModules } from '@typed/framework'
 import * as Fx from '@typed/fx' ${
       shouldImportRoute ? EOL + `import * as Route from '@typed/route'` : ''
     }
@@ -53,7 +54,7 @@ if (import.meta.env.PROD) {
 const matcher = buildModules([
   ${modules.join(',' + EOL + '  ')}
 ])
-const main = ${fallback ? runMatcherWithFallback(fallback) : `matcher.run()`}
+const main = ${fallback ? runMatcherWithFallback(fallback) : `matcher.run`}
 const indexHtml: string = readIndexHtml(join(clientDirectory, 'index.html'))
 
 app.get('*', runExpressApp(main, indexHtml))

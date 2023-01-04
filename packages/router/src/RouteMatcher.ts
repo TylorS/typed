@@ -75,9 +75,6 @@ export interface RouteMatcher<R = never, E = never> {
       : [(path: string) => Path.ParamsOf<P>]
   ) => Fx.Fx<Router | R | R2, E | Redirect, html.Renderable>
 
-  /**
-   * @internal
-   */
   readonly run: Fx.Fx<Router | R, E | Redirect, html.Renderable | null>
 }
 

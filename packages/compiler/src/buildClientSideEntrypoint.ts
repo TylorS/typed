@@ -17,6 +17,7 @@ export function buildClientSideEntrypoint(
 ) {
   const [imports, modules, fallback] = buildImportsAndModules(sourceFileModules, dirname(outFile))
   const shouldImportRoute = modules.some((x) => x.includes('provideLayer'))
+  const shouldImportModule = modules.length > 0
 
   const entrypoint = project.createSourceFile(
     outFile,
@@ -26,7 +27,7 @@ import * as F from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx' ${
       shouldImportRoute ? EOL + `import * as Route from '@typed/route'` : ''
     }
-import { Module, buildModules, provideBrowserIntrinsics } from '@typed/framework'
+import { ${shouldImportModule ? 'Module, ': ""}buildModules, provideBrowserIntrinsics } from '@typed/framework'
 import { renderInto } from '@typed/html'
 ${imports.join('\n')}
 
@@ -40,7 +41,7 @@ if (!parentElement) {
 const matcher = buildModules([
   ${modules.join(',' + EOL + '  ')}
 ])
-const main = ${fallback ? runMatcherWithFallback(fallback) : `matcher.run()`}
+const main = ${fallback ? runMatcherWithFallback(fallback) : `matcher.run`}
 
 const program = F.pipe(
   main,
@@ -48,7 +49,7 @@ const program = F.pipe(
   provideBrowserIntrinsics(window, { parentElement }),
 )
 
-document.addEventListener('DOMContentLoaded', () => Fx.unsafeRun(program))
+document.addEventListener('DOMContentLoaded', () => Fx.unsafeRunAsync(program))
 `,
     { overwrite: true },
   )
