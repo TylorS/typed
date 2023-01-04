@@ -31,14 +31,14 @@ class OnDoneCauseFx<R, E, A, R2, E2, B, R3, E3, C>
         (cause) =>
           pipe(
             this.onCause(cause),
-            Effect.foldCauseEffect(
+            Effect.matchCauseEffect(
               (cause2) => sink.error(Cause.sequential(cause, cause2)),
               () => sink.error(cause),
             ),
           ),
         pipe(
           this.onDone,
-          Effect.foldCauseEffect(sink.error, () => sink.end),
+          Effect.matchCauseEffect(sink.error, () => sink.end),
         ),
       ),
     )

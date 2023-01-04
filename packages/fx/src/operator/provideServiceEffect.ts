@@ -29,7 +29,7 @@ class ProvideServiceEffectFx<R, E, A, R2, E2, S>
     return pipe(
       this.self.run(sink),
       Effect.provideServiceEffect(this.tag)(this.service),
-      Effect.foldCauseEffect(sink.error, Effect.succeed),
+      Effect.matchCauseEffect(sink.error, Effect.succeed),
     ) as Effect.Effect<Exclude<R | R2 | R3 | Scope, S>, never, unknown>
   }
 }

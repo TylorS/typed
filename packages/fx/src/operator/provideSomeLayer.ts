@@ -20,7 +20,7 @@ class ProvideSomeLayerFx<R, E, A, R2, E2, S>
   run<R3>(sink: Fx.Sink<R3, E | E2, A>) {
     return pipe(
       Effect.provideSomeLayer(this.layer)(this.self.run(sink)),
-      Effect.foldCauseEffect(sink.error, Effect.succeed),
+      Effect.matchCauseEffect(sink.error, Effect.succeed),
     )
   }
 }

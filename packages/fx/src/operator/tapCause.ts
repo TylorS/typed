@@ -26,7 +26,7 @@ class TapCauseFx<R, E, A, R2, E2, B>
         (cause) =>
           pipe(
             this.f(cause),
-            Effect.foldCauseEffect(
+            Effect.matchCauseEffect(
               (cause2) => sink.error(Cause.sequential(cause, cause2)),
               () => sink.error(cause),
             ),

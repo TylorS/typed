@@ -27,7 +27,7 @@ class ScanEffectFx<R, E, A, R2, E2, B, R3, E3>
   run<R4>(sink: Sink<R4, E | E2 | E3, B>) {
     return pipe(
       this.seed,
-      Effect.foldCauseEffect(sink.error, (acc) =>
+      Effect.matchCauseEffect(sink.error, (acc) =>
         pipe(
           sink.event(acc),
           Effect.flatMap(() => this.fx.run(new ScanEffectSink(sink, acc, this.f))),
@@ -50,7 +50,7 @@ class ScanEffectSink<R, E, A, R2, E2, B, R3, E3, R4> implements Fx.Sink<R | R2 |
   event = (a: A) => {
     return pipe(
       this.f(this.acc, a),
-      Effect.foldCauseEffect(this.sink.error, (acc) => {
+      Effect.matchCauseEffect(this.sink.error, (acc) => {
         this.acc = acc
 
         return this.sink.event(acc)

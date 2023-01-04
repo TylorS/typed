@@ -55,7 +55,7 @@ class SnapshotEffectFx<R, E, A, R2, E2, B, R3, E3, C>
                       (b) =>
                         pipe(
                           f(b, a),
-                          Effect.foldCauseEffect(sink.error, sink.event),
+                          Effect.matchCauseEffect(sink.error, sink.event),
                           Effect.as(Option.some(b)),
                         ),
                     ),

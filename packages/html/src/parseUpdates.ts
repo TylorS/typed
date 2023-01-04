@@ -161,7 +161,7 @@ function ref(node: Element) {
     if (oldValue !== newValue && isElementRef(newValue)) {
       oldValue = newValue
 
-      runtime.unsafeRunAsync(newValue.set(Maybe.some(node as HTMLElement)))
+      runtime.unsafeRun(newValue.set(Maybe.some(node as HTMLElement)))
     }
   }
 }
@@ -186,14 +186,14 @@ function event(node: Element, name: string) {
     }
 
     if (newValue instanceof EventHandlerImplementation) {
-      listener = (ev: Event) => runtime.unsafeRunAsync(newValue.handler(ev))
+      listener = (ev: Event) => runtime.unsafeRun(newValue.handler(ev))
       node.addEventListener(type, listener, newValue.options)
 
       return
     }
 
     if (isEffect(newValue)) {
-      listener = () => runtime.unsafeRunAsync(newValue as any)
+      listener = () => runtime.unsafeRun(newValue as any)
       node.addEventListener(type, listener)
 
       return

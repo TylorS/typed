@@ -131,7 +131,7 @@ export function provideEnvironment<R>(environment: Context.Context<R>) {
       params: pipe(router.params, Fx.provideEnvironment(environment)),
       route: Route.provideEnvironment(environment)(router.route),
       createPath: ((other, ...params) =>
-        Effect.provideEnvironment(environment)(router.createPath(other, ...params))) as Router<
+        Effect.provideEnvironment<R>(environment)(router.createPath(other, ...params))) as Router<
         never,
         P
       >['createPath'],
@@ -240,7 +240,7 @@ const patchHistory = Effect.gen(function* ($) {
   const historyEvents = Fx.Subject.unsafeMake<never, void>()
   const runtime = yield* $(Effect.runtime<never>())
 
-  patchHistory_(history, () => runtime.unsafeRunAsync(historyEvents.event()))
+  patchHistory_(history, () => runtime.unsafeRun(historyEvents.event()))
 
   return historyEvents
 })

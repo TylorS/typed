@@ -34,7 +34,7 @@ class FilterEffectSink<R, E, A, R2, E2> implements Fx.Sink<R | R2, E, A> {
   event = (a: A) => {
     return pipe(
       this.predicate(a),
-      Effect.foldCauseEffect(this.sink.error, (b) => (b ? this.sink.event(a) : Effect.unit())),
+      Effect.matchCauseEffect(this.sink.error, (b) => (b ? this.sink.event(a) : Effect.unit())),
     )
   }
 

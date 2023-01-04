@@ -7,7 +7,7 @@ export const promiseFx = <R, E, A>(f: () => Promise<Fx<R, E, A>>): Fx<R, E, A> =
   Fx((sink) =>
     pipe(
       Effect.promise(f),
-      Effect.foldCauseEffect(sink.error, (fx) => fx.run(sink)),
+      Effect.matchCauseEffect(sink.error, (fx) => fx.run(sink)),
     ),
   )
 
@@ -17,7 +17,7 @@ export const promiseInterruptFx = <R, E, A>(
   Fx((sink) =>
     pipe(
       Effect.promiseInterrupt(f),
-      Effect.foldCauseEffect(sink.error, (fx) => fx.run(sink)),
+      Effect.matchCauseEffect(sink.error, (fx) => fx.run(sink)),
     ),
   )
 
@@ -28,7 +28,7 @@ export const tryCatchPromiseFx = <R, E, A, E2>(
   Fx((sink) =>
     pipe(
       Effect.tryCatchPromise(f, onError),
-      Effect.foldCauseEffect(sink.error, (fx) => fx.run(sink)),
+      Effect.matchCauseEffect(sink.error, (fx) => fx.run(sink)),
     ),
   )
 
@@ -39,6 +39,6 @@ export const tryCatchPromiseInterruptFx = <R, E, A, E2>(
   Fx((sink) =>
     pipe(
       Effect.tryCatchPromiseInterrupt(f, onError),
-      Effect.foldCauseEffect(sink.error, (fx) => fx.run(sink)),
+      Effect.matchCauseEffect(sink.error, (fx) => fx.run(sink)),
     ),
   )

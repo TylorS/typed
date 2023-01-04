@@ -26,7 +26,7 @@ export function run_<A, R2, E2, E, R3, E3, B, R4, E4>(
       const sink = Sink(
         flow(
           event,
-          Effect.foldCauseEffect(
+          Effect.matchCauseEffect(
             (cause) =>
               Effect.sync(() =>
                 pipe(deferred, Deferred.unsafeDone<E2 | E3 | E4, B>(Effect.failCause(cause))),

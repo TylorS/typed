@@ -20,7 +20,7 @@ class StartWithEffectFx<R, E, A, R2, E2, B>
   run<R3>(sink: Fx.Sink<R3, E | E2, A | B>) {
     return pipe(
       this.effect,
-      Effect.foldCauseEffect(sink.error, (a) =>
+      Effect.matchCauseEffect(sink.error, (a) =>
         pipe(
           a,
           sink.event,

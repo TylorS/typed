@@ -25,7 +25,7 @@ class OnInterruptFx<R, E, A, R2, E2, B>
   run<R3>(sink: Fx.Sink<R3, E | E2, A>) {
     return pipe(
       this.fx.run(sink),
-      Effect.onInterrupt(flow(this.f, Effect.foldCauseEffect(sink.error, Effect.unit))),
+      Effect.onInterrupt(flow(this.f, Effect.matchCauseEffect(sink.error, Effect.unit))),
     )
   }
 }

@@ -13,7 +13,7 @@ class FromEffect<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
   }
 
   run<R2>(sink: Sink<R2, E, A>) {
-    return Effect.foldCauseEffect(
+    return Effect.matchCauseEffect(
       sink.error,
       flow(sink.event, Effect.zipRight(sink.end)),
     )(this.effect)

@@ -24,7 +24,7 @@ class AcquireUseReleaseFx<R, E, A, R2, R3, E3, B>
   run<R4>(sink: Fx.Sink<R4, E | E3, B>) {
     return pipe(
       Effect.acquireUseRelease(this.acquire, (a) => this.use(a).run(sink), this.release),
-      Effect.foldCauseEffect(sink.error, Effect.succeed),
+      Effect.matchCauseEffect(sink.error, Effect.succeed),
     )
   }
 }
