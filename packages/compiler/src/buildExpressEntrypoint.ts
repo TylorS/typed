@@ -27,9 +27,7 @@ import { join } from 'path'
 import * as F from '@fp-ts/data/Function'
 import { readIndexHtml, getClientDirectory, runExpressApp } from '@typed/compiler'
 import { ${shouldImportModule ? 'Module, ' : ''}buildModules } from '@typed/framework'
-import * as Fx from '@typed/fx' ${
-      shouldImportRoute ? EOL + `import * as Route from '@typed/route'` : ''
-    }
+${shouldImportRoute ? EOL + `import * as Route from '@typed/route'` : ''}
 import express from 'express'
 import expressStaticGzip from 'express-static-gzip'
 import httpDevServer from 'vavite/http-dev-server'
