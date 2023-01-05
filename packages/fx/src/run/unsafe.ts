@@ -1,14 +1,15 @@
-import {Cancel} from '@effect/io/Runtime'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
 import * as Fiber from '@effect/io/Fiber'
+import { Cancel } from '@effect/io/Runtime'
 import * as Scope from '@effect/io/Scope'
 
 import { Fx } from '../Fx.js'
 
 import { drain } from './drain.js'
 
-export const unsafeRunAsync = <E, A>(fx: Fx<never, E, A>): Cancel<E, void> => Effect.unsafeRun(drain(fx))
+export const unsafeRunAsync = <E, A>(fx: Fx<never, E, A>): Cancel<E, void> =>
+  Effect.unsafeRun(drain(fx))
 
 export const unsafeRunAsyncWith =
   <E>(f: (exit: Exit.Exit<E, void>) => void) =>

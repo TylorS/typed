@@ -3,7 +3,7 @@ import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
 
-import { observe } from './observe.js'
+import { observeSync } from './observe.js'
 
 export const reduce: <B, A>(
   seed: B,
@@ -14,7 +14,7 @@ export const reduce: <B, A>(
 
     return pipe(
       fx,
-      observe((a) => Effect.sync(() => (acc = f(acc, a)))),
+      observeSync((a) => (acc = f(acc, a))),
       Effect.map(() => acc),
     )
   })

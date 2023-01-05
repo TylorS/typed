@@ -42,7 +42,7 @@ export function run_<A, R2, E2, E, R3, E3, B, R4, E4>(
 
       const c = yield* $(Deferred.await(deferred))
 
-      yield* $(Fiber.interrupt(fiber))
+      yield* $(Fiber.interruptFork(fiber))
 
       return c
     })
