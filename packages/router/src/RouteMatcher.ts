@@ -12,7 +12,7 @@ import * as Path from '@typed/path'
 import * as Route from '@typed/route'
 
 import { RouteMatch } from './RouteMatch.js'
-import { currentPath, Redirect, redirectTo, Router } from './router.js'
+import { Redirect, redirectTo, Router } from './router.js'
 
 export interface RouteMatcher<R = never, E = never> {
   // Where things are actually stored immutably
@@ -118,11 +118,11 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
           const { environment } = yield* $(RenderContext.get)
           // Create stable references to the route matchers
           const matchers = Array.from(routes.values()).map(
-            (v) => [v, runRouteMatch(router, v)] as const,
+            (v) =>
+              [{ ...v, route: router.route.concat(v.route) }, runRouteMatch(router, v)] as const,
           )
 
-          const renderFallback = pipe(currentPath, Fx.switchMap(f))
-          const fallbackMatch = RouteMatch(Route.base, () => renderFallback, options?.layout)
+          const renderFallback = Fx.switchMap(f)(router.currentPath)
 
           let previousFiber: Fiber.RuntimeFiber<any, any> | undefined
           let previousLayout: Fx.Fx<any, any, html.Renderable> | undefined
@@ -137,19 +137,19 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
           // This function helps us to ensure shared layouts are only rendered once
           // and the outlet content is changed
           const verifyShouldRerender = (
-            match: RouteMatch<any, any, any>,
             render: Fx.Fx<any, any, html.Renderable>,
+            layout?: Fx.Fx<any, any, html.Renderable>,
           ): Effect.Effect<any, any, Option.Option<Fx.Fx<any, any, html.Renderable>>> =>
             Effect.gen(function* ($) {
               const previous = samplePreviousValues()
 
               // Update the previous values
               previousRender = render
-              previousLayout = match.layout
+              previousLayout = layout
               previousFiber = undefined
 
               // Skip rerendering if the render function is the same
-              if (previous.render === render) {
+              if (previous.render === render && previous.layout === layout) {
                 return Option.none
               }
 
@@ -159,13 +159,13 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
               }
 
               // If we have a layout, we need to render it and use the route outlet.
-              if (match.layout) {
+              if (layout) {
                 // Render into the route outlet
                 previousFiber = yield* $(
                   pipe(render, Fx.observe(router.outlet.set), Effect.forkScoped),
                 )
 
-                return Option.some(match.layout)
+                return Option.some(layout)
               }
 
               // If we don't have a layout, but we did, we need to clear the outlet
@@ -182,29 +182,27 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
             environment === 'browser' ? Fx.skipRepeats : Fx.take(1),
             Fx.switchMapEffect((path) =>
               Effect.gen(function* ($) {
-                yield* $(Effect.logDebug(`[@typed/router] Matching path: ${path}.`))
+                yield* $(Effect.logDebug(`[@typed/router] Matching path: ${path}`))
 
                 // Attempt to find the best match
                 for (const [match, render] of matchers) {
-                  yield* $(
-                    Effect.logDebug(`[@typed/router] Matching against: ${match.route.path}.`),
-                  )
+                  yield* $(Effect.logDebug(`[@typed/router] Matching against: ${match.route.path}`))
 
                   const result = yield* $(match.route.match(path))
 
                   if (Option.isSome(result)) {
                     yield* $(
-                      Effect.logDebug(`[@typed/router] Matched against: ${match.route.path}.`),
+                      Effect.logDebug(`[@typed/router] Matched against: ${match.route.path}`),
                     )
 
-                    return yield* $(verifyShouldRerender(match, render))
+                    return yield* $(verifyShouldRerender(render, match.layout))
                   }
                 }
 
-                yield* $(Effect.logDebug(`[@typed/router] Rendering fallback.`))
+                yield* $(Effect.logDebug(`[@typed/router] Rendering fallback`))
 
                 // If we didn't find a match, render the not found page
-                return yield* $(verifyShouldRerender(fallbackMatch, renderFallback))
+                return yield* $(verifyShouldRerender(renderFallback, options.layout))
               }),
             ),
             Fx.compact,

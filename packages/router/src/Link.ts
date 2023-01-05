@@ -7,23 +7,24 @@ import { Router } from './router.js'
 export function Link<R = never, E = never, R2 = never>(
   props: LinkProps<R, E, R2>,
 ): Fx.Fx<R | R2 | Router, E, Hole> {
-  const clickHandler = (event: MouseEvent & { currentTarget: HTMLAnchorElement }) =>
-    Effect.gen(function* ($) {
-      const { currentPath } = yield* $(Router.get)
+  return Fx.gen(function* ($) {
+    const router = yield* $(Router.get)
+    const clickHandler = (event: MouseEvent & { currentTarget: HTMLAnchorElement }) =>
+      Effect.gen(function* ($) {
+        yield* $(router.currentPath.set(props.href))
 
-      yield* $(currentPath.set(props.href))
+        if (props.onClick) {
+          yield* $(props.onClick(event))
+        }
+      })
 
-      if (props.onClick) {
-        yield* $(props.onClick(event))
-      }
-    })
-
-  return html`<a
-    class=${props.className}
-    href="${props.href}"
-    onclick=${EventHandler.preventDefault(clickHandler)}
-    >${props.label}</a
-  >`
+    return html`<a
+      class=${props.className}
+      href="${props.href}"
+      onclick=${EventHandler.preventDefault(clickHandler)}
+      >${props.label}</a
+    >`
+  })
 }
 
 export interface LinkProps<R, E, R2> {

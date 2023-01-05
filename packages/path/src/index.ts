@@ -156,7 +156,9 @@ export const formatPart = (part: string) => {
 /**
  * @category Type-level
  */
-export type FormatPart<P extends string> = `` extends P
+export type FormatPart<P extends string> = [never] extends [P]
+  ? string
+  : `` extends P
   ? P
   : RemoveLeadingSlash<P> extends `\\?${infer _}`
   ? RemoveLeadingSlash<P>
@@ -315,10 +317,9 @@ type Compact<A> = { readonly [K in keyof A]: A[K] }
 /**
  * @category Type-level
  */
-export type Interpolate<
-  P extends string,
-  Params extends ParamsOf<P>,
-> = P extends `${infer Head}\\?${infer Tail}`
+export type Interpolate<P extends string, Params extends ParamsOf<P>> = [Params] extends [never]
+  ? P
+  : P extends `${infer Head}\\?${infer Tail}`
   ? PathJoin<
       InterpolateWithQueryParams<
         SplitQueryParams<Tail>,

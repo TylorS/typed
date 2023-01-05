@@ -5,7 +5,7 @@ import * as Scope from '@effect/io/Scope'
 import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import * as Context from '@typed/context'
-import { Location, History, addWindowListener } from '@typed/dom'
+import { Document, Location, History, addWindowListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
 import * as html from '@typed/html'
 import { RenderContext } from '@typed/html'
@@ -179,6 +179,8 @@ redirectTo.fx = <R, P extends string>(
     Fx.switchMap(redirect.fx),
   )
 
+// TOOD: Add support for reading <base> tag for default Router path.
+
 export const makeRouter = (
   currentPath?: Fx.RefSubject<string>,
 ): Effect.Effect<Location | History | Window | Document | Scope.Scope, never, Router> =>
@@ -222,8 +224,13 @@ export const makeRouter = (
       ),
     )
 
+    // Find the configured base path
+    const document = yield* $(Document.get)
+    const base = document.querySelector('base')
+    const baseHref = base ? getBasePath(base.href) : '/'
+
     // Make our base router
-    return Router(Route.base, currentPath) as Router
+    return Router(Route.Route(baseHref), currentPath) as Router
   })
 
 export const live = (
@@ -231,7 +238,7 @@ export const live = (
 ): Layer.Layer<Location | History | Window | Document, never, Router<never, string>> =>
   Router.layerSoped(makeRouter(currentPath))
 
-export function getCurrentPath(location: Location | HTMLAnchorElement) {
+export function getCurrentPath(location: Location | HTMLAnchorElement | URL) {
   return location.pathname + location.search + location.hash
 }
 
@@ -275,5 +282,15 @@ function patchHistory_(history: History, sendEvent: () => void) {
   history.forward = function () {
     forward()
     sendEvent()
+  }
+}
+
+function getBasePath(href: string) {
+  try {
+    const url = new URL(href)
+
+    return getCurrentPath(url)
+  } catch {
+    return href
   }
 }

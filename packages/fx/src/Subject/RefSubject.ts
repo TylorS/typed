@@ -49,11 +49,11 @@ export namespace RefSubject {
         const current = getValue()
         const [b, a] = f(current)
 
+        mutableRef.set(Option.some(a))
+
         if (eq(current, a)) {
           return Effect.succeed(b)
         }
-
-        mutableRef.set(Option.some(a))
 
         return pipe(subject.event(a), Effect.as(b))
       })
