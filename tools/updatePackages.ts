@@ -29,6 +29,7 @@ const rootPackageJson = readJson(join(root, 'package.json'))
 const esmBultinModules = builtinModules.map((x) => `node:${x}`)
 
 for (const name of packageNames) {
+  console.log(`Updating ${name}...`)
   const packageDir = join(packagesDir, name)
   const srcDir = join(packageDir, 'src')
   const filePaths = getAllFilePaths(srcDir)
@@ -70,16 +71,16 @@ for (const name of packageNames) {
       }
     }
   }
-  
+
   if (!packageJson.private) {
     packageJson.publishConfig = {
-      access: 'public'
+      access: 'public',
     }
   }
 
   packageJson.dependencies = {}
   packageJson.devDependencies = {}
-  for (const dependency of dependencies) {
+  for (const dependency of Array.from(dependencies).sort()) {
     checkDependency(dependency, packageJson)
   }
 
@@ -155,7 +156,7 @@ function findRootPackageVersion(name: string) {
   return null
 }
 
-function parsePackageName(importPath: string) {
+function parsePackageName(importPath: string): readonly [string, string] {
   const [orgName, packageName = ''] = importPath.split(/\//g).map((x) => x.trim())
 
   if (packageName === '' || !orgName.startsWith('@')) {
