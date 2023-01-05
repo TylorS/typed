@@ -152,7 +152,10 @@ function scanAndBuild(
   )
   const filePath = join(dir, `${environment}.ts`)
   const entryPoint = buildEntryPoint(scanned, project, environment, filePath)
-  const output = ts.transpileModule(entryPoint.getFullText(), { compilerOptions: project.getCompilerOptions() })
+  const output = ts.transpileModule(entryPoint.getFullText(), {
+    fileName: entryPoint.getFilePath(),
+    compilerOptions: project.getCompilerOptions(),
+  })
 
   return {
     code: output.outputText,

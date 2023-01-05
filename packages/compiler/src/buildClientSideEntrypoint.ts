@@ -27,7 +27,9 @@ import * as F from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx' ${
       shouldImportRoute ? EOL + `import * as Route from '@typed/route'` : ''
     }
-import { ${shouldImportModule ? 'Module, ': ""}buildModules, provideBrowserIntrinsics } from '@typed/framework'
+import { ${
+      shouldImportModule ? 'Module, ' : ''
+    }buildModules, provideBrowserIntrinsics } from '@typed/framework'
 import { renderInto } from '@typed/html'
 ${imports.join('\n')}
 
