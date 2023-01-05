@@ -18,19 +18,16 @@ import * as typedModule2 from './pages/home.js'
 import * as typedModule0 from './pages/layout.js'
 import * as typedModule5 from './pages/react/counter.jsx'
 
-const MAX_AGE = 31536000000 // 1 year
+export const app: express.Express = express()
+export const clientDirectory = getClientDirectory(import.meta.url)
 
-const app = express()
-const clientDirectory = getClientDirectory(import.meta.url)
-
-if (import.meta.env.PROD) {
-  // TODO: Handle mapping assets to a CDN in production
-  app.use(
-    expressStaticGzip(clientDirectory, { serveStatic: { maxAge: MAX_AGE, cacheControl: true } }),
-  )
+export function staticGzip(
+  options: expressStaticGzip.ExpressStaticGzipOptions,
+): express.RequestHandler {
+  return expressStaticGzip(clientDirectory, options)
 }
 
-const matcher = buildModules([
+export const matcher = buildModules([
   Module.make(typedModule2.route, () => typedModule2.main, { layout: typedModule0.layout }),
   Module.make(
     F.pipe(typedModule3.route, Route.provideLayer(typedModule3.environment)),
@@ -40,15 +37,19 @@ const matcher = buildModules([
   Module.make(typedModule4.route, typedModule4.main, { layout: typedModule0.layout }),
   Module.make(typedModule5.route, typedModule5.main, { layout: typedModule0.layout }),
 ])
-const main = matcher.notFound(typedModule1.fallback, { layout: typedModule0.layout })
-const indexHtml: string = readIndexHtml(join(clientDirectory, 'index.html'))
 
-app.get('*', runExpressApp(main, indexHtml))
+export const main = matcher.notFound(typedModule1.fallback, { layout: typedModule0.layout })
 
-if (httpDevServer) {
-  httpDevServer.on('request', app)
-} else {
-  app.listen(3000, () => {
-    console.log('Starting prod server on port 3000')
-  })
+export const indexHtml: string = readIndexHtml(join(clientDirectory, 'index.html'))
+
+export const requestHandler: express.RequestHandler = runExpressApp(main, indexHtml)
+
+export const listen = (...args: ArgsOf<typeof app['listen']>) => {
+  if (httpDevServer) {
+    httpDevServer.on('request', app)
+  } else {
+    app.listen(...args)
+  }
 }
+
+type ArgsOf<T> = T extends (...args: infer A) => any ? A : never

@@ -1,14 +1,10 @@
 import { EOL } from 'os'
-import { dirname, relative } from 'path'
+import { dirname } from 'path'
 
 import type { Project } from 'ts-morph'
 
-import {
-  FallbackSourceFileModule,
-  LayoutSourceFileModule,
-  RedirectSourceFileModule,
-  SourceFileModule,
-} from './SourceFileModule.js'
+import { SourceFileModule } from './SourceFileModule.js'
+import { buildImportsAndModules, runMatcherWithFallback } from './helpers.js'
 
 export function buildClientSideEntrypoint(
   sourceFileModules: SourceFileModule[],
@@ -33,25 +29,17 @@ import { ${
 import { renderInto } from '@typed/html'
 ${imports.join('\n')}
 
-const parentElementId = 'application'
-const parentElement = document.getElementById(parentElementId)
-
-if (!parentElement) {
-  throw new Error(\`Could not find element with id \${parentElementId}"\`)
-}
-
-const matcher = buildModules([
+export const matcher = buildModules([
   ${modules.join(',' + EOL + '  ')}
 ])
-const main = ${fallback ? runMatcherWithFallback(fallback) : `matcher.run`}
 
-const program = F.pipe(
+export const main = ${fallback ? runMatcherWithFallback(fallback) : `matcher.run`}
+
+export const render = <T extends HTMLElement>(parentElement: T) => F.pipe(
   main,
   renderInto(parentElement),
   provideBrowserIntrinsics(window, { parentElement }),
 )
-
-document.addEventListener('DOMContentLoaded', () => Fx.unsafeRunAsync(program))
 `,
     { overwrite: true },
   )
@@ -64,103 +52,4 @@ document.addEventListener('DOMContentLoaded', () => Fx.unsafeRunAsync(program))
   }
 
   return entrypoint
-}
-
-function buildImportsAndModules(sourceFileModules: SourceFileModule[], relativeTo: string) {
-  let _id = 0
-  const imports: string[] = []
-  const modules: string[] = []
-
-  let layout: [LayoutSourceFileModule, string] | undefined
-  let fallback: [FallbackSourceFileModule | RedirectSourceFileModule, string, string?] | undefined
-
-  for (const mod of sourceFileModules) {
-    const id = _id++
-    const filePath = mod.sourceFile.getFilePath()
-    const moduleName = `typedModule${id}`
-
-    imports.push(
-      `import * as ${moduleName} from './${relative(relativeTo, filePath).replace(
-        /.ts(x)?/,
-        '.js$1',
-      )}'`,
-    )
-
-    switch (mod._tag) {
-      case 'Redirect/Basic':
-      case 'Redirect/Environment':
-      case 'Fallback/Basic':
-      case 'Fallback/Environment': {
-        if (!fallback) {
-          fallback = [mod, moduleName, layout?.[1]]
-        } else {
-          throw new Error('Only one root-level fallback module is allowed')
-        }
-
-        continue
-      }
-      case 'Layout/Basic':
-      case 'Layout/Environment': {
-        layout = [mod, moduleName]
-
-        continue
-      }
-      case 'Render/Basic': {
-        modules.push(
-          `Module.make(${moduleName}.route, ${
-            mod.isFx ? `() => ${moduleName}.main,` : `${moduleName}.main,`
-          }${
-            mod.hasLayout
-              ? `{ layout: ${moduleName}.layout }`
-              : layout
-              ? ` { layout: ${layout[1]}.layout }`
-              : ''
-          })`,
-        )
-        continue
-      }
-      case 'Render/Environment': {
-        modules.push(
-          `Module.make(F.pipe(${moduleName}.route, Route.provideLayer(${moduleName}.environment)), F.flow(${
-            mod.isFx ? `() => ${moduleName}.main` : `${moduleName}.main`
-          }, Fx.provideSomeLayer(${moduleName}.environment)), ${
-            mod.hasLayout
-              ? `{ layout: ${moduleName}.layout }`
-              : layout
-              ? ` { layout: ${layout[1]}.layout }`
-              : ''
-          })`,
-        )
-        continue
-      }
-    }
-  }
-
-  return [imports, modules, fallback] as const
-}
-
-function runMatcherWithFallback([fallback, fallbackModuleName, layoutModule]: [
-  FallbackSourceFileModule | RedirectSourceFileModule,
-  string,
-  string?,
-]) {
-  switch (fallback._tag) {
-    case 'Redirect/Basic':
-      return `matcher.redirectTo(${fallbackModuleName}.route, ${fallbackModuleName}?.params ?? {})`
-
-    case 'Redirect/Environment':
-      return `matcher.redirectTo(F.pipe(${fallbackModuleName}.route, Route.provideLayer(${fallbackModuleName}.environment)), ${fallbackModuleName}?.params ?? {})`
-
-    case 'Fallback/Basic':
-      return `matcher.notFound(${
-        fallback.isFx ? `() => ${fallbackModuleName}.fallback` : `${fallbackModuleName}.fallback`
-      }${layoutModule ? `, {layout:${layoutModule}.layout}` : ``})`
-
-    case 'Fallback/Environment':
-      return `matcher.notFound(${
-        fallback.isFx
-          ? `() => F.pipe(${fallbackModuleName}.fallback, Fx.provideSomeLayer(${fallbackModuleName}.environment))`
-          : `F.flow(${fallbackModuleName}.fallback, Fx.provideSomeLayer(${fallbackModuleName}.environment))`
-      }${layoutModule ? `, {layout:${layoutModule}.layout}` : ``})`
-  }
 }

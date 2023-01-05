@@ -13,14 +13,7 @@ import * as typedModule2 from './pages/home.js'
 import * as typedModule0 from './pages/layout.js'
 import * as typedModule5 from './pages/react/counter.jsx'
 
-const parentElementId = 'application'
-const parentElement = document.getElementById(parentElementId)
-
-if (!parentElement) {
-  throw new Error(`Could not find element with id ${parentElementId}"`)
-}
-
-const matcher = buildModules([
+export const matcher = buildModules([
   Module.make(typedModule2.route, () => typedModule2.main, { layout: typedModule0.layout }),
   Module.make(
     F.pipe(typedModule3.route, Route.provideLayer(typedModule3.environment)),
@@ -30,12 +23,8 @@ const matcher = buildModules([
   Module.make(typedModule4.route, typedModule4.main, { layout: typedModule0.layout }),
   Module.make(typedModule5.route, typedModule5.main, { layout: typedModule0.layout }),
 ])
-const main = matcher.notFound(typedModule1.fallback, { layout: typedModule0.layout })
 
-const program = F.pipe(
-  main,
-  renderInto(parentElement),
-  provideBrowserIntrinsics(window, { parentElement }),
-)
+export const main = matcher.notFound(typedModule1.fallback, { layout: typedModule0.layout })
 
-document.addEventListener('DOMContentLoaded', () => Fx.unsafeRunAsync(program))
+export const render = <T extends HTMLElement>(parentElement: T) =>
+  F.pipe(main, renderInto(parentElement), provideBrowserIntrinsics(window, { parentElement }))
