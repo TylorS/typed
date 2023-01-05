@@ -84,6 +84,14 @@ for (const name of packageNames) {
     checkDependency(dependency, packageJson)
   }
 
+  if (Object.keys(packageJson.dependencies).length === 0) {
+    delete packageJson.dependencies
+  }
+
+  if (Object.keys(packageJson.devDependencies).length === 0) {
+    delete packageJson.devDependencies
+  }
+
   fs.writeFileSync(join(packageDir, 'package.json'), JSON.stringify(packageJson, null, 2) + EOL)
 
   tsconfigJson.references = Array.from(references)
