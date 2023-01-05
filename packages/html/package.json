@@ -1,6 +1,6 @@
 {
   "name": "@typed/html",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -32,6 +32,5 @@
   "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",
   "publishConfig": {
     "access": "public"
-  },
-  "devDependencies": {}
+  }
 }

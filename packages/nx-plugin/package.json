@@ -1,11 +1,10 @@
 {
   "name": "@typed/nx-plugin",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "commonjs",
   "devDependencies": {
     "@nrwl/devkit": "^15.4.4"
   },
-  "generators": "generators.json",
-  "dependencies": {}
+  "generators": "generators.json"
 }
