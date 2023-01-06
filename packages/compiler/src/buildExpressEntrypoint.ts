@@ -41,9 +41,11 @@ export function staticGzip(options: expressStaticGzip.ExpressStaticGzipOptions):
   return expressStaticGzip(clientDirectory, options)
 }
 
-export const matcher = buildModules([
+export const modules = [
   ${modules.join(',' + EOL + '  ')}
-])
+]
+
+export const matcher = buildModules(modules)
 
 export const main = ${fallback ? runMatcherWithFallback(fallback) : `matcher.run`}
 

@@ -28,9 +28,11 @@ import { ${
 import { renderInto } from '@typed/html'
 ${imports.join('\n')}
 
-export const matcher = buildModules([
+export const modules = [
   ${modules.join(',' + EOL + '  ')}
-])
+]
+
+export const matcher = buildModules(modules)
 
 export const main = ${fallback ? runMatcherWithFallback(fallback) : `matcher.run`}
 

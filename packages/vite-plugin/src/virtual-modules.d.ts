@@ -1,7 +1,9 @@
 declare module 'virtual:browser-entry:*' {
-  import { IntrinsicServices } from '@typed/framework'
+  import { Module, IntrinsicServices } from '@typed/framework'
   import { Renderable } from '@typed/html'
   import { RouteMatcher, Redirect } from '@typed/router'
+
+  export const modules: ReadonlyArray<Module<IntrinsicServices, string>>
 
   export const matcher: RouteMatcher<IntrinsicServices, Redirect>
 
@@ -24,6 +26,8 @@ declare module 'virtual:server-entry:*' {
   export function staticGzip(
     options?: expressStaticGzip.ExpressStaticGzipOptions,
   ): express.RequestHandler
+
+  export const modules: ReadonlyArray<Module<IntrinsicServices, string>>
 
   export const matcher: RouteMatcher<IntrinsicServices, Redirect>
 
