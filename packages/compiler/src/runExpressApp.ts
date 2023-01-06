@@ -10,7 +10,7 @@ import { Redirect } from '@typed/router'
 import express from 'express'
 import isbot from 'isbot'
 
-import { html5Doctype, makeServerWindowFromExpress } from './makeServerWindow.js'
+import { html5Doctype, makeServerWindow } from './makeServerWindow.js'
 
 const prettyPrintCause = Cause.pretty()
 
@@ -23,7 +23,7 @@ export const runExpressApp =
     try {
       await Effect.unsafeRunPromise(
         Effect.gen(function* ($) {
-          const window = makeServerWindowFromExpress(req)
+          const window = makeServerWindow(req)
           const documentElement = window.document.documentElement
 
           documentElement.innerHTML = indexHtml

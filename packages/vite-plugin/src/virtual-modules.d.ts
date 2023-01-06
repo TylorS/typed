@@ -2,7 +2,7 @@
  * typed:module:./path/to/modules is the base way to constructing a graph
  * of related modules together by routes, renderables, and layouts.
  */
-declare module 'typed:module:*' {
+declare module 'typed:modules:*' {
   import { Module, IntrinsicServices } from '@typed/framework'
   import { Fx } from '@typed/fx'
   import { Renderable } from '@typed/html'
@@ -33,17 +33,18 @@ declare module 'typed:browser:*' {
   /**
    * Re-exports from typed:module
    */
-  export * from 'typed:module:*'
+  export * from 'typed:modules:*'
 }
 
 /**
- * typed:server:./path/to/modules extends typed:module:* by
- * adding the associated HTML template as a string and potentially
- * an asset directory where you can serve from if any.
+ * typed:server:*.html helps load associated HTML template as a string and potentially
+ * an asset directory where you can serve any assets it requires from.
  *
  * TODO: Should have helpers for constructing happy-dom instance
  */
 declare module 'typed:server:*' {
+  import { IncomingMessage } from 'http'
+
   /**
    * The path to the directory where assets will be found
    */
@@ -65,9 +66,9 @@ declare module 'typed:server:*' {
   export const docType: string
 
   /**
-   * Re-exports from typed:module
+   * Construct a server-side implementation of Window & GlobalThis
    */
-  export * from 'typed:module:*'
+  export function makeWindow(req: IncomingMessage, origin?: string): Window & typeof globalThis
 }
 
 declare module 'typed:api:*' {

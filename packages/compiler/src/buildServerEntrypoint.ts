@@ -24,6 +24,18 @@ export function buildServerEntrypoint(
     namedImports: ['readFileSync'],
   })
 
+  entrypoint.addImportDeclaration({
+    moduleSpecifier: 'http',
+    namedImports: ['IncomingMessage'],
+    isTypeOnly: true,
+  })
+
+  entrypoint.addImportDeclaration({
+    moduleSpecifier: '@typed/compiler',
+    namedImports: ['makeServerWindow'],
+    isTypeOnly: true,
+  })
+
   entrypoint.insertText(
     entrypoint.getFullWidth(),
     `
@@ -34,6 +46,19 @@ export const html = readFileSync('${htmlFilePath}').toString()
 export const htmlAttributes = ${JSON.stringify(httmlAttributes)}
 
 export const docType = '${docType}'
+
+export function makeWindow(req: IncomingMessage, origin?: string) {
+  const win = makeServerWindow(req, origin)
+  const documentElement = window.document.documentElement
+
+  documentElement.innerHTML = indexHtml
+
+  for (const [key, value] of Object.entries(htmlAttributes)) {
+    documentElement.setAttribute(key, value)
+  }
+
+  return win
+}
     `,
   )
 
