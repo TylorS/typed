@@ -27,6 +27,11 @@ There is currently one toy example in the example directory which will showcase 
 
 ## Upcoming
 
+- Multiple entrypoints
+- Api Routes
+- Integrate effect-ts plugins
+- Hydration of HTML
+- Support for html templating
 - Static generation of files
 - Integrations with @fp-ts/schema
 - Itegrations with @fp-ts/optic

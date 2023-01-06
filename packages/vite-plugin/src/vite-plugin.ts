@@ -25,8 +25,8 @@ export interface PluginOptions {
 const cwd = process.cwd()
 
 const PLUGIN_NAME = '@typed/vite-plugin'
-const BROWSER_VIRTUAL_ENTRYPOINT_PREFIX = 'virtual:browser-entry'
-const SERVER_VIRTUAL_ENTRYPOINT_PREFIX = 'virtual:server-entry'
+const BROWSER_VIRTUAL_ENTRYPOINT_PREFIX = 'typed:browser'
+const SERVER_VIRTUAL_ENTRYPOINT_PREFIX = 'typed:server'
 
 export default function makePlugin({ directory, tsConfig }: PluginOptions): Plugin {
   const sourceDirectory = resolve(cwd, directory)

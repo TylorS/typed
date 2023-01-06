@@ -1,11 +1,11 @@
 import { writeFileSync } from 'fs'
 import { EOL } from 'os'
-import { resolve } from 'path'
+import { join, resolve } from 'path'
 
 import yargs from 'yargs'
 
 import { buildClientSideEntrypoint } from './buildClientSideEntrypoint.js'
-import { buildExpressEntrypoint } from './buildExpressEntrypoint.js'
+import { buildServerEntrypoint } from './buildServerEntrypoint.js'
 import { scanSourceFiles } from './scanSourceFiles.js'
 import { setupTsProject } from './setupTsProject.js'
 
@@ -55,7 +55,8 @@ function buildEntryPoint() {
   }
 
   if (environment === 'server') {
-    return buildExpressEntrypoint(scanned, project, outFile)
+    // TODO: Better handle client directory
+    return buildServerEntrypoint(scanned, project, join(dir, 'index.html'), outFile)
   }
 
   throw new Error(`Unsupported environment: ${environment}`)

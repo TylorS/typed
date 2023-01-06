@@ -1,5 +1,10 @@
-declare module 'virtual:browser-entry:*' {
+/**
+ * typed:module:./path/to/modules is the base way to constructing a graph
+ * of related modules together by routes, renderables, and layouts.
+ */
+declare module 'typed:module:*' {
   import { Module, IntrinsicServices } from '@typed/framework'
+  import { Fx } from '@typed/fx'
   import { Renderable } from '@typed/html'
   import { RouteMatcher, Redirect } from '@typed/router'
 
@@ -8,36 +13,63 @@ declare module 'virtual:browser-entry:*' {
   export const matcher: RouteMatcher<IntrinsicServices, Redirect>
 
   export const main: Fx<IntrinsicServices, Redirect, Renderable>
-
-  export const render: <T extends HTMLElement>(parentElement: T) => Fx<never, never, T>
 }
 
-declare module 'virtual:server-entry:*' {
-  import { IntrinsicServices } from '@typed/framework'
-  import { Renderable } from '@typed/html'
-  import { RouteMatcher, Redirect } from '@typed/router'
-  import express from 'express'
-  import expressStaticGzip from 'express-static-gzip'
+/**
+ * typed:browser:./path/to/modules extends typed:module:* by
+ * adding a render function that can be used to render the application
+ * provided with all IntrinsicServices and handles redirects.
+ */
+declare module 'typed:browser:*' {
+  import { Fx } from '@typed/fx'
 
-  export const app: express.Express
+  /**
+   * Render the application given a parent element
+   */
+  export const render: <T extends HTMLElement | DocumentFragment>(
+    parentElement: T,
+  ) => Fx<never, never, T>
 
-  export const clientDirectory: string
+  /**
+   * Re-exports from typed:module
+   */
+  export * from 'typed:module:*'
+}
 
-  export function staticGzip(
-    options?: expressStaticGzip.ExpressStaticGzipOptions,
-  ): express.RequestHandler
+/**
+ * typed:server:./path/to/modules extends typed:module:* by
+ * adding the associated HTML template as a string and potentially
+ * an asset directory where you can serve from if any.
+ *
+ * TODO: Should have helpers for constructing happy-dom instance
+ */
+declare module 'typed:server:*' {
+  /**
+   * The path to the directory where assets will be found
+   */
+  export const assetDirectory: string | null
 
-  export const modules: ReadonlyArray<Module<IntrinsicServices, string>>
+  /**
+   * The html to utilize for rendering
+   */
+  export const html: string
 
-  export const matcher: RouteMatcher<IntrinsicServices, Redirect>
+  /**
+   * Html attributes that should be re-added to the document element
+   */
+  export const htmlAttributes: Record<string, string>
 
-  export const main: Fx<IntrinsicServices, Redirect, Renderable>
+  /**
+   * The docType of the html
+   */
+  export const docType: string
 
-  export const indexHtml: string
+  /**
+   * Re-exports from typed:module
+   */
+  export * from 'typed:module:*'
+}
 
-  export const requestHandler: express.RequestHandler
-
-  export const listen: typeof app['listen']
-
-  type ArgsOf<T> = T extends (...args: infer A) => any ? A : never
+declare module 'typed:api:*' {
+  // TODO: We should have a way for constructing API modules here
 }
