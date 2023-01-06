@@ -1,5 +1,5 @@
 import { existsSync } from 'fs'
-import { join, resolve } from 'path'
+import { dirname, join, resolve } from 'path'
 
 /// <reference types="vavite/vite-config" />
 
@@ -97,11 +97,17 @@ export default function makePlugin({ directory, tsConfig }: PluginOptions): Plug
 
     async resolveId(id, importer) {
       if (id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)) {
-        return `${BROWSER_VIRTUAL_ID_PREFIX}?pages=${parsePagesFromId(id, importer)}`
+        return `${BROWSER_VIRTUAL_ID_PREFIX}?pages=${parsePagesFromId(
+          id,
+          importer,
+        )}&importer=${importer}`
       }
 
       if (id === SERVER_VIRTUAL_ENTRYPOINT_PREFIX) {
-        return `${SERVER_VIRTUAL_ID_PREFIX}?pages=${parsePagesFromId(id, importer)}`
+        return `${SERVER_VIRTUAL_ID_PREFIX}?pages=${parsePagesFromId(
+          id,
+          importer,
+        )}&importer=${importer}`
       }
 
       // Virtual modules have problems with resolving modules due to not having a real directory to work with
@@ -129,11 +135,21 @@ export default function makePlugin({ directory, tsConfig }: PluginOptions): Plug
 
     load(id) {
       if (id.startsWith(BROWSER_VIRTUAL_ID_PREFIX)) {
-        return scanAndBuild(sourceDirectory, parsePagesFromVirtualId(id), project, 'browser')
+        return scanAndBuild(
+          parseSourceDirectoryFromVirtualId(id),
+          parsePagesFromVirtualId(id),
+          project,
+          'browser',
+        )
       }
 
       if (id.startsWith(SERVER_VIRTUAL_ID_PREFIX)) {
-        return scanAndBuild(sourceDirectory, parsePagesFromVirtualId(id), project, 'server')
+        return scanAndBuild(
+          parseSourceDirectoryFromVirtualId(id),
+          parsePagesFromVirtualId(id),
+          project,
+          'server',
+        )
       }
     },
   }
@@ -177,9 +193,14 @@ function parsePagesFromId(id: string, importer: string | undefined) {
 function parsePagesFromVirtualId(id: string): readonly string[] {
   return id
     .split('?pages=')[1]
+    .split('&importer')[0]
     .split(',')
     .flatMap((p) => [
       `${p}${p.endsWith('/') ? '' : '/'}**/*.ts`,
       `${p}${p.endsWith('/') ? '' : '/'}**/*.tsx`,
     ])
+}
+
+function parseSourceDirectoryFromVirtualId(id: string): string {
+  return dirname(id.split('&importer=')[1])
 }
