@@ -30,7 +30,7 @@ ${imports.join('\n')}
 
 export const modules = [
   ${modules.join(',' + EOL + '  ')}
-]
+] as const
 
 export const matcher = buildModules(modules)
 

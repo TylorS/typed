@@ -43,7 +43,7 @@ export function staticGzip(options: expressStaticGzip.ExpressStaticGzipOptions):
 
 export const modules = [
   ${modules.join(',' + EOL + '  ')}
-]
+] as const
 
 export const matcher = buildModules(modules)
 
@@ -53,13 +53,13 @@ export const indexHtml: string = readIndexHtml(join(clientDirectory, 'index.html
 
 export const requestHandler: express.RequestHandler = runExpressApp(main, indexHtml)
 
-export const listen = (...args: ArgsOf<typeof app['listen']>) => {
+export const listen = ((...args: ArgsOf<typeof app['listen']>) => {
   if (httpDevServer) {
     httpDevServer.on('request', app)
   } else {
     app.listen(...args)
   }
-}
+}) as typeof app['listen']
 
 type ArgsOf<T> = T extends (...args: infer A) => any ? A : never
 `,

@@ -27,7 +27,7 @@ export function staticGzip(
   return expressStaticGzip(clientDirectory, options)
 }
 
-export const matcher = buildModules([
+export const modules = [
   Module.make(typedModule2.route, () => typedModule2.main, { layout: typedModule0.layout }),
   Module.make(
     F.pipe(typedModule3.route, Route.provideLayer(typedModule3.environment)),
@@ -36,7 +36,9 @@ export const matcher = buildModules([
   ),
   Module.make(typedModule4.route, typedModule4.main, { layout: typedModule0.layout }),
   Module.make(typedModule5.route, typedModule5.main, { layout: typedModule0.layout }),
-])
+] as const
+
+export const matcher = buildModules(modules)
 
 export const main = matcher.notFound(typedModule1.fallback, { layout: typedModule0.layout })
 
@@ -44,12 +46,12 @@ export const indexHtml: string = readIndexHtml(join(clientDirectory, 'index.html
 
 export const requestHandler: express.RequestHandler = runExpressApp(main, indexHtml)
 
-export const listen = (...args: ArgsOf<typeof app['listen']>) => {
+export const listen = ((...args: ArgsOf<typeof app['listen']>) => {
   if (httpDevServer) {
     httpDevServer.on('request', app)
   } else {
     app.listen(...args)
   }
-}
+}) as typeof app['listen']
 
 type ArgsOf<T> = T extends (...args: infer A) => any ? A : never
