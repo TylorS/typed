@@ -1,4 +1,4 @@
-declare module 'virtual:browser-entry' {
+declare module 'virtual:browser-entry:*' {
   import { IntrinsicServices } from '@typed/framework'
   import { Renderable } from '@typed/html'
   import { RouteMatcher, Redirect } from '@typed/router'
@@ -10,7 +10,7 @@ declare module 'virtual:browser-entry' {
   export const render: <T extends HTMLElement>(parentElement: T) => Fx<never, never, T>
 }
 
-declare module 'virtual:server-entry' {
+declare module 'virtual:server-entry:*' {
   import { IntrinsicServices } from '@typed/framework'
   import { Renderable } from '@typed/html'
   import { RouteMatcher, Redirect } from '@typed/router'

@@ -20,27 +20,23 @@ export interface PluginOptions {
    * The name/path to your tsconfig.json file, relative to the directory above or absolute
    */
   readonly tsConfig: string
-  /**
-   * File globs to scan for pages, relative to the directory above or absolute
-   */
-  readonly pages: readonly string[]
 }
 
 const cwd = process.cwd()
 
 const PLUGIN_NAME = '@typed/vite-plugin'
-const BROWSER_VIRTUAL_ENTRYPOINT = 'virtual:browser-entry'
-const SERVER_VIRTUAL_ENTRYPOINT = 'virtual:server-entry'
+const BROWSER_VIRTUAL_ENTRYPOINT_PREFIX = 'virtual:browser-entry'
+const SERVER_VIRTUAL_ENTRYPOINT_PREFIX = 'virtual:server-entry'
 
-export default function makePlugin({ directory, tsConfig, pages }: PluginOptions): Plugin {
+export default function makePlugin({ directory, tsConfig }: PluginOptions): Plugin {
   const sourceDirectory = resolve(cwd, directory)
   const tsConfigFilePath = resolve(sourceDirectory, tsConfig)
 
   console.info(`[${PLUGIN_NAME}]: Setting up typescript project...`)
   const project = setupTsProject(tsConfigFilePath)
 
-  const BROWSER_VIRTUAL_ID = '\0' + join(sourceDirectory, 'browser.ts')
-  const SERVER_VIRTUAL_ID = '\0' + join(sourceDirectory, 'server.ts')
+  const BROWSER_VIRTUAL_ID_PREFIX = '\0' + join(sourceDirectory, 'browser.ts')
+  const SERVER_VIRTUAL_ID_PREFIX = '\0' + join(sourceDirectory, 'server.ts')
 
   const indexHtmlFilePath = join(sourceDirectory, 'index.html')
 
@@ -100,17 +96,20 @@ export default function makePlugin({ directory, tsConfig, pages }: PluginOptions
     },
 
     async resolveId(id, importer) {
-      if (id === BROWSER_VIRTUAL_ENTRYPOINT) {
-        return BROWSER_VIRTUAL_ID
+      if (id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)) {
+        return `${BROWSER_VIRTUAL_ID_PREFIX}?pages=${parsePagesFromId(id, importer)}`
       }
 
-      if (id === SERVER_VIRTUAL_ENTRYPOINT) {
-        return SERVER_VIRTUAL_ID
+      if (id === SERVER_VIRTUAL_ENTRYPOINT_PREFIX) {
+        return `${SERVER_VIRTUAL_ID_PREFIX}?pages=${parsePagesFromId(id, importer)}`
       }
 
       // Virtual modules have problems with resolving modules due to not having a real directory to work with
       // thus the need to resolve them manually.
-      if (importer === BROWSER_VIRTUAL_ID || importer === SERVER_VIRTUAL_ID) {
+      if (
+        importer?.startsWith(BROWSER_VIRTUAL_ID_PREFIX) ||
+        importer?.startsWith(SERVER_VIRTUAL_ID_PREFIX)
+      ) {
         // If a relative path, attempt to match to a source .ts(x) file
         if (id.startsWith('.')) {
           const tsPath = resolve(sourceDirectory, id.replace(/.js(x)?$/, '.ts$1'))
@@ -129,12 +128,12 @@ export default function makePlugin({ directory, tsConfig, pages }: PluginOptions
     },
 
     load(id) {
-      if (id === BROWSER_VIRTUAL_ID) {
-        return scanAndBuild(sourceDirectory, pages, project, 'browser')
+      if (id.startsWith(BROWSER_VIRTUAL_ID_PREFIX)) {
+        return scanAndBuild(sourceDirectory, parsePagesFromVirtualId(id), project, 'browser')
       }
 
-      if (id === SERVER_VIRTUAL_ID) {
-        return scanAndBuild(sourceDirectory, pages, project, 'server')
+      if (id.startsWith(SERVER_VIRTUAL_ID_PREFIX)) {
+        return scanAndBuild(sourceDirectory, parsePagesFromVirtualId(id), project, 'server')
       }
     },
   }
@@ -161,4 +160,26 @@ function scanAndBuild(
     code: output.outputText,
     map: output.sourceMapText,
   }
+}
+
+function parsePagesFromId(id: string, importer: string | undefined) {
+  const pages = id
+    .replace(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
+    .replace(SERVER_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
+
+  if (pages === '') {
+    throw new Error(`[${PLUGIN_NAME}]: No pages were specified from ${importer}`)
+  }
+
+  return pages
+}
+
+function parsePagesFromVirtualId(id: string): readonly string[] {
+  return id
+    .split('?pages=')[1]
+    .split(',')
+    .flatMap((p) => [
+      `${p}${p.endsWith('/') ? '' : '/'}**/*.ts`,
+      `${p}${p.endsWith('/') ? '' : '/'}**/*.tsx`,
+    ])
 }

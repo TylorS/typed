@@ -12,8 +12,6 @@ export default defineConfig({
     typed({
       // Directory should point towards the root of your project with an index.html file
       directory: join(__dirname, 'example'),
-      // Globs to search for routes and renderables. Can be absolute path or relative to directory above
-      pages: ['pages/**/*'],
       // Path to your tsconfig.json file. Can be absolute path or relative to directory above
       tsConfig: 'tsconfig.json',
     }),

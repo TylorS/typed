@@ -1,7 +1,7 @@
 /// <reference types="@typed/vite-plugin" />
 
 import * as Fx from '@typed/fx'
-import { render } from 'virtual:browser-entry'
+import { render } from 'virtual:browser-entry:./pages'
 
 const parentElement = document.getElementById('application')
 

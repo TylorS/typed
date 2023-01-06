@@ -15,7 +15,7 @@ export function buildExpressEntrypoint(
   outFile: string,
 ) {
   const [imports, modules, fallback] = buildImportsAndModules(sourceFileModules, dirname(outFile))
-  const shouldImportRoute = modules.some((x) => x.includes('provideLayer'))
+  const shouldImportForEnvironment = modules.some((x) => x.includes('provideLayer'))
   const shouldImportModule = modules.length > 0
 
   const entrypoint = project.createSourceFile(
@@ -27,7 +27,8 @@ import { join } from 'path'
 import * as F from '@fp-ts/data/Function'
 import { readIndexHtml, getClientDirectory, runExpressApp } from '@typed/compiler'
 import { ${shouldImportModule ? 'Module, ' : ''}buildModules } from '@typed/framework'
-${shouldImportRoute ? EOL + `import * as Route from '@typed/route'` : ''}
+${shouldImportForEnvironment ? EOL + `import * as Fx from '@typed/fx'` : ''}
+${shouldImportForEnvironment ? EOL + `import * as Route from '@typed/route'` : ''}
 import express from 'express'
 import expressStaticGzip from 'express-static-gzip'
 import httpDevServer from 'vavite/http-dev-server'

@@ -1,7 +1,7 @@
 /// <reference types="@typed/vite-plugin" />
 
 // App here is "just" an express app, use it as you would any other express app.
-import { app, staticGzip, requestHandler, listen } from 'virtual:server-entry'
+import { app, staticGzip, requestHandler, listen } from 'virtual:server-entry:./pages'
 
 // Serve static files with express server
 if (import.meta.env.PROD) {
