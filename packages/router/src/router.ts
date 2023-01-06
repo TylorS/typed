@@ -246,8 +246,10 @@ const patchHistory = Effect.gen(function* ($) {
   const history = yield* $(History.get)
   const historyEvents = Fx.Subject.unsafeMake<never, void>()
   const runtime = yield* $(Effect.runtime<never>())
+  const cleanup = patchHistory_(history, () => runtime.unsafeRun(historyEvents.event()))
 
-  patchHistory_(history, () => runtime.unsafeRun(historyEvents.event()))
+  // unpatch history upon finalization
+  yield* $(Effect.addFinalizer(() => Effect.sync(cleanup)))
 
   return historyEvents
 })
@@ -282,6 +284,15 @@ function patchHistory_(history: History, sendEvent: () => void) {
   history.forward = function () {
     forward()
     sendEvent()
+  }
+
+  // Reset history to original state
+  return () => {
+    history.pushState = pushState
+    history.replaceState = replaceState
+    history.go = go
+    history.back = back
+    history.forward = forward
   }
 }
 
