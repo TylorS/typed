@@ -28,11 +28,11 @@ There is currently one toy example in the example directory which will showcase 
 ## Upcoming
 
 - Multiple entrypoints
-- Api Routes
+- API Routes
 - Integrate effect-ts plugins
-- Hydration of HTML
-- Support for html templating
-- Static generation of files
+- Hydration of SSR content
+- Support for html template pages
+- SSG output
+- Hot module reloading
 - Integrations with @fp-ts/schema
 - Itegrations with @fp-ts/optic
-- 
