@@ -22,9 +22,6 @@
     },
     {
       "path": "../html/tsconfig.build.json"
-    },
-    {
-      "path": "../router/tsconfig.build.json"
     }
   ]
 }

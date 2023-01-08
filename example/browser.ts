@@ -1,4 +1,4 @@
-/// <reference types="@typed/vite-plugin" />
+/// <reference types="@typed/framework" />
 
 import * as Fx from '@typed/fx'
 import { render } from 'typed:browser:./pages'

@@ -3,8 +3,9 @@
  * of related modules together by routes, renderables, and layouts.
  */
 declare module 'typed:modules:*' {
-  import { Fallback, Module, IntrinsicServices } from '@typed/framework'
   import { RouteMatcher, Redirect } from '@typed/router'
+
+  import { Fallback, Module, IntrinsicServices } from '@typed/framework'
 
   export const modules: ReadonlyArray<Module<IntrinsicServices, string>>
 
@@ -24,9 +25,7 @@ declare module 'typed:browser:*' {
   /**
    * Render the application given a parent element
    */
-  export const render: <T extends HTMLElement | DocumentFragment>(
-    parentElement: T,
-  ) => Fx<never, never, T>
+  export const render: <T extends HTMLElement>(parentElement: T) => Fx<never, never, T>
 
   /**
    * Re-exports from typed:module
@@ -40,8 +39,10 @@ declare module 'typed:browser:*' {
  *
  * TODO: Should have helpers for constructing happy-dom instance
  */
-declare module 'typed:server:*' {
+declare module 'typed:html:*' {
   import { IncomingMessage } from 'http'
+
+  import { ServerWindowOptions } from '@typed/framework'
 
   /**
    * The path to the directory where assets will be found
@@ -66,7 +67,10 @@ declare module 'typed:server:*' {
   /**
    * Construct a server-side implementation of Window & GlobalThis
    */
-  export function makeWindow(req: IncomingMessage, origin?: string): Window & typeof globalThis
+  export function makeWindow(
+    req: IncomingMessage,
+    options?: ServerWindowOptions,
+  ): Window & typeof globalThis
 }
 
 declare module 'typed:api:*' {

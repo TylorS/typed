@@ -3,10 +3,9 @@ import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
 import { either } from '@fp-ts/data'
 import { pipe } from '@fp-ts/data/function'
-import { IntrinsicServices, provideServerIntrinsics } from '@typed/framework'
+import { RuntimeModule, provideServerIntrinsics, runMatcherWithFallback } from '@typed/framework'
 import * as Fx from '@typed/fx'
-import { Renderable, renderInto } from '@typed/html'
-import { Redirect } from '@typed/router'
+import { renderInto } from '@typed/html'
 import express from 'express'
 import isbot from 'isbot'
 
@@ -14,12 +13,13 @@ import { html5Doctype, makeServerWindow } from './makeServerWindow.js'
 
 const prettyPrintCause = Cause.pretty()
 
-export const runExpressApp =
-  (
-    main: Fx.Fx<IntrinsicServices, Redirect, Renderable>,
-    indexHtml: string,
-  ): express.RequestHandler =>
-  async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const runExpressApp = (
+  runtimeModule: RuntimeModule,
+  indexHtml: string,
+): express.RequestHandler => {
+  const main = runMatcherWithFallback(runtimeModule.matcher, runtimeModule.fallback)
+
+  return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
       await Effect.unsafeRunPromise(
         Effect.gen(function* ($) {
@@ -63,3 +63,4 @@ export const runExpressApp =
       next(error)
     }
   }
+}
