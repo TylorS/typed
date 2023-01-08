@@ -3,16 +3,14 @@
  * of related modules together by routes, renderables, and layouts.
  */
 declare module 'typed:modules:*' {
-  import { Module, IntrinsicServices } from '@typed/framework'
-  import { Fx } from '@typed/fx'
-  import { Renderable } from '@typed/html'
+  import { Fallback, Module, IntrinsicServices } from '@typed/framework'
   import { RouteMatcher, Redirect } from '@typed/router'
 
   export const modules: ReadonlyArray<Module<IntrinsicServices, string>>
 
   export const matcher: RouteMatcher<IntrinsicServices, Redirect>
 
-  export const main: Fx<IntrinsicServices, Redirect, Renderable>
+  export const fallback: Fallback | null
 }
 
 /**

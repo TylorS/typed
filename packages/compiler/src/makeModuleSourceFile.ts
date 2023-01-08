@@ -46,6 +46,8 @@ export function makeModuleSourceFile(
         ) +
         ' as const',
     )
+  } else {
+    appendText(sourceFile, EOL + `export const fallback = null`)
   }
 
   return sourceFile
@@ -189,7 +191,7 @@ export function makeModuleSourceFile(
     switch (fallback._tag) {
       case 'Fallback/Basic': {
         const layoutOptions = makeLayoutModuleOptions(fallback.hasLayout ? fallback : layout)
-        return `export const fallback = { type: 'render', render: ${
+        return `export const fallback = { type: 'Renderable', fallback: ${
           fallback.isFx ? `() => ${name}.fallback` : `${name}.fallback`
         }${layoutOptions ? `, ${layoutOptions}` : ''} }`
       }
@@ -202,14 +204,14 @@ export function makeModuleSourceFile(
         )
         const layoutOptions = makeLayoutModuleOptions(fallback.hasLayout ? fallback : layout)
 
-        return `export const fallback = { type: 'render', render: ${
+        return `export const fallback = { type: 'Renderable', fallback: ${
           fallback.isFx
             ? `constant(pipe(${name}.fallback, Fx.provideSomeLayer(${name}.environment)))`
             : `flow(${name}.fallback, Fx.provideSomeLayer(${name}.environment))`
         }${layoutOptions ? `, ${layoutOptions}` : ''} }`
       }
       case 'Redirect/Basic':
-        return `export const redirect = { type: 'redirect', route: ${name}.route${
+        return `export const redirect = { type: 'Redirect', route: ${name}.route${
           fallback.hasParams ? `, params: ${name}.params` : ``
         } }`
       case 'Redirect/Environment': {
@@ -217,7 +219,7 @@ export function makeModuleSourceFile(
         addNamespaceImport(sourceFile, 'Route', '@typed/route')
         addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
 
-        return `export const redirect = { type: 'redirect', route: pipe(${name}.route, Route.provideLayer(${name}.environment))${
+        return `export const redirect = { type: 'Redirect', route: pipe(${name}.route, Route.provideLayer(${name}.environment))${
           fallback.hasParams ? `, params: ${name}.params` : ``
         } }`
       }
