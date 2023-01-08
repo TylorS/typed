@@ -85,7 +85,7 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
 
       // Setup vavite multi-build
 
-      if (serverExists && !(config as any).buildSteps) {
+      if (!(config as any).buildSteps) {
         ;(config as any).buildSteps = [
           {
             name: 'client',
@@ -98,16 +98,20 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
               },
             },
           },
-          {
-            name: 'server',
-            config: {
-              build: {
-                ssr: true,
-                outDir: serverOutputDirectory,
-                rollupOptions: { input: serverFilePath },
-              },
-            },
-          },
+          ...(serverExists
+            ? [
+                {
+                  name: 'server',
+                  config: {
+                    build: {
+                      ssr: true,
+                      outDir: serverOutputDirectory,
+                      rollupOptions: { input: serverFilePath },
+                    },
+                  },
+                },
+              ]
+            : []),
         ]
       }
     },
