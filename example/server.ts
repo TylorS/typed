@@ -1,5 +1,6 @@
 /// <reference types="@typed/framework" />
 
+import { AddressInfo } from 'net'
 import { fileURLToPath } from 'url'
 
 import { runExpressApp } from '@typed/compiler'
@@ -41,7 +42,7 @@ app.get(
 
 if (httpDevServer) {
   httpDevServer.on('request', app)
-  console.log('listening on port 5173')
+  console.log('listening on port ' + (httpDevServer.address() as AddressInfo).port)
 } else {
   const port = import.meta.env.VITE_PORT ? parseInt(import.meta.env.VITE_PORT, 10) : 3000
 
