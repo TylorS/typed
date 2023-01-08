@@ -24,8 +24,6 @@ export const runExpressApp = (
   const main = runMatcherWithFallback(runtimeModule.matcher, runtimeModule.fallback)
 
   return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.log(req.url)
-
     try {
       await Effect.unsafeRunPromise(
         Effect.gen(function* ($) {
