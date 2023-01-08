@@ -16,19 +16,17 @@ import { ModuleTree, ModuleTreeWithFallback, readModules } from './readModules.j
 
 const filePath = fileURLToPath(import.meta.url)
 const directory = dirname(filePath)
-const compilerDirectory = dirname(directory)
-const packagesDirectory = dirname(compilerDirectory)
-const rootDirectory = dirname(packagesDirectory)
-const examplesDirectory = join(rootDirectory, 'example')
+const rootDirectory = dirname(dirname(dirname(directory)))
+const exampleDirectory = join(rootDirectory, 'example')
 
 describe(import.meta.url, () => {
-  const project = new Project({ tsConfigFilePath: join(examplesDirectory, 'tsconfig.json') })
+  const project = new Project({ tsConfigFilePath: join(exampleDirectory, 'tsconfig.json') })
 
   describe(readModules.name, () => {
     it(
       'should read modules from a directory',
       async () => {
-        const directory = await readDirectory(join(examplesDirectory, 'pages'))
+        const directory = await readDirectory(join(exampleDirectory, 'pages'))
         const moduleTree = readModules(project, directory)
         const expected = {
           directory: 'pages',
@@ -111,7 +109,7 @@ describe(import.meta.url, () => {
 
 function stripModules(tree: ModuleTreeWithFallback | ModuleTree): any {
   return {
-    directory: relative(examplesDirectory, tree.directory),
+    directory: relative(exampleDirectory, tree.directory),
     layout: tree.layout ? stripLayoutModule(tree.layout) : null,
     fallback: (tree as ModuleTreeWithFallback).fallback
       ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -125,7 +123,7 @@ function stripModules(tree: ModuleTreeWithFallback | ModuleTree): any {
 function stripLayoutModule(m: LayoutSourceFileModule) {
   return {
     _tag: m._tag,
-    filePath: relative(examplesDirectory, m.sourceFile.getFilePath()),
+    filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
     isNested: m.isNested,
   }
 }
@@ -133,7 +131,7 @@ function stripLayoutModule(m: LayoutSourceFileModule) {
 function stripRenderModule(m: RenderSourceFileModule) {
   return {
     _tag: m._tag,
-    filePath: relative(examplesDirectory, m.sourceFile.getFilePath()),
+    filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
     isFx: m.isFx,
     hasLayout: m.hasLayout,
     isNested: m.isNested,
@@ -146,7 +144,7 @@ function stripFallbackModule(m: FallbackSourceFileModule | RedirectSourceFileMod
     case 'Fallback/Environment': {
       return {
         _tag: m._tag,
-        filePath: relative(examplesDirectory, m.sourceFile.getFilePath()),
+        filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
         isFx: m.isFx,
         hasLayout: m.hasLayout,
         isNested: m.isNested,
@@ -156,7 +154,7 @@ function stripFallbackModule(m: FallbackSourceFileModule | RedirectSourceFileMod
     case 'Redirect/Environment': {
       return {
         _tag: m._tag,
-        filePath: relative(examplesDirectory, m.sourceFile.getFilePath()),
+        filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
       }
     }
   }
