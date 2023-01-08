@@ -40,6 +40,7 @@ describe(import.meta.url, () => {
           fallback: {
             _tag: 'Fallback/Basic',
             filePath: 'pages/fallback.ts',
+            isFx: false,
             hasLayout: false,
             isNested: false,
           },
@@ -146,6 +147,7 @@ function stripFallbackModule(m: FallbackSourceFileModule | RedirectSourceFileMod
       return {
         _tag: m._tag,
         filePath: relative(examplesDirectory, m.sourceFile.getFilePath()),
+        isFx: m.isFx,
         hasLayout: m.hasLayout,
         isNested: m.isNested,
       }
