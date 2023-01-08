@@ -26,6 +26,7 @@ If you're interested in chatting about this project join us on [Discord](https:/
 There is currently one toy example in the example directory which will showcase the way our vite plugin work
 
 ## Upcoming
+- Nested Layouts
 - API Routes
 - Integrate effect-ts plugins
 - Hydration of SSR content
