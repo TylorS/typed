@@ -4,7 +4,6 @@
 /// <reference path="./vavite.d.ts" />
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 
-export * from './buildEntrypoint.js'
 export * from './lazyExpressHandler.js'
 export * from './readIndexHtml.js'
 export * from './runExpressApp.js'
