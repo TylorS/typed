@@ -23,11 +23,9 @@ If you're interested in chatting about this project join us on [Discord](https:/
 
 ## Example
 
-There is currently one toy example in the example directory which will showcase the way our vite plugin works.
+There is currently one toy example in the example directory which will showcase the way our vite plugin work
 
 ## Upcoming
-
-- Dev Mode for server-side rendering
 - API Routes
 - Integrate effect-ts plugins
 - Hydration of SSR content

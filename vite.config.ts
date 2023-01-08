@@ -2,6 +2,7 @@
 
 import { join } from 'path'
 
+import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 import typed from './packages/vite-plugin/src/vite-plugin'
@@ -9,7 +10,7 @@ import typed from './packages/vite-plugin/src/vite-plugin'
 export default defineConfig(() => ({
   root: join(__dirname, 'example'),
   resolve: {
-    // Only necessary because developing in a monorepo
+    // Only necessary because developing in a monorepo dogfooding my own source code.
     alias: {
       '@typed/compiler': join(__dirname, 'packages/compiler/dist'),
       '@typed/context': join(__dirname, 'packages/context/dist'),
@@ -29,6 +30,7 @@ export default defineConfig(() => ({
       // Path to your tsconfig.json file. Can be absolute path or relative to directory above
       tsConfig: 'tsconfig.json',
     }),
+    react(),
   ],
   build: {
     manifest: true,

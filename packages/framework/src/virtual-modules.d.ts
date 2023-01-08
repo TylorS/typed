@@ -39,7 +39,7 @@ declare module 'browser:*' {
  *
  * TODO: Should have helpers for constructing happy-dom instance
  */
-declare module 'entry:*' {
+declare module 'html:*' {
   import type { IncomingMessage } from 'http'
 
   import type { ServerWindowOptions } from '@typed/framework'

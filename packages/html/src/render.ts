@@ -56,10 +56,10 @@ function renderWithHoleContext<T extends DocumentFragment | HTMLElement>(
 ) {
   return Effect.sync(() => {
     const { renderCache } = holeContext.renderContext
-    if (!renderCache.has(where)) {
-      renderCache.set(where, RenderCache())
+    let cache = renderCache.get(where)
+    if (!cache) {
+      renderCache.set(where, (cache = RenderCache()))
     }
-    const cache = renderCache.get(where) as RenderCache
     const wire = what instanceof Hole ? renderHole(what, cache, holeContext) : what
 
     if (wire !== cache.wire) {

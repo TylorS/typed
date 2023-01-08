@@ -39,7 +39,7 @@ const PLUGIN_NAME = '@typed/vite-plugin'
 
 const RENDER_VIRTUAL_ENTRYPOINT_PREFIX = 'runtime'
 const BROWSER_VIRTUAL_ENTRYPOINT_PREFIX = 'browser'
-const HTML_VIRTUAL_ENTRYPOINT_PREFIX = 'entry'
+const HTML_VIRTUAL_ENTRYPOINT_PREFIX = 'html'
 
 const VIRTUAL_ID_PREFIX = '\0'
 
@@ -67,17 +67,20 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
     tsconfigPaths({
       projects: [join(sourceDirectory, 'tsconfig.json')],
     }),
-    vavite({
-      serverEntry: serverFilePath,
-      serveClientAssetsInDev: true,
-    }),
-    // @ts-expect-error Unable to resolve types w/ NodeNext
-    compression(),
+    ...(serverExists
+      ? [
+          vavite({
+            serverEntry: serverFilePath,
+            serveClientAssetsInDev: true,
+          }),
+        ]
+      : []),
   ]
 
   plugins.push({
     name: PLUGIN_NAME,
     config(config: UserConfig, env: ConfigEnv) {
+      // Configure Build steps when running with vavite
       if (env.mode === 'multibuild') {
         const clientBuild: UserConfig['build'] = {
           outDir: clientOutputDirectory,
@@ -89,13 +92,16 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
         const serverBuild: UserConfig['build'] = {
           ssr: true,
           outDir: serverOutputDirectory,
-          rollupOptions: { input: serverFilePath, output: { inlineDynamicImports: true } },
+          rollupOptions: {
+            input: serverFilePath,
+          },
         }
 
         ;(config as any).buildSteps = [
           {
             name: 'client',
-            config: { build: clientBuild },
+            // @ts-expect-error Unable to resolve types w/ NodeNext
+            config: { build: clientBuild, plugins: [compression()] },
           },
           ...(serverExists
             ? [
@@ -139,10 +145,7 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
 
       // Virtual modules have problems with resolving modules due to not having a real directory to work with
       // thus the need to resolve them manually.
-      if (
-        importer?.startsWith(VIRTUAL_ID_PREFIX) &&
-        (importer.includes('?modules=') || importer.includes('?source='))
-      ) {
+      if (importer?.startsWith(VIRTUAL_ID_PREFIX)) {
         // If a relative path, attempt to match to a source .ts(x) file
         if (id.startsWith('.')) {
           const dir = getVirtualSourceDirectory(importer)
@@ -216,12 +219,10 @@ async function buildVirtualModule(
 }
 
 function getVirtualSourceDirectory(id: string) {
-  const [importer] = id.split(VIRTUAL_ID_PREFIX)[1].split('?')
-
-  return dirname(importer)
+  return dirname(id.split(VIRTUAL_ID_PREFIX)[1].split('?')[0])
 }
 
-function parseModulesFromId(id: string, importer: string | undefined) {
+function parseModulesFromId(id: string, importer: string | undefined): string {
   const pages = id
     .replace(RENDER_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
     .replace(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
@@ -234,7 +235,7 @@ function parseModulesFromId(id: string, importer: string | undefined) {
   return pages
 }
 
-function findHtmlFiles(directory: string) {
+function findHtmlFiles(directory: string): readonly string[] {
   // eslint-disable-next-line import/no-named-as-default-member
   return glob.sync([
     join(directory, '**/*.html'),
@@ -243,7 +244,7 @@ function findHtmlFiles(directory: string) {
   ])
 }
 
-function buildClientInput(htmlFilePaths: string[]) {
+function buildClientInput(htmlFilePaths: readonly string[]) {
   const input: Record<string, string> = {}
 
   for (const htmlFilePath of htmlFilePaths) {
