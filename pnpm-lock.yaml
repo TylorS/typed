@@ -7,7 +7,7 @@ importers:
 
   .:
     specifiers:
-      '@effect/io': ~0.0.59
+      '@effect/io': ~0.0.60
       '@effect/stm': ~0.0.13
       '@esbuild-kit/esm-loader': ^2.5.4
       '@fp-ts/core': ~0.0.11
@@ -67,7 +67,7 @@ importers:
       vitest: ^0.26.3
       yargs: ^17.6.2
     dependencies:
-      '@effect/io': 0.0.59
+      '@effect/io': 0.0.60
       '@effect/stm': 0.0.13
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.36
@@ -157,7 +157,7 @@ importers:
 
   packages/compiler:
     specifiers:
-      '@effect/io': ~0.0.59
+      '@effect/io': ~0.0.60
       '@fp-ts/data': ~0.0.36
       '@typed/framework': workspace:*
       '@typed/fx': workspace:*
@@ -169,7 +169,7 @@ importers:
       vavite: ^1.5.2
       vite: ^4.0.4
     dependencies:
-      '@effect/io': 0.0.59
+      '@effect/io': 0.0.60
       '@fp-ts/data': 0.0.36
       '@typed/framework': link:../framework
       '@typed/fx': link:../fx
@@ -184,24 +184,24 @@ importers:
 
   packages/context:
     specifiers:
-      '@effect/io': ~0.0.59
+      '@effect/io': ~0.0.60
       '@fp-ts/data': ~0.0.36
       '@typed/fx': workspace:*
     dependencies:
-      '@effect/io': 0.0.59
+      '@effect/io': 0.0.60
       '@fp-ts/data': 0.0.36
       '@typed/fx': link:../fx
 
   packages/dom:
     specifiers:
-      '@effect/io': ~0.0.59
+      '@effect/io': ~0.0.60
       '@fp-ts/data': ~0.0.36
       '@fp-ts/schema': ~0.0.7
       '@typed/context': workspace:*
       '@typed/fx': workspace:*
       typed-query-selector: ^2.8.0
     dependencies:
-      '@effect/io': 0.0.59
+      '@effect/io': 0.0.60
       '@fp-ts/data': 0.0.36
       '@fp-ts/schema': 0.0.7
       '@typed/context': link:../context
@@ -210,7 +210,7 @@ importers:
 
   packages/framework:
     specifiers:
-      '@effect/io': ~0.0.59
+      '@effect/io': ~0.0.60
       '@fp-ts/data': ~0.0.36
       '@typed/dom': workspace:*
       '@typed/fx': workspace:*
@@ -220,7 +220,7 @@ importers:
       '@typed/router': workspace:*
       happy-dom: ^8.1.3
     dependencies:
-      '@effect/io': 0.0.59
+      '@effect/io': 0.0.60
       '@fp-ts/data': 0.0.36
       '@typed/dom': link:../dom
       '@typed/fx': link:../fx
@@ -232,19 +232,19 @@ importers:
 
   packages/fx:
     specifiers:
-      '@effect/io': ~0.0.59
+      '@effect/io': ~0.0.60
       '@effect/stm': ~0.0.13
       '@fp-ts/core': ~0.0.11
       '@fp-ts/data': ~0.0.36
     dependencies:
-      '@effect/io': 0.0.59
+      '@effect/io': 0.0.60
       '@effect/stm': 0.0.13
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.36
 
   packages/html:
     specifiers:
-      '@effect/io': ~0.0.59
+      '@effect/io': ~0.0.60
       '@fp-ts/data': ~0.0.36
       '@typed/context': workspace:*
       '@typed/dom': workspace:*
@@ -252,7 +252,7 @@ importers:
       '@webreflection/uparser': ~0.2.4
       udomdiff: ^1.1.0
     dependencies:
-      '@effect/io': 0.0.59
+      '@effect/io': 0.0.60
       '@fp-ts/data': 0.0.36
       '@typed/context': link:../context
       '@typed/dom': link:../dom
@@ -280,19 +280,19 @@ importers:
 
   packages/route:
     specifiers:
-      '@effect/io': ~0.0.59
+      '@effect/io': ~0.0.60
       '@fp-ts/data': ~0.0.36
       '@typed/path': workspace:*
       path-to-regexp: ^6.2.1
     dependencies:
-      '@effect/io': 0.0.59
+      '@effect/io': 0.0.60
       '@fp-ts/data': 0.0.36
       '@typed/path': link:../path
       path-to-regexp: 6.2.1
 
   packages/router:
     specifiers:
-      '@effect/io': ~0.0.59
+      '@effect/io': ~0.0.60
       '@fp-ts/data': ~0.0.36
       '@typed/context': workspace:*
       '@typed/dom': workspace:*
@@ -301,7 +301,7 @@ importers:
       '@typed/path': workspace:*
       '@typed/route': workspace:*
     dependencies:
-      '@effect/io': 0.0.59
+      '@effect/io': 0.0.60
       '@fp-ts/data': 0.0.36
       '@typed/context': link:../context
       '@typed/dom': link:../dom
@@ -313,19 +313,17 @@ importers:
   packages/vite-plugin:
     specifiers:
       '@typed/compiler': workspace:*
-      '@vavite/expose-vite-dev-server': ^1.5.2
-      '@vavite/reloader': ^1.5.2
       fast-glob: ^3.2.12
       ts-morph: ^17.0.1
       vavite: ^1.5.2
       vite: ^4.0.4
+      vite-plugin-compression: ^0.5.1
       vite-tsconfig-paths: ^4.0.3
     dependencies:
       '@typed/compiler': link:../compiler
-      '@vavite/expose-vite-dev-server': 1.5.2_vite@4.0.4
-      '@vavite/reloader': 1.5.2_vite@4.0.4
       fast-glob: 3.2.12
       vavite: 1.5.2_vite@4.0.4
+      vite-plugin-compression: 0.5.1_vite@4.0.4
     devDependencies:
       ts-morph: 17.0.1
       vite: 4.0.4
@@ -663,8 +661,8 @@ packages:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
 
-  /@effect/io/0.0.59:
-    resolution: {integrity: sha512-de82TR5FbqBT2yrJ31a/rqKkqlNiiVpP+Ywn46/UDMudyC4FDC1ClAzesZo3OS/RIP/MJCNtThjdCCkzNQvSAg==}
+  /@effect/io/0.0.60:
+    resolution: {integrity: sha512-5rJzjOiXV3b/Njezyyi1SQiu25NyocD20hT716ha86o+zBonYleArxbrD7Olls+SRjKaHpL4itaxlzNOHB45rQ==}
     dependencies:
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.36
@@ -673,7 +671,7 @@ packages:
   /@effect/stm/0.0.13:
     resolution: {integrity: sha512-38g14h8aKQtwvqqdzfDrlzightIbNyq1mLr4noH+f3+CtSe5khJ5NsvfZDRgmythrEmpWOH7qTQ+eFL4lEc5FA==}
     dependencies:
-      '@effect/io': 0.0.59
+      '@effect/io': 0.0.60
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.36
     dev: false
@@ -2862,7 +2860,7 @@ packages:
     peerDependencies:
       vite: '>=2.8.1'
     dependencies:
-      vite: 4.0.4
+      vite: 4.0.4_@types+node@18.11.18
     dev: false
 
   /@vavite/multibuild-cli/1.5.2_vite@4.0.4:
@@ -2894,7 +2892,7 @@ packages:
     peerDependencies:
       vite: '>=2.8.1'
     dependencies:
-      vite: 4.0.4
+      vite: 4.0.4_@types+node@18.11.18
     dev: false
 
   /@vitest/coverage-c8/0.26.3_chrioifgofiwzezi7lq2hqmsvm:
@@ -8940,6 +8938,7 @@ packages:
       rollup: 3.9.1
     optionalDependencies:
       fsevents: 2.3.2
+    dev: true
 
   /vite/4.0.4_@types+node@18.11.18:
     resolution: {integrity: sha512-xevPU7M8FU0i/80DMR+YhgrzR5KS2ORy1B4xcX/cXLsvnUWvfHuqMmVU6N0YiJ4JWGRJJsLCgjEzKjG9/GKoSw==}

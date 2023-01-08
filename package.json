@@ -26,13 +26,13 @@
     "update:packages": "tsx ./tools/updatePackages.ts",
     "update:rootTsconfig": "tsx ./tools/updateRootTsconfig.ts",
     "example": "vite --config ./vite.config.ts serve example",
-    "example:build": "vavite --config ./vite.config.ts example",
+    "example:build": "vavite --config ./vite.config.ts",
     "example:preview": "node ./example/dist/server/index.js",
     "~~NEEDS POSITIONAL COMMAND LINE ARGUMENT~~": "",
     "new-package": "nx generate ./packages/nx-plugin:package"
   },
   "dependencies": {
-    "@effect/io": "~0.0.59",
+    "@effect/io": "~0.0.60",
     "@effect/stm": "~0.0.13",
     "@fp-ts/core": "~0.0.11",
     "@fp-ts/data": "~0.0.36",

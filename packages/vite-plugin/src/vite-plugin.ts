@@ -13,7 +13,7 @@ import glob from 'fast-glob'
 import { Project, ts } from 'ts-morph'
 // @ts-expect-error Unable to resolve types w/ NodeNext
 import vavite from 'vavite'
-import { Plugin, UserConfig } from 'vite'
+import { ConfigEnv, Plugin, UserConfig } from 'vite'
 import compression from 'vite-plugin-compression'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -77,32 +77,36 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
 
   plugins.push({
     name: PLUGIN_NAME,
-    config(config: UserConfig) {
-      const clientBuild = {
-        outDir: clientOutputDirectory,
-        rollupOptions: { input: buildClientInput(htmlFilePaths) },
-      }
+    config(config: UserConfig, env: ConfigEnv) {
+      if (env.mode === 'multibuild') {
+        const clientBuild: UserConfig['build'] = {
+          outDir: clientOutputDirectory,
+          rollupOptions: {
+            input: buildClientInput(htmlFilePaths),
+          },
+        }
 
-      const serverBuild = {
-        ssr: true,
-        outDir: serverOutputDirectory,
-        rollupOptions: { input: serverFilePath },
-      }
+        const serverBuild: UserConfig['build'] = {
+          ssr: true,
+          outDir: serverOutputDirectory,
+          rollupOptions: { input: serverFilePath, output: { inlineDynamicImports: true } },
+        }
 
-      ;(config as any).buildSteps = [
-        {
-          name: 'client',
-          config: { build: clientBuild },
-        },
-        ...(serverExists
-          ? [
-              {
-                name: 'server',
-                config: { build: serverBuild },
-              },
-            ]
-          : []),
-      ]
+        ;(config as any).buildSteps = [
+          {
+            name: 'client',
+            config: { build: clientBuild },
+          },
+          ...(serverExists
+            ? [
+                {
+                  name: 'server',
+                  config: { build: serverBuild },
+                },
+              ]
+            : []),
+        ]
+      }
     },
 
     async resolveId(id: string, importer?: string) {

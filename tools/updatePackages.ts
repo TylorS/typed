@@ -10,6 +10,8 @@ import { Project } from 'ts-morph'
 
 // TODO: Add support for @types packages
 
+const virtualPrefixes = ['runtime', 'browser', 'entry']
+
 const optionalPackagesNames = process.argv.slice(2)
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
@@ -108,7 +110,11 @@ spawnSync('pnpm', ['install'], { stdio: 'inherit' })
 function checkDependency(dependency: string, packageJson: any) {
   const version = findRootPackageVersion(dependency)
 
-  if (version === null && !dependency.startsWith('@typed') && !dependency.startsWith('typed:')) {
+  if (
+    version === null &&
+    !dependency.startsWith('@typed') &&
+    !virtualPrefixes.some((x) => dependency.startsWith(x))
+  ) {
     throw new Error(
       `Could not find package version for ${dependency} in package ${packageJson.name}`,
     )

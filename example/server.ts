@@ -19,8 +19,6 @@ if (index.assetDirectory && import.meta.env.PROD) {
   const ONE_YEAR = 31536000
   const assetDirectory = fileURLToPath(new URL(index.assetDirectory, import.meta.url))
 
-  console.log(`Serving static assets from ${assetDirectory}`)
-
   app.use(
     staticGzip(assetDirectory, {
       serveStatic: { maxAge: ONE_YEAR, cacheControl: true },
