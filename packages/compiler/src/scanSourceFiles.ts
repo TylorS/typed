@@ -96,10 +96,18 @@ function parseRedirectFallbackSourceFileModule(
   }
 
   if (O.isNone(environment)) {
-    return O.some({ _tag: 'Redirect/Basic', sourceFile })
+    return O.some({
+      _tag: 'Redirect/Basic',
+      sourceFile,
+      hasParams: exportedDeclarations.has('params'),
+    })
   }
 
-  return O.some({ _tag: 'Redirect/Environment', sourceFile })
+  return O.some({
+    _tag: 'Redirect/Environment',
+    sourceFile,
+    hasParams: exportedDeclarations.has('params'),
+  })
 }
 
 function parseRenderableFallbackSourceFileModule(

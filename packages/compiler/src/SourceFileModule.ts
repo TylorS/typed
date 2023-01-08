@@ -43,11 +43,13 @@ export type RedirectSourceFileModule = BasicRedirectModule | RedirectModuleWithE
 export interface BasicRedirectModule {
   readonly _tag: 'Redirect/Basic'
   readonly sourceFile: SourceFile
+  readonly hasParams: boolean
 }
 
 export interface RedirectModuleWithEnvironment {
   readonly _tag: 'Redirect/Environment'
   readonly sourceFile: SourceFile
+  readonly hasParams: boolean
 }
 
 export type FallbackSourceFileModule = BasicFallbackModule | FallbackModuleWithEnvironment

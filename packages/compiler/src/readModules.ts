@@ -41,7 +41,7 @@ export interface ModuleTree {
   readonly directory: string
   readonly children: readonly ModuleTree[]
   readonly layout?: SFM.LayoutSourceFileModule
-  readonly modules?: readonly SFM.RenderSourceFileModule[]
+  readonly modules: readonly SFM.RenderSourceFileModule[]
 }
 
 export interface ModuleTreeWithFallback extends ModuleTree {
