@@ -17,6 +17,7 @@ export interface Module<out R, P extends string> {
 export namespace Module {
   export interface Meta {
     readonly layout?: Fx.Fx<IntrinsicServices, Router.Redirect, Renderable>
+    readonly nested?: boolean
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

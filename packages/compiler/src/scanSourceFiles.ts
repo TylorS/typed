@@ -63,11 +63,13 @@ function parseLayoutSourceFileModule(
     return O.none
   }
 
+  const isNested = isNestedLayout(exportedDeclarations)
+
   return pipe(
     environment,
     O.match(
-      () => O.some({ _tag: 'Layout/Basic', sourceFile }),
-      () => O.some({ _tag: 'Layout/Environment', sourceFile }),
+      () => O.some({ _tag: 'Layout/Basic', sourceFile, isNested }),
+      () => O.some({ _tag: 'Layout/Environment', sourceFile, isNested }),
     ),
   )
 }
@@ -115,16 +117,20 @@ function parseRenderableFallbackSourceFileModule(
     exportedDeclarations,
     'renderable fallback',
   )
+  const layout = getAndVerifyLayout(sourceFile, exportedDeclarations)
 
   if (O.isNone(fallback)) {
     return O.none
   }
 
+  const hasLayout = O.isSome(layout)
+  const isNested = hasLayout ? isNestedLayout(exportedDeclarations) : false
+
   if (O.isNone(environment)) {
-    return O.some({ _tag: 'Fallback/Basic', sourceFile, isFx })
+    return O.some({ _tag: 'Fallback/Basic', sourceFile, isFx, hasLayout, isNested })
   }
 
-  return O.some({ _tag: 'Fallback/Environment', sourceFile, isFx })
+  return O.some({ _tag: 'Fallback/Environment', sourceFile, isFx, hasLayout, isNested })
 }
 
 function parseRenderSourceFileModule(
@@ -145,11 +151,14 @@ function parseRenderSourceFileModule(
     return O.none
   }
 
+  const hasLayout = O.isSome(layout)
+  const isNested = hasLayout ? isNestedLayout(exportedDeclarations) : false
+
   if (O.isNone(environment)) {
-    return O.some({ _tag: 'Render/Basic', sourceFile, isFx, hasLayout: O.isSome(layout) })
+    return O.some({ _tag: 'Render/Basic', sourceFile, isFx, hasLayout, isNested })
   }
 
-  return O.some({ _tag: 'Render/Environment', sourceFile, isFx, hasLayout: O.isSome(layout) })
+  return O.some({ _tag: 'Render/Environment', sourceFile, isFx, hasLayout, isNested })
 }
 
 function getAndVerifyRoute(
@@ -258,4 +267,14 @@ function typeIsFxReturningFunction(type: Type) {
   }
 
   return typeIsFx(callSignatures[0].getReturnType())
+}
+
+function isNestedLayout(exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>) {
+  const declarations = exportedDeclarations.get('nested')
+
+  if (declarations === undefined || declarations.length === 0) {
+    return false
+  }
+
+  return declarations[0].getFullText().includes('true')
 }
