@@ -4,7 +4,6 @@ import { createElement } from '@typed/dom'
 import { Main } from '@typed/framework'
 import * as Fx from '@typed/fx'
 import { Route } from '@typed/route'
-import React from 'react'
 
 export const route = Route('/react/:counter')
 

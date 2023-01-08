@@ -13,9 +13,6 @@
   "references": [
     {
       "path": "../compiler/tsconfig.build.json"
-    },
-    {
-      "path": "../html/tsconfig.build.json"
     }
   ]
 }

@@ -1,8 +1,8 @@
 /**
- * typed:runtime:./path/to/modules is the base way to constructing a graph
+ * runtime:./path/to/modules is the base way to constructing a graph
  * of related modules together by routes, renderables, and layouts.
  */
-declare module 'typed:runtime:*' {
+declare module 'runtime:*' {
   import { RouteMatcher, Redirect } from '@typed/router'
 
   import { Fallback, Module, IntrinsicServices } from '@typed/framework'
@@ -15,11 +15,11 @@ declare module 'typed:runtime:*' {
 }
 
 /**
- * typed:browser:./path/to/modules extends typed:module:* by
+ * browser:./path/to/modules extends module:* by
  * adding a render function that can be used to render the application
  * provided with all IntrinsicServices and handles redirects.
  */
-declare module 'typed:browser:*' {
+declare module 'browser:*' {
   import { Fx } from '@typed/fx'
 
   /**
@@ -28,18 +28,18 @@ declare module 'typed:browser:*' {
   export const render: <T extends HTMLElement>(parentElement: T) => Fx<never, never, T>
 
   /**
-   * Re-exports from typed:module
+   * Re-exports from module
    */
-  export * from 'typed:runtime:*'
+  export * from 'runtime:*'
 }
 
 /**
- * typed:html:*.html helps load associated HTML template as a string and potentially
+ * html:*.html helps load associated HTML template as a string and potentially
  * an asset directory where you can serve any assets it requires from.
  *
  * TODO: Should have helpers for constructing happy-dom instance
  */
-declare module 'typed:html:*' {
+declare module 'entry:*' {
   import type { IncomingMessage } from 'http'
 
   import type { ServerWindowOptions } from '@typed/framework'
@@ -73,6 +73,6 @@ declare module 'typed:html:*' {
   ): Window & typeof globalThis
 }
 
-declare module 'typed:api:*' {
+declare module 'api:*' {
   // TODO: We should have a way for constructing API modules here
 }

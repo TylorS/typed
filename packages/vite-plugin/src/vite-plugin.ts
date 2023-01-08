@@ -11,10 +11,7 @@ import {
 } from '@typed/compiler'
 import glob from 'fast-glob'
 import { Project, ts } from 'ts-morph'
-// @ts-expect-error Types don't seem to work with ESNext module resolution
-import { default as vavite } from 'vavite'
 import { Plugin } from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 export interface PluginOptions {
   /**
@@ -36,9 +33,9 @@ const cwd = process.cwd()
 
 const PLUGIN_NAME = '@typed/vite-plugin'
 
-const RENDER_VIRTUAL_ENTRYPOINT_PREFIX = 'typed:runtime'
-const BROWSER_VIRTUAL_ENTRYPOINT_PREFIX = 'typed:browser'
-const HTML_VIRTUAL_ENTRYPOINT_PREFIX = 'typed:html'
+const RENDER_VIRTUAL_ENTRYPOINT_PREFIX = 'runtime'
+const BROWSER_VIRTUAL_ENTRYPOINT_PREFIX = 'browser'
+const HTML_VIRTUAL_ENTRYPOINT_PREFIX = 'entry'
 
 const VIRTUAL_ID_PREFIX = '\0'
 
@@ -65,55 +62,31 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
   return {
     name: PLUGIN_NAME,
     config(config) {
-      if (!config.plugins) {
-        config.plugins = []
+      const clientBuild = {
+        outDir: clientOutputDirectory,
+        rollupOptions: { input: buildClientInput(htmlFilePaths) },
       }
 
-      config.plugins.push(
-        tsconfigPaths({
-          projects: [tsConfigFilePath],
-        }),
+      const serverBuild = {
+        ssr: true,
+        outDir: serverOutputDirectory,
+        rollupOptions: { input: serverFilePath },
+      }
+
+      ;(config as any).buildSteps = [
+        {
+          name: 'client',
+          config: { build: clientBuild },
+        },
         ...(serverExists
           ? [
-              vavite({
-                serverEntry: serverFilePath,
-                serveClientAssetsInDev: true,
-              }),
+              {
+                name: 'server',
+                config: { build: serverBuild },
+              },
             ]
           : []),
-      )
-
-      // Setup vavite multi-build
-
-      if (!(config as any).buildSteps) {
-        ;(config as any).buildSteps = [
-          {
-            name: 'client',
-            config: {
-              build: {
-                outDir: clientOutputDirectory,
-                rollupOptions: {
-                  input: buildClientInput(htmlFilePaths),
-                },
-              },
-            },
-          },
-          ...(serverExists
-            ? [
-                {
-                  name: 'server',
-                  config: {
-                    build: {
-                      ssr: true,
-                      outDir: serverOutputDirectory,
-                      rollupOptions: { input: serverFilePath },
-                    },
-                  },
-                },
-              ]
-            : []),
-        ]
-      }
+      ]
     },
 
     async resolveId(id, importer) {
@@ -137,8 +110,7 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
 
       if (id.startsWith(HTML_VIRTUAL_ENTRYPOINT_PREFIX)) {
         const virtualId =
-          VIRTUAL_ID_PREFIX +
-          `${importer}?html=${basename(parseModulesFromId(id, importer), '.html')}`
+          VIRTUAL_ID_PREFIX + `${importer}?source=${parseModulesFromId(id, importer)}`
 
         virtualIds.add(virtualId)
 
@@ -149,17 +121,18 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
       // thus the need to resolve them manually.
       if (
         importer?.startsWith(VIRTUAL_ID_PREFIX) &&
-        (importer.includes('?modules=') || importer.includes('?html='))
+        (importer.includes('?modules=') || importer.includes('?source='))
       ) {
         // If a relative path, attempt to match to a source .ts(x) file
         if (id.startsWith('.')) {
-          const tsPath = resolve(sourceDirectory, id.replace(/.js(x)?$/, '.ts$1'))
+          const dir = getVirtualSourceDirectory(importer)
+          const tsPath = resolve(dir, id.replace(/.js(x)?$/, '.ts$1'))
 
           if (existsSync(tsPath)) {
             return tsPath
           }
 
-          const jsPath = resolve(sourceDirectory, id)
+          const jsPath = resolve(dir, id)
 
           if (existsSync(jsPath)) {
             return tsPath
@@ -209,7 +182,7 @@ async function buildVirtualModule(
     return makeRenderModule(project, moduleTree, importer)
   }
 
-  const htmlFile = query.split('html=')[1]
+  const htmlFile = query.split('source=')[1]
 
   return makeHtmlModule(
     project,
@@ -218,6 +191,12 @@ async function buildVirtualModule(
     serverOutputDirectory,
     clientOutputDirectory,
   )
+}
+
+function getVirtualSourceDirectory(id: string) {
+  const [importer] = id.split(VIRTUAL_ID_PREFIX)[1].split('?')
+
+  return dirname(importer)
 }
 
 function parseModulesFromId(id: string, importer: string | undefined) {

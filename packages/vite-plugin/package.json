@@ -22,7 +22,9 @@
   },
   "dependencies": {
     "@typed/compiler": "workspace:*",
-    "@typed/html": "workspace:*",
+    "@vavite/expose-vite-dev-server": "^1.5.2",
+    "@vavite/reloader": "^1.5.2",
+    "fast-glob": "^3.2.12",
     "vavite": "^1.5.2"
   },
   "devDependencies": {

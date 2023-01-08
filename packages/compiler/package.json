@@ -21,23 +21,19 @@
     }
   },
   "dependencies": {
-    "@effect/io": "~0.0.52",
+    "@effect/io": "~0.0.59",
     "@fp-ts/data": "~0.0.36",
-    "@typed/dom": "workspace:*",
     "@typed/framework": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/html": "workspace:*",
     "express": "^4.18.2",
-    "happy-dom": "^8.1.2",
     "isbot": "^3.6.5",
-    "vavite": "^1.5.2",
-    "yargs": "^17.6.2"
+    "vavite": "^1.5.2"
   },
   "devDependencies": {
     "@types/express": "^4.17.15",
     "ts-morph": "^17.0.1",
-    "vite": "^4.0.4",
-    "@types/yargs": "^17.0.19"
+    "vite": "^4.0.4"
   },
   "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",
   "publishConfig": {

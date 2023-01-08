@@ -52,9 +52,14 @@ export function makeHtmlModule(
 
   const relativeFilePath = join(relativeClientOutput, basename(htmlFilePath))
 
+  sourceFile.addImportDeclaration({
+    defaultImport: 'viteDevServer',
+    moduleSpecifier: 'vavite/vite-dev-server',
+  })
+
   appendText(
     sourceFile,
-    `export const html = import.meta.env.PROD ? readFileSync(fileURLToPath(new URL('${relativeFilePath}', import.meta.url))).toString().trim() : \`${html.trim()}\``,
+    `export const html = import.meta.env.PROD ? readFileSync(fileURLToPath(new URL('${relativeFilePath}', import.meta.url))).toString().trim() : viteDevServer ? await viteDevServer.transformIndexHtml('${relativeFilePath}', \`${html.trim()}\`) : \`${html.trim()}\``,
   )
 
   appendText(

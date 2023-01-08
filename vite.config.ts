@@ -2,12 +2,15 @@
 
 import { join } from 'path'
 
+import vavite from 'vavite'
 import { defineConfig } from 'vite'
 import compression from 'vite-plugin-compression'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 import typed from './packages/vite-plugin/src/vite-plugin'
 
 export default defineConfig(() => ({
+  root: join(__dirname, 'example'),
   resolve: {
     // Only necessary because developing in a monorepo
     alias: {
@@ -23,11 +26,18 @@ export default defineConfig(() => ({
     },
   },
   plugins: [
+    tsconfigPaths({
+      projects: [join(__dirname, 'example/tsconfig.json')],
+    }),
     typed({
       // Directory should point towards the root of your project with an index.html file
       directory: join(__dirname, 'example'),
       // Path to your tsconfig.json file. Can be absolute path or relative to directory above
       tsConfig: 'tsconfig.json',
+    }),
+    vavite({
+      serverEntry: join(__dirname, 'example/server.ts'),
+      serveClientAssetsInDev: true,
     }),
     compression(),
   ],

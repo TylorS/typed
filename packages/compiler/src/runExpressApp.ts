@@ -2,7 +2,7 @@ import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
 import { either } from '@fp-ts/data'
-import { pipe } from '@fp-ts/data/function'
+import { pipe } from '@fp-ts/data/Function'
 import {
   RuntimeModule,
   provideServerIntrinsics,
@@ -13,6 +13,7 @@ import * as Fx from '@typed/fx'
 import { renderInto } from '@typed/html'
 import express from 'express'
 import isbot from 'isbot'
+import viteDevServer from 'vavite/vite-dev-server'
 
 const prettyPrintCause = Cause.pretty()
 
@@ -67,6 +68,10 @@ export const runExpressApp = (
         }),
       )
     } catch (error) {
+      if (error instanceof Error && viteDevServer) {
+        viteDevServer.ssrFixStacktrace(error)
+      }
+
       next(error)
     }
   }

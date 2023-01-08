@@ -1,7 +1,7 @@
 /// <reference types="@typed/framework" />
 
 import * as Fx from '@typed/fx'
-import { render } from 'typed:browser:./pages'
+import { render } from 'browser:./pages'
 
 const parentElement = document.getElementById('application')
 
