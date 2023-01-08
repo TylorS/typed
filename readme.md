@@ -27,11 +27,11 @@ There is currently one toy example in the example directory which will showcase 
 
 ## Upcoming
 
-- Multiple entrypoints
+- Dev Mode for server-side rendering
 - API Routes
 - Integrate effect-ts plugins
 - Hydration of SSR content
-- Support for html template pages
+- Support for html template languages
 - SSG output
 - Hot module reloading
 - Integrations with @fp-ts/schema
