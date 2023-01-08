@@ -12,19 +12,16 @@ export interface RenderableFallback {
   readonly type: 'Renderable'
   readonly fallback: (path: string) => Fx<IntrinsicServices, Router.Redirect, Renderable>
   readonly layout?: Fx<IntrinsicServices, Router.Redirect, Renderable>
-  readonly nested?: boolean
 }
 
 export function RenderableFallback(
   fallback: (path: string) => Fx<IntrinsicServices, Router.Redirect, Renderable>,
   layout?: Fx<IntrinsicServices, Router.Redirect, Renderable>,
-  nested = false,
 ): RenderableFallback {
   return {
     type: 'Renderable',
     fallback,
     layout,
-    nested,
   }
 }
 

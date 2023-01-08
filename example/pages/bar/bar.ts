@@ -20,3 +20,5 @@ export const layout = html`
     <main>${outlet}</main>
   </div>
 `
+
+export const nested = true

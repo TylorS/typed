@@ -13,7 +13,6 @@ export interface BaseRenderModule {
   readonly sourceFile: SourceFile
   readonly isFx: boolean
   readonly hasLayout: boolean
-  readonly isNested: boolean
 }
 
 export interface RenderModuleWithEnvironment {
@@ -21,7 +20,6 @@ export interface RenderModuleWithEnvironment {
   readonly sourceFile: SourceFile
   readonly isFx: boolean
   readonly hasLayout: boolean
-  readonly isNested: boolean
 }
 
 export type LayoutSourceFileModule = BasicLayoutModule | LayoutModuleWithEnvironment
@@ -29,13 +27,11 @@ export type LayoutSourceFileModule = BasicLayoutModule | LayoutModuleWithEnviron
 export interface BasicLayoutModule {
   readonly _tag: 'Layout/Basic'
   readonly sourceFile: SourceFile
-  readonly isNested: boolean
 }
 
 export interface LayoutModuleWithEnvironment {
   readonly _tag: 'Layout/Environment'
   readonly sourceFile: SourceFile
-  readonly isNested: boolean
 }
 
 export type RedirectSourceFileModule = BasicRedirectModule | RedirectModuleWithEnvironment
@@ -59,7 +55,6 @@ export interface BasicFallbackModule {
   readonly isFx: boolean
   readonly sourceFile: SourceFile
   readonly hasLayout: boolean
-  readonly isNested: boolean
 }
 
 export interface FallbackModuleWithEnvironment {
@@ -67,7 +62,6 @@ export interface FallbackModuleWithEnvironment {
   readonly isFx: boolean
   readonly sourceFile: SourceFile
   readonly hasLayout: boolean
-  readonly isNested: boolean
 }
 
 export function isLayoutModule(module: SourceFileModule): module is LayoutSourceFileModule {

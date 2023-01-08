@@ -141,6 +141,7 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
             layout?: Fx.Fx<any, any, html.Renderable>,
           ): Effect.Effect<any, any, Option.Option<Fx.Fx<any, any, html.Renderable>>> =>
             Effect.gen(function* ($) {
+              const { outlet } = yield* $(Router.get)
               const previous = samplePreviousValues()
 
               // Update the previous values
@@ -154,23 +155,23 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
               }
 
               // Interrupt the previous fiber if it exists
-              if (previous.fiber) {
+              if (previous.render !== render && previous.fiber) {
                 yield* $(Fiber.interrupt(previous.fiber))
               }
 
               // If we have a layout, we need to render it and use the route outlet.
               if (layout) {
                 // Render into the route outlet
-                previousFiber = yield* $(
-                  pipe(render, Fx.observe(router.outlet.set), Effect.forkScoped),
-                )
+                if (previous.render !== render) {
+                  previousFiber = yield* $(pipe(render, Fx.observe(outlet.set), Effect.forkScoped))
+                }
 
                 return Option.some(layout)
               }
 
               // If we don't have a layout, but we did, we need to clear the outlet
               if (previous.layout) {
-                yield* $(router.outlet.set(null))
+                yield* $(outlet.set(null))
               }
 
               // Otherwise use the render function directly
@@ -239,10 +240,11 @@ function runRouteMatch<R, E, P extends string>(
     const env = yield* $(Effect.environment<R>())
     const nestedRouter = router.define(route)
     const params = pipe(nestedRouter.params, Fx.provideEnvironment(env))
-
-    return pipe(
+    const render = pipe(
       match(params as unknown as Fx.Fx<never, never, Path.ParamsOf<P>>),
       Router.provideFx(nestedRouter as Router),
     )
+
+    return render
   })
 }

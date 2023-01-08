@@ -162,16 +162,14 @@ export function makeRenderModule(
       case 'Fallback/Basic':
       case 'Render/Basic':
       case 'Layout/Basic':
-        return mod.isNested ? `layout: ${name}.layout, nested: true` : `layout: ${name}.layout`
+        return `layout: ${name}.layout`
       case 'Fallback/Environment':
       case 'Render/Environment':
       case 'Layout/Environment': {
         addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
         addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
 
-        return mod.isNested
-          ? `layout: pipe(${name}.layout, Fx.provideSomeLayer(${name}.environment)), nested: true`
-          : `layout: pipe(${name}.layout, Fx.provideSomeLayer(${name}.environment))`
+        return `layout: pipe(${name}.layout, Fx.provideSomeLayer(${name}.environment))`
       }
     }
 
