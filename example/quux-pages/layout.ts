@@ -16,8 +16,8 @@ export const layout = html`
       <li><a href="/">Home</a></li>
       <li>${Link({ href: '/quux/foo/1', label: 'Foo 1' })}</li>
       <li>${Link({ href: '/quux/foo/2', label: 'Foo 2' })}</li>
-      <li>${Link({ href: '/quux/foo/bar/1', label: 'Bar 1' })}</li>
-      <li>${Link({ href: '/quux/foo/bar/2', label: 'Bar 2' })}</li>
+      <li>${Link({ href: '/quux/bar/1', label: 'Bar 1' })}</li>
+      <li>${Link({ href: '/quux/bar/2', label: 'Bar 2' })}</li>
       <li>${Link({ href: '/quux/react/foo', label: 'React Foo' })}</li>
       <li>${Link({ href: '/quux/react/bar', label: 'React Bar' })}</li>
       <li>${Link({ href: '/quux/broken-link', label: 'Broken' })}</li>

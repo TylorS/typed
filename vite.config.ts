@@ -7,7 +7,21 @@ import compression from 'vite-plugin-compression'
 
 import typed from './packages/vite-plugin/src/vite-plugin'
 
-export default defineConfig({
+export default defineConfig(() => ({
+  resolve: {
+    // Only necessary because developing in a monorepo
+    alias: {
+      '@typed/compiler': join(__dirname, 'packages/compiler/dist'),
+      '@typed/context': join(__dirname, 'packages/context/dist'),
+      '@typed/dom': join(__dirname, 'packages/dom/dist'),
+      '@typed/framework': join(__dirname, 'packages/framework/dist'),
+      '@typed/fx': join(__dirname, 'packages/fx/dist'),
+      '@typed/html': join(__dirname, 'packages/html/dist'),
+      '@typed/path': join(__dirname, 'packages/path/dist'),
+      '@typed/route': join(__dirname, 'packages/route/dist'),
+      '@typed/router': join(__dirname, 'packages/router/dist'),
+    },
+  },
   plugins: [
     typed({
       // Directory should point towards the root of your project with an index.html file
@@ -22,4 +36,4 @@ export default defineConfig({
     sourcemap: true,
     minify: true,
   },
-})
+}))

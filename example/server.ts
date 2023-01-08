@@ -10,7 +10,6 @@ import * as quuxHtml from 'typed:html:./quux.html'
 import * as pages from 'typed:runtime:./pages'
 import * as quuxPages from 'typed:runtime:./quux-pages'
 import httpDevServer from 'vavite/http-dev-server'
-import { join } from 'path'
 
 const app = express()
 
@@ -21,7 +20,11 @@ if (index.assetDirectory && import.meta.env.PROD) {
 
   console.log(`Serving static assets from ${assetDirectory}`)
 
-  app.use('/assets', staticGzip(join(assetDirectory, 'assets'), { serveStatic: { maxAge: ONE_YEAR, cacheControl: true } }))
+  app.use(
+    staticGzip(assetDirectory, {
+      serveStatic: { maxAge: ONE_YEAR, cacheControl: true },
+    }),
+  )
 }
 
 // Register our request handler

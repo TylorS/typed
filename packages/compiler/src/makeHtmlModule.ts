@@ -32,12 +32,17 @@ export function makeHtmlModule(
   addNamedImport(sourceFile, ['IncomingMessage'], 'http')
   addNamedImport(sourceFile, ['readFileSync'], 'fs')
   addNamedImport(sourceFile, ['fileURLToPath'], 'url')
-  addNamedImport(sourceFile, ['ServerWindowOptions'], '@typed/framework')
-  addNamedImport(sourceFile, ['makeServerWindow'], '@typed/framework/makeServerWindow')
+  addNamedImport(
+    sourceFile,
+    ['makeServerWindow', 'ServerWindowOptions'],
+    '@typed/framework/makeServerWindow',
+  )
 
   appendText(
     sourceFile,
-    `export const assetDirectory: string = '${relativeClientOutput}'`,
+    `export const assetDirectory: string = import.meta.env.PROD ? '${relativeClientOutput}' : '${dirname(
+      importer,
+    )}'`,
   )
   appendText(
     sourceFile,

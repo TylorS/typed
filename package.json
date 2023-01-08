@@ -26,6 +26,7 @@
     "update:packages": "tsx ./tools/updatePackages.ts",
     "update:rootTsconfig": "tsx ./tools/updateRootTsconfig.ts",
     "example": "vite --config ./vite.config.ts serve example",
+    "example:server": "vite --config ./vite.config.ts --mode server serve example",
     "example:build": "vavite --config ./vite.config.ts example",
     "example:preview": "node ./example/dist/server/server.js",
     "compiler:build-browser": "node --loader @esbuild-kit/esm-loader ./packages/compiler/src/cli.ts --directory example --environment browser --out example/compiler-test.ts",
