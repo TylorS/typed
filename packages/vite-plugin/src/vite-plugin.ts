@@ -11,7 +11,11 @@ import {
 } from '@typed/compiler'
 import glob from 'fast-glob'
 import { Project, ts } from 'ts-morph'
-import { Plugin } from 'vite'
+// @ts-expect-error Unable to resolve types w/ NodeNext
+import vavite from 'vavite'
+import { Plugin, UserConfig } from 'vite'
+import compression from 'vite-plugin-compression'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 export interface PluginOptions {
   /**
@@ -39,7 +43,7 @@ const HTML_VIRTUAL_ENTRYPOINT_PREFIX = 'entry'
 
 const VIRTUAL_ID_PREFIX = '\0'
 
-export default function makePlugin({ directory, tsConfig, server }: PluginOptions): Plugin {
+export default function makePlugin({ directory, tsConfig, server }: PluginOptions): Plugin[] {
   const sourceDirectory = resolve(cwd, directory)
   const tsConfigFilePath = resolve(sourceDirectory, tsConfig)
   const serverOutputDirectory = join(sourceDirectory, 'dist', 'server')
@@ -59,9 +63,21 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
   const serverExists = existsSync(serverFilePath)
   const virtualIds = new Set<string>()
 
-  return {
+  const plugins: Plugin[] = [
+    tsconfigPaths({
+      projects: [join(sourceDirectory, 'tsconfig.json')],
+    }),
+    vavite({
+      serverEntry: serverFilePath,
+      serveClientAssetsInDev: true,
+    }),
+    // @ts-expect-error Unable to resolve types w/ NodeNext
+    compression(),
+  ]
+
+  plugins.push({
     name: PLUGIN_NAME,
-    config(config) {
+    config(config: UserConfig) {
       const clientBuild = {
         outDir: clientOutputDirectory,
         rollupOptions: { input: buildClientInput(htmlFilePaths) },
@@ -89,7 +105,7 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
       ]
     },
 
-    async resolveId(id, importer) {
+    async resolveId(id: string, importer?: string) {
       if (id.startsWith(RENDER_VIRTUAL_ENTRYPOINT_PREFIX)) {
         const virtualId =
           VIRTUAL_ID_PREFIX + `${importer}?modules=${parseModulesFromId(id, importer)}`
@@ -141,7 +157,7 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
       }
     },
 
-    async load(id) {
+    async load(id: string) {
       if (virtualIds.has(id)) {
         const sourceFile = await buildVirtualModule(
           project,
@@ -159,7 +175,9 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
         }
       }
     },
-  }
+  })
+
+  return plugins
 }
 
 async function buildVirtualModule(

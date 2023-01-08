@@ -1,6 +1,6 @@
 /// <reference types="@typed/framework" />
 
-import { AddressInfo } from 'net'
+import type { AddressInfo } from 'net'
 import { fileURLToPath } from 'url'
 
 import { runExpressApp } from '@typed/compiler'
