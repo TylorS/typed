@@ -1,8 +1,8 @@
 /**
- * typed:module:./path/to/modules is the base way to constructing a graph
+ * typed:runtime:./path/to/modules is the base way to constructing a graph
  * of related modules together by routes, renderables, and layouts.
  */
-declare module 'typed:modules:*' {
+declare module 'typed:runtime:*' {
   import { RouteMatcher, Redirect } from '@typed/router'
 
   import { Fallback, Module, IntrinsicServices } from '@typed/framework'
@@ -30,19 +30,19 @@ declare module 'typed:browser:*' {
   /**
    * Re-exports from typed:module
    */
-  export * from 'typed:modules:*'
+  export * from 'typed:runtime:*'
 }
 
 /**
- * typed:server:*.html helps load associated HTML template as a string and potentially
+ * typed:html:*.html helps load associated HTML template as a string and potentially
  * an asset directory where you can serve any assets it requires from.
  *
  * TODO: Should have helpers for constructing happy-dom instance
  */
 declare module 'typed:html:*' {
-  import { IncomingMessage } from 'http'
+  import type { IncomingMessage } from 'http'
 
-  import { ServerWindowOptions } from '@typed/framework'
+  import type { ServerWindowOptions } from '@typed/framework'
 
   /**
    * The path to the directory where assets will be found

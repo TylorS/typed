@@ -12,7 +12,7 @@ import {
 import { ModuleTree, ModuleTreeWithFallback } from './readModules.js'
 import { addNamedImport, addNamespaceImport, appendText } from './ts-morph-helpers.js'
 
-export function makeModuleSourceFile(
+export function makeRenderModule(
   project: Project,
   moduleTree: ModuleTreeWithFallback,
   importer: string,

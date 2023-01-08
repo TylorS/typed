@@ -31,25 +31,32 @@ export function makeHtmlModule(
 
   addNamedImport(sourceFile, ['IncomingMessage'], 'http')
   addNamedImport(sourceFile, ['readFileSync'], 'fs')
-  addNamedImport(sourceFile, ['makeServerWindow', 'ServerWindowOptions'], '@typed/framework')
-
-  appendText(sourceFile, `export const assetDirectory = '${join(relativeClientOutput, 'assets')}'`)
-  appendText(sourceFile, `export const htmlAttributes = ${JSON.stringify(htmlAttributes)}`)
-  appendText(sourceFile, `export const docType = '${docType}'`)
+  addNamedImport(sourceFile, ['fileURLToPath'], 'url')
+  addNamedImport(sourceFile, ['ServerWindowOptions'], '@typed/framework')
+  addNamedImport(sourceFile, ['makeServerWindow'], '@typed/framework/makeServerWindow')
 
   appendText(
     sourceFile,
-    `export const html = import.meta.env.PROD ? readFileSync('${join(
-      relativeClientOutput,
-      basename(htmlFilePath),
-    )}').toString() : \`${html}\``,
+    `export const assetDirectory: string = '${relativeClientOutput}'`,
+  )
+  appendText(
+    sourceFile,
+    `export const htmlAttributes: Record<string, string> = ${JSON.stringify(htmlAttributes)}`,
+  )
+  appendText(sourceFile, `export const docType: string = '${docType}'`)
+
+  const relativeFilePath = join(relativeClientOutput, basename(htmlFilePath))
+
+  appendText(
+    sourceFile,
+    `export const html = import.meta.env.PROD ? readFileSync(fileURLToPath(new URL('${relativeFilePath}', import.meta.url))).toString().trim() : \`${html.trim()}\``,
   )
 
   appendText(
     sourceFile,
     `export function makeWindow(req: IncomingMessage, options?: ServerWindowOptions) {
   const win = makeServerWindow(req, options)
-  const documentElement = window.document.documentElement
+  const documentElement = win.document.documentElement
 
   documentElement.innerHTML = html
 

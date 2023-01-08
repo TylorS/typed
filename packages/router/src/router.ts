@@ -229,6 +229,8 @@ export const makeRouter = (
     const base = document.querySelector('base')
     const baseHref = base ? getBasePath(base.href) : '/'
 
+    console.log(baseHref)
+
     // Make our base router
     return Router(Route.Route(baseHref), currentPath) as Router
   })

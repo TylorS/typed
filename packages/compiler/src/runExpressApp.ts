@@ -3,40 +3,47 @@ import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
 import { either } from '@fp-ts/data'
 import { pipe } from '@fp-ts/data/function'
-import { RuntimeModule, provideServerIntrinsics, runMatcherWithFallback } from '@typed/framework'
+import {
+  RuntimeModule,
+  provideServerIntrinsics,
+  runMatcherWithFallback,
+  HtmlModule,
+} from '@typed/framework'
 import * as Fx from '@typed/fx'
 import { renderInto } from '@typed/html'
 import express from 'express'
 import isbot from 'isbot'
 
-import { html5Doctype, makeServerWindow } from './makeServerWindow.js'
-
 const prettyPrintCause = Cause.pretty()
 
 export const runExpressApp = (
   runtimeModule: RuntimeModule,
-  indexHtml: string,
+  htmlModule: HtmlModule,
+  getParentElement: (doc: Document) => HTMLElement | null,
 ): express.RequestHandler => {
   const main = runMatcherWithFallback(runtimeModule.matcher, runtimeModule.fallback)
 
   return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.log(req.url)
+
     try {
       await Effect.unsafeRunPromise(
         Effect.gen(function* ($) {
-          const window = makeServerWindow(req)
-          const documentElement = window.document.documentElement
-
-          documentElement.innerHTML = indexHtml
-          documentElement.lang = 'en-us'
+          const window = htmlModule.makeWindow(req)
 
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const application = window.document.getElementById('application')!
+          const parentElement = getParentElement(window.document)
+
+          if (!parentElement) {
+            return yield* $(Effect.dieMessage(`Unable to find parent element`))
+          }
+
           const fiber = yield* $(
             pipe(
               main,
-              renderInto(application),
+              renderInto(parentElement),
               provideServerIntrinsics(window, window, {
-                parentElement: application,
+                parentElement,
                 isBot: isbot(req.get('user-agent') ?? ''),
               }),
               Fx.drain,
@@ -56,7 +63,9 @@ export const runExpressApp = (
             )
           }
 
-          return res.status(200).send(html5Doctype + documentElement.outerHTML)
+          return res
+            .status(200)
+            .send(htmlModule.docType + window.document.documentElement.outerHTML)
         }),
       )
     } catch (error) {

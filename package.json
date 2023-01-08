@@ -43,6 +43,7 @@
     "@fp-ts/schema": "~0.0.7",
     "@webreflection/uparser": "~0.2.4",
     "express": "^4.18.2",
+    "fast-glob": "^3.2.12",
     "happy-dom": "^8.1.2",
     "isbot": "^3.6.5",
     "path-to-regexp": "^6.2.1",

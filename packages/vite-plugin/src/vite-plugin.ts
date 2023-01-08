@@ -1,10 +1,15 @@
 import { existsSync } from 'fs'
-import { dirname, join, resolve } from 'path'
+import { basename, dirname, join, resolve } from 'path'
 
-/// <reference types="vavite/vite-config" />
-
-import { setupTsProject, scanSourceFiles, buildEntryPoint } from '@typed/compiler'
-import { Environment } from '@typed/html'
+import {
+  setupTsProject,
+  makeBrowserModule,
+  makeHtmlModule,
+  makeRenderModule,
+  readDirectory,
+  readModules,
+} from '@typed/compiler'
+import glob from 'fast-glob'
 import { Project, ts } from 'ts-morph'
 // @ts-expect-error Types don't seem to work with ESNext module resolution
 import { default as vavite } from 'vavite'
@@ -20,32 +25,42 @@ export interface PluginOptions {
    * The name/path to your tsconfig.json file, relative to the directory above or absolute
    */
   readonly tsConfig: string
+
+  /**
+   * Server file path
+   */
+  readonly server?: string
 }
 
 const cwd = process.cwd()
 
 const PLUGIN_NAME = '@typed/vite-plugin'
-const BROWSER_VIRTUAL_ENTRYPOINT_PREFIX = 'typed:browser'
-const SERVER_VIRTUAL_ENTRYPOINT_PREFIX = 'typed:server'
 
-export default function makePlugin({ directory, tsConfig }: PluginOptions): Plugin {
+const RENDER_VIRTUAL_ENTRYPOINT_PREFIX = 'typed:runtime'
+const BROWSER_VIRTUAL_ENTRYPOINT_PREFIX = 'typed:browser'
+const HTML_VIRTUAL_ENTRYPOINT_PREFIX = 'typed:html'
+
+const VIRTUAL_ID_PREFIX = '\0'
+
+export default function makePlugin({ directory, tsConfig, server }: PluginOptions): Plugin {
   const sourceDirectory = resolve(cwd, directory)
   const tsConfigFilePath = resolve(sourceDirectory, tsConfig)
+  const serverOutputDirectory = join(sourceDirectory, 'dist', 'server')
+  const clientOutputDirectory = join(sourceDirectory, 'dist', 'client')
 
   console.info(`[${PLUGIN_NAME}]: Setting up typescript project...`)
   const project = setupTsProject(tsConfigFilePath)
+  console.info(`[${PLUGIN_NAME}]: Finding HTML files...`)
 
-  const BROWSER_VIRTUAL_ID_PREFIX = '\0' + join(sourceDirectory, 'browser.ts')
-  const SERVER_VIRTUAL_ID_PREFIX = '\0' + join(sourceDirectory, 'server.ts')
+  const htmlFilePaths = findHtmlFiles(sourceDirectory)
 
-  const indexHtmlFilePath = join(sourceDirectory, 'index.html')
-
-  if (!existsSync(indexHtmlFilePath)) {
-    throw new Error(`[${PLUGIN_NAME}]: Could not find index.html file at ${indexHtmlFilePath}`)
+  if (htmlFilePaths.length === 0) {
+    throw new Error(`[${PLUGIN_NAME}]: Could not find html files in ${sourceDirectory}`)
   }
 
-  const serverFilePath = join(sourceDirectory, 'server.ts')
+  const serverFilePath = resolve(sourceDirectory, server ?? 'server.ts')
   const serverExists = existsSync(serverFilePath)
+  const virtualIds = new Set<string>()
 
   return {
     name: PLUGIN_NAME,
@@ -76,8 +91,10 @@ export default function makePlugin({ directory, tsConfig }: PluginOptions): Plug
             name: 'client',
             config: {
               build: {
-                outDir: 'dist/client',
-                rollupOptions: { input: resolve(sourceDirectory, 'index.html') },
+                outDir: clientOutputDirectory,
+                rollupOptions: {
+                  input: buildClientInput(htmlFilePaths),
+                },
               },
             },
           },
@@ -86,7 +103,7 @@ export default function makePlugin({ directory, tsConfig }: PluginOptions): Plug
             config: {
               build: {
                 ssr: true,
-                outDir: 'dist/server',
+                outDir: serverOutputDirectory,
                 rollupOptions: { input: serverFilePath },
               },
             },
@@ -96,25 +113,39 @@ export default function makePlugin({ directory, tsConfig }: PluginOptions): Plug
     },
 
     async resolveId(id, importer) {
-      if (id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)) {
-        return `${BROWSER_VIRTUAL_ID_PREFIX}?pages=${parsePagesFromId(
-          id,
-          importer,
-        )}&importer=${importer}`
+      if (id.startsWith(RENDER_VIRTUAL_ENTRYPOINT_PREFIX)) {
+        const virtualId =
+          VIRTUAL_ID_PREFIX + `${importer}?modules=${parseModulesFromId(id, importer)}`
+
+        virtualIds.add(virtualId)
+
+        return virtualId
       }
 
-      if (id === SERVER_VIRTUAL_ENTRYPOINT_PREFIX) {
-        return `${SERVER_VIRTUAL_ID_PREFIX}?pages=${parsePagesFromId(
-          id,
-          importer,
-        )}&importer=${importer}`
+      if (id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)) {
+        const virtualId =
+          VIRTUAL_ID_PREFIX + `${importer}?modules=${parseModulesFromId(id, importer)}&browser`
+
+        virtualIds.add(virtualId)
+
+        return virtualId
+      }
+
+      if (id.startsWith(HTML_VIRTUAL_ENTRYPOINT_PREFIX)) {
+        const virtualId =
+          VIRTUAL_ID_PREFIX +
+          `${importer}?html=${basename(parseModulesFromId(id, importer), '.html')}`
+
+        virtualIds.add(virtualId)
+
+        return virtualId
       }
 
       // Virtual modules have problems with resolving modules due to not having a real directory to work with
       // thus the need to resolve them manually.
       if (
-        importer?.startsWith(BROWSER_VIRTUAL_ID_PREFIX) ||
-        importer?.startsWith(SERVER_VIRTUAL_ID_PREFIX)
+        importer?.startsWith(VIRTUAL_ID_PREFIX) &&
+        (importer.includes('?modules=') || importer.includes('?html='))
       ) {
         // If a relative path, attempt to match to a source .ts(x) file
         if (id.startsWith('.')) {
@@ -133,55 +164,63 @@ export default function makePlugin({ directory, tsConfig }: PluginOptions): Plug
       }
     },
 
-    load(id) {
-      if (id.startsWith(BROWSER_VIRTUAL_ID_PREFIX)) {
-        return scanAndBuild(
-          parseSourceDirectoryFromVirtualId(id),
-          parsePagesFromVirtualId(id),
+    async load(id) {
+      if (virtualIds.has(id)) {
+        const sourceFile = await buildVirtualModule(
           project,
-          'browser',
+          id,
+          serverOutputDirectory,
+          clientOutputDirectory,
         )
-      }
+        const output = ts.transpileModule(sourceFile.getFullText(), {
+          compilerOptions: project.getCompilerOptions(),
+        })
 
-      if (id.startsWith(SERVER_VIRTUAL_ID_PREFIX)) {
-        return scanAndBuild(
-          parseSourceDirectoryFromVirtualId(id),
-          parsePagesFromVirtualId(id),
-          project,
-          'server',
-        )
+        return {
+          code: output.outputText,
+          map: output.sourceMapText,
+        }
       }
     },
   }
 }
 
-function scanAndBuild(
-  dir: string,
-  pages: readonly string[],
+async function buildVirtualModule(
   project: Project,
-  environment: Environment,
+  id: string,
+  serverOutputDirectory: string,
+  clientOutputDirectory: string,
 ) {
-  const scanned = scanSourceFiles(
-    pages.map((x) => join(dir, x)),
-    project,
-  )
-  const filePath = join(dir, `${environment}.ts`)
-  const entryPoint = buildEntryPoint(scanned, project, environment, filePath)
-  const output = ts.transpileModule(entryPoint.getFullText(), {
-    fileName: entryPoint.getFilePath(),
-    compilerOptions: project.getCompilerOptions(),
-  })
+  const [importer, query] = id.split(VIRTUAL_ID_PREFIX)[1].split('?')
 
-  return {
-    code: output.outputText,
-    map: output.sourceMapText,
+  if (query.includes('modules=')) {
+    const moduleDirectory = resolve(dirname(importer), query.split('modules=')[1].split('&')[0])
+    const directory = await readDirectory(moduleDirectory)
+    const moduleTree = readModules(project, directory)
+
+    if (query.includes('&browser')) {
+      return makeBrowserModule(project, moduleTree, importer)
+    }
+
+    return makeRenderModule(project, moduleTree, importer)
   }
+
+  const htmlFile = query.split('html=')[1]
+
+  return makeHtmlModule(
+    project,
+    htmlFile + '.html',
+    importer,
+    serverOutputDirectory,
+    clientOutputDirectory,
+  )
 }
 
-function parsePagesFromId(id: string, importer: string | undefined) {
+function parseModulesFromId(id: string, importer: string | undefined) {
   const pages = id
+    .replace(RENDER_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
     .replace(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
-    .replace(SERVER_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
+    .replace(HTML_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
 
   if (pages === '') {
     throw new Error(`[${PLUGIN_NAME}]: No pages were specified from ${importer}`)
@@ -190,17 +229,23 @@ function parsePagesFromId(id: string, importer: string | undefined) {
   return pages
 }
 
-function parsePagesFromVirtualId(id: string): readonly string[] {
-  return id
-    .split('?pages=')[1]
-    .split('&importer')[0]
-    .split(',')
-    .flatMap((p) => [
-      `${p}${p.endsWith('/') ? '' : '/'}**/*.ts`,
-      `${p}${p.endsWith('/') ? '' : '/'}**/*.tsx`,
-    ])
+function findHtmlFiles(directory: string) {
+  // eslint-disable-next-line import/no-named-as-default-member
+  return glob.sync([
+    join(directory, '**/*.html'),
+    '!' + join(directory, '**/node_modules/**'),
+    '!' + join(directory, '**/dist/**'),
+  ])
 }
 
-function parseSourceDirectoryFromVirtualId(id: string): string {
-  return dirname(id.split('&importer=')[1])
+function buildClientInput(htmlFilePaths: string[]) {
+  const input: Record<string, string> = {}
+
+  for (const htmlFilePath of htmlFilePaths) {
+    const htmlFile = basename(htmlFilePath, '.html')
+
+    input[htmlFile] = htmlFilePath
+  }
+
+  return input
 }

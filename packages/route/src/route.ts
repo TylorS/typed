@@ -108,7 +108,7 @@ export const concat =
     const concatPath = (
       route.path === '/'
         ? otherRoute.path
-        : (route.path + otherRoute.path).replace(/\/{1,}/g, '/').replace(/\/$/, '') || '/'
+        : otherRoute.path === '/' ? route.path : (route.path + otherRoute.path).replace(/\/{1,}/g, '/').replace(/\/$/, '') || '/'
     ) as P.PathJoin<[Path, Path2]>
 
     const concatMatch = (path: string) =>

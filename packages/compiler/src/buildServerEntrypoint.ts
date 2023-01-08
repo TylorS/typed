@@ -49,7 +49,7 @@ export const docType = '${docType}'
 
 export function makeWindow(req: IncomingMessage, origin?: string) {
   const win = makeServerWindow(req, origin)
-  const documentElement = window.document.documentElement
+  const documentElement = win.document.documentElement
 
   documentElement.innerHTML = indexHtml
 
