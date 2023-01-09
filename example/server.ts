@@ -59,7 +59,7 @@ app.get('/quux*', runExpressApp(quuxPages, quuxHtml, getParentElement))
 app.get('/*', runExpressApp(pages, index, getParentElement))
 
 // Our vite plugin configures another vite plugin called vavite for you
-// anytime it finds your configured
+// anytime it finds your configured server file.
 // See: https://github.com/cyco130/vavite
 //
 // Vavite assists us in running your server in development mode and enabling
