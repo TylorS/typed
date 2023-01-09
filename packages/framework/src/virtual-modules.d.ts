@@ -42,6 +42,8 @@ declare module 'browser:*' {
 declare module 'html:*' {
   import type { IncomingMessage } from 'http'
 
+  import * as happyDom from 'happy-dom'
+
   import type { ServerWindowOptions } from '@typed/framework'
 
   /**
@@ -70,7 +72,7 @@ declare module 'html:*' {
   export function makeWindow(
     req: IncomingMessage,
     options?: ServerWindowOptions,
-  ): Window & typeof globalThis
+  ): Window & typeof globalThis & Pick<InstanceType<typeof happyDom.Window>, 'happyDOM'>
 }
 
 declare module 'api:*' {

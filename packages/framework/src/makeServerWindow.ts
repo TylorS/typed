@@ -19,10 +19,11 @@ export interface ServerWindowOptions {
 export function makeServerWindow(req: IncomingMessage, options?: ServerWindowOptions) {
   const url = options?.url ?? new URL(req.url || '/', getOriginFromRequest(req)).toString()
 
-  const win: Window & GlobalThis = new happyDom.Window({
-    ...options,
-    url,
-  }) as any
+  const win: Window & GlobalThis & Pick<InstanceType<typeof happyDom.Window>, 'happyDOM'> =
+    new happyDom.Window({
+      ...options,
+      url,
+    }) as any
 
   return win
 }

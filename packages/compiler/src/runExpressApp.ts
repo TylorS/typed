@@ -41,7 +41,7 @@ export const runExpressApp = (
             pipe(
               main,
               renderInto(parentElement),
-              provideServerIntrinsics(window, window, {
+              provideServerIntrinsics(window, {
                 parentElement,
                 isBot: isbot(req.get('user-agent') ?? ''),
               }),

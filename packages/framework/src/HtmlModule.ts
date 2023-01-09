@@ -29,5 +29,7 @@ export interface HtmlModule {
   readonly makeWindow: (
     req: IncomingMessage,
     options?: ServerWindowOptions,
-  ) => Window & typeof globalThis
+  ) => Window &
+    typeof globalThis &
+    Pick<InstanceType<typeof import('happy-dom').Window>, 'happyDOM'>
 }

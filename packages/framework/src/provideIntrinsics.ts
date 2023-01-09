@@ -56,18 +56,10 @@ export function provideBrowserIntrinsics(
   )
 }
 
-export function provideServerIntrinsics(
-  window: Window,
-  globalThis: GlobalThis,
-  options?: IntrinsicOptions,
-) {
+export function provideServerIntrinsics(window: Window & GlobalThis, options?: IntrinsicOptions) {
   return provideIntrinsics({ ...options, environment: 'server', window, globalThis })
 }
 
-export function provideStaticIntrinsics(
-  window: Window,
-  globalThis: GlobalThis,
-  options?: IntrinsicOptions,
-) {
+export function provideStaticIntrinsics(window: Window & GlobalThis, options?: IntrinsicOptions) {
   return provideIntrinsics({ ...options, environment: 'static', window, globalThis })
 }
