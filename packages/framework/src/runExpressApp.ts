@@ -3,17 +3,18 @@ import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
 import { either } from '@fp-ts/data'
 import { pipe } from '@fp-ts/data/Function'
+import * as Fx from '@typed/fx'
+import { renderInto } from '@typed/html'
+import express from 'express'
+import isbot from 'isbot'
+import viteDevServer from 'vavite/vite-dev-server'
+
 import {
   RuntimeModule,
   provideServerIntrinsics,
   runMatcherWithFallback,
   HtmlModule,
 } from '@typed/framework'
-import * as Fx from '@typed/fx'
-import { renderInto } from '@typed/html'
-import express from 'express'
-import isbot from 'isbot'
-import viteDevServer from 'vavite/vite-dev-server'
 
 const prettyPrintCause = Cause.pretty()
 

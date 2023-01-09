@@ -1,10 +1,7 @@
 /// <reference types="@typed/framework" />
 
-import { fileURLToPath } from 'url'
-
-import { runExpressApp } from '@typed/compiler'
+import { addAssetDirectories, run } from '@typed/framework/express'
 import express from 'express'
-import staticGzip from 'express-static-gzip'
 // HTML modules are transformed by our vite plugin .
 // See @typed/framework/src/HtmlModule.ts to see its full signature.
 import * as index from 'html:./index'
@@ -19,27 +16,7 @@ const app = express()
 
 // Serve static files with express server in production
 if (import.meta.env.PROD) {
-  const ONE_YEAR = 31536000
-  const assetDirectories = new Set<string>()
-
-  // Register any assets that need to be served
-  for (const mod of [index, quuxHtml]) {
-    if (!mod.assetDirectory) continue
-
-    const assetDirectory = fileURLToPath(new URL(mod.assetDirectory, import.meta.url))
-
-    if (assetDirectories.has(assetDirectory)) continue
-
-    assetDirectories.add(assetDirectory)
-
-    app.use(
-      // The vite plugin outputs .gz files, so we can serve them directly with
-      // a tool like express-static-gzip
-      staticGzip(assetDirectory, {
-        serveStatic: { maxAge: ONE_YEAR, cacheControl: true },
-      }),
-    )
-  }
+  addAssetDirectories(app, [index, quuxHtml], 31536000 /* One Year */)
 }
 
 // Register our request handlers
@@ -53,10 +30,10 @@ const getParentElement = (d: Document) => d.getElementById('application')
 // together an express.RouteHandler from a RuntimeModule and a HtmlModule.
 // Since our applications define our own routes, we use the splat (*) operator
 // to allow our application to handle any route that doesn't match the other
-app.get('/quux*', runExpressApp(quuxPages, quuxHtml, getParentElement))
+app.get('/quux*', run(quuxPages, quuxHtml, getParentElement))
 
 // Register another handler
-app.get('/*', runExpressApp(pages, index, getParentElement))
+app.get('/*', run(pages, index, getParentElement))
 
 // Our vite plugin configures another vite plugin called vavite for you
 // anytime it finds your configured server file.
@@ -67,7 +44,7 @@ app.get('/*', runExpressApp(pages, index, getParentElement))
 // which enable yout html modules to be transformed by vite using vavite/vite-dev-server,
 // and also enables you to run your server in development mode.
 
-// httpDevServer will resolve to undefined when import.env.PROD is true and be
+// httpDevServer will resolve to undefined when import.meta.env.PROD is true and be
 // dead-code eliminated from your production build.
 if (httpDevServer) {
   httpDevServer.on('request', app)
