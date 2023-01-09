@@ -8,8 +8,6 @@ import { RenderContext } from '@typed/html'
 import { ParamsOf, Route } from '@typed/route'
 import { Redirect } from '@typed/router'
 import { ReactElement } from 'react'
-import { createRoot, hydrateRoot } from 'react-dom/client'
-import { renderToString } from 'react-dom/server'
 
 // Only the first render should ever use hydrate
 let firstRender = true
@@ -31,6 +29,10 @@ export function renderReact<R, Path extends string>(
       }
 
       if (ctx.environment === 'browser') {
+        const { createRoot, hydrateRoot } = yield* $(
+          Effect.promise(() => import('react-dom/client')),
+        )
+
         const current = yield* $(querySelector('#react-root'))
         const container = yield* $(
           pipe(
@@ -62,6 +64,7 @@ export function renderReact<R, Path extends string>(
         )
       }
 
+      const { renderToString } = yield* $(Effect.promise(() => import('react-dom/server')))
       const container = yield* $(createElement('div'))
 
       container.id = 'react-root'
