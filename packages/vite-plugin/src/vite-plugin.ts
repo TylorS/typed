@@ -1,5 +1,6 @@
-import { existsSync } from 'fs'
-import { basename, dirname, join, resolve } from 'path'
+import { existsSync, readFileSync } from 'fs'
+import { readFile } from 'fs/promises'
+import { basename, dirname, join, relative, resolve } from 'path'
 
 import {
   setupTsProject,
@@ -13,7 +14,7 @@ import glob from 'fast-glob'
 import { Project, ts } from 'ts-morph'
 // @ts-expect-error Unable to resolve types w/ NodeNext
 import vavite from 'vavite'
-import { ConfigEnv, Plugin, UserConfig } from 'vite'
+import { ConfigEnv, PluginOption, UserConfig, ViteDevServer } from 'vite'
 import compression from 'vite-plugin-compression'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -43,49 +44,64 @@ const HTML_VIRTUAL_ENTRYPOINT_PREFIX = 'html'
 
 const VIRTUAL_ID_PREFIX = '\0'
 
-export default function makePlugin({ directory, tsConfig, server }: PluginOptions): Plugin[] {
+export default function makePlugin({ directory, tsConfig, server }: PluginOptions): PluginOption[] {
   const sourceDirectory = resolve(cwd, directory)
   const tsConfigFilePath = resolve(sourceDirectory, tsConfig)
   const serverOutputDirectory = join(sourceDirectory, 'dist', 'server')
   const clientOutputDirectory = join(sourceDirectory, 'dist', 'client')
-
-  console.info(`[${PLUGIN_NAME}]: Setting up typescript project...`)
-  const project = setupTsProject(tsConfigFilePath)
-  console.info(`[${PLUGIN_NAME}]: Finding HTML files...`)
-
-  const htmlFilePaths = findHtmlFiles(sourceDirectory)
-
-  if (htmlFilePaths.length === 0) {
-    throw new Error(`[${PLUGIN_NAME}]: Could not find html files in ${sourceDirectory}`)
-  }
-
   const serverFilePath = resolve(sourceDirectory, server ?? 'server.ts')
   const serverExists = existsSync(serverFilePath)
   const virtualIds = new Set<string>()
 
-  const plugins: Plugin[] = [
+  const plugins: PluginOption[] = [
     tsconfigPaths({
       projects: [join(sourceDirectory, 'tsconfig.json')],
     }),
-    ...(serverExists
-      ? [
-          vavite({
-            serverEntry: serverFilePath,
-            serveClientAssetsInDev: true,
-          }),
-        ]
-      : []),
   ]
 
-  plugins.push({
+  const setupProject = () => {
+    console.info(`[${PLUGIN_NAME}]: Setting up typescript project...`)
+    const project = setupTsProject(tsConfigFilePath)
+    console.info(`[${PLUGIN_NAME}]: Finding HTML files...`)
+
+    return project
+  }
+
+  let production = false
+  let devServer: ViteDevServer
+  let project: Project
+
+  const virtualModulePlugin: PluginOption = {
     name: PLUGIN_NAME,
+
     config(config: UserConfig, env: ConfigEnv) {
+      console.log(env.mode)
+
+      if (env.command === 'build') {
+        production = true
+
+        if (!config.plugins) {
+          config.plugins = []
+        }
+
+        config.plugins.push(
+          ...(serverExists
+            ? [
+                vavite({
+                  serverEntry: serverFilePath,
+                  serveClientAssetsInDev: true,
+                }),
+              ]
+            : []),
+        )
+      }
+
       // Configure Build steps when running with vavite
       if (env.mode === 'multibuild') {
         const clientBuild: UserConfig['build'] = {
           outDir: clientOutputDirectory,
           rollupOptions: {
-            input: buildClientInput(htmlFilePaths),
+            input: buildClientInput(findHtmlFiles(sourceDirectory)),
           },
         }
 
@@ -112,6 +128,20 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
               ]
             : []),
         ]
+
+        return
+      }
+    },
+
+    configureServer(server) {
+      if (!devServer) {
+        devServer = server
+      }
+    },
+
+    async buildEnd() {
+      if (production && devServer) {
+        await devServer.close()
       }
     },
 
@@ -165,12 +195,18 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
     },
 
     async load(id: string) {
+      if (!project) {
+        project = setupProject()
+      }
+
       if (virtualIds.has(id)) {
         const sourceFile = await buildVirtualModule(
           project,
           id,
+          sourceDirectory,
           serverOutputDirectory,
           clientOutputDirectory,
+          devServer,
         )
         const output = ts.transpileModule(sourceFile.getFullText(), {
           compilerOptions: project.getCompilerOptions(),
@@ -182,7 +218,9 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
         }
       }
     },
-  })
+  }
+
+  plugins.push(virtualModulePlugin)
 
   return plugins
 }
@@ -190,8 +228,10 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
 async function buildVirtualModule(
   project: Project,
   id: string,
+  sourceDirectory: string,
   serverOutputDirectory: string,
   clientOutputDirectory: string,
+  devServer?: ViteDevServer,
 ) {
   const [importer, query] = id.split(VIRTUAL_ID_PREFIX)[1].split('?')
 
@@ -208,14 +248,29 @@ async function buildVirtualModule(
   }
 
   const htmlFile = query.split('source=')[1]
+  const htmlFilePath = resolve(dirname(importer), htmlFile + '.html')
+  let html = readFileSync(htmlFilePath, 'utf-8').toString()
 
-  return makeHtmlModule(
+  if (devServer) {
+    html = await devServer.transformIndexHtml(getRelativePath(sourceDirectory, htmlFilePath), html)
+  } else {
+    html = (
+      await readFile(
+        resolve(clientOutputDirectory, relative(sourceDirectory, htmlFilePath)),
+        'utf-8',
+      )
+    ).toString()
+  }
+
+  return await makeHtmlModule({
     project,
-    htmlFile + '.html',
+    filePath: htmlFilePath,
+    html,
     importer,
     serverOutputDirectory,
     clientOutputDirectory,
-  )
+    devServer,
+  })
 }
 
 function getVirtualSourceDirectory(id: string) {
@@ -254,4 +309,14 @@ function buildClientInput(htmlFilePaths: readonly string[]) {
   }
 
   return input
+}
+
+function getRelativePath(from: string, to: string) {
+  const path = relative(from, to)
+
+  if (!path.startsWith('.')) {
+    return './' + path
+  }
+
+  return path
 }

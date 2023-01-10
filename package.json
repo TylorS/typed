@@ -27,7 +27,7 @@
     "update:rootTsconfig": "tsx ./tools/updateRootTsconfig.ts",
     "example": "vite --config ./vite.config.ts serve example",
     "example:build": "vavite --config ./vite.config.ts",
-    "example:preview": "node ./example/dist/server/index.js",
+    "example:preview": "node ./example/dist/server/server.js",
     "~~NEEDS POSITIONAL COMMAND LINE ARGUMENT~~": "",
     "new-package": "nx generate ./packages/nx-plugin:package"
   },

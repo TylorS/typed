@@ -2,13 +2,21 @@ import { EOL } from 'os'
 
 import { ImportDeclaration, SourceFile } from 'ts-morph'
 
-const importDeclarations = new Map<string, ImportDeclaration>()
+const importDeclarationsMap = new WeakMap<SourceFile, Map<string, ImportDeclaration>>()
+
+const getImportDeclarations = (sourceFile: SourceFile) => {
+  if (!importDeclarationsMap.has(sourceFile)) {
+    importDeclarationsMap.set(sourceFile, new Map())
+  }
+
+  return importDeclarationsMap.get(sourceFile) as Map<string, ImportDeclaration>
+}
 
 function findImportDeclaration(sourceFile: SourceFile, moduleSpecifier: string) {
-  const key = sourceFile.getFilePath() + moduleSpecifier
+  const importDeclarations = getImportDeclarations(sourceFile)
 
-  if (importDeclarations.has(key)) {
-    const declaration = importDeclarations.get(key) as ImportDeclaration
+  if (importDeclarations.has(moduleSpecifier)) {
+    const declaration = importDeclarations.get(moduleSpecifier) as ImportDeclaration
 
     if ((declaration as any)._compilerNode) {
       return declaration
@@ -27,14 +35,14 @@ export function addNamedImport(
   names: readonly string[],
   moduleSpecifier: string,
 ) {
-  const key = sourceFile.getFilePath() + moduleSpecifier
   const importDeclaration = findImportDeclaration(sourceFile, moduleSpecifier)
+  const importDeclarations = getImportDeclarations(sourceFile)
 
   if (importDeclaration) {
     const currentNames = new Set(importDeclaration.getNamedImports().map((x) => x.getName()))
 
     importDeclaration.addNamedImports(names.filter((x) => !currentNames.has(x)))
-    importDeclarations.set(key, importDeclaration)
+    importDeclarations.set(moduleSpecifier, importDeclaration)
 
     return
   }
@@ -44,13 +52,13 @@ export function addNamedImport(
     moduleSpecifier,
   })
 
-  importDeclarations.set(key, delcaration)
+  importDeclarations.set(moduleSpecifier, delcaration)
 }
 
 export function addNamespaceImport(sourceFile: SourceFile, name: string, moduleSpecifier: string) {
-  const key = sourceFile.getFilePath() + moduleSpecifier
+  const importDeclarations = getImportDeclarations(sourceFile)
 
-  if (importDeclarations.has(key)) {
+  if (importDeclarations.has(moduleSpecifier)) {
     return
   }
 
@@ -59,5 +67,5 @@ export function addNamespaceImport(sourceFile: SourceFile, name: string, moduleS
     moduleSpecifier,
   })
 
-  importDeclarations.set(key, declaration)
+  importDeclarations.set(moduleSpecifier, declaration)
 }
