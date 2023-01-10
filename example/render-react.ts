@@ -4,7 +4,7 @@ import * as Option from '@fp-ts/data/Option'
 import { createElement, Location, querySelector } from '@typed/dom'
 import { Main } from '@typed/framework'
 import * as Fx from '@typed/fx'
-import { RenderContext } from '@typed/html'
+import { isBrowser } from '@typed/html'
 import { ParamsOf, Route } from '@typed/route'
 import { Redirect } from '@typed/router'
 import { ReactElement } from 'react'
@@ -18,7 +18,6 @@ export function renderReact<R, Path extends string>(
 ): Main<never, typeof route> {
   return (params: Fx.Fx<R, Redirect, ParamsOf<typeof route>>) =>
     Fx.gen(function* ($) {
-      const ctx = yield* $(RenderContext.get)
       const location = yield* $(Location.get)
       const initialParams = yield* $(route.match(location.pathname))
 
@@ -28,7 +27,7 @@ export function renderReact<R, Path extends string>(
         )
       }
 
-      if (ctx.environment === 'browser') {
+      if (yield* $(isBrowser)) {
         const { createRoot, hydrateRoot } = yield* $(
           Effect.promise(() => import('react-dom/client')),
         )
