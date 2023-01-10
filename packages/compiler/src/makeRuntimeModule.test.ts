@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 import { Project } from 'ts-morph'
 import { describe, it } from 'vitest'
 
-import { makeRenderModule } from './makeRenderModule.js'
+import { makeRuntimeModule } from './makeRuntimeModule.js'
 import { readDirectory } from './readDirectory.js'
 import { readModules } from './readModules.js'
 
@@ -16,13 +16,13 @@ const exampleDirectory = join(rootDirectory, 'example')
 describe(import.meta.url, () => {
   const project = new Project({ tsConfigFilePath: join(exampleDirectory, 'tsconfig.json') })
 
-  describe(makeRenderModule.name, () => {
+  describe(makeRuntimeModule.name, () => {
     it(
       'should construct a typescript module',
       async () => {
         const directory = await readDirectory(join(exampleDirectory, 'pages'))
         const moduleTree = readModules(project, directory)
-        const sourceFile = makeRenderModule(
+        const sourceFile = makeRuntimeModule(
           project,
           moduleTree,
           join(exampleDirectory, 'browser.ts'),

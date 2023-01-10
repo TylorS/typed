@@ -2,7 +2,6 @@
 
 import { join } from 'path'
 
-import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 import typed from './packages/vite-plugin/src/vite-plugin'
@@ -30,7 +29,6 @@ export default defineConfig(() => ({
       // Path to your tsconfig.json file. Can be absolute path or relative to directory above
       tsConfig: 'tsconfig.json',
     }),
-    react(),
   ],
   build: {
     manifest: true,

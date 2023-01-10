@@ -1,6 +1,6 @@
 import { Project, SourceFile } from 'ts-morph'
 
-import { makeRenderModule } from './makeRenderModule.js'
+import { makeRuntimeModule } from './makeRuntimeModule.js'
 import { ModuleTreeWithFallback } from './readModules.js'
 import { addNamedImport, appendText } from './ts-morph-helpers.js'
 
@@ -9,7 +9,7 @@ export function makeBrowserModule(
   moduleTree: ModuleTreeWithFallback,
   importer: string,
 ): SourceFile {
-  const sourceFile = makeRenderModule(project, moduleTree, importer)
+  const sourceFile = makeRuntimeModule(project, moduleTree, importer)
 
   addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
   addNamedImport(

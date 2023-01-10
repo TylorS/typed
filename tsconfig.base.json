@@ -65,7 +65,12 @@
       "@typed/vite-plugin/*": [
         "./packages/vite/src/*-plugin"
       ]
-    }
+    },
+    "plugins": [
+      {
+        "name": "@effect/language-service"
+      }
+    ]
   },
   "exclude": [
     "node_modules",

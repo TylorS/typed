@@ -57,6 +57,8 @@
     "tslib": "^2.4.1"
   },
   "devDependencies": {
+    "@effect/language-service": "^0.0.15",
+    "@effect/vite-plugin": "^0.0.1",
     "@esbuild-kit/esm-loader": "^2.5.4",
     "@most/core": "^1.6.1",
     "@most/scheduler": "^1.3.0",

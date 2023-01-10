@@ -8,7 +8,9 @@ importers:
   .:
     specifiers:
       '@effect/io': ~0.0.60
+      '@effect/language-service': ^0.0.15
       '@effect/stm': ~0.0.13
+      '@effect/vite-plugin': ^0.0.1
       '@esbuild-kit/esm-loader': ^2.5.4
       '@fp-ts/core': ~0.0.11
       '@fp-ts/data': ~0.0.36
@@ -93,6 +95,8 @@ importers:
       vite-plugin-compression: 0.5.1_vite@4.0.4
       yargs: 17.6.2
     devDependencies:
+      '@effect/language-service': 0.0.15
+      '@effect/vite-plugin': 0.0.1_vite@4.0.4
       '@esbuild-kit/esm-loader': 2.5.4
       '@most/core': 1.6.1
       '@most/scheduler': 1.3.0
@@ -701,6 +705,13 @@ packages:
       '@fp-ts/data': 0.0.36
     dev: false
 
+  /@effect/language-service/0.0.15:
+    resolution: {integrity: sha512-ELYL6h56W2TjTd13AiddZgbZjZFaa0J6MpnLpM26XlxYIR66j5tmdNFW67dtJxFbieoFS33+E713E5hrkg8MKg==}
+    dependencies:
+      '@fp-ts/core': 0.0.11
+      '@fp-ts/data': 0.0.36
+    dev: true
+
   /@effect/stm/0.0.13:
     resolution: {integrity: sha512-38g14h8aKQtwvqqdzfDrlzightIbNyq1mLr4noH+f3+CtSe5khJ5NsvfZDRgmythrEmpWOH7qTQ+eFL4lEc5FA==}
     dependencies:
@@ -708,6 +719,18 @@ packages:
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.36
     dev: false
+
+  /@effect/vite-plugin/0.0.1_vite@4.0.4:
+    resolution: {integrity: sha512-SD4dwsZMSZ5jjeKfTIIy6n1Ft+5/oOuerSZynsLxLTzXUVfpdje/f33Iu5cUhEJq/ats1upYp5mZvQEmL9Y3vQ==}
+    dependencies:
+      '@babel/core': 7.20.12
+      '@rollup/pluginutils': 5.0.2
+      '@vitejs/plugin-react': 3.0.1_vite@4.0.4
+    transitivePeerDependencies:
+      - rollup
+      - supports-color
+      - vite
+    dev: true
 
   /@esbuild-kit/cjs-loader/2.4.1:
     resolution: {integrity: sha512-lhc/XLith28QdW0HpHZvZKkorWgmCNT7sVelMHDj3HFdTfdqkwEKvT+aXVQtNAmCC39VJhunDkWhONWB7335mg==}
@@ -943,13 +966,11 @@ packages:
 
   /@fp-ts/core/0.0.11:
     resolution: {integrity: sha512-BCAJBYzghwoJpcUOARJ1tui50HoYJFlV2pJlVMlsEkDFhD8MTtq8xQVpZCRF66RmtkxtGBYINCQ+5H1lRaL35Q==}
-    dev: false
 
   /@fp-ts/data/0.0.36:
     resolution: {integrity: sha512-uC8S69OO+KyXrVTQhDr+JWXmex9blTwZcwG9BcxflPnytHA3lU8BxMz0DjxgSpeWzoGJIZ9F5L6bbwCnvcLeEA==}
     dependencies:
       '@fp-ts/core': 0.0.11
-    dev: false
 
   /@fp-ts/schema/0.0.7:
     resolution: {integrity: sha512-9QUldRcc5Ii+69neOw00cDaR5jjK5CAMvbfUhh9mU3FmBEZEY2/23IMSfMmKUQs65qIofRbS9MIJRfa1rosQ2g==}
@@ -2522,6 +2543,20 @@ packages:
     resolution: {integrity: sha512-iKnFXr7NkdZAIHiIWE+BX5ULi/ucVFYWD6TbAV+rZctiRTY2PL6tsIKhoIOaoskiWAkgu+VsbXgUVDNLHf+InQ==}
     engines: {node: '>= 8.0.0'}
     dependencies:
+      estree-walker: 2.0.2
+      picomatch: 2.3.1
+    dev: true
+
+  /@rollup/pluginutils/5.0.2:
+    resolution: {integrity: sha512-pTd9rIsP92h+B6wWwFbW8RkZv4hiR/xKsqre4SIuAOaOEQRxi0lqLke9k2/7WegC85GgUs9pjmOjCUi3In4vwA==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+    dependencies:
+      '@types/estree': 1.0.0
       estree-walker: 2.0.2
       picomatch: 2.3.1
     dev: true

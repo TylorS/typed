@@ -12,7 +12,11 @@ import {
 import { ModuleTree, ModuleTreeWithFallback } from './readModules.js'
 import { addNamedImport, addNamespaceImport, appendText } from './ts-morph-helpers.js'
 
-export function makeRenderModule(
+/**
+ * Construct a typescript module that can be used to access all modules in a
+ * ModuleTree,
+ */
+export function makeRuntimeModule(
   project: Project,
   moduleTree: ModuleTreeWithFallback,
   importer: string,

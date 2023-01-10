@@ -52,3 +52,4 @@ tsconfig*.tsbuildinfo
 .rpt2_cache
 .eslintcache
 .tracing-plugin
+.cache

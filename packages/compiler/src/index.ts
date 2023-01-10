@@ -1,6 +1,6 @@
 export * from './makeBrowserModule.js'
 export * from './makeHtmlModule.js'
-export * from './makeRenderModule.js'
+export * from './makeRuntimeModule.js'
 export * from './readDirectory.js'
 export * from './cleanHtml.js'
 export * from './readModules.js'

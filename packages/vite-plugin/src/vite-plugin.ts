@@ -6,7 +6,7 @@ import {
   setupTsProject,
   makeBrowserModule,
   makeHtmlModule,
-  makeRenderModule,
+  makeRuntimeModule,
   readDirectory,
   readModules,
 } from '@typed/compiler'
@@ -62,7 +62,6 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
   const setupProject = () => {
     console.info(`[${PLUGIN_NAME}]: Setting up typescript project...`)
     const project = setupTsProject(tsConfigFilePath)
-    console.info(`[${PLUGIN_NAME}]: Finding HTML files...`)
 
     return project
   }
@@ -233,6 +232,7 @@ async function buildVirtualModule(
 ) {
   const [importer, query] = id.split(VIRTUAL_ID_PREFIX)[1].split('?')
 
+  // If the query is for a render module, read the directory and transform it into a module.
   if (query.includes('modules=')) {
     const moduleDirectory = resolve(dirname(importer), query.split('modules=')[1].split('&')[0])
     const directory = await readDirectory(moduleDirectory)
@@ -242,16 +242,20 @@ async function buildVirtualModule(
       return makeBrowserModule(project, moduleTree, importer)
     }
 
-    return makeRenderModule(project, moduleTree, importer)
+    return makeRuntimeModule(project, moduleTree, importer)
   }
+
+  // If the query is for an HTML file, read the file and transform it into a module.
 
   const htmlFile = query.split('source=')[1]
   const htmlFilePath = resolve(dirname(importer), htmlFile + '.html')
   let html = readFileSync(htmlFilePath, 'utf-8').toString()
 
+  // If there's a dev server, use it to transform the HTML for development
   if (devServer) {
     html = await devServer.transformIndexHtml(getRelativePath(sourceDirectory, htmlFilePath), html)
   } else {
+    // Otherwise, read the already transformed file from the output directory.
     html = (
       await readFile(
         resolve(clientOutputDirectory, relative(sourceDirectory, htmlFilePath)),
