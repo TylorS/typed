@@ -4,7 +4,7 @@ import * as Option from '@fp-ts/data/Option'
 import { createElement, Location, querySelector } from '@typed/dom'
 import { Main } from '@typed/framework'
 import * as Fx from '@typed/fx'
-import { isBrowser } from '@typed/html'
+import { isBrowser, isServer } from '@typed/html'
 import { ParamsOf, Route } from '@typed/route'
 import { Redirect } from '@typed/router'
 import { ReactElement } from 'react'
@@ -63,11 +63,15 @@ export function renderReact<R, Path extends string>(
         )
       }
 
-      const { renderToString } = yield* $(Effect.promise(() => import('react-dom/server')))
+      const { renderToString, renderToStaticMarkup } = yield* $(
+        Effect.promise(() => import('react-dom/server')),
+      )
       const container = yield* $(createElement('div'))
 
       container.id = 'react-root'
-      container.innerHTML = renderToString(Component(initialParams.value))
+      container.innerHTML = (yield* $(isServer))
+        ? renderToString(Component(initialParams.value))
+        : renderToStaticMarkup(Component(initialParams.value))
 
       return Fx.succeed(container)
     })
