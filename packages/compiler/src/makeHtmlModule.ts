@@ -1,5 +1,6 @@
 import { dirname, relative } from 'path'
 
+import { minify } from 'html-minifier'
 import { Project, SourceFile } from 'ts-morph'
 import { ViteDevServer } from 'vite'
 
@@ -108,6 +109,8 @@ async function generateHtmlExport(
 ) {
   if (devServer) {
     html = await devServer.transformIndexHtml(filePath, html)
+  } else {
+    html = minify(html, { sortAttributes: true, sortClassName: true })
   }
 
   html = cleanHtml(html, docType)

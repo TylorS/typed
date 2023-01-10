@@ -75,8 +75,6 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
     name: PLUGIN_NAME,
 
     config(config: UserConfig, env: ConfigEnv) {
-      console.log(env.mode)
-
       if (env.command === 'build') {
         production = true
 
@@ -195,11 +193,11 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
     },
 
     async load(id: string) {
-      if (!project) {
-        project = setupProject()
-      }
-
       if (virtualIds.has(id)) {
+        if (!project) {
+          project = setupProject()
+        }
+
         const sourceFile = await buildVirtualModule(
           project,
           id,

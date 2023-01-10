@@ -46,7 +46,7 @@ app.get('/*', run(pages, index, getParentElement))
 
 // httpDevServer will resolve to undefined when import.meta.env.PROD is true and be
 // dead-code eliminated from your production build.
-if (httpDevServer) {
+if (import.meta.env.DEV && httpDevServer) {
   httpDevServer.on('request', app)
   console.log(`listening on at ${JSON.stringify(httpDevServer.address())}`)
 } else {
