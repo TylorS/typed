@@ -86,14 +86,6 @@ export default function makePlugin({
     clientOutputDirectory ?? 'dist/client',
   )
 
-  console.log(
-    sourceDirectory,
-    tsConfigFilePath,
-    resolvedServerFilePath,
-    resolvedServerOutputDirectory,
-    resolvedClientOutputDirectory,
-  )
-
   const virtualIds = new Set<string>()
   const dependentsMap = new Map<string, Set<string>>()
   const sourceFilePathToVirtualId = new Map<string, string>()
@@ -174,7 +166,9 @@ export default function makePlugin({
         const clientBuild: UserConfig['build'] = {
           outDir: resolvedClientOutputDirectory,
           rollupOptions: {
-            input: buildClientInput(findHtmlFiles(sourceDirectory, htmlFileGlobs)),
+            input: buildClientInput(
+              findHtmlFiles(sourceDirectory, htmlFileGlobs).map((p) => resolve(sourceDirectory, p)),
+            ),
           },
         }
 

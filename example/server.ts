@@ -5,11 +5,11 @@ import express from 'express'
 // HTML modules are transformed by our vite plugin .
 // See @typed/framework/src/HtmlModule.ts to see its full signature.
 import * as index from 'html:./index'
-import * as quuxHtml from 'html:./quux'
+import * as quuxHtml from 'html:./other'
 // Runtime modules are transformed by our vite plugin and expose an RuntimeModule.
 // See @typed/framework/src/RuntimeModule.ts to see its full signature.
+import * as quuxPages from 'runtime:./other-pages'
 import * as pages from 'runtime:./pages'
-import * as quuxPages from 'runtime:./quux-pages'
 import httpDevServer from 'vavite/http-dev-server'
 
 const app = express()

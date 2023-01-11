@@ -1,7 +1,7 @@
 /// <reference types="@typed/framework" />
 
 import * as Fx from '@typed/fx'
-import { render } from 'browser:./quux-pages'
+import { render } from 'browser:./other-pages'
 
 const parentElement = document.getElementById('application')
 
