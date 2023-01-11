@@ -42,5 +42,6 @@
   "devDependencies": {
     "@types/express": "^4.17.15",
     "vite": "^4.0.4"
-  }
+  },
+  "sideEffects": false
 }

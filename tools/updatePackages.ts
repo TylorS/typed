@@ -80,6 +80,7 @@ for (const name of packageNames) {
     }
   }
 
+  packageJson.sideEffects = false
   packageJson.dependencies = {}
   packageJson.devDependencies = {}
   for (const dependency of Array.from(dependencies).sort()) {
