@@ -6,7 +6,7 @@
  * the path-to-regexp syntax and type-level combinators for parsing that syntax and
  * for interpolating values.
  */
-import { A, N } from 'ts-toolbelt'
+import type { A, N } from 'ts-toolbelt'
 
 /* Start Region: Parameter DSL */
 

@@ -24,12 +24,12 @@
     "@typed/compiler": "workspace:*",
     "fast-glob": "^3.2.12",
     "vavite": "^1.5.2",
-    "vite-plugin-compression": "^0.5.1"
+    "vite-plugin-compression": "^0.5.1",
+    "vite-tsconfig-paths": "^4.0.3"
   },
   "devDependencies": {
     "ts-morph": "^17.0.1",
-    "vite": "^4.0.4",
-    "vite-tsconfig-paths": "^4.0.3"
+    "vite": "^4.0.4"
   },
   "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",
   "publishConfig": {

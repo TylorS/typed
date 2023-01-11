@@ -51,6 +51,6 @@ export const provideDomServices =
       ),
     )
 
-export const domServices = Layer.fromEffectEnvironment(
+export const domServices = Layer.effectEnvironment(
   Window.withEffect((w) => GlobalThis.with((g) => makeDomServices(w, g))),
 )

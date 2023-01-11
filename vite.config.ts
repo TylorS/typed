@@ -25,9 +25,7 @@ export default defineConfig(() => ({
   plugins: [
     typed({
       // Directory should point towards the root of your project with an index.html file
-      directory: join(__dirname, 'example'),
-      // Path to your tsconfig.json file. Can be absolute path or relative to directory above
-      tsConfig: 'tsconfig.json',
+      sourceDirectory: join(__dirname, 'example'),
     }),
   ],
   build: {

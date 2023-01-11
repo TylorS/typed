@@ -4,15 +4,13 @@ export function setupTsProject(tsConfigFilePath: string) {
   const project = new Project({
     tsConfigFilePath,
     compilerOptions: {
+      composite: false,
       sourceMap: false,
       declaration: false,
       declarationMap: false,
       inlineSourceMap: true,
       inlineSources: true,
     },
-    skipAddingFilesFromTsConfig: true,
-    skipFileDependencyResolution: true,
-    skipLoadingLibFiles: true,
   })
 
   return project

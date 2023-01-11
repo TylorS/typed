@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'fs'
+import { existsSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { basename, dirname, join, relative, resolve } from 'path'
 
@@ -11,102 +11,178 @@ import {
   readModules,
 } from '@typed/compiler'
 import glob from 'fast-glob'
-import { Project, ts } from 'ts-morph'
+import { Project, SourceFile, ts } from 'ts-morph'
 // @ts-expect-error Unable to resolve types w/ NodeNext
 import vavite from 'vavite'
-import { ConfigEnv, PluginOption, UserConfig, ViteDevServer } from 'vite'
+import { ConfigEnv, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
 import compression from 'vite-plugin-compression'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
+/**
+ * The Configuration for the Typed Plugin. All file paths can be relative to sourceDirectory or
+ * can be absolute, path.resolve is used to stitch things together.
+ */
 export interface PluginOptions {
   /**
-   * The directory in which you have your entry files. Namely an index.html file and optionally a server.ts file
+   * The directory in which you have your application.
+   * This can be relative to the current working directory or absolute.
    */
-  readonly directory: string
-  /**
-   * The name/path to your tsconfig.json file, relative to the directory above or absolute
-   */
-  readonly tsConfig: string
+  readonly sourceDirectory: string
 
   /**
-   * Server file path
+   * The file path to your tsconfig.json file.
    */
-  readonly server?: string
+  readonly tsConfig?: string
+
+  /**
+   * The file path to your server entry file
+   */
+  readonly serverFilePath?: string
+
+  /**
+   * The output directory for your client code
+   */
+  readonly clientOutputDirectory?: string
+
+  /**
+   * The output directory for your server code
+   */
+  readonly serverOutputDirectory?: string
+
+  /**
+   * File globs to use to look for your HTML entry points.
+   */
+  readonly htmlFileGlobs?: readonly string[]
 }
 
 const cwd = process.cwd()
 
 const PLUGIN_NAME = '@typed/vite-plugin'
 
-const RENDER_VIRTUAL_ENTRYPOINT_PREFIX = 'runtime'
+const RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX = 'runtime'
 const BROWSER_VIRTUAL_ENTRYPOINT_PREFIX = 'browser'
 const HTML_VIRTUAL_ENTRYPOINT_PREFIX = 'html'
 
 const VIRTUAL_ID_PREFIX = '\0'
 
-export default function makePlugin({ directory, tsConfig, server }: PluginOptions): PluginOption[] {
+export default function makePlugin({
+  sourceDirectory: directory,
+  tsConfig,
+  serverFilePath,
+  clientOutputDirectory,
+  serverOutputDirectory,
+  htmlFileGlobs,
+}: PluginOptions): PluginOption[] {
+  // Resolved options
   const sourceDirectory = resolve(cwd, directory)
-  const tsConfigFilePath = resolve(sourceDirectory, tsConfig)
-  const serverOutputDirectory = join(sourceDirectory, 'dist', 'server')
-  const clientOutputDirectory = join(sourceDirectory, 'dist', 'client')
-  const serverFilePath = resolve(sourceDirectory, server ?? 'server.ts')
-  const serverExists = existsSync(serverFilePath)
+  const tsConfigFilePath = resolve(sourceDirectory, tsConfig ?? 'tsconfig.json')
+  const resolvedServerFilePath = resolve(sourceDirectory, serverFilePath ?? 'server.ts')
+  const resolvedServerOutputDirectory = resolve(
+    sourceDirectory,
+    serverOutputDirectory ?? 'dist/server',
+  )
+  const resolvedClientOutputDirectory = resolve(
+    sourceDirectory,
+    clientOutputDirectory ?? 'dist/client',
+  )
+
+  console.log(
+    sourceDirectory,
+    tsConfigFilePath,
+    resolvedServerFilePath,
+    resolvedServerOutputDirectory,
+    resolvedClientOutputDirectory,
+  )
+
   const virtualIds = new Set<string>()
+  const dependentsMap = new Map<string, Set<string>>()
+  const sourceFilePathToVirtualId = new Map<string, string>()
+  let devServer: ViteDevServer
+  let project: Project
+
+  const serverExists = existsSync(resolvedServerFilePath)
 
   const plugins: PluginOption[] = [
     tsconfigPaths({
       projects: [join(sourceDirectory, 'tsconfig.json')],
     }),
+    ...(serverExists
+      ? [
+          vavite({
+            serverEntry: resolvedServerFilePath,
+            serveClientAssetsInDev: true,
+          }),
+        ]
+      : []),
   ]
 
   const setupProject = () => {
-    console.info(`[${PLUGIN_NAME}]: Setting up typescript project...`)
+    info(`Setting up TypeScript project...`)
     const project = setupTsProject(tsConfigFilePath)
+    info(`Setup TypeScript project.`)
 
     return project
   }
 
-  let production = false
-  let devServer: ViteDevServer
-  let project: Project
+  const handleFileChange = async (path: string, event: 'create' | 'update' | 'delete') => {
+    if (/\.tsx?$/.test(path)) {
+      switch (event) {
+        case 'create': {
+          project.addSourceFileAtPath(path)
+          break
+        }
+        case 'update': {
+          const sourceFile = project.getSourceFile(path)
 
-  const virtualModulePlugin: PluginOption = {
+          if (sourceFile) {
+            sourceFile.refreshFromFileSystemSync()
+          } else {
+            project.addSourceFileAtPath(path)
+          }
+
+          if (devServer) {
+            const dependents = dependentsMap.get(path.replace(/.ts(x)?/, '.js$1'))
+
+            for (const dependent of dependents ?? []) {
+              const id = sourceFilePathToVirtualId.get(dependent) ?? dependent
+              const mod = devServer.moduleGraph.getModuleById(id)
+
+              if (mod) {
+                info(`reloading ${id}`)
+
+                await devServer.reloadModule(mod)
+              }
+            }
+          }
+
+          break
+        }
+        case 'delete': {
+          await project.getSourceFile(path)?.deleteImmediately()
+          break
+        }
+      }
+    }
+  }
+
+  const virtualModulePlugin = {
     name: PLUGIN_NAME,
 
     config(config: UserConfig, env: ConfigEnv) {
-      if (env.command === 'build') {
-        production = true
-
-        if (!config.plugins) {
-          config.plugins = []
-        }
-
-        config.plugins.push(
-          ...(serverExists
-            ? [
-                vavite({
-                  serverEntry: serverFilePath,
-                  serveClientAssetsInDev: true,
-                }),
-              ]
-            : []),
-        )
-      }
-
       // Configure Build steps when running with vavite
       if (env.mode === 'multibuild') {
         const clientBuild: UserConfig['build'] = {
-          outDir: clientOutputDirectory,
+          outDir: resolvedClientOutputDirectory,
           rollupOptions: {
-            input: buildClientInput(findHtmlFiles(sourceDirectory)),
+            input: buildClientInput(findHtmlFiles(sourceDirectory, htmlFileGlobs)),
           },
         }
 
         const serverBuild: UserConfig['build'] = {
           ssr: true,
-          outDir: serverOutputDirectory,
+          outDir: resolvedServerOutputDirectory,
           rollupOptions: {
-            input: serverFilePath,
+            input: resolvedServerFilePath,
           },
         }
 
@@ -131,19 +207,35 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
     },
 
     configureServer(server) {
-      if (!devServer) {
-        devServer = server
-      }
+      devServer = server
+
+      server.watcher.on('all', (event, path) => {
+        if (event === 'change') {
+          handleFileChange(path, 'update')
+        } else if (event === 'add') {
+          handleFileChange(path, 'create')
+        } else if (event === 'unlink') {
+          handleFileChange(path, 'delete')
+        }
+      })
     },
 
-    async buildEnd() {
-      if (production && devServer) {
-        await devServer.close()
+    async watchChange(path, { event }) {
+      handleFileChange(path, event)
+    },
+
+    closeBundle() {
+      if (project) {
+        const diagnostics = project.getPreEmitDiagnostics()
+
+        if (diagnostics.length > 0) {
+          this.error(project.formatDiagnosticsWithColorAndContext(diagnostics))
+        }
       }
     },
 
     async resolveId(id: string, importer?: string) {
-      if (id.startsWith(RENDER_VIRTUAL_ENTRYPOINT_PREFIX)) {
+      if (id.startsWith(RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX)) {
         const virtualId =
           VIRTUAL_ID_PREFIX + `${importer}?modules=${parseModulesFromId(id, importer)}`
 
@@ -170,41 +262,66 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
         return virtualId
       }
 
-      // Virtual modules have problems with resolving modules due to not having a real directory to work with
-      // thus the need to resolve them manually.
-      if (importer?.startsWith(VIRTUAL_ID_PREFIX)) {
-        // If a relative path, attempt to match to a source .ts(x) file
-        if (id.startsWith('.')) {
-          const dir = getVirtualSourceDirectory(importer)
-          const tsPath = resolve(dir, id.replace(/.js(x)?$/, '.ts$1'))
-
-          if (existsSync(tsPath)) {
-            return tsPath
-          }
-
-          const jsPath = resolve(dir, id)
-
-          if (existsSync(jsPath)) {
-            return tsPath
-          }
-        }
+      // Virtual modules have problems with resolving relative paths due to not
+      // having a real directory to work with thus the need to resolve them manually.
+      if (importer?.startsWith(VIRTUAL_ID_PREFIX) && id.startsWith('.')) {
+        return findRelativeFile(importer, id)
       }
     },
 
     async load(id: string) {
       if (virtualIds.has(id)) {
+        // Setup the TypeScript project if it hasn't been already
         if (!project) {
           project = setupProject()
         }
 
-        const sourceFile = await buildVirtualModule(
+        // Build our virtual module as a SourceFile
+        const sourceFile: SourceFile = await buildVirtualModule(
           project,
           id,
           sourceDirectory,
-          serverOutputDirectory,
-          clientOutputDirectory,
+          resolvedServerOutputDirectory,
+          resolvedClientOutputDirectory,
           devServer,
         )
+        const filePath = sourceFile.getFilePath()
+
+        sourceFilePathToVirtualId.set(filePath, id)
+
+        // If we're in a development evnironment, we need to track the dependencies of
+        // our virtual module so we can reload them when they change.
+        if (devServer) {
+          const importModuleSpecifiers = await Promise.all(
+            sourceFile.getLiteralsReferencingOtherSourceFiles().map((l) => l.getLiteralText()),
+          )
+
+          for (const specifier of importModuleSpecifiers) {
+            let resolved =
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              (await virtualModulePlugin.resolveId!.apply(this, [specifier, filePath])) || specifier
+
+            if (resolved.startsWith('.')) {
+              resolved = resolve(dirname(filePath), resolved)
+            }
+
+            const current = dependentsMap.get(resolved) ?? new Set()
+
+            current.add(filePath)
+            dependentsMap.set(resolved, current)
+          }
+        }
+
+        const diagnostics = sourceFile.getPreEmitDiagnostics()
+        const relativeFilePath = relative(sourceDirectory, filePath)
+
+        if (diagnostics.length > 0) {
+          info(project.formatDiagnosticsWithColorAndContext(diagnostics))
+          info(sourceFile.getFullText())
+        } else {
+          info(`${relativeFilePath} virtual module successfuly typed-checked.`)
+        }
+
         const output = ts.transpileModule(sourceFile.getFullText(), {
           compilerOptions: project.getCompilerOptions(),
         })
@@ -212,10 +329,11 @@ export default function makePlugin({ directory, tsConfig, server }: PluginOption
         return {
           code: output.outputText,
           map: output.sourceMapText,
+          moduleSideEffects: false,
         }
       }
     },
-  }
+  } satisfies Plugin
 
   plugins.push(virtualModulePlugin)
 
@@ -230,29 +348,40 @@ async function buildVirtualModule(
   clientOutputDirectory: string,
   devServer?: ViteDevServer,
 ) {
+  // Parse our virtual ID into the original importer and whatever query was passed to it
   const [importer, query] = id.split(VIRTUAL_ID_PREFIX)[1].split('?')
 
-  // If the query is for a render module, read the directory and transform it into a module.
+  // If the query is for a runtime module, read the directory and transform it into a module.
   if (query.includes('modules=')) {
     const moduleDirectory = resolve(dirname(importer), query.split('modules=')[1].split('&')[0])
+    const relativeDirectory = relative(sourceDirectory, moduleDirectory)
     const directory = await readDirectory(moduleDirectory)
     const moduleTree = readModules(project, directory)
+    const isBrowser = query.includes('&browser')
 
-    if (query.includes('&browser')) {
-      return makeBrowserModule(project, moduleTree, importer)
-    }
+    info(`Building ${isBrowser ? 'browser' : 'runtime'} module for ${relativeDirectory}...`)
 
-    return makeRuntimeModule(project, moduleTree, importer)
+    const mod = isBrowser
+      ? makeBrowserModule(project, moduleTree, importer)
+      : makeRuntimeModule(project, moduleTree, importer)
+
+    info(`Built ${isBrowser ? 'browser' : 'runtime'} module for ${relativeDirectory}.`)
+
+    return mod
   }
 
   // If the query is for an HTML file, read the file and transform it into a module.
 
   const htmlFile = query.split('source=')[1]
   const htmlFilePath = resolve(dirname(importer), htmlFile + '.html')
-  let html = readFileSync(htmlFilePath, 'utf-8').toString()
+  const relativeHtmlFilePath = relative(sourceDirectory, htmlFilePath)
+  let html = ''
+
+  info(`Building html module for ${relativeHtmlFilePath}...`)
 
   // If there's a dev server, use it to transform the HTML for development
   if (devServer) {
+    html = (await readFile(htmlFilePath, 'utf-8')).toString()
     html = await devServer.transformIndexHtml(getRelativePath(sourceDirectory, htmlFilePath), html)
   } else {
     // Otherwise, read the already transformed file from the output directory.
@@ -264,7 +393,7 @@ async function buildVirtualModule(
     ).toString()
   }
 
-  return await makeHtmlModule({
+  const module = await makeHtmlModule({
     project,
     filePath: htmlFilePath,
     html,
@@ -273,6 +402,25 @@ async function buildVirtualModule(
     clientOutputDirectory,
     devServer,
   })
+
+  info(`Built html module for ${relativeHtmlFilePath}.`)
+
+  return module
+}
+
+function findRelativeFile(importer: string, id: string) {
+  const dir = getVirtualSourceDirectory(importer)
+  const tsPath = resolve(dir, id.replace(/.js(x)?$/, '.ts$1'))
+
+  if (existsSync(tsPath)) {
+    return tsPath
+  }
+
+  const jsPath = resolve(dir, id)
+
+  if (existsSync(jsPath)) {
+    return tsPath
+  }
 }
 
 function getVirtualSourceDirectory(id: string) {
@@ -281,7 +429,7 @@ function getVirtualSourceDirectory(id: string) {
 
 function parseModulesFromId(id: string, importer: string | undefined): string {
   const pages = id
-    .replace(RENDER_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
+    .replace(RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
     .replace(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
     .replace(HTML_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
 
@@ -292,13 +440,16 @@ function parseModulesFromId(id: string, importer: string | undefined): string {
   return pages
 }
 
-function findHtmlFiles(directory: string): readonly string[] {
+function findHtmlFiles(directory: string, htmlFileGlobs?: readonly string[]): readonly string[] {
+  if (htmlFileGlobs) {
+    // eslint-disable-next-line import/no-named-as-default-member
+    return glob.sync([...htmlFileGlobs], { cwd: directory })
+  }
+
   // eslint-disable-next-line import/no-named-as-default-member
-  return glob.sync([
-    join(directory, '**/*.html'),
-    '!' + join(directory, '**/node_modules/**'),
-    '!' + join(directory, '**/dist/**'),
-  ])
+  return glob.sync(['**/*.html', '!' + '**/node_modules/**', '!' + '**/dist/**'], {
+    cwd: directory,
+  })
 }
 
 function buildClientInput(htmlFilePaths: readonly string[]) {
@@ -321,4 +472,10 @@ function getRelativePath(from: string, to: string) {
   }
 
   return path
+}
+
+function info(message: string) {
+  const date = new Date()
+
+  console.info(`[${PLUGIN_NAME}] ${date.toISOString()};`, `${message}`)
 }
