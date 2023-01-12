@@ -6,7 +6,7 @@ import express from 'express'
 // See @typed/framework/src/HtmlModule.ts to see its full signature.
 import * as index from 'html:./index'
 import * as quuxHtml from 'html:./other'
-// Runtime modules are transformed by our vite plugin and expose an RuntimeModule.
+// Runtime modules are transformed by our vite plugin and expose a RuntimeModule.
 // See @typed/framework/src/RuntimeModule.ts to see its full signature.
 import * as quuxPages from 'runtime:./other-pages'
 import * as pages from 'runtime:./pages'
@@ -25,12 +25,12 @@ if (import.meta.env.PROD) {
 // element we should render into.
 const getParentElement = (d: Document) => d.getElementById('application')
 
-// Register an route handler
-// Here we utilize @typed/compiler's runExpressApp when understands how to stitch
+// Register a route handler
+// Here we utilize run from @typed/framework/express which understands how to stitch
 // together an express.RouteHandler from a RuntimeModule and a HtmlModule.
 // Since our applications define our own routes, we use the splat (*) operator
 // to allow our application to handle any route that doesn't match the other
-app.get('/quux*', run(quuxPages, quuxHtml, getParentElement))
+app.get('/other*', run(quuxPages, quuxHtml, getParentElement))
 
 // Register another handler
 app.get('/*', run(pages, index, getParentElement))

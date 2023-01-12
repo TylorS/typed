@@ -6,7 +6,7 @@ import { Main } from '@typed/framework'
 import * as Fx from '@typed/fx'
 import { isBrowser, isServer } from '@typed/html'
 import { ParamsOf, Route } from '@typed/route'
-import { Redirect } from '@typed/router'
+import { Redirect, Router } from '@typed/router'
 import { ReactElement } from 'react'
 
 // Only the first render should ever use hydrate
@@ -19,7 +19,12 @@ export function renderReact<R, Path extends string>(
   return (params: Fx.Fx<R, Redirect, ParamsOf<typeof route>>) =>
     Fx.gen(function* ($) {
       const location = yield* $(Location.get)
-      const initialParams = yield* $(route.match(location.pathname))
+      const router = yield* $(Router.get)
+      const initialParams: Option.Option<ParamsOf<typeof route>> = (yield* $(
+        // Route will already be amended here since it has been matched. The function
+        // parameter is used merely for type-inference
+        router.route.match(location.pathname),
+      )) as any
 
       if (Option.isNone(initialParams)) {
         throw new Error(

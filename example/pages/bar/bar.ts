@@ -15,10 +15,13 @@ export const layout = html`
   <div>
     <h1>Bar</h1>
 
-    <nav>${Link({ href: '/', label: 'Go Back' })}</nav>
+    <nav>
+      ${
+        // Links can be configured with "useBase: false" to avoid pre-prending the current base path
+        Link({ href: '/', label: 'Go Back', useBase: false })
+      }
+    </nav>
 
     <main>${outlet}</main>
   </div>
 `
-
-export const nested = true

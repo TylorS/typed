@@ -58,11 +58,17 @@ export interface Router<out R = never, in out P extends string = string> {
    * Provide all the resources needed for a Router
    */
   readonly provideEnvironment: (environment: Context.Context<R>) => Router<never, P>
+
+  /**
+   * The parent router if one exists
+   */
+  readonly parent: Option.Option<Router<any, string>>
 }
 
 export const Router = Object.assign(function makeRouter<R = never, P extends string = string>(
   route: Route.Route<R, P>,
   currentPath: Fx.RefSubject<string>,
+  parent: Option.Option<Router<any, string>> = Option.none,
 ): Router<R, P> {
   const outlet = Fx.RefSubject.unsafeMake((): html.Renderable => null)
 
@@ -101,8 +107,9 @@ export const Router = Object.assign(function makeRouter<R = never, P extends str
     outlet,
     createPath: createPath as Router<R, P>['createPath'],
     define: <R2, Path2 extends string>(other: Route.Route<R2, Path2>) =>
-      makeRouter(route.concat(other), currentPath),
+      makeRouter(route.concat(other), currentPath, Option.some(router as any)),
     provideEnvironment: (env) => provideEnvironment(env)(router),
+    parent,
   }
 
   return router
@@ -189,7 +196,7 @@ export const makeRouter = (
     const location = yield* $(Location.get)
 
     if (!currentPath) {
-      currentPath = Fx.RefSubject.unsafeMake(() => getCurrentPath(location))
+      currentPath = Fx.RefSubject.unsafeMake(() => getCurrentPathFromLocation(location))
     }
 
     // Patch history events to emit an event when the path changes
@@ -203,7 +210,7 @@ export const makeRouter = (
       pipe(
         Fx.mergeAll(addWindowListener('popstate'), addWindowListener('hashchange'), historyEvents),
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        Fx.switchMapEffect(() => currentPath!.set(getCurrentPath(location))),
+        Fx.switchMapEffect(() => currentPath!.set(getCurrentPathFromLocation(location))),
         Fx.forkScoped,
       ),
     )
@@ -215,7 +222,7 @@ export const makeRouter = (
         Fx.skipRepeats,
         Fx.observe((path) =>
           Effect.sync(() => {
-            if (path !== getCurrentPath(location)) {
+            if (path !== getCurrentPathFromLocation(location)) {
               history.pushState({}, '', path)
             }
           }),
@@ -227,7 +234,7 @@ export const makeRouter = (
     // Find the configured base path
     const document = yield* $(Document.get)
     const base = document.querySelector('base')
-    const baseHref = base ? getBasePath(base.href) : '/'
+    const baseHref = base ? getBasePathFromHref(base.href) : '/'
 
     // Make our base router
     return Router(Route.Route(baseHref), currentPath) as Router
@@ -238,9 +245,23 @@ export const live = (
 ): Layer.Layer<Location | History | Window | Document, never, Router<never, string>> =>
   Router.layerSoped(makeRouter(currentPath))
 
-export function getCurrentPath(location: Location | HTMLAnchorElement | URL) {
+export function getCurrentPathFromLocation(location: Location | HTMLAnchorElement | URL) {
   return location.pathname + location.search + location.hash
 }
+
+export const getCurrentPath = Router.withEffect((r) => r.currentPath.get)
+
+export const getBasePath = Router.with((r) => {
+  const routers: Router<any, any>[] = [r]
+  let current: Router<any, any> = r
+
+  while (Option.isSome(current.parent)) {
+    current = current.parent.value
+    routers.push(current)
+  }
+
+  return routers.reduceRight((acc, r) => Path.pathJoin(r.route.path, acc), '')
+})
 
 const patchHistory = Effect.gen(function* ($) {
   const history = yield* $(History.get)
@@ -296,11 +317,11 @@ function patchHistory_(history: History, sendEvent: () => void) {
   }
 }
 
-function getBasePath(href: string) {
+function getBasePathFromHref(href: string) {
   try {
     const url = new URL(href)
 
-    return getCurrentPath(url)
+    return getCurrentPathFromLocation(url)
   } catch {
     return href
   }

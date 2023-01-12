@@ -5,9 +5,9 @@ A collection of libraries and tools for building applications using [fp-ts v3](h
 While some libraries like `Fx`, which provides a push-based stream abstraction, are generally applicable, many libraries have a strong focus
 on building web applications on both the backend and frontend. 
 
-These libraries are highly in flux, and not yet published. Please reach out with all your curiousities in the meantime!
-
 ## Community
+
+Please reach out with all your curiousities!
 
 If you're interested in chatting about this project join us on [Discord](https://discord.gg/kpPHEvkaAv).
 
@@ -23,7 +23,7 @@ If you're interested in chatting about this project join us on [Discord](https:/
 
 ## Example
 
-There is currently one toy example in the example directory which will showcase the way our vite plugin work
+There is currently one toy example in the example directory which will showcase the way our vite plugin works
 
 ## Upcoming
 - API Routes
