@@ -27,7 +27,6 @@ There is currently one toy example in the example directory which will showcase 
 
 ## Upcoming
 - API Routes
-- Integrate effect-ts plugins
 - Hydration of SSR content
 - Support for html template languages
 - SSG output
