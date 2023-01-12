@@ -2,6 +2,7 @@ import { existsSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { basename, dirname, join, relative, resolve } from 'path'
 
+import effectTransformer from '@effect/language-service/transformer'
 import {
   setupTsProject,
   makeBrowserModule,
@@ -53,6 +54,12 @@ export interface PluginOptions {
    * File globs to use to look for your HTML entry points.
    */
   readonly htmlFileGlobs?: readonly string[]
+
+  /**
+   * If true, will configure the effect-ts plugin to include debugger statements. If
+   * effectTsOptions.debug is provided it will override this value.
+   */
+  readonly debug?: boolean
 }
 
 const cwd = process.cwd()
@@ -72,6 +79,7 @@ export default function makePlugin({
   clientOutputDirectory,
   serverOutputDirectory,
   htmlFileGlobs,
+  debug,
 }: PluginOptions): PluginOption[] {
   // Resolved options
   const sourceDirectory = resolve(cwd, directory)
@@ -85,12 +93,22 @@ export default function makePlugin({
     sourceDirectory,
     clientOutputDirectory ?? 'dist/client',
   )
+  const defaultIncludeExcludeTs = {
+    include: ['**/*.ts', '**/*.tsx'],
+    exclude: ['dist/**/*'],
+  }
+  const resolvedEffectTsOptions = {
+    trace: defaultIncludeExcludeTs,
+    optimize: defaultIncludeExcludeTs,
+    debug: debug ? defaultIncludeExcludeTs : {},
+  }
 
   const virtualIds = new Set<string>()
   const dependentsMap = new Map<string, Set<string>>()
   const sourceFilePathToVirtualId = new Map<string, string>()
   let devServer: ViteDevServer
   let project: Project
+  let transformers: ts.CustomTransformers
 
   const serverExists = existsSync(resolvedServerFilePath)
 
@@ -112,6 +130,17 @@ export default function makePlugin({
     info(`Setting up TypeScript project...`)
     const project = setupTsProject(tsConfigFilePath)
     info(`Setup TypeScript project.`)
+
+    // Setup transformer for virtual modules.
+    transformers = {
+      before: [
+        // Types are weird for some reason
+        (effectTransformer as any as typeof effectTransformer.default)(
+          project.getProgram().compilerObject,
+          resolvedEffectTsOptions,
+        ).before,
+      ],
+    }
 
     return project
   }
@@ -159,6 +188,8 @@ export default function makePlugin({
 
   const virtualModulePlugin = {
     name: PLUGIN_NAME,
+
+    enforce: 'pre',
 
     config(config: UserConfig, env: ConfigEnv) {
       // Configure Build steps when running with vavite
@@ -306,24 +337,54 @@ export default function makePlugin({
           }
         }
 
-        const diagnostics = sourceFile.getPreEmitDiagnostics()
-        const relativeFilePath = relative(sourceDirectory, filePath)
-
-        if (diagnostics.length > 0) {
-          info(project.formatDiagnosticsWithColorAndContext(diagnostics))
-          info(sourceFile.getFullText())
-        } else {
-          info(`${relativeFilePath} virtual module successfuly typed-checked.`)
-        }
+        logDiagnostics(project, sourceFile, sourceDirectory, filePath)
 
         const output = ts.transpileModule(sourceFile.getFullText(), {
           compilerOptions: project.getCompilerOptions(),
+          transformers,
         })
 
         return {
           code: output.outputText,
           map: output.sourceMapText,
           moduleSideEffects: false,
+        }
+      } else if (/\.tsx?$/.test(id)) {
+        if (!project) {
+          project = setupProject()
+        }
+
+        const sourceFile =
+          project.getSourceFile(id) ??
+          project.createSourceFile(id, await readFile(id).then((b) => b.toString()))
+
+        const output = ts.transpileModule(sourceFile.getFullText(), {
+          compilerOptions: project.getCompilerOptions(),
+          transformers,
+        })
+
+        return {
+          code: output.outputText,
+          map: output.sourceMapText,
+        }
+      }
+    },
+    transform(code, id) {
+      if (/\.tsx?$/.test(id)) {
+        if (!project) {
+          project = setupProject()
+        }
+
+        const sourceFile = project.getSourceFile(id) ?? project.createSourceFile(id, code)
+
+        const output = ts.transpileModule(sourceFile.getFullText(), {
+          compilerOptions: project.getCompilerOptions(),
+          transformers,
+        })
+
+        return {
+          code: output.outputText,
+          map: output.sourceMapText,
         }
       }
     },
@@ -332,6 +393,23 @@ export default function makePlugin({
   plugins.push(virtualModulePlugin)
 
   return plugins
+}
+
+function logDiagnostics(
+  project: Project,
+  sourceFile: SourceFile,
+  sourceDirectory: string,
+  filePath: string,
+) {
+  const diagnostics = sourceFile.getPreEmitDiagnostics()
+  const relativeFilePath = relative(sourceDirectory, filePath)
+
+  if (diagnostics.length > 0) {
+    info(sourceFile.getFullText())
+    info(project.formatDiagnosticsWithColorAndContext(diagnostics))
+  } else {
+    info(`${relativeFilePath} module successfuly typed-checked.`)
+  }
 }
 
 async function buildVirtualModule(

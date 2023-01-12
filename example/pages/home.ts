@@ -19,10 +19,6 @@ export const route = Route.home
 
 export const main = html`<h2>Home</h2>`
 
-// Or you can export a "render" function
-
-// export const render = html`<h2>Home</h2>
-
 // ----------------------------------------------
 
 // ** Environment ** //

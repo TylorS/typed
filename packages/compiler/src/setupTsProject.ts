@@ -5,11 +5,11 @@ export function setupTsProject(tsConfigFilePath: string) {
     tsConfigFilePath,
     compilerOptions: {
       composite: false,
-      sourceMap: false,
+      sourceMap: true,
       declaration: false,
       declarationMap: false,
-      inlineSourceMap: true,
-      inlineSources: true,
+      inlineSourceMap: false,
+      inlineSources: false,
     },
   })
 
