@@ -12,6 +12,7 @@
     "other-pages/**/*.ts",
     "other-pages/**/*.tsx",
     "components/**/*.ts",
-    "components/**/*.tsx"
+    "components/**/*.tsx",
+    "components/*.svelte"
   ]
 }

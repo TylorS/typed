@@ -1,9 +1,5 @@
 <script lang="ts">
 	export let name: string;
-
-  interface $$Props extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap['button']> {
-    name: string;
-  }
 </script>
 
 <main>
