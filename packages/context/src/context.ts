@@ -47,7 +47,7 @@ export interface Tag<S> extends C.Tag<S> {
   /**
    * Create a Layer using a Scoped Effect
    */
-  readonly layerSoped: <R, E>(effect: Effect.Effect<R | Scope.Scope, E, S>) => Layer.Layer<R, E, S>
+  readonly layerScoped: <R, E>(effect: Effect.Effect<R | Scope.Scope, E, S>) => Layer.Layer<R, E, S>
 
   /**
    * Create a Layer from the service
@@ -78,7 +78,7 @@ export function Tag<A>(key?: string): Tag<A> {
     provide: Effect.provideService(tag),
     provideFx: Fx.provideService(tag),
     layer: Effect.toLayer(tag),
-    layerSoped: Layer.scoped(tag),
+    layerScoped: Layer.scoped(tag),
     layerOf: flow(Effect.succeed<A>, Effect.toLayer(tag)),
     build: flow(buildContext(tag), makeContextBuilder),
   })
