@@ -4,7 +4,6 @@ import * as Option from '@fp-ts/data/Option'
 import { createElement, getHead, Location, querySelector } from '@typed/dom'
 import type { Main } from '@typed/framework'
 import * as Fx from '@typed/fx'
-import { isBrowser } from '@typed/html'
 import type { Route, ParamsOf } from '@typed/route'
 import { Router } from '@typed/router'
 import type { ComponentConstructorOptions, SvelteComponentTyped } from 'svelte'
@@ -41,7 +40,7 @@ export function renderSvelte<
         )
       }
 
-      if (yield* $(isBrowser)) {
+      if (!import.meta.env.SSR) {
         const current = yield* $(querySelector('#svelte-root'))
         const container = yield* $(
           pipe(
