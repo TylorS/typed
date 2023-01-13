@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
-import { createElement, Location, querySelector } from '@typed/dom'
+import { createElement, getHead, Location, querySelector } from '@typed/dom'
 import type { Main } from '@typed/framework'
 import * as Fx from '@typed/fx'
 import type { Route, ParamsOf } from '@typed/route'
@@ -68,10 +68,20 @@ export function renderSvelte<
       const container = yield* $(createElement('div'))
       container.id = 'svelte-root'
 
-      // TODO: Fix typings
-      const { html } = (Component as any).render(f(initialParams.value))
+      // TODO: Do something with head content and fix typings
+      const { html, css, head } = (Component as any).render(f(initialParams.value))
 
       container.innerHTML = html
+
+      // In development we need to insert our css content
+      if (import.meta.env.DEV) {
+        const headElement = yield* $(getHead)
+        const styleElement = yield* $(createElement('style'))
+
+        styleElement.innerText = css.code
+        headElement.appendChild(styleElement)
+        headElement.append(head)
+      }
 
       return Fx.succeed(container)
     })
