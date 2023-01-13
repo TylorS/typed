@@ -1,7 +1,8 @@
+/// <reference types="svelte" />
 import { Route } from '@typed/route'
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// @ts-ignore Svelte types do not work with NodeNext Resolution?
 import Hello from '../../components/Hello.svelte'
 
 import { renderSvelte } from './render-svelte.js'
