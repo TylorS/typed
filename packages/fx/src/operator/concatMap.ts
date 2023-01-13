@@ -1,4 +1,4 @@
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { flatMapConcurrently } from './flatMapConcurrently.js'
 

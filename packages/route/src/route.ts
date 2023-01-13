@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
-import * as Layer from '@effect/io/Layer'
-import * as Context from '@fp-ts/data/Context'
+import type * as Layer from '@effect/io/Layer'
+import type * as Context from '@fp-ts/data/Context'
 import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import * as P from '@typed/path'
@@ -108,7 +108,9 @@ export const concat =
     const concatPath = (
       route.path === '/'
         ? otherRoute.path
-        : otherRoute.path === '/' ? route.path : (route.path + otherRoute.path).replace(/\/{1,}/g, '/').replace(/\/$/, '') || '/'
+        : otherRoute.path === '/'
+        ? route.path
+        : (route.path + otherRoute.path).replace(/\/{1,}/g, '/').replace(/\/$/, '') || '/'
     ) as P.PathJoin<[Path, Path2]>
 
     const concatMatch = (path: string) =>

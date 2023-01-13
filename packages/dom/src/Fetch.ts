@@ -1,13 +1,13 @@
 import * as Effect from '@effect/io/Effect'
 import { identity, pipe } from '@fp-ts/data/Function'
-import { Identity } from '@fp-ts/data/Identity'
+import type { Identity } from '@fp-ts/data/Identity'
 import * as These from '@fp-ts/data/These'
-import { DecodeError } from '@fp-ts/schema/DecodeError'
+import type { DecodeError } from '@fp-ts/schema/DecodeError'
 import { decoderFor } from '@fp-ts/schema/Decoder'
-import * as S from '@fp-ts/schema/Schema'
+import type * as S from '@fp-ts/schema/Schema'
 import * as Context from '@typed/context'
 
-export interface Fetch extends Identity<typeof globalThis['fetch']> {}
+export interface Fetch extends Identity<(typeof globalThis)['fetch']> {}
 
 export const Fetch = Context.Tag<Fetch>()
 

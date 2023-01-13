@@ -1,7 +1,7 @@
-import { Layer } from '@effect/io/Layer'
+import type { Layer } from '@effect/io/Layer'
 import { pipe } from '@fp-ts/data/Function'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { provideSomeLayer } from './provideSomeLayer.js'
 

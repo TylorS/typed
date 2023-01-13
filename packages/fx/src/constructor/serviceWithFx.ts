@@ -1,5 +1,5 @@
 import * as Effect from '@effect/io/Effect'
-import { Tag } from '@fp-ts/data/Context'
+import type { Tag } from '@fp-ts/data/Context'
 
 import { Fx } from '../Fx.js'
 

@@ -1,4 +1,4 @@
-import { Placeholder } from './Placeholder.js'
+import type { Placeholder } from './Placeholder.js'
 
 export interface Wire extends Placeholder {
   readonly ELEMENT_NODE: 1

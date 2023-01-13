@@ -1,10 +1,10 @@
-import * as Layer from '@effect/io/Layer'
+import type * as Layer from '@effect/io/Layer'
 import * as Fx from '@typed/fx'
-import { Renderable } from '@typed/html'
-import * as Route from '@typed/route'
-import * as Router from '@typed/router'
+import type { Renderable } from '@typed/html'
+import type * as Route from '@typed/route'
+import type * as Router from '@typed/router'
 
-import { IntrinsicServices } from './IntrinsicServices.js'
+import type { IntrinsicServices } from './IntrinsicServices.js'
 
 export interface Module<out R, P extends string> {
   readonly route: Route.Route<R, P>

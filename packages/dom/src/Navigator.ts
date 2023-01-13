@@ -1,7 +1,7 @@
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
-import { Option, fromNullable } from '@fp-ts/data/Option'
+import { type Option, fromNullable } from '@fp-ts/data/Option'
 import * as C from '@typed/context'
 import * as Fx from '@typed/fx'
 

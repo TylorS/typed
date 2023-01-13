@@ -1,6 +1,6 @@
 import { identity, pipe } from '@fp-ts/data/Function'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { snapshot } from './snapshot.js'
 

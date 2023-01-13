@@ -1,6 +1,6 @@
 import { map } from '@effect/io/Cause'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { mapCause } from './mapCause.js'
 

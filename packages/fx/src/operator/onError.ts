@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { onDone } from './onDone.js'
 

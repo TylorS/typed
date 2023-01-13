@@ -1,5 +1,5 @@
 import * as Effect from '@effect/io/Effect'
-import * as Context from '@fp-ts/data/Context'
+import type * as Context from '@fp-ts/data/Context'
 import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'

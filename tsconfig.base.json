@@ -1,5 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
     "rootDir": ".",
     "baseUrl": ".",
@@ -69,6 +70,9 @@
     "plugins": [
       {
         "name": "@effect/language-service"
+      },
+      {
+        "name": "svelte-language-server"
       }
     ]
   },

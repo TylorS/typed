@@ -1,8 +1,8 @@
 import * as Effect from '@effect/io/Effect'
-import * as Layer from '@effect/io/Layer'
+import type * as Layer from '@effect/io/Layer'
 import * as O from '@fp-ts/data/Option'
 import * as C from '@typed/context'
-import * as Fx from '@typed/fx'
+import type * as Fx from '@typed/fx'
 
 import { addEventListener } from './EventTarget.js'
 import { GlobalThis } from './GlobalThis.js'

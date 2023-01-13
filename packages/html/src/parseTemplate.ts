@@ -1,7 +1,7 @@
 import instrument from '@webreflection/uparser'
 
-import { Hole } from './Hole.js'
-import { TemplateCache, TemplateHole } from './TemplateCache.js'
+import type { Hole } from './Hole.js'
+import type { TemplateCache, TemplateHole } from './TemplateCache.js'
 import { createContent } from './createContent.js'
 import { createPath } from './paths.js'
 

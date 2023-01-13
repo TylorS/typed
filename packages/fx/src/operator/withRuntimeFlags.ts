@@ -1,5 +1,5 @@
 import * as Effect from '@effect/io/Effect'
-import { RuntimeFlagsPatch } from '@effect/io/Fiber/Runtime/Flags/Patch'
+import type { RuntimeFlagsPatch } from '@effect/io/Fiber/Runtime/Flags/Patch'
 import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'

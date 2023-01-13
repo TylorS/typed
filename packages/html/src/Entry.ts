@@ -1,9 +1,9 @@
-import { Runtime } from '@effect/io/Runtime'
-import { Context } from '@fp-ts/data/Context'
+import type { Runtime } from '@effect/io/Runtime'
+import type { Context } from '@fp-ts/data/Context'
 
 import type { Hole } from './Hole.js'
-import { Placeholder } from './Placeholder.js'
-import { TemplateCache } from './TemplateCache.js'
+import type { Placeholder } from './Placeholder.js'
+import type { TemplateCache } from './TemplateCache.js'
 import type { Wire } from './Wire.js'
 import { parseUpdates } from './parseUpdates.js'
 

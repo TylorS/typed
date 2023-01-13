@@ -15,7 +15,7 @@ import glob from 'fast-glob'
 import { Project, SourceFile, ts } from 'ts-morph'
 // @ts-expect-error Unable to resolve types w/ NodeNext
 import vavite from 'vavite'
-import { ConfigEnv, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
+import type { ConfigEnv, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
 import compression from 'vite-plugin-compression'
 import tsconfigPaths from 'vite-tsconfig-paths'
 

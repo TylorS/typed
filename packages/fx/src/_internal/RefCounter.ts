@@ -3,7 +3,7 @@ import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref'
 import * as Schedule from '@effect/io/Schedule'
-import { Scope } from '@effect/io/Scope'
+import type { Scope } from '@effect/io/Scope'
 import { millis } from '@fp-ts/data/Duration'
 import { pipe } from '@fp-ts/data/Function'
 

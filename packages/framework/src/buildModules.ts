@@ -1,8 +1,8 @@
 import * as Router from '@typed/router'
 import { Redirect, RouteMatcher } from '@typed/router'
 
-import { IntrinsicServices } from './IntrinsicServices.js'
-import { Module } from './Module.js'
+import type { IntrinsicServices } from './IntrinsicServices.js'
+import type { Module } from './Module.js'
 import { isFallbackFileName, isLayoutFileName } from './fileNames.js'
 
 export type Modules = ReadonlyArray<Module<never, any> | Module<any, any>>

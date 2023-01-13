@@ -1,6 +1,6 @@
-import { Context } from '@fp-ts/data/Context'
+import type { Context } from '@fp-ts/data/Context'
 
-import { Placeholder } from './Placeholder.js'
+import type { Placeholder } from './Placeholder.js'
 
 export class Hole implements Placeholder {
   readonly __Placeholder__!: {

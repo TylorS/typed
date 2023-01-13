@@ -1,7 +1,7 @@
 import * as TSemaphore from '@effect/stm/TSemaphore'
 import { flow, pipe } from '@fp-ts/data/Function'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 import { suspend } from '../constructor/suspend.js'
 
 import { flatMap } from './flatMap.js'

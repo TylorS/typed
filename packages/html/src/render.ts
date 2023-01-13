@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import * as Flags from '@effect/io/Fiber/Runtime/Flags'
 import * as RuntimeFlagsPatch from '@effect/io/Fiber/Runtime/Flags/Patch'
-import { FiberRefs } from '@effect/io/FiberRefs'
+import type { FiberRefs } from '@effect/io/FiberRefs'
 import * as R from '@effect/io/Runtime'
 import { pipe } from '@fp-ts/data/Function'
 import { Document } from '@typed/dom/Document'
@@ -9,10 +9,10 @@ import * as Fx from '@typed/fx'
 
 import { makeEntry } from './Entry.js'
 import { Hole } from './Hole.js'
-import { Placeholder } from './Placeholder.js'
+import type { Placeholder } from './Placeholder.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
-import { Wire, persistent } from './Wire.js'
+import { type Wire, persistent } from './Wire.js'
 
 export type Renderable = Placeholder | Node | null | undefined | ReadonlyArray<Renderable>
 

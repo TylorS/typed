@@ -1,7 +1,7 @@
-import { Project, SourceFile } from 'ts-morph'
+import type { Project, SourceFile } from 'ts-morph'
 
 import { makeRuntimeModule } from './makeRuntimeModule.js'
-import { ModuleTreeWithFallback } from './readModules.js'
+import type { ModuleTreeWithFallback } from './readModules.js'
 import { addNamedImport, appendText } from './ts-morph-helpers.js'
 
 export function makeBrowserModule(

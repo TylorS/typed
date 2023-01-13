@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
-import * as Scope from '@effect/io/Scope'
+import type * as Scope from '@effect/io/Scope'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { fromFxEffect } from './fromFxEffect.js'
 

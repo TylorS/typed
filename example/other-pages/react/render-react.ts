@@ -2,12 +2,12 @@ import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import { createElement, Location, querySelector } from '@typed/dom'
-import { Main } from '@typed/framework'
+import type { Main } from '@typed/framework'
 import * as Fx from '@typed/fx'
 import { isBrowser, isServer } from '@typed/html'
-import { ParamsOf, Route } from '@typed/route'
-import { Redirect, Router } from '@typed/router'
-import { ReactElement } from 'react'
+import type { ParamsOf, Route } from '@typed/route'
+import { type Redirect, Router } from '@typed/router'
+import type { ReactElement } from 'react'
 
 // Only the first render should ever use hydrate
 let firstRender = true

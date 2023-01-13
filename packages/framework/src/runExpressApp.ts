@@ -5,15 +5,15 @@ import { either } from '@fp-ts/data'
 import { pipe } from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx'
 import { renderInto } from '@typed/html'
-import express from 'express'
+import type express from 'express'
 import isbot from 'isbot'
 import viteDevServer from 'vavite/vite-dev-server'
 
 import {
-  RuntimeModule,
+  type RuntimeModule,
   provideServerIntrinsics,
   runMatcherWithFallback,
-  HtmlModule,
+  type HtmlModule,
 } from '@typed/framework'
 
 const prettyPrintCause = Cause.pretty()

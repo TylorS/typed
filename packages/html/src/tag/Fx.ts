@@ -1,12 +1,12 @@
 import * as Effect from '@effect/io/Effect'
-import { Context } from '@fp-ts/data/Context'
+import type { Context } from '@fp-ts/data/Context'
 import { pipe } from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx'
 
 import { Hole } from '../Hole.js'
-import { Placeholder } from '../Placeholder.js'
+import type { Placeholder } from '../Placeholder.js'
 import { RenderCache } from '../RenderCache.js'
-import { RenderContext } from '../RenderContext.js'
+import type { RenderContext } from '../RenderContext.js'
 import { getRenderHoleContext, renderHole } from '../render.js'
 
 import * as Tag from './Effect.js'

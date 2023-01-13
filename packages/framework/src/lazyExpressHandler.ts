@@ -2,7 +2,7 @@
 // when reloadOn option is set to "static-deps-change",
 // changes to the route handlers will not trigger a reload.
 
-import { RequestHandler } from 'express'
+import type { RequestHandler } from 'express'
 import viteDevServer from 'vavite/vite-dev-server'
 
 // Feel free to remove this and import routes directly.

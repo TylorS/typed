@@ -8,8 +8,10 @@
   },
   "include": [
     "*.ts",
-    "pages",
-    "quux-pages",
-    "components"
+    "pages/**/*.ts",
+    "other-pages/**/*.ts",
+    "other-pages/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx"
   ]
 }

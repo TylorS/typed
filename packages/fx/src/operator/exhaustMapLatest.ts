@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
-import * as Fiber from '@effect/io/Fiber'
+import type * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
-import { Scope } from '@effect/io/Scope'
+import type { Scope } from '@effect/io/Scope'
 import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'

@@ -1,10 +1,10 @@
-import * as Effect from '@effect/io/Effect'
+import type * as Effect from '@effect/io/Effect'
 import { flow } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import * as C from '@typed/context'
 
 import { dispatchEventWith } from './EventTarget.js'
-import { GlobalThis } from './GlobalThis.js'
+import type { GlobalThis } from './GlobalThis.js'
 
 export interface ParentElement {
   readonly parentElement: ParentNode & HTMLElement

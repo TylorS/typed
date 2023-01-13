@@ -1,7 +1,7 @@
 import { pipe } from '@fp-ts/data/Function'
-import { Predicate, not } from '@fp-ts/data/Predicate'
+import { type Predicate, not } from '@fp-ts/data/Predicate'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { takeUntil } from './takeUntil.js'
 

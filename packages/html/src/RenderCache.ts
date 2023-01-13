@@ -1,5 +1,5 @@
-import { Entry } from './Entry.js'
-import { Wire } from './Wire.js'
+import type { Entry } from './Entry.js'
+import type { Wire } from './Wire.js'
 
 export interface RenderCache {
   entry: Entry | null

@@ -1,8 +1,8 @@
 import { dirname, relative } from 'path'
 
 import { minify } from 'html-minifier'
-import { Project, SourceFile } from 'ts-morph'
-import { ViteDevServer } from 'vite'
+import type { Project, SourceFile } from 'ts-morph'
+import type { ViteDevServer } from 'vite'
 
 import { cleanHtml } from './cleanHtml.js'
 import { addNamedImport, appendText } from './ts-morph-helpers.js'
@@ -40,7 +40,7 @@ export async function makeHtmlModule(options: HtmlModuleOptions): Promise<Source
   addNamedImport(sourceFile, ['IncomingMessage'], 'http', true)
   addNamedImport(
     sourceFile,
-    ['makeServerWindow', 'ServerWindowOptions'],
+    ['makeServerWindow', 'type ServerWindowOptions'],
     '@typed/framework/makeServerWindow',
   )
 

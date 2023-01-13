@@ -1,8 +1,8 @@
 import * as Effect from '@effect/io/Effect'
-import { Either } from '@fp-ts/data/Either'
+import type { Either } from '@fp-ts/data/Either'
 import { flow } from '@fp-ts/data/Function'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { fromEffect } from './fromEffect.js'
 

@@ -1,6 +1,6 @@
-import { Effect } from '@effect/io/Effect'
+import type { Effect } from '@effect/io/Effect'
 
-import { Placeholder } from './Placeholder.js'
+import type { Placeholder } from './Placeholder.js'
 
 export interface EventHandler<T extends Event, R = never> extends Placeholder<R> {
   readonly handler: (event: T) => Effect<R, never, void>

@@ -1,6 +1,6 @@
 import { pipe } from '@fp-ts/data/Function'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 import { succeed } from '../constructor/succeed.js'
 
 import { continueWith } from './continueWith.js'

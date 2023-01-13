@@ -1,7 +1,7 @@
-import { Project } from 'ts-morph'
+import type { Project } from 'ts-morph'
 
 import * as SFM from './SourceFileModule.js'
-import { Directory } from './readDirectory.js'
+import type { Directory } from './readDirectory.js'
 import { scanSourceFiles } from './scanSourceFiles.js'
 
 export function readModules(project: Project, directory: Directory): ModuleTreeWithFallback {

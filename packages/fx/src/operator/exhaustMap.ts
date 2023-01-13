@@ -1,5 +1,5 @@
 import * as Effect from '@effect/io/Effect'
-import * as Fiber from '@effect/io/Fiber'
+import type * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
 import { pipe } from '@fp-ts/data/Function'
 

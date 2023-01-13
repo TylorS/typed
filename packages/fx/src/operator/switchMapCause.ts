@@ -1,4 +1,4 @@
-import * as Cause from '@effect/io/Cause'
+import type * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
@@ -14,14 +14,14 @@ export function switchMapCause<E, R2, E2, B>(
 }
 
 class SwitchMapCauseFx<R, E, A, R2, E2, B>
-  extends Fx.Variance<R | R2,  E2, A | B>
-  implements Fx<R | R2,  E2, A | B>
+  extends Fx.Variance<R | R2, E2, A | B>
+  implements Fx<R | R2, E2, A | B>
 {
   constructor(readonly fx: Fx<R, E, A>, readonly f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>) {
     super()
   }
 
-  run<R3>(sink: Fx.Sink<R3,  E2, A | B>) {
+  run<R3>(sink: Fx.Sink<R3, E2, A | B>) {
     return withRefCounter(
       0,
       (counter) =>

@@ -1,11 +1,11 @@
 import * as Effect from '@effect/io/Effect'
-import { Context } from '@fp-ts/data/Context'
+import type { Context } from '@fp-ts/data/Context'
 import { pipe } from '@fp-ts/data/Function'
 
 import { Hole } from '../Hole.js'
-import { Placeholder } from '../Placeholder.js'
+import type { Placeholder } from '../Placeholder.js'
 import { RenderCache } from '../RenderCache.js'
-import { RenderContext } from '../RenderContext.js'
+import type { RenderContext } from '../RenderContext.js'
 import { getRenderHoleContext, renderHole } from '../render.js'
 
 // Tag functions which only accept and return Effect

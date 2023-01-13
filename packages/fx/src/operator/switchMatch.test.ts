@@ -6,12 +6,12 @@ import { pipe } from '@fp-ts/data/Function'
 import { describe, it } from 'vitest'
 
 import { at } from '../constructor/at.js'
+import { fail } from '../constructor/fail.js'
 import { collectAll } from '../run/collectAll.js'
 
+import { flatten } from './flatMap.js'
 import { mergeAll } from './merge.js'
 import { switchMatchError } from './switchMatch.js'
-import { flatten } from './flatMap.js'
-import { fail } from '../constructor/fail.js'
 
 describe(import.meta.url, () => {
   describe(switchMatchError.name, () => {

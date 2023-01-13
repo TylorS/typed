@@ -1,6 +1,6 @@
 import { EOL } from 'os'
 
-import { SourceFile } from 'ts-morph'
+import type { SourceFile } from 'ts-morph'
 
 function findImportDeclaration(sourceFile: SourceFile, moduleSpecifier: string) {
   return sourceFile.getImportDeclaration((x) => x.getModuleSpecifierValue() === moduleSpecifier)

@@ -1,10 +1,10 @@
-import { Fx } from '@typed/fx'
-import { Renderable } from '@typed/html'
-import { ParamsOf } from '@typed/path'
-import { Route } from '@typed/route'
-import * as Router from '@typed/router'
+import type { Fx } from '@typed/fx'
+import type { Renderable } from '@typed/html'
+import type { ParamsOf } from '@typed/path'
+import type { Route } from '@typed/route'
+import type * as Router from '@typed/router'
 
-import { IntrinsicServices } from './IntrinsicServices.js'
+import type { IntrinsicServices } from './IntrinsicServices.js'
 
 export type Fallback = RenderableFallback | RedirectFallback<any>
 

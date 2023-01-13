@@ -1,14 +1,14 @@
 import * as Cause from '@effect/io/Cause'
-import * as CP from '@fp-ts/core/typeclass/Coproduct'
+import type * as CP from '@fp-ts/core/typeclass/Coproduct'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 import { failCause } from '../constructor/failCause.js'
 import { never } from '../constructor/never.js'
 import { orElse } from '../operator/orElse.js'
 import { raceAll } from '../operator/race.js'
 
 import { SemiCoproductRace, SemiCoproductOrElse } from './SemiCoproduct.js'
-import { FxTypeLambda } from './TypeLambda.js'
+import type { FxTypeLambda } from './TypeLambda.js'
 
 export const CoproductRace: CP.Coproduct<FxTypeLambda> = {
   ...SemiCoproductRace,

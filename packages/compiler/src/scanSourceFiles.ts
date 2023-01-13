@@ -1,9 +1,9 @@
 import { pipe } from '@fp-ts/data/Function'
 import * as O from '@fp-ts/data/Option'
 import { pathCardinality, isFallbackFileName, isLayoutFileName } from '@typed/framework'
-import { ExportedDeclarations, Project, SourceFile, Type } from 'ts-morph'
+import type { ExportedDeclarations, Project, SourceFile, Type } from 'ts-morph'
 
-import { SourceFileModule } from './SourceFileModule.js'
+import type { SourceFileModule } from './SourceFileModule.js'
 
 /**
  * Scans over the source files and returns the inferred type of FileSystemModule it

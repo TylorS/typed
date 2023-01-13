@@ -1,8 +1,8 @@
-import * as A from '@fp-ts/core/typeclass/Alternative'
+import type * as A from '@fp-ts/core/typeclass/Alternative'
 
 import { CoproductRace, CoproductOrElse } from './Coproduct.js'
 import { SemiAlternativeRace, SemiAlternativeOrElse } from './SemiAlternative.js'
-import { FxTypeLambda } from './TypeLambda.js'
+import type { FxTypeLambda } from './TypeLambda.js'
 
 export const ApplicativeRace: A.Alternative<FxTypeLambda> = {
   ...SemiAlternativeRace,

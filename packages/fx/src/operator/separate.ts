@@ -1,7 +1,7 @@
 import * as Either from '@fp-ts/data/Either'
 import { pipe } from '@fp-ts/data/Function'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { filter } from './filter.js'
 import { map } from './map.js'

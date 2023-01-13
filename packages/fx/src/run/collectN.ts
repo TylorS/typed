@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 import { take } from '../operator/take.js'
 
 import { reduce } from './reduce.js'

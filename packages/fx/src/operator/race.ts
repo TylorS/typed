@@ -3,7 +3,7 @@ import * as Effect from '@effect/io/Effect'
 import * as ExecutionStrategy from '@effect/io/ExecutionStrategy'
 import * as Exit from '@effect/io/Exit'
 import * as Scope from '@effect/io/Scope'
-import { Chunk } from '@fp-ts/data/Chunk'
+import type { Chunk } from '@fp-ts/data/Chunk'
 import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'

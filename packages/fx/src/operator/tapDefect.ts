@@ -3,7 +3,7 @@ import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
 import { match } from '@fp-ts/data/Option'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { tapCause } from './tapCause.js'
 

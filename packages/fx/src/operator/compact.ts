@@ -1,7 +1,7 @@
 import { identity } from '@fp-ts/data/Function'
-import { Option } from '@fp-ts/data/Option'
+import type { Option } from '@fp-ts/data/Option'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { filterMap } from './filterMap.js'
 

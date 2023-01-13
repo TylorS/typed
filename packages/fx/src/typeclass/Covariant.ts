@@ -1,9 +1,9 @@
 import * as C from '@fp-ts/core/typeclass/Covariant'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 import { map } from '../operator/map.js'
 
-import { FxTypeLambda } from './TypeLambda.js'
+import type { FxTypeLambda } from './TypeLambda.js'
 
 export const Covariant: C.Covariant<FxTypeLambda> = C.make((f) => map(f))
 

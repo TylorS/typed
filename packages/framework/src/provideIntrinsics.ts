@@ -1,14 +1,14 @@
 import * as Effect from '@effect/io/Effect'
 import { flow, pipe } from '@fp-ts/data/Function'
 import { makeDomServices } from '@typed/dom/DomServices'
-import { GlobalThis } from '@typed/dom/GlobalThis'
-import { Window } from '@typed/dom/Window'
+import type { GlobalThis } from '@typed/dom/GlobalThis'
+import type { Window } from '@typed/dom/Window'
 import * as Fx from '@typed/fx'
-import { Environment, RenderContext } from '@typed/html'
+import { type Environment, RenderContext } from '@typed/html'
 import * as Router from '@typed/router'
 import { Redirect } from '@typed/router'
 
-import { IntrinsicServices } from './IntrinsicServices.js'
+import type { IntrinsicServices } from './IntrinsicServices.js'
 
 export interface ProvideIntrinsicsOptions {
   readonly environment: Environment

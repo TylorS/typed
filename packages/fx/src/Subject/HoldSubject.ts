@@ -1,9 +1,9 @@
 import * as Effect from '@effect/io/Effect'
 import { identity } from '@fp-ts/data/Function'
-import { MutableRef, make } from '@fp-ts/data/MutableRef'
-import { Option, none } from '@fp-ts/data/Option'
+import { type MutableRef, make } from '@fp-ts/data/MutableRef'
+import { type Option, none } from '@fp-ts/data/Option'
 
-import { Fx, Sink } from '../Fx.js'
+import type { Fx, Sink } from '../Fx.js'
 import { never } from '../constructor/never.js'
 import { HoldFx } from '../operator/hold.js'
 

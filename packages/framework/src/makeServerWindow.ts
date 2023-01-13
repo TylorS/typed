@@ -1,7 +1,7 @@
-import { IncomingMessage } from 'http'
-import { TLSSocket } from 'tls'
+import type { IncomingMessage } from 'http'
+import type { TLSSocket } from 'tls'
 
-import { Window, GlobalThis } from '@typed/dom'
+import type { Window, GlobalThis } from '@typed/dom'
 import * as happyDom from 'happy-dom'
 
 export interface ServerWindowOptions {

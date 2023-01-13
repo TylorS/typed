@@ -1,12 +1,12 @@
-import * as Effect from '@effect/io/Effect'
 import * as Cause from '@effect/io/Cause'
+import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
+import { either } from '@fp-ts/data'
 import { flow, pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
-import { either } from '@fp-ts/data'
 import { failCause } from '../constructor/failCause.js'
 
 export function switchMatchCause<E, R2, E2, B, A, R3, E3, C>(

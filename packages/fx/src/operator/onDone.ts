@@ -3,7 +3,7 @@ import * as Effect from '@effect/io/Effect'
 import * as Either from '@fp-ts/data/Either'
 import { flow, pipe } from '@fp-ts/data/Function'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { onDoneCause } from './onDoneCause.js'
 

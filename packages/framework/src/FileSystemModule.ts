@@ -1,12 +1,12 @@
-import { Layer } from '@effect/io/Layer'
-import { Fx } from '@typed/fx'
-import { Renderable } from '@typed/html'
-import { ParamsOf } from '@typed/path'
-import { Route } from '@typed/route'
-import { Redirect } from '@typed/router'
+import type { Layer } from '@effect/io/Layer'
+import type { Fx } from '@typed/fx'
+import type { Renderable } from '@typed/html'
+import type { ParamsOf } from '@typed/path'
+import type { Route } from '@typed/route'
+import type { Redirect } from '@typed/router'
 
-import { IntrinsicServices } from './IntrinsicServices.js'
-import { Main } from './Module.js'
+import type { IntrinsicServices } from './IntrinsicServices.js'
+import type { Main } from './Module.js'
 
 /**
  * The possible configurations of a Module that the runtime, and @typed/compiler,

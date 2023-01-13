@@ -1,11 +1,11 @@
-import * as A from '@fp-ts/core/typeclass/Applicative'
+import type * as A from '@fp-ts/core/typeclass/Applicative'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 import { combineAll } from '../operator/combine.js'
 
 import { Of } from './Of.js'
 import { SemiApplicative } from './SemiApplicative.js'
-import { FxTypeLambda } from './TypeLambda.js'
+import type { FxTypeLambda } from './TypeLambda.js'
 
 export const Applicative: A.Applicative<FxTypeLambda> = {
   ...SemiApplicative,

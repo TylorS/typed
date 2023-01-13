@@ -1,5 +1,5 @@
 import { unit } from '@effect/io/Effect'
-import { Predicate } from '@fp-ts/data/Predicate'
+import type { Predicate } from '@fp-ts/data/Predicate'
 
 import { Fx } from '../Fx.js'
 

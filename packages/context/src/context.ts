@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
-import * as Scope from '@effect/io/Scope'
+import type * as Scope from '@effect/io/Scope'
 import * as C from '@fp-ts/data/Context'
 import { flow } from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx'
@@ -120,7 +120,7 @@ export function makeContextBuilder<R = never>(
 }
 
 export {
-  Context,
+  type Context,
   isContext,
   isTag,
   empty,

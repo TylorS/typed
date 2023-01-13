@@ -1,15 +1,15 @@
 import { EOL } from 'os'
 import { dirname, relative } from 'path'
 
-import { Project, SourceFile } from 'ts-morph'
+import type { Project, SourceFile } from 'ts-morph'
 
-import {
+import type {
   FallbackSourceFileModule,
   LayoutSourceFileModule,
   RedirectSourceFileModule,
   RenderSourceFileModule,
 } from './SourceFileModule.js'
-import { ModuleTree, ModuleTreeWithFallback } from './readModules.js'
+import type { ModuleTree, ModuleTreeWithFallback } from './readModules.js'
 import { addNamedImport, addNamespaceImport, appendText } from './ts-morph-helpers.js'
 
 /**

@@ -1,8 +1,8 @@
 import * as Effect from '@effect/io/Effect'
-import { Scope } from '@effect/io/Scope'
+import type { Scope } from '@effect/io/Scope'
 import { flow } from '@fp-ts/data/Function'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { run_ } from './run.js'
 

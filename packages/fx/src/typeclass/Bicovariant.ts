@@ -1,11 +1,11 @@
 import * as B from '@fp-ts/core/typeclass/Bicovariant'
 import { pipe } from '@fp-ts/data/Function'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 import { map } from '../operator/map.js'
 import { mapError } from '../operator/mapError.js'
 
-import { FxTypeLambda } from './TypeLambda.js'
+import type { FxTypeLambda } from './TypeLambda.js'
 
 export const Bicovariant: B.Bicovariant<FxTypeLambda> = {
   bimap: (f, g) => (fa) => pipe(fa, mapError(f), map(g)),

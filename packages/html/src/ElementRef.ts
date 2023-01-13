@@ -3,9 +3,14 @@ import { pipe } from '@fp-ts/data/Function'
 import * as Option from '@fp-ts/data/Option'
 import { DomSource } from '@typed/dom/DomSource'
 import * as Fx from '@typed/fx'
-import { EffectAdapter, EffectGenErrors, EffectGenResources, isRefSubject } from '@typed/fx'
+import {
+  type EffectAdapter,
+  type EffectGenErrors,
+  type EffectGenResources,
+  isRefSubject,
+} from '@typed/fx'
 
-import { Placeholder } from './Placeholder.js'
+import type { Placeholder } from './Placeholder.js'
 
 export interface ElementRef<A extends HTMLElement>
   extends Fx.RefSubject<Option.Option<A>>,

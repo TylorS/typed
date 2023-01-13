@@ -2,6 +2,8 @@
 
 import { join } from 'path'
 
+import { svelte } from '@sveltejs/vite-plugin-svelte'
+import autoPreprocess from 'svelte-preprocess'
 import { defineConfig } from 'vite'
 
 import typed from './packages/vite-plugin/src/vite-plugin'
@@ -26,6 +28,12 @@ export default defineConfig(() => ({
     typed({
       // Directory should point towards the root of your project with an index.html file
       sourceDirectory: join(__dirname, 'example'),
+    }),
+    svelte({
+      preprocess: autoPreprocess(),
+      compilerOptions: {
+        hydratable: true,
+      },
     }),
   ],
   build: {

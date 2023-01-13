@@ -1,9 +1,9 @@
-import * as M from '@fp-ts/core/typeclass/Monad'
+import type * as M from '@fp-ts/core/typeclass/Monad'
 
 import { Covariant } from './Covariant.js'
 import { FlatMap, SwitchMap, ExhaustMap } from './FlatMap.js'
 import { Pointed } from './Pointed.js'
-import { FxTypeLambda } from './TypeLambda.js'
+import type { FxTypeLambda } from './TypeLambda.js'
 
 export const Monad: M.Monad<FxTypeLambda> = {
   ...FlatMap,

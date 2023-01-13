@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import * as Layer from '@effect/io/Layer'
+import type * as Layer from '@effect/io/Layer'
 import { flow } from '@fp-ts/data/Function'
-import * as Context from '@typed/context'
+import type * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
-import * as html from '@typed/html'
-import * as Path from '@typed/path'
+import type * as html from '@typed/html'
+import type * as Path from '@typed/path'
 import * as Route from '@typed/route'
 
 export interface RouteMatch<R, E, P extends string> {

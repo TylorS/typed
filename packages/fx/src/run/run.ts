@@ -1,8 +1,8 @@
-import { Cause } from '@effect/io/Cause'
+import type { Cause } from '@effect/io/Cause'
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
-import { Scope } from '@effect/io/Scope'
+import type { Scope } from '@effect/io/Scope'
 import { flow, pipe } from '@fp-ts/data/Function'
 
 import { Fx, Sink } from '../Fx.js'

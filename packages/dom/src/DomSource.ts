@@ -4,7 +4,7 @@ import * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
 
 import { addEventListener } from './EventTarget.js'
-import { ParseSelector, DefaultEventMap, ROOT_CSS_SELECTOR } from './helpers.js'
+import { type ParseSelector, type DefaultEventMap, ROOT_CSS_SELECTOR } from './helpers.js'
 
 export interface DomSource<Element = HTMLElement, EventMap extends {} = DefaultEventMap<Element>> {
   readonly selectors: ReadonlyArray<string>

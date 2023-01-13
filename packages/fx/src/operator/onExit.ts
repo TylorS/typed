@@ -1,8 +1,8 @@
-import * as Effect from '@effect/io/Effect'
+import type * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
 import { pipe } from '@fp-ts/data/Function'
 
-import { Fx } from '../Fx.js'
+import type { Fx } from '../Fx.js'
 
 import { onDoneCause } from './onDoneCause.js'
 

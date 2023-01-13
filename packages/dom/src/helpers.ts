@@ -1,4 +1,4 @@
-import * as TQS from 'typed-query-selector/parser.js'
+import type * as TQS from 'typed-query-selector/parser.js'
 
 export type ParseSelector<T extends string, Fallback> = [T] extends [typeof ROOT_CSS_SELECTOR]
   ? Fallback

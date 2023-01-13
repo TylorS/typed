@@ -1,5 +1,5 @@
-import * as Effect from '@effect/io/Effect'
-import { Identity } from '@fp-ts/data/Identity'
+import type * as Effect from '@effect/io/Effect'
+import type { Identity } from '@fp-ts/data/Identity'
 import * as C from '@typed/context'
 
 export interface GlobalThis extends Identity<typeof globalThis> {}

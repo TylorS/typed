@@ -1,5 +1,5 @@
 import * as Effect from '@effect/io/Effect'
-import { Schedule } from '@effect/io/Schedule'
+import type { Schedule } from '@effect/io/Schedule'
 import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'

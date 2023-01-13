@@ -1,4 +1,4 @@
-import { Equal, hash, hashCombine, symbolEqual, symbolHash } from '@fp-ts/data/Equal'
+import { type Equal, hash, hashCombine, symbolEqual, symbolHash } from '@fp-ts/data/Equal'
 
 export class SingleShotGen<T, A> implements Generator<T, A, A> {
   called = false

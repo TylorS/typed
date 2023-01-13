@@ -1,4 +1,4 @@
-import * as Effect from '@effect/io/Effect'
+import type * as Effect from '@effect/io/Effect'
 import * as C from '@typed/context'
 
 export interface Location extends globalThis.Location {}

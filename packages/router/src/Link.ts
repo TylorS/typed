@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
-import { EventHandler, html, Hole, Placeholder } from '@typed/html'
+import { EventHandler, html, Hole, type Placeholder } from '@typed/html'
 import { pathJoin } from '@typed/path'
 
 import { Router, getBasePath } from './router.js'

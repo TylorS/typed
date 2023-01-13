@@ -1,7 +1,7 @@
 import * as Context from '@typed/context'
 
-import { RenderCache } from './RenderCache.js'
-import { TemplateCache } from './TemplateCache.js'
+import type { RenderCache } from './RenderCache.js'
+import type { TemplateCache } from './TemplateCache.js'
 
 export interface RenderContext {
   readonly environment: 'server' | 'browser' | 'static'

@@ -1,4 +1,4 @@
-import { Cause } from '@effect/io/Cause'
+import type { Cause } from '@effect/io/Cause'
 import { flow } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
