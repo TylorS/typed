@@ -2,6 +2,7 @@ import { html } from '@typed/html'
 import { Link, outlet } from '@typed/router'
 
 import * as bar from './bar/bar.js'
+import * as baz from './baz/baz.js'
 import * as foo from './foo/foo.js'
 
 // A layout is applied to all pages that don't have a layout specified in the same directory
@@ -21,6 +22,8 @@ export const layout = html`
       <li>${Link({ href: foo.route.make({ foo: '2' }), label: 'Foo 2' })}</li>
       <li>${Link({ href: bar.route.make({ bar: '1' }), label: 'Bar 1' })}</li>
       <li>${Link({ href: bar.route.make({ bar: '2' }), label: 'Bar 2' })}</li>
+      <li>${Link({ href: baz.route.make({ baz: '1' }), label: 'Baz 1' })}</li>
+      <li>${Link({ href: baz.route.make({ baz: '2' }), label: 'Baz 2' })}</li>
       <li><a href="/other">Other</a></li>
       <li>${Link({ href: '/broken-link', label: 'Broken' })}</li>
     </ul>
