@@ -359,7 +359,11 @@ export default function makePlugin({
           project.createSourceFile(id, await readFile(id).then((b) => b.toString()))
 
         const output = ts.transpileModule(sourceFile.getFullText(), {
-          compilerOptions: project.getCompilerOptions(),
+          compilerOptions: {
+            ...project.getCompilerOptions(),
+            inlineSourceMap: false,
+            sourceMap: true,
+          },
           transformers,
         })
 
