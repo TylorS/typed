@@ -11,7 +11,9 @@ import { pipe } from 'node_modules/@fp-ts/data/Function.js'
  * which allows querying for elements relative to the element you are referencing
  * and access Fx of events or the elements themselves. Anyone coming from Cycle.js
  * will be familiar with this pattern of separating your code using Model-View-Intent (MVI)
- * https://cycle.js.org/model-view-intent.html.
+ * https://cycle.js.org/model-view-intent.html. The biggest difference howerver is you have
+ * access to all of Effect, including dependency injection. Solving problems of prop-drilling and
+ * the ability to create reusable components.
  */
 export const Counter = Fx.gen(function* ($) {
   const ref = yield* $(makeElementRef<HTMLDivElement>())
