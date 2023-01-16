@@ -5,14 +5,14 @@ import { fileURLToPath } from 'url'
 import { Project } from 'ts-morph'
 import { describe, it } from 'vitest'
 
-import {
+import type {
   FallbackSourceFileModule,
   LayoutSourceFileModule,
   RedirectSourceFileModule,
   RenderSourceFileModule,
 } from './SourceFileModule.js'
 import { readDirectory } from './readDirectory.js'
-import { ModuleTree, ModuleTreeWithFallback, readModules } from './readModules.js'
+import { type ModuleTree, type ModuleTreeWithFallback, readModules } from './readModules.js'
 
 const filePath = fileURLToPath(import.meta.url)
 const directory = dirname(filePath)
@@ -33,14 +33,12 @@ describe(import.meta.url, () => {
           layout: {
             _tag: 'Layout/Basic',
             filePath: 'pages/layout.ts',
-            isNested: false,
           },
           fallback: {
             _tag: 'Fallback/Basic',
             filePath: 'pages/fallback.ts',
             isFx: false,
             hasLayout: false,
-            isNested: false,
           },
           modules: [
             {
@@ -48,7 +46,6 @@ describe(import.meta.url, () => {
               filePath: 'pages/home.ts',
               isFx: true,
               hasLayout: false,
-              isNested: false,
             },
           ],
           children: [
@@ -62,7 +59,6 @@ describe(import.meta.url, () => {
                   filePath: 'pages/bar/bar.ts',
                   isFx: false,
                   hasLayout: true,
-                  isNested: false,
                 },
               ],
               children: [],
@@ -77,7 +73,6 @@ describe(import.meta.url, () => {
                   filePath: 'pages/foo/foo.ts',
                   isFx: false,
                   hasLayout: false,
-                  isNested: false,
                 },
               ],
               children: [],
@@ -92,7 +87,6 @@ describe(import.meta.url, () => {
                   filePath: 'pages/react/counter.tsx',
                   isFx: false,
                   hasLayout: false,
-                  isNested: false,
                 },
               ],
               children: [],
@@ -124,7 +118,6 @@ function stripLayoutModule(m: LayoutSourceFileModule) {
   return {
     _tag: m._tag,
     filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
-    isNested: m.isNested,
   }
 }
 
@@ -134,7 +127,6 @@ function stripRenderModule(m: RenderSourceFileModule) {
     filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
     isFx: m.isFx,
     hasLayout: m.hasLayout,
-    isNested: m.isNested,
   }
 }
 
@@ -147,7 +139,6 @@ function stripFallbackModule(m: FallbackSourceFileModule | RedirectSourceFileMod
         filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
         isFx: m.isFx,
         hasLayout: m.hasLayout,
-        isNested: m.isNested,
       }
     }
     case 'Redirect/Basic':

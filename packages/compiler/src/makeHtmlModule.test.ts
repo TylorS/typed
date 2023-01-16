@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -18,15 +19,15 @@ describe(import.meta.url, () => {
     it(
       'should construct a typescript module',
       async () => {
-        const sourceFile = makeHtmlModule(
+        const filePath = join(exampleDirectory, 'index.html')
+        const sourceFile = await makeHtmlModule({
           project,
-          join(exampleDirectory, 'index.html'),
-          join(exampleDirectory, 'server.ts'),
-          join(exampleDirectory, 'dist/server'),
-          join(exampleDirectory, 'dist/client'),
-        )
-
-        // TODO: add some assertions
+          filePath,
+          html: readFileSync(filePath).toString(),
+          importer: join(exampleDirectory, 'browser.ts'),
+          serverOutputDirectory: join(exampleDirectory, 'dist/server'),
+          clientOutputDirectory: join(exampleDirectory, 'dist/client'),
+        })
 
         console.log(sourceFile.getFullText())
       },

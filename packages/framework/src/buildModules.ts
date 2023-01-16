@@ -3,7 +3,7 @@ import { Redirect, RouteMatcher } from '@typed/router'
 
 import type { IntrinsicServices } from './IntrinsicServices.js'
 import type { Module } from './Module.js'
-import { isFallbackFileName, isLayoutFileName } from './fileNames.js'
+import { isEnvironmentFileName, isFallbackFileName, isLayoutFileName } from './fileNames.js'
 
 export type Modules = ReadonlyArray<Module<never, any> | Module<any, any>>
 
@@ -38,7 +38,11 @@ export function pathCardinality(a: string, b: string): number {
   if (isLayoutFileName(a)) return -1
   if (isLayoutFileName(b)) return 1
 
-  // Fallback should be processed second
+  // Environment should be processed second
+  if (isEnvironmentFileName(a)) return -1
+  if (isEnvironmentFileName(b)) return 1
+
+  // Fallback should be processed third
   if (isFallbackFileName(a)) return -1
   if (isFallbackFileName(b)) return 1
 

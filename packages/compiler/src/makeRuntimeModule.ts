@@ -4,6 +4,7 @@ import { dirname, relative } from 'path'
 import type { Project, SourceFile } from 'ts-morph'
 
 import type {
+  EnvironmentSourceFileModule,
   FallbackSourceFileModule,
   LayoutSourceFileModule,
   RedirectSourceFileModule,
@@ -21,6 +22,7 @@ export function makeRuntimeModule(
   moduleTree: ModuleTreeWithFallback,
   importer: string,
   fileName: string,
+  isBrowser: boolean,
 ) {
   const importNames = new Map<string, string>()
   const sourceFile = project.createSourceFile(
@@ -48,6 +50,7 @@ export function makeRuntimeModule(
           moduleTree.fallback,
           getImportName(moduleTree.fallback.sourceFile),
           moduleTree.layout,
+          moduleTree.environment,
         ) +
         ' as const',
     )
@@ -55,11 +58,36 @@ export function makeRuntimeModule(
     appendText(sourceFile, EOL + `export const fallback = null`)
   }
 
+  if (isBrowser) {
+    addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
+    addNamedImport(
+      sourceFile,
+      ['runMatcherWithFallback', 'provideBrowserIntrinsics'],
+      '@typed/framework',
+    )
+    addNamedImport(sourceFile, ['renderInto'], '@typed/html')
+
+    const renderEnvText = moduleTree.environment
+      ? `, Fx.provideSomeLayer(${getImportName(moduleTree.environment.sourceFile)}.environment)`
+      : ''
+
+    appendText(
+      sourceFile,
+      `export const render = <T extends HTMLElement>(parentElement: T) => pipe(runMatcherWithFallback(matcher, fallback), renderInto(parentElement)${renderEnvText}, provideBrowserIntrinsics(window, { parentElement }))`,
+    )
+
+    return sourceFile
+  }
+
   return sourceFile
 
   function addModuleTreeImports(moduleTree: ModuleTreeWithFallback) {
     if (moduleTree.layout) {
       addNamespace(moduleTree.layout.sourceFile)
+    }
+
+    if (moduleTree.environment) {
+      addNamespace(moduleTree.environment.sourceFile)
     }
 
     if (moduleTree.fallback) {
@@ -98,17 +126,16 @@ export function makeRuntimeModule(
   function constructModules(moduleTree: ModuleTree) {
     const toProcess: ModuleTree[] = [moduleTree]
     const modules: string[] = []
-    let layout: LayoutSourceFileModule | undefined
 
     while (toProcess.length > 0) {
       const current = toProcess.shift() as ModuleTree
 
-      if (current.layout) {
-        layout = current.layout
-      }
-
       if (current.modules.length > 0) {
-        modules.push(...current.modules.map((mod) => makeRenderModule(mod, layout)))
+        modules.push(
+          ...current.modules.map((mod) =>
+            makeRenderModule(mod, current.layout, current.environment),
+          ),
+        )
       }
 
       toProcess.push(...current.children)
@@ -120,21 +147,44 @@ export function makeRuntimeModule(
   function makeRenderModule(
     render: RenderSourceFileModule,
     layout?: LayoutSourceFileModule,
+    environment?: EnvironmentSourceFileModule,
   ): string {
     const name = getImportName(render.sourceFile)
-    const layoutOptions = makeLayoutModuleOptions(render.hasLayout ? render : layout)
+    const layoutOptions = makeLayoutModuleOptions(render.hasLayout ? render : layout, environment)
 
     addNamedImport(sourceFile, ['Module'], '@typed/framework')
 
-    if (render.isFx) {
-      addNamedImport(sourceFile, ['constant'], '@fp-ts/data/Function')
+    addNamedImport(
+      sourceFile,
+      [
+        ...(render.isFx ? ['constant'] : []),
+        ...(environment ? [render.isFx ? 'pipe' : 'flow'] : []),
+        ...(layout ? ['pipe'] : []),
+      ],
+      '@fp-ts/data/Function',
+    )
+
+    if (environment) {
+      addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
     }
 
     switch (render._tag) {
       case 'Render/Basic': {
-        return `Module.make(${name}.route, ${
-          render.isFx ? `constant(${name}.main)` : `${name}.main`
-        }${layoutOptions ? `, { ${layoutOptions} }` : ''})`
+        const mainText = render.isFx
+          ? environment
+            ? `constant(pipe(${name}.main, Fx.provideSomeLayer(${getImportName(
+                environment.sourceFile,
+              )}.environment)))`
+            : `constant(${name}.main)`
+          : environment
+          ? `flow(${name}.main, Fx.provideSomeLayer(${getImportName(
+              environment.sourceFile,
+            )}.environment))`
+          : `${name}.main`
+
+        return `Module.make(${name}.route, ${mainText}${
+          layoutOptions ? `, { ${layoutOptions} }` : ''
+        })`
       }
       case 'Render/Environment': {
         addNamespaceImport(sourceFile, 'Route', '@typed/route')
@@ -145,10 +195,18 @@ export function makeRuntimeModule(
           '@fp-ts/data/Function',
         )
 
-        return `Module.make(pipe(${name}.route, Route.provideSomeLayer(${name}.environment)), ${
+        const routeEnvText = environment
+          ? `, Route.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
+          : ''
+
+        const mainEnvText = environment
+          ? `, Fx.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
+          : ''
+
+        return `Module.make(pipe(${name}.route${routeEnvText}, Route.provideSomeLayer(${name}.environment)), ${
           render.isFx
-            ? `constant(pipe(${name}.main, Fx.provideSomeLayer(${name}.environment)))`
-            : `flow(${name}.main, Fx.provideSomeLayer(${name}.environment))`
+            ? `constant(pipe(${name}.main${mainEnvText}, Fx.provideSomeLayer(${name}.environment)))`
+            : `flow(${name}.main${mainEnvText}, Fx.provideSomeLayer(${name}.environment))`
         } ${layoutOptions ? `, { ${layoutOptions} }` : ''})`
       }
     }
@@ -156,6 +214,7 @@ export function makeRuntimeModule(
 
   function makeLayoutModuleOptions(
     mod?: FallbackSourceFileModule | RenderSourceFileModule | LayoutSourceFileModule,
+    environment?: EnvironmentSourceFileModule,
   ): string {
     if (!mod) {
       return ''
@@ -167,14 +226,22 @@ export function makeRuntimeModule(
       case 'Fallback/Basic':
       case 'Render/Basic':
       case 'Layout/Basic':
-        return `layout: ${name}.layout`
+        return environment
+          ? `layout: pipe(${name}.layout, Fx.provideSomeLayer(${getImportName(
+              environment.sourceFile,
+            )}.environment))`
+          : `layout: ${name}.layout`
       case 'Fallback/Environment':
       case 'Render/Environment':
       case 'Layout/Environment': {
         addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
         addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
 
-        return `layout: pipe(${name}.layout, Fx.provideSomeLayer(${name}.environment))`
+        const layoutEnvText = environment
+          ? `, Fx.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
+          : ''
+
+        return `layout: pipe(${name}.layout${layoutEnvText}, Fx.provideSomeLayer(${name}.environment))`
       }
     }
 
@@ -190,12 +257,23 @@ export function makeRuntimeModule(
     fallback: FallbackSourceFileModule | RedirectSourceFileModule,
     name: string,
     layout: LayoutSourceFileModule | undefined,
+    environment: EnvironmentSourceFileModule | undefined,
   ) {
     switch (fallback._tag) {
       case 'Fallback/Basic': {
         const layoutOptions = makeLayoutModuleOptions(fallback.hasLayout ? fallback : layout)
         return `export const fallback = { type: 'Renderable', fallback: ${
-          fallback.isFx ? `() => ${name}.fallback` : `${name}.fallback`
+          fallback.isFx
+            ? environment
+              ? `() => pipe(${name}.fallback, Fx.provideSomeLayer(${getImportName(
+                  environment.sourceFile,
+                )}.environment))`
+              : `() => ${name}.fallback`
+            : environment
+            ? `flow(${name}.fallback, Fx.provideSomeLayer(${getImportName(
+                environment.sourceFile,
+              )}.environment))`
+            : `${name}.fallback`
         }${layoutOptions ? `, ${layoutOptions}` : ''} }`
       }
       case 'Fallback/Environment': {
@@ -207,22 +285,35 @@ export function makeRuntimeModule(
         )
         const layoutOptions = makeLayoutModuleOptions(fallback.hasLayout ? fallback : layout)
 
+        const mainEnvText = environment
+          ? `, Fx.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
+          : ''
+
         return `export const fallback = { type: 'Renderable', fallback: ${
           fallback.isFx
-            ? `constant(pipe(${name}.fallback, Fx.provideSomeLayer(${name}.environment)))`
-            : `flow(${name}.fallback, Fx.provideSomeLayer(${name}.environment))`
+            ? `constant(pipe(${name}.fallback${mainEnvText}, Fx.provideSomeLayer(${name}.environment)))`
+            : `flow(${name}.fallback${mainEnvText}, Fx.provideSomeLayer(${name}.environment))`
         }${layoutOptions ? `, ${layoutOptions}` : ''} }`
       }
-      case 'Redirect/Basic':
-        return `export const redirect = { type: 'Redirect', route: ${name}.route${
+      case 'Redirect/Basic': {
+        const routeText = environment
+          ? `pipe(${name}.route, Route.provideSomeLayer(${name}.environment))`
+          : `${name}.route`
+
+        return `export const redirect = { type: 'Redirect', route: ${routeText}${
           fallback.hasParams ? `, params: ${name}.params` : ``
         } }`
+      }
       case 'Redirect/Environment': {
         addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
         addNamespaceImport(sourceFile, 'Route', '@typed/route')
         addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
 
-        return `export const redirect = { type: 'Redirect', route: pipe(${name}.route, Route.provideSomeLayer(${name}.environment))${
+        const routeEnvText = environment
+          ? `, Route.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
+          : ''
+
+        return `export const redirect = { type: 'Redirect', route: pipe(${name}.route${routeEnvText}, Route.provideSomeLayer(${name}.environment))${
           fallback.hasParams ? `, params: ${name}.params` : ``
         } }`
       }

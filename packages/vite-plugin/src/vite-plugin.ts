@@ -5,7 +5,6 @@ import { basename, dirname, join, relative, resolve } from 'path'
 import effectTransformer from '@effect/language-service/transformer'
 import {
   setupTsProject,
-  makeBrowserModule,
   makeHtmlModule,
   makeRuntimeModule,
   readDirectory,
@@ -217,16 +216,14 @@ export default function makePlugin({
     // Setup the TypeScript project if it hasn't been already
     setupProject()
 
-    const mod = isBrowser
-      ? makeBrowserModule(project, moduleTree, importer, filePath)
-      : makeRuntimeModule(project, moduleTree, importer, filePath)
+    const sourceFile = makeRuntimeModule(project, moduleTree, importer, filePath, isBrowser)
 
     info(`Built ${moduleType} module for ${relativeDirectory}.`)
 
-    filePathToModule.set(filePath, mod)
+    filePathToModule.set(filePath, sourceFile)
 
     if (saveGeneratedModules) {
-      await mod.save()
+      await sourceFile.save()
     }
 
     return filePath

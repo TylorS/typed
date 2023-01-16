@@ -1,6 +1,6 @@
 /// <reference types="@typed/framework" />
 
-import { addAssetDirectories, run } from '@typed/framework/express'
+import { addAssetDirectories, run, registerFetchHandler } from '@typed/framework/express'
 import express from 'express'
 // HTML modules are transformed by our vite plugin .
 // See @typed/framework/src/HtmlModule.ts to see its full signature.
@@ -11,6 +11,8 @@ import * as quuxHtml from 'html:./other'
 import * as quuxPages from 'runtime:./other-pages'
 import * as pages from 'runtime:./pages'
 import httpDevServer from 'vavite/http-dev-server'
+
+import * as hello from './api/hello.js'
 
 const app = express()
 
@@ -24,6 +26,8 @@ if (import.meta.env.PROD) {
 // The DOM is our API so even on the server, we need to provide the root
 // element we should render into.
 const getParentElement = (d: Document) => d.getElementById('application')
+
+registerFetchHandler(app, hello.handler)
 
 // Register a route handler
 // Here we utilize run from @typed/framework/express which understands how to stitch

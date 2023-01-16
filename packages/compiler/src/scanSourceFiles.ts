@@ -1,6 +1,11 @@
 import { pipe } from '@fp-ts/data/Function'
 import * as O from '@fp-ts/data/Option'
-import { pathCardinality, isFallbackFileName, isLayoutFileName } from '@typed/framework'
+import {
+  pathCardinality,
+  isFallbackFileName,
+  isLayoutFileName,
+  isEnvironmentFileName,
+} from '@typed/framework'
 import type { ExportedDeclarations, Project, SourceFile, Type } from 'ts-morph'
 
 import type { SourceFileModule } from './SourceFileModule.js'
@@ -47,6 +52,8 @@ export function parseSourceFileModule(sourceFile: SourceFile): O.Option<SourceFi
     return parseLayoutSourceFileModule(sourceFile, exportedDeclarations)
   } else if (isFallbackFileName(fileName)) {
     return parseFallbackSourceFileModule(sourceFile, exportedDeclarations)
+  } else if (isEnvironmentFileName(fileName)) {
+    return parseEnvironmentSourceFileModule(sourceFile, exportedDeclarations)
   }
 
   return parseRenderSourceFileModule(sourceFile, exportedDeclarations)
@@ -271,4 +278,17 @@ function typeIsFxReturningFunction(type: Type) {
   }
 
   return typeIsFx(callSignatures[0].getReturnType())
+}
+
+function parseEnvironmentSourceFileModule(
+  sourceFile: SourceFile,
+  exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
+): O.Option<SourceFileModule> {
+  const environment = getAndVerifyEnvironment(sourceFile, exportedDeclarations, 'environment')
+
+  if (O.isNone(environment)) {
+    return O.none
+  }
+
+  return O.some({ _tag: 'Environment', sourceFile })
 }

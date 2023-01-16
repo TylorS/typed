@@ -26,6 +26,8 @@ describe(import.meta.url, () => {
           project,
           moduleTree,
           join(exampleDirectory, 'browser.ts'),
+          join(exampleDirectory, 'example.ts'),
+          false,
         )
 
         // TODO: add some assertions
