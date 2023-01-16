@@ -159,7 +159,7 @@ export function makeRuntimeModule(
       [
         ...(render.isFx ? ['constant'] : []),
         ...(environment ? [render.isFx ? 'pipe' : 'flow'] : []),
-        ...(layout ? ['pipe'] : []),
+        ...(layout && environment ? ['pipe'] : []),
       ],
       '@fp-ts/data/Function',
     )
