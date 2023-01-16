@@ -145,7 +145,7 @@ export function makeRuntimeModule(
           '@fp-ts/data/Function',
         )
 
-        return `Module.make(pipe(${name}.route, Route.provideLayer(${name}.environment)), ${
+        return `Module.make(pipe(${name}.route, Route.provideSomeLayer(${name}.environment)), ${
           render.isFx
             ? `constant(pipe(${name}.main, Fx.provideSomeLayer(${name}.environment)))`
             : `flow(${name}.main, Fx.provideSomeLayer(${name}.environment))`
@@ -222,7 +222,7 @@ export function makeRuntimeModule(
         addNamespaceImport(sourceFile, 'Route', '@typed/route')
         addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
 
-        return `export const redirect = { type: 'Redirect', route: pipe(${name}.route, Route.provideLayer(${name}.environment))${
+        return `export const redirect = { type: 'Redirect', route: pipe(${name}.route, Route.provideSomeLayer(${name}.environment))${
           fallback.hasParams ? `, params: ${name}.params` : ``
         } }`
       }

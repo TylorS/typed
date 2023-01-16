@@ -243,7 +243,7 @@ export const makeRouter = (
 export const live = (
   currentPath?: Fx.RefSubject<string>,
 ): Layer.Layer<Location | History | Window | Document, never, Router<never, string>> =>
-  Router.layerSoped(makeRouter(currentPath))
+  Router.layerScoped(makeRouter(currentPath))
 
 export function getCurrentPathFromLocation(location: Location | HTMLAnchorElement | URL) {
   return location.pathname + location.search + location.hash
