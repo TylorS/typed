@@ -1,6 +1,6 @@
+import { pipe } from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx'
 import { html, makeElementRef } from '@typed/html'
-import { pipe } from 'node_modules/@fp-ts/data/Function.js'
 
 /**
  * This is an @typed/html example which allows you to access a DOM reference
