@@ -8,7 +8,8 @@ import {
 } from '@typed/framework'
 import type { ExportedDeclarations, Project, SourceFile, Type } from 'ts-morph'
 
-import type { SourceFileModule } from './SourceFileModule.js'
+import type { ApiSourceFileModule } from './ApiModuleTree.js'
+import type { EnvironmentSourceFileModule, SourceFileModule } from './SourceFileModule.js'
 
 /**
  * Scans over the source files and returns the inferred type of FileSystemModule it
@@ -283,7 +284,7 @@ function typeIsFxReturningFunction(type: Type) {
 function parseEnvironmentSourceFileModule(
   sourceFile: SourceFile,
   exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
-): O.Option<SourceFileModule> {
+): O.Option<EnvironmentSourceFileModule> {
   const environment = getAndVerifyEnvironment(sourceFile, exportedDeclarations, 'environment')
 
   if (O.isNone(environment)) {
@@ -291,4 +292,93 @@ function parseEnvironmentSourceFileModule(
   }
 
   return O.some({ _tag: 'Environment', sourceFile })
+}
+
+export function scanApiSourceFiles(
+  fileGlobs: readonly string[],
+  project: Project,
+): ReadonlyArray<ApiSourceFileModule | EnvironmentSourceFileModule> {
+  const apiModules: Array<ApiSourceFileModule | EnvironmentSourceFileModule> = []
+  const sourceFiles = project
+    .getSourceFiles(fileGlobs)
+    .sort((a, b) => pathCardinality(a.getFilePath(), b.getFilePath()))
+
+  for (const sourceFile of sourceFiles) {
+    const apiModule = parseApiSourceFile(sourceFile)
+
+    if (O.isNone(apiModule)) {
+      console.log(`Unable to parse API information from ${sourceFile.getFilePath()}`)
+
+      continue
+    }
+
+    apiModules.push(apiModule.value)
+  }
+
+  return apiModules
+}
+
+function parseApiSourceFile(
+  sourceFile: SourceFile,
+): O.Option<ApiSourceFileModule | EnvironmentSourceFileModule> {
+  const filePath = sourceFile.getFilePath()
+  const exportedDeclarations = sourceFile.getExportedDeclarations()
+
+  if (exportedDeclarations.size === 0) {
+    return O.none
+  }
+
+  if (isEnvironmentFileName(filePath)) {
+    return parseEnvironmentSourceFileModule(sourceFile, exportedDeclarations)
+  }
+
+  return parseApiModule(sourceFile, exportedDeclarations)
+}
+
+function parseApiModule(
+  sourceFile: SourceFile,
+  exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
+): O.Option<ApiSourceFileModule> {
+  const environment = getAndVerifyEnvironment(sourceFile, exportedDeclarations, 'API')
+  const handlerExportNames: string[] = []
+
+  for (const exportName of exportedDeclarations.keys()) {
+    if (exportName === 'environment') {
+      continue
+    }
+
+    const handler = getDeclarationOfType(
+      sourceFile,
+      exportedDeclarations,
+      typeIsFetchHandler,
+      exportName,
+      'API',
+    )
+
+    if (O.isNone(handler)) {
+      continue
+    }
+
+    handlerExportNames.push(exportName)
+  }
+
+  return O.some({
+    _tag: 'Api',
+    sourceFile,
+    handlerExportNames,
+    hasEnvironment: O.isSome(environment),
+  })
+}
+
+function typeIsFetchHandler(type: Type) {
+  const route = type.getProperty('route')?.getDeclaredType()
+  const handler = type.getProperty('handler')
+
+  return !!(
+    route &&
+    typeIsRoute(route) &&
+    handler &&
+    handler.getDeclaredType().getCallSignatures().length > 0 &&
+    type.getProperty('httpMethods')
+  )
 }

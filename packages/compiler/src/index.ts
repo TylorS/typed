@@ -1,5 +1,7 @@
+export * from './ApiModuleTree.js'
 export * from './makeHtmlModule.js'
 export * from './makeRuntimeModule.js'
+export * from './readApiModules.js'
 export * from './readDirectory.js'
 export * from './cleanHtml.js'
 export * from './readModules.js'
