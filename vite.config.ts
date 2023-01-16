@@ -8,7 +8,7 @@ import { defineConfig } from 'vite'
 
 import typed from './packages/vite-plugin/src/vite-plugin'
 
-export default defineConfig(() => ({
+export default defineConfig({
   root: join(__dirname, 'example'),
   resolve: {
     // Only necessary because developing in a monorepo dogfooding my own source code.
@@ -41,4 +41,4 @@ export default defineConfig(() => ({
     sourcemap: true,
     minify: true,
   },
-}))
+})
