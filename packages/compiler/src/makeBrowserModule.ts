@@ -8,8 +8,9 @@ export function makeBrowserModule(
   project: Project,
   moduleTree: ModuleTreeWithFallback,
   importer: string,
+  fileName: string,
 ): SourceFile {
-  const sourceFile = makeRuntimeModule(project, moduleTree, importer)
+  const sourceFile = makeRuntimeModule(project, moduleTree, importer, fileName)
 
   addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
   addNamedImport(

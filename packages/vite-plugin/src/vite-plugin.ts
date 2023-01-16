@@ -152,7 +152,6 @@ export default function makePlugin({
 
     return {
       ...project.getCompilerOptions(),
-      allowSyntheticDefaultImports: false,
       allowJs: true,
     }
   }
@@ -200,22 +199,23 @@ export default function makePlugin({
   const buildRenderModule = async (importer: string, id: string) => {
     const moduleDirectory = resolve(dirname(importer), parseModulesFromId(id, importer))
     const relativeDirectory = relative(sourceDirectory, moduleDirectory)
+    const isBrowser = id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)
+    const moduleType = isBrowser ? 'browser' : 'runtime'
+    const filePath = `${moduleDirectory}.${moduleType}.__generated__.ts`
+
+    info(`Building ${moduleType} module for ${relativeDirectory}...`)
+
     const directory = await readDirectory(moduleDirectory)
     const moduleTree = readModules(project, directory)
-    const isBrowser = id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)
 
     // Setup the TypeScript project if it hasn't been already
     setupProject()
 
-    info(`Building ${isBrowser ? 'browser' : 'runtime'} module for ${relativeDirectory}...`)
-
     const mod = isBrowser
-      ? makeBrowserModule(project, moduleTree, importer)
-      : makeRuntimeModule(project, moduleTree, importer)
+      ? makeBrowserModule(project, moduleTree, importer, filePath)
+      : makeRuntimeModule(project, moduleTree, importer, filePath)
 
-    info(`Built ${isBrowser ? 'browser' : 'runtime'} module for ${relativeDirectory}.`)
-
-    const filePath = mod.getFilePath()
+    info(`Built ${moduleType} module for ${relativeDirectory}.`)
 
     filePathToModule.set(filePath, mod)
 
@@ -265,9 +265,6 @@ export default function makePlugin({
 
   const virtualModulePlugin = {
     name: PLUGIN_NAME,
-
-    enforce: 'pre',
-
     config(config: UserConfig, env: ConfigEnv) {
       // Configure Build steps when running with vavite
       if (env.mode === 'multibuild') {
@@ -388,7 +385,7 @@ export default function makePlugin({
     },
 
     transform(text: string, id: string) {
-      if (/.tsx?$/.test(id)) {
+      if (/.tsx?$/.test(id) || /.m?jsx?$/.test(id)) {
         const output = ts.transpileModule(text, {
           fileName: id,
           compilerOptions: transpilerCompilerOptions(),
