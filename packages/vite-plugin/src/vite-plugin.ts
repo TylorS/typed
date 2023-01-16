@@ -60,6 +60,11 @@ export interface PluginOptions {
    * effectTsOptions.debug is provided it will override this value.
    */
   readonly debug?: boolean
+
+  /**
+   * If true, will configure the plugin to save all the generated files to disk
+   */
+  readonly saveGeneratedModules?: boolean
 }
 
 const cwd = process.cwd()
@@ -79,7 +84,8 @@ export default function makePlugin({
   clientOutputDirectory,
   serverOutputDirectory,
   htmlFileGlobs,
-  debug,
+  debug = false,
+  saveGeneratedModules = false,
 }: PluginOptions): PluginOption[] {
   // Resolved options
   const sourceDirectory = resolve(cwd, directory)
@@ -219,6 +225,10 @@ export default function makePlugin({
 
     filePathToModule.set(filePath, mod)
 
+    if (saveGeneratedModules) {
+      await mod.save()
+    }
+
     return filePath
   }
 
@@ -259,6 +269,10 @@ export default function makePlugin({
     const filePath = sourceFile.getFilePath()
 
     filePathToModule.set(filePath, sourceFile)
+
+    if (saveGeneratedModules) {
+      await sourceFile.save()
+    }
 
     return filePath
   }
