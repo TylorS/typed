@@ -46,7 +46,7 @@ export function RouteMatch<R, P extends string, R2, E2, R3, E3>(
       ),
     provideLayer: (layer) =>
       RouteMatch(
-        Route.provideLayer(layer)(route),
+        Route.provideSomeLayer(layer)(route),
         flow(match, Fx.provideSomeLayer(layer)),
         layout ? Fx.provideSomeLayer(layer)(layout) : undefined,
       ),

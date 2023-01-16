@@ -5,6 +5,7 @@ export type SourceFileModule =
   | LayoutSourceFileModule
   | RedirectSourceFileModule
   | FallbackSourceFileModule
+  | EnvironmentSourceFileModule
 
 export type RenderSourceFileModule = BaseRenderModule | RenderModuleWithEnvironment
 
@@ -64,6 +65,11 @@ export interface FallbackModuleWithEnvironment {
   readonly hasLayout: boolean
 }
 
+export interface EnvironmentSourceFileModule {
+  readonly _tag: 'Environment'
+  readonly sourceFile: SourceFile
+}
+
 export function isLayoutModule(module: SourceFileModule): module is LayoutSourceFileModule {
   return module._tag === 'Layout/Basic' || module._tag === 'Layout/Environment'
 }
@@ -78,4 +84,10 @@ export function isRedirectModule(module: SourceFileModule): module is RedirectSo
 
 export function isFallbackModule(module: SourceFileModule): module is FallbackSourceFileModule {
   return module._tag === 'Fallback/Basic' || module._tag === 'Fallback/Environment'
+}
+
+export function isEnvironmentModule(
+  module: SourceFileModule,
+): module is EnvironmentSourceFileModule {
+  return module._tag === 'Environment'
 }

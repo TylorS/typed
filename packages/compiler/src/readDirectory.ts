@@ -1,10 +1,20 @@
 import { promises } from 'fs'
-import { join } from 'path'
+import { dirname, join } from 'path'
 
 import { left, right } from '@fp-ts/data/Either'
 import * as RA from '@fp-ts/data/ReadonlyArray'
 
 export async function readDirectory(directory: string): Promise<Directory> {
+  const stat = await promises.stat(directory)
+
+  if (stat.isFile()) {
+    return {
+      directory: dirname(directory),
+      files: [directory],
+      directories: [],
+    }
+  }
+
   const paths = await promises.readdir(directory)
   const [files, directories] = RA.separate(
     await Promise.all(

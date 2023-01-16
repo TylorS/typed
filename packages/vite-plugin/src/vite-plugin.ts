@@ -5,14 +5,13 @@ import { basename, dirname, join, relative, resolve } from 'path'
 import effectTransformer from '@effect/language-service/transformer'
 import {
   setupTsProject,
-  makeBrowserModule,
   makeHtmlModule,
   makeRuntimeModule,
   readDirectory,
   readModules,
 } from '@typed/compiler'
 import glob from 'fast-glob'
-import { Project, SourceFile, ts } from 'ts-morph'
+import { Project, SourceFile, ts, type CompilerOptions } from 'ts-morph'
 // @ts-expect-error Unable to resolve types w/ NodeNext
 import vavite from 'vavite'
 import type { ConfigEnv, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
@@ -60,6 +59,11 @@ export interface PluginOptions {
    * effectTsOptions.debug is provided it will override this value.
    */
   readonly debug?: boolean
+
+  /**
+   * If true, will configure the plugin to save all the generated files to disk
+   */
+  readonly saveGeneratedModules?: boolean
 }
 
 const cwd = process.cwd()
@@ -79,7 +83,8 @@ export default function makePlugin({
   clientOutputDirectory,
   serverOutputDirectory,
   htmlFileGlobs,
-  debug,
+  debug = false,
+  saveGeneratedModules = false,
 }: PluginOptions): PluginOption[] {
   // Resolved options
   const sourceDirectory = resolve(cwd, directory)
@@ -103,9 +108,9 @@ export default function makePlugin({
     debug: debug ? defaultIncludeExcludeTs : {},
   }
 
-  const virtualIds = new Set<string>()
   const dependentsMap = new Map<string, Set<string>>()
-  const sourceFilePathToVirtualId = new Map<string, string>()
+  const filePathToModule = new Map<string, SourceFile>()
+
   let devServer: ViteDevServer
   let project: Project
   let transformers: ts.CustomTransformers
@@ -127,8 +132,12 @@ export default function makePlugin({
   ]
 
   const setupProject = () => {
+    if (project) {
+      return
+    }
+
     info(`Setting up TypeScript project...`)
-    const project = setupTsProject(tsConfigFilePath)
+    project = setupTsProject(tsConfigFilePath)
     info(`Setup TypeScript project.`)
 
     // Setup transformer for virtual modules.
@@ -141,8 +150,15 @@ export default function makePlugin({
         ).before,
       ],
     }
+  }
 
-    return project
+  const transpilerCompilerOptions = (): CompilerOptions => {
+    setupProject()
+
+    return {
+      ...project.getCompilerOptions(),
+      allowJs: true,
+    }
   }
 
   const handleFileChange = async (path: string, event: 'create' | 'update' | 'delete') => {
@@ -165,11 +181,10 @@ export default function makePlugin({
             const dependents = dependentsMap.get(path.replace(/.ts(x)?/, '.js$1'))
 
             for (const dependent of dependents ?? []) {
-              const id = sourceFilePathToVirtualId.get(dependent) ?? dependent
-              const mod = devServer.moduleGraph.getModuleById(id)
+              const mod = devServer.moduleGraph.getModuleById(dependent)
 
               if (mod) {
-                info(`reloading ${id}`)
+                info(`reloading ${dependent}`)
 
                 await devServer.reloadModule(mod)
               }
@@ -186,11 +201,81 @@ export default function makePlugin({
     }
   }
 
+  const buildRenderModule = async (importer: string, id: string) => {
+    const moduleDirectory = resolve(dirname(importer), parseModulesFromId(id, importer))
+    const relativeDirectory = relative(sourceDirectory, moduleDirectory)
+    const isBrowser = id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)
+    const moduleType = isBrowser ? 'browser' : 'runtime'
+    const filePath = `${moduleDirectory}.${moduleType}.__generated__.ts`
+
+    info(`Building ${moduleType} module for ${relativeDirectory}...`)
+
+    const directory = await readDirectory(moduleDirectory)
+    const moduleTree = readModules(project, directory)
+
+    // Setup the TypeScript project if it hasn't been already
+    setupProject()
+
+    const sourceFile = makeRuntimeModule(project, moduleTree, importer, filePath, isBrowser)
+
+    info(`Built ${moduleType} module for ${relativeDirectory}.`)
+
+    filePathToModule.set(filePath, sourceFile)
+
+    if (saveGeneratedModules) {
+      await sourceFile.save()
+    }
+
+    return filePath
+  }
+
+  const buildHtmlModule = async (importer: string, id: string) => {
+    const htmlFileName = parseModulesFromId(id, importer)
+    const htmlFilePath = resolve(dirname(importer), htmlFileName + '.html')
+    const relativeHtmlFilePath = relative(sourceDirectory, htmlFilePath)
+    let html = ''
+
+    info(`Building html module for ${relativeHtmlFilePath}...`)
+
+    // If there's a dev server, use it to transform the HTML for development
+    if (devServer) {
+      html = (await readFile(htmlFilePath, 'utf-8')).toString()
+      html = await devServer.transformIndexHtml(
+        getRelativePath(sourceDirectory, htmlFilePath),
+        html,
+      )
+    } else {
+      // Otherwise, read the already transformed file from the output directory.
+      html = (
+        await readFile(resolve(resolvedClientOutputDirectory, relativeHtmlFilePath), 'utf-8')
+      ).toString()
+    }
+
+    const sourceFile = await makeHtmlModule({
+      project,
+      filePath: htmlFilePath,
+      html,
+      importer,
+      serverOutputDirectory: resolvedServerOutputDirectory,
+      clientOutputDirectory: resolvedClientOutputDirectory,
+      devServer,
+    })
+
+    info(`Built html module for ${relativeHtmlFilePath}.`)
+
+    const filePath = sourceFile.getFilePath()
+
+    filePathToModule.set(filePath, sourceFile)
+
+    if (saveGeneratedModules) {
+      await sourceFile.save()
+    }
+
+    return filePath
+  }
+
   const virtualModulePlugin = {
     name: PLUGIN_NAME,
-
-    enforce: 'pre',
-
     config(config: UserConfig, env: ConfigEnv) {
       // Configure Build steps when running with vavite
       if (env.mode === 'multibuild') {
@@ -260,110 +345,46 @@ export default function makePlugin({
     },
 
     async resolveId(id: string, importer?: string) {
-      if (id.startsWith(RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX)) {
-        const virtualId =
-          VIRTUAL_ID_PREFIX + `${importer}?modules=${parseModulesFromId(id, importer)}`
-
-        virtualIds.add(virtualId)
-
-        return virtualId
+      if (!importer) {
+        return
       }
 
-      if (id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)) {
-        const virtualId =
-          VIRTUAL_ID_PREFIX + `${importer}?modules=${parseModulesFromId(id, importer)}&browser`
+      if (
+        id.startsWith(RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX) ||
+        id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)
+      ) {
+        setupProject()
 
-        virtualIds.add(virtualId)
-
-        return virtualId
+        return VIRTUAL_ID_PREFIX + (await buildRenderModule(importer, id))
       }
 
       if (id.startsWith(HTML_VIRTUAL_ENTRYPOINT_PREFIX)) {
-        const virtualId =
-          VIRTUAL_ID_PREFIX + `${importer}?source=${parseModulesFromId(id, importer)}`
+        setupProject()
 
-        virtualIds.add(virtualId)
-
-        return virtualId
+        return VIRTUAL_ID_PREFIX + (await buildHtmlModule(importer, id))
       }
+
+      importer = importer.replace(VIRTUAL_ID_PREFIX, '')
 
       // Virtual modules have problems with resolving relative paths due to not
       // having a real directory to work with thus the need to resolve them manually.
-      if (importer?.startsWith(VIRTUAL_ID_PREFIX) && id.startsWith('.')) {
+      if (filePathToModule.has(importer) && id.startsWith('.')) {
         return findRelativeFile(importer, id)
       }
     },
 
     async load(id: string) {
-      if (virtualIds.has(id)) {
-        // Setup the TypeScript project if it hasn't been already
-        if (!project) {
-          project = setupProject()
-        }
+      id = id.replace(VIRTUAL_ID_PREFIX, '')
 
-        // Build our virtual module as a SourceFile
-        const sourceFile: SourceFile = await buildVirtualModule(
-          project,
-          id,
-          sourceDirectory,
-          resolvedServerOutputDirectory,
-          resolvedClientOutputDirectory,
-          devServer,
-        )
-        const filePath = sourceFile.getFilePath()
+      const sourceFile = filePathToModule.get(id) ?? project?.getSourceFile(id)
 
-        sourceFilePathToVirtualId.set(filePath, id)
+      if (sourceFile) {
+        logDiagnostics(project, sourceFile, sourceDirectory, id)
 
-        // If we're in a development evnironment, we need to track the dependencies of
-        // our virtual module so we can reload them when they change.
-        if (devServer) {
-          const importModuleSpecifiers = await Promise.all(
-            sourceFile.getLiteralsReferencingOtherSourceFiles().map((l) => l.getLiteralText()),
-          )
-
-          for (const specifier of importModuleSpecifiers) {
-            let resolved =
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              (await virtualModulePlugin.resolveId!.apply(this, [specifier, filePath])) || specifier
-
-            if (resolved.startsWith('.')) {
-              resolved = resolve(dirname(filePath), resolved)
-            }
-
-            const current = dependentsMap.get(resolved) ?? new Set()
-
-            current.add(filePath)
-            dependentsMap.set(resolved, current)
-          }
-        }
-
-        logDiagnostics(project, sourceFile, sourceDirectory, filePath)
-
-        const output = ts.transpileModule(sourceFile.getFullText(), {
-          compilerOptions: project.getCompilerOptions(),
-          transformers,
-        })
-
-        return {
-          code: output.outputText,
-          map: output.sourceMapText,
-          moduleSideEffects: false,
-        }
-      } else if (/\.tsx?$/.test(id)) {
-        if (!project) {
-          project = setupProject()
-        }
-
-        const sourceFile =
-          project.getSourceFile(id) ??
-          project.createSourceFile(id, await readFile(id).then((b) => b.toString()))
-
-        const output = ts.transpileModule(sourceFile.getFullText(), {
-          compilerOptions: {
-            ...project.getCompilerOptions(),
-            inlineSourceMap: false,
-            sourceMap: true,
-          },
+        const text = sourceFile.getFullText()
+        const output = ts.transpileModule(text, {
+          fileName: id,
+          compilerOptions: transpilerCompilerOptions(),
           transformers,
         })
 
@@ -373,20 +394,12 @@ export default function makePlugin({
         }
       }
     },
-    transform(code, id) {
-      if (/\.tsx?$/.test(id)) {
-        if (!project) {
-          project = setupProject()
-        }
 
-        const sourceFile = project.getSourceFile(id) ?? project.createSourceFile(id, code)
-
-        const output = ts.transpileModule(sourceFile.getFullText(), {
-          compilerOptions: {
-            ...project.getCompilerOptions(),
-            inlineSourceMap: false,
-            sourceMap: true,
-          },
+    transform(text: string, id: string) {
+      if (/.tsx?$/.test(id) || /.m?jsx?$/.test(id)) {
+        const output = ts.transpileModule(text, {
+          fileName: id,
+          compilerOptions: transpilerCompilerOptions(),
           transformers,
         })
 
@@ -420,76 +433,8 @@ function logDiagnostics(
   }
 }
 
-async function buildVirtualModule(
-  project: Project,
-  id: string,
-  sourceDirectory: string,
-  serverOutputDirectory: string,
-  clientOutputDirectory: string,
-  devServer?: ViteDevServer,
-) {
-  // Parse our virtual ID into the original importer and whatever query was passed to it
-  const [importer, query] = id.split(VIRTUAL_ID_PREFIX)[1].split('?')
-
-  // If the query is for a runtime module, read the directory and transform it into a module.
-  if (query.includes('modules=')) {
-    const moduleDirectory = resolve(dirname(importer), query.split('modules=')[1].split('&')[0])
-    const relativeDirectory = relative(sourceDirectory, moduleDirectory)
-    const directory = await readDirectory(moduleDirectory)
-    const moduleTree = readModules(project, directory)
-    const isBrowser = query.includes('&browser')
-
-    info(`Building ${isBrowser ? 'browser' : 'runtime'} module for ${relativeDirectory}...`)
-
-    const mod = isBrowser
-      ? makeBrowserModule(project, moduleTree, importer)
-      : makeRuntimeModule(project, moduleTree, importer)
-
-    info(`Built ${isBrowser ? 'browser' : 'runtime'} module for ${relativeDirectory}.`)
-
-    return mod
-  }
-
-  // If the query is for an HTML file, read the file and transform it into a module.
-
-  const htmlFile = query.split('source=')[1]
-  const htmlFilePath = resolve(dirname(importer), htmlFile + '.html')
-  const relativeHtmlFilePath = relative(sourceDirectory, htmlFilePath)
-  let html = ''
-
-  info(`Building html module for ${relativeHtmlFilePath}...`)
-
-  // If there's a dev server, use it to transform the HTML for development
-  if (devServer) {
-    html = (await readFile(htmlFilePath, 'utf-8')).toString()
-    html = await devServer.transformIndexHtml(getRelativePath(sourceDirectory, htmlFilePath), html)
-  } else {
-    // Otherwise, read the already transformed file from the output directory.
-    html = (
-      await readFile(
-        resolve(clientOutputDirectory, relative(sourceDirectory, htmlFilePath)),
-        'utf-8',
-      )
-    ).toString()
-  }
-
-  const module = await makeHtmlModule({
-    project,
-    filePath: htmlFilePath,
-    html,
-    importer,
-    serverOutputDirectory,
-    clientOutputDirectory,
-    devServer,
-  })
-
-  info(`Built html module for ${relativeHtmlFilePath}.`)
-
-  return module
-}
-
 function findRelativeFile(importer: string, id: string) {
-  const dir = getVirtualSourceDirectory(importer)
+  const dir = dirname(importer)
   const tsPath = resolve(dir, id.replace(/.js(x)?$/, '.ts$1'))
 
   if (existsSync(tsPath)) {
@@ -501,10 +446,6 @@ function findRelativeFile(importer: string, id: string) {
   if (existsSync(jsPath)) {
     return tsPath
   }
-}
-
-function getVirtualSourceDirectory(id: string) {
-  return dirname(id.split(VIRTUAL_ID_PREFIX)[1].split('?')[0])
 }
 
 function parseModulesFromId(id: string, importer: string | undefined): string {

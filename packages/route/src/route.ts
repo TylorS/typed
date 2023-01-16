@@ -152,7 +152,12 @@ export function provideService<S>(tag: Context.Tag<S>, service: S) {
     Route(route.path, (path) => Effect.provideService(tag)(service)(route.match(path)))
 }
 
-export function provideLayer<R2, S>(layer: Layer.Layer<R2, never, S>) {
+export function provideSomeLayer<R2, S>(layer: Layer.Layer<R2, never, S>) {
   return <R, Path extends string>(route: Route<R, Path>): Route<R2 | Exclude<R, S>, Path> =>
     Route(route.path, (path) => Effect.provideSomeLayer(layer)(route.match(path)))
+}
+
+export function provideLayer<R0, R>(layer: Layer.Layer<R0, never, R>) {
+  return <Path extends string>(route: Route<R, Path>): Route<R0, Path> =>
+    Route(route.path, (path) => Effect.provideLayer(layer)(route.match(path)))
 }

@@ -23,11 +23,12 @@
   "dependencies": {
     "@typed/compiler": "workspace:*",
     "fast-glob": "^3.2.12",
-    "vavite": "^1.5.2",
+    "vavite": "^1.5.3",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.0.3"
   },
   "devDependencies": {
+    "@effect/language-service": "^0.0.15",
     "ts-morph": "^17.0.1",
     "vite": "^4.0.4"
   },

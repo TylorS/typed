@@ -1,4 +1,3 @@
-export * from './makeBrowserModule.js'
 export * from './makeHtmlModule.js'
 export * from './makeRuntimeModule.js'
 export * from './readDirectory.js'
