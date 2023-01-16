@@ -162,7 +162,7 @@ export default function makePlugin({
   }
 
   const handleFileChange = async (path: string, event: 'create' | 'update' | 'delete') => {
-    if (/\.tsx?$/.test(path) || /\.jsx?$/.test(path)) {
+    if (/\.tsx?$/.test(path)) {
       switch (event) {
         case 'create': {
           project.addSourceFileAtPath(path)

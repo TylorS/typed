@@ -7,18 +7,14 @@ import * as Option from '@fp-ts/data/Option'
 import type { ParamsOf } from '@typed/path'
 import type express from 'express'
 
-import { ALL_HTTP_METHODS, type FetchHandler } from './FetchHandler.js'
+import type { FetchHandler } from './FetchHandler.js'
 
 export function registerFetchHandler<Path extends string>(
   app: express.Express,
   fetchHandler: FetchHandler<never, Path>,
 ) {
-  if (fetchHandler.httpMethods.size === ALL_HTTP_METHODS.size) {
-    app.use(fetchHandler.route.path, runFetchHandler(fetchHandler))
-  } else {
-    for (const method of fetchHandler.httpMethods) {
-      app[method](fetchHandler.route.path, runFetchHandler(fetchHandler))
-    }
+  for (const method of fetchHandler.httpMethods) {
+    app[method](fetchHandler.route.path, runFetchHandler(fetchHandler))
   }
 }
 

@@ -29,7 +29,7 @@ export interface FetchHandler<R, Path extends string> {
     layer: Layer<RI, never, RO>,
   ) => FetchHandler<RI | Exclude<R, RO>, Path>
 
-  readonly setHttpMethods: (httpMethods: ReadonlySet<HttpMethod>) => FetchHandler<R, Path>
+  readonly setHttpMethods: (httpMethods: Iterable<HttpMethod>) => FetchHandler<R, Path>
 }
 
 export function FetchHandler<R, Path extends string, R2 = never>(
@@ -48,6 +48,6 @@ export function FetchHandler<R, Path extends string, R2 = never>(
         pipe(route, Route.provideSomeLayer(layer)),
         flow(handler, provideSomeLayer(layer)),
       ),
-    setHttpMethods: (httpMethods) => FetchHandler(route, handler, httpMethods),
+    setHttpMethods: (httpMethods) => FetchHandler(route, handler, new Set(httpMethods)),
   }
 }
