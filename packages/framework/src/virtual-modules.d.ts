@@ -84,7 +84,7 @@ declare module 'api:*' {
 declare module 'express:*' {
   import type express from 'express'
 
-  export const register: (app: express.Express) => void
+  export const router: express.Router
 
   export * from 'api:*'
 }

@@ -10,11 +10,11 @@ import type express from 'express'
 import type { FetchHandler } from './FetchHandler.js'
 
 export function registerFetchHandler<Path extends string>(
-  app: express.Express,
+  route: express.Router,
   fetchHandler: FetchHandler<never, Path>,
 ) {
   for (const method of fetchHandler.httpMethods) {
-    app[method](fetchHandler.route.path, runFetchHandler(fetchHandler))
+    route[method](fetchHandler.route.path, runFetchHandler(fetchHandler))
   }
 }
 

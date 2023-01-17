@@ -35,7 +35,7 @@ export function makeApiModule(
   )
 
   if (isExpress) {
-    appendText(sourceFile, `export const register = registerHandlers(handlers)`)
+    appendText(sourceFile, `export const router = registerHandlers(handlers)`)
   }
 
   return sourceFile

@@ -27,7 +27,7 @@ if (import.meta.env.PROD) {
 const getParentElement = (d: Document) => d.getElementById('application')
 
 // Register API routes
-api.register(app)
+app.use('/api', api.router)
 
 // Register a route handler
 // Here we utilize run from @typed/framework/express which understands how to stitch
@@ -38,6 +38,8 @@ app.get('/other*', run(quuxPages, quuxHtml, getParentElement))
 
 // Register another handler
 app.get('/*', run(pages, indexHtml, getParentElement))
+
+console.log(app._router.stack.map((x: any) => x.regexp))
 
 // Our vite plugin configures another vite plugin called vavite for you
 // anytime it finds your configured server file.
