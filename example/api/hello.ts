@@ -23,4 +23,6 @@ export const handler = FetchHandler(Route('/hello/:name'), (_, { name }) =>
       ),
     ),
   ),
-).provideLayer(I18N.layerOf({ translate: Effect.succeed }))
+)
+
+export const environment = I18N.layerOf({ translate: Effect.succeed })

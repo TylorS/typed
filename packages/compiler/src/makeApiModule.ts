@@ -82,23 +82,16 @@ export function makeApiModule(
 
       for (const exportName of mod.handlerExportNames) {
         const handlerIdentifier = `${importName}.${exportName}`
+        const inheritedProvider = moduleTree.environment
+          ? `.provideSomeLayer(${getImportName(moduleTree.environment.sourceFile)}.environment)`
+          : ``
 
         if (mod.hasEnvironment) {
-          addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
-          addNamedImport(sourceFile, ['flow'], '@fp-ts/data/Function')
-
-          handlers.push(`${handlerIdentifier}.provideSomeLayer(${importName}.environment)`)
-        } else if (moduleTree.environment) {
-          addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
-          addNamedImport(sourceFile, ['flow'], '@fp-ts/data/Function')
-
-          const environmentImportName = getImportName(moduleTree.environment.sourceFile)
-
           handlers.push(
-            `${handlerIdentifier}.provideSomeLayer(${environmentImportName}.environment)`,
+            `${handlerIdentifier}${inheritedProvider}.provideSomeLayer(${importName}.environment)`,
           )
         } else {
-          handlers.push(handlerIdentifier)
+          handlers.push(handlerIdentifier + inheritedProvider)
         }
       }
     }
