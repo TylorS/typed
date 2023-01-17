@@ -1,11 +1,11 @@
 /// <reference types="@typed/framework" />
 
-import { addAssetDirectories, run, registerFetchHandler } from '@typed/framework/express'
-import * as api from 'api:./api'
+import { addAssetDirectories, run } from '@typed/framework/express'
 import express from 'express'
+import * as api from 'express:./api'
 // HTML modules are transformed by our vite plugin .
 // See @typed/framework/src/HtmlModule.ts to see its full signature.
-import * as index from 'html:./index'
+import * as indexHtml from 'html:./index'
 import * as quuxHtml from 'html:./other'
 // Runtime modules are transformed by our vite plugin and expose a RuntimeModule.
 // See @typed/framework/src/RuntimeModule.ts to see its full signature.
@@ -17,7 +17,7 @@ const app = express()
 
 // Serve static files with express server in production
 if (import.meta.env.PROD) {
-  addAssetDirectories(app, [index, quuxHtml], 31536000 /* One Year */)
+  addAssetDirectories(app, [indexHtml, quuxHtml], 31536000 /* One Year */)
 }
 
 // Register our request handlers
@@ -26,9 +26,7 @@ if (import.meta.env.PROD) {
 // element we should render into.
 const getParentElement = (d: Document) => d.getElementById('application')
 
-for (const handler of api.handlers) {
-  registerFetchHandler(app, handler)
-}
+api.register(app)
 
 // Register a route handler
 // Here we utilize run from @typed/framework/express which understands how to stitch
@@ -38,7 +36,7 @@ for (const handler of api.handlers) {
 app.get('/other*', run(quuxPages, quuxHtml, getParentElement))
 
 // Register another handler
-app.get('/*', run(pages, index, getParentElement))
+app.get('/*', run(pages, indexHtml, getParentElement))
 
 // Our vite plugin configures another vite plugin called vavite for you
 // anytime it finds your configured server file.

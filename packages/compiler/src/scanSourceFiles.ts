@@ -6,7 +6,13 @@ import {
   isLayoutFileName,
   isEnvironmentFileName,
 } from '@typed/framework'
-import type { ExportedDeclarations, Project, SourceFile, Type } from 'ts-morph'
+import {
+  SyntaxKind,
+  type ExportedDeclarations,
+  type Project,
+  type SourceFile,
+  type Type,
+} from 'ts-morph'
 
 import type { ApiSourceFileModule } from './ApiModuleTree.js'
 import type { EnvironmentSourceFileModule, SourceFileModule } from './SourceFileModule.js'
@@ -225,7 +231,7 @@ function getAndVerifyEnvironment(
 function getDeclarationOfType(
   sourceFile: SourceFile,
   exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
-  predicate: (type: Type) => boolean,
+  predicate: (type: Type, node: ExportedDeclarations) => boolean,
   exportName: string,
   typeOfFile: string,
 ) {
@@ -240,11 +246,19 @@ function getDeclarationOfType(
       Using the first declaration.`)
   }
 
-  const symbol = declarations[0].getSymbolOrThrow()
-  const type = symbol.getTypeAtLocation(declarations[0])
+  const declaration = declarations.find(
+    (x) => !x.isKind(SyntaxKind.InterfaceDeclaration) && !x.isKind(SyntaxKind.TypeAliasDeclaration),
+  )
 
-  if (predicate(type)) {
-    return O.some(declarations[0])
+  if (!declaration) {
+    return O.none
+  }
+
+  const symbol = declaration.getSymbolOrThrow()
+  const type = symbol.getTypeAtLocation(declaration)
+
+  if (predicate(type, declaration)) {
+    return O.some(declaration)
   }
 
   return O.none
@@ -365,20 +379,20 @@ function parseApiModule(
   return O.some({
     _tag: 'Api',
     sourceFile,
-    handlerExportNames,
+    handlerExportNames: handlerExportNames.sort(),
     hasEnvironment: O.isSome(environment),
   })
 }
 
-function typeIsFetchHandler(type: Type) {
-  const route = type.getProperty('route')?.getDeclaredType()
+function typeIsFetchHandler(type: Type, node: ExportedDeclarations) {
+  const route = type.getProperty('route')?.getTypeAtLocation(node)
   const handler = type.getProperty('handler')
 
   return !!(
     route &&
     typeIsRoute(route) &&
     handler &&
-    handler.getDeclaredType().getCallSignatures().length > 0 &&
+    handler.getTypeAtLocation(node).getCallSignatures().length > 0 &&
     type.getProperty('httpMethods')
   )
 }

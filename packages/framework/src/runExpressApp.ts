@@ -6,8 +6,6 @@ import { pipe } from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx'
 import { renderInto } from '@typed/html'
 import type express from 'express'
-import isbot from 'isbot'
-import viteDevServer from 'vavite/vite-dev-server'
 
 import {
   type RuntimeModule,
@@ -15,6 +13,9 @@ import {
   runMatcherWithFallback,
   type HtmlModule,
 } from '@typed/framework'
+
+import isbot from 'isbot'
+import viteDevServer from 'vavite/vite-dev-server'
 
 const prettyPrintCause = Cause.pretty()
 

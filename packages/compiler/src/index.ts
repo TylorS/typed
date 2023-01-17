@@ -1,4 +1,5 @@
 export * from './ApiModuleTree.js'
+export * from './makeApiModule.js'
 export * from './makeHtmlModule.js'
 export * from './makeRuntimeModule.js'
 export * from './readApiModules.js'

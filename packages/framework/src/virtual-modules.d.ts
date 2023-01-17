@@ -3,9 +3,9 @@
  * of related modules together by routes, renderables, and layouts.
  */
 declare module 'runtime:*' {
-  import { RouteMatcher, Redirect } from '@typed/router'
+  import type { RouteMatcher, Redirect } from '@typed/router'
 
-  import { Fallback, Module, IntrinsicServices } from '@typed/framework'
+  import type { Fallback, Module, IntrinsicServices } from '@typed/framework'
 
   export const modules: ReadonlyArray<Module<IntrinsicServices, string>>
 
@@ -20,7 +20,7 @@ declare module 'runtime:*' {
  * provided with all IntrinsicServices and handles redirects.
  */
 declare module 'browser:*' {
-  import { Fx } from '@typed/fx'
+  import type { Fx } from '@typed/fx'
 
   /**
    * Render the application given a parent element
@@ -42,7 +42,7 @@ declare module 'browser:*' {
 declare module 'html:*' {
   import type { IncomingMessage } from 'http'
 
-  import * as happyDom from 'happy-dom'
+  import type * as happyDom from 'happy-dom'
 
   import type { ServerWindowOptions } from '@typed/framework'
 
@@ -76,7 +76,15 @@ declare module 'html:*' {
 }
 
 declare module 'api:*' {
-  import { FetchHandler } from '@typed/framework/FetchHandler'
+  import type { FetchHandler } from '@typed/framework/FetchHandler'
 
   export const handlers: ReadonlyArray<FetchHandler<never, string>>
+}
+
+declare module 'express:*' {
+  import type express from 'express'
+
+  export const register: (app: express.Express) => void
+
+  export * from 'api:*'
 }

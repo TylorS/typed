@@ -1,6 +1,6 @@
 import { existsSync } from 'fs'
 import { readFile } from 'fs/promises'
-import { basename, dirname, join, relative, resolve } from 'path'
+import { basename, dirname, relative, resolve } from 'path'
 
 import effectTransformer from '@effect/language-service/transformer'
 import {
@@ -9,6 +9,8 @@ import {
   makeRuntimeModule,
   readDirectory,
   readModules,
+  readApiModules,
+  makeApiModule,
 } from '@typed/compiler'
 import glob from 'fast-glob'
 import { Project, SourceFile, ts, type CompilerOptions } from 'ts-morph'
@@ -73,6 +75,16 @@ const PLUGIN_NAME = '@typed/vite-plugin'
 const RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX = 'runtime'
 const BROWSER_VIRTUAL_ENTRYPOINT_PREFIX = 'browser'
 const HTML_VIRTUAL_ENTRYPOINT_PREFIX = 'html'
+const API_VIRTUAL_ENTRYPOINT_PREFIX = 'api'
+const EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX = 'express'
+
+const PREFIXES = [
+  RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX,
+  BROWSER_VIRTUAL_ENTRYPOINT_PREFIX,
+  HTML_VIRTUAL_ENTRYPOINT_PREFIX,
+  API_VIRTUAL_ENTRYPOINT_PREFIX,
+  EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX,
+]
 
 const VIRTUAL_ID_PREFIX = '\0'
 
@@ -119,7 +131,7 @@ export default function makePlugin({
 
   const plugins: PluginOption[] = [
     tsconfigPaths({
-      projects: [join(sourceDirectory, 'tsconfig.json')],
+      projects: [tsConfigFilePath],
     }),
     ...(serverExists
       ? [
@@ -274,6 +286,40 @@ export default function makePlugin({
     return filePath
   }
 
+  const buildApiModule = async (importer: string, id: string) => {
+    const importDirectory = dirname(importer)
+    const moduleName = parseModulesFromId(id, importer)
+    const moduleDirectory = resolve(importDirectory, moduleName)
+    const relativeDirectory = relative(sourceDirectory, moduleDirectory)
+    const moduleType = id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX) ? 'express' : 'API'
+
+    info(`Building ${moduleType} module for ${relativeDirectory}...`)
+
+    const directory = await readDirectory(moduleDirectory)
+    const moduleTree = readApiModules(project, directory)
+    const filePath = `${importDirectory}/${basename(
+      moduleName,
+    )}.${moduleType.toLowerCase()}.__generated__.ts`
+
+    const sourceFile = makeApiModule(
+      project,
+      moduleTree,
+      filePath,
+      importer,
+      id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX),
+    )
+
+    info(`Built ${moduleType} module for ${relativeDirectory}.`)
+
+    filePathToModule.set(filePath, sourceFile)
+
+    if (saveGeneratedModules) {
+      await sourceFile.save()
+    }
+
+    return filePath
+  }
+
   const virtualModulePlugin = {
     name: PLUGIN_NAME,
     config(config: UserConfig, env: ConfigEnv) {
@@ -364,6 +410,15 @@ export default function makePlugin({
         return VIRTUAL_ID_PREFIX + (await buildHtmlModule(importer, id))
       }
 
+      if (
+        id.startsWith(API_VIRTUAL_ENTRYPOINT_PREFIX) ||
+        id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX)
+      ) {
+        setupProject()
+
+        return VIRTUAL_ID_PREFIX + (await buildApiModule(importer, id))
+      }
+
       importer = importer.replace(VIRTUAL_ID_PREFIX, '')
 
       // Virtual modules have problems with resolving relative paths due to not
@@ -449,10 +504,11 @@ function findRelativeFile(importer: string, id: string) {
 }
 
 function parseModulesFromId(id: string, importer: string | undefined): string {
-  const pages = id
-    .replace(RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
-    .replace(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
-    .replace(HTML_VIRTUAL_ENTRYPOINT_PREFIX + ':', '')
+  let pages = id
+
+  for (const prefix of PREFIXES) {
+    pages = pages.replace(prefix + ':', '')
+  }
 
   if (pages === '') {
     throw new Error(`[${PLUGIN_NAME}]: No pages were specified from ${importer}`)
