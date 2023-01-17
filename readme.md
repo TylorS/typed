@@ -26,10 +26,7 @@ If you're interested in chatting about this project join us on [Discord](https:/
 There is currently one toy example in the example directory which will showcase the way our vite plugin works
 
 ## Upcoming
-- API Routes
 - Hydration of SSR content
-- Support for html template languages
 - SSG output
-- Hot module reloading
 - Integrations with @fp-ts/schema
 - Itegrations with @fp-ts/optic
