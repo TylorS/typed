@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
+import type * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import type * as Layer from '@effect/io/Layer'
@@ -163,7 +164,14 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
               if (layout) {
                 // Render into the route outlet
                 if (previous.render !== render) {
-                  previousFiber = yield* $(pipe(render, Fx.observe(outlet.set), Effect.forkScoped))
+                  previousFiber = yield* $(
+                    pipe(
+                      render,
+                      Fx.observe(outlet.set),
+                      Effect.onError((cause) => outlet.error(cause as Cause.Cause<never>)),
+                      Effect.forkScoped,
+                    ),
+                  )
                 }
 
                 return Option.some(layout)
