@@ -39,14 +39,6 @@ export interface I18N {
 
 export const I18N = Context.Tag<I18N>()
 
-const translations: Record<string, Record<string, string>> = {
-  hello: {
-    en: 'Hello',
-    es: 'Hola',
-    fr: 'Bonjour',
-  },
-}
-
 // Every API module can expose an environment that will be provided to all the handlers in the module.
 // You can also use an environment.ts file just like when generating a page, it will be utilized in conjunction
 // with anything defined locally to a module.
@@ -67,3 +59,11 @@ export const environment = I18N.layerOf({
       return translation['en']
     }),
 })
+
+const translations: Record<string, Record<string, string>> = {
+  hello: {
+    en: 'Hello',
+    es: 'Hola',
+    fr: 'Bonjour',
+  },
+}
