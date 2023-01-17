@@ -38,7 +38,17 @@ export function run_<A, R2, E2, E, R3, E3, B, R4, E4>(
         pipe(end, Effect.intoDeferred(deferred)),
       )
 
-      const fiber = yield* $(Effect.forkScoped(fx.run(sink)))
+      const fiber = yield* $(
+        pipe(
+          fx.run(sink),
+          Effect.onError((cause) =>
+            Effect.sync(() =>
+              pipe(deferred, Deferred.unsafeDone<E2 | E3 | E4, B>(Effect.failCause(cause))),
+            ),
+          ),
+          Effect.forkScoped,
+        ),
+      )
 
       const c = yield* $(Deferred.await(deferred))
 
