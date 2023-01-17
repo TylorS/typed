@@ -1,3 +1,4 @@
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import { identity, pipe } from '@fp-ts/data/Function'
 
@@ -33,7 +34,9 @@ class FlatMapFx<R, E, A, R2, E2, B>
                 Effect.flatMap(() =>
                   this.f(a).run(Fx.Sink(sink.event, sink.error, counter.decrement)),
                 ),
-                Effect.onError((cause) => sink.error(cause)),
+                Effect.onError((cause) =>
+                  Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
+                ),
                 Effect.forkScoped,
               ),
             sink.error,

@@ -1,3 +1,4 @@
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Ref from '@effect/io/Ref/Synchronized'
 import { pipe } from '@fp-ts/data/Function'
@@ -36,7 +37,9 @@ class SnapshotEffectFx<R, E, A, R2, E2, B, R3, E3, C>
         pipe(
           sampled,
           run((b) => pipe(ref, Ref.set(Option.some(b))), sink.error, Effect.unit()),
-          Effect.onError((cause) => sink.error(cause)),
+          Effect.onError((cause) =>
+            Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
+          ),
           Effect.forkScoped,
         ),
       )

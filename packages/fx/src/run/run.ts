@@ -1,4 +1,4 @@
-import type { Cause } from '@effect/io/Cause'
+import * as Cause from '@effect/io/Cause'
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
@@ -9,7 +9,7 @@ import { Fx, Sink } from '../Fx.js'
 
 export function run<A, R2, E2, E, R3, E3, B, R4, E4>(
   event: (a: A) => Effect.Effect<R2, E2, any>,
-  error: (cause: Cause<E>) => Effect.Effect<R3, E3, B>,
+  error: (cause: Cause.Cause<E>) => Effect.Effect<R3, E3, B>,
   end: Effect.Effect<R4, E4, B>,
 ): <R>(fx: Fx<R, E, A>) => Effect.Effect<R | R2 | R3 | R4, E2 | E3 | E4, B> {
   return flow(run_(event, error, end), Effect.scoped)
@@ -17,7 +17,7 @@ export function run<A, R2, E2, E, R3, E3, B, R4, E4>(
 
 export function run_<A, R2, E2, E, R3, E3, B, R4, E4>(
   event: (a: A) => Effect.Effect<R2, E2, any>,
-  error: (cause: Cause<E>) => Effect.Effect<R3, E3, B>,
+  error: (cause: Cause.Cause<E>) => Effect.Effect<R3, E3, B>,
   end: Effect.Effect<R4, E4, B>,
 ) {
   return <R>(fx: Fx<R, E, A>): Effect.Effect<R | R2 | R3 | R4 | Scope, E2 | E3 | E4, B> =>
@@ -43,7 +43,9 @@ export function run_<A, R2, E2, E, R3, E3, B, R4, E4>(
           fx.run(sink),
           Effect.onError((cause) =>
             Effect.sync(() =>
-              pipe(deferred, Deferred.unsafeDone<E2 | E3 | E4, B>(Effect.failCause(cause))),
+              Cause.isInterruptedOnly(cause)
+                ? null
+                : pipe(deferred, Deferred.unsafeDone<E2 | E3 | E4, B>(Effect.failCause(cause))),
             ),
           ),
           Effect.forkScoped,
