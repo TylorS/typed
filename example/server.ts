@@ -8,10 +8,10 @@ import * as api from 'express:./api'
 // HTML modules are transformed by our vite plugin .
 // See @typed/framework/src/HtmlModule.ts to see its full signature.
 import * as indexHtml from 'html:./index'
-import * as quuxHtml from 'html:./other'
+import * as otherHtml from 'html:./other'
 // Runtime modules are transformed by our vite plugin and expose a RuntimeModule.
 // See @typed/framework/src/RuntimeModule.ts to see its full signature.
-import * as quuxPages from 'runtime:./other-pages'
+import * as otherPages from 'runtime:./other-pages'
 import * as pages from 'runtime:./pages'
 import httpDevServer from 'vavite/http-dev-server'
 
@@ -19,7 +19,7 @@ const app = express()
 
 // Serve static files with express server in production
 if (import.meta.env.PROD) {
-  addAssetDirectories(app, [indexHtml, quuxHtml], 31536000 /* One Year */)
+  addAssetDirectories(app, [indexHtml, otherHtml], 31536000 /* One Year */)
 }
 
 // Register our request handlers
@@ -36,7 +36,7 @@ const getParentElement = (d: Document) => d.getElementById('application')
 // together an express.RouteHandler from a RuntimeModule and a HtmlModule.
 // Since our applications define our own routes, we use the splat (*) operator
 // to allow our application to handle all routes starting from the base path.
-app.get('/other*', run(quuxPages, quuxHtml, getParentElement))
+app.get('/other*', run(otherPages, otherHtml, getParentElement))
 
 // Register another handler
 app.get('/*', run(pages, indexHtml, getParentElement))
