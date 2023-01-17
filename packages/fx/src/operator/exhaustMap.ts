@@ -1,3 +1,4 @@
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import type * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
@@ -39,11 +40,18 @@ class ExhaustMapFx<R, E, A, R2, E2, B>
                             counter.increment,
                             Effect.flatMap(() =>
                               Effect.forkScoped(
-                                this.f(a).run(
-                                  Fx.Sink(
-                                    sink.event,
-                                    (cause) => pipe(resetRef, Effect.zipRight(sink.error(cause))),
-                                    pipe(resetRef, Effect.zipRight(counter.decrement)),
+                                pipe(
+                                  this.f(a).run(
+                                    Fx.Sink(
+                                      sink.event,
+                                      (cause) => pipe(resetRef, Effect.zipRight(sink.error(cause))),
+                                      pipe(resetRef, Effect.zipRight(counter.decrement)),
+                                    ),
+                                  ),
+                                  Effect.onError((cause) =>
+                                    Cause.isInterruptedOnly(cause)
+                                      ? Effect.unit()
+                                      : sink.error(cause),
                                   ),
                                 ),
                               ),

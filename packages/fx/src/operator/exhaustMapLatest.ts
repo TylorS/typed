@@ -1,3 +1,4 @@
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import type * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
@@ -46,11 +47,18 @@ class ExhaustMapLatestFx<R, E, A, R2, E2, B>
               fx: Fx<R2, E2, B>,
             ): Effect.Effect<R2 | R3 | Scope, never, Fiber.RuntimeFiber<never, unknown> | null> =>
               Effect.forkScoped(
-                fx.run(
-                  Fx.Sink(
-                    sink.event,
-                    (e) => pipe(resetRef, Effect.zipRight(sink.error(e))),
-                    pipe(resetRef, Effect.zipRight(runNextFx)),
+                pipe(
+                  fx.run(
+                    Fx.Sink(
+                      sink.event,
+                      (e) => pipe(resetRef, Effect.zipRight(sink.error(e))),
+                      pipe(resetRef, Effect.zipRight(runNextFx)),
+                    ),
+                  ),
+                  Effect.onError((e) =>
+                    Cause.isInterruptedOnly(e)
+                      ? resetRef
+                      : pipe(resetRef, Effect.zipRight(sink.error(e))),
                   ),
                 ),
               )

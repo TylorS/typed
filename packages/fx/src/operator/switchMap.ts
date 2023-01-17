@@ -1,3 +1,4 @@
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
@@ -47,7 +48,7 @@ class SwitchMapFx<R, E, A, R2, E2, B>
                           : Effect.asUnit(counter.increment),
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         Effect.flatMap((_: unknown) =>
-                          Effect.forkScoped(
+                          pipe(
                             this.f(a).run(
                               Fx.Sink(
                                 sink.event,
@@ -55,6 +56,10 @@ class SwitchMapFx<R, E, A, R2, E2, B>
                                 pipe(counter.decrement, Effect.zipLeft(resetRef)),
                               ),
                             ),
+                            Effect.onError((cause) =>
+                              Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
+                            ),
+                            Effect.forkScoped,
                           ),
                         ),
                       ),

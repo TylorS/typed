@@ -63,7 +63,7 @@ class SwitchMatchFx<R, E, A, R2, E2, B, R3, E3, C>
                       : Effect.asUnit(counter.increment),
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     Effect.flatMap((_: unknown) =>
-                      Effect.forkScoped(
+                      pipe(
                         fx.run(
                           Fx.Sink(
                             sink.event,
@@ -71,6 +71,10 @@ class SwitchMatchFx<R, E, A, R2, E2, B, R3, E3, C>
                             pipe(counter.decrement, Effect.zipLeft(resetRef)),
                           ),
                         ),
+                        Effect.onError((cause) =>
+                          Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
+                        ),
+                        Effect.forkScoped,
                       ),
                     ),
                   ),

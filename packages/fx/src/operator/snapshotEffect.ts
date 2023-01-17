@@ -36,6 +36,7 @@ class SnapshotEffectFx<R, E, A, R2, E2, B, R3, E3, C>
         pipe(
           sampled,
           run((b) => pipe(ref, Ref.set(Option.some(b))), sink.error, Effect.unit()),
+          Effect.onError((cause) => sink.error(cause)),
           Effect.forkScoped,
         ),
       )
