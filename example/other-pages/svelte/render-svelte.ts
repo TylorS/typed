@@ -68,7 +68,6 @@ export function renderSvelte<
       const container = yield* $(createElement('div'))
       container.id = 'svelte-root'
 
-      // TODO: Do something with head content and fix typings
       const { html, css, head } = (Component as any).render(f(initialParams.value))
 
       container.innerHTML = html

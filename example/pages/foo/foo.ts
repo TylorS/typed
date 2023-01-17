@@ -7,11 +7,9 @@ export const route = Route.Route('/foo/:foo')
 
 // Any exported Fx, or Fx-returning function can easily be lazy loaded
 export const main = Main.lazy(route)(() =>
-  import('../../components/counter-with-service.js').then(
-    (m) => (params: Main.ParamsOf<typeof route>) =>
-      pipe(
-        params,
-        Fx.switchMap(({ foo }) => pipe(m.Counter, Fx.provideSomeLayer(m.layer('Foo: ' + foo)))),
-      ),
+  import('../../components/counter-with-service.js').then((m) =>
+    Fx.switchMap(({ foo }: Route.ParamsOf<typeof route>) =>
+      pipe(m.Counter, Fx.provideSomeLayer(m.layer('Foo: ' + foo))),
+    ),
   ),
 )

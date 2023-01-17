@@ -1,6 +1,9 @@
 /// <reference types="@typed/framework" />
 
 import * as Fx from '@typed/fx'
+// Browser virtual modules are extensions of RuntimeModule
+// which expose an additional 'render' function which takes a parentElement
+// and returns an Fx which will render your application into the parentElement.
 import { render } from 'browser:./other-pages'
 
 const parentElement = document.getElementById('application')
