@@ -39,8 +39,6 @@ app.get('/other*', run(quuxPages, quuxHtml, getParentElement))
 // Register another handler
 app.get('/*', run(pages, indexHtml, getParentElement))
 
-console.log(app._router.stack.map((x: any) => x.regexp))
-
 // Our vite plugin configures another vite plugin called vavite for you
 // anytime it finds your configured server file.
 // See: https://github.com/cyco130/vavite
