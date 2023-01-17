@@ -26,6 +26,7 @@ if (import.meta.env.PROD) {
 // element we should render into.
 const getParentElement = (d: Document) => d.getElementById('application')
 
+// Register API routes
 api.register(app)
 
 // Register a route handler
