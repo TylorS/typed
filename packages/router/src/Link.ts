@@ -10,7 +10,7 @@ export function Link<R = never, E = never, R2 = never>(
 ): Fx.Fx<R | R2 | Router, E, Hole> {
   return Fx.gen(function* ($) {
     const useBase = props.useBase ?? true
-    const href = useBase ? pathJoin(yield* $(getBasePath), props.href) : props.href
+    const href = useBase ? pathJoin(yield* $(getBasePath), props.href) || '/' : props.href
     const router = yield* $(Router.get)
     const clickHandler = (event: MouseEvent & { currentTarget: HTMLAnchorElement }) =>
       Effect.gen(function* ($) {
