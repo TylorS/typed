@@ -12,7 +12,7 @@ export function buildModules<M extends Modules>(
 ): RouteMatcher<Module.ResourcesOf<M[number]>, Redirect> {
   return orderModulesByRoute(modules as M)
     .map(moduleToRouteMatcher)
-    .reduce(RouteMatcher.concat)
+    .reduce(RouteMatcher.concat, RouteMatcher(new Map()))
 }
 
 export function moduleToRouteMatcher<R>(

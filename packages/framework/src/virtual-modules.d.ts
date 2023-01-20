@@ -76,7 +76,7 @@ declare module 'html:*' {
 }
 
 declare module 'api:*' {
-  import type { FetchHandler } from '@typed/framework/FetchHandler'
+  import type { FetchHandler } from 'packages/framework/dist/api/FetchHandler.js'
 
   export const handlers: ReadonlyArray<FetchHandler<never, string>>
 }

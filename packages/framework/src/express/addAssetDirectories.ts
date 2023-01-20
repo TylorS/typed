@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url'
 import type express from 'express'
 import staticGzip from 'express-static-gzip'
 
-import type { HtmlModule } from './HtmlModule.js'
+import type { HtmlModule } from '../HtmlModule.js'
 
 export function addAssetDirectories(app: express.Express, modules: HtmlModule[], maxAge: number) {
   const assetDirectories = new Set<string>()

@@ -7,7 +7,7 @@ import * as Option from '@fp-ts/data/Option'
 import type { ParamsOf } from '@typed/path'
 import type express from 'express'
 
-import type { FetchHandler } from './FetchHandler.js'
+import type { FetchHandler } from '../api/FetchHandler.js'
 
 export function registerFetchHandler<Path extends string>(
   route: express.Router,

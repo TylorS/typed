@@ -1,6 +1,7 @@
 import express from 'express'
 
-import type { FetchHandler } from './FetchHandler.js'
+import type { FetchHandler } from '../api/FetchHandler.js'
+
 import { registerFetchHandler } from './fetch-express.js'
 
 export function registerExpressHandlers<H extends ReadonlyArray<FetchHandler<never, any>>>(

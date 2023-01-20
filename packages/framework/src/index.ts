@@ -5,9 +5,9 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./virtual-modules.d.ts" />
 
+export * from './BrowserModule.js'
 export * from './buildModules.js'
 export * from './FallbackModule.js'
-export * from './FetchHandler.js'
 export * from './fileNames.js'
 export * from './HtmlModule.js'
 export * from './IntrinsicServices.js'
