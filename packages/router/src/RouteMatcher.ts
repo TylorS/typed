@@ -150,6 +150,8 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
               previousLayout = layout
               previousFiber = undefined
 
+              console.log(previous.render === render, previous.layout === layout)
+
               // Skip rerendering if the render function is the same
               if (previous.render === render && previous.layout === layout) {
                 return Option.none
