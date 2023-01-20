@@ -456,22 +456,14 @@ export default function makePlugin({
       if (sourceFile) {
         logDiagnostics(project, sourceFile, sourceDirectory, id, logger)
 
-        const text = sourceFile.getFullText()
-        const output = ts.transpileModule(text, {
-          fileName: id,
-          compilerOptions: transpilerCompilerOptions(),
-          transformers,
-        })
-
         return {
-          code: output.outputText,
-          map: output.sourceMapText,
+          code: sourceFile.getFullText(),
         }
       }
     },
 
     transform(text: string, id: string) {
-      if (/.[c|m]?tsx?$/.test(id) || /.[c|m]?jsx?$/.test(id)) {
+      if (/.[c|m]?tsx?$/.test(id)) {
         const output = ts.transpileModule(text, {
           fileName: id,
           compilerOptions: transpilerCompilerOptions(),
@@ -568,7 +560,7 @@ function getRelativePath(from: string, to: string) {
 
 function info(message: string, logger: Logger | undefined) {
   if (logger) {
-    logger.info(`[${PLUGIN_NAME}]: ${message}`, { clear: true })
+    logger.info(`[${PLUGIN_NAME}]: ${message}`)
   } else {
     console.info(`[${PLUGIN_NAME}]:`, `${message}`)
   }
