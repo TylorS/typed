@@ -23,6 +23,7 @@ export function makeApiModule(
 
   if (isExpress) {
     addNamedImport(sourceFile, ['registerHandlers'], '@typed/framework/express')
+    addNamespaceImport(sourceFile, 'express', 'express', true)
   }
 
   addModuleTreeImports(moduleTree)
@@ -35,7 +36,7 @@ export function makeApiModule(
   )
 
   if (isExpress) {
-    appendText(sourceFile, `export const router = registerHandlers(handlers)`)
+    appendText(sourceFile, `export const router: express.Router = registerHandlers(handlers)`)
   }
 
   return sourceFile

@@ -1,3 +1,4 @@
+import { EOL } from 'os'
 import { dirname, relative } from 'path'
 
 import { minify } from 'html-minifier'
@@ -46,21 +47,25 @@ export async function makeHtmlModule(options: HtmlModuleOptions): Promise<Source
 
   appendText(
     sourceFile,
-    `export const assetDirectory: string = '${
-      devServer ? dirname(importer) : getRelativePath(serverOutputDirectory, clientOutputDirectory)
-    }'`,
+    EOL +
+      `export const assetDirectory: string = '${
+        devServer
+          ? dirname(importer)
+          : getRelativePath(serverOutputDirectory, clientOutputDirectory)
+      }'`,
   )
   appendText(
     sourceFile,
-    `export const htmlAttributes: Record<string, string> = ${JSON.stringify(htmlAttributes)}`,
+    EOL + `export const htmlAttributes: Record<string, string> = ${JSON.stringify(htmlAttributes)}`,
   )
-  appendText(sourceFile, `export const docType: string = \`${docType.trim()}\``)
+  appendText(sourceFile, EOL + `export const docType: string = \`${docType.trim()}\``)
 
-  appendText(sourceFile, await generateHtmlExport(filePath, html, docType, devServer))
+  appendText(sourceFile, EOL + (await generateHtmlExport(filePath, html, docType, devServer)))
 
   appendText(
     sourceFile,
-    `export function makeWindow(req: IncomingMessage, options?: ServerWindowOptions) {
+    EOL +
+      `export function makeWindow(req: IncomingMessage, options?: ServerWindowOptions): ReturnType<typeof makeServerWindow> {
   const win = makeServerWindow(req, options)
   const documentElement = win.document.documentElement
 

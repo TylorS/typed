@@ -16,7 +16,10 @@ export interface ServerWindowOptions {
   }
 }
 
-export function makeServerWindow(req: IncomingMessage, options?: ServerWindowOptions) {
+export function makeServerWindow(
+  req: IncomingMessage,
+  options?: ServerWindowOptions,
+): Window & GlobalThis & Pick<InstanceType<typeof happyDom.Window>, 'happyDOM'> {
   const url = options?.url ?? new URL(req.url || '/', getOriginFromRequest(req)).toString()
 
   const win: Window & GlobalThis & Pick<InstanceType<typeof happyDom.Window>, 'happyDOM'> =
@@ -33,7 +36,7 @@ export const html5Doctype = '<!DOCTYPE html>'
 function getOriginFromRequest(req: IncomingMessage) {
   const proto =
     req.headers['x-forwarded-proto'] || ((req.socket as TLSSocket).encrypted ? 'https' : 'http')
-  const host = req.headers['x-forwarded-host'] || req.headers.host
+  const host = req.headers['x-forwarded-host'] || req.headers.host || `localhost`
 
-  return `${proto}://` + (host ?? `localhost`)
+  return `${proto}://` + host
 }

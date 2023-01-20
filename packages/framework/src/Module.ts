@@ -20,7 +20,7 @@ export namespace Module {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export type ResourcesOf<T> = T extends Module<infer R, infer _> ? R : never
+  export type ResourcesOf<T> = [T] extends [Module<infer R, infer _>] ? R : never
 
   export function make<R, P extends string, R2>(
     route: Route.Route<R | IntrinsicServices, P>,

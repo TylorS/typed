@@ -1,5 +1,6 @@
 import { existsSync } from 'fs'
 import { readFile } from 'fs/promises'
+import { EOL } from 'os'
 import { basename, dirname, relative, resolve } from 'path'
 
 import effectTransformer from '@effect/language-service/transformer'
@@ -169,6 +170,9 @@ export default function makePlugin({
 
     return {
       ...project.getCompilerOptions(),
+      inlineSourceMap: false,
+      inlineSources: saveGeneratedModules,
+      sourceMap: true,
       allowJs: true,
     }
   }
@@ -481,10 +485,9 @@ function logDiagnostics(
   const relativeFilePath = relative(sourceDirectory, filePath)
 
   if (diagnostics.length > 0) {
-    info(sourceFile.getFullText())
+    info(`Type-checking errors found at ${relativeFilePath}`)
+    info(`Source:` + EOL + sourceFile.getFullText())
     info(project.formatDiagnosticsWithColorAndContext(diagnostics))
-  } else {
-    info(`${relativeFilePath} module successfuly typed-checked.`)
   }
 }
 
@@ -530,15 +533,10 @@ function findHtmlFiles(directory: string, htmlFileGlobs?: readonly string[]): re
 }
 
 function buildClientInput(htmlFilePaths: readonly string[]) {
-  const input: Record<string, string> = {}
-
-  for (const htmlFilePath of htmlFilePaths) {
-    const htmlFile = basename(htmlFilePath, '.html')
-
-    input[htmlFile] = htmlFilePath
-  }
-
-  return input
+  return htmlFilePaths.reduce(
+    (acc, htmlFilePath) => ({ ...acc, [basename(htmlFilePath, '.html')]: htmlFilePath }),
+    {},
+  )
 }
 
 function getRelativePath(from: string, to: string) {

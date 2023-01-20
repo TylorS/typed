@@ -5,7 +5,7 @@ import type { Redirect, RouteMatcher } from '@typed/router'
 import type { Fallback } from './FallbackModule.js'
 import type { IntrinsicServices } from './IntrinsicServices.js'
 
-export function runMatcherWithFallback<R, E>(
+export function runMatcherWithFallback<R = never, E = never>(
   matcher: RouteMatcher<R, E>,
   fallback: Fallback | null,
 ): Fx<R | IntrinsicServices, E | Redirect, Renderable> {

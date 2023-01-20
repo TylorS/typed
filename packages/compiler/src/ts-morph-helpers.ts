@@ -33,15 +33,25 @@ export function addNamedImport(
   })
 }
 
-export function addNamespaceImport(sourceFile: SourceFile, name: string, moduleSpecifier: string) {
+export function addNamespaceImport(
+  sourceFile: SourceFile,
+  name: string,
+  moduleSpecifier: string,
+  isTypeOnly = false,
+) {
   const importDeclaration = findImportDeclaration(sourceFile, moduleSpecifier)
 
   if (importDeclaration) {
+    if (importDeclaration.isTypeOnly() && !isTypeOnly) {
+      importDeclaration.setIsTypeOnly(false)
+    }
+
     return
   }
 
   sourceFile.addImportDeclaration({
     namespaceImport: name,
     moduleSpecifier,
+    isTypeOnly,
   })
 }

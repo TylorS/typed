@@ -66,6 +66,7 @@ export function makeRuntimeModule(
       '@typed/framework',
     )
     addNamedImport(sourceFile, ['renderInto'], '@typed/html')
+    addNamespaceImport(sourceFile, 'Fx', '@typed/fx', true)
 
     const renderEnvText = moduleTree.environment
       ? `, Fx.provideSomeLayer(${getImportName(moduleTree.environment.sourceFile)}.environment)`
@@ -73,7 +74,8 @@ export function makeRuntimeModule(
 
     appendText(
       sourceFile,
-      `export const render = <T extends HTMLElement>(parentElement: T) => pipe(runMatcherWithFallback(matcher, fallback), renderInto(parentElement)${renderEnvText}, provideBrowserIntrinsics(window, { parentElement }))`,
+      EOL +
+        `export const render = <T extends HTMLElement>(parentElement: T): Fx.Fx<never, never, T> => pipe(runMatcherWithFallback(matcher, fallback), renderInto(parentElement)${renderEnvText}, provideBrowserIntrinsics(window, { parentElement }))`,
     )
 
     return sourceFile

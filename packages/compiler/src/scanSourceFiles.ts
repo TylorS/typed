@@ -68,8 +68,8 @@ function parseLayoutSourceFileModule(
   sourceFile: SourceFile,
   exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
 ): O.Option<SourceFileModule> {
-  const layout = getAndVerifyLayout(sourceFile, exportedDeclarations)
-  const environment = getAndVerifyEnvironment(sourceFile, exportedDeclarations, 'layout')
+  const layout = getAndVerifyLayout(exportedDeclarations)
+  const environment = getAndVerifyEnvironment(exportedDeclarations)
 
   if (O.isNone(layout)) {
     return O.none
@@ -98,8 +98,8 @@ function parseRedirectFallbackSourceFileModule(
   sourceFile: SourceFile,
   exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
 ): O.Option<SourceFileModule> {
-  const route = getAndVerifyRoute(sourceFile, exportedDeclarations, 'route redirect')
-  const environment = getAndVerifyEnvironment(sourceFile, exportedDeclarations, 'route redirect')
+  const route = getAndVerifyRoute(exportedDeclarations)
+  const environment = getAndVerifyEnvironment(exportedDeclarations)
 
   if (O.isNone(route)) {
     return O.none
@@ -124,18 +124,9 @@ function parseRenderableFallbackSourceFileModule(
   sourceFile: SourceFile,
   exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
 ): O.Option<SourceFileModule> {
-  const [fallback, isFx] = getAndVerifyFxOrFxReturning(
-    sourceFile,
-    exportedDeclarations,
-    'fallback',
-    'renderable fallback',
-  )
-  const environment = getAndVerifyEnvironment(
-    sourceFile,
-    exportedDeclarations,
-    'renderable fallback',
-  )
-  const layout = getAndVerifyLayout(sourceFile, exportedDeclarations)
+  const [fallback, isFx] = getAndVerifyFxOrFxReturning(exportedDeclarations, 'fallback')
+  const environment = getAndVerifyEnvironment(exportedDeclarations)
+  const layout = getAndVerifyLayout(exportedDeclarations)
 
   if (O.isNone(fallback)) {
     return O.none
@@ -154,15 +145,10 @@ function parseRenderSourceFileModule(
   sourceFile: SourceFile,
   exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
 ): O.Option<SourceFileModule> {
-  const route = getAndVerifyRoute(sourceFile, exportedDeclarations, 'renderable')
-  const [main, isFx] = getAndVerifyFxOrFxReturning(
-    sourceFile,
-    exportedDeclarations,
-    'main',
-    'renderable',
-  )
-  const environment = getAndVerifyEnvironment(sourceFile, exportedDeclarations, 'renderable')
-  const layout = getAndVerifyLayout(sourceFile, exportedDeclarations)
+  const route = getAndVerifyRoute(exportedDeclarations)
+  const [main, isFx] = getAndVerifyFxOrFxReturning(exportedDeclarations, 'main')
+  const environment = getAndVerifyEnvironment(exportedDeclarations)
+  const layout = getAndVerifyLayout(exportedDeclarations)
 
   if (O.isNone(route) || O.isNone(main)) {
     return O.none
@@ -177,71 +163,49 @@ function parseRenderSourceFileModule(
   return O.some({ _tag: 'Render/Environment', sourceFile, isFx, hasLayout })
 }
 
-function getAndVerifyRoute(
-  sourceFile: SourceFile,
-  exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
-  typeOfFile: string,
-) {
-  return getDeclarationOfType(sourceFile, exportedDeclarations, typeIsRoute, 'route', typeOfFile)
+function getAndVerifyRoute(exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>) {
+  return getDeclarationOfType(exportedDeclarations, typeIsRoute, 'route')
 }
 
 function getAndVerifyFxOrFxReturning(
-  sourceFile: SourceFile,
   exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
   exportName: string,
-  typeOfFile: string,
 ) {
   let isFx = false
 
   return [
     getDeclarationOfType(
-      sourceFile,
       exportedDeclarations,
       (t) => (isFx = typeIsFx(t)) || typeIsFxReturningFunction(t),
       exportName,
-      typeOfFile,
     ),
     isFx,
   ] as const
 }
 
-function getAndVerifyLayout(
-  sourceFile: SourceFile,
-  exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
-) {
-  return getDeclarationOfType(sourceFile, exportedDeclarations, typeIsFx, 'layout', 'layout')
+function getAndVerifyLayout(exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>) {
+  return getDeclarationOfType(exportedDeclarations, typeIsFx, 'layout')
 }
 
 function getAndVerifyEnvironment(
-  sourceFile: SourceFile,
   exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
-  typeOfFile: string,
 ) {
   return getDeclarationOfType(
-    sourceFile,
     exportedDeclarations,
     (t) => typeIsLayer(t) || typeIsContext(t),
     'environment',
-    typeOfFile,
   )
 }
 
 function getDeclarationOfType(
-  sourceFile: SourceFile,
   exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
   predicate: (type: Type, node: ExportedDeclarations) => boolean,
   exportName: string,
-  typeOfFile: string,
 ) {
   const declarations = exportedDeclarations.get(exportName)
 
   if (declarations === undefined) {
     return O.none
-  }
-
-  if (declarations.length > 1) {
-    console.warn(`Multiple declarations for ${exportName} found in ${typeOfFile} file: ${sourceFile.getFilePath()}.
-      Using the first declaration.`)
   }
 
   const declaration = declarations.find(
@@ -297,7 +261,7 @@ function parseEnvironmentSourceFileModule(
   sourceFile: SourceFile,
   exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
 ): O.Option<EnvironmentSourceFileModule> {
-  const environment = getAndVerifyEnvironment(sourceFile, exportedDeclarations, 'environment')
+  const environment = getAndVerifyEnvironment(exportedDeclarations)
 
   if (O.isNone(environment)) {
     return O.none
@@ -349,7 +313,7 @@ function parseApiModule(
   sourceFile: SourceFile,
   exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
 ): O.Option<ApiSourceFileModule> {
-  const environment = getAndVerifyEnvironment(sourceFile, exportedDeclarations, 'API')
+  const environment = getAndVerifyEnvironment(exportedDeclarations)
   const handlerExportNames: string[] = []
 
   for (const exportName of exportedDeclarations.keys()) {
@@ -357,13 +321,7 @@ function parseApiModule(
       continue
     }
 
-    const handler = getDeclarationOfType(
-      sourceFile,
-      exportedDeclarations,
-      typeIsFetchHandler,
-      exportName,
-      'API',
-    )
+    const handler = getDeclarationOfType(exportedDeclarations, typeIsFetchHandler, exportName)
 
     if (O.isNone(handler)) {
       continue
