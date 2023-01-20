@@ -29,7 +29,11 @@ describe(import.meta.url, () => {
           clientOutputDirectory: join(exampleDirectory, 'dist/client'),
         })
 
-        console.log(sourceFile.getFullText())
+        const diagnostics = sourceFile.getPreEmitDiagnostics()
+
+        if (diagnostics.length > 0) {
+          throw new Error(project.formatDiagnosticsWithColorAndContext(diagnostics))
+        }
       },
       30 * 1000,
     )

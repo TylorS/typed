@@ -6,6 +6,7 @@ import { Project } from 'ts-morph'
 import { describe, it } from 'vitest'
 
 import type {
+  EnvironmentSourceFileModule,
   FallbackSourceFileModule,
   LayoutSourceFileModule,
   RedirectSourceFileModule,
@@ -28,18 +29,20 @@ describe(import.meta.url, () => {
       async () => {
         const directory = await readDirectory(join(exampleDirectory, 'pages'))
         const moduleTree = readModules(project, directory)
+        const mainLayout = {
+          _tag: 'Layout/Basic',
+          filePath: 'pages/layout.ts',
+        }
         const expected = {
           directory: 'pages',
-          layout: {
-            _tag: 'Layout/Basic',
-            filePath: 'pages/layout.ts',
-          },
+          layout: mainLayout,
           fallback: {
             _tag: 'Fallback/Basic',
             filePath: 'pages/fallback.ts',
             isFx: false,
             hasLayout: false,
           },
+          environment: null,
           modules: [
             {
               _tag: 'Render/Basic',
@@ -51,11 +54,12 @@ describe(import.meta.url, () => {
           children: [
             {
               directory: 'pages/bar',
+              layout: mainLayout,
               fallback: null,
-              layout: null,
+              environment: { _tag: 'Environment', filePath: 'pages/bar/environment.ts' },
               modules: [
                 {
-                  _tag: 'Render/Environment',
+                  _tag: 'Render/Basic',
                   filePath: 'pages/bar/bar.ts',
                   isFx: false,
                   hasLayout: true,
@@ -64,27 +68,29 @@ describe(import.meta.url, () => {
               children: [],
             },
             {
-              directory: 'pages/foo',
+              directory: 'pages/baz',
+              layout: mainLayout,
               fallback: null,
-              layout: null,
+              environment: null,
               modules: [
                 {
                   _tag: 'Render/Basic',
-                  filePath: 'pages/foo/foo.ts',
-                  isFx: false,
+                  filePath: 'pages/baz/baz.ts',
+                  isFx: true,
                   hasLayout: false,
                 },
               ],
               children: [],
             },
             {
-              directory: 'pages/react',
+              directory: 'pages/foo',
+              layout: mainLayout,
               fallback: null,
-              layout: null,
+              environment: null,
               modules: [
                 {
                   _tag: 'Render/Basic',
-                  filePath: 'pages/react/counter.tsx',
+                  filePath: 'pages/foo/foo.ts',
                   isFx: false,
                   hasLayout: false,
                 },
@@ -109,6 +115,7 @@ function stripModules(tree: ModuleTreeWithFallback | ModuleTree): any {
       ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         stripFallbackModule((tree as ModuleTreeWithFallback).fallback!)
       : null,
+    environment: tree.environment ? stripEnvironmentModule(tree.environment) : null,
     modules: tree.modules?.map(stripRenderModule) ?? [],
     children: tree.children.map(stripModules),
   }
@@ -148,5 +155,12 @@ function stripFallbackModule(m: FallbackSourceFileModule | RedirectSourceFileMod
         filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
       }
     }
+  }
+}
+
+function stripEnvironmentModule(m: EnvironmentSourceFileModule) {
+  return {
+    _tag: m._tag,
+    filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
   }
 }

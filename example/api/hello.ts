@@ -1,8 +1,10 @@
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
 import * as Context from '@typed/context'
-import { FetchHandler } from '@typed/framework/express'
-import { Route } from '@typed/route'
+import { FetchHandler } from '@typed/framework'
+import { type ParamsOf, Route, type PathOf } from '@typed/route'
+
+const route = Route('/hello/:name')
 
 // Our API module handling is always modeled as a FetchHandler. This allows us to
 // easily support multiple environments (e.g. Node, Deno, Service Worker, etc)
@@ -10,18 +12,20 @@ import { Route } from '@typed/route'
 //
 // A FetchHandler can be exported at any name and each module can contain as many
 // handlers as they would like.
-export const hello = FetchHandler(Route('/hello/:name'), (req, { name }) =>
-  I18N.withEffect(({ translate }) =>
-    pipe(
-      translate('Hello', getPreferredLanguages(req)),
-      Effect.map(
-        (greeting) =>
-          new Response(`${greeting}, ${decodeURIComponent(name)}!`, {
-            headers: { 'content-type': 'text/plain' },
-          }),
+export const hello: FetchHandler<I18N, PathOf<typeof route>> = FetchHandler(
+  route,
+  (req: Request, { name }: ParamsOf<typeof route>) =>
+    I18N.withEffect(({ translate }) =>
+      pipe(
+        translate('Hello', getPreferredLanguages(req)),
+        Effect.map(
+          (greeting) =>
+            new Response(`${greeting}, ${decodeURIComponent(name)}!`, {
+              headers: { 'content-type': 'text/plain' },
+            }),
+        ),
       ),
     ),
-  ),
 )
 
 const getPreferredLanguages = (req: Request): readonly string[] =>
@@ -53,7 +57,6 @@ export const environment = I18N.layerOf({
 
       for (const language of preferredLanguages) {
         if (language in translation) return translation[language]
-        if (language.includes('-')) return translation[language.split('-')[0]]
       }
 
       return translation['en']

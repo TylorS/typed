@@ -71,17 +71,17 @@ export function Tag<A>(key?: string): Tag<A> {
   const tag = C.Tag<A>(key)
 
   return Object.assign(tag, {
-    get: Effect.service(tag),
-    with: Effect.serviceWith(tag),
-    withEffect: Effect.serviceWithEffect(tag),
-    withFx: Fx.serviceWithFx(tag),
-    provide: Effect.provideService(tag),
-    provideFx: Fx.provideService(tag),
-    layer: Effect.toLayer(tag),
-    layerScoped: Layer.scoped(tag),
-    layerOf: flow(Effect.succeed<A>, Effect.toLayer(tag)),
+    get: Effect.service<A>(tag),
+    with: Effect.serviceWith<A>(tag),
+    withEffect: Effect.serviceWithEffect<A>(tag),
+    withFx: Fx.serviceWithFx<A>(tag),
+    provide: Effect.provideService<A>(tag),
+    provideFx: Fx.provideService<A>(tag),
+    layer: Effect.toLayer<A>(tag),
+    layerScoped: Layer.scoped<A>(tag),
+    layerOf: flow(Effect.succeed<A>, Effect.toLayer<A>(tag)),
     build: flow(buildContext(tag), makeContextBuilder),
-  })
+  } as const)
 }
 
 export namespace Tag {
@@ -98,6 +98,10 @@ export interface ContextBuilder<R> {
   readonly prune: <Tags extends Array<C.Tags<R>>>(
     ...tags: Tags
   ) => ContextBuilder<ServiceOf<Tags[number]>>
+}
+
+export namespace ContextBuilder {
+  export const empty: ContextBuilder<never> = makeContextBuilder()
 }
 
 export function makeContextBuilder<R = never>(

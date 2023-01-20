@@ -36,8 +36,6 @@ export function scanSourceFiles(fileGlobs: readonly string[], project: Project) 
     const sourceFileModule = parseSourceFileModule(sourceFile)
 
     if (O.isNone(sourceFileModule)) {
-      console.log(`Unable to parse information from ${sourceFile.getFilePath()}`)
-
       continue
     }
 
@@ -321,8 +319,6 @@ export function scanApiSourceFiles(
     const apiModule = parseApiSourceFile(sourceFile)
 
     if (O.isNone(apiModule)) {
-      console.log(`Unable to parse API information from ${sourceFile.getFilePath()}`)
-
       continue
     }
 

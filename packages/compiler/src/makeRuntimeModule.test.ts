@@ -30,9 +30,11 @@ describe(import.meta.url, () => {
           false,
         )
 
-        // TODO: add some assertions
+        const diagnostics = sourceFile.getPreEmitDiagnostics()
 
-        console.log(sourceFile.getFullText())
+        if (diagnostics.length > 0) {
+          throw new Error(project.formatDiagnosticsWithColorAndContext(diagnostics))
+        }
       },
       30 * 1000,
     )

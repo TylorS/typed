@@ -10,7 +10,7 @@ import { Project } from 'ts-morph'
 
 // TODO: Add support for @types packages
 
-const virtualPrefixes = ['runtime', 'browser', 'entry']
+const virtualPrefixes = ['runtime', 'browser', 'entry', 'api', 'express']
 
 const optionalPackagesNames = process.argv.slice(2)
 
