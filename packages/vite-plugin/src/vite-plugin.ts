@@ -17,7 +17,7 @@ import glob from 'fast-glob'
 import { Project, SourceFile, ts, type CompilerOptions } from 'ts-morph'
 // @ts-expect-error Unable to resolve types w/ NodeNext
 import vavite from 'vavite'
-import type { ConfigEnv, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
+import type { ConfigEnv, Logger, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
 import compression from 'vite-plugin-compression'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -125,6 +125,7 @@ export default function makePlugin({
   const filePathToModule = new Map<string, SourceFile>()
 
   let devServer: ViteDevServer
+  let logger: Logger
   let project: Project
   let transformers: ts.CustomTransformers
 
@@ -149,9 +150,9 @@ export default function makePlugin({
       return
     }
 
-    info(`Setting up TypeScript project...`)
+    info(`Setting up TypeScript project...`, logger)
     project = setupTsProject(tsConfigFilePath)
-    info(`Setup TypeScript project.`)
+    info(`Setup TypeScript project.`, logger)
 
     // Setup transformer for virtual modules.
     transformers = {
@@ -200,7 +201,7 @@ export default function makePlugin({
               const mod = devServer.moduleGraph.getModuleById(dependent)
 
               if (mod) {
-                info(`reloading ${dependent}`)
+                info(`reloading ${dependent}`, logger)
 
                 await devServer.reloadModule(mod)
               }
@@ -223,9 +224,6 @@ export default function makePlugin({
     const isBrowser = id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)
     const moduleType = isBrowser ? 'browser' : 'runtime'
     const filePath = `${moduleDirectory}.${moduleType}.__generated__.ts`
-
-    info(`Building ${moduleType} module for ${relativeDirectory}...`)
-
     const directory = await readDirectory(moduleDirectory)
     const moduleTree = readModules(project, directory)
 
@@ -234,7 +232,9 @@ export default function makePlugin({
 
     const sourceFile = makeRuntimeModule(project, moduleTree, importer, filePath, isBrowser)
 
-    info(`Built ${moduleType} module for ${relativeDirectory}.`)
+    addDependents(sourceFile)
+
+    info(`Built ${moduleType} module for ${relativeDirectory}.`, logger)
 
     filePathToModule.set(filePath, sourceFile)
 
@@ -250,8 +250,6 @@ export default function makePlugin({
     const htmlFilePath = resolve(dirname(importer), htmlFileName + '.html')
     const relativeHtmlFilePath = relative(sourceDirectory, htmlFilePath)
     let html = ''
-
-    info(`Building html module for ${relativeHtmlFilePath}...`)
 
     // If there's a dev server, use it to transform the HTML for development
     if (devServer) {
@@ -277,7 +275,9 @@ export default function makePlugin({
       devServer,
     })
 
-    info(`Built html module for ${relativeHtmlFilePath}.`)
+    addDependents(sourceFile)
+
+    info(`Built html module for ${relativeHtmlFilePath}.`, logger)
 
     const filePath = sourceFile.getFilePath()
 
@@ -296,9 +296,6 @@ export default function makePlugin({
     const moduleDirectory = resolve(importDirectory, moduleName)
     const relativeDirectory = relative(sourceDirectory, moduleDirectory)
     const moduleType = id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX) ? 'express' : 'API'
-
-    info(`Building ${moduleType} module for ${relativeDirectory}...`)
-
     const directory = await readDirectory(moduleDirectory)
     const moduleTree = readApiModules(project, directory)
     const filePath = `${importDirectory}/${basename(
@@ -313,7 +310,9 @@ export default function makePlugin({
       id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX),
     )
 
-    info(`Built ${moduleType} module for ${relativeDirectory}.`)
+    addDependents(sourceFile)
+
+    info(`Built ${moduleType} module for ${relativeDirectory}.`, logger)
 
     filePathToModule.set(filePath, sourceFile)
 
@@ -322,6 +321,19 @@ export default function makePlugin({
     }
 
     return filePath
+  }
+
+  const addDependents = (sourceFile: SourceFile) => {
+    const imports = sourceFile
+      .getLiteralsReferencingOtherSourceFiles()
+      .map((i) => i.getLiteralValue())
+
+    for (const i of imports) {
+      const dependents = dependentsMap.get(i) ?? new Set()
+
+      dependents.add(sourceFile.getFilePath())
+      dependentsMap.set(i, dependents)
+    }
   }
 
   const virtualModulePlugin = {
@@ -364,6 +376,10 @@ export default function makePlugin({
 
         return
       }
+    },
+
+    configResolved(resolvedConfig) {
+      logger = resolvedConfig.logger
     },
 
     configureServer(server) {
@@ -438,7 +454,7 @@ export default function makePlugin({
       const sourceFile = filePathToModule.get(id) ?? project?.getSourceFile(id)
 
       if (sourceFile) {
-        logDiagnostics(project, sourceFile, sourceDirectory, id)
+        logDiagnostics(project, sourceFile, sourceDirectory, id, logger)
 
         const text = sourceFile.getFullText()
         const output = ts.transpileModule(text, {
@@ -455,7 +471,7 @@ export default function makePlugin({
     },
 
     transform(text: string, id: string) {
-      if (/.tsx?$/.test(id) || /.m?jsx?$/.test(id)) {
+      if (/.[c|m]?tsx?$/.test(id) || /.[c|m]?jsx?$/.test(id)) {
         const output = ts.transpileModule(text, {
           fileName: id,
           compilerOptions: transpilerCompilerOptions(),
@@ -480,20 +496,21 @@ function logDiagnostics(
   sourceFile: SourceFile,
   sourceDirectory: string,
   filePath: string,
+  logger: Logger | undefined,
 ) {
   const diagnostics = sourceFile.getPreEmitDiagnostics()
   const relativeFilePath = relative(sourceDirectory, filePath)
 
   if (diagnostics.length > 0) {
-    info(`Type-checking errors found at ${relativeFilePath}`)
-    info(`Source:` + EOL + sourceFile.getFullText())
-    info(project.formatDiagnosticsWithColorAndContext(diagnostics))
+    info(`Type-checking errors found at ${relativeFilePath}`, logger)
+    info(`Source:` + EOL + sourceFile.getFullText(), logger)
+    info(project.formatDiagnosticsWithColorAndContext(diagnostics), logger)
   }
 }
 
 function findRelativeFile(importer: string, id: string) {
   const dir = dirname(importer)
-  const tsPath = resolve(dir, id.replace(/.js(x)?$/, '.ts$1'))
+  const tsPath = resolve(dir, id.replace(/.([c|m])?js(x)?$/, '.$1ts$2'))
 
   if (existsSync(tsPath)) {
     return tsPath
@@ -549,8 +566,10 @@ function getRelativePath(from: string, to: string) {
   return path
 }
 
-function info(message: string) {
-  const date = new Date()
-
-  console.info(`[${PLUGIN_NAME}] ${date.toISOString()};`, `${message}`)
+function info(message: string, logger: Logger | undefined) {
+  if (logger) {
+    logger.info(`[${PLUGIN_NAME}]: ${message}`, { clear: true })
+  } else {
+    console.info(`[${PLUGIN_NAME}]:`, `${message}`)
+  }
 }
