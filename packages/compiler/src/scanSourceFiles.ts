@@ -75,13 +75,7 @@ function parseLayoutSourceFileModule(
     return O.none
   }
 
-  return pipe(
-    environment,
-    O.match(
-      () => O.some({ _tag: 'Layout/Basic', sourceFile }),
-      () => O.some({ _tag: 'Layout/Environment', sourceFile }),
-    ),
-  )
+  return O.some({ _tag: 'Layout', sourceFile, hasEnvironment: O.isSome(environment) })
 }
 
 function parseFallbackSourceFileModule(
@@ -105,18 +99,11 @@ function parseRedirectFallbackSourceFileModule(
     return O.none
   }
 
-  if (O.isNone(environment)) {
-    return O.some({
-      _tag: 'Redirect/Basic',
-      sourceFile,
-      hasParams: exportedDeclarations.has('params'),
-    })
-  }
-
   return O.some({
-    _tag: 'Redirect/Environment',
+    _tag: 'Redirect',
     sourceFile,
     hasParams: exportedDeclarations.has('params'),
+    hasEnvironment: O.isSome(environment),
   })
 }
 
@@ -133,12 +120,9 @@ function parseRenderableFallbackSourceFileModule(
   }
 
   const hasLayout = O.isSome(layout)
+  const hasEnvironment = O.isSome(environment)
 
-  if (O.isNone(environment)) {
-    return O.some({ _tag: 'Fallback/Basic', sourceFile, isFx, hasLayout })
-  }
-
-  return O.some({ _tag: 'Fallback/Environment', sourceFile, isFx, hasLayout })
+  return O.some({ _tag: 'Fallback', sourceFile, isFx, hasLayout, hasEnvironment })
 }
 
 function parseRenderSourceFileModule(

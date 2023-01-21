@@ -244,29 +244,13 @@ export function makeRuntimeModule(
       return `layout: pipe(${name}.layout${layoutEnvText}, Fx.provideSomeLayer(${name}.environment))`
     }
 
-    switch (mod._tag) {
-      case 'Fallback/Basic':
-      case 'Layout/Basic':
-        return basicOptions()
-      case 'Fallback/Environment':
-      case 'Layout/Environment': {
-        addEnvironmentImports()
+    if (mod.hasEnvironment) {
+      addEnvironmentImports()
 
-        return environmentOptions()
-      }
-      case 'Render': {
-        switch (mod.hasEnvironment) {
-          case true: {
-            addEnvironmentImports()
-            return environmentOptions()
-          }
-          case false:
-            return basicOptions()
-        }
-      }
+      return environmentOptions()
     }
 
-    return ``
+    return basicOptions()
   }
 
   function getImportName(sourceFile: SourceFile) {
@@ -281,7 +265,27 @@ export function makeRuntimeModule(
     environment: EnvironmentSourceFileModule | undefined,
   ) {
     switch (fallback._tag) {
-      case 'Fallback/Basic': {
+      case 'Fallback': {
+        if (fallback.hasEnvironment) {
+          addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
+          addNamedImport(
+            sourceFile,
+            fallback.isFx ? ['pipe', 'constant'] : ['pipe'],
+            '@fp-ts/data/Function',
+          )
+          const layoutOptions = makeLayoutModuleOptions(fallback.hasLayout ? fallback : layout)
+
+          const mainEnvText = environment
+            ? `, Fx.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
+            : ''
+
+          return `export const fallback = { type: 'Renderable', fallback: ${
+            fallback.isFx
+              ? `constant(pipe(${name}.fallback${mainEnvText}, Fx.provideSomeLayer(${name}.environment)))`
+              : `flow(${name}.fallback${mainEnvText}, Fx.provideSomeLayer(${name}.environment))`
+          }${layoutOptions ? `, ${layoutOptions}` : ''} }`
+        }
+
         const layoutOptions = makeLayoutModuleOptions(fallback.hasLayout ? fallback : layout)
         return `export const fallback = { type: 'Renderable', fallback: ${
           fallback.isFx
@@ -297,44 +301,26 @@ export function makeRuntimeModule(
             : `${name}.fallback`
         }${layoutOptions ? `, ${layoutOptions}` : ''} }`
       }
-      case 'Fallback/Environment': {
-        addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
-        addNamedImport(
-          sourceFile,
-          fallback.isFx ? ['pipe', 'constant'] : ['pipe'],
-          '@fp-ts/data/Function',
-        )
-        const layoutOptions = makeLayoutModuleOptions(fallback.hasLayout ? fallback : layout)
+      case 'Redirect': {
+        if (fallback.hasEnvironment) {
+          addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
+          addNamespaceImport(sourceFile, 'Route', '@typed/route')
+          addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
 
-        const mainEnvText = environment
-          ? `, Fx.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
-          : ''
+          const routeEnvText = environment
+            ? `, Route.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
+            : ''
 
-        return `export const fallback = { type: 'Renderable', fallback: ${
-          fallback.isFx
-            ? `constant(pipe(${name}.fallback${mainEnvText}, Fx.provideSomeLayer(${name}.environment)))`
-            : `flow(${name}.fallback${mainEnvText}, Fx.provideSomeLayer(${name}.environment))`
-        }${layoutOptions ? `, ${layoutOptions}` : ''} }`
-      }
-      case 'Redirect/Basic': {
+          return `export const redirect = { type: 'Redirect', route: pipe(${name}.route${routeEnvText}, Route.provideSomeLayer(${name}.environment))${
+            fallback.hasParams ? `, params: ${name}.params` : ``
+          } }`
+        }
+
         const routeText = environment
           ? `pipe(${name}.route, Route.provideSomeLayer(${name}.environment))`
           : `${name}.route`
 
         return `export const redirect = { type: 'Redirect', route: ${routeText}${
-          fallback.hasParams ? `, params: ${name}.params` : ``
-        } }`
-      }
-      case 'Redirect/Environment': {
-        addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
-        addNamespaceImport(sourceFile, 'Route', '@typed/route')
-        addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
-
-        const routeEnvText = environment
-          ? `, Route.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
-          : ''
-
-        return `export const redirect = { type: 'Redirect', route: pipe(${name}.route${routeEnvText}, Route.provideSomeLayer(${name}.environment))${
           fallback.hasParams ? `, params: ${name}.params` : ``
         } }`
       }

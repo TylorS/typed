@@ -16,46 +16,25 @@ export interface RenderSourceFileModule {
   readonly hasStaticPaths: boolean
 }
 
-export type LayoutSourceFileModule = BasicLayoutModule | LayoutModuleWithEnvironment
-
-export interface BasicLayoutModule {
-  readonly _tag: 'Layout/Basic'
+export interface LayoutSourceFileModule {
+  readonly _tag: 'Layout'
   readonly sourceFile: SourceFile
+  readonly hasEnvironment: boolean
 }
 
-export interface LayoutModuleWithEnvironment {
-  readonly _tag: 'Layout/Environment'
-  readonly sourceFile: SourceFile
-}
-
-export type RedirectSourceFileModule = BasicRedirectModule | RedirectModuleWithEnvironment
-
-export interface BasicRedirectModule {
-  readonly _tag: 'Redirect/Basic'
+export interface RedirectSourceFileModule {
+  readonly _tag: 'Redirect'
   readonly sourceFile: SourceFile
   readonly hasParams: boolean
+  readonly hasEnvironment: boolean
 }
 
-export interface RedirectModuleWithEnvironment {
-  readonly _tag: 'Redirect/Environment'
-  readonly sourceFile: SourceFile
-  readonly hasParams: boolean
-}
-
-export type FallbackSourceFileModule = BasicFallbackModule | FallbackModuleWithEnvironment
-
-export interface BasicFallbackModule {
-  readonly _tag: 'Fallback/Basic'
+export interface FallbackSourceFileModule {
+  readonly _tag: 'Fallback'
   readonly isFx: boolean
   readonly sourceFile: SourceFile
   readonly hasLayout: boolean
-}
-
-export interface FallbackModuleWithEnvironment {
-  readonly _tag: 'Fallback/Environment'
-  readonly isFx: boolean
-  readonly sourceFile: SourceFile
-  readonly hasLayout: boolean
+  readonly hasEnvironment: boolean
 }
 
 export interface EnvironmentSourceFileModule {
@@ -64,7 +43,7 @@ export interface EnvironmentSourceFileModule {
 }
 
 export function isLayoutModule(module: SourceFileModule): module is LayoutSourceFileModule {
-  return module._tag === 'Layout/Basic' || module._tag === 'Layout/Environment'
+  return module._tag === 'Layout'
 }
 
 export function isRenderModule(module: SourceFileModule): module is RenderSourceFileModule {
@@ -72,11 +51,11 @@ export function isRenderModule(module: SourceFileModule): module is RenderSource
 }
 
 export function isRedirectModule(module: SourceFileModule): module is RedirectSourceFileModule {
-  return module._tag === 'Redirect/Basic' || module._tag === 'Redirect/Environment'
+  return module._tag === 'Redirect'
 }
 
 export function isFallbackModule(module: SourceFileModule): module is FallbackSourceFileModule {
-  return module._tag === 'Fallback/Basic' || module._tag === 'Fallback/Environment'
+  return module._tag === 'Fallback'
 }
 
 export function isEnvironmentModule(
