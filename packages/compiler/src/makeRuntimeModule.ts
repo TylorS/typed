@@ -254,6 +254,8 @@ export function makeRuntimeModule(
   ) {
     switch (fallback._tag) {
       case 'Fallback': {
+        const layoutOptions = makeLayoutModuleOptions(fallback.hasLayout ? fallback : layout)
+
         if (fallback.hasEnvironment) {
           addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
           addNamedImport(
@@ -261,8 +263,6 @@ export function makeRuntimeModule(
             fallback.isFx ? ['pipe', 'constant'] : ['pipe'],
             '@fp-ts/data/Function',
           )
-          const layoutOptions = makeLayoutModuleOptions(fallback.hasLayout ? fallback : layout)
-
           const mainEnvText = environment
             ? `, Fx.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
             : ''
@@ -274,7 +274,6 @@ export function makeRuntimeModule(
           }${layoutOptions ? `, ${layoutOptions}` : ''} }`
         }
 
-        const layoutOptions = makeLayoutModuleOptions(fallback.hasLayout ? fallback : layout)
         return `export const fallback = { type: 'Renderable', fallback: ${
           fallback.isFx
             ? environment
