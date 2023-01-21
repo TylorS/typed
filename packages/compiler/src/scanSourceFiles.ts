@@ -149,18 +149,25 @@ function parseRenderSourceFileModule(
   const [main, isFx] = getAndVerifyFxOrFxReturning(exportedDeclarations, 'main')
   const environment = getAndVerifyEnvironment(exportedDeclarations)
   const layout = getAndVerifyLayout(exportedDeclarations)
+  const staticPaths = getAndVerifyStaticPaths(exportedDeclarations)
 
+  // Required exports
   if (O.isNone(route) || O.isNone(main)) {
     return O.none
   }
 
   const hasLayout = O.isSome(layout)
+  const hasEnvironment = O.isSome(environment)
+  const hasStaticPaths = O.isSome(staticPaths)
 
-  if (O.isNone(environment)) {
-    return O.some({ _tag: 'Render/Basic', sourceFile, isFx, hasLayout })
-  }
-
-  return O.some({ _tag: 'Render/Environment', sourceFile, isFx, hasLayout })
+  return O.some({
+    _tag: 'Render',
+    sourceFile,
+    isFx,
+    hasLayout,
+    hasEnvironment,
+    hasStaticPaths,
+  })
 }
 
 function getAndVerifyRoute(exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>) {
@@ -195,6 +202,12 @@ function getAndVerifyEnvironment(
     (t) => typeIsLayer(t) || typeIsContext(t),
     'environment',
   )
+}
+
+function getAndVerifyStaticPaths(
+  exportedDeclarations: ReadonlyMap<string, ExportedDeclarations[]>,
+) {
+  return getDeclarationOfType(exportedDeclarations, typeIsEffect, 'getStaticPaths')
 }
 
 function getDeclarationOfType(
@@ -349,4 +362,10 @@ function typeIsFetchHandler(type: Type, node: ExportedDeclarations) {
     handler.getTypeAtLocation(node).getCallSignatures().length > 0 &&
     type.getProperty('httpMethods')
   )
+}
+
+function typeIsEffect(type: Type) {
+  return type.getProperties().some((s) => {
+    return s.getValueDeclarationOrThrow().getSourceFile().getFilePath().includes('@effect/io')
+  })
 }

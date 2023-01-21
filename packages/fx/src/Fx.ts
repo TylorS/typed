@@ -4,6 +4,9 @@ import type { Scope } from '@effect/io/Scope'
 import { identity } from '@fp-ts/data/Function'
 
 export interface Fx<R, E, A> extends Fx.Variance<R, E, A> {
+  /**
+   * @macro traced
+   */
   readonly run: <R2>(sink: Fx.Sink<R2, E, A>) => Effect<R | R2 | Scope, never, unknown>
 }
 

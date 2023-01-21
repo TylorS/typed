@@ -1,4 +1,4 @@
-import { existsSync } from 'fs'
+import { existsSync, writeFileSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { EOL } from 'os'
 import { basename, dirname, relative, resolve } from 'path'
@@ -12,6 +12,10 @@ import {
   readModules,
   readApiModules,
   makeApiModule,
+  type ApiModuleTreeJson,
+  type ModuleTreeJsonWithFallback,
+  moduleTreeToJson,
+  apiModuleTreeToJson,
 } from '@typed/compiler'
 import glob from 'fast-glob'
 import { Project, SourceFile, ts, type CompilerOptions } from 'ts-morph'
@@ -71,7 +75,11 @@ export interface PluginOptions {
 
 const cwd = process.cwd()
 
-const PLUGIN_NAME = '@typed/vite-plugin'
+export const PLUGIN_NAME = '@typed/vite-plugin'
+
+export interface TypedVitePlugin extends Plugin {
+  name: typeof PLUGIN_NAME
+}
 
 const RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX = 'runtime'
 const BROWSER_VIRTUAL_ENTRYPOINT_PREFIX = 'browser'
@@ -88,6 +96,37 @@ const PREFIXES = [
 ]
 
 const VIRTUAL_ID_PREFIX = '\0'
+
+// TODO: Build a manifest of all the files that are generated and save them to disk
+// TODO:
+
+export type ManifestEntry =
+  | ApiManfiestEntry
+  | ExpressManfiestEntry
+  | HtmlManifestEntry
+  | RuntimeManifestEntry
+  | BrowserManifestEntry
+
+export interface ApiManfiestEntry extends ApiModuleTreeJson {
+  readonly type: 'api'
+}
+
+export interface ExpressManfiestEntry extends ApiModuleTreeJson {
+  readonly type: 'express'
+}
+
+export interface HtmlManifestEntry {
+  readonly type: 'html'
+  readonly filePath: string
+}
+
+export interface BrowserManifestEntry extends ModuleTreeJsonWithFallback {
+  readonly type: 'browser'
+}
+
+export interface RuntimeManifestEntry extends ModuleTreeJsonWithFallback {
+  readonly type: 'runtime'
+}
 
 export default function makePlugin({
   sourceDirectory: directory,
@@ -123,9 +162,19 @@ export default function makePlugin({
 
   const dependentsMap = new Map<string, Set<string>>()
   const filePathToModule = new Map<string, SourceFile>()
+  const manifest: Record<string, Record<string, ManifestEntry>> = {}
+
+  const addManifestEntry = (entry: ManifestEntry, importer: string, id: string) => {
+    if (!manifest[importer]) {
+      manifest[importer] = {}
+    }
+
+    manifest[importer][id] = entry
+  }
 
   let devServer: ViteDevServer
   let logger: Logger
+  let isSsr = false
   let project: Project
   let transformers: ts.CustomTransformers
 
@@ -218,7 +267,7 @@ export default function makePlugin({
     }
   }
 
-  const buildRenderModule = async (importer: string, id: string) => {
+  const buildRuntimeModule = async (importer: string, id: string) => {
     const moduleDirectory = resolve(dirname(importer), parseModulesFromId(id, importer))
     const relativeDirectory = relative(sourceDirectory, moduleDirectory)
     const isBrowser = id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)
@@ -226,6 +275,15 @@ export default function makePlugin({
     const filePath = `${moduleDirectory}.${moduleType}.__generated__.ts`
     const directory = await readDirectory(moduleDirectory)
     const moduleTree = readModules(project, directory)
+
+    addManifestEntry(
+      {
+        type: moduleType,
+        ...moduleTreeToJson(sourceDirectory, moduleTree),
+      },
+      relative(sourceDirectory, importer),
+      id,
+    )
 
     // Setup the TypeScript project if it hasn't been already
     setupProject()
@@ -275,6 +333,15 @@ export default function makePlugin({
       devServer,
     })
 
+    addManifestEntry(
+      {
+        type: 'html',
+        filePath: relativeHtmlFilePath,
+      },
+      relative(sourceDirectory, importer),
+      id,
+    )
+
     addDependents(sourceFile)
 
     info(`Built html module for ${relativeHtmlFilePath}.`, logger)
@@ -295,7 +362,7 @@ export default function makePlugin({
     const moduleName = parseModulesFromId(id, importer)
     const moduleDirectory = resolve(importDirectory, moduleName)
     const relativeDirectory = relative(sourceDirectory, moduleDirectory)
-    const moduleType = id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX) ? 'express' : 'API'
+    const moduleType = id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX) ? 'express' : 'api'
     const directory = await readDirectory(moduleDirectory)
     const moduleTree = readApiModules(project, directory)
     const filePath = `${importDirectory}/${basename(
@@ -308,6 +375,15 @@ export default function makePlugin({
       filePath,
       importer,
       id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX),
+    )
+
+    addManifestEntry(
+      {
+        type: moduleType,
+        ...apiModuleTreeToJson(sourceDirectory, moduleTree),
+      },
+      relative(sourceDirectory, importer),
+      id,
     )
 
     addDependents(sourceFile)
@@ -336,9 +412,21 @@ export default function makePlugin({
     }
   }
 
-  const virtualModulePlugin = {
+  const virtualModulePlugin: TypedVitePlugin = {
     name: PLUGIN_NAME,
     config(config: UserConfig, env: ConfigEnv) {
+      isSsr = env.ssrBuild ?? false
+
+      if (env.command === 'serve' && env.mode === 'production' && serverExists) {
+        config.build = {
+          ssr: true,
+          outDir: resolvedServerOutputDirectory,
+          rollupOptions: {
+            input: resolvedServerFilePath,
+          },
+        }
+      }
+
       // Configure Build steps when running with vavite
       if (env.mode === 'multibuild') {
         const clientBuild: UserConfig['build'] = {
@@ -408,6 +496,16 @@ export default function makePlugin({
           this.error(project.formatDiagnosticsWithColorAndContext(diagnostics))
         }
       }
+
+      if (Object.keys(manifest).length > 0) {
+        writeFileSync(
+          resolve(
+            isSsr ? resolvedServerOutputDirectory : resolvedClientOutputDirectory,
+            'typed-manfiest.json',
+          ),
+          JSON.stringify(manifest, null, 2) + EOL,
+        )
+      }
     },
 
     async resolveId(id: string, importer?: string) {
@@ -421,7 +519,7 @@ export default function makePlugin({
       ) {
         setupProject()
 
-        return VIRTUAL_ID_PREFIX + (await buildRenderModule(importer, id))
+        return VIRTUAL_ID_PREFIX + (await buildRuntimeModule(importer, id))
       }
 
       if (id.startsWith(HTML_VIRTUAL_ENTRYPOINT_PREFIX)) {
@@ -476,7 +574,7 @@ export default function makePlugin({
         }
       }
     },
-  } satisfies Plugin
+  }
 
   plugins.push(virtualModulePlugin)
 

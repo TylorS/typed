@@ -7,20 +7,13 @@ export type SourceFileModule =
   | FallbackSourceFileModule
   | EnvironmentSourceFileModule
 
-export type RenderSourceFileModule = BaseRenderModule | RenderModuleWithEnvironment
-
-export interface BaseRenderModule {
-  readonly _tag: 'Render/Basic'
+export interface RenderSourceFileModule {
+  readonly _tag: 'Render'
   readonly sourceFile: SourceFile
   readonly isFx: boolean
   readonly hasLayout: boolean
-}
-
-export interface RenderModuleWithEnvironment {
-  readonly _tag: 'Render/Environment'
-  readonly sourceFile: SourceFile
-  readonly isFx: boolean
-  readonly hasLayout: boolean
+  readonly hasEnvironment: boolean
+  readonly hasStaticPaths: boolean
 }
 
 export type LayoutSourceFileModule = BasicLayoutModule | LayoutModuleWithEnvironment
@@ -75,7 +68,7 @@ export function isLayoutModule(module: SourceFileModule): module is LayoutSource
 }
 
 export function isRenderModule(module: SourceFileModule): module is RenderSourceFileModule {
-  return module._tag === 'Render/Basic' || module._tag === 'Render/Environment'
+  return module._tag === 'Render'
 }
 
 export function isRedirectModule(module: SourceFileModule): module is RedirectSourceFileModule {

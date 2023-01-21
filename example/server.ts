@@ -55,10 +55,15 @@ app.get('/*', run(pages, indexHtml, getParentElement))
 // dead-code eliminated from your production build.
 if (import.meta.env.DEV && httpDevServer) {
   httpDevServer.on('request', app)
-  console.log(`listening on at ${JSON.stringify(httpDevServer.address())}`)
+  console.log(`listening at ${JSON.stringify(httpDevServer.address())}`)
 } else {
   // Otherwise, start the server for production
   const port = 3000
 
   app.listen(port, () => console.log(`Server listening on port ${port}.`))
+}
+
+// Allow other processes know when the server is ready
+if (process.send) {
+  process.send('@typed/ready')
 }
