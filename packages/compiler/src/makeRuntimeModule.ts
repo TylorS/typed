@@ -223,20 +223,10 @@ export function makeRuntimeModule(
 
     const name = getImportName(mod.sourceFile)
 
-    const addEnvironmentImports = () => {
+    if (mod.hasEnvironment) {
       addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
       addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
-    }
 
-    const basicOptions = () => {
-      return environment
-        ? `layout: pipe(${name}.layout, Fx.provideSomeLayer(${getImportName(
-            environment.sourceFile,
-          )}.environment))`
-        : `layout: ${name}.layout`
-    }
-
-    const environmentOptions = () => {
       const layoutEnvText = environment
         ? `, Fx.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
         : ''
@@ -244,13 +234,11 @@ export function makeRuntimeModule(
       return `layout: pipe(${name}.layout${layoutEnvText}, Fx.provideSomeLayer(${name}.environment))`
     }
 
-    if (mod.hasEnvironment) {
-      addEnvironmentImports()
-
-      return environmentOptions()
-    }
-
-    return basicOptions()
+    return environment
+      ? `layout: pipe(${name}.layout, Fx.provideSomeLayer(${getImportName(
+          environment.sourceFile,
+        )}.environment))`
+      : `layout: ${name}.layout`
   }
 
   function getImportName(sourceFile: SourceFile) {
