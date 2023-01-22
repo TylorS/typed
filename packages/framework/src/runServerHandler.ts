@@ -28,11 +28,9 @@ export function runServerHandler(
       return yield* $(Effect.dieMessage(`Unable to find parent element`))
     }
 
-    const fiber = yield* $(
-      pipe(main, renderInto(parentElement), provide(window, parentElement), Fx.drain, Effect.fork),
+    const exit = yield* $(
+      pipe(main, renderInto(parentElement), provide(window, parentElement), Fx.drain, Effect.exit),
     )
-
-    const exit = yield* $(fiber.await())
 
     return pipe(
       exit,
