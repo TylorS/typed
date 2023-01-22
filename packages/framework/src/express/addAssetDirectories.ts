@@ -14,8 +14,6 @@ export function addAssetDirectories(
 
   // Register any assets that need to be served
   for (const mod of modules) {
-    if (!mod.assetDirectory) continue
-
     const assetDirectory = fileURLToPath(new URL(mod.assetDirectory, import.meta.url))
 
     if (assetDirectories.has(assetDirectory)) continue

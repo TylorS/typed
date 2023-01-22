@@ -4,7 +4,7 @@ export interface HtmlModule {
   /**
    * The path to the directory where assets will be found
    */
-  readonly assetDirectory: string | null
+  readonly assetDirectory: string
 
   /**
    * The html to utilize for rendering
