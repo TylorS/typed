@@ -14,7 +14,7 @@ export function runServerHandler(
   main: Fx.Fx<IntrinsicServices, Redirect, Renderable>,
   url: string,
   provide: (
-    window: ReturnType<(typeof htmlModule)['makeWindow']>,
+    window: ReturnType<HtmlModule['makeWindow']>,
     parentElement: HTMLElement,
   ) => (fx: Fx.Fx<IntrinsicServices, Redirect, Renderable>) => Fx.Fx<never, Redirect, Renderable>,
 ): Effect.Effect<never, never, Exit.Exit<Redirect, string>> {
