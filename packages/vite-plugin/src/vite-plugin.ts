@@ -248,6 +248,12 @@ export default function makePlugin({
     tsconfigPaths({
       projects: [tsConfigFilePath],
     }),
+    serverExists &&
+      !isStaticBuild &&
+      vavite({
+        serverEntry: resolvedServerFilePath,
+        serveClientAssetsInDev: true,
+      }),
   ]
 
   const setupProject = () => {
@@ -511,17 +517,6 @@ export default function makePlugin({
         ]
 
         return
-      }
-
-      if (serverExists) {
-        config.plugins?.push(
-          vavite({
-            serverEntry: resolvedServerFilePath,
-            serveClientAssetsInDev: true,
-          }),
-        )
-      } else {
-        // TODO: Add vavite plugins without reloader
       }
     },
 

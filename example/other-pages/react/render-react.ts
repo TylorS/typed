@@ -8,8 +8,7 @@ import type { ParamsOf, Route } from '@typed/route'
 import { type Redirect, Router } from '@typed/router'
 import type { ReactElement } from 'react'
 
-// Only the first render should ever use hydrate
-let firstRender = true
+import { isFirstRender } from '../helper.js'
 
 export function renderReact<R, Path extends string>(
   route: Route<R, Path>,
@@ -49,11 +48,9 @@ export function renderReact<R, Path extends string>(
           Option.match(
             () => createRoot(container),
             () => {
-              if (!firstRender) {
+              if (!isFirstRender()) {
                 return createRoot(container)
               }
-
-              firstRender = false
 
               return hydrateRoot(container, Component(initialParams.value))
             },

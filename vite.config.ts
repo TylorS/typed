@@ -8,7 +8,7 @@ import { defineConfig } from 'vite'
 
 import typed from './packages/vite-plugin/src/vite-plugin'
 
-const isStaticBuild = process.argv[1].includes('vite-node')
+const isStaticBuild = process.env.STATIC_BUILD === 'true'
 
 export default defineConfig({
   root: join(__dirname, 'example'),

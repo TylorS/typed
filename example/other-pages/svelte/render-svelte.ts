@@ -9,7 +9,7 @@ import { Router } from '@typed/router'
 import type { ComponentConstructorOptions, SvelteComponentTyped } from 'svelte'
 import type { SvelteComponentDev } from 'svelte/internal'
 
-let isFirstRender = true
+import { isFirstRender } from '../helper.js'
 
 export function renderSvelte<
   R,
@@ -53,10 +53,8 @@ export function renderSvelte<
         const instance = new Component({
           target: container,
           props: f(initialParams.value),
-          hydrate: isFirstRender ? Option.isSome(current) : false,
+          hydrate: isFirstRender() ? Option.isSome(current) : false,
         })
-
-        isFirstRender = false
 
         return pipe(
           params,
