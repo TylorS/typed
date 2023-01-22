@@ -27,6 +27,5 @@ There is currently one toy example in the example directory which will showcase 
 
 ## Upcoming
 - Hydration of SSR content
-- SSG output
 - Integrations with @fp-ts/schema
 - Itegrations with @fp-ts/optic
