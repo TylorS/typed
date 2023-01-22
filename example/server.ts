@@ -63,8 +63,3 @@ if (import.meta.env.DEV && httpDevServer) {
 
   app.listen(port, () => console.log(`Server listening on port ${port}.`))
 }
-
-// Allow other processes know when the server is ready
-if (process.send) {
-  process.send('@typed/ready')
-}
