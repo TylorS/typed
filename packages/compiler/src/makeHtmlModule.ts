@@ -1,5 +1,5 @@
 import { EOL } from 'os'
-import { dirname, relative } from 'path'
+import { dirname, join, relative } from 'path'
 
 import { parseBasePath } from '@typed/framework/html'
 import { minify } from 'html-minifier'
@@ -11,6 +11,7 @@ import { addNamedImport, appendText } from './ts-morph-helpers.js'
 
 export interface HtmlModuleOptions {
   readonly project: Project
+  readonly base: string
   readonly filePath: string
   readonly html: string
   readonly importer: string
@@ -23,6 +24,7 @@ export interface HtmlModuleOptions {
 export async function makeHtmlModule(options: HtmlModuleOptions): Promise<SourceFile> {
   const {
     project,
+    base,
     filePath,
     html,
     importer,
@@ -64,12 +66,24 @@ export async function makeHtmlModule(options: HtmlModuleOptions): Promise<Source
     EOL + `export const htmlAttributes: Record<string, string> = ${JSON.stringify(htmlAttributes)}`,
   )
 
-  appendText(sourceFile, EOL + `export const basePath: string = '${parseBasePath(html)}'`)
+  let basePath = join(base, parseBasePath(html))
+
+  if (basePath !== '/' && basePath.endsWith('/')) {
+    basePath = basePath.slice(0, -1)
+  }
+
+  appendText(sourceFile, EOL + `export const basePath: string = '${basePath}'`)
 
   appendText(
     sourceFile,
     EOL +
-      (await generateHtmlExport(filePath, html, docType, isStaticBuild ? undefined : devServer)),
+      (await generateHtmlExport(
+        basePath,
+        filePath,
+        html,
+        docType,
+        isStaticBuild ? undefined : devServer,
+      )),
   )
 
   appendText(
@@ -116,11 +130,14 @@ function parseHtmlAttributes(html: string): Record<string, string> {
 }
 
 async function generateHtmlExport(
+  base: string,
   filePath: string,
   html: string,
   docType: string,
   devServer?: ViteDevServer,
 ) {
+  html = addOrUpdateBase(html, base)
+
   if (devServer) {
     html = await devServer.transformIndexHtml(filePath, html)
   } else {
@@ -140,4 +157,15 @@ function getRelativePath(serverOutputDirectory: string, clientOutputDirectory: s
   }
 
   return relativeClientOutput
+}
+
+function addOrUpdateBase(html: string, base: string) {
+  const baseHrefRegex = /<base(.*)(href=["'].*["'])(.*)>/i
+  const baseMatch = html.match(baseHrefRegex)
+
+  if (baseMatch) {
+    return html.replace(baseHrefRegex, `<base$1 href="${base}"$3>`)
+  }
+
+  return html.replace('</head>', `  <base href="${base}" />${EOL}</head>`)
 }

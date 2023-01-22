@@ -21,7 +21,15 @@ import glob from 'fast-glob'
 import { Project, SourceFile, ts, type CompilerOptions } from 'ts-morph'
 // @ts-expect-error Unable to resolve types w/ NodeNext
 import vavite from 'vavite'
-import type { ConfigEnv, Logger, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
+import type {
+  ConfigEnv,
+  Logger,
+  Plugin,
+  PluginOption,
+  ResolvedConfig,
+  UserConfig,
+  ViteDevServer,
+} from 'vite'
 import compression from 'vite-plugin-compression'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -172,6 +180,7 @@ export interface ResolvedOptions {
   readonly debug: boolean
   readonly saveGeneratedModules: boolean
   readonly isStaticBuild: boolean
+  readonly base: string
 }
 
 export default function makePlugin({
@@ -219,6 +228,7 @@ export default function makePlugin({
     debug,
     saveGeneratedModules,
     isStaticBuild,
+    base: '/',
   }
 
   const dependentsMap = new Map<string, Set<string>>()
@@ -237,6 +247,7 @@ export default function makePlugin({
   }
 
   let devServer: ViteDevServer
+  let config: ResolvedConfig
   let logger: Logger
   let isSsr = false
   let project: Project
@@ -386,6 +397,7 @@ export default function makePlugin({
 
     const sourceFile = await makeHtmlModule({
       project,
+      base: config.base,
       filePath: htmlFilePath,
       html,
       importer,
@@ -521,19 +533,24 @@ export default function makePlugin({
     },
 
     configResolved(resolvedConfig) {
+      config = resolvedConfig
       logger = resolvedConfig.logger
 
       const input = resolvedConfig.build.rollupOptions.input
 
+      Object.assign(resolvedOptions, { base: resolvedConfig.base })
+
       if (!input) return
 
       if (typeof input === 'string') {
-        manifest.entryFiles.push(parseEntryFile(sourceDirectory, input))
+        manifest.entryFiles.push(parseEntryFile(sourceDirectory, input, config.base))
       } else if (Array.isArray(input)) {
-        manifest.entryFiles.push(...input.map((i) => parseEntryFile(sourceDirectory, i)))
+        manifest.entryFiles.push(
+          ...input.map((i) => parseEntryFile(sourceDirectory, i, config.base)),
+        )
       } else {
         manifest.entryFiles.push(
-          ...Object.values(input).map((i) => parseEntryFile(sourceDirectory, i)),
+          ...Object.values(input).map((i) => parseEntryFile(sourceDirectory, i, config.base)),
         )
       }
     },
@@ -750,22 +767,22 @@ function info(message: string, logger: Logger | undefined) {
   }
 }
 
-function parseEntryFile(sourceDirectory: string, filePath: string): EntryFile {
+function parseEntryFile(sourceDirectory: string, filePath: string, base: string): EntryFile {
   if (filePath.endsWith('.html')) {
-    return parseHtmlEntryFile(sourceDirectory, filePath)
+    return parseHtmlEntryFile(sourceDirectory, filePath, base)
   }
 
   return parseTsEntryFile(sourceDirectory, filePath)
 }
 
-function parseHtmlEntryFile(sourceDirectory: string, filePath: string): EntryFile {
+function parseHtmlEntryFile(sourceDirectory: string, filePath: string, base: string): EntryFile {
   const content = readFileSync(filePath, 'utf-8').toString()
 
   return {
     type: 'html',
     filePath: relative(sourceDirectory, filePath),
     imports: parseHtmlImports(sourceDirectory, content),
-    basePath: parseBasePath(content),
+    basePath: join(base, parseBasePath(content)),
   }
 }
 

@@ -12,6 +12,7 @@ const isStaticBuild = process.env.STATIC_BUILD === 'true'
 
 export default defineConfig({
   root: join(__dirname, 'example'),
+  base: '/web',
   ...(isStaticBuild ? { mode: 'production' } : {}),
   resolve: {
     // Only necessary because developing in a monorepo dogfooding my own source code.

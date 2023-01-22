@@ -107,4 +107,6 @@ declare module 'typed:config' {
   export const debug: boolean
 
   export const saveGeneratedModules: boolean
+
+  export const base: string
 }

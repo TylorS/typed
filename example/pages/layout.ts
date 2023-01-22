@@ -24,7 +24,7 @@ export const layout = html`
       <li>${Link({ href: bar.route.make({ bar: '2' }), label: 'Bar 2' })}</li>
       <li>${Link({ href: baz.route.make({ baz: '1' }), label: 'Baz 1' })}</li>
       <li>${Link({ href: baz.route.make({ baz: '2' }), label: 'Baz 2' })}</li>
-      <li><a href="/other">Other</a></li>
+      <li>${Link({ href: '/other', label: 'Other Frameworks', fullReload: true })}</li>
       <li>${Link({ href: '/broken-link', label: 'Broken' })}</li>
     </ul>
   </nav>

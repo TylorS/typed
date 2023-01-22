@@ -1,5 +1,7 @@
 /// <reference types="@typed/framework" />
 
+import { join } from 'path'
+
 import { addAssetDirectories, run } from '@typed/framework/express'
 import express from 'express'
 // Express Modules are transform by our vite plugin and expose all of the FetchHandlers
@@ -13,6 +15,7 @@ import * as otherHtml from 'html:./other'
 // See @typed/framework/src/RuntimeModule.ts to see its full signature.
 import * as otherPages from 'runtime:./other-pages'
 import * as pages from 'runtime:./pages'
+import * as config from 'typed:config'
 import httpDevServer from 'vavite/http-dev-server'
 
 const app = express()
@@ -42,8 +45,8 @@ app.use('/api', api.router)
 // element we should render into.
 const getParentElement = (d: Document) => d.getElementById('application')
 
-app.get('/other*', run(otherPages, otherHtml, getParentElement))
-app.get('/*', run(pages, indexHtml, getParentElement))
+app.get(join(config.base, '/other*'), run(otherPages, otherHtml, getParentElement))
+app.get(join(config.base, '/*'), run(pages, indexHtml, getParentElement))
 
 // Our vite plugin configures another vite plugin called vavite for you
 // anytime it finds your configured server file.

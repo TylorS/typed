@@ -16,7 +16,7 @@ export const layout = html`
 
   <nav>
     <ul>
-      <li><a href="/">Home</a></li>
+      <li>${Link({ href: '/', label: 'Home', fullReload: true })}</li>
       <li>${Link({ href: react.route.make({ counter: 'foo' }), label: 'React Foo' })}</li>
       <li>${Link({ href: react.route.make({ counter: 'bar' }), label: 'React Bar' })}</li>
       <li>${Link({ href: svelte.route.make({ name: 'foo' }), label: 'Svelte Foo' })}</li>
