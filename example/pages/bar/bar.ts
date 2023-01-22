@@ -1,3 +1,5 @@
+import { sync } from '@effect/io/Effect'
+import { range } from '@fp-ts/data/ReadonlyArray'
 import { Main } from '@typed/framework'
 import { html } from '@typed/html'
 import * as Route from '@typed/route'
@@ -11,7 +13,7 @@ export const main = Main.make(route)(() => Counter)
 
 export const layout = html`
   <div>
-    <h1>Bar</h1>
+    <h1>Bar Layout</h1>
 
     <nav>
       ${
@@ -23,3 +25,5 @@ export const layout = html`
     <main>${outlet}</main>
   </div>
 `
+
+export const getStaticPaths = sync(() => range(0, 10).map((i) => route.make({ bar: i.toString() })))

@@ -10,6 +10,7 @@ export type SourceFileModule =
 export interface RenderSourceFileModule {
   readonly _tag: 'Render'
   readonly sourceFile: SourceFile
+  readonly route: string
   readonly isFx: boolean
   readonly hasLayout: boolean
   readonly hasEnvironment: boolean

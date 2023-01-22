@@ -1,4 +1,6 @@
+import { sync } from '@effect/io/Effect'
 import { pipe } from '@fp-ts/data/Function'
+import { range } from '@fp-ts/data/ReadonlyArray'
 import { Main } from '@typed/framework'
 import * as Fx from '@typed/fx'
 import * as Route from '@typed/route'
@@ -14,3 +16,5 @@ export const main = Main.lazy(route)(() =>
       ),
   ),
 )
+
+export const getStaticPaths = sync(() => range(0, 10).map((i) => route.make({ foo: i.toString() })))

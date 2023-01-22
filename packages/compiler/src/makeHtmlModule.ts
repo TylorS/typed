@@ -1,6 +1,7 @@
 import { EOL } from 'os'
 import { dirname, relative } from 'path'
 
+import { parseBasePath } from '@typed/framework/html'
 import { minify } from 'html-minifier'
 import type { Project, SourceFile } from 'ts-morph'
 import type { ViteDevServer } from 'vite'
@@ -15,6 +16,7 @@ export interface HtmlModuleOptions {
   readonly importer: string
   readonly serverOutputDirectory: string
   readonly clientOutputDirectory: string
+  readonly isStaticBuild: boolean
   readonly devServer?: ViteDevServer
 }
 
@@ -26,6 +28,7 @@ export async function makeHtmlModule(options: HtmlModuleOptions): Promise<Source
     importer,
     serverOutputDirectory,
     clientOutputDirectory,
+    isStaticBuild,
     devServer,
   } = options
   const tsPath = `${filePath}.__generated__.ts`
@@ -38,7 +41,6 @@ export async function makeHtmlModule(options: HtmlModuleOptions): Promise<Source
   const docType = `<!DOCTYPE ${parseDocType(html)}>`
   const htmlAttributes = parseHtmlAttributes(html)
 
-  addNamedImport(sourceFile, ['IncomingMessage'], 'http', true)
   addNamedImport(
     sourceFile,
     ['makeServerWindow', 'type ServerWindowOptions'],
@@ -49,24 +51,32 @@ export async function makeHtmlModule(options: HtmlModuleOptions): Promise<Source
     sourceFile,
     EOL +
       `export const assetDirectory: string = '${
-        devServer
+        devServer && !isStaticBuild
           ? dirname(importer)
           : getRelativePath(serverOutputDirectory, clientOutputDirectory)
       }'`,
   )
+
+  appendText(sourceFile, EOL + `export const docType: string = \`${docType.trim()}\``)
+
   appendText(
     sourceFile,
     EOL + `export const htmlAttributes: Record<string, string> = ${JSON.stringify(htmlAttributes)}`,
   )
-  appendText(sourceFile, EOL + `export const docType: string = \`${docType.trim()}\``)
 
-  appendText(sourceFile, EOL + (await generateHtmlExport(filePath, html, docType, devServer)))
+  appendText(sourceFile, EOL + `export const basePath: string = '${parseBasePath(html)}'`)
 
   appendText(
     sourceFile,
     EOL +
-      `export function makeWindow(req: IncomingMessage, options?: ServerWindowOptions): ReturnType<typeof makeServerWindow> {
-  const win = makeServerWindow(req, options)
+      (await generateHtmlExport(filePath, html, docType, isStaticBuild ? undefined : devServer)),
+  )
+
+  appendText(
+    sourceFile,
+    EOL +
+      `export function makeWindow(options: ServerWindowOptions): ReturnType<typeof makeServerWindow> {
+  const win = makeServerWindow(options)
   const documentElement = win.document.documentElement
 
   documentElement.innerHTML = html

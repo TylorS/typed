@@ -1,3 +1,4 @@
+import type * as Effect from '@effect/io/Effect'
 import type * as Layer from '@effect/io/Layer'
 import * as Fx from '@typed/fx'
 import type { Renderable } from '@typed/html'
@@ -17,6 +18,7 @@ export interface Module<out R, P extends string> {
 export namespace Module {
   export interface Meta {
     readonly layout?: Fx.Fx<IntrinsicServices, Router.Redirect, Renderable>
+    readonly getStaticPaths?: Effect.Effect<IntrinsicServices, never, ReadonlyArray<string>>
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

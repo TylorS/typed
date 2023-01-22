@@ -19,7 +19,18 @@ const app = express()
 
 // Serve static files with express server in production
 if (import.meta.env.PROD) {
-  addAssetDirectories(app, [indexHtml, otherHtml], 31536000 /* One Year */)
+  addAssetDirectories(app, [indexHtml, otherHtml], {
+    serveStatic: {
+      maxAge: 31536000 /* One Year */,
+      cacheControl: true,
+      // Enable serving of pre-rendered static HTML files
+      extensions: ['html'],
+      setHeaders: (res, path) => {
+        // HTML files are served with a max-age of 0 so that they are always fresh
+        if (path.endsWith('.html')) res.setHeader('Cache-Control', 'public, max-age=0')
+      },
+    },
+  })
 }
 
 // Register our request handlers
@@ -31,14 +42,7 @@ app.use('/api', api.router)
 // element we should render into.
 const getParentElement = (d: Document) => d.getElementById('application')
 
-// Register a route handler
-// Here we utilize 'run' from @typed/framework/express which understands how to stitch
-// together an express.RouteHandler from a RuntimeModule and a HtmlModule.
-// Since our applications define our own routes, we use the splat (*) operator
-// to allow our application to handle all routes starting from the base path.
 app.get('/other*', run(otherPages, otherHtml, getParentElement))
-
-// Register another handler
 app.get('/*', run(pages, indexHtml, getParentElement))
 
 // Our vite plugin configures another vite plugin called vavite for you

@@ -26,7 +26,8 @@
     "update:packages": "tsx ./tools/updatePackages.ts",
     "update:rootTsconfig": "tsx ./tools/updateRootTsconfig.ts",
     "example": "vite --config ./vite.config.ts serve example",
-    "example:build": "vavite --config ./vite.config.ts",
+    "example:build": "vavite --config ./vite.config.ts && pnpm run example:static",
+    "example:static": "vite-node --config ./vite.config.ts ./example/static.ts --options.transformMode.ssr='\\.svelte$'",
     "example:preview": "node ./example/dist/server/index.js",
     "~~NEEDS POSITIONAL COMMAND LINE ARGUMENT~~": "",
     "new-package": "nx generate ./packages/nx-plugin:package"

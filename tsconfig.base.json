@@ -64,7 +64,7 @@
         "./packages/router/src/*"
       ],
       "@typed/vite-plugin/*": [
-        "./packages/vite/src/*-plugin"
+        "./packages/vite/src/*"
       ]
     },
     "plugins": [
@@ -78,6 +78,6 @@
   },
   "exclude": [
     "node_modules",
-    "packages/*/dist"
+    ".**/*/dist"
   ]
 }

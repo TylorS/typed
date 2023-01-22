@@ -1,7 +1,7 @@
-import { existsSync, writeFileSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { EOL } from 'os'
-import { basename, dirname, relative, resolve } from 'path'
+import { basename, dirname, join, relative, resolve } from 'path'
 
 import effectTransformer from '@effect/language-service/transformer'
 import {
@@ -71,6 +71,11 @@ export interface PluginOptions {
    * If true, will configure the plugin to save all the generated files to disk
    */
   readonly saveGeneratedModules?: boolean
+
+  /**
+   * If true, will configure the plugin to operate in a static build mode.
+   */
+  readonly isStaticBuild?: boolean
 }
 
 const cwd = process.cwd()
@@ -78,7 +83,8 @@ const cwd = process.cwd()
 export const PLUGIN_NAME = '@typed/vite-plugin'
 
 export interface TypedVitePlugin extends Plugin {
-  name: typeof PLUGIN_NAME
+  readonly name: typeof PLUGIN_NAME
+  readonly resolvedOptions: ResolvedOptions
 }
 
 const RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX = 'runtime'
@@ -86,6 +92,7 @@ const BROWSER_VIRTUAL_ENTRYPOINT_PREFIX = 'browser'
 const HTML_VIRTUAL_ENTRYPOINT_PREFIX = 'html'
 const API_VIRTUAL_ENTRYPOINT_PREFIX = 'api'
 const EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX = 'express'
+const TYPED_CONFIG_IMPORT = 'typed:config'
 
 const PREFIXES = [
   RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX,
@@ -97,21 +104,48 @@ const PREFIXES = [
 
 const VIRTUAL_ID_PREFIX = '\0'
 
-// TODO: Build a manifest of all the files that are generated and save them to disk
-// TODO:
+export interface Manifest {
+  readonly entryFiles: EntryFile[]
+
+  readonly modules: {
+    [importer: string]: Record<string, ManifestEntry>
+  }
+}
+
+export interface ClientManifest extends Manifest {
+  readonly entryFiles: HtmlEntryFile[]
+
+  readonly modules: {
+    [importer: string]: Record<string, ManifestEntry>
+  }
+}
+
+export type EntryFile = HtmlEntryFile | TsEntryFile
+
+export interface HtmlEntryFile {
+  readonly type: 'html'
+  readonly filePath: string
+  readonly imports: string[]
+  readonly basePath: string
+}
+
+export interface TsEntryFile {
+  readonly type: 'ts'
+  readonly filePath: string
+}
 
 export type ManifestEntry =
-  | ApiManfiestEntry
-  | ExpressManfiestEntry
+  | ApiManifestEntry
+  | ExpressManifestEntry
   | HtmlManifestEntry
   | RuntimeManifestEntry
   | BrowserManifestEntry
 
-export interface ApiManfiestEntry extends ApiModuleTreeJson {
+export interface ApiManifestEntry extends ApiModuleTreeJson {
   readonly type: 'api'
 }
 
-export interface ExpressManfiestEntry extends ApiModuleTreeJson {
+export interface ExpressManifestEntry extends ApiModuleTreeJson {
   readonly type: 'express'
 }
 
@@ -128,6 +162,18 @@ export interface RuntimeManifestEntry extends ModuleTreeJsonWithFallback {
   readonly type: 'runtime'
 }
 
+export interface ResolvedOptions {
+  readonly sourceDirectory: string
+  readonly tsConfig: string
+  readonly serverFilePath: string
+  readonly clientOutputDirectory: string
+  readonly serverOutputDirectory: string
+  readonly htmlFiles: readonly string[]
+  readonly debug: boolean
+  readonly saveGeneratedModules: boolean
+  readonly isStaticBuild: boolean
+}
+
 export default function makePlugin({
   sourceDirectory: directory,
   tsConfig,
@@ -137,6 +183,7 @@ export default function makePlugin({
   htmlFileGlobs,
   debug = false,
   saveGeneratedModules = false,
+  isStaticBuild = false,
 }: PluginOptions): PluginOption[] {
   // Resolved options
   const sourceDirectory = resolve(cwd, directory)
@@ -160,16 +207,33 @@ export default function makePlugin({
     debug: debug ? defaultIncludeExcludeTs : {},
   }
 
+  const resolvedOptions: ResolvedOptions = {
+    sourceDirectory,
+    tsConfig: tsConfigFilePath,
+    serverFilePath: resolvedServerFilePath,
+    serverOutputDirectory: resolvedServerOutputDirectory,
+    clientOutputDirectory: resolvedClientOutputDirectory,
+    htmlFiles: findHtmlFiles(sourceDirectory, htmlFileGlobs).map((p) =>
+      resolve(sourceDirectory, p),
+    ),
+    debug,
+    saveGeneratedModules,
+    isStaticBuild,
+  }
+
   const dependentsMap = new Map<string, Set<string>>()
   const filePathToModule = new Map<string, SourceFile>()
-  const manifest: Record<string, Record<string, ManifestEntry>> = {}
+  const manifest: Manifest = {
+    entryFiles: [],
+    modules: {},
+  }
 
   const addManifestEntry = (entry: ManifestEntry, importer: string, id: string) => {
-    if (!manifest[importer]) {
-      manifest[importer] = {}
+    if (!manifest.modules[importer]) {
+      manifest.modules[importer] = {}
     }
 
-    manifest[importer][id] = entry
+    manifest.modules[importer][id] = entry
   }
 
   let devServer: ViteDevServer
@@ -184,14 +248,6 @@ export default function makePlugin({
     tsconfigPaths({
       projects: [tsConfigFilePath],
     }),
-    ...(serverExists
-      ? [
-          vavite({
-            serverEntry: resolvedServerFilePath,
-            serveClientAssetsInDev: true,
-          }),
-        ]
-      : []),
   ]
 
   const setupProject = () => {
@@ -223,7 +279,6 @@ export default function makePlugin({
       inlineSourceMap: false,
       inlineSources: saveGeneratedModules,
       sourceMap: true,
-      allowJs: true,
     }
   }
 
@@ -310,7 +365,7 @@ export default function makePlugin({
     let html = ''
 
     // If there's a dev server, use it to transform the HTML for development
-    if (devServer) {
+    if (!isStaticBuild && devServer) {
       html = (await readFile(htmlFilePath, 'utf-8')).toString()
       html = await devServer.transformIndexHtml(
         getRelativePath(sourceDirectory, htmlFilePath),
@@ -331,6 +386,7 @@ export default function makePlugin({
       serverOutputDirectory: resolvedServerOutputDirectory,
       clientOutputDirectory: resolvedClientOutputDirectory,
       devServer,
+      isStaticBuild,
     })
 
     addManifestEntry(
@@ -400,6 +456,7 @@ export default function makePlugin({
   }
 
   const addDependents = (sourceFile: SourceFile) => {
+    const importer = sourceFile.getFilePath()
     const imports = sourceFile
       .getLiteralsReferencingOtherSourceFiles()
       .map((i) => i.getLiteralValue())
@@ -407,34 +464,23 @@ export default function makePlugin({
     for (const i of imports) {
       const dependents = dependentsMap.get(i) ?? new Set()
 
-      dependents.add(sourceFile.getFilePath())
+      dependents.add(importer)
       dependentsMap.set(i, dependents)
     }
   }
 
   const virtualModulePlugin: TypedVitePlugin = {
     name: PLUGIN_NAME,
+    resolvedOptions,
     config(config: UserConfig, env: ConfigEnv) {
       isSsr = env.ssrBuild ?? false
-
-      if (env.command === 'serve' && env.mode === 'production' && serverExists) {
-        config.build = {
-          ssr: true,
-          outDir: resolvedServerOutputDirectory,
-          rollupOptions: {
-            input: resolvedServerFilePath,
-          },
-        }
-      }
 
       // Configure Build steps when running with vavite
       if (env.mode === 'multibuild') {
         const clientBuild: UserConfig['build'] = {
           outDir: resolvedClientOutputDirectory,
           rollupOptions: {
-            input: buildClientInput(
-              findHtmlFiles(sourceDirectory, htmlFileGlobs).map((p) => resolve(sourceDirectory, p)),
-            ),
+            input: buildClientInput(resolvedOptions.htmlFiles),
           },
         }
 
@@ -442,7 +488,9 @@ export default function makePlugin({
           ssr: true,
           outDir: resolvedServerOutputDirectory,
           rollupOptions: {
-            input: resolvedServerFilePath,
+            input: {
+              index: resolvedServerFilePath,
+            },
           },
         }
 
@@ -464,10 +512,35 @@ export default function makePlugin({
 
         return
       }
+
+      if (serverExists) {
+        config.plugins?.push(
+          vavite({
+            serverEntry: resolvedServerFilePath,
+            serveClientAssetsInDev: true,
+          }),
+        )
+      } else {
+        // TODO: Add vavite plugins without reloader
+      }
     },
 
     configResolved(resolvedConfig) {
       logger = resolvedConfig.logger
+
+      const input = resolvedConfig.build.rollupOptions.input
+
+      if (!input) return
+
+      if (typeof input === 'string') {
+        manifest.entryFiles.push(parseEntryFile(sourceDirectory, input))
+      } else if (Array.isArray(input)) {
+        manifest.entryFiles.push(...input.map((i) => parseEntryFile(sourceDirectory, i)))
+      } else {
+        manifest.entryFiles.push(
+          ...Object.values(input).map((i) => parseEntryFile(sourceDirectory, i)),
+        )
+      }
     },
 
     configureServer(server) {
@@ -488,7 +561,7 @@ export default function makePlugin({
       handleFileChange(path, event)
     },
 
-    closeBundle() {
+    async closeBundle() {
       if (project) {
         const diagnostics = project.getPreEmitDiagnostics()
 
@@ -501,7 +574,7 @@ export default function makePlugin({
         writeFileSync(
           resolve(
             isSsr ? resolvedServerOutputDirectory : resolvedClientOutputDirectory,
-            'typed-manfiest.json',
+            'typed-manifest.json',
           ),
           JSON.stringify(manifest, null, 2) + EOL,
         )
@@ -519,13 +592,17 @@ export default function makePlugin({
       ) {
         setupProject()
 
-        return VIRTUAL_ID_PREFIX + (await buildRuntimeModule(importer, id))
+        const virtualId = VIRTUAL_ID_PREFIX + (await buildRuntimeModule(importer, id))
+
+        return virtualId
       }
 
       if (id.startsWith(HTML_VIRTUAL_ENTRYPOINT_PREFIX)) {
         setupProject()
 
-        return VIRTUAL_ID_PREFIX + (await buildHtmlModule(importer, id))
+        const virtualId = VIRTUAL_ID_PREFIX + (await buildHtmlModule(importer, id))
+
+        return virtualId
       }
 
       if (
@@ -534,7 +611,13 @@ export default function makePlugin({
       ) {
         setupProject()
 
-        return VIRTUAL_ID_PREFIX + (await buildApiModule(importer, id))
+        const virtualId = VIRTUAL_ID_PREFIX + (await buildApiModule(importer, id))
+
+        return virtualId
+      }
+
+      if (id === TYPED_CONFIG_IMPORT) {
+        return VIRTUAL_ID_PREFIX + TYPED_CONFIG_IMPORT
       }
 
       importer = importer.replace(VIRTUAL_ID_PREFIX, '')
@@ -556,6 +639,14 @@ export default function makePlugin({
 
         return {
           code: sourceFile.getFullText(),
+        }
+      }
+
+      if (id === TYPED_CONFIG_IMPORT) {
+        return {
+          code: Object.entries(resolvedOptions)
+            .map(([key, value]) => `export const ${key} = ${JSON.stringify(value)}`)
+            .join(EOL),
         }
       }
     },
@@ -661,5 +752,71 @@ function info(message: string, logger: Logger | undefined) {
     logger.info(`[${PLUGIN_NAME}]: ${message}`)
   } else {
     console.info(`[${PLUGIN_NAME}]:`, `${message}`)
+  }
+}
+
+function parseEntryFile(sourceDirectory: string, filePath: string): EntryFile {
+  if (filePath.endsWith('.html')) {
+    return parseHtmlEntryFile(sourceDirectory, filePath)
+  }
+
+  return parseTsEntryFile(sourceDirectory, filePath)
+}
+
+function parseHtmlEntryFile(sourceDirectory: string, filePath: string): EntryFile {
+  const content = readFileSync(filePath, 'utf-8').toString()
+
+  return {
+    type: 'html',
+    filePath: relative(sourceDirectory, filePath),
+    imports: parseHtmlImports(sourceDirectory, content),
+    basePath: parseBasePath(content),
+  }
+}
+
+function parseHtmlImports(sourceDirectory: string, content: string) {
+  const imports: string[] = []
+
+  const matches = content.match(/<script[^>]*src="([^"]*)"[^>]*>/g)
+
+  if (matches) {
+    for (const match of matches) {
+      // If script is not type=module then skip
+      if (!match.includes('type="module"')) {
+        continue
+      }
+
+      const src = match.match(/src="([^"]*)"/)?.[1]
+
+      if (src) {
+        const fullPath = join(sourceDirectory, src)
+        const relativePath = relative(sourceDirectory, fullPath)
+
+        imports.push(relativePath)
+      }
+    }
+  }
+
+  return imports
+}
+
+function parseBasePath(content: string) {
+  const baseTag = content.match(/<base[^>]*>/)?.[0]
+
+  if (baseTag) {
+    const href = baseTag.match(/href="([^"]*)"/)?.[1]
+
+    if (href) {
+      return href
+    }
+  }
+
+  return '/'
+}
+
+function parseTsEntryFile(sourceDirectory: string, filePath: string): EntryFile {
+  return {
+    type: 'ts',
+    filePath: relative(sourceDirectory, filePath),
   }
 }

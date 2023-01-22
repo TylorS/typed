@@ -3,19 +3,20 @@ import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
 import { either } from '@fp-ts/data'
 import { pipe } from '@fp-ts/data/Function'
-import * as Fx from '@typed/fx'
-import { renderInto } from '@typed/html'
 import type express from 'express'
+import isbot from 'isbot'
+import viteDevServer from 'vavite/vite-dev-server'
+
+import { runServerHandler } from '../runServerHandler.js'
+
+import { getOriginFromRequest } from './getOriginFromRequest.js'
 
 import {
   type RuntimeModule,
-  provideServerIntrinsics,
   runMatcherWithFallback,
   type HtmlModule,
+  provideServerIntrinsics,
 } from '@typed/framework'
-
-import isbot from 'isbot'
-import viteDevServer from 'vavite/vite-dev-server'
 
 const prettyPrintCause = Cause.pretty()
 
@@ -30,29 +31,20 @@ export const runExpressApp = (
     try {
       await Effect.unsafeRunPromise(
         Effect.gen(function* ($) {
-          const window = htmlModule.makeWindow(req)
-
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const parentElement = getParentElement(window.document)
-
-          if (!parentElement) {
-            return yield* $(Effect.dieMessage(`Unable to find parent element`))
-          }
-
-          const fiber = yield* $(
-            pipe(
+          const url = new URL(req.url, getOriginFromRequest(req))
+          const exit = yield* $(
+            runServerHandler(
+              htmlModule,
+              getParentElement,
               main,
-              renderInto(parentElement),
-              provideServerIntrinsics(window, {
-                parentElement,
-                isBot: isbot(req.get('user-agent') ?? ''),
-              }),
-              Fx.drain,
-              Effect.fork,
+              url.href,
+              (window, parentElement) =>
+                provideServerIntrinsics(window, {
+                  parentElement,
+                  isBot: isbot(req.get('user-agent')),
+                }),
             ),
           )
-
-          const exit = yield* $(fiber.await())
 
           if (Exit.isFailure(exit)) {
             return pipe(
@@ -64,9 +56,7 @@ export const runExpressApp = (
             )
           }
 
-          return res
-            .status(200)
-            .send(htmlModule.docType + window.document.documentElement.outerHTML)
+          return res.status(200).send(exit.value)
         }),
       )
     } catch (error) {

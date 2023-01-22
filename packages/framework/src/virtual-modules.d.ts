@@ -40,8 +40,6 @@ declare module 'browser:*' {
  * TODO: Should have helpers for constructing happy-dom instance
  */
 declare module 'html:*' {
-  import type { IncomingMessage } from 'http'
-
   import type * as happyDom from 'happy-dom'
 
   import type { ServerWindowOptions } from '@typed/framework'
@@ -67,16 +65,20 @@ declare module 'html:*' {
   export const docType: string
 
   /**
+   * The basePath of the html
+   */
+  export const basePath: string
+
+  /**
    * Construct a server-side implementation of Window & GlobalThis
    */
   export function makeWindow(
-    req: IncomingMessage,
-    options?: ServerWindowOptions,
+    options: ServerWindowOptions,
   ): Window & typeof globalThis & Pick<InstanceType<typeof happyDom.Window>, 'happyDOM'>
 }
 
 declare module 'api:*' {
-  import type { FetchHandler } from 'packages/framework/dist/api/FetchHandler.js'
+  import type { FetchHandler } from '@typed/framework'
 
   export const handlers: ReadonlyArray<FetchHandler<never, string>>
 }
@@ -87,4 +89,22 @@ declare module 'express:*' {
   export const router: express.Router
 
   export * from 'api:*'
+}
+
+declare module 'typed:config' {
+  export const sourceDirectory: string
+
+  export const tsConfig: string
+
+  export const serverFilePath: string
+
+  export const clientOutputDirectory: string
+
+  export const serverOutputDirectory: string
+
+  export const htmlFiles: readonly string[]
+
+  export const debug: boolean
+
+  export const saveGeneratedModules: boolean
 }

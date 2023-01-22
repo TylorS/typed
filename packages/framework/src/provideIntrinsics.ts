@@ -1,4 +1,5 @@
 import * as Effect from '@effect/io/Effect'
+import * as Context from '@fp-ts/data/Context'
 import { flow, pipe } from '@fp-ts/data/Function'
 import { makeDomServices } from '@typed/dom/DomServices'
 import type { GlobalThis } from '@typed/dom/GlobalThis'
@@ -28,6 +29,18 @@ export function provideIntrinsics(options: ProvideIntrinsicsOptions) {
         makeDomServices(options.window, options.globalThis, options.parentElement),
       ),
       RenderContext.provideFx(RenderContext(options.environment, options.isBot)),
+    )
+}
+
+export function provideIntrinsicsEffect(options: ProvideIntrinsicsOptions) {
+  return <E, A>(effect: Effect.Effect<IntrinsicServices, E, A>): Effect.Effect<never, E, A> =>
+    pipe(
+      effect,
+      Effect.provideSomeLayer(Router.live(options.currentPath)),
+      RenderContext.provide(RenderContext(options.environment, options.isBot)),
+      Effect.provideSomeEnvironment(
+        Context.merge(makeDomServices(options.window, options.globalThis, options.parentElement)),
+      ),
     )
 }
 
@@ -62,4 +75,18 @@ export function provideServerIntrinsics(window: Window & GlobalThis, options?: I
 
 export function provideStaticIntrinsics(window: Window & GlobalThis, options?: IntrinsicOptions) {
   return provideIntrinsics({ ...options, environment: 'static', window, globalThis })
+}
+
+export function provideServerIntrinsicsEffect(
+  window: Window & GlobalThis,
+  options?: IntrinsicOptions,
+) {
+  return provideIntrinsicsEffect({ ...options, environment: 'server', window, globalThis })
+}
+
+export function provideStaticIntrinsicsEffect(
+  window: Window & GlobalThis,
+  options?: IntrinsicOptions,
+) {
+  return provideIntrinsicsEffect({ ...options, environment: 'static', window, globalThis })
 }

@@ -147,6 +147,7 @@ function parseRenderSourceFileModule(
   return O.some({
     _tag: 'Render',
     sourceFile,
+    route: parseRouteValue(route.value),
     isFx,
     hasLayout,
     hasEnvironment,
@@ -352,4 +353,12 @@ function typeIsEffect(type: Type) {
   return type.getProperties().some((s) => {
     return s.getValueDeclarationOrThrow().getSourceFile().getFilePath().includes('@effect/io')
   })
+}
+
+function parseRouteValue(route: ExportedDeclarations) {
+  const typeArgs = route.getType().getTypeArguments()
+  const pathArg = typeArgs[1]
+  const path = pathArg.getText(route).replace(/['"]/g, '')
+
+  return path
 }

@@ -153,6 +153,8 @@ export function makeRuntimeModule(
   ): string {
     const name = getImportName(render.sourceFile)
     const layoutOptions = makeLayoutModuleOptions(render.hasLayout ? render : layout, environment)
+    const staticPathsOptions = makeGetStaticPathsOptions(render, environment)
+    const options = [layoutOptions, staticPathsOptions].filter(Boolean).join(', ')
 
     addNamedImport(sourceFile, ['Module'], '@typed/framework')
 
@@ -191,7 +193,7 @@ export function makeRuntimeModule(
         render.isFx
           ? `constant(pipe(${name}.main${mainEnvText}, Fx.provideSomeLayer(${name}.environment)))`
           : `flow(${name}.main${mainEnvText}, Fx.provideSomeLayer(${name}.environment))`
-      } ${layoutOptions ? `, { ${layoutOptions} }` : ''})`
+      } ${options ? `, { ${options} }` : ''})`
     }
 
     if (environment) {
@@ -203,14 +205,12 @@ export function makeRuntimeModule(
             environment.sourceFile,
           )}.environment))`
 
-      return `Module.make(${name}.route, ${mainText}${
-        layoutOptions ? `, { ${layoutOptions} }` : ''
-      })`
+      return `Module.make(${name}.route, ${mainText}${options ? `, { ${options} }` : ''})`
     }
 
     const mainText = render.isFx ? `constant(${name}.main)` : `${name}.main`
 
-    return `Module.make(${name}.route, ${mainText}${layoutOptions ? `, { ${layoutOptions} }` : ''})`
+    return `Module.make(${name}.route, ${mainText}${options ? `, { ${options} }` : ''})`
   }
 
   function makeLayoutModuleOptions(
@@ -223,10 +223,12 @@ export function makeRuntimeModule(
 
     const name = getImportName(mod.sourceFile)
 
-    if (mod.hasEnvironment) {
+    if (mod.hasEnvironment || environment) {
       addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
       addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
+    }
 
+    if (mod.hasEnvironment) {
       const layoutEnvText = environment
         ? `, Fx.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
         : ''
@@ -239,6 +241,36 @@ export function makeRuntimeModule(
           environment.sourceFile,
         )}.environment))`
       : `layout: ${name}.layout`
+  }
+
+  function makeGetStaticPathsOptions(
+    mod: RenderSourceFileModule,
+    environment?: EnvironmentSourceFileModule,
+  ): string {
+    if (!mod.hasStaticPaths) {
+      return ''
+    }
+
+    const name = getImportName(mod.sourceFile)
+
+    if (environment || mod.hasEnvironment) {
+      addNamespaceImport(sourceFile, 'Effect', '@effect/io/Effect')
+      addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
+    }
+
+    if (mod.hasEnvironment) {
+      const envText = environment
+        ? `, Effect.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
+        : ''
+
+      return `getStaticPaths: pipe(${name}.getStaticPaths${envText}, Effect.provideSomeLayer(${name}.environment))`
+    }
+
+    return environment
+      ? `getStaticPaths: pipe(${name}.getStaticPaths, Effect.provideSomeLayer(${getImportName(
+          environment.sourceFile,
+        )}.environment))`
+      : `getStaticPaths: ${name}.getStaticPaths`
   }
 
   function getImportName(sourceFile: SourceFile) {
@@ -298,7 +330,7 @@ export function makeRuntimeModule(
             ? `, Route.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
             : ''
 
-          return `export const redirect = { type: 'Redirect', route: pipe(${name}.route${routeEnvText}, Route.provideSomeLayer(${name}.environment))${
+          return `export const fallback = { type: 'Redirect', route: pipe(${name}.route${routeEnvText}, Route.provideSomeLayer(${name}.environment))${
             fallback.hasParams ? `, params: ${name}.params` : ``
           } }`
         }
@@ -307,7 +339,7 @@ export function makeRuntimeModule(
           ? `pipe(${name}.route, Route.provideSomeLayer(${name}.environment))`
           : `${name}.route`
 
-        return `export const redirect = { type: 'Redirect', route: ${routeText}${
+        return `export const fallback = { type: 'Redirect', route: ${routeText}${
           fallback.hasParams ? `, params: ${name}.params` : ``
         } }`
       }

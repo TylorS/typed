@@ -8,8 +8,11 @@ import { defineConfig } from 'vite'
 
 import typed from './packages/vite-plugin/src/vite-plugin'
 
+const isStaticBuild = process.argv[1].includes('vite-node')
+
 export default defineConfig({
   root: join(__dirname, 'example'),
+  ...(isStaticBuild ? { mode: 'production' } : {}),
   resolve: {
     // Only necessary because developing in a monorepo dogfooding my own source code.
     alias: {
@@ -29,6 +32,7 @@ export default defineConfig({
       // Directory should point towards the root of your project with an index.html file
       sourceDirectory: join(__dirname, 'example'),
       saveGeneratedModules: true,
+      isStaticBuild,
     }),
     svelte({
       preprocess: autoPreprocess(),

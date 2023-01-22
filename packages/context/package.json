@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@effect/io": "~0.0.65",
-    "@fp-ts/data": "~0.0.40",
+    "@fp-ts/data": "~0.0.39",
     "@typed/fx": "workspace:*"
   },
   "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",

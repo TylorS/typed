@@ -1,5 +1,3 @@
-import type { IncomingMessage } from 'http'
-
 import type { ServerWindowOptions } from './makeServerWindow.js'
 
 export interface HtmlModule {
@@ -24,11 +22,15 @@ export interface HtmlModule {
   readonly docType: string
 
   /**
+   * The base path of the html
+   */
+  readonly basePath: string
+
+  /**
    * Construct a server-side implementation of Window & GlobalThis
    */
   readonly makeWindow: (
-    req: IncomingMessage,
-    options?: ServerWindowOptions,
+    options: ServerWindowOptions,
   ) => Window &
     typeof globalThis &
     Pick<InstanceType<typeof import('happy-dom').Window>, 'happyDOM'>

@@ -338,6 +338,7 @@ importers:
     specifiers:
       '@effect/language-service': ^0.0.15
       '@typed/compiler': workspace:*
+      '@typed/framework': workspace:*
       fast-glob: ^3.2.12
       ts-morph: ^17.0.1
       vavite: ^1.5.3
@@ -346,6 +347,7 @@ importers:
       vite-tsconfig-paths: ^4.0.5
     dependencies:
       '@typed/compiler': link:../compiler
+      '@typed/framework': link:../framework
       fast-glob: 3.2.12
       vavite: 1.5.3_vite@4.0.4
       vite-plugin-compression: 0.5.1_vite@4.0.4
