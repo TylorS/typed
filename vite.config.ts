@@ -1,5 +1,3 @@
-/// <reference types="vavite/vite-config" />
-
 import { join } from 'path'
 
 import { svelte } from '@sveltejs/vite-plugin-svelte'
