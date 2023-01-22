@@ -26,12 +26,6 @@ if (import.meta.env.PROD) {
     serveStatic: {
       maxAge: 31536000 /* One Year */,
       cacheControl: true,
-      // Enable serving of pre-rendered static HTML files
-      extensions: ['html'],
-      setHeaders: (res, path) => {
-        // HTML files are served with a max-age of 0 so that they are always fresh
-        if (path.endsWith('.html')) res.setHeader('Cache-Control', 'public, max-age=0')
-      },
     },
   })
 }

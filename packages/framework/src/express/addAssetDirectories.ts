@@ -8,7 +8,7 @@ import type { HtmlModule } from '../HtmlModule.js'
 export function addAssetDirectories(
   app: express.Express,
   modules: HtmlModule[],
-  options: staticGzip.ExpressStaticGzipOptions,
+  options: staticGzip.ExpressStaticGzipOptions = {},
 ) {
   const assetDirectories = new Set<string>()
 
@@ -22,10 +22,28 @@ export function addAssetDirectories(
 
     assetDirectories.add(assetDirectory)
 
+    // By Default, add support for .html files
+    const defaultExtensions = ['html']
+    const defaultSetHeaders: NonNullable<
+      staticGzip.ExpressStaticGzipOptions['serveStatic']
+    >['setHeaders'] = (res, path) => {
+      // HTML files are served with a max-age of 0 so that they are always fresh
+      if (path.endsWith('.html')) res.setHeader('Cache-Control', 'public, max-age=0')
+    }
+
+    const resolvedOptions: staticGzip.ExpressStaticGzipOptions = {
+      ...options,
+      serveStatic: {
+        ...options.serveStatic,
+        extensions: options.serveStatic?.extensions ?? defaultExtensions,
+        setHeaders: options.serveStatic?.setHeaders ?? defaultSetHeaders,
+      },
+    }
+
     app.use(
       // The vite plugin outputs .gz files, so we can serve them directly with
       // a tool like express-static-gzip
-      staticGzip(assetDirectory, options),
+      staticGzip(assetDirectory, resolvedOptions),
     )
   }
 }
