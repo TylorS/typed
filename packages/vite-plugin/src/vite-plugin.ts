@@ -521,6 +521,10 @@ export default function makePlugin({
 
         return
       }
+
+      if (isStaticBuild) {
+        config.mode = 'production'
+      }
     },
 
     configResolved(resolvedConfig) {
@@ -562,7 +566,7 @@ export default function makePlugin({
     },
 
     async closeBundle() {
-      if (Object.keys(manifest).length > 0) {
+      if (Object.keys(manifest).length > 0 && !isStaticBuild) {
         writeFileSync(
           resolve(
             isSsr ? resolvedServerOutputDirectory : resolvedClientOutputDirectory,
