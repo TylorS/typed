@@ -2,7 +2,7 @@
 
 import { join } from 'path'
 
-import { addAssetDirectories, run } from '@typed/framework/express'
+import { addAssetDirectories, run, parsePort } from '@typed/framework/express'
 import express from 'express'
 // Express Modules are transform by our vite plugin and expose all of the FetchHandlers
 // in the directory as an express.Router at the export 'router'
@@ -15,6 +15,7 @@ import * as otherHtml from 'html:./other'
 // See @typed/framework/src/RuntimeModule.ts to see its full signature.
 import * as otherPages from 'runtime:./other-pages'
 import * as pages from 'runtime:./pages'
+// The resolved configuration from our vite plugin can be access as a typed module.
 import * as config from 'typed:config'
 import httpDevServer from 'vavite/http-dev-server'
 
@@ -39,6 +40,8 @@ app.use('/api', api.router)
 // element we should render into.
 const getParentElement = (d: Document) => d.getElementById('application')
 
+// Register our html handlers
+// It is optional to use config.base, but if you need to set config.base in your vite config, it can be useful.
 app.get(join(config.base, '/other*'), run(otherPages, otherHtml, getParentElement))
 app.get(join(config.base, '/*'), run(pages, indexHtml, getParentElement))
 
@@ -59,7 +62,7 @@ if (import.meta.env.DEV && httpDevServer) {
   console.log(`listening at ${JSON.stringify(httpDevServer.address())}`)
 } else {
   // Otherwise, start the server for production
-  const port = 3000
+  const port = parsePort(3000)
 
   app.listen(port, () => console.log(`Server listening on port ${port}.`))
 }
