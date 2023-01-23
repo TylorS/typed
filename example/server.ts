@@ -15,7 +15,7 @@ import * as otherHtml from 'html:./other'
 // See @typed/framework/src/RuntimeModule.ts to see its full signature.
 import * as otherPages from 'runtime:./other-pages'
 import * as pages from 'runtime:./pages'
-// The resolved configuration from our vite plugin can be access as a typed module.
+// The resolved configuration from our vite plugin can be accessed as a typed module.
 import * as config from 'typed:config'
 import httpDevServer from 'vavite/http-dev-server'
 
