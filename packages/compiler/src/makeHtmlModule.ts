@@ -1,5 +1,5 @@
 import { EOL } from 'os'
-import { dirname, relative } from 'path'
+import { dirname, join, relative } from 'path'
 
 import { minify } from 'html-minifier'
 import type { Project, SourceFile } from 'ts-morph'
@@ -129,10 +129,14 @@ function getRelativePath(serverOutputDirectory: string, clientOutputDirectory: s
 export function addOrUpdateBase(html: string, base: string) {
   base = removeTrailingSlash(base)
 
-  const baseHrefRegex = /<base(.*)href=["']?(.*)["']?(.*)>/i
+  const baseHrefRegex = /<base(.*)href=["|'](.*)["|'](.*)>/i
+  const matches = html.match(baseHrefRegex)
 
-  if (baseHrefRegex.test(html)) {
-    return html.replace(baseHrefRegex, `<base$1href="${base}$2$3>`)
+  if (matches) {
+    return html.replace(
+      baseHrefRegex,
+      `<base${matches[1]}href="${join(base, matches[2])}"${matches[3]}>`,
+    )
   }
 
   return html.replace('</head>', `  <base href="${base}" />${EOL}</head>`)
