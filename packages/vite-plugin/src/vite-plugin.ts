@@ -16,20 +16,13 @@ import {
   type ModuleTreeJsonWithFallback,
   moduleTreeToJson,
   apiModuleTreeToJson,
+  addOrUpdateBase,
 } from '@typed/compiler'
 import glob from 'fast-glob'
 import { Project, SourceFile, ts, type CompilerOptions } from 'ts-morph'
 // @ts-expect-error Unable to resolve types w/ NodeNext
 import vavite from 'vavite'
-import type {
-  ConfigEnv,
-  Logger,
-  Plugin,
-  PluginOption,
-  ResolvedConfig,
-  UserConfig,
-  ViteDevServer,
-} from 'vite'
+import type { ConfigEnv, Logger, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
 import compression from 'vite-plugin-compression'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -247,7 +240,6 @@ export default function makePlugin({
   }
 
   let devServer: ViteDevServer
-  let config: ResolvedConfig
   let logger: Logger
   let isSsr = false
   let project: Project
@@ -397,14 +389,13 @@ export default function makePlugin({
 
     const sourceFile = await makeHtmlModule({
       project,
-      base: config.base,
+      base: parseBasePath(html),
       filePath: htmlFilePath,
       html,
       importer,
       serverOutputDirectory: resolvedServerOutputDirectory,
       clientOutputDirectory: resolvedClientOutputDirectory,
-      devServer,
-      isStaticBuild,
+      build: isStaticBuild ? 'static' : devServer ? 'development' : 'production',
     })
 
     addManifestEntry(
@@ -533,7 +524,6 @@ export default function makePlugin({
     },
 
     configResolved(resolvedConfig) {
-      config = resolvedConfig
       logger = resolvedConfig.logger
 
       const input = resolvedConfig.build.rollupOptions.input
@@ -543,14 +533,12 @@ export default function makePlugin({
       if (!input) return
 
       if (typeof input === 'string') {
-        manifest.entryFiles.push(parseEntryFile(sourceDirectory, input, config.base))
+        manifest.entryFiles.push(parseEntryFile(sourceDirectory, input))
       } else if (Array.isArray(input)) {
-        manifest.entryFiles.push(
-          ...input.map((i) => parseEntryFile(sourceDirectory, i, config.base)),
-        )
+        manifest.entryFiles.push(...input.map((i) => parseEntryFile(sourceDirectory, i)))
       } else {
         manifest.entryFiles.push(
-          ...Object.values(input).map((i) => parseEntryFile(sourceDirectory, i, config.base)),
+          ...Object.values(input).map((i) => parseEntryFile(sourceDirectory, i)),
         )
       }
     },
@@ -574,14 +562,6 @@ export default function makePlugin({
     },
 
     async closeBundle() {
-      if (project) {
-        const diagnostics = project.getPreEmitDiagnostics()
-
-        if (diagnostics.length > 0) {
-          this.error(project.formatDiagnosticsWithColorAndContext(diagnostics))
-        }
-      }
-
       if (Object.keys(manifest).length > 0) {
         writeFileSync(
           resolve(
@@ -677,6 +657,11 @@ export default function makePlugin({
         }
       }
     },
+
+    transformIndexHtml(html: string) {
+      // Add vite's base path to all HTML files
+      return addOrUpdateBase(html, resolvedOptions.base)
+    },
   }
 
   plugins.push(virtualModulePlugin)
@@ -767,22 +752,22 @@ function info(message: string, logger: Logger | undefined) {
   }
 }
 
-function parseEntryFile(sourceDirectory: string, filePath: string, base: string): EntryFile {
+function parseEntryFile(sourceDirectory: string, filePath: string): EntryFile {
   if (filePath.endsWith('.html')) {
-    return parseHtmlEntryFile(sourceDirectory, filePath, base)
+    return parseHtmlEntryFile(sourceDirectory, filePath)
   }
 
   return parseTsEntryFile(sourceDirectory, filePath)
 }
 
-function parseHtmlEntryFile(sourceDirectory: string, filePath: string, base: string): EntryFile {
+function parseHtmlEntryFile(sourceDirectory: string, filePath: string): EntryFile {
   const content = readFileSync(filePath, 'utf-8').toString()
 
   return {
     type: 'html',
     filePath: relative(sourceDirectory, filePath),
     imports: parseHtmlImports(sourceDirectory, content),
-    basePath: join(base, parseBasePath(content)),
+    basePath: parseBasePath(content),
   }
 }
 

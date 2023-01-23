@@ -47,7 +47,7 @@ declare module 'html:*' {
   /**
    * The path to the directory where assets will be found
    */
-  export const assetDirectory: string | null
+  export const assetDirectory: string
 
   /**
    * The html to utilize for rendering

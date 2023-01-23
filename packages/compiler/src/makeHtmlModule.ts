@@ -1,10 +1,8 @@
 import { EOL } from 'os'
-import { dirname, join, relative } from 'path'
+import { dirname, relative } from 'path'
 
-import { parseBasePath } from '@typed/framework/html'
 import { minify } from 'html-minifier'
 import type { Project, SourceFile } from 'ts-morph'
-import type { ViteDevServer } from 'vite'
 
 import { cleanHtml } from './cleanHtml.js'
 import { addNamedImport, appendText } from './ts-morph-helpers.js'
@@ -17,8 +15,7 @@ export interface HtmlModuleOptions {
   readonly importer: string
   readonly serverOutputDirectory: string
   readonly clientOutputDirectory: string
-  readonly isStaticBuild: boolean
-  readonly devServer?: ViteDevServer
+  readonly build: 'development' | 'production' | 'static'
 }
 
 export async function makeHtmlModule(options: HtmlModuleOptions): Promise<SourceFile> {
@@ -30,8 +27,7 @@ export async function makeHtmlModule(options: HtmlModuleOptions): Promise<Source
     importer,
     serverOutputDirectory,
     clientOutputDirectory,
-    isStaticBuild,
-    devServer,
+    build,
   } = options
   const tsPath = `${filePath}.__generated__.ts`
   const sourceFile = project.createSourceFile(
@@ -53,7 +49,7 @@ export async function makeHtmlModule(options: HtmlModuleOptions): Promise<Source
     sourceFile,
     EOL +
       `export const assetDirectory: string = '${
-        devServer && !isStaticBuild
+        build === 'development'
           ? dirname(importer)
           : getRelativePath(serverOutputDirectory, clientOutputDirectory)
       }'`,
@@ -66,25 +62,9 @@ export async function makeHtmlModule(options: HtmlModuleOptions): Promise<Source
     EOL + `export const htmlAttributes: Record<string, string> = ${JSON.stringify(htmlAttributes)}`,
   )
 
-  let basePath = join(base, parseBasePath(html))
+  appendText(sourceFile, EOL + `export const basePath: string = '${base}'`)
 
-  if (basePath !== '/' && basePath.endsWith('/')) {
-    basePath = basePath.slice(0, -1)
-  }
-
-  appendText(sourceFile, EOL + `export const basePath: string = '${basePath}'`)
-
-  appendText(
-    sourceFile,
-    EOL +
-      (await generateHtmlExport(
-        basePath,
-        filePath,
-        html,
-        docType,
-        isStaticBuild ? undefined : devServer,
-      )),
-  )
+  appendText(sourceFile, EOL + (await generateHtmlExport(html, docType)))
 
   appendText(
     sourceFile,
@@ -129,21 +109,8 @@ function parseHtmlAttributes(html: string): Record<string, string> {
   )
 }
 
-async function generateHtmlExport(
-  base: string,
-  filePath: string,
-  html: string,
-  docType: string,
-  devServer?: ViteDevServer,
-) {
-  html = addOrUpdateBase(html, base)
-
-  if (devServer) {
-    html = await devServer.transformIndexHtml(filePath, html)
-  } else {
-    html = minify(html, { sortAttributes: true, sortClassName: true })
-  }
-
+async function generateHtmlExport(html: string, docType: string) {
+  html = minify(html, { sortAttributes: true, sortClassName: true })
   html = cleanHtml(html, docType)
 
   return `export const html: string = \`${html}\``
@@ -159,13 +126,20 @@ function getRelativePath(serverOutputDirectory: string, clientOutputDirectory: s
   return relativeClientOutput
 }
 
-function addOrUpdateBase(html: string, base: string) {
-  const baseHrefRegex = /<base(.*)(href=["'].*["'])(.*)>/i
-  const baseMatch = html.match(baseHrefRegex)
+export function addOrUpdateBase(html: string, base: string) {
+  base = removeTrailingSlash(base)
 
-  if (baseMatch) {
-    return html.replace(baseHrefRegex, `<base$1 href="${base}"$3>`)
+  const baseHrefRegex = /<base(.*)href=["']?(.*)["']?(.*)>/i
+
+  if (baseHrefRegex.test(html)) {
+    return html.replace(baseHrefRegex, `<base$1href="${base}$2$3>`)
   }
 
   return html.replace('</head>', `  <base href="${base}" />${EOL}</head>`)
+}
+
+function removeTrailingSlash(path: string) {
+  if (path === '/') return path
+
+  return path.endsWith('/') ? path.slice(0, -1) : path
 }

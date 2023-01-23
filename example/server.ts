@@ -22,7 +22,7 @@ const app = express()
 
 // Serve static files with express server in production
 if (import.meta.env.PROD) {
-  addAssetDirectories(app, [indexHtml, otherHtml], {
+  addAssetDirectories(app, config.base, [indexHtml, otherHtml], {
     serveStatic: {
       maxAge: 31536000 /* One Year */,
       cacheControl: true,
