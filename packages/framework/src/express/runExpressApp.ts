@@ -1,7 +1,7 @@
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
-import { either } from '@fp-ts/data'
+import * as Either from '@fp-ts/data/Either'
 import { pipe } from '@fp-ts/data/Function'
 import type express from 'express'
 import isbot from 'isbot'
@@ -49,7 +49,7 @@ export const runExpressApp = (
           if (Exit.isFailure(exit)) {
             return pipe(
               Cause.failureOrCause(exit.cause),
-              either.match(
+              Either.match(
                 (redirect) => res.redirect(redirect.path),
                 (error) => next(new Error(prettyPrintCause(error))),
               ),

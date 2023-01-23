@@ -2,7 +2,7 @@ import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
-import { either } from '@fp-ts/data'
+import * as Either from '@fp-ts/data/Either'
 import { flow, pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
@@ -20,7 +20,7 @@ export function switchMatchError<E, R2, E2, B, A, R3, E3, C>(
   f: (error: E) => Fx<R2, E2, B>,
   g: (a: A) => Fx<R3, E3, C>,
 ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3, E2 | E3, B | C> {
-  return switchMatchCause(flow(Cause.failureOrCause, either.match(f, failCause)), g)
+  return switchMatchCause(flow(Cause.failureOrCause, Either.match(f, failCause)), g)
 }
 
 class SwitchMatchFx<R, E, A, R2, E2, B, R3, E3, C>
