@@ -274,9 +274,9 @@ importers:
       happy-dom: 8.1.5
       isbot: 3.6.5
       vavite: 1.5.3_vite@4.0.4
+      vite: 4.0.4
     devDependencies:
       '@types/express': 4.17.15
-      vite: 4.0.4
 
   packages/fx:
     specifiers:
@@ -366,12 +366,12 @@ importers:
       '@typed/compiler': link:../compiler
       fast-glob: 3.2.12
       vavite: 1.5.3_vite@4.0.4
+      vite: 4.0.4
       vite-plugin-compression: 0.5.1_vite@4.0.4
       vite-tsconfig-paths: 4.0.5
     devDependencies:
       '@effect/language-service': 0.0.15
       ts-morph: 17.0.1
-      vite: 4.0.4
 
 packages:
 
@@ -9562,6 +9562,7 @@ packages:
       rollup: 3.10.0
     optionalDependencies:
       fsevents: 2.3.2
+    dev: false
 
   /vite/4.0.4_@types+node@18.11.18:
     resolution: {integrity: sha512-xevPU7M8FU0i/80DMR+YhgrzR5KS2ORy1B4xcX/cXLsvnUWvfHuqMmVU6N0YiJ4JWGRJJsLCgjEzKjG9/GKoSw==}

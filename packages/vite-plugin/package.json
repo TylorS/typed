@@ -24,13 +24,13 @@
     "@typed/compiler": "workspace:*",
     "fast-glob": "^3.2.12",
     "vavite": "^1.5.3",
+    "vite": "^4.0.4",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.0.5"
   },
   "devDependencies": {
     "@effect/language-service": "^0.0.15",
-    "ts-morph": "^17.0.1",
-    "vite": "^4.0.4"
+    "ts-morph": "^17.0.1"
   },
   "peerDependencies": {
     "vite-node": "^0.27.2"
