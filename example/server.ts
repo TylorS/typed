@@ -2,8 +2,9 @@
 
 import { join } from 'path'
 
-import { addAssetDirectories, run, parsePort } from '@typed/framework/express'
-import express from 'express'
+// @typed/framework provide a facade for express, where "import express from express"
+// is re-exported at 'express', and it provides additional features for working with our virtual modules.
+import * as express from '@typed/framework/express'
 // Express Modules are transform by our vite plugin and expose all of the FetchHandlers
 // in the directory as an express.Router at the export 'router'
 import * as api from 'express:./api'
@@ -17,18 +18,17 @@ import * as otherPages from 'runtime:./other-pages'
 import * as pages from 'runtime:./pages'
 // The resolved configuration from our vite plugin can be accessed as a typed module.
 import * as config from 'typed:config'
-import httpDevServer from 'vavite/http-dev-server'
 
-const app = express()
+const app = express.express()
 
 // Serve static files with express server in production
 if (import.meta.env.PROD) {
-  addAssetDirectories(app, config.base, [indexHtml, otherHtml], {
-    serveStatic: {
-      maxAge: 31536000 /* One Year */,
-      cacheControl: true,
-    },
-  })
+  app.use(
+    config.base, // Optional if you do not need to set config.base in your vite config
+    ...express.assets([indexHtml, otherHtml], {
+      serveStatic: { maxAge: 31536000, cacheControl: true },
+    }),
+  )
 }
 
 // Register our request handlers
@@ -42,27 +42,8 @@ const getParentElement = (d: Document) => d.getElementById('application')
 
 // Register our html handlers
 // It is optional to use config.base, but if you need to set config.base in your vite config, it can be useful.
-app.get(join(config.base, '/other*'), run(otherPages, otherHtml, getParentElement))
-app.get(join(config.base, '/*'), run(pages, indexHtml, getParentElement))
+app.get(join(config.base, '/other*'), express.run(otherPages, otherHtml, getParentElement))
+app.get(join(config.base, '/*'), express.run(pages, indexHtml, getParentElement))
 
-// Our vite plugin configures another vite plugin called vavite for you
-// anytime it finds your configured server file.
-// See: https://github.com/cyco130/vavite
-//
-// Vavite assists us in running your server in development mode and enabling
-// us to easily serve our static assets. This plugin also exposes virtual modules
-// which enable yout html modules to be transformed by vite using vavite/vite-dev-server,
-// and also enables you to run your server in development mode using vite without needing
-// to add middlewares to your express server.
-
-// httpDevServer will resolve to undefined when import.meta.env.PROD is true and be
-// dead-code eliminated from your production build.
-if (import.meta.env.DEV && httpDevServer) {
-  httpDevServer.on('request', app)
-  console.log(`listening at ${JSON.stringify(httpDevServer.address())}`)
-} else {
-  // Otherwise, start the server for production
-  const port = parsePort(3000)
-
-  app.listen(port, () => console.log(`Server listening on port ${port}.`))
-}
+// Start the server properly in development and production
+express.listen(app, { port: 3000 })

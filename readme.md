@@ -2,8 +2,8 @@
 
 A collection of libraries and tools for building applications using [fp-ts v3](https://github.com/fp-ts) and [Effect](https://github.com/Effect-TS).
 
-While some libraries like `Fx`, which provides a push-based stream abstraction, are generally applicable, many libraries have a strong focus
-on building web applications on both the backend and frontend. 
+While some libraries like `Fx`, which provides a push-based stream abstraction, are generally applicable, 
+many libraries have a strong focus on building web applications on both the backend and frontend. 
 
 ## Community
 
@@ -20,12 +20,13 @@ If you're interested in chatting about this project join us on [Discord](https:/
 - [Route](./packages/route) - Effect-based abstraction for describing a Route built on `Path`
 - [Router](./packages/router) - Fx-based abstraction for routing with `Route`
 - [Vite Plugin](./packages/vite-plugin) - Vite plugin for building CSR and SSR applications with Effect and the packages above.
+- [CLI](./packages/cli) - CLI for building, serving, and running files in conjunction with our vite plugin
+- [Compiler](./packages/compiler) - The compiler code the vite-plugin utilizes
 
 ## Example
 
-There is currently one toy example in the example directory which will showcase the way our vite plugin works
+There is currently one example in the example directory which will showcase the way our vite plugin works.
 
 ## Upcoming
-- Hydration of SSR content
 - Integrations with @fp-ts/schema
 - Itegrations with @fp-ts/optic

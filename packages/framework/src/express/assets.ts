@@ -5,13 +5,12 @@ import staticGzip from 'express-static-gzip'
 
 import type { HtmlModule } from '../HtmlModule.js'
 
-export function addAssetDirectories(
-  app: express.Express,
-  base: string,
+export function assets(
   modules: HtmlModule[],
   options: staticGzip.ExpressStaticGzipOptions = {},
-) {
+): Array<express.RequestHandler> {
   const assetDirectories = new Set<string>()
+  const handlers: Array<express.RequestHandler> = []
 
   // Register any assets that need to be served
   for (const mod of modules) {
@@ -39,11 +38,8 @@ export function addAssetDirectories(
       },
     }
 
-    app.use(
-      base,
-      // The vite plugin outputs .gz files, so we can serve them directly with
-      // a tool like express-static-gzip
-      staticGzip(assetDirectory, resolvedOptions),
-    )
+    handlers.push(staticGzip(assetDirectory, resolvedOptions))
   }
+
+  return handlers
 }
