@@ -5,7 +5,7 @@ import * as Context from '@typed/context'
 
 export interface Fetch extends Identity<(typeof globalThis)['fetch']> {}
 
-export const Fetch = Context.Tag<Fetch>()
+export const Fetch = Context.Tag<Fetch>('@typed/dom/Fetch')
 
 export interface FetchError {
   readonly _tag: 'FetchError'

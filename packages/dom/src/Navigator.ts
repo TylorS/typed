@@ -9,7 +9,7 @@ import { GlobalThis } from './GlobalThis.js'
 
 export interface Navigator extends globalThis.Navigator {}
 
-export const Navigator = C.Tag<Navigator>()
+export const Navigator = C.Tag<Navigator>('@typed/dom/Navigator')
 
 export const canShare = (shareData?: ShareData) => Navigator.with((n) => n.canShare(shareData))
 

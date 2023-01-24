@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "resolveJsonModule": true
   },
   "include": [
     "src"
@@ -10,9 +11,5 @@
   "exclude": [
     "dist"
   ],
-  "references": [
-    {
-      "path": "../compiler/tsconfig.build.json"
-    }
-  ]
+  "references": []
 }

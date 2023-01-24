@@ -4,7 +4,7 @@ import * as C from '@typed/context'
 import { addEventListener } from './EventTarget.js'
 
 export interface Document extends globalThis.Document {}
-export const Document = C.Tag<Document>()
+export const Document = C.Tag<Document>('@typed/dom/Document')
 
 export const getBody: Effect.Effect<Document, never, HTMLBodyElement> = Document.with(
   (d) => d.body as HTMLBodyElement,

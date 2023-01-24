@@ -26,7 +26,7 @@ export default defineConfig({
     typed({
       // Directory should point towards the root of your project with an index.html file
       sourceDirectory: join(__dirname, 'example'),
-      isStaticBuild: process.env.STATIC_BUILD === 'true',
+      saveGeneratedModules: true,
     }),
     svelte({
       preprocess: autoPreprocess(),

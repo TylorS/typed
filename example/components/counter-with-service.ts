@@ -8,7 +8,7 @@ export interface CounterName {
   readonly name: string
 }
 
-export const CounterName = Tag<CounterName>()
+export const CounterName = Tag<CounterName>('CounterName')
 
 export const Counter = Fx.gen(function* ($) {
   const count = yield* $(Fx.makeRef(() => 0))

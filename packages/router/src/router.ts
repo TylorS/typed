@@ -114,7 +114,7 @@ export const Router = Object.assign(function makeRouter<R = never, P extends str
 
   return router
 },
-Context.Tag<Router>())
+Context.Tag<Router>('@typed/router/Router'))
 
 export const outlet: Fx.Fx<RenderContext | Router, never, html.Renderable> = RenderContext.withFx(
   ({ environment }) =>

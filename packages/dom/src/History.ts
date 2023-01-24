@@ -2,7 +2,7 @@ import * as Effect from '@effect/io/Effect'
 import * as C from '@typed/context'
 
 export interface History extends globalThis.History {}
-export const History = C.Tag<History>()
+export const History = C.Tag<History>('@typed/dom/History')
 
 export const pushState = (url: string | URL, data?: unknown) =>
   History.with((h) => h.pushState(data, '', url))

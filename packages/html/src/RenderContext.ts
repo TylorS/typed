@@ -23,7 +23,7 @@ export const RenderContext = Object.assign(function makeRenderContext(
     templateCache: new WeakMap(),
   }
 },
-Context.Tag<RenderContext>())
+Context.Tag<RenderContext>('@typed/html/RenderContext'))
 
 export const isStatic = RenderContext.with((ctx) => ctx.environment === 'static')
 

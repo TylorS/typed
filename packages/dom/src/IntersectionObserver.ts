@@ -88,7 +88,9 @@ export const makeIntersectionObserverManager: Effect.Effect<
   return observer
 })
 
-export const IntersectionObserverManager = C.Tag<IntersectionObserverManager>()
+export const IntersectionObserverManager = C.Tag<IntersectionObserverManager>(
+  '@typed/dom/IntersectionObserverManager',
+)
 
 type InternalObserver = readonly [
   globalThis.IntersectionObserver,

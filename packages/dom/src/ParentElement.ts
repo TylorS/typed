@@ -10,7 +10,7 @@ export interface ParentElement {
   readonly parentElement: ParentNode & HTMLElement
 }
 
-export const ParentElement = C.Tag<ParentElement>()
+export const ParentElement = C.Tag<ParentElement>('@typed/dom/ParentElement')
 
 export const querySelector: <A extends HTMLElement>(
   selector: string,

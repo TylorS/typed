@@ -2,7 +2,7 @@ import type * as Effect from '@effect/io/Effect'
 import * as C from '@typed/context'
 
 export interface Location extends globalThis.Location {}
-export const Location = C.Tag<Location>()
+export const Location = C.Tag<Location>('@typed/dom/Location')
 
 export const getHref: Effect.Effect<Location, never, string> = Location.with((l) => l.href)
 

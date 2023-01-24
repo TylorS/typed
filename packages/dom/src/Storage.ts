@@ -11,7 +11,7 @@ import { Window } from './Window.js'
 // TODO: Integrate with Schema/Decoder
 
 export interface Storage extends globalThis.Storage {}
-export const Storage = C.Tag<Storage>()
+export const Storage = C.Tag<Storage>('@typed/dom/Storage')
 
 export const getItem = (key: string): Effect.Effect<Storage, never, O.Option<string>> =>
   Storage.with((s) => O.fromNullable(s.getItem(key)))

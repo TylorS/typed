@@ -4,7 +4,7 @@ import * as T from '@typed/context'
 import { addEventListener } from './EventTarget.js'
 
 export interface Window extends globalThis.Window {}
-export const Window = T.Tag<Window>()
+export const Window = T.Tag<Window>('@typed/dom/Window')
 
 export const getInnerWidth: Effect.Effect<Window, never, number> = Window.with((w) => w.innerWidth)
 

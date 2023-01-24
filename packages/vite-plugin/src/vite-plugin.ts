@@ -185,7 +185,7 @@ export default function makePlugin({
   htmlFileGlobs,
   debug = false,
   saveGeneratedModules = false,
-  isStaticBuild = false,
+  isStaticBuild = process.env.STATIC_BUILD === 'true',
 }: PluginOptions): PluginOption[] {
   // Resolved options
   const sourceDirectory = resolve(cwd, directory)
@@ -332,6 +332,9 @@ export default function makePlugin({
   }
 
   const buildRuntimeModule = async (importer: string, id: string) => {
+    // Setup the TypeScript project if it hasn't been already
+    setupProject()
+
     const moduleDirectory = resolve(dirname(importer), parseModulesFromId(id, importer))
     const relativeDirectory = relative(sourceDirectory, moduleDirectory)
     const isBrowser = id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)
@@ -349,9 +352,6 @@ export default function makePlugin({
       id,
     )
 
-    // Setup the TypeScript project if it hasn't been already
-    setupProject()
-
     const sourceFile = makeRuntimeModule(project, moduleTree, importer, filePath, isBrowser)
 
     addDependents(sourceFile)
@@ -368,6 +368,9 @@ export default function makePlugin({
   }
 
   const buildHtmlModule = async (importer: string, id: string) => {
+    // Setup the TypeScript project if it hasn't been already
+    setupProject()
+
     const htmlFileName = parseModulesFromId(id, importer)
     const htmlFilePath = resolve(dirname(importer), htmlFileName + '.html')
     const relativeHtmlFilePath = relative(sourceDirectory, htmlFilePath)
@@ -423,6 +426,9 @@ export default function makePlugin({
   }
 
   const buildApiModule = async (importer: string, id: string) => {
+    // Setup the TypeScript project if it hasn't been already
+    setupProject()
+
     const importDirectory = dirname(importer)
     const moduleName = parseModulesFromId(id, importer)
     const moduleDirectory = resolve(importDirectory, moduleName)
@@ -521,10 +527,6 @@ export default function makePlugin({
 
         return
       }
-
-      if (isStaticBuild) {
-        config.mode = 'production'
-      }
     },
 
     configResolved(resolvedConfig) {
@@ -586,30 +588,18 @@ export default function makePlugin({
         id.startsWith(RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX) ||
         id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)
       ) {
-        setupProject()
-
-        const virtualId = VIRTUAL_ID_PREFIX + (await buildRuntimeModule(importer, id))
-
-        return virtualId
+        return VIRTUAL_ID_PREFIX + (await buildRuntimeModule(importer, id))
       }
 
       if (id.startsWith(HTML_VIRTUAL_ENTRYPOINT_PREFIX)) {
-        setupProject()
-
-        const virtualId = VIRTUAL_ID_PREFIX + (await buildHtmlModule(importer, id))
-
-        return virtualId
+        return VIRTUAL_ID_PREFIX + (await buildHtmlModule(importer, id))
       }
 
       if (
         id.startsWith(API_VIRTUAL_ENTRYPOINT_PREFIX) ||
         id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX)
       ) {
-        setupProject()
-
-        const virtualId = VIRTUAL_ID_PREFIX + (await buildApiModule(importer, id))
-
-        return virtualId
+        return VIRTUAL_ID_PREFIX + (await buildApiModule(importer, id))
       }
 
       if (id === TYPED_CONFIG_IMPORT) {
