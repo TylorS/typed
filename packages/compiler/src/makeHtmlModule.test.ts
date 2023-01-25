@@ -27,6 +27,8 @@ describe(import.meta.url, () => {
           importer: join(exampleDirectory, 'browser.ts'),
           serverOutputDirectory: join(exampleDirectory, 'dist/server'),
           clientOutputDirectory: join(exampleDirectory, 'dist/client'),
+          base: '/',
+          build: 'development',
         })
 
         const diagnostics = sourceFile.getPreEmitDiagnostics()

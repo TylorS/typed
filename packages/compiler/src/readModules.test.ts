@@ -1,19 +1,13 @@
 import { deepStrictEqual } from 'assert'
-import { dirname, join, relative } from 'path'
+import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
 import { Project } from 'ts-morph'
 import { describe, it } from 'vitest'
 
-import type {
-  EnvironmentSourceFileModule,
-  FallbackSourceFileModule,
-  LayoutSourceFileModule,
-  RedirectSourceFileModule,
-  RenderSourceFileModule,
-} from './SourceFileModule.js'
+import { moduleTreeToJson } from './json.js'
 import { readDirectory } from './readDirectory.js'
-import { type ModuleTree, type ModuleTreeWithFallback, readModules } from './readModules.js'
+import { readModules } from './readModules.js'
 
 const filePath = fileURLToPath(import.meta.url)
 const directory = dirname(filePath)
@@ -30,137 +24,90 @@ describe(import.meta.url, () => {
         const directory = await readDirectory(join(exampleDirectory, 'pages'))
         const moduleTree = readModules(project, directory)
         const mainLayout = {
-          _tag: 'Layout/Basic',
-          filePath: 'pages/layout.ts',
-        }
+            _tag: 'Layout',
+            sourceFile: 'pages/layout.ts',
+            hasEnvironment: false,
+          }
         const expected = {
           directory: 'pages',
-          layout: mainLayout,
-          fallback: {
-            _tag: 'Fallback/Basic',
-            filePath: 'pages/fallback.ts',
-            isFx: false,
-            hasLayout: false,
-          },
-          environment: null,
           modules: [
             {
-              _tag: 'Render/Basic',
-              filePath: 'pages/home.ts',
+              _tag: 'Render',
+              sourceFile: 'pages/home.ts',
+              route: '/',
               isFx: true,
               hasLayout: false,
+              hasEnvironment: false,
+              hasStaticPaths: false,
             },
           ],
           children: [
             {
               directory: 'pages/bar',
-              layout: mainLayout,
-              fallback: null,
-              environment: { _tag: 'Environment', filePath: 'pages/bar/environment.ts' },
               modules: [
                 {
-                  _tag: 'Render/Basic',
-                  filePath: 'pages/bar/bar.ts',
+                  _tag: 'Render',
+                  sourceFile: 'pages/bar/bar.ts',
+                  route: '/bar/:bar',
                   isFx: false,
                   hasLayout: true,
+                  hasEnvironment: false,
+                  hasStaticPaths: true,
                 },
               ],
               children: [],
+              layout: mainLayout,
+              environment: {
+                _tag: 'Environment',
+                sourceFile: 'pages/bar/environment.ts',
+              },
             },
             {
               directory: 'pages/baz',
-              layout: mainLayout,
-              fallback: null,
-              environment: null,
               modules: [
                 {
-                  _tag: 'Render/Basic',
-                  filePath: 'pages/baz/baz.ts',
+                  _tag: 'Render',
+                  sourceFile: 'pages/baz/baz.ts',
+                  route: '/baz/:baz',
                   isFx: true,
                   hasLayout: false,
+                  hasEnvironment: false,
+                  hasStaticPaths: true,
                 },
               ],
               children: [],
+              layout: mainLayout,
             },
             {
               directory: 'pages/foo',
-              layout: mainLayout,
-              fallback: null,
-              environment: null,
               modules: [
                 {
-                  _tag: 'Render/Basic',
-                  filePath: 'pages/foo/foo.ts',
+                  _tag: 'Render',
+                  sourceFile: 'pages/foo/foo.ts',
+                  route: '/foo/:foo',
                   isFx: false,
                   hasLayout: false,
+                  hasEnvironment: false,
+                  hasStaticPaths: true,
                 },
               ],
               children: [],
+              layout: mainLayout,
             },
           ],
+          layout: mainLayout,
+          fallback: {
+            _tag: 'Fallback',
+            sourceFile: 'pages/fallback.ts',
+            isFx: false,
+            hasLayout: false,
+            hasEnvironment: false,
+          },
         }
 
-        deepStrictEqual(stripModules(moduleTree), expected)
+        deepStrictEqual(moduleTreeToJson(exampleDirectory, moduleTree), expected)
       },
       30 * 1000,
     )
   })
 })
-
-function stripModules(tree: ModuleTreeWithFallback | ModuleTree): any {
-  return {
-    directory: relative(exampleDirectory, tree.directory),
-    layout: tree.layout ? stripLayoutModule(tree.layout) : null,
-    fallback: (tree as ModuleTreeWithFallback).fallback
-      ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        stripFallbackModule((tree as ModuleTreeWithFallback).fallback!)
-      : null,
-    environment: tree.environment ? stripEnvironmentModule(tree.environment) : null,
-    modules: tree.modules?.map(stripRenderModule) ?? [],
-    children: tree.children.map(stripModules),
-  }
-}
-
-function stripLayoutModule(m: LayoutSourceFileModule) {
-  return {
-    _tag: m._tag,
-    filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
-  }
-}
-
-function stripRenderModule(m: RenderSourceFileModule) {
-  return {
-    _tag: m._tag,
-    filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
-    isFx: m.isFx,
-    hasLayout: m.hasLayout,
-  }
-}
-
-function stripFallbackModule(m: FallbackSourceFileModule | RedirectSourceFileModule) {
-  switch (m._tag) {
-    case 'Fallback/Basic':
-    case 'Fallback/Environment': {
-      return {
-        _tag: m._tag,
-        filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
-        isFx: m.isFx,
-        hasLayout: m.hasLayout,
-      }
-    }
-    case 'Redirect/Basic':
-    case 'Redirect/Environment': {
-      return {
-        _tag: m._tag,
-        filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
-      }
-    }
-  }
-}
-
-function stripEnvironmentModule(m: EnvironmentSourceFileModule) {
-  return {
-    _tag: m._tag,
-    filePath: relative(exampleDirectory, m.sourceFile.getFilePath()),
-  }
-}

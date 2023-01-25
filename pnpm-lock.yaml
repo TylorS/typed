@@ -7,7 +7,6 @@ importers:
       '@effect/io': 0.0.65
       '@effect/language-service': ^0.0.15
       '@effect/stm': 0.0.15
-      '@effect/test': 0.0.0
       '@effect/vite-plugin': ^0.0.1
       '@esbuild-kit/esm-loader': ^2.5.4
       '@fp-ts/core': 0.0.11
@@ -81,7 +80,6 @@ importers:
     dependencies:
       '@effect/io': 0.0.65
       '@effect/stm': 0.0.15
-      '@effect/test': 0.0.0
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.39
       '@fp-ts/schema': 0.0.8
@@ -717,13 +715,6 @@ packages:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
 
-  /@effect/io/0.0.52:
-    resolution: {integrity: sha512-dR0E7TtN6grqiz6rF2dCH1QW+RsS0vupNR8dI1aqjwmwcc1pU2MtVM/PmTB5Zei3E+STT5P/fOpx9q7y4Iel6Q==}
-    dependencies:
-      '@fp-ts/core': 0.0.11
-      '@fp-ts/data': 0.0.39
-    dev: false
-
   /@effect/io/0.0.65:
     resolution: {integrity: sha512-LiCeZap+ERUAALdk1cscgWJj4o0IEvQ2KhAtI4fev8cqIRjYy/UsYaW29zeX6FIVGUN/5UaU0xLgMuJnl6Kjqw==}
     dependencies:
@@ -742,14 +733,6 @@ packages:
     resolution: {integrity: sha512-8H3AnkGFWf96THWog51XR5fQKu81vzN1vlTbXfXmvj1wDNEmY5/cqS4QWLIG2iGlIYHI0y9nVAWBI/LUD0vSkQ==}
     dependencies:
       '@effect/io': 0.0.65
-      '@fp-ts/core': 0.0.11
-      '@fp-ts/data': 0.0.39
-    dev: false
-
-  /@effect/test/0.0.0:
-    resolution: {integrity: sha512-e97uWl4kDJh5d4LM9prJr839nCQT6dMN4EOe/3teLfXHKWyGbMl3RvypUxjdwzBgiekBPY3PbO2xz87+dhDPjw==}
-    dependencies:
-      '@effect/io': 0.0.52
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.39
     dev: false
