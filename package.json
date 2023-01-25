@@ -33,12 +33,12 @@
     "new-package": "nx generate ./packages/nx-plugin:package"
   },
   "dependencies": {
-    "@effect/io": "~0.0.65",
-    "@effect/stm": "~0.0.15",
-    "@effect/test": "~0.0.0",
-    "@fp-ts/core": "~0.0.11",
-    "@fp-ts/data": "~0.0.39",
-    "@fp-ts/schema": "~0.0.8",
+    "@effect/io": "0.0.65",
+    "@effect/stm": "0.0.15",
+    "@effect/test": "0.0.0",
+    "@fp-ts/core": "0.0.11",
+    "@fp-ts/data": "0.0.39",
+    "@fp-ts/schema": "0.0.8",
     "@vavite/multibuild": "^1.5.3",
     "@webreflection/uparser": "~0.2.4",
     "cac": "^6.7.14",
@@ -112,15 +112,5 @@
     "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-react": "^4.0.1",
     "vitest": "^0.27.2"
-  },
-  "pnpm": {
-    "overrides": {
-      "@effect/io": "0.0.65",
-      "@effect/stm": "0.0.15",
-      "@effect/test": "0.0.0",
-      "@fp-ts/core": "0.0.11",
-      "@fp-ts/data": "0.0.39",
-      "@fp-ts/schema": "0.0.8"
-    }
   }
 }

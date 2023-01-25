@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@fp-ts/data": "~0.0.39",
+    "@fp-ts/data": "0.0.39",
     "@typed/framework": "workspace:*",
     "html-minifier": "^4.0.0"
   },
