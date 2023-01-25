@@ -1,3 +1,6 @@
+// For support of our virtual modules
+/// <reference types="@typed/framework" />
+
 import * as Effect from '@effect/io/Effect'
 import { renderStaticHtml, writeAllOutputs } from '@typed/framework/static'
 import * as indexHtml from 'html:./index'

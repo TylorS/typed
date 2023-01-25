@@ -1,3 +1,4 @@
+// For support of our virtual modules
 /// <reference types="@typed/framework" />
 
 import { join } from 'path'
