@@ -1,4 +1,4 @@
-import * as Effect from '@effect/io/Effect'
+import type * as Effect from '@effect/io/Effect'
 import * as C from '@typed/context'
 
 import { addEventListener } from './EventTarget.js'
@@ -65,7 +65,7 @@ export const importNode = <T extends Node>(node: T, deep?: boolean) =>
   Document.with((d) => d.importNode(node, deep))
 
 export const updateTitle = (title: string) =>
-  Document.withEffect((d) => Effect.sync(() => (d.title = title)))
+  Document.with((d) => (d.title = title))
 
 export type MetaParams = {
   readonly name: string
@@ -74,17 +74,15 @@ export type MetaParams = {
 }
 
 export const updateMeta = (params: MetaParams) =>
-  Document.withEffect((d) =>
-    Effect.sync(() => {
-      const meta =
-        d.querySelector<HTMLMetaElement>(`meta[name="${params.name}"]`) ??
-        createNewHeadElement(d, 'meta')
+  Document.with((d) => {
+    const meta =
+      d.querySelector<HTMLMetaElement>(`meta[name="${params.name}"]`) ??
+      createNewHeadElement(d, 'meta')
 
-      setAttrs(meta, params)
+    setAttrs(meta, params)
 
-      return meta
-    }),
-  )
+    return meta
+  })
 
 export type LinkParams = {
   readonly rel: string
@@ -107,17 +105,15 @@ export type LinkParams = {
 }
 
 export const updateLink = (params: LinkParams) =>
-  Document.withEffect((d) =>
-    Effect.sync(() => {
-      const link =
-        d.querySelector<HTMLLinkElement>(`link[rel="${params.rel}"][href="${params.href}"]`) ??
-        createNewHeadElement(d, 'link')
+  Document.with((d) => {
+    const link =
+      d.querySelector<HTMLLinkElement>(`link[rel="${params.rel}"][href="${params.href}"]`) ??
+      createNewHeadElement(d, 'link')
 
-      setAttrs(link, params)
+    setAttrs(link, params)
 
-      return link
-    }),
-  )
+    return link
+  })
 
 function createNewHeadElement<T extends keyof HTMLElementTagNameMap>(
   document: Document,

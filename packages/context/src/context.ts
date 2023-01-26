@@ -60,13 +60,6 @@ export interface Tag<S> extends C.Tag<S> {
   readonly build: (s: S) => ContextBuilder<S>
 }
 
-const empty_ = C.empty()
-
-const buildContext =
-  <S>(tag: C.Tag<S>) =>
-  (s: S) =>
-    C.add(tag)(s)(empty_)
-
 export function Tag<A>(key?: string): Tag<A> {
   const tag = C.Tag<A>(key)
 
@@ -80,7 +73,7 @@ export function Tag<A>(key?: string): Tag<A> {
     layer: Effect.toLayer<A>(tag),
     layerScoped: Layer.scoped<A>(tag),
     layerOf: flow(Effect.succeed<A>, Effect.toLayer<A>(tag)),
-    build: flow(buildContext(tag), makeContextBuilder),
+    build: flow(C.make(tag), makeContextBuilder),
   } as const)
 }
 

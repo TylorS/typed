@@ -111,11 +111,11 @@ function findMostSpecificElement<T extends Element>(cssSelectors: ReadonlyArray<
 function findMatchingElements<El extends Element = Element>(cssSelectors: ReadonlyArray<string>) {
   const cssSelector = cssSelectors.join(' ')
   return function (element: El): ReadonlyArray<El> {
-    const nodes = Array.from(element.querySelectorAll(cssSelector))
+    const nodes = Array.from(element.querySelectorAll<El>(cssSelector))
 
-    if (element.matches(cssSelector)) return [element, ...nodes] as any as ReadonlyArray<El>
+    if (element.matches(cssSelector)) return [element, ...nodes]
 
-    return nodes as any as ReadonlyArray<El>
+    return nodes
   }
 }
 
@@ -163,7 +163,7 @@ function findCurrentTarget(cssSelector: string, element: Element) {
       const node = nodes[i]
       const containsEventTarget = node.contains(event.target as Element)
 
-      if (containsEventTarget) return cloneEvent(event, node) as E
+      if (containsEventTarget) return cloneEvent(event, node)
     }
 
     return event
@@ -172,10 +172,10 @@ function findCurrentTarget(cssSelector: string, element: Element) {
 
 const EVENT_PROPERTY_TO_REPLACE = 'currentTarget'
 
-function cloneEvent(event: Event, currentTarget: Element): Event {
+function cloneEvent<E extends Event>(event: E, currentTarget: Element): E {
   return new Proxy(event, {
-    get(target: Event, property: keyof Event) {
-      return property === EVENT_PROPERTY_TO_REPLACE ? currentTarget : target[property]
+    get(target: E, property: string | symbol) {
+      return property === EVENT_PROPERTY_TO_REPLACE ? currentTarget : target[property as keyof E]
     },
   })
 }

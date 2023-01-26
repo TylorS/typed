@@ -19,7 +19,7 @@ export const FetchError = (request: Request, error: unknown): FetchError => ({
   error,
 })
 
-export type FetchInput = RequestInfo | URL
+export type FetchInput = Request | string | URL
 
 export type FetchInit = Omit<RequestInit, 'signal'>
 
