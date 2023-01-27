@@ -21,7 +21,9 @@
     }
   },
   "dependencies": {
+    "@fp-ts/data": "0.0.39",
     "@typed/compiler": "workspace:*",
+    "@typed/framework": "workspace:*",
     "fast-glob": "^3.2.12",
     "vavite": "^1.5.3",
     "vite": "^4.0.4",

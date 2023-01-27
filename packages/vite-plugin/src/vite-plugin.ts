@@ -4,6 +4,7 @@ import { EOL } from 'os'
 import { basename, dirname, join, relative, resolve } from 'path'
 
 import effectTransformer from '@effect/language-service/transformer'
+import { none, some, type Option } from '@fp-ts/data/Option'
 import {
   setupTsProject,
   makeHtmlModule,
@@ -18,6 +19,7 @@ import {
   apiModuleTreeToJson,
   addOrUpdateBase,
 } from '@typed/compiler'
+import { parseHtmlImports, parseBasePath } from '@typed/framework/html'
 import glob from 'fast-glob'
 import { Project, SourceFile, ts, type CompilerOptions } from 'ts-morph'
 // @ts-expect-error Unable to resolve types w/ NodeNext
@@ -25,6 +27,8 @@ import vavite from 'vavite'
 import type { ConfigEnv, Logger, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
 import compression from 'vite-plugin-compression'
 import tsconfigPaths from 'vite-tsconfig-paths'
+
+import { PLUGIN_NAME } from './constants.js'
 
 /**
  * The Configuration for the Typed Plugin. All file paths can be relative to sourceDirectory or
@@ -80,8 +84,6 @@ export interface PluginOptions {
 }
 
 const cwd = process.cwd()
-
-export const PLUGIN_NAME = '@typed/vite-plugin'
 
 export interface TypedVitePlugin extends Plugin {
   readonly name: typeof PLUGIN_NAME
@@ -166,7 +168,7 @@ export interface RuntimeManifestEntry extends ModuleTreeJsonWithFallback {
 export interface ResolvedOptions {
   readonly sourceDirectory: string
   readonly tsConfig: string
-  readonly serverFilePath: string
+  readonly serverFilePath: Option<string>
   readonly clientOutputDirectory: string
   readonly serverOutputDirectory: string
   readonly htmlFiles: readonly string[]
@@ -191,6 +193,7 @@ export default function makePlugin({
   const sourceDirectory = resolve(cwd, directory)
   const tsConfigFilePath = resolve(sourceDirectory, tsConfig ?? 'tsconfig.json')
   const resolvedServerFilePath = resolve(sourceDirectory, serverFilePath ?? 'server.ts')
+  const serverExists = existsSync(resolvedServerFilePath)
   const resolvedServerOutputDirectory = resolve(
     sourceDirectory,
     serverOutputDirectory ?? 'dist/server',
@@ -199,9 +202,14 @@ export default function makePlugin({
     sourceDirectory,
     clientOutputDirectory ?? 'dist/client',
   )
+  const exclusions = [
+    getRelativePath(sourceDirectory, join(resolvedServerOutputDirectory, '/**/*')),
+    getRelativePath(sourceDirectory, join(resolvedClientOutputDirectory, '/**/*')),
+    '**/node_modules/**',
+  ]
   const defaultIncludeExcludeTs = {
     include: ['**/*.ts', '**/*.tsx'],
-    exclude: ['dist/**/*'],
+    exclude: exclusions,
   }
   const resolvedEffectTsOptions = {
     trace: defaultIncludeExcludeTs,
@@ -212,10 +220,10 @@ export default function makePlugin({
   const resolvedOptions: ResolvedOptions = {
     sourceDirectory,
     tsConfig: tsConfigFilePath,
-    serverFilePath: resolvedServerFilePath,
+    serverFilePath: serverExists ? some(resolvedServerFilePath) : none,
     serverOutputDirectory: resolvedServerOutputDirectory,
     clientOutputDirectory: resolvedClientOutputDirectory,
-    htmlFiles: findHtmlFiles(sourceDirectory, htmlFileGlobs).map((p) =>
+    htmlFiles: findHtmlFiles(sourceDirectory, htmlFileGlobs, exclusions).map((p) =>
       resolve(sourceDirectory, p),
     ),
     debug,
@@ -244,8 +252,6 @@ export default function makePlugin({
   let isSsr = false
   let project: Project
   let transformers: ts.CustomTransformers
-
-  const serverExists = existsSync(resolvedServerFilePath)
 
   const plugins: PluginOption[] = [
     tsconfigPaths({
@@ -292,7 +298,7 @@ export default function makePlugin({
   }
 
   const handleFileChange = async (path: string, event: 'create' | 'update' | 'delete') => {
-    if (/\.tsx?$/.test(path)) {
+    if (/\.[c|m]?tsx?$/.test(path)) {
       switch (event) {
         case 'create': {
           project.addSourceFileAtPath(path)
@@ -709,14 +715,18 @@ function parseModulesFromId(id: string, importer: string | undefined): string {
   return pages
 }
 
-function findHtmlFiles(directory: string, htmlFileGlobs?: readonly string[]): readonly string[] {
+function findHtmlFiles(
+  directory: string,
+  htmlFileGlobs: readonly string[] | undefined,
+  exclusions: readonly string[],
+): readonly string[] {
   if (htmlFileGlobs) {
     // eslint-disable-next-line import/no-named-as-default-member
-    return glob.sync([...htmlFileGlobs], { cwd: directory })
+    return glob.sync([...htmlFileGlobs, ...exclusions.map((x) => '!' + x)], { cwd: directory })
   }
 
   // eslint-disable-next-line import/no-named-as-default-member
-  return glob.sync(['**/*.html', '!' + '**/node_modules/**', '!' + '**/dist/**'], {
+  return glob.sync(['**/*.html', ...exclusions.map((x) => '!' + x)], {
     cwd: directory,
   })
 }
@@ -763,46 +773,6 @@ function parseHtmlEntryFile(sourceDirectory: string, filePath: string): EntryFil
     imports: parseHtmlImports(sourceDirectory, content),
     basePath: parseBasePath(content),
   }
-}
-
-function parseHtmlImports(sourceDirectory: string, content: string) {
-  const imports: string[] = []
-
-  const matches = content.match(/<script[^>]*src="([^"]*)"[^>]*>/g)
-
-  if (matches) {
-    for (const match of matches) {
-      // If script is not type=module then skip
-      if (!match.includes('type="module"')) {
-        continue
-      }
-
-      const src = match.match(/src="([^"]*)"/)?.[1]
-
-      if (src) {
-        const fullPath = join(sourceDirectory, src)
-        const relativePath = relative(sourceDirectory, fullPath)
-
-        imports.push(relativePath)
-      }
-    }
-  }
-
-  return imports
-}
-
-function parseBasePath(content: string) {
-  const baseTag = content.match(/<base[^>]*>/)?.[0]
-
-  if (baseTag) {
-    const href = baseTag.match(/href="([^"]*)"/)?.[1]
-
-    if (href) {
-      return href
-    }
-  }
-
-  return '/'
 }
 
 function parseTsEntryFile(sourceDirectory: string, filePath: string): EntryFile {
