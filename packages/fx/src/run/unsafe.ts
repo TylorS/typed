@@ -8,22 +8,20 @@ import type { Fx } from '../Fx.js'
 
 import { drain } from './drain.js'
 
-export const unsafeRunAsync = <E, A>(fx: Fx<never, E, A>): Cancel<E, void> =>
-  Effect.unsafeRun(drain(fx))
+export const run = <E, A>(fx: Fx<never, E, A>): Cancel<E, void> => Effect.runCallback(drain(fx))
 
-export const unsafeRunAsyncWith =
+export const runCallback =
   <E>(f: (exit: Exit.Exit<E, void>) => void) =>
   <A>(fx: Fx<never, E, A>): Cancel<E, void> =>
-    Effect.unsafeRun(drain(fx), f)
+    Effect.runCallback(drain(fx), f)
 
-export const unsafeFork = <E, A>(fx: Fx<never, E, A>): Fiber.RuntimeFiber<E, void> =>
-  Effect.unsafeFork(drain(fx))
+export const runFork = <E, A>(fx: Fx<never, E, A>): Fiber.RuntimeFiber<E, void> =>
+  Effect.runFork(drain(fx))
 
-export const unsafeRunPromise = <E, A>(fx: Fx<never, E, A>): Promise<void> =>
-  Effect.unsafeRunPromise(drain(fx))
+export const runPromise = <E, A>(fx: Fx<never, E, A>): Promise<void> => Effect.runPromise(drain(fx))
 
-export const unsafeRunPromiseExit = <E, A>(fx: Fx<never, E, A>): Promise<Exit.Exit<E, void>> =>
-  Effect.unsafeRunPromiseExit(drain(fx))
+export const runPromiseExit = <E, A>(fx: Fx<never, E, A>): Promise<Exit.Exit<E, void>> =>
+  Effect.runPromiseExit(drain(fx))
 
 export const fork = <R, E, A>(
   fx: Fx<R, E, A>,

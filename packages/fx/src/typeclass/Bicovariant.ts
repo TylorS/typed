@@ -1,5 +1,5 @@
+import { pipe } from '@fp-ts/core/Function'
 import * as B from '@fp-ts/core/typeclass/Bicovariant'
-import { pipe } from '@fp-ts/data/Function'
 
 import type { Fx } from '../Fx.js'
 import { map } from '../operator/map.js'

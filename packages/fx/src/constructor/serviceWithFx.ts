@@ -14,6 +14,6 @@ class ServiceWithFx<T, R, E, A> extends Fx.Variance<T | R, E, A> implements Fx<T
   }
 
   run<R2>(sink: Fx.Sink<R2, E, A>) {
-    return Effect.serviceWithEffect(this.tag)((a) => this.f(a).run(sink))
+    return Effect.serviceWithEffect(this.tag, (a) => this.f(a).run(sink))
   }
 }

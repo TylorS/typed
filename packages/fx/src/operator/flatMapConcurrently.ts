@@ -1,5 +1,5 @@
 import * as TSemaphore from '@effect/stm/TSemaphore'
-import { flow, pipe } from '@fp-ts/data/Function'
+import { flow, pipe } from '@fp-ts/core/Function'
 
 import type { Fx } from '../Fx.js'
 import { suspend } from '../constructor/suspend.js'

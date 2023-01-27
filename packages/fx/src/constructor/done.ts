@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
-import { flow, pipe } from '@fp-ts/data/Function'
+import { flow, pipe } from '@fp-ts/core/Function'
 
 import { Fx, Sink } from '../Fx.js'
 

@@ -1,7 +1,7 @@
 import type { Effect } from '@effect/io/Effect'
 import type { Scope } from '@effect/io/Scope'
 import * as TSemaphore from '@effect/stm/TSemaphore'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 
 import { Fx } from '../Fx.js'
 
@@ -15,6 +15,7 @@ class WithPermitFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> 
   }
 
   run<R2>(sink: Fx.Sink<R2, E, A>): Effect<R | R2 | Scope, never, unknown> {
+    // @ts-expect-error STM has not been updated to 0.1.0 yet
     return pipe(this.fx.run(sink), TSemaphore.withPermit(this.semaphore))
   }
 }

@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
+import { pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 import { equals } from '@fp-ts/data/Equal'
-import { pipe } from '@fp-ts/data/Function'
-import * as Option from '@fp-ts/data/Option'
 
 import { Fx } from '../Fx.js'
 
@@ -23,7 +23,7 @@ class SkipRepeatsWithFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E
 
   run<R2>(sink: Fx.Sink<R2, E, A>) {
     return Effect.suspendSucceed(() => {
-      let previous: Option.Option<A> = Option.none
+      let previous: Option.Option<A> = Option.none()
 
       return this.self.run({
         ...sink,

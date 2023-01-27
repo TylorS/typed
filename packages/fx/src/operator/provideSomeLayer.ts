@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 import type { Layer } from '@effect/io/Layer'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 
 import { Fx } from '../Fx.js'
 

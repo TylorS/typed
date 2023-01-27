@@ -4,8 +4,8 @@ import * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref'
 import * as Schedule from '@effect/io/Schedule'
 import type { Scope } from '@effect/io/Scope'
+import { pipe } from '@fp-ts/core/Function'
 import { millis } from '@fp-ts/data/Duration'
-import { pipe } from '@fp-ts/data/Function'
 
 export const asap = pipe(
   Schedule.once(),
@@ -43,7 +43,7 @@ export class RefCounter {
       Effect.flatMap(() => Ref.get(this.count)),
       Effect.flatMap((x) =>
         Effect.sync(() => {
-          if (x === 0) Deferred.unsafeDone(Effect.unit())(this.deferred)
+          if (x === 0) Deferred.unsafeDone<never, void>(this.deferred, Effect.unit())
         }),
       ),
       Effect.scheduleForked(asap),

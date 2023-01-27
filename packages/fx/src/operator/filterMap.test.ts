@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
 
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/data/Function'
-import { none, some } from '@fp-ts/data/Option'
+import { pipe } from '@fp-ts/core/Function'
+import { none, some } from '@fp-ts/core/Option'
 import { describe, it } from 'vitest'
 
 import { fromArray } from '../constructor/fromArray.js'
@@ -15,10 +15,10 @@ describe(import.meta.url, () => {
     it('filters and transforms an Fx', async () => {
       const test = pipe(
         fromArray([1, 2, 3]),
-        filterMap((n) => (n % 2 === 0 ? some(n + 1) : none)),
+        filterMap((n) => (n % 2 === 0 ? some(n + 1) : none())),
         collectAll,
       )
-      const events = await Effect.unsafeRunPromise(test)
+      const events = await Effect.runPromise(test)
 
       deepStrictEqual(events, [3])
     })

@@ -3,16 +3,15 @@ import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
 import * as Fiber from '@effect/io/Fiber'
-import type * as Runtime from '@effect/io/Runtime'
 import type { Scope } from '@effect/io/Scope'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 
 import { Fx } from '../Fx.js'
 
 export interface Emitter<E, A> {
-  readonly emit: (a: A) => Runtime.Cancel<never, unknown>
-  readonly failCause: (e: Cause<E>) => Runtime.Cancel<never, unknown>
-  readonly end: () => Runtime.Cancel<never, unknown>
+  readonly emit: (a: A) => Fiber.RuntimeFiber<never, unknown>
+  readonly failCause: (e: Cause<E>) => Fiber.RuntimeFiber<never, unknown>
+  readonly end: () => Fiber.RuntimeFiber<never, unknown>
 }
 
 export function fromEmitter<E, A, R, E2>(
@@ -37,9 +36,9 @@ class FromEmitterFx<R, E, E2, A>
       const deferred = yield* $(Deferred.make<never, Exit.Exit<E | E2, void>>())
       const done = (exit: Exit.Exit<E | E2, void>) => Deferred.done(Exit.succeed(exit))(deferred)
       const emitter: Emitter<E, A> = {
-        emit: (a) => runtime.unsafeRun(sink.event(a)),
-        failCause: (e) => runtime.unsafeRun(done(Exit.failCause(e))),
-        end: () => runtime.unsafeRun(done(Exit.succeed(undefined))),
+        emit: (a) => runtime.unsafeFork(sink.event(a)),
+        failCause: (e) => runtime.unsafeFork(done(Exit.failCause(e))),
+        end: () => runtime.unsafeFork(done(Exit.succeed(undefined))),
       }
 
       const fiber = yield* $(

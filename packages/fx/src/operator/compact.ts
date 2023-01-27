@@ -1,5 +1,5 @@
-import { identity } from '@fp-ts/data/Function'
-import type { Option } from '@fp-ts/data/Option'
+import { identity } from '@fp-ts/core/Function'
+import type { Option } from '@fp-ts/core/Option'
 
 import type { Fx } from '../Fx.js'
 

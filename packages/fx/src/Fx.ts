@@ -1,7 +1,7 @@
 import type { Cause } from '@effect/io/Cause'
 import type { Effect } from '@effect/io/Effect'
 import type { Scope } from '@effect/io/Scope'
-import { identity } from '@fp-ts/data/Function'
+import { identity } from '@fp-ts/core/Function'
 
 export interface Fx<R, E, A> extends Fx.Variance<R, E, A> {
   /**

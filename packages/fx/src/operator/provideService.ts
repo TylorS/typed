@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
+import { pipe } from '@fp-ts/core/Function'
 import type * as Context from '@fp-ts/data/Context'
-import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
 
@@ -20,6 +20,6 @@ class ProvideServiceFx<R, E, A, S>
   }
 
   run<R2>(sink: Fx.Sink<R2, E, A>) {
-    return pipe(this.self.run(sink), Effect.provideService(this.tag)(this.service))
+    return pipe(this.self.run(sink), Effect.provideService(this.tag, this.service))
   }
 }

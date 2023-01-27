@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/data/Function'
-import * as Option from '@fp-ts/data/Option'
+import { pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 
 import { Fx } from '../Fx.js'
 

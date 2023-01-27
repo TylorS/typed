@@ -2,8 +2,8 @@ import { deepStrictEqual } from 'assert'
 
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
+import { pipe } from '@fp-ts/core/Function'
 import { millis } from '@fp-ts/data/Duration'
-import { pipe } from '@fp-ts/data/Function'
 import { describe, it } from 'vitest'
 
 import { fromIterable } from '../constructor/fromIterable.js'
@@ -63,7 +63,7 @@ describe(import.meta.url, () => {
         deepStrictEqual(started, 1)
       })
 
-      await Effect.unsafeRunPromise(test)
+      await Effect.runPromise(test)
     })
   })
 })

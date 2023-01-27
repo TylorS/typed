@@ -2,10 +2,10 @@ import * as Effect from '@effect/io/Effect'
 import * as Ref from '@effect/io/Ref'
 import * as Synchronized from '@effect/io/Ref/Synchronized'
 import * as TSemaphore from '@effect/stm/TSemaphore'
+import { identity, pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 import { equals } from '@fp-ts/data/Equal'
-import { identity, pipe } from '@fp-ts/data/Function'
 import * as MutableRef from '@fp-ts/data/MutableRef'
-import * as Option from '@fp-ts/data/Option'
 
 import { Fx } from '../Fx.js'
 
@@ -49,7 +49,9 @@ export namespace SynchronizedSubject {
     const modifyEffect = <B, R2, E2>(
       f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>,
     ): Effect.Effect<R2, E2, B> =>
+      // @ts-expect-error STM has not been updated to 0.1.0 yet
       locked(
+        // @ts-expect-error STM has not been updated to 0.1.0 yet
         Effect.gen(function* ($) {
           const current = getValue()
           const [b, a] = yield* $(f(current))
@@ -102,7 +104,7 @@ export namespace SynchronizedSubject {
         const option = mutableRef.get()
 
         // Next pull should recompute the initial value
-        mutableRef.set(Option.none)
+        mutableRef.set(Option.none())
 
         return option
       }),

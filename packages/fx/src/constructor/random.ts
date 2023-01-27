@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 import type { Random } from '@effect/io/Random'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 
 import type { Fx } from '../Fx.js'
 

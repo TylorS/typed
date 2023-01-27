@@ -1,7 +1,7 @@
 import { deepStrictEqual } from 'assert'
 
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 import { describe, it } from 'vitest'
 
 import { fromArray } from '../constructor/fromArray.js'
@@ -17,7 +17,7 @@ describe(import.meta.url, () => {
         scan(0, (acc, n) => acc + n),
         collectAll,
       )
-      const events = await Effect.unsafeRunPromise(test)
+      const events = await Effect.runPromise(test)
 
       deepStrictEqual(events, [0, 1, 3, 6])
     })

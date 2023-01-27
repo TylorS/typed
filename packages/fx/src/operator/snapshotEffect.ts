@@ -1,8 +1,8 @@
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Ref from '@effect/io/Ref/Synchronized'
-import { pipe } from '@fp-ts/data/Function'
-import * as Option from '@fp-ts/data/Option'
+import { pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 
 import { Fx } from '../Fx.js'
 import { run } from '../run/run.js'
@@ -31,7 +31,7 @@ class SnapshotEffectFx<R, E, A, R2, E2, B, R3, E3, C>
     const { fx, sampled, f } = this
 
     return Effect.gen(function* ($) {
-      const ref = yield* $(Ref.make<Option.Option<B>>(Option.none))
+      const ref = yield* $(Ref.make<Option.Option<B>>(Option.none()))
 
       yield* $(
         pipe(
@@ -48,21 +48,17 @@ class SnapshotEffectFx<R, E, A, R2, E2, B, R3, E3, C>
         fx.run(
           Fx.Sink(
             (a) =>
-              pipe(
-                ref,
-                // Uses updateEffect to avoid concurrency issues
-                Ref.updateEffect((option) =>
-                  pipe(
-                    option,
-                    Option.match(
-                      () => Effect.succeed(Option.none),
-                      (b) =>
-                        pipe(
-                          f(b, a),
-                          Effect.matchCauseEffect(sink.error, sink.event),
-                          Effect.as(Option.some(b)),
-                        ),
-                    ),
+              Ref.updateEffect(ref, (option) =>
+                pipe(
+                  option,
+                  Option.match(
+                    () => Effect.sync(Option.none),
+                    (b) =>
+                      pipe(
+                        f(b, a),
+                        Effect.matchCauseEffect(sink.error, sink.event),
+                        Effect.as(Option.some(b)),
+                      ),
                   ),
                 ),
               ),

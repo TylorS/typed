@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import type { FiberId } from '@effect/io/Fiber/Id'
-import { flow } from '@fp-ts/data/Function'
-import type { Option } from '@fp-ts/data/Option'
+import { flow } from '@fp-ts/core/Function'
+import type { Option } from '@fp-ts/core/Option'
 
 import type { Fx } from '../Fx.js'
 

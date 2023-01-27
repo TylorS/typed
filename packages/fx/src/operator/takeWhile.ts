@@ -1,4 +1,4 @@
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 import { type Predicate, not } from '@fp-ts/data/Predicate'
 
 import type { Fx } from '../Fx.js'

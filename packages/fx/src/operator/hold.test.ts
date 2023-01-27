@@ -41,7 +41,7 @@ describe(import.meta.url, () => {
         deepStrictEqual(yield* $(Fiber.join(fiber3)), [2, 3, 4, 5, 6], '3')
       })
 
-      await Effect.unsafeRunPromise(test)
+      await Effect.runPromise(test)
     })
   })
 })
