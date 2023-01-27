@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import type * as Layer from '@effect/io/Layer'
-import { flow } from '@fp-ts/data/Function'
-import type * as Context from '@typed/context'
+import { flow } from '@fp-ts/core/Function'
+import * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
 import type * as html from '@typed/html'
 import type * as Path from '@typed/path'
@@ -14,11 +14,11 @@ export interface RouteMatch<R, E, P extends string> {
 
   readonly match: (params: Fx.Fx<never, never, Path.ParamsOf<P>>) => Fx.Fx<R, E, html.Renderable>
 
-  readonly provideEnvironment: (environment: Context.Context<R>) => RouteMatch<never, E, P>
+  readonly provideContext: (environment: Context.Context<R>) => RouteMatch<never, E, P>
 
   readonly provideService: <S>(tag: Context.Tag<S>, service: S) => RouteMatch<Exclude<R, S>, E, P>
 
-  readonly provideLayer: <R2, S>(
+  readonly provideSomeLayer: <R2, S>(
     layer: Layer.Layer<R2, never, S>,
   ) => RouteMatch<R2 | Exclude<R, S>, E, P>
 }
@@ -32,11 +32,11 @@ export function RouteMatch<R, P extends string, R2, E2, R3, E3>(
     route,
     match,
     layout,
-    provideEnvironment: (env) =>
+    provideContext: (env) =>
       RouteMatch(
-        Route.provideEnvironment(env)(route),
-        flow(match, Fx.provideSomeEnvironment(env)),
-        layout ? Fx.provideEnvironment(env)(layout) : undefined,
+        Route.provideContext(env)(route),
+        flow(match, Fx.contramapContext(Context.merge(env))),
+        layout ? Fx.provideContext(env)(layout) : undefined,
       ),
     provideService: (tag, service) =>
       RouteMatch(
@@ -44,7 +44,7 @@ export function RouteMatch<R, P extends string, R2, E2, R3, E3>(
         flow(match, Fx.provideService(tag)(service)),
         layout ? Fx.provideService(tag)(service)(layout) : undefined,
       ),
-    provideLayer: (layer) =>
+    provideSomeLayer: (layer) =>
       RouteMatch(
         Route.provideSomeLayer(layer)(route),
         flow(match, Fx.provideSomeLayer(layer)),

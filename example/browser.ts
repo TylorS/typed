@@ -1,6 +1,6 @@
 /// <reference types="@typed/framework" />
 
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 import * as Fx from '@typed/fx'
 // Browser virtual modules are extensions of RuntimeModule
 // which expose an additional 'render' function which takes a parentElement
@@ -13,4 +13,4 @@ if (!parentElement) {
   throw new Error('Could not find #application element')
 }
 
-pipe(render(parentElement), Fx.unsafeRunAsyncWith(console.log))
+pipe(render(parentElement), Fx.runCallback(console.log))

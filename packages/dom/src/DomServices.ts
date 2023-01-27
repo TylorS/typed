@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 import * as C from '@typed/context'
 
 import { Document } from './Document.js'
@@ -46,11 +46,11 @@ export const provideDomServices =
       // If the environment doesn't support declarative shadow-dom, polyfill by attaching shadow roots
       attachShadowRoots,
       Effect.zipRight(effect),
-      Effect.provideSomeEnvironment((env: C.Context<Exclude<R, DomServices>>) =>
+      Effect.contramapContext((env: C.Context<Exclude<R, DomServices>>) =>
         pipe(env as C.Context<R>, C.merge(makeDomServices(window, window))),
       ),
     )
 
-export const domServices = Layer.effectEnvironment(
+export const domServices = Layer.effectContext(
   Window.withEffect((w) => GlobalThis.with((g) => makeDomServices(w, g))),
 )

@@ -1,5 +1,5 @@
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 import * as Context from '@typed/context'
 import { FetchHandler } from '@typed/framework/api'
 import { type ParamsOf, Route, type PathOf } from '@typed/route'

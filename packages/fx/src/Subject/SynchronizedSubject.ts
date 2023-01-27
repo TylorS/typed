@@ -1,7 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 import * as Ref from '@effect/io/Ref'
 import * as Synchronized from '@effect/io/Ref/Synchronized'
-import * as TSemaphore from '@effect/stm/TSemaphore'
 import { identity, pipe } from '@fp-ts/core/Function'
 import * as Option from '@fp-ts/core/Option'
 import { equals } from '@fp-ts/data/Equal'
@@ -31,8 +30,8 @@ export namespace SynchronizedSubject {
   ): SynchronizedSubject<A> {
     const mutableRef = MutableRef.make(Option.some(initial()))
     const subject = HoldSubject.unsafeMake<never, A>(mutableRef)
-    const semaphore = TSemaphore.unsafeMake(1)
-    const locked = TSemaphore.withPermit(semaphore)
+    const semaphore = Effect.unsafeMakeSemaphore(1)
+    const locked = semaphore.withPermits(1)
 
     const getValue = () =>
       pipe(
@@ -49,9 +48,7 @@ export namespace SynchronizedSubject {
     const modifyEffect = <B, R2, E2>(
       f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>,
     ): Effect.Effect<R2, E2, B> =>
-      // @ts-expect-error STM has not been updated to 0.1.0 yet
       locked(
-        // @ts-expect-error STM has not been updated to 0.1.0 yet
         Effect.gen(function* ($) {
           const current = getValue()
           const [b, a] = yield* $(f(current))

@@ -3,9 +3,9 @@ import { join } from 'path'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
-import * as Either from '@fp-ts/data/Either'
-import { pipe } from '@fp-ts/data/Function'
-import * as RA from '@fp-ts/data/ReadonlyArray'
+import * as Either from '@fp-ts/core/Either'
+import { pipe } from '@fp-ts/core/Function'
+import * as RA from '@fp-ts/core/ReadonlyArray'
 
 import { runServerHandler } from '../runServerHandler.js'
 

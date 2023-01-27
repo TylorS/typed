@@ -1,6 +1,6 @@
 import { type Effect, provideSomeLayer, provideLayer } from '@effect/io/Effect'
 import type { Layer } from '@effect/io/Layer'
-import { flow, pipe } from '@fp-ts/data/Function'
+import { flow, pipe } from '@fp-ts/core/Function'
 import type { ParamsOf } from '@typed/path'
 import * as Route from '@typed/route'
 

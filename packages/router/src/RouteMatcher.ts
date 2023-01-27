@@ -3,8 +3,8 @@ import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import type * as Layer from '@effect/io/Layer'
-import { pipe } from '@fp-ts/data/Function'
-import * as Option from '@fp-ts/data/Option'
+import { pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 import type * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
 import type * as html from '@typed/html'
@@ -42,16 +42,14 @@ export interface RouteMatcher<R = never, E = never> {
 
   // Provide resources
 
-  readonly provideEnvironment: <R2>(
-    environment: Context.Context<R2>,
-  ) => RouteMatcher<Exclude<R, R2>, E>
+  readonly provideContext: <R2>(environment: Context.Context<R2>) => RouteMatcher<Exclude<R, R2>, E>
 
   readonly provideService: <R2>(
     tag: Context.Tag<R2>,
     service: R2,
   ) => RouteMatcher<Exclude<R, R2>, E>
 
-  readonly provideLayer: <R2, S>(
+  readonly provideSomeLayer: <R2, S>(
     layer: Layer.Layer<R2, never, S>,
   ) => RouteMatcher<Exclude<R, S> | R2, E>
 
@@ -100,16 +98,14 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
           ]),
         ),
       ),
-    provideEnvironment: (environment) =>
-      RouteMatcher(
-        new Map(Array.from(routes).map(([k, v]) => [k, v.provideEnvironment(environment)])),
-      ),
+    provideContext: (environment) =>
+      RouteMatcher(new Map(Array.from(routes).map(([k, v]) => [k, v.provideContext(environment)]))),
     provideService: (tag, service) =>
       RouteMatcher(
         new Map(Array.from(routes).map(([k, v]) => [k, v.provideService(tag, service)])),
       ),
-    provideLayer: (layer) =>
-      RouteMatcher(new Map(Array.from(routes).map(([k, v]) => [k, v.provideLayer(layer)]))),
+    provideSomeLayer: (layer) =>
+      RouteMatcher(new Map(Array.from(routes).map(([k, v]) => [k, v.provideSomeLayer(layer)]))),
     notFound: <R2, E2, R3, E3>(
       f: (path: string) => Fx.Fx<R2, E2, html.Renderable>,
       options: FallbackOptions<R3, E3> = {},
@@ -152,7 +148,7 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
 
               // Skip rerendering if the render function is the same
               if (previous.render === render && previous.layout === layout) {
-                return Option.none
+                return Option.none()
               }
 
               // Interrupt the previous fiber if it exists
@@ -227,7 +223,7 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
     notFoundEffect: (f) => matcher.notFound((path) => Fx.fromEffect(f(path))),
     redirectTo: ((route, ...params) =>
       matcher.notFound(() => redirectTo.fx(route, ...params))) as RouteMatcher<R, E>['redirectTo'],
-    run: Fx.suspend(() => matcher.notFoundEffect(Effect.never)),
+    run: Fx.suspend(() => matcher.notFound(() => Fx.succeed(null))),
   }
 
   return matcher
@@ -249,9 +245,9 @@ function runRouteMatch<R, E, P extends string>(
   { route, match }: RouteMatch<R, E, P>,
 ): Fx.Fx<R, E, html.Renderable> {
   return Fx.gen(function* ($) {
-    const env = yield* $(Effect.environment<R>())
+    const env = yield* $(Effect.context<R>())
     const nestedRouter = router.define(route)
-    const params = pipe(nestedRouter.params, Fx.provideEnvironment(env))
+    const params = pipe(nestedRouter.params, Fx.provideContext(env))
     const render = pipe(
       match(params as unknown as Fx.Fx<never, never, Path.ParamsOf<P>>),
       Router.provideFx(nestedRouter as Router),

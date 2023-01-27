@@ -1,5 +1,5 @@
 import type { Layer } from '@effect/io/Layer'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 import { Tag } from '@typed/context'
 import * as Fx from '@typed/fx'
 import { html } from '@typed/html'

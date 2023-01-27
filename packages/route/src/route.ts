@@ -1,8 +1,8 @@
 import * as Effect from '@effect/io/Effect'
 import type * as Layer from '@effect/io/Layer'
+import { pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 import type * as Context from '@fp-ts/data/Context'
-import { pipe } from '@fp-ts/data/Function'
-import * as Option from '@fp-ts/data/Option'
 import * as P from '@typed/path'
 import * as ptr from 'path-to-regexp'
 
@@ -41,7 +41,7 @@ export interface Route<out R, in out Path extends string> {
 
 export function Route<R = never, Path extends string = string>(
   path: Path,
-  match: Route<R, Path>['match'] = Route.makeMatch(path),
+  match: Route<R, Path>['match'] = Route.makeMatch<Path>(path),
 ): Route<R, Path> {
   const route: Route<R, Path> = {
     path,
@@ -55,14 +55,14 @@ export function Route<R = never, Path extends string = string>(
 }
 
 export namespace Route {
-  export function makeMatch<P extends string>(path: P) {
+  export function makeMatch<P extends string>(path: P): Route<never, P>['match'] {
     const parse_ = ptr.match(path, { end: false })
 
     return (input: string) =>
       Effect.sync(() => {
         const match = parse_(input)
 
-        return !match ? Option.none : Option.some({ ...match.params } as unknown as P.ParamsOf<P>)
+        return !match ? Option.none() : Option.some({ ...match.params } as unknown as P.ParamsOf<P>)
       })
   }
 }
@@ -85,7 +85,7 @@ export const guard =
         const params = yield* $(route.match(path))
 
         if (Option.isNone(params)) {
-          return Option.none
+          return Option.none()
         }
 
         const matched = yield* $(guard(params.value, path))
@@ -95,7 +95,7 @@ export const guard =
             yield* $(onNoMatch(params.value, path))
           }
 
-          return Option.none
+          return Option.none()
         }
 
         return params
@@ -118,7 +118,7 @@ export const concat =
         const aParams = yield* $(route.match(path))
 
         if (Option.isNone(aParams)) {
-          return Option.none
+          return Option.none()
         }
 
         const aPath = route.make(aParams.value)
@@ -126,7 +126,7 @@ export const concat =
         const bParams = yield* $(otherRoute.match(remainingPath))
 
         if (Option.isNone(bParams)) {
-          return Option.none
+          return Option.none()
         }
 
         return Option.some({
@@ -142,14 +142,14 @@ export const base = Route('/')
 
 export const home = base.guard((_, p) => Effect.succeed(p === '/'))
 
-export function provideEnvironment<R>(context: Context.Context<R>) {
+export function provideContext<R>(context: Context.Context<R>) {
   return <Path extends string>(route: Route<R, Path>): Route<never, Path> =>
-    Route(route.path, (path) => Effect.provideEnvironment(context)(route.match(path)))
+    Route(route.path, (path) => Effect.provideContext(context)(route.match(path)))
 }
 
 export function provideService<S>(tag: Context.Tag<S>, service: S) {
   return <R, Path extends string>(route: Route<R, Path>): Route<Exclude<R, S>, Path> =>
-    Route(route.path, (path) => Effect.provideService(tag)(service)(route.match(path)))
+    Route(route.path, (path) => Effect.provideService(tag, service)(route.match(path)))
 }
 
 export function provideSomeLayer<R2, S>(layer: Layer.Layer<R2, never, S>) {

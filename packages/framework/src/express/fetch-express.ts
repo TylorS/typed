@@ -2,8 +2,8 @@ import type { Writable } from 'stream'
 
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
-import { pipe } from '@fp-ts/data/Function'
-import * as Option from '@fp-ts/data/Option'
+import { pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 import type { ParamsOf } from '@typed/path'
 import type express from 'express'
 
@@ -41,11 +41,11 @@ export function runFetchHandler<Path extends string>(fetchHandler: FetchHandler<
       // Annotate some request data
       Effect.logAnnotate('request.url', request.url),
       Effect.logAnnotate('request.referrer', request.referrer),
-      Effect.unsafeFork,
+      Effect.runFork,
     )
 
     // If the request/response are closed, interrupt the fiber.
-    request.signal.addEventListener('abort', () => Effect.unsafeFork(Fiber.interrupt(fiber)))
+    request.signal.addEventListener('abort', () => Effect.runFork(Fiber.interrupt(fiber)))
   }
 }
 

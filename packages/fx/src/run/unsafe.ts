@@ -8,7 +8,8 @@ import type { Fx } from '../Fx.js'
 
 import { drain } from './drain.js'
 
-export const run = <E, A>(fx: Fx<never, E, A>): Cancel<E, void> => Effect.runCallback(drain(fx))
+export const runAsync = <E, A>(fx: Fx<never, E, A>): Cancel<E, void> =>
+  Effect.runCallback(drain(fx))
 
 export const runCallback =
   <E>(f: (exit: Exit.Exit<E, void>) => void) =>

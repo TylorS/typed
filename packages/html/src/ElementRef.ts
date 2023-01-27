@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/data/Function'
-import * as Option from '@fp-ts/data/Option'
+import { pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 import { DomSource } from '@typed/dom/DomSource'
 import * as Fx from '@typed/fx'
 import {
@@ -25,7 +25,7 @@ export function makeElementRef<A extends HTMLElement = HTMLElement>(): Effect.Ef
   ElementRef<A>
 > {
   return pipe(
-    Fx.makeRef<Option.Option<A>>(() => Option.none),
+    Fx.makeRef<Option.Option<A>>(Option.none),
     Effect.map((subject): ElementRef<A> => {
       const element: Fx.Fx<never, never, A> = pipe(subject, Fx.compact, Fx.skipRepeats, Fx.hold)
 

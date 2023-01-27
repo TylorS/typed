@@ -2,8 +2,8 @@
 import * as Effect from '@effect/io/Effect'
 import type * as Layer from '@effect/io/Layer'
 import type * as Scope from '@effect/io/Scope'
-import { pipe } from '@fp-ts/data/Function'
-import * as Option from '@fp-ts/data/Option'
+import { pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 import * as Context from '@typed/context'
 import { Document, Location, History, addWindowListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
@@ -57,7 +57,7 @@ export interface Router<out R = never, in out P extends string = string> {
   /**
    * Provide all the resources needed for a Router
    */
-  readonly provideEnvironment: (environment: Context.Context<R>) => Router<never, P>
+  readonly provideContext: (environment: Context.Context<R>) => Router<never, P>
 
   /**
    * The parent router if one exists
@@ -68,7 +68,7 @@ export interface Router<out R = never, in out P extends string = string> {
 export const Router = Object.assign(function makeRouter<R = never, P extends string = string>(
   route: Route.Route<R, P>,
   currentPath: Fx.RefSubject<string>,
-  parent: Option.Option<Router<any, string>> = Option.none,
+  parent: Option.Option<Router<any, string>> = Option.none(),
 ): Router<R, P> {
   const outlet = Fx.RefSubject.unsafeMake((): html.Renderable => null)
 
@@ -108,7 +108,7 @@ export const Router = Object.assign(function makeRouter<R = never, P extends str
     createPath: createPath as Router<R, P>['createPath'],
     define: <R2, Path2 extends string>(other: Route.Route<R2, Path2>) =>
       makeRouter(route.concat(other), currentPath, Option.some(router as any)),
-    provideEnvironment: (env) => provideEnvironment(env)(router),
+    provideContext: (env) => provideContext(env)(router),
     parent,
   }
 
@@ -131,18 +131,18 @@ export const outlet: Fx.Fx<RenderContext | Router, never, html.Renderable> = Ren
 
 export const currentPath: Fx.Fx<Router, never, string> = Router.withFx((r) => r.currentPath)
 
-export function provideEnvironment<R>(environment: Context.Context<R>) {
+export function provideContext<R>(environment: Context.Context<R>) {
   return <P extends string>(router: Router<R, P>): Router<never, P> => {
     const provided: Router<never, P> = {
       ...router,
-      params: pipe(router.params, Fx.provideEnvironment(environment)),
-      route: Route.provideEnvironment(environment)(router.route),
+      params: pipe(router.params, Fx.provideContext(environment)),
+      route: Route.provideContext(environment)(router.route),
       createPath: ((other, ...params) =>
-        Effect.provideEnvironment<R>(environment)(router.createPath(other, ...params))) as Router<
+        Effect.provideContext<R>(environment)(router.createPath(other, ...params))) as Router<
         never,
         P
       >['createPath'],
-      provideEnvironment: (env) => provideEnvironment(env)(provided),
+      provideContext: (env) => provideContext(env)(provided),
     }
 
     return provided
@@ -267,7 +267,7 @@ const patchHistory = Effect.gen(function* ($) {
   const history = yield* $(History.get)
   const historyEvents = Fx.Subject.unsafeMake<never, void>()
   const runtime = yield* $(Effect.runtime<never>())
-  const cleanup = patchHistory_(history, () => runtime.unsafeRun(historyEvents.event()))
+  const cleanup = patchHistory_(history, () => runtime.unsafeFork(historyEvents.event()))
 
   // unpatch history upon finalization
   yield* $(Effect.addFinalizer(() => Effect.sync(cleanup)))

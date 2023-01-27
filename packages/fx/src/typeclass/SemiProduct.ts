@@ -7,6 +7,9 @@ import type { FxTypeLambda } from './TypeLambda.js'
 
 export const SemiProduct: SP.SemiProduct<FxTypeLambda> = {
   product: ((s, o) => combine(o)(s)) as SP.SemiProduct<FxTypeLambda>['product'],
-  productMany: SP.productMany<FxTypeLambda>(Covariant, (s, o) => combine(o)(s)),
+  productMany: SP.productMany<FxTypeLambda>(
+    Covariant,
+    (s, o) => combine(o)(s) as any,
+  ) as SP.SemiProduct<FxTypeLambda>['productMany'],
   imap: Covariant.imap,
 }

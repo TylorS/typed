@@ -1,7 +1,8 @@
 import * as Effect from '@effect/io/Effect'
+import * as Layer from '@effect/io/Layer'
+import { flow, pipe } from '@fp-ts/core/Function'
 import * as Context from '@fp-ts/data/Context'
-import { flow, pipe } from '@fp-ts/data/Function'
-import { makeDomServices } from '@typed/dom/DomServices'
+import { type DomServices, makeDomServices } from '@typed/dom/DomServices'
 import type { GlobalThis } from '@typed/dom/GlobalThis'
 import type { Window } from '@typed/dom/Window'
 import * as Fx from '@typed/fx'
@@ -25,10 +26,10 @@ export function provideIntrinsics(options: ProvideIntrinsicsOptions) {
     pipe(
       fx,
       Fx.provideSomeLayer(Router.live(options.currentPath)),
-      Fx.provideSomeEnvironment(
-        makeDomServices(options.window, options.globalThis, options.parentElement),
-      ),
       RenderContext.provideFx(RenderContext(options.environment, options.isBot)),
+      Fx.contramapContext<never, DomServices>(
+        Context.merge(makeDomServices(options.window, options.globalThis, options.parentElement)),
+      ),
     )
 }
 
@@ -38,8 +39,12 @@ export function provideIntrinsicsEffect(options: ProvideIntrinsicsOptions) {
       effect,
       Effect.provideSomeLayer(Router.live(options.currentPath)),
       RenderContext.provide(RenderContext(options.environment, options.isBot)),
-      Effect.provideSomeEnvironment(
-        Context.merge(makeDomServices(options.window, options.globalThis, options.parentElement)),
+      Effect.provideSomeLayer<never, never, DomServices>(
+        Layer.effectContext(
+          Effect.succeed(
+            makeDomServices(options.window, options.globalThis, options.parentElement),
+          ),
+        ),
       ),
     )
 }

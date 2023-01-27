@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 import type { Context } from '@fp-ts/data/Context'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 
 import { Hole } from '../Hole.js'
 import type { Placeholder } from '../Placeholder.js'
@@ -18,7 +18,7 @@ export function html<Values extends ReadonlyArray<Placeholder<any>>>(
   Placeholder.ErrorsOf<Values[number]>,
   Hole
 > {
-  return Effect.environmentWithEffect((env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
+  return Effect.contextWithEffect((env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
     pipe(
       unwrapEffectValues(values),
       Effect.map((values) => new Hole('html', env, template, values)),
@@ -52,7 +52,7 @@ export function svg<Values extends ReadonlyArray<Placeholder<any>>>(
   Placeholder.ErrorsOf<Values[number]>,
   Hole
 > {
-  return Effect.environmentWithEffect((env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
+  return Effect.contextWithEffect((env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
     pipe(
       unwrapEffectValues(values),
       Effect.map((values) => new Hole('svg', env, template, values)),

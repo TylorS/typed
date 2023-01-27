@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
+import { pipe } from '@fp-ts/core/Function'
 import type { Context } from '@fp-ts/data/Context'
-import { pipe } from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx'
 
 import { Hole } from '../Hole.js'
@@ -19,7 +19,7 @@ export function html<Values extends Array<Placeholder<any, any> | undefined | nu
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
   if (values.length === 0) {
     return Fx.fromEffect(
-      Effect.environmentWith(
+      Effect.contextWith(
         (env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
           new Hole('html', env, template, values),
       ),
@@ -27,7 +27,7 @@ export function html<Values extends Array<Placeholder<any, any> | undefined | nu
   }
 
   return Fx.fromFxEffect(
-    Effect.environmentWith((env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
+    Effect.contextWith((env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
       pipe(
         unwrapFxValues(template, values),
         Fx.map((values) => new Hole('html', env, template, values)),
@@ -70,7 +70,7 @@ export function svg<Values extends ReadonlyArray<Placeholder<any, any> | undefin
 ): Fx.Fx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>, Hole> {
   if (values.length === 0) {
     return Fx.fromEffect(
-      Effect.environmentWith(
+      Effect.contextWith(
         (env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
           new Hole('svg', env, template, values),
       ),
@@ -78,7 +78,7 @@ export function svg<Values extends ReadonlyArray<Placeholder<any, any> | undefin
   }
 
   return Fx.fromFxEffect(
-    Effect.environmentWith((env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
+    Effect.contextWith((env: Context<Placeholder.ResourcesOf<Values[number]>>) =>
       pipe(
         unwrapFxValues(template, values),
         Fx.map((values) => new Hole('svg', env, template, values)),
@@ -134,7 +134,7 @@ function unwrapFxValue(
   index: number,
   sampling: Fx.Subject<never, void>,
 ): Fx.Fx<any, any, any> {
-  if (Fx.isFx<any, any, any>(value) && !('element' in value)) {
+  if (value && Fx.isFx<any, any, any>(value) && !('element' in value)) {
     return pipe(
       value,
       Fx.tap(() => sampling.event()),

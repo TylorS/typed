@@ -1,4 +1,4 @@
-import * as TSemaphore from '@effect/stm/TSemaphore'
+import { unsafeMakeSemaphore } from '@effect/io/Effect'
 import { flow, pipe } from '@fp-ts/core/Function'
 
 import type { Fx } from '../Fx.js'
@@ -10,7 +10,7 @@ import { withPermit } from './withPermit.js'
 export function flatMapConcurrently<A, R2, E2, B>(concurrency: number, f: (a: A) => Fx<R2, E2, B>) {
   return <R, E>(stream: Fx<R, E, A>): Fx<R | R2, E | E2, B> =>
     suspend(() => {
-      const semaphore = TSemaphore.unsafeMake(concurrency)
+      const semaphore = unsafeMakeSemaphore(concurrency)
 
       return pipe(stream, flatMap(flow(f, withPermit(semaphore))))
     })

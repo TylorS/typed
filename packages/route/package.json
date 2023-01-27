@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@effect/io": "0.1.0",
+    "@fp-ts/core": "0.1.1",
     "@fp-ts/data": "0.1.0",
     "@typed/path": "workspace:*",
     "path-to-regexp": "^6.2.1"

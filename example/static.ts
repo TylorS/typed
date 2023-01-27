@@ -25,4 +25,4 @@ const main = Effect.gen(function* ($) {
   console.log('Static paths written!')
 })
 
-Effect.unsafeRunPromise(main)
+Effect.runPromise(main)

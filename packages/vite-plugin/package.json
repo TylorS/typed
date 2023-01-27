@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@fp-ts/data": "0.1.0",
+    "@fp-ts/core": "0.1.1",
     "@typed/compiler": "workspace:*",
     "@typed/framework": "workspace:*",
     "fast-glob": "^3.2.12",

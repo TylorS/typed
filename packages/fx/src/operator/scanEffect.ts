@@ -1,6 +1,5 @@
 import * as Effect from '@effect/io/Effect'
 import type * as Scope from '@effect/io/Scope'
-import * as TSemaphore from '@effect/stm/TSemaphore'
 import { pipe } from '@fp-ts/core/Function'
 
 import { Fx, Sink } from '../Fx.js'
@@ -42,7 +41,7 @@ class ScanEffectFx<R, E, A, R2, E2, B, R3, E3>
 
 class ScanEffectSink<E, A, E2, B, R3, E3, R4> implements Fx.Sink<R3 | R4, E, A> {
   protected acc: B = this.seed
-  protected semaphore = TSemaphore.unsafeMake(1)
+  protected semaphore = Effect.unsafeMakeSemaphore(1)
 
   constructor(
     readonly sink: Sink<R4, E | E2 | E3, B>,
@@ -58,8 +57,7 @@ class ScanEffectSink<E, A, E2, B, R3, E3, R4> implements Fx.Sink<R3 | R4, E, A> 
 
         return this.sink.event(acc)
       }),
-      // @ts-expect-error STM has not been updated to 0.1.0
-      TSemaphore.withPermit(this.semaphore),
+      this.semaphore.withPermits(1),
     )
   }
 

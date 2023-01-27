@@ -1,6 +1,6 @@
 import type * as Effect from '@effect/io/Effect'
-import { flow } from '@fp-ts/data/Function'
-import * as Option from '@fp-ts/data/Option'
+import { flow } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 import * as C from '@typed/context'
 
 import { dispatchEventWith } from './EventTarget.js'

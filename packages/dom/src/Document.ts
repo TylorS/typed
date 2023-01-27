@@ -64,8 +64,7 @@ export const getDocumentElement = Document.with((d) => d.documentElement)
 export const importNode = <T extends Node>(node: T, deep?: boolean) =>
   Document.with((d) => d.importNode(node, deep))
 
-export const updateTitle = (title: string) =>
-  Document.with((d) => (d.title = title))
+export const updateTitle = (title: string) => Document.with((d) => (d.title = title))
 
 export type MetaParams = {
   readonly name: string

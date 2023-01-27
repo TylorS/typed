@@ -1,8 +1,8 @@
 import * as Effect from '@effect/io/Effect'
 import * as Ref from '@effect/io/Ref'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
+import * as Maybe from '@fp-ts/core/Option'
 import * as HashMap from '@fp-ts/data/HashMap'
-import * as Maybe from '@fp-ts/data/Option'
 import * as C from '@typed/context'
 import * as Fx from '@typed/fx'
 

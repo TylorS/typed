@@ -1,4 +1,4 @@
-import { none, some, type Option } from '@fp-ts/data/Option'
+import { none, some, type Option } from '@fp-ts/core/Option'
 import { resolveConfig } from 'vite'
 
 import { PLUGIN_NAME } from './constants.js'
@@ -11,7 +11,7 @@ export async function resolveTypedConfig(
   const typedPlugin = config.plugins.find((p): p is TypedVitePlugin => p.name === PLUGIN_NAME)
 
   if (!typedPlugin) {
-    return none
+    return none()
   }
 
   return some(typedPlugin.resolvedOptions)
