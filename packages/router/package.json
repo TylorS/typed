@@ -1,6 +1,6 @@
 {
   "name": "@typed/router",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
