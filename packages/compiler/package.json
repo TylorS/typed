@@ -23,11 +23,13 @@
   "dependencies": {
     "@fp-ts/core": "0.1.1",
     "@typed/framework": "workspace:*",
-    "html-minifier": "^4.0.0"
+    "html-minifier": "^4.0.0",
+    "ts-morph": "^17.0.1",
+    "vite": "^4.0.4"
   },
   "devDependencies": {
-    "@types/html-minifier": "^4.0.2",
-    "ts-morph": "^17.0.1"
+    "@effect/language-service": "^0.0.17",
+    "@types/html-minifier": "^4.0.2"
   },
   "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",
   "publishConfig": {
