@@ -85,7 +85,7 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
     tsconfigPaths({
       projects: [options.tsConfig],
     }),
-    pipe(
+    ...pipe(
       options.serverFilePath,
       Option.filter(() => !options.isStaticBuild),
       Option.map((serverEntry) =>
@@ -94,7 +94,7 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
           serveClientAssetsInDev: true,
         }),
       ),
-      Option.getOrNull,
+      Option.toArray,
     ),
   ]
 
@@ -136,7 +136,7 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
               },
             },
           })),
-          Option.getOrNull,
+          Option.toArray,
         )
 
         ;(config as any).buildSteps = [
@@ -145,7 +145,7 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
             // @ts-expect-error Unable to resolve types w/ NodeNext
             config: { build: clientBuild, plugins: [compression()] },
           },
-          serverBuild,
+          ...serverBuild,
         ]
 
         return
