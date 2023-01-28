@@ -1,30 +1,14 @@
-import { existsSync, readFileSync, writeFileSync } from 'fs'
-import { readFile } from 'fs/promises'
+import { existsSync, writeFileSync } from 'fs'
 import { EOL } from 'os'
-import { basename, dirname, join, relative, resolve } from 'path'
+import { basename, join, resolve } from 'path'
 
-import effectTransformer from '@effect/language-service/transformer'
-import { none, some, type Option } from '@fp-ts/core/Option'
-import {
-  setupTsProject,
-  makeHtmlModule,
-  makeRuntimeModule,
-  readDirectory,
-  readModules,
-  readApiModules,
-  makeApiModule,
-  type ApiModuleTreeJson,
-  type ModuleTreeJsonWithFallback,
-  moduleTreeToJson,
-  apiModuleTreeToJson,
-  addOrUpdateBase,
-} from '@typed/compiler'
-import { parseHtmlImports, parseBasePath } from '@typed/framework/html'
+import { pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
+import { Compiler, getRelativePath, type ResolvedOptions } from '@typed/compiler'
 import glob from 'fast-glob'
-import { Project, SourceFile, ts, type CompilerOptions } from 'ts-morph'
 // @ts-expect-error Unable to resolve types w/ NodeNext
 import vavite from 'vavite'
-import type { ConfigEnv, Logger, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
+import type { ConfigEnv, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
 import compression from 'vite-plugin-compression'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -90,95 +74,176 @@ export interface TypedVitePlugin extends Plugin {
   readonly resolvedOptions: ResolvedOptions
 }
 
-const RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX = 'runtime'
-const BROWSER_VIRTUAL_ENTRYPOINT_PREFIX = 'browser'
-const HTML_VIRTUAL_ENTRYPOINT_PREFIX = 'html'
-const API_VIRTUAL_ENTRYPOINT_PREFIX = 'api'
-const EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX = 'express'
-const TYPED_CONFIG_IMPORT = 'typed:config'
+export default function makePlugin(pluginOptions: PluginOptions): PluginOption[] {
+  const options: ResolvedOptions = resolveOptions(pluginOptions)
 
-const PREFIXES = [
-  RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX,
-  BROWSER_VIRTUAL_ENTRYPOINT_PREFIX,
-  HTML_VIRTUAL_ENTRYPOINT_PREFIX,
-  API_VIRTUAL_ENTRYPOINT_PREFIX,
-  EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX,
-]
+  let compiler: Compiler
+  let devServer: ViteDevServer
+  let isSsr = false
 
-const VIRTUAL_ID_PREFIX = '\0'
+  const plugins: PluginOption[] = [
+    tsconfigPaths({
+      projects: [options.tsConfig],
+    }),
+    pipe(
+      options.serverFilePath,
+      Option.filter(() => !options.isStaticBuild),
+      Option.map((serverEntry) =>
+        vavite({
+          serverEntry,
+          serveClientAssetsInDev: true,
+        }),
+      ),
+      Option.getOrNull,
+    ),
+  ]
 
-export interface Manifest {
-  readonly entryFiles: EntryFile[]
+  const getCompiler = () => {
+    if (compiler) {
+      return compiler
+    }
 
-  readonly modules: {
-    [importer: string]: Record<string, ManifestEntry>
+    return (compiler = new Compiler(PLUGIN_NAME, options))
   }
-}
 
-export interface ClientManifest extends Manifest {
-  readonly entryFiles: HtmlEntryFile[]
+  const virtualModulePlugin: TypedVitePlugin = {
+    name: PLUGIN_NAME,
+    resolvedOptions: options,
 
-  readonly modules: {
-    [importer: string]: Record<string, ManifestEntry>
+    /**
+     * Configures our production build using vavite
+     */
+    config(config: UserConfig, env: ConfigEnv) {
+      isSsr = env.ssrBuild ?? false
+
+      // Configure Build steps when running with vavite
+      if (env.mode === 'multibuild') {
+        const clientBuild: UserConfig['build'] = {
+          outDir: options.clientOutputDirectory,
+          rollupOptions: {
+            input: buildClientInput(options.htmlFiles),
+          },
+        }
+
+        const serverBuild = pipe(
+          options.serverFilePath,
+          Option.map((index): UserConfig['build'] => ({
+            ssr: true,
+            outDir: options.serverOutputDirectory,
+            rollupOptions: {
+              input: {
+                index,
+              },
+            },
+          })),
+          Option.getOrNull,
+        )
+
+        ;(config as any).buildSteps = [
+          {
+            name: 'client',
+            // @ts-expect-error Unable to resolve types w/ NodeNext
+            config: { build: clientBuild, plugins: [compression()] },
+          },
+          serverBuild,
+        ]
+
+        return
+      }
+    },
+
+    /**
+     * Updates our resolved options with the correct base path
+     * and parses our input files for our manifest
+     */
+    configResolved(resolvedConfig) {
+      // Ensure options have the correct base path
+      Object.assign(options, { base: resolvedConfig.base })
+
+      getCompiler().parseInput(resolvedConfig.build.rollupOptions.input)
+    },
+
+    /**
+     * Configures our dev server to watch for changes to our input files
+     * and exposes the dev server to our compiler methods
+     */
+    configureServer(server) {
+      devServer = server
+
+      server.watcher.on('all', (event, path) => {
+        if (event === 'change') {
+          getCompiler().handleFileChange(path, 'update', server)
+        } else if (event === 'add') {
+          getCompiler().handleFileChange(path, 'create', server)
+        } else if (event === 'unlink') {
+          getCompiler().handleFileChange(path, 'delete', server)
+        }
+      })
+    },
+
+    /**
+     * Handles file changes
+     */
+    async watchChange(path, { event }) {
+      getCompiler().handleFileChange(path, event, devServer)
+    },
+
+    /**
+     * Type-check our project and fail the build if there are any errors.
+     * If successful, save our manifest to disk.
+     */
+    async closeBundle() {
+      const { manifest, throwDiagnostics } = getCompiler()
+
+      // Throw any diagnostics that were collected during the build
+      throwDiagnostics()
+
+      if (Object.keys(manifest).length > 0 && !options.isStaticBuild) {
+        writeFileSync(
+          resolve(
+            isSsr ? options.serverOutputDirectory : options.clientOutputDirectory,
+            'typed-manifest.json',
+          ),
+          JSON.stringify(manifest, null, 2) + EOL,
+        )
+      }
+    },
+
+    /**
+     * Resolve and build our virtual modules
+     */
+    async resolveId(id: string, importer?: string) {
+      return await getCompiler().resolveId(id, importer, devServer)
+    },
+
+    /**
+     * Load our virtual modules
+     */
+    async load(id: string) {
+      return await getCompiler().load(id)
+    },
+
+    /**
+     * Transorm TypeScript modules
+     */
+    transform(text: string, id: string) {
+      return getCompiler().transpileTsModule(text, id, devServer)
+    },
+
+    /**
+     * Transform HTML files
+     */
+    transformIndexHtml(html: string) {
+      return getCompiler().transformHtml(html)
+    },
   }
+
+  plugins.push(virtualModulePlugin)
+
+  return plugins
 }
 
-export type EntryFile = HtmlEntryFile | TsEntryFile
-
-export interface HtmlEntryFile {
-  readonly type: 'html'
-  readonly filePath: string
-  readonly imports: string[]
-  readonly basePath: string
-}
-
-export interface TsEntryFile {
-  readonly type: 'ts'
-  readonly filePath: string
-}
-
-export type ManifestEntry =
-  | ApiManifestEntry
-  | ExpressManifestEntry
-  | HtmlManifestEntry
-  | RuntimeManifestEntry
-  | BrowserManifestEntry
-
-export interface ApiManifestEntry extends ApiModuleTreeJson {
-  readonly type: 'api'
-}
-
-export interface ExpressManifestEntry extends ApiModuleTreeJson {
-  readonly type: 'express'
-}
-
-export interface HtmlManifestEntry {
-  readonly type: 'html'
-  readonly filePath: string
-}
-
-export interface BrowserManifestEntry extends ModuleTreeJsonWithFallback {
-  readonly type: 'browser'
-}
-
-export interface RuntimeManifestEntry extends ModuleTreeJsonWithFallback {
-  readonly type: 'runtime'
-}
-
-export interface ResolvedOptions {
-  readonly sourceDirectory: string
-  readonly tsConfig: string
-  readonly serverFilePath: Option<string>
-  readonly clientOutputDirectory: string
-  readonly serverOutputDirectory: string
-  readonly htmlFiles: readonly string[]
-  readonly debug: boolean
-  readonly saveGeneratedModules: boolean
-  readonly isStaticBuild: boolean
-  readonly base: string
-}
-
-export default function makePlugin({
+function resolveOptions({
   sourceDirectory: directory,
   tsConfig,
   serverFilePath,
@@ -188,7 +253,7 @@ export default function makePlugin({
   debug = false,
   saveGeneratedModules = false,
   isStaticBuild = process.env.STATIC_BUILD === 'true',
-}: PluginOptions): PluginOption[] {
+}: PluginOptions): ResolvedOptions {
   // Resolved options
   const sourceDirectory = resolve(cwd, directory)
   const tsConfigFilePath = resolve(sourceDirectory, tsConfig ?? 'tsconfig.json')
@@ -202,526 +267,30 @@ export default function makePlugin({
     sourceDirectory,
     clientOutputDirectory ?? 'dist/client',
   )
+
   const exclusions = [
     getRelativePath(sourceDirectory, join(resolvedServerOutputDirectory, '/**/*')),
     getRelativePath(sourceDirectory, join(resolvedClientOutputDirectory, '/**/*')),
     '**/node_modules/**',
   ]
-  const defaultIncludeExcludeTs = {
-    include: ['**/*.ts', '**/*.tsx'],
-    exclude: exclusions,
-  }
-  const resolvedEffectTsOptions = {
-    trace: defaultIncludeExcludeTs,
-    optimize: defaultIncludeExcludeTs,
-    debug: debug ? defaultIncludeExcludeTs : {},
-  }
 
   const resolvedOptions: ResolvedOptions = {
-    sourceDirectory,
-    tsConfig: tsConfigFilePath,
-    serverFilePath: serverExists ? some(resolvedServerFilePath) : none(),
-    serverOutputDirectory: resolvedServerOutputDirectory,
+    base: '/',
     clientOutputDirectory: resolvedClientOutputDirectory,
+    debug,
+    exclusions,
     htmlFiles: findHtmlFiles(sourceDirectory, htmlFileGlobs, exclusions).map((p) =>
       resolve(sourceDirectory, p),
     ),
-    debug,
-    saveGeneratedModules,
     isStaticBuild,
-    base: '/',
+    saveGeneratedModules,
+    serverFilePath: serverExists ? Option.some(resolvedServerFilePath) : Option.none(),
+    serverOutputDirectory: resolvedServerOutputDirectory,
+    sourceDirectory,
+    tsConfig: tsConfigFilePath,
   }
 
-  const dependentsMap = new Map<string, Set<string>>()
-  const filePathToModule = new Map<string, SourceFile>()
-  const manifest: Manifest = {
-    entryFiles: [],
-    modules: {},
-  }
-
-  const addManifestEntry = (entry: ManifestEntry, importer: string, id: string) => {
-    if (!manifest.modules[importer]) {
-      manifest.modules[importer] = {}
-    }
-
-    manifest.modules[importer][id] = entry
-  }
-
-  let devServer: ViteDevServer
-  let logger: Logger
-  let isSsr = false
-  let project: Project
-  let transformers: ts.CustomTransformers
-
-  const plugins: PluginOption[] = [
-    tsconfigPaths({
-      projects: [tsConfigFilePath],
-    }),
-    serverExists &&
-      !isStaticBuild &&
-      vavite({
-        serverEntry: resolvedServerFilePath,
-        serveClientAssetsInDev: true,
-      }),
-  ]
-
-  const setupProject = () => {
-    if (project) {
-      return
-    }
-
-    info(`Setting up TypeScript project...`, logger)
-    project = setupTsProject(tsConfigFilePath)
-    info(`Setup TypeScript project.`, logger)
-
-    // Setup transformer for virtual modules.
-    transformers = {
-      before: [
-        // Types are weird for some reason
-        (effectTransformer as any as typeof effectTransformer.default)(
-          project.getProgram().compilerObject,
-          resolvedEffectTsOptions,
-        ).before,
-      ],
-    }
-  }
-
-  const transpilerCompilerOptions = (): CompilerOptions => {
-    setupProject()
-
-    if (devServer) {
-      return {
-        ...project.getCompilerOptions(),
-        inlineSourceMap: true,
-        inlineSources: true,
-        sourceMap: false,
-      }
-    }
-
-    return {
-      ...project.getCompilerOptions(),
-      inlineSourceMap: false,
-      inlineSources: saveGeneratedModules,
-      sourceMap: true,
-    }
-  }
-
-  const handleFileChange = async (path: string, event: 'create' | 'update' | 'delete') => {
-    if (/\.[c|m]?tsx?$/.test(path)) {
-      switch (event) {
-        case 'create': {
-          project.addSourceFileAtPath(path)
-          break
-        }
-        case 'update': {
-          const sourceFile = project.getSourceFile(path)
-
-          if (sourceFile) {
-            sourceFile.refreshFromFileSystemSync()
-          } else {
-            project.addSourceFileAtPath(path)
-          }
-
-          if (devServer) {
-            const dependents = dependentsMap.get(path.replace(/.ts(x)?/, '.js$1'))
-
-            for (const dependent of dependents ?? []) {
-              const mod = devServer.moduleGraph.getModuleById(dependent)
-
-              if (mod) {
-                info(`reloading ${dependent}`, logger)
-
-                await devServer.reloadModule(mod)
-              }
-            }
-          }
-
-          break
-        }
-        case 'delete': {
-          await project.getSourceFile(path)?.deleteImmediately()
-          break
-        }
-      }
-    }
-  }
-
-  const buildRuntimeModule = async (importer: string, id: string) => {
-    // Setup the TypeScript project if it hasn't been already
-    setupProject()
-
-    const moduleDirectory = resolve(dirname(importer), parseModulesFromId(id, importer))
-    const relativeDirectory = relative(sourceDirectory, moduleDirectory)
-    const isBrowser = id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)
-    const moduleType = isBrowser ? 'browser' : 'runtime'
-    const filePath = `${moduleDirectory}.${moduleType}.__generated__.ts`
-    const directory = await readDirectory(moduleDirectory)
-    const moduleTree = readModules(project, directory)
-
-    addManifestEntry(
-      {
-        type: moduleType,
-        ...moduleTreeToJson(sourceDirectory, moduleTree),
-      },
-      relative(sourceDirectory, importer),
-      id,
-    )
-
-    const sourceFile = makeRuntimeModule(project, moduleTree, importer, filePath, isBrowser)
-
-    addDependents(sourceFile)
-
-    info(`Built ${moduleType} module for ${relativeDirectory}.`, logger)
-
-    filePathToModule.set(filePath, sourceFile)
-
-    if (saveGeneratedModules) {
-      await sourceFile.save()
-    }
-
-    return filePath
-  }
-
-  const buildHtmlModule = async (importer: string, id: string) => {
-    // Setup the TypeScript project if it hasn't been already
-    setupProject()
-
-    const htmlFileName = parseModulesFromId(id, importer)
-    const htmlFilePath = resolve(dirname(importer), htmlFileName + '.html')
-    const relativeHtmlFilePath = relative(sourceDirectory, htmlFilePath)
-    let html = ''
-
-    // If there's a dev server, use it to transform the HTML for development
-    if (!isStaticBuild && devServer) {
-      html = (await readFile(htmlFilePath, 'utf-8')).toString()
-      html = await devServer.transformIndexHtml(
-        getRelativePath(sourceDirectory, htmlFilePath),
-        html,
-      )
-    } else {
-      // Otherwise, read the already transformed file from the output directory.
-      html = (
-        await readFile(resolve(resolvedClientOutputDirectory, relativeHtmlFilePath), 'utf-8')
-      ).toString()
-    }
-
-    const sourceFile = await makeHtmlModule({
-      project,
-      base: parseBasePath(html),
-      filePath: htmlFilePath,
-      html,
-      importer,
-      serverOutputDirectory: resolvedServerOutputDirectory,
-      clientOutputDirectory: resolvedClientOutputDirectory,
-      build: isStaticBuild ? 'static' : devServer ? 'development' : 'production',
-    })
-
-    addManifestEntry(
-      {
-        type: 'html',
-        filePath: relativeHtmlFilePath,
-      },
-      relative(sourceDirectory, importer),
-      id,
-    )
-
-    addDependents(sourceFile)
-
-    info(`Built html module for ${relativeHtmlFilePath}.`, logger)
-
-    const filePath = sourceFile.getFilePath()
-
-    filePathToModule.set(filePath, sourceFile)
-
-    if (saveGeneratedModules) {
-      await sourceFile.save()
-    }
-
-    return filePath
-  }
-
-  const buildApiModule = async (importer: string, id: string) => {
-    // Setup the TypeScript project if it hasn't been already
-    setupProject()
-
-    const importDirectory = dirname(importer)
-    const moduleName = parseModulesFromId(id, importer)
-    const moduleDirectory = resolve(importDirectory, moduleName)
-    const relativeDirectory = relative(sourceDirectory, moduleDirectory)
-    const moduleType = id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX) ? 'express' : 'api'
-    const directory = await readDirectory(moduleDirectory)
-    const moduleTree = readApiModules(project, directory)
-    const filePath = `${importDirectory}/${basename(
-      moduleName,
-    )}.${moduleType.toLowerCase()}.__generated__.ts`
-
-    const sourceFile = makeApiModule(
-      project,
-      moduleTree,
-      filePath,
-      importer,
-      id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX),
-    )
-
-    addManifestEntry(
-      {
-        type: moduleType,
-        ...apiModuleTreeToJson(sourceDirectory, moduleTree),
-      },
-      relative(sourceDirectory, importer),
-      id,
-    )
-
-    addDependents(sourceFile)
-
-    info(`Built ${moduleType} module for ${relativeDirectory}.`, logger)
-
-    filePathToModule.set(filePath, sourceFile)
-
-    if (saveGeneratedModules) {
-      await sourceFile.save()
-    }
-
-    return filePath
-  }
-
-  const addDependents = (sourceFile: SourceFile) => {
-    const importer = sourceFile.getFilePath()
-    const imports = sourceFile
-      .getLiteralsReferencingOtherSourceFiles()
-      .map((i) => i.getLiteralValue())
-
-    for (const i of imports) {
-      const dependents = dependentsMap.get(i) ?? new Set()
-
-      dependents.add(importer)
-      dependentsMap.set(i, dependents)
-    }
-  }
-
-  const virtualModulePlugin: TypedVitePlugin = {
-    name: PLUGIN_NAME,
-    resolvedOptions,
-    config(config: UserConfig, env: ConfigEnv) {
-      isSsr = env.ssrBuild ?? false
-
-      // Configure Build steps when running with vavite
-      if (env.mode === 'multibuild') {
-        const clientBuild: UserConfig['build'] = {
-          outDir: resolvedClientOutputDirectory,
-          rollupOptions: {
-            input: buildClientInput(resolvedOptions.htmlFiles),
-          },
-        }
-
-        const serverBuild: UserConfig['build'] = {
-          ssr: true,
-          outDir: resolvedServerOutputDirectory,
-          rollupOptions: {
-            input: {
-              index: resolvedServerFilePath,
-            },
-          },
-        }
-
-        ;(config as any).buildSteps = [
-          {
-            name: 'client',
-            // @ts-expect-error Unable to resolve types w/ NodeNext
-            config: { build: clientBuild, plugins: [compression()] },
-          },
-          ...(serverExists
-            ? [
-                {
-                  name: 'server',
-                  config: { build: serverBuild },
-                },
-              ]
-            : []),
-        ]
-
-        return
-      }
-    },
-
-    configResolved(resolvedConfig) {
-      logger = resolvedConfig.logger
-
-      const input = resolvedConfig.build.rollupOptions.input
-
-      Object.assign(resolvedOptions, { base: resolvedConfig.base })
-
-      if (!input) return
-
-      if (typeof input === 'string') {
-        manifest.entryFiles.push(parseEntryFile(sourceDirectory, input))
-      } else if (Array.isArray(input)) {
-        manifest.entryFiles.push(...input.map((i) => parseEntryFile(sourceDirectory, i)))
-      } else {
-        manifest.entryFiles.push(
-          ...Object.values(input).map((i) => parseEntryFile(sourceDirectory, i)),
-        )
-      }
-    },
-
-    configureServer(server) {
-      devServer = server
-
-      server.watcher.on('all', (event, path) => {
-        if (event === 'change') {
-          handleFileChange(path, 'update')
-        } else if (event === 'add') {
-          handleFileChange(path, 'create')
-        } else if (event === 'unlink') {
-          handleFileChange(path, 'delete')
-        }
-      })
-    },
-
-    async watchChange(path, { event }) {
-      handleFileChange(path, event)
-    },
-
-    async closeBundle() {
-      if (Object.keys(manifest).length > 0 && !isStaticBuild) {
-        writeFileSync(
-          resolve(
-            isSsr ? resolvedServerOutputDirectory : resolvedClientOutputDirectory,
-            'typed-manifest.json',
-          ),
-          JSON.stringify(manifest, null, 2) + EOL,
-        )
-      }
-    },
-
-    async resolveId(id: string, importer?: string) {
-      if (!importer) {
-        return
-      }
-
-      if (
-        id.startsWith(RUNTIME_VIRTUAL_ENTRYPOINT_PREFIX) ||
-        id.startsWith(BROWSER_VIRTUAL_ENTRYPOINT_PREFIX)
-      ) {
-        return VIRTUAL_ID_PREFIX + (await buildRuntimeModule(importer, id))
-      }
-
-      if (id.startsWith(HTML_VIRTUAL_ENTRYPOINT_PREFIX)) {
-        return VIRTUAL_ID_PREFIX + (await buildHtmlModule(importer, id))
-      }
-
-      if (
-        id.startsWith(API_VIRTUAL_ENTRYPOINT_PREFIX) ||
-        id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX)
-      ) {
-        return VIRTUAL_ID_PREFIX + (await buildApiModule(importer, id))
-      }
-
-      if (id === TYPED_CONFIG_IMPORT) {
-        return VIRTUAL_ID_PREFIX + TYPED_CONFIG_IMPORT
-      }
-
-      importer = importer.replace(VIRTUAL_ID_PREFIX, '')
-
-      // Virtual modules have problems with resolving relative paths due to not
-      // having a real directory to work with thus the need to resolve them manually.
-      if (filePathToModule.has(importer) && id.startsWith('.')) {
-        return findRelativeFile(importer, id)
-      }
-    },
-
-    async load(id: string) {
-      id = id.replace(VIRTUAL_ID_PREFIX, '')
-
-      const sourceFile = filePathToModule.get(id) ?? project?.getSourceFile(id)
-
-      if (sourceFile) {
-        logDiagnostics(project, sourceFile, sourceDirectory, id, logger)
-
-        return {
-          code: sourceFile.getFullText(),
-        }
-      }
-
-      if (id === TYPED_CONFIG_IMPORT) {
-        return {
-          code: Object.entries(resolvedOptions)
-            .map(([key, value]) => `export const ${key} = ${JSON.stringify(value)}`)
-            .join(EOL),
-        }
-      }
-    },
-
-    transform(text: string, id: string) {
-      if (/.[c|m]?tsx?$/.test(id)) {
-        const output = ts.transpileModule(text, {
-          fileName: id,
-          compilerOptions: transpilerCompilerOptions(),
-          transformers,
-        })
-
-        return {
-          code: output.outputText,
-          map: output.sourceMapText,
-        }
-      }
-    },
-
-    transformIndexHtml(html: string) {
-      // Add vite's base path to all HTML files
-      return addOrUpdateBase(html, resolvedOptions.base)
-    },
-  }
-
-  plugins.push(virtualModulePlugin)
-
-  return plugins
-}
-
-function logDiagnostics(
-  project: Project,
-  sourceFile: SourceFile,
-  sourceDirectory: string,
-  filePath: string,
-  logger: Logger | undefined,
-) {
-  const diagnostics = sourceFile.getPreEmitDiagnostics()
-  const relativeFilePath = relative(sourceDirectory, filePath)
-
-  if (diagnostics.length > 0) {
-    info(`Type-checking errors found at ${relativeFilePath}`, logger)
-    info(`Source:` + EOL + sourceFile.getFullText(), logger)
-    info(project.formatDiagnosticsWithColorAndContext(diagnostics), logger)
-  }
-}
-
-function findRelativeFile(importer: string, id: string) {
-  const dir = dirname(importer)
-  const tsPath = resolve(dir, id.replace(/.([c|m])?js(x)?$/, '.$1ts$2'))
-
-  if (existsSync(tsPath)) {
-    return tsPath
-  }
-
-  const jsPath = resolve(dir, id)
-
-  if (existsSync(jsPath)) {
-    return tsPath
-  }
-}
-
-function parseModulesFromId(id: string, importer: string | undefined): string {
-  let pages = id
-
-  for (const prefix of PREFIXES) {
-    pages = pages.replace(prefix + ':', '')
-  }
-
-  if (pages === '') {
-    throw new Error(`[${PLUGIN_NAME}]: No pages were specified from ${importer}`)
-  }
-
-  return pages
+  return resolvedOptions
 }
 
 function findHtmlFiles(
@@ -745,48 +314,4 @@ function buildClientInput(htmlFilePaths: readonly string[]) {
     (acc, htmlFilePath) => ({ ...acc, [basename(htmlFilePath, '.html')]: htmlFilePath }),
     {},
   )
-}
-
-function getRelativePath(from: string, to: string) {
-  const path = relative(from, to)
-
-  if (!path.startsWith('.')) {
-    return './' + path
-  }
-
-  return path
-}
-
-function info(message: string, logger: Logger | undefined) {
-  if (logger) {
-    logger.info(`[${PLUGIN_NAME}]: ${message}`)
-  } else {
-    console.info(`[${PLUGIN_NAME}]:`, `${message}`)
-  }
-}
-
-function parseEntryFile(sourceDirectory: string, filePath: string): EntryFile {
-  if (filePath.endsWith('.html')) {
-    return parseHtmlEntryFile(sourceDirectory, filePath)
-  }
-
-  return parseTsEntryFile(sourceDirectory, filePath)
-}
-
-function parseHtmlEntryFile(sourceDirectory: string, filePath: string): EntryFile {
-  const content = readFileSync(filePath, 'utf-8').toString()
-
-  return {
-    type: 'html',
-    filePath: relative(sourceDirectory, filePath),
-    imports: parseHtmlImports(sourceDirectory, content),
-    basePath: parseBasePath(content),
-  }
-}
-
-function parseTsEntryFile(sourceDirectory: string, filePath: string): EntryFile {
-  return {
-    type: 'ts',
-    filePath: relative(sourceDirectory, filePath),
-  }
 }

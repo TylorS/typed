@@ -1,8 +1,9 @@
 import { none, some, type Option } from '@fp-ts/core/Option'
+import type { ResolvedOptions } from '@typed/compiler'
 import { resolveConfig } from 'vite'
 
 import { PLUGIN_NAME } from './constants.js'
-import type { ResolvedOptions, TypedVitePlugin } from './vite-plugin.js'
+import type { TypedVitePlugin } from './vite-plugin.js'
 
 export async function resolveTypedConfig(
   ...args: ArgsOf<typeof resolveConfig>
