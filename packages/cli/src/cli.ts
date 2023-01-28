@@ -15,7 +15,7 @@ import { installSourcemapsSupport } from 'vite-node/source-map'
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { version } from '../package.json'
+import { version } from '../package.json' assert { 'type': 'json' }
 
 const cwd = process.cwd()
 
