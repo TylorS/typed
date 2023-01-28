@@ -21,6 +21,7 @@
     }
   },
   "dependencies": {
+    "@effect/language-service": "^0.0.17",
     "@fp-ts/core": "0.1.1",
     "@typed/framework": "workspace:*",
     "html-minifier": "^4.0.0",
@@ -28,7 +29,6 @@
     "vite": "^4.0.4"
   },
   "devDependencies": {
-    "@effect/language-service": "^0.0.17",
     "@types/html-minifier": "^4.0.2"
   },
   "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",
