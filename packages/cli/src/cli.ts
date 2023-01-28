@@ -272,6 +272,8 @@ addCliOptions(cli.command('build [directory]', 'Build your project as static fil
         },
 
         onStartBuildStep(info: any) {
+          if (!info.currentStep) return
+
           initialConfig.logger.info(
             (info.currentStepIndex ? '\n' : '') +
               colors.cyan('vavite: ') +
