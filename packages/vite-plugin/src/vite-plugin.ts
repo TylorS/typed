@@ -219,8 +219,8 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
     /**
      * Load our virtual modules
      */
-    async load(id: string) {
-      return await getCompiler().load(id)
+    load(id: string) {
+      return getCompiler().load(id)
     },
 
     /**
