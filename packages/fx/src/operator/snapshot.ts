@@ -1,8 +1,8 @@
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Ref from '@effect/io/Ref'
-import { pipe } from '@fp-ts/data/Function'
-import * as Option from '@fp-ts/data/Option'
+import { pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 
 import { Fx } from '../Fx.js'
 import { run } from '../run/run.js'
@@ -27,7 +27,7 @@ class SnapshotFx<R, E, A, R2, E2, B, C>
     const { fx, sampled, f } = this
 
     return Effect.gen(function* ($) {
-      const ref = yield* $(Ref.make<Option.Option<B>>(Option.none))
+      const ref = yield* $(Ref.make<Option.Option<B>>(Option.none()))
 
       yield* $(
         pipe(

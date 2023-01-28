@@ -4,8 +4,8 @@ import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import type { RuntimeFiber } from '@effect/io/Fiber'
 import type { Scope } from '@effect/io/Scope'
+import { pipe } from '@fp-ts/core/Function'
 import type { Context } from '@fp-ts/data/Context'
-import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
 import { asap } from '../_internal/RefCounter.js'
@@ -35,7 +35,7 @@ export class MulticastFx<R, E, A>
 
     return Effect.gen(function* ($) {
       const deferred = yield* $(Deferred.make<never, void>())
-      const context = yield* $(Effect.environment<R | R2>())
+      const context = yield* $(Effect.context<R | R2>())
       const observer: MulticastObserver<R2, E, A> = {
         sink,
         context,
@@ -56,18 +56,14 @@ export class MulticastFx<R, E, A>
 
   event(a: A) {
     return Effect.suspendSucceed(() =>
-      pipe(
-        this.observers.slice(),
-        Effect.forEachDiscard((observer) => this.runEvent(a, observer)),
-      ),
+      Effect.forEachDiscard(this.observers.slice(), (observer) => this.runEvent(a, observer)),
     )
   }
 
   error(cause: Cause<E>) {
     return Effect.suspendSucceed(() =>
       pipe(
-        this.observers.slice(),
-        Effect.forEachDiscard((observer) => this.runError(cause, observer)),
+        Effect.forEachDiscard(this.observers.slice(), (observer) => this.runError(cause, observer)),
         Effect.tap(() => this.cleanup()),
       ),
     )
@@ -84,13 +80,13 @@ export class MulticastFx<R, E, A>
   }
 
   protected runEvent(a: A, observer: MulticastObserver<any, E, A>) {
-    return pipe(observer.sink.event(a), Effect.provideEnvironment(observer.context))
+    return pipe(observer.sink.event(a), Effect.provideContext(observer.context))
   }
 
   protected runError(cause: Cause<E>, observer: MulticastObserver<any, E, A>) {
     return pipe(
       observer.sink.error(cause),
-      Effect.provideEnvironment(observer.context),
+      Effect.provideContext(observer.context),
       Effect.tap(() => Effect.sync(() => this.removeObserver(observer))),
       Effect.intoDeferred(observer.deferred),
     )
@@ -99,7 +95,7 @@ export class MulticastFx<R, E, A>
   protected runEnd(observer: MulticastObserver<any, E, A>) {
     return pipe(
       observer.sink.end,
-      Effect.provideEnvironment(observer.context),
+      Effect.provideContext(observer.context),
       Effect.tap(() => Effect.sync(() => this.removeObserver(observer))),
       Effect.intoDeferred(observer.deferred),
     )

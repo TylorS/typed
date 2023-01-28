@@ -20,7 +20,7 @@ describe(import.meta.url, () => {
           }),
         ),
       )
-      const events = await Effect.unsafeRunPromise(test)
+      const events = await Effect.runPromise(test)
 
       deepStrictEqual(events, [1, 2, 3])
     })

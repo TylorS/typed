@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
+import { flow } from '@fp-ts/core/Function'
 import type { Duration } from '@fp-ts/data/Duration'
-import { flow } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
 

@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
-import * as TSemaphore from '@effect/stm/TSemaphore'
-import { pipe } from '@fp-ts/data/Function'
+import type * as Scope from '@effect/io/Scope'
+import { pipe } from '@fp-ts/core/Function'
 
 import { Fx, Sink } from '../Fx.js'
 
@@ -24,7 +24,9 @@ class ScanEffectFx<R, E, A, R2, E2, B, R3, E3>
     super()
   }
 
-  run<R4>(sink: Sink<R4, E | E2 | E3, B>) {
+  run<R4>(
+    sink: Sink<R4, E | E2 | E3, B>,
+  ): Effect.Effect<R | R2 | R3 | R4 | Scope.Scope, never, unknown> {
     return pipe(
       this.seed,
       Effect.matchCauseEffect(sink.error, (acc) =>
@@ -37,9 +39,9 @@ class ScanEffectFx<R, E, A, R2, E2, B, R3, E3>
   }
 }
 
-class ScanEffectSink<R, E, A, R2, E2, B, R3, E3, R4> implements Fx.Sink<R | R2 | R3 | R4, E, A> {
+class ScanEffectSink<E, A, E2, B, R3, E3, R4> implements Fx.Sink<R3 | R4, E, A> {
   protected acc: B = this.seed
-  protected semaphore = TSemaphore.unsafeMake(1)
+  protected semaphore = Effect.unsafeMakeSemaphore(1)
 
   constructor(
     readonly sink: Sink<R4, E | E2 | E3, B>,
@@ -47,7 +49,7 @@ class ScanEffectSink<R, E, A, R2, E2, B, R3, E3, R4> implements Fx.Sink<R | R2 |
     readonly f: (b: B, a: A) => Effect.Effect<R3, E3, B>,
   ) {}
 
-  event = (a: A) => {
+  event = (a: A): Effect.Effect<R3 | R4, never, unknown> => {
     return pipe(
       this.f(this.acc, a),
       Effect.matchCauseEffect(this.sink.error, (acc) => {
@@ -55,7 +57,7 @@ class ScanEffectSink<R, E, A, R2, E2, B, R3, E3, R4> implements Fx.Sink<R | R2 |
 
         return this.sink.event(acc)
       }),
-      TSemaphore.withPermit(this.semaphore),
+      this.semaphore.withPermits(1),
     )
   }
 

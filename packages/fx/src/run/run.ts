@@ -3,7 +3,7 @@ import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import type { Scope } from '@effect/io/Scope'
-import { flow, pipe } from '@fp-ts/data/Function'
+import { flow, pipe } from '@fp-ts/core/Function'
 
 import { Fx, Sink } from '../Fx.js'
 
@@ -29,7 +29,7 @@ export function run_<A, R2, E2, E, R3, E3, B, R4, E4>(
           Effect.matchCauseEffect(
             (cause) =>
               Effect.sync(() =>
-                pipe(deferred, Deferred.unsafeDone<E2 | E3 | E4, B>(Effect.failCause(cause))),
+                Deferred.unsafeDone<E2 | E3 | E4, B>(deferred, Effect.failCause(cause)),
               ),
             Effect.unit,
           ),
@@ -45,7 +45,7 @@ export function run_<A, R2, E2, E, R3, E3, B, R4, E4>(
             Effect.sync(() =>
               Cause.isInterruptedOnly(cause)
                 ? null
-                : pipe(deferred, Deferred.unsafeDone<E2 | E3 | E4, B>(Effect.failCause(cause))),
+                : Deferred.unsafeDone<E2 | E3 | E4, B>(deferred, Effect.failCause(cause)),
             ),
           ),
           Effect.forkScoped,

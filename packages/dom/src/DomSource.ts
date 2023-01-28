@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 import * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
 

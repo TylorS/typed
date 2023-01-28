@@ -11,7 +11,7 @@ describe(import.meta.url, () => {
   describe(fromEffect.name, () => {
     it('converts an Effect to an Fx', async () => {
       const test = collectAll(fromEffect(Effect.sync(() => 1)))
-      const events = await Effect.unsafeRunPromise(test)
+      const events = await Effect.runPromise(test)
 
       deepStrictEqual(events, [1])
     })

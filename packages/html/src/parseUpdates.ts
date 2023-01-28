@@ -1,6 +1,6 @@
 import { isEffect } from '@effect/io/Effect'
 import type { Runtime } from '@effect/io/Runtime'
-import * as Maybe from '@fp-ts/data/Option'
+import * as Maybe from '@fp-ts/core/Option'
 
 import { isElementRef } from './ElementRef.js'
 import type { Entry } from './Entry.js'
@@ -161,7 +161,7 @@ function ref(node: Element) {
     if (oldValue !== newValue && isElementRef(newValue)) {
       oldValue = newValue
 
-      runtime.unsafeRun(newValue.set(Maybe.some(node as HTMLElement)))
+      runtime.unsafeFork(newValue.set(Maybe.some(node as HTMLElement)))
     }
   }
 }
@@ -186,14 +186,14 @@ function event(node: Element, name: string) {
     }
 
     if (newValue instanceof EventHandlerImplementation) {
-      listener = (ev: Event) => runtime.unsafeRun(newValue.handler(ev))
+      listener = (ev: Event) => runtime.unsafeFork(newValue.handler(ev))
       node.addEventListener(type, listener, newValue.options)
 
       return
     }
 
     if (isEffect(newValue)) {
-      listener = () => runtime.unsafeRun(newValue as any)
+      listener = () => runtime.unsafeFork(newValue as any)
       node.addEventListener(type, listener)
 
       return

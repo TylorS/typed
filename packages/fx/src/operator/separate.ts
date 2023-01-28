@@ -1,5 +1,5 @@
-import * as Either from '@fp-ts/data/Either'
-import { pipe } from '@fp-ts/data/Function'
+import * as Either from '@fp-ts/core/Either'
+import { pipe } from '@fp-ts/core/Function'
 
 import type { Fx } from '../Fx.js'
 

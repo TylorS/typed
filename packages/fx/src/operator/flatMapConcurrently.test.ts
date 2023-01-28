@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
 
 import * as Effect from '@effect/io/Effect'
+import { pipe } from '@fp-ts/core/Function'
 import { millis } from '@fp-ts/data/Duration'
-import { pipe } from '@fp-ts/data/Function'
 import { describe, it } from 'vitest'
 
 import { at } from '../constructor/at.js'
@@ -20,7 +20,7 @@ describe(import.meta.url, () => {
         flatMapConcurrently(2, (n) => mergeAll(at(millis(50), n), at(millis(100), n * n))),
         collectAll,
       )
-      const events = await Effect.unsafeRunPromise(test)
+      const events = await Effect.runPromise(test)
 
       deepStrictEqual(events, [1, 2, 1, 4, 3, 4, 9, 16])
     })

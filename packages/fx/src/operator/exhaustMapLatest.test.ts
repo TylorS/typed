@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
 
 import * as Effect from '@effect/io/Effect'
+import { pipe } from '@fp-ts/core/Function'
 import * as Duration from '@fp-ts/data/Duration'
-import { pipe } from '@fp-ts/data/Function'
 import { describe, it } from 'vitest'
 
 import { fromIterable } from '../constructor/fromIterable.js'
@@ -18,7 +18,7 @@ describe(import.meta.url, () => {
         fromIterable([1, 2, 3]),
         exhaustMapLatest((n) => delay(Duration.millis(10))(fromIterable([n, n, n]))),
         collectAll,
-        Effect.unsafeRunPromise,
+        Effect.runPromise,
       )
 
       deepStrictEqual(result, [1, 1, 1, 3, 3, 3])

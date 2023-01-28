@@ -2,9 +2,9 @@ import { deepStrictEqual } from 'assert'
 
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
+import * as Either from '@fp-ts/core/Either'
+import { flow, pipe } from '@fp-ts/core/Function'
 import { millis } from '@fp-ts/data/Duration'
-import * as Either from '@fp-ts/data/Either'
-import { flow, pipe } from '@fp-ts/data/Function'
 import { describe, it } from 'vitest'
 
 import { at } from '../constructor/at.js'
@@ -32,7 +32,7 @@ describe(import.meta.url, () => {
         ),
         collectAll,
       )
-      const events = await Effect.unsafeRunPromise(test)
+      const events = await Effect.runPromise(test)
 
       deepStrictEqual(events, [9])
     })

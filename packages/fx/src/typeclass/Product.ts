@@ -9,5 +9,6 @@ import type { FxTypeLambda } from './TypeLambda.js'
 export const Product: P.Product<FxTypeLambda> = {
   ...SemiProduct,
   ...Of,
-  productAll: (iterable) => combineAll(...Array.from(iterable)),
+  productAll: ((iterable) =>
+    combineAll(...Array.from(iterable))) as P.Product<FxTypeLambda>['productAll'],
 }

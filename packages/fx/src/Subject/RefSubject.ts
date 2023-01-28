@@ -1,9 +1,9 @@
 import * as Effect from '@effect/io/Effect'
 import * as Ref from '@effect/io/Ref'
+import { identity, pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 import { equals } from '@fp-ts/data/Equal'
-import { identity, pipe } from '@fp-ts/data/Function'
 import * as MutableRef from '@fp-ts/data/MutableRef'
-import * as Option from '@fp-ts/data/Option'
 
 import { Fx } from '../Fx.js'
 
@@ -84,7 +84,7 @@ export namespace RefSubject {
         const option = mutableRef.get()
 
         // Next pull should recompute the initial value
-        mutableRef.set(Option.none)
+        mutableRef.set(Option.none())
 
         return option
       }),

@@ -4,7 +4,7 @@ import { EOL } from 'os'
 import { basename, dirname, join, relative, resolve } from 'path'
 
 import effectTransformer from '@effect/language-service/transformer'
-import { none, some, type Option } from '@fp-ts/data/Option'
+import { none, some, type Option } from '@fp-ts/core/Option'
 import {
   setupTsProject,
   makeHtmlModule,
@@ -220,7 +220,7 @@ export default function makePlugin({
   const resolvedOptions: ResolvedOptions = {
     sourceDirectory,
     tsConfig: tsConfigFilePath,
-    serverFilePath: serverExists ? some(resolvedServerFilePath) : none,
+    serverFilePath: serverExists ? some(resolvedServerFilePath) : none(),
     serverOutputDirectory: resolvedServerOutputDirectory,
     clientOutputDirectory: resolvedClientOutputDirectory,
     htmlFiles: findHtmlFiles(sourceDirectory, htmlFileGlobs, exclusions).map((p) =>
@@ -288,6 +288,15 @@ export default function makePlugin({
 
   const transpilerCompilerOptions = (): CompilerOptions => {
     setupProject()
+
+    if (devServer) {
+      return {
+        ...project.getCompilerOptions(),
+        inlineSourceMap: true,
+        inlineSources: true,
+        sourceMap: false,
+      }
+    }
 
     return {
       ...project.getCompilerOptions(),

@@ -3,8 +3,8 @@ import * as Effect from '@effect/io/Effect'
 import * as ExecutionStrategy from '@effect/io/ExecutionStrategy'
 import * as Exit from '@effect/io/Exit'
 import * as Scope from '@effect/io/Scope'
+import { pipe } from '@fp-ts/core/Function'
 import type { Chunk } from '@fp-ts/data/Chunk'
-import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
 import { asap } from '../_internal/RefCounter.js'
@@ -44,25 +44,20 @@ class RaceAllFx<Streams extends readonly Fx<any, any, any>[]>
 
     return Effect.gen(function* ($) {
       const fiberId = yield* $(Effect.fiberId())
-      const closeScope = Effect.forEachDiscard(Scope.close(Exit.failCause(interrupt(fiberId))))
       const scope = yield* $(Effect.scope())
 
       const scopes: Chunk<Scope.CloseableScope> = yield* $(
-        pipe(
-          streams,
-          Effect.forEachWithIndex((s, i) =>
-            pipe(
-              scope,
-              Scope.fork(ExecutionStrategy.sequential),
-              Effect.flatMap((scope) =>
-                pipe(
-                  s,
-                  tap(() => cleanupScopes(i)),
-                  run(sink.event, sink.error, sink.end),
-                  Effect.scheduleForked(asap), // Schedule starts so that all Scopes can be returned *before* attempting to cleanup
-                  Effect.as(scope),
-                  Effect.provideService(Scope.Tag)(scope),
-                ),
+        Effect.forEachWithIndex(streams, (s, i) =>
+          pipe(
+            Scope.fork(scope, ExecutionStrategy.sequential),
+            Effect.flatMap((scope) =>
+              pipe(
+                s,
+                tap(() => cleanupScopes(i)),
+                run(sink.event, sink.error, sink.end),
+                Effect.scheduleForked(asap), // Schedule starts so that all Scopes can be returned *before* attempting to cleanup
+                Effect.as(scope),
+                Effect.provideService(Scope.Tag, scope),
               ),
             ),
           ),
@@ -75,7 +70,11 @@ class RaceAllFx<Streams extends readonly Fx<any, any, any>[]>
 
           currentFibers.splice(i, 1)
 
-          return yield* $(closeScope(currentFibers))
+          return yield* $(
+            Effect.forEachDiscard(currentFibers, (s) =>
+              Scope.close(s, Exit.failCause(interrupt(fiberId))),
+            ),
+          )
         })
       }
     })

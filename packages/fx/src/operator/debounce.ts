@@ -1,8 +1,8 @@
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
+import { pipe } from '@fp-ts/core/Function'
 import type * as Duration from '@fp-ts/data/Duration'
-import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'

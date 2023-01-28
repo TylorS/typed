@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
-import { identity } from '@fp-ts/data/Function'
+import { identity } from '@fp-ts/core/Function'
+import { type Option, none } from '@fp-ts/core/Option'
 import { type MutableRef, make } from '@fp-ts/data/MutableRef'
-import { type Option, none } from '@fp-ts/data/Option'
 
 import type { Fx, Sink } from '../Fx.js'
 import { never } from '../constructor/never.js'
@@ -37,7 +37,7 @@ export namespace HoldSubject {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export type OutputsOf<T> = [T] extends [Variance<infer _E, infer A>] ? A : never
 
-  export function unsafeMake<E, A>(value: MutableRef<Option<A>> = make(none)): HoldSubject<E, A> {
+  export function unsafeMake<E, A>(value: MutableRef<Option<A>> = make(none())): HoldSubject<E, A> {
     return new HoldSubjectImpl(value)
   }
 

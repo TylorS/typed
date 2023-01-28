@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import type { Scope } from '@effect/io/Scope'
+import { pipe } from '@fp-ts/core/Function'
 import type * as Context from '@fp-ts/data/Context'
-import { pipe } from '@fp-ts/data/Function'
 
 import { Fx } from '../Fx.js'
 
@@ -28,7 +28,7 @@ class ProvideServiceEffectFx<R, E, A, R2, E2, S>
   run<R3>(sink: Fx.Sink<R3, E | E2, A>) {
     return pipe(
       this.self.run(sink),
-      Effect.provideServiceEffect(this.tag)(this.service),
+      Effect.provideServiceEffect(this.tag, this.service),
       Effect.matchCauseEffect(sink.error, Effect.succeed),
     ) as Effect.Effect<Exclude<R | R2 | R3 | Scope, S>, never, unknown>
   }

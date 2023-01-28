@@ -1,7 +1,7 @@
 /// <reference types="svelte" />
 import { sync } from '@effect/io/Effect'
-import { identity } from '@fp-ts/data/Function'
-import { range } from '@fp-ts/data/ReadonlyArray'
+import { identity } from '@fp-ts/core/Function'
+import { range } from '@fp-ts/core/ReadonlyArray'
 import { Route } from '@typed/route'
 
 import Hello from '../../components/Hello.svelte'

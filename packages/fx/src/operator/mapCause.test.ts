@@ -3,8 +3,8 @@ import { deepStrictEqual, ok } from 'assert'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
-import { pipe } from '@fp-ts/data/Function'
-import * as Option from '@fp-ts/data/Option'
+import { pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 import { describe, it } from 'vitest'
 
 import { fail } from '../constructor/fail.js'
@@ -16,7 +16,7 @@ describe(import.meta.url, () => {
   describe(mapCause.name, () => {
     it('transforms an Fx error', async () => {
       const test = pipe(fail(1), mapCause(Cause.map((x) => x + 1)), collectAll)
-      const exit = await Effect.unsafeRunPromiseExit(test)
+      const exit = await Effect.runPromiseExit(test)
 
       ok(Exit.isFailure(exit))
 

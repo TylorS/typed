@@ -1,11 +1,10 @@
 import * as Effect from '@effect/io/Effect'
 import * as Ref from '@effect/io/Ref'
 import * as Synchronized from '@effect/io/Ref/Synchronized'
-import * as TSemaphore from '@effect/stm/TSemaphore'
+import { identity, pipe } from '@fp-ts/core/Function'
+import * as Option from '@fp-ts/core/Option'
 import { equals } from '@fp-ts/data/Equal'
-import { identity, pipe } from '@fp-ts/data/Function'
 import * as MutableRef from '@fp-ts/data/MutableRef'
-import * as Option from '@fp-ts/data/Option'
 
 import { Fx } from '../Fx.js'
 
@@ -31,8 +30,8 @@ export namespace SynchronizedSubject {
   ): SynchronizedSubject<A> {
     const mutableRef = MutableRef.make(Option.some(initial()))
     const subject = HoldSubject.unsafeMake<never, A>(mutableRef)
-    const semaphore = TSemaphore.unsafeMake(1)
-    const locked = TSemaphore.withPermit(semaphore)
+    const semaphore = Effect.unsafeMakeSemaphore(1)
+    const locked = semaphore.withPermits(1)
 
     const getValue = () =>
       pipe(
@@ -102,7 +101,7 @@ export namespace SynchronizedSubject {
         const option = mutableRef.get()
 
         // Next pull should recompute the initial value
-        mutableRef.set(Option.none)
+        mutableRef.set(Option.none())
 
         return option
       }),

@@ -5,8 +5,7 @@
     "outDir": "dist"
   },
   "include": [
-    "src",
-    "../framework/src/vavite.d.ts"
+    "src"
   ],
   "exclude": [
     "dist"

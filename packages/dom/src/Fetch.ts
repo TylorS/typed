@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
-import { identity, pipe } from '@fp-ts/data/Function'
-import type { Identity } from '@fp-ts/data/Identity'
+import { identity, pipe } from '@fp-ts/core/Function'
+import type { Identity } from '@fp-ts/core/Identity'
 import * as Context from '@typed/context'
 
 export interface Fetch extends Identity<(typeof globalThis)['fetch']> {}

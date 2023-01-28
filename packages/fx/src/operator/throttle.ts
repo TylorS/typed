@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import type * as Fiber from '@effect/io/Fiber'
+import { pipe } from '@fp-ts/core/Function'
 import type * as Duration from '@fp-ts/data/Duration'
-import { pipe } from '@fp-ts/data/Function'
 
 import type { Fx } from '../Fx.js'
 import { suspend } from '../constructor/suspend.js'

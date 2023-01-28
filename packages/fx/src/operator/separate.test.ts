@@ -2,8 +2,8 @@ import { deepStrictEqual } from 'assert'
 
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
+import * as Either from '@fp-ts/core/Either'
 import { millis } from '@fp-ts/data/Duration'
-import * as Either from '@fp-ts/data/Either'
 import { describe, it } from 'vitest'
 
 import { at } from '../constructor/at.js'
@@ -32,7 +32,7 @@ describe(import.meta.url, () => {
         deepStrictEqual(yield* $(Fiber.join(fiberRights)), [4, 2])
       })
 
-      await Effect.unsafeRunPromise(test)
+      await Effect.runPromise(test)
     })
   })
 })

@@ -1,5 +1,5 @@
-import { pipe } from '@fp-ts/data/Function'
-import * as O from '@fp-ts/data/Option'
+import { pipe } from '@fp-ts/core/Function'
+import * as O from '@fp-ts/core/Option'
 import {
   pathCardinality,
   isFallbackFileName,
@@ -50,7 +50,7 @@ export function parseSourceFileModule(sourceFile: SourceFile): O.Option<SourceFi
   const exportedDeclarations = sourceFile.getExportedDeclarations()
 
   if (exportedDeclarations.size === 0) {
-    return O.none
+    return O.none()
   }
 
   if (isLayoutFileName(fileName)) {
@@ -72,7 +72,7 @@ function parseLayoutSourceFileModule(
   const environment = getAndVerifyEnvironment(exportedDeclarations)
 
   if (O.isNone(layout)) {
-    return O.none
+    return O.none()
   }
 
   return O.some({ _tag: 'Layout', sourceFile, hasEnvironment: O.isSome(environment) })
@@ -96,7 +96,7 @@ function parseRedirectFallbackSourceFileModule(
   const environment = getAndVerifyEnvironment(exportedDeclarations)
 
   if (O.isNone(route)) {
-    return O.none
+    return O.none()
   }
 
   return O.some({
@@ -116,7 +116,7 @@ function parseRenderableFallbackSourceFileModule(
   const layout = getAndVerifyLayout(exportedDeclarations)
 
   if (O.isNone(fallback)) {
-    return O.none
+    return O.none()
   }
 
   const hasLayout = O.isSome(layout)
@@ -137,7 +137,7 @@ function parseRenderSourceFileModule(
 
   // Required exports
   if (O.isNone(route) || O.isNone(main)) {
-    return O.none
+    return O.none()
   }
 
   const hasLayout = O.isSome(layout)
@@ -203,7 +203,7 @@ function getDeclarationOfType(
   const declarations = exportedDeclarations.get(exportName)
 
   if (declarations === undefined) {
-    return O.none
+    return O.none()
   }
 
   const declaration = declarations.find(
@@ -211,7 +211,7 @@ function getDeclarationOfType(
   )
 
   if (!declaration) {
-    return O.none
+    return O.none()
   }
 
   const symbol = declaration.getSymbolOrThrow()
@@ -221,7 +221,7 @@ function getDeclarationOfType(
     return O.some(declaration)
   }
 
-  return O.none
+  return O.none()
 }
 
 function typeIsFx(type: Type) {
@@ -262,7 +262,7 @@ function parseEnvironmentSourceFileModule(
   const environment = getAndVerifyEnvironment(exportedDeclarations)
 
   if (O.isNone(environment)) {
-    return O.none
+    return O.none()
   }
 
   return O.some({ _tag: 'Environment', sourceFile })
@@ -297,7 +297,7 @@ function parseApiSourceFile(
   const exportedDeclarations = sourceFile.getExportedDeclarations()
 
   if (exportedDeclarations.size === 0) {
-    return O.none
+    return O.none()
   }
 
   if (isEnvironmentFileName(filePath)) {

@@ -1,5 +1,5 @@
 import { sync } from '@effect/io/Effect'
-import { range } from '@fp-ts/data/ReadonlyArray'
+import { range } from '@fp-ts/core/ReadonlyArray'
 import { Route } from '@typed/route'
 
 import { Counter } from '../../components/react-counter.jsx'

@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@fp-ts/data": "0.0.39",
+    "@fp-ts/core": "0.1.1",
     "@typed/compiler": "workspace:*",
     "@typed/framework": "workspace:*",
     "fast-glob": "^3.2.12",
@@ -31,7 +31,7 @@
     "vite-tsconfig-paths": "^4.0.5"
   },
   "devDependencies": {
-    "@effect/language-service": "^0.0.15",
+    "@effect/language-service": "^0.0.17",
     "ts-morph": "^17.0.1"
   },
   "peerDependencies": {

@@ -1,5 +1,5 @@
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 
 import type { IntrinsicServices } from '../IntrinsicServices.js'
 import type { Module } from '../Module.js'

@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'fs/promises'
 import { dirname, join } from 'path'
 
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 
 export function writeAllOutputs(
   outputDirectory: string,

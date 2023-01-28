@@ -59,7 +59,7 @@ export function makeRuntimeModule(
   }
 
   if (isBrowser) {
-    addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
+    addNamedImport(sourceFile, ['pipe'], '@fp-ts/core/Function')
     addNamedImport(
       sourceFile,
       ['runMatcherWithFallback', 'provideBrowserIntrinsics'],
@@ -165,7 +165,7 @@ export function makeRuntimeModule(
         ...(environment ? [render.isFx ? 'pipe' : 'flow'] : []),
         ...(layout && environment ? ['pipe'] : []),
       ],
-      '@fp-ts/data/Function',
+      '@fp-ts/core/Function',
     )
 
     if (environment) {
@@ -178,7 +178,7 @@ export function makeRuntimeModule(
       addNamedImport(
         sourceFile,
         render.isFx ? ['constant', 'pipe'] : ['pipe', 'flow'],
-        '@fp-ts/data/Function',
+        '@fp-ts/core/Function',
       )
 
       const routeEnvText = environment
@@ -225,7 +225,7 @@ export function makeRuntimeModule(
 
     if (mod.hasEnvironment || environment) {
       addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
-      addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
+      addNamedImport(sourceFile, ['pipe'], '@fp-ts/core/Function')
     }
 
     if (mod.hasEnvironment) {
@@ -255,7 +255,7 @@ export function makeRuntimeModule(
 
     if (environment || mod.hasEnvironment) {
       addNamespaceImport(sourceFile, 'Effect', '@effect/io/Effect')
-      addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
+      addNamedImport(sourceFile, ['pipe'], '@fp-ts/core/Function')
     }
 
     if (mod.hasEnvironment) {
@@ -293,7 +293,7 @@ export function makeRuntimeModule(
           addNamedImport(
             sourceFile,
             fallback.isFx ? ['pipe', 'constant'] : ['pipe'],
-            '@fp-ts/data/Function',
+            '@fp-ts/core/Function',
           )
           const mainEnvText = environment
             ? `, Fx.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
@@ -324,7 +324,7 @@ export function makeRuntimeModule(
         if (fallback.hasEnvironment) {
           addNamespaceImport(sourceFile, 'Fx', '@typed/fx')
           addNamespaceImport(sourceFile, 'Route', '@typed/route')
-          addNamedImport(sourceFile, ['pipe'], '@fp-ts/data/Function')
+          addNamedImport(sourceFile, ['pipe'], '@fp-ts/core/Function')
 
           const routeEnvText = environment
             ? `, Route.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`

@@ -1,8 +1,8 @@
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import type * as Scope from '@effect/io/Scope'
+import { flow } from '@fp-ts/core/Function'
 import * as C from '@fp-ts/data/Context'
-import { flow } from '@fp-ts/data/Function'
 import * as Fx from '@typed/fx'
 
 /**
@@ -60,21 +60,21 @@ export interface Tag<S> extends C.Tag<S> {
   readonly build: (s: S) => ContextBuilder<S>
 }
 
-export function Tag<A>(key?: string): Tag<A> {
-  const tag = C.Tag<A>(key)
+export function Tag<S>(key?: string): Tag<S> {
+  const tag = C.Tag<S>(key)
 
   return Object.assign(tag, {
-    get: Effect.service<A>(tag),
-    with: Effect.serviceWith<A>(tag),
-    withEffect: Effect.serviceWithEffect<A>(tag),
-    withFx: Fx.serviceWithFx<A>(tag),
-    provide: Effect.provideService<A>(tag),
-    provideFx: Fx.provideService<A>(tag),
-    layer: Effect.toLayer<A>(tag),
-    layerScoped: Layer.scoped<A>(tag),
-    layerOf: flow(Effect.succeed<A>, Effect.toLayer<A>(tag)),
+    get: Effect.service<S>(tag),
+    with: <A>(f: (s: S) => A) => Effect.serviceWith(tag, f),
+    withEffect: <R, E, A>(f: (s: S) => Effect.Effect<R, E, A>) => Effect.serviceWithEffect(tag, f),
+    withFx: Fx.serviceWithFx<S>(tag),
+    provide: (s: S) => Effect.provideService(tag, s),
+    provideFx: Fx.provideService<S>(tag),
+    layer: Effect.toLayer<S>(tag),
+    layerScoped: <R, E>(e: Effect.Effect<R, E, S>) => Layer.scoped(tag, e),
+    layerOf: flow(Effect.succeed<S>, Effect.toLayer<S>(tag)),
     build: flow(C.make(tag), makeContextBuilder),
-  } as const)
+  }) satisfies Tag<S>
 }
 
 export namespace Tag {

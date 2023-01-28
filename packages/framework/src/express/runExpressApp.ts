@@ -1,8 +1,8 @@
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
-import * as Either from '@fp-ts/data/Either'
-import { pipe } from '@fp-ts/data/Function'
+import * as Either from '@fp-ts/core/Either'
+import { pipe } from '@fp-ts/core/Function'
 import type express from 'express'
 import isbot from 'isbot'
 import viteDevServer from 'vavite/vite-dev-server'
@@ -18,8 +18,6 @@ import {
   provideServerIntrinsics,
 } from '@typed/framework'
 
-const prettyPrintCause = Cause.pretty()
-
 export const runExpressApp = (
   runtimeModule: RuntimeModule,
   htmlModule: HtmlModule,
@@ -29,7 +27,7 @@ export const runExpressApp = (
 
   return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
-      await Effect.unsafeRunPromise(
+      await Effect.runPromise(
         Effect.gen(function* ($) {
           const url = new URL(req.url, getOriginFromRequest(req))
           const exit = yield* $(
@@ -51,7 +49,7 @@ export const runExpressApp = (
               Cause.failureOrCause(exit.cause),
               Either.match(
                 (redirect) => res.redirect(redirect.path),
-                (error) => next(new Error(prettyPrintCause(error))),
+                (error) => next(new Error(Cause.pretty(error))),
               ),
             )
           }

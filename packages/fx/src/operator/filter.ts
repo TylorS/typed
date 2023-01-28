@@ -1,5 +1,5 @@
 import * as Effect from '@effect/io/Effect'
-import type { Predicate, Refinement } from '@fp-ts/data/Predicate'
+import type { Predicate, Refinement } from '@fp-ts/core/Predicate'
 
 import { Fx } from '../Fx.js'
 

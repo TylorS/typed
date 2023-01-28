@@ -1,5 +1,5 @@
 import { zipRight } from '@effect/io/Effect'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 
 import { Fx } from '../Fx.js'
 

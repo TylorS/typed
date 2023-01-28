@@ -10,6 +10,6 @@ import type { FxTypeLambda } from './TypeLambda.js'
 export const Applicative: A.Applicative<FxTypeLambda> = {
   ...SemiApplicative,
   ...Of,
-  productAll: <R, E, A>(collection: Iterable<Fx<R, E, A>>) =>
-    combineAll<readonly Fx<R, E, A>[]>(...collection),
+  productAll: (<R, E, A>(collection: Iterable<Fx<R, E, A>>) =>
+    combineAll<readonly Fx<R, E, A>[]>(...collection)) as A.Applicative<FxTypeLambda>['productAll'],
 }

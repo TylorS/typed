@@ -1,5 +1,5 @@
 import type { Layer } from '@effect/io/Layer'
-import { pipe } from '@fp-ts/data/Function'
+import { pipe } from '@fp-ts/core/Function'
 
 import type { Fx } from '../Fx.js'
 

@@ -11,7 +11,7 @@ describe(import.meta.url, () => {
   describe(fromIterable.name, () => {
     it('converts an Effect to an Fx', async () => {
       const test = collectAll(fromIterable([1, 2, 3]))
-      const events = await Effect.unsafeRunPromise(test)
+      const events = await Effect.runPromise(test)
 
       deepStrictEqual(events, [1, 2, 3])
     })
