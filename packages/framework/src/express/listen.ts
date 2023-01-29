@@ -1,7 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../vavite.d.ts" />
 import type { Express } from 'express'
-import httpDevServer from 'vavite/http-dev-server'
 
 import { parsePort } from './parsePort.js'
 
@@ -12,6 +11,7 @@ export interface ListenOptions {
 
 export function listen(
   app: Express,
+  httpDevServer: typeof import('vavite/http-dev-server').default,
   options: ListenOptions = {},
   callback: (port: number, host?: string) => void = (p) =>
     console.log(`Server listening at port ${p}`),

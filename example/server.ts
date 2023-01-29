@@ -19,6 +19,8 @@ import * as otherPages from 'runtime:./other-pages'
 import * as pages from 'runtime:./pages'
 // The resolved configuration from our vite plugin can be accessed as a typed module.
 import * as config from 'typed:config'
+// Our vite plugin configures vavite to expose the httpDevServer in development.
+import httpDevServer from 'vavite/http-dev-server'
 
 const app = express.express()
 
@@ -47,4 +49,4 @@ app.get(join(config.base, '/other*'), express.run(otherPages, otherHtml, getPare
 app.get(join(config.base, '/*'), express.run(pages, indexHtml, getParentElement))
 
 // Start the server properly in development and production
-express.listen(app, { port: 3000 })
+express.listen(app, httpDevServer, { port: 3000 })
