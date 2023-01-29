@@ -28,7 +28,7 @@ const app = express.express()
 if (import.meta.env.PROD) {
   app.use(
     config.base, // Optional if you do not need to set config.base in your vite config
-    ...express.assets([indexHtml, otherHtml], {
+    ...express.assets(import.meta.url, [indexHtml, otherHtml], {
       serveStatic: { maxAge: 31536000, cacheControl: true },
     }),
   )
