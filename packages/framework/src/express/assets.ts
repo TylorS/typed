@@ -6,6 +6,7 @@ import staticGzip from 'express-static-gzip'
 import type { HtmlModule } from '../HtmlModule.js'
 
 export function assets(
+  url: string,
   modules: HtmlModule[],
   options: staticGzip.ExpressStaticGzipOptions = {},
 ): Array<express.RequestHandler> {
@@ -14,7 +15,7 @@ export function assets(
 
   // Register any assets that need to be served
   for (const mod of modules) {
-    const assetDirectory = fileURLToPath(new URL(mod.assetDirectory, import.meta.url))
+    const assetDirectory = fileURLToPath(new URL(mod.assetDirectory, url))
 
     if (assetDirectories.has(assetDirectory)) continue
 
