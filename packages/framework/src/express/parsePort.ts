@@ -1,5 +1,5 @@
 export function parsePort(fallback = 3000): number {
-  const port = import.meta.env.VITE_PORT
+  const port = process.env.PORT
 
   if (port === undefined) {
     return fallback
@@ -12,10 +12,4 @@ export function parsePort(fallback = 3000): number {
   }
 
   return parsedPort
-}
-
-declare global {
-  export interface ImportMetaEnv {
-    VITE_PORT?: string
-  }
 }
