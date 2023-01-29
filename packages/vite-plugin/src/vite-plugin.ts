@@ -118,36 +118,37 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
 
       // Configure Build steps when running with vavite
       if (env.mode === 'multibuild') {
-        const clientBuild: UserConfig['build'] = {
+        const clientBuild: NonNullable<UserConfig['build']> = {
           outDir: options.clientOutputDirectory,
           rollupOptions: {
             input: buildClientInput(options.htmlFiles),
           },
         }
 
-        const serverBuild = pipe(
+        const clientConfig = {
+          name: 'client',
+          // @ts-expect-error Unable to resolve types w/ NodeNext
+          config: { build: clientBuild, plugins: [compression()] },
+        }
+
+        const serverConfig = pipe(
           options.serverFilePath,
-          Option.map((index): UserConfig['build'] => ({
-            ssr: true,
-            outDir: options.serverOutputDirectory,
-            rollupOptions: {
-              input: {
-                index,
+          Option.map(
+            (index): NonNullable<UserConfig['build']> => ({
+              ssr: true,
+              outDir: options.serverOutputDirectory,
+              rollupOptions: {
+                input: {
+                  index,
+                },
               },
-            },
-          })),
+            }),
+          ),
+          Option.map((build) => ({ name: 'server', config: { build, plugins: [] } })),
           Option.toArray,
         )
 
-        ;(config as any).buildSteps = [
-          {
-            name: 'client',
-            // @ts-expect-error Unable to resolve types w/ NodeNext
-            config: { build: clientBuild, plugins: [compression()] },
-          },
-          ...serverBuild.map((build) => ({ name: 'server', config: { build } })),
-        ]
-
+        ;(config as any).buildSteps = [clientConfig].concat(serverConfig)
         return
       }
     },
