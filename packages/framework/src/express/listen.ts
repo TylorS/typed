@@ -18,7 +18,7 @@ export function listen(
 ): void {
   // httpDevServer will resolve to undefined when import.meta.env.PROD is true and be
   // dead-code eliminated from your production build.
-  if (import.meta.env.DEV && httpDevServer) {
+  if (httpDevServer) {
     httpDevServer.on('request', app)
     const address = httpDevServer.address()
     const port = typeof address === 'string' ? parseInt(address, 10) : address?.port ?? 3000
