@@ -145,7 +145,7 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
             // @ts-expect-error Unable to resolve types w/ NodeNext
             config: { build: clientBuild, plugins: [compression()] },
           },
-          ...serverBuild,
+          ...serverBuild.map((build) => ({ name: 'server', config: { build } })),
         ]
 
         return
