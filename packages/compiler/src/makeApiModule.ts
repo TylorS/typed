@@ -26,13 +26,14 @@ export function makeApiModule(
     addNamespaceImport(sourceFile, 'express', 'express', true)
   }
 
+  addNamedImport(sourceFile, ['FetchHandler'], '@typed/framework/api', true)
   addModuleTreeImports(moduleTree)
 
   appendText(
     sourceFile,
     `export const handlers = [
     ${constructHandlers(moduleTree).join(',' + EOL + '  ')}
-]`,
+] satisfies readonly FetchHandler<never, any>[]`,
   )
 
   if (isExpress) {
