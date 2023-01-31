@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@fp-ts/core": "0.1.1",
+    "@fp-ts/core": "^0.1.1",
     "@typed/compiler": "workspace:*",
     "fast-glob": "^3.2.12",
     "vavite": "^1.5.3",

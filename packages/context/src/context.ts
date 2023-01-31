@@ -73,7 +73,7 @@ export function Tag<S>(key?: string): Tag<S> {
     layer: Effect.toLayer<S>(tag),
     layerScoped: <R, E>(e: Effect.Effect<R, E, S>) => Layer.scoped(tag, e),
     layerOf: flow(Effect.succeed<S>, Effect.toLayer<S>(tag)),
-    build: flow(C.make(tag), makeContextBuilder),
+    build: flow((s: S) => C.make(tag, s), makeContextBuilder),
   }) satisfies Tag<S>
 }
 
@@ -102,7 +102,7 @@ export function makeContextBuilder<R = never>(
 ): ContextBuilder<R> {
   const builder: ContextBuilder<R> = {
     context,
-    add: <A>(tag: C.Tag<A>, a: A) => makeContextBuilder(C.add(tag)(a)(context)),
+    add: <A>(tag: C.Tag<A>, a: A) => makeContextBuilder(C.add(tag, a)(context)),
     merge: <S>(builder: ContextBuilder<S>) => makeContextBuilder(C.merge(builder.context)(context)),
     mergeContext: <S>(other: C.Context<S>) => makeContextBuilder(C.merge(other)(context)),
     prune: <Tags extends Array<C.Tags<R>>>(
