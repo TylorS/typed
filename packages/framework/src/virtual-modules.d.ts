@@ -40,9 +40,8 @@ declare module 'browser:*' {
  * TODO: Should have helpers for constructing happy-dom instance
  */
 declare module 'html:*' {
+  import type { ServerWindowOptions } from '@typed/framework/dist/makeServerWindow'
   import type * as happyDom from 'happy-dom'
-
-  import type { ServerWindowOptions } from '@typed/framework'
 
   /**
    * The path to the directory where assets will be found
@@ -78,15 +77,15 @@ declare module 'html:*' {
 }
 
 declare module 'api:*' {
-  import type { FetchHandler } from '@typed/framework'
+  import type { FetchHandler } from '@typed/framework/dist/api'
 
   export const handlers: ReadonlyArray<FetchHandler<never, string>>
 }
 
 declare module 'express:*' {
-  import type express from 'express'
+  import type { Router } from 'express'
 
-  export const router: express.Router
+  export const router: Router
 
   export * from 'api:*'
 }
