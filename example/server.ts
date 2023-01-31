@@ -39,14 +39,19 @@ if (import.meta.env.PROD) {
 // Register API routes
 app.use('/api', api.router)
 
-// The DOM is our API so even on the server, we need to provide the root
+// The DOM is our API even on the server, we need to provide the root
 // element we should render into.
 const getParentElement = (d: Document) => d.getElementById('application')
 
+// Create our express handlers
+const otherHandler = express.run(otherPages, otherHtml, getParentElement)
+const indexHandler = express.run(pages, indexHtml, getParentElement)
+
 // Register our html handlers
 // It is optional to use config.base, but if you need to set config.base in your vite config, it can be useful.
-app.get(join(config.base, '/other*'), express.run(otherPages, otherHtml, getParentElement))
-app.get(join(config.base, '/*'), express.run(pages, indexHtml, getParentElement))
+app.get(join(config.base, '/*'), (req, res, next) =>
+  req.url.includes('/other') ? otherHandler(req, res, next) : indexHandler(req, res, next),
+)
 
 // Start the server properly in development and production
 express.listen(app, httpDevServer, { port: 3000 })

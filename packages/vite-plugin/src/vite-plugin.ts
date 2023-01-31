@@ -23,7 +23,7 @@ export interface PluginOptions {
    * The directory in which you have your application.
    * This can be relative to the current working directory or absolute.
    */
-  readonly sourceDirectory: string
+  readonly sourceDirectory?: string
 
   /**
    * The file path to your tsconfig.json file.
@@ -76,7 +76,6 @@ export interface TypedVitePlugin extends Plugin {
 
 export default function makePlugin(pluginOptions: PluginOptions): PluginOption[] {
   const options: ResolvedOptions = resolveOptions(pluginOptions)
-
   let compiler: Compiler
   let devServer: ViteDevServer
   let isSsr = false
@@ -108,13 +107,18 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
 
   const virtualModulePlugin: TypedVitePlugin = {
     name: PLUGIN_NAME,
-    resolvedOptions: options,
-
+    get resolvedOptions() {
+      return options
+    },
     /**
      * Configures our production build using vavite
      */
     config(config: UserConfig, env: ConfigEnv) {
       isSsr = env.ssrBuild ?? false
+
+      if (!config.root) {
+        config.root = options.sourceDirectory
+      }
 
       // Configure Build steps when running with vavite
       if (env.mode === 'multibuild') {
@@ -127,7 +131,7 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
 
         const clientConfig = {
           name: 'client',
-          // @ts-expect-error Unable to resolve types w/ NodeNext
+          // @ts-expect-error Unable to resolve types properly for compression
           config: { build: clientBuild, plugins: [compression()] },
         }
 
@@ -148,8 +152,13 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
           Option.toArray,
         )
 
-        ;(config as any).buildSteps = [clientConfig].concat(serverConfig)
-        return
+        // Hack to add support for build steps in vavite
+        const multiBuildConfig = config as any
+
+        // Append our build steps to the end of the build steps
+        multiBuildConfig.buildSteps = (multiBuildConfig.buildSteps || []).concat(
+          [clientConfig].concat(serverConfig),
+        )
       }
     },
 
@@ -157,11 +166,11 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
      * Updates our resolved options with the correct base path
      * and parses our input files for our manifest
      */
-    configResolved(resolvedConfig) {
-      // Ensure options have the correct base path
-      Object.assign(options, { base: resolvedConfig.base })
+    configResolved(config) {
+      // Ensure final options has the correct base path
+      Object.assign(options, { base: config.base })
 
-      getCompiler().parseInput(resolvedConfig.build.rollupOptions.input)
+      getCompiler().parseInput(config.build.rollupOptions.input)
     },
 
     /**
@@ -244,8 +253,8 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
   return plugins
 }
 
-function resolveOptions({
-  sourceDirectory: directory,
+export function resolveOptions({
+  sourceDirectory: directory = cwd,
   tsConfig,
   serverFilePath,
   clientOutputDirectory,
@@ -294,7 +303,7 @@ function resolveOptions({
   return resolvedOptions
 }
 
-function findHtmlFiles(
+export function findHtmlFiles(
   directory: string,
   htmlFileGlobs: readonly string[] | undefined,
   exclusions: readonly string[],
@@ -310,7 +319,7 @@ function findHtmlFiles(
   })
 }
 
-function buildClientInput(htmlFilePaths: readonly string[]) {
+export function buildClientInput(htmlFilePaths: readonly string[]) {
   return htmlFilePaths.reduce(
     (acc, htmlFilePath) => ({ ...acc, [basename(htmlFilePath, '.html')]: htmlFilePath }),
     {},

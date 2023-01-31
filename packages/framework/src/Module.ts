@@ -7,6 +7,10 @@ import type * as Router from '@typed/router'
 
 import type { IntrinsicServices } from './IntrinsicServices.js'
 
+/**
+ * A module is a runtime representation of a route and its main function
+ * when constructing a runtime/browser: module.
+ */
 export interface Module<out R, P extends string> {
   readonly route: Route.Route<R, P>
 

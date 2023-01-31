@@ -11,5 +11,9 @@
   "exclude": [
     "dist"
   ],
-  "references": []
+  "references": [
+    {
+      "path": "../vite-plugin/tsconfig.build.json"
+    }
+  ]
 }

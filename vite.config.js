@@ -6,26 +6,26 @@ import { defineConfig } from 'vite'
 
 import typed from './packages/vite-plugin/src/vite-plugin'
 
+// Only necessary because developing in a monorepo dogfooding my own source code.
+const alias = {
+  '@typed/compiler': join(__dirname, 'packages/compiler/dist'),
+  '@typed/context': join(__dirname, 'packages/context/dist'),
+  '@typed/dom': join(__dirname, 'packages/dom/dist'),
+  '@typed/framework': join(__dirname, 'packages/framework/dist'),
+  '@typed/fx': join(__dirname, 'packages/fx/dist'),
+  '@typed/html': join(__dirname, 'packages/html/dist'),
+  '@typed/path': join(__dirname, 'packages/path/dist'),
+  '@typed/route': join(__dirname, 'packages/route/dist'),
+  '@typed/router': join(__dirname, 'packages/router/dist'),
+}
+
 export default defineConfig({
-  root: join(__dirname, 'example'),
-  resolve: {
-    // Only necessary because developing in a monorepo dogfooding my own source code.
-    alias: {
-      '@typed/compiler': join(__dirname, 'packages/compiler/dist'),
-      '@typed/context': join(__dirname, 'packages/context/dist'),
-      '@typed/dom': join(__dirname, 'packages/dom/dist'),
-      '@typed/framework': join(__dirname, 'packages/framework/dist'),
-      '@typed/fx': join(__dirname, 'packages/fx/dist'),
-      '@typed/html': join(__dirname, 'packages/html/dist'),
-      '@typed/path': join(__dirname, 'packages/path/dist'),
-      '@typed/route': join(__dirname, 'packages/route/dist'),
-      '@typed/router': join(__dirname, 'packages/router/dist'),
-    },
-  },
+  resolve: { alias },
   plugins: [
     typed({
-      // Directory should point towards the root of your project with an index.html file
+      // Directory should point towards the root of your project with html files
       sourceDirectory: join(__dirname, 'example'),
+      // Allows using includeSources:true for your sourceMaps
       saveGeneratedModules: true,
     }),
     svelte({

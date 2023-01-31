@@ -24,6 +24,8 @@
     }
   },
   "dependencies": {
+    "@typed/framework": "workspace:*",
+    "@typed/vite-plugin": "workspace:*",
     "@vavite/multibuild": "^1.5.3",
     "cac": "^6.7.14",
     "picocolors": "^1.0.0",

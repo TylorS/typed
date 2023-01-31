@@ -5,7 +5,7 @@ import { basename, dirname, relative, resolve } from 'path'
 
 import effectTransformer from '@effect/language-service/transformer'
 import { parseHtmlImports, parseBasePath } from '@typed/framework/html'
-import { SourceFile, ts } from 'ts-morph'
+import { Project, SourceFile, ts } from 'ts-morph'
 import type { ViteDevServer, BuildOptions } from 'vite'
 
 import type { EntryFile, Manifest, ManifestEntry } from './Manifest.js'
@@ -38,12 +38,16 @@ export class Compiler {
     modules: {},
   }
 
-  protected project = setupTsProject(this.options.tsConfig)
+  protected project: Project
   protected transformers!: ts.CustomTransformers
   protected dependents = new Map<string, Set<string>>()
   protected filePathToModule = new Map<string, SourceFile>()
 
-  constructor(readonly pluginName: string, readonly options: ResolvedOptions) {}
+  constructor(readonly pluginName: string, readonly options: ResolvedOptions) {
+    this.log(`Setting up TypeScript Project...`)
+    this.project = setupTsProject(options.tsConfig)
+    this.log(`TypeScript Project setup complete.`)
+  }
 
   readonly parseInput = (input: NonNullable<BuildOptions['rollupOptions']>['input']) => {
     if (!input) return []

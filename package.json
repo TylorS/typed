@@ -25,9 +25,10 @@
     "update": "pnpm run update:rootTsconfig && pnpm run update:packages",
     "update:packages": "tsx ./tools/updatePackages.ts",
     "update:rootTsconfig": "tsx ./tools/updateRootTsconfig.ts",
-    "example": "pnpm typed example",
-    "example:build": "pnpm typed build -s ./example/static.ts example",
-    "example:preview": "node ./example/dist/server/index.js",
+    "example": "pnpm typed serve",
+    "example:build": "pnpm typed build -s static.ts",
+    "example:preview": "pnpm typed preview",
+    "example:static": "pnpm typed run -s example/static.ts",
     "typed": "pnpm tsx ./packages/cli/src/cli.ts",
     "~~NEEDS POSITIONAL COMMAND LINE ARGUMENT~~": "",
     "new-package": "nx generate ./packages/nx-plugin:package"
