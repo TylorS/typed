@@ -16,6 +16,9 @@
       "path": "./packages/context/tsconfig.build.json"
     },
     {
+      "path": "./packages/decoder/tsconfig.build.json"
+    },
+    {
       "path": "./packages/dom/tsconfig.build.json"
     },
     {

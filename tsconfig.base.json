@@ -29,8 +29,8 @@
     "target": "ES2020",
     "types": ["vite/client"],
     "paths": {
-      "@typed/compiler/*": ["./packages/compiler/src/*"],
       "@typed/cli/*": ["./packages/cli/src/*"],
+      "@typed/compiler/*": ["./packages/compiler/src/*"],
       "@typed/context/*": ["./packages/context/src/*"],
       "@typed/dom/*": ["./packages/dom/src/*"],
       "@typed/framework/*": ["./packages/framework/src/*"],
