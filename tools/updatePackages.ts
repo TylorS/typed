@@ -41,6 +41,10 @@ for (const name of packageNames) {
   const dependencies = new Set<string>()
   const references = new Set<string>()
 
+  if (name === 'compiler') {
+    dependencies.add('@rollup/pluginutils')
+  }
+
   for (const path of filePaths) {
     const sourceFile = project.getSourceFile(path)
 
