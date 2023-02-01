@@ -1,15 +1,34 @@
-import { flow } from '@fp-ts/core/Function'
 import * as Option from '@fp-ts/core/Option'
 import type * as AST from '@fp-ts/schema/AST'
+import * as Parser from '@fp-ts/schema/Parser'
 import * as S from '@fp-ts/schema/Schema'
 
-import { fromSchema, type Decoder, type SchemaDecoder } from './decoder.js'
+import type { Decoder } from './decoder.js'
+import { union } from './union.js'
 
-export const literal: <Literals extends readonly AST.LiteralValue[]>(
+export interface SchemaDecoder<A> extends S.Schema<A>, Decoder<unknown, A> {}
+
+export function fromSchema<A>(schema: S.Schema<A>): SchemaDecoder<A>
+
+export function fromSchema<A>(schema: S.Schema<A>): SchemaDecoder<A> {
+  return Object.assign(Parser.decode(schema), schema)
+}
+
+export const literal = <Literals extends readonly AST.LiteralValue[]>(
   ...a: Literals
-) => SchemaDecoder<Literals[number]> = flow(S.literal, fromSchema)
-export const uniqueSymbol = flow(S.uniqueSymbol, fromSchema)
-export const enums = flow(S.enums, fromSchema)
+): SchemaDecoder<Literals[number]> => fromSchema(S.literal(...a))
+export const uniqueSymbol = <S extends symbol>(
+  symbol: S,
+  annotations?: Record<string | symbol, unknown> | undefined,
+) => fromSchema(S.uniqueSymbol(symbol, annotations))
+
+export const enums = <
+  A extends {
+    [x: string]: string | number
+  },
+>(
+  enums: A,
+) => fromSchema(S.enums(enums))
 export const never = fromSchema(S.never)
 export const unknown = fromSchema(S.unknown)
 export const any = fromSchema(S.any)
@@ -50,3 +69,6 @@ export const lazy = <I, O>(f: () => Decoder<I, O>): Decoder<I, O> => {
 
   return (i, options) => get()(i, options)
 }
+
+export const optional = <A>(member: Decoder<unknown, A>): Decoder<unknown, A | undefined> =>
+  union(member, undefined_)
