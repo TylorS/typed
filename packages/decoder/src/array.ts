@@ -6,19 +6,18 @@ import * as ParseResult from '@fp-ts/schema/ParseResult'
 import { compose } from './compose.js'
 import type { Decoder } from './decoder.js'
 
-export const unknownArray: Decoder<unknown, ReadonlyArray<unknown>> = {
-  decode: (i) =>
-    Array.isArray(i) ? ParseResult.success(i) : ParseResult.failure(ParseResult.unexpected(i)),
-}
+export const unknownArray: Decoder<unknown, ReadonlyArray<unknown>> = (i) =>
+  Array.isArray(i) ? ParseResult.success(i) : ParseResult.failure(ParseResult.unexpected(i))
 
-export const fromArray = <I, O>(member: Decoder<I, O>): Decoder<readonly I[], readonly O[]> => ({
-  decode: (i, options) => {
+export const fromArray =
+  <I, O>(member: Decoder<I, O>): Decoder<readonly I[], readonly O[]> =>
+  (i, options) => {
     const [failures, successes] = RA.separate(
       pipe(
         i,
         RA.mapWithIndex((ix, idx) =>
           pipe(
-            member.decode(ix, options),
+            member(ix, options),
             Either.mapLeft((errors) => ParseResult.index(idx, errors)),
           ),
         ),
@@ -30,23 +29,20 @@ export const fromArray = <I, O>(member: Decoder<I, O>): Decoder<readonly I[], re
     }
 
     return ParseResult.success(successes)
-  },
-})
+  }
 
 export const array = <O>(member: Decoder<unknown, O>): Decoder<unknown, readonly O[]> =>
   pipe(unknownArray, compose(fromArray(member)))
 
-export const fromNonEmptyArray = <I, O>(
-  member: Decoder<I, O>,
-): Decoder<readonly I[], readonly O[]> => ({
-  decode: (i, options) => {
+export const fromNonEmptyArray =
+  <I, O>(member: Decoder<I, O>): Decoder<readonly I[], readonly O[]> =>
+  (i, options) => {
     if (i.length === 0) {
       return ParseResult.failure(ParseResult.unexpected(i))
     }
 
-    return fromArray(member).decode(i, options)
-  },
-})
+    return fromArray(member)(i, options)
+  }
 
 export const nonEmptyArray = <O>(member: Decoder<unknown, O>): Decoder<unknown, readonly O[]> =>
   pipe(unknownArray, compose(fromNonEmptyArray(member)))

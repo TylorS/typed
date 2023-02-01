@@ -1,24 +1,38 @@
-import { pipe } from '@fp-ts/core/Function'
 import { isNonEmpty } from '@fp-ts/core/ReadonlyArray'
 import type { ReadonlyRecord } from '@fp-ts/core/ReadonlyRecord'
+import type { ParseOptions } from '@fp-ts/schema/AST'
 import * as ParseResult from '@fp-ts/schema/ParseResult'
 
-import { compose } from './compose.js'
 import type { Decoder, InputOf, OutputOf } from './decoder.js'
 import { unknownRecord } from './record.js'
 
-export function fromStruct<P extends ReadonlyRecord<Decoder<any, any>>>(
+export interface StructDecoder<P extends ReadonlyRecord<Decoder<any, any>>>
+  extends Decoder<
+    unknown,
+    {
+      readonly [K in keyof P]: OutputOf<P[K]>
+    }
+  > {
+  readonly properties: P
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type PropertiesOf<T> = T extends StructDecoder<infer P> ? P : never
+
+export function struct<P extends ReadonlyRecord<Decoder<unknown, any>>>(
   properties: P,
-): Decoder<
-  {
-    readonly [K in keyof P]: InputOf<P[K]>
-  },
-  {
-    readonly [K in keyof P]: OutputOf<P[K]>
-  }
-> {
-  return {
-    decode: (i, options) => {
+): StructDecoder<P> {
+  return Object.assign(
+    (i: InputOf<StructDecoder<P>>, options?: ParseOptions) => {
+      const recordResult = unknownRecord(i, options)
+
+      if (ParseResult.isFailure(recordResult)) {
+        return recordResult
+      }
+
+      const input = recordResult.right as {
+        readonly [K in keyof P]: InputOf<P[K]>
+      }
       const keys = Reflect.ownKeys(properties) as (keyof P)[]
       const failures: ParseResult.ParseError[] = []
       const successes: Partial<Record<keyof P, any>> = {}
@@ -27,7 +41,7 @@ export function fromStruct<P extends ReadonlyRecord<Decoder<any, any>>>(
 
         if (!property) continue
 
-        const result = property.decode(i[key], options)
+        const result = property(input[key], options)
 
         if (ParseResult.isFailure(result)) {
           failures.push(ParseResult.key(key, result.left))
@@ -42,23 +56,43 @@ export function fromStruct<P extends ReadonlyRecord<Decoder<any, any>>>(
 
       return ParseResult.success(successes as any)
     },
-  }
+    { properties },
+  )
 }
 
-export const struct = <P extends ReadonlyRecord<Decoder<unknown, any>>>(
-  properties: P,
-): Decoder<
-  unknown,
-  {
-    readonly [K in keyof P]: OutputOf<P[K]>
-  }
-> =>
-  pipe(
-    unknownRecord as Decoder<
-      unknown,
-      {
-        readonly [K in keyof P]: InputOf<P[K]>
-      }
-    >,
-    compose(fromStruct(properties)),
-  )
+export const extend =
+  <D2 extends StructDecoder<any>>(second: D2) =>
+  <D1 extends StructDecoder<any>>(
+    first: D1,
+  ): StructDecoder<Flatten<Omit<PropertiesOf<D1>, keyof PropertiesOf<D2>> & PropertiesOf<D2>>> =>
+    struct({ ...first.properties, ...second.properties })
+
+export const pick =
+  <P extends ReadonlyRecord<Decoder<any, any>>, Keys extends ReadonlyArray<keyof P>>(
+    ...keys: Keys
+  ) =>
+  (decoder: StructDecoder<P>): StructDecoder<PickFlatten<P, Keys>> =>
+    struct(
+      Object.fromEntries(Object.entries(decoder.properties).filter(([key]) => keys.includes(key))),
+    ) as StructDecoder<PickFlatten<P, Keys>>
+
+export const omit =
+  <P extends ReadonlyRecord<Decoder<any, any>>, Keys extends ReadonlyArray<keyof P>>(
+    ...keys: Keys
+  ) =>
+  (decoder: StructDecoder<P>): StructDecoder<OmitFlatten<P, Keys>> =>
+    struct(
+      Object.fromEntries(Object.entries(decoder.properties).filter(([key]) => !keys.includes(key))),
+    ) as StructDecoder<OmitFlatten<P, Keys>>
+
+type PickFlatten<
+  P extends ReadonlyRecord<Decoder<any, any>>,
+  Keys extends ReadonlyArray<keyof P>,
+> = Flatten<Pick<P, Keys[number]>>
+
+type OmitFlatten<
+  P extends ReadonlyRecord<Decoder<any, any>>,
+  Keys extends ReadonlyArray<keyof P>,
+> = Flatten<Omit<P, Keys[number]>>
+
+type Flatten<T> = [T] extends [infer R] ? { readonly [K in keyof R]: R[K] } : never

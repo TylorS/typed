@@ -16,24 +16,22 @@ export function fromPartial<P extends ReadonlyRecord<Decoder<any, any>>>(
     readonly [K in keyof P]?: OutputOf<P[K]>
   }
 > {
-  return {
-    decode: (i, options) => {
-      const keys = Reflect.ownKeys(properties) as (keyof P)[]
-      const successes: Partial<Record<keyof P, any>> = {}
-      for (const key of keys) {
-        const property = properties[key]
+  return (i, options) => {
+    const keys = Reflect.ownKeys(properties) as (keyof P)[]
+    const successes: Partial<Record<keyof P, any>> = {}
+    for (const key of keys) {
+      const property = properties[key]
 
-        if (!property || !(key in i)) continue
+      if (!property || !(key in i)) continue
 
-        const result = property.decode(i[key], options)
+      const result = property(i[key], options)
 
-        if (ParseResult.isSuccess(result)) {
-          successes[key] = result.right
-        }
+      if (ParseResult.isSuccess(result)) {
+        successes[key] = result.right
       }
+    }
 
-      return ParseResult.success(successes as any)
-    },
+    return ParseResult.success(successes as any)
   }
 }
 

@@ -4,7 +4,7 @@ import { pipe } from '@fp-ts/core/Function'
 import type { Decoder } from './decoder.js'
 
 export function map<A, B>(f: (a: A) => B) {
-  return <I>(fa: Decoder<I, A>): Decoder<I, B> => ({
-    decode: (i, options) => pipe(fa.decode(i, options), Either.map(f)),
-  })
+  return <I>(decoder: Decoder<I, A>): Decoder<I, B> =>
+    (i, options) =>
+      pipe(decoder(i, options), Either.map(f))
 }

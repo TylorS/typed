@@ -7,19 +7,20 @@ import { unknownArray } from './array.js'
 import { compose } from './compose.js'
 import type { Decoder, InputOf, OutputOf } from './decoder.js'
 
-export const fromTuple = <Members extends RA.NonEmptyReadonlyArray<Decoder<any, any>>>(
-  ...members: Members
-): Decoder<
-  { readonly [K in keyof Members]: InputOf<Members[K]> },
-  { readonly [K in keyof Members]: OutputOf<Members[K]> }
-> => ({
-  decode: (i, options) => {
+export const fromTuple =
+  <Members extends RA.NonEmptyReadonlyArray<Decoder<any, any>>>(
+    ...members: Members
+  ): Decoder<
+    { readonly [K in keyof Members]: InputOf<Members[K]> },
+    { readonly [K in keyof Members]: OutputOf<Members[K]> }
+  > =>
+  (i, options) => {
     const [failures, successes] = RA.separate(
       pipe(
         i,
         RA.mapWithIndex((ix, idx) =>
           pipe(
-            members[idx].decode(ix, options),
+            members[idx](ix, options),
             Either.mapLeft((errors) => ParseResult.index(idx, errors)),
           ),
         ),
@@ -31,8 +32,7 @@ export const fromTuple = <Members extends RA.NonEmptyReadonlyArray<Decoder<any, 
     }
 
     return ParseResult.success(successes as { readonly [K in keyof Members]: OutputOf<Members[K]> })
-  },
-})
+  }
 
 export const tuple = <Members extends RA.NonEmptyReadonlyArray<Decoder<any, any>>>(
   ...members: Members

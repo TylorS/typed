@@ -4,7 +4,7 @@ import * as P from '@fp-ts/schema/Parser'
 import type * as S from '@fp-ts/schema/Schema'
 
 export interface Decoder<I, O> {
-  readonly decode: (i: I, options?: ParseOptions) => ParseResult.ParseResult<O>
+  (i: I, options?: ParseOptions): ParseResult.ParseResult<O>
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -15,14 +15,5 @@ export type OutputOf<T> = [T] extends [Decoder<infer _, infer O>] ? O : never
 export interface SchemaDecoder<A> extends S.Schema<A>, Decoder<unknown, A> {}
 
 export function fromSchema<A>(schema: S.Schema<A>): SchemaDecoder<A> {
-  return {
-    ...schema,
-    decode: P.decode(schema),
-  }
+  return Object.assign(P.decode(schema), schema)
 }
-
-/**
- * TODO:
- * tuple
- * extend
- */

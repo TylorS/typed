@@ -1,10 +1,13 @@
 import { flow } from '@fp-ts/core/Function'
 import * as Option from '@fp-ts/core/Option'
+import type * as AST from '@fp-ts/schema/AST'
 import * as S from '@fp-ts/schema/Schema'
 
 import { fromSchema, type Decoder, type SchemaDecoder } from './decoder.js'
 
-export const literal = flow(S.literal, fromSchema)
+export const literal: <Literals extends readonly AST.LiteralValue[]>(
+  ...a: Literals
+) => SchemaDecoder<Literals[number]> = flow(S.literal, fromSchema)
 export const uniqueSymbol = flow(S.uniqueSymbol, fromSchema)
 export const enums = flow(S.enums, fromSchema)
 export const never = fromSchema(S.never)
@@ -45,7 +48,5 @@ export const lazy = <I, O>(f: () => Decoder<I, O>): Decoder<I, O> => {
     return x
   }
 
-  return {
-    decode: (i, options) => get().decode(i, options),
-  }
+  return (i, options) => get()(i, options)
 }

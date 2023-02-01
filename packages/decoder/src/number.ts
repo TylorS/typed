@@ -16,17 +16,16 @@ const numberFailure = (message: string, actual: number) =>
 
 export const lessThan =
   (max: number) =>
-  <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> => ({
-    decode: (i, options) =>
-      pipe(
-        decoder.decode(i, options),
-        Either.flatMap((n) =>
-          n < max
-            ? ParseResult.success(n)
-            : numberFailure(`Expected number to be less than ${max}, got ${n}`, n),
-        ),
+  <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> =>
+  (i, options) =>
+    pipe(
+      decoder(i, options),
+      Either.flatMap((n) =>
+        n < max
+          ? ParseResult.success(n)
+          : numberFailure(`Expected number to be less than ${max}, got ${n}`, n),
       ),
-  })
+    )
 
 export const lessThanOrEqualTo =
   (max: number) =>
@@ -35,55 +34,54 @@ export const lessThanOrEqualTo =
 
 export const greaterThan =
   (min: number) =>
-  <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> => ({
-    decode: (i, options) =>
-      pipe(
-        decoder.decode(i, options),
-        Either.flatMap((n) =>
-          n > min
-            ? ParseResult.success(n)
-            : numberFailure(`Expected number to be greater than ${min}, got ${n}`, n),
-        ),
+  <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> =>
+  (i, options) =>
+    pipe(
+      decoder(i, options),
+      Either.flatMap((n) =>
+        n > min
+          ? ParseResult.success(n)
+          : numberFailure(`Expected number to be greater than ${min}, got ${n}`, n),
       ),
-  })
+    )
 
 export const greaterThanOrEqualTo =
   (min: number) =>
   <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> =>
     pipe(decoder, greaterThan(min - 1))
 
-export const int = <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> => ({
-  decode: (i, options) =>
+export const int =
+  <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> =>
+  (i, options) =>
     pipe(
-      decoder.decode(i, options),
+      decoder(i, options),
       Either.flatMap((n) =>
         Number.isInteger(n)
           ? ParseResult.success(n)
           : numberFailure(`Expected number to be an integer, got ${n}`, n),
       ),
-    ),
-})
+    )
 
-export const nonNan = <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> => ({
-  decode: (i, options) =>
+export const nonNan =
+  <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> =>
+  (i, options) =>
     pipe(
-      decoder.decode(i, options),
+      decoder(i, options),
       Either.flatMap((n) =>
         Number.isNaN(n)
           ? numberFailure(`Expected number to be a number, got NaN`, n)
           : ParseResult.success(n),
       ),
-    ),
-})
+    )
 
-export const finite = <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> => ({
-  decode: (i, options) =>
+export const finite =
+  <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> =>
+  (i, options) =>
     pipe(
-      decoder.decode(i, options),
+      decoder(i, options),
       Either.flatMap((n) =>
         Number.isFinite(n)
           ? ParseResult.success(n)
           : numberFailure(`Expected number to be finite, got ${n}`, n),
       ),
-    ),
-})
+    )
