@@ -72,3 +72,6 @@ export const lazy = <I, O>(f: () => Decoder<I, O>): Decoder<I, O> => {
 
 export const optional = <A>(member: Decoder<unknown, A>): Decoder<unknown, A | undefined> =>
   union(member, undefined_)
+
+export const nullable = <A>(member: Decoder<unknown, A>): Decoder<unknown, A | null> =>
+  union(member, null_)
