@@ -5,6 +5,8 @@ import { flow, pipe } from '@fp-ts/core/Function'
 import type { NonEmptyReadonlyArray } from '@fp-ts/core/ReadonlyArray'
 import type { ParseOptions } from '@fp-ts/schema/AST'
 import { isFailure, type ParseError } from '@fp-ts/schema/ParseResult'
+import { decode } from '@fp-ts/schema/Parser'
+import type { Schema } from '@fp-ts/schema/Schema'
 import { formatErrors } from '@fp-ts/schema/formatter/Tree'
 import type { Decoder } from '@typed/decoder'
 import type { ParamsOf } from '@typed/path'
@@ -78,7 +80,7 @@ export function FetchHandler<R, Path extends string, R2 = never, E = never>(
 FetchHandler.decode = <R, Path extends string, A, R2, E>(
   route: Route.Route<R, Path>,
   decoder: Decoder<unknown, A>,
-  handler: (request: Request, body: A, params: ParamsOf<Path>) => Effect.Effect<R2, E, Response>,
+  handler: (body: A, request: Request, params: ParamsOf<Path>) => Effect.Effect<R2, E, Response>,
   options?: ParseOptions,
 ): FetchHandler<R | R2, E | DecodeError, Path> =>
   FetchHandler(route, (request, params) =>
@@ -89,14 +91,14 @@ FetchHandler.decode = <R, Path extends string, A, R2, E>(
         return yield* $(Effect.fail(new DecodeError(parseResult.left)))
       }
 
-      return yield* $(handler(request, parseResult.right, params))
+      return yield* $(handler(parseResult.right, request, params))
     }),
   )
 
 FetchHandler.decodeText = <R, Path extends string, A, R2, E>(
   route: Route.Route<R, Path>,
   decoder: Decoder<string, A>,
-  handler: (request: Request, body: A, params: ParamsOf<Path>) => Effect.Effect<R2, E, Response>,
+  handler: (body: A, request: Request, params: ParamsOf<Path>) => Effect.Effect<R2, E, Response>,
   options?: ParseOptions,
 ): FetchHandler<R | R2, E | DecodeError, Path> =>
   FetchHandler(route, (request, params) =>
@@ -107,9 +109,17 @@ FetchHandler.decodeText = <R, Path extends string, A, R2, E>(
         return yield* $(Effect.fail(new DecodeError(parseResult.left)))
       }
 
-      return yield* $(handler(request, parseResult.right, params))
+      return yield* $(handler(parseResult.right, request, params))
     }),
   )
+
+FetchHandler.schema = <R, Path extends string, A, R2, E>(
+  route: Route.Route<R, Path>,
+  schema: Schema<A>,
+  handler: (body: A, request: Request, params: ParamsOf<Path>) => Effect.Effect<R2, E, Response>,
+  options?: ParseOptions,
+): FetchHandler<R | R2, E | DecodeError, Path> =>
+  FetchHandler.decode(route, decode(schema), handler, options)
 
 export class DecodeError extends Error {
   readonly _tag = 'DecodeError' as const
