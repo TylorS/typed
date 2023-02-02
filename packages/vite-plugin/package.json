@@ -25,7 +25,7 @@
     "@typed/compiler": "workspace:*",
     "fast-glob": "^3.2.12",
     "vavite": "^1.5.3",
-    "vite": "^4.0.4",
+    "vite": "^4.1.1",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.0.5"
   },

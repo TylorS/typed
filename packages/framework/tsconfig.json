@@ -12,6 +12,9 @@
   ],
   "references": [
     {
+      "path": "../decoder/tsconfig.build.json"
+    },
+    {
       "path": "../dom/tsconfig.build.json"
     },
     {

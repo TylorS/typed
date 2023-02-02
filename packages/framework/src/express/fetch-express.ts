@@ -11,37 +11,42 @@ import type { FetchHandler } from '../api/FetchHandler.js'
 
 export function registerFetchHandler<Path extends string>(
   route: express.Router,
-  fetchHandler: FetchHandler<never, Path>,
+  fetchHandler: FetchHandler<never, never, Path>,
 ) {
   for (const method of fetchHandler.httpMethods) {
     route[method](fetchHandler.route.path, runFetchHandler(fetchHandler))
   }
 }
 
-export function runFetchHandler<Path extends string>(fetchHandler: FetchHandler<never, Path>) {
+export function runFetchHandler<Path extends string>(
+  fetchHandler: FetchHandler<never, never, Path>,
+) {
   return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const request = makeFetchRequest(req, res)
 
-    const fiber = pipe(
-      fetchHandler.route.match(req.url),
-      Effect.flatMap(
-        Option.match(
-          () => Effect.sync(next),
-          (params) =>
-            pipe(
-              fetchHandler.handler(request, params as ParamsOf<Path>),
-              Effect.flatMap((response) => Effect.promise(() => sendFetchResponse(res, response))),
-              // Handle all defects by passing them along to Express' next function.
-              Effect.catchAllDefect((defect) => Effect.sync(() => next(defect))),
-              // Log about all other defects
-              Effect.catchAllCause(Effect.logDebugCause),
-            ),
+    const fiber = Effect.runFork(
+      pipe(
+        fetchHandler.route.match(req.url),
+        Effect.flatMap(
+          Option.match(
+            () => Effect.sync(next),
+            (params) =>
+              pipe(
+                fetchHandler.handler(request, params as ParamsOf<Path>),
+                Effect.flatMap((response) =>
+                  Effect.promise(() => sendFetchResponse(res, response)),
+                ),
+                // Handle all defects by passing them along to Express' next function.
+                Effect.catchAllDefect((defect) => Effect.sync(() => next(defect))),
+                // Log about all other defects
+                Effect.catchAllCause(Effect.logDebugCause),
+              ),
+          ),
         ),
+        // Annotate some request data
+        Effect.logAnnotate('request.url', request.url),
+        Effect.logAnnotate('request.referrer', request.referrer),
       ),
-      // Annotate some request data
-      Effect.logAnnotate('request.url', request.url),
-      Effect.logAnnotate('request.referrer', request.referrer),
-      Effect.runFork,
     )
 
     // If the request/response are closed, interrupt the fiber.

@@ -27,7 +27,7 @@
     "@typed/framework": "workspace:*",
     "html-minifier": "^4.0.0",
     "ts-morph": "^17.0.1",
-    "vite": "^4.0.4"
+    "vite": "^4.1.1"
   },
   "devDependencies": {
     "@types/html-minifier": "^4.0.2"

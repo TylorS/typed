@@ -11,7 +11,10 @@
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
     "incremental": true,
-    "lib": ["DOM", "ES2020"],
+    "lib": [
+      "DOM",
+      "ES2020"
+    ],
     "module": "esnext",
     "moduleResolution": "NodeNext",
     "noFallthroughCasesInSwitch": true,
@@ -27,20 +30,49 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "target": "ES2020",
-    "types": ["vite/client"],
+    "types": [
+      "vite/client"
+    ],
     "paths": {
-      "@typed/cli/*": ["./packages/cli/src/*"],
-      "@typed/compiler/*": ["./packages/compiler/src/*"],
-      "@typed/context/*": ["./packages/context/src/*"],
-      "@typed/dom/*": ["./packages/dom/src/*"],
-      "@typed/framework/*": ["./packages/framework/src/*"],
-      "@typed/fx/*": ["./packages/fx/src/*"],
-      "@typed/html/*": ["./packages/html/src/*"],
-      "@typed/internal/*": ["./packages/internal/src/*"],
-      "@typed/path/*": ["./packages/path/src/*"],
-      "@typed/route/*": ["./packages/route/src/*"],
-      "@typed/router/*": ["./packages/router/src/*"],
-      "@typed/vite-plugin/*": ["./packages/vite/src/*"]
+      "@typed/cli/*": [
+        "./packages/cli/src/*"
+      ],
+      "@typed/compiler/*": [
+        "./packages/compiler/src/*"
+      ],
+      "@typed/context/*": [
+        "./packages/context/src/*"
+      ],
+      "@typed/decoder/*": [
+        "./packages/decoder/src/*"
+      ],
+      "@typed/dom/*": [
+        "./packages/dom/src/*"
+      ],
+      "@typed/framework/*": [
+        "./packages/framework/src/*"
+      ],
+      "@typed/fx/*": [
+        "./packages/fx/src/*"
+      ],
+      "@typed/html/*": [
+        "./packages/html/src/*"
+      ],
+      "@typed/internal/*": [
+        "./packages/internal/src/*"
+      ],
+      "@typed/path/*": [
+        "./packages/path/src/*"
+      ],
+      "@typed/route/*": [
+        "./packages/route/src/*"
+      ],
+      "@typed/router/*": [
+        "./packages/router/src/*"
+      ],
+      "@typed/vite-plugin/*": [
+        "./packages/vite/src/*"
+      ]
     },
     "plugins": [
       {
@@ -51,5 +83,8 @@
       }
     ]
   },
-  "exclude": ["node_modules", ".**/*/dist"]
+  "exclude": [
+    "node_modules",
+    ".**/*/dist"
+  ]
 }

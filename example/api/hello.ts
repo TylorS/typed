@@ -12,7 +12,7 @@ const route = Route('/hello/:name')
 //
 // A FetchHandler can be exported at any name and each module can contain as many
 // handlers as they would like.
-export const hello: FetchHandler<I18N, PathOf<typeof route>> = FetchHandler(
+export const hello: FetchHandler<I18N, never, PathOf<typeof route>> = FetchHandler(
   route,
   (req: Request, { name }: ParamsOf<typeof route>) =>
     I18N.withEffect(({ translate }) =>
