@@ -12,18 +12,17 @@ import httpDevServer from 'vavite/http-dev-server'
 
 const getParentElement = (d: Document) => d.getElementById('application')
 
+const assetOptions: import('express-static-gzip').ExpressStaticGzipOptions = {
+  serveStatic: { maxAge: 31536000, cacheControl: true },
+}
+
 const main = express.app(
   Effect.gen(function* ($) {
     if (import.meta.env.PROD) {
-      yield* $(
-        express.assets('/', import.meta.url, [indexHtml, otherHtml], {
-          serveStatic: { maxAge: 31536000, cacheControl: true },
-        }),
-      )
+      yield* $(express.assets('/', import.meta.url, [indexHtml, otherHtml], assetOptions))
     }
 
     yield* $(express.api('/api', api.handlers))
-
     yield* $(express.html('/other', otherPages, otherHtml, getParentElement))
     yield* $(express.html('/', pages, indexHtml, getParentElement))
 
