@@ -13,12 +13,6 @@ class UnknownTranslation extends E.tagged('UnknownTranslation') {
   }
 }
 
-class MessageError extends E.tagged('Message') {
-  constructor(readonly message: string) {
-    super(message)
-  }
-}
-
 // Our API module handling is always modeled as a FetchHandler. This allows us to
 // easily support multiple environments (e.g. Node, Deno, Service Worker, etc)
 // while still using the same code by using a W3C standard of Request and Response.
@@ -31,17 +25,13 @@ export const hello: FetchHandler<I18N, never, PathOf<typeof route>> = FetchHandl
     I18N.withEffect(({ translate }) =>
       pipe(
         translate('Hello', getPreferredLanguages(req)),
-        Effect.flatMap((greeting) =>
-          Math.random() > 0.2
-            ? Effect.succeed(
-                new Response(`${greeting}, ${decodeURIComponent(name)}!`, {
-                  headers: { 'content-type': 'text/plain' },
-                }),
-              )
-            : Effect.fail(new MessageError('Something went wrong')),
+        Effect.map(
+          (greeting) =>
+            new Response(`${greeting}, ${decodeURIComponent(name)}!`, {
+              headers: { 'content-type': 'text/plain' },
+            }),
         ),
         UnknownTranslation.catch((e) => Effect.succeed(new Response(e.message, { status: 500 }))),
-        MessageError.catch((e) => Effect.succeed(new Response(e.message, { status: 500 }))),
       ),
     ),
 )
