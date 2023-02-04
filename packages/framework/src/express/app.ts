@@ -63,8 +63,8 @@ export function listen(options: L.ListenOptions) {
   return ExpressService.withEffect(({ app }) => {
     return Effect.promise(
       () =>
-        new Promise<{ readonly port: number; readonly host?: string }>((resolve) =>
-          L.listen(app, options, (port, host) => resolve({ port, host })),
+        new Promise<{ readonly port: number; readonly host: string }>((resolve) =>
+          L.listen(app, options, (port, host) => resolve({ port, host: host || 'localhost' })),
         ),
     )
   })

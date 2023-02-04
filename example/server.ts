@@ -26,9 +26,9 @@ const main = express.app(
     yield* $(express.html('/other', otherPages, otherHtml, getParentElement))
     yield* $(express.html('/', pages, indexHtml, getParentElement))
 
-    const { port } = yield* $(express.listen({ port: 3000, httpDevServer }))
+    const { host, port } = yield* $(express.listen({ port: 3000, httpDevServer }))
 
-    yield* $(Effect.logInfo(`Server listening at port ${port}`))
+    yield* $(Effect.logInfo(`Server listening at port ${host}:${port}`))
   }),
 )
 
