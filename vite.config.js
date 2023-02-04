@@ -10,6 +10,7 @@ import typed from './packages/vite-plugin/src/vite-plugin'
 const alias = {
   '@typed/compiler': join(__dirname, 'packages/compiler/dist'),
   '@typed/context': join(__dirname, 'packages/context/dist'),
+  '@typed/decoder': join(__dirname, 'packages/decoder/dist'),
   '@typed/dom': join(__dirname, 'packages/dom/dist'),
   '@typed/framework': join(__dirname, 'packages/framework/dist'),
   '@typed/fx': join(__dirname, 'packages/fx/dist'),

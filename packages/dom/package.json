@@ -26,6 +26,7 @@
     "@fp-ts/data": "^0.1.1",
     "@fp-ts/schema": "^0.1.3",
     "@typed/context": "workspace:*",
+    "@typed/decoder": "workspace:*",
     "@typed/fx": "workspace:*",
     "typed-query-selector": "^2.8.0"
   },
