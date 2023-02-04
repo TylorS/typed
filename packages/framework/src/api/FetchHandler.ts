@@ -2,14 +2,13 @@ import type { Cause } from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import type { Layer } from '@effect/io/Layer'
 import { flow, pipe } from '@fp-ts/core/Function'
-import type { NonEmptyReadonlyArray } from '@fp-ts/core/ReadonlyArray'
 import type { ParseOptions } from '@fp-ts/schema/AST'
-import { isFailure, type ParseError } from '@fp-ts/schema/ParseResult'
+import { isFailure } from '@fp-ts/schema/ParseResult'
 import { decode } from '@fp-ts/schema/Parser'
 import type { Schema } from '@fp-ts/schema/Schema'
-import { formatErrors } from '@fp-ts/schema/formatter/Tree'
 import type * as Context from '@typed/context'
 import type { Decoder } from '@typed/decoder'
+import { DecodeError } from '@typed/dom/Fetch'
 import type { ParamsOf } from '@typed/path'
 import * as Route from '@typed/route'
 
@@ -97,7 +96,7 @@ FetchHandler.decode = <R, Path extends string, A, R2, E2>(
       const parseResult = decoder(yield* $(Effect.promise(() => request.json())), options)
 
       if (isFailure(parseResult)) {
-        return yield* $(Effect.fail(new DecodeError(parseResult.left)))
+        return yield* $(Effect.fail(new DecodeError(request, parseResult.left)))
       }
 
       return yield* $(handler(parseResult.right, request, params))
@@ -115,7 +114,7 @@ FetchHandler.decodeText = <R, Path extends string, A, R2, E2>(
       const parseResult = decoder(yield* $(Effect.promise(() => request.text())), options)
 
       if (isFailure(parseResult)) {
-        return yield* $(Effect.fail(new DecodeError(parseResult.left)))
+        return yield* $(Effect.fail(new DecodeError(request, parseResult.left)))
       }
 
       return yield* $(handler(parseResult.right, request, params))
@@ -135,11 +134,3 @@ export type ResourcesOf<T> = T extends FetchHandler<infer R, any, any> ? R : nev
 export type ErrorsOf<T> = T extends FetchHandler<any, infer E, any> ? E : never
 
 export type PathOf<T> = T extends FetchHandler<any, any, infer P> ? P : never
-
-export class DecodeError extends Error {
-  readonly _tag = 'DecodeError' as const
-
-  constructor(readonly errors: NonEmptyReadonlyArray<ParseError>) {
-    super(formatErrors(errors))
-  }
-}
