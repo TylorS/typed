@@ -33,7 +33,7 @@ export function makeApiModule(
     sourceFile,
     `export const handlers = [
     ${constructHandlers(moduleTree).join(',' + EOL + '  ')}
-] satisfies readonly FetchHandler<never, any>[]`,
+] satisfies readonly FetchHandler<never, never, any>[]`,
   )
 
   if (isExpress) {

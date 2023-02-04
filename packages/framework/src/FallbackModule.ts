@@ -1,7 +1,7 @@
 import type { Fx } from '@typed/fx'
 import type { Renderable } from '@typed/html'
 import type { ParamsOf } from '@typed/path'
-import type { Route } from '@typed/route'
+import { Route } from '@typed/route'
 import type * as Router from '@typed/router'
 
 import type { IntrinsicServices } from './IntrinsicServices.js'
@@ -27,12 +27,12 @@ export function RenderableFallback(
 
 export interface RedirectFallback<P extends string> {
   readonly type: 'Redirect'
-  readonly route: Route<IntrinsicServices, P>
+  readonly route: Route<IntrinsicServices, Router.Redirect, P>
   readonly params?: ParamsOf<P>
 }
 
 export function RedirectFallback<P extends string>(
-  route: Route<IntrinsicServices, P>,
+  route: Route<IntrinsicServices, Router.Redirect, P>,
   // eslint-disable-next-line @typescript-eslint/ban-types
   ...[params]: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
 ): RedirectFallback<P> {
@@ -42,3 +42,5 @@ export function RedirectFallback<P extends string>(
     params: params as RedirectFallback<P>['params'],
   }
 }
+
+RedirectFallback(Route('/'))

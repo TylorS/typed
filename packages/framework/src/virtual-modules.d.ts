@@ -7,7 +7,7 @@ declare module 'runtime:*' {
 
   import type { Fallback, Module, IntrinsicServices } from '@typed/framework'
 
-  export const modules: ReadonlyArray<Module<IntrinsicServices, string>>
+  export const modules: ReadonlyArray<Module<IntrinsicServices, never, string>>
 
   export const matcher: RouteMatcher<IntrinsicServices, Redirect>
 
@@ -40,8 +40,9 @@ declare module 'browser:*' {
  * TODO: Should have helpers for constructing happy-dom instance
  */
 declare module 'html:*' {
-  import type { ServerWindowOptions } from '@typed/framework/dist/makeServerWindow'
   import type * as happyDom from 'happy-dom'
+
+  import type { ServerWindowOptions } from '@typed/framework/makeServerWindow'
 
   /**
    * The path to the directory where assets will be found
@@ -77,9 +78,9 @@ declare module 'html:*' {
 }
 
 declare module 'api:*' {
-  import type { FetchHandler } from '@typed/framework/dist/api'
+  import type { FetchHandler } from '@typed/framework/api'
 
-  export const handlers: ReadonlyArray<FetchHandler<never, string>>
+  export const handlers: ReadonlyArray<FetchHandler<never, never, string>>
 }
 
 declare module 'express:*' {

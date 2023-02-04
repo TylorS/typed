@@ -11,6 +11,7 @@ import type { ViteDevServer, BuildOptions } from 'vite'
 import type { EntryFile, Manifest, ManifestEntry } from './Manifest.js'
 import type { ResolvedOptions } from './ResolvedOptions.js'
 import {
+  API_VIRTUAL_ENTRYPOINT_PREFIX,
   BROWSER_VIRTUAL_ENTRYPOINT_PREFIX,
   EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX,
   HTML_VIRTUAL_ENTRYPOINT_PREFIX,
@@ -81,7 +82,10 @@ export class Compiler {
       return await this.makeHtmlModule(importer, id, devServer)
     }
 
-    if (id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX)) {
+    if (
+      id.startsWith(API_VIRTUAL_ENTRYPOINT_PREFIX) ||
+      id.startsWith(EXPRESS_VIRTUAL_ENTRYPOINT_PREFIX)
+    ) {
       return await this.makeApiModule(importer, id)
     }
 

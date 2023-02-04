@@ -7,7 +7,7 @@ import type { HtmlModule } from '../HtmlModule.js'
 
 export function assets(
   url: string,
-  modules: HtmlModule[],
+  modules: readonly HtmlModule[],
   options: staticGzip.ExpressStaticGzipOptions = {},
 ): Array<express.RequestHandler> {
   const assetDirectories = new Set<string>()

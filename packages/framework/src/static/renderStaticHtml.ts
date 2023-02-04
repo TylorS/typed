@@ -6,6 +6,7 @@ import * as Exit from '@effect/io/Exit'
 import * as Either from '@fp-ts/core/Either'
 import { pipe } from '@fp-ts/core/Function'
 import * as RA from '@fp-ts/core/ReadonlyArray'
+import type { Redirect } from '@typed/router'
 
 import { runServerHandler } from '../runServerHandler.js'
 
@@ -24,7 +25,7 @@ export function renderStaticHtml(
   runtime: RuntimeModule,
   getParentElement: (d: Document) => HTMLElement | null,
   origin: string,
-): Effect.Effect<never, never, ReadonlyArray<readonly [path: string, html: string]>> {
+): Effect.Effect<never, Redirect, ReadonlyArray<readonly [path: string, html: string]>> {
   return Effect.gen(function* ($) {
     const paths = yield* $(
       pipe(

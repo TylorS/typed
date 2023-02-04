@@ -5,19 +5,19 @@ import type { IntrinsicServices } from './IntrinsicServices.js'
 import type { Module } from './Module.js'
 import { isEnvironmentFileName, isFallbackFileName, isLayoutFileName } from './fileNames.js'
 
-export type Modules = ReadonlyArray<Module<never, any> | Module<any, any>>
+export type Modules = ReadonlyArray<Module<any, never, any> | Module<any, Redirect, any>>
 
-export function buildModules<M extends Modules>(
+export function buildModules<M extends ReadonlyArray<Module<any, any, any>>>(
   modules: readonly [...M],
-): RouteMatcher<Module.ResourcesOf<M[number]>, Redirect> {
+): RouteMatcher<Module.ResourcesOf<M[number]>, Module.ErrorsOf<M[number]> | Redirect> {
   return orderModulesByRoute(modules as M)
     .map(moduleToRouteMatcher)
     .reduce(RouteMatcher.concat, RouteMatcher(new Map()))
 }
 
-export function moduleToRouteMatcher<R>(
-  module: Module<R, string>,
-): Router.RouteMatcher<R | IntrinsicServices, Router.Redirect> {
+export function moduleToRouteMatcher<R, E>(
+  module: Module<R, E, string>,
+): Router.RouteMatcher<R | IntrinsicServices, E | Router.Redirect> {
   const { route, main, meta } = module
   const matcher = Router.matchFx(route, main)
 
@@ -30,7 +30,7 @@ export function moduleToRouteMatcher<R>(
 
 // Ensure that routes are ordered deterministically
 function orderModulesByRoute(modules: Modules): Modules {
-  return modules.slice().sort((a, b) => pathCardinality(a.route.path, b.route.path)) as any
+  return modules.slice().sort((a, b) => pathCardinality(a.route.path, b.route.path))
 }
 
 export function pathCardinality(a: string, b: string): number {

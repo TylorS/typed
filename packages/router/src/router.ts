@@ -12,11 +12,11 @@ import { RenderContext } from '@typed/html'
 import * as Path from '@typed/path'
 import * as Route from '@typed/route'
 
-export interface Router<out R = never, in out P extends string = string> {
+export interface Router<out R = never, out E = never, in out P extends string = string> {
   /**
    * The base route the Router is starting from.
    */
-  readonly route: Route.Route<R, P>
+  readonly route: Route.Route<R, E, P>
 
   /**
    * The current path of the application
@@ -26,7 +26,7 @@ export interface Router<out R = never, in out P extends string = string> {
   /**
    * The current matched params of the router
    */
-  readonly params: Fx.Fx<R, never, Path.ParamsOf<P>>
+  readonly params: Fx.Fx<R, E, Path.ParamsOf<P>>
 
   /**
    * The current outlet of this Router
@@ -36,7 +36,7 @@ export interface Router<out R = never, in out P extends string = string> {
   /**
    * Helper for constructing a path from a route relative to the router.
    */
-  readonly createPath: <R2 extends Route.Route<any, string>, P extends Route.ParamsOf<R2>>(
+  readonly createPath: <R2 extends Route.Route<any, any, string>, P extends Route.ParamsOf<R2>>(
     route: R2,
     ...[params]: [keyof P] extends [never] ? [] : [P]
   ) => Effect.Effect<
@@ -50,34 +50,38 @@ export interface Router<out R = never, in out P extends string = string> {
   /**
    * Helper for constructing a nested router
    */
-  readonly define: <R2, Path2 extends string>(
-    route: Route.Route<R2, Path2>,
-  ) => Router<R | R2, Path.PathJoin<[P, Path2]>>
-
-  /**
-   * Provide all the resources needed for a Router
-   */
-  readonly provideContext: (environment: Context.Context<R>) => Router<never, P>
+  readonly define: <R2, E2, Path2 extends string>(
+    route: Route.Route<R2, E2, Path2>,
+  ) => Router<R | R2, E | E2, Path.PathJoin<[P, Path2]>>
 
   /**
    * The parent router if one exists
    */
   readonly parent: Option.Option<Router<any, string>>
+
+  /**
+   * Provide all the resources needed for a Router
+   */
+  readonly provideContext: (environment: Context.Context<R>) => Router<never, E, P>
 }
 
-export const Router = Object.assign(function makeRouter<R = never, P extends string = string>(
-  route: Route.Route<R, P>,
+export const Router = Object.assign(function makeRouter<
+  R = never,
+  E = never,
+  P extends string = string,
+>(
+  route: Route.Route<R, E, P>,
   currentPath: Fx.RefSubject<string>,
-  parent: Option.Option<Router<any, string>> = Option.none(),
-): Router<R, P> {
+  parent: Option.Option<Router<any, any, string>> = Option.none(),
+): Router<R, E, P> {
   const outlet = Fx.RefSubject.unsafeMake((): html.Renderable => null)
 
-  const createPath = <R2 extends Route.Route<any, string>, P extends Route.ParamsOf<R2>>(
+  const createPath = <R2 extends Route.Route<any, any, string>, P extends Route.ParamsOf<R2>>(
     other: R2,
     ...[params]: [keyof P] extends [never] ? [] : [P]
   ): Effect.Effect<
     R,
-    never,
+    E,
     Path.PathJoin<
       [Path.Interpolate<Route.PathOf<R>, Route.ParamsOf<R>>, Path.Interpolate<Route.PathOf<R2>, P>]
     >
@@ -100,14 +104,14 @@ export const Router = Object.assign(function makeRouter<R = never, P extends str
       return route.concat(other).make({ ...baseParams.value, ...params } as any) as any
     })
 
-  const router: Router<R, P> = {
+  const router: Router<R, E, P> = {
     route,
     currentPath,
     params: pipe(currentPath, Fx.switchMapEffect(route.match), Fx.compact, Fx.skipRepeats),
     outlet,
     createPath: createPath as Router<R, P>['createPath'],
-    define: <R2, Path2 extends string>(other: Route.Route<R2, Path2>) =>
-      makeRouter(route.concat(other), currentPath, Option.some(router as any)),
+    define: <R2, E2, Path2 extends string>(other: Route.Route<R2, E2, Path2>) =>
+      makeRouter(route.concat(other), currentPath, Option.some(router as any)) as any,
     provideContext: (env) => provideContext(env)(router),
     parent,
   }
@@ -132,8 +136,8 @@ export const outlet: Fx.Fx<RenderContext | Router, never, html.Renderable> = Ren
 export const currentPath: Fx.Fx<Router, never, string> = Router.withFx((r) => r.currentPath)
 
 export function provideContext<R>(environment: Context.Context<R>) {
-  return <P extends string>(router: Router<R, P>): Router<never, P> => {
-    const provided: Router<never, P> = {
+  return <E, P extends string>(router: Router<R, E, P>): Router<never, E, P> => {
+    const provided: Router<never, E, P> = {
       ...router,
       params: pipe(router.params, Fx.provideContext(environment)),
       route: Route.provideContext(environment)(router.route),
@@ -167,8 +171,8 @@ export function redirect(path: string) {
 
 redirect.fx = (path: string) => Fx.fail<Redirect>(Redirect.make(path))
 
-export const redirectTo = <R, P extends string>(
-  route: Route.Route<R, P>,
+export const redirectTo = <R, E, P extends string>(
+  route: Route.Route<R, E, P>,
   ...[params]: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
 ): Effect.Effect<Router, Redirect, never> =>
   pipe(
@@ -176,8 +180,8 @@ export const redirectTo = <R, P extends string>(
     Effect.flatMap(redirect),
   )
 
-redirectTo.fx = <R, P extends string>(
-  route: Route.Route<R, P>,
+redirectTo.fx = <R, E, P extends string>(
+  route: Route.Route<R, E, P>,
   ...params: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [(path: string) => Path.ParamsOf<P>]
 ): Fx.Fx<Router, Redirect, never> =>
   pipe(
@@ -242,7 +246,7 @@ export const makeRouter = (
 
 export const live = (
   currentPath?: Fx.RefSubject<string>,
-): Layer.Layer<Location | History | Window | Document, never, Router<never, string>> =>
+): Layer.Layer<Location | History | Window | Document, never, Router<never, never, string>> =>
   Router.layerScoped(makeRouter(currentPath))
 
 export function getCurrentPathFromLocation(location: Location | HTMLAnchorElement | URL) {

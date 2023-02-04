@@ -15,5 +15,10 @@
     "components/**/*.tsx",
     "components/*.svelte",
     "api"
+  ],
+  "exclude": [
+    "**/*.__generated__.ts",
+    "node_modules",
+    "dist"
   ]
 }

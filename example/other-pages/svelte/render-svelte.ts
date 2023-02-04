@@ -13,6 +13,7 @@ import { isFirstRender } from '../helper.js'
 
 export function renderSvelte<
   R,
+  E,
   P extends string,
   // eslint-disable-next-line @typescript-eslint/ban-types
   Props extends {},
@@ -20,10 +21,10 @@ export function renderSvelte<
   Slots extends Record<string, any>,
   T extends SvelteComponentDev | SvelteComponentTyped<Props, Events, Slots>,
 >(
-  route: Route<R, P>,
+  route: Route<R, E, P>,
   Component: new (options: ComponentConstructorOptions<Props>) => T,
   f: (params: ParamsOf<typeof route>) => Props,
-): Main<never, typeof route> {
+): Main<never, E, typeof route> {
   return (params) =>
     Fx.gen(function* ($) {
       const location = yield* $(Location.get)

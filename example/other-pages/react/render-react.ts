@@ -10,11 +10,11 @@ import type { ReactElement } from 'react'
 
 import { isFirstRender } from '../helper.js'
 
-export function renderReact<R, Path extends string>(
-  route: Route<R, Path>,
+export function renderReact<R, E, Path extends string>(
+  route: Route<R, E, Path>,
   Component: (params: ParamsOf<typeof route>) => ReactElement,
-): Main<never, typeof route> {
-  return (params: Fx.Fx<R, Redirect, ParamsOf<typeof route>>) =>
+): Main<never, E, typeof route> {
+  return (params: Fx.Fx<R, E | Redirect, ParamsOf<typeof route>>) =>
     Fx.gen(function* ($) {
       const location = yield* $(Location.get)
       const router = yield* $(Router.get)

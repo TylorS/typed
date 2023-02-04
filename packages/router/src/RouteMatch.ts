@@ -8,7 +8,7 @@ import type * as Path from '@typed/path'
 import * as Route from '@typed/route'
 
 export interface RouteMatch<R, E, P extends string> {
-  readonly route: Route.Route<R, P>
+  readonly route: Route.Route<R, E, P>
 
   readonly layout?: Fx.Fx<R, E, html.Renderable>
 
@@ -23,12 +23,12 @@ export interface RouteMatch<R, E, P extends string> {
   ) => RouteMatch<R2 | Exclude<R, S>, E, P>
 }
 
-export function RouteMatch<R, P extends string, R2, E2, R3, E3>(
-  route: Route.Route<R, P>,
+export function RouteMatch<R, E, P extends string, R2, E2, R3, E3>(
+  route: Route.Route<R, E, P>,
   match: (params: Fx.Fx<never, never, Path.ParamsOf<P>>) => Fx.Fx<R2, E2, html.Renderable>,
   layout?: Fx.Fx<R3, E3, html.Renderable>,
-): RouteMatch<R | R2 | R3, E2 | E3, P> {
-  const routeMatch: RouteMatch<R | R2 | R3, E2 | E3, P> = {
+): RouteMatch<R | R2 | R3, E | E2 | E3, P> {
+  const routeMatch: RouteMatch<R | R2 | R3, E | E2 | E3, P> = {
     route,
     match,
     layout,

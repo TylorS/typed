@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@effect/language-service": "^0.0.18",
+    "@effect/language-service": "^0.0.19",
     "@fp-ts/core": "^0.1.1",
     "@rollup/pluginutils": "^5.0.2",
     "@typed/framework": "workspace:*",

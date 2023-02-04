@@ -30,6 +30,9 @@ export const runExpressApp = (
       await Effect.runPromise(
         Effect.gen(function* ($) {
           const url = new URL(req.url, getOriginFromRequest(req))
+
+          yield* $(Effect.logInfo(`Handling request for ${url.pathname}`))
+
           const exit = yield* $(
             runServerHandler(
               htmlModule,
@@ -45,6 +48,13 @@ export const runExpressApp = (
           )
 
           if (Exit.isFailure(exit)) {
+            yield* $(
+              Effect.logErrorCauseMessage(
+                `Failure handler request for ${url.pathname}`,
+                exit.cause,
+              ),
+            )
+
             return pipe(
               Cause.failureOrCause(exit.cause),
               Either.match(
@@ -53,6 +63,8 @@ export const runExpressApp = (
               ),
             )
           }
+
+          yield* $(Effect.logInfo(`Successfully handled request for ${url.pathname}`))
 
           return res.status(200).send(exit.value)
         }),

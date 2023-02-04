@@ -17,24 +17,24 @@ import { Redirect, redirectTo, Router } from './router.js'
 
 export interface RouteMatcher<R = never, E = never> {
   // Where things are actually stored immutably
-  readonly routes: ReadonlyMap<Route.Route<any, any>, RouteMatch<any, any, any>>
+  readonly routes: ReadonlyMap<Route.Route<any, any, any>, RouteMatch<any, any, any>>
 
   // Add Routes
 
-  readonly match: <R2, P extends string, R3, E3>(
-    route: Route.Route<R2, P>,
+  readonly match: <R2, E2, P extends string, R3, E3>(
+    route: Route.Route<R2, E2, P>,
     f: (params: Path.ParamsOf<P>) => Fx.Fx<R3, E3, html.Renderable>,
-  ) => RouteMatcher<R | R2, E | E3>
+  ) => RouteMatcher<R | R2 | R3, E | E2 | E3>
 
-  readonly matchFx: <R2, P extends string, R3, E3>(
-    route: Route.Route<R2, P>,
+  readonly matchFx: <R2, E2, P extends string, R3, E3>(
+    route: Route.Route<R2, E2, P>,
     f: (params: Fx.Fx<never, never, Path.ParamsOf<P>>) => Fx.Fx<R3, E3, html.Renderable>,
-  ) => RouteMatcher<R | R2, E | E3>
+  ) => RouteMatcher<R | R2 | R3, E | E2 | E3>
 
-  readonly matchEffect: <R2, P extends string, R3, E3>(
-    route: Route.Route<R2, P>,
+  readonly matchEffect: <R2, E2, P extends string, R3, E3>(
+    route: Route.Route<R2, E2, P>,
     f: (params: Path.ParamsOf<P>) => Effect.Effect<R3, E3, html.Renderable>,
-  ) => RouteMatcher<R | R2, E | E3>
+  ) => RouteMatcher<R | R2 | R3, E | E2 | E3>
 
   // Add Layout
 
@@ -66,8 +66,8 @@ export interface RouteMatcher<R = never, E = never> {
     options?: FallbackOptions<R3, E3>,
   ) => Fx.Fx<Router | R | R2 | R3, E | E2 | E3, html.Renderable>
 
-  readonly redirectTo: <R2, P extends string>(
-    route: Route.Route<R2, P>,
+  readonly redirectTo: <R2, E2, P extends string>(
+    route: Route.Route<R2, E2, P>,
     ...params: [keyof Path.ParamsOf<P>] extends [never]
       ? // eslint-disable-next-line @typescript-eslint/ban-types
         [{}?]
