@@ -1,6 +1,6 @@
 {
   "name": "@typed/compiler",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
