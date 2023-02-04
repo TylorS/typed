@@ -7,10 +7,25 @@ import { flow, pipe } from '@fp-ts/core/Function'
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
 
+import { catchTag_ } from './catchTag.js'
+
 export function switchMapCause<E, R2, E2, B>(
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
 ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B> {
   return (fx) => new SwitchMapCauseFx(fx, f)
+}
+
+export function switchMapCatchTag<
+  K extends E['_tag'] & string,
+  E extends { readonly _tag: string },
+  R2,
+  E2,
+  B,
+>(
+  k: K,
+  f: (e: Extract<E, { readonly _tag: K }>) => Fx<R2, E2, B>,
+): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2 | Exclude<E, { readonly _tag: K }>, A | B> {
+  return (fx) => new SwitchMapCauseFx(fx, (cause) => catchTag_(cause, k, f))
 }
 
 class SwitchMapCauseFx<R, E, A, R2, E2, B>

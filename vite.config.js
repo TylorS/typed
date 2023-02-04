@@ -12,6 +12,7 @@ const alias = {
   '@typed/context': join(__dirname, 'packages/context/dist'),
   '@typed/decoder': join(__dirname, 'packages/decoder/dist'),
   '@typed/dom': join(__dirname, 'packages/dom/dist'),
+  '@typed/error': join(__dirname, 'packages/error/dist'),
   '@typed/framework': join(__dirname, 'packages/framework/dist'),
   '@typed/fx': join(__dirname, 'packages/fx/dist'),
   '@typed/html': join(__dirname, 'packages/html/dist'),

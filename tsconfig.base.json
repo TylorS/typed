@@ -49,6 +49,9 @@
       "@typed/dom/*": [
         "./packages/dom/src/*"
       ],
+      "@typed/error/*": [
+        "./packages/error/src/*"
+      ],
       "@typed/framework/*": [
         "./packages/framework/src/*"
       ],

@@ -40,11 +40,11 @@ export interface FetchHandler<out R, out E, in out Path extends string> {
   ) => FetchHandler<RI | Exclude<R, RO>, E, Path>
 
   readonly catchAllCause: <R2, E2>(
-    f: (cause: Cause<E>) => Effect.Effect<R2, E2, Response>,
+    f: (cause: Cause<E>, request: Request) => Effect.Effect<R2, E2, Response>,
   ) => FetchHandler<R | R2, E2, Path>
 
   readonly catchAll: <R2, E2>(
-    f: (error: E) => Effect.Effect<R2, E2, Response>,
+    f: (error: E, request: Request) => Effect.Effect<R2, E2, Response>,
   ) => FetchHandler<R | R2, E2, Path>
 
   readonly setHttpMethods: (httpMethods: Iterable<HttpMethod>) => FetchHandler<R, E, Path>
@@ -77,10 +77,28 @@ export function FetchHandler<R, Path extends string, R2 = never, E2 = never>(
         flow(handler, Effect.provideSomeLayer(layer)),
         httpMethods,
       ),
-    catchAllCause: <R3, E3>(f: (cause: Cause<E2>) => Effect.Effect<R3, E3, Response>) =>
-      FetchHandler(route, flow(handler, Effect.catchAllCause(f)), httpMethods),
-    catchAll: <R3, E3>(f: (error: E2) => Effect.Effect<R3, E3, Response>) =>
-      FetchHandler(route, flow(handler, Effect.catchAll(f)), httpMethods),
+    catchAllCause: <R3, E3>(
+      f: (cause: Cause<E2>, request: Request) => Effect.Effect<R3, E3, Response>,
+    ) =>
+      FetchHandler(
+        route,
+        (request, params) =>
+          pipe(
+            handler(request, params),
+            Effect.catchAllCause((e) => f(e, request)),
+          ),
+        httpMethods,
+      ),
+    catchAll: <R3, E3>(f: (error: E2, request: Request) => Effect.Effect<R3, E3, Response>) =>
+      FetchHandler<R, Path, R2 | R3, E3>(
+        route,
+        (request, params) =>
+          pipe(
+            handler(request, params),
+            Effect.catchAll((e) => f(e, request)),
+          ),
+        httpMethods,
+      ),
     setHttpMethods: (httpMethods) => FetchHandler(route, handler, new Set(httpMethods)),
   }
 }

@@ -7,6 +7,7 @@
     "@typed/context": "workspace:*",
     "@typed/decoder": "workspace:*",
     "@typed/dom": "workspace:*",
+    "@typed/error": "workspace:*",
     "@typed/framework": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/html": "workspace:*",

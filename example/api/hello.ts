@@ -1,10 +1,17 @@
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/core/Function'
 import * as Context from '@typed/context'
+import * as E from '@typed/error'
 import { FetchHandler } from '@typed/framework/api'
 import { type ParamsOf, Route, type PathOf } from '@typed/route'
 
 const route = Route('/hello/:name')
+
+class UnknownTranslation extends E.tagged('UnknownTranslation') {
+  constructor(readonly key: string, readonly preferredLanguages: readonly string[]) {
+    super(`Unknown languages for translation key ${key}:\n  ${preferredLanguages.join(',\n  ')}`)
+  }
+}
 
 // Our API module handling is always modeled as a FetchHandler. This allows us to
 // easily support multiple environments (e.g. Node, Deno, Service Worker, etc)
@@ -24,6 +31,7 @@ export const hello: FetchHandler<I18N, never, PathOf<typeof route>> = FetchHandl
               headers: { 'content-type': 'text/plain' },
             }),
         ),
+        UnknownTranslation.catch((e) => Effect.succeed(new Response(e.message, { status: 500 }))),
       ),
     ),
 )
@@ -38,7 +46,7 @@ export interface I18N {
   readonly translate: (
     key: string,
     preferredLanguages: readonly string[],
-  ) => Effect.Effect<never, never, string>
+  ) => Effect.Effect<never, UnknownTranslation, string>
 }
 
 export const I18N = Context.Tag<I18N>()
@@ -48,18 +56,19 @@ export const I18N = Context.Tag<I18N>()
 // with anything defined locally to a module.
 export const environment = I18N.layerOf({
   translate: (key, preferredLanguages) =>
-    Effect.sync(() => {
+    Effect.suspendSucceed(() => {
       const lowercaseKey = key.toLowerCase()
 
-      if (!(lowercaseKey in translations)) return key
+      if (!(lowercaseKey in translations))
+        return Effect.fail(new UnknownTranslation(key, preferredLanguages))
 
       const translation = translations[lowercaseKey]
 
       for (const language of preferredLanguages) {
-        if (language in translation) return translation[language]
+        if (language in translation) return Effect.succeed(translation[language])
       }
 
-      return translation['en']
+      return Effect.fail(new UnknownTranslation(key, preferredLanguages))
     }),
 })
 

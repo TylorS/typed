@@ -3,7 +3,7 @@ import type { Project } from 'ts-morph'
 import type { ApiModuleTree, ApiSourceFileModule } from './ApiModuleTree.js'
 import type * as SFM from './SourceFileModule.js'
 import type { Directory } from './readDirectory.js'
-import { scanApiSourceFiles } from './scanSourceFiles.js'
+import { scanApiSourceFiles } from './scanApiSourceFiles.js'
 
 export function readApiModules(
   project: Project,
