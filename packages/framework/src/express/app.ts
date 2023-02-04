@@ -23,13 +23,6 @@ export function app<R, E, A>(effect: Effect.Effect<R, E, A>) {
   return Effect.suspendSucceed(() => pipe(effect, ExpressService.provide({ app: express() })))
 }
 
-export interface ExpressApi {
-  readonly assets: typeof assets
-  readonly api: typeof api
-  readonly html: typeof html
-  readonly listen: typeof listen
-}
-
 export function api<Handlers extends readonly FetchHandler<any, never, any>[]>(
   baseUrl: string,
   handlers: Handlers,
