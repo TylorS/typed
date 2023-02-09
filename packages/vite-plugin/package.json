@@ -1,6 +1,6 @@
 {
   "name": "@typed/vite-plugin",
-  "version": "0.0.45",
+  "version": "0.0.46",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
