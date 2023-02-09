@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@effect/language-service": "^0.0.19",
-    "@fp-ts/core": "^0.1.1",
+    "@fp-ts/core": "^0.2.1",
     "@rollup/pluginutils": "^5.0.2",
     "@typed/framework": "workspace:*",
     "html-minifier": "^4.0.0",

@@ -45,7 +45,7 @@ export function parseFallbackSourceFileModule(
 ): O.Option<SourceFileModule> {
   return pipe(
     parseRedirectFallbackSourceFileModule(sourceFile, exportedDeclarations),
-    O.catchAll(() => parseRenderableFallbackSourceFileModule(sourceFile, exportedDeclarations)),
+    O.orElse(() => parseRenderableFallbackSourceFileModule(sourceFile, exportedDeclarations)),
   )
 }
 

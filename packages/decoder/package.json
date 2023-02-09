@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@fp-ts/core": "^0.1.1",
+    "@fp-ts/core": "^0.2.1",
     "@fp-ts/schema": "^0.1.3"
   },
   "publishConfig": {

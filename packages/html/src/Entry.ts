@@ -1,5 +1,5 @@
 import type { Runtime } from '@effect/io/Runtime'
-import type { Context } from '@fp-ts/data/Context'
+import type { Context } from '@effect/data/Context'
 
 import type { Hole } from './Hole.js'
 import type { Placeholder } from './Placeholder.js'

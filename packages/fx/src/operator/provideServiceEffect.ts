@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import type { Scope } from '@effect/io/Scope'
 import { pipe } from '@fp-ts/core/Function'
-import type * as Context from '@fp-ts/data/Context'
+import type * as Context from '@effect/data/Context'
 
 import { Fx } from '../Fx.js'
 

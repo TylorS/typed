@@ -3,7 +3,7 @@ import * as Effect from '@effect/io/Effect'
 import type * as Layer from '@effect/io/Layer'
 import { flow, pipe } from '@fp-ts/core/Function'
 import * as Option from '@fp-ts/core/Option'
-import type * as Context from '@fp-ts/data/Context'
+import type * as Context from '@effect/data/Context'
 import * as P from '@typed/path'
 import * as ptr from 'path-to-regexp'
 

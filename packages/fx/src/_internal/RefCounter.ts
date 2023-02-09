@@ -5,7 +5,7 @@ import * as Ref from '@effect/io/Ref'
 import * as Schedule from '@effect/io/Schedule'
 import type { Scope } from '@effect/io/Scope'
 import { pipe } from '@fp-ts/core/Function'
-import { millis } from '@fp-ts/data/Duration'
+import { millis } from '@effect/data/Duration'
 
 export const asap = pipe(
   Schedule.once(),

@@ -2,7 +2,7 @@ import { deepStrictEqual } from 'assert'
 
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/core/Function'
-import { Tag } from '@fp-ts/data/Context'
+import { Tag } from '@effect/data/Context'
 import { describe, it } from 'vitest'
 
 import { serviceWith } from '../constructor/serviceWith.js'

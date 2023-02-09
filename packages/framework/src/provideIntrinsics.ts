@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import { flow, pipe } from '@fp-ts/core/Function'
-import * as Context from '@fp-ts/data/Context'
+import * as Context from '@effect/data/Context'
 import { type DomServices, makeDomServices } from '@typed/dom/DomServices'
 import type { GlobalThis } from '@typed/dom/GlobalThis'
 import type { Window } from '@typed/dom/Window'

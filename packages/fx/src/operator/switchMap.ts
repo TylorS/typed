@@ -2,16 +2,17 @@ import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
-import { flow, pipe, identity } from '@fp-ts/core/Function'
+import { flow, pipe, identity, dual } from '@fp-ts/core/Function'
+import type { FlatMap } from '@fp-ts/core/typeclass/FlatMap'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
+import type { FxTypeLambda } from '../typeclass/TypeLambda.js'
 
-export function switchMap<A, R2, E2, B>(
-  f: (a: A) => Fx<R2, E2, B>,
-): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B> {
-  return (fx) => new SwitchMapFx(fx, f)
-}
+export const switchMap: FlatMap<FxTypeLambda>['flatMap'] = dual(
+  2,
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Fx<R2, E2, B>) => new SwitchMapFx(fx, f),
+)
 
 export const switchLatest: <R, E, R2, E2, A>(fx: Fx<R, E, Fx<R2, E2, A>>) => Fx<R | R2, E | E2, A> =
   switchMap(identity)

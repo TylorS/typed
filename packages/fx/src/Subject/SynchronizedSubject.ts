@@ -3,8 +3,8 @@ import * as Ref from '@effect/io/Ref'
 import * as Synchronized from '@effect/io/Ref/Synchronized'
 import { identity, pipe } from '@fp-ts/core/Function'
 import * as Option from '@fp-ts/core/Option'
-import { equals } from '@fp-ts/data/Equal'
-import * as MutableRef from '@fp-ts/data/MutableRef'
+import { equals } from '@effect/data/Equal'
+import * as MutableRef from '@effect/data/MutableRef'
 
 import { Fx } from '../Fx.js'
 

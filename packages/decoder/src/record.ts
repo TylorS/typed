@@ -19,7 +19,7 @@ export const fromRecord =
     const [failures, successes] = RA.separate(
       pipe(
         Object.entries(i),
-        RA.mapWithIndex(([key, value]) =>
+        RA.map(([key, value]) =>
           pipe(
             member(value, options),
             Either.bimap(

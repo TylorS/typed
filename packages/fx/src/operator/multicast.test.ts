@@ -3,7 +3,7 @@ import { deepStrictEqual } from 'assert'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import { pipe } from '@fp-ts/core/Function'
-import { millis } from '@fp-ts/data/Duration'
+import { millis } from '@effect/data/Duration'
 import { describe, it } from 'vitest'
 
 import { fromIterable } from '../constructor/fromIterable.js'

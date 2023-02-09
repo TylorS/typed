@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/core/Function'
-import type { Duration } from '@fp-ts/data/Duration'
+import type { Duration } from '@effect/data/Duration'
 
 import type { Fx } from '../Fx.js'
 

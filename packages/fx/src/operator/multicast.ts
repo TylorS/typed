@@ -5,7 +5,7 @@ import * as Fiber from '@effect/io/Fiber'
 import type { RuntimeFiber } from '@effect/io/Fiber'
 import type { Scope } from '@effect/io/Scope'
 import { pipe } from '@fp-ts/core/Function'
-import type { Context } from '@fp-ts/data/Context'
+import type { Context } from '@effect/data/Context'
 
 import { Fx } from '../Fx.js'
 import { asap } from '../_internal/RefCounter.js'

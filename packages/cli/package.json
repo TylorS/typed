@@ -24,7 +24,7 @@
     }
   },
   "dependencies": {
-    "@fp-ts/core": "^0.1.1",
+    "@fp-ts/core": "^0.2.1",
     "@typed/vite-plugin": "workspace:*",
     "@vavite/multibuild": "^1.5.3",
     "cac": "^6.7.14",

@@ -15,7 +15,7 @@ export const fromArray =
     const [failures, successes] = RA.separate(
       pipe(
         i,
-        RA.mapWithIndex((ix, idx) =>
+        RA.map((ix, idx) =>
           pipe(
             member(ix, options),
             Either.mapLeft((errors) => ParseResult.index(idx, errors)),

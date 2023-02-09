@@ -17,8 +17,8 @@
     }
   },
   "dependencies": {
-    "@effect/io": "^0.1.9",
-    "@fp-ts/core": "^0.1.1",
+    "@effect/io": "^0.1.11",
+    "@fp-ts/core": "^0.2.1",
     "@fp-ts/data": "^0.1.1"
   },
   "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",

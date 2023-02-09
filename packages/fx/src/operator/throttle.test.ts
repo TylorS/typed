@@ -2,7 +2,7 @@ import { deepStrictEqual } from 'assert'
 
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/core/Function'
-import * as Duration from '@fp-ts/data/Duration'
+import * as Duration from '@effect/data/Duration'
 import { describe, it } from 'vitest'
 
 import { fromArray } from '../constructor/fromArray.js'

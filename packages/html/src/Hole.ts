@@ -1,4 +1,4 @@
-import type { Context } from '@fp-ts/data/Context'
+import type { Context } from '@effect/data/Context'
 
 import type { Placeholder } from './Placeholder.js'
 

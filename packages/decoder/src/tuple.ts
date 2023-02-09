@@ -18,7 +18,7 @@ export const fromTuple =
     const [failures, successes] = RA.separate(
       pipe(
         i,
-        RA.mapWithIndex((ix, idx) =>
+        RA.map((ix, idx) =>
           pipe(
             members[idx](ix, options),
             Either.mapLeft((errors) => ParseResult.index(idx, errors)),

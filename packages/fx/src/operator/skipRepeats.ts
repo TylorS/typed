@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import { pipe } from '@fp-ts/core/Function'
 import * as Option from '@fp-ts/core/Option'
-import { equals } from '@fp-ts/data/Equal'
+import { equals } from '@effect/data/Equal'
 
 import { Fx } from '../Fx.js'
 

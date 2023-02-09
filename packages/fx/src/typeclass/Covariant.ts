@@ -5,7 +5,10 @@ import { map } from '../operator/map.js'
 
 import type { FxTypeLambda } from './TypeLambda.js'
 
-export const Covariant: C.Covariant<FxTypeLambda> = C.make((f) => map(f))
+export const Covariant: C.Covariant<FxTypeLambda> = {
+  map,
+  imap: C.imap<FxTypeLambda>(map),
+}
 
 export const flap: <A>(a: A) => <R, E, B>(self: Fx<R, E, (a: A) => B>) => Fx<R, E, B> =
   C.flap(Covariant)

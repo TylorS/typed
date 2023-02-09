@@ -1,15 +1,16 @@
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
-import { identity, pipe } from '@fp-ts/core/Function'
+import { dual, identity, pipe } from '@fp-ts/core/Function'
+import type { FlatMap } from '@fp-ts/core/typeclass/FlatMap'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
+import type { FxTypeLambda } from '../index.js'
 
-export function flatMap<A, R2, E2, B>(
-  f: (a: A) => Fx<R2, E2, B>,
-): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B> {
-  return (fx) => new FlatMapFx(fx, f)
-}
+export const flatMap: FlatMap<FxTypeLambda>['flatMap'] = dual(
+  2,
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Fx<R2, E2, B>) => new FlatMapFx(fx, f),
+)
 
 export const flatten: <R, E, R2, E2, A>(fx: Fx<R, E, Fx<R2, E2, A>>) => Fx<R | R2, E | E2, A> =
   flatMap(identity)

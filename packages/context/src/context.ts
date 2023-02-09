@@ -1,8 +1,8 @@
+import * as C from '@effect/data/Context'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import type * as Scope from '@effect/io/Scope'
 import { flow } from '@fp-ts/core/Function'
-import * as C from '@fp-ts/data/Context'
 import * as Fx from '@typed/fx'
 
 /**
@@ -127,4 +127,4 @@ export {
   add,
   merge,
   prune,
-} from '@fp-ts/data/Context'
+} from '@effect/data/Context'

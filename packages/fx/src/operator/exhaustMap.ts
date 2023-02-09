@@ -2,14 +2,17 @@ import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import type * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
-import { pipe } from '@fp-ts/core/Function'
+import { dual, pipe } from '@fp-ts/core/Function'
+import type { FlatMap } from '@fp-ts/core/typeclass/FlatMap'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
+import type { FxTypeLambda } from '../typeclass/TypeLambda.js'
 
-export function exhaustMap<A, R2, E2, B>(f: (a: A) => Fx<R2, E2, B>) {
-  return <R, E>(fx: Fx<R, E, A>): Fx<R | R2, E | E2, B> => new ExhaustMapFx(fx, f)
-}
+export const exhaustMap: FlatMap<FxTypeLambda>['flatMap'] = dual(
+  2,
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Fx<R2, E2, B>) => new ExhaustMapFx(fx, f),
+)
 
 class ExhaustMapFx<R, E, A, R2, E2, B>
   extends Fx.Variance<R | R2, E | E2, B>
