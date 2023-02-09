@@ -57,6 +57,9 @@ export namespace Fx {
   ): Sink<R | R2 | R3, E, A> {
     return { event, error, end }
   }
+
+  export interface Success<A> extends Fx<never, never, A> {}
+  export interface IO<E, A> extends Fx<never, E, A> {}
 }
 
 export const TypeId = Fx.TypeId
@@ -65,6 +68,9 @@ export type TypeId = Fx.TypeId
 export type ResourcesOf<T> = Fx.ResourcesOf<T>
 export type ErrorOf<T> = Fx.ErrorsOf<T>
 export type OutputOf<T> = Fx.OutputOf<T>
+
+export type Success<A> = Fx.Success<A>
+export type IO<E, A> = Fx.IO<E, A>
 
 export type Sink<R, E, A> = Fx.Sink<R, E, A>
 export const Sink = Fx.Sink
