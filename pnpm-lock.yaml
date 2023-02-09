@@ -10,7 +10,6 @@ importers:
       '@effect/query': ^0.1.3
       '@esbuild-kit/esm-loader': ^2.5.5
       '@fp-ts/core': ^0.2.1
-      '@fp-ts/data': ^0.1.1
       '@fp-ts/schema': ^0.1.3
       '@most/core': ^1.6.1
       '@most/scheduler': ^1.3.0
@@ -81,7 +80,6 @@ importers:
       '@effect/language-service': 0.0.19
       '@effect/query': 0.1.3
       '@fp-ts/core': 0.2.1
-      '@fp-ts/data': 0.1.1
       '@fp-ts/schema': 0.1.3
       '@rollup/pluginutils': 5.0.2
       '@vavite/multibuild': 1.5.3_vite@4.1.1
@@ -221,14 +219,14 @@ importers:
 
   packages/context:
     specifiers:
+      '@effect/data': ^0.1.0
       '@effect/io': ^0.1.11
       '@fp-ts/core': ^0.2.1
-      '@fp-ts/data': ^0.1.1
       '@typed/fx': workspace:*
     dependencies:
+      '@effect/data': 0.1.0
       '@effect/io': 0.1.11
       '@fp-ts/core': 0.2.1
-      '@fp-ts/data': 0.1.1
       '@typed/fx': link:../fx
 
   packages/decoder:
@@ -241,20 +239,20 @@ importers:
 
   packages/dom:
     specifiers:
+      '@effect/data': ^0.1.0
       '@effect/io': ^0.1.11
       '@effect/query': ^0.1.3
       '@fp-ts/core': ^0.2.1
-      '@fp-ts/data': ^0.1.1
       '@fp-ts/schema': ^0.1.3
       '@typed/context': workspace:*
       '@typed/decoder': workspace:*
       '@typed/fx': workspace:*
       typed-query-selector: ^2.8.0
     dependencies:
+      '@effect/data': 0.1.0
       '@effect/io': 0.1.11
       '@effect/query': 0.1.3
       '@fp-ts/core': 0.2.1
-      '@fp-ts/data': 0.1.1
       '@fp-ts/schema': 0.1.3
       '@typed/context': link:../context
       '@typed/decoder': link:../decoder
@@ -271,9 +269,9 @@ importers:
 
   packages/framework:
     specifiers:
+      '@effect/data': ^0.1.0
       '@effect/io': ^0.1.11
       '@fp-ts/core': ^0.2.1
-      '@fp-ts/data': ^0.1.1
       '@fp-ts/schema': ^0.1.3
       '@typed/context': workspace:*
       '@typed/decoder': workspace:*
@@ -291,9 +289,9 @@ importers:
       vavite: ^1.5.3
       vite: ^4.1.1
     dependencies:
+      '@effect/data': 0.1.0
       '@effect/io': 0.1.11
       '@fp-ts/core': 0.2.1
-      '@fp-ts/data': 0.1.1
       '@fp-ts/schema': 0.1.3
       '@typed/context': link:../context
       '@typed/decoder': link:../decoder
@@ -314,28 +312,28 @@ importers:
 
   packages/fx:
     specifiers:
+      '@effect/data': ^0.1.0
       '@effect/io': ^0.1.11
       '@fp-ts/core': ^0.2.1
-      '@fp-ts/data': ^0.1.1
     dependencies:
+      '@effect/data': 0.1.0
       '@effect/io': 0.1.11
       '@fp-ts/core': 0.2.1
-      '@fp-ts/data': 0.1.1
 
   packages/html:
     specifiers:
+      '@effect/data': ^0.1.0
       '@effect/io': ^0.1.11
       '@fp-ts/core': ^0.2.1
-      '@fp-ts/data': ^0.1.1
       '@typed/context': workspace:*
       '@typed/dom': workspace:*
       '@typed/fx': workspace:*
       '@webreflection/uparser': ~0.2.4
       udomdiff: ^1.1.0
     dependencies:
+      '@effect/data': 0.1.0
       '@effect/io': 0.1.11
       '@fp-ts/core': 0.2.1
-      '@fp-ts/data': 0.1.1
       '@typed/context': link:../context
       '@typed/dom': link:../dom
       '@typed/fx': link:../fx
@@ -356,15 +354,15 @@ importers:
 
   packages/route:
     specifiers:
+      '@effect/data': ^0.1.0
       '@effect/io': ^0.1.11
       '@fp-ts/core': ^0.2.1
-      '@fp-ts/data': ^0.1.1
       '@typed/path': workspace:*
       path-to-regexp: ^6.2.1
     dependencies:
+      '@effect/data': 0.1.0
       '@effect/io': 0.1.11
       '@fp-ts/core': 0.2.1
-      '@fp-ts/data': 0.1.1
       '@typed/path': link:../path
       path-to-regexp: 6.2.1
 
