@@ -33,12 +33,7 @@ export function queryPar<Queries extends ReadonlyArray<FetchRequest<any>>>(
     requests,
     RA.map(query),
     Query.collectAllPar,
-    Query.map(
-      (c) =>
-        c.toReadonlyArray() as {
-          readonly [K in keyof Queries]: Request.Request.Success<Queries[K]>
-        },
-    ),
+    Query.map((c) => c.toReadonlyArray()),
   ) as any
 }
 
@@ -55,11 +50,6 @@ export function queryBatched<Queries extends ReadonlyArray<FetchRequest>>(
     RA.map(query),
     Query.collectAllBatched,
     Query.maxBatchSize(batchSize),
-    Query.map(
-      (c) =>
-        c.toReadonlyArray() as {
-          readonly [K in keyof Queries]: Request.Request.Success<Queries[K]>
-        },
-    ),
+    Query.map((c) => c.toReadonlyArray()),
   ) as any
 }
