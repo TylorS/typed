@@ -1,4 +1,6 @@
 export * from './array.js'
+export * from './brand.js'
+export * from './chunk.js'
 export * from './compose.js'
 export * from './decoder.js'
 export * from './either.js'

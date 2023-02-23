@@ -1,7 +1,7 @@
+import { match } from '@effect/data/Either'
+import { pipe } from '@effect/data/Function'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
-import { match } from '@fp-ts/core/Either'
-import { pipe } from '@fp-ts/core/Function'
 
 import type { Fx } from '../Fx.js'
 

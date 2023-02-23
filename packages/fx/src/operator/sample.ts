@@ -1,4 +1,4 @@
-import { identity, pipe } from '@fp-ts/core/Function'
+import { identity, pipe } from '@effect/data/Function'
 
 import type { Fx } from '../Fx.js'
 

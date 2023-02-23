@@ -1,6 +1,6 @@
+import * as Context from '@effect/data/Context'
 import * as Effect from '@effect/io/Effect'
 import type { Scope } from '@effect/io/Scope'
-import * as Context from '@effect/data/Context'
 
 import { Fx } from '../Fx.js'
 

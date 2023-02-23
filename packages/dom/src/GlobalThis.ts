@@ -1,6 +1,7 @@
 import type * as Effect from '@effect/io/Effect'
-import type { Identity } from '@fp-ts/core/Identity'
 import * as C from '@typed/context'
+
+type Identity<A> = A
 
 export interface GlobalThis extends Identity<typeof globalThis> {}
 

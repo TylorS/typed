@@ -1,10 +1,10 @@
+import type { Chunk } from '@effect/data/Chunk'
+import { pipe } from '@effect/data/Function'
 import { interrupt } from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as ExecutionStrategy from '@effect/io/ExecutionStrategy'
 import * as Exit from '@effect/io/Exit'
 import * as Scope from '@effect/io/Scope'
-import { pipe } from '@fp-ts/core/Function'
-import type { Chunk } from '@effect/data/Chunk'
 
 import { Fx } from '../Fx.js'
 import { asap } from '../_internal/RefCounter.js'

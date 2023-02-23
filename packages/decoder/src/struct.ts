@@ -1,5 +1,5 @@
-import { isNonEmpty } from '@fp-ts/core/ReadonlyArray'
-import type { ReadonlyRecord } from '@fp-ts/core/ReadonlyRecord'
+import { isNonEmptyReadonlyArray } from '@effect/data/ReadonlyArray'
+import type { ReadonlyRecord } from '@effect/data/ReadonlyRecord'
 import type { ParseOptions } from '@fp-ts/schema/AST'
 import * as ParseResult from '@fp-ts/schema/ParseResult'
 
@@ -50,7 +50,7 @@ export function struct<P extends ReadonlyRecord<Decoder<unknown, any>>>(
         }
       }
 
-      if (isNonEmpty(failures)) {
+      if (isNonEmptyReadonlyArray(failures)) {
         return ParseResult.failures(failures)
       }
 

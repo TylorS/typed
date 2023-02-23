@@ -1,8 +1,8 @@
+import { pipe } from '@effect/data/Function'
+import * as Option from '@effect/data/Option'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Ref from '@effect/io/Ref/Synchronized'
-import { pipe } from '@fp-ts/core/Function'
-import * as Option from '@fp-ts/core/Option'
 
 import { Fx } from '../Fx.js'
 import { run } from '../run/run.js'

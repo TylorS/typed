@@ -1,5 +1,5 @@
+import type * as CP from '@effect/data/typeclass/Coproduct'
 import * as Cause from '@effect/io/Cause'
-import type * as CP from '@fp-ts/core/typeclass/Coproduct'
 
 import type { Fx } from '../Fx.js'
 import { failCause } from '../constructor/failCause.js'

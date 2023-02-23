@@ -25,7 +25,7 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@effect/io": "^0.1.11",
+    "@effect/io": "^0.3.0",
     "@typed/fx": "workspace:*"
   }
 }

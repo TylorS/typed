@@ -1,4 +1,4 @@
-import type { TypeLambda } from '@fp-ts/core/HKT'
+import type { TypeLambda } from '@effect/data/HKT'
 
 import type { Fx } from '../Fx.js'
 

@@ -1,6 +1,6 @@
+import type { Either } from '@effect/data/Either'
+import { flow } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
-import type { Either } from '@fp-ts/core/Either'
-import { flow } from '@fp-ts/core/Function'
 
 import type { Fx } from '../Fx.js'
 

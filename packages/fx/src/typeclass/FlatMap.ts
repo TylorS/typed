@@ -1,4 +1,4 @@
-import type * as F from '@fp-ts/core/typeclass/FlatMap'
+import type * as F from '@effect/data/typeclass/FlatMap'
 
 import { exhaustMap } from '../operator/exhaustMap.js'
 import { flatMap } from '../operator/flatMap.js'

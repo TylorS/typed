@@ -1,5 +1,5 @@
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/core/Function'
 
 export function withEarlyExit<R, E, A, R2, E2, B>(
   f: (_: Effect.Effect<never, never, never>) => Effect.Effect<R, E, A>,

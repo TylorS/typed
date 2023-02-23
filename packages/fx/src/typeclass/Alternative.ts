@@ -1,4 +1,4 @@
-import type * as A from '@fp-ts/core/typeclass/Alternative'
+import type * as A from '@effect/data/typeclass/Alternative'
 
 import { CoproductRace, CoproductOrElse } from './Coproduct.js'
 import { SemiAlternativeRace, SemiAlternativeOrElse } from './SemiAlternative.js'

@@ -1,4 +1,4 @@
-import type * as P from '@fp-ts/core/typeclass/Product'
+import type * as P from '@effect/data/typeclass/Product'
 
 import { combineAll } from '../operator/combine.js'
 

@@ -1,4 +1,4 @@
-import type * as M from '@fp-ts/core/typeclass/Monad'
+import type * as M from '@effect/data/typeclass/Monad'
 
 import { Covariant } from './Covariant.js'
 import { FlatMap, SwitchMap, ExhaustMap } from './FlatMap.js'

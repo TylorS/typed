@@ -1,9 +1,9 @@
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Flags from '@effect/io/Fiber/Runtime/Flags'
 import * as RuntimeFlagsPatch from '@effect/io/Fiber/Runtime/Flags/Patch'
 import type { FiberRefs } from '@effect/io/FiberRefs'
 import * as R from '@effect/io/Runtime'
-import { pipe } from '@fp-ts/core/Function'
 import { Document } from '@typed/dom/Document'
 import * as Fx from '@typed/fx'
 

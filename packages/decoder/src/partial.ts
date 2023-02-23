@@ -1,5 +1,5 @@
-import { pipe } from '@fp-ts/core/Function'
-import type { ReadonlyRecord } from '@fp-ts/core/ReadonlyRecord'
+import { pipe } from '@effect/data/Function'
+import type { ReadonlyRecord } from '@effect/data/ReadonlyRecord'
 import * as ParseResult from '@fp-ts/schema/ParseResult'
 
 import { compose } from './compose.js'

@@ -1,7 +1,7 @@
+import type { Duration } from '@effect/data/Duration'
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Schedule from '@effect/io/Schedule'
-import { pipe } from '@fp-ts/core/Function'
-import type { Duration } from '@effect/data/Duration'
 
 import type { Fx } from '../Fx.js'
 

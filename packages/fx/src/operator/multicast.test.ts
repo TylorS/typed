@@ -1,9 +1,9 @@
 import { deepStrictEqual } from 'assert'
 
+import { millis } from '@effect/data/Duration'
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
-import { pipe } from '@fp-ts/core/Function'
-import { millis } from '@effect/data/Duration'
 import { describe, it } from 'vitest'
 
 import { fromIterable } from '../constructor/fromIterable.js'

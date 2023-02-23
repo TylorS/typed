@@ -1,6 +1,6 @@
+import { pipe } from '@effect/data/Function'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/core/Function'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'

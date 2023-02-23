@@ -1,5 +1,5 @@
+import type { Predicate } from '@effect/data/Predicate'
 import type { Effect } from '@effect/io/Effect'
-import type { Predicate } from '@fp-ts/core/Predicate'
 
 import { Fx } from '../Fx.js'
 import { withEarlyExit } from '../_internal/earlyExit.js'

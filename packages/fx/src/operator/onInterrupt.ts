@@ -1,7 +1,7 @@
+import { flow, pipe } from '@effect/data/Function'
+import type { HashSet } from '@effect/data/HashSet'
 import * as Effect from '@effect/io/Effect'
 import type { FiberId } from '@effect/io/Fiber/Id'
-import { flow, pipe } from '@fp-ts/core/Function'
-import type { HashSet } from '@effect/data/HashSet'
 
 import { Fx } from '../Fx.js'
 

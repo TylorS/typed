@@ -1,9 +1,9 @@
+import { equals } from '@effect/data/Equal'
+import { identity, pipe } from '@effect/data/Function'
+import * as MutableRef from '@effect/data/MutableRef'
+import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Ref from '@effect/io/Ref'
-import { identity, pipe } from '@fp-ts/core/Function'
-import * as Option from '@fp-ts/core/Option'
-import { equals } from '@effect/data/Equal'
-import * as MutableRef from '@effect/data/MutableRef'
 
 import { Fx } from '../Fx.js'
 

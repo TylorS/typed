@@ -1,5 +1,5 @@
+import { flow } from '@effect/data/Function'
 import type { Cause } from '@effect/io/Cause'
-import { flow } from '@fp-ts/core/Function'
 
 import { Fx } from '../Fx.js'
 

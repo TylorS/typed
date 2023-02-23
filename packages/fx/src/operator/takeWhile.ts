@@ -1,5 +1,5 @@
-import { pipe } from '@fp-ts/core/Function'
-import { type Predicate, not } from '@fp-ts/core/Predicate'
+import { pipe } from '@effect/data/Function'
+import { type Predicate, not } from '@effect/data/Predicate'
 
 import type { Fx } from '../Fx.js'
 

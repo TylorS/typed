@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
 
+import { pipe } from '@effect/data/Function'
+import { none, some } from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/core/Function'
-import { none, some } from '@fp-ts/core/Option'
 import { describe, it } from 'vitest'
 
 import { fromArray } from '../constructor/fromArray.js'

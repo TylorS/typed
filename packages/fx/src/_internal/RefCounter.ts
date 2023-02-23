@@ -1,11 +1,11 @@
+import { millis } from '@effect/data/Duration'
+import { pipe } from '@effect/data/Function'
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref'
 import * as Schedule from '@effect/io/Schedule'
 import type { Scope } from '@effect/io/Scope'
-import { pipe } from '@fp-ts/core/Function'
-import { millis } from '@effect/data/Duration'
 
 export const asap = pipe(
   Schedule.once(),

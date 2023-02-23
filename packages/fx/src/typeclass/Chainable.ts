@@ -1,4 +1,4 @@
-import type * as C from '@fp-ts/core/typeclass/Chainable'
+import type * as C from '@effect/data/typeclass/Chainable'
 
 import { Covariant } from './Covariant.js'
 import { FlatMap, SwitchMap, ExhaustMap } from './FlatMap.js'

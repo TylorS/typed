@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
 
+import { millis } from '@effect/data/Duration'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
-import { millis } from '@effect/data/Duration'
 import { describe, it } from 'vitest'
 
 import { collectAll } from '../run/collectAll.js'

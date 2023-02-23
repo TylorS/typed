@@ -1,6 +1,6 @@
-import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/core/Function'
 import type { Context } from '@effect/data/Context'
+import { pipe } from '@effect/data/Function'
+import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
 
 import { Hole } from '../Hole.js'

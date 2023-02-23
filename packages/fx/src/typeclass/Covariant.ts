@@ -1,4 +1,4 @@
-import * as C from '@fp-ts/core/typeclass/Covariant'
+import * as C from '@effect/data/typeclass/Covariant'
 
 import type { Fx } from '../Fx.js'
 import { map } from '../operator/map.js'

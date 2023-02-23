@@ -1,4 +1,4 @@
-import type { NonEmptyReadonlyArray } from '@fp-ts/core/ReadonlyArray'
+import type { NonEmptyReadonlyArray } from '@effect/data/ReadonlyArray'
 import * as ParseResult from '@fp-ts/schema/ParseResult'
 
 import type { Decoder, OutputOf } from './decoder.js'
