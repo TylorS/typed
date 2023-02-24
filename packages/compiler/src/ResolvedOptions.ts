@@ -1,4 +1,4 @@
-import type { Option } from '@fp-ts/core/Option'
+import type { Option } from '@effect/data/Option'
 
 export interface ResolvedOptions {
   readonly base: string

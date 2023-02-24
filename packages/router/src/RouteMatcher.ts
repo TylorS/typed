@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
+import { pipe } from '@effect/data/Function'
+import * as Option from '@effect/data/Option'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import type * as Layer from '@effect/io/Layer'
-import { pipe } from '@fp-ts/core/Function'
-import * as Option from '@fp-ts/core/Option'
 import type * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
 import type * as html from '@typed/html'

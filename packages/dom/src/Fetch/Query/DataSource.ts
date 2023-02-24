@@ -1,7 +1,7 @@
+import type * as Chunk from '@effect/data/Chunk'
 import * as Effect from '@effect/io/Effect'
 import * as DataSource from '@effect/query/DataSource'
 import * as Request from '@effect/query/Request'
-import type * as Chunk from '@effect/data/Chunk'
 import * as P from '@fp-ts/schema/Parser'
 
 import type { FetchRequest } from './Request.js'

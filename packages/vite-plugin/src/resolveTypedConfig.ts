@@ -1,4 +1,4 @@
-import { none, some, type Option } from '@fp-ts/core/Option'
+import { none, some, type Option } from '@effect/data/Option'
 import type { ResolvedOptions } from '@typed/compiler'
 import { resolveConfig } from 'vite'
 

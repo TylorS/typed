@@ -1,4 +1,4 @@
-import { identity } from '@fp-ts/core/Function'
+import { identity } from '@effect/data/Function'
 
 import { Fx, isFx, Sink } from '../Fx.js'
 import { never } from '../constructor/never.js'

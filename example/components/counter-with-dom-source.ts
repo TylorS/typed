@@ -1,4 +1,4 @@
-import { pipe } from '@fp-ts/core/Function'
+import { pipe } from '@effect/data/Function'
 import * as Fx from '@typed/fx'
 import { html, makeElementRef } from '@typed/html'
 

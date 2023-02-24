@@ -2,8 +2,8 @@ import { existsSync, writeFileSync } from 'fs'
 import { EOL } from 'os'
 import { basename, join, resolve } from 'path'
 
-import { pipe } from '@fp-ts/core/Function'
-import * as Option from '@fp-ts/core/Option'
+import { pipe } from '@effect/data/Function'
+import * as Option from '@effect/data/Option'
 import { Compiler, getRelativePath, type ResolvedOptions } from '@typed/compiler'
 import glob from 'fast-glob'
 // @ts-expect-error Unable to resolve types w/ NodeNext

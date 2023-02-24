@@ -1,6 +1,6 @@
+import { pipe } from '@effect/data/Function'
 import type { Effect, Semaphore } from '@effect/io/Effect'
 import type { Scope } from '@effect/io/Scope'
-import { pipe } from '@fp-ts/core/Function'
 
 import { Fx } from '../Fx.js'
 

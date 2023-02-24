@@ -1,9 +1,9 @@
+import type * as Context from '@effect/data/Context'
+import { flow, pipe } from '@effect/data/Function'
+import * as Option from '@effect/data/Option'
 import type * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import type * as Layer from '@effect/io/Layer'
-import { flow, pipe } from '@fp-ts/core/Function'
-import * as Option from '@fp-ts/core/Option'
-import type * as Context from '@effect/data/Context'
 import * as P from '@typed/path'
 import * as ptr from 'path-to-regexp'
 

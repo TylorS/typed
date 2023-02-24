@@ -1,7 +1,7 @@
 import { existsSync } from 'fs'
 import { resolve } from 'path'
 
-import * as Option from '@fp-ts/core/Option'
+import * as Option from '@effect/data/Option'
 import { resolveTypedConfig } from '@typed/vite-plugin'
 // @ts-expect-error Unable to find types
 import multibuild from '@vavite/multibuild'

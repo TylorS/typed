@@ -1,6 +1,6 @@
+import { flow } from '@effect/data/Function'
+import type { Option } from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
-import { flow } from '@fp-ts/core/Function'
-import type { Option } from '@fp-ts/core/Option'
 
 import type { Fx } from '../Fx.js'
 

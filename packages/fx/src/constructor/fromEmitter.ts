@@ -1,10 +1,11 @@
+import { pipe } from '@effect/data/Function'
 import type { Cause } from '@effect/io/Cause'
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
 import * as Fiber from '@effect/io/Fiber'
+import * as Runtime from '@effect/io/Runtime'
 import type { Scope } from '@effect/io/Scope'
-import { pipe } from '@fp-ts/core/Function'
 
 import { Fx } from '../Fx.js'
 
@@ -36,9 +37,9 @@ class FromEmitterFx<R, E, E2, A>
       const deferred = yield* $(Deferred.make<never, Exit.Exit<E | E2, void>>())
       const done = (exit: Exit.Exit<E | E2, void>) => Deferred.done(Exit.succeed(exit))(deferred)
       const emitter: Emitter<E, A> = {
-        emit: (a) => runtime.unsafeFork(sink.event(a)),
-        failCause: (e) => runtime.unsafeFork(done(Exit.failCause(e))),
-        end: () => runtime.unsafeFork(done(Exit.succeed(undefined))),
+        emit: (a) => Runtime.runFork(runtime)(sink.event(a)),
+        failCause: (e) => Runtime.runFork(runtime)(done(Exit.failCause(e))),
+        end: () => Runtime.runFork(runtime)(done(Exit.succeed(undefined))),
       }
 
       const fiber = yield* $(

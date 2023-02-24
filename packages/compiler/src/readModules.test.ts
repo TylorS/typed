@@ -24,10 +24,10 @@ describe(import.meta.url, () => {
         const directory = await readDirectory(join(exampleDirectory, 'pages'))
         const moduleTree = readModules(project, directory)
         const mainLayout = {
-            _tag: 'Layout',
-            sourceFile: 'pages/layout.ts',
-            hasEnvironment: false,
-          }
+          _tag: 'Layout',
+          sourceFile: 'pages/layout.ts',
+          hasEnvironment: false,
+        }
         const expected = {
           directory: 'pages',
           modules: [

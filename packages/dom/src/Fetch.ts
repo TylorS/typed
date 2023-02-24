@@ -1,12 +1,13 @@
+import { pipe } from '@effect/data/Function'
+import type { NonEmptyReadonlyArray } from '@effect/data/ReadonlyArray'
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/core/Function'
-import type { Identity } from '@fp-ts/core/Identity'
-import type { NonEmptyReadonlyArray } from '@fp-ts/core/ReadonlyArray'
 import type { ParseOptions } from '@fp-ts/schema/AST'
 import * as ParseResult from '@fp-ts/schema/ParseResult'
 import { formatErrors } from '@fp-ts/schema/formatter/Tree'
 import * as Context from '@typed/context'
 import type { Decoder } from '@typed/decoder'
+
+type Identity<A> = A
 
 export interface Fetch extends Identity<(typeof globalThis)['fetch']> {}
 

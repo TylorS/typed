@@ -1,5 +1,5 @@
-import * as Either from '@fp-ts/core/Either'
-import { pipe } from '@fp-ts/core/Function'
+import * as Either from '@effect/data/Either'
+import { pipe } from '@effect/data/Function'
 import * as AST from '@fp-ts/schema/AST'
 import * as ParseResult from '@fp-ts/schema/ParseResult'
 import * as Annotations from '@fp-ts/schema/annotation/AST'

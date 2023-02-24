@@ -1,7 +1,7 @@
+import { pipe } from '@effect/data/Function'
+import * as RA from '@effect/data/ReadonlyArray'
 import * as Query from '@effect/query/Query'
 import type * as Request from '@effect/query/Request'
-import { pipe } from '@fp-ts/core/Function'
-import * as RA from '@fp-ts/core/ReadonlyArray'
 
 import type { Fetch } from '../Fetch.js'
 

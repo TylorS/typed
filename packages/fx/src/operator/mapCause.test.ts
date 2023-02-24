@@ -1,10 +1,10 @@
 import { deepStrictEqual, ok } from 'assert'
 
+import { pipe } from '@effect/data/Function'
+import * as Option from '@effect/data/Option'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
-import { pipe } from '@fp-ts/core/Function'
-import * as Option from '@fp-ts/core/Option'
 import { describe, it } from 'vitest'
 
 import { fail } from '../constructor/fail.js'

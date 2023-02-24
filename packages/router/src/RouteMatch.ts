@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
+import { flow } from '@effect/data/Function'
 import type * as Layer from '@effect/io/Layer'
-import { flow } from '@fp-ts/core/Function'
 import * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
 import type * as html from '@typed/html'

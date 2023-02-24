@@ -1,6 +1,6 @@
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
-import { pipe } from '@fp-ts/core/Function'
 import * as Fx from '@typed/fx'
 import { type Renderable, renderInto } from '@typed/html'
 import type { Redirect } from '@typed/router'

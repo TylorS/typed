@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 
-import * as Option from '@fp-ts/core/Option'
+import * as Option from '@effect/data/Option'
 import { buildClientInput, resolveTypedConfig } from '@typed/vite-plugin'
 import { preview as vitePreview, type InlineConfig } from 'vite'
 

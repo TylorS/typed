@@ -2,7 +2,7 @@ import { deepStrictEqual, ok } from 'assert'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
-import { isSome, some } from '@fp-ts/core/Option'
+import { isSome, some } from '@effect/data/Option'
 import { describe, it } from 'vitest'
 
 import { resolveTypedConfig } from './resolveTypedConfig.js'

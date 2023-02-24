@@ -1,5 +1,5 @@
+import { flow } from '@effect/data/Function'
 import type { Effect } from '@effect/io/Effect'
-import { flow } from '@fp-ts/core/Function'
 
 import type { Fx } from '../Fx.js'
 import { fromEffect } from '../constructor/fromEffect.js'

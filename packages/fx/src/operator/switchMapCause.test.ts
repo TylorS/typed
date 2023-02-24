@@ -1,10 +1,10 @@
 import { deepStrictEqual } from 'assert'
 
+import { millis } from '@effect/data/Duration'
+import * as Either from '@effect/data/Either'
+import { flow, pipe } from '@effect/data/Function'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
-import * as Either from '@fp-ts/core/Either'
-import { flow, pipe } from '@fp-ts/core/Function'
-import { millis } from '@effect/data/Duration'
 import { describe, it } from 'vitest'
 
 import { at } from '../constructor/at.js'

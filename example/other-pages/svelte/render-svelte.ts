@@ -1,6 +1,6 @@
+import { pipe } from '@effect/data/Function'
+import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/core/Function'
-import * as Option from '@fp-ts/core/Option'
 import { createElement, getHead, Location, querySelector } from '@typed/dom'
 import type { Main } from '@typed/framework'
 import * as Fx from '@typed/fx'

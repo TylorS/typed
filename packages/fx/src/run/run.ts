@@ -1,9 +1,9 @@
+import { flow, pipe } from '@effect/data/Function'
 import * as Cause from '@effect/io/Cause'
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import type { Scope } from '@effect/io/Scope'
-import { flow, pipe } from '@fp-ts/core/Function'
 
 import { Fx, Sink } from '../Fx.js'
 

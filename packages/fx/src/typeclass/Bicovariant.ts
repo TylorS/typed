@@ -1,5 +1,5 @@
-import { dual, pipe } from '@fp-ts/core/Function'
-import * as B from '@fp-ts/core/typeclass/Bicovariant'
+import { dual, pipe } from '@effect/data/Function'
+import * as B from '@effect/data/typeclass/Bicovariant'
 
 import type { Fx } from '../Fx.js'
 import { map } from '../operator/map.js'

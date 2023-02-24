@@ -1,6 +1,6 @@
+import { pipe } from '@effect/data/Function'
+import { range } from '@effect/data/ReadonlyArray'
 import { sync } from '@effect/io/Effect'
-import { pipe } from '@fp-ts/core/Function'
-import { range } from '@fp-ts/core/ReadonlyArray'
 import { Main } from '@typed/framework'
 import * as Fx from '@typed/fx'
 import * as Route from '@typed/route'

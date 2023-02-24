@@ -1,4 +1,4 @@
-import { dual } from '@fp-ts/core/Function'
+import { dual } from '@effect/data/Function'
 
 import { Fx } from '../Fx.js'
 

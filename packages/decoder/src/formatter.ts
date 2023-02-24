@@ -1,5 +1,5 @@
-import * as Either from '@fp-ts/core/Either'
-import { pipe } from '@fp-ts/core/Function'
+import * as Either from '@effect/data/Either'
+import { pipe } from '@effect/data/Function'
 import type * as ParseResult from '@fp-ts/schema/ParseResult'
 import { formatErrors } from '@fp-ts/schema/formatter/Tree'
 

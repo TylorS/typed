@@ -1,5 +1,5 @@
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/core/Function'
 import type { Redirect } from '@typed/router'
 
 import type { IntrinsicServices } from '../IntrinsicServices.js'

@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
+import { pipe } from '@effect/data/Function'
+import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import type * as Layer from '@effect/io/Layer'
+import * as Runtime from '@effect/io/Runtime'
 import type * as Scope from '@effect/io/Scope'
-import { pipe } from '@fp-ts/core/Function'
-import * as Option from '@fp-ts/core/Option'
 import * as Context from '@typed/context'
 import { Document, Location, History, addWindowListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
@@ -271,7 +272,7 @@ const patchHistory = Effect.gen(function* ($) {
   const history = yield* $(History.get)
   const historyEvents = Fx.Subject.unsafeMake<never, void>()
   const runtime = yield* $(Effect.runtime<never>())
-  const cleanup = patchHistory_(history, () => runtime.unsafeFork(historyEvents.event()))
+  const cleanup = patchHistory_(history, () => Runtime.runFork(runtime)(historyEvents.event()))
 
   // unpatch history upon finalization
   yield* $(Effect.addFinalizer(() => Effect.sync(cleanup)))

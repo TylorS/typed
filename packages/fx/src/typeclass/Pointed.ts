@@ -1,4 +1,4 @@
-import type * as P from '@fp-ts/core/typeclass/Pointed'
+import type * as P from '@effect/data/typeclass/Pointed'
 
 import { Covariant } from './Covariant.js'
 import { Of } from './Of.js'

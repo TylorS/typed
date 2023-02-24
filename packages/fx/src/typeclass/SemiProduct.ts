@@ -1,5 +1,5 @@
-import { dual } from '@fp-ts/core/Function'
-import * as SP from '@fp-ts/core/typeclass/SemiProduct'
+import { dual } from '@effect/data/Function'
+import * as SP from '@effect/data/typeclass/SemiProduct'
 
 import type { Fx } from '../Fx.js'
 import { combine } from '../operator/combine.js'

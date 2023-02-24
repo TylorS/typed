@@ -1,5 +1,5 @@
+import { range } from '@effect/data/ReadonlyArray'
 import { sync } from '@effect/io/Effect'
-import { range } from '@fp-ts/core/ReadonlyArray'
 import { Main } from '@typed/framework'
 import { html } from '@typed/html'
 import * as Route from '@typed/route'

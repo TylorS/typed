@@ -1,4 +1,4 @@
-import type * as O from '@fp-ts/core/typeclass/Of'
+import type * as O from '@effect/data/typeclass/Of'
 
 import { succeed } from '../constructor/succeed.js'
 

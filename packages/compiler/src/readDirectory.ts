@@ -1,8 +1,8 @@
 import { promises } from 'fs'
 import { dirname, join } from 'path'
 
-import { left, right } from '@fp-ts/core/Either'
-import * as RA from '@fp-ts/core/ReadonlyArray'
+import { left, right } from '@effect/data/Either'
+import * as RA from '@effect/data/ReadonlyArray'
 
 export async function readDirectory(directory: string): Promise<Directory> {
   const stat = await promises.stat(directory)

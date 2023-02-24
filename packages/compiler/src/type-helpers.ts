@@ -1,5 +1,5 @@
-import { pipe } from '@fp-ts/core/Function'
-import * as O from '@fp-ts/core/Option'
+import { pipe } from '@effect/data/Function'
+import * as O from '@effect/data/Option'
 import { isLayoutFileName, isEnvironmentFileName, isFallbackFileName } from '@typed/framework'
 import { SyntaxKind, type ExportedDeclarations, type SourceFile, type Type } from 'ts-morph'
 

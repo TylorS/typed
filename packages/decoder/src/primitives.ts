@@ -1,4 +1,4 @@
-import * as Option from '@fp-ts/core/Option'
+import * as Option from '@effect/data/Option'
 import type * as AST from '@fp-ts/schema/AST'
 import * as Parser from '@fp-ts/schema/Parser'
 import * as S from '@fp-ts/schema/Schema'

@@ -21,11 +21,11 @@
     }
   },
   "dependencies": {
-    "@fp-ts/core": "^0.2.1",
+    "@effect/data": "^0.2.0",
     "@typed/compiler": "workspace:*",
     "fast-glob": "^3.2.12",
     "vavite": "^1.5.3",
-    "vite": "^4.1.1",
+    "vite": "^4.1.4",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.0.5"
   },

@@ -1,4 +1,4 @@
-import type * as A from '@fp-ts/core/typeclass/Applicative'
+import type * as A from '@effect/data/typeclass/Applicative'
 
 import type { Fx } from '../Fx.js'
 import { combineAll } from '../operator/combine.js'

@@ -1,4 +1,4 @@
-import * as O from '@fp-ts/core/Option'
+import * as O from '@effect/data/Option'
 import { pathCardinality } from '@typed/framework'
 import type { Project } from 'ts-morph'
 

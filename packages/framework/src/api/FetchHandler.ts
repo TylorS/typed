@@ -1,7 +1,7 @@
+import { flow, pipe } from '@effect/data/Function'
 import type { Cause } from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import type { Layer } from '@effect/io/Layer'
-import { flow, pipe } from '@fp-ts/core/Function'
 import type { ParseOptions } from '@fp-ts/schema/AST'
 import { isFailure } from '@fp-ts/schema/ParseResult'
 import { decode } from '@fp-ts/schema/Parser'

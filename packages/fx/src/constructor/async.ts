@@ -1,6 +1,6 @@
+import { flow } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import type { FiberId } from '@effect/io/Fiber/Id'
-import { flow } from '@fp-ts/core/Function'
 
 import type { Fx } from '../Fx.js'
 

@@ -1,4 +1,4 @@
-import { pipe } from '@fp-ts/core/Function'
+import { pipe } from '@effect/data/Function'
 
 import type { Fx } from '../Fx.js'
 import { entriesOf } from '../_internal/entriesOf.js'

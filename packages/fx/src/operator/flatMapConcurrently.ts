@@ -1,5 +1,5 @@
+import { flow, pipe } from '@effect/data/Function'
 import { unsafeMakeSemaphore } from '@effect/io/Effect'
-import { flow, pipe } from '@fp-ts/core/Function'
 
 import type { Fx } from '../Fx.js'
 import { suspend } from '../constructor/suspend.js'

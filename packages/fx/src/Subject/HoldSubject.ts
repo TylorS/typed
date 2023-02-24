@@ -1,7 +1,7 @@
-import * as Effect from '@effect/io/Effect'
-import { identity } from '@fp-ts/core/Function'
-import { type Option, none } from '@fp-ts/core/Option'
+import { identity } from '@effect/data/Function'
 import { type MutableRef, make } from '@effect/data/MutableRef'
+import { type Option, none } from '@effect/data/Option'
+import * as Effect from '@effect/io/Effect'
 
 import type { Fx, Sink } from '../Fx.js'
 import { never } from '../constructor/never.js'

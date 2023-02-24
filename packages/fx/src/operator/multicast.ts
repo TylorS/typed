@@ -1,11 +1,11 @@
+import type { Context } from '@effect/data/Context'
+import { pipe } from '@effect/data/Function'
 import type { Cause } from '@effect/io/Cause'
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import type { RuntimeFiber } from '@effect/io/Fiber'
 import type { Scope } from '@effect/io/Scope'
-import { pipe } from '@fp-ts/core/Function'
-import type { Context } from '@effect/data/Context'
 
 import { Fx } from '../Fx.js'
 import { asap } from '../_internal/RefCounter.js'

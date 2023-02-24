@@ -1,8 +1,8 @@
 import * as C from '@effect/data/Context'
+import { flow } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import type * as Scope from '@effect/io/Scope'
-import { flow } from '@fp-ts/core/Function'
 import * as Fx from '@typed/fx'
 
 /**

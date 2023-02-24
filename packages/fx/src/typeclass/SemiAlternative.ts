@@ -1,4 +1,4 @@
-import type * as SA from '@fp-ts/core/typeclass/SemiAlternative'
+import type * as SA from '@effect/data/typeclass/SemiAlternative'
 
 import { Covariant } from './Covariant.js'
 import { SemiCoproductRace, SemiCoproductOrElse } from './SemiCoproduct.js'

@@ -1,4 +1,4 @@
-import type * as SCP from '@fp-ts/core/typeclass/SemiCoproduct'
+import type * as SCP from '@effect/data/typeclass/SemiCoproduct'
 
 import { orElse } from '../operator/orElse.js'
 import { race, raceAll } from '../operator/race.js'

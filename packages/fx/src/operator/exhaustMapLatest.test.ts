@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
 
-import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/core/Function'
 import * as Duration from '@effect/data/Duration'
+import { pipe } from '@effect/data/Function'
+import * as Effect from '@effect/io/Effect'
 import { describe, it } from 'vitest'
 
 import { fromIterable } from '../constructor/fromIterable.js'

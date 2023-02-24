@@ -1,6 +1,6 @@
+import * as Maybe from '@effect/data/Option'
 import { isEffect } from '@effect/io/Effect'
-import type { Runtime } from '@effect/io/Runtime'
-import * as Maybe from '@fp-ts/core/Option'
+import * as Runtime from '@effect/io/Runtime'
 
 import { isElementRef } from './ElementRef.js'
 import type { Entry } from './Entry.js'
@@ -157,11 +157,11 @@ function setter(node: Element, key: string) {
 
 function ref(node: Element) {
   let oldValue: any = null
-  return <R>(newValue: Placeholder<R>, runtime: Runtime<R>): void => {
+  return <R>(newValue: Placeholder<R>, runtime: Runtime.Runtime<R>): void => {
     if (oldValue !== newValue && isElementRef(newValue)) {
       oldValue = newValue
 
-      runtime.unsafeFork(newValue.set(Maybe.some(node as HTMLElement)))
+      Runtime.runFork(runtime)(newValue.set(Maybe.some(node as HTMLElement)))
     }
   }
 }
@@ -173,7 +173,7 @@ function event(node: Element, name: string) {
     listener: EventListener | undefined
   if (!(name in node) && (lower = name.toLowerCase()) in node) type = lower.slice(2)
 
-  return <R>(newValue: Placeholder<R>, runtime: Runtime<R>) => {
+  return <R>(newValue: Placeholder<R>, runtime: Runtime.Runtime<R>) => {
     if (oldValue === newValue) {
       return
     }
@@ -186,14 +186,14 @@ function event(node: Element, name: string) {
     }
 
     if (newValue instanceof EventHandlerImplementation) {
-      listener = (ev: Event) => runtime.unsafeFork(newValue.handler(ev))
+      listener = (ev: Event) => Runtime.runFork(runtime)(newValue.handler(ev))
       node.addEventListener(type, listener, newValue.options)
 
       return
     }
 
     if (isEffect(newValue)) {
-      listener = () => runtime.unsafeFork(newValue as any)
+      listener = () => Runtime.runFork(runtime)(newValue as any)
       node.addEventListener(type, listener)
 
       return

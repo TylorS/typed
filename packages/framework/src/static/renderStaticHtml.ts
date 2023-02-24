@@ -1,11 +1,11 @@
 import { join } from 'path'
 
+import * as Either from '@effect/data/Either'
+import { pipe } from '@effect/data/Function'
+import * as RA from '@effect/data/ReadonlyArray'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
-import * as Either from '@fp-ts/core/Either'
-import { pipe } from '@fp-ts/core/Function'
-import * as RA from '@fp-ts/core/ReadonlyArray'
 import type { Redirect } from '@typed/router'
 
 import { runServerHandler } from '../runServerHandler.js'

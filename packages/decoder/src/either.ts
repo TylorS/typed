@@ -1,7 +1,9 @@
-import type * as Either from '@fp-ts/core/Either'
+import type * as Either from '@effect/data/Either'
+import * as Equal from '@effect/data/Equal'
+import * as Hash from '@effect/data/Hash'
 
 import type { Decoder } from './decoder.js'
-import { literal } from './primitives.js'
+import { any, literal } from './primitives.js'
 import { struct } from './struct.js'
 import { union } from './union.js'
 
@@ -9,12 +11,16 @@ export const right = <A>(member: Decoder<unknown, A>): Decoder<unknown, Either.R
   struct({
     _tag: literal('Right'),
     right: member,
+    [Equal.symbol]: any,
+    [Hash.symbol]: any,
   })
 
 export const left = <A>(member: Decoder<unknown, A>): Decoder<unknown, Either.Left<A>> =>
   struct({
     _tag: literal('Left'),
     left: member,
+    [Equal.symbol]: any,
+    [Hash.symbol]: any,
   })
 
 export const either = <A, B>(

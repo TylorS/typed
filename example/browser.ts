@@ -1,6 +1,6 @@
 /// <reference types="@typed/framework" />
 
-import { pipe } from '@fp-ts/core/Function'
+import { pipe } from '@effect/data/Function'
 import * as Fx from '@typed/fx'
 // Browser virtual modules are extensions of RuntimeModule
 // which expose an additional 'render' function which takes a parentElement

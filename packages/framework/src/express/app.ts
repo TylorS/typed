@@ -1,5 +1,5 @@
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
-import { pipe } from '@fp-ts/core/Function'
 import { Tag } from '@typed/context'
 import type { Express } from 'express'
 import express from 'express'

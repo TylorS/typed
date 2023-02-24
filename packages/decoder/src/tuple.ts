@@ -1,6 +1,6 @@
-import * as Either from '@fp-ts/core/Either'
-import { pipe } from '@fp-ts/core/Function'
-import * as RA from '@fp-ts/core/ReadonlyArray'
+import * as Either from '@effect/data/Either'
+import { pipe } from '@effect/data/Function'
+import * as RA from '@effect/data/ReadonlyArray'
 import * as ParseResult from '@fp-ts/schema/ParseResult'
 
 import { unknownArray } from './array.js'
@@ -27,7 +27,7 @@ export const fromTuple =
       ),
     )
 
-    if (RA.isNonEmpty(failures)) {
+    if (RA.isNonEmptyReadonlyArray(failures)) {
       return ParseResult.failures(failures)
     }
 

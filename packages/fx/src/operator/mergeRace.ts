@@ -1,7 +1,7 @@
+import { pipe } from '@effect/data/Function'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
-import { pipe } from '@fp-ts/core/Function'
 
 import { Fx } from '../Fx.js'
 

@@ -1,7 +1,7 @@
+import { dual, identity, pipe } from '@effect/data/Function'
+import type { FlatMap } from '@effect/data/typeclass/FlatMap'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
-import { dual, identity, pipe } from '@fp-ts/core/Function'
-import type { FlatMap } from '@fp-ts/core/typeclass/FlatMap'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
