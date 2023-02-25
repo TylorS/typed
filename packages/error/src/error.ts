@@ -6,6 +6,14 @@ export const tagged = <Tag extends string>(tag: Tag) =>
     static tag = tag
     readonly _tag = tag
 
+    static fail<T extends TaggedConstructor<Tag>>(this: T, ...params: ConstructorParameters<T>) {
+      return Effect.fail(new this(...params))
+    }
+
+    static failFx<T extends TaggedConstructor<Tag>>(this: T, ...params: ConstructorParameters<T>) {
+      return Fx.fail(new this(...params))
+    }
+
     static catch<T extends TaggedConstructor<Tag>, R, E, A>(
       this: T,
       f: (error: InstanceType<T>) => Effect.Effect<R, E, A>,
@@ -41,6 +49,8 @@ export type TaggedConstructor<Tag extends string> = {
   readonly tag: Tag
   new (...args: any[]): Tagged<Tag>
 
+  readonly fail: ReturnType<typeof tagged<Tag>>['fail']
+  readonly failFx: ReturnType<typeof tagged<Tag>>['failFx']
   readonly catch: ReturnType<typeof tagged<Tag>>['catch']
   readonly catchFx: ReturnType<typeof tagged<Tag>>['catchFx']
   readonly switchMapCatch: ReturnType<typeof tagged<Tag>>['switchMapCatch']
