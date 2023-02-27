@@ -6,7 +6,6 @@ import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import { Compiler, getRelativePath, type ResolvedOptions } from '@typed/compiler'
 import glob from 'fast-glob'
-// @ts-expect-error Unable to resolve types w/ NodeNext
 import vavite from 'vavite'
 import type { ConfigEnv, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
 import compression from 'vite-plugin-compression'

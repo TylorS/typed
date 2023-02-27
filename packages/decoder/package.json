@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@effect/data": "^0.2.0",
-    "@fp-ts/schema": "^0.3.0"
+    "@fp-ts/schema": "^0.3.2"
   },
   "publishConfig": {
     "access": "public"
