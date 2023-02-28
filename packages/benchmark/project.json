@@ -21,6 +21,18 @@
     },
     "test": {
       "executor": "@nrwl/vite:test"
+    },
+    "build:cjs": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          {
+            "command": "tsc --build packages/benchmark/tsconfig.cjs.build.json"
+          }
+        ],
+        "parallel": false
+      },
+      "outputs": ["{projectRoot}/dist/cjs"]
     }
   }
 }

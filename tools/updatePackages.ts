@@ -8,8 +8,6 @@ import { fileURLToPath } from 'node:url'
 
 import { Project } from 'ts-morph'
 
-// TODO: Add support for @types packages
-
 const virtualPrefixes = ['runtime', 'browser', 'entry', 'api', 'express']
 
 const optionalPackagesNames = process.argv.slice(2)
@@ -87,6 +85,20 @@ for (const name of packageNames) {
   packageJson.sideEffects = false
   packageJson.dependencies = {}
   packageJson.devDependencies = {}
+
+  packageJson.exports = {
+    '.': {
+      import: './dist/index.js',
+      require: './dist/cjs/index.js',
+      types: './dist/index.d.ts',
+    },
+    './*': {
+      import: './dist/*.js',
+      require: './dist/cjs/*.js',
+      types: './dist/*.d.ts',
+    },
+  }
+
   for (const dependency of Array.from(dependencies).sort()) {
     checkDependency(dependency, packageJson)
   }

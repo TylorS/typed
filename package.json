@@ -12,8 +12,8 @@
   "author": "Tylor Steinberger <tlsteinberger167@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "nx run-many --target=build --all",
-    "build:affected": "nx affected --target=build",
+    "build": "nx run-many --target=build --target=build:cjs --all",
+    "build:affected": "nx affected --target=build --target=build:cjs",
     "lint": "nx run-many --target=lint --all",
     "lint:fix": "nx run-many --target=lint --all --fix",
     "lint:affected": "nx affected --target=lint",
@@ -30,6 +30,7 @@
     "example:preview": "pnpm typed preview",
     "example:static": "pnpm typed run -s example/static.ts",
     "typed": "pnpm tsx ./packages/cli/src/cli.ts",
+    "release": "pnpm run build && lerna publish",
     "~~NEEDS POSITIONAL COMMAND LINE ARGUMENT~~": "",
     "new-package": "nx generate ./packages/nx-plugin:package"
   },

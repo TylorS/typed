@@ -7,5 +7,17 @@
     "@nrwl/devkit": "^15.7.2"
   },
   "generators": "generators.json",
-  "sideEffects": false
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./*": {
+      "import": "./dist/*.js",
+      "require": "./dist/cjs/*.js",
+      "types": "./dist/*.d.ts"
+    }
+  }
 }

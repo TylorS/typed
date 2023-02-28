@@ -9,14 +9,12 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
+      "require": "./dist/cjs/index.js",
       "types": "./dist/index.d.ts"
     },
     "./*": {
       "import": "./dist/*.js",
-      "types": "./dist/*.d.ts"
-    },
-    "./*.js": {
-      "import": "./dist/*.js",
+      "require": "./dist/cjs/*.js",
       "types": "./dist/*.d.ts"
     }
   },
