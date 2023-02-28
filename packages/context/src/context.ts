@@ -72,7 +72,7 @@ export function Tag<S>(key?: string): Tag<S> {
     provideFx: Fx.provideService<S>(tag),
     layer: Effect.toLayer<S>(tag),
     layerScoped: <R, E>(e: Effect.Effect<R, E, S>) => Layer.scoped(tag, e),
-    layerOf: flow(Effect.succeed<S>, Effect.toLayer<S>(tag)),
+    layerOf: (s: S) => Effect.toLayer<S>(tag)(Effect.succeed(s)),
     build: flow((s: S) => C.make(tag, s), makeContextBuilder),
   }) satisfies Tag<S>
 }
