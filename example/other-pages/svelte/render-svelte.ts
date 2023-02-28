@@ -4,7 +4,7 @@ import { createElement, getHead } from '@typed/dom'
 import * as Fx from '@typed/fx'
 import type { Route, ParamsOf } from '@typed/route'
 import type { ComponentConstructorOptions, SvelteComponentTyped } from 'svelte'
-import type { SvelteComponentDev } from 'svelte/internal'
+import type { create_ssr_component, SvelteComponentDev } from 'svelte/internal'
 
 import { renderThirdParty } from '../render-third-party.js'
 
@@ -17,17 +17,21 @@ export function renderSvelte<
   Events extends Record<string, any>,
   Slots extends Record<string, any>,
   T extends SvelteComponentDev | SvelteComponentTyped<Props, Events, Slots>,
+  R2,
+  E2,
 >(
   route: Route<R, E, P>,
   Component: new (options: ComponentConstructorOptions<Props>) => T,
-  routeParamsToProps: (params: ParamsOf<typeof route>) => Props,
+  routeParamsToProps: (params: ParamsOf<typeof route>) => Effect.Effect<R2, E2, Props>,
 ) {
   return renderThirdParty(
     route,
     'svelte-root',
     (params) =>
       Effect.gen(function* ($) {
-        const { html, css, head } = (Component as any).render(routeParamsToProps(params))
+        const props = yield* $(routeParamsToProps(params))
+        const ssr = Component as unknown as ReturnType<typeof create_ssr_component>
+        const { html, css, head } = ssr.render(props)
 
         // In development we need to insert our css/head content ourselves
         if (import.meta.env.DEV) {
@@ -42,16 +46,17 @@ export function renderSvelte<
         return html
       }),
     (container, initialParams, params, shouldHydrate) =>
-      Fx.suspend(() => {
+      Fx.gen(function* ($) {
         const instance = new Component({
           target: container,
-          props: routeParamsToProps(initialParams),
+          props: yield* $(routeParamsToProps(initialParams)),
           hydrate: shouldHydrate,
         })
 
         return pipe(
           params,
-          Fx.map((params) => (instance.$set(routeParamsToProps(params)), container)),
+          Fx.switchMapEffect(routeParamsToProps),
+          Fx.map((props) => (instance.$set(props), container)),
           Fx.onInterrupt(() => Effect.sync(() => instance.$destroy())),
         )
       }),
