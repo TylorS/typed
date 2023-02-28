@@ -61,9 +61,6 @@
       "@typed/html/*": [
         "./packages/html/src/*"
       ],
-      "@typed/internal/*": [
-        "./packages/internal/src/*"
-      ],
       "@typed/path/*": [
         "./packages/path/src/*"
       ],

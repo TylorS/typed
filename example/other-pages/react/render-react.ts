@@ -1,75 +1,39 @@
 import { pipe } from '@effect/data/Function'
-import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
-import { createElement, Location, querySelector } from '@typed/dom'
-import type { Main } from '@typed/framework'
 import * as Fx from '@typed/fx'
 import type { ParamsOf, Route } from '@typed/route'
-import { type Redirect, Router } from '@typed/router'
 import type { ReactElement } from 'react'
 
-import { isFirstRender } from '../helper.js'
+import { renderThirdParty } from '../render-third-party.js'
 
 export function renderReact<R, E, Path extends string>(
   route: Route<R, E, Path>,
   Component: (params: ParamsOf<typeof route>) => ReactElement,
-): Main<never, E, typeof route> {
-  return (params: Fx.Fx<R, E | Redirect, ParamsOf<typeof route>>) =>
-    Fx.gen(function* ($) {
-      const location = yield* $(Location.get)
-      const router = yield* $(Router.get)
-      const initialParams: Option.Option<ParamsOf<typeof route>> = (yield* $(
-        // Route will already be amended here since it has been matched. The function
-        // parameter is used merely for type-inference
-        router.route.match(location.pathname),
-      )) as any
+) {
+  return renderThirdParty(
+    route,
+    'react-root',
+    (container, params) =>
+      Effect.gen(function* ($) {
+        const { renderToString } = yield* $(Effect.promise(() => import('react-dom/server')))
 
-      if (Option.isNone(initialParams)) {
-        throw new Error(
-          'Bug it should be impossible to run this page without matching the current route',
-        )
-      }
-
-      if (!import.meta.env.SSR) {
+        container.id = 'react-root'
+        container.innerHTML = renderToString(Component(params))
+      }),
+    (container, initialParams, params, shouldHydrate) =>
+      Fx.gen(function* ($) {
         const { createRoot, hydrateRoot } = yield* $(
           Effect.promise(() => import('react-dom/client')),
         )
-
-        const current = yield* $(querySelector('#react-root'))
-        const container = yield* $(
-          pipe(
-            current,
-            Option.match(() => createElement('div'), Effect.succeed),
-          ),
-        )
-
-        const root = pipe(
-          current,
-          Option.match(
-            () => createRoot(container),
-            () => {
-              if (!isFirstRender()) {
-                return createRoot(container)
-              }
-
-              return hydrateRoot(container, Component(initialParams.value))
-            },
-          ),
-        )
+        const root = shouldHydrate
+          ? hydrateRoot(container, Component(initialParams))
+          : createRoot(container)
 
         return pipe(
           params,
           Fx.map((p) => (root.render(Component(p)), container)),
           Fx.onInterrupt(() => Effect.sync(() => root.unmount())),
         )
-      }
-
-      const { renderToString } = yield* $(Effect.promise(() => import('react-dom/server')))
-      const container = yield* $(createElement('div'))
-
-      container.id = 'react-root'
-      container.innerHTML = renderToString(Component(initialParams.value))
-
-      return Fx.succeed(container)
-    })
+      }),
+  )
 }

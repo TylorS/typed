@@ -1,15 +1,12 @@
 import { pipe } from '@effect/data/Function'
-import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
-import { createElement, getHead, Location, querySelector } from '@typed/dom'
-import type { Main } from '@typed/framework'
+import { createElement, getHead } from '@typed/dom'
 import * as Fx from '@typed/fx'
 import type { Route, ParamsOf } from '@typed/route'
-import { Router } from '@typed/router'
 import type { ComponentConstructorOptions, SvelteComponentTyped } from 'svelte'
 import type { SvelteComponentDev } from 'svelte/internal'
 
-import { isFirstRender } from '../helper.js'
+import { renderThirdParty } from '../render-third-party.js'
 
 export function renderSvelte<
   R,
@@ -23,64 +20,40 @@ export function renderSvelte<
 >(
   route: Route<R, E, P>,
   Component: new (options: ComponentConstructorOptions<Props>) => T,
-  f: (params: ParamsOf<typeof route>) => Props,
-): Main<never, E, typeof route> {
-  return (params) =>
-    Fx.gen(function* ($) {
-      const location = yield* $(Location.get)
-      const router = yield* $(Router.get)
-      const initialParams: Option.Option<ParamsOf<typeof route>> = (yield* $(
-        // Route will already be amended here since it has been matched. The function
-        // parameter is used merely for type-inference
-        router.route.match(location.pathname),
-      )) as any
+  routeParamsToProps: (params: ParamsOf<typeof route>) => Props,
+) {
+  return renderThirdParty(
+    route,
+    'svelte-root',
+    (container, params) =>
+      Effect.gen(function* ($) {
+        const { html, css, head } = (Component as any).render(routeParamsToProps(params))
 
-      if (Option.isNone(initialParams)) {
-        throw new Error(
-          'Bug it should be impossible to run this page without matching the current route',
-        )
-      }
+        container.innerHTML = html
 
-      if (!import.meta.env.SSR) {
-        const current = yield* $(querySelector('#svelte-root'))
-        const container = yield* $(
-          pipe(
-            current,
-            Option.match(() => createElement('div'), Effect.succeed),
-          ),
-        )
-        container.id = 'svelte-root'
+        // In development we need to insert our css content
+        if (import.meta.env.DEV) {
+          const headElement = yield* $(getHead)
+          const styleElement = yield* $(createElement('style'))
 
+          styleElement.innerText = css.code
+          headElement.appendChild(styleElement)
+          headElement.append(head)
+        }
+      }),
+    (container, initialParams, params, shouldHydrate) =>
+      Fx.suspend(() => {
         const instance = new Component({
           target: container,
-          props: f(initialParams.value),
-          hydrate: isFirstRender() ? Option.isSome(current) : false,
+          props: routeParamsToProps(initialParams),
+          hydrate: shouldHydrate,
         })
 
         return pipe(
           params,
-          Fx.map((params) => (instance.$set(f(params)), container)),
+          Fx.map((params) => (instance.$set(routeParamsToProps(params)), container)),
           Fx.onInterrupt(() => Effect.sync(() => instance.$destroy())),
         )
-      }
-
-      const container = yield* $(createElement('div'))
-      container.id = 'svelte-root'
-
-      const { html, css, head } = (Component as any).render(f(initialParams.value))
-
-      container.innerHTML = html
-
-      // In development we need to insert our css content
-      if (import.meta.env.DEV) {
-        const headElement = yield* $(getHead)
-        const styleElement = yield* $(createElement('style'))
-
-        styleElement.innerText = css.code
-        headElement.appendChild(styleElement)
-        headElement.append(head)
-      }
-
-      return Fx.succeed(container)
-    })
+      }),
+  )
 }
