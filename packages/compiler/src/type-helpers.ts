@@ -297,7 +297,7 @@ export function typeIsEffect(type: Type) {
 
 export function parseRouteValue(route: ExportedDeclarations) {
   const typeArgs = route.getType().getTypeArguments()
-  const pathArg = typeArgs[1]
+  const pathArg = typeArgs[2]
   const path = pathArg.getText(route).replace(/['"]/g, '')
 
   return path
