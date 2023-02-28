@@ -6,9 +6,9 @@ import type { ReactElement } from 'react'
 
 import { renderThirdParty } from '../render-third-party.js'
 
-export function renderReact<R, E, Path extends string>(
+export function renderReact<R, E, Path extends string, R2, E2>(
   route: Route<R, E, Path>,
-  Component: (params: ParamsOf<typeof route>) => ReactElement,
+  Component: (params: ParamsOf<typeof route>) => Effect.Effect<R2, E2, ReactElement>,
 ) {
   return renderThirdParty(
     route,
@@ -17,20 +17,21 @@ export function renderReact<R, E, Path extends string>(
       Effect.gen(function* ($) {
         const { renderToString } = yield* $(Effect.promise(() => import('react-dom/server')))
 
-        return renderToString(Component(params))
+        return renderToString(yield* $(Component(params)))
       }),
     (container, initialParams, params, shouldHydrate) =>
       Fx.gen(function* ($) {
         const { createRoot, hydrateRoot } = yield* $(
           Effect.promise(() => import('react-dom/client')),
         )
-        const root = shouldHydrate
-          ? hydrateRoot(container, Component(initialParams))
+        const root: import('react-dom/client').Root = shouldHydrate
+          ? hydrateRoot(container, yield* $(Component(initialParams)))
           : createRoot(container)
 
         return pipe(
           params,
-          Fx.map((p) => (root.render(Component(p)), container)),
+          Fx.switchMapEffect(Component),
+          Fx.map((reactElement) => (root.render(reactElement), container)),
           Fx.onInterrupt(() => Effect.sync(() => root.unmount())),
         )
       }),

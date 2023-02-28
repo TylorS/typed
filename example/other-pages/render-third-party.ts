@@ -53,8 +53,7 @@ export function renderThirdParty<R, E, Path extends string, R2, E2, R3, E3>(
       }
 
       if (import.meta.env.SSR) {
-        const html = yield* $(server(initialParams.value))
-        container.innerHTML = html
+        container.innerHTML = yield* $(server(initialParams.value))
 
         return Fx.succeed(container)
       }
