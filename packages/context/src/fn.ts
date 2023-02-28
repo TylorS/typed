@@ -115,3 +115,10 @@ export function Fn<T extends EffectFn>() {
     } as const)
   }
 }
+
+export namespace Fn {
+  export type KeyOf<T extends Fn<any, any>> = T extends Fn<infer K, any> ? K : never
+  export type FnOf<T extends Fn<any, any>> = T extends Fn<any, infer F> ? F : never
+
+  export type Service<T extends Fn<any, any>> = EffectFn.Branded<KeyOf<T>, FnOf<T>>
+}
