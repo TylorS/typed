@@ -25,13 +25,11 @@ export function renderSvelte<
   return renderThirdParty(
     route,
     'svelte-root',
-    (container, params) =>
+    (params) =>
       Effect.gen(function* ($) {
         const { html, css, head } = (Component as any).render(routeParamsToProps(params))
 
-        container.innerHTML = html
-
-        // In development we need to insert our css content
+        // In development we need to insert our css/head content ourselves
         if (import.meta.env.DEV) {
           const headElement = yield* $(getHead)
           const styleElement = yield* $(createElement('style'))
@@ -40,6 +38,8 @@ export function renderSvelte<
           headElement.appendChild(styleElement)
           headElement.append(head)
         }
+
+        return html
       }),
     (container, initialParams, params, shouldHydrate) =>
       Fx.suspend(() => {

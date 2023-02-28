@@ -13,12 +13,11 @@ export function renderReact<R, E, Path extends string>(
   return renderThirdParty(
     route,
     'react-root',
-    (container, params) =>
+    (params) =>
       Effect.gen(function* ($) {
         const { renderToString } = yield* $(Effect.promise(() => import('react-dom/server')))
 
-        container.id = 'react-root'
-        container.innerHTML = renderToString(Component(params))
+        return renderToString(Component(params))
       }),
     (container, initialParams, params, shouldHydrate) =>
       Fx.gen(function* ($) {

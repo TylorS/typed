@@ -12,7 +12,7 @@ import { isFirstRender } from './helper.js'
 export function renderThirdParty<R, E, Path extends string, R2, E2, R3, E3>(
   route: Route<R, E, Path>,
   id: string,
-  server: (container: HTMLElement, params: ParamsOf<typeof route>) => Effect.Effect<R2, E2, void>,
+  server: (params: ParamsOf<typeof route>) => Effect.Effect<R2, E2, string>,
   browser: (
     container: HTMLElement,
     initial: ParamsOf<typeof route>,
@@ -53,9 +53,10 @@ export function renderThirdParty<R, E, Path extends string, R2, E2, R3, E3>(
       }
 
       if (import.meta.env.SSR) {
-        return Fx.as(container)(
-          Fx.fromEffect<R2 | R3, E2 | E3, void>(server(container, initialParams.value)),
-        )
+        const html = yield* $(server(initialParams.value))
+        container.innerHTML = html
+
+        return Fx.succeed(container)
       }
 
       return browser(
