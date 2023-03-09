@@ -9,7 +9,7 @@ import * as Synchronized from '@effect/io/Ref/Synchronized'
 import { Fx } from '../Fx.js'
 
 import { HoldSubject } from './HoldSubject.js'
-import { isRefSubject, RefSubject } from './RefSubject.js'
+import { Computed, isRefSubject, RefSubject } from './RefSubject.js'
 import { Subject } from './Subject.js'
 
 export interface SynchronizedSubject<A> extends RefSubject<A>, Synchronized.Synchronized<A> {
@@ -30,8 +30,7 @@ export namespace SynchronizedSubject {
   ): SynchronizedSubject<A> {
     const mutableRef = MutableRef.make(Option.some(initial()))
     const subject = HoldSubject.unsafeMake<never, A>(mutableRef)
-    const semaphore = Effect.unsafeMakeSemaphore(1)
-    const locked = semaphore.withPermits(1)
+    const locked = Effect.unsafeMakeSemaphore(1).withPermits(1)
 
     const getValue = () =>
       pipe(
@@ -83,6 +82,7 @@ export namespace SynchronizedSubject {
       error: subject.error.bind(subject),
       end: subject.end,
       value: subject.value,
+      eq,
       modify,
       modifyEffect,
       get get() {
@@ -98,13 +98,14 @@ export namespace SynchronizedSubject {
         return Synchronized.updateAndGetEffect(f)(synchronizedSubject)
       },
       delete: Effect.sync(() => {
-        const option = mutableRef.get()
+        const value = getValue()
 
-        // Next pull should recompute the initial value
-        mutableRef.set(Option.none())
+        mutableRef.set(Option.some(value))
 
-        return option
+        return value
       }),
+      compute: (f) => Computed.make(synchronizedSubject, f),
+      computeSync: (f) => Computed.make(synchronizedSubject, (a) => Effect.sync(() => f(a))),
     }
 
     return synchronizedSubject

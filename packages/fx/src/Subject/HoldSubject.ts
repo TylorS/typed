@@ -3,17 +3,12 @@ import { type MutableRef, make } from '@effect/data/MutableRef'
 import { type Option, none } from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 
-import type { Fx, Sink } from '../Fx.js'
 import { never } from '../constructor/never.js'
 import { HoldFx } from '../operator/hold.js'
 
 import { isSubject, Subject } from './Subject.js'
 
-export interface HoldSubject<E, A>
-  extends Fx<never, E, A>,
-    Sink<never, E, A>,
-    Subject.Variance<E, A>,
-    HoldSubject.Variance<E, A> {
+export interface HoldSubject<E, A> extends Subject<E, A>, HoldSubject.Variance<E, A> {
   readonly value: Effect.Effect<never, never, Option<A>>
 }
 

@@ -16,7 +16,7 @@ export class MulticastFx<R, E, A>
   extends Fx.Variance<R, E, A>
   implements Fx<R, E, A>, Fx.Sink<never, E, A>
 {
-  protected observers: Array<MulticastObserver<any, E, A>> = []
+  readonly observers: Array<MulticastObserver<any, E, A>> = []
   protected fiber: RuntimeFiber<never, unknown> | undefined
 
   constructor(readonly fx: Fx<R, E, A>) {
