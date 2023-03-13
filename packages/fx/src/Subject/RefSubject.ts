@@ -25,11 +25,9 @@ export interface RefSubject<A> extends HoldSubject<never, A>, Ref.Ref<A> {
   readonly set: (a: A) => Effect.Effect<never, never, A>
   readonly update: (f: (a: A) => A) => Effect.Effect<never, never, A>
   readonly delete: Effect.Effect<never, never, A>
-
   readonly compute: <R, E, B>(
     f: (a: A) => Effect.Effect<R, E, B>,
   ) => Effect.Effect<R | Scope.Scope, never, Computed<E, B>>
-
   readonly computeSync: <B>(f: (a: A) => B) => Effect.Effect<Scope.Scope, never, Computed<never, B>>
 }
 
