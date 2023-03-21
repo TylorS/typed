@@ -1,5 +1,6 @@
 import { pipe } from '@effect/data/Function'
 import { match } from '@effect/data/Option'
+import * as Chunk from '@effect/data/Chunk'
 import * as Cause from '@effect/io/Cause'
 
 import type { Fx } from '../Fx.js'
@@ -14,7 +15,7 @@ export function catchAllDefect<R2, E2, B>(f: (defect: unknown) => Fx<R2, E2, B>)
       catchAllCause(
         (cause): Fx<R2, E | E2, B> =>
           pipe(
-            Cause.defects(cause).get(0),
+           Chunk.get(Cause.defects(cause), 0),
             match(() => failCause(cause), f),
           ),
       ),

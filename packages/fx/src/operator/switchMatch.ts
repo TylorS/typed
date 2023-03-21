@@ -49,7 +49,7 @@ class SwitchMatchFx<R, E, A, R2, E2, B, R3, E3, C>
 
             let firstError = true
 
-            const handleError = Effect.suspendSucceed(() =>
+            const handleError = Effect.suspend(() =>
               firstError ? ((firstError = false), Effect.asUnit(counter.decrement)) : Effect.unit(),
             )
 

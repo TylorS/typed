@@ -28,5 +28,5 @@ If you're interested in chatting about this project join us on [Discord](https:/
 There is currently one example in the example directory which will showcase the way our vite plugin works.
 
 ## Upcoming
-- Integrations with @fp-ts/schema
+- Integrations with @effect/schema
 - Itegrations with @fp-ts/optic

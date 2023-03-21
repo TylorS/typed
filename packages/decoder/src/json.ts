@@ -1,12 +1,12 @@
-import * as ParseResult from '@fp-ts/schema/ParseResult'
-import * as Json from '@fp-ts/schema/data/Json'
+import * as ParseResult from '@effect/schema/ParseResult'
+import * as S from '@effect/schema/Schema'
 
 import type { Decoder } from './decoder.js'
 import { fromSchema } from './primitives.js'
 
-export const json = fromSchema(Json.json)
+export const json = fromSchema(S.json)
 
-export const jsonParse: Decoder<string, Json.Json> = (input, options) => {
+export const jsonParse: Decoder<string, S.Json> = (input, options) => {
   try {
     return json(JSON.parse(input), options)
   } catch {

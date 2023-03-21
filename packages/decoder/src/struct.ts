@@ -1,7 +1,9 @@
+import * as Either from '@effect/data/Either'
 import { isNonEmptyReadonlyArray } from '@effect/data/ReadonlyArray'
 import type { ReadonlyRecord } from '@effect/data/ReadonlyRecord'
-import type { ParseOptions } from '@fp-ts/schema/AST'
-import * as ParseResult from '@fp-ts/schema/ParseResult'
+import * as Effect from '@effect/io/Effect'
+import type { ParseOptions } from '@effect/schema/AST'
+import * as ParseResult from '@effect/schema/ParseResult'
 
 import type { Decoder, InputOf, OutputOf } from './decoder.js'
 import { unknownRecord } from './record.js'
@@ -23,39 +25,38 @@ export function struct<P extends ReadonlyRecord<Decoder<unknown, any>>>(
   properties: P,
 ): StructDecoder<P> {
   return Object.assign(
-    (i: InputOf<StructDecoder<P>>, options?: ParseOptions) => {
-      const recordResult = unknownRecord(i, options)
-
-      if (ParseResult.isFailure(recordResult)) {
-        return recordResult
-      }
-
-      const input = recordResult.right as {
-        readonly [K in keyof P]: InputOf<P[K]>
-      }
-      const keys = Reflect.ownKeys(properties) as (keyof P)[]
-      const failures: ParseResult.ParseError[] = []
-      const successes: Partial<Record<keyof P, any>> = {}
-      for (const key of keys) {
-        const property = properties[key]
-
-        if (!property) continue
-
-        const result = property(input[key], options)
-
-        if (ParseResult.isFailure(result)) {
-          failures.push(ParseResult.key(key, result.left))
-        } else {
-          successes[key] = result.right
+    (i: InputOf<StructDecoder<P>>, options?: ParseOptions) =>
+      Effect.gen(function* ($) {
+        const input = (yield* $(unknownRecord(i, options))) as {
+          readonly [K in keyof P]: InputOf<P[K]>
         }
-      }
+        const keys = Reflect.ownKeys(properties) as (keyof P)[]
+        const failures: ParseResult.ParseErrors[] = []
+        const successes: Partial<Record<keyof P, any>> = {}
+        for (const key of keys) {
+          const property = properties[key]
 
-      if (isNonEmptyReadonlyArray(failures)) {
-        return ParseResult.failures(failures)
-      }
+          if (!property) continue
 
-      return ParseResult.success(successes as any)
-    },
+          if (options?.allErrors) {
+            const either = yield* $(Effect.either(property(input[key], options)))
+
+            if (Either.isLeft(either)) {
+              failures.push(ParseResult.key(key, either.left.errors))
+            } else {
+              successes[key] = either.right
+            }
+          } else {
+            successes[key] = yield* $(property(input[key], options))
+          }
+        }
+
+        if (isNonEmptyReadonlyArray(failures)) {
+          return yield* $(Effect.fail(ParseResult.parseError(failures)))
+        }
+
+        return successes as any
+      }),
     { properties },
   )
 }

@@ -1,5 +1,6 @@
 import * as Request from '@effect/query/Request'
-import type { Schema } from '@fp-ts/schema/Schema'
+import type { ParseError } from '@effect/schema/ParseResult'
+import type { Schema } from '@effect/schema/Schema'
 import type { Decoder } from '@typed/decoder'
 
 import type {
@@ -8,7 +9,6 @@ import type {
   FetchInput,
   FetchInit,
   FetchTextResponse,
-  DecodeError,
   FetchDecodeInit,
 } from '@typed/dom/Fetch'
 
@@ -38,7 +38,7 @@ export const FetchText = (input: FetchInput, init?: FetchInit): FetchText =>
   Request.tagged<FetchText>('FetchText')({ input, init })
 
 export interface FetchDecodeJson<A>
-  extends Request.Request<FetchError | DecodeError, FetchJsonResponse<A>> {
+  extends Request.Request<FetchError | ParseError, FetchJsonResponse<A>> {
   readonly _tag: 'FetchDecodeJson'
   readonly input: FetchInput
   readonly decoder: Decoder<unknown, A>
@@ -53,7 +53,7 @@ export const FetchDecodeJson = <A>(
   Request.tagged<FetchDecodeJson<A>>('FetchDecodeJson')({ input, decoder, init })
 
 export interface FetchDecodeText<A>
-  extends Request.Request<FetchError | DecodeError, FetchJsonResponse<A>> {
+  extends Request.Request<FetchError | ParseError, FetchJsonResponse<A>> {
   readonly _tag: 'FetchDecodeText'
   readonly input: FetchInput
   readonly decoder: Decoder<string, A>
@@ -68,7 +68,7 @@ export const FetchDecodeText = <A>(
   Request.tagged<FetchDecodeText<A>>('FetchDecodeText')({ input, decoder, init })
 
 export interface FetchSchema<A>
-  extends Request.Request<FetchError | DecodeError, FetchJsonResponse<A>> {
+  extends Request.Request<FetchError | ParseError, FetchJsonResponse<A>> {
   readonly _tag: 'FetchSchema'
   readonly input: FetchInput
   readonly schema: Schema<A>

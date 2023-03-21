@@ -1,7 +1,8 @@
-import * as Either from '@effect/data/Either'
 import { pipe } from '@effect/data/Function'
 import * as RA from '@effect/data/ReadonlyArray'
-import * as ParseResult from '@fp-ts/schema/ParseResult'
+import * as Effect from '@effect/io/Effect'
+import type { ParseOptions } from '@effect/schema/AST'
+import * as ParseResult from '@effect/schema/ParseResult'
 
 import { compose } from './compose.js'
 import type { Decoder } from './decoder.js'
@@ -11,25 +12,30 @@ export const unknownArray: Decoder<unknown, ReadonlyArray<unknown>> = (i) =>
 
 export const fromArray =
   <I, O>(member: Decoder<I, O>): Decoder<readonly I[], readonly O[]> =>
-  (i, options) => {
-    const [failures, successes] = RA.separate(
-      pipe(
-        i,
-        RA.map((ix, idx) =>
+  (i: readonly I[], options?: ParseOptions) =>
+    Effect.gen(function* ($) {
+      const results = yield* $(
+        Effect.all(
           pipe(
-            member(ix, options),
-            Either.mapLeft((errors) => ParseResult.index(idx, errors)),
+            i,
+            RA.map((ix, idx) =>
+              pipe(
+                member(ix, options),
+                Effect.mapError((e) => ParseResult.index(idx, e.errors)),
+                Effect.either,
+              ),
+            ),
           ),
         ),
-      ),
-    )
+      )
+      const [failures, successes] = RA.separate(results)
 
-    if (RA.isNonEmptyReadonlyArray(failures)) {
-      return ParseResult.failures(failures)
-    }
+      if (RA.isNonEmptyReadonlyArray(failures)) {
+        return yield* $(Effect.fail(ParseResult.parseError(failures)))
+      }
 
-    return ParseResult.success(successes)
-  }
+      return successes
+    })
 
 export const array = <O>(member: Decoder<unknown, O>): Decoder<unknown, readonly O[]> =>
   pipe(unknownArray, compose(fromArray(member)))

@@ -88,7 +88,7 @@ export interface ContextBuilder<R> {
   readonly add: <S>(tag: C.Tag<S>, a: S) => ContextBuilder<R | S>
   readonly merge: <S>(builder: ContextBuilder<S>) => ContextBuilder<R | S>
   readonly mergeContext: <S>(context: C.Context<S>) => ContextBuilder<R | S>
-  readonly prune: <Tags extends Array<C.Tags<R>>>(
+  readonly pick: <Tags extends Array<C.Tags<R>>>(
     ...tags: Tags
   ) => ContextBuilder<ServiceOf<Tags[number]>>
 }
@@ -105,10 +105,8 @@ export function makeContextBuilder<R = never>(
     add: <A>(tag: C.Tag<A>, a: A) => makeContextBuilder(C.add(tag, a)(context)),
     merge: <S>(builder: ContextBuilder<S>) => makeContextBuilder(C.merge(builder.context)(context)),
     mergeContext: <S>(other: C.Context<S>) => makeContextBuilder(C.merge(other)(context)),
-    prune: <Tags extends Array<C.Tags<R>>>(
-      ...tags: Tags
-    ): ContextBuilder<ServiceOf<Tags[number]>> =>
-      makeContextBuilder(C.prune<R, Tags>(...tags)(context)) as ContextBuilder<
+    pick: <Tags extends Array<C.Tags<R>>>(...tags: Tags): ContextBuilder<ServiceOf<Tags[number]>> =>
+      makeContextBuilder(C.pick<R, Tags>(...tags)(context)) as ContextBuilder<
         ServiceOf<Tags[number]>
       >,
   }
@@ -126,5 +124,5 @@ export {
   getOption,
   add,
   merge,
-  prune,
+  pick,
 } from '@effect/data/Context'

@@ -34,11 +34,11 @@ export namespace SynchronizedSubject {
 
     const getValue = () =>
       pipe(
-        mutableRef.get(),
+        MutableRef.get(mutableRef),
         Option.getOrElse(() => {
           const a = initial()
 
-          mutableRef.set(Option.some(a))
+          MutableRef.set(mutableRef, Option.some(a))
 
           return a
         }),
@@ -56,7 +56,7 @@ export namespace SynchronizedSubject {
             return b
           }
 
-          mutableRef.set(Option.some(a))
+          MutableRef.set(mutableRef, Option.some(a))
 
           yield* $(subject.event(a))
 
@@ -100,7 +100,7 @@ export namespace SynchronizedSubject {
       delete: Effect.sync(() => {
         const value = getValue()
 
-        mutableRef.set(Option.some(value))
+        MutableRef.set(mutableRef, Option.some(value))
 
         return value
       }),

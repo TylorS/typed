@@ -33,7 +33,7 @@ export class RefCounter {
 
   readonly wait = Deferred.await(this.deferred)
 
-  private checkShouldClose = Effect.suspendSucceed(() => {
+  private checkShouldClose = Effect.suspend(() => {
     const interrupt = this.fiber ? Fiber.interrupt(this.fiber) : Effect.unit()
 
     this.fiber = undefined

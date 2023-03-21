@@ -42,7 +42,7 @@ class DuringFx<R, E, A, R2, E2, R3, E3, B>
               signal.run(
                 Fx.Sink(
                   (endSignal) =>
-                    Effect.suspendSucceed(() => {
+                    Effect.suspend(() => {
                       shouldRun = true
 
                       return endSignal.run(Fx.Sink(() => earlyExit, sink.error, earlyExit))

@@ -1,5 +1,5 @@
-import type { ParseOptions } from '@fp-ts/schema/AST'
-import type * as ParseResult from '@fp-ts/schema/ParseResult'
+import type { ParseOptions } from '@effect/schema/AST'
+import type * as ParseResult from '@effect/schema/ParseResult'
 
 export interface Decoder<I, O> {
   (i: I, options?: ParseOptions): ParseResult.ParseResult<O>

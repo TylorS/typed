@@ -1,12 +1,11 @@
-import * as E from '@effect/data/Either'
 import { pipe } from '@effect/data/Function'
 import * as O from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import type * as Layer from '@effect/io/Layer'
-import type { ParseOptions } from '@fp-ts/schema/AST'
-import type { ParseError, ParseResult } from '@fp-ts/schema/ParseResult'
-import * as P from '@fp-ts/schema/Parser'
-import type * as S from '@fp-ts/schema/Schema'
+import type { ParseOptions } from '@effect/schema/AST'
+import type { ParseError, ParseResult } from '@effect/schema/ParseResult'
+import * as P from '@effect/schema/Parser'
+import type * as S from '@effect/schema/Schema'
 import * as C from '@typed/context'
 import type * as Fx from '@typed/fx'
 
@@ -60,7 +59,7 @@ export const storageEvents = Object.assign(Window.withFx(addEventListener('stora
   setItem: (key: string, value: string): StorageEffect<GlobalThis | Window, never, void> =>
     StorageEffect(
       Storage.withEffect((s) =>
-        Effect.suspendSucceed(() => {
+        Effect.suspend(() => {
           const oldValue = s.getItem(key)
           s.setItem(key, value)
 
@@ -71,7 +70,7 @@ export const storageEvents = Object.assign(Window.withFx(addEventListener('stora
   removeItem: (key: string): StorageEffect<GlobalThis | Window, never, void> =>
     StorageEffect(
       Storage.withEffect((s) =>
-        Effect.suspendSucceed(() => {
+        Effect.suspend(() => {
           const oldValue = s.getItem(key)
 
           s.removeItem(key)
@@ -113,11 +112,11 @@ export interface SchemaStorage<Schema extends Record<string, S.Schema<any>>> {
   readonly get: <K extends keyof Schema & string>(
     key: K,
     options?: ParseOptions,
-  ) => StorageEffect<never, SchemaParseError, O.Option<S.Infer<Schema[K]>>>
+  ) => StorageEffect<never, ParseError, O.Option<S.To<Schema[K]>>>
 
   readonly set: <K extends keyof Schema & string>(
     key: K,
-    value: S.Infer<Schema[K]>,
+    value: S.To<Schema[K]>,
     options?: ParseOptions,
   ) => StorageEffect<never, never, void>
 
@@ -127,11 +126,11 @@ export interface SchemaStorage<Schema extends Record<string, S.Schema<any>>> {
     readonly get: <K extends keyof Schema & string>(
       key: K,
       options?: ParseOptions,
-    ) => StorageEffect<never, SchemaParseError, O.Option<S.Infer<Schema[K]>>>
+    ) => StorageEffect<never, ParseError, O.Option<S.To<Schema[K]>>>
 
     readonly set: <K extends keyof Schema & string>(
       key: K,
-      value: S.Infer<Schema[K]>,
+      value: S.To<Schema[K]>,
       options?: ParseOptions,
     ) => StorageEffect<GlobalThis | Window, never, void>
 
@@ -141,16 +140,16 @@ export interface SchemaStorage<Schema extends Record<string, S.Schema<any>>> {
   }
 }
 
-export function SchemaStorage<S extends Record<string, S.Schema<any>>>(
-  schema: S,
-): SchemaStorage<S> {
+export function SchemaStorage<Schemas extends Record<string, S.Schema<any>>>(
+  schema: Schemas,
+): SchemaStorage<Schemas> {
   const decoders: Record<string, (i: unknown, options?: ParseOptions) => ParseResult<any>> = {}
   const getDecoder = (key: string) => decoders[key] || (decoders[key] = P.decode(schema[key]))
 
   const encoders: Record<string, (i: unknown, options?: ParseOptions) => unknown> = {}
   const getEncoder = (key: string) => encoders[key] || (encoders[key] = P.encode(schema[key]))
 
-  const get = <K extends keyof S & string>(key: K, options?: ParseOptions) =>
+  const get = <K extends keyof Schemas & string>(key: K, options?: ParseOptions) =>
     StorageEffect(
       Effect.gen(function* ($) {
         const option = yield* $(getItem(key))
@@ -159,11 +158,7 @@ export function SchemaStorage<S extends Record<string, S.Schema<any>>>(
           return O.none()
         }
 
-        const result = getDecoder(key)(JSON.parse(option.value), options)
-
-        if (E.isLeft(result)) {
-          return yield* $(Effect.fail(SchemaParseError(key, option.value, result.left)))
-        }
+        const result = yield* $(getDecoder(key)(JSON.parse(option.value), options))
 
         return O.some(result.right)
       }),
@@ -172,35 +167,21 @@ export function SchemaStorage<S extends Record<string, S.Schema<any>>>(
   return {
     schema,
     get,
-    set: <K extends keyof S & string>(key: K, value: S.Infer<S[K]>, options?: ParseOptions) =>
-      StorageEffect(setItem(key, JSON.stringify(getEncoder(key)(value, options)))),
-    remove: <K extends keyof S & string>(key: K) => StorageEffect(removeItem(key)),
+    set: <K extends keyof Schemas & string>(
+      key: K,
+      value: S.To<Schemas[K]>,
+      options?: ParseOptions,
+    ) => StorageEffect(setItem(key, JSON.stringify(getEncoder(key)(value, options)))),
+    remove: <K extends keyof Schemas & string>(key: K) => StorageEffect(removeItem(key)),
     events: {
       get,
-      set: <K extends keyof S & string>(key: K, value: S.Infer<S[K]>, options?: ParseOptions) =>
-        storageEvents.setItem(key, JSON.stringify(getEncoder(key)(value, options))),
-      remove: <K extends keyof S & string>(key: K) => storageEvents.removeItem(key),
+      set: <K extends keyof Schemas & string>(
+        key: K,
+        value: S.To<Schemas[K]>,
+        options?: ParseOptions,
+      ) => storageEvents.setItem(key, JSON.stringify(getEncoder(key)(value, options))),
+      remove: <K extends keyof Schemas & string>(key: K) => storageEvents.removeItem(key),
     },
-  }
-}
-
-export interface SchemaParseError {
-  readonly _tag: 'SchemaParserError'
-  readonly key: string
-  readonly value: string
-  readonly errors: readonly [ParseError, ...ParseError[]]
-}
-
-export function SchemaParseError(
-  key: string,
-  value: string,
-  errors: readonly [ParseError, ...ParseError[]],
-): SchemaParseError {
-  return {
-    _tag: 'SchemaParserError',
-    key,
-    value,
-    errors,
   }
 }
 

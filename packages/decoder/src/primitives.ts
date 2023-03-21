@@ -1,17 +1,15 @@
 import * as Option from '@effect/data/Option'
-import type * as AST from '@fp-ts/schema/AST'
-import * as Parser from '@fp-ts/schema/Parser'
-import * as S from '@fp-ts/schema/Schema'
+import type * as AST from '@effect/schema/AST'
+import * as Parser from '@effect/schema/Parser'
+import * as S from '@effect/schema/Schema'
 
 import type { Decoder } from './decoder.js'
 import { union } from './union.js'
 
-export interface SchemaDecoder<A> extends S.Schema<A>, Decoder<unknown, A> {}
+export interface SchemaDecoder<From, To = From> extends S.Schema<From, To>, Decoder<unknown, To> {}
 
-export function fromSchema<A>(schema: S.Schema<A>): SchemaDecoder<A>
-
-export function fromSchema<A>(schema: S.Schema<A>): SchemaDecoder<A> {
-  return Object.assign(Parser.decode(schema), schema)
+export function fromSchema<From, To>(schema: S.Schema<From, To>): SchemaDecoder<From, To> {
+  return Object.assign(Parser.decodeEffect(schema), schema)
 }
 
 export const literal = <Literals extends readonly AST.LiteralValue[]>(
@@ -49,8 +47,7 @@ export { null_ as null, undefined_ as undefined, void_ as void }
 export const instanceOf = <A extends abstract new (...args: any) => any>(
   constructor: A,
   annotationOptions?: S.AnnotationOptions<object>,
-): SchemaDecoder<InstanceType<A>> =>
-  fromSchema(S.instanceOf(constructor, annotationOptions)(S.object))
+): SchemaDecoder<InstanceType<A>> => fromSchema(S.instanceOf(constructor, annotationOptions))
 
 export const lazy = <I, O>(f: () => Decoder<I, O>): Decoder<I, O> => {
   let memoized: Option.Option<Decoder<I, O>> = Option.none()

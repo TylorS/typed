@@ -63,7 +63,7 @@ export const storeCredential = (credential: Credential) =>
 
 export const getCurrentPosition = (options?: PositionOptions) =>
   Navigator.withEffect((n) =>
-    Effect.tryCatchPromise(
+    Effect.attemptCatchPromise(
       () =>
         new Promise<GeolocationPosition>((resolve, reject) =>
           n.geolocation.getCurrentPosition(resolve, reject, options),

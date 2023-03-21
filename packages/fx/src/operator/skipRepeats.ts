@@ -22,13 +22,13 @@ class SkipRepeatsWithFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E
   }
 
   run<R2>(sink: Fx.Sink<R2, E, A>) {
-    return Effect.suspendSucceed(() => {
+    return Effect.suspend(() => {
       let previous: Option.Option<A> = Option.none()
 
       return this.self.run({
         ...sink,
         event: (a) =>
-          Effect.suspendSucceed(() => {
+          Effect.suspend(() => {
             if (Option.isNone(previous) || !this.equals(previous.value, a)) {
               previous = Option.some(a)
 

@@ -6,7 +6,7 @@ import type { Fx } from '../Fx.js'
 import { reduce } from './reduce.js'
 
 export const collectAll = <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, readonly A[]> =>
-  Effect.suspendSucceed(() =>
+  Effect.suspend(() =>
     pipe(
       fx,
       reduce([] as A[], (acc, a) => {

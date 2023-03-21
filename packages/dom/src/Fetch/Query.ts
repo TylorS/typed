@@ -1,3 +1,4 @@
+import * as Chunk from '@effect/data/Chunk'
 import { pipe } from '@effect/data/Function'
 import * as RA from '@effect/data/ReadonlyArray'
 import * as Query from '@effect/query/Query'
@@ -33,7 +34,7 @@ export function queryPar<Queries extends ReadonlyArray<FetchRequest<any>>>(
     requests,
     RA.map(query),
     Query.collectAllPar,
-    Query.map((c) => c.toReadonlyArray()),
+    Query.map((c) => Chunk.toReadonlyArray(c)),
   ) as any
 }
 
@@ -50,6 +51,6 @@ export function queryBatched<Queries extends ReadonlyArray<FetchRequest>>(
     RA.map(query),
     Query.collectAllBatched,
     Query.maxBatchSize(batchSize),
-    Query.map((c) => c.toReadonlyArray()),
+    Query.map((c) => Chunk.toReadonlyArray(c)),
   ) as any
 }

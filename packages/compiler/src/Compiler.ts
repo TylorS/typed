@@ -359,10 +359,11 @@ export class Compiler {
     return (this.transformers = {
       before: [
         // Types are weird for some reason
+        // Also, not updated usage w/ TS 5.x
         (effectTransformer as any as typeof effectTransformer.default)(
-          this.project.getProgram().compilerObject,
+          this.project.getProgram().compilerObject as any,
           resolvedEffectTsOptions,
-        ).before,
+        ).before as any,
       ],
     })
   }

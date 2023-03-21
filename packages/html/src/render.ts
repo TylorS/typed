@@ -94,7 +94,7 @@ export const getRenderHoleContext: Effect.Effect<
   Document | RenderContext,
   never,
   RenderHoleContext
-> = Effect.struct({
+> = Effect.all({
   document: Document.get,
   fiberRefs: Effect.getFiberRefs(),
   runtimeFlags: Effect.runtimeFlags(),

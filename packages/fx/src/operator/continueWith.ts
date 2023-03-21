@@ -1,4 +1,4 @@
-import { suspendSucceed } from '@effect/io/Effect'
+import { suspend } from '@effect/io/Effect'
 
 import { Fx } from '../Fx.js'
 
@@ -24,5 +24,5 @@ class ContinueWithSink<R, E, A, R2, E2, B> {
 
   event = this.sink.event
   error = this.sink.error
-  end = suspendSucceed(() => this.f().run(this.sink))
+  end = suspend(() => this.f().run(this.sink))
 }

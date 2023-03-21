@@ -146,6 +146,7 @@ function unwrapFxValue(
     const prev = prevParts[prevParts.length - 1].trim()
 
     // Allow event listeners to be passed as Effects to be called when triggered
+    // Otherwise the Effect is lifted into an Fx that is sampled whenever the Fx emits a value
     if (!prev.startsWith('on')) {
       return pipe(
         Fx.fromEffect<any, any, any>(value),

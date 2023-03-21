@@ -1,4 +1,5 @@
 import { pipe } from '@effect/data/Function'
+import * as Chunk from '@effect/data/Chunk'
 import * as Effect from '@effect/io/Effect'
 import type { Redirect } from '@typed/router'
 
@@ -12,7 +13,7 @@ export function getAllStaticPaths({
   return pipe(
     modules,
     Effect.forEach(getStaticPathsFromModule),
-    Effect.map((x) => x.toReadonlyArray().flat()),
+    Effect.map((x) => Chunk.toReadonlyArray(x).flat()),
   )
 }
 

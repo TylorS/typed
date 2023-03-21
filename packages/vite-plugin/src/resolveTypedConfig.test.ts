@@ -6,7 +6,7 @@ import { isSome, some } from '@effect/data/Option'
 import { describe, it } from 'vitest'
 
 import { resolveTypedConfig } from './resolveTypedConfig.js'
-import type { ResolvedOptions } from './vite-plugin.js'
+import type { ResolvedOptions } from '@typed/compiler'
 
 const vitePluginSrcDirectory = dirname(fileURLToPath(import.meta.url))
 const rootDirectory = dirname(dirname(dirname(vitePluginSrcDirectory)))
@@ -24,6 +24,7 @@ describe(import.meta.url, () => {
         clientOutputDirectory: join(sourceDirectory, 'dist/client'),
         serverOutputDirectory: join(sourceDirectory, 'dist/server'),
         htmlFiles: [join(sourceDirectory, 'index.html'), join(sourceDirectory, 'other.html')],
+        exclusions: [],
         debug: false,
         saveGeneratedModules: true,
         isStaticBuild: false,

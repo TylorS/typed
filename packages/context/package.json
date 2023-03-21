@@ -19,8 +19,8 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.2.0",
-    "@effect/io": "^0.3.0",
+    "@effect/data": "^0.5.0",
+    "@effect/io": "^0.10.0",
     "@typed/fx": "workspace:*"
   },
   "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",

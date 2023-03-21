@@ -34,8 +34,8 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
   }
 
   run<R2>(sink: Fx.Sink<R2, E, A>): Effect.Effect<Scope | R | R2, never, void> {
-    return Effect.suspendSucceed(() => {
-      if (Option.isSome(this.current.get())) {
+    return Effect.suspend(() => {
+      if (Option.isSome(MutableRef.get(this.current))) {
         return pipe(
           this.scheduleFlush(sink),
           Effect.flatMap(() => super.run(sink)),
@@ -47,7 +47,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
   }
 
   event(a: A) {
-    return Effect.suspendSucceed(() => {
+    return Effect.suspend(() => {
       this.addValue(a)
 
       return pipe(
@@ -58,7 +58,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
   }
 
   error(cause: Cause.Cause<E>) {
-    return Effect.suspendSucceed(() =>
+    return Effect.suspend(() =>
       pipe(
         this.flushPending(),
         Effect.flatMap(() => super.error(cause)),
@@ -67,7 +67,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
   }
 
   get end() {
-    return Effect.suspendSucceed(() =>
+    return Effect.suspend(() =>
       pipe(
         this.flushPending(),
         Effect.flatMap(() => super.end),
@@ -76,11 +76,12 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
   }
 
   protected scheduleFlush(sink: Fx.Sink<any, E, A>) {
-    return Effect.suspendSucceed(() => {
+    return Effect.suspend(() => {
       this.pendingSinks.push([
         sink,
         pipe(
-          this.current.get(),
+          this.current,
+          MutableRef.get,
           Option.match(
             () => [],
             (a) => [a],
@@ -137,7 +138,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
   }
 
   protected addValue(a: A) {
-    this.current.set(Option.some(a))
+    MutableRef.set(this.current, Option.some(a))
     this.pendingSinks.forEach(([, events]) => events.push(a))
   }
 }

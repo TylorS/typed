@@ -9,7 +9,7 @@ export const reduce: <B, A>(
   seed: B,
   f: (acc: B, a: A) => B,
 ) => <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, B> = (seed, f) => (fx) =>
-  Effect.suspendSucceed(() => {
+  Effect.suspend(() => {
     let acc = seed
 
     return pipe(

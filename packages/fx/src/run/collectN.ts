@@ -9,7 +9,7 @@ import { reduce } from './reduce.js'
 export const collectN =
   (amount: number) =>
   <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, readonly A[]> =>
-    Effect.suspendSucceed(() =>
+    Effect.suspend(() =>
       pipe(
         fx,
         take(amount),

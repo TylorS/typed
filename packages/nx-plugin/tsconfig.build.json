@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "preserveValueImports": false,
+    "verbatimModuleSyntax": false,
     "module": "commonjs"
   },
   "exclude": [

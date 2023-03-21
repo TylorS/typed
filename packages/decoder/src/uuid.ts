@@ -1,5 +1,5 @@
-import * as UUID from '@fp-ts/schema/data/UUID'
+import * as S from '@effect/schema/Schema'
 
 import { fromSchema } from './primitives.js'
 
-export const uuid = fromSchema(UUID.UUID)
+export const uuid = fromSchema(S.UUID)

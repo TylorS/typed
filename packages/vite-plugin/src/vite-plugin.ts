@@ -82,7 +82,7 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
   const plugins: PluginOption[] = [
     tsconfigPaths({
       projects: [options.tsConfig],
-    }),
+    }) as PluginOption,
     ...pipe(
       options.serverFilePath,
       Option.filter(() => !options.isStaticBuild),

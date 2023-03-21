@@ -1,15 +1,14 @@
-import * as Either from '@effect/data/Either'
 import { pipe } from '@effect/data/Function'
-import * as AST from '@fp-ts/schema/AST'
-import * as ParseResult from '@fp-ts/schema/ParseResult'
-import * as Annotations from '@fp-ts/schema/annotation/AST'
+import * as Effect from '@effect/io/Effect'
+import * as AST from '@effect/schema/AST'
+import * as ParseResult from '@effect/schema/ParseResult'
 
 import type { Decoder } from './decoder.js'
 
 const numberFailure = (message: string, actual: number) =>
   ParseResult.failure(
     ParseResult.type(
-      AST.setAnnotation(AST.numberKeyword, Annotations.MessageId, () => message),
+      AST.setAnnotation(AST.numberKeyword, AST.MessageAnnotationId, () => message),
       actual,
     ),
   )
@@ -20,7 +19,7 @@ export const lessThan =
   (i, options) =>
     pipe(
       decoder(i, options),
-      Either.flatMap((n) =>
+      Effect.flatMap((n) =>
         n < max
           ? ParseResult.success(n)
           : numberFailure(`Expected number to be less than ${max}, got ${n}`, n),
@@ -38,7 +37,7 @@ export const greaterThan =
   (i, options) =>
     pipe(
       decoder(i, options),
-      Either.flatMap((n) =>
+      Effect.flatMap((n) =>
         n > min
           ? ParseResult.success(n)
           : numberFailure(`Expected number to be greater than ${min}, got ${n}`, n),
@@ -55,7 +54,7 @@ export const int =
   (i, options) =>
     pipe(
       decoder(i, options),
-      Either.flatMap((n) =>
+      Effect.flatMap((n) =>
         Number.isInteger(n)
           ? ParseResult.success(n)
           : numberFailure(`Expected number to be an integer, got ${n}`, n),
@@ -67,7 +66,7 @@ export const nonNan =
   (i, options) =>
     pipe(
       decoder(i, options),
-      Either.flatMap((n) =>
+      Effect.flatMap((n) =>
         Number.isNaN(n)
           ? numberFailure(`Expected number to be a number, got NaN`, n)
           : ParseResult.success(n),
@@ -79,7 +78,7 @@ export const finite =
   (i, options) =>
     pipe(
       decoder(i, options),
-      Either.flatMap((n) =>
+      Effect.flatMap((n) =>
         Number.isFinite(n)
           ? ParseResult.success(n)
           : numberFailure(`Expected number to be finite, got ${n}`, n),

@@ -30,7 +30,7 @@ class LoopSink<R, E, A, B, C> implements Fx.Sink<R, E, A> {
   ) {}
 
   readonly event = (a: A) =>
-    Effect.suspendSucceed(() => {
+    Effect.suspend(() => {
       const [c, b] = this.f(this.acc, a)
 
       this.acc = b

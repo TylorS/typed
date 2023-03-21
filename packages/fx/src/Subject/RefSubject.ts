@@ -48,14 +48,14 @@ export namespace RefSubject {
     const current = MutableRef.make(Option.some(initial()))
     const subject = HoldSubject.unsafeMake<never, A>(current)
 
-    const getValue = () => pipe(current.get(), Option.getOrElse(initial))
+    const getValue = () => pipe(current, MutableRef.get, Option.getOrElse(initial))
 
     const modify = <B>(f: (a: A) => readonly [B, A]): Effect.Effect<never, never, B> =>
-      Effect.suspendSucceed(() => {
+      Effect.suspend(() => {
         const currentValue = getValue()
         const [b, a] = f(currentValue)
 
-        current.set(Option.some(a))
+        MutableRef.set(current, (Option.some(a)))
 
         if (eq(currentValue, a)) {
           return Effect.succeed(b)
@@ -80,9 +80,9 @@ export namespace RefSubject {
       modify,
       ...makeDerivations(modify, Effect.sync(getValue)),
       delete: Effect.sync(() => {
-        const option = current.get()
+        const option = MutableRef.get(current)
         const reset = initial()
-        current.set(Option.some(reset))
+        MutableRef.set(current, (Option.some(reset)))
 
         return Option.getOrElse(option, () => reset)
       }),
@@ -103,7 +103,7 @@ export namespace RefSubject {
     type Val = { readonly [K in keyof Subjects]: ValueOf<Subjects[K]> }
     const length = subjects.length
 
-    const getUnderlyingValues = Effect.tuple(
+    const getUnderlyingValues = Effect.all(
       ...ReadonlyArray.mapNonEmpty(subjects, (s) => s.get),
     ) as Effect.Effect<never, never, Val>
 
@@ -128,7 +128,7 @@ export namespace RefSubject {
 
       // Override event to replicate events into underlying subjects
       const event = (val: Val) =>
-        Effect.tuple(...ReadonlyArray.mapNonEmpty(subjects, (s, i) => s.event(val[i])))
+        Effect.all(...ReadonlyArray.mapNonEmpty(subjects, (s, i) => s.event(val[i])))
 
       // Override modify to replicate events into underlying subjects
       const modify = <B>(f: (a: Val) => readonly [B, Val]): Effect.Effect<never, never, B> =>
@@ -173,7 +173,7 @@ export namespace RefSubject {
   > {
     type Val = { readonly [K in keyof Subjects]: ValueOf<Subjects[K]> }
 
-    const getUnderlyingValues = Effect.struct(
+    const getUnderlyingValues = Effect.all(
       ReadonlyRecord.map(subjects, (s) => s.get),
     ) as Effect.Effect<never, never, Val>
 
@@ -197,7 +197,7 @@ export namespace RefSubject {
 
       // Override event to replicate events into underlying subjects
       const event = (val: Val) =>
-        Effect.struct(ReadonlyRecord.map(subjects, (s, i) => s.event(val[i])))
+        Effect.all(ReadonlyRecord.map(subjects, (s, i) => s.event(val[i])))
 
       // Override modify to replicate events into underlying subjects
       const modify = <B>(f: (a: Val) => readonly [B, Val]): Effect.Effect<never, never, B> =>

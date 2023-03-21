@@ -55,13 +55,13 @@ export class MulticastFx<R, E, A>
   }
 
   event(a: A) {
-    return Effect.suspendSucceed(() =>
+    return Effect.suspend(() =>
       Effect.forEachDiscard(this.observers.slice(), (observer) => this.runEvent(a, observer)),
     )
   }
 
   error(cause: Cause<E>) {
-    return Effect.suspendSucceed(() =>
+    return Effect.suspend(() =>
       pipe(
         Effect.forEachDiscard(this.observers.slice(), (observer) => this.runError(cause, observer)),
         Effect.tap(() => this.cleanup()),
@@ -70,7 +70,7 @@ export class MulticastFx<R, E, A>
   }
 
   get end(): Effect.Effect<never, never, void> {
-    return Effect.suspendSucceed(() =>
+    return Effect.suspend(() =>
       pipe(
         this.observers.slice(),
         Effect.forEachDiscard((observer) => this.runEnd(observer)),

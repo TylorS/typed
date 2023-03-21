@@ -1,9 +1,7 @@
 import { pipe } from '@effect/data/Function'
-import type { NonEmptyReadonlyArray } from '@effect/data/ReadonlyArray'
 import * as Effect from '@effect/io/Effect'
-import type { ParseOptions } from '@fp-ts/schema/AST'
-import * as ParseResult from '@fp-ts/schema/ParseResult'
-import { formatErrors } from '@fp-ts/schema/formatter/Tree'
+import type { ParseOptions } from '@effect/schema/AST'
+import * as ParseResult from '@effect/schema/ParseResult'
 import * as Context from '@typed/context'
 import type { Decoder } from '@typed/decoder'
 
@@ -77,17 +75,13 @@ fetchJson.decode = <A>(
   input: FetchInput,
   decoder: Decoder<unknown, A>,
   init?: FetchDecodeInit,
-): Effect.Effect<Fetch, FetchError | DecodeError, FetchJsonResponse<A>> =>
+): Effect.Effect<Fetch, FetchError | ParseResult.ParseError, FetchJsonResponse<A>> =>
   Effect.gen(function* ($) {
     const [request, controller] = createRequest(input, init)
     const { body, ...rest } = yield* $(fetchJson(request, undefined, controller))
-    const result = decoder(body, init)
+    const result = yield* $(decoder(body, init))
 
-    if (ParseResult.isFailure(result)) {
-      return yield* $(Effect.fail(new DecodeError(request, result.left)))
-    }
-
-    return { ...rest, body: result.right }
+    return { ...rest, body: result }
   })
 
 export function fetchText(
@@ -119,17 +113,13 @@ fetchText.decode = <A>(
   input: FetchInput,
   decoder: Decoder<string, A>,
   init?: FetchDecodeInit,
-): Effect.Effect<Fetch, FetchError | DecodeError, FetchJsonResponse<A>> =>
+): Effect.Effect<Fetch, FetchError | ParseResult.ParseError, FetchJsonResponse<A>> =>
   Effect.gen(function* ($) {
     const [request, controller] = createRequest(input, init)
     const { body, ...rest } = yield* $(fetchText(request, undefined, controller))
-    const result = decoder(body, init)
+    const result = yield* $(decoder(body, init))
 
-    if (ParseResult.isFailure(result)) {
-      return yield* $(Effect.fail(new DecodeError(request, result.left)))
-    }
-
-    return { ...rest, _tag: 'FetchJsonResponse', body: result.right }
+    return { ...rest, _tag: 'FetchJsonResponse', body: result }
   })
 
 export interface FetchTextResponse {
@@ -160,11 +150,11 @@ const fetch_ = <A>(
   optionalController?: AbortController,
 ): Effect.Effect<Fetch, FetchError, A> =>
   Fetch.withEffect((fetch) =>
-    Effect.suspendSucceed(() => {
+    Effect.suspend(() => {
       const [request, controller] = createRequest(input, init, optionalController)
 
       return pipe(
-        Effect.tryCatchPromise(
+        Effect.attemptCatchPromise(
           () => fetch(request).then((response) => f(request, response)),
           (e) => FetchError(request, e),
         ),
@@ -172,14 +162,3 @@ const fetch_ = <A>(
       )
     }),
   )
-
-export class DecodeError extends Error {
-  readonly _tag = 'DecodeError' as const
-
-  constructor(
-    readonly request: Request,
-    readonly errors: NonEmptyReadonlyArray<ParseResult.ParseError>,
-  ) {
-    super(formatErrors(errors))
-  }
-}

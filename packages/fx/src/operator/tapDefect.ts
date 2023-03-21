@@ -1,5 +1,6 @@
 import { pipe } from '@effect/data/Function'
 import { match } from '@effect/data/Option'
+import * as Chunk from '@effect/data/Chunk'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 
@@ -14,7 +15,7 @@ export function tapDefect<R2, E2, B>(f: (defect: unknown) => Effect.Effect<R2, E
       tapCause(
         (cause): Effect.Effect<R2, E | E2, B> =>
           pipe(
-            Cause.defects(cause).get(0),
+            Chunk.get(Cause.defects(cause), 0),
             match(() => Effect.failCause(cause), f),
           ),
       ),

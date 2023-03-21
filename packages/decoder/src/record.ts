@@ -1,8 +1,9 @@
-import * as Either from '@effect/data/Either'
 import { pipe } from '@effect/data/Function'
 import * as RA from '@effect/data/ReadonlyArray'
 import type * as RR from '@effect/data/ReadonlyRecord'
-import * as ParseResult from '@fp-ts/schema/ParseResult'
+import * as Effect from '@effect/io/Effect'
+import type { ParseOptions } from '@effect/schema/AST'
+import * as ParseResult from '@effect/schema/ParseResult'
 
 import { compose } from './compose.js'
 import type { Decoder } from './decoder.js'
@@ -15,28 +16,33 @@ export const unknownRecord: Decoder<unknown, RR.ReadonlyRecord<unknown>> = (i) =
 
 export const fromRecord =
   <I, O>(member: Decoder<I, O>): Decoder<RR.ReadonlyRecord<I>, RR.ReadonlyRecord<O>> =>
-  (i, options) => {
-    const [failures, successes] = RA.separate(
-      pipe(
-        Object.entries(i),
-        RA.map(([key, value]) =>
+  (i: RR.ReadonlyRecord<I>, options?: ParseOptions) =>
+    Effect.gen(function* ($) {
+      const results = yield* $(
+        Effect.all(
           pipe(
-            member(value, options),
-            Either.bimap(
-              (errors) => ParseResult.key(key, errors),
-              (o) => [key, o] as const,
+            Object.entries(i),
+            RA.map(([k, v]) =>
+              pipe(
+                member(v, options),
+                Effect.mapBoth(
+                  (e) => ParseResult.key(k, e.errors),
+                  (a) => [k, a] as const,
+                ),
+                Effect.either,
+              ),
             ),
           ),
         ),
-      ),
-    )
+      )
+      const [failures, successes] = RA.separate(results)
 
-    if (RA.isNonEmptyReadonlyArray(failures)) {
-      return ParseResult.failures(failures)
-    }
+      if (RA.isNonEmptyReadonlyArray(failures)) {
+        return yield* $(Effect.fail(ParseResult.parseError(failures)))
+      }
 
-    return ParseResult.success(Object.fromEntries(successes))
-  }
+      return Object.fromEntries(successes)
+    })
 
 export const record = <O>(member: Decoder<unknown, O>): Decoder<unknown, RR.ReadonlyRecord<O>> =>
   pipe(unknownRecord, compose(fromRecord(member)))

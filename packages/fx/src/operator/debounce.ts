@@ -27,7 +27,7 @@ class DebounceFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
         return fx.run(
           Fx.Sink(
             (a: A) =>
-              Effect.suspendSucceed(() =>
+              Effect.suspend(() =>
                 pipe(
                   scheduledFiber ? Fiber.interrupt(scheduledFiber) : counter.increment,
                   // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -20,7 +20,7 @@ export interface ExpressService {
 export const ExpressService = Tag<ExpressService>()
 
 export function app<R, E, A>(effect: Effect.Effect<R, E, A>) {
-  return Effect.suspendSucceed(() => pipe(effect, ExpressService.provide({ app: express() })))
+  return Effect.suspend(() => pipe(effect, ExpressService.provide({ app: express() })))
 }
 
 export function api<Handlers extends readonly FetchHandler<any, never, any>[]>(

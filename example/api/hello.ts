@@ -56,7 +56,7 @@ export const I18N = Context.Tag<I18N>()
 // with anything defined locally to a module.
 export const environment = I18N.layerOf({
   translate: (key, preferredLanguages) =>
-    Effect.suspendSucceed(() => {
+    Effect.suspend(() => {
       const lowercaseKey = key.toLowerCase()
 
       if (!(lowercaseKey in translations))
