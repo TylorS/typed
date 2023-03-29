@@ -263,7 +263,7 @@ export function makeRuntimeModule(
         ? `, Effect.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
         : ''
 
-      return `getStaticPaths: pipe(${name}.getStaticPaths${envText}, Effect.provideSomeLayer(${name}.environment))`
+      return `getStaticPaths: pipe(${name}.getStaticPaths, Effect.provideSomeLayer(${name}.environment)${envText})`
     }
 
     return environment
