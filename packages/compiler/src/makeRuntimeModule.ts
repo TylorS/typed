@@ -15,7 +15,7 @@ import { addNamedImport, addNamespaceImport, appendText } from './ts-morph-helpe
 
 /**
  * Construct a typescript module that can be used to access all modules in a
- * ModuleTree.
+ * ModuleTree. Passes along inheritance of layout and environment.
  */
 export function makeRuntimeModule(
   project: Project,
