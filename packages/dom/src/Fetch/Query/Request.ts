@@ -12,12 +12,12 @@ import type {
   FetchDecodeInit,
 } from '@typed/dom/Fetch'
 
-export type FetchRequest<A = unknown> =
+export type FetchRequest<O = unknown> =
   | FetchJson
   | FetchText
-  | FetchDecodeJson<A>
-  | FetchDecodeText<A>
-  | FetchSchema<A>
+  | FetchDecodeJson<O>
+  | FetchDecodeText<O>
+  | FetchSchema<any, O>
 
 export interface FetchJson extends Request.Request<FetchError, FetchJsonResponse> {
   readonly _tag: 'FetchJson'
@@ -67,16 +67,16 @@ export const FetchDecodeText = <A>(
 ): FetchDecodeText<A> =>
   Request.tagged<FetchDecodeText<A>>('FetchDecodeText')({ input, decoder, init })
 
-export interface FetchSchema<A>
+export interface FetchSchema<I, A>
   extends Request.Request<FetchError | ParseError, FetchJsonResponse<A>> {
   readonly _tag: 'FetchSchema'
   readonly input: FetchInput
-  readonly schema: Schema<A>
+  readonly schema: Schema<I, A>
   readonly init?: FetchDecodeInit
 }
 
-export const FetchSchema = <A>(
+export const FetchSchema = <I, A>(
   input: FetchInput,
-  schema: Schema<A>,
+  schema: Schema<I, A>,
   init?: FetchDecodeInit,
-): FetchSchema<A> => Request.tagged<FetchSchema<A>>('FetchSchema')({ input, schema, init })
+): FetchSchema<I, A> => Request.tagged<FetchSchema<I, A>>('FetchSchema')({ input, schema, init })

@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import * as DataSource from '@effect/query/DataSource'
 import * as Request from '@effect/query/Request'
-import * as P from '@effect/schema/Parser'
+import { fromSchema } from '@typed/decoder'
 
 import type { FetchRequest } from './Request.js'
 
@@ -25,9 +25,7 @@ export const FetchDataSource: DataSource.DataSource<Fetch, FetchRequest> = DataS
 
       if (request._tag === 'FetchSchema') {
         const response = yield* $(
-          Effect.either(
-            fetchJson.decode(request.input, P.decodeEffect(request.schema), request.init),
-          ),
+          Effect.either(fetchJson.decode(request.input, fromSchema(request.schema), request.init)),
         )
         return yield* $(Request.complete(request, response))
       }

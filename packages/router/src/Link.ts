@@ -12,7 +12,7 @@ export function Link<R = never, E = never, R2 = never>(
   return Fx.gen(function* ($) {
     const useBase = props.useBase ?? true
     const href = useBase ? pathJoin(yield* $(getBasePath), props.href) || '/' : props.href
-    const router = yield* $(Router.get)
+    const router = yield* $(Router)
     const clickHandler = (event: MouseEvent & { currentTarget: HTMLAnchorElement }) =>
       Effect.gen(function* ($) {
         if (props.fullReload) {

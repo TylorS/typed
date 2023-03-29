@@ -95,10 +95,10 @@ export const getRenderHoleContext: Effect.Effect<
   never,
   RenderHoleContext
 > = Effect.all({
-  document: Document.get,
+  document: Document,
   fiberRefs: Effect.getFiberRefs(),
   runtimeFlags: Effect.runtimeFlags(),
-  renderContext: RenderContext.get,
+  renderContext: RenderContext,
 })
 
 /**

@@ -54,9 +54,17 @@ const toFetchJsonResponse = (r: Response, body: unknown): FetchJsonResponse => (
   url: r.url,
   status: r.status,
   statusText: r.statusText,
-  headers: r.headers,
+  headers: fromHeaders(r.headers),
   body,
 })
+
+const fromHeaders = (headers: Headers): Readonly<Record<string, string>> => {
+  const result: Record<string, string> = {}
+
+  headers.forEach((value, key) => (result[key] = value))
+
+  return result
+}
 
 export interface FetchJsonResponse<A = unknown> {
   readonly _tag: 'FetchJsonResponse'
@@ -65,7 +73,7 @@ export interface FetchJsonResponse<A = unknown> {
   readonly url: string
   readonly status: number
   readonly statusText: string
-  readonly headers: Headers
+  readonly headers: Readonly<Record<string, string>>
   readonly body: A
 }
 
@@ -79,7 +87,7 @@ fetchJson.decode = <A>(
   Effect.gen(function* ($) {
     const [request, controller] = createRequest(input, init)
     const { body, ...rest } = yield* $(fetchJson(request, undefined, controller))
-    const result = yield* $(decoder(body, init))
+    const result = yield* $(ParseResult.effect(decoder(body, init)))
 
     return { ...rest, body: result }
   })
@@ -99,7 +107,7 @@ export function fetchText(
           url: r.url,
           status: r.status,
           statusText: r.statusText,
-          headers: r.headers,
+          headers: fromHeaders(r.headers),
           body,
         }),
       ),
@@ -117,7 +125,7 @@ fetchText.decode = <A>(
   Effect.gen(function* ($) {
     const [request, controller] = createRequest(input, init)
     const { body, ...rest } = yield* $(fetchText(request, undefined, controller))
-    const result = yield* $(decoder(body, init))
+    const result = yield* $(ParseResult.effect(decoder(body, init)))
 
     return { ...rest, _tag: 'FetchJsonResponse', body: result }
   })
@@ -129,7 +137,7 @@ export interface FetchTextResponse {
   readonly url: string
   readonly status: number
   readonly statusText: string
-  readonly headers: Headers
+  readonly headers: Readonly<Record<string, string>>
   readonly body: string
 }
 

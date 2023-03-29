@@ -9,7 +9,7 @@ export const makeMutationObserver = (
 ): Fx.Fx<GlobalThis, never, readonly MutationRecord[]> =>
   Fx.fromEmitter((emitter) =>
     Effect.gen(function* ($) {
-      const globalThis = yield* $(GlobalThis.get)
+      const globalThis = yield* $(GlobalThis)
 
       const observer = new globalThis.MutationObserver(emitter.emit)
 

@@ -1,5 +1,4 @@
 import { pipe } from '@effect/data/Function'
-import * as Effect from '@effect/io/Effect'
 import * as AST from '@effect/schema/AST'
 import * as ParseResult from '@effect/schema/ParseResult'
 
@@ -17,13 +16,10 @@ export const lessThan =
   (max: number) =>
   <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> =>
   (i, options) =>
-    pipe(
-      decoder(i, options),
-      Effect.flatMap((n) =>
-        n < max
-          ? ParseResult.success(n)
-          : numberFailure(`Expected number to be less than ${max}, got ${n}`, n),
-      ),
+    ParseResult.flatMap(decoder(i, options), (n) =>
+      n < max
+        ? ParseResult.success(n)
+        : numberFailure(`Expected number to be less than ${max}, got ${n}`, n),
     )
 
 export const lessThanOrEqualTo =
@@ -35,13 +31,10 @@ export const greaterThan =
   (min: number) =>
   <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> =>
   (i, options) =>
-    pipe(
-      decoder(i, options),
-      Effect.flatMap((n) =>
-        n > min
-          ? ParseResult.success(n)
-          : numberFailure(`Expected number to be greater than ${min}, got ${n}`, n),
-      ),
+    ParseResult.flatMap(decoder(i, options), (n) =>
+      n > min
+        ? ParseResult.success(n)
+        : numberFailure(`Expected number to be greater than ${min}, got ${n}`, n),
     )
 
 export const greaterThanOrEqualTo =
@@ -52,35 +45,26 @@ export const greaterThanOrEqualTo =
 export const int =
   <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> =>
   (i, options) =>
-    pipe(
-      decoder(i, options),
-      Effect.flatMap((n) =>
-        Number.isInteger(n)
-          ? ParseResult.success(n)
-          : numberFailure(`Expected number to be an integer, got ${n}`, n),
-      ),
+    ParseResult.flatMap(decoder(i, options), (n) =>
+      Number.isInteger(n)
+        ? ParseResult.success(n)
+        : numberFailure(`Expected number to be an integer, got ${n}`, n),
     )
 
 export const nonNan =
   <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> =>
   (i, options) =>
-    pipe(
-      decoder(i, options),
-      Effect.flatMap((n) =>
-        Number.isNaN(n)
-          ? numberFailure(`Expected number to be a number, got NaN`, n)
-          : ParseResult.success(n),
-      ),
+    ParseResult.flatMap(decoder(i, options), (n) =>
+      Number.isNaN(n)
+        ? numberFailure(`Expected number to be a number, got NaN`, n)
+        : ParseResult.success(n),
     )
 
 export const finite =
   <I, O extends number>(decoder: Decoder<I, O>): Decoder<I, O> =>
   (i, options) =>
-    pipe(
-      decoder(i, options),
-      Effect.flatMap((n) =>
-        Number.isFinite(n)
-          ? ParseResult.success(n)
-          : numberFailure(`Expected number to be finite, got ${n}`, n),
-      ),
+    ParseResult.flatMap(decoder(i, options), (n) =>
+      Number.isFinite(n)
+        ? ParseResult.success(n)
+        : numberFailure(`Expected number to be finite, got ${n}`, n),
     )

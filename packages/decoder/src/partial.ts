@@ -29,16 +29,16 @@ export function fromPartial<P extends ReadonlyRecord<Decoder<any, any>>>(
 
         if (!property || !(key in i)) continue
 
-        if (options?.allErrors) {
-          const either = yield* $(Effect.either(property(i[key], options)))
+        if (options?.errors === 'first') {
+          successes[key] = yield* $(ParseResult.effect(property(i[key], options)))
+        } else {
+          const either = yield* $(Effect.either(ParseResult.effect(property(i[key], options))))
 
           if (Either.isLeft(either)) {
             errors.push(ParseResult.key(key, either.left.errors))
           } else {
             successes[key] = either.right
           }
-        } else {
-          successes[key] = yield* $(property(i[key], options))
         }
       }
 

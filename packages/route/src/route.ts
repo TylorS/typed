@@ -167,8 +167,8 @@ export function provideContext<R>(context: Context.Context<R>) {
     Route(route.path, (path) => Effect.provideContext(context)(route.match(path)))
 }
 
-export function provideService<S>(tag: Context.Tag<S>, service: S) {
-  return <R, E, Path extends string>(route: Route<R, E, Path>): Route<Exclude<R, S>, E, Path> =>
+export function provideService<I, S>(tag: Context.Tag<I, S>, service: S) {
+  return <R, E, Path extends string>(route: Route<R, E, Path>): Route<Exclude<R, I>, E, Path> =>
     Route(route.path, (path) => Effect.provideService(tag, service)(route.match(path)))
 }
 

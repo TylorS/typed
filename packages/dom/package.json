@@ -19,10 +19,10 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.5.0",
-    "@effect/io": "^0.10.0",
+    "@effect/data": "^0.7.4",
+    "@effect/io": "^0.15.1",
     "@effect/query": "^0.3.0",
-    "@effect/schema": "^0.3.0",
+    "@effect/schema": "^0.8.0",
     "@typed/context": "workspace:*",
     "@typed/decoder": "workspace:*",
     "@typed/fx": "workspace:*",

@@ -3,7 +3,7 @@ import * as O from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import type * as Layer from '@effect/io/Layer'
 import type { ParseOptions } from '@effect/schema/AST'
-import type { ParseError, ParseResult } from '@effect/schema/ParseResult'
+import * as ParseResult from '@effect/schema/ParseResult'
 import * as P from '@effect/schema/Parser'
 import type * as S from '@effect/schema/Schema'
 import * as C from '@typed/context'
@@ -112,7 +112,7 @@ export interface SchemaStorage<Schema extends Record<string, S.Schema<any>>> {
   readonly get: <K extends keyof Schema & string>(
     key: K,
     options?: ParseOptions,
-  ) => StorageEffect<never, ParseError, O.Option<S.To<Schema[K]>>>
+  ) => StorageEffect<never, ParseResult.ParseError, O.Option<S.To<Schema[K]>>>
 
   readonly set: <K extends keyof Schema & string>(
     key: K,
@@ -126,7 +126,7 @@ export interface SchemaStorage<Schema extends Record<string, S.Schema<any>>> {
     readonly get: <K extends keyof Schema & string>(
       key: K,
       options?: ParseOptions,
-    ) => StorageEffect<never, ParseError, O.Option<S.To<Schema[K]>>>
+    ) => StorageEffect<never, ParseResult.ParseError, O.Option<S.To<Schema[K]>>>
 
     readonly set: <K extends keyof Schema & string>(
       key: K,
@@ -143,7 +143,10 @@ export interface SchemaStorage<Schema extends Record<string, S.Schema<any>>> {
 export function SchemaStorage<Schemas extends Record<string, S.Schema<any>>>(
   schema: Schemas,
 ): SchemaStorage<Schemas> {
-  const decoders: Record<string, (i: unknown, options?: ParseOptions) => ParseResult<any>> = {}
+  const decoders: Record<
+    string,
+    (i: unknown, options?: ParseOptions) => ParseResult.ParseResult<any>
+  > = {}
   const getDecoder = (key: string) => decoders[key] || (decoders[key] = P.decode(schema[key]))
 
   const encoders: Record<string, (i: unknown, options?: ParseOptions) => unknown> = {}
@@ -158,7 +161,9 @@ export function SchemaStorage<Schemas extends Record<string, S.Schema<any>>>(
           return O.none()
         }
 
-        const result = yield* $(getDecoder(key)(JSON.parse(option.value), options))
+        const result = yield* $(
+          ParseResult.effect(getDecoder(key)(JSON.parse(option.value), options)),
+        )
 
         return O.some(result.right)
       }),

@@ -9,7 +9,7 @@ import { union } from './union.js'
 export interface SchemaDecoder<From, To = From> extends S.Schema<From, To>, Decoder<unknown, To> {}
 
 export function fromSchema<From, To>(schema: S.Schema<From, To>): SchemaDecoder<From, To> {
-  return Object.assign(Parser.decodeEffect(schema), schema)
+  return Object.assign(Parser.validateEffect(schema), schema)
 }
 
 export const literal = <Literals extends readonly AST.LiteralValue[]>(

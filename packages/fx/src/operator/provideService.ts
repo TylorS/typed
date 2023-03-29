@@ -4,18 +4,22 @@ import * as Effect from '@effect/io/Effect'
 
 import { Fx } from '../Fx.js'
 
-export function provideService<S>(tag: Context.Tag<S>) {
+export function provideService<I, S>(tag: Context.Tag<I, S>) {
   return (service: S) => {
-    return <R, E, A>(self: Fx<R | S, E, A>): Fx<Exclude<R, S>, E, A> =>
+    return <R, E, A>(self: Fx<R | I, E, A>): Fx<Exclude<R, I>, E, A> =>
       new ProvideServiceFx(self, tag, service)
   }
 }
 
-class ProvideServiceFx<R, E, A, S>
-  extends Fx.Variance<Exclude<R, S>, E, A>
-  implements Fx<Exclude<R, S>, E, A>
+class ProvideServiceFx<R, E, A, I, S>
+  extends Fx.Variance<Exclude<R, I>, E, A>
+  implements Fx<Exclude<R, I>, E, A>
 {
-  constructor(readonly self: Fx<R | S, E, A>, readonly tag: Context.Tag<S>, readonly service: S) {
+  constructor(
+    readonly self: Fx<R | I, E, A>,
+    readonly tag: Context.Tag<I, S>,
+    readonly service: S,
+  ) {
     super()
   }
 

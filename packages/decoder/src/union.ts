@@ -13,7 +13,7 @@ export function union<Members extends NonEmptyReadonlyArray<Decoder<unknown, any
       const failures: ParseResult.ParseErrors[] = []
 
       for (const member of members) {
-        const result = yield* $(Effect.either(member(i, options)))
+        const result = yield* $(Effect.either(ParseResult.effect(member(i, options))))
 
         if (Either.isRight(result)) {
           return result.right

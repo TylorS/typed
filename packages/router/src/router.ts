@@ -197,8 +197,8 @@ export const makeRouter = (
   currentPath?: Fx.RefSubject<string>,
 ): Effect.Effect<Location | History | Window | Document | Scope.Scope, never, Router> =>
   Effect.gen(function* ($) {
-    const history = yield* $(History.get)
-    const location = yield* $(Location.get)
+    const history = yield* $(History)
+    const location = yield* $(Location)
 
     if (!currentPath) {
       currentPath = Fx.RefSubject.unsafeMake(() => getCurrentPathFromLocation(location))
@@ -225,19 +225,17 @@ export const makeRouter = (
       pipe(
         currentPath,
         Fx.skipRepeats,
-        Fx.observe((path) =>
-          Effect.sync(() => {
-            if (path !== getCurrentPathFromLocation(location)) {
-              history.pushState({}, '', path)
-            }
-          }),
-        ),
+        Fx.observeSync((path) => {
+          if (path !== getCurrentPathFromLocation(location)) {
+            history.pushState({}, '', path)
+          }
+        }),
         Effect.forkScoped,
       ),
     )
 
     // Find the configured base path
-    const document = yield* $(Document.get)
+    const document = yield* $(Document)
     const base = document.querySelector('base')
     const baseHref = base ? getBasePathFromHref(base.href) : '/'
 
@@ -269,10 +267,11 @@ export const getBasePath = Router.with((r) => {
 })
 
 const patchHistory = Effect.gen(function* ($) {
-  const history = yield* $(History.get)
+  const history = yield* $(History)
   const historyEvents = Fx.Subject.unsafeMake<never, void>()
   const runtime = yield* $(Effect.runtime<never>())
-  const cleanup = patchHistory_(history, () => Runtime.runFork(runtime)(historyEvents.event()))
+  const runFork = Runtime.runFork(runtime)
+  const cleanup = patchHistory_(history, () => runFork(historyEvents.event()))
 
   // unpatch history upon finalization
   yield* $(Effect.addFinalizer(() => Effect.sync(cleanup)))

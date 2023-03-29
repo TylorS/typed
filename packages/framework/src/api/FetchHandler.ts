@@ -3,9 +3,8 @@ import type { Cause } from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import type { Layer } from '@effect/io/Layer'
 import type { ParseOptions } from '@effect/schema/AST'
-import type { ParseError } from '@effect/schema/ParseResult'
-import { decodeEffect } from '@effect/schema/Parser'
-import type { Schema } from '@effect/schema/Schema'
+import * as ParseResult from '@effect/schema/ParseResult'
+import { Schema, parseEffect } from '@effect/schema/Schema'
 import type * as Context from '@typed/context'
 import type { Decoder } from '@typed/decoder'
 import type { ParamsOf } from '@typed/path'
@@ -107,11 +106,11 @@ FetchHandler.decode = <R, Path extends string, A, R2, E2>(
   decoder: Decoder<unknown, A>,
   handler: (body: A, request: Request, params: ParamsOf<Path>) => Effect.Effect<R2, E2, Response>,
   options?: ParseOptions,
-): FetchHandler<R | R2, E2 | ParseError, Path> =>
+): FetchHandler<R | R2, E2 | ParseResult.ParseError, Path> =>
   FetchHandler(route, (request, params) =>
     Effect.gen(function* ($) {
       const result = yield* $(Effect.promise(() => request.json()))
-      const parsed = yield* $(decoder(result, options))
+      const parsed = yield* $(ParseResult.effect(decoder(result, options)))
 
       return yield* $(handler(parsed, request, params))
     }),
@@ -122,10 +121,12 @@ FetchHandler.decodeText = <R, Path extends string, A, R2, E2>(
   decoder: Decoder<string, A>,
   handler: (body: A, request: Request, params: ParamsOf<Path>) => Effect.Effect<R2, E2, Response>,
   options?: ParseOptions,
-): FetchHandler<R | R2, E2 | ParseError, Path> =>
+): FetchHandler<R | R2, E2 | ParseResult.ParseError, Path> =>
   FetchHandler(route, (request, params) =>
     Effect.gen(function* ($) {
-      const parseResult = yield* $(decoder(yield* $(Effect.promise(() => request.text())), options))
+      const parseResult = yield* $(
+        ParseResult.effect(decoder(yield* $(Effect.promise(() => request.text())), options)),
+      )
 
       return yield* $(handler(parseResult, request, params))
     }),
@@ -136,8 +137,8 @@ FetchHandler.schema = <R, Path extends string, A, R2, E2>(
   schema: Schema<A>,
   handler: (body: A, request: Request, params: ParamsOf<Path>) => Effect.Effect<R2, E2, Response>,
   options?: ParseOptions,
-): FetchHandler<R | R2, E2 | ParseError, Path> =>
-  FetchHandler.decode(route, decodeEffect(schema), handler, options)
+): FetchHandler<R | R2, E2 | ParseResult.ParseError, Path> =>
+  FetchHandler.decode(route, parseEffect(schema), handler, options)
 
 export type ResourcesOf<T> = T extends FetchHandler<infer R, any, any> ? R : never
 

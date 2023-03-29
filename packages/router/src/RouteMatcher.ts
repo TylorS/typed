@@ -112,7 +112,7 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
     ) =>
       Router.withFx((router) =>
         Fx.gen(function* ($) {
-          const { environment } = yield* $(RenderContext.get)
+          const { environment } = yield* $(RenderContext)
           // Create stable references to the route matchers
           const matchers = Array.from(routes.values()).map(
             (v) =>
@@ -138,7 +138,7 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
             layout?: Fx.Fx<any, any, html.Renderable>,
           ): Effect.Effect<any, any, Option.Option<Fx.Fx<any, any, html.Renderable>>> =>
             Effect.gen(function* ($) {
-              const { outlet } = yield* $(Router.get)
+              const { outlet } = yield* $(Router)
               const previous = samplePreviousValues()
 
               // Update the previous values

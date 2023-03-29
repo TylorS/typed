@@ -27,27 +27,42 @@ export function struct<P extends ReadonlyRecord<Decoder<unknown, any>>>(
   return Object.assign(
     (i: InputOf<StructDecoder<P>>, options?: ParseOptions) =>
       Effect.gen(function* ($) {
-        const input = (yield* $(unknownRecord(i, options))) as {
+        const input = (yield* $(ParseResult.effect(unknownRecord(i, options)))) as {
           readonly [K in keyof P]: InputOf<P[K]>
         }
         const keys = Reflect.ownKeys(properties) as (keyof P)[]
         const failures: ParseResult.ParseErrors[] = []
         const successes: Partial<Record<keyof P, any>> = {}
+
+        // Handle required properties
         for (const key of keys) {
           const property = properties[key]
 
           if (!property) continue
 
-          if (options?.allErrors) {
-            const either = yield* $(Effect.either(property(input[key], options)))
+          if (options?.errors === 'first') {
+            successes[key] = yield* $(ParseResult.effect(property(input[key], options)))
+          } else {
+            const either = yield* $(
+              Effect.either(ParseResult.effect(property(input[key], options))),
+            )
 
             if (Either.isLeft(either)) {
               failures.push(ParseResult.key(key, either.left.errors))
             } else {
               successes[key] = either.right
             }
-          } else {
-            successes[key] = yield* $(property(input[key], options))
+          }
+        }
+
+        // Handle excess properties
+        if (options?.onExcessProperty === 'error') {
+          const excessProperties = Object.keys(input).filter(
+            (key) => keys.includes(key),
+          )
+
+          for (const key of excessProperties) {
+            failures.push(ParseResult.key(key, [ParseResult.unexpected(input[key])]))
           }
         }
 

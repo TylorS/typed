@@ -25,6 +25,7 @@ export const fromRecord =
             RA.map(([k, v]) =>
               pipe(
                 member(v, options),
+                ParseResult.effect,
                 Effect.mapBoth(
                   (e) => ParseResult.key(k, e.errors),
                   (a) => [k, a] as const,

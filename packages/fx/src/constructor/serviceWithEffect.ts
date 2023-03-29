@@ -5,7 +5,7 @@ import type { Fx } from '../Fx.js'
 
 import { fromEffect } from './fromEffect.js'
 
-export const serviceWithEffect: <T>(
-  tag: Tag<T>,
-) => <R, E, A>(f: (a: T) => Effect.Effect<R, E, A>) => Fx<T | R, E, A> = (tag) => (f) =>
-  fromEffect(Effect.serviceWithEffect(tag, f))
+export const serviceWithEffect: <I, T>(
+  tag: Tag<I, T>,
+) => <R, E, A>(f: (a: T) => Effect.Effect<R, E, A>) => Fx<I | R, E, A> = (tag) => (f) =>
+  fromEffect(Effect.flatMap(tag, f))

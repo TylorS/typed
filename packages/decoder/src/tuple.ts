@@ -24,6 +24,8 @@ export const fromTuple =
             RA.map((ix, idx) =>
               pipe(
                 members[idx](ix, options),
+                (x) => x,
+                ParseResult.effect,
                 Effect.mapError((e) => ParseResult.index(idx, e.errors)),
                 Effect.either,
               ),

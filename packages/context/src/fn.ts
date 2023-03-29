@@ -43,10 +43,10 @@ export namespace EffectFn {
     ? A
     : never
 
-  export const Brand = Symbol.for('@typed/context/EffectFn/Brand')
-  export type Brand = typeof Brand
+  export const Key = Symbol.for('@typed/context/EffectFn/Key')
+  export type Key = typeof Key
 
-  export type Branded<Key extends string, T extends EffectFn> = T & { readonly [Brand]: Key }
+  export type Branded<K extends string, T extends EffectFn> = T & { readonly [Key]: K }
 }
 
 /**
@@ -95,8 +95,7 @@ export function Fn<T extends EffectFn>() {
   return <K extends string>(key: K): Fn<K, T> => {
     const tag = Tag<EffectFn.Branded<K, T>>(key)
 
-    const access = <R, E, A>(f: (t: T) => Effect.Effect<R, E, A>) =>
-      pipe(tag.get, Effect.flatMap(f))
+    const access = <R, E, A>(f: (t: T) => Effect.Effect<R, E, A>) => pipe(tag, Effect.flatMap(f))
 
     return Object.assign(tag, {
       key,

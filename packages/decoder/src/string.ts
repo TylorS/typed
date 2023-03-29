@@ -1,5 +1,4 @@
 import { pipe } from '@effect/data/Function'
-import * as Effect from '@effect/io/Effect'
 import * as AST from '@effect/schema/AST'
 import * as ParseResult from '@effect/schema/ParseResult'
 
@@ -17,26 +16,20 @@ export const minLength =
   (min: number) =>
   <I, O extends string>(decoder: Decoder<I, O>): Decoder<I, O> =>
   (i, options) =>
-    pipe(
-      decoder(i, options),
-      Effect.flatMap((s) =>
-        s.length >= min
-          ? ParseResult.success(s)
-          : stringFailure(`Expected string to have a minimum length of ${min}, got ${s.length}`, s),
-      ),
+    ParseResult.flatMap(decoder(i, options), (s) =>
+      s.length >= min
+        ? ParseResult.success(s)
+        : stringFailure(`Expected string to have a minimum length of ${min}, got ${s.length}`, s),
     )
 
 export const maxLength =
   (max: number) =>
   <I, O extends string>(decoder: Decoder<I, O>): Decoder<I, O> =>
   (i, options) =>
-    pipe(
-      decoder(i, options),
-      Effect.flatMap((s) =>
-        s.length <= max
-          ? ParseResult.success(s)
-          : stringFailure(`Expected string to have a maximum length of ${max}, got ${s.length}`, s),
-      ),
+    ParseResult.flatMap(decoder(i, options), (s) =>
+      s.length <= max
+        ? ParseResult.success(s)
+        : stringFailure(`Expected string to have a maximum length of ${max}, got ${s.length}`, s),
     )
 
 export const length =
@@ -50,60 +43,45 @@ export const startsWith =
   (prefix: string) =>
   <I, O extends string>(decoder: Decoder<I, O>): Decoder<I, O> =>
   (i, options) =>
-    pipe(
-      decoder(i, options),
-      Effect.flatMap((s) =>
-        s.startsWith(prefix)
-          ? ParseResult.success(s)
-          : stringFailure(`Expected string to start with ${prefix}, got ${s}`, s),
-      ),
+    ParseResult.flatMap(decoder(i, options), (s) =>
+      s.startsWith(prefix)
+        ? ParseResult.success(s)
+        : stringFailure(`Expected string to start with ${prefix}, got ${s}`, s),
     )
 
 export const endsWith =
   (suffix: string) =>
   <I, O extends string>(decoder: Decoder<I, O>): Decoder<I, O> =>
   (i, options) =>
-    pipe(
-      decoder(i, options),
-      Effect.flatMap((s) =>
-        s.endsWith(suffix)
-          ? ParseResult.success(s)
-          : stringFailure(`Expected string to end with ${suffix}, got ${s}`, s),
-      ),
+    ParseResult.flatMap(decoder(i, options), (s) =>
+      s.endsWith(suffix)
+        ? ParseResult.success(s)
+        : stringFailure(`Expected string to end with ${suffix}, got ${s}`, s),
     )
 
 export const includes =
   (substring: string) =>
   <I, O extends string>(decoder: Decoder<I, O>): Decoder<I, O> =>
   (i, options) =>
-    pipe(
-      decoder(i, options),
-      Effect.flatMap((s) =>
-        s.includes(substring)
-          ? ParseResult.success(s)
-          : stringFailure(`Expected string to include ${substring}, got ${s}`, s),
-      ),
+    ParseResult.flatMap(decoder(i, options), (s) =>
+      s.includes(substring)
+        ? ParseResult.success(s)
+        : stringFailure(`Expected string to include ${substring}, got ${s}`, s),
     )
 
 export const pattern =
   (regex: RegExp) =>
   <I, O extends string>(decoder: Decoder<I, O>): Decoder<I, O> =>
   (i, options) =>
-    pipe(
-      decoder(i, options),
-      Effect.flatMap((s) =>
-        regex.test(s)
-          ? ParseResult.success(s)
-          : stringFailure(`Expected string to match ${regex}, got ${s}`, s),
-      ),
+    ParseResult.flatMap(decoder(i, options), (s) =>
+      regex.test(s)
+        ? ParseResult.success(s)
+        : stringFailure(`Expected string to match ${regex}, got ${s}`, s),
     )
 
 export const trimmed =
   <I, O extends string>(decoder: Decoder<I, O>): Decoder<I, string> =>
   (i, options) =>
-    pipe(
-      decoder(i, options),
-      Effect.map((s) => s.trim()),
-    )
+    ParseResult.map(decoder(i, options), (s) => s.trim())
 
 // TODO: TempalteLiteral

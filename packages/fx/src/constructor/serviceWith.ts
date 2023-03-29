@@ -5,6 +5,6 @@ import type { Fx } from '../Fx.js'
 
 import { fromEffect } from './fromEffect.js'
 
-export const serviceWith: <T>(tag: Tag<T>) => <A>(f: (a: T) => A) => Fx<T, never, A> =
+export const serviceWith: <I, T>(tag: Tag<I, T>) => <A>(f: (a: T) => A) => Fx<I, never, A> =
   (tag) => (f) =>
-    fromEffect(Effect.serviceWith(tag, f))
+    fromEffect(Effect.map(tag, f))

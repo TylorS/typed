@@ -24,7 +24,7 @@ export const makeIntersectionObserverManager: Effect.Effect<
   never,
   IntersectionObserverManager
 > = Effect.gen(function* ($) {
-  const globalThis = yield* $(GlobalThis.get)
+  const globalThis = yield* $(GlobalThis)
 
   // Use HashMap for value-equality checks on keys for options.
   // There will only ever be 1 observer per set of options.
