@@ -336,7 +336,9 @@ export function makeRuntimeModule(
         }
 
         const routeText = environment
-          ? `pipe(${name}.route, Route.provideSomeLayer(${name}.environment))`
+          ? `pipe(${name}.route, Route.provideSomeLayer(${getImportName(
+              environment.sourceFile,
+            )}.environment))`
           : `${name}.route`
 
         return `export const fallback = { type: 'Redirect', route: ${routeText}${
