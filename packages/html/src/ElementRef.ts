@@ -31,7 +31,7 @@ export function makeElementRef<A extends HTMLElement = HTMLElement>(): Effect.Ef
 
       return {
         ...subject,
-        ...DomSource(element),
+        ...DomSource.make(element),
         element,
       }
     }),

@@ -12,18 +12,22 @@ export interface RenderContext {
 
 export type Environment = RenderContext['environment']
 
-export const RenderContext = Object.assign(function makeRenderContext(
-  environment: RenderContext['environment'],
-  isBot: RenderContext['isBot'] = false,
-): RenderContext {
-  return {
-    environment,
-    isBot,
-    renderCache: new WeakMap(),
-    templateCache: new WeakMap(),
-  }
-},
-Context.Tag<RenderContext>('@typed/html/RenderContext'))
+export const RenderContext = Object.assign(
+  Context.Tag<RenderContext>('@typed/html/RenderContext'),
+  {
+    make: function makeRenderContext(
+      environment: RenderContext['environment'],
+      isBot: RenderContext['isBot'] = false,
+    ): RenderContext {
+      return {
+        environment,
+        isBot,
+        renderCache: new WeakMap(),
+        templateCache: new WeakMap(),
+      }
+    },
+  },
+)
 
 export const isStatic = RenderContext.with((ctx) => ctx.environment === 'static')
 

@@ -66,60 +66,60 @@ export interface Router<out R = never, out E = never, in out P extends string = 
   readonly provideContext: (environment: Context.Context<R>) => Router<never, E, P>
 }
 
-export const Router = Object.assign(function makeRouter<
-  R = never,
-  E = never,
-  P extends string = string,
->(
-  route: Route.Route<R, E, P>,
-  currentPath: Fx.RefSubject<string>,
-  parent: Option.Option<Router<any, any, string>> = Option.none(),
-): Router<R, E, P> {
-  const outlet = Fx.RefSubject.unsafeMake((): html.Renderable => null)
+export const Router = Object.assign(Context.Tag<Router>('@typed/router/Router'), {
+  make: function makeRouter<R = never, E = never, P extends string = string>(
+    route: Route.Route<R, E, P>,
+    currentPath: Fx.RefSubject<string>,
+    parent: Option.Option<Router<any, any, string>> = Option.none(),
+  ): Router<R, E, P> {
+    const outlet = Fx.RefSubject.unsafeMake((): html.Renderable => null)
 
-  const createPath = <R2 extends Route.Route<any, any, string>, P extends Route.ParamsOf<R2>>(
-    other: R2,
-    ...[params]: [keyof P] extends [never] ? [] : [P]
-  ): Effect.Effect<
-    R,
-    E,
-    Path.PathJoin<
-      [Path.Interpolate<Route.PathOf<R>, Route.ParamsOf<R>>, Path.Interpolate<Route.PathOf<R2>, P>]
-    >
-  > =>
-    Effect.gen(function* ($) {
-      const path = yield* $(currentPath.get)
-      const baseParams = yield* $(route.match(path))
+    const createPath = <R2 extends Route.Route<any, any, string>, P extends Route.ParamsOf<R2>>(
+      other: R2,
+      ...[params]: [keyof P] extends [never] ? [] : [P]
+    ): Effect.Effect<
+      R,
+      E,
+      Path.PathJoin<
+        [
+          Path.Interpolate<Route.PathOf<R>, Route.ParamsOf<R>>,
+          Path.Interpolate<Route.PathOf<R2>, P>,
+        ]
+      >
+    > =>
+      Effect.gen(function* ($) {
+        const path = yield* $(currentPath.get)
+        const baseParams = yield* $(route.match(path))
 
-      if (Option.isNone(baseParams)) {
-        return yield* $(
-          Effect.dieMessage(
-            `Can not create path when the parent can not be matched.
+        if (Option.isNone(baseParams)) {
+          return yield* $(
+            Effect.dieMessage(
+              `Can not create path when the parent can not be matched.
                 Parent Route: ${route.path}
                 Current Route: ${other.path}
                 Current Path: ${path}`,
-          ),
-        )
-      }
+            ),
+          )
+        }
 
-      return route.concat(other).make({ ...baseParams.value, ...params } as any) as any
-    })
+        return route.concat(other).make({ ...baseParams.value, ...params } as any) as any
+      })
 
-  const router: Router<R, E, P> = {
-    route,
-    currentPath,
-    params: pipe(currentPath, Fx.switchMapEffect(route.match), Fx.compact, Fx.skipRepeats),
-    outlet,
-    createPath: createPath as Router<R, P>['createPath'],
-    define: <R2, E2, Path2 extends string>(other: Route.Route<R2, E2, Path2>) =>
-      makeRouter(route.concat(other), currentPath, Option.some(router as any)) as any,
-    provideContext: (env) => provideContext(env)(router),
-    parent,
-  }
+    const router: Router<R, E, P> = {
+      route,
+      currentPath,
+      params: pipe(currentPath, Fx.switchMapEffect(route.match), Fx.compact, Fx.skipRepeats),
+      outlet,
+      createPath: createPath as Router<R, P>['createPath'],
+      define: <R2, E2, Path2 extends string>(other: Route.Route<R2, E2, Path2>) =>
+        makeRouter(route.concat(other), currentPath, Option.some(router as any)) as any,
+      provideContext: (env) => provideContext(env)(router),
+      parent,
+    }
 
-  return router
-},
-Context.Tag<Router>('@typed/router/Router'))
+    return router
+  },
+})
 
 export const outlet: Fx.Fx<RenderContext | Router, never, html.Renderable> = RenderContext.withFx(
   ({ environment }) =>
@@ -240,7 +240,7 @@ export const makeRouter = (
     const baseHref = base ? getBasePathFromHref(base.href) : '/'
 
     // Make our base router
-    return Router(Route.Route(baseHref), currentPath) as Router
+    return Router.make(Route.Route(baseHref), currentPath) as Router
   })
 
 export const live = (

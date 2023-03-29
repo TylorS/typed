@@ -250,6 +250,7 @@ function runRouteMatch<R, E, P extends string>(
     const params = pipe(nestedRouter.params, Fx.provideContext(env))
     const render = pipe(
       match(params as unknown as Fx.Fx<never, never, Path.ParamsOf<P>>),
+      Fx.provideContext(env),
       Router.provideFx(nestedRouter as Router),
     )
 

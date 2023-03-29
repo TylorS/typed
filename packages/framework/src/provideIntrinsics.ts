@@ -26,7 +26,7 @@ export function provideIntrinsics(options: ProvideIntrinsicsOptions) {
     pipe(
       fx,
       Fx.provideSomeLayer(Router.live(options.currentPath)),
-      RenderContext.provideFx(RenderContext(options.environment, options.isBot)),
+      RenderContext.provideFx(RenderContext.make(options.environment, options.isBot)),
       Fx.contramapContext<never, DomServices>(
         Context.merge(makeDomServices(options.window, options.globalThis, options.parentElement)),
       ),
@@ -38,7 +38,7 @@ export function provideIntrinsicsEffect(options: ProvideIntrinsicsOptions) {
     pipe(
       effect,
       Effect.provideSomeLayer(Router.live(options.currentPath)),
-      RenderContext.provide(RenderContext(options.environment, options.isBot)),
+      RenderContext.provide(RenderContext.make(options.environment, options.isBot)),
       Effect.provideSomeLayer<never, never, DomServices>(
         Layer.effectContext(
           Effect.succeed(

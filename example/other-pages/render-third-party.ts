@@ -24,8 +24,8 @@ export function renderThirdParty<R, E, Path extends string, R2, E2, R3, E3>(
     params: Fx.Fx<R, E | Redirect, ParamsOf<typeof route>>,
   ): Fx.Fx<IntrinsicServices | R2 | R3, E2 | E3, HTMLElement> =>
     Fx.gen(function* ($) {
-      const location = yield* $(Location.get)
-      const router = yield* $(Router.get)
+      const location = yield* $(Location)
+      const router = yield* $(Router)
       const initialParams: Option.Option<ParamsOf<typeof route>> = (yield* $(
         // Route will already be amended here since it has been matched. The function
         // parameter is used merely for type-inference

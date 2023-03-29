@@ -21,58 +21,59 @@ export interface DomSource<Element = HTMLElement, EventMap extends {} = DefaultE
   ) => Fx.Fx<never, never, EventMap[T] & { readonly currentTarget: Element }>
 }
 
-export const DomSource = Object.assign(function DomSource<
-  Element extends globalThis.Element = HTMLElement,
-  EventMap extends {} = DefaultEventMap<Element>,
->(
-  rootElement: Fx.Fx<never, never, Element>,
-  selectors: ReadonlyArray<string> = [],
-): DomSource<Element, EventMap> {
-  const eventMap = new Map<any, Fx.Fx<never, never, any>>()
+export const DomSource = Object.assign(Context.Tag<DomSource>('@typed/dom/DomSource'), {
+  make: function DomSource<
+    Element extends globalThis.Element = HTMLElement,
+    EventMap extends {} = DefaultEventMap<Element>,
+  >(
+    rootElement: Fx.Fx<never, never, Element>,
+    selectors: ReadonlyArray<string> = [],
+  ): DomSource<Element, EventMap> {
+    const eventMap = new Map<any, Fx.Fx<never, never, any>>()
 
-  const manager: DomSource<Element, EventMap> = {
-    selectors,
-    query: <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
-      selector: S,
-    ): DomSource<ParseSelector<S, Element>, Ev> => {
-      if (selector === ROOT_CSS_SELECTOR) return manager as any
+    const manager: DomSource<Element, EventMap> = {
+      selectors,
+      query: <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
+        selector: S,
+      ): DomSource<ParseSelector<S, Element>, Ev> => {
+        if (selector === ROOT_CSS_SELECTOR) return manager as any
 
-      return DomSource(
-        Fx.multicast(pipe(rootElement, Fx.map(findMostSpecificElement(selectors)))),
-        [...selectors, selector],
-      )
-    },
-    elements:
-      selectors.length === 0
-        ? pipe(
-            rootElement,
-            Fx.map((e) => [e]),
-            Fx.multicast,
-          )
-        : pipe(
-            rootElement,
-            Fx.map(findMatchingElements(selectors)),
-            Fx.filter((e) => e.length > 0),
-            Fx.multicast,
-          ),
-    events: (type, options) => {
-      if (eventMap.has(type)) return eventMap.get(type) as Fx.Fx<never, never, any>
+        return DomSource(
+          Fx.multicast(pipe(rootElement, Fx.map(findMostSpecificElement(selectors)))),
+          [...selectors, selector],
+        )
+      },
+      elements:
+        selectors.length === 0
+          ? pipe(
+              rootElement,
+              Fx.map((e) => [e]),
+              Fx.multicast,
+            )
+          : pipe(
+              rootElement,
+              Fx.map(findMatchingElements(selectors)),
+              Fx.filter((e) => e.length > 0),
+              Fx.multicast,
+            ),
+      events: (type, options) => {
+        if (eventMap.has(type)) return eventMap.get(type) as Fx.Fx<never, never, any>
 
-      const s = pipe(
-        rootElement,
-        Fx.switchMap(makeEventStream(selectors, type as any, options)),
-        Fx.multicast,
-      )
+        const s = pipe(
+          rootElement,
+          Fx.switchMap(makeEventStream(selectors, type as any, options)),
+          Fx.multicast,
+        )
 
-      eventMap.set(type, s)
+        eventMap.set(type, s)
 
-      return s
-    },
-  }
+        return s
+      },
+    }
 
-  return manager
-},
-Context.Tag<DomSource>('@typed/dom/DomSource'))
+    return manager
+  },
+})
 
 export function query<
   Element,
