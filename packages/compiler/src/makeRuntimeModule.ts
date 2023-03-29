@@ -191,8 +191,8 @@ export function makeRuntimeModule(
 
       return `Module.make(pipe(${name}.route, Route.provideSomeLayer(${name}.environment)${routeEnvText}), ${
         render.isFx
-          ? `constant(pipe(${name}.main, Fx.provideSomeLayer(${name}.environment${mainEnvText})))`
-          : `flow(${name}.main, Fx.provideSomeLayer(${name}.environment${mainEnvText}))`
+          ? `constant(pipe(${name}.main, Fx.provideSomeLayer(${name}.environment)${mainEnvText}))`
+          : `flow(${name}.main, Fx.provideSomeLayer(${name}.environment)${mainEnvText})`
       } ${options ? `, { ${options} }` : ''})`
     }
 
@@ -233,7 +233,7 @@ export function makeRuntimeModule(
         ? `, Fx.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
         : ''
 
-      return `layout: pipe(${name}.layout${layoutEnvText}, Fx.provideSomeLayer(${name}.environment))`
+      return `layout: pipe(${name}.layout$, Fx.provideSomeLayer(${name}.environment)${layoutEnvText})`
     }
 
     return environment
@@ -301,8 +301,8 @@ export function makeRuntimeModule(
 
           return `export const fallback = { type: 'Renderable', fallback: ${
             fallback.isFx
-              ? `constant(pipe(${name}.fallback${mainEnvText}, Fx.provideSomeLayer(${name}.environment)))`
-              : `flow(${name}.fallback${mainEnvText}, Fx.provideSomeLayer(${name}.environment))`
+              ? `constant(pipe(${name}.fallback, Fx.provideSomeLayer(${name}.environment)${mainEnvText}))`
+              : `flow(${name}.fallback, Fx.provideSomeLayer(${name}.environment)${mainEnvText})`
           }${layoutOptions ? `, ${layoutOptions}` : ''} }`
         }
 
@@ -330,7 +330,7 @@ export function makeRuntimeModule(
             ? `, Route.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
             : ''
 
-          return `export const fallback = { type: 'Redirect', route: pipe(${name}.route${routeEnvText}, Route.provideSomeLayer(${name}.environment))${
+          return `export const fallback = { type: 'Redirect', route: pipe(${name}.route, Route.provideSomeLayer(${name}.environment)${routeEnvText})${
             fallback.hasParams ? `, params: ${name}.params` : ``
           } }`
         }
