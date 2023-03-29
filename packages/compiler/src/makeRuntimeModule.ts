@@ -121,7 +121,7 @@ export function makeRuntimeModule(
     addNamespaceImport(
       sourceFile,
       name,
-      './' + relative(dirname(importer), filePath.replace(/.ts(x)?/, '.js$1')),
+      './' + relative(dirname(importer), filePath.replace(/.ts(x)?$/, '.js$1')),
     )
   }
 
@@ -189,10 +189,10 @@ export function makeRuntimeModule(
         ? `, Fx.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
         : ''
 
-      return `Module.make(pipe(${name}.route${routeEnvText}, Route.provideSomeLayer(${name}.environment)), ${
+      return `Module.make(pipe(${name}.route, Route.provideSomeLayer(${name}.environment)${routeEnvText}), ${
         render.isFx
-          ? `constant(pipe(${name}.main${mainEnvText}, Fx.provideSomeLayer(${name}.environment)))`
-          : `flow(${name}.main${mainEnvText}, Fx.provideSomeLayer(${name}.environment))`
+          ? `constant(pipe(${name}.main, Fx.provideSomeLayer(${name}.environment${mainEnvText})))`
+          : `flow(${name}.main, Fx.provideSomeLayer(${name}.environment${mainEnvText}))`
       } ${options ? `, { ${options} }` : ''})`
     }
 

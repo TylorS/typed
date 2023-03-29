@@ -55,7 +55,7 @@ export namespace RefSubject {
         const currentValue = getValue()
         const [b, a] = f(currentValue)
 
-        MutableRef.set(current, (Option.some(a)))
+        MutableRef.set(current, Option.some(a))
 
         if (eq(currentValue, a)) {
           return Effect.succeed(b)
@@ -82,7 +82,7 @@ export namespace RefSubject {
       delete: Effect.sync(() => {
         const option = MutableRef.get(current)
         const reset = initial()
-        MutableRef.set(current, (Option.some(reset)))
+        MutableRef.set(current, Option.some(reset))
 
         return Option.getOrElse(option, () => reset)
       }),

@@ -72,7 +72,7 @@ export function makeApiModule(
     addNamespaceImport(
       sourceFile,
       name,
-      './' + relative(dirname(importer), filePath.replace(/.ts(x)?/, '.js$1')),
+      './' + relative(dirname(importer), filePath.replace(/.ts(x)?$/, '.js$1')),
     )
   }
 
@@ -90,7 +90,7 @@ export function makeApiModule(
 
         if (mod.hasEnvironment) {
           handlers.push(
-            `${handlerIdentifier}${inheritedProvider}.provideSomeLayer(${importName}.environment)`,
+            `${handlerIdentifier}.provideSomeLayer(${importName}.environment)${inheritedProvider}`,
           )
         } else {
           handlers.push(handlerIdentifier + inheritedProvider)
