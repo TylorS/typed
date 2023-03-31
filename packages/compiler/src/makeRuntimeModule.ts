@@ -233,7 +233,7 @@ export function makeRuntimeModule(
         ? `, Fx.provideSomeLayer(${getImportName(environment.sourceFile)}.environment)`
         : ''
 
-      return `layout: pipe(${name}.layout$, Fx.provideSomeLayer(${name}.environment)${layoutEnvText})`
+      return `layout: pipe(${name}.layout, Fx.provideSomeLayer(${name}.environment)${layoutEnvText})`
     }
 
     return environment
