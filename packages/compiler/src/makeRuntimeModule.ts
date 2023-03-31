@@ -16,6 +16,10 @@ import { addNamedImport, addNamespaceImport, appendText } from './ts-morph-helpe
 /**
  * Construct a typescript module that can be used to access all modules in a
  * ModuleTree. Passes along inheritance of layout and environment.
+ *
+ * There are some current limitations of this design. No resources can be
+ * exposed because of the limitation of @typed/frameworks .d.ts files for
+ * types for runtime: and browser: virtual modules.
  */
 export function makeRuntimeModule(
   project: Project,
