@@ -161,9 +161,7 @@ export function SchemaStorage<Schemas extends Record<string, S.Schema<any>>>(
           return O.none()
         }
 
-        const result = yield* $(
-          ParseResult.effect(getDecoder(key)(JSON.parse(option.value), options)),
-        )
+        const result = yield* $(getDecoder(key)(JSON.parse(option.value), options))
 
         return O.some(result.right)
       }),

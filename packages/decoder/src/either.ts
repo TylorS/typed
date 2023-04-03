@@ -1,6 +1,7 @@
 import type * as Either from '@effect/data/Either'
 import * as Equal from '@effect/data/Equal'
 import * as Hash from '@effect/data/Hash'
+import * as Effect from '@effect/io/Effect'
 
 import type { Decoder } from './decoder.js'
 import { any, literal } from './primitives.js'
@@ -13,6 +14,8 @@ export const right = <A>(member: Decoder<unknown, A>): Decoder<unknown, Either.R
     right: member,
     [Equal.symbol]: any,
     [Hash.symbol]: any,
+    traced: any,
+    [Effect.EffectTypeId]: any,
   })
 
 export const left = <A>(member: Decoder<unknown, A>): Decoder<unknown, Either.Left<A>> =>
@@ -21,6 +24,8 @@ export const left = <A>(member: Decoder<unknown, A>): Decoder<unknown, Either.Le
     left: member,
     [Equal.symbol]: any,
     [Hash.symbol]: any,
+    traced: any,
+    [Effect.EffectTypeId]: any,
   })
 
 export const either = <A, B>(

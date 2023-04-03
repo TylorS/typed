@@ -21,8 +21,7 @@ export const fromArray =
             RA.map((ix, idx) =>
               pipe(
                 member(ix, options),
-                ParseResult.effect,
-                Effect.mapError((e) => ParseResult.index(idx, e.errors)),
+                Effect.mapError((e: ParseResult.ParseError) => ParseResult.index(idx, e.errors)),
                 Effect.either,
               ),
             ),

@@ -110,7 +110,7 @@ FetchHandler.decode = <R, Path extends string, A, R2, E2>(
   FetchHandler(route, (request, params) =>
     Effect.gen(function* ($) {
       const result = yield* $(Effect.promise(() => request.json()))
-      const parsed = yield* $(ParseResult.effect(decoder(result, options)))
+      const parsed = yield* $(decoder(result, options))
 
       return yield* $(handler(parsed, request, params))
     }),
@@ -124,9 +124,7 @@ FetchHandler.decodeText = <R, Path extends string, A, R2, E2>(
 ): FetchHandler<R | R2, E2 | ParseResult.ParseError, Path> =>
   FetchHandler(route, (request, params) =>
     Effect.gen(function* ($) {
-      const parseResult = yield* $(
-        ParseResult.effect(decoder(yield* $(Effect.promise(() => request.text())), options)),
-      )
+      const parseResult = yield* $(decoder(yield* $(Effect.promise(() => request.text())), options))
 
       return yield* $(handler(parseResult, request, params))
     }),

@@ -87,7 +87,7 @@ fetchJson.decode = <A>(
   Effect.gen(function* ($) {
     const [request, controller] = createRequest(input, init)
     const { body, ...rest } = yield* $(fetchJson(request, undefined, controller))
-    const result = yield* $(ParseResult.effect(decoder(body, init)))
+    const result = yield* $(decoder(body, init))
 
     return { ...rest, body: result }
   })
@@ -125,7 +125,7 @@ fetchText.decode = <A>(
   Effect.gen(function* ($) {
     const [request, controller] = createRequest(input, init)
     const { body, ...rest } = yield* $(fetchText(request, undefined, controller))
-    const result = yield* $(ParseResult.effect(decoder(body, init)))
+    const result = yield* $(decoder(body, init))
 
     return { ...rest, _tag: 'FetchJsonResponse', body: result }
   })
@@ -162,7 +162,7 @@ const fetch_ = <A>(
       const [request, controller] = createRequest(input, init, optionalController)
 
       return pipe(
-        Effect.attemptCatchPromise(
+        Effect.tryCatchPromise(
           () => fetch(request).then((response) => f(request, response)),
           (e) => FetchError(request, e),
         ),

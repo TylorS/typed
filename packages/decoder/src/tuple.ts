@@ -24,9 +24,7 @@ export const fromTuple =
             RA.map((ix, idx) =>
               pipe(
                 members[idx](ix, options),
-                (x) => x,
-                ParseResult.effect,
-                Effect.mapError((e) => ParseResult.index(idx, e.errors)),
+                Effect.mapError((e: ParseResult.ParseError) => ParseResult.index(idx, e.errors)),
                 Effect.either,
               ),
             ),
@@ -39,7 +37,9 @@ export const fromTuple =
         return yield* $(Effect.fail(ParseResult.parseError(failures)))
       }
 
-      return successes as { readonly [K in keyof Members]: OutputOf<Members[K]> }
+      return successes as {
+        readonly [K in keyof Members]: OutputOf<Members[K]>
+      }
     })
 
 export const tuple = <Members extends RA.NonEmptyReadonlyArray<Decoder<any, any>>>(

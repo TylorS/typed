@@ -1,6 +1,7 @@
 import * as Equal from '@effect/data/Equal'
 import * as Hash from '@effect/data/Hash'
 import type * as Option from '@effect/data/Option'
+import * as Effect from '@effect/io/Effect'
 
 import type { Decoder } from './decoder.js'
 import { any, literal } from './primitives.js'
@@ -13,12 +14,16 @@ export const some = <A>(member: Decoder<unknown, A>): Decoder<unknown, Option.So
     value: member,
     [Equal.symbol]: any,
     [Hash.symbol]: any,
+    traced: any,
+    [Effect.EffectTypeId]: any,
   })
 
 export const none: Decoder<unknown, Option.None> = struct({
   _tag: literal('None'),
   [Equal.symbol]: any,
   [Hash.symbol]: any,
+  traced: any,
+  [Effect.EffectTypeId]: any,
 })
 
 export const option = <A>(member: Decoder<unknown, A>): Decoder<unknown, Option.Option<A>> =>

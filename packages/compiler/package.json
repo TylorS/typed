@@ -19,7 +19,7 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.7.4",
+    "@effect/data": "^0.10.3",
     "@effect/language-service": "^0.0.19",
     "@rollup/pluginutils": "^5.0.2",
     "@typed/framework": "workspace:*",
