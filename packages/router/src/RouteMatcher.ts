@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { pipe } from '@effect/data/Function'
+import { identity, pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
@@ -116,8 +116,7 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
           const { environment } = yield* $(RenderContext)
           // Create stable references to the route matchers
           const matchers = Array.from(routes.values()).map(
-            (v) =>
-              [{ ...v, route: router.route.concat(v.route) }, runRouteMatch(router, v)] as const,
+            (v) => [v, runRouteMatch(router, v)] as const,
           )
 
           const renderFallback = Fx.switchMap(f)(router.currentPath)
@@ -188,16 +187,26 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
 
           return pipe(
             router.currentPath,
-            environment === 'browser' ? Fx.skipRepeats : Fx.take(1),
+            environment === 'browser' ? identity : Fx.take(1),
             Fx.switchMapEffect((path) =>
               Effect.gen(function* ($) {
-                yield* $(Effect.logDebug(`[@typed/router] Matching path: ${path}`))
+                const currentParams = yield* $(router.route.match(path))
+
+                if (Option.isNone(currentParams)) {
+                  return Option.none()
+                }
+
+                const matchedPath: string = router.route.make(currentParams.value)
+                const currentPath =
+                  matchedPath === '/' ? path : path.replace(matchedPath, '') || '/'
+
+                yield* $(Effect.logDebug(`[@typed/router] Matching path: ${currentPath}`))
 
                 // Attempt to find the best match
                 for (const [match, render] of matchers) {
                   yield* $(Effect.logDebug(`[@typed/router] Matching against: ${match.route.path}`))
 
-                  const result = yield* $(match.route.match(path))
+                  const result = yield* $(match.route.match(currentPath))
 
                   if (Option.isSome(result)) {
                     yield* $(
@@ -250,8 +259,8 @@ function runRouteMatch<R, E, P extends string>(
     const params = pipe(nestedRouter.params, Fx.provideContext(env))
     const render = pipe(
       match(params as unknown as Fx.Fx<never, never, Path.ParamsOf<P>>),
-      Fx.provideContext(env),
       Router.provideFx(nestedRouter as Router),
+      Fx.provideContext(env),
     )
 
     return render
