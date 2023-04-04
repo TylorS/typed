@@ -178,7 +178,7 @@ importers:
   packages/cli:
     specifiers:
       '@effect/data': ^0.10.3
-      '@typed/vite-plugin': ^0.5.8
+      '@typed/vite-plugin': ^0.5.9
       '@vavite/multibuild': ^1.7.0
       cac: ^6.7.14
       picocolors: ^1.0.0
@@ -198,7 +198,7 @@ importers:
       '@effect/data': ^0.10.3
       '@effect/language-service': ^0.0.19
       '@rollup/pluginutils': ^5.0.2
-      '@typed/framework': ^0.5.8
+      '@typed/framework': ^0.5.9
       '@types/html-minifier': ^4.0.2
       html-minifier: ^4.0.0
       ts-morph: ^18.0.0
@@ -218,7 +218,7 @@ importers:
     specifiers:
       '@effect/data': ^0.10.3
       '@effect/io': ^0.17.0
-      '@typed/fx': ^1.5.7
+      '@typed/fx': ^1.5.8
     dependencies:
       '@effect/data': 0.10.3
       '@effect/io': 0.17.0
@@ -240,9 +240,9 @@ importers:
       '@effect/io': ^0.17.0
       '@effect/query': ^0.5.0
       '@effect/schema': ^0.10.0
-      '@typed/context': ^0.5.7
+      '@typed/context': ^0.5.8
       '@typed/decoder': ^0.4.2
-      '@typed/fx': ^1.5.7
+      '@typed/fx': ^1.5.8
       typed-query-selector: ^2.9.2
     dependencies:
       '@effect/data': 0.10.3
@@ -257,7 +257,7 @@ importers:
   packages/error:
     specifiers:
       '@effect/io': ^0.17.0
-      '@typed/fx': ^1.5.7
+      '@typed/fx': ^1.5.8
     dependencies:
       '@effect/io': 0.17.0
       '@typed/fx': link:../fx
@@ -267,14 +267,14 @@ importers:
       '@effect/data': ^0.10.3
       '@effect/io': ^0.17.0
       '@effect/schema': ^0.10.0
-      '@typed/context': ^0.5.7
+      '@typed/context': ^0.5.8
       '@typed/decoder': ^0.4.2
-      '@typed/dom': ^8.5.7
-      '@typed/fx': ^1.5.7
-      '@typed/html': ^3.5.7
+      '@typed/dom': ^8.5.8
+      '@typed/fx': ^1.5.8
+      '@typed/html': ^3.5.8
       '@typed/path': ^0.1.2
       '@typed/route': ^0.4.2
-      '@typed/router': ^0.5.8
+      '@typed/router': ^0.5.9
       '@types/express': ^4.17.17
       express: ^4.18.2
       express-static-gzip: ^2.1.7
@@ -315,9 +315,9 @@ importers:
     specifiers:
       '@effect/data': ^0.10.3
       '@effect/io': ^0.17.0
-      '@typed/context': ^0.5.7
-      '@typed/dom': ^8.5.7
-      '@typed/fx': ^1.5.7
+      '@typed/context': ^0.5.8
+      '@typed/dom': ^8.5.8
+      '@typed/fx': ^1.5.8
       '@webreflection/uparser': ~0.2.4
       udomdiff: ^1.1.0
     dependencies:
@@ -357,10 +357,10 @@ importers:
     specifiers:
       '@effect/data': ^0.10.3
       '@effect/io': ^0.17.0
-      '@typed/context': ^0.5.7
-      '@typed/dom': ^8.5.7
-      '@typed/fx': ^1.5.7
-      '@typed/html': ^3.5.7
+      '@typed/context': ^0.5.8
+      '@typed/dom': ^8.5.8
+      '@typed/fx': ^1.5.8
+      '@typed/html': ^3.5.8
       '@typed/path': ^0.1.2
       '@typed/route': ^0.4.2
     dependencies:
@@ -376,7 +376,7 @@ importers:
   packages/vite-plugin:
     specifiers:
       '@effect/data': ^0.10.3
-      '@typed/compiler': ^0.5.8
+      '@typed/compiler': ^0.5.9
       fast-glob: ^3.2.12
       vavite: ^1.7.0
       vite: ^4.2.1
