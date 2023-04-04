@@ -1,18 +1,18 @@
 import { equals } from '@effect/data/Equal'
 import { identity, pipe, dual, flow } from '@effect/data/Function'
-import * as MutableRef from '@effect/data/MutableRef'
 import * as Option from '@effect/data/Option'
 import * as ReadonlyArray from '@effect/data/ReadonlyArray'
 import * as ReadonlyRecord from '@effect/data/ReadonlyRecord'
 import * as Equivalence from '@effect/data/typeclass/Equivalence'
+import type * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import type * as Exit from '@effect/io/Exit'
 import * as Ref from '@effect/io/Ref'
 import type * as Scope from '@effect/io/Scope'
 
 import { Fx, Sink } from '../Fx.js'
+import { Mutable } from '../_internal/Mutable.js'
 import { flatMapEffect } from '../operator/flatMapEffect.js'
-import { hold } from '../operator/hold.js'
 import { skipWhile } from '../operator/skipWhile.js'
 import { observe } from '../run/observe.js'
 
@@ -24,7 +24,7 @@ export interface RefSubject<A> extends HoldSubject<never, A>, Ref.Ref<A> {
   readonly get: Effect.Effect<never, never, A>
   readonly set: (a: A) => Effect.Effect<never, never, A>
   readonly update: (f: (a: A) => A) => Effect.Effect<never, never, A>
-  readonly delete: Effect.Effect<never, never, A>
+  readonly delete: Effect.Effect<never, Cause.NoSuchElementException, A>
   readonly compute: <R, E, B>(
     f: (a: A) => Effect.Effect<R, E, B>,
   ) => Effect.Effect<R | Scope.Scope, never, Computed<E, B>>
@@ -44,18 +44,26 @@ export namespace RefSubject {
   export function unsafeMake<A>(
     initial: () => A,
     eq: Equivalence.Equivalence<A> = equals,
+    current: Mutable<Option.Option<A>> = Mutable(Option.some(initial())),
   ): RefSubject<A> {
-    const current = MutableRef.make(Option.some(initial()))
     const subject = HoldSubject.unsafeMake<never, A>(current)
 
-    const getValue = () => pipe(current, MutableRef.get, Option.getOrElse(initial))
+    const getValue = () =>
+      pipe(
+        current.get(),
+        Option.getOrElse(() => {
+          const a = initial()
+          current.set(Option.some(a))
+          return a
+        }),
+      )
 
     const modify = <B>(f: (a: A) => readonly [B, A]): Effect.Effect<never, never, B> =>
       Effect.suspend(() => {
         const currentValue = getValue()
         const [b, a] = f(currentValue)
 
-        MutableRef.set(current, Option.some(a))
+        current.set(Option.some(a))
 
         if (eq(currentValue, a)) {
           return Effect.succeed(b)
@@ -76,15 +84,16 @@ export namespace RefSubject {
       error: subject.error.bind(subject),
       end: subject.end,
       value: subject.value,
+      current: subject.current,
       eq,
       modify,
       ...makeDerivations(modify, Effect.sync(getValue)),
-      delete: Effect.sync(() => {
-        const option = MutableRef.get(current)
-        const reset = initial()
-        MutableRef.set(current, Option.some(reset))
+      delete: Effect.suspend(() => {
+        const option = current.get()
 
-        return Option.getOrElse(option, () => reset)
+        current.set(Option.none())
+
+        return option
       }),
       compute: (f) => makeComputed(refSubject, f),
       computeSync: (f) => makeComputed(refSubject, (a) => Effect.sync(() => f(a))),
@@ -258,6 +267,12 @@ export function isRefSubject<A>(u: unknown): u is RefSubject<A> {
 
 export interface Computed<E, A> extends Fx<never, E, A> {
   readonly get: Effect.Effect<never, E, A>
+
+  readonly compute: <R2, E2, B>(
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+  ) => Effect.Effect<R2 | Scope.Scope, never, Computed<E | E2, B>>
+
+  readonly computeSync: <B>(f: (a: A) => B) => Effect.Effect<Scope.Scope, never, Computed<E, B>>
 }
 
 export namespace Computed {
@@ -288,19 +303,23 @@ export namespace Computed {
   }
 
   class ComputedImpl<E, A> extends Fx.Variance<never, E, A> implements Computed<E, A> {
-    readonly fx: Fx<never, E, A>
-
     constructor(readonly input: RefSubject<Exit.Exit<E, A>>) {
       super()
-
-      this.fx = pipe(input, flatMapEffect(Effect.done), hold)
     }
 
     run<R3>(sink: Sink<R3, E, A>) {
-      return this.fx.run(sink)
+      return pipe(this.input, flatMapEffect(Effect.done)).run(sink)
     }
 
     readonly get = Effect.flatMap(this.input.get, Effect.done)
+
+    readonly compute = <R2, E2, B>(
+      f: (a: A) => Effect.Effect<R2, E2, B>,
+    ): Effect.Effect<R2 | Scope.Scope, never, Computed<E | E2, B>> =>
+      Effect.tap(this.input.compute(Effect.flatMap(f)), Effect.yieldNow)
+
+    readonly computeSync = <B>(f: (a: A) => B): Effect.Effect<Scope.Scope, never, Computed<E, B>> =>
+      Effect.tap(this.input.compute(Effect.map(f)), Effect.yieldNow)
   }
 }
 

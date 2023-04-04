@@ -32,12 +32,12 @@ class SliceSink<R, E, A> implements Fx.Sink<R, E, A> {
   ) {}
 
   event = (a: A) => {
-    if (this.skip > 0) {
-      this.skip--
-      return Effect.unit()
+    if (this.take === 0) {
+      return this.earlyExit
     }
 
-    if (this.take === 0) {
+    if (this.skip > 0) {
+      this.skip--
       return Effect.unit()
     }
 

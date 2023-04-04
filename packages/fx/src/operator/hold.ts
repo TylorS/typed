@@ -1,5 +1,4 @@
 import { pipe } from '@effect/data/Function'
-import * as MutableRef from '@effect/data/MutableRef'
 import * as Option from '@effect/data/Option'
 import type * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
@@ -7,15 +6,15 @@ import * as Fiber from '@effect/io/Fiber'
 import type { Scope } from '@effect/io/Scope'
 
 import type { Fx } from '../Fx.js'
-import { asap } from '../_internal/RefCounter.js'
+import { Mutable } from '../_internal/Mutable.js'
 
 import { MulticastFx } from './multicast.js'
 
 export function hold<R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> {
-  return new HoldFx(fx, MutableRef.make(Option.none()))
+  return new HoldFx(fx, Mutable(Option.none()))
 }
 
-export function hold_<R, E, A>(fx: Fx<R, E, A>, value: MutableRef.MutableRef<Option.Option<A>>) {
+export function hold_<R, E, A>(fx: Fx<R, E, A>, value: Mutable<Option.Option<A>>) {
   return new HoldFx(fx, value)
 }
 
@@ -23,10 +22,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
   protected pendingSinks: Array<readonly [Fx.Sink<any, E, A>, A[]]> = []
   protected scheduledFiber: Fiber.RuntimeFiber<any, any> | undefined = undefined
 
-  constructor(
-    readonly fx: Fx<R, E, A>,
-    protected current: MutableRef.MutableRef<Option.Option<A>>,
-  ) {
+  constructor(readonly fx: Fx<R, E, A>, readonly current: Mutable<Option.Option<A>>) {
     super(fx)
 
     this.event = this.event.bind(this)
@@ -35,7 +31,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
 
   run<R2>(sink: Fx.Sink<R2, E, A>): Effect.Effect<Scope | R | R2, never, void> {
     return Effect.suspend(() => {
-      if (Option.isSome(MutableRef.get(this.current))) {
+      if (Option.isSome(this.current.get())) {
         return pipe(
           this.scheduleFlush(sink),
           Effect.flatMap(() => super.run(sink)),
@@ -80,8 +76,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
       this.pendingSinks.push([
         sink,
         pipe(
-          this.current,
-          MutableRef.get,
+          this.current.get(),
           Option.match(
             () => [],
             (a) => [a],
@@ -98,7 +93,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
       return pipe(
         interrupt,
         Effect.flatMap(() => this.flushPending()),
-        Effect.scheduleForked(asap),
+        Effect.forkScoped,
         Effect.tap((f) =>
           Effect.sync(() => {
             this.scheduledFiber = f
@@ -138,7 +133,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> implements Fx<R, E, A>
   }
 
   protected addValue(a: A) {
-    MutableRef.set(this.current, Option.some(a))
+    this.current.set(Option.some(a))
     this.pendingSinks.forEach(([, events]) => events.push(a))
   }
 }

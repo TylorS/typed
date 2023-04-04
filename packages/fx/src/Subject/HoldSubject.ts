@@ -1,8 +1,8 @@
 import { identity } from '@effect/data/Function'
-import * as MutableRef from '@effect/data/MutableRef'
 import { type Option, none } from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 
+import { Mutable } from '../_internal/Mutable.js'
 import { never } from '../constructor/never.js'
 import { HoldFx } from '../operator/hold.js'
 
@@ -10,6 +10,11 @@ import { isSubject, Subject } from './Subject.js'
 
 export interface HoldSubject<E, A> extends Subject<E, A>, HoldSubject.Variance<E, A> {
   readonly value: Effect.Effect<never, never, Option<A>>
+
+  /**
+   * @internal
+   */
+  readonly current: Mutable<Option<A>>
 }
 
 export namespace HoldSubject {
@@ -32,7 +37,7 @@ export namespace HoldSubject {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export type OutputsOf<T> = [T] extends [Variance<infer _E, infer A>] ? A : never
 
-  export function unsafeMake<E, A>(value: MutableRef.MutableRef<Option<A>> = MutableRef.make(none())): HoldSubject<E, A> {
+  export function unsafeMake<E, A>(value: Mutable<Option<A>> = Mutable(none())): HoldSubject<E, A> {
     return new HoldSubjectImpl(value)
   }
 
@@ -43,11 +48,11 @@ export namespace HoldSubject {
     };
     readonly [TypeId]: HoldSubject.Variance<E, A>[TypeId] = this[Subject.TypeId]
 
-    constructor(value: MutableRef.MutableRef<Option<A>>) {
+    constructor(value: Mutable<Option<A>>) {
       super(never, value)
     }
 
-    readonly value = Effect.sync(() => MutableRef.get(this.current))
+    readonly value = Effect.sync(() => this.current.get())
   }
 }
 
