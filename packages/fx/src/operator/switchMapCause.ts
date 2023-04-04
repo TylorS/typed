@@ -1,4 +1,4 @@
-import { flow, pipe } from '@effect/data/Function'
+import { pipe } from '@effect/data/Function'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
@@ -6,6 +6,7 @@ import * as Ref from '@effect/io/Ref/Synchronized'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
+import { splitInterrupt } from '../_internal/matchInterruptCause.js'
 
 import { catchTag_ } from './catchTag.js'
 
@@ -65,14 +66,7 @@ class SwitchMapCauseFx<R, E, A, R2, E2, B>
                             this.f(cause).run(
                               Fx.Sink(
                                 sink.event,
-                                flow(
-                                  Effect.unified((cause) =>
-                                    Cause.isInterruptedOnly(cause)
-                                      ? counter.decrement
-                                      : sink.error(cause),
-                                  ),
-                                  Effect.zipLeft(resetRef),
-                                ),
+                                splitInterrupt(sink.error, () => counter.decrement),
                                 pipe(counter.decrement, Effect.zipLeft(resetRef)),
                               ),
                             ),

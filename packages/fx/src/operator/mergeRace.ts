@@ -20,7 +20,7 @@ export function mergeRace<R2, E2, B>(raced: Fx<R2, E2, B>) {
         const racedFiber = yield* $(
           pipe(
             raced.run(Fx.Sink(sink.event, sink.error, Effect.unit())),
-            Effect.onError((cause) =>
+            Effect.catchAllCause((cause) =>
               Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
             ),
             Effect.forkScoped,

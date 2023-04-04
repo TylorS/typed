@@ -6,6 +6,7 @@ import * as Fiber from '@effect/io/Fiber'
 import type { Scope } from '@effect/io/Scope'
 
 import { Fx, Sink } from '../Fx.js'
+import { matchInterruptCause } from '../_internal/matchInterruptCause.js'
 
 export function run<A, R2, E2, E, R3, E3, B, R4, E4>(
   event: (a: A) => Effect.Effect<R2, E2, any>,
@@ -26,11 +27,12 @@ export function run_<A, R2, E2, E, R3, E3, B, R4, E4>(
       const sink = Sink(
         flow(
           event,
-          Effect.matchCauseEffect(
+          matchInterruptCause(
             (cause) =>
               Effect.sync(() =>
                 Deferred.unsafeDone<E2 | E3 | E4, B>(deferred, Effect.failCause(cause)),
               ),
+            () => pipe(end, Effect.intoDeferred(deferred)),
             Effect.unit,
           ),
         ),
@@ -41,7 +43,7 @@ export function run_<A, R2, E2, E, R3, E3, B, R4, E4>(
       const fiber = yield* $(
         pipe(
           fx.run(sink),
-          Effect.onError((cause) =>
+          Effect.catchAllCause((cause) =>
             Effect.sync(() =>
               Cause.isInterruptedOnly(cause)
                 ? null

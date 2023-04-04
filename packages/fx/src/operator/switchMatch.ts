@@ -7,6 +7,7 @@ import * as Ref from '@effect/io/Ref/Synchronized'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
+import { splitInterrupt } from '../_internal/matchInterruptCause.js'
 import { failCause } from '../constructor/failCause.js'
 
 export function switchMatchCause<E, R2, E2, B, A, R3, E3, C>(
@@ -67,18 +68,13 @@ class SwitchMatchFx<R, E, A, R2, E2, B, R3, E3, C>
                         fx.run(
                           Fx.Sink(
                             sink.event,
-                            flow(
-                              Effect.unified((cause) =>
-                                Cause.isInterruptedOnly(cause)
-                                  ? counter.decrement
-                                  : sink.error(cause),
-                              ),
-                              Effect.zipLeft(resetRef),
+                            splitInterrupt(sink.error, () =>
+                              Effect.zip(counter.decrement, resetRef),
                             ),
                             pipe(counter.decrement, Effect.zipLeft(resetRef)),
                           ),
                         ),
-                        Effect.onError((cause) =>
+                        Effect.catchAllCause((cause) =>
                           Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
                         ),
                         Effect.forkScoped,

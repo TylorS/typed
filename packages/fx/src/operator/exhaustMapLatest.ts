@@ -55,7 +55,7 @@ class ExhaustMapLatestFx<R, E, A, R2, E2, B>
                       pipe(resetRef, Effect.zipRight(runNextFx)),
                     ),
                   ),
-                  Effect.onError((e) =>
+                  Effect.catchAllCause((e) =>
                     Cause.isInterruptedOnly(e)
                       ? resetRef
                       : pipe(resetRef, Effect.zipRight(sink.error(e))),

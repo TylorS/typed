@@ -32,7 +32,7 @@ class FlatMapCauseFx<R, E, A, R2, E2, B>
                 Effect.flatMap(() =>
                   this.f(cause).run(Fx.Sink(sink.event, sink.error, counter.decrement)),
                 ),
-                Effect.onError((cause) =>
+                Effect.catchAllCause((cause) =>
                   Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
                 ),
                 Effect.forkScoped,

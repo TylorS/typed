@@ -7,6 +7,7 @@ import * as Ref from '@effect/io/Ref/Synchronized'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
+import { splitInterrupt } from '../_internal/matchInterruptCause.js'
 import type { FxTypeLambda } from '../typeclass/TypeLambda.js'
 
 export const switchMap: FlatMap<FxTypeLambda>['flatMap'] = dual(
@@ -64,6 +65,11 @@ class SwitchMapFx<R, E, A, R2, E2, B>
                                 pipe(counter.decrement, Effect.zipLeft(resetRef)),
                               ),
                             ),
+                            Effect.catchAllCause(
+                              splitInterrupt(sink.error, () =>
+                                pipe(resetRef, Effect.zipRight(counter.decrement)),
+                              ),
+                            ),
                             Effect.forkScoped,
                           ),
                         ),
@@ -75,6 +81,7 @@ class SwitchMapFx<R, E, A, R2, E2, B>
               ),
             )
           }),
+          Effect.catchAllCause(splitInterrupt(sink.error, () => counter.decrement)),
         ),
       sink.end,
     )

@@ -1,11 +1,11 @@
 import type * as Duration from '@effect/data/Duration'
 import { pipe } from '@effect/data/Function'
-import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
+import { matchInterruptCause } from '../_internal/matchInterruptCause.js'
 
 export function debounce(duration: Duration.Duration) {
   return <R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> => new DebounceFx(fx, duration)
@@ -36,11 +36,12 @@ class DebounceFx<R, E, A> extends Fx.Variance<R, E, A> implements Fx<R, E, A> {
                       sink.event(a),
                       Effect.delay(duration),
                       Effect.interruptible,
-                      Effect.zipRight(counter.decrement),
-                      Effect.uninterruptible,
-                      Effect.onError((cause) =>
-                        Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
+                      matchInterruptCause(
+                        sink.error,
+                        () => counter.decrement,
+                        () => counter.decrement,
                       ),
+                      Effect.uninterruptible,
                       Effect.forkScoped,
                       Effect.tap((fiber) =>
                         Effect.sync(() => {

@@ -1,12 +1,12 @@
 import { dual, pipe } from '@effect/data/Function'
 import type { FlatMap } from '@effect/data/typeclass/FlatMap'
-import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import type * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
+import { splitInterrupt } from '../_internal/matchInterruptCause.js'
 import type { FxTypeLambda } from '../typeclass/TypeLambda.js'
 
 export const exhaustMap: FlatMap<FxTypeLambda>['flatMap'] = dual(
@@ -51,10 +51,8 @@ class ExhaustMapFx<R, E, A, R2, E2, B>
                                       pipe(resetRef, Effect.zipRight(counter.decrement)),
                                     ),
                                   ),
-                                  Effect.onError((cause) =>
-                                    Cause.isInterruptedOnly(cause)
-                                      ? Effect.unit()
-                                      : sink.error(cause),
+                                  Effect.catchAllCause(
+                                    splitInterrupt(sink.error, () => counter.decrement),
                                   ),
                                 ),
                               ),

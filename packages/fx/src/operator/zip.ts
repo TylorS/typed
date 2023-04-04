@@ -3,6 +3,7 @@ import * as Effect from '@effect/io/Effect'
 
 import { Fx } from '../Fx.js'
 import { withRefCounter } from '../_internal/RefCounter.js'
+import { splitInterrupt } from '../_internal/matchInterruptCause.js'
 
 export function zipAll<Streams extends readonly Fx<any, any, any>[]>(
   ...streams: Streams
@@ -79,7 +80,7 @@ class ZipAllFx<Streams extends readonly Fx<any, any, any>[]>
                     Effect.sync(() => results.set(i, a)),
                     Effect.zipRight(emitIfReady),
                   ),
-                sink.error,
+                splitInterrupt(sink.error, () => counter.decrement),
                 counter.decrement,
               ),
             ),
