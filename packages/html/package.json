@@ -1,6 +1,6 @@
 {
   "name": "@typed/html",
-  "version": "3.5.3",
+  "version": "3.5.4",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -21,13 +21,13 @@
   "dependencies": {
     "@effect/data": "^0.10.3",
     "@effect/io": "^0.17.0",
-    "@typed/context": "workspace:*",
-    "@typed/dom": "workspace:*",
-    "@typed/fx": "workspace:*",
+    "@typed/context": "^0.5.4",
+    "@typed/dom": "^8.5.4",
+    "@typed/fx": "^1.5.4",
     "@webreflection/uparser": "~0.2.4",
     "udomdiff": "^1.1.0"
   },
-  "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",
+  "gitHead": "e4ce734001044e830662a65b647c52f3cd5e683c",
   "publishConfig": {
     "access": "public"
   },

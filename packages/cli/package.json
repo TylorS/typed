@@ -1,6 +1,6 @@
 {
   "name": "@typed/cli",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@effect/data": "^0.10.3",
-    "@typed/vite-plugin": "workspace:*",
+    "@typed/vite-plugin": "^0.5.4",
     "@vavite/multibuild": "^1.7.0",
     "cac": "^6.7.14",
     "picocolors": "^1.0.0",
@@ -33,5 +33,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "gitHead": "e4ce734001044e830662a65b647c52f3cd5e683c"
 }

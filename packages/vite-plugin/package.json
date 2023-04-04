@@ -1,6 +1,6 @@
 {
   "name": "@typed/vite-plugin",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@effect/data": "^0.10.3",
-    "@typed/compiler": "workspace:*",
+    "@typed/compiler": "^0.5.4",
     "fast-glob": "^3.2.12",
     "vavite": "^1.7.0",
     "vite": "^4.2.1",
@@ -30,7 +30,7 @@
   "peerDependencies": {
     "vite-node": "^0.28.3"
   },
-  "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",
+  "gitHead": "e4ce734001044e830662a65b647c52f3cd5e683c",
   "publishConfig": {
     "access": "public"
   },

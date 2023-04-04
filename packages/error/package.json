@@ -1,6 +1,6 @@
 {
   "name": "@typed/error",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -24,6 +24,7 @@
   "sideEffects": false,
   "dependencies": {
     "@effect/io": "^0.17.0",
-    "@typed/fx": "workspace:*"
-  }
+    "@typed/fx": "^1.5.4"
+  },
+  "gitHead": "e4ce734001044e830662a65b647c52f3cd5e683c"
 }
