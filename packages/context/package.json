@@ -1,6 +1,6 @@
 {
   "name": "@typed/context",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -21,9 +21,9 @@
   "dependencies": {
     "@effect/data": "^0.10.3",
     "@effect/io": "^0.17.0",
-    "@typed/fx": "^1.5.4"
+    "@typed/fx": "^1.5.5"
   },
-  "gitHead": "e4ce734001044e830662a65b647c52f3cd5e683c",
+  "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",
   "publishConfig": {
     "access": "public"
   },

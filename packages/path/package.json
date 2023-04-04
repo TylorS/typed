@@ -1,6 +1,6 @@
 {
   "name": "@typed/path",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -21,7 +21,7 @@
   "dependencies": {
     "ts-toolbelt": "^9.6.0"
   },
-  "gitHead": "92882bfb2ddaefc711437f58a59ad5c409ee9ac7",
+  "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",
   "publishConfig": {
     "access": "public"
   },

@@ -1,6 +1,6 @@
 {
   "name": "@typed/decoder",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -26,5 +26,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a"
 }

@@ -1,6 +1,6 @@
 {
   "name": "@typed/dom",
-  "version": "8.5.4",
+  "version": "8.5.5",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -23,12 +23,12 @@
     "@effect/io": "^0.17.0",
     "@effect/query": "^0.5.0",
     "@effect/schema": "^0.10.0",
-    "@typed/context": "^0.5.4",
-    "@typed/decoder": "^0.4.1",
-    "@typed/fx": "^1.5.4",
+    "@typed/context": "^0.5.5",
+    "@typed/decoder": "^0.4.2",
+    "@typed/fx": "^1.5.5",
     "typed-query-selector": "^2.9.2"
   },
-  "gitHead": "e4ce734001044e830662a65b647c52f3cd5e683c",
+  "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",
   "publishConfig": {
     "access": "public"
   },
