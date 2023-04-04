@@ -1,5 +1,5 @@
 import { flow, pipe } from '@effect/data/Function'
-import type * as Cause from '@effect/io/Cause'
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Ref from '@effect/io/Ref/Synchronized'
@@ -65,7 +65,14 @@ class SwitchMapCauseFx<R, E, A, R2, E2, B>
                             this.f(cause).run(
                               Fx.Sink(
                                 sink.event,
-                                flow(sink.error, Effect.zipLeft(resetRef)),
+                                flow(
+                                  Effect.unified((cause) =>
+                                    Cause.isInterruptedOnly(cause)
+                                      ? counter.decrement
+                                      : sink.error(cause),
+                                  ),
+                                  Effect.zipLeft(resetRef),
+                                ),
                                 pipe(counter.decrement, Effect.zipLeft(resetRef)),
                               ),
                             ),

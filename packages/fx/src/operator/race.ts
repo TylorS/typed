@@ -7,7 +7,6 @@ import * as Exit from '@effect/io/Exit'
 import * as Scope from '@effect/io/Scope'
 
 import { Fx } from '../Fx.js'
-import { asap } from '../_internal/RefCounter.js'
 import { run } from '../run/run.js'
 
 import { tap } from './tap.js'
@@ -55,7 +54,7 @@ class RaceAllFx<Streams extends readonly Fx<any, any, any>[]>
                 s,
                 tap(() => cleanupScopes(i)),
                 run(sink.event, sink.error, sink.end),
-                Effect.scheduleForked(asap), // Schedule starts so that all Scopes can be returned *before* attempting to cleanup
+                Effect.forkScoped, // Schedule starts so that all Scopes can be returned *before* attempting to cleanup
                 Effect.as(scope),
                 Effect.provideService(Scope.Scope, scope),
               ),

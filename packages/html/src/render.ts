@@ -23,7 +23,7 @@ export function renderInto<T extends DocumentFragment | HTMLElement>(where: T) {
 
       return pipe(
         fx,
-        Fx.exhaustMapLatestEffect((hole) => renderWithHoleContext(holeContext, where, hole)),
+        Fx.switchMapEffect((hole) => renderWithHoleContext(holeContext, where, hole)),
         // Disable cooperative yielding to help ensure consistent rendering performance
         Fx.withRuntimeFlags(RuntimeFlagsPatch.disable(Flags.CooperativeYielding)),
       )

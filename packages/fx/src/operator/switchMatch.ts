@@ -67,7 +67,14 @@ class SwitchMatchFx<R, E, A, R2, E2, B, R3, E3, C>
                         fx.run(
                           Fx.Sink(
                             sink.event,
-                            flow(sink.error, Effect.zipLeft(resetRef)),
+                            flow(
+                              Effect.unified((cause) =>
+                                Cause.isInterruptedOnly(cause)
+                                  ? counter.decrement
+                                  : sink.error(cause),
+                              ),
+                              Effect.zipLeft(resetRef),
+                            ),
                             pipe(counter.decrement, Effect.zipLeft(resetRef)),
                           ),
                         ),

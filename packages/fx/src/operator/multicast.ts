@@ -8,7 +8,6 @@ import type { RuntimeFiber } from '@effect/io/Fiber'
 import type { Scope } from '@effect/io/Scope'
 
 import { Fx } from '../Fx.js'
-import { asap } from '../_internal/RefCounter.js'
 
 export const multicast = <R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> => new MulticastFx(fx)
 
@@ -43,7 +42,7 @@ export class MulticastFx<R, E, A>
       }
 
       if (observers.push(observer) === 1) {
-        that.fiber = yield* $(pipe(fx.run(that), Effect.scheduleForked(asap)))
+        that.fiber = yield* $(pipe(fx.run(that), Effect.forkScoped))
       }
 
       yield* $(Deferred.await(deferred))

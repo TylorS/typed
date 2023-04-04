@@ -153,7 +153,7 @@ function unwrapFxValue(
         Fx.continueWith(() =>
           pipe(
             sampling,
-            Fx.exhaustMapLatest(() => Fx.fromEffect<any, any, any>(value)),
+            Fx.switchMapEffect(() => value),
           ),
         ),
       )
