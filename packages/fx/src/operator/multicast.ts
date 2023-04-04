@@ -1,6 +1,6 @@
 import type { Context } from '@effect/data/Context'
 import { pipe } from '@effect/data/Function'
-import type { Cause } from '@effect/io/Cause'
+import * as Cause from '@effect/io/Cause'
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
@@ -59,7 +59,7 @@ export class MulticastFx<R, E, A>
     )
   }
 
-  error(cause: Cause<E>) {
+  error(cause: Cause.Cause<E>) {
     return Effect.suspend(() =>
       pipe(
         Effect.forEachDiscard(this.observers.slice(), (observer) => this.runError(cause, observer)),
@@ -82,9 +82,9 @@ export class MulticastFx<R, E, A>
     return pipe(observer.sink.event(a), Effect.provideContext(observer.context))
   }
 
-  protected runError(cause: Cause<E>, observer: MulticastObserver<any, E, A>) {
+  protected runError(cause: Cause.Cause<E>, observer: MulticastObserver<any, E, A>) {
     return pipe(
-      observer.sink.error(cause),
+      Cause.isInterruptedOnly(cause) ? observer.sink.end : observer.sink.error(cause),
       Effect.provideContext(observer.context),
       Effect.tap(() => Effect.sync(() => this.removeObserver(observer))),
       Effect.intoDeferred(observer.deferred),

@@ -56,19 +56,12 @@ class SwitchMapFx<R, E, A, R2, E2, B>
                                 flow(
                                   Effect.unified((cause) =>
                                     Cause.isInterruptedOnly(cause)
-                                      ? counter.decrement
+                                      ? Effect.unit()
                                       : sink.error(cause),
                                   ),
                                   Effect.zipLeft(resetRef),
                                 ),
                                 pipe(counter.decrement, Effect.zipLeft(resetRef)),
-                              ),
-                            ),
-                            Effect.onError(
-                              Effect.unified((cause) =>
-                                Cause.isInterruptedOnly(cause)
-                                  ? counter.decrement
-                                  : sink.error(cause),
                               ),
                             ),
                             Effect.forkScoped,

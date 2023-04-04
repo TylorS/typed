@@ -46,7 +46,7 @@ export class RefCounter {
           if (x === 0) Deferred.unsafeDone<never, void>(this.deferred, Effect.unit())
         }),
       ),
-      Effect.scheduleForked(asap),
+      Effect.forkScoped,
       Effect.tap((fiber) =>
         Effect.sync(() => {
           this.fiber = fiber
