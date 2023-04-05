@@ -1,6 +1,6 @@
 {
   "name": "@typed/router",
-  "version": "0.5.9",
+  "version": "0.5.10",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -21,10 +21,10 @@
   "dependencies": {
     "@effect/data": "^0.10.3",
     "@effect/io": "^0.17.0",
-    "@typed/context": "^0.5.8",
-    "@typed/dom": "^8.5.8",
-    "@typed/fx": "^1.5.8",
-    "@typed/html": "^3.5.8",
+    "@typed/context": "^0.5.9",
+    "@typed/dom": "^8.5.9",
+    "@typed/fx": "^1.5.9",
+    "@typed/html": "^3.5.9",
     "@typed/path": "^0.1.2",
     "@typed/route": "^0.4.2"
   },
