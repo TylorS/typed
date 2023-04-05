@@ -5,7 +5,7 @@ import type { Layer } from '@effect/io/Layer'
 import { Fx } from '../Fx.js'
 
 export function provideSomeLayer<R2, E2, S>(layer: Layer<R2, E2, S>) {
-  return <R, E, A>(self: Fx<R | S, E, A>): Fx<Exclude<R, S> | R2, E | E2, A> =>
+  return <R, E, A>(self: Fx<R, E, A>): Fx<Exclude<R, S> | R2, E | E2, A> =>
     new ProvideSomeLayerFx(self, layer)
 }
 

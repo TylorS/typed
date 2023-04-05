@@ -6,7 +6,7 @@ import { Fx } from '../Fx.js'
 
 export function provideService<I, S>(tag: Context.Tag<I, S>) {
   return (service: S) => {
-    return <R, E, A>(self: Fx<R | I, E, A>): Fx<Exclude<R, I>, E, A> =>
+    return <R, E, A>(self: Fx<R, E, A>): Fx<Exclude<R, I>, E, A> =>
       new ProvideServiceFx(self, tag, service)
   }
 }

@@ -42,32 +42,21 @@ export namespace EffectFn {
   Effect.Effect<infer _R, infer _E, infer A>
     ? A
     : never
-
-  export const Key = Symbol.for('@typed/context/EffectFn/Key')
-  export type Key = typeof Key
-
-  export type Branded<K extends string, T extends EffectFn> = T & { readonly [Key]: K }
 }
 
 /**
  * Fn is a helper for creating contextual services that are single functions that return
  * an Effect.
  */
-export interface Fn<Key extends string, T extends EffectFn>
+export interface Fn<Key, T extends EffectFn>
   // Brand T so that functions do not collide so easily
-  extends Tag<EffectFn.Branded<Key, T>> {
-  readonly key: Key
-
+  extends Tag<Key, T> {
   /**
    * Call your effectful function with the provided arguments.
    */
   readonly apply: <Args extends EffectFn.ArgsOf<T>>(
     ...args: Args
-  ) => Effect.Effect<
-    EffectFn.Branded<Key, T> | EffectFn.ResourcesOf<T>,
-    EffectFn.ErrorsOf<T>,
-    EffectFn.OutputOf<T>
-  >
+  ) => Effect.Effect<Key | EffectFn.ResourcesOf<T>, EffectFn.ErrorsOf<T>, EffectFn.OutputOf<T>>
 
   /**
    * Access your effect-ful function and perform an effect with it.
@@ -76,7 +65,7 @@ export interface Fn<Key extends string, T extends EffectFn>
    */
   readonly access: <R, E, A>(
     f: (t: T) => Effect.Effect<R, E, A>,
-  ) => Effect.Effect<EffectFn.Branded<Key, T> | R, E | EffectFn.ErrorsOf<T>, A>
+  ) => Effect.Effect<Key | R, E | EffectFn.ErrorsOf<T>, A>
 
   /**
    * A helper to implement a Layer for your effectful function which
@@ -84,34 +73,16 @@ export interface Fn<Key extends string, T extends EffectFn>
    */
   readonly implement: <T2 extends EffectFn.Extendable<T>>(
     implementation: T2,
-  ) => Layer.Layer<EffectFn.ResourcesOf<T2>, never, EffectFn.Branded<Key, T>>
+  ) => Layer.Layer<EffectFn.ResourcesOf<T2>, never, Key>
 }
 
 /**
  * Create a new Fn
  */
 export function Fn<T extends EffectFn>() {
-  // Key is provided in a second function to allow inference to work without duplicating your typing
   return <K extends string>(key: K): Fn<K, T> => {
-    const tag = Tag<EffectFn.Branded<K, T>>(key)
-
-    const access = <R, E, A>(f: (t: T) => Effect.Effect<R, E, A>) => pipe(tag, Effect.flatMap(f))
-
-    return Object.assign(tag, {
-      key,
-      access,
-      apply: (...args: EffectFn.ArgsOf<T>) => access((f) => f(...args)),
-      implement: <T2 extends EffectFn.Extendable<T>>(
-        implementation: T2,
-      ): Layer.Layer<EffectFn.ResourcesOf<T2>, never, EffectFn.Branded<K, T>> =>
-        tag.layer(
-          Effect.gen(function* ($) {
-            const layer = Layer.succeedContext(yield* $(Effect.context<EffectFn.ResourcesOf<T2>>()))
-
-            return flow(implementation, Effect.provideSomeLayer(layer)) as EffectFn.Branded<K, T>
-          }),
-        ),
-    } as const)
+    // Add key for debugging
+    return Object.assign(Fn.wrap(Tag<K, T>(key)), { key })
   }
 }
 
@@ -120,5 +91,22 @@ export namespace Fn {
 
   export type FnOf<T extends Fn<any, any>> = T extends Fn<any, infer F> ? F : never
 
-  export type Service<T extends Fn<any, any>> = EffectFn.Branded<KeyOf<T>, FnOf<T>>
+  export const wrap = <I, S extends EffectFn>(tag: Tag<I, S>): Fn<I, S> => {
+    const access = <R, E, A>(f: (t: S) => Effect.Effect<R, E, A>) => pipe(tag, Effect.flatMap(f))
+
+    return Object.assign(tag, {
+      access,
+      apply: (...args: EffectFn.ArgsOf<S>) => access((f) => f(...args)),
+      implement: <T2 extends EffectFn.Extendable<S>>(
+        implementation: T2,
+      ): Layer.Layer<EffectFn.ResourcesOf<T2>, never, I> =>
+        tag.layer(
+          Effect.gen(function* ($) {
+            const layer = Layer.succeedContext(yield* $(Effect.context<EffectFn.ResourcesOf<T2>>()))
+
+            return flow(implementation, Effect.provideSomeLayer(layer)) as any
+          }),
+        ),
+    } as const)
+  }
 }

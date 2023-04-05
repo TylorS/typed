@@ -2,6 +2,7 @@ import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 
 import { Fx } from '../Fx.js'
+import { matchInterruptCause } from '../_internal/matchInterruptCause.js'
 
 export function fromFxEffect<R, E, R2, E2, A>(
   effect: Effect.Effect<R, E, Fx<R2, E2, A>>,
@@ -20,7 +21,11 @@ class FromFxEffect<R, E, R2, E2, A>
   run<R3>(sink: Fx.Sink<R3, E | E2, A>) {
     return pipe(
       this.effect,
-      Effect.matchCauseEffect(sink.error, (fx) => fx.run(sink)),
+      matchInterruptCause(
+        sink.error,
+        () => sink.end,
+        (fx) => fx.run(sink),
+      ),
     )
   }
 }

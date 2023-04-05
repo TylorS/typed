@@ -118,10 +118,7 @@ function unwrapFxValues<Values extends Array<Placeholder<any, any> | undefined |
   Placeholder.ErrorsOf<Values[number]>,
   Array<any>
 > {
-  // Used to sample pull-based Effect's whenever an Fx emits a value.
-  const sampling = Fx.Subject.unsafeMake<never, void>()
-
-  return Fx.combineAll(...values.map((v, i) => unwrapFxValue(template, v, i, sampling))) as Fx.Fx<
+  return Fx.combineAll(...values.map((v, i) => unwrapFxValue(template, v, i))) as Fx.Fx<
     Placeholder.ResourcesOf<Values[number]>,
     Placeholder.ErrorsOf<Values[number]>,
     Array<any>
@@ -132,13 +129,9 @@ function unwrapFxValue(
   template: TemplateStringsArray,
   value: Placeholder<any, any> | undefined | null,
   index: number,
-  sampling: Fx.Subject<never, void>,
 ): Fx.Fx<any, any, any> {
-  if (value && Fx.isFx<any, any, any>(value) && !('element' in value)) {
-    return pipe(
-      value,
-      Fx.tap(() => sampling.event()),
-    )
+  if (Fx.isFx<any, any, any>(value) && !('element' in value)) {
+    return value
   }
 
   if (Effect.isEffect(value)) {
@@ -148,15 +141,7 @@ function unwrapFxValue(
     // Allow event listeners to be passed as Effects to be called when triggered
     // Otherwise the Effect is lifted into an Fx that is sampled whenever the Fx emits a value
     if (!prev.startsWith('on')) {
-      return pipe(
-        Fx.fromEffect<any, any, any>(value),
-        Fx.continueWith(() =>
-          pipe(
-            sampling,
-            Fx.switchMapEffect(() => value),
-          ),
-        ),
-      )
+      return Fx.fromEffect<any, any, any>(value)
     }
   }
 

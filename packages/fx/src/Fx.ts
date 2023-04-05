@@ -1,3 +1,4 @@
+import { methodWithTrace } from '@effect/data/Debug'
 import { identity } from '@effect/data/Function'
 import type { Cause } from '@effect/io/Cause'
 import type { Effect } from '@effect/io/Effect'
@@ -55,7 +56,11 @@ export namespace Fx {
     error: (error: Cause<E>) => Effect<R2, never, unknown>,
     end: Effect<R3, never, unknown>,
   ): Sink<R | R2 | R3, E, A> {
-    return { event, error, end }
+    return {
+      event: methodWithTrace((trace) => (a: A) => event(a).traced(trace)),
+      error: methodWithTrace((trace) => (cause: Cause<E>) => error(cause).traced(trace)),
+      end,
+    }
   }
 
   export interface Success<A> extends Fx<never, never, A> {}

@@ -207,34 +207,25 @@ function event(node: Element, name: string) {
   }
 }
 
+const getValue = (value: any) => (value == null ? value : value.valueOf())
+
 function attribute(node: Element, name: string, document: Document) {
-  let oldValue: Placeholder<any>,
+  let oldValue: Placeholder<any, any>,
     orphan = true
-  let attributeNode: Attr
-
-  return <R>(newValue: Placeholder<R>) => {
-    if (!attributeNode) {
-      attributeNode = document.createAttributeNS(null, name)
-    }
-
-    if (oldValue !== newValue) {
-      oldValue = newValue
-      if (oldValue == undefined) {
+  const attributeNode = document.createAttributeNS(null, name)
+  return (newValue: Placeholder<any, any>) => {
+    const value = getValue(newValue)
+    if (oldValue !== value) {
+      if ((oldValue = value) == null) {
         if (!orphan) {
           node.removeAttributeNode(attributeNode)
           orphan = true
         }
       } else {
-        const value = newValue
-        if (value == undefined) {
-          if (!orphan) node.removeAttributeNode(attributeNode)
-          orphan = true
-        } else {
-          attributeNode.value = value as string
-          if (orphan) {
-            node.setAttributeNodeNS(attributeNode)
-            orphan = false
-          }
+        attributeNode.value = value
+        if (orphan) {
+          node.setAttributeNodeNS(attributeNode)
+          orphan = false
         }
       }
     }

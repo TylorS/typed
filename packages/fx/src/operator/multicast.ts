@@ -83,8 +83,12 @@ export class MulticastFx<R, E, A>
   }
 
   protected runError(cause: Cause.Cause<E>, observer: MulticastObserver<any, E, A>) {
+    if (Cause.isInterruptedOnly(cause)) {
+      return this.runEnd(observer)
+    }
+
     return pipe(
-      Cause.isInterruptedOnly(cause) ? observer.sink.end : observer.sink.error(cause),
+      observer.sink.error(cause),
       Effect.provideContext(observer.context),
       Effect.tap(() => Effect.sync(() => this.removeObserver(observer))),
       Effect.intoDeferred(observer.deferred),

@@ -9,7 +9,7 @@ export function provideServiceEffect<I, S, R2, E2>(
   tag: Context.Tag<I, S>,
   service: Effect.Effect<R2, E2, S>,
 ) {
-  return <R, E, A>(self: Fx<R | I, E, A>): Fx<Exclude<R | R2, I>, E | E2, A> =>
+  return <R, E, A>(self: Fx<R, E, A>): Fx<Exclude<R | R2, I>, E | E2, A> =>
     new ProvideServiceEffectFx(self, tag, service)
 }
 
