@@ -22,7 +22,7 @@ export interface Router<out R = never, out E = never, in out P extends string = 
   /**
    * The current path of the application
    */
-  readonly currentPath: Fx.RefSubject<string>
+  readonly currentPath: Fx.RefSubject<never, string>
 
   /**
    * The current matched params of the router
@@ -32,7 +32,7 @@ export interface Router<out R = never, out E = never, in out P extends string = 
   /**
    * The current outlet of this Router
    */
-  readonly outlet: Fx.RefSubject<html.Renderable>
+  readonly outlet: Fx.RefSubject<Redirect, html.Renderable>
 
   /**
    * Helper for constructing a path from a route relative to the router.
@@ -69,10 +69,12 @@ export interface Router<out R = never, out E = never, in out P extends string = 
 export const Router = Object.assign(Context.Tag<Router>('@typed/router/Router'), {
   make: function makeRouter<R = never, E = never, P extends string = string>(
     route: Route.Route<R, E, P>,
-    currentPath: Fx.RefSubject<string>,
+    currentPath: Fx.RefSubject<never, string>,
     parent: Option.Option<Router<any, any, string>> = Option.none(),
   ): Router<R, E, P> {
-    const outlet = Fx.RefSubject.unsafeMake((): html.Renderable => null)
+    const outlet = Fx.RefSubject.unsafeMake<Redirect, html.Renderable>(
+      Effect.sync((): html.Renderable => null),
+    )
 
     const createPath = <R2 extends Route.Route<any, any, string>, P extends Route.ParamsOf<R2>>(
       other: R2,
@@ -121,8 +123,8 @@ export const Router = Object.assign(Context.Tag<Router>('@typed/router/Router'),
   },
 })
 
-export const outlet: Fx.Fx<RenderContext | Router, never, html.Renderable> = RenderContext.withFx(
-  ({ environment }) =>
+export const outlet: Fx.Fx<RenderContext | Router, Redirect, html.Renderable> =
+  RenderContext.withFx(({ environment }) =>
     Router.withFx((r) =>
       environment === 'browser'
         ? r.outlet
@@ -132,7 +134,7 @@ export const outlet: Fx.Fx<RenderContext | Router, never, html.Renderable> = Ren
             Fx.take(1),
           ),
     ),
-)
+  )
 
 export const currentPath: Fx.Fx<Router, never, string> = Router.withFx((r) => r.currentPath)
 
@@ -194,14 +196,16 @@ redirectTo.fx = <R, E, P extends string>(
 // TOOD: Add support for reading <base> tag for default Router path.
 
 export const makeRouter = (
-  currentPath?: Fx.RefSubject<string>,
+  currentPath?: Fx.RefSubject<never, string>,
 ): Effect.Effect<Location | History | Window | Document | Scope.Scope, never, Router> =>
   Effect.gen(function* ($) {
     const history = yield* $(History)
     const location = yield* $(Location)
 
     if (!currentPath) {
-      currentPath = Fx.RefSubject.unsafeMake(() => getCurrentPathFromLocation(location))
+      currentPath = Fx.RefSubject.unsafeMake(
+        Effect.sync(() => getCurrentPathFromLocation(location)),
+      )
     }
 
     // Patch history events to emit an event when the path changes
@@ -212,12 +216,11 @@ export const makeRouter = (
     // - hashchange
     // - history events
     yield* $(
-      pipe(
-        Fx.mergeAll(addWindowListener('popstate'), addWindowListener('hashchange'), historyEvents),
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        Fx.switchMapEffect(() => currentPath!.set(getCurrentPathFromLocation(location))),
-        Fx.forkScoped,
-      ),
+      Fx.mergeAll(addWindowListener('popstate'), addWindowListener('hashchange'), historyEvents),
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      Fx.switchMapEffect(() => currentPath!.set(getCurrentPathFromLocation(location))),
+      Fx.drain,
+      Effect.forkScoped,
     )
 
     // Listen to path changes and update the current history location, if necessary
@@ -225,11 +228,13 @@ export const makeRouter = (
       pipe(
         currentPath,
         Fx.skipRepeats,
-        Fx.observeSync((path) => {
-          if (path !== getCurrentPathFromLocation(location)) {
-            history.pushState({}, '', path)
-          }
-        }),
+        Fx.observe((path) =>
+          Effect.sync(() => {
+            if (path !== getCurrentPathFromLocation(location)) {
+              history.pushState({}, '', path)
+            }
+          }),
+        ),
         Effect.forkScoped,
       ),
     )
@@ -244,7 +249,7 @@ export const makeRouter = (
   })
 
 export const live = (
-  currentPath?: Fx.RefSubject<string>,
+  currentPath?: Fx.RefSubject<never, string>,
 ): Layer.Layer<Location | History | Window | Document, never, Router<never, never, string>> =>
   Router.layerScoped(makeRouter(currentPath))
 

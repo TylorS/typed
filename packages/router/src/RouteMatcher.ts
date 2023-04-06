@@ -200,24 +200,22 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
                 const currentPath =
                   matchedPath === '/' ? path : path.replace(matchedPath, '') || '/'
 
-                yield* $(Effect.logDebug(`[@typed/router] Matching path: ${currentPath}`))
+                yield* $(Effect.logInfo(`[@typed/router] Matching path: ${currentPath}`))
 
                 // Attempt to find the best match
                 for (const [match, render] of matchers) {
-                  yield* $(Effect.logDebug(`[@typed/router] Matching against: ${match.route.path}`))
+                  yield* $(Effect.logInfo(`[@typed/router] Matching against: ${match.route.path}`))
 
                   const result = yield* $(match.route.match(currentPath))
 
                   if (Option.isSome(result)) {
-                    yield* $(
-                      Effect.logDebug(`[@typed/router] Matched against: ${match.route.path}`),
-                    )
+                    yield* $(Effect.logInfo(`[@typed/router] Matched against: ${match.route.path}`))
 
                     return yield* $(verifyShouldRerender(render, match.layout))
                   }
                 }
 
-                yield* $(Effect.logDebug(`[@typed/router] Rendering fallback`))
+                yield* $(Effect.logInfo(`[@typed/router] Rendering fallback`))
 
                 // If we didn't find a match, render the not found page
                 return yield* $(verifyShouldRerender(renderFallback, options.layout))

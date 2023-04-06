@@ -118,7 +118,7 @@ function unwrapFxValues<Values extends Array<Placeholder<any, any> | undefined |
   Placeholder.ErrorsOf<Values[number]>,
   Array<any>
 > {
-  return Fx.combineAll(...values.map((v, i) => unwrapFxValue(template, v, i))) as Fx.Fx<
+  return Fx.combineAll(values.map((v, i) => unwrapFxValue(template, v, i))) as Fx.Fx<
     Placeholder.ResourcesOf<Values[number]>,
     Placeholder.ErrorsOf<Values[number]>,
     Array<any>
@@ -130,7 +130,7 @@ function unwrapFxValue(
   value: Placeholder<any, any> | undefined | null,
   index: number,
 ): Fx.Fx<any, any, any> {
-  if (Fx.isFx<any, any, any>(value) && !('element' in value)) {
+  if (Fx.isFx(value) && !('element' in value)) {
     return value
   }
 
@@ -150,14 +150,14 @@ function unwrapFxValue(
 
 declare module '@typed/fx' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export interface Fx<R, E, A> extends Placeholder<R, E> {}
+  export interface Fx<Services, Errors, Output> extends Placeholder<Services, Errors> {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export interface Variance<R, E, A> extends Placeholder<R, E> {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export interface MulticastFx<R, E, A> extends Placeholder<R, E> {}
+  export interface MulticastFx<R, E, A, Name> extends Placeholder<R, E> {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export interface HoldFx<R, E, A> extends Placeholder<R, E> {}
+  export interface HoldFx<R, E, A, Tag> extends Placeholder<R, E> {}
 }

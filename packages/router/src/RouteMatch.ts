@@ -41,8 +41,8 @@ export function RouteMatch<R, E, P extends string, R2, E2, R3, E3>(
     provideService: (tag, service) =>
       RouteMatch(
         Route.provideService(tag, service)(route),
-        flow(match, Fx.provideService(tag)(service)),
-        layout ? Fx.provideService(tag)(service)(layout) : undefined,
+        flow(match, Fx.provideService(tag, service)),
+        layout ? Fx.provideService(tag, service)(layout) : undefined,
       ),
     provideSomeLayer: (layer) =>
       RouteMatch(

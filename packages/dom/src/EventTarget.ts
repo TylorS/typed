@@ -13,12 +13,12 @@ export function addEventListener<T extends EventTarget, EventName extends keyof 
 ): (target: T) => Fx.Fx<never, never, DefaultEventMap<T>[EventName]>
 
 export function addEventListener<T extends EventTarget, EventName extends string>(
-  event: EventName,
+  eventName: EventName,
   options?: AddEventListenerOptions,
 ): (target: T) => Fx.Fx<never, never, Event> {
   return (target: T): Fx.Fx<never, never, Event> =>
-    Fx.fromEmitter(({ emit }) => {
-      const cleanup = addEventListener_(target, event, emit, options)
+    Fx.fromEmitter(({ event }) => {
+      const cleanup = addEventListener_(target, eventName, event, options)
 
       return Effect.addFinalizer(() => Effect.sync(cleanup))
     })

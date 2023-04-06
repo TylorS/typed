@@ -62,9 +62,9 @@ export function Tag<I, S = I>(key?: string): Tag<I, S> {
   return Object.assign(tag, {
     with: <A>(f: (s: S) => A) => Effect.map(tag, f),
     withEffect: <R, E, A>(f: (s: S) => Effect.Effect<R, E, A>) => Effect.flatMap(tag, f),
-    withFx: <R, E, A>(f: (s: S) => Fx.Fx<R, E, A>) => Fx.serviceWithFx(tag)(f),
+    withFx: <R, E, A>(f: (s: S) => Fx.Fx<R, E, A>) => Fx.serviceWithFx(tag, f),
     provide: (s: S) => Effect.provideService(tag, s),
-    provideFx: Fx.provideService(tag),
+    provideFx: (s: S) => Fx.provideService(tag, s),
     layer: <R, E>(effect: Effect.Effect<R, E, S>) => Effect.toLayer(effect, tag),
     layerScoped: <R, E>(effect: Effect.Effect<R | Scope.Scope, E, S>) =>
       Effect.toLayerScoped(effect, tag),

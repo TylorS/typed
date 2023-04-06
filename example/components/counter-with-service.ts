@@ -1,4 +1,5 @@
 import { pipe } from '@effect/data/Function'
+import * as Effect from '@effect/io/Effect'
 import type { Layer } from '@effect/io/Layer'
 import { Tag } from '@typed/context'
 import * as Fx from '@typed/fx'
@@ -11,7 +12,7 @@ export interface CounterName {
 export const CounterName = Tag<CounterName>('CounterName')
 
 export const Counter = Fx.gen(function* ($) {
-  const count = yield* $(Fx.makeRef(() => 0))
+  const count = yield* $(Fx.makeRef(Effect.sync(() => 0)))
 
   return html`
     <button onclick=${count.update((x) => x - 1)}>Decrement</button>

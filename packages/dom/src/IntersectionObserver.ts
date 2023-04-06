@@ -65,7 +65,7 @@ export const makeIntersectionObserverManager: Effect.Effect<
       ),
     observe: (element, options) =>
       pipe(
-        Fx.Fx<never, never, IntersectionObserverEntry>((sink) =>
+        Fx.make<never, never, IntersectionObserverEntry>((sink) =>
           pipe(
             options,
             get,

@@ -78,8 +78,8 @@ export const watchPosition = (
   Navigator.withFx((n) =>
     Fx.fromEmitter((emitter) => {
       const id = n.geolocation.watchPosition(
-        emitter.emit,
-        (e) => emitter.failCause(Cause.fail(e)),
+        emitter.event,
+        (e) => emitter.error(Cause.fail(e)),
         options,
       )
 

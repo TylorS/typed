@@ -1,4 +1,4 @@
-import { Fx } from '@typed/fx/Fx'
+import { Fx } from '@typed/fx'
 
 import { RenderContext } from './RenderContext.js'
 

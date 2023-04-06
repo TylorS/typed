@@ -16,7 +16,7 @@ export interface ProvideIntrinsicsOptions {
   readonly environment: Environment
   readonly window: Window
   readonly globalThis: GlobalThis
-  readonly currentPath?: Fx.RefSubject<string>
+  readonly currentPath?: Fx.RefSubject<never, string>
   readonly isBot?: boolean
   readonly parentElement?: HTMLElement
 }
@@ -50,7 +50,7 @@ export function provideIntrinsicsEffect(options: ProvideIntrinsicsOptions) {
 }
 
 export type IntrinsicOptions = {
-  readonly currentPath?: Fx.RefSubject<string>
+  readonly currentPath?: Fx.RefSubject<never, string>
   readonly parentElement?: HTMLElement
   readonly isBot?: boolean
 }
@@ -61,7 +61,7 @@ export function provideBrowserIntrinsics(
 ): <E, A>(fx: Fx.Fx<IntrinsicServices, E, A>) => Fx.Fx<never, Exclude<E, Redirect>, A> {
   return flow(
     provideIntrinsics({ ...options, environment: 'browser', window, globalThis: window }),
-    Fx.switchMapErrorEffect((e) => {
+    Fx.catchAllEffect((e) => {
       if (Redirect.is(e)) {
         return pipe(
           Effect.sync(() => window.history.pushState(null, '', e.path)),

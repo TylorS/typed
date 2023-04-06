@@ -11,7 +11,7 @@ export const makeMutationObserver = (
     Effect.gen(function* ($) {
       const globalThis = yield* $(GlobalThis)
 
-      const observer = new globalThis.MutationObserver(emitter.emit)
+      const observer = new globalThis.MutationObserver(emitter.event)
 
       observer.observe(node, options)
 
