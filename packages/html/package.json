@@ -1,6 +1,6 @@
 {
   "name": "@typed/html",
-  "version": "3.5.9",
+  "version": "3.6.0",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -21,9 +21,9 @@
   "dependencies": {
     "@effect/data": "^0.10.3",
     "@effect/io": "^0.17.0",
-    "@typed/context": "^0.5.9",
-    "@typed/dom": "^8.5.9",
-    "@typed/fx": "^1.5.9",
+    "@typed/context": "^0.6.0",
+    "@typed/dom": "^8.6.0",
+    "@typed/fx": "^1.6.0",
     "@webreflection/uparser": "~0.2.4",
     "udomdiff": "^1.1.0"
   },
