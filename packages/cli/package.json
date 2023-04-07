@@ -1,6 +1,6 @@
 {
   "name": "@typed/cli",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@effect/data": "^0.10.3",
-    "@typed/vite-plugin": "^0.6.0",
+    "@typed/vite-plugin": "^0.6.1",
     "@vavite/multibuild": "^1.7.0",
     "cac": "^6.7.14",
     "picocolors": "^1.0.0",
