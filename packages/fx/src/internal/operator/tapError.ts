@@ -2,7 +2,7 @@ import { dualWithTrace } from '@effect/data/Debug'
 import { pipe } from '@effect/data/Function'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Cause, Effect, Either } from '@typed/fx/internal/_externals'
+import { Cause, Effect, Either } from '@typed/fx/internal/externals'
 import { tapCause } from '@typed/fx/internal/operator/tapCause'
 
 export const tapError: {

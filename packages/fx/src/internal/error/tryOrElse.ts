@@ -3,8 +3,8 @@ import { dualWithTrace } from '@effect/data/Debug'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect } from '@typed/fx/internal/_externals'
-import type { Context, Scope } from '@typed/fx/internal/_externals'
+import type { Context, Scope } from '@typed/fx/internal/externals'
+import { Effect } from '@typed/fx/internal/externals'
 
 export const tryOrElse: {
   <R, E, A, R2, E2, B, R3, E3, C>(

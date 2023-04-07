@@ -1,7 +1,7 @@
 import { dualWithTrace } from '@effect/data/Debug'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect } from '@typed/fx/internal/_externals'
+import { Effect } from '@typed/fx/internal/externals'
 
 export const logSpan: {
   <R, E, A>(fx: Fx<R, E, A>, span: string): Fx<R, E, A>

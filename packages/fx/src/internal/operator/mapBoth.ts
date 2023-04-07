@@ -3,7 +3,7 @@ import { dualWithTrace } from '@effect/data/Debug'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect, Cause, Scope } from '@typed/fx/internal/_externals'
+import { Effect, Cause, Scope } from '@typed/fx/internal/externals'
 import { isMap } from '@typed/fx/internal/operator/map'
 
 export const mapBoth: {

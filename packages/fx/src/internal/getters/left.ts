@@ -1,7 +1,7 @@
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Cause, Either, Effect, Scope, pipe } from '@typed/fx/internal/_externals'
+import { Cause, Either, Effect, Scope, pipe } from '@typed/fx/internal/externals'
 
 export function left<R, E, A, B>(
   self: Fx<R, E, Either.Either<A, B>>,

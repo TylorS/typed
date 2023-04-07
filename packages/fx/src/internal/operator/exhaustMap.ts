@@ -5,9 +5,9 @@ import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
 import { withRefCounter } from '@typed/fx/internal/RefCounter'
-import { Effect, Synchronized } from '@typed/fx/internal/_externals'
-import type { Context, Fiber, Scope } from '@typed/fx/internal/_externals'
 import { fromEffect } from '@typed/fx/internal/conversion/fromEffect'
+import type { Context, Fiber, Scope } from '@typed/fx/internal/externals'
+import { Effect, Synchronized } from '@typed/fx/internal/externals'
 
 export const exhaustMap: {
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Fx<R2, E2, B>): Fx<R | R2, E | E2, B>

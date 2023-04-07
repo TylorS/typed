@@ -5,7 +5,7 @@ import * as Effect from '@effect/io/Effect'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
-import type { Context, Scope } from '@typed/fx/internal/_externals'
+import type { Context, Scope } from '@typed/fx/internal/externals'
 
 export const onNonInterruptCause: {
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Effect.Effect<R2, E2, B>): Fx<

@@ -1,7 +1,7 @@
 import { dualWithTrace } from '@effect/data/Debug'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Cause } from '@typed/fx/internal/_externals'
+import { Cause } from '@typed/fx/internal/externals'
 import { mapCause } from '@typed/fx/internal/operator/mapCause'
 
 export const mapError: {

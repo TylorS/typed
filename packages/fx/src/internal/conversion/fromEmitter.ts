@@ -3,8 +3,8 @@ import * as Runtime from '@effect/io/Runtime'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
 import { withRefCounter } from '@typed/fx/internal/RefCounter'
-import { Effect } from '@typed/fx/internal/_externals'
-import type { Cause, Scope } from '@typed/fx/internal/_externals'
+import type { Cause, Scope } from '@typed/fx/internal/externals'
+import { Effect } from '@typed/fx/internal/externals'
 
 export interface Emitter<E, A> {
   readonly event: (a: A) => void

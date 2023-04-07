@@ -2,7 +2,7 @@ import { methodWithTrace } from '@effect/data/Debug'
 import * as Either from '@effect/data/Either'
 import * as Cause from '@effect/io/Cause'
 
-import { Effect, Scope } from '../_externals.js'
+import { Effect, Scope } from '../externals.js'
 
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'

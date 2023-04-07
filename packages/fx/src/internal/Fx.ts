@@ -16,7 +16,7 @@ import type { Cause } from '@effect/io/Cause'
 import type { Effect } from '@effect/io/Effect'
 import type { Scope } from '@effect/io/Scope'
 
-import type { Fiber } from '@typed/fx/internal/_externals'
+import type { Fiber } from '@typed/fx/internal/externals'
 
 /**
  * A `Fx` is a push-based reactive data structure that declaratively represents a multi-shot Effects.

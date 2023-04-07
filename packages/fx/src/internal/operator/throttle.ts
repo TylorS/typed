@@ -1,7 +1,7 @@
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect, pipe } from '@typed/fx/internal/_externals'
-import type { Duration, Fiber } from '@typed/fx/internal/_externals'
 import { suspend } from '@typed/fx/internal/constructor/suspend'
+import { Effect, pipe } from '@typed/fx/internal/externals'
+import type { Duration, Fiber } from '@typed/fx/internal/externals'
 import { filterEffect } from '@typed/fx/internal/operator/filterMapEffect'
 
 export function throttle<R, E, A>(self: Fx<R, E, A>, duration: Duration.Duration): Fx<R, E, A> {

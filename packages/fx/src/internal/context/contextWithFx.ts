@@ -2,8 +2,8 @@ import { bodyWithTrace } from '@effect/data/Debug'
 
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
-import { Effect, Scope } from '@typed/fx/internal/_externals'
-import type { Context } from '@typed/fx/internal/_externals'
+import { Effect, Scope } from '@typed/fx/internal/externals'
+import type { Context } from '@typed/fx/internal/externals'
 
 export const contextWithFx: <R, R2, E2, A>(
   f: (context: Context.Context<R>) => Fx<R2, E2, A>,

@@ -3,8 +3,8 @@ import type { Config } from '@effect/io/Config'
 import type { ConfigError } from '@effect/io/Config/Error'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect } from '@typed/fx/internal/_externals'
 import { fromEffect } from '@typed/fx/internal/conversion/fromEffect'
+import { Effect } from '@typed/fx/internal/externals'
 
 export const config: <A>(config: Config<A>) => Fx<never, ConfigError, A> = methodWithTrace(
   (trace) =>

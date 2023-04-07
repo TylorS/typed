@@ -2,7 +2,7 @@ import { dualWithTrace } from '@effect/data/Debug'
 import type { Duration } from '@effect/data/Duration'
 import * as Effect from '@effect/io/Effect'
 
-import { Scope } from '../_externals.js'
+import { Scope } from '../externals.js'
 
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'

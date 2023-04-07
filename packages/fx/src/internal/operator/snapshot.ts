@@ -4,7 +4,7 @@ import * as Ref from '@effect/io/Ref'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
-import { Effect, Option, Scope } from '@typed/fx/internal/_externals'
+import { Effect, Option, Scope } from '@typed/fx/internal/externals'
 
 /**
  * Runs two Fx in parallel. Events are emitted when `self` emits "sampling" the latest value of `snapshot`.

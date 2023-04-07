@@ -1,7 +1,7 @@
 import { dualWithTrace } from '@effect/data/Debug'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Cause, Effect, Either, pipe } from '@typed/fx/internal/_externals'
+import { Cause, Effect, Either, pipe } from '@typed/fx/internal/externals'
 import { onDoneCause } from '@typed/fx/internal/operator/onDoneCause'
 
 export const onDone: {

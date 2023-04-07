@@ -6,8 +6,8 @@ import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { withRefCounter } from '@typed/fx/internal/RefCounter'
-import { Effect, pipe } from '@typed/fx/internal/_externals'
-import type { Cause, Context, Scope } from '@typed/fx/internal/_externals'
+import type { Cause, Context, Scope } from '@typed/fx/internal/externals'
+import { Effect, pipe } from '@typed/fx/internal/externals'
 
 export const catchAllCause: {
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<

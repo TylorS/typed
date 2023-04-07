@@ -4,7 +4,7 @@ import type * as Metric from '@effect/io/Metric'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
-import { Effect, pipe } from '@typed/fx/internal/_externals'
+import { Effect, pipe } from '@typed/fx/internal/externals'
 
 export const withMetric: {
   <Type, In, Out>(metric: Metric.Metric<Type, In, Out>): <R, E, A extends In>(

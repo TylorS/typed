@@ -5,8 +5,8 @@ import type * as FiberId from '@effect/io/Fiber/Id'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
-import { Cause, Effect } from '@typed/fx/internal/_externals'
-import type { Context, Scope } from '@typed/fx/internal/_externals'
+import type { Context, Scope } from '@typed/fx/internal/externals'
+import { Cause, Effect } from '@typed/fx/internal/externals'
 
 export const onInterrupt: {
   <R, E, A, R2, B>(

@@ -1,7 +1,7 @@
 import { dualWithTrace } from '@effect/data/Debug'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Either } from '@typed/fx/internal/_externals'
+import { Either } from '@typed/fx/internal/externals'
 import { map } from '@typed/fx/internal/operator/map'
 
 export const mapEither: {

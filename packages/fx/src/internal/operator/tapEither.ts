@@ -3,8 +3,8 @@ import { dualWithTrace } from '@effect/data/Debug'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect, Either } from '@typed/fx/internal/_externals'
-import type { Context } from '@typed/fx/internal/_externals'
+import type { Context } from '@typed/fx/internal/externals'
+import { Effect, Either } from '@typed/fx/internal/externals'
 
 export const tapEither: {
   <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): <R, E, E3>(

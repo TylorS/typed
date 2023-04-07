@@ -1,9 +1,9 @@
 import { methodWithTrace } from '@effect/data/Debug'
 
-import type { Fx } from '@typed/fx/internal/Fx'
-import type { Either } from '@typed/fx/internal/_externals'
-import { Effect } from '@typed/fx/internal/_externals'
+import { Fx } from '@typed/fx/internal/Fx'
 import { fromEffect } from '@typed/fx/internal/conversion/fromEffect'
+import type { Either } from '@typed/fx/internal/externals'
+import { Effect } from '@typed/fx/internal/externals'
 
 export const succeedRight: <A>(a: A) => Fx<never, never, Either.Either<never, A>> = methodWithTrace(
   (trace) =>

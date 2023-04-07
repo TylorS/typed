@@ -1,7 +1,7 @@
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Cause, Effect, Scope, Option, pipe } from '@typed/fx/internal/_externals'
+import { Cause, Effect, Scope, Option, pipe } from '@typed/fx/internal/externals'
 
 export function some<R, E, A>(self: Fx<R, E, Option.Option<A>>): Fx<R, Option.Option<E>, A> {
   return new SomeFx(self)

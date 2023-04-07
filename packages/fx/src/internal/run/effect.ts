@@ -1,10 +1,10 @@
 import { methodWithTrace } from '@effect/data/Debug'
 import * as Effect from '@effect/io/Effect'
 
-import { Fx } from '../Fx.js'
-import { Scope } from '../_externals.js'
-
 import { drain } from './drain.js'
+
+import { Fx } from '@typed/fx/internal/Fx'
+import { Scope } from '@typed/fx/internal/externals'
 
 export const forkDaemon: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, E, unknown> =
   methodWithTrace(

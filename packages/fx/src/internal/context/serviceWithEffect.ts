@@ -1,9 +1,9 @@
 import type { Trace } from '@effect/data/Debug'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import type { Context } from '@typed/fx/internal/_externals'
-import { Debug, Effect } from '@typed/fx/internal/_externals'
 import { fromEffect } from '@typed/fx/internal/conversion/fromEffect'
+import type { Context } from '@typed/fx/internal/externals'
+import { Debug, Effect } from '@typed/fx/internal/externals'
 
 export const serviceWithEffect: {
   <I, A, R2, E2, B>(tag: Context.Tag<I, A>, f: (a: A) => Effect.Effect<R2, E2, B>): Fx<

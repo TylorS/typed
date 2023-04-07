@@ -1,7 +1,7 @@
 import { methodWithTrace } from '@effect/data/Debug'
 import * as Effect from '@effect/io/Effect'
 
-import { Scope } from '../_externals.js'
+import { Scope } from '../externals.js'
 
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx, Sink } from '@typed/fx/internal/Fx'

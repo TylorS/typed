@@ -5,7 +5,7 @@ import type { Equivalence } from '@effect/data/typeclass/Equivalence'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect, Option, Scope } from '@typed/fx/internal/_externals'
+import { Effect, Option, Scope } from '@typed/fx/internal/externals'
 
 export function skipRepeatsWith<A>(eq: Equivalence<A>) {
   return <R, E>(fx: Fx<R, E, A>): Fx<R, E, A> => new SkipRepeatsWithFx(fx, eq)

@@ -1,7 +1,7 @@
 import { dualWithTrace } from '@effect/data/Debug'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect } from '@typed/fx/internal/_externals'
+import { Effect } from '@typed/fx/internal/externals'
 
 export const reduce: {
   <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B): Effect.Effect<R, E, B>

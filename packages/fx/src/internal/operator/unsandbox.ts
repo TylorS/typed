@@ -3,7 +3,7 @@ import { methodWithTrace } from '@effect/data/Debug'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
-import { Cause, Effect, Either, pipe, Scope } from '@typed/fx/internal/_externals'
+import { Cause, Effect, Either, pipe, Scope } from '@typed/fx/internal/externals'
 
 export const unsandbox: <R, E, A>(fx: Fx<R, Cause.Cause<E>, A>) => Fx<R, E, A> = methodWithTrace(
   (trace) =>

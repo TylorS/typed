@@ -1,4 +1,4 @@
-import { Effect } from './_externals.js'
+import { Effect } from './externals.js'
 
 export function withEarlyExit<R, E, A>(
   f: (earlyExit: Effect.Effect<never, never, never>) => Effect.Effect<R, E, A>,

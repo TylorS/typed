@@ -4,8 +4,8 @@ import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
 import { withRefCounter } from '@typed/fx/internal/RefCounter'
-import { Cause, Effect, Fiber, pipe, Scope } from '@typed/fx/internal/_externals'
-import type { Duration } from '@typed/fx/internal/_externals'
+import type { Duration } from '@typed/fx/internal/externals'
+import { Cause, Effect, Fiber, pipe, Scope } from '@typed/fx/internal/externals'
 
 export const debounce: {
   <R, E, A>(self: Fx<R, E, A>, duration: Duration.Duration): Fx<R, E, A>

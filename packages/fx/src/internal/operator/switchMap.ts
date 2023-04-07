@@ -10,8 +10,8 @@ import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
 import { withRefCounter } from '@typed/fx/internal/RefCounter'
-import { Fiber } from '@typed/fx/internal/_externals'
-import type { Context } from '@typed/fx/internal/_externals'
+import type { Context } from '@typed/fx/internal/externals'
+import { Fiber } from '@typed/fx/internal/externals'
 
 export const switchMap: {
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Fx<R2, E2, B>): Fx<

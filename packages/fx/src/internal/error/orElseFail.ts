@@ -3,7 +3,7 @@ import { dualWithTrace } from '@effect/data/Debug'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Cause, Effect, Scope } from '@typed/fx/internal/_externals'
+import { Cause, Effect, Scope } from '@typed/fx/internal/externals'
 
 export const orElseFail: {
   <R, E, A, E2>(fx: Fx<R, E, A>, orFail: () => E2): Fx<R, E2, A>

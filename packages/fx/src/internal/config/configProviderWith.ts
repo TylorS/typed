@@ -3,7 +3,7 @@ import type { ConfigProvider } from '@effect/io/Config/Provider'
 
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
-import { Effect } from '@typed/fx/internal/_externals'
+import { Effect } from '@typed/fx/internal/externals'
 
 export const configProviderWith: <R, E, A>(
   f: (config: ConfigProvider) => Fx<R, E, A>,

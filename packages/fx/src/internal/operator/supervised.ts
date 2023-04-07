@@ -2,7 +2,7 @@ import { dualWithTrace } from '@effect/data/Debug'
 import type * as Supervisor from '@effect/io/Supervisor'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect } from '@typed/fx/internal/_externals'
+import { Effect } from '@typed/fx/internal/externals'
 
 export const supervised: {
   <X>(supervisor: Supervisor.Supervisor<X>): <R, E, A>(self: Fx<R, E, A>) => Fx<R, E, A>

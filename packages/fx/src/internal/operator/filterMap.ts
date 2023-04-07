@@ -4,7 +4,7 @@ import type { Predicate, Refinement } from '@effect/data/Predicate'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
-import { Effect, Option, Scope } from '@typed/fx/internal/_externals'
+import { Effect, Option, Scope } from '@typed/fx/internal/externals'
 
 export const filterMap: {
   <R, E, A, B>(self: Fx<R, E, A>, f: (a: A) => Option.Option<B>): Fx<R, E, B>

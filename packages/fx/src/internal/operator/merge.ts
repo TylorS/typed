@@ -6,7 +6,7 @@ import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
 import { withRefCounter } from '@typed/fx/internal/RefCounter'
-import { Scope } from '@typed/fx/internal/_externals'
+import { Scope } from '@typed/fx/internal/externals'
 
 export const mergeAll: <const Streams extends ReadonlyArray<Fx<any, any, any>>>(
   ...streams: Streams

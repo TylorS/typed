@@ -2,7 +2,7 @@ import { dualWithTrace } from '@effect/data/Debug'
 
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
-import { Context, Effect, Option, Scope } from '@typed/fx/internal/_externals'
+import { Context, Effect, Option, Scope } from '@typed/fx/internal/externals'
 
 export const contramapContext: {
   <R1, R2, E, A>(fx: Fx<R2, E, A>, f: (r: Context.Context<R1>) => Context.Context<R2>): Fx<R1, E, A>

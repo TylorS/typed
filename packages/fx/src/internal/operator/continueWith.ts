@@ -5,7 +5,7 @@ import type { Scope } from '@effect/io/Scope'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
-import type { Context } from '@typed/fx/internal/_externals'
+import type { Context } from '@typed/fx/internal/externals'
 
 export const continueWith: {
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: () => Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>

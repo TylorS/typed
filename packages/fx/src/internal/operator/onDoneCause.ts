@@ -3,8 +3,8 @@ import { pipe } from '@effect/data/Function'
 
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
-import type { Cause, Scope } from '@typed/fx/internal/_externals'
-import { Effect } from '@typed/fx/internal/_externals'
+import type { Cause, Scope } from '@typed/fx/internal/externals'
+import { Effect } from '@typed/fx/internal/externals'
 
 export const onDoneCause: {
   <R, E, A, R2, E2, B, R3, E3, C>(

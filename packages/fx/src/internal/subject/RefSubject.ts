@@ -9,8 +9,8 @@ import { isFx } from '../BaseFx.js'
 
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
 import { Mutable } from '@typed/fx/internal/Mutable'
-import type { Context, Scope } from '@typed/fx/internal/_externals'
-import { Effect, Fiber, Option, pipe } from '@typed/fx/internal/_externals'
+import { Effect, Fiber, Option, pipe } from '@typed/fx/internal/externals'
+import type { Context, Scope } from '@typed/fx/internal/externals'
 import type { HoldSubject } from '@typed/fx/internal/subject/HoldSubject'
 import { HoldSubjectImpl } from '@typed/fx/internal/subject/HoldSubject'
 

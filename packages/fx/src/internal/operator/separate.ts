@@ -1,8 +1,8 @@
 import { pipe } from '@effect/data/Function'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Cause, Either, Exit, Option } from '@typed/fx/internal/_externals'
 import { exit } from '@typed/fx/internal/error/index'
+import { Cause, Either, Exit, Option } from '@typed/fx/internal/externals'
 import { filter, filterMap } from '@typed/fx/internal/operator/filterMap'
 import { map } from '@typed/fx/internal/operator/map'
 import { multicast } from '@typed/fx/internal/operator/multicast'

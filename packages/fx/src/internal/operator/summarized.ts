@@ -2,7 +2,7 @@ import { dualWithTrace } from '@effect/data/Debug'
 
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
-import { Effect, Synchronized, Scope } from '@typed/fx/internal/_externals'
+import { Effect, Synchronized, Scope } from '@typed/fx/internal/externals'
 
 export const summarized: {
   <R, E, A, R2, E2, B, C>(

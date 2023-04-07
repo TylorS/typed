@@ -1,7 +1,7 @@
 import { dualWithTrace } from '@effect/data/Debug'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Context, Effect } from '@typed/fx/internal/_externals'
+import { Context, Effect } from '@typed/fx/internal/externals'
 
 export const provideContext: {
   <R, E, A>(fx: Fx<R, E, A>, context: Context.Context<R>): Fx<never, E, A>

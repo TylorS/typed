@@ -2,7 +2,7 @@ import { methodWithTrace } from '@effect/data/Debug'
 import { pipe } from '@effect/data/Function'
 import * as Exit from '@effect/io/Exit'
 
-import { Effect, Scope } from '../_externals.js'
+import { Effect, Scope } from '../externals.js'
 
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'

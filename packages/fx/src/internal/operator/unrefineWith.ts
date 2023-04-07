@@ -3,8 +3,8 @@ import { dualWithTrace } from '@effect/data/Debug'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect, identity, pipe } from '@typed/fx/internal/_externals'
-import type { Option, Scope } from '@typed/fx/internal/_externals'
+import type { Option, Scope } from '@typed/fx/internal/externals'
+import { Effect, identity, pipe } from '@typed/fx/internal/externals'
 
 export const unrefineWith: {
   <E2, E, E3>(f: (defect: unknown) => Option.Option<E2>, g: (e: E) => E3): <R, A>(

@@ -4,9 +4,9 @@ import { pipe } from '@effect/data/Function'
 import { fromEffect } from '../conversion/fromEffect.js'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Cause, Either, Effect } from '@typed/fx/internal/_externals'
 import { failCause } from '@typed/fx/internal/constructor/index'
 import { catchAllCause } from '@typed/fx/internal/error/catchAllCause'
+import { Cause, Either, Effect } from '@typed/fx/internal/externals'
 
 export const catchAll: {
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (e: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>

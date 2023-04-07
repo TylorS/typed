@@ -2,7 +2,7 @@ import { dualWithTrace } from '@effect/data/Debug'
 
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
-import { Effect, pipe, Schedule, Scope } from '@typed/fx/internal/_externals'
+import { Effect, pipe, Schedule, Scope } from '@typed/fx/internal/externals'
 
 export const schedule: {
   <R, E, A, R2, B>(self: Effect.Effect<R, E, A>, schedule: Schedule.Schedule<R2, any, B>): Fx<

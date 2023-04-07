@@ -2,7 +2,7 @@ import { dualWithTrace } from '@effect/data/Debug'
 import type * as MetricLabel from '@effect/io/Metric/Label'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect } from '@typed/fx/internal/_externals'
+import { Effect } from '@typed/fx/internal/externals'
 
 export const taggedWithLabels: {
   (labels: Iterable<MetricLabel.MetricLabel>): <R, E, A>(self: Fx<R, E, A>) => Fx<R, E, A>

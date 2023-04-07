@@ -2,7 +2,7 @@ import { dualWithTrace } from '@effect/data/Debug'
 
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
-import { Effect, pipe, Scope } from '@typed/fx/internal/_externals'
+import { Effect, pipe, Scope } from '@typed/fx/internal/externals'
 import { filter } from '@typed/fx/internal/operator/filterMap'
 
 export const since: {

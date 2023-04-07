@@ -1,7 +1,7 @@
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
-import { Cause, Either, Effect, Option, Scope, pipe } from '@typed/fx/internal/_externals'
+import { Cause, Either, Effect, Option, Scope, pipe } from '@typed/fx/internal/externals'
 
 export function unsome<R, E, A>(fx: Fx<R, Option.Option<E>, A>): Fx<R, E, Option.Option<A>> {
   return new UnsomeFx(fx)

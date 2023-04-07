@@ -7,7 +7,7 @@ import type { Scope } from '@effect/io/Scope'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Option } from '@typed/fx/internal/_externals'
+import { Option } from '@typed/fx/internal/externals'
 
 export const tapSome: {
   <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): <R, E>(

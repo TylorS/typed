@@ -1,5 +1,5 @@
-import { pipe } from '@effect/data/Function'
 import * as Chunk from '@effect/data/Chunk'
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import type { Redirect } from '@typed/router'
 

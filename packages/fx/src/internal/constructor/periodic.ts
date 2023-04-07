@@ -1,7 +1,7 @@
 import type { Fx } from '@typed/fx/internal/Fx'
-import type { Duration } from '@typed/fx/internal/_externals'
-import { Effect, Schedule } from '@typed/fx/internal/_externals'
 import { schedule } from '@typed/fx/internal/constructor/schedule'
+import type { Duration } from '@typed/fx/internal/externals'
+import { Effect, Schedule } from '@typed/fx/internal/externals'
 
 export function periodic(duration: Duration.Duration): Fx<never, never, void> {
   return schedule(

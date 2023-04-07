@@ -2,7 +2,7 @@ import type { Tag } from '@effect/data/Context'
 import { dualWithTrace } from '@effect/data/Debug'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect, pipe } from '@typed/fx/internal/_externals'
+import { Effect, pipe } from '@typed/fx/internal/externals'
 import { switchMap } from '@typed/fx/internal/operator/switchMap'
 
 export const provideServiceFx: {

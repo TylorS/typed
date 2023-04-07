@@ -2,10 +2,9 @@ import { dualWithTrace } from '@effect/data/Debug'
 import * as Effect from '@effect/io/Effect'
 import type { Exit } from '@effect/io/Exit'
 
-import { Scope } from '../_externals.js'
-
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
+import { Scope } from '@typed/fx/internal/externals'
 
 export const acquireUseRelease: {
   <R, E, A, R2, E2, B, R3, C>(

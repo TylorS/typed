@@ -2,7 +2,7 @@ import type { Tag } from '@effect/data/Context'
 import { dualWithTrace } from '@effect/data/Debug'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect } from '@typed/fx/internal/_externals'
+import { Effect } from '@typed/fx/internal/externals'
 
 export const provideService: {
   <R, I, E, A, S>(fx: Fx<R | I, E, A>, service: Tag<I, S>, implementation: S): Fx<

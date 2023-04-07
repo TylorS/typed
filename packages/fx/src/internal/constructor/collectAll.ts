@@ -6,7 +6,7 @@ import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { withRefCounter } from '@typed/fx/internal/RefCounter'
-import { Scope } from '@typed/fx/internal/_externals'
+import { Scope } from '@typed/fx/internal/externals'
 
 export const collectAll: <R, E, A>(fx: Iterable<Fx<R, E, A>>) => Fx<R, E, Chunk.Chunk<A>> =
   methodWithTrace(

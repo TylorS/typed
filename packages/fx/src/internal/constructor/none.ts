@@ -1,8 +1,8 @@
 import { methodWithTrace } from '@effect/data/Debug'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Option } from '@typed/fx/internal/_externals'
 import { fail } from '@typed/fx/internal/constructor/fail'
+import { Option } from '@typed/fx/internal/externals'
 import { flatMap } from '@typed/fx/internal/operator/flatMap'
 import { unit } from '@typed/fx/internal/typeclass/Of'
 

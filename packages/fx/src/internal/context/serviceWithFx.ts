@@ -1,7 +1,7 @@
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
-import type { Context, Scope } from '@typed/fx/internal/_externals'
-import { Debug, Effect } from '@typed/fx/internal/_externals'
+import type { Context, Scope } from '@typed/fx/internal/externals'
+import { Debug, Effect } from '@typed/fx/internal/externals'
 
 export const serviceWithFx: {
   <I, A, R2, E2, B>(tag: Context.Tag<I, A>, f: (a: A) => Fx<R2, E2, B>): Fx<R2 | I, E2, B>

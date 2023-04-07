@@ -1,8 +1,8 @@
 import { dualWithTrace } from '@effect/data/Debug'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect } from '@typed/fx/internal/_externals'
-import type { Cause } from '@typed/fx/internal/_externals'
+import { Effect } from '@typed/fx/internal/externals'
+import type { Cause } from '@typed/fx/internal/externals'
 import { onDoneCause } from '@typed/fx/internal/operator/onDoneCause'
 
 export const onErrorCause: {

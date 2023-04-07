@@ -3,7 +3,7 @@ import { dualWithTrace } from '@effect/data/Debug'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
-import type { Effect, Cause, Scope } from '@typed/fx/internal/_externals'
+import type { Effect, Cause, Scope } from '@typed/fx/internal/externals'
 
 export const mapCause: {
   <E, E2>(f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): <R, A>(self: Fx<R, E, A>) => Fx<R, E2, A>

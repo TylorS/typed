@@ -5,7 +5,7 @@ import { pipe } from '@effect/data/Function'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Cause, Effect, Scope } from '@typed/fx/internal/_externals'
+import { Cause, Effect, Scope } from '@typed/fx/internal/externals'
 
 export const either: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, never, Either.Either<E, A>> =
   methodWithTrace((trace) => (fx) => new EitherFx(fx).traced(trace))

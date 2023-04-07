@@ -3,8 +3,8 @@ import * as Effect from '@effect/io/Effect'
 
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
-import type { Scope } from '@typed/fx/internal/_externals'
 import { fromFxEffect } from '@typed/fx/internal/conversion/fromFxEffect'
+import type { Scope } from '@typed/fx/internal/externals'
 
 export const gen: <Eff extends Effect.EffectGen<any, any, any>, R, E, A>(
   f: (resume: Effect.Adapter) => Generator<Eff, Fx<R, E, A>, unknown>,

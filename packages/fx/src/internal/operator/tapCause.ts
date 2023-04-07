@@ -4,8 +4,8 @@ import type { Scope } from '@effect/io/Scope'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
-import { Cause, Effect, pipe } from '@typed/fx/internal/_externals'
-import type { Context } from '@typed/fx/internal/_externals'
+import type { Context } from '@typed/fx/internal/externals'
+import { Cause, Effect, pipe } from '@typed/fx/internal/externals'
 
 export const tapCause: {
   <R, E, A, R2, E2, B>(

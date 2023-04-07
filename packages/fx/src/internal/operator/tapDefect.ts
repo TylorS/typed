@@ -1,7 +1,7 @@
 import { pipe } from '@effect/data/Function'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Cause, Chunk, Effect, Option } from '@typed/fx/internal/_externals'
+import { Cause, Chunk, Effect, Option } from '@typed/fx/internal/externals'
 import { tapCause } from '@typed/fx/internal/operator/tapCause'
 
 export function tapDefect<R2, E2, B>(f: (defect: unknown) => Effect.Effect<R2, E2, B>) {

@@ -3,8 +3,8 @@ import { dualWithTrace } from '@effect/data/Debug'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
-import type { Context, Option, Scope } from '@typed/fx/internal/_externals'
-import { Effect } from '@typed/fx/internal/_externals'
+import { Effect } from '@typed/fx/internal/externals'
+import type { Context, Option, Scope } from '@typed/fx/internal/externals'
 
 export const orElseOptional = dualWithTrace(
   2,

@@ -3,8 +3,8 @@ import { dualWithTrace } from '@effect/data/Debug'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
-import { Effect, Option } from '@typed/fx/internal/_externals'
-import type { Context, Scope } from '@typed/fx/internal/_externals'
+import type { Context, Scope } from '@typed/fx/internal/externals'
+import { Effect, Option } from '@typed/fx/internal/externals'
 
 export const filterMapEffect: {
   <R, E, A, R2, E2, B>(self: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>): Fx<

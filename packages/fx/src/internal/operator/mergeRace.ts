@@ -4,7 +4,7 @@ import { pipe } from '@effect/data/Function'
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { Sink } from '@typed/fx/internal/Fx'
-import { Cause, Effect, Fiber, Scope } from '@typed/fx/internal/_externals'
+import { Cause, Effect, Fiber, Scope } from '@typed/fx/internal/externals'
 import { tap } from '@typed/fx/internal/operator/tap'
 
 export const mergeRace: {

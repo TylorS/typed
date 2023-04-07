@@ -7,7 +7,7 @@ import * as Ref from '@effect/io/Ref'
 import * as Schedule from '@effect/io/Schedule'
 
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
-import { Cause, Scope } from '@typed/fx/internal/_externals'
+import { Cause, Scope } from '@typed/fx/internal/externals'
 
 const zero = millis(0)
 export const asap = Schedule.delayed(Schedule.once(), () => zero)

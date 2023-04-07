@@ -1,9 +1,9 @@
 import { dualWithTrace } from '@effect/data/Debug'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import type { Cause } from '@typed/fx/internal/_externals'
-import { Effect } from '@typed/fx/internal/_externals'
 import { fromEffect } from '@typed/fx/internal/conversion/fromEffect'
+import type { Cause } from '@typed/fx/internal/externals'
+import { Effect } from '@typed/fx/internal/externals'
 
 export const logDebugCauseMessage: {
   <E>(message: string, cause: Cause.Cause<E>): Fx<never, never, void>

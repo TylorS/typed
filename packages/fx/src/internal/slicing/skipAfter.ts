@@ -3,7 +3,7 @@ import type { Predicate } from '@effect/data/Predicate'
 
 import { BaseFx } from '@typed/fx/internal/BaseFx'
 import type { Fx, Sink } from '@typed/fx/internal/Fx'
-import { Effect, Scope } from '@typed/fx/internal/_externals'
+import { Effect, Scope } from '@typed/fx/internal/externals'
 
 export const skipAfter: {
   <R, E, A>(self: Fx<R, E, A>, predicate: Predicate<A>): Fx<R, E, A>

@@ -2,7 +2,7 @@ import { dualWithTrace } from '@effect/data/Debug'
 import type { Layer } from '@effect/io/Layer'
 
 import type { Fx } from '@typed/fx/internal/Fx'
-import { Effect } from '@typed/fx/internal/_externals'
+import { Effect } from '@typed/fx/internal/externals'
 
 export const provideLayer: {
   <R, E, A, R2, E2>(fx: Fx<R, E, A>, layer: Layer<R2, E2, R>): Fx<R2, E | E2, A>

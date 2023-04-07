@@ -5,8 +5,8 @@ import { BaseFx } from '@typed/fx/internal/BaseFx'
 import { Sink } from '@typed/fx/internal/Fx'
 import type { Fx } from '@typed/fx/internal/Fx'
 import { withRefCounter } from '@typed/fx/internal/RefCounter'
-import { Scope } from '@typed/fx/internal/_externals'
 import { succeed } from '@typed/fx/internal/constructor/succeed'
+import { Scope } from '@typed/fx/internal/externals'
 
 export const combineAll: <const F extends ReadonlyArray<Fx<any, any, any>>>(
   fx: F,
