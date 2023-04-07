@@ -1,6 +1,6 @@
 {
   "name": "@typed/dom",
-  "version": "8.6.1",
+  "version": "8.6.2",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -23,9 +23,9 @@
     "@effect/io": "^0.17.0",
     "@effect/query": "^0.5.0",
     "@effect/schema": "^0.10.0",
-    "@typed/context": "^0.6.1",
+    "@typed/context": "^0.6.2",
     "@typed/decoder": "^0.4.2",
-    "@typed/fx": "^1.6.1",
+    "@typed/fx": "^1.6.2",
     "typed-query-selector": "^2.9.2"
   },
   "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",
