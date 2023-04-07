@@ -51,20 +51,24 @@ export class CatchAllCauseFx<R, E, A, R2, E2, B> extends BaseFx<R | R2, E2, A | 
   run(sink: Sink<E | E2, A | B>): Effect.Effect<R | R2 | Scope.Scope, never, unknown> {
     return Effect.contextWithEffect((context: Context.Context<R | R2 | Scope.Scope>) =>
       withRefCounter(
-        0,
+        1,
         (counter) =>
-          this.fx.run(
-            Sink(
-              sink.event,
-              (cause) =>
-                pipe(
-                  counter.increment,
-                  Effect.zipRight(counter.refCounted(this.f(cause), sink, Effect.unit)),
-                  Effect.forkScoped,
-                  Effect.provideContext(context),
-                ),
-              () => Effect.provideContext(counter.decrement, context),
+          pipe(
+            this.fx.run(
+              Sink(
+                sink.event,
+                (cause) =>
+                  pipe(
+                    counter.increment,
+                    Effect.zipRight(counter.refCounted(this.f(cause), sink, Effect.unit)),
+                    Effect.forkScoped,
+                    Effect.provideContext(context),
+                  ),
+                Effect.unit,
+              ),
             ),
+            // Allow the Effect completion to single completion
+            Effect.zipLeft(counter.decrement),
           ),
         sink.end,
       ),
