@@ -19,10 +19,10 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.10.3",
+    "@effect/data": "^0.11.5",
     "@effect/language-service": "^0.0.19",
     "@rollup/pluginutils": "^5.0.2",
-    "@typed/framework": "^0.6.2",
+    "@typed/framework": "workspace:*",
     "html-minifier": "^4.0.0",
     "ts-morph": "^18.0.0",
     "vite": "^4.2.1"

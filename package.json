@@ -38,7 +38,7 @@
     "@effect/data": "^0.11.5",
     "@effect/io": "^0.19.2",
     "@effect/language-service": "^0.0.19",
-    "@effect/query": "^0.5.0",
+    "@effect/query": "^0.6.0",
     "@effect/schema": "^0.11.1",
     "@rollup/pluginutils": "^5.0.2",
     "@vavite/multibuild": "^1.7.0",
@@ -88,7 +88,7 @@
     "@typescript-eslint/parser": "^5.57.1",
     "@vitest/coverage-c8": "^0.29.8",
     "@vitest/ui": "^0.29.8",
-    "eslint": "^8.37.0",
+    "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-import-resolver-typescript": "^3.5.5",
     "eslint-plugin-import": "^2.27.5",
@@ -109,5 +109,11 @@
     "tsx": "^3.12.6",
     "typescript": "^5.0.4",
     "vitest": "^0.29.8"
+  },
+  "pnpm": {
+    "overrides": {
+      "@effect/data": "^0.11.5",
+      "@effect/io": "^0.19.2"
+    }
   }
 }

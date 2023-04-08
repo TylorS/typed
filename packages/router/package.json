@@ -19,14 +19,14 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.10.3",
-    "@effect/io": "^0.17.0",
-    "@typed/context": "^0.6.2",
-    "@typed/dom": "^8.6.2",
-    "@typed/fx": "^1.6.2",
-    "@typed/html": "^3.6.2",
-    "@typed/path": "^0.1.2",
-    "@typed/route": "^0.4.2"
+    "@effect/data": "^0.11.5",
+    "@effect/io": "^0.19.2",
+    "@typed/context": "workspace:*",
+    "@typed/dom": "workspace:*",
+    "@typed/fx": "workspace:*",
+    "@typed/html": "workspace:*",
+    "@typed/path": "workspace:*",
+    "@typed/route": "workspace:*"
   },
   "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",
   "publishConfig": {

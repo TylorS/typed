@@ -19,11 +19,11 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.10.3",
-    "@effect/io": "^0.17.0",
-    "@typed/context": "^0.6.2",
-    "@typed/dom": "^8.6.2",
-    "@typed/fx": "^1.6.2",
+    "@effect/data": "^0.11.5",
+    "@effect/io": "^0.19.2",
+    "@typed/context": "workspace:*",
+    "@typed/dom": "workspace:*",
+    "@typed/fx": "workspace:*",
     "@webreflection/uparser": "~0.2.4",
     "udomdiff": "^1.1.0"
   },

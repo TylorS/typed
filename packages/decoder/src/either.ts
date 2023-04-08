@@ -1,4 +1,4 @@
-import type * as Either from '@effect/data/Either'
+import * as Either from '@effect/data/Either'
 import * as Equal from '@effect/data/Equal'
 import * as Hash from '@effect/data/Hash'
 import * as Effect from '@effect/io/Effect'
@@ -8,7 +8,9 @@ import { any, literal } from './primitives.js'
 import { struct } from './struct.js'
 import { union } from './union.js'
 
-export const right = <A>(member: Decoder<unknown, A>): Decoder<unknown, Either.Right<A>> =>
+export const right = <A, E = never>(
+  member: Decoder<unknown, A>,
+): Decoder<unknown, Either.Right<E, A>> =>
   struct({
     _tag: literal('Right'),
     right: member,
@@ -16,9 +18,12 @@ export const right = <A>(member: Decoder<unknown, A>): Decoder<unknown, Either.R
     [Hash.symbol]: any,
     traced: any,
     [Effect.EffectTypeId]: any,
+    [Either.EitherTypeId]: any,
   })
 
-export const left = <A>(member: Decoder<unknown, A>): Decoder<unknown, Either.Left<A>> =>
+export const left = <E, A = never>(
+  member: Decoder<unknown, E>,
+): Decoder<unknown, Either.Left<E, A>> =>
   struct({
     _tag: literal('Left'),
     left: member,
@@ -26,6 +31,7 @@ export const left = <A>(member: Decoder<unknown, A>): Decoder<unknown, Either.Le
     [Hash.symbol]: any,
     traced: any,
     [Effect.EffectTypeId]: any,
+    [Either.EitherTypeId]: any,
   })
 
 export const either = <A, B>(

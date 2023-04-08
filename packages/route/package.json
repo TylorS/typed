@@ -19,9 +19,9 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.10.3",
-    "@effect/io": "^0.17.0",
-    "@typed/path": "^0.1.2",
+    "@effect/data": "^0.11.5",
+    "@effect/io": "^0.19.2",
+    "@typed/path": "workspace:*",
     "path-to-regexp": "^6.2.1"
   },
   "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",
