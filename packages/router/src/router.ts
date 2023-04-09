@@ -172,7 +172,8 @@ export function redirect(path: string) {
   return Effect.fail<Redirect>(Redirect.make(path))
 }
 
-redirect.fx = (path: string) => Fx.fail<Redirect>(Redirect.make(path))
+redirect.fx = (path: string): Fx.Fx<never, Redirect, never> =>
+  Fx.fail<Redirect>(Redirect.make(path))
 
 export const redirectTo = <R, E, P extends string>(
   route: Route.Route<R, E, P>,
@@ -273,7 +274,7 @@ export const getBasePath = Router.with((r) => {
 
 const patchHistory = Effect.gen(function* ($) {
   const history = yield* $(History)
-  const historyEvents = Fx.Subject.unsafeMake<never, void>()
+  const historyEvents = Fx.makeSubject<never, void>()
   const runtime = yield* $(Effect.runtime<never>())
   const runFork = Runtime.runFork(runtime)
   const cleanup = patchHistory_(history, () => runFork(historyEvents.event()))

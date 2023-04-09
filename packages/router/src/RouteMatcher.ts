@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { identity, pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
-import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import type * as Layer from '@effect/io/Layer'
@@ -163,11 +162,10 @@ export function RouteMatcher<R, E>(routes: RouteMatcher<R, E>['routes']): RouteM
                     pipe(
                       render,
                       Fx.observe(outlet.set),
-                      Effect.onError((cause) =>
-                        Cause.isInterruptedOnly(cause)
-                          ? outlet.set(null)
-                          : outlet.error(cause as Cause.Cause<never>),
+                      Effect.catchAll((e: Redirect) =>
+                        Redirect.is(e) ? router.currentPath.set(e.path) : Effect.fail(e),
                       ),
+                      Effect.onError(outlet.error),
                       Effect.forkDaemon,
                     ),
                   )

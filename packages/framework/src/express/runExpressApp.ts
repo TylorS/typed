@@ -28,46 +28,48 @@ export const runExpressApp = (
   return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
       await Effect.runPromise(
-        Effect.gen(function* ($) {
-          const url = new URL(req.url, getOriginFromRequest(req))
+        Effect.scoped(
+          Effect.gen(function* ($) {
+            const url = new URL(req.url, getOriginFromRequest(req))
 
-          yield* $(Effect.logInfo(`Handling request for ${url.pathname}`))
+            yield* $(Effect.logInfo(`Handling request for ${url.pathname}`))
 
-          const exit = yield* $(
-            runServerHandler(
-              htmlModule,
-              getParentElement,
-              main,
-              url.href,
-              (window, parentElement) =>
-                provideServerIntrinsics(window, {
-                  parentElement,
-                  isBot: isbot(req.get('user-agent')),
-                }),
-            ),
-          )
-
-          if (Exit.isFailure(exit)) {
-            yield* $(
-              Effect.logErrorCauseMessage(
-                `Failure handler request for ${url.pathname}`,
-                exit.cause,
+            const exit = yield* $(
+              runServerHandler(
+                htmlModule,
+                getParentElement,
+                main,
+                url.href,
+                (window, parentElement) =>
+                  provideServerIntrinsics(window, {
+                    parentElement,
+                    isBot: isbot(req.get('user-agent')),
+                  }),
               ),
             )
 
-            return pipe(
-              Cause.failureOrCause(exit.cause),
-              Either.match(
-                (redirect) => res.redirect(redirect.path),
-                (error) => next(new Error(Cause.pretty(error))),
-              ),
-            )
-          }
+            if (Exit.isFailure(exit)) {
+              yield* $(
+                Effect.logErrorCauseMessage(
+                  `Failure handler request for ${url.pathname}`,
+                  exit.cause,
+                ),
+              )
 
-          yield* $(Effect.logInfo(`Successfully handled request for ${url.pathname}`))
+              return pipe(
+                Cause.failureOrCause(exit.cause),
+                Either.match(
+                  (redirect) => res.redirect(redirect.path),
+                  (error) => next(new Error(Cause.pretty(error))),
+                ),
+              )
+            }
 
-          return res.status(200).send(exit.value)
-        }),
+            yield* $(Effect.logInfo(`Successfully handled request for ${url.pathname}`))
+
+            return res.status(200).send(exit.value)
+          }),
+        ),
       )
     } catch (error) {
       if (error instanceof Error && viteDevServer) {

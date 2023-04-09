@@ -1,4 +1,3 @@
-import * as Context from '@effect/data/Context'
 import { flow, pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
@@ -22,15 +21,15 @@ export interface ProvideIntrinsicsOptions {
 }
 
 export function provideIntrinsics(options: ProvideIntrinsicsOptions) {
-  return <E, A>(fx: Fx.Fx<IntrinsicServices, E, A>): Fx.Fx<never, E, A> =>
+  return <R, E, A>(fx: Fx.Fx<R, E, A>): Fx.Fx<Exclude<R, IntrinsicServices>, E, A> =>
     pipe(
       fx,
       Fx.provideSomeLayer(Router.live(options.currentPath)),
       RenderContext.provideFx(RenderContext.make(options.environment, options.isBot)),
-      Fx.contramapContext<never, DomServices>(
-        Context.merge(makeDomServices(options.window, options.globalThis, options.parentElement)),
+      Fx.provideSomeContext<DomServices>(
+        makeDomServices(options.window, options.globalThis, options.parentElement),
       ),
-    )
+    ) as any
 }
 
 export function provideIntrinsicsEffect(options: ProvideIntrinsicsOptions) {

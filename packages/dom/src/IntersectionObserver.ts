@@ -3,6 +3,7 @@ import * as HashMap from '@effect/data/HashMap'
 import * as Maybe from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Ref from '@effect/io/Ref'
+import * as Scope from '@effect/io/Scope'
 import * as C from '@typed/context'
 import * as Fx from '@typed/fx'
 
@@ -16,7 +17,7 @@ export interface IntersectionObserverManager {
   readonly observe: (
     element: Element,
     options: IntersectionObserverInit,
-  ) => Fx.Fx<never, never, IntersectionObserverEntry>
+  ) => Fx.Fx<Scope.Scope, never, IntersectionObserverEntry>
 }
 
 export const makeIntersectionObserverManager: Effect.Effect<
@@ -41,7 +42,7 @@ export const makeIntersectionObserverManager: Effect.Effect<
         Maybe.match(
           () =>
             observers.modify((map) => {
-              const subject = Fx.Subject.unsafeMake<never, IntersectionObserverEntry>()
+              const subject = Fx.makeSubject<never, IntersectionObserverEntry>()
               const intersectionObserver = new globalThis.IntersectionObserver(
                 (entries) => entries.forEach((e) => subject.event(e)),
                 options,
@@ -65,7 +66,7 @@ export const makeIntersectionObserverManager: Effect.Effect<
       ),
     observe: (element, options) =>
       pipe(
-        Fx.make<never, never, IntersectionObserverEntry>((sink) =>
+        Fx.make<Scope.Scope, never, IntersectionObserverEntry>((sink) =>
           pipe(
             options,
             get,

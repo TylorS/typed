@@ -21,6 +21,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "resolveJsonModule": true,
+    "resolvePackageJsonExports": true,
     "rootDir": ".",
     "skipLibCheck": true,
     "sourceMap": true,

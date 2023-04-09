@@ -1,9 +1,9 @@
 import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Flags from '@effect/io/Fiber/Runtime/Flags'
-import * as RuntimeFlagsPatch from '@effect/io/Fiber/Runtime/Flags/Patch'
 import type { FiberRefs } from '@effect/io/FiberRefs'
 import * as R from '@effect/io/Runtime'
+import type { Scope } from '@effect/io/Scope'
 import { Document } from '@typed/dom/Document'
 import * as Fx from '@typed/fx'
 
@@ -26,11 +26,6 @@ export function renderInto<T extends DocumentFragment | HTMLElement>(where: T) {
         Fx.switchMapEffect((hole) =>
           Effect.uninterruptible(renderWithHoleContext(holeContext, where, hole)),
         ),
-        // Disable cooperative yielding to help ensure consistent rendering performance
-        (x) =>
-          x.transform(
-            Effect.withRuntimeFlags(RuntimeFlagsPatch.disable(Flags.CooperativeYielding)),
-          ),
       )
     })
 }
@@ -38,7 +33,8 @@ export function renderInto<T extends DocumentFragment | HTMLElement>(where: T) {
 export function drainInto<T extends DocumentFragment | HTMLElement>(where: T) {
   return <R, E>(
     fx: Fx.Fx<R, E, Renderable>,
-  ): Effect.Effect<R | Document | RenderContext, E, void> => pipe(fx, renderInto(where), Fx.drain)
+  ): Effect.Effect<R | Document | RenderContext | Scope, E, void> =>
+    pipe(fx, renderInto(where), Fx.drain)
 }
 
 /**

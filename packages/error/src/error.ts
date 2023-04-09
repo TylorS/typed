@@ -18,10 +18,27 @@ export const tagged = <Tag extends string>(tag: Tag) =>
     static catchFx<T extends TaggedConstructor<Tag>, R, E, A>(
       this: T,
       f: (error: InstanceType<T>) => Fx.Fx<R, E, A>,
-    ): <R2, E2, A2>(
-      fx: Fx.Fx<R2, E2 | InstanceType<T>, A2>,
-    ) => Fx.Fx<R | R2, E | Exclude<E2, InstanceType<T>>, A | A2> {
-      return Fx.catchTag(tag, f as any) as any
+    ) {
+      return <R2, E2, A2>(
+        fx: Fx.Fx<R2, E2 | InstanceType<T>, A2>,
+      ): Fx.Fx<R | R2, E | Exclude<E2, InstanceType<T>>, A | A2> => {
+        return Fx.catchAll(fx, (e) =>
+          e instanceof TaggedError ? f(e as InstanceType<T>) : Fx.fail(e as any),
+        )
+      }
+    }
+
+    static switchCatchFx<T extends TaggedConstructor<Tag>, R, E, A>(
+      this: T,
+      f: (error: InstanceType<T>) => Fx.Fx<R, E, A>,
+    ) {
+      return <R2, E2, A2>(
+        fx: Fx.Fx<R2, E2 | InstanceType<T>, A2>,
+      ): Fx.Fx<R | R2, E | Exclude<E2, InstanceType<T>>, A | A2> => {
+        return Fx.switchMapError(fx, (e) =>
+          e instanceof TaggedError ? f(e as InstanceType<T>) : Fx.fail(e as any),
+        )
+      }
     }
 
     readonly is = <T extends TaggedConstructor<any>>(constructor: T): this is InstanceType<T> =>

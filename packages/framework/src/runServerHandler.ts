@@ -1,6 +1,7 @@
 import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
+import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 import { type Renderable, renderInto } from '@typed/html'
 import type { Redirect } from '@typed/router'
@@ -17,7 +18,7 @@ export function runServerHandler(
     window: ReturnType<HtmlModule['makeWindow']>,
     parentElement: HTMLElement,
   ) => (fx: Fx.Fx<IntrinsicServices, Redirect, Renderable>) => Fx.Fx<never, Redirect, Renderable>,
-): Effect.Effect<never, never, Exit.Exit<Redirect, string>> {
+): Effect.Effect<Scope.Scope, never, Exit.Exit<Redirect, string>> {
   return Effect.gen(function* ($) {
     const window = htmlModule.makeWindow({ url })
 

@@ -35,7 +35,7 @@ export function RouteMatch<R, E, P extends string, R2, E2, R3, E3>(
     provideContext: (env) =>
       RouteMatch(
         Route.provideContext(env)(route),
-        flow(match, Fx.contramapContext(Context.merge(env))),
+        flow(match, Fx.provideSomeContext(env)),
         layout ? Fx.provideContext(env)(layout) : undefined,
       ),
     provideService: (tag, service) =>
