@@ -2,9 +2,8 @@ import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import type { Scope } from '@effect/io/Scope'
 
-import { Cause, Effect, Fiber, Ref } from './externals.js'
-
 import { Fx, Sink } from './Fx.js'
+import { Cause, Effect, Fiber, Ref } from './externals.js'
 import { fromEffect } from './fromEffect.js'
 
 export function exhaustMapLatest<R, E, A, R2, E2, B>(

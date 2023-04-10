@@ -1,8 +1,7 @@
 import { pipe } from '@effect/data/Function'
 
-import { Cause, Effect, Either, Fiber, RefS } from './externals.js'
-
 import { Fx, Sink } from './Fx.js'
+import { Cause, Effect, Either, Fiber, RefS } from './externals.js'
 import { failCause } from './failCause.js'
 import { fromEffect } from './fromEffect.js'
 

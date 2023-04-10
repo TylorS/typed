@@ -2,9 +2,8 @@ import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import type { Scope } from '@effect/io/Scope'
 
-import { Cause, Effect, Either, Fiber, Ref } from './externals.js'
-
 import { Fx, Sink } from './Fx.js'
+import { Cause, Effect, Either, Fiber, Ref } from './externals.js'
 import { failCause } from './failCause.js'
 import { fromEffect } from './fromEffect.js'
 
