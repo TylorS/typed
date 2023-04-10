@@ -35,8 +35,8 @@
     "new-package": "nx generate ./packages/nx-plugin:package"
   },
   "dependencies": {
-    "@effect/data": "^0.11.7",
-    "@effect/io": "^0.19.2",
+    "@effect/data": "^0.11.8",
+    "@effect/io": "^0.19.3",
     "@effect/language-service": "^0.0.19",
     "@effect/query": "^0.6.0",
     "@effect/schema": "^0.11.1",
@@ -60,7 +60,7 @@
     "vite": "^4.2.1",
     "vite-node": "^0.30.0",
     "vite-plugin-compression": "^0.5.1",
-    "vite-tsconfig-paths": "^4.0.8",
+    "vite-tsconfig-paths": "^4.0.9",
     "yargs": "^17.7.1"
   },
   "peerDependencies": {
@@ -81,11 +81,11 @@
     "@types/express": "^4.17.17",
     "@types/html-minifier": "^4.0.2",
     "@types/node": "^18.15.11",
-    "@types/react": "^18.0.33",
+    "@types/react": "^18.0.34",
     "@types/react-dom": "^18.0.11",
     "@types/yargs": "^17.0.24",
-    "@typescript-eslint/eslint-plugin": "^5.57.1",
-    "@typescript-eslint/parser": "^5.57.1",
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "@typescript-eslint/parser": "^5.58.0",
     "@vitest/coverage-c8": "^0.30.0",
     "@vitest/ui": "^0.30.0",
     "eslint": "^8.38.0",
