@@ -12,6 +12,7 @@ import type { Context } from './externals.js'
 import { Effect, Fiber, MutableRef, Option, Ref } from './externals.js'
 import { hold, HoldFx } from './hold.js'
 import { map } from './map.js'
+import { multicast } from './multicast.js'
 import { never } from './never.js'
 import { switchMapEffect } from './switchMap.js'
 
@@ -570,13 +571,18 @@ class ComputedImpl<R, E, A, R2, E2, B> implements Computed<R | R2, E | E2, B> {
     _A: identity,
   }
 
+  readonly fx: Fx<R | R2, E | E2, B>
+
   constructor(
     readonly computed: Computed<R, E, A>,
     readonly f: (a: A) => Effect.Effect<R2, E2, B>,
-  ) {}
+  ) {
+    // Create a stable reference to derived Fx
+    this.fx = multicast(switchMapEffect(this.computed, this.f))
+  }
 
   run<R3>(sink: Sink<R3, E | E2, B>) {
-    return switchMapEffect(this.computed, this.f).run(sink)
+    return this.fx.run(sink)
   }
 
   traced(trace: Trace): Fx<R | R2, E | E2, B> {

@@ -110,7 +110,7 @@ export const Router = Object.assign(Context.Tag<Router>('@typed/router/Router'),
     const router: Router<R, E, P> = {
       route,
       currentPath,
-      params: pipe(currentPath, Fx.switchMapEffect(route.match), Fx.compact, Fx.skipRepeats),
+      params: pipe(currentPath, Fx.switchMapEffect(route.match), Fx.compact, Fx.hold),
       outlet,
       createPath: createPath as Router<R, P>['createPath'],
       define: <R2, E2, Path2 extends string>(other: Route.Route<R2, E2, Path2>) =>
