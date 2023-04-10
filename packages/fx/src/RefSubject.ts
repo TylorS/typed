@@ -9,8 +9,8 @@ import { Fx, Sink, isFx, Traced, FxTypeId } from './Fx.js'
 import type { Subject } from './Subject.js'
 import { combineAll } from './combineAll.js'
 import type { Context } from './externals.js'
-import { Effect, Fiber, MutableRef, Option, Ref } from './externals.js'
-import { hold, HoldFx } from './hold.js'
+import { Effect, Fiber, MutableRef, Option } from './externals.js'
+import { HoldFx } from './hold.js'
 import { map } from './map.js'
 import { multicast } from './multicast.js'
 import { never } from './never.js'
@@ -125,9 +125,8 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
 
   readonly lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
-  readonly initializeFiber: Ref.Ref<Option.Option<Fiber.RuntimeFiber<E, A>>> = Ref.unsafeMake(
-    Option.none(),
-  )
+  readonly initializeFiber: MutableRef.MutableRef<Option.Option<Fiber.RuntimeFiber<E, A>>> =
+    MutableRef.make(Option.none())
 
   constructor(
     readonly initialize: Effect.Effect<never, E, A>,
@@ -171,20 +170,27 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
       Option.match(
         () =>
           pipe(
-            Ref.get(this.initializeFiber),
-            Effect.flatMap(
-              Option.match(
-                () =>
-                  this.lock(
-                    pipe(
-                      Effect.forkDaemon(this.initialize),
-                      Effect.tap((fiber) => Ref.set(this.initializeFiber, Option.some(fiber))),
-                      Effect.flatMap(Fiber.join),
-                      Effect.tap((a) => super.event(a)),
+            MutableRef.get(this.initializeFiber),
+            Option.match(
+              () =>
+                this.lock(
+                  pipe(
+                    Effect.forkDaemon(this.initialize),
+                    Effect.tap((fiber) =>
+                      Effect.sync(() => MutableRef.set(this.initializeFiber, Option.some(fiber))),
+                    ),
+                    Effect.flatMap(Fiber.join),
+                    Effect.tap((a) =>
+                      Effect.suspend(() => {
+                        MutableRef.set(this.current, Option.some(a))
+                        MutableRef.set(this.initializeFiber, Option.none())
+
+                        return super.event(a)
+                      }),
                     ),
                   ),
-                Fiber.join,
-              ),
+                ),
+              (fiber) => Effect.flatMap(Fiber.await(fiber), Effect.done),
             ),
           ),
         Effect.succeed,
@@ -230,11 +236,6 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
 
     if (Option.isSome(current)) {
       MutableRef.set(this.current, Option.none())
-
-      // If there are any observers we must re-initial
-      if (this.observers.length > 0) {
-        return Effect.as(Effect.flatMap(this.get, this.event), current)
-      }
     }
 
     return Effect.succeed<Option.Option<A>>(current)
@@ -269,7 +270,7 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
   readonly eq: Equivalence.Equivalence<{ readonly [K in keyof S]: Fx.OutputOf<S[K]> }>
 
   constructor(readonly subjects: S) {
-    super(hold(combineAll(...subjects)) as any)
+    super(combineAll(...subjects) as any)
 
     this.eq = Equivalence.tuple(...subjects.map((s) => s.eq)) as Equivalence.Equivalence<{
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
@@ -359,11 +360,6 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
 
     if (Option.isSome(current)) {
       MutableRef.set(this.current, Option.none())
-
-      // If there are any observers we must re-initial
-      if (this.observers.length > 0) {
-        return Effect.as(Effect.flatMap(this.get, this.event), current)
-      }
     }
 
     return Effect.succeed<
@@ -425,11 +421,9 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
 
   constructor(readonly subjects: S) {
     super(
-      hold(
-        map(
-          combineAll(...Object.entries(subjects).map(([k, s]) => map(s, (x) => [k, x]))),
-          Object.fromEntries,
-        ),
+      map(
+        combineAll(...Object.entries(subjects).map(([k, s]) => map(s, (x) => [k, x]))),
+        Object.fromEntries,
       ) as any,
     )
 
@@ -521,11 +515,6 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
 
     if (Option.isSome(current)) {
       MutableRef.set(this.current, Option.none())
-
-      // If there are any observers we must re-initial
-      if (this.observers.length > 0) {
-        return Effect.as(Effect.flatMap(this.get, this.event), current)
-      }
     }
 
     return Effect.succeed<
