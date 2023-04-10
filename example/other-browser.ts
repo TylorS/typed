@@ -14,4 +14,4 @@ if (!parentElement) {
   throw new Error('Could not find #application element')
 }
 
-Effect.runCallback(pipe(render(parentElement), Fx.drain), console.log)
+Effect.runCallback(pipe(render(parentElement), Fx.drain, Effect.scoped), console.log)

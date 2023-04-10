@@ -515,6 +515,16 @@ export const map: {
       internal.map(fx, f).traced(trace),
 )
 
+export const as: {
+  <B>(value: B): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, B>
+  <R, E, A, B>(fx: Fx<R, E, A>, value: B): Fx<R, E, B>
+} = dualWithTrace(
+  2,
+  (trace) =>
+    <R, E, A, B>(fx: Fx<R, E, A>, value: B): Fx<R, E, B> =>
+      internal.as(fx, value).traced(trace),
+)
+
 export const mergeAll: <FXS extends ReadonlyArray<Fx<any, any, any>>>(
   ...fxs: FXS
 ) => Fx<
@@ -552,13 +562,16 @@ export const observe: {
 export const drain: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R | Scope.Scope, E, void> =
   methodWithTrace((trace) => (fx) => internal.drain(fx).traced(trace))
 
-export const onInterrupt: <R, E, A, R2, E2, B>(
-  fx: Fx<R, E, A>,
-  f: (interruptors: HashSet<FiberId>) => Effect.Effect<R2, E2, B>,
-) => Fx<R | R2, E | E2, A> = dualWithTrace(
-  2,
-  (trace) => (fx, f) => internal.onInterrupt(fx, f).traced(trace),
-)
+export const onInterrupt: {
+  <R2, E2, B>(f: (interruptors: HashSet<FiberId>) => Effect.Effect<R2, E2, B>): <R, E, A>(
+    fx: Fx<R, E, A>,
+  ) => Fx<R | R2, E | E2, A>
+
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (interruptors: HashSet<FiberId>) => Effect.Effect<R2, E2, B>,
+  ): Fx<R | R2, E | E2, A>
+} = dualWithTrace(2, (trace) => (fx, f) => internal.onInterrupt(fx, f).traced(trace))
 
 export const promise: <A>(f: () => Promise<A>) => Fx<never, never, A> = methodWithTrace(
   (trace) => (f) => internal.promise(f).traced(trace),
@@ -699,6 +712,11 @@ export const reduce: {
 
   <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (b: B, a: A) => B): Effect.Effect<R, E, B>
 } = dualWithTrace(3, (trace) => (fx, seed, f) => internal.reduce(fx, seed, f).traced(trace))
+
+export const scan: {
+  <B, A>(seed: B, f: (b: B, a: A) => B): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
+  <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (b: B, a: A) => B): Fx<R, E, B>
+} = dualWithTrace(3, (trace) => (fx, seed, f) => internal.scan(fx, seed, f).traced(trace))
 
 export const skipRepeatsWith: {
   <A>(eq: Equivalence<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>

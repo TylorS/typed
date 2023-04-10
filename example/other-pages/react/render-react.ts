@@ -31,7 +31,7 @@ export function renderReact<R, E, Path extends string, R2, E2>(
         return pipe(
           params,
           Fx.switchMapEffect(Component),
-          Fx.map((reactElement) => (root.render(reactElement), container)),
+          Fx.map((reactElement: ReactElement) => (root.render(reactElement), container)),
           Fx.onInterrupt(() => Effect.sync(() => root.unmount())),
         )
       }),

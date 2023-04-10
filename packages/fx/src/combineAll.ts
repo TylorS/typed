@@ -1,5 +1,7 @@
 import { Fx, Sink } from './Fx.js'
 import { Effect } from './externals.js'
+import { map } from './map.js'
+import { succeed } from './succeed.js'
 
 export function combineAll<FX extends ReadonlyArray<Fx<any, any, any>>>(
   ...fx: FX
@@ -10,6 +12,14 @@ export function combineAll<FX extends ReadonlyArray<Fx<any, any, any>>>(
     [k in keyof FX]: Fx.OutputOf<FX[k]>
   }
 > {
+  if (fx.length === 0) {
+    return succeed([]) as any
+  }
+
+  if (fx.length === 1) {
+    return map(fx[0], (x) => [x]) as any
+  }
+
   return Fx((sink) =>
     Effect.gen(function* ($) {
       const length = fx.length
@@ -19,7 +29,7 @@ export function combineAll<FX extends ReadonlyArray<Fx<any, any, any>>>(
         values.size === length
           ? sink.event(
               Array.from(values)
-                .sort((a, b) => a[0] - b[0])
+                .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
                 .map((x) => x[1]) as {
                 [k in keyof FX]: Fx.OutputOf<FX[k]>
               },

@@ -19,5 +19,6 @@ Effect.runPromise(
     render(parentElement),
     Fx.tapCause((cause) => Effect.logInfoCause(cause)),
     Fx.drain,
+    Effect.scoped,
   ),
 ).then(console.log, console.log)
