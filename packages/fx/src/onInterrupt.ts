@@ -1,8 +1,8 @@
 import type { HashSet } from '@effect/data/HashSet'
 import type { FiberId } from '@effect/io/Fiber/Id'
 
-import { Fx } from '@typed/fx/Fx'
-import { Effect } from '@typed/fx/externals'
+import { Fx } from './Fx.js'
+import { Effect } from './externals.js'
 
 export function onInterrupt<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,

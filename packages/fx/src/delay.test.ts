@@ -1,7 +1,9 @@
-import { delay } from '@typed/fx/delay'
-import { Duration } from '@typed/fx/externals'
-import { fromArray } from '@typed/fx/fromArray'
-import { testCollectAll } from '@typed/fx/test-utils'
+import { describe } from 'vitest'
+
+import { delay } from './delay.js'
+import { Duration } from './externals.js'
+import { fromArray } from './fromArray.js'
+import { testCollectAll } from './test-utils.js'
 
 describe(__filename, () => {
   describe(delay.name, () => {

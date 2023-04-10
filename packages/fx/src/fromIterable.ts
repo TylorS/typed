@@ -1,5 +1,5 @@
-import { Fx } from '@typed/fx/Fx'
-import { Effect } from '@typed/fx/externals'
+import { Fx } from './Fx.js'
+import { Effect } from './externals.js'
 
 export function fromIterable<A>(iterable: Iterable<A>): Fx<never, never, A> {
   return Fx((sink) =>

@@ -1,8 +1,8 @@
 import type { Scope } from '@effect/io/Scope'
 
-import type { Fx } from '@typed/fx/Fx'
-import { Effect } from '@typed/fx/externals'
-import { observe } from '@typed/fx/observe'
+import type { Fx } from './Fx.js'
+import { Effect } from './externals.js'
+import { observe } from './observe.js'
 
 export function toReadonlyArray<R, E, A>(
   fx: Fx<R, E, A>,

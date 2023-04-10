@@ -1,6 +1,8 @@
-import { Cause, Effect } from '@typed/fx/externals'
-import { fromEffect } from '@typed/fx/fromEffect'
-import { testCause, testCollectAll } from '@typed/fx/test-utils'
+import { describe } from 'vitest'
+
+import { Cause, Effect } from './externals.js'
+import { fromEffect } from './fromEffect.js'
+import { testCause, testCollectAll } from './test-utils.js'
 
 describe(__filename, () => {
   describe(fromEffect.name, (): void => {

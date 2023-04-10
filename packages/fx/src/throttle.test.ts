@@ -1,7 +1,9 @@
-import { Duration } from '@typed/fx/externals'
-import { fromArray } from '@typed/fx/fromArray'
-import { testCollectAll } from '@typed/fx/test-utils'
-import { throttle } from '@typed/fx/throttle'
+import { describe } from 'vitest'
+
+import { Duration } from './externals.js'
+import { fromArray } from './fromArray.js'
+import { testCollectAll } from './test-utils.js'
+import { throttle } from './throttle.js'
 
 describe(__filename, () => {
   describe(throttle.name, () => {

@@ -120,6 +120,20 @@ for (const name of packageNames) {
     }))
 
   fs.writeFileSync(join(packageDir, 'tsconfig.json'), JSON.stringify(tsconfigJson, null, 2) + EOL)
+
+  const tsconfigCjsJsonPath = join(packageDir, 'tsconfig.cjs.build.json')
+
+  if (fs.existsSync(tsconfigCjsJsonPath)) {
+    const tsconfigCjsJSon = readJson(tsconfigCjsJsonPath)
+
+    tsconfigCjsJSon.references = Array.from(references)
+      .sort()
+      .map((name) => ({
+        path: `../${name}/tsconfig.cjs.build.json`,
+      }))
+
+    fs.writeFileSync(tsconfigCjsJsonPath, JSON.stringify(tsconfigCjsJSon, null, 2) + EOL)
+  }
 }
 
 spawnSync('pnpm', ['install'], { stdio: 'inherit' })

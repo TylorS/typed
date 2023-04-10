@@ -22,7 +22,7 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.11.6",
+    "@effect/data": "^0.11.7",
     "@typed/vite-plugin": "workspace:*",
     "@vavite/multibuild": "^1.7.0",
     "cac": "^6.7.14",

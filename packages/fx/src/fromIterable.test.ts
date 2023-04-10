@@ -1,5 +1,7 @@
-import { fromIterable } from '@typed/fx/fromIterable'
-import { testCollectAll } from '@typed/fx/test-utils'
+import { describe } from 'vitest'
+
+import { fromIterable } from './fromIterable.js'
+import { testCollectAll } from './test-utils.js'
 
 describe(__filename, () => {
   describe(fromIterable.name, () => {

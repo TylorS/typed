@@ -1,15 +1,15 @@
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
-import { describe, it } from 'vitest'
+import { describe, it, expect } from 'vitest'
 
-import { delay } from '@typed/fx/delay'
-import { Chunk, Duration } from '@typed/fx/externals'
-import { flatMap } from '@typed/fx/flatMap'
-import { fromArray } from '@typed/fx/fromArray'
-import { merge } from '@typed/fx/mergeAll'
-import { multicast } from '@typed/fx/multicast'
-import { suspend } from '@typed/fx/suspend'
-import { toChunk } from '@typed/fx/toChunk'
+import { delay } from './delay.js'
+import { Chunk, Duration } from './externals.js'
+import { flatMap } from './flatMap.js'
+import { fromArray } from './fromArray.js'
+import { merge } from './mergeAll.js'
+import { multicast } from './multicast.js'
+import { suspend } from './suspend.js'
+import { toChunk } from './toChunk.js'
 
 describe(__filename, () => {
   describe(multicast.name, () => {

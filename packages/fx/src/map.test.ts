@@ -1,6 +1,8 @@
-import { fromArray } from '@typed/fx/fromArray'
-import { map } from '@typed/fx/map'
-import { testCollectAll } from '@typed/fx/test-utils'
+import { describe } from 'vitest'
+
+import { fromArray } from './fromArray.js'
+import { map } from './map.js'
+import { testCollectAll } from './test-utils.js'
 
 describe(__filename, () => {
   describe(map.name, () => {

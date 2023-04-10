@@ -2,9 +2,9 @@ import { pipe } from '@effect/data/Function'
 
 import { Cause, Effect, Either, Fiber, RefS } from './externals.js'
 
-import { Fx, Sink } from '@typed/fx/Fx'
-import { failCause } from '@typed/fx/failCause'
-import { fromEffect } from '@typed/fx/fromEffect'
+import { Fx, Sink } from './Fx.js'
+import { failCause } from './failCause.js'
+import { fromEffect } from './fromEffect.js'
 
 export function switchMatchCause<R, E, A, R2, E2, B, R3, E3, C>(
   fx: Fx<R, E, A>,

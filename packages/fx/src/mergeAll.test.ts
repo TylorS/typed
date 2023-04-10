@@ -1,6 +1,8 @@
-import { fromArray } from '@typed/fx/fromArray'
-import { mergeAll } from '@typed/fx/mergeAll'
-import { testCollectAll } from '@typed/fx/test-utils'
+import { describe } from 'vitest'
+
+import { fromArray } from './fromArray.js'
+import { mergeAll } from './mergeAll.js'
+import { testCollectAll } from './test-utils.js'
 
 describe(__filename, () => {
   describe(mergeAll.name, () => {

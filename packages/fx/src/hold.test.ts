@@ -2,13 +2,13 @@ import { millis } from '@effect/data/Duration'
 import { range } from '@effect/data/ReadonlyArray'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
-import { describe, it } from 'vitest'
+import { describe, it, expect } from 'vitest'
 
-import { at } from '@typed/fx/at'
-import { Chunk } from '@typed/fx/externals'
-import { hold } from '@typed/fx/hold'
-import { mergeAll } from '@typed/fx/mergeAll'
-import { toChunk } from '@typed/fx/toChunk'
+import { at } from './at.js'
+import { Chunk } from './externals.js'
+import { hold } from './hold.js'
+import { mergeAll } from './mergeAll.js'
+import { toChunk } from './toChunk.js'
 
 describe(__filename, () => {
   describe(hold.name, () => {

@@ -1,11 +1,10 @@
 import { methodWithTrace } from '@effect/data/Debug'
 
 import type { Fx, Sink } from './Fx.js'
-
-import { Effect, Fiber } from '@typed/fx/externals'
-import { HoldFx } from '@typed/fx/hold'
-import { MulticastFx } from '@typed/fx/multicast'
-import { never } from '@typed/fx/never'
+import { Effect, Fiber } from './externals.js'
+import { HoldFx } from './hold.js'
+import { MulticastFx } from './multicast.js'
+import { never } from './never.js'
 
 export interface Subject<E, A> extends Fx<never, E, A>, Sink<never, E, A> {
   readonly end: () => Effect.Effect<never, never, void>

@@ -1,6 +1,6 @@
-import type { Fx } from '@typed/fx/Fx'
-import { Effect } from '@typed/fx/externals'
-import { fromFxEffect } from '@typed/fx/fromFxEffect'
+import type { Fx } from './Fx.js'
+import { Effect } from './externals.js'
+import { fromFxEffect } from './fromFxEffect.js'
 
 export type EffectGenResources<T> = [T] extends [never]
   ? never

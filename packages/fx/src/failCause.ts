@@ -1,7 +1,7 @@
 import * as Cause from '@effect/io/Cause'
 import type { FiberId } from '@effect/io/Fiber/Id'
 
-import { Fx } from '@typed/fx/Fx'
+import { Fx } from './Fx.js'
 
 export function failCause<E>(cause: Cause.Cause<E>): Fx<never, E, never> {
   return Fx((sink) => sink.error(cause))

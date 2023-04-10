@@ -1,5 +1,5 @@
-import { Fx, Sink } from '@typed/fx/Fx'
-import { Effect } from '@typed/fx/externals'
+import { Fx, Sink } from './Fx.js'
+import { Effect } from './externals.js'
 
 export function combineAll<FX extends ReadonlyArray<Fx<any, any, any>>>(
   ...fx: FX

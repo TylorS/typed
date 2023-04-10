@@ -1,8 +1,8 @@
 import { pipe } from '@effect/data/Function'
 
-import { Fx, Sink } from '@typed/fx/Fx'
-import type { Duration } from '@typed/fx/externals'
-import { Effect, Fiber, Ref } from '@typed/fx/externals'
+import { Fx, Sink } from './Fx.js'
+import type { Duration } from './externals.js'
+import { Effect, Fiber, Ref } from './externals.js'
 
 export function throttle<R, E, A>(fx: Fx<R, E, A>, duration: Duration.Duration): Fx<R, E, A> {
   return Fx((sink) =>

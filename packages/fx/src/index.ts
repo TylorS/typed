@@ -7,8 +7,7 @@ import type { FiberId } from '@effect/io/Fiber/Id'
 
 import type { Fx } from './Fx.js'
 import * as internal from './data-first.js'
-
-import type { Cause, Chunk, Context, Effect, Layer, Option, Scope } from '@typed/fx/externals'
+import type { Cause, Chunk, Context, Effect, Layer, Option, Scope } from './externals.js'
 
 export * from './Fx.js'
 

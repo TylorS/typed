@@ -5,7 +5,7 @@ import type { Cause } from '@effect/io/Cause'
 import type { Effect } from '@effect/io/Effect'
 import type * as Runtime from '@effect/io/Runtime'
 
-export const FxTypeId = Symbol.for('@typed/fx/Fx')
+export const FxTypeId = Symbol.for('./Fx')
 export type FxTypeId = typeof FxTypeId
 
 export interface Fx<out R, out E, out A> {

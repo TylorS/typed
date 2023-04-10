@@ -1,6 +1,8 @@
-import { fromArray } from '@typed/fx/fromArray'
-import { skipUntil, skipWhile } from '@typed/fx/skipWhile'
-import { testCollectAll } from '@typed/fx/test-utils'
+import { describe } from 'vitest'
+
+import { fromArray } from './fromArray.js'
+import { skipUntil, skipWhile } from './skipWhile.js'
+import { testCollectAll } from './test-utils.js'
 
 describe(__filename, () => {
   describe(skipWhile.name, () => {

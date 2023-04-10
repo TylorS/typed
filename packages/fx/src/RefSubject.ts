@@ -5,17 +5,17 @@ import { identity, pipe } from '@effect/data/Function'
 import * as RR from '@effect/data/ReadonlyRecord'
 import * as Equivalence from '@effect/data/typeclass/Equivalence'
 
-import { Fx, Sink, isFx, FxTypeId, Traced } from '@typed/fx/Fx'
-import type { Subject } from '@typed/fx/Subject'
-import { combineAll } from '@typed/fx/combineAll'
-import type { Context } from '@typed/fx/externals'
-import { Effect, Fiber, MutableRef, Option, Ref } from '@typed/fx/externals'
-import { hold, HoldFx } from '@typed/fx/hold'
-import { map } from '@typed/fx/map'
-import { never } from '@typed/fx/never'
-import { switchMapEffect } from '@typed/fx/switchMap'
+import { Fx, Sink, isFx, Traced, FxTypeId } from './Fx.js'
+import type { Subject } from './Subject.js'
+import { combineAll } from './combineAll.js'
+import type { Context } from './externals.js'
+import { Effect, Fiber, MutableRef, Option, Ref } from './externals.js'
+import { hold, HoldFx } from './hold.js'
+import { map } from './map.js'
+import { never } from './never.js'
+import { switchMapEffect } from './switchMap.js'
 
-export const RefSubjectTypeId = Symbol.for('@typed/fx/RefSubject')
+export const RefSubjectTypeId = Symbol.for('./RefSubject')
 export type RefSubjectTypeId = typeof RefSubjectTypeId
 
 export interface RefSubject<in out E, in out A> extends Subject<E, A> {

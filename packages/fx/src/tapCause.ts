@@ -1,7 +1,7 @@
 import { pipe } from '@effect/data/Function'
 
-import { Fx, Sink } from '@typed/fx/Fx'
-import { Cause, Effect } from '@typed/fx/externals'
+import { Fx, Sink } from './Fx.js'
+import { Cause, Effect } from './externals.js'
 
 export function tapCause<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,

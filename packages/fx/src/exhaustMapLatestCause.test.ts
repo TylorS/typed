@@ -1,10 +1,12 @@
-import { delay } from '@typed/fx/delay'
-import { exhaustMapLatestCause, exhaustMapLatestError } from '@typed/fx/exhaustMapLatestCause'
-import { Duration } from '@typed/fx/externals'
-import { fail } from '@typed/fx/failCause'
-import { fromArray } from '@typed/fx/fromArray'
-import { mergeAll } from '@typed/fx/mergeAll'
-import { testCollectAll } from '@typed/fx/test-utils'
+import { describe } from 'vitest'
+
+import { delay } from './delay.js'
+import { exhaustMapLatestCause, exhaustMapLatestError } from './exhaustMapLatestCause.js'
+import { Duration } from './externals.js'
+import { fail } from './failCause.js'
+import { fromArray } from './fromArray.js'
+import { mergeAll } from './mergeAll.js'
+import { testCollectAll } from './test-utils.js'
 
 describe(__filename, () => {
   describe(exhaustMapLatestCause.name, () => {

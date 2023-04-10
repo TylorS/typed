@@ -1,7 +1,7 @@
-import { Fx } from '@typed/fx/Fx'
-import { Effect } from '@typed/fx/externals'
-import { fromEffect } from '@typed/fx/fromEffect'
-import { succeed } from '@typed/fx/succeed'
+import { Fx } from './Fx.js'
+import { Effect } from './externals.js'
+import { fromEffect } from './fromEffect.js'
+import { succeed } from './succeed.js'
 
 export function continueWith<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,

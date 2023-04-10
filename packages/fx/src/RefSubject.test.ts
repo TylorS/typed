@@ -2,9 +2,9 @@ import { deepStrictEqual } from 'assert'
 
 import { describe, it } from 'vitest'
 
-import { makeRef, RefSubject } from '@typed/fx/RefSubject'
-import { Chunk, Duration, Effect, Fiber, Option } from '@typed/fx/externals'
-import { toChunk } from '@typed/fx/toChunk'
+import { makeRef, RefSubject } from './RefSubject.js'
+import { Chunk, Duration, Effect, Fiber, Option } from './externals.js'
+import { toChunk } from './toChunk.js'
 
 describe('RefSubject', () => {
   describe('get', () => {

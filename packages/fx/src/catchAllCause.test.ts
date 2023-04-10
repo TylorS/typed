@@ -1,10 +1,12 @@
-import { catchAll, catchAllCause } from '@typed/fx/catchAllCause'
-import { delay } from '@typed/fx/delay'
-import { Duration } from '@typed/fx/externals'
-import { fail } from '@typed/fx/failCause'
-import { fromArray } from '@typed/fx/fromArray'
-import { mergeAll } from '@typed/fx/mergeAll'
-import { testCollectAll } from '@typed/fx/test-utils'
+import { describe } from 'vitest'
+
+import { catchAll, catchAllCause } from './catchAllCause.js'
+import { delay } from './delay.js'
+import { Duration } from './externals.js'
+import { fail } from './failCause.js'
+import { fromArray } from './fromArray.js'
+import { mergeAll } from './mergeAll.js'
+import { testCollectAll } from './test-utils.js'
 
 describe(__filename, () => {
   describe(catchAllCause.name, () => {

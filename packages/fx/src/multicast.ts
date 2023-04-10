@@ -1,10 +1,10 @@
 import type { Trace } from '@effect/data/Debug'
 import { identity } from '@effect/data/Function'
 
-import type { Fx, Sink } from '@typed/fx/Fx'
-import { FxTypeId, Traced } from '@typed/fx/Fx'
-import type { Cause, Context } from '@typed/fx/externals'
-import { Effect, Fiber } from '@typed/fx/externals'
+import type { Fx, Sink } from './Fx.js'
+import { FxTypeId, Traced } from './Fx.js'
+import type { Cause, Context } from './externals.js'
+import { Effect, Fiber } from './externals.js'
 
 export function multicast<R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> {
   return new MulticastFx(fx)
@@ -46,6 +46,7 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
           that.fiber = yield* $(Effect.forkDaemon(that.fx.run(that)))
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         yield* $(Fiber.join(that.fiber!))
 
         that.fiber = undefined
@@ -55,7 +56,7 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     )
   }
 
-  traced(trace: Trace): Fx<R, E, A> {
+  readonly traced = (trace: Trace): Fx<R, E, A> => {
     return multicast(Traced<R, E, A>(this.fx, trace))
   }
 
@@ -93,6 +94,7 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
       }
 
       if (this.observers.length === 0) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return Fiber.interrupt(this.fiber!)
       }
 

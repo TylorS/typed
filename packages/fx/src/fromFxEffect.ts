@@ -1,5 +1,5 @@
-import { Fx } from '@typed/fx/Fx'
-import { Effect } from '@typed/fx/externals'
+import { Fx } from './Fx.js'
+import { Effect } from './externals.js'
 
 export function fromFxEffect<R, E, R2, E2, B>(
   effect: Effect.Effect<R, E, Fx<R2, E2, B>>,

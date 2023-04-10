@@ -4,5 +4,10 @@
     "outDir": "./dist/cjs",
     "module": "CommonJS",
     "verbatimModuleSyntax": false
-  }
+  },
+  "references": [
+    {
+      "path": "../compiler/tsconfig.cjs.build.json"
+    }
+  ]
 }

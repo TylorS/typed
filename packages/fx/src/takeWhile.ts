@@ -1,8 +1,8 @@
 import type { Predicate } from '@effect/data/Predicate'
 import { not } from '@effect/data/Predicate'
 
-import { Fx, Sink } from '@typed/fx/Fx'
-import { Effect } from '@typed/fx/externals'
+import { Fx, Sink } from './Fx.js'
+import { Effect } from './externals.js'
 
 export function takeWhile<R, E, A>(fx: Fx<R, E, A>, predicate: Predicate<A>): Fx<R, E, A> {
   return Fx(<R2>(sink: Sink<R2, E, A>) =>

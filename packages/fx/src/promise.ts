@@ -1,7 +1,7 @@
-import type { Fx } from '@typed/fx/Fx'
-import { Effect } from '@typed/fx/externals'
-import { fromEffect } from '@typed/fx/fromEffect'
-import { fromFxEffect } from '@typed/fx/fromFxEffect'
+import type { Fx } from './Fx.js'
+import { Effect } from './externals.js'
+import { fromEffect } from './fromEffect.js'
+import { fromFxEffect } from './fromFxEffect.js'
 
 export function promise<A>(f: () => Promise<A>): Fx<never, never, A> {
   return fromEffect(Effect.promise(f))

@@ -4,8 +4,8 @@ import type { Scope } from '@effect/io/Scope'
 
 import { Cause, Effect, Fiber, Ref } from './externals.js'
 
-import { Fx, Sink } from '@typed/fx/Fx'
-import { fromEffect } from '@typed/fx/fromEffect'
+import { Fx, Sink } from './Fx.js'
+import { fromEffect } from './fromEffect.js'
 
 export function exhaustMapLatest<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,

@@ -1,7 +1,9 @@
-import { debounce } from '@typed/fx/debounce'
-import { Duration } from '@typed/fx/externals'
-import { fromArray } from '@typed/fx/fromArray'
-import { testCollectAll } from '@typed/fx/test-utils'
+import { describe } from 'vitest'
+
+import { debounce } from './debounce.js'
+import { Duration } from './externals.js'
+import { fromArray } from './fromArray.js'
+import { testCollectAll } from './test-utils.js'
 
 describe(__filename, () => {
   describe(debounce.name, () => {

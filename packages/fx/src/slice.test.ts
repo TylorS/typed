@@ -1,7 +1,9 @@
-import { flatMap } from '@typed/fx/flatMap'
-import { fromArray } from '@typed/fx/fromArray'
-import { slice } from '@typed/fx/slice'
-import { testCollectAll } from '@typed/fx/test-utils'
+import { describe } from 'vitest'
+
+import { flatMap } from './flatMap.js'
+import { fromArray } from './fromArray.js'
+import { slice } from './slice.js'
+import { testCollectAll } from './test-utils.js'
 
 describe(__filename, () => {
   describe(slice.name, () => {

@@ -1,5 +1,7 @@
-import { empty } from '@typed/fx/empty'
-import { testCollectAll } from '@typed/fx/test-utils'
+import { describe } from 'vitest'
+
+import { empty } from './empty.js'
+import { testCollectAll } from './test-utils.js'
 
 describe(__filename, () => {
   describe(empty.name, () => {

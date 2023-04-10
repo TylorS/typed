@@ -1,8 +1,8 @@
 import { equals } from '@effect/data/Equal'
 import type { Equivalence } from '@effect/data/typeclass/Equivalence'
 
-import { Fx, Sink } from '@typed/fx/Fx'
-import { Effect, Option } from '@typed/fx/externals'
+import { Fx, Sink } from './Fx.js'
+import { Effect, Option } from './externals.js'
 
 export function skipRepeatsWith<R, E, A>(fx: Fx<R, E, A>, eq: Equivalence<A>): Fx<R, E, A> {
   return Fx((sink) =>

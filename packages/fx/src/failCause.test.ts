@@ -1,6 +1,8 @@
-import { Cause, FiberId } from '@typed/fx/externals'
-import { failCause } from '@typed/fx/failCause'
-import { testCause } from '@typed/fx/test-utils'
+import { describe } from 'vitest'
+
+import { Cause, FiberId } from './externals.js'
+import { failCause } from './failCause.js'
+import { testCause } from './test-utils.js'
 
 describe(__filename, () => {
   describe(failCause.name, () => {
