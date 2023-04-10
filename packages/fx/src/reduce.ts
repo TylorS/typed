@@ -1,12 +1,17 @@
-import { Fx, Sink } from './Fx.js'
-import { Effect } from './externals.js'
+import { Fx } from './Fx.js'
+import { Effect, Scope } from './externals.js'
+import { observe } from './observe.js'
 
-export function reduce<R, E, A, B>(fx: Fx<R, E, A>, b: B, f: (b: B, a: A) => B): Fx<R, E, B> {
-  return Fx((sink) =>
-    Effect.suspend(() => {
-      let acc = b
+export function reduce<R, E, A, B>(
+  fx: Fx<R, E, A>,
+  b: B,
+  f: (b: B, a: A) => B,
+): Effect.Effect<R | Scope.Scope, E, B> {
+  return Effect.gen(function* ($) {
+    let acc = b
 
-      return fx.run(Sink((a) => Effect.sync(() => (acc = f(acc, a))), sink.error))
-    }),
-  )
+    yield* $(observe(fx, (a) => Effect.sync(() => (acc = f(acc, a)))))
+
+    return acc
+  })
 }

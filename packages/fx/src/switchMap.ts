@@ -1,8 +1,7 @@
 import { pipe } from '@effect/data/Function'
 
-import { Cause, Effect, Fiber, RefS } from './externals.js'
-
 import { Fx, Sink } from './Fx.js'
+import { Cause, Effect, Fiber, RefS } from './externals.js'
 import { fromEffect } from './fromEffect.js'
 
 export function switchMap<R, E, A, R2, E2, B>(
