@@ -85,9 +85,9 @@ describe('RefSubject', () => {
           const ref = yield* $(makeRef(Effect.succeed(1)))
           const computed = ref.map((a) => a + 1)
 
-          deepStrictEqual(yield* $(computed.get), 2)
+          deepStrictEqual(yield* $(computed), 2)
           deepStrictEqual(yield* $(ref.set(2)), 2)
-          deepStrictEqual(yield* $(computed.get), 3)
+          deepStrictEqual(yield* $(computed), 3)
         }),
       )
 

@@ -24,8 +24,7 @@ export type RefSubjectTypeId = typeof RefSubjectTypeId
 export interface RefSubject<in out E, in out A> extends Subject<E, A>, Effect.Effect<never, E, A> {
   readonly [RefSubjectTypeId]: RefSubjectTypeId
 
-  readonly i1: Equivalence.Equivalence<A>
-
+  readonly eq: Equivalence.Equivalence<A>
   readonly get: Effect.Effect<never, E, A>
 
   readonly modifyEffect: <R2, E2, B>(
@@ -141,10 +140,13 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
   readonly initializeFiber: MutableRef.MutableRef<Option.Option<Fiber.RuntimeFiber<E, A>>> =
     MutableRef.make(Option.none())
 
+  readonly eq: Equivalence.Equivalence<A>
+
   constructor(readonly i0: Effect.Effect<never, E, A>, readonly i1: Equivalence.Equivalence<A>) {
     super(never<E, A>())
 
     this.modifyEffect = this.modifyEffect.bind(this)
+    this.eq = i1
   }
 
   run<R2>(sink: Sink<R2, E, A>) {
@@ -307,10 +309,12 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
 
   readonly lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
 
+  readonly eq: Equivalence.Equivalence<{ readonly [K in keyof S]: Fx.OutputOf<S[K]> }>
+
   constructor(readonly i0: S) {
     super(combineAll(...i0) as any)
 
-    this.i1 = Equivalence.tuple(...i0.map((s) => s.i1)) as Equivalence.Equivalence<{
+    this.i1 = this.eq = Equivalence.tuple(...i0.map((s) => s.eq)) as Equivalence.Equivalence<{
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }>
   }
@@ -497,6 +501,8 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
 
   readonly lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
 
+  readonly eq: Equivalence.Equivalence<{ readonly [K in keyof S]: Fx.OutputOf<S[K]> }>
+
   constructor(readonly i0: S) {
     super(
       map(
@@ -505,7 +511,7 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
       ) as any,
     )
 
-    this.i1 = Equivalence.struct(RR.map(i0, (s) => s.i1)) as Equivalence.Equivalence<{
+    this.i1 = this.eq = Equivalence.struct(RR.map(i0, (s) => s.eq)) as Equivalence.Equivalence<{
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }>
   }
