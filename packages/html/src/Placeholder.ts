@@ -49,6 +49,8 @@ declare global {
   export interface Boolean extends Placeholder {}
   export interface Symbol extends Placeholder {}
   export interface BigInt extends Placeholder {}
+  export interface Array<T>
+    extends Placeholder<Placeholder.ResourcesOf<T>, Placeholder.ErrorsOf<T>> {}
   // export interface Function extends Placeholder {} // TODO: Utilize for directives??
 
   // DOM types

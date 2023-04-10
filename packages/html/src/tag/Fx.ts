@@ -130,6 +130,10 @@ function unwrapFxValue(
   value: Placeholder<any, any> | undefined | null,
   index: number,
 ): Fx.Fx<any, any, any> {
+  if (Array.isArray(value)) {
+    return Fx.combineAll(...value.map((v) => unwrapFxValue(template, v, index)))
+  }
+
   if (Fx.isFx(value) && !('element' in value)) {
     return value
   }
