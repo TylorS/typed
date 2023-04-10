@@ -11,7 +11,7 @@ describe('RefSubject', () => {
     it('lazily instantiates the value', async () => {
       const test = Effect.gen(function* ($) {
         const ref = yield* $(makeRef(Effect.succeed(1)))
-        const value = yield* $(ref.get)
+        const value = yield* $(ref)
 
         deepStrictEqual(value, 1)
       })

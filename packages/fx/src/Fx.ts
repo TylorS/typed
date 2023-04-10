@@ -17,7 +17,7 @@ export interface Fx<out R, out E, out A> {
 
   readonly run: <R2>(sink: Sink<R2, E, A>) => Effect<R | R2, never, void>
 
-  readonly traced: (trace: Trace) => Fx<R, E, A>
+  readonly addTrace: (trace: Trace) => Fx<R, E, A>
 }
 
 export const make: <R, E, A>(
@@ -32,7 +32,7 @@ export const make: <R, E, A>(
           _A: identity,
         },
         run: methodWithTrace((inner) => (sink) => run(sink).traced(inner).traced(trace)),
-        traced: (inner) => Traced(Traced(fx, inner), trace),
+        addTrace: (inner) => Traced(Traced(fx, inner), trace),
       }
 
       return fx
@@ -61,7 +61,7 @@ export function Traced<R, E, A>(fx: Fx<R, E, A>, trace: Trace): Fx<R, E, A> {
           ),
         )
         .traced(trace),
-    traced: (trace) => Traced(traced, trace),
+    addTrace: (trace) => Traced(traced, trace),
   }
 
   return traced

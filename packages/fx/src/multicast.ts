@@ -56,7 +56,7 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     )
   }
 
-  readonly traced = (trace: Trace): Fx<R, E, A> => {
+  readonly addTrace = (trace: Trace): Fx<R, E, A> => {
     return multicast(Traced<R, E, A>(this.fx, trace))
   }
 

@@ -1,7 +1,9 @@
 import type { Trace } from '@effect/data/Debug'
 import { methodWithTrace } from '@effect/data/Debug'
 import { equals } from '@effect/data/Equal'
+import * as Equal from '@effect/data/Equal'
 import { identity, pipe } from '@effect/data/Function'
+import * as Hash from '@effect/data/Hash'
 import * as RR from '@effect/data/ReadonlyRecord'
 import * as Equivalence from '@effect/data/typeclass/Equivalence'
 
@@ -19,10 +21,10 @@ import { switchMapEffect } from './switchMap.js'
 export const RefSubjectTypeId = Symbol.for('./RefSubject')
 export type RefSubjectTypeId = typeof RefSubjectTypeId
 
-export interface RefSubject<in out E, in out A> extends Subject<E, A> {
+export interface RefSubject<in out E, in out A> extends Subject<E, A>, Effect.Effect<never, E, A> {
   readonly [RefSubjectTypeId]: RefSubjectTypeId
 
-  readonly eq: Equivalence.Equivalence<A>
+  readonly i1: Equivalence.Equivalence<A>
 
   readonly get: Effect.Effect<never, E, A>
 
@@ -47,7 +49,7 @@ export interface RefSubject<in out E, in out A> extends Subject<E, A> {
   readonly map: <B>(f: (a: A) => B) => Computed<never, E, B>
 }
 
-export interface Computed<R, E, A> extends Fx<R, E, A> {
+export interface Computed<R, E, A> extends Fx<R, E, A>, Effect.Effect<R, E, A> {
   readonly get: Effect.Effect<R, E, A>
 
   readonly mapEffect: <R2, E2, B>(
@@ -121,17 +123,25 @@ export namespace RefSubject {
   }
 }
 
+const refSubjectVariant = {
+  _R: identity,
+  _E: identity,
+  _A: identity,
+}
+
 class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, A> {
+  readonly _tag = 'Commit'
+  public i2: any = undefined
+  public trace: Trace = undefined;
+
+  readonly [Effect.EffectTypeId] = refSubjectVariant;
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
 
   readonly lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
   readonly initializeFiber: MutableRef.MutableRef<Option.Option<Fiber.RuntimeFiber<E, A>>> =
     MutableRef.make(Option.none())
 
-  constructor(
-    readonly initialize: Effect.Effect<never, E, A>,
-    readonly eq: Equivalence.Equivalence<A>,
-  ) {
+  constructor(readonly i0: Effect.Effect<never, E, A>, readonly i1: Equivalence.Equivalence<A>) {
     super(never<E, A>())
 
     this.modifyEffect = this.modifyEffect.bind(this)
@@ -175,7 +185,7 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
               () =>
                 this.lock(
                   pipe(
-                    Effect.forkDaemon(this.initialize),
+                    Effect.forkDaemon(this.i0),
                     Effect.tap((fiber) =>
                       Effect.sync(() => MutableRef.set(this.initializeFiber, Option.some(fiber))),
                     ),
@@ -208,7 +218,7 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
                 Effect.suspend(() => {
                   MutableRef.set(this.current, Option.some(a2))
 
-                  if (this.eq(a1, a2)) {
+                  if (this.i1(a1, a2)) {
                     return Effect.succeed(b)
                   }
 
@@ -245,7 +255,29 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
     f: (a: A) => Effect.Effect<R2, E2, B>,
   ) => new ComputedImpl<never, E, A, R2, E2, B>(this, f)
 
-  readonly map: RefSubject<E, A>['map'] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)))
+  readonly map: RefSubject<E, A>['map'] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)));
+
+  [Equal.symbol](that: unknown) {
+    return this === that
+  }
+
+  [Hash.symbol]() {
+    return Hash.random(this)
+  }
+
+  traced(trace: Trace): Effect.Effect<never, E, A> {
+    if (trace) {
+      const traced = new RefSubjectImpl(this.i0, this.i1)
+      traced.trace = trace
+      return traced
+    }
+
+    return this
+  }
+
+  commit(): Effect.Effect<never, E, A> {
+    return this.get.traced(this.trace)
+  }
 }
 
 class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
@@ -264,21 +296,27 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
       }
     >
 {
+  readonly _tag = 'Commit'
+  public trace: Trace = undefined;
+
+  readonly [Effect.EffectTypeId] = refSubjectVariant;
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
 
+  readonly i1: Equivalence.Equivalence<{ readonly [K in keyof S]: Fx.OutputOf<S[K]> }>
+  public i2: any = undefined
+
   readonly lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
-  readonly eq: Equivalence.Equivalence<{ readonly [K in keyof S]: Fx.OutputOf<S[K]> }>
 
-  constructor(readonly subjects: S) {
-    super(combineAll(...subjects) as any)
+  constructor(readonly i0: S) {
+    super(combineAll(...i0) as any)
 
-    this.eq = Equivalence.tuple(...subjects.map((s) => s.eq)) as Equivalence.Equivalence<{
+    this.i1 = Equivalence.tuple(...i0.map((s) => s.i1)) as Equivalence.Equivalence<{
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }>
   }
 
   end() {
-    return Effect.all(this.subjects.map((s) => s.end()))
+    return Effect.all(this.i0.map((s) => s.end()))
   }
 
   readonly get: RefSubject<
@@ -288,7 +326,7 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
     }
   >['get'] = Effect.suspend(
     () =>
-      Effect.all(this.subjects.map((s) => s.get)) as Effect.Effect<
+      Effect.all(this.i0.map((s) => s.get)) as Effect.Effect<
         never,
         Fx.ErrorsOf<S[number]>,
         {
@@ -302,7 +340,7 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }) => Effect.Effect<R2, E2, readonly [B, { readonly [K in keyof S]: Fx.OutputOf<S[K]> }]>,
   ) {
-    const { current, subjects } = this
+    const { current, i0 } = this
 
     return pipe(
       this.get,
@@ -313,7 +351,7 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
 
             MutableRef.set(current, Option.some(a2))
 
-            yield* $(Effect.all(subjects.map((s, i) => s.set(a2[i]))))
+            yield* $(Effect.all(i0.map((s, i) => s.set(a2[i]))))
 
             return b
           }),
@@ -395,7 +433,41 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
     {
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }
-  >['map'] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)))
+  >['map'] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)));
+
+  [Equal.symbol](that: unknown) {
+    return this === that
+  }
+
+  [Hash.symbol]() {
+    return Hash.random(this)
+  }
+
+  traced(trace: Trace): Effect.Effect<
+    never,
+    Fx.ErrorsOf<S[number]>,
+    {
+      readonly [K in keyof S]: Fx.OutputOf<S[K]>
+    }
+  > {
+    if (trace) {
+      const traced = new TupleRefSubjectImpl(this.i0)
+      traced.trace = trace
+      return traced
+    }
+
+    return this
+  }
+
+  commit(): Effect.Effect<
+    never,
+    Fx.ErrorsOf<S[number]>,
+    {
+      readonly [K in keyof S]: Fx.OutputOf<S[K]>
+    }
+  > {
+    return this.get.traced(this.trace)
+  }
 }
 
 class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
@@ -414,26 +486,32 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
       }
     >
 {
+  readonly _tag = 'Commit'
+  public trace: Trace = undefined;
+
+  readonly [Effect.EffectTypeId] = refSubjectVariant;
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
 
-  readonly lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
-  readonly eq: Equivalence.Equivalence<{ readonly [K in keyof S]: Fx.OutputOf<S[K]> }>
+  readonly i1: Equivalence.Equivalence<{ readonly [K in keyof S]: Fx.OutputOf<S[K]> }>
+  public i2: any = undefined
 
-  constructor(readonly subjects: S) {
+  readonly lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
+
+  constructor(readonly i0: S) {
     super(
       map(
-        combineAll(...Object.entries(subjects).map(([k, s]) => map(s, (x) => [k, x]))),
+        combineAll(...Object.entries(i0).map(([k, s]) => map(s, (x) => [k, x]))),
         Object.fromEntries,
       ) as any,
     )
 
-    this.eq = Equivalence.struct(RR.map(subjects, (s) => s.eq)) as Equivalence.Equivalence<{
+    this.i1 = Equivalence.struct(RR.map(i0, (s) => s.i1)) as Equivalence.Equivalence<{
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }>
   }
 
   end() {
-    return Effect.all(RR.map(this.subjects, (s) => s.end()))
+    return Effect.all(RR.map(this.i0, (s) => s.end()))
   }
 
   readonly get: RefSubject<
@@ -443,7 +521,7 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
     }
   >['get'] = Effect.suspend(
     () =>
-      Effect.all(RR.map(this.subjects, (s) => s.get)) as Effect.Effect<
+      Effect.all(RR.map(this.i0, (s) => s.get)) as Effect.Effect<
         never,
         Fx.ErrorsOf<S[number]>,
         {
@@ -457,7 +535,7 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }) => Effect.Effect<R2, E2, readonly [B, { readonly [K in keyof S]: Fx.OutputOf<S[K]> }]>,
   ) {
-    const { current, subjects } = this
+    const { current, i0: subjects } = this
 
     return pipe(
       this.get,
@@ -550,7 +628,41 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
     {
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }
-  >['map'] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)))
+  >['map'] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)));
+
+  [Equal.symbol](that: unknown) {
+    return this === that
+  }
+
+  [Hash.symbol]() {
+    return Hash.random(this)
+  }
+
+  traced(trace: Trace): Effect.Effect<
+    never,
+    Fx.ErrorsOf<S[number]>,
+    {
+      readonly [K in keyof S]: Fx.OutputOf<S[K]>
+    }
+  > {
+    if (trace) {
+      const traced = new StructRefSubjectImpl(this.i0)
+      traced.trace = trace
+      return traced
+    }
+
+    return this
+  }
+
+  commit(): Effect.Effect<
+    never,
+    Fx.ErrorsOf<S[number]>,
+    {
+      readonly [K in keyof S]: Fx.OutputOf<S[K]>
+    }
+  > {
+    return this.get.traced(this.trace)
+  }
 }
 
 class ComputedImpl<R, E, A, R2, E2, B> implements Computed<R | R2, E | E2, B> {
@@ -560,33 +672,58 @@ class ComputedImpl<R, E, A, R2, E2, B> implements Computed<R | R2, E | E2, B> {
     _A: identity,
   }
 
-  readonly fx: Fx<R | R2, E | E2, B>
+  readonly _tag = 'Commit'
+  public trace: Trace = undefined;
 
-  constructor(
-    readonly computed: Computed<R, E, A>,
-    readonly f: (a: A) => Effect.Effect<R2, E2, B>,
-  ) {
+  readonly [Effect.EffectTypeId] = refSubjectVariant;
+  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
+
+  readonly i2: Fx<R | R2, E | E2, B>
+
+  constructor(readonly i0: Computed<R, E, A>, readonly i1: (a: A) => Effect.Effect<R2, E2, B>) {
     // Create a stable reference to derived Fx
-    this.fx = multicast(switchMapEffect(this.computed, this.f))
+    this.i2 = multicast(switchMapEffect(this.i0, this.i1))
   }
 
   run<R3>(sink: Sink<R3, E | E2, B>) {
-    return this.fx.run(sink)
+    return this.i2.run(sink)
   }
 
-  traced(trace: Trace): Fx<R | R2, E | E2, B> {
+  addTrace(trace: Trace): Fx<R | R2, E | E2, B> {
     return Traced<R | R2, E | E2, B>(this, trace)
   }
 
-  readonly get = Effect.flatMap(this.computed.get, this.f)
+  readonly get = Effect.flatMap(this.i0.get, this.i1)
 
   readonly mapEffect: Computed<R | R2, E | E2, B>['mapEffect'] = <R3, E3, C>(
     f: (b: B) => Effect.Effect<R3, E3, C>,
   ): Computed<R | R2 | R3, E | E2 | E3, C> =>
-    new ComputedImpl<R | R2, E | E2, B, R3, E3, C>(this, f)
+    new ComputedImpl(this.i0, (a) => Effect.flatMap(this.i1(a), f))
 
   readonly map: Computed<R | R2, E | E2, B>['map'] = <C>(f: (b: B) => C) =>
-    this.mapEffect((a) => Effect.sync(() => f(a)))
+    this.mapEffect((a) => Effect.sync(() => f(a)));
+
+  [Equal.symbol](that: unknown) {
+    return this === that
+  }
+
+  [Hash.symbol]() {
+    return Hash.random(this)
+  }
+
+  traced(trace: Trace): Effect.Effect<R | R2, E | E2, B> {
+    if (trace) {
+      const traced = new ComputedImpl(this.i0, this.i1)
+      traced.trace = trace
+      return traced
+    }
+
+    return this
+  }
+
+  commit(): Effect.Effect<R | R2, E | E2, B> {
+    return this.get.traced(this.trace)
+  }
 }
 
 export function isRefSubject<E, A>(u: unknown): u is RefSubject<E, A> {

@@ -26,7 +26,7 @@ export class HoldFx<R, E, A> extends MulticastFx<R, E, A> {
     return super.run(sink)
   }
 
-  readonly traced = (trace: Trace): Fx<R, E, A> => {
+  readonly addTrace = (trace: Trace): Fx<R, E, A> => {
     return hold(Traced<R, E, A>(this.fx, trace))
   }
 
