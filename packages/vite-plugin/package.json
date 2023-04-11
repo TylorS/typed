@@ -19,13 +19,13 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.11.7",
+    "@effect/data": "^0.12.2",
     "@typed/compiler": "workspace:*",
     "fast-glob": "^3.2.12",
     "vavite": "^1.7.0",
     "vite": "^4.2.1",
     "vite-plugin-compression": "^0.5.1",
-    "vite-tsconfig-paths": "^4.0.8"
+    "vite-tsconfig-paths": "^4.1.0"
   },
   "peerDependencies": {
     "vite-node": "^0.28.3"
