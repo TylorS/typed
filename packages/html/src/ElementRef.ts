@@ -24,11 +24,7 @@ export function makeElementRef<A extends HTMLElement = HTMLElement>(): Effect.Ef
     Effect.map((subject): ElementRef<A> => {
       const element: Fx.Fx<never, never, A> = pipe(subject, Fx.compact, Fx.skipRepeats, Fx.hold)
 
-      return {
-        ...subject,
-        ...DomSource.make(element),
-        element,
-      }
+      return Object.assign(subject, DomSource.make(element), { element })
     }),
   )
 }
