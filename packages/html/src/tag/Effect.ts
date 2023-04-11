@@ -91,7 +91,7 @@ function unwrapEffectValues<Values extends Array<Placeholder<any>>>(
     for (let i = 0; i < values.length; i++) {
       const value = values[i]
 
-      if (Effect.isEffect(value)) {
+      if (Effect.isEffect(value) && !('element' in value)) {
         output.push(
           yield* $(
             value as any as Effect.Effect<Placeholder.ResourcesOf<Values[number]>, never, any>,

@@ -134,11 +134,13 @@ function unwrapFxValue(
     return Fx.combineAll(...value.map((v) => unwrapFxValue(template, v, index)))
   }
 
+  // If is an Fx, but not an ElementRef
   if (Fx.isFx(value) && !('element' in value)) {
     return value
   }
 
-  if (Effect.isEffect(value)) {
+  // If is an Effect but not an Element Ref
+  if (Effect.isEffect(value) && !('element' in value)) {
     const prevParts = template[index].split(/\s/g)
     const prev = prevParts[prevParts.length - 1].trim()
 
