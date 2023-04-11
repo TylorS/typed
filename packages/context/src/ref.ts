@@ -1,13 +1,14 @@
 import * as Context from '@effect/data/Context'
 import * as Debug from '@effect/data/Debug'
 import { equals } from '@effect/data/Equal'
+import { identity } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import * as Equivalence from '@effect/data/typeclass/Equivalence'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as Fx from '@typed/fx'
 
-export interface Ref<I, R, E, A> extends Context.Tag<I, Fx.RefSubject<E, A>> {
+export interface Ref<I, R, E, A> extends Context.Tag<I, Fx.RefSubject<E, A>>, Fx.Fx<I, E, A> {
   readonly identifier: I
 
   readonly eq: Equivalence.Equivalence<A>
@@ -45,6 +46,12 @@ export interface Ref<I, R, E, A> extends Context.Tag<I, Fx.RefSubject<E, A>> {
   readonly provideFx: <R2, E2, A2>(fx: Fx.Fx<R2, E2, A2>) => Fx.Fx<R | Exclude<R2, I>, E2, A2>
 }
 
+const refVariance: Fx.Fx<any, any, any>[Fx.FxTypeId] = {
+  _R: identity,
+  _E: identity,
+  _A: identity,
+}
+
 export const Ref: {
   <R, E, A>(initial: Effect.Effect<R, E, A>, eq?: Equivalence.Equivalence<A>): <const I>(
     identifier: I,
@@ -65,10 +72,14 @@ export const Ref: {
     ): Ref<I, R, E, A> {
       const tag = Context.Tag<I, Fx.RefSubject<E, A>>(identifier)
       const make = Fx.makeRef(initial, eq).traced(trace)
+      const fx = Fx.hold(Fx.fromFxEffect(tag))
 
       return Object.assign(tag, {
         identifier,
         eq,
+        [Fx.FxTypeId]: refVariance,
+        run: fx.run.bind(fx),
+        addTrace: fx.addTrace.bind(fx),
         get: Effect.flatMap(tag, (r) => r.get).traced(trace),
         modifyEffect: <R2, E2, A2>(f: (a: A) => Effect.Effect<R2, E2, readonly [A2, A]>) =>
           Effect.flatMap(tag, (r) => r.modifyEffect(f)).traced(trace),
