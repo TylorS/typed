@@ -766,6 +766,39 @@ export const take: {
   <R, E, A>(fx: Fx<R, E, A>, n: number): Fx<R, E, A>
 } = dualWithTrace(2, (trace) => (fx, n) => internal.take(fx, n).addTrace(trace))
 
+export const snapshotEffect: {
+  <R2, E2, B, R3, E3, A, C>(sampled: Fx<R2, E2, B>, f: (a: A, b: B) => Effect.Effect<R3, E3, C>): <
+    R,
+    E,
+  >(
+    fx: Fx<R, E, A>,
+  ) => Fx<R | R2 | R3, E | E2 | E3, C>
+
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    sampled: Fx<R2, E2, B>,
+    f: (a: A, b: B) => Effect.Effect<R3, E3, C>,
+  ): Fx<R | R2 | R3, E | E2 | E3, C>
+} = dualWithTrace(
+  3,
+  (trace) => (fx, sampled, f) => internal.snapshotEffect(fx, sampled, f).addTrace(trace),
+)
+
+export const snapshot: {
+  <R2, E2, B, A, C>(sampled: Fx<R2, E2, B>, f: (a: A, b: B) => C): <R, E>(
+    fx: Fx<R, E, A>,
+  ) => Fx<R | R2, E | E2, C>
+
+  <R, E, A, R2, E2, B, C>(fx: Fx<R, E, A>, sampled: Fx<R2, E2, B>, f: (a: A, b: B) => C): Fx<
+    R | R2,
+    E | E2,
+    C
+  >
+} = dualWithTrace(
+  3,
+  (trace) => (fx, sampled, f) => internal.snapshot(fx, sampled, f).addTrace(trace),
+)
+
 export const succeed: <A>(a: A) => Fx<never, never, A> = methodWithTrace(
   (trace) => (a) => internal.succeed(a).addTrace(trace),
 )
