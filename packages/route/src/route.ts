@@ -52,6 +52,10 @@ export interface Route<out R, out E, in out Path extends string> {
   readonly catchAll: <R2, E2>(
     f: (e: E) => Effect.Effect<R2, E2, Option.Option<P.ParamsOf<Path>>>,
   ) => Route<R | R2, E2, Path>
+
+  readonly onMatch: <R2, E2, B>(
+    f: (params: P.ParamsOf<Path>) => Effect.Effect<R2, E2, B>,
+  ) => Route<R | R2, E | E2, Path>
 }
 
 export function Route<R = never, E = never, Path extends string = string>(
@@ -66,6 +70,7 @@ export function Route<R = never, E = never, Path extends string = string>(
     concat: (r) => pipe(route, concat(r)),
     catchAllCause: (f) => Route(path, flow(match, Effect.catchAllCause(f))),
     catchAll: (f) => Route(path, flow(match, Effect.catchAll(f))),
+    onMatch: (f) => Route(path, flow(match, Effect.tap(Option.match(Effect.unit, f)))),
   }
 
   return route
