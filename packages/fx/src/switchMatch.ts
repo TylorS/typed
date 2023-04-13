@@ -19,7 +19,7 @@ export function switchMatchCause<R, E, A, R2, E2, B, R3, E3, C>(
         const switchWith = (f: () => Fx<R2 | R3, E2 | E3, B | C>) =>
           RefS.updateEffect(ref, (currentFiber) =>
             pipe(
-              currentFiber ? Fiber.interrupt(currentFiber) : Effect.unit(),
+              currentFiber ? Fiber.interruptFork(currentFiber) : Effect.unit(),
               Effect.flatMap(() =>
                 pipe(
                   f().run(
