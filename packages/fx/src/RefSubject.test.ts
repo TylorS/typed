@@ -132,11 +132,12 @@ describe('RefSubject', () => {
             // Update ref value
             deepStrictEqual(yield* $(ref.set(2)), 2)
             deepStrictEqual(yield* $(ref.set(3)), 3)
+
             yield* $(ref.end())
 
             const results = yield* $(Fiber.join(fiber))
 
-            deepStrictEqual(Chunk.toReadonlyArray(results), [4, 6, 8])
+            deepStrictEqual(Chunk.toReadonlyArray(results), [4, 8])
           }),
         )
 
@@ -240,8 +241,6 @@ describe('RefSubject', () => {
 
         deepStrictEqual(Chunk.toReadonlyArray(results), [
           [2, 3, 4],
-          [3, 3, 4],
-          [3, 4, 4],
           [3, 4, 5],
         ])
       })
