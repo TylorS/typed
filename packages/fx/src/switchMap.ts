@@ -17,7 +17,7 @@ export function switchMap<R, E, A, R2, E2, B>(
         const switchEvent = (a: A) =>
           RefS.updateEffect(ref, (currentFiber) =>
             pipe(
-              currentFiber ? Fiber.interruptFork(currentFiber) : Effect.unit(),
+              currentFiber ? Fiber.interrupt(currentFiber) : Effect.unit(),
               Effect.flatMap(() =>
                 pipe(
                   f(a).run(

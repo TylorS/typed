@@ -20,11 +20,9 @@ export function observe<R, E, A, R2, E2>(
       ),
     )
 
-    const a = yield* $(Deferred.await(deferred))
+    yield* $(Deferred.await(deferred))
 
     yield* $(Fiber.interruptFork(fiber))
-
-    return a
   })
 }
 
