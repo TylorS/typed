@@ -60,3 +60,8 @@ declare global {
   export interface HTMLElement extends Placeholder {}
   export interface SVGElement extends Placeholder {}
 }
+
+declare module '@typed/fx' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export interface Fx<R, E, A> extends Placeholder<R, E> {}
+}

@@ -1,6 +1,5 @@
 import instrument from '@webreflection/uparser'
 
-import type { Hole } from './Hole.js'
 import type { TemplateCache, TemplateHole } from './TemplateCache.js'
 import { createContent } from './createContent.js'
 import { createPath } from './paths.js'
@@ -16,14 +15,13 @@ export function stripHoleComments(html: string) {
 // a RegExp that helps checking nodes that cannot contain comments
 const TEXT_ONLY_NODES_REGEX = /^(?:textarea|script|style|title|plaintext|xmp)$/
 
-export function parseTemplate(hole: Hole, document: Document) {
-  const isSvg = hole.type === 'svg'
-  const innerHtml = instrument(hole.template, PREFIX, isSvg)
+export function parseTemplate(template: TemplateStringsArray, document: Document, isSvg: boolean) {
+  const innerHtml = instrument(template, PREFIX, isSvg)
   const content = createContent(innerHtml, isSvg, document)
   const walker = document.createTreeWalker(content, 1 | 128)
 
   const holes: TemplateHole[] = []
-  const length = hole.template.length - 1
+  const length = template.length - 1
 
   let i = 0
   // updates are searched via unique names, linearly increased across the tree

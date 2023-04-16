@@ -17,7 +17,9 @@ export function runServerHandler(
   provide: (
     window: ReturnType<HtmlModule['makeWindow']>,
     parentElement: HTMLElement,
-  ) => (fx: Fx.Fx<IntrinsicServices, Redirect, Renderable>) => Fx.Fx<never, Redirect, Renderable>,
+  ) => <R>(
+    fx: Fx.Fx<R, Redirect, Renderable>,
+  ) => Fx.Fx<Exclude<R, IntrinsicServices>, Redirect, Renderable>,
 ): Effect.Effect<Scope.Scope, never, Exit.Exit<Redirect, string>> {
   return Effect.gen(function* ($) {
     const window = htmlModule.makeWindow({ url })

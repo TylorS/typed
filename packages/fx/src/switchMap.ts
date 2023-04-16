@@ -1,50 +1,46 @@
 import { pipe } from '@effect/data/Function'
 
 import { Fx, Sink } from './Fx.js'
-import { Cause, Effect, Fiber, RefS } from './externals.js'
+import { Cause, Effect, Fiber, Runtime } from './externals.js'
 import { fromEffect } from './fromEffect.js'
 
 export function switchMap<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
   f: (a: A) => Fx<R2, E2, B>,
 ): Fx<R | R2, E | E2, B> {
-  return Fx((sink) =>
-    Effect.scoped(
-      Effect.gen(function* ($) {
-        const ref = yield* $(RefS.make<Fiber.RuntimeFiber<never, void> | null>(null))
-        const reset = RefS.set(ref, null)
+  return Fx(<R3>(sink: Sink<R3, E | E2, B>) =>
+    Effect.gen(function* ($) {
+      const runFork = Runtime.runFork(yield* $(Effect.runtime<R | R2 | R3>()))
+      let ref: Fiber.RuntimeFiber<never, void> | undefined
 
-        const switchEvent = (a: A) =>
-          RefS.updateEffect(ref, (currentFiber) =>
+      const switchEvent = (a: A) =>
+        Effect.gen(function* ($) {
+          if (ref) {
+            yield* $(Fiber.interruptFork(ref))
+          }
+
+          ref = runFork(
             pipe(
-              currentFiber ? Fiber.interruptFork(currentFiber) : Effect.unit(),
-              Effect.flatMap(() =>
-                pipe(
-                  f(a).run(
-                    Sink(sink.event, (cause) =>
-                      Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
-                    ),
-                  ),
-                  Effect.zipLeft(reset),
-                  Effect.catchAllCause((cause) =>
-                    Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
-                  ),
-                  Effect.forkScoped,
+              f(a).run(
+                Sink(sink.event, (cause) =>
+                  Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
                 ),
+              ),
+              Effect.zipLeft(Effect.sync(() => (ref = undefined))),
+              Effect.catchAllCause((cause) =>
+                Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
               ),
             ),
           )
+        })
 
-        yield* $(fx.run(Sink(switchEvent, sink.error)))
+      yield* $(fx.run(Sink(switchEvent, sink.error)))
 
-        // Wait for the last fiber to finish
-        const fiber = yield* $(RefS.get(ref))
-
-        if (fiber) {
-          yield* $(Fiber.join(fiber))
-        }
-      }),
-    ),
+      // Wait for the last fiber to finish
+      if (ref) {
+        yield* $(Fiber.join(ref))
+      }
+    }),
   )
 }
 

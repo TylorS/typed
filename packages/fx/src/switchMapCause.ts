@@ -1,7 +1,7 @@
 import { pipe } from '@effect/data/Function'
 
 import { Fx, Sink } from './Fx.js'
-import { Cause, Effect, Either, Fiber, RefS } from './externals.js'
+import { Cause, Duration, Effect, Either, Fiber, RefS } from './externals.js'
 import { failCause } from './failCause.js'
 import { fromEffect } from './fromEffect.js'
 
@@ -37,6 +37,8 @@ export function switchMapCause<R, E, A, R2, E2, B>(
           )
 
         yield* $(fx.run(Sink(sink.event, switchError)))
+
+        yield* $(Effect.sleep(Duration.millis(0)))
 
         // Wait for the last fiber to finish
         const fiber = yield* $(RefS.get(ref))

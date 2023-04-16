@@ -1,6 +1,5 @@
 import { flow, pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
-import * as Layer from '@effect/io/Layer'
 import { type DomServices, makeDomServices } from '@typed/dom/DomServices'
 import type { GlobalThis } from '@typed/dom/GlobalThis'
 import type { Window } from '@typed/dom/Window'
@@ -29,23 +28,24 @@ export function provideIntrinsics(options: ProvideIntrinsicsOptions) {
       Fx.provideSomeContext<DomServices>(
         makeDomServices(options.window, options.globalThis, options.parentElement),
       ),
+      Fx.scoped,
     ) as any
 }
 
 export function provideIntrinsicsEffect(options: ProvideIntrinsicsOptions) {
-  return <E, A>(effect: Effect.Effect<IntrinsicServices, E, A>): Effect.Effect<never, E, A> =>
+  return <R, E, A>(
+    effect: Effect.Effect<R, E, A>,
+  ): Effect.Effect<Exclude<R, IntrinsicServices>, E, A> =>
     pipe(
       effect,
       Effect.provideSomeLayer(Router.live(options.currentPath)),
-      RenderContext.provide(RenderContext.make(options.environment, options.isBot)),
-      Effect.provideSomeLayer<never, never, DomServices>(
-        Layer.effectContext(
-          Effect.succeed(
-            makeDomServices(options.window, options.globalThis, options.parentElement),
-          ),
-        ),
+      Effect.provideSomeContext(
+        RenderContext.build(RenderContext.make(options.environment, options.isBot)).mergeContext(
+          makeDomServices(options.window, options.globalThis, options.parentElement),
+        ).context,
       ),
-    )
+      Effect.scoped,
+    ) as any
 }
 
 export type IntrinsicOptions = {

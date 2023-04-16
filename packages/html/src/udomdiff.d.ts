@@ -1,11 +1,11 @@
 declare module 'udomdiff' {
   const udomdiff: (
     parentNode: Node,
-    current: readonly Node[],
-    updated: readonly Node[],
+    current: Node[],
+    updated: Node[],
     get: (n: Node, x: number) => Node | DocumentFragment | null,
     before: Node,
-  ) => readonly Node[]
+  ) => Node[]
 
   export default udomdiff
 }

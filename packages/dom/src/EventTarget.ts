@@ -9,12 +9,12 @@ import type { DefaultEventMap } from './helpers.js'
 
 export function addEventListener<T extends EventTarget, EventName extends keyof DefaultEventMap<T>>(
   event: EventName,
-  options?: AddEventListenerOptions,
+  options?: AddEventListenerOptions | boolean,
 ): (target: T) => Fx.Fx<never, never, DefaultEventMap<T>[EventName]>
 
 export function addEventListener<T extends EventTarget, EventName extends string>(
   eventName: EventName,
-  options?: AddEventListenerOptions,
+  options?: AddEventListenerOptions | boolean,
 ): (target: T) => Fx.Fx<never, never, Event> {
   return (target: T): Fx.Fx<never, never, Event> =>
     Fx.fromEmitter(({ event }) => {
@@ -28,7 +28,7 @@ function addEventListener_(
   target: EventTarget,
   event: string,
   listener: EventListenerOrEventListenerObject,
-  options?: AddEventListenerOptions,
+  options?: AddEventListenerOptions | boolean,
 ): () => void {
   target.addEventListener(event, listener, options)
 

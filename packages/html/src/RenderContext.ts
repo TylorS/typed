@@ -1,3 +1,4 @@
+import type { Effect } from '@effect/io/Effect'
 import * as Context from '@typed/context'
 
 import type { RenderCache } from './RenderCache.js'
@@ -29,8 +30,14 @@ export const RenderContext = Object.assign(
   },
 )
 
-export const isStatic = RenderContext.with((ctx) => ctx.environment === 'static')
+export const isStatic: Effect<RenderContext, never, boolean> = RenderContext.with(
+  (ctx) => ctx.environment === 'static',
+)
 
-export const isBrowser = RenderContext.with((ctx) => ctx.environment === 'browser')
+export const isBrowser: Effect<RenderContext, never, boolean> = RenderContext.with(
+  (ctx) => ctx.environment === 'browser',
+)
 
-export const isServer = RenderContext.with((ctx) => ctx.environment === 'server')
+export const isServer: Effect<RenderContext, never, boolean> = RenderContext.with(
+  (ctx) => ctx.environment === 'server',
+)

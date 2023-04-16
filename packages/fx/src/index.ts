@@ -137,6 +137,11 @@ export const continueWithEffect: {
       internal.continueWithEffect(fx, f).addTrace(trace),
 )
 
+export const startWith: {
+  <B>(value: B): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A | B>
+  <R, E, A, B>(fx: Fx<R, E, A>, value: B): Fx<R, E, A | B>
+} = dualWithTrace(2, (trace) => (fx, value) => internal.startWith(fx, value).addTrace(trace))
+
 export const debounce: {
   (duration: Duration): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
   <R, E, A>(fx: Fx<R, E, A>, duration: Duration): Fx<R, E, A>
@@ -541,6 +546,11 @@ export const merge: {
   <R2, E2, B>(other: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A | B>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, other: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
 } = dualWithTrace(2, (trace) => (fx, other) => internal.merge(fx, other).addTrace(trace))
+
+export const mergeFirst: {
+  <R2, E2, B>(other: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, other: Fx<R2, E2, B>): Fx<R | R2, E | E2, A>
+} = dualWithTrace(2, (trace) => (fx, other) => internal.mergeFirst(fx, other).addTrace(trace))
 
 export const multicast: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = methodWithTrace(
   (trace) =>
@@ -1060,3 +1070,5 @@ export const toReadonlyArray: <R, E, A>(
 
 export * from './RefSubject.js'
 export * from './Subject.js'
+
+export * from './scoped.js'

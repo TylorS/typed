@@ -4,8 +4,8 @@ import { diffable } from './Wire.js'
 
 export function diffChildren(
   comment: Comment,
-  currentNodes: readonly Node[],
-  nextNodes: readonly Node[],
+  currentNodes: Node[],
+  nextNodes: Node[],
   document: Document,
 ) {
   return udomdiff(
