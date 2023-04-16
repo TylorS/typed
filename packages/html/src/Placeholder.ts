@@ -65,3 +65,8 @@ declare module '@typed/fx' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export interface Fx<R, E, A> extends Placeholder<R, E> {}
 }
+
+declare module '@effect/io/Effect' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export interface Effect<R, E, A> extends Placeholder<R, E> {}
+}

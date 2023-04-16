@@ -292,6 +292,9 @@ function updateEvent<R, E>(
   value: Placeholder<R, E> | null | undefined,
 ): Effect.Effect<R | Scope.Scope, E, void> {
   const [handler, options] = getEventHandlerAndOptions(value)
+  if (!handler) {
+    return Effect.unit()
+  }
 
   return pipe(
     node,
@@ -306,7 +309,7 @@ function updateEvent<R, E>(
 function getEventHandlerAndOptions(
   value: any,
 ): readonly [
-  (event: any) => Effect.Effect<any, never, void>,
+  undefined | ((event: any) => Effect.Effect<any, never, void>),
   boolean | AddEventListenerOptions | undefined,
 ] {
   if (value instanceof EventHandlerImplementation) {
@@ -315,6 +318,10 @@ function getEventHandlerAndOptions(
 
   if (Effect.isEffect(value)) {
     return [() => value, undefined] as any
+  }
+
+  if (!value) {
+    return [undefined, undefined] as any
   }
 
   throw new Error(`Unexpected value for event handler: ${JSON.stringify(value)}`)
