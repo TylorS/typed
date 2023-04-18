@@ -36,7 +36,7 @@ export const boolean = fromSchema(S.boolean)
 export const bigint = fromSchema(S.bigint)
 export const symbol = fromSchema(S.symbol)
 export const object = fromSchema(S.object)
-export const date = fromSchema(S.date)
+export const Date = fromSchema(S.Date)
 
 const null_ = fromSchema(S.null)
 const undefined_ = fromSchema(S.undefined)

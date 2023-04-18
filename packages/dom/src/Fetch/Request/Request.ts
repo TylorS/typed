@@ -1,4 +1,4 @@
-import * as Request from '@effect/query/Request'
+import * as Request from '@effect/io/Request'
 import type { ParseError } from '@effect/schema/ParseResult'
 import type { Schema } from '@effect/schema/Schema'
 import type { Decoder } from '@typed/decoder'

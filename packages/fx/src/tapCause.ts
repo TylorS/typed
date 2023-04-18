@@ -32,7 +32,7 @@ export function tapError<R, E, A, R2, E2, B>(
   f: (error: E) => Effect.Effect<R, E2, B>,
 ): Fx<R | R2, E | E2, A> {
   return tapCause(fx, (cause) =>
-    pipe(Cause.failureOrCause(cause), Effect.fromEither, Effect.matchEffect(f, Effect.failCause)),
+    pipe(Cause.failureOrCause(cause), Effect.matchEffect(f, Effect.failCause)),
   )
 }
 
