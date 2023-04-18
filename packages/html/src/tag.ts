@@ -90,7 +90,10 @@ function renderTemplate<Values extends ReadonlyArray<Placeholder<any, any> | und
       if (update) updates.push(update)
     }
 
-    return Fx.skipRepeatsWith(Fx.as(Fx.combineAll(...updates), wire.valueOf() as Node), strictEqual)
+    return Fx.skipRepeatsWith(
+      Fx.as(Fx.combineAllDiscard(...updates), wire.valueOf() as Node),
+      strictEqual,
+    )
   })
 }
 
@@ -182,13 +185,31 @@ function updateNode<R, E>(
   return Fx.map(unwrapPlaceholder(value), handleNode)
 }
 
+function unwrapPlaceholder<R, E>(
+  placeholder: Placeholder<R, E> | null | undefined,
+): Fx.Fx<R, E, unknown> {
+  if (Array.isArray(placeholder)) {
+    return Fx.combineAll(...placeholder.map(unwrapPlaceholder)) as any
+  }
+
+  if (Fx.isFx<R, E, unknown>(placeholder)) {
+    return placeholder
+  }
+
+  if (Effect.isEffect(placeholder)) {
+    return Fx.fromEffect(placeholder) as any
+  }
+
+  return Fx.succeed(placeholder)
+}
+
 function updateText<R, E>(
   node: Node,
   value: Placeholder<R, E> | null | undefined,
 ): Fx.Fx<R, E, unknown> | undefined {
   let oldValue: any
 
-  const handleText = (newValue: Placeholder<R, E>): void => {
+  const handleText = (newValue: any): void => {
     if (oldValue != newValue) {
       oldValue = newValue
       node.textContent = newValue == undefined ? '' : (newValue as string)
@@ -196,7 +217,7 @@ function updateText<R, E>(
   }
 
   if (Fx.isFx<R, E, unknown>(value)) {
-    return Fx.map(value as any, handleText)
+    return Fx.map(value, handleText)
   }
 
   if (Effect.isEffect(value)) {
@@ -204,7 +225,7 @@ function updateText<R, E>(
     return Fx.map(Fx.fromEffect<R, E, any>(value as any), handleText)
   }
 
-  handleText(value as any)
+  handleText(value)
 }
 
 function updateAttribute<R, E>(
@@ -240,7 +261,7 @@ function updateBoolean<R, E>(
 ): Fx.Fx<R, E, unknown> | undefined {
   let oldValue: any = false
 
-  const handleBoolean = (newValue: Placeholder<R, E>): void => {
+  const handleBoolean = (newValue: any): void => {
     if (oldValue != newValue) {
       const b = !!newValue
 
@@ -251,14 +272,14 @@ function updateBoolean<R, E>(
   }
 
   if (Fx.isFx<R, E, unknown>(value)) {
-    return Fx.map(value as any, handleBoolean)
+    return Fx.map(value, handleBoolean)
   }
 
   if (Effect.isEffect(value)) {
     return Fx.map(Fx.fromEffect<R, E, any>(value as any), handleBoolean)
   }
 
-  handleBoolean(value as any)
+  handleBoolean(value)
 }
 
 function updateProperty<R, E>(
@@ -268,7 +289,7 @@ function updateProperty<R, E>(
 ): Fx.Fx<R, E, unknown> | undefined {
   let oldValue: any
 
-  const handleProperty = (newValue: Placeholder<R, E>): void => {
+  const handleProperty = (newValue: any): void => {
     if (oldValue != newValue) {
       oldValue = newValue
       ;(node as any)[name] = newValue
@@ -276,14 +297,14 @@ function updateProperty<R, E>(
   }
 
   if (Fx.isFx<R, E, unknown>(value)) {
-    return Fx.map(value as any, handleProperty)
+    return Fx.map(value, handleProperty)
   }
 
   if (Effect.isEffect(value)) {
     return Fx.map(Fx.fromEffect<R, E, any>(value as any), handleProperty)
   }
 
-  handleProperty(value as any)
+  handleProperty(value)
 }
 
 function updateEvent<R, E>(
@@ -351,7 +372,7 @@ function updateAttr<R, E>(
   let oldValue: Placeholder<any, any>,
     orphan = true
   const attributeNode = document.createAttributeNS(null, name)
-  const handleAttr = (newValue: Placeholder<any, any>) => {
+  const handleAttr = (newValue: any) => {
     const value = getValue(newValue)
     if (oldValue !== value) {
       if ((oldValue = value) == null) {
@@ -370,30 +391,12 @@ function updateAttr<R, E>(
   }
 
   if (Fx.isFx<R, E, unknown>(value)) {
-    return Fx.map(value as any, handleAttr)
+    return Fx.map(value, handleAttr)
   }
 
   if (Effect.isEffect(value)) {
     return Fx.map(Fx.fromEffect<R, E, any>(value as any), handleAttr)
   }
 
-  handleAttr(value as any)
-}
-
-function unwrapPlaceholder<R, E>(
-  placeholder: Placeholder<R, E> | null | undefined,
-): Fx.Fx<R, E, unknown> {
-  if (Array.isArray(placeholder)) {
-    return Fx.combineAll(...placeholder.map(unwrapPlaceholder)) as any
-  }
-
-  if (Fx.isFx<R, E, unknown>(placeholder)) {
-    return placeholder
-  }
-
-  if (Effect.isEffect(placeholder)) {
-    return Fx.fromEffect(placeholder) as any
-  }
-
-  return Fx.succeed(placeholder)
+  handleAttr(value)
 }

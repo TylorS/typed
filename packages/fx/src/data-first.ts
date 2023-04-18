@@ -1,6 +1,7 @@
 export * from './at.js'
 export * from './catchAllCause.js'
 export * from './combineAll.js'
+export * from './combineAllDiscard.js'
 export * from './continueWith.js'
 export * from './debounce.js'
 export * from './delay.js'

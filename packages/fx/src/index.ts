@@ -106,6 +106,15 @@ export const combine: {
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, other: Fx<R2, E2, B>): Fx<R | R2, E | E2, readonly [A, B]>
 } = dualWithTrace(2, (trace) => (fx, other) => internal.combine(fx, other).addTrace(trace))
 
+export const combineAllDiscard: <FX extends readonly internal.Fx<any, any, any>[]>(
+  ...fx: FX
+) => internal.Fx<internal.Fx.ResourcesOf<FX[number]>, internal.Fx.ErrorsOf<FX[number]>, void> =
+  methodWithTrace(
+    (trace) =>
+      (...fx) =>
+        internal.combineAllDiscard(...fx).addTrace(trace),
+  )
+
 export const continueWith: {
   <R2, E2, B>(f: () => Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A | B>
 
@@ -776,6 +785,9 @@ export const take: {
   <R, E, A>(fx: Fx<R, E, A>, n: number): Fx<R, E, A>
 } = dualWithTrace(2, (trace) => (fx, n) => internal.take(fx, n).addTrace(trace))
 
+export const scoped: <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, Scope.Scope>, E, A> =
+  methodWithTrace((trace) => (fx) => internal.scoped(fx).addTrace(trace))
+
 export const snapshotEffect: {
   <R2, E2, B, R3, E3, A, C>(sampled: Fx<R2, E2, B>, f: (a: A, b: B) => Effect.Effect<R3, E3, C>): <
     R,
@@ -1070,5 +1082,3 @@ export const toReadonlyArray: <R, E, A>(
 
 export * from './RefSubject.js'
 export * from './Subject.js'
-
-export * from './scoped.js'

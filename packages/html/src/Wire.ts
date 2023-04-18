@@ -21,16 +21,17 @@ const remove = ({ firstChild, lastChild }: Node, document: Document): Node => {
   return firstChild as Node
 }
 
-export const diffable = (document: Document) => (node: Node, operation: number) =>
-  node.nodeType === nodeType
-    ? 1 / operation < 0
-      ? operation
-        ? remove(node, document)
-        : (node.lastChild as Node)
-      : operation
-      ? (node.valueOf() as Node)
-      : (node.firstChild as Node)
-    : node
+export const diffable =
+  (document: Document) =>
+  (node: Node, operation: number): Node | null => {
+    if (node.nodeType !== nodeType) return node
+
+    if (1 / operation < 0) {
+      return operation ? remove(node, document) : node.lastChild
+    }
+
+    return operation ? (node.valueOf() as Node) : node.firstChild
+  }
 
 export const persistent = (fragment: DocumentFragment): DocumentFragment | Node | Wire => {
   const { childNodes } = fragment
@@ -52,10 +53,9 @@ export const persistent = (fragment: DocumentFragment): DocumentFragment | Node 
     nodeType,
     firstChild,
     lastChild,
-    valueOf() {
+    valueOf(): DocumentFragment {
       if (childNodes.length !== length) {
-        let i = 0
-        while (i < length) fragment.appendChild(nodes[i++])
+        fragment.append(...nodes)
       }
       return fragment
     },
