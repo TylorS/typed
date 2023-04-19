@@ -10,11 +10,13 @@ import { EventHandlerImplementation } from './EventHandler.js'
 import type { Placeholder } from './Placeholder.js'
 import { RenderContext } from './RenderContext.js'
 import type { AttributeTemplateHole, TemplateCache, TemplateHole } from './TemplateCache.js'
-import { persistent } from './Wire.js'
+import { Wire, persistent } from './Wire.js'
 import { diffChildren } from './diffChildren.js'
 import { parseTemplate } from './parseTemplate.js'
 import { findPath } from './paths.js'
 import { getRenderHoleContext } from './render.js'
+
+const strictEqual = (x: any, y: any): boolean => x === y
 
 export function html<Values extends ReadonlyArray<Placeholder<any, any> | undefined | null>>(
   template: TemplateStringsArray,
@@ -22,7 +24,7 @@ export function html<Values extends ReadonlyArray<Placeholder<any, any> | undefi
 ): Fx.Fx<
   Document | RenderContext | Scope.Scope | Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
-  HTMLElement | DocumentFragment
+  HTMLElement | DocumentFragment | Wire
 > {
   return renderTemplate(template, values, false)
 }
@@ -70,7 +72,7 @@ function renderTemplate<Values extends ReadonlyArray<Placeholder<any, any> | und
     const wire = persistent(fragment)
 
     if (values.length === 0) {
-      return Fx.succeed(wire.valueOf() as Node)
+      return Fx.succeed(wire)
     }
 
     const updates: Array<
@@ -88,7 +90,9 @@ function renderTemplate<Values extends ReadonlyArray<Placeholder<any, any> | und
       if (update) updates.push(update)
     }
 
-    return Fx.map(Fx.combineAllDiscard(...updates), () => wire.valueOf() as Node)
+    if (updates.length === 0) return Fx.succeed(wire)
+
+    return Fx.skipRepeatsWith(Fx.as(Fx.combineAllDiscard(...updates), wire), strictEqual)
   })
 }
 
@@ -137,20 +141,16 @@ function updateNode<R, E>(
       // null, and undefined are used to cleanup previous content
       case 'object':
       case 'undefined': {
-        oldValue = newValue
-
         if (newValue == null) {
           if (oldValue === newValue) {
             return
           }
+
           nodes = diffChildren(comment, nodes, [], document)
           break
         }
         // arrays and nodes have a special treatment
         if (Array.isArray(newValue)) {
-          if (oldValue === newValue) {
-            return
-          }
           // arrays can be used to cleanup, if empty
           if (newValue.length === 0) nodes = diffChildren(comment, nodes, [], document)
           // or diffed, if these contains nodes or "wires"
@@ -161,20 +161,28 @@ function updateNode<R, E>(
           break
         }
 
+        if (oldValue === newValue) {
+          return
+        }
+
+        oldValue = newValue
+
         // if the new value is a DOM node, or a wire, and it's
         // different from the one already live, then it's diffed.
         // if the node is a fragment, it's appended once via its childNodes
         // There is no `else` here, meaning if the content
         // is not expected one, nothing happens, as easy as that.
         if ('ELEMENT_NODE' in newValue) {
+          const node = newValue.nodeType === 111 ? (newValue.valueOf() as Node) : newValue
+
           nodes = diffChildren(
             comment,
             nodes,
-            (newValue as DocumentFragment).nodeType === 11
-              ? Array.from((newValue as DocumentFragment).childNodes)
-              : [newValue.valueOf() as Node],
+            node.nodeType === 11 ? Array.from(node.childNodes) : [node],
             document,
           )
+        } else {
+          handleNode(newValue.valueOf())
         }
 
         break

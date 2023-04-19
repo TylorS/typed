@@ -55,7 +55,8 @@ export const persistent = (fragment: DocumentFragment): DocumentFragment | Node 
     lastChild,
     valueOf(): DocumentFragment {
       if (childNodes.length !== length) {
-        fragment.append(...nodes)
+        let i = 0
+        while (i < length) fragment.append(nodes[i++])
       }
       return fragment
     },
