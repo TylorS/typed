@@ -16,8 +16,6 @@ import { parseTemplate } from './parseTemplate.js'
 import { findPath } from './paths.js'
 import { getRenderHoleContext } from './render.js'
 
-const strictEqual = (x: any, y: any): boolean => x === y
-
 export function html<Values extends ReadonlyArray<Placeholder<any, any> | undefined | null>>(
   template: TemplateStringsArray,
   ...values: Values
@@ -90,10 +88,7 @@ function renderTemplate<Values extends ReadonlyArray<Placeholder<any, any> | und
       if (update) updates.push(update)
     }
 
-    return Fx.skipRepeatsWith(
-      Fx.as(Fx.combineAllDiscard(...updates), wire.valueOf() as Node),
-      strictEqual,
-    )
+    return Fx.map(Fx.combineAllDiscard(...updates), () => wire.valueOf() as Node)
   })
 }
 
@@ -123,15 +118,14 @@ function updateNode<R, E>(
     nodes: Node[] = []
 
   const handleNode = (newValue: any): void => {
-    if (oldValue === newValue) {
-      return
-    }
-
     switch (typeof newValue) {
       // primitives are handled as text content
       case 'string':
       case 'number':
       case 'boolean': {
+        if (oldValue === newValue) {
+          return
+        }
         oldValue = newValue
 
         if (!text) text = document.createTextNode('')
@@ -146,11 +140,17 @@ function updateNode<R, E>(
         oldValue = newValue
 
         if (newValue == null) {
+          if (oldValue === newValue) {
+            return
+          }
           nodes = diffChildren(comment, nodes, [], document)
           break
         }
         // arrays and nodes have a special treatment
         if (Array.isArray(newValue)) {
+          if (oldValue === newValue) {
+            return
+          }
           // arrays can be used to cleanup, if empty
           if (newValue.length === 0) nodes = diffChildren(comment, nodes, [], document)
           // or diffed, if these contains nodes or "wires"
@@ -170,8 +170,8 @@ function updateNode<R, E>(
           nodes = diffChildren(
             comment,
             nodes,
-            (newValue as SVGElement).nodeType === 11
-              ? Array.from((newValue as SVGElement).childNodes)
+            (newValue as DocumentFragment).nodeType === 11
+              ? Array.from((newValue as DocumentFragment).childNodes)
               : [newValue.valueOf() as Node],
             document,
           )
