@@ -117,21 +117,20 @@ function updateNode<R, E>(
   document: Document,
   value: Placeholder<R, E> | null | undefined,
 ): Fx.Fx<R, E, unknown> {
-  let oldValue: Placeholder<any>,
+  let oldValue: any,
     text: Text,
     nodes: Node[] = []
 
   const handleNode = (newValue: any): void => {
+    if (oldValue === newValue) return
+
+    oldValue = newValue
+
     switch (typeof newValue) {
       // primitives are handled as text content
       case 'string':
       case 'number':
       case 'boolean': {
-        if (oldValue === newValue) {
-          return
-        }
-        oldValue = newValue
-
         if (!text) text = document.createTextNode('')
         text.data = String(newValue)
 
@@ -142,15 +141,10 @@ function updateNode<R, E>(
       case 'object':
       case 'undefined': {
         if (newValue == null) {
-          if (oldValue === newValue) {
-            return
-          }
-
           nodes = diffChildren(comment, nodes, [], document)
-          break
         }
         // arrays and nodes have a special treatment
-        if (Array.isArray(newValue)) {
+        else if (Array.isArray(newValue)) {
           // arrays can be used to cleanup, if empty
           if (newValue.length === 0) nodes = diffChildren(comment, nodes, [], document)
           // or diffed, if these contains nodes or "wires"
@@ -158,31 +152,8 @@ function updateNode<R, E>(
             nodes = diffChildren(comment, nodes, newValue, document)
           // in all other cases the content is stringified as is
           else handleNode(String(newValue))
-          break
-        }
-
-        if (oldValue === newValue) {
-          return
-        }
-
-        oldValue = newValue
-
-        // if the new value is a DOM node, or a wire, and it's
-        // different from the one already live, then it's diffed.
-        // if the node is a fragment, it's appended once via its childNodes
-        // There is no `else` here, meaning if the content
-        // is not expected one, nothing happens, as easy as that.
-        if ('ELEMENT_NODE' in newValue) {
-          const node = newValue.nodeType === 111 ? (newValue.valueOf() as Node) : newValue
-
-          nodes = diffChildren(
-            comment,
-            nodes,
-            node.nodeType === 11 ? Array.from(node.childNodes) : [node],
-            document,
-          )
         } else {
-          handleNode(newValue.valueOf())
+          nodes = diffChildren(comment, nodes, [newValue], document)
         }
 
         break
