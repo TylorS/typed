@@ -16,7 +16,7 @@ export function switchMap<R, E, A, R2, E2, B>(
       const switchEvent = (a: A) =>
         Effect.gen(function* ($) {
           if (ref) {
-            yield* $(Fiber.interruptFork(ref))
+            yield* $(Fiber.interrupt(ref))
           }
 
           ref = runFork(

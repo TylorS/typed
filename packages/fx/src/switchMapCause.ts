@@ -19,7 +19,7 @@ export function switchMapCause<R, E, A, R2, E2, B>(
       const switchError = (cause: Cause.Cause<E>) =>
         RefS.updateEffect(ref, (currentFiber) =>
           pipe(
-            currentFiber ? Fiber.interruptFork(currentFiber) : Effect.unit(),
+            currentFiber ? Fiber.interrupt(currentFiber) : Effect.unit(),
             Effect.map(() =>
               pipe(
                 f(cause).run(

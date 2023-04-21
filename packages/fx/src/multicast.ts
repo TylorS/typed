@@ -47,7 +47,7 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return yield* $(Fiber.join(that.fiber!))
+        yield* $(Fiber.await(that.fiber!))
       }),
       () => this.removeSink(sink),
     )
