@@ -37,7 +37,7 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
 
-    return Effect.catchAllCause(
+    return Effect.onExit(
       Effect.gen(function* ($) {
         const context = yield* $(Effect.context<R2>())
         const observer: MulticastObserver<R2, E, A> = { sink, context }
@@ -48,9 +48,6 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         yield* $(Fiber.join(that.fiber!))
-
-        that.fiber = undefined
-        that.observers = []
       }),
       () => this.removeSink(sink),
     )
