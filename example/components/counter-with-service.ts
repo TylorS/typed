@@ -14,7 +14,7 @@ export const CounterName = Tag<CounterName>('CounterName')
 export const Counter = Fx.gen(function* ($) {
   const count = yield* $(Fx.makeRef(Effect.sync(() => 0)))
 
-  return html`
+  return html`<div>
     <button onclick=${count.update((x) => x - 1)}>Decrement</button>
     <button onclick=${count.update((x) => x + 1)}>Increment</button>
 
@@ -26,7 +26,7 @@ export const Counter = Fx.gen(function* ($) {
         ),
       )}
     </p>
-  `
+  </div>`
 })
 
 export const layer: (name: string) => Layer<never, never, CounterName> = (name) =>

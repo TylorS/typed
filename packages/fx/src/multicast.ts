@@ -37,19 +37,20 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
 
-    return Effect.onExit(
+    return Effect.uninterruptibleMask((restore) =>
       Effect.gen(function* ($) {
         const context = yield* $(Effect.context<R2>())
         const observer: MulticastObserver<R2, E, A> = { sink, context }
 
         if (observers.push(observer) === 1) {
-          that.fiber = yield* $(Effect.forkDaemon(that.fx.run(that)))
+          that.fiber = yield* $(Effect.forkDaemon(restore(that.fx.run(that))))
         }
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        yield* $(Fiber.join(that.fiber!))
+        yield* $(restore(Fiber.await(that.fiber!)))
+
+        yield* $(that.removeSink(sink))
       }),
-      () => this.removeSink(sink),
     )
   }
 
@@ -90,9 +91,15 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
         this.observers.splice(index, 1)
       }
 
+      console.log('removed sink', this.observers.length)
+
       if (this.observers.length === 0) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return Fiber.interrupt(this.fiber!)
+        const interrupt = Fiber.interrupt(this.fiber!)
+
+        this.fiber = undefined
+
+        return interrupt
       }
 
       return Effect.unit()
