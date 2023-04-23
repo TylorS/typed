@@ -69,10 +69,9 @@ function renderTemplate<Values extends ReadonlyArray<Placeholder<any, any> | und
 
     const { content, holes } = templateCache.get(template) as TemplateCache
     const fragment = document.importNode(content, true)
-    const wire = persistent(fragment)
 
     if (values.length === 0) {
-      return Fx.succeed(wire)
+      return Fx.succeed(persistent(fragment))
     }
 
     const updates: Array<
@@ -90,9 +89,13 @@ function renderTemplate<Values extends ReadonlyArray<Placeholder<any, any> | und
       if (update) updates.push(update)
     }
 
-    if (updates.length === 0) return Fx.succeed(wire)
+    if (updates.length === 0) return Fx.succeed(persistent(fragment))
 
-    return Fx.skipRepeatsWith(Fx.as(Fx.combineAllDiscard(...updates), wire), strictEqual)
+    let wire: Wire | Node | DocumentFragment
+    return Fx.skipRepeatsWith(
+      Fx.map(Fx.combineAllDiscard(...updates), () => wire || (wire = persistent(fragment))),
+      strictEqual,
+    )
   })
 }
 
@@ -104,11 +107,11 @@ function makeUpdate<R, E>(
 ): Effect.Effect<R | Scope.Scope, E, Fx.Fx<R, E, unknown> | undefined | void> {
   switch (templateHole.type) {
     case 'node':
-      return Effect.sync(() => updateNode(node as Comment, document, value))
+      return Effect.succeed(updateNode(node as Comment, document, value))
     case 'attr':
       return updateAttribute(node as Element, templateHole, document, value)
     case 'text':
-      return Effect.sync(() => updateText(node, value))
+      return Effect.succeed(updateText(node, value))
   }
 }
 
@@ -217,9 +220,9 @@ function updateAttribute<R, E>(
 
   switch (name[0]) {
     case '?':
-      return Effect.sync(() => updateBoolean(node, name.slice(1), value))
+      return Effect.succeed(updateBoolean(node, name.slice(1), value))
     case '.':
-      return Effect.sync(() => updateProperty(node, name.slice(1), value))
+      return Effect.succeed(updateProperty(node, name.slice(1), value))
     case '@':
       return updateEvent(node, name.slice(1), value)
     case 'o':
@@ -227,10 +230,10 @@ function updateAttribute<R, E>(
   }
 
   if (name === 'ref') {
-    return Effect.sync(() => updateRef(node, value))
+    return Effect.succeed(updateRef(node, value))
   }
 
-  return Effect.sync(() => updateAttr(node, name, document, value))
+  return Effect.succeed(updateAttr(node, name, document, value))
 }
 
 function updateBoolean<R, E>(

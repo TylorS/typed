@@ -12,7 +12,7 @@ export function diffChildren(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     comment.parentNode!,
     // Document Fragments cannot be removed, so we filter them out
-    currentNodes.filter((x) => x.nodeType !== x.DOCUMENT_FRAGMENT_NODE),
+    currentNodes,
     nextNodes,
     diffable(document),
     comment,

@@ -130,7 +130,7 @@ export const outlet: Fx.Fx<RenderContext | Router, Redirect, html.Renderable> =
         ? r.outlet
         : pipe(
             r.outlet,
-            Fx.skipUntil((x) => x !== null),
+            Fx.skipWhile((x) => x === null),
             Fx.take(1),
           ),
     ),
