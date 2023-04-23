@@ -1,6 +1,6 @@
 {
   "name": "@typed/cli",
-  "version": "0.11.7",
+  "version": "0.11.8",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
