@@ -1,6 +1,6 @@
 {
   "name": "@typed/error",
-  "version": "0.11.6",
+  "version": "0.11.7",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
