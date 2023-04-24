@@ -91,8 +91,6 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
         this.observers.splice(index, 1)
       }
 
-      console.log('removed sink', this.observers.length)
-
       if (this.observers.length === 0) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const interrupt = Fiber.interrupt(this.fiber!)
