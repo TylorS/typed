@@ -1,6 +1,6 @@
 {
   "name": "@typed/html",
-  "version": "3.11.10",
+  "version": "3.11.11",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
