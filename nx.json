@@ -20,6 +20,9 @@
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"]
+    },
+    "build:cjs": {
+      "dependsOn": ["^build:cjs"]
     }
   },
   "workspaceLayout": {
