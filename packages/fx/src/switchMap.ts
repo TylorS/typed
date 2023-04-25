@@ -1,46 +1,14 @@
-import { pipe } from '@effect/data/Function'
-
 import { Fx, Sink } from './Fx.js'
-import { Cause, Effect, Fiber, Runtime } from './externals.js'
+import { Effect } from './externals.js'
 import { fromEffect } from './fromEffect.js'
+import { withSwitch } from './helpers.js'
 
 export function switchMap<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
   f: (a: A) => Fx<R2, E2, B>,
 ): Fx<R | R2, E | E2, B> {
   return Fx(<R3>(sink: Sink<R3, E | E2, B>) =>
-    Effect.gen(function* ($) {
-      const runFork = Runtime.runFork(yield* $(Effect.runtime<R | R2 | R3>()))
-      let ref: Fiber.RuntimeFiber<never, void> | undefined
-
-      const switchEvent = (a: A) =>
-        Effect.gen(function* ($) {
-          if (ref) {
-            yield* $(Fiber.interruptFork(ref))
-          }
-
-          ref = runFork(
-            pipe(
-              f(a).run(
-                Sink(sink.event, (cause) =>
-                  Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
-                ),
-              ),
-              Effect.zipLeft(Effect.sync(() => (ref = undefined))),
-              Effect.catchAllCause((cause) =>
-                Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
-              ),
-            ),
-          )
-        })
-
-      yield* $(fx.run(Sink(switchEvent, sink.error)))
-
-      // Wait for the last fiber to finish
-      if (ref) {
-        yield* $(Fiber.join(ref))
-      }
-    }),
+    withSwitch((fork) => fx.run(Sink((a) => fork(f(a).run(sink)), sink.error))),
   )
 }
 
