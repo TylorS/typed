@@ -1,6 +1,6 @@
 {
   "name": "@typed/fx",
-  "version": "1.11.9",
+  "version": "1.11.10",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
