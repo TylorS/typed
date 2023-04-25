@@ -1,3 +1,4 @@
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import { describe, it, expect } from 'vitest'
@@ -8,6 +9,8 @@ import { flatMap } from './flatMap.js'
 import { fromArray } from './fromArray.js'
 import { merge } from './mergeAll.js'
 import { multicast } from './multicast.js'
+import { never } from './never.js'
+import { onInterrupt } from './onInterrupt.js'
 import { suspend } from './suspend.js'
 import { toChunk } from './toChunk.js'
 
@@ -57,6 +60,28 @@ describe(__filename, () => {
       })
 
       await Effect.runPromise(Effect.scoped(test))
+    })
+
+    describe('when all subscribers are interrupted', () => {
+      it('interrupts the underlying producer', async () => {
+        let interrupted = false
+        const test = Effect.gen(function* ($) {
+          const stream = pipe(
+            onInterrupt(never<never, number>(), () => Effect.sync(() => (interrupted = true))),
+            multicast,
+          )
+
+          const fiber1 = yield* $(Effect.fork(toChunk(stream)))
+          const fiber2 = yield* $(Effect.fork(toChunk(stream)))
+
+          yield* $(Fiber.interrupt(fiber1))
+          yield* $(Fiber.interrupt(fiber2))
+        })
+
+        await Effect.runPromise(Effect.scoped(test))
+
+        expect(interrupted).toEqual(true)
+      })
     })
   })
 })
