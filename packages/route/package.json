@@ -1,6 +1,6 @@
 {
   "name": "@typed/route",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@effect/data": "^0.12.2",
-    "@effect/io": "^0.25.2",
+    "@effect/io": "^0.25.5",
     "@typed/path": "workspace:*",
     "path-to-regexp": "^6.2.1"
   },

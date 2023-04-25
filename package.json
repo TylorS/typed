@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@effect/data": "^0.12.2",
-    "@effect/io": "^0.25.2",
+    "@effect/io": "^0.25.5",
     "@effect/language-service": "^0.0.19",
     "@effect/schema": "^0.17.2",
     "@rollup/pluginutils": "^5.0.2",

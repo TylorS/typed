@@ -7,8 +7,8 @@ importers:
         specifier: ^0.12.2
         version: 0.12.2
       '@effect/io':
-        specifier: ^0.25.2
-        version: 0.25.2
+        specifier: ^0.25.5
+        version: 0.25.5
       '@effect/language-service':
         specifier: ^0.0.19
         version: 0.0.19
@@ -308,8 +308,8 @@ importers:
         specifier: ^0.12.2
         version: 0.12.2
       '@effect/io':
-        specifier: ^0.25.2
-        version: 0.25.2
+        specifier: ^0.25.5
+        version: 0.25.5
       '@typed/fx':
         specifier: workspace:*
         version: link:../fx
@@ -320,8 +320,8 @@ importers:
         specifier: ^0.12.2
         version: 0.12.2
       '@effect/io':
-        specifier: ^0.25.2
-        version: 0.25.2
+        specifier: ^0.25.5
+        version: 0.25.5
       '@effect/schema':
         specifier: ^0.17.2
         version: 0.17.2
@@ -332,8 +332,8 @@ importers:
         specifier: ^0.12.2
         version: 0.12.2
       '@effect/io':
-        specifier: ^0.25.2
-        version: 0.25.2
+        specifier: ^0.25.5
+        version: 0.25.5
       '@effect/schema':
         specifier: ^0.17.2
         version: 0.17.2
@@ -353,8 +353,8 @@ importers:
   packages/error:
     dependencies:
       '@effect/io':
-        specifier: ^0.25.2
-        version: 0.25.2
+        specifier: ^0.25.5
+        version: 0.25.5
       '@typed/fx':
         specifier: workspace:*
         version: link:../fx
@@ -365,8 +365,8 @@ importers:
         specifier: ^0.12.2
         version: 0.12.2
       '@effect/io':
-        specifier: ^0.25.2
-        version: 0.25.2
+        specifier: ^0.25.5
+        version: 0.25.5
       '@effect/schema':
         specifier: ^0.17.2
         version: 0.17.2
@@ -423,8 +423,8 @@ importers:
         specifier: ^0.12.2
         version: 0.12.2
       '@effect/io':
-        specifier: ^0.25.2
-        version: 0.25.2
+        specifier: ^0.25.5
+        version: 0.25.5
     devDependencies:
       vitest:
         specifier: ^0.30.1
@@ -436,8 +436,8 @@ importers:
         specifier: ^0.12.2
         version: 0.12.2
       '@effect/io':
-        specifier: ^0.25.2
-        version: 0.25.2
+        specifier: ^0.25.5
+        version: 0.25.5
       '@typed/context':
         specifier: workspace:*
         version: link:../context
@@ -472,8 +472,8 @@ importers:
         specifier: ^0.12.2
         version: 0.12.2
       '@effect/io':
-        specifier: ^0.25.2
-        version: 0.25.2
+        specifier: ^0.25.5
+        version: 0.25.5
       '@typed/path':
         specifier: workspace:*
         version: link:../path
@@ -487,8 +487,8 @@ importers:
         specifier: ^0.12.2
         version: 0.12.2
       '@effect/io':
-        specifier: ^0.25.2
-        version: 0.25.2
+        specifier: ^0.25.5
+        version: 0.25.5
       '@typed/context':
         specifier: workspace:*
         version: link:../context
@@ -2152,10 +2152,10 @@ packages:
       }
     dev: false
 
-  /@effect/io@0.25.2:
+  /@effect/io@0.25.5:
     resolution:
       {
-        integrity: sha512-eGkx616RF3uUqhrHHeLGgZKXR8AXZdWrvwPnPdKSqXcr6Iu+8YqFQ73dCk5ujHfNVDLIHUSrI+kjAzLeKhVITg==,
+        integrity: sha512-/JVjyF7kSQKwV0o6gkeYvNOYc7iVgdW88DbDdua1X6upDYIiyHp3LwsbigwL0NU8j9w/INwxQ3hEwFio9TjUOQ==,
       }
     dependencies:
       '@effect/data': 0.12.2
@@ -2178,7 +2178,7 @@ packages:
       }
     dependencies:
       '@effect/data': 0.12.2
-      '@effect/io': 0.25.2
+      '@effect/io': 0.25.5
       fast-check: 3.8.1
     dev: false
 
@@ -5731,7 +5731,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001481
-      electron-to-chromium: 1.4.370
+      electron-to-chromium: 1.4.371
       node-releases: 2.0.10
       update-browserslist-db: 1.0.11(browserslist@4.21.5)
     dev: true
@@ -6951,10 +6951,10 @@ packages:
       jake: 10.8.5
     dev: true
 
-  /electron-to-chromium@1.4.370:
+  /electron-to-chromium@1.4.371:
     resolution:
       {
-        integrity: sha512-c+wzD4sCYQeNeasbnArwsU3ig6+lR6bwQmxfMjB6bx+XoopVSPFp+7ZLxqa90MTC+Tq9QQ5l7zsMNG9GgMBorg==,
+        integrity: sha512-jlBzY4tFcJaiUjzhRTCWAqRvTO/fWzjA3Bls0mykzGZ7zvcMP7h05W6UcgzfT9Ca1SW2xyKDOFRyI0pQeRNZGw==,
       }
     dev: true
 
