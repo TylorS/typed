@@ -153,7 +153,13 @@ function updateNode<R, E>(
           if (newValue.length === 0) nodes = diffChildren(comment, nodes, [], document)
           // or diffed, if these contains nodes or "wires"
           else if (newValue.some((x) => typeof x === 'object'))
-            nodes = diffChildren(comment, nodes, newValue, document)
+            nodes = diffChildren(
+              comment,
+              nodes,
+              // We can't diff null values, so we filter them out
+              newValue.filter((x) => x !== null),
+              document,
+            )
           // in all other cases the content is stringified as is
           else handleNode(String(newValue))
         } else {
