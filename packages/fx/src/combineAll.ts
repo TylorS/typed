@@ -28,9 +28,7 @@ export function combineAll<FX extends ReadonlyArray<Fx<any, any, any>>>(
       const emitIfReady = Effect.suspend(() =>
         values.size === length
           ? sink.event(
-              Array.from(values)
-                .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
-                .map((x) => x[1]) as {
+              Array.from({ length }, (_, i) => values.get(i)) as {
                 [k in keyof FX]: Fx.OutputOf<FX[k]>
               },
             )
