@@ -171,10 +171,23 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
 
   readonly end = methodWithTrace(
     (trace) => () =>
-      Effect.suspend(() => (this.fiber ? Fiber.interrupt(this.fiber) : Effect.unit())).traced(
-        trace,
-      ),
+      Effect.suspend(() =>
+        Effect.zipPar(this.interruptFibers(), this.interruptInitializeFiber()),
+      ).traced(trace),
   )
+
+  protected interruptFibers() {
+    return this.fiber ? Fiber.interrupt(this.fiber) : Effect.unit()
+  }
+
+  protected interruptInitializeFiber() {
+    const fiber = MutableRef.get(this.initializeFiber)
+    if (Option.isSome(fiber)) {
+      return Fiber.interrupt(fiber.value)
+    }
+
+    return Effect.unit()
+  }
 
   readonly get: RefSubject<E, A>['get'] = Effect.suspend(() =>
     pipe(
@@ -186,23 +199,25 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
             Option.match(
               () =>
                 this.lock(
-                  pipe(
-                    Effect.forkDaemon(this.i0),
-                    Effect.tap((fiber) =>
-                      Effect.sync(() => MutableRef.set(this.initializeFiber, Option.some(fiber))),
-                    ),
-                    Effect.flatMap(Fiber.join),
-                    Effect.tap((a) =>
-                      Effect.suspend(() => {
-                        MutableRef.set(this.current, Option.some(a))
-                        MutableRef.set(this.initializeFiber, Option.none())
+                  Effect.uninterruptibleMask((restore) =>
+                    pipe(
+                      Effect.forkDaemon(restore(this.i0)),
+                      Effect.tap((fiber) =>
+                        Effect.sync(() => MutableRef.set(this.initializeFiber, Option.some(fiber))),
+                      ),
+                      Effect.flatMap(Fiber.join),
+                      Effect.tap((a) =>
+                        Effect.suspend(() => {
+                          MutableRef.set(this.current, Option.some(a))
+                          MutableRef.set(this.initializeFiber, Option.none())
 
-                        return super.event(a)
-                      }),
+                          return super.event(a)
+                        }),
+                      ),
                     ),
                   ),
                 ),
-              (fiber) => Effect.flatMap(Fiber.await(fiber), Effect.done),
+              Fiber.join,
             ),
           ),
         Effect.succeed,
