@@ -3,8 +3,7 @@ import { identity } from '@effect/data/Function'
 
 import type { Fx, Sink } from './Fx.js'
 import { FxTypeId, Traced } from './Fx.js'
-import type { Cause, Context } from './externals.js'
-import { Effect, Fiber } from './externals.js'
+import { Cause, Context, Deferred, Effect, Fiber } from './externals.js'
 
 export function multicast<R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> {
   return new MulticastFx(fx)
@@ -13,6 +12,7 @@ export function multicast<R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> {
 export interface MulticastObserver<R, E, A> {
   readonly sink: Sink<R, E, A>
   readonly context: Context.Context<R>
+  readonly deferred: Deferred.Deferred<never, void>
 }
 
 export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
@@ -40,14 +40,21 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     return Effect.uninterruptibleMask((restore) =>
       Effect.gen(function* ($) {
         const context = yield* $(Effect.context<R2>())
-        const observer: MulticastObserver<R2, E, A> = { sink, context }
+        const deferred = yield* $(Deferred.make<never, void>())
+        const observer: MulticastObserver<R2, E, A> = { sink, context, deferred }
 
         if (observers.push(observer) === 1) {
-          that.fiber = yield* $(Effect.forkDaemon(restore(that.fx.run(that))))
+          that.fiber = yield* $(
+            that.fx.run(that),
+            restore,
+            Effect.onExit(() => that.runEnd()),
+            Effect.uninterruptible,
+            Effect.forkDaemon,
+          )
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        yield* $(Effect.ensuring(restore(Fiber.await(that.fiber!)), that.removeSink(sink)))
+        yield* $(Deferred.await(deferred))
+        yield* $(that.removeSink(sink))
       }),
     )
   }
@@ -62,22 +69,25 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     )
   }
 
-  error = (cause: Cause.Cause<E>) =>
-    Effect.suspend(() =>
+  error(cause: Cause.Cause<E>) {
+    return Effect.suspend(() =>
       Effect.forEachDiscard(this.observers.slice(0), (observer) => this.runError(observer, cause)),
-    )
-
-  protected runEvent<R>(observer: MulticastObserver<R, E, A>, a: A) {
-    return Effect.catchAllCause(
-      Effect.provideContext(observer.sink.event(a), observer.context),
-      () => this.removeSink(observer.sink),
     )
   }
 
+  protected runEvent<R>(observer: MulticastObserver<R, E, A>, a: A) {
+    return Effect.provideContext(observer.sink.event(a), observer.context)
+  }
+
   protected runError<R>(observer: MulticastObserver<R, E, A>, cause: Cause.Cause<E>) {
-    return Effect.catchAllCause(
-      Effect.provideContext(observer.sink.error(cause), observer.context),
-      () => this.removeSink(observer.sink),
+    return Effect.provideContext(observer.sink.error(cause), observer.context)
+  }
+
+  protected runEnd() {
+    return Effect.suspend(() =>
+      Effect.forEachDiscard(this.observers.slice(0), (observer) =>
+        Deferred.succeed(observer.deferred, void 0),
+      ),
     )
   }
 
@@ -97,7 +107,6 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
           const interrupt = Fiber.interrupt(this.fiber!)
 
           this.fiber = undefined
-
           return interrupt
         }
       }
