@@ -335,7 +335,7 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
   }
 
   end() {
-    return Effect.all(this.i0.map((s) => s.end()))
+    return Effect.allPar(this.i0.map((s) => s.end()))
   }
 
   readonly get: RefSubject<
@@ -345,7 +345,7 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
     }
   >['get'] = Effect.suspend(
     () =>
-      Effect.all(this.i0.map((s) => s.get)) as Effect.Effect<
+      Effect.allPar(this.i0.map((s) => s.get)) as Effect.Effect<
         never,
         Fx.ErrorsOf<S[number]>,
         {
@@ -370,7 +370,7 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
 
             MutableRef.set(current, Option.some(a2))
 
-            yield* $(Effect.all(i0.map((s, i) => s.set(a2[i]))))
+            yield* $(Effect.allPar(i0.map((s, i) => s.set(a2[i]))))
 
             return b
           }),
@@ -532,7 +532,7 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
   }
 
   end() {
-    return Effect.all(RR.map(this.i0, (s) => s.end()))
+    return Effect.allPar(RR.map(this.i0, (s) => s.end()))
   }
 
   readonly get: RefSubject<
@@ -542,7 +542,7 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
     }
   >['get'] = Effect.suspend(
     () =>
-      Effect.all(RR.map(this.i0, (s) => s.get)) as Effect.Effect<
+      Effect.allPar(RR.map(this.i0, (s) => s.get)) as Effect.Effect<
         never,
         Fx.ErrorsOf<S[number]>,
         {
@@ -567,7 +567,7 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
 
             MutableRef.set(current, Option.some(a2))
 
-            yield* $(Effect.all(RR.map(subjects, (s, i) => s.set(a2[i]))))
+            yield* $(Effect.allPar(RR.map(subjects, (s, i) => s.set(a2[i]))))
 
             return b
           }),
