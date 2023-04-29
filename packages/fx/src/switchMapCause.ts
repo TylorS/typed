@@ -1,17 +1,18 @@
 import { pipe } from '@effect/data/Function'
 
-import { Fx } from './Fx.js'
+import { Fx, Sink } from './Fx.js'
 import { Cause, Effect, Either } from './externals.js'
 import { failCause } from './failCause.js'
 import { fromEffect } from './fromEffect.js'
-import { succeed } from './succeed.js'
-import { switchMatchCause } from './switchMatch.js'
+import { withSwitch } from './helpers.js'
 
 export function switchMapCause<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
 ): Fx<R | R2, E2, A | B> {
-  return switchMatchCause(fx, f, succeed)
+  return Fx((sink) =>
+    withSwitch((fork) => fx.run(Sink(sink.event, (cause) => fork(f(cause).run(sink))))),
+  )
 }
 
 export function switchMapCauseEffect<R, E, A, R2, E2, B>(
