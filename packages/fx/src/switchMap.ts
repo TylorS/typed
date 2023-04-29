@@ -7,9 +7,7 @@ export function switchMap<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
   f: (a: A) => Fx<R2, E2, B>,
 ): Fx<R | R2, E | E2, B> {
-  return Fx(<R3>(sink: Sink<R3, E | E2, B>) =>
-    withSwitch((fork) => fx.run(Sink((a) => fork(f(a).run(sink)), sink.error))),
-  )
+  return Fx((sink) => withSwitch((fork) => fx.run(Sink((a) => fork(f(a).run(sink)), sink.error))))
 }
 
 export function switchMapEffect<R, E, A, R2, E2, B>(

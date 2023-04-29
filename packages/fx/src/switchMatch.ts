@@ -11,7 +11,7 @@ export function switchMatchCause<R, E, A, R2, E2, B, R3, E3, C>(
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
   g: (a: A) => Fx<R3, E3, C>,
 ): Fx<R | R2 | R3, E2 | E3, B | C> {
-  return Fx(<R4>(sink: Sink<R4, E2 | E3, B | C>) =>
+  return Fx((sink) =>
     withSwitch((fork) =>
       fx.run(
         Sink(
