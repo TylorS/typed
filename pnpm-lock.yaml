@@ -537,6 +537,12 @@ importers:
         specifier: workspace:*
         version: link:../route
 
+  packages/virtual-module:
+    devDependencies:
+      '@types/node':
+        specifier: ^18.16.0
+        version: 18.16.0
+
   packages/vite-plugin:
     dependencies:
       '@effect/data':
@@ -3581,6 +3587,10 @@ packages:
 
   /@types/minimist@1.2.2:
     resolution: {integrity: sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==}
+    dev: true
+
+  /@types/node@18.16.0:
+    resolution: {integrity: sha512-BsAaKhB+7X+H4GnSjGhJG9Qi8Tw+inU9nJDwmD5CgOmBLEI6ArdhikpLX7DjbjDRDTbqZzU2LSQNZg8WGPiSZQ==}
     dev: true
 
   /@types/node@20.4.2:
