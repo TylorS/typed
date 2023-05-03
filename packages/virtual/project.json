@@ -7,7 +7,7 @@
       "options": {
         "commands": [
           {
-            "command": "tsc --build packages/virtual-module/tsconfig.build.json"
+            "command": "tsc --build packages/virtual/tsconfig.build.json"
           }
         ]
       },
@@ -16,7 +16,7 @@
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "options": {
-        "lintFilePatterns": ["packages/virtual-module/src/**/*.ts"]
+        "lintFilePatterns": ["packages/virtual/src/**/*.ts"]
       }
     },
     "test": {

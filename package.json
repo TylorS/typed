@@ -44,6 +44,7 @@
     "@webreflection/uparser": "~0.2.4",
     "cac": "^6.7.14",
     "escape-html": "^1.0.3",
+    "chalk": "^5.2.0",
     "express": "^4.18.2",
     "express-static-gzip": "^2.1.7",
     "fast-deep-equal": "^3.1.3",

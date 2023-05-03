@@ -45,7 +45,8 @@
       {
         "maxDepth": 3
       }
-    ]
+    ],
+    "import/no-named-as-default-member": "off"
   },
   "settings": {
     "import/parsers": {

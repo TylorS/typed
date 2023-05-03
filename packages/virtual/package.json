@@ -1,5 +1,5 @@
 {
-  "name": "@typed/virtual-module",
+  "name": "@typed/virtual",
   "version": "0.0.0",
   "type": "module",
   "main": "dist/index.js",
