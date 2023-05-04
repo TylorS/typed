@@ -1,12 +1,12 @@
-import ts from 'typescript'
+import ts from 'typescript/lib/tsserverlibrary'
 
-import { VersionedSnapshot } from './snapshot.js'
-import { normalizePath } from './util.js'
+import { VersionedSnapshot } from './snapshot'
+import { getCanonicalFileName, normalizePath } from './util'
 
 export class ProjectFileCache {
   private files: Map<string, VersionedSnapshot> = new Map()
 
-  constructor(fileNames: string[]) {
+  constructor(fileNames: string[], protected info?: ts.server.PluginCreateInfo) {
     fileNames.forEach((fileName) => this.set(fileName))
   }
 
@@ -18,10 +18,26 @@ export class ProjectFileCache {
   set(fileName: string, snapshot?: ts.IScriptSnapshot): void {
     const normalized = normalizePath(fileName)
 
-    console.log('setting', normalized, snapshot?.getText(0, snapshot.getLength()))
-
     if (!this.files.has(normalized)) {
-      this.files.set(normalized, new VersionedSnapshot(normalized, snapshot))
+      if (this.info) {
+        console.log('set', fileName, snapshot?.getText(0, snapshot.getLength()))
+
+        const scriptInfo = this.info.project.projectService.getOrCreateScriptInfoForNormalizedPath(
+          ts.server.toNormalizedPath(fileName),
+          !!snapshot,
+          snapshot ? snapshot.getText(0, snapshot.getLength()) : undefined,
+        )
+
+        if (scriptInfo) {
+          try {
+            this.files.set(normalized, new VersionedSnapshot(normalized, snapshot))
+          } catch (e) {
+            this.info.project.log('Loading Snapshot failed ' + fileName)
+          }
+        }
+      } else {
+        this.files.set(normalized, new VersionedSnapshot(normalized, snapshot))
+      }
     } else {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Map has the element, and we only store non-null objects
       this.files.get(normalized)!.update(snapshot)
@@ -68,4 +84,13 @@ export class ExternalFileCache {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Map has the element, and we only store non-null objects
     return this.files.get(normalized)!.getSnapshot()
   }
+
+  has(fileName: string): boolean {
+    const normalized = normalizePath(fileName)
+    return this.files.has(normalized)
+  }
+}
+
+export function createModuleResolutionCache(cwd: string, options: ts.CompilerOptions) {
+  return ts.createModuleResolutionCache(cwd, getCanonicalFileName, options)
 }

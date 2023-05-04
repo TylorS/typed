@@ -1,6 +1,6 @@
 import ts from 'typescript'
 
-import { getCanonicalFileName, getNewLine } from './util.js'
+import { getCanonicalFileName, getNewLine } from './util'
 
 export type DiagnosticWriter = {
   format: (diagnostic: ts.Diagnostic) => string

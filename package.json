@@ -94,6 +94,7 @@
     "@typescript-eslint/parser": "^6.1.0",
     "@vitest/coverage-c8": "^0.33.0",
     "@vitest/ui": "^0.33.0",
+    "esbuild-register": "^3.4.2",
     "eslint": "^8.45.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-import-resolver-typescript": "^3.5.5",

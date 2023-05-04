@@ -7,6 +7,11 @@
     "moduleResolution": "NodeNext",
     "inlineSources": true,
     "outDir": "dist",
+    "plugins": [
+      {
+        "name": "@typed/virtual"
+      }
+    ]
   },
   "include": [
     "*.ts",

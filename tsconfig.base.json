@@ -80,9 +80,6 @@
       },
       {
         "name": "svelte-language-server"
-      },
-      {
-        "name": "@typed/virtual/typescript"
       }
     ]
   },

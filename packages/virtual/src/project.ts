@@ -1,16 +1,16 @@
-import chalk from 'chalk'
 import ts from 'typescript'
 
-import { ExternalFileCache, ProjectFileCache } from './cache.js'
-import type { DiagnosticWriter } from './diagnostics.js'
+import { ExternalFileCache, ProjectFileCache } from './cache'
+import type { DiagnosticWriter } from './diagnostics'
+import { EnhanceProject } from './types'
 
 export class Project {
   private diagnosticWriter: DiagnosticWriter
   private cmdLine: ts.ParsedCommandLine
+  private diagnostics: ts.Diagnostic[] = []
 
-  private projectFiles: ProjectFileCache
-  private externalFiles: ExternalFileCache
-
+  readonly projectFiles: ProjectFileCache
+  readonly externalFiles: ExternalFileCache
   readonly languageService: ts.LanguageService
   readonly languageServiceHost: ts.LanguageServiceHost
 
@@ -18,13 +18,7 @@ export class Project {
     documentRegistry: ts.DocumentRegistry,
     diagnosticWriter: DiagnosticWriter,
     cmdLine: ts.ParsedCommandLine,
-    enhanceLanguageServiceHost?: (
-      host: ts.LanguageServiceHost,
-      files: {
-        readonly projectFiles: ProjectFileCache
-        readonly externalFiles: ExternalFileCache
-      },
-    ) => void,
+    enhance?: EnhanceProject,
   ) {
     this.diagnosticWriter = diagnosticWriter
     this.cmdLine = cmdLine
@@ -47,9 +41,6 @@ export class Project {
       //getCancellationToken?(): HostCancellationToken;
       getCurrentDirectory: () => process.cwd(),
       getDefaultLibFileName: (o) => ts.getDefaultLibFilePath(o),
-      log: (s: string): void => console.log(chalk.cyanBright(s)),
-      trace: (s: string): void => console.log(chalk.greenBright(s)),
-      error: (s: string): void => console.error(chalk.redBright(s)),
       //useCaseSensitiveFileNames?(): boolean;
 
       /*
@@ -69,14 +60,11 @@ export class Project {
       directoryExists: ts.sys.directoryExists,
     }
 
-    if (enhanceLanguageServiceHost) {
-      enhanceLanguageServiceHost(this.languageServiceHost, {
-        projectFiles: this.projectFiles,
-        externalFiles: this.externalFiles,
-      })
-    }
-
     this.languageService = ts.createLanguageService(this.languageServiceHost, documentRegistry)
+
+    if (enhance) {
+      enhance(this)
+    }
   }
 
   getCommandLine(): ts.ParsedCommandLine {
@@ -91,7 +79,10 @@ export class Project {
   }
 
   validateFile(fileName: string): boolean {
-    const diagnostics = this.getFileDiagnostics(fileName)
+    return this.printDiagnostics(this.getFileDiagnostics(fileName))
+  }
+
+  protected printDiagnostics(diagnostics: ts.Diagnostic[]): boolean {
     if (Array.isArray(diagnostics) && diagnostics.length > 0) {
       diagnostics.forEach((d) => this.diagnosticWriter.print(d))
       return false
@@ -113,6 +104,10 @@ export class Project {
         result = result && fileResult
       }
     }
+
+    this.diagnostics.forEach((d) => this.diagnosticWriter.print(d))
+    this.diagnostics = []
+
     return result
   }
 
@@ -132,8 +127,6 @@ export class Project {
     //  emit each file
     let result = true
     for (const file of this.projectFiles.getFileNames()) {
-      console.log('emitting', file)
-
       //  always emit the file, even if others have failed
       const fileResult = this.emitFile(file)
       //  combine this file's result with the aggregate result
@@ -163,5 +156,11 @@ export class Project {
 
     // @ts-expect-error `languageService` cannot be used after calling dispose
     this.languageService = null
+
+    this.diagnostics = []
+  }
+
+  getProgram() {
+    return this.languageService.getProgram()
   }
 }

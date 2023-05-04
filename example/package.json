@@ -12,6 +12,12 @@
     "@typed/html": "workspace:*",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
+<<<<<<< HEAD
     "@typed/router": "workspace:*"
+=======
+    "@typed/router": "workspace:*",
+    "@typed/virtual": "workspace:*",
+    "@typed/vite-plugin": "workspace:*"
+>>>>>>> d09de7a1 (WIP: Hacking on plugins)
   }
 }

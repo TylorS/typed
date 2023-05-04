@@ -1,6 +1,6 @@
 import ts from 'typescript'
 
-import { createDiagnosticWriter } from './diagnostics.js'
+import { createDiagnosticWriter } from './diagnostics'
 
 export function findConfigFile(searchPath: string, fileName = 'tsconfig.json'): string | undefined {
   return ts.findConfigFile(searchPath, ts.sys.fileExists, fileName)

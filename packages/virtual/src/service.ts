@@ -1,28 +1,19 @@
 import ts from 'typescript'
 
-import { ExternalFileCache, ProjectFileCache } from './cache.js'
-import { createDiagnosticWriter } from './diagnostics.js'
-import { Project } from './project.js'
+import { createDiagnosticWriter } from './diagnostics'
+import { Project } from './project'
+import { EnhanceProject } from './types'
 
-export class Service {
-  private documentRegistry
-  private diagnosticWriter
+class Service {
+  protected documentRegistry
+  protected diagnosticWriter
 
   constructor(write?: (message: string) => void) {
     this.documentRegistry = ts.createDocumentRegistry()
     this.diagnosticWriter = createDiagnosticWriter(write)
   }
 
-  openProject(
-    cmdLine: ts.ParsedCommandLine,
-    enhanceLanguageServiceHost?: (
-      host: ts.LanguageServiceHost,
-      files: {
-        readonly projectFiles: ProjectFileCache
-        readonly externalFiles: ExternalFileCache
-      },
-    ) => void,
-  ): Project {
+  openProject(cmdLine: ts.ParsedCommandLine, enhanceLanguageServiceHost?: EnhanceProject): Project {
     return new Project(
       this.documentRegistry,
       this.diagnosticWriter,
@@ -31,3 +22,5 @@ export class Service {
     )
   }
 }
+
+export { Service }
