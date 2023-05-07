@@ -1,9 +1,9 @@
 import fs from 'fs'
-import { dirname, join } from 'path'
+import { dirname, join, relative } from 'path'
 
 import { left, right } from '@effect/data/Either'
 import * as RA from '@effect/data/ReadonlyArray'
-import ts from 'typescript'
+import ts from 'typescript/lib/tsserverlibrary'
 
 export function getCanonicalFileName(fileName: string): string {
   return ts.sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase()
@@ -53,4 +53,36 @@ export interface Directory {
   readonly directory: string
   readonly files: readonly string[]
   readonly directories: readonly Directory[]
+}
+
+export function removeQuotes(s: string): string {
+  return s.replace(/"/g, '').replace(/'/g, '')
+}
+
+export function ensureRelative(from: string, to: string): string {
+  const rel = relative(from, to)
+
+  if (rel.startsWith('.')) {
+    return rel
+  }
+
+  return `./${rel}`
+}
+
+export function getConfigPathForProject(project: ts.server.Project) {
+  return (
+    (project as ts.server.ConfiguredProject).canonicalConfigFilePath ??
+    (project.getCompilerOptions() as any).configFilePath
+  )
+}
+
+export function getModuleResolutionKind(options: ts.CompilerOptions): ts.ResolutionMode {
+  switch (options.moduleResolution) {
+    case ts.ModuleResolutionKind.NodeJs:
+      return ts.ModuleKind.CommonJS
+    case ts.ModuleResolutionKind.Bundler:
+    case ts.ModuleResolutionKind.Node16:
+    case ts.ModuleResolutionKind.NodeNext:
+      return ts.ModuleKind.ESNext
+  }
 }

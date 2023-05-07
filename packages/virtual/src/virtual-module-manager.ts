@@ -1,4 +1,3 @@
-import { Project } from './project'
 import { ResolveFileNameParams, VirtualModule, VirtualModulePlugin } from './virtual-module'
 
 export class VirtualModuleManager {
@@ -8,19 +7,25 @@ export class VirtualModuleManager {
   protected idToContent = new Map<string, string>()
   protected filePathToId = new Map<string, string>()
 
-  constructor(readonly plugins: VirtualModulePlugin[], readonly project: Project) {}
+  constructor(
+    readonly plugins: readonly VirtualModulePlugin[],
+    readonly log: (msg: string) => void,
+  ) {}
 
   readonly match = (id: string): boolean => !!this.getPluginById(id)
+
+  readonly hasFileName = (fileName: string): boolean => this.filePathToId.has(fileName)
 
   /**
    * Should only be called AFTER `match` has been called.
    */
-  readonly resolveFileName = (params: Omit<ResolveFileNameParams, 'project'>): string => {
+  readonly resolveFileName = (params: ResolveFileNameParams): string => {
     const fileName = // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.getPluginById(params.id)!.resolveFileName({
         ...params,
-        project: this.project,
       })
+
+    this.log(`[@typed/virtual] Resolved ${params.id} to ${fileName}`)
 
     this.idToFilePath.set(params.id, fileName)
     this.idToImporter.set(params.id, params.importer)
@@ -42,10 +47,12 @@ export class VirtualModuleManager {
       id,
       fileName,
       importer,
-      project: this.project,
     })
 
     this.idToContent.set(id, content)
+
+    // // Add the file to the project
+    // this.projectFiles.set(fileName, ts.ScriptSnapshot.fromString(content))
 
     return content
   }

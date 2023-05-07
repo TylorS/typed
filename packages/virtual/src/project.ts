@@ -5,18 +5,18 @@ import type { DiagnosticWriter } from './diagnostics'
 import { EnhanceProject } from './types'
 
 export class Project {
-  private diagnosticWriter: DiagnosticWriter
   private cmdLine: ts.ParsedCommandLine
   private diagnostics: ts.Diagnostic[] = []
 
   readonly projectFiles: ProjectFileCache
   readonly externalFiles: ExternalFileCache
-  readonly languageService: ts.LanguageService
-  readonly languageServiceHost: ts.LanguageServiceHost
+  public languageServiceHost: ts.LanguageServiceHost
+
+  protected _languageService!: ts.LanguageService
 
   constructor(
-    documentRegistry: ts.DocumentRegistry,
-    diagnosticWriter: DiagnosticWriter,
+    readonly documentRegistry: ts.DocumentRegistry,
+    readonly diagnosticWriter: DiagnosticWriter,
     cmdLine: ts.ParsedCommandLine,
     enhance?: EnhanceProject,
   ) {
@@ -60,11 +60,16 @@ export class Project {
       directoryExists: ts.sys.directoryExists,
     }
 
-    this.languageService = ts.createLanguageService(this.languageServiceHost, documentRegistry)
-
     if (enhance) {
       enhance(this)
     }
+  }
+
+  get languageService(): ts.LanguageService {
+    return (this._languageService ||= ts.createLanguageService(
+      this.languageServiceHost,
+      this.documentRegistry,
+    ))
   }
 
   getCommandLine(): ts.ParsedCommandLine {

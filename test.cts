@@ -8,3 +8,4 @@ const exampleDirectory = join(__dirname, 'example')
 const project = setupProject(service, exampleDirectory, 'tsconfig.json')
 
 console.log(project.validate())
+console.log(project.emit())

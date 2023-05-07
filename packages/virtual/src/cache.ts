@@ -19,25 +19,7 @@ export class ProjectFileCache {
     const normalized = normalizePath(fileName)
 
     if (!this.files.has(normalized)) {
-      if (this.info) {
-        console.log('set', fileName, snapshot?.getText(0, snapshot.getLength()))
-
-        const scriptInfo = this.info.project.projectService.getOrCreateScriptInfoForNormalizedPath(
-          ts.server.toNormalizedPath(fileName),
-          !!snapshot,
-          snapshot ? snapshot.getText(0, snapshot.getLength()) : undefined,
-        )
-
-        if (scriptInfo) {
-          try {
-            this.files.set(normalized, new VersionedSnapshot(normalized, snapshot))
-          } catch (e) {
-            this.info.project.log('Loading Snapshot failed ' + fileName)
-          }
-        }
-      } else {
-        this.files.set(normalized, new VersionedSnapshot(normalized, snapshot))
-      }
+      this.files.set(normalized, new VersionedSnapshot(normalized, snapshot))
     } else {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Map has the element, and we only store non-null objects
       this.files.get(normalized)!.update(snapshot)

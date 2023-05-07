@@ -1,5 +1,3 @@
-import { Project } from './project'
-
 export interface VirtualModule {
   readonly id: string
   readonly importer: string
@@ -43,12 +41,10 @@ export interface VirtualModulePlugin {
 export interface ResolveFileNameParams {
   readonly id: string
   readonly importer: string
-  readonly project: Project
 }
 
 export interface CreateContentParams {
   readonly id: string
   readonly fileName: string
   readonly importer: string
-  readonly project: Project
 }
