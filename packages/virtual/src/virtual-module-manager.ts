@@ -25,7 +25,7 @@ export class VirtualModuleManager {
         ...params,
       })
 
-    this.log(`[@typed/virtual] Resolved ${params.id} to ${fileName}`)
+    this.log(`Resolved ${params.id} to ${fileName}`)
 
     this.idToFilePath.set(params.id, fileName)
     this.idToImporter.set(params.id, params.importer)

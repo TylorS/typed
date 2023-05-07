@@ -15,12 +15,11 @@ export const plugin: ts.server.PluginModuleFactory = () => {
 
   // Extend the language service host
   function create(info: ts.server.PluginCreateInfo) {
-    const tsConfigPath = info.config.tsConfigPath ?? 'tsconfig.json'
     const workingDirectory = info.project.getCurrentDirectory()
     const tsConfigFilePath = getConfigPathForProject(info.project)
 
     if (!tsConfigFilePath) {
-      throw new Error(`Cannot find TsConfig in ${workingDirectory} for ${tsConfigPath}`)
+      throw new Error(`Cannot find TsConfig in ${workingDirectory} for ${tsConfigFilePath}`)
     }
 
     const config = readConfigFile(tsConfigFilePath)
@@ -33,25 +32,31 @@ export const plugin: ts.server.PluginModuleFactory = () => {
       config.options = {}
     }
 
+    const typedOptions = readTypedOptions(config.raw)
+
     // Overrides for virtual modules
     config.options.inlineSources = true
 
     const manager = new VirtualModuleManager([ApiPlugin, BrowserPlugin] as const, (msg) =>
-      info.project.log(msg),
+      info.project.log(`[@typed/virtual] ${msg}`),
     )
     const moduleResolutionCache = createModuleResolutionCache(workingDirectory, config.options)
 
-    info.languageServiceHost.resolveModuleNameLiterals = (
-      moduleNames,
-      containingFile,
-      redirectedReference,
-      options,
-    ) => {
-      return moduleNames.map((moduleName) => {
+    const resolveModuleNameLiterals = info.languageServiceHost.resolveModuleNameLiterals?.bind(
+      info.languageServiceHost,
+    )
+
+    const createModuleResolver =
+      (
+        containingFile: string,
+        options: ts.CompilerOptions,
+        redirectedReference?: ts.ResolvedProjectReference,
+      ) =>
+      (moduleName: ts.StringLiteralLike) => {
         const name = moduleName.text
 
         if (manager.match(name)) {
-          manager.log(`[@typed/virtual] Resolving ${name} from ${containingFile}...`)
+          manager.log(`Resolving ${name} from ${containingFile}...`)
 
           const resolvedFileName = manager.resolveFileName({
             id: name,
@@ -62,7 +67,7 @@ export const plugin: ts.server.PluginModuleFactory = () => {
             resolvedModule: {
               extension: ts.Extension.Ts,
               resolvedFileName,
-              isExternalLibraryImport: true,
+              isExternalLibraryImport: !typedOptions.saveGeneratedFiles,
               resolvedUsingTsExtension: false,
             },
           }
@@ -79,7 +84,39 @@ export const plugin: ts.server.PluginModuleFactory = () => {
           redirectedReference,
           getModuleResolutionKind(config.options),
         )
-      })
+      }
+
+    if (resolveModuleNameLiterals) {
+      info.languageServiceHost.resolveModuleNameLiterals = (
+        moduleNames,
+        containingFile,
+        redirectedReference,
+        options,
+        ...rest
+      ) => {
+        const resolver = createModuleResolver(containingFile, options, redirectedReference)
+
+        return resolveModuleNameLiterals(
+          moduleNames,
+          containingFile,
+          redirectedReference,
+          options,
+          ...rest,
+        ).map((resolved, i) => {
+          if (resolved.resolvedModule) {
+            return resolved
+          }
+
+          return resolver(moduleNames[i])
+        })
+      }
+    } else {
+      info.languageServiceHost.resolveModuleNameLiterals = (
+        moduleNames,
+        containingFile,
+        redirectedReference,
+        options,
+      ) => moduleNames.map(createModuleResolver(containingFile, options, redirectedReference))
     }
 
     const getScriptKind = info.languageServiceHost.getScriptKind?.bind(info.languageServiceHost)
@@ -98,24 +135,39 @@ export const plugin: ts.server.PluginModuleFactory = () => {
 
     info.languageServiceHost.getScriptSnapshot = (fileName) => {
       if (manager.hasFileName(fileName)) {
-        manager.log(`[@typed/virtual] Generating snapshot for ${fileName}...`)
+        manager.log(`Generating snapshot for ${fileName}...`)
 
+        let scriptInfo = info.project.projectService.getScriptInfo(fileName)
+        let snapshot = scriptInfo?.getSnapshot()
         const content = manager.createContent(fileName)
-        const snapshot = ts.ScriptSnapshot.fromString(content)
-        const normalizedFileName = ts.server.toNormalizedPath(fileName)
-        const scriptInfo = info.project.projectService.getOrCreateScriptInfoForNormalizedPath(
-          normalizedFileName,
-          true,
-          content,
-          ts.ScriptKind.TS,
-          false,
-          {
-            fileExists: (path) =>
-              path === fileName || path === normalizedFileName || ts.sys.fileExists(path),
-          },
-        )
 
-        scriptInfo?.attachToProject(info.project)
+        if (snapshot) {
+          const length = snapshot.getLength()
+          const current = snapshot.getText(0, length)
+          if (current !== content) {
+            scriptInfo?.editContent(0, length, content)
+          }
+        } else {
+          snapshot = ts.ScriptSnapshot.fromString(content)
+
+          const normalizedFileName = ts.server.toNormalizedPath(fileName)
+          scriptInfo = info.project.projectService.getOrCreateScriptInfoForNormalizedPath(
+            normalizedFileName,
+            true,
+            content,
+            ts.ScriptKind.TS,
+            false,
+            {
+              fileExists: (path) =>
+                path === fileName || path === normalizedFileName || ts.sys.fileExists(path),
+            },
+          )
+          scriptInfo?.attachToProject(info.project)
+        }
+
+        if (typedOptions.saveGeneratedFiles && scriptInfo) {
+          scriptInfo.saveTo(fileName)
+        }
 
         return snapshot
       }
@@ -136,5 +188,13 @@ export const plugin: ts.server.PluginModuleFactory = () => {
     }
 
     return info.languageService
+  }
+}
+
+function readTypedOptions(config: ts.ParsedCommandLine['raw']) {
+  const typed = config['@typed/virtual']
+
+  return {
+    saveGeneratedFiles: typed.saveGeneratedFiles !== undefined ? !!typed.saveGeneratedFiles : false,
   }
 }

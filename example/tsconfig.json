@@ -27,5 +27,8 @@
   "exclude": [
     "node_modules",
     "dist"
-  ]
+  ],
+  "@typed/virtual": {
+    "saveGeneratedFiles": true
+  }
 }
