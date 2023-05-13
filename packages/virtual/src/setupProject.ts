@@ -28,16 +28,19 @@ export function setupProject(service: Service, workingDirectory: string, tsConfi
     const manager = patchLanguageServiceHost(
       workingDirectory,
       config,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      () => project.languageService.getProgram()!,
       project.languageServiceHost,
       [ApiPlugin, BrowserPlugin],
-      undefined,
-      project.projectFiles,
-      project.externalFiles,
+      {
+        projectFiles: project.projectFiles,
+        externalFiles: project.externalFiles,
+      },
     )
 
-    // TODO: Handle merging transformers
     const getCustomTransformersTs = project.languageServiceHost.getCustomTransformers
     const getCustomTransformersVirtual = getCustomTransformers(manager)
+
     project.languageServiceHost.getCustomTransformers = () => {
       const ts = getCustomTransformersTs?.() ?? {}
       const virtual = getCustomTransformersVirtual()

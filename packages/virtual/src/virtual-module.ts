@@ -1,21 +1,4 @@
-export interface VirtualModule {
-  readonly id: string
-  readonly importer: string
-  readonly fileName: string
-  readonly contents: string
-}
-
-export const VirtualModule = (
-  id: string,
-  importer: string,
-  fileName: string,
-  contents: string,
-): VirtualModule => ({
-  id,
-  importer,
-  fileName,
-  contents,
-})
+import { Program } from 'typescript'
 
 export interface VirtualModulePlugin {
   readonly name: string
@@ -47,4 +30,6 @@ export interface CreateContentParams {
   readonly id: string
   readonly fileName: string
   readonly importer: string
+  readonly getProgram: () => Program
+  readonly log?: (msg: string) => void
 }

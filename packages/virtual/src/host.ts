@@ -12,50 +12,82 @@ export const resolveModuleNameLiterals = (
   host: ts.LanguageServiceHost,
   manager: VirtualModuleManager,
 ): NonNullable<ts.LanguageServiceHost['resolveModuleNameLiterals']> => {
-  return (moduleNames, containingFile, redirectedReference, options) =>
-    moduleNames.map((moduleName) => {
-      const name = moduleName.text
+  const resolveModuleNameLiterals_ = host.resolveModuleNameLiterals?.bind(host)
 
-      if (manager.match(name)) {
-        const resolvedFileName = manager.resolveFileName({
-          id: name,
-          importer: containingFile,
-        })
+  const resolver = (
+    moduleName: ts.StringLiteralLike,
+    containingFile: string,
+    redirectedReference: ts.ResolvedProjectReference | undefined,
+    options: ts.CompilerOptions,
+  ) => {
+    const name = moduleName.text
 
-        manager.log(`Resolve ${moduleName} to ${resolvedFileName}`)
+    if (manager.match(name)) {
+      const resolvedFileName = manager.resolveFileName({
+        id: name,
+        importer: containingFile,
+      })
 
-        const resolved: ts.ResolvedModuleWithFailedLookupLocations = {
-          resolvedModule: {
-            extension: ts.Extension.Ts,
-            resolvedFileName,
-            isExternalLibraryImport: true,
-            resolvedUsingTsExtension: false,
-          },
-        }
+      manager.log(`Resolve ${name} to ${resolvedFileName}`)
 
-        return resolved
+      const resolved: ts.ResolvedModuleWithFailedLookupLocations = {
+        resolvedModule: {
+          extension: ts.Extension.Ts,
+          resolvedFileName,
+          isExternalLibraryImport: true,
+          resolvedUsingTsExtension: false,
+        },
       }
 
-      return ts.resolveModuleName(
-        name,
+      return resolved
+    }
+
+    return ts.resolveModuleName(
+      name,
+      containingFile,
+      options,
+      host,
+      moduleResolutionCache,
+      redirectedReference,
+      getModuleResolutionKind(options),
+    )
+  }
+
+  return (moduleNames, containingFile, redirectedReference, options, ...rest) => {
+    return moduleNames.map((name) => {
+      const resolved = resolveModuleNameLiterals_?.(
+        [name],
         containingFile,
-        options,
-        host,
-        moduleResolutionCache,
         redirectedReference,
-        getModuleResolutionKind(options),
-      )
+        options,
+        ...rest,
+      )?.[0] ??
+        resolver(name, containingFile, redirectedReference, options) ?? {
+          resolvedModule: undefined,
+        }
+
+      manager.log(`Resolved ${name.text} from ${resolved.resolvedModule?.resolvedFileName}`)
+
+      return resolved
     })
+  }
+}
+
+export type GetScriptSnapshotOptions = {
+  readonly project?: ts.server.Project
+  readonly projectFiles?: ProjectFileCache
+  readonly externalFiles?: ExternalFileCache
 }
 
 export const getScriptSnapshot =
   (
     manager: VirtualModuleManager,
-    project?: ts.server.Project,
-    projectFiles?: ProjectFileCache,
-    externalFiles?: ExternalFileCache,
+    getProgram: () => ts.Program,
+    options?: GetScriptSnapshotOptions,
   ): ts.LanguageServiceHost['getScriptSnapshot'] =>
   (fileName) => {
+    const { project, projectFiles, externalFiles } = options ?? {}
+
     if (projectFiles && projectFiles.has(fileName)) {
       return projectFiles.getSnapshot(fileName)
     }
@@ -65,22 +97,23 @@ export const getScriptSnapshot =
     }
 
     if (manager.hasFileName(fileName)) {
-      const content = manager.createContent(fileName)
+      const content = manager.createContent(fileName, getProgram)
       const snapshot = ts.ScriptSnapshot.fromString(content)
 
       projectFiles?.set(fileName, snapshot)
 
       // Add the file to the project for language service plugin
       if (project) {
+        const normalizedFileName = ts.server.toNormalizedPath(fileName)
         const scriptInfo = project.projectService.getOrCreateScriptInfoForNormalizedPath(
-          ts.server.toNormalizedPath(fileName),
+          normalizedFileName,
           true,
           content,
           ts.ScriptKind.TS,
           false,
           {
             fileExists(path) {
-              if (path === fileName) {
+              if (path === fileName || path === normalizedFileName) {
                 return true
               }
 
@@ -155,26 +188,17 @@ export const getCustomTransformers =
 export const patchLanguageServiceHost = (
   workingDirectory: string,
   config: ts.ParsedCommandLine,
+  getProgram: () => ts.Program,
   host: ts.LanguageServiceHost,
   plugins: readonly VirtualModulePlugin[],
-  project?: ts.server.Project,
-  projectFiles?: ProjectFileCache,
-  externalFiles?: ExternalFileCache,
+  options: GetScriptSnapshotOptions,
 ) => {
   const moduleResolutionCache = createModuleResolutionCache(workingDirectory, config.options)
   const manager = new VirtualModuleManager(plugins, host.log ?? console.log)
 
   host.getCurrentDirectory = () => workingDirectory
 
-  const resolveTs = host.resolveModuleNameLiterals?.bind(host)
-  const resolveVirtual = resolveModuleNameLiterals(
-    moduleResolutionCache,
-    // Clone the existing host to avoid recursion issues
-    host,
-    manager,
-  )
-  host.resolveModuleNameLiterals = (...args) =>
-    resolveVirtual(...args) ?? resolveTs?.(...args) ?? []
+  host.resolveModuleNameLiterals = resolveModuleNameLiterals(moduleResolutionCache, host, manager)
 
   const getScriptKind = host.getScriptKind?.bind(host)
 
@@ -191,9 +215,9 @@ export const patchLanguageServiceHost = (
   }
 
   const getScriptSnapshotTs = host.getScriptSnapshot.bind(host)
-  const getScriptSnapshotVirtual = getScriptSnapshot(manager, project, projectFiles, externalFiles)
+  const getScriptSnapshotVirtual = getScriptSnapshot(manager, getProgram, options)
   host.getScriptSnapshot = (...args) =>
-    getScriptSnapshotVirtual(...args) ?? getScriptSnapshotTs?.(...args)
+    getScriptSnapshotTs?.(...args) ?? getScriptSnapshotVirtual(...args)
 
   return manager
 }

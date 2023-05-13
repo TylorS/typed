@@ -139,7 +139,9 @@ export const plugin: ts.server.PluginModuleFactory = () => {
 
         let scriptInfo = info.project.projectService.getScriptInfo(fileName)
         let snapshot = scriptInfo?.getSnapshot()
-        const content = manager.createContent(fileName)
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const content = manager.createContent(fileName, () => info.languageService.getProgram()!)
 
         if (snapshot) {
           const length = snapshot.getLength()

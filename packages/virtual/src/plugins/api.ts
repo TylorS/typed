@@ -1,5 +1,8 @@
 import { basename, dirname, resolve } from 'path'
 
+import ts from 'typescript'
+
+import { Directory, readDirectory } from '../util'
 import { VirtualModulePlugin } from '../virtual-module'
 
 const apiRegex = /^api:(.+)/
@@ -15,128 +18,125 @@ export const ApiPlugin: VirtualModulePlugin = {
 
     return resolve(dir, name)
   },
-  createContent: () => {
-    // const importDirectory = dirname(importer)
-    // // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    // const [, moduleName] = apiRegex.exec(id)!
-    // const moduleDirectory = resolve(importDirectory, moduleName)
-    // const directory = readDirectory(moduleDirectory)
-    // // readApiModuleTree(project, directory)
+  createContent: ({ id, importer, getProgram, log }) => {
+    const importDirectory = dirname(importer)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const [, moduleName] = apiRegex.exec(id)!
+    const moduleDirectory = resolve(importDirectory, moduleName)
+    const directory = readDirectory(moduleDirectory)
+    const moduleTree = readApiModuleTree(getProgram(), directory)
 
-    // TODO: Build content from moduleTree
-    // Collect all imports to de-duplicate
+    log?.(JSON.stringify(moduleTree))
 
     return 'export const handlers = [] as const'
   },
 }
 
-// function readApiModuleTree(
-//   project: Project,
-//   directory: Directory,
-//   existingEnvironmentTree: EnvironmentTree = new EnvironmentTree(null, []),
-// ): ApiModuleTree {
-//   const modules = scanApiSourceFiles(directory.files, project)
-//   const fetchHandlerFiles = modules.filter(isFetchHandlerFile)
-//   const environmentFiles = modules.filter(isEnvironmentFile)
-//   const environmentTree = existingEnvironmentTree.addChildren(environmentFiles)
+function readApiModuleTree(
+  program: ts.Program,
+  directory: Directory,
+  existingEnvironmentTree: EnvironmentTree = new EnvironmentTree(null, []),
+): ApiModuleTree {
+  const modules = scanApiSourceFiles(directory.files, program)
+  const fetchHandlerFiles = modules.filter(isFetchHandlerFile)
+  const environmentFiles = modules.filter(isEnvironmentFile)
+  const environmentTree = existingEnvironmentTree.addChildren(environmentFiles)
 
-//   return {
-//     handlers: fetchHandlerFiles,
-//     environments: environmentTree,
-//     children: directory.directories.map((dir) => readApiModuleTree(project, dir, environmentTree)),
-//   }
-// }
+  return {
+    handlers: fetchHandlerFiles,
+    environments: environmentTree,
+    children: directory.directories.map((dir) => readApiModuleTree(program, dir, environmentTree)),
+  }
+}
 
-// export interface ApiModuleTree {
-//   readonly handlers: readonly FetchHandlerFile[]
-//   readonly environments: EnvironmentTree
-//   readonly children: readonly ApiModuleTree[]
-// }
+export interface ApiModuleTree {
+  readonly handlers: readonly FetchHandlerFile[]
+  readonly environments: EnvironmentTree
+  readonly children: readonly ApiModuleTree[]
+}
 
-// export class EnvironmentTree {
-//   constructor(
-//     readonly parent: EnvironmentTree | null,
-//     readonly environmentFiles: readonly EnvironmentFile[],
-//   ) {}
+export class EnvironmentTree {
+  constructor(
+    readonly parent: EnvironmentTree | null,
+    readonly environmentFiles: readonly EnvironmentFile[],
+  ) {}
 
-//   addChildren(children: readonly EnvironmentFile[]): EnvironmentTree {
-//     if (this.parent === null) {
-//       return new EnvironmentTree(null, children)
-//     }
+  addChildren(children: readonly EnvironmentFile[]): EnvironmentTree {
+    return new EnvironmentTree(this, children)
+  }
+}
 
-//     return new EnvironmentTree(this, children)
-//   }
-// }
+function scanApiSourceFiles(
+  files: readonly string[],
+  program: ts.Program,
+): readonly ApiSourceFile[] {
+  return files.flatMap((file) => {
+    const sourceFile = program.getSourceFile(file)
 
-// function scanApiSourceFiles(files: readonly string[], project: Project): readonly ApiSourceFile[] {
-//   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-//   const program = project.getProgram()!
+    if (sourceFile) {
+      const parsed = parseApiSourceFile(sourceFile, program)
 
-//   return files.flatMap((file) => {
-//     const sourceFile = program.getSourceFile(file)
+      return parsed ? [parsed] : []
+    }
 
-//     if (sourceFile) {
-//       const parsed = parseApiSourceFile(sourceFile, project)
+    return []
+  })
+}
 
-//       return parsed ? [parsed] : []
-//     }
+function parseApiSourceFile(
+  sourceFile: ts.SourceFile,
+  program: ts.Program,
+): ApiSourceFile | undefined {
+  const { fileName } = sourceFile
 
-//     return []
-//   })
-// }
+  if (isEnvironmentFileName(fileName)) {
+    return parseEnvironmentSourceFile(sourceFile, program)
+  }
 
-// function parseApiSourceFile(
-//   sourceFile: ts.SourceFile,
-//   project: Project,
-// ): ApiSourceFile | undefined {
-//   const { fileName } = sourceFile
+  return parseFetchHandlerSourceFile(sourceFile, program)
+}
 
-//   if (isEnvironmentFileName(fileName)) {
-//     return parseEnvironmentSourceFile(sourceFile, project)
-//   }
+function parseEnvironmentSourceFile(
+  _sourceFile: ts.SourceFile,
+  program: ts.Program,
+): EnvironmentFile | undefined {
+  const typeChecker = program.getTypeChecker()
 
-//   return parseFetchHandlerSourceFile(sourceFile, project)
-// }
+  return undefined
+}
 
-// function parseEnvironmentSourceFile(
-//   _sourceFile: ts.SourceFile,
-//   _project: Project,
-// ): EnvironmentFile | undefined {
-//   return undefined
-// }
+function parseFetchHandlerSourceFile(
+  _sourceFile: ts.SourceFile,
+  _program: ts.Program,
+): FetchHandlerFile | undefined {
+  return undefined
+}
 
-// function parseFetchHandlerSourceFile(
-//   _sourceFile: ts.SourceFile,
-//   _project: Project,
-// ): FetchHandlerFile | undefined {
-//   return undefined
-// }
+// TODO: Fetch All Exported Symbols
+// TODO: Match exported symbols to declarations
+// TODO: Resolve Types for declarations
+// TODO: Validate Types match expected types
 
-// // TODO: Fetch All Exported Symbols
-// // TODO: Match exported symbols to declarations
-// // TODO: Resolve Types for declarations
-// // TODO: Validate Types match expected types
+function isEnvironmentFileName(fileName: string): boolean {
+  return fileName.endsWith('.environment.ts')
+}
 
-// function isEnvironmentFileName(fileName: string): boolean {
-//   return fileName.endsWith('.environment.ts')
-// }
+export type ApiSourceFile = FetchHandlerFile | EnvironmentFile
 
-// export type ApiSourceFile = FetchHandlerFile | EnvironmentFile
+export interface FetchHandlerFile {
+  readonly _tag: 'FetchHandler'
+  readonly file: string
+}
 
-// export interface FetchHandlerFile {
-//   readonly _tag: 'FetchHandler'
-//   readonly file: string
-// }
+export interface EnvironmentFile {
+  readonly _tag: 'Environment'
+  readonly file: string
+}
 
-// export interface EnvironmentFile {
-//   readonly _tag: 'Environment'
-//   readonly file: string
-// }
+function isFetchHandlerFile(file: ApiSourceFile): file is FetchHandlerFile {
+  return file._tag === 'FetchHandler'
+}
 
-// function isFetchHandlerFile(file: ApiSourceFile): file is FetchHandlerFile {
-//   return file._tag === 'FetchHandler'
-// }
-
-// function isEnvironmentFile(file: ApiSourceFile): file is EnvironmentFile {
-//   return file._tag === 'Environment'
-// }
+function isEnvironmentFile(file: ApiSourceFile): file is EnvironmentFile {
+  return file._tag === 'Environment'
+}
