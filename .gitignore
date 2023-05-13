@@ -1,0 +1,11 @@
+coverage/
+node_modules/
+dist/
+build/
+packages/*/docs
+*.tsbuildinfo
+.ultra.cache.json
+.DS_Store
+tmp/
+.cache/
+.direnv/

@@ -1,0 +1,83 @@
+{
+  "compilerOptions": {
+    "moduleDetection": "force",
+    "composite": true,
+    "downlevelIteration": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "preserveSymlinks": true,
+    "moduleResolution": "node",
+    "noEmit": false,
+    "lib": [
+      "ES2021",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "sourceMap": true,
+    "declarationMap": true,
+    "strict": true,
+    "noImplicitReturns": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "noEmitOnError": false,
+    "noErrorTruncation": true,
+    "allowJs": false,
+    "checkJs": false,
+    "forceConsistentCasingInFileNames": true,
+    "stripInternal": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUncheckedIndexedAccess": false,
+    "strictNullChecks": true,
+    "baseUrl": ".",
+    "target": "ES2021",
+    "module": "ES6",
+    "incremental": true,
+    "removeComments": false,
+    "paths": {
+      "@typed/context/*": [
+        "packages/context/src/*"
+      ],
+      "@typed/decoder/*": [
+        "packages/decoder/src/*"
+      ],
+      "@typed/dom/*": [
+        "packages/dom/src/*"
+      ],
+      "@typed/error/*": [
+        "packages/error/src/*"
+      ],
+      "@typed/fx/*": [
+        "packages/fx/src/*"
+      ],
+      "@typed/html/*": [
+        "packages/html/src/*"
+      ],
+      "@typed/path/*": [
+        "packages/path/src/*"
+      ],
+      "@typed/route/*": [
+        "packages/route/src/*"
+      ],
+      "@typed/router/*": [
+        "packages/router/src/*"
+      ],
+    },
+    "plugins": [
+      {
+        "name": "@effect/language-service"
+      }
+    ]
+  },
+  "include": [],
+  "exclude": [
+    "node_modules",
+    "build",
+    "lib"
+  ]
+}
