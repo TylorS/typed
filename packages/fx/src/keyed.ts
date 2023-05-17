@@ -14,7 +14,7 @@ import { ScopedFork, withScopedFork } from './helpers.js'
 
 export function keyed<R, E, A, R2, E2, B>(
   fx: Fx<R, E, readonly A[]>,
-  f: (a: Fx<never, never, A>) => Fx<R2, E2, B>,
+  f: (a: Fx<never, never, A>, initial: A) => Fx<R2, E2, B>,
   eq: Equivalence<A> = fastDeepEqual,
 ): Fx<R | R2, E | E2, readonly B[]> {
   return Fx(<R3>(sink: Sink<R3, E | E2, readonly B[]>) =>
@@ -93,7 +93,7 @@ function updateState<A, B, R2, E2, R3>({
 }: {
   state: KeyedState<A, B>
   updated: readonly A[]
-  f: (a: Fx<never, never, A>) => Fx<R2, E2, B>
+  f: (a: Fx<never, never, A>, initial: A) => Fx<R2, E2, B>
   fork: ScopedFork
   difference: (self: Iterable<A>, that: Iterable<A>) => A[]
   intersection: (self: Iterable<A>, that: Iterable<A>) => A[]
@@ -151,14 +151,14 @@ function addValue<A, B, R2, E2, R3>({
 }: {
   state: KeyedState<A, B>
   value: A
-  f: (a: Fx<never, never, A>) => Fx<R2, E2, B>
+  f: (a: Fx<never, never, A>, initial: A) => Fx<R2, E2, B>
   fork: ScopedFork
   emit: Effect.Effect<never, never, void>
   error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
 }) {
   return Effect.gen(function* ($) {
     const subject = RefSubject.unsafeMake<never, A>(Effect.succeed(value))
-    const fx = f(subject)
+    const fx = f(subject, value)
     const fiber = yield* $(
       fork(
         fx.run(
