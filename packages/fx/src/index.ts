@@ -1080,5 +1080,26 @@ export const toReadonlyArray: <R, E, A>(
   (trace) => (fx) => internal.toReadonlyArray(fx).traced(trace),
 )
 
+export const keyed: {
+  <A, R2, E2, B>(f: (value: Fx<never, never, A>) => Fx<R2, E2, B>, eq?: Equivalence<A>): <R, E>(
+    fx: Fx<R, E, readonly A[]>,
+  ) => Fx<R2, E2, readonly B[]>
+
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, readonly A[]>,
+    f: (value: Fx<never, never, A>) => Fx<R2, E2, B>,
+    eq?: Equivalence<A>,
+  ): Fx<R | R2, E | E2, readonly B[]>
+} = dualWithTrace(
+  (args) => internal.isFx(args[0]),
+  (trace) =>
+    <R, E, A, R2, E2, B>(
+      fx: Fx<R, E, readonly A[]>,
+      f: (value: Fx<never, never, A>) => Fx<R2, E2, B>,
+      eq?: Equivalence<A>,
+    ): Fx<R | R2, E | E2, readonly B[]> =>
+      internal.keyed(fx, f, eq).addTrace(trace),
+)
+
 export * from './RefSubject.js'
 export * from './Subject.js'
