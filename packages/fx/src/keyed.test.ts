@@ -10,7 +10,7 @@ import { toReadonlyArray } from './toReadonlyArray.js'
 
 describe(__filename, () => {
   describe(keyed.name, () => {
-    it('allows replaying latest events to late subscribers', async () => {
+    it('allow keeping a reference to a running stream', async () => {
       const test = Effect.gen(function* ($) {
         const inputs = mergeAll(
           succeed([1, 2, 3]),
@@ -20,10 +20,14 @@ describe(__filename, () => {
 
         let calls = 0
 
-        const fx = keyed(inputs, (source) => {
-          calls++
-          return source
-        })
+        const fx = keyed(
+          inputs,
+          (source) => {
+            calls++
+            return source
+          },
+          (x) => x,
+        )
 
         const events = yield* $(toReadonlyArray(fx))
 
