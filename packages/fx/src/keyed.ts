@@ -124,8 +124,8 @@ function updateState<A, B, C, R2, E2, R3>({
     // Update values that are still in the stream
     yield* $(Effect.forEachParDiscard(unchanged, (value) => updateValue(state, value, getKey)))
 
-    // If nothing was added or removed, emit the current values
-    if (added.length === 0 && removed.length === 0) {
+    // If nothing was added, emit the current values
+    if (added.length === 0) {
       yield* $(emit)
     }
   })
