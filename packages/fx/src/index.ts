@@ -1081,13 +1081,14 @@ export const toReadonlyArray: <R, E, A>(
 )
 
 export const keyed: {
-  <A, R2, E2, B>(f: (value: Fx<never, never, A>) => Fx<R2, E2, B>, eq?: Equivalence<A>): <R, E>(
-    fx: Fx<R, E, readonly A[]>,
-  ) => Fx<R2, E2, readonly B[]>
+  <A, R2, E2, B>(
+    f: (value: Fx<never, never, A>, initial: A) => Fx<R2, E2, B>,
+    eq?: Equivalence<A>,
+  ): <R, E>(fx: Fx<R, E, readonly A[]>) => Fx<R2, E2, readonly B[]>
 
   <R, E, A, R2, E2, B>(
     fx: Fx<R, E, readonly A[]>,
-    f: (value: Fx<never, never, A>) => Fx<R2, E2, B>,
+    f: (value: Fx<never, never, A>, initial: A) => Fx<R2, E2, B>,
     eq?: Equivalence<A>,
   ): Fx<R | R2, E | E2, readonly B[]>
 } = dualWithTrace(
