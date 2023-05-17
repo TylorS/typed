@@ -66,7 +66,7 @@ type KeyedState<A, B, C> = {
   previous: readonly A[]
   ended: boolean
 
-  readonly subjects: MutableHashMap.MutableHashMap<C, Subject<never, A>>
+  readonly subjects: MutableHashMap.MutableHashMap<C, RefSubject<never, A>>
   readonly fibers: MutableHashMap.MutableHashMap<C, Fiber.RuntimeFiber<never, void>>
   readonly values: MutableHashMap.MutableHashMap<C, B>
   readonly output: Subject<never, readonly B[]>
@@ -195,7 +195,7 @@ function updateValue<A, B, C>(state: KeyedState<A, B, C>, value: A, getKey: (a: 
 
     // Send the current value
     if (Option.isSome(subject)) {
-      yield* $(subject.value.event(value))
+      yield* $(subject.value.set(value))
     }
   })
 }
