@@ -136,11 +136,11 @@ function removeValue<A, B, C>(state: KeyedState<A, B, C>, value: A, getKey: (a: 
     const key = getKey(value)
     const subject = MutableHashMap.get(state.subjects, key)
 
-    if (Option.isSome(subject)) yield* $(subject.value.end())
+    if (Option.isSome(subject)) yield* $(Effect.fork(subject.value.end()))
 
     const fiber = MutableHashMap.get(state.fibers, key)
 
-    if (Option.isSome(fiber)) yield* $(Fiber.interrupt(fiber.value))
+    if (Option.isSome(fiber)) yield* $(Fiber.interruptFork(fiber.value))
 
     MutableHashMap.remove(state.values, key)
     MutableHashMap.remove(state.subjects, key)
