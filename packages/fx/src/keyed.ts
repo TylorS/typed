@@ -22,8 +22,6 @@ export function keyed<R, E, A, R2, E2, B, C>(
       Effect.gen(function* ($) {
         const state = createKeyedState<A, B, C>()
         const eq = Equivalence.make((x: A, y: A) => fastDeepEqual(getKey(x), getKey(y)))
-        const difference = ReadonlyArray.difference(eq)
-        const intersection = ReadonlyArray.intersection(eq)
         const emit = emitWhenReady(state, getKey)
 
         // Let output emit to the sink
@@ -37,11 +35,10 @@ export function keyed<R, E, A, R2, E2, B, C>(
                 updateState({
                   state,
                   updated: as,
+                  eq,
                   getKey,
                   f,
                   fork,
-                  difference,
-                  intersection,
                   emit,
                   error: sink.error,
                 }),
@@ -64,6 +61,7 @@ export function keyed<R, E, A, R2, E2, B, C>(
 
 type KeyedState<A, B, C> = {
   previous: readonly A[]
+  previousKeys: ReadonlySet<C>
   ended: boolean
 
   readonly subjects: MutableHashMap.MutableHashMap<C, RefSubject<never, A>>
@@ -75,6 +73,7 @@ type KeyedState<A, B, C> = {
 function createKeyedState<A, B, C>(): KeyedState<A, B, C> {
   return {
     previous: [],
+    previousKeys: new Set(),
     ended: false,
     subjects: MutableHashMap.empty(),
     fibers: MutableHashMap.empty(),
@@ -88,41 +87,35 @@ function updateState<A, B, C, R2, E2, R3>({
   updated,
   f,
   fork,
-  difference,
-  intersection,
   emit,
   error,
   getKey,
 }: {
   state: KeyedState<A, B, C>
   updated: readonly A[]
+  eq: Equivalence.Equivalence<A>
   f: (fx: RefSubject<never, A>) => Fx<R2, E2, B>
   fork: ScopedFork
-  difference: (self: Iterable<A>, that: Iterable<A>) => A[]
-  intersection: (self: Iterable<A>, that: Iterable<A>) => A[]
   emit: Effect.Effect<never, never, void>
   error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
   getKey: (a: A) => C
 }) {
   return Effect.gen(function* ($) {
-    const added = difference(updated, state.previous)
-    const removed = difference(state.previous, updated)
-    const unchanged = intersection(updated, state.previous)
-
-    state.previous = updated
+    const { added, removed, unchanged } = diffValues(state, updated, getKey)
 
     // Remove values that are no longer in the stream
-    yield* $(Effect.forEachParDiscard(removed, (value) => removeValue(state, value, getKey)))
+    yield* $(Effect.forEachParDiscard(removed, (key) => removeValue(state, key)))
 
-    // Add values that are new to the stream
     yield* $(
+      // Add values that are new to the stream
       Effect.forEachParDiscard(added, (value) =>
         addValue({ state, value, f, fork, emit, error, getKey }),
       ),
+      Effect.zipPar(
+        // Update values that are still in the stream
+        Effect.forEachParDiscard(unchanged, (value) => updateValue(state, value, getKey)),
+      ),
     )
-
-    // Update values that are still in the stream
-    yield* $(Effect.forEachParDiscard(unchanged, (value) => updateValue(state, value, getKey)))
 
     // If nothing was added, emit the current values
     if (added.length === 0) {
@@ -131,9 +124,46 @@ function updateState<A, B, C, R2, E2, R3>({
   })
 }
 
-function removeValue<A, B, C>(state: KeyedState<A, B, C>, value: A, getKey: (a: A) => C) {
-  return Effect.gen(function* ($) {
+function diffValues<A, B, C>(
+  state: KeyedState<A, B, C>,
+  updated: ReadonlyArray<A>,
+  getKey: (a: A) => C,
+) {
+  const added: A[] = []
+  const unchanged: A[] = []
+  const removed: C[] = []
+  const previousKeys = state.previousKeys
+  const keys = new Set<C>(updated.map(getKey))
+
+  for (let i = 0; i < updated.length; ++i) {
+    const value = updated[i]
     const key = getKey(value)
+
+    if (previousKeys.has(key)) {
+      unchanged.push(value)
+    } else {
+      added.push(value)
+    }
+  }
+
+  previousKeys.forEach((k) => {
+    if (!keys.has(k)) {
+      removed.push(k)
+    }
+  })
+
+  state.previous = updated
+  state.previousKeys = keys
+
+  return {
+    added,
+    unchanged,
+    removed,
+  } as const
+}
+
+function removeValue<A, B, C>(state: KeyedState<A, B, C>, key: C) {
+  return Effect.gen(function* ($) {
     const subject = MutableHashMap.get(state.subjects, key)
 
     if (Option.isSome(subject)) yield* $(Effect.fork(subject.value.end()))
@@ -202,6 +232,11 @@ function updateValue<A, B, C>(state: KeyedState<A, B, C>, value: A, getKey: (a: 
 
 function emitWhenReady<A, B, C>(state: KeyedState<A, B, C>, getKey: (a: A) => C) {
   return Effect.suspend(() => {
+    // Fast path: if we don't have enough values, don't emit
+    if (MutableHashMap.size(state.values) !== state.previous.length) {
+      return Effect.unit()
+    }
+
     const values = ReadonlyArray.filterMap(state.previous, (value) =>
       MutableHashMap.get(state.values, getKey(value)),
     )
