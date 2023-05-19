@@ -49,7 +49,7 @@ export function keyed<R, E, A, R2, E2, B, C>(
         yield* $(Fiber.joinAll(Array.from(state.fibers).map((x) => x[1])))
 
         // Terminate the output fiber
-        yield* $(Fiber.interrupt(fiber))
+        yield* $(Fiber.interruptFork(fiber))
       }),
     ),
   )
