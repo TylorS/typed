@@ -76,23 +76,19 @@ function createKeyedState<A, B, C>(): KeyedState<A, B, C> {
   }
 }
 
-function updateState<A, B, C, R2, E2, R3>({
-  state,
-  updated,
-  f,
-  fork,
-  emit,
-  error,
-  getKey,
-}: {
+type UpdateStateParams<A, B, C, R2, E2, R3> = {
   state: KeyedState<A, B, C>
   updated: readonly A[]
   f: (fx: RefSubject<never, A>) => Fx<R2, E2, B>
-  fork: ScopedFork
-  emit: Effect.Effect<never, never, void>
-  error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
   getKey: (a: A) => C
-}) {
+  fork: ScopedFork
+  error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
+  emit: Effect.Effect<never, never, void>
+}
+
+function updateState<A, B, C, R2, E2, R3>(params: UpdateStateParams<A, B, C, R2, E2, R3>) {
+  const { state, updated, emit, getKey } = params
+
   return Effect.gen(function* ($) {
     const { added, removed, unchanged } = diffValues(state, updated, getKey)
 
@@ -103,11 +99,7 @@ function updateState<A, B, C, R2, E2, R3>({
 
     // Add values that are new to the stream
     if (added.length > 0) {
-      yield* $(
-        Effect.forEachDiscard(added, (value) =>
-          addValue({ state, value, f, fork, emit, error, getKey }),
-        ),
-      )
+      yield* $(Effect.forEachDiscard(added, (value) => addValue({ ...params, value })))
     }
 
     // Update values that are still in the stream
@@ -185,6 +177,16 @@ function removeValue<A, B, C>(state: KeyedState<A, B, C>, key: C) {
   })
 }
 
+type AddValueParams<A, B, C, R2, E2, R3> = {
+  state: KeyedState<A, B, C>
+  value: A
+  f: (fx: RefSubject<never, A>) => Fx<R2, E2, B>
+  fork: ScopedFork
+  emit: Effect.Effect<never, never, void>
+  error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
+  getKey: (a: A) => C
+}
+
 function addValue<A, B, C, R2, E2, R3>({
   state,
   value,
@@ -193,15 +195,7 @@ function addValue<A, B, C, R2, E2, R3>({
   emit,
   error,
   getKey,
-}: {
-  state: KeyedState<A, B, C>
-  value: A
-  f: (fx: RefSubject<never, A>) => Fx<R2, E2, B>
-  fork: ScopedFork
-  emit: Effect.Effect<never, never, void>
-  error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
-  getKey: (a: A) => C
-}) {
+}: AddValueParams<A, B, C, R2, E2, R3>) {
   return Effect.gen(function* ($) {
     const key = getKey(value)
     const subject = RefSubject.unsafeMake<never, A>(Effect.succeed(value))
