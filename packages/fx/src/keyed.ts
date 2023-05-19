@@ -22,34 +22,36 @@ export function keyed<R, E, A, R2, E2, B, C>(
         const emit = emitWhenReady(state, getKey)
 
         // Let output emit to the sink
-        const fiber = yield* $(fork(state.output.run(sink)))
+        yield* $(fork(state.output.run(sink)))
+
+        const params: Omit<UpdateStateParams<A, B, C, R2, E2, R3>, 'updated'> = {
+          state,
+          getKey,
+          f,
+          fork,
+          emit,
+          error: sink.error,
+        }
 
         // Listen to the input and update the state
         yield* $(
           fx.run(
             Sink(
-              (as) =>
+              (updated) =>
                 updateState({
-                  state,
-                  updated: as,
-                  getKey,
-                  f,
-                  fork,
-                  emit,
-                  error: sink.error,
+                  ...params,
+                  updated,
                 }),
               sink.error,
             ),
           ),
         )
 
-        yield* $(endAll(state))
-
         // When the source stream ends we wait for the remaining fibers to end
         yield* $(Fiber.joinAll(Array.from(state.fibers).map((x) => x[1])))
 
-        // Terminate the output fiber
-        yield* $(Fiber.interruptFork(fiber))
+        // Send end signals to all Fx listening to subjects to allow finalization
+        yield* $(endAll(state))
       }),
     ),
   )
