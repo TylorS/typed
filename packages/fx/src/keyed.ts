@@ -1,10 +1,8 @@
 import * as MutableHashMap from '@effect/data/MutableHashMap'
 import * as Option from '@effect/data/Option'
 import * as ReadonlyArray from '@effect/data/ReadonlyArray'
-import * as Equivalence from '@effect/data/typeclass/Equivalence'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
-import fastDeepEqual from 'fast-deep-equal'
 
 import { Fx, Sink } from './Fx.js'
 import { RefSubject } from './RefSubject.js'
@@ -21,7 +19,6 @@ export function keyed<R, E, A, R2, E2, B, C>(
     withScopedFork((fork) =>
       Effect.gen(function* ($) {
         const state = createKeyedState<A, B, C>()
-        const eq = Equivalence.make((x: A, y: A) => fastDeepEqual(getKey(x), getKey(y)))
         const emit = emitWhenReady(state, getKey)
 
         // Let output emit to the sink
@@ -35,7 +32,6 @@ export function keyed<R, E, A, R2, E2, B, C>(
                 updateState({
                   state,
                   updated: as,
-                  eq,
                   getKey,
                   f,
                   fork,
@@ -93,7 +89,6 @@ function updateState<A, B, C, R2, E2, R3>({
 }: {
   state: KeyedState<A, B, C>
   updated: readonly A[]
-  eq: Equivalence.Equivalence<A>
   f: (fx: RefSubject<never, A>) => Fx<R2, E2, B>
   fork: ScopedFork
   emit: Effect.Effect<never, never, void>
