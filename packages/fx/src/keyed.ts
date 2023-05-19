@@ -58,7 +58,6 @@ export function keyed<R, E, A, R2, E2, B, C>(
 type KeyedState<A, B, C> = {
   previous: readonly A[]
   previousKeys: ReadonlySet<C>
-  ended: boolean
 
   readonly subjects: MutableHashMap.MutableHashMap<C, RefSubject<never, A>>
   readonly fibers: MutableHashMap.MutableHashMap<C, Fiber.RuntimeFiber<never, void>>
@@ -70,7 +69,6 @@ function createKeyedState<A, B, C>(): KeyedState<A, B, C> {
   return {
     previous: [],
     previousKeys: new Set(),
-    ended: false,
     subjects: MutableHashMap.empty(),
     fibers: MutableHashMap.empty(),
     values: MutableHashMap.empty(),
