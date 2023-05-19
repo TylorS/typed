@@ -7,6 +7,7 @@
  * for interpolating values.
  */
 import type { A, N } from 'ts-toolbelt'
+import { Equals } from 'ts-toolbelt/out/Any/Equals.js'
 
 /* Start Region: Parameter DSL */
 
@@ -156,8 +157,8 @@ export const formatPart = (part: string) => {
 /**
  * @category Type-level
  */
-export type FormatPart<P extends string> = [never] extends [P]
-  ? string
+export type FormatPart<P extends string> = Equals<string, P> extends 1
+  ? `/${string}`
   : `` extends P
   ? P
   : RemoveLeadingSlash<P> extends `\\?${infer _}`
@@ -215,7 +216,7 @@ export type PathToParts<P> = P extends `${infer Head}\\?${infer Tail}`
   ? readonly [...PathToParts<Head>, `{${Q}}?`, ...PathToParts<`${Tail}`>]
   : P extends `${infer Head}{${infer Q}}${infer Tail}`
   ? readonly [...PathToParts<Head>, `{${Q}}`, ...PathToParts<`${Tail}`>]
-  : `` extends P
+  : Equals<``, P> extends 1
   ? readonly []
   : readonly [P]
 
@@ -338,7 +339,9 @@ export type InpterpolateParts<
   R extends readonly any[] = [],
   AST = {},
 > = Parts extends readonly [infer H, ...infer T]
-  ? H extends Optional<Prefix<infer Pre, Unnamed>>
+  ? Equals<string, H> extends 1
+    ? InpterpolateParts<T, Params, [...R, H], AST>
+    : H extends Optional<Prefix<infer Pre, Unnamed>>
     ? FindNextIndex<AST> extends keyof Params
       ? InpterpolateParts<
           T,
