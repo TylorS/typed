@@ -104,18 +104,17 @@ function updateState<A, B, C, R2, E2, R3>({
     const { added, removed, unchanged } = diffValues(state, updated, getKey)
 
     // Remove values that are no longer in the stream
-    yield* $(Effect.forEachParDiscard(removed, (key) => removeValue(state, key)))
+    yield* $(Effect.forEachDiscard(removed, (key) => removeValue(state, key)))
 
+    // Add values that are new to the stream
     yield* $(
-      // Add values that are new to the stream
-      Effect.forEachParDiscard(added, (value) =>
+      Effect.forEachDiscard(added, (value) =>
         addValue({ state, value, f, fork, emit, error, getKey }),
       ),
-      Effect.zipPar(
-        // Update values that are still in the stream
-        Effect.forEachParDiscard(unchanged, (value) => updateValue(state, value, getKey)),
-      ),
     )
+
+    // Update values that are still in the stream
+    yield* $(Effect.forEachDiscard(unchanged, (value) => updateValue(state, value, getKey)))
 
     // If nothing was added, emit the current values
     if (added.length === 0) {
@@ -129,11 +128,23 @@ function diffValues<A, B, C>(
   updated: ReadonlyArray<A>,
   getKey: (a: A) => C,
 ) {
+  const previousKeys = state.previousKeys
+  const keys = new Set<C>(updated.map(getKey))
+
+  state.previous = updated
+  state.previousKeys = keys
+
+  if (previousKeys.size === 0) {
+    return {
+      added: updated,
+      unchanged: [],
+      removed: [],
+    }
+  }
+
   const added: A[] = []
   const unchanged: A[] = []
   const removed: C[] = []
-  const previousKeys = state.previousKeys
-  const keys = new Set<C>(updated.map(getKey))
 
   for (let i = 0; i < updated.length; ++i) {
     const value = updated[i]
@@ -151,9 +162,6 @@ function diffValues<A, B, C>(
       removed.push(k)
     }
   })
-
-  state.previous = updated
-  state.previousKeys = keys
 
   return {
     added,
