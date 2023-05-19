@@ -104,17 +104,23 @@ function updateState<A, B, C, R2, E2, R3>({
     const { added, removed, unchanged } = diffValues(state, updated, getKey)
 
     // Remove values that are no longer in the stream
-    yield* $(Effect.forEachDiscard(removed, (key) => removeValue(state, key)))
+    if (removed.length > 0) {
+      yield* $(Effect.forEachDiscard(removed, (key) => removeValue(state, key)))
+    }
 
     // Add values that are new to the stream
-    yield* $(
-      Effect.forEachDiscard(added, (value) =>
-        addValue({ state, value, f, fork, emit, error, getKey }),
-      ),
-    )
+    if (added.length > 0) {
+      yield* $(
+        Effect.forEachDiscard(added, (value) =>
+          addValue({ state, value, f, fork, emit, error, getKey }),
+        ),
+      )
+    }
 
     // Update values that are still in the stream
-    yield* $(Effect.forEachDiscard(unchanged, (value) => updateValue(state, value, getKey)))
+    if (unchanged.length > 0) {
+      yield* $(Effect.forEachDiscard(unchanged, (value) => updateValue(state, value, getKey)))
+    }
 
     // If nothing was added, emit the current values
     if (added.length === 0) {
