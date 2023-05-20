@@ -29,16 +29,16 @@ export interface Subject<I, E, A> extends Context.Tag<I, Fx.Subject<E, A>>, Fx.F
 export const Subject =
   <E, A>() =>
   <const I>(identifier: I): Subject<I, E, A> =>
-    make(identifier, () => Fx.makeSubject<E, A>())
+    make(identifier, () => Fx.makeSubject<E, A>(), false)
 
 export const HoldSubject =
   <E, A>() =>
   <const I>(identifier: I): Subject<I, E, A> =>
-    make(identifier, () => Fx.makeHoldSubject<E, A>())
+    make(identifier, () => Fx.makeHoldSubject<E, A>(), true)
 
-function make<const I, E, A>(id: I, f: () => Fx.Subject<E, A>): Subject<I, E, A> {
+function make<const I, E, A>(id: I, f: () => Fx.Subject<E, A>, hold: boolean): Subject<I, E, A> {
   const tag = Context.Tag<I, Fx.Subject<E, A>>(id)
-  const fx = Fx.multicast(Fx.fromFxEffect(tag))
+  const fx = hold ? Fx.hold(Fx.fromFxEffect(tag)) : Fx.multicast(Fx.fromFxEffect(tag))
   const layer = Effect.toLayer(Effect.sync(f), tag)
 
   return Object.assign(tag, {
