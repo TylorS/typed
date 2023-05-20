@@ -5,8 +5,8 @@ export function id<const T>(uniqueIdentifier: T): TaggedIdentifierConstructor<re
   }
 }
 
-export interface TaggedIdentifierConstructor<Args extends readonly any[], T> {
-  readonly _tag: T
+export interface TaggedIdentifierConstructor<Args extends readonly any[], T>
+  extends TaggedIdentifier<T> {
   new (...args: Args): TaggedIdentifier<T>
 }
 
