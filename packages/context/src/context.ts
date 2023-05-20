@@ -1,4 +1,5 @@
 import * as C from '@effect/data/Context'
+import * as Debug from '@effect/data/Debug'
 import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
@@ -100,6 +101,31 @@ export namespace ContextBuilder {
     return fromContext(C.make(tag, s))
   }
 }
+
+export const provideContextBuilder: {
+  <R>(builder: ContextBuilder<R>): <E, A>(
+    effect: Effect.Effect<R, E, A>,
+  ) => Effect.Effect<never, E, A>
+  <R, E, A>(effect: Effect.Effect<R, E, A>, builder: ContextBuilder<R>): Effect.Effect<never, E, A>
+} = Debug.dualWithTrace(
+  2,
+  (trace) =>
+    <R, E, A>(
+      effect: Effect.Effect<R, E, A>,
+      builder: ContextBuilder<R>,
+    ): Effect.Effect<never, E, A> =>
+      Effect.provideContext(effect, builder.context).traced(trace),
+)
+
+export const provideContextBuilderFx: {
+  <R>(builder: ContextBuilder<R>): <E, A>(fx: Fx.Fx<R, E, A>) => Fx.Fx<never, E, A>
+  <R, E, A>(fx: Fx.Fx<R, E, A>, builder: ContextBuilder<R>): Fx.Fx<never, E, A>
+} = Debug.dualWithTrace(
+  2,
+  (trace) =>
+    <R, E, A>(fx: Fx.Fx<R, E, A>, builder: ContextBuilder<R>): Fx.Fx<never, E, A> =>
+      Fx.provideContext(fx, builder.context).addTrace(trace),
+)
 
 export function effectContextBuilder<R, E, I>(
   effect: Effect.Effect<R, E, ContextBuilder<I>>,
