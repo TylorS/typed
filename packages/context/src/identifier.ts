@@ -1,13 +1,12 @@
-export function id<const T>(uniqueIdentifier: T): TaggedIdentifierConstructor<readonly [], T> {
+export function id<const T>(uniqueIdentifier: T): TaggedIdentifierConstructor<T> {
   return class Tagged implements TaggedIdentifier<T> {
     static readonly _tag: T = uniqueIdentifier
     readonly _tag: T = uniqueIdentifier
   }
 }
 
-export interface TaggedIdentifierConstructor<Args extends readonly any[], T>
-  extends TaggedIdentifier<T> {
-  new (...args: Args): TaggedIdentifier<T>
+export interface TaggedIdentifierConstructor<T> extends TaggedIdentifier<T> {
+  new (): TaggedIdentifier<T>
 }
 
 export interface TaggedIdentifier<T> {
