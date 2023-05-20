@@ -341,6 +341,10 @@ function updateRef<R, E>(
   node: Element,
   value: Placeholder<R, E> | null | undefined,
 ): Fx.Fx<R, E, unknown> | undefined {
+  if (value == null) {
+    return
+  }
+
   if (isElementRef(value)) {
     return Fx.fromEffect(value.set(Option.some(node as HTMLElement)))
   }
