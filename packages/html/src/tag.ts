@@ -330,7 +330,7 @@ function getEventHandlerAndOptions(
   }
 
   if (!value) {
-    return [undefined, undefined] as any
+    return [undefined, undefined] as const
   }
 
   throw new Error(`Unexpected value for event handler: ${JSON.stringify(value)}`)
