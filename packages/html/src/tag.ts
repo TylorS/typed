@@ -309,8 +309,7 @@ function updateEvent<R, E>(
   return pipe(
     node,
     addEventListener(type as any, options),
-    Fx.flatMapEffect(handler),
-    Fx.drain,
+    Fx.observe(handler),
     Effect.forkScoped,
     Effect.asUnit,
   )
