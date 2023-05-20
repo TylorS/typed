@@ -1,7 +1,7 @@
+import * as Effect from '@effect/io/Effect'
 import type { Scope } from '@effect/io/Scope'
 
 import type { Fx } from './Fx.js'
-import { Effect } from './externals.js'
 import { toArray } from './toArray.js'
 
 export function toReadonlyArray<R, E, A>(

@@ -1,9 +1,11 @@
+import * as Cause from '@effect/io/Cause'
+import * as Deferred from '@effect/io/Deferred'
+import * as Effect from '@effect/io/Effect'
+import * as Fiber from '@effect/io/Fiber'
 import type { Scope } from '@effect/io/Scope'
 
 import type { Fx } from './Fx.js'
 import { Sink } from './Fx.js'
-import type { Cause } from './externals.js'
-import { Deferred, Effect, Fiber } from './externals.js'
 
 export function observe<R, E, A, R2, E2>(
   fx: Fx<R, E, A>,

@@ -1,10 +1,12 @@
 import { methodWithTrace } from '@effect/data/Debug'
+import * as Cause from '@effect/io/Cause'
+import * as Deferred from '@effect/io/Deferred'
+import * as Effect from '@effect/io/Effect'
+import * as Runtime from '@effect/io/Runtime'
 import type { Scope } from '@effect/io/Scope'
 
 import type { Sink } from './Fx.js'
 import { Fx } from './Fx.js'
-import type { Cause } from './externals.js'
-import { Deferred, Effect, Runtime } from './externals.js'
 
 export function fromEmitter<E, A, R, E2>(
   f: (emitter: Emitter<E, A>) => Effect.Effect<R | Scope, E2, void>,

@@ -1,5 +1,6 @@
+import * as Effect from '@effect/io/Effect'
+
 import { Fx, Sink } from './Fx.js'
-import { Effect } from './externals.js'
 
 export function slice<R, E, A>(fx: Fx<R, E, A>, skip: number, take: number): Fx<R, E, A> {
   return Fx(

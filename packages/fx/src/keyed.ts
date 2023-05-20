@@ -1,13 +1,13 @@
 import * as MutableHashMap from '@effect/data/MutableHashMap'
 import * as Option from '@effect/data/Option'
 import * as ReadonlyArray from '@effect/data/ReadonlyArray'
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 
 import { Fx, Sink } from './Fx.js'
 import { RefSubject } from './RefSubject.js'
 import { Subject, makeHoldSubject } from './Subject.js'
-import { Cause } from './externals.js'
 import { ScopedFork, withScopedFork } from './helpers.js'
 
 export function keyed<R, E, A, R2, E2, B, C>(

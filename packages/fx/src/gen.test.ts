@@ -1,6 +1,7 @@
+import * as Cause from '@effect/io/Cause'
+import * as Effect from '@effect/io/Effect'
 import { describe } from 'vitest'
 
-import { Cause, Effect } from './externals.js'
 import { gen } from './gen.js'
 import { succeed } from './succeed.js'
 import { testCause, testCollectAll } from './test-utils.js'

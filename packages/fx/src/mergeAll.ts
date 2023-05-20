@@ -1,5 +1,8 @@
+import * as Option from '@effect/data/Option'
+import * as Cause from '@effect/io/Cause'
+import * as Effect from '@effect/io/Effect'
+
 import { Fx, Sink } from './Fx.js'
-import { Cause, Effect, Option } from './externals.js'
 import { compact } from './filterMap.js'
 import { map } from './map.js'
 

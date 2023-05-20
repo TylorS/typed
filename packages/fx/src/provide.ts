@@ -1,7 +1,9 @@
-import type { Sink } from './Fx.js'
+import * as Context from '@effect/data/Context'
+import * as Effect from '@effect/io/Effect'
+import * as Layer from '@effect/io/Layer'
+
 import { Fx } from './Fx.js'
-import type { Layer } from './externals.js'
-import { Context, Effect } from './externals.js'
+import type { Sink } from './Fx.js'
 import { switchMap } from './switchMap.js'
 
 export function provideContext<R, E, A>(

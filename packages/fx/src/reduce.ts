@@ -1,5 +1,7 @@
+import * as Effect from '@effect/io/Effect'
+import * as Scope from '@effect/io/Scope'
+
 import { Fx } from './Fx.js'
-import { Effect, Scope } from './externals.js'
 import { observe } from './observe.js'
 
 export function reduce<R, E, A, B>(

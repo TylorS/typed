@@ -1,5 +1,6 @@
+import * as Effect from '@effect/io/Effect'
+
 import type { Fx } from './Fx.js'
-import { Effect } from './externals.js'
 import { fromFxEffect } from './fromFxEffect.js'
 
 export type EffectGenResources<T> = [T] extends [never]

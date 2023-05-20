@@ -1,10 +1,12 @@
+import type * as Context from '@effect/data/Context'
 import type { Trace } from '@effect/data/Debug'
 import { identity } from '@effect/data/Function'
+import type * as Cause from '@effect/io/Cause'
+import * as Effect from '@effect/io/Effect'
+import * as Fiber from '@effect/io/Fiber'
 
-import type { Fx, Sink } from './Fx.js'
 import { FxTypeId, Traced } from './Fx.js'
-import type { Cause, Context } from './externals.js'
-import { Effect, Fiber } from './externals.js'
+import type { Fx, Sink } from './Fx.js'
 
 export function multicast<R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> {
   return new MulticastFx(fx)

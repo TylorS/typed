@@ -1,7 +1,8 @@
 import { methodWithTrace } from '@effect/data/Debug'
+import * as Effect from '@effect/io/Effect'
+import * as Fiber from '@effect/io/Fiber'
 
 import type { Fx, Sink } from './Fx.js'
-import { Effect, Fiber } from './externals.js'
 import { HoldFx } from './hold.js'
 import { MulticastFx } from './multicast.js'
 import { never } from './never.js'

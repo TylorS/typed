@@ -1,8 +1,8 @@
 import type { Predicate, Refinement } from '@effect/data/Predicate'
 import { not } from '@effect/data/Predicate'
+import * as Effect from '@effect/io/Effect'
 
 import { Fx, Sink } from './Fx.js'
-import { Effect } from './externals.js'
 
 export function filter<R, E, A, B extends A>(
   fx: Fx<R, E, A>,

@@ -1,5 +1,6 @@
+import * as Effect from '@effect/io/Effect'
+
 import { Fx, Sink } from './Fx.js'
-import { Effect } from './externals.js'
 import { map } from './map.js'
 import { succeed } from './succeed.js'
 

@@ -1,5 +1,6 @@
+import * as Effect from '@effect/io/Effect'
+
 import { Fx } from './Fx.js'
-import { Effect } from './externals.js'
 
 export function fromArray<A>(array: ReadonlyArray<A>): Fx<never, never, A> {
   return Fx((sink) =>

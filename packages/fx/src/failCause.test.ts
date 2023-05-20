@@ -1,6 +1,7 @@
+import * as Cause from '@effect/io/Cause'
+import * as FiberId from '@effect/io/Fiber/Id'
 import { describe } from 'vitest'
 
-import { Cause, FiberId } from './externals.js'
 import { failCause } from './failCause.js'
 import { testCause } from './test-utils.js'
 

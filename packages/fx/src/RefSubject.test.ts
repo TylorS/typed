@@ -1,9 +1,13 @@
 import { deepStrictEqual } from 'assert'
 
+import * as Chunk from '@effect/data/Chunk'
+import * as Duration from '@effect/data/Duration'
+import * as Option from '@effect/data/Option'
+import * as Effect from '@effect/io/Effect'
+import * as Fiber from '@effect/io/Fiber'
 import { describe, it } from 'vitest'
 
 import { makeRef, RefSubject } from './RefSubject.js'
-import { Chunk, Duration, Effect, Fiber, Option } from './externals.js'
 import { toChunk } from './toChunk.js'
 
 describe('RefSubject', () => {

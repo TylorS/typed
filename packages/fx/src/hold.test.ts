@@ -1,11 +1,11 @@
 import { millis } from '@effect/data/Duration'
+import * as Chunk from '@effect/data/Chunk'
 import { range } from '@effect/data/ReadonlyArray'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import { describe, it, expect } from 'vitest'
 
 import { at } from './at.js'
-import { Chunk } from './externals.js'
 import { hold } from './hold.js'
 import { mergeAll } from './mergeAll.js'
 import { toChunk } from './toChunk.js'

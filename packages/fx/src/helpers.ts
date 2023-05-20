@@ -1,6 +1,10 @@
 import { pipe } from '@effect/data/Function'
-
-import { Effect, Fiber, Option, Ref, RefS, Scope } from './externals.js'
+import * as Option from '@effect/data/Option'
+import * as Effect from '@effect/io/Effect'
+import * as Fiber from '@effect/io/Fiber'
+import * as Ref from '@effect/io/Ref'
+import * as RefS from '@effect/io/Ref/Synchronized'
+import * as Scope from '@effect/io/Scope'
 
 export type ScopedFork = <R2, E2, B>(
   effect: Effect.Effect<R2, E2, B>,

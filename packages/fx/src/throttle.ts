@@ -1,5 +1,7 @@
+import * as Duration from '@effect/data/Duration'
+import * as Effect from '@effect/io/Effect'
+
 import { Fx, Sink } from './Fx.js'
-import { Duration, Effect } from './externals.js'
 import { withExhaust } from './helpers.js'
 
 export function throttle<R, E, A>(fx: Fx<R, E, A>, duration: Duration.Duration): Fx<R, E, A> {

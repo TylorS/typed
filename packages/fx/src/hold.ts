@@ -1,8 +1,10 @@
 import type { Trace } from '@effect/data/Debug'
+import * as MutableRef from '@effect/data/MutableRef'
+import * as Option from '@effect/data/Option'
+import * as Effect from '@effect/io/Effect'
 
 import type { Fx, Sink } from './Fx.js'
 import { Traced } from './Fx.js'
-import { Effect, MutableRef, Option } from './externals.js'
 import { MulticastFx } from './multicast.js'
 
 export function hold<R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> {

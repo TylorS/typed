@@ -1,5 +1,9 @@
+import * as Option from '@effect/data/Option'
+import * as Effect from '@effect/io/Effect'
+import * as Fiber from '@effect/io/Fiber'
+import * as Ref from '@effect/io/Ref'
+
 import { Fx, Sink } from './Fx.js'
-import { Effect, Fiber, Option, Ref } from './externals.js'
 
 export function snapshotEffect<R, E, A, R2, E2, B, R3, E3, C>(
   fx: Fx<R, E, A>,

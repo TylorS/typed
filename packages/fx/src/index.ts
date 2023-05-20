@@ -1,14 +1,19 @@
+import * as Chunk from '@effect/data/Chunk'
+import * as Context from '@effect/data/Context'
 import { dualWithTrace, methodWithTrace } from '@effect/data/Debug'
 import type { Duration } from '@effect/data/Duration'
 import type { HashSet } from '@effect/data/HashSet'
+import * as Option from '@effect/data/Option'
 import type { Predicate, Refinement } from '@effect/data/Predicate'
 import type { Equivalence } from '@effect/data/typeclass/Equivalence'
+import * as Cause from '@effect/io/Cause'
+import * as Effect from '@effect/io/Effect'
 import type { FiberId } from '@effect/io/Fiber/Id'
+import * as Layer from '@effect/io/Layer'
+import * as Scope from '@effect/io/Scope'
 
 import type { Fx } from './Fx.js'
 import * as internal from './data-first.js'
-import type { Cause, Chunk, Context, Effect, Layer, Option, Scope } from './externals.js'
-
 export * from './Fx.js'
 
 export const at: {

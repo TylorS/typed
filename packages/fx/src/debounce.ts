@@ -1,6 +1,7 @@
+import * as Duration from '@effect/data/Duration'
+import * as Effect from '@effect/io/Effect'
+
 import type { Fx } from './Fx.js'
-import type { Duration } from './externals.js'
-import { Effect } from './externals.js'
 import { switchMapEffect } from './switchMap.js'
 
 export function debounce<R, E, A>(fx: Fx<R, E, A>, duration: Duration.Duration): Fx<R, E, A> {

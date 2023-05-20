@@ -1,5 +1,6 @@
+import * as Effect from '@effect/io/Effect'
+
 import { Fx, Sink } from './Fx.js'
-import { Effect } from './externals.js'
 
 export function scan<R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (b: B, a: A) => B): Fx<R, E, B> {
   return Fx((sink) =>

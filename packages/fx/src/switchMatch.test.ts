@@ -1,7 +1,7 @@
+import * as Duration from '@effect/data/Duration'
 import { describe } from 'vitest'
 
 import { delay } from './delay.js'
-import { Duration } from './externals.js'
 import { fail } from './failCause.js'
 import { fromArray } from './fromArray.js'
 import { mergeAll } from './mergeAll.js'

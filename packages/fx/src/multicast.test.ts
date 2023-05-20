@@ -1,10 +1,11 @@
+import * as Chunk from '@effect/data/Chunk'
+import * as Duration from '@effect/data/Duration'
 import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import { describe, it, expect } from 'vitest'
 
 import { delay } from './delay.js'
-import { Chunk, Duration } from './externals.js'
 import { flatMap } from './flatMap.js'
 import { fromArray } from './fromArray.js'
 import { merge } from './mergeAll.js'

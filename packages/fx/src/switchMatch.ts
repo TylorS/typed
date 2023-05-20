@@ -1,7 +1,9 @@
 import { pipe } from '@effect/data/Function'
+import * as Either from '@effect/data/Either'
+import * as Cause from '@effect/io/Cause'
+import * as Effect from '@effect/io/Effect'
 
 import { Fx, Sink } from './Fx.js'
-import { Cause, Effect, Either } from './externals.js'
 import { failCause } from './failCause.js'
 import { fromEffect } from './fromEffect.js'
 import { withSwitch } from './helpers.js'
