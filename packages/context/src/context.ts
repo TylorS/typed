@@ -70,7 +70,7 @@ export function Tag<I, S = I>(key?: string): Tag<I, S> {
       Effect.toLayerScoped(effect, tag),
     layerOf: (s: S) => Layer.succeed(tag, s),
     build: (s: S) => ContextBuilder.fromTag(tag, s),
-  }) as Tag<I, S>
+  } as const) satisfies Tag<I, S>
 }
 
 export interface ContextBuilder<I> {
