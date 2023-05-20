@@ -50,7 +50,7 @@ export const makeIntersectionObserverManager: Effect.Effect<
 
               const observer: InternalObserver = [intersectionObserver, subject]
 
-              return [observer, HashMap.set(options, observer)(map)]
+              return [observer, HashMap.set(map, options, observer)]
             }),
           Effect.succeed,
         ),

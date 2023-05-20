@@ -11,36 +11,64 @@ export interface Navigator extends globalThis.Navigator {}
 
 export const Navigator = C.Tag<Navigator>('@typed/dom/Navigator')
 
-export const canShare = (shareData?: ShareData) => Navigator.with((n) => n.canShare(shareData))
+export const canShare: (shareData?: ShareData) => Effect.Effect<Navigator, never, boolean> = (
+  shareData?: ShareData,
+) => Navigator.with((n) => n.canShare(shareData))
 
-export const share = (shareData: ShareData) =>
-  Navigator.withEffect((n) => Effect.promise(() => n.share(shareData)))
+export const share: (shareData: ShareData) => Effect.Effect<Navigator, never, void> = (
+  shareData: ShareData,
+) => Navigator.withEffect((n) => Effect.promise(() => n.share(shareData)))
 
-export const readClipboardText = Navigator.withEffect((n) =>
-  Effect.promise(() => n.clipboard.readText()),
+export const readClipboardText: Effect.Effect<Navigator, never, string> = Navigator.withEffect(
+  (n) => Effect.promise(() => n.clipboard.readText()),
 )
 
-export const writeClipboardText = (text: string) =>
-  Navigator.withEffect((n) => Effect.promise(() => n.clipboard.writeText(text)))
+export const writeClipboardText: (text: string) => Effect.Effect<Navigator, never, void> = (
+  text: string,
+) => Navigator.withEffect((n) => Effect.promise(() => n.clipboard.writeText(text)))
 
-export const readClipboard = Navigator.withEffect((n) => Effect.promise(() => n.clipboard.read()))
+export const readClipboard: Effect.Effect<Navigator, never, ClipboardItems> = Navigator.withEffect(
+  (n) => Effect.promise(() => n.clipboard.read()),
+)
 
 export const makeClipoboardItem = (
   items: Record<string, string | Blob | PromiseLike<string | Blob>>,
   options?: ClipboardItemOptions | undefined,
-) => GlobalThis.with((g) => new g.ClipboardItem(items, options))
+): Effect.Effect<GlobalThis, never, ClipboardItem> =>
+  GlobalThis.with((g) => new g.ClipboardItem(items, options))
 
-export const writeClipboard = (items: ClipboardItems) =>
+export const writeClipboard = (items: ClipboardItems): Effect.Effect<Navigator, never, void> =>
   Navigator.withEffect((n) => Effect.promise(() => n.clipboard.write(items)))
 
-export const checkCookieEnabled = Navigator.with((n) => n.cookieEnabled)
-export const getHardwareConcurrency = Navigator.with((n) => n.hardwareConcurrency)
-export const getMaxTouchPoints = Navigator.with((n) => n.maxTouchPoints)
-export const getMediaDevices = Navigator.with((n) => n.mediaDevices)
-export const getMediaSession = Navigator.with((n) => n.mediaSession)
-export const checkOnline = Navigator.with((n) => n.onLine)
-export const checkPdfViewerEnabled = Navigator.with((n) => n.pdfViewerEnabled)
-export const getUserAgent = Navigator.with((n) => n.userAgent)
+export const checkCookieEnabled: Effect.Effect<Navigator, never, boolean> = Navigator.with(
+  (n) => n.cookieEnabled,
+)
+
+export const getHardwareConcurrency: Effect.Effect<Navigator, never, number> = Navigator.with(
+  (n) => n.hardwareConcurrency,
+)
+
+export const getMaxTouchPoints: Effect.Effect<Navigator, never, number> = Navigator.with(
+  (n) => n.maxTouchPoints,
+)
+
+export const getMediaDevices: Effect.Effect<Navigator, never, MediaDevices> = Navigator.with(
+  (n) => n.mediaDevices,
+)
+
+export const getMediaSession: Effect.Effect<Navigator, never, MediaSession> = Navigator.with(
+  (n) => n.mediaSession,
+)
+
+export const checkOnline: Effect.Effect<Navigator, never, boolean> = Navigator.with((n) => n.onLine)
+
+export const checkPdfViewerEnabled: Effect.Effect<Navigator, never, boolean> = Navigator.with(
+  (n) => n.pdfViewerEnabled,
+)
+
+export const getUserAgent: Effect.Effect<Navigator, never, string> = Navigator.with(
+  (n) => n.userAgent,
+)
 
 export const createCredential = (
   options?: CredentialCreationOptions,
@@ -58,10 +86,14 @@ export const getCredential = (
     Effect.map(fromNullable),
   )
 
-export const storeCredential = (credential: Credential) =>
+export const storeCredential = (
+  credential: Credential,
+): Effect.Effect<Navigator, never, Credential> =>
   Navigator.withEffect((n) => Effect.promise(() => n.credentials.store(credential)))
 
-export const getCurrentPosition = (options?: PositionOptions) =>
+export const getCurrentPosition = (
+  options?: PositionOptions,
+): Effect.Effect<Navigator, GeolocationPositionError, GeolocationPosition> =>
   Navigator.withEffect((n) =>
     Effect.tryCatchPromise(
       () =>

@@ -38,11 +38,11 @@ function addEventListener_(
 }
 
 export function preventDefault<R, E, A extends Event>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
-  return Fx.tap((event: A) => Effect.succeed(event.preventDefault()))(fx)
+  return Fx.tap(fx, (event: A) => Effect.succeed(event.preventDefault()))
 }
 
 export function stopPropagation<R, E, A extends Event>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
-  return Fx.tap((event: A) => Effect.succeed(event.stopPropagation()))(fx)
+  return Fx.tap(fx, (event: A) => Effect.succeed(event.stopPropagation()))
 }
 
 export function dispatchEventWith<

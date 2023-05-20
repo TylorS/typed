@@ -12,12 +12,21 @@ export const getBody: Effect.Effect<Document, never, HTMLBodyElement> = Document
 
 export const getHead: Effect.Effect<Document, never, HTMLHeadElement> = Document.with((d) => d.head)
 
-export const addDocumentListener = <EventName extends keyof DocumentEventMap>(
+export const addDocumentListener: <EventName extends keyof DocumentEventMap>(
+  event: EventName,
+  options?: AddEventListenerOptions,
+) => import('@typed/fx').Fx<Document, never, DocumentEventMap[EventName]> = <
+  EventName extends keyof DocumentEventMap,
+>(
   event: EventName,
   options?: AddEventListenerOptions,
 ) => Document.withFx(addEventListener(event, options))
 
-export const createElement = <TagName extends keyof HTMLElementTagNameMap>(
+export const createElement: <TagName extends keyof HTMLElementTagNameMap>(
+  tagName: TagName,
+) => Effect.Effect<Document, never, HTMLElementTagNameMap[TagName]> = <
+  TagName extends keyof HTMLElementTagNameMap,
+>(
   tagName: TagName,
 ): Effect.Effect<Document, never, HTMLElementTagNameMap[TagName]> =>
   Document.with((d) => d.createElement(tagName))
@@ -59,12 +68,19 @@ export const createAttributeNS = (
 ): Effect.Effect<Document, never, Attr> =>
   Document.with((d) => d.createAttributeNS(namespace, qualifiedName))
 
-export const getDocumentElement = Document.with((d) => d.documentElement)
+export const getDocumentElement: Effect.Effect<Document, never, HTMLElement> = Document.with(
+  (d) => d.documentElement,
+)
 
-export const importNode = <T extends Node>(node: T, deep?: boolean) =>
+export const importNode: <T extends Node>(
+  node: T,
+  deep?: boolean,
+) => Effect.Effect<Document, never, T> = <T extends Node>(node: T, deep?: boolean) =>
   Document.with((d) => d.importNode(node, deep))
 
-export const updateTitle = (title: string) => Document.with((d) => (d.title = title))
+export const updateTitle: (title: string) => Effect.Effect<Document, never, string> = (
+  title: string,
+) => Document.with((d) => (d.title = title))
 
 export type MetaParams = {
   readonly name: string
@@ -72,7 +88,9 @@ export type MetaParams = {
   readonly httpEquiv?: string
 }
 
-export const updateMeta = (params: MetaParams) =>
+export const updateMeta: (params: MetaParams) => Effect.Effect<Document, never, HTMLMetaElement> = (
+  params: MetaParams,
+) =>
   Document.with((d) => {
     const meta =
       d.querySelector<HTMLMetaElement>(`meta[name="${params.name}"]`) ??
@@ -103,7 +121,9 @@ export type LinkParams = {
   readonly type?: string
 }
 
-export const updateLink = (params: LinkParams) =>
+export const updateLink: (params: LinkParams) => Effect.Effect<Document, never, HTMLLinkElement> = (
+  params: LinkParams,
+) =>
   Document.with((d) => {
     const link =
       d.querySelector<HTMLLinkElement>(`link[rel="${params.rel}"][href="${params.href}"]`) ??

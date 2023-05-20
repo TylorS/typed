@@ -106,7 +106,7 @@ function sendStorageEvent_(
  * store, this allows you to store and retrieve values that are not strings. JSON.stringify and
  * JSON.parse is used on the values to store and retrieve them.
  */
-export interface SchemaStorage<Schema extends Record<string, S.Schema<any>>> {
+export interface SchemaStorage<Schema extends Readonly<Record<string, S.Schema<string, any>>>> {
   readonly schema: Schema
 
   readonly get: <K extends keyof Schema & string>(
@@ -140,17 +140,23 @@ export interface SchemaStorage<Schema extends Record<string, S.Schema<any>>> {
   }
 }
 
-export function SchemaStorage<Schemas extends Record<string, S.Schema<any>>>(
-  schema: Schemas,
-): SchemaStorage<Schemas> {
-  const decoders: Record<
-    string,
-    (i: unknown, options?: ParseOptions) => ParseResult.ParseResult<any>
-  > = {}
-  const getDecoder = (key: string) => decoders[key] || (decoders[key] = P.decode(schema[key]))
+export function SchemaStorage<
+  const Schemas extends Readonly<Record<string, S.Schema<string, any>>>,
+>(schema: Schemas): SchemaStorage<Schemas> {
+  const decoders: Partial<{
+    [K in keyof Schemas]: (
+      i: S.From<Schemas[K]>,
+      options?: ParseOptions,
+    ) => ParseResult.ParseResult<S.To<Schemas[K]>>
+  }> = {}
+  const getDecoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof decoders)[K]> =>
+    decoders[key] || (decoders[key] = P.decode(schema[key]))
 
-  const encoders: Record<string, (i: unknown, options?: ParseOptions) => unknown> = {}
-  const getEncoder = (key: string) => encoders[key] || (encoders[key] = P.encode(schema[key]))
+  const encoders: Partial<{
+    [K in keyof Schemas]: (i: S.To<Schemas[K]>, options?: ParseOptions) => S.From<Schemas[K]>
+  }> = {}
+  const getEncoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof encoders)[K]> =>
+    encoders[key] || (encoders[key] = P.encode(schema[key]))
 
   const get = <K extends keyof Schemas & string>(key: K, options?: ParseOptions) =>
     StorageEffect(
