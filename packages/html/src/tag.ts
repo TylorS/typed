@@ -201,7 +201,7 @@ function updateText<R, E>(
   const handleText = (newValue: any): void => {
     if (oldValue != newValue) {
       oldValue = newValue
-      node.textContent = newValue == undefined ? '' : (newValue as string)
+      node.textContent = newValue == undefined ? '' : String(newValue)
     }
   }
 
