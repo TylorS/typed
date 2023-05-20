@@ -101,6 +101,26 @@ export namespace ContextBuilder {
   }
 }
 
+export function effectContextBuilder<R, E, I>(
+  effect: Effect.Effect<R, E, ContextBuilder<I>>,
+): Layer.Layer<R, E, I> {
+  return Layer.effectContext(Effect.map(effect, (builder) => builder.context))
+}
+
+export function syncContextBuilder<I>(f: () => ContextBuilder<I>): Layer.Layer<never, never, I> {
+  return Layer.syncContext(() => f().context)
+}
+
+export function scopedContextBuilder<R, E, I>(
+  effect: Effect.Effect<R, E, ContextBuilder<I>>,
+): Layer.Layer<Exclude<R, Scope.Scope>, E, I> {
+  return Layer.scopedContext(Effect.map(effect, (builder) => builder.context))
+}
+
+export function succeedContextBuilder<I>(builder: ContextBuilder<I>): Layer.Layer<never, never, I> {
+  return Layer.succeedContext(builder.context)
+}
+
 export {
   type TagTypeId,
   type TypeId,
