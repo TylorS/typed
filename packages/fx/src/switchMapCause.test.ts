@@ -1,5 +1,5 @@
-import { describe } from 'vitest'
 import * as Duration from '@effect/data/Duration'
+import { describe } from 'vitest'
 
 import { delay } from './delay.js'
 import { fail } from './failCause.js'

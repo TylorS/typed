@@ -1,11 +1,11 @@
 import { ok } from 'assert'
 
-import { it, expect } from 'vitest'
-
-import type { Fx } from './Fx.js'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
+import { it, expect } from 'vitest'
+
+import type { Fx } from './Fx.js'
 import { observe } from './observe.js'
 
 export function testCollectAll<E = never, A = never>(

@@ -21,37 +21,32 @@ export function keyed<R, E, A, R2, E2, B, C>(
         const state = createKeyedState<A, B, C>()
         const emit = emitWhenReady(state, getKey)
 
-        // Let output emit to the sink
+        // Let output emit to the sink, it is closes by the surrounding scope
         yield* $(fork(state.output.run(sink)))
-
-        const params: Omit<UpdateStateParams<A, B, C, R2, E2, R3>, 'updated'> = {
-          state,
-          getKey,
-          f,
-          fork,
-          emit,
-          error: sink.error,
-        }
 
         // Listen to the input and update the state
         yield* $(
           fx.run(
             Sink(
-              (updated) =>
+              (as) =>
                 updateState({
-                  ...params,
-                  updated,
+                  state,
+                  updated: as,
+                  getKey,
+                  f,
+                  fork,
+                  emit,
+                  error: sink.error,
                 }),
               sink.error,
             ),
           ),
         )
 
+        yield* $(endAll(state))
+
         // When the source stream ends we wait for the remaining fibers to end
         yield* $(Fiber.joinAll(Array.from(state.fibers).map((x) => x[1])))
-
-        // Send end signals to all Fx listening to subjects to allow finalization
-        yield* $(endAll(state))
       }),
     ),
   )
@@ -78,36 +73,38 @@ function createKeyedState<A, B, C>(): KeyedState<A, B, C> {
   }
 }
 
-type UpdateStateParams<A, B, C, R2, E2, R3> = {
+function updateState<A, B, C, R2, E2, R3>({
+  state,
+  updated,
+  f,
+  fork,
+  emit,
+  error,
+  getKey,
+}: {
   state: KeyedState<A, B, C>
   updated: readonly A[]
   f: (fx: RefSubject<never, A>) => Fx<R2, E2, B>
-  getKey: (a: A) => C
   fork: ScopedFork
-  error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
   emit: Effect.Effect<never, never, void>
-}
-
-function updateState<A, B, C, R2, E2, R3>(params: UpdateStateParams<A, B, C, R2, E2, R3>) {
-  const { state, updated, emit, getKey } = params
-
+  error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
+  getKey: (a: A) => C
+}) {
   return Effect.gen(function* ($) {
     const { added, removed, unchanged } = diffValues(state, updated, getKey)
 
     // Remove values that are no longer in the stream
-    if (removed.length > 0) {
-      yield* $(Effect.forEachDiscard(removed, (key) => removeValue(state, key)))
-    }
-
-    // Add values that are new to the stream
-    if (added.length > 0) {
-      yield* $(Effect.forEachDiscard(added, (value) => addValue({ ...params, value })))
-    }
+    yield* $(Effect.forEachDiscard(removed, (key) => removeValue(state, key)))
 
     // Update values that are still in the stream
-    if (unchanged.length > 0) {
-      yield* $(Effect.forEachDiscard(unchanged, (value) => updateValue(state, value, getKey)))
-    }
+    yield* $(Effect.forEachParDiscard(unchanged, (value) => updateValue(state, value, getKey)))
+
+    // Add values that are new to the stream
+    yield* $(
+      Effect.forEachParDiscard(added, (value) =>
+        addValue({ state, value, f, fork, emit, error, getKey }),
+      ),
+    )
 
     // If nothing was added, emit the current values
     if (added.length === 0) {
@@ -121,23 +118,11 @@ function diffValues<A, B, C>(
   updated: ReadonlyArray<A>,
   getKey: (a: A) => C,
 ) {
-  const previousKeys = state.previousKeys
-  const keys = new Set<C>(updated.map(getKey))
-
-  state.previous = updated
-  state.previousKeys = keys
-
-  if (previousKeys.size === 0) {
-    return {
-      added: updated,
-      unchanged: [],
-      removed: [],
-    }
-  }
-
   const added: A[] = []
   const unchanged: A[] = []
   const removed: C[] = []
+  const previousKeys = state.previousKeys
+  const keys = new Set<C>(updated.map(getKey))
 
   for (let i = 0; i < updated.length; ++i) {
     const value = updated[i]
@@ -155,6 +140,9 @@ function diffValues<A, B, C>(
       removed.push(k)
     }
   })
+
+  state.previous = updated
+  state.previousKeys = keys
 
   return {
     added,
@@ -179,16 +167,6 @@ function removeValue<A, B, C>(state: KeyedState<A, B, C>, key: C) {
   })
 }
 
-type AddValueParams<A, B, C, R2, E2, R3> = {
-  state: KeyedState<A, B, C>
-  value: A
-  f: (fx: RefSubject<never, A>) => Fx<R2, E2, B>
-  fork: ScopedFork
-  emit: Effect.Effect<never, never, void>
-  error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
-  getKey: (a: A) => C
-}
-
 function addValue<A, B, C, R2, E2, R3>({
   state,
   value,
@@ -197,7 +175,15 @@ function addValue<A, B, C, R2, E2, R3>({
   emit,
   error,
   getKey,
-}: AddValueParams<A, B, C, R2, E2, R3>) {
+}: {
+  state: KeyedState<A, B, C>
+  value: A
+  f: (fx: RefSubject<never, A>) => Fx<R2, E2, B>
+  fork: ScopedFork
+  emit: Effect.Effect<never, never, void>
+  error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
+  getKey: (a: A) => C
+}) {
   return Effect.gen(function* ($) {
     const key = getKey(value)
     const subject = RefSubject.unsafeMake<never, A>(Effect.succeed(value))
@@ -254,7 +240,5 @@ function emitWhenReady<A, B, C>(state: KeyedState<A, B, C>, getKey: (a: A) => C)
 }
 
 function endAll<A, B, C>(state: KeyedState<A, B, C>) {
-  return Effect.gen(function* ($) {
-    yield* $(Effect.forEachParDiscard(state.subjects, ([, subject]) => subject.end()))
-  })
+  return Effect.forEachParDiscard(state.subjects, ([, subject]) => subject.end())
 }

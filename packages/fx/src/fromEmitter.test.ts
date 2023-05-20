@@ -1,6 +1,5 @@
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
-
 import { describe } from 'vitest'
 
 import { fromEmitter } from './fromEmitter.js'

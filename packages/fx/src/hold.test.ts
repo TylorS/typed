@@ -1,5 +1,5 @@
-import { millis } from '@effect/data/Duration'
 import * as Chunk from '@effect/data/Chunk'
+import { millis } from '@effect/data/Duration'
 import { range } from '@effect/data/ReadonlyArray'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
