@@ -426,26 +426,28 @@ export const dom: Layer.Layer<
         Fx.mergeAll(
           pipe(
             historyEvents,
-            Fx.map((event) =>
-              Effect.gen(function* ($) {
-                switch (event._tag) {
-                  case 'PushState':
-                    return yield* $(push(event.url, { state: event.state }, true))
-                  case 'ReplaceState':
-                    return yield* $(replace(event.url, { state: event.state }, true))
-                  case 'Back':
-                    return yield* $(back(true))
-                  case 'Forward':
-                    return yield* $(forward(true))
-                  case 'Go':
-                    return yield* $(go(event.delta))
-                }
-              }),
+            Fx.flatMapEffect((event) =>
+              lock(
+                Effect.gen(function* ($) {
+                  switch (event._tag) {
+                    case 'PushState':
+                      return yield* $(push(event.url, { state: event.state }, true))
+                    case 'ReplaceState':
+                      return yield* $(replace(event.url, { state: event.state }, true))
+                    case 'Back':
+                      return yield* $(back(true))
+                    case 'Forward':
+                      return yield* $(forward(true))
+                    case 'Go':
+                      return yield* $(go(event.delta))
+                  }
+                }),
+              ),
             ),
           ),
           pipe(
-            addWindowListener('hashchange'),
-            Fx.map(() => push(location.href, { state: history.state }, true)),
+            addWindowListener('hashchange', { capture: true }),
+            Fx.flatMapEffect((ev) => lock(push(ev.newURL, { state: history.state }, true))),
           ),
           pipe(
             addWindowListener('popstate'),
@@ -456,12 +458,12 @@ export const dom: Layer.Layer<
 
               const navigation = ev.state.event as NavigationEventJson
 
-              return Option.some(goTo(navigation.destination.key))
+              return Option.some(lock(goTo(navigation.destination.key)))
             }),
             Fx.compact,
+            Fx.flattenEffect,
           ),
         ),
-        Fx.switchLatestEffect,
         Fx.drain,
         Effect.forkScoped,
       )
