@@ -9,7 +9,7 @@ import { makeServerWindow } from '@typed/framework/makeServerWindow'
 import * as Fx from '@typed/fx'
 import { describe, it } from 'vitest'
 
-import { dom } from './DOM.js'
+import { dom, getStoredEvents } from './DOM.js'
 import { Destination, Navigation, NavigationType } from './Navigation.js'
 
 const serviceNavigation = (url: string) => {
@@ -366,6 +366,24 @@ describe(import.meta.url, () => {
         assertEqualDestination(yield* $(goTo(d0.key)), testDestination)
         assertEqualDestination(yield* $(goTo(d1.key)), testPathname1Destination)
         assertEqualDestination(yield* $(goTo(d2.key)), testPathname2Destination)
+      })
+
+      await Effect.runPromise(test)
+    })
+  })
+
+  describe('localStorage', () => {
+    it('saves and retrieves entries from localStorage', async () => {
+      const test = testNavigation(function* ($, { navigate }) {
+        yield* $(navigate(testPathname1))
+        yield* $(navigate(testPathname2))
+
+        const events = yield* $(getStoredEvents)
+
+        assertEqualDestinations(
+          events.map((x) => x.destination),
+          [testDestination, testPathname1Destination, testPathname2Destination],
+        )
       })
 
       await Effect.runPromise(test)

@@ -49,8 +49,11 @@ const parseDestination = (d: DestinationJson): Destination => ({
   url: new URL(d.url),
 })
 
-const getStoredEntries: Effect.Effect<Storage, never, readonly NavigationEvent[]> = Effect.gen(
-  function* ($) {
+/**
+ * @internal
+ */
+export const getStoredEvents: Effect.Effect<Storage, never, readonly NavigationEvent[]> =
+  Effect.gen(function* ($) {
     const option = yield* $(getItem(TYPED_NAVIGATION_ENTRIES_KEY))
 
     if (Option.isNone(option)) {
@@ -62,8 +65,7 @@ const getStoredEntries: Effect.Effect<Storage, never, readonly NavigationEvent[]
       ...event,
       destination: parseDestination(event.destination),
     }))
-  },
-)
+  })
 
 const getStoredIndex = Effect.gen(function* ($) {
   const option = yield* $(getItem(TYPED_NAVIGATION_INDEX_KEY))
@@ -96,7 +98,7 @@ const getInitialValues = (
   location: Location,
 ): Effect.Effect<Storage, never, readonly [readonly NavigationEvent[], number]> =>
   Effect.gen(function* ($) {
-    const storedEntries = yield* $(getStoredEntries)
+    const storedEntries = yield* $(getStoredEvents)
     const storedIndex = Option.getOrElse(yield* $(getStoredIndex), () => storedEntries.length - 1)
     const storedEntry = storedEntries[storedIndex]
     const initialUrl = getUrl(location.href, location.origin)
