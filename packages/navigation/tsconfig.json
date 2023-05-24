@@ -21,6 +21,9 @@
       "path": "../error/tsconfig.build.json"
     },
     {
+      "path": "../framework/tsconfig.build.json"
+    },
+    {
       "path": "../fx/tsconfig.build.json"
     }
   ]

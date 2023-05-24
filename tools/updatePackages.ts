@@ -35,12 +35,12 @@ for (const name of packageNames) {
   const filePaths = getAllFilePaths(srcDir)
   const packageJson = readJson(join(packageDir, 'package.json'))
   const tsconfigJson = readJson(join(packageDir, 'tsconfig.json'))
-  const project = new Project({ tsConfigFilePath: join(packageDir, 'tsconfig.build.json') })
-  const dependencies = new Set<string>()
+  const project = new Project({ tsConfigFilePath: join(packageDir, 'tsconfig.json') })
+  const dependencies = new Map<string, boolean /* importedFromTestFile */>()
   const references = new Set<string>()
 
   if (name === 'compiler') {
-    dependencies.add('@rollup/pluginutils')
+    dependencies.set('@rollup/pluginutils', false)
   }
 
   for (const path of filePaths) {
@@ -50,6 +50,8 @@ for (const name of packageNames) {
       continue
     }
 
+    const filePath = sourceFile.getFilePath()
+    const isTestFile = filePath.endsWith('.test.ts')
     const imports = sourceFile
       .getImportStringLiterals()
       .map((x) => x.getText().trim().slice(1).slice(0, -1))
@@ -68,7 +70,9 @@ for (const name of packageNames) {
         continue
       }
 
-      dependencies.add(fullName)
+      const current = dependencies.get(fullName)
+
+      dependencies.set(fullName, !current ? isTestFile : false)
 
       if (orgName === '@typed') {
         references.add(packageName)
@@ -99,8 +103,12 @@ for (const name of packageNames) {
     },
   }
 
-  for (const dependency of Array.from(dependencies).sort()) {
-    checkDependency(dependency, packageJson)
+  console.log(dependencies)
+
+  for (const [dependency, testFile] of Array.from(dependencies).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
+    checkDependency(dependency, packageJson, testFile)
   }
 
   if (Object.keys(packageJson.dependencies).length === 0) {
@@ -138,8 +146,10 @@ for (const name of packageNames) {
 
 spawnSync('pnpm', ['install'], { stdio: 'inherit' })
 
-function checkDependency(dependency: string, packageJson: any) {
-  const version = findRootPackageVersion(dependency)
+function checkDependency(dependency: string, packageJson: any, testFile: boolean) {
+  const version = findRootPackageVersion(dependency, testFile)
+
+  console.log(version, dependency, testFile)
 
   if (
     version === null &&
@@ -157,7 +167,7 @@ function checkDependency(dependency: string, packageJson: any) {
     if (depType === 'dep') {
       packageJson.dependencies[dependency] = versionString
 
-      const typesVersion = findRootPackageVersion(`@types/${dependency}`)
+      const typesVersion = findRootPackageVersion(`@types/${dependency}`, false)
 
       if (typesVersion) {
         const [typesVersionString] = typesVersion
@@ -168,7 +178,11 @@ function checkDependency(dependency: string, packageJson: any) {
       packageJson.devDependencies[dependency] = versionString
     }
   } else if (dependency.startsWith('@typed')) {
-    packageJson.dependencies[dependency] = 'workspace:*'
+    if (testFile) {
+      packageJson.devDependencies[dependency] = 'workspace:*'
+    } else {
+      packageJson.dependencies[dependency] = 'workspace:*'
+    }
   }
 }
 
@@ -187,12 +201,15 @@ function getAllFilePaths(directory: string): readonly string[] {
   })
 }
 
-function findRootPackageVersion(name: string) {
+function findRootPackageVersion(name: string, testFile: boolean) {
   const possibleNames = [name, name.split('/')[0]]
 
   for (const possibleName of possibleNames) {
     if (possibleName in rootPackageJson.dependencies) {
-      return [rootPackageJson.dependencies[possibleName] as string, 'dep'] as const
+      return [
+        rootPackageJson.dependencies[possibleName] as string,
+        testFile ? 'devdep' : 'dep',
+      ] as const
     } else if (possibleName in rootPackageJson.devDependencies) {
       return [rootPackageJson.devDependencies[possibleName] as string, 'devdep'] as const
     }

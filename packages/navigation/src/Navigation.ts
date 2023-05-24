@@ -1,18 +1,20 @@
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import * as Context from '@typed/context'
-import * as Error from '@typed/error'
 import * as Fx from '@typed/fx'
 
-// TODO: Support storing entries in Storage
+// TODO: Should onNavigation return errors for Redirects or Cancelation?
+// TODO: Should there be a max-size for entries?
 
 export interface Navigation {
   readonly entries: Fx.Computed<never, never, readonly Destination[]>
 
+  readonly currentEntry: Fx.Computed<never, never, Destination>
+
   readonly navigate: (
     url: string,
     options?: NavigateOptions,
-  ) => Effect.Effect<never, NavigationError, Destination>
+  ) => Effect.Effect<never, never, Destination>
 
   readonly onNavigation: <R>(
     handler: (event: NavigationEvent) => Effect.Effect<R, never, void>,
@@ -20,13 +22,15 @@ export interface Navigation {
 
   readonly canGoBack: Fx.Computed<never, never, boolean>
 
-  readonly back: Effect.Effect<never, NavigationError, Destination>
+  readonly back: Effect.Effect<never, never, Destination>
 
   readonly canGoForward: Fx.Computed<never, never, boolean>
 
-  readonly forward: Effect.Effect<never, NavigationError, Destination>
+  readonly forward: Effect.Effect<never, never, Destination>
 
-  readonly reload: Effect.Effect<never, never, void>
+  readonly reload: Effect.Effect<never, never, Destination>
+
+  readonly goTo: (key: string) => Effect.Effect<never, never, Destination>
 }
 
 export const Navigation = Context.Tag<Navigation>('Navigation')
@@ -59,26 +63,34 @@ export interface NavigateOptions {
   readonly history?: 'push' | 'replace'
 }
 
-export class NavigationError extends Error.tagged('NavigationError') {
-  constructor(readonly destination: Destination) {
-    super(`Failed to navigate to ${destination.url}`)
-  }
-}
-
 export interface NavigationEvent {
   readonly destination: Destination
   readonly hashChange: boolean
   readonly navigationType: NavigationType
 }
 
+export function NavigationEvent(
+  destination: Destination,
+  hashChange: boolean,
+  navigationType: NavigationType,
+): NavigationEvent {
+  return { destination, hashChange, navigationType }
+}
+
 export interface Destination {
   readonly key: string
-  readonly url: string
+  readonly url: URL
   readonly state: unknown
+}
+
+export function Destination(key: string, url: URL, state?: unknown): Destination {
+  return { key, url, state }
 }
 
 export enum NavigationType {
   Push = 'push',
   Reload = 'reload',
   Replace = 'replace',
+  Back = 'back',
+  Forward = 'forward',
 }
