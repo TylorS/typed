@@ -51,7 +51,13 @@ const testNavigation = <Y extends Effect.EffectGen<any, any, any>, A>(
 
 const fxToFiber = <R, E, A>(fx: Fx.Fx<R, E, A>, take: number) =>
   Effect.gen(function* ($) {
-    const fiber = yield* $(fx, Fx.take(take), Fx.toReadonlyArray, Effect.forkScoped)
+    const fiber = yield* $(
+      fx,
+      Fx.tapSync((x) => console.log(x)),
+      Fx.take(take),
+      Fx.toReadonlyArray,
+      Effect.forkScoped,
+    )
 
     yield* $(Effect.sleep(Duration.millis(0)))
     yield* $(Effect.sleep(Duration.millis(0)))
@@ -240,6 +246,21 @@ describe(import.meta.url, () => {
 
       await Effect.runPromise(test)
     })
+
+    it('is observable', async () => {
+      const test = testNavigation(function* ($, { canGoBack, navigate }) {
+        const fiber = yield* $(fxToFiber(canGoBack, 3))
+
+        yield* $(navigate(testPathname1))
+        yield* $(navigate(testPathname2))
+
+        const results = yield* $(Fiber.join(fiber))
+
+        deepStrictEqual(results, [false, true, true])
+      })
+
+      await Effect.runPromise(test)
+    })
   })
 
   describe('back', () => {
@@ -281,6 +302,21 @@ describe(import.meta.url, () => {
         yield* $(back)
 
         deepStrictEqual(yield* $(canGoForward), true)
+      })
+
+      await Effect.runPromise(test)
+    })
+
+    it('is observable', async () => {
+      const test = testNavigation(function* ($, { canGoForward, back, navigate }) {
+        const fiber = yield* $(fxToFiber(canGoForward, 2))
+
+        yield* $(navigate(testPathname1))
+        yield* $(back)
+
+        const results = yield* $(Fiber.join(fiber))
+
+        deepStrictEqual(results, [false, true]) // Duplication between first and second entry is skipped
       })
 
       await Effect.runPromise(test)

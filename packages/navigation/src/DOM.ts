@@ -190,8 +190,8 @@ export const dom: Layer.Layer<
           return previous
         })
 
-      const canGoForward = Fx.RefSubject.tuple(index, events).map(
-        ([i, entries]) => i < entries.length - 1,
+      const canGoForward = yield* $(
+        Fx.makeRef(Effect.succeed(initialIndex < initialEntries.length - 1)),
       )
 
       const forward = (skipHistory: boolean) =>
@@ -252,8 +252,11 @@ export const dom: Layer.Layer<
 
       const notify = (event: NavigationEvent) =>
         Effect.gen(function* ($) {
-          yield* $(saveToStorage(yield* $(events), yield* $(index)))
+          const e = yield* $(events)
+          const i = yield* $(index)
+          yield* $(saveToStorage(e, i))
           yield* $(currentEntry.set(event.destination))
+          yield* $(canGoForward.set(i < e.length - 1))
 
           if (eventHandlers.size > 0)
             yield* $(Effect.forEachDiscard(eventHandlers, (handler) => handler(event)))
