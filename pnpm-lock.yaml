@@ -463,15 +463,15 @@ importers:
 
   packages/navigation:
     dependencies:
-      '@effect/data':
-        specifier: ^0.12.2
-        version: 0.12.2
       '@effect/io':
         specifier: ^0.25.11
         version: 0.25.11
       '@typed/context':
         specifier: workspace:*
         version: link:../context
+      '@typed/dom':
+        specifier: workspace:*
+        version: link:../dom
       '@typed/error':
         specifier: workspace:*
         version: link:../error

@@ -4,14 +4,10 @@ import * as Context from '@typed/context'
 import * as Error from '@typed/error'
 import * as Fx from '@typed/fx'
 
-// TODO: Enable Scroll restoration
 // TODO: Support storing entries in Storage
-// TODO: Support redirects ??
-//
 
 export interface Navigation {
-  // TODO: Convert this to a list of entries
-  readonly entries: Fx.Computed<never, never, string>
+  readonly entries: Fx.Computed<never, never, readonly Destination[]>
 
   readonly navigate: (
     url: string,
@@ -40,7 +36,7 @@ export const navigate = (url: string, options?: NavigateOptions) =>
 
 export const onNavigation = <R>(
   handler: (event: NavigationEvent) => Effect.Effect<R, never, void>,
-) => Navigation.with((n) => n.onNavigation(handler))
+) => Navigation.withEffect((n) => n.onNavigation(handler))
 
 export const canGoBack = Object.assign(
   Navigation.withEffect((n) => n.canGoBack),
