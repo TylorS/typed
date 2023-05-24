@@ -8,6 +8,7 @@ import type { Predicate, Refinement } from '@effect/data/Predicate'
 import type { Equivalence } from '@effect/data/typeclass/Equivalence'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
+import * as Exit from '@effect/io/Exit'
 import type { FiberId } from '@effect/io/Fiber/Id'
 import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
@@ -590,6 +591,17 @@ export const observe: {
 
 export const drain: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R | Scope.Scope, E, void> =
   methodWithTrace((trace) => (fx) => internal.drain(fx).traced(trace))
+
+export const onExit: {
+  <E, R2, E2, B>(f: (exit: Exit.Exit<E, void>) => Effect.Effect<R2, E2, B>): <R, A>(
+    fx: Fx<R, E, A>,
+  ) => Fx<R | R2, E | E2, A>
+
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (exit: Exit.Exit<E, void>) => Effect.Effect<R2, E2, B>,
+  ): Fx<R | R2, E | E2, A>
+} = dualWithTrace(2, (trace) => (fx, f) => internal.onExit(fx, f).addTrace(trace))
 
 export const onInterrupt: {
   <R2, E2, B>(f: (interruptors: HashSet<FiberId>) => Effect.Effect<R2, E2, B>): <R, E, A>(
