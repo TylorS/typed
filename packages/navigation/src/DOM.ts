@@ -439,7 +439,7 @@ export const dom: Layer.Layer<
                     case 'Forward':
                       return yield* $(forward(true))
                     case 'Go':
-                      return yield* $(go(event.delta))
+                      return yield* $(go(event.delta, true))
                   }
                 }),
               ),
