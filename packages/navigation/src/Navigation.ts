@@ -74,7 +74,7 @@ export interface Navigation {
 export const Navigation = Context.Tag<Navigation>('Navigation')
 
 export const navigate = (url: string, options?: NavigateOptions) =>
-  Navigation.with((n) => n.navigate(url, options))
+  Navigation.withEffect((n) => n.navigate(url, options))
 
 export const onNavigation = <R>(
   handler: (event: NavigationEvent) => Effect.Effect<R, never, void>,
