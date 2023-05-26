@@ -1,3 +1,4 @@
+import * as Brand from '@effect/data/Brand'
 import { Option } from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
@@ -5,30 +6,69 @@ import * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
 
 export interface Navigation {
+  /**
+   * The list of navigation entries that are currently kept in-memory and
+   * saved within Local/Session Storage.
+   */
   readonly entries: Fx.Computed<never, never, readonly Destination[]>
 
+  /**
+   * The currently focused navigation entry.
+   */
   readonly currentEntry: Fx.Computed<never, never, Destination>
 
+  /**
+   * Navigate to a new URL. NavigateOptions can be used to control how the
+   * navigation is handled via history.pushState or history.replaceState,
+   * set/update the state of the navigation entry, or provide a key to use
+   * for the navigation entry.
+   */
   readonly navigate: (
     url: string,
     options?: NavigateOptions,
   ) => Effect.Effect<never, never, Destination>
 
+  /**
+   * Subscribe to navigation events. Any handler can cancel the or redirect
+   * the navigation by failing with a CancelNavigation or RedirectNavigation
+   * error.
+   */
   readonly onNavigation: <R>(
     handler: (event: NavigationEvent) => Effect.Effect<R, NavigationError, void>,
   ) => Effect.Effect<R | Scope.Scope, never, void>
 
+  /**
+   * Returns true if there is a previous navigation entry to navigate to.
+   */
   readonly canGoBack: Fx.Computed<never, never, boolean>
 
+  /**
+   * Navigate to the previous navigation entry. If you're on the first entry
+   * then this will do nothing.
+   */
   readonly back: Effect.Effect<never, never, Destination>
 
+  /**
+   * Returns true if there is a next navigation entry to navigate to after you have gone back.
+   */
   readonly canGoForward: Fx.Computed<never, never, boolean>
 
+  /**
+   * Navigate to the next navigation entry. If you're on the last entry then
+   * this will do nothing.
+   */
   readonly forward: Effect.Effect<never, never, Destination>
 
+  /**
+   * Reload the current navigation entry.
+   */
   readonly reload: Effect.Effect<never, never, Destination>
 
-  readonly goTo: (key: string) => Effect.Effect<never, never, Option<Destination>>
+  /**
+   * Navigate to a specific navigation entry by key. If the key does not
+   * exist then this will do nothing visible to the user and return Option.none().
+   */
+  readonly goTo: (key: DestinationKey) => Effect.Effect<never, never, Option<Destination>>
 }
 
 export const Navigation = Context.Tag<Navigation>('Navigation')
@@ -80,12 +120,15 @@ export function NavigationEvent(
 }
 
 export interface Destination {
-  readonly key: string
+  readonly key: DestinationKey
   readonly url: URL
   readonly state: unknown
 }
 
-export function Destination(key: string, url: URL, state?: unknown): Destination {
+export type DestinationKey = string & Brand.Brand<'DestinationKey'>
+export const DestinationKey = Brand.nominal<DestinationKey>()
+
+export function Destination(key: DestinationKey, url: URL, state?: unknown): Destination {
   return { key, url, state }
 }
 

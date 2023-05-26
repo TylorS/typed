@@ -13,6 +13,7 @@ import { describe, it } from 'vitest'
 import { DomNavigationOptions, dom } from './DOM.js'
 import {
   Destination,
+  DestinationKey,
   Navigation,
   NavigationType,
   cancelNavigation,
@@ -37,9 +38,9 @@ const provide = <R, E, A>(
   options: DomNavigationOptions = {},
 ) => Effect.provideSomeLayer(serviceNavigation(url, options))(effect)
 
-const testKey = 'keys-are-random-and-not-tested-by-default-assertions'
+const testKey = DestinationKey('keys-are-random-and-not-tested-by-default-assertions')
 const testUrl = 'https://example.com'
-const testDestination = Destination('default', new URL(testUrl))
+const testDestination = Destination(DestinationKey('default'), new URL(testUrl))
 const testPathname1 = `${testUrl}/1`
 const testPathname1Destination = Destination(testKey, new URL(testPathname1))
 const testPathname2 = `${testUrl}/2`
@@ -443,7 +444,7 @@ describe(import.meta.url, () => {
 
     it('returns None when the entry does not exist', async () => {
       const test = testNavigation(function* ($, { goTo }) {
-        deepStrictEqual(yield* $(goTo('does-not-exist')), Option.none())
+        deepStrictEqual(yield* $(goTo(DestinationKey('does-not-exist'))), Option.none())
       })
 
       await Effect.runPromise(test)

@@ -6,7 +6,7 @@ import * as Context from '@typed/context'
 import { Location, History, Window, Storage, addWindowListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
-import { Destination, Navigation, NavigationError } from './Navigation.js'
+import { Destination, DestinationKey, Navigation, NavigationError } from './Navigation.js'
 import { onHistoryEvent, patchHistory } from './history.js'
 import { makeIntent } from './intent.js'
 import { NavigationEventJson } from './json.js'
@@ -17,7 +17,7 @@ export type NavigationServices = Window | Location | History | Storage
 export interface DomNavigationOptions {
   // Defaults to a random value, but you can provide your own
   // Navigation keys can be provided to Navigation.navigate along the way as needed.
-  readonly initialKey?: string
+  readonly initialKey?: DestinationKey
 
   // Defaults to 50
   // The maximum number of entries to keep in memory and storage.
