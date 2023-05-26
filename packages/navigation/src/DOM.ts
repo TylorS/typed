@@ -2,6 +2,7 @@ import { flow, pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
+import * as Context from '@typed/context'
 import { Location, History, Window, Storage, addWindowListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
@@ -15,44 +16,57 @@ export type NavigationServices = Window | Location | History | Storage
 
 export const dom: Layer.Layer<NavigationServices, never, Navigation> = Navigation.layerScoped(
   Effect.gen(function* ($) {
+    // Get resources
+    const context = yield* $(Effect.context<NavigationServices>())
+    const history = Context.get(context, History)
+
+    // Create model and intent
     const model = yield* $(makeModel)
     const intent = makeIntent(model)
-    const lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
-    const context = yield* $(Effect.context<NavigationServices>())
-    const history = yield* $(History)
 
+    // Used to ensure ordering of navigation events
+    const lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
+
+    // Used to provide a locked effect with the current context
     const provideLocked = <E, A>(effect: Effect.Effect<NavigationServices, E, A>) =>
       Effect.provideContext(lock(effect), context)
 
+    // Constructor our service
     const navigation: Navigation = {
-      entries: model.entries,
-      currentEntry: model.currentEntry,
-      canGoBack: model.canGoBack,
       back: provideLocked(intent.back(false)),
+      canGoBack: model.canGoBack,
       canGoForward: model.canGoForward,
+      currentEntry: model.currentEntry,
+      entries: model.entries,
       forward: provideLocked(intent.forward(false)),
-      reload: provideLocked(intent.reload),
-      onNavigation: intent.onNavigation,
-      navigate: flow(intent.navigate, provideLocked),
       goTo: flow(intent.goTo, provideLocked),
+      navigate: flow(intent.navigate, provideLocked),
+      onNavigation: intent.onNavigation,
+      reload: provideLocked(intent.reload),
     }
 
+    // Patch History API to enable sending events
     const historyEvents = yield* $(patchHistory)
 
-    // Listen to history events and keep track of entries
+    // Listen to various events and update our model
     yield* $(
       Fx.mergeAll(
+        // Listen to history events and keep track of entries
         pipe(
           historyEvents,
           Fx.flatMapEffect((event) => lock(onHistoryEvent(event, intent))),
         ),
+        // Listen to hash changes and push them to the history
         pipe(
           addWindowListener('hashchange', { capture: true }),
           Fx.flatMapEffect((ev) => lock(intent.push(ev.newURL, { state: history.state }, true))),
         ),
+        // Listen to popstate events and go to the correct entry
         pipe(
           addWindowListener('popstate'),
           Fx.map((ev) => {
+            // TODO: Should we throw some kind of error here?
+            // This should never happen if you are solely using the Navigation Service
             if (!ev.state || !ev.state.event) {
               return Option.none()
             }
