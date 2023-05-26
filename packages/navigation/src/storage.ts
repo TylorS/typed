@@ -34,7 +34,6 @@ export const getStoredIndex = Effect.gen(function* ($) {
     return Option.none()
   }
 
-  // TODO: Validate index with Schema
   const n = JSON.parse(option.value) as number
 
   if (Number.isNaN(n)) {

@@ -3,11 +3,13 @@ import { History, Location } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
 import type { DomNavigationOptions } from './DOM.js'
-import { Destination, NavigationEvent } from './Navigation.js'
+import { Destination, NavigationError, NavigationEvent } from './Navigation.js'
 import { getInitialValues } from './storage.js'
 
 export interface Model {
-  readonly eventHandlers: Set<(event: NavigationEvent) => Effect.Effect<never, never, unknown>>
+  readonly eventHandlers: Set<
+    (event: NavigationEvent) => Effect.Effect<never, NavigationError, unknown>
+  >
   readonly events: Fx.RefSubject<never, readonly NavigationEvent[]>
   readonly index: Fx.RefSubject<never, number>
   readonly entries: Fx.Computed<never, never, Destination[]>

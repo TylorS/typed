@@ -6,7 +6,7 @@ import * as Context from '@typed/context'
 import { Location, History, Window, Storage, addWindowListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
-import { Navigation } from './Navigation.js'
+import { Destination, Navigation, NavigationError } from './Navigation.js'
 import { onHistoryEvent, patchHistory } from './history.js'
 import { makeIntent } from './intent.js'
 import { NavigationEventJson } from './json.js'
@@ -40,22 +40,53 @@ export const dom = (
       // Used to ensure ordering of navigation events
       const lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
 
+      const handleNavigationError =
+        (depth: number) =>
+        (error: NavigationError): Effect.Effect<NavigationServices, never, Destination> =>
+          Effect.gen(function* ($) {
+            if (depth >= 50) {
+              throw new Error(
+                'Too many redirects. You may have an infinite loop of onNavigation handlers that are redirecting.',
+              )
+            }
+
+            switch (error._tag) {
+              case 'CancelNavigation':
+                return yield* $(model.currentEntry.get)
+              case 'RedirectNavigation':
+                return yield* $(
+                  Effect.catchAll(
+                    intent.navigate(error.url, error),
+                    handleNavigationError(depth + 1),
+                  ),
+                )
+            }
+          })
+
+      const catchNavigationError = <A>(
+        effect: Effect.Effect<NavigationServices, NavigationError, A>,
+      ) => Effect.catchAll(effect, handleNavigationError(0))
+
       // Used to provide a locked effect with the current context
       const provideLocked = <E, A>(effect: Effect.Effect<NavigationServices, E, A>) =>
         Effect.provideContext(lock(effect), context)
 
       // Constructor our service
       const navigation: Navigation = {
-        back: provideLocked(intent.back(false)),
+        back: provideLocked(catchNavigationError(intent.back(false))),
         canGoBack: model.canGoBack,
         canGoForward: model.canGoForward,
         currentEntry: model.currentEntry,
         entries: model.entries,
-        forward: provideLocked(intent.forward(false)),
-        goTo: flow(intent.goTo, provideLocked),
-        navigate: flow(intent.navigate, provideLocked),
+        forward: provideLocked(catchNavigationError(intent.forward(false))),
+        goTo: flow(
+          intent.goTo,
+          Effect.catchAll(flow(handleNavigationError(0), Effect.map(Option.some))),
+          provideLocked,
+        ),
+        navigate: flow(intent.navigate, catchNavigationError, provideLocked),
         onNavigation: intent.onNavigation,
-        reload: provideLocked(intent.reload),
+        reload: provideLocked(catchNavigationError(intent.reload)),
       }
 
       // Patch History API to enable sending events

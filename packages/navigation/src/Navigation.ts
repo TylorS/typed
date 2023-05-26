@@ -4,9 +4,6 @@ import * as Scope from '@effect/io/Scope'
 import * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
 
-// TODO: Should onNavigation return errors for Redirects or Cancelation?
-// TODO: Should there be a max-size for entries?
-
 export interface Navigation {
   readonly entries: Fx.Computed<never, never, readonly Destination[]>
 
@@ -18,7 +15,7 @@ export interface Navigation {
   ) => Effect.Effect<never, never, Destination>
 
   readonly onNavigation: <R>(
-    handler: (event: NavigationEvent) => Effect.Effect<R, never, void>,
+    handler: (event: NavigationEvent) => Effect.Effect<R, NavigationError, void>,
   ) => Effect.Effect<R | Scope.Scope, never, void>
 
   readonly canGoBack: Fx.Computed<never, never, boolean>
@@ -98,4 +95,31 @@ export enum NavigationType {
   Replace = 'replace',
   Back = 'back',
   Forward = 'forward',
+}
+
+export type NavigationError = CancelNavigation | RedirectNavigation
+
+export interface CancelNavigation {
+  readonly _tag: 'CancelNavigation'
+}
+
+export const cancelNavigation = Effect.fail<CancelNavigation>({ _tag: 'CancelNavigation' })
+
+export function isCancelNavigation(error: NavigationError): error is CancelNavigation {
+  return error._tag === 'CancelNavigation'
+}
+
+export interface RedirectNavigation extends NavigateOptions {
+  readonly _tag: 'RedirectNavigation'
+  readonly url: string
+}
+
+export const redirect = (
+  url: string,
+  options: NavigateOptions = {},
+): Effect.Effect<never, RedirectNavigation, never> =>
+  Effect.fail({ _tag: 'RedirectNavigation', url, ...options })
+
+export function isRedirectNavigation(error: NavigationError): error is RedirectNavigation {
+  return error._tag === 'RedirectNavigation'
 }

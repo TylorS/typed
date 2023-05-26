@@ -11,7 +11,13 @@ import * as Fx from '@typed/fx'
 import { describe, it } from 'vitest'
 
 import { DomNavigationOptions, dom } from './DOM.js'
-import { Destination, Navigation, NavigationType } from './Navigation.js'
+import {
+  Destination,
+  Navigation,
+  NavigationType,
+  cancelNavigation,
+  redirect,
+} from './Navigation.js'
 import { encodeDestination } from './json.js'
 import { getStoredEvents } from './storage.js'
 
@@ -209,15 +215,10 @@ describe(import.meta.url, () => {
           onNavigation((event) => {
             if (i === 0) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
-              assertEqualDestination(event.destination, testDestination)
-            }
-
-            if (i === 1) {
-              deepStrictEqual(event.navigationType, NavigationType.Push)
               assertEqualDestination(event.destination, testPathname1Destination)
             }
 
-            if (i === 2) {
+            if (i === 1) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
               assertEqualDestination(event.destination, testPathname2Destination)
             }
@@ -231,7 +232,35 @@ describe(import.meta.url, () => {
         yield* $(navigate(testPathname1))
         yield* $(navigate(testPathname2))
 
-        deepStrictEqual(i, 3)
+        deepStrictEqual(i, 2)
+      })
+
+      await Effect.runPromise(test)
+    })
+
+    it('allows canceling the requested navigation', async () => {
+      const test = testNavigation(function* ($, { navigate, onNavigation }) {
+        yield* $(onNavigation(() => cancelNavigation))
+
+        const destination = yield* $(navigate(testPathname1))
+
+        assertEqualDestination(destination, testDestination)
+      })
+
+      await Effect.runPromise(test)
+    })
+
+    it('allow redirection to a different url', async () => {
+      const test = testNavigation(function* ($, { navigate, onNavigation }) {
+        yield* $(
+          onNavigation(({ destination }) =>
+            destination.url.href === testPathname1 ? redirect(testPathname2) : Effect.unit(),
+          ),
+        )
+
+        const destination = yield* $(navigate(testPathname1))
+
+        assertEqualDestination(destination, testPathname2Destination)
       })
 
       await Effect.runPromise(test)
@@ -373,15 +402,10 @@ describe(import.meta.url, () => {
           onNavigation((event) => {
             if (i === 0) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
-              assertEqualDestination(event.destination, testDestination)
-            }
-
-            if (i === 1) {
-              deepStrictEqual(event.navigationType, NavigationType.Push)
               assertEqualDestination(event.destination, testPathname1Destination)
             }
 
-            if (i === 2) {
+            if (i === 1) {
               deepStrictEqual(event.navigationType, NavigationType.Reload)
               assertEqualDestination(event.destination, testPathname1Destination)
             }
@@ -395,7 +419,7 @@ describe(import.meta.url, () => {
         yield* $(navigate(testPathname1))
         yield* $(reload)
 
-        deepStrictEqual(i, 3)
+        deepStrictEqual(i, 2)
       })
 
       await Effect.runPromise(test)
