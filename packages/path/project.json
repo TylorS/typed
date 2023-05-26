@@ -11,20 +11,21 @@
           }
         ]
       },
-      "outputs": [
-        "{projectRoot}/dist"
-      ]
+      "outputs": ["{projectRoot}/dist"]
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "options": {
-        "lintFilePatterns": [
-          "packages/path/src/**/*.ts"
-        ]
+        "lintFilePatterns": ["packages/path/src/**/*.ts"]
       }
     },
     "test": {
-      "executor": "@nrwl/vite:test"
+      "executor": "@nrwl/vite:test",
+      "configurations": {
+        "watch": {
+          "watch": true
+        }
+      }
     },
     "build:cjs": {
       "executor": "nx:run-commands",
@@ -36,9 +37,7 @@
         ],
         "parallel": false
       },
-      "outputs": [
-        "{projectRoot}/dist/cjs"
-      ]
+      "outputs": ["{projectRoot}/dist/cjs"]
     }
   }
 }

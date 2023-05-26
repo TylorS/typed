@@ -7,7 +7,6 @@
  * for interpolating values.
  */
 import type { A, N } from 'ts-toolbelt'
-import { Equals } from 'ts-toolbelt/out/Any/Equals.js'
 
 /* Start Region: Parameter DSL */
 
@@ -142,6 +141,7 @@ export const pathJoin = <P extends ReadonlyArray<string>>(...parts: P): PathJoin
  */
 export const formatPart = (part: string) => {
   part = removeLeadingSlash(part)
+  part = removeTrailingSlash(part)
 
   if (part.startsWith('{')) {
     return part
@@ -157,17 +157,17 @@ export const formatPart = (part: string) => {
 /**
  * @category Type-level
  */
-export type FormatPart<P extends string> = Equals<string, P> extends 1
+export type FormatPart<P extends string> = A.Equals<string, P> extends 1
   ? `/${string}`
   : `` extends P
   ? P
-  : RemoveLeadingSlash<P> extends `\\?${infer _}`
-  ? RemoveLeadingSlash<P>
-  : RemoveLeadingSlash<P> extends `{${infer _}`
-  ? RemoveLeadingSlash<P>
+  : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `\\?${infer _}`
+  ? RemoveTrailingSlash<RemoveLeadingSlash<P>>
+  : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `{${infer _}`
+  ? RemoveTrailingSlash<RemoveLeadingSlash<P>>
   : P extends QueryParam<infer _, infer _> | QueryParams<infer _, infer _>
   ? P
-  : `/${RemoveLeadingSlash<P>}`
+  : `/${RemoveTrailingSlash<RemoveLeadingSlash<P>>}`
 
 /**
  * Remove forward slashes prefixes recursively
@@ -187,6 +187,25 @@ export const removeLeadingSlash = <A extends string>(a: A): RemoveLeadingSlash<A
 
   return s as RemoveLeadingSlash<A>
 }
+
+/**
+ * @category Combinator
+ */
+export const removeTrailingSlash = <A extends string>(a: A): RemoveTrailingSlash<A> => {
+  let s = a.slice()
+
+  while (s.endsWith('/')) {
+    s = s.slice(0, -1)
+  }
+
+  return s as RemoveTrailingSlash<A>
+}
+
+/**
+ * Remove forward slashes postfixes recursively
+ * @category Type-level
+ */
+export type RemoveTrailingSlash<A> = A extends `${infer R}/` ? RemoveTrailingSlash<R> : A
 
 /* End Region: Parameter DSL */
 
@@ -216,7 +235,7 @@ export type PathToParts<P> = P extends `${infer Head}\\?${infer Tail}`
   ? readonly [...PathToParts<Head>, `{${Q}}?`, ...PathToParts<`${Tail}`>]
   : P extends `${infer Head}{${infer Q}}${infer Tail}`
   ? readonly [...PathToParts<Head>, `{${Q}}`, ...PathToParts<`${Tail}`>]
-  : Equals<``, P> extends 1
+  : A.Equals<``, P> extends 1
   ? readonly []
   : readonly [P]
 
@@ -339,7 +358,7 @@ export type InpterpolateParts<
   R extends readonly any[] = [],
   AST = {},
 > = Parts extends readonly [infer H, ...infer T]
-  ? Equals<string, H> extends 1
+  ? A.Equals<string, H> extends 1
     ? InpterpolateParts<T, Params, [...R, H], AST>
     : H extends Optional<Prefix<infer Pre, Unnamed>>
     ? FindNextIndex<AST> extends keyof Params
