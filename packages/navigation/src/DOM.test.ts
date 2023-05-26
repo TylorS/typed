@@ -9,8 +9,9 @@ import { makeServerWindow } from '@typed/framework/makeServerWindow'
 import * as Fx from '@typed/fx'
 import { describe, it } from 'vitest'
 
-import { dom, getStoredEvents } from './DOM.js'
+import { dom } from './DOM.js'
 import { Destination, Navigation, NavigationType } from './Navigation.js'
+import { getStoredEvents } from './storage.js'
 
 const serviceNavigation = (url: string) => {
   const window = makeServerWindow({ url })
