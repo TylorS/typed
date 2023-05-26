@@ -1,4 +1,4 @@
-import {} from '@effect/data/Function'
+import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import { History, Location } from '@typed/dom'
@@ -272,14 +272,17 @@ export const makeGo =
 
 export const makeGoTo = (model: Model, go: ReturnType<typeof makeGo>) => (key: string) =>
   Effect.gen(function* ($) {
-    const entries = yield* $(model.events)
+    const entries = yield* $(model.entries)
     const currentIndex = yield* $(model.index)
-    const nextIndex = entries.findIndex((event) => event.destination.key === key)
+    const nextIndex = entries.findIndex((destination) => destination.key === key)
+
+    if (nextIndex === -1) return Option.none()
+
     const delta = nextIndex - currentIndex
 
     if (delta !== 0) {
-      return yield* $(go(delta))
+      return Option.some(yield* $(go(delta)))
     }
 
-    return entries[nextIndex].destination
+    return Option.some(entries[nextIndex])
   })

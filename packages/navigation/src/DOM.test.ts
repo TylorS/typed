@@ -1,6 +1,7 @@
-import { deepStrictEqual } from 'assert'
+import { deepStrictEqual, ok } from 'assert'
 
 import * as Duration from '@effect/data/Duration'
+import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Layer from '@effect/io/Layer'
@@ -11,21 +12,25 @@ import { describe, it } from 'vitest'
 
 import { dom } from './DOM.js'
 import { Destination, Navigation, NavigationType } from './Navigation.js'
+import { encodeDestination } from './json.js'
 import { getStoredEvents } from './storage.js'
 
-const serviceNavigation = (url: string) => {
+const serviceNavigation = (url: string, initialKey?: string) => {
   const window = makeServerWindow({ url })
   const services = makeDomServices(window, window, window.document.body)
 
-  return Layer.provideMerge(Layer.succeedContext(services), Layer.provideMerge(localStorage, dom))
+  return Layer.provideMerge(
+    Layer.succeedContext(services),
+    Layer.provideMerge(localStorage, dom({ initialKey })),
+  )
 }
 
-const provide = <R, E, A>(effect: Effect.Effect<R, E, A>, url: string) =>
-  Effect.provideSomeLayer(serviceNavigation(url))(effect)
+const provide = <R, E, A>(effect: Effect.Effect<R, E, A>, url: string, initialKey?: string) =>
+  Effect.provideSomeLayer(serviceNavigation(url, initialKey))(effect)
 
 const testKey = 'keys-are-random-and-not-tested-by-default-assertions'
 const testUrl = 'https://example.com'
-const testDestination = Destination(testKey, new URL(testUrl))
+const testDestination = Destination('default', new URL(testUrl))
 const testPathname1 = `${testUrl}/1`
 const testPathname1Destination = Destination(testKey, new URL(testPathname1))
 const testPathname2 = `${testUrl}/2`
@@ -34,6 +39,7 @@ const testPathname2Destination = Destination(testKey, new URL(testPathname2))
 const testNavigation = <Y extends Effect.EffectGen<any, any, any>, A>(
   f: (adapter: Effect.Adapter, navigation: Navigation) => Generator<Y, A, any>,
   initialUrl = testUrl,
+  initialKey?: string,
 ) =>
   Effect.scoped(
     provide(
@@ -47,6 +53,7 @@ const testNavigation = <Y extends Effect.EffectGen<any, any, any>, A>(
         Effect.logErrorCause,
       ),
       initialUrl,
+      initialKey,
     ),
   )
 
@@ -74,6 +81,11 @@ const assertEqualDestination: (a: Destination, b: Destination) => void = (a, b) 
       ' Expeced: ' +
       JSON.stringify(b.state),
   )
+}
+
+const assertSomeDestination = (a: Option.Option<Destination>, b: Destination) => {
+  ok(Option.isSome(a))
+  assertEqualDestination(a.value, b)
 }
 
 const assertEqualDestinations: (a: readonly Destination[], b: readonly Destination[]) => void = (
@@ -394,9 +406,17 @@ describe(import.meta.url, () => {
         const d1 = yield* $(navigate(testPathname1))
         const d2 = yield* $(navigate(testPathname2))
 
-        assertEqualDestination(yield* $(goTo(d0.key)), testDestination)
-        assertEqualDestination(yield* $(goTo(d1.key)), testPathname1Destination)
-        assertEqualDestination(yield* $(goTo(d2.key)), testPathname2Destination)
+        assertSomeDestination(yield* $(goTo(d0.key)), testDestination)
+        assertSomeDestination(yield* $(goTo(d1.key)), testPathname1Destination)
+        assertSomeDestination(yield* $(goTo(d2.key)), testPathname2Destination)
+      })
+
+      await Effect.runPromise(test)
+    })
+
+    it('returns None when the entry does not exist', async () => {
+      const test = testNavigation(function* ($, { goTo }) {
+        deepStrictEqual(yield* $(goTo('does-not-exist')), Option.none())
       })
 
       await Effect.runPromise(test)
@@ -552,20 +572,24 @@ describe(import.meta.url, () => {
 
   describe('popstate', () => {
     it('updates currentEntry when the state changes', async () => {
-      const test = testNavigation(function* ($, { currentEntry, navigate }) {
-        const fiber = yield* $(fxToFiber(currentEntry, 3))
+      const test = testNavigation(
+        function* ($, { currentEntry, navigate }) {
+          const fiber = yield* $(fxToFiber(currentEntry, 3))
 
-        yield* $(navigate(testPathname1))
-        yield* $(popstate(testDestination))
+          yield* $(navigate(testPathname1))
+          yield* $(popstate(testDestination))
 
-        const results = yield* $(Fiber.join(fiber))
+          const results = yield* $(Fiber.join(fiber))
 
-        assertEqualDestinations(results, [
-          testDestination,
-          testPathname1Destination,
-          testDestination,
-        ])
-      })
+          assertEqualDestinations(results, [
+            testDestination,
+            testPathname1Destination,
+            testDestination,
+          ])
+        },
+        testUrl,
+        testDestination.key,
+      )
 
       await Effect.runPromise(test)
     })
@@ -599,7 +623,7 @@ function popstate(destination: Destination) {
     const state = {
       // Not a full event, but enough to get the test to pass
       event: {
-        destination,
+        destination: encodeDestination(destination),
       },
       state: destination.state,
     }

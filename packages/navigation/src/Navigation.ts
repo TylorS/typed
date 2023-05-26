@@ -1,3 +1,4 @@
+import { Option } from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import * as Context from '@typed/context'
@@ -30,7 +31,7 @@ export interface Navigation {
 
   readonly reload: Effect.Effect<never, never, Destination>
 
-  readonly goTo: (key: string) => Effect.Effect<never, never, Destination>
+  readonly goTo: (key: string) => Effect.Effect<never, never, Option<Destination>>
 }
 
 export const Navigation = Context.Tag<Navigation>('Navigation')
@@ -59,8 +60,12 @@ export const forward = Navigation.withEffect((n) => n.forward)
 export const reload = Navigation.withEffect((n) => n.reload)
 
 export interface NavigateOptions {
+  // State to save to history
   readonly state?: unknown
+  // History type
   readonly history?: 'push' | 'replace'
+  // Key to use for Navigation entry
+  readonly key?: string
 }
 
 export interface NavigationEvent {

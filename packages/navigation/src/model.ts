@@ -2,6 +2,7 @@ import * as Effect from '@effect/io/Effect'
 import { History, Location } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
+import type { DomNavigationOptions } from './DOM.js'
 import { Destination, NavigationEvent } from './Navigation.js'
 import { getInitialValues } from './storage.js'
 
@@ -15,9 +16,11 @@ export interface Model {
   readonly canGoForward: Fx.RefSubject<never, boolean>
 }
 
-export const makeModel: Effect.Effect<History | Location | Storage, never, Model> = Effect.gen(
-  function* ($) {
-    const [initialEntries, initialIndex] = yield* $(getInitialValues)
+export const makeModel = (
+  options: DomNavigationOptions,
+): Effect.Effect<History | Location | Storage, never, Model> =>
+  Effect.gen(function* ($) {
+    const [initialEntries, initialIndex] = yield* $(getInitialValues(options))
     const events = yield* $(Fx.makeRef(Effect.succeed(initialEntries)))
     const index = yield* $(Fx.makeRef(Effect.succeed(initialIndex)))
     const entries = events.map((es) => es.map((e) => e.destination))
@@ -38,5 +41,4 @@ export const makeModel: Effect.Effect<History | Location | Storage, never, Model
       canGoBack,
       canGoForward,
     }
-  },
-)
+  })
