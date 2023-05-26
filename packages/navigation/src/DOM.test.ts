@@ -10,23 +10,26 @@ import { makeServerWindow } from '@typed/framework/makeServerWindow'
 import * as Fx from '@typed/fx'
 import { describe, it } from 'vitest'
 
-import { dom } from './DOM.js'
+import { DomNavigationOptions, dom } from './DOM.js'
 import { Destination, Navigation, NavigationType } from './Navigation.js'
 import { encodeDestination } from './json.js'
 import { getStoredEvents } from './storage.js'
 
-const serviceNavigation = (url: string, initialKey?: string) => {
+const serviceNavigation = (url: string, options: DomNavigationOptions = {}) => {
   const window = makeServerWindow({ url })
   const services = makeDomServices(window, window, window.document.body)
 
   return Layer.provideMerge(
     Layer.succeedContext(services),
-    Layer.provideMerge(localStorage, dom({ initialKey })),
+    Layer.provideMerge(localStorage, dom(options)),
   )
 }
 
-const provide = <R, E, A>(effect: Effect.Effect<R, E, A>, url: string, initialKey?: string) =>
-  Effect.provideSomeLayer(serviceNavigation(url, initialKey))(effect)
+const provide = <R, E, A>(
+  effect: Effect.Effect<R, E, A>,
+  url: string,
+  options: DomNavigationOptions = {},
+) => Effect.provideSomeLayer(serviceNavigation(url, options))(effect)
 
 const testKey = 'keys-are-random-and-not-tested-by-default-assertions'
 const testUrl = 'https://example.com'
@@ -39,7 +42,7 @@ const testPathname2Destination = Destination(testKey, new URL(testPathname2))
 const testNavigation = <Y extends Effect.EffectGen<any, any, any>, A>(
   f: (adapter: Effect.Adapter, navigation: Navigation) => Generator<Y, A, any>,
   initialUrl = testUrl,
-  initialKey?: string,
+  options: DomNavigationOptions = {},
 ) =>
   Effect.scoped(
     provide(
@@ -53,7 +56,7 @@ const testNavigation = <Y extends Effect.EffectGen<any, any, any>, A>(
         Effect.logErrorCause,
       ),
       initialUrl,
-      initialKey,
+      options,
     ),
   )
 
@@ -588,7 +591,39 @@ describe(import.meta.url, () => {
           ])
         },
         testUrl,
-        testDestination.key,
+        { initialKey: testDestination.key },
+      )
+
+      await Effect.runPromise(test)
+    })
+  })
+
+  describe('maxEntries', () => {
+    it('allows configuring how many entries are stored', async () => {
+      const test = testNavigation(
+        function* ($, { currentEntry, entries, navigate }) {
+          const fiber = yield* $(fxToFiber(currentEntry, 3))
+
+          yield* $(navigate(testPathname1))
+          yield* $(navigate(testPathname2))
+
+          const results = yield* $(Fiber.join(fiber))
+
+          assertEqualDestinations(results, [
+            testDestination,
+            testPathname1Destination,
+            testPathname2Destination,
+          ])
+
+          const entriesAfterNavigation = yield* $(entries)
+
+          assertEqualDestinations(entriesAfterNavigation, [
+            testPathname1Destination,
+            testPathname2Destination,
+          ])
+        },
+        testUrl,
+        { maxEntries: 2 },
       )
 
       await Effect.runPromise(test)

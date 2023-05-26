@@ -15,7 +15,13 @@ import { makeModel } from './model.js'
 export type NavigationServices = Window | Location | History | Storage
 
 export interface DomNavigationOptions {
+  // Defaults to a random value, but you can provide your own
+  // Navigation keys can be provided to Navigation.navigate along the way as needed.
   readonly initialKey?: string
+
+  // Defaults to 50
+  // The maximum number of entries to keep in memory and storage.
+  readonly maxEntries?: number
 }
 
 export const dom = (
@@ -29,7 +35,7 @@ export const dom = (
 
       // Create model and intent
       const model = yield* $(makeModel(options))
-      const intent = makeIntent(model)
+      const intent = makeIntent(model, options)
 
       // Used to ensure ordering of navigation events
       const lock = Effect.unsafeMakeSemaphore(1).withPermits(1)

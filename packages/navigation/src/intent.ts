@@ -3,6 +3,7 @@ import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import { History, Location } from '@typed/dom'
 
+import type { DomNavigationOptions } from './DOM.js'
 import { Destination, NavigateOptions, NavigationEvent, NavigationType } from './Navigation.js'
 import { ServiceId } from './constant.js'
 import { encodeEvent } from './json.js'
@@ -10,16 +11,19 @@ import { Model } from './model.js'
 import { saveToStorage } from './storage.js'
 import { createKey, getUrl } from './util.js'
 
-export function makeIntent(model: Model) {
-  // eslint-disable-next-line require-yield
+// Roughly the number of History entries in a browser anyways
+const DEFAULT_MAX_ENTRIES = 50
+
+export function makeIntent(model: Model, options: DomNavigationOptions) {
+  const maxEntries = Math.abs(options.maxEntries ?? DEFAULT_MAX_ENTRIES)
   const notify = makeNotify(model)
   const go = makeGo(model, notify)
   const replace = makeReplace(model, notify)
-  const push = makePush(model, notify)
+  const push = makePush(model, notify, maxEntries)
 
   return {
-    back: makeBack(model, notify),
-    forward: makeForward(model, notify),
+    back: (skipHistory: boolean) => go(-1, skipHistory),
+    forward: (skipHistory: boolean) => go(1, skipHistory),
     push,
     replace,
     navigate: (url: string, options: NavigateOptions = {}) =>
@@ -77,56 +81,6 @@ export const makeOnNavigation =
         yield* $(restore(handler(entries[i])))
       }),
     )
-
-export const makeBack = (model: Model, notify: Notify) => (skipHistory: boolean) =>
-  Effect.gen(function* ($) {
-    const current = yield* $(model.currentEntry)
-    const index = yield* $(model.index.update((i) => Math.max(i - 1, 0)))
-    const events = yield* $(model.events)
-
-    if (!skipHistory) {
-      const history = yield* $(History)
-      history.back.call(ServiceId)
-    }
-
-    const previous = events[index].destination
-
-    if (previous.url.href !== current.url.href) {
-      yield* $(
-        notify({
-          destination: previous,
-          hashChange: previous.url.hash !== current.url.hash,
-          navigationType: NavigationType.Back,
-        }),
-      )
-    }
-
-    return previous
-  })
-
-export const makeForward = (model: Model, notify: Notify) => (skipHistory: boolean) =>
-  Effect.gen(function* ($) {
-    const current = yield* $(model.currentEntry)
-    const e = yield* $(model.events)
-    const i = yield* $(model.index.update((i) => Math.min(i + 1, e.length - 1)))
-    if (!skipHistory) {
-      const history = yield* $(History)
-      history.forward.call(ServiceId)
-    }
-    const previous = e[i].destination
-
-    if (previous.url.href !== current.url.href) {
-      yield* $(
-        notify({
-          destination: previous,
-          hashChange: previous.url.hash !== current.url.hash,
-          navigationType: NavigationType.Forward,
-        }),
-      )
-    }
-
-    return previous
-  })
 
 export const makeReload = (model: Model, notify: Notify) =>
   Effect.gen(function* ($) {
@@ -187,7 +141,7 @@ export const makeReplace =
     })
 
 export const makePush =
-  (model: Model, notify: Notify) =>
+  (model: Model, notify: Notify, maxEntries: number) =>
   (url: string, options: NavigateOptions = {}, skipHistory = false) =>
     Effect.gen(function* ($) {
       const location = yield* $(Location)
@@ -222,7 +176,7 @@ export const makePush =
         model.events.update((entries) => {
           const updated = entries.slice(0, currentIndex + 1)
           updated.push(event)
-          return updated
+          return updated.slice(-maxEntries)
         }),
       )
 
