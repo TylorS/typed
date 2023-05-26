@@ -1,9 +1,8 @@
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
-import { History, Location } from '@typed/dom'
 
-import type { DomNavigationOptions } from './DOM.js'
+import type { MemoryNavigationOptions } from './Memory.js'
 import {
   Destination,
   NavigateOptions,
@@ -11,26 +10,24 @@ import {
   NavigationEvent,
   NavigationType,
 } from './Navigation.js'
-import { ServiceId } from './constant.js'
-import { encodeEvent } from './json.js'
 import { Model } from './model.js'
-import { saveToStorage } from './storage.js'
 import { createKey, getUrl } from './util.js'
 
 // Roughly the number of History entries in a browser anyways
 const DEFAULT_MAX_ENTRIES = 50
 
-export function makeIntent(model: Model, options: DomNavigationOptions) {
+export function makeIntent(model: Model, options: MemoryNavigationOptions) {
+  const { origin } = options.initialUrl
   const maxEntries = Math.abs(options.maxEntries ?? DEFAULT_MAX_ENTRIES)
   const notify = makeNotify(model)
   const save = makeSave(model)
   const go = makeGo(model, notify, save)
-  const replace = makeReplace(model, notify, save)
-  const push = makePush(model, notify, save, maxEntries)
+  const replace = makeReplace(model, notify, save, origin)
+  const push = makePush(model, notify, save, origin, maxEntries)
 
   return {
-    back: (skipHistory: boolean) => go(-1, skipHistory),
-    forward: (skipHistory: boolean) => go(1, skipHistory),
+    back: go(-1),
+    forward: go(1),
     push,
     replace,
     navigate: (url: string, options: NavigateOptions = {}) =>
@@ -60,11 +57,11 @@ export const makeSave = (model: Model) => (event: NavigationEvent) =>
     const events = yield* $(model.events)
     const index = yield* $(model.index)
 
-    // Save to storage
-    yield* $(saveToStorage(events, index))
-
     // Update current entry
     yield* $(model.currentEntry.set(event.destination))
+
+    // Update canGoBack
+    yield* $(model.canGoBack.set(index > 0))
 
     // Update canGoForward
     yield* $(model.canGoForward.set(index < events.length - 1))
@@ -97,22 +94,17 @@ export const makeReload = (model: Model, notify: Notify, save: Save) =>
     yield* $(notify(reloadEvent))
     yield* $(save(reloadEvent))
 
-    const location = yield* $(Location)
-
-    location.reload()
-
     return event.destination
   })
 
 export const makeReplace =
-  (model: Model, notify: Notify, save: Save) =>
-  (url: string, options: NavigateOptions = {}, skipHistory = false) =>
+  (model: Model, notify: Notify, save: Save, origin: string) =>
+  (url: string, options: NavigateOptions = {}) =>
     Effect.gen(function* ($) {
-      const location = yield* $(Location)
       const entry = yield* $(model.currentEntry.get)
       const destination: Destination = {
         key: entry.key,
-        url: getUrl(url, location.origin),
+        url: getUrl(url, origin),
         state: options.state,
       }
       const event: NavigationEvent = {
@@ -122,17 +114,6 @@ export const makeReplace =
       }
 
       yield* $(notify(event))
-
-      if (!skipHistory) {
-        const history = yield* $(History)
-
-        history.replaceState.call(
-          ServiceId,
-          { state: options.state, event: encodeEvent(event) },
-          '',
-          url,
-        )
-      }
 
       const currentIndex = yield* $(model.index)
 
@@ -150,14 +131,13 @@ export const makeReplace =
     })
 
 export const makePush =
-  (model: Model, notify: Notify, save: Save, maxEntries: number) =>
-  (url: string, options: NavigateOptions = {}, skipHistory = false) =>
+  (model: Model, notify: Notify, save: Save, origin: string, maxEntries: number) =>
+  (url: string, options: NavigateOptions = {}) =>
     Effect.gen(function* ($) {
-      const location = yield* $(Location)
       const entry = yield* $(model.currentEntry.get)
       const destination: Destination = {
         key: yield* $(createKey),
-        url: getUrl(url, location.origin),
+        url: getUrl(url, origin),
         state: options.state,
       }
       const event: NavigationEvent = {
@@ -168,17 +148,6 @@ export const makePush =
 
       // Notify event handlers
       yield* $(notify(event))
-
-      if (!skipHistory) {
-        const history = yield* $(History)
-
-        history.pushState.call(
-          ServiceId,
-          { state: options.state, event: encodeEvent(event) },
-          '',
-          url,
-        )
-      }
 
       const currentIndex = yield* $(model.index)
 
@@ -200,42 +169,34 @@ export const makePush =
       return destination
     })
 
-export const makeGo =
-  (model: Model, notify: Notify, save: Save) =>
-  (delta: number, skipHistory = false) =>
-    Effect.gen(function* ($) {
-      const currentEntries = yield* $(model.events)
-      const totalEntries = currentEntries.length
-      const currentIndex = yield* $(model.index)
+export const makeGo = (model: Model, notify: Notify, save: Save) => (delta: number) =>
+  Effect.gen(function* ($) {
+    const currentEntries = yield* $(model.events)
+    const totalEntries = currentEntries.length
+    const currentIndex = yield* $(model.index)
 
-      // Nothing to do here
-      if (delta === 0) return currentEntries[currentIndex].destination
+    // Nothing to do here
+    if (delta === 0) return currentEntries[currentIndex].destination
 
-      const nextIndex =
-        delta > 0
-          ? Math.min(currentIndex + delta, totalEntries - 1)
-          : Math.max(currentIndex + delta, 0)
-      const nextEntry = currentEntries[nextIndex]
+    const nextIndex =
+      delta > 0
+        ? Math.min(currentIndex + delta, totalEntries - 1)
+        : Math.max(currentIndex + delta, 0)
+    const nextEntry = currentEntries[nextIndex]
 
-      yield* $(
-        notify({
-          ...nextEntry,
-          navigationType: nextIndex > currentIndex ? NavigationType.Forward : NavigationType.Back,
-        }),
-      )
+    yield* $(
+      notify({
+        ...nextEntry,
+        navigationType: nextIndex > currentIndex ? NavigationType.Forward : NavigationType.Back,
+      }),
+    )
 
-      if (!skipHistory) {
-        const history = yield* $(History)
+    yield* $(model.index.set(nextIndex))
 
-        history.go.call(ServiceId, delta)
-      }
+    yield* $(save(nextEntry))
 
-      yield* $(model.index.set(nextIndex))
-
-      yield* $(save(nextEntry))
-
-      return nextEntry.destination
-    })
+    return nextEntry.destination
+  })
 
 export const makeGoTo = (model: Model, go: ReturnType<typeof makeGo>) => (key: string) =>
   Effect.gen(function* ($) {

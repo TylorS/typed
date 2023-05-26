@@ -6,7 +6,7 @@ import { History } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
 import { ServiceId } from './constant.js'
-import { Intent } from './intent.js'
+import { Intent } from './dom-intent.js'
 
 export type HistoryEvent = PushStateEvent | ReplaceStateEvent | GoEvent | BackEvent | ForwardEvent
 

@@ -4,13 +4,10 @@ import * as Duration from '@effect/data/Duration'
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
-import * as Layer from '@effect/io/Layer'
-import { GlobalThis, History, Location, Window, localStorage, makeDomServices } from '@typed/dom'
-import { makeServerWindow } from '@typed/framework/makeServerWindow'
 import * as Fx from '@typed/fx'
 import { describe, it } from 'vitest'
 
-import { DomNavigationOptions, dom } from './DOM.js'
+import { MemoryNavigationOptions, memory } from './Memory.js'
 import {
   Destination,
   DestinationKey,
@@ -19,24 +16,9 @@ import {
   cancelNavigation,
   redirect,
 } from './Navigation.js'
-import { encodeDestination } from './json.js'
-import { getStoredEvents } from './storage.js'
 
-const serviceNavigation = (url: string, options: DomNavigationOptions = {}) => {
-  const window = makeServerWindow({ url })
-  const services = makeDomServices(window, window, window.document.body)
-
-  return Layer.provideMerge(
-    Layer.succeedContext(services),
-    Layer.provideMerge(localStorage, dom(options)),
-  )
-}
-
-const provide = <R, E, A>(
-  effect: Effect.Effect<R, E, A>,
-  url: string,
-  options: DomNavigationOptions = {},
-) => Effect.provideSomeLayer(serviceNavigation(url, options))(effect)
+const provide = <R, E, A>(effect: Effect.Effect<R, E, A>, options: MemoryNavigationOptions) =>
+  Effect.provideSomeLayer(memory(options))(effect)
 
 const testKey = DestinationKey('keys-are-random-and-not-tested-by-default-assertions')
 const testUrl = 'https://example.com'
@@ -48,8 +30,7 @@ const testPathname2Destination = Destination(testKey, new URL(testPathname2))
 
 const testNavigation = <Y extends Effect.EffectGen<any, any, any>, A>(
   f: (adapter: Effect.Adapter, navigation: Navigation) => Generator<Y, A, any>,
-  initialUrl = testUrl,
-  options: DomNavigationOptions = {},
+  options: MemoryNavigationOptions = { initialUrl: new URL(testUrl) },
 ) =>
   Effect.scoped(
     provide(
@@ -62,7 +43,6 @@ const testNavigation = <Y extends Effect.EffectGen<any, any, any>, A>(
         }),
         Effect.logErrorCause,
       ),
-      initialUrl,
       options,
     ),
   )
@@ -451,178 +431,6 @@ describe(import.meta.url, () => {
     })
   })
 
-  describe('localStorage', () => {
-    it('saves and retrieves entries from localStorage', async () => {
-      const test = testNavigation(function* ($, { navigate }) {
-        yield* $(navigate(testPathname1))
-        yield* $(navigate(testPathname2))
-
-        const events = yield* $(getStoredEvents)
-
-        assertEqualDestinations(
-          events.map((x) => x.destination),
-          [testDestination, testPathname1Destination, testPathname2Destination],
-        )
-      })
-
-      await Effect.runPromise(test)
-    })
-  })
-
-  describe('history', () => {
-    it('patches history.pushState', async () => {
-      const test = testNavigation(function* ($, { currentEntry }) {
-        const history = yield* $(History)
-        const fiber = yield* $(fxToFiber(currentEntry, 3))
-
-        history.pushState(undefined, '', '/1')
-        history.pushState(undefined, '', '/2')
-
-        const results = yield* $(Fiber.join(fiber))
-
-        assertEqualDestinations(results, [
-          testDestination,
-          testPathname1Destination,
-          testPathname2Destination,
-        ])
-      })
-
-      await Effect.runPromise(test)
-    })
-
-    it('patches history.replaceState', async () => {
-      const test = testNavigation(function* ($, { currentEntry }) {
-        const history = yield* $(History)
-        const fiber = yield* $(fxToFiber(currentEntry, 3))
-
-        const state = { x: Math.random(), y: Math.random() }
-
-        history.replaceState(state, '', '/1')
-        history.replaceState(state, '', '/2')
-
-        const results = yield* $(Fiber.join(fiber))
-
-        assertEqualDestinations(results, [
-          testDestination,
-          { ...testPathname1Destination, state },
-          { ...testPathname2Destination, state },
-        ])
-      })
-
-      await Effect.runPromise(test)
-    })
-
-    it('patches history.back', async () => {
-      const test = testNavigation(function* ($, { currentEntry }) {
-        const history = yield* $(History)
-        const fiber = yield* $(fxToFiber(currentEntry, 3))
-
-        history.pushState(undefined, '', '/1')
-        history.back()
-
-        const results = yield* $(Fiber.join(fiber))
-
-        assertEqualDestinations(results, [
-          testDestination,
-          testPathname1Destination,
-          testDestination,
-        ])
-      })
-
-      await Effect.runPromise(test)
-    })
-
-    it('patches history.forward', async () => {
-      const test = testNavigation(function* ($, { currentEntry }) {
-        const history = yield* $(History)
-        const fiber = yield* $(fxToFiber(currentEntry, 4))
-
-        history.pushState(undefined, '', '/1')
-        history.back()
-        history.forward()
-
-        const results = yield* $(Fiber.join(fiber))
-
-        assertEqualDestinations(results, [
-          testDestination,
-          testPathname1Destination,
-          testDestination,
-          testPathname1Destination,
-        ])
-      })
-
-      await Effect.runPromise(test)
-    })
-
-    it('patches history.go', async () => {
-      const test = testNavigation(function* ($, { currentEntry }) {
-        const history = yield* $(History)
-        const fiber = yield* $(fxToFiber(currentEntry, 4))
-
-        history.pushState(undefined, '', '/1')
-        history.go(-1)
-        history.go(1)
-
-        const results = yield* $(Fiber.join(fiber))
-
-        assertEqualDestinations(results, [
-          testDestination,
-          testPathname1Destination,
-          testDestination,
-          testPathname1Destination,
-        ])
-      })
-
-      await Effect.runPromise(test)
-    })
-  })
-
-  describe('hashchange', () => {
-    it('updates currentEntry when the hash changes', async () => {
-      const test = testNavigation(function* ($, { currentEntry }) {
-        const fiber = yield* $(fxToFiber(currentEntry, 3))
-
-        yield* $(changeHash('1'))
-        yield* $(changeHash('2'))
-
-        const results = yield* $(Fiber.join(fiber))
-
-        assertEqualDestinations(results, [
-          testDestination,
-          { ...testDestination, url: new URL(testUrl + '#1') },
-          { ...testDestination, url: new URL(testUrl + '#2') },
-        ])
-      })
-
-      await Effect.runPromise(test)
-    })
-  })
-
-  describe('popstate', () => {
-    it('updates currentEntry when the state changes', async () => {
-      const test = testNavigation(
-        function* ($, { currentEntry, navigate }) {
-          const fiber = yield* $(fxToFiber(currentEntry, 3))
-
-          yield* $(navigate(testPathname1))
-          yield* $(popstate(testDestination))
-
-          const results = yield* $(Fiber.join(fiber))
-
-          assertEqualDestinations(results, [
-            testDestination,
-            testPathname1Destination,
-            testDestination,
-          ])
-        },
-        testUrl,
-        { initialKey: testDestination.key },
-      )
-
-      await Effect.runPromise(test)
-    })
-  })
-
   describe('maxEntries', () => {
     it('allows configuring how many entries are stored', async () => {
       const test = testNavigation(
@@ -647,51 +455,10 @@ describe(import.meta.url, () => {
             testPathname2Destination,
           ])
         },
-        testUrl,
-        { maxEntries: 2 },
+        { initialUrl: new URL(testUrl), maxEntries: 2 },
       )
 
       await Effect.runPromise(test)
     })
   })
 })
-
-// Happy-DOM does not send hashchange events when the hash changes programmatically.
-function changeHash(hash: string) {
-  return Effect.gen(function* ($) {
-    const globalThis = yield* $(GlobalThis)
-    const window = yield* $(Window)
-    const location = yield* $(Location)
-    const oldUrl = location.href
-
-    location.hash = `#${hash}`
-
-    const event = new globalThis.HashChangeEvent('hashchange')
-
-    // Setting these values in the constructor does not work with Happy-DOM.
-    ;(event as any).oldURL = oldUrl
-    ;(event as any).newURL = location.href
-
-    window.dispatchEvent(event)
-  })
-}
-
-function popstate(destination: Destination) {
-  return Effect.gen(function* ($) {
-    const window = yield* $(Window)
-    const globalThis = yield* $(GlobalThis)
-    const state = {
-      // Not a full event, but enough to get the test to pass
-      event: {
-        destination: encodeDestination(destination),
-      },
-      state: destination.state,
-    }
-    const event = new globalThis.PopStateEvent('popstate')
-
-    // Setting these values in the constructor does not work with Happy-DOM.
-    ;(event as any).state = state
-
-    window.dispatchEvent(event)
-  })
-}

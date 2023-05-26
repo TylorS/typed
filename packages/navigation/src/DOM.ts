@@ -7,10 +7,11 @@ import { Location, History, Window, Storage, addWindowListener } from '@typed/do
 import * as Fx from '@typed/fx'
 
 import { Destination, DestinationKey, Navigation, NavigationError } from './Navigation.js'
+import { makeIntent } from './dom-intent.js'
 import { onHistoryEvent, patchHistory } from './history.js'
-import { makeIntent } from './intent.js'
 import { NavigationEventJson } from './json.js'
 import { makeModel } from './model.js'
+import { getInitialValues } from './storage.js'
 
 export type NavigationServices = Window | Location | History | Storage
 
@@ -34,7 +35,8 @@ export const dom = (
       const history = Context.get(context, History)
 
       // Create model and intent
-      const model = yield* $(makeModel(options))
+      const [initialEntries, initialIndex] = yield* $(getInitialValues(options))
+      const model = yield* $(makeModel(initialEntries, initialIndex))
       const intent = makeIntent(model, options)
 
       // Used to ensure ordering of navigation events
