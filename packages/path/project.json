@@ -24,6 +24,9 @@
       "configurations": {
         "watch": {
           "watch": true
+        },
+        "typecheck": {
+          "mode": "typecheck"
         }
       }
     },

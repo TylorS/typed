@@ -19,11 +19,11 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.12.2",
+    "@effect/data": "^0.12.3",
     "@typed/compiler": "workspace:*",
     "fast-glob": "^3.2.12",
-    "vavite": "^1.7.1",
-    "vite": "^4.3.7",
+    "vavite": "^1.8.1",
+    "vite": "^4.3.9",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.2.0"
   },
@@ -34,5 +34,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "devDependencies": {
+    "vitest": "^0.31.1"
+  }
 }

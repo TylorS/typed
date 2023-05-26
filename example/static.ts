@@ -15,14 +15,14 @@ const getParentElement = (doc: Document) => doc.getElementById('application')
 const origin = 'https://example.com'
 
 const main = Effect.gen(function* ($) {
-  yield $(Effect.logInfo('Rendering static paths for pages...'))
+  yield* $(Effect.logInfo('Rendering static paths for pages...'))
   const pageOutput = yield* $(renderStaticHtml(indexHtml, pages, getParentElement, origin))
-  yield $(Effect.logInfo('Rendering static paths for other-pages...'))
+  yield* $(Effect.logInfo('Rendering static paths for other-pages...'))
   const otherOutput = yield* $(renderStaticHtml(otherHtml, other, getParentElement, origin))
 
-  yield $(Effect.logInfo('Writing static paths...'))
+  yield* $(Effect.logInfo('Writing static paths...'))
   yield* $(writeAllOutputs(config.clientOutputDirectory, [...pageOutput, ...otherOutput]))
-  yield $(Effect.logInfo('Static paths written!'))
+  yield* $(Effect.logInfo('Static paths written!'))
 })
 
 Effect.runPromise(main)

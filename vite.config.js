@@ -21,25 +21,33 @@ const alias = {
   '@typed/router': join(__dirname, 'packages/router/dist'),
 }
 
-export default defineConfig({
-  resolve: { alias },
-  plugins: [
-    typed({
-      // Directory should point towards the root of your project with html files
-      sourceDirectory: join(__dirname, 'example'),
-      // Allows using includeSources:true for your sourceMaps
-      saveGeneratedModules: true,
-    }),
-    svelte({
-      preprocess: autoPreprocess(),
-      compilerOptions: {
-        hydratable: true,
-      },
-    }),
-  ],
-  build: {
-    manifest: true,
-    sourcemap: true,
-    minify: true,
-  },
+export default defineConfig(({ mode }) => {
+  return {
+    resolve: { alias },
+    plugins:
+      mode === 'typecheck'
+        ? []
+        : [
+            typed({
+              // Directory should point towards the root of your project with html files
+              sourceDirectory: join(__dirname, 'example'),
+              // Allows using includeSources:true for your sourceMaps
+              saveGeneratedModules: true,
+            }),
+            svelte({
+              preprocess: autoPreprocess(),
+              compilerOptions: {
+                hydratable: true,
+              },
+            }),
+          ],
+    build: {
+      manifest: true,
+      sourcemap: true,
+      minify: true,
+    },
+    test: {
+      checker: 'tsc',
+    },
+  }
 })

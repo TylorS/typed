@@ -103,8 +103,6 @@ for (const name of packageNames) {
     },
   }
 
-  console.log(dependencies)
-
   for (const [dependency, testFile] of Array.from(dependencies).sort(([a], [b]) =>
     a.localeCompare(b),
   )) {
@@ -148,8 +146,6 @@ spawnSync('pnpm', ['install'], { stdio: 'inherit' })
 
 function checkDependency(dependency: string, packageJson: any, testFile: boolean) {
   const version = findRootPackageVersion(dependency, testFile)
-
-  console.log(version, dependency, testFile)
 
   if (
     version === null &&

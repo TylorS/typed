@@ -1,6 +1,6 @@
 import { deepStrictEqual } from 'assert'
 
-import { assertType, describe, it } from 'vitest'
+import { describe, it } from 'vitest'
 
 import { pathJoin } from './index.js'
 
@@ -33,28 +33,6 @@ describe(import.meta.url, () => {
       deepStrictEqual(pathJoin('a/', 'b', 'c'), '/a/b/c')
       deepStrictEqual(pathJoin('a/', 'b/', 'c'), '/a/b/c')
       deepStrictEqual(pathJoin('a/', 'b////', 'c/'), '/a/b/c')
-    })
-
-    describe('type-level', () => {
-      it('joins paths', () => {
-        assertType<'/a/b/c'>(pathJoin('a', 'b', 'c'))
-        assertType<'/a/b/c'>(pathJoin('a', '/b', 'c'))
-        assertType<'/a/b/c'>(pathJoin('a', '/b', '/c'))
-        assertType<'/a/b/c'>(pathJoin('/a', '/b', '/c'))
-
-        assertType<'/a/:b/c'>(pathJoin('a', ':b', 'c'))
-        assertType<'/a/:b/:c'>(pathJoin('a', ':b', ':c'))
-        assertType<'/:a/:b/:c'>(pathJoin(':a', ':b', ':c'))
-        assertType<'/a/:b/c'>(pathJoin('a', ':b', '/c'))
-        assertType<'/a/:b/c'>(pathJoin('a', '/:b', 'c'))
-        assertType<'/a/:b/c'>(pathJoin('a', '/:b', '/c'))
-        assertType<'/a/:b/c'>(pathJoin('/a', '/:b', '/c'))
-
-        assertType<'/a/c'>(pathJoin('a', '', 'c'))
-
-        assertType<'/a/b/c'>(pathJoin('a', 'b', 'c/'))
-        assertType<'/a/b/c'>(pathJoin('a', 'b///', 'c'))
-      })
     })
   })
 })
