@@ -18,9 +18,6 @@
       "path": "../dom/tsconfig.build.json"
     },
     {
-      "path": "../error/tsconfig.build.json"
-    },
-    {
       "path": "../framework/tsconfig.build.json"
     },
     {
