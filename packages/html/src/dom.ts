@@ -16,6 +16,11 @@ import type { AttributeTemplateHole, TemplateCache, TemplateHole } from './Templ
 import { Wire, persistent } from './Wire.js'
 import { diffChildren } from './diffChildren.js'
 import { parseTemplate } from './parseTemplate.js'
+import { AttrPart } from './parts/AttrPart.js'
+import { BasePart } from './parts/BasePart.js'
+import { BooleanPart } from './parts/BooleanPart.js'
+import { PropertyPart } from './parts/PropertyPart.js'
+import { TextPart } from './parts/TextPart.js'
 import { findPath } from './paths.js'
 import { getRenderHoleContext } from './render.js'
 
@@ -173,25 +178,7 @@ function unwrapPlaceholder<R, E>(placeholder: Renderable<R, E>): Fx.Fx<R, E, unk
 }
 
 function updateText<R, E>(node: Node, value: Renderable<R, E>): Fx.Fx<R, E, unknown> | undefined {
-  let oldValue: any
-
-  const handleText = (newValue: any): void => {
-    if (oldValue != newValue) {
-      oldValue = newValue
-      node.textContent = newValue == undefined ? '' : String(newValue)
-    }
-  }
-
-  if (Fx.isFx<R, E, unknown>(value)) {
-    return Fx.map(value, handleText)
-  }
-
-  if (Effect.isEffect(value)) {
-    // TODO: Sample this Effect
-    return Fx.map(Fx.fromEffect<R, E, any>(value as any), handleText)
-  }
-
-  handleText(value)
+  return handlePart(new TextPart(node), value)
 }
 
 function updateAttribute<R, E>(
@@ -225,27 +212,7 @@ function updateBoolean<R, E>(
   name: string,
   value: Renderable<R, E>,
 ): Fx.Fx<R, E, unknown> | undefined {
-  let oldValue: any = false
-
-  const handleBoolean = (newValue: any): void => {
-    if (oldValue != newValue) {
-      const b = !!newValue
-
-      if (oldValue !== b) {
-        node.toggleAttribute(name, (oldValue = b))
-      }
-    }
-  }
-
-  if (Fx.isFx<R, E, unknown>(value)) {
-    return Fx.map(value, handleBoolean)
-  }
-
-  if (Effect.isEffect(value)) {
-    return Fx.map(Fx.fromEffect<R, E, any>(value as any), handleBoolean)
-  }
-
-  handleBoolean(value)
+  return handlePart(new BooleanPart(node, name), value)
 }
 
 function updateProperty<R, E>(
@@ -253,24 +220,7 @@ function updateProperty<R, E>(
   name: string,
   value: Renderable<R, E>,
 ): Fx.Fx<R, E, unknown> | undefined {
-  let oldValue: any
-
-  const handleProperty = (newValue: any): void => {
-    if (oldValue != newValue) {
-      oldValue = newValue
-      ;(node as any)[name] = newValue
-    }
-  }
-
-  if (Fx.isFx<R, E, unknown>(value)) {
-    return Fx.map(value, handleProperty)
-  }
-
-  if (Effect.isEffect(value)) {
-    return Fx.map(Fx.fromEffect<R, E, any>(value as any), handleProperty)
-  }
-
-  handleProperty(value)
+  return handlePart(new PropertyPart(node, name), value)
 }
 
 function updateEvent<R, E>(
@@ -327,42 +277,23 @@ function updateRef<R, E>(node: Element, value: Renderable<R, E>): Fx.Fx<R, E, un
   throw new Error(`Unexpected value for ref: ${JSON.stringify(value)}`)
 }
 
-const getValue = (value: any) => (value == null ? value : value.valueOf())
-
 function updateAttr<R, E>(
   node: Element,
   name: string,
   document: Document,
   value: Renderable<R, E>,
 ): Fx.Fx<R, E, unknown> | undefined {
-  let oldValue: Placeholder<any, any>,
-    orphan = true
-  const attributeNode = document.createAttributeNS(null, name)
-  const handleAttr = (newValue: any) => {
-    const value = getValue(newValue)
-    if (oldValue !== value) {
-      if ((oldValue = value) == null) {
-        if (!orphan) {
-          node.removeAttributeNode(attributeNode)
-          orphan = true
-        }
-      } else {
-        attributeNode.value = value
-        if (orphan) {
-          node.setAttributeNodeNS(attributeNode)
-          orphan = false
-        }
-      }
-    }
-  }
+  return handlePart(new AttrPart(node, document.createAttributeNS(null, name)), value)
+}
 
+function handlePart<P extends BasePart<any>, R, E>(part: P, value: Renderable<R, E>) {
   if (Fx.isFx<R, E, unknown>(value)) {
-    return Fx.map(value, handleAttr)
+    return Fx.map(value, part.handle)
   }
 
   if (Effect.isEffect(value)) {
-    return Fx.map(Fx.fromEffect<R, E, any>(value as any), handleAttr)
+    return Fx.map(Fx.fromEffect<R, E, any>(value as any), part.handle)
   }
 
-  handleAttr(value)
+  part.handle(value)
 }
