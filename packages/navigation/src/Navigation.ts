@@ -7,6 +7,11 @@ import * as Fx from '@typed/fx'
 
 export interface Navigation {
   /**
+   * Base path for all navigation entries.
+   */
+  readonly base: string
+
+  /**
    * The list of navigation entries that are currently kept in-memory and
    * saved within Local/Session Storage.
    */

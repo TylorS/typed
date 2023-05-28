@@ -18,6 +18,7 @@ import { createKey } from './util.js'
 export interface MemoryNavigationOptions extends DomNavigationOptions {
   readonly initialUrl: URL
   readonly initialState?: unknown
+  readonly base?: string
 }
 
 export function memory(options: MemoryNavigationOptions): Layer.Layer<never, never, Navigation> {
@@ -66,9 +67,10 @@ export function memory(options: MemoryNavigationOptions): Layer.Layer<never, nev
       const catchNavigationError = <A>(effect: Effect.Effect<never, NavigationError, A>) =>
         Effect.catchAll(effect, handleNavigationError(0))
 
-      // Constructor our service
+      // Construct our service
       const navigation: Navigation = {
         back: lock(catchNavigationError(intent.back)),
+        base: '/',
         canGoBack: model.canGoBack,
         canGoForward: model.canGoForward,
         currentEntry: model.currentEntry,

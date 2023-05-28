@@ -3,7 +3,7 @@ import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as Context from '@typed/context'
-import { Location, History, Window, Storage, addWindowListener } from '@typed/dom'
+import { Location, History, Window, Storage, addWindowListener, Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
 import { Destination, DestinationKey, Navigation, NavigationError } from './Navigation.js'
@@ -13,7 +13,7 @@ import { NavigationEventJson } from './json.js'
 import { makeModel } from './model.js'
 import { getInitialValues } from './storage.js'
 
-export type NavigationServices = Window | Location | History | Storage
+export type NavigationServices = Window | Document | Location | History | Storage
 
 export interface DomNavigationOptions {
   // Defaults to a random value, but you can provide your own
@@ -33,11 +33,14 @@ export const dom = (
       // Get resources
       const context = yield* $(Effect.context<NavigationServices>())
       const history = Context.get(context, History)
+      const document = Context.get(context, Document)
+      const base = document.querySelector('base')
+      const baseHref = base ? getBasePathFromHref(base.href) : '/'
 
       // Create model and intent
-      const [initialEntries, initialIndex] = yield* $(getInitialValues(options))
+      const [initialEntries, initialIndex] = yield* $(getInitialValues(baseHref, options))
       const model = yield* $(makeModel(initialEntries, initialIndex))
-      const intent = makeIntent(model, options)
+      const intent = makeIntent(model, baseHref, options)
 
       // Used to ensure ordering of navigation events
       const lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
@@ -76,6 +79,7 @@ export const dom = (
       // Constructor our service
       const navigation: Navigation = {
         back: provideLocked(catchNavigationError(intent.back(false))),
+        base: baseHref,
         canGoBack: model.canGoBack,
         canGoForward: model.canGoForward,
         currentEntry: model.currentEntry,
@@ -132,3 +136,17 @@ export const dom = (
       return navigation
     }),
   )
+
+export function getBasePathFromHref(href: string) {
+  try {
+    const url = new URL(href)
+
+    return getCurrentPathFromLocation(url)
+  } catch {
+    return href
+  }
+}
+
+export function getCurrentPathFromLocation(location: Location | HTMLAnchorElement | URL) {
+  return location.pathname + location.search + location.hash
+}

@@ -22,6 +22,9 @@
     },
     {
       "path": "../fx/tsconfig.build.json"
+    },
+    {
+      "path": "../path/tsconfig.build.json"
     }
   ]
 }

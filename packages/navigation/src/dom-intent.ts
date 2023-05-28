@@ -21,13 +21,13 @@ import { createKey, getUrl } from './util.js'
 // Roughly the number of History entries in a browser anyways
 const DEFAULT_MAX_ENTRIES = 50
 
-export function makeIntent(model: Model, options: DomNavigationOptions) {
+export function makeIntent(model: Model, base: string, options: DomNavigationOptions) {
   const maxEntries = Math.abs(options.maxEntries ?? DEFAULT_MAX_ENTRIES)
   const notify = makeNotify(model)
   const save = makeSave(model)
   const go = makeGo(model, notify, save)
-  const replace = makeReplace(model, notify, save)
-  const push = makePush(model, notify, save, maxEntries)
+  const replace = makeReplace(model, notify, save, base)
+  const push = makePush(model, notify, save, base, maxEntries)
 
   return {
     back: (skipHistory: boolean) => go(-1, skipHistory),
@@ -115,14 +115,14 @@ export const makeReload = (model: Model, notify: Notify, save: Save) =>
   })
 
 export const makeReplace =
-  (model: Model, notify: Notify, save: Save) =>
+  (model: Model, notify: Notify, save: Save, base: string) =>
   (url: string, options: NavigateOptions = {}, skipHistory = false) =>
     Effect.gen(function* ($) {
       const location = yield* $(Location)
       const entry = yield* $(model.currentEntry.get)
       const destination: Destination = {
         key: entry.key,
-        url: getUrl(url, location.origin),
+        url: getUrl(url, base, location.origin),
         state: options.state,
       }
       const event: NavigationEvent = {
@@ -160,14 +160,14 @@ export const makeReplace =
     })
 
 export const makePush =
-  (model: Model, notify: Notify, save: Save, maxEntries: number) =>
+  (model: Model, notify: Notify, save: Save, base: string, maxEntries: number) =>
   (url: string, options: NavigateOptions = {}, skipHistory = false) =>
     Effect.gen(function* ($) {
       const location = yield* $(Location)
       const entry = yield* $(model.currentEntry.get)
       const destination: Destination = {
         key: yield* $(createKey),
-        url: getUrl(url, location.origin),
+        url: getUrl(url, base, location.origin),
         state: options.state,
       }
       const event: NavigationEvent = {

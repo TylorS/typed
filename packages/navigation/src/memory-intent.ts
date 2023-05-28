@@ -19,12 +19,13 @@ const DEFAULT_MAX_ENTRIES = 50
 
 export function makeIntent(model: Model, options: MemoryNavigationOptions) {
   const { origin } = options.initialUrl
+  const base = options.base ?? '/'
   const maxEntries = Math.abs(options.maxEntries ?? DEFAULT_MAX_ENTRIES)
   const notify = makeNotify(model)
   const save = makeSave(model)
   const go = makeGo(model, notify, save)
-  const replace = makeReplace(model, notify, save, origin)
-  const push = makePush(model, notify, save, origin, maxEntries)
+  const replace = makeReplace(model, notify, save, base, origin)
+  const push = makePush(model, notify, save, base, origin, maxEntries)
 
   return {
     back: go(-1),
@@ -105,13 +106,13 @@ export const makeReload = (model: Model, notify: Notify, save: Save) =>
   })
 
 export const makeReplace =
-  (model: Model, notify: Notify, save: Save, origin: string) =>
+  (model: Model, notify: Notify, save: Save, base: string, origin: string) =>
   (url: string, options: NavigateOptions = {}) =>
     Effect.gen(function* ($) {
       const entry = yield* $(model.currentEntry.get)
       const destination: Destination = {
         key: entry.key,
-        url: getUrl(url, origin),
+        url: getUrl(url, base, origin),
         state: options.state,
       }
       const event: NavigationEvent = {
@@ -138,13 +139,13 @@ export const makeReplace =
     })
 
 export const makePush =
-  (model: Model, notify: Notify, save: Save, origin: string, maxEntries: number) =>
+  (model: Model, notify: Notify, save: Save, base: string, origin: string, maxEntries: number) =>
   (url: string, options: NavigateOptions = {}) =>
     Effect.gen(function* ($) {
       const entry = yield* $(model.currentEntry.get)
       const destination: Destination = {
         key: yield* $(createKey),
-        url: getUrl(url, origin),
+        url: getUrl(url, base, origin),
         state: options.state,
       }
       const event: NavigationEvent = {
