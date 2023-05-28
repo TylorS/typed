@@ -19,12 +19,10 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.12.3",
     "@effect/io": "^0.25.13",
     "@typed/context": "workspace:*",
-    "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
-    "@typed/html": "workspace:*",
+    "@typed/navigation": "workspace:*",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*"
   },

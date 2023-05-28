@@ -478,6 +478,9 @@ importers:
       '@typed/fx':
         specifier: workspace:*
         version: link:../fx
+      '@typed/path':
+        specifier: workspace:*
+        version: link:../path
     devDependencies:
       '@typed/framework':
         specifier: workspace:*
@@ -519,24 +522,18 @@ importers:
 
   packages/router:
     dependencies:
-      '@effect/data':
-        specifier: ^0.12.3
-        version: 0.12.3
       '@effect/io':
         specifier: ^0.25.13
         version: 0.25.13
       '@typed/context':
         specifier: workspace:*
         version: link:../context
-      '@typed/dom':
-        specifier: workspace:*
-        version: link:../dom
       '@typed/fx':
         specifier: workspace:*
         version: link:../fx
-      '@typed/html':
+      '@typed/navigation':
         specifier: workspace:*
-        version: link:../html
+        version: link:../navigation
       '@typed/path':
         specifier: workspace:*
         version: link:../path
