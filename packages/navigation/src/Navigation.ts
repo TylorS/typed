@@ -35,6 +35,7 @@ export interface Navigation {
    */
   readonly onNavigation: <R>(
     handler: (event: NavigationEvent) => Effect.Effect<R, NavigationError, void>,
+    options?: OnNavigationOptions,
   ) => Effect.Effect<R | Scope.Scope, never, void>
 
   /**
@@ -165,4 +166,8 @@ export const redirect = (
 
 export function isRedirectNavigation(error: NavigationError): error is RedirectNavigation {
   return error._tag === 'RedirectNavigation'
+}
+
+export interface OnNavigationOptions {
+  readonly passive?: boolean
 }

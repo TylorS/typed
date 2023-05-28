@@ -9,6 +9,7 @@ import {
   NavigationError,
   NavigationEvent,
   NavigationType,
+  OnNavigationOptions,
 } from './Navigation.js'
 import { Model } from './model.js'
 import { createKey, getUrl } from './util.js'
@@ -49,7 +50,11 @@ export const makeNotify = (model: Model) => (event: NavigationEvent) =>
   Effect.gen(function* ($) {
     // Notify event handlers
     if (model.eventHandlers.size > 0)
-      yield* $(Effect.forEachDiscard(model.eventHandlers, (handler) => handler(event)))
+      yield* $(
+        Effect.forEachDiscard(model.eventHandlers, ([handler, options]) =>
+          options?.passive ? Effect.fork(handler(event)) : handler(event),
+        ),
+      )
   })
 
 export const makeSave = (model: Model) => (event: NavigationEvent) =>
@@ -71,16 +76,18 @@ export const makeOnNavigation =
   ({ eventHandlers }: Model) =>
   <R>(
     handler: (event: NavigationEvent) => Effect.Effect<R, NavigationError, unknown>,
+    options?: OnNavigationOptions,
   ): Effect.Effect<R | Scope.Scope, never, void> =>
     Effect.uninterruptibleMask((restore) =>
       Effect.gen(function* ($) {
         const context = yield* $(Effect.context<R>())
         const handler_ = (event: NavigationEvent) =>
           restore(Effect.provideContext(handler(event), context))
+        const entry = [handler_, options] as const
 
-        eventHandlers.add(handler_)
+        eventHandlers.add(entry)
 
-        yield* $(Effect.addFinalizer(() => Effect.sync(() => eventHandlers.delete(handler_))))
+        yield* $(Effect.addFinalizer(() => Effect.sync(() => eventHandlers.delete(entry))))
       }),
     )
 

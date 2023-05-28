@@ -1,11 +1,14 @@
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
 
-import { Destination, NavigationError, NavigationEvent } from './Navigation.js'
+import { Destination, NavigationError, NavigationEvent, OnNavigationOptions } from './Navigation.js'
 
 export interface Model {
   readonly eventHandlers: Set<
-    (event: NavigationEvent) => Effect.Effect<never, NavigationError, unknown>
+    readonly [
+      (event: NavigationEvent) => Effect.Effect<never, NavigationError, unknown>,
+      OnNavigationOptions?,
+    ]
   >
   readonly events: Fx.RefSubject<never, readonly NavigationEvent[]>
   readonly index: Fx.RefSubject<never, number>
