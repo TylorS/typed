@@ -2,7 +2,7 @@ import type { Effect } from '@effect/io/Effect'
 
 import type { Placeholder } from './Placeholder.js'
 
-export interface EventHandler<T extends Event, R = never> extends Placeholder<R> {
+export interface EventHandler<T extends Event, R = never> extends Placeholder<R, never, void> {
   readonly handler: (event: T) => Effect<R, never, void>
   readonly options?: boolean | AddEventListenerOptions
 }
@@ -37,6 +37,7 @@ export class EventHandlerImplementation<T extends Event, R = never> implements E
   readonly __Placeholder__!: {
     readonly _R: (_: never) => R
     readonly _E: (_: never) => never
+    readonly _A: (_: never) => void
   }
 
   constructor(

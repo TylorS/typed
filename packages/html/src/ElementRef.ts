@@ -10,7 +10,7 @@ import type { Placeholder } from './Placeholder.js'
 export interface ElementRef<A extends HTMLElement>
   extends Fx.RefSubject<never, Option.Option<A>>,
     DomSource<A>,
-    Placeholder {
+    Placeholder<never, never, Option.Option<A>> {
   readonly element: Fx.Fx<never, never, A>
 }
 

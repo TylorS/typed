@@ -1,6 +1,7 @@
-import { pipe } from '@effect/data/Function'
+import { flow, pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
+import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
 import { addEventListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
@@ -9,6 +10,8 @@ import { isElementRef } from './ElementRef.js'
 import { EventHandlerImplementation } from './EventHandler.js'
 import type { Placeholder } from './Placeholder.js'
 import { RenderContext } from './RenderContext.js'
+import { RenderTemplate } from './RenderTemplate.js'
+import { Renderable } from './Renderable.js'
 import type { AttributeTemplateHole, TemplateCache, TemplateHole } from './TemplateCache.js'
 import { Wire, persistent } from './Wire.js'
 import { diffChildren } from './diffChildren.js'
@@ -16,41 +19,20 @@ import { parseTemplate } from './parseTemplate.js'
 import { findPath } from './paths.js'
 import { getRenderHoleContext } from './render.js'
 
+export const dom: Layer.Layer<Document | RenderContext, never, RenderTemplate> =
+  RenderTemplate.layer(
+    Effect.gen(function* ($) {
+      const context = yield* $(Effect.context<Document | RenderContext>())
+
+      return {
+        renderTemplate: flow(renderTemplate, Fx.provideSomeContext(context)),
+      }
+    }),
+  )
+
 const strictEqual = (x: any, y: any): boolean => x === y
 
-export function html<Values extends ReadonlyArray<Placeholder<any, any> | undefined | null>>(
-  template: TemplateStringsArray,
-  ...values: Values
-): Fx.Fx<
-  Document | RenderContext | Scope.Scope | Placeholder.ResourcesOf<Values[number]>,
-  Placeholder.ErrorsOf<Values[number]>,
-  HTMLElement | DocumentFragment | Wire
-> {
-  return renderTemplate(template, values, false)
-}
-
-html.as = <T extends Node>() =>
-  html as any as <Values extends ReadonlyArray<Placeholder<any, any> | undefined | null>>(
-    template: TemplateStringsArray,
-    ...values: Values
-  ) => Fx.Fx<
-    Document | RenderContext | Scope.Scope | Placeholder.ResourcesOf<Values[number]>,
-    Placeholder.ErrorsOf<Values[number]>,
-    T
-  >
-
-export function svg<Values extends ReadonlyArray<Placeholder<any, any> | undefined | null>>(
-  template: TemplateStringsArray,
-  ...values: Values
-): Fx.Fx<
-  Document | RenderContext | Scope.Scope | Placeholder.ResourcesOf<Values[number]>,
-  Placeholder.ErrorsOf<Values[number]>,
-  SVGElement
-> {
-  return renderTemplate(template, values, true) as any
-}
-
-function renderTemplate<Values extends ReadonlyArray<Placeholder<any, any> | undefined | null>>(
+function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   values: Values,
   isSvg: boolean,
@@ -104,7 +86,7 @@ function makeUpdate<R, E>(
   templateHole: TemplateHole,
   node: Node,
   document: Document,
-  value: Placeholder<R, E> | null | undefined,
+  value: Renderable<R, E>,
 ): Effect.Effect<R | Scope.Scope, E, Fx.Fx<R, E, unknown> | undefined | void> {
   switch (templateHole.type) {
     case 'node':
@@ -119,7 +101,7 @@ function makeUpdate<R, E>(
 function updateNode<R, E>(
   comment: Comment,
   document: Document,
-  value: Placeholder<R, E> | null | undefined,
+  value: Renderable<R, E>,
 ): Fx.Fx<R, E, unknown> {
   let oldValue: any,
     text: Text,
@@ -174,9 +156,7 @@ function updateNode<R, E>(
   return Fx.map(unwrapPlaceholder(value), handleNode)
 }
 
-function unwrapPlaceholder<R, E>(
-  placeholder: Placeholder<R, E> | null | undefined,
-): Fx.Fx<R, E, unknown> {
+function unwrapPlaceholder<R, E>(placeholder: Renderable<R, E>): Fx.Fx<R, E, unknown> {
   if (Array.isArray(placeholder)) {
     return Fx.combineAll(...placeholder.map(unwrapPlaceholder)) as any
   }
@@ -192,10 +172,7 @@ function unwrapPlaceholder<R, E>(
   return Fx.succeed(placeholder)
 }
 
-function updateText<R, E>(
-  node: Node,
-  value: Placeholder<R, E> | null | undefined,
-): Fx.Fx<R, E, unknown> | undefined {
+function updateText<R, E>(node: Node, value: Renderable<R, E>): Fx.Fx<R, E, unknown> | undefined {
   let oldValue: any
 
   const handleText = (newValue: any): void => {
@@ -221,7 +198,7 @@ function updateAttribute<R, E>(
   node: Element,
   templateHole: AttributeTemplateHole,
   document: Document,
-  value: Placeholder<R, E> | null | undefined,
+  value: Renderable<R, E>,
 ): Effect.Effect<R | Scope.Scope, E, Fx.Fx<R, E, unknown> | undefined | void> {
   const { name } = templateHole
 
@@ -246,7 +223,7 @@ function updateAttribute<R, E>(
 function updateBoolean<R, E>(
   node: Element,
   name: string,
-  value: Placeholder<R, E> | null | undefined,
+  value: Renderable<R, E>,
 ): Fx.Fx<R, E, unknown> | undefined {
   let oldValue: any = false
 
@@ -274,7 +251,7 @@ function updateBoolean<R, E>(
 function updateProperty<R, E>(
   node: Element,
   name: string,
-  value: Placeholder<R, E> | null | undefined,
+  value: Renderable<R, E>,
 ): Fx.Fx<R, E, unknown> | undefined {
   let oldValue: any
 
@@ -299,7 +276,7 @@ function updateProperty<R, E>(
 function updateEvent<R, E>(
   node: Element,
   type: string,
-  value: Placeholder<R, E> | null | undefined,
+  value: Renderable<R, E>,
 ): Effect.Effect<R | Scope.Scope, E, void> {
   const [handler, options] = getEventHandlerAndOptions(value)
   if (!handler) {
@@ -336,10 +313,7 @@ function getEventHandlerAndOptions(
   throw new Error(`Unexpected value for event handler: ${JSON.stringify(value)}`)
 }
 
-function updateRef<R, E>(
-  node: Element,
-  value: Placeholder<R, E> | null | undefined,
-): Fx.Fx<R, E, unknown> | undefined {
+function updateRef<R, E>(node: Element, value: Renderable<R, E>): Fx.Fx<R, E, unknown> | undefined {
   if (value == null) {
     return
   }
@@ -359,7 +333,7 @@ function updateAttr<R, E>(
   node: Element,
   name: string,
   document: Document,
-  value: Placeholder<R, E> | undefined | null,
+  value: Renderable<R, E>,
 ): Fx.Fx<R, E, unknown> | undefined {
   let oldValue: Placeholder<any, any>,
     orphan = true

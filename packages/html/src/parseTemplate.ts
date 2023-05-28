@@ -4,9 +4,9 @@ import type { TemplateCache, TemplateHole } from './TemplateCache.js'
 import { createContent } from './createContent.js'
 import { createPath } from './paths.js'
 
-const PREFIX = `html-template-hole`
+const PREFIX = `hole`
 
-const COMMENT_REGEX = /<!--html-template-hole[0-9]+-->/g
+const COMMENT_REGEX = /<!--hole[0-9]+-->/g
 
 export function stripHoleComments(html: string) {
   return html.replace(COMMENT_REGEX, '')

@@ -8,10 +8,10 @@ import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
 import { type Wire } from './Wire.js'
 
-export type Renderable = Wire | Node | null | undefined | ReadonlyArray<Renderable>
+export type Rendered = Wire | Node | DocumentFragment
 
 export function renderInto<T extends HTMLElement>(where: T) {
-  return <R, E>(fx: Fx.Fx<R, E, Renderable>): Fx.Fx<R | Document | RenderContext | Scope, E, T> =>
+  return <R, E>(fx: Fx.Fx<R, E, Rendered>): Fx.Fx<R | RenderContext, E, T> =>
     Fx.gen(function* ($) {
       const { renderCache } = yield* $(RenderContext)
 
@@ -23,9 +23,7 @@ export function renderInto<T extends HTMLElement>(where: T) {
 }
 
 export function drainInto<T extends HTMLElement>(where: T) {
-  return <R, E>(
-    fx: Fx.Fx<R, E, Renderable>,
-  ): Effect.Effect<R | Document | RenderContext | Scope, E, void> =>
+  return <R, E>(fx: Fx.Fx<R, E, Rendered>): Effect.Effect<R | RenderContext | Scope, E, void> =>
     pipe(fx, renderInto(where), Fx.drain)
 }
 
@@ -34,8 +32,8 @@ export function drainInto<T extends HTMLElement>(where: T) {
  */
 export function render<T extends HTMLElement>(
   where: T,
-  what: Renderable,
-): Effect.Effect<Document | RenderContext, never, T> {
+  what: Rendered,
+): Effect.Effect<RenderContext, never, T> {
   return pipe(
     RenderContext,
     Effect.flatMap(({ renderCache }) => renderWithCache(renderCache, where, what)),
@@ -45,7 +43,7 @@ export function render<T extends HTMLElement>(
 function renderWithCache<T extends HTMLElement>(
   renderCache: WeakMap<HTMLElement, RenderCache>,
   where: T,
-  what: Renderable,
+  what: Rendered,
 ) {
   return Effect.sync(() => {
     let cache = renderCache.get(where)

@@ -1,12 +1,15 @@
-export * from './EventHandler.js'
+export * from './dom.js'
 export * from './ElementRef.js'
-export * from './tag.js'
+export * from './EventHandler.js'
 export * from './Placeholder.js'
 export * from './render.js'
+export * from './Renderable.js'
+export * from './RenderCache.js'
 export * from './RenderContext.js'
+export * from './RenderTemplate.js'
+export * from './TemplateCache.js'
 export * from './whenBrowser.js'
-
-// TODO: Port over lightherhtml's ability to handle sparse attributes
+export * from './Wire.js'
 
 /// <reference path="./udomdiff.d.ts" />
 /// <reference path="./uparser.d.ts" />
