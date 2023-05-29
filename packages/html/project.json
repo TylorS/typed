@@ -20,7 +20,12 @@
       }
     },
     "test": {
-      "executor": "@nrwl/vite:test"
+      "executor": "@nrwl/vite:test",
+      "configurations": {
+        "watch": {
+          "watch": true
+        }
+      }
     },
     "build:cjs": {
       "executor": "nx:run-commands",

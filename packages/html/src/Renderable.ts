@@ -5,6 +5,7 @@ export type Renderable<R = never, E = never> =
   | Renderable.Value
   | Rendered
   | ReadonlyArray<Renderable<R, E>>
+  | { readonly [key: string]: Renderable<R, E> }
   | Placeholder<R, E, Renderable<R, E>>
 
 export namespace Renderable {

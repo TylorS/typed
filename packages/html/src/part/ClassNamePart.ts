@@ -20,15 +20,15 @@ export class ClassNamePart extends BasePart<void> {
     }
   }
 
-  add(...classNames: string[]) {
+  add(...classNames: readonly string[]) {
     this.element.classList.add(...classNames)
   }
 
-  remove(...classNames: string[]) {
+  remove(...classNames: readonly string[]) {
     this.element.classList.remove(...classNames)
   }
 
-  toggle(className: string) {
-    this.element.classList.toggle(className)
+  toggle(...classNames: readonly string[]) {
+    classNames.forEach((className) => this.element.classList.toggle(className))
   }
 }

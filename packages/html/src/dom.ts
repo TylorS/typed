@@ -192,7 +192,7 @@ function updateEvent<R, E>(
   const part = new EventPart(document, element, type)
 
   if (isDirective<R, E>(renderable)) {
-    return renderable.f(part)
+    return Effect.asUnit(renderable.f(part))
   }
 
   // Events can only be null/undefined, EventHandler, or an Effect,
@@ -204,12 +204,14 @@ function updateRef<R, E>(document: Document, element: HTMLElement, renderable: R
   const part = new RefPart(document, element)
 
   if (isDirective<R, E>(renderable)) {
-    return renderable.f(part)
+    return Effect.asUnit(renderable.f(part))
   }
+
+  const effect = part.update(renderable)
 
   // Refs can only be null/undefined or an ElementRef,
   // so we don't need to use handlePart here
-  return part.update(renderable) || Effect.unit()
+  return effect ? Effect.asUnit(effect) : Effect.unit()
 }
 
 function updateClass<R, E>(document: Document, node: HTMLElement, renderable: Renderable<R, E>) {

@@ -28,12 +28,6 @@ export default defineConfig(({ mode }) => {
       mode === 'typecheck'
         ? []
         : [
-            typed({
-              // Directory should point towards the root of your project with html files
-              sourceDirectory: join(__dirname, 'example'),
-              // Allows using includeSources:true for your sourceMaps
-              saveGeneratedModules: true,
-            }),
             svelte({
               preprocess: autoPreprocess(),
               compilerOptions: {

@@ -5,7 +5,12 @@ import { AttrPart } from './part/AttrPart.js'
 import { BooleanPart } from './part/BooleanPart.js'
 import { ClassNamePart } from './part/ClassNamePart.js'
 import { DataPart } from './part/DataPart.js'
+import { EventPart } from './part/EventPart.js'
+import { NodePart } from './part/NodePart.js'
 import { Part } from './part/Part.js'
+import { PropertyPart } from './part/PropertyPart.js'
+import { RefPart } from './part/RefPart.js'
+import { TextPart } from './part/TextPart.js'
 
 export class Directive<R, E> implements Placeholder<R, E, void> {
   readonly __Placeholder__!: {
@@ -34,6 +39,7 @@ export function directiveFor<const A extends ReadonlyArray<Part['_tag']>, R, E>(
       return f(part as Extract<Part, { readonly _tag: A[number] }>)
     }
 
+    // TODO: Should this be an error?
     return Effect.unit()
   })
 }
@@ -54,4 +60,24 @@ export function dataDirective<R, E>(f: (part: DataPart) => Effect.Effect<R, E, v
   return directiveFor(['Data'], f)
 }
 
-// TODO: More directives
+export function eventDirective<R, E, R0 = never, E0 = never>(
+  f: (part: EventPart<R0, E0>) => Effect.Effect<R, E, void>,
+) {
+  return directiveFor(['Event'], f)
+}
+
+export function nodeDirective<R, E>(f: (part: NodePart) => Effect.Effect<R, E, void>) {
+  return directiveFor(['Node'], f)
+}
+
+export function propertyDirective<R, E>(f: (part: PropertyPart) => Effect.Effect<R, E, void>) {
+  return directiveFor(['Property'], f)
+}
+
+export function refDirective<R, E>(f: (part: RefPart) => Effect.Effect<R, E, void>) {
+  return directiveFor(['Ref'], f)
+}
+
+export function textDirective<R, E>(f: (part: TextPart) => Effect.Effect<R, E, void>) {
+  return directiveFor(['Text'], f)
+}
