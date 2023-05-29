@@ -1,11 +1,16 @@
 import { BasePart } from './BasePart.js'
 
 export class TextPart extends BasePart<void> {
-  constructor(readonly node: Node) {
-    super()
+  readonly _tag = 'Text'
+
+  constructor(document: Document, readonly node: Node) {
+    super(document)
   }
 
-  update(newValue: unknown) {
+  /**
+   * @internal
+   */
+  handle(newValue: unknown) {
     this.node.textContent = newValue == null ? '' : String(newValue)
   }
 }

@@ -15,6 +15,11 @@ export function addEventListener<T extends EventTarget, EventName extends keyof 
 export function addEventListener<T extends EventTarget, EventName extends string>(
   eventName: EventName,
   options?: AddEventListenerOptions | boolean,
+): (target: T) => Fx.Fx<never, never, Event>
+
+export function addEventListener<T extends EventTarget, EventName extends string>(
+  eventName: EventName,
+  options?: AddEventListenerOptions | boolean,
 ): (target: T) => Fx.Fx<never, never, Event> {
   return (target: T): Fx.Fx<never, never, Event> =>
     Fx.fromEmitter(({ event }) => {
