@@ -259,7 +259,7 @@ function handlePart<A, R, E>(
   renderable: Renderable<R, E>,
 ): Effect.Effect<R | Scope.Scope, E, Fx.Fx<R, E, unknown> | void> {
   if (isDirective<R, E>(renderable)) {
-    return Effect.succeed(Fx.fromEffect(renderable.f(part as any as Part)))
+    return Effect.asUnit(renderable.f(part as any as Part))
   }
 
   // Listen to Fx values
