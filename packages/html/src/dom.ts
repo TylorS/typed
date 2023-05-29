@@ -113,7 +113,7 @@ function updateNode<R, E>(
   const part = new NodePart(document, comment)
 
   if (isDirective<R, E>(renderable)) {
-    return renderable.f(part)
+    return Effect.asUnit(renderable.f(part))
   }
 
   return Effect.succeed(Fx.map(unwrapRenderable(renderable), part.update))
