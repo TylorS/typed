@@ -3,10 +3,10 @@ import * as Effect from '@effect/io/Effect'
 import type { Scope } from '@effect/io/Scope'
 import { Document } from '@typed/dom/Document'
 import * as Fx from '@typed/fx'
+import { type Wire } from '@typed/wire'
 
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
-import { type Wire } from './Wire.js'
 
 export type Rendered = Wire | Node | DocumentFragment
 

@@ -10,12 +10,16 @@ export interface RenderTemplate {
   readonly renderTemplate: <const Values extends ReadonlyArray<Renderable<any, any>>>(
     template: TemplateStringsArray,
     values: Values,
-    isSvg: boolean,
+    options?: RenderTemplateOptions,
   ) => Fx<
     Scope | Placeholder.ResourcesOf<Values[number]>,
     Placeholder.ErrorsOf<Values[number]>,
     Rendered
   >
+}
+
+export interface RenderTemplateOptions {
+  readonly isSvg?: boolean
 }
 
 export const RenderTemplate = Tag<RenderTemplate>('RenderTemplate')
@@ -28,7 +32,7 @@ export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   Placeholder.ErrorsOf<Values[number]>,
   Rendered
 > {
-  return RenderTemplate.withFx(({ renderTemplate }) => renderTemplate(template, values, false))
+  return RenderTemplate.withFx(({ renderTemplate }) => renderTemplate(template, values))
 }
 
 html.as = <T extends Node>() =>
@@ -49,5 +53,7 @@ export function svg<const Values extends ReadonlyArray<Renderable<any, any>>>(
   Placeholder.ErrorsOf<Values[number]>,
   SVGElement
 > {
-  return html.as<SVGElement>()(template, ...values)
+  return RenderTemplate.withFx(({ renderTemplate }) =>
+    renderTemplate(template, values, { isSvg: true }),
+  ) as any
 }

@@ -20,7 +20,6 @@
   },
   "dependencies": {
     "@effect/data": "^0.12.3",
-    "@effect/io": "^0.25.13",
     "@typed/path": "workspace:*",
     "path-to-regexp": "^6.2.1"
   },

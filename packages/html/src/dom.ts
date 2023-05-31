@@ -1,16 +1,16 @@
-import { flow } from '@effect/data/Function'
+import { flow, identity, pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
+import { Wire, persistent } from '@typed/wire'
 
 import { isDirective } from './Directive.js'
 import type { Placeholder } from './Placeholder.js'
 import { RenderContext } from './RenderContext.js'
-import { RenderTemplate } from './RenderTemplate.js'
+import { RenderTemplate, RenderTemplateOptions } from './RenderTemplate.js'
 import { Renderable } from './Renderable.js'
 import type { AttributeTemplateHole, TemplateCache, TemplateHole } from './TemplateCache.js'
-import { Wire, persistent } from './Wire.js'
 import { parseTemplate } from './parseTemplate.js'
 import { AttrPart } from './part/AttrPart.js'
 import { BasePart } from './part/BasePart.js'
@@ -46,7 +46,7 @@ const strictEqual = (x: any, y: any): boolean => x === y
 function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   values: Values,
-  isSvg: boolean,
+  options?: RenderTemplateOptions,
 ): Fx.Fx<
   Document | RenderContext | Scope.Scope | Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
@@ -54,7 +54,8 @@ function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>>>(
 > {
   return Fx.gen(function* ($) {
     const { document, renderContext } = yield* $(getRenderHoleContext)
-    const { templateCache } = renderContext
+    const { environment, templateCache } = renderContext
+    const isSvg = options?.isSvg ?? false
 
     if (!templateCache.has(template)) {
       templateCache.set(template, parseTemplate(template, document, isSvg))
@@ -86,9 +87,12 @@ function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>>>(
 
     let wire: Wire | Node | DocumentFragment
 
-    return Fx.skipRepeatsWith(
-      Fx.map(Fx.combineAllDiscard(...updates), () => wire || (wire = persistent(fragment))),
-      strictEqual,
+    return pipe(
+      Fx.combineAllDiscard(...updates),
+      Fx.map(() => wire || (wire = persistent(fragment))),
+      // Test likely want to know when a render has happened, even if the root element
+      // never changes reference.
+      environment === 'test' ? identity : Fx.skipRepeatsWith(strictEqual),
     )
   })
 }

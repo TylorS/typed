@@ -47,6 +47,9 @@
     },
     {
       "path": "./packages/vite-plugin/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/wire/tsconfig.build.json"
     }
   ]
 }

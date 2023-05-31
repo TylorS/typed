@@ -1,7 +1,6 @@
-import type { Placeholder } from './Placeholder.js'
-
-export interface Wire extends Placeholder<never, never, DocumentFragment> {
+export interface Wire {
   readonly ELEMENT_NODE: 1
+  readonly DOCUMENT_FRAGMENT_NODE: 11
   readonly nodeType: 111
   readonly firstChild: Node | null
   readonly lastChild: Node | null
@@ -9,6 +8,7 @@ export interface Wire extends Placeholder<never, never, DocumentFragment> {
 }
 
 const ELEMENT_NODE = 1
+const DOCUMENT_FRAGMENT_NODE = 11
 const nodeType = 111
 
 const remove = ({ firstChild, lastChild }: Node, document: Document): Node => {
@@ -45,12 +45,8 @@ export const persistent = (fragment: DocumentFragment): DocumentFragment | Node 
   const lastChild = nodes[length - 1]
 
   return {
-    __Placeholder__: {
-      _R: (_) => _,
-      _E: (_) => _,
-      _A: (_) => _,
-    },
     ELEMENT_NODE,
+    DOCUMENT_FRAGMENT_NODE,
     nodeType,
     firstChild,
     lastChild,

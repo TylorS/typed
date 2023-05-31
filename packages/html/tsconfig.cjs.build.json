@@ -17,6 +17,9 @@
     },
     {
       "path": "../fx/tsconfig.cjs.build.json"
+    },
+    {
+      "path": "../wire/tsconfig.cjs.build.json"
     }
   ]
 }

@@ -1,32 +1,39 @@
 import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import { DomSource } from '@typed/dom/DomSource'
 import * as Fx from '@typed/fx'
 import { type EffectGenErrors, type EffectGenResources, isRefSubject } from '@typed/fx'
 
 import type { Placeholder } from './Placeholder.js'
+import { Rendered } from './render.js'
 
-export interface ElementRef<A extends HTMLElement>
+export interface ElementRef<A extends Rendered>
   extends Fx.RefSubject<never, Option.Option<A>>,
     DomSource<A>,
     Placeholder<never, never, Option.Option<A>> {
   readonly element: Fx.Fx<never, never, A>
+  readonly getElement: Effect.Effect<never, Cause.NoSuchElementException, A>
 }
 
-export function makeElementRef<A extends HTMLElement = HTMLElement>(): Effect.Effect<
+export function makeElementRef<A extends Rendered = HTMLElement>(): Effect.Effect<
   never,
   never,
   ElementRef<A>
 > {
-  return pipe(
-    Fx.makeRef<never, never, Option.Option<A>>(Effect.sync(Option.none)),
-    Effect.map((subject): ElementRef<A> => {
-      const element: Fx.Fx<never, never, A> = pipe(subject, Fx.compact, Fx.skipRepeats, Fx.hold)
+  return Effect.sync(() => unsafeMakeElementRef<A>())
+}
 
-      return Object.assign(subject, DomSource.make(element), { element })
-    }),
+export function unsafeMakeElementRef<A extends Rendered = HTMLElement>(): ElementRef<A> {
+  const subject = Fx.RefSubject.unsafeMake<never, Option.Option<A>>(
+    Effect.sync(Option.none),
+    Option.getEquivalence((a, b) => a === b),
   )
+  const element: Fx.Fx<never, never, A> = pipe(subject, Fx.compact, Fx.skipRepeats, Fx.hold)
+  const getElement = Effect.flatten(subject)
+
+  return Object.assign(subject, DomSource.make(element), { element, getElement })
 }
 
 export function withElementRef<T extends HTMLElement = HTMLElement>() {

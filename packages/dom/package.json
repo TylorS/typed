@@ -25,6 +25,7 @@
     "@typed/context": "workspace:*",
     "@typed/decoder": "workspace:*",
     "@typed/fx": "workspace:*",
+    "@typed/wire": "workspace:*",
     "typed-query-selector": "^2.10.1"
   },
   "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",

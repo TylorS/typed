@@ -356,6 +356,9 @@ importers:
       '@typed/fx':
         specifier: workspace:*
         version: link:../fx
+      '@typed/wire':
+        specifier: workspace:*
+        version: link:../wire
       typed-query-selector:
         specifier: ^2.10.1
         version: 2.10.1
@@ -451,6 +454,9 @@ importers:
       '@effect/io':
         specifier: ^0.25.13
         version: 0.25.13
+      '@effect/schema':
+        specifier: ^0.19.3
+        version: 0.19.3
       '@typed/context':
         specifier: workspace:*
         version: link:../context
@@ -460,6 +466,9 @@ importers:
       '@typed/fx':
         specifier: workspace:*
         version: link:../fx
+      '@typed/wire':
+        specifier: workspace:*
+        version: link:../wire
       '@webreflection/uparser':
         specifier: ~0.2.4
         version: 0.2.4
@@ -523,9 +532,6 @@ importers:
       '@effect/data':
         specifier: ^0.12.3
         version: 0.12.3
-      '@effect/io':
-        specifier: ^0.25.13
-        version: 0.25.13
       '@typed/path':
         specifier: workspace:*
         version: link:../path
@@ -535,6 +541,9 @@ importers:
 
   packages/router:
     dependencies:
+      '@effect/data':
+        specifier: ^0.12.3
+        version: 0.12.3
       '@effect/io':
         specifier: ^0.25.13
         version: 0.25.13
@@ -584,6 +593,8 @@ importers:
       vitest:
         specifier: ^0.31.1
         version: 0.31.1(@vitest/ui@0.31.1)(happy-dom@9.20.3)
+
+  packages/wire: {}
 
 packages:
 

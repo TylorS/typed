@@ -9,7 +9,7 @@ export * from './RenderContext.js'
 export * from './RenderTemplate.js'
 export * from './TemplateCache.js'
 export * from './whenBrowser.js'
-export * from './Wire.js'
+export * from '@typed/wire'
 
 /// <reference path="./udomdiff.d.ts" />
 /// <reference path="./uparser.d.ts" />

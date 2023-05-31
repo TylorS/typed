@@ -1,6 +1,5 @@
+import { diffable } from '@typed/wire'
 import udomdiff from 'udomdiff'
-
-import { diffable } from './Wire.js'
 
 export function diffChildren(
   comment: Comment,

@@ -5,7 +5,7 @@ import type { RenderCache } from './RenderCache.js'
 import type { TemplateCache } from './TemplateCache.js'
 
 export interface RenderContext {
-  readonly environment: 'server' | 'browser' | 'static'
+  readonly environment: 'server' | 'browser' | 'static' | 'test'
   readonly isBot: boolean
   readonly renderCache: WeakMap<HTMLElement | DocumentFragment, RenderCache>
   readonly templateCache: WeakMap<TemplateStringsArray, TemplateCache>
