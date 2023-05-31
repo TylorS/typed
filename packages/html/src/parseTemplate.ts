@@ -34,6 +34,7 @@ export function parseTemplate(template: TemplateStringsArray, document: Document
 
   while (i < length) {
     const node = walker.nextNode()
+
     // if not all updates are bound but there's nothing else to crawl
     // it means that there is something wrong with the template.
     if (!node) throw `bad template: ${innerHtml}`
