@@ -24,7 +24,7 @@ import { switchMapEffect } from './switchMap.js'
 export const RefSubjectTypeId = Symbol.for('./RefSubject')
 export type RefSubjectTypeId = typeof RefSubjectTypeId
 
-export interface RefSubject<in out E, in out A> extends Subject<E, A>, Effect.Effect<never, E, A> {
+export interface RefSubject<in out E, in out A> extends Subject<E, A>, Computed<never, E, A> {
   readonly [RefSubjectTypeId]: RefSubjectTypeId
 
   readonly eq: Equivalence.Equivalence<A>
@@ -46,10 +46,6 @@ export interface RefSubject<in out E, in out A> extends Subject<E, A>, Effect.Ef
 
   readonly delete: Effect.Effect<never, E, Option.Option<A>>
 
-  readonly mapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) => Computed<R2, E | E2, B>
-
-  readonly map: <B>(f: (a: A) => B) => Computed<never, E, B>
-
   readonly addTrace: (trace: Trace) => RefSubject<E, A>
 }
 
@@ -69,6 +65,7 @@ export function makeRef<R, E, A>(
   effect: Effect.Effect<R, E, A>,
   eq: Equivalence.Equivalence<A> = equals,
 ): Effect.Effect<R, never, RefSubject<E, A>> {
+  // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
   return Effect.contextWith(
     (ctx: Context.Context<R>) => new RefSubjectImpl(Effect.provideContext(effect, ctx), eq),
   )
@@ -85,6 +82,7 @@ export namespace RefSubject {
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }
   > {
+    // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
     return new TupleRefSubjectImpl(subjects)
   }
 
@@ -96,6 +94,7 @@ export namespace RefSubject {
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }
   > {
+    // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
     return new StructRefSubjectImpl(subjects)
   }
 
@@ -125,6 +124,7 @@ export namespace RefSubject {
     get: Effect.Effect<never, E, A>,
     eq: Equivalence.Equivalence<A> = equals,
   ): RefSubject<E, A> {
+    // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
     return new RefSubjectImpl(get, eq)
   }
 }
@@ -135,6 +135,7 @@ const refSubjectVariant = {
   _A: identity,
 }
 
+// @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
 class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, A> {
   readonly _tag = 'Commit'
   public i2: any = undefined
@@ -174,9 +175,10 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
 
   readonly addTrace = (trace: Trace): RefSubject<E, A> => {
     if (trace) {
+      // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
       return new TracedRefSubjectImpl(this, trace)
     }
-
+    // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
     return this
   }
 
@@ -283,8 +285,10 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
     return Effect.succeed<Option.Option<A>>(current)
   })
 
+  // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
   readonly mapEffect: RefSubject<E, A>['mapEffect'] = <R2, E2, B>(
     f: (a: A) => Effect.Effect<R2, E2, B>,
+    // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
   ) => new ComputedImpl<never, E, A, R2, E2, B>(this, f)
 
   readonly map: RefSubject<E, A>['map'] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)));
@@ -301,10 +305,10 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
     if (trace) {
       const traced = new RefSubjectImpl(this.i0, this.i1)
       traced.trace = trace
-      return traced
+      return traced as any
     }
 
-    return this
+    return this as any
   }
 
   commit(): Effect.Effect<never, E, A> {
@@ -312,6 +316,7 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
   }
 }
 
+// @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
 class TracedRefSubjectImpl<E, A> implements RefSubject<E, A> {
   readonly _tag = 'Commit'
   public i2: any = undefined
@@ -359,8 +364,10 @@ class TracedRefSubjectImpl<E, A> implements RefSubject<E, A> {
   [Equal.symbol] = this.i0[Equal.symbol];
   [Hash.symbol] = this.i0[Hash.symbol]
 
+  // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
   readonly addTrace: (trace: Trace) => RefSubject<E, A> = (trace) => {
     if (trace) {
+      // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
       return new TracedRefSubjectImpl(this, trace)
     }
 
@@ -369,10 +376,11 @@ class TracedRefSubjectImpl<E, A> implements RefSubject<E, A> {
 
   traced(trace: Trace): Effect.Effect<never, E, A> {
     if (trace) {
-      return new TracedRefSubjectImpl(this, trace)
+      // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
+      return new TracedRefSubjectImpl(this, trace) as any
     }
 
-    return this
+    return this as any
   }
 
   commit(): Effect.Effect<never, E, A> {
@@ -380,6 +388,7 @@ class TracedRefSubjectImpl<E, A> implements RefSubject<E, A> {
   }
 }
 
+// @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
 class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
   extends HoldFx<
     never,
@@ -511,6 +520,7 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
     >(current)
   })
 
+  // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
   readonly mapEffect: RefSubject<
     Fx.ErrorsOf<S[number]>,
     {
@@ -530,6 +540,7 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
       R2,
       E2,
       B
+      // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
     >(this, f)
 
   readonly map: RefSubject<
@@ -556,9 +567,11 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
     }
   > => {
     if (trace) {
+      // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
       return new TracedRefSubjectImpl(this, trace)
     }
 
+    // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
     return this
   }
 
@@ -572,10 +585,10 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
     if (trace) {
       const traced = new TupleRefSubjectImpl(this.i0)
       traced.trace = trace
-      return traced
+      return traced as any
     }
 
-    return this
+    return this as any
   }
 
   commit(): Effect.Effect<
@@ -589,6 +602,7 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
   }
 }
 
+// @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
 class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
   extends HoldFx<
     never,
@@ -723,6 +737,7 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
     >(current)
   })
 
+  // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
   readonly mapEffect: RefSubject<
     Fx.ErrorsOf<S[number]>,
     {
@@ -742,6 +757,7 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
       R2,
       E2,
       B
+      // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
     >(this, f)
 
   readonly map: RefSubject<
@@ -768,9 +784,10 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
     }
   > => {
     if (trace) {
+      // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
       return new TracedRefSubjectImpl(this, trace)
     }
-
+    // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
     return this
   }
 
@@ -784,10 +801,10 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
     if (trace) {
       const traced = new StructRefSubjectImpl(this.i0)
       traced.trace = trace
-      return traced
+      return traced as any
     }
 
-    return this
+    return this as any
   }
 
   commit(): Effect.Effect<
@@ -801,6 +818,7 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
   }
 }
 
+// @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
 class ComputedImpl<R, E, A, R2, E2, B> implements Computed<R | R2, E | E2, B> {
   readonly [FxTypeId] = refSubjectVariant
 
@@ -822,6 +840,7 @@ class ComputedImpl<R, E, A, R2, E2, B> implements Computed<R | R2, E | E2, B> {
   }
 
   addTrace(trace: Trace): Computed<R | R2, E | E2, B> {
+    // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
     return new TracedComputed<R | R2, E | E2, B>(this, trace)
   }
 
@@ -830,6 +849,7 @@ class ComputedImpl<R, E, A, R2, E2, B> implements Computed<R | R2, E | E2, B> {
   readonly mapEffect: Computed<R | R2, E | E2, B>['mapEffect'] = <R3, E3, C>(
     f: (b: B) => Effect.Effect<R3, E3, C>,
   ): Computed<R | R2 | R3, E | E2 | E3, C> =>
+    // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
     new ComputedImpl(this.i0, (a) => Effect.flatMap(this.i1(a), f))
 
   readonly map: Computed<R | R2, E | E2, B>['map'] = <C>(f: (b: B) => C) =>
@@ -848,7 +868,7 @@ class ComputedImpl<R, E, A, R2, E2, B> implements Computed<R | R2, E | E2, B> {
       return this.commit().traced(trace)
     }
 
-    return this
+    return this as any
   }
 
   commit(): Effect.Effect<R | R2, E | E2, B> {
@@ -856,6 +876,7 @@ class ComputedImpl<R, E, A, R2, E2, B> implements Computed<R | R2, E | E2, B> {
   }
 }
 
+// @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
 class TracedComputed<R, E, A> implements Computed<R, E, A> {
   readonly _tag = 'Commit'
   readonly i2: any = undefined
@@ -874,6 +895,7 @@ class TracedComputed<R, E, A> implements Computed<R, E, A> {
   }
 
   addTrace(trace: Trace): Computed<R, E, A> {
+    // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
     return new TracedComputed<R, E, A>(this, trace)
   }
 
@@ -881,6 +903,7 @@ class TracedComputed<R, E, A> implements Computed<R, E, A> {
 
   readonly mapEffect: Computed<R, E, A>['mapEffect'] = <R2, E2, B>(
     f: (a: A) => Effect.Effect<R2, E2, B>,
+    // @ts-expect-error Cannot determine this is a valid RefSubject because of module augmentation of Effect in @effect/stream
   ): Computed<R | R2, E | E2, B> => new ComputedImpl(this as Computed<R, E, A>, f)
 
   readonly map: Computed<R, E, A>['map'] = <B>(f: (a: A) => B) =>
@@ -894,7 +917,7 @@ class TracedComputed<R, E, A> implements Computed<R, E, A> {
       return this.commit().traced(trace)
     }
 
-    return this
+    return this as any
   }
 
   commit(): Effect.Effect<R, E, A> {

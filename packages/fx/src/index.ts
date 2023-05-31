@@ -10,8 +10,11 @@ import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
 import type { FiberId } from '@effect/io/Fiber/Id'
+import * as Hub from '@effect/io/Hub'
 import * as Layer from '@effect/io/Layer'
+import * as Queue from '@effect/io/Queue'
 import * as Scope from '@effect/io/Scope'
+import * as Stream from '@effect/stream/Stream'
 
 import type { Fx } from './Fx.js'
 import * as internal from './data-first.js'
@@ -1118,6 +1121,28 @@ export const keyed: {
     ): Fx<R | R2, E | E2, readonly B[]> =>
       internal.keyed(fx, f, getKey).addTrace(trace),
 )
+
+export const fromDequeue: <A>(queue: Queue.Dequeue<A>) => Fx<never, never, A> = methodWithTrace(
+  (trace) => (queue) => internal.fromDequeue(queue).addTrace(trace),
+)
+
+export const fromQueue: <A>(queue: Queue.Queue<A>) => Fx<never, never, A> = fromDequeue
+
+export const fromDequeueWithShutdown: <A>(queue: Queue.Dequeue<A>) => Fx<never, never, A> =
+  methodWithTrace((trace) => (queue) => internal.fromDequeueWithShutdown(queue).addTrace(trace))
+
+export const fromHub: <A>(hub: Hub.Hub<A>) => Fx<Scope.Scope, never, A> = methodWithTrace(
+  (trace) => (hub) => internal.fromHub(hub).addTrace(trace),
+)
+
+export const fromStream: <R, E, A>(stream: Stream.Stream<R, E, A>) => Fx<R, E, A> = methodWithTrace(
+  (trace) => (stream) => internal.fromStream(stream).addTrace(trace),
+)
+
+export const toEnqueue: {
+  <A>(enqueue: Queue.Enqueue<A>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, void>
+  <R, E, A>(fx: Fx<R, E, A>, enqueue: Queue.Enqueue<A>): Effect.Effect<R, E, void>
+} = dualWithTrace(2, (trace) => (fx, enqueue) => internal.toEnqueue(fx, enqueue).traced(trace))
 
 export * from './RefSubject.js'
 export * from './Subject.js'

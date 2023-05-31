@@ -16,6 +16,9 @@ importers:
       '@effect/schema':
         specifier: ^0.19.3
         version: 0.19.3
+      '@effect/stream':
+        specifier: ^0.21.1
+        version: 0.21.1
       '@rollup/pluginutils':
         specifier: ^5.0.2
         version: 5.0.2
@@ -432,6 +435,9 @@ importers:
       '@effect/io':
         specifier: ^0.25.13
         version: 0.25.13
+      '@effect/stream':
+        specifier: ^0.21.1
+        version: 0.21.1
     devDependencies:
       vitest:
         specifier: ^0.31.1
@@ -1944,6 +1950,13 @@ packages:
       '@effect/data': 0.12.3
       '@effect/io': 0.25.13
       fast-check: 3.9.0
+    dev: false
+
+  /@effect/stream@0.21.1:
+    resolution: {integrity: sha512-x227xIB+PC/xaz4R3RYkjg2Z0sw5Fgkt5hfxXeGHpKThhmqVEeIXjd0v04pcoz2lJtStcvWL5Wuh/Z8HP3Hw/Q==}
+    dependencies:
+      '@effect/data': 0.12.3
+      '@effect/io': 0.25.13
     dev: false
 
   /@emmetio/abbreviation@2.3.3:
