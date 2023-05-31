@@ -1144,5 +1144,6 @@ export const toEnqueue: {
   <R, E, A>(fx: Fx<R, E, A>, enqueue: Queue.Enqueue<A>): Effect.Effect<R, E, void>
 } = dualWithTrace(2, (trace) => (fx, enqueue) => internal.toEnqueue(fx, enqueue).traced(trace))
 
+export * from './toStream.js'
 export * from './RefSubject.js'
 export * from './Subject.js'
