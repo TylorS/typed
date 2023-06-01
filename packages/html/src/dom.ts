@@ -197,29 +197,11 @@ function updateEvent<R, E>(
   type: string,
   renderable: Renderable<R, E>,
 ) {
-  const part = new EventPart(document, element, type)
-
-  if (isDirective<R, E>(renderable)) {
-    return Effect.asUnit(renderable.f(part))
-  }
-
-  // Events can only be null/undefined, EventHandler, or an Effect,
-  // so we don't need to use handlePart here
-  return part.update(renderable) || Effect.unit()
+  return handleEffectPart(new EventPart(document, element, type), renderable)
 }
 
 function updateRef<R, E>(document: Document, element: HTMLElement, renderable: Renderable<R, E>) {
-  const part = new RefPart(document, element)
-
-  if (isDirective<R, E>(renderable)) {
-    return Effect.asUnit(renderable.f(part))
-  }
-
-  const effect = part.update(renderable)
-
-  // Refs can only be null/undefined or an ElementRef,
-  // so we don't need to use handlePart here
-  return effect ? Effect.asUnit(effect) : Effect.unit()
+  return handleEffectPart(new RefPart(document, element), renderable)
 }
 
 function updateClass<R, E>(document: Document, node: HTMLElement, renderable: Renderable<R, E>) {
@@ -247,12 +229,12 @@ function unwrapRenderable<R, E>(renderable: Renderable<R, E>): Fx.Fx<R, E, unkno
     return Fx.combineAll(...renderable.map(unwrapRenderable)) as any
   }
 
-  if (Fx.isFx<R, E, unknown>(renderable)) {
-    return renderable
+  if (Fx.isFx<R, E, any>(renderable)) {
+    return Fx.switchMap(renderable, unwrapRenderable) as any
   }
 
   if (Effect.isEffect(renderable)) {
-    return Fx.fromEffect(renderable) as any
+    return Fx.switchMap(Fx.fromEffect<R, E, any>(renderable as any), unwrapRenderable) as any
   }
 
   return Fx.succeed(renderable)
@@ -284,4 +266,14 @@ function handlePart<A, R, E>(
   return Effect.sync(() => {
     part.update(renderable)
   })
+}
+
+function handleEffectPart<R, E>(part: Part, renderable: Renderable<R, E>) {
+  if (isDirective<R, E>(renderable)) {
+    return Effect.asUnit(renderable.f(part))
+  }
+
+  // Events can only be null/undefined, EventHandler, or an Effect,
+  // so we don't need to use handlePart here
+  return part.update(renderable) || Effect.unit()
 }
