@@ -16,7 +16,7 @@ export interface Router<in out P extends string = string> {
   /**
    * The current params for the current path.
    */
-  readonly params: Computed<never, never, Option.Option<ParamsOf<P>>>
+  readonly params: Computed<never, never, ParamsOf<P>>
 
   /**
    * Construct a new Router instance by defining a new Route which is concatenated
@@ -44,7 +44,7 @@ export const navigation: Layer.Layer<Navigation, never, Router> = Router.layer(
     >(route: Route<P>, parent: Option.Option<Router<any>>): Router<P> {
       const router: Router<P> = {
         route,
-        params: currentPath.map(route.match),
+        params: currentPath.filterMap(route.match),
         define: <P2 extends string>(other: Route<P2>): Router<PathJoin<[P, P2]>> =>
           makeRouter(route.concat(other), Option.some(router)),
         parent,

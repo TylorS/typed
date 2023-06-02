@@ -1,4 +1,4 @@
-import { identity, pipe } from '@effect/data/Function'
+import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
@@ -9,8 +9,6 @@ import { ParamsOf } from '@typed/path'
 import { Match } from './Match.js'
 import { Redirect } from './Redirect.js'
 import { Router, getCurrentPathFromUrl } from './Router.js'
-
-// TODO: Needs to be able to handle redirects
 
 export function matchRoutes<
   const Matches extends ReadonlyArray<Match.Any>,
@@ -36,11 +34,11 @@ export function matchRoutes<
   return Fx.gen(function* ($) {
     const navigation = yield* $(Navigation)
     const router = yield* $(Router)
-    const notFound = onNotFound(router.params.filterMap(identity)) as RENDERABLE
+    const notFound = onNotFound(router.params) as RENDERABLE
     const matchers = matches.map((match) => {
       const nestedRouter = router.define(match.route)
       const render = pipe(
-        nestedRouter.params.filterMap(identity),
+        nestedRouter.params,
         match.render,
         Fx.provideService(Router, nestedRouter as Router),
         Fx.scoped,
