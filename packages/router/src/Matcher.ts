@@ -1,6 +1,5 @@
 import * as Debug from '@effect/data/Debug'
 import * as Effect from '@effect/io/Effect'
-import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 import { Navigation } from '@typed/navigation'
 import { ParamsOf } from '@typed/path'
@@ -35,7 +34,7 @@ export interface Matcher<Matches extends ReadonlyArray<Match.Any>> {
   readonly notFound: <R, E, A>(
     render: (params: Fx.Computed<never, never, Readonly<Record<string, string>>>) => Fx.Fx<R, E, A>,
   ) => Fx.Fx<
-    Exclude<Router | Navigation | R | Match.Context<Matches[number]>, Scope.Scope>,
+    Router | Navigation | R | Match.Context<Matches[number]>,
     Exclude<E | Match.Error<Matches[number]>, Redirect>,
     A | Match.Success<Matches[number]>
   >
