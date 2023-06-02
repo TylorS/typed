@@ -194,12 +194,12 @@ describe(import.meta.url, () => {
         let i = 0
         yield* $(
           onNavigation((event) => {
-            if (i === 0) {
+            if (i === 1) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
               assertEqualDestination(event.destination, testPathname1Destination)
             }
 
-            if (i === 1) {
+            if (i === 2) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
               assertEqualDestination(event.destination, testPathname2Destination)
             }
@@ -213,7 +213,7 @@ describe(import.meta.url, () => {
         yield* $(navigate(testPathname1))
         yield* $(navigate(testPathname2))
 
-        deepStrictEqual(i, 2)
+        deepStrictEqual(i, 3)
       })
 
       await Effect.runPromise(test)
@@ -381,12 +381,12 @@ describe(import.meta.url, () => {
         let i = 0
         yield* $(
           onNavigation((event) => {
-            if (i === 0) {
+            if (i === 1) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
               assertEqualDestination(event.destination, testPathname1Destination)
             }
 
-            if (i === 1) {
+            if (i === 2) {
               deepStrictEqual(event.navigationType, NavigationType.Reload)
               assertEqualDestination(event.destination, testPathname1Destination)
             }
@@ -400,7 +400,7 @@ describe(import.meta.url, () => {
         yield* $(navigate(testPathname1))
         yield* $(reload)
 
-        deepStrictEqual(i, 2)
+        deepStrictEqual(i, 3)
       })
 
       await Effect.runPromise(test)

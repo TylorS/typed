@@ -275,5 +275,5 @@ function handleEffectPart<R, E>(part: Part, renderable: Renderable<R, E>) {
 
   // Events can only be null/undefined, EventHandler, or an Effect,
   // so we don't need to use handlePart here
-  return part.update(renderable) || Effect.unit()
+  return Effect.asUnit(part.update(renderable) || Effect.unit())
 }

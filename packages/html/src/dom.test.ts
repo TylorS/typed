@@ -257,10 +257,9 @@ describe(import.meta.url, () => {
 
           ok(rendered instanceof globalThis.HTMLDivElement)
 
-          const element = yield* $(ref)
+          const element = yield* $(ref.getElement)
 
-          ok(Option.isSome(element))
-          ok(element.value === rendered)
+          ok(element === rendered)
         }),
       )
 
@@ -346,6 +345,6 @@ describe(import.meta.url, () => {
       )
     })
 
-    await Effect.runPromise(test)
+    await Effect.runPromise(Effect.scoped(test))
   })
 })

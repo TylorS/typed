@@ -71,8 +71,8 @@ const fxToFiber = <R, E, A>(fx: Fx.Fx<R, E, A>, take: number) =>
   Effect.gen(function* ($) {
     const fiber = yield* $(fx, Fx.take(take), Fx.toReadonlyArray, Effect.forkScoped)
 
-    yield* $(Effect.sleep(Duration.millis(0)))
-    yield* $(Effect.sleep(Duration.millis(0)))
+    yield* $(Effect.sleep(Duration.millis(1)))
+    yield* $(Effect.sleep(Duration.millis(1)))
 
     return fiber
   })
@@ -216,10 +216,15 @@ describe(import.meta.url, () => {
           onNavigation((event) => {
             if (i === 0) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
-              assertEqualDestination(event.destination, testPathname1Destination)
+              assertEqualDestination(event.destination, testDestination)
             }
 
             if (i === 1) {
+              deepStrictEqual(event.navigationType, NavigationType.Push)
+              assertEqualDestination(event.destination, testPathname1Destination)
+            }
+
+            if (i === 2) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
               assertEqualDestination(event.destination, testPathname2Destination)
             }
@@ -233,7 +238,7 @@ describe(import.meta.url, () => {
         yield* $(navigate(testPathname1))
         yield* $(navigate(testPathname2))
 
-        deepStrictEqual(i, 2)
+        deepStrictEqual(i, 3)
       })
 
       await Effect.runPromise(test)
@@ -401,12 +406,12 @@ describe(import.meta.url, () => {
         let i = 0
         yield* $(
           onNavigation((event) => {
-            if (i === 0) {
+            if (i === 1) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
               assertEqualDestination(event.destination, testPathname1Destination)
             }
 
-            if (i === 1) {
+            if (i === 2) {
               deepStrictEqual(event.navigationType, NavigationType.Reload)
               assertEqualDestination(event.destination, testPathname1Destination)
             }
@@ -420,7 +425,7 @@ describe(import.meta.url, () => {
         yield* $(navigate(testPathname1))
         yield* $(reload)
 
-        deepStrictEqual(i, 2)
+        deepStrictEqual(i, 3)
       })
 
       await Effect.runPromise(test)
