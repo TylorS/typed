@@ -44,7 +44,9 @@ export interface Tag<I, S = I> extends C.Tag<I, S> {
   /**
    * Create a Layer using a Scoped Effect
    */
-  readonly layerScoped: <R, E>(effect: Effect.Effect<R | Scope.Scope, E, S>) => Layer.Layer<R, E, I>
+  readonly layerScoped: <R, E>(
+    effect: Effect.Effect<R, E, S>,
+  ) => Layer.Layer<Exclude<R, Scope.Scope>, E, I>
 
   /**
    * Create a Layer from the service

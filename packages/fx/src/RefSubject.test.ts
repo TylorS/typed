@@ -20,7 +20,7 @@ describe('RefSubject', () => {
         deepStrictEqual(value, 1)
       })
 
-      await Effect.runPromise(test)
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 
@@ -33,7 +33,7 @@ describe('RefSubject', () => {
         deepStrictEqual(yield* $(ref.get), 2)
       })
 
-      await Effect.runPromise(test)
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 
@@ -46,7 +46,7 @@ describe('RefSubject', () => {
         deepStrictEqual(yield* $(ref.get), 2)
       })
 
-      await Effect.runPromise(test)
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 
@@ -59,7 +59,7 @@ describe('RefSubject', () => {
         deepStrictEqual(yield* $(ref.get), 2)
       })
 
-      await Effect.runPromise(test)
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 
@@ -78,7 +78,7 @@ describe('RefSubject', () => {
         deepStrictEqual(yield* $(ref.delete), Option.some(1))
       })
 
-      await Effect.runPromise(test)
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 
@@ -350,7 +350,7 @@ describe('RefSubject', () => {
         deepStrictEqual(yield* $(c.get), 4)
       })
 
-      await Effect.runPromise(test)
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 })

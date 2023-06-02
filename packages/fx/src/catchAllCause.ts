@@ -4,7 +4,7 @@ import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 
 import { Fx, Sink } from './Fx.js'
-import { failCause } from './failCause.js'
+import { fail, failCause } from './failCause.js'
 import { fromEffect } from './fromEffect.js'
 import { withUnboundedConcurrency } from './helpers.js'
 
@@ -38,4 +38,27 @@ export function catchAllEffect<R, E, A, R2, E2, B>(
   f: (e: E) => Effect.Effect<R2, E2, B>,
 ): Fx<R | R2, E2, A | B> {
   return catchAll(fx, (e) => fromEffect(f(e)))
+}
+
+export function catchTag<R, E, A, Tag extends string, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  tag: Tag,
+  f: (e: Extract<E, { readonly _tag: Tag }>) => Fx<R2, E2, B>,
+): Fx<R | R2, Exclude<E, { readonly _tag: Tag }> | E2, A | B> {
+  return catchAll(
+    fx,
+    (e): Fx<R | R2, Exclude<E, { readonly _tag: Tag }> | E2, A | B> =>
+      isTaggedWith(e, tag) ? f(e) : fail(e as unknown as Exclude<E, { readonly _tag: Tag }>),
+  )
+}
+
+function isTaggedWith<E, Tag extends string>(
+  e: E,
+  tag: Tag,
+): e is Extract<E, { readonly _tag: Tag }> {
+  if (!e || typeof e !== 'object' || Array.isArray(e)) {
+    return false
+  }
+
+  return (e as any)._tag === tag
 }

@@ -1,4 +1,5 @@
 import * as Effect from '@effect/io/Effect'
+import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
 import { Destination, NavigationError, NavigationEvent, OnNavigationOptions } from './Navigation.js'
@@ -21,7 +22,7 @@ export interface Model {
 export const makeModel = (
   initialEntries: readonly NavigationEvent[],
   initialIndex: number,
-): Effect.Effect<never, never, Model> =>
+): Effect.Effect<Scope.Scope, never, Model> =>
   Effect.gen(function* ($) {
     const events = yield* $(Fx.makeRef(Effect.succeed(initialEntries)))
     const index = yield* $(Fx.makeRef(Effect.succeed(initialIndex)))

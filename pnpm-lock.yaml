@@ -550,6 +550,9 @@ importers:
       '@typed/context':
         specifier: workspace:*
         version: link:../context
+      '@typed/error':
+        specifier: workspace:*
+        version: link:../error
       '@typed/fx':
         specifier: workspace:*
         version: link:../fx

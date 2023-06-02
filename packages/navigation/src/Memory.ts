@@ -1,5 +1,6 @@
-import { flow } from '@effect/data/Function'
+import { flow, pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 
@@ -22,7 +23,7 @@ export interface MemoryNavigationOptions extends DomNavigationOptions {
 }
 
 export function memory(options: MemoryNavigationOptions): Layer.Layer<never, never, Navigation> {
-  return Navigation.layer(
+  return Navigation.layerScoped(
     Effect.gen(function* ($) {
       const initial: Destination = {
         key: options.initialKey ?? (yield* $(createKey)),
@@ -43,7 +44,9 @@ export function memory(options: MemoryNavigationOptions): Layer.Layer<never, nev
 
       const handleNavigationError =
         (depth: number) =>
-        (error: NavigationError): Effect.Effect<never, never, Destination> =>
+        (
+          error: NavigationError | Cause.NoSuchElementException,
+        ): Effect.Effect<never, never, Destination> =>
           Effect.gen(function* ($) {
             if (depth >= 50) {
               throw new Error(
@@ -52,6 +55,7 @@ export function memory(options: MemoryNavigationOptions): Layer.Layer<never, nev
             }
 
             switch (error._tag) {
+              case 'NoSuchElementException':
               case 'CancelNavigation':
                 return yield* $(model.currentEntry.get)
               case 'RedirectNavigation':
@@ -64,8 +68,9 @@ export function memory(options: MemoryNavigationOptions): Layer.Layer<never, nev
             }
           })
 
-      const catchNavigationError = <A>(effect: Effect.Effect<never, NavigationError, A>) =>
-        Effect.catchAll(effect, handleNavigationError(0))
+      const catchNavigationError = <R, A>(
+        effect: Effect.Effect<R, NavigationError | Cause.NoSuchElementException, A>,
+      ) => Effect.catchAll(effect, handleNavigationError(0))
 
       // Construct our service
       const navigation: Navigation = {
@@ -82,7 +87,8 @@ export function memory(options: MemoryNavigationOptions): Layer.Layer<never, nev
           lock,
         ),
         navigate: flow(intent.navigate, catchNavigationError, lock),
-        onNavigation: intent.onNavigation,
+        onNavigation: (handler, options) =>
+          pipe(intent.onNavigation(handler, options), catchNavigationError, Effect.asUnit),
         reload: lock(catchNavigationError(intent.reload)),
       }
 

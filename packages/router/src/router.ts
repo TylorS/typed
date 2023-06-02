@@ -7,7 +7,7 @@ import { Navigation } from '@typed/navigation'
 import { ParamsOf, PathJoin } from '@typed/path'
 import { Route } from '@typed/route'
 
-export interface Router<in out P extends string> {
+export interface Router<in out P extends string = string> {
   /**
    * The base Route for this Router instance.
    */
@@ -30,36 +30,33 @@ export interface Router<in out P extends string> {
   readonly parent: Option.Option<Router<string>>
 }
 
-const tag = Tag<Router<any>>('Router')
+export const Router = Tag<Router>('Router')
 
-export const Router = <P extends string>() => tag as Tag<Router<P>>
+export const navigation: Layer.Layer<Navigation, never, Router> = Router.layer(
+  Effect.gen(function* ($) {
+    const navigation = yield* $(Navigation)
+    const currentPath = navigation.currentEntry.map((destination) =>
+      getCurrentPathFromUrl(destination.url),
+    )
 
-export const navigation = <P extends string>(): Layer.Layer<Navigation, never, Router<P>> =>
-  Router<P>().layer(
-    Effect.gen(function* ($) {
-      const navigation = yield* $(Navigation)
-      const currentPath = navigation.currentEntry.map((destination) =>
-        getCurrentPathFromUrl(destination.url),
-      )
-
-      function makeRouter<
-        P extends string,
-      >(route: Route<P>, parent: Option.Option<Router<any>>): Router<P> {
-        const router: Router<P> = {
-          route,
-          params: currentPath.map(route.match),
-          define: <P2 extends string>(other: Route<P2>): Router<PathJoin<[P, P2]>> =>
-            makeRouter(route.concat(other), Option.some(router)),
-          parent,
-        }
-
-        return router
+    function makeRouter<
+      P extends string,
+    >(route: Route<P>, parent: Option.Option<Router<any>>): Router<P> {
+      const router: Router<P> = {
+        route,
+        params: currentPath.map(route.match),
+        define: <P2 extends string>(other: Route<P2>): Router<PathJoin<[P, P2]>> =>
+          makeRouter(route.concat(other), Option.some(router)),
+        parent,
       }
 
-      return makeRouter<P>(Route(navigation.base as P), Option.none())
-    }),
-  )
+      return router
+    }
 
-function getCurrentPathFromUrl(url: URL): string {
+    return makeRouter(Route(navigation.base), Option.none())
+  }),
+)
+
+export function getCurrentPathFromUrl(url: URL): string {
   return url.pathname + url.search + url.hash
 }

@@ -1,5 +1,6 @@
 import * as Brand from '@effect/data/Brand'
 import { Option } from '@effect/data/Option'
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import * as Context from '@typed/context'
@@ -86,14 +87,16 @@ export const onNavigation = <R>(
   handler: (event: NavigationEvent) => Effect.Effect<R, never, void>,
 ) => Navigation.withEffect((n) => n.onNavigation(handler))
 
-export const canGoBack = Object.assign(
+export const canGoBack: Effect.Effect<Navigation, Cause.NoSuchElementException, boolean> &
+  Fx.Fx<Navigation, never, boolean> = Object.assign(
   Navigation.withEffect((n) => n.canGoBack),
   Navigation.withFx((n) => n.canGoBack),
 )
 
 export const back = Navigation.withEffect((n) => n.back)
 
-export const canGoForward = Object.assign(
+export const canGoForward: Effect.Effect<Navigation, Cause.NoSuchElementException, boolean> &
+  Fx.Fx<Navigation, never, boolean> = Object.assign(
   Navigation.withEffect((n) => n.canGoForward),
   Navigation.withFx((n) => n.canGoForward),
 )

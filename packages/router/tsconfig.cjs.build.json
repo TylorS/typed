@@ -11,6 +11,9 @@
       "path": "../context/tsconfig.cjs.build.json"
     },
     {
+      "path": "../error/tsconfig.cjs.build.json"
+    },
+    {
       "path": "../fx/tsconfig.cjs.build.json"
     },
     {

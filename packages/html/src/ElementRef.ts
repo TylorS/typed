@@ -17,6 +17,9 @@ export interface ElementRef<A extends Rendered>
   readonly getElement: Effect.Effect<never, Cause.NoSuchElementException, A>
 }
 
+const initial = Effect.sync(Option.none)
+const strictEqual = Option.getEquivalence((a, b) => a === b)
+
 export function makeElementRef<A extends Rendered = HTMLElement>(): Effect.Effect<
   never,
   never,
@@ -26,10 +29,7 @@ export function makeElementRef<A extends Rendered = HTMLElement>(): Effect.Effec
 }
 
 export function unsafeMakeElementRef<A extends Rendered = HTMLElement>(): ElementRef<A> {
-  const subject = Fx.RefSubject.unsafeMake<never, Option.Option<A>>(
-    Effect.sync(Option.none),
-    Option.getEquivalence((a, b) => a === b),
-  )
+  const subject = Fx.RefSubject.unsafeMake<never, Option.Option<A>>(initial, strictEqual)
   const element: Fx.Fx<never, never, A> = pipe(subject, Fx.compact, Fx.skipRepeats, Fx.hold)
   const getElement = Effect.flatten(subject)
 
@@ -50,5 +50,5 @@ export function withElementRef<T extends HTMLElement = HTMLElement>() {
 export function isElementRef<A extends HTMLElement = HTMLElement>(
   value: unknown,
 ): value is ElementRef<A> {
-  return isRefSubject(value) && 'element' in value
+  return isRefSubject(value) && 'element' in value && 'getElement' in value
 }

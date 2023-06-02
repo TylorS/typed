@@ -22,6 +22,7 @@
     "@effect/data": "^0.12.3",
     "@effect/io": "^0.25.13",
     "@typed/context": "workspace:*",
+    "@typed/error": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/navigation": "workspace:*",
     "@typed/path": "workspace:*",

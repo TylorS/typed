@@ -6,7 +6,9 @@ import { DestinationKey } from './Navigation.js'
 export function getUrl(href: string, base: string, origin: string) {
   const url = new URL(href, origin)
 
-  url.pathname = pathJoin(base, url.pathname)
+  if (!url.pathname.startsWith(base)) {
+    url.pathname = pathJoin(base, url.pathname)
+  }
 
   return url
 }

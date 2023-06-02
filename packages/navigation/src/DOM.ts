@@ -1,5 +1,6 @@
 import { flow, pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as Context from '@typed/context'
@@ -27,8 +28,8 @@ export interface DomNavigationOptions {
 
 export const dom = (
   options: DomNavigationOptions = {},
-): Layer.Layer<NavigationServices, never, Navigation> =>
-  Navigation.layerScoped(
+): Layer.Layer<NavigationServices, never, Navigation> => {
+  return Navigation.layerScoped(
     Effect.gen(function* ($) {
       // Get resources
       const context = yield* $(Effect.context<NavigationServices>())
@@ -47,29 +48,35 @@ export const dom = (
 
       const handleNavigationError =
         (depth: number) =>
-        (error: NavigationError): Effect.Effect<NavigationServices, never, Destination> =>
-          Effect.gen(function* ($) {
-            if (depth >= 50) {
-              throw new Error(
-                'Too many redirects. You may have an infinite loop of onNavigation handlers that are redirecting.',
-              )
-            }
-
-            switch (error._tag) {
-              case 'CancelNavigation':
-                return yield* $(model.currentEntry.get)
-              case 'RedirectNavigation':
-                return yield* $(
-                  Effect.catchAll(
-                    intent.navigate(error.url, error),
-                    handleNavigationError(depth + 1),
-                  ),
+        (
+          error: NavigationError | Cause.NoSuchElementException,
+        ): Effect.Effect<never, never, Destination> =>
+          Effect.provideContext(
+            Effect.gen(function* ($) {
+              if (depth >= 50) {
+                throw new Error(
+                  'Too many redirects. You may have an infinite loop of onNavigation handlers that are redirecting.',
                 )
-            }
-          })
+              }
 
-      const catchNavigationError = <A>(
-        effect: Effect.Effect<NavigationServices, NavigationError, A>,
+              switch (error._tag) {
+                case 'NoSuchElementException':
+                case 'CancelNavigation':
+                  return yield* $(model.currentEntry.get)
+                case 'RedirectNavigation':
+                  return yield* $(
+                    Effect.catchAll(
+                      intent.navigate(error.url, error),
+                      handleNavigationError(depth + 1),
+                    ),
+                  )
+              }
+            }),
+            context,
+          )
+
+      const catchNavigationError = <R, A>(
+        effect: Effect.Effect<R, NavigationError | Cause.NoSuchElementException, A>,
       ) => Effect.catchAll(effect, handleNavigationError(0))
 
       // Used to provide a locked effect with the current context
@@ -91,7 +98,8 @@ export const dom = (
           provideLocked,
         ),
         navigate: flow(intent.navigate, catchNavigationError, provideLocked),
-        onNavigation: intent.onNavigation,
+        onNavigation: (handler, options) =>
+          pipe(intent.onNavigation(handler, options), catchNavigationError, Effect.asUnit),
         reload: provideLocked(catchNavigationError(intent.reload)),
       }
 
@@ -136,6 +144,7 @@ export const dom = (
       return navigation
     }),
   )
+}
 
 export function getBasePathFromHref(href: string) {
   try {
