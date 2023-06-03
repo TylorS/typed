@@ -1,11 +1,12 @@
 import * as Option from '@effect/data/Option'
-import { Effect } from '@effect/io/Effect'
+import * as Effect from '@effect/io/Effect'
 
 import { isElementRef } from '../ElementRef.js'
 
 import { BasePart } from './BasePart.js'
+import { removeAttribute } from './templateHelpers.js'
 
-export class RefPart extends BasePart<Effect<never, never, Option.Option<HTMLElement>> | void> {
+export class RefPart extends BasePart<never, never> {
   readonly _tag = 'Ref'
 
   constructor(document: Document, readonly element: HTMLElement) {
@@ -17,7 +18,7 @@ export class RefPart extends BasePart<Effect<never, never, Option.Option<HTMLEle
    */
   handle(value: unknown) {
     if (value == null) {
-      return
+      return Effect.unit()
     }
 
     if (isElementRef(value)) {
@@ -27,5 +28,12 @@ export class RefPart extends BasePart<Effect<never, never, Option.Option<HTMLEle
     console.error(`Unexpected value for ref of `, this.element, `:`, value)
 
     throw new Error(`Unexpected value for ref: ${JSON.stringify(value)}`)
+  }
+
+  /**
+   * @internal
+   */
+  getHTML(template: string): string {
+    return removeAttribute('ref', template)
   }
 }

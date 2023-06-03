@@ -7,12 +7,11 @@ import { observe } from '@typed/fx'
 import { EventHandlerImplementation } from '../EventHandler.js'
 
 import { BasePart } from './BasePart.js'
+import { removeAttribute } from './templateHelpers.js'
 
 // TODO: Keep track of our fiber, add better API for managing an event listener
 
-export class EventPart<R = never, E = never> extends BasePart<
-  Effect.Effect<R | Scope.Scope, E, void>
-> {
+export class EventPart<R = never, E = never> extends BasePart<R | Scope.Scope, E> {
   readonly _tag = 'Event'
 
   constructor(document: Document, readonly element: HTMLElement, readonly eventName: string) {
@@ -36,6 +35,13 @@ export class EventPart<R = never, E = never> extends BasePart<
       Effect.forkScoped,
       Effect.asUnit,
     )
+  }
+
+  /**
+   * @internal
+   */
+  getHTML(template: string): string {
+    return removeAttribute(removeAttribute(template, '@' + this.eventName), 'on' + this.eventName)
   }
 }
 

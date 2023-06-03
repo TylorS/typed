@@ -5,25 +5,25 @@ import { Document } from '@typed/dom/Document'
 import * as Fx from '@typed/fx'
 import { type Wire } from '@typed/wire'
 
-import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
+import type { RenderEvent } from './RenderEvent.js'
 
 export type Rendered = Wire | Node | DocumentFragment
 
 export function renderInto<T extends HTMLElement>(where: T) {
-  return <R, E>(fx: Fx.Fx<R, E, Rendered>): Fx.Fx<R | RenderContext, E, T> =>
+  return <R, E>(fx: Fx.Fx<R, E, RenderEvent>): Fx.Fx<R | RenderContext, E, T> =>
     Fx.gen(function* ($) {
-      const { renderCache } = yield* $(RenderContext)
+      const ctx = yield* $(RenderContext)
 
       return pipe(
         fx,
-        Fx.switchMapEffect((hole) => renderWithCache(renderCache, where, hole)),
+        Fx.switchMapEffect((hole) => renderWithCache(ctx, where, hole)),
       )
     })
 }
 
 export function drainInto<T extends HTMLElement>(where: T) {
-  return <R, E>(fx: Fx.Fx<R, E, Rendered>): Effect.Effect<R | RenderContext | Scope, E, void> =>
+  return <R, E>(fx: Fx.Fx<R, E, RenderEvent>): Effect.Effect<R | RenderContext | Scope, E, void> =>
     pipe(fx, renderInto(where), Fx.drain)
 }
 
@@ -32,31 +32,43 @@ export function drainInto<T extends HTMLElement>(where: T) {
  */
 export function render<T extends HTMLElement>(
   where: T,
-  what: Rendered,
+  what: RenderEvent,
 ): Effect.Effect<RenderContext, never, T> {
   return pipe(
     RenderContext,
-    Effect.flatMap(({ renderCache }) => renderWithCache(renderCache, where, what)),
+    Effect.flatMap((ctx) => renderWithCache(ctx, where, what)),
   )
 }
 
-function renderWithCache<T extends HTMLElement>(
-  renderCache: WeakMap<HTMLElement, RenderCache>,
-  where: T,
-  what: Rendered,
-) {
+function renderWithCache<T extends HTMLElement>(ctx: RenderContext, where: T, what: RenderEvent) {
+  const { renderCache, updates } = ctx
+
   return Effect.sync(() => {
-    let cache = renderCache.get(where)
-    if (!cache) {
-      renderCache.set(where, (cache = RenderCache()))
-    }
+    switch (what._tag) {
+      case 'RenderedDom': {
+        const that = what.rendered
 
-    if (what !== cache.wire) {
-      if (cache.wire && !what) where.removeChild(cache.wire.valueOf() as Node)
+        if (that !== renderCache.wire) {
+          if (renderCache.wire && !what) where.removeChild(renderCache.wire.valueOf() as Node)
 
-      cache.wire = what as Wire | Node | null | undefined
+          renderCache.wire = that as Wire | Node | null | undefined
 
-      if (what) where.replaceChildren(what.valueOf() as Node)
+          if (what) where.replaceChildren(what.valueOf() as Node)
+        }
+        break
+      }
+      case 'RenderUpdate': {
+        updates.set(what.part, what.update)
+        break
+      }
+      case 'FullHtml': {
+        where.innerHTML = what.html
+        break
+      }
+      case 'PartialHtml': {
+        where.innerHTML = where.innerHTML + what.html
+        break
+      }
     }
 
     return where

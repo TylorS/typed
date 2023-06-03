@@ -1,6 +1,9 @@
-import { BasePart } from './BasePart.js'
+import { sync } from '@effect/io/Effect'
 
-export class DataPart extends BasePart<void> {
+import { BasePart } from './BasePart.js'
+import { removeAttribute } from './templateHelpers.js'
+
+export class DataPart extends BasePart<never, never> {
   readonly _tag = 'Data'
   protected keys: string[] = []
 
@@ -11,24 +14,45 @@ export class DataPart extends BasePart<void> {
   /**
    * @internal
    */
-  handle(value: unknown): void {
-    if (!value) {
-      this.keys.forEach((k) => delete this.element.dataset[k])
-      this.keys = []
-    } else if (!Array.isArray(value) && typeof value === 'object') {
-      const keys = Object.keys(value)
+  handle(value: unknown) {
+    return sync(() => {
+      if (value && !Array.isArray(value) && typeof value === 'object') {
+        const keys = Object.keys(value)
 
-      for (const key of this.keys) {
-        if (!keys.includes(key)) {
-          delete this.element.dataset[key]
+        // Remove old keys
+        for (const key of this.keys) {
+          if (!keys.includes(key)) {
+            delete this.element.dataset[key]
+          }
         }
+
+        this.keys = keys
+
+        // Set new keys
+        Object.assign(this.element.dataset, value)
+      } else {
+        this.keys.forEach((k) => delete this.element.dataset[k])
+        this.keys = []
       }
+    })
+  }
 
-      this.keys = keys
+  /**
+   * @internal
+   */
+  getHTML(template: string) {
+    const { dataset } = this.element
+    const keys = Object.keys(dataset)
 
-      keys.forEach((key) => {
-        this.element.dataset[key] = String((value as Record<string, unknown>)[key])
-      })
+    if (keys.length === 0) {
+      return ''
     }
+
+    return (
+      removeAttribute('.data', template) +
+      keys.reduce((acc, key) => {
+        return acc + `data-${key}="${dataset[key]}" `
+      }, '')
+    )
   }
 }

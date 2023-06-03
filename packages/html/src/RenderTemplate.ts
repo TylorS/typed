@@ -3,8 +3,8 @@ import { Tag } from '@typed/context'
 import { Fx } from '@typed/fx'
 
 import type { Placeholder } from './Placeholder.js'
+import { RenderEvent } from './RenderEvent.js'
 import { Renderable } from './Renderable.js'
-import type { Rendered } from './render.js'
 
 export interface RenderTemplate {
   readonly renderTemplate: <const Values extends ReadonlyArray<Renderable<any, any>>>(
@@ -14,7 +14,7 @@ export interface RenderTemplate {
   ) => Fx<
     Scope | Placeholder.ResourcesOf<Values[number]>,
     Placeholder.ErrorsOf<Values[number]>,
-    Rendered
+    RenderEvent
   >
 }
 
@@ -30,20 +30,10 @@ export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
 ): Fx<
   RenderTemplate | Scope | Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
-  Rendered
+  RenderEvent
 > {
   return RenderTemplate.withFx(({ renderTemplate }) => renderTemplate(template, values))
 }
-
-html.as = <T extends Node>() =>
-  html as any as <Values extends ReadonlyArray<Renderable<any, any>>>(
-    template: TemplateStringsArray,
-    ...values: Values
-  ) => Fx<
-    RenderTemplate | Scope | Placeholder.ResourcesOf<Values[number]>,
-    Placeholder.ErrorsOf<Values[number]>,
-    T
-  >
 
 export function svg<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
@@ -51,7 +41,7 @@ export function svg<const Values extends ReadonlyArray<Renderable<any, any>>>(
 ): Fx<
   RenderTemplate | Scope | Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
-  SVGElement
+  RenderEvent
 > {
   return RenderTemplate.withFx(({ renderTemplate }) =>
     renderTemplate(template, values, { isSvg: true }),

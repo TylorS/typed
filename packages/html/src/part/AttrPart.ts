@@ -1,14 +1,17 @@
+import * as Effect from '@effect/io/Effect'
+
 import { BasePart } from './BasePart.js'
+import { addQuotations } from './templateHelpers.js'
 
 const getValue = (value: any) => (value == null ? value : value.valueOf())
 
-export class AttrPart extends BasePart<void> {
+export class AttrPart extends BasePart<never, never> {
   readonly _tag = 'Attr'
 
   protected orphaned = true
 
   constructor(document: Document, readonly element: HTMLElement, readonly attributeNode: Attr) {
-    super(document, false)
+    super(document)
   }
 
   /**
@@ -22,20 +25,29 @@ export class AttrPart extends BasePart<void> {
    * @internal
    */
   handle(newValue: unknown) {
-    const { attributeNode } = this
+    return Effect.sync(() => {
+      const { attributeNode } = this
 
-    if (newValue == null) {
-      if (!this.orphaned) {
-        this.element.removeAttributeNode(attributeNode)
-        this.orphaned = true
-      }
-    } else {
-      attributeNode.value = String(newValue)
+      if (newValue == null) {
+        if (!this.orphaned) {
+          this.element.removeAttributeNode(attributeNode)
+          this.orphaned = true
+        }
+      } else {
+        attributeNode.value = String(newValue)
 
-      if (this.orphaned) {
-        this.element.setAttributeNodeNS(attributeNode)
-        this.orphaned = false
+        if (this.orphaned) {
+          this.element.setAttributeNodeNS(attributeNode)
+          this.orphaned = false
+        }
       }
-    }
+    })
+  }
+
+  /**
+   * @internal
+   */
+  getHTML(template: string): string {
+    return addQuotations(template, this.attributeNode.value)
   }
 }

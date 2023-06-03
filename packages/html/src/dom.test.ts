@@ -111,7 +111,7 @@ describe(import.meta.url, () => {
 
   it('allows using directives to manage attributes', async () => {
     const test = testRenderTemplate(
-      html`<div id=${attrDirective((part) => Effect.sync(() => part.update('foo')))}></div>`,
+      html`<div id=${attrDirective((part) => part.update('foo'))}></div>`,
       function* ($, rendered) {
         const globalThis = yield* $(GlobalThis)
 
@@ -126,12 +126,7 @@ describe(import.meta.url, () => {
   it('allows using directives to manage attributes allows multiple updates', async () => {
     const test = testRenderTemplate(
       html`<div
-        id=${attrDirective((part) =>
-          Effect.sync(() => {
-            part.update('foo')
-            part.update('bar')
-          }),
-        )}
+        id=${attrDirective((part) => Effect.all(part.update('foo'), part.update('bar')))}
       ></div>`,
       function* ($, rendered) {
         const globalThis = yield* $(GlobalThis)
@@ -146,9 +141,7 @@ describe(import.meta.url, () => {
 
   it('allows using directive to manage class names', async () => {
     const updateTest = testRenderTemplate(
-      html`<div
-        class=${classNameDirective((part) => Effect.sync(() => part.update('foo')))}
-      ></div>`,
+      html`<div class=${classNameDirective((part) => part.update('foo'))}></div>`,
       function* ($, rendered) {
         const globalThis = yield* $(GlobalThis)
 
@@ -162,11 +155,11 @@ describe(import.meta.url, () => {
     const addRemoveTest = testRenderTemplate(
       html`<div
         class=${classNameDirective((part) =>
-          Effect.sync(() => {
-            part.add('foo', 'bar')
-            part.remove('foo')
-            part.toggle('baz', 'quux')
-            part.toggle('quux')
+          Effect.gen(function* ($) {
+            yield* $(part.add('foo', 'bar'))
+            yield* $(part.remove('foo'))
+            yield* $(part.toggle('baz', 'quux'))
+            yield* $(part.toggle('quux'))
           }),
         )}
       ></div>`,
@@ -207,9 +200,7 @@ describe(import.meta.url, () => {
     await Effect.runPromise(object)
 
     const directive = testRenderTemplate(
-      html`<div
-        .data=${dataDirective((part) => Effect.sync(() => part.update({ test: 'foo' })))}
-      ></div>`,
+      html`<div .data=${dataDirective((part) => part.update({ test: 'foo' }))}></div>`,
       function* ($, rendered) {
         const globalThis = yield* $(GlobalThis)
 
@@ -234,7 +225,7 @@ describe(import.meta.url, () => {
 
     // Using a directive
     const directive = testRenderTemplate(
-      html`<div .test=${propertyDirective((part) => Effect.sync(() => part.update('foo')))}></div>`,
+      html`<div .test=${propertyDirective((part) => part.update('foo'))}></div>`,
       function* ($, rendered) {
         const globalThis = yield* $(GlobalThis)
 
@@ -266,9 +257,7 @@ describe(import.meta.url, () => {
       // Using a directive
       yield* $(
         testRenderTemplate(
-          html`<div
-            ref=${refDirective((part) => ref.set(Option.some(part.element as HTMLDivElement)))}
-          ></div>`,
+          html`<div ref=${refDirective((part) => part.update(ref))}></div>`,
           function* ($, rendered) {
             const globalThis = yield* $(GlobalThis)
 
@@ -327,9 +316,7 @@ describe(import.meta.url, () => {
       // Using eventDirective
       yield* $(
         testRenderTemplate(
-          html`<div
-            @click=${eventDirective((part) => part.update(listener) || Effect.unit())}
-          ></div>`,
+          html`<div @click=${eventDirective((part) => part.update(listener))}></div>`,
           function* ($, rendered, dispatch) {
             const globalThis = yield* $(GlobalThis)
 
