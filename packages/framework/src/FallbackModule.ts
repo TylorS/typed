@@ -27,12 +27,12 @@ export function RenderableFallback(
 
 export interface RedirectFallback<P extends string> {
   readonly type: 'Redirect'
-  readonly route: Route<IntrinsicServices, Router.Redirect, P>
+  readonly route: Route<P>
   readonly params?: ParamsOf<P>
 }
 
 export function RedirectFallback<P extends string>(
-  route: Route<IntrinsicServices, Router.Redirect, P>,
+  route: Route<P>,
   // eslint-disable-next-line @typescript-eslint/ban-types
   ...[params]: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
 ): RedirectFallback<P> {

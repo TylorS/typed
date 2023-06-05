@@ -123,7 +123,7 @@ function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>>>(
                 Effect.forkScoped,
               )
             } else {
-              if (part._tag === 'Ref') {
+              if (part._tag === 'Ref' || part._tag === 'Event') {
                 fibers[index] = Fiber.unit()
 
                 yield* $(part.update(renderable))
@@ -147,7 +147,7 @@ function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>>>(
   })
 }
 
-export function isRenderEvent(u: unknown): u is DomRenderEvent {
+function isRenderEvent(u: unknown): u is DomRenderEvent {
   if (typeof u !== 'object' || u === null || Array.isArray(u)) {
     return false
   }

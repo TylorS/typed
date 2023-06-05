@@ -13,3 +13,7 @@ export function removeAttribute(name: string, template: string) {
 export function replaceAttribute(name: string, value: string, template: string) {
   return template.replace(new RegExp(`${name}=(["'])?`, 'g'), value)
 }
+
+export function trimEmptyQuotes(template: string) {
+  return template.replace(/^"\s?"/g, '')
+}

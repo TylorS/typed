@@ -17,6 +17,7 @@ import { collectPartsAndValues } from './collectPartsAndValues.js'
 import { unwrapRenderable } from './makeUpdate.js'
 import { parseTemplate } from './parseTemplate.js'
 import { Part } from './part/Part.js'
+import { trimEmptyQuotes } from './part/templateHelpers.js'
 import { getRenderHoleContext } from './render.js'
 
 export const server: Layer.Layer<Document | RenderContext, never, RenderTemplate> =
@@ -76,7 +77,11 @@ export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>
               const isLast = index === lastIndex
 
               // Emit our HTML
-              yield* $(sink.event(PartialHtml(isLast ? html + template[index + 1] : html, isLast)))
+              yield* $(
+                sink.event(
+                  PartialHtml(trimEmptyQuotes(isLast ? html + template[index + 1] : html), isLast),
+                ),
+              )
 
               // When a fiber is completed we can interrupt the underlying Fiber
               yield* $(Fiber.interruptFork(fibers[index]))
@@ -121,7 +126,7 @@ export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>
                 } else {
                   // If it's already ready, just stream out directly
                   if (index === hasRendered) {
-                    yield* $(sink.event(PartialHtml(html, false)))
+                    yield* $(sink.event(PartialHtml(trimEmptyQuotes(html), false)))
                   } else {
                     pendingHtml.set(index, html)
                   }
@@ -135,6 +140,7 @@ export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>
                 yield* $(handleRenderEvent(value))
               } else {
                 yield* $(part.update(value))
+
                 indexToHtml.set(index, part.getHTML(template[index]))
 
                 yield* $(emitHtml(index))
@@ -160,15 +166,15 @@ export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>
               Effect.forkScoped(Effect.catchAllCause(renderable.f(part as Part), sink.error)),
             )
           } else {
-            if (part._tag === 'Ref') {
-              yield* $(part.update(renderable))
+            if (part._tag === 'Ref' || part._tag === 'Event') {
+              yield* $((part as Part).update(renderable))
               indexToHtml.set(index, part.getHTML(template[index]))
 
               yield* $(emitHtml(index))
             } else {
               fibers[index] = yield* $(
                 unwrapRenderable(renderable),
-                Fx.observe(renderPart(index, part)),
+                Fx.observe(renderPart(index, part as Part)),
                 Effect.catchAllCause(sink.error),
                 Effect.forkScoped,
               )
@@ -184,7 +190,7 @@ export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>
   })
 }
 
-export function isRenderEvent(u: unknown): u is HtmlRenderEvent {
+function isRenderEvent(u: unknown): u is HtmlRenderEvent {
   if (typeof u !== 'object' || u === null || Array.isArray(u)) {
     return false
   }

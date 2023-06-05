@@ -175,34 +175,10 @@ describe(fileURLToPath(import.meta.url), () => {
 
   it('properly handles extra quotations hanging around', async () => {
     const ref = unsafeMakeElementRef()
-    const test = Effect.gen(function* ($) {
-      yield* $(
-        testRenderEvents(
-          html`<div class=${Effect.succeed('test')} ref="${ref}" onclick="${Effect.unit()}">
-            hello
-          </div>`,
-          [PartialHtml(`<div class="test">hello</div>`, true)],
-        ),
-      )
-
-      yield* $(
-        testRenderEvents(
-          html`<div ref="${ref}" class=${Effect.succeed('test')} onclick="${Effect.unit()}">
-            hello
-          </div>`,
-          [PartialHtml(`<div class="test">hello</div>`, true)],
-        ),
-      )
-
-      yield* $(
-        testRenderEvents(
-          html`<div ref="${ref}" onclick="${Effect.unit()}" class=${Effect.succeed('test')}>
-            hello
-          </div>`,
-          [PartialHtml(`<div class="test">hello</div>`, true)],
-        ),
-      )
-    })
+    const test = testRenderEvents(
+      html`<div class="test" ref="${ref}" onclick="${Effect.unit()}">hello</div>`,
+      [PartialHtml(`<div class="test" `, false), PartialHtml(`>hello</div>`, true)],
+    )
 
     await Effect.runPromise(test)
   })

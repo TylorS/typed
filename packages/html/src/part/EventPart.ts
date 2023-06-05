@@ -41,7 +41,7 @@ export class EventPart<R = never, E = never> extends BasePart<R | Scope.Scope, E
    * @internal
    */
   getHTML(template: string): string {
-    return removeAttribute(removeAttribute(template, '@' + this.eventName), 'on' + this.eventName)
+    return removeAttribute('on' + this.eventName, removeAttribute('@' + this.eventName, template))
   }
 }
 

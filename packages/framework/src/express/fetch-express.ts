@@ -27,21 +27,17 @@ export function runFetchHandler<Path extends string>(
     const fiber = Effect.runFork(
       pipe(
         fetchHandler.route.match(req.url),
-        Effect.flatMap(
-          Option.match(
-            () => Effect.sync(next),
-            (params) =>
-              pipe(
-                fetchHandler.handler(request, params as ParamsOf<Path>),
-                Effect.flatMap((response) =>
-                  Effect.promise(() => sendFetchResponse(res, response)),
-                ),
-                // Handle all defects by passing them along to Express' next function.
-                Effect.catchAllDefect((defect) => Effect.sync(() => next(defect))),
-                // Log about all other defects
-                Effect.catchAllCause(Effect.logDebugCause),
-              ),
-          ),
+        Option.match(
+          () => Effect.sync(next),
+          (params) =>
+            pipe(
+              fetchHandler.handler(request, params as ParamsOf<Path>),
+              Effect.flatMap((response) => Effect.promise(() => sendFetchResponse(res, response))),
+              // Handle all defects by passing them along to Express' next function.
+              Effect.catchAllDefect((defect) => Effect.sync(() => next(defect))),
+              // Log about all other defects
+              Effect.catchAllCause(Effect.logDebugCause),
+            ),
         ),
         // Annotate some request data
         Effect.logAnnotate('request.url', request.url),

@@ -59,7 +59,7 @@ export const runExpressApp = (
               return pipe(
                 Cause.failureOrCause(exit.cause),
                 Either.match(
-                  (redirect) => res.redirect(redirect.path),
+                  (redirect) => res.redirect(redirect.url),
                   (error) => next(new Error(Cause.pretty(error))),
                 ),
               )
