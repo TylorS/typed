@@ -179,3 +179,6 @@ export function isRedirectNavigation(error: NavigationError): error is RedirectN
 export interface OnNavigationOptions {
   readonly passive?: boolean
 }
+
+export const getCurrentUrl: Effect.Effect<Navigation, Cause.NoSuchElementException, URL> =
+  Navigation.withEffect((n) => n.currentEntry.map((d) => d.url))

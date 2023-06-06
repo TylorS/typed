@@ -38,7 +38,7 @@ export class NodePart extends BasePart<never, never> {
         // null, and undefined are used to cleanup previous content
         case 'object':
         case 'undefined': {
-          if (newValue == null) {
+          if (!newValue) {
             this.nodes = diffChildren(comment, this.nodes, [], document)
           }
           // arrays and nodes have a special treatment

@@ -30,3 +30,15 @@ export function observe<R, E, A, R2, E2>(
 export function drain<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R | Scope, E, void> {
   return observe(fx, () => Effect.unit())
 }
+
+export function forkScoped<R, E, A>(
+  fx: Fx<R, E, A>,
+): Effect.Effect<R | Scope, never, Fiber.RuntimeFiber<E, void>> {
+  return Effect.forkScoped(drain(fx))
+}
+
+export function fork<R, E, A>(
+  fx: Fx<R, E, A>,
+): Effect.Effect<R | Scope, never, Fiber.RuntimeFiber<E, void>> {
+  return Effect.fork(drain(fx))
+}

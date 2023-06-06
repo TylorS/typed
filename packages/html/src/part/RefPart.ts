@@ -17,7 +17,7 @@ export class RefPart extends BasePart<never, never> {
    * @internal
    */
   handle(value: unknown) {
-    if (value == null) {
+    if (!value) {
       return Effect.unit()
     }
 

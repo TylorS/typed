@@ -3,7 +3,7 @@ import * as Effect from '@effect/io/Effect'
 import { BasePart } from './BasePart.js'
 import { addQuotations } from './templateHelpers.js'
 
-const getValue = (value: any) => (value == null ? value : value.valueOf())
+const getValue = (value: any) => (!value ? value : value.valueOf())
 
 export class AttrPart extends BasePart<never, never> {
   readonly _tag = 'Attr'
@@ -28,7 +28,7 @@ export class AttrPart extends BasePart<never, never> {
     return Effect.sync(() => {
       const { attributeNode } = this
 
-      if (newValue == null) {
+      if (!newValue) {
         if (!this.orphaned) {
           this.element.removeAttributeNode(attributeNode)
           this.orphaned = true

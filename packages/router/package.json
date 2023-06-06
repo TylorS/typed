@@ -24,6 +24,7 @@
     "@typed/context": "workspace:*",
     "@typed/error": "workspace:*",
     "@typed/fx": "workspace:*",
+    "@typed/html": "workspace:*",
     "@typed/navigation": "workspace:*",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*"

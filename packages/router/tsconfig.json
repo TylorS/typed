@@ -21,6 +21,9 @@
       "path": "../fx/tsconfig.build.json"
     },
     {
+      "path": "../html/tsconfig.build.json"
+    },
+    {
       "path": "../navigation/tsconfig.build.json"
     },
     {

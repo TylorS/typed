@@ -9,6 +9,7 @@ import * as Option from '@effect/data/Option'
 import * as RR from '@effect/data/ReadonlyRecord'
 import * as Equivalence from '@effect/data/typeclass/Equivalence'
 import * as Cause from '@effect/io/Cause'
+import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Scope from '@effect/io/Scope'
@@ -24,12 +25,14 @@ import { HoldFx } from './hold.js'
 import { map } from './map.js'
 import { multicast } from './multicast.js'
 import { never } from './never.js'
+import { drain } from './observe.js'
 import { switchMapEffect } from './switchMap.js'
+import { switchMatchCauseEffect } from './switchMatch.js'
 
 export const RefSubjectTypeId = Symbol.for('./RefSubject')
 export type RefSubjectTypeId = typeof RefSubjectTypeId
 
-export interface RefSubject<in out E, in out A> extends Subject<E, A>, Computed<never, E, A> {
+export interface RefSubject<in out E, in out A> extends Subject<E, A>, Effect.Effect<never, E, A> {
   readonly [RefSubjectTypeId]: RefSubjectTypeId
 
   readonly eq: Equivalence.Equivalence<A>
@@ -50,6 +53,22 @@ export interface RefSubject<in out E, in out A> extends Subject<E, A>, Computed<
   readonly set: (a: A) => Effect.Effect<never, E, A>
 
   readonly delete: Effect.Effect<never, E, Option.Option<A>>
+
+  readonly mapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) => Computed<R2, E | E2, B>
+
+  readonly map: <B>(f: (a: A) => B) => Computed<never, E, B>
+
+  readonly filterMapEffect: <R2, E2, B>(
+    f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>,
+  ) => Computed<R2, E | E2, B>
+
+  readonly filterMap: <B>(f: (a: A) => Option.Option<B>) => Computed<never, E, B>
+
+  readonly filterEffect: <R2, E2>(
+    f: (a: A) => Effect.Effect<R2, E2, boolean>,
+  ) => Computed<R2, E | E2, A>
+
+  readonly filter: (f: (a: A) => boolean) => Computed<never, E, A>
 
   readonly addTrace: (trace: Trace) => RefSubject<E, A>
 }
@@ -90,6 +109,35 @@ export function makeRef<R, E, A>(
 
     // Ensure underlying Fiber is interrupted when scope closes
     yield* _(Effect.addFinalizer(() => ref.end()))
+
+    return ref
+  })
+}
+
+export function asRef<R, E, A>(
+  fx: Fx<R, E, A>,
+): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>> {
+  return Effect.gen(function* (_) {
+    // Use a Deferred value to capture the initial value of the reference
+    const deferred = yield* _(Deferred.make<E, A>())
+    const ref = yield* _(makeRef(Deferred.await(deferred)))
+
+    // Listen to the reference and update the reference
+    yield* _(
+      switchMatchCauseEffect(
+        fx,
+        (cause) =>
+          Effect.flatMap(Deferred.failCause(deferred, cause), (closed) =>
+            closed ? Effect.unit() : ref.error(cause),
+          ),
+        (a) =>
+          Effect.flatMap(Deferred.succeed(deferred, a), (closed) =>
+            closed ? Effect.unit() : ref.set(a),
+          ),
+      ),
+      drain,
+      Effect.forkScoped,
+    )
 
     return ref
   })
@@ -326,7 +374,7 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
 
   readonly filterMapEffect: RefSubject<E, A>['filterMapEffect'] = <R2, E2, B>(
     f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>,
-  ) => new ComputedImpl(this as unknown as RefSubject<E, A>, f)
+  ) => new ComputedImpl(this as any as Computed<never, E, A>, f)
 
   readonly filterMap: RefSubject<E, A>['filterMap'] = (f) =>
     this.filterMapEffect((a) => Effect.sync(() => f(a)))

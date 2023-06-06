@@ -1,6 +1,5 @@
-// TODO: Investigate Error types in placeholders to broadcast in Fx ??
-
 import * as Effect from '@effect/io/Effect'
+import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
 export interface Placeholder<R = never, E = never, A = unknown> {
@@ -163,6 +162,33 @@ export namespace Placeholder {
 
     return f(placeholder as A) as Placeholder<R | R1, E | E1, B>
   }
+
+  export function asFx(placeholder: undefined): Fx.Fx<never, never, undefined>
+  export function asFx(placeholder: void): Fx.Fx<never, never, void>
+  export function asFx(placeholder: null): Fx.Fx<never, never, null>
+  export function asFx<R = never, E = never, A = unknown>(
+    placeholder: Placeholder<R, E, A> | null | undefined,
+  ): Fx.Fx<R, E, A>
+
+  export function asFx<R = never, E = never, A = unknown>(
+    placeholder: Placeholder<R, E, A> | null | void,
+  ): Fx.Fx<R, E, A> {
+    if (Fx.isFx<R, E, A>(placeholder)) {
+      return placeholder
+    }
+
+    if (Effect.isEffect(placeholder)) {
+      return Fx.fromEffect(placeholder as Effect.Effect<R, E, A>)
+    }
+
+    return Fx.succeed(placeholder as A)
+  }
+
+  export function asRef<R, E, A>(
+    placeholder: Placeholder<R, E, A> | null | undefined,
+  ): Effect.Effect<Scope.Scope | R, never, Fx.RefSubject<E, A>> {
+    return Fx.asRef(asFx(placeholder))
+  }
 }
 
 declare global {
@@ -178,6 +204,9 @@ declare global {
       Placeholder.ErrorsOf<T>,
       ReadonlyArray<Placeholder.ValuesOf<T>>
     > {}
+
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  export interface Object extends Placeholder<never, never, Object> {}
   // export interface Function extends Placeholder {} // TODO: Utilize for directives??
 
   // DOM types

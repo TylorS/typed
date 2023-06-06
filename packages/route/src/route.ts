@@ -27,9 +27,9 @@ export interface Route<in out P extends string> {
   ) => Route<Path.PathJoin<readonly [P, P2]>>
 }
 
-export type MakeRoute<P extends string> = [keyof Path.ParamsOf<P>] extends [never]
-  ? () => P
-  : <const Params extends Path.ParamsOf<P>>(params: Params) => Path.Interpolate<P, Params>
+export type MakeRoute<P extends string> = <const Params extends Path.ParamsOf<P>>(
+  params: Params,
+) => Path.Interpolate<P, Params>
 
 export function Route<const P extends string>(path: P, options?: RouteOptions): Route<P> {
   const match = Route.makeMatch(path, options?.match)

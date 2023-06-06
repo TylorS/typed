@@ -1,5 +1,7 @@
+export * from './Link.js'
 export * from './Match.js'
 export * from './Matcher.js'
 export * from './matchRoutes.js'
+export * from './Navigation.js'
 export * from './Redirect.js'
 export * from './Router.js'

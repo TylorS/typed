@@ -9,6 +9,7 @@ import type { Equivalence } from '@effect/data/typeclass/Equivalence'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
+import * as Fiber from '@effect/io/Fiber'
 import type { FiberId } from '@effect/io/Fiber/Id'
 import * as Hub from '@effect/io/Hub'
 import * as Layer from '@effect/io/Layer'
@@ -594,6 +595,12 @@ export const observe: {
 
 export const drain: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R | Scope.Scope, E, void> =
   methodWithTrace((trace) => (fx) => internal.drain(fx).traced(trace))
+
+export const forkScoped: <R, E, A>(
+  fx: Fx<R, E, A>,
+) => Effect.Effect<R | Scope.Scope, never, Fiber.RuntimeFiber<E, void>> = methodWithTrace(
+  (trace) => (fx) => internal.forkScoped(fx).traced(trace),
+)
 
 export const onExit: {
   <E, R2, E2, B>(f: (exit: Exit.Exit<E, void>) => Effect.Effect<R2, E2, B>): <R, A>(

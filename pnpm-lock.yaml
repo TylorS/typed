@@ -565,6 +565,9 @@ importers:
       '@typed/fx':
         specifier: workspace:*
         version: link:../fx
+      '@typed/html':
+        specifier: workspace:*
+        version: link:../html
       '@typed/navigation':
         specifier: workspace:*
         version: link:../navigation
