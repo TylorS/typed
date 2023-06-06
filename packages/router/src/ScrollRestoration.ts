@@ -6,6 +6,7 @@ import * as Navigation from '@typed/navigation'
 
 export interface ScrollRestorationParams<A extends HTMLElement> {
   readonly ref: ElementRef<A>
+  readonly behavior?: ScrollBehavior
 }
 
 export type ScrollRestorationState = {
@@ -37,7 +38,11 @@ export function ScrollRestoration<A extends HTMLElement>(
               if (scrollRestoration) {
                 const el = yield* $(params.ref.getElement)
 
-                el.scrollTo(scrollRestoration.scrollLeft, scrollRestoration.scrollTop)
+                el.scroll({
+                  left: scrollRestoration.scrollLeft,
+                  top: scrollRestoration.scrollTop,
+                  behavior: params.behavior || 'smooth',
+                })
               }
 
               return
@@ -64,6 +69,7 @@ export function ScrollRestoration<A extends HTMLElement>(
               )
             }
           }),
+          // If there is not Element to scroll, ignore the error
           'NoSuchElementException',
           Effect.succeed,
         ),
