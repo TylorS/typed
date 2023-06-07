@@ -6,7 +6,7 @@ export function getElementsFromRendered<T extends Rendered>(element: T): Readonl
   if (isWire(element)) return getElementsFromRendered(element.valueOf() as DocumentFragment)
   if (isElement(element)) return [element]
   if (isDocumentFragment(element))
-    return Array.from(new Set(Array.from(element.childNodes).flatMap(getElementsFromRendered)))
+    return Array.from(new Set(Array.from(element.childNodes).filter(isElement)))
 
   // Must be a Node
   if (element.parentElement) return [element.parentElement]
