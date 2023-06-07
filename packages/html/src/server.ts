@@ -17,8 +17,12 @@ import { collectPartsAndValues } from './collectPartsAndValues.js'
 import { unwrapRenderable } from './makeUpdate.js'
 import { parseTemplate } from './parseTemplate.js'
 import { Part } from './part/Part.js'
-import { trimEmptyQuotes } from './part/templateHelpers.js'
+import { addDataTypedAttributes, trimEmptyQuotes } from './part/templateHelpers.js'
 import { getRenderHoleContext } from './render.js'
+
+export interface ServerOptions {
+  readonly hydrate?: boolean
+}
 
 export const server: Layer.Layer<Document | RenderContext, never, RenderTemplate> =
   RenderTemplate.layer(
@@ -47,6 +51,7 @@ export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>
     const { document, renderContext } = yield* $(getRenderHoleContext)
     const { templateCache } = renderContext
     const isSvg = options?.isSvg ?? false
+    const isStatic = renderContext.environment === 'static'
 
     if (!templateCache.has(template)) {
       templateCache.set(template, parseTemplate(template, document, isSvg))
@@ -56,7 +61,7 @@ export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>
     const { html, partsToRenderable } = collectPartsAndValues(document, cache, values)
 
     if (partsToRenderable.size === 0) {
-      return Fx.succeed(FullHtml(html()))
+      return Fx.succeed(FullHtml(isStatic ? html() : addDataTypedAttributes(html())))
     }
 
     return Fx.Fx<_R, _E, RenderEvent>(<R2>(sink: Fx.Sink<R2, _E, RenderEvent>) =>
@@ -79,12 +84,12 @@ export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>
 
               indexToHtml.delete(index)
 
+              const baseHtml = trimEmptyQuotes(isLast ? html + template[index + 1] : html)
+              const fullHtml =
+                index === 0 && !isStatic ? addDataTypedAttributes(baseHtml) : baseHtml
+
               // Emit our HTML
-              yield* $(
-                sink.event(
-                  PartialHtml(trimEmptyQuotes(isLast ? html + template[index + 1] : html), isLast),
-                ),
-              )
+              yield* $(sink.event(PartialHtml(fullHtml, isLast)))
 
               // When a fiber is completed we can interrupt the underlying Fiber
               yield* $(Fiber.interruptFork(fibers[index]))
@@ -103,27 +108,40 @@ export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>
         function renderPart<R, E>(index: number, part: Part<R, E>) {
           let isFirst = true
 
-          const getFirst = (html: string) => {
+          const getFirst = (html: string, includeDataTyped: boolean) => {
             if (isFirst) {
               isFirst = false
-              return template[index] + html
+              const base = template[index] + html
+
+              if (includeDataTyped && !isStatic && index > 0 && part._tag === 'Node') {
+                return addDataTypedAttributes(base)
+              }
+
+              return base
             }
             return html
+          }
+
+          const getComment = () => {
+            if (!isStatic && part._tag === 'Node') {
+              return `<!--${part.comment.nodeValue}-->`
+            }
+            return ''
           }
 
           const handleRenderEvent = (value: HtmlRenderEvent) =>
             Effect.gen(function* ($) {
               if (value._tag === 'FullHtml') {
-                indexToHtml.set(index, getFirst(value.html))
+                indexToHtml.set(index, getFirst(value.html, false) + getComment())
 
                 yield* $(emitHtml(index))
               } else {
                 const currentHtml = pendingHtml.get(index) ?? ''
-                const html = currentHtml + getFirst(value.html)
+                const html = currentHtml + getFirst(value.html, true)
 
                 if (value.isLast) {
                   pendingHtml.delete(index)
-                  indexToHtml.set(index, html)
+                  indexToHtml.set(index, html + getComment())
 
                   yield* $(emitHtml(index))
                 } else {
@@ -144,7 +162,7 @@ export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>
               } else {
                 yield* $(part.update(value))
 
-                indexToHtml.set(index, part.getHTML(template[index]))
+                indexToHtml.set(index, part.getHTML(template[index], isStatic))
 
                 yield* $(emitHtml(index))
               }
@@ -158,7 +176,7 @@ export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>
             yield* $(
               part.subscribe((part) =>
                 Effect.suspend(() => {
-                  indexToHtml.set(index, part.getHTML(template[index]))
+                  indexToHtml.set(index, part.getHTML(template[index], isStatic))
 
                   return emitHtml(index)
                 }),

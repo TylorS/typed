@@ -69,8 +69,12 @@ export class NodePart extends BasePart<never, never> {
   /**
    * @internal
    */
-  getHTML(template: string): string {
-    return `${template}${this.nodes.map(nodeToHtml).join('') + nodeToHtml(this.comment)}`
+  getHTML(template: string, isStatic: boolean): string {
+    const base = `${template}${this.nodes.map(nodeToHtml).join('')}`
+
+    if (!isStatic) return `${base}${nodeToHtml(this.comment)}`
+
+    return base
   }
 }
 

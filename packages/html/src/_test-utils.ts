@@ -14,6 +14,7 @@ import { RenderContext } from './RenderContext.js'
 import { RenderEvent } from './RenderEvent.js'
 import { dom } from './dom.js'
 import { Rendered } from './render.js'
+import { renderToHtml } from './renderHtml.js'
 import { server } from './server.js'
 
 export const testRenderTemplate = <R, E, Y extends Effect.EffectGen<any, any, any>, O>(
@@ -116,4 +117,20 @@ function trimExtraSpaces(s: string) {
     .replace(/>(\s+)/g, '>')
     .replace(/(\s+)</g, '<')
     .replace(/(\s+)>/g, '>')
+}
+
+export const testRenderHtml = <R, E>(
+  template: Fx.Fx<R, E, RenderEvent>,
+  environment: RenderContext['environment'] = 'test',
+) => {
+  const window = makeServerWindow({ url: 'https://example.com' })
+
+  return pipe(
+    template,
+    renderToHtml,
+    Effect.provideSomeLayer(server),
+    Effect.provideSomeContext(makeDomServices(window, window)),
+    RenderContext.provide(RenderContext.make(environment)),
+    Effect.scoped,
+  )
 }

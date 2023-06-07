@@ -91,7 +91,13 @@ function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>>>(
                     yield* $(part.update(value.rendered))
                     yield* $(emitDom)
                   } else {
-                    yield* $(sink.event(value))
+                    // If the DOM here has been emitted, broadcast the update
+                    if (hasEmittedDom) {
+                      yield* $(sink.event(value))
+                    } else {
+                      // Otherwise just run the update here
+                      yield* $(value.update)
+                    }
                   }
                 } else {
                   if (hasEmittedDom) {

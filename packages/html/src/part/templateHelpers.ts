@@ -17,3 +17,9 @@ export function replaceAttribute(name: string, value: string, template: string) 
 export function trimEmptyQuotes(template: string) {
   return template.replace(/^"\s?"/g, '')
 }
+
+const DATA_TYPED_ATTR = ' data-typed="true"'
+
+export function addDataTypedAttributes(template: string) {
+  return template.replace(/<([a-z]+)([^>]*)/, `<$1${DATA_TYPED_ATTR}$2`)
+}
