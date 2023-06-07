@@ -1,7 +1,7 @@
-import { equals } from '@effect/data/Equal'
 import * as Option from '@effect/data/Option'
 import type { Equivalence } from '@effect/data/typeclass/Equivalence'
 import * as Effect from '@effect/io/Effect'
+import fastDeepEqual from 'fast-deep-equal/es6'
 
 import { Fx, Sink } from './Fx.js'
 
@@ -27,5 +27,5 @@ export function skipRepeatsWith<R, E, A>(fx: Fx<R, E, A>, eq: Equivalence<A>): F
 }
 
 export function skipRepeats<R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> {
-  return skipRepeatsWith(fx, equals)
+  return skipRepeatsWith(fx, fastDeepEqual)
 }

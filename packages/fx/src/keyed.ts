@@ -4,11 +4,14 @@ import * as ReadonlyArray from '@effect/data/ReadonlyArray'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
+import * as Scope from '@effect/io/Scope'
 
 import { Fx, Sink } from './Fx.js'
 import { RefSubject } from './RefSubject.js'
+import { makeRef } from './RefSubject2.js'
 import { Subject, makeHoldSubject } from './Subject.js'
 import { ScopedFork, withScopedFork } from './helpers.js'
+import { skipRepeats } from './skipRepeats.js'
 
 export function keyed<R, E, A, R2, E2, B, C>(
   fx: Fx<R, E, readonly A[]>,
@@ -16,13 +19,13 @@ export function keyed<R, E, A, R2, E2, B, C>(
   getKey: (a: A) => C,
 ): Fx<R | R2, E | E2, readonly B[]> {
   return Fx(<R3>(sink: Sink<R3, E | E2, readonly B[]>) =>
-    withScopedFork((fork) =>
+    withScopedFork((fork, scope) =>
       Effect.gen(function* ($) {
         const state = createKeyedState<A, B, C>()
         const emit = emitWhenReady(state, getKey)
 
         // Let output emit to the sink, it is closes by the surrounding scope
-        yield* $(fork(state.output.run(sink)))
+        yield* $(fork(skipRepeats(state.output).run(sink)))
 
         // Listen to the input and update the state
         yield* $(
@@ -35,6 +38,7 @@ export function keyed<R, E, A, R2, E2, B, C>(
                   getKey,
                   f,
                   fork,
+                  scope,
                   emit,
                   error: sink.error,
                 }),
@@ -78,6 +82,7 @@ function updateState<A, B, C, R2, E2, R3>({
   updated,
   f,
   fork,
+  scope,
   emit,
   error,
   getKey,
@@ -86,31 +91,36 @@ function updateState<A, B, C, R2, E2, R3>({
   updated: readonly A[]
   f: (fx: RefSubject<never, A>) => Fx<R2, E2, B>
   fork: ScopedFork
+  scope: Scope.Scope
   emit: Effect.Effect<never, never, void>
   error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
   getKey: (a: A) => C
 }) {
-  return Effect.gen(function* ($) {
-    const { added, removed, unchanged } = diffValues(state, updated, getKey)
+  return Effect.provideService(
+    Effect.gen(function* ($) {
+      const { added, removed, unchanged } = diffValues(state, updated, getKey)
 
-    // Remove values that are no longer in the stream
-    yield* $(Effect.forEachDiscard(removed, (key) => removeValue(state, key)))
+      // Remove values that are no longer in the stream
+      yield* $(Effect.forEachDiscard(removed, (key) => removeValue(state, key)))
 
-    // Update values that are still in the stream
-    yield* $(Effect.forEachParDiscard(unchanged, (value) => updateValue(state, value, getKey)))
+      // Update values that are still in the stream
+      yield* $(Effect.forEachParDiscard(unchanged, (value) => updateValue(state, value, getKey)))
 
-    // Add values that are new to the stream
-    yield* $(
-      Effect.forEachParDiscard(added, (value) =>
-        addValue({ state, value, f, fork, emit, error, getKey }),
-      ),
-    )
+      // Add values that are new to the stream
+      yield* $(
+        Effect.forEachParDiscard(added, (value) =>
+          addValue({ state, value, f, fork, emit, error, getKey }),
+        ),
+      )
 
-    // If nothing was added, emit the current values
-    if (added.length === 0) {
-      yield* $(emit)
-    }
-  })
+      // If nothing was added, emit the current values
+      if (added.length === 0) {
+        yield* $(emit)
+      }
+    }),
+    Scope.Scope,
+    scope,
+  )
 }
 
 function diffValues<A, B, C>(
@@ -186,7 +196,7 @@ function addValue<A, B, C, R2, E2, R3>({
 }) {
   return Effect.gen(function* ($) {
     const key = getKey(value)
-    const subject = RefSubject.unsafeMake<never, A>(Effect.succeed(value))
+    const subject = yield* $(makeRef<never, never, A>(Effect.succeed(value)))
     const fx = f(subject)
     const fiber = yield* $(
       fork(

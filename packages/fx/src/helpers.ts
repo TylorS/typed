@@ -10,10 +10,12 @@ export type ScopedFork = <R2, E2, B>(
   effect: Effect.Effect<R2, E2, B>,
 ) => Effect.Effect<R2, never, Fiber.RuntimeFiber<E2, B>>
 
-export function withScopedFork<R, E, A>(f: (fork: ScopedFork) => Effect.Effect<R, E, A>) {
+export function withScopedFork<R, E, A>(
+  f: (fork: ScopedFork, scope: Scope.Scope) => Effect.Effect<R, E, A>,
+) {
   return Effect.acquireUseRelease(
     Scope.make(),
-    (scope) => f(Effect.forkIn(scope)),
+    (scope) => f(Effect.forkIn(scope), scope),
     (scope, exit) => Scope.close(scope, exit),
   )
 }
