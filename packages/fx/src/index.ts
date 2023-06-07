@@ -1153,4 +1153,7 @@ export const toEnqueue: {
 
 export * from './toStream.js'
 export * from './RefSubject.js'
+export * from './Computed.js'
+export * from './Filtered.js'
+export * from './RefTransform.js'
 export * from './Subject.js'
