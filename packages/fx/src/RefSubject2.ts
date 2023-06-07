@@ -23,6 +23,7 @@ import { Subject } from './Subject.js'
 import { combineAll } from './combineAll.js'
 import { HoldFx } from './hold.js'
 import { never } from './never.js'
+import { struct } from './struct.js'
 
 const refVariance = {
   _R: identity,
@@ -397,6 +398,13 @@ function makeTransformMethods<E, A>(
 }
 
 const placeholders = {
+  _tag: 'Commit',
+  [Effect.EffectTypeId]: refVariance,
+  /* I Don't really want these Stream IDs to be here, but
+     @effect/stream uses module augmentation on Effect */
+  [SinkTypeId]: refVariance as any,
+  [ChannelTypeId]: refVariance as any,
+  [StreamTypeId]: refVariance,
   i0: undefined,
   i1: undefined,
   i2: undefined,
@@ -426,17 +434,10 @@ function makeEffectMethods<E, A>(
 
   return Object.assign(
     {
-      _tag: 'Commmit',
-      [Effect.EffectTypeId]: refVariance,
       traced,
       commit() {
         return get
       },
-      /* I Don't really want these Stream IDs to be here, but
-           @effect/stream uses module augmentation on Effect */
-      [SinkTypeId]: refVariance as any,
-      [ChannelTypeId]: refVariance as any,
-      [StreamTypeId]: refVariance,
     } as const,
     placeholders,
   )
@@ -644,7 +645,7 @@ function structRefPrimitive<const Refs extends Readonly<Record<string, RefSubjec
   type _E = Fx.ErrorsOf<Refs[string]>
   type _A = { readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]> }
 
-  const hold = new HoldFx(combineAll(...refs) as any as Fx<never, _E, _A>)
+  const hold = new HoldFx(struct(refs)) as HoldFx<never, _E, _A>
   const eq = Equivalence.struct(mapRecord(refs, (ref) => ref.eq))
   const get = Effect.allPar(mapRecord(refs, (ref) => ref.get)) as Effect.Effect<never, _E, _A>
 
