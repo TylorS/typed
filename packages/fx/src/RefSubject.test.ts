@@ -7,7 +7,7 @@ import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import { describe, it } from 'vitest'
 
-import { makeRef, RefSubject } from './RefSubject.js'
+import { makeRef, RefSubject } from './RefSubject2.js'
 import { toChunk } from './toChunk.js'
 
 describe('RefSubject', () => {

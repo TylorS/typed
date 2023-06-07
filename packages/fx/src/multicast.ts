@@ -24,8 +24,10 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     _A: identity,
   }
 
-  protected observers: Array<MulticastObserver<any, E, A>> = []
-  protected fiber: Fiber.RuntimeFiber<never, void> | undefined
+  /**@internal */
+  public observers: Array<MulticastObserver<any, E, A>> = []
+  /**@internal */
+  public fiber: Fiber.RuntimeFiber<never, void> | undefined
 
   constructor(readonly fx: Fx<R, E, A>) {
     this.run = this.run.bind(this)

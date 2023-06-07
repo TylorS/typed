@@ -12,7 +12,7 @@ export function hold<R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> {
 }
 
 export class HoldFx<R, E, A> extends MulticastFx<R, E, A> {
-  protected current = MutableRef.make(Option.none<A>())
+  readonly current = MutableRef.make(Option.none<A>())
 
   constructor(public fx: Fx<R, E, A>) {
     super(fx)

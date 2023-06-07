@@ -1,3 +1,4 @@
+import * as Context from '@effect/data/Context'
 import type { Trace } from '@effect/data/Debug'
 import { methodWithTrace } from '@effect/data/Debug'
 import { equals } from '@effect/data/Equal'
@@ -8,7 +9,6 @@ import * as MutableRef from '@effect/data/MutableRef'
 import * as Option from '@effect/data/Option'
 import * as RR from '@effect/data/ReadonlyRecord'
 import * as Equivalence from '@effect/data/typeclass/Equivalence'
-import * as Cause from '@effect/io/Cause'
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
@@ -17,26 +17,28 @@ import { ChannelTypeId } from '@effect/stream/Channel'
 import { SinkTypeId } from '@effect/stream/Sink'
 import { StreamTypeId } from '@effect/stream/Stream'
 
+import { Computed, ComputedImpl, ComputedTypeId } from './Computed.js'
+import { Filtered, FilteredImpl } from './Filtered.js'
 import { Fx, Sink, isFx, FxTypeId } from './Fx.js'
+import { RefTransform, RefTransformImpl } from './RefTransform.js'
 import type { Subject } from './Subject.js'
 import { combineAll } from './combineAll.js'
-import { compact } from './filterMap.js'
 import { HoldFx } from './hold.js'
 import { map } from './map.js'
-import { multicast } from './multicast.js'
 import { never } from './never.js'
 import { drain } from './observe.js'
-import { switchMapEffect } from './switchMap.js'
 import { switchMatchCauseEffect } from './switchMatch.js'
 
-export const RefSubjectTypeId = Symbol.for('./RefSubject')
+export const RefSubjectTypeId = Symbol.for('@typed/fx/RefSubject')
 export type RefSubjectTypeId = typeof RefSubjectTypeId
 
-export interface RefSubject<in out E, in out A> extends Subject<E, A>, Effect.Effect<never, E, A> {
+export interface RefSubject<in out E, in out A>
+  extends Subject<E, A>,
+    Effect.Effect<never, E, A>,
+    Computed<never, E, A> {
   readonly [RefSubjectTypeId]: RefSubjectTypeId
 
   readonly eq: Equivalence.Equivalence<A>
-  readonly get: Effect.Effect<never, E, A>
 
   readonly modifyEffect: <R2, E2, B>(
     f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>,
@@ -54,49 +56,7 @@ export interface RefSubject<in out E, in out A> extends Subject<E, A>, Effect.Ef
 
   readonly delete: Effect.Effect<never, E, Option.Option<A>>
 
-  readonly mapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) => Computed<R2, E | E2, B>
-
-  readonly map: <B>(f: (a: A) => B) => Computed<never, E, B>
-
-  readonly filterMapEffect: <R2, E2, B>(
-    f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>,
-  ) => Computed<R2, E | E2, B>
-
-  readonly filterMap: <B>(f: (a: A) => Option.Option<B>) => Computed<never, E, B>
-
-  readonly filterEffect: <R2, E2>(
-    f: (a: A) => Effect.Effect<R2, E2, boolean>,
-  ) => Computed<R2, E | E2, A>
-
-  readonly filter: (f: (a: A) => boolean) => Computed<never, E, A>
-
   readonly addTrace: (trace: Trace) => RefSubject<E, A>
-}
-
-export interface Computed<R, E, A>
-  extends Fx<R, E, A>,
-    Effect.Effect<R, E | Cause.NoSuchElementException, A> {
-  readonly get: Effect.Effect<R, E | Cause.NoSuchElementException, A>
-
-  readonly mapEffect: <R2, E2, B>(
-    f: (a: A) => Effect.Effect<R2, E2, B>,
-  ) => Computed<R | R2, E | E2, B>
-
-  readonly map: <B>(f: (a: A) => B) => Computed<R, E, B>
-
-  readonly filterMapEffect: <R2, E2, B>(
-    f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>,
-  ) => Computed<R | R2, E | E2, B>
-
-  readonly filterMap: <B>(f: (a: A) => Option.Option<B>) => Computed<R, E, B>
-
-  readonly filterEffect: <R2, E2>(
-    f: (a: A) => Effect.Effect<R2, E2, boolean>,
-  ) => Computed<R | R2, E | E2, A>
-
-  readonly filter: (f: (a: A) => boolean) => Computed<R, E, A>
-
-  readonly addTrace: (trace: Trace) => Computed<R, E, A>
 }
 
 export function makeRef<R, E, A>(
@@ -104,8 +64,12 @@ export function makeRef<R, E, A>(
   eq: Equivalence.Equivalence<A> = equals,
 ): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>> {
   return Effect.gen(function* (_) {
-    const context = yield* _(Effect.context<R>())
-    const ref = RefSubject.unsafeMake(Effect.provideContext(effect, context), eq)
+    const context = yield* _(Effect.context<R | Scope.Scope>())
+    const ref = RefSubject.unsafeMake(
+      Effect.provideContext(effect, context),
+      Context.get(context, Scope.Scope),
+      eq,
+    )
 
     // Ensure underlying Fiber is interrupted when scope closes
     yield* _(Effect.addFinalizer(() => ref.end()))
@@ -154,7 +118,6 @@ export namespace RefSubject {
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }
   > {
-    //
     return new TupleRefSubjectImpl(subjects) as unknown as RefSubject<
       Fx.ErrorsOf<S[number]>,
       {
@@ -171,7 +134,6 @@ export namespace RefSubject {
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }
   > {
-    //
     return new StructRefSubjectImpl(subjects) as unknown as RefSubject<
       Fx.ErrorsOf<S[keyof S]>,
       {
@@ -204,10 +166,10 @@ export namespace RefSubject {
 
   export function unsafeMake<E, A>(
     get: Effect.Effect<never, E, A>,
+    scope: Scope.Scope,
     eq: Equivalence.Equivalence<A> = equals,
   ): RefSubject<E, A> {
-    //
-    return new RefSubjectImpl(get, eq) as unknown as RefSubject<E, A>
+    return new RefSubjectImpl(get, eq, scope)
   }
 }
 
@@ -217,14 +179,13 @@ const refSubjectVariant = {
   _A: identity,
 }
 
-//
 class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, A> {
   readonly _tag = 'Commit'
-  public i2: any = undefined
   public trace: Trace = undefined;
 
   readonly [Effect.EffectTypeId] = refSubjectVariant;
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId;
+  readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId;
 
   /* I Don't really want this to be here */
   readonly [SinkTypeId] = refSubjectVariant as any;
@@ -237,7 +198,11 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
 
   readonly eq: Equivalence.Equivalence<A>
 
-  constructor(readonly i0: Effect.Effect<never, E, A>, readonly i1: Equivalence.Equivalence<A>) {
+  constructor(
+    readonly i0: Effect.Effect<never, E, A>,
+    readonly i1: Equivalence.Equivalence<A>,
+    readonly i2: Scope.Scope,
+  ) {
     super(never<E, A>())
 
     this.modifyEffect = this.modifyEffect.bind(this)
@@ -262,10 +227,9 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
 
   readonly addTrace = (trace: Trace): RefSubject<E, A> => {
     if (trace) {
-      //
       return new TracedRefSubjectImpl(this, trace)
     }
-    //
+
     return this
   }
 
@@ -305,7 +269,7 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
                 this.lock(
                   Effect.uninterruptibleMask((restore) =>
                     pipe(
-                      Effect.forkDaemon(restore(this.i0)),
+                      Effect.forkIn(restore(this.i0), this.i2),
                       Effect.tap((fiber) =>
                         Effect.sync(() => MutableRef.set(this.initializeFiber, Option.some(fiber))),
                       ),
@@ -372,28 +336,60 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
     return Effect.succeed<Option.Option<A>>(current)
   })
 
-  readonly filterMapEffect: RefSubject<E, A>['filterMapEffect'] = <R2, E2, B>(
+  filterMapEffect<R2, E2, B>(
     f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>,
-  ) => new ComputedImpl(this as any as Computed<never, E, A>, f)
+  ): Filtered<R2, E | E2, B> {
+    return new FilteredImpl(this, f)
+  }
 
-  readonly filterMap: RefSubject<E, A>['filterMap'] = (f) =>
-    this.filterMapEffect((a) => Effect.sync(() => f(a)))
+  filterMap<B>(f: (a: A) => Option.Option<B>): Filtered<never, E, B> {
+    return this.filterMapEffect((a) => Effect.sync(() => f(a)))
+  }
 
-  readonly filterEffect: RefSubject<E, A>['filterEffect'] = <R2, E2>(
-    predicate: (a: A) => Effect.Effect<R2, E2, boolean>,
-  ) =>
-    this.filterMapEffect((a) =>
-      Effect.map(predicate(a), (b) => (b ? Option.some(a) : Option.none())),
+  filterEffect<R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): Filtered<R2, E | E2, A> {
+    return this.filterMapEffect((a) =>
+      Effect.map(f(a), (b) => (b ? Option.some(a) : Option.none())),
     )
+  }
 
-  readonly filter: RefSubject<E, A>['filter'] = (predicate) =>
-    this.filterEffect((a) => Effect.sync(() => predicate(a)))
+  filter(f: (a: A) => boolean): Filtered<never, E, A> {
+    return this.filterEffect((a) => Effect.sync(() => f(a)))
+  }
 
-  readonly mapEffect: RefSubject<E, A>['mapEffect'] = <R2, E2, B>(
-    f: (a: A) => Effect.Effect<R2, E2, B>,
-  ) => this.filterMapEffect((a) => Effect.map(f(a), Option.some))
+  filterNotEffect<R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): Filtered<R2, E | E2, A> {
+    return this.filterEffect((a) => Effect.map(f(a), (b) => !b))
+  }
 
-  readonly map: RefSubject<E, A>['map'] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)));
+  filterNot(f: (a: A) => boolean): Filtered<never, E, A> {
+    return this.filterNotEffect((a) => Effect.sync(() => f(a)))
+  }
+
+  mapEffect<R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): Computed<R2, E | E2, B> {
+    return new ComputedImpl(this, f)
+  }
+
+  map<B>(f: (a: A) => B): Computed<never, E, B> {
+    return this.mapEffect((a) => Effect.sync(() => f(a)))
+  }
+
+  transform<R3, E3, C>(
+    f: (fx: Fx<never, E, A>) => Fx<R3, E3, C>,
+  ): RefTransform<R3, E3, C, never, E, A> {
+    return this.transformBoth(f, identity)
+  }
+
+  transformGet<R3, E3, C>(
+    f: (effect: Effect.Effect<never, E, A>) => Effect.Effect<R3, E3, C>,
+  ): RefTransform<never, E, A, R3, E3, C> {
+    return this.transformBoth(identity, f)
+  }
+
+  transformBoth<R3, E3, C, R4, E4, D>(
+    f: (fx: Fx<never, E, A>) => Fx<R3, E3, C>,
+    g: (effect: Effect.Effect<never, E, A>) => Effect.Effect<R4, E4, D>,
+  ): RefTransform<R3, E3, C, R4, E4, D> {
+    return new RefTransformImpl(this, f, g)
+  }
 
   [Equal.symbol](that: unknown) {
     return this === that
@@ -405,9 +401,7 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
 
   traced(trace: Trace): Effect.Effect<never, E, A> {
     if (trace) {
-      const traced = new RefSubjectImpl(this.i0, this.i1)
-      traced.trace = trace
-      return traced as any
+      return new TracedRefSubjectImpl(this, trace)
     }
 
     return this as any
@@ -418,7 +412,6 @@ class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, 
   }
 }
 
-//
 class TracedRefSubjectImpl<E, A> implements RefSubject<E, A> {
   readonly _tag = 'Commit'
   public i2: any = undefined
@@ -462,29 +455,13 @@ class TracedRefSubjectImpl<E, A> implements RefSubject<E, A> {
 
   readonly set: RefSubject<E, A>['set'] = (a) => this.i0.set(a).traced(this.i1)
 
-  readonly delete: RefSubject<E, A>['delete'] = this.i0.delete.traced(this.i1)
-
-  readonly filterMapEffect: RefSubject<E, A>['filterMapEffect'] = (f) =>
-    this.i0.filterMapEffect(f).addTrace(this.i1)
-
-  readonly filterMap: RefSubject<E, A>['filterMap'] = (f) => this.i0.filterMap(f).addTrace(this.i1)
-
-  readonly filterEffect: RefSubject<E, A>['filterEffect'] = (f) =>
-    this.i0.filterEffect(f).addTrace(this.i1)
-
-  readonly filter: RefSubject<E, A>['filter'] = (f) => this.i0.filter(f).addTrace(this.i1)
-
-  readonly mapEffect: RefSubject<E, A>['mapEffect'] = (f) => this.i0.mapEffect(f).addTrace(this.i1)
-
-  readonly map: RefSubject<E, A>['map'] = (f) => this.i0.map(f).addTrace(this.i1);
+  readonly delete: RefSubject<E, A>['delete'] = this.i0.delete.traced(this.i1);
 
   [Equal.symbol] = this.i0[Equal.symbol];
   [Hash.symbol] = this.i0[Hash.symbol]
 
-  //
   readonly addTrace: (trace: Trace) => RefSubject<E, A> = (trace) => {
     if (trace) {
-      //
       return new TracedRefSubjectImpl(this, trace)
     }
 
@@ -493,7 +470,6 @@ class TracedRefSubjectImpl<E, A> implements RefSubject<E, A> {
 
   traced(trace: Trace): Effect.Effect<never, E, A> {
     if (trace) {
-      //
       return new TracedRefSubjectImpl(this, trace) as any
     }
 
@@ -505,7 +481,6 @@ class TracedRefSubjectImpl<E, A> implements RefSubject<E, A> {
   }
 }
 
-//
 class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
   extends HoldFx<
     never,
@@ -640,53 +615,7 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
         readonly [K in keyof S]: Fx.OutputOf<S[K]>
       }>
     >(current)
-  })
-
-  //
-  readonly filterMapEffect: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['filterMapEffect'] = (f) => new ComputedImpl(this, f) as any
-
-  readonly filterMap: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['filterMap'] = (f) => this.filterMapEffect((a) => Effect.sync(() => f(a)))
-
-  readonly filterEffect: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['filterEffect'] = (predicate) =>
-    this.filterMapEffect((a) =>
-      Effect.map(predicate(a), (b) => (b ? Option.some(a) : Option.none())),
-    )
-
-  readonly filter: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['filter'] = (predicate) => this.filterEffect((a) => Effect.sync(() => predicate(a)))
-
-  readonly mapEffect: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['mapEffect'] = (f) => this.filterMapEffect((a) => Effect.map(f(a), Option.some))
-
-  readonly map: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['map'] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)));
+  });
 
   [Equal.symbol](that: unknown) {
     return this === that
@@ -705,11 +634,9 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
     }
   > => {
     if (trace) {
-      //
       return new TracedRefSubjectImpl(this, trace)
     }
 
-    //
     return this
   }
 
@@ -720,13 +647,7 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }
   > {
-    if (trace) {
-      const traced = new TupleRefSubjectImpl(this.i0)
-      traced.trace = trace
-      return traced as any
-    }
-
-    return this as any
+    return this.addTrace(trace)
   }
 
   commit(): Effect.Effect<
@@ -740,7 +661,6 @@ class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
   }
 }
 
-//
 class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
   extends HoldFx<
     never,
@@ -878,53 +798,7 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
         readonly [K in keyof S]: Fx.OutputOf<S[K]>
       }>
     >(current)
-  })
-
-  //
-  readonly filterMapEffect: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['filterMapEffect'] = (f) => new ComputedImpl(this, f) as any
-
-  readonly filterMap: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['filterMap'] = (f) => this.filterMapEffect((a) => Effect.sync(() => f(a)))
-
-  readonly filterEffect: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['filterEffect'] = (predicate) =>
-    this.filterMapEffect((a) =>
-      Effect.map(predicate(a), (b) => (b ? Option.some(a) : Option.none())),
-    )
-
-  readonly filter: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['filter'] = (predicate) => this.filterEffect((a) => Effect.sync(() => predicate(a)))
-
-  readonly mapEffect: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['mapEffect'] = (f) => this.filterMapEffect((a) => Effect.map(f(a), Option.some))
-
-  readonly map: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['map'] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)));
+  });
 
   [Equal.symbol](that: unknown) {
     return this === that
@@ -943,10 +817,9 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
     }
   > => {
     if (trace) {
-      //
       return new TracedRefSubjectImpl(this, trace)
     }
-    //
+
     return this
   }
 
@@ -957,13 +830,7 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
       readonly [K in keyof S]: Fx.OutputOf<S[K]>
     }
   > {
-    if (trace) {
-      const traced = new StructRefSubjectImpl(this.i0)
-      traced.trace = trace
-      return traced as any
-    }
-
-    return this as any
+    return this.addTrace(trace)
   }
 
   commit(): Effect.Effect<
@@ -974,150 +841,6 @@ class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
     }
   > {
     return this.get.traced(this.trace)
-  }
-}
-
-//
-class ComputedImpl<R, E, A, R2, E2, B> implements Computed<R | R2, E | E2, B> {
-  readonly [FxTypeId] = refSubjectVariant
-
-  readonly _tag = 'Commit'
-  public trace: Trace = undefined;
-
-  readonly [Effect.EffectTypeId] = refSubjectVariant;
-  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId;
-  /* I Don't really want this to be here */
-  readonly [SinkTypeId] = refSubjectVariant as any;
-  readonly [ChannelTypeId] = refSubjectVariant as any;
-  readonly [StreamTypeId] = refSubjectVariant
-
-  readonly i2: Fx<R | R2, E | E2, B>
-
-  constructor(
-    readonly i0: Computed<R, E, A>,
-    readonly i1: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>,
-  ) {
-    // Create a stable reference to derived Fx
-    this.i2 = multicast(compact(switchMapEffect(this.i0, this.i1)))
-  }
-
-  run<R3>(sink: Sink<R3, E | E2, B>) {
-    return this.i2.run(sink)
-  }
-
-  addTrace(trace: Trace): Computed<R | R2, E | E2, B> {
-    return new TracedComputed<R | R2, E | E2, B>(this, trace)
-  }
-
-  readonly get: Computed<R | R2, E | E2, B>['get'] = Effect.flatten(
-    Effect.flatMap(this.i0.get, this.i1),
-  )
-
-  readonly filterMapEffect: Computed<R | R2, E | E2, B>['filterMapEffect'] = <R3, E3, C>(
-    f: (b: B) => Effect.Effect<R3, E3, Option.Option<C>>,
-  ): Computed<R | R2 | R3, E | E2 | E3, C> =>
-    new ComputedImpl(this as Computed<R | R2, E | E2, B>, f)
-
-  readonly filterMap: Computed<R | R2, E | E2, B>['filterMap'] = (f) =>
-    this.filterMapEffect((a) => Effect.sync(() => f(a)))
-
-  readonly filterEffect: Computed<R | R2, E | E2, B>['filterEffect'] = (f) =>
-    this.filterMapEffect((a) => Effect.map(f(a), (b) => (b ? Option.some(a) : Option.none())))
-
-  readonly filter: Computed<R | R2, E | E2, B>['filter'] = (f) =>
-    this.filterEffect((a) => Effect.sync(() => f(a)))
-
-  readonly mapEffect: Computed<R | R2, E | E2, B>['mapEffect'] = <R3, E3, C>(
-    f: (b: B) => Effect.Effect<R3, E3, C>,
-  ): Computed<R | R2 | R3, E | E2 | E3, C> =>
-    this.filterMapEffect((a) => Effect.map(f(a), Option.some))
-
-  readonly map: Computed<R | R2, E | E2, B>['map'] = <C>(f: (b: B) => C) =>
-    this.mapEffect((a) => Effect.sync(() => f(a)));
-
-  [Equal.symbol](that: unknown) {
-    return this === that
-  }
-
-  [Hash.symbol]() {
-    return Hash.random(this)
-  }
-
-  traced(trace: Trace): Effect.Effect<R | R2, E | E2 | Cause.NoSuchElementException, B> {
-    if (trace) {
-      return this.commit().traced(trace)
-    }
-
-    return this as any
-  }
-
-  commit(): Effect.Effect<R | R2, E | E2 | Cause.NoSuchElementException, B> {
-    return this.get.traced(this.trace)
-  }
-}
-
-//
-class TracedComputed<R, E, A> implements Computed<R, E, A> {
-  readonly _tag = 'Commit'
-  readonly i2: any = undefined
-  readonly trace: Trace;
-
-  readonly [Effect.EffectTypeId] = refSubjectVariant;
-  readonly [FxTypeId] = refSubjectVariant;
-  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId;
-  /* I Don't really want this to be here */
-  readonly [SinkTypeId] = refSubjectVariant as any;
-  readonly [ChannelTypeId] = refSubjectVariant as any;
-  readonly [StreamTypeId] = refSubjectVariant
-
-  constructor(readonly i0: Computed<R, E, A>, readonly i1: Trace) {
-    this.trace = i1
-  }
-
-  run<R2>(sink: Sink<R2, E, A>) {
-    return this.i0.run(sink).traced(this.i1)
-  }
-
-  addTrace(trace: Trace): Computed<R, E, A> {
-    //
-    return new TracedComputed<R, E, A>(this, trace)
-  }
-
-  readonly get = this.i0.get.traced(this.i1)
-
-  readonly filterMapEffect: Computed<R, E, A>['filterMapEffect'] = <R2, E2, B>(
-    f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>,
-  ): Computed<R | R2, E | E2, B> => new ComputedImpl(this as Computed<R, E, A>, f)
-
-  readonly filterMap: Computed<R, E, A>['filterMap'] = (f) =>
-    this.filterMapEffect((a) => Effect.sync(() => f(a)))
-
-  readonly filterEffect: Computed<R, E, A>['filterEffect'] = (f) =>
-    this.filterMapEffect((a) => Effect.map(f(a), (b) => (b ? Option.some(a) : Option.none())))
-
-  readonly filter: Computed<R, E, A>['filter'] = (f) =>
-    this.filterEffect((a) => Effect.sync(() => f(a)))
-
-  readonly mapEffect: Computed<R, E, A>['mapEffect'] = <R2, E2, B>(
-    f: (a: A) => Effect.Effect<R2, E2, B>,
-  ): Computed<R | R2, E | E2, B> => this.filterMapEffect((a) => Effect.map(f(a), Option.some))
-
-  readonly map: Computed<R, E, A>['map'] = <B>(f: (a: A) => B) =>
-    this.mapEffect((a) => Effect.sync(() => f(a)));
-
-  [Equal.symbol] = this.i0[Equal.symbol];
-  [Hash.symbol] = this.i0[Hash.symbol]
-
-  traced(trace: Trace): Effect.Effect<R, E | Cause.NoSuchElementException, A> {
-    if (trace) {
-      return this.commit().traced(trace)
-    }
-
-    return this as any
-  }
-
-  commit(): Effect.Effect<R, E | Cause.NoSuchElementException, A> {
-    return this.get
   }
 }
 
