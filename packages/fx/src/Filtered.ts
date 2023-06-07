@@ -34,6 +34,11 @@ export interface Filtered<R, E, A>
   map<B>(f: (a: A) => B): Filtered<R, E, B>
 
   addTrace(trace: Trace): Filtered<R, E, A>
+
+  /**
+   * @internal
+   */
+  version(): number
 }
 
 export class FilteredImpl<R, E, A, R2, E2, R3, E3, C>

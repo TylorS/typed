@@ -2,6 +2,8 @@ import type { Trace } from '@effect/data/Debug'
 import * as Equal from '@effect/data/Equal'
 import { flow, identity } from '@effect/data/Function'
 import * as Hash from '@effect/data/Hash'
+import * as MutableRef from '@effect/data/MutableRef'
+import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import { ChannelTypeId } from '@effect/stream/Channel'
 import { SinkTypeId } from '@effect/stream/Sink'
@@ -18,6 +20,9 @@ const fxVariance = {
 
 export interface RefTransformInput<R, E, A, R2, E2, B> extends Fx.Fx<R, E, A> {
   readonly get: Effect.Effect<R2, E2, B>
+
+  /** @internal */
+  readonly version: () => number
 }
 
 export interface RefTransform<R, E, A, R2, E2, B> extends Fx.Fx<R, E, A>, Effect.Effect<R2, E2, B> {
@@ -37,6 +42,9 @@ export interface RefTransform<R, E, A, R2, E2, B> extends Fx.Fx<R, E, A>, Effect
   ): RefTransform<R3, E3, C, R4, E4, D>
 
   addTrace(trace: Trace): RefTransform<R, E, A, R2, E2, B>
+
+  /** @internal */
+  readonly version: () => number
 }
 
 export class RefTransformImpl<R0, E0, A0, R1, E1, A1, R2, E2, B, R3, E3, C>
@@ -55,6 +63,9 @@ export class RefTransformImpl<R0, E0, A0, R1, E1, A1, R2, E2, B, R3, E3, C>
   readonly [ChannelTypeId] = fxVariance as any;
   readonly [StreamTypeId] = fxVariance
 
+  protected _lastVersion: number
+  protected _currentValue: MutableRef.MutableRef<Option.Option<C>> = MutableRef.make(Option.none())
+
   constructor(
     readonly i0: RefTransformInput<R0, E0, A0, R1, E1, A1>,
     readonly i1: (fx: Fx.Fx<R0, E0, A0>) => Fx.Fx<R2, E2, B>,
@@ -62,7 +73,28 @@ export class RefTransformImpl<R0, E0, A0, R1, E1, A1, R2, E2, B, R3, E3, C>
     readonly trace?: Trace,
   ) {
     this.fx = multicast(i1(i0).addTrace(trace))
-    this.get = i2(i0.get).traced(trace)
+
+    this._lastVersion = i0.version()
+
+    this.get = Effect.suspend(() => {
+      const currentVersion = i0.version()
+      const currentValue = MutableRef.get(this._currentValue)
+
+      // Avoid computing a new value when the underlying ref hasn't changed
+      if (currentVersion === this._lastVersion && Option.isSome(currentValue)) {
+        return Effect.succeed(currentValue.value)
+      }
+
+      return Effect.flatMap(i2(i0.get), (value) =>
+        Effect.sync(() => {
+          this._lastVersion = i0.version()
+
+          MutableRef.set(this._currentValue, Option.some(value))
+
+          return value
+        }),
+      )
+    }).traced(trace)
   }
 
   run<R4>(sink: Fx.Sink<R4, E2, B>) {
@@ -82,6 +114,10 @@ export class RefTransformImpl<R0, E0, A0, R1, E1, A1, R2, E2, B, R3, E3, C>
     g: (effect: Effect.Effect<R3, E3, C>) => Effect.Effect<R5, E5, E>,
   ): RefTransformImpl<R0, E0, A0, R1, E1, A1, R4, E4, D, R5, E5, E> {
     return new RefTransformImpl(this.i0, flow(this.i1, f), flow(this.i2, g), this.trace)
+  }
+
+  version() {
+    return this.i0.version()
   }
 
   [Equal.symbol](that: unknown) {

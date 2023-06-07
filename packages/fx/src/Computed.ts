@@ -38,6 +38,11 @@ export interface Computed<R, E, A> extends RefTransform<R, E, A, R, E, A> {
   filterNotEffect<R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): Filtered<R | R2, E | E2, A>
 
   addTrace(trace: Trace): Computed<R, E, A>
+
+  /**
+   * @internal
+   */
+  version(): number
 }
 
 export class ComputedImpl<R, E, A, R2, E2, R3, E3, B>
