@@ -110,6 +110,29 @@ describe(fileURLToPath(import.meta.url), () => {
           PartialHtml(`<div class="test1 test2">hello</div>`, true),
         ]),
       )
+
+      // Take the first value of any given rendered + current part.
+      yield* $(
+        testRenderEvents(
+          html`<div className=${Fx.merge(Fx.succeed('test1 test2'), Fx.succeed('test3'))}>
+            hello
+          </div>`,
+          [PartialHtml(`<div class="test1 test2">hello</div>`, true)],
+        ),
+      )
+
+      // Will take updates if not the current part
+      yield* $(
+        testRenderEvents(
+          html`<div
+            id="${Fx.delay(Fx.succeed('test'), Duration.millis(10))}"
+            className="${Fx.merge(Fx.succeed('test1 test2'), Fx.succeed('test3'))}"
+          >
+            hello
+          </div>`,
+          [PartialHtml(`<div id="test`, false), PartialHtml(`" class="test3">hello</div>`, true)],
+        ),
+      )
     })
 
     await Effect.runPromise(test)

@@ -18,9 +18,7 @@ import { parseTemplate } from './parseTemplate.js'
 import { Part } from './part/Part.js'
 import { getRenderHoleContext } from './render.js'
 
-// TODO: How to implement for a server??
-// Can we keep track of ordering of parts to allow streaming values out?
-// How can we utilize parts to allow hydration?
+// TODO: How can we utilize parts to allow hydration?
 
 export const dom: Layer.Layer<Document | RenderContext, never, RenderTemplate> =
   RenderTemplate.layer(

@@ -75,6 +75,9 @@ export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>
             if (index === hasRendered && indexToHtml.has(index)) {
               const html = indexToHtml.get(index) as string
               const isLast = index === lastIndex
+              const nextIndex = ++hasRendered
+
+              indexToHtml.delete(index)
 
               // Emit our HTML
               yield* $(
@@ -91,7 +94,7 @@ export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>
                 yield* $(Deferred.succeed(deferred, void 0))
               } else {
                 // See if we can emit the next HTML
-                yield* $(emitHtml(++hasRendered))
+                yield* $(emitHtml(nextIndex))
               }
             }
           })
