@@ -19,7 +19,7 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.12.3",
+    "@effect/data": "^0.12.5",
     "@typed/compiler": "workspace:*",
     "fast-glob": "^3.2.12",
     "vavite": "^1.8.1",
@@ -36,6 +36,6 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "vitest": "^0.31.1"
+    "vitest": "^0.32.0"
   }
 }

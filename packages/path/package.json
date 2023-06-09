@@ -27,6 +27,6 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "vitest": "^0.31.1"
+    "vitest": "^0.32.0"
   }
 }

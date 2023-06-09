@@ -19,7 +19,7 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.12.3",
+    "@effect/data": "^0.12.5",
     "@effect/language-service": "^0.0.19",
     "@rollup/pluginutils": "^5.0.2",
     "@typed/framework": "workspace:*",
@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@types/html-minifier": "^4.0.2",
-    "vitest": "^0.31.1"
+    "vitest": "^0.32.0"
   },
   "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",
   "publishConfig": {
