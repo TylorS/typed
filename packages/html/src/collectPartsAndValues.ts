@@ -2,7 +2,7 @@ import { persistent } from '@typed/wire'
 
 import { Placeholder } from './Placeholder.js'
 import { Renderable } from './Renderable.js'
-import { AttributeTemplateHole, TemplateCache, TemplateHole } from './TemplateCache.js'
+import { TemplateCache, TemplateHole } from './TemplateCache.js'
 import { getElementsFromRendered } from './getElementsFromRendered.js'
 import { AttrPart } from './part/AttrPart.js'
 import { BooleanPart } from './part/BooleanPart.js'
@@ -60,41 +60,23 @@ function holeToPart(document: Document, hole: TemplateHole, node: Node): Part {
       return new NodePart(document, node as Comment)
     case 'text':
       return new TextPart(document, node)
-    case 'attr': {
-      return attrHoleToPart(document, hole, node as HTMLElement)
-    }
-  }
-}
-
-function attrHoleToPart(document: Document, hole: AttributeTemplateHole, node: HTMLElement): Part {
-  const { name } = hole
-
-  switch (name[0]) {
-    case '?':
-      return new BooleanPart(document, node, name.slice(1))
-    case '.': {
-      const propertyName = name.slice(1)
-
-      switch (propertyName) {
-        case 'data':
-          return new DataPart(document, node)
-        default:
-          return new PropertyPart(document, node, propertyName)
-      }
-    }
-    case '@':
-      return new EventPart(document, node, name.slice(1))
-    case 'o':
-      if (name[1] === 'n') return new EventPart(document, node, name.slice(2))
-  }
-
-  switch (name.toLowerCase()) {
+    case 'attr':
+      return new AttrPart(
+        document,
+        node as HTMLElement,
+        document.createAttributeNS(null, hole.name),
+      )
+    case 'boolean':
+      return new BooleanPart(document, node as HTMLElement, hole.name)
+    case 'className':
+      return new ClassNamePart(document, node as HTMLElement)
+    case 'data':
+      return new DataPart(document, node as HTMLElement)
+    case 'property':
+      return new PropertyPart(document, node as HTMLElement, hole.name)
+    case 'event':
+      return new EventPart(document, node as HTMLElement, hole.name)
     case 'ref':
-      return new RefPart(document, node)
-    case 'class':
-    case 'classname':
-      return new ClassNamePart(document, node)
+      return new RefPart(document, node as HTMLElement)
   }
-
-  return new AttrPart(document, node, document.createAttributeNS(null, name))
 }

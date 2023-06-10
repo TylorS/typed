@@ -1,11 +1,11 @@
-import { Placeholder } from './Placeholder.js'
-import { RenderEvent } from './RenderEvent.js'
-import { Rendered } from './render.js'
+import type { Placeholder } from './Placeholder.js'
+import type { TemplateResult } from './TemplateResult.js'
+import type { Rendered } from './render.js'
 
 export type Renderable<R = never, E = never> =
   | Renderable.Value
   | Rendered
-  | RenderEvent
+  | TemplateResult
   | ReadonlyArray<Renderable<R, E>>
   | { readonly [key: string]: Renderable<R, E> }
   | Placeholder<R, E, Renderable<R, E>>

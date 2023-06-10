@@ -11,7 +11,7 @@ import type { Part } from './part/Part.js'
 export interface RenderContext {
   readonly environment: 'server' | 'browser' | 'static' | 'test'
   readonly isBot: boolean
-  readonly renderCache: RenderCache
+  readonly renderCache: WeakMap<object, RenderCache>
   readonly templateCache: WeakMap<TemplateStringsArray, TemplateCache>
   // TODO: Consider creating a priority queue for updates
   readonly updates: Map<Part<any, any>, Effect.Effect<never, never, unknown>>
@@ -19,23 +19,20 @@ export interface RenderContext {
 
 export type Environment = RenderContext['environment']
 
-export const RenderContext = Object.assign(
-  Context.Tag<RenderContext>('@typed/html/RenderContext'),
-  {
-    make: function makeRenderContext(
-      environment: RenderContext['environment'],
-      isBot: RenderContext['isBot'] = false,
-    ): RenderContext {
-      return {
-        environment,
-        isBot,
-        renderCache: RenderCache(),
-        templateCache: new WeakMap(),
-        updates: new Map(),
-      }
-    },
-  },
-)
+export const RenderContext = Context.Tag<RenderContext>('@typed/html/RenderContext')
+
+export function makeRenderContext(
+  environment: RenderContext['environment'],
+  isBot: RenderContext['isBot'] = false,
+): RenderContext {
+  return {
+    environment,
+    isBot,
+    renderCache: new WeakMap(),
+    templateCache: new WeakMap(),
+    updates: new Map(),
+  }
+}
 
 export const isStatic: Effect.Effect<RenderContext, never, boolean> = RenderContext.with(
   (ctx) => ctx.environment === 'static',
@@ -71,7 +68,7 @@ export const withUpdateWorker = (
   RenderContext.layerScoped(
     Effect.gen(function* ($) {
       const { environment, isBot = false, batchSize = DEFAULT_BATCH_SIZE } = options
-      const ctx = RenderContext.make(environment, isBot)
+      const ctx = makeRenderContext(environment, isBot)
 
       yield* $(Effect.forkScoped(Effect.forever(runUpdates(ctx.updates, batchSize))))
 

@@ -55,11 +55,10 @@ export function parseTemplate(template: TemplateStringsArray, document: Document
       // the fphtmlX attribute will be removed as irrelevant for the layout
       // let svg = -1;
       while ((node as Element).hasAttribute(search)) {
-        holes.push({
-          type: 'attr',
-          path: createPath(node),
-          name: (node as Element).getAttribute(search) as string,
-        })
+        const path = createPath(node)
+        const name = (node as Element).getAttribute(search) as string
+
+        holes.push(createAttrHole(name, path))
         ;(node as Element).removeAttribute(search)
         nextSearch()
       }
@@ -83,4 +82,32 @@ export function parseTemplate(template: TemplateStringsArray, document: Document
   }
 
   return templateCache
+}
+
+function createAttrHole(name: string, path: readonly number[]): TemplateHole {
+  switch (name[0]) {
+    case '?':
+      return { type: 'boolean', path, name: name.slice(1) }
+    case '.': {
+      const propertyName = name.slice(1)
+
+      if (propertyName === 'data') return { type: 'data', path }
+
+      return { type: 'property', path, name: propertyName }
+    }
+    case '@':
+      return { type: 'event', path, name: name.slice(1) }
+    case 'o':
+      if (name[1] === 'n') return { type: 'event', path, name: name.slice(2) }
+  }
+
+  switch (name.toLowerCase()) {
+    case 'ref':
+      return { type: 'ref', path }
+    case 'class':
+    case 'classname':
+      return { type: 'className', path }
+  }
+
+  return { type: 'attr', path, name }
 }

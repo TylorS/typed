@@ -1,11 +1,18 @@
 import type { Wire } from '@typed/wire'
 
+import type { Entry } from './Entry.js'
+
 export interface RenderCache {
-  wire: Node | DocumentFragment | Wire | null | undefined
+  entry: Entry | null
+  wire: Node | DocumentFragment | Wire | null
+
+  readonly stack: Array<RenderCache | null>
 }
 
 export function RenderCache(): RenderCache {
   return {
+    entry: null,
     wire: null,
+    stack: [],
   }
 }

@@ -1,10 +1,9 @@
-import { Scope } from '@effect/io/Scope'
 import { Tag } from '@typed/context'
 import { Fx } from '@typed/fx'
 
 import type { Placeholder } from './Placeholder.js'
-import { RenderEvent } from './RenderEvent.js'
 import { Renderable } from './Renderable.js'
+import { TemplateResult } from './TemplateResult.js'
 
 export interface RenderTemplate {
   readonly renderTemplate: <const Values extends ReadonlyArray<Renderable<any, any>>>(
@@ -12,9 +11,9 @@ export interface RenderTemplate {
     values: Values,
     options?: RenderTemplateOptions,
   ) => Fx<
-    Scope | Placeholder.ResourcesOf<Values[number]>,
+    Placeholder.ResourcesOf<Values[number]>,
     Placeholder.ErrorsOf<Values[number]>,
-    RenderEvent
+    TemplateResult
   >
 }
 
@@ -28,9 +27,9 @@ export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
 ): Fx<
-  RenderTemplate | Scope | Placeholder.ResourcesOf<Values[number]>,
+  RenderTemplate | Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
-  RenderEvent
+  TemplateResult
 > {
   return RenderTemplate.withFx(({ renderTemplate }) => renderTemplate(template, values))
 }
@@ -39,11 +38,11 @@ export function svg<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
 ): Fx<
-  RenderTemplate | Scope | Placeholder.ResourcesOf<Values[number]>,
+  RenderTemplate | Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
-  RenderEvent
+  TemplateResult
 > {
   return RenderTemplate.withFx(({ renderTemplate }) =>
     renderTemplate(template, values, { isSvg: true }),
-  ) as any
+  )
 }

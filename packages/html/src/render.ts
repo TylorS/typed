@@ -41,7 +41,8 @@ export function render<T extends HTMLElement>(
 }
 
 function renderWithCache<T extends HTMLElement>(ctx: RenderContext, where: T, what: RenderEvent) {
-  const { renderCache, updates } = ctx
+  const { updates } = ctx
+  const renderCache = ctx.renderCache.get(where) ?? { wire: null }
 
   return Effect.sync(() => {
     switch (what._tag) {

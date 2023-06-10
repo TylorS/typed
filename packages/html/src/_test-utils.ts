@@ -2,23 +2,21 @@ import { ok } from 'assert'
 
 import { millis } from '@effect/data/Duration'
 import { pipe } from '@effect/data/Function'
-import { none, some } from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
-import { GlobalThis, makeDomServices } from '@typed/dom'
+import { DomServices, GlobalThis, makeDomServices } from '@typed/dom'
 import { makeServerWindow } from '@typed/framework/makeServerWindow'
 import * as Fx from '@typed/fx'
-import { expect } from 'vitest'
 
-import { RenderContext } from './RenderContext.js'
-import { RenderEvent } from './RenderEvent.js'
+import { RenderContext, makeRenderContext } from './RenderContext.js'
+import { RenderTemplate } from './RenderTemplate.js'
+import { TemplateResult } from './TemplateResult.js'
 import { dom } from './dom.js'
 import { Rendered } from './render.js'
-import { renderToHtml } from './renderHtml.js'
-import { server } from './server.js'
+import { render } from './render2.js'
 
 export const testRenderTemplate = <R, E, Y extends Effect.EffectGen<any, any, any>, O>(
-  template: Fx.Fx<R, E, RenderEvent>,
+  template: Fx.Fx<R, E, TemplateResult>,
   f: (
     $: Effect.Adapter,
     rendered: Rendered,
@@ -28,11 +26,33 @@ export const testRenderTemplate = <R, E, Y extends Effect.EffectGen<any, any, an
     }) => Effect.Effect<GlobalThis, never, void>,
   ) => Generator<Y, O>,
   environment: RenderContext['environment'] = 'browser',
-) => {
+): Effect.Effect<
+  | Exclude<Exclude<Exclude<Exclude<R, RenderTemplate>, DomServices>, RenderContext>, Scope.Scope>
+  | Exclude<
+      Exclude<
+        Exclude<
+          Exclude<
+            [Y] extends [never]
+              ? never
+              : [Y] extends [Effect.EffectGen<infer R, any, any>]
+              ? R
+              : never,
+            RenderTemplate
+          >,
+          DomServices
+        >,
+        RenderContext
+      >,
+      Scope.Scope
+    >,
+  [Y] extends [never] ? never : [Y] extends [Effect.EffectGen<any, infer E, any>] ? E : never,
+  O
+> => {
   const window = makeServerWindow({ url: 'https://example.com' })
 
   return pipe(
-    getRendered(template),
+    template,
+    render(window.document.body),
     Effect.flatMap((rendered) =>
       Effect.gen(($) =>
         f($, rendered, ({ event, init }) =>
@@ -54,83 +74,7 @@ export const testRenderTemplate = <R, E, Y extends Effect.EffectGen<any, any, an
     ),
     Effect.provideSomeLayer(dom),
     Effect.provideSomeContext(makeDomServices(window, window)),
-    RenderContext.provide(RenderContext.make(environment)),
-    Effect.scoped,
-  )
-}
-
-const getRendered = <R, E>(
-  fx: Fx.Fx<R, E, RenderEvent>,
-): Effect.Effect<R | Scope.Scope, E, Rendered> =>
-  pipe(
-    fx,
-    Fx.filterMap((a) => (a._tag === 'RenderedDom' ? some(a.rendered) : none())),
-    Fx.take(1),
-    Fx.toReadonlyArray,
-    Effect.map((x) => x[0]),
-  )
-
-export const testRenderEvents = <R, E>(
-  template: Fx.Fx<R, E, RenderEvent>,
-  expected: readonly RenderEvent[],
-  environment: RenderContext['environment'] = 'test',
-) => {
-  const window = makeServerWindow({ url: 'https://example.com' })
-
-  return pipe(
-    template,
-    Fx.toReadonlyArray,
-    Effect.flatMap((events) =>
-      Effect.sync(() => {
-        try {
-          return expect(events.map(trimRenderEvent)).toEqual(expected.map(trimRenderEvent))
-        } catch (error) {
-          console.log('Actual', events.map(trimRenderEvent))
-          console.log('Expected', expected.map(trimRenderEvent))
-
-          throw error
-        }
-      }),
-    ),
-    Effect.provideSomeLayer(server),
-    Effect.provideSomeContext(makeDomServices(window, window)),
-    RenderContext.provide(RenderContext.make(environment)),
-    Effect.scoped,
-  )
-}
-
-function trimRenderEvent(event: RenderEvent) {
-  switch (event._tag) {
-    case 'FullHtml':
-      return { ...event, html: trimExtraSpaces(event.html) }
-    case 'PartialHtml':
-      return { ...event, html: trimExtraSpaces(event.html) }
-    default:
-      return event
-  }
-}
-
-function trimExtraSpaces(s: string) {
-  return s
-    .replace(/\n/g, '')
-    .replace(/\s+/g, ' ')
-    .replace(/>(\s+)/g, '>')
-    .replace(/(\s+)</g, '<')
-    .replace(/(\s+)>/g, '>')
-}
-
-export const testRenderHtml = <R, E>(
-  template: Fx.Fx<R, E, RenderEvent>,
-  environment: RenderContext['environment'] = 'test',
-) => {
-  const window = makeServerWindow({ url: 'https://example.com' })
-
-  return pipe(
-    template,
-    renderToHtml,
-    Effect.provideSomeLayer(server),
-    Effect.provideSomeContext(makeDomServices(window, window)),
-    RenderContext.provide(RenderContext.make(environment)),
+    RenderContext.provide(makeRenderContext(environment)),
     Effect.scoped,
   )
 }
