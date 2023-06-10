@@ -25,7 +25,9 @@ export class RefPart extends BasePart<never, never> {
       return value.set(Option.some(this.element))
     }
 
-    console.error(`Unexpected value for ref of `, this.element, `:`, value)
+    console.error(`Unexpected value for RefPart`)
+    console.error(`Element:`, this.element)
+    console.error(`Value:`, value)
 
     throw new Error(`Unexpected value for ref: ${JSON.stringify(value)}`)
   }

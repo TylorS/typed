@@ -24,7 +24,7 @@ export abstract class BasePart<R, E> {
   /**
    * @internal
    */
-  abstract getHTML(template: string, isStatic: boolean): string
+  abstract getHTML(template: string): string
 
   /**
    * Update the value of this part.

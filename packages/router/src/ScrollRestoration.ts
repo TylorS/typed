@@ -36,7 +36,9 @@ export function ScrollRestoration<A extends HTMLElement>(
               const scrollRestoration = state?.scrollRestoration
 
               if (scrollRestoration) {
-                const el = yield* $(params.ref.getElement)
+                // TODO: This should probably be ensured to happen AFTER a render occurs
+
+                const el = yield* $(params.ref.element)
 
                 el.scroll({
                   left: scrollRestoration.scrollLeft,
@@ -50,7 +52,7 @@ export function ScrollRestoration<A extends HTMLElement>(
 
             // If ScrollRestoration is not set, set it
             if (!state.scrollRestoration) {
-              const el = yield* $(params.ref.getElement)
+              const el = yield* $(params.ref.element)
               const scrollLeft = el.scrollLeft
               const scrollTop = el.scrollTop
 

@@ -6,6 +6,7 @@ import * as Hash from '@effect/data/Hash'
 import * as MutableRef from '@effect/data/MutableRef'
 import * as Option from '@effect/data/Option'
 import * as Equivalence from '@effect/data/typeclass/Equivalence'
+import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Scope from '@effect/io/Scope'
@@ -22,7 +23,9 @@ import { Subject } from './Subject.js'
 import { combineAll } from './combineAll.js'
 import { HoldFx } from './hold.js'
 import { never } from './never.js'
+import { drain } from './observe.js'
 import { struct } from './struct.js'
+import { switchMatchCauseEffect } from './switchMatch.js'
 
 const refVariance = {
   _R: identity,
@@ -735,4 +738,25 @@ function mapRecord<K extends string, A, B>(
   }
 
   return result
+}
+
+export function asRef<R, E, A>(fx: Fx<R, E, A>) {
+  return Effect.gen(function* ($) {
+    const deferred = yield* $(Deferred.make<E, A>())
+    const ref = yield* $(makeRef(Deferred.await(deferred)))
+
+    const onValue = (value: A) =>
+      Effect.flatMap(Deferred.succeed(deferred, value), (closed) =>
+        closed ? Effect.unit() : ref.set(value),
+      )
+
+    yield* $(
+      switchMatchCauseEffect(fx, ref.error, onValue),
+      drain,
+      Effect.catchAllCause(ref.error),
+      Effect.forkScoped,
+    )
+
+    return ref
+  })
 }

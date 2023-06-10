@@ -4,10 +4,9 @@ import * as Fiber from '@effect/io/Fiber'
 import { Wire, persistent } from '@typed/wire'
 
 import type { RenderContext } from './RenderContext.js'
-import { TemplateCache } from './TemplateCache.js'
 import { TemplateResult } from './TemplateResult.js'
+import { getTemplateCache } from './getCache.js'
 import { holeToPart } from './holeToPart.js'
-import { parseTemplate } from './parseTemplate.js'
 import { Part } from './part/Part.js'
 import { findPath } from './paths.js'
 
@@ -25,7 +24,7 @@ export function Entry(document: Document, renderContext: RenderContext, result: 
   // eslint-disable-next-line require-yield
   return Effect.gen(function* ($) {
     const { template, deferred } = result
-    const { content, holes } = getTemplateCache(document, renderContext, result)
+    const { content, holes } = getTemplateCache(document, renderContext.templateCache, result)
     const { onReady, onValue } = yield* $(indexRefCounter(holes.length))
     const parts = holes.map((hole) => holeToPart(document, hole, findPath(content, hole.path)))
     const fibers: Fiber.Fiber<any, any>[] = Array(parts.length)
@@ -81,21 +80,4 @@ function indexRefCounter(expected: number) {
       onValue,
     }
   })
-}
-
-function getTemplateCache(
-  document: Document,
-  { templateCache }: RenderContext,
-  { template, options }: TemplateResult,
-): TemplateCache {
-  const cache = templateCache.get(template)
-
-  if (cache) return cache
-
-  const isSvg = options?.isSvg ?? false
-  const created = parseTemplate(template, document, isSvg)
-
-  templateCache.set(template, created)
-
-  return created
 }

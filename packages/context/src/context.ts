@@ -78,7 +78,7 @@ export function Tag<I, S = I>(key?: string): Tag<I, S> {
 
 export interface ContextBuilder<I> {
   readonly context: C.Context<I>
-  readonly add: <I2, S>(tag: Tag<I2, S>, s: S) => ContextBuilder<I | I2>
+  readonly add: <I2, S>(tag: C.Tag<I2, S>, s: S) => ContextBuilder<I | I2>
   readonly merge: <I2>(builder: ContextBuilder<I2>) => ContextBuilder<I | I2>
   readonly mergeContext: <I2>(context: C.Context<I2>) => ContextBuilder<I | I2>
   readonly pick: <S extends ReadonlyArray<C.ValidTagsById<I>>>(
@@ -92,7 +92,7 @@ export namespace ContextBuilder {
   export function fromContext<I>(context: C.Context<I>): ContextBuilder<I> {
     return {
       context,
-      add: <I2, S>(tag: Tag<I2, S>, s: S) => fromContext(C.add(context, tag, s)),
+      add: <I2, S>(tag: C.Tag<I2, S>, s: S) => fromContext(C.add(context, tag, s)),
       merge: <I2>(builder: ContextBuilder<I2>) => fromContext(C.merge(context, builder.context)),
       mergeContext: <I2>(ctx: C.Context<I2>) => fromContext(C.merge(context, ctx)),
       pick: (...tags) => fromContext(pipe(context, C.pick(...tags))),

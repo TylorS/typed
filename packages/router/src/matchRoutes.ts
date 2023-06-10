@@ -8,7 +8,7 @@ import { ParamsOf } from '@typed/path'
 
 import { Match } from './Match.js'
 import { Redirect } from './Redirect.js'
-import { Router, getCurrentPathFromUrl } from './Router.js'
+import { Router, getCurrentPathFromUrl } from './router.js'
 
 export function matchRoutes<
   const Matches extends ReadonlyArray<Match.Any>,
@@ -18,7 +18,7 @@ export function matchRoutes<
 >(
   matches: Matches,
   onNotFound: (
-    params: Fx.Computed<never, never, Readonly<Record<string, string>>>,
+    params: Fx.Filtered<never, never, Readonly<Record<string, string>>>,
   ) => Fx.Fx<R, E, A> = () => Fx.empty(),
 ): Fx.Fx<
   Router | Navigation | R | Match.Context<Matches[number]> | Scope.Scope,

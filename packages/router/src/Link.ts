@@ -5,7 +5,7 @@ import { Placeholder } from '@typed/html'
 import * as Navigation from '@typed/navigation'
 import { pathJoin } from '@typed/path'
 
-import { Router, getCurrentPathFromUrl } from './Router.js'
+import { Router, getCurrentPathFromUrl } from './router.js'
 
 export interface UseLinkParams<
   R = never,
@@ -18,27 +18,23 @@ export interface UseLinkParams<
   E4 = never,
   R5 = never,
   E5 = never,
-  R6 = never,
-  E6 = never,
 > {
   readonly to: Placeholder<R, E, string>
   readonly replace?: Placeholder<R2, E2, boolean>
   readonly state?: Placeholder<R3, E3, unknown> | unknown
   readonly relative?: Placeholder<R4, E4, boolean>
   readonly key?: Placeholder<R5, E5, string>
-
-  readonly onClick?: Effect.Effect<R6, E6, unknown>
 }
 
 export namespace UseLinkParams {
-  export type Any = UseLinkParams<any, any, any, any, any, any, any, any, any, any, any, any>
+  export type Any = UseLinkParams<any, any, any, any, any, any, any, any, any, any>
 
   export type Context<T extends Any> = Placeholder.ResourcesOf<
     T['to'] | T['replace'] | T['state'] | T['relative'] | T['key']
   >
 
   export type Error<T extends Any> = Placeholder.ErrorsOf<
-    T['to'] | T['replace'] | T['state'] | T['relative'] | T['key'] | T['onClick']
+    T['to'] | T['replace'] | T['state'] | T['relative'] | T['key']
   >
 }
 
@@ -61,11 +57,15 @@ export function useLink<Params extends UseLinkParams.Any>(
   params: Params,
 ): Effect.Effect<UseLinkParams.Context<Params> | Scope.Scope, never, UseLink.FromParams<Params>> {
   return Effect.gen(function* ($) {
-    const to = yield* $(Placeholder.asRef(params.to))
-    const replace = yield* $(Placeholder.asRef(params.replace ?? false))
-    const state = yield* $(Placeholder.asRef(params.state ?? null))
-    const key = yield* $(Placeholder.asRef(params.key))
-    const relative = yield* $(Placeholder.asRef(params.relative ?? true))
+    const [to, replace, state, key, relative] = yield* $(
+      Effect.allPar(
+        Placeholder.asRef(params.to),
+        Placeholder.asRef(params.replace ?? false),
+        Placeholder.asRef(params.state ?? null),
+        Placeholder.asRef(params.key),
+        Placeholder.asRef(params.relative ?? true),
+      ),
+    )
 
     const url = Fx.RefSubject.tuple(to, relative).mapEffect(([to, relative]) =>
       Effect.gen(function* ($) {

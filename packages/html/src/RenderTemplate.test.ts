@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok } from 'assert'
 
-import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import { GlobalThis } from '@typed/dom'
 import * as Fx from '@typed/fx'
@@ -152,17 +151,17 @@ describe(import.meta.url, () => {
 
     await Effect.runPromise(updateTest)
 
+    const directive = classNameDirective((part) =>
+      Effect.gen(function* ($) {
+        yield* $(part.add('foo', 'bar'))
+        yield* $(part.remove('foo'))
+        yield* $(part.toggle('baz', 'quux'))
+        yield* $(part.toggle('quux'))
+      }),
+    )
+
     const addRemoveTest = testRenderTemplate(
-      html`<div
-        class=${classNameDirective((part) =>
-          Effect.gen(function* ($) {
-            yield* $(part.add('foo', 'bar'))
-            yield* $(part.remove('foo'))
-            yield* $(part.toggle('baz', 'quux'))
-            yield* $(part.toggle('quux'))
-          }),
-        )}
-      ></div>`,
+      html`<div class=${directive}></div>`,
       function* ($, rendered) {
         const globalThis = yield* $(GlobalThis)
 
@@ -248,7 +247,7 @@ describe(import.meta.url, () => {
 
           ok(rendered instanceof globalThis.HTMLDivElement)
 
-          const element = yield* $(ref.getElement)
+          const element = yield* $(ref.element)
 
           ok(element === rendered)
         }),
@@ -263,16 +262,15 @@ describe(import.meta.url, () => {
 
             ok(rendered instanceof globalThis.HTMLDivElement)
 
-            const element = yield* $(ref)
+            const element = yield* $(ref.element)
 
-            ok(Option.isSome(element))
-            ok(element.value === rendered)
+            ok(element === rendered)
           },
         ),
       )
     })
 
-    await Effect.runPromise(test)
+    await Effect.runPromise(Effect.scoped(test))
   })
 
   it('manages event listeners', async () => {

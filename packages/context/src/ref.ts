@@ -6,6 +6,7 @@ import * as Option from '@effect/data/Option'
 import * as Equivalence from '@effect/data/typeclass/Equivalence'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
+import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
 export interface Ref<I, R, E, A> extends Context.Tag<I, Fx.RefSubject<E, A>>, Fx.Fx<I, E, A> {
@@ -41,9 +42,11 @@ export interface Ref<I, R, E, A> extends Context.Tag<I, Fx.RefSubject<E, A>>, Fx
 
   readonly provide: <R2, E2, A2>(
     effect: Effect.Effect<R2, E2, A2>,
-  ) => Effect.Effect<R | Exclude<R2, I>, E2, A2>
+  ) => Effect.Effect<R | Scope.Scope | Exclude<R2, I>, E2, A2>
 
-  readonly provideFx: <R2, E2, A2>(fx: Fx.Fx<R2, E2, A2>) => Fx.Fx<R | Exclude<R2, I>, E2, A2>
+  readonly provideFx: <R2, E2, A2>(
+    fx: Fx.Fx<R2, E2, A2>,
+  ) => Fx.Fx<R | Scope.Scope | Exclude<R2, I>, E2, A2>
 }
 
 const refVariance: Fx.Fx<any, any, any>[Fx.FxTypeId] = {
@@ -93,7 +96,7 @@ export const Ref: {
         mapEffect: <R2, E2, A2>(f: (a: A) => Effect.Effect<R2, E2, A2>) =>
           Effect.map(tag, (r) => r.mapEffect(f)).traced(trace),
         map: <A2>(f: (a: A) => A2) => Effect.map(tag, (r) => r.map(f)).traced(trace),
-        layer: Effect.toLayer(make, tag),
+        layer: Effect.toLayerScoped(make, tag),
         provide: <R2, E2, A2>(effect: Effect.Effect<R2, E2, A2>) =>
           Effect.provideServiceEffect(effect, tag, make).traced(trace),
         provideFx: <R2, E2, A2>(fx: Fx.Fx<R2, E2, A2>) =>

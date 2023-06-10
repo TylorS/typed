@@ -2,7 +2,7 @@ import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import { Tag } from '@typed/context'
-import { Computed } from '@typed/fx'
+import { Filtered } from '@typed/fx'
 import { Navigation } from '@typed/navigation'
 import { ParamsOf, PathJoin } from '@typed/path'
 import { Route } from '@typed/route'
@@ -16,7 +16,7 @@ export interface Router<in out P extends string = string> {
   /**
    * The current params for the current path.
    */
-  readonly params: Computed<never, never, ParamsOf<P>>
+  readonly params: Filtered<never, never, ParamsOf<P>>
 
   /**
    * Construct a new Router instance by defining a new Route which is concatenated

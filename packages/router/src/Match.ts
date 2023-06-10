@@ -31,7 +31,7 @@ export type Match<
   in out Options extends MatchOptions<P, any, any> = MatchOptions<P>,
 > = {
   readonly route: Route<P>
-  readonly render: (params: Fx.Computed<never, never, ParamsOf<P>>) => Rendered
+  readonly render: (params: Fx.Filtered<never, never, ParamsOf<P>>) => Rendered
   readonly options?: Options
 }
 
@@ -68,7 +68,7 @@ export namespace Match {
 
 export function Match<P extends string, Rendered extends Fx.Fx<any, any, any>>(
   route: Route<P>,
-  render: (params: Fx.Computed<never, never, ParamsOf<P>>) => Rendered,
+  render: (params: Fx.Filtered<never, never, ParamsOf<P>>) => Rendered,
 ): Match<P, Rendered, MatchOptions<P>>
 
 export function Match<
@@ -77,7 +77,7 @@ export function Match<
   Options extends MatchOptions.Any<P>,
 >(
   route: Route<P>,
-  render: (params: Fx.Computed<never, never, ParamsOf<P>>) => Rendered,
+  render: (params: Fx.Filtered<never, never, ParamsOf<P>>) => Rendered,
   options: Options,
 ): Match<P, Rendered, Options>
 
@@ -87,7 +87,7 @@ export function Match<
   Options extends MatchOptions.Any<P> = MatchOptions<P, never, never>,
 >(
   route: Route<P>,
-  render: (params: Fx.Computed<never, never, ParamsOf<P>>) => Rendered,
+  render: (params: Fx.Filtered<never, never, ParamsOf<P>>) => Rendered,
   options?: Options,
 ): Match<P, Rendered, Options> | Match<P, Rendered, never> {
   return {
@@ -103,7 +103,7 @@ Match.lazy = function <
   Options extends MatchOptions.Any<P> = MatchOptions<P>,
 >(
   route: Route<P>,
-  render: () => Promise<(params: Fx.Computed<never, never, ParamsOf<P>>) => Rendered>,
+  render: () => Promise<(params: Fx.Filtered<never, never, ParamsOf<P>>) => Rendered>,
   options?: Options,
 ): Match<P, Rendered, Options> | Match<P, Rendered, never> {
   return {

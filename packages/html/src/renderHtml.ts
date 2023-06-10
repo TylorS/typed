@@ -1,63 +1,267 @@
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
+import { Scope } from '@effect/io/Scope'
+import { Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
-import { RenderEvent } from './RenderEvent.js'
-import { getElementsFromRendered } from './getElementsFromRendered.js'
+import { isDirective } from './Directive.js'
+import { RenderContext } from './RenderContext.js'
+import { TemplateResult } from './TemplateResult.js'
+import { getTemplateCache } from './getCache.js'
+import { holeToPart } from './holeToPart.js'
+import { handleEffectPart, handlePart, unwrapRenderable } from './makeUpdate.js'
 import { nodeToHtml } from './part/NodePart.js'
+import { Part } from './part/Part.js'
+import { addDataTypedAttributes, trimEmptyQuotes } from './part/templateHelpers.js'
+import { findPath } from './paths.js'
 
-export function renderHtmlStream<R, E>(fx: Fx.Fx<R, E, RenderEvent>): Fx.Fx<R, E, string> {
-  return Fx.Fx((sink) =>
-    Effect.gen(function* ($) {
-      const deferred = yield* $(Deferred.make<never, void>())
-      const done = Deferred.succeed(deferred, void 0)
+export const renderToHtmlStream = <R, E>(
+  what: Fx.Fx<R, E, TemplateResult>,
+): Fx.Fx<Document | RenderContext | Scope | R, E, HtmlEvent> =>
+  Fx.Fx(<R2>(sink: Fx.Sink<R2, E, HtmlEvent>) => {
+    return Effect.catchAllCause(
+      Effect.gen(function* ($) {
+        const [templateResult] = yield* $(Fx.toArray(Fx.take(what, 1)))
+        const input: RenderResultInput = {
+          document: yield* $(Document),
+          renderContext: yield* $(RenderContext),
+        }
 
-      const onEvent = (event: RenderEvent) =>
-        Effect.gen(function* ($) {
-          switch (event._tag) {
-            case 'FullHtml': {
-              yield* $(sink.event(event.html))
+        yield* $(renderTemplateResult<E>(input, templateResult).run(sink))
+      }),
+      sink.error,
+    )
+  })
 
-              return yield* $(done)
-            }
-            case 'PartialHtml': {
-              const { html, isLast } = event
+export const renderToHtml: <R, E>(
+  what: Fx.Fx<R, E, TemplateResult>,
+) => Effect.Effect<Document | RenderContext | Scope | R, E, string> = <R, E>(
+  what: Fx.Fx<R, E, TemplateResult>,
+) =>
+  Effect.map(Fx.toReadonlyArray(renderToHtmlStream(what)), (events) =>
+    events.map((e) => e.html).join(''),
+  )
 
-              yield* $(sink.event(html))
+function renderTemplateResult<E>(
+  input: RenderResultInput,
+  result: TemplateResult,
+): Fx.Fx<Scope, E, HtmlEvent> {
+  const { document, renderContext } = input
+  const { template, values } = result
+  const { content, holes } = getTemplateCache(document, renderContext.templateCache, result)
+
+  if (holes.length === 0) {
+    return Fx.succeed(
+      new FullHtml(addDataTypedAttributes(Array.from(content.childNodes).map(nodeToHtml).join(''))),
+    )
+  }
+
+  return Fx.Fx(<R>(sink: Fx.Sink<R, E, HtmlEvent>) => {
+    return Effect.catchAllCause(
+      Effect.gen(function* ($) {
+        const deferred = yield* $(Deferred.make<never, void>())
+        const parts = holes.map((h) => holeToPart(document, h, findPath(content, h.path)))
+        const lastIndex = parts.length - 1
+        const fibers = Array(parts.length)
+        const indexToHtml = new Map<number, string>()
+        const pendingHtml = new Map<number, string>()
+
+        let hasRendered = 0
+
+        function emitHtml(index: number): Effect.Effect<R, never, void> {
+          return Effect.gen(function* ($) {
+            if (index === hasRendered && indexToHtml.has(index)) {
+              const html = indexToHtml.get(index) as string
+              const isLast = index === lastIndex
+              const nextIndex = ++hasRendered
+
+              indexToHtml.delete(index)
+
+              const baseHtml = trimEmptyQuotes(isLast ? html + template[index + 1] : html)
+              const fullHtml = index === 0 ? addDataTypedAttributes(baseHtml) : baseHtml
+
+              // Emit our HTML
+              yield* $(sink.event(new PartialHtml(fullHtml, isLast)))
+
+              // When a fiber is completed we can interrupt the underlying Fiber
+              yield* $(Fiber.interruptFork(fibers[index]))
 
               if (isLast) {
-                return yield* $(done)
+                // We're done!
+                yield* $(Deferred.succeed(deferred, void 0))
+              } else {
+                // See if we can emit the next HTML
+                yield* $(emitHtml(nextIndex))
+              }
+            }
+          })
+        }
+
+        function renderNode(part: Part, index: number) {
+          let isFirst = true
+
+          const getFirst = (html: string, includeDataTyped: boolean) => {
+            if (isFirst) {
+              isFirst = false
+              const base = template[index] + html
+
+              if (includeDataTyped && index > 0 && part._tag === 'Node') {
+                return addDataTypedAttributes(base)
               }
 
-              return
+              return base
             }
-            case 'RenderedDom': {
-              const { rendered } = event
-              const elements = getElementsFromRendered(rendered)
-              const html = elements.map(nodeToHtml).join('')
+            return html
+          }
 
-              yield* $(sink.event(html))
-
-              return yield* $(done)
+          const getComment = () => {
+            if (part._tag === 'Node') {
+              return `<!--${part.comment.nodeValue}-->`
             }
-            default: {
-              // Should never really happen
-              return yield* $(done)
+            return ''
+          }
+
+          function handleHtmlEvent(event: HtmlEvent): Effect.Effect<R, never, void> {
+            return Effect.gen(function* ($) {
+              if (event._tag === 'Full') {
+                indexToHtml.set(index, getFirst(event.html, false) + getComment())
+
+                yield* $(emitHtml(index))
+              } else {
+                const currentHtml = pendingHtml.get(index) ?? ''
+                const html = currentHtml + getFirst(event.html, true)
+
+                if (event.isLast) {
+                  pendingHtml.delete(index)
+                  indexToHtml.set(index, html + getComment())
+
+                  yield* $(emitHtml(index))
+                } else {
+                  // If it's already ready, just stream out directly
+                  if (index === hasRendered) {
+                    yield* $(sink.event(new PartialHtml(trimEmptyQuotes(html), false)))
+                  } else {
+                    pendingHtml.set(index, html)
+                  }
+                }
+              }
+            })
+          }
+
+          return (value: unknown) =>
+            Effect.gen(function* ($) {
+              if (value instanceof TemplateResult) {
+                yield* $(
+                  renderTemplateResult(input, value),
+                  Fx.observe(handleHtmlEvent),
+                  Effect.forkScoped,
+                )
+              } else {
+                yield* $(part.update(value))
+
+                indexToHtml.set(index, part.getHTML(template[index]))
+
+                yield* $(emitHtml(index))
+              }
+            })
+        }
+
+        for (let i = 0; i < parts.length; ++i) {
+          const part = parts[i]
+          const value = values[i]
+          const index = i
+
+          // Directives need to be handled separately to listen to events
+          if (isDirective(value)) {
+            // Subscribe to a part's value changes
+            yield* $(
+              part.subscribe((part) =>
+                Effect.suspend(() => {
+                  indexToHtml.set(index, part.getHTML(template[index]))
+
+                  return emitHtml(index)
+                }),
+              ),
+            )
+
+            fibers[index] = yield* $(
+              Effect.forkScoped(
+                Effect.catchAllCause(
+                  value.f(part as Part) as Effect.Effect<R, E, unknown>,
+                  sink.error,
+                ),
+              ),
+            )
+          } else {
+            switch (part._tag) {
+              case 'Node': {
+                fibers[index] = yield* $(
+                  unwrapRenderable(value),
+                  Fx.switchMatchCauseEffect(sink.error, renderNode(part, index)),
+                  Fx.drain,
+                  Effect.forkScoped,
+                )
+
+                break
+              }
+              case 'Ref':
+              case 'Event': {
+                yield* $(handleEffectPart(part, value))
+
+                indexToHtml.set(index, part.getHTML(template[index]))
+                fibers[index] = Fiber.unit()
+
+                yield* $(emitHtml(index))
+
+                break
+              }
+              default: {
+                // Other parts may or may not return an Fx to be executed over time
+                const fx = yield* $(handlePart(part, value))
+
+                if (fx) {
+                  fibers[index] = yield* $(
+                    fx,
+                    Fx.switchMatchCauseEffect(sink.error, () => {
+                      indexToHtml.set(index, part.getHTML(template[index]))
+
+                      return emitHtml(index)
+                    }),
+                    Fx.drain,
+                    Effect.forkScoped,
+                  )
+                } else {
+                  fibers[index] = Fiber.unit()
+                  indexToHtml.set(index, part.getHTML(template[index]))
+
+                  yield* $(emitHtml(index))
+                }
+              }
             }
           }
-        })
-
-      const fiber = yield* $(fx.run(Fx.Sink(onEvent, sink.error)), Effect.fork)
-
-      yield* $(Deferred.await(deferred))
-      yield* $(Fiber.interruptFork(fiber))
-    }),
-  )
+        }
+      }),
+      sink.error,
+    )
+  })
 }
 
-export function renderToHtml<R, E>(fx: Fx.Fx<R, E, RenderEvent>): Effect.Effect<R, E, string> {
-  return Effect.scoped(
-    Effect.map(Fx.toReadonlyArray(renderHtmlStream(fx)), (html) => html.join('')),
-  )
+type RenderResultInput = {
+  readonly document: Document
+  readonly renderContext: RenderContext
+}
+
+export type HtmlEvent = FullHtml | PartialHtml
+
+export class FullHtml {
+  readonly _tag = 'Full'
+
+  constructor(readonly html: string) {}
+}
+
+export class PartialHtml {
+  readonly _tag = 'Partial'
+
+  constructor(readonly html: string, readonly isLast: boolean) {}
 }

@@ -1,4 +1,4 @@
-import { ok } from 'assert'
+import { deepStrictEqual, ok } from 'assert'
 
 import { millis } from '@effect/data/Duration'
 import { pipe } from '@effect/data/Function'
@@ -9,11 +9,10 @@ import { makeServerWindow } from '@typed/framework/makeServerWindow'
 import * as Fx from '@typed/fx'
 
 import { RenderContext, makeRenderContext } from './RenderContext.js'
-import { RenderTemplate } from './RenderTemplate.js'
+import { RenderTemplate, renderTemplate } from './RenderTemplate.js'
 import { TemplateResult } from './TemplateResult.js'
-import { dom } from './dom.js'
-import { Rendered } from './render.js'
-import { render } from './render2.js'
+import { Rendered, render } from './render.js'
+import { HtmlEvent, renderToHtml, renderToHtmlStream } from './renderHtml.js'
 
 export const testRenderTemplate = <R, E, Y extends Effect.EffectGen<any, any, any>, O>(
   template: Fx.Fx<R, E, TemplateResult>,
@@ -26,29 +25,11 @@ export const testRenderTemplate = <R, E, Y extends Effect.EffectGen<any, any, an
     }) => Effect.Effect<GlobalThis, never, void>,
   ) => Generator<Y, O>,
   environment: RenderContext['environment'] = 'browser',
-): Effect.Effect<
-  | Exclude<Exclude<Exclude<Exclude<R, RenderTemplate>, DomServices>, RenderContext>, Scope.Scope>
-  | Exclude<
-      Exclude<
-        Exclude<
-          Exclude<
-            [Y] extends [never]
-              ? never
-              : [Y] extends [Effect.EffectGen<infer R, any, any>]
-              ? R
-              : never,
-            RenderTemplate
-          >,
-          DomServices
-        >,
-        RenderContext
-      >,
-      Scope.Scope
-    >,
-  [Y] extends [never] ? never : [Y] extends [Effect.EffectGen<any, infer E, any>] ? E : never,
-  O
-> => {
+) => {
   const window = makeServerWindow({ url: 'https://example.com' })
+  const { context } = RenderTemplate.build({ renderTemplate })
+    .mergeContext(makeDomServices(window, window))
+    .merge(RenderContext.build(makeRenderContext(environment)))
 
   return pipe(
     template,
@@ -72,9 +53,63 @@ export const testRenderTemplate = <R, E, Y extends Effect.EffectGen<any, any, an
         ),
       ),
     ),
-    Effect.provideSomeLayer(dom),
-    Effect.provideSomeContext(makeDomServices(window, window)),
-    RenderContext.provide(makeRenderContext(environment)),
+    Effect.provideSomeContext(context),
     Effect.scoped,
   )
+}
+
+export const testHtmlEvents = <R, E>(
+  template: Fx.Fx<R, E, TemplateResult>,
+  expected: readonly HtmlEvent[],
+  environment: RenderContext['environment'] = 'browser',
+): Effect.Effect<
+  Exclude<Exclude<R, RenderContext | Scope.Scope | RenderTemplate | DomServices>, Scope.Scope>,
+  E,
+  readonly HtmlEvent[]
+> => {
+  const window = makeServerWindow({ url: 'https://example.com' })
+  const scope = Effect.runSync(Scope.make())
+  const { context } = RenderTemplate.build({ renderTemplate })
+    .mergeContext(makeDomServices(window, window))
+    .merge(RenderContext.build(makeRenderContext(environment)))
+    .add(Scope.Scope, scope)
+
+  return pipe(
+    renderToHtmlStream(template),
+    Fx.toReadonlyArray,
+    Effect.provideSomeContext(context),
+    Effect.scoped,
+    Effect.map((events) => {
+      try {
+        deepStrictEqual(events.map(trimHtmlEvent), expected.map(trimHtmlEvent))
+      } catch (error) {
+        console.log(`Actual:`, ...events.map(trimHtmlEvent))
+        console.log(`Expected:`, ...expected.map(trimHtmlEvent))
+      }
+
+      return events
+    }),
+  )
+}
+
+function trimHtmlEvent(event: HtmlEvent) {
+  return event.html.replace(/\s+/g, ' ').trim()
+}
+
+export const testHtml = <R, E>(
+  template: Fx.Fx<R, E, TemplateResult>,
+  environment: RenderContext['environment'] = 'browser',
+): Effect.Effect<
+  Exclude<R, RenderContext | Scope.Scope | RenderTemplate | DomServices>,
+  E,
+  string
+> => {
+  const window = makeServerWindow({ url: 'https://example.com' })
+  const scope = Effect.runSync(Scope.make())
+  const { context } = RenderTemplate.build({ renderTemplate })
+    .mergeContext(makeDomServices(window, window))
+    .merge(RenderContext.build(makeRenderContext(environment)))
+    .add(Scope.Scope, scope)
+
+  return Effect.provideSomeContext(renderToHtml(template), context)
 }

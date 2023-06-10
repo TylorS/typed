@@ -8,13 +8,13 @@ import { Route } from '@typed/route'
 
 import { Match, MatchOptions } from './Match.js'
 import { Redirect } from './Redirect.js'
-import { Router } from './Router.js'
 import { matchRoutes } from './matchRoutes.js'
+import { Router } from './router.js'
 
 export interface Matcher<Matches extends ReadonlyArray<Match.Any>> {
   readonly match: <P extends string, R, E, A, Opts extends MatchOptions.Any<P> = MatchOptions<P>>(
     route: Route<P>,
-    render: (params: Fx.Computed<never, never, ParamsOf<P>>) => Fx.Fx<R, E, A>,
+    render: (params: Fx.Filtered<never, never, ParamsOf<P>>) => Fx.Fx<R, E, A>,
     options?: Opts,
   ) => Matcher<readonly [...Matches, Match<P, Fx.Fx<R, E, A>, Opts>]>
 
@@ -26,12 +26,12 @@ export interface Matcher<Matches extends ReadonlyArray<Match.Any>> {
     Opts extends MatchOptions.Any<P> = MatchOptions<P>,
   >(
     route: Route<P>,
-    render: () => Promise<(params: Fx.Computed<never, never, ParamsOf<P>>) => Fx.Fx<R, E, A>>,
+    render: () => Promise<(params: Fx.Filtered<never, never, ParamsOf<P>>) => Fx.Fx<R, E, A>>,
     options?: Opts,
   ) => Matcher<readonly [...Matches, Match<P, Fx.Fx<R, E, A>, Opts>]>
 
   readonly notFound: <R, E, A>(
-    render: (params: Fx.Computed<never, never, Readonly<Record<string, string>>>) => Fx.Fx<R, E, A>,
+    render: (params: Fx.Filtered<never, never, Readonly<Record<string, string>>>) => Fx.Fx<R, E, A>,
   ) => Fx.Fx<
     Router | Navigation | R | Match.Context<Matches[number]>,
     Exclude<E | Match.Error<Matches[number]>, Redirect>,
@@ -45,7 +45,7 @@ export function Matcher<const Matches extends ReadonlyArray<Match.Any>>(
   return {
     match<P extends string, R, E, A, Opts extends MatchOptions.Any<P> = never>(
       route: Route<P>,
-      render: (params: Fx.Computed<never, never, ParamsOf<P>>) => Fx.Fx<R, E, A>,
+      render: (params: Fx.Filtered<never, never, ParamsOf<P>>) => Fx.Fx<R, E, A>,
       options?: Opts,
     ): Matcher<readonly [...Matches, Match<P, Fx.Fx<R, E, A>, Opts>]> {
       return Matcher(Chunk.append(matches, Match(route, render, options || {})))
@@ -53,7 +53,7 @@ export function Matcher<const Matches extends ReadonlyArray<Match.Any>>(
 
     matchLazy<P extends string, R, E, A, Opts extends MatchOptions.Any<P> = never>(
       route: Route<P>,
-      render: () => Promise<(params: Fx.Computed<never, never, ParamsOf<P>>) => Fx.Fx<R, E, A>>,
+      render: () => Promise<(params: Fx.Filtered<never, never, ParamsOf<P>>) => Fx.Fx<R, E, A>>,
       options?: Opts,
     ): Matcher<readonly [...Matches, Match<P, Fx.Fx<R, E, A>, Opts>]> {
       return Matcher(Chunk.append(matches, Match.lazy(route, render, options || {})))
@@ -61,7 +61,7 @@ export function Matcher<const Matches extends ReadonlyArray<Match.Any>>(
 
     notFound: <R, E, A>(
       render: (
-        params: Fx.Computed<never, never, Readonly<Record<string, string>>>,
+        params: Fx.Filtered<never, never, Readonly<Record<string, string>>>,
       ) => Fx.Fx<R, E, A>,
     ) => Fx.scoped(matchRoutes(Chunk.toReadonlyArray(matches) as Matches, render)),
   }
@@ -71,7 +71,7 @@ export const { match, matchLazy } = Matcher<readonly []>(Chunk.empty())
 
 export const notFound: {
   <R, E, A>(
-    render: (params: Fx.Computed<never, never, Readonly<Record<string, string>>>) => Fx.Fx<R, E, A>,
+    render: (params: Fx.Filtered<never, never, Readonly<Record<string, string>>>) => Fx.Fx<R, E, A>,
   ): <Matches extends readonly Match.Any[]>(
     matcher: Matcher<Matches>,
   ) => Fx.Fx<
@@ -82,7 +82,7 @@ export const notFound: {
 
   <Matches extends readonly Match.Any[], R, E, A>(
     matcher: Matcher<Matches>,
-    render: (params: Fx.Computed<never, never, Readonly<Record<string, string>>>) => Fx.Fx<R, E, A>,
+    render: (params: Fx.Filtered<never, never, Readonly<Record<string, string>>>) => Fx.Fx<R, E, A>,
   ): Fx.Fx<
     Navigation | Router<string> | R | Match.Context<Matches[number]>,
     Exclude<E | Match.Error<Matches[number]>, Redirect>,
@@ -94,7 +94,7 @@ export const notFound: {
     <Matches extends readonly Match.Any[], R, E, A>(
       matcher: Matcher<Matches>,
       render: (
-        params: Fx.Computed<never, never, Readonly<Record<string, string>>>,
+        params: Fx.Filtered<never, never, Readonly<Record<string, string>>>,
       ) => Fx.Fx<R, E, A>,
     ) =>
       matcher.notFound(render).addTrace(trace),
