@@ -7,8 +7,9 @@ import type { RenderContext } from './RenderContext.js'
 import { TemplateResult } from './TemplateResult.js'
 import { getTemplateCache } from './getCache.js'
 import { holeToPart } from './holeToPart.js'
+import { nodeToHtml } from './part/NodePart.js'
 import { Part } from './part/Part.js'
-import { findPath } from './paths.js'
+import { ParentChildNodes, findPath } from './paths.js'
 
 export interface Entry {
   cleanup: Effect.Effect<never, never, void>
@@ -17,7 +18,7 @@ export interface Entry {
   onValue: (index: number) => Effect.Effect<never, never, void>
   parts: readonly Part[]
   template: TemplateStringsArray
-  wire: () => Node | DocumentFragment | Wire | null
+  wire: () => Node | DocumentFragment | Wire | Node[] | null
 }
 
 export function Entry(document: Document, renderContext: RenderContext, result: TemplateResult) {
@@ -80,4 +81,83 @@ function indexRefCounter(expected: number) {
       onValue,
     }
   })
+}
+
+export function HydrateEntry(
+  document: Document,
+  renderContext: RenderContext,
+  result: TemplateResult,
+  where: ParentChildNodes,
+) {
+  // TODO: Bail out of hydration if any nodes can't be found
+  return Effect.gen(function* ($) {
+    const { template, deferred } = result
+    const { holes } = getTemplateCache(document, renderContext.templateCache, result)
+    const { onReady, onValue } = yield* $(indexRefCounter(holes.length))
+    const parts = holes.map((hole, i) => {
+      if (hole.type === 'node') {
+        return holeToPart(document, hole, findCommentNode(where, i), (comment) => {
+          return []
+          return getPreviousNodes(comment, i)
+        })
+      }
+
+      return holeToPart(document, hole, findPath(where, hole.path))
+    })
+    const fibers: Fiber.Fiber<any, any>[] = Array(parts.length)
+
+    const cleanup = Effect.forkDaemon(
+      Effect.allPar(
+        Effect.suspend(() => Fiber.interruptAll(fibers)),
+        Deferred.succeed(deferred, undefined),
+      ),
+    )
+
+    return {
+      template,
+      cleanup,
+      onReady,
+      onValue,
+      parts,
+      fibers,
+      wire: () => Array.from(where.childNodes),
+    } satisfies Entry
+  })
+}
+
+function findCommentNode(where: ParentChildNodes, index: number): Comment {
+  const { childNodes } = where
+
+  for (let i = 0; i < childNodes.length; ++i) {
+    const node = childNodes[i]
+
+    if (node.nodeType === node.ELEMENT_NODE) {
+      if ((node as HTMLElement).dataset['typed'] === '-1')
+        return findCommentNode({ parentNode: node, childNodes: node.childNodes }, index)
+      if ((node as HTMLElement).dataset['typed'] === String(index))
+        return findCommentNode({ parentNode: node, childNodes: node.childNodes }, index)
+    }
+
+    if (node.nodeType === node.COMMENT_NODE && node.nodeValue === `hole${index}`) {
+      return node as Comment
+    }
+  }
+
+  throw new Error(`Could not find comment node for index ${index}`)
+}
+
+function getPreviousNodes(comment: Node, index: number) {
+  const nodes: Node[] = []
+  let node = comment.previousSibling
+  const previousHole = `hole${index - 1}`
+
+  while (node && node.nodeValue !== previousHole) {
+    if (node.nodeType !== node.COMMENT_NODE) {
+      nodes.push(node)
+    }
+
+    node = node.previousSibling
+  }
+
+  return nodes
 }

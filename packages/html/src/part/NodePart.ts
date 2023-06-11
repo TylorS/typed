@@ -8,9 +8,8 @@ export class NodePart extends BasePart<never, never> {
   readonly _tag = 'Node'
 
   protected text: Text | undefined
-  protected nodes: Node[] = []
 
-  constructor(document: Document, readonly comment: Comment) {
+  constructor(document: Document, readonly comment: Comment, protected nodes: Node[] = []) {
     super(document, false)
   }
 
@@ -26,10 +25,7 @@ export class NodePart extends BasePart<never, never> {
         case 'string':
         case 'number':
         case 'boolean': {
-          if (!this.text) this.text = this.document.createTextNode('')
-          const { text } = this
-
-          text.data = String(newValue)
+          const text = this.manageTextNode(String(newValue))
 
           this.nodes = diffChildren(comment, this.nodes, [text], document)
 
@@ -73,6 +69,25 @@ export class NodePart extends BasePart<never, never> {
     const base = `${template}${this.nodes.map(nodeToHtml).join('')}`
 
     return `${base}${nodeToHtml(this.comment)}`
+  }
+
+  protected manageTextNode(content: string) {
+    if (!this.text) {
+      const previous = this.comment.previousSibling
+
+      if (previous && previous.nodeType === 3) {
+        this.text = previous as Text
+      }
+
+      if (!this.text) {
+        this.text = this.document.createTextNode(content)
+      }
+    }
+    const { text } = this
+
+    text.data = content
+
+    return text
   }
 }
 

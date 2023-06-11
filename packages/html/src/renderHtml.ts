@@ -16,6 +16,9 @@ import { Part } from './part/Part.js'
 import { addDataTypedAttributes, trimEmptyQuotes } from './part/templateHelpers.js'
 import { findPath } from './paths.js'
 
+export const START_COMMENT = `<!--typed-start-->`
+export const END_COMMENT = `<!--typed-end-->`
+
 export const renderToHtmlStream = <R, E>(
   what: Fx.Fx<R, E, TemplateResult>,
 ): Fx.Fx<Document | RenderContext | Scope | R, E, HtmlEvent> =>
@@ -28,7 +31,26 @@ export const renderToHtmlStream = <R, E>(
           renderContext: yield* $(RenderContext),
         }
 
-        yield* $(renderTemplateResult<E>(input, templateResult).run(sink))
+        let first = true
+
+        const getFirst = () => {
+          if (first) {
+            first = false
+            return START_COMMENT
+          }
+
+          return ''
+        }
+
+        yield* $(
+          Fx.map(renderTemplateResult<E>(input, templateResult, -1), (event) =>
+            event._tag === 'Full'
+              ? new FullHtml(START_COMMENT + event.html + END_COMMENT)
+              : event.isLast
+              ? new PartialHtml(getFirst() + event.html + END_COMMENT, true)
+              : new PartialHtml(getFirst() + event.html, false),
+          ).run(sink),
+        )
       }),
       sink.error,
     )
@@ -46,6 +68,7 @@ export const renderToHtml: <R, E>(
 function renderTemplateResult<E>(
   input: RenderResultInput,
   result: TemplateResult,
+  templateIndex: number,
 ): Fx.Fx<Scope, E, HtmlEvent> {
   const { document, renderContext } = input
   const { template, values } = result
@@ -53,7 +76,12 @@ function renderTemplateResult<E>(
 
   if (holes.length === 0) {
     return Fx.succeed(
-      new FullHtml(addDataTypedAttributes(Array.from(content.childNodes).map(nodeToHtml).join(''))),
+      new FullHtml(
+        addDataTypedAttributes(
+          Array.from(content.childNodes).map(nodeToHtml).join(''),
+          templateIndex,
+        ),
+      ),
     )
   }
 
@@ -79,7 +107,8 @@ function renderTemplateResult<E>(
               indexToHtml.delete(index)
 
               const baseHtml = trimEmptyQuotes(isLast ? html + template[index + 1] : html)
-              const fullHtml = index === 0 ? addDataTypedAttributes(baseHtml) : baseHtml
+              const fullHtml =
+                index === 0 ? addDataTypedAttributes(baseHtml, templateIndex) : baseHtml
 
               // Emit our HTML
               yield* $(sink.event(new PartialHtml(fullHtml, isLast)))
@@ -107,7 +136,7 @@ function renderTemplateResult<E>(
               const base = template[index] + html
 
               if (includeDataTyped && index > 0 && part._tag === 'Node') {
-                return addDataTypedAttributes(base)
+                return addDataTypedAttributes(base, index)
               }
 
               return base
@@ -153,7 +182,7 @@ function renderTemplateResult<E>(
             Effect.gen(function* ($) {
               if (value instanceof TemplateResult) {
                 yield* $(
-                  renderTemplateResult(input, value),
+                  renderTemplateResult(input, value, index),
                   Fx.observe(handleHtmlEvent),
                   Effect.forkScoped,
                 )
@@ -176,7 +205,7 @@ function renderTemplateResult<E>(
           if (isDirective(value)) {
             // Subscribe to a part's value changes
             yield* $(
-              part.subscribe((part) =>
+              part.subscribe((part: Part) =>
                 Effect.suspend(() => {
                   indexToHtml.set(index, part.getHTML(template[index]))
 
@@ -241,6 +270,8 @@ function renderTemplateResult<E>(
             }
           }
         }
+
+        yield* $(Deferred.await(deferred))
       }),
       sink.error,
     )

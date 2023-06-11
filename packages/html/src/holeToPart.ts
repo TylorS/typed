@@ -10,29 +10,39 @@ import { PropertyPart } from './part/PropertyPart.js'
 import { RefPart } from './part/RefPart.js'
 import { TextPart } from './part/TextPart.js'
 
-export function holeToPart(document: Document, hole: TemplateHole, node: Node): Part {
+export function holeToPart(
+  document: Document,
+  hole: TemplateHole,
+  node: Node,
+  getExistingNodes?: (comment: Comment) => Node[],
+): Part {
+  const element = node as HTMLElement
+
   switch (hole.type) {
     case 'node':
-      return new NodePart(document, node as Comment)
+      return new NodePart(document, node as Comment, getExistingNodes?.(node as Comment))
     case 'text':
       return new TextPart(document, node)
     case 'attr':
       return new AttrPart(
         document,
-        node as HTMLElement,
-        document.createAttributeNS(null, hole.name),
+        element,
+        element.hasAttribute(hole.name)
+          ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            element.getAttributeNode(hole.name)!
+          : document.createAttributeNS(null, hole.name),
       )
     case 'boolean':
-      return new BooleanPart(document, node as HTMLElement, hole.name)
+      return new BooleanPart(document, element, hole.name)
     case 'className':
-      return new ClassNamePart(document, node as HTMLElement)
+      return new ClassNamePart(document, element)
     case 'data':
-      return new DataPart(document, node as HTMLElement)
+      return new DataPart(document, element)
     case 'property':
-      return new PropertyPart(document, node as HTMLElement, hole.name)
+      return new PropertyPart(document, element, hole.name)
     case 'event':
-      return new EventPart(document, node as HTMLElement, hole.name)
+      return new EventPart(document, element, hole.name)
     case 'ref':
-      return new RefPart(document, node as HTMLElement)
+      return new RefPart(document, element)
   }
 }

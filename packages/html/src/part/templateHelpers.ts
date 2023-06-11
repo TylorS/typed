@@ -18,8 +18,8 @@ export function trimEmptyQuotes(template: string) {
   return template.replace(/^"\s?"/g, '')
 }
 
-const DATA_TYPED_ATTR = ' data-typed="true"'
+const DATA_TYPED_ATTR = (n: number) => ` data-typed="${n}"`
 
-export function addDataTypedAttributes(template: string) {
-  return template.replace(/<([a-z]+)([^>]*)/, `<$1${DATA_TYPED_ATTR}$2`)
+export function addDataTypedAttributes(template: string, n: number) {
+  return template.replace(/<([a-z]+)([^>]*)/, `<$1${DATA_TYPED_ATTR(n)}$2`)
 }

@@ -14,7 +14,11 @@ export class TextPart extends BasePart<never, never> {
    */
   handle(newValue: unknown) {
     return sync(() => {
-      this.node.textContent = newValue == null ? '' : String(newValue)
+      const textContent = newValue == null ? '' : String(newValue)
+
+      if (this.node.textContent !== textContent) {
+        this.node.textContent = textContent
+      }
     })
   }
 
