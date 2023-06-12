@@ -10,13 +10,14 @@ import { Wire } from '@typed/wire'
 import { Entry, HydrateEntry } from './Entry.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
-import { TemplateResult } from './TemplateResult.js'
+import { TemplateResult, fromValue } from './TemplateResult.js'
 import { getRenderCache } from './getCache.js'
 import { handleEffectPart, handlePart, unwrapRenderable } from './makeUpdate.js'
-import { nodeToHtml } from './part/NodePart.js'
 import { Part } from './part/Part.js'
 import { ParentChildNodes } from './paths.js'
 import type { Rendered } from './render.js'
+
+// TODO: Figure out how to bail out of hydration when we find things that don't match up
 
 export const hydrate: {
   (where: HTMLElement): <R, E>(
@@ -40,9 +41,10 @@ export const hydrate: {
           where,
           document: yield* $(Document),
           renderContext: yield* $(RenderContext),
+          initial: true,
         }
 
-        return Fx.switchMapEffect(what, (template) => renderRootResult(input, template))
+        return Fx.switchMapEffect(what, (template) => hydrateRoot(input, template))
       }).addTrace(trace),
 )
 
@@ -50,17 +52,18 @@ type RenderResultInput = {
   readonly where: HTMLElement
   readonly document: Document
   readonly renderContext: RenderContext
+
+  initial: boolean
 }
 
-function renderRootResult(input: RenderResultInput, template: TemplateResult) {
+function hydrateRoot(input: RenderResultInput, template: TemplateResult) {
   const { document, renderContext, where } = input
   const cache = getRenderCache(where, renderContext.renderCache)
 
   return Effect.gen(function* ($) {
     const parentChildNodes = findRootParentChildNodes(where)
-
     const wire = yield* $(
-      renderTemplateResult(document, renderContext, template, cache, parentChildNodes),
+      hydrateTemplateResult(document, renderContext, template, cache, parentChildNodes, 0),
       Effect.provideSomeContext(template.context),
     )
 
@@ -68,6 +71,14 @@ function renderRootResult(input: RenderResultInput, template: TemplateResult) {
       if (cache.wire && !wire) where.removeChild(cache.wire as Node)
 
       cache.wire = wire as Wire | Node | null
+
+      // Don't replace the child nodes on the first render
+      if (input.initial) {
+        input.initial = false
+
+        return cache.wire as Rendered
+      }
+
       // valueOf() simply returns the node itself, but in case it was a "wire"
       // it will eventually re-append all nodes to its fragment so that such
       // fragment can be re-appended many times in a meaningful way
@@ -83,12 +94,14 @@ function renderRootResult(input: RenderResultInput, template: TemplateResult) {
   })
 }
 
-function renderTemplateResult(
+/**@internal */
+export function hydrateTemplateResult(
   document: Document,
   renderContext: RenderContext,
   result: TemplateResult,
   cache: RenderCache,
   where: ParentChildNodes,
+  depth = 0,
 ): Effect.Effect<Document | RenderContext | Scope, never, Rendered | null> {
   return Effect.gen(function* ($) {
     let { entry } = cache
@@ -99,14 +112,13 @@ function renderTemplateResult(
         yield* $(cache.entry.cleanup)
       }
 
-      printParentChildNodes(where)
-      console.log(result.template.join(''), ...result.values)
-
-      cache.entry = entry = yield* $(HydrateEntry(document, renderContext, result, where))
+      cache.entry = entry = yield* $(HydrateEntry(document, renderContext, result, where, depth))
 
       // Render all children before creating the wire
       if (entry.parts.length > 0) {
-        yield* $(renderPlaceholders(document, renderContext, result, cache, entry, where))
+        yield* $(
+          hydratePlaceholders(document, renderContext, result, cache, entry, where, depth + 1),
+        )
       }
     }
 
@@ -115,31 +127,28 @@ function renderTemplateResult(
   })
 }
 
-function renderPlaceholders(
+function hydratePlaceholders(
   document: Document,
   renderContext: RenderContext,
   { values, sink, context }: TemplateResult,
   renderCache: RenderCache,
   { parts, onValue, onReady, fibers }: Entry,
   where: ParentChildNodes,
+  depth: number,
 ): Effect.Effect<Scope, never, void> {
   const renderNode = (value: unknown, index: number, cache: RenderCache) =>
-    Effect.suspend(() => {
-      // If the value is a TemplateResult, we need to render it recusively
-      if (value instanceof TemplateResult) {
-        return renderTemplateResult(
-          document,
-          renderContext,
-          value,
-          cache,
-          findTemplateResultParentChildNodes(where, index),
-        )
-      }
+    Effect.suspend(() =>
+      hydrateTemplateResult(
+        document,
+        renderContext,
+        value instanceof TemplateResult ? value : fromValue(value),
+        cache,
+        findTemplateResultParentChildNodes(where, index),
+        depth,
+      ),
+    )
 
-      return Effect.succeed(value)
-    })
-
-  const renderPart = (part: Part, index: number) =>
+  const hydratePart = (part: Part, index: number) =>
     Effect.gen(function* ($) {
       const value = values[index]
 
@@ -156,7 +165,7 @@ function renderPlaceholders(
                   renderCache.stack[index] || (renderCache.stack[index] = RenderCache()),
                 ),
                 Effect.flatMap(part.update),
-                Effect.flatMap(() => onValue(index)),
+                Effect.tap(() => onValue(index)),
               ),
             ),
             Fx.drain,
@@ -194,15 +203,14 @@ function renderPlaceholders(
     })
 
   return pipe(
-    Effect.allPar(parts.map(renderPart)),
+    Effect.allPar(parts.map(hydratePart)),
     Effect.flatMap(() => onReady),
-    Effect.tap(() => Effect.log(`Rendered Placeholders`)),
     Effect.catchAllCause(sink.error),
     Effect.provideSomeContext(context),
   )
 }
 
-function findRootParentChildNodes(where: HTMLElement): ParentChildNodes {
+export function findRootParentChildNodes(where: HTMLElement): ParentChildNodes {
   const childNodes = findRootChildNodes(where)
 
   return {
@@ -211,7 +219,8 @@ function findRootParentChildNodes(where: HTMLElement): ParentChildNodes {
   }
 }
 
-function findRootChildNodes(where: HTMLElement): Node[] {
+// Finds all of the childNodes between the "typed-start" and "typed-end" comments
+export function findRootChildNodes(where: HTMLElement): Node[] {
   const childNodes: Node[] = []
 
   let start = 0
@@ -222,7 +231,7 @@ function findRootChildNodes(where: HTMLElement): Node[] {
 
     if (node.nodeType === node.COMMENT_NODE) {
       if (node.nodeValue === 'typed-start') {
-        start = i + 1
+        start = i
         break
       }
     }
@@ -239,14 +248,14 @@ function findRootChildNodes(where: HTMLElement): Node[] {
     }
   }
 
-  for (let i = start; i < end; i++) {
+  for (let i = start + 1; i <= end; i++) {
     childNodes.push(where.childNodes[i])
   }
 
   return childNodes
 }
 
-function findTemplateResultParentChildNodes(
+export function findTemplateResultParentChildNodes(
   { childNodes }: ParentChildNodes,
   index: number,
 ): ParentChildNodes {
@@ -262,27 +271,14 @@ function findTemplateResultParentChildNodes(
 
   const parentNode = childNodes[start]
 
-  return {
+  const parentChildNodes: ParentChildNodes = {
     parentNode,
     childNodes: parentNode.childNodes,
   }
+
+  return parentChildNodes
 }
 
 function isElement(node: Node): node is HTMLElement {
   return node.nodeType === node.ELEMENT_NODE
-}
-
-function printParentChildNodes(x: ParentChildNodes) {
-  console.log({
-    parentNode: x.parentNode ? nodeToHtml(x.parentNode) : 'null',
-    childNodes: Array.from(x.childNodes).map(nodeToHtml),
-  })
-}
-
-function* makeIdGenerator() {
-  let id = 0
-
-  while (true) {
-    yield id++
-  }
 }

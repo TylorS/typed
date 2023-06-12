@@ -7,7 +7,7 @@ export class ClassNamePart extends BasePart<never, never> {
   readonly _tag = 'ClassName'
 
   constructor(document: Document, readonly element: Element) {
-    super(document)
+    super(document, element.className)
   }
 
   /**

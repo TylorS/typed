@@ -3,6 +3,7 @@ import { sync } from '@effect/io/Effect'
 import { diffChildren } from '../diffChildren.js'
 
 import { BasePart } from './BasePart.js'
+import { nodeToHtml } from './templateHelpers.js'
 
 export class NodePart extends BasePart<never, never> {
   readonly _tag = 'Node'
@@ -10,7 +11,7 @@ export class NodePart extends BasePart<never, never> {
   protected text: Text | undefined
 
   constructor(document: Document, readonly comment: Comment, protected nodes: Node[] = []) {
-    super(document, false)
+    super(document, nodes.length === 1 ? nodes[0] : nodes)
   }
 
   /**
@@ -88,16 +89,5 @@ export class NodePart extends BasePart<never, never> {
     text.data = content
 
     return text
-  }
-}
-
-export function nodeToHtml(node: Node): string {
-  switch (node.nodeType) {
-    case 3:
-      return node.textContent || ''
-    case 8:
-      return `<!--${node.textContent || ''}-->`
-    default:
-      return (node.valueOf() as Element).outerHTML
   }
 }

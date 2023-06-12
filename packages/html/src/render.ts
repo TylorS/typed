@@ -51,7 +51,7 @@ type RenderResultInput = {
   readonly renderContext: RenderContext
 }
 
-function renderRootResult(input: RenderResultInput, template: TemplateResult) {
+export function renderRootResult(input: RenderResultInput, template: TemplateResult) {
   const { document, renderContext, where } = input
   const cache = getRenderCache(where, renderContext.renderCache)
 
@@ -76,7 +76,7 @@ function renderRootResult(input: RenderResultInput, template: TemplateResult) {
   })
 }
 
-function renderTemplateResult(
+export function renderTemplateResult(
   document: Document,
   renderContext: RenderContext,
   result: TemplateResult,
@@ -104,7 +104,7 @@ function renderTemplateResult(
   })
 }
 
-function renderPlaceholders(
+export function renderPlaceholders(
   document: Document,
   renderContext: RenderContext,
   { values, sink, context }: TemplateResult,
@@ -131,12 +131,13 @@ function renderPlaceholders(
           fibers[index] = yield* $(
             unwrapRenderable(value),
             Fx.switchMatchCauseEffect(sink.error, (x) =>
-              Effect.flatMap(
+              pipe(
                 renderNode(
                   x,
                   renderCache.stack[index] || (renderCache.stack[index] = RenderCache()),
                 ),
-                part.update,
+                Effect.flatMap(part.update),
+                Effect.tap(() => onValue(index)),
               ),
             ),
             Fx.drain,

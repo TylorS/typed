@@ -16,7 +16,7 @@ import {
 import { makeElementRef } from './ElementRef.js'
 import { EventHandler } from './EventHandler.js'
 import { html } from './RenderTemplate.js'
-import { testRenderTemplate } from './_test-utils.js'
+import { testRenderTemplate, trimHtml } from './_test-utils.js'
 
 describe(import.meta.url, () => {
   it('renders a simple html element', async () => {
@@ -64,6 +64,30 @@ describe(import.meta.url, () => {
 
         ok(rendered instanceof globalThis.HTMLDivElement)
         ok(rendered.outerHTML === '<div id="test" class="foo" style="color:blue;"></div>')
+      },
+    )
+
+    await Effect.runPromise(test)
+  })
+
+  it('renders a simple html element with interpolated templates', async () => {
+    const test = testRenderTemplate(
+      html`<div
+        id="${'test'}"
+        class="${Effect.succeed('foo')}"
+        style="${Fx.succeed('color:blue;')}"
+      >
+        ${html`<p>${html`<span>lorem ipsum</span>`}</p>`}
+      </div>`,
+      function* ($, rendered) {
+        const globalThis = yield* $(GlobalThis)
+
+        ok(rendered instanceof globalThis.HTMLDivElement)
+
+        ok(
+          trimHtml(rendered.outerHTML) ===
+            '<div id="test" class="foo" style="color:blue;"><p><span>lorem ipsum</span></p></div>',
+        )
       },
     )
 

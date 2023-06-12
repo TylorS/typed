@@ -11,7 +11,7 @@ export class AttrPart extends BasePart<never, never> {
   protected orphaned = true
 
   constructor(document: Document, readonly element: HTMLElement, readonly attributeNode: Attr) {
-    super(document)
+    super(document, attributeNode.value)
   }
 
   /**

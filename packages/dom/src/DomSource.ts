@@ -22,7 +22,7 @@ export interface DomSource<T = HTMLElement, EventMap extends {} = DefaultEventMa
   ) => Fx.Fx<never, never, EventMap[T] & { readonly currentTarget: T }>
 }
 
-type Rendered = Node | DocumentFragment | Wire
+type Rendered = Node | DocumentFragment | Wire | readonly Rendered[]
 
 export const DomSource = Object.assign(Context.Tag<DomSource>('@typed/dom/DomSource'), {
   make: function DomSource<
@@ -218,23 +218,29 @@ function ensureMatches(cssSelector: string, element: Element, ev: Event, capture
 }
 
 function getElements<T extends Rendered>(element: T): ReadonlyArray<Element> {
-  if (isWire(element)) return getElements(element.valueOf() as DocumentFragment)
-  if (isElement(element)) return [element]
-  if (isDocumentFragment(element)) return Array.from(element.children)
+  if (Array.isArray(element)) return element.flatMap(getElements)
+  if (isWire(element as RenderedWithoutArray))
+    return getElements(element.valueOf() as DocumentFragment)
+  if (isElement(element as RenderedWithoutArray)) return [element as Element]
+  if (isDocumentFragment(element as RenderedWithoutArray))
+    return Array.from((element as Element).children)
 
-  if (element.parentElement) return [element.parentElement]
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  if ((element as Node).parentElement) return [(element as Node).parentElement!]
 
   return []
 }
 
-function isDocumentFragment(element: Rendered): element is DocumentFragment {
+type RenderedWithoutArray = Exclude<Rendered, readonly Rendered[]>
+
+function isDocumentFragment(element: RenderedWithoutArray): element is DocumentFragment {
   return element.nodeType === element.DOCUMENT_FRAGMENT_NODE
 }
 
-function isElement(element: Rendered): element is Element {
+function isElement(element: RenderedWithoutArray): element is Element {
   return element.nodeType === element.ELEMENT_NODE
 }
 
-function isWire(element: Rendered): element is Wire {
+function isWire(element: RenderedWithoutArray): element is Wire {
   return element.nodeType === 111
 }

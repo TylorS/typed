@@ -5,14 +5,16 @@ import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import { DomServices, GlobalThis, makeDomServices } from '@typed/dom'
-import { makeServerWindow } from '@typed/framework/makeServerWindow'
 import * as Fx from '@typed/fx'
+import * as happyDom from 'happy-dom'
 
 import { RenderContext, makeRenderContext } from './RenderContext.js'
 import { RenderTemplate, renderTemplate } from './RenderTemplate.js'
 import { TemplateResult } from './TemplateResult.js'
 import { hydrate } from './hydrate.js'
+import { makeServerWindow } from './makeServerWindow.js'
 import { stripHoleComments } from './parseTemplate.js'
+import { renderedToHtml } from './part/templateHelpers.js'
 import { Rendered, render } from './render.js'
 import {
   END_COMMENT,
@@ -103,19 +105,21 @@ export const testHtmlEvents = <R, E>(
   )
 }
 
-function trimHtmlEvent(event: HtmlEvent) {
+export function trimHtmlEvent(event: HtmlEvent) {
   return {
     ...event,
     html: trimHtml(event.html),
   }
 }
 
-function trimHtml(html: string) {
+export function trimHtml(html: string) {
   return stripHoleComments(
     html
       .replace(/\s+/g, ' ')
       .replace(new RegExp(START_COMMENT, 'g'), '')
-      .replace(new RegExp(END_COMMENT, 'g'), ''),
+      .replace(new RegExp(END_COMMENT, 'g'), '')
+      .replace(/>\s+/g, '>')
+      .replace(/\s+</g, '<'),
   ).trim()
 }
 
@@ -171,11 +175,10 @@ export const testHydrate = <I, R, E, Y extends Effect.EffectGen<any, any, any>, 
       return yield* $(
         template,
         hydrate(document.body),
-        Fx.take(1),
-        Fx.toArray,
-        Effect.map((x) => x[0]),
-        Effect.flatMap((rendered) =>
+        Fx.flatMapEffect((rendered) =>
           Effect.gen(($) => {
+            console.log(renderedToHtml(rendered))
+
             return test($, initial, rendered, ({ event, init }) =>
               GlobalThis.withEffect((globalThis) =>
                 Effect.gen(function* ($) {
@@ -193,13 +196,15 @@ export const testHydrate = <I, R, E, Y extends Effect.EffectGen<any, any, any>, 
             )
           }),
         ),
+        Fx.take(1),
+        Fx.toArray,
       )
     }),
     context,
   )
 }
 
-function dom(document: Document, root: HTMLElement) {
+export function dom(document: Document, root: HTMLElement) {
   return {
     element: <
       const T extends keyof HTMLElementTagNameMap,
@@ -207,8 +212,9 @@ function dom(document: Document, root: HTMLElement) {
     >(
       tag: T,
       attr: Attrs = {} as Attrs,
+      id?: number,
     ) => {
-      const rendered = elementWithAttr(document, tag, attr)
+      const rendered = elementWithAttr(document, tag, attr, String(id))
 
       root.append(rendered.node)
 
@@ -231,13 +237,20 @@ function dom(document: Document, root: HTMLElement) {
 
       return node
     },
+    hole: (index: number) => {
+      const node = document.createComment(`hole${index}`)
+
+      root.append(node)
+
+      return node
+    },
   }
 }
 
 function elementWithAttr<
   const T extends keyof HTMLElementTagNameMap,
   const Attrs extends Readonly<Record<string, string>>,
->(document: Document, tag: T, attr: Attrs) {
+>(document: Document, tag: T, attr: Attrs, id?: string) {
   const node = document.createElement(tag)
   const attributes = Object.fromEntries(
     Object.entries(attr).map(([k, v]) => {
@@ -258,8 +271,53 @@ function elementWithAttr<
     readonly [K in keyof Attrs]: K extends `data-${string}` ? string : Attr
   }
 
+  if (id) {
+    node.dataset.typed = id
+  }
+
   return {
     node,
     attributes,
   } as const
+}
+
+export function makeTestDom(): {
+  readonly window: Window & GlobalThis & Pick<happyDom.Window, 'happyDOM'>
+  readonly document: Document
+  readonly body: HTMLElement
+  readonly render: <A>(
+    f: (_: ReturnType<typeof dom>) => A,
+  ) => readonly [A, { start: Comment; end: Comment }]
+} {
+  const window = makeServerWindow({ url: 'https://example.com' })
+
+  function render<A>(f: (_: ReturnType<typeof dom>) => A): readonly [
+    A,
+    {
+      start: Comment
+      end: Comment
+    },
+  ] {
+    const { document } = window
+
+    document.body.innerHTML = ''
+
+    const start = document.createComment('typed-start')
+    const end = document.createComment('typed-end')
+
+    document.body.appendChild(start)
+
+    const a = f(dom(document, document.body))
+
+    document.body.appendChild(end)
+
+    return [a, { start, end }]
+  }
+
+  return {
+    window,
+    document: window.document,
+    body: window.document.body,
+    render,
+  }
 }

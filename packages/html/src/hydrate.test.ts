@@ -8,7 +8,6 @@ import { describe, expect, it } from 'vitest'
 import { html } from './RenderTemplate.js'
 import { testHydrate } from './_test-utils.js'
 import { hydrate } from './hydrate.js'
-import { nodeToHtml } from './part/NodePart.js'
 
 describe(fileURLToPath(import.meta.url), () => {
   describe(hydrate.name, () => {
@@ -16,9 +15,9 @@ describe(fileURLToPath(import.meta.url), () => {
       const test = testHydrate(
         html`<div></div>`,
         ({ element }) => {
-          const div = element('div', {})
+          const div = element('div', {}, -1)
 
-          return [div.node]
+          return div.node
         },
         // eslint-disable-next-line require-yield
         function* (_, initial, rendered) {
@@ -37,16 +36,12 @@ describe(fileURLToPath(import.meta.url), () => {
 
           return div.attributes.id
         },
-        // eslint-disable-next-line require-yield
         function* ($, attr, rendered) {
-          ok(Array.isArray(rendered))
-
-          const [node] = rendered
           const globalThis = yield* $(GlobalThis)
 
-          ok(node instanceof globalThis.HTMLDivElement)
+          ok(rendered instanceof globalThis.HTMLDivElement)
 
-          const renderedAttr = node.getAttributeNode('id')
+          const renderedAttr = rendered.getAttributeNode('id')
 
           ok(renderedAttr === attr)
         },
@@ -74,11 +69,7 @@ describe(fileURLToPath(import.meta.url), () => {
           return output
         },
         // eslint-disable-next-line require-yield
-        function* (_, [div, p, text], rendered) {
-          ok(Array.isArray(rendered))
-
-          const [root] = rendered
-
+        function* (_, [div, p, text], root) {
           ok(root === div.node)
 
           const child = root.childNodes[0]
@@ -92,44 +83,118 @@ describe(fileURLToPath(import.meta.url), () => {
       await Effect.runPromise(test)
     })
 
-    it.only('hydrates multi-nested templates', async () => {
+    it('hydrates multi-nested templates', async () => {
       const text = `lorem ipsum something something`
       const template = html`<div>${html`<p>${html`<span>${text}</span>`}</p>`}</div>`
 
       const test = testHydrate(
         template,
         ({ element }) => {
-          const div = element('div', { 'data-typed': '-1' })
-          const p = div.element('p', { 'data-typed': '0' })
-          const span = p.element('span', { 'data-typed': '0' })
+          const div = element('div', {}, -1)
+          const p = div.element('p', {}, 0)
+          const span = p.element('span', {}, 0)
 
           const output = [div, p, span, span.text(text)] as const
 
-          span.comment('hole0')
-          p.comment('hole0')
-          div.comment('hole0')
+          span.hole(0)
+          p.hole(0)
+          div.hole(0)
 
           return output
         },
         // eslint-disable-next-line require-yield
         function* (_, [div, p, span, text], rendered) {
-          ok(Array.isArray(rendered))
+          ok(rendered === div.node)
 
-          const [root] = rendered
-          ok(root === div.node)
-
-          console.log('root', nodeToHtml(root))
-
-          const child = root.childNodes[0]
+          const child = rendered.childNodes[0]
           ok(child === p.node)
-
-          console.log('child', nodeToHtml(child))
 
           const grandchild = child.childNodes[0]
 
           ok(grandchild === span.node)
 
           ok(grandchild.childNodes[0] === text)
+        },
+      )
+
+      await Effect.runPromise(test)
+    })
+
+    it('hydrates templates with multiple children', async () => {
+      const template = html`<div>${html`<p>1</p>`}${html`<p>2</p>`}</div>`
+
+      const test = testHydrate(
+        template,
+        ({ element }) => {
+          const div = element('div', {}, -1)
+          const p1 = div.element('p', {}, 0)
+          const p1Comment = div.hole(0)
+          const p2 = div.element('p', {}, 1)
+          const p2Comment = div.hole(1)
+
+          const output = {
+            div,
+            p1: {
+              node: p1.node,
+              text: p1.text('1'),
+              comment: p1Comment,
+            },
+            p2: {
+              node: p2.node,
+              text: p2.text('2'),
+              comment: p2Comment,
+            },
+          } as const
+
+          p2.hole(0)
+          p1.hole(0)
+
+          return output
+        },
+        // eslint-disable-next-line require-yield
+        function* (_, initial, rendered) {
+          ok(rendered === initial.div.node)
+
+          ok(rendered.childNodes[0] === initial.p1.node)
+          ok(rendered.childNodes[1] === initial.p1.comment)
+          ok(rendered.childNodes[2] === initial.p2.node)
+          ok(rendered.childNodes[3] === initial.p2.comment)
+        },
+      )
+
+      await Effect.runPromise(test)
+    })
+
+    it(`hydrates root template with multiple child templates`, async () => {
+      const template = html`${html`<p>1</p>`}${html`<p>2</p>`}`
+
+      const test = testHydrate(
+        template,
+        ({ element }, document) => {
+          const p1 = element('p', {}, 0)
+          const p1Hole = document.createComment('hole0')
+          document.body.appendChild(p1Hole)
+          const p2 = element('p', {}, 1)
+          const p2Hole = document.createComment('hole1')
+          document.body.appendChild(p2Hole)
+
+          const output = {
+            p1: {
+              node: p1.node,
+            },
+            p2: {
+              node: p2.node,
+            },
+          } as const
+
+          return output
+        },
+        // eslint-disable-next-line require-yield
+        function* (_, { p1, p2 }, rendered) {
+          ok(Array.isArray(rendered))
+
+          ok(rendered[0] === p1.node)
+          ok(rendered[1] === p2.node)
         },
       )
 

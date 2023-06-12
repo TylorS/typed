@@ -7,7 +7,6 @@ import type { RenderContext } from './RenderContext.js'
 import { TemplateResult } from './TemplateResult.js'
 import { getTemplateCache } from './getCache.js'
 import { holeToPart } from './holeToPart.js'
-import { nodeToHtml } from './part/NodePart.js'
 import { Part } from './part/Part.js'
 import { ParentChildNodes, findPath } from './paths.js'
 
@@ -88,6 +87,7 @@ export function HydrateEntry(
   renderContext: RenderContext,
   result: TemplateResult,
   where: ParentChildNodes,
+  depth: number,
 ) {
   // TODO: Bail out of hydration if any nodes can't be found
   return Effect.gen(function* ($) {
@@ -96,10 +96,9 @@ export function HydrateEntry(
     const { onReady, onValue } = yield* $(indexRefCounter(holes.length))
     const parts = holes.map((hole, i) => {
       if (hole.type === 'node') {
-        return holeToPart(document, hole, findCommentNode(where, i), (comment) => {
-          return []
-          return getPreviousNodes(comment, i)
-        })
+        const comment = findCommentNode(where.childNodes, i)
+
+        return holeToPart(document, hole, comment, (comment) => getPreviousNodes(comment, i))
       }
 
       return holeToPart(document, hole, findPath(where, hole.path))
@@ -113,6 +112,18 @@ export function HydrateEntry(
       ),
     )
 
+    const wire = (() => {
+      if (depth === 0) {
+        const nodes = Array.from(where.childNodes).filter(
+          (node) => node.nodeType !== node.COMMENT_NODE,
+        )
+
+        return nodes.length === 1 ? nodes[0] : nodes
+      }
+
+      return where.parentNode
+    })()
+
     return {
       template,
       cleanup,
@@ -120,42 +131,35 @@ export function HydrateEntry(
       onValue,
       parts,
       fibers,
-      wire: () => Array.from(where.childNodes),
+      wire: () => wire,
     } satisfies Entry
   })
 }
 
-function findCommentNode(where: ParentChildNodes, index: number): Comment {
-  const { childNodes } = where
+export function findCommentNode(childNodes: ArrayLike<Node>, index: number): Comment {
+  const value = `hole${index}`
 
   for (let i = 0; i < childNodes.length; ++i) {
     const node = childNodes[i]
 
-    if (node.nodeType === node.ELEMENT_NODE) {
-      if ((node as HTMLElement).dataset['typed'] === '-1')
-        return findCommentNode({ parentNode: node, childNodes: node.childNodes }, index)
-      if ((node as HTMLElement).dataset['typed'] === String(index))
-        return findCommentNode({ parentNode: node, childNodes: node.childNodes }, index)
-    }
-
-    if (node.nodeType === node.COMMENT_NODE && node.nodeValue === `hole${index}`) {
+    if (
+      node.nodeType === node.COMMENT_NODE &&
+      (node.nodeValue === value || node.nodeValue === 'typed-end')
+    ) {
       return node as Comment
     }
   }
 
-  throw new Error(`Could not find comment node for index ${index}`)
+  throw new Error(`Could not find comment node for <!--hole${index}-->`)
 }
 
-function getPreviousNodes(comment: Node, index: number) {
+export function getPreviousNodes(comment: Node, index: number) {
   const nodes: Node[] = []
   let node = comment.previousSibling
   const previousHole = `hole${index - 1}`
 
-  while (node && node.nodeValue !== previousHole) {
-    if (node.nodeType !== node.COMMENT_NODE) {
-      nodes.push(node)
-    }
-
+  while (node && node.nodeValue !== previousHole && node.nodeValue !== 'typed-start') {
+    nodes.unshift(node)
     node = node.previousSibling
   }
 

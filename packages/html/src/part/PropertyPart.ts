@@ -8,7 +8,7 @@ export class PropertyPart extends BasePart<never, never> {
   readonly _tag = 'Property'
 
   constructor(document: Document, readonly node: Node, readonly propertyName: string) {
-    super(document)
+    super(document, node[propertyName as keyof typeof node])
   }
 
   /**

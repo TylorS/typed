@@ -8,7 +8,7 @@ export class DataPart extends BasePart<never, never> {
   protected keys: string[] = []
 
   constructor(document: Document, readonly element: HTMLElement) {
-    super(document)
+    super(document, Object.keys(element.dataset))
   }
 
   /**

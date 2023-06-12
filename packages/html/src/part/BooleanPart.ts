@@ -7,7 +7,7 @@ export class BooleanPart extends BasePart<never, never> {
   readonly _tag = 'Boolean'
 
   constructor(document: Document, readonly element: Element, readonly attributeName: string) {
-    super(document, false)
+    super(document, element.hasAttribute(attributeName))
   }
 
   /**

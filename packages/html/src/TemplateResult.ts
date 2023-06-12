@@ -1,6 +1,8 @@
-import type { Deferred } from '@effect/io/Deferred'
-import type { Context } from '@typed/context'
-import type { Sink } from '@typed/fx'
+import * as Deferred from '@effect/io/Deferred'
+import * as Effect from '@effect/io/Effect'
+import * as FiberId from '@effect/io/Fiber/Id'
+import * as Context from '@typed/context'
+import { Sink } from '@typed/fx'
 
 import type { RenderTemplateOptions } from './RenderTemplate.js'
 import type { Renderable } from './Renderable.js'
@@ -23,10 +25,38 @@ export class TemplateResult {
     // Options for rendering a template
     readonly options: RenderTemplateOptions | undefined,
     // The context in which all Effects will be run
-    readonly context: Context<any>,
+    readonly context: Context.Context<any>,
     // Where to send events or errors to be handled
     readonly sink: Sink<any, any, TemplateResult>,
     // Used to signal when a template has been completed.
-    readonly deferred: Deferred<never, void>,
+    readonly deferred: Deferred.Deferred<never, void>,
   ) {}
+}
+
+function tmpl(template: TemplateStringsArray) {
+  return {
+    template,
+  }
+}
+
+const { template: emptyTemplate } = tmpl``
+const emptyContext = Context.empty() as Context.Context<any>
+const emptySink = Sink(
+  () => Effect.unit(),
+  () => Effect.unit(),
+)
+
+/**
+ * Utilized to lift values into a `TemplateResult` for use in hydration to
+ * help find the right place in the DOM to handle diffing and patching
+ * @internal */
+export function fromValue(value: unknown) {
+  return new TemplateResult(
+    emptyTemplate,
+    [value as Renderable<any, any>],
+    undefined,
+    emptyContext,
+    emptySink,
+    Deferred.unsafeMake(FiberId.none),
+  )
 }

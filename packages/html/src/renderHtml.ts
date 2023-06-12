@@ -11,9 +11,8 @@ import { TemplateResult } from './TemplateResult.js'
 import { getTemplateCache } from './getCache.js'
 import { holeToPart } from './holeToPart.js'
 import { handleEffectPart, handlePart, unwrapRenderable } from './makeUpdate.js'
-import { nodeToHtml } from './part/NodePart.js'
 import { Part } from './part/Part.js'
-import { addDataTypedAttributes, trimEmptyQuotes } from './part/templateHelpers.js'
+import { nodeToHtml, addDataTypedAttributes, trimEmptyQuotes } from './part/templateHelpers.js'
 import { findPath } from './paths.js'
 
 export const START_COMMENT = `<!--typed-start-->`

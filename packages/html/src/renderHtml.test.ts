@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 import { html } from './RenderTemplate.js'
 import { testHtml, testHtmlEvents } from './_test-utils.js'
-import { FullHtml, renderToHtml, renderToHtmlStream } from './renderHtml.js'
+import { FullHtml, PartialHtml, renderToHtml, renderToHtmlStream } from './renderHtml.js'
 
 describe(fileURLToPath(import.meta.url), () => {
   describe(renderToHtmlStream.name, () => {
@@ -23,6 +23,24 @@ describe(fileURLToPath(import.meta.url), () => {
           testHtmlEvents(html`<div id="test"></div>`, [
             new FullHtml(`<div data-typed="-1" id="test"></div>`),
           ]),
+        )
+      })
+
+      await Effect.runPromise(test)
+    })
+
+    it('renders a simple html element with interlopated templates', async () => {
+      const test = Effect.gen(function* ($) {
+        yield* $(
+          testHtmlEvents(
+            html`<div id="test">${html`<p>${html`<span>${'lorem ipsum'}</span>`}</p>`}</div>`,
+            [
+              new PartialHtml(
+                `<div data-typed="-1" id="test"><p data-typed="0"><span data-typed="0">lorem ipsum</span></p></div>`,
+                true,
+              ),
+            ],
+          ),
         )
       })
 
