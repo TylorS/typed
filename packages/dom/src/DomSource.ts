@@ -216,10 +216,10 @@ function ensureMatches(cssSelector: string, element: Element, ev: Event, capture
 function getElements<T extends Rendered>(element: T): ReadonlyArray<Element> {
   if (Array.isArray(element)) return element.flatMap(getElements)
   if (isWire(element as RenderedWithoutArray))
-    return getElements(element.valueOf() as DocumentFragment)
+    return Array.from((element.valueOf() as DocumentFragment).children)
   if (isElement(element as RenderedWithoutArray)) return [element as Element]
   if (isDocumentFragment(element as RenderedWithoutArray))
-    return Array.from((element as Element).children)
+    return Array.from((element as DocumentFragment).children)
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   if ((element as Node).parentElement) return [(element as Node).parentElement!]
