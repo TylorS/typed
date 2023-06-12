@@ -120,8 +120,8 @@ export function HydrateEntry(
 
     const wire = (() => {
       if (depth === 0) {
-        const nodes = Array.from(where.childNodes).filter(
-          (node) => node.nodeType !== node.COMMENT_NODE,
+        const nodes = Array.from(where.childNodes).filter((node) =>
+          node.nodeType === node.COMMENT_NODE ? node.nodeValue !== 'typed-end' : true,
         )
 
         return nodes.length === 1 ? nodes[0] : nodes

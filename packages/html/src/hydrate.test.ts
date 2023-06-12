@@ -174,23 +174,27 @@ describe(fileURLToPath(import.meta.url), () => {
         template,
         ({ element, hole }) => {
           const p1 = element('p', {}, 0)
-          hole(0)
+          const p1Hole = hole(0)
           const p2 = element('p', {}, 1)
-          hole(1)
+          const p2Hole = hole(1)
 
           const output = {
             p1,
+            p1Hole,
             p2,
+            p2Hole,
           } as const
 
           return output
         },
         // eslint-disable-next-line require-yield
-        function* (_, { p1, p2 }, rendered) {
+        function* (_, { p1, p1Hole, p2, p2Hole }, rendered) {
           ok(Array.isArray(rendered))
 
           ok(rendered[0] === p1.node)
-          ok(rendered[1] === p2.node)
+          ok(rendered[1] === p1Hole)
+          ok(rendered[2] === p2.node)
+          ok(rendered[3] === p2Hole)
         },
       )
 
