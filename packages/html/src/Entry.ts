@@ -4,6 +4,7 @@ import * as Fiber from '@effect/io/Fiber'
 import { Wire, persistent } from '@typed/wire'
 
 import type { RenderContext } from './RenderContext.js'
+import { Renderable } from './Renderable.js'
 import { TemplateResult } from './TemplateResult.js'
 import { getTemplateCache } from './getCache.js'
 import { holeToPart } from './holeToPart.js'
@@ -17,6 +18,7 @@ export interface Entry {
   onValue: (index: number) => Effect.Effect<never, never, void>
   parts: readonly Part[]
   template: TemplateStringsArray
+  values: readonly Renderable<any, any>[]
   wire: () => Node | DocumentFragment | Wire | Node[] | null
 }
 
@@ -45,6 +47,7 @@ export function Entry(document: Document, renderContext: RenderContext, result: 
       onValue,
       parts,
       fibers,
+      values: result.values,
       wire: () => wire || (wire = persistent(content)),
     } satisfies Entry
   })
@@ -134,6 +137,7 @@ export function HydrateEntry(
       onValue,
       parts,
       fibers,
+      values: result.values,
       wire: () => wire,
     } satisfies Entry
   })

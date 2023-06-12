@@ -15,7 +15,7 @@ import { getRenderCache } from './getCache.js'
 import { handleEffectPart, handlePart, unwrapRenderable } from './makeUpdate.js'
 import { Part } from './part/Part.js'
 import { ParentChildNodes } from './paths.js'
-import type { Rendered } from './render.js'
+import { renderPlaceholders, type Rendered } from './render.js'
 
 // TODO: Figure out how to bail out of hydration when we find things that don't match up
 
@@ -108,17 +108,23 @@ export function hydrateTemplateResult(
 
     if (!entry || entry.template !== result.template) {
       // The entry is changing, so we need to cleanup the previous one
-      if (cache.entry) {
-        yield* $(cache.entry.cleanup)
-      }
+      if (entry) {
+        yield* $(entry.cleanup)
 
-      cache.entry = entry = yield* $(HydrateEntry(document, renderContext, result, where, depth))
+        cache.entry = entry = yield* $(Entry(document, renderContext, result))
 
-      // Render all children before creating the wire
-      if (entry.parts.length > 0) {
-        yield* $(
-          hydratePlaceholders(document, renderContext, result, cache, entry, where, depth + 1),
-        )
+        // Render all children before creating the wire
+        if (entry.parts.length > 0) {
+          yield* $(renderPlaceholders(document, renderContext, result, cache, entry))
+        }
+      } else {
+        cache.entry = entry = yield* $(HydrateEntry(document, renderContext, result, where, depth))
+        // Render all children before creating the wire
+        if (entry.parts.length > 0) {
+          yield* $(
+            hydratePlaceholders(document, renderContext, result, cache, entry, where, depth + 1),
+          )
+        }
       }
     }
 

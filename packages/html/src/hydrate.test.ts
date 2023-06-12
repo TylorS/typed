@@ -1,8 +1,10 @@
 import { ok } from 'assert'
 import { fileURLToPath } from 'url'
 
+import * as Duration from '@effect/data/Duration'
 import * as Effect from '@effect/io/Effect'
 import { GlobalThis } from '@typed/dom'
+import * as Fx from '@typed/fx'
 import { describe, expect, it } from 'vitest'
 
 import { html } from './RenderTemplate.js'
@@ -177,12 +179,8 @@ describe(fileURLToPath(import.meta.url), () => {
           hole(1)
 
           const output = {
-            p1: {
-              node: p1.node,
-            },
-            p2: {
-              node: p2.node,
-            },
+            p1,
+            p2,
           } as const
 
           return output
@@ -193,6 +191,99 @@ describe(fileURLToPath(import.meta.url), () => {
 
           ok(rendered[0] === p1.node)
           ok(rendered[1] === p2.node)
+        },
+      )
+
+      await Effect.runPromise(test)
+    })
+
+    it(`allows root TemplateResult to change over time`, async () => {
+      const template = Fx.mergeAll(
+        html`<div>1</div>`,
+        Fx.delay(html`<p>2</p>`, Duration.millis(100)),
+        Fx.delay(html`<span>3</span>`, Duration.millis(200)),
+      )
+
+      const test = testHydrate(
+        template,
+        ({ element }) => {
+          const div = element('div', {}, -1)
+          const text = div.text('1')
+
+          const output = {
+            div,
+            text,
+          } as const
+
+          return output
+        },
+        // eslint-disable-next-line require-yield
+        function* ($, { div, text }, rendered, i) {
+          const globalThis = yield* $(GlobalThis)
+
+          ok(rendered instanceof globalThis.HTMLElement)
+
+          if (i === 0) {
+            ok(rendered === div.node)
+            ok(rendered.childNodes.length === 1)
+            ok(rendered.childNodes[0] === text)
+          }
+
+          if (i === 1) {
+            ok(rendered.tagName === 'P')
+            ok(rendered.textContent === '2')
+          }
+
+          if (i === 2) {
+            ok(rendered.tagName === 'SPAN')
+            ok(rendered.textContent === '3')
+          }
+        },
+        undefined,
+        3,
+      )
+
+      await Effect.runPromise(test)
+    })
+
+    it(`allows nested TemplateResults to change over time`, async () => {
+      const template = html`<div>
+        ${Fx.mergeAll(
+          html`<p>1</p>`,
+          Fx.delay(html`<span>2</span>`, Duration.millis(100)),
+          Fx.delay(html`<span>3</span>`, Duration.millis(200)),
+        )}
+      </div>`
+
+      const test = testHydrate(
+        template,
+        ({ element }) => {
+          const div = element('div', {}, -1)
+          const p = div.element('p', {}, 0)
+          div.hole(0)
+
+          const output = {
+            div,
+            p,
+          } as const
+
+          return output
+        },
+        // eslint-disable-next-line require-yield
+        function* ($, { div, p }, rendered, i) {
+          const globalThis = yield* $(GlobalThis)
+
+          ok(rendered === div.node)
+
+          if (i === 0) {
+            ok(rendered.childNodes[0] === p.node)
+          }
+
+          if (i > 0) {
+            ok(rendered.childNodes[0] instanceof globalThis.HTMLSpanElement)
+            ok(rendered.childNodes[0].tagName === 'SPAN')
+            ok(rendered.childNodes[0].textContent === String(i + 1))
+          }
         },
       )
 

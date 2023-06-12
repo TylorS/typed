@@ -148,12 +148,14 @@ export const testHydrate = <I, R, E, Y extends Effect.EffectGen<any, any, any>, 
     $: Effect.Adapter,
     initial: I,
     rendered: Rendered,
+    index: number,
     sendEvent: (config: {
       event: string
       init?: EventInit
     }) => Effect.Effect<GlobalThis, never, void>,
   ) => Generator<Y, O>,
   environment: RenderContext['environment'] = 'browser',
+  take = 1,
 ) => {
   const window = makeServerWindow({ url: 'https://example.com' })
   const scope = Effect.runSync(Scope.make())
@@ -172,14 +174,14 @@ export const testHydrate = <I, R, E, Y extends Effect.EffectGen<any, any, any>, 
 
       document.body.append(document.createComment('typed-end'))
 
+      let i = 0
+
       return yield* $(
         template,
         hydrate(document.body),
         Fx.flatMapEffect((rendered) =>
           Effect.gen(($) => {
-            console.log(renderedToHtml(rendered))
-
-            return test($, initial, rendered, ({ event, init }) =>
+            return test($, initial, rendered, i++, ({ event, init }) =>
               GlobalThis.withEffect((globalThis) =>
                 Effect.gen(function* ($) {
                   ok(rendered instanceof globalThis.HTMLElement)
@@ -196,7 +198,7 @@ export const testHydrate = <I, R, E, Y extends Effect.EffectGen<any, any, any>, 
             )
           }),
         ),
-        Fx.take(1),
+        Fx.take(take),
         Fx.toArray,
       )
     }),
