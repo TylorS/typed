@@ -94,9 +94,12 @@ export function HydrateEntry(
     const { template, deferred } = result
     const { holes } = getTemplateCache(document, renderContext.templateCache, result)
     const { onReady, onValue } = yield* $(indexRefCounter(holes.length))
+
+    let last = 0
     const parts = holes.map((hole, i) => {
       if (hole.type === 'node') {
-        const comment = findCommentNode(where.childNodes, i)
+        const [comment, index] = findCommentNode(where.childNodes, i, last)
+        last = index
 
         return holeToPart(document, hole, comment, (comment) => getPreviousNodes(comment, i))
       }
@@ -136,17 +139,21 @@ export function HydrateEntry(
   })
 }
 
-export function findCommentNode(childNodes: ArrayLike<Node>, index: number): Comment {
+export function findCommentNode(
+  childNodes: ArrayLike<Node>,
+  index: number,
+  start = 0,
+): readonly [Comment, number] {
   const value = `hole${index}`
 
-  for (let i = 0; i < childNodes.length; ++i) {
+  for (let i = start; i < childNodes.length; ++i) {
     const node = childNodes[i]
 
     if (
       node.nodeType === node.COMMENT_NODE &&
       (node.nodeValue === value || node.nodeValue === 'typed-end')
     ) {
-      return node as Comment
+      return [node as Comment, i]
     }
   }
 

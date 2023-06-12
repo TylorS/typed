@@ -32,7 +32,7 @@ describe(fileURLToPath(import.meta.url), () => {
       const test = testHydrate(
         html`<div id=${'foo'}></div>`,
         ({ element }) => {
-          const div = element('div', { id: 'initial' })
+          const div = element('div', { id: 'initial' }, -1)
 
           return div.attributes.id
         },
@@ -57,8 +57,8 @@ describe(fileURLToPath(import.meta.url), () => {
       const test = testHydrate(
         template,
         ({ element }) => {
-          const div = element('div', { 'data-typed': '-1' })
-          const p = div.element('p', { 'data-typed': '0' })
+          const div = element('div', {}, -1)
+          const p = div.element('p', {}, 0)
 
           const output = [div, p, p.text(text)] as const
 
@@ -170,13 +170,11 @@ describe(fileURLToPath(import.meta.url), () => {
 
       const test = testHydrate(
         template,
-        ({ element }, document) => {
+        ({ element, hole }) => {
           const p1 = element('p', {}, 0)
-          const p1Hole = document.createComment('hole0')
-          document.body.appendChild(p1Hole)
+          hole(0)
           const p2 = element('p', {}, 1)
-          const p2Hole = document.createComment('hole1')
-          document.body.appendChild(p2Hole)
+          hole(1)
 
           const output = {
             p1: {
