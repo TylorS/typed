@@ -11,6 +11,8 @@ import { html } from './RenderTemplate.js'
 import { testHydrate } from './_test-utils.js'
 import { hydrate } from './hydrate.js'
 
+// TODO: Figure out how to update values during hydration.
+
 describe(fileURLToPath(import.meta.url), () => {
   describe(hydrate.name, () => {
     it('hydrates a simple html element', async () => {
