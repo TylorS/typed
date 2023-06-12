@@ -142,18 +142,6 @@ function hydratePlaceholders(
   where: ParentChildNodes,
   depth: number,
 ): Effect.Effect<Scope, never, void> {
-  const renderNode = (value: unknown, index: number, cache: RenderCache) =>
-    Effect.suspend(() =>
-      hydrateTemplateResult(
-        document,
-        renderContext,
-        value instanceof TemplateResult ? value : fromValue(value),
-        cache,
-        findTemplateResultParentChildNodes(where, index),
-        depth,
-      ),
-    )
-
   const hydratePart = (part: Part, index: number) =>
     Effect.gen(function* ($) {
       const value = values[index]
@@ -165,10 +153,13 @@ function hydratePlaceholders(
             unwrapRenderable(value),
             Fx.switchMatchCauseEffect(sink.error, (x) =>
               pipe(
-                renderNode(
-                  x,
-                  index,
+                hydrateTemplateResult(
+                  document,
+                  renderContext,
+                  x instanceof TemplateResult ? x : fromValue(x),
                   renderCache.stack[index] || (renderCache.stack[index] = RenderCache()),
+                  findTemplateResultParentChildNodes(where, index),
+                  depth,
                 ),
                 Effect.flatMap(part.update),
                 Effect.tap(() => onValue(index)),
