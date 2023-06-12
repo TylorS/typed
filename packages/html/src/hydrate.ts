@@ -7,7 +7,7 @@ import { Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
 import { Wire } from '@typed/wire'
 
-import { Entry, HydrateEntry } from './Entry.js'
+import { CouldNotFindCommentError, Entry, HydrateEntry } from './Entry.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
 import { TemplateResult, fromValue } from './TemplateResult.js'
@@ -15,7 +15,7 @@ import { getRenderCache } from './getCache.js'
 import { handleEffectPart, handlePart, unwrapRenderable } from './makeUpdate.js'
 import { Part } from './part/Part.js'
 import { ParentChildNodes } from './paths.js'
-import { renderPlaceholders, type Rendered } from './render.js'
+import { renderPlaceholders, type Rendered, renderRootResult } from './render.js'
 
 // TODO: Figure out how to bail out of hydration when we find things that don't match up
 
@@ -44,7 +44,17 @@ export const hydrate: {
           initial: true,
         }
 
-        return Fx.switchMapEffect(what, (template) => hydrateRoot(input, template))
+        return Fx.switchMapEffect(what, (template) =>
+          Effect.catchAllDefect(hydrateRoot(input, template), (defect) => {
+            // If we can't find a comment then we need to render the result
+            // without hydration
+            if (defect instanceof CouldNotFindCommentError) {
+              return renderRootResult(input, template)
+            } else {
+              return Effect.die(defect)
+            }
+          }),
+        )
       }).addTrace(trace),
 )
 

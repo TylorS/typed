@@ -161,7 +161,13 @@ export function findCommentNode(
     }
   }
 
-  throw new Error(`Could not find comment node for <!--hole${index}-->`)
+  throw new CouldNotFindCommentError(index)
+}
+
+export class CouldNotFindCommentError extends Error {
+  constructor(index: number) {
+    super(`Could not find comment node for <!--hole${index}-->`)
+  }
 }
 
 export function getPreviousNodes(comment: Node, index: number) {
