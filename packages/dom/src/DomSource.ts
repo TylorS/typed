@@ -49,11 +49,7 @@ export const DomSource = Object.assign(Context.Tag<DomSource>('@typed/dom/DomSou
       },
       elements:
         selectors.length === 0
-          ? pipe(
-              rootElement,
-              Fx.map((e) => getElements(e) as ReadonlyArray<Element>),
-              Fx.multicast,
-            )
+          ? pipe(rootElement, Fx.map(getElements), Fx.multicast)
           : pipe(
               rootElement,
               Fx.map(findMatchingElements<any>(selectors)),
