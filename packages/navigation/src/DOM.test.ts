@@ -6,7 +6,6 @@ import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Layer from '@effect/io/Layer'
 import { GlobalThis, History, Location, Window, localStorage, makeDomServices } from '@typed/dom'
-import { makeServerWindow } from '@typed/framework/makeServerWindow'
 import * as Fx from '@typed/fx'
 import { describe, it } from 'vitest'
 
@@ -19,6 +18,7 @@ import {
   cancelNavigation,
   redirect,
 } from './Navigation.js'
+import { makeServerWindow } from './_makeServerWindow.js'
 import { encodeDestination } from './json.js'
 import { getStoredEvents } from './storage.js'
 

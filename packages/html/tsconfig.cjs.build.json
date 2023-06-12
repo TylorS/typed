@@ -13,9 +13,6 @@
       "path": "../dom/tsconfig.cjs.build.json"
     },
     {
-      "path": "../framework/tsconfig.cjs.build.json"
-    },
-    {
       "path": "../fx/tsconfig.cjs.build.json"
     },
     {

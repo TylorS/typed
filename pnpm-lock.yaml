@@ -472,9 +472,6 @@ importers:
       '@typed/dom':
         specifier: workspace:*
         version: link:../dom
-      '@typed/framework':
-        specifier: workspace:*
-        version: link:../framework
       '@typed/fx':
         specifier: workspace:*
         version: link:../fx
@@ -484,6 +481,9 @@ importers:
       '@webreflection/uparser':
         specifier: ~0.2.4
         version: 0.2.4
+      escape-html:
+        specifier: ^1.0.3
+        version: 1.0.3
       happy-dom:
         specifier: ^9.20.3
         version: 9.20.3
@@ -491,9 +491,9 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0
     devDependencies:
-      escape-html:
-        specifier: ^1.0.3
-        version: 1.0.3
+      '@types/escape-html':
+        specifier: ^1.0.2
+        version: 1.0.2
       vitest:
         specifier: ^0.32.0
         version: 0.32.0(@vitest/ui@0.32.0)(happy-dom@9.20.3)
@@ -518,10 +518,10 @@ importers:
       '@typed/path':
         specifier: workspace:*
         version: link:../path
+      happy-dom:
+        specifier: ^9.20.3
+        version: 9.20.3
     devDependencies:
-      '@typed/framework':
-        specifier: workspace:*
-        version: link:../framework
       vitest:
         specifier: ^0.32.0
         version: 0.32.0(@vitest/ui@0.32.0)(happy-dom@9.20.3)
@@ -5777,6 +5777,7 @@ packages:
 
   /escape-html@1.0.3:
     resolution: {integrity: sha512-NiSupZ4OeuGwr68lGIeym/ksIZMJodUGOSCZ/FSnTxcrekbvqrgdUxlJOMpijaKZVjAJrWrGs/6Jy8OMuyj9ow==}
+    dev: false
 
   /escape-string-regexp@1.0.5:
     resolution: {integrity: sha512-vbRorB5FUQWvla16U8R/qgaFIya2qGzwDrNmCZuYKrbdSUMG6I1ZCGQRefkRVhuOkIGVne7BQ35DSfo1qvJqFg==}

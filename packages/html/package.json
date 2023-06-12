@@ -23,10 +23,10 @@
     "@effect/io": "^0.26.0",
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",
-    "@typed/framework": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/wire": "workspace:*",
     "@webreflection/uparser": "~0.2.4",
+    "escape-html": "^1.0.3",
     "happy-dom": "^9.20.3",
     "udomdiff": "^1.1.0"
   },
@@ -36,7 +36,7 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "escape-html": "^1.0.3",
+    "@types/escape-html": "^1.0.2",
     "vitest": "^0.32.0"
   }
 }

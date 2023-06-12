@@ -14,7 +14,6 @@ import { TemplateResult } from './TemplateResult.js'
 import { hydrate } from './hydrate.js'
 import { makeServerWindow } from './makeServerWindow.js'
 import { stripHoleComments } from './parseTemplate.js'
-import { renderedToHtml } from './part/templateHelpers.js'
 import { Rendered, render } from './render.js'
 import {
   END_COMMENT,

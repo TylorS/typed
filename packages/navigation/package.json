@@ -24,14 +24,14 @@
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
-    "@typed/path": "workspace:*"
+    "@typed/path": "workspace:*",
+    "happy-dom": "^9.20.3"
   },
   "publishConfig": {
     "access": "public"
   },
   "sideEffects": false,
   "devDependencies": {
-    "@typed/framework": "workspace:*",
     "vitest": "^0.32.0"
   }
 }
