@@ -28,6 +28,11 @@ export interface Router<in out P extends string = string> {
    * The parent Router instance if one exists.
    */
   readonly parent: Option.Option<Router<string>>
+
+  /**
+   * The Navigation Service
+   */
+  readonly navigation: Navigation
 }
 
 export const Router = Tag<Router>('Router')
@@ -44,6 +49,7 @@ export const navigation: Layer.Layer<Navigation, never, Router> = Router.layer(
     >(route: Route<P>, parent: Option.Option<Router<any>>): Router<P> {
       const router: Router<P> = {
         route,
+        navigation,
         params: currentPath.filterMap(route.match),
         define: <P2 extends string>(other: Route<P2>): Router<PathJoin<[P, P2]>> =>
           makeRouter(route.concat(other), Option.some(router)),

@@ -14,7 +14,16 @@ import {
 import { ServiceId } from './constant.js'
 import { encodeEvent } from './json.js'
 import { Model } from './model.js'
-import { Notify, Save, makeGoTo, makeNotify, makeOnNavigation } from './shared-intent.js'
+import {
+  Notify,
+  NotifyEnd,
+  Save,
+  makeGoTo,
+  makeNotify,
+  makeNotifyEnd,
+  makeOnNavigation,
+  makeOnNavigationEnd,
+} from './shared-intent.js'
 import { saveToStorage } from './storage.js'
 import { createKey, getUrl } from './util.js'
 
@@ -50,6 +59,8 @@ export type DomIntent = {
   readonly reload: ReturnType<typeof makeReload>
 
   readonly onNavigation: ReturnType<typeof makeOnNavigation>
+
+  readonly onNavigationEnd: ReturnType<typeof makeOnNavigationEnd>
 }
 
 export const makeIntent = (
@@ -59,10 +70,11 @@ export const makeIntent = (
 ): DomIntent => {
   const maxEntries = Math.abs(options.maxEntries ?? DEFAULT_MAX_ENTRIES)
   const notify = makeNotify(model)
+  const notifyEnd = makeNotifyEnd(model)
   const save = makeSave(model)
-  const go = makeGo(model, notify, save)
-  const replace = makeReplace(model, notify, save, base)
-  const push = makePush(model, notify, save, base, maxEntries)
+  const go = makeGo(model, notify, notifyEnd, save)
+  const replace = makeReplace(model, notify, notifyEnd, save, base)
+  const push = makePush(model, notify, notifyEnd, save, base, maxEntries)
 
   return {
     back: (skipHistory: boolean) => go(-1, skipHistory),
@@ -76,6 +88,7 @@ export const makeIntent = (
     goTo: makeGoTo(model, go),
     reload: makeReload(model, notify, save),
     onNavigation: makeOnNavigation(model),
+    onNavigationEnd: makeOnNavigationEnd(model),
   } as const
 }
 
@@ -119,7 +132,7 @@ export const makeReload = (model: Model, notify: Notify, save: Save<Storage>) =>
   })
 
 export const makeReplace =
-  (model: Model, notify: Notify, save: Save<Storage>, base: string) =>
+  (model: Model, notify: Notify, notifyEnd: NotifyEnd, save: Save<Storage>, base: string) =>
   (url: string, options: NavigateOptions = {}, skipHistory = false) =>
     Effect.gen(function* ($) {
       const location = yield* $(Location)
@@ -159,12 +172,20 @@ export const makeReplace =
       )
 
       yield* $(save(event))
+      yield* $(notifyEnd(event))
 
       return destination
     })
 
 export const makePush =
-  (model: Model, notify: Notify, save: Save<Storage>, base: string, maxEntries: number) =>
+  (
+    model: Model,
+    notify: Notify,
+    notifyEnd: NotifyEnd,
+    save: Save<Storage>,
+    base: string,
+    maxEntries: number,
+  ) =>
   (url: string, options: NavigateOptions = {}, skipHistory = false) =>
     Effect.gen(function* ($) {
       const location = yield* $(Location)
@@ -210,12 +231,13 @@ export const makePush =
       yield* $(model.index.update((i) => i + 1))
 
       yield* $(save(event))
+      yield* $(notifyEnd(event))
 
       return destination
     })
 
 export const makeGo =
-  (model: Model, notify: Notify, save: Save<Storage>) =>
+  (model: Model, notify: Notify, notifyEnd: NotifyEnd, save: Save<Storage>) =>
   (delta: number, skipHistory = false) =>
     Effect.gen(function* ($) {
       const currentEntries = yield* $(model.events)
@@ -247,6 +269,8 @@ export const makeGo =
       yield* $(model.index.set(nextIndex))
 
       yield* $(save(nextEntry))
+
+      yield* $(notifyEnd(nextEntry))
 
       return nextEntry.destination
     })

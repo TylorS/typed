@@ -207,7 +207,6 @@ declare global {
 
   // eslint-disable-next-line @typescript-eslint/ban-types
   export interface Object extends Placeholder<never, never, Object> {}
-  // export interface Function extends Placeholder {} // TODO: Utilize for directives??
 
   // DOM types
   export interface Node extends Placeholder<never, never, Node> {}

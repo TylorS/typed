@@ -92,7 +92,6 @@ export function HydrateEntry(
   where: ParentChildNodes,
   isRoot: boolean,
 ) {
-  // TODO: Bail out of hydration if any nodes can't be found
   return Effect.gen(function* ($) {
     const { template, deferred } = result
     const { holes } = getTemplateCache(document, renderContext.templateCache, result)

@@ -89,6 +89,8 @@ export function memory(options: MemoryNavigationOptions): Layer.Layer<never, nev
         navigate: flow(intent.navigate, catchNavigationError, lock),
         onNavigation: (handler, options) =>
           pipe(intent.onNavigation(handler, options), catchNavigationError, Effect.asUnit),
+        onNavigationEnd: (handler, options) =>
+          Effect.asUnit(intent.onNavigationEnd(handler, options)),
         reload: lock(catchNavigationError(intent.reload)),
       }
 

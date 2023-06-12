@@ -100,6 +100,8 @@ export const dom = (
         navigate: flow(intent.navigate, catchNavigationError, provideLocked),
         onNavigation: (handler, options) =>
           pipe(intent.onNavigation(handler, options), catchNavigationError, Effect.asUnit),
+        onNavigationEnd: (handler, options) =>
+          Effect.asUnit(intent.onNavigationEnd(handler, options)),
         reload: provideLocked(catchNavigationError(intent.reload)),
       }
 

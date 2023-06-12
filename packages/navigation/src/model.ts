@@ -5,9 +5,15 @@ import * as Fx from '@typed/fx'
 import { Destination, NavigationError, NavigationEvent, OnNavigationOptions } from './Navigation.js'
 
 export interface Model {
-  readonly eventHandlers: Set<
+  readonly onNavigationHandlers: Set<
     readonly [
       (event: NavigationEvent) => Effect.Effect<never, NavigationError, unknown>,
+      OnNavigationOptions?,
+    ]
+  >
+  readonly onNavigationEndHandlers: Set<
+    readonly [
+      (event: NavigationEvent) => Effect.Effect<never, never, unknown>,
       OnNavigationOptions?,
     ]
   >
@@ -36,7 +42,8 @@ export const makeModel = (
     )
 
     return {
-      eventHandlers: new Set(),
+      onNavigationHandlers: new Set(),
+      onNavigationEndHandlers: new Set(),
       events,
       index,
       entries,

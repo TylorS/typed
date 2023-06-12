@@ -17,8 +17,6 @@ import { Part } from './part/Part.js'
 import { ParentChildNodes } from './paths.js'
 import { renderPlaceholders, type Rendered, renderRootResult } from './render.js'
 
-// TODO: Figure out how to bail out of hydration when we find things that don't match up
-
 export const hydrate: {
   (where: HTMLElement): <R, E>(
     what: Fx.Fx<R, E, TemplateResult>,

@@ -45,6 +45,14 @@ export interface Navigation {
   ) => Effect.Effect<R | Scope.Scope, never, void>
 
   /**
+   * Subscribe to navigation events after they have been commited.
+   */
+  readonly onNavigationEnd: <R>(
+    handler: (event: NavigationEvent) => Effect.Effect<R, never, void>,
+    options?: OnNavigationOptions,
+  ) => Effect.Effect<R | Scope.Scope, never, void>
+
+  /**
    * Returns true if there is a previous navigation entry to navigate to.
    */
   readonly canGoBack: Fx.Computed<never, never, boolean>

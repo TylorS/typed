@@ -11,7 +11,14 @@ import {
   NavigationType,
 } from './Navigation.js'
 import { Model } from './model.js'
-import { Notify, Save, makeGoTo, makeNotify, makeOnNavigation } from './shared-intent.js'
+import {
+  Notify,
+  Save,
+  makeGoTo,
+  makeNotify,
+  makeOnNavigation,
+  makeOnNavigationEnd,
+} from './shared-intent.js'
 import { createKey, getUrl } from './util.js'
 
 // Roughly the number of History entries in a browser anyways
@@ -42,6 +49,8 @@ export type MemoryIntent = {
   readonly reload: ReturnType<typeof makeReload>
 
   readonly onNavigation: ReturnType<typeof makeOnNavigation>
+
+  readonly onNavigationEnd: ReturnType<typeof makeOnNavigationEnd>
 }
 
 export function makeIntent(model: Model, options: MemoryNavigationOptions): MemoryIntent {
@@ -65,6 +74,7 @@ export function makeIntent(model: Model, options: MemoryNavigationOptions): Memo
     goTo: makeGoTo(model, go),
     reload: makeReload(model, notify, save),
     onNavigation: makeOnNavigation(model),
+    onNavigationEnd: makeOnNavigationEnd(model),
     notify,
   } as const
 }
