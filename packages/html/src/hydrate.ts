@@ -63,7 +63,7 @@ function hydrateRoot(input: RenderResultInput, template: TemplateResult) {
   return Effect.gen(function* ($) {
     const parentChildNodes = findRootParentChildNodes(where)
     const wire = yield* $(
-      hydrateTemplateResult(document, renderContext, template, cache, parentChildNodes, 0),
+      hydrateTemplateResult(document, renderContext, template, cache, parentChildNodes, true),
       Effect.provideSomeContext(template.context),
     )
 
@@ -101,7 +101,7 @@ export function hydrateTemplateResult(
   result: TemplateResult,
   cache: RenderCache,
   where: ParentChildNodes,
-  depth = 0,
+  isRoot: boolean,
 ): Effect.Effect<Document | RenderContext | Scope, never, Rendered | null> {
   return Effect.gen(function* ($) {
     let { entry } = cache
@@ -118,12 +118,10 @@ export function hydrateTemplateResult(
           yield* $(renderPlaceholders(document, renderContext, result, cache, entry))
         }
       } else {
-        cache.entry = entry = yield* $(HydrateEntry(document, renderContext, result, where, depth))
+        cache.entry = entry = yield* $(HydrateEntry(document, renderContext, result, where, isRoot))
         // Render all children before creating the wire
         if (entry.parts.length > 0) {
-          yield* $(
-            hydratePlaceholders(document, renderContext, result, cache, entry, where, depth + 1),
-          )
+          yield* $(hydratePlaceholders(document, renderContext, result, cache, entry, where))
         }
       }
     }
@@ -140,7 +138,6 @@ function hydratePlaceholders(
   renderCache: RenderCache,
   { parts, onValue, onReady, fibers }: Entry,
   where: ParentChildNodes,
-  depth: number,
 ): Effect.Effect<Scope, never, void> {
   const hydratePart = (part: Part, index: number) =>
     Effect.gen(function* ($) {
@@ -159,8 +156,9 @@ function hydratePlaceholders(
                   x instanceof TemplateResult ? x : fromValue(x),
                   renderCache.stack[index] || (renderCache.stack[index] = RenderCache()),
                   findTemplateResultParentChildNodes(where, index),
-                  depth,
+                  false,
                 ),
+                Effect.provideSomeContext(x instanceof TemplateResult ? x.context : context),
                 Effect.flatMap(part.update),
                 Effect.tap(() => onValue(index)),
               ),

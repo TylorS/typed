@@ -90,7 +90,7 @@ export function HydrateEntry(
   renderContext: RenderContext,
   result: TemplateResult,
   where: ParentChildNodes,
-  depth: number,
+  isRoot: boolean,
 ) {
   // TODO: Bail out of hydration if any nodes can't be found
   return Effect.gen(function* ($) {
@@ -119,7 +119,7 @@ export function HydrateEntry(
     )
 
     const wire = (() => {
-      if (depth === 0) {
+      if (isRoot) {
         const nodes = Array.from(where.childNodes).filter((node) =>
           node.nodeType === node.COMMENT_NODE ? node.nodeValue !== 'typed-end' : true,
         )
