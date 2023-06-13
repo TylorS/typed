@@ -28,7 +28,7 @@ export namespace MatchOptions {
 export type Match<
   in out P extends string,
   out Rendered extends Fx.Fx<any, any, any>,
-  in out Options extends MatchOptions<P, any, any> = MatchOptions<P>,
+  in out Options extends MatchOptions.Any<P> = MatchOptions<P>,
 > = {
   readonly route: Route<P>
   readonly render: (params: Fx.Filtered<never, never, ParamsOf<P>>) => Rendered

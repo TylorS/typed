@@ -11,6 +11,9 @@ import { matchRoutes } from './matchRoutes.js'
 import { Router } from './router.js'
 
 export interface Matcher<Matches extends ReadonlyArray<Match.Any>> {
+  /** @internal */
+  readonly matches: Chunk.Chunk<Match.Any>
+
   readonly match: <P extends string, R, E, A, Opts extends MatchOptions.Any<P> = MatchOptions<P>>(
     route: Route<P>,
     render: (params: Fx.Filtered<never, never, ParamsOf<P>>) => Fx.Fx<R, E, A>,
@@ -36,12 +39,18 @@ export interface Matcher<Matches extends ReadonlyArray<Match.Any>> {
     Exclude<E | Match.Error<Matches[number]>, Redirect>,
     A | Match.Success<Matches[number]>
   >
+
+  readonly concat: <OtherMatches extends ReadonlyArray<Match.Any>>(
+    other: Matcher<OtherMatches>,
+  ) => Matcher<readonly [...Matches, ...OtherMatches]>
 }
 
 export function Matcher<const Matches extends ReadonlyArray<Match.Any>>(
   matches: Chunk.Chunk<Match.Any>,
 ): Matcher<Matches> {
   return {
+    matches,
+
     match<P extends string, R, E, A, Opts extends MatchOptions.Any<P> = never>(
       route: Route<P>,
       render: (params: Fx.Filtered<never, never, ParamsOf<P>>) => Fx.Fx<R, E, A>,
@@ -63,6 +72,12 @@ export function Matcher<const Matches extends ReadonlyArray<Match.Any>>(
         params: Fx.Filtered<never, never, Readonly<Record<string, string>>>,
       ) => Fx.Fx<R, E, A>,
     ) => Fx.scoped(matchRoutes(Chunk.toReadonlyArray(matches) as Matches, render)),
+
+    concat: <OtherMatches extends ReadonlyArray<Match.Any>>(
+      other: Matcher<OtherMatches>,
+    ): Matcher<readonly [...Matches, ...OtherMatches]> => {
+      return Matcher(Chunk.concat(matches, other.matches))
+    },
   }
 }
 
