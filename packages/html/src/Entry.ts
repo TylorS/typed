@@ -3,6 +3,7 @@ import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import { Wire, persistent } from '@typed/wire'
 
+import { RenderCache } from './RenderCache.js'
 import type { RenderContext } from './RenderContext.js'
 import { Renderable } from './Renderable.js'
 import { TemplateResult } from './TemplateResult.js'
@@ -26,7 +27,12 @@ export interface Entry {
   indexToRootElement: Map<number, Node>
 }
 
-export function Entry(document: Document, renderContext: RenderContext, result: TemplateResult) {
+export function Entry(
+  document: Document,
+  renderContext: RenderContext,
+  result: TemplateResult,
+  cache: RenderCache,
+) {
   // eslint-disable-next-line require-yield
   return Effect.gen(function* ($) {
     const { template, deferred } = result
@@ -37,7 +43,10 @@ export function Entry(document: Document, renderContext: RenderContext, result: 
 
     const cleanup = Effect.forkDaemon(
       Effect.allPar(
-        Effect.suspend(() => Fiber.interruptAll(fibers)),
+        Effect.suspend(() => {
+          cache.stack.fill(null)
+          return Fiber.interruptAll(fibers)
+        }),
         Deferred.succeed(deferred, undefined),
       ),
     )
@@ -102,6 +111,7 @@ export function HydrateEntry(
   document: Document,
   renderContext: RenderContext,
   result: TemplateResult,
+  cache: RenderCache,
   where: ParentChildNodes,
   isRoot: boolean,
   rootIndex: number,
@@ -143,7 +153,11 @@ export function HydrateEntry(
 
     const cleanup = Effect.forkDaemon(
       Effect.allPar(
-        Effect.suspend(() => Fiber.interruptAll(fibers)),
+        Effect.suspend(() => {
+          cache.stack.fill(null)
+
+          return Fiber.interruptAll(fibers)
+        }),
         Deferred.succeed(deferred, undefined),
       ),
     )

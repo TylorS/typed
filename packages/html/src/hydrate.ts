@@ -120,7 +120,7 @@ export function hydrateTemplateResult(
       if (entry) {
         yield* $(entry.cleanup)
 
-        cache.entry = entry = yield* $(Entry(document, renderContext, result))
+        cache.entry = entry = yield* $(Entry(document, renderContext, result, cache))
 
         // Render all children before creating the wire
         if (entry.parts.length > 0) {
@@ -128,7 +128,7 @@ export function hydrateTemplateResult(
         }
       } else {
         cache.entry = entry = yield* $(
-          HydrateEntry(document, renderContext, result, where, isRoot, rootIndex),
+          HydrateEntry(document, renderContext, result, cache, where, isRoot, rootIndex),
         )
         // Render all children before creating the wire
         if (entry.parts.length > 0) {
@@ -165,24 +165,29 @@ function hydratePlaceholders(
           fibers[index] = yield* $(
             unwrapRenderable(value),
             Fx.switchMatchCauseEffect(sink.error, (x) => {
+              let effect = Effect.succeed(x) as ReturnType<typeof hydrateTemplateResult>
+
+              if (x instanceof TemplateResult) {
+                effect = hydrateTemplateResult(
+                  document,
+                  renderContext,
+                  x,
+                  renderCache.stack[index] || (renderCache.stack[index] = RenderCache()),
+                  {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    parentNode: rootElement!,
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    childNodes: rootElement!.childNodes,
+                  },
+                  false,
+                  index,
+                )
+              } else if (!x) {
+                renderCache.stack[index] = null
+              }
+
               return pipe(
-                x instanceof TemplateResult
-                  ? hydrateTemplateResult(
-                      document,
-                      renderContext,
-                      x,
-                      renderCache.stack[index] || (renderCache.stack[index] = RenderCache()),
-                      {
-                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                        parentNode: rootElement!,
-                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                        childNodes: rootElement!.childNodes,
-                      },
-                      false,
-                      index,
-                    )
-                  : Effect.succeed(x),
-                Effect.provideSomeContext(x instanceof TemplateResult ? x.context : context),
+                effect,
                 Effect.flatMap(part.update),
                 Effect.tap(() => onValue(index)),
               )
@@ -198,12 +203,14 @@ function hydratePlaceholders(
         case 'Event': {
           yield* $(handleEffectPart(part, value))
           fibers[index] = Fiber.unit()
+          renderCache.stack[index] = null
           yield* $(onValue(index))
           break
         }
         default: {
           // Other parts may or may not return an Fx to be executed over time
           const fx = yield* $(handlePart(part, value))
+          renderCache.stack[index] = null
 
           if (fx) {
             fibers[index] = yield* $(

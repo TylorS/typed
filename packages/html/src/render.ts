@@ -91,7 +91,7 @@ export function renderTemplateResult(
         yield* $(cache.entry.cleanup)
       }
 
-      cache.entry = entry = yield* $(Entry(document, renderContext, result))
+      cache.entry = entry = yield* $(Entry(document, renderContext, result, cache))
 
       // Render all children before creating the wire
       if (entry.parts.length > 0) {
@@ -111,11 +111,15 @@ export function renderPlaceholders(
   renderCache: RenderCache,
   { parts, onValue, onReady, fibers }: Entry,
 ): Effect.Effect<Scope, never, void> {
-  const renderNode = (value: unknown, cache: RenderCache) =>
+  const renderNode = (value: unknown, cache: () => RenderCache, i: number) =>
     Effect.suspend(() => {
       // If the value is a TemplateResult, we need to render it recusively
       if (value instanceof TemplateResult) {
-        return renderTemplateResult(document, renderContext, value, cache)
+        return renderTemplateResult(document, renderContext, value, cache())
+      }
+
+      if (!value) {
+        renderCache.stack[i] = null
       }
 
       return Effect.succeed(value)
@@ -134,7 +138,8 @@ export function renderPlaceholders(
               pipe(
                 renderNode(
                   x,
-                  renderCache.stack[index] || (renderCache.stack[index] = RenderCache()),
+                  () => renderCache.stack[index] || (renderCache.stack[index] = RenderCache()),
+                  index,
                 ),
                 Effect.flatMap(part.update),
                 Effect.tap(() => onValue(index)),
