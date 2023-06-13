@@ -23,6 +23,8 @@ export function trimEmptyQuotes(template: string) {
 const DATA_TYPED_ATTR = (n: number) => ` data-typed="${n}"`
 
 export function addDataTypedAttributes(template: string, n: number) {
+  if (template.includes(DATA_TYPED_ATTR(n))) return template
+
   return template.replace(/<([a-z]+)([^>]*)/, `<$1${DATA_TYPED_ATTR(n)}$2`)
 }
 

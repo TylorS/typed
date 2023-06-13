@@ -1,4 +1,4 @@
-import { ok } from 'assert'
+import { deepStrictEqual, ok } from 'assert'
 import { fileURLToPath } from 'url'
 
 import * as Duration from '@effect/data/Duration'
@@ -10,8 +10,6 @@ import { describe, expect, it } from 'vitest'
 import { html } from './RenderTemplate.js'
 import { testHydrate } from './_test-utils.js'
 import { hydrate } from './hydrate.js'
-
-// TODO: Figure out how to update values during hydration.
 
 describe(fileURLToPath(import.meta.url), () => {
   describe(hydrate.name, () => {
@@ -55,8 +53,8 @@ describe(fileURLToPath(import.meta.url), () => {
     })
 
     it('hydrates nested templates', async () => {
-      const text = `lorem ipsum something something`
-      const template = html`<div>${html`<p>${text}</p>`}</div>`
+      const exampleText = `lorem ipsum something something`
+      const template = html`<div>${html`<p>${exampleText}</p>`}</div>`
 
       const test = testHydrate(
         template,
@@ -64,11 +62,10 @@ describe(fileURLToPath(import.meta.url), () => {
           const div = element('div', {}, -1)
           const p = div.element('p', {}, 0)
 
-          const output = [div, p, p.text(text)] as const
+          const output = [div, p, p.text('')] as const
 
-          p.comment('hole0')
-
-          div.comment('hole0')
+          p.hole(0)
+          div.hole(0)
 
           return output
         },
@@ -81,6 +78,7 @@ describe(fileURLToPath(import.meta.url), () => {
           ok(child === p.node)
 
           ok(child.childNodes[0] === text)
+          deepStrictEqual(child.childNodes[0].nodeValue, exampleText)
         },
       )
 
@@ -295,5 +293,61 @@ describe(fileURLToPath(import.meta.url), () => {
 
       await Effect.runPromise(test)
     })
+  })
+
+  it(`hydrates nested template with multiple child templates`, async () => {
+    const template = html`<div>${html`<p>1</p>`}${html`<p>2</p>`}</div>
+      <div>${html`<p>3</p>`}${html`<p>4</p>`}</div>`
+
+    const test = testHydrate(
+      template,
+      ({ element }) => {
+        const div1 = element('div', {}, -1)
+        const p1 = div1.element('p', {}, 0)
+        const p1Hole = div1.hole(0)
+        const p2 = div1.element('p', {}, 1)
+        const p2Hole = div1.hole(1)
+
+        const div2 = element('div', {}, -1)
+        const p3 = div2.element('p', {}, 2)
+        const p3Hole = div2.hole(2)
+        const p4 = div2.element('p', {}, 3)
+        const p4Hole = div2.hole(3)
+
+        const output = {
+          div1,
+          p1,
+          p1Hole,
+          p2,
+          p2Hole,
+          div2,
+          p3,
+          p3Hole,
+          p4,
+          p4Hole,
+        } as const
+
+        return output
+      },
+      // eslint-disable-next-line require-yield
+      function* (_, { div1, div2, p1, p1Hole, p2, p2Hole, p3, p3Hole, p4, p4Hole }, rendered) {
+        ok(Array.isArray(rendered))
+        ok(rendered.length === 2)
+        ok(rendered[0] === div1.node)
+
+        ok(rendered[0].childNodes[0] === p1.node)
+        ok(rendered[0].childNodes[1] === p1Hole)
+        ok(rendered[0].childNodes[2] === p2.node)
+        ok(rendered[0].childNodes[3] === p2Hole)
+
+        ok(rendered[1] === div2.node)
+        ok(rendered[1].childNodes[0] === p3.node)
+        ok(rendered[1].childNodes[1] === p3Hole)
+        ok(rendered[1].childNodes[2] === p4.node)
+        ok(rendered[1].childNodes[3] === p4Hole)
+      },
+    )
+
+    await Effect.runPromise(test)
   })
 })

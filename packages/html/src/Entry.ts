@@ -20,6 +20,10 @@ export interface Entry {
   template: TemplateStringsArray
   values: readonly Renderable<any, any>[]
   wire: () => Node | DocumentFragment | Wire | Node[] | null
+
+  // Only for hydration
+  rootElements: readonly Node[]
+  indexToRootElement: Map<number, Node>
 }
 
 export function Entry(document: Document, renderContext: RenderContext, result: TemplateResult) {
@@ -49,12 +53,21 @@ export function Entry(document: Document, renderContext: RenderContext, result: 
       fibers,
       values: result.values,
       wire: () => wire || (wire = persistent(content)),
+      rootElements: [],
+      indexToRootElement: new Map(),
     } satisfies Entry
   })
 }
 
 function indexRefCounter(expected: number) {
   return Effect.gen(function* ($) {
+    if (expected === 0) {
+      return {
+        onReady: Effect.unit(),
+        onValue: () => Effect.unit(),
+      }
+    }
+
     const hasValue = new Set<number>()
     const deferred = yield* $(Deferred.make<never, void>())
     const done = Deferred.succeed(deferred, undefined)
@@ -91,17 +104,20 @@ export function HydrateEntry(
   result: TemplateResult,
   where: ParentChildNodes,
   isRoot: boolean,
+  rootIndex: number,
 ) {
   return Effect.gen(function* ($) {
     const { template, deferred } = result
     const { holes } = getTemplateCache(document, renderContext.templateCache, result)
     const { onReady, onValue } = yield* $(indexRefCounter(holes.length))
-
-    let last = 0
+    const rootElements = findRootElements(where, rootIndex)
+    const indexToRootElement = new Map<number, Node>()
     const parts = holes.map((hole, i) => {
       if (hole.type === 'node') {
-        const [comment, index] = findCommentNode(where.childNodes, i, last)
-        last = index
+        const rootElement = findRootElement(rootElements, i)
+        indexToRootElement.set(i, rootElement)
+
+        const comment = findCommentNode(rootElement.childNodes, i)
 
         return holeToPart(document, hole, comment, (comment) => getPreviousNodes(comment, i))
       }
@@ -119,14 +135,22 @@ export function HydrateEntry(
 
     const wire = (() => {
       if (isRoot) {
-        const nodes = Array.from(where.childNodes).filter((node) =>
-          node.nodeType === node.COMMENT_NODE ? node.nodeValue !== 'typed-end' : true,
+        const childNodes = Array.from(where.childNodes).filter((node) =>
+          isComment(node) ? !isCommentWithValue(node, 'typed-end') : true,
         )
 
-        return nodes.length === 1 ? nodes[0] : nodes
+        if (childNodes.length === 1) {
+          return childNodes[0]
+        }
+
+        return childNodes
       }
 
-      return where.parentNode
+      if (rootElements.length === 1) {
+        return rootElements[0]
+      }
+
+      return rootElements
     })()
 
     return {
@@ -138,25 +162,23 @@ export function HydrateEntry(
       fibers,
       values: result.values,
       wire: () => wire,
+      rootElements,
+      indexToRootElement,
     } satisfies Entry
   })
 }
 
-export function findCommentNode(
-  childNodes: ArrayLike<Node>,
-  index: number,
-  start = 0,
-): readonly [Comment, number] {
+export function findCommentNode(childNodes: ArrayLike<Node>, index: number): Comment {
   const value = `hole${index}`
 
-  for (let i = start; i < childNodes.length; ++i) {
+  for (let i = 0; i < childNodes.length; ++i) {
     const node = childNodes[i]
 
     if (
       node.nodeType === node.COMMENT_NODE &&
       (node.nodeValue === value || node.nodeValue === 'typed-end')
     ) {
-      return [node as Comment, i]
+      return node as Comment
     }
   }
 
@@ -180,4 +202,66 @@ export function getPreviousNodes(comment: Node, index: number) {
   }
 
   return nodes
+}
+
+export function isElement(node: Node): node is HTMLElement {
+  return node.nodeType === node.ELEMENT_NODE
+}
+
+export function isTypedRoot(element: HTMLElement, rootIndex: number): element is HTMLElement {
+  const typed = element.dataset.typed
+
+  return typed == rootIndex.toString()
+}
+
+export function isComment(node: Node): node is Comment {
+  return node.nodeType === node.COMMENT_NODE
+}
+
+export function isHoleComent(node: Comment, index: number) {
+  return node.nodeValue === `hole${index}`
+}
+
+export function isCommentWithValue(node: Comment, value: string) {
+  return node.nodeValue === value
+}
+
+export function findRootElements({ parentNode, childNodes }: ParentChildNodes, rootIndex: number) {
+  if (childNodes.length === 0) return [parentNode as HTMLElement]
+
+  const elements: HTMLElement[] = []
+
+  for (let i = 0; i < childNodes.length; ++i) {
+    const root = childNodes[i]
+
+    if (isElement(root) && isTypedRoot(root, rootIndex)) {
+      elements.push(root)
+    }
+  }
+
+  if (elements.length === 0 && parentNode) {
+    const lastNode = childNodes[childNodes.length - 1]
+
+    if (isComment(lastNode) && isCommentWithValue(lastNode, 'typed-end')) {
+      elements.push(parentNode as HTMLElement)
+    }
+  }
+
+  return elements
+}
+
+export function findRootElement(rootElements: readonly Node[], partIndex: number) {
+  for (let i = 0; i < rootElements.length; ++i) {
+    const root = rootElements[i]
+
+    for (let j = 0; j < root.childNodes.length; ++j) {
+      const node = root.childNodes[j]
+
+      if (isComment(node) && isHoleComent(node, partIndex)) {
+        return root
+      }
+    }
+  }
+
+  throw new Error('Could not find root element')
 }

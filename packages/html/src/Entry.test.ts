@@ -3,9 +3,10 @@ import { fileURLToPath } from 'url'
 
 import { describe, it } from 'vitest'
 
-import { findCommentNode, getPreviousNodes } from './Entry.js'
+import { findCommentNode, getPreviousNodes, isElement } from './Entry.js'
 import { makeTestDom } from './_test-utils.js'
-import { findRootParentChildNodes, findTemplateResultParentChildNodes } from './hydrate.js'
+import { findRootParentChildNodes } from './hydrate.js'
+import { ParentChildNodes } from './paths.js'
 
 describe(fileURLToPath(import.meta.url), () => {
   describe(findRootParentChildNodes.name, () => {
@@ -38,63 +39,6 @@ describe(fileURLToPath(import.meta.url), () => {
     })
   })
 
-  describe(findTemplateResultParentChildNodes.name, () => {
-    const { body, render } = makeTestDom()
-    const [rendered] = render(({ element }) => {
-      const div = element('div', { id: 'test-div' }, -1)
-      const p = div.element('p', { id: 'test-p' }, 0)
-      const span = p.element('span', { id: 'test-span' }, 0)
-      const text = span.text('lorem ipsum')
-
-      const spanComment = span.comment('hole0')
-      const pComment = p.comment('hole0')
-      const divComment = div.comment('hole0')
-
-      return {
-        div,
-        divComment,
-        p,
-        pComment,
-        span,
-        spanComment,
-        text,
-      } as const
-    })
-
-    it('returns the expected elements', () => {
-      const root = findRootParentChildNodes(body)
-      const actual = findTemplateResultParentChildNodes(root, 0)
-
-      ok(actual.parentNode === rendered.div.node)
-      ok(actual.childNodes.length === 2)
-      ok(actual.childNodes[0] === rendered.p.node)
-      ok(actual.childNodes[1] === rendered.divComment)
-    })
-
-    it('returns the expected elements for children', () => {
-      const root = findRootParentChildNodes(body)
-      const parent = findTemplateResultParentChildNodes(root, 0)
-      const actual = findTemplateResultParentChildNodes(parent, 0)
-
-      ok(actual.parentNode === rendered.p.node)
-      ok(actual.childNodes.length === 2)
-      ok(actual.childNodes[0] === rendered.span.node)
-      ok(actual.childNodes[1] === rendered.pComment)
-    })
-
-    it('returns the expected elements for text nodes', () => {
-      const root = findRootParentChildNodes(body)
-      const parent = findTemplateResultParentChildNodes(root, 0)
-      const child = findTemplateResultParentChildNodes(parent, 0)
-      const actual = findTemplateResultParentChildNodes(child, 0)
-
-      ok(actual.parentNode === rendered.span.node)
-      ok(actual.childNodes.length === 2)
-      ok(actual.childNodes[0] === rendered.text)
-      ok(actual.childNodes[1] === rendered.spanComment)
-    })
-  })
-
   describe(findCommentNode.name, () => {
     const { body, render } = makeTestDom()
     const [rendered, { end }] = render(({ element }) => {
@@ -121,7 +65,7 @@ describe(fileURLToPath(import.meta.url), () => {
     it('returns the expected comment node for root', () => {
       const root = findRootParentChildNodes(body)
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const [actual] = findCommentNode(root.parentNode!.childNodes, 0)
+      const actual = findCommentNode(root.parentNode!.childNodes, 0)
 
       ok(actual === end)
     })
@@ -129,7 +73,7 @@ describe(fileURLToPath(import.meta.url), () => {
     it('returns the expected comment node for children', () => {
       const root = findRootParentChildNodes(body)
       const parent = findTemplateResultParentChildNodes(root, 0)
-      const [actual] = findCommentNode(parent.childNodes, 0)
+      const actual = findCommentNode(parent.childNodes, 0)
 
       ok(actual === rendered.divComment)
     })
@@ -138,7 +82,7 @@ describe(fileURLToPath(import.meta.url), () => {
       const root = findRootParentChildNodes(body)
       const parent = findTemplateResultParentChildNodes(root, 0)
       const child = findTemplateResultParentChildNodes(parent, 0)
-      const [actual] = findCommentNode(child.childNodes, 0)
+      const actual = findCommentNode(child.childNodes, 0)
 
       ok(actual === rendered.pComment)
     })
@@ -148,7 +92,7 @@ describe(fileURLToPath(import.meta.url), () => {
       const parent = findTemplateResultParentChildNodes(root, 0)
       const child = findTemplateResultParentChildNodes(parent, 0)
       const grandchild = findTemplateResultParentChildNodes(child, 0)
-      const [actual] = findCommentNode(grandchild.childNodes, 0)
+      const actual = findCommentNode(grandchild.childNodes, 0)
 
       ok(actual === rendered.spanComment)
     })
@@ -196,3 +140,27 @@ describe(fileURLToPath(import.meta.url), () => {
     })
   })
 })
+
+function findTemplateResultParentChildNodes(
+  { childNodes }: ParentChildNodes,
+  index: number,
+): ParentChildNodes {
+  let start = 0
+
+  for (let i = 0; i < childNodes.length; i++) {
+    const node = childNodes[i]
+
+    if (isElement(node) && node.dataset.typed === index.toString()) {
+      start = i
+    }
+  }
+
+  const parentNode = childNodes[start]
+
+  const parentChildNodes: ParentChildNodes = {
+    parentNode,
+    childNodes: parentNode.childNodes,
+  }
+
+  return parentChildNodes
+}

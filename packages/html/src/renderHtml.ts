@@ -70,8 +70,9 @@ function renderTemplateResult<E>(
   templateIndex: number,
 ): Fx.Fx<Scope, E, HtmlEvent> {
   const { document, renderContext } = input
-  const { template, values } = result
+  const { values } = result
   const { content, holes } = getTemplateCache(document, renderContext.templateCache, result)
+  const template = result.template.map((x) => addDataTypedAttributes(x, templateIndex))
 
   if (holes.length === 0) {
     return Fx.succeed(
@@ -105,9 +106,7 @@ function renderTemplateResult<E>(
 
               indexToHtml.delete(index)
 
-              const baseHtml = trimEmptyQuotes(isLast ? html + template[index + 1] : html)
-              const fullHtml =
-                index === 0 ? addDataTypedAttributes(baseHtml, templateIndex) : baseHtml
+              const fullHtml = trimEmptyQuotes(isLast ? html + template[index + 1] : html)
 
               // Emit our HTML
               yield* $(sink.event(new PartialHtml(fullHtml, isLast)))
@@ -129,14 +128,10 @@ function renderTemplateResult<E>(
         function renderNode(part: Part, index: number) {
           let isFirst = true
 
-          const getFirst = (html: string, includeDataTyped: boolean) => {
+          const getFirst = (html: string) => {
             if (isFirst) {
               isFirst = false
               const base = template[index] + html
-
-              if (includeDataTyped && index > 0 && part._tag === 'Node') {
-                return addDataTypedAttributes(base, index)
-              }
 
               return base
             }
@@ -153,12 +148,12 @@ function renderTemplateResult<E>(
           function handleHtmlEvent(event: HtmlEvent): Effect.Effect<R, never, void> {
             return Effect.gen(function* ($) {
               if (event._tag === 'Full') {
-                indexToHtml.set(index, getFirst(event.html, false) + getComment())
+                indexToHtml.set(index, getFirst(event.html) + getComment())
 
                 yield* $(emitHtml(index))
               } else {
                 const currentHtml = pendingHtml.get(index) ?? ''
-                const html = currentHtml + getFirst(event.html, true)
+                const html = currentHtml + getFirst(event.html)
 
                 if (event.isLast) {
                   pendingHtml.delete(index)

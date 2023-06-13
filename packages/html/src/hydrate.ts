@@ -7,10 +7,10 @@ import { Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
 import { Wire } from '@typed/wire'
 
-import { CouldNotFindCommentError, Entry, HydrateEntry } from './Entry.js'
+import { CouldNotFindCommentError, Entry, HydrateEntry, findRootElement } from './Entry.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
-import { TemplateResult, fromValue } from './TemplateResult.js'
+import { TemplateResult } from './TemplateResult.js'
 import { getRenderCache } from './getCache.js'
 import { handleEffectPart, handlePart, unwrapRenderable } from './makeUpdate.js'
 import { Part } from './part/Part.js'
@@ -71,7 +71,7 @@ function hydrateRoot(input: RenderResultInput, template: TemplateResult) {
   return Effect.gen(function* ($) {
     const parentChildNodes = findRootParentChildNodes(where)
     const wire = yield* $(
-      hydrateTemplateResult(document, renderContext, template, cache, parentChildNodes, true),
+      hydrateTemplateResult(document, renderContext, template, cache, parentChildNodes, true, -1),
       Effect.provideSomeContext(template.context),
     )
 
@@ -110,6 +110,7 @@ export function hydrateTemplateResult(
   cache: RenderCache,
   where: ParentChildNodes,
   isRoot: boolean,
+  rootIndex: number,
 ): Effect.Effect<Document | RenderContext | Scope, never, Rendered | null> {
   return Effect.gen(function* ($) {
     let { entry } = cache
@@ -126,10 +127,12 @@ export function hydrateTemplateResult(
           yield* $(renderPlaceholders(document, renderContext, result, cache, entry))
         }
       } else {
-        cache.entry = entry = yield* $(HydrateEntry(document, renderContext, result, where, isRoot))
+        cache.entry = entry = yield* $(
+          HydrateEntry(document, renderContext, result, where, isRoot, rootIndex),
+        )
         // Render all children before creating the wire
         if (entry.parts.length > 0) {
-          yield* $(hydratePlaceholders(document, renderContext, result, cache, entry, where))
+          yield* $(hydratePlaceholders(document, renderContext, result, cache, entry))
         }
       }
     }
@@ -144,8 +147,7 @@ function hydratePlaceholders(
   renderContext: RenderContext,
   { values, sink, context }: TemplateResult,
   renderCache: RenderCache,
-  { parts, onValue, onReady, fibers }: Entry,
-  where: ParentChildNodes,
+  { parts, onValue, onReady, fibers, rootElements, indexToRootElement }: Entry,
 ): Effect.Effect<Scope, never, void> {
   const hydratePart = (part: Part, index: number) =>
     Effect.gen(function* ($) {
@@ -154,23 +156,37 @@ function hydratePlaceholders(
       switch (part._tag) {
         // Nodes needs special handling as they support arrays, and other TemplateResults
         case 'Node': {
+          let rootElement = indexToRootElement.get(index)
+          if (!rootElement) {
+            rootElement = findRootElement(rootElements, index)
+            indexToRootElement.set(index, rootElement)
+          }
+
           fibers[index] = yield* $(
             unwrapRenderable(value),
-            Fx.switchMatchCauseEffect(sink.error, (x) =>
-              pipe(
-                hydrateTemplateResult(
-                  document,
-                  renderContext,
-                  x instanceof TemplateResult ? x : fromValue(x),
-                  renderCache.stack[index] || (renderCache.stack[index] = RenderCache()),
-                  findTemplateResultParentChildNodes(where, index),
-                  false,
-                ),
+            Fx.switchMatchCauseEffect(sink.error, (x) => {
+              return pipe(
+                x instanceof TemplateResult
+                  ? hydrateTemplateResult(
+                      document,
+                      renderContext,
+                      x,
+                      renderCache.stack[index] || (renderCache.stack[index] = RenderCache()),
+                      {
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        parentNode: rootElement!,
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        childNodes: rootElement!.childNodes,
+                      },
+                      false,
+                      index,
+                    )
+                  : Effect.succeed(x),
                 Effect.provideSomeContext(x instanceof TemplateResult ? x.context : context),
                 Effect.flatMap(part.update),
                 Effect.tap(() => onValue(index)),
-              ),
-            ),
+              )
+            }),
             Fx.drain,
             Effect.forkScoped,
           )
@@ -256,32 +272,4 @@ export function findRootChildNodes(where: HTMLElement): Node[] {
   }
 
   return childNodes
-}
-
-export function findTemplateResultParentChildNodes(
-  { childNodes }: ParentChildNodes,
-  index: number,
-): ParentChildNodes {
-  let start = 0
-
-  for (let i = 0; i < childNodes.length; i++) {
-    const node = childNodes[i]
-
-    if (isElement(node) && node.dataset.typed === index.toString()) {
-      start = i
-    }
-  }
-
-  const parentNode = childNodes[start]
-
-  const parentChildNodes: ParentChildNodes = {
-    parentNode,
-    childNodes: parentNode.childNodes,
-  }
-
-  return parentChildNodes
-}
-
-function isElement(node: Node): node is HTMLElement {
-  return node.nodeType === node.ELEMENT_NODE
 }
