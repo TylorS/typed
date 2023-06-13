@@ -41,8 +41,8 @@ export namespace UseLinkParams {
 export interface UseLink<E> {
   readonly url: Fx.Computed<Router, E, string>
   readonly options: Fx.Computed<never, E, Navigation.NavigateOptions>
-  readonly navigate: Effect.Effect<Router | Navigation.Navigation, E, Navigation.Destination>
-  readonly active: Fx.Computed<Router | Navigation.Navigation, E, boolean>
+  readonly navigate: Effect.Effect<Router, E, Navigation.Destination>
+  readonly active: Fx.Computed<Router, E, boolean>
 }
 
 export namespace UseLink {
@@ -91,13 +91,11 @@ export function useLink<Params extends UseLinkParams.Any>(
       }),
     )
 
-    const active: Fx.Computed<
-      Router | Navigation.Navigation,
-      UseLinkParams.Error<Params>,
-      boolean
-    > = url.mapEffect((url) =>
+    const active: Fx.Computed<Router, UseLinkParams.Error<Params>, boolean> = url.mapEffect((url) =>
       Effect.gen(function* ($) {
-        const { currentEntry } = yield* $(Navigation.Navigation)
+        const {
+          navigation: { currentEntry },
+        } = yield* $(Router)
         const current = (yield* $(currentEntry)).url
 
         return isActive(url, current)
@@ -105,11 +103,11 @@ export function useLink<Params extends UseLinkParams.Any>(
     )
 
     const navigate: Effect.Effect<
-      Router | Navigation.Navigation,
+      Router,
       UseLinkParams.Error<Params>,
       Navigation.Destination
     > = Effect.flatMap(Effect.all(url, options), ([url, options]) =>
-      Navigation.navigate(url, options),
+      Router.withEffect((r) => r.navigation.navigate(url, options)),
     )
 
     return {

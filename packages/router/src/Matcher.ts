@@ -89,7 +89,7 @@ export const notFound: {
   ): <Matches extends readonly Match.Any[]>(
     matcher: Matcher<Matches>,
   ) => Fx.Fx<
-    Router<string> | R | Match.Context<Matches[number]>,
+    Router | R | Match.Context<Matches[number]>,
     Exclude<E | Match.Error<Matches[number]>, Redirect>,
     A | Fx.Fx.OutputOf<Match.Rendered<Matches[number]>>
   >
@@ -98,7 +98,7 @@ export const notFound: {
     matcher: Matcher<Matches>,
     render: (params: Fx.Filtered<never, never, Readonly<Record<string, string>>>) => Fx.Fx<R, E, A>,
   ): Fx.Fx<
-    Router<string> | R | Match.Context<Matches[number]>,
+    Router | R | Match.Context<Matches[number]>,
     Exclude<E | Match.Error<Matches[number]>, Redirect>,
     A | Fx.Fx.OutputOf<Match.Rendered<Matches[number]>>
   >
