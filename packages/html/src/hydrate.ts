@@ -7,13 +7,7 @@ import { Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
 import { Wire } from '@typed/wire'
 
-import {
-  CouldNotFindCommentError,
-  CouldNotFindRootElement,
-  Entry,
-  HydrateEntry,
-  findRootElement,
-} from './Entry.js'
+import { CouldNotFindCommentError, CouldNotFindRootElement, Entry, HydrateEntry } from './Entry.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
 import { TemplateResult } from './TemplateResult.js'
