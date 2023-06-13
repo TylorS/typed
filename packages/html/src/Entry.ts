@@ -299,5 +299,11 @@ export function findRootElement(
     }
   }
 
-  throw new Error('Could not find root element')
+  throw new CouldNotFindRootElement(partIndex)
+}
+
+export class CouldNotFindRootElement extends Error {
+  constructor(index: number) {
+    super(`Could not root element for <!--hole${index}-->`)
+  }
 }

@@ -7,7 +7,13 @@ import { Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
 import { Wire } from '@typed/wire'
 
-import { CouldNotFindCommentError, Entry, HydrateEntry, findRootElement } from './Entry.js'
+import {
+  CouldNotFindCommentError,
+  CouldNotFindRootElement,
+  Entry,
+  HydrateEntry,
+  findRootElement,
+} from './Entry.js'
 import { RenderCache } from './RenderCache.js'
 import { RenderContext } from './RenderContext.js'
 import { TemplateResult } from './TemplateResult.js'
@@ -15,7 +21,7 @@ import { getRenderCache } from './getCache.js'
 import { handleEffectPart, handlePart, unwrapRenderable } from './makeUpdate.js'
 import { Part } from './part/Part.js'
 import { ParentChildNodes } from './paths.js'
-import { renderPlaceholders, type Rendered, renderRootResult } from './render.js'
+import { renderPlaceholders, type Rendered, renderTemplateResult } from './render.js'
 
 export const hydrate: {
   (where: HTMLElement): <R, E>(
@@ -42,17 +48,7 @@ export const hydrate: {
           initial: true,
         }
 
-        return Fx.switchMapEffect(what, (template) =>
-          Effect.catchAllDefect(hydrateRoot(input, template), (defect) => {
-            // If we can't find a comment then we need to render the result
-            // without hydration
-            if (defect instanceof CouldNotFindCommentError) {
-              return renderRootResult(input, template)
-            } else {
-              return Effect.die(defect)
-            }
-          }),
-        )
+        return Fx.switchMapEffect(what, (template) => hydrateRoot(input, template))
       }).addTrace(trace),
 )
 
@@ -112,34 +108,44 @@ export function hydrateTemplateResult(
   isRoot: boolean,
   rootIndex: number,
 ): Effect.Effect<Document | RenderContext | Scope, never, Rendered | null> {
-  return Effect.gen(function* ($) {
-    let { entry } = cache
+  return Effect.catchAllDefect(
+    Effect.gen(function* ($) {
+      let { entry } = cache
 
-    if (!entry || entry.template !== result.template) {
-      // The entry is changing, so we need to cleanup the previous one
-      if (entry) {
-        yield* $(entry.cleanup)
+      if (!entry || entry.template !== result.template) {
+        // The entry is changing, so we need to cleanup the previous one
+        if (entry) {
+          yield* $(entry.cleanup)
 
-        cache.entry = entry = yield* $(Entry(document, renderContext, result, cache))
+          cache.entry = entry = yield* $(Entry(document, renderContext, result, cache))
 
-        // Render all children before creating the wire
-        if (entry.parts.length > 0) {
-          yield* $(renderPlaceholders(document, renderContext, result, cache, entry))
-        }
-      } else {
-        cache.entry = entry = yield* $(
-          HydrateEntry(document, renderContext, result, cache, where, isRoot, rootIndex),
-        )
-        // Render all children before creating the wire
-        if (entry.parts.length > 0) {
-          yield* $(hydratePlaceholders(document, renderContext, result, cache, entry))
+          // Render all children before creating the wire
+          if (entry.parts.length > 0) {
+            yield* $(renderPlaceholders(document, renderContext, result, cache, entry))
+          }
+        } else {
+          cache.entry = entry = yield* $(
+            HydrateEntry(document, renderContext, result, cache, where, isRoot, rootIndex),
+          )
+          // Render all children before creating the wire
+          if (entry.parts.length > 0) {
+            yield* $(hydratePlaceholders(document, renderContext, result, cache, entry))
+          }
         }
       }
-    }
 
-    // Lazily creates the wire after all childNodes are available
-    return entry.wire()
-  })
+      // Lazily creates the wire after all childNodes are available
+      return entry.wire()
+    }),
+    (defect) => {
+      // If we can't find a comment/rootElement then we need to render the result without hydration
+      if (defect instanceof CouldNotFindCommentError || defect instanceof CouldNotFindRootElement) {
+        return renderTemplateResult(document, renderContext, result, cache)
+      } else {
+        return Effect.die(defect)
+      }
+    },
+  )
 }
 
 function hydratePlaceholders(
