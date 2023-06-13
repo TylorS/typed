@@ -33,14 +33,19 @@ export function isDirective<R, E>(value: unknown): value is Directive<R, E> {
 export function directiveFor<const A extends ReadonlyArray<Part['_tag']>, R, E>(
   tags: A,
   f: (part: Extract<Part, { readonly _tag: A[number] }>) => Effect.Effect<R, E, void>,
+  name?: string,
 ): Directive<R, E> {
   return directive((part) => {
     if (tags.includes(part._tag)) {
       return f(part as Extract<Part, { readonly _tag: A[number] }>)
     }
 
+    const msg = name
+      ? `Directive ${part._tag} is not supproted by ${name} directive.`
+      : `Directive ${part._tag} is not within the support list ${tags.join(', ')}.`
+
     // TODO: Should this be an error?
-    return Effect.unit()
+    return Effect.logDebug(msg)
   })
 }
 
