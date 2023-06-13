@@ -36,16 +36,18 @@ export abstract class BasePart<R, E> {
 
     if (value === this.value) return Effect.unit()
 
-    this.value = value
-
     if (this._subscribers.size > 0) {
       return Effect.ensuring(
         this.handle(value),
-        Effect.suspend(() => this.emit()),
+        Effect.suspend(() => {
+          this.value = value
+
+          return this.emit()
+        }),
       )
     }
 
-    return this.handle(value)
+    return Effect.tap(this.handle(value), () => Effect.sync(() => (this.value = value)))
   }
 
   /**
