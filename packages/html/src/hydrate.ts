@@ -15,7 +15,12 @@ import { getRenderCache } from './getCache.js'
 import { handleEffectPart, handlePart, unwrapRenderable } from './makeUpdate.js'
 import { Part } from './part/Part.js'
 import { ParentChildNodes } from './paths.js'
-import { renderPlaceholders, type Rendered, renderTemplateResult } from './render.js'
+import {
+  renderPlaceholders,
+  type Rendered,
+  renderTemplateResult,
+  renderRootResult,
+} from './render.js'
 
 export const hydrate: {
   (where: HTMLElement): <R, E>(
@@ -60,6 +65,11 @@ function hydrateRoot(input: RenderResultInput, template: TemplateResult) {
 
   return Effect.gen(function* ($) {
     const parentChildNodes = findRootParentChildNodes(where)
+
+    if (parentChildNodes.childNodes.length === 0) {
+      return yield* $(renderRootResult(input, template))
+    }
+
     const wire = yield* $(
       hydrateTemplateResult(document, renderContext, template, cache, parentChildNodes, true, -1),
       Effect.provideSomeContext(template.context),

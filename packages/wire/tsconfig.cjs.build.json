@@ -4,5 +4,6 @@
     "outDir": "./dist/cjs",
     "module": "CommonJS",
     "verbatimModuleSyntax": false
-  }
+  },
+  "references": []
 }

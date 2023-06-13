@@ -67,6 +67,9 @@ export class NodePart extends BasePart<never, never> {
    * @internal
    */
   getHTML(template: string): string {
+    // If there is just text, we need to add a comment to ensure a separate text node is created.
+    if (this.text) return `${template}<!--text-start-->${this.text.nodeValue}` + nodeToHtml(this.comment)
+
     const base = `${template}${this.nodes.map(nodeToHtml).join('')}`
 
     return `${base}${nodeToHtml(this.comment)}`
@@ -74,7 +77,7 @@ export class NodePart extends BasePart<never, never> {
 
   protected manageTextNode(content: string) {
     if (!this.text) {
-      const previous = this.comment.previousSibling
+      const previous = getPreviousTextSibling(this.comment.previousSibling)
 
       if (previous && previous.nodeType === 3) {
         this.text = previous as Text
@@ -90,4 +93,12 @@ export class NodePart extends BasePart<never, never> {
 
     return text
   }
+}
+
+function getPreviousTextSibling(node: Node | null) {
+  if (!node) return null
+
+  if (node && node.nodeType === 3) return node as Text
+
+  return null
 }

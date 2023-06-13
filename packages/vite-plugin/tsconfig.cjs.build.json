@@ -5,9 +5,5 @@
     "module": "CommonJS",
     "verbatimModuleSyntax": false
   },
-  "references": [
-    {
-      "path": "../compiler/tsconfig.cjs.build.json"
-    }
-  ]
+  "references": []
 }

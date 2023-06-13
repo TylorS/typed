@@ -2,8 +2,9 @@ import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import { Tag } from '@typed/context'
+import { GlobalThis, Window, DomServices, domServices, localStorage } from '@typed/dom'
 import { Filtered } from '@typed/fx'
-import { Navigation } from '@typed/navigation'
+import * as Navigation from '@typed/navigation'
 import { ParamsOf, PathJoin } from '@typed/path'
 import { Route } from '@typed/route'
 
@@ -32,14 +33,14 @@ export interface Router<in out P extends string = string> {
   /**
    * The Navigation Service
    */
-  readonly navigation: Navigation
+  readonly navigation: Navigation.Navigation
 }
 
 export const Router = Tag<Router>('Router')
 
-export const navigation: Layer.Layer<Navigation, never, Router> = Router.layer(
+export const navigation: Layer.Layer<Navigation.Navigation, never, Router> = Router.layer(
   Effect.gen(function* ($) {
-    const navigation = yield* $(Navigation)
+    const navigation = yield* $(Navigation.Navigation)
     const currentPath = navigation.currentEntry.map((destination) =>
       getCurrentPathFromUrl(destination.url),
     )
@@ -66,3 +67,16 @@ export const navigation: Layer.Layer<Navigation, never, Router> = Router.layer(
 export function getCurrentPathFromUrl(url: URL): string {
   return url.pathname + url.search + url.hash
 }
+
+export const dom = (
+  options?: Navigation.DomNavigationOptions,
+): Layer.Layer<GlobalThis | Window, never, DomServices | Navigation.Navigation | Router> =>
+  Layer.provideMerge(
+    localStorage,
+    Layer.provideMerge(domServices, Layer.provideMerge(Navigation.dom(options), navigation)),
+  )
+
+export const memory = (
+  options: Navigation.MemoryNavigationOptions,
+): Layer.Layer<never, never, Navigation.Navigation | Router> =>
+  Layer.provideMerge(Navigation.memory(options), navigation)

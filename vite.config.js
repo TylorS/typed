@@ -1,10 +1,8 @@
 import { join } from 'path'
 
-import { svelte } from '@sveltejs/vite-plugin-svelte'
-import autoPreprocess from 'svelte-preprocess'
 import { defineConfig } from 'vite'
 
-import typed from './packages/vite-plugin/src/vite-plugin'
+import typed from './packages/vite-plugin'
 
 // Only necessary because developing in a monorepo dogfooding my own source code.
 const alias = {
@@ -21,20 +19,16 @@ const alias = {
   '@typed/router': join(__dirname, 'packages/router/dist'),
 }
 
-export default defineConfig(({ mode }) => {
+const exampleDir = join(__dirname, 'example')
+
+export default defineConfig(() => {
   return {
     resolve: { alias },
-    plugins:
-      mode === 'typecheck'
-        ? []
-        : [
-            svelte({
-              preprocess: autoPreprocess(),
-              compilerOptions: {
-                hydratable: true,
-              },
-            }),
-          ],
+    plugins: [
+      typed({
+        sourceDirectory: exampleDir,
+      }),
+    ],
     build: {
       manifest: true,
       sourcemap: true,

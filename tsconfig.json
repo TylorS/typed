@@ -4,13 +4,7 @@
   "files": [],
   "references": [
     {
-      "path": "./packages/benchmark/tsconfig.build.json"
-    },
-    {
       "path": "./packages/cli/tsconfig.build.json"
-    },
-    {
-      "path": "./packages/compiler/tsconfig.build.json"
     },
     {
       "path": "./packages/context/tsconfig.build.json"

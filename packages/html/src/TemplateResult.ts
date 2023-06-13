@@ -17,6 +17,8 @@ import type { Renderable } from './Renderable.js'
  * template functions which construct an Fx.
  */
 export class TemplateResult {
+  readonly _tag = 'TemplateResult'
+
   constructor(
     // The template strings
     readonly template: TemplateStringsArray,

@@ -10,9 +10,5 @@
   "exclude": [
     "dist"
   ],
-  "references": [
-    {
-      "path": "../compiler/tsconfig.build.json"
-    }
-  ]
+  "references": []
 }

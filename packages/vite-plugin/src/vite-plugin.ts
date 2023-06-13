@@ -1,17 +1,17 @@
-import { existsSync, writeFileSync } from 'fs'
-import { EOL } from 'os'
-import { basename, join, resolve } from 'path'
+import { existsSync } from 'fs'
+import { basename, join, relative, resolve } from 'path'
 
 import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
-import { Compiler, getRelativePath, type ResolvedOptions } from '@typed/compiler'
 import glob from 'fast-glob'
+import { visualizer } from 'rollup-plugin-visualizer'
 import vavite from 'vavite'
-import type { ConfigEnv, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
+import type { ConfigEnv, Plugin, PluginOption, UserConfig } from 'vite'
 import compression from 'vite-plugin-compression'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 import { PLUGIN_NAME } from './constants.js'
+import { ResolvedOptions } from './resolveTypedConfig.js'
 
 /**
  * The Configuration for the Typed Plugin. All file paths can be relative to sourceDirectory or
@@ -75,14 +75,17 @@ export interface TypedVitePlugin extends Plugin {
 
 export default function makePlugin(pluginOptions: PluginOptions): PluginOption[] {
   const options: ResolvedOptions = resolveOptions(pluginOptions)
-  let compiler: Compiler
-  let devServer: ViteDevServer
-  let isSsr = false
+  // let devServer: ViteDevServer
+  // let isSsr = false
 
   const plugins: PluginOption[] = [
     tsconfigPaths({
       projects: [options.tsConfig],
     }) as PluginOption,
+    visualizer({
+      emitFile: true,
+      filename: 'bundle-visualizer.html',
+    }),
     ...pipe(
       options.serverFilePath,
       Option.filter(() => !options.isStaticBuild),
@@ -96,14 +99,6 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
     ),
   ]
 
-  const getCompiler = () => {
-    if (compiler) {
-      return compiler
-    }
-
-    return (compiler = new Compiler(PLUGIN_NAME, options))
-  }
-
   const virtualModulePlugin: TypedVitePlugin = {
     name: PLUGIN_NAME,
     get resolvedOptions() {
@@ -113,7 +108,7 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
      * Configures our production build using vavite
      */
     config(config: UserConfig, env: ConfigEnv) {
-      isSsr = env.ssrBuild ?? false
+      // isSsr = env.ssrBuild ?? false
 
       if (!config.root) {
         config.root = options.sourceDirectory
@@ -168,83 +163,65 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
     configResolved(config) {
       // Ensure final options has the correct base path
       Object.assign(options, { base: config.base })
-
-      getCompiler().parseInput(config.build.rollupOptions.input)
     },
 
     /**
      * Configures our dev server to watch for changes to our input files
      * and exposes the dev server to our compiler methods
      */
-    configureServer(server) {
-      devServer = server
-
-      server.watcher.on('all', (event, path) => {
-        if (event === 'change') {
-          getCompiler().handleFileChange(path, 'update', server)
-        } else if (event === 'add') {
-          getCompiler().handleFileChange(path, 'create', server)
-        } else if (event === 'unlink') {
-          getCompiler().handleFileChange(path, 'delete', server)
-        }
-      })
-    },
+    // configureServer(server) {
+    //   devServer = server
+    // },
 
     /**
      * Handles file changes
      */
-    async watchChange(path, { event }) {
-      getCompiler().handleFileChange(path, event, devServer)
-    },
+    // async watchChange(path, { event }) {},
 
     /**
      * Type-check our project and fail the build if there are any errors.
      * If successful, save our manifest to disk.
      */
-    async closeBundle() {
-      const { manifest, throwDiagnostics } = getCompiler()
-
-      // Throw any diagnostics that were collected during the build
-      throwDiagnostics()
-
-      if (Object.keys(manifest).length > 0 && !options.isStaticBuild) {
-        writeFileSync(
-          resolve(
-            isSsr ? options.serverOutputDirectory : options.clientOutputDirectory,
-            'typed-manifest.json',
-          ),
-          JSON.stringify(manifest, null, 2) + EOL,
-        )
-      }
-    },
+    // async closeBundle() {},
 
     /**
      * Resolve and build our virtual modules
      */
-    async resolveId(id: string, importer?: string) {
-      return await getCompiler().resolveId(id, importer, devServer)
+    async resolveId(id: string) {
+      if (id === 'typed:config') {
+        return id
+      }
+
+      return null
     },
 
     /**
      * Load our virtual modules
      */
     load(id: string) {
-      return getCompiler().load(id)
+      if (id === 'typed:config') {
+        return Object.entries(options).reduce((acc, [key, value]) => {
+          acc += `export const ${key} = ${JSON.stringify(value)}\n`
+          return acc
+        }, '')
+      }
+
+      return null
     },
 
     /**
      * Transorm TypeScript modules
      */
-    transform(text: string, id: string) {
-      return getCompiler().transpileTsModule(text, id, devServer)
-    },
+    // transform(text: string, id: string) {
+    //   return getCompiler().transpileTsModule(text, id, devServer)
+    // },
 
     /**
      * Transform HTML files
      */
-    transformIndexHtml(html: string) {
-      return getCompiler().transformHtml(html)
-    },
+    // transformIndexHtml(html: string) {
+    //   return getCompiler().transformHtml(html)
+    // },
   }
 
   plugins.push(virtualModulePlugin)
@@ -323,4 +300,14 @@ export function buildClientInput(htmlFilePaths: readonly string[]) {
     (acc, htmlFilePath) => ({ ...acc, [basename(htmlFilePath, '.html')]: htmlFilePath }),
     {},
   )
+}
+
+function getRelativePath(from: string, to: string) {
+  const path = relative(from, to)
+
+  if (path.startsWith('.')) {
+    return path
+  }
+
+  return './' + path
 }

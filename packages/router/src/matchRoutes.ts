@@ -61,18 +61,29 @@ export function matchRoutes<
 
     const matchPath = (path: string) =>
       Effect.gen(function* ($) {
+        yield* $(Effect.logDebug('Matching against path: ' + path))
+
         for (const [route, render, guard, onMatch] of matchers) {
           const params = route.match(path)
 
+          yield* $(Effect.logDebug('Matching against route: ' + route.path))
+
           if (Option.isSome(params)) {
+            yield* $(Effect.logDebug('Matched against route: ' + route.path))
+            yield* $(Effect.logDebug('With Parameters: ' + JSON.stringify(params.value)))
+
             // If there is a guard and it fails, continue to next route
             if (guard && !(yield* $(guard(params.value)))) {
+              yield* $(Effect.logDebug('Guard failed for route: ' + route.path))
+
               continue
             }
 
             // If there is an onMatch handler, run it and catch any errors
             // This is useful when you want to add tracking when a route is matched
             if (onMatch) {
+              yield* $(Effect.logDebug('Running onMatch for route: ' + route.path))
+
               yield* $(
                 onMatch(params.value),
                 Effect.catchAllCause((cause) => matched.error(cause)),

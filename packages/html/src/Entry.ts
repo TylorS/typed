@@ -227,12 +227,17 @@ export class CouldNotFindCommentError extends Error {
   }
 }
 
+const textStart = 'text-start'
+const typedStart = 'typed-start'
+
 export function getPreviousNodes(comment: Node, index: number) {
   const nodes: Node[] = []
   let node = comment.previousSibling
   const previousHole = `hole${index - 1}`
 
-  while (node && node.nodeValue !== previousHole && node.nodeValue !== 'typed-start') {
+  const values = new Set([previousHole, textStart, typedStart])
+
+  while (node && !values.has(String(node.nodeValue))) {
     nodes.unshift(node)
     node = node.previousSibling
   }

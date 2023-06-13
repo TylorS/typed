@@ -68,3 +68,7 @@ export namespace Route {
     }
   }
 }
+
+export type PathOf<T extends Route<any>> = [T] extends [Route<infer P>] ? P : never
+
+export type ParamsOf<T extends Route<any>> = [T] extends [Route<infer P>] ? Path.ParamsOf<P> : never

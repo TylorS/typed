@@ -19,9 +19,9 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.12.5",
-    "@typed/compiler": "workspace:*",
+    "@effect/data": "^0.12.6",
     "fast-glob": "^3.2.12",
+    "rollup-plugin-visualizer": "^5.9.2",
     "vavite": "^1.8.1",
     "vite": "^4.3.9",
     "vite-plugin-compression": "^0.5.1",

@@ -42,13 +42,13 @@ export const renderToHtmlStream = <R, E>(
         }
 
         yield* $(
-          Fx.map(renderTemplateResult<E>(input, templateResult, -1), (event) =>
-            event._tag === 'Full'
+          Fx.map(renderTemplateResult<E>(input, templateResult, -1), (event) => {
+            return event._tag === 'Full'
               ? new FullHtml(START_COMMENT + event.html + END_COMMENT)
               : event.isLast
               ? new PartialHtml(getFirst() + event.html + END_COMMENT, true)
-              : new PartialHtml(getFirst() + event.html, false),
-          ).run(sink),
+              : new PartialHtml(getFirst() + event.html, false)
+          }).run(sink),
         )
       }),
       sink.error,
@@ -174,7 +174,7 @@ function renderTemplateResult<E>(
 
           return (value: unknown) =>
             Effect.gen(function* ($) {
-              if (value instanceof TemplateResult) {
+              if (isTemplateResult(value)) {
                 yield* $(
                   renderTemplateResult(input, value, index),
                   Fx.observe(handleHtmlEvent),
@@ -289,4 +289,13 @@ export class PartialHtml {
   readonly _tag = 'Partial'
 
   constructor(readonly html: string, readonly isLast: boolean) {}
+}
+
+function isTemplateResult(value: unknown): value is TemplateResult {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    '_tag' in value &&
+    value._tag === 'TemplateResult'
+  )
 }
