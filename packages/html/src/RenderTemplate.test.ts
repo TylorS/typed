@@ -197,6 +197,44 @@ describe(import.meta.url, () => {
     await Effect.runPromise(addRemoveTest)
   })
 
+  it('allows array for managing class names', async () => {
+    const syncArray = testRenderTemplate(
+      html`<div class=${['foo', 'bar', 'baz']}></div>`,
+      function* ($, rendered) {
+        const globalThis = yield* $(GlobalThis)
+
+        ok(rendered instanceof globalThis.HTMLDivElement)
+        ok(rendered.outerHTML === '<div class="foo bar baz"></div>')
+      },
+    )
+
+    await Effect.runPromise(syncArray)
+
+    const effectArray = testRenderTemplate(
+      html`<div class=${Effect.succeed(['foo', 'bar', 'baz'])}></div>`,
+      function* ($, rendered) {
+        const globalThis = yield* $(GlobalThis)
+
+        ok(rendered instanceof globalThis.HTMLDivElement)
+        ok(rendered.outerHTML === '<div class="foo bar baz"></div>')
+      },
+    )
+
+    await Effect.runPromise(effectArray)
+
+    const fxArray = testRenderTemplate(
+      html`<div class=${Fx.succeed(['foo', 'bar', 'baz'])}></div>`,
+      function* ($, rendered) {
+        const globalThis = yield* $(GlobalThis)
+
+        ok(rendered instanceof globalThis.HTMLDivElement)
+        ok(rendered.outerHTML === '<div class="foo bar baz"></div>')
+      },
+    )
+
+    await Effect.runPromise(fxArray)
+  })
+
   it('sets data attributes', async () => {
     const attribute = testRenderTemplate(
       html`<div data-test="foo"></div>`,
