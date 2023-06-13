@@ -92,11 +92,11 @@ export function renderTemplateResult(
       }
 
       cache.entry = entry = yield* $(Entry(document, renderContext, result, cache))
+    }
 
-      // Render all children before creating the wire
-      if (entry.parts.length > 0) {
-        yield* $(renderPlaceholders(document, renderContext, result, cache, entry))
-      }
+    // Render all children before creating the wire
+    if (entry.parts.length > 0) {
+      yield* $(renderPlaceholders(document, renderContext, result, cache, entry))
     }
 
     // Lazily creates the wire after all childNodes are available
@@ -109,13 +109,18 @@ export function renderPlaceholders(
   renderContext: RenderContext,
   { values, sink, context }: TemplateResult,
   renderCache: RenderCache,
-  { parts, onValue, onReady, fibers }: Entry,
+  { parts, onValue, onReady, fibers, values: cachedValues }: Entry,
 ): Effect.Effect<Scope, never, void> {
-  const renderNode = (value: unknown, cache: () => RenderCache, i: number) =>
+  const renderNode = (value: unknown, i: number) =>
     Effect.suspend(() => {
       // If the value is a TemplateResult, we need to render it recusively
       if (value instanceof TemplateResult) {
-        return renderTemplateResult(document, renderContext, value, cache())
+        return renderTemplateResult(
+          document,
+          renderContext,
+          value,
+          renderCache.stack[i] || (renderCache.stack[i] = RenderCache()),
+        )
       }
 
       if (!value) {
@@ -129,6 +134,15 @@ export function renderPlaceholders(
     Effect.gen(function* ($) {
       const value = values[index]
 
+      // Avoid re-rendering the same value
+      if (value === cachedValues[index] && index in fibers) {
+        return
+      } else if (index in fibers) {
+        yield* $(Fiber.interruptFork(fibers[index]))
+      }
+
+      cachedValues[index] = value
+
       switch (part._tag) {
         // Nodes needs special handling as they support arrays, and other TemplateResults
         case 'Node': {
@@ -136,11 +150,7 @@ export function renderPlaceholders(
             unwrapRenderable(value),
             Fx.switchMatchCauseEffect(sink.error, (x) =>
               pipe(
-                renderNode(
-                  x,
-                  () => renderCache.stack[index] || (renderCache.stack[index] = RenderCache()),
-                  index,
-                ),
+                renderNode(x, index),
                 Effect.flatMap(part.update),
                 Effect.tap(() => onValue(index)),
               ),

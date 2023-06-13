@@ -19,10 +19,11 @@ export interface Entry {
   onValue: (index: number) => Effect.Effect<never, never, void>
   parts: readonly Part[]
   template: TemplateStringsArray
-  values: readonly Renderable<any, any>[]
+  values: Renderable<any, any>[]
   wire: () => Node | DocumentFragment | Wire | Node[] | null
 
   // Only for hydration
+  isHydrating: boolean
   rootElements: readonly Node[]
   indexToRootElement: Map<number, Node>
 }
@@ -60,10 +61,11 @@ export function Entry(
       onValue,
       parts,
       fibers,
-      values: result.values,
+      values: result.values.slice(0),
       wire: () => wire || (wire = persistent(content)),
       rootElements: [],
       indexToRootElement: new Map(),
+      isHydrating: false,
     } satisfies Entry
   })
 }
@@ -189,10 +191,11 @@ export function HydrateEntry(
       onValue,
       parts,
       fibers,
-      values: result.values,
+      values: result.values.slice(0),
       wire: () => wire,
       rootElements,
       indexToRootElement,
+      isHydrating: true,
     } satisfies Entry
   })
 }

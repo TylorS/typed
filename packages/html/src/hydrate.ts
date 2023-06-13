@@ -112,19 +112,18 @@ export function hydrateTemplateResult(
           yield* $(entry.cleanup)
 
           cache.entry = entry = yield* $(Entry(document, renderContext, result, cache))
-
-          // Render all children before creating the wire
-          if (entry.parts.length > 0) {
-            yield* $(renderPlaceholders(document, renderContext, result, cache, entry))
-          }
         } else {
           cache.entry = entry = yield* $(
             HydrateEntry(document, renderContext, result, cache, where, isRoot, rootIndex),
           )
-          // Render all children before creating the wire
-          if (entry.parts.length > 0) {
-            yield* $(hydratePlaceholders(document, renderContext, result, cache, entry))
-          }
+        }
+      }
+
+      if (entry.parts.length > 0) {
+        if (entry.isHydrating) {
+          yield* $(hydratePlaceholders(document, renderContext, result, cache, entry))
+        } else {
+          yield* $(renderPlaceholders(document, renderContext, result, cache, entry))
         }
       }
 
@@ -147,11 +146,20 @@ function hydratePlaceholders(
   renderContext: RenderContext,
   { values, sink, context }: TemplateResult,
   renderCache: RenderCache,
-  { parts, onValue, onReady, fibers, indexToRootElement }: Entry,
+  { parts, onValue, onReady, fibers, indexToRootElement, values: cachedValues }: Entry,
 ): Effect.Effect<Scope, never, void> {
   const hydratePart = (part: Part, index: number) =>
     Effect.gen(function* ($) {
       const value = values[index]
+
+      // Avoid re-rendering the same value
+      if (value === cachedValues[index] && index in fibers) {
+        return
+      } else if (index in fibers) {
+        yield* $(Fiber.interruptFork(fibers[index]))
+      }
+
+      cachedValues[index] = value
 
       switch (part._tag) {
         // Nodes needs special handling as they support arrays, and other TemplateResults
