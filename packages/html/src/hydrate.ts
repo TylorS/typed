@@ -158,7 +158,7 @@ function hydratePlaceholders(
         case 'Node': {
           let rootElement = indexToRootElement.get(index)
           if (!rootElement) {
-            rootElement = findRootElement(rootElements, index)
+            ;[rootElement] = findRootElement(document, rootElements, index, 0)
             indexToRootElement.set(index, rootElement)
           }
 

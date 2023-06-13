@@ -112,12 +112,27 @@ export function HydrateEntry(
     const { onReady, onValue } = yield* $(indexRefCounter(holes.length))
     const rootElements = findRootElements(where, rootIndex)
     const indexToRootElement = new Map<number, Node>()
+    let lastRootElementIndex = 0
+    let lastCommentIndex = 0
     const parts = holes.map((hole, i) => {
       if (hole.type === 'node') {
-        const rootElement = findRootElement(rootElements, i)
+        const [rootElement, elementIndex] = findRootElement(
+          document,
+          rootElements,
+          i,
+          lastRootElementIndex,
+        )
+
+        if (elementIndex !== lastRootElementIndex) {
+          lastCommentIndex = 0
+        }
+
+        lastRootElementIndex = elementIndex
         indexToRootElement.set(i, rootElement)
 
-        const comment = findCommentNode(rootElement.childNodes, i)
+        const [comment, commentIndex] = findCommentNode(rootElement.childNodes, i, lastCommentIndex)
+
+        lastCommentIndex = commentIndex
 
         return holeToPart(document, hole, comment, (comment) => getPreviousNodes(comment, i))
       }
@@ -168,17 +183,21 @@ export function HydrateEntry(
   })
 }
 
-export function findCommentNode(childNodes: ArrayLike<Node>, index: number): Comment {
+export function findCommentNode(
+  childNodes: ArrayLike<Node>,
+  index: number,
+  lastCommentIndex = 0,
+): readonly [Comment, number] {
   const value = `hole${index}`
 
-  for (let i = 0; i < childNodes.length; ++i) {
+  for (let i = lastCommentIndex; i < childNodes.length; ++i) {
     const node = childNodes[i]
 
     if (
       node.nodeType === node.COMMENT_NODE &&
       (node.nodeValue === value || node.nodeValue === 'typed-end')
     ) {
-      return node as Comment
+      return [node as Comment, i]
     }
   }
 
@@ -227,8 +246,6 @@ export function isCommentWithValue(node: Comment, value: string) {
 }
 
 export function findRootElements({ parentNode, childNodes }: ParentChildNodes, rootIndex: number) {
-  if (childNodes.length === 0) return [parentNode as HTMLElement]
-
   const elements: HTMLElement[] = []
 
   for (let i = 0; i < childNodes.length; ++i) {
@@ -239,27 +256,32 @@ export function findRootElements({ parentNode, childNodes }: ParentChildNodes, r
     }
   }
 
+  // Special case for root templates
   if (elements.length === 0 && parentNode) {
-    const lastNode = childNodes[childNodes.length - 1]
-
-    if (isComment(lastNode) && isCommentWithValue(lastNode, 'typed-end')) {
-      elements.push(parentNode as HTMLElement)
-    }
+    return [parentNode as HTMLElement]
   }
 
   return elements
 }
 
-export function findRootElement(rootElements: readonly Node[], partIndex: number) {
-  for (let i = 0; i < rootElements.length; ++i) {
+export function findRootElement(
+  document: Document,
+  rootElements: readonly Node[],
+  partIndex: number,
+  lastRootElementIndex = 0,
+) {
+  for (let i = lastRootElementIndex; i < rootElements.length; ++i) {
     const root = rootElements[i]
+    const iterator = document.createNodeIterator(root, 128)
 
-    for (let j = 0; j < root.childNodes.length; ++j) {
-      const node = root.childNodes[j]
+    let node = iterator.nextNode()
 
-      if (isComment(node) && isHoleComent(node, partIndex)) {
-        return root
+    while (node) {
+      if (isHoleComent(node as Comment, partIndex)) {
+        return [root, i] as const
       }
+
+      node = iterator.nextNode()
     }
   }
 

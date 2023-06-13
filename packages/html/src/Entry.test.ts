@@ -65,7 +65,7 @@ describe(fileURLToPath(import.meta.url), () => {
     it('returns the expected comment node for root', () => {
       const root = findRootParentChildNodes(body)
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const actual = findCommentNode(root.parentNode!.childNodes, 0)
+      const [actual] = findCommentNode(root.parentNode!.childNodes, 0)
 
       ok(actual === end)
     })
@@ -73,7 +73,7 @@ describe(fileURLToPath(import.meta.url), () => {
     it('returns the expected comment node for children', () => {
       const root = findRootParentChildNodes(body)
       const parent = findTemplateResultParentChildNodes(root, 0)
-      const actual = findCommentNode(parent.childNodes, 0)
+      const [actual] = findCommentNode(parent.childNodes, 0)
 
       ok(actual === rendered.divComment)
     })
@@ -82,7 +82,7 @@ describe(fileURLToPath(import.meta.url), () => {
       const root = findRootParentChildNodes(body)
       const parent = findTemplateResultParentChildNodes(root, 0)
       const child = findTemplateResultParentChildNodes(parent, 0)
-      const actual = findCommentNode(child.childNodes, 0)
+      const [actual] = findCommentNode(child.childNodes, 0)
 
       ok(actual === rendered.pComment)
     })
@@ -92,7 +92,7 @@ describe(fileURLToPath(import.meta.url), () => {
       const parent = findTemplateResultParentChildNodes(root, 0)
       const child = findTemplateResultParentChildNodes(parent, 0)
       const grandchild = findTemplateResultParentChildNodes(child, 0)
-      const actual = findCommentNode(grandchild.childNodes, 0)
+      const [actual] = findCommentNode(grandchild.childNodes, 0)
 
       ok(actual === rendered.spanComment)
     })
