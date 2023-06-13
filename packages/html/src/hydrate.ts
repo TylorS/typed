@@ -153,7 +153,7 @@ function hydratePlaceholders(
   renderContext: RenderContext,
   { values, sink, context }: TemplateResult,
   renderCache: RenderCache,
-  { parts, onValue, onReady, fibers, rootElements, indexToRootElement }: Entry,
+  { parts, onValue, onReady, fibers, indexToRootElement }: Entry,
 ): Effect.Effect<Scope, never, void> {
   const hydratePart = (part: Part, index: number) =>
     Effect.gen(function* ($) {
@@ -162,11 +162,7 @@ function hydratePlaceholders(
       switch (part._tag) {
         // Nodes needs special handling as they support arrays, and other TemplateResults
         case 'Node': {
-          let rootElement = indexToRootElement.get(index)
-          if (!rootElement) {
-            ;[rootElement] = findRootElement(document, rootElements, index, 0)
-            indexToRootElement.set(index, rootElement)
-          }
+          const rootElement = indexToRootElement.get(index) as Node
 
           fibers[index] = yield* $(
             unwrapRenderable(value),
