@@ -10,6 +10,7 @@ import { TemplateResult } from './TemplateResult.js'
 import { getTemplateCache } from './getCache.js'
 import { holeToPart } from './holeToPart.js'
 import { Part } from './part/Part.js'
+import { nodeToHtml } from './part/templateHelpers.js'
 import { ParentChildNodes, findPath } from './paths.js'
 
 export interface Entry {
@@ -123,33 +124,24 @@ export function HydrateEntry(
     const { holes } = getTemplateCache(document, renderContext.templateCache, result)
     const { onReady, onValue } = yield* $(indexRefCounter(holes.length))
     const rootElements = findRootElements(where, rootIndex)
+
+    console.log('Found root elements', rootElements.map(nodeToHtml))
+
     const indexToRootElement = new Map<number, Node>()
-    let lastRootElementIndex = 0
-    let lastCommentIndex = 0
     const parts = holes.map((hole, i) => {
+      const [rootElement, comment] = findRootElement(document, rootElements, i)
       if (hole.type === 'node') {
-        const [rootElement, elementIndex] = findRootElement(
-          document,
-          rootElements,
-          i,
-          lastRootElementIndex,
-        )
-
-        if (elementIndex !== lastRootElementIndex) {
-          lastCommentIndex = 0
-        }
-
-        lastRootElementIndex = elementIndex
         indexToRootElement.set(i, rootElement)
-
-        const [comment, commentIndex] = findCommentNode(rootElement.childNodes, i, lastCommentIndex)
-
-        lastCommentIndex = commentIndex
 
         return holeToPart(document, hole, comment, (comment) => getPreviousNodes(comment, i))
       }
 
-      return holeToPart(document, hole, findPath(where, hole.path))
+      if (rootElements.length === 1) {
+        return holeToPart(document, hole, rootElements[0])
+      } else {
+        // TODO: Attributes need to be marked appropriately in HTML to ensure they get matched to the right element
+        throw new CouldNotFindRootElement(i)
+      }
     })
     const fibers: Fiber.Fiber<any, any>[] = Array(parts.length)
 
@@ -290,9 +282,8 @@ export function findRootElement(
   document: Document,
   rootElements: readonly Node[],
   partIndex: number,
-  lastRootElementIndex = 0,
 ) {
-  for (let i = lastRootElementIndex; i < rootElements.length; ++i) {
+  for (let i = 0; i < rootElements.length; ++i) {
     const root = rootElements[i]
     const iterator = document.createNodeIterator(root, 128)
 
@@ -300,7 +291,9 @@ export function findRootElement(
 
     while (node) {
       if (isHoleComent(node as Comment, partIndex)) {
-        return [root, i] as const
+        // There could be multiple elements between root and the comment, so we take the comments parent
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return [node.parentElement!, node] as const
       }
 
       node = iterator.nextNode()

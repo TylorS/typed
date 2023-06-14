@@ -1,4 +1,4 @@
-import { deepStrictEqual, ok } from 'assert'
+import { deepStrictEqual, ok, strictEqual } from 'assert'
 import { fileURLToPath } from 'url'
 
 import * as Duration from '@effect/data/Duration'
@@ -43,9 +43,9 @@ describe(fileURLToPath(import.meta.url), () => {
 
           ok(rendered instanceof globalThis.HTMLDivElement)
 
-          const renderedAttr = rendered.getAttributeNode('id')
+          const renderedAttr = rendered.getAttributeNodeNS(null, 'id')
 
-          ok(renderedAttr === attr)
+          strictEqual(renderedAttr, attr)
         },
       )
 

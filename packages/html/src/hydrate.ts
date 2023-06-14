@@ -14,6 +14,7 @@ import { TemplateResult } from './TemplateResult.js'
 import { getRenderCache } from './getCache.js'
 import { handleEffectPart, handlePart, unwrapRenderable } from './makeUpdate.js'
 import { Part } from './part/Part.js'
+import { nodeToHtml } from './part/templateHelpers.js'
 import { ParentChildNodes } from './paths.js'
 import {
   renderPlaceholders,
@@ -116,6 +117,11 @@ export function hydrateTemplateResult(
     Effect.gen(function* ($) {
       let { entry } = cache
 
+      console.log('Hydrating template', result.template, {
+        parentNode: nodeToHtml(where.parentNode),
+        where: Array.from(where.childNodes).map(nodeToHtml),
+      })
+
       if (!entry || entry.template !== result.template) {
         // The entry is changing, so we need to cleanup the previous one
         if (entry) {
@@ -196,8 +202,6 @@ function hydratePlaceholders(
                   false,
                   index,
                 )
-              } else if (!x) {
-                renderCache.stack[index] = null
               }
 
               return pipe(

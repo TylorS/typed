@@ -103,9 +103,6 @@ function renderTemplateResult<E>(
               const html = indexToHtml.get(index) as string
               const isLast = index === lastIndex
               const nextIndex = ++hasRendered
-
-              indexToHtml.delete(index)
-
               const fullHtml = trimEmptyQuotes(isLast ? html + template[index + 1] : html)
 
               // Emit our HTML
@@ -153,7 +150,7 @@ function renderTemplateResult<E>(
                 yield* $(emitHtml(index))
               } else {
                 const currentHtml = pendingHtml.get(index) ?? ''
-                const html = currentHtml + getFirst(event.html)
+                const html = getFirst(currentHtml + event.html)
 
                 if (event.isLast) {
                   pendingHtml.delete(index)
@@ -175,11 +172,7 @@ function renderTemplateResult<E>(
           return (value: unknown) =>
             Effect.gen(function* ($) {
               if (isTemplateResult(value)) {
-                yield* $(
-                  renderTemplateResult(input, value, index),
-                  Fx.observe(handleHtmlEvent),
-                  Effect.forkScoped,
-                )
+                yield* $(renderTemplateResult<E>(input, value, index), Fx.observe(handleHtmlEvent))
               } else {
                 yield* $(part.update(value))
 
@@ -220,9 +213,10 @@ function renderTemplateResult<E>(
             switch (part._tag) {
               case 'Node': {
                 fibers[index] = yield* $(
-                  unwrapRenderable(value),
+                  unwrapRenderable<R, E>(value),
                   Fx.switchMatchCauseEffect(sink.error, renderNode(part, index)),
                   Fx.drain,
+                  Effect.catchAllCause(sink.error),
                   Effect.forkScoped,
                 )
 

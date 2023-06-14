@@ -15,3 +15,5 @@ export const server = (options?: ServerWindowOptions & { readonly isBot?: boolea
 
   return Layer.provideMerge(Layer.succeedContext(context), domServices)
 }
+
+export * from './makeServerWindow.js'

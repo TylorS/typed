@@ -3,15 +3,15 @@ import { sync } from '@effect/io/Effect'
 import { diffChildren } from '../diffChildren.js'
 
 import { BasePart } from './BasePart.js'
-import { nodeToHtml } from './templateHelpers.js'
+import { nodeToHtml, trimEmptyQuotes } from './templateHelpers.js'
 
 export class NodePart extends BasePart<never, never> {
   readonly _tag = 'Node'
 
-  protected text: Text | undefined
+  protected text: Text | null = null
 
   constructor(document: Document, readonly comment: Comment, protected nodes: Node[] = []) {
-    super(document, nodes.length === 1 ? nodes[0] : nodes)
+    super(document, nodes.length === 1 ? nodes[0] : nodes.filter(notIsEmptyTextNode))
   }
 
   /**
@@ -68,19 +68,21 @@ export class NodePart extends BasePart<never, never> {
    */
   getHTML(template: string): string {
     // If there is just text, we need to add a comment to ensure a separate text node is created.
-    if (this.text) return `${template}<!--text-start-->${this.text.nodeValue}` + nodeToHtml(this.comment)
+    if (this.text)
+      return (
+        `${trimEmptyQuotes(template)}<!--text-start-->${this.text.nodeValue}` +
+        nodeToHtml(this.comment)
+      )
 
-    const base = `${template}${this.nodes.map(nodeToHtml).join('')}`
+    const base = `${trimEmptyQuotes(template)}${this.nodes.map(nodeToHtml).join('')}`
 
     return `${base}${nodeToHtml(this.comment)}`
   }
 
   protected manageTextNode(content: string) {
     if (!this.text) {
-      const previous = getPreviousTextSibling(this.comment.previousSibling)
-
-      if (previous && previous.nodeType === 3) {
-        this.text = previous as Text
+      if (this.comment.previousSibling) {
+        this.text = getPreviousTextSibling(this.comment.previousSibling)
       }
 
       if (!this.text) {
@@ -101,4 +103,12 @@ function getPreviousTextSibling(node: Node | null) {
   if (node && node.nodeType === 3) return node as Text
 
   return null
+}
+
+function notIsEmptyTextNode(node: Node) {
+  if (node.nodeType === node.COMMENT_NODE) {
+    return node.nodeValue?.trim() === ''
+  }
+
+  return true
 }

@@ -261,7 +261,7 @@ function elementWithAttr<
         return [k, v]
       } else {
         const attr = document.createAttributeNS(null, k)
-        attr.nodeValue = v
+        attr.value = v
 
         node.setAttributeNodeNS(attr)
 

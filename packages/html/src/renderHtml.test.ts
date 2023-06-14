@@ -36,7 +36,7 @@ describe(fileURLToPath(import.meta.url), () => {
             html`<div id="test">${html`<p>${html`<span>${'lorem ipsum'}</span>`}</p>`}</div>`,
             [
               new PartialHtml(
-                `<div data-typed="-1" id="test"><p data-typed="0"><span data-typed="0">lorem ipsum</span></p></div>`,
+                `<div data-typed="-1" id="test"><p data-typed="0"><span data-typed="0"><!--text-start-->lorem ipsum</span></p></div>`,
                 true,
               ),
             ],
@@ -54,6 +54,20 @@ describe(fileURLToPath(import.meta.url), () => {
         const output = yield* $(testHtml(html`<div></div>`))
 
         expect(output).toEqual(`<div data-typed="-1"></div>`)
+      })
+
+      await Effect.runPromise(test)
+    })
+
+    it('renders a simple html element', async () => {
+      const test = Effect.gen(function* ($) {
+        const output = yield* $(testHtml(html`<div id="${'foo'}"></div>`))
+
+        console.log(output)
+
+        expect(output).toEqual(
+          `<div data-typed="-1"<!--attr0-start-->id="foo"<!--attr0-end-->></div>`,
+        )
       })
 
       await Effect.runPromise(test)

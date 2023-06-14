@@ -1,6 +1,8 @@
 /// <reference types="@typed/framework" />
 
 import { readFileSync } from 'fs'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
 
 import { flow, pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
@@ -16,7 +18,11 @@ import viteDevServer from 'vavite/vite-dev-server'
 
 import { layout, router } from './routing.js'
 
-const indexHtml = readFileSync(`${clientOutputDirectory}/index.html`, 'utf-8').toString()
+const dir = dirname(fileURLToPath(import.meta.url))
+
+const indexHtml = import.meta.env.PROD
+  ? readFileSync(`${clientOutputDirectory}/index.html`, 'utf-8').toString()
+  : readFileSync(join(dir, './index.html'), 'utf-8').toString()
 const [appElementStart, appElementEnd] = [`<div id="application">`, `</div>`]
 const [before, after] = indexHtml.split(appElementStart + appElementEnd)
 
@@ -37,18 +43,18 @@ const provideUiResources = (req: express.Request) => {
   )
 }
 
-// eslint-disable-next-line import/no-named-as-default-member
-app.get(
-  '*.js',
-  staticGzip(clientOutputDirectory, {
-    serveStatic: {
-      maxAge: '1y',
-      immutable: true,
-    },
-  }),
-)
+if (import.meta.env.PROD) {
+  app.use(
+    staticGzip(clientOutputDirectory, {
+      serveStatic: {
+        maxAge: '1y',
+        immutable: true,
+      },
+    }),
+  )
+}
 
-app.get('*', async (req, res, next) => {
+app.get('/*', async (req, res, next) => {
   console.log('handling', req.url)
 
   try {
@@ -61,7 +67,8 @@ app.get('*', async (req, res, next) => {
 
       res.status(200)
       res.setHeader('Content-Type', 'text/html')
-      res.send(html)
+      res.write(html)
+      res.end()
     } else {
       res.type('text/html')
       res.write(before + appElementStart)
@@ -77,12 +84,13 @@ app.get('*', async (req, res, next) => {
       res.end(appElementEnd + after)
     }
   } catch (error) {
+    console.error(error)
     next(error)
   }
 })
 
 if (viteDevServer) {
-  httpDevServer!.on('request', app)
+  httpDevServer?.on('request', app)
 } else {
   console.log('Starting production server')
   app.listen(3000)

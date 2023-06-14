@@ -120,6 +120,7 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
           outDir: options.clientOutputDirectory,
           rollupOptions: {
             input: buildClientInput(options.htmlFiles),
+            external: ['happy-dom'],
           },
         }
 
