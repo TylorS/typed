@@ -10,7 +10,7 @@ type TokenState = {
 
 const TEXT_ONLY_NODES_REGEX = /^(?:textarea|script|style|title|plaintext|xmp)$/
 
-export function parseTemplateStrings(template: TemplateStringsArray): ReadonlyArray<Token> {
+export function tokenizeTemplateStrings(template: TemplateStringsArray): ReadonlyArray<Token> {
   const state: TokenState = {
     context: 'text',
     currentTag: '',

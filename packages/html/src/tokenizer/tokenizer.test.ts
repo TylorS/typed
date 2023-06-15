@@ -7,7 +7,7 @@ import {
   OpeningTagToken,
   OpeningTagEndToken,
   Token,
-  parseTemplateStrings,
+  tokenizeTemplateStrings,
   AttributeStartToken,
   AttributeEndToken,
   PartToken,
@@ -16,7 +16,7 @@ import {
   CommentToken,
   CommentStartToken,
   CommentEndToken,
-} from './parser.js'
+} from './tokenizer.js'
 
 type TestCase = {
   name: string
@@ -330,7 +330,7 @@ const testCases: TestCase[] = [
   },
 ]
 
-describe(parseTemplateStrings.name, () => {
+describe(tokenizeTemplateStrings.name, () => {
   for (const testCase of testCases) {
     setup(testCase)
   }
@@ -347,7 +347,7 @@ function setup(test: TestCase) {
 }
 
 function runTest(test: TestCase) {
-  const actual = parseTemplateStrings(test.template)
+  const actual = tokenizeTemplateStrings(test.template)
 
   try {
     deepStrictEqual(actual, test.expected)
