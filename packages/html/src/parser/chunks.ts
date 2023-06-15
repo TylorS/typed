@@ -41,7 +41,12 @@ export const getTagEnd = chunker(/(\s*(\/?>))/g)
 /**
  * Attribute name chunker function.
  */
-export const getAttributeName = chunker(/(\s+(([a-z0-9\-_]+:)?[a-z0-9\-_]+)(\s*=\s*)?)/gi)
+export const getAttributeName = chunker(/(\s+(([a-z0-9\-_]+:)?[?.@a-z0-9\-_]+)(\s*=\s*)?)/gi)
+
+/**
+ * Whitespace chunker function.
+ */
+export const getWhitespace = chunker(/(\s+)/g)
 
 export type Chunk = {
   readonly length: number

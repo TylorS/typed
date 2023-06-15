@@ -21,6 +21,10 @@
     },
     "test": {
       "executor": "@nrwl/vite:test",
+      "options": {
+        "globals": true,
+        "include": ["src/parser/**/*.test.ts"]
+      },
       "configurations": {
         "watch": {
           "watch": true

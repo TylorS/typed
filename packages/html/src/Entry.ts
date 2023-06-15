@@ -10,7 +10,6 @@ import { TemplateResult } from './TemplateResult.js'
 import { getTemplateCache } from './getCache.js'
 import { holeToPart } from './holeToPart.js'
 import { Part } from './part/Part.js'
-import { nodeToHtml } from './part/templateHelpers.js'
 import { ParentChildNodes, findPath } from './paths.js'
 
 export interface Entry {
@@ -124,9 +123,6 @@ export function HydrateEntry(
     const { holes } = getTemplateCache(document, renderContext.templateCache, result)
     const { onReady, onValue } = yield* $(indexRefCounter(holes.length))
     const rootElements = findRootElements(where, rootIndex)
-
-    console.log('Found root elements', rootElements.map(nodeToHtml))
-
     const indexToRootElement = new Map<number, Node>()
     const parts = holes.map((hole, i) => {
       const [rootElement, comment] = findRootElement(document, rootElements, i)
