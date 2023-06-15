@@ -38,11 +38,27 @@ export type Token =
   | AttributeToken
   | AttributeStartToken
   | AttributeEndToken
+  | BooleanAttributeStartToken
+  | BooleanAttributeEndToken
+  | ClassNameAttributeStartToken
+  | ClassNameAttributeEndToken
+  | DataAttributeStartToken
+  | DataAttributeEndToken
+  | EventAttributeStartToken
+  | EventAttributeEndToken
+  | PropertyAttributeStartToken
+  | PropertyAttributeEndToken
+  | RefAttributeStartToken
+  | RefAttributeEndToken
   | CommentToken
   | CommentStartToken
   | CommentEndToken
   | TextToken
   | PartToken
+
+// Maybe these too?
+// TODO: Node Parts
+// TODO: Text Parts
 
 export class OpeningTagToken {
   readonly _tag = 'opening-tag'
@@ -61,6 +77,60 @@ export class AttributeStartToken {
 export class AttributeEndToken {
   readonly _tag = 'attribute-end'
   constructor(readonly name: string) {}
+}
+
+export class BooleanAttributeStartToken {
+  readonly _tag = 'boolean-attribute-start'
+  constructor(readonly name: string) {}
+}
+
+export class BooleanAttributeEndToken {
+  readonly _tag = 'boolean-attribute-end'
+  constructor(readonly name: string) {}
+}
+
+export class ClassNameAttributeStartToken {
+  readonly _tag = 'className-attribute-start'
+}
+
+export class ClassNameAttributeEndToken {
+  readonly _tag = 'className-attribute-end'
+}
+
+export class DataAttributeStartToken {
+  readonly _tag = 'data-attribute-start'
+}
+
+export class DataAttributeEndToken {
+  readonly _tag = 'data-attribute-end'
+}
+
+export class EventAttributeStartToken {
+  readonly _tag = 'event-attribute-start'
+  constructor(readonly name: string) {}
+}
+
+export class EventAttributeEndToken {
+  readonly _tag = 'event-attribute-end'
+  constructor(readonly name: string) {}
+}
+
+export class PropertyAttributeStartToken {
+  readonly _tag = 'property-attribute-start'
+  constructor(readonly name: string) {}
+}
+
+export class PropertyAttributeEndToken {
+  readonly _tag = 'property-attribute-end'
+  constructor(readonly name: string) {}
+}
+
+export class RefAttributeStartToken {
+  readonly _tag = 'ref-attribute-start'
+}
+
+export class RefAttributeEndToken {
+  readonly _tag = 'ref-attribute-end'
 }
 
 export class AttributeToken {
@@ -98,7 +168,7 @@ export class CommentStartToken {
 }
 
 export class CommentEndToken {
-  readonly _tag = 'comment'
+  readonly _tag = 'comment-end'
   constructor(readonly value: string) {}
 }
 
@@ -161,7 +231,7 @@ function tokenize(state: TokenState, input: string): void {
           pos += read.length
           state.tokens.push(new AttributeToken(name, read.value))
         } else {
-          state.tokens.push(new AttributeStartToken(name))
+          state.tokens.push(getAttributeTokenPartial(name, 'start'))
           state.currentAttribute = name
           state.context = 'attribute'
           pos += name.length
@@ -190,14 +260,14 @@ function tokenize(state: TokenState, input: string): void {
           state.tokens.pop()
         }
 
-        state.tokens.push(new AttributeEndToken(state.currentAttribute))
+        state.tokens.push(getAttributeTokenPartial(state.currentAttribute, 'end'))
         state.tokens.push(new OpeningTagEndToken(state.currentTag, isSelfClosing))
         pos += isSelfClosing ? 2 : 1
 
         state.currentAttribute = ''
         state.context = 'tag'
       } else if (char === '"') {
-        state.tokens.push(new AttributeEndToken(state.currentAttribute))
+        state.tokens.push(getAttributeTokenPartial(state.currentAttribute, 'end'))
         state.currentAttribute = ''
         state.context = 'tag'
         pos += 1
@@ -206,7 +276,7 @@ function tokenize(state: TokenState, input: string): void {
         const name = next.match[2]
         const hasValue = next.match[4]
 
-        state.tokens.push(new AttributeEndToken(state.currentAttribute))
+        state.tokens.push(getAttributeTokenPartial(state.currentAttribute, 'end'))
 
         if (hasValue && hasValue.length > 1) {
           const read = readAttribute(input, pos)
@@ -214,7 +284,7 @@ function tokenize(state: TokenState, input: string): void {
 
           state.tokens.push(new AttributeToken(name, read.value))
         } else {
-          state.tokens.push(new AttributeStartToken(name))
+          state.tokens.push(getAttributeTokenPartial(name, 'start'))
           state.currentAttribute = name
           pos += name.length
         }
@@ -273,4 +343,44 @@ function tokenize(state: TokenState, input: string): void {
 
 function lastToken(tokens: Token[]) {
   return tokens[tokens.length - 1]
+}
+
+function getAttributeTokenPartial(name: string, ctx: 'start' | 'end') {
+  switch (name[0]) {
+    case '?':
+      return ctx === 'start'
+        ? new BooleanAttributeStartToken(name.substring(1))
+        : new BooleanAttributeEndToken(name.substring(1))
+    case '.': {
+      const propertyName = name.substring(1)
+
+      switch (propertyName) {
+        case 'data':
+          return ctx === 'start' ? new DataAttributeStartToken() : new DataAttributeEndToken()
+        default:
+          return ctx === 'start'
+            ? new PropertyAttributeStartToken(propertyName)
+            : new PropertyAttributeEndToken(propertyName)
+      }
+    }
+    case '@':
+      return ctx === 'start'
+        ? new EventAttributeStartToken(name.substring(1))
+        : new EventAttributeEndToken(name.substring(1))
+    case 'o':
+      if (name[1] === 'n')
+        return ctx === 'start'
+          ? new EventAttributeStartToken(name.substring(2))
+          : new EventAttributeEndToken(name.substring(2))
+  }
+
+  switch (name) {
+    case 'class':
+    case 'className':
+      return ctx === 'start' ? new ClassNameAttributeStartToken() : new ClassNameAttributeEndToken()
+    case 'ref':
+      return ctx === 'start' ? new RefAttributeStartToken() : new RefAttributeEndToken()
+  }
+
+  return ctx === 'start' ? new AttributeStartToken(name) : new AttributeEndToken(name)
 }
