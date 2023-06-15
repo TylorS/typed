@@ -65,9 +65,7 @@ describe(fileURLToPath(import.meta.url), () => {
 
         console.log(output)
 
-        expect(output).toEqual(
-          `<div data-typed="-1"<!--attr0-start-->id="foo"<!--attr0-end-->></div>`,
-        )
+        expect(output).toEqual(`<div data-typed="-1" id="foo"></div>`)
       })
 
       await Effect.runPromise(test)
