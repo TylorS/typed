@@ -1,9 +1,35 @@
+import { TYPED_ATTR, TYPED_END, TYPED_START } from './meta.js'
 import { Token } from './tokenizer/tokenizer.js'
 
-export function tokensToHtml(tokens: readonly Token[], templateIndex: number, depth = 0) {
+type TokenToHtmlState = {
+  depth: number
+  partIndex: number
+  attributes: Map<Depth, Set<PartIndex>>
+  currentAttribute: string
+}
+
+type Depth = number
+type PartIndex = number
+
+const defaultState = (): TokenToHtmlState => ({
+  depth: 0,
+  partIndex: -1,
+  attributes: new Map(),
+  currentAttribute: '',
+})
+
+export function tokensToHtml(
+  tokens: readonly Token[],
+  templateIndex: number,
+  state: TokenToHtmlState = defaultState(),
+  hash = `${templateIndex}`,
+) {
   let html = ''
   let i = 0
-  let partIndex = -1
+
+  if (templateIndex === -1) {
+    html += TYPED_START
+  }
 
   tokenLoop: for (; i < tokens.length; i++) {
     const token = tokens[i]
@@ -12,23 +38,25 @@ export function tokensToHtml(tokens: readonly Token[], templateIndex: number, de
       case 'opening-tag': {
         html += `<${token.name}`
 
-        if (depth === 0) {
-          html += ` data-typed="${templateIndex}"`
+        if (state.depth === 0) {
+          html += ` data-typed="${hash}"`
         }
 
-        depth++
+        state.depth++
 
         break
       }
       case 'closing-tag': {
+        html += appendAttributeAtDepth(state)
         html += `</${token.name}>`
-        depth--
+        state.depth--
         break
       }
       case 'opening-tag-end': {
         if (token.selfClosing) {
           html += '/>'
-          depth--
+          html += appendAttributeAtDepth(state)
+          state.depth--
         } else {
           html += '>'
         }
@@ -44,6 +72,8 @@ export function tokensToHtml(tokens: readonly Token[], templateIndex: number, de
       case 'property-attribute-start': {
         html += ` ${token.name}="`
 
+        state.currentAttribute = token.name
+
         break
       }
       case 'attribute-end':
@@ -51,10 +81,12 @@ export function tokensToHtml(tokens: readonly Token[], templateIndex: number, de
       case 'className-attribute-end':
       case 'property-attribute-end': {
         html += `"`
+        state.currentAttribute = ''
         break
       }
       case 'className-attribute-start': {
         html += ` class="`
+        state.currentAttribute = 'class'
 
         break
       }
@@ -74,30 +106,76 @@ export function tokensToHtml(tokens: readonly Token[], templateIndex: number, de
         html += token.value
         break
       }
-      case 'part-token': {
-        partIndex = token.index
-        break tokenLoop
-      }
       // We don't render these attributes here, only rehydrate them so no need to break tokenLoop
       case 'data-attribute-start':
-      case 'data-attribute-end':
       case 'event-attribute-start':
-      case 'event-attribute-end':
-      case 'ref-attribute-start':
-      case 'ref-attribute-end': {
+      case 'ref-attribute-start': {
+        state.currentAttribute = token._tag.split('-')[0]
         break
       }
+      case 'data-attribute-end':
+      case 'event-attribute-end':
+      case 'ref-attribute-end': {
+        state.currentAttribute = ''
+        break
+      }
+
+      case 'part-token': {
+        state.partIndex = token.index
+
+        // If we are in an attribute, add it to the attributes at the current depth
+        // To be rendered later when we close the corresponding tag.
+        if (state.currentAttribute) {
+          addAttrAtDepth(state)
+        }
+
+        break tokenLoop
+      }
+    }
+  }
+
+  const remaining = tokens.slice(i + 1)
+
+  if (remaining.length === 0) {
+    state.partIndex = -1
+
+    if (templateIndex === -1) {
+      html += TYPED_END
     }
   }
 
   return {
     // The HTML We can render now
     html,
-    // The index of the part we need to wait on next
-    partIndex,
     // The remaining tokens to be utilized in the next render
-    remaining: tokens.slice(i + 1),
-    // The depth of currently open tags
-    depth,
+    remaining,
+    // The remaining state to be utilized in the next render
+    state,
   } as const
+}
+
+function appendAttributeAtDepth(state: TokenToHtmlState) {
+  const { depth, attributes } = state
+
+  let html = ''
+
+  const attrsAtDepth = attributes.get(depth)
+  if (attrsAtDepth) {
+    attrsAtDepth.forEach((partIndex) => {
+      html += TYPED_ATTR(partIndex)
+    })
+    attributes.delete(depth)
+  }
+
+  return html
+}
+
+function addAttrAtDepth(state: TokenToHtmlState) {
+  let current = state.attributes.get(state.depth)
+  if (current === undefined) {
+    current = new Set()
+    state.attributes.set(state.depth, current)
+  }
+
+  current.add(state.partIndex)
 }

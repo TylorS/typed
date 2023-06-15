@@ -2,7 +2,11 @@ const digestSize = 2
 const multiplier = 33
 const fill = 5381
 
-export function hasForTemplateStrings(strings: ReadonlyArray<string>) {
+/**
+ * Generates a hash for an ordered list of strings. Intended for the purposes
+ * of server-side rendering with hydration.
+ */
+export function hashForTemplateStrings(strings: ReadonlyArray<string>) {
   const hashes = new Uint32Array(digestSize).fill(fill)
 
   for (let i = 0; i < strings.length; i++) {

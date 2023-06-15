@@ -2,6 +2,7 @@ import { deepStrictEqual } from 'assert'
 
 import { describe, it } from 'vitest'
 
+import { hashForTemplateStrings } from './hashForTemplateStrings.js'
 import { tokenizeTemplateStrings } from './tokenizer/tokenizer.js'
 import { tokensToHtml } from './tokensToHtml.js'
 
@@ -15,41 +16,41 @@ describe(tokensToHtml.name, () => {
       const step1 = tokensToHtml(tokens, templateIndex)
 
       deepStrictEqual(step1.html, `<div data-typed="${templateIndex}" id="`)
-      deepStrictEqual(step1.depth, 1)
-      deepStrictEqual(step1.partIndex, 0)
+      deepStrictEqual(step1.state.depth, 1)
+      deepStrictEqual(step1.state.partIndex, 0)
 
-      const step2 = tokensToHtml(step1.remaining, templateIndex, step1.depth)
+      const step2 = tokensToHtml(step1.remaining, templateIndex, step1.state)
 
       deepStrictEqual(step2.html, [`" `, `class=`, `"`].join(''))
-      deepStrictEqual(step2.depth, 1)
-      deepStrictEqual(step2.partIndex, 1)
+      deepStrictEqual(step2.state.depth, 1)
+      deepStrictEqual(step2.state.partIndex, 1)
 
       // @click doesn't render to html
-      const step3 = tokensToHtml(step2.remaining, templateIndex, step2.depth)
+      const step3 = tokensToHtml(step2.remaining, templateIndex, step2.state)
 
       deepStrictEqual(step3.html, `"`)
-      deepStrictEqual(step3.depth, 1)
-      deepStrictEqual(step3.partIndex, 2)
+      deepStrictEqual(step3.state.depth, 1)
+      deepStrictEqual(step3.state.partIndex, 2)
 
       // ontouchdown doesn't render to html
-      const step4 = tokensToHtml(step3.remaining, templateIndex, step3.depth)
+      const step4 = tokensToHtml(step3.remaining, templateIndex, step3.state)
 
       deepStrictEqual(step4.html, ``)
-      deepStrictEqual(step4.depth, 1)
-      deepStrictEqual(step4.partIndex, 3)
+      deepStrictEqual(step4.state.depth, 1)
+      deepStrictEqual(step4.state.partIndex, 3)
 
-      const step5 = tokensToHtml(step4.remaining, templateIndex, step4.depth)
+      const step5 = tokensToHtml(step4.remaining, templateIndex, step4.state)
 
       deepStrictEqual(step5.html, `><p>`)
-      deepStrictEqual(step5.depth, 2)
-      deepStrictEqual(step5.partIndex, 4)
+      deepStrictEqual(step5.state.depth, 2)
+      deepStrictEqual(step5.state.partIndex, 4)
 
-      const step6 = tokensToHtml(step5.remaining, templateIndex, step5.depth)
+      const step6 = tokensToHtml(step5.remaining, templateIndex, step5.state)
 
-      deepStrictEqual(step6.html, `</p></div>`)
-      deepStrictEqual(step6.depth, 0)
+      deepStrictEqual(step6.html, `</p><!--attr0--><!--attr1--><!--attr2--><!--attr3--></div>`)
+      deepStrictEqual(step6.state.depth, 0)
       // There is no more parts to process
-      deepStrictEqual(step6.partIndex, -1)
+      deepStrictEqual(step6.state.partIndex, -1)
     })
   })
 
@@ -61,21 +62,21 @@ describe(tokensToHtml.name, () => {
     it('renders tokens to html and returns state to continue rendering', () => {
       const step1 = tokensToHtml(tokens, templateIndex)
 
-      deepStrictEqual(step1.html, `<div data-typed="${templateIndex}">`)
-      deepStrictEqual(step1.depth, 1)
-      deepStrictEqual(step1.partIndex, 0)
+      deepStrictEqual(step1.html, `<div data-typed="${templateIndex}">`, 'step1.html')
+      deepStrictEqual(step1.state.depth, 1, 'step1.state.depth')
+      deepStrictEqual(step1.state.partIndex, 0, 'step1.state.partIndex')
 
-      const step2 = tokensToHtml(step1.remaining, templateIndex, step1.depth)
+      const step2 = tokensToHtml(step1.remaining, templateIndex, step1.state)
 
-      deepStrictEqual(step2.html, `</div><div data-typed="${templateIndex}">`)
-      deepStrictEqual(step2.depth, 1)
-      deepStrictEqual(step2.partIndex, 1)
+      deepStrictEqual(step2.html, `</div><div data-typed="${templateIndex}">`, 'step2.html')
+      deepStrictEqual(step2.state.depth, 1, 'step2.state.depth')
+      deepStrictEqual(step2.state.partIndex, 1, 'step2.state.partIndex')
 
-      const step3 = tokensToHtml(step2.remaining, templateIndex, step2.depth)
+      const step3 = tokensToHtml(step2.remaining, templateIndex, step2.state)
 
-      deepStrictEqual(step3.html, `</div>`)
-      deepStrictEqual(step3.depth, 0)
-      deepStrictEqual(step3.partIndex, -1)
+      deepStrictEqual(step3.html, `</div>`, 'step3.html')
+      deepStrictEqual(step3.state.depth, 0, 'step3.state.depth')
+      deepStrictEqual(step3.state.partIndex, -1, 'step3.state.partIndex')
     })
   })
 
@@ -91,27 +92,45 @@ describe(tokensToHtml.name, () => {
         step1.html,
         ['<div data-typed="', templateIndex, `" `, `class=`, `"`].join(''),
       )
-      deepStrictEqual(step1.depth, 1)
-      deepStrictEqual(step1.partIndex, 0)
+      deepStrictEqual(step1.state.depth, 1)
+      deepStrictEqual(step1.state.partIndex, 0)
 
-      const step2 = tokensToHtml(step1.remaining, templateIndex, step1.depth)
+      const step2 = tokensToHtml(step1.remaining, templateIndex, step1.state)
 
       deepStrictEqual(step2.html, ` `)
-      deepStrictEqual(step2.depth, 1)
-      deepStrictEqual(step2.partIndex, 1)
+      deepStrictEqual(step2.state.depth, 1)
+      deepStrictEqual(step2.state.partIndex, 1)
 
-      const step3 = tokensToHtml(step2.remaining, templateIndex, step2.depth)
+      const step3 = tokensToHtml(step2.remaining, templateIndex, step2.state)
 
       deepStrictEqual(step3.html, ` `)
-      deepStrictEqual(step3.depth, 1)
-      deepStrictEqual(step3.partIndex, 2)
+      deepStrictEqual(step3.state.depth, 1)
+      deepStrictEqual(step3.state.partIndex, 2)
 
-      const step4 = tokensToHtml(step3.remaining, templateIndex, step3.depth)
+      const step4 = tokensToHtml(step3.remaining, templateIndex, step3.state)
 
-      deepStrictEqual(step4.html, ['"', `></div>`].join(''))
-      deepStrictEqual(step4.depth, 0)
-      deepStrictEqual(step4.partIndex, -1)
+      deepStrictEqual(step4.html, ['"', `><!--attr0--><!--attr1--><!--attr2--></div>`].join(''))
+      deepStrictEqual(step4.state.depth, 0)
+      deepStrictEqual(step4.state.partIndex, -1)
     })
+  })
+
+  it('adds typed-start and typed-end comments to root template', () => {
+    const template = h`<div></div>`
+    const tokens = tokenizeTemplateStrings(template)
+    const templateIndex = -1
+    const { html } = tokensToHtml(tokens, templateIndex)
+
+    deepStrictEqual(html, '<!--typed-start--><div data-typed="-1"></div><!--typed-end-->')
+  })
+
+  it('utilizes the provide template hash', () => {
+    const template = h`<div></div>`
+    const tokens = tokenizeTemplateStrings(template)
+    const hash = hashForTemplateStrings(template)
+    const { html } = tokensToHtml(tokens, -1, undefined, hash)
+
+    deepStrictEqual(html, `<!--typed-start--><div data-typed="${hash}"></div><!--typed-end-->`)
   })
 })
 
