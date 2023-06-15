@@ -154,10 +154,10 @@ function tokenize(state: TokenState, input: string): void {
       if ((next = chunks.getAttributeName(input, pos))) {
         pos += next.length
         const name = next.match[2]
-        const hasValue = next.match[4]
+        const hasEqualsSign = next.match[4]
 
         let read: AttrChunk
-        if (hasValue && (read = readAttribute(input, pos)).value) {
+        if (hasEqualsSign && (read = readAttribute(input, pos)).value) {
           pos += read.length
           state.tokens.push(new AttributeToken(name, read.value))
         } else {
