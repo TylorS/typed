@@ -13,6 +13,9 @@ import {
   PartToken,
   TextToken,
   AttributeToken,
+  CommentToken,
+  CommentStartToken,
+  CommentEndToken,
 } from './parser.js'
 
 type TestCase = {
@@ -255,6 +258,74 @@ const testCases: TestCase[] = [
       new PartToken(0),
       new AttributeEndToken('onclick'),
       new OpeningTagEndToken('input', true),
+    ],
+  },
+  {
+    name: 'parses namespaced attributes',
+    template: h`<input xlink:href=${'foo'} />`,
+    expected: [
+      new OpeningTagToken('input'),
+      new AttributeStartToken('xlink:href'),
+      new PartToken(0),
+      new AttributeEndToken('xlink:href'),
+      new OpeningTagEndToken('input', true),
+    ],
+  },
+  {
+    name: 'parses boolean attributes with namespaced syntax',
+    template: h`<input ?xlink:href=${true} />`,
+    expected: [
+      new OpeningTagToken('input'),
+      new AttributeStartToken('?xlink:href'),
+      new PartToken(0),
+      new AttributeEndToken('?xlink:href'),
+      new OpeningTagEndToken('input', true),
+    ],
+  },
+  {
+    name: 'parses property attributes with namespaced syntax',
+    template: h`<input .xlink:href=${true} />`,
+    expected: [
+      new OpeningTagToken('input'),
+      new AttributeStartToken('.xlink:href'),
+      new PartToken(0),
+      new AttributeEndToken('.xlink:href'),
+      new OpeningTagEndToken('input', true),
+    ],
+  },
+
+  {
+    name: 'parses event attributes with namespaced syntax + @*',
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    template: h`<input @xlink:href=${() => {}} />`,
+    expected: [
+      new OpeningTagToken('input'),
+      new AttributeStartToken('@xlink:href'),
+      new PartToken(0),
+      new AttributeEndToken('@xlink:href'),
+      new OpeningTagEndToken('input', true),
+    ],
+  },
+  {
+    name: 'parses comment nodes',
+    template: h`<div><!-- foo --></div>`,
+    expected: [
+      new OpeningTagToken('div'),
+      new OpeningTagEndToken('div', false),
+      new CommentToken(' foo '),
+      new ClosingTagToken('div'),
+    ],
+  },
+  {
+    name: 'parses comment nodes with interpolated content',
+    template: h`<div><!-- ${'foo'} --></div>`,
+    expected: [
+      new OpeningTagToken('div'),
+      new OpeningTagEndToken('div', false),
+      new CommentStartToken(' '),
+      new PartToken(0),
+      new CommentEndToken(' '),
+      new ClosingTagToken('div'),
     ],
   },
 ]

@@ -39,6 +39,8 @@ export type Token =
   | AttributeStartToken
   | AttributeEndToken
   | CommentToken
+  | CommentStartToken
+  | CommentEndToken
   | TextToken
   | PartToken
 
@@ -90,6 +92,16 @@ export class CommentToken {
   constructor(readonly value: string) {}
 }
 
+export class CommentStartToken {
+  readonly _tag = 'comment-start'
+  constructor(readonly value: string) {}
+}
+
+export class CommentEndToken {
+  readonly _tag = 'comment'
+  constructor(readonly value: string) {}
+}
+
 export class TextToken {
   readonly _tag = 'text'
   constructor(readonly value: string) {}
@@ -100,7 +112,7 @@ export class PartToken {
   constructor(readonly index: number) {}
 }
 
-function tokenize(state: TokenState, input: string) {
+function tokenize(state: TokenState, input: string): void {
   const length = input.length
 
   let pos = 0
@@ -120,7 +132,11 @@ function tokenize(state: TokenState, input: string) {
       } else if (isOpenBracket && (next = chunks.getClosingTag(input, pos))) {
         pos += next.length
         state.tokens.push(new ClosingTagToken(next.match[2]))
+      } else if (isOpenBracket && (next = chunks.getComment(input, pos))) {
+        state.tokens.push(new CommentToken(next.match[3]))
+        pos += next.length
       } else if (isOpenBracket && (next = chunks.getCommentOpen(input, pos))) {
+        state.tokens.push(new CommentStartToken(next.match[3]))
         pos += next.length
         state.context = 'comment'
       } else if ((next = chunks.getText(input, pos))) {
@@ -212,9 +228,9 @@ function tokenize(state: TokenState, input: string) {
       /* #endregion */
     } else if (state.context === 'comment') {
       /* #region Comment */
-      if ((next = chunks.getComment(input, pos))) {
+      if ((next = chunks.getCommentEnd(input, pos))) {
         pos += next.length
-        state.tokens.push(new CommentToken(next.match[2]))
+        state.tokens.push(new CommentEndToken(next.match[2]))
         state.context = 'text'
       } else {
         state.tokens.push(new CommentToken(input.substring(pos)))

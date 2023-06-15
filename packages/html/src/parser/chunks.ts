@@ -14,14 +14,19 @@ export const getText = chunker(/([^<]+)/g)
 export const getClosingTag = chunker(/(<\/(([a-z0-9-]+:)?[a-z0-9-]+)>)/gi)
 
 /**
+ * Comment content chunker function.
+ */
+export const getComment = chunker(/((<!--)(.+)(-->))/g)
+
+/**
  * Comment open chunker function.
  */
-export const getCommentOpen = chunker(/(<!--)/g)
+export const getCommentOpen = chunker(/((<!--)(.+))/g)
 
 /**
  * Comment content chunker function.
  */
-export const getComment = chunker(/(([\s\S]*?)-->)/g)
+export const getCommentEnd = chunker(/((.+)-->)/g)
 
 /**
  * Script content chunker function.
@@ -41,7 +46,7 @@ export const getTagEnd = chunker(/(\s*(\/?>))/g)
 /**
  * Attribute name chunker function.
  */
-export const getAttributeName = chunker(/(\s+(([a-z0-9\-_]+:)?[?.@a-z0-9\-_]+)(\s*=\s*)?)/gi)
+export const getAttributeName = chunker(/(\s+(([?.@a-z0-9\-_]+:)?[?.@a-z0-9\-_]+)(\s*=\s*)?)/gi)
 
 /**
  * Whitespace chunker function.
