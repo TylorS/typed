@@ -1,9 +1,8 @@
-import { Context } from './Context.js'
 import * as chunks from './chunks.js'
 import readAttribute, { AttrChunk } from './readAttribute.js'
 
 type TokenState = {
-  context: Context
+  context: 'tag' | 'attribute' | 'comment' | 'text' | 'script' | 'style'
   currentTag: string
   currentAttribute: string
   tokens: Array<Token>
@@ -45,7 +44,11 @@ export type Token =
 
 export class OpeningTagToken {
   readonly _tag = 'opening-tag'
-  constructor(readonly name: string, readonly textOnly: boolean = false) {}
+
+  constructor(
+    readonly name: string,
+    readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.test(name),
+  ) {}
 }
 
 export class AttributeStartToken {
@@ -65,16 +68,21 @@ export class AttributeToken {
 
 export class OpeningTagEndToken {
   readonly _tag = 'opening-tag-end'
+
   constructor(
     readonly name: string,
     readonly selfClosing: boolean,
-    readonly textOnly: boolean = false,
+    readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.test(name),
   ) {}
 }
 
 export class ClosingTagToken {
   readonly _tag = 'closing-tag'
-  constructor(readonly name: string, readonly textOnly: boolean = false) {}
+
+  constructor(
+    readonly name: string,
+    readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.test(name),
+  ) {}
 }
 
 export class CommentToken {
@@ -107,15 +115,11 @@ function tokenize(state: TokenState, input: string) {
       if (isOpenBracket && (next = chunks.getOpeningTag(input, pos))) {
         pos += next.length
         state.currentTag = next.match[2]
-        state.tokens.push(
-          new OpeningTagToken(state.currentTag, TEXT_ONLY_NODES_REGEX.test(state.currentTag)),
-        )
+        state.tokens.push(new OpeningTagToken(state.currentTag))
         state.context = 'tag'
       } else if (isOpenBracket && (next = chunks.getClosingTag(input, pos))) {
         pos += next.length
-        state.tokens.push(
-          new ClosingTagToken(next.match[2], TEXT_ONLY_NODES_REGEX.test(state.currentTag)),
-        )
+        state.tokens.push(new ClosingTagToken(next.match[2]))
       } else if (isOpenBracket && (next = chunks.getCommentOpen(input, pos))) {
         pos += next.length
         state.context = 'comment'
@@ -150,13 +154,7 @@ function tokenize(state: TokenState, input: string) {
         pos += next.length
         const token = next.match[2] as '>' | '/>'
 
-        state.tokens.push(
-          new OpeningTagEndToken(
-            state.currentTag,
-            token === '/>',
-            TEXT_ONLY_NODES_REGEX.test(state.currentTag),
-          ),
-        )
+        state.tokens.push(new OpeningTagEndToken(state.currentTag, token === '/>'))
 
         state.context = state.currentTag === 'script' ? 'script' : 'text'
       } else {
@@ -176,13 +174,7 @@ function tokenize(state: TokenState, input: string) {
         }
 
         state.tokens.push(new AttributeEndToken(state.currentAttribute))
-        state.tokens.push(
-          new OpeningTagEndToken(
-            state.currentTag,
-            isSelfClosing,
-            TEXT_ONLY_NODES_REGEX.test(state.currentTag),
-          ),
-        )
+        state.tokens.push(new OpeningTagEndToken(state.currentTag, isSelfClosing))
         pos += isSelfClosing ? 2 : 1
 
         state.currentAttribute = ''
