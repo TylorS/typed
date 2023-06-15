@@ -156,7 +156,8 @@ function tokenize(state: TokenState, input: string) {
 
         state.tokens.push(new OpeningTagEndToken(state.currentTag, token === '/>'))
 
-        state.context = state.currentTag === 'script' ? 'script' : 'text'
+        state.context =
+          state.currentTag === 'script' ? 'script' : state.currentTag === 'style' ? 'style' : 'text'
       } else {
         state.context = 'text'
       }
@@ -220,8 +221,22 @@ function tokenize(state: TokenState, input: string) {
         break
       }
       /* #endregion */
-    } else if (state.context === 'script' || state.context === 'style') {
+    } else if (state.context === 'script') {
       if ((next = chunks.getScript(input, pos))) {
+        pos += next.length
+
+        if (next.match[2]) {
+          state.tokens.push(new TextToken(next.match[2]))
+        }
+
+        state.tokens.push(new ClosingTagToken(state.context, true))
+        state.context = 'text'
+      } else {
+        state.tokens.push(new TextToken(input.substring(pos)))
+        break
+      }
+    } else if (state.context === 'style') {
+      if ((next = chunks.getStyle(input, pos))) {
         pos += next.length
 
         if (next.match[2]) {
