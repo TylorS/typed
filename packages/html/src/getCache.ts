@@ -26,7 +26,7 @@ export function getTemplateCache(
 ): TemplateCache {
   const cache = templateCache.get(template)
 
-  if (cache) return cache
+  if (cache) return cache as TemplateCache
 
   const isSvg = options?.isSvg ?? false
   const created = parseTemplate(template, document, isSvg)

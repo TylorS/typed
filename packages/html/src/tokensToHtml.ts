@@ -6,23 +6,25 @@ type TokenToHtmlState = {
   partIndex: number
   attributes: Map<Depth, Set<PartIndex>>
   currentAttribute: string
+  previousBooleanAttribute: string
 }
 
 type Depth = number
 type PartIndex = number
 
-const defaultState = (): TokenToHtmlState => ({
+export const defaultTokenToHtmlState = (): TokenToHtmlState => ({
   depth: 0,
   partIndex: -1,
   attributes: new Map(),
   currentAttribute: '',
+  previousBooleanAttribute: '',
 })
 
 export function tokensToHtml(
   tokens: readonly Token[],
   templateIndex: number,
-  state: TokenToHtmlState = defaultState(),
   hash = `${templateIndex}`,
+  state: TokenToHtmlState = defaultTokenToHtmlState(),
 ) {
   let html = ''
   let i = 0
@@ -68,7 +70,6 @@ export function tokensToHtml(
         break
       }
       case 'attribute-start':
-      case 'boolean-attribute-start':
       case 'property-attribute-start': {
         html += ` ${token.name}="`
 
@@ -76,12 +77,23 @@ export function tokensToHtml(
 
         break
       }
+      // Booleans are special because they don't have a value when false and we don't want to render them here
+      case 'boolean-attribute-start': {
+        state.currentAttribute = token.name
+        state.previousBooleanAttribute = token.name
+
+        break
+      }
       case 'attribute-end':
-      case 'boolean-attribute-end':
       case 'className-attribute-end':
       case 'property-attribute-end': {
         html += `"`
         state.currentAttribute = ''
+        break
+      }
+      case 'boolean-attribute-end': {
+        state.currentAttribute = ''
+        state.previousBooleanAttribute = ''
         break
       }
       case 'className-attribute-start': {

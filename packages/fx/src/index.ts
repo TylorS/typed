@@ -571,6 +571,18 @@ export const mergeFirst: {
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, other: Fx<R2, E2, B>): Fx<R | R2, E | E2, A>
 } = dualWithTrace(2, (trace) => (fx, other) => internal.mergeFirst(fx, other).addTrace(trace))
 
+export const mergeConcurrently: <FXS extends ReadonlyArray<Fx<any, any, any>>>(
+  ...fxs: FXS
+) => Fx<
+  internal.Fx.ResourcesOf<FXS[number]>,
+  internal.Fx.ErrorsOf<FXS[number]>,
+  internal.Fx.OutputOf<FXS[number]>
+> = methodWithTrace(
+  (trace) =>
+    (...fxs) =>
+      internal.mergeConcurrently(...fxs).addTrace(trace),
+)
+
 export const multicast: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = methodWithTrace(
   (trace) =>
     <R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> =>

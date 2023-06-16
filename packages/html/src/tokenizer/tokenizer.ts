@@ -5,30 +5,49 @@ type TokenState = {
   context: 'tag' | 'attribute' | 'comment' | 'text' | 'script' | 'style'
   currentTag: string
   currentAttribute: string
-  tokens: Array<Token>
 }
 
 const TEXT_ONLY_NODES_REGEX = /^(?:textarea|script|style|title|plaintext|xmp)$/
 
-export function tokenizeTemplateStrings(template: TemplateStringsArray): ReadonlyArray<Token> {
+const SELF_CLOSING_TAGS = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'command',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'keygen',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+])
+
+function isSelfClosingTag(tag: string): boolean {
+  return SELF_CLOSING_TAGS.has(tag)
+}
+
+export function* tokenizeTemplateStrings(template: ReadonlyArray<string>): Generator<Token> {
   const state: TokenState = {
     context: 'text',
     currentTag: '',
     currentAttribute: '',
-    tokens: [],
   }
 
   const lastIndex = template.length - 1
 
   for (let i = 0; i < template.length; i++) {
-    tokenize(state, template[i])
+    yield* tokenize(state, template[i])
 
     if (i < lastIndex) {
-      state.tokens.push(new PartToken(i))
+      yield new PartToken(i)
     }
   }
-
-  return state.tokens
 }
 
 export type Token =
@@ -65,6 +84,7 @@ export class OpeningTagToken {
 
   constructor(
     readonly name: string,
+    readonly isSelfClosing: boolean = false,
     readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.test(name),
   ) {}
 }
@@ -182,7 +202,7 @@ export class PartToken {
   constructor(readonly index: number) {}
 }
 
-function tokenize(state: TokenState, input: string): void {
+function* tokenize(state: TokenState, input: string): Generator<Token> {
   const length = input.length
 
   let pos = 0
@@ -197,25 +217,25 @@ function tokenize(state: TokenState, input: string): void {
       if (isOpenBracket && (next = chunks.getOpeningTag(input, pos))) {
         pos += next.length
         state.currentTag = next.match[2]
-        state.tokens.push(new OpeningTagToken(state.currentTag))
+        yield new OpeningTagToken(state.currentTag, isSelfClosingTag(state.currentTag))
         state.context = 'tag'
       } else if (isOpenBracket && (next = chunks.getClosingTag(input, pos))) {
         pos += next.length
-        state.tokens.push(new ClosingTagToken(next.match[2]))
+        yield new ClosingTagToken(next.match[2])
       } else if (isOpenBracket && (next = chunks.getComment(input, pos))) {
-        state.tokens.push(new CommentToken(next.match[3]))
+        yield new CommentToken(next.match[3])
         pos += next.length
       } else if (isOpenBracket && (next = chunks.getCommentOpen(input, pos))) {
-        state.tokens.push(new CommentStartToken(next.match[3]))
+        yield new CommentStartToken(next.match[3])
         pos += next.length
         state.context = 'comment'
       } else if ((next = chunks.getText(input, pos))) {
         pos += next.length
-        state.tokens.push(new TextToken(next.match[1]))
+        yield new TextToken(next.match[1])
       } else {
         const text = input.substring(pos, pos + 1)
         pos += 1
-        state.tokens.push(new TextToken(text))
+        yield new TextToken(text)
       }
       /* #endregion */
     } else if (state.context === 'tag') {
@@ -229,9 +249,9 @@ function tokenize(state: TokenState, input: string): void {
         let read: AttrChunk
         if (hasEqualsSign && (read = readAttribute(input, pos)).value) {
           pos += read.length
-          state.tokens.push(new AttributeToken(name, read.value))
+          yield new AttributeToken(name, read.value)
         } else {
-          state.tokens.push(getAttributeTokenPartial(name, 'start'))
+          yield getAttributeTokenPartial(name, 'start')
           state.currentAttribute = name
           state.context = 'attribute'
           pos += name.length
@@ -240,7 +260,7 @@ function tokenize(state: TokenState, input: string): void {
         pos += next.length
         const token = next.match[2] as '>' | '/>'
 
-        state.tokens.push(new OpeningTagEndToken(state.currentTag, token === '/>'))
+        yield new OpeningTagEndToken(state.currentTag, token === '/>')
 
         state.context =
           state.currentTag === 'script' ? 'script' : state.currentTag === 'style' ? 'style' : 'text'
@@ -254,20 +274,14 @@ function tokenize(state: TokenState, input: string): void {
       const isClosing = char === '>'
 
       if (isClosing || isSelfClosing) {
-        const last = lastToken(state.tokens)
-        // We don't need to track whitespace between attributes and the close of a tag
-        if (last && last._tag === 'text' && last.value.trim() === '') {
-          state.tokens.pop()
-        }
-
-        state.tokens.push(getAttributeTokenPartial(state.currentAttribute, 'end'))
-        state.tokens.push(new OpeningTagEndToken(state.currentTag, isSelfClosing))
+        yield getAttributeTokenPartial(state.currentAttribute, 'end')
+        yield new OpeningTagEndToken(state.currentTag, isSelfClosing)
         pos += isSelfClosing ? 2 : 1
 
         state.currentAttribute = ''
         state.context = 'tag'
       } else if (char === '"') {
-        state.tokens.push(getAttributeTokenPartial(state.currentAttribute, 'end'))
+        yield getAttributeTokenPartial(state.currentAttribute, 'end')
         state.currentAttribute = ''
         state.context = 'tag'
         pos += 1
@@ -276,20 +290,20 @@ function tokenize(state: TokenState, input: string): void {
         const name = next.match[2]
         const hasValue = next.match[4]
 
-        state.tokens.push(getAttributeTokenPartial(state.currentAttribute, 'end'))
+        yield getAttributeTokenPartial(state.currentAttribute, 'end')
 
         if (hasValue && hasValue.length > 1) {
           const read = readAttribute(input, pos)
           pos += read.length
 
-          state.tokens.push(new AttributeToken(name, read.value))
+          yield new AttributeToken(name, read.value)
         } else {
-          state.tokens.push(getAttributeTokenPartial(name, 'start'))
+          yield getAttributeTokenPartial(name, 'start')
           state.currentAttribute = name
           pos += name.length
         }
       } else if ((next = chunks.getWhitespace(input, pos))) {
-        state.tokens.push(new TextToken(next.match[1]))
+        yield new TextToken(next.match[1])
         pos += next.length
       } else {
         break
@@ -300,10 +314,10 @@ function tokenize(state: TokenState, input: string): void {
       /* #region Comment */
       if ((next = chunks.getCommentEnd(input, pos))) {
         pos += next.length
-        state.tokens.push(new CommentEndToken(next.match[2]))
+        yield new CommentEndToken(next.match[2])
         state.context = 'text'
       } else {
-        state.tokens.push(new CommentToken(input.substring(pos)))
+        yield new CommentToken(input.substring(pos))
         break
       }
       /* #endregion */
@@ -312,13 +326,13 @@ function tokenize(state: TokenState, input: string): void {
         pos += next.length
 
         if (next.match[2]) {
-          state.tokens.push(new TextToken(next.match[2]))
+          yield new TextToken(next.match[2])
         }
 
-        state.tokens.push(new ClosingTagToken(state.context, true))
+        yield new ClosingTagToken(state.context, true)
         state.context = 'text'
       } else {
-        state.tokens.push(new TextToken(input.substring(pos)))
+        yield new TextToken(input.substring(pos))
         break
       }
     } else if (state.context === 'style') {
@@ -326,23 +340,19 @@ function tokenize(state: TokenState, input: string): void {
         pos += next.length
 
         if (next.match[2]) {
-          state.tokens.push(new TextToken(next.match[2]))
+          yield new TextToken(next.match[2])
         }
 
-        state.tokens.push(new ClosingTagToken(state.context, true))
+        yield new ClosingTagToken(state.context, true)
         state.context = 'text'
       } else {
-        state.tokens.push(new TextToken(input.substring(pos)))
+        yield new TextToken(input.substring(pos))
         break
       }
     } else {
       break
     }
   }
-}
-
-function lastToken(tokens: Token[]) {
-  return tokens[tokens.length - 1]
 }
 
 function getAttributeTokenPartial(name: string, ctx: 'start' | 'end') {

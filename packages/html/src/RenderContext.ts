@@ -1,14 +1,12 @@
 import * as Effect from '@effect/io/Effect'
 import * as Context from '@typed/context'
 
-import { RenderCache } from './RenderCache.js'
-import type { TemplateCache } from './TemplateCache.js'
-
 export interface RenderContext {
   readonly environment: 'server' | 'browser' | 'static' | 'test'
   readonly isBot: boolean
-  readonly renderCache: WeakMap<object, RenderCache>
-  readonly templateCache: WeakMap<TemplateStringsArray, TemplateCache>
+
+  readonly renderCache: WeakMap<object, unknown>
+  readonly templateCache: WeakMap<TemplateStringsArray, unknown>
 }
 
 export type Environment = RenderContext['environment']

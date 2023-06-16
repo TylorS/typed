@@ -53,7 +53,7 @@ type RenderResultInput = {
 
 export function renderRootResult(input: RenderResultInput, template: TemplateResult) {
   const { document, renderContext, where } = input
-  const cache = getRenderCache(where, renderContext.renderCache)
+  const cache = getRenderCache(where, renderContext.renderCache as any)
 
   return Effect.gen(function* ($) {
     const wire = yield* $(

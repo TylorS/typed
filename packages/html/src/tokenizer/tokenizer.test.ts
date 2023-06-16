@@ -229,6 +229,7 @@ const testCases: TestCase[] = [
       new OpeningTagToken('input'),
       new BooleanAttributeStartToken('disabled'),
       new PartToken(0),
+      new TextToken(' '),
       new BooleanAttributeEndToken('disabled'),
       new OpeningTagEndToken('input', true),
     ],
@@ -240,6 +241,7 @@ const testCases: TestCase[] = [
       new OpeningTagToken('input'),
       new PropertyAttributeStartToken('disabled'),
       new PartToken(0),
+      new TextToken(' '),
       new PropertyAttributeEndToken('disabled'),
       new OpeningTagEndToken('input', true),
     ],
@@ -252,6 +254,7 @@ const testCases: TestCase[] = [
       new OpeningTagToken('input'),
       new EventAttributeStartToken('click'),
       new PartToken(0),
+      new TextToken(' '),
       new EventAttributeEndToken('click'),
       new OpeningTagEndToken('input', true),
     ],
@@ -264,6 +267,7 @@ const testCases: TestCase[] = [
       new OpeningTagToken('input'),
       new EventAttributeStartToken('click'),
       new PartToken(0),
+      new TextToken(' '),
       new EventAttributeEndToken('click'),
       new OpeningTagEndToken('input', true),
     ],
@@ -275,6 +279,7 @@ const testCases: TestCase[] = [
       new OpeningTagToken('input'),
       new AttributeStartToken('xlink:href'),
       new PartToken(0),
+      new TextToken(' '),
       new AttributeEndToken('xlink:href'),
       new OpeningTagEndToken('input', true),
     ],
@@ -286,6 +291,7 @@ const testCases: TestCase[] = [
       new OpeningTagToken('input'),
       new BooleanAttributeStartToken('xlink:href'),
       new PartToken(0),
+      new TextToken(' '),
       new BooleanAttributeEndToken('xlink:href'),
       new OpeningTagEndToken('input', true),
     ],
@@ -297,6 +303,7 @@ const testCases: TestCase[] = [
       new OpeningTagToken('input'),
       new PropertyAttributeStartToken('xlink:href'),
       new PartToken(0),
+      new TextToken(' '),
       new PropertyAttributeEndToken('xlink:href'),
       new OpeningTagEndToken('input', true),
     ],
@@ -309,6 +316,7 @@ const testCases: TestCase[] = [
       new OpeningTagToken('input'),
       new EventAttributeStartToken('xlink:href'),
       new PartToken(0),
+      new TextToken(' '),
       new EventAttributeEndToken('xlink:href'),
       new OpeningTagEndToken('input', true),
     ],
@@ -354,7 +362,7 @@ function setup(test: TestCase) {
 }
 
 function runTest(test: TestCase) {
-  const actual = tokenizeTemplateStrings(test.template)
+  const actual = Array.from(tokenizeTemplateStrings(test.template))
 
   try {
     deepStrictEqual(actual, test.expected)
