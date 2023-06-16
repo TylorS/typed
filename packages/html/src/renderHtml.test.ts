@@ -63,8 +63,6 @@ describe(fileURLToPath(import.meta.url), () => {
       const test = Effect.gen(function* ($) {
         const output = yield* $(testHtml(html`<div id="${'foo'}"></div>`))
 
-        console.log(output)
-
         expect(output).toEqual(`<div data-typed="-1" id="foo"></div>`)
       })
 

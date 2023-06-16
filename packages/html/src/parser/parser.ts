@@ -333,8 +333,6 @@ export class Parser {
       return null
     }
 
-    console.log('Next Token', value)
-
     return value
   }
 }

@@ -186,7 +186,7 @@ const testCases: TestCase[] = [
     name: 'parses script tags with with static content',
     template: h`<script>console.log('foo')</script>`,
     expected: [
-      new OpeningTagToken('script', true),
+      new OpeningTagToken('script', false, true),
       new OpeningTagEndToken('script', false, true),
       new TextToken("console.log('foo')"),
       new ClosingTagToken('script', true),
@@ -196,7 +196,7 @@ const testCases: TestCase[] = [
     name: 'parses script tags with interpolated content as elements',
     template: h`<script>${'foo'}</script>`,
     expected: [
-      new OpeningTagToken('script', true),
+      new OpeningTagToken('script', false, true),
       new OpeningTagEndToken('script', false, true),
       new PartToken(0),
       new ClosingTagToken('script', true),
@@ -206,7 +206,7 @@ const testCases: TestCase[] = [
     name: 'parses style tags with with static content',
     template: h`<style>.foo{color:white;}</style>`,
     expected: [
-      new OpeningTagToken('style', true),
+      new OpeningTagToken('style', false, true),
       new OpeningTagEndToken('style', false, true),
       new TextToken('.foo{color:white;}'),
       new ClosingTagToken('style', true),
@@ -216,7 +216,7 @@ const testCases: TestCase[] = [
     name: 'parses style tags with interpolated content as elements',
     template: h`<style>${'foo'}</style>`,
     expected: [
-      new OpeningTagToken('style', true),
+      new OpeningTagToken('style', false, true),
       new OpeningTagEndToken('style', false, true),
       new PartToken(0),
       new ClosingTagToken('style', true),
@@ -226,7 +226,7 @@ const testCases: TestCase[] = [
     name: 'parses boolean attributes',
     template: h`<input ?disabled=${true} />`,
     expected: [
-      new OpeningTagToken('input'),
+      new OpeningTagToken('input', true),
       new BooleanAttributeStartToken('disabled'),
       new PartToken(0),
       new TextToken(' '),
@@ -238,7 +238,7 @@ const testCases: TestCase[] = [
     name: 'parses property attributes',
     template: h`<input .disabled=${true} />`,
     expected: [
-      new OpeningTagToken('input'),
+      new OpeningTagToken('input', true),
       new PropertyAttributeStartToken('disabled'),
       new PartToken(0),
       new TextToken(' '),
@@ -251,7 +251,7 @@ const testCases: TestCase[] = [
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     template: h`<input @click=${() => {}} />`,
     expected: [
-      new OpeningTagToken('input'),
+      new OpeningTagToken('input', true),
       new EventAttributeStartToken('click'),
       new PartToken(0),
       new TextToken(' '),
@@ -264,7 +264,7 @@ const testCases: TestCase[] = [
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     template: h`<input onclick=${() => {}} />`,
     expected: [
-      new OpeningTagToken('input'),
+      new OpeningTagToken('input', true),
       new EventAttributeStartToken('click'),
       new PartToken(0),
       new TextToken(' '),
@@ -276,7 +276,7 @@ const testCases: TestCase[] = [
     name: 'parses namespaced attributes',
     template: h`<input xlink:href=${'foo'} />`,
     expected: [
-      new OpeningTagToken('input'),
+      new OpeningTagToken('input', true),
       new AttributeStartToken('xlink:href'),
       new PartToken(0),
       new TextToken(' '),
@@ -288,7 +288,7 @@ const testCases: TestCase[] = [
     name: 'parses boolean attributes with namespaced syntax',
     template: h`<input ?xlink:href=${true} />`,
     expected: [
-      new OpeningTagToken('input'),
+      new OpeningTagToken('input', true),
       new BooleanAttributeStartToken('xlink:href'),
       new PartToken(0),
       new TextToken(' '),
@@ -300,7 +300,7 @@ const testCases: TestCase[] = [
     name: 'parses property attributes with namespaced syntax',
     template: h`<input .xlink:href=${true} />`,
     expected: [
-      new OpeningTagToken('input'),
+      new OpeningTagToken('input', true),
       new PropertyAttributeStartToken('xlink:href'),
       new PartToken(0),
       new TextToken(' '),
@@ -313,7 +313,7 @@ const testCases: TestCase[] = [
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     template: h`<input @xlink:href=${() => {}} />`,
     expected: [
-      new OpeningTagToken('input'),
+      new OpeningTagToken('input', true),
       new EventAttributeStartToken('xlink:href'),
       new PartToken(0),
       new TextToken(' '),
