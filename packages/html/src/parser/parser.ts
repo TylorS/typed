@@ -20,11 +20,7 @@ export class Parser {
     const nodes: Node[] = []
 
     while (this._lookahead !== null) {
-      const node = this.Node()
-
-      if (node) {
-        nodes.push(node)
-      }
+      nodes.push(this.Node())
     }
 
     return new Template(nodes, hash)
