@@ -343,6 +343,13 @@ describe(Parser.name, () => {
 
     expect(parser.parse(template)).toEqual(expected)
   })
+
+  it.only('parses empty templates', () => {
+    const template = h``
+    const expected = new Template([], hashForTemplateStrings(template))
+
+    expect(parser.parse(template)).toEqual(expected)
+  })
 })
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
