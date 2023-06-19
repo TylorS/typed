@@ -1,5 +1,3 @@
-import * as Option from '@effect/data/Option'
-
 import { hashForTemplateStrings } from '../hashForTemplateStrings.js'
 import { Token, tokenizeTemplateStrings } from '../tokenizer/tokenizer.js'
 
@@ -7,23 +5,34 @@ export class Parser {
   protected _template: ReadonlyArray<string> = []
   protected _tokenStream!: Iterator<Token>
   protected _lookahead: Token | null = null
+  protected _stack: Array<number> = []
+  protected _parts: Array<[PartNode, ReadonlyArray<number>]> = []
 
-  parse(template: ReadonlyArray<string>) {
+  parse(template: ReadonlyArray<string>): Template {
     this._template = template
     this._tokenStream = tokenizeTemplateStrings(template)
     this._lookahead = this.getNextToken()
 
-    return this.Template(hashForTemplateStrings(template))
+    const ast = this.Template(hashForTemplateStrings(template))
+
+    this._stack = []
+    this._parts = []
+
+    return ast
   }
 
   protected Template(hash: string): Template {
     const nodes: Node[] = []
+    const template = new Template(nodes, hash, this._parts)
 
+    let i = 0
     while (this._lookahead !== null) {
+      this._stack.push(i++)
       nodes.push(this.Node())
+      this._stack.pop()
     }
 
-    return new Template(nodes, hash)
+    return template
   }
 
   protected Node(): Node {
@@ -33,8 +42,9 @@ export class Parser {
       return new TextNode(token.value)
     }
 
+    // Some annoyances here for generating the correct path for node parts
     if (token._tag === 'part-token') {
-      return new NodePart(token.index)
+      return this.addPartWithoutCurrent(new NodePart(token.index))
     }
 
     if (token.isSelfClosing) {
@@ -47,28 +57,37 @@ export class Parser {
   }
 
   protected ElementNode(tagName: string): ElementNode {
-    const attributes = this.Attributes()
-    const children = this.Children()
+    const attrs: Attribute[] = []
+    const children: Node[] = []
+    const element = new ElementNode(tagName, attrs, children)
 
-    return new ElementNode(tagName, attributes, children)
+    this.Attributes(attrs)
+    this.Children(children)
+
+    return element
   }
 
   protected SelfClosingElementNode(tagName: string): SelfClosingElementNode {
-    const attributes = this.Attributes()
+    const attrs: Attribute[] = []
+    const element = new SelfClosingElementNode(tagName, attrs)
 
-    return new SelfClosingElementNode(tagName, attributes)
+    this.Attributes(attrs)
+
+    return element
   }
 
   protected TextOnlyElement(tagName: string): TextOnlyElement {
-    const attributes = this.Attributes()
-    const children = this.TextChildren()
+    const attrs: Attribute[] = []
+    const children: Text[] = []
+    const element = new TextOnlyElement(tagName, attrs, children)
 
-    return new TextOnlyElement(tagName, attributes, children)
+    this.Attributes(attrs)
+    this.TextChildren(children)
+
+    return element
   }
 
-  protected Attributes(): Attribute[] {
-    const attributes: Attribute[] = []
-
+  protected Attributes(attributes: Attribute[] = []): Attribute[] {
     while (this._lookahead !== null) {
       if (this._lookahead._tag === 'opening-tag-end') {
         this._lookahead = this.getNextToken()
@@ -129,7 +148,7 @@ export class Parser {
         nodes.push(new AttrPartNode(name, token.index))
       } else {
         if (nodes.length === 0) {
-          return new BooleanNode(name, Option.none())
+          return new BooleanNode(name)
         }
 
         break
@@ -137,20 +156,20 @@ export class Parser {
     }
 
     if (nodes.length === 1) {
-      return nodes[0] as AttrPartNode
+      return this.addPart(nodes[0] as AttrPartNode)
     }
 
     if (nodes.length === 0) {
       throw new SyntaxError(`Expected at least one part or text element in attribute ${name}`)
     }
 
-    return new SparseAttrNode(name, nodes)
+    return this.addPart(new SparseAttrNode(name, nodes))
   }
 
   protected AttrNode(name: string): AttrPartNode {
     const token = this.findTokenOfType('part-token')
 
-    return new AttrPartNode(name, token.index)
+    return this.addPart(new AttrPartNode(name, token.index))
   }
 
   protected BooleanNode(name: string): BooleanNode {
@@ -160,13 +179,7 @@ export class Parser {
     // We don't need to do anything with a boolean-attribute-end token, skip it
     this.predictNextToken('boolean-attribute-end')
 
-    return new BooleanNode(name, Option.some(part.index))
-  }
-
-  protected ClassNamePartNode(): ClassNamePartNode {
-    const part = this.predictNextToken('part-token')
-
-    return new ClassNamePartNode(part.index)
+    return this.addPart(new BooleanPartNode(name, part.index))
   }
 
   protected SparseClassNameNode(): SparseClassNameNode | ClassNameNode {
@@ -177,7 +190,7 @@ export class Parser {
 
       if (token._tag === 'text') {
         if (token.value.trim() === '') continue
-        nodes.push(new ClassNameTextNode(token.value))
+        nodes.push(new TextNode(token.value))
       } else if (token._tag === 'part-token') {
         nodes.push(new ClassNamePartNode(token.index))
       } else {
@@ -190,67 +203,64 @@ export class Parser {
     }
 
     if (nodes.length === 1) {
-      return nodes[0]
+      return this.addPart(nodes[0] as ClassNamePartNode)
     }
 
-    return new SparseClassNameNode(nodes)
+    return this.addPart(new SparseClassNameNode(nodes))
   }
 
-  protected DataNode(): DataNode {
+  protected DataNode(): DataPartNode {
     const part = this.predictNextToken('part-token')
 
     // We don't need to do anything with a data-attribute-end token, skip it
     this.predictNextToken('data-attribute-end')
 
-    return new DataNode(part.index)
+    return this.addPart(new DataPartNode(part.index))
   }
 
-  protected EventNode(name: string): EventNode {
+  protected EventNode(name: string): EventPartNode {
     const part = this.predictNextToken('part-token')
 
     // We don't need to do anything with a event-attribute-end token, skip it
     this.predictNextToken('event-attribute-end')
 
-    return new EventNode(name, part.index)
+    return this.addPart(new EventPartNode(name, part.index))
   }
 
-  protected PropertyNode(name: string): PropertyNode {
+  protected PropertyNode(name: string): PropertyPartNode {
     const part = this.predictNextToken('part-token')
 
     // We don't need to do anything with a property-attribute-end token, skip it
     this.predictNextToken('property-attribute-end')
 
-    return new PropertyNode(name, part.index)
+    return this.addPart(new PropertyPartNode(name, part.index))
   }
 
-  protected RefNode(): RefNode {
+  protected RefNode(): RefPartNode {
     const part = this.predictNextToken('part-token')
 
     // We don't need to do anything with a ref-attribute-end token, skip it
     this.predictNextToken('ref-attribute-end')
 
-    return new RefNode(part.index)
-  }
-
-  protected TextNode(value: string): TextNode {
-    return new TextNode(value)
+    return this.addPart(new RefPartNode(part.index))
   }
 
   protected TextPartNode(): TextPartNode {
     const token = this.predictNextToken('part-token')
 
-    return new TextPartNode(token.index)
+    return this.addPart(new TextPartNode(token.index))
   }
 
-  protected Children(): Node[] {
-    const children: Node[] = []
-
+  protected Children(children: Node[] = []): Node[] {
+    let i = 0
     while (this._lookahead) {
       if (this._lookahead._tag === 'closing-tag') {
         this._lookahead = this.getNextToken()
         break
       } else {
+        this._stack.push(i++)
         const child = this.Node()
+        this._stack.pop()
 
         if (child) {
           children.push(child)
@@ -263,16 +273,14 @@ export class Parser {
     return children
   }
 
-  protected TextChildren(): Text[] {
-    const children: Text[] = []
-
+  protected TextChildren(children: Text[] = []): Text[] {
     while (this._lookahead !== null) {
       const token = this.findTokenOfType('text', 'part-token', 'closing-tag')
 
       if (token._tag === 'text') {
         children.push(new TextNode(token.value))
       } else if (token._tag === `part-token`) {
-        children.push(new TextPartNode(token.index))
+        children.push(this.addPart(new TextPartNode(token.index)))
       } else {
         break
       }
@@ -332,15 +340,49 @@ export class Parser {
 
     return value
   }
+
+  protected addPart<A extends PartNode>(part: A): A {
+    this._parts.push([part, this._stack.slice()])
+
+    return part
+  }
+
+  protected addPartWithoutCurrent<A extends PartNode>(part: A): A {
+    const current = this._stack[this._stack.length - 1]
+    this._stack.pop()
+    this.addPart(part)
+    this._stack.push(current)
+
+    return part
+  }
 }
 
 export class Template {
   readonly type = 'template'
 
-  constructor(readonly nodes: readonly Node[], readonly hash: string) {}
+  constructor(
+    readonly nodes: readonly Node[],
+    readonly hash: string,
+    readonly parts: ReadonlyArray<readonly [PartNode, ReadonlyArray<number>]>,
+  ) {}
 }
 
+export type ParentNode = ElementNode | SelfClosingElementNode | TextOnlyElement
+
 export type Node = ElementNode | SelfClosingElementNode | TextOnlyElement | TextNode | NodePart
+
+export type PartNode =
+  | AttrPartNode
+  | BooleanPartNode
+  | ClassNamePartNode
+  | DataPartNode
+  | EventPartNode
+  | NodePart
+  | PropertyPartNode
+  | RefPartNode
+  | SparseAttrNode
+  | SparseClassNameNode
+  | TextPartNode
 
 export class ElementNode {
   readonly type = 'element'
@@ -366,7 +408,7 @@ export class TextOnlyElement {
   constructor(
     readonly tagName: string,
     readonly attributes: Attribute[],
-    readonly children: ReadonlyArray<Text>,
+    readonly children: Text[],
   ) {}
 }
 
@@ -375,12 +417,13 @@ export type Attribute =
   | AttrPartNode
   | SparseAttrNode
   | BooleanNode
+  | BooleanPartNode
   | ClassNameNode
   | SparseClassNameNode
-  | DataNode
-  | EventNode
-  | PropertyNode
-  | RefNode
+  | DataPartNode
+  | EventPartNode
+  | PropertyPartNode
+  | RefPartNode
   | TextNode
 
 export class AttributeNode {
@@ -395,20 +438,20 @@ export class AttrPartNode {
 
 export class SparseAttrNode {
   readonly type = 'sparse-attr' as const
-  constructor(readonly name: string, readonly nodes: ReadonlyArray<AttrPartNode | TextNode>) {}
+  constructor(readonly name: string, readonly nodes: Array<AttrPartNode | TextNode>) {}
 }
 
 export class BooleanNode {
   readonly type = 'boolean' as const
-  constructor(readonly name: string, readonly index: Option.Option<number>) {}
+  constructor(readonly name: string) {}
 }
 
-export type ClassNameNode = ClassNameTextNode | ClassNamePartNode
-
-export class ClassNameTextNode {
-  readonly type = 'className-text' as const
-  constructor(readonly value: string) {}
+export class BooleanPartNode {
+  readonly type = 'boolean' as const
+  constructor(readonly name: string, readonly index: number) {}
 }
+
+export type ClassNameNode = TextNode | ClassNamePartNode
 
 export class ClassNamePartNode {
   readonly type = 'className-part' as const
@@ -421,25 +464,25 @@ export class SparseClassNameNode {
   constructor(readonly nodes: ClassNameNode[]) {}
 }
 
-export class DataNode {
+export class DataPartNode {
   readonly type = 'data' as const
 
   constructor(readonly index: number) {}
 }
 
-export class EventNode {
+export class EventPartNode {
   readonly type = 'event' as const
 
   constructor(readonly name: string, readonly index: number) {}
 }
 
-export class PropertyNode {
+export class PropertyPartNode {
   readonly type = 'property' as const
 
   constructor(readonly name: string, readonly index: number) {}
 }
 
-export class RefNode {
+export class RefPartNode {
   readonly type = 'ref' as const
 
   constructor(readonly index: number) {}
