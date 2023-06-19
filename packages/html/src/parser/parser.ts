@@ -1,5 +1,6 @@
 import * as Option from '@effect/data/Option'
 
+import { hashForTemplateStrings } from '../hashForTemplateStrings.js'
 import { Token, tokenizeTemplateStrings } from '../tokenizer/tokenizer.js'
 
 export class Parser {
@@ -12,10 +13,10 @@ export class Parser {
     this._tokenStream = tokenizeTemplateStrings(template)
     this._lookahead = this.getNextToken()
 
-    return this.Template()
+    return this.Template(hashForTemplateStrings(template))
   }
 
-  protected Template(): Template {
+  protected Template(hash: string): Template {
     const nodes: Node[] = []
 
     while (this._lookahead !== null) {
@@ -26,7 +27,7 @@ export class Parser {
       }
     }
 
-    return new Template(nodes)
+    return new Template(nodes, hash)
   }
 
   protected Node(): Node {
@@ -340,7 +341,7 @@ export class Parser {
 export class Template {
   readonly type = 'template'
 
-  constructor(readonly nodes: readonly Node[]) {}
+  constructor(readonly nodes: readonly Node[], readonly hash: string) {}
 }
 
 export type Node = ElementNode | SelfClosingElementNode | TextOnlyElement | TextNode | NodePart
