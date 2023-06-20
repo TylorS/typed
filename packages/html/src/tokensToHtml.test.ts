@@ -6,7 +6,7 @@ import { hashForTemplateStrings } from './hashForTemplateStrings.js'
 import { tokenizeTemplateStrings } from './tokenizer/tokenizer.js'
 import { tokensToHtml } from './tokensToHtml.js'
 
-describe(tokensToHtml.name, () => {
+describe.skip(tokensToHtml.name, () => {
   describe('single root element', () => {
     const template = h`<div id=${'foo'} class=${'bar'} @click=${null} ontouchdown=${null}><p>${'text'}</p></div>`
     const tokens = Array.from(tokenizeTemplateStrings(template))

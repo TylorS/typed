@@ -1,6 +1,11 @@
 import * as Effect from '@effect/io/Effect'
+import { Sink } from '@typed/fx'
+
+import { handlePart } from '../updates.js'
 
 import { BasePart } from './BasePart.js'
+
+import { Placeholder } from '@typed/html/Placeholder.js'
 
 export class ClassNamePart extends BasePart<readonly string[]> {
   readonly _tag = 'ClassName' as const
@@ -29,10 +34,6 @@ export class ClassNamePart extends BasePart<readonly string[]> {
     return this.setClassName(value.join(' '))
   }
 
-  getHTML(): string {
-    return (this.value || []).join(' ')
-  }
-
   add(...classNames: readonly string[]) {
     return this.update(this.value ? [...this.value, ...classNames] : classNames)
   }
@@ -57,6 +58,27 @@ export class ClassNamePart extends BasePart<readonly string[]> {
 
       return this.update(Array.from(updated))
     })
+  }
+
+  observe<R, E, R2>(
+    placeholder: Placeholder<R, E, unknown>,
+    sink: Sink<R2, E, unknown>,
+  ): Effect.Effect<R | R2, never, void> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const part = this
+
+    return Effect.catchAllCause(
+      Effect.gen(function* (_) {
+        const fx = yield* _(handlePart(part, placeholder))
+
+        if (fx) {
+          yield* _(fx.run(sink))
+        } else {
+          yield* _(sink.event(part.value))
+        }
+      }),
+      sink.error,
+    )
   }
 
   static fromElement(element: Element, index: number) {

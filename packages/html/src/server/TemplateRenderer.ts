@@ -1,97 +1,140 @@
+import { pipe } from '@effect/data/Function'
+import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
+import { withScopedFork } from '@typed/fx/helpers.js'
 
 import { RenderContext } from '../RenderContext.js'
-import { Renderable } from '../Renderable.js'
 import { TemplateResult } from '../TemplateResult.js'
-import { hashForTemplateStrings } from '../hashForTemplateStrings.js'
-import { Token, tokenizeTemplateStrings } from '../tokenizer/tokenizer.js'
-import { defaultTokenToHtmlState, tokensToHtml } from '../tokensToHtml.js'
+import { Parser, PartNode, Template } from '../parser/parser.js'
+import { nodeToHtml } from '../part/templateHelpers.js'
 
-import { Part } from './part/Part.js'
 import { AttrPart } from './part/AttrPart.js'
+import { BooleanPart } from './part/BooleanPart.js'
+import { ClassNamePart } from './part/ClassNamePart.js'
+import { CommentPart } from './part/CommentPart.js'
+import { DataPart } from './part/DataPart.js'
+import { EventPart } from './part/EventPart.js'
+import { NodePart } from './part/NodePart.js'
+import { Part } from './part/Part.js'
+import { PropertyPart } from './part/PropertyPart.js'
+import { RefPart } from './part/RefPart.js'
+import { SparseAttrPart } from './part/SparseAttrPart.js'
+import { SparseClassNamePart } from './part/SparseClassNamePart.js'
+import { TextPart } from './part/TextPart.js'
+import { HtmlChunk, templateToHtmlChunks } from './templateToHtmlChunks.js'
+
+const parser = new Parser()
 
 type ServerTemplateCache = {
-  readonly tokens: readonly Token[]
-  readonly hash: string
+  readonly template: Template
+  readonly chunks: readonly HtmlChunk[]
 }
 
 function renderTemplateResult(
-  document: Document,
   context: RenderContext,
   result: TemplateResult,
-  templateIndex: number,
 ): Fx.Fx<never, never, string> {
-  const cache = getTemplateCache(result, context)
+  const { template, chunks } = getTemplateCache(result.template, context.templateCache)
 
   if (result.values.length === 0) {
-    const { html } = tokensToHtml(cache.tokens, templateIndex, cache.hash)
-
-    return Fx.succeed(html)
+    return Fx.succeed(chunksToHtmlWithoutParts(chunks))
   }
 
-  // eslint-disable-next-line require-yield
   return Fx.Fx<never, never, string>((sink) =>
-    Effect.gen(function* ($) {
-      const parts = tokensToParts(cache.tokens, result.values)
-
-      yield* $(sink.event(html))
-    }),
+    withScopedFork((fork) =>
+      Effect.gen(function* ($) {
+        const fiberId = yield* $(Effect.fiberId())
+        const indexToHtml = new Map<number, string>()
+        const pendingHtml = new Map<number, string>()
+        const partsWithTemplateResults = new Set<number>()
+      }),
+    ),
   )
 }
 
-function tokensToParts(tokens: readonly Token[], values: TemplateResult['values']) {
-  const parts: Array<[Part, Renderable<any, any>]> = []
-  const partToHtml = new Map<Part, string>()
+function chunksToHtmlWithoutParts(chunk: readonly HtmlChunk[]): string {
+  let html = ''
 
-  let context: 'attr' | 'boolean' | 'class' | 'data' | 'event' | 'node' | 'ref' | 'text' = 'node'
-
-  for (let i = 0; i < tokens.length; ++i) {
-    const token = tokens[i]
-
-    switch (token._tag) {
-      case 'attribute-start': {
-        context = 'attr'
+  for (const c of chunk) {
+    switch (c.type) {
+      case 'text':
+        html += c.value
         break
-      }
-      case 'boolean-attribute-start': {
-        context = 'boolean'
-        break
-      }
-      case 'part-token': {
-        if (!context) throw Error(`Bad template`)
-
-        switch (context) {
-          case 'attr': {
-            const part = AttrPart.
-          }
-        }
-      }
+      case 'part':
+      case 'sparse-part':
+        throw new Error(`Invalid chunk type: ${c.type} for template with no interpolations.`)
     }
   }
 
-  return parts
+  return html
 }
 
-function getTemplateCache(result: TemplateResult, context: RenderContext): ServerTemplateCache {
-  const existing = context.templateCache.get(result.template)
+function getTemplateCache(
+  templateStrings: TemplateStringsArray,
+  templateCache: RenderContext['templateCache'],
+): ServerTemplateCache {
+  const cache = templateCache.get(templateStrings)
 
-  if (existing) return existing as ServerTemplateCache
+  if (cache) return cache as ServerTemplateCache
 
-  const cache = makeTemplateCache(result)
+  const template = parser.parse(templateStrings)
+  const chunks = templateToHtmlChunks(template)
 
-  context.templateCache.set(result.template, cache)
+  const newCache = { template, chunks }
 
-  return cache
+  templateCache.set(templateStrings, newCache)
+
+  return newCache
 }
 
-function makeTemplateCache(result: TemplateResult): ServerTemplateCache {
-  const tokens = tokenizeTemplateStrings(result.template)
-  const hash = hashForTemplateStrings(result.template)
-  const cache: ServerTemplateCache = {
-    tokens,
-    hash,
+function partNodeToParts(
+  node: PartNode,
+  onChunk: (value: unknown) => Effect.Effect<never, never, void>,
+): Part {
+  switch (node.type) {
+    case 'attr':
+      return new AttrPart(onChunk, () => Effect.unit(), node.index)
+    case 'boolean-part':
+      return new BooleanPart(onChunk, node.index)
+    case 'className-part':
+      return new ClassNamePart(onChunk, node.index, [])
+    case 'comment-part':
+      return new CommentPart(onChunk, node.index)
+    case 'data':
+      return new DataPart(onChunk, node.index)
+    case 'event':
+      return new EventPart(onChunk, Effect.unit(), node.name, node.index)
+    case 'node':
+      // TODO: Figure out how to handle node elements
+      return new NodePart(
+        node.index,
+        (_, nodes) => Effect.as(onChunk(nodes.map(nodeToHtml).join('')), nodes),
+        (value) => Effect.succeed(textFacade(value)),
+      )
+    case 'property':
+      return new PropertyPart(onChunk, node.index, null)
+    case 'ref':
+      return new RefPart(Effect.succeed(null), node.index)
+    case 'text-part':
+      return new TextPart(onChunk, node.index, '')
+    case 'sparse-attr':
+      return SparseAttrPart.fromPartNodes((s) => onChunk(s || ''), node.nodes)
+    case 'sparse-class-name':
+      return SparseClassNamePart.fromPartNodes(onChunk, node.nodes)
+  }
+}
+
+function textFacade(nodeValue: string): Text {
+  const text = {
+    nodeType: 3,
+    nodeValue,
+    valueOf: () => text,
   }
 
-  return cache
+  return text as unknown as Text
+}
+
+export class ServeTemplateInstance {
+  constructor(readonly result: TemplateResult, readonly cache: ServerTemplateCache) {}
 }

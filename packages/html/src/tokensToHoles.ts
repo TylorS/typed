@@ -252,7 +252,7 @@ export interface ClassNameTemplateHole {
 }
 
 export interface SparseClassNameTemplateHole {
-  readonly type: 'sparseClassName'
+  readonly type: 'sparse-class-name'
   readonly holes: ClassNameTemplateHole[]
 }
 

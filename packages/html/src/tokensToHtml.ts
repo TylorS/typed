@@ -1,4 +1,4 @@
-import { TYPED_ATTR, TYPED_END, TYPED_START } from './meta.js'
+import { TYPED_ATTR, TYPED_END, TYPED_HASH } from './meta.js'
 import { Token } from './tokenizer/tokenizer.js'
 
 type TokenToHtmlState = {
@@ -30,7 +30,7 @@ export function tokensToHtml(
   let i = 0
 
   if (templateIndex === -1) {
-    html += TYPED_START
+    html += TYPED_HASH
   }
 
   tokenLoop: for (; i < tokens.length; i++) {

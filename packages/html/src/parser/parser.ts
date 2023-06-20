@@ -4,48 +4,59 @@ import { Token, tokenizeTemplateStrings } from '../tokenizer/tokenizer.js'
 export class Parser {
   protected _template: ReadonlyArray<string> = []
   protected _tokenStream!: Iterator<Token>
-  protected _lookahead: Token | null = null
-  protected _stack: Array<number> = []
-  protected _parts: Array<[PartNode, ReadonlyArray<number>]> = []
+  protected _lookahead!: Token | null
+  protected _stack!: Array<number>
+  protected _parts!: Array<[PartNode | SparsePartNode, ReadonlyArray<number>]>
+  protected _skipWhitespace!: boolean
 
   parse(template: ReadonlyArray<string>): Template {
     this._template = template
     this._tokenStream = tokenizeTemplateStrings(template)
     this._lookahead = this.getNextToken()
-
-    const ast = this.Template(hashForTemplateStrings(template))
-
     this._stack = []
     this._parts = []
+    this._skipWhitespace = true
+
+    const ast = this.Template(hashForTemplateStrings(template))
 
     return ast
   }
 
   protected Template(hash: string): Template {
-    const nodes: Node[] = []
-    const template = new Template(nodes, hash, this._parts)
-
-    let i = 0
-    while (this._lookahead !== null) {
-      this._stack.push(i++)
-      nodes.push(this.Node())
-      this._stack.pop()
-    }
-
-    return template
+    return new Template(this.Children(), hash, this._parts)
   }
 
-  protected Node(): Node {
-    const token = this.findTokenOfType('opening-tag', 'text', 'part-token')
+  protected Node(): Node | null {
+    const token = this.findTokenOfType(
+      'opening-tag',
+      'text',
+      'comment',
+      'comment-start',
+      'part-token',
+    )
 
     if (token._tag === 'text') {
+      if (this._skipWhitespace && token.value.trim() === '') return null
+
       return new TextNode(token.value)
+    }
+
+    if (token._tag === 'comment') {
+      return new CommentNode(token.value)
+    }
+
+    if (token._tag === 'comment-start') {
+      const node = this.Comment(token.value)
+      return node
     }
 
     // Some annoyances here for generating the correct path for node parts
     if (token._tag === 'part-token') {
+      this._skipWhitespace = false
       return this.addPartWithoutCurrent(new NodePart(token.index))
     }
+
+    this._skipWhitespace = true
 
     if (token.isSelfClosing) {
       return this.SelfClosingElementNode(token.name)
@@ -93,17 +104,19 @@ export class Parser {
         this._lookahead = this.getNextToken()
         break
       } else {
-        attributes.push(this.Attribute())
+        const attr = this.Attribute()
+        if (attr) attributes.push(attr)
       }
     }
 
     return attributes
   }
 
-  protected Attribute(): Attribute {
+  protected Attribute(): Attribute | null {
     const token = this.findTokenOfType(
       'attribute',
       'attribute-start',
+      'boolean-attribute',
       'boolean-attribute-start',
       'className-attribute-start',
       'data-attribute-start',
@@ -118,6 +131,8 @@ export class Parser {
         return new AttributeNode(token.name, token.value)
       case 'attribute-start':
         return this.SparseAttrNode(token.name)
+      case 'boolean-attribute':
+        return new BooleanNode(token.name)
       case 'boolean-attribute-start':
         return this.BooleanNode(token.name)
       case 'className-attribute-start':
@@ -131,7 +146,7 @@ export class Parser {
       case 'ref-attribute-start':
         return this.RefNode()
       case 'text':
-        return new TextNode(token.value)
+        return null
     }
   }
 
@@ -142,7 +157,7 @@ export class Parser {
       const token = this.findTokenOfType('text', 'part-token', 'attribute-end')
 
       if (token._tag === 'text') {
-        if (token.value.trim() === '') continue
+        if (token.value === '') continue
         nodes.push(new TextNode(token.value))
       } else if (token._tag === 'part-token') {
         nodes.push(new AttrPartNode(name, token.index))
@@ -160,7 +175,7 @@ export class Parser {
     }
 
     if (nodes.length === 0) {
-      throw new SyntaxError(`Expected at least one part or text element in attribute ${name}`)
+      return new BooleanNode(name)
     }
 
     return this.addPart(new SparseAttrNode(name, nodes))
@@ -172,7 +187,7 @@ export class Parser {
     return this.addPart(new AttrPartNode(name, token.index))
   }
 
-  protected BooleanNode(name: string): BooleanNode {
+  protected BooleanNode(name: string): BooleanPartNode {
     // We know that the next token MUST be a part-token
     const part = this.predictNextToken('part-token')
 
@@ -256,7 +271,15 @@ export class Parser {
     while (this._lookahead) {
       if (this._lookahead._tag === 'closing-tag') {
         this._lookahead = this.getNextToken()
+        this._skipWhitespace = true
+
         break
+      } else if (
+        this._skipWhitespace &&
+        this._lookahead._tag === 'text' &&
+        this._lookahead.value.trim() === ''
+      ) {
+        this._lookahead = this.getNextToken()
       } else {
         this._stack.push(i++)
         const child = this.Node()
@@ -278,15 +301,34 @@ export class Parser {
       const token = this.findTokenOfType('text', 'part-token', 'closing-tag')
 
       if (token._tag === 'text') {
-        children.push(new TextNode(token.value))
+        if (token.value) children.push(new TextNode(token.value))
       } else if (token._tag === `part-token`) {
         children.push(this.addPart(new TextPartNode(token.index)))
       } else {
+        this._skipWhitespace = true
         break
       }
     }
 
     return children
+  }
+
+  protected Comment(before: string): CommentPartNode {
+    let after = ''
+    let index = 0
+
+    while (this._lookahead !== null) {
+      const token = this.findTokenOfType('part-token', 'comment-end')
+
+      if (token._tag === 'part-token') {
+        index = token.index
+      } else {
+        after += token.value
+        break
+      }
+    }
+
+    return this.addPart(new CommentPartNode(before, after, index))
   }
 
   protected findTokenOfType<T extends ReadonlyArray<Token['_tag']>>(
@@ -341,7 +383,7 @@ export class Parser {
     return value
   }
 
-  protected addPart<A extends PartNode>(part: A): A {
+  protected addPart<A extends PartNode | SparsePartNode>(part: A): A {
     this._parts.push([part, this._stack.slice()])
 
     return part
@@ -363,13 +405,19 @@ export class Template {
   constructor(
     readonly nodes: readonly Node[],
     readonly hash: string,
-    readonly parts: ReadonlyArray<readonly [PartNode, ReadonlyArray<number>]>,
+    readonly parts: ReadonlyArray<readonly [PartNode | SparsePartNode, ReadonlyArray<number>]>,
   ) {}
 }
 
 export type ParentNode = ElementNode | SelfClosingElementNode | TextOnlyElement
 
-export type Node = ElementNode | SelfClosingElementNode | TextOnlyElement | TextNode | NodePart
+export type Node =
+  | ElementNode
+  | SelfClosingElementNode
+  | TextOnlyElement
+  | TextNode
+  | NodePart
+  | Comment
 
 export type PartNode =
   | AttrPartNode
@@ -380,9 +428,10 @@ export type PartNode =
   | NodePart
   | PropertyPartNode
   | RefPartNode
-  | SparseAttrNode
-  | SparseClassNameNode
   | TextPartNode
+  | CommentPartNode
+
+export type SparsePartNode = SparseAttrNode | SparseClassNameNode
 
 export class ElementNode {
   readonly type = 'element'
@@ -447,7 +496,7 @@ export class BooleanNode {
 }
 
 export class BooleanPartNode {
-  readonly type = 'boolean' as const
+  readonly type = 'boolean-part' as const
   constructor(readonly name: string, readonly index: number) {}
 }
 
@@ -459,7 +508,7 @@ export class ClassNamePartNode {
 }
 
 export class SparseClassNameNode {
-  readonly type = 'sparseClassName' as const
+  readonly type: 'sparse-class-name' = 'sparse-class-name' as const
 
   constructor(readonly nodes: ClassNameNode[]) {}
 }
@@ -500,4 +549,18 @@ export class TextPartNode {
   readonly type = 'text-part' as const
 
   constructor(readonly index: number) {}
+}
+
+export type Comment = CommentNode | CommentPartNode
+
+export class CommentNode {
+  readonly type = 'comment' as const
+
+  constructor(readonly value: string) {}
+}
+
+export class CommentPartNode {
+  readonly type = 'comment-part' as const
+
+  constructor(readonly before: string, readonly after: string, readonly index: number) {}
 }

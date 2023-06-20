@@ -1,6 +1,11 @@
 import * as Effect from '@effect/io/Effect'
+import { Sink } from '@typed/fx'
+
+import { handlePart } from '../updates.js'
 
 import { BasePart } from './BasePart.js'
+
+import { Placeholder } from '@typed/html/Placeholder.js'
 
 type DomStringMap = Partial<Readonly<Record<string, string>>>
 
@@ -26,12 +31,25 @@ export class DataPart extends BasePart<DomStringMap | null> {
     return this.updateDataSet(value)
   }
 
-  getHTML(): string {
-    if (!this.value) return ''
+  observe<R, E, R2>(
+    placeholder: Placeholder<R, E, unknown>,
+    sink: Sink<R2, E, unknown>,
+  ): Effect.Effect<R | R2, never, void> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const part = this
 
-    return Object.entries(this.value)
-      .map(([key, value]) => `data-${key}="${value}"`)
-      .join(' ')
+    return Effect.catchAllCause(
+      Effect.gen(function* (_) {
+        const fx = yield* _(handlePart(part, placeholder))
+
+        if (fx) {
+          yield* _(fx.run(sink))
+        } else {
+          yield* _(sink.event(part.value))
+        }
+      }),
+      sink.error,
+    )
   }
 
   static fromHTMLElement(element: HTMLElement, index: number) {

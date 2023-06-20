@@ -57,6 +57,7 @@ export type Token =
   | AttributeToken
   | AttributeStartToken
   | AttributeEndToken
+  | BooleanAttributeToken
   | BooleanAttributeStartToken
   | BooleanAttributeEndToken
   | ClassNameAttributeStartToken
@@ -158,6 +159,11 @@ export class AttributeToken {
   constructor(readonly name: string, readonly value: string) {}
 }
 
+export class BooleanAttributeToken {
+  readonly _tag = 'boolean-attribute'
+  constructor(readonly name: string) {}
+}
+
 export class OpeningTagEndToken {
   readonly _tag = 'opening-tag-end'
 
@@ -231,6 +237,7 @@ function* tokenize(state: TokenState, input: string): Generator<Token> {
         state.context = 'comment'
       } else if ((next = chunks.getText(input, pos))) {
         pos += next.length
+
         yield new TextToken(next.match[1])
       } else {
         const text = input.substring(pos, pos + 1)
@@ -250,11 +257,13 @@ function* tokenize(state: TokenState, input: string): Generator<Token> {
         if (hasEqualsSign && (read = readAttribute(input, pos)).value) {
           pos += read.length
           yield new AttributeToken(name, read.value)
-        } else {
+        } else if (hasEqualsSign) {
           yield getAttributeTokenPartial(name, 'start')
           state.currentAttribute = name
           state.context = 'attribute'
           pos += name.length
+        } else {
+          yield new BooleanAttributeToken(name)
         }
       } else if ((next = chunks.getTagEnd(input, pos))) {
         pos += next.length
@@ -279,31 +288,43 @@ function* tokenize(state: TokenState, input: string): Generator<Token> {
         pos += isSelfClosing ? 2 : 1
 
         state.currentAttribute = ''
-        state.context = 'tag'
+        state.context = 'text'
       } else if (char === '"') {
         yield getAttributeTokenPartial(state.currentAttribute, 'end')
         state.currentAttribute = ''
         state.context = 'tag'
         pos += 1
-      } else if ((next = chunks.getAttributeName(input, pos))) {
-        pos += next.length
-        const name = next.match[2]
-        const hasValue = next.match[4]
-
+      } else if ((next = chunks.getAttributeStart(input, pos))) {
         yield getAttributeTokenPartial(state.currentAttribute, 'end')
 
-        if (hasValue && hasValue.length > 1) {
-          const read = readAttribute(input, pos)
-          pos += read.length
+        state.context = 'tag'
+      } else if ((next = chunks.getText(input, pos))) {
+        const value = next.match[1]
 
-          yield new AttributeToken(name, read.value)
+        if (value.endsWith('/>')) {
+          const text = value.substring(0, value.length - 2)
+
+          yield getAttributeTokenPartial(state.currentAttribute, 'end')
+          yield new TextToken(text)
+
+          yield new OpeningTagEndToken(state.currentTag, true)
+          pos += value.length
+          state.currentAttribute = ''
+          state.context = 'text'
+        } else if (value.endsWith('>')) {
+          const text = value.substring(0, value.length - 1)
+
+          yield getAttributeTokenPartial(state.currentAttribute, 'end')
+          yield new TextToken(text)
+          yield new OpeningTagEndToken(state.currentTag, false)
+          pos += value.length
+          state.currentAttribute = ''
+          state.context = 'text'
         } else {
-          yield getAttributeTokenPartial(name, 'start')
-          state.currentAttribute = name
-          pos += name.length
+          pos += next.length
+          yield new TextToken(next.match[0])
         }
       } else if ((next = chunks.getWhitespace(input, pos))) {
-        yield new TextToken(next.match[1])
         pos += next.length
       } else {
         break
@@ -325,10 +346,7 @@ function* tokenize(state: TokenState, input: string): Generator<Token> {
       if ((next = chunks.getScript(input, pos))) {
         pos += next.length
 
-        if (next.match[2]) {
-          yield new TextToken(next.match[2])
-        }
-
+        if (next.match[2]) yield new TextToken(next.match[2])
         yield new ClosingTagToken(state.context, true)
         state.context = 'text'
       } else {
@@ -339,10 +357,7 @@ function* tokenize(state: TokenState, input: string): Generator<Token> {
       if ((next = chunks.getStyle(input, pos))) {
         pos += next.length
 
-        if (next.match[2]) {
-          yield new TextToken(next.match[2])
-        }
-
+        if (next.match[2]) yield new TextToken(next.match[2])
         yield new ClosingTagToken(state.context, true)
         state.context = 'text'
       } else {

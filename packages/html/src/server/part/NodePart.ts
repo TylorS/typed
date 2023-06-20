@@ -1,23 +1,24 @@
 import * as Effect from '@effect/io/Effect'
+import * as Scope from '@effect/io/Scope'
+import * as Fx from '@typed/fx'
 
-import { diffChildren } from '../../diffChildren.js'
-import { nodeToHtml } from '../../part/templateHelpers.js'
+import { unwrapRenderable } from '../updates.js'
 
 import { BasePart } from './BasePart.js'
 
-import { TEXT_START } from '@typed/html/meta.js'
+import { Placeholder } from '@typed/html/Placeholder.js'
 
 export class NodePart extends BasePart<unknown> {
   readonly _tag = 'Node'
 
-  protected text: Text | null = null
-
   constructor(
-    readonly document: Document,
-    readonly comment: Comment,
     index: number,
+    protected diffChildren: (
+      previous: Node[],
+      updated: Node[],
+    ) => Effect.Effect<never, never, Node[]>,
+    protected setTextNode: (text: string) => Effect.Effect<never, never, Text>,
     protected nodes: Node[] = [],
-    protected onUpdated: Effect.Effect<never, never, void> = Effect.unit(),
   ) {
     super(index, nodes.length === 1 ? nodes[0] : nodes.filter(notIsEmptyTextNode))
   }
@@ -26,18 +27,19 @@ export class NodePart extends BasePart<unknown> {
     return u
   }
 
-  setValue(newValue: unknown) {
-    return Effect.suspend(() => {
-      const { document, comment } = this
+  setValue(newValue: unknown): Effect.Effect<never, never, unknown> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this
 
+    return Effect.gen(function* ($) {
       switch (typeof newValue) {
         // primitives are handled as text content
         case 'string':
         case 'number':
         case 'boolean': {
-          const text = this.manageTextNode(String(newValue))
+          const text = yield* $(that.setTextNode(String(newValue)))
 
-          this.nodes = diffChildren(comment, this.nodes, [text], document)
+          that.nodes = [text]
 
           break
         }
@@ -45,60 +47,44 @@ export class NodePart extends BasePart<unknown> {
         case 'object':
         case 'undefined': {
           if (!newValue) {
-            this.nodes = diffChildren(comment, this.nodes, [], document)
+            that.nodes = yield* $(that.diffChildren(that.nodes, []))
           }
           // arrays and nodes have a special treatment
           else if (Array.isArray(newValue)) {
             // arrays can be used to cleanup, if empty
-            if (newValue.length === 0) this.nodes = diffChildren(comment, this.nodes, [], document)
+            if (newValue.length === 0) that.nodes = yield* $(that.diffChildren(that.nodes, []))
             // or diffed, if these contains nodes or "wires"
             else if (newValue.some((x) => typeof x === 'object'))
-              this.nodes = diffChildren(
-                comment,
-                this.nodes,
-                // We can't diff null values, so we filter them out
-                newValue.filter((x) => x !== null),
-                document,
+              that.nodes = yield* $(
+                that.diffChildren(
+                  that.nodes,
+                  // We can't diff null values, so we filter them out
+                  newValue.filter((x) => x !== null),
+                ),
               )
             // in all other cases the content is stringified as is
-            else this.setValue(String(newValue))
+            else yield* $(that.setValue(String(newValue)))
           } else {
-            this.nodes = diffChildren(comment, this.nodes, [newValue as Node], document)
+            that.nodes = yield* $(that.diffChildren(that.nodes, [newValue as Node]))
           }
 
           break
         }
       }
-
-      return this.onUpdated
     })
   }
 
-  getHTML(): string {
-    // If there is just text, we need to add a comment to ensure a separate text node is created.
-    if (this.text) return `${TEXT_START}${this.text.nodeValue}` + nodeToHtml(this.comment)
-
-    return `${this.nodes.map(nodeToHtml).join('')}${nodeToHtml(this.comment)}`
-  }
-
-  protected manageTextNode(content: string) {
-    if (!this.text && this.comment.previousSibling) {
-      this.text = getPreviousTextSibling(this.comment.previousSibling)
-    }
-
-    if (!this.text) {
-      this.text = this.document.createTextNode(content)
-    }
-
-    const { text } = this
-
-    text.data = content
-
-    return text
+  observe<R, E, R2>(
+    placeholder: Placeholder<R, E, unknown>,
+    sink: Fx.Sink<R2, E, unknown>,
+  ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
+    return Fx.drain(
+      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, this.update),
+    )
   }
 }
 
-function getPreviousTextSibling(node: Node | null) {
+export function getPreviousTextSibling(node: Node | null) {
   if (!node) return null
 
   if (node && node.nodeType === 3) return node as Text
@@ -106,7 +92,7 @@ function getPreviousTextSibling(node: Node | null) {
   return null
 }
 
-function notIsEmptyTextNode(node: Node) {
+export function notIsEmptyTextNode(node: Node) {
   if (node.nodeType === node.COMMENT_NODE) {
     return node.nodeValue?.trim() === ''
   }

@@ -1,3 +1,6 @@
+import { deepStrictEqual } from 'assert'
+import { inspect } from 'util'
+
 import { describe, expect, it } from 'vitest'
 
 import { hashForTemplateStrings } from '../hashForTemplateStrings.js'
@@ -8,6 +11,8 @@ import {
   BooleanNode,
   BooleanPartNode,
   ClassNamePartNode,
+  CommentNode,
+  CommentPartNode,
   DataPartNode,
   ElementNode,
   EventPartNode,
@@ -69,17 +74,37 @@ describe(Parser.name, () => {
   })
 
   it('parses sparse attributes', () => {
-    const template = h`<div id="${'foo'} ${'bar'} ${'baz'}}"></div>`
+    const template = h`<div id="${'foo'} ${'bar'} ${'baz'}"></div>`
     const div = new ElementNode('div', [], [])
     const id0 = new AttrPartNode('id', 0)
     const id1 = new AttrPartNode('id', 1)
     const id2 = new AttrPartNode('id', 2)
-    const sparse = new SparseAttrNode('id', [id0, id1, id2])
+    const idText = new TextNode(' ')
+    const idText2 = new TextNode(' ')
+    const sparse = new SparseAttrNode('id', [id0, idText, id1, idText2, id2])
 
     div.attributes.push(sparse)
 
     const expected = new Template([div], hashForTemplateStrings(template), [[sparse, [0]]])
+
     expect(parser.parse(template)).toEqual(expected)
+  })
+
+  it('parses sparse attributes with text', () => {
+    const template = h`<div id="${'foo'} hello ${'bar'} world ${'baz'}"></div>`
+    const div = new ElementNode('div', [], [])
+    const id0 = new AttrPartNode('id', 0)
+    const id1 = new AttrPartNode('id', 1)
+    const id2 = new AttrPartNode('id', 2)
+    const idText = new TextNode(' hello ')
+    const idText2 = new TextNode(' world ')
+    const sparse = new SparseAttrNode('id', [id0, idText, id1, idText2, id2])
+
+    div.attributes.push(sparse)
+
+    const expected = new Template([div], hashForTemplateStrings(template), [[sparse, [0]]])
+
+    deepStrictEqual(parser.parse(template), expected)
   })
 
   it('parses boolean attributes', () => {
@@ -131,7 +156,7 @@ describe(Parser.name, () => {
   })
 
   it('parses sparse class name attributes', () => {
-    const template = h`<div class="${'foo'} ${'bar'} ${'baz'}}"></div>`
+    const template = h`<div class="${'foo'} ${'bar'} ${'baz'}"></div>`
     const div = new ElementNode('div', [], [])
 
     const className0 = new ClassNamePartNode(0)
@@ -437,6 +462,21 @@ describe(Parser.name, () => {
         [part3, [2, 1, 0]],
       ],
     )
+
+    expect(parser.parse(template)).toEqual(expected)
+  })
+
+  it('parses comments', () => {
+    const template = h`<!-- test -->`
+    const expected = new Template([new CommentNode(' test ')], hashForTemplateStrings(template), [])
+
+    expect(parser.parse(template)).toEqual(expected)
+  })
+
+  it('parses comments with hole', () => {
+    const template = h`<!-- ${'test'} -->`
+    const part = new CommentPartNode(' ', ' ', 0)
+    const expected = new Template([part], hashForTemplateStrings(template), [[part, [0]]])
 
     expect(parser.parse(template)).toEqual(expected)
   })

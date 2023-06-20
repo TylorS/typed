@@ -7,6 +7,8 @@ import { EventPart } from './EventPart.js'
 import { NodePart } from './NodePart.js'
 import { PropertyPart } from './PropertyPart.js'
 import { RefPart } from './RefPart.js'
+import { SparseAttrPart } from './SparseAttrPart.js'
+import { SparseClassNamePart } from './SparseClassNamePart.js'
 import { TextPart } from './TextPart.js'
 
 export type Part =
@@ -20,3 +22,5 @@ export type Part =
   | PropertyPart
   | RefPart
   | TextPart
+  | SparseAttrPart
+  | SparseClassNamePart

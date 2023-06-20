@@ -1,6 +1,12 @@
 import * as Effect from '@effect/io/Effect'
+import * as Scope from '@effect/io/Scope'
+import * as Fx from '@typed/fx'
+
+import { unwrapRenderable } from '../updates.js'
 
 import { BasePart } from './BasePart.js'
+
+import { Placeholder } from '@typed/html/Placeholder.js'
 
 export class TextPart extends BasePart<string> {
   readonly _tag = 'Text' as const
@@ -23,8 +29,13 @@ export class TextPart extends BasePart<string> {
     return this.setText(value)
   }
 
-  getHTML(): string {
-    return this.value ?? ''
+  observe<R, E, R2>(
+    placeholder: Placeholder<R, E, unknown>,
+    sink: Fx.Sink<R2, E, unknown>,
+  ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
+    return Fx.drain(
+      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, this.update),
+    )
   }
 
   static fromElement(element: Node, index: number) {
