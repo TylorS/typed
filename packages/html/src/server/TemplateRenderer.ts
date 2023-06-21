@@ -116,6 +116,8 @@ function renderTemplateResult<R, E>(
                     fork,
                   ),
                 )
+              } else if (renderChunk.part._tag === 'Ref' || renderChunk.part._tag === 'Event') {
+                yield* $(onChunk(renderChunk.index, ''))
               } else {
                 fibers.set(
                   renderChunk.index,

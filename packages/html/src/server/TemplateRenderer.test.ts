@@ -1,6 +1,6 @@
 import { deepStrictEqual } from 'assert'
 
-import { pipe } from '@effect/data/Function'
+import { flow, pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
 import { describe, it } from 'vitest'
@@ -77,6 +77,87 @@ describe(renderToHtmlStream.name, () => {
       '</div>',
     ])
   })
+
+  it('renders boolean attributes', async () => {
+    await testHtmlChunks(html`<div ?hidden=${true}></div>`, [
+      '<div data-typed="..."',
+      ' hidden',
+      `>${TYPED_ATTR(0)}</div>`,
+    ])
+
+    await testHtmlChunks(html`<div ?hidden=${false}></div>`, [
+      '<div data-typed="..."',
+      `>${TYPED_ATTR(0)}</div>`,
+    ])
+  })
+
+  it('renders comments', async () => {
+    await testHtmlChunks(html`<div><!-- Hello, world! --></div>`, [
+      '<div data-typed="..."><!-- Hello, world! --></div>',
+    ])
+  })
+
+  it('renders comments with interpolations', async () => {
+    await testHtmlChunks(html`<div><!-- ${'Hello, world!'} --></div>`, [
+      '<div data-typed="...">',
+      '<!-- Hello, world! -->',
+      '</div>',
+    ])
+
+    await testHtmlChunks(html`<div><!-- ${Effect.succeed('Hello, world!')} --></div>`, [
+      '<div data-typed="...">',
+      '<!-- Hello, world! -->',
+      '</div>',
+    ])
+
+    await testHtmlChunks(html`<div><!-- ${Fx.succeed('Hello, world!')} --></div>`, [
+      '<div data-typed="...">',
+      '<!-- Hello, world! -->',
+      '</div>',
+    ])
+  })
+
+  it('renders data attributes', async () => {
+    await testHtmlChunks(html`<div data-foo=${'bar'}></div>`, [
+      '<div data-typed="..."',
+      ' data-foo="bar"',
+      `>${TYPED_ATTR(0)}</div>`,
+    ])
+
+    await testHtmlChunks(html`<div .data=${Fx.succeed({ foo: 'bar' })}></div>`, [
+      '<div data-typed="..."',
+      ' data-foo="bar"',
+      `>${TYPED_ATTR(0)}</div>`,
+    ])
+  })
+
+  it('renders with event attributes', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    await testHtmlChunks(html`<div @click=${() => {}}></div>`, [
+      `<div data-typed="...">${TYPED_ATTR(0)}</div>`,
+    ])
+  })
+
+  it('renders with property attributes', async () => {
+    await testHtmlChunks(html`<input .value=${'foo'} />`, [
+      `<input data-typed="..."`,
+      ` value="foo"`,
+      `/>${TYPED_ATTR(0)}`,
+    ])
+  })
+
+  it('renders with ref attributes', async () => {
+    await testHtmlChunks(html`<input ref=${null} />`, [`<input data-typed="..."/>${TYPED_ATTR(0)}`])
+  })
+
+  it('renders text-only templates', async () => {
+    await testHtmlChunks(
+      html`<script>
+        console.log('hello, world!')
+      </script>`,
+      [`<script data-typed="...">\n        console.log('hello, world!')\n      </script>`],
+    )
+  })
 })
 
 function provideResources<R, E, A>(effect: Effect.Effect<R, E, A>) {
@@ -100,7 +181,7 @@ async function testHtmlChunks(
       provideResources,
       Effect.runPromise,
     )
-  ).map(stripDataTyped)
+  ).map(flow(stripDataTyped, stripSelfClosingComment))
 
   try {
     deepStrictEqual(actual, expected)
@@ -113,4 +194,8 @@ async function testHtmlChunks(
 
 function stripDataTyped(s: string): string {
   return s.replace(/data-typed="[^"]+"/g, 'data-typed="..."')
+}
+
+function stripSelfClosingComment(s: string): string {
+  return s.replace(/^<!--sx-[a-z0-9=]+-->/gi, '').replace(/<!--\/sx-[a-z0-9=]+-->$/gi, '')
 }

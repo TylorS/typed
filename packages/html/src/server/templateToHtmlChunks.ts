@@ -192,7 +192,7 @@ function attributeToHtmlChunk(attr: Attribute): HtmlChunk {
     case 'ref':
       return new TextChunk('')
     case 'property':
-      return new PartChunk(attr, (value) => ` ${attr.name}="${escapeHTML(JSON.stringify(value))}"`)
+      return new PartChunk(attr, (value) => ` ${attr.name}="${escape(value)}"`)
     case 'sparse-attr': {
       return new SparsePartChunk(attr, (values) => {
         return `${attr.name}="${Array.isArray(values) ? values.join('') : values}"`
@@ -208,9 +208,11 @@ function attributeToHtmlChunk(attr: Attribute): HtmlChunk {
 }
 
 function datasetToString(dataset: Readonly<Record<string, string | undefined>>) {
-  return Object.entries(dataset)
+  const s = Object.entries(dataset)
     .map(([key, value]) => (value === undefined ? `data-${key}` : `data-${key}="${value}"`))
     .join(' ')
+
+  return s.length === 0 ? '' : ' ' + s
 }
 
 function openTag(tagName: string, hash?: string): string {
@@ -246,4 +248,15 @@ function attributeComments(attributes: Attribute[]): readonly TextChunk[] {
         return attributeComments(a.nodes)
     }
   })
+}
+
+function escape(s: unknown) {
+  switch (typeof s) {
+    case 'string':
+    case 'number':
+    case 'boolean':
+      return escapeHTML(String(s))
+    default:
+      return escapeHTML(JSON.stringify(s))
+  }
 }

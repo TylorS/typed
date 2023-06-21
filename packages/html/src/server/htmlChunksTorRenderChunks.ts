@@ -56,37 +56,28 @@ export function htmlChunksToRenderChunks<R, E>(
   values: ReadonlyArray<Renderable<R, E>>,
   onChunk: (index: number, value: string) => Effect.Effect<never, never, void>,
 ) {
-  const output: RenderChunk<R, E>[] = []
+  const output: RenderChunk<R, E>[] = Array(chunks.length)
 
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i]
     const index = i
 
-    switch (chunk.type) {
-      case 'text':
-        output.push(new TextRenderChunk(index, chunk.value))
-        break
-      case 'part':
-        output.push(
-          new PartRenderChunk(
-            index,
-            chunk,
-            partNodeToPart(chunk.node, (v) => onChunk(index, chunk.render(v))),
-            values[chunk.node.index],
-          ),
-        )
-        break
-      case 'sparse-part':
-        output.push(
-          new SparsePartRenderChunk(
-            index,
-            chunk,
-            sparsePartNodeToPart(chunk.node, (v) => onChunk(index, chunk.render(v))),
-            chunk.node.nodes.map((n) => (n.type === 'text' ? n.value : values[n.index])),
-          ),
-        )
-
-        break
+    if (chunk.type === 'text') {
+      output[index] = new TextRenderChunk(index, chunk.value)
+    } else if (chunk.type === 'part') {
+      output[index] = new PartRenderChunk(
+        index,
+        chunk,
+        partNodeToPart(chunk.node, (v) => onChunk(index, chunk.render(v))),
+        values[chunk.node.index],
+      )
+    } else {
+      output[index] = new SparsePartRenderChunk(
+        index,
+        chunk,
+        sparsePartNodeToPart(chunk.node, (v) => onChunk(index, chunk.render(v))),
+        chunk.node.nodes.map((n) => (n.type === 'text' ? n.value : values[n.index])),
+      )
     }
   }
 
