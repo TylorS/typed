@@ -2,7 +2,7 @@
 export const TYPED_START = (hash: string) => `<!--typed-start-${hash}-->`
 export const TYPED_END = (hash: string) => `<!--typed-end-${hash}-->`
 
-export const TYPED_HASH = (hash: string) => `data-typed="${hash}`
+export const TYPED_HASH = (hash: string) => `data-typed="${hash}"`
 
 // Inserted into the html to mark where the text starts and ensure separate
 // text nodes are created.

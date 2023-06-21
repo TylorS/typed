@@ -124,7 +124,7 @@ function toComparable(chunk: HtmlChunk) {
     case 'part':
       return [chunk.type, chunk.node]
     case 'sparse-part':
-      return [chunk.type, chunk.node.nodes.map((n) => n.type)]
+      return [chunk.type, chunk.node.nodes]
     case 'text':
       return [chunk.type, chunk.value]
   }

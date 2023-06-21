@@ -5,7 +5,7 @@ import { RenderContext } from '../RenderContext.js'
 import { TemplateResult } from '../TemplateResult.js'
 
 import { getTemplateCache } from './getTemplateCache.js'
-import { AttrPart } from './part/AttrPart.js'
+import { AttrPart } from '../partV2/AttrPart.js'
 import { PartChunk, SparsePartChunk } from './templateToHtmlChunks.js'
 
 export function resultToTemplateInstance(result: TemplateResult, context: RenderContext) {

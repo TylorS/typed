@@ -1,4 +1,9 @@
 import * as Effect from '@effect/io/Effect'
+import * as Scope from '@effect/io/Scope'
+import * as Fx from '@typed/fx'
+
+import { Renderable } from '../Renderable.js'
+import { unwrapRenderable } from '../server/updates.js'
 
 import { AttrPart } from './AttrPart.js'
 
@@ -16,15 +21,28 @@ export class SparseAttrPart {
   protected getValue(value: unknown): string | null {
     if (value == null) return null
 
+    if (Array.isArray(value)) return value.join('')
+
     return String(value)
   }
 
-  update(value: string | null): Effect.Effect<never, never, void> {
+  update = (input: unknown): Effect.Effect<never, never, string | null> => {
     return Effect.suspend(() => {
-      if (value === this.value) return Effect.unit()
+      const value = this.getValue(input)
 
-      return Effect.tap(this.setAttribute(value), () => Effect.sync(() => (this.value = value)))
+      if (value === this.value) return Effect.succeed(value)
+
+      return Effect.flatMap(this.setAttribute(value), () => Effect.sync(() => (this.value = value)))
     })
+  }
+
+  observe<R, E, R2>(
+    placeholder: Renderable<R, E>,
+    sink: Fx.Sink<R2, E, unknown>,
+  ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
+    return Fx.drain(
+      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, this.update),
+    )
   }
 
   static fromPartNodes(

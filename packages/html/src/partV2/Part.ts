@@ -22,5 +22,5 @@ export type Part =
   | PropertyPart
   | RefPart
   | TextPart
-  | SparseAttrPart
-  | SparseClassNamePart
+
+export type SparsePart = SparseAttrPart | SparseClassNamePart

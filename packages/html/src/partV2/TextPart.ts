@@ -2,11 +2,10 @@ import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
-import { unwrapRenderable } from '../updates.js'
+import { Renderable } from '../Renderable.js'
+import { unwrapRenderable } from '../server/updates.js'
 
 import { BasePart } from './BasePart.js'
-
-import { Placeholder } from '@typed/html/Placeholder.js'
 
 export class TextPart extends BasePart<string> {
   readonly _tag = 'Text' as const
@@ -30,7 +29,7 @@ export class TextPart extends BasePart<string> {
   }
 
   observe<R, E, R2>(
-    placeholder: Placeholder<R, E, unknown>,
+    placeholder: Renderable<R, E>,
     sink: Fx.Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
     return Fx.drain(

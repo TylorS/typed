@@ -1,33 +1,24 @@
 import * as Effect from '@effect/io/Effect'
 import { Sink } from '@typed/fx'
 
-import { handlePart } from '../updates.js'
+import { Renderable } from '../Renderable.js'
+import { handlePart } from '../server/updates.js'
 
 import { BasePart } from './BasePart.js'
 
-import { Placeholder } from '@typed/html/Placeholder.js'
-
-export class PropertyPart extends BasePart<unknown> {
-  readonly _tag = 'Property' as const
+export class BooleanPart extends BasePart<boolean> {
+  readonly _tag = 'Boolean' as const
 
   constructor(
-    protected setProperty: (value: unknown) => Effect.Effect<never, never, void>,
+    protected toggleAttribute: (bool: boolean) => Effect.Effect<never, never, void>,
     index: number,
-    value: unknown = null,
+    value = false,
   ) {
     super(index, value)
   }
 
-  protected getValue(value: unknown): unknown {
-    return value
-  }
-
-  protected setValue(value: unknown) {
-    return this.setProperty(value)
-  }
-
   observe<R, E, R2>(
-    placeholder: Placeholder<R, E, unknown>,
+    placeholder: Renderable<R, E>,
     sink: Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2, never, void> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -47,12 +38,19 @@ export class PropertyPart extends BasePart<unknown> {
     )
   }
 
-  static fromElement(element: Element, name: string, index: number) {
-    const setProperty = (value: unknown) =>
-      Effect.sync(() => {
-        ;(element as any)[name] = value
-      })
+  protected getValue(value: unknown): boolean {
+    return !!value
+  }
 
-    return new PropertyPart(setProperty, index, (element as any)[name])
+  protected setValue(value: boolean): Effect.Effect<never, never, void> {
+    return this.toggleAttribute(value)
+  }
+
+  static fromElement(element: Element, name: string, index: number) {
+    return new BooleanPart(
+      (b) => Effect.sync(() => element.toggleAttribute(name, b)),
+      index,
+      element.hasAttribute(name),
+    )
   }
 }

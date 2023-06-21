@@ -2,10 +2,11 @@ import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import { Sink } from '@typed/fx'
 
+import { Renderable } from '../Renderable.js'
+
 import { BasePart } from './BasePart.js'
 
 import { ElementRef, isElementRef } from '@typed/html/ElementRef.js'
-import { Placeholder } from '@typed/html/Placeholder.js'
 
 export class RefPart extends BasePart<ElementRef<HTMLElement> | null> {
   readonly _tag = 'Ref' as const
@@ -33,7 +34,7 @@ export class RefPart extends BasePart<ElementRef<HTMLElement> | null> {
   }
 
   observe<R, E, R2>(
-    placeholder: Placeholder<R, E, unknown>,
+    placeholder: Renderable<R, E>,
     sink: Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2, never, void> {
     return Effect.catchAllCause(this.update(this.getValue(placeholder)), sink.error)

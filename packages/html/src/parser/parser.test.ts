@@ -1,5 +1,4 @@
 import { deepStrictEqual } from 'assert'
-import { inspect } from 'util'
 
 import { describe, expect, it } from 'vitest'
 

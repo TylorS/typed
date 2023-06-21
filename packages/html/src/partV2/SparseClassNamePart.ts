@@ -1,4 +1,9 @@
 import * as Effect from '@effect/io/Effect'
+import * as Scope from '@effect/io/Scope'
+import * as Fx from '@typed/fx'
+
+import { Renderable } from '../Renderable.js'
+import { unwrapRenderable } from '../server/updates.js'
 
 import { ClassNamePart } from './ClassNamePart.js'
 
@@ -15,16 +20,29 @@ export class SparseClassNamePart {
 
   protected getValue(value: unknown): string | null {
     if (value == null) return ''
+    if (Array.isArray(value)) return value.join(' ')
 
     return String(value)
   }
 
-  update(value: string): Effect.Effect<never, never, void> {
+  update = (input: unknown): Effect.Effect<never, never, void> => {
     return Effect.suspend(() => {
+      const value = this.getValue(input)
       if (value === this.value) return Effect.unit()
 
-      return Effect.tap(this.setClassName(value), () => Effect.sync(() => (this.value = value)))
+      return Effect.flatMap(this.setClassName(value || ''), () =>
+        Effect.sync(() => (this.value = value)),
+      )
     })
+  }
+
+  observe<R, E, R2>(
+    placeholder: Renderable<R, E>,
+    sink: Fx.Sink<R2, E, unknown>,
+  ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
+    return Fx.drain(
+      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, sink.event),
+    )
   }
 
   static fromPartNodes(
@@ -37,7 +55,7 @@ export class SparseClassNamePart {
       return (
         Array.from(values.values())
           .filter((x) => x !== null)
-          .join('') || null
+          .join(' ') || null
       )
     }
 

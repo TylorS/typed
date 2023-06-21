@@ -1,11 +1,10 @@
 import * as Effect from '@effect/io/Effect'
 import { Sink } from '@typed/fx'
 
-import { handlePart } from '../updates.js'
+import { Renderable } from '../Renderable.js'
+import { handlePart } from '../server/updates.js'
 
 import { BasePart } from './BasePart.js'
-
-import { Placeholder } from '@typed/html/Placeholder.js'
 
 export class CommentPart extends BasePart<string | null> {
   readonly _tag = 'Comment' as const
@@ -29,7 +28,7 @@ export class CommentPart extends BasePart<string | null> {
   }
 
   observe<R, E, R2>(
-    placeholder: Placeholder<R, E, unknown>,
+    placeholder: Renderable<R, E>,
     sink: Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2, never, void> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias

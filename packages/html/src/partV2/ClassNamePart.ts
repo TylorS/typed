@@ -1,11 +1,10 @@
 import * as Effect from '@effect/io/Effect'
 import { Sink } from '@typed/fx'
 
-import { handlePart } from '../updates.js'
+import { Renderable } from '../Renderable.js'
+import { handlePart } from '../server/updates.js'
 
 import { BasePart } from './BasePart.js'
-
-import { Placeholder } from '@typed/html/Placeholder.js'
 
 export class ClassNamePart extends BasePart<readonly string[]> {
   readonly _tag = 'ClassName' as const
@@ -61,7 +60,7 @@ export class ClassNamePart extends BasePart<readonly string[]> {
   }
 
   observe<R, E, R2>(
-    placeholder: Placeholder<R, E, unknown>,
+    placeholder: Renderable<R, E>,
     sink: Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2, never, void> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -74,7 +73,7 @@ export class ClassNamePart extends BasePart<readonly string[]> {
         if (fx) {
           yield* _(fx.run(sink))
         } else {
-          yield* _(sink.event(part.value))
+          yield* _(sink.event(part.value?.join(' ') ?? ''))
         }
       }),
       sink.error,

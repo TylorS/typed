@@ -5,10 +5,11 @@ import { Context } from '@typed/context'
 import { addEventListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
+import { Renderable } from '../Renderable.js'
+
 import { BasePart } from './BasePart.js'
 
 import { EventHandler, EventHandlerImplementation } from '@typed/html/EventHandler.js'
-import { Placeholder } from '@typed/html/Placeholder.js'
 
 export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
   readonly _tag = 'Event' as const
@@ -38,7 +39,7 @@ export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
   }
 
   observe<R, E, R2>(
-    placeholder: Placeholder<R, E, unknown>,
+    placeholder: Renderable<R, E>,
     sink: Fx.Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2, never, void> {
     return Effect.catchAllCause(this.update(this.getValue(placeholder)), sink.error)

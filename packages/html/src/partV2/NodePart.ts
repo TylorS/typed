@@ -2,11 +2,10 @@ import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
-import { unwrapRenderable } from '../updates.js'
+import { Renderable } from '../Renderable.js'
+import { unwrapRenderable } from '../server/updates.js'
 
 import { BasePart } from './BasePart.js'
-
-import { Placeholder } from '@typed/html/Placeholder.js'
 
 export class NodePart extends BasePart<unknown> {
   readonly _tag = 'Node'
@@ -16,6 +15,7 @@ export class NodePart extends BasePart<unknown> {
     protected diffChildren: (
       previous: Node[],
       updated: Node[],
+      isText: boolean,
     ) => Effect.Effect<never, never, Node[]>,
     protected setTextNode: (text: string) => Effect.Effect<never, never, Text>,
     protected nodes: Node[] = [],
@@ -38,8 +38,7 @@ export class NodePart extends BasePart<unknown> {
         case 'number':
         case 'boolean': {
           const text = yield* $(that.setTextNode(String(newValue)))
-
-          that.nodes = [text]
+          that.nodes = yield* $(that.diffChildren(that.nodes, [text], true))
 
           break
         }
@@ -47,12 +46,13 @@ export class NodePart extends BasePart<unknown> {
         case 'object':
         case 'undefined': {
           if (!newValue) {
-            that.nodes = yield* $(that.diffChildren(that.nodes, []))
+            that.nodes = yield* $(that.diffChildren(that.nodes, [], false))
           }
           // arrays and nodes have a special treatment
           else if (Array.isArray(newValue)) {
             // arrays can be used to cleanup, if empty
-            if (newValue.length === 0) that.nodes = yield* $(that.diffChildren(that.nodes, []))
+            if (newValue.length === 0)
+              that.nodes = yield* $(that.diffChildren(that.nodes, [], false))
             // or diffed, if these contains nodes or "wires"
             else if (newValue.some((x) => typeof x === 'object'))
               that.nodes = yield* $(
@@ -60,12 +60,13 @@ export class NodePart extends BasePart<unknown> {
                   that.nodes,
                   // We can't diff null values, so we filter them out
                   newValue.filter((x) => x !== null),
+                  false,
                 ),
               )
             // in all other cases the content is stringified as is
             else yield* $(that.setValue(String(newValue)))
           } else {
-            that.nodes = yield* $(that.diffChildren(that.nodes, [newValue as Node]))
+            that.nodes = yield* $(that.diffChildren(that.nodes, [newValue as Node], false))
           }
 
           break
@@ -75,11 +76,11 @@ export class NodePart extends BasePart<unknown> {
   }
 
   observe<R, E, R2>(
-    placeholder: Placeholder<R, E, unknown>,
+    placeholder: Renderable<R, E>,
     sink: Fx.Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
     return Fx.drain(
-      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, this.update),
+      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, sink.event),
     )
   }
 }

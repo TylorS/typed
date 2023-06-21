@@ -253,15 +253,15 @@ function* tokenize(state: TokenState, input: string): Generator<Token> {
         const name = next.match[2]
         const hasEqualsSign = next.match[4]
 
-        let read: AttrChunk
-        if (hasEqualsSign && (read = readAttribute(input, pos)).value) {
+        let read: AttrChunk | null
+        if (hasEqualsSign && (read = readAttribute(input, pos))?.value) {
           pos += read.length
           yield new AttributeToken(name, read.value)
         } else if (hasEqualsSign) {
           yield getAttributeTokenPartial(name, 'start')
           state.currentAttribute = name
           state.context = 'attribute'
-          pos += name.length
+          pos += 1
         } else {
           yield new BooleanAttributeToken(name)
         }

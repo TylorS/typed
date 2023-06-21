@@ -3,7 +3,7 @@ import * as Fiber from '@effect/io/Fiber'
 import * as Scope from '@effect/io/Scope'
 import { Sink } from '@typed/fx'
 
-import { Placeholder } from '@typed/html/Placeholder.js'
+import { Renderable } from '../Renderable.js'
 
 export abstract class BasePart<A> {
   abstract readonly _tag: string
@@ -17,7 +17,7 @@ export abstract class BasePart<A> {
 
   protected abstract setValue(value: A): Effect.Effect<never, never, void>
 
-  update(input: unknown): Effect.Effect<never, never, A> {
+  update = (input: unknown): Effect.Effect<never, never, A> => {
     return Effect.suspend(() => {
       const value = this.getValue(input)
 
@@ -28,7 +28,7 @@ export abstract class BasePart<A> {
   }
 
   abstract observe<R, E, R2>(
-    placeholder: Placeholder<R, E, unknown>,
+    placeholder: Renderable<R, E>,
     sink: Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2 | Scope.Scope, never, void>
 }

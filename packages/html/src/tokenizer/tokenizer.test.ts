@@ -138,6 +138,23 @@ const testCases: TestCase[] = [
     ],
   },
   {
+    name: 'parses single element with multiple attributes interpolated with text at start',
+    template: h`<div class="hello ${'foo'} ${'bar'} world ${'baz'}"></div>`,
+    expected: [
+      new OpeningTagToken('div'),
+      new ClassNameAttributeStartToken(),
+      new TextToken('hello '),
+      new PartToken(0),
+      new TextToken(' '),
+      new PartToken(1),
+      new TextToken(' world '),
+      new PartToken(2),
+      new ClassNameAttributeEndToken(),
+      new OpeningTagEndToken('div', false),
+      new ClosingTagToken('div'),
+    ],
+  },
+  {
     name: 'parses single element with multiple attributes interpolated with text',
     template: h`<div id=${'foo'} class=${'bar'} role=${'button'}>${'baz'}</div>`,
     expected: [

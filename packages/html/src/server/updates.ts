@@ -1,10 +1,8 @@
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
 
-import { Placeholder } from '../Placeholder.js'
 import { Renderable } from '../Renderable.js'
-
-import type { Part } from './part/Part.js'
+import type { Part } from '../partV2/Part.js'
 
 /**
  * Lifts all possible values into an Fx. This is used to handle
@@ -34,7 +32,7 @@ export function unwrapRenderable<R, E>(renderable: Renderable<R, E>): Fx.Fx<R, E
  */
 export function handlePart<R, E>(
   part: Part,
-  renderable: Placeholder<R, E, unknown>,
+  renderable: Renderable<R, E>,
 ): Effect.Effect<R, E, Fx.Fx<R, E, unknown> | void> {
   // TODO: Add back support for directives
   // if (isDirective<R, E>(renderable)) {
