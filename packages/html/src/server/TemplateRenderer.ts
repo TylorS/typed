@@ -17,7 +17,7 @@ import { unwrapRenderable } from './updates.js'
 
 const parser = new Parser()
 
-type ServerTemplateCache = {
+export type ServerTemplateCache = {
   readonly template: Template
   readonly chunks: readonly HtmlChunk[]
 }
@@ -40,7 +40,7 @@ function renderTemplateResult<R, E>(
   renderContext: RenderContext,
   result: TemplateResult,
 ): Fx.Fx<R, E, string> {
-  const { chunks } = getTemplateCache(result.template, renderContext.templateCache)
+  const { chunks } = getServerTemplateCache(result.template, renderContext.templateCache)
 
   if (result.values.length === 0) {
     return Fx.succeed(chunksToHtmlWithoutParts(chunks))
@@ -54,21 +54,32 @@ function renderTemplateResult<R, E>(
         Effect.gen(function* ($) {
           let currentIndex = 0
 
+          // Create our render chunks, which zips together HTML chunks with their
+          // corresponding values
           const renderChunks = htmlChunksToRenderChunks(chunks, result.values, onChunk)
+          // The context we'll use to render parts of our template
           const context = yield* $(Effect.context<R | R2>())
+          // Used to keep track of the current index we're rendering
           const deferred = yield* $(Deferred.make<never, void>())
+          // Used to keep track of the finished HTML for each index
           const indexToHtml = new Map<number, string>()
+          // Used to keep track of the pending HTML for each index with a TemplateResult
           const pendingHtml = new Map<number, string>()
+          // Used to keep track of the fibers that are rendering each chunk
           const fibers = new Map<number, Fiber.Fiber<never, void>>()
+          // Used to keep track of the indexes that correspond to a TemplateResult
           const templateResults = new Set<number>()
+          // Used to determine when the rendering is complete
           const lastIndex = chunks.length - 1
 
           for (let i = 0; i < renderChunks.length; i++) {
             const renderChunk = renderChunks[i]
 
+            // Text chunks are ready to be rendered immediately
             if (renderChunk.type === 'text') {
               yield* $(onChunk(renderChunk.index, renderChunk.value))
             } else if (renderChunk.type === 'part') {
+              // Node parts have more capabilities as they support arrays and TemplateResults
               if (renderChunk.part._tag === 'Node') {
                 fibers.set(
                   renderChunk.index,
@@ -116,6 +127,7 @@ function renderTemplateResult<R, E>(
                     fork,
                   ),
                 )
+                // Other parts are handled consistently
               } else {
                 fibers.set(
                   renderChunk.index,
@@ -129,6 +141,7 @@ function renderTemplateResult<R, E>(
                   ),
                 )
               }
+              // Sparse parts are handled consistently waiting for multiple values
             } else {
               fibers.set(
                 renderChunk.index,
@@ -182,16 +195,21 @@ function renderTemplateResult<R, E>(
             return Effect.provideContext(
               Effect.catchAllCause(
                 Effect.gen(function* ($) {
+                  // TemplateResult's are handled differently as they can be rendered
+                  // incrementally
                   if (templateResults.has(index)) {
                     const currentHtml = pendingHtml.get(index) || ''
                     const html = currentHtml + value
 
+                    // Stream the HTML if we're at the current index
                     if (index === currentIndex) {
                       pendingHtml.delete(index)
                       yield* $(sink.event(html))
+                      // Otherwise store the HTML for later
                     } else {
                       pendingHtml.set(index, html)
                     }
+                    // All others are rendered immediately
                   } else {
                     indexToHtml.set(index, value)
 
@@ -227,7 +245,7 @@ function chunksToHtmlWithoutParts(chunk: readonly HtmlChunk[]): string {
   return html
 }
 
-function getTemplateCache(
+export function getServerTemplateCache(
   templateStrings: TemplateStringsArray,
   templateCache: RenderContext['templateCache'],
 ): ServerTemplateCache {
