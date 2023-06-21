@@ -1,6 +1,6 @@
 // Used to mark where the typed templates are in the html.
-export const TYPED_START = (hash: string) => `<!--typed-start-${hash}-->`
-export const TYPED_END = (hash: string) => `<!--typed-end-${hash}-->`
+export const TYPED_START = `<!--typed-start-->`
+export const TYPED_END = `<!--typed-end-->`
 
 export const TYPED_HASH = (hash: string) => `data-typed="${hash}"`
 

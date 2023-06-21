@@ -1,4 +1,5 @@
 import * as Effect from '@effect/io/Effect'
+import * as Fiber from '@effect/io/Fiber'
 import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
@@ -12,9 +13,12 @@ import { AttrPartNode, TextNode } from '@typed/html/parser/parser'
 export class SparseAttrPart {
   readonly _tag = 'SparseAttr' as const
 
+  // Can be used to track resources for a given Part.
+  public fibers: Set<Fiber.Fiber<never, unknown>> = new Set()
+
   constructor(
     protected setAttribute: (value: string | null) => Effect.Effect<never, never, void>,
-    protected parts: readonly AttrPart[],
+    readonly parts: readonly AttrPart[],
     protected value: string | null = null,
   ) {}
 
@@ -86,6 +90,11 @@ export class SparseAttrPart {
       }
     }
 
-    return new SparseAttrPart(setAttribute, parts)
+    const part = new SparseAttrPart(setAttribute, parts)
+
+    // Each part should share the same fibers
+    parts.forEach((p) => (p.fibers = part.fibers))
+
+    return part
   }
 }

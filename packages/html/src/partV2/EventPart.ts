@@ -51,7 +51,7 @@ export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
     index: number,
     onCause: (error: Cause.Cause<any>) => Effect.Effect<never, never, void>,
     context: Context<any>,
-  ): EventPart | undefined {
+  ): EventPart {
     let fiber: Fiber.Fiber<never, void> | undefined
 
     const add = (handler: EventHandler<any, any, any>) =>

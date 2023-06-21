@@ -4,7 +4,7 @@ import { TemplateCache } from './TemplateCache.js'
 import { TemplateResult } from './TemplateResult.js'
 import { parseTemplate } from './parseTemplate.js'
 
-export function getRenderCache(
+export function getRenderCache<T>(
   where: HTMLElement | DocumentFragment,
   renderCache: WeakMap<HTMLElement | DocumentFragment, RenderCache>,
 ) {

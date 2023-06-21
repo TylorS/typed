@@ -2,6 +2,7 @@ import * as Effect from '@effect/io/Effect'
 import { Sink } from '@typed/fx'
 
 import { Renderable } from '../Renderable.js'
+import { findHoleComment } from '../findHoleComment.js'
 import { handlePart } from '../server/updates.js'
 
 import { BasePart } from './BasePart.js'
@@ -57,5 +58,9 @@ export class CommentPart extends BasePart<string | null> {
       index,
       comment.nodeValue,
     )
+  }
+
+  static fromParentElement(element: Element, index: number) {
+    return CommentPart.fromComment(findHoleComment(element, index), index)
   }
 }

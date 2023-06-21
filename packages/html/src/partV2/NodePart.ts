@@ -3,6 +3,8 @@ import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
 import { Renderable } from '../Renderable.js'
+import { diffChildren } from '../diffChildren.js'
+import { findHoleComment } from '../findHoleComment.js'
 import { unwrapRenderable } from '../server/updates.js'
 
 import { BasePart } from './BasePart.js'
@@ -81,6 +83,24 @@ export class NodePart extends BasePart<unknown> {
   ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
     return Fx.drain(
       Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, sink.event),
+    )
+  }
+
+  static fromParentElemnt(document: Document, parent: Element, index: number) {
+    const comment = findHoleComment(parent, index)
+
+    let text: Text
+
+    return new NodePart(
+      index,
+      (prev, next) => Effect.sync(() => diffChildren(comment, prev, next, document)),
+      (content) =>
+        Effect.sync(() => {
+          if (!text) text = document.createTextNode('')
+          text.textContent = content
+
+          return text
+        }),
     )
   }
 }

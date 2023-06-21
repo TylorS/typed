@@ -399,9 +399,9 @@ function getAttributeTokenPartial(name: string, ctx: 'start' | 'end') {
           : new EventAttributeEndToken(name.substring(2))
   }
 
-  switch (name) {
+  switch (name.toLowerCase()) {
     case 'class':
-    case 'className':
+    case 'classname':
       return ctx === 'start' ? new ClassNameAttributeStartToken() : new ClassNameAttributeEndToken()
     case 'ref':
       return ctx === 'start' ? new RefAttributeStartToken() : new RefAttributeEndToken()

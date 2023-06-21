@@ -9,7 +9,6 @@ import * as Fx from '@typed/fx'
 import * as happyDom from 'happy-dom'
 
 import { RenderContext, makeRenderContext } from './RenderContext.js'
-import { RenderTemplate, renderTemplate } from './RenderTemplate.js'
 import { TemplateResult } from './TemplateResult.js'
 import { hydrate } from './hydrate.js'
 import { makeServerWindow } from './makeServerWindow.js'
@@ -36,9 +35,9 @@ export const testRenderTemplate = <R, E, Y extends Effect.EffectGen<any, any, an
   environment: RenderContext['environment'] = 'browser',
 ) => {
   const window = makeServerWindow({ url: 'https://example.com' })
-  const { context } = RenderTemplate.build({ renderTemplate })
-    .mergeContext(makeDomServices(window, window))
-    .merge(RenderContext.build(makeRenderContext(environment)))
+  const { context } = RenderContext.build(makeRenderContext(environment)).mergeContext(
+    makeDomServices(window, window),
+  )
 
   return pipe(
     template,
@@ -75,15 +74,14 @@ export const testHtmlEvents = <R, E>(
   expected: readonly HtmlEvent[],
   environment: RenderContext['environment'] = 'browser',
 ): Effect.Effect<
-  Exclude<Exclude<R, RenderContext | Scope.Scope | RenderTemplate | DomServices>, Scope.Scope>,
+  Exclude<Exclude<R, RenderContext | Scope.Scope | DomServices>, Scope.Scope>,
   E,
   readonly HtmlEvent[]
 > => {
   const window = makeServerWindow({ url: 'https://example.com' })
   const scope = Effect.runSync(Scope.make())
-  const { context } = RenderTemplate.build({ renderTemplate })
+  const { context } = RenderContext.build(makeRenderContext(environment))
     .mergeContext(makeDomServices(window, window))
-    .merge(RenderContext.build(makeRenderContext(environment)))
     .add(Scope.Scope, scope)
 
   return pipe(
@@ -125,16 +123,11 @@ export function trimHtml(html: string) {
 export const testHtml = <R, E>(
   template: Fx.Fx<R, E, TemplateResult>,
   environment: RenderContext['environment'] = 'browser',
-): Effect.Effect<
-  Exclude<R, RenderContext | Scope.Scope | RenderTemplate | DomServices>,
-  E,
-  string
-> => {
+): Effect.Effect<Exclude<R, RenderContext | Scope.Scope | DomServices>, E, string> => {
   const window = makeServerWindow({ url: 'https://example.com' })
   const scope = Effect.runSync(Scope.make())
-  const { context } = RenderTemplate.build({ renderTemplate })
+  const { context } = RenderContext.build(makeRenderContext(environment))
     .mergeContext(makeDomServices(window, window))
-    .merge(RenderContext.build(makeRenderContext(environment)))
     .add(Scope.Scope, scope)
 
   return Effect.provideSomeContext(Effect.map(renderToHtml(template), trimHtml), context)
@@ -158,9 +151,8 @@ export const testHydrate = <I, R, E, Y extends Effect.EffectGen<any, any, any>, 
 ) => {
   const window = makeServerWindow({ url: 'https://example.com' })
   const scope = Effect.runSync(Scope.make())
-  const { context } = RenderTemplate.build({ renderTemplate })
+  const { context } = RenderContext.build(makeRenderContext(environment))
     .mergeContext(makeDomServices(window, window))
-    .merge(RenderContext.build(makeRenderContext(environment)))
     .add(Scope.Scope, scope)
 
   return Effect.provideSomeContext(

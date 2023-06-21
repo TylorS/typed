@@ -1,3 +1,4 @@
+import { pipe } from '@effect/data/Function'
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
@@ -8,12 +9,15 @@ import { withScopedFork } from '@typed/fx/helpers.js'
 import { RenderContext } from '../RenderContext.js'
 import { Renderable } from '../Renderable.js'
 import { TemplateResult } from '../TemplateResult.js'
-import { TEXT_START, TYPED_HOLE } from '../meta.js'
+import { isTemplateResult } from '../isTemplateResult.js'
+import { TEXT_START, TYPED_END, TYPED_HOLE, TYPED_START } from '../meta.js'
 import { Parser, Template } from '../parser/parser.js'
 
 import { htmlChunksToRenderChunks } from './htmlChunksTorRenderChunks.js'
 import { HtmlChunk, templateToHtmlChunks } from './templateToHtmlChunks.js'
 import { unwrapRenderable } from './updates.js'
+
+// TODO: Add support for directives
 
 const parser = new Parser()
 
@@ -25,8 +29,12 @@ export type ServerTemplateCache = {
 export function renderToHtmlStream<R, E>(
   fx: Fx.Fx<R, E, TemplateResult>,
 ): Fx.Fx<R | RenderContext, E, string> {
-  return RenderContext.withFx((context) =>
-    Fx.switchMap(Fx.take(fx, 1), (result) => renderTemplateResult<R, E>(context, result)),
+  return pipe(
+    RenderContext.withFx((context) =>
+      Fx.switchMap(Fx.take(fx, 1), (result) => renderTemplateResult<R, E>(context, result)),
+    ),
+    Fx.startWith(TYPED_START),
+    Fx.continueWith(() => Fx.succeed(TYPED_END)),
   )
 }
 
@@ -261,13 +269,4 @@ export function getServerTemplateCache(
   templateCache.set(templateStrings, newCache)
 
   return newCache
-}
-
-function isTemplateResult(value: unknown): value is TemplateResult {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    '_tag' in value &&
-    value._tag === 'TemplateResult'
-  )
 }

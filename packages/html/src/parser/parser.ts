@@ -473,7 +473,6 @@ export type Attribute =
   | EventPartNode
   | PropertyPartNode
   | RefPartNode
-  | TextNode
 
 export class AttributeNode {
   readonly type = 'attribute' as const

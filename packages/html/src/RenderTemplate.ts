@@ -1,52 +1,35 @@
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
-import { Tag } from '@typed/context'
 import * as Fx from '@typed/fx'
 
 import type { Placeholder } from './Placeholder.js'
 import { Renderable } from './Renderable.js'
 import { TemplateResult } from './TemplateResult.js'
 
-export interface RenderTemplate {
-  readonly renderTemplate: <const Values extends ReadonlyArray<Renderable<any, any>>>(
-    template: TemplateStringsArray,
-    values: Values,
-    options?: RenderTemplateOptions,
-  ) => Fx.Fx<
-    Placeholder.ResourcesOf<Values[number]>,
-    Placeholder.ErrorsOf<Values[number]>,
-    TemplateResult
-  >
-}
-
-export interface RenderTemplateOptions {
-  readonly isSvg?: boolean
-}
-
-export const RenderTemplate = Tag<RenderTemplate>('RenderTemplate')
-
 export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
 ): Fx.Fx<
-  RenderTemplate | Placeholder.ResourcesOf<Values[number]>,
+  Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
   TemplateResult
 > {
-  return RenderTemplate.withFx(({ renderTemplate }) => renderTemplate(template, values))
+  return renderTemplate(template, values)
 }
 
 export function svg<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
 ): Fx.Fx<
-  RenderTemplate | Placeholder.ResourcesOf<Values[number]>,
+  Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
   TemplateResult
 > {
-  return RenderTemplate.withFx(({ renderTemplate }) =>
-    renderTemplate(template, values, { isSvg: true }),
-  )
+  return renderTemplate(template, values, { isSvg: true })
+}
+
+export interface RenderTemplateOptions {
+  readonly isSvg?: boolean
 }
 
 export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>>>(

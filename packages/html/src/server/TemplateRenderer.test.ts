@@ -6,7 +6,7 @@ import * as Fx from '@typed/fx'
 import { describe, it } from 'vitest'
 
 import { RenderContext, makeRenderContext } from '../RenderContext.js'
-import { RenderTemplate, html, renderTemplate } from '../RenderTemplate.js'
+import { html } from '../RenderTemplate.js'
 import { TemplateResult } from '../TemplateResult.js'
 import { TEXT_START, TYPED_ATTR, TYPED_HOLE } from '../meta.js'
 
@@ -161,16 +161,11 @@ describe(renderToHtmlStream.name, () => {
 })
 
 function provideResources<R, E, A>(effect: Effect.Effect<R, E, A>) {
-  return pipe(
-    effect,
-    RenderContext.provide(makeRenderContext('test')),
-    RenderTemplate.provide({ renderTemplate }),
-    Effect.scoped,
-  )
+  return pipe(effect, RenderContext.provide(makeRenderContext('test')), Effect.scoped)
 }
 
 async function testHtmlChunks(
-  template: Fx.Fx<RenderTemplate, never, TemplateResult>,
+  template: Fx.Fx<never, never, TemplateResult>,
   expected: string[],
 ): Promise<void> {
   const actual = (
@@ -184,7 +179,8 @@ async function testHtmlChunks(
   ).map(flow(stripDataTyped, stripSelfClosingComment))
 
   try {
-    deepStrictEqual(actual, expected)
+    // Remove TYPED_START + TYPED_END from actual
+    deepStrictEqual(actual.slice(1, -1), expected)
   } catch (error) {
     console.log(`Actual:`, JSON.stringify(actual, null, 2))
     console.log(`Expected:`, JSON.stringify(expected, null, 2))
