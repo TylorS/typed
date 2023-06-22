@@ -15,12 +15,15 @@ import { unwrapRenderable } from '../server/updates.js'
 import {
   BrowserCache,
   BrowserEntry,
+  CouldNotFindCommentError,
+  CouldNotFindRootElement,
   findRootParentChildNodes,
   getBrowserCache,
   getHydrateEntry,
   makeEmptyBrowerCache,
 } from './cache.js'
 import { indexRefCounter } from './indexRefCounter.js'
+import { renderTemplateResult } from './render.js'
 
 // TODO: Add support for directives
 
@@ -76,36 +79,46 @@ export function hydrateTemplateResult<R, E>(
   rootIndex: number,
   parentTemplate: Template | null = null,
 ): Effect.Effect<R, E, Rendered | null> {
-  return Effect.gen(function* ($) {
-    let { entry } = cache
+  return Effect.catchAllDefect(
+    Effect.gen(function* ($) {
+      let { entry } = cache
 
-    if (!entry || entry.result.template !== result.template) {
-      // The entry is changing, so we need to cleanup the previous one
-      if (cache.entry) {
-        yield* $(cache.entry.cleanup)
+      if (!entry || entry.result.template !== result.template) {
+        // The entry is changing, so we need to cleanup the previous one
+        if (cache.entry) {
+          yield* $(cache.entry.cleanup)
+        }
+
+        cache.entry = entry = getHydrateEntry(
+          document,
+          renderContext,
+          result,
+          cache,
+          where,
+          rootIndex,
+          parentTemplate,
+        )
       }
 
-      cache.entry = entry = getHydrateEntry(
-        document,
-        renderContext,
-        result,
-        cache,
-        where,
-        rootIndex,
-        parentTemplate,
-      )
-    }
+      const { template } = entry
 
-    const { template } = entry
+      // Render all children before creating the wire
+      if (template.parts.length > 0) {
+        yield* $(hydratePlaceholders<R, E>(document, renderContext, result, cache, entry, where))
+      }
 
-    // Render all children before creating the wire
-    if (template.parts.length > 0) {
-      yield* $(hydratePlaceholders<R, E>(document, renderContext, result, cache, entry, where))
-    }
-
-    // Lazily creates the wire after all childNodes are available
-    return entry.wire()
-  })
+      // Lazily creates the wire after all childNodes are available
+      return entry.wire()
+    }),
+    (defect) => {
+      // If we can't find a comment/rootElement then we need to render the result without hydration
+      if (defect instanceof CouldNotFindCommentError || defect instanceof CouldNotFindRootElement) {
+        return renderTemplateResult(document, renderContext, result, cache)
+      } else {
+        return Effect.die(defect)
+      }
+    },
+  )
 }
 
 function hydratePlaceholders<R, E>(
