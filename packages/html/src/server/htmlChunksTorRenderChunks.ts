@@ -118,13 +118,13 @@ function partNodeToPart(
 
 function sparsePartNodeToPart(
   node: SparsePartNode,
-  onChunk: (value: string) => Effect.Effect<never, never, void>,
+  onChunk: (value: string | null) => Effect.Effect<never, never, void>,
 ) {
   switch (node.type) {
     case 'sparse-attr':
-      return SparseAttrPart.fromPartNodes((s) => onChunk(s || ''), node.nodes)
+      return SparseAttrPart.fromPartNodes((s) => onChunk(s), node.nodes)
     case 'sparse-class-name':
-      return SparseClassNamePart.fromPartNodes((s) => onChunk(s || ''), node.nodes)
+      return SparseClassNamePart.fromPartNodes((s) => onChunk(s), node.nodes)
   }
 }
 

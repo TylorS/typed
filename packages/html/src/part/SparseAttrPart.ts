@@ -6,7 +6,8 @@ import * as Fx from '@typed/fx'
 import { Renderable } from '../Renderable.js'
 
 import { AttrPart } from './AttrPart.js'
-import { unwrapRenderable } from './updates.js'
+import { StaticTextPart } from './StaticTextPart.js'
+import { unwrapSparsePartRenderables } from './updates.js'
 
 import { AttrPartNode, TextNode } from '@typed/html/parser/parser'
 
@@ -18,7 +19,7 @@ export class SparseAttrPart {
 
   constructor(
     protected setAttribute: (value: string | null) => Effect.Effect<never, never, void>,
-    readonly parts: readonly AttrPart[],
+    readonly parts: ReadonlyArray<AttrPart | StaticTextPart>,
     protected value: string | null = null,
   ) {}
 
@@ -41,11 +42,15 @@ export class SparseAttrPart {
   }
 
   observe<R, E, R2>(
-    placeholder: Renderable<R, E>,
+    placeholder: readonly Renderable<R, E>[],
     sink: Fx.Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
     return Fx.drain(
-      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, this.update),
+      Fx.switchMatchCauseEffect(
+        unwrapSparsePartRenderables(placeholder, this),
+        sink.error,
+        (value) => Effect.flatMap(this.update(value), () => sink.event(this.value)),
+      ),
     )
   }
 
@@ -56,11 +61,9 @@ export class SparseAttrPart {
     const values: Map<number, string | null> = new Map()
 
     function getValue() {
-      return (
-        Array.from(values.values())
-          .filter((x) => x !== null)
-          .join('') || null
-      )
+      return (part.value = Array.from({ length: nodes.length }, (_, i) => values.get(i) || '').join(
+        '',
+      ))
     }
 
     function setValue(value: string | null, index: number) {
@@ -71,19 +74,21 @@ export class SparseAttrPart {
       })
     }
 
-    const parts: AttrPart[] = []
+    const parts: Array<StaticTextPart | AttrPart> = []
 
+    let partIndex = 0
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i]
 
       if (node.type === 'text') {
         values.set(i, node.value)
+        parts.push(new StaticTextPart(node.value))
       } else {
         parts.push(
           new AttrPart(
             (value) => setValue(value, i),
             () => setValue(null, i),
-            i,
+            partIndex++,
             null,
           ),
         )

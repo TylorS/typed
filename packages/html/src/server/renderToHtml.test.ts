@@ -5,6 +5,16 @@ import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
 import { describe, it } from 'vitest'
 
+import {
+  attrDirective,
+  booleanDirective,
+  classNameDirective,
+  dataDirective,
+  eventDirective,
+  propertyDirective,
+  refDirective,
+} from '../Directive.js'
+import { EventHandler } from '../EventHandler.js'
 import { RenderContext, makeRenderContext } from '../RenderContext.js'
 import { html } from '../RenderTemplate.js'
 import { TemplateResult } from '../TemplateResult.js'
@@ -45,7 +55,7 @@ describe(renderToHtmlStream.name, () => {
   it('renders a template with sparse attribute parts', async () => {
     await testHtmlChunks(html`<div id="${'foo'} ${'bar'} ${'baz'}"></div>`, [
       '<div data-typed="..."',
-      'id="foo bar baz"',
+      ' id="foo bar baz"',
       `>${TYPED_ATTR(0)}${TYPED_ATTR(1)}${TYPED_ATTR(2)}</div>`,
     ])
   })
@@ -171,6 +181,79 @@ describe(renderToHtmlStream.name, () => {
       `<div data-typed="..."`,
       `>${TYPED_ATTR(0)}</div>`,
     ])
+  })
+
+  it(`renders with attribute directives`, async () => {
+    await testHtmlChunks(html`<div id=${attrDirective((part) => part.update('foo'))}></div>`, [
+      `<div data-typed="..."`,
+      ` id="foo"`,
+      `>${TYPED_ATTR(0)}</div>`,
+    ])
+  })
+
+  it(`rendered with boolean directives`, async () => {
+    // True
+    await testHtmlChunks(
+      html`<div ?hidden=${booleanDirective((part) => part.update(true))}></div>`,
+      [`<div data-typed="..."`, ` hidden`, `>${TYPED_ATTR(0)}</div>`],
+    )
+
+    // False
+    await testHtmlChunks(
+      html`<div ?hidden=${booleanDirective((part) => part.update(false))}></div>`,
+      [`<div data-typed="..."`, `>${TYPED_ATTR(0)}</div>`],
+    )
+  })
+
+  it(`renders with class name directives`, async () => {
+    await testHtmlChunks(
+      html`<div class=${classNameDirective((part) => part.update('foo'))}></div>`,
+      [`<div data-typed="..."`, ` class="foo"`, `>${TYPED_ATTR(0)}</div>`],
+    )
+  })
+
+  it(`renders with data directives`, async () => {
+    await testHtmlChunks(
+      html`<div .data=${dataDirective((part) => part.update({ foo: 'bar' }))}></div>`,
+      [`<div data-typed="..."`, ` data-foo="bar"`, `>${TYPED_ATTR(0)}</div>`],
+    )
+  })
+
+  it(`renders with event directives`, async () => {
+    await testHtmlChunks(
+      html`<div
+        @click=${eventDirective((part) => part.update(EventHandler(() => Effect.unit())))}
+      ></div>`,
+      [`<div data-typed="...">${TYPED_ATTR(0)}</div>`],
+    )
+  })
+
+  it(`renders with property directives`, async () => {
+    await testHtmlChunks(
+      html`<input .value=${propertyDirective((part) => part.update('foo'))} />`,
+      [`<input data-typed="..."`, ` value="foo"`, `/>${TYPED_ATTR(0)}`],
+    )
+  })
+
+  it(`renders with ref directives`, async () => {
+    await testHtmlChunks(html`<input ref=${refDirective((part) => part.update(null))} />`, [
+      `<input data-typed="..."/>${TYPED_ATTR(0)}`,
+    ])
+  })
+
+  it(`renders with sparse attribute directives`, async () => {
+    await testHtmlChunks(
+      html`<div
+        id="${attrDirective((part) => part.update('foo'))} ${attrDirective((part) =>
+          part.update('bar'),
+        )} ${attrDirective((part) => part.update('baz'))}"
+      ></div>`,
+      [
+        `<div data-typed="..."`,
+        ` id="foo bar baz"`,
+        `>${TYPED_ATTR(0)}${TYPED_ATTR(1)}${TYPED_ATTR(2)}</div>`,
+      ],
+    )
   })
 })
 

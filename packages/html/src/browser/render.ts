@@ -144,9 +144,9 @@ function renderPlaceholders<R, E>(
                   ),
                 )
               } else if (part._tag === 'SparseClassName' || part._tag === 'SparseAttr') {
-                const renderables = part.parts.map((p) => values[p.index])
-
-                // TODO: Need to support diffing these values
+                const renderables = part.parts.map((p) =>
+                  p._tag === 'StaticText' ? p.text : values[p.index],
+                )
 
                 part.fibers.add(
                   yield* $(

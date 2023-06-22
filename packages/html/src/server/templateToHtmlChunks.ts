@@ -37,7 +37,7 @@ export class SparsePartChunk {
 
   constructor(
     readonly node: SparseAttrNode | SparseClassNameNode,
-    readonly render: (value: string) => string,
+    readonly render: (value: readonly string[] | string | null | undefined) => string,
   ) {}
 }
 
@@ -199,7 +199,7 @@ function attributeToHtmlChunk(attr: Attribute): HtmlChunk {
       return new SparsePartChunk(attr, (values) => {
         return values == null
           ? ``
-          : `${attr.name}="${Array.isArray(values) ? values.join('') : values}"`
+          : ` ${attr.name}="${Array.isArray(values) ? values.join('') : values}"`
       })
     }
     case 'sparse-class-name':

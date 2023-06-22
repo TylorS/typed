@@ -6,6 +6,7 @@ import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 import { withScopedFork } from '@typed/fx/helpers.js'
 
+import { isDirective } from '../Directive.js'
 import { RenderContext } from '../RenderContext.js'
 import { Renderable } from '../Renderable.js'
 import { TemplateResult } from '../TemplateResult.js'
@@ -136,17 +137,26 @@ function renderTemplateResult<R, E>(
                 )
                 // Other parts are handled consistently
               } else {
-                fibers.set(
-                  renderChunk.index,
+                if (isDirective<R, E>(renderChunk.renderable)) {
                   yield* $(
-                    renderChunk.part.observe<R, E, R2>(
-                      unwrapRenderable(renderChunk.renderable) as Renderable<R, E>,
-                      Fx.Sink((value) => onChunk(renderChunk.index, value as string), sink.error),
+                    renderChunk.renderable.f(renderChunk.part),
+                    Effect.matchCauseEffect(sink.error, () =>
+                      onChunk(renderChunk.index, renderChunk.chunk.render(renderChunk.part.value)),
                     ),
-                    Effect.catchAllCause(sink.error),
-                    fork,
-                  ),
-                )
+                  )
+                } else {
+                  fibers.set(
+                    renderChunk.index,
+                    yield* $(
+                      renderChunk.part.observe<R, E, R2>(
+                        unwrapRenderable(renderChunk.renderable) as Renderable<R, E>,
+                        Fx.Sink((value) => onChunk(renderChunk.index, value as string), sink.error),
+                      ),
+                      Effect.catchAllCause(sink.error),
+                      fork,
+                    ),
+                  )
+                }
               }
               // Sparse parts are handled consistently waiting for multiple values
             } else {

@@ -7,6 +7,7 @@ import { GlobalThis, makeDomServices } from '@typed/dom'
 import * as Fx from '@typed/fx'
 import { describe, it } from 'vitest'
 
+import { attrDirective } from '../Directive.js'
 import { RenderContext, makeRenderContext } from '../RenderContext.js'
 import { html } from '../RenderTemplate.js'
 import { Rendered } from '../Rendered.js'
@@ -80,6 +81,38 @@ describe(render.name, () => {
         ok(rendered instanceof globalThis.HTMLDivElement)
         deepStrictEqual(rendered.outerHTML, `<div><span></span>${TYPED_HOLE(0)}</div>`)
       }),
+    )
+
+    await Effect.runPromise(test)
+  })
+
+  it('renders sparse attributes ', async () => {
+    const test = testRendered(html`<div id="${'foo'} ${'bar'} ${'baz'}"></div>`, (rendered) =>
+      Effect.gen(function* ($) {
+        const globalThis = yield* $(GlobalThis)
+
+        ok(rendered instanceof globalThis.HTMLDivElement)
+        deepStrictEqual(rendered.outerHTML, '<div id="foo bar baz"></div>')
+      }),
+    )
+
+    await Effect.runPromise(test)
+  })
+
+  it('renders sparse attributes with directives', async () => {
+    const test = testRendered(
+      html`<div
+        id="${attrDirective((part) => part.update('foo'))} ${attrDirective((part) =>
+          part.update('bar'),
+        )}"
+      ></div>`,
+      (rendered) =>
+        Effect.gen(function* ($) {
+          const globalThis = yield* $(GlobalThis)
+
+          ok(rendered instanceof globalThis.HTMLDivElement)
+          deepStrictEqual(rendered.outerHTML, '<div id="foo bar"></div>')
+        }),
     )
 
     await Effect.runPromise(test)

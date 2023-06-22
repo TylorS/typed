@@ -181,12 +181,6 @@ export class Parser {
     return this.addPart(new SparseAttrNode(name, nodes))
   }
 
-  protected AttrNode(name: string): AttrPartNode {
-    const token = this.findTokenOfType('part-token')
-
-    return this.addPart(new AttrPartNode(name, token.index))
-  }
-
   protected BooleanNode(name: string): BooleanPartNode {
     // We know that the next token MUST be a part-token
     const part = this.predictNextToken('part-token')

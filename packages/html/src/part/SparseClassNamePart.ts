@@ -6,7 +6,8 @@ import * as Fx from '@typed/fx'
 import { Renderable } from '../Renderable.js'
 
 import { ClassNamePart } from './ClassNamePart.js'
-import { unwrapRenderable } from './updates.js'
+import { StaticTextPart } from './StaticTextPart.js'
+import { unwrapSparsePartRenderables } from './updates.js'
 
 import { ClassNamePartNode, TextNode } from '@typed/html/parser/parser'
 
@@ -18,7 +19,7 @@ export class SparseClassNamePart {
 
   constructor(
     protected setClassName: (value: string) => Effect.Effect<never, never, void>,
-    readonly parts: readonly ClassNamePart[],
+    readonly parts: ReadonlyArray<StaticTextPart | ClassNamePart>,
     protected value: string | null = null,
   ) {}
 
@@ -41,11 +42,15 @@ export class SparseClassNamePart {
   }
 
   observe<R, E, R2>(
-    placeholder: Renderable<R, E>,
+    placeholder: readonly Renderable<R, E>[],
     sink: Fx.Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
     return Fx.drain(
-      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, sink.event),
+      Fx.switchMatchCauseEffect(
+        unwrapSparsePartRenderables(placeholder, this),
+        sink.error,
+        (value) => Effect.flatMap(this.update(value), sink.event),
+      ),
     )
   }
 
@@ -73,15 +78,17 @@ export class SparseClassNamePart {
       })
     }
 
-    const parts: ClassNamePart[] = []
+    const parts: Array<StaticTextPart | ClassNamePart> = []
 
+    let partIndex = 0
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i]
 
       if (node.type === 'text') {
         values.set(i, node.value)
+        parts.push(new StaticTextPart(node.value))
       } else {
-        parts.push(new ClassNamePart((value) => setValue(value, i), i, []))
+        parts.push(new ClassNamePart((value) => setValue(value, i), partIndex++, []))
       }
     }
 

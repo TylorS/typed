@@ -4,7 +4,7 @@ import * as Fx from '@typed/fx'
 import { isDirective } from '../Directive.js'
 import { Renderable } from '../Renderable.js'
 
-import type { Part } from './Part.js'
+import type { Part, SparsePart } from './Part.js'
 
 /**
  * Lifts all possible values into an Fx. This is used to handle
@@ -24,6 +24,30 @@ export function unwrapRenderable<R, E>(renderable: Renderable<R, E>): Fx.Fx<R, E
   }
 
   return Fx.succeed(renderable)
+}
+
+export function unwrapSparsePartRenderables<R, E>(
+  renderables: readonly Renderable<R, E>[],
+  part: SparsePart,
+): Fx.Fx<R, E, unknown> {
+  return Fx.combineAll(
+    ...renderables.map((renderable, i) => {
+      const p = part.parts[i]
+
+      if (p._tag === 'StaticText') {
+        return Fx.succeed(p.text)
+      }
+
+      if (isDirective<R, E>(renderable)) {
+        return Fx.fromEffect(Effect.map(renderable.f(p), () => p.value))
+      }
+
+      return Fx.flatMapEffect(
+        unwrapRenderable(renderable),
+        (u) => p.update(u) as Effect.Effect<R, E, unknown>,
+      )
+    }),
+  )
 }
 
 /**
