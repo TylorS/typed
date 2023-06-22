@@ -6,6 +6,7 @@ import { Renderable } from '../Renderable.js'
 import { diffChildren } from '../diffChildren.js'
 import { findHoleComment } from '../findHoleComment.js'
 import { unwrapRenderable } from '../server/updates.js'
+import { isCommentWithValue } from '../utils.js'
 
 import { BasePart } from './BasePart.js'
 
@@ -88,6 +89,7 @@ export class NodePart extends BasePart<unknown> {
 
   static fromParentElemnt(document: Document, parent: Element, index: number) {
     const comment = findHoleComment(parent, index)
+    const previousNodes = findPreviousNodes(comment, index)
 
     let text: Text
 
@@ -96,11 +98,14 @@ export class NodePart extends BasePart<unknown> {
       (prev, next) => Effect.sync(() => diffChildren(comment, prev, next, document)),
       (content) =>
         Effect.sync(() => {
-          if (!text) text = document.createTextNode('')
+          if (!text) {
+            text = getPreviousTextSibling(comment.previousSibling) || document.createTextNode('')
+          }
           text.textContent = content
 
           return text
         }),
+      previousNodes,
     )
   }
 }
@@ -119,4 +124,18 @@ export function notIsEmptyTextNode(node: Node) {
   }
 
   return true
+}
+
+export function findPreviousNodes(comment: Comment, index: number) {
+  const previousIndex = `hole${index - 1}`
+
+  const nodes: Node[] = []
+
+  let node = comment.previousSibling
+  while (node && !isCommentWithValue(node, previousIndex)) {
+    nodes.push(node)
+    node = node.previousSibling
+  }
+
+  return nodes
 }

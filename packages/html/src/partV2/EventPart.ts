@@ -9,7 +9,7 @@ import { Renderable } from '../Renderable.js'
 
 import { BasePart } from './BasePart.js'
 
-import { EventHandler, EventHandlerImplementation } from '@typed/html/EventHandler.js'
+import { EventHandler } from '@typed/html/EventHandler.js'
 
 export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
   readonly _tag = 'Event' as const
@@ -29,7 +29,7 @@ export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
   protected getValue(value: unknown): EventHandler<any, any, any> | null {
     if (value == null) return null
     if (Effect.isEffect(value)) return EventHandler(() => value)
-    if (value instanceof EventHandlerImplementation) return value
+    if (isEventHandler(value)) return value
 
     return null
   }
@@ -42,7 +42,7 @@ export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
     placeholder: Renderable<R, E>,
     sink: Fx.Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2, never, void> {
-    return Effect.catchAllCause(this.update(this.getValue(placeholder)), sink.error)
+    return Effect.matchCauseEffect(this.update(placeholder), sink.error, sink.event)
   }
 
   static fromHTMLElement(
@@ -83,4 +83,8 @@ export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
 
     return part
   }
+}
+
+function isEventHandler(value: unknown): value is EventHandler<any, any, any> {
+  return !!value && typeof value === 'object' && 'handler' in value && 'options' in value
 }

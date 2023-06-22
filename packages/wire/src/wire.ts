@@ -23,14 +23,14 @@ const remove = ({ firstChild, lastChild }: Node, document: Document): Node => {
 
 export const diffable =
   (document: Document) =>
-  (node: Node, operation: number): Node | null => {
+  (node: Node, operation: number): Node => {
     if (node.nodeType !== nodeType) return node
 
     if (1 / operation < 0) {
-      return operation ? remove(node, document) : node.lastChild
+      return operation ? remove(node, document) : (node.lastChild as Node)
     }
 
-    return operation ? (node.valueOf() as Node) : node.firstChild
+    return operation ? (node.valueOf() as Node) : (node.firstChild as Node)
   }
 
 export const persistent = (fragment: DocumentFragment): DocumentFragment | Node | Wire => {

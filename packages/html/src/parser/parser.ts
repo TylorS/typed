@@ -384,7 +384,7 @@ export class Parser {
   }
 
   protected addPart<A extends PartNode | SparsePartNode>(part: A): A {
-    this._parts.push([part, this._stack.slice()])
+    this._parts.push([part, this._stack.slice(0)])
 
     return part
   }

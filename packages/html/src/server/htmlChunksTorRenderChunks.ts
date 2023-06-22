@@ -102,7 +102,6 @@ function partNodeToPart(
     case 'event':
       return new EventPart(onChunk, onChunk(null), node.name, node.index)
     case 'node':
-      // TODO: Figure out how to handle node elements
       return new NodePart(
         node.index,
         (_, nodes, isText) => Effect.as(onChunk(isText ? nodes[0] : nodes), nodes),

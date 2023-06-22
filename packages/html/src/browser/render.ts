@@ -1,58 +1,23 @@
-import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
-import * as Fiber from '@effect/io/Fiber'
 import { Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
-import { persistent } from '@typed/wire'
 
 import { RenderContext } from '../RenderContext.js'
 import { TemplateResult } from '../TemplateResult.js'
 import { isTemplateResult } from '../isTemplateResult.js'
-import { Parser, Template } from '../parser/parser.js'
-import { AttrPart } from '../partV2/AttrPart.js'
-import { BooleanPart } from '../partV2/BooleanPart.js'
-import { ClassNamePart } from '../partV2/ClassNamePart.js'
-import { CommentPart } from '../partV2/CommentPart.js'
-import { DataPart } from '../partV2/DataPart.js'
-import { EventPart } from '../partV2/EventPart.js'
 import { NodePart } from '../partV2/NodePart.js'
 import { Part, SparsePart } from '../partV2/Part.js'
-import { PropertyPart } from '../partV2/PropertyPart.js'
-import { RefPart } from '../partV2/RefPart.js'
-import { SparseAttrPart } from '../partV2/SparseAttrPart.js'
-import { SparseClassNamePart } from '../partV2/SparseClassNamePart.js'
-import { TextPart } from '../partV2/TextPart.js'
-import { findPath } from '../paths.js'
 import { Rendered } from '../render.js'
 import { unwrapRenderable } from '../server/updates.js'
 
-import { buildTemplate } from './buildTemplate.js'
+import {
+  BrowserCache,
+  BrowserEntry,
+  getBrowserCache,
+  getRenderEntry,
+  makeEmptyBrowerCache,
+} from './cache.js'
 import { indexRefCounter } from './indexRefCounter.js'
-
-// TODO: Add support for directives
-
-export type BrowserCache = {
-  readonly stack: Array<BrowserCache | null>
-
-  wire: Rendered | null
-  entry: BrowserEntry | null
-}
-
-export type BrowserTemplateCache = {
-  readonly template: Template
-  readonly content: DocumentFragment
-}
-
-export type BrowserEntry = {
-  readonly result: TemplateResult
-  readonly template: Template
-  readonly cleanup: Effect.Effect<never, never, void>
-  readonly parts: ReadonlyArray<Part | SparsePart>
-  values: ReadonlyArray<unknown>
-  readonly wire: () => Rendered | null
-}
-
-const parser = new Parser()
 
 export function render<R, E>(
   what: Fx.Fx<R, E, TemplateResult>,
@@ -181,6 +146,8 @@ function renderPlaceholders<R, E>(
               } else if (part._tag === 'SparseClassName' || part._tag === 'SparseAttr') {
                 const renderables = part.parts.map((p) => values[p.index])
 
+                // TODO: Need to support diffing these values
+
                 part.fibers.add(
                   yield* $(
                     part.observe(
@@ -220,145 +187,4 @@ function renderPlaceholders<R, E>(
     ),
     result.context,
   )
-}
-
-const makeEmptyBrowerCache = (): BrowserCache => ({
-  entry: null,
-  stack: [],
-  wire: null,
-})
-
-export function getBrowserCache(
-  renderCache: RenderContext['renderCache'],
-  where: HTMLElement,
-): BrowserCache {
-  const cache = renderCache.get(where)
-
-  if (cache) return cache as BrowserCache
-
-  const newCache: BrowserCache = {
-    entry: null,
-    stack: [],
-    wire: null,
-  }
-
-  renderCache.set(where, newCache)
-
-  return newCache
-}
-
-function getRenderEntry(
-  document: Document,
-  renderContext: RenderContext,
-  result: TemplateResult,
-  browserCache: BrowserCache,
-): BrowserEntry {
-  const { deferred } = result
-  const { template, content } = getBrowserTemplateCache(
-    document,
-    result,
-    renderContext.templateCache,
-  )
-
-  const parts = template.parts.map(([part, path]): Part | SparsePart => {
-    const node = findPath(content, path) as HTMLElement
-
-    switch (part.type) {
-      case 'attr':
-        return AttrPart.fromElement(node, part.name, part.index)
-      case 'boolean-part':
-        return BooleanPart.fromElement(node, part.name, part.index)
-      case 'className-part':
-        return ClassNamePart.fromElement(node, part.index)
-      case 'comment-part':
-        return CommentPart.fromParentElement(node, part.index)
-      case 'data':
-        return DataPart.fromHTMLElement(node, part.index)
-      case 'event':
-        return EventPart.fromHTMLElement(
-          node,
-          part.name,
-          part.index,
-          (cause) => Effect.provideContext(result.sink.error(cause), result.context),
-          result.context,
-        )
-      case 'node':
-        return NodePart.fromParentElemnt(document, node, part.index)
-      case 'property':
-        return PropertyPart.fromElement(node, part.name, part.index)
-      case 'ref':
-        return RefPart.fromElement(node, part.index)
-      case 'sparse-attr':
-        return SparseAttrPart.fromPartNodes(
-          (value) =>
-            Effect.sync(() =>
-              value ? node.setAttribute(part.name, value) : node.removeAttribute(part.name),
-            ),
-          part.nodes,
-        )
-      case 'sparse-class-name':
-        return SparseClassNamePart.fromPartNodes(
-          (value) => Effect.sync(() => (node.className = value ?? '')),
-          part.nodes,
-        )
-      case 'text-part':
-        return TextPart.fromElement(node, part.index)
-    }
-  })
-
-  const cleanup = Effect.forkDaemon(
-    Effect.allPar(
-      Effect.suspend(() => Fiber.interruptAll(parts.flatMap((p) => Array.from(p.fibers)))),
-      Deferred.succeed(deferred, undefined),
-      Effect.suspend(() =>
-        Effect.allPar(
-          browserCache.stack.map((cache, i) =>
-            cache && cache.entry
-              ? Effect.map(cache.entry.cleanup, () => (browserCache.stack[i] = null))
-              : Effect.unit(),
-          ),
-        ),
-      ),
-    ),
-  )
-
-  let wire: Rendered | null = null
-
-  const entry: BrowserEntry = {
-    result,
-    template,
-    cleanup,
-    parts,
-    values: [],
-    wire: () => wire || (wire = persistent(content)),
-  }
-
-  return entry
-}
-
-function getBrowserTemplateCache(
-  document: Document,
-  result: TemplateResult,
-  templateCache: RenderContext['templateCache'],
-): BrowserTemplateCache {
-  const current = templateCache.get(result.template)
-
-  if (current) {
-    return {
-      template: (current as BrowserTemplateCache).template,
-      content: (current as BrowserTemplateCache).content.cloneNode(true) as DocumentFragment,
-    }
-  }
-
-  const template = parser.parse(result.template)
-  const content = buildTemplate(document, template)
-
-  const newCache: BrowserTemplateCache = {
-    template,
-    content,
-  }
-
-  templateCache.set(result.template, newCache)
-
-  return newCache
 }

@@ -13,8 +13,10 @@ export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
   TemplateResult
-> {
-  return renderTemplate(template, values)
+> & {
+  readonly template: TemplateStringsArray
+} {
+  return Object.assign(renderTemplate(template, values), { template })
 }
 
 export function svg<const Values extends ReadonlyArray<Renderable<any, any>>>(
