@@ -10,7 +10,7 @@ import { html } from '../RenderTemplate.js'
 import { TemplateResult } from '../TemplateResult.js'
 import { TEXT_START, TYPED_ATTR, TYPED_HOLE } from '../meta.js'
 
-import { renderToHtmlStream } from './TemplateRenderer.js'
+import { renderToHtmlStream } from './renderToHtml.js'
 
 describe(renderToHtmlStream.name, () => {
   it('renders a simple template', async () => {
@@ -157,6 +157,20 @@ describe(renderToHtmlStream.name, () => {
       </script>`,
       [`<script data-typed="...">\n        console.log('hello, world!')\n      </script>`],
     )
+  })
+
+  it('remove attributes with undefined values', async () => {
+    await testHtmlChunks(html`<div class=${undefined}></div>`, [
+      `<div data-typed="..."`,
+      `>${TYPED_ATTR(0)}</div>`,
+    ])
+  })
+
+  it('remove attributes with null values', async () => {
+    await testHtmlChunks(html`<div class=${null}></div>`, [
+      `<div data-typed="..."`,
+      `>${TYPED_ATTR(0)}</div>`,
+    ])
   })
 })
 

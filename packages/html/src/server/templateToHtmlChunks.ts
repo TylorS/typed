@@ -176,31 +176,35 @@ function attributeToHtmlChunk(attr: Attribute): HtmlChunk {
     case 'attribute':
       return new TextChunk(` ${attr.name}="${attr.value}"`)
     case 'attr':
-      return new PartChunk(attr, (value) => ` ${attr.name}="${value}"`)
+      return new PartChunk(attr, (value) => (value == null ? `` : ` ${attr.name}="${value}"`))
     case 'boolean':
       return new TextChunk(' ' + attr.name)
     case 'boolean-part':
       return new PartChunk(attr, (value) => (value ? ` ${attr.name}` : ''))
     case 'className-part':
-      return new PartChunk(attr, (value) => ` class="${value}"`)
+      return new PartChunk(attr, (value) => (value ? ` class="${value}"` : ''))
     case 'data':
       return new PartChunk(attr, (value) =>
-        datasetToString(value as Readonly<Record<string, string>>),
+        value == null ? `` : datasetToString(value as Readonly<Record<string, string>>),
       )
     // Event and ref attributes are not rendered into HTML
     case 'event':
     case 'ref':
       return new TextChunk('')
     case 'property':
-      return new PartChunk(attr, (value) => ` ${attr.name}="${escape(value)}"`)
+      return new PartChunk(attr, (value) =>
+        value == null ? `` : ` ${attr.name}="${escape(value)}"`,
+      )
     case 'sparse-attr': {
       return new SparsePartChunk(attr, (values) => {
-        return `${attr.name}="${Array.isArray(values) ? values.join('') : values}"`
+        return values == null
+          ? ``
+          : `${attr.name}="${Array.isArray(values) ? values.join('') : values}"`
       })
     }
     case 'sparse-class-name':
       return new SparsePartChunk(attr, (values) => {
-        return ` class="${Array.isArray(values) ? values.join(' ') : values}"`
+        return values == null ? `` : ` class="${Array.isArray(values) ? values.join(' ') : values}"`
       })
     case 'text':
       return new TextChunk(attr.value)

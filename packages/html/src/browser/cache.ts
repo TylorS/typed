@@ -5,30 +5,28 @@ import * as Fiber from '@effect/io/Fiber'
 import { Context } from '@typed/context'
 import { persistent } from '@typed/wire'
 
-import { getPreviousNodes } from '../Entry.js'
 import { RenderContext } from '../RenderContext.js'
+import { Rendered } from '../Rendered.js'
 import { TemplateResult } from '../TemplateResult.js'
-import { Parser, PartNode, SparsePartNode, Template } from '../parser/parser.js'
-import { AttrPart } from '../partV2/AttrPart.js'
-import { BooleanPart } from '../partV2/BooleanPart.js'
-import { ClassNamePart } from '../partV2/ClassNamePart.js'
-import { CommentPart } from '../partV2/CommentPart.js'
-import { DataPart } from '../partV2/DataPart.js'
-import { EventPart } from '../partV2/EventPart.js'
-import { NodePart } from '../partV2/NodePart.js'
-import { Part, SparsePart } from '../partV2/Part.js'
-import { PropertyPart } from '../partV2/PropertyPart.js'
-import { RefPart } from '../partV2/RefPart.js'
-import { SparseAttrPart } from '../partV2/SparseAttrPart.js'
-import { SparseClassNamePart } from '../partV2/SparseClassNamePart.js'
-import { TextPart } from '../partV2/TextPart.js'
+import { globalParser } from '../parser/global.js'
+import { PartNode, SparsePartNode, Template } from '../parser/parser.js'
+import { AttrPart } from '../part/AttrPart.js'
+import { BooleanPart } from '../part/BooleanPart.js'
+import { ClassNamePart } from '../part/ClassNamePart.js'
+import { CommentPart } from '../part/CommentPart.js'
+import { DataPart } from '../part/DataPart.js'
+import { EventPart } from '../part/EventPart.js'
+import { NodePart } from '../part/NodePart.js'
+import { Part, SparsePart } from '../part/Part.js'
+import { PropertyPart } from '../part/PropertyPart.js'
+import { RefPart } from '../part/RefPart.js'
+import { SparseAttrPart } from '../part/SparseAttrPart.js'
+import { SparseClassNamePart } from '../part/SparseClassNamePart.js'
+import { TextPart } from '../part/TextPart.js'
 import { ParentChildNodes, findPath } from '../paths.js'
-import { Rendered } from '../render.js'
-import { isComment, isCommentWithValue, isHtmlElement } from '../utils.js'
+import { getPreviousNodes, isComment, isCommentWithValue, isHtmlElement } from '../utils.js'
 
 import { buildTemplate } from './buildTemplate.js'
-
-const parser = new Parser()
 
 export type BrowserCache = {
   readonly stack: Array<BrowserCache | null>
@@ -42,24 +40,7 @@ export type BrowserTemplateCache = {
   readonly content: DocumentFragment
 }
 
-export type BrowserEntry = RenderEntry | HydrateEntry
-
-export type RenderEntry = {
-  readonly _tag: 'Render'
-
-  readonly result: TemplateResult
-  readonly template: Template
-  readonly cleanup: Effect.Effect<never, never, void>
-  readonly parts: ReadonlyArray<Part | SparsePart>
-  readonly wire: () => Rendered | null
-
-  // Used to determine if a value in a template has changed
-  values: ReadonlyArray<unknown>
-}
-
-export type HydrateEntry = {
-  readonly _tag: 'Hydrate'
-
+export type BrowserEntry = {
   readonly result: TemplateResult
   readonly template: Template
   readonly cleanup: Effect.Effect<never, never, void>
@@ -133,7 +114,6 @@ export function getRenderEntry(
   let wire: Rendered | null = null
 
   const entry: BrowserEntry = {
-    _tag: 'Render',
     result,
     template,
     cleanup,
@@ -159,7 +139,7 @@ export function getBrowserTemplateCache(
     }
   }
 
-  const template = parser.parse(result.template)
+  const template = globalParser.parse(result.template)
   const content = buildTemplate(document, template)
 
   const newCache: BrowserTemplateCache = {
@@ -287,7 +267,6 @@ export function getHydrateEntry(
   })()
 
   const entry: BrowserEntry = {
-    _tag: 'Hydrate',
     result,
     template,
     cleanup,

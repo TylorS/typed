@@ -2,10 +2,10 @@ import * as Effect from '@effect/io/Effect'
 import { Sink } from '@typed/fx'
 
 import { Renderable } from '../Renderable.js'
-import { findHoleComment } from '../findHoleComment.js'
-import { handlePart } from '../server/updates.js'
+import { findHoleComment } from '../utils.js'
 
 import { BasePart } from './BasePart.js'
+import { handlePart } from './updates.js'
 
 export class CommentPart extends BasePart<string | null> {
   readonly _tag = 'Comment' as const

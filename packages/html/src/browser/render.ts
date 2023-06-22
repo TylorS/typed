@@ -3,12 +3,12 @@ import { Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
 import { RenderContext } from '../RenderContext.js'
+import { Rendered } from '../Rendered.js'
 import { TemplateResult } from '../TemplateResult.js'
-import { isTemplateResult } from '../isTemplateResult.js'
-import { NodePart } from '../partV2/NodePart.js'
-import { Part, SparsePart } from '../partV2/Part.js'
-import { Rendered } from '../render.js'
-import { unwrapRenderable } from '../server/updates.js'
+import { NodePart } from '../part/NodePart.js'
+import { Part, SparsePart } from '../part/Part.js'
+import { unwrapRenderable } from '../part/updates.js'
+import { isTemplateResult } from '../utils.js'
 
 import {
   BrowserCache,

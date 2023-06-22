@@ -1,11 +1,10 @@
 import * as Effect from '@effect/io/Effect'
-import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
-import { isDirective } from './Directive.js'
-import { Renderable } from './Renderable.js'
-import { BasePart } from './part/BasePart.js'
-import { Part } from './part/Part.js'
+import { isDirective } from '../Directive.js'
+import { Renderable } from '../Renderable.js'
+
+import type { Part } from './Part.js'
 
 /**
  * Lifts all possible values into an Fx. This is used to handle
@@ -32,35 +31,25 @@ export function unwrapRenderable<R, E>(renderable: Renderable<R, E>): Fx.Fx<R, E
  * in attribute and text "holes" in the template.
  */
 export function handlePart<R, E>(
-  part: BasePart<R, E>,
+  part: Part,
   renderable: Renderable<R, E>,
-): Effect.Effect<R | Scope.Scope, E, Fx.Fx<R, E, unknown> | void> {
+): Effect.Effect<R, E, Fx.Fx<R, E, unknown> | void> {
   if (isDirective<R, E>(renderable)) {
-    return Effect.asUnit(renderable.f(part as any as Part))
+    return Effect.asUnit(renderable.f(part))
   }
 
   // Listen to Fx values
   if (Fx.isFx<R, E, unknown>(renderable)) {
-    return Effect.succeed(Fx.switchMapEffect(renderable, part.update))
+    return Effect.succeed(Fx.switchMapEffect(renderable, part.update as any))
   }
 
   // Sample effects
   if (Effect.isEffect(renderable)) {
     return Effect.asUnit(
-      Effect.flatMap(renderable as any as Effect.Effect<R, E, unknown>, part.update),
+      Effect.flatMap(renderable as any as Effect.Effect<R, E, unknown>, part.update as any),
     )
   }
 
   // Unchanging values
-  return Effect.asUnit(part.update(renderable))
-}
-
-export function handleEffectPart<R, E>(part: Part, renderable: Renderable<R, E>) {
-  if (isDirective<R, E>(renderable)) {
-    return Effect.asUnit(renderable.f(part))
-  }
-
-  // Events can only be null/undefined, EventHandler, or an Effect,
-  // so we don't need to use handlePart here
-  return Effect.asUnit(part.update(renderable) || Effect.unit())
+  return Effect.asUnit((part as any).update(renderable))
 }

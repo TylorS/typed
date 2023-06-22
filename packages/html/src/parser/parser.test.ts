@@ -2,7 +2,7 @@ import { deepStrictEqual } from 'assert'
 
 import { describe, expect, it } from 'vitest'
 
-import { hashForTemplateStrings } from '../hashForTemplateStrings.js'
+import { hashForTemplateStrings } from '../utils.js'
 
 import {
   AttrPartNode,

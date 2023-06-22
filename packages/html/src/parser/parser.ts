@@ -1,5 +1,5 @@
-import { hashForTemplateStrings } from '../hashForTemplateStrings.js'
 import { Token, tokenizeTemplateStrings } from '../tokenizer/tokenizer.js'
+import { hashForTemplateStrings } from '../utils.js'
 
 export class Parser {
   protected _template: ReadonlyArray<string> = []

@@ -3,9 +3,9 @@ import { deepStrictEqual, ok } from 'assert'
 import { Wire, persistent } from '@typed/wire'
 import { describe, it } from 'vitest'
 
-import { makeServerWindow } from '../makeServerWindow.js'
 import { TYPED_HOLE } from '../meta.js'
 import { Parser } from '../parser/parser.js'
+import { makeServerWindow } from '../server/makeServerWindow.js'
 
 import { buildTemplate } from './buildTemplate.js'
 

@@ -1,53 +1,64 @@
 import * as Effect from '@effect/io/Effect'
+import { Sink } from '@typed/fx'
+
+import { Renderable } from '../Renderable.js'
 
 import { BasePart } from './BasePart.js'
-import { addQuotations } from './templateHelpers.js'
+import { handlePart } from './updates.js'
 
-const getValue = (value: any) => (!value ? value : value.valueOf())
+export class AttrPart extends BasePart<string | null> {
+  readonly _tag = 'Attr' as const
 
-export class AttrPart extends BasePart<never, never> {
-  readonly _tag = 'Attr'
-
-  protected orphaned = true
-
-  constructor(document: Document, readonly element: HTMLElement, readonly attributeNode: Attr) {
-    super(document, attributeNode.value)
+  constructor(
+    protected setAttribute: (value: string) => Effect.Effect<never, never, void>,
+    protected removeAttribute: () => Effect.Effect<never, never, void>,
+    index: number,
+    value: string | null = null,
+  ) {
+    super(index, value)
   }
 
-  /**
-   * @internal
-   */
-  getValue(value: unknown) {
-    return getValue(value)
+  protected getValue(value: unknown): string | null {
+    if (value == null) return null
+
+    return String(value)
   }
 
-  /**
-   * @internal
-   */
-  handle(newValue: unknown) {
-    return Effect.sync(() => {
-      const { attributeNode } = this
-
-      if (!newValue) {
-        if (!this.orphaned) {
-          this.element.removeAttributeNode(attributeNode)
-          this.orphaned = true
-        }
+  protected setValue(value: string | null): Effect.Effect<never, never, void> {
+    return Effect.suspend(() => {
+      if (value === null) {
+        return this.removeAttribute()
       } else {
-        attributeNode.value = String(newValue)
-
-        if (this.orphaned) {
-          this.element.setAttributeNodeNS(attributeNode)
-          this.orphaned = false
-        }
+        return this.setAttribute(value)
       }
     })
   }
 
-  /**
-   * @internal
-   */
-  getHTML(template: string): string {
-    return addQuotations(template, this.attributeNode.value)
+  observe<R, E, R2>(
+    placeholder: Renderable<R, E>,
+    sink: Sink<R2, E, unknown>,
+  ): Effect.Effect<R | R2, never, void> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const part = this
+
+    return Effect.catchAllCause(
+      Effect.gen(function* (_) {
+        const fx = yield* _(handlePart(part, placeholder))
+
+        if (fx) {
+          yield* _(fx.run(sink))
+        } else {
+          yield* _(sink.event(part.value))
+        }
+      }),
+      sink.error,
+    )
+  }
+
+  static fromElement(element: Element, name: string, index: number) {
+    const setAttribute = (value: string) => Effect.sync(() => element.setAttribute(name, value))
+    const removeAttribute = () => Effect.sync(() => element.removeAttribute(name))
+
+    return new AttrPart(setAttribute, removeAttribute, index, element.getAttribute(name))
   }
 }

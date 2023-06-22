@@ -9,17 +9,16 @@ import { withScopedFork } from '@typed/fx/helpers.js'
 import { RenderContext } from '../RenderContext.js'
 import { Renderable } from '../Renderable.js'
 import { TemplateResult } from '../TemplateResult.js'
-import { isTemplateResult } from '../isTemplateResult.js'
 import { TEXT_START, TYPED_END, TYPED_HOLE, TYPED_START } from '../meta.js'
-import { Parser, Template } from '../parser/parser.js'
+import { globalParser } from '../parser/global.js'
+import { Template } from '../parser/parser.js'
+import { unwrapRenderable } from '../part/updates.js'
+import { isTemplateResult } from '../utils.js'
 
 import { htmlChunksToRenderChunks } from './htmlChunksTorRenderChunks.js'
 import { HtmlChunk, templateToHtmlChunks } from './templateToHtmlChunks.js'
-import { unwrapRenderable } from './updates.js'
 
 // TODO: Add support for directives
-
-const parser = new Parser()
 
 export type ServerTemplateCache = {
   readonly template: Template
@@ -261,7 +260,7 @@ export function getServerTemplateCache(
 
   if (cache) return cache as ServerTemplateCache
 
-  const template = parser.parse(templateStrings)
+  const template = globalParser.parse(templateStrings)
   const chunks = templateToHtmlChunks(template)
 
   const newCache = { template, chunks }

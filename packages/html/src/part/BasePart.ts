@@ -1,81 +1,34 @@
 import * as Effect from '@effect/io/Effect'
+import * as Fiber from '@effect/io/Fiber'
 import * as Scope from '@effect/io/Scope'
+import { Sink } from '@typed/fx'
 
-export abstract class BasePart<R, E> {
+import { Renderable } from '../Renderable.js'
+
+export abstract class BasePart<A> {
   abstract readonly _tag: string
 
-  protected _hasBeenUpdated = false
-  protected _subscribers = new Set<Effect.Effect<never, never, unknown>>()
+  // Can be used to track resources for a given Part.
+  public fibers: Set<Fiber.Fiber<never, unknown>> = new Set()
 
-  constructor(readonly document: Document, public value: unknown = undefined) {}
+  constructor(readonly index: number, public value?: A) {}
 
-  /**
-   * @internal
-   */
-  abstract handle(value: unknown): Effect.Effect<R, E, unknown>
+  protected abstract getValue(value: unknown): A
 
-  /**
-   * @internal
-   */
-  getValue(value: unknown): unknown {
-    return value
-  }
+  protected abstract setValue(value: A): Effect.Effect<never, never, void>
 
-  /**
-   * @internal
-   */
-  abstract getHTML(template: string): string
+  update = (input: unknown): Effect.Effect<never, never, A> => {
+    return Effect.suspend(() => {
+      const value = this.getValue(input)
 
-  /**
-   * Update the value of this part.
-   */
-  readonly update = (newValue: unknown): Effect.Effect<R, E, unknown> => {
-    this._hasBeenUpdated = true
+      if (value === this.value) return Effect.succeed(value)
 
-    const value = this.getValue(newValue)
-
-    if (value === this.value) return Effect.unit()
-
-    if (this._subscribers.size > 0) {
-      return Effect.ensuring(
-        this.handle(value),
-        Effect.suspend(() => {
-          this.value = value
-
-          return this.emit()
-        }),
-      )
-    }
-
-    return Effect.tap(this.handle(value), () => Effect.sync(() => (this.value = value)))
-  }
-
-  /**
-   * @internal
-   */
-  subscribe = <R>(
-    f: (part: this) => Effect.Effect<R, never, unknown>,
-  ): Effect.Effect<R | Scope.Scope, never, unknown> => {
-    const { _subscribers } = this
-    const subscriber = f(this)
-
-    return Effect.gen(function* ($) {
-      const context = yield* $(Effect.context<R>())
-      const subscriber_ = Effect.provideContext(subscriber, context)
-
-      _subscribers.add(subscriber_)
-
-      yield* $(Effect.addFinalizer(() => Effect.sync(() => _subscribers.delete(subscriber_))))
+      return Effect.flatMap(this.setValue(value), () => Effect.sync(() => (this.value = value)))
     })
   }
 
-  protected emit() {
-    const { _subscribers } = this
-
-    return Effect.all(_subscribers)
-  }
-
-  get hasBeenUpdated() {
-    return this._hasBeenUpdated
-  }
+  abstract observe<R, E, R2>(
+    placeholder: Renderable<R, E>,
+    sink: Sink<R2, E, unknown>,
+  ): Effect.Effect<R | R2 | Scope.Scope, never, void>
 }

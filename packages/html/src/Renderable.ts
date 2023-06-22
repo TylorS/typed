@@ -1,6 +1,6 @@
 import type { Placeholder } from './Placeholder.js'
+import type { Rendered } from './Rendered.js'
 import type { TemplateResult } from './TemplateResult.js'
-import type { Rendered } from './render.js'
 
 export type Renderable<R = never, E = never> =
   | Renderable.Value

@@ -1,65 +1,90 @@
-import { pipe } from '@effect/data/Function'
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
-import * as Scope from '@effect/io/Scope'
+import * as Fiber from '@effect/io/Fiber'
+import { Context } from '@typed/context'
 import { addEventListener } from '@typed/dom'
-import { observe } from '@typed/fx'
+import * as Fx from '@typed/fx'
 
-import { EventHandlerImplementation } from '../EventHandler.js'
+import { Renderable } from '../Renderable.js'
 
 import { BasePart } from './BasePart.js'
-import { removeAttribute } from './templateHelpers.js'
 
-export class EventPart<R = never, E = never> extends BasePart<R | Scope.Scope, E> {
-  readonly _tag = 'Event'
+import { EventHandler } from '@typed/html/EventHandler.js'
 
-  constructor(document: Document, readonly element: HTMLElement, readonly eventName: string) {
-    super(document)
+export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
+  readonly _tag = 'Event' as const
+
+  constructor(
+    readonly addEventListener: (
+      handler: EventHandler<any, any, any>,
+    ) => Effect.Effect<never, never, void>,
+    readonly removeEventListener: Effect.Effect<never, never, void>,
+    readonly name: string,
+    index: number,
+    value: EventHandler<any, any, any> | null = null,
+  ) {
+    super(index, value)
   }
 
-  /**
-   * @internal
-   */
-  handle(value: unknown) {
-    const [handler, options] = getEventHandlerAndOptions<R, E>(value)
+  protected getValue(value: unknown): EventHandler<any, any, any> | null {
+    if (value == null) return null
+    if (Effect.isEffect(value)) return EventHandler(() => value)
+    if (isEventHandler(value)) return value
 
-    if (!handler) return Effect.unit()
-
-    const { element, eventName } = this
-
-    return pipe(
-      element,
-      addEventListener(eventName, options),
-      observe(handler),
-      Effect.forkScoped,
-      Effect.asUnit,
-    )
+    return null
   }
 
-  /**
-   * @internal
-   */
-  getHTML(template: string): string {
-    return removeAttribute('on' + this.eventName, removeAttribute('@' + this.eventName, template))
+  protected setValue(value: EventHandler<any, any, any> | null) {
+    return value ? this.addEventListener(value) : this.removeEventListener
+  }
+
+  observe<R, E, R2>(
+    placeholder: Renderable<R, E>,
+    sink: Fx.Sink<R2, E, unknown>,
+  ): Effect.Effect<R | R2, never, void> {
+    return Effect.matchCauseEffect(this.update(placeholder), sink.error, sink.event)
+  }
+
+  static fromHTMLElement(
+    element: HTMLElement,
+    name: string,
+    index: number,
+    onCause: (error: Cause.Cause<any>) => Effect.Effect<never, never, void>,
+    context: Context<any>,
+  ): EventPart {
+    let fiber: Fiber.Fiber<never, void> | undefined
+
+    const add = (handler: EventHandler<any, any, any>) =>
+      Effect.provideSomeContext(
+        Effect.gen(function* ($) {
+          yield* $(remove)
+
+          fiber = yield* $(
+            element,
+            addEventListener(name, handler.options),
+            Fx.observe(handler.handler),
+            Effect.catchAllCause(onCause),
+            Effect.forkScoped,
+          )
+
+          part.fibers.add(fiber)
+        }),
+        context,
+      )
+
+    const remove = Effect.gen(function* ($) {
+      if (fiber) {
+        part.fibers.delete(fiber)
+        yield* $(Fiber.interruptFork(fiber))
+      }
+    })
+
+    const part = new EventPart(add, remove, name, index)
+
+    return part
   }
 }
 
-function getEventHandlerAndOptions<R, E>(
-  value: unknown,
-): readonly [
-  undefined | ((event: any) => Effect.Effect<R, E, void>),
-  boolean | AddEventListenerOptions | undefined,
-] {
-  if (value instanceof EventHandlerImplementation) {
-    return [value.handler, value.options]
-  }
-
-  if (Effect.isEffect(value)) {
-    return [() => value, undefined] as any
-  }
-
-  if (!value) {
-    return [undefined, undefined] as const
-  }
-
-  throw new Error(`Unexpected value for event handler: ${JSON.stringify(value)}`)
+function isEventHandler(value: unknown): value is EventHandler<any, any, any> {
+  return !!value && typeof value === 'object' && 'handler' in value && 'options' in value
 }

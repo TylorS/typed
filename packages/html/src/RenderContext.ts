@@ -2,10 +2,24 @@ import * as Effect from '@effect/io/Effect'
 import * as Context from '@typed/context'
 
 export interface RenderContext {
+  /**
+   * The current environment.
+   */
   readonly environment: 'server' | 'browser' | 'static' | 'test'
+
+  /**
+   * Whether or not the current render is for a bot.
+   */
   readonly isBot: boolean
 
+  /**
+   * @internal
+   */
   readonly renderCache: WeakMap<object, unknown>
+
+  /**
+   * @internal
+   */
   readonly templateCache: WeakMap<TemplateStringsArray, unknown>
 }
 

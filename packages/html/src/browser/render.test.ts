@@ -9,10 +9,10 @@ import { describe, it } from 'vitest'
 
 import { RenderContext, makeRenderContext } from '../RenderContext.js'
 import { html } from '../RenderTemplate.js'
+import { Rendered } from '../Rendered.js'
 import { TemplateResult } from '../TemplateResult.js'
-import { makeServerWindow } from '../makeServerWindow.js'
 import { TYPED_HOLE } from '../meta.js'
-import { Rendered } from '../render.js'
+import { makeServerWindow } from '../server/makeServerWindow.js'
 
 import { render } from './render.js'
 

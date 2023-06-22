@@ -1,16 +1,16 @@
 import * as Effect from '@effect/io/Effect'
 
 import { Placeholder } from './Placeholder.js'
-import { AttrPart } from './part/AttrPart.js'
-import { BooleanPart } from './part/BooleanPart.js'
-import { ClassNamePart } from './part/ClassNamePart.js'
-import { DataPart } from './part/DataPart.js'
-import { EventPart } from './part/EventPart.js'
-import { NodePart } from './part/NodePart.js'
-import { Part } from './part/Part.js'
-import { PropertyPart } from './part/PropertyPart.js'
-import { RefPart } from './part/RefPart.js'
-import { TextPart } from './part/TextPart.js'
+import type { AttrPart } from './part/AttrPart.js'
+import type { BooleanPart } from './part/BooleanPart.js'
+import type { ClassNamePart } from './part/ClassNamePart.js'
+import type { DataPart } from './part/DataPart.js'
+import type { EventPart } from './part/EventPart.js'
+import type { NodePart } from './part/NodePart.js'
+import type { Part } from './part/Part.js'
+import type { PropertyPart } from './part/PropertyPart.js'
+import type { RefPart } from './part/RefPart.js'
+import type { TextPart } from './part/TextPart.js'
 
 export class Directive<R, E> implements Placeholder<R, E, void> {
   readonly __Placeholder__!: {
@@ -65,9 +65,7 @@ export function dataDirective<R, E>(f: (part: DataPart) => Effect.Effect<R, E, v
   return directiveFor(['Data'], f)
 }
 
-export function eventDirective<R, E, R0 = never, E0 = never>(
-  f: (part: EventPart<R0, E0>) => Effect.Effect<R, E, void>,
-) {
+export function eventDirective<R, E>(f: (part: EventPart) => Effect.Effect<R, E, void>) {
   return directiveFor(['Event'], f)
 }
 

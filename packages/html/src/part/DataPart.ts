@@ -1,58 +1,85 @@
-import { sync } from '@effect/io/Effect'
+import * as Effect from '@effect/io/Effect'
+import { Sink } from '@typed/fx'
+
+import { Renderable } from '../Renderable.js'
 
 import { BasePart } from './BasePart.js'
-import { removeAttribute } from './templateHelpers.js'
+import { handlePart } from './updates.js'
 
-export class DataPart extends BasePart<never, never> {
-  readonly _tag = 'Data'
-  protected keys: string[] = []
+type DomStringMap = Partial<Readonly<Record<string, string>>>
 
-  constructor(document: Document, readonly element: HTMLElement) {
-    super(document, Object.keys(element.dataset))
+export class DataPart extends BasePart<DomStringMap | null> {
+  readonly _tag = 'Data' as const
+
+  constructor(
+    readonly updateDataSet: (value: DomStringMap | null) => Effect.Effect<never, never, void>,
+    index: number,
+    value: DomStringMap | null = null,
+  ) {
+    super(index, value)
   }
 
-  /**
-   * @internal
-   */
-  handle(value: unknown) {
-    return sync(() => {
-      if (value && !Array.isArray(value) && typeof value === 'object') {
-        const keys = Object.keys(value)
+  protected getValue(value: unknown): DomStringMap | null {
+    if (typeof value !== 'object') return null
+    if (Array.isArray(value)) return null
 
-        // Remove old keys
-        for (const key of this.keys) {
-          if (!keys.includes(key)) {
-            delete this.element.dataset[key]
+    return value as DomStringMap | null
+  }
+
+  protected setValue(value: { readonly [key: string]: string | undefined } | null) {
+    return this.updateDataSet(value)
+  }
+
+  observe<R, E, R2>(
+    placeholder: Renderable<R, E>,
+    sink: Sink<R2, E, unknown>,
+  ): Effect.Effect<R | R2, never, void> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const part = this
+
+    return Effect.catchAllCause(
+      Effect.gen(function* (_) {
+        const fx = yield* _(handlePart(part, placeholder))
+
+        if (fx) {
+          yield* _(fx.run(sink))
+        } else {
+          yield* _(sink.event(part.value))
+        }
+      }),
+      sink.error,
+    )
+  }
+
+  static fromHTMLElement(element: HTMLElement, index: number) {
+    let keys = new Set(Object.keys(element.dataset))
+
+    const updateDataSet = (dataset: DomStringMap | null) => {
+      if (dataset === null) {
+        for (const key of keys) {
+          delete element.dataset[key]
+        }
+      } else {
+        const newKeys = new Set(Object.keys(dataset))
+
+        for (const key of newKeys) {
+          element.dataset[key] = dataset[key] ?? ''
+        }
+
+        for (const key of keys) {
+          if (!newKeys.has(key)) {
+            delete element.dataset[key]
           }
         }
 
-        this.keys = keys
-
-        // Set new keys
-        Object.assign(this.element.dataset, value)
-      } else {
-        this.keys.forEach((k) => delete this.element.dataset[k])
-        this.keys = []
+        keys = newKeys
       }
-    })
-  }
-
-  /**
-   * @internal
-   */
-  getHTML(template: string) {
-    const { dataset } = this.element
-    const keys = Object.keys(dataset)
-
-    if (keys.length === 0) {
-      return ''
     }
 
-    return (
-      removeAttribute('.data', template) +
-      keys.reduce((acc, key) => {
-        return acc + `data-${key}="${dataset[key]}" `
-      }, '')
+    return new DataPart(
+      (d) => Effect.sync(() => updateDataSet(d)),
+      index,
+      Object.fromEntries(Array.from(keys).map((key) => [key, element.dataset[key]])),
     )
   }
 }

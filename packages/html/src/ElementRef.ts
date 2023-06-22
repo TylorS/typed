@@ -6,7 +6,7 @@ import * as Fx from '@typed/fx'
 import { type EffectGenErrors, type EffectGenResources, isRefSubject } from '@typed/fx'
 
 import type { Placeholder } from './Placeholder.js'
-import type { Rendered } from './render.js'
+import type { Rendered } from './Rendered.js'
 
 export interface ElementRef<A extends Rendered>
   extends Fx.RefSubject<never, Option.Option<A>>,

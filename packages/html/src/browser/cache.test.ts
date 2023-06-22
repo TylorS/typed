@@ -2,15 +2,15 @@ import { ok } from 'assert'
 
 import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
+import { GlobalThis } from '@typed/dom'
 import { describe, it } from 'vitest'
 
 import { RenderContext, makeRenderContext } from '../RenderContext.js'
 import { html } from '../RenderTemplate.js'
 import { Renderable } from '../Renderable.js'
-import { makeTestDom } from '../_test-utils.js'
-import { makeServerWindow } from '../makeServerWindow.js'
 import { Parser } from '../parser/parser.js'
-import { renderToHtml } from '../server/TemplateRenderer.js'
+import { makeServerWindow } from '../server/makeServerWindow.js'
+import { renderToHtml } from '../server/renderToHtml.js'
 
 import {
   findPartComment,
@@ -182,4 +182,122 @@ function testDomTemplate(strings: TemplateStringsArray, ...values: ReadonlyArray
     RenderContext.provide(makeRenderContext('test')),
     Effect.scoped,
   )
+}
+
+export function dom(document: Document, root: HTMLElement) {
+  return {
+    element: <
+      const T extends keyof HTMLElementTagNameMap,
+      const Attrs extends Readonly<Record<string, string>> = Record<never, never>,
+    >(
+      tag: T,
+      attr: Attrs = {} as Attrs,
+      id?: number,
+    ) => {
+      const rendered = elementWithAttr(document, tag, attr, String(id))
+
+      root.append(rendered.node)
+
+      return {
+        ...rendered,
+        ...dom(document, rendered.node),
+      } as const
+    },
+    text: (text: string) => {
+      const node = document.createTextNode(text)
+
+      root.append(node)
+
+      return node
+    },
+    comment: (text: string) => {
+      const node = document.createComment(text)
+
+      root.append(node)
+
+      return node
+    },
+    hole: (index: number) => {
+      const node = document.createComment(`hole${index}`)
+
+      root.append(node)
+
+      return node
+    },
+  }
+}
+
+function elementWithAttr<
+  const T extends keyof HTMLElementTagNameMap,
+  const Attrs extends Readonly<Record<string, string>>,
+>(document: Document, tag: T, attr: Attrs, id?: string) {
+  const node = document.createElement(tag)
+  const attributes = Object.fromEntries(
+    Object.entries(attr).map(([k, v]) => {
+      if (k.startsWith('data-')) {
+        node.dataset[k.slice(5)] = v
+
+        return [k, v]
+      } else {
+        const attr = document.createAttributeNS(null, k)
+        attr.value = v
+
+        node.setAttributeNodeNS(attr)
+
+        return [k, attr] as const
+      }
+    }),
+  ) as {
+    readonly [K in keyof Attrs]: K extends `data-${string}` ? string : Attr
+  }
+
+  if (id) {
+    node.dataset.typed = id
+  }
+
+  return {
+    node,
+    attributes,
+  } as const
+}
+
+export function makeTestDom(): {
+  readonly window: Window & GlobalThis
+  readonly document: Document
+  readonly body: HTMLElement
+  readonly render: <A>(
+    f: (_: ReturnType<typeof dom>) => A,
+  ) => readonly [A, { start: Comment; end: Comment }]
+} {
+  const window = makeServerWindow({ url: 'https://example.com' })
+
+  function render<A>(f: (_: ReturnType<typeof dom>) => A): readonly [
+    A,
+    {
+      start: Comment
+      end: Comment
+    },
+  ] {
+    const { document } = window
+
+    document.body.innerHTML = ''
+
+    const start = document.createComment('typed-start')
+    const end = document.createComment('typed-end')
+
+    document.body.appendChild(start)
+
+    const a = f(dom(document, document.body))
+
+    document.body.appendChild(end)
+
+    return [a, { start, end }]
+  }
+
+  return {
+    window,
+    document: window.document,
+    body: window.document.body,
+    render,
+  }
 }

@@ -4,39 +4,39 @@ import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
 import { Renderable } from '../Renderable.js'
-import { unwrapRenderable } from '../server/updates.js'
 
-import { AttrPart } from './AttrPart.js'
+import { ClassNamePart } from './ClassNamePart.js'
+import { unwrapRenderable } from './updates.js'
 
-import { AttrPartNode, TextNode } from '@typed/html/parser/parser'
+import { ClassNamePartNode, TextNode } from '@typed/html/parser/parser'
 
-export class SparseAttrPart {
-  readonly _tag = 'SparseAttr' as const
+export class SparseClassNamePart {
+  readonly _tag = 'SparseClassName' as const
 
   // Can be used to track resources for a given Part.
   public fibers: Set<Fiber.Fiber<never, unknown>> = new Set()
 
   constructor(
-    protected setAttribute: (value: string | null) => Effect.Effect<never, never, void>,
-    readonly parts: readonly AttrPart[],
+    protected setClassName: (value: string) => Effect.Effect<never, never, void>,
+    readonly parts: readonly ClassNamePart[],
     protected value: string | null = null,
   ) {}
 
   protected getValue(value: unknown): string | null {
-    if (value == null) return null
-
-    if (Array.isArray(value)) return value.join('')
+    if (value == null) return ''
+    if (Array.isArray(value)) return value.join(' ')
 
     return String(value)
   }
 
-  update = (input: unknown): Effect.Effect<never, never, string | null> => {
+  update = (input: unknown): Effect.Effect<never, never, void> => {
     return Effect.suspend(() => {
       const value = this.getValue(input)
+      if (value === this.value) return Effect.unit()
 
-      if (value === this.value) return Effect.succeed(value)
-
-      return Effect.flatMap(this.setAttribute(value), () => Effect.sync(() => (this.value = value)))
+      return Effect.flatMap(this.setClassName(value || ''), () =>
+        Effect.sync(() => (this.value = value)),
+      )
     })
   }
 
@@ -45,21 +45,21 @@ export class SparseAttrPart {
     sink: Fx.Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
     return Fx.drain(
-      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, this.update),
+      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, sink.event),
     )
   }
 
   static fromPartNodes(
     setAttribute: (value: string | null) => Effect.Effect<never, never, void>,
-    nodes: Array<AttrPartNode | TextNode>,
-  ): SparseAttrPart {
+    nodes: Array<ClassNamePartNode | TextNode>,
+  ): SparseClassNamePart {
     const values: Map<number, string | null> = new Map()
 
     function getValue() {
       return (
         Array.from(values.values())
           .filter((x) => x !== null)
-          .join('') || null
+          .join(' ') || null
       )
     }
 
@@ -67,11 +67,13 @@ export class SparseAttrPart {
       return Effect.gen(function* ($) {
         values.set(index, value)
 
-        if (values.size === nodes.length) yield* $(setAttribute(getValue()))
+        if (values.size === nodes.length) {
+          yield* $(setAttribute(getValue()))
+        }
       })
     }
 
-    const parts: AttrPart[] = []
+    const parts: ClassNamePart[] = []
 
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i]
@@ -79,18 +81,11 @@ export class SparseAttrPart {
       if (node.type === 'text') {
         values.set(i, node.value)
       } else {
-        parts.push(
-          new AttrPart(
-            (value) => setValue(value, i),
-            () => setValue(null, i),
-            i,
-            null,
-          ),
-        )
+        parts.push(new ClassNamePart((value) => setValue(value, i), i, []))
       }
     }
 
-    const part = new SparseAttrPart(setAttribute, parts)
+    const part = new SparseClassNamePart(setAttribute, parts)
 
     // Each part should share the same fibers
     parts.forEach((p) => (p.fibers = part.fibers))

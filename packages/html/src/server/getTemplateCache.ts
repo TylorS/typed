@@ -1,9 +1,8 @@
 import { RenderContext } from '../RenderContext.js'
-import { Parser, Template } from '../parser/parser.js'
+import { globalParser } from '../parser/global.js'
+import { Template } from '../parser/parser.js'
 
 import { HtmlChunk, templateToHtmlChunks } from './templateToHtmlChunks.js'
-
-const parser = new Parser()
 
 export type ServerTemplateCache = {
   readonly template: Template
@@ -18,7 +17,7 @@ export function getTemplateCache(
 
   if (cache) return cache as ServerTemplateCache
 
-  const template = parser.parse(templateStrings)
+  const template = globalParser.parse(templateStrings)
   const chunks = templateToHtmlChunks(template)
 
   const newCache = { template, chunks }

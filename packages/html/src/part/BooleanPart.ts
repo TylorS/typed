@@ -1,45 +1,56 @@
 import * as Effect from '@effect/io/Effect'
+import { Sink } from '@typed/fx'
+
+import { Renderable } from '../Renderable.js'
 
 import { BasePart } from './BasePart.js'
-import { removeAttribute, replaceAttribute } from './templateHelpers.js'
+import { handlePart } from './updates.js'
 
-export class BooleanPart extends BasePart<never, never> {
-  readonly _tag = 'Boolean'
+export class BooleanPart extends BasePart<boolean> {
+  readonly _tag = 'Boolean' as const
 
-  constructor(document: Document, readonly element: Element, readonly attributeName: string) {
-    super(document, element.hasAttribute(attributeName))
+  constructor(
+    protected toggleAttribute: (bool: boolean) => Effect.Effect<never, never, void>,
+    index: number,
+    value = false,
+  ) {
+    super(index, value)
   }
 
-  /**
-   * @internal
-   */
-  getValue(value: unknown): boolean {
+  observe<R, E, R2>(
+    placeholder: Renderable<R, E>,
+    sink: Sink<R2, E, unknown>,
+  ): Effect.Effect<R | R2, never, void> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const part = this
+
+    return Effect.catchAllCause(
+      Effect.gen(function* (_) {
+        const fx = yield* _(handlePart(part, placeholder))
+
+        if (fx) {
+          yield* _(fx.run(sink))
+        } else {
+          yield* _(sink.event(part.value))
+        }
+      }),
+      sink.error,
+    )
+  }
+
+  protected getValue(value: unknown): boolean {
     return !!value
   }
 
-  /**
-   * @internal
-   */
-  handle(newValue: boolean) {
-    return Effect.sync(() => this.element.toggleAttribute(this.attributeName, newValue))
+  protected setValue(value: boolean): Effect.Effect<never, never, void> {
+    return this.toggleAttribute(value)
   }
 
-  /**@internal */
-  getHTML(template: string) {
-    const { attributeName } = this
-
-    if (this.value) {
-      return replaceAttribute(`\\?${attributeName}`, attributeName, template)
-    }
-
-    return removeAttribute(`\\?${attributeName}`, template)
-  }
-
-  setValue(bool: boolean) {
-    this.update(bool)
-  }
-
-  toggle() {
-    this.update(!this.value)
+  static fromElement(element: Element, name: string, index: number) {
+    return new BooleanPart(
+      (b) => Effect.sync(() => element.toggleAttribute(name, b)),
+      index,
+      element.hasAttribute(name),
+    )
   }
 }
