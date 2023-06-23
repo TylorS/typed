@@ -88,7 +88,7 @@ export function getRenderEntry(
   const parts = template.parts.map(([part, path]): Part | SparsePart => {
     const element = findPath(content, path) as HTMLElement
 
-    return partNodeToPart(document, element, part, result.context, result.sink.error)
+    return partNodeToPart(document, element, part, result.context, result.sink.error, false)
   })
 
   const cleanup = Effect.forkDaemon(
@@ -136,6 +136,7 @@ export function getBrowserTemplateCache(
   }
 
   const template = globalParser.parse(result.template)
+
   const content = buildTemplate(document, template)
 
   const newCache: BrowserTemplateCache = {
@@ -154,6 +155,7 @@ export function partNodeToPart(
   part: PartNode | SparsePartNode,
   context: Context<any>,
   onCause: (cause: Cause.Cause<any>) => Effect.Effect<any, never, void>,
+  isHydrating: boolean,
 ): Part | SparsePart {
   switch (part.type) {
     case 'attr':
@@ -175,7 +177,7 @@ export function partNodeToPart(
         context,
       )
     case 'node':
-      return NodePart.fromParentElemnt(document, node, part.index)
+      return NodePart.fromParentElemnt(document, node, part.index, isHydrating)
     case 'property':
       return PropertyPart.fromElement(node, part.name, part.index)
     case 'ref':
@@ -217,7 +219,7 @@ export function getHydrateEntry(
   const parts = template.parts.map(([part, path]): Part | SparsePart => {
     const parent = findPath(where, path) as HTMLElement
 
-    return partNodeToPart(document, parent, part, result.context, result.sink.error)
+    return partNodeToPart(document, parent, part, result.context, result.sink.error, true)
   })
 
   const cleanup = Effect.forkDaemon(

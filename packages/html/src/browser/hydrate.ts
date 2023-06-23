@@ -97,9 +97,12 @@ export function hydrateTemplateResult<R, E>(
       let { entry } = cache
 
       if (!entry || entry.result.template !== result.template) {
-        // The entry is changing, so we need to cleanup the previous one
         if (cache.entry) {
+          // The entry is changing, so we need to cleanup the previous one
           yield* $(cache.entry.cleanup)
+
+          // We also need to switch to "standard" rendering
+          return yield* $(renderTemplateResult<R, E>(document, renderContext, result, cache))
         }
 
         cache.entry = entry = getHydrateEntry(

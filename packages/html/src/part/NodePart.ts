@@ -87,9 +87,9 @@ export class NodePart extends BasePart<unknown> {
     )
   }
 
-  static fromParentElemnt(document: Document, parent: Element, index: number) {
+  static fromParentElemnt(document: Document, parent: Element, index: number, isHydrating = false) {
     const comment = findHoleComment(parent, index)
-    const previousNodes = findPreviousNodes(comment, index)
+    const previousNodes = isHydrating ? findPreviousNodes(comment, index) : []
 
     let text: Text
 
@@ -99,7 +99,9 @@ export class NodePart extends BasePart<unknown> {
       (content) =>
         Effect.sync(() => {
           if (!text) {
-            text = getPreviousTextSibling(comment.previousSibling) || document.createTextNode('')
+            text = isHydrating
+              ? getPreviousTextSibling(comment.previousSibling) || document.createTextNode('')
+              : document.createTextNode('')
           }
           text.textContent = content
 
@@ -113,7 +115,12 @@ export class NodePart extends BasePart<unknown> {
 export function getPreviousTextSibling(node: Node | null) {
   if (!node) return null
 
-  if (node && node.nodeType === 3) return node as Text
+  if (node && node.nodeType === node.TEXT_NODE) {
+    // During hydration there should be a comment to separate these values
+    if (node.previousSibling && isCommentWithValue(node.previousSibling, 'text')) {
+      return node as Text
+    }
+  }
 
   return null
 }
@@ -132,7 +139,7 @@ export function findPreviousNodes(comment: Comment, index: number) {
   const nodes: Node[] = []
 
   let node = comment.previousSibling
-  while (node && !isCommentWithValue(node, previousIndex)) {
+  while (node && !isCommentWithValue(node, previousIndex) && !isCommentWithValue(node, 'text')) {
     nodes.unshift(node)
     node = node.previousSibling
   }
