@@ -73,7 +73,7 @@ export function renderTemplateResult<R, E>(
     if (!entry || entry.result.template !== result.template) {
       // The entry is changing, so we need to cleanup the previous one
       if (cache.entry) {
-        yield* $(cache.entry.cleanup)
+        yield* $(Effect.uninterruptible(cache.entry.cleanup))
       }
 
       cache.entry = entry = getRenderEntry(document, renderContext, result, cache)
@@ -115,6 +115,7 @@ function renderPlaceholders<R, E>(
                   cache.stack[part.index] || (cache.stack[part.index] = makeEmptyBrowerCache()),
                 ),
               )
+
 
               yield* $(part.update(rendered))
             } else {

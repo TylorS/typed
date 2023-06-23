@@ -19,9 +19,9 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.12.6",
-    "@effect/io": "^0.26.0",
-    "@effect/stream": "^0.22.1",
+    "@effect/data": "^0.12.9",
+    "@effect/io": "^0.26.2",
+    "@effect/stream": "^0.22.2",
     "fast-deep-equal": "^3.1.3"
   },
   "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",
@@ -30,6 +30,6 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "vitest": "^0.32.0"
+    "vitest": "0.32.2"
   }
 }

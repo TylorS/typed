@@ -79,11 +79,13 @@ export function getRenderEntry(
   browserCache: BrowserCache,
 ): BrowserEntry {
   const { deferred } = result
-  const { template, content } = getBrowserTemplateCache(
+  const cache = getBrowserTemplateCache(
     document,
     result,
     renderContext.templateCache,
   )
+  const template = cache.template
+  const content = document.importNode(cache.content, true)
 
   const parts = template.parts.map(([part, path]): Part | SparsePart => {
     const element = findPath(content, path) as HTMLElement
@@ -129,19 +131,13 @@ export function getBrowserTemplateCache(
   const current = templateCache.get(result.template)
 
   if (current) {
-    return {
-      template: (current as BrowserTemplateCache).template,
-      content: (current as BrowserTemplateCache).content.cloneNode(true) as DocumentFragment,
-    }
+    return current as BrowserTemplateCache
   }
 
   const template = globalParser.parse(result.template)
-
-  const content = buildTemplate(document, template)
-
   const newCache: BrowserTemplateCache = {
     template,
-    content,
+    content: buildTemplate(document, template),
   }
 
   templateCache.set(result.template, newCache)

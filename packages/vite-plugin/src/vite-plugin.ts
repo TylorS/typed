@@ -85,6 +85,8 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
     visualizer({
       emitFile: true,
       filename: 'bundle-visualizer.html',
+      gzipSize: true,
+      brotliSize: true,
     }),
     ...pipe(
       options.serverFilePath,

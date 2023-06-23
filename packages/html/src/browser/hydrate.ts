@@ -27,32 +27,38 @@ import { renderTemplateResult } from './render.js'
 
 // TODO: Add support for directives
 
+type HydateContext = {
+  hydrate: boolean
+  document: Document
+  renderContext: RenderContext
+}
+
 export function hydrate<R, E>(
   what: Fx.Fx<R, E, TemplateResult>,
   where: HTMLElement,
 ): Fx.Fx<R | Document | RenderContext, E, Rendered | null> {
   return Document.withFx((document) =>
-    RenderContext.withFx((renderContext) =>
-      Fx.switchMapEffect(what, (result) =>
-        hydrateRootTemplateResult(document, renderContext, result, where),
-      ),
-    ),
+    RenderContext.withFx((renderContext) => {
+      const hydrateContext: HydateContext = { hydrate: true, document, renderContext }
+
+      return Fx.switchMapEffect(what, (result) =>
+        hydrateRootTemplateResult(hydrateContext, result, where),
+      )
+    }),
   )
 }
 
 export function hydrateRootTemplateResult<R, E>(
-  document: Document,
-  renderContext: RenderContext,
+  hydrateContext: HydateContext,
   result: TemplateResult,
   where: HTMLElement,
 ): Effect.Effect<R, E, Rendered | null> {
-  const cache = getBrowserCache(renderContext.renderCache, where)
+  const cache = getBrowserCache(hydrateContext.renderContext.renderCache, where)
   const rootPartChildNodes = findRootParentChildNodes(where)
 
   return Effect.gen(function* ($) {
     const wire = yield* $(
-      hydrateTemplateResult<R, E>(document, renderContext, result, cache, rootPartChildNodes, -1),
-      Effect.provideSomeContext(result.context),
+      hydrateTemplateResult<R, E>(hydrateContext, result, cache, rootPartChildNodes, -1),
     )
 
     if (wire !== cache.wire) {
@@ -79,13 +85,14 @@ export function hydrateRootTemplateResult<R, E>(
       }
     }
 
+    hydrateContext.hydrate = false
+
     return cache.wire
   })
 }
 
 export function hydrateTemplateResult<R, E>(
-  document: Document,
-  renderContext: RenderContext,
+  hydrateContext: HydateContext,
   result: TemplateResult,
   cache: BrowserCache,
   where: ParentChildNodes,
@@ -93,43 +100,64 @@ export function hydrateTemplateResult<R, E>(
   parentTemplate: Template | null = null,
 ): Effect.Effect<R, E, Rendered | null> {
   return Effect.catchAllDefect(
-    Effect.gen(function* ($) {
-      let { entry } = cache
-
-      if (!entry || entry.result.template !== result.template) {
-        if (cache.entry) {
-          // The entry is changing, so we need to cleanup the previous one
-          yield* $(cache.entry.cleanup)
-
-          // We also need to switch to "standard" rendering
-          return yield* $(renderTemplateResult<R, E>(document, renderContext, result, cache))
+    Effect.provideSomeContext(
+      Effect.gen(function* ($) {
+        if (!hydrateContext.hydrate) {
+          return yield* $(
+            renderTemplateResult<R, E>(
+              hydrateContext.document,
+              hydrateContext.renderContext,
+              result,
+              cache,
+            ),
+          )
         }
 
-        cache.entry = entry = getHydrateEntry(
-          document,
-          renderContext,
-          result,
-          cache,
-          where,
-          rootIndex,
-          parentTemplate,
-        )
-      }
+        let { entry } = cache
 
-      const { template } = entry
+        if (!entry || entry.result.template !== result.template) {
+          if (cache.entry) {
+            // The entry is changing, so we need to cleanup the previous one
+            yield* $(cache.entry.cleanup)
 
-      // Render all children before creating the wire
-      if (template.parts.length > 0) {
-        yield* $(hydratePlaceholders<R, E>(document, renderContext, result, cache, entry, where))
-      }
+            // We also need to switch to "standard" rendering
+            return yield* $(
+              renderTemplateResult<R, E>(
+                hydrateContext.document,
+                hydrateContext.renderContext,
+                result,
+                cache,
+              ),
+            )
+          }
 
-      // Lazily creates the wire after all childNodes are available
-      return entry.wire()
-    }),
+          cache.entry = entry = getHydrateEntry(
+            hydrateContext.document,
+            hydrateContext.renderContext,
+            result,
+            cache,
+            where,
+            rootIndex,
+            parentTemplate,
+          )
+        }
+
+        const { template } = entry
+
+        // Render all children before creating the wire
+        if (template.parts.length > 0) {
+          yield* $(hydratePlaceholders<R, E>(hydrateContext, result, cache, entry, where))
+        }
+
+        // Lazily creates the wire after all childNodes are available
+        return entry.wire()
+      }),
+      result.context,
+    ),
     (defect) => {
       // If we can't find a comment/rootElement then we need to render the result without hydration
       if (defect instanceof CouldNotFindCommentError || defect instanceof CouldNotFindRootElement) {
-        return renderTemplateResult(document, renderContext, result, cache)
+        return renderTemplateResult(document, hydrateContext.renderContext, result, cache)
       } else {
         return Effect.die(defect)
       }
@@ -138,8 +166,8 @@ export function hydrateTemplateResult<R, E>(
 }
 
 function hydratePlaceholders<R, E>(
-  document: Document,
-  renderContext: RenderContext,
+  hydrateContext: HydateContext,
+
   result: TemplateResult,
   cache: BrowserCache,
   entry: BrowserEntry,
@@ -156,8 +184,7 @@ function hydratePlaceholders<R, E>(
             if (isTemplateResult(value)) {
               const rendered = yield* $(
                 hydrateTemplateResult<R, E>(
-                  document,
-                  renderContext,
+                  hydrateContext,
                   value,
                   cache.stack[part.index] || (cache.stack[part.index] = makeEmptyBrowerCache()),
                   where,
