@@ -73,7 +73,7 @@ export function renderTemplateResult<R, E>(
     if (!entry || entry.result.template !== result.template) {
       // The entry is changing, so we need to cleanup the previous one
       if (cache.entry) {
-        yield* $(Effect.uninterruptible(cache.entry.cleanup))
+        yield* $(cache.entry.cleanup)
       }
 
       cache.entry = entry = getRenderEntry(document, renderContext, result, cache)

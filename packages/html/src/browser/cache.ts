@@ -29,8 +29,7 @@ import { getPreviousNodes, isComment, isCommentWithValue, isHtmlElement } from '
 import { buildTemplate } from './buildTemplate.js'
 
 export type BrowserCache = {
-  readonly stack: Array<BrowserCache | null>
-
+  stack: Array<BrowserCache | null>
   wire: Rendered | null
   entry: BrowserEntry | null
 }
@@ -79,11 +78,7 @@ export function getRenderEntry(
   browserCache: BrowserCache,
 ): BrowserEntry {
   const { deferred } = result
-  const cache = getBrowserTemplateCache(
-    document,
-    result,
-    renderContext.templateCache,
-  )
+  const cache = getBrowserTemplateCache(document, result, renderContext.templateCache)
   const template = cache.template
   const content = document.importNode(cache.content, true)
 
@@ -93,20 +88,19 @@ export function getRenderEntry(
     return partNodeToPart(document, element, part, result.context, result.sink.error, false)
   })
 
-  const cleanup = Effect.forkDaemon(
-    Effect.allPar(
+  const cleanup = Effect.allPar(
+    Effect.suspend(() => {
+      const stack = browserCache.stack.slice(0)
+      browserCache.stack = []
+
+      return Effect.allPar(
+        stack.map((cache) => (cache && cache.entry ? cache.entry.cleanup : Effect.unit())),
+      )
+    }),
+    Effect.forkDaemon(
       Effect.suspend(() => Fiber.interruptAll(parts.flatMap((p) => Array.from(p.fibers)))),
-      Deferred.succeed(deferred, undefined),
-      Effect.suspend(() =>
-        Effect.allPar(
-          browserCache.stack.map((cache, i) =>
-            cache && cache.entry
-              ? Effect.map(cache.entry.cleanup, () => (browserCache.stack[i] = null))
-              : Effect.unit(),
-          ),
-        ),
-      ),
     ),
+    Deferred.succeed(deferred, undefined),
   )
 
   let wire: Rendered | null = null
@@ -218,20 +212,19 @@ export function getHydrateEntry(
     return partNodeToPart(document, parent, part, result.context, result.sink.error, true)
   })
 
-  const cleanup = Effect.forkDaemon(
-    Effect.allPar(
+  const cleanup = Effect.allPar(
+    Effect.suspend(() => {
+      const stack = browserCache.stack.slice(0)
+      browserCache.stack = []
+
+      return Effect.allPar(
+        stack.map((cache) => (cache && cache.entry ? cache.entry.cleanup : Effect.unit())),
+      )
+    }),
+    Effect.forkDaemon(
       Effect.suspend(() => Fiber.interruptAll(parts.flatMap((p) => Array.from(p.fibers)))),
-      Deferred.succeed(deferred, undefined),
-      Effect.suspend(() =>
-        Effect.allPar(
-          browserCache.stack.map((cache, i) =>
-            cache && cache.entry
-              ? Effect.map(cache.entry.cleanup, () => (browserCache.stack[i] = null))
-              : Effect.unit(),
-          ),
-        ),
-      ),
     ),
+    Deferred.succeed(deferred, undefined),
   )
 
   const wire = (() => {
