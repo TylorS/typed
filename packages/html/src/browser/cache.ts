@@ -88,12 +88,12 @@ export function getRenderEntry(
     return partNodeToPart(document, element, part, result.context, result.sink.error, false)
   })
 
-  const cleanup = Effect.allPar(
+  const cleanup = Effect.all(
     Effect.suspend(() => {
       const stack = browserCache.stack.slice(0)
       browserCache.stack = []
 
-      return Effect.allPar(
+      return Effect.all(
         stack.map((cache) => (cache && cache.entry ? cache.entry.cleanup : Effect.unit())),
       )
     }),
