@@ -32,20 +32,8 @@ export class CommentPart extends BasePart<string | null> {
     placeholder: Renderable<R, E>,
     sink: Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2, never, void> {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const part = this
-
-    return Effect.catchAllCause(
-      Effect.gen(function* (_) {
-        const fx = yield* _(handlePart(part, placeholder))
-
-        if (fx) {
-          yield* _(fx.run(sink))
-        } else {
-          yield* _(sink.event(part.value))
-        }
-      }),
-      sink.error,
+    return Effect.matchCauseEffect(handlePart(this, placeholder), sink.error, (fx) =>
+      fx ? fx.run(sink) : sink.event(this.value),
     )
   }
 

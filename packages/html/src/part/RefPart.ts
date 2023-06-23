@@ -36,7 +36,7 @@ export class RefPart extends BasePart<ElementRef<HTMLElement> | null> {
     placeholder: Renderable<R, E>,
     sink: Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2, never, void> {
-    return Effect.catchAllCause(this.update(this.getValue(placeholder)), sink.error)
+    return Effect.catchAllCause(this.update(placeholder), sink.error)
   }
 
   static fromElement(element: HTMLElement, index: number) {

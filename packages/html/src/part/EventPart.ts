@@ -4,6 +4,7 @@ import * as Fiber from '@effect/io/Fiber'
 import { Context } from '@typed/context'
 import { addEventListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
+import { pipe } from '@effect/data/Function'
 
 import { EventHandler } from '../EventHandler.js'
 import { Renderable } from '../Renderable.js'
@@ -53,29 +54,29 @@ export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
   ): EventPart {
     let fiber: Fiber.Fiber<never, void> | undefined
 
-    const add = (handler: EventHandler<any, any, any>) =>
-      Effect.provideSomeContext(
-        Effect.gen(function* ($) {
-          yield* $(remove)
-
-          fiber = yield* $(
-            element,
-            addEventListener(name, handler.options),
-            Fx.observe(handler.handler),
-            Effect.catchAllCause(onCause),
-            Effect.forkScoped,
-          )
-
-          part.fibers.add(fiber)
-        }),
-        context,
+    const add = (handler: EventHandler<any, any, any>): Effect.Effect<never, never, void> =>
+      pipe(
+        remove,
+        Effect.flatMap(() =>
+          Effect.forkScoped(
+            Fx.observe(addEventListener(name, handler.options)(element), (event) =>
+              Effect.catchAllCause(handler.handler(event), onCause),
+            ),
+          ),
+        ),
+        Effect.flatMap((f: Fiber.Fiber<never, void>) =>
+          Effect.sync(() => void part.fibers.add(fiber = f)),
+        ),
+        Effect.provideContext(context),
       )
 
-    const remove = Effect.gen(function* ($) {
+    const remove = Effect.suspend(() => {
       if (fiber) {
         part.fibers.delete(fiber)
-        yield* $(Fiber.interruptFork(fiber))
+        return Fiber.interruptFork(fiber)
       }
+
+      return Effect.unit()
     })
 
     const part = new EventPart(add, remove, name, index)

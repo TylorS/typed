@@ -1,6 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import { Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
+import { pipe } from '@effect/data/Function'
 
 import { RenderContext } from '../RenderContext.js'
 import { Rendered } from '../Rendered.js'
@@ -48,85 +49,50 @@ export function hydrate<R, E>(
   )
 }
 
-export function hydrateRootTemplateResult<R, E>(
+export function hydrateRootTemplateResult(
   hydrateContext: HydateContext,
   result: TemplateResult,
   where: HTMLElement,
-): Effect.Effect<R, E, Rendered | null> {
+): Effect.Effect<never, never, Rendered | null> {
   const cache = getBrowserCache(hydrateContext.renderContext.renderCache, where)
   const rootPartChildNodes = findRootParentChildNodes(where)
 
-  return Effect.gen(function* ($) {
-    if (rootPartChildNodes.childNodes.length === 0) {
-      return yield* $(renderRootTemplateResult<R, E>(hydrateContext.document, hydrateContext.renderContext, result, where))
-    }
-
-    const wire = yield* $(
-      hydrateTemplateResult<R, E>(hydrateContext, result, cache, rootPartChildNodes, -1),
+  if (rootPartChildNodes.childNodes.length === 0) {
+    return renderRootTemplateResult(
+      hydrateContext.document,
+      hydrateContext.renderContext,
+      result,
+      where,
     )
+  }
 
-    if (wire !== cache.wire) {
-      if (cache.wire && !wire) {
-        const nodes = cache.wire.valueOf()
-
-        if (Array.isArray(nodes)) {
-          nodes.forEach((node) => where.removeChild(node))
-        } else {
-          where.removeChild(nodes as globalThis.Node)
-        }
-      }
-
-      cache.wire = wire
-
-      // valueOf() simply returns the node itself, but in case it was a "wire"
-      // it will eventually re-append all nodes to its fragment so that such
-      // fragment can be re-appended many times in a meaningful way
-      // (wires are basically persistent fragments facades with special behavior)
-      if (wire) {
-        const nodes = wire.valueOf()
-
-        where.replaceChildren(...(Array.isArray(nodes) ? nodes : [nodes]))
-      }
-    }
-
-    hydrateContext.hydrate = false
-
-    return cache.wire
-  })
+  return Effect.tap(
+    hydrateTemplateResult(hydrateContext, result, cache, rootPartChildNodes, -1),
+    (wire) =>
+      Effect.sync(() => {
+        cache.wire = wire
+        hydrateContext.hydrate = false
+      }),
+  )
 }
 
-export function hydrateTemplateResult<R, E>(
+export function hydrateTemplateResult(
   hydrateContext: HydateContext,
   result: TemplateResult,
   cache: BrowserCache,
   where: ParentChildNodes,
   rootIndex: number,
   parentTemplate: Template | null = null,
-): Effect.Effect<R, E, Rendered | null> {
-  return Effect.catchAllDefect(
-    Effect.provideSomeContext(
-      Effect.gen(function* ($) {
-        if (!hydrateContext.hydrate) {
-          return yield* $(
-            renderTemplateResult<R, E>(
-              hydrateContext.document,
-              hydrateContext.renderContext,
-              result,
-              cache,
-            ),
-          )
-        }
-
+): Effect.Effect<never, never, Rendered | null> {
+  if (hydrateContext.hydrate) {
+    return Effect.catchAllDefect(
+      Effect.suspend(() => {
         let { entry } = cache
 
         if (!entry || entry.result.template !== result.template) {
           if (cache.entry) {
-            // The entry is changing, so we need to cleanup the previous one
-            yield* $(cache.entry.cleanup)
-
-            // We also need to switch to "standard" rendering
-            return yield* $(
-              renderTemplateResult<R, E>(
+            return Effect.flatMap(cache.entry.cleanup, () =>
+              renderTemplateResult(
                 hydrateContext.document,
                 hydrateContext.renderContext,
                 result,
@@ -135,126 +101,134 @@ export function hydrateTemplateResult<R, E>(
             )
           }
 
-          cache.entry = entry = getHydrateEntry(
-            { document: hydrateContext.document, renderContext: hydrateContext.renderContext, result, browserCache: cache, where, rootIndex, parentTemplate },
-          )
+          cache.entry = entry = getHydrateEntry({
+            document: hydrateContext.document,
+            renderContext: hydrateContext.renderContext,
+            result,
+            browserCache: cache,
+            where,
+            rootIndex,
+            parentTemplate,
+          })
         }
 
         const { template } = entry
 
+        // TODO: Handle lazily instantiating parts
+
         // Render all children before creating the wire
         if (template.parts.length > 0) {
-          yield* $(hydratePlaceholders<R, E>(hydrateContext, result, cache, entry, where))
+          return pipe(
+            hydratePlaceholders(hydrateContext, result, cache, entry, where),
+            Effect.catchAllCause(result.sink.error),
+            Effect.provideContext(result.context),
+            Effect.map(entry.wire),
+          )
         }
 
         // Lazily creates the wire after all childNodes are available
-        return entry.wire()
+        return Effect.succeed(entry.wire())
       }),
-      result.context,
-    ),
-    (defect) => {
-      // If we can't find a comment/rootElement then we need to render the result without hydration
-      if (defect instanceof CouldNotFindCommentError || defect instanceof CouldNotFindRootElement) {
-        return renderTemplateResult(document, hydrateContext.renderContext, result, cache)
-      } else {
-        return Effect.die(defect)
-      }
-    },
-  )
+      (defect) => {
+        // If we can't find a comment/rootElement then we need to render the result without hydration
+        if (
+          defect instanceof CouldNotFindCommentError ||
+          defect instanceof CouldNotFindRootElement
+        ) {
+          return renderTemplateResult(document, hydrateContext.renderContext, result, cache)
+        } else {
+          return Effect.die(defect)
+        }
+      },
+    )
+  }
+
+  return renderTemplateResult(hydrateContext.document, hydrateContext.renderContext, result, cache)
 }
 
-function hydratePlaceholders<R, E>(
+function hydratePlaceholders(
   hydrateContext: HydateContext,
-
   result: TemplateResult,
   cache: BrowserCache,
   entry: BrowserEntry,
   where: ParentChildNodes,
-): Effect.Effect<R, E, void> {
-  return Effect.provideSomeContext(
-    Effect.catchAllCause(
-      Effect.gen(function* ($) {
-        const { values, sink } = result
-        const { onReady, onValue } = yield* $(indexRefCounter(entry.parts.length))
+): Effect.Effect<any, any, void> {
+  const { values, sink } = result
 
-        const renderNode = (part: NodePart) => (value: unknown) =>
-          Effect.gen(function* ($) {
-            if (isTemplateResult(value)) {
-              const rendered = yield* $(
-                hydrateTemplateResult<R, E>(
-                  hydrateContext,
-                  value,
-                  cache.stack[part.index] || (cache.stack[part.index] = makeEmptyBrowerCache()),
-                  where,
-                  part.index,
-                  entry.template,
-                ),
-              )
+  if (result.values === entry.values) return Effect.unit()
 
-              yield* $(part.update(rendered))
-            } else {
-              yield* $(part.update(value))
-            }
-          })
+  return Effect.flatMap(indexRefCounter(entry.parts.length), ({ onReady, onValue }) => {
+    const renderNode = (part: NodePart) => (value: unknown) =>
+      Effect.suspend(() => {
+        if (isTemplateResult(value)) {
+          return Effect.flatMap(
+            hydrateTemplateResult(
+              hydrateContext,
+              value,
+              cache.stack[part.index] || (cache.stack[part.index] = makeEmptyBrowerCache()),
+              where,
+              part.index,
+              entry.template,
+            ),
+            part.update,
+          )
+        }
 
-        const renderPart = (part: Part | SparsePart, index: number) =>
-          Effect.provideSomeContext(
-            Effect.gen(function* ($) {
-              if (part._tag === 'Node') {
-                const value = values[part.index]
+        return part.update(value)
+      })
 
-                // If the value hasn't changed, don't re-render
-                if (entry.values[part.index] === value) return yield* $(onValue(index))
+    const renderPart = (
+      part: Part | SparsePart,
+      index: number,
+    ): Effect.Effect<never, never, void> =>
+      Effect.suspend(() => {
+        if (part._tag === 'Node') {
+          const value = values[part.index]
 
-                part.fibers.add(
-                  yield* $(
-                    unwrapRenderable(value),
-                    Fx.switchMatchCauseEffect(sink.error, renderNode(part)),
-                    Fx.observe(() => onValue(index)),
-                    Effect.catchAllCause(sink.error),
-                    Effect.fork,
-                  ),
-                )
-              } else if (part._tag === 'SparseClassName' || part._tag === 'SparseAttr') {
-                const renderables = part.parts.map((p) =>
-                  p._tag === 'StaticText' ? p.text : values[p.index],
-                )
+          // If the value hasn't changed, don't re-render
+          if (entry.values[part.index] === value) return onValue(index)
 
-                part.fibers.add(
-                  yield* $(
-                    part.observe(
-                      renderables,
-                      Fx.Sink(() => onValue(index), sink.error),
-                    ),
-                    Effect.fork,
-                  ),
-                )
-              } else {
-                const value = values[part.index]
-
-                // If the value hasn't changed, don't re-render
-                if (entry.values[part.index] === value) return yield* $(onValue(index))
-
-                part.fibers.add(
-                  yield* $(
-                    part.observe(
-                      value,
-                      Fx.Sink(() => onValue(index), sink.error),
-                    ),
-                    Effect.fork,
-                  ),
-                )
-              }
-            }),
-            result.context,
+          return pipe(
+            unwrapRenderable(value),
+            Fx.switchMatchCauseEffect(sink.error, renderNode(part)),
+            Fx.observe(() => onValue(index)),
+            Effect.catchAllCause(sink.error),
+            Effect.provideContext(result.context),
+            Effect.fork,
+            Effect.tap((fiber) => Effect.sync(() => part.fibers.add(fiber))),
+          )
+        } else if (part._tag === 'SparseClassName' || part._tag === 'SparseAttr') {
+          const renderables = part.parts.map((p) =>
+            p._tag === 'StaticText' ? p.text : values[p.index],
           )
 
-        yield* $(Effect.all(entry.parts.map(renderPart)))
+          return pipe(
+            part.observe(
+              renderables,
+              Fx.Sink(() => onValue(index), sink.error),
+            ),
+            Effect.provideContext(result.context),
+            Effect.fork,
+            Effect.tap((fiber) => Effect.sync(() => part.fibers.add(fiber))),
+          )
+        } else {
+          const value = values[part.index]
 
-        yield* $(onReady)
-      }),
-      result.sink.error,
-    ),
-    result.context,
-  )
+          // If the value hasn't changed, don't re-render
+          if (entry.values[part.index] === value) return onValue(index)
+
+          return pipe(
+            part.observe(
+              value,
+              Fx.Sink(() => onValue(index), sink.error),
+            ),
+            Effect.provideContext(result.context),
+            Effect.fork,
+            Effect.tap((fiber) => Effect.sync(() => part.fibers.add(fiber))),
+          )
+        }
+      })
+
+    return Effect.flatMap(Effect.allPar(entry.parts.map(renderPart)), () => onReady)
+  })
 }

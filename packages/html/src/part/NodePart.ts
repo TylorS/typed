@@ -31,50 +31,35 @@ export class NodePart extends BasePart<unknown> {
   }
 
   setValue(newValue: unknown): Effect.Effect<never, never, unknown> {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this
-
-    return Effect.gen(function* ($) {
+    return Effect.suspend(() => {
       switch (typeof newValue) {
         // primitives are handled as text content
         case 'string':
         case 'number':
         case 'boolean': {
-          const text = yield* $(that.setTextNode(String(newValue)))
-          that.nodes = yield* $(that.diffChildren(that.nodes, [text], true))
-
-          break
+          return this.handleText(newValue)
         }
         // null, and undefined are used to cleanup previous content
         case 'object':
         case 'undefined': {
           if (!newValue) {
-            that.nodes = yield* $(that.diffChildren(that.nodes, [], false))
+            return this.handleDiff([])
           }
           // arrays and nodes have a special treatment
           else if (Array.isArray(newValue)) {
             // arrays can be used to cleanup, if empty
-            if (newValue.length === 0)
-              that.nodes = yield* $(that.diffChildren(that.nodes, [], false))
+            if (newValue.length === 0) return this.handleDiff([])
             // or diffed, if these contains nodes or "wires"
             else if (newValue.some((x) => typeof x === 'object'))
-              that.nodes = yield* $(
-                that.diffChildren(
-                  that.nodes,
-                  // We can't diff null values, so we filter them out
-                  newValue.filter((x) => x !== null),
-                  false,
-                ),
-              )
+              return this.handleDiff(newValue.filter((x) => x !== null))
             // in all other cases the content is stringified as is
-            else yield* $(that.setValue(String(newValue)))
+            else this.setValue(String(newValue))
           } else {
-            that.nodes = yield* $(that.diffChildren(that.nodes, [newValue as Node], false))
+            return this.handleDiff([newValue as Node])
           }
-
-          break
         }
       }
+      return Effect.unit()
     })
   }
 
@@ -108,6 +93,21 @@ export class NodePart extends BasePart<unknown> {
           return text
         }),
       previousNodes,
+    )
+  }
+
+  protected handleText(newValue: unknown) {
+    return Effect.tap(
+      Effect.flatMap(this.setTextNode(String(newValue)), (text) =>
+        this.diffChildren(this.nodes, [text], true),
+      ),
+      (nodes) => Effect.sync(() => (this.nodes = nodes)),
+    )
+  }
+
+  protected handleDiff(next: Node[]) {
+    return Effect.tap(this.diffChildren(this.nodes, next, false), (nodes) =>
+      Effect.sync(() => (this.nodes = nodes)),
     )
   }
 }

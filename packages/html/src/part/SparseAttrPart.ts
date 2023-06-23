@@ -66,10 +66,12 @@ export class SparseAttrPart {
     }
 
     function setValue(value: string | null, index: number) {
-      return Effect.gen(function* ($) {
+      return Effect.suspend(() => {
         values.set(index, value)
 
-        if (values.size === nodes.length) yield* $(setAttribute(getValue()))
+        if (values.size === nodes.length) return setAttribute(getValue())
+
+        return Effect.unit()
       })
     }
 

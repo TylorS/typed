@@ -2,16 +2,8 @@ import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 
 export function indexRefCounter(expected: number) {
-  return Effect.gen(function* ($) {
-    if (expected === 0) {
-      return {
-        onReady: Effect.unit(),
-        onValue: () => Effect.unit(),
-      }
-    }
-
+  return Effect.map(Deferred.make<never, void>(), (deferred) => {
     const hasValue = new Set<number>()
-    const deferred = yield* $(Deferred.make<never, void>())
     const done = Deferred.succeed(deferred, undefined)
 
     let finished = false

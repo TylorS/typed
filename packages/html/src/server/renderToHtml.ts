@@ -26,6 +26,8 @@ export type ServerTemplateCache = {
   readonly chunks: readonly HtmlChunk[]
 }
 
+const unit_ = Effect.unit()
+
 export function renderToHtmlStream<R, E>(
   fx: Fx.Fx<R, E, TemplateResult>,
 ): Fx.Fx<R | RenderContext, E, string> {
@@ -128,7 +130,7 @@ function renderTemplateResult<R, E>(
 
                           return emitHtml(renderChunk.index)
                         }
-                        return Effect.unit()
+                        return unit_
                       }),
                     ),
                     Effect.catchAllCause(sink.error),
@@ -143,6 +145,7 @@ function renderTemplateResult<R, E>(
                     Effect.matchCauseEffect(sink.error, () =>
                       onChunk(renderChunk.index, renderChunk.chunk.render(renderChunk.part.value)),
                     ),
+                    fork,
                   )
                 } else {
                   fibers.set(
@@ -181,62 +184,60 @@ function renderTemplateResult<R, E>(
           // Wait for all chunks to be rendered
           yield* $(Deferred.await(deferred))
 
-          function emitHtml(index: number): Effect.Effect<R2, E, void> {
-            return Effect.gen(function* ($) {
+          function emitHtml(index: number): Effect.Effect<never, never, void> {
+            return Effect.suspend(() => {
               if (index === currentIndex && indexToHtml.has(index)) {
                 const html = indexToHtml.get(index) as string
+                const fiber = fibers.get(index)
 
                 indexToHtml.delete(index)
+                fibers.delete(index)
 
-                if (html.length > 0) yield* $(sink.event(html))
+                const effects = [
+                  html.length > 0 ? Effect.provideContext(sink.event(html), context) : unit_,
+                  fiber ? Fiber.interruptFork(fiber) : unit_,
+                  index === lastIndex
+                    ? Deferred.succeed(deferred, undefined)
+                    : emitHtml(++currentIndex),
+                ]
 
-                const fiber = fibers.get(index)
-                if (fiber) {
-                  yield* $(Fiber.interruptFork(fiber))
-                }
-
-                if (index === lastIndex) {
-                  yield* $(Deferred.succeed(deferred, undefined))
-                } else {
-                  yield* $(emitHtml(++currentIndex))
-                }
+                return Effect.all(effects)
               }
+
+              return unit_
             })
           }
 
-          function onChunk(index: number, value: string) {
+          function onChunk(index: number, value: string): Effect.Effect<never, never, void> {
             if (currentIndex > index)
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              return fibers.has(index) ? Fiber.interrupt(fibers.get(index)!) : Effect.unit()
+              return fibers.has(index) ? Fiber.interrupt(fibers.get(index)!) : unit_
 
-            return Effect.provideContext(
-              Effect.catchAllCause(
-                Effect.gen(function* ($) {
-                  // TemplateResult's are handled differently as they can be rendered
-                  // incrementally
-                  if (templateResults.has(index)) {
-                    const currentHtml = pendingHtml.get(index) || ''
-                    const html = currentHtml + value
+            return Effect.suspend(() => {
+              // TemplateResult's are handled differently as they can be rendered
+              // incrementally
+              if (templateResults.has(index)) {
+                const currentHtml = pendingHtml.get(index) || ''
+                const html = currentHtml + value
 
-                    // Stream the HTML if we're at the current index
-                    if (index === currentIndex) {
-                      pendingHtml.delete(index)
-                      yield* $(sink.event(html))
-                      // Otherwise store the HTML for later
-                    } else {
-                      pendingHtml.set(index, html)
-                    }
-                    // All others are rendered immediately
-                  } else {
-                    indexToHtml.set(index, value)
+                // Stream the HTML if we're at the current index
+                if (index === currentIndex) {
+                  pendingHtml.delete(index)
 
-                    yield* $(emitHtml(index))
-                  }
-                }),
-                sink.error,
-              ),
-              context,
-            )
+                  return Effect.provideContext(sink.event(html), context)
+                } else {
+                  // Otherwise store the HTML for later
+                  pendingHtml.set(index, html)
+
+                  return unit_
+                }
+                // All others are rendered immediately
+              } else {
+                indexToHtml.set(index, value)
+
+                return emitHtml(index)
+              }
+            })
           }
         }),
         result.context,

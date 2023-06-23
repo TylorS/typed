@@ -1,6 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import { Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
+import { pipe } from '@effect/data/Function'
 
 import { RenderContext } from '../RenderContext.js'
 import { Rendered } from '../Rendered.js'
@@ -32,48 +33,45 @@ export function render<R, E>(
   )
 }
 
-export function renderRootTemplateResult<R, E>(
+export function renderRootTemplateResult(
   document: Document,
   renderContext: RenderContext,
   result: TemplateResult,
   where: HTMLElement,
-): Effect.Effect<R, E, Rendered | null> {
+): Effect.Effect<never, never, Rendered | null> {
   const cache = getBrowserCache(renderContext.renderCache, where)
 
-  return Effect.gen(function* ($) {
-    const wire = yield* $(
-      renderTemplateResult<R, E>(document, renderContext, result, cache),
-      Effect.provideSomeContext(result.context),
-    )
+  return Effect.tap(renderTemplateResult(document, renderContext, result, cache), (wire) =>
+    Effect.sync(() => {
+      if (wire !== cache.wire) {
+        if (cache.wire && !wire) where.removeChild(cache.wire as globalThis.Node)
 
-    if (wire !== cache.wire) {
-      if (cache.wire && !wire) where.removeChild(cache.wire as globalThis.Node)
-
-      cache.wire = wire
-      // valueOf() simply returns the node itself, but in case it was a "wire"
-      // it will eventually re-append all nodes to its fragment so that such
-      // fragment can be re-appended many times in a meaningful way
-      // (wires are basically persistent fragments facades with special behavior)
-      if (wire) where.replaceChildren(wire.valueOf() as globalThis.Node)
-    }
-
-    return cache.wire
-  })
+        cache.wire = wire
+        // valueOf() simply returns the node itself, but in case it was a "wire"
+        // it will eventually re-append all nodes to its fragment so that such
+        // fragment can be re-appended many times in a meaningful way
+        // (wires are basically persistent fragments facades with special behavior)
+        if (wire) where.replaceChildren(wire.valueOf() as globalThis.Node)
+      }
+    }),
+  )
 }
 
-export function renderTemplateResult<R, E>(
+export function renderTemplateResult(
   document: Document,
   renderContext: RenderContext,
   result: TemplateResult,
   cache: BrowserCache,
-): Effect.Effect<R, E, Rendered | null> {
-  return Effect.gen(function* ($) {
+): Effect.Effect<never, never, Rendered | null> {
+  return Effect.suspend(() => {
     let { entry } = cache
+
+    const effects: Effect.Effect<never, never, unknown>[] = []
 
     if (!entry || entry.result.template !== result.template) {
       // The entry is changing, so we need to cleanup the previous one
       if (cache.entry) {
-        yield* $(cache.entry.cleanup)
+        effects.push(cache.entry.cleanup)
       }
 
       cache.entry = entry = getRenderEntry({ document, renderContext, result, browserCache: cache })
@@ -83,109 +81,109 @@ export function renderTemplateResult<R, E>(
 
     // Render all children before creating the wire
     if (template.parts.length > 0) {
-      yield* $(renderPlaceholders<R, E>(document, renderContext, result, cache, entry))
+      effects.push(
+        Effect.provideContext(
+          Effect.catchAllCause(
+            renderPlaceholders(document, renderContext, result, cache, entry),
+            result.sink.error,
+          ),
+          result.context,
+        ),
+      )
     }
 
     // Lazily creates the wire after all childNodes are available
-    return entry.wire()
+    return Effect.map(Effect.all(effects), entry.wire)
   })
 }
 
-function renderPlaceholders<R, E>(
+function renderPlaceholders(
   document: Document,
   renderContext: RenderContext,
   result: TemplateResult,
   cache: BrowserCache,
   entry: BrowserEntry,
-): Effect.Effect<R, E, void> {
-  return Effect.provideSomeContext(
-    Effect.catchAllCause(
-      Effect.gen(function* ($) {
-        const { values, sink } = result
-        const { onReady, onValue } = yield* $(indexRefCounter(entry.parts.length))
+): Effect.Effect<never, never, void> {
+  const { values, sink } = result
 
-        const renderNode = (part: NodePart) => (value: unknown) =>
-          Effect.gen(function* ($) {
-            if (isTemplateResult(value)) {
-              const rendered = yield* $(
-                renderTemplateResult<R, E>(
-                  document,
-                  renderContext,
-                  value,
-                  cache.stack[part.index] || (cache.stack[part.index] = makeEmptyBrowerCache()),
-                ),
-              )
+  return pipe(
+    indexRefCounter(entry.parts.length),
+    Effect.flatMap(({ onReady, onValue }) => {
+      const renderNode = (part: NodePart) => (value: unknown) =>
+        Effect.suspend(() => {
+          if (isTemplateResult(value)) {
+            return Effect.flatMap(
+              renderTemplateResult(
+                document,
+                renderContext,
+                value,
+                cache.stack[part.index] || (cache.stack[part.index] = makeEmptyBrowerCache()),
+              ),
+              part.update,
+            )
+          } else {
+            return part.update(value)
+          }
+        })
 
+      const renderPart = (
+        part: Part | SparsePart,
+        index: number,
+      ): Effect.Effect<never, never, void> =>
+        Effect.suspend(() => {
+          if (part._tag === 'Node') {
+            const value = values[part.index]
 
-              yield* $(part.update(rendered))
-            } else {
-              yield* $(part.update(value))
-            }
-          })
+            // If the value hasn't changed, don't re-render
+            if (entry.values[part.index] === value) return onValue(index)
 
-        const renderPart = (
-          part: Part | SparsePart,
-          index: number,
-        ): Effect.Effect<never, never, void> =>
-          Effect.provideSomeContext(
-            Effect.gen(function* ($) {
-              if (part._tag === 'Node') {
-                const value = values[part.index]
+            return pipe(
+              unwrapRenderable(value),
+              Fx.switchMatchCauseEffect(sink.error, renderNode(part)),
+              Fx.observe(() => onValue(index)),
+              Effect.catchAllCause(sink.error),
+              Effect.provideContext(result.context),
+              Effect.fork,
+              Effect.tap((fiber) => Effect.sync(() => part.fibers.add(fiber))),
+            )
+          } else if (part._tag === 'SparseClassName' || part._tag === 'SparseAttr') {
+            const renderables = part.parts.map((p) =>
+              p._tag === 'StaticText' ? p.text : values[p.index],
+            )
 
-                // If the value hasn't changed, don't re-render
-                if (entry.values[part.index] === value) return yield* $(onValue(index))
+            return pipe(
+              part.observe(
+                renderables,
+                Fx.Sink(() => onValue(index), sink.error),
+              ),
+              Effect.provideContext(result.context),
+              Effect.fork,
+              Effect.tap((fiber) => Effect.sync(() => part.fibers.add(fiber))),
+            )
+          } else {
+             const value = values[part.index]
 
-                part.fibers.add(
-                  yield* $(
-                    unwrapRenderable(value),
-                    Fx.switchMatchCauseEffect(sink.error, renderNode(part)),
-                    Fx.observe(() => onValue(index)),
-                    Effect.catchAllCause(sink.error),
-                    Effect.fork,
-                  ),
-                )
-              } else if (part._tag === 'SparseClassName' || part._tag === 'SparseAttr') {
-                const renderables = part.parts.map((p) =>
-                  p._tag === 'StaticText' ? p.text : values[p.index],
-                )
+          // If the value hasn't changed, don't re-render
+            if (entry.values[part.index] === value) return onValue(index)
 
-                part.fibers.add(
-                  yield* $(
-                    part.observe(
-                      renderables,
-                      Fx.Sink(() => onValue(index), sink.error),
-                    ),
-                    Effect.fork,
-                  ),
-                )
-              } else {
-                const value = values[part.index]
+            return pipe(
+              part.observe(
+                value,
+                Fx.Sink(() => onValue(index), sink.error),
+              ),
+              Effect.provideContext(result.context),
+              Effect.fork,
+              Effect.tap((fiber) => Effect.sync(() => part.fibers.add(fiber))),
+            )
+          }
+        })
 
-                // If the value hasn't changed, don't re-render
-                if (entry.values[part.index] === value) return yield* $(onValue(index))
-
-                part.fibers.add(
-                  yield* $(
-                    part.observe(
-                      value,
-                      Fx.Sink(() => onValue(index), sink.error),
-                    ),
-                    Effect.fork,
-                  ),
-                )
-              }
-            }),
-            result.context,
-          )
-
-        yield* $(Effect.all(entry.parts.map(renderPart)))
-
-        entry.values = result.values
-
-        yield* $(onReady)
-      }),
-      result.sink.error,
-    ),
-    result.context,
+      return Effect.zip(
+        Effect.flatMap(Effect.allPar(entry.parts.map(renderPart)), () =>
+          Effect.sync(() => (entry.values = values)),
+        ),
+        onReady,
+      )
+    }),
   )
 }
