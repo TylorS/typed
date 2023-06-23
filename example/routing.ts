@@ -36,7 +36,17 @@ export const router = Router.match(
 export const layout = <Content extends Renderable<any, any>>(content: Content) =>
   html`<main>
     <nav>
-      <ul></ul>
+      <ul>
+        ${ListItemLink(homeRoute.path, 'Home')}
+        ${ListItemLink(fooRoute.make({ foo: '1' }), 'Foo 1')}
+        ${ListItemLink(fooRoute.make({ foo: '2' }), 'Foo 2')}
+        ${ListItemLink(barRoute.make({ bar: '1' }), 'Bar 1')}
+        ${ListItemLink(barRoute.make({ bar: '2' }), 'Bar 2')}
+        ${ListItemLink(fooBarRoute.make({ foo: '1', bar: '1' }), 'Foo 1 Bar 1')}
+        ${ListItemLink(fooBarRoute.make({ foo: '1', bar: '2' }), 'Foo 1 Bar 2')}
+        ${ListItemLink(fooBarRoute.make({ foo: '2', bar: '1' }), 'Foo 2 Bar 1')}
+        ${ListItemLink('/funky-town', 'Funky Town')}
+      </ul>
     </nav>
     <section>${content}</section>
   </main>`
