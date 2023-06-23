@@ -2,11 +2,10 @@ import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import { Sink } from '@typed/fx'
 
+import { ElementRef, isElementRef } from '../ElementRef.js'
 import { Renderable } from '../Renderable.js'
 
 import { BasePart } from './BasePart.js'
-
-import { ElementRef, isElementRef } from '@typed/html/ElementRef.js'
 
 export class RefPart extends BasePart<ElementRef<HTMLElement> | null> {
   readonly _tag = 'Ref' as const

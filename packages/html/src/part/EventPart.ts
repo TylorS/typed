@@ -5,11 +5,10 @@ import { Context } from '@typed/context'
 import { addEventListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
+import { EventHandler } from '../EventHandler.js'
 import { Renderable } from '../Renderable.js'
 
 import { BasePart } from './BasePart.js'
-
-import { EventHandler } from '@typed/html/EventHandler.js'
 
 export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
   readonly _tag = 'Event' as const

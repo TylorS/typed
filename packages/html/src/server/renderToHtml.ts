@@ -4,7 +4,7 @@ import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
-import { withScopedFork } from '@typed/fx/helpers.js'
+import { withScopedFork } from '@typed/fx/helpers'
 
 import { isDirective } from '../Directive.js'
 import { RenderContext } from '../RenderContext.js'

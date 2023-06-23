@@ -5,6 +5,7 @@ import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import { GlobalThis, makeDomServices } from '@typed/dom'
 import * as Fx from '@typed/fx'
+import { isWire } from '@typed/wire'
 import { describe, it } from 'vitest'
 
 import { attrDirective } from '../Directive.js'
@@ -12,6 +13,7 @@ import { RenderContext, makeRenderContext } from '../RenderContext.js'
 import { html } from '../RenderTemplate.js'
 import { Rendered } from '../Rendered.js'
 import { TemplateResult } from '../TemplateResult.js'
+import { counter } from '../_test_components.js'
 import { TYPED_HOLE } from '../meta.js'
 import { makeServerWindow } from '../server/makeServerWindow.js'
 
@@ -113,6 +115,26 @@ describe(render.name, () => {
           ok(rendered instanceof globalThis.HTMLDivElement)
           deepStrictEqual(rendered.outerHTML, '<div id="foo bar"></div>')
         }),
+    )
+
+    await Effect.runPromise(test)
+  })
+
+  it('renders components with wires', async () => {
+    const test = testRendered(counter, (rendered) =>
+      // eslint-disable-next-line require-yield
+      Effect.gen(function* ($) {
+        const globalThis = yield* $(GlobalThis)
+
+        ok(rendered && isWire(rendered))
+        const { childNodes } = rendered.valueOf()
+
+        deepStrictEqual(childNodes.length, 3)
+
+        ok(childNodes[0] instanceof globalThis.HTMLButtonElement)
+        ok(childNodes[1] instanceof globalThis.HTMLSpanElement)
+        ok(childNodes[2] instanceof globalThis.HTMLButtonElement)
+      }),
     )
 
     await Effect.runPromise(test)

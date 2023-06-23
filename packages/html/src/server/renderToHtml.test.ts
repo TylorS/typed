@@ -18,6 +18,7 @@ import { EventHandler } from '../EventHandler.js'
 import { RenderContext, makeRenderContext } from '../RenderContext.js'
 import { html } from '../RenderTemplate.js'
 import { TemplateResult } from '../TemplateResult.js'
+import { counter } from '../_test_components.js'
 import { TEXT_START, TYPED_ATTR, TYPED_HOLE } from '../meta.js'
 
 import { renderToHtmlStream } from './renderToHtml.js'
@@ -255,6 +256,16 @@ describe(renderToHtmlStream.name, () => {
       ],
     )
   })
+
+  it('renders components with wires', async () => {
+    await testHtmlChunks(Fx.scoped(counter), [
+      `<button data-typed="..." id="decrement">-${TYPED_ATTR(
+        0,
+      )}</button><span data-typed="..." id="count">`,
+      `${TEXT_START}0${TYPED_HOLE(1)}`,
+      `</span><button data-typed="..." id="increment">+${TYPED_ATTR(2)}</button>`,
+    ])
+  })
 })
 
 function provideResources<R, E, A>(effect: Effect.Effect<R, E, A>) {
@@ -273,11 +284,12 @@ async function testHtmlChunks(
       provideResources,
       Effect.runPromise,
     )
-  ).map(flow(stripDataTyped, stripSelfClosingComment))
+  )
+    .map(flow(stripDataTyped, stripSelfClosingComment))
+    .slice(1, -1) // Remove TYPED_START + TYPED_END from actual
 
   try {
-    // Remove TYPED_START + TYPED_END from actual
-    deepStrictEqual(actual.slice(1, -1), expected)
+    deepStrictEqual(actual, expected)
   } catch (error) {
     console.log(`Actual:`, JSON.stringify(actual, null, 2))
     console.log(`Expected:`, JSON.stringify(expected, null, 2))

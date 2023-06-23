@@ -16,9 +16,9 @@ const counter = Fx.gen(function* ($) {
   const decrement = count.update((n) => n - 1)
 
   return html`
-    <button id="${'decrement'}" onclick=${decrement}>-</button>
+    <button id="decrement" onclick=${decrement}>-</button>
     <span>${count}</span>
-    <button id="${'increment'}" onclick=${increment}>+</button>
+    <button id="increment" onclick=${increment}>+</button>
   `
 })
 

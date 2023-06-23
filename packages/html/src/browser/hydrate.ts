@@ -56,14 +56,27 @@ export function hydrateRootTemplateResult<R, E>(
     )
 
     if (wire !== cache.wire) {
-      if (cache.wire && !wire) where.removeChild(cache.wire as globalThis.Node)
+      if (cache.wire && !wire) {
+        const nodes = cache.wire.valueOf()
+
+        if (Array.isArray(nodes)) {
+          nodes.forEach((node) => where.removeChild(node))
+        } else {
+          where.removeChild(nodes as globalThis.Node)
+        }
+      }
 
       cache.wire = wire
+
       // valueOf() simply returns the node itself, but in case it was a "wire"
       // it will eventually re-append all nodes to its fragment so that such
       // fragment can be re-appended many times in a meaningful way
       // (wires are basically persistent fragments facades with special behavior)
-      if (wire) where.replaceChildren(wire.valueOf() as globalThis.Node)
+      if (wire) {
+        const nodes = wire.valueOf()
+
+        where.replaceChildren(...(Array.isArray(nodes) ? nodes : [nodes]))
+      }
     }
 
     return cache.wire

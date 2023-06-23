@@ -12,6 +12,7 @@ import { RenderContext, makeRenderContext } from '../RenderContext.js'
 import { html } from '../RenderTemplate.js'
 import { Rendered } from '../Rendered.js'
 import { TemplateResult } from '../TemplateResult.js'
+import { counter } from '../_test_components.js'
 import { TYPED_ATTR, TYPED_HOLE } from '../meta.js'
 import { makeServerWindow } from '../server/makeServerWindow.js'
 import { renderToHtml } from '../server/renderToHtml.js'
@@ -142,6 +143,35 @@ describe(hydrate.name, () => {
     })
 
     await Effect.runPromise(Effect.scoped(test))
+  })
+
+  it('renders components with wires', async () => {
+    const test = testHydrate(
+      counter,
+      (body) => ({
+        increment: body.querySelector('button#increment'),
+        decrement: body.querySelector('button#decrement'),
+        count: body.querySelector('span#count'),
+      }),
+      ({ increment, decrement, count }, rendered) =>
+        // eslint-disable-next-line require-yield
+        Effect.gen(function* ($) {
+          const globalThis = yield* $(GlobalThis)
+
+          ok(Array.isArray(rendered))
+
+          deepStrictEqual(rendered.length, 3)
+
+          ok(rendered[0] instanceof globalThis.HTMLButtonElement)
+          deepStrictEqual(rendered[0], decrement)
+          ok(rendered[1] instanceof globalThis.HTMLSpanElement)
+          deepStrictEqual(rendered[1], count)
+          ok(rendered[2] instanceof globalThis.HTMLButtonElement)
+          deepStrictEqual(rendered[2], increment)
+        }),
+    )
+
+    await Effect.runPromise(test)
   })
 })
 

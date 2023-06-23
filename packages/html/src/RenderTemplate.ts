@@ -6,28 +6,30 @@ import type { Placeholder } from './Placeholder.js'
 import { Renderable } from './Renderable.js'
 import { TemplateResult } from './TemplateResult.js'
 
+export interface TemplateFx<R, E, A> extends Fx.Fx<R, E, A> {
+  readonly template: TemplateStringsArray
+}
+
 export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
-): Fx.Fx<
+): TemplateFx<
   Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
   TemplateResult
-> & {
-  readonly template: TemplateStringsArray
-} {
+> {
   return Object.assign(renderTemplate(template, values), { template })
 }
 
 export function svg<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
-): Fx.Fx<
+): TemplateFx<
   Placeholder.ResourcesOf<Values[number]>,
   Placeholder.ErrorsOf<Values[number]>,
   TemplateResult
 > {
-  return renderTemplate(template, values, { isSvg: true })
+  return Object.assign(renderTemplate(template, values, { isSvg: true }), { template })
 }
 
 export interface RenderTemplateOptions {

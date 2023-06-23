@@ -4,12 +4,11 @@ import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
 import { Renderable } from '../Renderable.js'
+import { ClassNamePartNode, TextNode } from '../parser/parser.js'
 
 import { ClassNamePart } from './ClassNamePart.js'
 import { StaticTextPart } from './StaticTextPart.js'
 import { unwrapSparsePartRenderables } from './updates.js'
-
-import { ClassNamePartNode, TextNode } from '@typed/html/parser/parser'
 
 export class SparseClassNamePart {
   readonly _tag = 'SparseClassName' as const

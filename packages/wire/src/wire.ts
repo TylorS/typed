@@ -59,3 +59,11 @@ export const persistent = (fragment: DocumentFragment): DocumentFragment | Node 
     },
   }
 }
+
+type Rendered = Node | DocumentFragment | Wire | readonly Rendered[]
+
+export function isWire(node: Rendered): node is Wire {
+  if (!Array.isArray(node)) return (node as Node | Document | Wire).nodeType === nodeType
+
+  return false
+}

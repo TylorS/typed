@@ -85,15 +85,11 @@ export function getRenderEntry(
     renderContext.templateCache,
   )
 
-  const parts = template.parts.map(([part, path]): Part | SparsePart =>
-    partNodeToPart(
-      document,
-      findPath(content, path) as HTMLElement,
-      part,
-      result.context,
-      result.sink.error,
-    ),
-  )
+  const parts = template.parts.map(([part, path]): Part | SparsePart => {
+    const element = findPath(content, path) as HTMLElement
+
+    return partNodeToPart(document, element, part, result.context, result.sink.error)
+  })
 
   const cleanup = Effect.forkDaemon(
     Effect.allPar(
@@ -218,15 +214,11 @@ export function getHydrateEntry(
     where = findTemplateResultPartChildNodes(where, parentTemplate, template, rootIndex)
   }
 
-  const parts = template.parts.map(([part, path]): Part | SparsePart =>
-    partNodeToPart(
-      document,
-      findPath(where, path) as HTMLElement,
-      part,
-      result.context,
-      result.sink.error,
-    ),
-  )
+  const parts = template.parts.map(([part, path]): Part | SparsePart => {
+    const parent = findPath(where, path) as HTMLElement
+
+    return partNodeToPart(document, parent, part, result.context, result.sink.error)
+  })
 
   const cleanup = Effect.forkDaemon(
     Effect.allPar(

@@ -7,8 +7,7 @@ import { fileURLToPath } from 'url'
 import { flow, pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
-import { HtmlEvent, renderToHtml, renderToHtmlStream } from '@typed/html'
-import { server } from '@typed/html/server'
+import { renderToHtml, renderToHtmlStream, server } from '@typed/html/server'
 import * as Router from '@typed/router'
 import express from 'express'
 import staticGzip from 'express-static-gzip'
@@ -32,8 +31,8 @@ const ui = layout(router)
 const uiStream = renderToHtmlStream(ui)
 const uiHtml = renderToHtml(ui)
 
-const writeToResponse = (res: express.Response) => (chunk: HtmlEvent) =>
-  Effect.sync(() => res.write(chunk.html))
+const writeToResponse = (res: express.Response) => (chunk: string) =>
+  Effect.sync(() => res.write(chunk))
 
 const provideUiResources = (req: express.Request) => {
   return flow(

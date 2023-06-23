@@ -133,7 +133,7 @@ export function findPreviousNodes(comment: Comment, index: number) {
 
   let node = comment.previousSibling
   while (node && !isCommentWithValue(node, previousIndex)) {
-    nodes.push(node)
+    nodes.unshift(node)
     node = node.previousSibling
   }
 
