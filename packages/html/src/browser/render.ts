@@ -1,7 +1,7 @@
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import { Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
-import { pipe } from '@effect/data/Function'
 
 import { RenderContext } from '../RenderContext.js'
 import { Rendered } from '../Rendered.js'
@@ -71,7 +71,7 @@ export function renderTemplateResult(
     if (!entry || entry.result.template !== result.template) {
       // The entry is changing, so we need to cleanup the previous one
       if (cache.entry) {
-        effects.push(cache.entry.cleanup)
+        effects.push(Effect.uninterruptible(cache.entry.cleanup))
       }
 
       cache.entry = entry = getRenderEntry({ document, renderContext, result, browserCache: cache })
@@ -93,7 +93,7 @@ export function renderTemplateResult(
     }
 
     // Lazily creates the wire after all childNodes are available
-    return Effect.map(Effect.all(effects), entry.wire)
+    return Effect.map(Effect.allPar(effects), entry.wire)
   })
 }
 
@@ -120,6 +120,38 @@ function renderPlaceholders(
                 cache.stack[part.index] || (cache.stack[part.index] = makeEmptyBrowerCache()),
               ),
               part.update,
+            )
+          } else if (Array.isArray(value)) {
+            const arrayCache =
+              cache.stack[part.index] || (cache.stack[part.index] = makeEmptyBrowerCache())
+
+            const effects: Effect.Effect<any, any, any>[] = []
+            // Cleanup up entries that have been removed from the array
+            for (let j = value.length; j < arrayCache.stack.length; j++) {
+              const arrayStackItem = arrayCache.stack[j]
+
+              if (arrayStackItem && arrayStackItem.entry) {
+                effects.push(arrayStackItem.entry.cleanup)
+                arrayCache.stack[j] = null
+              }
+            }
+
+            return Effect.flatMap(Effect.forkDaemon(Effect.all(effects)), () =>
+              Effect.flatMap(
+                Effect.allPar(
+                  value.map((v, i) =>
+                    isTemplateResult(v)
+                      ? renderTemplateResult(
+                          document,
+                          renderContext,
+                          v,
+                          arrayCache.stack[i] || (arrayCache.stack[i] = makeEmptyBrowerCache()),
+                        )
+                      : Effect.succeed(v),
+                  ),
+                ),
+                part.update,
+              ),
             )
           } else {
             return part.update(value)
@@ -161,9 +193,9 @@ function renderPlaceholders(
               Effect.tap((fiber) => Effect.sync(() => part.fibers.add(fiber))),
             )
           } else {
-             const value = values[part.index]
+            const value = values[part.index]
 
-          // If the value hasn't changed, don't re-render
+            // If the value hasn't changed, don't re-render
             if (entry.values[part.index] === value) return onValue(index)
 
             return pipe(

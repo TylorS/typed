@@ -1,7 +1,7 @@
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import { Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
-import { pipe } from '@effect/data/Function'
 
 import { RenderContext } from '../RenderContext.js'
 import { Rendered } from '../Rendered.js'
@@ -57,6 +57,7 @@ export function hydrateRootTemplateResult(
   const cache = getBrowserCache(hydrateContext.renderContext.renderCache, where)
   const rootPartChildNodes = findRootParentChildNodes(where)
 
+  // If we can't find where to hydrate, we render normally
   if (rootPartChildNodes.childNodes.length === 0) {
     return renderRootTemplateResult(
       hydrateContext.document,
@@ -71,6 +72,7 @@ export function hydrateRootTemplateResult(
     (wire) =>
       Effect.sync(() => {
         cache.wire = wire
+        // We only utilize hydration the first time around
         hydrateContext.hydrate = false
       }),
   )
@@ -84,66 +86,59 @@ export function hydrateTemplateResult(
   rootIndex: number,
   parentTemplate: Template | null = null,
 ): Effect.Effect<never, never, Rendered | null> {
-  if (hydrateContext.hydrate) {
-    return Effect.catchAllDefect(
-      Effect.suspend(() => {
-        let { entry } = cache
+  return Effect.catchAllDefect(
+    Effect.suspend(() => {
+      let { entry } = cache
 
-        if (!entry || entry.result.template !== result.template) {
-          if (cache.entry) {
-            return Effect.flatMap(cache.entry.cleanup, () =>
-              renderTemplateResult(
-                hydrateContext.document,
-                hydrateContext.renderContext,
-                result,
-                cache,
-              ),
-            )
-          }
-
-          cache.entry = entry = getHydrateEntry({
-            document: hydrateContext.document,
-            renderContext: hydrateContext.renderContext,
-            result,
-            browserCache: cache,
-            where,
-            rootIndex,
-            parentTemplate,
-          })
-        }
-
-        const { template } = entry
-
-        // TODO: Handle lazily instantiating parts
-
-        // Render all children before creating the wire
-        if (template.parts.length > 0) {
-          return pipe(
-            hydratePlaceholders(hydrateContext, result, cache, entry, where),
-            Effect.catchAllCause(result.sink.error),
-            Effect.provideContext(result.context),
-            Effect.map(entry.wire),
+      if (!entry || entry.result.template !== result.template) {
+        if (cache.entry) {
+          return Effect.flatMap(Effect.uninterruptible(cache.entry.cleanup), () =>
+            renderTemplateResult(
+              hydrateContext.document,
+              hydrateContext.renderContext,
+              result,
+              cache,
+            ),
           )
         }
 
-        // Lazily creates the wire after all childNodes are available
-        return Effect.succeed(entry.wire())
-      }),
-      (defect) => {
-        // If we can't find a comment/rootElement then we need to render the result without hydration
-        if (
-          defect instanceof CouldNotFindCommentError ||
-          defect instanceof CouldNotFindRootElement
-        ) {
-          return renderTemplateResult(document, hydrateContext.renderContext, result, cache)
-        } else {
-          return Effect.die(defect)
-        }
-      },
-    )
-  }
+        cache.entry = entry = getHydrateEntry({
+          document: hydrateContext.document,
+          renderContext: hydrateContext.renderContext,
+          result,
+          browserCache: cache,
+          where,
+          rootIndex,
+          parentTemplate,
+        })
+      }
 
-  return renderTemplateResult(hydrateContext.document, hydrateContext.renderContext, result, cache)
+      const { template } = entry
+
+      // TODO: Handle lazily instantiating parts
+
+      // Render all children before creating the wire
+      if (template.parts.length > 0) {
+        return pipe(
+          hydratePlaceholders(hydrateContext, result, cache, entry, where),
+          Effect.catchAllCause(result.sink.error),
+          Effect.provideContext(result.context),
+          Effect.map(entry.wire),
+        )
+      }
+
+      // Lazily creates the wire after all childNodes are available
+      return Effect.succeed(entry.wire())
+    }),
+    (defect) => {
+      // If we can't find a comment/rootElement then we need to render the result without hydration
+      if (defect instanceof CouldNotFindCommentError || defect instanceof CouldNotFindRootElement) {
+        return renderTemplateResult(document, hydrateContext.renderContext, result, cache)
+      } else {
+        return Effect.die(defect)
+      }
+    },
+  )
 }
 
 function hydratePlaceholders(
@@ -171,6 +166,42 @@ function hydratePlaceholders(
               entry.template,
             ),
             part.update,
+          )
+        } else if (Array.isArray(value)) {
+          // TODO: Diff the array of values against the stack somehow
+
+          const arrayCache =
+            cache.stack[part.index] || (cache.stack[part.index] = makeEmptyBrowerCache())
+
+          const effects: Effect.Effect<any, any, any>[] = []
+          // Cleanup up entries that have been removed from the array
+          for (let j = value.length; j < arrayCache.stack.length; j++) {
+            const arrayStackItem = arrayCache.stack[j]
+
+            if (arrayStackItem && arrayStackItem.entry) {
+              effects.push(arrayStackItem.entry.cleanup)
+              arrayCache.stack[j] = null
+            }
+          }
+
+          return Effect.flatMap(Effect.forkDaemon(Effect.all(effects)), () =>
+            Effect.flatMap(
+              Effect.allPar(
+                value.map((v, i) =>
+                  isTemplateResult(v)
+                    ? hydrateTemplateResult(
+                        hydrateContext,
+                        v,
+                        arrayCache.stack[i] || (arrayCache.stack[i] = makeEmptyBrowerCache()),
+                        where,
+                        part.index,
+                        entry.template,
+                      )
+                    : Effect.succeed(v),
+                ),
+              ),
+              part.update,
+            ),
           )
         }
 

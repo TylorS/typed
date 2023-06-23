@@ -35,30 +35,41 @@ export class TemplateResult {
   ) {}
 }
 
-function tmpl(template: TemplateStringsArray) {
-  return {
-    template,
-  }
-}
-
-const { template: emptyTemplate } = tmpl``
-const emptyContext = Context.empty() as Context.Context<any>
-const emptySink = Sink(
-  () => Effect.unit(),
-  () => Effect.unit(),
-)
-
 /**
  * Utilized to lift values into a `TemplateResult` for use in hydration to
  * help find the right place in the DOM to handle diffing and patching
  * @internal */
-export function fromValue(value: unknown) {
+export function fromValues<R, E, R2>(
+  values: readonly Renderable<R, E>[],
+  sink: Sink<R2, E, unknown>,
+  context: Context.Context<R | R2>,
+) {
   return new TemplateResult(
-    emptyTemplate,
-    [value as Renderable<any, any>],
+    emptyTemplateStringsArray(values),
+    values,
     undefined,
-    emptyContext,
-    emptySink,
+    context,
+    Sink(() => Effect.unit(), sink.error),
     Deferred.unsafeMake(FiberId.none),
   )
+}
+
+const emptyStringsCache = new Map<number, TemplateStringsArray>()
+
+function emptyTemplateStringsArray(values: readonly unknown[]): TemplateStringsArray {
+  const stringsLength = values.length + 1
+
+  if (emptyStringsCache.has(stringsLength)) {
+    return emptyStringsCache.get(stringsLength) as TemplateStringsArray
+  }
+
+  const strings = Object.assign(Array(stringsLength).fill(''), {
+    get raw() {
+      return strings
+    },
+  }) as TemplateStringsArray
+
+  emptyStringsCache.set(stringsLength, strings)
+
+  return strings
 }

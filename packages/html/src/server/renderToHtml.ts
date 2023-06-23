@@ -9,7 +9,7 @@ import { withScopedFork } from '@typed/fx/helpers'
 import { isDirective } from '../Directive.js'
 import { RenderContext } from '../RenderContext.js'
 import { Renderable } from '../Renderable.js'
-import { TemplateResult } from '../TemplateResult.js'
+import { TemplateResult, fromValues } from '../TemplateResult.js'
 import { TEXT_START, TYPED_END, TYPED_HOLE, TYPED_START } from '../meta.js'
 import { globalParser } from '../parser/global.js'
 import { Template } from '../parser/parser.js'
@@ -56,7 +56,7 @@ function renderTemplateResult<R, E>(
     return Fx.succeed(chunksToHtmlWithoutParts(chunks))
   }
 
-  // Traverse all chunks, create runtime Parts, ensure they render in order
+  // Traverse all chunks, create runtime Parts, ensure they render in orderis
 
   return Fx.Fx<R, E, string>(<R2>(sink: Fx.Sink<R2, E, string>) =>
     withScopedFork((fork) =>
@@ -87,7 +87,8 @@ function renderTemplateResult<R, E>(
 
             // Text chunks are ready to be rendered immediately
             if (renderChunk.type === 'text') {
-              yield* $(onChunk(renderChunk.index, renderChunk.value))
+              indexToHtml.set(renderChunk.index, renderChunk.value)
+              if (i === 0) yield* $(emitHtml(renderChunk.index))
             } else if (renderChunk.type === 'part') {
               // Node parts have more capabilities as they support arrays and TemplateResults
               if (renderChunk.part._tag === 'Node') {
@@ -96,7 +97,7 @@ function renderTemplateResult<R, E>(
                   yield* $(
                     unwrapRenderable<R, E>(renderChunk.renderable),
                     Fx.take(1),
-                    Fx.switchMap((value) => {
+                    Fx.switchMap(function renderNodeValue(value) {
                       if (isTemplateResult(value)) {
                         templateResults.add(renderChunk.index)
 
@@ -113,6 +114,29 @@ function renderTemplateResult<R, E>(
                           return Fx.succeed(
                             TEXT_START + value.toString() + TYPED_HOLE(renderChunk.part.index),
                           )
+                        case 'undefined':
+                        case 'object': {
+                          if (value == null) {
+                            return Fx.succeed(TYPED_HOLE(renderChunk.part.index))
+                          } else if (Array.isArray(value)) {
+                            if (value.length === 0)
+                              return Fx.succeed(TYPED_HOLE(renderChunk.part.index))
+
+                            if (value.length === 1) return renderNodeValue(value[0])
+
+                            templateResults.add(renderChunk.index)
+
+                            return Fx.continueWith(
+                              renderTemplateResult<R, E>(
+                                renderContext,
+                                fromValues(value, result.sink as any, result.context),
+                              ),
+                              () => Fx.succeed(TYPED_HOLE(renderChunk.part.index)),
+                            )
+                          }
+
+                          // TODO: Should we continue to handle DOM nodes here?
+                        }
                       }
 
                       return Fx.succeed(
