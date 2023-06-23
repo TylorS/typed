@@ -16,7 +16,7 @@ export function combineAllDiscard<FX extends ReadonlyArray<Fx<any, any, any>>>(
   }
 
   return Fx((sink) =>
-    Effect.gen(function* ($) {
+    Effect.suspend(() => {
       const length = fx.length
       const values = new Map<number, any>()
 
@@ -24,7 +24,7 @@ export function combineAllDiscard<FX extends ReadonlyArray<Fx<any, any, any>>>(
         values.size === length ? sink.event() : Effect.unit(),
       )
 
-      yield* $(
+      return Effect.asUnit(
         Effect.forEachParWithIndex(fx, (f, i) =>
           f.run(
             Sink(

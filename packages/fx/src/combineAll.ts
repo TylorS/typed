@@ -22,7 +22,7 @@ export function combineAll<FX extends ReadonlyArray<Fx<any, any, any>>>(
   }
 
   return Fx((sink) =>
-    Effect.gen(function* ($) {
+    Effect.suspend(() => {
       const length = fx.length
       const values = new Map<number, any>()
 
@@ -36,7 +36,7 @@ export function combineAll<FX extends ReadonlyArray<Fx<any, any, any>>>(
           : Effect.unit(),
       )
 
-      yield* $(
+      return Effect.asUnit(
         Effect.forEachParWithIndex(fx, (f, i) =>
           f.run(
             Sink(
