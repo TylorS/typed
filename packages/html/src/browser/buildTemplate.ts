@@ -8,13 +8,10 @@ import {
 } from '../parser/parser.js'
 
 export function buildTemplate(document: Document, template: Template): DocumentFragment {
-  const nodes: globalThis.Node[] = []
+  const nodes: globalThis.Node[] = Array(template.nodes.length)
 
   for (let i = 0; i < template.nodes.length; ++i) {
-    const node = template.nodes[i]
-    const built = buildNode(document, node)
-
-    if (built) nodes.push(built)
+    nodes[i] = buildNode(document, template.nodes[i])
   }
 
   const fragment = document.createDocumentFragment()
