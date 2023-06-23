@@ -76,7 +76,7 @@ export function renderTemplateResult<R, E>(
         yield* $(cache.entry.cleanup)
       }
 
-      cache.entry = entry = getRenderEntry(document, renderContext, result, cache)
+      cache.entry = entry = getRenderEntry({ document, renderContext, result, browserCache: cache })
     }
 
     const { template } = entry

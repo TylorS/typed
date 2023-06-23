@@ -5,7 +5,7 @@ import * as Route from '@typed/route'
 import * as Router from '@typed/router'
 
 // Type-safe routes
-export const homeRoute = Route.Route('/', { match: { end: true } })
+export const homeRoute = Route.Route('/', { match: { end: true } }) // Configures path-to-regexp to only match root path
 export const fooRoute = Route.Route('/foo/:foo')
 export const barRoute = Route.Route('/bar/:bar')
 export const fooBarRoute = fooRoute.concat(barRoute)

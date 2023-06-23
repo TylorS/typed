@@ -23,7 +23,7 @@ import {
   makeEmptyBrowerCache,
 } from './cache.js'
 import { indexRefCounter } from './indexRefCounter.js'
-import { renderTemplateResult } from './render.js'
+import { renderRootTemplateResult, renderTemplateResult } from './render.js'
 
 // TODO: Add support for directives
 
@@ -57,6 +57,10 @@ export function hydrateRootTemplateResult<R, E>(
   const rootPartChildNodes = findRootParentChildNodes(where)
 
   return Effect.gen(function* ($) {
+    if (rootPartChildNodes.childNodes.length === 0) {
+      return yield* $(renderRootTemplateResult<R, E>(hydrateContext.document, hydrateContext.renderContext, result, where))
+    }
+
     const wire = yield* $(
       hydrateTemplateResult<R, E>(hydrateContext, result, cache, rootPartChildNodes, -1),
     )
@@ -132,13 +136,7 @@ export function hydrateTemplateResult<R, E>(
           }
 
           cache.entry = entry = getHydrateEntry(
-            hydrateContext.document,
-            hydrateContext.renderContext,
-            result,
-            cache,
-            where,
-            rootIndex,
-            parentTemplate,
+            { document: hydrateContext.document, renderContext: hydrateContext.renderContext, result, browserCache: cache, where, rootIndex, parentTemplate },
           )
         }
 

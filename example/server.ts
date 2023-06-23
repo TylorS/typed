@@ -34,26 +34,33 @@ const uiHtml = renderToHtml(ui)
 const writeToResponse = (res: express.Response) => (chunk: string) =>
   Effect.sync(() => res.write(chunk))
 
+const renderContext = Effect.provideSomeLayer(server())
+
 const provideUiResources = (req: express.Request) => {
   return flow(
     Effect.provideSomeLayer(Router.memory({ initialUrl: new URL(req.url, 'https://localhost') })),
-    Effect.provideSomeLayer(server()),
+    renderContext,
     Effect.scoped,
   )
 }
 
 if (import.meta.env.PROD) {
-  app.use(
-    staticGzip(clientOutputDirectory, {
-      serveStatic: {
-        maxAge: '1y',
-        immutable: true,
-      },
-    }),
-  )
+  const serveStatic = staticGzip(clientOutputDirectory, {
+    serveStatic: {
+      maxAge: '1y',
+      immutable: true,
+    },
+  })
+
+  app.use((req, res, next) => {
+    // Don't render index.html from static files here
+    if (req.url === '/') return next()
+
+    return serveStatic(req, res, next)
+  })
 }
 
-app.get('/*', async (req, res, next) => {
+app.get('*', async (req, res, next) => {
   console.log('handling', req.url)
 
   try {

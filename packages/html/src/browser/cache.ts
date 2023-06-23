@@ -71,12 +71,17 @@ export function getBrowserCache(
   return newCache
 }
 
-export function getRenderEntry(
-  document: Document,
-  renderContext: RenderContext,
-  result: TemplateResult,
-  browserCache: BrowserCache,
-): BrowserEntry {
+export function getRenderEntry({
+  document,
+  renderContext,
+  result,
+  browserCache,
+}: {
+  document: Document
+  renderContext: RenderContext
+  result: TemplateResult
+  browserCache: BrowserCache
+}): BrowserEntry {
   const { deferred } = result
   const cache = getBrowserTemplateCache(document, result, renderContext.templateCache)
   const template = cache.template
@@ -85,23 +90,17 @@ export function getRenderEntry(
   const parts = template.parts.map(([part, path]): Part | SparsePart => {
     const element = findPath(content, path) as HTMLElement
 
-    return partNodeToPart(document, element, part, result.context, result.sink.error, false)
+    return partNodeToPart({
+      document,
+      node: element,
+      part,
+      context: result.context,
+      onCause: result.sink.error,
+      isHydrating: false,
+    })
   })
 
-  const cleanup = Effect.all(
-    Effect.suspend(() => {
-      const stack = browserCache.stack.slice(0)
-      browserCache.stack = []
-
-      return Effect.all(
-        stack.map((cache) => (cache && cache.entry ? cache.entry.cleanup : Effect.unit())),
-      )
-    }),
-    Effect.forkDaemon(
-      Effect.suspend(() => Fiber.interruptAll(parts.flatMap((p) => Array.from(p.fibers)))),
-    ),
-    Deferred.succeed(deferred, undefined),
-  )
+  const cleanup = makeCleanup(browserCache, parts, deferred)
 
   let wire: Rendered | null = null
 
@@ -139,14 +138,21 @@ export function getBrowserTemplateCache(
   return newCache
 }
 
-export function partNodeToPart(
-  document: Document,
-  node: HTMLElement,
-  part: PartNode | SparsePartNode,
-  context: Context<any>,
-  onCause: (cause: Cause.Cause<any>) => Effect.Effect<any, never, void>,
-  isHydrating: boolean,
-): Part | SparsePart {
+export function partNodeToPart({
+  document,
+  node,
+  part,
+  context,
+  onCause,
+  isHydrating,
+}: {
+  document: Document
+  node: HTMLElement
+  part: PartNode | SparsePartNode
+  context: Context<any>
+  onCause: (cause: Cause.Cause<any>) => Effect.Effect<any, never, void>
+  isHydrating: boolean
+}): Part | SparsePart {
   switch (part.type) {
     case 'attr':
       return AttrPart.fromElement(node, part.name, part.index)
@@ -190,15 +196,23 @@ export function partNodeToPart(
   }
 }
 
-export function getHydrateEntry(
-  document: Document,
-  renderContext: RenderContext,
-  result: TemplateResult,
-  browserCache: BrowserCache,
-  where: ParentChildNodes,
-  rootIndex: number,
-  parentTemplate: Template | null,
-): BrowserEntry {
+export function getHydrateEntry({
+  document,
+  renderContext,
+  result,
+  browserCache,
+  where,
+  rootIndex,
+  parentTemplate,
+}: {
+  document: Document
+  renderContext: RenderContext
+  result: TemplateResult
+  browserCache: BrowserCache
+  where: ParentChildNodes
+  rootIndex: number
+  parentTemplate: Template | null
+}): BrowserEntry {
   const { deferred } = result
   const { template } = getBrowserTemplateCache(document, result, renderContext.templateCache)
 
@@ -206,26 +220,18 @@ export function getHydrateEntry(
     where = findTemplateResultPartChildNodes(where, parentTemplate, template, rootIndex)
   }
 
-  const parts = template.parts.map(([part, path]): Part | SparsePart => {
-    const parent = findPath(where, path) as HTMLElement
-
-    return partNodeToPart(document, parent, part, result.context, result.sink.error, true)
-  })
-
-  const cleanup = Effect.allPar(
-    Effect.suspend(() => {
-      const stack = browserCache.stack.slice(0)
-      browserCache.stack = []
-
-      return Effect.allPar(
-        stack.map((cache) => (cache && cache.entry ? cache.entry.cleanup : Effect.unit())),
-      )
+  const parts = template.parts.map(([part, path]): Part | SparsePart =>
+    partNodeToPart({
+      document,
+      node: findPath(where, path) as HTMLElement,
+      part,
+      context: result.context,
+      onCause: result.sink.error,
+      isHydrating: true,
     }),
-    Effect.forkDaemon(
-      Effect.suspend(() => Fiber.interruptAll(parts.flatMap((p) => Array.from(p.fibers)))),
-    ),
-    Deferred.succeed(deferred, undefined),
   )
+
+  const cleanup = makeCleanup(browserCache, parts, deferred)
 
   const wire = (() => {
     if (!parentTemplate) {
@@ -378,4 +384,25 @@ export class CouldNotFindRootElement extends Error {
   constructor(readonly partIndex: number) {
     super(`Could not find root elements for part ${partIndex}`)
   }
+}
+
+function makeCleanup(
+  browserCache: BrowserCache,
+  parts: Array<Part | SparsePart>,
+  deferred: Deferred.Deferred<never, void>,
+) {
+  return Effect.allPar(
+    Effect.suspend(() => {
+      const stack = browserCache.stack.slice(0)
+      browserCache.stack = []
+
+      return Effect.allPar(
+        stack.map((cache) => (cache && cache.entry ? cache.entry.cleanup : Effect.unit())),
+      )
+    }),
+    Effect.forkDaemon(
+      Effect.suspend(() => Fiber.interruptAll(parts.flatMap((p) => Array.from(p.fibers)))),
+    ),
+    Deferred.succeed(deferred, undefined),
+  )
 }
