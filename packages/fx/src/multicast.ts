@@ -41,17 +41,22 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
 
-    return Effect.gen(function* ($) {
-      const context = yield* $(Effect.context<R2>())
-      const observer: MulticastObserver<R2, E, A> = { sink, context }
+    return Effect.flatMap(Effect.context<R2>(), (context) =>
+      Effect.suspend(() => {
+        const observer: MulticastObserver<R2, E, A> = { sink, context }
 
-      if (observers.push(observer) === 1) {
-        that.fiber = yield* $(Effect.forkDaemon(that.fx.run(that)))
-      }
+        const effects: Array<Effect.Effect<R, never, void>> = []
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      yield* $(Effect.ensuring(Fiber.await(that.fiber!), that.removeSink(sink)))
-    })
+        if (observers.push(observer) === 1) {
+          effects.push(Effect.tap(Effect.forkDaemon(that.fx.run(that)), (fiber) => Effect.sync(() => (that.fiber = fiber))))
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        effects.push(Effect.suspend(() => Effect.ensuring(Fiber.await(that.fiber!), that.removeSink(sink))))
+
+        return Effect.all(effects)
+      }),
+    )
   }
 
   readonly addTrace = (trace: Trace): Fx<R, E, A> => {

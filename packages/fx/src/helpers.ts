@@ -28,33 +28,26 @@ export function withUnboundedConcurrency<R, E, A>(
   f: (fork: ForkFxFiber) => Effect.Effect<R, E, A>,
 ) {
   return withScopedFork((fork) =>
-    Effect.gen(function* ($) {
+    Effect.suspend(() => {
       const fibers = new Set<Fiber.RuntimeFiber<never, void>>()
 
-      yield* $(
+      return Effect.flatMap(
         f((effect) =>
-          Effect.gen(function* ($) {
-            const fiber = yield* $(fork(effect))
-
+          Effect.flatMap(fork(effect), (fiber) => {
             fibers.add(fiber)
-
-            // Ensure that the fiber is removed from the set when it finishes
-            yield* $(
-              Fiber.join(fiber),
-              Effect.ensuring(Effect.sync(() => fibers.delete(fiber))),
-              // but don't allow this to be blocking
-              fork,
+            return Effect.as(
+              fork(
+                Effect.ensuring(
+                  Fiber.join(fiber),
+                  Effect.sync(() => fibers.delete(fiber)),
+                ),
+              ),
+              fiber,
             )
-
-            return fiber
           }),
         ),
+        () => (fibers.size > 0 ? Fiber.joinAll(fibers) : Effect.unit()),
       )
-
-      // Wait for all fibers to complete
-      if (fibers.size > 0) {
-        yield* $(Fiber.joinAll(fibers))
-      }
     }),
   )
 }
@@ -63,9 +56,7 @@ export type ForkFx = <R2>(eff: Effect.Effect<R2, never, void>) => Effect.Effect<
 
 export function withSwitch<R, E, A>(f: (switchFork: ForkFx) => Effect.Effect<R, E, A>) {
   return withScopedFork((fork) =>
-    Effect.gen(function* ($) {
-      const ref = yield* $(RefS.make<Fiber.Fiber<never, void>>(Fiber.unit()))
-
+    Effect.flatMap(RefS.make<Fiber.Fiber<never, void>>(Fiber.unit()), (ref) => {
       const switchFork = <R2>(eff: Effect.Effect<R2, never, void>) =>
         RefS.updateEffect(ref, (currentFiber) =>
           pipe(
@@ -74,45 +65,30 @@ export function withSwitch<R, E, A>(f: (switchFork: ForkFx) => Effect.Effect<R, 
           ),
         )
 
-      yield* $(f(switchFork))
-
-      const fiber = yield* $(RefS.get(ref))
-
-      // Wait for last fiber to complete
-      if (fiber) {
-        yield* $(Fiber.join(fiber))
-      }
+      return Effect.flatMap(
+        Effect.flatMap(f(switchFork), () => RefS.get(ref)),
+        (fiber) => (fiber ? Fiber.join(fiber) : Effect.unit()),
+      )
     }),
   )
 }
 
 export function withExhaust<R, E, A>(f: (exhaustFork: ForkFx) => Effect.Effect<R, E, A>) {
   return withScopedFork((fork) =>
-    Effect.gen(function* ($) {
-      const ref = yield* $(Ref.make<Fiber.Fiber<never, void> | void>(undefined))
+    Effect.flatMap(Ref.make<Fiber.Fiber<never, void> | void>(undefined), (ref) => {
       const reset = Ref.set(ref, undefined)
 
       const exhaustFork = <R2>(eff: Effect.Effect<R2, never, void>) =>
-        Effect.gen(function* ($) {
-          const currentFiber = yield* $(Ref.get(ref))
+        Effect.flatMap(Ref.get(ref), (currentFiber) =>
+          currentFiber
+            ? Effect.unit()
+            : Effect.flatMap(fork(Effect.ensuring(eff, reset)), (fiber) => Ref.set(ref, fiber)),
+        )
 
-          if (currentFiber) {
-            return
-          }
-
-          const fiber = yield* $(eff, Effect.ensuring(reset), fork)
-
-          yield* $(Ref.set(ref, fiber))
-        })
-
-      yield* $(f(exhaustFork))
-
-      const fiber = yield* $(Ref.get(ref))
-
-      // Wait for last fiber to complete
-      if (fiber) {
-        yield* $(Fiber.join(fiber))
-      }
+      return Effect.flatMap(
+        Effect.flatMap(f(exhaustFork), () => Ref.get(ref)),
+        (fiber) => (fiber ? Fiber.join(fiber) : Effect.unit()),
+      )
     }),
   )
 }
@@ -121,57 +97,50 @@ export function withExhaustLatest<R, E, A>(
   f: (exhaustLatestFork: ForkFx) => Effect.Effect<R, E, A>,
 ) {
   return withScopedFork((fork) =>
-    Effect.gen(function* ($) {
-      const ref = yield* $(Ref.make<Fiber.Fiber<never, void> | void>(undefined))
-      const nextEffect = yield* $(
+    Effect.flatMap(
+      Effect.zip(
+        Ref.make<Fiber.Fiber<never, void> | void>(undefined),
         Ref.make<Option.Option<Effect.Effect<any, never, void>>>(Option.none()),
-      )
-      const reset = Ref.set(ref, undefined)
+      ),
+      ([ref, nextEffect]) => {
+        const reset = Ref.set(ref, undefined)
 
-      // Wait for the current fiber to finish
-      const awaitNext = Effect.gen(function* ($) {
-        // Wait for the last fiber to finish
-        const fiber = yield* $(Ref.get(ref))
+        // Wait for the current fiber to finish
+        const awaitNext = Effect.flatMap(Ref.get(ref), (fiber) =>
+          fiber ? Fiber.join(fiber) : Effect.unit(),
+        )
 
-        if (fiber) {
-          // Wait for the fiber to end to check to see if we need to run another
-          yield* $(Fiber.join(fiber))
-        }
-      })
+        // Run the next value that's be saved for replay if it exists
 
-      // Run the next value that's be saved for replay if it exists
-      const runNext: Effect.Effect<any, never, void> = Effect.gen(function* ($) {
-        const next = yield* $(Ref.get(nextEffect))
+        const runNext: Effect.Effect<any, never, void> = Effect.flatMap(
+          Ref.get(nextEffect),
+          (next) => {
+            if (Option.isNone(next)) {
+              return Effect.unit()
+            }
 
-        if (Option.isSome(next)) {
-          // Clear the next A to be replayed
-          yield* $(Ref.set(nextEffect, Option.none()))
+            return Effect.all(
+              // Clear the next A to be replayed
+              Ref.set(nextEffect, Option.none()),
+              // Replay the next A
+              exhaustLatestFork(next.value),
+              // Ensure we don't close the scope until the last fiber completes
+              awaitNext,
+            )
+          },
+        )
 
-          // Replay the next A
-          yield* $(exhaustLatestFork(next.value))
+        const exhaustLatestFork = <R2>(eff: Effect.Effect<R2, never, void>) =>
+          Effect.flatMap(Ref.get(ref), (currentFiber) =>
+            currentFiber
+              ? Ref.set(nextEffect, Option.some(eff))
+              : Effect.flatMap(fork(Effect.ensuring(eff, Effect.zip(reset, runNext))), (fiber) =>
+                  RefS.set(ref, fiber),
+                ),
+          )
 
-          // Ensure we don't close the scope until the last fiber completes
-          yield* $(awaitNext)
-        }
-      })
-
-      const exhaustLatestFork = <R2>(eff: Effect.Effect<R2, never, void>) =>
-        Effect.gen(function* ($) {
-          const currentFiber = yield* $(Ref.get(ref))
-
-          if (currentFiber) {
-            return yield* $(Ref.set(nextEffect, Option.some(eff)))
-          }
-
-          const fiber = yield* $(eff, Effect.ensuring(Effect.zip(reset, runNext)), fork)
-
-          yield* $(RefS.set(ref, fiber))
-        })
-
-      yield* $(f(exhaustLatestFork))
-
-      // Wait for last fibers to complete
-      yield* $(awaitNext)
-    }),
+        return Effect.zip(f(exhaustLatestFork), awaitNext)
+      },
+    ),
   )
 }
