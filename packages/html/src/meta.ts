@@ -8,10 +8,6 @@ export const TYPED_HASH = (hash: string) => `data-typed="${hash}"`
 // text nodes are created.
 export const TEXT_START = '<!--text-->'
 
-// Inserted into the html to mark where in the DOM an attribute with a given
-// part index is. It can be found at the start of the elements body.
-export const TYPED_ATTR = (index: number) => `<!--attr${index}-->`
-
 // Used to mark where a NodePart is in the DOM. It can be found directly after the
 // elements or text nodes it is managing.
 export const TYPED_HOLE = (index: number) => `<!--hole${index}-->`

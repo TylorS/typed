@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  TYPED_ATTR,
-  TYPED_HASH,
-  TYPED_SELF_CLOSING_END,
-  TYPED_SELF_CLOSING_START,
-} from '../meta.js'
+import { TYPED_HASH, TYPED_SELF_CLOSING_END, TYPED_SELF_CLOSING_START } from '../meta.js'
 import * as parser from '../parser/parser.js'
 
 import {
@@ -53,7 +48,7 @@ describe(templateToHtmlChunks.name, () => {
       new PartChunk(new parser.AttrPartNode('id', 0), noOp),
       new TextChunk(`>`),
       new PartChunk(new parser.NodePart(1), noOp),
-      new TextChunk(`${TYPED_ATTR(0)}</div>`),
+      new TextChunk(`</div>`),
     ])
   })
 
@@ -71,7 +66,7 @@ describe(templateToHtmlChunks.name, () => {
     testChunks(h`<input ?disabled="${true}" />`, ({ hash }) => [
       new TextChunk(`${TYPED_SELF_CLOSING_START(hash)}<input ${TYPED_HASH(hash)}`),
       new PartChunk(new parser.BooleanPartNode('disabled', 0), noOp),
-      new TextChunk(`/>${TYPED_ATTR(0)}${TYPED_SELF_CLOSING_END(hash)}`),
+      new TextChunk(`/>${TYPED_SELF_CLOSING_END(hash)}`),
     ])
   })
 
@@ -80,7 +75,7 @@ describe(templateToHtmlChunks.name, () => {
       return [
         new TextChunk(`<div ${TYPED_HASH(hash)}`),
         new SparsePartChunk(parts[0][0] as parser.SparseAttrNode, noOp),
-        new TextChunk(`>${TYPED_ATTR(0) + TYPED_ATTR(1)}</div>`),
+        new TextChunk(`></div>`),
       ]
     })
   })

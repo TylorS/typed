@@ -19,7 +19,7 @@ import { RenderContext, makeRenderContext } from '../RenderContext.js'
 import { html } from '../RenderTemplate.js'
 import { TemplateResult } from '../TemplateResult.js'
 import { counter } from '../_test_components.js'
-import { TEXT_START, TYPED_ATTR, TYPED_HOLE } from '../meta.js'
+import { TEXT_START, TYPED_HOLE } from '../meta.js'
 
 import { renderToHtmlStream } from './renderToHtml.js'
 
@@ -49,7 +49,7 @@ describe(renderToHtmlStream.name, () => {
     await testHtmlChunks(html`<div class="${'foo'}"></div>`, [
       '<div data-typed="..."',
       ' class="foo"',
-      `>${TYPED_ATTR(0)}</div>`,
+      `></div>`,
     ])
   })
 
@@ -57,7 +57,7 @@ describe(renderToHtmlStream.name, () => {
     await testHtmlChunks(html`<div id="${'foo'} ${'bar'} ${'baz'}"></div>`, [
       '<div data-typed="..."',
       ' id="foo bar baz"',
-      `>${TYPED_ATTR(0)}${TYPED_ATTR(1)}${TYPED_ATTR(2)}</div>`,
+      `></div>`,
     ])
   })
 
@@ -65,7 +65,7 @@ describe(renderToHtmlStream.name, () => {
     await testHtmlChunks(html`<div class="${'foo'} ${'bar'} ${'baz'}"></div>`, [
       '<div data-typed="..."',
       ' class="foo bar baz"',
-      `>${TYPED_ATTR(0)}${TYPED_ATTR(1)}${TYPED_ATTR(2)}</div>`,
+      `></div>`,
     ])
   })
 
@@ -93,13 +93,10 @@ describe(renderToHtmlStream.name, () => {
     await testHtmlChunks(html`<div ?hidden=${true}></div>`, [
       '<div data-typed="..."',
       ' hidden',
-      `>${TYPED_ATTR(0)}</div>`,
+      `></div>`,
     ])
 
-    await testHtmlChunks(html`<div ?hidden=${false}></div>`, [
-      '<div data-typed="..."',
-      `>${TYPED_ATTR(0)}</div>`,
-    ])
+    await testHtmlChunks(html`<div ?hidden=${false}></div>`, ['<div data-typed="..."', `></div>`])
   })
 
   it('renders comments', async () => {
@@ -132,33 +129,31 @@ describe(renderToHtmlStream.name, () => {
     await testHtmlChunks(html`<div data-foo=${'bar'}></div>`, [
       '<div data-typed="..."',
       ' data-foo="bar"',
-      `>${TYPED_ATTR(0)}</div>`,
+      `></div>`,
     ])
 
     await testHtmlChunks(html`<div .data=${Fx.succeed({ foo: 'bar' })}></div>`, [
       '<div data-typed="..."',
       ' data-foo="bar"',
-      `>${TYPED_ATTR(0)}</div>`,
+      `></div>`,
     ])
   })
 
   it('renders with event attributes', async () => {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    await testHtmlChunks(html`<div @click=${() => {}}></div>`, [
-      `<div data-typed="...">${TYPED_ATTR(0)}</div>`,
-    ])
+    await testHtmlChunks(html`<div @click=${() => {}}></div>`, [`<div data-typed="..."></div>`])
   })
 
   it('renders with property attributes', async () => {
     await testHtmlChunks(html`<input .value=${'foo'} />`, [
       `<input data-typed="..."`,
       ` value="foo"`,
-      `/>${TYPED_ATTR(0)}`,
+      `/>`,
     ])
   })
 
   it('renders with ref attributes', async () => {
-    await testHtmlChunks(html`<input ref=${null} />`, [`<input data-typed="..."/>${TYPED_ATTR(0)}`])
+    await testHtmlChunks(html`<input ref=${null} />`, [`<input data-typed="..."/>`])
   })
 
   it('renders text-only templates', async () => {
@@ -171,24 +166,18 @@ describe(renderToHtmlStream.name, () => {
   })
 
   it('remove attributes with undefined values', async () => {
-    await testHtmlChunks(html`<div class=${undefined}></div>`, [
-      `<div data-typed="..."`,
-      `>${TYPED_ATTR(0)}</div>`,
-    ])
+    await testHtmlChunks(html`<div class=${undefined}></div>`, [`<div data-typed="..."`, `></div>`])
   })
 
   it('remove attributes with null values', async () => {
-    await testHtmlChunks(html`<div class=${null}></div>`, [
-      `<div data-typed="..."`,
-      `>${TYPED_ATTR(0)}</div>`,
-    ])
+    await testHtmlChunks(html`<div class=${null}></div>`, [`<div data-typed="..."`, `></div>`])
   })
 
   it(`renders with attribute directives`, async () => {
     await testHtmlChunks(html`<div id=${attrDirective((part) => part.update('foo'))}></div>`, [
       `<div data-typed="..."`,
       ` id="foo"`,
-      `>${TYPED_ATTR(0)}</div>`,
+      `></div>`,
     ])
   })
 
@@ -196,27 +185,27 @@ describe(renderToHtmlStream.name, () => {
     // True
     await testHtmlChunks(
       html`<div ?hidden=${booleanDirective((part) => part.update(true))}></div>`,
-      [`<div data-typed="..."`, ` hidden`, `>${TYPED_ATTR(0)}</div>`],
+      [`<div data-typed="..."`, ` hidden`, `></div>`],
     )
 
     // False
     await testHtmlChunks(
       html`<div ?hidden=${booleanDirective((part) => part.update(false))}></div>`,
-      [`<div data-typed="..."`, `>${TYPED_ATTR(0)}</div>`],
+      [`<div data-typed="..."`, `></div>`],
     )
   })
 
   it(`renders with class name directives`, async () => {
     await testHtmlChunks(
       html`<div class=${classNameDirective((part) => part.update('foo'))}></div>`,
-      [`<div data-typed="..."`, ` class="foo"`, `>${TYPED_ATTR(0)}</div>`],
+      [`<div data-typed="..."`, ` class="foo"`, `></div>`],
     )
   })
 
   it(`renders with data directives`, async () => {
     await testHtmlChunks(
       html`<div .data=${dataDirective((part) => part.update({ foo: 'bar' }))}></div>`,
-      [`<div data-typed="..."`, ` data-foo="bar"`, `>${TYPED_ATTR(0)}</div>`],
+      [`<div data-typed="..."`, ` data-foo="bar"`, `></div>`],
     )
   })
 
@@ -225,20 +214,20 @@ describe(renderToHtmlStream.name, () => {
       html`<div
         @click=${eventDirective((part) => part.update(EventHandler(() => Effect.unit())))}
       ></div>`,
-      [`<div data-typed="...">${TYPED_ATTR(0)}</div>`],
+      [`<div data-typed="..."></div>`],
     )
   })
 
   it(`renders with property directives`, async () => {
     await testHtmlChunks(
       html`<input .value=${propertyDirective((part) => part.update('foo'))} />`,
-      [`<input data-typed="..."`, ` value="foo"`, `/>${TYPED_ATTR(0)}`],
+      [`<input data-typed="..."`, ` value="foo"`, `/>`],
     )
   })
 
   it(`renders with ref directives`, async () => {
     await testHtmlChunks(html`<input ref=${refDirective((part) => part.update(null))} />`, [
-      `<input data-typed="..."/>${TYPED_ATTR(0)}`,
+      `<input data-typed="..."/>`,
     ])
   })
 
@@ -249,21 +238,15 @@ describe(renderToHtmlStream.name, () => {
           part.update('bar'),
         )} ${attrDirective((part) => part.update('baz'))}"
       ></div>`,
-      [
-        `<div data-typed="..."`,
-        ` id="foo bar baz"`,
-        `>${TYPED_ATTR(0)}${TYPED_ATTR(1)}${TYPED_ATTR(2)}</div>`,
-      ],
+      [`<div data-typed="..."`, ` id="foo bar baz"`, `></div>`],
     )
   })
 
   it('renders components with wires', async () => {
     await testHtmlChunks(Fx.scoped(counter), [
-      `<button data-typed="..." id="decrement">-${TYPED_ATTR(
-        0,
-      )}</button><span data-typed="..." id="count">`,
+      `<button data-typed="..." id="decrement">-</button><span data-typed="..." id="count">`,
       `${TEXT_START}0${TYPED_HOLE(1)}`,
-      `</span><button data-typed="..." id="increment">+${TYPED_ATTR(2)}</button>`,
+      `</span><button data-typed="..." id="increment">+</button>`,
     ])
   })
 })

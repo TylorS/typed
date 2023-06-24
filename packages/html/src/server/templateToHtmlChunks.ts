@@ -1,11 +1,6 @@
 import escapeHTML from 'escape-html'
 
-import {
-  TYPED_ATTR,
-  TYPED_SELF_CLOSING_END,
-  TYPED_SELF_CLOSING_START,
-  TYPED_HASH,
-} from '../meta.js'
+import { TYPED_SELF_CLOSING_END, TYPED_SELF_CLOSING_START, TYPED_HASH } from '../meta.js'
 import {
   Attribute,
   ElementNode,
@@ -110,7 +105,6 @@ function elementToHtmlChunks(
     ...attributes.map((a) => attributeToHtmlChunk(a)),
     new TextChunk('>'),
     ...children.flatMap((c) => nodeToHtmlChunk(c)),
-    ...attributeComments(attributes),
     new TextChunk(closeTag(tagName)),
   ]
 
@@ -136,7 +130,6 @@ function selfClosingElementToHtmlChunks(
     new TextChunk(TYPED_SELF_CLOSING_START(hash) + openTag(tagName, hash)),
     ...attributes.map((a) => attributeToHtmlChunk(a)),
     new TextChunk(`/>`),
-    ...attributeComments(attributes),
     new TextChunk(TYPED_SELF_CLOSING_END(hash)),
   ]
 
@@ -163,7 +156,6 @@ function textOnlyElementToHtmlChunks(
     new TextChunk(openTag(tagName, hash)),
     ...attributes.map((a) => attributeToHtmlChunk(a)),
     new TextChunk('>'),
-    ...attributeComments(attributes),
     ...children.map((c) => textToHtmlChunks(c)),
     new TextChunk(closeTag(tagName)),
   ]
@@ -227,31 +219,6 @@ function openTag(tagName: string, hash?: string): string {
 
 function closeTag(tagName: string): string {
   return `</${tagName}>`
-}
-
-function attributeComments(attributes: Attribute[]): readonly TextChunk[] {
-  return attributes.flatMap((a) => {
-    switch (a.type) {
-      // Attribute, boolean, and text nodes are static
-      case 'attribute':
-      case 'boolean':
-      case 'text':
-        return []
-      // Dynamic parts
-      case 'attr':
-      case 'boolean-part':
-      case 'className-part':
-      case 'event':
-      case 'data':
-      case 'property':
-      case 'ref':
-        return new TextChunk(TYPED_ATTR(a.index))
-      // Sparse parts
-      case 'sparse-attr':
-      case 'sparse-class-name':
-        return attributeComments(a.nodes)
-    }
-  })
 }
 
 function escape(s: unknown) {

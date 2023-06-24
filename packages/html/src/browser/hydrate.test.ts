@@ -13,7 +13,7 @@ import { html } from '../RenderTemplate.js'
 import { Rendered } from '../Rendered.js'
 import { TemplateResult } from '../TemplateResult.js'
 import { counter } from '../_test_components.js'
-import { TYPED_ATTR, TYPED_HOLE } from '../meta.js'
+import { TYPED_HOLE } from '../meta.js'
 import { makeServerWindow } from '../server/makeServerWindow.js'
 import { renderToHtml } from '../server/renderToHtml.js'
 
@@ -34,32 +34,30 @@ describe(hydrate.name, () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const getInitial = (body: HTMLElement) => ({ div: body.querySelector('div')! })
 
-    const onRendered =
-      (withAttr: boolean) =>
-      ({ div }: { div: HTMLElement }, rendered: Rendered | null) =>
-        Effect.sync(() => {
-          ok(rendered === div)
+    const onRendered = ({ div }: { div: HTMLElement }, rendered: Rendered | null) =>
+      Effect.sync(() => {
+        ok(rendered === div)
 
-          deepStrictEqual(
-            stripDataTyped((rendered as HTMLElement).outerHTML),
-            `<div data-typed="..." id="test">${withAttr ? TYPED_ATTR(0) : ''}</div>`,
-          )
-        })
+        deepStrictEqual(
+          stripDataTyped((rendered as HTMLElement).outerHTML),
+          `<div data-typed="..." id="test"></div>`,
+        )
+      })
 
-    const staticAttr = testHydrate(html`<div id="test"></div>`, getInitial, onRendered(false))
+    const staticAttr = testHydrate(html`<div id="test"></div>`, getInitial, onRendered)
 
-    const staticPart = testHydrate(html`<div id=${'test'}></div>`, getInitial, onRendered(true))
+    const staticPart = testHydrate(html`<div id=${'test'}></div>`, getInitial, onRendered)
 
     const effectPart = testHydrate(
       html`<div id=${Effect.succeed('test')}></div>`,
       getInitial,
-      onRendered(true),
+      onRendered,
     )
 
     const fxPart = testHydrate(
       html`<div id=${Fx.at('test', Duration.millis(10))}></div>`,
       getInitial,
-      onRendered(true),
+      onRendered,
     )
 
     await Promise.all([staticAttr, staticPart, effectPart, fxPart].map(Effect.runPromise))
@@ -129,10 +127,7 @@ describe(hydrate.name, () => {
 
               ok(rendered instanceof globalThis.HTMLDivElement)
               ok(rendered === div)
-              deepStrictEqual(
-                stripDataTyped(rendered.outerHTML),
-                `<div data-typed="...">${TYPED_ATTR(0)}</div>`,
-              )
+              deepStrictEqual(stripDataTyped(rendered.outerHTML), `<div data-typed="..."></div>`)
 
               yield* $(dispatchEvent({ element: rendered, eventName: 'click' }))
 
