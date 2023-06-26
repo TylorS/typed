@@ -13,7 +13,7 @@ export function testCollectAll<E = never, A = never>(
   fx: Fx<never, E, A>,
   expected: ReadonlyArray<A>,
 ) {
-  it(name, async () => {
+  it.concurrent(name, async () => {
     const test = Effect.scoped(
       Effect.gen(function* ($) {
         const values: Array<A> = []

@@ -32,9 +32,11 @@ export class SparsePartChunk {
 
   constructor(
     readonly node: SparseAttrNode | SparseClassNameNode,
-    readonly render: (value: readonly string[] | string | null | undefined) => string,
+    readonly render: (value: AttrValue) => string,
   ) {}
 }
+
+export type AttrValue = string | null | undefined | readonly AttrValue[]
 
 // TODO: Should we escape more things?
 
@@ -191,16 +193,22 @@ function attributeToHtmlChunk(attr: Attribute): HtmlChunk {
       return new SparsePartChunk(attr, (values) => {
         return values == null
           ? ``
-          : ` ${attr.name}="${Array.isArray(values) ? values.join('') : values}"`
+          : ` ${attr.name}="${Array.isArray(values) ? values.filter(isString).join('') : values}"`
       })
     }
     case 'sparse-class-name':
       return new SparsePartChunk(attr, (values) => {
-        return values == null ? `` : ` class="${Array.isArray(values) ? values.join(' ') : values}"`
+        return values == null
+          ? ``
+          : ` class="${Array.isArray(values) ? values.filter(isString).join(' ') : values}"`
       })
     case 'text':
       return new TextChunk(attr.value)
   }
+}
+
+function isString(value: unknown): value is string {
+  return typeof value === 'string'
 }
 
 function datasetToString(dataset: Readonly<Record<string, string | undefined>>) {

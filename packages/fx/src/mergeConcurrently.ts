@@ -2,12 +2,12 @@ import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 
 import { Fx, Sink } from './Fx.js'
-import { unit } from './succeed.js'
+import { empty } from './empty.js'
 
 export function mergeConcurrently<FXS extends ReadonlyArray<Fx<any, any, any>>>(
   ...fxs: FXS
 ): Fx<Fx.ResourcesOf<FXS[number]>, Fx.ErrorsOf<FXS[number]>, Fx.OutputOf<FXS[number]>> {
-  if (fxs.length === 0) return unit as any
+  if (fxs.length === 0) return empty as any
   if (fxs.length === 1) return fxs[0]
 
   return Fx(<R2>(sink: Sink<R2, Fx.ErrorsOf<FXS[number]>, Fx.OutputOf<FXS[number]>>) =>

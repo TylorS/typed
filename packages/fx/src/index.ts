@@ -583,6 +583,18 @@ export const mergeConcurrently: <FXS extends ReadonlyArray<Fx<any, any, any>>>(
       internal.mergeConcurrently(...fxs).addTrace(trace),
 )
 
+export const mergeBufferConcurrently: <FXS extends ReadonlyArray<Fx<any, any, any>>>(
+  ...fxs: FXS
+) => Fx<
+  internal.Fx.ResourcesOf<FXS[number]>,
+  internal.Fx.ErrorsOf<FXS[number]>,
+  internal.Fx.OutputOf<FXS[number]>
+> = methodWithTrace(
+  (trace) =>
+    (...fxs) =>
+      internal.mergeBufferConcurrently(...fxs).addTrace(trace),
+)
+
 export const multicast: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = methodWithTrace(
   (trace) =>
     <R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> =>

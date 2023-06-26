@@ -15,36 +15,39 @@ import {
   refDirective,
 } from '../Directive.js'
 import { EventHandler } from '../EventHandler.js'
-import { RenderContext, makeRenderContext } from '../RenderContext.js'
-import { html } from '../RenderTemplate.js'
-import { TemplateResult } from '../TemplateResult.js'
+import { RenderContext } from '../RenderContext.js'
+import { RenderEvent } from '../RenderEvent.js'
+import { RenderTemplate, html } from '../RenderTemplate.js'
 import { counter } from '../_test_components.js'
+import { many } from '../many.js'
 import { TEXT_START, TYPED_HOLE } from '../meta.js'
 
-import { renderToHtmlStream } from './renderToHtml.js'
+import { server } from './layer.js'
+import { renderToHtml, renderToHtmlStream } from './renderToHtml.js'
 
 describe(renderToHtmlStream.name, () => {
-  it('renders a simple template', async () => {
+  it.concurrent('renders a simple template', async () => {
     await testHtmlChunks(html`<div>Hello, world!</div>`, [
       '<div data-typed="...">Hello, world!</div>',
     ])
   })
 
-  it('renders a template with a value', async () => {
+  it.concurrent('renders a template with a value', async () => {
     await testHtmlChunks(html`<div>${'Hello, world!'}</div>`, [
       '<div data-typed="...">',
-      `${TEXT_START}Hello, world!${TYPED_HOLE(0)}`,
+      `${TEXT_START}Hello, world!`,
+      TYPED_HOLE(0),
       '</div>',
     ])
   })
 
-  it('renders a template with attributes', async () => {
+  it.concurrent('renders a template with attributes', async () => {
     await testHtmlChunks(html`<div class="foo" id="bar"></div>`, [
       '<div data-typed="..." class="foo" id="bar"></div>',
     ])
   })
 
-  it('renders a template with a attribute parts', async () => {
+  it.concurrent('renders a template with a attribute parts', async () => {
     // Static
     await testHtmlChunks(html`<div class="${'foo'}"></div>`, [
       '<div data-typed="..."',
@@ -53,7 +56,7 @@ describe(renderToHtmlStream.name, () => {
     ])
   })
 
-  it('renders a template with sparse attribute parts', async () => {
+  it.concurrent('renders a template with sparse attribute parts', async () => {
     await testHtmlChunks(html`<div id="${'foo'} ${'bar'} ${'baz'}"></div>`, [
       '<div data-typed="..."',
       ' id="foo bar baz"',
@@ -61,7 +64,7 @@ describe(renderToHtmlStream.name, () => {
     ])
   })
 
-  it('renders a template with sparse class name parts', async () => {
+  it.concurrent('renders a template with sparse class name parts', async () => {
     await testHtmlChunks(html`<div class="${'foo'} ${'bar'} ${'baz'}"></div>`, [
       '<div data-typed="..."',
       ' class="foo bar baz"',
@@ -69,7 +72,7 @@ describe(renderToHtmlStream.name, () => {
     ])
   })
 
-  it('renders interpolated templates', async () => {
+  it.concurrent('renders interpolated templates', async () => {
     await testHtmlChunks(html`<div>${html`<span>Hello, world!</span>`}</div>`, [
       '<div data-typed="...">',
       `<span data-typed="...">Hello, world!</span>`,
@@ -78,18 +81,19 @@ describe(renderToHtmlStream.name, () => {
     ])
   })
 
-  it('renders interpolated templates with interpolations', async () => {
+  it.concurrent('renders interpolated templates with interpolations', async () => {
     await testHtmlChunks(html`<div>${html`<span>${'Hello, world!'}</span>`}</div>`, [
       '<div data-typed="...">',
       '<span data-typed="...">',
-      TEXT_START + 'Hello, world!' + TYPED_HOLE(0),
+      TEXT_START + 'Hello, world!',
+      TYPED_HOLE(0),
       '</span>',
       TYPED_HOLE(0),
       '</div>',
     ])
   })
 
-  it('renders boolean attributes', async () => {
+  it.concurrent('renders boolean attributes', async () => {
     await testHtmlChunks(html`<div ?hidden=${true}></div>`, [
       '<div data-typed="..."',
       ' hidden',
@@ -99,13 +103,13 @@ describe(renderToHtmlStream.name, () => {
     await testHtmlChunks(html`<div ?hidden=${false}></div>`, ['<div data-typed="..."', `></div>`])
   })
 
-  it('renders comments', async () => {
+  it.concurrent('renders comments', async () => {
     await testHtmlChunks(html`<div><!-- Hello, world! --></div>`, [
       '<div data-typed="..."><!-- Hello, world! --></div>',
     ])
   })
 
-  it('renders comments with interpolations', async () => {
+  it.concurrent('renders comments with interpolations', async () => {
     await testHtmlChunks(html`<div><!-- ${'Hello, world!'} --></div>`, [
       '<div data-typed="...">',
       '<!-- Hello, world! -->',
@@ -125,7 +129,7 @@ describe(renderToHtmlStream.name, () => {
     ])
   })
 
-  it('renders data attributes', async () => {
+  it.concurrent('renders data attributes', async () => {
     await testHtmlChunks(html`<div data-foo=${'bar'}></div>`, [
       '<div data-typed="..."',
       ' data-foo="bar"',
@@ -139,12 +143,12 @@ describe(renderToHtmlStream.name, () => {
     ])
   })
 
-  it('renders with event attributes', async () => {
+  it.concurrent('renders with event attributes', async () => {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     await testHtmlChunks(html`<div @click=${() => {}}></div>`, [`<div data-typed="..."></div>`])
   })
 
-  it('renders with property attributes', async () => {
+  it.concurrent('renders with property attributes', async () => {
     await testHtmlChunks(html`<input .value=${'foo'} />`, [
       `<input data-typed="..."`,
       ` value="foo"`,
@@ -152,11 +156,11 @@ describe(renderToHtmlStream.name, () => {
     ])
   })
 
-  it('renders with ref attributes', async () => {
+  it.concurrent('renders with ref attributes', async () => {
     await testHtmlChunks(html`<input ref=${null} />`, [`<input data-typed="..."/>`])
   })
 
-  it('renders text-only templates', async () => {
+  it.concurrent('renders text-only templates', async () => {
     await testHtmlChunks(
       html`<script>
         console.log('hello, world!')
@@ -165,15 +169,15 @@ describe(renderToHtmlStream.name, () => {
     )
   })
 
-  it('remove attributes with undefined values', async () => {
+  it.concurrent('remove attributes with undefined values', async () => {
     await testHtmlChunks(html`<div class=${undefined}></div>`, [`<div data-typed="..."`, `></div>`])
   })
 
-  it('remove attributes with null values', async () => {
+  it.concurrent('remove attributes with null values', async () => {
     await testHtmlChunks(html`<div class=${null}></div>`, [`<div data-typed="..."`, `></div>`])
   })
 
-  it(`renders with attribute directives`, async () => {
+  it.concurrent(`renders with attribute directives`, async () => {
     await testHtmlChunks(html`<div id=${attrDirective((part) => part.update('foo'))}></div>`, [
       `<div data-typed="..."`,
       ` id="foo"`,
@@ -181,7 +185,7 @@ describe(renderToHtmlStream.name, () => {
     ])
   })
 
-  it(`rendered with boolean directives`, async () => {
+  it.concurrent(`rendered with boolean directives`, async () => {
     // True
     await testHtmlChunks(
       html`<div ?hidden=${booleanDirective((part) => part.update(true))}></div>`,
@@ -195,21 +199,21 @@ describe(renderToHtmlStream.name, () => {
     )
   })
 
-  it(`renders with class name directives`, async () => {
+  it.concurrent(`renders with class name directives`, async () => {
     await testHtmlChunks(
       html`<div class=${classNameDirective((part) => part.update('foo'))}></div>`,
       [`<div data-typed="..."`, ` class="foo"`, `></div>`],
     )
   })
 
-  it(`renders with data directives`, async () => {
+  it.concurrent(`renders with data directives`, async () => {
     await testHtmlChunks(
       html`<div .data=${dataDirective((part) => part.update({ foo: 'bar' }))}></div>`,
       [`<div data-typed="..."`, ` data-foo="bar"`, `></div>`],
     )
   })
 
-  it(`renders with event directives`, async () => {
+  it.concurrent(`renders with event directives`, async () => {
     await testHtmlChunks(
       html`<div
         @click=${eventDirective((part) => part.update(EventHandler(() => Effect.unit())))}
@@ -218,20 +222,20 @@ describe(renderToHtmlStream.name, () => {
     )
   })
 
-  it(`renders with property directives`, async () => {
+  it.concurrent(`renders with property directives`, async () => {
     await testHtmlChunks(
       html`<input .value=${propertyDirective((part) => part.update('foo'))} />`,
       [`<input data-typed="..."`, ` value="foo"`, `/>`],
     )
   })
 
-  it(`renders with ref directives`, async () => {
+  it.concurrent(`renders with ref directives`, async () => {
     await testHtmlChunks(html`<input ref=${refDirective((part) => part.update(null))} />`, [
       `<input data-typed="..."/>`,
     ])
   })
 
-  it(`renders with sparse attribute directives`, async () => {
+  it.concurrent(`renders with sparse attribute directives`, async () => {
     await testHtmlChunks(
       html`<div
         id="${attrDirective((part) => part.update('foo'))} ${attrDirective((part) =>
@@ -242,21 +246,75 @@ describe(renderToHtmlStream.name, () => {
     )
   })
 
-  it('renders components with wires', async () => {
+  it.concurrent('renders components with wires', async () => {
     await testHtmlChunks(Fx.scoped(counter), [
       `<button data-typed="..." id="decrement">-</button><span data-typed="..." id="count">`,
-      `${TEXT_START}0${TYPED_HOLE(1)}`,
+      `${TEXT_START}0`,
+      TYPED_HOLE(1),
       `</span><button data-typed="..." id="increment">+</button>`,
     ])
+  })
+
+  const counterOfCounters = Fx.scoped(
+    Fx.gen(function* ($) {
+      const count = yield* $(Fx.makeRef(Effect.succeed(1)))
+      const increment = count.update((n) => n + 1)
+      const decrement = count.update((n) => n - 1)
+
+      return html`<button @click=${decrement}>-</button>
+        <span>Number of counters: ${count}</span>
+        <button @click=${increment}>+</button>
+        <ul>
+          ${many(
+            count.map((n) => Array.from({ length: n }, (_, i) => i)),
+            () => html`<div>${counter}</div>`,
+            (i) => i,
+          )}
+        </ul>`
+    }),
+  )
+
+  it.concurrent('renders components with arrays', async () => {
+    await testHtmlChunks(counterOfCounters, [
+      `<button data-typed="...">-</button><span data-typed="...">Number of counters: `,
+      `${TEXT_START}1`,
+      TYPED_HOLE(1),
+      `</span><button data-typed="...">+</button><ul data-typed="...">`,
+      `<div data-typed="...">`,
+      `<button data-typed="..." id="decrement">-</button><span data-typed="..." id="count">`,
+      `${TEXT_START}0`,
+      TYPED_HOLE(1),
+      `</span><button data-typed="..." id="increment">+</button>`,
+      TYPED_HOLE(0),
+      `</div>`,
+      TYPED_HOLE(3),
+      `</ul>`,
+    ])
+  })
+
+  it.concurrent('runs fassstt', async () => {
+    let total = 0
+    const iterations = 100
+
+    for (let i = 0; i < iterations; i++) {
+      const start = Date.now()
+      await pipe(renderToHtml(counterOfCounters), provideResources, Effect.runPromise)
+      const end = Date.now()
+      total += end - start
+    }
+
+    const average = total / iterations
+
+    console.log(`Average render time: ${average}ms`)
   })
 })
 
 function provideResources<R, E, A>(effect: Effect.Effect<R, E, A>) {
-  return pipe(effect, RenderContext.provide(makeRenderContext('test')), Effect.scoped)
+  return pipe(effect, Effect.provideSomeLayer(server()), Effect.scoped)
 }
 
 async function testHtmlChunks(
-  template: Fx.Fx<never, never, TemplateResult>,
+  template: Fx.Fx<RenderTemplate | RenderContext, never, RenderEvent>,
   expected: string[],
 ): Promise<void> {
   const actual = (

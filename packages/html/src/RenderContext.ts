@@ -5,7 +5,7 @@ export interface RenderContext {
   /**
    * The current environment.
    */
-  readonly environment: 'server' | 'browser' | 'static' | 'test'
+  readonly environment: 'server' | 'browser' | 'static'
 
   /**
    * Whether or not the current render is for a bot.
@@ -27,10 +27,15 @@ export type Environment = RenderContext['environment']
 
 export const RenderContext = Context.Tag<RenderContext>('@typed/html/RenderContext')
 
-export function makeRenderContext(
-  environment: RenderContext['environment'],
-  isBot: RenderContext['isBot'] = false,
-): RenderContext {
+export type RenderContextOptions = {
+  readonly environment: RenderContext['environment']
+  readonly isBot?: RenderContext['isBot']
+}
+
+export function makeRenderContext({
+  environment,
+  isBot = false,
+}: RenderContextOptions): RenderContext {
   return {
     environment,
     isBot,
@@ -49,10 +54,6 @@ export const isBrowser: Effect.Effect<RenderContext, never, boolean> = RenderCon
 
 export const isServer: Effect.Effect<RenderContext, never, boolean> = RenderContext.with(
   (ctx) => ctx.environment === 'server',
-)
-
-export const isTest: Effect.Effect<RenderContext, never, boolean> = RenderContext.with(
-  (ctx) => ctx.environment === 'test',
 )
 
 export const isBot: Effect.Effect<RenderContext, never, boolean> = RenderContext.with(

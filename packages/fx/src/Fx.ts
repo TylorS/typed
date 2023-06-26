@@ -68,6 +68,9 @@ export function Traced<R, E, A>(fx: Fx<R, E, A>, trace: Trace): Fx<R, E, A> {
 }
 
 export namespace Fx {
+  export type Any = Fx<any, any, any>
+  export type TupleAny = ReadonlyArray<Any>
+
   export type Cancel = Runtime.Cancel<never, void>
 
   export type ResourcesOf<T> = [T] extends [never]

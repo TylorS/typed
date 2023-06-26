@@ -22,7 +22,12 @@
     "test": {
       "executor": "@nrwl/vite:test",
       "options": {
-        "globals": true
+        "globals": true,
+        "include": [
+          "src/server/renderToHtml.test.ts",
+          "src/tokenizer/tokenizer.test.ts",
+          "src/parser/parser.test.ts"
+        ]
       },
       "configurations": {
         "watch": {

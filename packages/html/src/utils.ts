@@ -1,4 +1,3 @@
-import type { TemplateResult } from './TemplateResult.js'
 import { TEXT_START, TYPED_START } from './meta.js'
 
 export function isComment(node: Node): node is Comment {
@@ -44,15 +43,6 @@ export function getPreviousNodes(comment: Node, index: number) {
   previousComments.delete(previousHole)
 
   return nodes
-}
-
-export function isTemplateResult(value: unknown): value is TemplateResult {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    '_tag' in value &&
-    value._tag === 'TemplateResult'
-  )
 }
 
 const digestSize = 2

@@ -52,7 +52,7 @@ export class Parser {
 
     // Some annoyances here for generating the correct path for node parts
     if (token._tag === 'part-token') {
-      this._skipWhitespace = false
+      this._skipWhitespace = true
       return this.addPartWithoutCurrent(new NodePart(token.index))
     }
 

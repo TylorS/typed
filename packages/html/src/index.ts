@@ -6,7 +6,7 @@ export * from './Renderable.js'
 export * from './RenderContext.js'
 export * from './Rendered.js'
 export * from './RenderTemplate.js'
-export * from './TemplateResult.js'
+export * from './many.js'
 export * from './when.js'
 export * from '@typed/wire'
 

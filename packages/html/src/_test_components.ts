@@ -2,10 +2,12 @@ import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
-import { html } from './RenderTemplate.js'
-import { TemplateResult } from './TemplateResult.js'
+import { RenderEvent } from './RenderEvent.js'
+import { RenderTemplate, html } from './RenderTemplate.js'
 
-export const counter: Fx.Fx<Scope.Scope, never, TemplateResult> = Fx.gen(function* ($) {
+export const counter: Fx.Fx<Scope.Scope | RenderTemplate, never, RenderEvent> = Fx.gen(function* (
+  $,
+) {
   const count = yield* $(Fx.makeRef(Effect.succeed(typeof window !== 'undefined' ? 1 : 0)))
   const increment = count.update((n) => n + 1)
   const decrement = count.update((n) => n - 1)

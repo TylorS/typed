@@ -1,61 +1,52 @@
-import { pipe } from '@effect/data/Function'
-import * as Deferred from '@effect/io/Deferred'
-import * as Effect from '@effect/io/Effect'
+import * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
 
 import type { Placeholder } from './Placeholder.js'
+import { RenderEvent } from './RenderEvent.js'
 import { Renderable } from './Renderable.js'
-import { TemplateResult } from './TemplateResult.js'
 
-export interface TemplateFx<R, E> extends Fx.Fx<R, E, TemplateResult> {
+export interface RenderTemplate {
+  readonly renderTemplate: <Values extends ReadonlyArray<Renderable<any, any>>>(
+    template: TemplateStringsArray,
+    values: Values,
+    options?: RenderTemplateOptions,
+  ) => Fx.Fx<
+    Placeholder.ResourcesOf<Values[number]>,
+    Placeholder.ErrorsOf<Values[number]>,
+    RenderEvent
+  >
+}
+
+export const RenderTemplate = Context.Tag<RenderTemplate>('@typed/html/RenderTemplate')
+
+export interface TemplateFx<R, E> extends Fx.Fx<R, E, RenderEvent> {
   readonly template: TemplateStringsArray
 }
 
 export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
-): TemplateFx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>> {
-  return Object.assign(renderTemplate(template, values), { template })
+): Fx.Fx<
+  RenderTemplate | Placeholder.ResourcesOf<Values[number]>,
+  Placeholder.ErrorsOf<Values[number]>,
+  RenderEvent
+> {
+  return RenderTemplate.withFx(({ renderTemplate }) => renderTemplate(template, values))
 }
 
 export function svg<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
-): TemplateFx<Placeholder.ResourcesOf<Values[number]>, Placeholder.ErrorsOf<Values[number]>> {
-  return Object.assign(renderTemplate(template, values, { isSvg: true }), { template })
+): Fx.Fx<
+  RenderTemplate | Placeholder.ResourcesOf<Values[number]>,
+  Placeholder.ErrorsOf<Values[number]>,
+  RenderEvent
+> {
+  return RenderTemplate.withFx(({ renderTemplate }) =>
+    renderTemplate(template, values, { isSvg: true }),
+  )
 }
 
 export interface RenderTemplateOptions {
   readonly isSvg?: boolean
-}
-
-export function renderTemplate<Values extends ReadonlyArray<Renderable<any, any>>>(
-  template: TemplateStringsArray,
-  values: Values,
-  options?: RenderTemplateOptions,
-): Fx.Fx<
-  Placeholder.ResourcesOf<Values[number]>,
-  Placeholder.ErrorsOf<Values[number]>,
-  TemplateResult
-> {
-  return Fx.multicast(
-    Fx.Fx<
-      Placeholder.ResourcesOf<Values[number]>,
-      Placeholder.ErrorsOf<Values[number]>,
-      TemplateResult
-    >(<R2>(sink: Fx.Sink<R2, Placeholder.ErrorsOf<Values[number]>, TemplateResult>) =>
-      pipe(
-        Effect.context<Placeholder.ResourcesOf<Values[number]> | R2>(),
-        Effect.bindTo('context'),
-        Effect.bind('deferred', () => Deferred.make<never, void>()),
-        Effect.let(
-          'result',
-          ({ context, deferred }) =>
-            new TemplateResult(template, values, options, context, sink, deferred),
-        ),
-        Effect.tap(({ result }) => sink.event(result)),
-        Effect.flatMap(({ deferred }) => Deferred.await(deferred)),
-      ),
-    ),
-  )
 }

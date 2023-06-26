@@ -8,15 +8,10 @@ import {
 } from '../parser/parser.js'
 
 export function buildTemplate(document: Document, template: Template): DocumentFragment {
-  const nodes: globalThis.Node[] = Array(template.nodes.length)
+  const fragment = document.createDocumentFragment()
 
   for (let i = 0; i < template.nodes.length; ++i) {
-    nodes[i] = buildNode(document, template.nodes[i])
-  }
-
-  const fragment = document.createDocumentFragment()
-  for (let i = 0; i < nodes.length; ++i) {
-    fragment.appendChild(nodes[i])
+    fragment.append(buildNode(document, template.nodes[i]))
   }
 
   return fragment

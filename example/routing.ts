@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
-import { EventHandler, Placeholder, Renderable, html, whenBrowser } from '@typed/html'
+import { EventHandler, Placeholder, Renderable, html } from '@typed/html'
 import * as Route from '@typed/route'
 import * as Router from '@typed/router'
 
@@ -11,7 +11,7 @@ export const barRoute = Route.Route('/bar/:bar')
 export const fooBarRoute = fooRoute.concat(barRoute)
 
 const counter = Fx.gen(function* ($) {
-  const count = yield* $(Fx.makeRef(Effect.succeed(typeof window !== 'undefined' ? 1 : 0)))
+  const count = yield* $(Fx.makeRef(Effect.succeed(0)))
   const increment = count.update((n) => n + 1)
   const decrement = count.update((n) => n - 1)
 
@@ -30,7 +30,7 @@ export const router = Router.match(
   .match(fooRoute, (params) => html`<div>Foo: ${params.map((p) => p.foo)}</div>`)
   .match(barRoute, (params) => html`<div>Bar: ${params.map((p) => p.bar)}</div>`)
   .match(homeRoute, () => html`<div>Home</div>`)
-  .notFound(() => whenBrowser(counter, html`<h1>Hello World!</h1>`))
+  .notFound(() => counter)
 
 // Layout
 export const layout = <Content extends Renderable<any, any>>(content: Content) =>

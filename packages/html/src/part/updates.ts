@@ -10,7 +10,7 @@ import type { Part, SparsePart } from './Part.js'
  * Lifts all possible values into an Fx. This is used to handle
  * NodeParts which have the ability to be arrays of values.
  */
-export function unwrapRenderable<R, E>(renderable: Renderable<R, E>): Fx.Fx<R, E, unknown> {
+export function unwrapRenderable<R, E, A>(renderable: Renderable<R, E>): Fx.Fx<R, E, A> {
   if (Array.isArray(renderable)) {
     return Fx.combineAll(...renderable.map(unwrapRenderable)) as any
   }
@@ -23,7 +23,25 @@ export function unwrapRenderable<R, E>(renderable: Renderable<R, E>): Fx.Fx<R, E
     return Fx.switchMap(Fx.fromEffect<R, E, any>(renderable as any), unwrapRenderable) as any
   }
 
-  return Fx.succeed(renderable)
+  return Fx.succeed(renderable as A)
+}
+
+export function unwrapRenderableConcurrently<R, E, A>(
+  renderable: Renderable<R, E>,
+): Fx.Fx<R, E, A> {
+  if (Array.isArray(renderable)) {
+    return Fx.mergeBufferConcurrently(...renderable.map(unwrapRenderable)) as any
+  }
+
+  if (Fx.isFx<R, E, any>(renderable)) {
+    return Fx.switchMap(renderable, unwrapRenderable) as any
+  }
+
+  if (Effect.isEffect(renderable)) {
+    return Fx.switchMap(Fx.fromEffect<R, E, any>(renderable as any), unwrapRenderable) as any
+  }
+
+  return Fx.succeed(renderable as A)
 }
 
 export function unwrapSparsePartRenderables<R, E>(

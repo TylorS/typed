@@ -84,7 +84,7 @@ export function htmlChunksToRenderChunks<R, E>(
   return output
 }
 
-function partNodeToPart(
+export function partNodeToPart(
   node: PartNode,
   onChunk: (value: unknown) => Effect.Effect<never, never, void>,
 ): Part {
