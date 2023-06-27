@@ -1,3 +1,4 @@
+import { pipe } from '@effect/data/Function'
 import { none, some } from '@effect/data/Option'
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
@@ -176,10 +177,8 @@ function renderSparsePart<R, E>(
 function takeOneIfNotRenderEvent<R, E, A>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
   return Fx.Fx((sink) =>
     withScopedFork((fork, scope) =>
-      Effect.gen(function* (_) {
-        const deferred = yield* _(Deferred.make<never, void>())
-
-        yield* _(
+      Effect.flatMap(Deferred.make<never, void>(), (deferred) =>
+        pipe(
           fx,
           Fx.observe((event) =>
             isRenderEvent(event)
@@ -189,10 +188,9 @@ function takeOneIfNotRenderEvent<R, E, A>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
           Effect.onExit((exit) => Deferred.done(deferred, exit)),
           Effect.provideService(Scope.Scope, scope),
           fork,
-        )
-
-        yield* _(Deferred.await(deferred))
-      }),
+          Effect.flatMap(() => Deferred.await(deferred)),
+        ),
+      ),
     ),
   )
 }
