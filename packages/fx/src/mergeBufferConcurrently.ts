@@ -51,62 +51,56 @@ export function mergeBufferConcurrently<FXS extends Fx.TupleAny>(
         })
       }
 
-      return Effect.contextWithEffect((ctx) => {
-        const withCtx = Effect.provideContext(ctx)
+      return Effect.asUnit(
+        Effect.allPar(
+          fxs.map((fx, index) =>
+            Effect.suspend(() => {
+              if (index === currentIndex) return Effect.flatMap(fx.run(sink), () => next(index))
 
-        return Effect.asUnit(
-          withCtx(
-            Effect.allPar(
-              fxs.map((fx, index) =>
-                Effect.suspend(() => {
-                  if (index === currentIndex) return Effect.flatMap(fx.run(sink), () => next(index))
+              let buffer: Chunk.Chunk<O> = Chunk.empty()
+              let isEmitting = false
 
-                  let buffer: Chunk.Chunk<O> = Chunk.empty()
-                  let isEmitting = false
+              return Effect.flatMap(
+                fx.run(
+                  Sink(
+                    (o) =>
+                      Effect.suspend(
+                        Effect.unifiedFn(() => {
+                          // The current index is emitting now
+                          if (isEmitting) {
+                            return sink.event(o)
+                          }
 
-                  return Effect.flatMap(
-                    fx.run(
-                      Sink(
-                        (o) =>
-                          Effect.suspend(
-                            Effect.unifiedFn(() => {
-                              // The current index is emitting now
-                              if (isEmitting) {
-                                return sink.event(o)
-                              }
+                          // This index is ready to emit values
+                          if (index === currentIndex) {
+                            if (Chunk.size(buffer) === 0) return sink.event(o)
 
-                              // This index is ready to emit values
-                              if (index === currentIndex) {
-                                if (Chunk.size(buffer) === 0) return sink.event(o)
+                            // Drain the current buffer first
+                            const toEmit = Chunk.append(buffer, o)
+                            // Clear the buffer
+                            buffer = Chunk.empty()
+                            // Fast-path for remaining values
+                            isEmitting = true
 
-                                // Drain the current buffer first
-                                const toEmit = Chunk.append(buffer, o)
-                                // Clear the buffer
-                                buffer = Chunk.empty()
-                                // Fast-path for remaining values
-                                isEmitting = true
+                            // Emit the values
+                            return Effect.all(Chunk.map(toEmit, sink.event))
+                          }
 
-                                // Emit the values
-                                return Effect.all(Chunk.map(toEmit, sink.event))
-                              }
+                          // Otherwise, buffer the value
+                          buffer = Chunk.append(buffer, o)
 
-                              // Otherwise, buffer the value
-                              buffer = Chunk.append(buffer, o)
-
-                              return Effect.unit()
-                            }),
-                          ),
-                        sink.error,
+                          return Effect.unit()
+                        }),
                       ),
-                    ),
-                    () => (isEmitting ? next(index) : onFinished(index, buffer)),
-                  )
-                }),
-              ),
-            ),
+                    sink.error,
+                  ),
+                ),
+                () => (isEmitting ? next(index) : onFinished(index, buffer)),
+              )
+            }),
           ),
-        )
-      })
+        ),
+      )
     }),
   )
 }
