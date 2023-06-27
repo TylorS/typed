@@ -12,7 +12,7 @@ import { empty } from './empty.js'
 export function mergeBufferConcurrently<FXS extends Fx.TupleAny>(
   ...fxs: FXS
 ): Fx<Fx.ResourcesOf<FXS[number]>, Fx.ErrorsOf<FXS[number]>, Fx.OutputOf<FXS[number]>> {
-  if (fxs.length === 0) return empty as any
+  if (fxs.length === 0) return empty()
   if (fxs.length === 1) return fxs[0]
 
   return Fx(<R2>(sink: Sink<R2, Fx.ErrorsOf<FXS[number]>, Fx.OutputOf<FXS[number]>>) =>
