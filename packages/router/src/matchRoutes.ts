@@ -1,8 +1,9 @@
-import { pipe } from '@effect/data/Function'
+import { identity, pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
+import { RenderContext } from '@typed/html'
 import { NavigationError } from '@typed/navigation'
 import { ParamsOf } from '@typed/path'
 
@@ -21,7 +22,7 @@ export function matchRoutes<
     params: Fx.Filtered<never, never, Readonly<Record<string, string>>>,
   ) => Fx.Fx<R, E, A> = () => Fx.empty(),
 ): Fx.Fx<
-  Router | Scope.Scope | R | Match.Context<Matches[number]>,
+  Router | RenderContext | Scope.Scope | R | Match.Context<Matches[number]>,
   Exclude<E | Match.Error<Matches[number]>, Redirect>,
   A | Match.Success<Matches[number]>
 > {
@@ -32,6 +33,8 @@ export function matchRoutes<
   type RENDERABLE = Fx.Fx<_R, _E, _A>
 
   return Fx.gen(function* ($) {
+    const { environment } = yield* $(RenderContext)
+    const isBrowser = environment === 'browser'
     const router = yield* $(Router)
     const notFound = onNotFound(router.params) as RENDERABLE
     const matchers = matches.map((match) => {
@@ -107,6 +110,7 @@ export function matchRoutes<
 
     return pipe(
       matched,
+      isBrowser ? identity : Fx.take(1),
       Redirect.switchMatch(
         (r) => Fx.as(Fx.fromEffect(router.navigation.navigate(r.url, r.options)), Option.none()),
         Fx.map(Option.some),

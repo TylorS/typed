@@ -2,6 +2,7 @@ import * as Chunk from '@effect/data/Chunk'
 import * as Debug from '@effect/data/Debug'
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
+import { RenderContext } from '@typed/html'
 import { ParamsOf } from '@typed/path'
 import { Route } from '@typed/route'
 
@@ -35,7 +36,7 @@ export interface Matcher<Matches extends ReadonlyArray<Match.Any>> {
   readonly notFound: <R, E, A>(
     render: (params: Fx.Filtered<never, never, Readonly<Record<string, string>>>) => Fx.Fx<R, E, A>,
   ) => Fx.Fx<
-    Router | R | Match.Context<Matches[number]>,
+    Router | RenderContext | R | Match.Context<Matches[number]>,
     Exclude<E | Match.Error<Matches[number]>, Redirect>,
     A | Match.Success<Matches[number]>
   >

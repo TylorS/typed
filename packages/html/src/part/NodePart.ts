@@ -4,6 +4,7 @@ import * as Fx from '@typed/fx'
 import { diffable } from '@typed/wire'
 import udomdiff from 'udomdiff'
 
+import { isRenderEvent } from '../RenderEvent.js'
 import { Renderable } from '../Renderable.js'
 import { findHoleComment, isCommentWithValue } from '../utils.js'
 
@@ -68,7 +69,11 @@ export class NodePart extends BasePart<unknown> {
     sink: Fx.Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
     return Fx.drain(
-      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, sink.event),
+      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, (a: any) =>
+        Effect.flatMap(this.update(isRenderEvent(a) ? a.valueOf() : a), () =>
+          sink.event(this.value),
+        ),
+      ),
     )
   }
 

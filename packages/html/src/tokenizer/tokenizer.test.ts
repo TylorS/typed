@@ -386,6 +386,11 @@ const testCases: TestCase[] = [
       new OpeningTagEndToken('input', true),
     ],
   },
+  {
+    name: 'parses template with only parts',
+    template: h`${'hello'} ${'world'}`,
+    expected: [new PartToken(0), new TextToken(' '), new PartToken(1)],
+  },
 ]
 
 describe(tokenizeTemplateStrings.name, () => {

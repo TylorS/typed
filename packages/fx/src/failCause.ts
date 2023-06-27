@@ -14,3 +14,7 @@ export function fail<E>(error: E): Fx<never, E, never> {
 export function interrupt(id: FiberId): Fx<never, never, never> {
   return Fx((sink) => sink.error(Cause.interrupt(id)))
 }
+
+export function die(error: unknown): Fx<never, never, never> {
+  return failCause(Cause.die(error))
+}

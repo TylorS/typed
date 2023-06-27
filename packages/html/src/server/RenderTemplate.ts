@@ -10,7 +10,7 @@ import { withScopedFork } from '@typed/fx/helpers'
 
 import { isDirective } from '../Directive.js'
 import { RenderContext } from '../RenderContext.js'
-import { HtmlRenderEvent, RenderEvent } from '../RenderEvent.js'
+import { HtmlRenderEvent, RenderEvent, isRenderEvent } from '../RenderEvent.js'
 import { RenderTemplate } from '../RenderTemplate.js'
 import { Renderable } from '../Renderable.js'
 import { TEXT_START, TYPED_HOLE } from '../meta.js'
@@ -19,8 +19,6 @@ import { unwrapRenderable } from '../part/updates.js'
 import { getTemplateCache } from './getTemplateCache.js'
 import { partNodeToPart } from './htmlChunksTorRenderChunks.js'
 import { HtmlChunk, PartChunk, SparsePartChunk, TextChunk } from './templateToHtmlChunks.js'
-
-// TODO: Handle directives
 
 export const renderTemplateToHtml: Layer.Layer<RenderContext, never, RenderTemplate> =
   RenderTemplate.layer(
@@ -69,7 +67,7 @@ function renderNode<R, E>(
       return Fx.succeed(HtmlRenderEvent(TEXT_START + renderable))
     case 'undefined':
     case 'object': {
-      if (renderable === null) {
+      if (renderable == null) {
         return Fx.succeed(HtmlRenderEvent(TEXT_START))
       } else if (Array.isArray(renderable)) {
         return Fx.mergeBufferConcurrently(...renderable.map((r) => renderNode(r, id))) as any
@@ -173,20 +171,6 @@ function renderSparsePart<R, E>(
     ),
     (value) => HtmlRenderEvent(render(value as any)),
   )
-}
-
-function isRenderEvent(value: unknown): value is RenderEvent {
-  return isTaggedObject(value) && (value._tag === 'html' || value._tag === 'dom')
-}
-
-function isTaggedObject(
-  value: unknown,
-): value is Record<string, unknown> & { readonly _tag: unknown } {
-  return isObject(value) && '_tag' in value
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return !!value && typeof value === 'object'
 }
 
 function takeOneIfNotRenderEvent<R, E, A>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {

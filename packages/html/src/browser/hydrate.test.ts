@@ -9,18 +9,18 @@ import { describe, it } from 'vitest'
 
 import { EventHandler } from '../EventHandler.js'
 import { RenderContext, makeRenderContext } from '../RenderContext.js'
+import { RenderEvent } from '../RenderEvent.js'
 import { html } from '../RenderTemplate.js'
 import { Rendered } from '../Rendered.js'
-import { TemplateResult } from '../TemplateResult.js'
-import { counter } from '../_test_components.js'
 import { TYPED_HOLE } from '../meta.js'
 import { makeServerWindow } from '../server/makeServerWindow.js'
 import { renderToHtml } from '../server/renderToHtml.js'
+import { counter } from '../test_components.test.js'
 
 import { hydrate } from './hydrate.js'
 
-describe.skip(hydrate.name, () => {
-  it('renders a simple elements', async () => {
+describe(hydrate.name, () => {
+  it.concurrent('renders a simple elements', async () => {
     const test = testHydrate(
       html`<div></div>`,
       (body) => ({ div: body.querySelector('div') }),
@@ -30,7 +30,7 @@ describe.skip(hydrate.name, () => {
     await Effect.runPromise(test)
   })
 
-  it('renders a simple elements with attributes', async () => {
+  it.concurrent('renders a simple elements with attributes', async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const getInitial = (body: HTMLElement) => ({ div: body.querySelector('div')! })
 
@@ -63,7 +63,7 @@ describe.skip(hydrate.name, () => {
     await Promise.all([staticAttr, staticPart, effectPart, fxPart].map(Effect.runPromise))
   })
 
-  it('renders interpolated templates', async () => {
+  it.concurrent('renders interpolated templates', async () => {
     const test = testHydrate(
       html`<div>${html`<span></span>`}</div>`,
       (body) => {
@@ -87,7 +87,7 @@ describe.skip(hydrate.name, () => {
     await Effect.runPromise(test)
   })
 
-  it('renders interpolated sibling templates', async () => {
+  it.concurrent('renders interpolated sibling templates', async () => {
     const spanTemplate = html`<span></span>`
 
     const test = testHydrate(
@@ -113,7 +113,7 @@ describe.skip(hydrate.name, () => {
     await Effect.runPromise(test)
   })
 
-  it('reattaches event listeners', async () => {
+  it.concurrent('reattaches event listeners', async () => {
     const test = Effect.gen(function* ($) {
       const count = yield* $(Fx.makeRef(Effect.succeed(0)))
 
@@ -140,7 +140,7 @@ describe.skip(hydrate.name, () => {
     await Effect.runPromise(Effect.scoped(test))
   })
 
-  it('renders components with wires', async () => {
+  it.concurrent('renders components with wires', async () => {
     const test = testHydrate(
       counter,
       (body) => ({
@@ -179,7 +179,7 @@ type DispatchEventParams = {
 type DispatchEvent = (params: DispatchEventParams) => Effect.Effect<never, never, void>
 
 function testHydrate<R, E, A, R2, E2>(
-  what: Fx.Fx<R, E, TemplateResult>,
+  what: Fx.Fx<R, E, RenderEvent>,
   getInitial: (body: HTMLElement) => A,
   onRendered: (
     initial: A,
@@ -221,8 +221,9 @@ function testHydrate<R, E, A, R2, E2>(
       return yield* $(
         hydrate(what, where),
         Fx.take(take),
-        Fx.observe((rendered) => onRendered(initial, rendered, dispatchEvent)),
-        RenderContext.provide(makeRenderContext({ environment: 'browser' })),
+        Fx.observe((rendered) =>
+          onRendered(initial, rendered.valueOf() as Rendered, dispatchEvent),
+        ),
       )
     }),
     Effect.provideSomeContext(makeDomServices(window, window)),

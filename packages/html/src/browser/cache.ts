@@ -1,5 +1,4 @@
 import * as Cause from '@effect/io/Cause'
-import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import { Context } from '@typed/context'
@@ -7,7 +6,6 @@ import { persistent } from '@typed/wire'
 
 import { RenderContext } from '../RenderContext.js'
 import { Rendered } from '../Rendered.js'
-import { TemplateResult } from '../TemplateResult.js'
 import { globalParser } from '../parser/global.js'
 import { PartNode, SparsePartNode, Template } from '../parser/parser.js'
 import { AttrPart } from '../part/AttrPart.js'
@@ -40,14 +38,10 @@ export type BrowserTemplateCache = {
 }
 
 export type BrowserEntry = {
-  readonly result: TemplateResult
   readonly template: Template
   readonly cleanup: Effect.Effect<never, never, void>
   readonly parts: ReadonlyArray<Part | SparsePart>
   readonly wire: () => Rendered | null
-
-  // Used to determine if a value in a template has changed
-  values: ReadonlyArray<unknown>
 }
 
 export const makeEmptyBrowerCache = (): BrowserCache => ({
@@ -74,16 +68,19 @@ export function getBrowserCache(
 export function getRenderEntry({
   document,
   renderContext,
-  result,
   browserCache,
+  strings,
+  context,
+  onCause,
 }: {
   document: Document
   renderContext: RenderContext
-  result: TemplateResult
   browserCache: BrowserCache
+  strings: TemplateStringsArray
+  context: Context<any>
+  onCause: (cause: Cause.Cause<any>) => Effect.Effect<any, never, void>
 }): BrowserEntry {
-  const { deferred } = result
-  const cache = getBrowserTemplateCache(document, result, renderContext.templateCache)
+  const cache = getBrowserTemplateCache(document, strings, renderContext.templateCache)
   const template = cache.template
   const content = document.importNode(cache.content, true)
 
@@ -94,22 +91,20 @@ export function getRenderEntry({
       document,
       node: element,
       part,
-      context: result.context,
-      onCause: result.sink.error,
+      context,
+      onCause,
       isHydrating: false,
     })
   })
 
-  const cleanup = makeCleanup(browserCache, parts, deferred)
+  const cleanup = makeCleanup(browserCache, parts)
 
   let wire: Rendered | null = null
 
   const entry: BrowserEntry = {
-    result,
     template,
     cleanup,
     parts,
-    values: [],
     wire: () => wire || (wire = persistent(content as DocumentFragment)),
   }
 
@@ -118,22 +113,22 @@ export function getRenderEntry({
 
 export function getBrowserTemplateCache(
   document: Document,
-  result: TemplateResult,
+  strings: TemplateStringsArray,
   templateCache: RenderContext['templateCache'],
 ): BrowserTemplateCache {
-  const current = templateCache.get(result.template)
+  const current = templateCache.get(strings)
 
   if (current) {
     return current as BrowserTemplateCache
   }
 
-  const template = globalParser.parse(result.template)
+  const template = globalParser.parse(strings)
   const newCache: BrowserTemplateCache = {
     template,
     content: buildTemplate(document, template),
   }
 
-  templateCache.set(result.template, newCache)
+  templateCache.set(strings, newCache)
 
   return newCache
 }
@@ -199,22 +194,25 @@ export function partNodeToPart({
 export function getHydrateEntry({
   document,
   renderContext,
-  result,
   browserCache,
   where,
   rootIndex,
   parentTemplate,
+  strings,
+  context,
+  onCause,
 }: {
   document: Document
   renderContext: RenderContext
-  result: TemplateResult
   browserCache: BrowserCache
   where: ParentChildNodes
   rootIndex: number
   parentTemplate: Template | null
-}): BrowserEntry {
-  const { deferred } = result
-  const { template } = getBrowserTemplateCache(document, result, renderContext.templateCache)
+  strings: TemplateStringsArray
+  context: Context<any>
+  onCause: (cause: Cause.Cause<any>) => Effect.Effect<any, never, void>
+}) {
+  const { template } = getBrowserTemplateCache(document, strings, renderContext.templateCache)
 
   if (parentTemplate) {
     where = findTemplateResultPartChildNodes(where, parentTemplate, template, rootIndex)
@@ -225,13 +223,13 @@ export function getHydrateEntry({
       document,
       node: findPath(where, path) as HTMLElement,
       part,
-      context: result.context,
-      onCause: result.sink.error,
+      context,
+      onCause,
       isHydrating: true,
     }),
   )
 
-  const cleanup = makeCleanup(browserCache, parts, deferred)
+  const cleanup = makeCleanup(browserCache, parts)
 
   const wire = (() => {
     if (!parentTemplate) {
@@ -256,15 +254,13 @@ export function getHydrateEntry({
   })()
 
   const entry: BrowserEntry = {
-    result,
     template,
     cleanup,
     parts,
     wire: () => wire,
-    values: [],
   }
 
-  return entry
+  return [entry, where] as const
 }
 
 export function findRootParentChildNodes(where: HTMLElement): ParentChildNodes {
@@ -386,11 +382,7 @@ export class CouldNotFindRootElement extends Error {
   }
 }
 
-function makeCleanup(
-  browserCache: BrowserCache,
-  parts: Array<Part | SparsePart>,
-  deferred: Deferred.Deferred<never, void>,
-) {
+function makeCleanup(browserCache: BrowserCache, parts: Array<Part | SparsePart>) {
   return Effect.allPar(
     Effect.suspend(() => {
       const stack = browserCache.stack.slice(0)
@@ -403,6 +395,5 @@ function makeCleanup(
     Effect.forkDaemon(
       Effect.suspend(() => Fiber.interruptAll(parts.flatMap((p) => Array.from(p.fibers)))),
     ),
-    Deferred.succeed(deferred, undefined),
   )
 }

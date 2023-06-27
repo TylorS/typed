@@ -31,6 +31,6 @@ export function renderToHtmlStream<R, E>(
 
 export function renderToHtml<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>,
-): Effect.Effect<R | Scope.Scope | RenderContext, E, string> {
+): Effect.Effect<Exclude<R, RenderTemplate> | Scope.Scope | RenderContext, E, string> {
   return Effect.map(Fx.toReadonlyArray(renderToHtmlStream(fx)), (chunks) => chunks.join(''))
 }

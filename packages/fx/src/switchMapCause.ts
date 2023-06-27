@@ -1,3 +1,4 @@
+import * as Chunk from '@effect/data/Chunk'
 import * as Either from '@effect/data/Either'
 import { pipe } from '@effect/data/Function'
 import * as Cause from '@effect/io/Cause'
@@ -38,4 +39,19 @@ export function switchMapErrorEffect<R, E, A, R2, E2, B>(
   f: (error: E) => Effect.Effect<R2, E2, B>,
 ): Fx<R | R2, E2, A | B> {
   return switchMapError(fx, (a) => fromEffect(f(a)))
+}
+
+export function switchMapDefect<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (e: unknown) => Fx<R2, E2, B>,
+): Fx<R | R2, E | E2, A | B> {
+  return switchMapCause(fx, (cause): Fx<R | R2, E | E2, A | B> => {
+    const defects = Cause.defects(cause)
+
+    if (Chunk.size(defects) > 0) {
+      return f(Chunk.unsafeHead(defects))
+    }
+
+    return failCause(cause)
+  })
 }

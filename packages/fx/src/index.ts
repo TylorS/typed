@@ -76,6 +76,21 @@ export const catchAll: {
       internal.catchAll(fx, f).addTrace(trace),
 )
 
+export const catchAllDefect: {
+  <R2, E2, B>(f: (e: unknown) => Fx<R2, E2, B>): <R, E, A>(
+    fx: Fx<R, E, A>,
+  ) => Fx<R | R2, E | E2, A | B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (e: unknown) => Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+} = dualWithTrace(
+  2,
+  (trace) =>
+    <R, E, A, R2, E2, B>(
+      fx: Fx<R, E, A>,
+      f: (e: unknown) => Fx<R2, E2, B>,
+    ): Fx<R | R2, E | E2, A | B> =>
+      internal.catchAllDefect(fx, f).addTrace(trace),
+)
+
 export const catchAllEffect: {
   <E, R2, E2, B>(f: (e: E) => Effect.Effect<R2, E2, B>): <R, A>(
     fx: Fx<R, E, A>,
@@ -402,6 +417,12 @@ export const interrupt: (id: FiberId) => Fx<never, never, never> = methodWithTra
   (trace) =>
     (id: FiberId): Fx<never, never, never> =>
       internal.interrupt(id).addTrace(trace),
+)
+
+export const die: (defect: unknown) => Fx<never, never, never> = methodWithTrace(
+  (trace) =>
+    (defect: unknown): Fx<never, never, never> =>
+      internal.die(defect).addTrace(trace),
 )
 
 export const filter: {
@@ -1026,6 +1047,21 @@ export const switchMapCauseEffect: {
   >
 } = dualWithTrace(2, (trace) => (fx, f) => internal.switchMapCauseEffect(fx, f).addTrace(trace))
 
+export const switchMapDefect: {
+  <R2, E2, B>(f: (e: unknown) => Fx<R2, E2, B>): <R, E, A>(
+    fx: Fx<R, E, A>,
+  ) => Fx<R | R2, E | E2, A | B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (e: unknown) => Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+} = dualWithTrace(
+  2,
+  (trace) =>
+    <R, E, A, R2, E2, B>(
+      fx: Fx<R, E, A>,
+      f: (e: unknown) => Fx<R2, E2, B>,
+    ): Fx<R | R2, E | E2, A | B> =>
+      internal.switchMapDefect(fx, f).addTrace(trace),
+)
+
 export const switchMapError: {
   <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, B>
 
@@ -1174,6 +1210,21 @@ export const toEnqueue: {
   <A>(enqueue: Queue.Enqueue<A>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, void>
   <R, E, A>(fx: Fx<R, E, A>, enqueue: Queue.Enqueue<A>): Effect.Effect<R, E, void>
 } = dualWithTrace(2, (trace) => (fx, enqueue) => internal.toEnqueue(fx, enqueue).traced(trace))
+
+export const orElse: {
+  <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(
+    fx: Fx<R, E, A>,
+  ) => Fx<R | R2, E2, A | B>
+  <R, E, R2, E2, B>(fx: Fx<R, E, B>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2, E2, B>
+} = dualWithTrace(
+  2,
+  (trace) =>
+    <R, E, R2, E2, B>(
+      fx: Fx<R, E, B>,
+      f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    ): Fx<R | R2, E2, B> =>
+      internal.orElse(fx, f).addTrace(trace),
+)
 
 export * from './toStream.js'
 export * from './RefSubject.js'

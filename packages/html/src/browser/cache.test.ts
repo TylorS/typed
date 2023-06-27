@@ -21,7 +21,7 @@ import {
 
 const parser = new Parser()
 
-describe.skip(findRootChildNodes.name, () => {
+describe(findRootChildNodes.name, () => {
   const { body, render } = makeTestDom()
   const [rendered, { end }] = render(({ element }) => {
     const div = element('div', { id: 'test-div' }, -1)
@@ -52,8 +52,8 @@ describe.skip(findRootChildNodes.name, () => {
 
 describe(findPartComment.name, () => {
   const testTemplate = Effect.gen(function* ($) {
-    const spanTemplate = html`<span>${'lorem ipsum'}</span>`
-    const pTemplate = html`<p id="test-p">${spanTemplate}</p>`
+    const [spanTemplate, spanTemplateParsed] = htmlWithTemplate`<span>${'lorem ipsum'}</span>`
+    const [pTemplate, pTemplateParsed] = htmlWithTemplate`<p id="test-p">${spanTemplate}</p>`
 
     const { window, body, rendered, template } = yield* $(
       testDomTemplate`<div id="test-div">${pTemplate}</div>`,
@@ -82,10 +82,10 @@ describe(findPartComment.name, () => {
       divTemplate: template,
       p,
       pComment,
-      pTemplate: parser.parse(pTemplate.template),
+      pTemplate: pTemplateParsed,
       span,
       spanComment,
-      spanTemplate: parser.parse(spanTemplate.template),
+      spanTemplate: spanTemplateParsed,
       text,
       textStartComment,
     } as const
@@ -158,7 +158,10 @@ describe(findPartComment.name, () => {
   })
 })
 
-function testDomTemplate(strings: TemplateStringsArray, ...values: ReadonlyArray<Renderable>) {
+function testDomTemplate(
+  strings: TemplateStringsArray,
+  ...values: ReadonlyArray<Renderable<any, any>>
+) {
   return pipe(
     html(strings, ...values),
     renderToHtml,
@@ -179,7 +182,7 @@ function testDomTemplate(strings: TemplateStringsArray, ...values: ReadonlyArray
         rendered,
       } as const
     }),
-    RenderContext.provide(makeRenderContext({ environment: 'test' })),
+    RenderContext.provide(makeRenderContext({ environment: 'browser' })),
     Effect.scoped,
   )
 }
@@ -300,4 +303,11 @@ export function makeTestDom(): {
     body: window.document.body,
     render,
   }
+}
+
+function htmlWithTemplate<Values extends ReadonlyArray<Renderable<any, any>>>(
+  strings: TemplateStringsArray,
+  ...values: Values
+) {
+  return [html(strings, ...values), parser.parse(strings)] as const
 }

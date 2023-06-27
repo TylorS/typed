@@ -479,6 +479,22 @@ describe(Parser.name, () => {
 
     expect(parser.parse(template)).toEqual(expected)
   })
+
+  it('parses tempalte with only holes', () => {
+    const template = h`${'test'} ${'test'}`
+    const part1 = new NodePart(0)
+    const part2 = new NodePart(1)
+    const expected = new Template(
+      [part1, new TextNode(' '), part2],
+      hashForTemplateStrings(template),
+      [
+        [part1, []],
+        [part2, []],
+      ],
+    )
+
+    expect(parser.parse(template)).toEqual(expected)
+  })
 })
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

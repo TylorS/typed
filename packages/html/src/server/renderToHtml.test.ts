@@ -2,6 +2,7 @@ import { deepStrictEqual } from 'assert'
 
 import { flow, pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
+import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 import { describe, it } from 'vitest'
 
@@ -18,9 +19,9 @@ import { EventHandler } from '../EventHandler.js'
 import { RenderContext } from '../RenderContext.js'
 import { RenderEvent } from '../RenderEvent.js'
 import { RenderTemplate, html } from '../RenderTemplate.js'
-import { counter } from '../_test_components.js'
 import { many } from '../many.js'
 import { TEXT_START, TYPED_HOLE } from '../meta.js'
+import { counter } from '../test_components.test.js'
 
 import { server } from './layer.js'
 import { renderToHtml, renderToHtmlStream } from './renderToHtml.js'
@@ -51,7 +52,7 @@ describe(renderToHtmlStream.name, () => {
     // Static
     await testHtmlChunks(html`<div class="${'foo'}"></div>`, [
       '<div data-typed="..."',
-      ' class="foo"',
+      'class="foo"',
       `></div>`,
     ])
   })
@@ -59,7 +60,7 @@ describe(renderToHtmlStream.name, () => {
   it.concurrent('renders a template with sparse attribute parts', async () => {
     await testHtmlChunks(html`<div id="${'foo'} ${'bar'} ${'baz'}"></div>`, [
       '<div data-typed="..."',
-      ' id="foo bar baz"',
+      'id="foo bar baz"',
       `></div>`,
     ])
   })
@@ -67,7 +68,7 @@ describe(renderToHtmlStream.name, () => {
   it.concurrent('renders a template with sparse class name parts', async () => {
     await testHtmlChunks(html`<div class="${'foo'} ${'bar'} ${'baz'}"></div>`, [
       '<div data-typed="..."',
-      ' class="foo bar baz"',
+      'class="foo bar baz"',
       `></div>`,
     ])
   })
@@ -96,7 +97,7 @@ describe(renderToHtmlStream.name, () => {
   it.concurrent('renders boolean attributes', async () => {
     await testHtmlChunks(html`<div ?hidden=${true}></div>`, [
       '<div data-typed="..."',
-      ' hidden',
+      'hidden',
       `></div>`,
     ])
 
@@ -132,13 +133,13 @@ describe(renderToHtmlStream.name, () => {
   it.concurrent('renders data attributes', async () => {
     await testHtmlChunks(html`<div data-foo=${'bar'}></div>`, [
       '<div data-typed="..."',
-      ' data-foo="bar"',
+      'data-foo="bar"',
       `></div>`,
     ])
 
     await testHtmlChunks(html`<div .data=${Fx.succeed({ foo: 'bar' })}></div>`, [
       '<div data-typed="..."',
-      ' data-foo="bar"',
+      'data-foo="bar"',
       `></div>`,
     ])
   })
@@ -151,7 +152,7 @@ describe(renderToHtmlStream.name, () => {
   it.concurrent('renders with property attributes', async () => {
     await testHtmlChunks(html`<input .value=${'foo'} />`, [
       `<input data-typed="..."`,
-      ` value="foo"`,
+      `value="foo"`,
       `/>`,
     ])
   })
@@ -180,7 +181,7 @@ describe(renderToHtmlStream.name, () => {
   it.concurrent(`renders with attribute directives`, async () => {
     await testHtmlChunks(html`<div id=${attrDirective((part) => part.update('foo'))}></div>`, [
       `<div data-typed="..."`,
-      ` id="foo"`,
+      `id="foo"`,
       `></div>`,
     ])
   })
@@ -189,7 +190,7 @@ describe(renderToHtmlStream.name, () => {
     // True
     await testHtmlChunks(
       html`<div ?hidden=${booleanDirective((part) => part.update(true))}></div>`,
-      [`<div data-typed="..."`, ` hidden`, `></div>`],
+      [`<div data-typed="..."`, `hidden`, `></div>`],
     )
 
     // False
@@ -202,14 +203,14 @@ describe(renderToHtmlStream.name, () => {
   it.concurrent(`renders with class name directives`, async () => {
     await testHtmlChunks(
       html`<div class=${classNameDirective((part) => part.update('foo'))}></div>`,
-      [`<div data-typed="..."`, ` class="foo"`, `></div>`],
+      [`<div data-typed="..."`, `class="foo"`, `></div>`],
     )
   })
 
   it.concurrent(`renders with data directives`, async () => {
     await testHtmlChunks(
       html`<div .data=${dataDirective((part) => part.update({ foo: 'bar' }))}></div>`,
-      [`<div data-typed="..."`, ` data-foo="bar"`, `></div>`],
+      [`<div data-typed="..."`, `data-foo="bar"`, `></div>`],
     )
   })
 
@@ -225,7 +226,7 @@ describe(renderToHtmlStream.name, () => {
   it.concurrent(`renders with property directives`, async () => {
     await testHtmlChunks(
       html`<input .value=${propertyDirective((part) => part.update('foo'))} />`,
-      [`<input data-typed="..."`, ` value="foo"`, `/>`],
+      [`<input data-typed="..."`, `value="foo"`, `/>`],
     )
   })
 
@@ -242,7 +243,7 @@ describe(renderToHtmlStream.name, () => {
           part.update('bar'),
         )} ${attrDirective((part) => part.update('baz'))}"
       ></div>`,
-      [`<div data-typed="..."`, ` id="foo bar baz"`, `></div>`],
+      [`<div data-typed="..."`, `id="foo bar baz"`, `></div>`],
     )
   })
 
@@ -276,7 +277,7 @@ describe(renderToHtmlStream.name, () => {
 
   it.concurrent('renders components with arrays', async () => {
     await testHtmlChunks(counterOfCounters, [
-      `<button data-typed="...">-</button><span data-typed="...">Number of counters: `,
+      `<button data-typed="...">-</button><span data-typed="...">Number of counters:`,
       `${TEXT_START}1`,
       TYPED_HOLE(1),
       `</span><button data-typed="...">+</button><ul data-typed="...">`,
@@ -314,7 +315,7 @@ function provideResources<R, E, A>(effect: Effect.Effect<R, E, A>) {
 }
 
 async function testHtmlChunks(
-  template: Fx.Fx<RenderTemplate | RenderContext, never, RenderEvent>,
+  template: Fx.Fx<RenderTemplate | RenderContext | Scope.Scope, never, RenderEvent>,
   expected: string[],
 ): Promise<void> {
   const actual = (
@@ -326,7 +327,7 @@ async function testHtmlChunks(
       Effect.runPromise,
     )
   )
-    .map(flow(stripDataTyped, stripSelfClosingComment))
+    .map(flow(stripDataTyped, stripSelfClosingComment, (x) => x.trim()))
     .slice(1, -1) // Remove TYPED_START + TYPED_END from actual
 
   try {

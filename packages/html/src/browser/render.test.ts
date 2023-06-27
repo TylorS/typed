@@ -9,18 +9,17 @@ import { isWire } from '@typed/wire'
 import { describe, it } from 'vitest'
 
 import { attrDirective } from '../Directive.js'
-import { RenderContext, makeRenderContext } from '../RenderContext.js'
+import { RenderEvent } from '../RenderEvent.js'
 import { html } from '../RenderTemplate.js'
 import { Rendered } from '../Rendered.js'
-import { TemplateResult } from '../TemplateResult.js'
-import { counter } from '../_test_components.js'
 import { TYPED_HOLE } from '../meta.js'
 import { makeServerWindow } from '../server/makeServerWindow.js'
+import { counter } from '../test_components.test.js'
 
 import { render } from './render.js'
 
-describe.skip(render.name, () => {
-  it('renders a simple elements', async () => {
+describe(render.name, () => {
+  it.concurrent('renders a simple elements', async () => {
     const test = testRendered(html`<div></div>`, (rendered) =>
       Effect.gen(function* ($) {
         const globalThis = yield* $(GlobalThis)
@@ -33,7 +32,7 @@ describe.skip(render.name, () => {
     await Effect.runPromise(test)
   })
 
-  it('renders a simple elements with attributes', async () => {
+  it.concurrent('renders a simple elements with attributes', async () => {
     const staticAttr = testRendered(html`<div id="test"></div>`, (rendered) =>
       Effect.gen(function* ($) {
         const globalThis = yield* $(GlobalThis)
@@ -75,7 +74,7 @@ describe.skip(render.name, () => {
     await Promise.all([staticAttr, staticPart, effectPart, fxPart].map(Effect.runPromise))
   })
 
-  it('renders interpolated templates', async () => {
+  it.concurrent('renders interpolated templates', async () => {
     const test = testRendered(html`<div>${html`<span></span>`}</div>`, (rendered) =>
       Effect.gen(function* ($) {
         const globalThis = yield* $(GlobalThis)
@@ -88,7 +87,7 @@ describe.skip(render.name, () => {
     await Effect.runPromise(test)
   })
 
-  it('renders sparse attributes ', async () => {
+  it.concurrent('renders sparse attributes ', async () => {
     const test = testRendered(html`<div id="${'foo'} ${'bar'} ${'baz'}"></div>`, (rendered) =>
       Effect.gen(function* ($) {
         const globalThis = yield* $(GlobalThis)
@@ -101,7 +100,7 @@ describe.skip(render.name, () => {
     await Effect.runPromise(test)
   })
 
-  it('renders sparse attributes with directives', async () => {
+  it.concurrent('renders sparse attributes with directives', async () => {
     const test = testRendered(
       html`<div
         id="${attrDirective((part) => part.update('foo'))} ${attrDirective((part) =>
@@ -120,7 +119,7 @@ describe.skip(render.name, () => {
     await Effect.runPromise(test)
   })
 
-  it('renders components with wires', async () => {
+  it.concurrent('renders components with wires', async () => {
     const test = testRendered(counter, (rendered) =>
       // eslint-disable-next-line require-yield
       Effect.gen(function* ($) {
@@ -142,8 +141,8 @@ describe.skip(render.name, () => {
 })
 
 function testRendered<R, E, R2, E2>(
-  what: Fx.Fx<R, E, TemplateResult>,
-  onRendered: (rendered: Rendered | null) => Effect.Effect<R2, E2, unknown>,
+  what: Fx.Fx<R, E, RenderEvent>,
+  onRendered: (rendered: Rendered) => Effect.Effect<R2, E2, unknown>,
   take = 1,
 ) {
   const window = makeServerWindow()
@@ -152,9 +151,8 @@ function testRendered<R, E, R2, E2>(
   return pipe(
     render(what, where),
     Fx.take(take),
-    Fx.observe(onRendered),
+    Fx.observe((event) => onRendered(event.valueOf() as Rendered)),
     Effect.provideSomeContext(makeDomServices(window, window)),
-    RenderContext.provide(makeRenderContext({ environment: 'browser' })),
     Effect.scoped,
   )
 }
