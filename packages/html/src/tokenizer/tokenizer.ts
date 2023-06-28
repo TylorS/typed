@@ -76,10 +76,6 @@ export type Token =
   | TextToken
   | PartToken
 
-// Maybe these too?
-// TODO: Node Parts
-// TODO: Text Parts
-
 export class OpeningTagToken {
   readonly _tag = 'opening-tag'
 
