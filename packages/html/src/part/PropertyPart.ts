@@ -1,4 +1,5 @@
 import * as Effect from '@effect/io/Effect'
+import * as Scope from '@effect/io/Scope'
 import { Sink } from '@typed/fx'
 
 import { Renderable } from '../Renderable.js'
@@ -28,9 +29,9 @@ export class PropertyPart extends BasePart<unknown> {
   observe<R, E, R2>(
     placeholder: Renderable<R, E>,
     sink: Sink<R2, E, unknown>,
-  ): Effect.Effect<R | R2, never, void> {
+  ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
     return Effect.matchCauseEffect(handlePart(this, placeholder), sink.error, (fx) =>
-      fx ? fx.run(sink) : sink.event(this.value),
+      fx ? Effect.forkScoped(fx.run(sink)) : sink.event(this.value),
     )
   }
 

@@ -68,10 +68,12 @@ export class NodePart extends BasePart<unknown> {
     placeholder: Renderable<R, E>,
     sink: Fx.Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
-    return Fx.drain(
-      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, (a: any) =>
-        Effect.flatMap(this.update(isRenderEvent(a) ? a.valueOf() : a), () =>
-          sink.event(this.value),
+    return Effect.forkScoped(
+      Fx.drain(
+        Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, (a: any) =>
+          Effect.flatMap(this.update(isRenderEvent(a) ? a.valueOf() : a), () =>
+            sink.event(this.value),
+          ),
         ),
       ),
     )

@@ -15,11 +15,15 @@ export function hydrate<R, E>(
   what: Fx.Fx<R, E, RenderEvent>,
   where: HTMLElement,
 ): Fx.Fx<Exclude<R, Document | RenderContext | RenderTemplate>, E, RenderEvent> {
-  const parentChildNodes = findRootParentChildNodes(where)
   const renderContext = makeRenderContext({ environment: 'browser' })
   const { context } = Document.build(where.ownerDocument)
-    .merge(RenderContext.build(renderContext))
-    .merge(HydrateContext.build({ where: parentChildNodes, rootIndex: -1, parentTemplate: null }))
+    .add(RenderContext, renderContext)
+    .add(HydrateContext, {
+      where: findRootParentChildNodes(where),
+      rootIndex: -1,
+      parentTemplate: null,
+    })
+
   const layer = Layer.provideMerge(Layer.succeedContext(context), hydrateTemplateInDom)
   const cache = getBrowserCache(renderContext.renderCache, where)
 
@@ -40,15 +44,15 @@ function attachRoot(
     if (wire !== cache.wire) {
       if (cache.wire && !wire) where.removeChild(cache.wire.valueOf() as globalThis.Node)
 
+      const previouslyHadWire = cache.wire
+
       cache.wire = wire
-      // valueOf() simply returns the node itself, but in case it was a "wire"
-      // it will eventually re-append all nodes to its fragment so that such
-      // fragment can be re-appended many times in a meaningful way
-      // (wires are basically persistent fragments facades with special behavior)
+
       if (wire) {
         const value = wire.valueOf()
 
-        where.replaceChildren(...(Array.isArray(value) ? value : [value]))
+        // Only replace children after the first render
+        if (previouslyHadWire) where.replaceChildren(...(Array.isArray(value) ? value : [value]))
       }
     }
   })

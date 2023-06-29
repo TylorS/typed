@@ -1,10 +1,10 @@
+import { pipe } from '@effect/data/Function'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import { Context } from '@typed/context'
 import { addEventListener } from '@typed/dom'
 import * as Fx from '@typed/fx'
-import { pipe } from '@effect/data/Function'
 
 import { EventHandler } from '../EventHandler.js'
 import { Renderable } from '../Renderable.js'
@@ -65,7 +65,9 @@ export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
           ),
         ),
         Effect.flatMap((f: Fiber.Fiber<never, void>) =>
-          Effect.sync(() => void part.fibers.add(fiber = f)),
+          Effect.sync(() => {
+            part.fibers.add((fiber = f))
+          }),
         ),
         Effect.provideContext(context),
       )

@@ -86,13 +86,11 @@ function hydrateTemplate<Values extends readonly Renderable<any, any>[]>(
             Effect.tap(({ onValue }) =>
               Effect.all(
                 parts.map((part, index) =>
-                  Effect.forkScoped(
-                    renderPart(
-                      values,
-                      part,
-                      makeHydrateContext,
-                      Fx.Sink(() => onValue(index), sink.error),
-                    ),
+                  renderPart(
+                    values,
+                    part,
+                    makeHydrateContext,
+                    Fx.Sink(() => onValue(index), sink.error),
                   ),
                 ),
               ),

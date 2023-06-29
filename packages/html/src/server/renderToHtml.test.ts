@@ -293,7 +293,7 @@ describe(renderToHtmlStream.name, () => {
     ])
   })
 
-  it.concurrent.skip('runs fassstt', async () => {
+  it.concurrent.only('runs fassstt', async () => {
     let total = 0
     const iterations = 100
 

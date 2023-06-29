@@ -32,9 +32,11 @@ export class TextPart extends BasePart<string> {
     placeholder: Renderable<R, E>,
     sink: Fx.Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
-    return Fx.drain(
-      Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, (value) =>
-        Effect.flatMap(this.update(value), () => sink.event(this.value)),
+    return Effect.forkScoped(
+      Fx.drain(
+        Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, (value) =>
+          Effect.flatMap(this.update(value), () => sink.event(this.value)),
+        ),
       ),
     )
   }

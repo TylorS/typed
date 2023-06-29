@@ -44,11 +44,13 @@ export class SparseClassNamePart {
     placeholder: readonly Renderable<R, E>[],
     sink: Fx.Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
-    return Fx.drain(
-      Fx.switchMatchCauseEffect(
-        unwrapSparsePartRenderables(placeholder, this),
-        sink.error,
-        (value) => Effect.flatMap(this.update(value), sink.event),
+    return Effect.forkScoped(
+      Fx.drain(
+        Fx.switchMatchCauseEffect(
+          unwrapSparsePartRenderables(placeholder, this),
+          sink.error,
+          (value) => Effect.flatMap(this.update(value), sink.event),
+        ),
       ),
     )
   }

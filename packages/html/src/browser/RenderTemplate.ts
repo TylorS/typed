@@ -59,12 +59,10 @@ export function renderTemplate<Values extends readonly Renderable<any, any>[]>(
           Effect.tap(({ onValue }) =>
             Effect.all(
               parts.map((part, index) =>
-                Effect.forkScoped(
-                  renderPart(
-                    values,
-                    part,
-                    Fx.Sink(() => onValue(index), sink.error),
-                  ),
+                renderPart(
+                  values,
+                  part,
+                  Fx.Sink(() => onValue(index), sink.error),
                 ),
               ),
             ),
