@@ -20,7 +20,7 @@ import { counter } from '../test_components.test.js'
 import { hydrate } from './hydrate.js'
 
 describe(hydrate.name, () => {
-  it.concurrent('renders a simple elements', async () => {
+  it.concurrent('hydrates a simple elements', async () => {
     const test = testHydrate(
       html`<div></div>`,
       (body) => ({ div: body.querySelector('div') }),
@@ -30,7 +30,7 @@ describe(hydrate.name, () => {
     await Effect.runPromise(test)
   })
 
-  it.concurrent('renders a simple elements with attributes', async () => {
+  it.concurrent('hydrates a simple elements with attributes', async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const getInitial = (body: HTMLElement) => ({ div: body.querySelector('div')! })
 
@@ -63,7 +63,7 @@ describe(hydrate.name, () => {
     await Promise.all([staticAttr, staticPart, effectPart, fxPart].map(Effect.runPromise))
   })
 
-  it.concurrent('renders interpolated templates', async () => {
+  it.concurrent('hydrates interpolated templates', async () => {
     const test = testHydrate(
       html`<div>${html`<span></span>`}</div>`,
       (body) => {
@@ -87,7 +87,7 @@ describe(hydrate.name, () => {
     await Effect.runPromise(test)
   })
 
-  it.concurrent('renders interpolated sibling templates', async () => {
+  it.concurrent('hydrates interpolated sibling templates', async () => {
     const spanTemplate = html`<span></span>`
 
     const test = testHydrate(
@@ -140,7 +140,7 @@ describe(hydrate.name, () => {
     await Effect.runPromise(Effect.scoped(test))
   })
 
-  it.concurrent('renders components with wires', async () => {
+  it.concurrent('hydrates components with wires', async () => {
     const test = testHydrate(
       counter,
       (body) => ({
