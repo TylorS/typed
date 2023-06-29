@@ -38,6 +38,26 @@ export interface Ref<I, R, E, A> extends Context.Tag<I, Fx.RefSubject<E, A>>, Fx
 
   readonly map: <A2>(f: (a: A) => A2) => Effect.Effect<I, never, Fx.Computed<never, E, A2>>
 
+  readonly filterMapEffect: <R2, E2, A2>(
+    f: (a: A) => Effect.Effect<R2, E2, Option.Option<A2>>,
+  ) => Effect.Effect<I, never, Fx.Filtered<R | R2, E | E2, A2>>
+
+  readonly filterMap: <A2>(
+    f: (a: A) => Option.Option<A2>,
+  ) => Effect.Effect<I, never, Fx.Filtered<R, E, A2>>
+
+  readonly filterEffect: <R2, E2>(
+    f: (a: A) => Effect.Effect<R2, E2, boolean>,
+  ) => Effect.Effect<I, never, Fx.Filtered<R | R2, E | E2, A>>
+
+  readonly filter: (f: (a: A) => boolean) => Effect.Effect<I, never, Fx.Filtered<R, E, A>>
+
+  readonly filterNotEffect: <R2, E2>(
+    f: (a: A) => Effect.Effect<R2, E2, boolean>,
+  ) => Effect.Effect<I, never, Fx.Filtered<R | R2, E | E2, A>>
+
+  readonly filterNot: (f: (a: A) => boolean) => Effect.Effect<I, never, Fx.Filtered<R, E, A>>
+
   readonly layer: Layer.Layer<R, never, I>
 
   readonly provide: <R2, E2, A2>(
@@ -97,6 +117,16 @@ export const Ref: {
           Effect.map(tag, (r) => r.mapEffect(f)).traced(trace),
         map: <A2>(f: (a: A) => A2) => Effect.map(tag, (r) => r.map(f)).traced(trace),
         layer: Effect.toLayerScoped(make, tag),
+        filterMapEffect: <R2, E2, A2>(f: (a: A) => Effect.Effect<R2, E2, Option.Option<A2>>) =>
+          Effect.map(tag, (r) => r.filterMapEffect(f)).traced(trace),
+        filterMap: <A2>(f: (a: A) => Option.Option<A2>) =>
+          Effect.map(tag, (r) => r.filterMap(f)).traced(trace),
+        filterEffect: <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>) =>
+          Effect.map(tag, (r) => r.filterEffect(f)).traced(trace),
+        filter: (f: (a: A) => boolean) => Effect.map(tag, (r) => r.filter(f)).traced(trace),
+        filterNotEffect: <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>) =>
+          Effect.map(tag, (r) => r.filterNotEffect(f)).traced(trace),
+        filterNot: (f: (a: A) => boolean) => Effect.map(tag, (r) => r.filterNot(f)).traced(trace),
         provide: <R2, E2, A2>(effect: Effect.Effect<R2, E2, A2>) =>
           Effect.provideServiceEffect(effect, tag, make).traced(trace),
         provideFx: <R2, E2, A2>(fx: Fx.Fx<R2, E2, A2>) =>
