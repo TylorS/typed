@@ -27,9 +27,7 @@ import { getPreviousNodes, isComment, isCommentWithValue, isHtmlElement } from '
 import { buildTemplate } from './buildTemplate.js'
 
 export type BrowserCache = {
-  stack: Array<BrowserCache | null>
   wire: Rendered | null
-  entry: BrowserEntry | null
 }
 
 export type BrowserTemplateCache = {
@@ -45,8 +43,6 @@ export type BrowserEntry = {
 }
 
 export const makeEmptyBrowerCache = (): BrowserCache => ({
-  entry: null,
-  stack: [],
   wire: null,
 })
 
@@ -68,36 +64,35 @@ export function getBrowserCache(
 export function getRenderEntry({
   document,
   renderContext,
-  browserCache,
   strings,
   context,
   onCause,
 }: {
   document: Document
   renderContext: RenderContext
-  browserCache: BrowserCache
   strings: TemplateStringsArray
   context: Context<any>
   onCause: (cause: Cause.Cause<any>) => Effect.Effect<any, never, void>
 }): BrowserEntry {
-  const cache = getBrowserTemplateCache(document, strings, renderContext.templateCache)
-  const template = cache.template
-  const content = document.importNode(cache.content, true)
+  const { template, content } = getBrowserTemplateCache(
+    document,
+    strings,
+    renderContext.templateCache,
+    false,
+  )
 
-  const parts = template.parts.map(([part, path]): Part | SparsePart => {
-    const element = findPath(content, path) as HTMLElement
-
-    return partNodeToPart({
+  const parts = template.parts.map(([part, path]): Part | SparsePart =>
+    partNodeToPart({
       document,
-      node: element,
+      node: findPath(content, path) as HTMLElement,
       part,
       context,
       onCause,
       isHydrating: false,
-    })
-  })
+    }),
+  )
 
-  const cleanup = makeCleanup(browserCache, parts)
+  const cleanup = makeCleanup(parts)
 
   let wire: Rendered | null = null
 
@@ -115,18 +110,22 @@ export function getBrowserTemplateCache(
   document: Document,
   strings: TemplateStringsArray,
   templateCache: RenderContext['templateCache'],
+  isHydrating: boolean,
 ): BrowserTemplateCache {
   const current = templateCache.get(strings)
 
   if (current) {
-    return current as BrowserTemplateCache
+    return {
+      template: (current as BrowserTemplateCache).template,
+      content: isHydrating ? undefined : (current as BrowserTemplateCache).content.cloneNode(true),
+    } as BrowserTemplateCache
   }
 
   const template = globalParser.parse(strings)
-  const newCache: BrowserTemplateCache = {
+  const newCache = {
     template,
-    content: buildTemplate(document, template),
-  }
+    content: isHydrating ? undefined : buildTemplate(document, template),
+  } as BrowserTemplateCache
 
   templateCache.set(strings, newCache)
 
@@ -194,7 +193,6 @@ export function partNodeToPart({
 export function getHydrateEntry({
   document,
   renderContext,
-  browserCache,
   where,
   rootIndex,
   parentTemplate,
@@ -204,7 +202,6 @@ export function getHydrateEntry({
 }: {
   document: Document
   renderContext: RenderContext
-  browserCache: BrowserCache
   where: ParentChildNodes
   rootIndex: number
   parentTemplate: Template | null
@@ -212,7 +209,7 @@ export function getHydrateEntry({
   context: Context<any>
   onCause: (cause: Cause.Cause<any>) => Effect.Effect<any, never, void>
 }) {
-  const { template } = getBrowserTemplateCache(document, strings, renderContext.templateCache)
+  const { template } = getBrowserTemplateCache(document, strings, renderContext.templateCache, true)
 
   if (parentTemplate) {
     where = findTemplateResultPartChildNodes(where, parentTemplate, template, rootIndex)
@@ -229,7 +226,7 @@ export function getHydrateEntry({
     }),
   )
 
-  const cleanup = makeCleanup(browserCache, parts)
+  const cleanup = makeCleanup(parts)
 
   const wire = (() => {
     if (!parentTemplate) {
@@ -382,18 +379,8 @@ export class CouldNotFindRootElement extends Error {
   }
 }
 
-function makeCleanup(browserCache: BrowserCache, parts: Array<Part | SparsePart>) {
-  return Effect.allPar(
-    Effect.suspend(() => {
-      const stack = browserCache.stack.slice(0)
-      browserCache.stack = []
-
-      return Effect.allPar(
-        stack.map((cache) => (cache && cache.entry ? cache.entry.cleanup : Effect.unit())),
-      )
-    }),
-    Effect.forkDaemon(
-      Effect.suspend(() => Fiber.interruptAll(parts.flatMap((p) => Array.from(p.fibers)))),
-    ),
+function makeCleanup(parts: Array<Part | SparsePart>) {
+  return Effect.forkDaemon(
+    Effect.suspend(() => Fiber.interruptAll(parts.flatMap((p) => Array.from(p.fibers)))),
   )
 }

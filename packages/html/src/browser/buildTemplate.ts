@@ -7,11 +7,11 @@ import {
   Text,
 } from '../parser/parser.js'
 
-export function buildTemplate(document: Document, template: Template): DocumentFragment {
+export function buildTemplate(document: Document, { nodes }: Template): DocumentFragment {
   const fragment = document.createDocumentFragment()
 
-  for (let i = 0; i < template.nodes.length; ++i) {
-    fragment.append(buildNode(document, template.nodes[i]))
+  for (let i = 0; i < nodes.length; ++i) {
+    fragment.append(buildNode(document, nodes[i]))
   }
 
   return fragment
@@ -40,13 +40,14 @@ function buildElement(
   document: Document,
   node: ElementNode | SelfClosingElementNode | TextOnlyElement,
 ): Element {
+  const { type, tagName, attributes } = node
   const element =
-    node.tagName === 'svg'
-      ? document.createElementNS(SVG_NAMESPACE, node.tagName)
-      : document.createElement(node.tagName)
+    tagName === 'svg'
+      ? document.createElementNS(SVG_NAMESPACE, tagName)
+      : document.createElement(tagName)
 
-  for (let i = 0; i < node.attributes.length; ++i) {
-    const attr = node.attributes[i]
+  for (let i = 0; i < attributes.length; ++i) {
+    const attr = attributes[i]
 
     // We only handle static attributes here, parts are handled elsewhere
     if (attr.type === 'attribute') {
@@ -56,7 +57,7 @@ function buildElement(
     }
   }
 
-  if (node.type === 'element') {
+  if (type === 'element') {
     element.append(...node.children.map((child) => buildNode(document, child)))
   } else if (node.type === 'text-only-element') {
     element.append(...node.children.map((child) => buildTextChild(document, child)))

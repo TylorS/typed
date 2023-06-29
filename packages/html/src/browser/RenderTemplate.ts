@@ -1,3 +1,4 @@
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
@@ -14,7 +15,7 @@ import { Renderable } from '../Renderable.js'
 import { Rendered } from '../Rendered.js'
 import { Part, SparsePart } from '../part/Part.js'
 
-import { getRenderEntry, makeEmptyBrowerCache } from './cache.js'
+import { getRenderEntry } from './cache.js'
 import { indexRefCounter } from './indexRefCounter.js'
 
 type RenderToDomInput = {
@@ -41,43 +42,37 @@ export function renderTemplate<Values extends readonly Renderable<any, any>[]>(
   return Fx.Fx(<R2>(sink: Fx.Sink<R2, Placeholder.ErrorsOf<Values[number]>, RenderEvent>) =>
     Effect.contextWithEffect(
       (context: Context.Context<Placeholder.ResourcesOf<Values[number]> | R2 | Scope.Scope>) => {
-        const browserCache = makeEmptyBrowerCache()
         const { cleanup, wire, parts } = getRenderEntry({
           ...input,
-          browserCache,
           strings,
           context,
           onCause: sink.error,
         })
 
-        return Effect.flatMap(
-          Effect.flatMap(
-            Effect.addFinalizer(() => cleanup),
-            () =>
-              parts.length === 0
-                ? sink.event(DomRenderEvent(wire() as Rendered))
-                : Effect.flatMap(
-                    Effect.tap(indexRefCounter(parts.length), ({ onValue }) =>
-                      Effect.all(
-                        parts.map((part, i) =>
-                          Effect.forkScoped(
-                            renderPart<
-                              R2 | Placeholder.ResourcesOf<Values[number]>,
-                              Placeholder.ErrorsOf<Values[number]>
-                            >(
-                              values,
-                              part,
-                              Fx.Sink(() => onValue(i), sink.error),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    ({ onReady }) =>
-                      Effect.flatMap(onReady, () => sink.event(DomRenderEvent(wire() as Rendered))),
+        if (parts.length === 0) {
+          return sink.event(DomRenderEvent(wire() as Rendered))
+        }
+
+        return pipe(
+          Effect.addFinalizer(() => cleanup),
+          Effect.flatMap(() => indexRefCounter(parts.length)),
+          Effect.tap(({ onValue }) =>
+            Effect.all(
+              parts.map((part, index) =>
+                Effect.forkScoped(
+                  renderPart(
+                    values,
+                    part,
+                    Fx.Sink(() => onValue(index), sink.error),
                   ),
+                ),
+              ),
+            ),
           ),
-          () => Effect.never(),
+          Effect.tap(({ onReady }) =>
+            Effect.flatMap(onReady, () => sink.event(DomRenderEvent(wire() as Rendered))),
+          ),
+          Effect.flatMap(() => Effect.never()),
         )
       },
     ),
@@ -89,20 +84,18 @@ function renderPart<R, E>(
   part: Part | SparsePart,
   sink: Fx.Sink<R, E, unknown>,
 ): Effect.Effect<R, never, void> {
-  return Effect.suspend((): Effect.Effect<R, never, void> => {
-    if (part._tag === 'SparseClassName' || part._tag === 'SparseAttr') {
-      return part.observe(
-        part.parts.map((p) => (p._tag === 'StaticText' ? Fx.succeed(p.text) : values[p.index])),
-        sink,
-      )
-    } else {
-      const renderable = values[part.index]
+  if (part._tag === 'SparseClassName' || part._tag === 'SparseAttr') {
+    return part.observe(
+      part.parts.map((p) => (p._tag === 'StaticText' ? Fx.succeed(p.text) : values[p.index])),
+      sink,
+    )
+  } else {
+    const renderable = values[part.index]
 
-      if (isDirective<R, E>(renderable)) {
-        return Effect.matchCauseEffect(renderable.f(part), sink.error, () => sink.event(part.value))
-      } else {
-        return part.observe(values[part.index], sink)
-      }
+    if (isDirective<R, E>(renderable)) {
+      return Effect.matchCauseEffect(renderable.f(part), sink.error, () => sink.event(part.value))
+    } else {
+      return part.observe(values[part.index], sink)
     }
-  })
+  }
 }

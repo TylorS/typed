@@ -218,13 +218,20 @@ function testHydrate<R, E, A, R2, E2>(
         })
       }
 
-      return yield* $(
+      const test = $(
         hydrate(what, where),
         Fx.take(take),
-        Fx.observe((rendered) =>
-          onRendered(initial, rendered.valueOf() as Rendered, dispatchEvent),
-        ),
+        Fx.observe((rendered) => {
+          const end = Date.now()
+
+          console.log(`Hydration took ${end - start}ms`)
+          return onRendered(initial, rendered.valueOf() as Rendered, dispatchEvent)
+        }),
       )
+
+      const start = Date.now()
+
+      yield* test
     }),
     Effect.provideSomeContext(makeDomServices(window, window)),
     Effect.scoped,

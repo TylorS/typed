@@ -35,7 +35,7 @@ function attachRoot(
     const wire = what.valueOf() as Rendered
 
     if (wire !== cache.wire) {
-      if (cache.wire && !wire) where.removeChild(cache.wire as globalThis.Node)
+      if (cache.wire && !wire) where.removeChild(cache.wire.valueOf() as globalThis.Node)
 
       cache.wire = wire
       // valueOf() simply returns the node itself, but in case it was a "wire"

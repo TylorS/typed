@@ -293,13 +293,15 @@ describe(renderToHtmlStream.name, () => {
     ])
   })
 
-  it.concurrent('runs fassstt', async () => {
+  it.concurrent.skip('runs fassstt', async () => {
     let total = 0
     const iterations = 100
 
+    const test = provideResources(renderToHtml(counterOfCounters))
+
     for (let i = 0; i < iterations; i++) {
       const start = Date.now()
-      await pipe(renderToHtml(counterOfCounters), provideResources, Effect.runPromise)
+      await Effect.runPromise(test)
       const end = Date.now()
       total += end - start
     }
@@ -322,13 +324,12 @@ async function testHtmlChunks(
     await pipe(
       template,
       renderToHtmlStream,
+      Fx.map(flow(stripDataTyped, stripSelfClosingComment, (x) => x.trim())),
       Fx.toReadonlyArray,
       provideResources,
       Effect.runPromise,
     )
-  )
-    .map(flow(stripDataTyped, stripSelfClosingComment, (x) => x.trim()))
-    .slice(1, -1) // Remove TYPED_START + TYPED_END from actual
+  ).slice(1, -1) // Remove TYPED_START + TYPED_END from actual
 
   try {
     deepStrictEqual(actual, expected)

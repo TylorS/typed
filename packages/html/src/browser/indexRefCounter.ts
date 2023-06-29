@@ -1,6 +1,9 @@
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 
+/**
+ * @internal
+ */
 export function indexRefCounter(expected: number) {
   return Effect.map(Deferred.make<never, void>(), (deferred) => {
     const hasValue = new Set<number>()
@@ -9,20 +12,18 @@ export function indexRefCounter(expected: number) {
     let finished = false
 
     function onValue(index: number) {
-      return Effect.suspend(() => {
-        if (finished) return Effect.unit()
+      if (finished) return Effect.unit()
 
-        hasValue.add(index)
+      hasValue.add(index)
 
-        if (hasValue.size === expected) {
-          finished = true
-          hasValue.clear()
+      if (hasValue.size === expected) {
+        finished = true
+        hasValue.clear()
 
-          return done
-        }
+        return done
+      }
 
-        return Effect.unit()
-      })
+      return Effect.unit()
     }
 
     return {

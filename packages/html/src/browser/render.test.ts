@@ -148,11 +148,18 @@ function testRendered<R, E, R2, E2>(
   const window = makeServerWindow()
   const where = window.document.body
 
-  return pipe(
+  const test = pipe(
     render(what, where),
     Fx.take(take),
-    Fx.observe((event) => onRendered(event.valueOf() as Rendered)),
+    Fx.observe((event) => {
+      console.log('Rendered in', Date.now() - start, 'ms')
+      return onRendered(event.valueOf() as Rendered)
+    }),
     Effect.provideSomeContext(makeDomServices(window, window)),
     Effect.scoped,
   )
+
+  const start = Date.now()
+
+  return test
 }

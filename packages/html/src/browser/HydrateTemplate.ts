@@ -1,3 +1,4 @@
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
@@ -17,12 +18,7 @@ import { Part, SparsePart } from '../part/Part.js'
 import { ParentChildNodes } from '../paths.js'
 
 import { renderTemplate } from './RenderTemplate.js'
-import {
-  CouldNotFindCommentError,
-  CouldNotFindRootElement,
-  getHydrateEntry,
-  makeEmptyBrowerCache,
-} from './cache.js'
+import { CouldNotFindCommentError, CouldNotFindRootElement, getHydrateEntry } from './cache.js'
 import { indexRefCounter } from './indexRefCounter.js'
 
 type HydrateInput = {
@@ -66,16 +62,17 @@ function hydrateTemplate<Values extends readonly Renderable<any, any>[]>(
     Effect.catchAllDefect(
       Effect.contextWithEffect(
         (context: Context<Placeholder.ResourcesOf<Values[number]> | R2 | Scope.Scope>) => {
-          const browserCache = makeEmptyBrowerCache()
-
           const [{ template, cleanup, wire, parts }, where] = getHydrateEntry({
             ...input,
             ...unsafeGet(context, HydrateContext),
-            browserCache,
             strings,
             context,
             onCause: sink.error,
           })
+
+          if (parts.length === 0) {
+            return sink.event(DomRenderEvent(wire() as Rendered))
+          }
 
           const makeHydrateContext = (index: number): HydrateContext => ({
             where,
@@ -83,37 +80,27 @@ function hydrateTemplate<Values extends readonly Renderable<any, any>[]>(
             rootIndex: index,
           })
 
-          return Effect.flatMap(
-            Effect.flatMap(
-              Effect.addFinalizer(() => cleanup),
-              () =>
-                parts.length === 0
-                  ? sink.event(DomRenderEvent(wire() as Rendered))
-                  : Effect.flatMap(
-                      Effect.tap(indexRefCounter(parts.length), ({ onValue }) =>
-                        Effect.all(
-                          parts.map((part, i) =>
-                            Effect.forkScoped(
-                              renderPart<
-                                R2 | Placeholder.ResourcesOf<Values[number]>,
-                                Placeholder.ErrorsOf<Values[number]>
-                              >(
-                                values,
-                                part,
-                                makeHydrateContext,
-                                Fx.Sink(() => onValue(i), sink.error),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      ({ onReady }) =>
-                        Effect.flatMap(onReady, () =>
-                          sink.event(DomRenderEvent(wire() as Rendered)),
-                        ),
+          return pipe(
+            Effect.addFinalizer(() => cleanup),
+            Effect.flatMap(() => indexRefCounter(parts.length)),
+            Effect.tap(({ onValue }) =>
+              Effect.all(
+                parts.map((part, index) =>
+                  Effect.forkScoped(
+                    renderPart(
+                      values,
+                      part,
+                      makeHydrateContext,
+                      Fx.Sink(() => onValue(index), sink.error),
                     ),
+                  ),
+                ),
+              ),
             ),
-            () => Effect.never(),
+            Effect.tap(({ onReady }) =>
+              Effect.flatMap(onReady, () => sink.event(DomRenderEvent(wire() as Rendered))),
+            ),
+            Effect.flatMap(() => Effect.never()),
           )
         },
       ),
@@ -136,17 +123,7 @@ function renderPart<R, E>(
   sink: Fx.Sink<R, E, unknown>,
 ): Effect.Effect<R, never, void> {
   return Effect.suspend((): Effect.Effect<R, never, void> => {
-    if (part._tag === 'Node') {
-      const renderable = values[part.index]
-
-      if (isDirective<R, E>(renderable)) {
-        return Effect.matchCauseEffect(renderable.f(part), sink.error, () => sink.event(part.value))
-      } else {
-        return HydrateContext.provide(makeHydrateContext(part.index))(
-          part.observe(values[part.index], sink),
-        )
-      }
-    } else if (part._tag === 'SparseClassName' || part._tag === 'SparseAttr') {
+    if (part._tag === 'SparseClassName' || part._tag === 'SparseAttr') {
       return part.observe(
         part.parts.map((p) => (p._tag === 'StaticText' ? Fx.succeed(p.text) : values[p.index])),
         sink,
@@ -156,6 +133,10 @@ function renderPart<R, E>(
 
       if (isDirective<R, E>(renderable)) {
         return Effect.matchCauseEffect(renderable.f(part), sink.error, () => sink.event(part.value))
+      } else if (part._tag === 'Node') {
+        return HydrateContext.provide(makeHydrateContext(part.index))(
+          part.observe(values[part.index], sink),
+        )
       } else {
         return part.observe(values[part.index], sink)
       }
