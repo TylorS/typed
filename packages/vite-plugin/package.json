@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@effect/data": "^0.12.10",
-    "fast-glob": "^3.2.12",
+    "fast-glob": "^3.3.0",
     "rollup-plugin-visualizer": "^5.9.2",
     "vavite": "^1.8.1",
     "vite": "^4.3.9",

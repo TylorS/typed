@@ -26,7 +26,7 @@ export function matchRoutes<
   Exclude<E | Match.Error<Matches[number]>, Redirect>,
   A | Match.Success<Matches[number]>
 > {
-  type _R = R | Match.Context<Matches[number]> | Router | Scope.Scope
+  type _R = R | Match.Context<Matches[number]> | RenderContext | Router | Scope.Scope
   type _E = E | Match.Error<Matches[number]> | Redirect
   type _A = A | Match.Success<Matches[number]>
 
