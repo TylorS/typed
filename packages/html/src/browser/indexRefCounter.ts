@@ -7,7 +7,6 @@ import * as Effect from '@effect/io/Effect'
 export function indexRefCounter(expected: number) {
   return Effect.map(Deferred.make<never, void>(), (deferred) => {
     const hasValue = new Set<number>()
-    const done = Deferred.succeed(deferred, undefined)
 
     let finished = false
 
@@ -20,7 +19,7 @@ export function indexRefCounter(expected: number) {
         finished = true
         hasValue.clear()
 
-        return done
+        return Deferred.succeed(deferred, undefined)
       }
 
       return Effect.unit()

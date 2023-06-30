@@ -1,6 +1,5 @@
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
-import * as Fiber from '@effect/io/Fiber'
 import { Context } from '@typed/context'
 import { persistent } from '@typed/wire'
 
@@ -37,7 +36,6 @@ export type BrowserTemplateCache = {
 
 export type BrowserEntry = {
   readonly template: Template
-  readonly cleanup: Effect.Effect<never, never, void>
   readonly parts: ReadonlyArray<Part | SparsePart>
   readonly wire: () => Rendered | null
 }
@@ -92,13 +90,10 @@ export function getRenderEntry({
     }),
   )
 
-  const cleanup = makeCleanup(parts)
-
   let wire: Rendered | null = null
 
   const entry: BrowserEntry = {
     template,
-    cleanup,
     parts,
     wire: () => wire || (wire = persistent(content as DocumentFragment)),
   }
@@ -132,62 +127,61 @@ export function getBrowserTemplateCache(
   return newCache
 }
 
-export function partNodeToPart({
-  document,
-  node,
-  part,
-  context,
-  onCause,
-  isHydrating,
-}: {
+type PartInput<Part = PartNode | SparsePartNode> = {
   document: Document
   node: HTMLElement
-  part: PartNode | SparsePartNode
+  part: Part
   context: Context<any>
   onCause: (cause: Cause.Cause<any>) => Effect.Effect<any, never, void>
   isHydrating: boolean
-}): Part | SparsePart {
-  switch (part.type) {
-    case 'attr':
-      return AttrPart.fromElement(node, part.name, part.index)
-    case 'boolean-part':
-      return BooleanPart.fromElement(node, part.name, part.index)
-    case 'className-part':
-      return ClassNamePart.fromElement(node, part.index)
-    case 'comment-part':
-      return CommentPart.fromParentElement(node, part.index)
-    case 'data':
-      return DataPart.fromHTMLElement(node, part.index)
-    case 'event':
-      return EventPart.fromHTMLElement(
-        node,
-        part.name,
-        part.index,
-        (cause) => Effect.provideContext(onCause(cause), context),
-        context,
-      )
-    case 'node':
-      return NodePart.fromParentElemnt(document, node, part.index, isHydrating)
-    case 'property':
-      return PropertyPart.fromElement(node, part.name, part.index)
-    case 'ref':
-      return RefPart.fromElement(node, part.index)
-    case 'sparse-attr':
-      return SparseAttrPart.fromPartNodes(
-        (value) =>
-          Effect.sync(() =>
-            value ? node.setAttribute(part.name, value) : node.removeAttribute(part.name),
-          ),
-        part.nodes,
-      )
-    case 'sparse-class-name':
-      return SparseClassNamePart.fromPartNodes(
-        (value) => Effect.sync(() => (node.className = value ?? '')),
-        part.nodes,
-      )
-    case 'text-part':
-      return TextPart.fromElement(node, part.index)
-  }
+}
+
+type CreatePart = {
+  readonly [K in PartNode['type']]: (
+    input: PartInput<Extract<PartNode, { readonly type: K }>>,
+  ) => Part
+} & {
+  readonly [K in SparsePartNode['type']]: (
+    input: PartInput<Extract<SparsePartNode, { readonly type: K }>>,
+  ) => SparsePart
+}
+
+const createPart: CreatePart = {
+  attr: ({ node, part }) => AttrPart.fromElement(node, part.name, part.index),
+  'boolean-part': ({ node, part }) => BooleanPart.fromElement(node, part.name, part.index),
+  'className-part': ({ node, part }) => ClassNamePart.fromElement(node, part.index),
+  'comment-part': ({ node, part }) => CommentPart.fromParentElement(node, part.index),
+  data: ({ node, part }) => DataPart.fromHTMLElement(node, part.index),
+  event: ({ node, part, onCause, context }) =>
+    EventPart.fromHTMLElement(
+      node,
+      part.name,
+      part.index,
+      (cause) => Effect.provideContext(onCause(cause), context),
+      context,
+    ),
+  node: ({ document, node, part, isHydrating }) =>
+    NodePart.fromParentElemnt(document, node, part.index, isHydrating),
+  property: ({ node, part }) => PropertyPart.fromElement(node, part.name, part.index),
+  ref: ({ node, part }) => RefPart.fromElement(node, part.index),
+  'sparse-attr': ({ node, part }) =>
+    SparseAttrPart.fromPartNodes(
+      (value) =>
+        Effect.sync(() =>
+          value ? node.setAttribute(part.name, value) : node.removeAttribute(part.name),
+        ),
+      part.nodes,
+    ),
+  'sparse-class-name': ({ node, part }) =>
+    SparseClassNamePart.fromPartNodes(
+      (value) => Effect.sync(() => (node.className = value ?? '')),
+      part.nodes,
+    ),
+  'text-part': ({ node, part }) => TextPart.fromElement(node, part.index),
+}
+
+export function partNodeToPart(input: PartInput): Part | SparsePart {
+  return createPart[input.part.type](input as any)
 }
 
 export function getHydrateEntry({
@@ -226,12 +220,10 @@ export function getHydrateEntry({
     }),
   )
 
-  const cleanup = makeCleanup(parts)
-
   const wire = (() => {
     if (!parentTemplate) {
       const childNodes = Array.from(where.childNodes).filter((node) =>
-        isComment(node) ? !isCommentWithValue(node, 'typed-end') : true,
+        isComment(node) ? !isCommentWithValue(node, END) : true,
       )
 
       if (childNodes.length === 1) {
@@ -252,7 +244,6 @@ export function getHydrateEntry({
 
   const entry: BrowserEntry = {
     template,
-    cleanup,
     parts,
     wire: () => wire,
   }
@@ -269,6 +260,9 @@ export function findRootParentChildNodes(where: HTMLElement): ParentChildNodes {
   }
 }
 
+const START = 'typed-start'
+const END = 'typed-end'
+
 // Finds all of the childNodes between the "typed-start" and "typed-end" comments
 export function findRootChildNodes(where: HTMLElement): Node[] {
   const childNodes: Node[] = []
@@ -280,7 +274,7 @@ export function findRootChildNodes(where: HTMLElement): Node[] {
     const node = where.childNodes[i]
 
     if (node.nodeType === node.COMMENT_NODE) {
-      if (node.nodeValue === 'typed-start') {
+      if (node.nodeValue === START) {
         start = i
         break
       }
@@ -291,7 +285,7 @@ export function findRootChildNodes(where: HTMLElement): Node[] {
     const node = where.childNodes[i]
 
     if (node.nodeType === node.COMMENT_NODE) {
-      if (node.nodeValue === 'typed-end') {
+      if (node.nodeValue === END) {
         end = i
         break
       }
@@ -329,6 +323,7 @@ export function findPartChildNodes(
   const [comment, index] = findPartComment(childNodes, partIndex)
 
   const nodes: Node[] = []
+  const previousHoleValue = `hole${partIndex - 1}`
 
   if (hash) {
     for (let i = index; i > -1; --i) {
@@ -336,7 +331,7 @@ export function findPartChildNodes(
 
       if (isHtmlElement(node) && node.dataset.typed === hash) {
         nodes.unshift(node)
-      } else if (partIndex > 0 && isCommentWithValue(node, `hole${partIndex - 1}`)) {
+      } else if (partIndex > 0 && isCommentWithValue(node, previousHoleValue)) {
         break
       }
     }
@@ -377,10 +372,4 @@ export class CouldNotFindRootElement extends Error {
   constructor(readonly partIndex: number) {
     super(`Could not find root elements for part ${partIndex}`)
   }
-}
-
-function makeCleanup(parts: Array<Part | SparsePart>) {
-  return Effect.forkDaemon(
-    Effect.suspend(() => Fiber.interruptAll(parts.flatMap((p) => Array.from(p.fibers)))),
-  )
 }

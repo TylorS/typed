@@ -1,5 +1,4 @@
 import * as Effect from '@effect/io/Effect'
-import * as Fiber from '@effect/io/Fiber'
 import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
@@ -12,9 +11,6 @@ import { unwrapSparsePartRenderables } from './updates.js'
 
 export class SparseClassNamePart {
   readonly _tag = 'SparseClassName' as const
-
-  // Can be used to track resources for a given Part.
-  public fibers: Set<Fiber.Fiber<never, unknown>> = new Set()
 
   constructor(
     protected setClassName: (value: string) => Effect.Effect<never, never, void>,
@@ -96,9 +92,6 @@ export class SparseClassNamePart {
     }
 
     const part = new SparseClassNamePart(setAttribute, parts)
-
-    // Each part should share the same fibers
-    parts.forEach((p) => (p.fibers = part.fibers))
 
     return part
   }

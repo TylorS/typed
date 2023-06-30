@@ -62,7 +62,7 @@ function hydrateTemplate<Values extends readonly Renderable<any, any>[]>(
     Effect.catchAllDefect(
       Effect.contextWithEffect(
         (context: Context<Placeholder.ResourcesOf<Values[number]> | R2 | Scope.Scope>) => {
-          const [{ template, cleanup, wire, parts }, where] = getHydrateEntry({
+          const [{ template, wire, parts }, where] = getHydrateEntry({
             ...input,
             ...unsafeGet(context, HydrateContext),
             strings,
@@ -76,13 +76,12 @@ function hydrateTemplate<Values extends readonly Renderable<any, any>[]>(
 
           const makeHydrateContext = (index: number): HydrateContext => ({
             where,
-            parentTemplate: template,
             rootIndex: index,
+            parentTemplate: template,
           })
 
           return pipe(
-            Effect.addFinalizer(() => cleanup),
-            Effect.flatMap(() => indexRefCounter(parts.length)),
+            indexRefCounter(parts.length),
             Effect.tap(({ onValue }) =>
               Effect.all(
                 parts.map((part, index) =>
@@ -120,24 +119,22 @@ function renderPart<R, E>(
   makeHydrateContext: (index: number) => HydrateContext,
   sink: Fx.Sink<R, E, unknown>,
 ): Effect.Effect<R, never, void> {
-  return Effect.suspend((): Effect.Effect<R, never, void> => {
-    if (part._tag === 'SparseClassName' || part._tag === 'SparseAttr') {
-      return part.observe(
-        part.parts.map((p) => (p._tag === 'StaticText' ? Fx.succeed(p.text) : values[p.index])),
-        sink,
+  if (part._tag === 'SparseClassName' || part._tag === 'SparseAttr') {
+    return part.observe(
+      part.parts.map((p) => (p._tag === 'StaticText' ? Fx.succeed(p.text) : values[p.index])),
+      sink,
+    )
+  } else {
+    const renderable = values[part.index]
+
+    if (isDirective<R, E>(renderable)) {
+      return Effect.matchCauseEffect(renderable.f(part), sink.error, () => sink.event(part.value))
+    } else if (part._tag === 'Node') {
+      return HydrateContext.provide(makeHydrateContext(part.index))(
+        part.observe(values[part.index], sink),
       )
     } else {
-      const renderable = values[part.index]
-
-      if (isDirective<R, E>(renderable)) {
-        return Effect.matchCauseEffect(renderable.f(part), sink.error, () => sink.event(part.value))
-      } else if (part._tag === 'Node') {
-        return HydrateContext.provide(makeHydrateContext(part.index))(
-          part.observe(values[part.index], sink),
-        )
-      } else {
-        return part.observe(values[part.index], sink)
-      }
+      return part.observe(values[part.index], sink)
     }
-  })
+  }
 }

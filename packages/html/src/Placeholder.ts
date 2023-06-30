@@ -180,10 +180,26 @@ export namespace Placeholder {
     return Fx.succeed(placeholder as A)
   }
 
-  export function asRef<R, E, A>(
+  export function asRef<R = never, E = never, A = never>(
+    placeholder: Placeholder<R, E, A>,
+  ): Effect.Effect<Scope.Scope | R, never, Fx.RefSubject<E, A>>
+
+  export function asRef<R = never, E = never, A = never>(
+    placeholder: Placeholder<R, E, A> | null | undefined,
+  ): Effect.Effect<Scope.Scope | R, never, Fx.RefSubject<E, A | null | undefined>>
+
+  export function asRef<R = never, E = never, A = never>(
     placeholder: Placeholder<R, E, A> | null | undefined,
   ): Effect.Effect<Scope.Scope | R, never, Fx.RefSubject<E, A>> {
-    return Fx.asRef(asFx(placeholder))
+    if (Fx.isFx<R, E, A>(placeholder)) {
+      return Fx.asRef(placeholder)
+    }
+
+    if (Effect.isEffect(placeholder)) {
+      return Fx.makeRef(placeholder as Effect.Effect<R, E, A>)
+    }
+
+    return Fx.makeRef<never, E, A>(Effect.succeed(placeholder as A))
   }
 }
 

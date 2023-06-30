@@ -1,4 +1,3 @@
-import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
@@ -56,13 +55,10 @@ export type ForkFx = <R2>(eff: Effect.Effect<R2, never, void>) => Effect.Effect<
 
 export function withSwitch<R, E, A>(f: (switchFork: ForkFx) => Effect.Effect<R, E, A>) {
   return withScopedFork((fork) =>
-    Effect.flatMap(RefS.make<Fiber.Fiber<never, void>>(Fiber.unit()), (ref) => {
+    Effect.flatMap(RefS.make<Fiber.Fiber<never, void> | undefined>(undefined), (ref) => {
       const switchFork = <R2>(eff: Effect.Effect<R2, never, void>) =>
         RefS.updateEffect(ref, (currentFiber) =>
-          pipe(
-            Fiber.interruptFork(currentFiber),
-            Effect.flatMap(() => fork(eff)),
-          ),
+          currentFiber ? Effect.zipRight(Fiber.interruptFork(currentFiber), fork(eff)) : fork(eff),
         )
 
       return Effect.flatMap(

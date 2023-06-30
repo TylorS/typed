@@ -171,47 +171,41 @@ export namespace RefSubject {
 }
 
 export function isRefSubject<E, A>(u: unknown): u is RefSubject<E, A> {
-  return isFx<never, E, A>(u) && RefSubjectTypeId in u && u[RefSubjectTypeId] === RefSubjectTypeId
+  return isFx<never, E, A>(u) && RefSubjectTypeId in u
 }
 
 // Internals for RefSubject
 
 function makeGetFromContext<E, A>(ctx: RefSubjectContext<E, A>): RefSubject<E, A>['get'] {
-  return Effect.gen(function* ($) {
+  return Effect.suspend(() => {
     const current = MutableRef.get(ctx.currentRef)
 
     if (Option.isSome(current)) {
-      return current.value
+      return Effect.succeed(current.value)
     }
 
     const fiber = MutableRef.get(ctx.initializingFiberRef)
 
     if (Option.isSome(fiber)) {
-      return yield* $(Fiber.join(fiber.value))
+      return Fiber.join(fiber.value)
     }
 
-    const a = yield* $(ctx.lock(initializeFromContext(ctx)))
-
-    yield* $(ctx.hold.event(a))
-
-    return a
+    return Effect.tap(ctx.lock(initializeFromContext(ctx)), (a) => ctx.hold.event(a))
   })
 }
 
 function initializeFromContext<E, A>(ctx: RefSubjectContext<E, A>): Effect.Effect<never, E, A> {
   return Effect.uninterruptibleMask((restore) =>
-    Effect.gen(function* ($) {
-      const fiber = yield* $(ctx.initial, restore, Effect.forkIn(ctx.scope))
-
+    Effect.flatMap(Effect.forkIn(restore(ctx.initial), ctx.scope), (fiber) => {
       MutableRef.set(ctx.initializingFiberRef, Option.some(fiber))
 
-      const a = yield* $(Fiber.join(fiber))
-
-      MutableRef.increment(ctx.version)
-      MutableRef.set(ctx.currentRef, Option.some(a))
-      MutableRef.set(ctx.initializingFiberRef, Option.none())
-
-      return a
+      return Effect.tap(Fiber.join(fiber), (a) =>
+        Effect.sync(() => {
+          MutableRef.increment(ctx.version)
+          MutableRef.set(ctx.currentRef, Option.some(a))
+          MutableRef.set(ctx.initializingFiberRef, Option.none())
+        }),
+      )
     }),
   )
 }
@@ -273,27 +267,29 @@ function makeUpdate<E, A>(
 }
 
 function makeSetFromContext<E, A>(ctx: RefSubjectContext<E, A>): RefSubject<E, A>['set'] {
-  return (a) =>
-    Effect.gen(function* ($) {
+  return (a: A) =>
+    Effect.suspend(() => {
       const fiber = MutableRef.get(ctx.initializingFiberRef)
 
-      // Allow waiting for an initialization to complete to ensure ordering
-      if (Option.isSome(fiber)) {
-        yield* $(Fiber.await(fiber.value))
-      }
+      return pipe(
+        fiber,
+        Option.match(Effect.unit, Fiber.await),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        Effect.flatMap((_: unknown) => {
+          const current = MutableRef.get(ctx.currentRef)
 
-      const current = MutableRef.get(ctx.currentRef)
+          MutableRef.set(ctx.currentRef, Option.some(a))
 
-      MutableRef.set(ctx.currentRef, Option.some(a))
+          // Only emit if the value has changed
+          if (Option.isNone(current) || (Option.isSome(current) && !ctx.eq(current.value, a))) {
+            // Increment the version
+            MutableRef.increment(ctx.version)
+            return Effect.as(ctx.hold.event(a), a)
+          }
 
-      // Only emit if the value has changed
-      if (Option.isNone(current) || (Option.isSome(current) && !ctx.eq(current.value, a))) {
-        // Increment the version
-        MutableRef.increment(ctx.version)
-        yield* $(ctx.hold.event(a))
-      }
-
-      return a
+          return Effect.succeed(a)
+        }),
+      )
     })
 }
 
@@ -741,6 +737,22 @@ function mapRecord<K extends string, A, B>(
 }
 
 export function asRef<R, E, A>(fx: Fx<R, E, A>) {
+  return Effect.flatMap(Deferred.make<E, A>(), (deferred) =>
+    Effect.flatMap(makeRef(Deferred.await(deferred)), (ref) => {
+      const onValue = (value: A) =>
+        Effect.flatMap(Deferred.succeed(deferred, value), (closed) =>
+          closed ? Effect.unit() : ref.set(value),
+        )
+
+      return Effect.as(
+        Effect.forkScoped(
+          Effect.catchAllCause(drain(switchMatchCauseEffect(fx, ref.error, onValue)), ref.error),
+        ),
+        ref,
+      )
+    }),
+  )
+
   return Effect.gen(function* ($) {
     const deferred = yield* $(Deferred.make<E, A>())
     const ref = yield* $(makeRef(Deferred.await(deferred)))

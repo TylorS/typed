@@ -66,7 +66,7 @@ export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
         ),
         Effect.flatMap((f: Fiber.Fiber<never, void>) =>
           Effect.sync(() => {
-            part.fibers.add((fiber = f))
+            fiber = f
           }),
         ),
         Effect.provideContext(context),
@@ -74,7 +74,6 @@ export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
 
     const remove = Effect.suspend(() => {
       if (fiber) {
-        part.fibers.delete(fiber)
         return Fiber.interruptFork(fiber)
       }
 

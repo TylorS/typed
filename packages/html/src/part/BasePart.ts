@@ -1,5 +1,4 @@
 import * as Effect from '@effect/io/Effect'
-import * as Fiber from '@effect/io/Fiber'
 import * as Scope from '@effect/io/Scope'
 import { Sink } from '@typed/fx'
 
@@ -7,9 +6,6 @@ import { Renderable } from '../Renderable.js'
 
 export abstract class BasePart<A> {
   abstract readonly _tag: string
-
-  // Can be used to track resources for a given Part.
-  public fibers: Set<Fiber.Fiber<never, unknown>> = new Set()
 
   constructor(readonly index: number, public value?: A) {}
 

@@ -71,23 +71,24 @@ function fuseTextChunks(chunks: HtmlChunk[]): readonly HtmlChunk[] {
   return output
 }
 
+type NodeMap = {
+  readonly [K in Node['type']]: (node: Extract<Node, { type: K }>, hash?: string) => HtmlChunk[]
+}
+
+const nodeMap: NodeMap = {
+  element: elementToHtmlChunks,
+  node: (node) => [new PartChunk(node, String)],
+  'self-closing-element': selfClosingElementToHtmlChunks,
+  text: (node) => [textToHtmlChunks(node)],
+  'text-only-element': textOnlyElementToHtmlChunks,
+  comment: (node) => [new TextChunk(`<!--${node.value}-->`)],
+  'comment-part': (node) => [
+    new PartChunk(node, (value) => `<!--${node.before}${value}${node.after}-->`),
+  ],
+}
+
 function nodeToHtmlChunk(node: Node, hash?: string): HtmlChunk[] {
-  switch (node.type) {
-    case 'element':
-      return elementToHtmlChunks(node, hash)
-    case 'node':
-      return [new PartChunk(node, String)]
-    case 'self-closing-element':
-      return selfClosingElementToHtmlChunks(node, hash)
-    case 'text':
-      return [textToHtmlChunks(node)]
-    case 'text-only-element':
-      return textOnlyElementToHtmlChunks(node, hash)
-    case 'comment':
-      return [new TextChunk(`<!--${node.value}-->`)]
-    case 'comment-part':
-      return [new PartChunk(node, (value) => `<!--${node.before}${value}${node.after}-->`)]
-  }
+  return nodeMap[node.type](node as any, hash)
 }
 
 function elementToHtmlChunks(
@@ -165,46 +166,41 @@ function textOnlyElementToHtmlChunks(
   return chunks
 }
 
+type AttrMap = {
+  [K in Attribute['type']]: (attr: Extract<Attribute, { readonly type: K }>) => HtmlChunk
+}
+
+const attrMap: AttrMap = {
+  attribute: (attr) => new TextChunk(` ${attr.name}="${attr.value}"`),
+  attr: (attr) => new PartChunk(attr, (value) => (value == null ? `` : ` ${attr.name}="${value}"`)),
+  boolean: (attr) => new TextChunk(' ' + attr.name),
+  'boolean-part': (attr) => new PartChunk(attr, (value) => (value ? ` ${attr.name}` : '')),
+  'className-part': (attr) => new PartChunk(attr, (value) => (value ? ` class="${value}"` : '')),
+  data: (attr) =>
+    new PartChunk(attr, (value) =>
+      value == null ? `` : datasetToString(value as Readonly<Record<string, string>>),
+    ),
+  event: () => new TextChunk(''),
+  property: (attr) =>
+    new PartChunk(attr, (value) => (value == null ? `` : ` ${attr.name}="${escape(value)}"`)),
+  ref: () => new TextChunk(''),
+  'sparse-attr': (attr) =>
+    new SparsePartChunk(attr, (values) => {
+      return values == null
+        ? ``
+        : ` ${attr.name}="${Array.isArray(values) ? values.filter(isString).join('') : values}"`
+    }),
+  'sparse-class-name': (attr) =>
+    new SparsePartChunk(attr, (values) => {
+      return values == null
+        ? ``
+        : ` class="${Array.isArray(values) ? values.filter(isString).join(' ') : values}"`
+    }),
+  text: (attr) => new TextChunk(attr.value),
+}
+
 function attributeToHtmlChunk(attr: Attribute): HtmlChunk {
-  switch (attr.type) {
-    case 'attribute':
-      return new TextChunk(` ${attr.name}="${attr.value}"`)
-    case 'attr':
-      return new PartChunk(attr, (value) => (value == null ? `` : ` ${attr.name}="${value}"`))
-    case 'boolean':
-      return new TextChunk(' ' + attr.name)
-    case 'boolean-part':
-      return new PartChunk(attr, (value) => (value ? ` ${attr.name}` : ''))
-    case 'className-part':
-      return new PartChunk(attr, (value) => (value ? ` class="${value}"` : ''))
-    case 'data':
-      return new PartChunk(attr, (value) =>
-        value == null ? `` : datasetToString(value as Readonly<Record<string, string>>),
-      )
-    // Event and ref attributes are not rendered into HTML
-    case 'event':
-    case 'ref':
-      return new TextChunk('')
-    case 'property':
-      return new PartChunk(attr, (value) =>
-        value == null ? `` : ` ${attr.name}="${escape(value)}"`,
-      )
-    case 'sparse-attr': {
-      return new SparsePartChunk(attr, (values) => {
-        return values == null
-          ? ``
-          : ` ${attr.name}="${Array.isArray(values) ? values.filter(isString).join('') : values}"`
-      })
-    }
-    case 'sparse-class-name':
-      return new SparsePartChunk(attr, (values) => {
-        return values == null
-          ? ``
-          : ` class="${Array.isArray(values) ? values.filter(isString).join(' ') : values}"`
-      })
-    case 'text':
-      return new TextChunk(attr.value)
-  }
+  return attrMap[attr.type](attr as any)
 }
 
 function isString(value: unknown): value is string {

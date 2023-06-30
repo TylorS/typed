@@ -1,4 +1,3 @@
-import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
@@ -20,12 +19,16 @@ export type ServerTemplateCache = {
 export function renderToHtmlStream<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>,
 ): Fx.Fx<RenderContext | Exclude<R, RenderTemplate>, E, string> {
-  return pipe(
-    fx,
-    Fx.map((event) => (event as HtmlRenderEvent).html),
-    Fx.startWith(TYPED_START),
-    Fx.continueWith(() => Fx.succeed(TYPED_END)),
-    Fx.provideSomeLayer(renderTemplateToHtml),
+  return Fx.Fx((sink) =>
+    Effect.provideSomeLayer(
+      Effect.flatMap(
+        Effect.flatMap(sink.event(TYPED_START), () =>
+          fx.run(Fx.Sink((event) => sink.event((event as HtmlRenderEvent).html), sink.error)),
+        ),
+        () => sink.event(TYPED_END),
+      ),
+      renderTemplateToHtml,
+    ),
   )
 }
 

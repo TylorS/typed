@@ -4,9 +4,9 @@ import * as Fx from '@typed/fx'
 import { diffable } from '@typed/wire'
 import udomdiff from 'udomdiff'
 
-import { isRenderEvent } from '../RenderEvent.js'
+import { DomRenderEvent, HtmlRenderEvent, isRenderEvent } from '../RenderEvent.js'
 import { Renderable } from '../Renderable.js'
-import { findHoleComment, isCommentWithValue } from '../utils.js'
+import { findHoleComment, isComment, isCommentWithValue } from '../utils.js'
 
 import { BasePart } from './BasePart.js'
 import { unwrapRenderable } from './updates.js'
@@ -71,8 +71,11 @@ export class NodePart extends BasePart<unknown> {
     return Effect.forkScoped(
       Fx.drain(
         Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, (a: any) =>
-          Effect.flatMap(this.update(isRenderEvent(a) ? a.valueOf() : a), () =>
-            sink.event(this.value),
+          Effect.flatMap(
+            this.update(
+              isRenderEvent(a) ? (a as HtmlRenderEvent).html || (a as DomRenderEvent).rendered : a,
+            ),
+            () => sink.event(this.value),
           ),
         ),
       ),
@@ -124,7 +127,11 @@ export function getPreviousTextSibling(node: Node | null) {
 
   if (node && node.nodeType === node.TEXT_NODE) {
     // During hydration there should be a comment to separate these values
-    if (node.previousSibling && isCommentWithValue(node.previousSibling, 'text')) {
+    if (
+      node.previousSibling &&
+      isComment(node.previousSibling) &&
+      isCommentWithValue(node.previousSibling, 'text')
+    ) {
       return node as Text
     }
   }

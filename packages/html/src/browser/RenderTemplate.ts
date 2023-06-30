@@ -42,7 +42,7 @@ export function renderTemplate<Values extends readonly Renderable<any, any>[]>(
   return Fx.Fx(<R2>(sink: Fx.Sink<R2, Placeholder.ErrorsOf<Values[number]>, RenderEvent>) =>
     Effect.contextWithEffect(
       (context: Context.Context<Placeholder.ResourcesOf<Values[number]> | R2 | Scope.Scope>) => {
-        const { cleanup, wire, parts } = getRenderEntry({
+        const { wire, parts } = getRenderEntry({
           ...input,
           strings,
           context,
@@ -54,8 +54,7 @@ export function renderTemplate<Values extends readonly Renderable<any, any>[]>(
         }
 
         return pipe(
-          Effect.addFinalizer(() => cleanup),
-          Effect.flatMap(() => indexRefCounter(parts.length)),
+          indexRefCounter(parts.length),
           Effect.tap(({ onValue }) =>
             Effect.all(
               parts.map((part, index) =>

@@ -48,11 +48,17 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
         const effects: Array<Effect.Effect<R, never, void>> = []
 
         if (observers.push(observer) === 1) {
-          effects.push(Effect.tap(Effect.forkDaemon(that.fx.run(that)), (fiber) => Effect.sync(() => (that.fiber = fiber))))
+          effects.push(
+            Effect.tap(Effect.forkDaemon(that.fx.run(that)), (fiber) =>
+              Effect.sync(() => (that.fiber = fiber)),
+            ),
+          )
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        effects.push(Effect.suspend(() => Effect.ensuring(Fiber.await(that.fiber!), that.removeSink(sink))))
+        effects.push(
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          Effect.suspend(() => Effect.ensuring(Fiber.await(that.fiber!), that.removeSink(sink))),
+        )
 
         return Effect.all(effects)
       }),

@@ -87,7 +87,7 @@ export function useLink<Params extends UseLinkParams.Any>(
       ([replace, state, key]): Navigation.NavigateOptions => ({
         history: replace ? 'replace' : 'push',
         state,
-        key,
+        key: key ?? undefined,
       }),
     )
 
@@ -96,9 +96,8 @@ export function useLink<Params extends UseLinkParams.Any>(
         const {
           navigation: { currentEntry },
         } = yield* $(Router)
-        const current = (yield* $(currentEntry)).url
 
-        return isActive(url, current)
+        return isActive(url, (yield* $(currentEntry)).url)
       }),
     )
 
@@ -127,10 +126,13 @@ export function Link<Params extends UseLinkParams.Any, R, E, A>(
 }
 
 function isActive(url: string, current: URL): boolean {
+  const { pathname } = current
+
   return (
     url === current.href ||
-    url === current.pathname ||
-    url === current.pathname + current.search ||
+    url === pathname ||
+    url === pathname + current.search ||
+    url === pathname + current.hash ||
     url === getCurrentPathFromUrl(current)
   )
 }

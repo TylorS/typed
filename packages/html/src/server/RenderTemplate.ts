@@ -2,7 +2,6 @@ import { pipe } from '@effect/data/Function'
 import { none, some } from '@effect/data/Option'
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
-import * as FiberId from '@effect/io/Fiber/Id'
 import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
 import { Context } from '@typed/context'
@@ -25,7 +24,6 @@ export const renderTemplateToHtml: Layer.Layer<RenderContext, never, RenderTempl
   RenderTemplate.layer(
     Effect.gen(function* ($) {
       const renderContext = yield* $(RenderContext)
-      const id = yield* $(Effect.fiberId())
 
       return {
         renderTemplate: (template, values) => {
@@ -35,7 +33,7 @@ export const renderTemplateToHtml: Layer.Layer<RenderContext, never, RenderTempl
             return Fx.succeed(HtmlRenderEvent((cache.chunks[0] as TextChunk).value))
           } else {
             return Fx.mergeBufferConcurrently(
-              ...cache.chunks.map((chunk) => renderChunk(chunk, values, id)),
+              ...cache.chunks.map((chunk) => renderChunk(chunk, values)),
             )
           }
         },
@@ -46,21 +44,17 @@ export const renderTemplateToHtml: Layer.Layer<RenderContext, never, RenderTempl
 function renderChunk<R, E>(
   chunk: HtmlChunk,
   values: ReadonlyArray<Renderable<R, E>>,
-  id: FiberId.FiberId,
 ): Fx.Fx<R, E, RenderEvent> {
   if (chunk.type === 'text') {
     return Fx.succeed(HtmlRenderEvent(chunk.value))
   } else if (chunk.type === 'part') {
-    return renderPart(chunk, values, id)
+    return renderPart(chunk, values)
   } else {
     return renderSparsePart(chunk, values)
   }
 }
 
-function renderNode<R, E>(
-  renderable: Renderable<R, E>,
-  id: FiberId.FiberId,
-): Fx.Fx<R, E, RenderEvent> {
+function renderNode<R, E>(renderable: Renderable<R, E>): Fx.Fx<R, E, RenderEvent> {
   switch (typeof renderable) {
     case 'string':
     case 'number':
@@ -71,17 +65,18 @@ function renderNode<R, E>(
       if (renderable == null) {
         return Fx.succeed(HtmlRenderEvent(TEXT_START))
       } else if (Array.isArray(renderable)) {
-        return Fx.mergeBufferConcurrently(...renderable.map((r) => renderNode(r, id))) as any
+        return Fx.mergeBufferConcurrently(...renderable.map(renderNode)) as any
       } else if (Fx.isFx<R, E, Renderable>(renderable)) {
-        return Fx.switchMap(takeOneIfNotRenderEvent(renderable), (r) => renderNode(r, id))
+        return Fx.switchMap(takeOneIfNotRenderEvent(renderable), renderNode)
       } else if (Effect.isEffect(renderable)) {
-        return Fx.switchMap(Fx.fromEffect(renderable as Effect.Effect<R, E, Renderable>), (r) =>
-          renderNode(r, id),
+        return Fx.switchMap(
+          Fx.fromEffect(renderable as Effect.Effect<R, E, Renderable>),
+          renderNode,
         )
       } else if (isRenderEvent(renderable)) {
         return Fx.succeed(renderable)
       } else {
-        return Fx.interrupt(id)
+        return Fx.empty()
       }
     }
     default:
@@ -92,15 +87,15 @@ function renderNode<R, E>(
 function renderPart<R, E>(
   chunk: PartChunk,
   values: ReadonlyArray<Renderable<R, E>>,
-  id: FiberId.FiberId,
 ): Fx.Fx<R, E, RenderEvent> {
   const { node, render } = chunk
   const renderable = values[node.index]
+  const { type } = node
 
   // Refs and events are not rendered into HTML
-  if (node.type === 'ref' || node.type === 'event') {
+  if (type === 'ref' || type === 'event') {
     return Fx.empty()
-  } else if (node.type === 'node') {
+  } else if (type === 'node') {
     if (isDirective<R, E>(renderable)) {
       return Fx.Fx(<R2>(sink: Fx.Sink<R2, E, RenderEvent>) =>
         Effect.contextWithEffect((ctx: Context<R2>) =>
@@ -115,7 +110,7 @@ function renderPart<R, E>(
         ),
       )
     } else {
-      return Fx.continueWith(renderNode(renderable, id), () =>
+      return Fx.continueWith(renderNode(renderable), () =>
         Fx.succeed(HtmlRenderEvent(TYPED_HOLE(node.index))),
       )
     }
