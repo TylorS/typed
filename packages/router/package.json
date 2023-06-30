@@ -34,9 +34,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "sideEffects": false,
-  "devDependencies": {
-    "@typed/rotue": "workspace:*",
-    "vitest": "0.32.2"
-  }
+  "sideEffects": false
 }
