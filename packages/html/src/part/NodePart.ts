@@ -4,7 +4,7 @@ import * as Fx from '@typed/fx'
 import { diffable } from '@typed/wire'
 import udomdiff from 'udomdiff'
 
-import { DomRenderEvent, HtmlRenderEvent, isRenderEvent } from '../RenderEvent.js'
+import { DomRenderEvent, isRenderEvent } from '../RenderEvent.js'
 import { Renderable } from '../Renderable.js'
 import { findHoleComment, isComment, isCommentWithValue } from '../utils.js'
 
@@ -72,10 +72,8 @@ export class NodePart extends BasePart<unknown> {
       Fx.drain(
         Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, (a: any) =>
           Effect.flatMap(
-            this.update(
-              isRenderEvent(a) ? (a as HtmlRenderEvent).html || (a as DomRenderEvent).rendered : a,
-            ),
-            () => sink.event(this.value),
+            this.update(isRenderEvent(a) ? (a as DomRenderEvent).rendered : a),
+            sink.event,
           ),
         ),
       ),

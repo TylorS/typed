@@ -30,10 +30,7 @@ export function hydrate<R, E>(
   const cache = getBrowserCache(renderContext.renderCache, where)
 
   return Fx.provideSomeLayer(
-    Fx.tap(what, (event) => {
-      ctx.hydrate = false
-      return attachRoot(cache, where, event)
-    }),
+    Fx.tap(what, (event) => attachRoot(cache, where, event)),
     layer,
   ) as Fx.Fx<Exclude<R, Document | RenderContext | RenderTemplate>, E, RenderEvent>
 }

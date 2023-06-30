@@ -10,7 +10,6 @@ import { SinkTypeId } from '@effect/stream/Sink'
 import { StreamTypeId } from '@effect/stream/Stream'
 
 import * as Fx from './Fx.js'
-import { multicast } from './multicast.js'
 
 const fxVariance = {
   _R: identity,
@@ -72,7 +71,7 @@ export class RefTransformImpl<R0, E0, A0, R1, E1, A1, R2, E2, B, R3, E3, C>
     readonly i2: (effect: Effect.Effect<R1, E1, A1>) => Effect.Effect<R3, E3, C>,
     readonly trace?: Trace,
   ) {
-    this.fx = multicast(i1(i0).addTrace(trace))
+    this.fx = i1(i0).addTrace(trace)
 
     this._lastVersion = i0.version()
 

@@ -82,6 +82,7 @@ function hydrateTemplate<Values extends readonly Renderable<any, any>[]>(
           })
 
           if (parts.length === 0) {
+            ctx.hydrate = false
             return sink.event(DomRenderEvent(wire() as Rendered))
           }
 
@@ -89,12 +90,7 @@ function hydrateTemplate<Values extends readonly Renderable<any, any>[]>(
             where,
             rootIndex: index,
             parentTemplate: template,
-            get hydrate() {
-              return ctx.hydrate
-            },
-            set hydrate(value) {
-              ctx.hydrate = value
-            },
+            hydrate: true,
           })
 
           return toNever_(
@@ -110,7 +106,11 @@ function hydrateTemplate<Values extends readonly Renderable<any, any>[]>(
                     ),
                   ),
                 ),
-                () => Effect.flatMap(onReady, () => sink.event(DomRenderEvent(wire() as Rendered))),
+                () =>
+                  Effect.flatMap(onReady, () => {
+                    ctx.hydrate = false
+                    return sink.event(DomRenderEvent(wire() as Rendered))
+                  }),
               ),
             ),
           )
