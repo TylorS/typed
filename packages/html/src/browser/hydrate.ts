@@ -16,19 +16,24 @@ export function hydrate<R, E>(
   where: HTMLElement,
 ): Fx.Fx<Exclude<R, Document | RenderContext | RenderTemplate>, E, RenderEvent> {
   const renderContext = makeRenderContext({ environment: 'browser' })
+  const ctx: HydrateContext = {
+    where: findRootParentChildNodes(where),
+    rootIndex: -1,
+    parentTemplate: null,
+    hydrate: true,
+  }
   const { context } = Document.build(where.ownerDocument)
     .add(RenderContext, renderContext)
-    .add(HydrateContext, {
-      where: findRootParentChildNodes(where),
-      rootIndex: -1,
-      parentTemplate: null,
-    })
+    .add(HydrateContext, ctx)
 
   const layer = Layer.provideMerge(Layer.succeedContext(context), hydrateTemplateInDom)
   const cache = getBrowserCache(renderContext.renderCache, where)
 
   return Fx.provideSomeLayer(
-    Fx.tap(what, (event) => attachRoot(cache, where, event)),
+    Fx.tap(what, (event) => {
+      ctx.hydrate = false
+      return attachRoot(cache, where, event)
+    }),
     layer,
   ) as Fx.Fx<Exclude<R, Document | RenderContext | RenderTemplate>, E, RenderEvent>
 }

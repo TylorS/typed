@@ -62,6 +62,7 @@ if (import.meta.env.PROD) {
 
 app.get('*', async (req, res, next) => {
   console.log('handling', req.url)
+  const start = Date.now()
 
   try {
     if (viteDevServer) {
@@ -72,9 +73,8 @@ app.get('*', async (req, res, next) => {
       html = await viteDevServer.transformIndexHtml(req.url, html)
 
       res.status(200)
-      res.setHeader('Content-Type', 'text/html')
-      res.write(html)
-      res.end()
+      res.type('text/html')
+      res.end(html)
     } else {
       res.type('text/html')
       res.write(before + appElementStart)
@@ -88,6 +88,7 @@ app.get('*', async (req, res, next) => {
 
       res.status(200)
       res.end(appElementEnd + after)
+      console.log('rendered in', Date.now() - start, 'ms')
     }
   } catch (error) {
     console.error(error)

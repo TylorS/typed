@@ -24,6 +24,7 @@ import { ParentChildNodes, findPath } from '../paths.js'
 import { getPreviousNodes, isComment, isCommentWithValue, isHtmlElement } from '../utils.js'
 
 import { buildTemplate } from './buildTemplate.js'
+import { CouldNotFindRootElement, CouldNotFindCommentError } from './errors.js'
 
 export type BrowserCache = {
   wire: Rendered | null
@@ -72,12 +73,9 @@ export function getRenderEntry({
   context: Context<any>
   onCause: (cause: Cause.Cause<any>) => Effect.Effect<any, never, void>
 }): BrowserEntry {
-  const { template, content } = getBrowserTemplateCache(
-    document,
-    strings,
-    renderContext.templateCache,
-    false,
-  )
+  const cache = getBrowserTemplateCache(document, strings, renderContext.templateCache)
+  const { template } = cache
+  const content = document.importNode(cache.content, true)
 
   const parts = template.parts.map(([part, path]): Part | SparsePart =>
     partNodeToPart({
@@ -105,21 +103,17 @@ export function getBrowserTemplateCache(
   document: Document,
   strings: TemplateStringsArray,
   templateCache: RenderContext['templateCache'],
-  isHydrating: boolean,
 ): BrowserTemplateCache {
   const current = templateCache.get(strings)
 
   if (current) {
-    return {
-      template: (current as BrowserTemplateCache).template,
-      content: isHydrating ? undefined : (current as BrowserTemplateCache).content.cloneNode(true),
-    } as BrowserTemplateCache
+    return current as BrowserTemplateCache
   }
 
   const template = globalParser.parse(strings)
   const newCache = {
     template,
-    content: isHydrating ? undefined : buildTemplate(document, template),
+    content: buildTemplate(document, template),
   } as BrowserTemplateCache
 
   templateCache.set(strings, newCache)
@@ -203,7 +197,7 @@ export function getHydrateEntry({
   context: Context<any>
   onCause: (cause: Cause.Cause<any>) => Effect.Effect<any, never, void>
 }) {
-  const { template } = getBrowserTemplateCache(document, strings, renderContext.templateCache, true)
+  const { template } = getBrowserTemplateCache(document, strings, renderContext.templateCache)
 
   if (parentTemplate) {
     where = findTemplateResultPartChildNodes(where, parentTemplate, template, rootIndex)
@@ -360,16 +354,4 @@ export function findPartComment(childNodes: ArrayLike<Node>, partIndex: number) 
   }
 
   throw new CouldNotFindCommentError(partIndex)
-}
-
-export class CouldNotFindCommentError extends Error {
-  constructor(readonly partIndex: number) {
-    super(`Could not find comment for part ${partIndex}`)
-  }
-}
-
-export class CouldNotFindRootElement extends Error {
-  constructor(readonly partIndex: number) {
-    super(`Could not find root elements for part ${partIndex}`)
-  }
 }

@@ -1,4 +1,3 @@
-import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
@@ -18,7 +17,8 @@ import { Part, SparsePart } from '../part/Part.js'
 import { ParentChildNodes } from '../paths.js'
 
 import { renderTemplate } from './RenderTemplate.js'
-import { CouldNotFindCommentError, CouldNotFindRootElement, getHydrateEntry } from './cache.js'
+import { getHydrateEntry } from './cache.js'
+import { CouldNotFindCommentError, CouldNotFindRootElement } from './errors.js'
 import { indexRefCounter } from './indexRefCounter.js'
 
 type HydrateInput = {
@@ -34,7 +34,12 @@ export type HydrateContext = {
   readonly where: ParentChildNodes
   readonly rootIndex: number
   readonly parentTemplate: Template | null
+
+  /**@internal */
+  hydrate: boolean
 }
+
+const toNever_ = Effect.flatMap(Effect.never)
 
 /**
  * Used Internally to pass context down to components for hydration
@@ -62,9 +67,15 @@ function hydrateTemplate<Values extends readonly Renderable<any, any>[]>(
     Effect.catchAllDefect(
       Effect.contextWithEffect(
         (context: Context<Placeholder.ResourcesOf<Values[number]> | R2 | Scope.Scope>) => {
+          const ctx = unsafeGet(context, HydrateContext)
+
+          if (!ctx.hydrate) {
+            return renderTemplate(input, strings, values).run(sink)
+          }
+
           const [{ template, wire, parts }, where] = getHydrateEntry({
             ...input,
-            ...unsafeGet(context, HydrateContext),
+            ...ctx,
             strings,
             context,
             onCause: sink.error,
@@ -78,26 +89,30 @@ function hydrateTemplate<Values extends readonly Renderable<any, any>[]>(
             where,
             rootIndex: index,
             parentTemplate: template,
+            get hydrate() {
+              return ctx.hydrate
+            },
+            set hydrate(value) {
+              ctx.hydrate = value
+            },
           })
 
-          return pipe(
-            indexRefCounter(parts.length),
-            Effect.tap(({ onValue }) =>
-              Effect.all(
-                parts.map((part, index) =>
-                  renderPart(
-                    values,
-                    part,
-                    makeHydrateContext,
-                    Fx.Sink(() => onValue(index), sink.error),
+          return toNever_(
+            Effect.flatMap(indexRefCounter(parts.length), ({ onValue, onReady }) =>
+              Effect.tap(
+                Effect.all(
+                  parts.map((part, index) =>
+                    renderPart(
+                      values,
+                      part,
+                      makeHydrateContext,
+                      Fx.Sink(() => onValue(index), sink.error),
+                    ),
                   ),
                 ),
+                () => Effect.flatMap(onReady, () => sink.event(DomRenderEvent(wire() as Rendered))),
               ),
             ),
-            Effect.tap(({ onReady }) =>
-              Effect.flatMap(onReady, () => sink.event(DomRenderEvent(wire() as Rendered))),
-            ),
-            Effect.flatMap(() => Effect.never()),
           )
         },
       ),

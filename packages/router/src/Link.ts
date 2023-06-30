@@ -56,66 +56,66 @@ export namespace UseLink {
 export function useLink<Params extends UseLinkParams.Any>(
   params: Params,
 ): Effect.Effect<UseLinkParams.Context<Params> | Scope.Scope, never, UseLink.FromParams<Params>> {
-  return Effect.gen(function* ($) {
-    const [to, replace, state, key, relative] = yield* $(
-      Effect.allPar(
-        Placeholder.asRef(params.to),
-        Placeholder.asRef(params.replace ?? false),
-        Placeholder.asRef(params.state ?? null),
-        Placeholder.asRef(params.key),
-        Placeholder.asRef(params.relative ?? true),
-      ),
-    )
+  return Effect.map(
+    Effect.all(
+      Placeholder.asRef(params.to),
+      Placeholder.asRef(params.replace ?? false),
+      Placeholder.asRef(params.state ?? null),
+      Placeholder.asRef(params.key),
+      Placeholder.asRef(params.relative ?? true),
+    ),
+    ([to, replace, state, key, relative]) => {
+      const url = Fx.RefSubject.tuple(to, relative).mapEffect(([to, relative]) =>
+        Effect.gen(function* ($) {
+          let url = to
 
-    const url = Fx.RefSubject.tuple(to, relative).mapEffect(([to, relative]) =>
-      Effect.gen(function* ($) {
-        let url = to
+          // Check if we should make the URL relative to the current route
+          if (relative) {
+            const { route, params } = yield* $(Router)
+            const matched = yield* $(params)
+            const basePath = route.make(matched)
 
-        // Check if we should make the URL relative to the current route
-        if (relative) {
-          const { route, params } = yield* $(Router)
-          const matched = yield* $(params)
-          const basePath = route.make(matched)
+            url = pathJoin(basePath, url)
+          }
 
-          url = pathJoin(basePath, url)
-        }
+          return url
+        }),
+      )
+      const options = Fx.RefSubject.tuple(replace, state, key).map(
+        ([replace, state, key]): Navigation.NavigateOptions => ({
+          history: replace ? 'replace' : 'push',
+          state,
+          key: key ?? undefined,
+        }),
+      )
 
-        return url
-      }),
-    )
-    const options = Fx.RefSubject.tuple(replace, state, key).map(
-      ([replace, state, key]): Navigation.NavigateOptions => ({
-        history: replace ? 'replace' : 'push',
-        state,
-        key: key ?? undefined,
-      }),
-    )
+      const active: Fx.Computed<Router, UseLinkParams.Error<Params>, boolean> = url.mapEffect(
+        (url) =>
+          Effect.gen(function* ($) {
+            const {
+              navigation: { currentEntry },
+            } = yield* $(Router)
 
-    const active: Fx.Computed<Router, UseLinkParams.Error<Params>, boolean> = url.mapEffect((url) =>
-      Effect.gen(function* ($) {
-        const {
-          navigation: { currentEntry },
-        } = yield* $(Router)
+            return isActive(url, (yield* $(currentEntry)).url)
+          }),
+      )
 
-        return isActive(url, (yield* $(currentEntry)).url)
-      }),
-    )
+      const navigate: Effect.Effect<
+        Router,
+        UseLinkParams.Error<Params>,
+        Navigation.Destination
+      > = Effect.flatMap(Effect.all(url, options), ([url, options]) =>
+        Router.withEffect((r) => r.navigation.navigate(url, options)),
+      )
 
-    const navigate: Effect.Effect<
-      Router,
-      UseLinkParams.Error<Params>,
-      Navigation.Destination
-    > = Effect.flatMap(Effect.all(url, options), ([url, options]) =>
-      Router.withEffect((r) => r.navigation.navigate(url, options)),
-    )
-
-    return {
-      url,
-      options,
-      navigate,
-      active,
-    } satisfies UseLink.FromParams<Params>
-  })
+      return {
+        url,
+        options,
+        navigate,
+        active,
+      } satisfies UseLink.FromParams<Params>
+    },
+  )
 }
 
 export function Link<Params extends UseLinkParams.Any, R, E, A>(
