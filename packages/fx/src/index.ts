@@ -15,7 +15,6 @@ import * as Hub from '@effect/io/Hub'
 import * as Layer from '@effect/io/Layer'
 import * as Queue from '@effect/io/Queue'
 import * as Scope from '@effect/io/Scope'
-import * as Stream from '@effect/stream/Stream'
 
 import type { Fx } from './Fx.js'
 import * as internal from './data-first.js'
@@ -1202,10 +1201,6 @@ export const fromHub: <A>(hub: Hub.Hub<A>) => Fx<Scope.Scope, never, A> = method
   (trace) => (hub) => internal.fromHub(hub).addTrace(trace),
 )
 
-export const fromStream: <R, E, A>(stream: Stream.Stream<R, E, A>) => Fx<R, E, A> = methodWithTrace(
-  (trace) => (stream) => internal.fromStream(stream).addTrace(trace),
-)
-
 export const toEnqueue: {
   <A>(enqueue: Queue.Enqueue<A>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, void>
   <R, E, A>(fx: Fx<R, E, A>, enqueue: Queue.Enqueue<A>): Effect.Effect<R, E, void>
@@ -1226,7 +1221,6 @@ export const orElse: {
       internal.orElse(fx, f).addTrace(trace),
 )
 
-export * from './toStream.js'
 export * from './RefSubject.js'
 export * from './Computed.js'
 export * from './Filtered.js'

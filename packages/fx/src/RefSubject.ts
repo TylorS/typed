@@ -10,9 +10,6 @@ import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Scope from '@effect/io/Scope'
-import { ChannelTypeId } from '@effect/stream/Channel'
-import { SinkTypeId } from '@effect/stream/Sink'
-import { StreamTypeId } from '@effect/stream/Stream'
 import fastDeepEqual from 'fast-deep-equal'
 
 import { Computed, ComputedImpl, ComputedTypeId } from './Computed.js'
@@ -420,11 +417,6 @@ function makeTransformMethods<E, A>(
 const placeholders = {
   _tag: 'Commit',
   [Effect.EffectTypeId]: refVariance,
-  /* I Don't really want these Stream IDs to be here, but
-     @effect/stream uses module augmentation on Effect */
-  [SinkTypeId]: refVariance as any,
-  [ChannelTypeId]: refVariance as any,
-  [StreamTypeId]: refVariance,
   i0: undefined,
   i1: undefined,
   i2: undefined,
@@ -438,23 +430,12 @@ const placeholders = {
 
 function makeEffectMethods<E, A>(
   get: RefSubject<E, A>['get'],
-): Pick<
-  RefSubject<E, A>,
-  | Effect.EffectTypeId
-  | SinkTypeId
-  | ChannelTypeId
-  | StreamTypeId
-  | typeof Equal.symbol
-  | typeof Hash.symbol
-  | 'traced'
-> {
-  function traced(trace: Trace): Effect.Effect<never, E, A> {
-    return get.traced(trace)
-  }
-
+): Pick<RefSubject<E, A>, Extract<keyof Effect.Effect<never, E, A>, keyof RefSubject<E, A>>> {
   return Object.assign(
     {
-      traced,
+      traced(trace: Trace): Effect.Effect<never, E, A> {
+        return get.traced(trace)
+      },
       commit() {
         return get
       },

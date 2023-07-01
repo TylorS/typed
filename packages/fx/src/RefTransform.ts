@@ -5,9 +5,6 @@ import * as Hash from '@effect/data/Hash'
 import * as MutableRef from '@effect/data/MutableRef'
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
-import { ChannelTypeId } from '@effect/stream/Channel'
-import { SinkTypeId } from '@effect/stream/Sink'
-import { StreamTypeId } from '@effect/stream/Stream'
 
 import * as Fx from './Fx.js'
 
@@ -55,12 +52,7 @@ export class RefTransformImpl<R0, E0, A0, R1, E1, A1, R2, E2, B, R3, E3, C>
   readonly [Fx.FxTypeId] = fxVariance
 
   readonly fx: Fx.Fx<R2, E2, B>
-  readonly get: Effect.Effect<R3, E3, C>;
-
-  /* I Don't really want this to be here */
-  readonly [SinkTypeId] = fxVariance as any;
-  readonly [ChannelTypeId] = fxVariance as any;
-  readonly [StreamTypeId] = fxVariance
+  readonly get: Effect.Effect<R3, E3, C>
 
   protected _lastVersion: number
   protected _currentValue: MutableRef.MutableRef<Option.Option<C>> = MutableRef.make(Option.none())

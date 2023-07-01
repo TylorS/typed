@@ -14,11 +14,8 @@ importers:
         specifier: ^0.0.19
         version: 0.0.19
       '@effect/schema':
-        specifier: ^0.21.1
-        version: 0.21.1
-      '@effect/stream':
-        specifier: ^0.23.0
-        version: 0.23.0
+        specifier: ^0.22.0
+        version: 0.22.0
       '@rollup/pluginutils':
         specifier: ^5.0.2
         version: 5.0.2
@@ -306,8 +303,8 @@ importers:
         specifier: ^0.28.0
         version: 0.28.0
       '@effect/schema':
-        specifier: ^0.21.1
-        version: 0.21.1
+        specifier: ^0.22.0
+        version: 0.22.0
 
   packages/dom:
     dependencies:
@@ -318,8 +315,8 @@ importers:
         specifier: ^0.28.0
         version: 0.28.0
       '@effect/schema':
-        specifier: ^0.21.1
-        version: 0.21.1
+        specifier: ^0.22.0
+        version: 0.22.0
       '@typed/context':
         specifier: workspace:*
         version: link:../context
@@ -354,8 +351,8 @@ importers:
         specifier: ^0.28.0
         version: 0.28.0
       '@effect/schema':
-        specifier: ^0.21.1
-        version: 0.21.1
+        specifier: ^0.22.0
+        version: 0.22.0
       '@typed/context':
         specifier: workspace:*
         version: link:../context
@@ -386,9 +383,6 @@ importers:
       '@effect/io':
         specifier: ^0.28.0
         version: 0.28.0
-      '@effect/stream':
-        specifier: ^0.23.0
-        version: 0.23.0
       fast-deep-equal:
         specifier: ^3.1.3
         version: 3.1.3
@@ -1900,12 +1894,6 @@ packages:
   /@effect/data@0.12.10:
     resolution: {integrity: sha512-zIz/DgumH2LgGdr1Wc9ChET5JSG0k/G5kDc8rn4a6yIJ0v2d5rfnbRWIJO2fWmdFvc+128JyaBvYguIyz9JaAQ==}
 
-  /@effect/io@0.27.2:
-    resolution: {integrity: sha512-J9s+v2JyGUKzxG5I6v1/X5v+I/e9dST4Afk3y6ZYBEXzU3Slo+3ZDf7XlazicS7koAoTEnvJ6zt79aM4LLkoWA==}
-    dependencies:
-      '@effect/data': 0.12.10
-    dev: false
-
   /@effect/io@0.28.0:
     resolution: {integrity: sha512-FzGyTAoRZMsXsji6I45/lLDqqFxV38rEhqebhLiXc995tfIvS+xAHkiTN+nrLFadTP0JL0H4ystSz4kcYgTy5Q==}
     dependencies:
@@ -1919,19 +1907,12 @@ packages:
       '@fp-ts/data': 0.0.41
     dev: false
 
-  /@effect/schema@0.21.1:
-    resolution: {integrity: sha512-ZKxrkOPFo158lw21di+cxcGc7XnvnhQ334hAlXYP4DMEAAmp4bVVuPuDSjVYLLVkg1y3bdYyVqfT7+v1ZfpJNg==}
+  /@effect/schema@0.22.0:
+    resolution: {integrity: sha512-121wYIn6MrCqLmE8bfix+aqFRpBrFp9h0VVyJN/CGzfwWq8p2SqkA27tTYMUOxfefPhK0wguYmAgbZXudSrG8Q==}
     dependencies:
       '@effect/data': 0.12.10
-      '@effect/io': 0.27.2
+      '@effect/io': 0.28.0
       fast-check: 3.10.0
-    dev: false
-
-  /@effect/stream@0.23.0:
-    resolution: {integrity: sha512-rYBnPCHXTicyEhKrlhnX4GDDgZEgX71NICetMAZjWKJgfD3PtJhOf98+66Zcr9VgveypAh4WHc7+S12Ut7nlHQ==}
-    dependencies:
-      '@effect/data': 0.12.10
-      '@effect/io': 0.27.2
     dev: false
 
   /@emmetio/abbreviation@2.3.3:
@@ -6102,7 +6083,7 @@ packages:
       fs.realpath: 1.0.0
       inflight: 1.0.6
       inherits: 2.0.4
-      minimatch: 3.1.2
+      minimatch: 3.0.5
       once: 1.4.0
       path-is-absolute: 1.0.1
     dev: true
