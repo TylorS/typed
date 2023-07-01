@@ -16,6 +16,9 @@
       "path": "./packages/dom/tsconfig.build.json"
     },
     {
+      "path": "./packages/effect/tsconfig.build.json"
+    },
+    {
       "path": "./packages/error/tsconfig.build.json"
     },
     {

@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 importers:
 
   .:
@@ -332,6 +336,18 @@ importers:
       typed-query-selector:
         specifier: ^2.11.0
         version: 2.11.0
+
+  packages/effect:
+    dependencies:
+      '@effect/data':
+        specifier: ^0.12.10
+        version: 0.12.10
+      '@effect/io':
+        specifier: ^0.28.0
+        version: 0.28.0
+      '@typed/context':
+        specifier: workspace:*
+        version: link:../context
 
   packages/error:
     dependencies:
