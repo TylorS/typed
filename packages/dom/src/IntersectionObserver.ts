@@ -1,6 +1,7 @@
+import * as Data from '@effect/data/Data'
 import { pipe } from '@effect/data/Function'
 import * as HashMap from '@effect/data/HashMap'
-import * as Maybe from '@effect/data/Option'
+import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Ref from '@effect/io/Ref'
 import * as Scope from '@effect/io/Scope'
@@ -33,13 +34,15 @@ export const makeIntersectionObserverManager: Effect.Effect<
     Ref.make<HashMap.HashMap<IntersectionObserverInit, InternalObserver>>(HashMap.empty()),
   )
 
-  const get = (options: IntersectionObserverInit) =>
-    pipe(
+  const get = (options: IntersectionObserverInit) => {
+    const init = Data.struct(options)
+
+    return pipe(
       observers,
       Ref.get,
-      Effect.map(HashMap.get(options)),
+      Effect.map(HashMap.get(init)),
       Effect.flatMap(
-        Maybe.match(
+        Option.match(
           () =>
             observers.modify((map) => {
               const subject = Fx.makeSubject<never, IntersectionObserverEntry>()
@@ -50,12 +53,13 @@ export const makeIntersectionObserverManager: Effect.Effect<
 
               const observer: InternalObserver = [intersectionObserver, subject]
 
-              return [observer, HashMap.set(map, options, observer)]
+              return [observer, HashMap.set(map, init, observer)]
             }),
           Effect.succeed,
         ),
       ),
     )
+  }
 
   const observer: IntersectionObserverManager = {
     get: (options) =>
