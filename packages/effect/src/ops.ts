@@ -6,11 +6,11 @@ import { In, Out } from './Lambda.js'
 import { Op } from './Op.js'
 import * as core from './core.js'
 
-export class ForEach extends Op<ForEach, In.ReadonlyArrayLambda>('@typed/effect/ForEach') {
+export class ForEach extends Op<ForEach, never, In.ReadonlyArrayLambda>('@typed/effect/ForEach') {
   static handle = core.handle(
     Op.handleReturn(ForEach)<Out.ReadonlyArrayLambda>(
       (input, resume) => {
-        let effect: Effect<never, void> = core.unit()
+        let effect: Effect<never, never, void> = core.unit()
 
         for (let i = 0; i < input.length; ++i) {
           const value = input[i]
@@ -25,5 +25,5 @@ export class ForEach extends Op<ForEach, In.ReadonlyArrayLambda>('@typed/effect/
   )
 }
 
-export const forEach: <I extends readonly any[]>(input: I) => Effect<ForEach, I[number]> =
+export const forEach: <I extends readonly any[]>(input: I) => Effect<ForEach, never, I[number]> =
   core.op(ForEach)

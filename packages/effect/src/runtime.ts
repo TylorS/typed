@@ -1,9 +1,11 @@
+import { Cause } from './Cause.js'
 import { Effect } from './Effect.js'
 import * as Exit from './Exit.js'
 import { Handler } from './Handler.js'
 import * as Instruction from './Instruction.js'
 import { Op } from './Op.js'
 import { Stack } from './Stack.js'
+import { fromExit } from './core.js'
 
 export type HandlerFrame = ControlFlowFrame | EffectHandlerFrame
 
@@ -27,13 +29,9 @@ export class Handlers {
   }
 
   push(handler: Handler.Any) {
-    const handlers = this.map.get(handler.op)
+    const previous = this.map.get(handler.op) || null
 
-    if (handlers) {
-      this.map.set(handler.op, new Stack(handler, handlers))
-    } else {
-      this.map.set(handler.op, new Stack(handler, null))
-    }
+    this.map.set(handler.op, new Stack(handler, previous))
   }
 
   pop(handler: Handler.Any) {
@@ -84,13 +82,16 @@ export class Observers<A> {
   }
 }
 
-export class Executor<R, A> {
+export class Executor<R, E, A> {
   private _started = false
   private _instruction: Instruction.Instruction | null = null
-  private _frames: StackFrames = null
   private _observers = new Observers<A>()
 
-  constructor(readonly effect: Effect<R, A>, readonly handlers: Handlers = new Handlers()) {
+  constructor(
+    readonly effect: Effect<R, E, A>,
+    readonly handlers: Handlers = new Handlers(),
+    protected _frames: StackFrames = null,
+  ) {
     this._instruction = effect as Instruction.Instruction
   }
 
@@ -108,6 +109,8 @@ export class Executor<R, A> {
 
   private process() {
     while (this._instruction !== null) {
+      console.log('Processing instruction', this._instruction._tag)
+
       this.processInstruction(this._instruction)
     }
   }
@@ -124,12 +127,30 @@ export class Executor<R, A> {
     this.continueWith(instruction.i0)
   }
 
-  private Map(instruction: Instruction.Map<any, any, any>) {
+  private Failure(instruction: Instruction.Failure<any>) {
+    this.failWith(instruction.i0)
+  }
+
+  private Sync(instruction: Instruction.Sync<any>) {
+    this.continueWith(instruction.i0())
+  }
+
+  private Async(instruction: Instruction.Async<any, any, any>) {
+    this._instruction = null
+
+    instruction.register((effect) => {
+      this._instruction = effect as Instruction.Instruction
+
+      this.process()
+    })
+  }
+
+  private Map(instruction: Instruction.Map<any, any, any, any>) {
     this._instruction = instruction.i0
     this.pushFrame(new ControlFlowFrame((value) => new Instruction.Succeed(instruction.i1(value))))
   }
 
-  private FlatMap(instruction: Instruction.FlatMap<any, any, any, any>) {
+  private FlatMap(instruction: Instruction.FlatMap<any, any, any, any, any, any>) {
     this._instruction = instruction.i0
     this.pushFrame(new ControlFlowFrame((value) => instruction.i1(value)))
   }
@@ -141,27 +162,28 @@ export class Executor<R, A> {
       throw new Error(`No handler could be found for ${instruction.i0.id}`)
     }
 
-    const resume = this.reifyStack(handler)
+    const resume = this.resume(this.cloneStackUntilHandler(handler))
 
-    if (handler._tag === 'EffectReturnHandler') {
+    if (handler._tag === 'EffectHandler') {
+      this._instruction = handler.handle(instruction.i1, resume) as Instruction.Instruction
+    } else {
       const values: any[] = []
 
       this._instruction = Instruction.Map.make(
-        handler.handle(
-          instruction.i1,
-          (a) =>
-            Instruction.Map.make(resume(a), (b) => {
-              values.push(handler.onReturn(b))
-            }) as Effect<never, void>,
+        handler.handle(instruction.i1, (a) =>
+          Instruction.Map.make(resume(a), (b) => {
+            values.push(handler.onReturn(b))
+          }),
         ),
         () => {
           const [first, ...rest] = values
+          const result = handler.semigroup.combineMany(first, rest)
 
-          return handler.semigroup.combineMany(first, rest)
+          console.log('Result', result)
+
+          return result
         },
       ) as Instruction.Instruction
-    } else {
-      this._instruction = handler.handle(instruction.i1, resume) as Instruction.Instruction
     }
   }
 
@@ -215,6 +237,11 @@ export class Executor<R, A> {
     // TODO: Maybe run finalizers
   }
 
+  private failWith(cause: Cause<never>) {
+    this._instruction = null
+    this._observers.notify(Exit.failCause(cause))
+  }
+
   private uncaughtException(error: unknown) {
     this._instruction = null
     this._observers.notify(Exit.die(error))
@@ -222,52 +249,30 @@ export class Executor<R, A> {
     // TODO: Maybe run finalizers
   }
 
-  private reifyStack(handler: Handler.Any): <A>(value: A) => Instruction.Instruction {
+  private cloneStackUntilHandler(handler: Handler.Any) {
     const frames = this._frames
 
     // If the stack is at its end we can just return the value
-    if (!frames) return (value) => new Instruction.Succeed(value)
+    if (!frames) return null
 
-    // Capture the stack up until the provision of the current handler
-    let stack: StackFrames = frames
-    const clone: Array<HandlerFrame> = []
+    const [clone, remaining] = frames.takeUntil(
+      (frame) => frame._tag === 'EffectHandlerFrame' && frame.handler === handler,
+    )
 
-    while (stack !== null) {
-      const frame = stack.value
+    this._frames = remaining
 
-      if (frame._tag === 'ControlFlowFrame') {
-        clone.push(frame)
-      } else {
-        // Reify up until the point that we find the handler
-        if (frame.handler === handler) {
-          break
-        }
+    return clone
+  }
 
-        clone.push(frame)
-      }
+  private resume(frames: StackFrames) {
+    const handlers = this.handlers.clone()
 
-      stack = stack.previous
-    }
+    return (value: any) =>
+      Instruction.Async.make<never, never, any>((k) => {
+        const executor = new Executor(new Instruction.Succeed(value), handlers.clone(), frames)
 
-    const continuation = (value: any) => {
-      let effect: Instruction.Instruction = new Instruction.Succeed(value)
-
-      for (let i = 0; i < clone.length; i++) {
-        const frame = clone[i]
-
-        if (frame._tag === 'ControlFlowFrame') {
-          effect = new Instruction.FlatMap(effect, frame.f)
-        } else {
-          effect = new Instruction.ProvideHandler(effect, frame.handler)
-        }
-      }
-
-      return effect
-    }
-
-    // Set the stack to what is left over
-    this._frames = stack
-
-    return continuation
+        executor.addObserver((exit) => k(fromExit(exit)))
+        executor.start()
+      })
   }
 }
