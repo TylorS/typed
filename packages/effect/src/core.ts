@@ -1,60 +1,36 @@
 import * as Cause from './Cause.js'
-import * as Debug from './Debug.js'
 import { Effect } from './Effect.js'
 import { Exit } from './Exit.js'
 import { Handler } from './Handler.js'
-import { Failure, FlatMap, Map, ProvideHandler, RunOp, Succeed } from './Instruction.js'
+import {
+  Failure,
+  FlatMap,
+  Map,
+  ProvideHandler,
+  RunOp,
+  Succeed,
+  Suspend,
+  YieldNow,
+} from './Instruction.js'
 import { Op } from './Op.js'
 
-export const succeed: <A>(value: A) => Effect<never, never, A> = Debug.methodWithTrace(
-  (trace) =>
-    <A>(value: A) =>
-      Succeed.make(value, trace),
-)
+export const succeed: <A>(value: A) => Effect<never, never, A> = Succeed.make
 
 export const unit = (): Effect<never, never, void> => succeed(undefined)
 
-export const failCause: <E>(cause: Cause.Cause<E>) => Effect<never, E, never> =
-  Debug.methodWithTrace(
-    (trace) =>
-      <E>(cause: Cause.Cause<E>) =>
-        Failure.make(cause, trace),
-  )
+export const failCause: <E>(cause: Cause.Cause<E>) => Effect<never, E, never> = Failure.make
 
-export const fail: <E>(error: E) => Effect<never, E, never> = Debug.methodWithTrace(
-  (trace) =>
-    <E>(error: E) =>
-      Failure.make(Cause.fail(error), trace),
-)
+export const fail = <E>(error: E) => Failure.make(Cause.fail(error))
 
 export const fromExit = <E, A>(exit: Exit<E, A>): Effect<never, E, A> =>
   exit._tag === 'Success' ? succeed(exit.value) : failCause(exit.cause)
 
-export const map: {
-  <A, B>(f: (a: A) => B): <R, E>(effect: Effect<R, E, A>) => Effect<R, E, B>
-  <R, E, A, B>(effect: Effect<R, E, A>, f: (a: A) => B): Effect<R, E, B>
-} = Debug.dualWithTrace(
-  2,
-  (trace) =>
-    <R, E, A, B>(effect: Effect<R, E, A>, f: (a: A) => B) =>
-      Map.make(effect, f, trace),
-)
+export const map = <R, E, A, B>(effect: Effect<R, E, A>, f: (a: A) => B) => Map.make(effect, f)
 
-export const flatMap: {
-  <A, R2, E2, B>(f: (a: A) => Effect<R2, E2, B>): <R, E>(
-    effect: Effect<R, E, A>,
-  ) => Effect<R | R2, E | E2, B>
-  <R, E, A, R2, E2, B>(effect: Effect<R, E, A>, f: (a: A) => Effect<R2, E2, B>): Effect<
-    R | R2,
-    E | E2,
-    B
-  >
-} = Debug.dualWithTrace(
-  2,
-  (trace) =>
-    <R, E, A, R2, E2, B>(effect: Effect<R, E, A>, f: (a: A) => Effect<R2, E2, B>) =>
-      FlatMap.make(effect, f, trace),
-)
+export const flatMap = <R, E, A, R2, E2, B>(
+  effect: Effect<R, E, A>,
+  f: (a: A) => Effect<R2, E2, B>,
+) => FlatMap.make(effect, f)
 
 export const op: {
   <O extends Op.Any>(op: O): <I extends Op.Constraint<O>>(
@@ -65,35 +41,58 @@ export const op: {
     Op.Error<O>,
     Op.Apply<O, I>
   >
-} = Debug.methodWithTrace(
-  (outer) =>
-    function op<O extends Op.Any, I extends Op.Constraint<O>>(...args: [O, I] | [O]): any {
-      if (args.length === 1) {
-        return Debug.methodWithTrace(
-          (inner) => (input: I) => new RunOp(args[0], input, [outer, inner]),
-        )
-      }
+} = function op<O extends Op.Any, I extends Op.Constraint<O>>(...args: [O, I] | [O]): any {
+  if (args.length === 1) {
+    return (input: I) => new RunOp(args[0], input)
+  }
 
-      return RunOp.make(args[0], args[1], outer)
-    },
-)
+  return RunOp.make(args[0], args[1])
+}
 
-export const handle: {
-  <H extends Handler.Any>(handler: H): <E extends Effect.Any>(
-    effect: E,
-  ) => Effect<Handler.ApplyOp<E, H>, Handler.ApplyError<E, H>, Handler.ApplyReturn<E, H>>
-  <E extends Effect.Any, H extends Handler.Any>(effect: E, handler: H): Effect<
-    Handler.ApplyOp<E, H>,
-    Handler.ApplyError<E, H>,
-    Handler.ApplyReturn<E, H>
+export const handle = function handle<E extends Effect.Any, H extends Handler.Any>(
+  effect: E,
+  handler: H,
+): Handler.Apply<E, H> {
+  return ProvideHandler.make(effect, handler)
+}
+
+export const suspend = <R, E, A>(f: () => Effect<R, E, A>) => Suspend.make(f)
+
+export const yieldNow: Effect<never, never, void> = new YieldNow()
+
+export const tuple = <Effs extends ReadonlyArray<Effect.Any>>(
+  ...effects: Effs
+): Effect<
+  Effect.Op<Effs[number]>,
+  Effect.Error<Effs[number]>,
+  {
+    readonly [K in keyof Effs]: Effect.Return<Effs[K]>
+  }
+> => {
+  type R = Effect<
+    Effect.Op<Effs[number]>,
+    Effect.Error<Effs[number]>,
+    {
+      readonly [K in keyof Effs]: Effect.Return<Effs[K]>
+    }
   >
-} = Debug.dualWithTrace(
-  2,
-  (trace) =>
-    function handle<E extends Effect.Any, H extends Handler.Any>(
-      effect: E,
-      handler: H,
-    ): Handler.Apply<E, H> {
-      return ProvideHandler.make(effect, handler, trace)
-    },
-)
+
+  const { length } = effects
+
+  if (length === 0) {
+    return succeed([]) as R
+  } else if (length === 1) {
+    return map(effects[0], (x) => [x]) as R
+  } else {
+    let output: Effect.Any<any[]> = succeed([])
+
+    for (let i = 0; i < effects.length; ++i) {
+      const effect = effects[i]
+      output = flatMap(output, (previous) => map(effect, (a) => [...previous, a]))
+    }
+
+    return output as R
+  }
+}
+
+// TODO: TuplePar

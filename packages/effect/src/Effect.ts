@@ -7,7 +7,7 @@ export namespace Effect {
     readonly _A: (_: never) => A
   }
 
-  export type Any = Effect<any, any, any>
+  export type Any<O = any> = Effect<any, any, O>
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export type Op<T extends Any> = T extends Effect<infer R, infer _, infer __> ? R : never

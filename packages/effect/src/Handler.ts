@@ -1,7 +1,4 @@
-import * as Semigroup from '@effect/data/typeclass/Semigroup'
-
 import { Effect } from './Effect.js'
-import { Exit } from './Exit.js'
 import { Lambda } from './Lambda.js'
 import type { Op } from './Op.js'
 
@@ -56,8 +53,8 @@ export class EffectHandler<O extends Op.Any, R2, E2> {
     readonly op: O,
     readonly handle: <I extends Op.Constraint<O>>(
       input: I,
-      resume: (ouptut: Op.Apply<O, I>) => Effect<never, never, void>,
-    ) => Effect<R2, E2, void>,
+      resume: (ouptut: Op.Apply<O, I>) => Effect<never, never, unknown>,
+    ) => Effect<R2, E2, unknown>,
   ) {}
 }
 
@@ -80,7 +77,7 @@ export namespace EffectHandler {
     ApplyReturn<E, H>
   >
 
-  export type Any = EffectHandler<any, any, any> | EffectHandler<any, any, never>
+  export type Any = EffectHandler<Op.Any, any, any> | EffectHandler<any, any, never>
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export type Op<T extends Any> = T extends EffectHandler<infer O, infer _, infer __> ? O : never
@@ -103,10 +100,9 @@ export class EffectReturnHandler<O extends Op.Any, R2, E2, Return extends Lambda
     readonly op: O,
     readonly handle: <I extends Op.Constraint<O>>(
       input: I,
-      resume: (ouptut: Exit<Op.Error<O>, Op.Apply<O, I>>) => Effect<never, never, void>,
-    ) => Effect<R2, E2, void>,
+      resume: (input: Op.Apply<O, I>) => Effect<never, never, unknown>,
+    ) => Effect<R2, E2, unknown>,
     readonly onReturn: <A>(value: A) => Lambda.Apply<Return, A>,
-    readonly semigroup: Semigroup.Semigroup<Lambda.Apply<Return, any>>,
   ) {}
 }
 
@@ -132,8 +128,8 @@ export namespace EffectReturnHandler {
   >
 
   export type Any =
-    | EffectReturnHandler<any, any, any, any>
-    | EffectReturnHandler<any, any, never, any>
+    | EffectReturnHandler<Op.Any, any, any, any>
+    | EffectReturnHandler<Op.Any, any, never, any>
 
   export type Op<H extends Any> = H extends EffectReturnHandler<infer R, any, any, any> ? R : never
 
