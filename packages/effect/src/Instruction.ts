@@ -1,13 +1,9 @@
-import * as Debug from '@effect/data/Debug'
-
 import type { Cause } from './Cause.js'
 import type { Continuation } from './Continuation.js'
 import type { Effect } from './Effect.js'
 import type { Handler } from './Handler.js'
 import type { Op } from './Op.js'
 import { Variance } from './shared.js'
-
-Debug.runtimeDebug.tracingEnabled = false
 
 export type Instruction =
   | Succeed<any>
@@ -47,7 +43,7 @@ export class Failure<E> extends EffectInstruction<never, E, never> {
   readonly _tag = 'Failure' as const
 
   constructor(cause: Cause<E>) {
-    super(cause, undefined)
+    super(cause)
   }
 
   static make<E>(cause: Cause<E>): Effect<never, E, never> {
@@ -59,7 +55,7 @@ export class Sync<A> extends EffectInstruction<never, never, A> {
   readonly _tag = 'Sync' as const
 
   constructor(f: () => A) {
-    super(f, undefined)
+    super(f)
   }
 
   static make<A>(f: () => A): Effect<never, never, A> {
@@ -71,7 +67,7 @@ export class Suspend<R, E, A> extends EffectInstruction<R, E, A> {
   readonly _tag = 'Suspend' as const
 
   constructor(f: () => Effect<R, E, A>) {
-    super(f, undefined)
+    super(f)
   }
 
   static make<R, E, A>(f: () => Effect<R, E, A>): Effect<R, E, A> {
@@ -135,7 +131,7 @@ export class Async<R, E, A> extends EffectInstruction<R, E, A> {
   readonly _tag = 'Async' as const
 
   constructor(register: (cb: (a: Effect<R, E, A>) => void) => void) {
-    super(register, undefined)
+    super(register)
   }
 
   static make<R, E, A>(register: (cb: (a: Effect<R, E, A>) => void) => void): Effect<R, E, A> {

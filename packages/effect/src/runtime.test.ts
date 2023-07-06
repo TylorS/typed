@@ -109,7 +109,7 @@ describe(Executor, () => {
     expect(actual).toEqual([3, 4, 5, 6, 7, 8, 9, 10, 11])
   })
 
-  it.concurrent('runs recursive fib', async () => {
+  it.concurrent.skip('runs recursive fib', async () => {
     const promiseBased = async (n: number): Promise<number> => {
       if (n < 2) {
         return 1

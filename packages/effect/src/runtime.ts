@@ -44,7 +44,7 @@ export class Executor<R, E, A> {
   }
 
   private process() {
-    while (this._instruction !== null) {
+    while (this._instruction) {
       this.processInstruction(this._instruction)
     }
   }
@@ -157,9 +157,9 @@ export class Executor<R, E, A> {
       return this.exitWith(Exit.succeed(value))
     } else if (frame._tag === 'FlatMapCauseFrame') {
       this.continueWith(value)
+    } else {
+      this[frame._tag](frame as any, value)
     }
-
-    this[frame._tag](frame as any, value)
   }
 
   private failWith(cause: Cause.Cause<any>) {
@@ -169,9 +169,9 @@ export class Executor<R, E, A> {
       return this.exitWith(Exit.failCause(cause))
     } else if (frame._tag !== 'FlatMapCauseFrame') {
       this.failWith(cause)
+    } else {
+      this[frame._tag](frame as any, cause)
     }
-
-    this[frame._tag](frame as any, cause)
   }
 
   private MapFrame(frame: MapFrame, value: any) {
@@ -201,11 +201,12 @@ export class Executor<R, E, A> {
   }
 
   private popFrame(): HandlerFrame | null {
-    if (this._frames === null) return null
+    const frames = this._frames
 
-    const frame = this._frames.value
+    if (frames === null) return null
 
-    this._frames = this._frames.previous
+    const frame = frames.value
+    this._frames = frames.previous
 
     return frame
   }
@@ -240,14 +241,12 @@ export class Executor<R, E, A> {
   }
 
   private resume(handler: Handler.Any) {
-    const frames = this.cloneStackUntilHandler(handler)
-    const handlers = this._handlers.clone()
+    const ctx = {
+      handler,
+      frames: this.cloneStackUntilHandler(handler),
+      handlers: this._handlers.clone(),
+    }
 
-    return (input: any) =>
-      Instruction.Resume.make(input, {
-        handler,
-        frames,
-        handlers,
-      })
+    return (input: any) => Instruction.Resume.make(input, ctx)
   }
 }

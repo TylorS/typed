@@ -14,6 +14,6 @@ export class ForEach extends Op<ForEach, never, In.ReadonlyArrayLambda>('@typed/
 export const forEach: <I extends readonly any[]>(input: I) => Effect<ForEach, never, I[number]> =
   core.op(ForEach)
 
-export const withForEach = <E extends Effect.Any>(
+export const withForEach: <E extends Effect.Any>(
   effect: E,
-): Handler.Apply<E, (typeof ForEach)['sequential']> => core.handle(effect, ForEach.sequential)
+) => Handler.Apply<E, (typeof ForEach)['sequential']> = core.handle(ForEach.sequential)

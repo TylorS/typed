@@ -13,6 +13,7 @@ import {
   YieldNow,
 } from './Instruction.js'
 import { Op } from './Op.js'
+import { dual } from './_function.js'
 
 export const succeed: <A>(value: A) => Effect<never, never, A> = Succeed.make
 
@@ -25,12 +26,23 @@ export const fail = <E>(error: E) => Failure.make(Cause.fail(error))
 export const fromExit = <E, A>(exit: Exit<E, A>): Effect<never, E, A> =>
   exit._tag === 'Success' ? succeed(exit.value) : failCause(exit.cause)
 
-export const map = <R, E, A, B>(effect: Effect<R, E, A>, f: (a: A) => B) => Map.make(effect, f)
+export const map: {
+  <A, B>(f: (a: A) => B): <R, E>(effect: Effect<R, E, A>) => Effect<R, E, B>
+  <R, E, A, B>(effect: Effect<R, E, A>, f: (a: A) => B): Effect<R, E, B>
+} = dual(2, <R, E, A, B>(effect: Effect<R, E, A>, f: (a: A) => B) => Map.make(effect, f))
 
-export const flatMap = <R, E, A, R2, E2, B>(
-  effect: Effect<R, E, A>,
-  f: (a: A) => Effect<R2, E2, B>,
-) => FlatMap.make(effect, f)
+export const flatMap: {
+  <A, R2, E2, B>(f: (a: A) => Effect<R2, E2, B>): <R, E>(
+    effect: Effect<R, E, A>,
+  ) => Effect<R | R2, E | E2, B>
+  <R, E, A, R2, E2, B>(effect: Effect<R, E, A>, f: (a: A) => Effect<R2, E2, B>): Effect<
+    R | R2,
+    E | E2,
+    B
+  >
+} = dual(2, <R, E, A, R2, E2, B>(effect: Effect<R, E, A>, f: (a: A) => Effect<R2, E2, B>) =>
+  FlatMap.make(effect, f),
+)
 
 export const op: {
   <O extends Op.Any>(op: O): <I extends Op.Constraint<O>>(
@@ -49,12 +61,15 @@ export const op: {
   return RunOp.make(args[0], args[1])
 }
 
-export const handle = function handle<E extends Effect.Any, H extends Handler.Any>(
-  effect: E,
-  handler: H,
-): Handler.Apply<E, H> {
+export const handle: {
+  <H extends Handler.Any>(handler: H): <E extends Effect.Any<any>>(effect: E) => Handler.Apply<E, H>
+  <E extends Effect.Any<any>, H extends Handler.Any>(effect: E, handler: H): Handler.Apply<E, H>
+} = dual(2, function handle<
+  E extends Effect.Any,
+  H extends Handler.Any,
+>(effect: E, handler: H): Handler.Apply<E, H> {
   return ProvideHandler.make(effect, handler)
-}
+})
 
 export const suspend = <R, E, A>(f: () => Effect<R, E, A>) => Suspend.make(f)
 
