@@ -15,21 +15,7 @@ export class ForEach extends Op<ForEach, never, In.ReadonlyArrayLambda>()('@type
   )
 
   static discard = ForEach.handleReturn<ForEach, ForEachDiscardLambda, never, never>(
-    (input, resume) => {
-      if (input.length === 0) return core.unit()
-      if (input.length === 1) return resume(input[0])
-
-      const [first, ...rest] = input
-
-      let output = resume(first)
-
-      for (let i = 0; i < rest.length; i++) {
-        const x = rest[i]
-        output = core.flatMap(output, () => resume(x))
-      }
-
-      return output
-    },
+    (input, resume) => core.tupleDiscard(...input.map(resume)),
     (a) => void a,
   )
 }

@@ -39,6 +39,9 @@ export const map: {
   <R, E, A, B>(effect: Effect<R, E, A>, f: (a: A) => B): Effect<R, E, B>
 } = dual(2, <R, E, A, B>(effect: Effect<R, E, A>, f: (a: A) => B) => Map.make(effect, f))
 
+export const asUnit = <R, E, A>(effect: Effect<R, E, A>): Effect<R, E, void> =>
+  map(effect, () => undefined)
+
 export const flatMap: {
   <A, R2, E2, B>(f: (a: A) => Effect<R2, E2, B>): <R, E>(
     effect: Effect<R, E, A>,
@@ -120,6 +123,26 @@ export const tuple = <Effs extends ReadonlyArray<Effect.Any>>(
     }
 
     return output as R
+  }
+}
+
+export const tupleDiscard = <Effs extends ReadonlyArray<Effect.Any>>(
+  ...effects: Effs
+): Effect<Effect.Op<Effs[number]>, Effect.Error<Effs[number]>, void> => {
+  {
+    if (effects.length === 0) return unit()
+    if (effects.length === 1) return asUnit(effects[0])
+
+    const [first, ...rest] = effects
+
+    let output = first
+
+    for (let i = 0; i < rest.length; i++) {
+      const x = rest[i]
+      output = flatMap(output, () => x)
+    }
+
+    return asUnit(output)
   }
 }
 
