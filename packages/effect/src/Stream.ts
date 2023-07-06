@@ -46,6 +46,7 @@ export class StreamEvent<A> extends Operation<StreamEventLambda>('@typed/effect/
   constructor() {
     super()
     this.produce = this.produce.bind(this)
+    this.produceAll = this.produceAll.bind(this)
   }
 
   produce(value: A) {
@@ -86,6 +87,16 @@ export class StreamEnd extends Op<StreamEnd, never, StreamEndLambda>()('@typed/e
 }
 
 export const observe: {
+  // Data-last
+  <R extends Stream<any, any>, R2, E2, B>(f: (a: Stream.EventFrom<R>) => Effect<R2, E2, B>): <E, A>(
+    effect: Effect<R, E, A>,
+  ) => Effect<
+    Exclude<R | R2, Stream.StreamFrom<typeof effect>>,
+    E | E2 | Stream.ErrorFrom<typeof effect>,
+    void
+  >
+
+  // Data-first
   <R extends Stream<any, any>, E, A, R2, E2, B>(
     effect: Effect<R, E, A>,
     f: (a: Stream.EventFrom<R>) => Effect<R2, E2, B>,
@@ -106,15 +117,18 @@ export const observe: {
   E | E2 | Stream.ErrorFrom<typeof effect>,
   void
 > {
-  return core.async((cb) => {
-    const eventOp = new StreamEvent<Stream.EventFrom<R>>()
-    const errorOp = new StreamError<Stream.ErrorFrom<typeof effect>>()
+  const eventOp = new StreamEvent<Stream.EventFrom<R>>()
+  const errorOp = new StreamError<Stream.ErrorFrom<typeof effect>>()
+  const handleEvent = core.handle(
+    Op.handle(eventOp)((value, resume) => core.flatMap(f(value), resume)),
+  )
 
-    return pipe(
+  return core.async((resume) =>
+    pipe(
       effect,
-      core.handle(Op.handle(eventOp)((value, resume) => core.flatMap(f(value), resume))),
-      core.handle(Op.handle(errorOp)((value) => core.sync(() => cb(core.fail(value))))),
-      core.handle(StreamEnd.handle(() => core.sync(() => cb(core.unit())))),
-    )
-  })
+      handleEvent,
+      core.handle(Op.handle(errorOp)((value) => core.sync(() => resume(core.fail(value))))),
+      core.handle(StreamEnd.handle(() => core.sync(() => resume(core.unit())))),
+    ),
+  )
 })
