@@ -18,6 +18,7 @@ export type Instruction =
   | Resume<any>
   | Suspend<any, any, any>
   | YieldNow
+  | Break
 
 export abstract class EffectInstruction<R, E, A> extends Variance<R, E, A> {
   abstract readonly _tag: string
@@ -206,4 +207,8 @@ export class Resume<A> extends EffectInstruction<never, never, unknown> {
 
 export class YieldNow extends EffectInstruction<never, never, void> {
   readonly _tag = 'YieldNow' as const
+}
+
+export class Break extends EffectInstruction<never, never, never> {
+  readonly _tag = 'Break' as const
 }
