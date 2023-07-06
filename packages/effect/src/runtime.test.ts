@@ -6,9 +6,9 @@ import { Op } from './Op.js'
 import { pipe } from './_function.js'
 import * as core from './core.js'
 import { forEach, withForEach } from './ops.js'
-import { Executor, runPromise } from './runtime.js'
+import { runPromise } from './runtime.js'
 
-describe(Executor, () => {
+describe('Runtime', () => {
   it.concurrent('executes Succeed effect', async () => {
     const value = await runPromise(core.succeed(1))
 
@@ -101,9 +101,12 @@ describe(Executor, () => {
 
   it.concurrent('executes return Op effect', async () => {
     const actual = await runPromise(
-      core.map(withForEach(core.map(forEach([1, 2, 3]), (x) => x + 1)), (xs) => {
-        return xs.map((x) => x + 1)
-      }),
+      pipe(
+        forEach([1, 2, 3]),
+        core.map((x) => x + 1),
+        withForEach,
+        core.map((xs) => xs.map((x) => x + 1)),
+      ),
     )
 
     expect(actual).toEqual([3, 4, 5])
