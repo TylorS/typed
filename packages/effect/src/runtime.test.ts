@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
+import { Cause, pretty } from './Cause.js'
 import { Effect } from './Effect.js'
 import * as Exit from './Exit.js'
 import { Lambda } from './Lambda.js'
 import { Op } from './Op.js'
+import { pipe } from './_function.js'
 import * as core from './core.js'
 import { forEach, withForEach } from './ops.js'
 import { Executor } from './runtime.js'
@@ -44,6 +46,59 @@ describe(Executor, () => {
     const value = await runPromise(add)
 
     expect(value).toBe(3)
+  })
+
+  it.concurrent('executes complex Op Service', async () => {
+    type CalcAction =
+      | { type: 'add'; a: number; b: number }
+      | { type: 'subtract'; a: number; b: number }
+      | { type: 'multiply'; a: number; b: number }
+      | { type: 'divide'; a: number; b: number }
+
+    interface CalcLambda extends Lambda {
+      readonly InConstraint: CalcAction
+      readonly Out: number
+    }
+    class Calc extends Op<Calc, never, CalcLambda>('test/Calc') {
+      static add = (a: number, b: number): Effect<Calc, never, number> =>
+        core.op(Calc, { type: 'add', a, b })
+
+      static subtract = (a: number, b: number): Effect<Calc, never, number> =>
+        core.op(Calc, { type: 'subtract', a, b })
+
+      static multiply = (a: number, b: number): Effect<Calc, never, number> =>
+        core.op(Calc, { type: 'multiply', a, b })
+
+      static divide = (a: number, b: number): Effect<Calc, never, number> =>
+        core.op(Calc, { type: 'divide', a, b })
+
+      static with = core.handle(
+        Calc.handle(({ type, a, b }, resume) => {
+          switch (type) {
+            case 'add':
+              return resume(a + b)
+            case 'subtract':
+              return resume(a - b)
+            case 'multiply':
+              return resume(a * b)
+            case 'divide':
+              return resume(a / b)
+          }
+        }),
+      )
+    }
+
+    const calc = pipe(
+      Calc.add(1, 2),
+      core.flatMap((n) => Calc.multiply(n, 3)),
+      core.flatMap((n) => Calc.subtract(n, 1)),
+      core.flatMap((n) => Calc.divide(n, 2)),
+      Calc.with,
+    )
+
+    const value = await runPromise(calc)
+
+    expect(value).toBe(4)
   })
 
   it.concurrent('executes return Op effect', async () => {
@@ -157,8 +212,14 @@ function runPromiseExit<E, A>(effect: Effect<never, E, A>): Promise<Exit.Exit<E,
 function runPromise<E, A>(effect: Effect<never, E, A>): Promise<A> {
   return runPromiseExit(effect).then(
     Exit.match(
-      (cause) => Promise.reject(cause),
+      (cause) => Promise.reject(new CauseError(cause)),
       (value) => Promise.resolve(value),
     ),
   )
+}
+
+class CauseError<E> extends Error {
+  constructor(readonly cause: Cause<E>) {
+    super(pretty(cause))
+  }
 }

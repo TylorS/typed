@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import * as Cause from './Cause.js'
+import { Continuation } from './Continuation.js'
 import { Effect } from './Effect.js'
 import * as Exit from './Exit.js'
 import { Handler } from './Handler.js'
@@ -133,7 +134,7 @@ export class Executor<R, E, A> {
   private Resume<A>(instruction: Instruction.Resume<A>) {
     const { i0, i1 } = instruction
 
-    const executor = new Executor(Instruction.Succeed.make(i0), i1.frames, i1.handlers)
+    const executor = new Executor(Instruction.Succeed.make(i0), i1.frames, i1.handlers.clone())
 
     // Suspend this executor until the new one is done
     this._instruction = null
@@ -222,6 +223,8 @@ export class Executor<R, E, A> {
     this._instruction = new Instruction.Failure(Cause.die(error))
   }
 
+  // Construct a delimited continuation from the current stack until
+  // the specified handler is found.
   private cloneStackUntilHandler(handler: Handler.Any) {
     const frames = this._frames
 
@@ -240,13 +243,13 @@ export class Executor<R, E, A> {
     return clone
   }
 
+  // Create a continuation which can be continued later
   private resume(handler: Handler.Any) {
-    const ctx = {
-      handler,
+    const cont: Continuation = {
       frames: this.cloneStackUntilHandler(handler),
       handlers: this._handlers.clone(),
     }
 
-    return (input: any) => Instruction.Resume.make(input, ctx)
+    return (input: any) => Instruction.Resume.make(input, cont)
   }
 }

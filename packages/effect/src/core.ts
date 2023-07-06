@@ -35,6 +35,7 @@ export const flatMap: {
   <A, R2, E2, B>(f: (a: A) => Effect<R2, E2, B>): <R, E>(
     effect: Effect<R, E, A>,
   ) => Effect<R | R2, E | E2, B>
+
   <R, E, A, R2, E2, B>(effect: Effect<R, E, A>, f: (a: A) => Effect<R2, E2, B>): Effect<
     R | R2,
     E | E2,
