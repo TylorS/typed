@@ -19,6 +19,10 @@ import {
 } from './StackFrames.js'
 import { fromExit } from './core.js'
 
+// TODO: Implement interruption
+// TODO: Implement finalizers
+// TODO: Implement concurrency
+
 export class Executor<R, E, A> {
   // State to check if Executor.start() has been called
   private _started = false
