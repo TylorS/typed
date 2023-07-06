@@ -3,6 +3,7 @@ import { Effect } from './Effect.js'
 import { Exit } from './Exit.js'
 import { Handler } from './Handler.js'
 import {
+  Async,
   Failure,
   FlatMap,
   Map,
@@ -10,12 +11,17 @@ import {
   RunOp,
   Succeed,
   Suspend,
+  Sync,
   YieldNow,
 } from './Instruction.js'
 import { Op } from './Op.js'
 import { dual } from './_function.js'
 
 export const succeed: <A>(value: A) => Effect<never, never, A> = Succeed.make
+
+export const unify = <E extends Effect.Any>(
+  effect: E,
+): [E] extends [Effect<infer R, infer E, infer A>] ? Effect<R, E, A> : never => effect as any
 
 export const unit = (): Effect<never, never, void> => succeed(undefined)
 
@@ -25,6 +31,8 @@ export const fail = <E>(error: E) => Failure.make(Cause.fail(error))
 
 export const fromExit = <E, A>(exit: Exit<E, A>): Effect<never, E, A> =>
   exit._tag === 'Success' ? succeed(exit.value) : failCause(exit.cause)
+
+export const sync = <A>(f: () => A): Effect<never, never, A> => Sync.make(f)
 
 export const map: {
   <A, B>(f: (a: A) => B): <R, E>(effect: Effect<R, E, A>) => Effect<R, E, B>
@@ -75,6 +83,10 @@ export const handle: {
 export const suspend = <R, E, A>(f: () => Effect<R, E, A>) => Suspend.make(f)
 
 export const yieldNow: Effect<never, never, void> = new YieldNow()
+
+export const async = <R, E, A, R2, E2>(
+  register: (cb: (effect: Effect<R, E, A>) => void) => Effect<R2, E2, void>,
+): Effect<R, E, A> => new Async(register)
 
 export const tuple = <Effs extends ReadonlyArray<Effect.Any>>(
   ...effects: Effs

@@ -8,7 +8,7 @@ import { Variance } from './shared.js'
 export type Instruction =
   | Succeed<any>
   | Sync<any>
-  | Async<any, any, any>
+  | Async<any, any, any, any, any>
   | Failure<any>
   | Map<any, any, any, any>
   | FlatMap<any, any, any, any, any, any>
@@ -127,14 +127,17 @@ export class FlatMapCause<R, E, A, R2, E2, B> extends EffectInstruction<R | R2, 
   }
 }
 
-export class Async<R, E, A> extends EffectInstruction<R, E, A> {
+// TODO: Async should probably be allowed to return an Effect
+export class Async<R, E, A, R2, E2> extends EffectInstruction<R | R2, E | E2, A> {
   readonly _tag = 'Async' as const
 
-  constructor(register: (cb: (a: Effect<R, E, A>) => void) => void) {
+  constructor(register: (cb: (a: Effect<R, E, A>) => void) => Effect<R2, E2, void>) {
     super(register)
   }
 
-  static make<R, E, A>(register: (cb: (a: Effect<R, E, A>) => void) => void): Effect<R, E, A> {
+  static make<R, E, A, R2, E2>(
+    register: (cb: (a: Effect<R, E, A>) => void) => Effect<R2, E2, void>,
+  ): Effect<R | R2, E | E2, A> {
     return new Async(register)
   }
 }

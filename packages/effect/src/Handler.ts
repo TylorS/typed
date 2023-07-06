@@ -1,6 +1,7 @@
 import { Effect } from './Effect.js'
 import { Lambda } from './Lambda.js'
 import type { Op } from './Op.js'
+import type { unify } from './core.js'
 
 export type Handler<O extends Op.Any, ReturnR, ReturnE, Return extends Lambda = never> =
   | EffectHandler<O, ReturnR, ReturnE>
@@ -8,6 +9,12 @@ export type Handler<O extends Op.Any, ReturnR, ReturnE, Return extends Lambda = 
 
 export namespace Handler {
   export type Any = EffectHandler.Any | EffectReturnHandler.Any
+
+  export type Op<H extends Any> = H extends EffectHandler.Any
+    ? EffectHandler.Op<H>
+    : H extends EffectReturnHandler.Any
+    ? EffectReturnHandler.Op<H>
+    : never
 
   export type ApplyOp<E extends Effect.Any, H extends Any> = [
     H extends EffectReturnHandler.Any
@@ -39,10 +46,10 @@ export namespace Handler {
     ? R
     : never
 
-  export type Apply<E extends Effect.Any, H extends Any> = Effect<
-    ApplyOp<E, H>,
-    ApplyError<E, H>,
-    ApplyReturn<E, H>
+  export type Apply<E extends Effect.Any, H extends Any> = ReturnType<
+    typeof unify<
+      Effect<Exclude<Effect.Op<E>, Op<H>>, Effect.Error<E> | Op.Error<Op<H>>, ApplyReturn<E, H>>
+    >
   >
 }
 

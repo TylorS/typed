@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { Cause, pretty } from './Cause.js'
 import { Effect } from './Effect.js'
-import * as Exit from './Exit.js'
 import { Lambda } from './Lambda.js'
 import { Op } from './Op.js'
 import { pipe } from './_function.js'
 import * as core from './core.js'
 import { forEach, withForEach } from './ops.js'
-import { Executor } from './runtime.js'
+import { Executor, runPromise } from './runtime.js'
 
 describe(Executor, () => {
   it.concurrent('executes Succeed effect', async () => {
@@ -164,28 +162,4 @@ function repeatN<R, E, A>(effect: Effect<R, E, A>, n: number): Effect<R, E, A> {
   }
 
   return output
-}
-
-function runPromiseExit<E, A>(effect: Effect<never, E, A>): Promise<Exit.Exit<E, A>> {
-  return new Promise((resolve) => {
-    const executor = new Executor(effect)
-
-    executor.addObserver(resolve)
-    executor.start()
-  })
-}
-
-function runPromise<E, A>(effect: Effect<never, E, A>): Promise<A> {
-  return runPromiseExit(effect).then(
-    Exit.match(
-      (cause) => Promise.reject(new CauseError(cause)),
-      (value) => Promise.resolve(value),
-    ),
-  )
-}
-
-class CauseError<E> extends Error {
-  constructor(readonly cause: Cause<E>) {
-    super(pretty(cause))
-  }
 }

@@ -70,13 +70,33 @@ export class Executor<R, E, A> {
     this.continueWith(instruction.i0())
   }
 
-  private Async(instruction: Instruction.Async<any, any, any>) {
-    this._instruction = null
+  private Async(instruction: Instruction.Async<any, any, any, any, any>) {
+    let nextInstruction: Instruction.Instruction | null = null
+    let finishedSetup = false
 
-    instruction.i0((instr: Instruction.Instruction) => {
-      this._instruction = instr
-      this.process()
-    })
+    this._instruction = new Instruction.FlatMap(
+      instruction.i0((instr: Instruction.Instruction) => {
+        if (nextInstruction) return
+
+        if (finishedSetup) {
+          this._instruction = nextInstruction = instr
+          this.process()
+        } else {
+          nextInstruction = instr
+        }
+      }),
+      (a) => {
+        finishedSetup = true
+
+        if (nextInstruction) return nextInstruction
+
+        return new Instruction.Succeed(a)
+      },
+    )
+
+    if (nextInstruction) {
+      this._instruction = nextInstruction
+    }
   }
 
   private YieldNow() {
@@ -134,7 +154,7 @@ export class Executor<R, E, A> {
   private Resume<A>(instruction: Instruction.Resume<A>) {
     const { i0, i1 } = instruction
 
-    const executor = new Executor(Instruction.Succeed.make(i0), i1.frames, i1.handlers.clone())
+    const executor = new Executor(Instruction.Succeed.make(i0), i1.frames, i1.handlers)
 
     // Suspend this executor until the new one is done
     this._instruction = null
@@ -247,9 +267,33 @@ export class Executor<R, E, A> {
   private resume(handler: Handler.Any) {
     const cont: Continuation = {
       frames: this.cloneStackUntilHandler(handler),
-      handlers: this._handlers.clone(),
+      handlers: this._handlers,
     }
 
     return (input: any) => Instruction.Resume.make(input, cont)
+  }
+}
+
+export function runPromiseExit<E, A>(effect: Effect<never, E, A>): Promise<Exit.Exit<E, A>> {
+  return new Promise((resolve) => {
+    const executor = new Executor(effect)
+
+    executor.addObserver(resolve)
+    executor.start()
+  })
+}
+
+export function runPromise<E, A>(effect: Effect<never, E, A>): Promise<A> {
+  return runPromiseExit(effect).then(
+    Exit.match(
+      (cause) => Promise.reject(new CauseError(cause)),
+      (value) => Promise.resolve(value),
+    ),
+  )
+}
+
+export class CauseError<E> extends Error {
+  constructor(readonly cause: Cause.Cause<E>) {
+    super(Cause.pretty(cause))
   }
 }

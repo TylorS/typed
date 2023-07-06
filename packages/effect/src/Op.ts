@@ -39,14 +39,11 @@ export function Op<R, E, Input extends Lambda>(id: string): Op<R, E, Input> {
   return class OpImpl {
     static _R: (_: never) => R
     static _E: (_: never) => E
-    static _A: (_: Input) => never
+    static _A: (_: never) => Input
 
     readonly _R!: (_: never) => R
     readonly _E!: (_: never) => E
-    readonly _A!: (_: Input) => never
-
-    static _tag = 'Op' as const
-    readonly _tag = OpImpl._tag
+    readonly _A!: (_: never) => Input
 
     static id: string = id
     readonly id: string = OpImpl.id
