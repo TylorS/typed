@@ -10,17 +10,27 @@ export type Stream<E, A> = StreamError<E> | StreamEvent<A> | StreamEnd
 export namespace Stream {
   export type Any = Stream<any, any>
 
-  export type StreamFrom<E extends Effect.Any> = [Effect.Op<E>] extends [Stream<infer E2, infer A>]
-    ? Stream<E2, A>
+  export type StreamFrom<E extends Effect.Any> = [Stream<ErrorFrom<E>, EventFrom<E>>] extends [
+    Stream<infer E2, infer A2>,
+  ]
+    ? Stream<E2, A2>
     : never
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export type ErrorFrom<E extends Effect.Any> = [StreamFrom<E>] extends [Stream<infer E2, infer _A>]
+  export type ErrorFrom<E extends Effect.Any> = [Extract<Effect.Op<E>, StreamError<any>>] extends [
+    never,
+  ]
+    ? never
+    : [Extract<Effect.Op<E>, StreamError<any>>] extends [StreamError<infer E2>]
     ? E2
     : never
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export type EventFrom<E extends Effect.Any> = [StreamFrom<E>] extends [Stream<infer _E2, infer A>]
+  export type EventFrom<E extends Effect.Any> = [Extract<Effect.Op<E>, StreamEvent<any>>] extends [
+    never,
+  ]
+    ? never
+    : [Extract<Effect.Op<E>, StreamEvent<any>>] extends [StreamEvent<infer A>]
     ? A
     : never
 }
@@ -71,7 +81,7 @@ export interface StreamEndLambda extends Lambda {
   readonly Out: void
 }
 
-export class StreamEnd extends Op<StreamEnd, never, StreamEndLambda>('@typed/effect/Stream/End') {
+export class StreamEnd extends Op<StreamEnd, never, StreamEndLambda>()('@typed/effect/Stream/End') {
   static readonly produce = core.op<StreamEnd>(StreamEnd)(undefined)
 }
 

@@ -32,35 +32,37 @@ export interface Op<R, E, Input extends Lambda> extends Operation<R, E, Input> {
   ): EffectReturnHandler<InstanceType<this>, R2, E2, Return>
 }
 
-export function Op<R, E, Input extends Lambda>(id: string): Op<R, E, Input> {
-  // The Static shape is exactly the same as the runtime version so that we can
-  // use the runtime Type as the identifier at all times.
+export function Op<R, E, Input extends Lambda>() {
+  return <Id extends string>(id: Id): Op<R, E, Input> => {
+    // The Static shape is exactly the same as the runtime version so that we can
+    // use the runtime Type as the identifier at all times.
 
-  return class OpImpl {
-    static _R: (_: never) => R
-    static _E: (_: never) => E
-    static _A: (_: never) => Input
+    return class OpImpl {
+      static _R: (_: never) => R
+      static _E: (_: never) => E
+      static _A: (_: never) => Input
 
-    readonly _R!: (_: never) => R
-    readonly _E!: (_: never) => E
-    readonly _A!: (_: never) => Input
+      readonly _R!: (_: never) => R
+      readonly _E!: (_: never) => E
+      readonly _A!: (_: never) => Input
 
-    static id: string = id
-    readonly id: string = OpImpl.id
+      static id: Id = id
+      readonly id: Id = OpImpl.id
 
-    static key = Tag(id) as any
-    readonly key = OpImpl.key as any
+      static key = Tag(id) as any
+      readonly key = OpImpl.key as any
 
-    static handle: Op<R, E, Input>['handle'] = Op.handle(this as any)
-    readonly handle = Op.handle(this) as any
+      static handle: Op<R, E, Input>['handle'] = Op.handle(this as any)
+      readonly handle = Op.handle(this) as any
 
-    static handleReturn: Op<R, E, Input>['handleReturn'] = Op.handleReturn(this as any)
-    readonly handleReturn = Op.handleReturn(this) as any
-  } as Op<R, E, Input>
+      static handleReturn: Op<R, E, Input>['handleReturn'] = Op.handleReturn(this as any)
+      readonly handleReturn = Op.handleReturn(this) as any
+    } as any as Op<R, E, Input>
+  }
 }
 
 export namespace Op {
-  export type Any = Operation<any, any, any> | Operation<any, never, any>
+  export type Any = Operation<any, any, any>
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export type Id<O extends Any> = O extends Operation<infer R, infer _, infer __> ? R : never

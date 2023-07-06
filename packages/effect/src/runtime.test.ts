@@ -32,7 +32,7 @@ describe(Executor, () => {
       readonly InConstraint: readonly [number, number]
       readonly Out: number
     }
-    class Add extends Op<Add, never, AddLambda>('test/Add') {
+    class Add extends Op<Add, never, AddLambda>()('test/Add') {
       static add = (a: number, b: number): Effect<Add, never, number> => core.op(Add, [a, b])
     }
 
@@ -57,7 +57,7 @@ describe(Executor, () => {
       readonly InConstraint: CalcAction
       readonly Out: number
     }
-    class Calc extends Op<Calc, never, CalcLambda>('test/Calc') {
+    class Calc extends Op<Calc, never, CalcLambda>()('test/Calc') {
       static add = (a: number, b: number): Effect<Calc, never, number> =>
         core.op(Calc, { type: 'add', a, b })
 

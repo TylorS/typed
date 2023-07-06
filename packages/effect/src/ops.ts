@@ -8,7 +8,7 @@ interface ForEachDiscardLambda extends Lambda {
   readonly Out: void
 }
 
-export class ForEach extends Op<ForEach, never, In.ReadonlyArrayLambda>('@typed/effect/ForEach') {
+export class ForEach extends Op<ForEach, never, In.ReadonlyArrayLambda>()('@typed/effect/ForEach') {
   static sequential = ForEach.handleReturn<ForEach, Out.ReadonlyArrayLambda, never, never>(
     (input, resume) => core.map(core.tuple(...input.map(resume)), (xs) => xs.flat()),
     (a) => [a],
