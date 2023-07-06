@@ -83,12 +83,15 @@ export class Map<R, E, A, B> extends EffectInstruction<R, E, B> {
   }
 
   static make<R, E, A, B>(effect: Effect<R, E, A>, f: (a: A) => B): Effect<R, E, B> {
-    if (effect instanceof Map) {
-      return new Map(effect.i0, (a) => f(effect.i1(a)))
-    } else if (effect instanceof Sync) {
-      return new Sync(() => f(effect.i1()))
-    } else {
-      return new Map(effect, f)
+    switch (effect.constructor) {
+      case Map:
+        return new Map((effect as Map<R, E, any, A>).i0, (a) =>
+          f((effect as Map<R, E, any, A>).i1(a)),
+        )
+      case Sync:
+        return new Sync(() => f((effect as Sync<any>).i0()))
+      default:
+        return new Map(effect, f)
     }
   }
 }
@@ -104,11 +107,20 @@ export class FlatMap<R, E, A, R2, E2, B> extends EffectInstruction<R | R2, E | E
     effect: Effect<R, E, A>,
     f: (a: A) => Effect<R2, E2, B>,
   ): Effect<R | R2, E | E2, B> {
-    if (effect instanceof Map) {
-      return new FlatMap(effect.i0, (a) => f(effect.i1(a)))
+    switch (effect.constructor) {
+      case Map:
+        return new FlatMap((effect as Map<R, E, any, A>).i0, (a) =>
+          f((effect as Map<R, E, any, A>).i1(a)),
+        )
+      case Succeed:
+        return new Suspend(() => f((effect as Succeed<A>).i0))
+      case Sync:
+        return new Suspend(() => f((effect as Sync<A>).i0()))
+      case Failure:
+        return effect as any
+      default:
+        return new FlatMap(effect, f)
     }
-
-    return new FlatMap(effect, f)
   }
 }
 
@@ -123,7 +135,14 @@ export class FlatMapCause<R, E, A, R2, E2, B> extends EffectInstruction<R | R2, 
     effect: Effect<R, E, A>,
     f: (cause: Cause<E>) => Effect<R2, E2, B>,
   ): Effect<R | R2, E | E2, B> {
-    return new FlatMapCause(effect, f)
+    switch (effect.constructor) {
+      case Succeed:
+        return effect as any
+      case Failure:
+        return new Suspend(() => f((effect as Failure<E>).i0))
+      default:
+        return new FlatMapCause(effect, f)
+    }
   }
 }
 
