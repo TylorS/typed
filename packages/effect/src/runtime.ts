@@ -123,11 +123,6 @@ export class Executor<R, E, A> {
         return new Instruction.Break()
       },
     )
-
-    // If the callback ran synchronously, we can just let the executor continue
-    if (nextInstruction) {
-      this._instruction = nextInstruction
-    }
   }
 
   private YieldNow() {
