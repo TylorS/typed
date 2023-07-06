@@ -38,7 +38,7 @@ describe('Runtime', () => {
 
     const add = core.handle(
       Add.add(1, 2),
-      Add.handle(([a, b]) => core.succeed(a + b)),
+      Add.handle(([a, b], resume) => resume(a + b)),
     )
 
     const value = await runPromise(add)
