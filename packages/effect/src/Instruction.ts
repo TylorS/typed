@@ -6,19 +6,19 @@ import type { Op } from './Op.js'
 import { Variance } from './shared.js'
 
 export type Instruction =
-  | Succeed<any>
-  | Sync<any>
   | Async<any, any, any, any, any>
+  | Break
   | Failure<any>
-  | Map<any, any, any, any>
   | FlatMap<any, any, any, any, any, any>
   | FlatMapCause<any, any, any, any, any, any>
-  | RunOp<any, any>
+  | Map<any, any, any, any>
   | ProvideHandler<any, any>
   | Resume<any>
+  | RunOp<any, any>
+  | Succeed<any>
   | Suspend<any, any, any>
+  | Sync<any>
   | YieldNow
-  | Break
 
 export abstract class EffectInstruction<R, E, A> extends Variance<R, E, A> {
   abstract readonly _tag: string
