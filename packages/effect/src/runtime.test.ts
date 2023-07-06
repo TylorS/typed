@@ -111,53 +111,19 @@ describe(Executor, () => {
     expect(actual).toEqual([3, 4, 5])
   })
 
-  it.concurrent('executes return Op effect more than once', async () => {
+  it.concurrent('executes return Op effect multiple times', async () => {
     const actual = await runPromise(
-      core.map(
-        withForEach(
-          core.map(
-            core.flatMap(
-              forEach([
-                [1, 2, 3],
-                [4, 5, 6],
-                [7, 8, 9],
-              ]),
-              forEach,
-            ),
-            (x) => x + 1,
-          ),
-        ),
-        (xs) => {
-          return xs.map((x) => x + 1)
-        },
-      ),
-    )
-
-    expect(actual).toEqual([3, 4, 5, 6, 7, 8, 9, 10, 11])
-  })
-
-  it.concurrent('executes return Op effect multiple times once', async () => {
-    const actual = await runPromise(
-      core.map(
-        withForEach(
-          core.map(
-            core.flatMap(
-              core.flatMap(
-                forEach([
-                  [[1], [2], [3]],
-                  [[4], [5], [6]],
-                  [[7], [8], [9]],
-                ]),
-                forEach,
-              ),
-              forEach,
-            ),
-            (x) => x + 1,
-          ),
-        ),
-        (xs) => {
-          return xs.map((x) => x + 1)
-        },
+      pipe(
+        forEach([
+          [[1], [2], [3]],
+          [[4], [5], [6]],
+          [[7], [8], [9]],
+        ]),
+        core.flatMap(forEach),
+        core.flatMap(forEach),
+        core.map((x) => x + 1),
+        withForEach,
+        core.map((xs) => xs.map((x) => x + 1)),
       ),
     )
 
