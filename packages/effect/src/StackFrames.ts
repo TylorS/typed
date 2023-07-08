@@ -1,9 +1,15 @@
 import { Cause } from './Cause.js'
+import { Finalizer } from './Finalizer.js'
 import { Handler } from './Handler.js'
 import { Instruction } from './Instruction.js'
 import { Stack } from './Stack.js'
 
-export type HandlerFrame = MapFrame | FlatMapFrame | FlatMapCauseFrame | EffectHandlerFrame
+export type HandlerFrame =
+  | MapFrame
+  | FlatMapFrame
+  | FlatMapCauseFrame
+  | EffectHandlerFrame
+  | FinalizerFrame
 
 export class MapFrame {
   readonly _tag = 'MapFrame' as const
@@ -23,6 +29,11 @@ export class FlatMapCauseFrame {
 export class EffectHandlerFrame {
   readonly _tag = 'EffectHandlerFrame' as const
   constructor(readonly handler: Handler.Any) {}
+}
+
+export class FinalizerFrame {
+  readonly _tag = 'FinalizerFrame' as const
+  constructor(readonly finalizer: Finalizer) {}
 }
 
 export type StackFrames = Stack<HandlerFrame> | null

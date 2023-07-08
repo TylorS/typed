@@ -118,17 +118,17 @@ export const observe: {
   void
 > {
   const eventOp = new StreamEvent<Stream.EventFrom<R>>()
-  const errorOp = new StreamError<Stream.ErrorFrom<typeof effect>>()
+  const errorOp = Op.handle(new StreamError<Stream.ErrorFrom<typeof effect>>())
   const handleEvent = core.handle(
     Op.handle(eventOp)((value, resume) => core.flatMap(f(value), resume)),
   )
 
-  return core.async((resume) =>
+  return core.asyncEffect((resume) =>
     pipe(
       effect,
       handleEvent,
-      core.handle(Op.handle(errorOp)((value) => core.sync(() => resume(core.fail(value))))),
+      core.handle(errorOp((value) => core.sync(() => resume(core.fail(value))))),
       core.handle(StreamEnd.handle(() => core.sync(() => resume(core.unit())))),
     ),
-  )
+  ) as any
 })

@@ -1,16 +1,20 @@
 import type { Cause } from './Cause.js'
 import type { Continuation } from './Continuation.js'
 import type { Effect } from './Effect.js'
+import { Exit } from './Exit.js'
+import { Fiber } from './Fiber.js'
 import type { Handler } from './Handler.js'
 import type { Op } from './Op.js'
 import { Variance } from './shared.js'
 
 export type Instruction =
-  | Async<any, any, any, any, any>
+  | AddFinalizer<any>
+  | Async<any, any, any>
   | Break
   | Failure<any>
   | FlatMap<any, any, any, any, any, any>
   | FlatMapCause<any, any, any, any, any, any>
+  | Fork<any, any, any>
   | Map<any, any, any, any>
   | ProvideHandler<any, any>
   | Resume<any>
@@ -19,6 +23,7 @@ export type Instruction =
   | Suspend<any, any, any>
   | Sync<any>
   | YieldNow
+  | Zip<any>
 
 export abstract class EffectInstruction<R, E, A> extends Variance<R, E, A> {
   abstract readonly _tag: string
@@ -148,18 +153,22 @@ export class FlatMapCause<R, E, A, R2, E2, B> extends EffectInstruction<R | R2, 
 }
 
 // TODO: Async should probably be allowed to return an Effect
-export class Async<R, E, A, R2, E2> extends EffectInstruction<R | R2, E | E2, A> {
+export class Async<R, E, A> extends EffectInstruction<R, E, A> {
   readonly _tag = 'Async' as const
 
-  constructor(register: (cb: (a: Effect<R, E, A>) => void) => Effect<R2, E2, void>) {
+  constructor(register: (cb: (a: Effect<R, E, A>) => void) => Disposable) {
     super(register)
   }
 
-  static make<R, E, A, R2, E2>(
-    register: (cb: (a: Effect<R, E, A>) => void) => Effect<R2, E2, void>,
-  ): Effect<R | R2, E | E2, A> {
+  static make<R, E, A>(
+    register: (cb: (a: Effect<R, E, A>) => void) => Disposable,
+  ): Effect<R, E, A> {
     return new Async(register)
   }
+}
+
+export class Disposable {
+  constructor(readonly dispose: () => void) {}
 }
 
 export class RunOp<O extends Op.Any, I> extends EffectInstruction<O, Op.Error<O>, Op.Apply<O, I>> {
@@ -211,4 +220,52 @@ export class YieldNow extends EffectInstruction<never, never, void> {
 
 export class Break extends EffectInstruction<never, never, never> {
   readonly _tag = 'Break' as const
+}
+
+export class Fork<R, E, A> extends EffectInstruction<R, never, Fiber<E, A>> {
+  readonly _tag = 'Fork' as const
+
+  constructor(effect: Effect<R, E, A>) {
+    super(effect)
+  }
+
+  static make<R, E, A>(effect: Effect<R, E, A>): Effect<R, never, Fiber<E, A>> {
+    return new Fork(effect)
+  }
+}
+
+export class AddFinalizer<R> extends EffectInstruction<R, never, void> {
+  readonly _tag = 'AddFinalizer' as const
+
+  constructor(finalizer: (exit: Exit<any, any>) => Effect<R, never, void>) {
+    super(finalizer)
+  }
+
+  static make<R = never>(
+    finalizer: (exit: Exit<any, any>) => Effect<R, never, void>,
+  ): Effect<R, never, void> {
+    return new AddFinalizer(finalizer)
+  }
+}
+
+export class Zip<Effs extends ReadonlyArray<Effect.Any>> extends EffectInstruction<
+  Effect.Op<Effs[number]>,
+  Effect.Error<Effs[number]>,
+  { readonly [K in keyof Effs]: Effect.Return<Effs[K]> }
+> {
+  readonly _tag = 'Zip' as const
+
+  constructor(effects: Effs) {
+    super(effects)
+  }
+
+  static make<Effs extends ReadonlyArray<Effect.Any>>(
+    effects: Effs,
+  ): Effect<
+    Effect.Op<Effs[number]>,
+    Effect.Error<Effs[number]>,
+    { readonly [K in keyof Effs]: Effect.Return<Effs[K]> }
+  > {
+    return new Zip(effects)
+  }
 }

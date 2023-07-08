@@ -1,11 +1,16 @@
 import * as Cause from './Cause.js'
+import { complete, makeDeferred, wait } from './Deferred.js'
 import { Effect } from './Effect.js'
-import { Exit } from './Exit.js'
+import * as Exit from './Exit.js'
+import { Fiber } from './Fiber.js'
 import { Handler } from './Handler.js'
 import {
   Async,
+  Disposable,
   Failure,
   FlatMap,
+  FlatMapCause,
+  Fork,
   Map,
   ProvideHandler,
   RunOp,
@@ -13,6 +18,7 @@ import {
   Suspend,
   Sync,
   YieldNow,
+  Zip,
 } from './Instruction.js'
 import { Op } from './Op.js'
 import { dual } from './_function.js'
@@ -29,7 +35,7 @@ export const failCause: <E>(cause: Cause.Cause<E>) => Effect<never, E, never> = 
 
 export const fail = <E>(error: E) => Failure.make(Cause.fail(error))
 
-export const fromExit = <E, A>(exit: Exit<E, A>): Effect<never, E, A> =>
+export const fromExit = <E, A>(exit: Exit.Exit<E, A>): Effect<never, E, A> =>
   exit._tag === 'Success' ? succeed(exit.value) : failCause(exit.cause)
 
 export const sync = <A>(f: () => A): Effect<never, never, A> => Sync.make(f)
@@ -54,6 +60,21 @@ export const flatMap: {
   >
 } = dual(2, <R, E, A, R2, E2, B>(effect: Effect<R, E, A>, f: (a: A) => Effect<R2, E2, B>) =>
   FlatMap.make(effect, f),
+)
+
+export const flatMapCause: {
+  <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Effect<R2, E2, B>): <R, A>(
+    effect: Effect<R, E, A>,
+  ) => Effect<R | R2, E2, A | B>
+
+  <R, E, A, R2, E2, B>(
+    effect: Effect<R, E, A>,
+    f: (cause: Cause.Cause<E>) => Effect<R2, E2, B>,
+  ): Effect<R | R2, E2, A | B>
+} = dual(
+  2,
+  <R, E, A, R2, E2, B>(effect: Effect<R, E, A>, f: (cause: Cause.Cause<E>) => Effect<R2, E2, B>) =>
+    FlatMapCause.make(effect, f),
 )
 
 export const op: {
@@ -87,9 +108,44 @@ export const suspend = <R, E, A>(f: () => Effect<R, E, A>) => Suspend.make(f)
 
 export const yieldNow: Effect<never, never, void> = new YieldNow()
 
-export const async = <R, E, A, R2, E2>(
-  register: (cb: (effect: Effect<R, E, A>) => void) => Effect<R2, E2, void>,
+export const async = <R, E, A>(
+  register: (cb: (effect: Effect<R, E, A>) => void) => Disposable,
 ): Effect<R, E, A> => new Async(register)
+
+const none = { dispose: () => void 0 }
+
+export const asyncInterrupt = <R, E, A, R2, E2>(
+  register: (cb: (effect: Effect<R, E, A>) => void) => Effect<R2, E2, void>,
+): Effect<R | R2, E | E2, A> =>
+  suspend(() => {
+    let canceler: Effect<R2, E2, void>
+
+    return flatMapCause(
+      async<R, E, A>((cb) => {
+        canceler = register(cb)
+
+        return none
+      }),
+      (cause) => flatMap(canceler, () => failCause(cause)),
+    )
+  })
+
+export const asyncEffect = <R, E, A, R2 = never, E2 = never>(
+  register: (cb: (effect: Effect<R, E, A>) => void) => Effect<R2, E2, void>,
+): Effect<R | R2, E | E2, A> =>
+  suspend(() => {
+    const deferred = makeDeferred<R, E | E2, A>()
+
+    return flatMap(
+      fork(
+        flatMapCause(
+          register((effect) => complete(deferred, effect)),
+          (cause) => sync(() => complete(deferred, failCause(cause))),
+        ),
+      ),
+      () => wait(deferred),
+    )
+  })
 
 export const tuple = <Effs extends ReadonlyArray<Effect.Any>>(
   ...effects: Effs
@@ -145,5 +201,38 @@ export const tupleDiscard = <Effs extends ReadonlyArray<Effect.Any>>(
     return asUnit(output)
   }
 }
+
+export const tuplePar = <Effs extends ReadonlyArray<Effect.Any>>(
+  ...effects: Effs
+): Effect<
+  Effect.Op<Effs[number]>,
+  Effect.Error<Effs[number]>,
+  {
+    readonly [K in keyof Effs]: Effect.Return<Effs[K]>
+  }
+> => {
+  type R = Effect<
+    Effect.Op<Effs[number]>,
+    Effect.Error<Effs[number]>,
+    {
+      readonly [K in keyof Effs]: Effect.Return<Effs[K]>
+    }
+  >
+
+  const { length } = effects
+
+  if (length === 0) {
+    return succeed([]) as R
+  } else if (length === 1) {
+    return map(effects[0], (x) => [x]) as R
+  } else {
+    return new Zip(effects) as R
+  }
+}
+
+export const fork = <R, E, A>(effect: Effect<R, E, A>): Effect<R, never, Fiber<E, A>> =>
+  new Fork(effect)
+
+export const join = <E, A>(fiber: Fiber<E, A>): Effect<never, E, A> => flatMap(fiber.wait, fromExit)
 
 // TODO: TuplePar

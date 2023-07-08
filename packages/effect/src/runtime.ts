@@ -4,6 +4,7 @@ import * as Cause from './Cause.js'
 import { Continuation } from './Continuation.js'
 import { Effect } from './Effect.js'
 import * as Exit from './Exit.js'
+import * as Fiber from './Fiber.js'
 import { Handler } from './Handler.js'
 import { Handlers } from './Handlers.js'
 import * as Instruction from './Instruction.js'
@@ -11,27 +12,31 @@ import { Observers } from './Observers.js'
 import { Stack, takeUntil } from './Stack.js'
 import {
   EffectHandlerFrame,
+  FinalizerFrame,
   FlatMapCauseFrame,
   FlatMapFrame,
   HandlerFrame,
   MapFrame,
   StackFrames,
 } from './StackFrames.js'
-import { fromExit } from './core.js'
+import { asyncInterrupt, fromExit } from './core.js'
 
-// TODO: Implement interruption
-// TODO: Implement finalizers
-// TODO: Implement concurrency
-
-export class Executor<R, E, A> {
+export class Executor<R, E, A> implements Fiber.Fiber<E, A> {
   // State to check if Executor.start() has been called
   private _started = false
-
   // The current instruction to process, if any
   private _instruction: Instruction.Instruction | null
-
   // The observers of the output of this executor
   private _observers = new Observers<E, A>()
+  // The exit value of this executor
+  private _exit: Exit.Exit<E, A> | null = null
+  // The cause of this executor
+  private _cause: Cause.Cause<E> = Cause.empty
+  // The child fibers of this executor
+  private _children: Set<Fiber.Fiber<any, any>> = new Set()
+
+  // The ID of this fiber
+  readonly id: Fiber.Id.FiberId = Fiber.Id.unsafeMake()
 
   constructor(
     // The initial Effect to execute
@@ -55,6 +60,29 @@ export class Executor<R, E, A> {
 
   addObserver(observer: (exit: Exit.Exit<E, A>) => void) {
     return this._observers.add(observer)
+  }
+
+  readonly wait = Instruction.Suspend.make<never, never, Exit.Exit<E, A>>(() => {
+    if (this._exit) {
+      return Instruction.Succeed.make(this._exit)
+    }
+
+    return new Instruction.Async((k) => ({
+      dispose: this.addObserver((exit) => k(new Instruction.Succeed(exit))),
+    }))
+  })
+
+  interrupt(id: Fiber.Id.FiberId) {
+    return Instruction.Suspend.make(() => {
+      if (this._exit) return Instruction.Succeed.make(this._exit)
+
+      this.failWith((this._cause = Cause.sequential(this._cause, Cause.interrupt(id))))
+      this.process()
+
+      return new Instruction.Async((k) => ({
+        dispose: this.addObserver((exit) => k(new Instruction.Succeed(exit))),
+      }))
+    })
   }
 
   private process() {
@@ -81,7 +109,7 @@ export class Executor<R, E, A> {
 
   // Fail instructions are synchronous and passed along to the next failure continuation
   private Failure(instruction: Instruction.Failure<any>) {
-    this.failWith(instruction.i0)
+    this.failWith(Cause.sequential(this._cause, instruction.i0))
   }
 
   // FlatMap instructions are synchronous and passed along to the next continuation
@@ -94,35 +122,92 @@ export class Executor<R, E, A> {
     this._instruction = null
   }
 
-  private Async(instruction: Instruction.Async<any, any, any, any, any>) {
+  private Async(instruction: Instruction.Async<any, any, any>) {
     // State to keep track of whether or not the Async effect was actually synchronous
     let nextInstruction: Instruction.Instruction | null = null
     let finishedSetup = false
 
-    this._instruction = new Instruction.FlatMap(
-      instruction.i0((instr: Instruction.Instruction) => {
-        // Can only be called once
-        if (nextInstruction) return
+    this._instruction = null
 
-        // The setup Effect has finished running, so we can now run the actual effect immediately
-        if (finishedSetup) {
-          this._instruction = nextInstruction = instr
-          this.process()
+    const disposable = instruction.i0((instr: Instruction.Instruction) => {
+      // Can only be called once
+      if (nextInstruction) return
+
+      // The setup Effect has finished running, so we can now run the actual effect immediately
+      if (finishedSetup) {
+        this._instruction = nextInstruction = instr
+        this.process()
+      } else {
+        // Store the instruction to run once the setup effect has finished
+        nextInstruction = instr
+      }
+    })
+
+    this.pushFrame(new FinalizerFrame(() => Instruction.Sync.make(() => disposable.dispose())))
+
+    finishedSetup = true
+
+    if (nextInstruction) {
+      this._instruction = nextInstruction
+    }
+  }
+
+  private Zip(instruction: Instruction.Zip<any>) {
+    const { i0 } = instruction
+
+    this._instruction = asyncInterrupt<any, any, any, any, any>((cb) => {
+      const executors: Executor<any, any, any>[] = i0.map(
+        (effect: Effect.Any) => new Executor(effect, null, this._handlers.clone()),
+      )
+
+      const values: any[] = []
+
+      function onExit(exit: Exit.Exit<any, any>, index: number) {
+        if (Exit.isSuccess(exit)) {
+          values[index] = exit.value
+
+          if (executors.length === values.length) {
+            cb(new Instruction.Succeed(values))
+          }
         } else {
-          // Store the instruction to run once the setup effect has finished
-          nextInstruction = instr
+          cb(
+            new Instruction.FlatMap(
+              new Instruction.Zip(executors.map((e) => e.interrupt(executors[index].id))),
+              () => new Instruction.Failure(exit.cause),
+            ),
+          )
         }
-      }),
-      () => {
-        finishedSetup = true
+      }
 
-        // If the async callback has already been called, then we can run the actual effect immediately
-        if (nextInstruction) return nextInstruction
+      executors.forEach((executor, i) => {
+        executor.addObserver((exit) => onExit(exit, i))
+        executor.start()
+      })
 
-        // Otherwise, we need to suspend the executor until the callback is called
-        return new Instruction.Break()
-      },
+      return new Instruction.Zip(executors.map((e) => e.interrupt(this.id)))
+    }) as Instruction.Instruction
+  }
+
+  private Fork(instruction: Instruction.Fork<any, any, any>) {
+    const executor = new Executor(
+      new Instruction.FlatMap(
+        new Instruction.YieldNow(),
+        () =>
+          new Instruction.Map(instruction.i0, (x) => {
+            this._children.delete(executor)
+
+            return x
+          }),
+      ),
+      null,
+      this._handlers.clone(),
     )
+
+    this._children.add(executor)
+
+    this._instruction = new Instruction.Succeed(executor)
+
+    executor.start()
   }
 
   private YieldNow() {
@@ -131,7 +216,7 @@ export class Executor<R, E, A> {
 
     // Schedule a microtask to resume execution
     Promise.resolve().then(() => {
-      this._instruction = new Instruction.Succeed(undefined)
+      this.continueWith(undefined)
       this.process()
     })
   }
@@ -215,16 +300,23 @@ export class Executor<R, E, A> {
     this._instruction = instruction.i0()
   }
 
+  private AddFinalizer(instruction: Instruction.AddFinalizer<any>) {
+    this.continueWith(undefined)
+    this.pushFrame(new FinalizerFrame(instruction.i0))
+  }
+
   // Unwind the stack with a successful value
   private continueWith(value: any) {
     const frame = this.popFrame()
 
     // If the is no frame, then we can exit
-    if (!frame) {
+    if (frame === null) {
       return this.exitWith(Exit.succeed(value))
       // Success values don't deal with causes, so we need to keep unwinding
     } else if (frame._tag === 'FlatMapCauseFrame') {
       this.continueWith(value)
+    } else if (frame._tag === 'FinalizerFrame') {
+      this.FinalizerFrame(frame, Exit.succeed(value))
     } else {
       // Apply the frame to the value and continue
       this[frame._tag](frame as any, value)
@@ -238,14 +330,12 @@ export class Executor<R, E, A> {
     // If there is no frame, then we can exit
     if (!frame) {
       return this.exitWith(Exit.failCause(cause))
-
-      // We only handle FlatMapCauseFrames here, so if its not
-      // we need to keep unwinding
-    } else if (frame._tag !== 'FlatMapCauseFrame') {
-      this.failWith(cause)
+    } else if (frame._tag === 'FinalizerFrame') {
+      this.FinalizerFrame(frame, Exit.failCause(cause))
+    } else if (frame._tag === 'FlatMapCauseFrame') {
+      this.FlatMapCauseFrame(frame, cause)
     } else {
-      // Handle the failure with the frame and continue
-      this[frame._tag](frame as any, cause)
+      this.failWith(cause)
     }
   }
 
@@ -260,7 +350,7 @@ export class Executor<R, E, A> {
   }
 
   // Compute the next instruction from a failure
-  private FlatMapCauseFrame(frame: FlatMapFrame, value: Cause.Cause<any>) {
+  private FlatMapCauseFrame(frame: FlatMapCauseFrame, value: Cause.Cause<any>) {
     this._instruction = frame.f(value)
   }
 
@@ -273,6 +363,20 @@ export class Executor<R, E, A> {
     }
 
     this.continueWith(value)
+  }
+
+  private FinalizerFrame(frame: FinalizerFrame, value: Exit.Exit<any, any>) {
+    if (Exit.isSuccess(value)) {
+      this._instruction = new Instruction.Map(frame.finalizer(value), () => value.value)
+    } else {
+      this._instruction = new Instruction.FlatMap(
+        new Instruction.FlatMapCause(
+          frame.finalizer(value),
+          (cause) => new Instruction.Failure(Cause.sequential(value.cause, cause)),
+        ),
+        () => new Instruction.Failure(value.cause),
+      )
+    }
   }
 
   // Push a new frame onto the stack
@@ -294,15 +398,25 @@ export class Executor<R, E, A> {
 
   // Exit the executor with the specified exit
   private exitWith(exit: Exit.Exit<any, any>) {
+    if (this._children.size === 0) {
+      this.onDone(exit)
+    } else {
+      this._instruction = new Instruction.Map(
+        new Instruction.Zip(Array.from(this._children).map((c) => c.interrupt(this.id))),
+        () => this.onDone(exit),
+      )
+    }
+  }
+
+  private onDone(exit: Exit.Exit<any, any>) {
     this._instruction = null
     this._observers.notify(exit)
-
-    // TODO: Maybe run finalizers
+    this._exit = exit
   }
 
   // Handle uncaught exceptions
   private uncaughtException(error: unknown) {
-    this._instruction = new Instruction.Failure(Cause.die(error))
+    this._instruction = new Instruction.Failure(Cause.sequential(this._cause, Cause.die(error)))
   }
 
   // Construct a delimited continuation from the current stack until
@@ -349,12 +463,7 @@ export function runPromise<E, A>(effect: Effect<never, E, A>): Promise<A> {
   return new Promise((resolve, reject) => {
     const executor = new Executor(effect)
 
-    executor.addObserver(
-      Exit.match(
-        (cause) => reject(new CauseError(cause)),
-        (value) => resolve(value),
-      ),
-    )
+    executor.addObserver(Exit.match((cause) => reject(new CauseError(cause)), resolve))
     executor.start()
   })
 }

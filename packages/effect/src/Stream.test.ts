@@ -6,7 +6,7 @@ import * as core from './core.js'
 import { forEach, withForEachDiscard } from './ops.js'
 import { runPromise } from './runtime.js'
 
-describe('Stream', () => {
+describe.only('Stream', () => {
   it('should work', async () => {
     const numEvent = new StreamEvent<number>()
     const stringEvent = new StreamEvent<string>()

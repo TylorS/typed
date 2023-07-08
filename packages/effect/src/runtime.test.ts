@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { Effect } from './Effect.js'
+import * as Exit from './Exit.js'
 import { Lambda } from './Lambda.js'
 import { Op } from './Op.js'
 import { pipe } from './_function.js'
@@ -129,6 +130,26 @@ describe('Runtime', () => {
     )
 
     expect(actual).toEqual([3, 4, 5, 6, 7, 8, 9, 10, 11])
+  })
+
+  it.concurrent('executes multiple concurrent effects', async () => {
+    const actual = await runPromise(
+      core.tuplePar(core.succeed(1), core.succeed(2), core.succeed(3)),
+    )
+
+    expect(actual).toEqual([1, 2, 3])
+  })
+
+  it.concurrent('allows forking fibers', async () => {
+    const actual = await runPromise(
+      pipe(
+        core.succeed(1),
+        core.fork,
+        core.flatMap((f) => f.wait),
+      ),
+    )
+
+    expect(actual).toEqual(Exit.succeed(1))
   })
 
   it.concurrent.skip('runs recursive fib', async () => {
