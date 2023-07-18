@@ -1,9 +1,11 @@
 import { pipe } from '@effect/data/Function'
+import * as Data from '@effect/data/Data'
 import * as HashMap from '@effect/data/HashMap'
 import * as Maybe from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Ref from '@effect/io/Ref'
 import * as Scope from '@effect/io/Scope'
+import * as Runtime from '@effect/io/Runtime'
 import * as C from '@typed/context'
 import * as Fx from '@typed/fx'
 
@@ -33,29 +35,33 @@ export const makeIntersectionObserverManager: Effect.Effect<
     Ref.make<HashMap.HashMap<IntersectionObserverInit, InternalObserver>>(HashMap.empty()),
   )
 
-  const get = (options: IntersectionObserverInit) =>
-    pipe(
+  const fork = Runtime.runFork(yield* $(Effect.runtime<never>()))
+
+  const get = (options: IntersectionObserverInit) => {
+    const optionsData = Data.struct(options)
+
+    return pipe(
       observers,
       Ref.get,
-      Effect.map(HashMap.get(options)),
+      Effect.map(HashMap.get(optionsData)),
       Effect.flatMap(
         Maybe.match({
-          onNone: () =>
-            observers.modify((map) => {
-              const subject = Fx.makeSubject<never, IntersectionObserverEntry>()
-              const intersectionObserver = new globalThis.IntersectionObserver(
-                (entries) => entries.forEach((e) => subject.event(e)),
-                options,
-              )
+          onNone: () => observers.modify((map) => {
+            const subject = Fx.makeSubject<never, IntersectionObserverEntry>()
+            const intersectionObserver = new globalThis.IntersectionObserver(
+              (entries) => fork(Effect.all(entries.map((e) => subject.event(e)))),
+              options
+            )
 
-              const observer: InternalObserver = [intersectionObserver, subject]
+            const observer: InternalObserver = [intersectionObserver, subject]
 
-              return [observer, HashMap.set(map, options, observer)]
-            }),
+            return [observer, HashMap.set(map, optionsData, observer)]
+          }),
           onSome: Effect.succeed,
-        }),
-      ),
+        })
+      )
     )
+  }
 
   const observer: IntersectionObserverManager = {
     get: (options) =>
