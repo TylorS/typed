@@ -4,7 +4,7 @@ import { readFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
-import { flow, pipe } from '@effect/data/Function'
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
 import { renderToHtml, renderToHtmlStream, server } from '@typed/html/server'
@@ -37,7 +37,8 @@ const writeToResponse = (res: express.Response) => (chunk: string) =>
 const renderContext = Effect.provideSomeLayer(server())
 
 const provideUiResources = (req: express.Request) => {
-  return flow(
+  return <R, E, A>(effect: Effect.Effect<R, E, A>) => pipe(
+    effect,
     Effect.provideSomeLayer(Router.memory({ initialUrl: new URL(req.url, 'https://localhost') })),
     renderContext,
     Effect.scoped,
