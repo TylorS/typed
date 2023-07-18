@@ -1,43 +1,61 @@
-import type { Effect } from '@effect/io/Effect'
+import * as Effect from '@effect/io/Effect'
 import * as Context from '@typed/context'
 
-import type { RenderCache } from './RenderCache.js'
-import type { TemplateCache } from './TemplateCache.js'
-
 export interface RenderContext {
+  /**
+   * The current environment.
+   */
   readonly environment: 'server' | 'browser' | 'static'
+
+  /**
+   * Whether or not the current render is for a bot.
+   */
   readonly isBot: boolean
-  readonly renderCache: WeakMap<HTMLElement | DocumentFragment, RenderCache>
-  readonly templateCache: WeakMap<TemplateStringsArray, TemplateCache>
+
+  /**
+   * @internal
+   */
+  readonly renderCache: WeakMap<object, unknown>
+
+  /**
+   * @internal
+   */
+  readonly templateCache: WeakMap<TemplateStringsArray, unknown>
 }
 
 export type Environment = RenderContext['environment']
 
-export const RenderContext = Object.assign(
-  Context.Tag<RenderContext>('@typed/html/RenderContext'),
-  {
-    make: function makeRenderContext(
-      environment: RenderContext['environment'],
-      isBot: RenderContext['isBot'] = false,
-    ): RenderContext {
-      return {
-        environment,
-        isBot,
-        renderCache: new WeakMap(),
-        templateCache: new WeakMap(),
-      }
-    },
-  },
-)
+export const RenderContext = Context.Tag<RenderContext>('@typed/html/RenderContext')
 
-export const isStatic: Effect<RenderContext, never, boolean> = RenderContext.with(
+export type RenderContextOptions = {
+  readonly environment: RenderContext['environment']
+  readonly isBot?: RenderContext['isBot']
+}
+
+export function makeRenderContext({
+  environment,
+  isBot = false,
+}: RenderContextOptions): RenderContext {
+  return {
+    environment,
+    isBot,
+    renderCache: new WeakMap(),
+    templateCache: new WeakMap(),
+  }
+}
+
+export const isStatic: Effect.Effect<RenderContext, never, boolean> = RenderContext.with(
   (ctx) => ctx.environment === 'static',
 )
 
-export const isBrowser: Effect<RenderContext, never, boolean> = RenderContext.with(
+export const isBrowser: Effect.Effect<RenderContext, never, boolean> = RenderContext.with(
   (ctx) => ctx.environment === 'browser',
 )
 
-export const isServer: Effect<RenderContext, never, boolean> = RenderContext.with(
+export const isServer: Effect.Effect<RenderContext, never, boolean> = RenderContext.with(
   (ctx) => ctx.environment === 'server',
+)
+
+export const isBot: Effect.Effect<RenderContext, never, boolean> = RenderContext.with(
+  (ctx) => ctx.isBot,
 )

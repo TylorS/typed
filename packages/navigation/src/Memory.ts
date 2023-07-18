@@ -1,5 +1,6 @@
-import { flow } from '@effect/data/Function'
+import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 
@@ -18,10 +19,11 @@ import { createKey } from './util.js'
 export interface MemoryNavigationOptions extends DomNavigationOptions {
   readonly initialUrl: URL
   readonly initialState?: unknown
+  readonly base?: string
 }
 
 export function memory(options: MemoryNavigationOptions): Layer.Layer<never, never, Navigation> {
-  return Navigation.layer(
+  return Navigation.layerScoped(
     Effect.gen(function* ($) {
       const initial: Destination = {
         key: options.initialKey ?? (yield* $(createKey)),
@@ -42,7 +44,9 @@ export function memory(options: MemoryNavigationOptions): Layer.Layer<never, nev
 
       const handleNavigationError =
         (depth: number) =>
-        (error: NavigationError): Effect.Effect<never, never, Destination> =>
+        (
+          error: NavigationError | Cause.NoSuchElementException,
+        ): Effect.Effect<never, never, Destination> =>
           Effect.gen(function* ($) {
             if (depth >= 50) {
               throw new Error(
@@ -51,6 +55,7 @@ export function memory(options: MemoryNavigationOptions): Layer.Layer<never, nev
             }
 
             switch (error._tag) {
+              case 'NoSuchElementException':
               case 'CancelNavigation':
                 return yield* $(model.currentEntry.get)
               case 'RedirectNavigation':
@@ -63,24 +68,31 @@ export function memory(options: MemoryNavigationOptions): Layer.Layer<never, nev
             }
           })
 
-      const catchNavigationError = <A>(effect: Effect.Effect<never, NavigationError, A>) =>
-        Effect.catchAll(effect, handleNavigationError(0))
+      const catchNavigationError = <R, A>(
+        effect: Effect.Effect<R, NavigationError | Cause.NoSuchElementException, A>,
+      ) => Effect.catchAll(effect, handleNavigationError(0))
 
-      // Constructor our service
+      // Construct our service
       const navigation: Navigation = {
         back: lock(catchNavigationError(intent.back)),
+        base: '/',
         canGoBack: model.canGoBack,
         canGoForward: model.canGoForward,
         currentEntry: model.currentEntry,
         entries: model.entries,
         forward: lock(catchNavigationError(intent.forward)),
-        goTo: flow(
-          intent.goTo,
-          Effect.catchAll(flow(handleNavigationError(0), Effect.map(Option.some))),
-          lock,
-        ),
-        navigate: flow(intent.navigate, catchNavigationError, lock),
-        onNavigation: intent.onNavigation,
+        goTo: (n) =>
+          pipe(
+            n,
+            intent.goTo,
+            Effect.catchAll((a) => pipe(a, handleNavigationError(0), Effect.map(Option.some))),
+            lock,
+          ),
+        navigate: (url, options) => pipe( intent.navigate(url, options), catchNavigationError, lock),
+        onNavigation: (handler, options) =>
+          pipe(intent.onNavigation(handler, options), catchNavigationError, Effect.asUnit),
+        onNavigationEnd: (handler, options) =>
+          Effect.asUnit(intent.onNavigationEnd(handler, options)),
         reload: lock(catchNavigationError(intent.reload)),
       }
 

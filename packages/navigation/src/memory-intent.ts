@@ -1,6 +1,6 @@
-import * as Option from '@effect/data/Option'
+import { Option } from '@effect/data/Option'
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
-import * as Scope from '@effect/io/Scope'
 
 import type { MemoryNavigationOptions } from './Memory.js'
 import {
@@ -11,19 +11,57 @@ import {
   NavigationType,
 } from './Navigation.js'
 import { Model } from './model.js'
+import {
+  Notify,
+  Save,
+  makeGoTo,
+  makeNotify,
+  makeOnNavigation,
+  makeOnNavigationEnd,
+} from './shared-intent.js'
 import { createKey, getUrl } from './util.js'
 
 // Roughly the number of History entries in a browser anyways
 const DEFAULT_MAX_ENTRIES = 50
 
-export function makeIntent(model: Model, options: MemoryNavigationOptions) {
+export type MemoryIntent = {
+  readonly back: ReturnType<ReturnType<typeof makeGo>>
+
+  readonly forward: ReturnType<ReturnType<typeof makeGo>>
+
+  readonly push: ReturnType<typeof makePush>
+
+  readonly replace: ReturnType<typeof makeReplace>
+
+  readonly navigate: (
+    url: string,
+    options?: NavigateOptions,
+  ) => ReturnType<ReturnType<typeof makePush | typeof makeReplace>>
+
+  readonly notify: Notify
+
+  readonly go: ReturnType<typeof makeGo>
+
+  readonly goTo: (
+    key: string,
+  ) => Effect.Effect<never, Cause.NoSuchElementException | NavigationError, Option<Destination>>
+
+  readonly reload: ReturnType<typeof makeReload>
+
+  readonly onNavigation: ReturnType<typeof makeOnNavigation>
+
+  readonly onNavigationEnd: ReturnType<typeof makeOnNavigationEnd>
+}
+
+export function makeIntent(model: Model, options: MemoryNavigationOptions): MemoryIntent {
   const { origin } = options.initialUrl
+  const base = options.base ?? '/'
   const maxEntries = Math.abs(options.maxEntries ?? DEFAULT_MAX_ENTRIES)
   const notify = makeNotify(model)
   const save = makeSave(model)
   const go = makeGo(model, notify, save)
-  const replace = makeReplace(model, notify, save, origin)
-  const push = makePush(model, notify, save, origin, maxEntries)
+  const replace = makeReplace(model, notify, save, base, origin)
+  const push = makePush(model, notify, save, base, origin, maxEntries)
 
   return {
     back: go(-1),
@@ -36,55 +74,32 @@ export function makeIntent(model: Model, options: MemoryNavigationOptions) {
     goTo: makeGoTo(model, go),
     reload: makeReload(model, notify, save),
     onNavigation: makeOnNavigation(model),
+    onNavigationEnd: makeOnNavigationEnd(model),
+    notify,
   } as const
 }
 
 export type Intent = ReturnType<typeof makeIntent>
 
-type Notify = ReturnType<typeof makeNotify>
-type Save = ReturnType<typeof makeSave>
+export const makeSave: (
+  model: Model,
+) => (event: NavigationEvent) => Effect.Effect<never, Cause.NoSuchElementException, void> =
+  (model: Model) => (event: NavigationEvent) =>
+    Effect.gen(function* ($) {
+      const events = yield* $(model.events)
+      const index = yield* $(model.index)
 
-// Anytime there are changes to the model, we need to notify all event handlers
-export const makeNotify = (model: Model) => (event: NavigationEvent) =>
-  Effect.gen(function* ($) {
-    // Notify event handlers
-    if (model.eventHandlers.size > 0)
-      yield* $(Effect.forEachDiscard(model.eventHandlers, (handler) => handler(event)))
-  })
+      // Update current entry
+      yield* $(model.currentEntry.set(event.destination))
 
-export const makeSave = (model: Model) => (event: NavigationEvent) =>
-  Effect.gen(function* ($) {
-    const events = yield* $(model.events)
-    const index = yield* $(model.index)
+      // Update canGoBack
+      yield* $(model.canGoBack.set(index > 0))
 
-    // Update current entry
-    yield* $(model.currentEntry.set(event.destination))
+      // Update canGoForward
+      yield* $(model.canGoForward.set(index < events.length - 1))
+    })
 
-    // Update canGoBack
-    yield* $(model.canGoBack.set(index > 0))
-
-    // Update canGoForward
-    yield* $(model.canGoForward.set(index < events.length - 1))
-  })
-
-export const makeOnNavigation =
-  ({ eventHandlers }: Model) =>
-  <R>(
-    handler: (event: NavigationEvent) => Effect.Effect<R, NavigationError, unknown>,
-  ): Effect.Effect<R | Scope.Scope, never, void> =>
-    Effect.uninterruptibleMask((restore) =>
-      Effect.gen(function* ($) {
-        const context = yield* $(Effect.context<R>())
-        const handler_ = (event: NavigationEvent) =>
-          restore(Effect.provideContext(handler(event), context))
-
-        eventHandlers.add(handler_)
-
-        yield* $(Effect.addFinalizer(() => Effect.sync(() => eventHandlers.delete(handler_))))
-      }),
-    )
-
-export const makeReload = (model: Model, notify: Notify, save: Save) =>
+export const makeReload = (model: Model, notify: Notify, save: Save<never>) =>
   Effect.gen(function* ($) {
     const i = yield* $(model.index.get)
     const e = yield* $(model.events)
@@ -98,13 +113,13 @@ export const makeReload = (model: Model, notify: Notify, save: Save) =>
   })
 
 export const makeReplace =
-  (model: Model, notify: Notify, save: Save, origin: string) =>
+  (model: Model, notify: Notify, save: Save<never>, base: string, origin: string) =>
   (url: string, options: NavigateOptions = {}) =>
     Effect.gen(function* ($) {
       const entry = yield* $(model.currentEntry.get)
       const destination: Destination = {
         key: entry.key,
-        url: getUrl(url, origin),
+        url: getUrl(url, base, origin),
         state: options.state,
       }
       const event: NavigationEvent = {
@@ -131,13 +146,20 @@ export const makeReplace =
     })
 
 export const makePush =
-  (model: Model, notify: Notify, save: Save, origin: string, maxEntries: number) =>
+  (
+    model: Model,
+    notify: Notify,
+    save: Save<never>,
+    base: string,
+    origin: string,
+    maxEntries: number,
+  ) =>
   (url: string, options: NavigateOptions = {}) =>
     Effect.gen(function* ($) {
       const entry = yield* $(model.currentEntry.get)
       const destination: Destination = {
         key: yield* $(createKey),
-        url: getUrl(url, origin),
+        url: getUrl(url, base, origin),
         state: options.state,
       }
       const event: NavigationEvent = {
@@ -169,7 +191,7 @@ export const makePush =
       return destination
     })
 
-export const makeGo = (model: Model, notify: Notify, save: Save) => (delta: number) =>
+export const makeGo = (model: Model, notify: Notify, save: Save<never>) => (delta: number) =>
   Effect.gen(function* ($) {
     const currentEntries = yield* $(model.events)
     const totalEntries = currentEntries.length
@@ -196,21 +218,4 @@ export const makeGo = (model: Model, notify: Notify, save: Save) => (delta: numb
     yield* $(save(nextEntry))
 
     return nextEntry.destination
-  })
-
-export const makeGoTo = (model: Model, go: ReturnType<typeof makeGo>) => (key: string) =>
-  Effect.gen(function* ($) {
-    const entries = yield* $(model.entries)
-    const currentIndex = yield* $(model.index)
-    const nextIndex = entries.findIndex((destination) => destination.key === key)
-
-    if (nextIndex === -1) return Option.none()
-
-    const delta = nextIndex - currentIndex
-
-    if (delta !== 0) {
-      return Option.some(yield* $(go(delta)))
-    }
-
-    return Option.some(entries[nextIndex])
   })

@@ -1,6 +1,5 @@
 import * as C from '@effect/data/Context'
-import * as Debug from '@effect/data/Debug'
-import { pipe } from '@effect/data/Function'
+import { dual, pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import type * as Scope from '@effect/io/Scope'
@@ -44,7 +43,9 @@ export interface Tag<I, S = I> extends C.Tag<I, S> {
   /**
    * Create a Layer using a Scoped Effect
    */
-  readonly layerScoped: <R, E>(effect: Effect.Effect<R | Scope.Scope, E, S>) => Layer.Layer<R, E, I>
+  readonly layerScoped: <R, E>(
+    effect: Effect.Effect<R, E, S>,
+  ) => Layer.Layer<Exclude<R, Scope.Scope>, E, I>
 
   /**
    * Create a Layer from the service
@@ -66,9 +67,8 @@ export function Tag<I, S = I>(key?: string): Tag<I, S> {
     withFx: <R, E, A>(f: (s: S) => Fx.Fx<R, E, A>) => Fx.switchMap(Fx.fromEffect(tag), f),
     provide: (s: S) => Effect.provideService(tag, s),
     provideFx: (s: S) => Fx.provideService(tag, s),
-    layer: <R, E>(effect: Effect.Effect<R, E, S>) => Effect.toLayer(effect, tag),
-    layerScoped: <R, E>(effect: Effect.Effect<R | Scope.Scope, E, S>) =>
-      Effect.toLayerScoped(effect, tag),
+    layer: <R, E>(effect: Effect.Effect<R, E, S>) => Layer.effect(tag, effect),
+    layerScoped: <R, E>(effect: Effect.Effect<R | Scope.Scope, E, S>) => Layer.scoped(tag, effect),
     layerOf: (s: S) => Layer.succeed(tag, s),
     build: (s: S) => ContextBuilder.fromTag(tag, s),
   } as const) satisfies Tag<I, S>
@@ -76,7 +76,7 @@ export function Tag<I, S = I>(key?: string): Tag<I, S> {
 
 export interface ContextBuilder<I> {
   readonly context: C.Context<I>
-  readonly add: <I2, S>(tag: Tag<I2, S>, s: S) => ContextBuilder<I | I2>
+  readonly add: <I2, S>(tag: C.Tag<I2, S>, s: S) => ContextBuilder<I | I2>
   readonly merge: <I2>(builder: ContextBuilder<I2>) => ContextBuilder<I | I2>
   readonly mergeContext: <I2>(context: C.Context<I2>) => ContextBuilder<I | I2>
   readonly pick: <S extends ReadonlyArray<C.ValidTagsById<I>>>(
@@ -90,7 +90,7 @@ export namespace ContextBuilder {
   export function fromContext<I>(context: C.Context<I>): ContextBuilder<I> {
     return {
       context,
-      add: <I2, S>(tag: Tag<I2, S>, s: S) => fromContext(C.add(context, tag, s)),
+      add: <I2, S>(tag: C.Tag<I2, S>, s: S) => fromContext(C.add(context, tag, s)),
       merge: <I2>(builder: ContextBuilder<I2>) => fromContext(C.merge(context, builder.context)),
       mergeContext: <I2>(ctx: C.Context<I2>) => fromContext(C.merge(context, ctx)),
       pick: (...tags) => fromContext(pipe(context, C.pick(...tags))),
@@ -103,28 +103,25 @@ export namespace ContextBuilder {
 }
 
 export const provideContextBuilder: {
-  <R>(builder: ContextBuilder<R>): <E, A>(
-    effect: Effect.Effect<R, E, A>,
-  ) => Effect.Effect<never, E, A>
+  <R>(
+    builder: ContextBuilder<R>,
+  ): <E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<never, E, A>
   <R, E, A>(effect: Effect.Effect<R, E, A>, builder: ContextBuilder<R>): Effect.Effect<never, E, A>
-} = Debug.dualWithTrace(
+} = dual(
   2,
-  (trace) =>
-    <R, E, A>(
-      effect: Effect.Effect<R, E, A>,
-      builder: ContextBuilder<R>,
-    ): Effect.Effect<never, E, A> =>
-      Effect.provideContext(effect, builder.context).traced(trace),
+  <R, E, A>(
+    effect: Effect.Effect<R, E, A>,
+    builder: ContextBuilder<R>,
+  ): Effect.Effect<never, E, A> => Effect.provideContext(effect, builder.context),
 )
 
 export const provideContextBuilderFx: {
   <R>(builder: ContextBuilder<R>): <E, A>(fx: Fx.Fx<R, E, A>) => Fx.Fx<never, E, A>
   <R, E, A>(fx: Fx.Fx<R, E, A>, builder: ContextBuilder<R>): Fx.Fx<never, E, A>
-} = Debug.dualWithTrace(
+} = dual(
   2,
-  (trace) =>
-    <R, E, A>(fx: Fx.Fx<R, E, A>, builder: ContextBuilder<R>): Fx.Fx<never, E, A> =>
-      Fx.provideContext(fx, builder.context).addTrace(trace),
+  <R, E, A>(fx: Fx.Fx<R, E, A>, builder: ContextBuilder<R>): Fx.Fx<never, E, A> =>
+    Fx.provideContext(fx, builder.context),
 )
 
 export function effectContextBuilder<R, E, I>(

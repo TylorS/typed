@@ -2,57 +2,57 @@
 import { pipe } from '@effect/data/Function'
 import * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
+import type { Wire } from '@typed/wire'
 
 import { addEventListener } from './EventTarget.js'
 import { type ParseSelector, type DefaultEventMap, ROOT_CSS_SELECTOR } from './helpers.js'
 
-export interface DomSource<Element = HTMLElement, EventMap extends {} = DefaultEventMap<Element>> {
+export interface DomSource<T = HTMLElement, EventMap extends {} = DefaultEventMap<T>> {
   readonly selectors: ReadonlyArray<string>
 
-  readonly query: <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
+  readonly query: <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, T>>>(
     selector: S,
-  ) => DomSource<ParseSelector<S, Element>, Ev>
+  ) => DomSource<ParseSelector<S, T>, Ev>
 
-  readonly elements: Fx.Fx<never, never, ReadonlyArray<Element>>
+  readonly elements: Fx.Fx<never, never, ReadonlyArray<T>>
 
   readonly events: <T extends keyof EventMap>(
     type: T,
     options?: AddEventListenerOptions,
-  ) => Fx.Fx<never, never, EventMap[T] & { readonly currentTarget: Element }>
+  ) => Fx.Fx<never, never, EventMap[T] & { readonly currentTarget: T }>
 }
+
+type Rendered = Node | DocumentFragment | Wire | readonly Rendered[]
 
 export const DomSource = Object.assign(Context.Tag<DomSource>('@typed/dom/DomSource'), {
   make: function DomSource<
-    Element extends globalThis.Element = HTMLElement,
-    EventMap extends {} = DefaultEventMap<Element>,
+    T extends Rendered = HTMLElement,
+    EventMap extends {} = DefaultEventMap<T>,
   >(
-    rootElement: Fx.Fx<never, never, Element>,
+    rootElement: Fx.Fx<never, never, T>,
     selectors: ReadonlyArray<string> = [],
-  ): DomSource<Element, EventMap> {
+  ): DomSource<T, EventMap> {
     const eventMap = new Map<any, Fx.Fx<never, never, any>>()
 
-    const manager: DomSource<Element, EventMap> = {
+    const manager: DomSource<T, EventMap> = {
       selectors,
-      query: <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
+      query: <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, T>>>(
         selector: S,
-      ): DomSource<ParseSelector<S, Element>, Ev> => {
-        if (selector === ROOT_CSS_SELECTOR) return manager as any
+      ): DomSource<ParseSelector<S, T>, Ev> => {
+        if (selector === ROOT_CSS_SELECTOR)
+          return manager as unknown as DomSource<ParseSelector<S, T>, Ev>
 
         return DomSource(
           Fx.multicast(pipe(rootElement, Fx.map(findMostSpecificElement(selectors)))),
           [...selectors, selector],
-        )
+        ) as DomSource<ParseSelector<S, T>, Ev>
       },
       elements:
         selectors.length === 0
-          ? pipe(
-              rootElement,
-              Fx.map((e) => [e]),
-              Fx.multicast,
-            )
+          ? pipe(rootElement, Fx.map(getElements), Fx.multicast)
           : pipe(
               rootElement,
-              Fx.map(findMatchingElements(selectors)),
+              Fx.map(findMatchingElements<any>(selectors)),
               Fx.filter((e) => e.length > 0),
               Fx.multicast,
             ),
@@ -97,12 +97,17 @@ export function events<
 }
 
 function findMostSpecificElement<T extends Element>(cssSelectors: ReadonlyArray<string>) {
-  return function (element: Element): T {
+  return function (element: Rendered): T {
+    const elements = getElements(element)
+
     for (let i = 0; i < cssSelectors.length; ++i) {
       const cssSelector = dropLast(i, cssSelectors).join(' ')
-      const node = element.querySelector(cssSelector)
 
-      if (node) return node as T
+      for (let j = 0; j < elements.length; ++j) {
+        const node = elements[j].querySelector(cssSelector)
+
+        if (node) return node as T
+      }
     }
 
     return element as T
@@ -111,10 +116,15 @@ function findMostSpecificElement<T extends Element>(cssSelectors: ReadonlyArray<
 
 function findMatchingElements<El extends Element = Element>(cssSelectors: ReadonlyArray<string>) {
   const cssSelector = cssSelectors.join(' ')
-  return function (element: El): ReadonlyArray<El> {
-    const nodes = Array.from(element.querySelectorAll<El>(cssSelector))
+  return function (element: Rendered): ReadonlyArray<El> {
+    const elements = getElements(element)
+    const nodes = elements.flatMap((element) =>
+      Array.from(element.querySelectorAll<El>(cssSelector)),
+    )
 
-    if (element.matches(cssSelector)) return [element, ...nodes]
+    const matchedElements = elements.filter((element) => element.matches(cssSelector)) as El[]
+
+    if (matchedElements.length > 0) return [...matchedElements, ...nodes]
 
     return nodes
   }
@@ -129,18 +139,23 @@ function makeEventStream<Ev extends Event>(
   eventType: string,
   options: EventListenerOptions = {},
 ) {
-  return function (element: Element): Fx.Fx<never, never, Ev> {
+  return function (element: Rendered): Fx.Fx<never, never, Ev> {
     const { capture } = options
     const cssSelector = cssSelectors.join(' ')
     const lastTwoCssSelectors = cssSelectors.slice(-2).join('')
+    const elements = getElements(element)
 
-    const event$ = pipe(
-      element,
-      addEventListener(eventType as any, options),
-      Fx.filter(
-        (event: Ev) =>
-          ensureMatches(cssSelector, element, event, capture) ||
-          ensureMatches(lastTwoCssSelectors, element, event, capture),
+    const event$ = Fx.mergeAll(
+      ...elements.map((element) =>
+        pipe(
+          element,
+          addEventListener(eventType as any, options),
+          Fx.filter(
+            (event: Ev) =>
+              ensureMatches(cssSelector, element, event, capture) ||
+              ensureMatches(lastTwoCssSelectors, element, event, capture),
+          ),
+        ),
       ),
     )
 
@@ -152,19 +167,25 @@ function makeEventStream<Ev extends Event>(
   }
 }
 
-function findCurrentTarget(cssSelector: string, element: Element) {
+function findCurrentTarget(cssSelector: string, element: Rendered) {
+  const elements = getElements(element)
+  const length = elements.length
+
   return function <E extends Event>(event: E): E {
-    const isCurrentTarget = !cssSelector || element.matches(cssSelector)
+    for (let i = 0; i < length; ++i) {
+      const element = elements[i]
+      const isCurrentTarget = !cssSelector || element.matches(cssSelector)
 
-    if (isCurrentTarget) return cloneEvent(event, element) as E
+      if (isCurrentTarget) return cloneEvent(event, element) as E
 
-    const nodes = element.querySelectorAll(cssSelector)
+      const nodes = element.querySelectorAll(cssSelector)
 
-    for (let i = 0; i < nodes.length; ++i) {
-      const node = nodes[i]
-      const containsEventTarget = node.contains(event.target as Element)
+      for (let i = 0; i < nodes.length; ++i) {
+        const node = nodes[i]
+        const containsEventTarget = node.contains(event.target as Element)
 
-      if (containsEventTarget) return cloneEvent(event, node)
+        if (containsEventTarget) return cloneEvent(event, node)
+      }
     }
 
     return event
@@ -190,4 +211,32 @@ function ensureMatches(cssSelector: string, element: Element, ev: Event, capture
     if (target.matches(cssSelector)) return true
 
   return element.matches(cssSelector)
+}
+
+function getElements<T extends Rendered>(element: T): ReadonlyArray<Element> {
+  if (Array.isArray(element)) return element.flatMap(getElements)
+  if (isWire(element as RenderedWithoutArray))
+    return Array.from((element.valueOf() as DocumentFragment).children)
+  if (isElement(element as RenderedWithoutArray)) return [element as Element]
+  if (isDocumentFragment(element as RenderedWithoutArray))
+    return Array.from((element as DocumentFragment).children)
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  if ((element as Node).parentElement) return [(element as Node).parentElement!]
+
+  return []
+}
+
+type RenderedWithoutArray = Exclude<Rendered, readonly Rendered[]>
+
+function isDocumentFragment(element: RenderedWithoutArray): element is DocumentFragment {
+  return element.nodeType === element.DOCUMENT_FRAGMENT_NODE
+}
+
+function isElement(element: RenderedWithoutArray): element is Element {
+  return element.nodeType === element.ELEMENT_NODE
+}
+
+function isWire(element: RenderedWithoutArray): element is Wire {
+  return element.nodeType === 111
 }

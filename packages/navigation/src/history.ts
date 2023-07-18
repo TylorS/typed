@@ -1,3 +1,4 @@
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Runtime from '@effect/io/Runtime'
@@ -5,8 +6,9 @@ import * as Scope from '@effect/io/Scope'
 import { History } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
+import { Destination, NavigationError } from './Navigation.js'
 import { ServiceId } from './constant.js'
-import { Intent } from './dom-intent.js'
+import { DomIntent } from './dom-intent.js'
 
 export type HistoryEvent = PushStateEvent | ReplaceStateEvent | GoEvent | BackEvent | ForwardEvent
 
@@ -41,7 +43,7 @@ export const patchHistory: Effect.Effect<
   Fx.Subject<never, HistoryEvent>
 > = Effect.gen(function* ($) {
   const history = yield* $(History)
-  const scope = yield* $(Effect.scope())
+  const scope = yield* $(Effect.scope)
   const historyEvents = Fx.makeSubject<never, HistoryEvent>()
   const runtime = yield* $(Effect.runtime<never>())
   const runFork = Runtime.runFork(runtime)
@@ -114,7 +116,14 @@ function patchHistory_(history: History, sendEvent: (event: HistoryEvent) => voi
   }
 }
 
-export function onHistoryEvent(event: HistoryEvent, intent: Intent) {
+export function onHistoryEvent(
+  event: HistoryEvent,
+  intent: DomIntent,
+): Effect.Effect<
+  History | Location | Storage,
+  Cause.NoSuchElementException | NavigationError,
+  Destination
+> {
   return Effect.gen(function* ($) {
     switch (event._tag) {
       case 'PushState':

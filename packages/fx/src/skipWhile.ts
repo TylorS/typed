@@ -14,7 +14,7 @@ export function skipWhile<R, E, A>(fx: Fx<R, E, A>, predicate: Predicate<A>): Fx
           (a) =>
             Effect.suspend(() => {
               if (skipping) {
-                return predicate(a) ? Effect.unit() : sink.event(((skipping = false), a))
+                return predicate(a) ? Effect.unit : sink.event(((skipping = false), a))
               }
 
               return sink.event(a)

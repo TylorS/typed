@@ -1,10 +1,10 @@
-import { flow, pipe } from '@effect/data/Function'
+import { pipe } from '@effect/data/Function'
 import type { Cause } from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import type { Layer } from '@effect/io/Layer'
 import type { ParseOptions } from '@effect/schema/AST'
 import * as ParseResult from '@effect/schema/ParseResult'
-import { Schema, parseEffect } from '@effect/schema/Schema'
+import { Schema, parse } from '@effect/schema/Schema'
 import type * as Context from '@typed/context'
 import type { Decoder } from '@typed/decoder'
 import type { ParamsOf } from '@typed/path'
@@ -23,7 +23,7 @@ export const ALL_HTTP_METHODS: ReadonlySet<HttpMethod> = new Set([
 ])
 
 export interface FetchHandler<out R, out E, in out Path extends string> {
-  readonly route: Route.Route<R, never, Path>
+  readonly route: Route.Route<Path>
 
   readonly handler: (request: Request, params: ParamsOf<Path>) => Effect.Effect<R, E, Response>
 
@@ -48,31 +48,31 @@ export interface FetchHandler<out R, out E, in out Path extends string> {
   readonly setHttpMethods: (httpMethods: Iterable<HttpMethod>) => FetchHandler<R, E, Path>
 }
 
-export function FetchHandler<R, Path extends string, R2 = never, E2 = never>(
-  route: Route.Route<R, never, Path>,
+export function FetchHandler<Path extends string, R2 = never, E2 = never>(
+  route: Route.Route<Path>,
   handler: (request: Request, params: ParamsOf<Path>) => Effect.Effect<R2, E2, Response>,
   httpMethods: ReadonlySet<HttpMethod> = ALL_HTTP_METHODS,
-): FetchHandler<R | R2, E2, Path> {
+): FetchHandler<R2, E2, Path> {
   return {
     route,
     handler,
     httpMethods,
     provideContext: (environment) =>
       FetchHandler(
-        pipe(route, Route.provideContext(environment)),
-        flow(handler, Effect.provideContext(environment)),
+        route,
+        (...args) => pipe(handler(...args), Effect.provideContext(environment)),
         httpMethods,
       ),
-    provideLayer: <RI>(layer: Layer<RI, never, R | R2>) =>
+    provideLayer: <RI>(layer: Layer<RI, never, R2>) =>
       FetchHandler(
-        pipe(route, Route.provideLayer(layer)),
-        flow(handler, Effect.provideLayer(layer)),
+        route,
+        (...args) => pipe(handler(...args), Effect.provideLayer(layer)),
         httpMethods,
       ),
     provideSomeLayer: <RI, RO>(layer: Layer<RI, never, RO>) =>
       FetchHandler(
-        pipe(route, Route.provideSomeLayer(layer)),
-        flow(handler, Effect.provideSomeLayer(layer)),
+        route,
+        (...args) => pipe(handler(...args), Effect.provideSomeLayer(layer)),
         httpMethods,
       ),
     catchAllCause: <R3, E3>(
@@ -88,7 +88,7 @@ export function FetchHandler<R, Path extends string, R2 = never, E2 = never>(
         httpMethods,
       ),
     catchAll: <R3, E3>(f: (error: E2, request: Request) => Effect.Effect<R3, E3, Response>) =>
-      FetchHandler<R, Path, R2 | R3, E3>(
+      FetchHandler<Path, R2 | R3, E3>(
         route,
         (request, params) =>
           pipe(
@@ -101,12 +101,12 @@ export function FetchHandler<R, Path extends string, R2 = never, E2 = never>(
   }
 }
 
-FetchHandler.decode = <R, Path extends string, A, R2, E2>(
-  route: Route.Route<R, never, Path>,
+FetchHandler.decode = <Path extends string, A, R2, E2>(
+  route: Route.Route<Path>,
   decoder: Decoder<unknown, A>,
   handler: (body: A, request: Request, params: ParamsOf<Path>) => Effect.Effect<R2, E2, Response>,
   options?: ParseOptions,
-): FetchHandler<R | R2, E2 | ParseResult.ParseError, Path> =>
+): FetchHandler<R2, E2 | ParseResult.ParseError, Path> =>
   FetchHandler(route, (request, params) =>
     Effect.gen(function* ($) {
       const result = yield* $(Effect.promise(() => request.json()))
@@ -116,12 +116,12 @@ FetchHandler.decode = <R, Path extends string, A, R2, E2>(
     }),
   )
 
-FetchHandler.decodeText = <R, Path extends string, A, R2, E2>(
-  route: Route.Route<R, never, Path>,
+FetchHandler.decodeText = <Path extends string, A, R2, E2>(
+  route: Route.Route<Path>,
   decoder: Decoder<string, A>,
   handler: (body: A, request: Request, params: ParamsOf<Path>) => Effect.Effect<R2, E2, Response>,
   options?: ParseOptions,
-): FetchHandler<R | R2, E2 | ParseResult.ParseError, Path> =>
+): FetchHandler<R2, E2 | ParseResult.ParseError, Path> =>
   FetchHandler(route, (request, params) =>
     Effect.gen(function* ($) {
       const parseResult = yield* $(decoder(yield* $(Effect.promise(() => request.text())), options))
@@ -130,13 +130,13 @@ FetchHandler.decodeText = <R, Path extends string, A, R2, E2>(
     }),
   )
 
-FetchHandler.schema = <R, Path extends string, A, R2, E2>(
-  route: Route.Route<R, never, Path>,
+FetchHandler.schema = <Path extends string, A, R2, E2>(
+  route: Route.Route<Path>,
   schema: Schema<A>,
   handler: (body: A, request: Request, params: ParamsOf<Path>) => Effect.Effect<R2, E2, Response>,
   options?: ParseOptions,
-): FetchHandler<R | R2, E2 | ParseResult.ParseError, Path> =>
-  FetchHandler.decode(route, parseEffect(schema), handler, options)
+): FetchHandler<R2, E2 | ParseResult.ParseError, Path> =>
+  FetchHandler.decode(route, parse(schema), handler, options)
 
 export type ResourcesOf<T> = T extends FetchHandler<infer R, any, any> ? R : never
 

@@ -11,16 +11,12 @@
           }
         ]
       },
-      "outputs": [
-        "{projectRoot}/dist"
-      ]
+      "outputs": ["{projectRoot}/dist"]
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "options": {
-        "lintFilePatterns": [
-          "packages/framework/src/**/*.ts"
-        ]
+        "lintFilePatterns": ["packages/framework/src/**/*.ts"]
       }
     },
     "test": {
@@ -36,9 +32,7 @@
         ],
         "parallel": false
       },
-      "outputs": [
-        "{projectRoot}/dist/cjs"
-      ]
+      "outputs": ["{projectRoot}/dist/cjs"]
     }
   }
 }

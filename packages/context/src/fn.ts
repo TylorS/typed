@@ -1,4 +1,4 @@
-import { flow, pipe } from '@effect/data/Function'
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 
@@ -101,11 +101,10 @@ export namespace Fn {
         implementation: T2,
       ): Layer.Layer<EffectFn.ResourcesOf<T2>, never, I> =>
         tag.layer(
-          Effect.gen(function* ($) {
-            const layer = Layer.succeedContext(yield* $(Effect.context<EffectFn.ResourcesOf<T2>>()))
-
-            return flow(implementation, Effect.provideSomeLayer(layer)) as any
-          }),
+          Effect.map(
+            Effect.context<EffectFn.ResourcesOf<T2>>(),
+            (c) => ((a: any) => pipe(a, implementation, Effect.provideSomeContext(c))) as any,
+          ),
         ),
     } as const)
   }

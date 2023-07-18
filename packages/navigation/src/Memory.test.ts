@@ -41,7 +41,7 @@ const testNavigation = <Y extends Effect.EffectGen<any, any, any>, A>(
 
           return result
         }),
-        Effect.logErrorCause,
+        Effect.logError,
       ),
       options,
     ),
@@ -194,26 +194,26 @@ describe(import.meta.url, () => {
         let i = 0
         yield* $(
           onNavigation((event) => {
-            if (i === 0) {
+            if (i === 1) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
               assertEqualDestination(event.destination, testPathname1Destination)
             }
 
-            if (i === 1) {
+            if (i === 2) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
               assertEqualDestination(event.destination, testPathname2Destination)
             }
 
             i++
 
-            return Effect.unit()
+            return Effect.unit
           }),
         )
 
         yield* $(navigate(testPathname1))
         yield* $(navigate(testPathname2))
 
-        deepStrictEqual(i, 2)
+        deepStrictEqual(i, 3)
       })
 
       await Effect.runPromise(test)
@@ -235,7 +235,7 @@ describe(import.meta.url, () => {
       const test = testNavigation(function* ($, { navigate, onNavigation }) {
         yield* $(
           onNavigation(({ destination }) =>
-            destination.url.href === testPathname1 ? redirect(testPathname2) : Effect.unit(),
+            destination.url.href === testPathname1 ? redirect(testPathname2) : Effect.unit,
           ),
         )
 
@@ -381,26 +381,26 @@ describe(import.meta.url, () => {
         let i = 0
         yield* $(
           onNavigation((event) => {
-            if (i === 0) {
+            if (i === 1) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
               assertEqualDestination(event.destination, testPathname1Destination)
             }
 
-            if (i === 1) {
+            if (i === 2) {
               deepStrictEqual(event.navigationType, NavigationType.Reload)
               assertEqualDestination(event.destination, testPathname1Destination)
             }
 
             i++
 
-            return Effect.unit()
+            return Effect.unit
           }),
         )
 
         yield* $(navigate(testPathname1))
         yield* $(reload)
 
-        deepStrictEqual(i, 2)
+        deepStrictEqual(i, 3)
       })
 
       await Effect.runPromise(test)

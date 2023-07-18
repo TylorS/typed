@@ -162,10 +162,10 @@ const fetch_ = <A>(
       const [request, controller] = createRequest(input, init, optionalController)
 
       return pipe(
-        Effect.tryCatchPromise(
-          () => fetch(request).then((response) => f(request, response)),
-          (e) => FetchError(request, e),
-        ),
+        Effect.tryPromise({
+          try: () => fetch(request).then((response) => f(request, response)),
+          catch: (e) => FetchError(request, e),
+        }),
         Effect.onInterrupt(() => Effect.sync(() => controller.abort())),
       )
     }),

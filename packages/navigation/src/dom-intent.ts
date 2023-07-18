@@ -1,6 +1,6 @@
-import * as Option from '@effect/data/Option'
+import { Option } from '@effect/data/Option'
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
-import * as Scope from '@effect/io/Scope'
 import { History, Location } from '@typed/dom'
 
 import type { DomNavigationOptions } from './DOM.js'
@@ -14,19 +14,67 @@ import {
 import { ServiceId } from './constant.js'
 import { encodeEvent } from './json.js'
 import { Model } from './model.js'
+import {
+  Notify,
+  NotifyEnd,
+  Save,
+  makeGoTo,
+  makeNotify,
+  makeNotifyEnd,
+  makeOnNavigation,
+  makeOnNavigationEnd,
+} from './shared-intent.js'
 import { saveToStorage } from './storage.js'
 import { createKey, getUrl } from './util.js'
 
 // Roughly the number of History entries in a browser anyways
 const DEFAULT_MAX_ENTRIES = 50
 
-export function makeIntent(model: Model, options: DomNavigationOptions) {
+export type DomIntent = {
+  readonly back: (skipHistory: boolean) => ReturnType<ReturnType<typeof makeGo>>
+
+  readonly forward: (skipHistory: boolean) => ReturnType<ReturnType<typeof makeGo>>
+
+  readonly push: ReturnType<typeof makePush>
+
+  readonly replace: ReturnType<typeof makeReplace>
+
+  readonly navigate: (
+    url: string,
+    options?: NavigateOptions,
+  ) => ReturnType<ReturnType<typeof makePush | typeof makeReplace>>
+
+  readonly notify: Notify
+
+  readonly go: ReturnType<typeof makeGo>
+
+  readonly goTo: (
+    key: string,
+  ) => Effect.Effect<
+    Storage | History,
+    Cause.NoSuchElementException | NavigationError,
+    Option<Destination>
+  >
+
+  readonly reload: ReturnType<typeof makeReload>
+
+  readonly onNavigation: ReturnType<typeof makeOnNavigation>
+
+  readonly onNavigationEnd: ReturnType<typeof makeOnNavigationEnd>
+}
+
+export const makeIntent = (
+  model: Model,
+  base: string,
+  options: DomNavigationOptions,
+): DomIntent => {
   const maxEntries = Math.abs(options.maxEntries ?? DEFAULT_MAX_ENTRIES)
   const notify = makeNotify(model)
+  const notifyEnd = makeNotifyEnd(model)
   const save = makeSave(model)
-  const go = makeGo(model, notify, save)
-  const replace = makeReplace(model, notify, save)
-  const push = makePush(model, notify, save, maxEntries)
+  const go = makeGo(model, notify, notifyEnd, save)
+  const replace = makeReplace(model, notify, notifyEnd, save, base)
+  const push = makePush(model, notify, notifyEnd, save, base, maxEntries)
 
   return {
     back: (skipHistory: boolean) => go(-1, skipHistory),
@@ -35,62 +83,38 @@ export function makeIntent(model: Model, options: DomNavigationOptions) {
     replace,
     navigate: (url: string, options: NavigateOptions = {}) =>
       options.history === 'replace' ? replace(url, options) : push(url, options),
+    notify,
     go: go,
     goTo: makeGoTo(model, go),
     reload: makeReload(model, notify, save),
     onNavigation: makeOnNavigation(model),
+    onNavigationEnd: makeOnNavigationEnd(model),
   } as const
 }
 
 export type Intent = ReturnType<typeof makeIntent>
 
-type Notify = ReturnType<typeof makeNotify>
-type Save = ReturnType<typeof makeSave>
+export const makeSave =
+  (model: Model) =>
+  (event: NavigationEvent): Effect.Effect<Storage, Cause.NoSuchElementException, void> =>
+    Effect.gen(function* ($) {
+      const events = yield* $(model.events)
+      const index = yield* $(model.index)
 
-// Anytime there are changes to the model, we need to notify all event handlers
-export const makeNotify = (model: Model) => (event: NavigationEvent) =>
-  Effect.gen(function* ($) {
-    // Notify event handlers
-    if (model.eventHandlers.size > 0)
-      yield* $(Effect.forEachDiscard(model.eventHandlers, (handler) => handler(event)))
-  })
+      // Save to storage
+      yield* $(saveToStorage(events, index))
 
-export const makeSave = (model: Model) => (event: NavigationEvent) =>
-  Effect.gen(function* ($) {
-    const events = yield* $(model.events)
-    const index = yield* $(model.index)
+      // Update current entry
+      yield* $(model.currentEntry.set(event.destination))
 
-    // Save to storage
-    yield* $(saveToStorage(events, index))
+      // Update canGoBack
+      yield* $(model.canGoBack.set(index > 0))
 
-    // Update current entry
-    yield* $(model.currentEntry.set(event.destination))
+      // Update canGoForward
+      yield* $(model.canGoForward.set(index < events.length - 1))
+    })
 
-    // Update canGoBack
-    yield* $(model.canGoBack.set(index > 0))
-
-    // Update canGoForward
-    yield* $(model.canGoForward.set(index < events.length - 1))
-  })
-
-export const makeOnNavigation =
-  ({ eventHandlers }: Model) =>
-  <R>(
-    handler: (event: NavigationEvent) => Effect.Effect<R, NavigationError, unknown>,
-  ): Effect.Effect<R | Scope.Scope, never, void> =>
-    Effect.uninterruptibleMask((restore) =>
-      Effect.gen(function* ($) {
-        const context = yield* $(Effect.context<R>())
-        const handler_ = (event: NavigationEvent) =>
-          restore(Effect.provideContext(handler(event), context))
-
-        eventHandlers.add(handler_)
-
-        yield* $(Effect.addFinalizer(() => Effect.sync(() => eventHandlers.delete(handler_))))
-      }),
-    )
-
-export const makeReload = (model: Model, notify: Notify, save: Save) =>
+export const makeReload = (model: Model, notify: Notify, save: Save<Storage>) =>
   Effect.gen(function* ($) {
     const i = yield* $(model.index.get)
     const e = yield* $(model.events)
@@ -108,14 +132,14 @@ export const makeReload = (model: Model, notify: Notify, save: Save) =>
   })
 
 export const makeReplace =
-  (model: Model, notify: Notify, save: Save) =>
+  (model: Model, notify: Notify, notifyEnd: NotifyEnd, save: Save<Storage>, base: string) =>
   (url: string, options: NavigateOptions = {}, skipHistory = false) =>
     Effect.gen(function* ($) {
       const location = yield* $(Location)
       const entry = yield* $(model.currentEntry.get)
       const destination: Destination = {
         key: entry.key,
-        url: getUrl(url, location.origin),
+        url: getUrl(url, base, location.origin),
         state: options.state,
       }
       const event: NavigationEvent = {
@@ -148,19 +172,27 @@ export const makeReplace =
       )
 
       yield* $(save(event))
+      yield* $(notifyEnd(event))
 
       return destination
     })
 
 export const makePush =
-  (model: Model, notify: Notify, save: Save, maxEntries: number) =>
+  (
+    model: Model,
+    notify: Notify,
+    notifyEnd: NotifyEnd,
+    save: Save<Storage>,
+    base: string,
+    maxEntries: number,
+  ) =>
   (url: string, options: NavigateOptions = {}, skipHistory = false) =>
     Effect.gen(function* ($) {
       const location = yield* $(Location)
       const entry = yield* $(model.currentEntry.get)
       const destination: Destination = {
         key: yield* $(createKey),
-        url: getUrl(url, location.origin),
+        url: getUrl(url, base, location.origin),
         state: options.state,
       }
       const event: NavigationEvent = {
@@ -199,12 +231,13 @@ export const makePush =
       yield* $(model.index.update((i) => i + 1))
 
       yield* $(save(event))
+      yield* $(notifyEnd(event))
 
       return destination
     })
 
 export const makeGo =
-  (model: Model, notify: Notify, save: Save) =>
+  (model: Model, notify: Notify, notifyEnd: NotifyEnd, save: Save<Storage>) =>
   (delta: number, skipHistory = false) =>
     Effect.gen(function* ($) {
       const currentEntries = yield* $(model.events)
@@ -237,22 +270,7 @@ export const makeGo =
 
       yield* $(save(nextEntry))
 
+      yield* $(notifyEnd(nextEntry))
+
       return nextEntry.destination
     })
-
-export const makeGoTo = (model: Model, go: ReturnType<typeof makeGo>) => (key: string) =>
-  Effect.gen(function* ($) {
-    const entries = yield* $(model.entries)
-    const currentIndex = yield* $(model.index)
-    const nextIndex = entries.findIndex((destination) => destination.key === key)
-
-    if (nextIndex === -1) return Option.none()
-
-    const delta = nextIndex - currentIndex
-
-    if (delta !== 0) {
-      return Option.some(yield* $(go(delta)))
-    }
-
-    return Option.some(entries[nextIndex])
-  })

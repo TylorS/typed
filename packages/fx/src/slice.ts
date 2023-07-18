@@ -15,17 +15,17 @@ export function slice<R, E, A>(fx: Fx<R, E, A>, skip: number, take: number): Fx<
               Effect.suspend(() => {
                 if (toSkip > 0) {
                   toSkip -= 1
-                  return Effect.unit()
+                  return Effect.unit
                 }
 
                 if (toTake > 0) {
                   toTake -= 1
                   return Effect.tap(sink.event(a), () =>
-                    Effect.sync(() => toTake === 0 && cb(Effect.unit())),
+                    Effect.sync(() => toTake === 0 && cb(Effect.unit)),
                   )
                 }
 
-                return Effect.sync(() => cb(Effect.unit()))
+                return Effect.sync(() => cb(Effect.unit))
               }),
             sink.error,
           ),

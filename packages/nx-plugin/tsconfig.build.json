@@ -6,6 +6,8 @@
   },
   "exclude": [
     "src/**/files",
-    "src/**/*.test.ts"
+    "src/**/*.test.ts",
+    "src/**/*.test-d.ts",
+    "dist"
   ]
 }

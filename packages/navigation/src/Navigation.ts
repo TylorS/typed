@@ -1,11 +1,17 @@
 import * as Brand from '@effect/data/Brand'
 import { Option } from '@effect/data/Option'
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
 
 export interface Navigation {
+  /**
+   * Base path for all navigation entries.
+   */
+  readonly base: string
+
   /**
    * The list of navigation entries that are currently kept in-memory and
    * saved within Local/Session Storage.
@@ -35,6 +41,15 @@ export interface Navigation {
    */
   readonly onNavigation: <R>(
     handler: (event: NavigationEvent) => Effect.Effect<R, NavigationError, void>,
+    options?: OnNavigationOptions,
+  ) => Effect.Effect<R | Scope.Scope, never, void>
+
+  /**
+   * Subscribe to navigation events after they have been commited.
+   */
+  readonly onNavigationEnd: <R>(
+    handler: (event: NavigationEvent) => Effect.Effect<R, never, void>,
+    options?: OnNavigationOptions,
   ) => Effect.Effect<R | Scope.Scope, never, void>
 
   /**
@@ -80,14 +95,16 @@ export const onNavigation = <R>(
   handler: (event: NavigationEvent) => Effect.Effect<R, never, void>,
 ) => Navigation.withEffect((n) => n.onNavigation(handler))
 
-export const canGoBack = Object.assign(
+export const canGoBack: Effect.Effect<Navigation, Cause.NoSuchElementException, boolean> &
+  Fx.Fx<Navigation, never, boolean> = Object.assign(
   Navigation.withEffect((n) => n.canGoBack),
   Navigation.withFx((n) => n.canGoBack),
 )
 
 export const back = Navigation.withEffect((n) => n.back)
 
-export const canGoForward = Object.assign(
+export const canGoForward: Effect.Effect<Navigation, Cause.NoSuchElementException, boolean> &
+  Fx.Fx<Navigation, never, boolean> = Object.assign(
   Navigation.withEffect((n) => n.canGoForward),
   Navigation.withFx((n) => n.canGoForward),
 )
@@ -166,3 +183,10 @@ export const redirect = (
 export function isRedirectNavigation(error: NavigationError): error is RedirectNavigation {
   return error._tag === 'RedirectNavigation'
 }
+
+export interface OnNavigationOptions {
+  readonly passive?: boolean
+}
+
+export const getCurrentUrl: Effect.Effect<Navigation, Cause.NoSuchElementException, URL> =
+  Navigation.withEffect((n) => n.currentEntry.map((d) => d.url))

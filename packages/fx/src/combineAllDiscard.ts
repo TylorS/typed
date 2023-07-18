@@ -16,26 +16,29 @@ export function combineAllDiscard<FX extends ReadonlyArray<Fx<any, any, any>>>(
   }
 
   return Fx((sink) =>
-    Effect.gen(function* ($) {
+    Effect.suspend(() => {
       const length = fx.length
       const values = new Map<number, any>()
 
       const emitIfReady = Effect.suspend(() =>
-        values.size === length ? sink.event() : Effect.unit(),
+        values.size === length ? sink.event() : Effect.unit,
       )
 
-      yield* $(
-        Effect.forEachParWithIndex(fx, (f, i) =>
-          f.run(
-            Sink(
-              () =>
-                Effect.suspend(() => {
-                  values.set(i, null)
-                  return emitIfReady
-                }),
-              sink.error,
+      return Effect.asUnit(
+        Effect.forEach(
+          fx,
+          (f, i) =>
+            f.run(
+              Sink(
+                () =>
+                  Effect.suspend(() => {
+                    values.set(i, null)
+                    return emitIfReady
+                  }),
+                sink.error,
+              ),
             ),
-          ),
+          { concurrency: 'unbounded' },
         ),
       )
     }),

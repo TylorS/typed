@@ -29,7 +29,7 @@ export function exhaustMapLatestError<R, E, A, R2, E2, B>(
   f: (e: E) => Fx<R2, E2, B>,
 ): Fx<R | R2, E2, A | B> {
   return exhaustMapLatestCause(fx, (cause) =>
-    pipe(cause, Cause.failureOrCause, Either.match(f, failCause)),
+    pipe(cause, Cause.failureOrCause, Either.match({ onLeft: f, onRight: failCause })),
   )
 }
 

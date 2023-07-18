@@ -14,10 +14,16 @@
       "path": "../dom/tsconfig.cjs.build.json"
     },
     {
+      "path": "../error/tsconfig.cjs.build.json"
+    },
+    {
       "path": "../fx/tsconfig.cjs.build.json"
     },
     {
       "path": "../html/tsconfig.cjs.build.json"
+    },
+    {
+      "path": "../navigation/tsconfig.cjs.build.json"
     },
     {
       "path": "../path/tsconfig.cjs.build.json"

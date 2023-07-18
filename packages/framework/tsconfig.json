@@ -5,7 +5,9 @@
     "outDir": "dist"
   },
   "include": [
-    "src"
+    "src",
+    "vavite.d.ts",
+    "virtual.d.ts"
   ],
   "exclude": [
     "dist"
@@ -19,9 +21,6 @@
     },
     {
       "path": "../dom/tsconfig.build.json"
-    },
-    {
-      "path": "../fx/tsconfig.build.json"
     },
     {
       "path": "../html/tsconfig.build.json"

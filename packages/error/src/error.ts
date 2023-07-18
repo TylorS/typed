@@ -15,7 +15,7 @@ export const tagged = <Tag extends string>(tag: Tag) =>
       return Effect.catchTag(tag, f as any) as any
     }
 
-    static catchFx<T extends TaggedConstructor<Tag>, R, E, A>(
+    static catchAll<T extends TaggedConstructor<Tag>, R, E, A>(
       this: T,
       f: (error: InstanceType<T>) => Fx.Fx<R, E, A>,
     ) {
@@ -28,7 +28,7 @@ export const tagged = <Tag extends string>(tag: Tag) =>
       }
     }
 
-    static switchCatchFx<T extends TaggedConstructor<Tag>, R, E, A>(
+    static switchCatch<T extends TaggedConstructor<Tag>, R, E, A>(
       this: T,
       f: (error: InstanceType<T>) => Fx.Fx<R, E, A>,
     ) {
@@ -37,6 +37,22 @@ export const tagged = <Tag extends string>(tag: Tag) =>
       ): Fx.Fx<R | R2, E | Exclude<E2, InstanceType<T>>, A | A2> => {
         return Fx.switchMapError(fx, (e) =>
           e instanceof TaggedError ? f(e as InstanceType<T>) : Fx.fail(e as any),
+        )
+      }
+    }
+
+    static switchMatch<T extends TaggedConstructor<Tag>, I, R, E, A, R2, E2, B>(
+      this: T,
+      f: (error: InstanceType<T>) => Fx.Fx<R, E, A>,
+      g: (i: I) => Fx.Fx<R2, E2, B>,
+    ) {
+      return <R3, E3>(
+        fx: Fx.Fx<R3, E3 | InstanceType<T>, I>,
+      ): Fx.Fx<R | R2 | R3, E | E2 | Exclude<E3, InstanceType<T>>, A | B> => {
+        return Fx.switchMatch(
+          fx,
+          (e) => (e instanceof TaggedError ? f(e as InstanceType<T>) : Fx.fail(e as any)),
+          g,
         )
       }
     }
@@ -50,7 +66,9 @@ export type TaggedConstructor<Tag extends string> = {
   new (...args: any[]): Tagged<Tag>
 
   readonly catch: ReturnType<typeof tagged<Tag>>['catch']
-  readonly catchFx: ReturnType<typeof tagged<Tag>>['catchFx']
+  readonly catchAll: ReturnType<typeof tagged<Tag>>['catchAll']
+  readonly switchCatch: ReturnType<typeof tagged<Tag>>['switchCatch']
+  readonly switchMatch: ReturnType<typeof tagged<Tag>>['switchMatch']
 }
 
 export interface Tagged<Tag extends string> extends Error {

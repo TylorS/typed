@@ -6,7 +6,6 @@ import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import * as Layer from '@effect/io/Layer'
 import { GlobalThis, History, Location, Window, localStorage, makeDomServices } from '@typed/dom'
-import { makeServerWindow } from '@typed/framework/makeServerWindow'
 import * as Fx from '@typed/fx'
 import { describe, it } from 'vitest'
 
@@ -19,6 +18,7 @@ import {
   cancelNavigation,
   redirect,
 } from './Navigation.js'
+import { makeServerWindow } from './_makeServerWindow.js'
 import { encodeDestination } from './json.js'
 import { getStoredEvents } from './storage.js'
 
@@ -60,7 +60,7 @@ const testNavigation = <Y extends Effect.EffectGen<any, any, any>, A>(
 
           return result
         }),
-        Effect.logErrorCause,
+        Effect.logError,
       ),
       initialUrl,
       options,
@@ -71,13 +71,15 @@ const fxToFiber = <R, E, A>(fx: Fx.Fx<R, E, A>, take: number) =>
   Effect.gen(function* ($) {
     const fiber = yield* $(fx, Fx.take(take), Fx.toReadonlyArray, Effect.forkScoped)
 
-    yield* $(Effect.sleep(Duration.millis(0)))
-    yield* $(Effect.sleep(Duration.millis(0)))
+    yield* $(Effect.sleep(Duration.millis(1)))
+    yield* $(Effect.sleep(Duration.millis(1)))
 
     return fiber
   })
 
 const assertEqualDestination: (a: Destination, b: Destination) => void = (a, b) => {
+  console.log(a, b)
+
   deepStrictEqual(
     a.url.href,
     b.url.href,
@@ -216,24 +218,29 @@ describe(import.meta.url, () => {
           onNavigation((event) => {
             if (i === 0) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
-              assertEqualDestination(event.destination, testPathname1Destination)
+              assertEqualDestination(event.destination, testDestination)
             }
 
             if (i === 1) {
+              deepStrictEqual(event.navigationType, NavigationType.Push)
+              assertEqualDestination(event.destination, testPathname1Destination)
+            }
+
+            if (i === 2) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
               assertEqualDestination(event.destination, testPathname2Destination)
             }
 
             i++
 
-            return Effect.unit()
+            return Effect.unit
           }),
         )
 
         yield* $(navigate(testPathname1))
         yield* $(navigate(testPathname2))
 
-        deepStrictEqual(i, 2)
+        deepStrictEqual(i, 3)
       })
 
       await Effect.runPromise(test)
@@ -255,7 +262,7 @@ describe(import.meta.url, () => {
       const test = testNavigation(function* ($, { navigate, onNavigation }) {
         yield* $(
           onNavigation(({ destination }) =>
-            destination.url.href === testPathname1 ? redirect(testPathname2) : Effect.unit(),
+            destination.url.href === testPathname1 ? redirect(testPathname2) : Effect.unit,
           ),
         )
 
@@ -401,26 +408,26 @@ describe(import.meta.url, () => {
         let i = 0
         yield* $(
           onNavigation((event) => {
-            if (i === 0) {
+            if (i === 1) {
               deepStrictEqual(event.navigationType, NavigationType.Push)
               assertEqualDestination(event.destination, testPathname1Destination)
             }
 
-            if (i === 1) {
+            if (i === 2) {
               deepStrictEqual(event.navigationType, NavigationType.Reload)
               assertEqualDestination(event.destination, testPathname1Destination)
             }
 
             i++
 
-            return Effect.unit()
+            return Effect.unit
           }),
         )
 
         yield* $(navigate(testPathname1))
         yield* $(reload)
 
-        deepStrictEqual(i, 2)
+        deepStrictEqual(i, 3)
       })
 
       await Effect.runPromise(test)

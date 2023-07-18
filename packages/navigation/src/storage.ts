@@ -47,6 +47,7 @@ export const getStoredIndex = Effect.gen(function* ($) {
  * @internal
  */
 export const getInitialValues = (
+  base: string,
   options: DomNavigationOptions,
 ): Effect.Effect<
   Storage | History | Location,
@@ -64,7 +65,7 @@ export const getInitialValues = (
     const storedEntry = storedEntries[storedIndex]
 
     // Read the initial url from the location
-    const initialUrl = getUrl(location.href, location.origin)
+    const initialUrl = getUrl(location.href, base, location.origin)
     const initial: Destination = {
       key: options.initialKey ?? (yield* $(createKey)),
       url: initialUrl,

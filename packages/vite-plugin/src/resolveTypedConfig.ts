@@ -1,5 +1,4 @@
 import { none, some, type Option } from '@effect/data/Option'
-import type { ResolvedOptions } from '@typed/compiler'
 import { resolveConfig } from 'vite'
 
 import { PLUGIN_NAME } from './constants.js'
@@ -19,3 +18,17 @@ export async function resolveTypedConfig(
 }
 
 type ArgsOf<T> = T extends (...args: infer A) => any ? A : never
+
+export interface ResolvedOptions {
+  readonly base: string
+  readonly clientOutputDirectory: string
+  readonly debug: boolean
+  readonly exclusions: readonly string[]
+  readonly htmlFiles: readonly string[]
+  readonly isStaticBuild: boolean
+  readonly saveGeneratedModules: boolean
+  readonly serverFilePath: Option<string>
+  readonly serverOutputDirectory: string
+  readonly sourceDirectory: string
+  readonly tsConfig: string
+}

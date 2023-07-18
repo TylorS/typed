@@ -3,10 +3,9 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
 import { isSome, some } from '@effect/data/Option'
-import type { ResolvedOptions } from '@typed/compiler'
 import { describe, it } from 'vitest'
 
-import { resolveTypedConfig } from './resolveTypedConfig.js'
+import { ResolvedOptions, resolveTypedConfig } from './resolveTypedConfig.js'
 
 const vitePluginSrcDirectory = dirname(fileURLToPath(import.meta.url))
 const rootDirectory = dirname(dirname(dirname(vitePluginSrcDirectory)))

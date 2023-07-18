@@ -3,7 +3,6 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@typed/compiler": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/decoder": "workspace:*",
     "@typed/dom": "workspace:*",
@@ -13,7 +12,6 @@
     "@typed/html": "workspace:*",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
-    "@typed/router": "workspace:*",
-    "@typed/vite-plugin": "workspace:*"
+    "@typed/router": "workspace:*"
   }
 }

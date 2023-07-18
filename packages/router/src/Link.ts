@@ -1,48 +1,138 @@
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
-import { assign } from '@typed/dom'
 import * as Fx from '@typed/fx'
-import { EventHandler, html, RenderContext, type Placeholder } from '@typed/html'
+import { Placeholder } from '@typed/html'
+import * as Navigation from '@typed/navigation'
 import { pathJoin } from '@typed/path'
 
-import { Router, getBasePath } from './router.js'
+import { Router, getCurrentPathFromUrl } from './router.js'
 
-export function Link<R = never, E = never, R2 = never>(
-  props: LinkProps<R, E, R2>,
-): Fx.Fx<R | R2 | Document | RenderContext | Router | Scope.Scope, E, HTMLAnchorElement> {
-  return Fx.gen(function* ($) {
-    const useBase = props.useBase ?? true
-    const href = useBase ? pathJoin(yield* $(getBasePath), props.href) || '/' : props.href
-    const router = yield* $(Router)
-    const clickHandler = (event: MouseEvent & { currentTarget: HTMLAnchorElement }) =>
-      Effect.gen(function* ($) {
-        if (props.fullReload) {
-          yield* $(assign(href))
-        } else {
-          yield* $(router.currentPath.set(href))
-        }
-
-        if (props.onClick) {
-          yield* $(props.onClick(event))
-        }
-      })
-
-    return html.as<HTMLAnchorElement>()`<a
-      class=${props.className}
-      href=${href}
-      onclick=${EventHandler.preventDefault(clickHandler)}
-      >${props.label}</a>`
-  })
+export interface UseLinkParams<
+  R = never,
+  E = never,
+  R2 = never,
+  E2 = never,
+  R3 = never,
+  E3 = never,
+  R4 = never,
+  E4 = never,
+  R5 = never,
+  E5 = never,
+> {
+  readonly to: Placeholder<R, E, string>
+  readonly replace?: Placeholder<R2, E2, boolean>
+  readonly state?: Placeholder<R3, E3, unknown> | unknown
+  readonly relative?: Placeholder<R4, E4, boolean>
+  readonly key?: Placeholder<R5, E5, string>
 }
 
-export interface LinkProps<R, E, R2> {
-  readonly href: string
-  readonly label: string | Placeholder<R, E>
-  readonly className?: string
-  readonly onClick?: (
-    event: MouseEvent & { currentTarget: HTMLAnchorElement },
-  ) => Effect.Effect<R2, never, unknown>
+export namespace UseLinkParams {
+  export type Any = UseLinkParams<any, any, any, any, any, any, any, any, any, any>
 
-  readonly useBase?: boolean
-  readonly fullReload?: boolean
+  export type Context<T extends Any> = Placeholder.ResourcesOf<
+    T['to'] | T['replace'] | T['state'] | T['relative'] | T['key']
+  >
+
+  export type Error<T extends Any> = Placeholder.ErrorsOf<
+    T['to'] | T['replace'] | T['state'] | T['relative'] | T['key']
+  >
+}
+
+export interface UseLink<E> {
+  readonly url: Fx.Computed<Router, E, string>
+  readonly options: Fx.Computed<never, E, Navigation.NavigateOptions>
+  readonly navigate: Effect.Effect<Router, E, Navigation.Destination>
+  readonly active: Fx.Computed<Router, E, boolean>
+}
+
+export namespace UseLink {
+  export type FromParams<T extends UseLinkParams.Any> = [UseLink<UseLinkParams.Error<T>>] extends [
+    infer U,
+  ]
+    ? U
+    : never
+}
+
+export function useLink<Params extends UseLinkParams.Any>(
+  params: Params,
+): Effect.Effect<UseLinkParams.Context<Params> | Scope.Scope, never, UseLink.FromParams<Params>> {
+  return Effect.map(
+    Effect.all([
+      Placeholder.asRef(params.to),
+      Placeholder.asRef(params.replace ?? false),
+      Placeholder.asRef(params.state ?? null),
+      Placeholder.asRef(params.key),
+      Placeholder.asRef(params.relative ?? true),
+    ] as const),
+    ([to, replace, state, key, relative]) => {
+      const url = Fx.RefSubject.tuple(to, relative).mapEffect(([to, relative]) =>
+        Effect.gen(function* ($) {
+          let url = to
+
+          // Check if we should make the URL relative to the current route
+          if (relative) {
+            const { route, params } = yield* $(Router)
+            const matched = yield* $(params)
+            const basePath = route.make(matched)
+
+            url = pathJoin(basePath, url)
+          }
+
+          return url
+        }),
+      )
+      const options = Fx.RefSubject.tuple(replace, state, key).map(
+        ([replace, state, key]): Navigation.NavigateOptions => ({
+          history: replace ? 'replace' : 'push',
+          state,
+          key: key ?? undefined,
+        }),
+      )
+
+      const active: Fx.Computed<Router, UseLinkParams.Error<Params>, boolean> = url.mapEffect(
+        (url) =>
+          Effect.gen(function* ($) {
+            const {
+              navigation: { currentEntry },
+            } = yield* $(Router)
+
+            return isActive(url, (yield* $(currentEntry)).url)
+          }),
+      )
+
+      const navigate: Effect.Effect<
+        Router,
+        UseLinkParams.Error<Params>,
+        Navigation.Destination
+      > = Effect.flatMap(Effect.all([url, options] as const), ([url, options]) =>
+        Router.withEffect((r) => r.navigation.navigate(url, options)),
+      )
+
+      return {
+        url,
+        options,
+        navigate,
+        active,
+      } satisfies UseLink.FromParams<Params>
+    },
+  )
+}
+
+export function Link<Params extends UseLinkParams.Any, R, E, A>(
+  params: Params,
+  render: (use: UseLink.FromParams<Params>) => Fx.Fx<R, E, A>,
+): Fx.Fx<Scope.Scope | R | UseLinkParams.Context<Params>, E, A> {
+  return Fx.fromFxEffect(Effect.map(useLink(params), render))
+}
+
+function isActive(url: string, current: URL): boolean {
+  const { pathname } = current
+
+  return (
+    url === current.href ||
+    url === pathname ||
+    url === pathname + current.search ||
+    url === pathname + current.hash ||
+    url === getCurrentPathFromUrl(current)
+  )
 }

@@ -1,34 +1,47 @@
 import * as Context from '@effect/data/Context'
-import type { Trace } from '@effect/data/Debug'
-import { methodWithTrace } from '@effect/data/Debug'
-import { equals } from '@effect/data/Equal'
 import * as Equal from '@effect/data/Equal'
 import { identity, pipe } from '@effect/data/Function'
 import * as Hash from '@effect/data/Hash'
 import * as MutableRef from '@effect/data/MutableRef'
 import * as Option from '@effect/data/Option'
-import * as RR from '@effect/data/ReadonlyRecord'
-import * as Equivalence from '@effect/data/typeclass/Equivalence'
+import { Pipeable, pipeArguments } from '@effect/data/Pipeable'
+import * as Equivalence from '@effect/data/Equivalence'
+import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
+import * as Scope from '@effect/io/Scope'
+import fastDeepEqual from 'fast-deep-equal'
 
-import { Fx, Sink, isFx, FxTypeId } from './Fx.js'
-import type { Subject } from './Subject.js'
+import { Computed, ComputedImpl, ComputedTypeId } from './Computed.js'
+import { FilteredImpl } from './Filtered.js'
+import { Fx, FxTypeId, Sink, isFx } from './Fx.js'
+import { RefTransform, RefTransformImpl } from './RefTransform.js'
+import { Subject } from './Subject.js'
 import { combineAll } from './combineAll.js'
 import { HoldFx } from './hold.js'
-import { map } from './map.js'
-import { multicast } from './multicast.js'
 import { never } from './never.js'
-import { switchMapEffect } from './switchMap.js'
+import { drain } from './observe.js'
+import { struct } from './struct.js'
+import { switchMatchCauseEffect } from './switchMatch.js'
 
-export const RefSubjectTypeId = Symbol.for('./RefSubject')
+const unboundedConcurrency = { concurrency: 'unbounded' } as const
+
+const refVariance = {
+  _R: identity,
+  _E: identity,
+  _A: identity,
+}
+
+export const RefSubjectTypeId = Symbol.for('@typed/fx/RefSubject')
 export type RefSubjectTypeId = typeof RefSubjectTypeId
 
-export interface RefSubject<in out E, in out A> extends Subject<E, A>, Effect.Effect<never, E, A> {
+export interface RefSubject<in out E, in out A>
+  extends Subject<E, A>,
+    Computed<never, E, A>,
+    Pipeable {
   readonly [RefSubjectTypeId]: RefSubjectTypeId
 
   readonly eq: Equivalence.Equivalence<A>
-  readonly get: Effect.Effect<never, E, A>
 
   readonly modifyEffect: <R2, E2, B>(
     f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>,
@@ -42,61 +55,75 @@ export interface RefSubject<in out E, in out A> extends Subject<E, A>, Effect.Ef
 
   readonly update: (f: (a: A) => A) => Effect.Effect<never, E, A>
 
-  readonly set: (a: A) => Effect.Effect<never, E, A>
+  readonly set: (a: A) => Effect.Effect<never, never, A>
 
   readonly delete: Effect.Effect<never, E, Option.Option<A>>
 
-  readonly mapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) => Computed<R2, E | E2, B>
-
-  readonly map: <B>(f: (a: A) => B) => Computed<never, E, B>
-
-  readonly addTrace: (trace: Trace) => RefSubject<E, A>
+  /**
+   * The current version of the RefSubject, starting with 0, 1 when initialized,
+   * and incremented each time the value is updated.
+   */
+  readonly version: () => number
 }
 
-export interface Computed<R, E, A> extends Fx<R, E, A>, Effect.Effect<R, E, A> {
-  readonly get: Effect.Effect<R, E, A>
-
-  readonly mapEffect: <R2, E2, B>(
-    f: (a: A) => Effect.Effect<R2, E2, B>,
-  ) => Computed<R | R2, E | E2, B>
-
-  readonly map: <B>(f: (a: A) => B) => Computed<R, E, B>
-
-  readonly addTrace: (trace: Trace) => Computed<R, E, A>
-}
+type Lock = <R2, E2, B>(effect: Effect.Effect<R2, E2, B>) => Effect.Effect<R2, E2, B>
 
 export function makeRef<R, E, A>(
   effect: Effect.Effect<R, E, A>,
-  eq: Equivalence.Equivalence<A> = equals,
-): Effect.Effect<R, never, RefSubject<E, A>> {
-  return Effect.contextWith(
-    (ctx: Context.Context<R>) => new RefSubjectImpl(Effect.provideContext(effect, ctx), eq),
+  eq?: Equivalence.Equivalence<A>,
+): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>> {
+  return Effect.contextWithEffect((context) =>
+    Effect.suspend(() => {
+      const ref = RefSubject.unsafeMake(
+        Effect.provideContext(effect, context),
+        Context.get(context, Scope.Scope),
+        eq,
+      )
+
+      return Effect.as(
+        Effect.addFinalizer(() => ref.end()),
+        ref,
+      )
+    }),
   )
 }
 
 export namespace RefSubject {
   export type Any = RefSubject<any, any> | RefSubject<never, any>
 
-  export function tuple<S extends ReadonlyArray<Any>>(
-    ...subjects: S
-  ): RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  > {
-    return new TupleRefSubjectImpl(subjects)
+  export function unsafeMake<E, A>(
+    initial: Effect.Effect<never, E, A>,
+    scope: Scope.Scope,
+    eq: Equivalence.Equivalence<A> = fastDeepEqual,
+  ): RefSubject<E, A> {
+    return makeRefFromPrimitive(unsafeMakeRefPrimitive(initial, scope, eq))
   }
 
-  export function struct<S extends RR.ReadonlyRecord<Any>>(
-    subjects: S,
+  export function tuple<const Refs extends readonly Any[]>(
+    ...refs: Refs
   ): RefSubject<
-    Fx.ErrorsOf<S[keyof S]>,
+    Fx.ErrorsOf<Refs[number]>,
     {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
+      readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]>
     }
   > {
-    return new StructRefSubjectImpl(subjects)
+    return makeRefFromPrimitive<
+      Fx.ErrorsOf<Refs[number]>,
+      {
+        readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]>
+      }
+    >(tupleRefPrimitive<Refs>(refs))
+  }
+
+  export function struct<const Refs extends Readonly<Record<string, Any>>>(
+    refs: Refs,
+  ): RefSubject<
+    Fx.ErrorsOf<Refs[string]>,
+    {
+      readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]>
+    }
+  > {
+    return makeRefFromPrimitive(structRefPrimitive<Refs>(refs))
   }
 
   export function all<S extends ReadonlyArray<Any>>(
@@ -108,7 +135,16 @@ export namespace RefSubject {
     }
   >
 
-  export function all<S extends RR.ReadonlyRecord<Any>>(
+  export function all<S extends ReadonlyArray<Any>>(
+    ...subjects: S
+  ): RefSubject<
+    Fx.ErrorsOf<S[number]>,
+    {
+      readonly [K in keyof S]: Fx.OutputOf<S[K]>
+    }
+  >
+
+  export function all<S extends Readonly<Record<string, Any>>>(
     subjects: S,
   ): RefSubject<
     Fx.ErrorsOf<S[string]>,
@@ -117,791 +153,623 @@ export namespace RefSubject {
     }
   >
 
-  export function all(subjects: any): any {
-    return (Array.isArray(subjects) ? tuple(...subjects) : struct(subjects)) as any
-  }
-
-  export function unsafeMake<E, A>(
-    get: Effect.Effect<never, E, A>,
-    eq: Equivalence.Equivalence<A> = equals,
-  ): RefSubject<E, A> {
-    return new RefSubjectImpl(get, eq)
-  }
-}
-
-const refSubjectVariant = {
-  _R: identity,
-  _E: identity,
-  _A: identity,
-}
-
-class RefSubjectImpl<E, A> extends HoldFx<never, E, A> implements RefSubject<E, A> {
-  readonly _tag = 'Commit'
-  public i2: any = undefined
-  public trace: Trace = undefined;
-
-  readonly [Effect.EffectTypeId] = refSubjectVariant;
-  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
-
-  readonly lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
-  readonly initializeFiber: MutableRef.MutableRef<Option.Option<Fiber.RuntimeFiber<E, A>>> =
-    MutableRef.make(Option.none())
-
-  readonly eq: Equivalence.Equivalence<A>
-
-  constructor(readonly i0: Effect.Effect<never, E, A>, readonly i1: Equivalence.Equivalence<A>) {
-    super(never<E, A>())
-
-    this.modifyEffect = this.modifyEffect.bind(this)
-    this.eq = i1
-  }
-
-  run<R2>(sink: Sink<R2, E, A>) {
-    return Effect.suspend(() => {
-      const current = MutableRef.get(this.current)
-
-      if (Option.isNone(current)) {
-        return pipe(
-          this.get,
-          Effect.catchAllCause(sink.error),
-          Effect.flatMap(() => super.run(sink)),
-        )
-      }
-
-      return super.run(sink)
-    })
-  }
-
-  readonly addTrace = (trace: Trace): RefSubject<E, A> => {
-    if (trace) {
-      return new TracedRefSubjectImpl(this, trace)
+  export function all(...subjects: any): any {
+    /// MUST be a tuple if more than one argument
+    if (subjects.length > 1) {
+      return tuple(...subjects)
     }
 
-    return this
-  }
+    // Otherwise a single param is either a tuple or a struct
+    const singleParam = subjects[0]
 
-  readonly event: RefSubject<E, A>['event'] = methodWithTrace(
-    (trace) => (a: A) => Effect.catchAllCause(this.set(a), this.error).traced(trace),
-  )
-
-  readonly end = methodWithTrace(
-    (trace) => () =>
-      Effect.suspend(() =>
-        Effect.zipPar(this.interruptFibers(), this.interruptInitializeFiber()),
-      ).traced(trace),
-  )
-
-  protected interruptFibers() {
-    return this.fiber ? Fiber.interrupt(this.fiber) : Effect.unit()
-  }
-
-  protected interruptInitializeFiber() {
-    const fiber = MutableRef.get(this.initializeFiber)
-    if (Option.isSome(fiber)) {
-      return Fiber.interrupt(fiber.value)
+    if (Array.isArray(singleParam)) {
+      return tuple(...singleParam)
     }
 
-    return Effect.unit()
-  }
-
-  readonly get: RefSubject<E, A>['get'] = Effect.suspend(() =>
-    pipe(
-      MutableRef.get(this.current),
-      Option.match(
-        () =>
-          pipe(
-            MutableRef.get(this.initializeFiber),
-            Option.match(
-              () =>
-                this.lock(
-                  Effect.uninterruptibleMask((restore) =>
-                    pipe(
-                      Effect.forkDaemon(restore(this.i0)),
-                      Effect.tap((fiber) =>
-                        Effect.sync(() => MutableRef.set(this.initializeFiber, Option.some(fiber))),
-                      ),
-                      Effect.flatMap(Fiber.join),
-                      Effect.tap((a) =>
-                        Effect.suspend(() => {
-                          MutableRef.set(this.current, Option.some(a))
-                          MutableRef.set(this.initializeFiber, Option.none())
-
-                          return super.event(a)
-                        }),
-                      ),
-                    ),
-                  ),
-                ),
-              Fiber.join,
-            ),
-          ),
-        Effect.succeed,
-      ),
-    ),
-  )
-
-  modifyEffect<R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>) {
-    return methodWithTrace(
-      (trace) =>
-        <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>) =>
-          Effect.flatMap(this.get, (a1) =>
-            this.lock(
-              Effect.flatMap(f(a1), ([b, a2]) =>
-                Effect.suspend(() => {
-                  MutableRef.set(this.current, Option.some(a2))
-
-                  if (this.i1(a1, a2)) {
-                    return Effect.succeed(b)
-                  }
-
-                  return Effect.as(super.event(a2), b)
-                }),
-              ),
-            ),
-          ).traced(trace),
-    )(f)
-  }
-
-  readonly modify: RefSubject<E, A>['modify'] = (f) =>
-    this.modifyEffect((a) => Effect.sync(() => f(a)))
-
-  readonly updateEffect: RefSubject<E, A>['updateEffect'] = (f) =>
-    this.modifyEffect((a) => Effect.map(f(a), (a) => [a, a]))
-
-  readonly update: RefSubject<E, A>['update'] = (f) =>
-    this.updateEffect((a) => Effect.sync(() => f(a)))
-
-  readonly set: RefSubject<E, A>['set'] = (a) => this.update(() => a)
-
-  readonly delete: RefSubject<E, A>['delete'] = Effect.suspend(() => {
-    const current = MutableRef.get(this.current)
-
-    if (Option.isSome(current)) {
-      MutableRef.set(this.current, Option.none())
-    }
-
-    return Effect.succeed<Option.Option<A>>(current)
-  })
-
-  readonly mapEffect: RefSubject<E, A>['mapEffect'] = <R2, E2, B>(
-    f: (a: A) => Effect.Effect<R2, E2, B>,
-  ) => new ComputedImpl<never, E, A, R2, E2, B>(this, f)
-
-  readonly map: RefSubject<E, A>['map'] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)));
-
-  [Equal.symbol](that: unknown) {
-    return this === that
-  }
-
-  [Hash.symbol]() {
-    return Hash.random(this)
-  }
-
-  traced(trace: Trace): Effect.Effect<never, E, A> {
-    if (trace) {
-      const traced = new RefSubjectImpl(this.i0, this.i1)
-      traced.trace = trace
-      return traced
-    }
-
-    return this
-  }
-
-  commit(): Effect.Effect<never, E, A> {
-    return this.get.traced(this.trace)
-  }
-}
-
-class TracedRefSubjectImpl<E, A> implements RefSubject<E, A> {
-  readonly _tag = 'Commit'
-  public i2: any = undefined
-  public trace: Trace = undefined;
-
-  readonly [Effect.EffectTypeId] = refSubjectVariant;
-  readonly [FxTypeId] = refSubjectVariant;
-  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
-  readonly eq: Equivalence.Equivalence<A>
-
-  constructor(readonly i0: RefSubject<E, A>, readonly i1: Trace) {
-    this.eq = i0.eq
-  }
-
-  run<R2>(sink: Sink<R2, E, A>) {
-    return this.i0.run(sink).traced(this.i1)
-  }
-
-  readonly event: RefSubject<E, A>['event'] = (f) => this.i0.event(f).traced(this.i1)
-
-  readonly error: RefSubject<E, A>['error'] = (e) => this.i0.error(e).traced(this.i1)
-
-  readonly end = () => this.i0.end().traced(this.i1)
-
-  readonly get = this.i0.get.traced(this.i1)
-
-  readonly modifyEffect: RefSubject<E, A>['modifyEffect'] = (f) =>
-    this.i0.modifyEffect(f).traced(this.i1)
-
-  readonly modify: RefSubject<E, A>['modify'] = (f) => this.i0.modify(f).traced(this.i1)
-
-  readonly updateEffect: RefSubject<E, A>['updateEffect'] = (f) =>
-    this.i0.updateEffect(f).traced(this.i1)
-
-  readonly update: RefSubject<E, A>['update'] = (f) => this.i0.update(f).traced(this.i1)
-
-  readonly set: RefSubject<E, A>['set'] = (a) => this.i0.set(a).traced(this.i1)
-
-  readonly delete: RefSubject<E, A>['delete'] = this.i0.delete.traced(this.i1)
-
-  readonly mapEffect: RefSubject<E, A>['mapEffect'] = (f) => this.i0.mapEffect(f).addTrace(this.i1)
-
-  readonly map: RefSubject<E, A>['map'] = (f) => this.i0.map(f).addTrace(this.i1);
-
-  [Equal.symbol] = this.i0[Equal.symbol];
-  [Hash.symbol] = this.i0[Hash.symbol]
-
-  readonly addTrace: (trace: Trace) => RefSubject<E, A> = (trace) => {
-    if (trace) {
-      return new TracedRefSubjectImpl(this, trace)
-    }
-
-    return this
-  }
-
-  traced(trace: Trace): Effect.Effect<never, E, A> {
-    if (trace) {
-      return new TracedRefSubjectImpl(this, trace)
-    }
-
-    return this
-  }
-
-  commit(): Effect.Effect<never, E, A> {
-    return this.get
-  }
-}
-
-class TupleRefSubjectImpl<S extends ReadonlyArray<RefSubject.Any>>
-  extends HoldFx<
-    never,
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >
-  implements
-    RefSubject<
-      Fx.ErrorsOf<S[number]>,
-      {
-        readonly [K in keyof S]: Fx.OutputOf<S[K]>
-      }
-    >
-{
-  readonly _tag = 'Commit'
-  public trace: Trace = undefined;
-
-  readonly [Effect.EffectTypeId] = refSubjectVariant;
-  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
-
-  readonly i1: Equivalence.Equivalence<{
-    readonly [K in keyof S]: Fx.OutputOf<S[K]>
-  }>
-  public i2: any = undefined
-
-  readonly lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
-
-  readonly eq: Equivalence.Equivalence<{
-    readonly [K in keyof S]: Fx.OutputOf<S[K]>
-  }>
-
-  constructor(readonly i0: S) {
-    super(combineAll(...i0) as any)
-
-    this.eq = this.i1 = Equivalence.tuple(...i0.map((s) => s.eq))
-  }
-
-  end() {
-    return Effect.allPar(this.i0.map((s) => s.end()))
-  }
-
-  readonly get: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['get'] = Effect.suspend(
-    () =>
-      Effect.allPar(this.i0.map((s) => s.get)) as Effect.Effect<
-        never,
-        Fx.ErrorsOf<S[number]>,
-        {
-          readonly [K in keyof S]: Fx.OutputOf<S[K]>
-        }
-      >,
-  )
-
-  modifyEffect<R2, E2, B>(
-    f: (a: {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }) => Effect.Effect<R2, E2, readonly [B, { readonly [K in keyof S]: Fx.OutputOf<S[K]> }]>,
-  ) {
-    const { current, i0 } = this
-
-    return pipe(
-      this.get,
-      Effect.flatMap((a) =>
-        this.lock(
-          Effect.gen(function* ($) {
-            const [b, a2] = yield* $(f(a))
-
-            MutableRef.set(current, Option.some(a2))
-
-            yield* $(Effect.allPar(i0.map((s, i) => s.set(a2[i]))))
-
-            return b
-          }),
-        ),
-      ),
-    )
-  }
-
-  readonly modify: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['modify'] = (f) => this.modifyEffect((a) => Effect.sync(() => f(a)))
-
-  readonly updateEffect: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['updateEffect'] = (f) => this.modifyEffect((a) => Effect.map(f(a), (a) => [a, a]))
-
-  readonly update: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['update'] = (f) => this.updateEffect((a) => Effect.sync(() => f(a)))
-
-  readonly set: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['set'] = (a) => this.update(() => a)
-
-  readonly delete: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['delete'] = Effect.suspend(() => {
-    const current = MutableRef.get(this.current)
-
-    if (Option.isSome(current)) {
-      MutableRef.set(this.current, Option.none())
-    }
-
-    return Effect.succeed<
-      Option.Option<{
-        readonly [K in keyof S]: Fx.OutputOf<S[K]>
-      }>
-    >(current)
-  })
-
-  readonly mapEffect: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['mapEffect'] = <R2, E2, B>(
-    f: (a: {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }) => Effect.Effect<R2, E2, B>,
-  ) =>
-    new ComputedImpl<
-      never,
-      Fx.ErrorsOf<S[number]>,
-      {
-        readonly [K in keyof S]: Fx.OutputOf<S[K]>
-      },
-      R2,
-      E2,
-      B
-    >(this, f)
-
-  readonly map: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['map'] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)));
-
-  [Equal.symbol](that: unknown) {
-    return this === that
-  }
-
-  [Hash.symbol]() {
-    return Hash.random(this)
-  }
-
-  readonly addTrace = (
-    trace: Trace,
-  ): RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  > => {
-    if (trace) {
-      return new TracedRefSubjectImpl(this, trace)
-    }
-
-    return this
-  }
-
-  traced(trace: Trace): Effect.Effect<
-    never,
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  > {
-    if (trace) {
-      const traced = new TupleRefSubjectImpl(this.i0)
-      traced.trace = trace
-      return traced
-    }
-
-    return this
-  }
-
-  commit(): Effect.Effect<
-    never,
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  > {
-    return this.get.traced(this.trace)
-  }
-}
-
-class StructRefSubjectImpl<S extends RR.ReadonlyRecord<RefSubject.Any>>
-  extends HoldFx<
-    never,
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >
-  implements
-    RefSubject<
-      Fx.ErrorsOf<S[number]>,
-      {
-        readonly [K in keyof S]: Fx.OutputOf<S[K]>
-      }
-    >
-{
-  readonly _tag = 'Commit'
-  public trace: Trace = undefined;
-
-  readonly [Effect.EffectTypeId] = refSubjectVariant;
-  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
-
-  readonly i1: Equivalence.Equivalence<{ readonly [K in keyof S]: Fx.OutputOf<S[K]> }>
-  public i2: any = undefined
-
-  readonly lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
-
-  readonly eq: Equivalence.Equivalence<{ readonly [K in keyof S]: Fx.OutputOf<S[K]> }>
-
-  constructor(readonly i0: S) {
-    super(
-      map(
-        combineAll(...Object.entries(i0).map(([k, s]) => map(s, (x) => [k, x]))),
-        Object.fromEntries,
-      ) as any,
-    )
-
-    this.i1 = this.eq = Equivalence.struct(RR.map(i0, (s) => s.eq)) as Equivalence.Equivalence<{
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }>
-  }
-
-  end() {
-    return Effect.allPar(RR.map(this.i0, (s) => s.end()))
-  }
-
-  readonly get: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['get'] = Effect.suspend(
-    () =>
-      Effect.allPar(RR.map(this.i0, (s) => s.get)) as Effect.Effect<
-        never,
-        Fx.ErrorsOf<S[number]>,
-        {
-          readonly [K in keyof S]: Fx.OutputOf<S[K]>
-        }
-      >,
-  )
-
-  modifyEffect<R2, E2, B>(
-    f: (a: {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }) => Effect.Effect<R2, E2, readonly [B, { readonly [K in keyof S]: Fx.OutputOf<S[K]> }]>,
-  ) {
-    const { current, i0: subjects } = this
-
-    return pipe(
-      this.get,
-      Effect.flatMap((a) =>
-        this.lock(
-          Effect.gen(function* ($) {
-            const [b, a2] = yield* $(f(a))
-
-            MutableRef.set(current, Option.some(a2))
-
-            yield* $(Effect.allPar(RR.map(subjects, (s, i) => s.set(a2[i]))))
-
-            return b
-          }),
-        ),
-      ),
-    )
-  }
-
-  readonly modify: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['modify'] = (f) => this.modifyEffect((a) => Effect.sync(() => f(a)))
-
-  readonly updateEffect: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['updateEffect'] = (f) => this.modifyEffect((a) => Effect.map(f(a), (a) => [a, a]))
-
-  readonly update: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['update'] = (f) => this.updateEffect((a) => Effect.sync(() => f(a)))
-
-  readonly set: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['set'] = (a) => this.update(() => a)
-
-  readonly delete: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['delete'] = Effect.suspend(() => {
-    const current = MutableRef.get(this.current)
-
-    if (Option.isSome(current)) {
-      MutableRef.set(this.current, Option.none())
-    }
-
-    return Effect.succeed<
-      Option.Option<{
-        readonly [K in keyof S]: Fx.OutputOf<S[K]>
-      }>
-    >(current)
-  })
-
-  readonly mapEffect: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['mapEffect'] = <R2, E2, B>(
-    f: (a: {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }) => Effect.Effect<R2, E2, B>,
-  ) =>
-    new ComputedImpl<
-      never,
-      Fx.ErrorsOf<S[number]>,
-      {
-        readonly [K in keyof S]: Fx.OutputOf<S[K]>
-      },
-      R2,
-      E2,
-      B
-    >(this, f)
-
-  readonly map: RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  >['map'] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)));
-
-  [Equal.symbol](that: unknown) {
-    return this === that
-  }
-
-  [Hash.symbol]() {
-    return Hash.random(this)
-  }
-
-  readonly addTrace = (
-    trace: Trace,
-  ): RefSubject<
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  > => {
-    if (trace) {
-      return new TracedRefSubjectImpl(this, trace)
-    }
-
-    return this
-  }
-
-  traced(trace: Trace): Effect.Effect<
-    never,
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  > {
-    if (trace) {
-      const traced = new StructRefSubjectImpl(this.i0)
-      traced.trace = trace
-      return traced
-    }
-
-    return this
-  }
-
-  commit(): Effect.Effect<
-    never,
-    Fx.ErrorsOf<S[number]>,
-    {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
-    }
-  > {
-    return this.get.traced(this.trace)
-  }
-}
-
-class ComputedImpl<R, E, A, R2, E2, B> implements Computed<R | R2, E | E2, B> {
-  readonly [FxTypeId] = refSubjectVariant
-
-  readonly _tag = 'Commit'
-  public trace: Trace = undefined;
-
-  readonly [Effect.EffectTypeId] = refSubjectVariant;
-  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
-
-  readonly i2: Fx<R | R2, E | E2, B>
-
-  constructor(readonly i0: Computed<R, E, A>, readonly i1: (a: A) => Effect.Effect<R2, E2, B>) {
-    // Create a stable reference to derived Fx
-    this.i2 = multicast(switchMapEffect(this.i0, this.i1))
-  }
-
-  run<R3>(sink: Sink<R3, E | E2, B>) {
-    return this.i2.run(sink)
-  }
-
-  addTrace(trace: Trace): Computed<R | R2, E | E2, B> {
-    return new TracedComputed<R | R2, E | E2, B>(this, trace)
-  }
-
-  readonly get = Effect.flatMap(this.i0.get, this.i1)
-
-  readonly mapEffect: Computed<R | R2, E | E2, B>['mapEffect'] = <R3, E3, C>(
-    f: (b: B) => Effect.Effect<R3, E3, C>,
-  ): Computed<R | R2 | R3, E | E2 | E3, C> =>
-    new ComputedImpl(this.i0, (a) => Effect.flatMap(this.i1(a), f))
-
-  readonly map: Computed<R | R2, E | E2, B>['map'] = <C>(f: (b: B) => C) =>
-    this.mapEffect((a) => Effect.sync(() => f(a)));
-
-  [Equal.symbol](that: unknown) {
-    return this === that
-  }
-
-  [Hash.symbol]() {
-    return Hash.random(this)
-  }
-
-  traced(trace: Trace): Effect.Effect<R | R2, E | E2, B> {
-    if (trace) {
-      return this.commit().traced(trace)
-    }
-
-    return this
-  }
-
-  commit(): Effect.Effect<R | R2, E | E2, B> {
-    return this.get.traced(this.trace)
-  }
-}
-
-class TracedComputed<R, E, A> implements Computed<R, E, A> {
-  readonly _tag = 'Commit'
-  readonly i2: any = undefined
-  readonly trace: Trace;
-
-  readonly [Effect.EffectTypeId] = refSubjectVariant;
-  readonly [FxTypeId] = refSubjectVariant;
-  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
-
-  constructor(readonly i0: Computed<R, E, A>, readonly i1: Trace) {
-    this.trace = i1
-  }
-
-  run<R2>(sink: Sink<R2, E, A>) {
-    return this.i0.run(sink).traced(this.i1)
-  }
-
-  addTrace(trace: Trace): Computed<R, E, A> {
-    return new TracedComputed<R, E, A>(this, trace)
-  }
-
-  readonly get = this.i0.get.traced(this.i1)
-
-  readonly mapEffect: Computed<R, E, A>['mapEffect'] = <R2, E2, B>(
-    f: (a: A) => Effect.Effect<R2, E2, B>,
-  ): Computed<R | R2, E | E2, B> => new ComputedImpl(this as Computed<R, E, A>, f)
-
-  readonly map: Computed<R, E, A>['map'] = <B>(f: (a: A) => B) =>
-    this.mapEffect((a) => Effect.sync(() => f(a)));
-
-  [Equal.symbol] = this.i0[Equal.symbol];
-  [Hash.symbol] = this.i0[Hash.symbol]
-
-  traced(trace: Trace): Effect.Effect<R, E, A> {
-    if (trace) {
-      return this.commit().traced(trace)
-    }
-
-    return this
-  }
-
-  commit(): Effect.Effect<R, E, A> {
-    return this.get
+    return struct(singleParam)
   }
 }
 
 export function isRefSubject<E, A>(u: unknown): u is RefSubject<E, A> {
-  return isFx<never, E, A>(u) && RefSubjectTypeId in u && u[RefSubjectTypeId] === RefSubjectTypeId
+  return isFx<never, E, A>(u) && RefSubjectTypeId in u
+}
+
+// Internals for RefSubject
+
+function makeGetFromContext<E, A>(ctx: RefSubjectContext<E, A>): RefSubject<E, A>['get'] {
+  return Effect.suspend(() => {
+    const current = MutableRef.get(ctx.currentRef)
+
+    if (Option.isSome(current)) {
+      return Effect.succeed(current.value)
+    }
+
+    const fiber = MutableRef.get(ctx.initializingFiberRef)
+
+    if (Option.isSome(fiber)) {
+      return Fiber.join(fiber.value)
+    }
+
+    return Effect.tap(ctx.lock(initializeFromContext(ctx)), (a) => ctx.hold.event(a))
+  })
+}
+
+function initializeFromContext<E, A>(ctx: RefSubjectContext<E, A>): Effect.Effect<never, E, A> {
+  return Effect.uninterruptibleMask((restore) =>
+    Effect.flatMap(Effect.forkIn(restore(ctx.initial), ctx.scope), (fiber) => {
+      MutableRef.set(ctx.initializingFiberRef, Option.some(fiber))
+
+      return Effect.tap(Fiber.join(fiber), (a) =>
+        Effect.sync(() => {
+          MutableRef.increment(ctx.version)
+          MutableRef.set(ctx.currentRef, Option.some(a))
+          MutableRef.set(ctx.initializingFiberRef, Option.none())
+        }),
+      )
+    }),
+  )
+}
+
+function makeRefMethods<E, A>(
+  primitive: RefPrimitive<E, A>,
+): Pick<RefSubject<E, A>, 'modify' | 'updateEffect' | 'update'> {
+  const modify = makeModify<E, A>(primitive.modifyEffect)
+  const updateEffect = makeUpdateEffect<E, A>(primitive.modifyEffect)
+  const update = makeUpdate<E, A>(updateEffect)
+
+  return {
+    modify,
+    updateEffect,
+    update,
+  } as const
+}
+
+function makeModifyEffectFromContext<E, A>(
+  get: RefSubject<E, A>['get'],
+  ctx: RefSubjectContext<E, A>,
+): RefSubject<E, A>['modifyEffect'] {
+  return (f) =>
+    Effect.flatMap(get, (a1) =>
+      ctx.lock(
+        Effect.flatMap(f(a1), ([b, a2]) =>
+          Effect.suspend(() => {
+            MutableRef.set(ctx.currentRef, Option.some(a2))
+
+            if (ctx.eq(a1, a2)) {
+              return Effect.succeed(b)
+            }
+
+            MutableRef.increment(ctx.version)
+
+            return Effect.as(ctx.hold.event(a2), b)
+          }),
+        ),
+      ),
+    )
+}
+
+function makeModify<E, A>(
+  modifyEffect: RefSubject<E, A>['modifyEffect'],
+): RefSubject<E, A>['modify'] {
+  return (f) => modifyEffect((a) => Effect.sync(() => f(a)))
+}
+
+function makeUpdateEffect<E, A>(
+  modifyEffect: RefSubject<E, A>['modifyEffect'],
+): RefSubject<E, A>['updateEffect'] {
+  return (f) => modifyEffect((a) => Effect.map(f(a), (a) => [a, a]))
+}
+
+function makeUpdate<E, A>(
+  updateEffect: RefSubject<E, A>['updateEffect'],
+): RefSubject<E, A>['update'] {
+  return (f) => updateEffect((a) => Effect.sync(() => f(a)))
+}
+
+function makeSetFromContext<E, A>(ctx: RefSubjectContext<E, A>): RefSubject<E, A>['set'] {
+  return (a: A) =>
+    Effect.suspend(() => {
+      const fiber = MutableRef.get(ctx.initializingFiberRef)
+
+      return pipe(
+        fiber,
+        Option.match({ onNone: () => Effect.unit, onSome: Fiber.await }),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        Effect.flatMap((_: unknown) => {
+          const current = MutableRef.get(ctx.currentRef)
+
+          MutableRef.set(ctx.currentRef, Option.some(a))
+
+          // Only emit if the value has changed
+          if (Option.isNone(current) || (Option.isSome(current) && !ctx.eq(current.value, a))) {
+            // Increment the version
+            MutableRef.increment(ctx.version)
+            return Effect.as(ctx.hold.event(a), a)
+          }
+
+          return Effect.succeed(a)
+        }),
+      )
+    })
+}
+
+function makeDeleteFromContext<E, A>(ctx: RefSubjectContext<E, A>): RefSubject<E, A>['delete'] {
+  return Effect.sync(() => {
+    const current = MutableRef.get(ctx.currentRef)
+
+    if (Option.isSome(current)) {
+      MutableRef.set(ctx.version, 0)
+      MutableRef.set(ctx.currentRef, Option.none())
+    }
+
+    return current
+  })
+}
+
+function makeEndFromContext<E, A>(ctx: RefSubjectContext<E, A>): RefSubject<E, A>['end'] {
+  return () =>
+    Effect.suspend(() => {
+      MutableRef.set(ctx.version, 0)
+
+      const fibers = [
+        ctx.hold.fiber || Fiber.unit,
+        Option.getOrElse(MutableRef.get(ctx.initializingFiberRef), () => Fiber.unit),
+      ]
+
+      return Fiber.interruptAll(fibers)
+    })
+}
+
+function makeFiltered<E, A>(
+  f: () => RefSubject<E, A>,
+): Pick<
+  RefSubject<E, A>,
+  'filterMapEffect' | 'filterMap' | 'filterEffect' | 'filter' | 'filterNotEffect' | 'filterNot'
+> {
+  const get = makeMemoizedGet(f)
+
+  function filterMapEffect<R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>) {
+    return new FilteredImpl(get(), f)
+  }
+
+  function filterMap<B>(f: (a: A) => Option.Option<B>) {
+    return filterMapEffect((a) => Effect.sync(() => f(a)))
+  }
+
+  function filterEffect<R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>) {
+    return filterMapEffect((a) => Effect.map(f(a), (b) => (b ? Option.some(a) : Option.none())))
+  }
+
+  function filter(f: (a: A) => boolean) {
+    return filterEffect((a) => Effect.sync(() => f(a)))
+  }
+
+  function filterNotEffect<R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>) {
+    return filterEffect((a) => Effect.map(f(a), (b) => !b))
+  }
+
+  function filterNot(f: (a: A) => boolean) {
+    return filterNotEffect((a) => Effect.sync(() => f(a)))
+  }
+
+  return {
+    filterMapEffect,
+    filterMap,
+    filterEffect,
+    filter,
+    filterNotEffect,
+    filterNot,
+  } as const
+}
+
+function makeComputedMethods<E, A>(
+  f: () => RefSubject<E, A>,
+): Pick<RefSubject<E, A>, 'mapEffect' | 'map'> {
+  const get = makeMemoizedGet(f)
+
+  function mapEffect<R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): Computed<R2, E | E2, B> {
+    return new ComputedImpl(get(), f)
+  }
+
+  function map<B>(f: (a: A) => B): Computed<never, E, B> {
+    return mapEffect((a) => Effect.sync(() => f(a)))
+  }
+
+  return {
+    mapEffect,
+    map,
+  } as const
+}
+
+function makeTransformMethods<E, A>(
+  f: () => RefSubject<E, A>,
+): Pick<RefSubject<E, A>, 'transformBoth' | 'transform' | 'transformGet'> {
+  const get = makeMemoizedGet(f)
+
+  function transformBoth<R3, E3, C, R4, E4, D>(
+    f: (fx: Fx<never, E, A>) => Fx<R3, E3, C>,
+    g: (effect: Effect.Effect<never, E, A>) => Effect.Effect<R4, E4, D>,
+  ): RefTransform<R3, E3, C, R4, E4, D> {
+    return new RefTransformImpl(get(), f, g)
+  }
+
+  function transform<R3, E3, C>(
+    f: (fx: Fx<never, E, A>) => Fx<R3, E3, C>,
+  ): RefTransform<R3, E3, C, never, E, A> {
+    return transformBoth(f, identity)
+  }
+
+  function transformGet<R3, E3, C>(
+    f: (effect: Effect.Effect<never, E, A>) => Effect.Effect<R3, E3, C>,
+  ): RefTransform<never, E, A, R3, E3, C> {
+    return transformBoth(identity, f)
+  }
+
+  return {
+    transformBoth,
+    transform,
+    transformGet,
+  } as const
+}
+
+const placeholders = {
+  _tag: 'Commit',
+  [Effect.EffectTypeId]: refVariance,
+  i0: undefined,
+  i1: undefined,
+  i2: undefined,
+  [Equal.symbol](that: unknown) {
+    return this === that
+  },
+  [Hash.symbol]() {
+    return Hash.random(this)
+  },
+  pipe() {
+    // eslint-disable-next-line prefer-rest-params
+    return pipeArguments(this, arguments)
+  },
+}
+
+function makeEffectMethods<E, A>(
+  get: RefSubject<E, A>['get'],
+): Pick<RefSubject<E, A>, Extract<keyof Effect.Effect<never, E, A>, keyof RefSubject<E, A>>> {
+  return Object.assign(
+    {
+      commit() {
+        return get
+      },
+    } as const,
+    placeholders,
+  ) as any
+}
+
+function makeMemoizedGet<A>(f: () => A) {
+  let memoized: Option.Option<A> = Option.none()
+
+  return () => {
+    if (Option.isNone(memoized)) {
+      memoized = Option.some(f())
+    }
+
+    return (memoized as Option.Some<A>).value
+  }
+}
+
+type RefSubjectContext<E, A> = {
+  initial: Effect.Effect<never, E, A>
+  currentRef: MutableRef.MutableRef<Option.Option<A>>
+  initializingFiberRef: MutableRef.MutableRef<Option.Option<Fiber.RuntimeFiber<E, A>>>
+  lock: Lock
+  scope: Scope.Scope
+  eq: Equivalence.Equivalence<A>
+  hold: HoldFx<never, E, A>
+  version: MutableRef.MutableRef<number>
+}
+
+function makeRefSubjectContext<E, A>(
+  initial: Effect.Effect<never, E, A>,
+  scope: Scope.Scope,
+  eq: Equivalence.Equivalence<A>,
+) {
+  const hold = new HoldFx(never<E, A>())
+  const ctx: RefSubjectContext<E, A> = {
+    initial,
+    currentRef: hold.current,
+    initializingFiberRef: MutableRef.make(Option.none()),
+    lock: Effect.unsafeMakeSemaphore(1).withPermits(1),
+    scope,
+    eq,
+    hold,
+    version: MutableRef.make(0),
+  }
+
+  return ctx
+}
+
+function unsafeMakeRefPrimitive<E, A>(
+  initial: Effect.Effect<never, E, A>,
+  scope: Scope.Scope,
+  eq: Equivalence.Equivalence<A>,
+): RefPrimitive<E, A> {
+  const ctx = makeRefSubjectContext(initial, scope, eq)
+  const get = makeGetFromContext(ctx)
+  const set = makeSetFromContext(ctx)
+
+  function run<R2>(sink: Sink<R2, E, A>) {
+    return Effect.suspend(() => {
+      const current = MutableRef.get(ctx.hold.current)
+
+      if (Option.isNone(current)) {
+        return pipe(
+          primitive.get,
+          Effect.catchAllCause(sink.error),
+          Effect.flatMap(() => ctx.hold.run(sink)),
+        )
+      }
+
+      return ctx.hold.run(sink)
+    })
+  }
+
+  const primitive: RefPrimitive<E, A> = {
+    delete: makeDeleteFromContext(ctx),
+    end: makeEndFromContext(ctx),
+    eq,
+    error: (cause) => ctx.hold.error(cause),
+    event: set,
+    get,
+    modifyEffect: makeModifyEffectFromContext(get, ctx),
+    run,
+    set,
+    version: ctx.version,
+  }
+
+  return primitive
+}
+
+function makeRefFromPrimitive<E, A>(primitive: RefPrimitive<E, A>): RefSubject<E, A> {
+  const ref: RefSubject<E, A> = {
+    [FxTypeId]: refVariance,
+    [RefSubjectTypeId]: RefSubjectTypeId,
+    [ComputedTypeId]: ComputedTypeId,
+    ...primitive,
+    ...makeRefMethods(primitive),
+    ...makeEffectMethods(primitive.get),
+    ...makeFiltered(() => ref),
+    ...makeComputedMethods(() => ref),
+    ...makeTransformMethods(() => ref),
+    version() {
+      return MutableRef.get(primitive.version)
+    },
+  }
+
+  return ref
+}
+
+// Base Ref which provides all functionality that can otherwise be derived
+// using makeRefFromPrimitive
+interface RefPrimitive<E, A> {
+  // Fx
+  run: RefSubject<E, A>['run']
+
+  // Subject
+  event: RefSubject<E, A>['event']
+  error: RefSubject<E, A>['error']
+  end: RefSubject<E, A>['end']
+
+  // Ref
+  eq: RefSubject<E, A>['eq']
+  get: RefSubject<E, A>['get']
+  modifyEffect: RefSubject<E, A>['modifyEffect']
+  set: RefSubject<E, A>['set']
+  delete: RefSubject<E, A>['delete']
+
+  // Primitive
+  version: MutableRef.MutableRef<number>
+}
+
+// Internals for RefSubject.tuple
+
+function tupleRefPrimitive<const Refs extends ReadonlyArray<RefSubject.Any>>(
+  refs: Refs,
+): RefPrimitive<Fx.ErrorsOf<Refs[number]>, { readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]> }> {
+  type _E = Fx.ErrorsOf<Refs[number]>
+  type _A = { readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]> }
+
+  const hold = new HoldFx(combineAll(...refs) as any as Fx<never, _E, _A>)
+  const eq = Equivalence.tuple(...refs.map((ref) => ref.eq))
+  const get = Effect.all(
+    refs.map((ref) => ref.get),
+    unboundedConcurrency,
+  ) as Effect.Effect<never, _E, _A>
+
+  const primitive: RefPrimitive<_E, _A> = {
+    delete: Effect.map(
+      Effect.all(
+        refs.map((ref) => ref.delete),
+        { concurrency: 'unbounded' },
+      ),
+      (values) => Option.all(values),
+    ) as Effect.Effect<never, _E, Option.Option<_A>>,
+    end: () =>
+      Effect.all(
+        refs.map((ref) => ref.end()),
+        unboundedConcurrency,
+      ),
+    eq,
+    error: (error) => hold.error(error),
+    event: (value) =>
+      Effect.all(
+        value.map((v, i) => refs[i].event(v)),
+        unboundedConcurrency,
+      ),
+    get,
+    modifyEffect: makeModifyEffectTuple(refs, get, eq),
+    run: (sink) => hold.run(sink),
+    set: (value) =>
+      Effect.all(
+        value.map((v, i) => refs[i].set(v)),
+        unboundedConcurrency,
+      ) as Effect.Effect<never, never, _A>,
+    version: MutableRef.make(0),
+  }
+
+  return primitive
+}
+
+function makeModifyEffectTuple<
+  const Refs extends ReadonlyArray<RefSubject.Any>,
+  E,
+  A extends readonly any[],
+>(
+  refs: Refs,
+  get: Effect.Effect<never, E, A>,
+  eq: Equivalence.Equivalence<A>,
+): RefSubject<E, A>['modifyEffect'] {
+  return <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>) => {
+    return Effect.gen(function* ($) {
+      const current = yield* $(get)
+      const [b, a] = yield* $(f(current))
+
+      if (eq(a, current)) {
+        return b
+      }
+
+      yield* $(
+        Effect.all(
+          refs.map((ref, i) => ref.set(a[i])),
+          unboundedConcurrency,
+        ),
+      )
+
+      return b
+    })
+  }
+}
+
+function structRefPrimitive<const Refs extends Readonly<Record<string, RefSubject.Any>>>(
+  refs: Refs,
+): RefPrimitive<Fx.ErrorsOf<Refs[string]>, { readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]> }> {
+  type _E = Fx.ErrorsOf<Refs[string]>
+  type _A = { readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]> }
+
+  const hold = new HoldFx(struct(refs)) as HoldFx<never, _E, _A>
+  const eq = Equivalence.struct(mapRecord(refs, (ref) => ref.eq))
+  const get = Effect.all(
+    mapRecord(refs, (ref) => ref.get),
+    unboundedConcurrency,
+  ) as Effect.Effect<never, _E, _A>
+
+  const primitive: RefPrimitive<_E, _A> = {
+    delete: Effect.map(
+      Effect.all(
+        mapRecord(refs, (ref) => ref.delete),
+        unboundedConcurrency,
+      ),
+      (values) => Option.all(values),
+    ) as Effect.Effect<never, _E, Option.Option<_A>>,
+    end: () =>
+      Effect.all(
+        mapRecord(refs, (ref) => ref.end()),
+        unboundedConcurrency,
+      ),
+    eq,
+    error: (error) => hold.error(error),
+    event: (value) =>
+      Effect.all(
+        mapRecord(value, (v, i) => refs[i].event(v)),
+        unboundedConcurrency,
+      ),
+    get,
+    modifyEffect: makeModifyEffectStruct(refs, get, eq),
+    run: (sink) => hold.run(sink),
+    set: (value) =>
+      Effect.all(
+        mapRecord(value, (v, i) => refs[i].set(v)),
+        unboundedConcurrency,
+      ) as Effect.Effect<never, never, _A>,
+    version: MutableRef.make(0),
+  }
+
+  return primitive
+}
+
+function makeModifyEffectStruct<
+  const Refs extends Readonly<Record<string, RefSubject.Any>>,
+  E,
+  A extends Readonly<Record<string, any>>,
+>(
+  refs: Refs,
+  get: Effect.Effect<never, E, A>,
+  eq: Equivalence.Equivalence<A>,
+): RefSubject<E, A>['modifyEffect'] {
+  return <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>) => {
+    return Effect.gen(function* ($) {
+      const current = yield* $(get)
+      const [b, a] = yield* $(f(current))
+
+      if (eq(a, current)) {
+        return b
+      }
+
+      yield* $(
+        Effect.all(
+          mapRecord(refs, (ref, i) => ref.set(a[i])),
+          unboundedConcurrency,
+        ),
+      )
+
+      return b
+    })
+  }
+}
+
+function mapRecord<K extends string, A, B>(
+  record: Readonly<Record<K, A>>,
+  f: (a: A, k: K) => B,
+): { readonly [_ in K]: B } {
+  const result: Record<K, B> = {} as any
+
+  for (const k in record) {
+    result[k] = f(record[k], k)
+  }
+
+  return result
+}
+
+export function asRef<R, E, A>(fx: Fx<R, E, A>) {
+  return Effect.flatMap(Deferred.make<E, A>(), (deferred) =>
+    Effect.flatMap(makeRef(Deferred.await(deferred)), (ref) => {
+      const onValue = (value: A) =>
+        Effect.flatMap(Deferred.succeed(deferred, value), (closed) =>
+          closed ? Effect.unit : ref.set(value),
+        )
+
+      return Effect.as(
+        Effect.forkScoped(
+          Effect.catchAllCause(drain(switchMatchCauseEffect(fx, ref.error, onValue)), ref.error),
+        ),
+        ref,
+      )
+    }),
+  )
+
+  return Effect.gen(function* ($) {
+    const deferred = yield* $(Deferred.make<E, A>())
+    const ref = yield* $(makeRef(Deferred.await(deferred)))
+
+    const onValue = (value: A) =>
+      Effect.flatMap(Deferred.succeed(deferred, value), (closed) =>
+        closed ? Effect.unit : ref.set(value),
+      )
+
+    yield* $(
+      switchMatchCauseEffect(fx, ref.error, onValue),
+      drain,
+      Effect.catchAllCause(ref.error),
+      Effect.forkScoped,
+    )
+
+    return ref
+  })
 }

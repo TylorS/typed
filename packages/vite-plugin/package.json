@@ -19,11 +19,11 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.12.2",
-    "@typed/compiler": "workspace:*",
-    "fast-glob": "^3.2.12",
-    "vavite": "^1.7.1",
-    "vite": "^4.3.7",
+    "@effect/data": "^0.15.1",
+    "fast-glob": "^3.3.0",
+    "rollup-plugin-visualizer": "^5.9.2",
+    "vavite": "^2.0.1",
+    "vite": "^4.4.4",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.2.0"
   },
@@ -34,5 +34,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "devDependencies": {
+    "vitest": "0.33.0"
+  }
 }

@@ -22,7 +22,7 @@ export function combineAll<FX extends ReadonlyArray<Fx<any, any, any>>>(
   }
 
   return Fx((sink) =>
-    Effect.gen(function* ($) {
+    Effect.suspend(() => {
       const length = fx.length
       const values = new Map<number, any>()
 
@@ -33,21 +33,24 @@ export function combineAll<FX extends ReadonlyArray<Fx<any, any, any>>>(
                 [k in keyof FX]: Fx.OutputOf<FX[k]>
               },
             )
-          : Effect.unit(),
+          : Effect.unit,
       )
 
-      yield* $(
-        Effect.forEachParWithIndex(fx, (f, i) =>
-          f.run(
-            Sink(
-              (a) =>
-                Effect.suspend(() => {
-                  values.set(i, a)
-                  return emitIfReady
-                }),
-              sink.error,
+      return Effect.asUnit(
+        Effect.forEach(
+          fx,
+          (f, i) =>
+            f.run(
+              Sink(
+                (a) =>
+                  Effect.suspend(() => {
+                    values.set(i, a)
+                    return emitIfReady
+                  }),
+                sink.error,
+              ),
             ),
-          ),
+          { concurrency: 'unbounded' },
         ),
       )
     }),

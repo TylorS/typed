@@ -1,11 +1,10 @@
 import type * as Context from '@effect/data/Context'
-import type { Trace } from '@effect/data/Debug'
 import { identity } from '@effect/data/Function'
 import type * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 
-import { FxTypeId, Traced } from './Fx.js'
+import { FxTypeId } from './Fx.js'
 import type { Fx, Sink } from './Fx.js'
 
 export function multicast<R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> {
@@ -24,8 +23,10 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     _A: identity,
   }
 
-  protected observers: Array<MulticastObserver<any, E, A>> = []
-  protected fiber: Fiber.RuntimeFiber<never, void> | undefined
+  /**@internal */
+  public observers: Array<MulticastObserver<any, E, A>> = []
+  /**@internal */
+  public fiber: Fiber.RuntimeFiber<never, void> | undefined
 
   constructor(readonly fx: Fx<R, E, A>) {
     this.run = this.run.bind(this)
@@ -39,40 +40,47 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
 
-    return Effect.gen(function* ($) {
-      const context = yield* $(Effect.context<R2>())
-      const observer: MulticastObserver<R2, E, A> = { sink, context }
+    return Effect.flatMap(Effect.context<R2>(), (context) =>
+      Effect.suspend(() => {
+        const observer: MulticastObserver<R2, E, A> = { sink, context }
 
-      if (observers.push(observer) === 1) {
-        that.fiber = yield* $(Effect.forkDaemon(that.fx.run(that)))
-      }
+        const effects: Array<Effect.Effect<R, never, void>> = []
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      yield* $(Effect.ensuring(Fiber.await(that.fiber!), that.removeSink(sink)))
-    })
-  }
+        if (observers.push(observer) === 1) {
+          effects.push(
+            Effect.tap(Effect.forkDaemon(that.fx.run(that)), (fiber) =>
+              Effect.sync(() => (that.fiber = fiber)),
+            ),
+          )
+        }
 
-  readonly addTrace = (trace: Trace): Fx<R, E, A> => {
-    return Traced<R, E, A>(this.fx, trace)
+        effects.push(
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          Effect.suspend(() => Effect.ensuring(Fiber.await(that.fiber!), that.removeSink(sink))),
+        )
+
+        return Effect.all(effects)
+      }),
+    )
   }
 
   event(a: A) {
     if (this.observers.length === 0) {
-      return Effect.unit()
+      return Effect.unit
     }
 
     return Effect.suspend(() =>
-      Effect.forEachDiscard(this.observers.slice(0), (observer) => this.runEvent(observer, a)),
+      Effect.forEach(this.observers.slice(0), (observer) => this.runEvent(observer, a)),
     )
   }
 
   error(cause: Cause.Cause<E>) {
     if (this.observers.length === 0) {
-      return Effect.unit()
+      return Effect.unit
     }
 
     return Effect.suspend(() =>
-      Effect.forEachDiscard(this.observers.slice(0), (observer) => this.runError(observer, cause)),
+      Effect.forEach(this.observers.slice(0), (observer) => this.runError(observer, cause)),
     )
   }
 
@@ -94,7 +102,7 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     return Effect.suspend(() => {
       const { observers } = this
 
-      if (observers.length === 0) return Effect.unit()
+      if (observers.length === 0) return Effect.unit
 
       const index = observers.findIndex((o) => o.sink === sink)
 
@@ -111,7 +119,7 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
         }
       }
 
-      return Effect.unit()
+      return Effect.unit
     })
   }
 }

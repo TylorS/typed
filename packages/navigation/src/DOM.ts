@@ -1,9 +1,10 @@
-import { flow, pipe } from '@effect/data/Function'
+import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
+import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as Context from '@typed/context'
-import { Location, History, Window, Storage, addWindowListener } from '@typed/dom'
+import { Location, History, Window, Storage, addWindowListener, Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
 import { Destination, DestinationKey, Navigation, NavigationError } from './Navigation.js'
@@ -13,7 +14,7 @@ import { NavigationEventJson } from './json.js'
 import { makeModel } from './model.js'
 import { getInitialValues } from './storage.js'
 
-export type NavigationServices = Window | Location | History | Storage
+export type NavigationServices = Window | Document | Location | History | Storage
 
 export interface DomNavigationOptions {
   // Defaults to a random value, but you can provide your own
@@ -27,46 +28,55 @@ export interface DomNavigationOptions {
 
 export const dom = (
   options: DomNavigationOptions = {},
-): Layer.Layer<NavigationServices, never, Navigation> =>
-  Navigation.layerScoped(
+): Layer.Layer<NavigationServices, never, Navigation> => {
+  return Navigation.layerScoped(
     Effect.gen(function* ($) {
       // Get resources
       const context = yield* $(Effect.context<NavigationServices>())
       const history = Context.get(context, History)
+      const document = Context.get(context, Document)
+      const base = document.querySelector('base')
+      const baseHref = base ? getBasePathFromHref(base.href) : '/'
 
       // Create model and intent
-      const [initialEntries, initialIndex] = yield* $(getInitialValues(options))
+      const [initialEntries, initialIndex] = yield* $(getInitialValues(baseHref, options))
       const model = yield* $(makeModel(initialEntries, initialIndex))
-      const intent = makeIntent(model, options)
+      const intent = makeIntent(model, baseHref, options)
 
       // Used to ensure ordering of navigation events
       const lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
 
       const handleNavigationError =
         (depth: number) =>
-        (error: NavigationError): Effect.Effect<NavigationServices, never, Destination> =>
-          Effect.gen(function* ($) {
-            if (depth >= 50) {
-              throw new Error(
-                'Too many redirects. You may have an infinite loop of onNavigation handlers that are redirecting.',
-              )
-            }
-
-            switch (error._tag) {
-              case 'CancelNavigation':
-                return yield* $(model.currentEntry.get)
-              case 'RedirectNavigation':
-                return yield* $(
-                  Effect.catchAll(
-                    intent.navigate(error.url, error),
-                    handleNavigationError(depth + 1),
-                  ),
+        (
+          error: NavigationError | Cause.NoSuchElementException,
+        ): Effect.Effect<never, never, Destination> =>
+          Effect.provideContext(
+            Effect.gen(function* ($) {
+              if (depth >= 50) {
+                throw new Error(
+                  'Too many redirects. You may have an infinite loop of onNavigation handlers that are redirecting.',
                 )
-            }
-          })
+              }
 
-      const catchNavigationError = <A>(
-        effect: Effect.Effect<NavigationServices, NavigationError, A>,
+              switch (error._tag) {
+                case 'NoSuchElementException':
+                case 'CancelNavigation':
+                  return yield* $(model.currentEntry.get)
+                case 'RedirectNavigation':
+                  return yield* $(
+                    Effect.catchAll(
+                      intent.navigate(error.url, error),
+                      handleNavigationError(depth + 1),
+                    ),
+                  )
+              }
+            }),
+            context,
+          )
+
+      const catchNavigationError = <R, A>(
+        effect: Effect.Effect<R, NavigationError | Cause.NoSuchElementException, A>,
       ) => Effect.catchAll(effect, handleNavigationError(0))
 
       // Used to provide a locked effect with the current context
@@ -76,18 +86,24 @@ export const dom = (
       // Constructor our service
       const navigation: Navigation = {
         back: provideLocked(catchNavigationError(intent.back(false))),
+        base: baseHref,
         canGoBack: model.canGoBack,
         canGoForward: model.canGoForward,
         currentEntry: model.currentEntry,
         entries: model.entries,
         forward: provideLocked(catchNavigationError(intent.forward(false))),
-        goTo: flow(
-          intent.goTo,
-          Effect.catchAll(flow(handleNavigationError(0), Effect.map(Option.some))),
-          provideLocked,
-        ),
-        navigate: flow(intent.navigate, catchNavigationError, provideLocked),
-        onNavigation: intent.onNavigation,
+        goTo: (a) =>
+          pipe(
+            a,
+            intent.goTo,
+            Effect.catchAll((a) => pipe(a, handleNavigationError(0), Effect.map(Option.some))),
+            provideLocked,
+          ),
+        navigate: (url, options) => pipe(intent.navigate(url, options), catchNavigationError, provideLocked),
+        onNavigation: (handler, options) =>
+          pipe(intent.onNavigation(handler, options), catchNavigationError, Effect.asUnit),
+        onNavigationEnd: (handler, options) =>
+          Effect.asUnit(intent.onNavigationEnd(handler, options)),
         reload: provideLocked(catchNavigationError(intent.reload)),
       }
 
@@ -132,3 +148,18 @@ export const dom = (
       return navigation
     }),
   )
+}
+
+export function getBasePathFromHref(href: string) {
+  try {
+    const url = new URL(href)
+
+    return getCurrentPathFromLocation(url)
+  } catch {
+    return href
+  }
+}
+
+export function getCurrentPathFromLocation(location: Location | HTMLAnchorElement | URL) {
+  return location.pathname + location.search + location.hash
+}

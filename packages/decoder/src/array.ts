@@ -12,8 +12,8 @@ export const unknownArray: Decoder<unknown, ReadonlyArray<unknown>> = (i) =>
 
 export const fromArray =
   <I, O>(member: Decoder<I, O>): Decoder<readonly I[], readonly O[]> =>
-  (i: readonly I[], options?: ParseOptions) =>
-    Effect.gen(function* ($) {
+  (i: readonly I[], options?: ParseOptions) => {
+    return Effect.gen(function* ($) {
       const results = yield* $(
         Effect.all(
           pipe(
@@ -36,6 +36,7 @@ export const fromArray =
 
       return successes
     })
+  }
 
 export const array = <O>(member: Decoder<unknown, O>): Decoder<unknown, readonly O[]> =>
   pipe(unknownArray, compose(fromArray(member)))

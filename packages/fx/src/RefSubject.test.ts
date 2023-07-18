@@ -20,7 +20,7 @@ describe('RefSubject', () => {
         deepStrictEqual(value, 1)
       })
 
-      await Effect.runPromise(test)
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 
@@ -33,7 +33,7 @@ describe('RefSubject', () => {
         deepStrictEqual(yield* $(ref.get), 2)
       })
 
-      await Effect.runPromise(test)
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 
@@ -46,7 +46,7 @@ describe('RefSubject', () => {
         deepStrictEqual(yield* $(ref.get), 2)
       })
 
-      await Effect.runPromise(test)
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 
@@ -59,7 +59,7 @@ describe('RefSubject', () => {
         deepStrictEqual(yield* $(ref.get), 2)
       })
 
-      await Effect.runPromise(test)
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 
@@ -78,7 +78,7 @@ describe('RefSubject', () => {
         deepStrictEqual(yield* $(ref.delete), Option.some(1))
       })
 
-      await Effect.runPromise(test)
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 
@@ -141,6 +141,67 @@ describe('RefSubject', () => {
             const results = yield* $(Fiber.join(fiber))
 
             deepStrictEqual(Chunk.toReadonlyArray(results), [4, 6, 8])
+          }),
+        )
+
+        await Effect.runPromise(test)
+      })
+
+      it('does not recompute value when underlying ref has not changed', async () => {
+        const test = Effect.scoped(
+          Effect.gen(function* ($) {
+            let calls = 0
+            const ref = yield* $(makeRef(Effect.succeed(1)))
+            const addOne = ref.map((x) => {
+              calls++
+              return x + 1
+            })
+
+            deepStrictEqual(yield* $(addOne), 2)
+            deepStrictEqual(yield* $(addOne), 2)
+            deepStrictEqual(yield* $(addOne), 2)
+            deepStrictEqual(calls, 1)
+
+            yield* $(ref.update((x) => x + 1))
+
+            deepStrictEqual(yield* $(addOne), 3)
+            deepStrictEqual(yield* $(addOne), 3)
+            deepStrictEqual(yield* $(addOne), 3)
+            deepStrictEqual(calls, 2)
+          }),
+        )
+
+        await Effect.runPromise(test)
+      })
+
+      it('does not recompute value when underlying ref has not changed with multiple layers', async () => {
+        const test = Effect.scoped(
+          Effect.gen(function* ($) {
+            let addOneCalls = 0
+            let multiplyTwoCalls = 0
+            const ref = yield* $(makeRef(Effect.succeed(1)))
+            const addOne = ref.map((x) => {
+              addOneCalls++
+              return x + 1
+            })
+            const multiplyTwo = addOne.map((a) => {
+              multiplyTwoCalls++
+              return a * 2
+            })
+
+            deepStrictEqual(yield* $(multiplyTwo), 4)
+            deepStrictEqual(yield* $(multiplyTwo), 4)
+            deepStrictEqual(yield* $(multiplyTwo), 4)
+            deepStrictEqual(addOneCalls, 1)
+            deepStrictEqual(multiplyTwoCalls, 1)
+
+            yield* $(ref.update((x) => x + 1))
+
+            deepStrictEqual(yield* $(multiplyTwo), 6)
+            deepStrictEqual(yield* $(multiplyTwo), 6)
+            deepStrictEqual(yield* $(multiplyTwo), 6)
+            deepStrictEqual(addOneCalls, 2)
+            deepStrictEqual(multiplyTwoCalls, 2)
           }),
         )
 
@@ -350,7 +411,7 @@ describe('RefSubject', () => {
         deepStrictEqual(yield* $(c.get), 4)
       })
 
-      await Effect.runPromise(test)
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 })
