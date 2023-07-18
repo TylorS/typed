@@ -39,8 +39,8 @@ export const makeIntersectionObserverManager: Effect.Effect<
       Ref.get,
       Effect.map(HashMap.get(options)),
       Effect.flatMap(
-        Maybe.match(
-          () =>
+        Maybe.match({
+          onNone: () =>
             observers.modify((map) => {
               const subject = Fx.makeSubject<never, IntersectionObserverEntry>()
               const intersectionObserver = new globalThis.IntersectionObserver(
@@ -52,8 +52,8 @@ export const makeIntersectionObserverManager: Effect.Effect<
 
               return [observer, HashMap.set(map, options, observer)]
             }),
-          Effect.succeed,
-        ),
+          onSome: Effect.succeed,
+        }),
       ),
     )
 

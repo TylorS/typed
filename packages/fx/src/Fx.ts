@@ -1,4 +1,3 @@
-import type { Trace } from '@effect/data/Debug'
 import { identity } from '@effect/data/Function'
 import type { Cause } from '@effect/io/Cause'
 import type { Effect } from '@effect/io/Effect'
@@ -15,8 +14,6 @@ export interface Fx<out R, out E, out A> {
   }
 
   readonly run: <R2>(sink: Sink<R2, E, A>) => Effect<R | R2, never, void>
-
-  readonly addTrace: (trace: Trace) => Fx<R, E, A>
 }
 
 const fxVariance = {
@@ -31,7 +28,6 @@ export const make: <R, E, A>(
   const fx: Fx<R, E, A> = {
     [FxTypeId]: fxVariance,
     run,
-    addTrace: (trace) => Traced(fx, trace),
   }
 
   return fx
@@ -41,24 +37,6 @@ export function Fx<R, E, A>(
   run: <R2>(sink: Sink<R2, E, A>) => Effect<R | R2, never, void>,
 ): Fx<R, E, A> {
   return make(run)
-}
-
-export function Traced<R, E, A>(fx: Fx<R, E, A>, trace: Trace): Fx<R, E, A> {
-  const traced: Fx<R, E, A> = {
-    [FxTypeId]: fxVariance,
-    run: (sink) =>
-      fx
-        .run(
-          Sink(
-            (a: A) => sink.event(a).traced(trace),
-            (cause: Cause<E>) => sink.error(cause).traced(trace),
-          ),
-        )
-        .traced(trace),
-    addTrace: (trace) => Traced(traced, trace),
-  }
-
-  return traced
 }
 
 export namespace Fx {

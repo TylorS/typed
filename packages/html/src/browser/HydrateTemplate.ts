@@ -39,7 +39,7 @@ export type HydrateContext = {
   hydrate: boolean
 }
 
-const toNever_ = Effect.flatMap(Effect.never)
+const toNever_ = Effect.flatMap(() => Effect.never)
 
 /**
  * Used Internally to pass context down to components for hydration
@@ -98,7 +98,7 @@ function hydrateTemplate<Values extends readonly Renderable<any, any>[]>(
               Effect.tap(
                 Effect.all(
                   parts.map((part, index) =>
-                    renderPart(
+                    renderPart<R2, Placeholder.ErrorsOf<Values[number]>>(
                       values,
                       part,
                       makeHydrateContext,
@@ -143,7 +143,10 @@ function renderPart<R, E>(
     const renderable = values[part.index]
 
     if (isDirective<R, E>(renderable)) {
-      return Effect.matchCauseEffect(renderable.f(part), sink.error, () => sink.event(part.value))
+      return Effect.matchCauseEffect(renderable.f(part), {
+        onFailure: sink.error,
+        onSuccess: () => sink.event(part.value),
+      })
     } else if (part._tag === 'Node') {
       return HydrateContext.provide(makeHydrateContext(part.index))(
         part.observe(values[part.index], sink),

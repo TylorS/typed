@@ -1,4 +1,3 @@
-import { flow } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import type * as Effect from '@effect/io/Effect'
 import * as C from '@typed/context'
@@ -31,4 +30,4 @@ export const dispatchEvent = <EventName extends keyof HTMLElementEventMap>(
   event: EventName,
   options?: EventInit,
 ): Effect.Effect<GlobalThis | ParentElement, never, boolean> =>
-  ParentElement.withEffect(flow((p) => p.parentElement, dispatchEventWith(event, options)))
+  ParentElement.withEffect((p) => dispatchEventWith(event, options)(p.parentElement))

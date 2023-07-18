@@ -46,11 +46,11 @@ export function mergeBufferConcurrently<FXS extends Fx.TupleAny>(
           return onFinished(nextIndex, finished.get(nextIndex) as Chunk.Chunk<O>)
         }
 
-        return Effect.unit()
+        return Effect.unit
       }
 
       return Effect.asUnit(
-        Effect.allPar(
+        Effect.all(
           fxs.map((fx, index) =>
             Effect.suspend(() => {
               if (index === currentIndex) return Effect.flatMap(fx.run(sink), () => next(index))
@@ -87,7 +87,7 @@ export function mergeBufferConcurrently<FXS extends Fx.TupleAny>(
                           // Otherwise, buffer the value
                           buffer = Chunk.append(buffer, o)
 
-                          return Effect.unit()
+                          return Effect.unit
                         }),
                       ),
                     sink.error,
@@ -97,6 +97,7 @@ export function mergeBufferConcurrently<FXS extends Fx.TupleAny>(
               )
             }),
           ),
+          { concurrency: 'unbounded' },
         ),
       )
     }),

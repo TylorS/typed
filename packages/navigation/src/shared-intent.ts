@@ -19,8 +19,10 @@ export const makeNotify = (model: Model) => (event: NavigationEvent) =>
     // Notify event handlers
     if (model.onNavigationHandlers.size > 0)
       yield* $(
-        Effect.forEachDiscard(model.onNavigationHandlers, ([handler, options]) =>
-          options?.passive ? Effect.fork(handler(event)) : handler(event),
+        Effect.forEach(
+          model.onNavigationHandlers,
+          ([handler, options]) => (options?.passive ? Effect.fork(handler(event)) : handler(event)),
+          { discard: true },
         ),
       )
   })
@@ -59,8 +61,10 @@ export const makeNotifyEnd = (model: Model) => (event: NavigationEvent) =>
     // Notify event handlers
     if (model.onNavigationEndHandlers.size > 0)
       yield* $(
-        Effect.forEachDiscard(model.onNavigationEndHandlers, ([handler, options]) =>
-          options?.passive ? Effect.fork(handler(event)) : handler(event),
+        Effect.forEach(
+          model.onNavigationEndHandlers,
+          ([handler, options]) => (options?.passive ? Effect.fork(handler(event)) : handler(event)),
+          { discard: true },
         ),
       )
   })

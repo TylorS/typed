@@ -9,7 +9,7 @@ export function fromIterable<A>(iterable: Iterable<A>): Fx<never, never, A> {
       let result = iterator.next()
 
       if (result.done) {
-        return Effect.unit()
+        return Effect.unit
       }
 
       let eff = sink.event(result.value)

@@ -1,5 +1,4 @@
-import type { Trace } from '@effect/data/Debug'
-import { flow } from '@effect/data/Function'
+import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
@@ -33,8 +32,6 @@ export interface Filtered<R, E, A>
 
   map<B>(f: (a: A) => B): Filtered<R, E, B>
 
-  addTrace(trace: Trace): Filtered<R, E, A>
-
   /**
    * @internal
    */
@@ -63,13 +60,11 @@ export class FilteredImpl<R, E, A, R2, E2, R3, E3, C>
   constructor(
     input: RefTransformInput<R, E, A, R2, E2, A>,
     f: (a: A) => Effect.Effect<R3, E3, Option.Option<C>>,
-    trace?: Trace,
   ) {
     super(
       input,
       (fx) => compact(switchMapEffect(fx, f)),
       (eff) => Effect.flatten(Effect.flatMap(eff, f)),
-      trace,
     )
   }
 
@@ -108,18 +103,10 @@ export class FilteredImpl<R, E, A, R2, E2, R3, E3, C>
   mapEffect<R4, E4, D>(
     f: (a: C) => Effect.Effect<R4, E4, D>,
   ): Filtered<R | R2 | R3 | R4, E | E2 | E3 | E4, D> {
-    return this.filterMapEffect(flow(f, Effect.map(Option.some)))
+    return this.filterMapEffect((a) => pipe(a, f, Effect.map(Option.some)))
   }
 
   map<D>(f: (a: C) => D) {
     return this.mapEffect((a) => Effect.sync(() => f(a)))
-  }
-
-  addTrace(trace: Trace): Filtered<R | R2 | R3, E | E2 | E3, C> {
-    return new FilteredImpl(
-      this as Filtered<R | R2 | R3, E | E2 | E3, C>,
-      Effect.succeedSome,
-      trace,
-    ) as Filtered<R | R2 | R3, E | E2 | E3, C>
   }
 }

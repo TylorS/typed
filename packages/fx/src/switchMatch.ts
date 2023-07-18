@@ -32,7 +32,7 @@ export function switchMatch<R, E, A, R2, E2, B, R3, E3, C>(
 ): Fx<R | R2 | R3, E2 | E3, B | C> {
   return switchMatchCause(
     fx,
-    (cause) => pipe(cause, Cause.failureOrCause, Either.match(f, failCause)),
+    (cause) => pipe(cause, Cause.failureOrCause, Either.match({ onLeft: f, onRight: failCause })),
     g,
   )
 }

@@ -64,9 +64,10 @@ export class ClassNamePart extends BasePart<readonly string[]> {
     placeholder: Renderable<R, E>,
     sink: Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
-    return Effect.matchCauseEffect(handlePart(this, placeholder), sink.error, (fx) =>
-      fx ? Effect.forkScoped(fx.run(sink)) : sink.event(this.value?.join(' ')),
-    )
+    return Effect.matchCauseEffect(handlePart(this, placeholder), {
+      onFailure: sink.error,
+      onSuccess: (fx) => (fx ? Effect.forkScoped(fx.run(sink)) : sink.event(this.value?.join(' '))),
+    })
   }
 
   static fromElement(element: Element, index: number) {

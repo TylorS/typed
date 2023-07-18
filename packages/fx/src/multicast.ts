@@ -1,11 +1,10 @@
 import type * as Context from '@effect/data/Context'
-import type { Trace } from '@effect/data/Debug'
 import { identity } from '@effect/data/Function'
 import type * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 
-import { FxTypeId, Traced } from './Fx.js'
+import { FxTypeId } from './Fx.js'
 import type { Fx, Sink } from './Fx.js'
 
 export function multicast<R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> {
@@ -65,27 +64,23 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     )
   }
 
-  readonly addTrace = (trace: Trace): Fx<R, E, A> => {
-    return Traced<R, E, A>(this.fx, trace)
-  }
-
   event(a: A) {
     if (this.observers.length === 0) {
-      return Effect.unit()
+      return Effect.unit
     }
 
     return Effect.suspend(() =>
-      Effect.forEachDiscard(this.observers.slice(0), (observer) => this.runEvent(observer, a)),
+      Effect.forEach(this.observers.slice(0), (observer) => this.runEvent(observer, a)),
     )
   }
 
   error(cause: Cause.Cause<E>) {
     if (this.observers.length === 0) {
-      return Effect.unit()
+      return Effect.unit
     }
 
     return Effect.suspend(() =>
-      Effect.forEachDiscard(this.observers.slice(0), (observer) => this.runError(observer, cause)),
+      Effect.forEach(this.observers.slice(0), (observer) => this.runError(observer, cause)),
     )
   }
 
@@ -107,7 +102,7 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     return Effect.suspend(() => {
       const { observers } = this
 
-      if (observers.length === 0) return Effect.unit()
+      if (observers.length === 0) return Effect.unit
 
       const index = observers.findIndex((o) => o.sink === sink)
 
@@ -124,7 +119,7 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
         }
       }
 
-      return Effect.unit()
+      return Effect.unit
     })
   }
 }

@@ -57,13 +57,13 @@ export function useLink<Params extends UseLinkParams.Any>(
   params: Params,
 ): Effect.Effect<UseLinkParams.Context<Params> | Scope.Scope, never, UseLink.FromParams<Params>> {
   return Effect.map(
-    Effect.all(
+    Effect.all([
       Placeholder.asRef(params.to),
       Placeholder.asRef(params.replace ?? false),
       Placeholder.asRef(params.state ?? null),
       Placeholder.asRef(params.key),
       Placeholder.asRef(params.relative ?? true),
-    ),
+    ] as const),
     ([to, replace, state, key, relative]) => {
       const url = Fx.RefSubject.tuple(to, relative).mapEffect(([to, relative]) =>
         Effect.gen(function* ($) {
@@ -104,7 +104,7 @@ export function useLink<Params extends UseLinkParams.Any>(
         Router,
         UseLinkParams.Error<Params>,
         Navigation.Destination
-      > = Effect.flatMap(Effect.all(url, options), ([url, options]) =>
+      > = Effect.flatMap(Effect.all([url, options] as const), ([url, options]) =>
         Router.withEffect((r) => r.navigation.navigate(url, options)),
       )
 

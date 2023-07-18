@@ -21,21 +21,24 @@ export function combineAllDiscard<FX extends ReadonlyArray<Fx<any, any, any>>>(
       const values = new Map<number, any>()
 
       const emitIfReady = Effect.suspend(() =>
-        values.size === length ? sink.event() : Effect.unit(),
+        values.size === length ? sink.event() : Effect.unit,
       )
 
       return Effect.asUnit(
-        Effect.forEachParWithIndex(fx, (f, i) =>
-          f.run(
-            Sink(
-              () =>
-                Effect.suspend(() => {
-                  values.set(i, null)
-                  return emitIfReady
-                }),
-              sink.error,
+        Effect.forEach(
+          fx,
+          (f, i) =>
+            f.run(
+              Sink(
+                () =>
+                  Effect.suspend(() => {
+                    values.set(i, null)
+                    return emitIfReady
+                  }),
+                sink.error,
+              ),
             ),
-          ),
+          { concurrency: 'unbounded' },
         ),
       )
     }),

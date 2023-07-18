@@ -46,7 +46,7 @@ export const provideDomServices =
       // If the environment doesn't support declarative shadow-dom, polyfill by attaching shadow roots
       attachShadowRoots,
       Effect.zipRight(effect),
-      Effect.contramapContext((env: C.Context<Exclude<R, DomServices>>) =>
+      Effect.mapInputContext((env: C.Context<Exclude<R, DomServices>>) =>
         pipe(env as C.Context<R>, C.merge(makeDomServices(window, window))),
       ),
     )

@@ -26,7 +26,10 @@ export type RenderChunk<R, E> =
 export class TextRenderChunk {
   readonly type = 'text'
 
-  constructor(readonly index: number, readonly value: string) {}
+  constructor(
+    readonly index: number,
+    readonly value: string,
+  ) {}
 }
 
 export class PartRenderChunk<R, E> {

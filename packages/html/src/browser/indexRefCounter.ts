@@ -11,7 +11,7 @@ export function indexRefCounter(expected: number) {
     let finished = false
 
     function onValue(index: number) {
-      if (finished) return Effect.unit()
+      if (finished) return Effect.unit
 
       hasValue.add(index)
 
@@ -22,7 +22,7 @@ export function indexRefCounter(expected: number) {
         return Deferred.succeed(deferred, undefined)
       }
 
-      return Effect.unit()
+      return Effect.unit
     }
 
     return {

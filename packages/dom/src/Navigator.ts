@@ -95,13 +95,13 @@ export const getCurrentPosition = (
   options?: PositionOptions,
 ): Effect.Effect<Navigator, GeolocationPositionError, GeolocationPosition> =>
   Navigator.withEffect((n) =>
-    Effect.tryCatchPromise(
-      () =>
+    Effect.tryPromise({
+      try: () =>
         new Promise<GeolocationPosition>((resolve, reject) =>
           n.geolocation.getCurrentPosition(resolve, reject, options),
         ),
-      (e) => e as GeolocationPositionError,
-    ),
+      catch: (e) => e as GeolocationPositionError,
+    }),
   )
 
 export const watchPosition = (

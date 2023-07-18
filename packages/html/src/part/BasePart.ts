@@ -7,7 +7,10 @@ import { Renderable } from '../Renderable.js'
 export abstract class BasePart<A> {
   abstract readonly _tag: string
 
-  constructor(readonly index: number, public value?: A) {}
+  constructor(
+    readonly index: number,
+    public value?: A,
+  ) {}
 
   protected abstract getValue(value: unknown): A
 

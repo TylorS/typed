@@ -1,8 +1,8 @@
 import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
+import * as Order from '@effect/data/Order'
 import * as ReadonlyArray from '@effect/data/ReadonlyArray'
-import * as Equivalence from '@effect/data/typeclass/Equivalence'
-import * as Order from '@effect/data/typeclass/Order'
+import * as Equivalence from '@effect/data/Equivalence'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import fastDeepEqual from 'fast-deep-equal/es6'
@@ -143,7 +143,7 @@ export interface RefArray<E, A> extends RefSubject<E, readonly A[]> {
   /**
    * Removes any duplicates held within the array contained within the RefSubject.
    */
-  readonly uniq: Effect.Effect<never, E, readonly A[]>
+  readonly dedupe: Effect.Effect<never, E, readonly A[]>
 }
 
 export function makeRefArray<R, E, A>(
@@ -178,11 +178,11 @@ export function makeRefArray<R, E, A>(
       ref.update(ReadonlyArray.takeWhile(predicate))
     const dropWhile = (predicate: (a: A) => boolean) =>
       ref.update(ReadonlyArray.dropWhile(predicate))
-    const sortBy = (...orders: Order.Order<A>[]) => ref.update(ReadonlyArray.sortBy(...orders))
+    const sortBy = (...orders: Order.Order<A>[]) => ref.update(ReadonlyArray.sortBy<A>(...orders))
     const rotate = (n: number) => ref.update(ReadonlyArray.rotate(n))
-    const contains_ = ReadonlyArray.contains(eq)
-    const contains = (a: A) => ref.map(contains_(a))
-    const uniq = ref.update(ReadonlyArray.uniq(eq))
+    const contains_ = ReadonlyArray.containsWith(eq)
+    const contains = (a: A) => ref.map<boolean>(contains_(a))
+    const dedupe = ref.update(ReadonlyArray.dedupeWith(eq))
     const groupBy = (f: (a: A) => string) => ref.map(ReadonlyArray.groupBy(f))
     const filterValues = (predicate: (a: A, index: number) => boolean) =>
       ref.update(ReadonlyArray.filter(predicate))
@@ -220,7 +220,7 @@ export function makeRefArray<R, E, A>(
       take,
       takeRight,
       takeWhile,
-      uniq,
+      dedupe,
     })
   })
 }

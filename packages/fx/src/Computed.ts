@@ -1,5 +1,5 @@
-import type { Trace } from '@effect/data/Debug'
 import * as Option from '@effect/data/Option'
+import * as Pipeable from '@effect/data/Pipeable'
 import * as Effect from '@effect/io/Effect'
 
 import { Filtered, FilteredImpl } from './Filtered.js'
@@ -16,7 +16,7 @@ export type ComputedTypeId = typeof ComputedTypeId
  * It always prefers the latest value so it will utilize switchMap
  * internally when running as an Fx.
  */
-export interface Computed<R, E, A> extends RefTransform<R, E, A, R, E, A> {
+export interface Computed<R, E, A> extends RefTransform<R, E, A, R, E, A>, Pipeable.Pipeable {
   readonly [ComputedTypeId]: ComputedTypeId
 
   mapEffect<R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): Computed<R | R2, E | E2, B>
@@ -36,8 +36,6 @@ export interface Computed<R, E, A> extends RefTransform<R, E, A, R, E, A> {
   filterNot(f: (a: A) => boolean): Filtered<R, E, A>
 
   filterNotEffect<R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): Filtered<R | R2, E | E2, A>
-
-  addTrace(trace: Trace): Computed<R, E, A>
 
   /**
    * @internal
@@ -64,16 +62,11 @@ export class ComputedImpl<R, E, A, R2, E2, R3, E3, B>
 {
   readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
 
-  constructor(
-    input: RefTransformInput<R, E, A, R2, E2, A>,
-    f: (a: A) => Effect.Effect<R3, E3, B>,
-    trace?: Trace,
-  ) {
+  constructor(input: RefTransformInput<R, E, A, R2, E2, A>, f: (a: A) => Effect.Effect<R3, E3, B>) {
     super(
       input,
       (fx) => switchMapEffect(fx, f),
       (eff) => Effect.flatMap(eff, f),
-      trace,
     )
   }
 
@@ -117,9 +110,5 @@ export class ComputedImpl<R, E, A, R2, E2, R3, E3, B>
 
   filterNot(f: (a: B) => boolean) {
     return this.filterNotEffect((a) => Effect.sync(() => f(a)))
-  }
-
-  addTrace(trace: Trace): Computed<R | R2 | R3, E | E2 | E3, B> {
-    return new ComputedImpl(this as Computed<R | R2 | R3, E | E2 | E3, B>, Effect.succeed, trace)
   }
 }

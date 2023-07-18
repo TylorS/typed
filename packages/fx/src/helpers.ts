@@ -45,7 +45,7 @@ export function withUnboundedConcurrency<R, E, A>(
             )
           }),
         ),
-        () => (fibers.size > 0 ? Fiber.joinAll(fibers) : Effect.unit()),
+        () => (fibers.size > 0 ? Fiber.joinAll(fibers) : Effect.unit),
       )
     }),
   )
@@ -63,7 +63,7 @@ export function withSwitch<R, E, A>(f: (switchFork: ForkFx) => Effect.Effect<R, 
 
       return Effect.flatMap(
         Effect.flatMap(f(switchFork), () => RefS.get(ref)),
-        (fiber) => (fiber ? Fiber.join(fiber) : Effect.unit()),
+        (fiber) => (fiber ? Fiber.join(fiber) : Effect.unit),
       )
     }),
   )
@@ -77,13 +77,13 @@ export function withExhaust<R, E, A>(f: (exhaustFork: ForkFx) => Effect.Effect<R
       const exhaustFork = <R2>(eff: Effect.Effect<R2, never, void>) =>
         Effect.flatMap(Ref.get(ref), (currentFiber) =>
           currentFiber
-            ? Effect.unit()
+            ? Effect.unit
             : Effect.flatMap(fork(Effect.ensuring(eff, reset)), (fiber) => Ref.set(ref, fiber)),
         )
 
       return Effect.flatMap(
         Effect.flatMap(f(exhaustFork), () => Ref.get(ref)),
-        (fiber) => (fiber ? Fiber.join(fiber) : Effect.unit()),
+        (fiber) => (fiber ? Fiber.join(fiber) : Effect.unit),
       )
     }),
   )
@@ -103,7 +103,7 @@ export function withExhaustLatest<R, E, A>(
 
         // Wait for the current fiber to finish
         const awaitNext = Effect.flatMap(Ref.get(ref), (fiber) =>
-          fiber ? Fiber.join(fiber) : Effect.unit(),
+          fiber ? Fiber.join(fiber) : Effect.unit,
         )
 
         // Run the next value that's be saved for replay if it exists
@@ -112,17 +112,17 @@ export function withExhaustLatest<R, E, A>(
           Ref.get(nextEffect),
           (next) => {
             if (Option.isNone(next)) {
-              return Effect.unit()
+              return Effect.unit
             }
 
-            return Effect.all(
+            return Effect.all([
               // Clear the next A to be replayed
               Ref.set(nextEffect, Option.none()),
               // Replay the next A
               exhaustLatestFork(next.value),
               // Ensure we don't close the scope until the last fiber completes
               awaitNext,
-            )
+            ])
           },
         )
 

@@ -1,5 +1,4 @@
 import * as Context from '@effect/data/Context'
-import * as Debug from '@effect/data/Debug'
 import { identity } from '@effect/data/Function'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
@@ -39,19 +38,14 @@ export const HoldSubject =
 function make<const I, E, A>(id: I, f: () => Fx.Subject<E, A>, hold: boolean): Subject<I, E, A> {
   const tag = Context.Tag<I, Fx.Subject<E, A>>(id)
   const fx = hold ? Fx.hold(Fx.fromFxEffect(tag)) : Fx.multicast(Fx.fromFxEffect(tag))
-  const layer = Effect.toLayer(Effect.sync(f), tag)
+  const layer = Layer.effect(tag, Effect.sync(f))
 
   return Object.assign(tag, {
     [Fx.FxTypeId]: subjectVariance,
     run: fx.run.bind(fx),
-    addTrace: fx.addTrace.bind(fx),
-    event: Debug.methodWithTrace(
-      (trace) => (a: A) => Effect.flatMap(tag, (s) => s.event(a)).traced(trace),
-    ),
-    error: Debug.methodWithTrace(
-      (trace) => (e: Cause.Cause<E>) => Effect.flatMap(tag, (s) => s.error(e)).traced(trace),
-    ),
-    end: Debug.methodWithTrace((trace) => () => Effect.flatMap(tag, (s) => s.end()).traced(trace)),
+    event: (a: A) => Effect.flatMap(tag, (s) => s.event(a)),
+    error: (e: Cause.Cause<E>) => Effect.flatMap(tag, (s) => s.error(e)),
+    end: () => Effect.flatMap(tag, (s) => s.end()),
     layer,
     provide: Effect.provideSomeLayer(layer),
     provideFx: Fx.provideSomeLayer(layer),

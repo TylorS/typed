@@ -4,7 +4,10 @@ import * as Fx from '@typed/fx'
 import { NavigateOptions } from '@typed/navigation'
 
 export class Redirect extends E.tagged('@typed/router/Redirect') {
-  constructor(readonly url: string, readonly options?: NavigateOptions) {
+  constructor(
+    readonly url: string,
+    readonly options?: NavigateOptions,
+  ) {
     super(`Redirect to ${url}`)
   }
 

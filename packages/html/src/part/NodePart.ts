@@ -60,7 +60,7 @@ export class NodePart extends BasePart<unknown> {
           }
         }
       }
-      return Effect.unit()
+      return Effect.unit
     })
   }
 

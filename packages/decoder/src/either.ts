@@ -18,7 +18,9 @@ export const right = <A, E = never>(
     [Hash.symbol]: any,
     traced: any,
     [Effect.EffectTypeId]: any,
-    [Either.EitherTypeId]: any,
+    [Either.TypeId]: any,
+    _id: any,
+    pipe: any,
   })
 
 export const left = <E, A = never>(
@@ -31,7 +33,9 @@ export const left = <E, A = never>(
     [Hash.symbol]: any,
     traced: any,
     [Effect.EffectTypeId]: any,
-    [Either.EitherTypeId]: any,
+    [Either.TypeId]: any,
+    _id: any,
+    pipe: any,
   })
 
 export const either = <A, B>(
