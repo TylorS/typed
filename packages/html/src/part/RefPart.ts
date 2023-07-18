@@ -10,7 +10,10 @@ import { BasePart } from './BasePart.js'
 export class RefPart extends BasePart<ElementRef<HTMLElement> | null> {
   readonly _tag = 'Ref' as const
 
-  constructor(readonly getElement: Effect.Effect<never, never, HTMLElement | null>, index: number) {
+  constructor(
+    readonly getElement: Effect.Effect<never, never, HTMLElement | null>,
+    index: number,
+  ) {
     super(index, null)
   }
 
@@ -29,7 +32,7 @@ export class RefPart extends BasePart<ElementRef<HTMLElement> | null> {
       return Effect.flatMap(this.getElement, (e) => ref.set(Option.fromNullable(e)))
     }
 
-    return Effect.unit()
+    return Effect.unit
   }
 
   observe<R, E, R2>(

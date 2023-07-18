@@ -28,7 +28,7 @@ export class SparseClassNamePart {
   update = (input: unknown): Effect.Effect<never, never, void> => {
     return Effect.suspend(() => {
       const value = this.getValue(input)
-      if (value === this.value) return Effect.unit()
+      if (value === this.value) return Effect.unit
 
       return Effect.flatMap(this.setClassName(value || ''), () =>
         Effect.sync(() => (this.value = value)),
@@ -73,7 +73,7 @@ export class SparseClassNamePart {
           return setAttribute(getValue())
         }
 
-        return Effect.unit()
+        return Effect.unit
       })
     }
 

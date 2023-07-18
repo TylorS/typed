@@ -63,7 +63,7 @@ export const storageEvents = Object.assign(Window.withFx(addEventListener('stora
           const oldValue = s.getItem(key)
           s.setItem(key, value)
 
-          return oldValue === value ? Effect.unit() : storageEvents.send(key, oldValue, value)
+          return oldValue === value ? Effect.unit : storageEvents.send(key, oldValue, value)
         }),
       ),
     ),
@@ -75,7 +75,7 @@ export const storageEvents = Object.assign(Window.withFx(addEventListener('stora
 
           s.removeItem(key)
 
-          return oldValue === null ? Effect.unit() : storageEvents.send(key, oldValue, null)
+          return oldValue === null ? Effect.unit : storageEvents.send(key, oldValue, null)
         }),
       ),
     ),
@@ -156,7 +156,7 @@ export function SchemaStorage<
     [K in keyof Schemas]: (i: S.To<Schemas[K]>, options?: ParseOptions) => S.From<Schemas[K]>
   }> = {}
   const getEncoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof encoders)[K]> =>
-    encoders[key] || (encoders[key] = P.encode(schema[key]))
+    encoders[key] || (encoders[key] = P.encodeSync(schema[key]))
 
   const get = <K extends keyof Schemas & string>(key: K, options?: ParseOptions) =>
     StorageEffect(

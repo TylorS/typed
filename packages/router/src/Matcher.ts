@@ -1,5 +1,5 @@
 import * as Chunk from '@effect/data/Chunk'
-import * as Debug from '@effect/data/Debug'
+import * as Debug from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
 import { RenderContext } from '@typed/html'
@@ -77,7 +77,7 @@ export function Matcher<const Matches extends ReadonlyArray<Match.Any>>(
     concat: <OtherMatches extends ReadonlyArray<Match.Any>>(
       other: Matcher<OtherMatches>,
     ): Matcher<readonly [...Matches, ...OtherMatches]> => {
-      return Matcher(Chunk.concat(matches, other.matches))
+      return Matcher(Chunk.appendAll(matches, other.matches))
     },
   }
 }
@@ -103,20 +103,18 @@ export const notFound: {
     Exclude<E | Match.Error<Matches[number]>, Redirect>,
     A | Fx.Fx.OutputOf<Match.Rendered<Matches[number]>>
   >
-} = Debug.dualWithTrace(
+} = Debug.dual(
   2,
-  (trace) =>
-    <Matches extends readonly Match.Any[], R, E, A>(
-      matcher: Matcher<Matches>,
-      render: (
-        params: Fx.Filtered<never, never, Readonly<Record<string, string>>>,
-      ) => Fx.Fx<R, E, A>,
-    ) =>
-      matcher.notFound(render).addTrace(trace),
+  <Matches extends readonly Match.Any[], R, E, A>(
+    matcher: Matcher<Matches>,
+    render: (params: Fx.Filtered<never, never, Readonly<Record<string, string>>>) => Fx.Fx<R, E, A>,
+  ) => matcher.notFound(render),
 )
 
 export const redirectEffect: {
-  <R, E>(effect: Effect.Effect<R, E, never>): <Matches extends readonly Match.Any[]>(
+  <R, E>(
+    effect: Effect.Effect<R, E, never>,
+  ): <Matches extends readonly Match.Any[]>(
     matcher: Matcher<Matches>,
   ) => Fx.Fx<
     Router | R | Match.Context<Matches[number]>,
@@ -132,12 +130,10 @@ export const redirectEffect: {
     Exclude<E | Match.Error<Matches[number]>, Redirect>,
     Match.Success<Matches[number]>
   >
-} = Debug.dualWithTrace(
+} = Debug.dual(
   2,
-  (trace) =>
-    <Matches extends readonly Match.Any[], R, E>(
-      matcher: Matcher<Matches>,
-      effect: Effect.Effect<R, E, never>,
-    ) =>
-      notFound(matcher, () => Fx.fromEffect(effect)).addTrace(trace),
+  <Matches extends readonly Match.Any[], R, E>(
+    matcher: Matcher<Matches>,
+    effect: Effect.Effect<R, E, never>,
+  ) => notFound(matcher, () => Fx.fromEffect(effect)),
 )

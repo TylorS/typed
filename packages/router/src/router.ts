@@ -45,9 +45,10 @@ export const navigation: Layer.Layer<Navigation.Navigation, never, Router> = Rou
       getCurrentPathFromUrl(destination.url),
     )
 
-    function makeRouter<
-      P extends string,
-    >(route: Route<P>, parent: Option.Option<Router<any>>): Router<P> {
+    function makeRouter<P extends string>(
+      route: Route<P>,
+      parent: Option.Option<Router<any>>,
+    ): Router<P> {
       const router: Router<P> = {
         route,
         navigation,

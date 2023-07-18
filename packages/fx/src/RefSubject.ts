@@ -1,11 +1,11 @@
 import * as Context from '@effect/data/Context'
-import { Trace, methodWithTrace } from '@effect/data/Debug'
 import * as Equal from '@effect/data/Equal'
 import { identity, pipe } from '@effect/data/Function'
 import * as Hash from '@effect/data/Hash'
 import * as MutableRef from '@effect/data/MutableRef'
 import * as Option from '@effect/data/Option'
-import * as Equivalence from '@effect/data/typeclass/Equivalence'
+import { Pipeable, pipeArguments } from '@effect/data/Pipeable'
+import * as Equivalence from '@effect/data/Equivalence'
 import * as Deferred from '@effect/io/Deferred'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
@@ -24,6 +24,8 @@ import { drain } from './observe.js'
 import { struct } from './struct.js'
 import { switchMatchCauseEffect } from './switchMatch.js'
 
+const unboundedConcurrency = { concurrency: 'unbounded' } as const
+
 const refVariance = {
   _R: identity,
   _E: identity,
@@ -33,7 +35,10 @@ const refVariance = {
 export const RefSubjectTypeId = Symbol.for('@typed/fx/RefSubject')
 export type RefSubjectTypeId = typeof RefSubjectTypeId
 
-export interface RefSubject<in out E, in out A> extends Subject<E, A>, Computed<never, E, A> {
+export interface RefSubject<in out E, in out A>
+  extends Subject<E, A>,
+    Computed<never, E, A>,
+    Pipeable {
   readonly [RefSubjectTypeId]: RefSubjectTypeId
 
   readonly eq: Equivalence.Equivalence<A>
@@ -53,8 +58,6 @@ export interface RefSubject<in out E, in out A> extends Subject<E, A>, Computed<
   readonly set: (a: A) => Effect.Effect<never, never, A>
 
   readonly delete: Effect.Effect<never, E, Option.Option<A>>
-
-  readonly addTrace: (trace: Trace) => RefSubject<E, A>
 
   /**
    * The current version of the RefSubject, starting with 0, 1 when initialized,
@@ -270,7 +273,7 @@ function makeSetFromContext<E, A>(ctx: RefSubjectContext<E, A>): RefSubject<E, A
 
       return pipe(
         fiber,
-        Option.match(Effect.unit, Fiber.await),
+        Option.match({ onNone: () => Effect.unit, onSome: Fiber.await }),
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         Effect.flatMap((_: unknown) => {
           const current = MutableRef.get(ctx.currentRef)
@@ -304,23 +307,20 @@ function makeDeleteFromContext<E, A>(ctx: RefSubjectContext<E, A>): RefSubject<E
 }
 
 function makeEndFromContext<E, A>(ctx: RefSubjectContext<E, A>): RefSubject<E, A>['end'] {
-  return methodWithTrace(
-    (trace) => () =>
-      Effect.suspend(() => {
-        MutableRef.set(ctx.version, 0)
+  return () =>
+    Effect.suspend(() => {
+      MutableRef.set(ctx.version, 0)
 
-        const fibers = [
-          ctx.hold.fiber || Fiber.unit(),
-          Option.getOrElse(MutableRef.get(ctx.initializingFiberRef), () => Fiber.unit()),
-        ]
+      const fibers = [
+        ctx.hold.fiber || Fiber.unit,
+        Option.getOrElse(MutableRef.get(ctx.initializingFiberRef), () => Fiber.unit),
+      ]
 
-        return Fiber.interruptAll(fibers)
-      }).traced(trace),
-  )
+      return Fiber.interruptAll(fibers)
+    })
 }
 
 function makeFiltered<E, A>(
-  primitive: RefPrimitive<E, A>,
   f: () => RefSubject<E, A>,
 ): Pick<
   RefSubject<E, A>,
@@ -329,7 +329,7 @@ function makeFiltered<E, A>(
   const get = makeMemoizedGet(f)
 
   function filterMapEffect<R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>) {
-    return new FilteredImpl(get(), f).addTrace(primitive.trace)
+    return new FilteredImpl(get(), f)
   }
 
   function filterMap<B>(f: (a: A) => Option.Option<B>) {
@@ -363,13 +363,12 @@ function makeFiltered<E, A>(
 }
 
 function makeComputedMethods<E, A>(
-  primitive: RefPrimitive<E, A>,
   f: () => RefSubject<E, A>,
 ): Pick<RefSubject<E, A>, 'mapEffect' | 'map'> {
   const get = makeMemoizedGet(f)
 
   function mapEffect<R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): Computed<R2, E | E2, B> {
-    return new ComputedImpl(get(), f).addTrace(primitive.trace)
+    return new ComputedImpl(get(), f)
   }
 
   function map<B>(f: (a: A) => B): Computed<never, E, B> {
@@ -383,7 +382,6 @@ function makeComputedMethods<E, A>(
 }
 
 function makeTransformMethods<E, A>(
-  primitive: RefPrimitive<E, A>,
   f: () => RefSubject<E, A>,
 ): Pick<RefSubject<E, A>, 'transformBoth' | 'transform' | 'transformGet'> {
   const get = makeMemoizedGet(f)
@@ -392,7 +390,7 @@ function makeTransformMethods<E, A>(
     f: (fx: Fx<never, E, A>) => Fx<R3, E3, C>,
     g: (effect: Effect.Effect<never, E, A>) => Effect.Effect<R4, E4, D>,
   ): RefTransform<R3, E3, C, R4, E4, D> {
-    return new RefTransformImpl(get(), f, g).addTrace(primitive.trace)
+    return new RefTransformImpl(get(), f, g)
   }
 
   function transform<R3, E3, C>(
@@ -426,6 +424,10 @@ const placeholders = {
   [Hash.symbol]() {
     return Hash.random(this)
   },
+  pipe() {
+    // eslint-disable-next-line prefer-rest-params
+    return pipeArguments(this, arguments)
+  },
 }
 
 function makeEffectMethods<E, A>(
@@ -433,15 +435,12 @@ function makeEffectMethods<E, A>(
 ): Pick<RefSubject<E, A>, Extract<keyof Effect.Effect<never, E, A>, keyof RefSubject<E, A>>> {
   return Object.assign(
     {
-      traced(trace: Trace): Effect.Effect<never, E, A> {
-        return get.traced(trace)
-      },
       commit() {
         return get
       },
     } as const,
     placeholders,
-  )
+  ) as any
 }
 
 function makeMemoizedGet<A>(f: () => A) {
@@ -513,7 +512,6 @@ function unsafeMakeRefPrimitive<E, A>(
   }
 
   const primitive: RefPrimitive<E, A> = {
-    addTrace: (trace) => traceRefPrimitive(primitive, trace),
     delete: makeDeleteFromContext(ctx),
     end: makeEndFromContext(ctx),
     eq,
@@ -529,25 +527,6 @@ function unsafeMakeRefPrimitive<E, A>(
   return primitive
 }
 
-function traceRefPrimitive<E, A>(input: RefPrimitive<E, A>, trace: Trace): RefPrimitive<E, A> {
-  const primitive: RefPrimitive<E, A> = {
-    addTrace: (trace) => traceRefPrimitive(primitive, trace),
-    delete: input.delete.traced(trace),
-    end: () => input.end().traced(trace),
-    eq: input.eq,
-    error: (error) => input.error(error).traced(trace),
-    event: (event) => input.event(event).traced(trace),
-    get: input.get.traced(trace),
-    modifyEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>) =>
-      input.modifyEffect(f).traced(trace),
-    run: (sink) => input.run(sink).traced(trace),
-    set: (a) => input.set(a).traced(trace),
-    version: input.version,
-  }
-
-  return primitive
-}
-
 function makeRefFromPrimitive<E, A>(primitive: RefPrimitive<E, A>): RefSubject<E, A> {
   const ref: RefSubject<E, A> = {
     [FxTypeId]: refVariance,
@@ -556,10 +535,9 @@ function makeRefFromPrimitive<E, A>(primitive: RefPrimitive<E, A>): RefSubject<E
     ...primitive,
     ...makeRefMethods(primitive),
     ...makeEffectMethods(primitive.get),
-    ...makeFiltered(primitive, () => ref),
-    ...makeComputedMethods(primitive, () => ref),
-    ...makeTransformMethods(primitive, () => ref),
-    addTrace: (trace) => makeRefFromPrimitive(traceRefPrimitive(primitive, trace)),
+    ...makeFiltered(() => ref),
+    ...makeComputedMethods(() => ref),
+    ...makeTransformMethods(() => ref),
     version() {
       return MutableRef.get(primitive.version)
     },
@@ -587,9 +565,7 @@ interface RefPrimitive<E, A> {
   delete: RefSubject<E, A>['delete']
 
   // Primitive
-  addTrace: (trace: Trace) => RefPrimitive<E, A>
   version: MutableRef.MutableRef<number>
-  trace?: Trace
 }
 
 // Internals for RefSubject.tuple
@@ -602,22 +578,39 @@ function tupleRefPrimitive<const Refs extends ReadonlyArray<RefSubject.Any>>(
 
   const hold = new HoldFx(combineAll(...refs) as any as Fx<never, _E, _A>)
   const eq = Equivalence.tuple(...refs.map((ref) => ref.eq))
-  const get = Effect.allPar(refs.map((ref) => ref.get)) as Effect.Effect<never, _E, _A>
+  const get = Effect.all(
+    refs.map((ref) => ref.get),
+    unboundedConcurrency,
+  ) as Effect.Effect<never, _E, _A>
 
   const primitive: RefPrimitive<_E, _A> = {
-    addTrace: (trace) => traceRefPrimitive(primitive, trace),
-    delete: Effect.map(Effect.allPar(refs.map((ref) => ref.delete)), (values) =>
-      Option.tuple(...values),
+    delete: Effect.map(
+      Effect.all(
+        refs.map((ref) => ref.delete),
+        { concurrency: 'unbounded' },
+      ),
+      (values) => Option.all(values),
     ) as Effect.Effect<never, _E, Option.Option<_A>>,
-    end: () => Effect.allPar(refs.map((ref) => ref.end())),
+    end: () =>
+      Effect.all(
+        refs.map((ref) => ref.end()),
+        unboundedConcurrency,
+      ),
     eq,
     error: (error) => hold.error(error),
-    event: (value) => Effect.allPar(value.map((v, i) => refs[i].event(v))),
+    event: (value) =>
+      Effect.all(
+        value.map((v, i) => refs[i].event(v)),
+        unboundedConcurrency,
+      ),
     get,
     modifyEffect: makeModifyEffectTuple(refs, get, eq),
     run: (sink) => hold.run(sink),
     set: (value) =>
-      Effect.allPar(value.map((v, i) => refs[i].set(v))) as Effect.Effect<never, never, _A>,
+      Effect.all(
+        value.map((v, i) => refs[i].set(v)),
+        unboundedConcurrency,
+      ) as Effect.Effect<never, never, _A>,
     version: MutableRef.make(0),
   }
 
@@ -642,7 +635,12 @@ function makeModifyEffectTuple<
         return b
       }
 
-      yield* $(Effect.allPar(refs.map((ref, i) => ref.set(a[i]))))
+      yield* $(
+        Effect.all(
+          refs.map((ref, i) => ref.set(a[i])),
+          unboundedConcurrency,
+        ),
+      )
 
       return b
     })
@@ -657,22 +655,39 @@ function structRefPrimitive<const Refs extends Readonly<Record<string, RefSubjec
 
   const hold = new HoldFx(struct(refs)) as HoldFx<never, _E, _A>
   const eq = Equivalence.struct(mapRecord(refs, (ref) => ref.eq))
-  const get = Effect.allPar(mapRecord(refs, (ref) => ref.get)) as Effect.Effect<never, _E, _A>
+  const get = Effect.all(
+    mapRecord(refs, (ref) => ref.get),
+    unboundedConcurrency,
+  ) as Effect.Effect<never, _E, _A>
 
   const primitive: RefPrimitive<_E, _A> = {
-    addTrace: (trace) => traceRefPrimitive(primitive, trace),
-    delete: Effect.map(Effect.allPar(mapRecord(refs, (ref) => ref.delete)), (values) =>
-      Option.struct(values),
+    delete: Effect.map(
+      Effect.all(
+        mapRecord(refs, (ref) => ref.delete),
+        unboundedConcurrency,
+      ),
+      (values) => Option.all(values),
     ) as Effect.Effect<never, _E, Option.Option<_A>>,
-    end: () => Effect.allPar(mapRecord(refs, (ref) => ref.end())),
+    end: () =>
+      Effect.all(
+        mapRecord(refs, (ref) => ref.end()),
+        unboundedConcurrency,
+      ),
     eq,
     error: (error) => hold.error(error),
-    event: (value) => Effect.allPar(mapRecord(value, (v, i) => refs[i].event(v))),
+    event: (value) =>
+      Effect.all(
+        mapRecord(value, (v, i) => refs[i].event(v)),
+        unboundedConcurrency,
+      ),
     get,
     modifyEffect: makeModifyEffectStruct(refs, get, eq),
     run: (sink) => hold.run(sink),
     set: (value) =>
-      Effect.allPar(mapRecord(value, (v, i) => refs[i].set(v))) as Effect.Effect<never, never, _A>,
+      Effect.all(
+        mapRecord(value, (v, i) => refs[i].set(v)),
+        unboundedConcurrency,
+      ) as Effect.Effect<never, never, _A>,
     version: MutableRef.make(0),
   }
 
@@ -697,7 +712,12 @@ function makeModifyEffectStruct<
         return b
       }
 
-      yield* $(Effect.allPar(mapRecord(refs, (ref, i) => ref.set(a[i]))))
+      yield* $(
+        Effect.all(
+          mapRecord(refs, (ref, i) => ref.set(a[i])),
+          unboundedConcurrency,
+        ),
+      )
 
       return b
     })
@@ -722,7 +742,7 @@ export function asRef<R, E, A>(fx: Fx<R, E, A>) {
     Effect.flatMap(makeRef(Deferred.await(deferred)), (ref) => {
       const onValue = (value: A) =>
         Effect.flatMap(Deferred.succeed(deferred, value), (closed) =>
-          closed ? Effect.unit() : ref.set(value),
+          closed ? Effect.unit : ref.set(value),
         )
 
       return Effect.as(
@@ -740,7 +760,7 @@ export function asRef<R, E, A>(fx: Fx<R, E, A>) {
 
     const onValue = (value: A) =>
       Effect.flatMap(Deferred.succeed(deferred, value), (closed) =>
-        closed ? Effect.unit() : ref.set(value),
+        closed ? Effect.unit : ref.set(value),
       )
 
     yield* $(

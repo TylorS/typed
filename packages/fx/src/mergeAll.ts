@@ -10,12 +10,15 @@ export function mergeAll<FXS extends ReadonlyArray<Fx<any, any, any>>>(
   ...fxs: FXS
 ): Fx<Fx.ResourcesOf<FXS[number]>, Fx.ErrorsOf<FXS[number]>, Fx.OutputOf<FXS[number]>> {
   return Fx((sink) =>
-    Effect.forEachParDiscard(fxs, (fx) =>
-      fx.run(
-        Sink(sink.event, (cause) =>
-          Cause.isInterruptedOnly(cause) ? Effect.unit() : sink.error(cause),
+    Effect.forEach(
+      fxs,
+      (fx) =>
+        fx.run(
+          Sink(sink.event, (cause) =>
+            Cause.isInterruptedOnly(cause) ? Effect.unit : sink.error(cause),
+          ),
         ),
-      ),
+      { concurrency: 'unbounded', discard: true },
     ),
   )
 }

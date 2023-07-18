@@ -16,8 +16,8 @@ export const unknownRecord: Decoder<unknown, RR.ReadonlyRecord<unknown>> = (i) =
 
 export const fromRecord =
   <I, O>(member: Decoder<I, O>): Decoder<RR.ReadonlyRecord<I>, RR.ReadonlyRecord<O>> =>
-  (i: RR.ReadonlyRecord<I>, options?: ParseOptions) =>
-    Effect.gen(function* ($) {
+  (i: RR.ReadonlyRecord<I>, options?: ParseOptions) => {
+    return Effect.gen(function* ($) {
       const results = yield* $(
         Effect.all(
           pipe(
@@ -25,10 +25,10 @@ export const fromRecord =
             RA.map(([k, v]) =>
               pipe(
                 member(v, options),
-                Effect.mapBoth(
-                  (e: ParseResult.ParseError) => ParseResult.key(k, e.errors),
-                  (a: O) => [k, a] as const,
-                ),
+                Effect.mapBoth({
+                  onFailure: (e: ParseResult.ParseError) => ParseResult.key(k, e.errors),
+                  onSuccess: (a: O) => [k, a] as const,
+                }),
                 Effect.either,
               ),
             ),
@@ -43,6 +43,7 @@ export const fromRecord =
 
       return Object.fromEntries(successes)
     })
+  }
 
 export const record = <O>(member: Decoder<unknown, O>): Decoder<unknown, RR.ReadonlyRecord<O>> =>
   pipe(unknownRecord, compose(fromRecord(member)))

@@ -33,9 +33,10 @@ export class CommentPart extends BasePart<string | null> {
     placeholder: Renderable<R, E>,
     sink: Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2 | Scope.Scope, never, void> {
-    return Effect.matchCauseEffect(handlePart(this, placeholder), sink.error, (fx) =>
-      fx ? Effect.forkScoped(fx.run(sink)) : sink.event(this.value),
-    )
+    return Effect.matchCauseEffect(handlePart(this, placeholder), {
+      onFailure: sink.error,
+      onSuccess: (fx) => (fx ? Effect.forkScoped(fx.run(sink)) : sink.event(this.value)),
+    })
   }
 
   static fromComment(comment: Comment, index: number) {

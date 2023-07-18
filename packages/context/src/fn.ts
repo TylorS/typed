@@ -1,4 +1,4 @@
-import { flow, pipe } from '@effect/data/Function'
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 
@@ -103,8 +103,8 @@ export namespace Fn {
         tag.layer(
           Effect.map(
             Effect.context<EffectFn.ResourcesOf<T2>>(),
-            c => flow(implementation, Effect.provideSomeContext(c)) as any
-          )
+            (c) => ((a: any) => pipe(a, implementation, Effect.provideSomeContext(c))) as any,
+          ),
         ),
     } as const)
   }

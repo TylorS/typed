@@ -24,7 +24,10 @@ export class TextChunk {
 export class PartChunk {
   readonly type = 'part'
 
-  constructor(readonly node: PartNode, readonly render: (value: unknown) => string) {}
+  constructor(
+    readonly node: PartNode,
+    readonly render: (value: unknown) => string,
+  ) {}
 }
 
 export class SparsePartChunk {

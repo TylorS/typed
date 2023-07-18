@@ -69,7 +69,7 @@ export class SparseAttrPart {
 
         if (values.size === nodes.length) return setAttribute(getValue())
 
-        return Effect.unit()
+        return Effect.unit
       })
     }
 

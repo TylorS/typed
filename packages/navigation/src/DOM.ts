@@ -1,4 +1,4 @@
-import { flow, pipe } from '@effect/data/Function'
+import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
@@ -92,12 +92,14 @@ export const dom = (
         currentEntry: model.currentEntry,
         entries: model.entries,
         forward: provideLocked(catchNavigationError(intent.forward(false))),
-        goTo: flow(
-          intent.goTo,
-          Effect.catchAll(flow(handleNavigationError(0), Effect.map(Option.some))),
-          provideLocked,
-        ),
-        navigate: flow(intent.navigate, catchNavigationError, provideLocked),
+        goTo: (a) =>
+          pipe(
+            a,
+            intent.goTo,
+            Effect.catchAll((a) => pipe(a, handleNavigationError(0), Effect.map(Option.some))),
+            provideLocked,
+          ),
+        navigate: (url, options) => pipe(intent.navigate(url, options), catchNavigationError, provideLocked),
         onNavigation: (handler, options) =>
           pipe(intent.onNavigation(handler, options), catchNavigationError, Effect.asUnit),
         onNavigationEnd: (handler, options) =>

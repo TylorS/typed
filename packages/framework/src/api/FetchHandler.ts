@@ -1,10 +1,10 @@
-import { flow, pipe } from '@effect/data/Function'
+import { pipe } from '@effect/data/Function'
 import type { Cause } from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import type { Layer } from '@effect/io/Layer'
 import type { ParseOptions } from '@effect/schema/AST'
 import * as ParseResult from '@effect/schema/ParseResult'
-import { Schema, parseEffect } from '@effect/schema/Schema'
+import { Schema, parse } from '@effect/schema/Schema'
 import type * as Context from '@typed/context'
 import type { Decoder } from '@typed/decoder'
 import type { ParamsOf } from '@typed/path'
@@ -58,11 +58,23 @@ export function FetchHandler<Path extends string, R2 = never, E2 = never>(
     handler,
     httpMethods,
     provideContext: (environment) =>
-      FetchHandler(route, flow(handler, Effect.provideContext(environment)), httpMethods),
+      FetchHandler(
+        route,
+        (...args) => pipe(handler(...args), Effect.provideContext(environment)),
+        httpMethods,
+      ),
     provideLayer: <RI>(layer: Layer<RI, never, R2>) =>
-      FetchHandler(route, flow(handler, Effect.provideLayer(layer)), httpMethods),
+      FetchHandler(
+        route,
+        (...args) => pipe(handler(...args), Effect.provideLayer(layer)),
+        httpMethods,
+      ),
     provideSomeLayer: <RI, RO>(layer: Layer<RI, never, RO>) =>
-      FetchHandler(route, flow(handler, Effect.provideSomeLayer(layer)), httpMethods),
+      FetchHandler(
+        route,
+        (...args) => pipe(handler(...args), Effect.provideSomeLayer(layer)),
+        httpMethods,
+      ),
     catchAllCause: <R3, E3>(
       f: (cause: Cause<E2>, request: Request) => Effect.Effect<R3, E3, Response>,
     ) =>
@@ -124,7 +136,7 @@ FetchHandler.schema = <Path extends string, A, R2, E2>(
   handler: (body: A, request: Request, params: ParamsOf<Path>) => Effect.Effect<R2, E2, Response>,
   options?: ParseOptions,
 ): FetchHandler<R2, E2 | ParseResult.ParseError, Path> =>
-  FetchHandler.decode(route, parseEffect(schema), handler, options)
+  FetchHandler.decode(route, parse(schema), handler, options)
 
 export type ResourcesOf<T> = T extends FetchHandler<infer R, any, any> ? R : never
 

@@ -26,14 +26,14 @@ export function tryCatchPromise<A, E>(
   f: () => Promise<A>,
   g: (error: unknown) => E,
 ): Fx<never, E, A> {
-  return fromEffect(Effect.tryCatchPromise(f, g))
+  return fromEffect(Effect.tryPromise({ try: f, catch: g }))
 }
 
 export function tryCatchPromiseInterrupt<A, E>(
   f: (signal: AbortSignal) => Promise<A>,
   g: (error: unknown) => E,
 ): Fx<never, E, A> {
-  return fromEffect(Effect.tryCatchPromiseInterrupt(f, g))
+  return fromEffect(Effect.tryPromiseInterrupt({ try: f, catch: g }))
 }
 
 export function promiseFx<R, E, A>(f: () => Promise<Fx<R, E, A>>): Fx<R, E, A> {
@@ -60,12 +60,12 @@ export function tryCatchPromiseFx<R, E, A, E2>(
   f: () => Promise<Fx<R, E, A>>,
   g: (error: unknown) => E2,
 ): Fx<R, E | E2, A> {
-  return fromFxEffect(Effect.tryCatchPromise(f, g))
+  return fromFxEffect(Effect.tryPromise({ try: f, catch: g }))
 }
 
 export function tryCatchPromiseInterruptFx<R, E, A, E2>(
   f: (signal: AbortSignal) => Promise<Fx<R, E, A>>,
   g: (error: unknown) => E2,
 ): Fx<R, E | E2, A> {
-  return fromFxEffect(Effect.tryCatchPromiseInterrupt(f, g))
+  return fromFxEffect(Effect.tryPromiseInterrupt({ try: f, catch: g }))
 }

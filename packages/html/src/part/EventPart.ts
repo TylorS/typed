@@ -42,7 +42,10 @@ export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
     placeholder: Renderable<R, E>,
     sink: Fx.Sink<R2, E, unknown>,
   ): Effect.Effect<R | R2, never, void> {
-    return Effect.matchCauseEffect(this.update(placeholder), sink.error, sink.event)
+    return Effect.matchCauseEffect(this.update(placeholder), {
+      onFailure: sink.error,
+      onSuccess: sink.event,
+    })
   }
 
   static fromHTMLElement(
@@ -77,7 +80,7 @@ export class EventPart extends BasePart<EventHandler<any, any, any> | null> {
         return Fiber.interruptFork(fiber)
       }
 
-      return Effect.unit()
+      return Effect.unit
     })
 
     const part = new EventPart(add, remove, name, index)

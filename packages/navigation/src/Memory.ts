@@ -1,4 +1,4 @@
-import { flow, pipe } from '@effect/data/Function'
+import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
@@ -81,12 +81,14 @@ export function memory(options: MemoryNavigationOptions): Layer.Layer<never, nev
         currentEntry: model.currentEntry,
         entries: model.entries,
         forward: lock(catchNavigationError(intent.forward)),
-        goTo: flow(
-          intent.goTo,
-          Effect.catchAll(flow(handleNavigationError(0), Effect.map(Option.some))),
-          lock,
-        ),
-        navigate: flow(intent.navigate, catchNavigationError, lock),
+        goTo: (n) =>
+          pipe(
+            n,
+            intent.goTo,
+            Effect.catchAll((a) => pipe(a, handleNavigationError(0), Effect.map(Option.some))),
+            lock,
+          ),
+        navigate: (url, options) => pipe( intent.navigate(url, options), catchNavigationError, lock),
         onNavigation: (handler, options) =>
           pipe(intent.onNavigation(handler, options), catchNavigationError, Effect.asUnit),
         onNavigationEnd: (handler, options) =>

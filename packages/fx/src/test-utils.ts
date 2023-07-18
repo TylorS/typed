@@ -30,7 +30,7 @@ export function testCollectAll<E = never, A = never>(
 
 export function testCause<E, A>(name: string, fx: Fx<never, E, A>, expected: Cause.Cause<E>) {
   it(name, async () => {
-    const exit = await Effect.runPromiseExit(Effect.scoped(observe(fx, () => Effect.unit())))
+    const exit = await Effect.runPromiseExit(Effect.scoped(observe(fx, () => Effect.unit)))
 
     ok(Exit.isFailure(exit))
     expect(Cause.unannotate(exit.cause)).toEqual(expected)

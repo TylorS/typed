@@ -43,7 +43,7 @@ export const patchHistory: Effect.Effect<
   Fx.Subject<never, HistoryEvent>
 > = Effect.gen(function* ($) {
   const history = yield* $(History)
-  const scope = yield* $(Effect.scope())
+  const scope = yield* $(Effect.scope)
   const historyEvents = Fx.makeSubject<never, HistoryEvent>()
   const runtime = yield* $(Effect.runtime<never>())
   const runFork = Runtime.runFork(runtime)

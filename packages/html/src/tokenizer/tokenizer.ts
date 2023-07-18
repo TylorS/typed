@@ -152,7 +152,10 @@ export class RefAttributeEndToken {
 
 export class AttributeToken {
   readonly _tag = 'attribute'
-  constructor(readonly name: string, readonly value: string) {}
+  constructor(
+    readonly name: string,
+    readonly value: string,
+  ) {}
 }
 
 export class BooleanAttributeToken {

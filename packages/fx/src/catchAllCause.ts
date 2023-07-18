@@ -24,7 +24,9 @@ export function catchAll<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
   f: (e: E) => Fx<R2, E2, B>,
 ): Fx<R | R2, E2, A | B> {
-  return catchAllCause(fx, (cause) => pipe(cause, Cause.failureOrCause, Either.match(f, failCause)))
+  return catchAllCause(fx, (cause) =>
+    pipe(cause, Cause.failureOrCause, Either.match({ onLeft: f, onRight: failCause })),
+  )
 }
 
 export function catchAllCauseEffect<R, E, A, R2, E2, B>(

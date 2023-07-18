@@ -60,7 +60,7 @@ const testNavigation = <Y extends Effect.EffectGen<any, any, any>, A>(
 
           return result
         }),
-        Effect.logErrorCause,
+        Effect.logError,
       ),
       initialUrl,
       options,
@@ -78,6 +78,8 @@ const fxToFiber = <R, E, A>(fx: Fx.Fx<R, E, A>, take: number) =>
   })
 
 const assertEqualDestination: (a: Destination, b: Destination) => void = (a, b) => {
+  console.log(a, b)
+
   deepStrictEqual(
     a.url.href,
     b.url.href,
@@ -231,7 +233,7 @@ describe(import.meta.url, () => {
 
             i++
 
-            return Effect.unit()
+            return Effect.unit
           }),
         )
 
@@ -260,7 +262,7 @@ describe(import.meta.url, () => {
       const test = testNavigation(function* ($, { navigate, onNavigation }) {
         yield* $(
           onNavigation(({ destination }) =>
-            destination.url.href === testPathname1 ? redirect(testPathname2) : Effect.unit(),
+            destination.url.href === testPathname1 ? redirect(testPathname2) : Effect.unit,
           ),
         )
 
@@ -418,7 +420,7 @@ describe(import.meta.url, () => {
 
             i++
 
-            return Effect.unit()
+            return Effect.unit
           }),
         )
 

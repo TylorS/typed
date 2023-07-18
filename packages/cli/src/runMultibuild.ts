@@ -3,7 +3,6 @@ import { resolve } from 'path'
 
 import * as Option from '@effect/data/Option'
 import { resolveTypedConfig } from '@typed/vite-plugin'
-// @ts-expect-error Unable to find types
 import multibuild from '@vavite/multibuild'
 import colors from 'picocolors'
 import type { LogLevel, ResolvedConfig } from 'vite'

@@ -32,7 +32,12 @@
       }
     },
     "test": {
-      "executor": "@nrwl/vite:test"
+      "executor": "@nrwl/vite:test",
+      "configurations": {
+        "watch": {
+          "watch": true
+        }
+      }
     }
   }
 }

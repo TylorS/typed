@@ -40,7 +40,7 @@ export function mergeConcurrently<FXS extends ReadonlyArray<Fx<any, any, any>>>(
           })
         }
 
-        return Effect.unit()
+        return Effect.unit
       }
 
       function onValue(index: number, value: Fx.OutputOf<FXS[number]>) {

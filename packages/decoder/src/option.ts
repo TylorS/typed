@@ -14,18 +14,20 @@ export const some = <A>(member: Decoder<unknown, A>): Decoder<unknown, Option.So
     value: member,
     [Equal.symbol]: any,
     [Hash.symbol]: any,
-    traced: any,
-    [Option.OptionTypeId]: any,
+    [Option.TypeId]: any,
     [Effect.EffectTypeId]: any,
+    _id: any,
+    pipe: any,
   })
 
 export const none: Decoder<unknown, Option.None<never>> = struct({
   _tag: literal('None'),
   [Equal.symbol]: any,
   [Hash.symbol]: any,
-  traced: any,
-  [Option.OptionTypeId]: any,
+  [Option.TypeId]: any,
   [Effect.EffectTypeId]: any,
+  _id: any,
+  pipe: any,
 })
 
 export const option = <A>(member: Decoder<unknown, A>): Decoder<unknown, Option.Option<A>> =>

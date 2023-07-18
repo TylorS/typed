@@ -443,7 +443,10 @@ export class NodePart {
 
 export class SelfClosingElementNode {
   readonly type = 'self-closing-element'
-  constructor(readonly tagName: string, readonly attributes: Attribute[]) {}
+  constructor(
+    readonly tagName: string,
+    readonly attributes: Attribute[],
+  ) {}
 }
 
 export class TextOnlyElement {
@@ -470,17 +473,26 @@ export type Attribute =
 
 export class AttributeNode {
   readonly type = 'attribute' as const
-  constructor(readonly name: string, readonly value: string) {}
+  constructor(
+    readonly name: string,
+    readonly value: string,
+  ) {}
 }
 
 export class AttrPartNode {
   readonly type = 'attr' as const
-  constructor(readonly name: string, readonly index: number) {}
+  constructor(
+    readonly name: string,
+    readonly index: number,
+  ) {}
 }
 
 export class SparseAttrNode {
   readonly type = 'sparse-attr' as const
-  constructor(readonly name: string, readonly nodes: Array<AttrPartNode | TextNode>) {}
+  constructor(
+    readonly name: string,
+    readonly nodes: Array<AttrPartNode | TextNode>,
+  ) {}
 }
 
 export class BooleanNode {
@@ -490,7 +502,10 @@ export class BooleanNode {
 
 export class BooleanPartNode {
   readonly type = 'boolean-part' as const
-  constructor(readonly name: string, readonly index: number) {}
+  constructor(
+    readonly name: string,
+    readonly index: number,
+  ) {}
 }
 
 export type ClassNameNode = TextNode | ClassNamePartNode
@@ -515,13 +530,19 @@ export class DataPartNode {
 export class EventPartNode {
   readonly type = 'event' as const
 
-  constructor(readonly name: string, readonly index: number) {}
+  constructor(
+    readonly name: string,
+    readonly index: number,
+  ) {}
 }
 
 export class PropertyPartNode {
   readonly type = 'property' as const
 
-  constructor(readonly name: string, readonly index: number) {}
+  constructor(
+    readonly name: string,
+    readonly index: number,
+  ) {}
 }
 
 export class RefPartNode {
@@ -555,5 +576,9 @@ export class CommentNode {
 export class CommentPartNode {
   readonly type = 'comment-part' as const
 
-  constructor(readonly before: string, readonly after: string, readonly index: number) {}
+  constructor(
+    readonly before: string,
+    readonly after: string,
+    readonly index: number,
+  ) {}
 }

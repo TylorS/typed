@@ -6,7 +6,7 @@ export function fromArray<A>(array: ReadonlyArray<A>): Fx<never, never, A> {
   return Fx((sink) =>
     Effect.suspend(() => {
       if (array.length === 0) {
-        return Effect.unit()
+        return Effect.unit
       }
 
       let eff = sink.event(array[0])

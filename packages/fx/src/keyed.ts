@@ -100,16 +100,22 @@ function updateState<A, B, C, R2, E2, R3>({
       const { added, removed, unchanged } = diffValues(state, updated, getKey)
 
       // Remove values that are no longer in the stream
-      yield* $(Effect.forEachDiscard(removed, (key) => removeValue(state, key)))
+      yield* $(Effect.forEach(removed, (key) => removeValue(state, key), { discard: true }))
 
       // Update values that are still in the stream
-      yield* $(Effect.forEachParDiscard(unchanged, (value) => updateValue(state, value, getKey)))
+      yield* $(
+        Effect.forEach(unchanged, (value) => updateValue(state, value, getKey), {
+          concurrency: 'unbounded',
+          discard: true,
+        }),
+      )
 
       // Add values that are new to the stream
       yield* $(
-        Effect.forEachParDiscard(added, (value) =>
-          addValue({ state, value, f, fork, emit, error, getKey }),
-        ),
+        Effect.forEach(added, (value) => addValue({ state, value, f, fork, emit, error, getKey }), {
+          concurrency: 'unbounded',
+          discard: true,
+        }),
       )
 
       // If nothing was added, emit the current values
@@ -232,7 +238,7 @@ function emitWhenReady<A, B, C>(state: KeyedState<A, B, C>, getKey: (a: A) => C)
   return Effect.suspend(() => {
     // Fast path: if we don't have enough values, don't emit
     if (MutableHashMap.size(state.values) !== state.previous.length) {
-      return Effect.unit()
+      return Effect.unit
     }
 
     const values = ReadonlyArray.filterMap(state.previous, (value) =>
@@ -244,10 +250,12 @@ function emitWhenReady<A, B, C>(state: KeyedState<A, B, C>, getKey: (a: A) => C)
       return state.output.event(values)
     }
 
-    return Effect.unit()
+    return Effect.unit
   })
 }
 
 function endAll<A, B, C>(state: KeyedState<A, B, C>) {
-  return Effect.forEachParDiscard(state.subjects, ([, subject]) => subject.end())
+  return Effect.forEach(state.subjects, ([, subject]) => subject.end(), {
+    concurrency: 'unbounded',
+  })
 }

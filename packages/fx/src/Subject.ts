@@ -1,4 +1,3 @@
-import { methodWithTrace } from '@effect/data/Debug'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 
@@ -24,12 +23,8 @@ export class SubjectImpl<E, A> extends MulticastFx<never, E, A> implements Subje
     super(never<E, A>())
   }
 
-  readonly end = methodWithTrace(
-    (trace) => () =>
-      Effect.suspend(() => (this.fiber ? Fiber.interrupt(this.fiber) : Effect.unit())).traced(
-        trace,
-      ),
-  )
+  readonly end = () =>
+    Effect.suspend(() => (this.fiber ? Fiber.interrupt(this.fiber) : Effect.unit))
 }
 
 export class HoldSubjectImpl<E, A> extends HoldFx<never, E, A> implements Subject<E, A> {
@@ -37,10 +32,6 @@ export class HoldSubjectImpl<E, A> extends HoldFx<never, E, A> implements Subjec
     super(never<E, A>())
   }
 
-  readonly end = methodWithTrace(
-    (trace) => () =>
-      Effect.suspend(() => (this.fiber ? Fiber.interrupt(this.fiber) : Effect.unit())).traced(
-        trace,
-      ),
-  )
+  readonly end = () =>
+    Effect.suspend(() => (this.fiber ? Fiber.interrupt(this.fiber) : Effect.unit))
 }

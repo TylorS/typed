@@ -12,7 +12,7 @@ export function provideContext<R, E, A>(
 ): Fx<never, E, A> {
   return Fx(
     <R2>(sink: Sink<R2, E, A>): Effect.Effect<R2, never, void> =>
-      Effect.contramapContext(fx.run(sink), (ctx) => Context.merge(ctx, context)),
+      Effect.mapInputContext(fx.run(sink), (ctx) => Context.merge(ctx, context)),
   )
 }
 
@@ -22,7 +22,7 @@ export function provideSomeContext<R, E, A, R2>(
 ): Fx<Exclude<R, R2>, E, A> {
   return Fx(
     <R3>(sink: Sink<R3, E, A>): Effect.Effect<Exclude<R, R2> | R3, never, void> =>
-      Effect.contramapContext(fx.run(sink), (ctx) =>
+      Effect.mapInputContext(fx.run(sink), (ctx) =>
         Context.merge(ctx as Context.Context<R | R3>, context),
       ),
   )
@@ -57,11 +57,13 @@ export function provideServiceEffect<R, E, A, I, S, R2, E2>(
 ): Fx<Exclude<R, I> | R2, E | E2, A> {
   return Fx(
     <R3>(sink: Sink<R3, E | E2, A>): Effect.Effect<Exclude<R, I> | R2 | R3, never, void> =>
-      Effect.matchCauseEffect(service, sink.error, (s) =>
-        Effect.contramapContext(fx.run(sink), (ctx) =>
-          Context.merge(ctx as Context.Context<R | R2 | R3>, Context.make(tag, s)),
-        ),
-      ),
+      Effect.matchCauseEffect(service, {
+        onFailure: sink.error,
+        onSuccess: (s) =>
+          Effect.mapInputContext(fx.run(sink), (ctx) =>
+            Context.merge(ctx as Context.Context<R | R2 | R3>, Context.make(tag, s)),
+          ),
+      }),
   )
 }
 

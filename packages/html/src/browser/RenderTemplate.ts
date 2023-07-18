@@ -58,7 +58,7 @@ export function renderTemplate<Values extends readonly Renderable<any, any>[]>(
           Effect.tap(({ onValue }) =>
             Effect.all(
               parts.map((part, index) =>
-                renderPart(
+                renderPart<R2, Placeholder.ErrorsOf<Values[number]>>(
                   values,
                   part,
                   Fx.Sink(() => onValue(index), sink.error),
@@ -69,7 +69,7 @@ export function renderTemplate<Values extends readonly Renderable<any, any>[]>(
           Effect.tap(({ onReady }) =>
             Effect.flatMap(onReady, () => sink.event(DomRenderEvent(wire() as Rendered))),
           ),
-          Effect.flatMap(() => Effect.never()),
+          Effect.flatMap(() => Effect.never),
         )
       },
     ),
@@ -90,7 +90,10 @@ function renderPart<R, E>(
     const renderable = values[part.index]
 
     if (isDirective<R, E>(renderable)) {
-      return Effect.matchCauseEffect(renderable.f(part), sink.error, () => sink.event(part.value))
+      return Effect.matchCauseEffect(renderable.f(part), {
+        onFailure: sink.error,
+        onSuccess: () => sink.event(part.value),
+      })
     } else {
       return part.observe(values[part.index], sink)
     }

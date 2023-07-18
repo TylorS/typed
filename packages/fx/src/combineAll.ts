@@ -33,21 +33,24 @@ export function combineAll<FX extends ReadonlyArray<Fx<any, any, any>>>(
                 [k in keyof FX]: Fx.OutputOf<FX[k]>
               },
             )
-          : Effect.unit(),
+          : Effect.unit,
       )
 
       return Effect.asUnit(
-        Effect.forEachParWithIndex(fx, (f, i) =>
-          f.run(
-            Sink(
-              (a) =>
-                Effect.suspend(() => {
-                  values.set(i, a)
-                  return emitIfReady
-                }),
-              sink.error,
+        Effect.forEach(
+          fx,
+          (f, i) =>
+            f.run(
+              Sink(
+                (a) =>
+                  Effect.suspend(() => {
+                    values.set(i, a)
+                    return emitIfReady
+                  }),
+                sink.error,
+              ),
             ),
-          ),
+          { concurrency: 'unbounded' },
         ),
       )
     }),

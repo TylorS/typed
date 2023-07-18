@@ -41,7 +41,7 @@ const testNavigation = <Y extends Effect.EffectGen<any, any, any>, A>(
 
           return result
         }),
-        Effect.logErrorCause,
+        Effect.logError,
       ),
       options,
     ),
@@ -206,7 +206,7 @@ describe(import.meta.url, () => {
 
             i++
 
-            return Effect.unit()
+            return Effect.unit
           }),
         )
 
@@ -235,7 +235,7 @@ describe(import.meta.url, () => {
       const test = testNavigation(function* ($, { navigate, onNavigation }) {
         yield* $(
           onNavigation(({ destination }) =>
-            destination.url.href === testPathname1 ? redirect(testPathname2) : Effect.unit(),
+            destination.url.href === testPathname1 ? redirect(testPathname2) : Effect.unit,
           ),
         )
 
@@ -393,7 +393,7 @@ describe(import.meta.url, () => {
 
             i++
 
-            return Effect.unit()
+            return Effect.unit
           }),
         )
 
