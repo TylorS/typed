@@ -1,4 +1,4 @@
-import { SchemaStorage, Window, localStorage } from '@typed/dom'
+import { SchemaStorage, Storage } from '@typed/dom'
 import * as Schema from '@effect/schema/Schema'
 import * as Effect from '@effect/io/Effect'
 
@@ -18,8 +18,7 @@ const program = Effect.gen(function* (_) {
 })
 
 const main = program.pipe(
-  Effect.provideSomeLayer(localStorage),
-  Window.provide(window),
+  Storage.provide(localStorage),
 )
 
 Effect.runPromise(main).then(console.log, console.error)
