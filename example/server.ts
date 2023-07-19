@@ -37,12 +37,13 @@ const writeToResponse = (res: express.Response) => (chunk: string) =>
 const renderContext = Effect.provideSomeLayer(server())
 
 const provideUiResources = (req: express.Request) => {
-  return <R, E, A>(effect: Effect.Effect<R, E, A>) => pipe(
-    effect,
-    Effect.provideSomeLayer(Router.memory({ initialUrl: new URL(req.url, 'https://localhost') })),
-    renderContext,
-    Effect.scoped,
-  )
+  return <R, E, A>(effect: Effect.Effect<R, E, A>) =>
+    pipe(
+      effect,
+      Effect.provideSomeLayer(Router.memory({ initialUrl: new URL(req.url, 'https://localhost') })),
+      renderContext,
+      Effect.scoped,
+    )
 }
 
 if (import.meta.env.PROD) {

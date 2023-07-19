@@ -1,23 +1,27 @@
 import * as Effect from '@effect/io/Effect'
-import * as Schema from '@effect/schema/Schema'
-import { SchemaStorage, Storage } from '@typed/dom'
-import { catchNoSuchElement } from '@typed/error'
+import { setItem, getItem, Storage } from '@typed/dom'
+import { catchNoSuchElement } from 'packages/error/dist/catchNoSuchElement.js'
 
-const storage = SchemaStorage({
-  foo: Schema.string,
-  bar: Schema.NumberFromString,
-})
+const FOO_KEY = 'foo'
+const BAR_KEY = 'bar'
 
 const program = Effect.gen(function* (_) {
-  yield* _(storage.set('foo', 'hello world'))
-  yield* _(storage.set('bar', 42))
+  yield* _(setItem(FOO_KEY, 'hello'))
+  yield* _(setItem(BAR_KEY, 'world'))
 
-  const foo = yield* _(storage.get('foo'), Effect.flatten)
-  const bar = yield* _(storage.get('bar'), Effect.flatten)
+  const foo = yield* _(getItem(FOO_KEY), Effect.flatten) // getItem returns Effect<Storage, never, Option<string>>
+  const bar = yield* _(getItem(BAR_KEY), Effect.flatten) // Effect.flatten turns it into Effect<Storage, Cause.NoSuchElementException, string>
 
-  return foo.length + bar
+  return `${foo} ${bar}!`
 })
 
-const main = program.pipe(Storage.provide(localStorage), catchNoSuchElement)
+const main = program.pipe(
+  // Provide the storage implementation to use for this effect.
+  Storage.provide(localStorage),
+  // Or with sessionStorage
+  // Storage.provide(sessionStorage),
+  // Turns Effect<R, E | Cause.NoSuchElementException, A> back into Effect<R, E, Option<A>>
+  catchNoSuchElement,
+)
 
 Effect.runPromise(main).then(console.log, console.error)
