@@ -1,6 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 import { setItem, getItem, Storage } from '@typed/dom'
-import { catchNoSuchElement } from 'packages/error/dist/catchNoSuchElement.js'
+import { catchNoSuchElement } from '@typed/error'
 
 const FOO_KEY = 'foo'
 const BAR_KEY = 'bar'
