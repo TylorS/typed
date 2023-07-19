@@ -1,6 +1,7 @@
-import { SchemaStorage, Storage } from '@typed/dom'
-import * as Schema from '@effect/schema/Schema'
 import * as Effect from '@effect/io/Effect'
+import * as Schema from '@effect/schema/Schema'
+import { SchemaStorage, Storage } from '@typed/dom'
+import { catchNoSuchElement } from '@typed/error'
 
 const storage = SchemaStorage({
   foo: Schema.string,
@@ -17,8 +18,6 @@ const program = Effect.gen(function* (_) {
   return foo.length + bar
 })
 
-const main = program.pipe(
-  Storage.provide(localStorage),
-)
+const main = program.pipe(Storage.provide(localStorage), catchNoSuchElement)
 
 Effect.runPromise(main).then(console.log, console.error)
