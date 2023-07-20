@@ -88,7 +88,7 @@ export function memory(options: MemoryNavigationOptions): Layer.Layer<never, nev
             Effect.catchAll((a) => pipe(a, handleNavigationError(0), Effect.map(Option.some))),
             lock,
           ),
-        navigate: (url, options) => pipe( intent.navigate(url, options), catchNavigationError, lock),
+        navigate: (url, options) => pipe(intent.navigate(url, options), catchNavigationError, lock),
         onNavigation: (handler, options) =>
           pipe(intent.onNavigation(handler, options), catchNavigationError, Effect.asUnit),
         onNavigationEnd: (handler, options) =>

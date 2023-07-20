@@ -1,5 +1,5 @@
-import * as Option from '@effect/data/Option'
 import type { Equivalence } from '@effect/data/Equivalence'
+import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import fastDeepEqual from 'fast-deep-equal/es6'
 

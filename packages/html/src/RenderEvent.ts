@@ -19,7 +19,7 @@ export function DomRenderEvent(rendered: Rendered): DomRenderEvent {
 export type HtmlRenderEvent = {
   readonly _tag: 'html'
   readonly html: string
-  readonly valueOf: () => string,
+  readonly valueOf: () => string
 }
 
 export function HtmlRenderEvent(html: string): HtmlRenderEvent {

@@ -99,7 +99,8 @@ export const dom = (
             Effect.catchAll((a) => pipe(a, handleNavigationError(0), Effect.map(Option.some))),
             provideLocked,
           ),
-        navigate: (url, options) => pipe(intent.navigate(url, options), catchNavigationError, provideLocked),
+        navigate: (url, options) =>
+          pipe(intent.navigate(url, options), catchNavigationError, provideLocked),
         onNavigation: (handler, options) =>
           pipe(intent.onNavigation(handler, options), catchNavigationError, Effect.asUnit),
         onNavigationEnd: (handler, options) =>
