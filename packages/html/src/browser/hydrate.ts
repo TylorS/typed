@@ -1,9 +1,9 @@
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
-import { Document } from '@typed/dom'
+import { Document, RootElement } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
-import { RenderContext, makeRenderContext } from '../RenderContext.js'
+import { RenderContext } from '../RenderContext.js'
 import { RenderEvent } from '../RenderEvent.js'
 import { RenderTemplate } from '../RenderTemplate.js'
 import { Rendered } from '../Rendered.js'
@@ -13,26 +13,31 @@ import { BrowserCache, findRootParentChildNodes, getBrowserCache } from './cache
 
 export function hydrate<R, E>(
   what: Fx.Fx<R, E, RenderEvent>,
-  where: HTMLElement,
-): Fx.Fx<Exclude<R, Document | RenderContext | RenderTemplate>, E, RenderEvent> {
-  const renderContext = makeRenderContext({ environment: 'browser' })
-  const ctx: HydrateContext = {
-    where: findRootParentChildNodes(where),
-    rootIndex: -1,
-    parentTemplate: null,
-    hydrate: true,
-  }
-  const { context } = Document.build(where.ownerDocument)
-    .add(RenderContext, renderContext)
-    .add(HydrateContext, ctx)
+): Fx.Fx<Exclude<R | Document | RootElement | RenderContext, RenderTemplate>, E, RenderEvent> {
+  return Fx.fromFxEffect(
+    Effect.map(
+      Effect.all([RootElement, RenderContext]),
+      ([{ rootElement: where }, renderContext]) => {
+        const ctx: HydrateContext = {
+          where: findRootParentChildNodes(where),
+          rootIndex: -1,
+          parentTemplate: null,
+          hydrate: true,
+        }
 
-  const layer = Layer.provideMerge(Layer.succeedContext(context), hydrateTemplateInDom)
-  const cache = getBrowserCache(renderContext.renderCache, where)
+        const layer = Layer.provideMerge(
+          Layer.succeedContext(HydrateContext.build(ctx).context),
+          hydrateTemplateInDom,
+        )
+        const cache = getBrowserCache(renderContext.renderCache, where)
 
-  return Fx.provideSomeLayer(
-    Fx.tap(what, (event) => attachRoot(cache, where, event)),
-    layer,
-  ) as Fx.Fx<Exclude<R, Document | RenderContext | RenderTemplate>, E, RenderEvent>
+        return Fx.provideSomeLayer(
+          Fx.tap(what, (event) => attachRoot(cache, where, event)),
+          layer,
+        )
+      },
+    ),
+  ) as Fx.Fx<Exclude<R | Document | RootElement | RenderContext, RenderTemplate>, E, RenderEvent>
 }
 
 function attachRoot(

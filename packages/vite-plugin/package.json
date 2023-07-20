@@ -19,11 +19,11 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.15.1",
+    "@effect/data": "^0.16.0",
     "fast-glob": "^3.3.0",
     "rollup-plugin-visualizer": "^5.9.2",
     "vavite": "^2.0.1",
-    "vite": "^4.4.4",
+    "vite": "^4.4.5",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.2.0"
   },

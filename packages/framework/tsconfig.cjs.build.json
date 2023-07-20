@@ -19,6 +19,9 @@
       "path": "../html/tsconfig.cjs.build.json"
     },
     {
+      "path": "../navigation/tsconfig.cjs.build.json"
+    },
+    {
       "path": "../path/tsconfig.cjs.build.json"
     },
     {

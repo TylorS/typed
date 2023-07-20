@@ -1,5 +1,7 @@
 export * from './context.js'
 export * from './fn.js'
 export * from './identifier.js'
+export * from './interfaces.js'
+export * from './many.js'
 export * from './ref.js'
 export * from './subject.js'

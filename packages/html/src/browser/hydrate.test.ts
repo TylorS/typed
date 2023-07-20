@@ -219,7 +219,7 @@ function testHydrate<R, E, A, R2, E2>(
       }
 
       const test = $(
-        hydrate(what, where),
+        hydrate(what),
         Fx.take(take),
         Fx.observe((rendered) => {
           const end = Date.now()
@@ -233,7 +233,9 @@ function testHydrate<R, E, A, R2, E2>(
 
       yield* test
     }),
-    Effect.provideSomeContext(makeDomServices(window, window)),
+    Effect.provideSomeContext(makeDomServices({ window, globalThis: window, rootElement: where })),
+    Effect.provideSomeLayer(RenderContext.layerOf(makeRenderContext({ environment: 'browser' }))),
+
     Effect.scoped,
   )
 }

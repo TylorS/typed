@@ -6,19 +6,20 @@ import { Environment, RenderContext, makeRenderContext } from '../RenderContext.
 import { renderTemplateToHtml } from './RenderTemplate.js'
 import { ServerWindowOptions, makeServerWindow } from './makeServerWindow.js'
 
-const layer =
-  (environment: Environment) => (options?: ServerWindowOptions & { readonly isBot?: boolean }) => {
-    const window = makeServerWindow(options)
+export type ServerLayerOptions = ServerWindowOptions & { readonly isBot?: boolean }
 
-    const { context } = GlobalThis.build(window)
-      .merge(Window.build(window))
-      .merge(RenderContext.build(makeRenderContext({ environment, isBot: options?.isBot })))
+const layer = (environment: Environment) => (options?: ServerLayerOptions) => {
+  const window = makeServerWindow(options)
 
-    return Layer.provideMerge(
-      Layer.succeedContext(context),
-      Layer.mergeAll(domServices, renderTemplateToHtml),
-    )
-  }
+  const { context } = GlobalThis.build(window)
+    .merge(Window.build(window))
+    .merge(RenderContext.build(makeRenderContext({ environment, isBot: options?.isBot })))
+
+  return Layer.provideMerge(
+    Layer.succeedContext(context),
+    Layer.mergeAll(domServices(), renderTemplateToHtml),
+  )
+}
 
 export const server = layer('server')
 

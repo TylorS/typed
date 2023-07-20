@@ -1,4 +1,3 @@
-import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as C from '@typed/context'
@@ -10,47 +9,100 @@ import { History } from './History.js'
 import { Location } from './Location.js'
 import { Navigator } from './Navigator.js'
 import { ParentElement } from './ParentElement.js'
+import { RootElement } from './RootElement.js'
 import { Window } from './Window.js'
-import { attachShadowRoots } from './declarative-shadow-dom.js'
 
 export type DomServices =
   | GlobalThis
   | Window
   | Document
+  | RootElement
   | ParentElement
   | History
   | Location
   | Navigator
   | Fetch
 
-export const makeDomServices = (
-  window: Window,
+export const DomServices: C.Tagged<
+  DomServices,
+  {
+    readonly globalThis: GlobalThis
+    readonly window: Window
+    readonly document: Document
+    readonly rootElement: RootElement
+    readonly parentElement: ParentElement
+    readonly history: History
+    readonly location: Location
+    readonly navigator: Navigator
+    readonly fetch: Fetch
+  }
+> = C.struct({
   globalThis: GlobalThis,
-  parentElement?: HTMLElement,
-): C.Context<DomServices> =>
-  Window.build(window)
-    .add(GlobalThis, globalThis)
-    .add(Document, window.document)
-    .add(ParentElement, { parentElement: parentElement ?? window.document.body })
-    .add(History, window.history)
-    .add(Location, window.location)
-    .add(Navigator, window.navigator)
-    .add(Fetch, window.fetch).context
+  window: Window,
+  document: Document,
+  rootElement: RootElement,
+  parentElement: ParentElement,
+  history: History,
+  location: Location,
+  navigator: Navigator,
+  fetch: Fetch,
+})
+
+export type DomServicesParams = {
+  readonly window: Window
+  readonly globalThis: GlobalThis
+  readonly rootElement?: HTMLElement
+  readonly parentElement?: HTMLElement
+}
+
+export const makeDomServices = (params: DomServicesParams): C.Context<DomServices> => {
+  const { window, globalThis } = params
+  const { document, history, location, navigator, fetch } = window
+  const { context } = DomServices.build({
+    globalThis,
+    window,
+    document,
+    rootElement: { rootElement: params.rootElement || document.body },
+    parentElement: { parentElement: params.parentElement || document.body },
+    history,
+    location,
+    navigator,
+    fetch,
+  })
+
+  return context
+}
+
+export type DomServicesElementParams = {
+  readonly rootElement?: HTMLElement
+  readonly parentElement?: HTMLElement
+}
 
 export const provideDomServices =
-  (window: Window & GlobalThis) =>
+  (window: Window & GlobalThis, params?: DomServicesElementParams) =>
   <R, E, A>(
     effect: Effect.Effect<R | DomServices, E, A>,
   ): Effect.Effect<Exclude<R, DomServices>, E, A> =>
-    pipe(
-      // If the environment doesn't support declarative shadow-dom, polyfill by attaching shadow roots
-      attachShadowRoots,
-      Effect.zipRight(effect),
-      Effect.mapInputContext((env: C.Context<Exclude<R, DomServices>>) =>
-        pipe(env as C.Context<R>, C.merge(makeDomServices(window, window))),
-      ),
+    Effect.provideSomeContext(
+      effect,
+      makeDomServices({
+        window,
+        globalThis: window,
+        ...params,
+      }),
     )
 
-export const domServices = Layer.effectContext(
-  Window.withEffect((w) => GlobalThis.with((g) => makeDomServices(w, g))),
-)
+export const domServices = (
+  params?: DomServicesElementParams,
+): Layer.Layer<Window | GlobalThis, never, DomServices> =>
+  Layer.effectContext(
+    Window.withEffect((window) =>
+      GlobalThis.with((globalThis) =>
+        makeDomServices({
+          window,
+          globalThis,
+          ...params,
+        }),
+      ),
+    ),
+  )

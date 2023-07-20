@@ -9,6 +9,7 @@ import { isWire } from '@typed/wire'
 import { describe, it } from 'vitest'
 
 import { attrDirective } from '../Directive.js'
+import { RenderContext, makeRenderContext } from '../RenderContext.js'
 import { RenderEvent } from '../RenderEvent.js'
 import { html } from '../RenderTemplate.js'
 import { Rendered } from '../Rendered.js'
@@ -149,13 +150,14 @@ function testRendered<R, E, R2, E2>(
   const where = window.document.body
 
   const test = pipe(
-    render(what, where),
+    render(what),
     Fx.take(take),
     Fx.observe((event) => {
       console.log('Rendered in', Date.now() - start, 'ms')
       return onRendered(event.valueOf() as Rendered)
     }),
-    Effect.provideSomeContext(makeDomServices(window, window)),
+    Effect.provideSomeContext(makeDomServices({ window, globalThis: window, rootElement: where })),
+    Effect.provideSomeLayer(RenderContext.layerOf(makeRenderContext({ environment: 'browser' }))),
     Effect.scoped,
   )
 

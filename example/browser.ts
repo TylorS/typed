@@ -2,27 +2,25 @@ import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Logger from '@effect/io/Logger'
 import * as LogLevel from '@effect/io/Logger/Level'
+import { browser } from '@typed/framework/browser'
 import * as Fx from '@typed/fx'
-import { browser, hydrate } from '@typed/html/browser'
-import * as Router from '@typed/router'
+import { hydrate } from '@typed/html/browser'
 
 import { layout, router } from './routing.js'
 
 // Bootstrap running application
-const parentElement = document.getElementById('application')
+const rootElement = document.getElementById('application')
 
-if (!parentElement) {
+if (!rootElement) {
   throw new Error('Could not find #application element')
 }
 
-const ui = hydrate(layout(router), parentElement)
-
 // Provide resources to the program
 const program = pipe(
-  ui,
+  layout(router),
+  hydrate,
   Fx.drain,
-  Effect.provideSomeLayer(Router.dom()),
-  Effect.provideSomeLayer(browser(window)),
+  Effect.provideSomeLayer(browser(window, { rootElement })),
   Logger.withMinimumLogLevel(LogLevel.Debug),
   Effect.scoped,
 )

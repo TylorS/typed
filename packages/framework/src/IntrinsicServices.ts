@@ -1,6 +1,7 @@
-import { Scope } from '@effect/io/Scope'
+import type { Scope } from '@effect/io/Scope'
 import type { DomServices } from '@typed/dom'
 import type { RenderContext } from '@typed/html'
+import type { Navigation } from '@typed/navigation'
 import type { Router } from '@typed/router'
 
 /**
@@ -10,4 +11,4 @@ import type { Router } from '@typed/router'
  *
  * With these services we provide all of the capabilities of our vite plugin.
  */
-export type IntrinsicServices = DomServices | Router | RenderContext | Scope
+export type IntrinsicServices = DomServices | Storage | Navigation | Router | RenderContext | Scope

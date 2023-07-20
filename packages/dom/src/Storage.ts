@@ -1,4 +1,3 @@
-import { pipe } from '@effect/data/Function'
 import * as O from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import type * as Layer from '@effect/io/Layer'
@@ -17,13 +16,38 @@ export interface Storage extends globalThis.Storage {}
 export const Storage = C.Tag<Storage>('@typed/dom/Storage')
 
 export const getItem = (key: string): StorageEffect<never, never, O.Option<string>> =>
-  StorageEffect(Storage.with((s) => O.fromNullable(s.getItem(key))))
+  StorageEffect(
+    Storage.with((s) => {
+      try {
+        return O.fromNullable(s.getItem(key))
+      } catch (error) {
+        console.error(error)
+        return O.none()
+      }
+    }),
+  )
 
 export const setItem = (key: string, value: string): StorageEffect<never, never, void> =>
-  StorageEffect(Storage.with((s) => s.setItem(key, value)))
+  StorageEffect(
+    Storage.with((s) => {
+      try {
+        return s.setItem(key, value)
+      } catch (error) {
+        console.error(error)
+      }
+    }),
+  )
 
 export const removeItem = (key: string): StorageEffect<never, never, void> =>
-  StorageEffect(Storage.with((s) => s.removeItem(key)))
+  StorageEffect(
+    Storage.with((s) => {
+      try {
+        return s.removeItem(key)
+      } catch (error) {
+        console.error(error)
+      }
+    }),
+  )
 
 export const sessionStorage: Layer.Layer<Window, never, Storage> = Storage.layer(
   Window.with((w) => w.sessionStorage),
@@ -32,6 +56,12 @@ export const sessionStorage: Layer.Layer<Window, never, Storage> = Storage.layer
 export const localStorage: Layer.Layer<Window, never, Storage> = Storage.layer(
   Window.with((w) => w.localStorage),
 )
+
+const sendResources = Effect.all({
+  globalThis: GlobalThis,
+  window: Window,
+  storage: Storage,
+})
 
 /**
  * Listen to cross-tab storage events. Additional opt-in to storageEvents.setItem and storageEvents.removeItem
@@ -48,22 +78,24 @@ export const storageEvents = Object.assign(Window.withFx(addEventListener('stora
     newValue: string | null,
   ): StorageEffect<GlobalThis | Window, never, void> =>
     StorageEffect(
-      GlobalThis.withEffect((g) =>
-        Window.withEffect((w) =>
-          Storage.withEffect((s) =>
-            Effect.sync(() => sendStorageEvent_(g, w, s, key, oldValue, newValue)),
-          ),
-        ),
+      Effect.map(sendResources, (r) =>
+        sendStorageEvent_(r.globalThis, r.window, r.storage, key, oldValue, newValue),
       ),
     ),
+  getItem,
   setItem: (key: string, value: string): StorageEffect<GlobalThis | Window, never, void> =>
     StorageEffect(
       Storage.withEffect((s) =>
         Effect.suspend(() => {
-          const oldValue = s.getItem(key)
-          s.setItem(key, value)
+          try {
+            const oldValue = s.getItem(key)
+            s.setItem(key, value)
 
-          return oldValue === value ? Effect.unit : storageEvents.send(key, oldValue, value)
+            return oldValue === value ? Effect.unit : storageEvents.send(key, oldValue, value)
+          } catch (error) {
+            console.error(error)
+            return Effect.unit
+          }
         }),
       ),
     ),
@@ -71,11 +103,16 @@ export const storageEvents = Object.assign(Window.withFx(addEventListener('stora
     StorageEffect(
       Storage.withEffect((s) =>
         Effect.suspend(() => {
-          const oldValue = s.getItem(key)
+          try {
+            const oldValue = s.getItem(key)
 
-          s.removeItem(key)
+            s.removeItem(key)
 
-          return oldValue === null ? Effect.unit : storageEvents.send(key, oldValue, null)
+            return oldValue === null ? Effect.unit : storageEvents.send(key, oldValue, null)
+          } catch (error) {
+            console.error(error)
+            return Effect.unit
+          }
         }),
       ),
     ),
@@ -195,15 +232,15 @@ export function SchemaStorage<
 }
 
 export interface StorageEffect<R, E, A> extends Effect.Effect<R | Storage, E, A> {
-  readonly local: Effect.Effect<R, E, A>
-  readonly session: Effect.Effect<R, E, A>
+  readonly local: Effect.Effect<Window | Exclude<R, Storage>, E, A>
+  readonly session: Effect.Effect<Window | Exclude<R, Storage>, E, A>
 }
 
 export function StorageEffect<R, E, A>(
   effect: Effect.Effect<R | Storage, E, A>,
 ): StorageEffect<Exclude<R, Storage>, E, A> {
   return Object.assign(effect, {
-    local: pipe(effect, Effect.provideSomeLayer(localStorage)),
-    session: pipe(effect, Effect.provideSomeLayer(sessionStorage)),
+    local: Effect.provideSomeLayer(effect, localStorage),
+    session: Effect.provideSomeLayer(effect, sessionStorage),
   }) as StorageEffect<Exclude<R, Storage>, E, A>
 }

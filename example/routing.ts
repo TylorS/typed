@@ -60,7 +60,8 @@ export const ListItemLink = <
 ) =>
   Router.Link(
     { to, relative: false },
-    ({ url, navigate }) => html`<li>
-      <a href=${url} onclick=${EventHandler.preventDefault(() => navigate)}>${label}</a>
-    </li>`,
+    ({ url, navigate }) =>
+      html`<li>
+        <a href=${url} onclick=${EventHandler.preventDefault(() => navigate)}>${label}</a>
+      </li>`,
   )

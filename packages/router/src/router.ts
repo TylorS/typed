@@ -2,7 +2,7 @@ import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import { Tag } from '@typed/context'
-import { GlobalThis, Window, DomServices, domServices, localStorage } from '@typed/dom'
+import { DomServicesElementParams } from '@typed/dom'
 import { Filtered } from '@typed/fx'
 import * as Navigation from '@typed/navigation'
 import { ParamsOf, PathJoin } from '@typed/path'
@@ -70,12 +70,9 @@ export function getCurrentPathFromUrl(url: URL): string {
 }
 
 export const dom = (
-  options?: Navigation.DomNavigationOptions,
-): Layer.Layer<GlobalThis | Window, never, DomServices | Navigation.Navigation | Router> =>
-  Layer.provideMerge(
-    localStorage,
-    Layer.provideMerge(domServices, Layer.provideMerge(Navigation.dom(options), navigation)),
-  )
+  options?: Navigation.DomNavigationOptions & DomServicesElementParams,
+): Layer.Layer<Navigation.NavigationServices, never, Navigation.Navigation | Router> =>
+  Layer.provideMerge(Navigation.dom(options), navigation)
 
 export const memory = (
   options: Navigation.MemoryNavigationOptions,

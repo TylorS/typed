@@ -6,14 +6,15 @@ import { fileURLToPath } from 'url'
 
 import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
+import { server } from '@typed/framework/server'
 import * as Fx from '@typed/fx'
-import { renderToHtml, renderToHtmlStream, server } from '@typed/html/server'
-import * as Router from '@typed/router'
+import { renderToHtml, renderToHtmlStream } from '@typed/html/server'
 import express from 'express'
 import staticGzip from 'express-static-gzip'
 import { clientOutputDirectory } from 'typed:config'
 import httpDevServer from 'vavite/http-dev-server'
 import viteDevServer from 'vavite/vite-dev-server'
+import { ViteDevServer } from 'vite'
 
 import { layout, router } from './routing.js'
 
@@ -34,14 +35,11 @@ const uiHtml = renderToHtml(ui)
 const writeToResponse = (res: express.Response) => (chunk: string) =>
   Effect.sync(() => res.write(chunk))
 
-const renderContext = Effect.provideSomeLayer(server())
-
 const provideUiResources = (req: express.Request) => {
   return <R, E, A>(effect: Effect.Effect<R, E, A>) =>
     pipe(
       effect,
-      Effect.provideSomeLayer(Router.memory({ initialUrl: new URL(req.url, 'https://localhost') })),
-      renderContext,
+      Effect.provideSomeLayer(server({ initialUrl: new URL(req.url, 'https://localhost') })),
       Effect.scoped,
     )
 }
@@ -64,33 +62,12 @@ if (import.meta.env.PROD) {
 
 app.get('*', async (req, res, next) => {
   console.log('handling', req.url)
-  const start = Date.now()
 
   try {
     if (viteDevServer) {
-      // In dev mode we unfortunately have to utilize full-html transformation with vite
-      let html = before + appElementStart
-      html += await pipe(uiHtml, provideUiResources(req), Effect.runPromise)
-      html += appElementEnd + after
-      html = await viteDevServer.transformIndexHtml(req.url, html)
-
-      res.status(200)
-      res.type('text/html')
-      res.end(html)
+      await runDev(req, res, viteDevServer)
     } else {
-      res.type('text/html')
-      res.write(before + appElementStart)
-
-      await pipe(
-        uiStream,
-        Fx.observe(writeToResponse(res)),
-        provideUiResources(req),
-        Effect.runPromise,
-      )
-
-      res.status(200)
-      res.end(appElementEnd + after)
-      console.log('rendered in', Date.now() - start, 'ms')
+      await runProd(req, res)
     }
   } catch (error) {
     console.error(error)
@@ -103,4 +80,27 @@ if (viteDevServer) {
 } else {
   console.log('Starting production server')
   app.listen(3000)
+}
+
+// In dev mode we unfortunately have to utilize full-html transformation with vite
+async function runDev(req: express.Request, res: express.Response, devServer: ViteDevServer) {
+  res.type('text/html')
+
+  let html = before + appElementStart
+  html += await pipe(uiHtml, provideUiResources(req), Effect.runPromise)
+  html += appElementEnd + after
+  html = await devServer.transformIndexHtml(req.url, html)
+
+  res.status(200)
+  res.end(html)
+}
+
+async function runProd(req: express.Request, res: express.Response) {
+  res.type('text/html')
+  res.write(before + appElementStart)
+
+  await pipe(uiStream, Fx.observe(writeToResponse(res)), provideUiResources(req), Effect.runPromise)
+
+  res.status(200)
+  res.end(appElementEnd + after)
 }
