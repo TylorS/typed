@@ -1,4 +1,3 @@
-import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 
@@ -59,15 +58,6 @@ export interface Fn<Key, T extends EffectFn>
   ) => Effect.Effect<Key | EffectFn.ResourcesOf<T>, EffectFn.ErrorsOf<T>, EffectFn.OutputOf<T>>
 
   /**
-   * Access your effect-ful function and perform an effect with it.
-   * Useful when your function has a type-parameter you don't want to lose
-   * like you will with `apply`.
-   */
-  readonly access: <R, E, A>(
-    f: (t: T) => Effect.Effect<R, E, A>,
-  ) => Effect.Effect<Key | R, E | EffectFn.ErrorsOf<T>, A>
-
-  /**
    * A helper to implement a Layer for your effectful function which
    * has more context requirements than the interface it is implementing.
    */
@@ -92,18 +82,15 @@ export namespace Fn {
   export type FnOf<T extends Fn<any, any>> = T extends Fn<any, infer F> ? F : never
 
   export const wrap = <I, S extends EffectFn>(tag: Tag<I, S>): Fn<I, S> => {
-    const access = <R, E, A>(f: (t: S) => Effect.Effect<R, E, A>) => pipe(tag, Effect.flatMap(f))
-
     return Object.assign(tag, {
-      access,
-      apply: (...args: EffectFn.ArgsOf<S>) => access((f) => f(...args)),
+      apply: (...args: EffectFn.ArgsOf<S>) => tag.withEffect((f) => f(...args)),
       implement: <T2 extends EffectFn.Extendable<S>>(
         implementation: T2,
       ): Layer.Layer<EffectFn.ResourcesOf<T2>, never, I> =>
         tag.layer(
           Effect.map(
             Effect.context<EffectFn.ResourcesOf<T2>>(),
-            (c) => ((a: any) => pipe(a, implementation, Effect.provideSomeContext(c))) as any,
+            (c) => ((...a: any) => Effect.provideSomeContext(implementation(...a), c)) as any,
           ),
         ),
     } as const)
