@@ -14,16 +14,20 @@ export type TaggedTuple<Tags extends TupleOfTags> = Tagged<
   { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
 > & {
   readonly tags: Tags
-}
+} & Effect.Effect<
+    Tag.Identifier<Tags[number]>,
+    never,
+    { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+  >
 
 export function tuple<Tags extends TupleOfTags>(...tags: Tags): TaggedTuple<Tags> {
-  return {
+  return Object.assign(Effect.all(tags) as any, {
     ...tupleActions(tags),
     ...tupleProvide(tags),
     ...tupleLayers(tags),
     ...tupleBuilder(tags),
     tags,
-  }
+  })
 }
 
 type TupleTagActions<Tags extends TupleOfTags> = Actions<
@@ -113,16 +117,20 @@ export type TaggedStruct<Tags extends StructOfTags> = Tagged<
   { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
 > & {
   readonly tags: Tags
-}
+} & Effect.Effect<
+    Tag.Identifier<Tags[keyof Tags]>,
+    never,
+    { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+  >
 
 export function struct<Tags extends StructOfTags>(tags: Tags): TaggedStruct<Tags> {
-  return {
+  return Object.assign(Effect.all(tags) as any, {
     ...structActions(tags),
     ...structProvide(tags),
     ...structLayers(tags),
     ...structBuilder(tags),
     tags,
-  }
+  })
 }
 
 type StructTagActions<Tags extends StructOfTags> = Actions<
