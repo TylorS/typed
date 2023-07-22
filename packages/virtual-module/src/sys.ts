@@ -1,7 +1,11 @@
 import { System } from 'typescript'
 
-export function makeVirtualSys(sys: System): System {
-  // TODO: Extend readFile + fileExists
+import { VirtualModuleManager } from './VirtualModuleManager.js'
+import { createOverrides } from './utils.js'
 
-  return sys
+export function makeVirtualSys(sys: System, manager: VirtualModuleManager): System {
+  return createOverrides(sys, {
+    readFile: (original) => (fileName) => original(fileName) || manager.readFile(fileName),
+    fileExists: (original) => (fileName) => original(fileName) || manager.hasFileName(fileName),
+  })
 }

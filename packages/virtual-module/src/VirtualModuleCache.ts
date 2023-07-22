@@ -24,12 +24,23 @@ export class VirtualModuleCache {
   getScriptVersion(fileName: string) {
     return this.virtualModules.get(fileName)?.getScriptVersion()
   }
+
+  getScriptKind(fileName: string) {
+    return this.virtualModules.get(fileName)?.getScriptKind() ?? ts.ScriptKind.Unknown
+  }
+
+  getScriptFileNames() {
+    return Array.from(this.virtualModules.keys())
+  }
 }
 
 export class VirtualModuleSnapshot {
   protected version = 0
 
-  constructor(readonly fileName: string, protected snapshot: ts.IScriptSnapshot) {}
+  constructor(
+    readonly fileName: string,
+    protected snapshot: ts.IScriptSnapshot,
+  ) {}
 
   getScriptVersion() {
     return this.version.toString()
@@ -37,6 +48,10 @@ export class VirtualModuleSnapshot {
 
   getScriptSnapshot() {
     return this.snapshot
+  }
+
+  getScriptKind() {
+    return ts.ScriptKind.TS
   }
 
   updateSnapshot(snapshot: ts.IScriptSnapshot): void {

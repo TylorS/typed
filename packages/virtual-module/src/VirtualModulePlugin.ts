@@ -1,4 +1,4 @@
-import { LanguageService } from 'typescript'
+import { Extension, LanguageService, ModuleKind } from 'typescript'
 
 export interface VirtualModulePlugin<Metadata> {
   /**
@@ -14,7 +14,7 @@ export interface VirtualModulePlugin<Metadata> {
   /**
    * Called to resolve the file name of a virtual module.
    */
-  readonly resolveVirtualModule: (id: string, importer: string) => VirtualModule | undefined
+  readonly resolveVirtualModule: (id: string, importer: string) => VirtualModule
 
   /**
    * Resolve metadata for a virtual module that will be passed to `generateContent`.
@@ -24,7 +24,7 @@ export interface VirtualModulePlugin<Metadata> {
   /**
    * Called to resolve the source code of a virtual module.
    */
-  readonly generateContent: (module: VirtualModule, metadata: Metadata) => string | undefined
+  readonly generateContent: (module: VirtualModule, metadata: Metadata) => string
 }
 
 export type VirtualModule = VirtualModuleFile | VirtualModuleDirectory
@@ -34,7 +34,8 @@ export interface VirtualModuleFile {
   readonly id: string
   readonly importer: string
   readonly fileName: string
-  readonly sourceFileName: string
+  readonly kind: ModuleKind
+  readonly extension: Extension
 }
 
 export function VirtualModuleFile(params: Omit<VirtualModuleFile, '_tag'>): VirtualModuleFile {
@@ -50,6 +51,8 @@ export interface VirtualModuleDirectory {
   readonly importer: string
   readonly fileName: string
   readonly sourceDirectory: string
+  readonly kind: ModuleKind
+  readonly extension: Extension
 }
 
 export function VirtualModuleDirectory(

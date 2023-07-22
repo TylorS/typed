@@ -6,7 +6,10 @@ import { getCanonicalFileName, normalizePath } from './util'
 export class ProjectFileCache {
   private files: Map<string, VersionedSnapshot> = new Map()
 
-  constructor(fileNames: string[], protected info?: ts.server.PluginCreateInfo) {
+  constructor(
+    fileNames: string[],
+    protected info?: ts.server.PluginCreateInfo,
+  ) {
     fileNames.forEach((fileName) => this.set(fileName))
   }
 
