@@ -27,6 +27,11 @@ const plugin: ts.server.PluginModuleFactory = ({ typescript }) => {
 
     const typedOptions = VM.resolveTypedOptions(config.raw)
 
+    // If we don't have any configured plugins, just return the language service as is
+    if (typedOptions.plugins.length === 0) {
+      return info.languageService
+    }
+
     // Overrides for virtual modules
     config.options.inlineSources = true
 
