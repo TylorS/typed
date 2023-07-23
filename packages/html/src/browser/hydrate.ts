@@ -13,11 +13,17 @@ import { BrowserCache, findRootParentChildNodes, getBrowserCache } from './cache
 
 export function hydrate<R, E>(
   what: Fx.Fx<R, E, RenderEvent>,
-): Fx.Fx<Exclude<R | Document | RootElement | RenderContext, RenderTemplate>, E, RenderEvent> {
+): Fx.Fx<
+  RootElement | RenderContext | Document | Exclude<R, RenderTemplate | HydrateContext>,
+  E,
+  RenderEvent
+> {
   return Fx.fromFxEffect(
     Effect.map(
-      Effect.all([RootElement, RenderContext]),
-      ([{ rootElement: where }, renderContext]) => {
+      RootElement.withEffect(({ rootElement }) =>
+        RenderContext.with((ctx) => [rootElement, ctx] as const),
+      ),
+      ([where, renderContext]) => {
         const ctx: HydrateContext = {
           where: findRootParentChildNodes(where),
           rootIndex: -1,
@@ -37,7 +43,7 @@ export function hydrate<R, E>(
         )
       },
     ),
-  ) as Fx.Fx<Exclude<R | Document | RootElement | RenderContext, RenderTemplate>, E, RenderEvent>
+  )
 }
 
 function attachRoot(

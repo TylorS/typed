@@ -12,11 +12,13 @@ import { BrowserCache, getBrowserCache } from './cache.js'
 
 export function render<R, E>(
   what: Fx.Fx<R, E, RenderEvent>,
-): Fx.Fx<Exclude<R | Document | RootElement | RenderContext, RenderTemplate>, E, RenderEvent> {
+): Fx.Fx<RootElement | RenderContext | Document | Exclude<R, RenderTemplate>, E, RenderEvent> {
   return Fx.fromFxEffect(
     Effect.map(
-      Effect.all([RootElement, RenderContext]),
-      ([{ rootElement: where }, renderContext]) => {
+      RootElement.withEffect(({ rootElement }) =>
+        RenderContext.with((ctx) => [rootElement, ctx] as const),
+      ),
+      ([where, renderContext]) => {
         const cache = getBrowserCache(renderContext.renderCache, where)
 
         return Fx.provideSomeLayer(
