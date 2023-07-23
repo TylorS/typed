@@ -93,7 +93,7 @@ export class VirtualModuleManager {
 
     const plugin = this.keyToPlugin.get(key)
 
-    if (!plugin) {
+    if (!plugin || !plugin.generateTypeScriptContent) {
       throw new Error(`Virtual module plugin not found for ${fileName}`)
     }
 
@@ -107,7 +107,7 @@ export class VirtualModuleManager {
       ...metadataParams,
       metadata,
     }
-    const content = plugin.generateContent(virtualModule, params)
+    const content = plugin.generateTypeScriptContent(virtualModule, params)
 
     return this.cache.setFile(fileName, ts.ScriptSnapshot.fromString(content))
   }

@@ -10,7 +10,13 @@
     "outDir": "dist",
     "plugins": [
       {
-        "name": "@typed/virtual-module"
+        "name": "@typed/virtual-module",
+        "saveGeneratedFiles": true,
+        "plugins": [
+          {
+            "name": "@typed/virtual-module/html"
+          }
+        ]
       }
     ]
   },
@@ -27,11 +33,5 @@
   "exclude": [
     "node_modules",
     "dist"
-  ],
-  "typed": {
-    "saveGeneratedFiles": true,
-    "plugins": [
-      { "name": "@typed/virtual-module/html" }
-    ]
-  }
+  ]
 }

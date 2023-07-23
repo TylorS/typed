@@ -2,7 +2,7 @@ import { Extension, LanguageService, ModuleKind } from 'typescript'
 // @ts-expect-error - Can't technically import this in a CJS module
 import type { ViteDevServer } from 'vite'
 
-export interface VirtualModulePlugin<Metadata> {
+export interface VirtualModulePlugin<Metadata, M extends VirtualModule = VirtualModule> {
   /**
    * Unique name of the plugin.
    */
@@ -16,24 +16,50 @@ export interface VirtualModulePlugin<Metadata> {
   /**
    * Called to resolve the file name of a virtual module.
    */
-  readonly resolveVirtualModule: (id: string, importer: string) => VirtualModule
+  readonly resolveVirtualModule: (id: string, importer: string) => M
 
   /**
    * Resolve metadata for a virtual module that will be passed to `generateContent`.
    */
-  readonly generateMetadata: (
-    module: VirtualModule,
-    params: VirtualModuleGenerateMetadataParams,
-  ) => Metadata
+  readonly generateMetadata: (module: M, params: VirtualModuleGenerateMetadataParams) => Metadata
 
   /**
-   * Called to resolve the source code of a virtual module.
+   * Called to resolve the source code of a virtual module. It's important to note that
+   * this is the variant that will always be utilized for our TypeScript plugin and therefore
+   * must be synchronous.
    */
-  readonly generateContent: (
-    module: VirtualModule,
+  readonly generateTypeScriptContent?: (
+    module: M,
     params: VirtualModuleGenerateContentParams<Metadata>,
   ) => string
+
+  /**
+   * Called when building for production with our vite plugin.
+   * It is an optional method that can be used to generate the content of a virtual module
+   * that depends on the environment. Otherwise the `generateContent` method will be used.
+   */
+  readonly generateViteContent?: (
+    module: M,
+    params: VirtualModuleGenerateContentParams<Metadata>,
+    viteParams: ViteParams,
+  ) => Promise<string>
 }
+
+export interface ViteParams {
+  readonly base: string
+  readonly clientOutputDirectory: string
+  readonly environment: 'browser' | 'server' | 'static'
+  readonly serverOutputDirectory: string
+  readonly sourceDirectory: string
+  readonly assetDirectory: string
+  readonly viteDevServer: ViteDevServer | null
+}
+
+export interface VirtualModuleFilePlugin<Metadata>
+  extends VirtualModulePlugin<Metadata, VirtualModuleFile> {}
+
+export interface VirtualModuleDirectoryPlugin<Metadata>
+  extends VirtualModulePlugin<Metadata, VirtualModuleDirectory> {}
 
 export type VirtualModule = VirtualModuleFile | VirtualModuleDirectory
 
@@ -59,6 +85,7 @@ export interface VirtualModuleDirectory {
   readonly importer: string
   readonly fileName: string
   readonly sourceDirectory: string
+  readonly sourceDirectoryGlobs: string[]
   readonly kind: ModuleKind
   readonly extension: Extension
 }
@@ -75,7 +102,6 @@ export function VirtualModuleDirectory(
 export interface VirtualModuleGenerateMetadataParams {
   readonly params: Record<string, any>
   readonly languageService: LanguageService
-  readonly viteDevServer: ViteDevServer | null
 }
 
 export interface VirtualModuleGenerateContentParams<Metadata>

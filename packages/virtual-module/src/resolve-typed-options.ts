@@ -24,7 +24,9 @@ export function resolveTypedOptions(
     return defaultOptions
   }
 
-  const typed = parsed?.typed
+  const typed = parsed?.compilerOptions?.plugins?.find(
+    (p: any) => p.name === '@typed/virtual-module',
+  )
 
   if (!typed) {
     return defaultOptions
