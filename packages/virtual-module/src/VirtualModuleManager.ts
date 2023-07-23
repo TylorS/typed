@@ -1,7 +1,13 @@
 import ts from 'typescript'
+// @ts-expect-error - Can't technically import this in a CJS module
+import type { ViteDevServer } from 'vite'
 
 import { VirtualModuleCache } from './VirtualModuleCache.js'
-import { VirtualModule, VirtualModulePlugin } from './VirtualModulePlugin.js'
+import {
+  VirtualModule,
+  VirtualModuleGenerateContentParams,
+  VirtualModulePlugin,
+} from './VirtualModulePlugin.js'
 
 export class VirtualModuleManager {
   // FilePath related
@@ -14,9 +20,11 @@ export class VirtualModuleManager {
 
   constructor(
     readonly plugins: VirtualModulePlugin<any>[],
+    readonly pluginParams: Record<string, Record<string, unknown>>,
     readonly languageService: ts.LanguageService,
     readonly log: (msg: string) => void,
     readonly cache: VirtualModuleCache = new VirtualModuleCache(),
+    readonly viteDevServer: ViteDevServer | null = null,
   ) {}
 
   /**
@@ -89,10 +97,17 @@ export class VirtualModuleManager {
       throw new Error(`Virtual module plugin not found for ${fileName}`)
     }
 
-    const content = plugin.generateContent(
-      virtualModule,
-      plugin.generateMetadata(virtualModule, this.languageService),
-    )
+    const metadataParams = {
+      params: this.pluginParams[plugin.name] || {},
+      languageService: this.languageService,
+      viteDevServer: this.viteDevServer,
+    }
+    const metadata = plugin.generateMetadata(virtualModule, metadataParams)
+    const params: VirtualModuleGenerateContentParams<any> = {
+      ...metadataParams,
+      metadata,
+    }
+    const content = plugin.generateContent(virtualModule, params)
 
     return this.cache.setFile(fileName, ts.ScriptSnapshot.fromString(content))
   }

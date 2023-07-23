@@ -31,7 +31,7 @@
   "typed": {
     "saveGeneratedFiles": true,
     "plugins": [
-      "@typed/virtual-module/html"
+      { "name": "@typed/virtual-module/html" }
     ]
   }
 }

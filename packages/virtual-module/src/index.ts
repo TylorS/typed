@@ -37,11 +37,18 @@ const plugin: ts.server.PluginModuleFactory = ({ typescript }) => {
 
     const plugins = typedOptions.plugins.map(
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      (plugin) => require(plugin) as VM.VirtualModulePlugin<any>,
+      (plugin) => require(plugin.name) as VM.VirtualModulePlugin<any>,
     )
 
-    const manager = new VM.VirtualModuleManager(plugins, info.languageService, (msg) =>
-      info.project.log(`[@typed/virtual] ${msg}`),
+    const pluginParams = Object.fromEntries(
+      typedOptions.plugins.map(({ name, ...config }) => [name, config] as const),
+    )
+
+    const manager = new VM.VirtualModuleManager(
+      plugins,
+      pluginParams,
+      info.languageService,
+      (msg) => info.project.log(`[@typed/virtual] ${msg}`),
     )
 
     const host = VM.patchLanguageServiceHost({

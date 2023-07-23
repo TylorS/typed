@@ -3,8 +3,13 @@ import ts from 'typescript'
 import { createDiagnosticWriter } from './diagnostics.js'
 
 export interface VirtualModuleTypescriptPluginOptions {
-  readonly plugins: ReadonlyArray<string>
+  readonly plugins: ReadonlyArray<PluginConfig>
   readonly saveGeneratedFiles?: boolean
+}
+
+export interface PluginConfig {
+  readonly name: string
+  readonly [key: string]: unknown
 }
 
 const defaultOptions: VirtualModuleTypescriptPluginOptions = {

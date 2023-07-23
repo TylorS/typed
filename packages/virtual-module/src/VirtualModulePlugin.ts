@@ -1,4 +1,6 @@
 import { Extension, LanguageService, ModuleKind } from 'typescript'
+// @ts-expect-error - Can't technically import this in a CJS module
+import type { ViteDevServer } from 'vite'
 
 export interface VirtualModulePlugin<Metadata> {
   /**
@@ -19,12 +21,18 @@ export interface VirtualModulePlugin<Metadata> {
   /**
    * Resolve metadata for a virtual module that will be passed to `generateContent`.
    */
-  readonly generateMetadata: (module: VirtualModule, languageService: LanguageService) => Metadata
+  readonly generateMetadata: (
+    module: VirtualModule,
+    params: VirtualModuleGenerateMetadataParams,
+  ) => Metadata
 
   /**
    * Called to resolve the source code of a virtual module.
    */
-  readonly generateContent: (module: VirtualModule, metadata: Metadata) => string
+  readonly generateContent: (
+    module: VirtualModule,
+    params: VirtualModuleGenerateContentParams<Metadata>,
+  ) => string
 }
 
 export type VirtualModule = VirtualModuleFile | VirtualModuleDirectory
@@ -62,4 +70,15 @@ export function VirtualModuleDirectory(
     _tag: 'Directory',
     ...params,
   }
+}
+
+export interface VirtualModuleGenerateMetadataParams {
+  readonly params: Record<string, any>
+  readonly languageService: LanguageService
+  readonly viteDevServer: ViteDevServer | null
+}
+
+export interface VirtualModuleGenerateContentParams<Metadata>
+  extends VirtualModuleGenerateMetadataParams {
+  readonly metadata: Metadata
 }
