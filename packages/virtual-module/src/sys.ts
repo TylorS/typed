@@ -1,7 +1,7 @@
 import { System } from 'typescript'
 
 import { VirtualModuleManager } from './VirtualModuleManager.js'
-import { createOverrides } from './utils.js'
+import { createOverrides } from './util.js'
 
 export function makeVirtualSys(sys: System, manager: VirtualModuleManager): System {
   return createOverrides(sys, {

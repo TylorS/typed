@@ -62,20 +62,20 @@ for (const name of packageNames) {
       const [orgName, packageName] = parsePackageName(importPath)
       const fullName = orgName ? `${orgName}/${packageName}` : packageName
 
-      if (
-        packageName === name ||
-        builtinModules.includes(fullName) ||
-        esmBultinModules.includes(fullName)
-      ) {
+      if (packageName === name) {
         continue
       }
 
-      const current = dependencies.get(fullName)
+      if (builtinModules.includes(fullName) || esmBultinModules.includes(fullName)) {
+        dependencies.set('@types/node', true)
+      } else {
+        const current = dependencies.get(fullName)
 
-      dependencies.set(fullName, !current ? isTestFile : false)
+        dependencies.set(fullName, !current ? isTestFile : false)
 
-      if (orgName === '@typed') {
-        references.add(packageName)
+        if (orgName === '@typed') {
+          references.add(packageName)
+        }
       }
     }
   }

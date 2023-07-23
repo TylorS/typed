@@ -1,57 +1,79 @@
-import ts from 'typescript'
+import ts, { LanguageServiceHost } from 'typescript'
 
 import { VirtualModuleManager } from './VirtualModuleManager.js'
-import { createOverrides } from './utils.js'
+import { createOverrides, getCanonicalFileName, getModuleResolutionKind } from './util.js'
 
-export function patchLanguageServiceHost(
-  cmdLine: ts.ParsedCommandLine,
-  host: ts.LanguageServiceHost,
-  manager: VirtualModuleManager,
-  workingDirectory: string,
-  saveGeneratedFiles: boolean,
-  options: ts.CompilerOptions,
-): ts.LanguageServiceHost {
-  const moduleResolutionCache = createModuleResolutionCache(workingDirectory, options)
-  const createModuleResolver =
-    (
-      containingFile: string,
-      options: ts.CompilerOptions,
-      redirectedReference?: ts.ResolvedProjectReference,
-    ) =>
-    (name: string): ts.ResolvedModuleWithFailedLookupLocations => {
-      if (manager.matches(name, containingFile)) {
-        manager.log(`Resolving ${name} from ${containingFile}...`)
+export type PatchLanguageServiceHostParams = {
+  cmdLine: ts.ParsedCommandLine
+  host: ts.LanguageServiceHost
+  manager: VirtualModuleManager
+  workingDirectory: string
+  saveGeneratedFiles: boolean
+  options: ts.CompilerOptions
+}
 
-        const resolvedFileName = manager.resolveFileName(name, containingFile)
+const createModuleResolverFactory =
+  (
+    manager: VirtualModuleManager,
+    saveGeneratedFiles: boolean,
+    languageServiceHost: LanguageServiceHost,
+    moduleResolutionCache: ts.ModuleResolutionCache,
+  ) =>
+  (
+    containingFile: string,
+    options: ts.CompilerOptions,
+    redirectedReference?: ts.ResolvedProjectReference,
+  ) =>
+  (name: string): ts.ResolvedModuleWithFailedLookupLocations => {
+    if (manager.matches(name, containingFile)) {
+      manager.log(`Resolving ${name} from ${containingFile}...`)
 
-        const resolved: ts.ResolvedModuleWithFailedLookupLocations = {
-          resolvedModule: {
-            extension: ts.Extension.Ts,
-            resolvedFileName,
-            isExternalLibraryImport: !saveGeneratedFiles,
-            resolvedUsingTsExtension: false,
-          },
-        }
+      const resolvedFileName = manager.resolveFileName(name, containingFile)
 
-        return resolved
+      const resolved: ts.ResolvedModuleWithFailedLookupLocations = {
+        resolvedModule: {
+          extension: ts.Extension.Ts,
+          resolvedFileName,
+          isExternalLibraryImport: !saveGeneratedFiles,
+          resolvedUsingTsExtension: false,
+        },
       }
 
-      return ts.resolveModuleName(
-        name,
-        containingFile,
-        options,
-        languageServiceHost,
-        moduleResolutionCache,
-        redirectedReference,
-        getModuleResolutionKind(options),
-      )
+      return resolved
     }
 
-  const languageServiceHost = createOverrides(host, {
+    return ts.resolveModuleName(
+      name,
+      containingFile,
+      options,
+      languageServiceHost,
+      moduleResolutionCache,
+      redirectedReference,
+      getModuleResolutionKind(options),
+    )
+  }
+
+export function patchLanguageServiceHost({
+  cmdLine,
+  host,
+  manager,
+  workingDirectory,
+  saveGeneratedFiles,
+  options,
+}: PatchLanguageServiceHostParams): ts.LanguageServiceHost {
+  const moduleResolutionCache = createModuleResolutionCache(workingDirectory, options)
+  const createModuleResolver = createModuleResolverFactory(
+    manager,
+    saveGeneratedFiles,
+    host,
+    moduleResolutionCache,
+  )
+
+  const languageServiceHost: ts.LanguageServiceHost = createOverrides(host, {
     getCompilationSettings: () => () => cmdLine.options,
     getProjectReferences: () => () => cmdLine.projectReferences,
-
-    getScriptFileNames: (original) => () => [...original(), ...manager.cache.getScriptFileNames()],
+    getScriptFileNames: (original) => () =>
+      Array.from(new Set([...original(), ...manager.cache.getScriptFileNames()])),
     getScriptKind: (original) => (fileName) =>
       manager.cache.getScriptKind(fileName) || original?.(fileName) || ts.ScriptKind.Unknown,
     getScriptSnapshot: (original) => (fileName) =>
@@ -61,7 +83,7 @@ export function patchLanguageServiceHost(
     resolveModuleNameLiterals:
       (original) =>
       (moduleNames, containingFile, redirectedReference, options, ...rest) => {
-        const resolver = createModuleResolver(containingFile, options, redirectedReference)
+        const resolve = createModuleResolver(containingFile, options, redirectedReference)
 
         return (
           original?.(moduleNames, containingFile, redirectedReference, options, ...rest).map(
@@ -70,15 +92,15 @@ export function patchLanguageServiceHost(
                 return resolved
               }
 
-              return resolver(moduleNames[i].text)
+              return resolve(moduleNames[i].text)
             },
-          ) ?? moduleNames.map((n) => resolver(n.text))
+          ) ?? moduleNames.map((n) => resolve(n.text))
         )
       },
     resolveModuleNames:
       (original) =>
       (moduleNames, containingFile, reusedNames, redirectedReference, options, ...rest) => {
-        const resolver = createModuleResolver(containingFile, options, redirectedReference)
+        const resolve = createModuleResolver(containingFile, options, redirectedReference)
 
         return (
           original?.(
@@ -93,8 +115,8 @@ export function patchLanguageServiceHost(
               return resolved
             }
 
-            return resolver(moduleNames[i]).resolvedModule
-          }) ?? moduleNames.map((n) => resolver(n).resolvedModule)
+            return resolve(moduleNames[i]).resolvedModule
+          }) ?? moduleNames.map((n) => resolve(n).resolvedModule)
         )
       },
 
@@ -115,21 +137,6 @@ export function patchLanguageServiceHost(
   })
 
   return languageServiceHost
-}
-
-export function getModuleResolutionKind(options: ts.CompilerOptions): ts.ResolutionMode {
-  switch (options.moduleResolution) {
-    case ts.ModuleResolutionKind.NodeJs:
-      return ts.ModuleKind.CommonJS
-    case ts.ModuleResolutionKind.Bundler:
-    case ts.ModuleResolutionKind.Node16:
-    case ts.ModuleResolutionKind.NodeNext:
-      return ts.ModuleKind.ESNext
-  }
-}
-
-export function getCanonicalFileName(fileName: string): string {
-  return ts.sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase()
 }
 
 export function createModuleResolutionCache(cwd: string, options: ts.CompilerOptions) {

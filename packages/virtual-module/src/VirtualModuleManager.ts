@@ -75,7 +75,7 @@ export class VirtualModuleManager {
     return this.getVirtualModule(this.resolveFileName(id, importer))
   }
 
-  readonly generateSnapshot = (fileName: string): ts.IScriptSnapshot => {
+  readonly generateSnapshot = (fileName: string) => {
     const virtualModule = this.filePathToVirtualModule.get(fileName)
     const key = this.filePathToKey.get(fileName)
 
@@ -89,21 +89,16 @@ export class VirtualModuleManager {
       throw new Error(`Virtual module plugin not found for ${fileName}`)
     }
 
-    const cached = this.cache.getSnapshot(fileName)
+    const content = plugin.generateContent(
+      virtualModule,
+      plugin.generateMetadata(virtualModule, this.languageService),
+    )
 
-    if (cached) return cached
-
-    const metadata = plugin.generateMetadata(virtualModule, this.languageService)
-    const content = plugin.generateContent(virtualModule, metadata)
-    const snapshot = ts.ScriptSnapshot.fromString(content)
-
-    this.cache.setFile(fileName, snapshot)
-
-    return snapshot
+    return this.cache.setFile(fileName, ts.ScriptSnapshot.fromString(content))
   }
 
   readonly readFile = (fileName: string): string => {
-    const snapshot = this.generateSnapshot(fileName)
+    const snapshot = this.generateSnapshot(fileName).getScriptSnapshot()
 
     return snapshot.getText(0, snapshot.getLength())
   }

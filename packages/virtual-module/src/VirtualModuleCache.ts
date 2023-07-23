@@ -3,13 +3,19 @@ import ts from 'typescript'
 export class VirtualModuleCache {
   protected virtualModules: Map<string, VirtualModuleSnapshot> = new Map()
 
-  setFile(fileName: string, snapshot: ts.IScriptSnapshot) {
+  setFile(fileName: string, snapshot: ts.IScriptSnapshot): VirtualModuleSnapshot {
     const item = this.virtualModules.get(fileName)
 
     if (item) {
       item.updateSnapshot(snapshot)
+
+      return item
     } else {
-      this.virtualModules.set(fileName, new VirtualModuleSnapshot(fileName, snapshot))
+      const virtualModuleSnapshot = new VirtualModuleSnapshot(fileName, snapshot)
+
+      this.virtualModules.set(fileName, virtualModuleSnapshot)
+
+      return virtualModuleSnapshot
     }
   }
 
@@ -48,6 +54,10 @@ export class VirtualModuleSnapshot {
 
   getScriptSnapshot() {
     return this.snapshot
+  }
+
+  getContent() {
+    return getScriptSnapshotContent(this.snapshot)
   }
 
   getScriptKind() {

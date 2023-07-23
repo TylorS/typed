@@ -13,7 +13,7 @@
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
     "@typed/router": "workspace:*",
-    "@typed/virtual": "workspace:*",
+    "@typed/virtual-module": "workspace:*",
     "@typed/vite-plugin": "workspace:*"
   }
 }

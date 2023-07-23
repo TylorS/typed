@@ -34,5 +34,8 @@
     "access": "public"
   },
   "sideEffects": false,
-  "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a"
+  "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",
+  "devDependencies": {
+    "@types/node": "^20.4.2"
+  }
 }

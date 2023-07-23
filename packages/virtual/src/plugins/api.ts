@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { basename, dirname, resolve } from 'path'
 
 import ts from 'typescript'
@@ -98,9 +99,9 @@ function parseApiSourceFile(
 
 function parseEnvironmentSourceFile(
   _sourceFile: ts.SourceFile,
-  program: ts.Program,
+  _program: ts.Program,
 ): EnvironmentFile | undefined {
-  const typeChecker = program.getTypeChecker()
+  // const typeChecker = program.getTypeChecker()
 
   return undefined
 }

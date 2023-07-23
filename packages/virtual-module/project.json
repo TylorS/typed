@@ -13,6 +13,18 @@
       },
       "outputs": ["{projectRoot}/dist"]
     },
+    "build:cjs": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          {
+            "command": "tsc --build packages/virtual-module/tsconfig.cjs.build.json"
+          }
+        ],
+        "parallel": false
+      },
+      "outputs": ["{projectRoot}/dist/cjs"]
+    },
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "options": {
