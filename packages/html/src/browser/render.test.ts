@@ -20,7 +20,7 @@ import { counter } from '../test_components.test.js'
 import { render } from './render.js'
 
 describe(render.name, () => {
-  it.concurrent.only('renders a simple elements', async () => {
+  it.concurrent('renders a simple elements', async () => {
     const test = testRendered(html`<div></div>`, (rendered) =>
       Effect.gen(function* ($) {
         const globalThis = yield* $(GlobalThis)

@@ -1,6 +1,6 @@
 import { deepStrictEqual } from 'assert'
 
-import { flow, pipe } from '@effect/data/Function'
+import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
@@ -217,7 +217,7 @@ describe(renderToHtmlStream.name, () => {
   it.concurrent(`renders with event directives`, async () => {
     await testHtmlChunks(
       html`<div
-        @click=${eventDirective((part) => part.update(EventHandler(() => Effect.unit())))}
+        @click=${eventDirective((part) => part.update(EventHandler(() => Effect.unit)))}
       ></div>`,
       [`<div data-typed="..."></div>`],
     )
@@ -293,7 +293,7 @@ describe(renderToHtmlStream.name, () => {
     ])
   })
 
-  it.concurrent.only('runs fassstt', async () => {
+  it.concurrent('runs fassstt', async () => {
     let total = 0
     const iterations = 100
 
@@ -324,7 +324,7 @@ async function testHtmlChunks(
     await pipe(
       template,
       renderToHtmlStream,
-      Fx.map(flow(stripDataTyped, stripSelfClosingComment, (x) => x.trim())),
+      Fx.map((s) => pipe(s, stripDataTyped, stripSelfClosingComment, (x) => x.trim())),
       Fx.toReadonlyArray,
       provideResources,
       Effect.runPromise,
