@@ -8,9 +8,9 @@ import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
-export interface Ref<I, R, E, A> extends Context.Tag<I, Fx.RefSubject<E, A>>, Fx.Fx<I, E, A> {
-  readonly identifier: I
+import { IdentifierOf } from './identifier.js'
 
+export interface Ref<I, R, E, A> extends Context.Tag<I, Fx.RefSubject<E, A>>, Fx.Fx<I, E, A> {
   readonly eq: Equivalence.Equivalence<A>
 
   readonly get: Effect.Effect<I, E, A>
@@ -92,13 +92,12 @@ export const Ref: {
     identifier: I,
     initial: Effect.Effect<R, E, A>,
     eq: Equivalence.Equivalence<A> = equals,
-  ): Ref<I, R, E, A> {
-    const tag = Context.Tag<I, Fx.RefSubject<E, A>>(identifier)
+  ): Ref<IdentifierOf<I>, R, E, A> {
+    const tag = Context.Tag<IdentifierOf<I>, Fx.RefSubject<E, A>>(identifier)
     const make = Fx.makeRef(initial, eq)
     const fx = Fx.hold(Fx.fromFxEffect(tag))
 
     return Object.assign(tag, {
-      identifier,
       eq,
       [Fx.FxTypeId]: refVariance,
       run: fx.run.bind(fx),
@@ -127,6 +126,6 @@ export const Ref: {
       provide: <R2, E2, A2>(effect: Effect.Effect<R2, E2, A2>) =>
         Effect.provideServiceEffect(effect, tag, make),
       provideFx: <R2, E2, A2>(fx: Fx.Fx<R2, E2, A2>) => Fx.provideServiceEffect(fx, tag, make),
-    }) satisfies Ref<I, R, E, A>
+    }) satisfies Ref<IdentifierOf<I>, R, E, A>
   },
 )

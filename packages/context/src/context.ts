@@ -6,6 +6,7 @@ import type * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
 import { ContextBuilder } from './builder.js'
+import { IdentifierOf, identifierToString } from './identifier.js'
 import { Actions, Builder, Layers, Provide, Tagged } from './interfaces.js'
 
 /**
@@ -14,18 +15,18 @@ import { Actions, Builder, Layers, Provide, Tagged } from './interfaces.js'
  */
 export interface Tag<I, S = I> extends C.Tag<I, S>, Tagged<I, S> {}
 
-export function Tag<I, S = I>(key?: string): Tag<I, S> {
-  return Tag.tag(C.Tag<I, S>(key))
+export function Tag<const I, S = I>(id?: I | string): Tag<IdentifierOf<I>, S> {
+  return Tag.tag(C.Tag<IdentifierOf<I>, S>(identifierToString(id)))
 }
 
 export namespace Tag {
-  export type Identifier<T> = [T] extends [C.Tag<any, any>]
-    ? C.Tag.Identifier<T>
+  export type Identifier<T> = [T] extends [C.Tag<infer I, infer _>]
+    ? I
     : [T] extends [Tagged<infer I, infer _>]
     ? I
     : never
 
-  export type Service<T> = [T] extends [Tag<infer _, infer S>]
+  export type Service<T> = [T] extends [C.Tag<infer _, infer S>]
     ? S
     : [T] extends [Tagged<infer _, infer S>]
     ? S

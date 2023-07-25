@@ -1,7 +1,7 @@
+import * as Context from '@effect/data/Context'
 import * as Effect from '@effect/io/Effect'
 import { describe, expect, it } from 'vitest'
 
-import * as Context from './context.js'
 import { struct, tuple } from './many.js'
 
 interface Foo {

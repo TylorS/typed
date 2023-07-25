@@ -3,6 +3,7 @@ import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 
 import { Tag } from './context.js'
+import { IdentifierOf } from './identifier.js'
 
 export interface EffectFn<Args extends readonly any[] = readonly any[], R = any, E = any, A = any> {
   (...args: Args): Effect.Effect<R, E, A>
@@ -87,9 +88,9 @@ export interface Fn<Key, T extends EffectFn>
  * Create a new Fn
  */
 export function Fn<T extends EffectFn>() {
-  return <K extends string>(key: K): Fn<K, T> => {
-    // Add key for debugging
-    return Object.assign(Fn.wrap(Tag<K, T>(key)), { key })
+  return <const K>(id: K): Fn<IdentifierOf<K>, T> => {
+    // Add id for debugging
+    return Object.assign(Fn.wrap(Tag<K, T>(id)), { id })
   }
 }
 

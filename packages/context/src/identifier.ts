@@ -12,3 +12,27 @@ export interface IdentifierConstructor<T> extends Identifier<T> {
 export interface Identifier<T> {
   readonly _id: T
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type IdentifierOf<T> = T extends IdentifierConstructor<infer _> ? InstanceType<T> : T
+
+export function identifierToString(x: unknown): string {
+  switch (typeof x) {
+    case 'string':
+    case 'number':
+    case 'boolean':
+    case 'bigint':
+    case 'symbol':
+      return String(x)
+    case 'function':
+      return String((x as any).displayName || x.name)
+    case 'undefined':
+    case 'object': {
+      if (x == null) return 'null'
+      if ('name' in x) return String(x.name)
+      if ('displayName' in x) return String(x.displayName)
+
+      return x.toString()
+    }
+  }
+}

@@ -24,7 +24,7 @@ import { getStoredEvents } from './storage.js'
 
 const serviceNavigation = (url: string, options: DomNavigationOptions = {}) => {
   const window = makeServerWindow({ url })
-  const services = makeDomServices(window, window, window.document.body)
+  const services = makeDomServices({ window, globalThis: window })
 
   return Layer.provideMerge(
     Layer.succeedContext(services),
@@ -78,8 +78,6 @@ const fxToFiber = <R, E, A>(fx: Fx.Fx<R, E, A>, take: number) =>
   })
 
 const assertEqualDestination: (a: Destination, b: Destination) => void = (a, b) => {
-  console.log(a, b)
-
   deepStrictEqual(
     a.url.href,
     b.url.href,

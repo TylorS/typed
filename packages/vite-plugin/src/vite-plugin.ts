@@ -3,12 +3,17 @@ import { basename, join, relative, resolve } from 'path'
 
 import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
-import glob from 'fast-glob'
+import fastGlob from 'fast-glob'
 import { visualizer } from 'rollup-plugin-visualizer'
 import vavite from 'vavite'
 import type { ConfigEnv, Plugin, PluginOption, UserConfig } from 'vite'
 import compression from 'vite-plugin-compression'
-import tsconfigPaths from 'vite-tsconfig-paths'
+import tsconfigPaths_ from 'vite-tsconfig-paths'
+
+const tsconfigPaths =
+  typeof tsconfigPaths_ === 'function'
+    ? tsconfigPaths_
+    : ((tsconfigPaths_ as any).default as typeof tsconfigPaths_)
 
 import { PLUGIN_NAME } from './constants.js'
 import { ResolvedOptions } from './resolveTypedConfig.js'
@@ -289,11 +294,13 @@ export function findHtmlFiles(
 ): readonly string[] {
   if (htmlFileGlobs) {
     // eslint-disable-next-line import/no-named-as-default-member
-    return glob.sync([...htmlFileGlobs, ...exclusions.map((x) => '!' + x)], { cwd: directory })
+    return fastGlob.sync([...htmlFileGlobs, ...exclusions.map((x) => '!' + x)], {
+      cwd: directory,
+    })
   }
 
   // eslint-disable-next-line import/no-named-as-default-member
-  return glob.sync(['**/*.html', ...exclusions.map((x) => '!' + x)], {
+  return fastGlob.sync(['**/*.html', ...exclusions.map((x) => '!' + x)], {
     cwd: directory,
   })
 }
