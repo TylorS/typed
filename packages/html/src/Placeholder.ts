@@ -51,6 +51,8 @@ export namespace Placeholder {
     : never
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
+  export type AnyOf<T = any> = Placeholder<any, any, T>
+
   export function map<R = never, E = never, A = unknown, B = unknown>(
     placeholder: Placeholder<R, E, A>,
     f: (a: A) => B,

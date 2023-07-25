@@ -52,8 +52,8 @@ export const layout = <Content extends Renderable<any, any>>(content: Content) =
   </main>`
 
 export const ListItemLink = <
-  T extends Placeholder<any, any, string>,
-  L extends Placeholder<any, any, string>,
+  T extends Placeholder.AnyOf<string>,
+  L extends Placeholder.AnyOf<string>,
 >(
   to: T,
   label: L,
