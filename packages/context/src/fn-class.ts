@@ -63,15 +63,7 @@ export function FnClass<A extends EffectFn<readonly any[]>>() {
     }
 
     static {
-      /**
-       * @internal
-       */
-      const _fn: Fn<any, A> = Fn<A>()(this)
-
-      this.withEffect = _fn.withEffect as any
-      this.apply = _fn.apply as any
-      this.implement = _fn.implement as any
-      this.provideImplementation = _fn.provideImplementation as any
+      Object.assign(this, Fn<A>()(this))
     }
   }
 }

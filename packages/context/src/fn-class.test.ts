@@ -6,6 +6,8 @@ import { FnClass } from './fn-class.js'
 describe(FnClass.name, () => {
   it('allows calling a function from Effect context', async () => {
     class Add extends FnClass<(x: number, y: number) => Effect.Effect<never, never, number>>() {
+      readonly _tag = 'Add' as const
+
       static increment = (x: number) => Add.apply(x, 1)
       static decrement = (x: number) => Add.apply(x, -1)
 
