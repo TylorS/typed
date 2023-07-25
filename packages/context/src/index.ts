@@ -1,5 +1,6 @@
 export * from './builder.js'
 export * from './context.js'
+export * from './fn-class.js'
 export * from './fn.js'
 export * from './identifier.js'
 export * from './interfaces.js'
