@@ -4,20 +4,19 @@ import * as Layer from '@effect/io/Layer'
 import * as Fx from '@typed/fx'
 
 import { ContextBuilder } from './builder.js'
-import { Tag } from './context.js'
 import { Actions, Builder, Layers, Provide, Tagged } from './interfaces.js'
 
 type TupleOfTags = ReadonlyArray<C.Tag<any, any>>
 
 export type TaggedTuple<Tags extends TupleOfTags> = Tagged<
-  Tag.Identifier<Tags[number]>,
-  { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+  C.Tag.Identifier<Tags[number]>,
+  { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
 > & {
   readonly tags: Tags
 } & Effect.Effect<
-    Tag.Identifier<Tags[number]>,
+    C.Tag.Identifier<Tags[number]>,
     never,
-    { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+    { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
   >
 
 export function tuple<Tags extends TupleOfTags>(...tags: Tags): TaggedTuple<Tags> {
@@ -31,15 +30,15 @@ export function tuple<Tags extends TupleOfTags>(...tags: Tags): TaggedTuple<Tags
 }
 
 type TupleTagActions<Tags extends TupleOfTags> = Actions<
-  Tag.Identifier<Tags[number]>,
-  { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+  C.Tag.Identifier<Tags[number]>,
+  { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
 >
 
 function tupleActions<Tags extends TupleOfTags>(tags: Tags): TupleTagActions<Tags> {
   const all = Effect.all(tags) as any as Effect.Effect<
-    Tag.Identifier<Tags[number]>,
+    C.Tag.Identifier<Tags[number]>,
     never,
-    { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+    { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
   >
 
   return {
@@ -50,8 +49,8 @@ function tupleActions<Tags extends TupleOfTags>(tags: Tags): TupleTagActions<Tag
 }
 
 type TupleTagProvide<Tags extends TupleOfTags> = Provide<
-  Tag.Identifier<Tags[number]>,
-  { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+  C.Tag.Identifier<Tags[number]>,
+  { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
 >
 
 function tupleProvide<Tags extends TupleOfTags>(tags: Tags): TupleTagProvide<Tags> {
@@ -70,8 +69,8 @@ function tupleProvide<Tags extends TupleOfTags>(tags: Tags): TupleTagProvide<Tag
 }
 
 type TupleTagLayers<Tags extends TupleOfTags> = Layers<
-  Tag.Identifier<Tags[number]>,
-  { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+  C.Tag.Identifier<Tags[number]>,
+  { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
 >
 
 function tupleLayers<Tags extends TupleOfTags>(tags: Tags): TupleTagLayers<Tags> {
@@ -85,8 +84,8 @@ function tupleLayers<Tags extends TupleOfTags>(tags: Tags): TupleTagLayers<Tags>
 }
 
 type TupleTagBuilder<Tags extends TupleOfTags> = Builder<
-  Tag.Identifier<Tags[number]>,
-  { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+  C.Tag.Identifier<Tags[number]>,
+  { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
 >
 
 function tupleBuilder<Tags extends TupleOfTags>(tags: Tags): TupleTagBuilder<Tags> {
@@ -98,7 +97,7 @@ function tupleBuilder<Tags extends TupleOfTags>(tags: Tags): TupleTagBuilder<Tag
 function buildTupleContext<Tags extends TupleOfTags>(
   tags: Tags,
   services: {
-    readonly [K in keyof Tags]: Tag.Service<Tags[K]>
+    readonly [K in keyof Tags]: C.Tag.Service<Tags[K]>
   },
 ) {
   let builder = ContextBuilder.empty
@@ -107,20 +106,20 @@ function buildTupleContext<Tags extends TupleOfTags>(
     builder = builder.add(tags[i], services[i])
   }
 
-  return builder as ContextBuilder<Tag.Identifier<Tags[number]>>
+  return builder as ContextBuilder<C.Tag.Identifier<Tags[number]>>
 }
 
 type StructOfTags = { readonly [key: PropertyKey]: C.Tag<any, any> }
 
 export type TaggedStruct<Tags extends StructOfTags> = Tagged<
-  Tag.Identifier<Tags[keyof Tags]>,
-  { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+  C.Tag.Identifier<Tags[keyof Tags]>,
+  { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
 > & {
   readonly tags: Tags
 } & Effect.Effect<
-    Tag.Identifier<Tags[keyof Tags]>,
+    C.Tag.Identifier<Tags[keyof Tags]>,
     never,
-    { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+    { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
   >
 
 export function struct<Tags extends StructOfTags>(tags: Tags): TaggedStruct<Tags> {
@@ -134,15 +133,15 @@ export function struct<Tags extends StructOfTags>(tags: Tags): TaggedStruct<Tags
 }
 
 type StructTagActions<Tags extends StructOfTags> = Actions<
-  Tag.Identifier<Tags[keyof Tags]>,
-  { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+  C.Tag.Identifier<Tags[keyof Tags]>,
+  { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
 >
 
 function structActions<Tags extends StructOfTags>(tags: Tags): StructTagActions<Tags> {
   const all = Effect.all(tags) as any as Effect.Effect<
-    Tag.Identifier<Tags[keyof Tags]>,
+    C.Tag.Identifier<Tags[keyof Tags]>,
     never,
-    { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+    { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
   >
 
   return {
@@ -153,8 +152,8 @@ function structActions<Tags extends StructOfTags>(tags: Tags): StructTagActions<
 }
 
 type StructTagProvide<Tags extends StructOfTags> = Provide<
-  Tag.Identifier<Tags[keyof Tags]>,
-  { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+  C.Tag.Identifier<Tags[keyof Tags]>,
+  { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
 >
 
 function structProvide<Tags extends StructOfTags>(tags: Tags): StructTagProvide<Tags> {
@@ -173,8 +172,8 @@ function structProvide<Tags extends StructOfTags>(tags: Tags): StructTagProvide<
 }
 
 type StructTagLayers<Tags extends StructOfTags> = Layers<
-  Tag.Identifier<Tags[keyof Tags]>,
-  { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+  C.Tag.Identifier<Tags[keyof Tags]>,
+  { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
 >
 
 function structLayers<Tags extends StructOfTags>(tags: Tags): StructTagLayers<Tags> {
@@ -188,8 +187,8 @@ function structLayers<Tags extends StructOfTags>(tags: Tags): StructTagLayers<Ta
 }
 
 type StructTagBuilder<Tags extends StructOfTags> = Builder<
-  Tag.Identifier<Tags[keyof Tags]>,
-  { readonly [K in keyof Tags]: Tag.Service<Tags[K]> }
+  C.Tag.Identifier<Tags[keyof Tags]>,
+  { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
 >
 
 function structBuilder<Tags extends StructOfTags>(tags: Tags): StructTagBuilder<Tags> {
@@ -201,7 +200,7 @@ function structBuilder<Tags extends StructOfTags>(tags: Tags): StructTagBuilder<
 function buildStructContext<Tags extends StructOfTags>(
   tags: Tags,
   services: {
-    readonly [K in keyof Tags]: Tag.Service<Tags[K]>
+    readonly [K in keyof Tags]: C.Tag.Service<Tags[K]>
   },
 ) {
   let builder = ContextBuilder.empty
@@ -210,5 +209,5 @@ function buildStructContext<Tags extends StructOfTags>(
     builder = builder.add(tags[key], services[key])
   }
 
-  return builder as ContextBuilder<Tag.Identifier<Tags[keyof Tags]>>
+  return builder as ContextBuilder<C.Tag.Identifier<Tags[keyof Tags]>>
 }
