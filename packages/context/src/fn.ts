@@ -99,6 +99,8 @@ export namespace Fn {
 
   export type FnOf<T extends Fn<any, any>> = T extends Fn<any, infer F> ? F : never
 
+  export type Any = Fn<any, any>
+
   export const wrap = <I, S extends EffectFn>(tag: Tag<I, S>): Fn<I, S> => {
     const implement = <T2 extends EffectFn.Extendable<S>>(
       implementation: T2,
