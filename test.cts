@@ -1,11 +1,9 @@
+import { readFileSync } from 'fs'
 import { join } from 'path'
 
-import { Service, setupProject } from './packages/virtual/src/api'
-
-const service = new Service()
 const exampleDirectory = join(__dirname, 'example')
+const indexHtml = join(exampleDirectory, 'index.html')
+const content = readFileSync(indexHtml).toString()
+const regex = /<!--\s+?TYPED_CONTENT\s+?-->/
 
-const project = setupProject(service, exampleDirectory, 'tsconfig.json')
-
-console.log(project.validate())
-console.log(project.emit())
+console.log(content.split(regex).filter((x) => x !== ''))

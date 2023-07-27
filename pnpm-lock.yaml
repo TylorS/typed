@@ -608,6 +608,9 @@ importers:
       '@effect/data':
         specifier: ^0.16.0
         version: 0.16.0
+      '@typed/virtual-module':
+        specifier: workspace:*
+        version: link:../virtual-module
       fast-glob:
         specifier: ^3.3.0
         version: 3.3.0
@@ -633,9 +636,6 @@ importers:
       '@types/node':
         specifier: ^20.4.2
         version: 20.4.2
-      vitest:
-        specifier: 0.33.0
-        version: 0.33.0(@vitest/ui@0.33.0)(happy-dom@10.5.2)
 
   packages/wire: {}
 

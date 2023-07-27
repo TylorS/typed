@@ -1,9 +1,5 @@
 /// <reference types="@typed/framework" />
 
-import { readFileSync } from 'fs'
-import { dirname, join } from 'path'
-import { fileURLToPath } from 'url'
-
 import { pipe } from '@effect/data/Function'
 import * as Effect from '@effect/io/Effect'
 import { server } from '@typed/framework/server'
@@ -11,20 +7,13 @@ import * as Fx from '@typed/fx'
 import { renderToHtml, renderToHtmlStream } from '@typed/html/server'
 import express from 'express'
 import staticGzip from 'express-static-gzip'
+import * as index from 'html:./index'
 import { clientOutputDirectory } from 'typed:config'
 import httpDevServer from 'vavite/http-dev-server'
 import viteDevServer from 'vavite/vite-dev-server'
 import { ViteDevServer } from 'vite'
 
 import { layout, router } from './routing.js'
-
-const dir = dirname(fileURLToPath(import.meta.url))
-
-const indexHtml = import.meta.env.PROD
-  ? readFileSync(`${clientOutputDirectory}/index.html`, 'utf-8').toString()
-  : readFileSync(join(dir, './index.html'), 'utf-8').toString()
-const [appElementStart, appElementEnd] = [`<div id="application">`, `</div>`]
-const [before, after] = indexHtml.split(appElementStart + appElementEnd)
 
 const app: express.Express = express()
 
@@ -86,9 +75,9 @@ if (viteDevServer) {
 async function runDev(req: express.Request, res: express.Response, devServer: ViteDevServer) {
   res.type('text/html')
 
-  let html = before + appElementStart
+  let html = index.before
   html += await pipe(uiHtml, provideUiResources(req), Effect.runPromise)
-  html += appElementEnd + after
+  html += index.after
   html = await devServer.transformIndexHtml(req.url, html)
 
   res.status(200)
@@ -97,10 +86,10 @@ async function runDev(req: express.Request, res: express.Response, devServer: Vi
 
 async function runProd(req: express.Request, res: express.Response) {
   res.type('text/html')
-  res.write(before + appElementStart)
+  res.write(index.before)
 
   await pipe(uiStream, Fx.observe(writeToResponse(res)), provideUiResources(req), Effect.runPromise)
 
   res.status(200)
-  res.end(appElementEnd + after)
+  res.end(index.after)
 }

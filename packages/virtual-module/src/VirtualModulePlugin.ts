@@ -1,6 +1,4 @@
 import { Extension, LanguageService, ModuleKind } from 'typescript'
-// @ts-expect-error - Can't technically import this in a CJS module
-import type { ViteDevServer } from 'vite'
 
 export interface VirtualModulePlugin<Metadata, M extends VirtualModule = VirtualModule> {
   /**
@@ -19,7 +17,7 @@ export interface VirtualModulePlugin<Metadata, M extends VirtualModule = Virtual
   readonly resolveVirtualModule: (id: string, importer: string) => M
 
   /**
-   * Resolve metadata for a virtual module that will be passed to `generateContent`.
+   * Resolve metadata for a virtual module that will be passed to `generateTypeScriptContent` and `generateProductionContent`.
    */
   readonly generateMetadata: (module: M, params: VirtualModuleGenerateMetadataParams) => Metadata
 
@@ -28,7 +26,7 @@ export interface VirtualModulePlugin<Metadata, M extends VirtualModule = Virtual
    * this is the variant that will always be utilized for our TypeScript plugin and therefore
    * must be synchronous.
    */
-  readonly generateTypeScriptContent?: (
+  readonly generateTypeScriptContent: (
     module: M,
     params: VirtualModuleGenerateContentParams<Metadata>,
   ) => string
@@ -38,21 +36,21 @@ export interface VirtualModulePlugin<Metadata, M extends VirtualModule = Virtual
    * It is an optional method that can be used to generate the content of a virtual module
    * that depends on the environment. Otherwise the `generateContent` method will be used.
    */
-  readonly generateViteContent?: (
+  readonly generateProductionContent?: (
     module: M,
     params: VirtualModuleGenerateContentParams<Metadata>,
-    viteParams: ViteParams,
+    productionParams: ProductionParams,
   ) => Promise<string>
 }
 
-export interface ViteParams {
+export interface ProductionParams {
   readonly base: string
   readonly clientOutputDirectory: string
   readonly environment: 'browser' | 'server' | 'static'
   readonly serverOutputDirectory: string
   readonly sourceDirectory: string
   readonly assetDirectory: string
-  readonly viteDevServer: ViteDevServer | null
+  readonly transformHtml?: (html: string) => Promise<string>
 }
 
 export interface VirtualModuleFilePlugin<Metadata>

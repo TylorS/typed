@@ -1,9 +1,9 @@
 import { promises, readFileSync } from 'fs'
-import { dirname, join, resolve } from 'path'
+import { dirname, join, relative, resolve } from 'path'
 
 import { ModuleKind, Extension } from 'typescript'
 
-import { VirtualModuleFile, VirtualModuleFilePlugin, ViteParams } from './VirtualModulePlugin'
+import { VirtualModuleFile, VirtualModuleFilePlugin, ProductionParams } from './VirtualModulePlugin'
 import { FileBuilder } from './file-builder'
 
 const htmlPlugin: VirtualModuleFilePlugin<null> = {
@@ -24,12 +24,27 @@ const htmlPlugin: VirtualModuleFilePlugin<null> = {
 
     return buildFileContent(dirname(vm.fileName), content, placeholder)
   },
-  generateViteContent: async (vm, { params }, viteParams) => {
-    const assetDirectory = join(viteParams.clientOutputDirectory, viteParams.assetDirectory)
-    const content = await getViteContent(vm, viteParams)
+  generateProductionContent: async (vm, { params }, prodParams) => {
+    let content: string
+    let assetDirectory: string
+
+    // TransformHtml signals we're in dev mode with vite, so we just read the source file and transform
+    if (prodParams.transformHtml) {
+      content = await prodParams.transformHtml(readFileSync(getHtmlFileName(vm)).toString())
+      assetDirectory = dirname(vm.importer)
+    } else {
+      // Otherwise, we fully expect the transformed file to be in the client output directory
+      content = await getProductionContent(vm, prodParams.clientOutputDirectory)
+      assetDirectory = relative(prodParams.serverOutputDirectory, prodParams.clientOutputDirectory)
+
+      if (!assetDirectory.startsWith('.')) {
+        assetDirectory = `./${assetDirectory}`
+      }
+    }
+
     const placeholder = getPlaceholderParam(params)
 
-    return buildFileContent(assetDirectory, content, placeholder, viteParams)
+    return buildFileContent(assetDirectory, content, placeholder, prodParams)
   },
 }
 
@@ -48,7 +63,7 @@ function getPlaceholderParam(params: Record<string, any>): RegExp {
     return new RegExp(params.placeholder)
   }
 
-  return /<!--(\s+)?TYPED_CONTENT(\s+)?-->/
+  return /<!--\s+?TYPED_CONTENT\s+?-->/
 }
 
 function parseBasePath(html: string, existingBase?: string): string | null {
@@ -69,34 +84,23 @@ function formatStringLiteralOrNull(value: string | null) {
   return `'${value}'`
 }
 
-async function getViteContent(vm: VirtualModuleFile, viteParams: ViteParams) {
-  if (viteParams.viteDevServer) {
-    const filePath = getHtmlFileName(vm)
-    const content = await viteParams.viteDevServer.transformIndexHtml(
-      filePath,
-      await promises.readFile(filePath).then((buffer) => buffer.toString()),
-    )
+async function getProductionContent(vm: VirtualModuleFile, clientOutputDirectory: string) {
+  const sourceFileName = getHtmlFileName(vm)
+  const relativeFileName = relative(clientOutputDirectory, sourceFileName)
+  const outputFileName = join(clientOutputDirectory, relativeFileName)
+  const content = await promises.readFile(outputFileName).then((buffer) => buffer.toString())
 
-    return content
-  } else {
-    // For Production we need to read the file from the asset directory since vite has already transformed it.
-
-    const assetDirectory = join(viteParams.clientOutputDirectory, viteParams.assetDirectory)
-    const filePath = join(assetDirectory, vm.id.replace('html:', '') + '.html')
-    const content = await promises.readFile(filePath).then((buffer) => buffer.toString())
-
-    return content
-  }
+  return content
 }
 
 function buildFileContent(
   assetDirectory: string,
   content: string,
   placeholder: RegExp,
-  viteParams?: ViteParams,
+  prodParams?: ProductionParams,
 ) {
-  const [before, , after] = content.split(placeholder)
-  const basePath = parseBasePath(content, viteParams?.base)
+  const [before, after] = content.split(placeholder).filter((x) => x !== '')
+  const basePath = parseBasePath(content, prodParams?.base)
 
   return new FileBuilder()
     .addText(`export const content: string = \`${content}\`;`)

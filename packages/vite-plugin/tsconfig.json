@@ -10,5 +10,9 @@
   "exclude": [
     "dist"
   ],
-  "references": []
+  "references": [
+    {
+      "path": "../virtual-module/tsconfig.build.json"
+    }
+  ]
 }

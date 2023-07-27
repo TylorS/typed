@@ -75,11 +75,11 @@ export function patchLanguageServiceHost({
     getScriptFileNames: (original) => () =>
       Array.from(new Set([...original(), ...manager.cache.getScriptFileNames()])),
     getScriptKind: (original) => (fileName) =>
-      manager.cache.getScriptKind(fileName) || original?.(fileName) || ts.ScriptKind.Unknown,
+      original?.(fileName) || manager.cache.getScriptKind(fileName) || ts.ScriptKind.Unknown,
     getScriptSnapshot: (original) => (fileName) =>
-      manager.cache.getSnapshot(fileName) || original(fileName),
+      original(fileName) || manager.cache.getSnapshot(fileName),
     getScriptVersion: (original) => (fileName) =>
-      manager.cache.getScriptVersion(fileName) || original(fileName),
+      original(fileName) || manager.cache.getScriptVersion(fileName) || '0',
     resolveModuleNameLiterals:
       (original) =>
       (moduleNames, containingFile, redirectedReference, options, ...rest) => {

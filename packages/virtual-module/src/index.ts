@@ -2,6 +2,8 @@ import ts from 'typescript/lib/tsserverlibrary'
 
 import * as VM from './api.js'
 
+// TODO: Manage file-watchers to update virtual modules when their underlying files change
+
 const plugin: ts.server.PluginModuleFactory = ({ typescript }) => {
   return {
     create,
@@ -47,7 +49,7 @@ const plugin: ts.server.PluginModuleFactory = ({ typescript }) => {
     const manager = new VM.VirtualModuleManager(
       plugins,
       pluginParams,
-      info.languageService,
+      () => info.languageService,
       (msg) => info.project.log(`[@typed/virtual] ${msg}`),
     )
 

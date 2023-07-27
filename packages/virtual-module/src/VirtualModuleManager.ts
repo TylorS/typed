@@ -1,9 +1,8 @@
 import ts from 'typescript'
-// @ts-expect-error - Can't technically import this in a CJS module
-import type { ViteDevServer } from 'vite'
 
 import { VirtualModuleCache } from './VirtualModuleCache.js'
 import {
+  ProductionParams,
   VirtualModule,
   VirtualModuleGenerateContentParams,
   VirtualModulePlugin,
@@ -21,10 +20,9 @@ export class VirtualModuleManager {
   constructor(
     readonly plugins: VirtualModulePlugin<any>[],
     readonly pluginParams: Record<string, Record<string, unknown>>,
-    readonly languageService: ts.LanguageService,
+    readonly languageService: () => ts.LanguageService,
     readonly log: (msg: string) => void,
     readonly cache: VirtualModuleCache = new VirtualModuleCache(),
-    readonly viteDevServer: ViteDevServer | null = null,
   ) {}
 
   /**
@@ -99,8 +97,7 @@ export class VirtualModuleManager {
 
     const metadataParams = {
       params: this.pluginParams[plugin.name] || {},
-      languageService: this.languageService,
-      viteDevServer: this.viteDevServer,
+      languageService: this.languageService(),
     }
     const metadata = plugin.generateMetadata(virtualModule, metadataParams)
     const params: VirtualModuleGenerateContentParams<any> = {
@@ -108,6 +105,38 @@ export class VirtualModuleManager {
       metadata,
     }
     const content = plugin.generateTypeScriptContent(virtualModule, params)
+
+    return this.cache.setFile(fileName, ts.ScriptSnapshot.fromString(content))
+  }
+
+  readonly generateProductionSnapshot = async (fileName: string, prodParams: ProductionParams) => {
+    const virtualModule = this.filePathToVirtualModule.get(fileName)
+    const key = this.filePathToKey.get(fileName)
+
+    if (!virtualModule || !key) {
+      throw new Error(`Virtual module not found for ${fileName}`)
+    }
+
+    const plugin = this.keyToPlugin.get(key)
+
+    if (!plugin) {
+      throw new Error(`Virtual module plugin not found for ${fileName}`)
+    }
+
+    const metadataParams = {
+      params: this.pluginParams[plugin.name] || {},
+      languageService: this.languageService(),
+    }
+    const metadata = plugin.generateMetadata(virtualModule, metadataParams)
+    const params: VirtualModuleGenerateContentParams<any> = {
+      ...metadataParams,
+      metadata,
+    }
+    const content = await (plugin.generateProductionContent || plugin.generateTypeScriptContent)(
+      virtualModule,
+      params,
+      prodParams,
+    )
 
     return this.cache.setFile(fileName, ts.ScriptSnapshot.fromString(content))
   }

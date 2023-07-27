@@ -3,6 +3,7 @@ import { basename, join, relative, resolve } from 'path'
 
 import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
+import * as vite from '@typed/virtual-module/vite'
 import fastGlob from 'fast-glob'
 import { visualizer } from 'rollup-plugin-visualizer'
 import vavite from 'vavite'
@@ -14,6 +15,11 @@ const tsconfigPaths =
   typeof tsconfigPaths_ === 'function'
     ? tsconfigPaths_
     : ((tsconfigPaths_ as any).default as typeof tsconfigPaths_)
+
+const virtualModulePlugin =
+  typeof vite.virtualModulePlugin === 'function'
+    ? vite.virtualModulePlugin
+    : ((vite as any).default.virtualModulePlugin as typeof vite.virtualModulePlugin)
 
 import { PLUGIN_NAME } from './constants.js'
 import { ResolvedOptions } from './resolveTypedConfig.js'
@@ -81,7 +87,7 @@ export interface TypedVitePlugin extends Plugin {
 export default function makePlugin(pluginOptions: PluginOptions): PluginOption[] {
   const options: ResolvedOptions = resolveOptions(pluginOptions)
   // let devServer: ViteDevServer
-  // let isSsr = false
+  let isSsr = false
 
   const plugins: PluginOption[] = [
     tsconfigPaths({
@@ -104,9 +110,13 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
       ),
       Option.toArray,
     ),
+    virtualModulePlugin({
+      ...options,
+      environment: options.isStaticBuild ? 'static' : isSsr ? 'server' : 'browser',
+    }),
   ]
 
-  const virtualModulePlugin: TypedVitePlugin = {
+  const typedPlugin: TypedVitePlugin = {
     name: PLUGIN_NAME,
     get resolvedOptions() {
       return options
@@ -115,7 +125,7 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
      * Configures our production build using vavite
      */
     config(config: UserConfig, env: ConfigEnv) {
-      // isSsr = env.ssrBuild ?? false
+      isSsr = env.ssrBuild ?? false
 
       if (!config.root) {
         config.root = options.sourceDirectory
@@ -232,7 +242,7 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
     // },
   }
 
-  plugins.push(virtualModulePlugin)
+  plugins.push(typedPlugin)
 
   return plugins
 }
