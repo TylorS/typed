@@ -1,4 +1,3 @@
-import * as Context from '@effect/data/Context'
 import { equals } from '@effect/data/Equal'
 import * as Equivalence from '@effect/data/Equivalence'
 import { identity, dual } from '@effect/data/Function'
@@ -8,6 +7,7 @@ import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
+import * as Context from './context.js'
 import { IdentifierOf } from './identifier.js'
 
 export interface Ref<I, R, E, A> extends Fx.Fx<I, E, A> {
@@ -95,7 +95,7 @@ export const Ref: {
     initial: Effect.Effect<R, E, A>,
     eq: Equivalence.Equivalence<A> = equals,
   ): Ref<IdentifierOf<I>, R, E, A> {
-    const tag = Context.Tag<IdentifierOf<I>, Fx.RefSubject<E, A>>(identifier)
+    const tag = Context.Tag<I, Fx.RefSubject<E, A>>(identifier)
     const make = Fx.makeRef(initial, eq)
     const fx = Fx.hold(Fx.fromFxEffect(tag))
 

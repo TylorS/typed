@@ -1,10 +1,10 @@
-import * as Context from '@effect/data/Context'
 import { identity } from '@effect/data/Function'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as Fx from '@typed/fx'
 
+import * as Context from './context.js'
 import { IdentifierOf } from './identifier.js'
 
 const subjectVariance: Fx.Fx<any, any, any>[Fx.FxTypeId] = {
@@ -44,7 +44,7 @@ function make<const I, E, A>(
   f: () => Fx.Subject<E, A>,
   hold: boolean,
 ): Subject<IdentifierOf<I>, E, A> {
-  const tag = Context.Tag<IdentifierOf<I>, Fx.Subject<E, A>>(id)
+  const tag = Context.Tag<I, Fx.Subject<E, A>>(id)
   const fx = hold ? Fx.hold(Fx.fromFxEffect(tag)) : Fx.multicast(Fx.fromFxEffect(tag))
   const layer = Layer.effect(tag, Effect.sync(f))
 
