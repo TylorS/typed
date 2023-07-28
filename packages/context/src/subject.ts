@@ -13,7 +13,9 @@ const subjectVariance: Fx.Fx<any, any, any>[Fx.FxTypeId] = {
   _A: identity,
 }
 
-export interface Subject<I, E, A> extends Context.Tag<I, Fx.Subject<E, A>>, Fx.Fx<I, E, A> {
+export interface Subject<I, E, A> extends Fx.Fx<I, E, A> {
+  readonly tag: Context.Tag<I, Fx.Subject<E, A>>
+
   readonly event: (a: A) => Effect.Effect<I, never, void>
   readonly error: (e: Cause.Cause<E>) => Effect.Effect<I, never, void>
   readonly end: () => Effect.Effect<I, never, void>
@@ -46,7 +48,8 @@ function make<const I, E, A>(
   const fx = hold ? Fx.hold(Fx.fromFxEffect(tag)) : Fx.multicast(Fx.fromFxEffect(tag))
   const layer = Layer.effect(tag, Effect.sync(f))
 
-  return Object.assign(tag, {
+  return {
+    tag,
     [Fx.FxTypeId]: subjectVariance,
     run: fx.run.bind(fx),
     event: (a: A) => Effect.flatMap(tag, (s) => s.event(a)),
@@ -55,5 +58,5 @@ function make<const I, E, A>(
     layer,
     provide: Effect.provideSomeLayer(layer),
     provideFx: Fx.provideSomeLayer(layer),
-  }) satisfies Subject<IdentifierOf<I>, E, A>
+  }
 }
