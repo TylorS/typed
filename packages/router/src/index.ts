@@ -1,3 +1,4 @@
+export * from './CurrentPath.js'
 export * from './Link.js'
 export * from './Match.js'
 export * from './Matcher.js'
