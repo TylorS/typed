@@ -24,8 +24,10 @@ export function observe<R, E, A, R2, E2>(
   })
 }
 
+const toUnit = () => Effect.unit
+
 export function drain<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R | Scope, E, void> {
-  return observe(fx, Effect.unit as any)
+  return observe(fx, toUnit)
 }
 
 export function forkScoped<R, E, A>(
