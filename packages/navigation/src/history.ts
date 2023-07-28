@@ -58,20 +58,20 @@ export const patchHistory: Effect.Effect<
 })
 
 function patchHistory_(history: History, sendEvent: (event: HistoryEvent) => void) {
-  const pushState = history.pushState.bind(history)
-  const replaceState = history.replaceState.bind(history)
-  const go = history.go.bind(history)
-  const back = history.back.bind(history)
-  const forward = history.forward.bind(history)
+  const pushState = history.pushState
+  const replaceState = history.replaceState
+  const go = history.go
+  const back = history.back
+  const forward = history.forward
 
   history.pushState = function (state, title, url) {
-    pushState(state, title, url)
+    pushState.call(history, state, title, url)
 
     if (url && this !== ServiceId) sendEvent({ _tag: 'PushState', state, url: url.toString() })
   }
 
   history.replaceState = function (state, title, url) {
-    replaceState(state, title, url)
+    replaceState.call(history, state, title, url)
 
     if (url && this !== ServiceId) sendEvent({ _tag: 'ReplaceState', state, url: url.toString() })
   }
@@ -79,17 +79,17 @@ function patchHistory_(history: History, sendEvent: (event: HistoryEvent) => voi
   history.go = function (delta) {
     if (!delta) return
 
-    go(delta)
+    go.call(history, delta)
     if (this !== ServiceId) sendEvent({ _tag: 'Go', delta })
   }
 
   history.back = function () {
-    back()
+    back.call(history)
     if (this !== ServiceId) sendEvent({ _tag: 'Back' })
   }
 
   history.forward = function () {
-    forward()
+    forward.call(history)
     if (this !== ServiceId) sendEvent({ _tag: 'Forward' })
   }
 
@@ -97,7 +97,7 @@ function patchHistory_(history: History, sendEvent: (event: HistoryEvent) => voi
   Object.defineProperty(history, 'state', {
     ...stateDescriptor,
     get() {
-      return stateDescriptor?.get?.()?.state
+      return stateDescriptor?.get?.call(history)?.state
     },
   })
   Object.defineProperty(history, 'originalState', {
