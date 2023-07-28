@@ -71,7 +71,15 @@ export class ClassNamePart extends BasePart<readonly string[]> {
   }
 
   static fromElement(element: Element, index: number) {
-    const setClassName = (value: string) => Effect.sync(() => (element.className = value))
+    const setClassName = (value: string) =>
+      Effect.sync(() => {
+        const classNames = value.split(' ')
+
+        element.classList.remove(
+          ...Array.from(element.classList).filter((c) => !classNames.includes(c)),
+        )
+        element.classList.add(...classNames)
+      })
 
     return new ClassNamePart(setClassName, index, Array.from(element.classList))
   }
