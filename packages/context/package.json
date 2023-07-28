@@ -1,6 +1,6 @@
 {
   "name": "@typed/context",
-  "version": "0.16.3",
+  "version": "0.16.4",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
