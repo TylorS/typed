@@ -78,13 +78,13 @@ export const Ref: {
   <R, E, A>(
     initial: Effect.Effect<R, E, A>,
     eq?: Equivalence.Equivalence<A>,
-  ): <const I>(identifier: I) => Ref<I, R, E, A>
+  ): <const I>(identifier: I) => Ref<IdentifierOf<I>, R, E, A>
 
   <const I, R, E, A>(
     identifier: I,
     initial: Effect.Effect<R, E, A>,
     eq?: Equivalence.Equivalence<A>,
-  ): Ref<I, R, E, A>
+  ): Ref<IdentifierOf<I>, R, E, A>
 } = dual(
   3,
 
