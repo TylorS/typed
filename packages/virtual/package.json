@@ -19,7 +19,7 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^20.4.2",
+    "@types/node": "^20.4.5",
     "typescript": "^5.1.6"
   },
   "publishConfig": {
@@ -27,6 +27,6 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@effect/data": "^0.16.0"
+    "@effect/data": "^0.17.0"
   }
 }

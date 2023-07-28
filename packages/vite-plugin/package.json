@@ -19,12 +19,12 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.16.0",
+    "@effect/data": "^0.17.0",
     "@typed/virtual-module": "workspace:*",
-    "fast-glob": "^3.3.0",
+    "fast-glob": "^3.3.1",
     "rollup-plugin-visualizer": "^5.9.2",
     "vavite": "^2.0.1",
-    "vite": "^4.4.5",
+    "vite": "^4.4.7",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.2.0"
   },
@@ -37,6 +37,6 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "@types/node": "^20.4.2"
+    "@types/node": "^20.4.5"
   }
 }
