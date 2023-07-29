@@ -7,7 +7,6 @@ import { History } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
 import { Destination, NavigationError } from './Navigation.js'
-import { ServiceId } from './constant.js'
 import { DomIntent } from './dom-intent.js'
 
 export type HistoryEvent = PushStateEvent | ReplaceStateEvent | GoEvent | BackEvent | ForwardEvent
@@ -40,9 +39,31 @@ export interface ForwardEvent {
 export const patchHistory: Effect.Effect<
   History | Scope.Scope,
   never,
-  Fx.Subject<never, HistoryEvent>
+  readonly [History, Fx.Subject<never, HistoryEvent>]
 > = Effect.gen(function* ($) {
   const history = yield* $(History)
+
+  // Create a clone that always operates on the original history
+  const clone: History = {
+    get length() {
+      return history.length
+    },
+    get scrollRestoration() {
+      return history.scrollRestoration
+    },
+    set scrollRestoration(value) {
+      history.scrollRestoration = value
+    },
+    get state() {
+      return history.state
+    },
+    back: history.back.bind(history),
+    forward: history.forward.bind(history),
+    go: history.go.bind(history),
+    pushState: history.pushState.bind(history),
+    replaceState: history.replaceState.bind(history),
+  }
+
   const scope = yield* $(Effect.scope)
   const historyEvents = Fx.makeSubject<never, HistoryEvent>()
   const runtime = yield* $(Effect.runtime<never>())
@@ -54,7 +75,7 @@ export const patchHistory: Effect.Effect<
   // unpatch history upon finalization
   yield* $(Effect.addFinalizer(() => Effect.sync(cleanup)))
 
-  return historyEvents
+  return [clone, historyEvents]
 })
 
 function patchHistory_(history: History, sendEvent: (event: HistoryEvent) => void) {
@@ -67,42 +88,31 @@ function patchHistory_(history: History, sendEvent: (event: HistoryEvent) => voi
   history.pushState = function (state, title, url) {
     pushState.call(history, state, title, url)
 
-    if (url && this !== ServiceId) sendEvent({ _tag: 'PushState', state, url: url.toString() })
+    if (url) sendEvent({ _tag: 'PushState', state, url: url.toString() })
   }
 
   history.replaceState = function (state, title, url) {
     replaceState.call(history, state, title, url)
 
-    if (url && this !== ServiceId) sendEvent({ _tag: 'ReplaceState', state, url: url.toString() })
+    if (url) sendEvent({ _tag: 'ReplaceState', state, url: url.toString() })
   }
 
   history.go = function (delta) {
     if (!delta) return
 
     go.call(history, delta)
-    if (this !== ServiceId) sendEvent({ _tag: 'Go', delta })
+    sendEvent({ _tag: 'Go', delta })
   }
 
   history.back = function () {
     back.call(history)
-    if (this !== ServiceId) sendEvent({ _tag: 'Back' })
+    sendEvent({ _tag: 'Back' })
   }
 
   history.forward = function () {
     forward.call(history)
-    if (this !== ServiceId) sendEvent({ _tag: 'Forward' })
+    sendEvent({ _tag: 'Forward' })
   }
-
-  const stateDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(history), 'state')
-  Object.defineProperty(history, 'state', {
-    ...stateDescriptor,
-    get() {
-      return stateDescriptor?.get?.call(history)?.state
-    },
-  })
-  Object.defineProperty(history, 'originalState', {
-    ...stateDescriptor,
-  })
 
   // Reset history to original state
   return () => {
@@ -111,8 +121,6 @@ function patchHistory_(history: History, sendEvent: (event: HistoryEvent) => voi
     history.go = go
     history.back = back
     history.forward = forward
-
-    if (stateDescriptor) Object.defineProperty(history, 'state', stateDescriptor)
   }
 }
 

@@ -1,5 +1,4 @@
 import * as Option from '@effect/data/Option'
-import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
 
@@ -9,9 +8,7 @@ import { Model } from './model.js'
 export type Notify = (event: NavigationEvent) => Effect.Effect<never, NavigationError, void>
 export type NotifyEnd = (event: NavigationEvent) => Effect.Effect<never, never, void>
 
-export type Save<R> = (
-  event: NavigationEvent,
-) => Effect.Effect<R, Cause.NoSuchElementException, void>
+export type Save<R> = (event: NavigationEvent) => Effect.Effect<R, never, void>
 
 // Anytime there are changes to the model, we need to notify all event handlers
 export const makeNotify = (model: Model) => (event: NavigationEvent) =>
@@ -102,7 +99,7 @@ export const makeGoTo =
     model: Model,
     go: (delta: number, skipHistory?: boolean) => Effect.Effect<R, E, Destination>,
   ) =>
-  (key: string): Effect.Effect<R, Cause.NoSuchElementException | E, Option.Option<Destination>> =>
+  (key: string): Effect.Effect<R, E, Option.Option<Destination>> =>
     Effect.gen(function* ($) {
       const entries = yield* $(model.entries)
       const currentIndex = yield* $(model.index)

@@ -1,5 +1,4 @@
 import { Option } from '@effect/data/Option'
-import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 
 import type { MemoryNavigationOptions } from './Memory.js'
@@ -42,9 +41,7 @@ export type MemoryIntent = {
 
   readonly go: ReturnType<typeof makeGo>
 
-  readonly goTo: (
-    key: string,
-  ) => Effect.Effect<never, Cause.NoSuchElementException | NavigationError, Option<Destination>>
+  readonly goTo: (key: string) => Effect.Effect<never, NavigationError, Option<Destination>>
 
   readonly reload: ReturnType<typeof makeReload>
 
@@ -83,7 +80,7 @@ export type Intent = ReturnType<typeof makeIntent>
 
 export const makeSave: (
   model: Model,
-) => (event: NavigationEvent) => Effect.Effect<never, Cause.NoSuchElementException, void> =
+) => (event: NavigationEvent) => Effect.Effect<never, never, void> =
   (model: Model) => (event: NavigationEvent) =>
     Effect.gen(function* ($) {
       const events = yield* $(model.events)
@@ -209,7 +206,7 @@ export const makeGo = (model: Model, notify: Notify, save: Save<never>) => (delt
     yield* $(
       notify({
         ...nextEntry,
-        navigationType: nextIndex > currentIndex ? NavigationType.Forward : NavigationType.Back,
+        navigationType: getNavigationType(currentIndex, nextIndex),
       }),
     )
 
@@ -219,3 +216,9 @@ export const makeGo = (model: Model, notify: Notify, save: Save<never>) => (delt
 
     return nextEntry.destination
   })
+
+function getNavigationType(currentIndex: number, nextIndex: number): NavigationType {
+  if (nextIndex > currentIndex) return NavigationType.Forward
+  if (nextIndex < currentIndex) return NavigationType.Back
+  return NavigationType.Reload
+}

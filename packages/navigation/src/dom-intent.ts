@@ -1,7 +1,6 @@
 import { Option } from '@effect/data/Option'
-import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
-import { History, Location } from '@typed/dom'
+import { Location } from '@typed/dom'
 
 import type { DomNavigationOptions } from './DOM.js'
 import {
@@ -11,8 +10,6 @@ import {
   NavigationEvent,
   NavigationType,
 } from './Navigation.js'
-import { ServiceId } from './constant.js'
-import { encodeEvent } from './json.js'
 import { Model } from './model.js'
 import {
   Notify,
@@ -50,11 +47,7 @@ export type DomIntent = {
 
   readonly goTo: (
     key: string,
-  ) => Effect.Effect<
-    Storage | History,
-    Cause.NoSuchElementException | NavigationError,
-    Option<Destination>
-  >
+  ) => Effect.Effect<Storage | History, NavigationError, Option<Destination>>
 
   readonly reload: ReturnType<typeof makeReload>
 
@@ -66,15 +59,16 @@ export type DomIntent = {
 export const makeIntent = (
   model: Model,
   base: string,
+  history: History,
   options: DomNavigationOptions,
 ): DomIntent => {
   const maxEntries = Math.abs(options.maxEntries ?? DEFAULT_MAX_ENTRIES)
   const notify = makeNotify(model)
   const notifyEnd = makeNotifyEnd(model)
   const save = makeSave(model)
-  const go = makeGo(model, notify, notifyEnd, save)
-  const replace = makeReplace(model, notify, notifyEnd, save, base)
-  const push = makePush(model, notify, notifyEnd, save, base, maxEntries)
+  const go = makeGo(model, notify, notifyEnd, save, history)
+  const replace = makeReplace(model, notify, notifyEnd, save, history, base)
+  const push = makePush(model, notify, notifyEnd, save, base, history, maxEntries)
 
   return {
     back: (skipHistory: boolean) => go(-1, skipHistory),
@@ -96,7 +90,7 @@ export type Intent = ReturnType<typeof makeIntent>
 
 export const makeSave =
   (model: Model) =>
-  (event: NavigationEvent): Effect.Effect<Storage, Cause.NoSuchElementException, void> =>
+  (event: NavigationEvent): Effect.Effect<Storage, never, void> =>
     Effect.gen(function* ($) {
       const events = yield* $(model.events)
       const index = yield* $(model.index)
@@ -132,7 +126,14 @@ export const makeReload = (model: Model, notify: Notify, save: Save<Storage>) =>
   })
 
 export const makeReplace =
-  (model: Model, notify: Notify, notifyEnd: NotifyEnd, save: Save<Storage>, base: string) =>
+  (
+    model: Model,
+    notify: Notify,
+    notifyEnd: NotifyEnd,
+    save: Save<Storage>,
+    history: History,
+    base: string,
+  ) =>
   (url: string, options: NavigateOptions = {}, skipHistory = false) =>
     Effect.gen(function* ($) {
       const location = yield* $(Location)
@@ -151,14 +152,7 @@ export const makeReplace =
       yield* $(notify(event))
 
       if (!skipHistory) {
-        const history = yield* $(History)
-
-        history.replaceState.call(
-          ServiceId,
-          { state: options.state, event: encodeEvent(event) },
-          '',
-          url,
-        )
+        history.replaceState(options.state, '', url)
       }
 
       const currentIndex = yield* $(model.index)
@@ -184,6 +178,7 @@ export const makePush =
     notifyEnd: NotifyEnd,
     save: Save<Storage>,
     base: string,
+    history: History,
     maxEntries: number,
   ) =>
   (url: string, options: NavigateOptions = {}, skipHistory = false) =>
@@ -205,14 +200,7 @@ export const makePush =
       yield* $(notify(event))
 
       if (!skipHistory) {
-        const history = yield* $(History)
-
-        history.pushState.call(
-          ServiceId,
-          { state: options.state, event: encodeEvent(event) },
-          '',
-          url,
-        )
+        history.pushState(options.state, '', url)
       }
 
       const currentIndex = yield* $(model.index)
@@ -237,7 +225,7 @@ export const makePush =
     })
 
 export const makeGo =
-  (model: Model, notify: Notify, notifyEnd: NotifyEnd, save: Save<Storage>) =>
+  (model: Model, notify: Notify, notifyEnd: NotifyEnd, save: Save<Storage>, history: History) =>
   (delta: number, skipHistory = false) =>
     Effect.gen(function* ($) {
       const currentEntries = yield* $(model.events)
@@ -261,9 +249,7 @@ export const makeGo =
       )
 
       if (!skipHistory) {
-        const history = yield* $(History)
-
-        history.go.call(ServiceId, delta)
+        history.go(delta)
       }
 
       yield* $(model.index.set(nextIndex))

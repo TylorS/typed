@@ -69,7 +69,7 @@ export const getInitialValues = (
     const initial: Destination = {
       key: options.initialKey ?? (yield* $(createKey)),
       url: initialUrl,
-      state: history.state?.state,
+      state: history.state,
     }
     const initialEvent: NavigationEvent = {
       destination: initial,

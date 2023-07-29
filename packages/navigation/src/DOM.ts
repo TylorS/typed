@@ -33,15 +33,17 @@ export const dom = (
     Effect.gen(function* ($) {
       // Get resources
       const context = yield* $(Effect.context<NavigationServices>())
-      const history = Context.get(context, History)
       const document = Context.get(context, Document)
       const base = document.querySelector('base')
       const baseHref = base ? getBasePathFromHref(base.href) : '/'
 
+      // Patch History API to enable sending events
+      const [history, historyEvents] = yield* $(patchHistory)
+
       // Create model and intent
       const [initialEntries, initialIndex] = yield* $(getInitialValues(baseHref, options))
       const model = yield* $(makeModel(initialEntries, initialIndex))
-      const intent = makeIntent(model, baseHref, options)
+      const intent = makeIntent(model, baseHref, history, options)
 
       // Used to ensure ordering of navigation events
       const lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
@@ -107,9 +109,6 @@ export const dom = (
           Effect.asUnit(intent.onNavigationEnd(handler, options)),
         reload: provideLocked(catchNavigationError(intent.reload)),
       }
-
-      // Patch History API to enable sending events
-      const historyEvents = yield* $(patchHistory)
 
       // Listen to various events and update our model
       yield* $(
