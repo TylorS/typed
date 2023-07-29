@@ -1,6 +1,7 @@
 {
-  "name": "@typed/router",
-  "version": "0.16.8",
+  "name": "@typed/browser-tests",
+  "private": true,
+  "version": "0.0.0",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -19,20 +20,25 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.17.1",
     "@effect/io": "^0.36.1",
+    "@typed/dom": "workspace:*",
+    "@typed/framework": "workspace:*",
+    "@typed/navigation": "workspace:*"
+  },
+  "sideEffects": false,
+  "devDependencies": {
     "@typed/context": "workspace:*",
+    "@typed/decoder": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/error": "workspace:*",
+    "@typed/framework": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/html": "workspace:*",
-    "@typed/navigation": "workspace:*",
     "@typed/path": "workspace:*",
-    "@typed/route": "workspace:*"
-  },
-  "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",
-  "publishConfig": {
-    "access": "public"
-  },
-  "sideEffects": false
+    "@typed/route": "workspace:*",
+    "@typed/router": "workspace:*",
+    "@typed/virtual-module": "workspace:*",
+    "@typed/vite-plugin": "workspace:*",
+    "vitest": "0.33.0"
+  }
 }

@@ -6,7 +6,6 @@ import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
 import { Context } from '@typed/context'
 import * as Fx from '@typed/fx'
-import { withScopedFork } from '@typed/fx/helpers'
 
 import { isDirective } from '../Directive.js'
 import { RenderContext } from '../RenderContext.js'
@@ -171,21 +170,24 @@ function renderSparsePart<R, E>(
 
 function takeOneIfNotRenderEvent<R, E, A>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
   return Fx.Fx((sink) =>
-    withScopedFork((fork, scope) =>
-      Effect.flatMap(Deferred.make<never, void>(), (deferred) =>
-        pipe(
-          fx,
-          Fx.observe((event) =>
-            isRenderEvent(event)
-              ? sink.event(event)
-              : Effect.flatMap(sink.event(event), () => Deferred.succeed(deferred, undefined)),
+    Effect.acquireUseRelease(
+      Scope.make(),
+      (scope) =>
+        Effect.flatMap(Deferred.make<never, void>(), (deferred) =>
+          pipe(
+            fx,
+            Fx.observe((event) =>
+              isRenderEvent(event)
+                ? sink.event(event)
+                : Effect.flatMap(sink.event(event), () => Deferred.succeed(deferred, undefined)),
+            ),
+            Effect.onExit((exit) => Deferred.done(deferred, exit)),
+            Effect.provideService(Scope.Scope, scope),
+            Effect.forkIn(scope),
+            Effect.flatMap(() => Deferred.await(deferred)),
           ),
-          Effect.onExit((exit) => Deferred.done(deferred, exit)),
-          Effect.provideService(Scope.Scope, scope),
-          fork,
-          Effect.flatMap(() => Deferred.await(deferred)),
         ),
-      ),
+      (scope, exit) => Scope.close(scope, exit),
     ),
   )
 }

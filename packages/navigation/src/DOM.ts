@@ -10,7 +10,6 @@ import * as Fx from '@typed/fx'
 import { Destination, DestinationKey, Navigation, NavigationError } from './Navigation.js'
 import { makeIntent } from './dom-intent.js'
 import { onHistoryEvent, patchHistory } from './history.js'
-import { NavigationEventJson } from './json.js'
 import { makeModel } from './model.js'
 import { getInitialValues } from './storage.js'
 
@@ -42,6 +41,10 @@ export const dom = (
 
       // Create model and intent
       const [initialEntries, initialIndex] = yield* $(getInitialValues(baseHref, options))
+
+      console.log('initialEntries', initialEntries)
+      console.log('initialIndex', initialIndex)
+
       const model = yield* $(makeModel(initialEntries, initialIndex))
       const intent = makeIntent(model, baseHref, history, options)
 
@@ -126,19 +129,17 @@ export const dom = (
           // Listen to popstate events and go to the correct entry
           pipe(
             addWindowListener('popstate'),
-            Fx.map((ev) => {
-              // TODO: Should we throw some kind of error here?
-              // This should never happen if you are solely using the Navigation Service
-              if (!ev.state || !ev.state.event) {
-                return Option.none()
-              }
+            Fx.mapEffect(
+              Effect.unifiedFn((ev) => {
+                // TODO: Should we throw some kind of error here?
+                // This should never happen if you are solely using the Navigation Service
+                if (!ev.state || !ev.state.key) {
+                  return lock(intent.push(location.href, { state: history.state }, true))
+                }
 
-              const navigation = ev.state.event as NavigationEventJson
-
-              return Option.some(lock(intent.goTo(navigation.destination.key)))
-            }),
-            Fx.compact,
-            Fx.flattenEffect,
+                return lock(intent.goTo(ev.state.key))
+              }),
+            ),
           ),
         ),
         Fx.drain,

@@ -19,7 +19,6 @@ import {
   redirect,
 } from './Navigation.js'
 import { makeServerWindow } from './_makeServerWindow.js'
-import { encodeDestination } from './json.js'
 import { getStoredEvents } from './storage.js'
 
 const serviceNavigation = (url: string, options: DomNavigationOptions = {}) => {
@@ -687,9 +686,7 @@ function popstate(destination: Destination) {
     const globalThis = yield* $(GlobalThis)
     const state = {
       // Not a full event, but enough to get the test to pass
-      event: {
-        destination: encodeDestination(destination),
-      },
+      key: destination.key,
       state: destination.state,
     }
     const event = new globalThis.PopStateEvent('popstate')

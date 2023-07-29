@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "./dist/cjs",
+    "module": "CommonJS",
+    "verbatimModuleSyntax": false
+  },
+  "references": [
+    {
+      "path": "../dom/tsconfig.cjs.build.json"
+    },
+    {
+      "path": "../framework/tsconfig.cjs.build.json"
+    },
+    {
+      "path": "../navigation/tsconfig.cjs.build.json"
+    }
+  ]
+}

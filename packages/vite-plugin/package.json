@@ -19,7 +19,7 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.17.0",
+    "@effect/data": "^0.17.1",
     "@typed/virtual-module": "workspace:*",
     "fast-glob": "^3.3.1",
     "rollup-plugin-visualizer": "^5.9.2",

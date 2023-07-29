@@ -43,6 +43,8 @@ export const patchHistory: Effect.Effect<
 > = Effect.gen(function* ($) {
   const history = yield* $(History)
 
+  const stateDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(history), 'state')
+
   // Create a clone that always operates on the original history
   const clone: History = {
     get length() {
@@ -55,7 +57,7 @@ export const patchHistory: Effect.Effect<
       history.scrollRestoration = value
     },
     get state() {
-      return history.state
+      return stateDescriptor?.get?.call(history)
     },
     back: history.back.bind(history),
     forward: history.forward.bind(history),
@@ -85,34 +87,40 @@ function patchHistory_(history: History, sendEvent: (event: HistoryEvent) => voi
   const back = history.back
   const forward = history.forward
 
-  history.pushState = function (state, title, url) {
-    pushState.call(history, state, title, url)
-
+  history.pushState = function (state, _, url) {
     if (url) sendEvent({ _tag: 'PushState', state, url: url.toString() })
   }
 
-  history.replaceState = function (state, title, url) {
-    replaceState.call(history, state, title, url)
-
+  history.replaceState = function (state, _, url) {
     if (url) sendEvent({ _tag: 'ReplaceState', state, url: url.toString() })
   }
 
   history.go = function (delta) {
     if (!delta) return
 
-    go.call(history, delta)
     sendEvent({ _tag: 'Go', delta })
   }
 
   history.back = function () {
-    back.call(history)
     sendEvent({ _tag: 'Back' })
   }
 
   history.forward = function () {
-    forward.call(history)
     sendEvent({ _tag: 'Forward' })
   }
+
+  const stateDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(history), 'state')
+
+  // Override state to always return the original state
+  Object.defineProperty(history, 'state', {
+    get() {
+      const state = stateDescriptor?.get?.call(history)
+
+      if (state && state.key && state.state) return state.state
+
+      return state
+    },
+  })
 
   // Reset history to original state
   return () => {
@@ -121,6 +129,10 @@ function patchHistory_(history: History, sendEvent: (event: HistoryEvent) => voi
     history.go = go
     history.back = back
     history.forward = forward
+
+    if (stateDescriptor) {
+      Object.defineProperty(history, 'state', stateDescriptor)
+    }
   }
 }
 

@@ -235,6 +235,8 @@ function makeModifyEffectFromContext<E, A>(
           Effect.suspend(() => {
             MutableRef.set(ctx.currentRef, Option.some(a2))
 
+            console.log(ctx)
+
             if (ctx.eq(a1, a2)) {
               return Effect.succeed(b)
             }
@@ -469,7 +471,7 @@ type RefSubjectContext<E, A> = {
 function makeRefSubjectContext<E, A>(
   initial: Effect.Effect<never, E, A>,
   scope: Scope.Scope,
-  eq: Equivalence.Equivalence<A>,
+  eq: Equivalence.Equivalence<A> = fastDeepEqual,
 ) {
   const hold = new HoldFx(never<E, A>())
   const ctx: RefSubjectContext<E, A> = {

@@ -152,7 +152,7 @@ export const makeReplace =
       yield* $(notify(event))
 
       if (!skipHistory) {
-        history.replaceState(options.state, '', url)
+        history.replaceState({ key: destination.key, state: options.state }, '', url)
       }
 
       const currentIndex = yield* $(model.index)
@@ -200,7 +200,7 @@ export const makePush =
       yield* $(notify(event))
 
       if (!skipHistory) {
-        history.pushState(options.state, '', url)
+        history.pushState({ key: destination.key, state: options.state }, '', url)
       }
 
       const currentIndex = yield* $(model.index)

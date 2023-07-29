@@ -19,7 +19,7 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.17.0",
+    "@effect/data": "^0.17.1",
     "@effect/io": "^0.36.1",
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",

@@ -19,7 +19,7 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.17.0",
+    "@effect/data": "^0.17.1",
     "vite": "^4.4.7"
   },
   "publishConfig": {
