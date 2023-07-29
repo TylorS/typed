@@ -116,12 +116,12 @@ export const dom = (
           // Listen to history events and keep track of entries
           pipe(
             historyEvents,
-            Fx.flatMapEffect((event) => lock(onHistoryEvent(event, intent))),
+            Fx.mapEffect((event) => lock(onHistoryEvent(event, intent))),
           ),
           // Listen to hash changes and push them to the history
           pipe(
             addWindowListener('hashchange', { capture: true }),
-            Fx.flatMapEffect((ev) => lock(intent.push(ev.newURL, { state: history.state }, true))),
+            Fx.mapEffect((ev) => lock(intent.push(ev.newURL, { state: history.state }, true))),
           ),
           // Listen to popstate events and go to the correct entry
           pipe(
