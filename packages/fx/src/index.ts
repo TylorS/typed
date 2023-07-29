@@ -436,6 +436,22 @@ export const flatMapEffect: {
   ): Fx<R | R2, E | E2, B> => internal.flatMapEffect(fx, f),
 )
 
+export const mapEffect: {
+  <A, R2, E2, B>(
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+  ): Fx<R | R2, E | E2, B>
+} = dual(
+  2,
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+  ): Fx<R | R2, E | E2, B> => internal.mapEffect(fx, f),
+)
+
 export const flatten: <R, E, R2, E2, A>(fx: Fx<R, E, Fx<R2, E2, A>>) => Fx<R | R2, E | E2, A> = <
   R,
   E,
