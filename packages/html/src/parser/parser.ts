@@ -224,7 +224,7 @@ export class Parser {
     const part = this.predictNextToken('part-token')
 
     // We don't need to do anything with a data-attribute-end token, skip it
-    this.predictNextToken('data-attribute-end')
+    this.skipIfNextToken('data-attribute-end')
 
     return this.addPart(new DataPartNode(part.index))
   }
@@ -242,7 +242,7 @@ export class Parser {
     const part = this.predictNextToken('part-token')
 
     // We don't need to do anything with a property-attribute-end token, skip it
-    this.predictNextToken('property-attribute-end')
+    this.skipIfNextToken('property-attribute-end')
 
     return this.addPart(new PropertyPartNode(name, part.index))
   }
@@ -251,7 +251,7 @@ export class Parser {
     const part = this.predictNextToken('part-token')
 
     // We don't need to do anything with a ref-attribute-end token, skip it
-    this.predictNextToken('ref-attribute-end')
+    this.skipIfNextToken('ref-attribute-end')
 
     return this.addPart(new RefPartNode(part.index))
   }
