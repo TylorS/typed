@@ -235,8 +235,6 @@ function makeModifyEffectFromContext<E, A>(
           Effect.suspend(() => {
             MutableRef.set(ctx.currentRef, Option.some(a2))
 
-            console.log(ctx)
-
             if (ctx.eq(a1, a2)) {
               return Effect.succeed(b)
             }

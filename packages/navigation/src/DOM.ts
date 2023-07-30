@@ -42,9 +42,6 @@ export const dom = (
       // Create model and intent
       const [initialEntries, initialIndex] = yield* $(getInitialValues(baseHref, options))
 
-      console.log('initialEntries', initialEntries)
-      console.log('initialIndex', initialIndex)
-
       const model = yield* $(makeModel(initialEntries, initialIndex))
       const intent = makeIntent(model, baseHref, history, options)
 

@@ -3,7 +3,7 @@ import { relative, resolve } from 'path'
 
 import ts from 'typescript'
 // @ts-expect-error -- Vite types don't work in a CJS environment
-import type { ConfigEnv, Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
+import type { Plugin, PluginOption, UserConfig, ViteDevServer } from 'vite'
 
 import { ProductionParams } from './VirtualModulePlugin'
 import * as VM from './api.js'
@@ -103,7 +103,6 @@ export function virtualModulePlugin(pluginOptions: PluginOptions): PluginOption[
   })
 
   let devServer: ViteDevServer
-  let isProduction = false
 
   const plugins: PluginOption[] = []
 
@@ -115,9 +114,7 @@ export function virtualModulePlugin(pluginOptions: PluginOptions): PluginOption[
     /**
      * Configures our production build using vavite
      */
-    config(config: UserConfig, env: ConfigEnv) {
-      isProduction = env.command === 'build'
-
+    config(config: UserConfig) {
       if (!config.root) {
         config.root = options.sourceDirectory
       }
@@ -132,10 +129,6 @@ export function virtualModulePlugin(pluginOptions: PluginOptions): PluginOption[
       Object.assign(options, { base: config.base, assetDirectory: config.build.assetsDir })
     },
 
-    /**
-     * Configures our dev server to watch for changes to our input files
-     * and exposes the dev server to our compiler methods
-     */
     configureServer(server) {
       devServer = server
     },
@@ -168,31 +161,34 @@ export function virtualModulePlugin(pluginOptions: PluginOptions): PluginOption[
     async load(id: string) {
       if (id.startsWith(VIRTUAL_PREFIX)) {
         const fileName = id.slice(VIRTUAL_PREFIX.length)
-        const snapshot = isProduction
-          ? await manager.generateProductionSnapshot(fileName, {
-              ...options,
-              transformHtml: (html) =>
-                devServer.transformIndexHtml(relative(options.sourceDirectory, fileName), html),
-            })
-          : manager.generateSnapshot(fileName)
 
-        const content = snapshot.getContent()
+        if (manager.hasFileName(fileName)) {
+          const snapshot = await manager.generateProductionSnapshot(fileName, {
+            ...options,
+            transformHtml: devServer
+              ? (html) =>
+                  devServer.transformIndexHtml(relative(options.sourceDirectory, fileName), html)
+              : undefined,
+          })
 
-        if (typedOptions.saveGeneratedFiles) {
-          await promises.writeFile(snapshot.fileName, content)
-        }
+          const content = snapshot.getContent()
 
-        const output = ts.transpileModule(content, {
-          compilerOptions: tsConfig.options,
-        })
+          if (typedOptions.saveGeneratedFiles) {
+            await promises.writeFile(snapshot.fileName, content)
+          }
 
-        if (output.diagnostics && output.diagnostics.length > 0) {
-          // TODO: Print diagnostics
-        }
+          const output = ts.transpileModule(content, {
+            compilerOptions: tsConfig.options,
+          })
 
-        return {
-          code: output.outputText,
-          map: output.sourceMapText,
+          if (output.diagnostics && output.diagnostics.length > 0) {
+            // TODO: Print diagnostics
+          }
+
+          return {
+            code: output.outputText,
+            map: output.sourceMapText,
+          }
         }
       }
 

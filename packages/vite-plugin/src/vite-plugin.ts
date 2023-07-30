@@ -93,6 +93,7 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
     tsconfigPaths({
       projects: [options.tsConfig],
     }) as PluginOption,
+    // @ts-expect-error -- Types don't seem to be correct
     visualizer({
       emitFile: true,
       filename: 'bundle-visualizer.html',
@@ -184,25 +185,6 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
     },
 
     /**
-     * Configures our dev server to watch for changes to our input files
-     * and exposes the dev server to our compiler methods
-     */
-    // configureServer(server) {
-    //   devServer = server
-    // },
-
-    /**
-     * Handles file changes
-     */
-    // async watchChange(path, { event }) {},
-
-    /**
-     * Type-check our project and fail the build if there are any errors.
-     * If successful, save our manifest to disk.
-     */
-    // async closeBundle() {},
-
-    /**
      * Resolve and build our virtual modules
      */
     async resolveId(id: string) {
@@ -226,20 +208,6 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
 
       return null
     },
-
-    /**
-     * Transorm TypeScript modules
-     */
-    // transform(text: string, id: string) {
-    //   return getCompiler().transpileTsModule(text, id, devServer)
-    // },
-
-    /**
-     * Transform HTML files
-     */
-    // transformIndexHtml(html: string) {
-    //   return getCompiler().transformHtml(html)
-    // },
   }
 
   plugins.push(typedPlugin)

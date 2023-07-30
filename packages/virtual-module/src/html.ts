@@ -34,7 +34,11 @@ const htmlPlugin: VirtualModuleFilePlugin<null> = {
       assetDirectory = dirname(vm.importer)
     } else {
       // Otherwise, we fully expect the transformed file to be in the client output directory
-      content = await getProductionContent(vm, prodParams.clientOutputDirectory)
+      content = await getProductionContent(
+        vm,
+        prodParams.sourceDirectory,
+        prodParams.clientOutputDirectory,
+      )
       assetDirectory = relative(prodParams.serverOutputDirectory, prodParams.clientOutputDirectory)
 
       if (!assetDirectory.startsWith('.')) {
@@ -84,9 +88,13 @@ function formatStringLiteralOrNull(value: string | null) {
   return `'${value}'`
 }
 
-async function getProductionContent(vm: VirtualModuleFile, clientOutputDirectory: string) {
+async function getProductionContent(
+  vm: VirtualModuleFile,
+  sourceDirectory: string,
+  clientOutputDirectory: string,
+) {
   const sourceFileName = getHtmlFileName(vm)
-  const relativeFileName = relative(clientOutputDirectory, sourceFileName)
+  const relativeFileName = relative(sourceDirectory, sourceFileName)
   const outputFileName = join(clientOutputDirectory, relativeFileName)
   const content = await promises.readFile(outputFileName).then((buffer) => buffer.toString())
 
