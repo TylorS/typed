@@ -185,9 +185,15 @@ export const makePush =
     Effect.gen(function* ($) {
       const location = yield* $(Location)
       const entry = yield* $(model.currentEntry.get)
+      const destinationUrl = getUrl(url, base, location.origin)
+
+      if (entry.url.href === destinationUrl.href) {
+        return entry
+      }
+
       const destination: Destination = {
         key: yield* $(createKey),
-        url: getUrl(url, base, location.origin),
+        url: destinationUrl,
         state: options.state,
       }
       const event: NavigationEvent = {
@@ -216,7 +222,7 @@ export const makePush =
       )
 
       // Update the index to the new destination
-      yield* $(model.index.update((i) => i + 1))
+      yield* $(model.index.update((i) => Math.min(i + 1, maxEntries)))
 
       yield* $(save(event))
       yield* $(notifyEnd(event))
@@ -238,7 +244,7 @@ export const makeGo =
       const nextIndex =
         delta > 0
           ? Math.min(currentIndex + delta, totalEntries - 1)
-          : Math.max(currentIndex + delta, 0)
+          : Math.min(Math.max(currentIndex + delta, 0))
       const nextEntry = currentEntries[nextIndex]
 
       yield* $(
