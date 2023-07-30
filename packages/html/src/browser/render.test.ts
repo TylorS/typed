@@ -140,7 +140,7 @@ describe(render.name, () => {
     await Effect.runPromise(test)
   })
 
-  it.only('renders components with multiple attributes', async () => {
+  it('renders components with multiple attributes', async () => {
     const test = testRendered(inputWithLabel, (rendered) =>
       Effect.gen(function* ($) {
         const globalThis = yield* $(GlobalThis)

@@ -1,5 +1,3 @@
-import { inspect } from 'util'
-
 import { Token, tokenizeTemplateStrings } from '../tokenizer/tokenizer.js'
 import { hashForTemplateStrings } from '../utils.js'
 
@@ -11,9 +9,12 @@ export class Parser {
   protected _parts!: Array<[PartNode | SparsePartNode, ReadonlyArray<number>]>
   protected _skipWhitespace!: boolean
 
-  parse(template: ReadonlyArray<string>): Template {
+  parse(
+    template: ReadonlyArray<string>,
+    tokenStream: Iterator<Token> = tokenizeTemplateStrings(template),
+  ): Template {
     this._template = template
-    this._tokenStream = tokenizeTemplateStrings(template)
+    this._tokenStream = tokenStream
     this._lookahead = this.getNextToken()
     this._stack = []
     this._parts = []
@@ -25,7 +26,9 @@ export class Parser {
   }
 
   protected Template(hash: string): Template {
-    return new Template(this.Children(), hash, this._parts)
+    const template = new Template(this.Children(), hash, this._parts)
+
+    return template
   }
 
   protected Node(): Node | null {
@@ -35,7 +38,10 @@ export class Parser {
       'comment',
       'comment-start',
       'part-token',
+      'closing-tag',
     )
+
+    if (token._tag === 'closing-tag') return null
 
     if (token._tag === 'text') {
       if (this._skipWhitespace && token.value.trim() === '') return null
@@ -107,7 +113,11 @@ export class Parser {
         break
       } else {
         const attr = this.Attribute()
-        if (attr) attributes.push(attr)
+        if (attr) {
+          attributes.push(attr)
+        } else {
+          break
+        }
       }
     }
 
