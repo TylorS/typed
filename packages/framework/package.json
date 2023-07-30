@@ -1,6 +1,6 @@
 {
   "name": "@typed/framework",
-  "version": "0.16.8",
+  "version": "0.16.9",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",

@@ -292,55 +292,6 @@ importers:
         specifier: workspace:*
         version: link:../packages/vite-plugin
 
-  packages/browser-tests:
-    dependencies:
-      '@effect/io':
-        specifier: ^0.36.1
-        version: 0.36.1
-      '@typed/dom':
-        specifier: workspace:*
-        version: link:../dom
-      '@typed/framework':
-        specifier: workspace:*
-        version: link:../framework
-      '@typed/navigation':
-        specifier: workspace:*
-        version: link:../navigation
-    devDependencies:
-      '@typed/context':
-        specifier: workspace:*
-        version: link:../context
-      '@typed/decoder':
-        specifier: workspace:*
-        version: link:../decoder
-      '@typed/error':
-        specifier: workspace:*
-        version: link:../error
-      '@typed/fx':
-        specifier: workspace:*
-        version: link:../fx
-      '@typed/html':
-        specifier: workspace:*
-        version: link:../html
-      '@typed/path':
-        specifier: workspace:*
-        version: link:../path
-      '@typed/route':
-        specifier: workspace:*
-        version: link:../route
-      '@typed/router':
-        specifier: workspace:*
-        version: link:../router
-      '@typed/virtual-module':
-        specifier: workspace:*
-        version: link:../virtual-module
-      '@typed/vite-plugin':
-        specifier: workspace:*
-        version: link:../vite-plugin
-      vitest:
-        specifier: 0.33.0
-        version: 0.33.0(@vitest/browser@0.33.0)(@vitest/ui@0.33.0)(happy-dom@10.5.2)(playwright@1.36.2)(webdriverio@8.13.13)
-
   packages/cli:
     dependencies:
       '@effect/data':
