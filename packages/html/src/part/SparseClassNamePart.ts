@@ -87,7 +87,7 @@ export class SparseClassNamePart {
         values.set(i, node.value)
         parts.push(new StaticTextPart(node.value))
       } else {
-        parts.push(new ClassNamePart((value) => setValue(value, i), partIndex++, []))
+        parts.push(new ClassNamePart((value) => setValue(value.join(' '), i), partIndex++, []))
       }
     }
 

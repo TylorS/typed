@@ -31,8 +31,11 @@ export const renderTemplateToHtml: Layer.Layer<RenderContext, never, RenderTempl
           if (values.length === 0) {
             return Fx.succeed(HtmlRenderEvent((cache.chunks[0] as TextChunk).value))
           } else {
-            return Fx.mergeBufferConcurrently(
-              ...cache.chunks.map((chunk) => renderChunk(chunk, values)),
+            return Fx.filter(
+              Fx.mergeBufferConcurrently(
+                ...cache.chunks.map((chunk) => renderChunk(chunk, values)),
+              ),
+              (x) => (x.valueOf() as string).length > 0,
             )
           }
         },

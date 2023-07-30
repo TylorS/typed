@@ -3,6 +3,8 @@ import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 import { it } from 'vitest'
 
+import { makeElementRef } from './ElementRef.js'
+import { EventHandler } from './EventHandler.js'
 import { RenderEvent } from './RenderEvent.js'
 import { RenderTemplate, html } from './RenderTemplate.js'
 
@@ -19,6 +21,20 @@ export const counter: Fx.Fx<Scope.Scope | RenderTemplate, never, RenderEvent> = 
     `
   },
 )
+
+export const inputWithLabel = Fx.gen(function* ($) {
+  const inputRef = yield* $(makeElementRef<HTMLInputElement>())
+
+  return html`<div class="formgroup">
+    <input
+      ref=${inputRef}
+      ?disabled=${false}
+      class="custom-input"
+      onchange=${EventHandler(() => Effect.unit)}
+    />
+    <label class="custom-input-label" for="name">Name</label>
+  </div>`
+})
 
 it('is great', () => {
   // This is here to keep vitest happy, but it's not actually testing anything.

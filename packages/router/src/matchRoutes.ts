@@ -67,6 +67,7 @@ export function matchRoutes<
       Effect.gen(function* ($) {
         for (let i = 0; i < length; ++i) {
           const [route, render, guard, onMatch] = matchers[i]
+          yield* $(Effect.logDebug(`Matching ${path} with ${route.path}`))
           const params = route.match(path)
 
           if (Option.isSome(params)) {
@@ -74,6 +75,8 @@ export function matchRoutes<
             if (guard && !(yield* $(guard(params.value)))) {
               continue
             }
+
+            yield* $(Effect.logDebug(`Matched ${path} with ${route.path}`))
 
             // If there is an onMatch handler, run it and catch any errors
             // This is useful when you want to add tracking when a route is matched

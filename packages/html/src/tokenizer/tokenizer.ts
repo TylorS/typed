@@ -300,21 +300,15 @@ function* tokenize(state: TokenState, input: string): Generator<Token> {
       } else if ((next = chunks.getText(input, pos))) {
         const value = next.match[1]
 
-        if (value.endsWith('/>')) {
-          const text = value.substring(0, value.length - 2)
-
+        if (value.trim().endsWith('/>')) {
           yield getAttributeTokenPartial(state.currentAttribute, 'end')
-          yield new TextToken(text)
 
           yield new OpeningTagEndToken(state.currentTag, true)
           pos += value.length
           state.currentAttribute = ''
           state.context = 'text'
-        } else if (value.endsWith('>')) {
-          const text = value.substring(0, value.length - 1)
-
+        } else if (value.trim().endsWith('>')) {
           yield getAttributeTokenPartial(state.currentAttribute, 'end')
-          yield new TextToken(text)
           yield new OpeningTagEndToken(state.currentTag, false)
           pos += value.length
           state.currentAttribute = ''

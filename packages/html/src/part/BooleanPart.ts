@@ -13,7 +13,7 @@ export class BooleanPart extends BasePart<boolean> {
   constructor(
     protected toggleAttribute: (bool: boolean) => Effect.Effect<never, never, void>,
     index: number,
-    value = false,
+    value?: boolean,
   ) {
     super(index, value)
   }

@@ -25,6 +25,8 @@ import {
   EventAttributeStartToken,
   EventAttributeEndToken,
   BooleanAttributeToken,
+  RefAttributeStartToken,
+  RefAttributeEndToken,
 } from './tokenizer.js'
 
 type TestCase = {
@@ -264,7 +266,6 @@ const testCases: TestCase[] = [
       new BooleanAttributeStartToken('disabled'),
       new PartToken(0),
       new BooleanAttributeEndToken('disabled'),
-      new TextToken(' '),
       new OpeningTagEndToken('input', true),
     ],
   },
@@ -276,7 +277,6 @@ const testCases: TestCase[] = [
       new PropertyAttributeStartToken('disabled'),
       new PartToken(0),
       new PropertyAttributeEndToken('disabled'),
-      new TextToken(' '),
       new OpeningTagEndToken('input', true),
     ],
   },
@@ -289,7 +289,6 @@ const testCases: TestCase[] = [
       new EventAttributeStartToken('click'),
       new PartToken(0),
       new EventAttributeEndToken('click'),
-      new TextToken(' '),
       new OpeningTagEndToken('input', true),
     ],
   },
@@ -302,7 +301,6 @@ const testCases: TestCase[] = [
       new EventAttributeStartToken('click'),
       new PartToken(0),
       new EventAttributeEndToken('click'),
-      new TextToken(' '),
       new OpeningTagEndToken('input', true),
     ],
   },
@@ -314,7 +312,6 @@ const testCases: TestCase[] = [
       new AttributeStartToken('xlink:href'),
       new PartToken(0),
       new AttributeEndToken('xlink:href'),
-      new TextToken(' '),
       new OpeningTagEndToken('input', true),
     ],
   },
@@ -326,7 +323,6 @@ const testCases: TestCase[] = [
       new BooleanAttributeStartToken('xlink:href'),
       new PartToken(0),
       new BooleanAttributeEndToken('xlink:href'),
-      new TextToken(' '),
       new OpeningTagEndToken('input', true),
     ],
   },
@@ -338,12 +334,11 @@ const testCases: TestCase[] = [
       new PropertyAttributeStartToken('xlink:href'),
       new PartToken(0),
       new PropertyAttributeEndToken('xlink:href'),
-      new TextToken(' '),
       new OpeningTagEndToken('input', true),
     ],
   },
   {
-    name: 'parses event attributes with namespaced syntax + @*',
+    name: 'parses event attributes with namespaced syntax + @* on self-closing elements',
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     template: h`<input @xlink:href=${() => {}} />`,
     expected: [
@@ -351,8 +346,20 @@ const testCases: TestCase[] = [
       new EventAttributeStartToken('xlink:href'),
       new PartToken(0),
       new EventAttributeEndToken('xlink:href'),
-      new TextToken(' '),
       new OpeningTagEndToken('input', true),
+    ],
+  },
+  {
+    name: 'parses event attributes with namespaced syntax + @*',
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    template: h`<div onclick=${() => {}}></div>`,
+    expected: [
+      new OpeningTagToken('div', false),
+      new EventAttributeStartToken('click'),
+      new PartToken(0),
+      new EventAttributeEndToken('click'),
+      new OpeningTagEndToken('div', false),
+      new ClosingTagToken('div'),
     ],
   },
   {
@@ -390,6 +397,44 @@ const testCases: TestCase[] = [
     name: 'parses template with only parts',
     template: h`${'hello'} ${'world'}`,
     expected: [new PartToken(0), new TextToken(' '), new PartToken(1)],
+  },
+  {
+    name: 'parses template with multiple attribute types',
+    template: h`<div class="formgroup">
+    <input
+      ref=${null}
+      ?disabled=${false}
+      class="custom-input"
+      onchange=${null}
+    />
+    <label class="custom-input-label" for="name">Name</label>
+  </div>`,
+    expected: [
+      new OpeningTagToken('div'),
+      new AttributeToken('class', 'formgroup'),
+      new OpeningTagEndToken('div', false),
+      new TextToken('\n    '),
+      new OpeningTagToken('input', true),
+      new RefAttributeStartToken(),
+      new PartToken(0),
+      new RefAttributeEndToken(),
+      new BooleanAttributeStartToken('disabled'),
+      new PartToken(1),
+      new BooleanAttributeEndToken('disabled'),
+      new AttributeToken('class', 'custom-input'),
+      new EventAttributeStartToken('change'),
+      new PartToken(2),
+      new EventAttributeEndToken('change'),
+      new OpeningTagEndToken('input', true),
+      new OpeningTagToken('label'),
+      new AttributeToken('class', 'custom-input-label'),
+      new AttributeToken('for', 'name'),
+      new OpeningTagEndToken('label', false),
+      new TextToken('Name'),
+      new ClosingTagToken('label'),
+      new TextToken('\n  '),
+      new ClosingTagToken('div'),
+    ],
   },
 ]
 

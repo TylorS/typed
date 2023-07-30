@@ -105,7 +105,8 @@ type PartNodeMap = {
 const partNodeMap: PartNodeMap = {
   attr: (node, onChunk) => new AttrPart(onChunk, () => onChunk(null), node.index),
   'boolean-part': (node, onChunk) => new BooleanPart(onChunk, node.index),
-  'className-part': (node, onChunk) => new ClassNamePart(onChunk, node.index, []),
+  'className-part': (node, onChunk) =>
+    new ClassNamePart((classes) => onChunk(classes.join(' ')), node.index, []),
   'comment-part': (node, onChunk) => new CommentPart(onChunk, node.index),
   data: (node, onChunk) => new DataPart(onChunk, node.index),
   event: (node, onChunk) => new EventPart(onChunk, onChunk(null), node.name, node.index),

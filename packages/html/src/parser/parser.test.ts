@@ -119,7 +119,7 @@ describe(Parser.name, () => {
   })
 
   it('parses boolean attributes with holes', () => {
-    const template = h`<div ?hidden=${true}></div>`
+    const template = h`<div ?hidden="${true}"></div>`
     const div = new ElementNode('div', [], [])
     const hidden = new BooleanPartNode('hidden', 0)
 

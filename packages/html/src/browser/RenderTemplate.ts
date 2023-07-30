@@ -69,6 +69,7 @@ export function renderTemplate<Values extends readonly Renderable<any, any>[]>(
           Effect.tap(({ onReady }) =>
             Effect.flatMap(onReady, () => sink.event(DomRenderEvent(wire() as Rendered))),
           ),
+          Effect.catchAllCause((cause) => sink.error(cause)),
           Effect.flatMap(() => Effect.never),
         )
       },

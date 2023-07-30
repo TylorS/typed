@@ -11,7 +11,7 @@ export class ClassNamePart extends BasePart<readonly string[]> {
   readonly _tag = 'ClassName' as const
 
   constructor(
-    protected setClassName: (value: string) => Effect.Effect<never, never, void>,
+    protected setClassName: (value: readonly string[]) => Effect.Effect<never, never, void>,
     index: number,
     value: readonly string[],
   ) {
@@ -20,18 +20,18 @@ export class ClassNamePart extends BasePart<readonly string[]> {
 
   protected getValue(value: unknown): readonly string[] {
     if (isString(value)) {
-      return value.split(' ')
+      return value.split(' ').filter((x) => isString(x) && x.trim() !== '')
     }
 
     if (Array.isArray(value)) {
-      return value.filter(isString)
+      return value.filter((x) => isString(x) && x.trim() !== '')
     }
 
     return []
   }
 
   protected setValue(value: readonly string[]) {
-    return this.setClassName(value.join(' '))
+    return this.setClassName(value)
   }
 
   add(...classNames: readonly string[]) {
@@ -71,18 +71,12 @@ export class ClassNamePart extends BasePart<readonly string[]> {
   }
 
   static fromElement(element: Element, index: number) {
-    const setClassName = (value: string) =>
+    const setClassName = (classNames: readonly string[]) =>
       Effect.sync(() => {
-        if (value === '') {
-          element.classList.remove(...Array.from(element.classList))
-        } else {
-          const classNames = value.split(' ')
-
-          element.classList.remove(
-            ...Array.from(element.classList).filter((c) => !classNames.includes(c)),
-          )
-          element.classList.add(...classNames)
-        }
+        element.classList.remove(
+          ...Array.from(element.classList).filter((c) => !classNames.includes(c)),
+        )
+        element.classList.add(...classNames)
       })
 
     return new ClassNamePart(setClassName, index, Array.from(element.classList))

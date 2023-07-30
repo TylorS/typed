@@ -1,3 +1,5 @@
+import { inspect } from 'util'
+
 import { Token, tokenizeTemplateStrings } from '../tokenizer/tokenizer.js'
 import { hashForTemplateStrings } from '../utils.js'
 
@@ -186,7 +188,7 @@ export class Parser {
     const part = this.predictNextToken('part-token')
 
     // We don't need to do anything with a boolean-attribute-end token, skip it
-    this.predictNextToken('boolean-attribute-end')
+    this.skipIfNextToken('boolean-attribute-end')
 
     return this.addPart(new BooleanPartNode(name, part.index))
   }
@@ -231,7 +233,7 @@ export class Parser {
     const part = this.predictNextToken('part-token')
 
     // We don't need to do anything with a event-attribute-end token, skip it
-    this.predictNextToken('event-attribute-end')
+    this.skipIfNextToken('event-attribute-end')
 
     return this.addPart(new EventPartNode(name, part.index))
   }
@@ -365,6 +367,22 @@ export class Parser {
     this._lookahead = this.getNextToken()
 
     return token as Extract<Token, { readonly _tag: T }>
+  }
+
+  protected skipIfNextToken<T extends Token['_tag']>(type: T): boolean {
+    const token = this._lookahead
+
+    if (token === null) {
+      return false
+    }
+
+    if (token._tag !== type) {
+      return false
+    }
+
+    this._lookahead = this.getNextToken()
+
+    return true
   }
 
   protected getNextToken(): Token | null {

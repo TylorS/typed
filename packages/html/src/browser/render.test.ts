@@ -15,7 +15,7 @@ import { html } from '../RenderTemplate.js'
 import { Rendered } from '../Rendered.js'
 import { TYPED_HOLE } from '../meta.js'
 import { makeServerWindow } from '../server/makeServerWindow.js'
-import { counter } from '../test_components.test.js'
+import { counter, inputWithLabel } from '../test_components.test.js'
 
 import { render } from './render.js'
 
@@ -134,6 +134,18 @@ describe(render.name, () => {
         ok(childNodes[0] instanceof globalThis.HTMLButtonElement)
         ok(childNodes[1] instanceof globalThis.HTMLSpanElement)
         ok(childNodes[2] instanceof globalThis.HTMLButtonElement)
+      }),
+    )
+
+    await Effect.runPromise(test)
+  })
+
+  it.only('renders components with multiple attributes', async () => {
+    const test = testRendered(inputWithLabel, (rendered) =>
+      Effect.gen(function* ($) {
+        const globalThis = yield* $(GlobalThis)
+
+        ok(rendered instanceof globalThis.HTMLDivElement)
       }),
     )
 

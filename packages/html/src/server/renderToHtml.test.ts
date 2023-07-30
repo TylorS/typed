@@ -21,7 +21,7 @@ import { RenderEvent } from '../RenderEvent.js'
 import { RenderTemplate, html } from '../RenderTemplate.js'
 import { many } from '../many.js'
 import { TEXT_START, TYPED_HOLE } from '../meta.js'
-import { counter } from '../test_components.test.js'
+import { counter, inputWithLabel } from '../test_components.test.js'
 
 import { server } from './layer.js'
 import { renderToHtml, renderToHtmlStream } from './renderToHtml.js'
@@ -290,6 +290,13 @@ describe(renderToHtmlStream.name, () => {
       `</div>`,
       TYPED_HOLE(3),
       `</ul>`,
+    ])
+  })
+
+  it.concurrent('renders components with multiple attribute types', async () => {
+    await testHtmlChunks(inputWithLabel, [
+      `<div data-typed="..." class="formgroup"><!--sx--><input`,
+      `class="custom-input"/><!--/sx--><label class="custom-input-label" for="name">Name</label></div>`,
     ])
   })
 
