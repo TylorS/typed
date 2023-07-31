@@ -42,7 +42,7 @@ function buildElement(
   isSvgContext: boolean,
 ): Element {
   const { type, tagName, attributes } = node
-  const isSvg = (isSvgContext || tagName === 'svg') && tagName !== 'foreignObject'
+  const isSvg = isSvgContext ? tagName !== 'foreignObject' : tagName === 'svg'
   const element = isSvg
     ? document.createElementNS(SVG_NAMESPACE, tagName)
     : document.createElement(tagName)
