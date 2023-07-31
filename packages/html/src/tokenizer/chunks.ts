@@ -11,7 +11,7 @@ export const getText = chunker(/([^<]+)/g)
 /**
  * Closing tag chunker function.
  */
-export const getClosingTag = chunker(/(<\/(([a-z0-9-]+:)?[a-z0-9-]+)>)/gi)
+export const getClosingTag = chunker(/(<\/(\s+)?(([a-z0-9-]+:)?[a-z0-9-]+)(\s)+?>)/gi)
 
 /**
  * Comment content chunker function.

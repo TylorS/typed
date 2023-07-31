@@ -226,7 +226,7 @@ function* tokenize(state: TokenState, input: string): Generator<Token> {
         state.context = 'tag'
       } else if (isOpenBracket && (next = chunks.getClosingTag(input, pos))) {
         pos += next.length
-        yield new ClosingTagToken(next.match[2])
+        yield new ClosingTagToken(next.match[3])
       } else if (isOpenBracket && (next = chunks.getComment(input, pos))) {
         yield new CommentToken(next.match[3])
         pos += next.length
