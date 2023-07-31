@@ -52,11 +52,15 @@ export class NodePart extends BasePart<unknown> {
             if (newValue.length === 0) return this.handleDiff([])
             // or diffed, if these contains nodes or "wires"
             else if (newValue.some((x) => typeof x === 'object'))
-              return this.handleDiff(newValue.filter((x) => x !== null))
+              return this.handleDiff(
+                newValue.flatMap((x) => (x === null ? [] : [isRenderEvent(x) ? x.valueOf() : x])),
+              )
             // in all other cases the content is stringified as is
             else this.setValue(String(newValue))
           } else {
-            return this.handleDiff([newValue as Node])
+            return this.handleDiff([
+              isRenderEvent(newValue) ? (newValue.valueOf() as Node) : (newValue as Node),
+            ])
           }
         }
       }
