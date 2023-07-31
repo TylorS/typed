@@ -11,18 +11,18 @@ export function buildTemplate(document: Document, { nodes }: Template): Document
   const fragment = document.createDocumentFragment()
 
   for (let i = 0; i < nodes.length; ++i) {
-    fragment.append(buildNode(document, nodes[i]))
+    fragment.append(buildNode(document, nodes[i], false))
   }
 
   return fragment
 }
 
-function buildNode(document: Document, node: Node): globalThis.Node {
+function buildNode(document: Document, node: Node, isSvgContext: boolean): globalThis.Node {
   switch (node.type) {
     case 'element':
     case 'self-closing-element':
     case 'text-only-element':
-      return buildElement(document, node)
+      return buildElement(document, node, isSvgContext)
     case 'text':
       return document.createTextNode(node.value)
     case 'comment':
@@ -39,12 +39,13 @@ const SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
 function buildElement(
   document: Document,
   node: ElementNode | SelfClosingElementNode | TextOnlyElement,
+  isSvgContext: boolean,
 ): Element {
   const { type, tagName, attributes } = node
-  const element =
-    tagName === 'svg'
-      ? document.createElementNS(SVG_NAMESPACE, tagName)
-      : document.createElement(tagName)
+  const isSvg = (isSvgContext || tagName === 'svg') && tagName !== 'foreignObject'
+  const element = isSvg
+    ? document.createElementNS(SVG_NAMESPACE, tagName)
+    : document.createElement(tagName)
 
   for (let i = 0; i < attributes.length; ++i) {
     const attr = attributes[i]
@@ -58,7 +59,7 @@ function buildElement(
   }
 
   if (type === 'element') {
-    element.append(...node.children.map((child) => buildNode(document, child)))
+    element.append(...node.children.map((child) => buildNode(document, child, isSvg)))
   } else if (node.type === 'text-only-element') {
     element.append(...node.children.map((child) => buildTextChild(document, child)))
   }
