@@ -24,7 +24,7 @@ export class NodePart extends BasePart<unknown> {
     protected setTextNode: (text: string) => Effect.Effect<never, never, Text>,
     protected nodes: Node[] = [],
   ) {
-    super(index, nodes.length === 1 ? nodes[0] : nodes.filter(notIsEmptyTextNode))
+    super(index, nodes.filter(notIsEmptyTextNode))
   }
 
   getValue(u: unknown) {
@@ -80,7 +80,12 @@ export class NodePart extends BasePart<unknown> {
     )
   }
 
-  static fromParentElemnt(document: Document, parent: Element, index: number, isHydrating = false) {
+  static fromParentElement(
+    document: Document,
+    parent: Element,
+    index: number,
+    isHydrating = false,
+  ) {
     const comment = findHoleComment(parent, index)
     const previousNodes = isHydrating ? findPreviousNodes(comment, index) : []
 

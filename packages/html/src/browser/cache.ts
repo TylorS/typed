@@ -155,7 +155,7 @@ const createPart: CreatePart = {
       context,
     ),
   node: ({ document, node, part, isHydrating }) =>
-    NodePart.fromParentElemnt(document, node, part.index, isHydrating),
+    NodePart.fromParentElement(document, node, part.index, isHydrating),
   property: ({ node, part }) => PropertyPart.fromElement(node, part.name, part.index),
   ref: ({ node, part }) => RefPart.fromElement(node, part.index),
   'sparse-attr': ({ node, part }) =>
