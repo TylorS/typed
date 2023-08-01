@@ -226,7 +226,7 @@ function* tokenize(state: TokenState, input: string): Generator<Token> {
         state.context = 'tag'
       } else if (isOpenBracket && (next = chunks.getClosingTag(input, pos))) {
         pos += next.length
-        yield new ClosingTagToken(next.match[3])
+        yield new ClosingTagToken(next.match[2])
       } else if (isOpenBracket && (next = chunks.getComment(input, pos))) {
         yield new CommentToken(next.match[3])
         pos += next.length
@@ -300,6 +300,7 @@ function* tokenize(state: TokenState, input: string): Generator<Token> {
       } else if ((next = chunks.getText(input, pos))) {
         const value = next.match[1]
 
+        // Check for self-closing element
         if (value.trim().endsWith('/>')) {
           yield getAttributeTokenPartial(state.currentAttribute, 'end')
 
@@ -307,12 +308,26 @@ function* tokenize(state: TokenState, input: string): Generator<Token> {
           pos += value.length
           state.currentAttribute = ''
           state.context = 'text'
+          // Check for tag closing
         } else if (value.trim().endsWith('>')) {
           yield getAttributeTokenPartial(state.currentAttribute, 'end')
           yield new OpeningTagEndToken(state.currentTag, false)
           pos += value.length
           state.currentAttribute = ''
           state.context = 'text'
+        } else if (value.includes(`"`)) {
+          const [text, , remaining] = value.split(`"`)
+
+          console.log(remaining)
+
+          const whitespace = chunks.getWhitespace(remaining, 0)?.match[0] ?? ''
+
+          yield new TextToken(text)
+          yield getAttributeTokenPartial(state.currentAttribute, 'end')
+
+          pos += text.length + 1 + whitespace.length
+          state.currentAttribute = ''
+          state.context = 'tag'
         } else {
           pos += next.length
           yield new TextToken(next.match[0])

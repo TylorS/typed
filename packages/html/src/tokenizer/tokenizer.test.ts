@@ -2,6 +2,8 @@ import { deepStrictEqual } from 'assert'
 
 import { describe, it } from 'vitest'
 
+import { CloseIcon } from '../test_components.test.js'
+
 import {
   ClosingTagToken,
   OpeningTagToken,
@@ -435,6 +437,48 @@ const testCases: TestCase[] = [
       new TextToken('\n  '),
       new ClosingTagToken('div'),
     ],
+  },
+  {
+    name: 'Parses svg element with multiline attributes',
+    template: CloseIcon(h)({
+      className: 'min-h-[12px] min-w-[12px] mx-2 cursor-pointer',
+      fill: '#161616',
+      height: 12,
+      width: 12,
+    }),
+    expected: [
+      new OpeningTagToken('svg'),
+      new AttributeToken('tabindex', '0'),
+      new ClassNameAttributeStartToken(),
+      new PartToken(0),
+      new ClassNameAttributeEndToken(),
+      new AttributeStartToken('fill'),
+      new PartToken(1),
+      new AttributeEndToken('fill'),
+      new EventAttributeStartToken('click'),
+      new PartToken(2),
+      new EventAttributeEndToken('click'),
+      new EventAttributeStartToken('keydown'),
+      new PartToken(3),
+      new EventAttributeEndToken('keydown'),
+      new AttributeStartToken('width'),
+      new PartToken(4),
+      new TextToken('px'),
+      new AttributeEndToken('width'),
+      new AttributeStartToken('height'),
+      new PartToken(5),
+      new AttributeEndToken('height'),
+      new OpeningTagEndToken('svg', false),
+      new OpeningTagToken('g'),
+      new AttributeToken('id', 'NRW-MVP'),
+      new AttributeToken('stroke', 'none'),
+      new AttributeToken('stroke-width', '1'),
+      new AttributeToken('fill-rule', 'evenodd'),
+      new OpeningTagEndToken('g', false),
+      new TextToken('\n              '),
+      new OpeningTagToken('g'),
+    ],
+    only: true,
   },
 ]
 

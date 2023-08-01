@@ -9,9 +9,14 @@ export const getOpeningTag = chunker(/(<(([a-z0-9-]+:)?[a-z0-9-]+))/gi)
 export const getText = chunker(/([^<]+)/g)
 
 /**
+ * Text node chunker function.
+ */
+export const getAttributeTextEnd = chunker(/([^"]+)/g)
+
+/**
  * Closing tag chunker function.
  */
-export const getClosingTag = chunker(/(<\/(\s+)?(([a-z0-9-]+:)?[a-z0-9-]+)(\s)+?>)/gi)
+export const getClosingTag = chunker(/(<\/(([a-z0-9-]+:)?[a-z0-9-]+)>)/gi)
 
 /**
  * Comment content chunker function.
