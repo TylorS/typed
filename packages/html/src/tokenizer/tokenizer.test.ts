@@ -3,31 +3,31 @@ import { deepStrictEqual } from 'assert'
 import { describe, it } from 'vitest'
 
 import {
-  ClosingTagToken,
+  Token,
   OpeningTagToken,
   OpeningTagEndToken,
-  Token,
-  tokenizeTemplateStrings,
+  ClosingTagToken,
+  PartToken,
   AttributeStartToken,
   AttributeEndToken,
-  PartToken,
-  TextToken,
   AttributeToken,
-  CommentToken,
-  CommentStartToken,
-  CommentEndToken,
   ClassNameAttributeStartToken,
   ClassNameAttributeEndToken,
+  TextToken,
   BooleanAttributeStartToken,
   BooleanAttributeEndToken,
   PropertyAttributeStartToken,
   PropertyAttributeEndToken,
   EventAttributeStartToken,
   EventAttributeEndToken,
+  CommentToken,
+  CommentStartToken,
+  CommentEndToken,
   BooleanAttributeToken,
   RefAttributeStartToken,
   RefAttributeEndToken,
-} from './tokenizer.js'
+} from './Token.js'
+import { tokenizeTemplateStrings } from './tokenizer.js'
 
 type TestCase = {
   name: string
@@ -378,9 +378,11 @@ const testCases: TestCase[] = [
     expected: [
       new OpeningTagToken('div'),
       new OpeningTagEndToken('div', false),
-      new CommentStartToken(' '),
+      new CommentStartToken('<!--'),
+      new TextToken(' '),
       new PartToken(0),
-      new CommentEndToken(' '),
+      new TextToken(' '),
+      new CommentEndToken('-->'),
       new ClosingTagToken('div'),
     ],
   },
@@ -426,6 +428,7 @@ const testCases: TestCase[] = [
       new PartToken(2),
       new EventAttributeEndToken('change'),
       new OpeningTagEndToken('input', true),
+      new TextToken('\n    '),
       new OpeningTagToken('label'),
       new AttributeToken('class', 'custom-input-label'),
       new AttributeToken('for', 'name'),

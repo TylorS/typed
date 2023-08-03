@@ -55,6 +55,10 @@ export const getAttributeStart = chunker(/(\s+(([?.@a-z0-9\-_]+:)?[?.@a-z0-9\-_]
  */
 export const getWhitespace = chunker(/(\s+)/g)
 
+export const PART_STRING = (i: number) => `{{__PART_${i}__}}`
+
+export const getPart = chunker(/({{__PART_(\d+)__}})/g)
+
 export type Chunk = {
   readonly length: number
   readonly match: RegExpExecArray

@@ -1,4 +1,5 @@
-import { Token, tokenizeTemplateStrings } from '../tokenizer/tokenizer.js'
+import { Token } from '../tokenizer/Token.js'
+import { tokenizeTemplateStrings } from '../tokenizer/tokenizer.js'
 import { hashForTemplateStrings } from '../utils.js'
 
 export class Parser {
@@ -54,7 +55,7 @@ export class Parser {
     }
 
     if (token._tag === 'comment-start') {
-      const node = this.Comment(token.value)
+      const node = this.Comment('')
       return node
     }
 
@@ -321,20 +322,26 @@ export class Parser {
 
   protected Comment(before: string): CommentPartNode {
     let after = ''
-    let index = 0
+    let index: number
 
     while (this._lookahead !== null) {
-      const token = this.findTokenOfType('part-token', 'comment-end')
+      const token = this.findTokenOfType('part-token', 'text', 'comment-end')
 
       if (token._tag === 'part-token') {
         index = token.index
+      } else if (token._tag === 'text') {
+        // @ts-expect-error - We know that the token is a text token
+        if (undefined === index) {
+          before += token.value
+        } else {
+          after += token.value
+        }
       } else {
-        after += token.value
         break
       }
     }
 
-    return this.addPart(new CommentPartNode(before, after, index))
+    return this.addPart(new CommentPartNode(before, after, index!))
   }
 
   protected findTokenOfType<T extends ReadonlyArray<Token['_tag']>>(
