@@ -27,7 +27,7 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "@types/node": "^20.4.5",
-    "vitest": "0.33.0"
+    "@types/node": "^20.4.6",
+    "vitest": "0.34.1"
   }
 }
