@@ -530,7 +530,5 @@ function splitTemplateByParts(template: string): string[] {
     }
   }
 
-  console.log(parts)
-
   return strings
 }
