@@ -606,52 +606,29 @@ export const onInterrupt: {
   ): Fx<R | R2, E | E2, A>
 } = dual(2, (fx, f) => internal.onInterrupt(fx, f))
 
-export const promise: <A>(f: () => Promise<A>) => Fx<never, never, A> = (f) => internal.promise(f)
+export const promise: <A>(f: (signal: AbortSignal) => Promise<A>) => Fx<never, never, A> = (f) =>
+  internal.promise(f)
 
-export const promiseInterrupt: <A>(
-  f: (signal: AbortSignal) => Promise<A>,
-) => Fx<never, never, A> = (f) => internal.promiseInterrupt(f)
-
-export const tryPromise: <A>(f: () => Promise<A>) => Fx<never, unknown, A> = (f) =>
-  internal.tryPromise(f)
-
-export const tryPromiseInterrupt: <A>(
-  f: (signal: AbortSignal) => Promise<A>,
-) => Fx<never, unknown, A> = (f) => internal.tryPromiseInterrupt(f)
+export const tryPromise: <A>(f: (signal: AbortSignal) => Promise<A>) => Fx<never, unknown, A> = (
+  f,
+) => internal.tryPromise(f)
 
 export const tryCatchPromise: <A, E>(
-  f: () => Promise<A>,
-  g: (error: unknown) => E,
-) => Fx<never, E, A> = (f, g) => internal.tryCatchPromise(f, g)
-
-export const tryCatchPromiseInterrupt: <A, E>(
   f: (signal: AbortSignal) => Promise<A>,
   g: (error: unknown) => E,
-) => Fx<never, E, A> = (f, g) => internal.tryCatchPromiseInterrupt(f, g)
+) => Fx<never, E, A> = (f, g) => internal.tryCatchPromise(f, g)
 
 export const promiseFx: <R, E, A>(f: () => Promise<Fx<R, E, A>>) => Fx<R, E, A> = (f) =>
   internal.promiseFx(f)
 
-export const promiseInterrupFx: <R, E, A>(
+export const tryPromiseFx: <R, E, A>(
   f: (signal: AbortSignal) => Promise<Fx<R, E, A>>,
-) => Fx<R, E, A> = (f) => internal.promiseInterruptFx(f)
-
-export const tryPromiseFx: <R, E, A>(f: () => Promise<Fx<R, E, A>>) => Fx<R, unknown, A> = (f) =>
-  internal.tryPromiseFx(f)
-
-export const tryPromiseInterruptFx: <R, E, A>(
-  f: (signal: AbortSignal) => Promise<Fx<R, E, A>>,
-) => Fx<R, unknown, A> = (f) => internal.tryPromiseInterruptFx(f)
+) => Fx<R, unknown, A> = (f) => internal.tryPromiseFx(f)
 
 export const tryCatchPromiseFx: <R, E, A, E2>(
-  f: () => Promise<Fx<R, E, A>>,
-  g: (error: unknown) => E2,
-) => Fx<R, E | E2, A> = (f, g) => internal.tryCatchPromiseFx(f, g)
-
-export const tryCatchPromiseInterruptFx: <R, E, A, E2>(
   f: (signal: AbortSignal) => Promise<Fx<R, E, A>>,
   g: (error: unknown) => E2,
-) => Fx<R, E | E2, A> = (f, g) => internal.tryCatchPromiseInterruptFx(f, g)
+) => Fx<R, E | E2, A> = (f, g) => internal.tryCatchPromiseFx(f, g)
 
 export const provideContext: {
   <R>(context: Context.Context<R>): <E, A>(fx: Fx<R, E, A>) => Fx<never, E, A>
