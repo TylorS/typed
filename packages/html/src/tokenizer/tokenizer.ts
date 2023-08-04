@@ -18,7 +18,7 @@ export const getOpeningTagEnd = chunker(/(\s*?>)/gi)
 // Matches the closing of a tag
 // Allows for whitespace between the tag name and the closing brackets
 // allows for namespaced tags
-export const getClosingTag = chunker(/(\s?<\/(\s+)?(([a-z0-9-]+:)?[a-z0-9-]+)(\s+)?\s?>)/gi)
+export const getClosingTag = chunker(/(\s?<\/(\s+)?(([a-z0-9-]+:)?[a-z0-9-]+)(\s+)?>)/gi)
 
 export const getSelfClosingTagEnd = chunker(/(\s+\/>)/gi)
 
@@ -29,7 +29,8 @@ export const getComment = chunker(/(<!--(.+)-->)/gu)
 export const getTextUntilPart = chunker(/((?:(?!{{__PART\d+__}}).)*)/gi)
 
 // Get all the text that does not lead to a Part
-export const getTextUntilCloseBrace = chunker(/([^<]+)/g)
+// Uses a negative lookahead to ensure to match all text that does not lead to a brace
+export const getTextUntilCloseBrace = chunker(/((?:(?!<).)*)/gi)
 
 // Get an attribute and its value within quotes
 export const getAttributeWithQuotes = chunker(
@@ -57,6 +58,7 @@ function chunker(regex: RegExp) {
     regex.lastIndex = pos
     const match = regex.exec(str)
     regex.lastIndex = 0
+
     if (!match || match.index !== pos) {
       return
     } else {
@@ -103,6 +105,23 @@ class Tokenizer implements Iterable<Token.Token> {
 
   *[Symbol.iterator](): Generator<Token.Token> {
     this.init()
+
+    // eslint-disable-next-line no-constant-condition
+    while (this.pos < this.input.length) {
+      switch (this.context) {
+        case 'element':
+          yield* this.nextElementToken()
+          break
+        case 'self-closing':
+          yield* this.nextSelfClosingToken()
+          break
+        case 'text-only':
+          yield* this.nextTextOnlyToken()
+          break
+        default:
+          yield* this.nextTextToken()
+      }
+    }
 
     do {
       switch (this.context) {

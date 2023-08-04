@@ -482,6 +482,145 @@ const testCases: TestCase[] = [
       new ClosingTagToken('svg'),
     ],
   },
+
+  {
+    name: 'parses a template with document fragments',
+    template: splitTemplateByParts(`
+      {{__PART0__}}
+
+      <div
+        class="{{__PART1__}}"
+        onclick="{{__PART2__}}"
+        ondragenter="{{__PART3__}}"
+        ondragleave="{{__PART4__}}"
+      >
+        {{__PART5__}}
+        {{__PART6__}}
+
+        <main class="dashboard__content">
+          <div
+            class="{{__PART7__}}"
+          >
+            {{__PART8__}}
+          </div>
+          {{__PART9__}}
+        </main>
+      </div>
+
+      <aside
+        class="{{__PART10__}}"
+        ondragover="{{__PART11__}}"
+        ondragenter="{{__PART12__}}"
+        ondragleave="{{__PART13__}}"
+        ondragend="{{__PART14__}}"
+        ondrop="{{__PART15__}}"
+      >
+        <div
+          class="border-dashed border-white rounded-xl flex flex-col border-4 p-12 justify-center items-center lg:p-24"
+        >
+          {{__PART16__}}
+
+          <p class="font-bold my-2 text-white text-[24px]">Drag & Drop</p>
+
+          <p class="text-base text-white">
+            your {{__PART17__}} files here to upload
+          </p>
+        </div>
+      </aside>`),
+    expected: [
+      new TextToken('\n      '),
+      new PartToken(0),
+      new TextToken('\n\n      '),
+      new OpeningTagToken('div'),
+      new ClassNameAttributeStartToken(),
+      new PartToken(1),
+      new ClassNameAttributeEndToken(),
+      new EventAttributeStartToken('click'),
+      new PartToken(2),
+      new EventAttributeEndToken('click'),
+      new EventAttributeStartToken('dragenter'),
+      new PartToken(3),
+      new EventAttributeEndToken('dragenter'),
+      new EventAttributeStartToken('dragleave'),
+      new PartToken(4),
+      new EventAttributeEndToken('dragleave'),
+      new OpeningTagEndToken('div'),
+      new TextToken('\n        '),
+      new PartToken(5),
+      new TextToken('\n        '),
+      new PartToken(6),
+      new TextToken('\n\n        '),
+      new OpeningTagToken('main'),
+      new AttributeToken('class', 'dashboard__content'),
+      new OpeningTagEndToken('main'),
+      new TextToken('\n          '),
+      new OpeningTagToken('div'),
+      new ClassNameAttributeStartToken(),
+      new PartToken(7),
+      new ClassNameAttributeEndToken(),
+      new OpeningTagEndToken('div'),
+      new TextToken('\n            '),
+      new PartToken(8),
+      new TextToken('\n          '),
+      new ClosingTagToken('div'),
+      new TextToken('\n          '),
+      new PartToken(9),
+      new TextToken('\n        '),
+      new ClosingTagToken('main'),
+      new TextToken('\n      '),
+      new ClosingTagToken('div'),
+      new TextToken('\n\n      '),
+      new OpeningTagToken('aside'),
+      new ClassNameAttributeStartToken(),
+      new PartToken(10),
+      new ClassNameAttributeEndToken(),
+      new EventAttributeStartToken('dragover'),
+      new PartToken(11),
+      new EventAttributeEndToken('dragover'),
+      new EventAttributeStartToken('dragenter'),
+      new PartToken(12),
+      new EventAttributeEndToken('dragenter'),
+      new EventAttributeStartToken('dragleave'),
+      new PartToken(13),
+      new EventAttributeEndToken('dragleave'),
+      new EventAttributeStartToken('dragend'),
+      new PartToken(14),
+      new EventAttributeEndToken('dragend'),
+      new EventAttributeStartToken('drop'),
+      new PartToken(15),
+      new EventAttributeEndToken('drop'),
+      new OpeningTagEndToken('aside'),
+      new TextToken('\n        '),
+      new OpeningTagToken('div'),
+      new AttributeToken(
+        'class',
+        'border-dashed border-white rounded-xl flex flex-col border-4 p-12 justify-center items-center lg:p-24',
+      ),
+      new OpeningTagEndToken('div'),
+      new TextToken('\n          '),
+      new PartToken(16),
+      new TextToken('\n\n          '),
+      new OpeningTagToken('p'),
+      new AttributeToken('class', 'font-bold my-2 text-white text-[24px]'),
+      new OpeningTagEndToken('p'),
+      new TextToken('Drag & Drop'),
+      new ClosingTagToken('p'),
+      new TextToken('\n\n          '),
+      new OpeningTagToken('p'),
+      new AttributeToken('class', 'text-base text-white'),
+      new OpeningTagEndToken('p'),
+      new TextToken('\n            '),
+      new TextToken('your '),
+      new PartToken(17),
+      new TextToken(' files here to upload'),
+      new TextToken('\n          '),
+      new ClosingTagToken('p'),
+      new TextToken('\n        '),
+      new ClosingTagToken('div'),
+      new TextToken('\n      '),
+      new ClosingTagToken('aside'),
+    ],
+  },
 ]
 
 describe(tokenizeTemplateStrings.name, () => {
@@ -501,7 +640,7 @@ function setup(test: TestCase) {
 }
 
 function runTest(test: TestCase) {
-  const actual = Array.from(tokenizeTemplateStrings(test.template))
+  const actual: Token[] = Array.from(tokenizeTemplateStrings(test.template))
 
   try {
     deepStrictEqual(actual, test.expected)
