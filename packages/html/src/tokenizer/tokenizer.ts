@@ -7,7 +7,7 @@ export type Chunk = {
 
 export const PART_STRING = (i: number) => `{{__PART${i}__}}`
 
-const PART_REGEX = /(\{\{__PART(\d+)__\}\})/g
+export const PART_REGEX = /(\{\{__PART(\d+)__\}\})/g
 
 export const getPart = chunker(PART_REGEX)
 
@@ -26,12 +26,10 @@ export const getComment = chunker(/(<!--(.+)-->)/gu)
 
 // Get all the text that does not lead to a Part
 // Uses a negative lookahead to ensure to match all text that does not lead to a Part
-export const getTextUntilPart = chunker(/([^{{__PART\d+__}}]+)/g)
+export const getTextUntilPart = chunker(/((?:(?!{{__PART\d+__}}).)*)/gi)
 
 // Get all the text that does not lead to a Part
 export const getTextUntilCloseBrace = chunker(/([^<]+)/g)
-
-export const getTextUntilOpenEndBrace = chunker(/([^>]+)/g)
 
 // Get an attribute and its value within quotes
 export const getAttributeWithQuotes = chunker(
@@ -173,10 +171,17 @@ class Tokenizer implements Iterable<Token.Token> {
       this.context = 'text'
 
       yield new Token.OpeningTagEndToken(this.currentTag!.value)
+    } else if ((next = this.chunk(getSelfClosingTagEnd))) {
+      yield new Token.OpeningTagEndToken(this.currentTag!.value, false)
+      yield new Token.ClosingTagToken(this.currentTag!.value)
+      this.popTag()
+      this.context = 'text'
     } else if ((next = this.chunk(getBooleanAttribute))) {
       yield new Token.BooleanAttributeToken(next.match[2])
+    } else if ((next = this.chunk(getWhitespace))) {
+      // Continue
     } else {
-      throw new Error(`Invalid template ${this.input}`)
+      this.invalidTemplate()
     }
   }
 
@@ -194,7 +199,7 @@ class Tokenizer implements Iterable<Token.Token> {
     } else if ((next = this.chunk(getBooleanAttribute))) {
       yield new Token.BooleanAttributeToken(next.match[2])
     } else {
-      throw new Error(`Invalid template ${this.input}`)
+      this.invalidTemplate()
     }
   }
 
@@ -217,7 +222,7 @@ class Tokenizer implements Iterable<Token.Token> {
       }
       this.context = 'text'
     } else {
-      throw new Error(`Invalid template ${this.input}`)
+      this.invalidTemplate()
     }
   }
 
@@ -289,6 +294,14 @@ class Tokenizer implements Iterable<Token.Token> {
     if (this.currentTag) {
       this.currentTag = this.currentTag.previous
     }
+  }
+
+  protected invalidTemplate() {
+    let message = `Invalid template ${this.input}`
+    message += '\n\nFrom:\n\n'
+    message += this.input.substring(this.pos)
+
+    throw new SyntaxError(message)
   }
 }
 

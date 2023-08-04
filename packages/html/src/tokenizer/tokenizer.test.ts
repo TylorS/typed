@@ -27,11 +27,11 @@ import {
   RefAttributeStartToken,
   RefAttributeEndToken,
 } from './Token.js'
-import { tokenizeTemplateStrings } from './tokenizer.js'
+import { PART_REGEX, tokenizeTemplateStrings } from './tokenizer.js'
 
 type TestCase = {
   name: string
-  template: TemplateStringsArray
+  template: ReadonlyArray<string>
   expected: ReadonlyArray<Token>
   only?: boolean
   skip?: boolean
@@ -439,6 +439,49 @@ const testCases: TestCase[] = [
       new ClosingTagToken('div'),
     ],
   },
+  {
+    name: 'parses multi-line svg',
+    template: splitTemplateByParts(`<svg
+    class="{{__PART0__}}"
+    fill="{{__PART1__}}"
+    width="{{__PART2__}}"
+    height="{{__PART3__}}"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M16 17C16.2652 17 16.5196 16.8946 16.7071 16.7071C16.8946 16.5196 17 16.2652 17 16V6.5C17 5.04131 16.4205 3.64236 15.3891 2.61091C14.3576 1.57946 12.9587 1 11.5 1C10.0413 1 8.64236 1.57946 7.61091 2.61091C6.57946 3.64236 6 5.04131 6 6.5V18C6 19.0609 6.42143 20.0783 7.17157 20.8284C7.92172 21.5786 8.93913 22 10 22C11.0609 22 12.0783 21.5786 12.8284 20.8284C13.5786 20.0783 14 19.0609 14 18V6.38C13.9974 5.7496 13.7458 5.14576 13.3 4.69999C12.8542 4.25423 12.2504 4.00263 11.62 4H11.38C10.7496 4.00263 10.1458 4.25423 9.69999 4.69999C9.25423 5.14576 9.00263 5.7496 9 6.38V16C9 16.2652 9.10536 16.5196 9.29289 16.7071C9.48043 16.8946 9.73478 17 10 17C10.2652 17 10.5196 16.8946 10.7071 16.7071C10.8946 16.5196 11 16.2652 11 16V6.38C11 6.27922 11.04 6.18256 11.1113 6.1113C11.1826 6.04004 11.2792 6 11.38 6H11.62C11.7208 6 11.8174 6.04004 11.8887 6.1113C11.96 6.18256 12 6.27922 12 6.38V18C12 18.5304 11.7893 19.0391 11.4142 19.4142C11.0391 19.7893 10.5304 20 10 20C9.46957 20 8.96086 19.7893 8.58579 19.4142C8.21071 19.0391 8 18.5304 8 18V6.5C8 5.57174 8.36875 4.6815 9.02513 4.02513C9.6815 3.36875 10.5717 3 11.5 3C12.4283 3 13.3185 3.36875 13.9749 4.02513C14.6313 4.6815 15 5.57174 15 6.5V16C15 16.2652 15.1054 16.5196 15.2929 16.7071C15.4804 16.8946 15.7348 17 16 17Z"
+    />
+  </svg>`),
+    expected: [
+      new OpeningTagToken('svg'),
+      new ClassNameAttributeStartToken(),
+      new PartToken(0),
+      new ClassNameAttributeEndToken(),
+      new AttributeStartToken('fill'),
+      new PartToken(1),
+      new AttributeEndToken('fill'),
+      new AttributeStartToken('width'),
+      new PartToken(2),
+      new AttributeEndToken('width'),
+      new AttributeStartToken('height'),
+      new PartToken(3),
+      new AttributeEndToken('height'),
+      new AttributeToken('viewBox', '0 0 24 24'),
+      new AttributeToken('xmlns', 'http://www.w3.org/2000/svg'),
+      new OpeningTagEndToken('svg', false),
+      new TextToken('\n    '),
+      new OpeningTagToken('path'),
+      new AttributeToken(
+        'd',
+        'M16 17C16.2652 17 16.5196 16.8946 16.7071 16.7071C16.8946 16.5196 17 16.2652 17 16V6.5C17 5.04131 16.4205 3.64236 15.3891 2.61091C14.3576 1.57946 12.9587 1 11.5 1C10.0413 1 8.64236 1.57946 7.61091 2.61091C6.57946 3.64236 6 5.04131 6 6.5V18C6 19.0609 6.42143 20.0783 7.17157 20.8284C7.92172 21.5786 8.93913 22 10 22C11.0609 22 12.0783 21.5786 12.8284 20.8284C13.5786 20.0783 14 19.0609 14 18V6.38C13.9974 5.7496 13.7458 5.14576 13.3 4.69999C12.8542 4.25423 12.2504 4.00263 11.62 4H11.38C10.7496 4.00263 10.1458 4.25423 9.69999 4.69999C9.25423 5.14576 9.00263 5.7496 9 6.38V16C9 16.2652 9.10536 16.5196 9.29289 16.7071C9.48043 16.8946 9.73478 17 10 17C10.2652 17 10.5196 16.8946 10.7071 16.7071C10.8946 16.5196 11 16.2652 11 16V6.38C11 6.27922 11.04 6.18256 11.1113 6.1113C11.1826 6.04004 11.2792 6 11.38 6H11.62C11.7208 6 11.8174 6.04004 11.8887 6.1113C11.96 6.18256 12 6.27922 12 6.38V18C12 18.5304 11.7893 19.0391 11.4142 19.4142C11.0391 19.7893 10.5304 20 10 20C9.46957 20 8.96086 19.7893 8.58579 19.4142C8.21071 19.0391 8 18.5304 8 18V6.5C8 5.57174 8.36875 4.6815 9.02513 4.02513C9.6815 3.36875 10.5717 3 11.5 3C12.4283 3 13.3185 3.36875 13.9749 4.02513C14.6313 4.6815 15 5.57174 15 6.5V16C15 16.2652 15.1054 16.5196 15.2929 16.7071C15.4804 16.8946 15.7348 17 16 17Z',
+      ),
+      new OpeningTagEndToken('path', false),
+      new ClosingTagToken('path'),
+      new TextToken('\n  '),
+      new ClosingTagToken('svg'),
+    ],
+  },
 ]
 
 describe(tokenizeTemplateStrings.name, () => {
@@ -472,4 +515,22 @@ function runTest(test: TestCase) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function h<Values extends readonly any[]>(template: TemplateStringsArray, ..._: Values) {
   return template
+}
+
+function splitTemplateByParts(template: string): string[] {
+  const parts = template.split(PART_REGEX)
+  const strings: string[] = []
+
+  for (let i = 0; i < parts.length; ) {
+    if (PART_REGEX.test(parts[i])) {
+      i += 2 // Skip past the extra matched portion of PART number
+    } else {
+      strings.push(parts[i])
+      i += 1
+    }
+  }
+
+  console.log(parts)
+
+  return strings
 }
