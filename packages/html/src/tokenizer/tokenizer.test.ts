@@ -621,6 +621,36 @@ const testCases: TestCase[] = [
       new ClosingTagToken('aside'),
     ],
   },
+  {
+    name: 'parses this template #1',
+    template: splitTemplateByParts(`<div
+      ref="{{__PART0__}}"
+      class="cursor-pointer hidden md:flex md:items-center "
+      onclick="{{__PART1__}}"
+      tabindex="0"
+      onkeydown="{{__PART2__}}"
+    >
+      <div
+        class="bg-light-gray rounded-full flex mr-2 min-w-8 max-h-8 max-w-8 p-2 items-center justify-center overflow-hidden"
+      >
+        {{__PART3__}}
+      </div>
+
+      <p class="text-center whitespace-nowrap">{{__PART4__}} {{__PART5__}}</p>
+
+      <img
+        class="{{__PART6__}}"
+        src="{{__PART7__}}"
+        alt="Open"
+      />
+
+      <div class="relative">
+        {{__PART8__}}
+      </div>
+    </div>`),
+    expected: [],
+    only: true,
+  },
 ]
 
 describe(tokenizeTemplateStrings.name, () => {

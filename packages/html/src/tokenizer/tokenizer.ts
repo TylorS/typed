@@ -13,7 +13,7 @@ export const getPart = chunker(PART_REGEX)
 
 export const getOpeningTag = chunker(/(\s?<(([a-z0-9-]+:)?[a-z0-9-]+))\s?/gi)
 
-export const getOpeningTagEnd = chunker(/(\s*?>)/gi)
+export const getOpeningTagEnd = chunker(/((\s+)?>)/gi)
 
 // Matches the closing of a tag
 // Allows for whitespace between the tag name and the closing brackets
@@ -72,6 +72,7 @@ function chunker(regex: RegExp) {
 
 export function* tokenizeTemplateStrings(template: ReadonlyArray<string>): Generator<Token.Token> {
   for (const token of new Tokenizer(template)) {
+    console.log('TOKEN', token)
     yield token
   }
 }
@@ -181,6 +182,24 @@ class Tokenizer implements Iterable<Token.Token> {
 
   private *nextElementToken(): Generator<Token.Token> {
     let next: Chunk | undefined
+
+    console.log('nextElementToken', JSON.stringify(this.input.slice(this.pos)))
+    console.log(
+      'attributeWithQuotes',
+      getAttributeWithQuotes(this.input, this.pos),
+      'attributeWithoutQuotes',
+      getAttributeWithoutQuotes(this.input, this.pos),
+      'openingTagEnd',
+      getOpeningTagEnd(this.input, this.pos),
+      'selfClosingTagEnd',
+      getSelfClosingTagEnd(this.input, this.pos),
+      'booleanAttribute',
+      getBooleanAttribute(this.input, this.pos),
+      'closingTag',
+      getClosingTag(this.input, this.pos),
+      'whiteSpace',
+      getWhitespace(this.input, this.pos),
+    )
 
     if ((next = this.chunk(getAttributeWithQuotes))) {
       yield* this.parseAttribute(next.match[2], next.match[4])
