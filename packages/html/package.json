@@ -1,6 +1,6 @@
 {
   "name": "@typed/html",
-  "version": "3.16.10",
+  "version": "3.17.0",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -35,8 +35,8 @@
   "sideEffects": false,
   "devDependencies": {
     "@effect/data": "^0.17.1",
-    "@types/node": "^20.4.6",
     "@types/escape-html": "^1.0.2",
+    "@types/node": "^20.4.6",
     "vitest": "0.34.1"
   }
 }
