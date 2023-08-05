@@ -4,7 +4,7 @@ import * as Fx from '@typed/fx'
 import { diffable } from '@typed/wire'
 import udomdiff from 'udomdiff'
 
-import { DomRenderEvent, isRenderEvent } from '../RenderEvent.js'
+import { DomRenderEvent, RenderEvent, isRenderEvent } from '../RenderEvent.js'
 import { Renderable } from '../Renderable.js'
 import { findHoleComment, isComment, isCommentWithValue } from '../utils.js'
 
@@ -179,8 +179,18 @@ export function diffChildren(
     comment.parentNode!,
     // Document Fragments cannot be removed, so we filter them out
     currentNodes.filter((x) => x.nodeType !== x.DOCUMENT_FRAGMENT_NODE),
-    nextNodes,
+    nextNodes.flatMap(flattenRenderEvent),
     diffable(document),
     comment,
   )
+}
+
+function flattenRenderEvent(x: Node | RenderEvent): Node[] {
+  if (isRenderEvent(x)) {
+    const value = x.valueOf()
+
+    return Array.isArray(value) ? value : [value]
+  } else {
+    return [x]
+  }
 }
