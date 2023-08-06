@@ -292,6 +292,57 @@ importers:
         specifier: workspace:*
         version: link:../packages/vite-plugin
 
+  examples/todomvc:
+    dependencies:
+      '@effect/data':
+        specifier: ^0.17.1
+        version: 0.17.1
+      '@effect/io':
+        specifier: ^0.38.0
+        version: 0.38.0(@effect/data@0.17.1)
+      '@effect/schema':
+        specifier: ^0.33.0
+        version: 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
+      '@typed/context':
+        specifier: workspace:*
+        version: link:../../packages/context
+      '@typed/decoder':
+        specifier: workspace:*
+        version: link:../../packages/decoder
+      '@typed/dom':
+        specifier: workspace:*
+        version: link:../../packages/dom
+      '@typed/error':
+        specifier: workspace:*
+        version: link:../../packages/error
+      '@typed/framework':
+        specifier: workspace:*
+        version: link:../../packages/framework
+      '@typed/fx':
+        specifier: workspace:*
+        version: link:../../packages/fx
+      '@typed/html':
+        specifier: workspace:*
+        version: link:../../packages/html
+      '@typed/navigation':
+        specifier: workspace:*
+        version: link:../../packages/navigation
+      '@typed/path':
+        specifier: workspace:*
+        version: link:../../packages/path
+      '@typed/route':
+        specifier: workspace:*
+        version: link:../../packages/route
+      '@typed/router':
+        specifier: workspace:*
+        version: link:../../packages/router
+      '@typed/virtual-module':
+        specifier: workspace:*
+        version: link:../../packages/virtual-module
+      '@typed/vite-plugin':
+        specifier: workspace:*
+        version: link:../../packages/vite-plugin
+
   packages/cli:
     dependencies:
       '@effect/data':

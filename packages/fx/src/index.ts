@@ -1063,6 +1063,7 @@ export const orElse: {
   ): Fx<R | R2, E2, B> => internal.orElse(fx, f),
 )
 
+export * from './RefArray.js'
 export * from './RefSubject.js'
 export * from './Computed.js'
 export * from './Filtered.js'
