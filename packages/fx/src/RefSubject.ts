@@ -199,12 +199,14 @@ function initializeFromContext<E, A>(ctx: RefSubjectContext<E, A>): Effect.Effec
     Effect.flatMap(Effect.forkIn(restore(ctx.initial), ctx.scope), (fiber) => {
       MutableRef.set(ctx.initializingFiberRef, Option.some(fiber))
 
-      return Effect.tap(Fiber.join(fiber), (a) =>
-        Effect.sync(() => {
-          MutableRef.increment(ctx.version)
-          MutableRef.set(ctx.currentRef, Option.some(a))
-          MutableRef.set(ctx.initializingFiberRef, Option.none())
-        }),
+      return Fiber.join(fiber).pipe(
+        Effect.tap((a) =>
+          Effect.sync(() => {
+            MutableRef.increment(ctx.version)
+            MutableRef.set(ctx.currentRef, Option.some(a))
+          }),
+        ),
+        Effect.ensuring(Effect.sync(() => MutableRef.set(ctx.initializingFiberRef, Option.none()))),
       )
     }),
   )
@@ -753,23 +755,4 @@ export function asRef<R, E, A>(fx: Fx<R, E, A>) {
       )
     }),
   )
-
-  return Effect.gen(function* ($) {
-    const deferred = yield* $(Deferred.make<E, A>())
-    const ref = yield* $(makeRef(Deferred.await(deferred)))
-
-    const onValue = (value: A) =>
-      Effect.flatMap(Deferred.succeed(deferred, value), (closed) =>
-        closed ? Effect.unit : ref.set(value),
-      )
-
-    yield* $(
-      switchMatchCauseEffect(fx, ref.error, onValue),
-      drain,
-      Effect.catchAllCause(ref.error),
-      Effect.forkScoped,
-    )
-
-    return ref
-  })
 }

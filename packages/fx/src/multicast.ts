@@ -1,5 +1,6 @@
 import type * as Context from '@effect/data/Context'
 import { identity } from '@effect/data/Function'
+import { pipeArguments } from '@effect/data/Pipeable'
 import type * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
@@ -82,6 +83,11 @@ export class MulticastFx<R, E, A> implements Fx<R, E, A>, Sink<never, E, A> {
     return Effect.suspend(() =>
       Effect.forEach(this.observers.slice(0), (observer) => this.runError(observer, cause)),
     )
+  }
+
+  pipe() {
+    // eslint-disable-next-line prefer-rest-params
+    return pipeArguments(this, arguments)
   }
 
   protected runEvent<R>(observer: MulticastObserver<R, E, A>, a: A) {

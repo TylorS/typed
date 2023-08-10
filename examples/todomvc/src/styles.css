@@ -1,0 +1,31 @@
+body {
+  font: 14px 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: normal;
+  line-height: 1.4em;
+  color: #4d4d4d;
+  -moz-osx-font-smoothing: grayscale;
+  font-weight: 300;
+}
+
+.todoapp {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 550px;
+  text-align: center;
+}
+
+.todoapp__heading {
+  font-size: 100px;
+  font-weight: 100;
+  color: rgba(175, 47, 47, 0.15);
+  text-rendering: optimizeLegibility;
+}
+
+.todoapp__create-todo-input {
+  padding: 1rem;
+  border: none;
+  background: rgba(0, 0, 0, 0.003);
+  box-shadow: inset 0 -2px 1px rgba(0,0,0,0.03);
+}

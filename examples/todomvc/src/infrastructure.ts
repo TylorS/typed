@@ -1,3 +1,4 @@
+import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as ParseResult from '@effect/schema/ParseResult'
@@ -5,14 +6,13 @@ import * as Schema from '@effect/schema/Schema'
 import * as DOM from '@typed/dom'
 import { browser } from '@typed/framework/browser'
 import * as Fx from '@typed/fx'
-import * as Navigation from '@typed/navigation'
 import * as Route from '@typed/route'
 import * as Router from '@typed/router'
 
-import { TodoRepository, CurrentViewState } from './application.js'
+import { CreateTodo, CurrentViewState, ReadTodoList, WriteTodoList } from './application.js'
 import { TodoId, TodoList, ViewState } from './domain.js'
 
-export const parseJson = <I, A>(schema: Schema.Schema<I, A>) =>
+const parseJson = <I, A>(schema: Schema.Schema<I, A>) =>
   Schema.transformResult(
     Schema.string,
     schema,
@@ -23,37 +23,48 @@ export const parseJson = <I, A>(schema: Schema.Schema<I, A>) =>
         return ParseResult.failure(ParseResult.type(schema.ast, s))
       }
     },
-    (a) => ParseResult.success(JSON.stringify(a)),
+    (i) => ParseResult.success(JSON.stringify(i)),
   )
 
-const todosKey = `typed-todos-list` as const
+const TodoListFromJson = parseJson(TodoList)
+const decodeJson = Schema.decodeResult(TodoListFromJson)
+const encodeJson = Schema.encode(TodoListFromJson)
 
-const storage = DOM.SchemaStorage({
-  [todosKey]: parseJson(TodoList),
-})
+const todosKey = 'todos'
 
-export const TodoRepositoryLive = TodoRepository.implement({
-  read: () => Effect.flatten(storage.get(todosKey)),
-  write: (todoList) => storage.set(todosKey, todoList),
-  create: (text) =>
+export const TodosLive = Layer.mergeAll(
+  ReadTodoList.implement(() => {
+    return DOM.getItem(todosKey).pipe(
+      Effect.flatten,
+      Effect.flatMap(decodeJson),
+      Effect.tapErrorCause(Effect.logError),
+      Effect.catchAll(() => Effect.succeed([])),
+    )
+  }),
+  WriteTodoList.implement((todoList) =>
+    encodeJson(todoList).pipe(
+      Effect.flatMap((todos) => DOM.setItem(todosKey, todos)),
+      Effect.catchAll(() => Effect.unit),
+    ),
+  ),
+  CreateTodo.implement((text) =>
     Effect.succeed({
-      id: crypto.randomUUID() as TodoId,
+      id: TodoId(crypto.randomUUID()),
       text,
       completed: false,
       timestamp: new Date(),
     }),
-})
+  ),
+)
 
 const homeRoute = Route.Route('/')
 const activeRoute = Route.Route('/active')
 const completedRoute = Route.Route('/completed')
 
-const router = Router.redirectEffect(
-  Router.match(homeRoute, () => Fx.succeed(ViewState.All))
-    .match(activeRoute, () => Fx.succeed(ViewState.Active))
-    .match(completedRoute, () => Fx.succeed(ViewState.Completed)),
-  Router.Redirect.redirect(homeRoute.path),
-)
+const router = Router.match(activeRoute, () => Fx.succeed(ViewState.Active))
+  .match(completedRoute, () => Fx.succeed(ViewState.Completed))
+  .match(homeRoute, () => Fx.succeed(ViewState.All))
+  .notFound(() => Fx.succeed(ViewState.All))
 
 const viewStatesToPath = {
   [ViewState.All]: homeRoute.path,
@@ -61,20 +72,30 @@ const viewStatesToPath = {
   [ViewState.Completed]: completedRoute.path,
 }
 
-const viewStateToPath = (viewState: ViewState) => viewStatesToPath[viewState]
+export const viewStateToPath = (viewState: ViewState) => viewStatesToPath[viewState]
 
-export const ViewStateLive = Layer.scoped(
+export const ViewStateLive = Layer.effect(
   CurrentViewState.tag,
   Effect.gen(function* (_) {
-    const ref = yield* _(Fx.makeRef(Effect.succeed<ViewState>(ViewState.All)))
+    const { navigation } = yield* _(Router.Router)
+    const currentRoute = navigation.currentEntry.map((entry) => getCurrentRoute(entry.url.pathname))
+    const ref = yield* _(Fx.makeRef(currentRoute))
 
-    // Route changes should update the current view state
     yield* _(router, Fx.observe(ref.set), Effect.forkScoped)
 
     // View state changes should update the route
     yield* _(
       ref,
-      Fx.observe((state) => Navigation.navigate(viewStateToPath(state))),
+      Fx.observe((state) =>
+        Effect.gen(function* (_) {
+          const current = yield* _(currentRoute)
+
+          // Avoid circular update loop
+          if (current === state) return Effect.unit
+
+          return navigation.navigate(viewStateToPath(state))
+        }),
+      ),
       Effect.forkScoped,
     )
 
@@ -82,7 +103,14 @@ export const ViewStateLive = Layer.scoped(
   }),
 )
 
-export const Live = Layer.provideMerge(
-  browser(window),
-  Layer.mergeAll(TodoRepositoryLive, ViewStateLive),
-)
+function getCurrentRoute(path: string) {
+  if (Option.isSome(activeRoute.match(path))) {
+    return ViewState.Active
+  } else if (Option.isSome(completedRoute.match(path))) {
+    return ViewState.Completed
+  } else {
+    return ViewState.All
+  }
+}
+
+export const Live = Layer.provideMerge(browser(window), Layer.mergeAll(TodosLive, ViewStateLive))

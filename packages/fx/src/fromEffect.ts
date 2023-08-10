@@ -1,3 +1,4 @@
+import { pipeArguments } from '@effect/data/Pipeable'
 import * as Effect from '@effect/io/Effect'
 
 import { Fx, FxTypeId, Sink } from './Fx.js'
@@ -13,5 +14,10 @@ class FromEffect<R, E, A> implements Fx<R, E, A> {
 
   run<R2>(sink: Sink<R2, E, A>): Effect.Effect<R | R2, never, void> {
     return Effect.matchCauseEffect(this.effect, { onFailure: sink.error, onSuccess: sink.event })
+  }
+
+  pipe() {
+    // eslint-disable-next-line prefer-rest-params
+    return pipeArguments(this, arguments)
   }
 }

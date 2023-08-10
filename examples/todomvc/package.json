@@ -5,7 +5,8 @@
   "dependencies": {
     "@effect/data": "^0.17.1",
     "@effect/io": "^0.38.0",
-    "@effect/schema": "^0.33.0",
+    "@effect/schema": "^0.33.1",
+    "@typed/cli": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/decoder": "workspace:*",
     "@typed/dom": "workspace:*",
@@ -21,6 +22,7 @@
     "@typed/vite-plugin": "workspace:*"
   },
   "scripts": {
-    "start": "vite"
+    "start": "pnpm run typed serve -c vite.config.js --force",
+    "typed": "pnpm tsx ../../packages/cli/src/cli.ts"
   }
 }

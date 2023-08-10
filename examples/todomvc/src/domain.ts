@@ -36,10 +36,18 @@ export function clearCompleted(list: TodoList): TodoList {
   return list.filter((todo) => !todo.completed)
 }
 
+export function remainingCount(list: TodoList): number {
+  return list.filter((todo) => !todo.completed).length
+}
+
+export function completedCount(list: TodoList): number {
+  return list.filter((todo) => todo.completed).length
+}
+
 export enum ViewState {
-  All = 'all',
-  Active = 'active',
-  Completed = 'completed',
+  All = 'All',
+  Active = 'Active',
+  Completed = 'Completed',
 }
 
 export function filterViewState(list: TodoList, state: ViewState): TodoList {
