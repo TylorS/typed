@@ -37,7 +37,6 @@ export const TodosLive = Layer.mergeAll(
     return DOM.getItem(todosKey).pipe(
       Effect.flatten,
       Effect.flatMap(decodeJson),
-      Effect.tapErrorCause(Effect.logError),
       Effect.catchAll(() => Effect.succeed([])),
     )
   }),
