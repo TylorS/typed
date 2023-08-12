@@ -1,4 +1,5 @@
 import { identity } from '@effect/data/Function'
+import { Pipeable, pipeArguments } from '@effect/data/Pipeable'
 import type { Cause } from '@effect/io/Cause'
 import type { Effect } from '@effect/io/Effect'
 import type * as Runtime from '@effect/io/Runtime'
@@ -6,7 +7,7 @@ import type * as Runtime from '@effect/io/Runtime'
 export const FxTypeId = Symbol.for('@typed/fx/Fx')
 export type FxTypeId = typeof FxTypeId
 
-export interface Fx<out R, out E, out A> {
+export interface Fx<out R, out E, out A> extends Pipeable {
   readonly [FxTypeId]: {
     readonly _R: (_: never) => R
     readonly _E: (_: never) => E
@@ -22,13 +23,20 @@ const fxVariance = {
   _A: identity,
 }
 
+const proto = {
+  [FxTypeId]: fxVariance,
+  pipe() {
+    // eslint-disable-next-line prefer-rest-params
+    return pipeArguments(this, arguments)
+  },
+}
+
 export const make: <R, E, A>(
   run: <R2>(sink: Sink<R2, E, A>) => Effect<R | R2, never, void>,
 ) => Fx<R, E, A> = function Fx<R, E, A>(run: Fx<R, E, A>['run']): Fx<R, E, A> {
-  const fx: Fx<R, E, A> = {
-    [FxTypeId]: fxVariance,
-    run,
-  }
+  const fx = Object.create(proto)
+
+  fx.run = run
 
   return fx
 }

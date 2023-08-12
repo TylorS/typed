@@ -1,4 +1,5 @@
 import { identity } from '@effect/data/Function'
+import { pipeArguments } from '@effect/data/Pipeable'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
@@ -58,5 +59,9 @@ function make<const I, E, A>(
     layer,
     provide: Effect.provideSomeLayer(layer),
     provideFx: Fx.provideSomeLayer(layer),
+    pipe() {
+      // eslint-disable-next-line prefer-rest-params
+      return pipeArguments(this, arguments)
+    },
   }
 }

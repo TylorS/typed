@@ -155,7 +155,7 @@ export interface SchemaStorage<Schema extends Readonly<Record<string, S.Schema<s
     key: K,
     value: S.To<Schema[K]>,
     options?: ParseOptions,
-  ) => StorageEffect<never, never, void>
+  ) => StorageEffect<never, ParseResult.ParseError, void>
 
   readonly remove: <K extends keyof Schema & string>(key: K) => StorageEffect<never, never, void>
 
@@ -169,7 +169,7 @@ export interface SchemaStorage<Schema extends Readonly<Record<string, S.Schema<s
       key: K,
       value: S.To<Schema[K]>,
       options?: ParseOptions,
-    ) => StorageEffect<GlobalThis | Window, never, void>
+    ) => StorageEffect<GlobalThis | Window, ParseResult.ParseError, void>
 
     readonly remove: <K extends keyof Schema & string>(
       key: K,
@@ -187,13 +187,16 @@ export function SchemaStorage<
     ) => ParseResult.ParseResult<S.To<Schemas[K]>>
   }> = {}
   const getDecoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof decoders)[K]> =>
-    decoders[key] || (decoders[key] = P.decode(schema[key]))
+    decoders[key] || (decoders[key] = P.decodeResult(schema[key]))
 
   const encoders: Partial<{
-    [K in keyof Schemas]: (i: S.To<Schemas[K]>, options?: ParseOptions) => S.From<Schemas[K]>
+    [K in keyof Schemas]: (
+      i: S.To<Schemas[K]>,
+      options?: ParseOptions,
+    ) => ParseResult.ParseResult<S.From<Schemas[K]>>
   }> = {}
   const getEncoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof encoders)[K]> =>
-    encoders[key] || (encoders[key] = P.encodeSync(schema[key]))
+    encoders[key] || (encoders[key] = P.encodeResult(schema[key]))
 
   const get = <K extends keyof Schemas & string>(key: K, options?: ParseOptions) =>
     StorageEffect(
@@ -210,6 +213,21 @@ export function SchemaStorage<
       }),
     )
 
+  const set = <K extends keyof Schemas & string>(
+    key: K,
+    value: S.To<Schemas[K]>,
+    options?: ParseOptions,
+  ) =>
+    StorageEffect(
+      Effect.gen(function* ($) {
+        const encoder = getEncoder(key)
+        const encoded = yield* $(encoder(value, options))
+        const json = JSON.stringify(encoded)
+
+        return yield* $(setItem(key, json))
+      }),
+    )
+
   return {
     schema,
     get,
@@ -217,7 +235,7 @@ export function SchemaStorage<
       key: K,
       value: S.To<Schemas[K]>,
       options?: ParseOptions,
-    ) => StorageEffect(setItem(key, JSON.stringify(getEncoder(key)(value, options)))),
+    ) => set(key, value, options),
     remove: <K extends keyof Schemas & string>(key: K) => StorageEffect(removeItem(key)),
     events: {
       get,
@@ -225,7 +243,16 @@ export function SchemaStorage<
         key: K,
         value: S.To<Schemas[K]>,
         options?: ParseOptions,
-      ) => storageEvents.setItem(key, JSON.stringify(getEncoder(key)(value, options))),
+      ) =>
+        StorageEffect(
+          Effect.gen(function* ($) {
+            const encoder = getEncoder(key)
+            const encoded = yield* $(encoder(value, options))
+            const json = JSON.stringify(encoded)
+
+            return yield* $(storageEvents.setItem(key, json))
+          }),
+        ),
       remove: <K extends keyof Schemas & string>(key: K) => storageEvents.removeItem(key),
     },
   }

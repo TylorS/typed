@@ -4,7 +4,7 @@ import * as Effect from '@effect/io/Effect'
 
 import { Filtered, FilteredImpl } from './Filtered.js'
 import { RefTransform, RefTransformImpl, RefTransformInput } from './RefTransform.js'
-import { switchMapEffect } from './switchMap.js'
+import { mapEffect } from './mapEffect.js'
 
 export const ComputedTypeId = Symbol.for('@typed/fx/Computed')
 export type ComputedTypeId = typeof ComputedTypeId
@@ -65,7 +65,7 @@ export class ComputedImpl<R, E, A, R2, E2, R3, E3, B>
   constructor(input: RefTransformInput<R, E, A, R2, E2, A>, f: (a: A) => Effect.Effect<R3, E3, B>) {
     super(
       input,
-      (fx) => switchMapEffect(fx, f),
+      (fx) => mapEffect(fx, f),
       (eff) => Effect.flatMap(eff, f),
     )
   }

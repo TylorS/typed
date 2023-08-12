@@ -2,6 +2,7 @@ import { equals } from '@effect/data/Equal'
 import * as Equivalence from '@effect/data/Equivalence'
 import { identity, dual } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
+import { pipeArguments } from '@effect/data/Pipeable'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
@@ -129,6 +130,10 @@ export const Ref: {
       provide: <R2, E2, A2>(effect: Effect.Effect<R2, E2, A2>) =>
         Effect.provideServiceEffect(effect, tag, make),
       provideFx: <R2, E2, A2>(fx: Fx.Fx<R2, E2, A2>) => Fx.provideServiceEffect(fx, tag, make),
+      pipe() {
+        // eslint-disable-next-line prefer-rest-params
+        return pipeArguments(this, arguments)
+      },
     } satisfies Ref<IdentifierOf<I>, R, E, A>
   },
 )

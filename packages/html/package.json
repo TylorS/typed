@@ -25,7 +25,7 @@
     "@typed/fx": "workspace:*",
     "@typed/wire": "workspace:*",
     "escape-html": "^1.0.3",
-    "happy-dom": "^10.7.0",
+    "happy-dom": "^10.9.0",
     "udomdiff": "^1.1.0"
   },
   "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",
@@ -35,8 +35,8 @@
   "sideEffects": false,
   "devDependencies": {
     "@effect/data": "^0.17.1",
+    "@types/node": "^20.4.10",
     "@types/escape-html": "^1.0.2",
-    "@types/node": "^20.4.6",
     "vitest": "0.34.1"
   }
 }

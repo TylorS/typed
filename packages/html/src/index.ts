@@ -1,3 +1,4 @@
+export * from './classNames.js'
 export * from './Directive.js'
 export * from './ElementRef.js'
 export * from './EventHandler.js'

@@ -20,14 +20,14 @@
   },
   "dependencies": {
     "@effect/data": "^0.17.1",
-    "vite": "^4.4.8"
+    "vite": "^4.4.9"
   },
   "publishConfig": {
     "access": "public"
   },
   "sideEffects": false,
   "devDependencies": {
-    "@types/node": "^20.4.6",
+    "@types/node": "^20.4.10",
     "typescript": "^5.1.6"
   }
 }
