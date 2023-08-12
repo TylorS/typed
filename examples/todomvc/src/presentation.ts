@@ -1,69 +1,76 @@
+import * as Predicate from '@effect/data/Predicate'
 import * as Effect from '@effect/io/Effect'
+import { getIsUsingKeyModifier } from '@typed/dom'
 import * as Fx from '@typed/fx'
-import { EventHandler, html, many } from '@typed/html'
+import { EventHandler, html, many, when } from '@typed/html'
 import * as Navigation from '@typed/navigation'
 
 import { Intent, makeIntent, makeModel } from './application.js'
 import { Todo, ViewState } from './domain.js'
 import { viewStateToPath } from './infrastructure.js'
 
-type EventWithTarget<T extends HTMLElement> = Event & { target: T }
-
 export const TodoApp = Fx.gen(function* (_) {
   const model = yield* _(makeModel)
   const intent = makeIntent(model)
 
-  return html`<section class="todoapp">
-    <header class="todoapp__header">
-      <h1 class="todoapp__heading">todos</h1>
+  return html`<section class="todoapp ${model.viewState.map((s) => s.toLowerCase())}">
+    <header class="header">
+      <h1>todos</h1>
 
-      <input
-        class="todoapp__create-todo-input"
-        placeholder="What needs to be done?"
-        .value=${model.createTodoText}
-        oninput=${EventHandler((ev: EventWithTarget<HTMLInputElement>) =>
-          model.createTodoText.set(ev.target.value),
-        )}
-        onkeydown=${EventHandler((ev: KeyboardEvent) =>
-          ev.key === 'Enter' ? intent.createTodo : Effect.unit,
-        )}
-      />
+      <form class="add-todo" onsubmit=${EventHandler.preventDefault(() => intent.createTodo)}>
+        <input
+          class="new-todo"
+          placeholder="What needs to be done?"
+          .value=${model.createTodoText}
+          oninput=${EventHandler.target<HTMLInputElement>()((ev) =>
+            model.createTodoText.set(ev.target.value),
+          )}
+        />
+      </div>
     </header>
 
-    <main class="todoapp__main">
-      <ul class="todoapp__list">
+    <section class="main">
+      <input class="toggle-all" type="checkbox" ?checked=${model.allAreCompleted} />
+      <label for="toggle-all" onclick=${intent.toggleAllCompleted}>Mark all as complete</label>
+
+      <ul class="todo-list">
         ${many(
           model.todos,
           (todo) => TodoItem(todo, intent),
           (todo) => todo.id,
         )}
       </ul>
-    </main>
 
-    <footer class="todoapp__footer">
-      <p class="todoapp__todo-count">
-        ${model.remainingCount} item${model.remainingCount.map((x) => (x === 1 ? '' : 's'))} left
-      </p>
+      <footer class="footer">
+        <span class="todo-count">
+          ${model.remainingCount} item${model.remainingCount.map((c) => (c === 1 ? '' : 's'))} left
+        </span>
 
-      <ul class="todoapp__actions">
-        ${Object.values(ViewState).map(ActionLink)}
-      </ul>
+        <ul class="filters">
+          ${Object.values(ViewState).map((s) => ActionLink(s, model.viewState))}
+        </ul>
 
-      ${Fx.switchMap(model.completedCount, (count) =>
-        count === 0
-          ? Fx.succeed(null)
-          : html`<button onclick=${intent.clearCompletedTodos}>Clear completed</button>`,
-      )}
-    </footer>
+        ${when(
+          model.completedCount,
+          (count) => count > 0,
+          () =>
+            html`<button class="clear-completed" onclick=${intent.clearCompletedTodos}>
+              Clear completed
+            </button>`,
+        )}
+      </footer>
+    </section>
   </section>`
 })
 
-const ActionLink = (viewState: ViewState) =>
-  html`<li class="todoapp__action">
+const ActionLink = (viewState: ViewState, currentViewState: Fx.RefSubject<never, ViewState>) =>
+  html`<li>
     <a
-      class="todoapp__action-link"
+      class="${currentViewState.map((current) => (current === viewState ? 'selected' : null))}"
       href=${viewStateToPath(viewState)}
-      onclick=${EventHandler.preventDefault(() => Navigation.navigate(viewStateToPath(viewState)))}
+      onclick=${EventHandler.preventDefault.if(Predicate.not(getIsUsingKeyModifier), () =>
+        Navigation.navigate(viewStateToPath(viewState)),
+      )}
       >${viewState}</a
     >
   </li>`
@@ -72,23 +79,46 @@ const TodoItem = (todo: Fx.RefSubject<never, Todo>, intent: Intent) =>
   Fx.gen(function* (_) {
     const { id } = yield* _(todo)
 
-    return html`<li class="todoapp__list-item">
-      <input
-        type="checkbox"
-        class="todoapp__checkbox"
-        .checked=${todo.map((t) => t.completed)}
-        onclick=${intent.toggleTodoCompletion(id)}
-      />
+    // Update the todo's text using the provided RefSubject
+    const updateText = (text: string) => todo.update((t) => ({ ...t, text }))
+
+    // Track whether the todo is being edited
+    const isEditing = yield* _(Fx.makeRef(Effect.succeed(false)))
+
+    // Submit the todo when the user is done editing
+    const submit = todo.pipe(
+      Effect.flatMap((t) =>
+        t.text.trim() === '' ? intent.deleteTodo(t.id) : intent.editTodo(t.id, t.text),
+      ),
+      Effect.flatMap(() => isEditing.set(false)),
+    )
+
+    return html`<li
+      class="${todo.map((t) => (t.completed ? 'completed' : ''))} ${isEditing.map((editing) =>
+        editing ? 'editing' : '',
+      )}"
+    >
+      <div class="view">
+        <input
+          type="checkbox"
+          class="toggle"
+          .checked=${todo.map((t) => t.completed)}
+          onclick=${intent.toggleTodoCompletion(id)}
+        />
+
+        <label ondblclick=${isEditing.set(true)}>${todo.map((t) => t.text)} </label>
+
+        <button class="destroy" onclick=${intent.deleteTodo(id)}></button>
+      </div>
 
       <input
-        class="todoapp__input"
+        class="edit"
         .value=${todo.map((t) => t.text)}
-        oninput=${EventHandler((ev: EventWithTarget<HTMLInputElement>) =>
-          todo.update((t) => ({ ...t, text: ev.target.value })),
+        oninput=${EventHandler.target<HTMLInputElement>()((ev) => updateText(ev.target.value))}
+        onblur=${EventHandler(() => submit, { capture: true })}
+        onkeydown=${EventHandler.target<HTMLInputElement, KeyboardEvent>()((ev) =>
+          ev.key === 'Enter' ? submit : Effect.unit,
         )}
-        onblur=${Effect.flatMap(todo, (t) => intent.editTodo(t.id, t.text))}
       />
-
-      <button class="todoapp__remove-button" onclick=${intent.deleteTodo(id)}>×</button>
     </li>`
   })

@@ -59,3 +59,11 @@ export function dispatchEventWith<
       target.dispatchEvent(new globalThis.Event(event as string, options)),
     )
 }
+
+export function getIsUsingKeyModifier(event: KeyboardEvent): boolean {
+  return event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+}
+
+export type EventWithTarget<T extends HTMLElement> = Event & { target: T }
+
+export type EventWithCurrentTarget<T extends HTMLElement> = Event & { currentTarget: T }

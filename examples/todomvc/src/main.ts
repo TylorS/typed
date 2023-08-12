@@ -10,10 +10,10 @@ import { render } from '@typed/html/browser'
 import { Live } from './infrastructure.js'
 import { TodoApp } from './presentation.js'
 
-const rootElement = document.getElementById('application')
+const rootElement = document.getElementById('todoapp')
 
 if (!rootElement) {
-  throw new Error('Unable to find root element #application')
+  throw new Error('Unable to find root element #todoapp')
 }
 
 pipe(

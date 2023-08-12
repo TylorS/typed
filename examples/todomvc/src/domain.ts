@@ -28,6 +28,13 @@ export function toggleCompleted(list: TodoList, id: TodoId): TodoList {
   return updateTodo(list, id, (todo) => ({ ...todo, completed: !todo.completed }))
 }
 
+export function toggleAllCompleted(list: TodoList): TodoList {
+  if (list.every((todo) => todo.completed))
+    return list.map((todo) => ({ ...todo, completed: false }))
+
+  return list.map((todo) => ({ ...todo, completed: true }))
+}
+
 export function deleteTodo(list: TodoList, id: TodoId): TodoList {
   return list.filter((todo) => todo.id !== id)
 }
@@ -42,6 +49,10 @@ export function remainingCount(list: TodoList): number {
 
 export function completedCount(list: TodoList): number {
   return list.filter((todo) => todo.completed).length
+}
+
+export function allAreCompleted(list: TodoList): boolean {
+  return list.length > 0 && list.every((todo) => todo.completed)
 }
 
 export enum ViewState {

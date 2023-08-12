@@ -1,3 +1,4 @@
+import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
@@ -29,6 +30,7 @@ export const makeModel = Effect.gen(function* (_) {
   )
   const remainingCount = todoList.map(Domain.remainingCount)
   const completedCount = todoList.map(Domain.completedCount)
+  const allAreCompleted = todoList.map(Domain.allAreCompleted)
 
   // Write todoList whenever it changes
   yield* _(todoList, Fx.observe(WriteTodoList.apply), Effect.fork)
@@ -40,6 +42,7 @@ export const makeModel = Effect.gen(function* (_) {
     todos,
     remainingCount,
     completedCount,
+    allAreCompleted,
   } as const
 })
 
@@ -48,9 +51,16 @@ export type Model = Effect.Effect.Success<typeof makeModel>
 export function makeIntent(model: Model) {
   return {
     createTodo: model.createTodoText.pipe(
-      Effect.flatMap(CreateTodo.apply),
-      Effect.tap((todo) => model.todoList.update((todos) => [...todos, todo])),
-      Effect.tap(() => model.createTodoText.set('')),
+      Effect.flatMap((text) =>
+        Effect.if(text.trim() === '', {
+          onFalse: CreateTodo.apply(text).pipe(
+            Effect.tap((todo) => model.todoList.update((todos) => [...todos, todo])),
+            Effect.tap(() => model.createTodoText.set('')),
+            Effect.map(Option.some),
+          ),
+          onTrue: Effect.succeedNone,
+        }),
+      ),
     ),
     editTodo: (id: Domain.TodoId, text: string) =>
       model.todoList.update((todos) => Domain.editText(todos, id, text)),
@@ -59,6 +69,7 @@ export function makeIntent(model: Model) {
     deleteTodo: (id: Domain.TodoId) =>
       model.todoList.update((todos) => Domain.deleteTodo(todos, id)),
     clearCompletedTodos: model.todoList.update(Domain.clearCompleted),
+    toggleAllCompleted: model.todoList.update(Domain.toggleAllCompleted),
   } as const
 }
 

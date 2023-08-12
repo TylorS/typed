@@ -26,25 +26,21 @@ const parseJson = <I, A>(schema: Schema.Schema<I, A>) =>
     (i) => ParseResult.success(JSON.stringify(i)),
   )
 
-const TodoListFromJson = parseJson(TodoList)
-const decodeJson = Schema.decodeResult(TodoListFromJson)
-const encodeJson = Schema.encode(TodoListFromJson)
-
 const todosKey = 'todos'
+const storage = DOM.SchemaStorage({
+  [todosKey]: parseJson(TodoList),
+})
 
 export const TodosLive = Layer.mergeAll(
-  ReadTodoList.implement(() => {
-    return DOM.getItem(todosKey).pipe(
-      Effect.flatten,
-      Effect.flatMap(decodeJson),
+  ReadTodoList.implement(() =>
+    storage.get(todosKey).pipe(
+      Effect.tap(Effect.log),
+      Effect.some,
       Effect.catchAll(() => Effect.succeed([])),
-    )
-  }),
-  WriteTodoList.implement((todoList) =>
-    encodeJson(todoList).pipe(
-      Effect.flatMap((todos) => DOM.setItem(todosKey, todos)),
-      Effect.catchAll(() => Effect.unit),
     ),
+  ),
+  WriteTodoList.implement((todoList) =>
+    storage.set(todosKey, todoList).pipe(Effect.catchAll(() => Effect.unit)),
   ),
   CreateTodo.implement((text) =>
     Effect.succeed({
@@ -73,13 +69,13 @@ const viewStatesToPath = {
 
 export const viewStateToPath = (viewState: ViewState) => viewStatesToPath[viewState]
 
-export const ViewStateLive = Layer.effect(
-  CurrentViewState.tag,
+export const ViewStateLive = CurrentViewState.tag.layer(
   Effect.gen(function* (_) {
     const { navigation } = yield* _(Router.Router)
     const currentRoute = navigation.currentEntry.map((entry) => getCurrentRoute(entry.url.pathname))
     const ref = yield* _(Fx.makeRef(currentRoute))
 
+    // Route changes should update the view state
     yield* _(router, Fx.observe(ref.set), Effect.forkScoped)
 
     // View state changes should update the route
