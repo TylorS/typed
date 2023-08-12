@@ -47,7 +47,7 @@ export function matchRoutes<
       ) as RENDERABLE
 
       return [
-        match.route,
+        nestedRouter.route,
         render,
         match.options?.guard as
           | ((params: ParamsOf<string>) => Effect.Effect<_R, NavigationError, boolean>)
