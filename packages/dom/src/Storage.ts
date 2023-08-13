@@ -159,6 +159,8 @@ export interface SchemaStorage<Schema extends Readonly<Record<string, S.Schema<s
 
   readonly remove: <K extends keyof Schema & string>(key: K) => StorageEffect<never, never, void>
 
+  readonly key: <K extends keyof Schema & string>(key: K) => SchemaKeyStorage<Schema[K]>
+
   readonly events: {
     readonly get: <K extends keyof Schema & string>(
       key: K,
@@ -174,6 +176,34 @@ export interface SchemaStorage<Schema extends Readonly<Record<string, S.Schema<s
     readonly remove: <K extends keyof Schema & string>(
       key: K,
     ) => StorageEffect<GlobalThis | Window, never, void>
+  }
+}
+
+export interface SchemaKeyStorage<S extends S.Schema<string, any>> {
+  readonly schema: S
+
+  readonly get: (
+    options?: ParseOptions,
+  ) => StorageEffect<never, ParseResult.ParseError, O.Option<S.To<S>>>
+
+  readonly set: (
+    value: S.To<S>,
+    options?: ParseOptions,
+  ) => StorageEffect<never, ParseResult.ParseError, void>
+
+  readonly remove: () => StorageEffect<never, never, void>
+
+  readonly events: {
+    readonly get: (
+      options?: ParseOptions,
+    ) => StorageEffect<never, ParseResult.ParseError, O.Option<S.To<S>>>
+
+    readonly set: (
+      value: S.To<S>,
+      options?: ParseOptions,
+    ) => StorageEffect<GlobalThis | Window, ParseResult.ParseError, void>
+
+    readonly remove: StorageEffect<GlobalThis | Window, never, void>
   }
 }
 
@@ -263,6 +293,7 @@ export function SchemaStorage<
       options?: ParseOptions,
     ) => set(key, value, options),
     remove: <K extends keyof Schemas & string>(key: K) => StorageEffect(removeItem(key)),
+    key: <K extends keyof Schemas & string>(key: K) => SchemaKeyStorage(key, schemas[key]),
     events: {
       get,
       set: <K extends keyof Schemas & string>(
@@ -280,6 +311,58 @@ export function SchemaStorage<
           }),
         ),
       remove: <K extends keyof Schemas & string>(key: K) => storageEvents.removeItem(key),
+    },
+  }
+}
+
+export function SchemaKeyStorage<K extends string, S extends S.Schema<string, any>>(
+  key: K,
+  schema: S,
+): SchemaKeyStorage<S> {
+  const decoder = P.decode(schema)
+  const encoder = P.encode(schema)
+
+  const get = (options?: ParseOptions) =>
+    StorageEffect(
+      Effect.gen(function* ($) {
+        const option = yield* $(getItem(key))
+
+        if (O.isNone(option)) {
+          return O.none()
+        }
+
+        const result = yield* $(decoder(option.value, options))
+
+        return O.some(result)
+      }),
+    )
+
+  const set = (value: S.To<S>, options?: ParseOptions) =>
+    StorageEffect(
+      Effect.gen(function* ($) {
+        const encoded = yield* $(encoder(value, options))
+
+        return yield* $(setItem(key, encoded))
+      }),
+    )
+
+  return {
+    schema,
+    get,
+    set,
+    remove: () => StorageEffect(removeItem(key)),
+    events: {
+      get,
+      set: (value: S.To<S>, options?: ParseOptions) =>
+        StorageEffect(
+          Effect.gen(function* ($) {
+            const encoded = yield* $(encoder(value, options))
+            const json = JSON.stringify(encoded)
+
+            return yield* $(storageEvents.setItem(key, json))
+          }),
+        ),
+      remove: storageEvents.removeItem(key),
     },
   }
 }

@@ -14,16 +14,17 @@ const todosKey = 'todos'
 const storage = DOM.SchemaStorage(({ json }) => ({
   [todosKey]: json(TodoList),
 }))
+const todos = storage.key(todosKey)
 
 export const TodosLive = Layer.mergeAll(
   ReadTodoList.implement(() =>
-    storage.get(todosKey).pipe(
+    todos.get().pipe(
       Effect.some,
       Effect.catchAll(() => Effect.succeed([])),
     ),
   ),
   WriteTodoList.implement((todoList) =>
-    storage.set(todosKey, todoList).pipe(Effect.catchAll(() => Effect.unit)),
+    todos.set(todoList).pipe(Effect.catchAll(() => Effect.unit)),
   ),
   CreateTodo.implement((text) =>
     Effect.succeed({
