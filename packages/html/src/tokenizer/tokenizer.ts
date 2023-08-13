@@ -231,6 +231,9 @@ class Tokenizer implements Iterable<Token.Token> {
       yield* this.parseAttribute(next.match[2], next.match[4])
     } else if ((next = this.chunk(getOpeningTagEnd))) {
       yield new Token.OpeningTagEndToken(this.currentTag!.value)
+    } else if ((next = this.chunk(getClosingTag))) {
+      yield new Token.ClosingTagToken(next.match[3])
+      this.context = 'text'
     } else if ((next = this.chunk(getAllTextUntilElementClose(this.currentTag!.value)))) {
       const text = next.match[1]
 

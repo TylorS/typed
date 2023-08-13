@@ -703,6 +703,137 @@ const testCases: TestCase[] = [
       new ClosingTagToken('div'),
     ],
   },
+  {
+    only: true,
+    name: 'parses this template #2',
+    template: splitTemplateByParts(`<section
+    ref="{{__PART0__}}"
+    class="seasoned-input-field {{__PART1__}}"
+  >
+    <div
+      class={{__PART2__}}
+    >
+      {{__PART3__}}
+
+      <textarea
+        ref="{{__PART4__}}"
+        class="seasoned-input-field__textarea"
+        type="{{__PART5__}}"
+        placeholder=" "
+        ?disabled="{{__PART6__}}"
+        id="{{__PART7__}}"
+        name="{{__PART8__}}"
+        .value="{{__PART9__}}"
+        onchange="{{__PART10__}}"
+        oninput="{{__PART11__}}"
+        onkeydown={{__PART12__}}
+        onfocus={{__PART13__}}
+        onblur={{__PART14__}}
+        tabindex="{{__PART15__}}"
+        step="{{__PART16__}}"
+        min="{{__PART17__}}"
+        minlength="{{__PART18__}}"
+        max="{{__PART19__}}"
+        maxlength="{{__PART20__}}"
+        rows="{{__PART21__}}"
+      ></textarea>
+
+      {{__PART22__}}
+    </div>
+
+    {{__PART23__}}
+    {{__PART24__}}
+  </section>`),
+    expected: [
+      new OpeningTagToken('section'),
+      new RefAttributeStartToken(),
+      new PartToken(0),
+      new RefAttributeEndToken(),
+      new ClassNameAttributeStartToken(),
+      new TextToken('seasoned-input-field '),
+      new PartToken(1),
+      new ClassNameAttributeEndToken(),
+      new OpeningTagEndToken('section'),
+      new TextToken('\n    '),
+      new OpeningTagToken('div'),
+      new ClassNameAttributeStartToken(),
+      new PartToken(2),
+      new ClassNameAttributeEndToken(),
+      new OpeningTagEndToken('div'),
+      new TextToken('\n      '),
+      new PartToken(3),
+      new TextToken('\n\n      '),
+      new OpeningTagToken('textarea'),
+      new RefAttributeStartToken(),
+      new PartToken(4),
+      new RefAttributeEndToken(),
+      new AttributeToken('class', 'seasoned-input-field__textarea'),
+      new AttributeStartToken('type'),
+      new PartToken(5),
+      new AttributeEndToken('type'),
+      new AttributeToken('placeholder', ' '),
+      new BooleanAttributeStartToken('disabled'),
+      new PartToken(6),
+      new BooleanAttributeEndToken('disabled'),
+      new AttributeStartToken('id'),
+      new PartToken(7),
+      new AttributeEndToken('id'),
+      new AttributeStartToken('name'),
+      new PartToken(8),
+      new AttributeEndToken('name'),
+      new PropertyAttributeStartToken('value'),
+      new PartToken(9),
+      new PropertyAttributeEndToken('value'),
+      new EventAttributeStartToken('change'),
+      new PartToken(10),
+      new EventAttributeEndToken('change'),
+      new EventAttributeStartToken('input'),
+      new PartToken(11),
+      new EventAttributeEndToken('input'),
+      new EventAttributeStartToken('keydown'),
+      new PartToken(12),
+      new EventAttributeEndToken('keydown'),
+      new EventAttributeStartToken('focus'),
+      new PartToken(13),
+      new EventAttributeEndToken('focus'),
+      new EventAttributeStartToken('blur'),
+      new PartToken(14),
+      new EventAttributeEndToken('blur'),
+      new AttributeStartToken('tabindex'),
+      new PartToken(15),
+      new AttributeEndToken('tabindex'),
+      new AttributeStartToken('step'),
+      new PartToken(16),
+      new AttributeEndToken('step'),
+      new AttributeStartToken('min'),
+      new PartToken(17),
+      new AttributeEndToken('min'),
+      new AttributeStartToken('minlength'),
+      new PartToken(18),
+      new AttributeEndToken('minlength'),
+      new AttributeStartToken('max'),
+      new PartToken(19),
+      new AttributeEndToken('max'),
+      new AttributeStartToken('maxlength'),
+      new PartToken(20),
+      new AttributeEndToken('maxlength'),
+      new AttributeStartToken('rows'),
+      new PartToken(21),
+      new AttributeEndToken('rows'),
+      new OpeningTagEndToken('textarea'),
+      new ClosingTagToken('textarea'),
+      new TextToken('\n\n      '),
+      new PartToken(22),
+      new TextToken('\n    '),
+      new ClosingTagToken('div'),
+      new TextToken('\n\n    '),
+      new PartToken(23),
+      new TextToken('\n    '),
+      new PartToken(24),
+      new TextToken('\n  '),
+      new ClosingTagToken('section'),
+    ],
+  },
 ]
 
 describe(tokenizeTemplateStrings.name, () => {
