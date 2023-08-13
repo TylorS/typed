@@ -704,7 +704,6 @@ const testCases: TestCase[] = [
     ],
   },
   {
-    only: true,
     name: 'parses this template #2',
     template: splitTemplateByParts(`<section
     ref="{{__PART0__}}"
