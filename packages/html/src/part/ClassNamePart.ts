@@ -71,18 +71,43 @@ export class ClassNamePart extends BasePart<readonly string[]> {
   }
 
   static fromElement(element: Element, index: number) {
+    let previous: readonly string[] = Array.from(element.classList)
     const setClassName = (classNames: readonly string[]) =>
       Effect.sync(() => {
-        element.classList.remove(
-          ...Array.from(element.classList).filter((c) => !classNames.includes(c)),
-        )
-        element.classList.add(...classNames)
+        const { added, removed } = diffClassNames(previous, classNames)
+
+        previous = classNames
+        element.classList.remove(...removed)
+        element.classList.add(...added)
       })
 
-    return new ClassNamePart(setClassName, index, Array.from(element.classList))
+    return new ClassNamePart(setClassName, index, previous)
   }
 }
 
 function isString(value: unknown): value is string {
   return typeof value === 'string'
+}
+
+function diffClassNames(previous: readonly string[], updated: readonly string[]) {
+  const added = new Set<string>()
+  const removed = new Set<string>()
+
+  for (let i = 0; i < updated.length; i++) {
+    const className = updated[i]
+
+    if (!previous.includes(className)) {
+      added.add(className)
+    }
+  }
+
+  for (let i = 0; i < previous.length; i++) {
+    const className = previous[i]
+
+    if (!updated.includes(className)) {
+      removed.add(className)
+    }
+  }
+
+  return { added, removed } as const
 }
