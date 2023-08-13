@@ -1,6 +1,6 @@
 {
   "name": "@typed/dom",
-  "version": "8.17.1",
+  "version": "8.17.2",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
