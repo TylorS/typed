@@ -38,15 +38,17 @@ export function mergeBufferConcurrently<FXS extends Fx.TupleAny>(
       }
 
       function next(index: number): Effect.Effect<R2, never, void> {
-        finished.delete(index)
+        return Effect.suspend(() => {
+          finished.delete(index)
 
-        const nextIndex = ++currentIndex
+          const nextIndex = ++currentIndex
 
-        if (finished.has(nextIndex)) {
-          return onFinished(nextIndex, finished.get(nextIndex) as Chunk.Chunk<O>)
-        }
+          if (finished.has(nextIndex)) {
+            return onFinished(nextIndex, finished.get(nextIndex) as Chunk.Chunk<O>)
+          }
 
-        return Effect.unit
+          return Effect.unit
+        })
       }
 
       return Effect.asUnit(
@@ -81,7 +83,7 @@ export function mergeBufferConcurrently<FXS extends Fx.TupleAny>(
                             isEmitting = true
 
                             // Emit the values
-                            return Effect.all(Chunk.map(toEmit, sink.event))
+                            return Effect.all(Chunk.map(toEmit, sink.event), { discard: true })
                           }
 
                           // Otherwise, buffer the value
@@ -97,7 +99,7 @@ export function mergeBufferConcurrently<FXS extends Fx.TupleAny>(
               )
             }),
           ),
-          { concurrency: 'unbounded' },
+          { concurrency: 'unbounded', discard: true },
         ),
       )
     }),
