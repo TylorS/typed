@@ -73,14 +73,15 @@ export function mergeBufferConcurrently<FXS extends Fx.TupleAny>(
 
                           // This index is ready to emit values
                           if (index === currentIndex) {
+                            // Fast-path for remaining values
+                            isEmitting = true
+
                             if (Chunk.size(buffer) === 0) return sink.event(o)
 
                             // Drain the current buffer first
                             const toEmit = Chunk.append(buffer, o)
                             // Clear the buffer
                             buffer = Chunk.empty()
-                            // Fast-path for remaining values
-                            isEmitting = true
 
                             // Emit the values
                             return Effect.all(Chunk.map(toEmit, sink.event), { discard: true })
