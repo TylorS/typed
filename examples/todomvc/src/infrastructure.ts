@@ -1,4 +1,3 @@
-import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as DOM from '@typed/dom'
@@ -36,14 +35,16 @@ export const TodosLive = Layer.mergeAll(
   ),
 )
 
-const homeRoute = Route.Route('/')
+const homeRoute = Route.Route('/', { match: { end: true } })
 const activeRoute = Route.Route('/active')
 const completedRoute = Route.Route('/completed')
 
-const router = Router.match(activeRoute, () => Fx.succeed(ViewState.Active))
-  .match(completedRoute, () => Fx.succeed(ViewState.Completed))
-  .match(homeRoute, () => Fx.succeed(ViewState.All))
-  .notFound(() => Fx.succeed(ViewState.All))
+const router = Router.redirectEffect(
+  Router.match(activeRoute, () => Fx.succeed(ViewState.Active))
+    .match(completedRoute, () => Fx.succeed(ViewState.Completed))
+    .match(homeRoute, () => Fx.succeed(ViewState.All)),
+  Router.Redirect.redirect(homeRoute.path),
+)
 
 const viewStatesToPath = {
   [ViewState.All]: homeRoute.path,
@@ -53,43 +54,6 @@ const viewStatesToPath = {
 
 export const viewStateToPath = (viewState: ViewState) => viewStatesToPath[viewState]
 
-export const ViewStateLive = CurrentViewState.tag.layer(
-  Effect.gen(function* (_) {
-    const { navigation } = yield* _(Router.Router)
-    const currentRoute = navigation.currentEntry.map((entry) => getCurrentRoute(entry.url.pathname))
-    const ref = yield* _(Fx.makeRef(currentRoute))
-
-    // Route changes should update the view state
-    yield* _(router, Fx.observe(ref.set), Effect.forkScoped)
-
-    // View state changes should update the route
-    yield* _(
-      ref,
-      Fx.observe((state) =>
-        Effect.gen(function* (_) {
-          const current = yield* _(currentRoute)
-
-          // Avoid circular update loop
-          if (current === state) return Effect.unit
-
-          return navigation.navigate(viewStateToPath(state))
-        }),
-      ),
-      Effect.forkScoped,
-    )
-
-    return ref
-  }),
-)
-
-function getCurrentRoute(path: string) {
-  if (Option.isSome(activeRoute.match(path))) {
-    return ViewState.Active
-  } else if (Option.isSome(completedRoute.match(path))) {
-    return ViewState.Completed
-  } else {
-    return ViewState.All
-  }
-}
+export const ViewStateLive = CurrentViewState.tag.layer(Fx.asRef(router))
 
 export const Live = Layer.provideMerge(browser(window), Layer.mergeAll(TodosLive, ViewStateLive))

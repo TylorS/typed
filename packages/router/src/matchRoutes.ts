@@ -47,7 +47,8 @@ export function matchRoutes<
       ) as RENDERABLE
 
       return [
-        nestedRouter.route,
+        // If the route is the a single slash, use the route directly to keep any parsing options.
+        match.route.path === '/' ? match.route : nestedRouter.route,
         render,
         match.options?.guard as
           | ((params: ParamsOf<string>) => Effect.Effect<_R, NavigationError, boolean>)
@@ -105,11 +106,12 @@ export function matchRoutes<
     return pipe(
       matched,
       isBrowser ? identity : Fx.take(1),
-      Redirect.switchMatch(
-        (r) => Fx.as(Fx.fromEffect(router.navigation.navigate(r.url, r.options)), Option.none()),
-        Fx.map(Option.some),
+      Fx.switchLatest,
+      Redirect.switchCatch((redirect) =>
+        Fx.fromFxEffect(
+          Effect.map(router.navigation.navigate(redirect.url, redirect.options), () => Fx.never()),
+        ),
       ),
-      Fx.compact,
     )
   })
 }
