@@ -5,7 +5,7 @@ import * as Route from '@typed/route'
 import * as Router from '@typed/router'
 
 // Type-safe routes
-export const homeRoute = Route.Route('/', { match: { end: true } }) // Configures path-to-regexp to only match root path
+export const homeRoute = Route.Route('/') // Configures path-to-regexp to only match root path
 export const fooRoute = Route.Route('/foo/:foo')
 export const barRoute = Route.Route('/bar/:bar')
 export const fooBarRoute = fooRoute.concat(barRoute)
@@ -29,7 +29,9 @@ export const router = Router.match(
 )
   .match(fooRoute, (params) => html`<div>Foo: ${params.map((p) => p.foo)}</div>`)
   .match(barRoute, (params) => html`<div>Bar: ${params.map((p) => p.bar)}</div>`)
-  .match(homeRoute, () => html`<div>Home</div>`)
+  .match(homeRoute, () => html`<div>Home</div>`, {
+    guard: () => Router.CurrentPath.pipe(Effect.map((path) => path === '/')),
+  })
   .notFound(() => counter)
 
 // Layout
