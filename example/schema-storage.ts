@@ -3,10 +3,10 @@ import * as Schema from '@effect/schema/Schema'
 import { SchemaStorage, Storage } from '@typed/dom'
 import { catchNoSuchElement } from '@typed/error'
 
-const storage = SchemaStorage({
+const storage = SchemaStorage(() => ({
   foo: Schema.string,
   bar: Schema.NumberFromString,
-})
+}))
 
 const program = Effect.gen(function* (_) {
   yield* _(storage.set('foo', 'hello world'))

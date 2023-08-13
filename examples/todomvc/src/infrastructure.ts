@@ -1,8 +1,6 @@
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
-import * as ParseResult from '@effect/schema/ParseResult'
-import * as Schema from '@effect/schema/Schema'
 import * as DOM from '@typed/dom'
 import { browser } from '@typed/framework/browser'
 import * as Fx from '@typed/fx'
@@ -12,29 +10,14 @@ import * as Router from '@typed/router'
 import { CreateTodo, CurrentViewState, ReadTodoList, WriteTodoList } from './application.js'
 import { TodoId, TodoList, ViewState } from './domain.js'
 
-const parseJson = <I, A>(schema: Schema.Schema<I, A>) =>
-  Schema.transformResult(
-    Schema.string,
-    schema,
-    (s, options) => {
-      try {
-        return Schema.parseResult(Schema.from(schema))(JSON.parse(s), options)
-      } catch {
-        return ParseResult.failure(ParseResult.type(schema.ast, s))
-      }
-    },
-    (i) => ParseResult.success(JSON.stringify(i)),
-  )
-
 const todosKey = 'todos'
-const storage = DOM.SchemaStorage({
-  [todosKey]: parseJson(TodoList),
-})
+const storage = DOM.SchemaStorage(({ json }) => ({
+  [todosKey]: json(TodoList),
+}))
 
 export const TodosLive = Layer.mergeAll(
   ReadTodoList.implement(() =>
     storage.get(todosKey).pipe(
-      Effect.tap(Effect.log),
       Effect.some,
       Effect.catchAll(() => Effect.succeed([])),
     ),

@@ -4,7 +4,7 @@ import type * as Layer from '@effect/io/Layer'
 import type { ParseOptions } from '@effect/schema/AST'
 import * as ParseResult from '@effect/schema/ParseResult'
 import * as P from '@effect/schema/Parser'
-import type * as S from '@effect/schema/Schema'
+import * as S from '@effect/schema/Schema'
 import * as C from '@typed/context'
 import type * as Fx from '@typed/fx'
 
@@ -177,26 +177,51 @@ export interface SchemaStorage<Schema extends Readonly<Record<string, S.Schema<s
   }
 }
 
+const parseJson = <I, A>(schema: S.Schema<I, A>) =>
+  S.transformResult(
+    S.string,
+    schema,
+    (s, options) => {
+      try {
+        return S.decode(S.from(schema))(JSON.parse(s), options)
+      } catch (err) {
+        return ParseResult.failure(ParseResult.type(schema.ast, s))
+      }
+    },
+    (i) => {
+      try {
+        return ParseResult.success(JSON.stringify(i))
+      } catch {
+        return ParseResult.failure(ParseResult.type(schema.ast, i))
+      }
+    },
+  )
+
+export type SchemaUtils = {
+  readonly json: typeof parseJson
+}
+
 export function SchemaStorage<
   const Schemas extends Readonly<Record<string, S.Schema<string, any>>>,
->(schema: Schemas): SchemaStorage<Schemas> {
+>(getSchemas: (utils: SchemaUtils) => Schemas): SchemaStorage<Schemas> {
+  const schemas = getSchemas({ json: parseJson })
   const decoders: Partial<{
     [K in keyof Schemas]: (
       i: S.From<Schemas[K]>,
       options?: ParseOptions,
-    ) => ParseResult.ParseResult<S.To<Schemas[K]>>
+    ) => Effect.Effect<never, ParseResult.ParseError, S.To<Schemas[K]>>
   }> = {}
   const getDecoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof decoders)[K]> =>
-    decoders[key] || (decoders[key] = P.decodeResult(schema[key]))
+    decoders[key] || (decoders[key] = P.decode(schemas[key]))
 
   const encoders: Partial<{
     [K in keyof Schemas]: (
       i: S.To<Schemas[K]>,
       options?: ParseOptions,
-    ) => ParseResult.ParseResult<S.From<Schemas[K]>>
+    ) => Effect.Effect<never, ParseResult.ParseError, S.From<Schemas[K]>>
   }> = {}
   const getEncoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof encoders)[K]> =>
-    encoders[key] || (encoders[key] = P.encodeResult(schema[key]))
+    encoders[key] || (encoders[key] = P.encode(schemas[key]))
 
   const get = <K extends keyof Schemas & string>(key: K, options?: ParseOptions) =>
     StorageEffect(
@@ -207,9 +232,11 @@ export function SchemaStorage<
           return O.none()
         }
 
-        const result = yield* $(getDecoder(key)(JSON.parse(option.value), options))
+        const decoder = getDecoder(key)
 
-        return O.some(result.right)
+        const result = yield* $(decoder(option.value, options))
+
+        return O.some(result)
       }),
     )
 
@@ -222,14 +249,13 @@ export function SchemaStorage<
       Effect.gen(function* ($) {
         const encoder = getEncoder(key)
         const encoded = yield* $(encoder(value, options))
-        const json = JSON.stringify(encoded)
 
-        return yield* $(setItem(key, json))
+        return yield* $(setItem(key, encoded))
       }),
     )
 
   return {
-    schema,
+    schema: schemas,
     get,
     set: <K extends keyof Schemas & string>(
       key: K,
