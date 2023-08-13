@@ -57,7 +57,11 @@ export const patchHistory: Effect.Effect<
       history.scrollRestoration = value
     },
     get state() {
-      return stateDescriptor?.get?.call(history)
+      const state = stateDescriptor?.get?.call(history)
+
+      if (state && state.key && state.state) return state.state
+
+      return state
     },
     back: history.back.bind(history),
     forward: history.forward.bind(history),
