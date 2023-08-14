@@ -39,13 +39,6 @@ const homeRoute = Route.Route('/', { match: { end: true } })
 const activeRoute = Route.Route('/active')
 const completedRoute = Route.Route('/completed')
 
-const router = Router.redirectEffect(
-  Router.match(activeRoute, () => Fx.succeed(ViewState.Active))
-    .match(completedRoute, () => Fx.succeed(ViewState.Completed))
-    .match(homeRoute, () => Fx.succeed(ViewState.All)),
-  Router.Redirect.redirect(homeRoute.path),
-)
-
 const viewStatesToPath = {
   [ViewState.All]: homeRoute.path,
   [ViewState.Active]: activeRoute.path,
@@ -53,6 +46,13 @@ const viewStatesToPath = {
 }
 
 export const viewStateToPath = (viewState: ViewState) => viewStatesToPath[viewState]
+
+const router = Router.redirectEffect(
+  Router.match(activeRoute, () => Fx.succeed(ViewState.Active))
+    .match(completedRoute, () => Fx.succeed(ViewState.Completed))
+    .match(homeRoute, () => Fx.succeed(ViewState.All)),
+  Router.Redirect.redirect(homeRoute.path),
+)
 
 export const ViewStateLive = CurrentViewState.tag.layer(Fx.asRef(router))
 

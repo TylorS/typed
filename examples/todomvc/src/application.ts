@@ -1,9 +1,12 @@
+import { flow } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
 
 import * as Domain from './domain.js'
+
+/* #region Services */
 
 export const ReadTodoList = Context.Fn<() => Effect.Effect<never, never, Domain.TodoList>>()(
   '@typed/TodoApp/ReadTodoList',
@@ -20,27 +23,27 @@ export const CreateTodo = Context.Fn<(text: string) => Effect.Effect<never, neve
 export const CurrentViewState = Context.Ref(Effect.succeed<Domain.ViewState>(Domain.ViewState.All))(
   '@typed/TodoApp/CurrentViewState',
 )
+/* #endregion */
+
+/* #region Model */
 
 export const makeModel = Effect.gen(function* (_) {
-  const todoList = yield* _(Fx.makeRef(ReadTodoList.apply()))
+  const todoList = yield* _(Fx.makeRefArray(ReadTodoList.apply()))
   const createTodoText = yield* _(Fx.makeRef(Effect.succeed('')))
   const viewState = yield* _(CurrentViewState.tag)
   const todos = Fx.RefSubject.tuple(todoList, viewState).map((args) =>
     Domain.filterViewState(...args),
   )
-  const remainingCount = todoList.map(Domain.remainingCount)
+  const activeCount = todoList.map(Domain.activeCount)
   const completedCount = todoList.map(Domain.completedCount)
   const allAreCompleted = todoList.map(Domain.allAreCompleted)
-
-  // Write todoList whenever it changes
-  yield* _(todoList, Fx.observe(WriteTodoList.apply), Effect.fork)
 
   return {
     todoList,
     createTodoText,
     viewState,
     todos,
-    remainingCount,
+    activeCount,
     completedCount,
     allAreCompleted,
   } as const
@@ -48,29 +51,49 @@ export const makeModel = Effect.gen(function* (_) {
 
 export type Model = Effect.Effect.Success<typeof makeModel>
 
+/* #endregion */
+
+/* #region Intent */
+
 export function makeIntent(model: Model) {
   return {
-    createTodo: model.createTodoText.pipe(
-      Effect.flatMap((text) =>
-        Effect.if(text.trim() === '', {
-          onFalse: CreateTodo.apply(text).pipe(
-            Effect.tap((todo) => model.todoList.update((todos) => [...todos, todo])),
-            Effect.tap(() => model.createTodoText.set('')),
-            Effect.map(Option.some),
-          ),
-          onTrue: Effect.succeedNone,
-        }),
-      ),
-    ),
-    editTodo: (id: Domain.TodoId, text: string) =>
-      model.todoList.update((todos) => Domain.editText(todos, id, text)),
-    toggleTodoCompletion: (id: Domain.TodoId) =>
-      model.todoList.update((todos) => Domain.toggleCompleted(todos, id)),
-    deleteTodo: (id: Domain.TodoId) =>
-      model.todoList.update((todos) => Domain.deleteTodo(todos, id)),
+    createTodo: makeCreateTodo(model),
+    editTodo: makeEditTodo(model),
+    toggleTodoCompleted: flow(Domain.toggleCompleted, model.todoList.update),
+    deleteTodo: flow(Domain.deleteTodo, model.todoList.update),
     clearCompletedTodos: model.todoList.update(Domain.clearCompleted),
     toggleAllCompleted: model.todoList.update(Domain.toggleAllCompleted),
   } as const
 }
 
+export function makeCreateTodo({
+  createTodoText,
+  todoList,
+}: Model): Effect.Effect<
+  Context.Tag.Identifier<typeof CreateTodo>,
+  never,
+  Option.Option<Domain.Todo>
+> {
+  return Effect.flatMap(createTodoText, (text) =>
+    Effect.if(text.trim() === '', {
+      onFalse: CreateTodo.apply(text).pipe(
+        Effect.tap(todoList.append),
+        Effect.tap(() => createTodoText.set('')),
+        Effect.map(Option.some),
+      ),
+      onTrue: Effect.succeedNone,
+    }),
+  )
+}
+
+export function makeEditTodo({ todoList }: Model) {
+  return (id: Domain.TodoId, text: string) =>
+    Effect.if(text.trim() === '', {
+      onFalse: todoList.update(Domain.editText(id, text)),
+      onTrue: todoList.update(Domain.deleteTodo(id)),
+    })
+}
+
 export type Intent = ReturnType<typeof makeIntent>
+
+/* #endregion */

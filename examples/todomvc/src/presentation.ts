@@ -1,3 +1,5 @@
+import './styles.css'
+
 import * as Predicate from '@effect/data/Predicate'
 import * as Effect from '@effect/io/Effect'
 import { getIsUsingKeyModifier } from '@typed/dom'
@@ -5,18 +7,20 @@ import * as Fx from '@typed/fx'
 import { EventHandler, html, many, when } from '@typed/html'
 import * as Navigation from '@typed/navigation'
 
-import { Intent, makeIntent, makeModel } from './application.js'
-import { Todo, ViewState } from './domain.js'
+import { Intent, WriteTodoList, makeIntent, makeModel } from './application.js'
+import { Todo, ViewState, isCompleted } from './domain.js'
 import { viewStateToPath } from './infrastructure.js'
 
 export const TodoApp = Fx.gen(function* (_) {
   const model = yield* _(makeModel)
   const intent = makeIntent(model)
 
+  // Write todoList whenever it changes
+  yield* _(model.todoList, Fx.observe(WriteTodoList.apply), Effect.fork)
+
   return html`<section class="todoapp ${model.viewState.map((s) => s.toLowerCase())}">
     <header class="header">
       <h1>todos</h1>
-
       <form class="add-todo" onsubmit=${EventHandler.preventDefault(() => intent.createTodo)}>
         <input
           class="new-todo"
@@ -34,20 +38,16 @@ export const TodoApp = Fx.gen(function* (_) {
       <label for="toggle-all" onclick=${intent.toggleAllCompleted}>Mark all as complete</label>
 
       <ul class="todo-list">
-        ${many(
-          model.todos,
-          (todo) => TodoItem(todo, intent),
-          (todo) => todo.id,
-        )}
+        ${many(model.todos, TodoItem(intent), (todo) => todo.id)}
       </ul>
 
       <footer class="footer">
         <span class="todo-count">
-          ${model.remainingCount} item${model.remainingCount.map((c) => (c === 1 ? '' : 's'))} left
+          ${model.activeCount} item${model.activeCount.map((c) => (c === 1 ? '' : 's'))} left
         </span>
 
         <ul class="filters">
-          ${Object.values(ViewState).map((s) => ActionLink(s, model.viewState))}
+          ${Object.values(ViewState).map(ActionLink(model.viewState))}
         </ul>
 
         ${when(
@@ -63,59 +63,65 @@ export const TodoApp = Fx.gen(function* (_) {
   </section>`
 })
 
-const ActionLink = (viewState: ViewState, currentViewState: Fx.RefSubject<never, ViewState>) =>
+const ActionLink = (currentViewState: Fx.RefSubject<never, ViewState>) => (viewState: ViewState) =>
   html`<li>
     <a
-      class="${currentViewState.map((current) => (current === viewState ? 'selected' : null))}"
+      class="${when(
+        currentViewState,
+        (current) => current === viewState,
+        () => 'selected',
+      )}"
       href=${viewStateToPath(viewState)}
       onclick=${EventHandler.preventDefault.if(Predicate.not(getIsUsingKeyModifier), () =>
         Navigation.navigate(viewStateToPath(viewState)),
       )}
-      >${viewState}</a
     >
+      ${viewState}
+    </a>
   </li>`
 
-const TodoItem = (todo: Fx.RefSubject<never, Todo>, intent: Intent) =>
+const TodoItem = (intent: Intent) => (todo: Fx.RefSubject<never, Todo>) =>
   Fx.gen(function* (_) {
     const { id } = yield* _(todo)
+
+    // Track whether this todo is being edited
+    const isEditing = yield* _(Fx.makeRef(Effect.succeed(false)))
 
     // Update the todo's text using the provided RefSubject
     const updateText = (text: string) => todo.update((t) => ({ ...t, text }))
 
-    // Track whether the todo is being edited
-    const isEditing = yield* _(Fx.makeRef(Effect.succeed(false)))
-
     // Submit the todo when the user is done editing
     const submit = todo.pipe(
-      Effect.flatMap((t) =>
-        t.text.trim() === '' ? intent.deleteTodo(t.id) : intent.editTodo(t.id, t.text),
-      ),
+      Effect.flatMap((t) => intent.editTodo(t.id, t.text)),
       Effect.flatMap(() => isEditing.set(false)),
     )
 
-    return html`<li
-      class="${todo.map((t) => (t.completed ? 'completed' : ''))} ${isEditing.map((editing) =>
-        editing ? 'editing' : '',
-      )}"
-    >
+    // The current text value
+    const text = todo.map((t) => t.text)
+
+    // Computed class names for the todo item
+    const completedClassName = when(todo, isCompleted, () => 'completed')
+    const editingClassName = when(isEditing, Boolean, () => 'editing')
+
+    return html`<li class="${completedClassName} ${editingClassName}">
       <div class="view">
         <input
           type="checkbox"
           class="toggle"
-          .checked=${todo.map((t) => t.completed)}
-          onclick=${intent.toggleTodoCompletion(id)}
+          .checked=${todo.map(isCompleted)}
+          onclick=${intent.toggleTodoCompleted(id)}
         />
 
-        <label ondblclick=${isEditing.set(true)}>${todo.map((t) => t.text)} </label>
+        <label ondblclick=${isEditing.set(true)}>${text}</label>
 
         <button class="destroy" onclick=${intent.deleteTodo(id)}></button>
       </div>
 
       <input
         class="edit"
-        .value=${todo.map((t) => t.text)}
+        .value=${text}
         oninput=${EventHandler.target<HTMLInputElement>()((ev) => updateText(ev.target.value))}
-        onblur=${EventHandler(() => submit, { capture: true })}
+        onfocusout=${EventHandler(() => submit)}
         onkeydown=${EventHandler.target<HTMLInputElement, KeyboardEvent>()((ev) =>
           ev.key === 'Enter' ? submit : Effect.unit,
         )}

@@ -579,6 +579,17 @@ export const observe: {
 export const drain: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R | Scope.Scope, E, void> = (fx) =>
   internal.drain(fx)
 
+export const drainScoped = <R, E, A>(
+  fx: Fx<R, E, A>,
+): Effect.Effect<Exclude<R, Scope.Scope>, E, void> => Effect.scoped(internal.drain(fx))
+
+export const runPromiseExit: <E, A>(fx: Fx<Scope.Scope, E, A>) => Promise<Exit.Exit<E, void>> = (
+  fx,
+) => Effect.runPromiseExit(drainScoped(fx))
+
+export const runPromise: <E, A>(fx: Fx<never, E, A>) => Promise<void> = (fx) =>
+  Effect.runPromise(drainScoped(fx))
+
 export const forkScoped: <R, E, A>(
   fx: Fx<R, E, A>,
 ) => Effect.Effect<R | Scope.Scope, never, Fiber.RuntimeFiber<E, void>> = (fx) =>
