@@ -589,7 +589,7 @@ function tupleRefPrimitive<const Refs extends ReadonlyArray<RefSubject.Any>>(
     delete: Effect.map(
       Effect.all(
         refs.map((ref) => ref.delete),
-        { concurrency: 'unbounded' },
+        unboundedConcurrency,
       ),
       (values) => Option.all(values),
     ) as Effect.Effect<never, _E, Option.Option<_A>>,

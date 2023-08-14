@@ -1,8 +1,9 @@
 import { identity } from '@effect/data/Function'
 import { Pipeable, pipeArguments } from '@effect/data/Pipeable'
-import type { Cause } from '@effect/io/Cause'
 import type { Effect } from '@effect/io/Effect'
 import type * as Runtime from '@effect/io/Runtime'
+
+import { Sink } from './Sink.js'
 
 export const FxTypeId = Symbol.for('@typed/fx/Fx')
 export type FxTypeId = typeof FxTypeId
@@ -72,21 +73,8 @@ export namespace Fx {
     : never
 }
 
-export interface Sink<R, E, A> {
-  readonly event: (a: A) => Effect<R, never, void>
-  readonly error: (e: Cause<E>) => Effect<R, never, void>
-}
-
-export function Sink<A, R, E, R2>(
-  event: (a: A) => Effect<R, never, void>,
-  error: (e: Cause<E>) => Effect<R2, never, void>,
-): Sink<R | R2, E, A> {
-  return {
-    event,
-    error,
-  }
-}
-
 export function isFx<R, E, A>(v: unknown): v is Fx<R, E, A> {
   return typeof v === 'object' && v != null && FxTypeId in v
 }
+
+export { Sink } from './Sink.js'

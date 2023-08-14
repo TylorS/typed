@@ -51,57 +51,55 @@ export function mergeBufferConcurrently<FXS extends Fx.TupleAny>(
         })
       }
 
-      return Effect.asUnit(
-        Effect.all(
-          fxs.map((fx, index) =>
-            Effect.suspend(() => {
-              if (index === currentIndex) return Effect.flatMap(fx.run(sink), () => next(index))
+      return Effect.all(
+        fxs.map((fx, index) =>
+          Effect.suspend(() => {
+            if (index === currentIndex) return Effect.flatMap(fx.run(sink), () => next(index))
 
-              let buffer: Chunk.Chunk<O> = Chunk.empty()
-              let isEmitting = false
+            let buffer: Chunk.Chunk<O> = Chunk.empty()
+            let isEmitting = false
 
-              return Effect.flatMap(
-                fx.run(
-                  Sink(
-                    (o) =>
-                      Effect.suspend(
-                        Effect.unifiedFn(() => {
-                          // The current index is emitting now
-                          if (isEmitting) {
-                            return sink.event(o)
-                          }
+            return Effect.flatMap(
+              fx.run(
+                Sink(
+                  (o) =>
+                    Effect.suspend(
+                      Effect.unifiedFn(() => {
+                        // The current index is emitting now
+                        if (isEmitting) {
+                          return sink.event(o)
+                        }
 
-                          // This index is ready to emit values
-                          if (index === currentIndex) {
-                            // Fast-path for remaining values
-                            isEmitting = true
+                        // This index is ready to emit values
+                        if (index === currentIndex) {
+                          // Fast-path for remaining values
+                          isEmitting = true
 
-                            if (Chunk.size(buffer) === 0) return sink.event(o)
+                          if (Chunk.size(buffer) === 0) return sink.event(o)
 
-                            // Drain the current buffer first
-                            const toEmit = Chunk.append(buffer, o)
-                            // Clear the buffer
-                            buffer = Chunk.empty()
+                          // Drain the current buffer first
+                          const toEmit = Chunk.append(buffer, o)
+                          // Clear the buffer
+                          buffer = Chunk.empty()
 
-                            // Emit the values
-                            return Effect.all(Chunk.map(toEmit, sink.event), { discard: true })
-                          }
+                          // Emit the values
+                          return Effect.forEach(toEmit, sink.event, { discard: true })
+                        }
 
-                          // Otherwise, buffer the value
-                          buffer = Chunk.append(buffer, o)
+                        // Otherwise, buffer the value
+                        buffer = Chunk.append(buffer, o)
 
-                          return Effect.unit
-                        }),
-                      ),
-                    sink.error,
-                  ),
+                        return Effect.unit
+                      }),
+                    ),
+                  sink.error,
                 ),
-                () => (isEmitting ? next(index) : onFinished(index, buffer)),
-              )
-            }),
-          ),
-          { concurrency: 'unbounded', discard: true },
+              ),
+              () => (isEmitting ? next(index) : onFinished(index, buffer)),
+            )
+          }),
         ),
+        { concurrency: 'unbounded', discard: true },
       )
     }),
   )
