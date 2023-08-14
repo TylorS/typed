@@ -25,8 +25,9 @@ type RenderToDomInput = {
 
 export const renderTemplateToDom: Layer.Layer<Document | RenderContext, never, RenderTemplate> =
   RenderTemplate.layer(
-    Effect.map(Effect.all({ document: Document, renderContext: RenderContext }), (input) => ({
-      renderTemplate: (strings, values) => renderTemplate(input, strings, values),
+    Effect.map(Effect.zip(Document, RenderContext), ([document, renderContext]) => ({
+      renderTemplate: (strings, values) =>
+        renderTemplate({ document, renderContext }, strings, values),
     })),
   )
 

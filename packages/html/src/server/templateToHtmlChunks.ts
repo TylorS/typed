@@ -42,23 +42,17 @@ export class SparsePartChunk {
 export type AttrValue = string | null | undefined | readonly AttrValue[]
 
 // TODO: Should we escape more things?
+// TODO: We should manually optimize the text fusion
 
 export function templateToHtmlChunks({ nodes, hash }: Template) {
-  const chunks: HtmlChunk[] = []
-
-  for (let i = 0; i < nodes.length; i++) {
-    chunks.push(...nodeToHtmlChunk(nodes[i], hash))
-  }
-
-  return fuseTextChunks(chunks)
+  return fuseTextChunks(nodes.flatMap((node) => nodeToHtmlChunk(node, hash)))
 }
 
 function fuseTextChunks(chunks: HtmlChunk[]): readonly HtmlChunk[] {
   const output: HtmlChunk[] = []
 
   for (let i = 0; i < chunks.length; i++) {
-    if (i === 0) output.push(chunks[i])
-    else {
+    if (i > 0) {
       const prevIndex = output.length - 1
       const prev = output[prevIndex]
       const curr = chunks[i]
@@ -68,6 +62,8 @@ function fuseTextChunks(chunks: HtmlChunk[]): readonly HtmlChunk[] {
       } else {
         output.push(curr)
       }
+    } else {
+      output.push(chunks[i])
     }
   }
 

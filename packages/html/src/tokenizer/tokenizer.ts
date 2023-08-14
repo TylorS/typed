@@ -122,22 +122,6 @@ class Tokenizer implements Iterable<Token.Token> {
           yield* this.nextTextToken()
       }
     }
-
-    do {
-      switch (this.context) {
-        case 'element':
-          yield* this.nextElementToken()
-          break
-        case 'self-closing':
-          yield* this.nextSelfClosingToken()
-          break
-        case 'text-only':
-          yield* this.nextTextOnlyToken()
-          break
-        default:
-          yield* this.nextTextToken()
-      }
-    } while (this.pos < this.input.length)
   }
 
   private init(): void {
