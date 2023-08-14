@@ -30,7 +30,7 @@ export const TodoApp = Fx.gen(function* (_) {
             model.createTodoText.set(ev.target.value),
           )}
         />
-      </div>
+      </form>
     </header>
 
     <section class="main">
