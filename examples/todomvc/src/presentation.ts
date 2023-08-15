@@ -74,6 +74,7 @@ const ActionLink = (viewState: ViewState) =>
 
 const TodoItem = (intent: Intent) => (todo: Fx.RefSubject<never, Todo>) =>
   Fx.gen(function* (_) {
+    // Get the id of the todo
     const { id } = yield* _(todo)
 
     // Track whether this todo is being edited
@@ -91,11 +92,9 @@ const TodoItem = (intent: Intent) => (todo: Fx.RefSubject<never, Todo>) =>
     // The current text value
     const text = todo.map((t) => t.text)
 
-    // Computed class names for the todo item
-    const completedClassName = when.true(todo.map(isCompleted), 'completed')
-    const editingClassName = when.true(isEditing, 'editing')
-
-    return html`<li class="${completedClassName} ${editingClassName}">
+    return html`<li
+      class="${when.true(todo.map(isCompleted), 'completed')} ${when.true(isEditing, 'editing')}"
+    >
       <div class="view">
         <input
           type="checkbox"
