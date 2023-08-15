@@ -22,7 +22,7 @@ export const CreateTodo = Context.Fn<(text: string) => Effect.Effect<never, neve
 
 export const CurrentFilterState = Context.Ref(
   Effect.succeed<Domain.FilterState>(Domain.FilterState.All),
-)('@typed/TodoApp/CurrentViewState')
+)('@typed/TodoApp/CurrentFilterState')
 /* #endregion */
 
 /* #region Model */
