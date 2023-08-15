@@ -1,11 +1,9 @@
 import './styles.css'
 
-import * as Predicate from '@effect/data/Predicate'
 import * as Effect from '@effect/io/Effect'
-import { getIsUsingKeyModifier } from '@typed/dom'
 import * as Fx from '@typed/fx'
 import { EventHandler, html, many, when } from '@typed/html'
-import * as Navigation from '@typed/navigation'
+import * as Router from '@typed/router'
 
 import { Intent, WriteTodoList, makeIntent, makeModel } from './application.js'
 import { Todo, ViewState, isCompleted } from './domain.js'
@@ -47,38 +45,32 @@ export const TodoApp = Fx.gen(function* (_) {
         </span>
 
         <ul class="filters">
-          ${Object.values(ViewState).map(ActionLink(model.viewState))}
+          ${Object.values(ViewState).map(ActionLink)}
         </ul>
 
-        ${when(
-          model.completedCount,
-          (count) => count > 0,
-          () =>
-            html`<button class="clear-completed" onclick=${intent.clearCompletedTodos}>
-              Clear completed
-            </button>`,
+        ${when.true(
+          model.completedCount.map((count) => count > 0),
+          html`<button class="clear-completed" onclick=${intent.clearCompletedTodos}>
+            Clear completed
+          </button>`,
         )}
       </footer>
     </section>
   </section>`
 })
 
-const ActionLink = (currentViewState: Fx.RefSubject<never, ViewState>) => (viewState: ViewState) =>
-  html`<li>
-    <a
-      class="${when(
-        currentViewState,
-        (current) => current === viewState,
-        () => 'selected',
-      )}"
-      href=${viewStateToPath(viewState)}
-      onclick=${EventHandler.preventDefault.if(Predicate.not(getIsUsingKeyModifier), () =>
-        Navigation.navigate(viewStateToPath(viewState)),
-      )}
-    >
-      ${viewState}
-    </a>
-  </li>`
+const ActionLink = (viewState: ViewState) =>
+  Router.Link(
+    {
+      to: viewStateToPath(viewState),
+    },
+    ({ url, active, onClick }) =>
+      html`<li>
+        <a class="${when.true(active, 'selected')}" href=${url} onclick=${onClick}>
+          ${viewState}
+        </a>
+      </li>`,
+  )
 
 const TodoItem = (intent: Intent) => (todo: Fx.RefSubject<never, Todo>) =>
   Fx.gen(function* (_) {
@@ -101,7 +93,7 @@ const TodoItem = (intent: Intent) => (todo: Fx.RefSubject<never, Todo>) =>
 
     // Computed class names for the todo item
     const completedClassName = when(todo, isCompleted, () => 'completed')
-    const editingClassName = when(isEditing, Boolean, () => 'editing')
+    const editingClassName = when.true(isEditing, 'editing')
 
     return html`<li class="${completedClassName} ${editingClassName}">
       <div class="view">

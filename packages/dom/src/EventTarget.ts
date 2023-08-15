@@ -60,7 +60,7 @@ export function dispatchEventWith<
     )
 }
 
-export function getIsUsingKeyModifier(event: KeyboardEvent): boolean {
+export function getIsUsingKeyModifier(event: KeyboardEvent | MouseEvent): boolean {
   return event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
 }
 

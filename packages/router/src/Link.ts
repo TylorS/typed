@@ -1,7 +1,9 @@
+import { not } from '@effect/data/Predicate'
 import * as Effect from '@effect/io/Effect'
 import * as Scope from '@effect/io/Scope'
+import { getIsUsingKeyModifier } from '@typed/dom'
 import * as Fx from '@typed/fx'
-import { Placeholder } from '@typed/html'
+import { EventHandler, Placeholder } from '@typed/html'
 import * as Navigation from '@typed/navigation'
 import { pathJoin } from '@typed/path'
 
@@ -49,7 +51,8 @@ export interface UseLink<E> {
   readonly url: Fx.Computed<Router, E, string>
   readonly options: Fx.Computed<never, E, Navigation.NavigateOptions>
   readonly navigate: Effect.Effect<Router, E, Navigation.Destination>
-  readonly active: Fx.Computed<Router, E, boolean>
+  readonly active: Fx.Fx<Router, E, boolean>
+  readonly onClick: EventHandler<KeyboardEvent | MouseEvent, Router, E>
 }
 
 export namespace UseLink {
@@ -70,15 +73,16 @@ export function useLink<Params extends UseLinkParams.Any>(
       Placeholder.asRef(params.state ?? null),
       Placeholder.asRef(params.key),
       Placeholder.asRef(params.relative ?? true),
+      Router,
     ] as const),
-    ([to, replace, state, key, relative]) => {
+    ([to, replace, state, key, relative, router]) => {
       const url = Fx.RefSubject.tuple(to, relative).mapEffect(([to, relative]) =>
         Effect.gen(function* ($) {
           let url = to
 
           // Check if we should make the URL relative to the current route
           if (relative) {
-            const { route, params } = yield* $(Router)
+            const { route, params } = router
             const matched = yield* $(params)
             const basePath = route.make(matched)
 
@@ -96,15 +100,8 @@ export function useLink<Params extends UseLinkParams.Any>(
         }),
       )
 
-      const active: Fx.Computed<Router, UseLinkParams.Error<Params>, boolean> = url.mapEffect(
-        (url) =>
-          Effect.gen(function* ($) {
-            const {
-              navigation: { currentEntry },
-            } = yield* $(Router)
-
-            return isActive(url, (yield* $(currentEntry)).url)
-          }),
+      const active = Fx.map(Fx.combine(url, router.navigation.currentEntry), ([url, destination]) =>
+        isActive(url, destination.url),
       )
 
       const navigate: Effect.Effect<
@@ -115,11 +112,18 @@ export function useLink<Params extends UseLinkParams.Any>(
         Router.withEffect((r) => r.navigation.navigate(url, options)),
       )
 
+      const onClick = EventHandler.preventDefault.if<
+        KeyboardEvent | MouseEvent,
+        Router,
+        UseLinkParams.Error<Params>
+      >(not(getIsUsingKeyModifier), () => navigate)
+
       return {
         url,
         options,
         navigate,
         active,
+        onClick,
       } satisfies UseLink.FromParams<Params>
     },
   )

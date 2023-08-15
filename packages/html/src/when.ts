@@ -49,3 +49,45 @@ export const when = <
   Placeholder.switchMap(placeholder, (a) =>
     Placeholder.asFx<R2 | R3, E2 | E3, B | C>(predicate(a) ? onTrue(a) : onFalse(a)),
   )
+
+when.true = <
+  R = never,
+  E = never,
+  R2 = never,
+  E2 = never,
+  B = unknown,
+  R3 = never,
+  E3 = never,
+  C = null,
+>(
+  placeholder: Placeholder<R, E, boolean>,
+  onTrue: Placeholder<R2, E2, B>,
+  onFalse: Placeholder<R3, E3, C> = Fx.succeed(null) as any,
+) =>
+  when(
+    placeholder,
+    Boolean,
+    () => onTrue,
+    () => onFalse,
+  )
+
+when.false = <
+  R = never,
+  E = never,
+  R2 = never,
+  E2 = never,
+  B = unknown,
+  R3 = never,
+  E3 = never,
+  C = null,
+>(
+  placeholder: Placeholder<R, E, boolean>,
+  onTrue: Placeholder<R2, E2, B>,
+  onFalse: Placeholder<R3, E3, C> = Fx.succeed(null) as any,
+) =>
+  when(
+    placeholder,
+    (x) => !x,
+    () => onTrue,
+    () => onFalse,
+  )
