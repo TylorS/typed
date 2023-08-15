@@ -46,6 +46,14 @@ export namespace EventHandler {
       options?: boolean | AddEventListenerOptions,
     ): EventHandler<Ev & { target: T }, R, E> => EventHandler(handler, options)
   }
+
+  export function keys<T extends HTMLElement = HTMLElement>(...keys: ReadonlyArray<string>) {
+    return <R = never, E = never>(
+      handler: (event: KeyboardEvent & { target: T }) => Effect.Effect<R, E, void>,
+      options?: boolean | AddEventListenerOptions,
+    ): EventHandler<KeyboardEvent & { target: T }, R, E> =>
+      EventHandler((ev) => (keys.includes(ev.key) ? handler(ev) : Effect.unit), options)
+  }
 }
 
 /**

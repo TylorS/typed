@@ -114,9 +114,7 @@ const TodoItem = (intent: Intent) => (todo: Fx.RefSubject<never, Todo>) =>
         .value=${text}
         oninput=${EventHandler.target<HTMLInputElement>()((ev) => updateText(ev.target.value))}
         onfocusout=${EventHandler(() => submit)}
-        onkeydown=${EventHandler.target<HTMLInputElement, KeyboardEvent>()((ev) =>
-          ev.key === 'Enter' ? submit : Effect.unit,
-        )}
+        onkeydown=${EventHandler.keys<HTMLInputElement>('Enter')(() => submit)}
       />
     </li>`
   })
