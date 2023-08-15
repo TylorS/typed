@@ -69,6 +69,10 @@ export interface Ref<I, R, E, A> extends Fx.Fx<I, E, A> {
   readonly provideFx: <R2, E2, A2>(
     fx: Fx.Fx<R2, E2, A2>,
   ) => Fx.Fx<R | Scope.Scope | Exclude<R2, I>, E2, A2>
+
+  readonly fromEffect: <R2>(effect: Effect.Effect<R2, E, A>) => Layer.Layer<R2, never, I>
+
+  readonly fromFx: <R2>(fx: Fx.Fx<R2, E, A>) => Layer.Layer<R2, never, I>
 }
 
 const refVariance: Fx.Fx<any, any, any>[Fx.FxTypeId] = {
@@ -130,6 +134,8 @@ export const Ref: {
       provide: <R2, E2, A2>(effect: Effect.Effect<R2, E2, A2>) =>
         Effect.provideServiceEffect(effect, tag, make),
       provideFx: <R2, E2, A2>(fx: Fx.Fx<R2, E2, A2>) => Fx.provideServiceEffect(fx, tag, make),
+      fromEffect: <R2>(effect: Effect.Effect<R2, E, A>) => tag.layerScoped(Fx.makeRef(effect, eq)),
+      fromFx: <R2>(fx: Fx.Fx<R2, E, A>) => tag.layerScoped(Fx.asRef(fx, eq)),
       pipe() {
         // eslint-disable-next-line prefer-rest-params
         return pipeArguments(this, arguments)

@@ -3,10 +3,10 @@ import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import { Tag } from '@typed/context'
 import { DomServicesElementParams } from '@typed/dom'
-import { Filtered } from '@typed/fx'
+import * as Fx from '@typed/fx'
 import * as Navigation from '@typed/navigation'
 import { ParamsOf, PathJoin } from '@typed/path'
-import { Route } from '@typed/route'
+import { Route, RouteOptions } from '@typed/route'
 
 export interface Router<in out P extends string = string> {
   /**
@@ -17,13 +17,16 @@ export interface Router<in out P extends string = string> {
   /**
    * The current params for the current path.
    */
-  readonly params: Filtered<never, never, ParamsOf<P>>
+  readonly params: Fx.Filtered<never, never, ParamsOf<P>>
 
   /**
    * Construct a new Router instance by defining a new Route which is concatenated
    * to the current Route.
    */
-  readonly define: <P2 extends string>(route: Route<P2>) => Router<PathJoin<[P, P2]>>
+  readonly define: <P2 extends string>(
+    route: Route<P2>,
+    overrides?: RouteOptions,
+  ) => Router<PathJoin<[P, P2]>>
 
   /**
    * The parent Router instance if one exists.
@@ -53,8 +56,11 @@ export const navigation: Layer.Layer<Navigation.Navigation, never, Router> = Rou
         route,
         navigation,
         params: currentPath.filterMap(route.match),
-        define: <P2 extends string>(other: Route<P2>): Router<PathJoin<[P, P2]>> =>
-          makeRouter(route.concat(other), Option.some(router)),
+        define: <P2 extends string>(
+          other: Route<P2>,
+          overrides?: RouteOptions,
+        ): Router<PathJoin<[P, P2]>> =>
+          makeRouter(route.concat(other, overrides), Option.some(router)),
         parent,
       }
 
@@ -78,3 +84,50 @@ export const memory = (
   options: Navigation.MemoryNavigationOptions,
 ): Layer.Layer<never, never, Navigation.Navigation | Router> =>
   Layer.provideMerge(Navigation.memory(options), navigation)
+
+const routerNavigation: Layer.Layer<Router, never, Navigation.Navigation> = Layer.effectContext(
+  Effect.map(Router, (router) => Navigation.Navigation.build(router.navigation).context),
+)
+
+const provideRouterNavigationEffect = Effect.provideSomeLayer(routerNavigation)
+const provideRouterNavigationFx = Fx.provideSomeLayer(routerNavigation)
+
+export const back: Effect.Effect<Router, never, Navigation.Destination> =
+  provideRouterNavigationEffect(Navigation.back)
+
+export const canGoBack: Effect.Effect<Router, never, boolean> & Fx.Fx<Router, never, boolean> =
+  Object.assign(
+    provideRouterNavigationEffect(Navigation.canGoBack),
+    provideRouterNavigationFx(Navigation.canGoBack),
+  )
+
+export const canGoForward: Effect.Effect<Router, never, boolean> & Fx.Fx<Router, never, boolean> =
+  Object.assign(
+    provideRouterNavigationEffect(Navigation.canGoForward),
+    provideRouterNavigationFx(Navigation.canGoForward),
+  )
+
+export const cancelNavigation = Navigation.cancelNavigation
+
+export const forward = provideRouterNavigationEffect(Navigation.forward)
+
+export const navigate: (
+  url: string,
+  options?: Navigation.NavigateOptions,
+) => Effect.Effect<Router, never, Navigation.Destination> = (url, options) =>
+  provideRouterNavigationEffect(Navigation.navigate(url, options))
+
+export const push: (
+  url: string,
+  options?: Omit<Navigation.NavigateOptions, 'history'>,
+) => Effect.Effect<Router, never, Navigation.Destination> = (url, options) =>
+  navigate(url, { ...options, history: 'push' })
+
+export const replace: (
+  url: string,
+  options?: Omit<Navigation.NavigateOptions, 'history'>,
+) => Effect.Effect<Router, never, Navigation.Destination> = (url, options) =>
+  navigate(url, { ...options, history: 'replace' })
+
+export const reload: Effect.Effect<Router, never, Navigation.Destination> =
+  provideRouterNavigationEffect(Navigation.reload)

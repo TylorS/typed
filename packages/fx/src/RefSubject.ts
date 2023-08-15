@@ -739,9 +739,9 @@ function mapRecord<K extends string, A, B>(
   return result
 }
 
-export function asRef<R, E, A>(fx: Fx<R, E, A>) {
+export function asRef<R, E, A>(fx: Fx<R, E, A>, eq?: Equivalence.Equivalence<A>) {
   return Effect.flatMap(Deferred.make<E, A>(), (deferred) =>
-    Effect.flatMap(makeRef(Deferred.await(deferred)), (ref) => {
+    Effect.flatMap(makeRef(Deferred.await(deferred), eq), (ref) => {
       const onValue = (value: A) =>
         Effect.flatMap(Deferred.succeed(deferred, value), (closed) =>
           closed ? Effect.unit : ref.set(value),

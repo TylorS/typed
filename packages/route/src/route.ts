@@ -9,6 +9,11 @@ export interface Route<in out P extends string> {
   readonly path: P
 
   /**
+   * The options used to create the route
+   */
+  readonly options?: RouteOptions
+
+  /**
    * Create a path from a given set params
    */
   readonly make: MakeRoute<P>
@@ -33,17 +38,34 @@ export type MakeRoute<P extends string> = <const Params extends Path.ParamsOf<P>
 
 export function Route<const P extends string>(path: P, options?: RouteOptions): Route<P> {
   const match = Route.makeMatch(path, options?.match)
-
-  return {
+  const self: Route<P> = {
     path,
+    options,
     make: ptr.compile(path, options?.make) as Route<P>['make'],
     match,
     concat<P2 extends string>(
       route: Route<P2>,
-      options?: RouteOptions,
+      overrides?: RouteOptions,
     ): Route<Path.PathJoin<readonly [P, P2]>> {
-      return Route(Path.pathJoin(path, route.path), options)
+      const opts = overrides ?? mergeRouteOptions(options, route.options)
+
+      return Route(Path.pathJoin(path, route.path), opts)
     },
+  }
+
+  return self
+}
+
+function mergeRouteOptions(options1: RouteOptions | undefined, options2: RouteOptions | undefined) {
+  if (options1 === undefined) {
+    return options2
+  } else if (options2 === undefined) {
+    return options1
+  } else {
+    return {
+      make: { ...options1.make, ...options2.make },
+      match: { ...options1.match, ...options2.match },
+    }
   }
 }
 

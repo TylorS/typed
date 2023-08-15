@@ -48,7 +48,7 @@ export function matchRoutes<
 
       return [
         // If the route is the a single slash, use the route directly to keep any parsing options.
-        match.route.path === '/' ? match.route : nestedRouter.route,
+        nestedRouter.route,
         render,
         match.options?.guard as
           | ((params: ParamsOf<string>) => Effect.Effect<_R, NavigationError, boolean>)

@@ -2,7 +2,6 @@ import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as DOM from '@typed/dom'
 import { browser } from '@typed/framework/browser'
-import * as Fx from '@typed/fx'
 import * as Route from '@typed/route'
 import * as Router from '@typed/router'
 
@@ -47,13 +46,11 @@ const viewStatesToPath = {
 
 export const viewStateToPath = (viewState: ViewState) => viewStatesToPath[viewState]
 
-const router = Router.redirectEffect(
-  Router.match(activeRoute, () => Fx.succeed(ViewState.Active))
-    .match(completedRoute, () => Fx.succeed(ViewState.Completed))
-    .match(homeRoute, () => Fx.succeed(ViewState.All)),
-  Router.Redirect.redirect(homeRoute.path),
+export const ViewStateLive = CurrentViewState.fromFx(
+  Router.matchTo(activeRoute, () => ViewState.Active)
+    .matchTo(completedRoute, () => ViewState.Completed)
+    .matchTo(homeRoute, () => ViewState.All)
+    .redirect(homeRoute),
 )
-
-export const ViewStateLive = CurrentViewState.tag.layer(Fx.asRef(router))
 
 export const Live = Layer.provideMerge(browser(window), Layer.mergeAll(TodosLive, ViewStateLive))

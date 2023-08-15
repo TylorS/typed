@@ -30,6 +30,8 @@ export const runDevServer = async (options: ServeOptions, env: ServeEnv) => {
       throw new Error('HTTP server not available')
     }
 
+    process.on('exit', () => server.close())
+
     await server.listen()
 
     const viteStartTime = (global as any).__vite_start_time ?? false
