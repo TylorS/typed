@@ -92,7 +92,7 @@ const TodoItem = (intent: Intent) => (todo: Fx.RefSubject<never, Todo>) =>
     const text = todo.map((t) => t.text)
 
     // Computed class names for the todo item
-    const completedClassName = when(todo, isCompleted, () => 'completed')
+    const completedClassName = when.true(todo.map(isCompleted), 'completed')
     const editingClassName = when.true(isEditing, 'editing')
 
     return html`<li class="${completedClassName} ${editingClassName}">
