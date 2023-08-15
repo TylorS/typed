@@ -20,9 +20,9 @@ export const CreateTodo = Context.Fn<(text: string) => Effect.Effect<never, neve
   '@typed/TodoApp/CreateTodo',
 )
 
-export const CurrentViewState = Context.Ref(Effect.succeed<Domain.ViewState>(Domain.ViewState.All))(
-  '@typed/TodoApp/CurrentViewState',
-)
+export const CurrentFilterState = Context.Ref(
+  Effect.succeed<Domain.FilterState>(Domain.FilterState.All),
+)('@typed/TodoApp/CurrentViewState')
 /* #endregion */
 
 /* #region Model */
@@ -30,9 +30,9 @@ export const CurrentViewState = Context.Ref(Effect.succeed<Domain.ViewState>(Dom
 export const makeModel = Effect.gen(function* (_) {
   const todoList = yield* _(Fx.makeRefArray(ReadTodoList.apply()))
   const createTodoText = yield* _(Fx.makeRef(Effect.succeed('')))
-  const viewState = yield* _(CurrentViewState.tag)
-  const todos = Fx.RefSubject.tuple(todoList, viewState).map((args) =>
-    Domain.filterViewState(...args),
+  const filterState = yield* _(CurrentFilterState.tag)
+  const todos = Fx.RefSubject.struct({ list: todoList, state: filterState }).map(
+    Domain.filterTodoList,
   )
   const activeCount = todoList.map(Domain.activeCount)
   const completedCount = todoList.map(Domain.completedCount)
@@ -41,7 +41,7 @@ export const makeModel = Effect.gen(function* (_) {
   return {
     todoList,
     createTodoText,
-    viewState,
+    filterState,
     todos,
     activeCount,
     completedCount,
@@ -77,7 +77,7 @@ export function makeCreateTodo({
   return Effect.flatMap(createTodoText, (text) =>
     Effect.if(text.trim() === '', {
       onFalse: CreateTodo.apply(text).pipe(
-        Effect.tap(todoList.append),
+        Effect.tap(todoList.prepend),
         Effect.tap(() => createTodoText.set('')),
         Effect.map(Option.some),
       ),

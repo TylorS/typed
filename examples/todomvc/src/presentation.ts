@@ -6,8 +6,8 @@ import { EventHandler, html, many, when } from '@typed/html'
 import * as Router from '@typed/router'
 
 import { Intent, WriteTodoList, makeIntent, makeModel } from './application.js'
-import { Todo, ViewState, isCompleted } from './domain.js'
-import { viewStateToPath } from './infrastructure.js'
+import { Todo, FilterState, isCompleted } from './domain.js'
+import { filterStateToPath } from './infrastructure.js'
 
 export const TodoApp = Fx.gen(function* (_) {
   const model = yield* _(makeModel)
@@ -16,7 +16,7 @@ export const TodoApp = Fx.gen(function* (_) {
   // Write todoList whenever it changes
   yield* _(model.todoList, Fx.observe(WriteTodoList.apply), Effect.fork)
 
-  return html`<section class="todoapp ${model.viewState.map((s) => s.toLowerCase())}">
+  return html`<section class="todoapp ${model.filterState}">
     <header class="header">
       <h1>todos</h1>
       <form class="add-todo" onsubmit=${EventHandler.preventDefault(() => intent.createTodo)}>
@@ -45,7 +45,7 @@ export const TodoApp = Fx.gen(function* (_) {
         </span>
 
         <ul class="filters">
-          ${Object.values(ViewState).map(ActionLink)}
+          ${Object.values(FilterState).map(FilterLink)}
         </ul>
 
         ${when.true(
@@ -59,10 +59,10 @@ export const TodoApp = Fx.gen(function* (_) {
   </section>`
 })
 
-const ActionLink = (viewState: ViewState) =>
+const FilterLink = (viewState: FilterState) =>
   Router.Link(
     {
-      to: viewStateToPath(viewState),
+      to: filterStateToPath(viewState),
     },
     ({ url, active, onClick }) =>
       html`<li>

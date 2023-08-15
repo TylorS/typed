@@ -5,8 +5,8 @@ import { browser } from '@typed/framework/browser'
 import * as Route from '@typed/route'
 import * as Router from '@typed/router'
 
-import { CreateTodo, CurrentViewState, ReadTodoList, WriteTodoList } from './application.js'
-import { TodoId, TodoList, ViewState } from './domain.js'
+import { CreateTodo, CurrentFilterState, ReadTodoList, WriteTodoList } from './application.js'
+import { TodoId, TodoList, FilterState } from './domain.js'
 
 const todosKey = 'todos'
 const storage = DOM.SchemaStorage(({ json }) => ({
@@ -38,19 +38,19 @@ const homeRoute = Route.Route('/', { match: { end: true } })
 const activeRoute = Route.Route('/active')
 const completedRoute = Route.Route('/completed')
 
-const viewStatesToPath = {
-  [ViewState.All]: homeRoute.path,
-  [ViewState.Active]: activeRoute.path,
-  [ViewState.Completed]: completedRoute.path,
+const filterStatesToPath = {
+  [FilterState.All]: homeRoute.path,
+  [FilterState.Active]: activeRoute.path,
+  [FilterState.Completed]: completedRoute.path,
 }
 
-export const viewStateToPath = (viewState: ViewState) => viewStatesToPath[viewState]
+export const filterStateToPath = (viewState: FilterState) => filterStatesToPath[viewState]
 
-export const ViewStateLive = CurrentViewState.fromFx(
-  Router.matchTo(activeRoute, () => ViewState.Active)
-    .matchTo(completedRoute, () => ViewState.Completed)
-    .matchTo(homeRoute, () => ViewState.All)
+export const FilterStateLive = CurrentFilterState.fromFx(
+  Router.matchTo(activeRoute, () => FilterState.Active)
+    .matchTo(completedRoute, () => FilterState.Completed)
+    .matchTo(homeRoute, () => FilterState.All)
     .redirect(homeRoute),
 )
 
-export const Live = Layer.provideMerge(browser(window), Layer.mergeAll(TodosLive, ViewStateLive))
+export const Live = Layer.provideMerge(browser(window), Layer.mergeAll(TodosLive, FilterStateLive))

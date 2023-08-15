@@ -18,10 +18,10 @@ export const TodoList = Schema.array(Todo)
 export interface TodoListJson extends Schema.From<typeof TodoList> {}
 export interface TodoList extends Schema.To<typeof TodoList> {}
 
-export enum ViewState {
-  All = 'All',
-  Active = 'Active',
-  Completed = 'Completed',
+export enum FilterState {
+  All = 'all',
+  Active = 'active',
+  Completed = 'completed',
 }
 
 /* #endregion */
@@ -77,13 +77,13 @@ export function allAreCompleted(list: TodoList): boolean {
   return list.length > 0 && list.every(isCompleted)
 }
 
-export function filterViewState(list: TodoList, state: ViewState): TodoList {
+export function filterTodoList({ list, state }: { list: TodoList; state: FilterState }): TodoList {
   switch (state) {
-    case ViewState.All:
+    case FilterState.All:
       return list
-    case ViewState.Active:
+    case FilterState.Active:
       return list.filter(isActive)
-    case ViewState.Completed:
+    case FilterState.Completed:
       return list.filter(isCompleted)
   }
 }
