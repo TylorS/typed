@@ -11,8 +11,8 @@ export interface RenderTemplate {
     template: TemplateStringsArray,
     values: Values,
   ) => Fx.Fx<
-    Placeholder.ResourcesOf<Values[number]> | Scope.Scope,
-    Placeholder.ErrorsOf<Values[number]>,
+    Placeholder.Context<Values[number]> | Scope.Scope,
+    Placeholder.Error<Values[number]>,
     RenderEvent
   >
 }
@@ -23,8 +23,8 @@ export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
 ): Fx.Fx<
-  RenderTemplate | Scope.Scope | Placeholder.ResourcesOf<Values[number]>,
-  Placeholder.ErrorsOf<Values[number]>,
+  RenderTemplate | Scope.Scope | Placeholder.Context<Values[number]>,
+  Placeholder.Error<Values[number]>,
   RenderEvent
 > {
   return RenderTemplate.withFx(({ renderTemplate }) => renderTemplate(template, values))

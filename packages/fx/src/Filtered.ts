@@ -3,6 +3,7 @@ import * as Option from '@effect/data/Option'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 
+import type { Computed } from './Computed.js'
 import { RefTransform, RefTransformImpl, RefTransformInput } from './RefTransform.js'
 import { compact } from './filterMap.js'
 import { switchMapEffect } from './switchMap.js'
@@ -36,6 +37,56 @@ export interface Filtered<R, E, A>
    * @internal
    */
   version(): number
+}
+
+export namespace Filtered {
+  export type Context<T> = [T] extends [never]
+    ? never
+    : // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    [T] extends [Filtered<infer R, infer _E, any>]
+    ? R
+    : never
+  export type Error<T> = [T] extends [never]
+    ? never
+    : // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    [T] extends [Filtered<infer _R, infer E, any>]
+    ? E
+    : never
+  export type Success<T> = [T] extends [never]
+    ? never
+    : // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    [T] extends [Filtered<infer _R, infer _E, infer A>]
+    ? A
+    : never
+
+  export function tuple<
+    Filtereds extends ReadonlyArray<Computed<any, any, any> | Filtered<any, any, any>>,
+  >(
+    ...Filtereds: Filtereds
+  ): Filtered<
+    Filtered.Context<Filtereds[number]>,
+    Filtered.Error<Filtereds[number]>,
+    { readonly [K in keyof Filtereds]: Filtered.Success<Filtereds[K]> }
+  > {
+    return new FilteredImpl(RefTransformInput.tuple(Filtereds) as any, Effect.succeedSome) as any
+  }
+
+  export function struct<
+    Filtereds extends Readonly<Record<string, Computed<any, any, any> | Filtered<any, any, any>>>,
+  >(
+    Filtereds: Filtereds,
+  ): Filtered<
+    Filtered.Context<Filtereds[string]>,
+    Filtered.Error<Filtereds[string]>,
+    { readonly [K in keyof Filtereds]: Filtered.Success<Filtereds[K]> }
+  > {
+    return new FilteredImpl(
+      RefTransformInput.tuple(
+        Object.entries(Filtereds).map(([k, c]) => c.map((v) => [k, v] as const)),
+      ) as any,
+      (entries) => Effect.sync(() => Option.some(Object.fromEntries(entries as any))),
+    ) as any
+  }
 }
 
 export class FilteredImpl<R, E, A, R2, E2, R3, E3, C>

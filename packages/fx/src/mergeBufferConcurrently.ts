@@ -11,13 +11,13 @@ import { empty } from './empty.js'
  */
 export function mergeBufferConcurrently<FXS extends Fx.TupleAny>(
   ...fxs: FXS
-): Fx<Fx.ResourcesOf<FXS[number]>, Fx.ErrorsOf<FXS[number]>, Fx.OutputOf<FXS[number]>> {
+): Fx<Fx.Context<FXS[number]>, Fx.Error<FXS[number]>, Fx.Success<FXS[number]>> {
   if (fxs.length === 0) return empty()
   if (fxs.length === 1) return fxs[0]
 
-  return Fx(<R2>(sink: Sink<R2, Fx.ErrorsOf<FXS[number]>, Fx.OutputOf<FXS[number]>>) =>
+  return Fx(<R2>(sink: Sink<R2, Fx.Error<FXS[number]>, Fx.Success<FXS[number]>>) =>
     Effect.suspend(() => {
-      type O = Fx.OutputOf<FXS[number]>
+      type O = Fx.Success<FXS[number]>
 
       const finished = new Map<number, Chunk.Chunk<O>>()
       let currentIndex = 0

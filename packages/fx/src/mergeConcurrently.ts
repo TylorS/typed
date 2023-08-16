@@ -6,14 +6,14 @@ import { empty } from './empty.js'
 
 export function mergeConcurrently<FXS extends ReadonlyArray<Fx<any, any, any>>>(
   ...fxs: FXS
-): Fx<Fx.ResourcesOf<FXS[number]>, Fx.ErrorsOf<FXS[number]>, Fx.OutputOf<FXS[number]>> {
+): Fx<Fx.Context<FXS[number]>, Fx.Error<FXS[number]>, Fx.Success<FXS[number]>> {
   if (fxs.length === 0) return empty()
   if (fxs.length === 1) return fxs[0]
 
-  return Fx(<R2>(sink: Sink<R2, Fx.ErrorsOf<FXS[number]>, Fx.OutputOf<FXS[number]>>) =>
+  return Fx(<R2>(sink: Sink<R2, Fx.Error<FXS[number]>, Fx.Success<FXS[number]>>) =>
     Effect.gen(function* ($) {
       let currentIndex = 0
-      const values = new Map<number, Fx.OutputOf<FXS[number]>>()
+      const values = new Map<number, Fx.Success<FXS[number]>>()
       const fibers: Fiber.Fiber<never, void>[] = []
 
       for (let i = 0; i < fxs.length; ++i) {
@@ -26,7 +26,7 @@ export function mergeConcurrently<FXS extends ReadonlyArray<Fx<any, any, any>>>(
         if (index === currentIndex && values.has(index)) {
           return Effect.gen(function* ($) {
             // Send this value to the sink
-            yield* $(sink.event(values.get(index) as Fx.OutputOf<FXS[number]>))
+            yield* $(sink.event(values.get(index) as Fx.Success<FXS[number]>))
 
             // Interrupt the underlying Fiber
             yield* $(Fiber.interruptFork(fibers[index]))
@@ -43,7 +43,7 @@ export function mergeConcurrently<FXS extends ReadonlyArray<Fx<any, any, any>>>(
         return Effect.unit
       }
 
-      function onValue(index: number, value: Fx.OutputOf<FXS[number]>) {
+      function onValue(index: number, value: Fx.Success<FXS[number]>) {
         return Effect.suspend(() => {
           values.set(index, value)
 

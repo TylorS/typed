@@ -104,15 +104,15 @@ export namespace RefSubject {
   export function tuple<const Refs extends readonly Any[]>(
     ...refs: Refs
   ): RefSubject<
-    Fx.ErrorsOf<Refs[number]>,
+    Fx.Error<Refs[number]>,
     {
-      readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]>
+      readonly [K in keyof Refs]: Fx.Success<Refs[K]>
     }
   > {
     return makeRefFromPrimitive<
-      Fx.ErrorsOf<Refs[number]>,
+      Fx.Error<Refs[number]>,
       {
-        readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]>
+        readonly [K in keyof Refs]: Fx.Success<Refs[K]>
       }
     >(tupleRefPrimitive<Refs>(refs))
   }
@@ -120,9 +120,9 @@ export namespace RefSubject {
   export function struct<const Refs extends Readonly<Record<string, Any>>>(
     refs: Refs,
   ): RefSubject<
-    Fx.ErrorsOf<Refs[string]>,
+    Fx.Error<Refs[string]>,
     {
-      readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]>
+      readonly [K in keyof Refs]: Fx.Success<Refs[K]>
     }
   > {
     return makeRefFromPrimitive(structRefPrimitive<Refs>(refs))
@@ -131,27 +131,27 @@ export namespace RefSubject {
   export function all<S extends ReadonlyArray<Any>>(
     subjects: S,
   ): RefSubject<
-    Fx.ErrorsOf<S[number]>,
+    Fx.Error<S[number]>,
     {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
+      readonly [K in keyof S]: Fx.Success<S[K]>
     }
   >
 
   export function all<S extends ReadonlyArray<Any>>(
     ...subjects: S
   ): RefSubject<
-    Fx.ErrorsOf<S[number]>,
+    Fx.Error<S[number]>,
     {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
+      readonly [K in keyof S]: Fx.Success<S[K]>
     }
   >
 
   export function all<S extends Readonly<Record<string, Any>>>(
     subjects: S,
   ): RefSubject<
-    Fx.ErrorsOf<S[string]>,
+    Fx.Error<S[string]>,
     {
-      readonly [K in keyof S]: Fx.OutputOf<S[K]>
+      readonly [K in keyof S]: Fx.Success<S[K]>
     }
   >
 
@@ -576,9 +576,9 @@ interface RefPrimitive<E, A> {
 
 function tupleRefPrimitive<const Refs extends ReadonlyArray<RefSubject.Any>>(
   refs: Refs,
-): RefPrimitive<Fx.ErrorsOf<Refs[number]>, { readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]> }> {
-  type _E = Fx.ErrorsOf<Refs[number]>
-  type _A = { readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]> }
+): RefPrimitive<Fx.Error<Refs[number]>, { readonly [K in keyof Refs]: Fx.Success<Refs[K]> }> {
+  type _E = Fx.Error<Refs[number]>
+  type _A = { readonly [K in keyof Refs]: Fx.Success<Refs[K]> }
 
   const hold = new HoldFx(combineAll(...refs) as any as Fx<never, _E, _A>)
   const eq = Equivalence.tuple(...refs.map((ref) => ref.eq))
@@ -653,9 +653,9 @@ function makeModifyEffectTuple<
 
 function structRefPrimitive<const Refs extends Readonly<Record<string, RefSubject.Any>>>(
   refs: Refs,
-): RefPrimitive<Fx.ErrorsOf<Refs[string]>, { readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]> }> {
-  type _E = Fx.ErrorsOf<Refs[string]>
-  type _A = { readonly [K in keyof Refs]: Fx.OutputOf<Refs[K]> }
+): RefPrimitive<Fx.Error<Refs[string]>, { readonly [K in keyof Refs]: Fx.Success<Refs[K]> }> {
+  type _E = Fx.Error<Refs[string]>
+  type _A = { readonly [K in keyof Refs]: Fx.Success<Refs[K]> }
 
   const hold = new HoldFx(struct(refs)) as HoldFx<never, _E, _A>
   const eq = Equivalence.struct(mapRecord(refs, (ref) => ref.eq))

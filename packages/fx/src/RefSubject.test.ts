@@ -7,6 +7,7 @@ import * as Effect from '@effect/io/Effect'
 import * as Fiber from '@effect/io/Fiber'
 import { describe, it } from 'vitest'
 
+import { Computed } from './Computed.js'
 import { makeRef, RefSubject } from './RefSubject.js'
 import { toChunk } from './toChunk.js'
 
@@ -202,6 +203,25 @@ describe('RefSubject', () => {
             deepStrictEqual(yield* $(multiplyTwo), 6)
             deepStrictEqual(addOneCalls, 2)
             deepStrictEqual(multiplyTwoCalls, 2)
+          }),
+        )
+
+        await Effect.runPromise(test)
+      })
+
+      it('allows being combined with other Computed', async () => {
+        const test = Effect.scoped(
+          Effect.gen(function* ($) {
+            const ref = yield* $(makeRef(Effect.succeed(1)))
+            const addOne = ref.map((a) => a + 1)
+            const multiplyTwo = addOne.map((a) => a * 2)
+            const combined = Computed.tuple(addOne, multiplyTwo)
+
+            deepStrictEqual(yield* $(combined.get), [2, 4])
+
+            yield* $(ref.set(2))
+
+            deepStrictEqual(yield* $(combined.get), [3, 6])
           }),
         )
 

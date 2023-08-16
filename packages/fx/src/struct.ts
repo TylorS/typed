@@ -5,10 +5,10 @@ import { map } from './map.js'
 export function struct<FXS extends Readonly<Record<string, Fx<any, any, any>>>>(
   fx: FXS,
 ): Fx<
-  Fx.ResourcesOf<FXS[string]>,
-  Fx.ErrorsOf<FXS[string]>,
+  Fx.Context<FXS[string]>,
+  Fx.Error<FXS[string]>,
   {
-    readonly [K in keyof FXS]: Fx.OutputOf<FXS[K]>
+    readonly [K in keyof FXS]: Fx.Success<FXS[K]>
   }
 > {
   return map(

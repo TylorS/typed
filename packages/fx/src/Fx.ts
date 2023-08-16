@@ -54,23 +54,11 @@ export namespace Fx {
 
   export type Cancel = Runtime.Cancel<never, void>
 
-  export type ResourcesOf<T> = [T] extends [never]
-    ? never
-    : T extends Fx<infer R, any, any>
-    ? R
-    : never
+  export type Context<T> = [T] extends [never] ? never : T extends Fx<infer R, any, any> ? R : never
 
-  export type ErrorsOf<T> = [T] extends [never]
-    ? never
-    : T extends Fx<any, infer E, any>
-    ? E
-    : never
+  export type Error<T> = [T] extends [never] ? never : T extends Fx<any, infer E, any> ? E : never
 
-  export type OutputOf<T> = [T] extends [never]
-    ? never
-    : T extends Fx<any, any, infer A>
-    ? A
-    : never
+  export type Success<T> = [T] extends [never] ? never : T extends Fx<any, any, infer A> ? A : never
 }
 
 export function isFx<R, E, A>(v: unknown): v is Fx<R, E, A> {

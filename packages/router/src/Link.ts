@@ -10,11 +10,11 @@ import { pathJoin } from '@typed/path'
 import { Router, getCurrentPathFromUrl } from './router.js'
 
 export interface UseLinkParams<
-  To extends Placeholder<any, any, string>,
-  Replace extends Placeholder<any, any, boolean>,
+  To extends Placeholder.AnyOf<string>,
+  Replace extends Placeholder.AnyOf<boolean>,
   State,
-  Relative extends Placeholder<any, any, boolean>,
-  Key extends Placeholder<any, any, string>,
+  Relative extends Placeholder.AnyOf<boolean>,
+  Key extends Placeholder.AnyOf<string>,
 > {
   readonly to: To
   readonly replace?: Replace
@@ -25,26 +25,20 @@ export interface UseLinkParams<
 
 export namespace UseLinkParams {
   export type Any = UseLinkParams<
-    Placeholder<any, any, string>,
-    Placeholder<any, any, boolean>,
+    Placeholder.AnyOf<string>,
+    Placeholder.AnyOf<boolean>,
     unknown,
-    Placeholder<any, any, boolean>,
-    Placeholder<any, any, string>
+    Placeholder.AnyOf<boolean>,
+    Placeholder.AnyOf<string>
   >
 
-  export type Context<T extends Any> =
-    | Placeholder.ResourcesOf<T['to']>
-    | Placeholder.ResourcesOf<T['replace']>
-    | Placeholder.ResourcesOf<T['state']>
-    | Placeholder.ResourcesOf<T['relative']>
-    | Placeholder.ResourcesOf<T['key']>
+  export type Context<T extends Any> = Placeholder.Context<
+    T['to'] | T['replace'] | T['state'] | T['relative'] | T['key']
+  >
 
-  export type Error<T extends Any> =
-    | Placeholder.ErrorsOf<T['to']>
-    | Placeholder.ErrorsOf<T['replace']>
-    | Placeholder.ErrorsOf<T['state']>
-    | Placeholder.ErrorsOf<T['relative']>
-    | Placeholder.ErrorsOf<T['key']>
+  export type Error<T extends Any> = Placeholder.Error<
+    T['to'] | T['replace'] | T['state'] | T['relative'] | T['key']
+  >
 }
 
 export interface UseLink<E> {

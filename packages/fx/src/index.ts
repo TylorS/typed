@@ -106,9 +106,9 @@ export const catchAllEffect: {
 export const combineAll: <FX extends readonly internal.Fx<any, any, any>[]>(
   ...fx: FX
 ) => internal.Fx<
-  internal.Fx.ResourcesOf<FX[number]>,
-  internal.Fx.ErrorsOf<FX[number]>,
-  { [k in keyof FX]: internal.Fx.OutputOf<FX[k]> }
+  internal.Fx.Context<FX[number]>,
+  internal.Fx.Error<FX[number]>,
+  { [k in keyof FX]: internal.Fx.Success<FX[k]> }
 > = (...fx) => internal.combineAll(...fx)
 
 export const combine: {
@@ -121,7 +121,7 @@ export const combine: {
 
 export const combineAllDiscard: <FX extends readonly internal.Fx<any, any, any>[]>(
   ...fx: FX
-) => internal.Fx<internal.Fx.ResourcesOf<FX[number]>, internal.Fx.ErrorsOf<FX[number]>, void> = (
+) => internal.Fx<internal.Fx.Context<FX[number]>, internal.Fx.Error<FX[number]>, void> = (
   ...fx
 ) => internal.combineAllDiscard(...fx)
 
@@ -528,9 +528,9 @@ export const as: {
 export const mergeAll: <FXS extends ReadonlyArray<Fx<any, any, any>>>(
   ...fxs: FXS
 ) => Fx<
-  internal.Fx.ResourcesOf<FXS[number]>,
-  internal.Fx.ErrorsOf<FXS[number]>,
-  internal.Fx.OutputOf<FXS[number]>
+  internal.Fx.Context<FXS[number]>,
+  internal.Fx.Error<FXS[number]>,
+  internal.Fx.Success<FXS[number]>
 > = (...fxs) => internal.mergeAll(...fxs)
 
 export const merge: {
@@ -546,17 +546,17 @@ export const mergeFirst: {
 export const mergeConcurrently: <FXS extends ReadonlyArray<Fx<any, any, any>>>(
   ...fxs: FXS
 ) => Fx<
-  internal.Fx.ResourcesOf<FXS[number]>,
-  internal.Fx.ErrorsOf<FXS[number]>,
-  internal.Fx.OutputOf<FXS[number]>
+  internal.Fx.Context<FXS[number]>,
+  internal.Fx.Error<FXS[number]>,
+  internal.Fx.Success<FXS[number]>
 > = (...fxs) => internal.mergeConcurrently(...fxs)
 
 export const mergeBufferConcurrently: <FXS extends ReadonlyArray<Fx<any, any, any>>>(
   ...fxs: FXS
 ) => Fx<
-  internal.Fx.ResourcesOf<FXS[number]>,
-  internal.Fx.ErrorsOf<FXS[number]>,
-  internal.Fx.OutputOf<FXS[number]>
+  internal.Fx.Context<FXS[number]>,
+  internal.Fx.Error<FXS[number]>,
+  internal.Fx.Success<FXS[number]>
 > = (...fxs) => internal.mergeBufferConcurrently(...fxs)
 
 export const multicast: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = <R, E, A>(

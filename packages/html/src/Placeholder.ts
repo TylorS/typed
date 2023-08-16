@@ -12,7 +12,7 @@ export interface Placeholder<R = never, E = never, A = unknown> {
 
 export namespace Placeholder {
   /* eslint-disable @typescript-eslint/no-unused-vars */
-  export type ResourcesOf<T> = [T] extends [never]
+  export type Context<T> = [T] extends [never]
     ? never
     : [T] extends [Placeholder<infer R, infer _E, any>]
     ? R
@@ -22,7 +22,7 @@ export namespace Placeholder {
     ? R
     : never
 
-  export type ErrorsOf<T> = [T] extends [null]
+  export type Error<T> = [T] extends [null]
     ? never
     : [T] extends [undefined]
     ? never
@@ -36,10 +36,10 @@ export namespace Placeholder {
     ? _E
     : never
 
-  export type ValuesOf<T> = [T] extends [null]
-    ? never
+  export type Success<T> = [T] extends [null]
+    ? null
     : [T] extends [undefined]
-    ? never
+    ? undefined
     : [T] extends [never]
     ? never
     : [T] extends [Placeholder<infer _R, infer _E, infer A>]
@@ -214,9 +214,9 @@ declare global {
   export interface BigInt extends Placeholder<never, never, bigint> {}
   export interface Array<T>
     extends Placeholder<
-      Placeholder.ResourcesOf<T>,
-      Placeholder.ErrorsOf<T>,
-      ReadonlyArray<Placeholder.ValuesOf<T>>
+      Placeholder.Context<T>,
+      Placeholder.Error<T>,
+      ReadonlyArray<Placeholder.Success<T>>
     > {}
 
   // eslint-disable-next-line @typescript-eslint/ban-types

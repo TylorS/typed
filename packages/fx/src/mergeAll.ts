@@ -8,7 +8,7 @@ import { map } from './map.js'
 
 export function mergeAll<FXS extends ReadonlyArray<Fx<any, any, any>>>(
   ...fxs: FXS
-): Fx<Fx.ResourcesOf<FXS[number]>, Fx.ErrorsOf<FXS[number]>, Fx.OutputOf<FXS[number]>> {
+): Fx<Fx.Context<FXS[number]>, Fx.Error<FXS[number]>, Fx.Success<FXS[number]>> {
   return Fx((sink) =>
     Effect.forEach(
       fxs,

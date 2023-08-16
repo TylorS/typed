@@ -7,6 +7,7 @@ import { Pipeable, pipeArguments } from '@effect/data/Pipeable'
 import * as Effect from '@effect/io/Effect'
 
 import * as Fx from './Fx.js'
+import { combineAll } from './combineAll.js'
 
 const fxVariance = {
   _R: identity,
@@ -19,6 +20,75 @@ export interface RefTransformInput<R, E, A, R2, E2, B> extends Fx.Fx<R, E, A> {
 
   /** @internal */
   readonly version: () => number
+}
+
+export namespace RefTransformInput {
+  export type Any = RefTransform<any, any, any, any, any, any>
+  export type TupleAny = ReadonlyArray<Any>
+
+  export type FxContext<T> = [T] extends [never]
+    ? never
+    : T extends RefTransformInput<infer R, any, any, any, any, any>
+    ? R
+    : never
+
+  export type FxError<T> = [T] extends [never]
+    ? never
+    : T extends RefTransformInput<any, infer E, any, any, any, any>
+    ? E
+    : never
+
+  export type FxSuccess<T> = [T] extends [never]
+    ? never
+    : T extends RefTransformInput<any, any, infer A, any, any, any>
+    ? A
+    : never
+
+  export type Fx<T> = [T] extends [never]
+    ? never
+    : T extends RefTransformInput<infer R, infer E, infer A, any, any, any>
+    ? Fx.Fx<R, E, A>
+    : never
+
+  export type GetContext<T> = [T] extends [never]
+    ? never
+    : T extends RefTransformInput<any, any, any, infer R, any, any>
+    ? R
+    : never
+
+  export type GetError<T> = [T] extends [never]
+    ? never
+    : T extends RefTransformInput<any, any, any, any, infer E, any>
+    ? E
+    : never
+
+  export type GetSuccess<T> = [T] extends [never]
+    ? never
+    : T extends RefTransformInput<any, any, any, any, any, infer A>
+    ? A
+    : never
+
+  export type Get<T> = [T] extends [never]
+    ? never
+    : T extends RefTransformInput<any, any, any, infer R, infer E, infer A>
+    ? Effect.Effect<R, E, A>
+    : never
+
+  export function tuple<const Inputs extends TupleAny>(
+    inputs: Inputs,
+  ): RefTransformInput<
+    FxContext<Inputs[number]>,
+    FxError<Inputs[number]>,
+    { readonly [K in keyof Inputs]: FxSuccess<Inputs[K]> },
+    GetContext<Inputs[number]>,
+    GetError<Inputs[number]>,
+    { readonly [K in keyof Inputs]: GetSuccess<Inputs[K]> }
+  > {
+    return Object.assign(combineAll(...inputs), {
+      get: Effect.all(inputs.map((input) => input.get)),
+      version: () => inputs.reduce((acc, input) => Math.max(acc, input.version()), 0),
+    }) as any
+  }
 }
 
 export interface RefTransform<R, E, A, R2, E2, B>

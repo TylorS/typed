@@ -59,14 +59,14 @@ function hydrateTemplate<Values extends readonly Renderable<any, any>[]>(
   strings: TemplateStringsArray,
   values: Values,
 ): Fx.Fx<
-  Placeholder.ResourcesOf<Values[number]> | Scope.Scope,
-  Placeholder.ErrorsOf<Values[number]>,
+  Placeholder.Context<Values[number]> | Scope.Scope,
+  Placeholder.Error<Values[number]>,
   RenderEvent
 > {
-  return Fx.Fx(<R2>(sink: Fx.Sink<R2, Placeholder.ErrorsOf<Values[number]>, RenderEvent>) =>
+  return Fx.Fx(<R2>(sink: Fx.Sink<R2, Placeholder.Error<Values[number]>, RenderEvent>) =>
     Effect.catchAllDefect(
       Effect.contextWithEffect(
-        (context: Context<Placeholder.ResourcesOf<Values[number]> | R2 | Scope.Scope>) => {
+        (context: Context<Placeholder.Context<Values[number]> | R2 | Scope.Scope>) => {
           const ctx = unsafeGet(context, HydrateContext)
 
           if (!ctx.hydrate) {
@@ -98,7 +98,7 @@ function hydrateTemplate<Values extends readonly Renderable<any, any>[]>(
               Effect.tap(
                 Effect.all(
                   parts.map((part, index) =>
-                    renderPart<R2, Placeholder.ErrorsOf<Values[number]>>(
+                    renderPart<R2, Placeholder.Error<Values[number]>>(
                       values,
                       part,
                       makeHydrateContext,

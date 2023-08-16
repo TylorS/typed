@@ -7,10 +7,10 @@ import { succeed } from './succeed.js'
 export function combineAll<FX extends ReadonlyArray<Fx<any, any, any>>>(
   ...fx: FX
 ): Fx<
-  Fx.ResourcesOf<FX[number]>,
-  Fx.ErrorsOf<FX[number]>,
+  Fx.Context<FX[number]>,
+  Fx.Error<FX[number]>,
   {
-    [k in keyof FX]: Fx.OutputOf<FX[k]>
+    [k in keyof FX]: Fx.Success<FX[k]>
   }
 > {
   if (fx.length === 0) {
@@ -30,7 +30,7 @@ export function combineAll<FX extends ReadonlyArray<Fx<any, any, any>>>(
         values.size === length
           ? sink.event(
               Array.from({ length }, (_, i) => values.get(i)) as {
-                [k in keyof FX]: Fx.OutputOf<FX[k]>
+                [k in keyof FX]: Fx.Success<FX[k]>
               },
             )
           : Effect.unit,

@@ -11,8 +11,8 @@ export type AnyChildren = ReadonlyArray<Renderable<any, any>>
 export type TagResources<
   P extends AnyPlaceholders,
   C extends AnyChildren,
-> = Placeholder.ResourcesOf<P[string] | C[number]>
+> = Placeholder.Context<P[string] | C[number]>
 
-export type TagErrors<P extends AnyPlaceholders, C extends AnyChildren> = Placeholder.ErrorsOf<
+export type TagErrors<P extends AnyPlaceholders, C extends AnyChildren> = Placeholder.Error<
   P[string] | C[number]
 >

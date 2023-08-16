@@ -170,7 +170,7 @@ export const notFound: {
   ) => Fx.Fx<
     Router | R | Match.Context<Matches[number]>,
     Exclude<E | Match.Error<Matches[number]>, Redirect>,
-    A | Fx.Fx.OutputOf<Match.Rendered<Matches[number]>>
+    A | Fx.Fx.Success<Match.Rendered<Matches[number]>>
   >
 
   <Matches extends readonly Match.Any[], R, E, A>(
@@ -179,7 +179,7 @@ export const notFound: {
   ): Fx.Fx<
     Router | R | Match.Context<Matches[number]>,
     Exclude<E | Match.Error<Matches[number]>, Redirect>,
-    A | Fx.Fx.OutputOf<Match.Rendered<Matches[number]>>
+    A | Fx.Fx.Success<Match.Rendered<Matches[number]>>
   >
 } = Debug.dual(
   2,

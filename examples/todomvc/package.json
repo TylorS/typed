@@ -24,7 +24,9 @@
     "todomvc-common": "^1.0.5"
   },
   "scripts": {
-    "start": "pnpm run typed serve -c vite.config.js --force",
+    "start": "pnpm run typed serve -c vite.config.js",
+    "build": "pnpm run typed build -c vite.config.js",
+    "preview": "pnpm run typed preview -c vite.config.js",
     "typed": "pnpm tsx ../../packages/cli/src/cli.ts"
   }
 }

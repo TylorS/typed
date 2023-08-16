@@ -2,17 +2,17 @@ import * as Effect from '@effect/io/Effect'
 
 import { Fx, Sink } from './Fx.js'
 import { map } from './map.js'
-import { succeed } from './succeed.js'
+import { unit } from './succeed.js'
 
 export function combineAllDiscard<FX extends ReadonlyArray<Fx<any, any, any>>>(
   ...fx: FX
-): Fx<Fx.ResourcesOf<FX[number]>, Fx.ErrorsOf<FX[number]>, void> {
+): Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, void> {
   if (fx.length === 0) {
-    return succeed([]) as any
+    return unit
   }
 
   if (fx.length === 1) {
-    return map(fx[0], (x) => [x]) as any
+    return map(fx[0], (x) => void x)
   }
 
   return Fx((sink) =>

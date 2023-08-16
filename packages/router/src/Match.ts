@@ -54,16 +54,16 @@ export namespace Match {
     : never
 
   export type Context<M extends Any> =
-    | Fx.Fx.ResourcesOf<Rendered<M>>
+    | Fx.Fx.Context<Rendered<M>>
     | ([Guard<M>] extends [never] ? never : Effect.Effect.Context<Guard<M>>)
     | ([Matched<M>] extends [never] ? never : Effect.Effect.Context<Matched<M>>)
 
   export type Error<M extends Any> =
-    | Fx.Fx.ErrorsOf<Rendered<M>>
+    | Fx.Fx.Error<Rendered<M>>
     | ([Guard<M>] extends [never] ? never : Exclude<Effect.Effect.Error<Guard<M>>, NavigationError>)
     | ([Matched<M>] extends [never] ? never : Effect.Effect.Error<Matched<M>>)
 
-  export type Success<M extends Any> = Fx.Fx.OutputOf<Rendered<M>>
+  export type Success<M extends Any> = Fx.Fx.Success<Rendered<M>>
 }
 
 export function Match<P extends string, Rendered extends Fx.Fx<any, any, any>>(

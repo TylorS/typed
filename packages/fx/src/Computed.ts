@@ -43,6 +43,52 @@ export interface Computed<R, E, A> extends RefTransform<R, E, A, R, E, A>, Pipea
   version(): number
 }
 
+export namespace Computed {
+  export type Context<T> = [T] extends [never]
+    ? never
+    : // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    [T] extends [Computed<infer R, infer _E, any>]
+    ? R
+    : never
+  export type Error<T> = [T] extends [never]
+    ? never
+    : // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    [T] extends [Computed<infer _R, infer E, any>]
+    ? E
+    : never
+  export type Success<T> = [T] extends [never]
+    ? never
+    : // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    [T] extends [Computed<infer _R, infer _E, infer A>]
+    ? A
+    : never
+
+  export function tuple<Computeds extends ReadonlyArray<Computed<any, any, any>>>(
+    ...computeds: Computeds
+  ): Computed<
+    Computed.Context<Computeds[number]>,
+    Computed.Error<Computeds[number]>,
+    { readonly [K in keyof Computeds]: Computed.Success<Computeds[K]> }
+  > {
+    return new ComputedImpl(RefTransformInput.tuple(computeds) as any, Effect.succeed) as any
+  }
+
+  export function struct<Computeds extends Readonly<Record<string, Computed<any, any, any>>>>(
+    computeds: Computeds,
+  ): Computed<
+    Computed.Context<Computeds[string]>,
+    Computed.Error<Computeds[string]>,
+    { readonly [K in keyof Computeds]: Computed.Success<Computeds[K]> }
+  > {
+    return new ComputedImpl(
+      RefTransformInput.tuple(
+        Object.entries(computeds).map(([k, c]) => c.map((v) => [k, v] as const)),
+      ) as any,
+      (entries) => Effect.sync(() => Object.fromEntries(entries as any)),
+    ) as any
+  }
+}
+
 export class ComputedImpl<R, E, A, R2, E2, R3, E3, B>
   extends RefTransformImpl<
     R,
@@ -62,7 +108,10 @@ export class ComputedImpl<R, E, A, R2, E2, R3, E3, B>
 {
   readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
 
-  constructor(input: RefTransformInput<R, E, A, R2, E2, A>, f: (a: A) => Effect.Effect<R3, E3, B>) {
+  constructor(
+    readonly input: RefTransformInput<R, E, A, R2, E2, A>,
+    f: (a: A) => Effect.Effect<R3, E3, B>,
+  ) {
     super(
       input,
       (fx) => mapEffect(fx, f),
