@@ -75,7 +75,7 @@ const FilterLink = (viewState: FilterState) =>
 const TodoItem = (intent: Intent) => (todo: Fx.RefSubject<never, Todo>) =>
   Fx.gen(function* (_) {
     // Get the id of the todo
-    const { id } = yield* _(todo)
+    const { id, text: initial } = yield* _(todo)
 
     // Track whether this todo is being edited
     const isEditing = yield* _(Fx.makeRef(Effect.succeed(false)))
@@ -88,6 +88,10 @@ const TodoItem = (intent: Intent) => (todo: Fx.RefSubject<never, Todo>) =>
       Effect.flatMap((t) => intent.editTodo(t.id, t.text)),
       Effect.flatMap(() => isEditing.set(false)),
     )
+
+    const reset = todo
+      .update((t) => ({ ...t, text: initial }))
+      .pipe(Effect.zipRight(isEditing.set(false)))
 
     // The current text value
     const text = todo.map((t) => t.text)
@@ -113,7 +117,10 @@ const TodoItem = (intent: Intent) => (todo: Fx.RefSubject<never, Todo>) =>
         .value=${text}
         oninput=${EventHandler.target<HTMLInputElement>()((ev) => updateText(ev.target.value))}
         onfocusout=${EventHandler(() => submit)}
-        onkeydown=${EventHandler.keys<HTMLInputElement>('Enter')(() => submit)}
+        onkeydown=${EventHandler.keys<HTMLInputElement>(
+          'Enter',
+          'Escape',
+        )((ev) => (ev.key === 'Enter' ? submit : reset))}
       />
     </li>`
   })
