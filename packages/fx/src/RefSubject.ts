@@ -19,9 +19,11 @@ import { RefTransform, RefTransformImpl } from './RefTransform.js'
 import { Subject } from './Subject.js'
 import { combineAll } from './combineAll.js'
 import { HoldFx } from './hold.js'
+import { merge } from './mergeAll.js'
 import { never } from './never.js'
 import { drain } from './observe.js'
 import { struct } from './struct.js'
+import { unit } from './succeed.js'
 import { switchMatchCauseEffect } from './switchMatch.js'
 
 const unboundedConcurrency = { concurrency: 'unbounded' } as const
@@ -739,20 +741,27 @@ function mapRecord<K extends string, A, B>(
   return result
 }
 
-export function asRef<R, E, A>(fx: Fx<R, E, A>, eq?: Equivalence.Equivalence<A>) {
-  return Effect.flatMap(Deferred.make<E, A>(), (deferred) =>
-    Effect.flatMap(makeRef(Deferred.await(deferred), eq), (ref) => {
-      const onValue = (value: A) =>
+export interface AsRefParams<A, R2 = never, E2 = never> {
+  readonly eq?: Equivalence.Equivalence<A>
+  readonly onValue?: (value: A) => Effect.Effect<R2, E2, unknown>
+}
+
+export function asRef<R, E, A, R2 = never, E2 = never>(
+  fx: Fx<R, E, A>,
+  params: AsRefParams<A, R2, E2> = {},
+) {
+  return Effect.flatMap(Deferred.make<E | E2, A>(), (deferred) =>
+    Effect.flatMap(makeRef(Deferred.await(deferred), params.eq), (ref) => {
+      const event = (value: A) =>
         Effect.flatMap(Deferred.succeed(deferred, value), (closed) =>
           closed ? Effect.unit : ref.set(value),
         )
 
-      return Effect.as(
-        Effect.forkScoped(
-          Effect.catchAllCause(drain(switchMatchCauseEffect(fx, ref.error, onValue)), ref.error),
-        ),
-        ref,
-      )
+      const to = switchMatchCauseEffect(fx, ref.error, event)
+      const from = params.onValue ? switchMatchCauseEffect(ref, ref.error, params.onValue) : unit
+      const both = merge(from, to)
+
+      return Effect.as(Effect.forkScoped(Effect.catchAllCause(drain(both), ref.error)), ref)
     }),
   )
 }
