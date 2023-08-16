@@ -47,11 +47,9 @@ export const fromOption = <A>(option: Option.Option<A>): Fx<never, never, A> =>
     onSome: succeed,
   })
 
-const empty: Fx<never, never, never> = new (class Empty extends BaseFx<never, never, never> {
-  run() {
-    return Effect.unit
-  }
-})()
+export const fromSync = <A>(f: () => A): Fx<never, never, A> => FromSync.make(f)
+
+export const suspend = <R, E, A>(f: () => Fx<R, E, A>): Fx<R, E, A> => Suspend.make(f)
 
 export const map = <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => B): Fx<R, E, B> => Map.make(fx, f)
 
@@ -64,13 +62,21 @@ export const filter = <R, E, A>(fx: Fx<R, E, A>, f: (a: A) => boolean): Fx<R, E,
   Filter.make(fx, f)
 
 // TODO: Determine how to handle creating less Fibers
-// succeed, failCause, suspend
+// succeed, failCause, suspend, fromSync
 // fromEffect
 // filter, map, scan, tap
 // effect variants
 // flatMap, switchMap, exhaustMap, exhaustMapLatest - attempt to avoid creating fibers
 // skip/takeUntil, skip/takeWhile + higher-order variants
 // reduce, drain, observe
+
+class Empty extends BaseFx<never, never, never> {
+  run() {
+    return Effect.unit
+  }
+}
+
+export const empty: Fx<never, never, never> = new Empty()
 
 class Succeed<A> extends BaseFx<never, never, A> {
   constructor(readonly value: A) {
@@ -109,6 +115,34 @@ class FromEffect<R, E, A> extends BaseFx<R, E, A> {
   }
 }
 
+class FromSync<A> extends BaseFx<never, never, A> {
+  constructor(readonly f: () => A) {
+    super()
+  }
+
+  run<R2>(sink: Sink.Sink<R2, never, A>): Effect.Effect<R2, never, void> {
+    return Effect.suspend(() => sink.event(this.f()))
+  }
+
+  static make<A>(f: () => A): Fx<never, never, A> {
+    return new FromSync(f)
+  }
+}
+
+class Suspend<R, E, A> extends BaseFx<R, E, A> {
+  constructor(readonly f: () => Fx<R, E, A>) {
+    super()
+  }
+
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, void> {
+    return Effect.suspend(() => this.f().run(sink))
+  }
+
+  static make<R, E, A>(f: () => Fx<R, E, A>): Fx<R, E, A> {
+    return new Suspend(f)
+  }
+}
+
 class Map<R, E, A, B> extends BaseFx<R, E, B> {
   constructor(
     readonly fx: Fx<R, E, A>,
@@ -122,7 +156,28 @@ class Map<R, E, A, B> extends BaseFx<R, E, B> {
   }
 
   static make<R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => B): Fx<R, E, B> {
-    return new Map(fx, f)
+    switch (fx.constructor) {
+      case Empty:
+        return empty
+      case Map:
+        return new Map((fx as Map<R, E, any, A>).fx, (a) => f((fx as Map<R, E, any, A>).f(a)))
+      case Filter:
+        return new FilterMap((fx as Filter<R, E, A>).fx, (a) =>
+          (fx as Filter<R, E, A>).f(a) ? Option.some(f(a)) : Option.none(),
+        )
+      case FilterMap:
+        return new FilterMap((fx as FilterMap<R, E, any, A>).fx, (a) =>
+          Option.map((fx as FilterMap<R, E, any, A>).f(a), f),
+        )
+      case FromSync:
+        return new FromSync(() => f((fx as FromSync<A>).f()))
+      case Suspend:
+        return new Suspend(() => Map.make((fx as Suspend<R, E, A>).f(), f))
+      case FailCause:
+        return fx as Fx<R, E, never>
+      default:
+        return new Map(fx, f)
+    }
   }
 }
 
@@ -139,10 +194,27 @@ class FilterMap<R, E, A, B> extends BaseFx<R, E, B> {
   }
 
   static make<R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => Option.Option<B>): Fx<R, E, B> {
-    if (fx instanceof FailCause) {
-      return fx
-    } else {
-      return new FilterMap(fx, f)
+    switch (fx.constructor) {
+      case Empty:
+        return empty
+      case Map:
+        return new FilterMap((fx as Map<R, E, any, A>).fx, (a) => f((fx as Map<R, E, any, A>).f(a)))
+      case Filter:
+        return new FilterMap((fx as Filter<R, E, A>).fx, (a) =>
+          (fx as Filter<R, E, A>).f(a) ? f(a) : Option.none(),
+        )
+      case FilterMap:
+        return new FilterMap((fx as FilterMap<R, E, any, A>).fx, (a) =>
+          Option.flatMap((fx as FilterMap<R, E, any, A>).f(a), f),
+        )
+      case FromSync:
+        return new Suspend(() => fromOption(f((fx as FromSync<A>).f())))
+      case Suspend:
+        return new Suspend(() => FilterMap.make((fx as Suspend<R, E, A>).f(), f))
+      case FailCause:
+        return fx as Fx<R, E, never>
+      default:
+        return new FilterMap(fx, f)
     }
   }
 }
@@ -160,10 +232,34 @@ class Filter<R, E, A> extends BaseFx<R, E, A> {
   }
 
   static make<R, E, A>(fx: Fx<R, E, A>, f: (a: A) => boolean): Fx<R, E, A> {
-    if (fx instanceof FailCause) {
-      return fx
-    } else {
-      return new Filter(fx, f)
+    switch (fx.constructor) {
+      case Empty:
+        return empty
+      case Map:
+        return new FilterMap((fx as Map<R, E, any, A>).fx, (a) => {
+          const b = (fx as Map<R, E, any, A>).f(a)
+          return f(b) ? Option.some(b) : Option.none()
+        })
+      case Filter:
+        return new Filter((fx as Filter<R, E, A>).fx, (a) => (fx as Filter<R, E, A>).f(a) && f(a))
+      case FilterMap:
+        return new FilterMap((fx as FilterMap<R, E, any, A>).fx, (a) =>
+          Option.flatMap((fx as FilterMap<R, E, any, A>).f(a), (b) =>
+            f(b) ? Option.some(b) : Option.none(),
+          ),
+        )
+      case FromSync:
+        return new Suspend(() => {
+          const a = (fx as FromSync<A>).f()
+
+          return f(a) ? succeed(a) : empty
+        })
+      case Suspend:
+        return new Suspend(() => Filter.make((fx as Suspend<R, E, A>).f(), f))
+      case FailCause:
+        return fx as Fx<R, E, never>
+      default:
+        return new Filter(fx, f)
     }
   }
 }
