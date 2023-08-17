@@ -31,6 +31,7 @@ export function identifierToString(x: unknown): string {
       if (x == null) return 'null'
       if ('name' in x) return String(x.name)
       if ('displayName' in x) return String(x.displayName)
+      if ('_id' in x) return identifierToString(x._id)
 
       return x.toString()
     }

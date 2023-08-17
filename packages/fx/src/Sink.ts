@@ -36,7 +36,7 @@ export function tapSync<R, E, A>(sink: Sink<R, E, A>, f: (a: A) => void): Sink<R
   })
 }
 
-class MapSink<R, E, A, B> implements Sink<R, E, B> {
+export class MapSink<R, E, A, B> implements Sink<R, E, B> {
   constructor(
     readonly sink: Sink<R, E, A>,
     readonly f: (a: B) => A,
@@ -237,7 +237,7 @@ export const filterReduce = <R, E, A, B>(
     init,
   )
 
-class FilterLoopSink<R, E, A, B, C> implements Sink<R, E, A> {
+export class FilterLoopSink<R, E, A, B, C> implements Sink<R, E, A> {
   private acc: B
 
   constructor(
@@ -327,7 +327,7 @@ export const reduceEffect = <R, E, A, R2, E2, B>(
   init: B,
 ): Sink<R | R2, E, A> => filterReduceEffect(sink, (b, a) => Effect.map(f(b, a), Option.some), init)
 
-class FilterLoopEffectSink<R, E, A, B, R2, E2, C> implements Sink<R | R2, E, A> {
+export class FilterLoopEffectSink<R, E, A, B, R2, E2, C> implements Sink<R | R2, E, A> {
   private acc: B
 
   constructor(
@@ -387,7 +387,7 @@ class FilterLoopEffectSink<R, E, A, B, R2, E2, C> implements Sink<R | R2, E, A> 
   }
 }
 
-class Observe<R, E, A> implements Sink<R, E, A> {
+export class Observe<R, E, A> implements Sink<R, E, A> {
   constructor(
     readonly deferred: Deferred.Deferred<E, void>,
     readonly f: (a: A) => Effect.Effect<R, E, void>,
