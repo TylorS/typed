@@ -1,7 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 
 import { Fx, Sink } from './Fx.js'
-import { fromEffect } from './fromEffect.js'
 import { withSwitch } from './helpers.js'
 
 export function switchMap<R, E, A, R2, E2, B>(
@@ -15,7 +14,17 @@ export function switchMapEffect<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
   f: (a: A) => Effect.Effect<R2, E2, B>,
 ): Fx<R | R2, E | E2, B> {
-  return switchMap(fx, (a) => fromEffect(f(a)))
+  return Fx((sink) =>
+    withSwitch((fork) =>
+      fx.run(
+        Sink(
+          (a) =>
+            fork(Effect.matchCauseEffect(f(a), { onFailure: sink.error, onSuccess: sink.event })),
+          sink.error,
+        ),
+      ),
+    ),
+  )
 }
 
 export function switchLatest<R, E, R2, E2, B>(fx: Fx<R, E, Fx<R2, E2, B>>): Fx<R | R2, E | E2, B> {
