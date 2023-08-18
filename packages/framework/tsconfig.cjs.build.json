@@ -10,10 +10,10 @@
       "path": "../context/tsconfig.cjs.build.json"
     },
     {
-      "path": "../decoder/tsconfig.cjs.build.json"
+      "path": "../dom/tsconfig.cjs.build.json"
     },
     {
-      "path": "../dom/tsconfig.cjs.build.json"
+      "path": "../fx/tsconfig.cjs.build.json"
     },
     {
       "path": "../html/tsconfig.cjs.build.json"
@@ -23,9 +23,6 @@
     },
     {
       "path": "../path/tsconfig.cjs.build.json"
-    },
-    {
-      "path": "../route/tsconfig.cjs.build.json"
     },
     {
       "path": "../router/tsconfig.cjs.build.json"

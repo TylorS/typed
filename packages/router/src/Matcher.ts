@@ -1,5 +1,6 @@
 import * as Chunk from '@effect/data/Chunk'
 import * as Debug from '@effect/data/Function'
+import * as Pipeable from '@effect/data/Pipeable'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
@@ -12,7 +13,7 @@ import { Redirect } from './Redirect.js'
 import { matchRoutes } from './matchRoutes.js'
 import { Router } from './router.js'
 
-export interface Matcher<Matches extends ReadonlyArray<Match.Any>> {
+export interface Matcher<Matches extends ReadonlyArray<Match.Any>> extends Pipeable.Pipeable {
   /** @internal */
   readonly matches: Chunk.Chunk<Match.Any>
 
@@ -154,6 +155,11 @@ export function Matcher<const Matches extends ReadonlyArray<Match.Any>>(
       other: Matcher<OtherMatches>,
     ): Matcher<readonly [...Matches, ...OtherMatches]> => {
       return Matcher(Chunk.appendAll(matches, other.matches))
+    },
+
+    pipe() {
+      // eslint-disable-next-line prefer-rest-params
+      return Pipeable.pipeArguments(this, arguments)
     },
   }
 

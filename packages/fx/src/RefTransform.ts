@@ -5,6 +5,9 @@ import * as MutableRef from '@effect/data/MutableRef'
 import * as Option from '@effect/data/Option'
 import { Pipeable, pipeArguments } from '@effect/data/Pipeable'
 import * as Effect from '@effect/io/Effect'
+import * as Channel from '@effect/stream/Channel'
+import * as Sink from '@effect/stream/Sink'
+import * as Stream from '@effect/stream/Stream'
 
 import * as Fx from './Fx.js'
 import { combineAll } from './combineAll.js'
@@ -119,6 +122,9 @@ export class RefTransformImpl<R0, E0, A0, R1, E1, A1, R2, E2, B, R3, E3, C>
 {
   readonly _tag = 'Commit';
   readonly [Effect.EffectTypeId] = fxVariance;
+  readonly [Sink.SinkTypeId] = fxVariance as any;
+  readonly [Channel.ChannelTypeId] = fxVariance as any;
+  readonly [Stream.StreamTypeId] = fxVariance as any;
 
   readonly [Fx.FxTypeId] = fxVariance
 

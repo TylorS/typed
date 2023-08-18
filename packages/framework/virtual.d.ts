@@ -17,3 +17,12 @@ declare module 'typed:config' {
 
   export const base: string
 }
+
+declare module 'html:*' {
+  export const content: string
+  export const placeholder: RegExp
+  export const before: string
+  export const after: string
+  export const basePath: string | null
+  export const assetDirectory: string
+}

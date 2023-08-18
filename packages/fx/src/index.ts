@@ -121,9 +121,8 @@ export const combine: {
 
 export const combineAllDiscard: <FX extends readonly internal.Fx<any, any, any>[]>(
   ...fx: FX
-) => internal.Fx<internal.Fx.Context<FX[number]>, internal.Fx.Error<FX[number]>, void> = (
-  ...fx
-) => internal.combineAllDiscard(...fx)
+) => internal.Fx<internal.Fx.Context<FX[number]>, internal.Fx.Error<FX[number]>, void> = (...fx) =>
+  internal.combineAllDiscard(...fx)
 
 export const continueWith: {
   <R2, E2, B>(f: () => Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A | B>
@@ -1080,3 +1079,4 @@ export * from './Computed.js'
 export * from './Filtered.js'
 export * from './RefTransform.js'
 export * from './Subject.js'
+export * from './toStream.js'

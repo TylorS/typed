@@ -161,7 +161,17 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
               },
             }),
           ),
-          Option.map((build) => ({ name: 'server', config: { build, plugins: [] } })),
+          Option.map((build) => ({
+            name: 'server',
+            config: {
+              build,
+              optimizeDeps: {
+                // Allow @typed/framework to include virtual imports
+                exclude: ['@typed/framework', '@typed/framework/*'],
+              },
+              plugins: [],
+            },
+          })),
           Option.toArray,
         )
 
