@@ -1,11 +1,11 @@
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
-import { EventHandler, Placeholder, Renderable, html } from '@typed/html'
+import { Placeholder, Renderable, html } from '@typed/html'
 import * as Route from '@typed/route'
 import * as Router from '@typed/router'
 
 // Type-safe routes
-export const homeRoute = Route.Route('/') // Configures path-to-regexp to only match root path
+export const homeRoute = Route.Route('/', { match: { end: true } }) // Configures path-to-regexp to only match root path
 export const fooRoute = Route.Route('/foo/:foo')
 export const barRoute = Route.Route('/bar/:bar')
 export const fooBarRoute = fooRoute.concat(barRoute)
@@ -29,9 +29,7 @@ export const router = Router.match(
 )
   .match(fooRoute, (params) => html`<div>Foo: ${params.map((p) => p.foo)}</div>`)
   .match(barRoute, (params) => html`<div>Bar: ${params.map((p) => p.bar)}</div>`)
-  .match(homeRoute, () => html`<div>Home</div>`, {
-    guard: () => Router.CurrentPath.pipe(Effect.map((path) => path === '/')),
-  })
+  .match(homeRoute, () => html`<div>Home</div>`)
   .notFound(() => counter)
 
 // Layout
@@ -61,9 +59,11 @@ export const ListItemLink = <
   label: L,
 ) =>
   Router.Link(
-    { to, relative: false },
-    ({ url, navigate }) =>
+    { to },
+    ({ url, onClick }) =>
       html`<li>
-        <a href=${url} onclick=${EventHandler.preventDefault(() => navigate)}>${label}</a>
+        <a href=${url} onclick=${onClick}>${label}</a>
       </li>`,
   )
+
+export const ui = layout(router)

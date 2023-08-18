@@ -38,23 +38,17 @@ export function renderHtml<R, E>(
 }
 
 export function serve<R, E>(
-  router: Http.router.Router<R, E>,
-  options: Net.ListenOptions = {},
+  app: Http.app.Default<R, E>,
+  options: Net.ListenOptions,
 ): Layer.Layer<
   Exclude<
-    Exclude<
-      Exclude<
-        Exclude<Exclude<R, Http.router.RouteContext>, ServerRequest.ServerRequest>,
-        Scope.Scope
-      >,
-      Http.server.Server
-    >,
+    Exclude<Exclude<Exclude<R, ServerRequest.ServerRequest>, Scope.Scope>, Http.server.Server>,
     NodeContext.NodeContext
   >,
   Http.error.ServeError,
   never
 > {
-  return router.pipe(
+  return app.pipe(
     Http.server.serve(Http.middleware.loggerTracer),
     Layer.scopedDiscard,
     Layer.use(
@@ -77,6 +71,8 @@ export function serve<R, E>(
 
             return server
           } else {
+            // TODO: Figure out how to serve using http2 and doing file pushing
+
             return createServer()
           }
         },

@@ -3,19 +3,19 @@ import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as ServerRequest from '@effect/platform/Http/ServerRequest'
 import * as ServerResponse from '@effect/platform/Http/ServerResponse'
-import * as Context from '@typed/context'
 import * as Fx from '@typed/fx'
 import { RenderEvent, RenderTemplate } from '@typed/html'
 import * as htmlServer from '@typed/html/server'
 
 import { HtmlModule } from '../HtmlModule.js'
 import { IntrinsicServices } from '../IntrinsicServices.js'
-import { server } from '../server.js'
+
+import { server } from './layer.js'
 
 const textEncoder = new TextEncoder()
 const htmlResponseOption: ServerResponse.Options = {
   status: 200,
-  headers: HashMap.make(['content-type', 'text/html']),
+  contentType: 'text/html',
 }
 
 export function renderToHtmlStream<R, E>(
@@ -26,27 +26,26 @@ export function renderToHtmlStream<R, E>(
   never,
   ServerResponse.ServerResponse
 > {
-  return Effect.contextWithEffect(
-    (context: Context.Context<Exclude<R, IntrinsicServices | RenderTemplate>>) =>
-      Effect.gen(function* (_) {
-        const request = yield* _(ServerRequest.ServerRequest)
-        const stream = render(request).pipe(
-          htmlServer.renderToHtmlStream,
-          Fx.startWith(html.before),
-          Fx.continueWith(() => Fx.succeed(html.after)),
-          Fx.map(stringToUint8Array),
-          Fx.provideSomeContext(context),
-          Fx.provideSomeLayer(
-            server({
-              initialUrl: getUrlFromServerRequest(request),
-            }),
-          ),
-          Fx.scoped,
-          Fx.toStream,
-        )
+  return Effect.contextWithEffect((context) =>
+    Effect.gen(function* (_) {
+      const request = yield* _(ServerRequest.ServerRequest)
+      const stream = render(request).pipe(
+        htmlServer.renderToHtmlStream,
+        Fx.startWith(html.before),
+        Fx.continueWith(() => Fx.succeed(html.after)),
+        Fx.map(stringToUint8Array),
+        Fx.provideSomeContext(context),
+        Fx.provideSomeLayer(
+          server({
+            initialUrl: getUrlFromServerRequest(request),
+          }),
+        ),
+        Fx.scoped,
+        Fx.toStream,
+      )
 
-        return ServerResponse.stream(stream as any, htmlResponseOption)
-      }),
+      return ServerResponse.stream(stream as any, htmlResponseOption)
+    }),
   )
 }
 
@@ -100,6 +99,7 @@ export function getUrlFromServerRequest(request: ServerRequest.ServerRequest): U
   )
   const protocol = HashMap.get(headers, 'x-forwarded-proto').pipe(
     Option.orElse(() => HashMap.get(headers, 'x-forwarded-protocol')),
+    Option.orElse(() => HashMap.get(headers, 'protocol')),
     Option.getOrElse(() => 'http'),
   )
 
