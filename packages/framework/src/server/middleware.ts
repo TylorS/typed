@@ -44,12 +44,12 @@ export type SetHeadersInput = {
   readonly encoding?: string
 }
 
-export const GetStaticFile = Context.Fn<
+const GetStaticFile = Context.Fn<
   <E>(
     request: Http.request.ServerRequest,
   ) => Effect.Effect<never, E, Option.Option<Http.response.ServerResponse>>
 >()(class GetStaticFile extends Context.id('@typed/framework/server/GetStaticFile') {})
-export type GetStaticFile = Context.Tag.Identifier<typeof GetStaticFile>
+type GetStaticFile = Context.Tag.Identifier<typeof GetStaticFile>
 
 export const staticFileMiddleware = <R = never, E = never>(
   options: StaticFileOptions<R, E>,
