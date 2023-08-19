@@ -2,7 +2,7 @@ import './styles.css'
 
 import * as Effect from '@effect/io/Effect'
 import * as Fx from '@typed/fx'
-import { EventHandler, html, many, when } from '@typed/html'
+import { EventHandler, html, isBrowser, many, when } from '@typed/html'
 import * as Router from '@typed/router'
 
 import { Intent, WriteTodoList, makeIntent, makeModel } from './application.js'
@@ -13,8 +13,10 @@ export const TodoApp = Fx.gen(function* (_) {
   const model = yield* _(makeModel)
   const intent = makeIntent(model)
 
-  // Write todoList whenever it changes
-  yield* _(model.todoList, Fx.observe(WriteTodoList.apply), Effect.fork)
+  if (yield* _(isBrowser)) {
+    // Write todoList whenever it changes
+    yield* _(model.todoList, Fx.observe(WriteTodoList.apply), Effect.fork)
+  }
 
   return html`<section class="todoapp ${model.filterState}">
     <header class="header">
