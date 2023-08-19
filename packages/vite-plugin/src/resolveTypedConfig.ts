@@ -20,6 +20,7 @@ export async function resolveTypedConfig(
 type ArgsOf<T> = T extends (...args: infer A) => any ? A : never
 
 export interface ResolvedOptions {
+  readonly assetDirectory: string
   readonly base: string
   readonly clientOutputDirectory: string
   readonly debug: boolean

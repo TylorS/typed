@@ -8,8 +8,10 @@
 // TODO: Determine content type based on file extension
 // Compute and cache requests for files to their file paths
 
+import { createHash } from 'node:crypto'
 import { extname, join, resolve } from 'node:path'
 
+import * as Duration from '@effect/data/Duration'
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
@@ -19,34 +21,46 @@ import * as Http from '@effect/platform-node/HttpServer'
 import * as pluginutils from '@rollup/pluginutils'
 import * as Context from '@typed/context'
 
-export interface StaticFileOptions {
-  readonly directory: string
-  readonly enable?: boolean
-  readonly include?: readonly string[]
-  readonly exclude?: readonly string[]
-  readonly extensions?: readonly string[]
+export interface StaticFileOptions<R, E> {
+  readonly directory: string // where to look for static files
+  readonly enable?: boolean // whether to enable static file serving, defaults to truea
+  readonly include?: readonly string[] // file globs to include
+  readonly exclude?: readonly string[] // file globs to exclude, overrides include
+  readonly extensions?: readonly string[] // file extensions to match, defaults to .html
   readonly compressions?: {
+    // Map of name as found in Accept-Encoding header to file extension
+    // that we expect to find in the directory
     readonly [AcceptEncoding: string]: string // FileExtension
   }
+  readonly setHeaders?: SetHeaders<R, E>
+}
+
+export type SetHeaders<R, E> = (input: SetHeadersInput) => Effect.Effect<R, E, Http.headers.Headers>
+
+export type SetHeadersInput = {
+  readonly path: string
+  readonly headers: Http.headers.Headers
+  readonly contentType: string
+  readonly encoding?: string
 }
 
 export const GetStaticFile = Context.Fn<
-  (
+  <E>(
     request: Http.request.ServerRequest,
-  ) => Effect.Effect<never, never, Option.Option<Http.response.ServerResponse>>
+  ) => Effect.Effect<never, E, Option.Option<Http.response.ServerResponse>>
 >()(class GetStaticFile extends Context.id('@typed/framework/server/GetStaticFile') {})
 export type GetStaticFile = Context.Tag.Identifier<typeof GetStaticFile>
 
-export const staticFileMiddleware = (
-  options: StaticFileOptions,
-): (<R, E>(
-  app: Http.app.Default<R, E>,
-) => Http.app.Default<R | FileSystem.FileSystem, E | PlatformError.PlatformError>) =>
+export const staticFileMiddleware = <R = never, E = never>(
+  options: StaticFileOptions<R, E>,
+): (<R0, E0>(
+  app: Http.app.Default<R0, E0>,
+) => Http.app.Default<R | R0 | FileSystem.FileSystem, E | E0 | PlatformError.PlatformError>) =>
   Http.middleware.make((app) => {
     if (options.enable === false) return app
 
     return Http.request.ServerRequest.pipe(
-      Effect.flatMap(GetStaticFile.apply),
+      Effect.flatMap((request) => GetStaticFile.withEffect((f) => f<E>(request))),
       Effect.flatMap(
         Option.match({
           onNone: () => app,
@@ -57,20 +71,101 @@ export const staticFileMiddleware = (
     )
   })
 
-function staticFileLayer(
-  options: StaticFileOptions,
-): Layer.Layer<FileSystem.FileSystem, PlatformError.PlatformError, GetStaticFile> {
+export interface CacheOptions {
+  readonly maxAge?: Duration.DurationInput
+  readonly immutable?: boolean
+  readonly etag?: boolean
+
+  readonly include?: readonly string[]
+  readonly exclude?: readonly string[]
+}
+
+export function cacheControl(
+  options: CacheOptions,
+): SetHeaders<FileSystem.FileSystem, PlatformError.PlatformError> {
+  const filter = pluginutils.createFilter(options.include, options.exclude)
+  const etagCache = new Map<string, string>()
+
+  return ({ path, headers }) =>
+    Effect.suspend(() => {
+      if (!filter(path)) return Effect.succeed(headers)
+
+      const cacheControl = headers.pipe(Http.headers.get('cache-control'))
+      const etag = headers.pipe(Http.headers.get('etag'))
+
+      // If cache-control is already set, don't override it
+      if (Option.isSome(cacheControl)) {
+        if (Option.isNone(etag) && options.etag !== false) {
+          return generateETag(path, etagCache).pipe(
+            Effect.map((etag) => headers.pipe(Http.headers.set('etag', etag))),
+          )
+        }
+
+        return Effect.succeed(headers)
+      }
+
+      const directives: string[] = []
+
+      if (options.maxAge) {
+        directives.push(`max-age=${Math.round(Duration.toMillis(options.maxAge) / 1000)}`)
+      }
+
+      if (options.immutable) {
+        directives.push('immutable')
+      }
+
+      if (Option.isNone(etag) && options.etag !== false) {
+        return generateETag(path, etagCache).pipe(
+          Effect.map((etag) =>
+            headers.pipe(
+              Http.headers.set('etag', etag),
+              Http.headers.set('cache-control', directives.join(', ')),
+            ),
+          ),
+        )
+      }
+
+      return Effect.succeed(headers.pipe(Http.headers.set('cache-control', directives.join(', '))))
+    })
+}
+
+function generateETag(
+  path: string,
+  cache: Map<string, string>,
+): Effect.Effect<FileSystem.FileSystem, PlatformError.PlatformError, string> {
+  const cached = cache.get(path)
+
+  if (cached) {
+    return Effect.succeed(cached)
+  }
+
+  return FileSystem.FileSystem.pipe(
+    Effect.flatMap((fs) => fs.readFileString(path)),
+    Effect.flatMap((content) =>
+      Effect.sync(() => {
+        const etag = createHash('md5').update(content).digest('hex')
+
+        cache.set(path, etag)
+
+        return etag
+      }),
+    ),
+  )
+}
+
+function staticFileLayer<R, E>(
+  options: StaticFileOptions<R, E>,
+): Layer.Layer<R | FileSystem.FileSystem, PlatformError.PlatformError, GetStaticFile> {
   return GetStaticFile.layerScoped(
     Effect.gen(function* (_) {
-      const ctx = yield* _(Effect.context<FileSystem.FileSystem>())
+      const ctx = yield* _(Effect.context<R | FileSystem.FileSystem>())
       const files = yield* _(readDirectory(options))
       const [urlToFilePath, filePathToCompressions] = buildRequestMaps(
         options.directory,
         files,
         options.extensions,
       )
-
-      return (request: Http.request.ServerRequest) => {
+      const getStaticFile = (request: Http.request.ServerRequest) => {
         if (!(request.method === 'GET' || request.method === 'HEAD')) {
           return Effect.succeed(Option.none())
         }
@@ -88,45 +183,76 @@ function staticFileLayer(
             if (name in compressions) {
               const { path, contentType } = compressions[name]
 
-              return fileStreamResponse(path, name, contentType).pipe(
-                Effect.map(Option.some),
-                Effect.provideSomeContext(ctx),
-              )
+              return fileStreamResponse({
+                path,
+                encoding: name,
+                contentType,
+                setHeaders: options.setHeaders,
+              }).pipe(Effect.map(Option.some), Effect.provideSomeContext(ctx))
             }
           }
         }
 
-        return fileStreamResponse(filePath).pipe(
+        return fileStreamResponse({ path: filePath, setHeaders: options.setHeaders }).pipe(
           Effect.map(Option.some),
           Effect.provideSomeContext(ctx),
         )
       }
+
+      return getStaticFile as any
     }),
   )
 }
 
-function fileStreamResponse(
-  path: string,
-  encoding?: string,
-  contentType?: string,
-): Effect.Effect<FileSystem.FileSystem, never, Http.response.ServerResponse> {
+function fileStreamResponse<R, E>(options: {
+  path: string
+  encoding?: string
+  contentType?: string
+  setHeaders?: (input: SetHeadersInput) => Effect.Effect<R, E, Http.headers.Headers>
+}): Effect.Effect<R | FileSystem.FileSystem, E, Http.response.ServerResponse> {
+  const contentType = options.contentType ?? fileExtensionToContentType(extname(options.path))
+  const defaultHeaders = Http.headers.empty.pipe(
+    options.encoding ? Http.headers.set('content-encoding', options.encoding) : (x) => x,
+    Http.headers.set('content-type', contentType),
+  )
+
+  if (options.setHeaders) {
+    return options
+      .setHeaders({
+        path: options.path,
+        contentType,
+        headers: defaultHeaders,
+        encoding: options.encoding,
+      })
+      .pipe(
+        Effect.flatMap((headers) =>
+          FileSystem.FileSystem.pipe(
+            Effect.map((fs) =>
+              Http.response.stream(fs.stream(options.path), { headers, contentType }),
+            ),
+          ),
+        ),
+      )
+  }
+
   return FileSystem.FileSystem.pipe(
     Effect.map((fs) =>
-      Http.response.stream(fs.stream(path), {
-        headers: Http.headers.empty.pipe(
-          encoding ? Http.headers.set('content-encoding', encoding) : (x) => x,
-        ),
-        contentType: contentType ?? fileExtensionToContentType(extname(path)),
+      Http.response.stream(fs.stream(options.path), {
+        contentType,
       }),
     ),
   )
 }
 
-function readDirectory({
+function readDirectory<R, E>({
   directory,
   include,
   exclude,
-}: StaticFileOptions): Effect.Effect<FileSystem.FileSystem, PlatformError.PlatformError, string[]> {
+}: StaticFileOptions<R, E>): Effect.Effect<
+  FileSystem.FileSystem,
+  PlatformError.PlatformError,
+  string[]
+> {
   const filter = pluginutils.createFilter(include, exclude, {
     resolve: directory,
   })
@@ -143,7 +269,7 @@ function buildRequestMaps(
   directory: string,
   paths: readonly string[],
   extensions: readonly string[] = ['.html'],
-  compressions: StaticFileOptions['compressions'] = {
+  compressions: StaticFileOptions<any, any>['compressions'] = {
     gzip: '.gz',
   },
 ): readonly [

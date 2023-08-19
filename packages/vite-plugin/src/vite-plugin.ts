@@ -191,7 +191,7 @@ export default function makePlugin(pluginOptions: PluginOptions): PluginOption[]
      */
     configResolved(config) {
       // Ensure final options has the correct base path
-      Object.assign(options, { base: config.base })
+      Object.assign(options, { base: config.base, assetDirectory: config.build.assetsDir })
     },
 
     /**
@@ -257,6 +257,7 @@ export function resolveOptions({
   ]
 
   const resolvedOptions: ResolvedOptions = {
+    assetDirectory: 'assets',
     base: '/',
     clientOutputDirectory: resolvedClientOutputDirectory,
     debug,
