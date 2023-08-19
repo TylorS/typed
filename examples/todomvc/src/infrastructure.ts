@@ -1,7 +1,6 @@
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as DOM from '@typed/dom'
-import { browser } from '@typed/framework/browser'
 import * as Route from '@typed/route'
 import * as Router from '@typed/router'
 
@@ -53,4 +52,4 @@ export const FilterStateLive = CurrentFilterState.fromFx(
     .redirect(homeRoute),
 )
 
-export const Live = Layer.provideMerge(browser(window), Layer.mergeAll(TodosLive, FilterStateLive))
+export const Live = Layer.mergeAll(TodosLive, FilterStateLive)

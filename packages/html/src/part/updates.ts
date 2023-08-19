@@ -60,7 +60,7 @@ export function unwrapSparsePartRenderables<R, E>(
         return Fx.fromEffect(Effect.map(renderable.f(p), () => p.value))
       }
 
-      return Fx.flatMapEffect(
+      return Fx.mapEffect(
         unwrapRenderable(renderable),
         (u) => p.update(u) as Effect.Effect<R, E, unknown>,
       )

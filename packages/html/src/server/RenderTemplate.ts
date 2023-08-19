@@ -118,28 +118,31 @@ function renderSparsePart<R, E>(
   const { node, render } = chunk
 
   return Fx.map(
-    Fx.combineAll(
-      ...node.nodes.map((node) => {
-        if (node.type === 'text') return Fx.succeed(node.value)
+    Fx.take(
+      Fx.combineAll(
+        ...node.nodes.map((node) => {
+          if (node.type === 'text') return Fx.succeed(node.value)
 
-        const renderable = values[node.index]
+          const renderable = values[node.index]
 
-        if (isDirective<R, E>(renderable)) {
-          return Fx.Fx<R, E, unknown>(<R2>(sink: Fx.Sink<R2, E, unknown>) =>
-            Effect.contextWithEffect((ctx: Context<R2>) =>
-              Effect.suspend(() => {
-                const part = partNodeToPart(node, (value) =>
-                  Effect.provideContext(sink.event(value), ctx),
-                )
+          if (isDirective<R, E>(renderable)) {
+            return Fx.Fx<R, E, unknown>(<R2>(sink: Fx.Sink<R2, E, unknown>) =>
+              Effect.contextWithEffect((ctx: Context<R2>) =>
+                Effect.suspend(() => {
+                  const part = partNodeToPart(node, (value) =>
+                    Effect.provideContext(sink.event(value), ctx),
+                  )
 
-                return Effect.catchAllCause(renderable.f(part), sink.error)
-              }),
-            ),
-          )
-        }
+                  return Effect.catchAllCause(renderable.f(part), sink.error)
+                }),
+              ),
+            )
+          }
 
-        return unwrapRenderable<R, E, string | null | undefined>(values[node.index])
-      }),
+          return unwrapRenderable<R, E, string | null | undefined>(values[node.index])
+        }),
+      ),
+      1,
     ),
     (value) => HtmlRenderEvent(render(value as any)),
   )

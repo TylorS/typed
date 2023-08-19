@@ -5,7 +5,18 @@
     "composite": false,
     "declaration": false,
     "declarationMap": false,
-    "isolatedModules": false
+    "isolatedModules": false,
+    "plugins": [
+      {
+        "name": "@typed/virtual-module",
+        "saveGeneratedFiles": true,
+        "plugins": [
+          {
+            "name": "@typed/virtual-module/html"
+          }
+        ]
+      }
+    ]
   },
   "include": [
     "src"
