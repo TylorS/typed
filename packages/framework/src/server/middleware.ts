@@ -238,6 +238,7 @@ function fileStreamResponse<R, E>(options: {
   return FileSystem.FileSystem.pipe(
     Effect.map((fs) =>
       Http.response.stream(fs.stream(options.path), {
+        headers: defaultHeaders,
         contentType,
       }),
     ),
