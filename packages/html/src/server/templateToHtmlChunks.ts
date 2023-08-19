@@ -1,6 +1,6 @@
 import escapeHTML from 'escape-html'
 
-import { TYPED_SELF_CLOSING_END, TYPED_SELF_CLOSING_START, TYPED_HASH } from '../meta.js'
+import { TYPED_HASH } from '../meta.js'
 import {
   Attribute,
   ElementNode,
@@ -118,21 +118,13 @@ function selfClosingElementToHtmlChunks(
   hash?: string,
 ): HtmlChunk[] {
   if (attributes.length === 0) {
-    return [
-      new TextChunk(
-        TYPED_SELF_CLOSING_START(hash) +
-          openTag(tagName, hash) +
-          '/>' +
-          TYPED_SELF_CLOSING_END(hash),
-      ),
-    ]
+    return [new TextChunk(openTag(tagName, hash) + '/>')]
   }
 
   const chunks: HtmlChunk[] = [
-    new TextChunk(TYPED_SELF_CLOSING_START(hash) + openTag(tagName, hash)),
+    new TextChunk(openTag(tagName, hash)),
     ...attributes.map((a) => attributeToHtmlChunk(a)),
     new TextChunk(`/>`),
-    new TextChunk(TYPED_SELF_CLOSING_END(hash)),
   ]
 
   return chunks

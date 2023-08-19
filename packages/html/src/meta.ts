@@ -11,8 +11,3 @@ export const TEXT_START = '<!--text-->'
 // Used to mark where a NodePart is in the DOM. It can be found directly after the
 // elements or text nodes it is managing.
 export const TYPED_HOLE = (index: number) => `<!--hole${index}-->`
-
-export const TYPED_SELF_CLOSING_START = (hash?: string) =>
-  hash ? `<!--sx-${hash}-->` : '<!--sx-->'
-export const TYPED_SELF_CLOSING_END = (hash?: string) =>
-  hash ? `<!--/sx-${hash}-->` : '<!--/sx-->'
