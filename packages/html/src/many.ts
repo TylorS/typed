@@ -6,7 +6,7 @@ import { DomRenderEvent, RenderEvent } from './RenderEvent.js'
 
 export function many<R, E, A, R2, E2, B>(
   values: Fx.Fx<R, E, ReadonlyArray<A>>,
-  f: (a: Fx.RefSubject<never, A>) => Fx.Fx<R2, E2, RenderEvent>,
+  f: (a: Fx.RefSubject<never, A>, key: B) => Fx.Fx<R2, E2, RenderEvent>,
   getKey: (a: A) => B,
 ): Fx.Fx<R | R2 | RenderContext, E | E2, RenderEvent> {
   return Fx.scoped(
@@ -19,7 +19,7 @@ export function many<R, E, A, R2, E2, B>(
             ...values.map((value) =>
               Fx.fromFxEffect(
                 Effect.map(Fx.makeRef(Effect.succeed(value)), (ref) =>
-                  f({ ...ref, ...Fx.take(ref, 1) } as Fx.RefSubject<never, A>),
+                  f({ ...ref, ...Fx.take(ref, 1) } as Fx.RefSubject<never, A>, getKey(value)),
                 ),
               ),
             ),

@@ -1023,13 +1023,13 @@ export const toReadonlyArray: <R, E, A>(
 
 export const keyed: {
   <A, R2, E2, B, C>(
-    f: (value: internal.RefSubject<never, A>) => Fx<R2, E2, B>,
+    f: (value: internal.RefSubject<never, A>, key: C) => Fx<R2, E2, B>,
     getKey: (a: A) => C,
   ): <R, E>(fx: Fx<R, E, readonly A[]>) => Fx<R2, E2, readonly B[]>
 
   <R, E, A, R2, E2, B, C>(
     fx: Fx<R, E, readonly A[]>,
-    f: (value: internal.RefSubject<never, A>) => Fx<R2, E2, B>,
+    f: (value: internal.RefSubject<never, A>, key: C) => Fx<R2, E2, B>,
     getKey: (a: A) => C,
   ): Fx<R | R2, E | E2, readonly B[]>
 } = dual(
@@ -1037,7 +1037,7 @@ export const keyed: {
 
   <R, E, A, R2, E2, B, C>(
     fx: Fx<R, E, readonly A[]>,
-    f: (value: Fx<never, never, A>) => Fx<R2, E2, B>,
+    f: (value: Fx<never, never, A>, key: C) => Fx<R2, E2, B>,
     getKey: (a: A) => C,
   ): Fx<R | R2, E | E2, readonly B[]> => internal.keyed(fx, f, getKey),
 )
