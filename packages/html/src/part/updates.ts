@@ -44,11 +44,14 @@ export function unwrapHydratableRenderable<R, E, A>(
     }
 
     if (Fx.isFx<R, E, any>(renderable)) {
-      return Fx.switchMap(renderable, unwrapRenderable) as any
+      return Fx.switchMap(renderable, unwrapHydratableRenderable) as any
     }
 
     if (Effect.isEffect(renderable)) {
-      return Fx.switchMap(Fx.fromEffect<R, E, any>(renderable as any), unwrapRenderable) as any
+      return Fx.switchMap(
+        Fx.fromEffect<R, E, any>(renderable as any),
+        unwrapHydratableRenderable,
+      ) as any
     }
 
     return Fx.succeed(renderable as A)
