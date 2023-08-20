@@ -6,7 +6,7 @@ import { EventHandler, html, isBrowser, many, when } from '@typed/html'
 import * as Router from '@typed/router'
 
 import { Intent, WriteTodoList, makeIntent, makeModel } from './application.js'
-import { Todo, FilterState, isCompleted } from './domain.js'
+import { Todo, FilterState, isCompleted, TodoId } from './domain.js'
 import { filterStateToPath } from './infrastructure.js'
 
 export const TodoApp = Fx.gen(function* (_) {
@@ -61,24 +61,21 @@ export const TodoApp = Fx.gen(function* (_) {
   </section>`
 })
 
-const FilterLink = (viewState: FilterState) =>
+const FilterLink = (filterState: FilterState) =>
   Router.Link(
     {
-      to: filterStateToPath(viewState),
+      to: filterStateToPath(filterState),
     },
     ({ url, active, onClick }) =>
       html`<li>
         <a class="${when.true(active, 'selected')}" href=${url} onclick=${onClick}>
-          ${viewState}
+          ${filterState}
         </a>
       </li>`,
   )
 
-const TodoItem = (intent: Intent) => (todo: Fx.RefSubject<never, Todo>) =>
+const TodoItem = (intent: Intent) => (todo: Fx.RefSubject<never, Todo>, id: TodoId) =>
   Fx.gen(function* (_) {
-    // Get the id of the todo
-    const { id, text: initial } = yield* _(todo)
-
     // Track whether this todo is being edited
     const isEditing = yield* _(Fx.makeRef(Effect.succeed(false)))
 
@@ -91,9 +88,8 @@ const TodoItem = (intent: Intent) => (todo: Fx.RefSubject<never, Todo>) =>
       Effect.flatMap(() => isEditing.set(false)),
     )
 
-    const reset = todo
-      .update((t) => ({ ...t, text: initial }))
-      .pipe(Effect.zipRight(isEditing.set(false)))
+    // Reset the todo's text to the current text value
+    const reset = todo.delete.pipe(Effect.zipRight(isEditing.set(false)))
 
     // The current text value
     const text = todo.map((t) => t.text)
