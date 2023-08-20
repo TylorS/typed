@@ -310,8 +310,6 @@ export function findTemplateResultPartChildNodes(
     childNodes: childIndex !== undefined ? [childNodes[childIndex]] : childNodes,
   }
 
-  console.log('findTemplateResultPartChildNodes', parentChildNodes)
-
   return parentChildNodes
 }
 
