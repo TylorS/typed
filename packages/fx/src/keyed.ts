@@ -14,7 +14,7 @@ import { skipRepeats } from './skipRepeats.js'
 
 export function keyed<R, E, A, R2, E2, B, C>(
   fx: Fx<R, E, readonly A[]>,
-  f: (fx: RefSubject<never, A>) => Fx<R2, E2, B>,
+  f: (fx: RefSubject<never, A>, key: C) => Fx<R2, E2, B>,
   getKey: (a: A) => C,
 ): Fx<R | R2, E | E2, readonly B[]> {
   return Fx(<R3>(sink: Sink<R3, E | E2, readonly B[]>) =>
@@ -60,6 +60,7 @@ type KeyedState<A, B, C> = {
   previousKeys: ReadonlySet<C>
 
   readonly subjects: MutableHashMap.MutableHashMap<C, RefSubject<never, A>>
+  readonly initialValues: MutableHashMap.MutableHashMap<C, A>
   readonly fibers: MutableHashMap.MutableHashMap<C, Fiber.RuntimeFiber<never, void>>
   readonly values: MutableHashMap.MutableHashMap<C, B>
   readonly output: Subject<never, readonly B[]>
@@ -70,6 +71,7 @@ function createKeyedState<A, B, C>(): KeyedState<A, B, C> {
     previous: [],
     previousKeys: new Set(),
     subjects: MutableHashMap.empty(),
+    initialValues: MutableHashMap.empty(),
     fibers: MutableHashMap.empty(),
     values: MutableHashMap.empty(),
     output: makeHoldSubject<never, readonly B[]>(),
@@ -88,7 +90,7 @@ function updateState<A, B, C, R2, E2, R3>({
 }: {
   state: KeyedState<A, B, C>
   updated: readonly A[]
-  f: (fx: RefSubject<never, A>) => Fx<R2, E2, B>
+  f: (fx: RefSubject<never, A>, key: C) => Fx<R2, E2, B>
   fork: ScopedFork
   scope: Scope.Scope
   emit: Effect.Effect<never, never, void>
@@ -193,7 +195,7 @@ function addValue<A, B, C, R2, E2, R3>({
 }: {
   state: KeyedState<A, B, C>
   value: A
-  f: (fx: RefSubject<never, A>) => Fx<R2, E2, B>
+  f: (fx: RefSubject<never, A>, key: C) => Fx<R2, E2, B>
   fork: ScopedFork
   emit: Effect.Effect<never, never, void>
   error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
@@ -201,8 +203,19 @@ function addValue<A, B, C, R2, E2, R3>({
 }) {
   return Effect.gen(function* ($) {
     const key = getKey(value)
-    const subject = yield* $(makeRef<never, never, A>(Effect.succeed(value)))
-    const fx = f(subject)
+
+    // Set the initial value
+    MutableHashMap.set(state.initialValues, key, value)
+
+    const subject = yield* $(
+      makeRef<never, never, A>(
+        Effect.sync(() =>
+          // Default to the initial value
+          MutableHashMap.get(state.initialValues, key).pipe(Option.getOrElse(() => value)),
+        ),
+      ),
+    )
+    const fx = f(subject, key)
     const fiber = yield* $(
       fork(
         fx.run(
@@ -225,7 +238,11 @@ function addValue<A, B, C, R2, E2, R3>({
 
 function updateValue<A, B, C>(state: KeyedState<A, B, C>, value: A, getKey: (a: A) => C) {
   return Effect.gen(function* ($) {
-    const subject = MutableHashMap.get(state.subjects, getKey(value))
+    const key = getKey(value)
+    const subject = MutableHashMap.get(state.subjects, key)
+
+    // External updates reset the initial value
+    MutableHashMap.set(state.initialValues, key, value)
 
     // Send the current value
     if (Option.isSome(subject)) {
