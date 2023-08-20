@@ -297,16 +297,24 @@ function makeSetFromContext<E, A>(ctx: RefSubjectContext<E, A>): RefSubject<E, A
     })
 }
 
-function makeDeleteFromContext<E, A>(ctx: RefSubjectContext<E, A>): RefSubject<E, A>['delete'] {
-  return Effect.sync(() => {
+function makeDeleteFromContext<E, A>(
+  ctx: RefSubjectContext<E, A>,
+  get: RefSubject<E, A>['get'],
+): RefSubject<E, A>['delete'] {
+  return Effect.suspend(() => {
     const current = MutableRef.get(ctx.currentRef)
 
     if (Option.isSome(current)) {
       MutableRef.set(ctx.version, 0)
       MutableRef.set(ctx.currentRef, Option.none())
+
+      // Attempt to reinitialize the subject if there are observers
+      if (ctx.hold.observers.length > 0) {
+        return Effect.forkDaemon(get).pipe(Effect.as(current))
+      }
     }
 
-    return current
+    return Effect.succeed(current)
   })
 }
 
@@ -516,7 +524,7 @@ function unsafeMakeRefPrimitive<E, A>(
   }
 
   const primitive: RefPrimitive<E, A> = {
-    delete: makeDeleteFromContext(ctx),
+    delete: makeDeleteFromContext(ctx, get),
     end: makeEndFromContext(ctx),
     eq,
     error: (cause) => ctx.hold.error(cause),
