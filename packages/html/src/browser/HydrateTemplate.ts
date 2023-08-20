@@ -1,7 +1,7 @@
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
 import * as Scope from '@effect/io/Scope'
-import { Context, Tag, unsafeGet } from '@typed/context'
+import { Context, unsafeGet } from '@typed/context'
 import { Document } from '@typed/dom'
 import * as Fx from '@typed/fx'
 
@@ -12,10 +12,9 @@ import { DomRenderEvent, RenderEvent } from '../RenderEvent.js'
 import { RenderTemplate } from '../RenderTemplate.js'
 import { Renderable } from '../Renderable.js'
 import { Rendered } from '../Rendered.js'
-import { Template } from '../parser/parser.js'
 import { Part, SparsePart } from '../part/Part.js'
-import { ParentChildNodes } from '../paths.js'
 
+import { HydrateContext } from './HydrateContext.js'
 import { renderTemplate } from './RenderTemplate.js'
 import { getHydrateEntry } from './cache.js'
 import { CouldNotFindCommentError, CouldNotFindRootElement } from './errors.js'
@@ -26,26 +25,7 @@ type HydrateInput = {
   readonly renderContext: RenderContext
 }
 
-/**
- * Used Internally to pass context down to components for hydration
- * @internal
- */
-export type HydrateContext = {
-  readonly where: ParentChildNodes
-  readonly rootIndex: number
-  readonly parentTemplate: Template | null
-
-  /**@internal */
-  hydrate: boolean
-}
-
 const toNever_ = Effect.flatMap(() => Effect.never)
-
-/**
- * Used Internally to pass context down to components for hydration
- * @internal
- */
-export const HydrateContext = Tag<HydrateContext>('@typed/html/HydrateContext')
 
 export const hydrateTemplateInDom: Layer.Layer<Document | RenderContext, never, RenderTemplate> =
   RenderTemplate.layer(
@@ -149,7 +129,7 @@ function renderPart<R, E>(
       })
     } else if (part._tag === 'Node') {
       return HydrateContext.provide(makeHydrateContext(part.index))(
-        part.observe(values[part.index], sink),
+        part.hydrate(values[part.index], sink),
       )
     } else {
       return part.observe(values[part.index], sink)

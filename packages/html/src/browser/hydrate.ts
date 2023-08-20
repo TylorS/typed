@@ -8,7 +8,8 @@ import { RenderEvent } from '../RenderEvent.js'
 import { RenderTemplate } from '../RenderTemplate.js'
 import { Rendered } from '../Rendered.js'
 
-import { HydrateContext, hydrateTemplateInDom } from './HydrateTemplate.js'
+import { HydrateContext } from './HydrateContext.js'
+import { hydrateTemplateInDom } from './HydrateTemplate.js'
 import { BrowserCache, findRootParentChildNodes, getBrowserCache } from './cache.js'
 
 export function hydrate<R, E>(

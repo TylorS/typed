@@ -3,6 +3,7 @@ import * as Fx from '@typed/fx'
 
 import { isDirective } from '../Directive.js'
 import { Renderable } from '../Renderable.js'
+import { HydrateContext } from '../browser/HydrateContext.js'
 
 import type { Part, SparsePart } from './Part.js'
 
@@ -24,6 +25,34 @@ export function unwrapRenderable<R, E, A>(renderable: Renderable<R, E>): Fx.Fx<R
   }
 
   return Fx.succeed(renderable as A)
+}
+
+/**
+ * Lifts all possible values into an Fx. This is used to handle
+ * NodeParts which have the ability to be arrays of values.
+ */
+export function unwrapHydratableRenderable<R, E, A>(
+  renderable: Renderable<R, E>,
+): Fx.Fx<R | HydrateContext, E, A> {
+  return HydrateContext.withFx((ctx) => {
+    if (Array.isArray(renderable)) {
+      return Fx.combineAll(
+        ...renderable.map((r, i) =>
+          unwrapRenderable(r).pipe(HydrateContext.provideFx({ ...ctx, childIndex: i })),
+        ),
+      ) as any
+    }
+
+    if (Fx.isFx<R, E, any>(renderable)) {
+      return Fx.switchMap(renderable, unwrapRenderable) as any
+    }
+
+    if (Effect.isEffect(renderable)) {
+      return Fx.switchMap(Fx.fromEffect<R, E, any>(renderable as any), unwrapRenderable) as any
+    }
+
+    return Fx.succeed(renderable as A)
+  })
 }
 
 export function unwrapRenderableConcurrently<R, E, A>(

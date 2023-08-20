@@ -6,10 +6,11 @@ import udomdiff from 'udomdiff'
 
 import { DomRenderEvent, RenderEvent, isRenderEvent } from '../RenderEvent.js'
 import { Renderable } from '../Renderable.js'
+import { HydrateContext } from '../browser/HydrateContext.js'
 import { findHoleComment, isComment, isCommentWithValue } from '../utils.js'
 
 import { BasePart } from './BasePart.js'
-import { unwrapRenderable } from './updates.js'
+import { unwrapHydratableRenderable, unwrapRenderable } from './updates.js'
 
 export class NodePart extends BasePart<unknown> {
   readonly _tag = 'Node'
@@ -75,6 +76,22 @@ export class NodePart extends BasePart<unknown> {
     return Effect.forkScoped(
       Fx.drain(
         Fx.switchMatchCauseEffect(unwrapRenderable(placeholder), sink.error, (a: any) =>
+          Effect.flatMap(
+            this.update(isRenderEvent(a) ? (a as DomRenderEvent).rendered : a),
+            sink.event,
+          ),
+        ),
+      ),
+    )
+  }
+
+  hydrate<R, E, R2>(
+    placeholder: Renderable<R, E>,
+    sink: Fx.Sink<R2, E, unknown>,
+  ): Effect.Effect<R | R2 | HydrateContext | Scope.Scope, never, void> {
+    return Effect.forkScoped(
+      Fx.drain(
+        Fx.switchMatchCauseEffect(unwrapHydratableRenderable(placeholder), sink.error, (a: any) =>
           Effect.flatMap(
             this.update(isRenderEvent(a) ? (a as DomRenderEvent).rendered : a),
             sink.event,

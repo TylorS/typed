@@ -187,6 +187,7 @@ export function getHydrateEntry({
   strings,
   context,
   onCause,
+  childIndex,
 }: {
   document: Document
   renderContext: RenderContext
@@ -196,11 +197,12 @@ export function getHydrateEntry({
   strings: TemplateStringsArray
   context: Context<any>
   onCause: (cause: Cause.Cause<any>) => Effect.Effect<any, never, void>
+  childIndex?: number
 }) {
   const { template } = getBrowserTemplateCache(document, strings, renderContext.templateCache)
 
   if (parentTemplate) {
-    where = findTemplateResultPartChildNodes(where, parentTemplate, template, rootIndex)
+    where = findTemplateResultPartChildNodes(where, parentTemplate, template, rootIndex, childIndex)
   }
 
   const parts = template.parts.map(([part, path]): Part | SparsePart =>
@@ -298,15 +300,19 @@ export function findTemplateResultPartChildNodes(
   parentTemplate: Template,
   childTemplate: Template | null,
   partIndex: number,
+  childIndex?: number,
 ) {
   const [, path] = parentTemplate.parts[partIndex]
   const parentNode = findPath(where, path) as HTMLElement
   const childNodes = findPartChildNodes(parentNode, childTemplate?.hash, partIndex)
-
-  return {
+  const parentChildNodes = {
     parentNode,
-    childNodes,
+    childNodes: childIndex !== undefined ? [childNodes[childIndex]] : childNodes,
   }
+
+  console.log('findTemplateResultPartChildNodes', parentChildNodes)
+
+  return parentChildNodes
 }
 
 export function findPartChildNodes(
