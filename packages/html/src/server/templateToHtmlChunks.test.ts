@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { TYPED_HASH, TYPED_SELF_CLOSING_END, TYPED_SELF_CLOSING_START } from '../meta.js'
+import { TYPED_HASH } from '../meta.js'
 import * as parser from '../parser/parser.js'
 
 import {
@@ -54,19 +54,15 @@ describe(templateToHtmlChunks.name, () => {
 
   it('converts boolean attributes and self-closing elements', () => {
     testChunks(h`<input disabled />`, ({ hash }) => [
-      new TextChunk(
-        `${TYPED_SELF_CLOSING_START(hash)}<input ${TYPED_HASH(
-          hash,
-        )} disabled/>${TYPED_SELF_CLOSING_END(hash)}`,
-      ),
+      new TextChunk(`<input ${TYPED_HASH(hash)} disabled/>`),
     ])
   })
 
   it('converts boolean parts', () => {
     testChunks(h`<input ?disabled="${true}" />`, ({ hash }) => [
-      new TextChunk(`${TYPED_SELF_CLOSING_START(hash)}<input ${TYPED_HASH(hash)}`),
+      new TextChunk(`<input ${TYPED_HASH(hash)}`),
       new PartChunk(new parser.BooleanPartNode('disabled', 0), noOp),
-      new TextChunk(`/>${TYPED_SELF_CLOSING_END(hash)}`),
+      new TextChunk(`/>`),
     ])
   })
 

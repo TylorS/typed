@@ -295,8 +295,8 @@ describe(renderToHtmlStream.name, () => {
 
   it.concurrent('renders components with multiple attribute types', async () => {
     await testHtmlChunks(inputWithLabel, [
-      `<div data-typed="..." class="formgroup"><!--sx--><input`,
-      `class="custom-input"/><!--/sx--><label class="custom-input-label" for="name">Name</label></div>`,
+      `<div data-typed="..." class="formgroup"><input`,
+      `class="custom-input"/><label class="custom-input-label" for="name">Name</label></div>`,
     ])
   })
 
