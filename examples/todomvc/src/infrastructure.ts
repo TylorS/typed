@@ -33,7 +33,7 @@ export const TodosLive = Layer.mergeAll(
   ),
 )
 
-const homeRoute = Route.Route('/', { match: { end: true } })
+const homeRoute = Route.Route('/', { match: { end: true } }) // Configures path-to-regexp to only match exactly '/'
 const activeRoute = Route.Route('/active')
 const completedRoute = Route.Route('/completed')
 
