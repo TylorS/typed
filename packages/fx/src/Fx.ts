@@ -62,7 +62,7 @@ export namespace Fx {
 }
 
 export function isFx<R, E, A>(v: unknown): v is Fx<R, E, A> {
-  return typeof v === 'object' && v != null && FxTypeId in v
+  return v !== null && typeof v === 'object' && FxTypeId in v
 }
 
 export { Sink } from './Sink.js'
