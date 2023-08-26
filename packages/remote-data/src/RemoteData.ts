@@ -11,7 +11,12 @@ import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
 
-export type RemoteData<E = never, A = unknown> = NoData | Loading | Failure<E> | Success<A>
+export interface RemoteData<E, A>
+  extends RemoteData.Variance<E, A>,
+    Effect.Effect<never, E | Cause.NoSuchElementException | LoadingException, A>,
+    Data.Case {
+  readonly state: 'NoData' | 'Loading' | 'Failure' | 'Success'
+}
 
 export namespace RemoteData {
   export type Any = RemoteData<any, any>
@@ -29,15 +34,18 @@ export namespace RemoteData {
     T extends [RemoteData<infer _, infer A>]
     ? A
     : never
+
+  export interface Variance<E, A> {
+    readonly _E: (_: never) => E
+    readonly _A: (_: never) => A
+  }
 }
 
-export interface NoData
-  extends Effect.Effect<never, Cause.NoSuchElementException, never>,
-    Data.Case {
+export interface NoData extends RemoteData<never, never> {
   readonly state: 'NoData' // We use state here instead of _tag because we want to be a sub-type of Effect which has a _tag
 }
 
-export interface Loading extends Effect.Effect<never, LoadingException, never>, Data.Case {
+export interface Loading extends RemoteData<never, never> {
   readonly state: 'Loading'
 }
 
@@ -47,13 +55,13 @@ export interface LoadingException {
 
 export const LoadingException: LoadingException = { _tag: 'LoadingException' }
 
-export interface Failure<E> extends Effect.Effect<never, E, never>, Data.Case {
+export interface Failure<E> extends RemoteData<E, never> {
   readonly state: 'Failure'
   readonly cause: Cause.Cause<E>
   readonly refreshing: boolean
 }
 
-export interface Success<A> extends Effect.Effect<never, never, A>, Data.Case {
+export interface Success<A> extends RemoteData<never, A> {
   readonly state: 'Success'
   readonly value: A
   readonly refreshing: boolean
@@ -64,10 +72,7 @@ export function isRemoteData<E, A>(u: unknown): u is RemoteData<E, A> {
     u !== null &&
     typeof u === 'object' &&
     'state' in u &&
-    (isNoData(u as RemoteData<E, A>) ||
-      isLoading(u as RemoteData<E, A>) ||
-      isFailure(u as RemoteData<E, A>) ||
-      isSuccess(u as RemoteData<E, A>))
+    (isNoData(u as any) || isLoading(u as any) || isFailure(u as any) || isSuccess(u as any))
   )
 }
 
@@ -105,9 +110,9 @@ export const match: {
       case 'Loading':
         return matchers.onLoading()
       case 'Failure':
-        return matchers.onFailure(data.cause, data.refreshing)
+        return matchers.onFailure((data as Failure<E>).cause, (data as Failure<E>).refreshing)
       case 'Success':
-        return matchers.onSuccess(data.value, data.refreshing)
+        return matchers.onSuccess((data as Success<A>).value, (data as Success<A>).refreshing)
     }
   },
 )
@@ -184,14 +189,14 @@ const proto = {
       case 'Failure':
         return pipe(
           Hash.string(this.state),
-          Hash.combine(Hash.hash(this.cause)),
-          Hash.combine(Hash.hash(this.refreshing)),
+          Hash.combine(Hash.hash((this as Failure<any>).cause)),
+          Hash.combine(Hash.hash((this as Failure<any>).refreshing)),
         )
       case 'Success':
         return pipe(
           Hash.string(this.state),
-          Hash.combine(Hash.hash(this.value)),
-          Hash.combine(Hash.hash(this.refreshing)),
+          Hash.combine(Hash.hash((this as Success<any>).value)),
+          Hash.combine(Hash.hash((this as Success<any>).refreshing)),
         )
     }
   },
@@ -323,7 +328,7 @@ export const map: {
   if (isSuccess(data)) {
     return success(f(data.value), data.refreshing)
   } else {
-    return data
+    return data as Failure<E> | NoData | Loading
   }
 })
 
@@ -337,7 +342,7 @@ export const mapError: {
   if (isFailure(data)) {
     return failCause(Cause.map(data.cause, f), data.refreshing)
   } else {
-    return data
+    return data as Success<A> | NoData | Loading
   }
 })
 
@@ -354,7 +359,7 @@ export const mapErrorCause: {
   if (isFailure(data)) {
     return failCause(f(data.cause), data.refreshing)
   } else {
-    return data
+    return data as Success<A> | NoData | Loading
   }
 })
 
@@ -382,7 +387,7 @@ export const flatMap: {
   if (isSuccess(data)) {
     return f(data.value, data.refreshing)
   } else {
-    return data
+    return data as Failure<E1> | NoData | Loading
   }
 })
 
@@ -406,7 +411,7 @@ export const catchAllCause: {
   if (isFailure(data)) {
     return f(data.cause, data.refreshing)
   } else {
-    return data
+    return data as Success<A> | NoData | Loading
   }
 })
 
@@ -434,7 +439,7 @@ export const catchAll: {
       onRight: () => data as Failure<never>,
     })
   } else {
-    return data
+    return data as Success<A> | NoData | Loading
   }
 })
 
@@ -486,7 +491,7 @@ export const zipWith: {
         return that
       }
     },
-  })
+  }) as any
 })
 
 export const zip: {

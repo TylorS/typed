@@ -1,3 +1,4 @@
+import * as Option from '@effect/data/Option'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Request from '@effect/io/Request'
@@ -13,13 +14,16 @@ export interface RequestSubject<
   Req extends Request.Request<any, any>,
   Args extends readonly any[] = [],
 > extends Fx.RefSubject<never, RemoteData.RemoteData<RequestError<Req>, RequestOutput<Req>>> {
-  readonly makeRequest: (...args: Args) => Effect.Effect<never, never, void>
-
   readonly isLoading: Fx.Computed<never, never, boolean>
   readonly isRefreshing: Fx.Computed<never, never, boolean>
   readonly isLoadingOrRefreshing: Fx.Computed<never, never, boolean>
   readonly isFailure: Fx.Computed<never, never, boolean>
   readonly isSuccess: Fx.Computed<never, never, boolean>
+  readonly option: Fx.Computed<never, never, Option.Option<RequestOutput<Req>>>
+  readonly optionError: Fx.Computed<never, never, Option.Option<RequestError<Req>>>
+  readonly optionCause: Fx.Computed<never, never, Option.Option<Cause.Cause<RequestError<Req>>>>
+
+  readonly makeRequest: (...args: Args) => Effect.Effect<never, never, void>
 
   readonly match: <R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>(options: {
     readonly onNoData: () => Fx.Fx<R, E, A> | Effect.Effect<R, E, A>
@@ -52,31 +56,34 @@ export function useRequest<
   return Effect.gen(function* ($) {
     const ctx = yield* $(Effect.context<R | Scope.Scope>())
     const resolverWithCtx = RequestResolver.provideContext(resolver, ctx)
-    const ref = yield* $(
+    const data = yield* $(
       Fx.makeRef(Effect.succeed<RemoteData.RemoteData<Error, Output>>(RemoteData.noData)),
     )
 
+    const isLoading = data.map(RemoteData.isLoading)
+    const isRefreshing = data.map(RemoteData.isRefreshing)
+    const isLoadingOrRefreshing = data.map(RemoteData.isLoadingOrRefreshing)
+    const isFailure = data.map(RemoteData.isFailure)
+    const isSuccess = data.map(RemoteData.isSuccess)
+    const option = data.map(RemoteData.toOption)
+    const optionError = data.map(RemoteData.toOptionError)
+    const optionCause = data.map(RemoteData.toOptionCause)
+
     const makeRequest = (...args: Args): Effect.Effect<never, never, void> =>
       Effect.gen(function* ($) {
-        const current = yield* $(ref.get)
+        const current = yield* $(data.get)
 
         // Don't make a request while one is in progress
         if (RemoteData.isLoadingOrRefreshing(current)) {
           return
         }
 
-        yield* $(ref.update(RemoteData.toLoading))
+        yield* $(data.update(RemoteData.toLoading))
 
         const exit = yield* $(Effect.request(constructor(...args), resolverWithCtx), Effect.exit)
 
-        yield* $(ref.set(RemoteData.fromExit(exit)))
-      }).pipe(Effect.ensuring(ref.update(RemoteData.stopLoading)))
-
-    const isLoading = ref.map(RemoteData.isLoading)
-    const isRefreshing = ref.map(RemoteData.isRefreshing)
-    const isLoadingOrRefreshing = ref.map(RemoteData.isLoadingOrRefreshing)
-    const isFailure = ref.map(RemoteData.isFailure)
-    const isSuccess = ref.map(RemoteData.isSuccess)
+        yield* $(data.set(RemoteData.fromExit(exit)))
+      }).pipe(Effect.ensuring(data.update(RemoteData.stopLoading)))
 
     const match = <R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>(options: {
       readonly onNoData: () => Fx.Fx<R, E, A> | Effect.Effect<R, E, A>
@@ -98,7 +105,7 @@ export function useRequest<
         E | E2 | E3 | E4,
         A | B | C | D
       >(
-        ref,
+        data,
         RemoteData.match({
           onNoData: () => toFx(options.onNoData()),
           onLoading: () => toFx(options.onLoading()),
@@ -107,13 +114,16 @@ export function useRequest<
         }),
       )
 
-    return Object.assign(ref, {
-      makeRequest,
+    return Object.assign(data, {
       isLoading,
       isRefreshing,
       isLoadingOrRefreshing,
       isFailure,
       isSuccess,
+      option,
+      optionError,
+      optionCause,
+      makeRequest,
       match,
     } as const) satisfies RequestSubject<Req, Args>
   })
