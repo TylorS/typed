@@ -10,5 +10,9 @@
   "exclude": [
     "dist"
   ],
-  "references": []
+  "references": [
+    {
+      "path": "../remote-data/tsconfig.build.json"
+    }
+  ]
 }

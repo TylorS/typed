@@ -61,6 +61,10 @@ export interface RefSubject<in out E, in out A>
 
   readonly delete: Effect.Effect<never, E, Option.Option<A>>
 
+  readonly multiUpdate: <R2, E2, B>(
+    f: (current: A, set: (a: A) => Effect.Effect<never, never, A>) => Effect.Effect<R2, E2, B>,
+  ) => Effect.Effect<R2, E | E2, B>
+
   /**
    * The current version of the RefSubject, starting with 0, 1 when initialized,
    * and incremented each time the value is updated.
@@ -250,6 +254,14 @@ function makeModifyEffectFromContext<E, A>(
         ),
       ),
     )
+}
+
+function makeMultiUpdateFromContext<E, A>(
+  get: RefSubject<E, A>['get'],
+  set: RefSubject<E, A>['set'],
+  lock: RefSubjectContext<E, A>['lock'],
+): RefSubject<E, A>['multiUpdate'] {
+  return (f) => get.pipe(Effect.flatMap((current) => lock(f(current, set))))
 }
 
 function makeModify<E, A>(
@@ -506,6 +518,7 @@ function unsafeMakeRefPrimitive<E, A>(
   const ctx = makeRefSubjectContext(initial, scope, eq)
   const get = makeGetFromContext(ctx)
   const set = makeSetFromContext(ctx)
+  const multiUpdate = makeMultiUpdateFromContext(get, set, ctx.lock)
 
   function run<R2>(sink: Sink<R2, E, A>) {
     return Effect.suspend(() => {
@@ -533,6 +546,7 @@ function unsafeMakeRefPrimitive<E, A>(
     modifyEffect: makeModifyEffectFromContext(get, ctx),
     run,
     set,
+    multiUpdate,
     version: ctx.version,
   }
 
@@ -575,6 +589,7 @@ interface RefPrimitive<E, A> {
   modifyEffect: RefSubject<E, A>['modifyEffect']
   set: RefSubject<E, A>['set']
   delete: RefSubject<E, A>['delete']
+  multiUpdate: RefSubject<E, A>['multiUpdate']
 
   // Primitive
   version: MutableRef.MutableRef<number>
@@ -594,8 +609,15 @@ function tupleRefPrimitive<const Refs extends ReadonlyArray<RefSubject.Any>>(
     refs.map((ref) => ref.get),
     unboundedConcurrency,
   ) as Effect.Effect<never, _E, _A>
+  const set = (value: { readonly [K in keyof Refs]: Fx.Success<Refs[K]> }) =>
+    Effect.all(
+      value.map((v, i) => refs[i].set(v)),
+      unboundedConcurrency,
+    ) as Effect.Effect<never, never, _A>
+  const multiUpdate = makeMultiUpdateFromContext(get, set, identity)
 
   const primitive: RefPrimitive<_E, _A> = {
+    multiUpdate,
     delete: Effect.map(
       Effect.all(
         refs.map((ref) => ref.delete),
@@ -618,11 +640,7 @@ function tupleRefPrimitive<const Refs extends ReadonlyArray<RefSubject.Any>>(
     get,
     modifyEffect: makeModifyEffectTuple(refs, get, eq),
     run: (sink) => hold.run(sink),
-    set: (value) =>
-      Effect.all(
-        value.map((v, i) => refs[i].set(v)),
-        unboundedConcurrency,
-      ) as Effect.Effect<never, never, _A>,
+    set,
     version: MutableRef.make(0),
   }
 
@@ -671,8 +689,15 @@ function structRefPrimitive<const Refs extends Readonly<Record<string, RefSubjec
     mapRecord(refs, (ref) => ref.get),
     unboundedConcurrency,
   ) as Effect.Effect<never, _E, _A>
+  const set = (value: { readonly [K in keyof Refs]: Fx.Success<Refs[K]> }) =>
+    Effect.all(
+      mapRecord(value, (v, i) => refs[i].set(v)),
+      unboundedConcurrency,
+    ) as Effect.Effect<never, never, _A>
+  const multiUpdate = makeMultiUpdateFromContext(get, set, identity)
 
   const primitive: RefPrimitive<_E, _A> = {
+    multiUpdate,
     delete: Effect.map(
       Effect.all(
         mapRecord(refs, (ref) => ref.delete),
