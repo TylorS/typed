@@ -22,9 +22,6 @@
       "path": "../navigation/tsconfig.cjs.build.json"
     },
     {
-      "path": "../path/tsconfig.cjs.build.json"
-    },
-    {
       "path": "../router/tsconfig.cjs.build.json"
     }
   ]

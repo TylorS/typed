@@ -34,7 +34,7 @@ export function spa<R, E>(
         >,
         Scope.Scope
       >,
-      Http.server.Server
+      Http.server.Server | Http.etag.Generator
     >,
     NodeContext.NodeContext
   >,

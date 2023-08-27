@@ -20,7 +20,7 @@ export const tagged = <Tag extends string>(tag: Tag) =>
     ): <R2, E2, A2>(
       effect: Effect.Effect<R2, E2 | InstanceType<T>, A2>,
     ) => Effect.Effect<R | R2, E | Exclude<E2, InstanceType<T>>, A | A2> {
-      return Effect.catchTag(tag, f as any) as any
+      return (Effect.catchTag as any)(tag, f)
     }
 
     static catchAll<T extends TaggedConstructor<Tag>, R, E, A>(

@@ -4,8 +4,8 @@
   "version": "0.7.1",
   "type": "commonjs",
   "devDependencies": {
-    "@nrwl/devkit": "^16.6.0",
-    "@types/node": "^20.4.10"
+    "@nrwl/devkit": "^16.7.4",
+    "@types/node": "^20.5.6"
   },
   "generators": "generators.json",
   "sideEffects": false,

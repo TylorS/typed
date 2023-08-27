@@ -1,6 +1,6 @@
-import * as HashMap from '@effect/data/HashMap'
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
+import * as Headers from '@effect/platform/Http/Headers'
 import * as ServerRequest from '@effect/platform/Http/ServerRequest'
 import * as ServerResponse from '@effect/platform/Http/ServerResponse'
 import * as Fx from '@typed/fx'
@@ -93,13 +93,13 @@ export function stringToUint8Array(s: string): Uint8Array {
 
 export function getUrlFromServerRequest(request: ServerRequest.ServerRequest): URL {
   const { headers } = request
-  const host = HashMap.get(headers, 'x-forwarded-host').pipe(
-    Option.orElse(() => HashMap.get(headers, 'host')),
+  const host = Headers.get(headers, 'x-forwarded-host').pipe(
+    Option.orElse(() => Headers.get(headers, 'host')),
     Option.getOrElse(() => 'localhost'),
   )
-  const protocol = HashMap.get(headers, 'x-forwarded-proto').pipe(
-    Option.orElse(() => HashMap.get(headers, 'x-forwarded-protocol')),
-    Option.orElse(() => HashMap.get(headers, 'protocol')),
+  const protocol = Headers.get(headers, 'x-forwarded-proto').pipe(
+    Option.orElse(() => Headers.get(headers, 'x-forwarded-protocol')),
+    Option.orElse(() => Headers.get(headers, 'protocol')),
     Option.getOrElse(() => 'http'),
   )
 

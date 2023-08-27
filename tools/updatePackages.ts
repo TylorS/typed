@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 
 import { Project } from 'ts-morph'
 
-const virtualPrefixes = ['runtime', 'browser', 'entry', 'api', 'express']
+const virtualPrefixes = ['typed', 'html']
 
 const optionalPackagesNames = process.argv.slice(2)
 

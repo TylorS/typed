@@ -19,22 +19,26 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.17.1",
-    "@effect/io": "^0.38.0",
-    "@effect/platform": "^0.12.1",
+    "@effect/data": "^0.17.6",
+    "@effect/io": "^0.38.2",
+    "@effect/platform": "^0.13.10",
+    "@effect/platform-node": "^0.13.10",
+    "@rollup/pluginutils": "^5.0.4",
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/html": "workspace:*",
     "@typed/navigation": "workspace:*",
-    "@typed/path": "workspace:*",
     "@typed/router": "workspace:*",
     "mock-storage": "^1.1.0",
-    "vavite": "^2.0.1"
+    "vavite": "^2.0.2"
   },
   "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",
   "publishConfig": {
     "access": "public"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "devDependencies": {
+    "@types/node": "^20.5.6"
+  }
 }

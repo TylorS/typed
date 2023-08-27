@@ -42,7 +42,10 @@ export function serve<R, E>(
   options: Net.ListenOptions,
 ): Layer.Layer<
   Exclude<
-    Exclude<Exclude<Exclude<R, ServerRequest.ServerRequest>, Scope.Scope>, Http.server.Server>,
+    Exclude<
+      Exclude<Exclude<R, ServerRequest.ServerRequest>, Scope.Scope>,
+      Http.server.Server | Http.etag.Generator
+    >,
     NodeContext.NodeContext
   >,
   Http.error.ServeError,

@@ -12,6 +12,7 @@ import { createHash } from 'node:crypto'
 import { extname, join, resolve } from 'node:path'
 
 import * as Duration from '@effect/data/Duration'
+import { pipe } from '@effect/data/Function'
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 import * as Layer from '@effect/io/Layer'
@@ -90,14 +91,14 @@ export function cacheControl(
     Effect.suspend(() => {
       if (!filter(path)) return Effect.succeed(headers)
 
-      const cacheControl = headers.pipe(Http.headers.get('cache-control'))
-      const etag = headers.pipe(Http.headers.get('etag'))
+      const cacheControl = pipe(headers, Http.headers.get('cache-control'))
+      const etag = pipe(headers, Http.headers.get('etag'))
 
       // If cache-control is already set, don't override it
       if (Option.isSome(cacheControl)) {
         if (Option.isNone(etag) && options.etag !== false) {
           return generateETag(path, etagCache).pipe(
-            Effect.map((etag) => headers.pipe(Http.headers.set('etag', etag))),
+            Effect.map((etag) => pipe(headers, Http.headers.set('etag', etag))),
           )
         }
 
@@ -117,7 +118,8 @@ export function cacheControl(
       if (Option.isNone(etag) && options.etag !== false) {
         return generateETag(path, etagCache).pipe(
           Effect.map((etag) =>
-            headers.pipe(
+            pipe(
+              headers,
               Http.headers.set('etag', etag),
               Http.headers.set('cache-control', directives.join(', ')),
             ),
@@ -125,7 +127,7 @@ export function cacheControl(
         )
       }
 
-      return Effect.succeed(headers.pipe(Http.headers.set('cache-control', directives.join(', '))))
+      return Effect.succeed(pipe(headers, Http.headers.set('cache-control', directives.join(', '))))
     })
 }
 
@@ -211,7 +213,8 @@ function fileStreamResponse<R, E>(options: {
   setHeaders?: (input: SetHeadersInput) => Effect.Effect<R, E, Http.headers.Headers>
 }): Effect.Effect<R | FileSystem.FileSystem, E, Http.response.ServerResponse> {
   const contentType = options.contentType ?? fileExtensionToContentType(extname(options.path))
-  const defaultHeaders = Http.headers.empty.pipe(
+  const defaultHeaders = pipe(
+    Http.headers.empty,
     options.encoding ? Http.headers.set('content-encoding', options.encoding) : (x) => x,
     Http.headers.set('content-type', contentType),
   )
