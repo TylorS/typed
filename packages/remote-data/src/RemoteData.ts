@@ -552,6 +552,7 @@ export function tuple<Data extends readonly RemoteData.Any[]>(
   const failures: Failure<RemoteData.Error<Data[number]>>[] = []
   const successes: Success<RemoteData.Success<Data[number]>>[] = []
   const length = data.length
+  let isLoading = false
 
   for (let i = 0; i < length; i++) {
     const d = data[i]
@@ -560,10 +561,16 @@ export function tuple<Data extends readonly RemoteData.Any[]>(
       successes.push(d)
     } else if (isFailure(d)) {
       failures.push(d)
-    } else {
-      // NoData/Loading override all other states
+    } else if (isNoData(d)) {
+      // NoData override all other states
       return d
+    } else {
+      isLoading = true
     }
+  }
+
+  if (isLoading) {
+    return loading
   }
 
   if (failures.length > 0) {
@@ -582,7 +589,7 @@ export function tuple<Data extends readonly RemoteData.Any[]>(
 
   return success(
     successes.map((s) => s.value),
-    successes.some((s) => s.refreshing),
+    successes.every((s) => s.refreshing),
   ) as any
 }
 
