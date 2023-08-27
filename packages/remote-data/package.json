@@ -1,6 +1,6 @@
 {
   "name": "@typed/remote-data",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -19,6 +19,5 @@
       "import": "./dist/*.js",
       "types": "./dist/*.d.ts"
     }
-  },
-  "dependencies": {}
+  }
 }
