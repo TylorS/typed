@@ -304,14 +304,14 @@ importers:
   examples/todomvc:
     dependencies:
       '@effect/data':
-        specifier: ^0.17.1
-        version: 0.17.1
+        specifier: ^0.17.6
+        version: 0.17.6
       '@effect/io':
-        specifier: ^0.38.0
-        version: 0.38.0(@effect/data@0.17.1)
+        specifier: ^0.38.2
+        version: 0.38.2(@effect/data@0.17.6)
       '@effect/schema':
-        specifier: ^0.33.1
-        version: 0.33.1(@effect/data@0.17.1)(@effect/io@0.38.0)
+        specifier: ^0.33.2
+        version: 0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2)
       '@typed/cli':
         specifier: workspace:*
         version: link:../../packages/cli
@@ -616,6 +616,8 @@ importers:
       vitest:
         specifier: 0.34.3
         version: 0.34.3(@vitest/browser@0.34.3)(@vitest/ui@0.34.3)(happy-dom@10.11.0)(playwright@1.37.1)(webdriverio@8.15.9)
+
+  packages/remote-data: {}
 
   packages/route:
     dependencies:
@@ -2015,20 +2017,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.9
     dev: true
 
-  /@effect/data@0.17.1:
-    resolution: {integrity: sha512-QCYkLE5Y5Dm5Yax5R3GmW4ZIgTx7W+kSZ7yq5eqQ/mFWa8i4yxbLuu8cudqzdeZtRtTGZKlhDxfFfgVtMywXJg==}
-    dev: false
-
   /@effect/data@0.17.6:
     resolution: {integrity: sha512-/vwz7Jh05eS0qY8kczR/YyJd18d0C+PMtUkAealh4f6gwvhABLGCnktNJTcq/+UHxY0Cbv18r5uaJ4+7PPC+WQ==}
-
-  /@effect/io@0.38.0(@effect/data@0.17.1):
-    resolution: {integrity: sha512-qlVC9ASxNC+L2NKX5qOV9672CE5wWizfwBSFaX2XLI7CC118WRvohCTIPQ52n50Bj5TmR20+na+U9C7e4VkqzA==}
-    peerDependencies:
-      '@effect/data': ^0.17.1
-    dependencies:
-      '@effect/data': 0.17.1
-    dev: false
 
   /@effect/io@0.38.2(@effect/data@0.17.6):
     resolution: {integrity: sha512-rnAXFo9BDLbY7DgQE1e8uP/sEniyVCsB7gNs+yXPu0XK9s4kaGinH6XgwYRDBuu7Fu1tQ1yd7JoAdEb7yutNRg==}
@@ -2072,17 +2062,6 @@ packages:
       find-my-way: 7.6.2
       mime: 3.0.0
       path-browserify: 1.0.1
-    dev: false
-
-  /@effect/schema@0.33.1(@effect/data@0.17.1)(@effect/io@0.38.0):
-    resolution: {integrity: sha512-h+fQInui4q3we8fegAygL0Cs5B2DD/+oC3JWthOh8eLcbKkbYM9smCD/PsHuyQ+BaeWiSP5JdvREGlP4Sg+Ysw==}
-    peerDependencies:
-      '@effect/data': ^0.17.1
-      '@effect/io': ^0.38.0
-    dependencies:
-      '@effect/data': 0.17.1
-      '@effect/io': 0.38.0(@effect/data@0.17.1)
-      fast-check: 3.12.0
     dev: false
 
   /@effect/schema@0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2):
