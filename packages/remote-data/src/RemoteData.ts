@@ -19,14 +19,14 @@ export namespace RemoteData {
   export type Error<T> = [T] extends [never]
     ? never
     : // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    T extends [RemoteData<infer E, infer _>]
+    [T] extends [RemoteData<infer E, infer _>]
     ? E
     : never
 
   export type Success<T> = [T] extends [never]
     ? never
     : // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    T extends [RemoteData<infer _, infer A>]
+    [T] extends [RemoteData<infer _, infer A>]
     ? A
     : never
 
@@ -41,7 +41,7 @@ export namespace RemoteData {
    */
   export interface Unify<A extends { [Unify.typeSymbol]?: any }> extends Effect.EffectUnify<A> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    RemoteData?: () => A[Unify.typeSymbol] extends RemoteData<infer E0, infer A0> | infer _
+    RemoteData: () => A[Unify.typeSymbol] extends RemoteData<infer E0, infer A0> | infer _
       ? RemoteData<E0, A0>
       : never
   }
