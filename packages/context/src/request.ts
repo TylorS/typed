@@ -24,7 +24,7 @@ export function Request<const Id, Input, Req extends R.Request<any, any>>(
   const fn = Fn<(req: Req) => Effect<never, R.Request.Error<Req>, R.Request.Success<Req>>>()(id)
 
   return Object.assign(fn, {
-    make: (...[input]: SimplifyInputArg<Input>) => fn.apply(makeRequest(input as Input)),
+    make: (...[input]: SimplifyInputArg<Input>) => fn.apply(makeRequest((input || {}) as Input)),
   })
 }
 
