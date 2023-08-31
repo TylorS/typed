@@ -4,11 +4,16 @@ import * as Option from '@effect/data/Option'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
+import * as Scope from '@effect/io/Scope'
 import * as RemoteData from '@typed/remote-data'
+import fastDeepEqual from 'fast-deep-equal'
 
 import { Computed } from './Computed.js'
 import { Fx } from './Fx.js'
 import { RefSubject, makeRef } from './RefSubject.js'
+import { drain } from './observe.js'
+import { skipWhile } from './skipWhile.js'
+import { take } from './slice.js'
 import { switchMap } from './switchMap.js'
 
 export interface RefRemoteData<E, A> extends RefSubject<never, RemoteData.RemoteData<E, A>> {
@@ -37,6 +42,8 @@ export interface RefRemoteData<E, A> extends RefSubject<never, RemoteData.Remote
   // Effects
   readonly runEffect: <R>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, never, boolean>
 
+  readonly awaitNotLoading: Effect.Effect<Scope.Scope, never, void>
+
   // Matching
   readonly matchFx: <R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(options: {
     onNoData: () => Fx<R2, E2, B>
@@ -63,9 +70,9 @@ export interface RefRemoteData<E, A> extends RefSubject<never, RemoteData.Remote
 }
 
 export function makeRefRemoteData<E, A>(
-  E: Equivalence.Equivalence<E>,
-  A: Equivalence.Equivalence<A>,
-) {
+  E: Equivalence.Equivalence<E> = fastDeepEqual,
+  A: Equivalence.Equivalence<A> = fastDeepEqual,
+): Effect.Effect<Scope.Scope, never, RefRemoteData<E, A>> {
   return Effect.gen(function* ($) {
     const ref = yield* $(
       makeRef(
@@ -103,7 +110,7 @@ export function makeRefRemoteData<E, A>(
             Effect.flatMap((exit) => set(RemoteData.fromExit(exit))),
             Effect.as(true),
           ),
-          onTrue: Effect.succeed(false),
+          onTrue: Effect.as(stopLoading, false),
         }).pipe(Effect.onInterrupt(() => stopLoading)),
       )
 
@@ -130,7 +137,10 @@ export function makeRefRemoteData<E, A>(
           RemoteData.match(data, options),
       )
 
+    const awaitNotLoading = drain(take(skipWhile(ref, RemoteData.isLoadingOrRefreshing), 1))
+
     const refRemoteData: RefRemoteData<E, A> = Object.assign(ref, {
+      awaitNotLoading,
       fail: (error: E) => failCause(Cause.fail(error)),
       failCause,
       fromEither: (either: Either.Either<E, A>) => ref.set(RemoteData.fromEither(either)),

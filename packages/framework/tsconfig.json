@@ -29,6 +29,9 @@
       "path": "../navigation/tsconfig.build.json"
     },
     {
+      "path": "../remote-data/tsconfig.build.json"
+    },
+    {
       "path": "../router/tsconfig.build.json"
     }
   ]

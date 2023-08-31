@@ -664,3 +664,5 @@ export function isLoadingException(e: unknown): e is LoadingException {
     (typeof e === 'object' && e !== null && '_tag' in e && e._tag === 'LoadingException')
   )
 }
+
+export { NoSuchElementException } from '@effect/io/Cause'

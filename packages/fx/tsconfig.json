@@ -5,7 +5,8 @@
     "outDir": "dist"
   },
   "include": [
-    "src"
+    "src",
+    "../framework/src/RefRequest.ts"
   ],
   "exclude": [
     "dist"

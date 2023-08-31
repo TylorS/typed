@@ -488,6 +488,9 @@ importers:
       '@typed/navigation':
         specifier: workspace:*
         version: link:../navigation
+      '@typed/remote-data':
+        specifier: workspace:*
+        version: link:../remote-data
       '@typed/router':
         specifier: workspace:*
         version: link:../router
