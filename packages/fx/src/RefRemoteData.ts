@@ -4,8 +4,6 @@ import * as Option from '@effect/data/Option'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
-import * as Fiber from '@effect/io/Fiber'
-import * as SynchronizedRef from '@effect/io/Ref/Synchronized'
 import * as Scope from '@effect/io/Scope'
 import * as RemoteData from '@typed/remote-data'
 import fastDeepEqual from 'fast-deep-equal'
@@ -105,30 +103,22 @@ export function makeRefRemoteData<E, A>(
     const isRefreshing = ref.map(RemoteData.isRefreshing)
     const isLoadingOrRefreshing = ref.map(RemoteData.isLoadingOrRefreshing)
 
-    // Ensure there can only ever be one loading fiber
-    const currentFiber = yield* $(
-      SynchronizedRef.make<Fiber.Fiber<never, boolean>>(Fiber.succeed(false)),
-    )
-
     const runEffect = <R>(effect: Effect.Effect<R, E, A>) =>
-      SynchronizedRef.updateAndGetEffect(currentFiber, (fiber) =>
-        Fiber.interrupt(fiber).pipe(
-          Effect.flatMap(() =>
-            ref.multiUpdate((current, set) =>
-              Effect.if(RemoteData.isLoadingOrRefreshing(current), {
-                onFalse: set(RemoteData.toLoading(current)).pipe(
-                  Effect.zipRight(effect),
-                  Effect.exit,
-                  Effect.flatMap((exit) => set(RemoteData.fromExit(exit))),
-                  Effect.as(true),
-                ),
-                onTrue: Effect.as(stopLoading, false),
-              }).pipe(Effect.onInterrupt(() => stopLoading)),
-            ),
-          ),
-          Effect.forkScoped,
-        ),
-      ).pipe(Effect.flatMap(Fiber.join))
+      Effect.gen(function* ($) {
+        const current = yield* $(ref.get)
+
+        if (RemoteData.isLoadingOrRefreshing(current)) {
+          return false
+        }
+
+        yield* $(toLoading)
+
+        const exit = yield* $(Effect.exit(effect))
+
+        yield* $(ref.set(RemoteData.fromExit(exit)))
+
+        return true
+      }).pipe(Effect.onInterrupt(() => stopLoading))
 
     const matchFx = <R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(options: {
       onNoData: () => Fx<R2, E2, B>
