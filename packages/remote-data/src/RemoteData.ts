@@ -665,4 +665,4 @@ export function isLoadingException(e: unknown): e is LoadingException {
   )
 }
 
-export { NoSuchElementException } from '@effect/io/Cause'
+export { NoSuchElementException, isNoSuchElementException } from '@effect/io/Cause'

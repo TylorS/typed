@@ -4,6 +4,8 @@ import * as Option from '@effect/data/Option'
 import * as Cause from '@effect/io/Cause'
 import * as Effect from '@effect/io/Effect'
 import * as Exit from '@effect/io/Exit'
+import * as Fiber from '@effect/io/Fiber'
+import * as SynchronizedRef from '@effect/io/Ref/Synchronized'
 import * as Scope from '@effect/io/Scope'
 import * as RemoteData from '@typed/remote-data'
 import fastDeepEqual from 'fast-deep-equal'
@@ -40,7 +42,9 @@ export interface RefRemoteData<E, A> extends RefSubject<never, RemoteData.Remote
   readonly mapValue: <B>(f: (a: A) => B) => Computed<never, never, RemoteData.RemoteData<E, B>>
 
   // Effects
-  readonly runEffect: <R>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, never, boolean>
+  readonly runEffect: <R>(
+    effect: Effect.Effect<R, E, A>,
+  ) => Effect.Effect<R | Scope.Scope, never, boolean>
 
   readonly awaitNotLoading: Effect.Effect<Scope.Scope, never, void>
 
@@ -101,18 +105,30 @@ export function makeRefRemoteData<E, A>(
     const isRefreshing = ref.map(RemoteData.isRefreshing)
     const isLoadingOrRefreshing = ref.map(RemoteData.isLoadingOrRefreshing)
 
+    // Ensure there can only ever be one loading fiber
+    const currentFiber = yield* $(
+      SynchronizedRef.make<Fiber.Fiber<never, boolean>>(Fiber.succeed(false)),
+    )
+
     const runEffect = <R>(effect: Effect.Effect<R, E, A>) =>
-      ref.multiUpdate((current, set) =>
-        Effect.if(RemoteData.isLoadingOrRefreshing(current), {
-          onFalse: set(RemoteData.toLoading(current)).pipe(
-            Effect.zipRight(effect),
-            Effect.exit,
-            Effect.flatMap((exit) => set(RemoteData.fromExit(exit))),
-            Effect.as(true),
+      SynchronizedRef.updateAndGetEffect(currentFiber, (fiber) =>
+        Fiber.interrupt(fiber).pipe(
+          Effect.flatMap(() =>
+            ref.multiUpdate((current, set) =>
+              Effect.if(RemoteData.isLoadingOrRefreshing(current), {
+                onFalse: set(RemoteData.toLoading(current)).pipe(
+                  Effect.zipRight(effect),
+                  Effect.exit,
+                  Effect.flatMap((exit) => set(RemoteData.fromExit(exit))),
+                  Effect.as(true),
+                ),
+                onTrue: Effect.as(stopLoading, false),
+              }).pipe(Effect.onInterrupt(() => stopLoading)),
+            ),
           ),
-          onTrue: Effect.as(stopLoading, false),
-        }).pipe(Effect.onInterrupt(() => stopLoading)),
-      )
+          Effect.forkScoped,
+        ),
+      ).pipe(Effect.flatMap(Fiber.join))
 
     const matchFx = <R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(options: {
       onNoData: () => Fx<R2, E2, B>
