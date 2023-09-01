@@ -29,7 +29,6 @@
     "@typed/fx": "workspace:*",
     "@typed/html": "workspace:*",
     "@typed/navigation": "workspace:*",
-    "@typed/remote-data": "workspace:*",
     "@typed/router": "workspace:*",
     "mock-storage": "^1.1.0",
     "vavite": "^2.0.2"
