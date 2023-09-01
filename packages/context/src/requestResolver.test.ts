@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 import * as Context from './index.js'
 
 describe(Context.RequestResolver.name, () => {
-  it('allows calling a function from Effect context', async () => {
+  it('allows resolving a request for the Effect Context', async () => {
     interface FooRequest extends Request.Request<never, string> {
       readonly _tag: 'Foo'
       readonly input: string
