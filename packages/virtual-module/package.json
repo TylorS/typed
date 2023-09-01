@@ -1,7 +1,6 @@
 {
   "name": "@typed/virtual-module",
   "version": "0.1.2",
-  "private": true,
   "main": "dist/cjs/index.js",
   "module": "dist/index.js",
   "typings": "dist/index.d.ts",
