@@ -4,7 +4,7 @@ import type * as Req from '@effect/io/Request'
 import * as RR from '@effect/io/RequestResolver'
 
 import { Context, Tag } from './context.js'
-import { IdentifierOf } from './identifier.js'
+import { IdentifierFactory, IdentifierOf } from './identifier.js'
 import { Request } from './request.js'
 
 export interface RequestResolver<
@@ -59,7 +59,11 @@ type Compact<Input> = [{ [K in keyof Input]: Input[K] }] extends [infer R] ? R :
 export function RequestResolver<
   const Requests extends Readonly<Record<string, Request<any, any, any>>>,
 >(requests: Requests) {
-  return <const Id>(id: Id) => {
+  function makeRequestResolver<const Id extends IdentifierFactory<any>>(
+    id: Id,
+  ): RequestResolver<IdentifierOf<Id>, Requests>
+  function makeRequestResolver<const Id>(id: Id): RequestResolver<IdentifierOf<Id>, Requests>
+  function makeRequestResolver<const Id>(id: Id): RequestResolver<IdentifierOf<Id>, Requests> {
     type _Req = Request.Req<Requests[keyof Requests]>
     type _Resolver = RequestResolver<IdentifierOf<Id>, Requests>
 
@@ -113,6 +117,8 @@ export function RequestResolver<
 
     return resolver
   }
+
+  return makeRequestResolver
 }
 
 export namespace RequestResolver {

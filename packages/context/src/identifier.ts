@@ -14,7 +14,16 @@ export interface Identifier<T> {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type IdentifierOf<T> = T extends IdentifierConstructor<infer _> ? InstanceType<T> : T
+export type IdentifierOf<T> = T extends (_id: typeof id) => IdentifierConstructor<infer _>
+  ? InstanceType<ReturnType<T>>
+  : // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  T extends IdentifierConstructor<infer _>
+  ? InstanceType<T>
+  : T
+
+export type IdentifierFactory<T> = (_id: typeof id) => IdentifierConstructor<T>
+
+export type IdentifierInput<T> = IdentifierFactory<T> | IdentifierConstructor<T> | T
 
 export function identifierToString(x: unknown): string {
   switch (typeof x) {
@@ -36,4 +45,10 @@ export function identifierToString(x: unknown): string {
       return x.toString()
     }
   }
+}
+
+export function makeIdentifier<T>(input: IdentifierInput<T>): T | IdentifierConstructor<T> {
+  return typeof input === 'function' && input.length === 1
+    ? (input as IdentifierFactory<T>)(id)
+    : (input as T)
 }

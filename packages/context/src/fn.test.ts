@@ -6,7 +6,7 @@ import { Fn } from './fn.js'
 describe(Fn.name, () => {
   it('allows calling a function from Effect context', async () => {
     const Add = Fn<(x: number, y: number) => Effect.Effect<never, never, number>>()(
-      '@typed/context/AddService',
+      (_) => class Add extends _('@typed/context/AddService') {},
     )
 
     const test = Add.apply(1, 2).pipe(Add.provideImplementation((x, y) => Effect.succeed(x + y)))

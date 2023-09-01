@@ -6,7 +6,7 @@ import * as Layer from '@effect/io/Layer'
 import * as Fx from '@typed/fx'
 
 import * as Context from './context.js'
-import { IdentifierOf } from './identifier.js'
+import { IdentifierFactory, IdentifierOf } from './identifier.js'
 
 const subjectVariance: Fx.Fx<any, any, any>[Fx.FxTypeId] = {
   _R: identity,
@@ -30,15 +30,29 @@ export interface Subject<I, E, A> extends Fx.Fx<I, E, A> {
   readonly provideFx: <R2, E2, A2>(fx: Fx.Fx<R2, E2, A2>) => Fx.Fx<Exclude<R2, I>, E2, A2>
 }
 
-export const Subject =
-  <E, A>() =>
-  <const I>(identifier: I): Subject<IdentifierOf<I>, E, A> =>
-    make(identifier, () => Fx.makeSubject<E, A>(), false)
+export const Subject = <E, A>() => {
+  function makeSubject<const I extends IdentifierFactory<any>>(
+    identifier: I,
+  ): Subject<IdentifierOf<I>, E, A>
+  function makeSubject<const I>(identifier: I): Subject<IdentifierOf<I>, E, A>
+  function makeSubject<const I>(identifier: I): Subject<IdentifierOf<I>, E, A> {
+    return make(identifier, () => Fx.makeSubject<E, A>(), false)
+  }
 
-export const HoldSubject =
-  <E, A>() =>
-  <const I>(identifier: I): Subject<IdentifierOf<I>, E, A> =>
-    make(identifier, () => Fx.makeHoldSubject<E, A>(), true)
+  return makeSubject
+}
+
+export function HoldSubject<E, A>() {
+  function makeHoldSubject<const I extends IdentifierFactory<any>>(
+    identifier: I,
+  ): Subject<IdentifierOf<I>, E, A>
+  function makeHoldSubject<const I>(identifier: I): Subject<IdentifierOf<I>, E, A>
+  function makeHoldSubject<const I>(identifier: I): Subject<IdentifierOf<I>, E, A> {
+    return make(identifier, () => Fx.makeHoldSubject<E, A>(), true)
+  }
+
+  return makeHoldSubject
+}
 
 function make<const I, E, A>(
   id: I,

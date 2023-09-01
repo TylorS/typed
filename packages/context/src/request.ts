@@ -4,7 +4,7 @@ import { Effect } from '@effect/io/Effect'
 import * as R from '@effect/io/Request'
 
 import { Fn } from './fn.js'
-import { IdentifierOf } from './identifier.js'
+import { IdentifierFactory, IdentifierOf } from './identifier.js'
 
 export interface Request<I, Input, Req extends R.Request<any, any>>
   extends Fn<I, (requests: Req) => Effect<never, R.Request.Error<Req>, R.Request.Success<Req>>> {
@@ -16,6 +16,17 @@ export interface Request<I, Input, Req extends R.Request<any, any>>
 type Compact<Input> = [{ [K in keyof Input]: Input[K] }] extends [infer R] ? R : never
 
 type SimplifyInputArg<Input> = [keyof Input] extends [never] ? [Compact<Input>?] : [Compact<Input>]
+
+export function Request<
+  const Id extends IdentifierFactory<any>,
+  Input,
+  Req extends R.Request<any, any>,
+>(id: Id, makeRequest: (input: Input) => Req): Request<IdentifierOf<Id>, Input, Req>
+
+export function Request<const Id, Input, Req extends R.Request<any, any>>(
+  id: Id,
+  makeRequest: (input: Input) => Req,
+): Request<IdentifierOf<Id>, Input, Req>
 
 export function Request<const Id, Input, Req extends R.Request<any, any>>(
   id: Id,
@@ -39,19 +50,35 @@ export namespace Request {
 
   export function tagged<Req extends R.Request<any, any> & { readonly _tag: string }>(
     tag: Req['_tag'],
-  ): <const Id>(
-    id: Id,
-  ) => Request<
-    IdentifierOf<Id>,
-    Compact<Omit<Req, R.RequestTypeId | '_tag' | keyof Data.Case>>,
-    Req
-  > {
+  ): {
+    <const Id extends IdentifierFactory<any>>(
+      id: Id,
+    ): Request<
+      IdentifierOf<Id>,
+      Compact<Omit<Req, R.RequestTypeId | '_tag' | keyof Data.Case>>,
+      Req
+    >
+
+    <const Id>(
+      id: Id,
+    ): Request<
+      IdentifierOf<Id>,
+      Compact<Omit<Req, R.RequestTypeId | '_tag' | keyof Data.Case>>,
+      Req
+    >
+  } {
     return <const Id>(id: Id) => Request(id, R.tagged(tag)) as any
   }
 
-  export function of<Req extends R.Request<any, any>>(): <const Id>(
-    id: Id,
-  ) => Request<IdentifierOf<Id>, Compact<Omit<Req, R.RequestTypeId | keyof Data.Case>>, Req> {
+  export function of<Req extends R.Request<any, any>>(): {
+    <const Id extends IdentifierFactory<any>>(
+      id: Id,
+    ): Request<IdentifierOf<Id>, Compact<Omit<Req, R.RequestTypeId | keyof Data.Case>>, Req>
+
+    <const Id>(
+      id: Id,
+    ): Request<IdentifierOf<Id>, Compact<Omit<Req, R.RequestTypeId | keyof Data.Case>>, Req>
+  } {
     return <const Id>(id: Id) => Request(id, R.of()) as any
   }
 }

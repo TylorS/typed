@@ -9,7 +9,7 @@ import * as Scope from '@effect/io/Scope'
 import * as Fx from '@typed/fx'
 
 import * as Context from './context.js'
-import { IdentifierOf } from './identifier.js'
+import { IdentifierFactory, IdentifierOf } from './identifier.js'
 
 export interface Ref<I, R, E, A> extends Fx.Fx<I, E, A> {
   readonly tag: Context.Tag<I, Fx.RefSubject<E, A>>
@@ -88,7 +88,16 @@ export const Ref: {
   <R, E, A>(
     initial: Effect.Effect<R, E, A>,
     eq?: Equivalence.Equivalence<A>,
-  ): <const I>(identifier: I) => Ref<IdentifierOf<I>, R, E, A>
+  ): {
+    <const I extends IdentifierFactory<any>>(identifier: I): Ref<IdentifierOf<I>, R, E, A>
+    <const I>(identifier: I): Ref<IdentifierOf<I>, R, E, A>
+  }
+
+  <const I extends IdentifierFactory<any>, R, E, A>(
+    identifier: I,
+    initial: Effect.Effect<R, E, A>,
+    eq?: Equivalence.Equivalence<A>,
+  ): Ref<IdentifierOf<I>, R, E, A>
 
   <const I, R, E, A>(
     identifier: I,
