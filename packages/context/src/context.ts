@@ -15,7 +15,9 @@ import { Actions, Builder, Layers, Provide, Tagged } from './interfaces.js'
  */
 export interface Tag<I, S = I> extends C.Tag<I, S>, Tagged<I, S> {}
 
-export function Tag<const I extends IdentifierInput<any>, S = I>(id?: I): Tag<IdentifierOf<I>, S> {
+export function Tag<const I extends IdentifierInput<any>, S = I>(
+  id?: I | string,
+): Tag<IdentifierOf<I>, S> {
   return Tag.tag(C.Tag<IdentifierOf<I>, S>(identifierToString(makeIdentifier(id))))
 }
 
