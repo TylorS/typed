@@ -73,11 +73,22 @@ export interface Loading extends Effect.Effect<never, LoadingException, never>, 
   [Unify.blacklistSymbol]?: RemoteData.UnifyBlackList
 }
 
+export const LoadingExceptionTypeId = Symbol.for('@typed/remote-data/LoadingException')
+export type LoadingExceptionTypeId = typeof LoadingExceptionTypeId
+
 export interface LoadingException {
+  readonly [LoadingExceptionTypeId]: LoadingExceptionTypeId
   readonly _tag: 'LoadingException'
+  readonly message?: string
 }
 
-export const LoadingException: LoadingException = { _tag: 'LoadingException' }
+export const LoadingException: (message?: string) => LoadingException =
+  makeException<LoadingException>(
+    {
+      [LoadingExceptionTypeId]: LoadingExceptionTypeId,
+    },
+    'LoadingException',
+  )
 
 export interface Failure<E> extends Effect.Effect<never, E, never>, Pipeable {
   readonly state: 'Failure'
@@ -238,9 +249,9 @@ const proto = {
   },
 }
 
-const noSuchElementException = Effect.fail(Cause.NoSuchElementException())
+const noSuchElementException = Effect.suspend(() => Effect.fail(Cause.NoSuchElementException()))
 const commitNoSuchElementException = () => noSuchElementException
-const loadingException = Effect.fail(LoadingException)
+const loadingException = Effect.suspend(() => Effect.fail(LoadingException()))
 const commitLoadingException = () => loadingException
 const noDataString = `RemoteData(NoData)`
 const loadingString = `RemoteData(Loading)`
@@ -313,13 +324,15 @@ export function isSuccess<E, A>(data: RemoteData<E, A>): data is Success<A> {
   return data.state === 'Success'
 }
 
-export function isRefreshing<E, A>(
-  data: RemoteData<E, A>,
-): data is (Failure<E> | Success<A>) & { readonly refreshing: true } {
+export type Refreshing<E, A> = (Failure<E> | Success<A>) & { readonly refreshing: true }
+
+export function isRefreshing<E, A>(data: RemoteData<E, A>): data is Refreshing<E, A> {
   return isFailure(data) || isSuccess(data) ? data.refreshing : false
 }
 
-export function isLoadingOrRefreshing<E, A>(data: RemoteData<E, A>): boolean {
+export function isLoadingOrRefreshing<E, A>(
+  data: RemoteData<E, A>,
+): data is Loading | Refreshing<E, A> {
   return isLoading(data) || isRefreshing(data)
 }
 
@@ -360,7 +373,7 @@ export const map: {
   if (isSuccess(data)) {
     return success(f(data.value), data.refreshing)
   } else {
-    return data as Failure<E> | NoData | Loading
+    return data
   }
 })
 
@@ -374,7 +387,7 @@ export const mapError: {
   if (isFailure(data)) {
     return failCause(Cause.map(data.cause, f), data.refreshing)
   } else {
-    return data as Success<A> | NoData | Loading
+    return data
   }
 })
 
@@ -391,7 +404,7 @@ export const mapErrorCause: {
   if (isFailure(data)) {
     return failCause(f(data.cause), data.refreshing)
   } else {
-    return data as Success<A> | NoData | Loading
+    return data
   }
 })
 
@@ -419,7 +432,7 @@ export const flatMap: {
   if (isSuccess(data)) {
     return f(data.value, data.refreshing)
   } else {
-    return data as Failure<E1> | NoData | Loading
+    return data
   }
 })
 
@@ -443,7 +456,7 @@ export const catchAllCause: {
   if (isFailure(data)) {
     return f(data.cause, data.refreshing)
   } else {
-    return data as Success<A> | NoData | Loading
+    return data
   }
 })
 
@@ -471,7 +484,7 @@ export const catchAll: {
       onRight: () => data as Failure<never>,
     })
   } else {
-    return data as Success<A> | NoData | Loading
+    return data
   }
 })
 
@@ -523,7 +536,7 @@ export const zipWith: {
         return that
       }
     },
-  }) as any
+  })
 })
 
 export const zip: {
@@ -666,3 +679,27 @@ export function isLoadingException(e: unknown): e is LoadingException {
 }
 
 export { NoSuchElementException, isNoSuchElementException } from '@effect/io/Cause'
+
+function makeException<T extends { _tag: string; message?: string }>(
+  proto: Omit<T, 'message' | '_tag'>,
+  tag: T['_tag'],
+) {
+  const _tag = {
+    value: tag,
+    enumerable: true,
+  }
+  const protoWithToString = {
+    ...proto,
+    toString(this: { _tag: string; message?: string }): string {
+      return `${this._tag}: ${this.message}`
+    },
+  }
+  return (message?: string): T =>
+    Object.create(protoWithToString, {
+      _tag,
+      message: {
+        value: message,
+        enumerable: true,
+      },
+    })
+}

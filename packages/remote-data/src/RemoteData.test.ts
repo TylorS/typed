@@ -38,7 +38,7 @@ describe('RemoteData', () => {
       it('returns LoadingException', async () => {
         const test = RemoteData.loading.pipe(Effect.either)
 
-        expect(await Effect.runPromise(test)).toEqual(Either.left(RemoteData.LoadingException))
+        expect(await Effect.runPromise(test)).toEqual(Either.left(RemoteData.LoadingException()))
       })
     })
   })
@@ -154,7 +154,7 @@ describe('RemoteData', () => {
     })
 
     it('converts Effect<R, LoadingException, A> ->  Effect<R, never, RemoteData<never, A>>', async () => {
-      const test = Effect.fail(RemoteData.LoadingException).pipe(RemoteData.unwrapEffect)
+      const test = Effect.fail(RemoteData.LoadingException()).pipe(RemoteData.unwrapEffect)
 
       expect(await Effect.runPromise(test)).toEqual(RemoteData.loading)
     })
