@@ -10,10 +10,10 @@
             "command": "tsc --build packages/nx-plugin/tsconfig.build.json"
           },
           {
-            "command": "cp ./packages/nx-plugin/src/generators/package/schema.json ./packages/nx-plugin/dist/generators/package"
+            "command": "shx cp ./packages/nx-plugin/src/generators/package/schema.json ./packages/nx-plugin/dist/generators/package"
           },
           {
-            "command": "cp -r packages/nx-plugin/src/generators/package/files packages/nx-plugin/dist/generators/package"
+            "command": "shx cp -r packages/nx-plugin/src/generators/package/files packages/nx-plugin/dist/generators/package"
           }
         ],
         "parallel": false

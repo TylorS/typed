@@ -58,6 +58,7 @@
     "path-to-regexp": "^6.2.1",
     "picocolors": "^1.0.0",
     "rollup-plugin-visualizer": "^5.9.2",
+    "shx": "^0.3.4",
     "ts-morph": "^19.0.0",
     "ts-toolbelt": "^9.6.0",
     "typed-query-selector": "^2.11.0",
