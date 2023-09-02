@@ -37,28 +37,25 @@ export function renderHtml<R, E>(
   return renderToHtmlStream(html, render)
 }
 
+export type ServeContext =
+  | ServerRequest.ServerRequest
+  | Http.server.Server
+  | Http.etag.Generator
+  | Scope.Scope
+  | NodeContext.NodeContext
+
 export function serve<R, E>(
   app: Http.app.Default<R, E>,
   options: Net.ListenOptions,
-): Layer.Layer<
-  Exclude<
-    Exclude<
-      Exclude<Exclude<R, ServerRequest.ServerRequest>, Scope.Scope>,
-      Http.server.Server | Http.etag.Generator
-    >,
-    NodeContext.NodeContext
-  >,
-  Http.error.ServeError,
-  never
-> {
+): Layer.Layer<Exclude<R, ServeContext>, Http.error.ServeError, never> {
   const listenOptions = httpDevServer ? serverToListenOptions(httpDevServer, options) : options
 
   return app.pipe(
     Http.server.serve(Http.middleware.loggerTracer),
     Layer.scopedDiscard,
-    Layer.use(Http.server.layer(() => createOrUseViteDevServer(listenOptions), listenOptions)),
+    Layer.use(Http.server.layer(() => createOrUseHttpServer(listenOptions), listenOptions)),
     Layer.use(NodeContext.layer),
-  )
+  ) as Layer.Layer<Exclude<R, ServeContext>, Http.error.ServeError, never>
 }
 
 function logServerStart(options: Net.ListenOptions) {
@@ -69,7 +66,7 @@ function logServerStart(options: Net.ListenOptions) {
   )
 }
 
-function createOrUseViteDevServer(options: Net.ListenOptions) {
+function createOrUseHttpServer(options: Net.ListenOptions) {
   if (isDev) {
     const server = httpDevServer!
 

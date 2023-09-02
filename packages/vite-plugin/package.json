@@ -19,7 +19,7 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.17.6",
+    "@effect/data": "^0.18.3",
     "@typed/virtual-module": "workspace:*",
     "fast-glob": "^3.3.1",
     "rollup-plugin-visualizer": "^5.9.2",
@@ -37,6 +37,6 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "@types/node": "^20.5.6"
+    "@types/node": "^20.5.8"
   }
 }

@@ -1,6 +1,7 @@
 import * as Either from '@effect/data/Either'
 import * as Equal from '@effect/data/Equal'
 import * as Hash from '@effect/data/Hash'
+import { NodeInspectSymbol } from '@effect/data/Inspectable'
 import * as Effect from '@effect/io/Effect'
 
 import type { Decoder } from './decoder.js'
@@ -16,11 +17,12 @@ export const right = <A, E = never>(
     right: member,
     [Equal.symbol]: any,
     [Hash.symbol]: any,
-    traced: any,
     [Effect.EffectTypeId]: any,
     [Either.TypeId]: any,
     _id: any,
     pipe: any,
+    toJSON: any,
+    [NodeInspectSymbol]: any,
   })
 
 export const left = <E, A = never>(
@@ -31,11 +33,12 @@ export const left = <E, A = never>(
     left: member,
     [Equal.symbol]: any,
     [Hash.symbol]: any,
-    traced: any,
-    [Effect.EffectTypeId]: any,
+    toJSON: any,
     [Either.TypeId]: any,
     _id: any,
     pipe: any,
+    [NodeInspectSymbol]: any,
+    [Effect.EffectTypeId]: any,
   })
 
 export const either = <A, B>(

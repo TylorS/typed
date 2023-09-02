@@ -1,6 +1,6 @@
 import type { HashSet } from '@effect/data/HashSet'
 import * as Effect from '@effect/io/Effect'
-import type { FiberId } from '@effect/io/Fiber/Id'
+import type { FiberId } from '@effect/io/FiberId'
 
 import { Fx } from './Fx.js'
 

@@ -1,5 +1,6 @@
 import * as Equal from '@effect/data/Equal'
 import * as Hash from '@effect/data/Hash'
+import { NodeInspectSymbol } from '@effect/data/Inspectable'
 import * as Option from '@effect/data/Option'
 import * as Effect from '@effect/io/Effect'
 
@@ -18,6 +19,8 @@ export const some = <A>(member: Decoder<unknown, A>): Decoder<unknown, Option.So
     [Effect.EffectTypeId]: any,
     _id: any,
     pipe: any,
+    toJSON: any,
+    [NodeInspectSymbol]: any,
   })
 
 export const none: Decoder<unknown, Option.None<never>> = struct({
@@ -28,6 +31,8 @@ export const none: Decoder<unknown, Option.None<never>> = struct({
   [Effect.EffectTypeId]: any,
   _id: any,
   pipe: any,
+  toJSON: any,
+  [NodeInspectSymbol]: any,
 })
 
 export const option = <A>(member: Decoder<unknown, A>): Decoder<unknown, Option.Option<A>> =>

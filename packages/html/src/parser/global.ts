@@ -1,4 +1,4 @@
-import { globalValue } from '@effect/data/Global'
+import { globalValue } from '@effect/data/GlobalValue'
 
 import { Parser } from './parser.js'
 

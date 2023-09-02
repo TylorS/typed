@@ -43,6 +43,9 @@
       "path": "./packages/router/tsconfig.build.json"
     },
     {
+      "path": "./packages/virtual-module/tsconfig.build.json"
+    },
+    {
       "path": "./packages/vite-plugin/tsconfig.build.json"
     },
     {

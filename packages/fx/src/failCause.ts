@@ -1,5 +1,5 @@
 import * as Cause from '@effect/io/Cause'
-import type { FiberId } from '@effect/io/Fiber/Id'
+import type { FiberId } from '@effect/io/FiberId'
 
 import { Fx } from './Fx.js'
 

@@ -22,7 +22,7 @@
     }
   },
   "dependencies": {
-    "@effect/data": "^0.17.6",
+    "@effect/data": "^0.18.3",
     "@typed/vite-plugin": "workspace:*",
     "@vavite/multibuild": "^2.0.2",
     "cac": "^6.7.14",
@@ -36,6 +36,6 @@
   "sideEffects": false,
   "gitHead": "781662109038798bdc35ec7a6de3551ec16aaa0a",
   "devDependencies": {
-    "@types/node": "^20.5.6"
+    "@types/node": "^20.5.8"
   }
 }
