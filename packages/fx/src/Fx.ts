@@ -57,25 +57,25 @@ export namespace Fx {
   }
 
   export const makeGen: <E extends Eff.EffectGen<any, any, any>>(
-    f: (resume: Adapter) => Generator<E, unknown, any>
+    f: (adapter: Adapter) => Generator<E, unknown, any>
   ) => Fx.WithExclude<
     GenResources<E>,
     Sink.Sink.ExtractError<GenResources<E>> | GenError<E>,
     Sink.Sink.ExtractEvent<GenResources<E>>
   > = (f) =>
     make(
-      Eff.gen((adapter) => {
-        const modified: Adapter = Object.assign(
+      Eff.gen((adapter) =>
+        f(Object.assign(
+          // Use .bind to make a clone of the function
+          // so that we don't mutate the Effect.Adapter singleton
           adapter.bind(null),
           {
             event: <A>(a: A) => adapter(Sink.event(a)),
             failCause: <E>(cause: Cause.Cause<E>) => adapter(Sink.failCause(cause)),
             fail: <E>(error: E) => adapter(Sink.fail(error))
           } as const
-        )
-
-        return f(modified)
-      }).pipe(Eff.catchAllCause(Sink.failCause))
+        ))
+      ).pipe(Eff.catchAllCause(Sink.failCause))
     )
 }
 
@@ -139,7 +139,7 @@ export function fromInput<R, E, A>(input: FxInput<R, E, A>): Fx.WithExclude<R, E
 export function drain<R, E, A>(
   input: FxInput<R, E, A>
 ): Eff.Effect<Exclude<R, Sink.Sink<any, any>>, Sink.Sink.ExtractError<R> | E, void> {
-  const fx = fromInput<R, E, A>(input)
+  const fx = fromInput(input)
 
   return Eff.acquireUseRelease(
     Scope.make(),
@@ -147,7 +147,7 @@ export function drain<R, E, A>(
       Eff.flatMap(
         Sink.drain<E, A>(),
         ({ deferred, sink }) =>
-          Eff.tap(Eff.provideSomeContext(Eff.forkIn(fx, scope), sink), () => Deferred.await(deferred))
+          Eff.flatMap(Eff.provideSomeContext(Eff.forkIn(fx, scope), sink), () => Deferred.await(deferred))
       ),
     Scope.close
   )

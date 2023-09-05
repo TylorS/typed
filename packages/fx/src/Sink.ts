@@ -156,3 +156,38 @@ export function map<R, E, A, B, C>(
     (event) => Effect.provideService(effect, Event<B>(), MapEventService.make(event, f))
   )
 }
+
+export class MapErrorCauseService<A, B> implements ErrorService<A> {
+  readonly _tag = "MapErrorCause" as const
+
+  constructor(readonly service: ErrorService<B>, readonly f: (b: Cause.Cause<A>) => Cause.Cause<B>) {}
+
+  error(cause: Cause.Cause<A>): Effect.Effect<never, never, void> {
+    return this.service.error(this.f(cause))
+  }
+
+  static make<A, B>(
+    service: ErrorService<B>,
+    f: (b: Cause.Cause<A>) => Cause.Cause<B>
+  ): ErrorService<A> {
+    if (isMapErrorCauseService(service)) {
+      return new MapErrorCauseService(service.service, (a) => service.f(f(a)))
+    } else {
+      return new MapErrorCauseService(service, f)
+    }
+  }
+}
+
+function isMapErrorCauseService<A>(service: ErrorService<A>): service is MapErrorCauseService<A, any> {
+  return service._tag === "MapErrorCause"
+}
+
+export function mapErrorCause<R, E, A, B, C>(
+  effect: Effect.Effect<R | Error<B>, E, A>,
+  f: (b: Cause.Cause<B>) => Cause.Cause<C>
+): Effect.Effect<Exclude<R, Error<B>> | Error<C>, E, A> {
+  return Effect.flatMap(
+    Error<C>(),
+    (event) => Effect.provideService(effect, Error<B>(), MapErrorCauseService.make(event, f))
+  )
+}
