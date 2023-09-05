@@ -1,5 +1,6 @@
 import type * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
+import type * as Fiber from "@effect/io/Fiber"
 import * as Scope from "@effect/io/Scope"
 import type { Fx } from "@typed/fx/Fx"
 import * as FromEffect from "@typed/fx/internal/fromEffect"
@@ -81,14 +82,19 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
+export type ScopedFork = <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, never, Fiber.RuntimeFiber<E, A>>
+
+export function withScopedFork<R, E, A>(
+  f: (fork: ScopedFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
+): Effect.Effect<R, E, A> {
+  return Effect.acquireUseRelease(Scope.make(), (scope) => f(Effect.forkIn(scope), scope), Scope.close)
+}
+
 export function drain<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<Exclude<R, Sink.Sink<E, A>>, E, void> {
-  return Effect.asUnit(Effect.acquireUseRelease(
-    Scope.make(),
-    (scope) =>
-      Sink.drain<E, A>().pipe(
-        Effect.tap((drain) => Effect.forkIn(drain.provide(fx), scope)),
-        Effect.flatMap((drain) => drain.wait())
-      ),
-    Scope.close
-  ))
+  return withScopedFork((fork) =>
+    Sink.drain<E, A>().pipe(
+      Effect.tap((drain) => fork(drain.provide(fx))),
+      Effect.flatMap((drain) => drain.wait())
+    )
+  )
 }
