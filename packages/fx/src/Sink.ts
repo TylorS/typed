@@ -61,26 +61,6 @@ export namespace Sink {
   export type ExtractEvent<T> = T extends Event<infer A> ? A : never
 }
 
-export class DrainErrorService<E> implements ErrorService<E> {
-  readonly _tag = "DrainError" as const
-
-  constructor(readonly deferred: Deferred.Deferred<E, void>) {}
-
-  onFailure(cause: Cause.Cause<E>): Effect.Effect<never, never, void> {
-    return Deferred.failCause(this.deferred, cause)
-  }
-}
-
-export class DrainEventService<E, A> implements EventService<A> {
-  readonly _tag = "DrainEvent" as const
-
-  constructor(readonly deferred: Deferred.Deferred<E, void>) {}
-
-  onSuccess(): Effect.Effect<never, never, void> {
-    return Deferred.succeed(this.deferred, undefined)
-  }
-}
-
 export class Drain<E, A> implements ErrorService<E>, EventService<A> {
   readonly _tag = "Drain" as const
 
