@@ -1,0 +1,116 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true,
+    "paths": {
+      "@typed/context": [
+        "packages/context/build/esm/index.js"
+      ],
+      "@typed/context/*": [
+        "packages/context/build/esm/*"
+      ],
+      "@typed/context/test/*": [
+        "packages/context/build/test/*"
+      ],
+      "@typed/context/examples/*": [
+        "packages/context/build/examples/*"
+      ],
+      "@typed/decoder": [
+        "packages/decoder/build/esm/index.js"
+      ],
+      "@typed/decoder/*": [
+        "packages/decoder/build/esm/*"
+      ],
+      "@typed/decoder/test/*": [
+        "packages/decoder/build/test/*"
+      ],
+      "@typed/decoder/examples/*": [
+        "packages/decoder/build/examples/*"
+      ],
+      "@typed/fx": [
+        "packages/fx/build/esm/index.js"
+      ],
+      "@typed/fx/*": [
+        "packages/fx/build/esm/*"
+      ],
+      "@typed/fx/test/*": [
+        "packages/fx/build/test/*"
+      ],
+      "@typed/fx/examples/*": [
+        "packages/fx/build/examples/*"
+      ],
+      "@typed/path": [
+        "packages/path/build/esm/index.js"
+      ],
+      "@typed/path/*": [
+        "packages/path/build/esm/*"
+      ],
+      "@typed/path/test/*": [
+        "packages/path/build/test/*"
+      ],
+      "@typed/path/examples/*": [
+        "packages/path/build/examples/*"
+      ],
+      "@typed/remote-data": [
+        "packages/remote-data/build/esm/index.js"
+      ],
+      "@typed/remote-data/*": [
+        "packages/remote-data/build/esm/*"
+      ],
+      "@typed/remote-data/test/*": [
+        "packages/remote-data/build/test/*"
+      ],
+      "@typed/remote-data/examples/*": [
+        "packages/remote-data/build/examples/*"
+      ],
+      "@typed/route": [
+        "packages/route/build/esm/index.js"
+      ],
+      "@typed/route/*": [
+        "packages/route/build/esm/*"
+      ],
+      "@typed/route/test/*": [
+        "packages/route/build/test/*"
+      ],
+      "@typed/route/examples/*": [
+        "packages/route/build/examples/*"
+      ],
+      "@typed/wire": [
+        "packages/wire/build/esm/index.js"
+      ],
+      "@typed/wire/*": [
+        "packages/wire/build/esm/*"
+      ],
+      "@typed/wire/test/*": [
+        "packages/wire/build/test/*"
+      ],
+      "@typed/wire/examples/*": [
+        "packages/wire/build/examples/*"
+      ]
+    }
+  },
+  "include": [
+    "packages/context/build/esm/**/*",
+    "packages/context/build/test/**/*",
+    "packages/context/build/examples/**/*",
+    "packages/decoder/build/esm/**/*",
+    "packages/decoder/build/test/**/*",
+    "packages/decoder/build/examples/**/*",
+    "packages/fx/build/esm/**/*",
+    "packages/fx/build/test/**/*",
+    "packages/fx/build/examples/**/*",
+    "packages/path/build/esm/**/*",
+    "packages/path/build/test/**/*",
+    "packages/path/build/examples/**/*",
+    "packages/remote-data/build/esm/**/*",
+    "packages/remote-data/build/test/**/*",
+    "packages/remote-data/build/examples/**/*",
+    "packages/route/build/esm/**/*",
+    "packages/route/build/test/**/*",
+    "packages/route/build/examples/**/*",
+    "packages/wire/build/esm/**/*",
+    "packages/wire/build/test/**/*",
+    "packages/wire/build/examples/**/*"
+  ]
+}

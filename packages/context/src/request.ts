@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import * as Data from '@effect/data/Data'
-import { Effect } from '@effect/io/Effect'
-import * as R from '@effect/io/Request'
+import type * as Data from "@effect/data/Data"
+import type { Effect } from "@effect/io/Effect"
+import * as R from "@effect/io/Request"
 
-import { Fn } from './fn.js'
-import { IdentifierFactory, IdentifierOf } from './identifier.js'
+import { Fn } from "./Fn"
+import type { IdentifierFactory, IdentifierOf } from "./Identifier"
 
 export interface Request<I, Input, Req extends R.Request<any, any>>
-  extends Fn<I, (requests: Req) => Effect<never, R.Request.Error<Req>, R.Request.Success<Req>>> {
+  extends Fn<I, (requests: Req) => Effect<never, R.Request.Error<Req>, R.Request.Success<Req>>>
+{
   readonly make: (
     ...input: SimplifyInputArg<Input>
   ) => Effect<I, R.Request.Error<Req>, R.Request.Success<Req>>
@@ -20,22 +21,22 @@ type SimplifyInputArg<Input> = [keyof Input] extends [never] ? [Compact<Input>?]
 export function Request<
   const Id extends IdentifierFactory<any>,
   Input,
-  Req extends R.Request<any, any>,
+  Req extends R.Request<any, any>
 >(id: Id, makeRequest: (input: Input) => Req): Request<IdentifierOf<Id>, Input, Req>
 
 export function Request<const Id, Input, Req extends R.Request<any, any>>(
   id: Id,
-  makeRequest: (input: Input) => Req,
+  makeRequest: (input: Input) => Req
 ): Request<IdentifierOf<Id>, Input, Req>
 
 export function Request<const Id, Input, Req extends R.Request<any, any>>(
   id: Id,
-  makeRequest: (input: Input) => Req,
+  makeRequest: (input: Input) => Req
 ): Request<IdentifierOf<Id>, Input, Req> {
   const fn = Fn<(req: Req) => Effect<never, R.Request.Error<Req>, R.Request.Success<Req>>>()(id)
 
   return Object.assign(fn, {
-    make: (...[input]: SimplifyInputArg<Input>) => fn.apply(makeRequest((input || {}) as Input)),
+    make: (...[input]: SimplifyInputArg<Input>) => fn.apply(makeRequest((input || {}) as Input))
   })
 }
 
@@ -49,21 +50,21 @@ export namespace Request {
   export type InputArg<T> = [keyof Input<T>] extends [never] ? [Input<T>?] : [Input<T>]
 
   export function tagged<Req extends R.Request<any, any> & { readonly _tag: string }>(
-    tag: Req['_tag'],
+    tag: Req["_tag"]
   ): {
     <const Id extends IdentifierFactory<any>>(
-      id: Id,
+      id: Id
     ): Request<
       IdentifierOf<Id>,
-      Compact<Omit<Req, R.RequestTypeId | '_tag' | keyof Data.Case>>,
+      Compact<Omit<Req, R.RequestTypeId | "_tag" | keyof Data.Case>>,
       Req
     >
 
     <const Id>(
-      id: Id,
+      id: Id
     ): Request<
       IdentifierOf<Id>,
-      Compact<Omit<Req, R.RequestTypeId | '_tag' | keyof Data.Case>>,
+      Compact<Omit<Req, R.RequestTypeId | "_tag" | keyof Data.Case>>,
       Req
     >
   } {
@@ -72,11 +73,11 @@ export namespace Request {
 
   export function of<Req extends R.Request<any, any>>(): {
     <const Id extends IdentifierFactory<any>>(
-      id: Id,
+      id: Id
     ): Request<IdentifierOf<Id>, Compact<Omit<Req, R.RequestTypeId | keyof Data.Case>>, Req>
 
     <const Id>(
-      id: Id,
+      id: Id
     ): Request<IdentifierOf<Id>, Compact<Omit<Req, R.RequestTypeId | keyof Data.Case>>, Req>
   } {
     return <const Id>(id: Id) => Request(id, R.of()) as any

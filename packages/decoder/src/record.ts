@@ -1,23 +1,23 @@
-import { pipe } from '@effect/data/Function'
-import * as RA from '@effect/data/ReadonlyArray'
-import type * as RR from '@effect/data/ReadonlyRecord'
-import * as Effect from '@effect/io/Effect'
-import type { ParseOptions } from '@effect/schema/AST'
-import * as ParseResult from '@effect/schema/ParseResult'
+import { pipe } from "@effect/data/Function"
+import * as RA from "@effect/data/ReadonlyArray"
+import type * as RR from "@effect/data/ReadonlyRecord"
+import * as Effect from "@effect/io/Effect"
+import type { ParseOptions } from "@effect/schema/AST"
+import * as ParseResult from "@effect/schema/ParseResult"
 
-import { compose } from './compose.js'
-import type { Decoder } from './decoder.js'
+import { compose } from "./compose"
+import { Decoder } from "./Decoder"
 
 const isRecord = (i: unknown): i is RR.ReadonlyRecord<unknown> =>
-  typeof i === 'object' && i !== null && !Array.isArray(i)
+  typeof i === "object" && i !== null && !Array.isArray(i)
 
-export const unknownRecord: Decoder<unknown, RR.ReadonlyRecord<unknown>> = (i) =>
+export const unknownRecord: Decoder<unknown, RR.ReadonlyRecord<unknown>> = Decoder((i) =>
   isRecord(i) ? ParseResult.success(i) : ParseResult.failure(ParseResult.unexpected(i))
+)
 
-export const fromRecord =
-  <I, O>(member: Decoder<I, O>): Decoder<RR.ReadonlyRecord<I>, RR.ReadonlyRecord<O>> =>
-  (i: RR.ReadonlyRecord<I>, options?: ParseOptions) => {
-    return Effect.gen(function* ($) {
+export const fromRecord = <I, O>(member: Decoder<I, O>): Decoder<RR.ReadonlyRecord<I>, RR.ReadonlyRecord<O>> =>
+  Decoder((i: RR.ReadonlyRecord<I>, options?: ParseOptions) => {
+    return Effect.gen(function*($) {
       const results = yield* $(
         Effect.all(
           pipe(
@@ -27,13 +27,13 @@ export const fromRecord =
                 member(v, options),
                 Effect.mapBoth({
                   onFailure: (e: ParseResult.ParseError) => ParseResult.key(k, e.errors),
-                  onSuccess: (a: O) => [k, a] as const,
+                  onSuccess: (a: O) => [k, a] as const
                 }),
-                Effect.either,
-              ),
-            ),
-          ),
-        ),
+                Effect.either
+              )
+            )
+          )
+        )
       )
       const [failures, successes] = RA.separate(results)
 
@@ -43,7 +43,7 @@ export const fromRecord =
 
       return Object.fromEntries(successes)
     })
-  }
+  })
 
 export const record = <O>(member: Decoder<unknown, O>): Decoder<unknown, RR.ReadonlyRecord<O>> =>
   pipe(unknownRecord, compose(fromRecord(member)))

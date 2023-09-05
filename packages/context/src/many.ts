@@ -1,19 +1,21 @@
-import * as C from '@effect/data/Context'
-import * as Effect from '@effect/io/Effect'
-import * as Layer from '@effect/io/Layer'
-import * as Fx from '@typed/fx'
+import type * as C from "@effect/data/Context"
+import * as Effect from "@effect/io/Effect"
+import * as Layer from "@effect/io/Layer"
 
-import { ContextBuilder } from './builder.js'
-import { Actions, Builder, Layers, Provide, Tagged } from './interfaces.js'
+import { ContextBuilder } from "./Builder"
+import type { Actions, Builder, Layers, Provide, Tagged } from "./Interface"
 
 type TupleOfTags = ReadonlyArray<C.Tag<any, any>>
 
-export type TaggedTuple<Tags extends TupleOfTags> = Tagged<
-  C.Tag.Identifier<Tags[number]>,
-  { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
-> & {
-  readonly tags: Tags
-} & Effect.Effect<
+export type TaggedTuple<Tags extends TupleOfTags> =
+  & Tagged<
+    C.Tag.Identifier<Tags[number]>,
+    { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
+  >
+  & {
+    readonly tags: Tags
+  }
+  & Effect.Effect<
     C.Tag.Identifier<Tags[number]>,
     never,
     { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
@@ -25,7 +27,7 @@ export function tuple<Tags extends TupleOfTags>(...tags: Tags): TaggedTuple<Tags
     ...tupleProvide(tags),
     ...tupleLayers(tags),
     ...tupleBuilder(tags),
-    tags,
+    tags
   })
 }
 
@@ -43,8 +45,7 @@ function tupleActions<Tags extends TupleOfTags>(tags: Tags): TupleTagActions<Tag
 
   return {
     with: (f) => Effect.map(all, f),
-    withEffect: (f) => Effect.flatMap(all, f),
-    withFx: (f) => Fx.fromFxEffect(Effect.map(all, f)),
+    withEffect: (f) => Effect.flatMap(all, f)
   }
 }
 
@@ -59,12 +60,7 @@ function tupleProvide<Tags extends TupleOfTags>(tags: Tags): TupleTagProvide<Tag
       const toProvide = tags.map((tag, i) => Effect.provideService(tag, s[i]))
 
       return (effect) => toProvide.reduce((acc, f) => f(acc), effect) as any
-    },
-    provideFx: (s) => {
-      const toProvide = tags.map((tag, i) => Fx.provideService(tag, s[i]))
-
-      return (fx) => toProvide.reduce((acc, f) => f(acc), fx) as any
-    },
+    }
   }
 }
 
@@ -76,10 +72,8 @@ type TupleTagLayers<Tags extends TupleOfTags> = Layers<
 function tupleLayers<Tags extends TupleOfTags>(tags: Tags): TupleTagLayers<Tags> {
   return {
     layerOf: (s) => Layer.succeedContext(buildTupleContext(tags, s).context),
-    layer: (effect) =>
-      Layer.effectContext(Effect.map(effect, (s) => buildTupleContext(tags, s).context)),
-    layerScoped: (effect) =>
-      Layer.scopedContext(Effect.map(effect, (s) => buildTupleContext(tags, s).context)),
+    layer: (effect) => Layer.effectContext(Effect.map(effect, (s) => buildTupleContext(tags, s).context)),
+    layerScoped: (effect) => Layer.scopedContext(Effect.map(effect, (s) => buildTupleContext(tags, s).context))
   }
 }
 
@@ -90,7 +84,7 @@ type TupleTagBuilder<Tags extends TupleOfTags> = Builder<
 
 function tupleBuilder<Tags extends TupleOfTags>(tags: Tags): TupleTagBuilder<Tags> {
   return {
-    build: (s) => buildTupleContext(tags, s),
+    build: (s) => buildTupleContext(tags, s)
   }
 }
 
@@ -98,7 +92,7 @@ function buildTupleContext<Tags extends TupleOfTags>(
   tags: Tags,
   services: {
     readonly [K in keyof Tags]: C.Tag.Service<Tags[K]>
-  },
+  }
 ) {
   let builder = ContextBuilder.empty
 
@@ -111,12 +105,15 @@ function buildTupleContext<Tags extends TupleOfTags>(
 
 type StructOfTags = { readonly [key: PropertyKey]: C.Tag<any, any> }
 
-export type TaggedStruct<Tags extends StructOfTags> = Tagged<
-  C.Tag.Identifier<Tags[keyof Tags]>,
-  { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
-> & {
-  readonly tags: Tags
-} & Effect.Effect<
+export type TaggedStruct<Tags extends StructOfTags> =
+  & Tagged<
+    C.Tag.Identifier<Tags[keyof Tags]>,
+    { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
+  >
+  & {
+    readonly tags: Tags
+  }
+  & Effect.Effect<
     C.Tag.Identifier<Tags[keyof Tags]>,
     never,
     { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
@@ -128,7 +125,7 @@ export function struct<Tags extends StructOfTags>(tags: Tags): TaggedStruct<Tags
     ...structProvide(tags),
     ...structLayers(tags),
     ...structBuilder(tags),
-    tags,
+    tags
   })
 }
 
@@ -146,8 +143,7 @@ function structActions<Tags extends StructOfTags>(tags: Tags): StructTagActions<
 
   return {
     with: (f) => Effect.map(all, f),
-    withEffect: (f) => Effect.flatMap(all, f),
-    withFx: (f) => Fx.fromFxEffect(Effect.map(all, f)),
+    withEffect: (f) => Effect.flatMap(all, f)
   }
 }
 
@@ -162,12 +158,7 @@ function structProvide<Tags extends StructOfTags>(tags: Tags): StructTagProvide<
       const toProvide = Object.keys(tags).map((key) => Effect.provideService(tags[key], s[key]))
 
       return (effect) => toProvide.reduce((acc, f) => f(acc), effect) as any
-    },
-    provideFx: (s) => {
-      const toProvide = Object.keys(tags).map((key) => Fx.provideService(tags[key], s[key]))
-
-      return (fx) => toProvide.reduce((acc, f) => f(acc), fx) as any
-    },
+    }
   }
 }
 
@@ -179,10 +170,8 @@ type StructTagLayers<Tags extends StructOfTags> = Layers<
 function structLayers<Tags extends StructOfTags>(tags: Tags): StructTagLayers<Tags> {
   return {
     layerOf: (s) => Layer.succeedContext(buildStructContext(tags, s).context),
-    layer: (effect) =>
-      Layer.effectContext(Effect.map(effect, (s) => buildStructContext(tags, s).context)),
-    layerScoped: (effect) =>
-      Layer.scopedContext(Effect.map(effect, (s) => buildStructContext(tags, s).context)),
+    layer: (effect) => Layer.effectContext(Effect.map(effect, (s) => buildStructContext(tags, s).context)),
+    layerScoped: (effect) => Layer.scopedContext(Effect.map(effect, (s) => buildStructContext(tags, s).context))
   }
 }
 
@@ -193,7 +182,7 @@ type StructTagBuilder<Tags extends StructOfTags> = Builder<
 
 function structBuilder<Tags extends StructOfTags>(tags: Tags): StructTagBuilder<Tags> {
   return {
-    build: (s) => buildStructContext(tags, s),
+    build: (s) => buildStructContext(tags, s)
   }
 }
 
@@ -201,7 +190,7 @@ function buildStructContext<Tags extends StructOfTags>(
   tags: Tags,
   services: {
     readonly [K in keyof Tags]: C.Tag.Service<Tags[K]>
-  },
+  }
 ) {
   let builder = ContextBuilder.empty
 

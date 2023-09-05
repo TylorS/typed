@@ -6,7 +6,7 @@
  * the path-to-regexp syntax and type-level combinators for parsing that syntax and
  * for interpolating values.
  */
-import type { A, N } from 'ts-toolbelt'
+import type { A, N } from "ts-toolbelt"
 
 /* Start Region: Parameter DSL */
 
@@ -66,8 +66,7 @@ export type ZeroOrMore<A extends string> = `${Param<A>}*`
 /**
  * @category Constructor
  */
-export const zeroOrMore = <A extends string>(param: A): ZeroOrMore<A> =>
-  `:${param}*` as ZeroOrMore<A>
+export const zeroOrMore = <A extends string>(param: A): ZeroOrMore<A> => `:${param}*` as ZeroOrMore<A>
 
 /**
  * @category Model
@@ -85,13 +84,12 @@ export const oneOrMore = <A extends string>(param: A): OneOrMore<A> => `:${param
  * @category Model
  */
 export type QueryParams<
-  Q extends readonly QueryParam<any, any>[],
-  R extends string = ``,
+  Q extends ReadonlyArray<QueryParam<any, any>>,
+  R extends string = ``
 > = Q extends readonly [
   infer Head extends string,
-  ...infer Tail extends readonly QueryParam<any, any>[],
-]
-  ? QueryParams<Tail, `` extends R ? `\\?${Head}` : `${R}&${Head}`>
+  ...infer Tail extends ReadonlyArray<QueryParam<any, any>>
+] ? QueryParams<Tail, `` extends R ? `\\?${Head}` : `${R}&${Head}`>
   : R
 
 /**
@@ -99,7 +97,7 @@ export type QueryParams<
  */
 export const queryParams = <P extends readonly [QueryParam<any, any>, ...QueryParam<any, any>]>(
   ...params: P
-): QueryParams<P> => `\\?${params.join('&')}` as QueryParams<P>
+): QueryParams<P> => `\\?${params.join("&")}` as QueryParams<P>
 
 /**
  * @category Constructor
@@ -117,9 +115,8 @@ export type Unnamed = typeof unnamed
  */
 export type PathJoin<A extends ReadonlyArray<string>> = A extends readonly [
   infer Head extends string,
-  ...infer Tail extends ReadonlyArray<string>,
-]
-  ? `${FormatPart<Head>}${PathJoin<Tail>}`
+  ...infer Tail extends ReadonlyArray<string>
+] ? `${FormatPart<Head>}${PathJoin<Tail>}`
   : ``
 
 /**
@@ -132,7 +129,7 @@ export const pathJoin = <P extends ReadonlyArray<string>>(...parts: P): PathJoin
 
   const [head, ...tail] = parts
 
-  return (`${formatPart(head)}${pathJoin(...tail)}` || '/') as PathJoin<P>
+  return (`${formatPart(head)}${pathJoin(...tail)}` || "/") as PathJoin<P>
 }
 
 /**
@@ -143,30 +140,25 @@ export const formatPart = (part: string) => {
   part = removeLeadingSlash(part)
   part = removeTrailingSlash(part)
 
-  if (part.startsWith('{')) {
+  if (part.startsWith("{")) {
     return part
   }
 
-  if (part.startsWith('\\?')) {
+  if (part.startsWith("\\?")) {
     return part
   }
 
-  return part === '' ? '' : `/${part}`
+  return part === "" ? "" : `/${part}`
 }
 
 /**
  * @category Type-level
  */
-export type FormatPart<P extends string> = A.Equals<string, P> extends 1
-  ? `/${string}`
-  : `` extends P
-  ? P
-  : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `\\?${infer _}`
-  ? RemoveTrailingSlash<RemoveLeadingSlash<P>>
-  : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `{${infer _}`
-  ? RemoveTrailingSlash<RemoveLeadingSlash<P>>
-  : P extends QueryParam<infer _, infer _> | QueryParams<infer _, infer _>
-  ? P
+export type FormatPart<P extends string> = A.Equals<string, P> extends 1 ? `/${string}`
+  : `` extends P ? P
+  : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `\\?${infer _}` ? RemoveTrailingSlash<RemoveLeadingSlash<P>>
+  : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `{${infer _}` ? RemoveTrailingSlash<RemoveLeadingSlash<P>>
+  : P extends QueryParam<infer _, infer _> | QueryParams<infer _, infer _> ? P
   : `/${RemoveTrailingSlash<RemoveLeadingSlash<P>>}`
 
 /**
@@ -181,7 +173,7 @@ export type RemoveLeadingSlash<A> = A extends `/${infer R}` ? RemoveLeadingSlash
 export const removeLeadingSlash = <A extends string>(a: A): RemoveLeadingSlash<A> => {
   let s = a.slice()
 
-  while (s.startsWith('/')) {
+  while (s.startsWith("/")) {
     s = s.slice(1)
   }
 
@@ -194,7 +186,7 @@ export const removeLeadingSlash = <A extends string>(a: A): RemoveLeadingSlash<A
 export const removeTrailingSlash = <A extends string>(a: A): RemoveTrailingSlash<A> => {
   let s = a.slice()
 
-  while (s.endsWith('/')) {
+  while (s.endsWith("/")) {
     s = s.slice(0, -1)
   }
 
@@ -227,16 +219,13 @@ export type QueryParamsOf<P extends string> = Compact<QueryToParams<PathToQuery<
 /**
  * @category Type-level
  */
-export type PathToParts<P> = P extends `${infer Head}\\?${infer Tail}`
-  ? readonly [...PathToParts<Head>, `\\?${Tail}`]
-  : P extends `${infer Head}/${infer Tail}`
-  ? readonly [...PathToParts<Head>, ...PathToParts<Tail>]
+export type PathToParts<P> = P extends `${infer Head}\\?${infer Tail}` ? readonly [...PathToParts<Head>, `\\?${Tail}`]
+  : P extends `${infer Head}/${infer Tail}` ? readonly [...PathToParts<Head>, ...PathToParts<Tail>]
   : P extends `${infer Head}{${infer Q}}?${infer Tail}`
-  ? readonly [...PathToParts<Head>, `{${Q}}?`, ...PathToParts<`${Tail}`>]
+    ? readonly [...PathToParts<Head>, `{${Q}}?`, ...PathToParts<`${Tail}`>]
   : P extends `${infer Head}{${infer Q}}${infer Tail}`
-  ? readonly [...PathToParts<Head>, `{${Q}}`, ...PathToParts<`${Tail}`>]
-  : A.Equals<``, P> extends 1
-  ? readonly []
+    ? readonly [...PathToParts<Head>, `{${Q}}`, ...PathToParts<`${Tail}`>]
+  : A.Equals<``, P> extends 1 ? readonly []
   : readonly [P]
 
 /**
@@ -244,9 +233,8 @@ export type PathToParts<P> = P extends `${infer Head}\\?${infer Tail}`
  */
 export type PartsToParams<A extends ReadonlyArray<string>, AST = {}> = A extends readonly [
   infer Head extends string,
-  ...infer Tail extends readonly string[],
-]
-  ? PartsToParams<Tail, AST & PartToParam<Head, AST>>
+  ...infer Tail extends ReadonlyArray<string>
+] ? PartsToParams<Tail, AST & PartToParam<Head, AST>>
   : AST
 
 /**
@@ -254,26 +242,19 @@ export type PartsToParams<A extends ReadonlyArray<string>, AST = {}> = A extends
  */
 export type PartToParam<A extends string, AST> = A extends `\\${infer R}`
   ? PartsToParams<QueryParamsToParts<R, []>, AST>
-  : A extends Unnamed
-  ? {
+  : A extends Unnamed ? {
       readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]: string
     }
   : A extends `${infer _}${Unnamed}}?`
-  ? { readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]?: string }
+    ? { readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]?: string }
   : A extends `${infer _}${Unnamed}}`
-  ? { readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]: string }
-  : A extends `${infer _}${Param<infer R>}}?`
-  ? { readonly [K in R]?: string }
-  : A extends `${infer _}${Param<infer R>}}`
-  ? { readonly [K in R]: string }
-  : A extends `${infer _}${Param<infer R>}?`
-  ? { readonly [K in R]?: string }
-  : A extends `${infer _}${Param<infer R>}+`
-  ? { readonly [K in R]: readonly [string, ...string[]] }
-  : A extends `${infer _}${Param<infer R>}*`
-  ? { readonly [K in R]: readonly string[] }
-  : A extends `${infer _}${Param<infer R>}`
-  ? { readonly [K in R]: string }
+    ? { readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]: string }
+  : A extends `${infer _}${Param<infer R>}}?` ? { readonly [K in R]?: string }
+  : A extends `${infer _}${Param<infer R>}}` ? { readonly [K in R]: string }
+  : A extends `${infer _}${Param<infer R>}?` ? { readonly [K in R]?: string }
+  : A extends `${infer _}${Param<infer R>}+` ? { readonly [K in R]: readonly [string, ...Array<string>] }
+  : A extends `${infer _}${Param<infer R>}*` ? { readonly [K in R]: ReadonlyArray<string> }
+  : A extends `${infer _}${Param<infer R>}` ? { readonly [K in R]: string }
   : {}
 
 /**
@@ -281,13 +262,10 @@ export type PartToParam<A extends string, AST> = A extends `\\${infer R}`
  */
 export type QueryParamsToParts<
   Q extends string,
-  R extends ReadonlyArray<string>,
-> = Q extends `\\?${infer Q}`
-  ? QueryParamsToParts<Q, R>
-  : Q extends `?${infer Q}`
-  ? QueryParamsToParts<Q, R>
-  : Q extends `${infer Head}&${infer Tail}`
-  ? QueryParamsToParts<Tail, QueryParamsToParts<Head, R>>
+  R extends ReadonlyArray<string>
+> = Q extends `\\?${infer Q}` ? QueryParamsToParts<Q, R>
+  : Q extends `?${infer Q}` ? QueryParamsToParts<Q, R>
+  : Q extends `${infer Head}&${infer Tail}` ? QueryParamsToParts<Tail, QueryParamsToParts<Head, R>>
   : readonly [...R, QueryParamValue<Q>]
 
 /**
@@ -295,20 +273,16 @@ export type QueryParamsToParts<
  */
 export type QueryToParams<Q extends string, AST = {}> = Q extends `${infer Head}&${infer Tail}`
   ? QueryToParams<Tail, QueryToParams<Head, AST>>
-  : Q extends `?${infer K}`
-  ? QueryToParams<K, AST>
-  : Q extends `${infer K}?`
-  ? AST & Partial<QueryParamAst<K>>
-  : Q extends `${infer K}`
-  ? AST & QueryParamAst<K>
+  : Q extends `?${infer K}` ? QueryToParams<K, AST>
+  : Q extends `${infer K}?` ? AST & Partial<QueryParamAst<K>>
+  : Q extends `${infer K}` ? AST & QueryParamAst<K>
   : AST
 
 // Increments up from I until it finds an index that is not taken
 /**
  * @category Type-level
  */
-export type FindNextIndex<AST, I extends number = 0> = I extends keyof AST
-  ? FindNextIndex<AST, N.Add<I, 1>>
+export type FindNextIndex<AST, I extends number = 0> = I extends keyof AST ? FindNextIndex<AST, N.Add<I, 1>>
   : I
 
 /**
@@ -323,9 +297,8 @@ type QueryParamAst<K extends string> = Readonly<Record<QueryParamAstKey<K>, Quer
 type QueryParamAstKey<K extends string> = K extends `${infer K}=${infer _}` ? K : K
 
 type QueryParamAstValue<K extends string> = K extends `${infer _}=${infer R}`
-  ? R extends Param<infer _> | Unnamed
-    ? string
-    : R
+  ? R extends Param<infer _> | Unnamed ? string
+  : R
   : string
 
 type Compact<A> = { readonly [K in keyof A]: A[K] }
@@ -337,10 +310,8 @@ type Compact<A> = { readonly [K in keyof A]: A[K] }
 /**
  * @category Type-level
  */
-export type Interpolate<P extends string, Params extends ParamsOf<P>> = [Params] extends [never]
-  ? P
-  : P extends `${infer Head}\\?${infer Tail}`
-  ? PathJoin<
+export type Interpolate<P extends string, Params extends ParamsOf<P>> = [Params] extends [never] ? P
+  : P extends `${infer Head}\\?${infer Tail}` ? PathJoin<
       InterpolateWithQueryParams<
         SplitQueryParams<Tail>,
         Params,
@@ -353,97 +324,83 @@ export type Interpolate<P extends string, Params extends ParamsOf<P>> = [Params]
  * @category Type-level
  */
 export type InpterpolateParts<
-  Parts extends readonly any[],
+  Parts extends ReadonlyArray<any>,
   Params extends {},
-  R extends readonly any[] = [],
-  AST = {},
+  R extends ReadonlyArray<any> = [],
+  AST = {}
 > = Parts extends readonly [infer H, ...infer T]
-  ? A.Equals<string, H> extends 1
-    ? InpterpolateParts<T, Params, [...R, H], AST>
-    : H extends Optional<Prefix<infer Pre, Unnamed>>
-    ? FindNextIndex<AST> extends keyof Params
-      ? InpterpolateParts<
-          T,
-          Params,
-          AppendPrefix<R, Pre, `${A.Cast<Params[FindNextIndex<AST>], string | number>}`>,
-          AST & Record<H, Params[FindNextIndex<AST>]>
-        >
-      : InpterpolateParts<T, Params, R, AST>
-    : H extends Prefix<infer Pre, Unnamed>
-    ? InpterpolateParts<
+  ? A.Equals<string, H> extends 1 ? InpterpolateParts<T, Params, [...R, H], AST>
+  : H extends Optional<Prefix<infer Pre, Unnamed>> ? FindNextIndex<AST> extends keyof Params ? InpterpolateParts<
         T,
         Params,
-        AppendPrefix<
-          R,
-          Pre,
-          `${A.Cast<Params[A.Cast<FindNextIndex<AST>, keyof Params>], string | number>}`
-        >,
-        AST & Record<H, Params[A.Cast<FindNextIndex<AST>, keyof Params>]>
+        AppendPrefix<R, Pre, `${A.Cast<Params[FindNextIndex<AST>], string | number>}`>,
+        AST & Record<H, Params[FindNextIndex<AST>]>
       >
-    : H extends Optional<Prefix<infer Pre, Param<infer P>>>
-    ? P extends keyof Params
-      ? InpterpolateParts<
-          T,
-          Params,
-          AppendPrefix<R, Pre, A.Cast<Params[A.Cast<P, keyof Params>], string>>,
-          AST & Record<H, Params[A.Cast<P, keyof Params>]>
-        >
-      : InpterpolateParts<T, Params, R, AST>
-    : H extends Prefix<infer Pre, Param<infer P>>
-    ? InpterpolateParts<
+    : InpterpolateParts<T, Params, R, AST>
+  : H extends Prefix<infer Pre, Unnamed> ? InpterpolateParts<
+      T,
+      Params,
+      AppendPrefix<
+        R,
+        Pre,
+        `${A.Cast<Params[A.Cast<FindNextIndex<AST>, keyof Params>], string | number>}`
+      >,
+      AST & Record<H, Params[A.Cast<FindNextIndex<AST>, keyof Params>]>
+    >
+  : H extends Optional<Prefix<infer Pre, Param<infer P>>> ? P extends keyof Params ? InpterpolateParts<
         T,
         Params,
         AppendPrefix<R, Pre, A.Cast<Params[A.Cast<P, keyof Params>], string>>,
         AST & Record<H, Params[A.Cast<P, keyof Params>]>
       >
-    : InterpolatePart<H, Params, AST> extends readonly [infer A, infer B]
-    ? InpterpolatePartsWithNext<T, Params, R, readonly [A, B]>
     : InpterpolateParts<T, Params, R, AST>
+  : H extends Prefix<infer Pre, Param<infer P>> ? InpterpolateParts<
+      T,
+      Params,
+      AppendPrefix<R, Pre, A.Cast<Params[A.Cast<P, keyof Params>], string>>,
+      AST & Record<H, Params[A.Cast<P, keyof Params>]>
+    >
+  : InterpolatePart<H, Params, AST> extends readonly [infer A, infer B]
+    ? InpterpolatePartsWithNext<T, Params, R, readonly [A, B]>
+  : InpterpolateParts<T, Params, R, AST>
   : readonly [R, AST]
 
 /**
  * @category Type-level
  */
 export type AppendPrefix<
-  R extends readonly any[],
+  R extends ReadonlyArray<any>,
   Pre extends string,
-  P extends string,
-> = R extends readonly [...infer Init, infer L extends string]
-  ? readonly [...Init, `${L}${Pre}${P}`]
+  P extends string
+> = R extends readonly [...infer Init, infer L extends string] ? readonly [...Init, `${L}${Pre}${P}`]
   : R
 
 /**
  * @category Type-level
  */
 export type InpterpolatePartsWithNext<
-  Parts extends readonly any[],
+  Parts extends ReadonlyArray<any>,
   Params extends {},
-  R extends readonly any[],
-  Next extends readonly [any, any],
+  R extends ReadonlyArray<any>,
+  Next extends readonly [any, any]
 > = InpterpolateParts<Parts, Params, readonly [...R, Next[0]], Next[1]>
 
 /**
  * @category Type-level
  */
 export type InterpolatePart<P, Params, AST> = P extends Optional<Param<infer R>>
-  ? R extends keyof Params
-    ? readonly [Params[R], AST & Record<R, Params[R]>]
-    : readonly ['', AST]
-  : P extends Param<infer R>
-  ? R extends keyof Params
-    ? readonly [Params[R], AST & Record<R, Params[R]>]
+  ? R extends keyof Params ? readonly [Params[R], AST & Record<R, Params[R]>]
+  : readonly ["", AST]
+  : P extends Param<infer R> ? R extends keyof Params ? readonly [Params[R], AST & Record<R, Params[R]>]
     : readonly [P, AST]
   : P extends Unnamed
-  ? FindNextIndex<AST> extends keyof Params
-    ? InterpolateUnnamedPart<Params, FindNextIndex<AST>, AST>
+    ? FindNextIndex<AST> extends keyof Params ? InterpolateUnnamedPart<Params, FindNextIndex<AST>, AST>
     : readonly [P, AST]
   : P extends Prefix<infer Pre, Param<infer R>>
-  ? R extends keyof Params
-    ? [`${Pre}${A.Cast<Params[R], string>}`, AST & Record<R, Params[R]>]
+    ? R extends keyof Params ? [`${Pre}${A.Cast<Params[R], string>}`, AST & Record<R, Params[R]>]
     : []
   : P extends Optional<Prefix<infer Pre, Param<infer R>>>
-  ? R extends keyof Params
-    ? [`${Pre}${A.Cast<Params[R], string>}`, AST & Partial<Record<R, Params[R]>>]
+    ? R extends keyof Params ? [`${Pre}${A.Cast<Params[R], string>}`, AST & Partial<Record<R, Params[R]>>]
     : []
   : readonly [P, AST]
 
@@ -452,21 +409,20 @@ export type InterpolatePart<P, Params, AST> = P extends Optional<Param<infer R>>
  */
 export type InterpolateUnnamedPart<Params, K extends keyof Params, AST> = readonly [
   Params[K],
-  AST & Record<K, Params[K]>,
+  AST & Record<K, Params[K]>
 ]
 
 type InterpolateWithQueryParams<
-  Q extends readonly string[],
+  Q extends ReadonlyArray<string>,
   Params,
   Previous extends readonly [any, any],
-  First extends boolean = true,
-> = Q extends readonly [infer Head, ...infer Tail extends readonly string[]]
-  ? InterpolateWithQueryParams<
-      Tail,
-      Params,
-      InterpolateQueryParamPart<Head, Params, Previous, First>[0],
-      InterpolateQueryParamPart<Head, Params, Previous, First>[1]
-    >
+  First extends boolean = true
+> = Q extends readonly [infer Head, ...infer Tail extends ReadonlyArray<string>] ? InterpolateWithQueryParams<
+    Tail,
+    Params,
+    InterpolateQueryParamPart<Head, Params, Previous, First>[0],
+    InterpolateQueryParamPart<Head, Params, Previous, First>[1]
+  >
   : Previous
 
 /**
@@ -475,24 +431,22 @@ type InterpolateWithQueryParams<
 export type InterpolateQueryParamPart<
   Part,
   Params,
-  Previous extends readonly [readonly string[], any],
-  First extends boolean,
-> = Part extends QueryParam<infer K, infer V>
-  ? InterpolateQueryParamPartWithKey<
-      First extends true ? `?${K}` : `&${K}`,
-      Previous[0],
-      InterpolatePart<V, Params, Previous[1]>,
-      First
-    >
+  Previous extends readonly [ReadonlyArray<string>, any],
+  First extends boolean
+> = Part extends QueryParam<infer K, infer V> ? InterpolateQueryParamPartWithKey<
+    First extends true ? `?${K}` : `&${K}`,
+    Previous[0],
+    InterpolatePart<V, Params, Previous[1]>,
+    First
+  >
   : readonly [[[...Previous[0], Part], Previous[1]], false]
 
 type InterpolateQueryParamPartWithKey<
   K extends string,
-  Parts extends readonly string[],
+  Parts extends ReadonlyArray<string>,
   Previous extends readonly [string, any],
-  First extends boolean,
-> = '' extends Previous[0]
-  ? [[Parts, Previous[1]], First]
+  First extends boolean
+> = "" extends Previous[0] ? [[Parts, Previous[1]], First]
   : [[[...Parts, `${K}=${Previous[0]}`], Previous[1]], false]
 
 type SplitQueryParams<P extends string> = P extends `${infer Head}&${infer Tail}`

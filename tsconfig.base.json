@@ -1,96 +1,98 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./packages/tsconfig/base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true,
-    "downlevelIteration": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "importHelpers": true,
-    "incremental": true,
-    "lib": [
-      "DOM",
-      "ES2020"
-    ],
-    "module": "esnext",
-    "moduleResolution": "NodeNext",
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "resolveJsonModule": true,
-    "resolvePackageJsonExports": true,
-    "rootDir": ".",
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "strict": true,
-    "strictFunctionTypes": true,
-    "strictNullChecks": true,
-    "strictPropertyInitialization": true,
-    "target": "ES2020",
-    "types": [
-      "vite/client"
-    ],
     "paths": {
-      "@typed/cli/*": [
-        "./packages/cli/src/*"
+      "@typed/context": [
+        "packages/context/src/index.ts"
       ],
       "@typed/context/*": [
-        "./packages/context/src/*"
+        "packages/context/src/*"
+      ],
+      "@typed/context/test/*": [
+        "packages/context/test/*"
+      ],
+      "@typed/context/examples/*": [
+        "packages/context/examples/*"
+      ],
+      "@typed/decoder": [
+        "packages/decoder/src/index.ts"
       ],
       "@typed/decoder/*": [
-        "./packages/decoder/src/*"
+        "packages/decoder/src/*"
       ],
-      "@typed/dom/*": [
-        "./packages/dom/src/*"
+      "@typed/decoder/test/*": [
+        "packages/decoder/test/*"
       ],
-      "@typed/error/*": [
-        "./packages/error/src/*"
+      "@typed/decoder/examples/*": [
+        "packages/decoder/examples/*"
       ],
-      "@typed/framework/*": [
-        "./packages/framework/src/*"
+      "@typed/fx": [
+        "packages/fx/src/index.ts"
       ],
       "@typed/fx/*": [
-        "./packages/fx/src/*"
+        "packages/fx/src/*"
       ],
-      "@typed/html/*": [
-        "./packages/html/src/*"
+      "@typed/fx/test/*": [
+        "packages/fx/test/*"
       ],
-      "@typed/navigation/*": [
-        "./packages/navigation/src/*"
+      "@typed/fx/examples/*": [
+        "packages/fx/examples/*"
+      ],
+      "@typed/path": [
+        "packages/path/src/index.ts"
       ],
       "@typed/path/*": [
-        "./packages/path/src/*"
+        "packages/path/src/*"
+      ],
+      "@typed/path/test/*": [
+        "packages/path/test/*"
+      ],
+      "@typed/path/examples/*": [
+        "packages/path/examples/*"
+      ],
+      "@typed/remote-data": [
+        "packages/remote-data/src/index.ts"
+      ],
+      "@typed/remote-data/*": [
+        "packages/remote-data/src/*"
+      ],
+      "@typed/remote-data/test/*": [
+        "packages/remote-data/test/*"
+      ],
+      "@typed/remote-data/examples/*": [
+        "packages/remote-data/examples/*"
+      ],
+      "@typed/route": [
+        "packages/route/src/index.ts"
       ],
       "@typed/route/*": [
-        "./packages/route/src/*"
+        "packages/route/src/*"
       ],
-      "@typed/router/*": [
-        "./packages/router/src/*"
+      "@typed/route/test/*": [
+        "packages/route/test/*"
       ],
-      "@typed/virtual-module/*": [
-        "./packages/virtual-module/src/*"
+      "@typed/route/examples/*": [
+        "packages/route/examples/*"
       ],
-      "@typed/vite-plugin/*": [
-        "./packages/vite/src/*"
+      "@typed/wire": [
+        "packages/wire/src/index.ts"
       ],
       "@typed/wire/*": [
-        "./packages/wire/src/*"
+        "packages/wire/src/*"
+      ],
+      "@typed/wire/test/*": [
+        "packages/wire/test/*"
+      ],
+      "@typed/wire/examples/*": [
+        "packages/wire/examples/*"
       ]
-    },
-    "plugins": [
-      {
-        "name": "@effect/language-service"
-      },
-      {
-        "name": "svelte-language-server"
-      }
-    ]
+    }
   },
+  "include": [],
   "exclude": [
     "node_modules",
-    "**/*/dist"
+    "build",
+    "lib"
   ]
 }

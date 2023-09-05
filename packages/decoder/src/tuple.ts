@@ -1,22 +1,22 @@
-import { pipe } from '@effect/data/Function'
-import * as RA from '@effect/data/ReadonlyArray'
-import * as Effect from '@effect/io/Effect'
-import type { ParseOptions } from '@effect/schema/AST'
-import * as ParseResult from '@effect/schema/ParseResult'
+import { pipe } from "@effect/data/Function"
+import * as RA from "@effect/data/ReadonlyArray"
+import * as Effect from "@effect/io/Effect"
+import type { ParseOptions } from "@effect/schema/AST"
+import * as ParseResult from "@effect/schema/ParseResult"
 
-import { unknownArray } from './array.js'
-import { compose } from './compose.js'
-import type { Decoder, InputOf, OutputOf } from './decoder.js'
+import { unknownArray } from "./array"
+import { compose } from "./compose"
+import { Decoder } from "./Decoder"
+import type { InputOf, OutputOf } from "./Decoder"
 
-export const fromTuple =
-  <Members extends RA.NonEmptyReadonlyArray<Decoder<any, any>>>(
-    ...members: Members
-  ): Decoder<
-    { readonly [K in keyof Members]: InputOf<Members[K]> },
-    { readonly [K in keyof Members]: OutputOf<Members[K]> }
-  > =>
-  (i: { readonly [K in keyof Members]: InputOf<Members[K]> }, options?: ParseOptions) =>
-    Effect.gen(function* ($) {
+export const fromTuple = <Members extends RA.NonEmptyReadonlyArray<Decoder<any, any>>>(
+  ...members: Members
+): Decoder<
+  { readonly [K in keyof Members]: InputOf<Members[K]> },
+  { readonly [K in keyof Members]: OutputOf<Members[K]> }
+> =>
+  Decoder((i: { readonly [K in keyof Members]: InputOf<Members[K]> }, options?: ParseOptions) =>
+    Effect.gen(function*($) {
       const results = yield* $(
         Effect.all(
           pipe(
@@ -25,11 +25,11 @@ export const fromTuple =
               pipe(
                 members[idx](ix, options),
                 Effect.mapError((e: ParseResult.ParseError) => ParseResult.index(idx, e.errors)),
-                Effect.either,
-              ),
-            ),
-          ),
-        ),
+                Effect.either
+              )
+            )
+          )
+        )
       )
       const [failures, successes] = RA.separate(results)
 
@@ -41,6 +41,7 @@ export const fromTuple =
         readonly [K in keyof Members]: OutputOf<Members[K]>
       }
     })
+  )
 
 export const tuple = <Members extends RA.NonEmptyReadonlyArray<Decoder<any, any>>>(
   ...members: Members
@@ -50,5 +51,5 @@ export const tuple = <Members extends RA.NonEmptyReadonlyArray<Decoder<any, any>
       unknown,
       { readonly [K in keyof Members]: InputOf<Members[K]> }
     >,
-    compose(fromTuple<Members>(...members)),
+    compose(fromTuple<Members>(...members))
   )

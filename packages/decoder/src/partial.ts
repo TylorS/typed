@@ -1,16 +1,17 @@
-import * as Either from '@effect/data/Either'
-import { pipe } from '@effect/data/Function'
-import * as RA from '@effect/data/ReadonlyArray'
-import type { ReadonlyRecord } from '@effect/data/ReadonlyRecord'
-import * as Effect from '@effect/io/Effect'
-import * as ParseResult from '@effect/schema/ParseResult'
+import * as Either from "@effect/data/Either"
+import { pipe } from "@effect/data/Function"
+import * as RA from "@effect/data/ReadonlyArray"
+import type { ReadonlyRecord } from "@effect/data/ReadonlyRecord"
+import * as Effect from "@effect/io/Effect"
+import * as ParseResult from "@effect/schema/ParseResult"
 
-import { compose } from './compose.js'
-import type { Decoder, InputOf, OutputOf } from './decoder.js'
-import { unknownRecord } from './record.js'
+import { compose } from "./compose"
+import { Decoder } from "./Decoder"
+import type { InputOf, OutputOf } from "./Decoder"
+import { unknownRecord } from "./record"
 
 export function fromPartial<P extends ReadonlyRecord<Decoder<any, any>>>(
-  properties: P,
+  properties: P
 ): Decoder<
   {
     readonly [K in keyof P]?: InputOf<P[K]>
@@ -19,17 +20,17 @@ export function fromPartial<P extends ReadonlyRecord<Decoder<any, any>>>(
     readonly [K in keyof P]?: OutputOf<P[K]>
   }
 > {
-  return (i, options) =>
-    Effect.gen(function* ($) {
-      const keys = Reflect.ownKeys(properties) as (keyof P)[]
+  return Decoder((i, options) =>
+    Effect.gen(function*($) {
+      const keys = Reflect.ownKeys(properties) as Array<keyof P>
       const successes: Partial<Record<keyof P, any>> = {}
-      const errors: ParseResult.ParseErrors[] = []
+      const errors: Array<ParseResult.ParseErrors> = []
       for (const key of keys) {
         const property = properties[key]
 
         if (!property || !(key in i)) continue
 
-        if (options?.errors === 'first') {
+        if (options?.errors === "first") {
           successes[key] = yield* $(property(i[key], options))
         } else {
           const either = yield* $(Effect.either(property(i[key], options)))
@@ -48,10 +49,11 @@ export function fromPartial<P extends ReadonlyRecord<Decoder<any, any>>>(
 
       return successes
     })
+  )
 }
 
 export const partial = <P extends ReadonlyRecord<Decoder<unknown, any>>>(
-  properties: P,
+  properties: P
 ): Decoder<
   unknown,
   {
@@ -65,5 +67,5 @@ export const partial = <P extends ReadonlyRecord<Decoder<unknown, any>>>(
         readonly [K in keyof P]?: InputOf<P[K]>
       }
     >,
-    compose(fromPartial(properties)),
+    compose(fromPartial(properties))
   )

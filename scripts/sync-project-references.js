@@ -1,0 +1,60 @@
+const { ROOT_DIRECTORY, readAllPackages, readJsonFile } = require("./common")
+const Path = require("node:path")
+const FS = require("node:fs")
+const { EOL } = require("node:os")
+
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})
+
+async function main() {
+  const packages = await readAllPackages()
+
+  await Promise.all([updateRootReferences(packages),  ...packages.map(updateProjectReferences)])
+}
+
+async function updateRootReferences(packages) { 
+  const [buildJson, tsconfigJson] = await Promise.all([readJsonFile(Path.join(ROOT_DIRECTORY, 'tsconfig.build.json')), readJsonFile(Path.join(ROOT_DIRECTORY, 'tsconfig.json'))])
+
+  buildJson.content.references = packages.map(({ name }) => ({ path: `packages/${name}` }))
+  tsconfigJson.content.references = packages.map(({ name }) => ({ path: `packages/${name}` }))
+
+  await Promise.all([
+    FS.promises.writeFile(buildJson.path, JSON.stringify(buildJson.content, null, 2) + EOL),
+    FS.promises.writeFile(tsconfigJson.path, JSON.stringify(tsconfigJson.content, null, 2) + EOL),
+  ])
+}
+
+async function updateProjectReferences({ name, packageJson, tsconfigBuildJson }) {
+  console.log(`Updating project references for @typed/${name}...`)
+
+  const typedReferences = findTypedReferencesFromPackageJson(packageJson)
+  
+  await updateTsConfigWithRefrences(tsconfigBuildJson, typedReferences)
+
+  console.log(`Updated project references for @typed/${name}!`)
+}
+
+async function updateTsConfigWithRefrences(tsconfigJson, references) {
+  if (references.length === 0) return
+
+  const { path,  content } = tsconfigJson
+
+  content.references = references.map((name) => ({ path: `../${name}` }))
+
+  await FS.promises.writeFile(path, JSON.stringify(content, null, 2) + EOL)
+}
+
+function findTypedReferencesFromPackageJson(packageJson) { 
+  const { content } = packageJson
+
+  if (!content) return []
+
+  const { dependencies, devDependencies, peerDependencies } = content
+  const allDependencies = { ...dependencies, ...devDependencies, ...peerDependencies }
+
+  return Object.entries(allDependencies)
+    .filter(([name, version]) => name.startsWith('@typed/') && version === 'workspace:*')
+    .map(([name]) => name.replace('@typed/', ''))
+}

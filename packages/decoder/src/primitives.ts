@@ -1,10 +1,10 @@
-import * as Option from '@effect/data/Option'
-import type * as AST from '@effect/schema/AST'
-import * as Parser from '@effect/schema/Parser'
-import * as S from '@effect/schema/Schema'
+import * as Option from "@effect/data/Option"
+import type * as AST from "@effect/schema/AST"
+import * as Parser from "@effect/schema/Parser"
+import * as S from "@effect/schema/Schema"
 
-import type { Decoder } from './decoder.js'
-import { union } from './union.js'
+import { Decoder } from "./Decoder"
+import { union } from "./union"
 
 export interface SchemaDecoder<From, To = From> extends S.Schema<From, To>, Decoder<unknown, To> {}
 
@@ -12,20 +12,20 @@ export function fromSchema<From, To>(schema: S.Schema<From, To>): SchemaDecoder<
   return Object.assign(Parser.validate(schema), schema)
 }
 
-export const literal = <Literals extends readonly AST.LiteralValue[]>(
+export const literal = <Literals extends ReadonlyArray<AST.LiteralValue>>(
   ...a: Literals
 ): SchemaDecoder<Literals[number]> => fromSchema(S.literal(...a))
 export const uniqueSymbol = <S extends symbol>(
   symbol: S,
-  annotations?: Record<string | symbol, unknown> | undefined,
+  annotations?: Record<string | symbol, unknown> | undefined
 ) => fromSchema(S.uniqueSymbol(symbol, annotations))
 
 export const enums = <
   A extends {
     [x: string]: string | number
-  },
+  }
 >(
-  enums: A,
+  enums: A
 ) => fromSchema(S.enums(enums))
 export const never = fromSchema(S.never)
 export const unknown = fromSchema(S.unknown)
@@ -44,9 +44,9 @@ const void_ = fromSchema(S.void)
 
 export { null_ as null, undefined_ as undefined, void_ as void }
 
-export const instanceOf = <A extends abstract new (...args: any) => any>(
+export const instanceOf = <A extends abstract new(...args: any) => any>(
   constructor: A,
-  annotationOptions?: S.AnnotationOptions<object>,
+  annotationOptions?: S.AnnotationOptions<object>
 ): SchemaDecoder<InstanceType<A>> => fromSchema(S.instanceOf(constructor, annotationOptions))
 
 export const lazy = <I, O>(f: () => Decoder<I, O>): Decoder<I, O> => {
@@ -64,11 +64,9 @@ export const lazy = <I, O>(f: () => Decoder<I, O>): Decoder<I, O> => {
     return x
   }
 
-  return (i, options) => get()(i, options)
+  return Decoder<I, O>((i, options) => get()(i, options))
 }
 
-export const optional = <A>(member: Decoder<unknown, A>): Decoder<unknown, A | undefined> =>
-  union(member, undefined_)
+export const optional = <A>(member: Decoder<unknown, A>): Decoder<unknown, A | undefined> => union(member, undefined_)
 
-export const nullable = <A>(member: Decoder<unknown, A>): Decoder<unknown, A | null> =>
-  union(member, null_)
+export const nullable = <A>(member: Decoder<unknown, A>): Decoder<unknown, A | null> => union(member, null_)
