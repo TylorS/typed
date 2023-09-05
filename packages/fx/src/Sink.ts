@@ -71,14 +71,20 @@ export class Drain<E, A> implements ErrorService<E>, EventService<A> {
   }
 
   onSuccess(): Effect.Effect<never, never, void> {
-    return Deferred.succeed(this.deferred, undefined)
+    return Effect.unit
   }
 
   provide<R, E2, A2>(
     this: Drain<E, A>,
     effect: Effect.Effect<R, E2, A2>
   ): Effect.Effect<Exclude<R, Sink<E, A>>, E2, A2> {
-    return effect.pipe(Sink<E, A>().provide({ error: this, event: this }))
+    return effect.pipe(
+      Effect.tap(
+        // Signal that we are done
+        () => Deferred.succeed(this.deferred, undefined)
+      ),
+      Sink<E, A>().provide({ error: this, event: this })
+    )
   }
 
   wait() {
