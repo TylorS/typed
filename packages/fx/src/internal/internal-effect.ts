@@ -7,7 +7,6 @@ import type * as Exit from "@effect/io/Exit"
 import type * as Fiber from "@effect/io/Fiber"
 import type * as FiberId from "@effect/io/FiberId"
 import type * as FiberStatus from "@effect/io/FiberStatus"
-import * as _blockedRequests from "@effect/io/internal/blockedRequests"
 import type * as BlockedRequests from "@effect/io/RequestBlock"
 import type * as RuntimeFlags from "@effect/io/RuntimeFlags"
 import type * as RuntimeFlagsPatch from "@effect/io/RuntimeFlagsPatch"
@@ -62,16 +61,18 @@ export enum OpCodes {
   OP_FAILURE = "Failure",
   OP_FAILURE_WITH_ANNOTATION = "FailureWithAnnotation",
   OP_ON_FAILURE = "OnFailure",
+  OP_ON_STEP = "OnStep",
   OP_ON_SUCCESS = "OnSuccess",
   OP_ON_SUCCESS_AND_FAILURE = "OnSuccessAndFailure",
+  OP_REVERT_FLAGS = "RevertFlags",
+  OP_RUN_BLOCKED = "RunBlocked",
   OP_SUCCESS = "Success",
   OP_SYNC = "Sync",
   OP_TAG = "Tag",
   OP_UPDATE_RUNTIME_FLAGS = "UpdateRuntimeFlags",
   OP_WHILE = "While",
   OP_WITH_RUNTIME = "WithRuntime",
-  OP_YIELD = "Yield",
-  OP_REVERT_FLAGS = "RevertFlags"
+  OP_YIELD = "Yield"
 }
 
 /** @internal */
@@ -96,7 +97,7 @@ export interface Async extends
 
 /** @internal */
 export interface Blocked<R = any, E = any, A = any> extends
-  Op<"Blocked", {
+  Op<OpCodes.OP_BLOCKED, {
     readonly i0: BlockedRequests.RequestBlock<R>
     readonly i1: Effect.Effect<R, E, A>
   }>
@@ -104,7 +105,7 @@ export interface Blocked<R = any, E = any, A = any> extends
 
 /** @internal */
 export interface RunBlocked<R = any> extends
-  Op<"RunBlocked", {
+  Op<OpCodes.OP_RUN_BLOCKED, {
     readonly i0: BlockedRequests.RequestBlock<R>
   }>
 {}
@@ -150,7 +151,7 @@ export interface OnSuccess extends
 
 /** @internal */
 export interface OnStep extends
-  Op<"OnStep", {
+  Op<OpCodes.OP_ON_STEP, {
     readonly i0: Primitive
     readonly i1: (result: Exit.Exit<any, any> | Blocked) => Primitive
   }>
