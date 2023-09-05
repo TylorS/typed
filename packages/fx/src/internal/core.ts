@@ -10,15 +10,15 @@ export type FxTypeId = typeof FxTypeId
 
 export function make<R, E = never, A = never>(
   effect: Effect.Effect<R | Sink.Error<E> | Sink.Event<A>, never, unknown>
-): Fx.WithExclude<R, E, A> {
+): Fx.WithoutSink<R, E, A> {
   return Object.assign(effect, {
     [FxTypeId]: FxTypeId
-  }) as Fx.WithExclude<R, E, A>
+  }) as Fx.WithoutSink<R, E, A>
 }
 
 export function makeSuspend<R, E = never, A = never>(
   effect: Effect.Effect<R | Sink.Error<E> | Sink.Event<A>, never, unknown>
-): Fx.WithExclude<R, E, A> {
+): Fx.WithoutSink<R, E, A> {
   return make(Effect.suspend(() => effect))
 }
 
@@ -60,7 +60,7 @@ export function Adapter(effectAdapter: Effect.Adapter): Adapter {
 
 export const makeGen: <E extends Effect.EffectGen<any, any, any>>(
   f: (adapter: Adapter) => Generator<E, unknown, any>
-) => Fx.WithExclude<
+) => Fx.WithoutSink<
   GenResources<E>,
   GenError<E>,
   never
@@ -69,7 +69,7 @@ export const makeGen: <E extends Effect.EffectGen<any, any, any>>(
     Effect.catchAllCause(Effect.gen((adapter) => f(Adapter(adapter))), Sink.failCause)
   )
 
-export function fromEffect<R, E, A>(effect: Effect.Effect<R, E, A>): Fx.WithExclude<R, E, A> {
+export function fromEffect<R, E, A>(effect: Effect.Effect<R, E, A>): Fx.WithoutSink<R, E, A> {
   return make(FromEffect.fromEffect(effect))
 }
 
