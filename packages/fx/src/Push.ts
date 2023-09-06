@@ -56,12 +56,15 @@ export function mapSink<R, E, A, E0, A0, R2, E2, B>(
     sink: Sink.SinkService<E2, B>
   ) => Sink.WithContext<R2, E, A>
 ): Push<Exclude<R, Sink.Sink<E, A>> | R2, E2, B, E0, A0> {
+  const ea = Sink.Sink<E, A>()
+  const e2b = Sink.Sink<E2, B>()
+
   // TODO: Somehow manage Sink fusion
   return Effect.contextWithEffect((ctx) =>
     push.pipe(
-      Sink.Sink<E, A>().provide(
+      ea.provide(
         Sink.provideContext(
-          f(Context.unsafeGet(ctx, Sink.Sink<E2, B>())),
+          f(Context.unsafeGet(ctx, e2b)),
           ctx
         )
       )
