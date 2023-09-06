@@ -24,7 +24,7 @@ export class BenchmarkBuilder {
   }
 
   run(options?: BenchmarkOptions) {
-    benchmarkSuite(this.name, this.benchmarks, options)
+    benchmarkSuite(`[Benchmark] ${this.name}`, this.benchmarks, options)
   }
 }
 
@@ -65,7 +65,8 @@ function benchmarkSuite<const B extends ReadonlyArray<Benchmark<any, any>>>(
       })
     )
 
-    afterAll(() =>
+    afterAll(() => {
+      console.log(name)
       console.table(
         reports.reduce((acc, report) => {
           Object.assign(
@@ -77,7 +78,7 @@ function benchmarkSuite<const B extends ReadonlyArray<Benchmark<any, any>>>(
         }, {}),
         tabularDataKeys
       )
-    )
+    })
   })
 }
 
