@@ -1,73 +1,140 @@
-import type * as Option from "@effect/data/Option"
-import type * as Effect from "@effect/io/Effect"
-import * as core from "@typed/fx/internal/core"
-import type * as Sink from "@typed/fx/Sink"
+import * as Equal from "@effect/data/Equal"
+import { identity } from "@effect/data/Function"
+import * as Hash from "@effect/data/Hash"
+import { pipeArguments } from "@effect/data/Pipeable"
+import type * as Cause from "@effect/io/Cause"
+import * as Effect from "@effect/io/Effect"
+import * as Push from "@typed/fx/Push"
+import * as Sink from "@typed/fx/Sink"
 
-export const FxTypeId: core.FxTypeId = core.FxTypeId
-export type FxTypeId = typeof FxTypeId
+// TODO: Implement Unify
+// TODO: Implement dual for Fx
 
-/*
- * An Fx is "just" an Effect with the use of Sink to handle errors and events
- * as a pushed-based stream.
- */
+export const TypeId = Symbol("@typed/fx/Fx")
+export type TypeId = typeof TypeId
+
+const Variance = {
+  _R: identity,
+  _E: identity,
+  _A: identity
+}
+
 export interface Fx<R, E, A> extends Effect.Effect<R | Sink.Sink<E, A>, never, unknown> {
-  readonly [FxTypeId]: FxTypeId
+  readonly [TypeId]: {
+    readonly _R: (_: never) => R
+    readonly _E: (_: never) => E
+    readonly _A: (_: never) => A
+  }
+}
+
+class FxImpl<R, E, A> implements Fx<R, E, A> {
+  readonly _tag = "Commit"
+
+  readonly [TypeId] = Variance as any
+  readonly [Effect.EffectTypeId] = Variance
+
+  constructor(
+    readonly i0: Effect.Effect<R | Sink.Sink<E, A>, never, unknown>,
+    readonly i1?: unknown,
+    readonly i2?: unknown
+  ) {}
+
+  [Equal.symbol](that: unknown): boolean {
+    return that instanceof FxImpl && Equal.equals(this.i0, that.i0)
+  }
+
+  [Hash.symbol](): number {
+    return Hash.combine(Hash.hash(TypeId))(Hash.hash(this.i0))
+  }
+
+  pipe() {
+    return pipeArguments(this.i0, arguments)
+  }
+
+  commit() {
+    return this.i0
+  }
 }
 
 export namespace Fx {
-  /*
-   * Ensure Sink is removed from the constructions of Fx
-   */
-  export type WithoutSink<R, E, A> = Fx<Exclude<R, Sink.Sink<any, any>>, E, A> extends Fx<infer _R, infer _E, infer _A>
-    ? Fx<_R, Sink.Sink.ExtractError<R> | _E, Sink.Sink.ExtractEvent<R> | _A>
-    : never
+  export type Context<T> = [T] extends [Fx<infer R, infer _, infer __>] ? R : never
+  export type Error<T> = [T] extends [Fx<any, infer E, any>] ? E : never
+  export type Success<T> = [T] extends [Fx<any, any, infer A>] ? A : never
 
-  /**
-   * Extract the Context of an Fx
-   */
-  export type Context<T extends Effect.Effect<any, any, any>> = Effect.Effect.Context<T> extends infer R ? R : never
+  export type ExcludeSink<T> = Exclude<T, Sink.Sink<any, any>>
+  export type ExtractSink<T> = Extract<T, Sink.Sink<any, any>>
 
-  /**
-   * Extract the Error of an Fx
-   */
-  export type Error<T extends Effect.Effect<any, any, any>> =
-    | Sink.Sink.ExtractError<Context<T>>
-    | Effect.Effect.Error<T>
-
-  export type Success<T extends Effect.Effect<any, any, any>> = Sink.Sink.ExtractEvent<Context<T>>
+  export type WithoutSink<R, E, A> = Fx<ExcludeSink<R>, E, A>
 }
 
-export type FxInput<R, E, A> =
-  | Fx<R, E, A>
-  | Effect.Effect<R, E, A>
-
-export type Adapter = core.Adapter
-
-export const make: <R, E = never, A = never>(
-  effect: Effect.Effect<R | Sink.Error<E> | Sink.Event<A>, never, unknown>
-) => Fx.WithoutSink<R, E, A> = core.makeSuspend
-
-export const makeGen: <E extends Effect.EffectGen<any, any, any>>(
-  f: (adapter: Adapter) => Generator<E, unknown, any>
-) => Fx.WithoutSink<
-  core.GenResources<E>,
-  core.GenError<E>,
-  never
-> = core.makeGen
-
-export function fromEffect<A>(effect: Option.Option<A>): Fx.WithoutSink<never, never, A>
-export function fromEffect<R, E, A>(effect: Effect.Effect<R, E, A>): Fx.WithoutSink<R, E, A>
-export function fromEffect<R, E, A>(effect: Effect.Effect<R, E, A>): Fx.WithoutSink<R, E, A> {
-  return core.fromEffect(effect)
+export function fromPush<R, E, A, E0, A0>(
+  push: Effect.Effect<R | Sink.Sink<E, A>, E0, A0>
+): Fx.WithoutSink<R, E | E0, A> {
+  return new FxImpl<R, E | E0, A>(Effect.catchAllCause(push, Sink.failCause))
 }
 
-export function fromInput<A>(effect: Option.Option<A>): Fx.WithoutSink<never, never, A>
-export function fromInput<R, E, A>(effect: Effect.Effect<R, E, A>): Fx.WithoutSink<R, E, A>
-export function fromInput<R, E, A>(effect: Fx<R, E, A>): Fx.WithoutSink<R, E, A>
-export function fromInput<R, E, A>(effect: FxInput<R, E, A>): Fx.WithoutSink<R, E, A> {
-  if (FxTypeId in effect) {
-    return effect as any
-  } else {
-    return fromEffect(effect)
-  }
+export function mapErrorCauseEffect<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (cause: Cause.Cause<E>) => Effect.Effect<R2, E2, Cause.Cause<B>>
+): Fx.WithoutSink<R | R2, E2 | B, A> {
+  return fromPush(Push.mapErrorCause(fx, f))
+}
+
+export function mapErrorEffect<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (error: E) => Effect.Effect<R2, E2, B>
+): Fx.WithoutSink<R | R2, E2 | B, A> {
+  return fromPush(Push.mapError(fx, f))
+}
+
+export function mapEffect<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, B>
+): Fx.WithoutSink<R | R2, E | E2, B> {
+  return fromPush(Push.mapEffect(fx, f))
+}
+
+export function tap<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, B>
+): Fx.WithoutSink<R | R2, E | E2, A> {
+  return fromPush(Push.tap(fx, f))
+}
+
+const withSwitchFork = Push.withSwitchFork<never, unknown>()
+
+export function switchMap<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (a: A) => Fx<R2, E2, B>
+): Fx.WithoutSink<R | R2, E | E2, B> {
+  return new FxImpl(
+    withSwitchFork((fork) =>
+      Push.mapSink(fx, (sink) => Sink.WithContext("SwitchMap", sink.onFailure, (a) => fork(f(a))))
+    )
+  )
+}
+
+export function drain<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, void> {
+  return Push.drain(fx)
+}
+
+export function observe<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, B>
+): Effect.Effect<R, E | E2, unknown> {
+  return Push.observe(fx, f) as any
+}
+
+export function toArray<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, Array<A>> {
+  return Effect.suspend(() => {
+    const array: Array<A> = []
+
+    return Push.observe(fx, (a) => Effect.sync(() => array.push(a))).pipe(
+      Effect.map(() => array)
+    )
+  })
+}
+
+export function toReadonlyArray<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, ReadonlyArray<A>> {
+  return toArray(fx)
 }

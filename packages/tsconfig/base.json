@@ -33,7 +33,12 @@
     "strict": true,
     "strictNullChecks": true,
     "stripInternal": true,
-    "target": "ES2021"
+    "target": "ES2021",
+    "plugins": [
+      {
+        "name": "@effect/language-service"
+      }
+    ]
   },
   "include": [],
   "exclude": ["**/node_modules/**", "**/build/**", "**/dist/**"]

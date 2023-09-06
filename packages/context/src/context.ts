@@ -8,6 +8,7 @@ export {
   isTag,
   make,
   merge,
+  omit,
   pick,
   type TagTypeId,
   type TypeId,

@@ -1,70 +1,163 @@
+import * as Option from "@effect/data/Option"
 import * as Cause from "@effect/io/Cause"
 import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import * as Context from "@typed/context"
 
-export interface Error<E> {
-  readonly _tag: "@typed/fx/Error"
+// TODO: Implement Unify + dual
+
+export interface Sink<out E, out A> {
+  readonly _tag: "@typed/fx/Sink"
   readonly _E: (_: never) => E
-}
-
-export interface ErrorService<E> {
-  readonly _tag: string
-  onFailure(e: Cause.Cause<E>): Effect.Effect<never, never, void>
-}
-
-const errorTag = Context.Tag<Error<any>, ErrorService<any>>("@typed/fx/Error")
-
-export function Error<E>(): Context.Tag<Error<E>, ErrorService<E>> {
-  return errorTag as any
-}
-
-export interface Event<A> {
-  readonly _tag: "@typed/fx/Event"
   readonly _A: (_: never) => A
 }
 
-export interface EventService<A> {
+export interface SinkService<in E, in A> {
   readonly _tag: string
-  onSuccess(a: A): Effect.Effect<never, never, void>
+  onFailure(e: Cause.Cause<E>): Effect.Effect<never, never, unknown>
+  onSuccess(a: A): Effect.Effect<never, never, unknown>
 }
 
-const eventTag = Context.Tag<Event<any>, EventService<any>>("@typed/fx/Event")
+const sinkTag = Context.Tag<Sink<any, any>, SinkService<any, any>>("@typed/fx/Sink")
 
-export function Event<A>(): Context.Tag<Event<A>, EventService<A>> {
-  return eventTag as any
-}
-
-const sink = Context.struct({
-  error: errorTag,
-  event: eventTag
-})
-
-export function Sink<E, A>(): Context.TaggedStruct<{
-  readonly error: ReturnType<typeof Error<E>>
-  readonly event: ReturnType<typeof Event<A>>
-}> {
-  return sink as any
-}
-
-export type Sink<E, A> = Error<E> | Event<A>
-
-export interface SinkService<E, A> {
-  readonly error: ErrorService<E>
-  readonly event: EventService<A>
+export function Sink<E, A>(): Context.Tag<Sink<E, A>, SinkService<E, A>> {
+  return sinkTag as any
 }
 
 export namespace Sink {
-  export type Extract<T> = Sink<ExtractError<T>, ExtractEvent<T>>
-
-  export type ExtractError<T> = T extends Error<infer E> ? E : never
-  export type ExtractEvent<T> = T extends Event<infer A> ? A : never
+  export type Error<T> = [T] extends [never] ? never : T extends Sink<infer E, infer _> ? E : never
+  export type Event<T> = [T] extends [never] ? never : T extends Sink<infer _, infer A> ? A : never
 }
 
-export class Drain<E, A> implements ErrorService<E>, EventService<A> {
+export function SinkService<E, A>(
+  tag: string,
+  onFailure: (e: Cause.Cause<E>) => Effect.Effect<never, never, unknown>,
+  onSuccess: (a: A) => Effect.Effect<never, never, unknown>
+): SinkService<E, A> {
+  return {
+    _tag: tag,
+    onFailure,
+    onSuccess
+  }
+}
+
+export function mapErrorCause<R, E, E2, A, E3, R2>(
+  sink: WithContext<R, E | E2, A>,
+  f: (cause: Cause.Cause<E3>) => Effect.Effect<R2, E, Cause.Cause<E2>>
+): WithContext<R | R2, E3, A> {
+  return WithContext(
+    "MapErrorCause",
+    (cause) =>
+      f(cause).pipe(Effect.matchCauseEffect({
+        onFailure: sink.onFailure,
+        onSuccess: sink.onFailure
+      })),
+    sink.onSuccess
+  )
+}
+
+export function mapError<R, E, A, R2, E2, B>(
+  sink: WithContext<R, E2 | B, A>,
+  f: (error: E) => Effect.Effect<R2, E2, B>
+): WithContext<R | R2, E, A> {
+  return mapErrorCause(sink, (cause) =>
+    Cause.failureOption(cause).pipe(
+      Option.match({
+        onNone: () => Effect.succeed(cause as Cause.Cause<never>),
+        onSome: (e) => Effect.map(f(e), Cause.fail)
+      })
+    ))
+}
+
+export function map<R, E, A, R2, E2, B>(
+  sink: WithContext<R, E | E2, B>,
+  f: (a: A) => Effect.Effect<R2, E2, B>
+): WithContext<R | R2, E, A> {
+  return WithContext(
+    "Map",
+    sink.onFailure,
+    (a) => Effect.matchCauseEffect(f(a), sink)
+  )
+}
+
+export function tap<R, E, A, R2, E2, B>(
+  sink: WithContext<R, E | E2, A>,
+  f: (a: A) => Effect.Effect<R2, E2, B>
+): WithContext<R | R2, E, A> {
+  return WithContext(
+    "Tap",
+    sink.onFailure,
+    (a) =>
+      Effect.matchCauseEffect(f(a), {
+        onFailure: sink.onFailure,
+        onSuccess: () => sink.onSuccess(a)
+      })
+  )
+}
+
+export function matchCause<R, E, A, R2, E2, B, R3, E3, C>(
+  sink: WithContext<R, E2 | E3, B | C>,
+  onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R2, E2, B>,
+  onSuccess: (a: A) => Effect.Effect<R3, E3, C>
+): WithContext<R | R2 | R3, E, A> {
+  return WithContext(
+    "MatchCause",
+    (cause) => Effect.matchCauseEffect(onFailure(cause), sink),
+    (value) => Effect.matchCauseEffect(onSuccess(value), sink)
+  )
+}
+
+export type WithContext<R, E, A> = {
+  readonly _tag: string
+  onFailure: (e: Cause.Cause<E>) => Effect.Effect<R, never, unknown>
+  onSuccess: (a: A) => Effect.Effect<R, never, unknown>
+}
+
+export function WithContext<E, R, A, R2>(
+  tag: string,
+  onFailure: (e: Cause.Cause<E>) => Effect.Effect<R, never, unknown>,
+  onSuccess: (a: A) => Effect.Effect<R2, never, unknown>
+): WithContext<R | R2, E, A> {
+  return {
+    _tag: tag,
+    onFailure,
+    onSuccess
+  }
+}
+
+export function provide<R, E, A>(
+  sink: WithContext<R, E, A>,
+  context: Context.Context<R>
+): SinkService<E, A> {
+  return SinkService(
+    sink._tag,
+    (cause) => Effect.provideContext(sink.onFailure(cause), context),
+    (a) => Effect.provideContext(sink.onSuccess(a), context)
+  )
+}
+
+export function event<A>(value: A) {
+  return Sink<never, A>().withEffect((sink) => sink.onSuccess(value))
+}
+
+export function events<const A extends ReadonlyArray<any>>(
+  values: A
+): Effect.Effect<Sink<never, A[number]>, never, void> {
+  return Sink<never, A>().withEffect((sink) => Effect.all(values.map((a) => sink.onSuccess(a)), { discard: true }))
+}
+
+export function failCause<E>(error: Cause.Cause<E>) {
+  return Sink<E, never>().withEffect((sink) => sink.onFailure(error))
+}
+
+export function fail<E>(error: E) {
+  return failCause(Cause.fail(error))
+}
+
+export class Drain<E, A, B> implements SinkService<E, A> {
   readonly _tag = "Drain" as const
 
-  constructor(readonly deferred: Deferred.Deferred<E, void>) {}
+  constructor(readonly deferred: Deferred.Deferred<E, B>) {}
 
   onFailure(cause: Cause.Cause<E>): Effect.Effect<never, never, void> {
     return Deferred.failCause(this.deferred, cause)
@@ -74,160 +167,70 @@ export class Drain<E, A> implements ErrorService<E>, EventService<A> {
     return Effect.unit
   }
 
-  provide<R, E2, A2>(
-    this: Drain<E, A>,
-    effect: Effect.Effect<R, E2, A2>
-  ): Effect.Effect<Exclude<R, Sink<E, A>>, E2, A2> {
+  provide<R, E2>(
+    this: Drain<E, A, B>,
+    effect: Effect.Effect<R, E2, B>
+  ): Effect.Effect<Exclude<R, Sink<E, A>>, E2, B> {
     return effect.pipe(
-      Effect.tap(
-        // Signal that we are done
-        () => Deferred.succeed(this.deferred, undefined)
-      ),
-      Sink<E, A>().provide({ error: this, event: this })
+      // Signal that we are done
+      Effect.tap((b) => Deferred.succeed(this.deferred, b)),
+      Sink<E, A>().provide(this)
     )
   }
 
-  wait() {
+  wait(): Effect.Effect<never, E, B> {
     return Deferred.await(this.deferred)
   }
 }
 
-export function drain<E, A>(): Effect.Effect<never, never, Drain<E, A>> {
+export function makeDrain<E, A, B>(): Effect.Effect<never, never, Drain<E, A, B>> {
   return Effect.map(
-    Deferred.make<E, void>(),
-    (deferred) => new Drain<E, A>(deferred)
+    Deferred.make<E, B>(),
+    (deferred) => new Drain<E, A, B>(deferred)
   )
 }
 
-export function event<A>(value: A) {
-  return Effect.flatMap(Event<A>(), (f) => f.onSuccess(value))
-}
-
-export function failCause<E>(error: Cause.Cause<E>) {
-  return Effect.flatMap(Error<E>(), (f) => f.onFailure(error))
-}
-
-export function fail<E>(error: E) {
-  return failCause(Cause.fail(error))
-}
-
-export class MapEventService<A, B> implements EventService<A> {
-  readonly _tag = "MapEvent" as const
-
-  constructor(readonly service: EventService<B>, readonly f: (a: A) => B) {}
-
-  onSuccess(a: A): Effect.Effect<never, never, void> {
-    return this.service.onSuccess(this.f(a))
-  }
-
-  static make<A, B>(service: EventService<B>, f: (a: A) => B): EventService<A> {
-    if (isMapEventService(service)) {
-      return new MapEventService(service.service, (a) => service.f(f(a)))
-    } else {
-      return new MapEventService(service, f)
-    }
-  }
-}
-
-function isMapEventService<A>(service: EventService<A>): service is MapEventService<A, any> {
-  return service._tag === "MapEvent"
-}
-
-export function map<R, E, A, B, C>(
-  effect: Effect.Effect<R | Event<B>, E, A>,
-  f: (b: B) => C
-): Effect.Effect<Exclude<R, Event<B>> | Event<C>, E, A> {
-  return Effect.flatMap(
-    Event<C>(),
-    (event) => Effect.provideService(effect, Event<B>(), MapEventService.make(event, f))
-  )
-}
-
-export class MapEffectEventService<A, E, B> implements EventService<A> {
-  readonly _tag = "MapEffectEvent" as const
+export class Observe<E, A, B> implements SinkService<E, A> {
+  readonly _tag = "Observe" as const
 
   constructor(
-    readonly eventService: EventService<B>,
-    readonly errorService: ErrorService<E>,
-    readonly f: (a: A) => Effect.Effect<never, E, B>
+    readonly deferred: Deferred.Deferred<E, B>,
+    private _onSuccess: (value: A) => Effect.Effect<never, E, unknown>
   ) {}
 
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<never, never, void> {
+    return Deferred.failCause(this.deferred, cause)
+  }
+
   onSuccess(a: A): Effect.Effect<never, never, void> {
-    return Effect.matchCauseEffect(this.f(a), {
-      onSuccess: (b) => this.eventService.onSuccess(b),
-      onFailure: (cause) => this.errorService.onFailure(cause)
-    })
+    return this._onSuccess(a).pipe(Effect.catchAllCause((cause) => this.onFailure(cause)))
   }
 
-  static make<A, E, B>(
-    sink: SinkService<E, B>,
-    f: (a: A) => Effect.Effect<never, E, B>
-  ): EventService<A> {
-    if (isMapEventService(sink.event)) {
-      return new MapEffectEventService(
-        sink.event.service,
-        sink.error,
-        (a) =>
-          Effect.matchCauseEffect(f(a), {
-            onFailure: sink.error.onFailure,
-            onSuccess: sink.event.onSuccess
-          })
+  provide<R, E2, A2>(
+    this: Observe<E, A, B>,
+    effect: Effect.Effect<R, E2, A2>
+  ): Effect.Effect<Exclude<R, Sink<E, A>>, E2, A2> {
+    return effect.pipe(
+      // Signal that we are done
+      Effect.tap(() => Deferred.succeed(this.deferred, undefined)),
+      Sink<E, A>().provide(this)
+    )
+  }
+
+  wait(): Effect.Effect<never, E, B> {
+    return Deferred.await(this.deferred)
+  }
+}
+
+export function makeObserve<B>() {
+  return <R, E, A, E2 = E>(
+    f: (value: A) => Effect.Effect<R, E, unknown>
+  ): Effect.Effect<R, never, Observe<E | E2, A, B>> => {
+    return Effect.contextWithEffect((ctx) =>
+      Effect.map(
+        Deferred.make<E, B>(),
+        (deferred) => new Observe<E | E2, A, B>(deferred, (a) => Effect.provideContext(f(a), ctx))
       )
-    }
-
-    return new MapEffectEventService(sink.event, sink.error, f)
+    )
   }
-}
-
-export function mapEffect<R, E, A, R2, E2, B>(
-  effect: Effect.Effect<R | Event<A>, E, unknown>,
-  f: (a: A) => Effect.Effect<R2, E2, B>
-): Effect.Effect<R2 | Exclude<R, Event<A>> | Event<B> | Error<E | E2>, never, unknown> {
-  return Effect.flatMap(
-    Effect.zip(Sink<E | E2, B>(), Effect.context<R2>()),
-    ([sink, ctx]) =>
-      Effect.catchAllCause(
-        Effect.provideService(
-          effect,
-          Event<A>(),
-          MapEffectEventService.make(sink, (a) => Effect.provideSomeContext(f(a), ctx))
-        ),
-        sink.error.onFailure
-      )
-  )
-}
-
-export class MapErrorCauseService<A, B> implements ErrorService<A> {
-  readonly _tag = "MapErrorCause" as const
-
-  constructor(readonly service: ErrorService<B>, readonly f: (b: Cause.Cause<A>) => Cause.Cause<B>) {}
-
-  onFailure(cause: Cause.Cause<A>): Effect.Effect<never, never, void> {
-    return this.service.onFailure(this.f(cause))
-  }
-
-  static make<A, B>(
-    service: ErrorService<B>,
-    f: (b: Cause.Cause<A>) => Cause.Cause<B>
-  ): ErrorService<A> {
-    if (isMapErrorCauseService(service)) {
-      return new MapErrorCauseService(service.service, (a) => service.f(f(a)))
-    } else {
-      return new MapErrorCauseService(service, f)
-    }
-  }
-}
-
-function isMapErrorCauseService<A>(service: ErrorService<A>): service is MapErrorCauseService<A, any> {
-  return service._tag === "MapErrorCause"
-}
-
-export function mapErrorCause<R, E, A, B, C>(
-  effect: Effect.Effect<R | Error<B>, E, A>,
-  f: (b: Cause.Cause<B>) => Cause.Cause<C>
-): Effect.Effect<Exclude<R, Error<B>> | Error<C>, E, A> {
-  return Effect.flatMap(
-    Error<C>(),
-    (event) => Effect.provideService(effect, Error<B>(), MapErrorCauseService.make(event, f))
-  )
 }
