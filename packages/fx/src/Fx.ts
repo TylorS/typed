@@ -242,15 +242,11 @@ export function mergeAll<FX extends ReadonlyArray<Fx.Any>>(
 ): Fx<
   Fx.Context<FX[number]>,
   Fx.Error<FX[number]>,
-  {
-    readonly [K in keyof FX]: Fx.Success<FX[K]>
-  }
+  Fx.Success<FX[number]>
 > {
   return new FxImpl<
     Fx.Context<FX[number]>,
     Fx.Error<FX[number]>,
-    {
-      readonly [K in keyof FX]: Fx.Success<FX[K]>
-    }
+    Fx.Success<FX[number]>
   >(Effect.all(fxs, { concurrency: "unbounded", discard: true }) as any)
 }
