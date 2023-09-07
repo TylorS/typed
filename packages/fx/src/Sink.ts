@@ -195,8 +195,8 @@ export function provideContext<R, E, A>(
   )
 }
 
-export function event<A>(value: A) {
-  return Sink<never, A>().withEffect((sink) => sink.onSuccess(value))
+export function event<A>(value: A): Effect.Effect<Sink<never, A>, never, unknown> {
+  return Sink<never, A>().withEffect((sink: SinkService<never, A>) => sink.onSuccess(value))
 }
 
 export function events<const A extends ReadonlyArray<any>>(
