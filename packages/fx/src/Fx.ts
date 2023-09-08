@@ -81,10 +81,12 @@ class FxImpl<R, E, A> implements Fx<Fx.ExcludeSink<R>, E, A> {
   }
 }
 
-export function fromPush<R, E, A, E0, A0>(
-  push: Effect.Effect<R | Sink.Sink<E, A>, E0, A0>
-): Fx.WithoutSink<R, E | E0, A> {
-  return new FxImpl<R, E | E0, A>(Effect.catchAllCause(push, Sink.failCause))
+export function fromPush<R, E0, A0>(
+  push: Effect.Effect<R, E0, A0>
+): Fx.WithoutSink<R, Push.Push.SinkError<typeof push> | E0, Push.Push.SinkEvent<typeof push>> {
+  return new FxImpl<R, Push.Push.SinkError<typeof push> | E0, Push.Push.SinkEvent<typeof push>>(
+    Effect.catchAllCause(push, Sink.failCause)
+  )
 }
 
 export function succeed<A>(a: A): Fx<never, never, A> {

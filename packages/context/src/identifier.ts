@@ -1,7 +1,7 @@
 export function id<const T>(uniqueIdentifier: T): IdentifierConstructor<T> {
   return class Id implements Identifier<T> {
-    static readonly _id: T = uniqueIdentifier
-    readonly _id: T = uniqueIdentifier
+    static readonly __identifier__: T = uniqueIdentifier
+    readonly __identifier__: T = uniqueIdentifier
   }
 }
 
@@ -10,7 +10,7 @@ export interface IdentifierConstructor<T> extends Identifier<T> {
 }
 
 export interface Identifier<T> {
-  readonly _id: T
+  readonly __identifier__: T
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -32,13 +32,12 @@ export function identifierToString(x: unknown): string {
     case "symbol":
       return String(x)
     case "function":
-      return String((x as any).displayName || x.name)
     case "undefined":
     case "object": {
       if (x == null) return "null"
+      if ("__identifier__" in x) return identifierToString(x.__identifier__)
       if ("name" in x) return String(x.name)
       if ("displayName" in x) return String(x.displayName)
-      if ("_id" in x) return identifierToString(x._id)
 
       return x.toString()
     }

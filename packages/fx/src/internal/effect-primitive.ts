@@ -20,32 +20,27 @@ import type * as RuntimeFlagsPatch from "@effect/io/RuntimeFlagsPatch"
 /** @internal */
 export const EffectTypeId: Effect.EffectTypeId = Symbol.for("@effect/io/Effect") as Effect.EffectTypeId
 
-export type InternalEffect = Primitive | Continuation
+export type InternalEffect = EffectPrimitive | EffectContinuation
 
 /** @internal */
-export type Primitive =
+export type EffectPrimitive =
   | Async
   | Blocked
   | Commit
   | Either.Either<any, any>
   | Failure
   | FailureWithAnnotation
-  | OnFailure
-  | OnStep
-  | OnSuccess
-  | OnSuccessAndFailure
   | OpTag
   | Option.Option<any>
   | RunBlocked
   | Success
   | Sync
   | UpdateRuntimeFlags
-  | While
   | WithRuntime
   | Yield
 
 /** @internal */
-export type Continuation =
+export type EffectContinuation =
   | OnSuccess
   | OnStep
   | OnSuccessAndFailure
@@ -79,7 +74,7 @@ export enum OpCodes {
 export interface RevertFlags extends Effect.Effect<never, never, never> {
   readonly _tag: OpCodes.OP_REVERT_FLAGS
   readonly patch: RuntimeFlagsPatch.RuntimeFlagsPatch
-  readonly op: Primitive & { _tag: OpCodes.OP_UPDATE_RUNTIME_FLAGS }
+  readonly op: EffectPrimitive & { _tag: OpCodes.OP_UPDATE_RUNTIME_FLAGS }
 }
 
 /** @internal */
@@ -90,7 +85,7 @@ export type Op<Tag extends string, Body = {}> = Effect.Effect<never, never, neve
 /** @internal */
 export interface Async extends
   Op<OpCodes.OP_ASYNC, {
-    readonly i0: (resume: (effect: Primitive) => void) => void
+    readonly i0: (resume: (effect: EffectPrimitive) => void) => void
     readonly i1: FiberId.FiberId
   }>
 {}
@@ -136,33 +131,33 @@ export interface Commit extends
 /** @internal */
 export interface OnFailure extends
   Op<OpCodes.OP_ON_FAILURE, {
-    readonly i0: Primitive
-    readonly i1: (a: Cause.Cause<unknown>) => Primitive
+    readonly i0: EffectPrimitive
+    readonly i1: (a: Cause.Cause<unknown>) => EffectPrimitive
   }>
 {}
 
 /** @internal */
 export interface OnSuccess extends
   Op<OpCodes.OP_ON_SUCCESS, {
-    readonly i0: Primitive
-    readonly i1: (a: unknown) => Primitive
+    readonly i0: EffectPrimitive
+    readonly i1: (a: unknown) => EffectPrimitive
   }>
 {}
 
 /** @internal */
 export interface OnStep extends
   Op<OpCodes.OP_ON_STEP, {
-    readonly i0: Primitive
-    readonly i1: (result: Exit.Exit<any, any> | Blocked) => Primitive
+    readonly i0: EffectPrimitive
+    readonly i1: (result: Exit.Exit<any, any> | Blocked) => EffectPrimitive
   }>
 {}
 
 /** @internal */
 export interface OnSuccessAndFailure extends
   Op<OpCodes.OP_ON_SUCCESS_AND_FAILURE, {
-    readonly i0: Primitive
-    readonly i1: (a: Cause.Cause<unknown>) => Primitive
-    readonly i2: (a: unknown) => Primitive
+    readonly i0: EffectPrimitive
+    readonly i1: (a: Cause.Cause<unknown>) => EffectPrimitive
+    readonly i2: (a: unknown) => EffectPrimitive
   }>
 {}
 
@@ -184,7 +179,7 @@ export interface Sync extends
 export interface UpdateRuntimeFlags extends
   Op<OpCodes.OP_UPDATE_RUNTIME_FLAGS, {
     readonly i0: RuntimeFlagsPatch.RuntimeFlagsPatch
-    readonly i1?: (oldRuntimeFlags: RuntimeFlags.RuntimeFlags) => Primitive
+    readonly i1?: (oldRuntimeFlags: RuntimeFlags.RuntimeFlags) => EffectPrimitive
   }>
 {}
 
@@ -192,7 +187,7 @@ export interface UpdateRuntimeFlags extends
 export interface While extends
   Op<OpCodes.OP_WHILE, {
     readonly i0: () => boolean
-    readonly i1: () => Primitive
+    readonly i1: () => EffectPrimitive
     readonly i2: (a: unknown) => void
   }>
 {}
@@ -200,7 +195,7 @@ export interface While extends
 /** @internal */
 export interface WithRuntime extends
   Op<OpCodes.OP_WITH_RUNTIME, {
-    readonly i0: (fiber: Fiber.RuntimeFiber<unknown, unknown>, status: FiberStatus.Running) => Primitive
+    readonly i0: (fiber: Fiber.RuntimeFiber<unknown, unknown>, status: FiberStatus.Running) => EffectPrimitive
   }>
 {}
 

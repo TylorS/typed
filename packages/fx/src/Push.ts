@@ -28,8 +28,10 @@ export namespace Push {
   >
 
   export type Context<T extends Any> = [T] extends [Effect.Effect<never, any, any>] ? never :
-    T extends Push<infer R, infer _E, infer _A, infer _E1, infer _A1> ? R
+    T extends Push<infer R, infer _E, infer _A, infer _E1, infer _A1> ? Exclude<R, Sink.Sink<any, any>>
     : never
+
+  export type ContextWithoutSink<T extends Any> = Exclude<Context<T>, Sink.Sink<any, any>>
 
   export type Sink<T extends Any> = [T] extends [Effect.Effect<never, any, any>] ? never :
     T extends Push<infer _R, infer E, infer A, infer _E1, infer _A1> ? Sink.Sink<
@@ -50,13 +52,13 @@ export namespace Push {
   export type Success<T extends Any> = Effect.Effect.Success<T>
 }
 
-export function mapSink<R, E, A, E0, A0, R2, E2, B>(
-  push: Push<R, E, A, E0, A0>,
+export function mapSink<P extends Push.Any, R2, E2, B>(
+  push: P,
   f: (
     sink: Sink.SinkService<E2, B>
-  ) => Sink.WithContext<R2, E, A>
-): Push<Exclude<R, Sink.Sink<E, A>> | R2, E2, B, E0, A0> {
-  const ea = Sink.Sink<E, A>()
+  ) => Sink.WithContext<R2, Push.SinkError<P>, Push.SinkEvent<P>>
+): Push<Exclude<Push.Context<P>, Push.Sink<P>> | R2, E2, B, Push.Error<P>, Push.Success<P>> {
+  const ea = Sink.Sink<Push.SinkError<P>, Push.SinkEvent<P>>()
   const e2b = Sink.Sink<E2, B>()
 
   // TODO: Somehow manage Sink fusion
@@ -72,51 +74,57 @@ export function mapSink<R, E, A, E0, A0, R2, E2, B>(
   )
 }
 
-export function mapErrorCause<R, E, A, E0, A0, R2, E2, B>(
-  push: Push<R, E, A, E0, A0>,
-  f: (cause: Cause.Cause<E>) => Effect.Effect<R2, E2, Cause.Cause<B>>
-): Push<R | R2, E2 | B, A, E0, A0> {
+export function mapErrorCause<P extends Push.Any, R2, E2, B>(
+  push: P,
+  f: (cause: Cause.Cause<Push.SinkError<P>>) => Effect.Effect<R2, E2, Cause.Cause<B>>
+): Push<Exclude<Push.Context<P>, Push.Sink<P>> | R2, E2 | B, Push.SinkEvent<P>, Push.Error<P>, Push.Success<P>> {
   return mapSink(
     push,
     (sink) => Sink.mapErrorCause(sink, f)
   )
 }
 
-export function mapError<R, E, A, E0, A0, R2, E2, B>(
-  push: Push<R, E, A, E0, A0>,
-  f: (error: E) => Effect.Effect<R2, E2, B>
-): Push<R | R2, E2 | B, A, E0, A0> {
+export function mapError<P extends Push.Any, R2, E2, B>(
+  push: P,
+  f: (error: Push.SinkError<P>) => Effect.Effect<R2, E2, B>
+): Push<Exclude<Push.Context<P>, Push.Sink<P>> | R2, E2 | B, Push.SinkEvent<P>, Push.Error<P>, Push.Success<P>> {
   return mapSink(
     push,
     (sink) => Sink.mapError(sink, f)
   )
 }
 
-export function mapEffect<R, E = never, A = never, E0 = never, A0 = unknown, R2 = never, E2 = never, B = unknown>(
-  push: Push<R, E, A, E0, A0>,
-  f: (value: A) => Effect.Effect<R2, E2, B>
-): Push<R | R2, E | E2, B, E0, A0> {
+export function mapEffect<P extends Push.Any, R2, E2, B>(
+  push: P,
+  f: (value: Push.SinkEvent<P>) => Effect.Effect<R2, E2, B>
+): Push<Exclude<Push.Context<P>, Push.Sink<P>> | R2, Push.SinkError<P> | E2, B, Push.Error<P>, Push.Success<P>> {
   return mapSink(
     push,
     (sink) => Sink.map(sink, f)
   )
 }
 
-export function tapEffect<R, E, A, E0, A0, R2, E2, B>(
-  push: Push<R, E, A, E0, A0>,
-  f: (value: A) => Effect.Effect<R2, E2, B>
-): Push<R | R2, E | E2, A, E0, A0> {
+export function tapEffect<P extends Push.Any, R2, E2, B>(
+  push: P,
+  f: (value: Push.SinkEvent<P>) => Effect.Effect<R2, E2, B>
+): Push<
+  Exclude<Push.Context<P>, Push.Sink<P>> | R2,
+  Push.SinkError<P> | E2,
+  Push.SinkEvent<P>,
+  Push.Error<P>,
+  Push.Success<P>
+> {
   return mapSink(
     push,
     (sink) => Sink.tap(sink, f)
   )
 }
 
-export function matchCause<R, E, A, E0, A0, R2, E2, B, R3, E3, C>(
-  push: Push<R, E, A, E0, A0>,
-  onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R2, E2, B>,
-  onSuccess: (a: A) => Effect.Effect<R3, E3, C>
-): Push<R | R2 | R3, E2 | E3, B | C, E0, A0> {
+export function matchCause<P extends Push.Any, R2, E2, B, R3, E3, C>(
+  push: P,
+  onFailure: (cause: Cause.Cause<Push.SinkError<P>>) => Effect.Effect<R2, E2, B>,
+  onSuccess: (a: Push.SinkEvent<P>) => Effect.Effect<R3, E3, C>
+): Push<Exclude<Push.Context<P>, Push.Sink<P>> | R2 | R3, E2 | E3, B | C, Push.Error<P>, Push.Success<P>> {
   return mapSink(
     push,
     (sink) => Sink.matchCause(sink, onFailure, onSuccess)
@@ -170,18 +178,21 @@ export function withSwitchFork<E>() {
   }
 }
 
-export function drain<R, E, A, E0, A0>(
-  push: Effect.Effect<R | Sink.Sink<E, A>, E0, A0>
-): Effect.Effect<R, E | E0, A0> {
-  return Effect.flatMap(Sink.makeDrain<E, A, A0>(), (deferredSink) => Sink.runDeferredSink(push, deferredSink))
+export function drain<P extends Push.Any>(
+  push: P
+): Effect.Effect<Push.ContextWithoutSink<P>, Push.SinkError<P> | Push.Error<P>, Push.Success<P>> {
+  return Effect.flatMap(
+    Sink.makeDrain<Push.SinkError<P>, Push.SinkEvent<P>, Push.Success<P>>(),
+    (deferredSink) => Sink.runDeferredSink(push, deferredSink)
+  )
 }
 
-export function observe<R, E, A, E0, A0, R2, E2, B>(
-  push: Push<R, E, A, E0, A0>,
-  f: (a: A) => Effect.Effect<R2, E2, B>
-): Effect.Effect<R | R2, E | E0 | E2, A0> {
+export function observe<P extends Push.Any, R2, E2, B>(
+  push: P,
+  f: (a: Push.SinkEvent<P>) => Effect.Effect<R2, E2, B>
+): Effect.Effect<Push.ContextWithoutSink<P> | R2, Push.SinkError<P> | Push.Error<P> | E2, Push.Success<P>> {
   return Effect.flatMap(
-    Sink.makeObserve<R2, E2, A, E, A0>(f),
+    Sink.makeObserve<R2, E2, Push.SinkEvent<P>, Push.SinkError<P>, Push.Success<P>>(f),
     (deferredSink) => Sink.runDeferredSink(push, deferredSink)
   )
 }
