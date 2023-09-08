@@ -2,19 +2,13 @@ import type { Cause } from "@effect/io/Cause"
 import { type Effect, provideContext } from "@effect/io/Effect"
 import type { Context } from "@typed/context"
 
-export interface Sink<E, A> {
-  readonly name: string
-  readonly onFailure: (cause: Cause<E>) => Effect<never, never, unknown>
-  readonly onSuccess: (a: A) => Effect<never, never, unknown>
-}
+export interface Sink<E, A> extends WithContext<never, E, A> {}
 
 export function Sink<E, A>(
-  name: string,
   onFailure: (cause: Cause<E>) => Effect<never, never, unknown>,
   onSuccess: (a: A) => Effect<never, never, unknown>
 ): Sink<E, A> {
   return {
-    name,
     onFailure,
     onSuccess
   }
@@ -26,18 +20,15 @@ export namespace Sink {
 }
 
 export interface WithContext<R, E, A> {
-  readonly name: string
   readonly onFailure: (cause: Cause<E>) => Effect<R, never, unknown>
   readonly onSuccess: (a: A) => Effect<R, never, unknown>
 }
 
 export function WithContext<R, E, A>(
-  name: string,
   onFailure: (cause: Cause<E>) => Effect<R, never, unknown>,
   onSuccess: (a: A) => Effect<R, never, unknown>
 ): WithContext<R, E, A> {
   return {
-    name,
     onFailure,
     onSuccess
   }
@@ -51,7 +42,6 @@ export namespace WithContext {
 
 export function provide<R, E, A>(sink: WithContext<R, E, A>, ctx: Context<R>): Sink<E, A> {
   return Sink(
-    sink.name,
     (cause) => provideContext(sink.onFailure(cause), ctx),
     (a) => provideContext(sink.onSuccess(a), ctx)
   )
