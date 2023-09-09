@@ -664,7 +664,10 @@ function runOperator<R, E, A, R2>(
   return effect
 }
 
-function makeOperatorSink(operator: Operator, sink: Sink.WithContext<any, any, any>): Sink.WithContext<any, any, any> {
+function makeOperatorSink(
+  operator: Operator,
+  sink: Sink.WithContext<any, any, any>
+): Sink.WithContext<any, any, any> {
   return Primitive.matchOperator(operator, {
     "Fx/ContinueWith": () => sink,
     "Fx/DropAfter": () => sink,

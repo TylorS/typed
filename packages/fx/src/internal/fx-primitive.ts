@@ -59,26 +59,26 @@ declare module "@effect/io/Effect" {
 
 /** @internal */
 export enum OpCodes {
-  OP_CONTINUE_WITH = "Fx/ContinueWith",
+  OP_CONTINUE_WITH = "Fx/ContinueWith", // Move to FxPrimitive
   OP_DROP_AFTER = "Fx/DropAfter",
   OP_DROP_UNTIL = "Fx/DropUntil",
   OP_DROP_WHILE = "Fx/DropWhile",
-  OP_DURING = "Fx/During",
+  OP_DURING = "Fx/During", // Move to FxPrimitive
   OP_FILTER = "Fx/Filter",
   OP_FILTER_EFFECT = "Fx/FilterEffect",
   OP_FILTER_MAP = "Fx/FilterMap",
   OP_FILTER_MAP_EFFECT = "Fx/FilterMapEffect",
-  OP_FLAT_MAP = "Fx/FlatMap",
-  OP_FLAT_MAP_CAUSE = "Fx/FlatMapCause",
-  OP_HOLD = "Fx/Hold",
+  OP_FLAT_MAP = "Fx/FlatMap", // Move to FxPrimitive
+  OP_FLAT_MAP_CAUSE = "Fx/FlatMapCause", // Move to FxPrimitive
+  OP_HOLD = "Fx/Hold", // Move to FxPrimitive
   OP_LOOP = "Fx/Loop",
   OP_LOOP_EFFECT = "Fx/LoopEffect",
   OP_MAP = "Fx/Map",
   OP_MAP_EFFECT = "Fx/MapEffect",
-  OP_MATCH_CAUSE = "Fx/MatchCause",
-  OP_MULTICAST = "Fx/Multicast",
-  OP_OR_ELSE = "Fx/OrElse",
-  OP_SINCE = "Fx/Since",
+  OP_MATCH_CAUSE = "Fx/MatchCause", // Move to FxPrimitive
+  OP_MULTICAST = "Fx/Multicast", // Move to FxPrimitive
+  OP_OR_ELSE = "Fx/OrElse", // Move to FxPrimitive
+  OP_SINCE = "Fx/Since", // Move to FxPrimitive
   OP_SKIP_REPEATS = "Fx/SkipRepeats",
   OP_SLICE = "Fx/Slice",
   OP_SNAPSHOT = "Fx/Snapshot",
@@ -86,7 +86,7 @@ export enum OpCodes {
   OP_TAKE_WHILE = "Fx/TakeWhile",
   OP_TAP = "Fx/Tap",
   OP_TAP_EFFECT = "Fx/TapEffect",
-  OP_UNTIL = "Fx/Until"
+  OP_UNTIL = "Fx/Until" // Move to FxPrimitive
 }
 
 export const operatorOpCodes = [
