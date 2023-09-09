@@ -1,33 +1,17 @@
-// Empty, Never
-// Map, Filter, + FilterMap
-// Tap
-// Scan, Loop
-// Slice
-// Time slicing
-// Merging, Combining, Racing
-// StartWith + EndWith
-// flatMap et al.
-// Scheduling
-// multicast + hold
-
 import type * as Option from "@effect/data/Option"
 import type { Pipeable } from "@effect/data/Pipeable"
 import type * as Cause from "@effect/io/Cause"
 import type * as Effect from "@effect/io/Effect"
-// import type { Scope } from "@effect/io/Scope"
-import type { InternalEffect } from "@typed/fx/internal/effect-primitive"
 
 export const TypeId = Symbol("@typed/fx/Fx")
 export type TypeId = typeof TypeId
 
 export interface Fx<R, E, A> extends Fx.Variance<R, E, A>, Pipeable {
-  // TODO: All Fx should implement drain + observe
+  readonly drain: Effect.Effect<R, E, void>
 
-  // readonly drain: Effect.Effect<R | Scope, E, void>
-
-  // readonly observe: <R2, E2, B>(
-  //   f: (a: A) => Effect.Effect<R2, E2, B>
-  // ) => Effect.Effect<R | R2 | Scope, E | E2, void>
+  readonly observe: <R2, E2, B>(
+    f: (a: A) => Effect.Effect<R2, E2, B>
+  ) => Effect.Effect<R | R2, E | E2, void>
 }
 
 export namespace Fx {
@@ -45,7 +29,7 @@ export namespace Fx {
 }
 
 declare module "@effect/data/Option" {
-  export interface None<A> extends Fx<never, never, A> {}
+  export interface None<A> extends Fx<never, Cause.NoSuchElementException, A> {}
   export interface Some<A> extends Fx<never, never, A> {}
 }
 
@@ -72,8 +56,6 @@ declare module "@effect/io/Exit" {
 declare module "@effect/io/Effect" {
   export interface Effect<R, E, A> extends Fx<R, E, A> {}
 }
-
-export type ExternalConstructor = InternalEffect | Cause.Cause<any>
 
 /** @internal */
 export enum OpCodes {
@@ -211,13 +193,13 @@ export interface FilterMapEffect extends
 
 export interface Tap extends
   Op<OpCodes.OP_TAP, {
-    readonly i0: (a: any) => void
+    readonly i0: (a: any) => unknown
   }>
 {}
 
 export interface TapEffect extends
   Op<OpCodes.OP_TAP_EFFECT, {
-    readonly i0: (a: any) => Effect.Effect<any, any, void>
+    readonly i0: (a: any) => Effect.Effect<any, any, unknown>
   }>
 {}
 
@@ -389,3 +371,39 @@ export interface Ordered {
 }
 
 export const Ordered = (concurrency: number): Ordered => ({ _tag: "Ordered", concurrency })
+
+export function matchOperator(
+  operator: Operator,
+  matchers: {
+    readonly [OpCodes.OP_CONTINUE_WITH]: (op: ContinueWith) => any
+    readonly [OpCodes.OP_DROP_AFTER]: (op: DropAfter) => any
+    readonly [OpCodes.OP_DROP_UNTIL]: (op: DropUntil) => any
+    readonly [OpCodes.OP_DROP_WHILE]: (op: DropWhile) => any
+    readonly [OpCodes.OP_DURING]: (op: During) => any
+    readonly [OpCodes.OP_FILTER]: (op: Filter) => any
+    readonly [OpCodes.OP_FILTER_EFFECT]: (op: FilterEffect) => any
+    readonly [OpCodes.OP_FILTER_MAP]: (op: FilterMap) => any
+    readonly [OpCodes.OP_FILTER_MAP_EFFECT]: (op: FilterMapEffect) => any
+    readonly [OpCodes.OP_FLAT_MAP]: (op: FlatMap) => any
+    readonly [OpCodes.OP_FLAT_MAP_CAUSE]: (op: FlatMapCause) => any
+    readonly [OpCodes.OP_HOLD]: (op: Hold) => any
+    readonly [OpCodes.OP_LOOP]: (op: Loop) => any
+    readonly [OpCodes.OP_LOOP_EFFECT]: (op: LoopEffect) => any
+    readonly [OpCodes.OP_MAP]: (op: Map) => any
+    readonly [OpCodes.OP_MAP_EFFECT]: (op: MapEffect) => any
+    readonly [OpCodes.OP_MATCH_CAUSE]: (op: MatchCause) => any
+    readonly [OpCodes.OP_MULTICAST]: (op: Multicast) => any
+    readonly [OpCodes.OP_OR_ELSE]: (op: OrElse) => any
+    readonly [OpCodes.OP_SINCE]: (op: Since) => any
+    readonly [OpCodes.OP_SKIP_REPEATS]: (op: SkipRepeats) => any
+    readonly [OpCodes.OP_SLICE]: (op: Slice) => any
+    readonly [OpCodes.OP_SNAPSHOT]: (op: Snapshot) => any
+    readonly [OpCodes.OP_TAKE_UNTIL]: (op: TakeUntil) => any
+    readonly [OpCodes.OP_TAKE_WHILE]: (op: TakeWhile) => any
+    readonly [OpCodes.OP_TAP]: (op: Tap) => any
+    readonly [OpCodes.OP_TAP_EFFECT]: (op: TapEffect) => any
+    readonly [OpCodes.OP_UNTIL]: (op: Until) => any
+  }
+) {
+  return matchers[operator._tag](operator as any)
+}
