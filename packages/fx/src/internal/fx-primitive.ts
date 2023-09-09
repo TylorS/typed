@@ -89,37 +89,6 @@ export enum OpCodes {
   OP_UNTIL = "Fx/Until" // Move to FxPrimitive
 }
 
-export const operatorOpCodes = [
-  OpCodes.OP_CONTINUE_WITH,
-  OpCodes.OP_DROP_AFTER,
-  OpCodes.OP_DROP_UNTIL,
-  OpCodes.OP_DROP_WHILE,
-  OpCodes.OP_DURING,
-  OpCodes.OP_FILTER,
-  OpCodes.OP_FILTER_EFFECT,
-  OpCodes.OP_FILTER_MAP,
-  OpCodes.OP_FILTER_MAP_EFFECT,
-  OpCodes.OP_FLAT_MAP,
-  OpCodes.OP_FLAT_MAP_CAUSE,
-  OpCodes.OP_HOLD,
-  OpCodes.OP_LOOP,
-  OpCodes.OP_LOOP_EFFECT,
-  OpCodes.OP_MAP,
-  OpCodes.OP_MAP_EFFECT,
-  OpCodes.OP_MATCH_CAUSE,
-  OpCodes.OP_MULTICAST,
-  OpCodes.OP_OR_ELSE,
-  OpCodes.OP_SINCE,
-  OpCodes.OP_SKIP_REPEATS,
-  OpCodes.OP_SLICE,
-  OpCodes.OP_SNAPSHOT,
-  OpCodes.OP_TAKE_UNTIL,
-  OpCodes.OP_TAKE_WHILE,
-  OpCodes.OP_TAP,
-  OpCodes.OP_TAP_EFFECT,
-  OpCodes.OP_UNTIL
-]
-
 /** @internal */
 export type Op<Tag extends string, Body = {}> = Body & {
   readonly _tag: Tag

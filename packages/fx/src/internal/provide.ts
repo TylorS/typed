@@ -2,6 +2,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Context from "@typed/context"
 
+// TODO: Need to separate Provide + ProvideSome
 export type Provide<R, E, A> = ProvideContext<A> | ProvideLayer<R, E, A>
 
 export interface ProvideContext<A> {
