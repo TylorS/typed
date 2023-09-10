@@ -746,7 +746,7 @@ export function fromInput<R = never, E = never, A = never>(input: FxInput<R, E, 
       case "Interrupt":
       case "Sequential":
       case "Parallel":
-        return new FailCause(input)
+        return new FailCause(input as Cause.Cause<E>)
       default:
         return fromEffect(input as Effect.Effect<R, E, A>)
     }
