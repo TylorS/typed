@@ -7,6 +7,8 @@ import { makeIdentifier } from "@typed/context/Identifier"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 
 export interface SynchronizedRef<I, A> extends Tag<I, SyncRef.SynchronizedRef<A>> {
+  readonly [SyncRef.SynchronizedRefTypeId]: SyncRef.SynchronizedRefTypeId
+
   // Ref Operators
   readonly get: Effect.Effect<I, never, A>
   readonly getAndSet: (a: A) => Effect.Effect<I, never, A>
@@ -69,6 +71,7 @@ export function SynchronizedRef<A>() {
     ) => Effect.flatMap(tag, f)
 
     const actions: Omit<SynchronizedRef<IdentifierOf<I>, A>, keyof typeof tag> = {
+      [SyncRef.SynchronizedRefTypeId]: SyncRef.SynchronizedRefTypeId,
       get: withRef(SyncRef.get),
       getAndSet: (a) => withRef(SyncRef.getAndSet(a)),
       getAndUpdate: (f) => withRef(SyncRef.getAndUpdate(f)),

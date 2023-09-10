@@ -7,6 +7,8 @@ import { makeIdentifier } from "@typed/context/Identifier"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 
 export interface ScopedRef<I, A> extends Tag<I, S.ScopedRef<A>> {
+  readonly [S.ScopedRefTypeId]: S.ScopedRefTypeId
+
   // ScopedRef Operators
   readonly get: Effect.Effect<I, never, A>
   readonly set: <R, E>(acquire: Effect.Effect<R, E, A>) => Effect.Effect<R | I, E, void>
@@ -35,6 +37,7 @@ export function ScopedRef<A>() {
     const set = <R, E>(a: Effect.Effect<R, E, A>) => withRef(S.set(a))
 
     const actions: Omit<ScopedRef<IdentifierOf<I>, A>, keyof typeof tag> = {
+      [S.ScopedRefTypeId]: S.ScopedRefTypeId,
       get,
       set,
       provide: (a) => Effect.provideServiceEffect(tag, S.make(() => a)),

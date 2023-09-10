@@ -6,6 +6,9 @@ import type { EffectFn } from "./EffectFn"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
 import { Tag } from "./Tag"
 
+export const FnTypeId = Symbol.for("@typed/context/Fn")
+export type FnTypeId = typeof FnTypeId
+
 /**
  * Fn is a helper for creating contextual services that are single functions that return
  * an Effect.
@@ -14,6 +17,8 @@ export interface Fn<Key, T extends EffectFn> extends
   // Brand T so that functions do not collide so easily
   Tag<Key, T>
 {
+  readonly [FnTypeId]: FnTypeId
+
   /**
    * Call your effectful function with the provided arguments.
    */
@@ -79,6 +84,7 @@ export namespace Fn {
       )
 
     return Object.assign(tag, {
+      [FnTypeId]: FnTypeId,
       apply: (...args: EffectFn.ArgsOf<S>) => tag.withEffect((f) => f(...args)),
       implement,
       provideImplementation: dual(
@@ -89,6 +95,6 @@ export namespace Fn {
         ): Effect.Effect<Exclude<R, I> | EffectFn.ResourcesOf<T2>, E | EffectFn.ErrorsOf<T2>, A> =>
           Effect.provideSomeLayer(effect, implement(implementation))
       )
-    })
+    }) as Fn<I, S>
   }
 }

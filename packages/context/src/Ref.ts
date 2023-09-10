@@ -7,6 +7,8 @@ import { makeIdentifier } from "@typed/context/Identifier"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 
 export interface Ref<I, A> extends Tag<I, R.Ref<A>> {
+  readonly [R.RefTypeId]: R.RefTypeId
+
   // Ref Operators
   readonly get: Effect.Effect<I, never, A>
   readonly getAndSet: (a: A) => Effect.Effect<I, never, A>
@@ -44,6 +46,7 @@ export function Ref<A>() {
     ) => Effect.flatMap(tag, f)
 
     const actions: Omit<Ref<IdentifierOf<I>, A>, keyof typeof tag> = {
+      [R.RefTypeId]: R.RefTypeId,
       get: withRef(R.get),
       getAndSet: (a) => withRef(R.getAndSet(a)),
       getAndUpdate: (f) => withRef(R.getAndUpdate(f)),
