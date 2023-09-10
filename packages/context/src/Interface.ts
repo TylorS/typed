@@ -24,6 +24,13 @@ export interface Provide<I, S> {
   readonly provide: (
     s: S
   ) => <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<Exclude<R, I>, E, A>
+
+  /**
+   * Provide the service to an Effect
+   */
+  readonly provideEffect: <R2, E2>(
+    effect: Effect.Effect<R2, E2, S>
+  ) => <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<Exclude<R, I> | R2, E | E2, A>
 }
 
 export interface Layers<I, S> {
@@ -35,7 +42,7 @@ export interface Layers<I, S> {
   /**
    * Create a Layer using a Scoped Effect
    */
-  readonly layerScoped: <R, E>(
+  readonly scoped: <R, E>(
     effect: Effect.Effect<R, E, S>
   ) => Layer.Layer<Exclude<R, Scope.Scope>, E, I>
 

@@ -60,7 +60,15 @@ function tupleProvide<Tags extends TupleOfTags>(tags: Tags): TupleTagProvide<Tag
       const toProvide = tags.map((tag, i) => Effect.provideService(tag, s[i]))
 
       return (effect) => toProvide.reduce((acc, f) => f(acc), effect) as any
-    }
+    },
+    provideEffect: (service) => (effect) =>
+      service.pipe(
+        Effect.flatMap((s) => {
+          const toProvide = tags.map((tag, i) => Effect.provideService(tag, s[i]))
+
+          return toProvide.reduce((acc, f) => f(acc), effect) as any
+        })
+      ) as any
   }
 }
 
@@ -73,7 +81,7 @@ function tupleLayers<Tags extends TupleOfTags>(tags: Tags): TupleTagLayers<Tags>
   return {
     layerOf: (s) => Layer.succeedContext(buildTupleContext(tags, s).context),
     layer: (effect) => Layer.effectContext(Effect.map(effect, (s) => buildTupleContext(tags, s).context)),
-    layerScoped: (effect) => Layer.scopedContext(Effect.map(effect, (s) => buildTupleContext(tags, s).context))
+    scoped: (effect) => Layer.scopedContext(Effect.map(effect, (s) => buildTupleContext(tags, s).context))
   }
 }
 
@@ -158,7 +166,15 @@ function structProvide<Tags extends StructOfTags>(tags: Tags): StructTagProvide<
       const toProvide = Object.keys(tags).map((key) => Effect.provideService(tags[key], s[key]))
 
       return (effect) => toProvide.reduce((acc, f) => f(acc), effect) as any
-    }
+    },
+    provideEffect: (service) => (effect) =>
+      service.pipe(
+        Effect.flatMap((s) => {
+          const toProvide = Object.keys(tags).map((key) => Effect.provideService(tags[key], s[key]))
+
+          return toProvide.reduce((acc, f) => f(acc), effect) as any
+        })
+      ) as any
   }
 }
 
@@ -171,7 +187,7 @@ function structLayers<Tags extends StructOfTags>(tags: Tags): StructTagLayers<Ta
   return {
     layerOf: (s) => Layer.succeedContext(buildStructContext(tags, s).context),
     layer: (effect) => Layer.effectContext(Effect.map(effect, (s) => buildStructContext(tags, s).context)),
-    layerScoped: (effect) => Layer.scopedContext(Effect.map(effect, (s) => buildStructContext(tags, s).context))
+    scoped: (effect) => Layer.scopedContext(Effect.map(effect, (s) => buildStructContext(tags, s).context))
   }
 }
 

@@ -4,7 +4,7 @@ import * as Layer from "@effect/io/Layer"
 import type * as Scope from "@effect/io/Scope"
 import { ContextBuilder } from "./Builder"
 import type { IdentifierInput, IdentifierOf } from "./Identifier"
-import { identifierToString, makeIdentifier } from "./Identifier"
+import { makeIdentifier } from "./Identifier"
 import type { Actions, Builder, Layers, Provide, Tagged } from "./Interface"
 
 /**
@@ -16,7 +16,7 @@ export interface Tag<I, S = I> extends C.Tag<I, S>, Tagged<I, S> {}
 export function Tag<const I extends IdentifierInput<any>, S = I>(
   id?: I | string
 ): Tag<IdentifierOf<I>, S> {
-  return Tag.tag(C.Tag<IdentifierOf<I>, S>(identifierToString(makeIdentifier(id))))
+  return Tag.tag(C.Tag<IdentifierOf<I>, S>(makeIdentifier(id)))
 }
 
 export namespace Tag {
@@ -37,14 +37,15 @@ export namespace Tag {
 
   export function provide<I, S>(tag: C.Tag<I, S>): Provide<I, S> {
     return {
-      provide: (s: S) => Effect.provideService(tag, s)
+      provide: (s: S) => Effect.provideService(tag, s),
+      provideEffect: <R2, E2>(effect: Effect.Effect<R2, E2, S>) => Effect.provideServiceEffect(tag, effect)
     }
   }
 
   export function layers<I, S>(tag: C.Tag<I, S>): Layers<I, S> {
     return {
       layer: <R, E>(effect: Effect.Effect<R, E, S>) => Layer.effect(tag, effect),
-      layerScoped: <R, E>(effect: Effect.Effect<R | Scope.Scope, E, S>) => Layer.scoped(tag, effect),
+      scoped: <R, E>(effect: Effect.Effect<R | Scope.Scope, E, S>) => Layer.scoped(tag, effect),
       layerOf: (s: S) => Layer.succeed(tag, s)
     }
   }
