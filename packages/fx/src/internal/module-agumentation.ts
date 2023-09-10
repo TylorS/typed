@@ -31,5 +31,8 @@ declare module "@effect/io/Effect" {
 }
 
 declare global {
+  export interface Array<T> extends Fx<never, never, T> {}
+  export interface Map<K, V> extends Fx<never, never, readonly [K, V]> {}
+  export interface Set<T> extends Fx<never, never, T> {}
   export interface Iterable<T> extends Fx<never, never, T> {}
 }

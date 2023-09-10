@@ -9,8 +9,8 @@ import type * as Exit from "@effect/io/Exit"
 import type * as Schedule from "@effect/io/Schedule"
 import { type EffectOperator, fuseEffectOperators, liftSyncOperator } from "@typed/fx/internal/effect-operator"
 import { applyFusionDecision } from "@typed/fx/internal/fusion"
-import type { Provide } from "@typed/fx/internal/provide"
-import type * as Sink from "@typed/fx/internal/sink"
+import * as provide from "@typed/fx/internal/provide"
+import * as Sink from "@typed/fx/internal/sink"
 import type * as strategies from "@typed/fx/internal/strategies"
 import { fuseSyncOperators, type SyncOperator } from "@typed/fx/internal/sync-operator"
 
@@ -90,41 +90,41 @@ export namespace Fx {
 export type Primitive = Constructor | ControlFlow | Operator | FxProvide<any, any, any, any, any, any>
 
 export type Constructor =
-  | AcquireUseRelease<any, any, any, any, any, any, any, any>
-  | Combine<any, any, any>
-  | Commit<any, any, any>
+  | AcquireUseRelease<unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown>
+  | Combine<unknown, unknown, unknown>
+  | Commit<unknown, unknown, unknown>
   | Empty
-  | Fail<any>
-  | FromIterable<any>
-  | FromEffect<any, any, any>
-  | FromScheduled<any, any, any, any>
-  | FromSink<any, any, any>
-  | Merge<any, any, any>
+  | Fail<unknown>
+  | FromIterable<unknown>
+  | FromEffect<unknown, unknown, unknown>
+  | FromScheduled<unknown, unknown, unknown, unknown>
+  | FromSink<unknown, unknown, unknown>
+  | Merge<unknown, unknown, unknown>
   | Never
-  | Race<any, any, any>
-  | Succeed<any>
-  | Suspend<any, any, any>
-  | Sync<any>
+  | Race<unknown, unknown, unknown>
+  | Succeed<unknown>
+  | Suspend<unknown, unknown, unknown>
+  | Sync<unknown>
 
 export type ControlFlow =
-  | FlatMap<any, any, any, any, any, any>
-  | FlatMapCause<any, any, any, any, any, any>
-  | MatchCause<any, any, any, any, any, any, any, any, any>
-  | ContinueWith<any, any, any, any, any, any>
-  | RecoverWith<any, any, any, any, any, any>
-  | Share<any, any, any, any>
-  | During<any, any, any, any, any, any, any, any>
-  | TakeWhile<any, any, any, any, any>
-  | DropWhile<any, any, any, any, any>
-  | DropAfter<any, any, any, any, any>
+  | FlatMap<unknown, unknown, unknown, unknown, unknown, unknown>
+  | FlatMapCause<unknown, unknown, unknown, unknown, unknown, unknown>
+  | MatchCause<unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown>
+  | ContinueWith<unknown, unknown, unknown, unknown, unknown, unknown>
+  | RecoverWith<unknown, unknown, unknown, unknown, unknown, unknown>
+  | Share<unknown, unknown, unknown, unknown>
+  | During<unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown>
+  | TakeWhile<unknown, unknown, unknown, unknown, unknown>
+  | DropWhile<unknown, unknown, unknown, unknown, unknown>
+  | DropAfter<unknown, unknown, unknown, unknown, unknown>
 
 export type Operator =
-  | Transformer<any, any, any>
-  | TransformerEffect<any, any, any>
-  | Loop<any, any, any, any, any>
-  | LoopEffect<any, any, any, any, any, any, any>
-  | Snapshot<any, any, any, any, any, any, any, any, any>
-  | Middleware<any, any, any, any>
+  | Transformer<unknown, unknown, unknown>
+  | TransformerEffect<unknown, unknown, unknown>
+  | Loop<unknown, unknown, unknown, unknown, unknown>
+  | LoopEffect<unknown, unknown, unknown, unknown, unknown, unknown, unknown>
+  | Snapshot<unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown>
+  | Middleware<unknown, unknown, unknown, unknown>
 
 export class AcquireUseRelease<R, E, A, R1, E1, A1, R2, E2> extends FxConstructorProto<R | R1 | R2, E | E1 | E2, A1> {
   readonly _tag = "Fx/AcquireUseRelease"
@@ -438,7 +438,7 @@ export class FxProvide<R, E, A, R2, E2, B> extends FxProto<Exclude<R, B> | R2, E
 
   constructor(
     readonly i0: Fx<R, E, A>,
-    readonly i1: Provide<R2, E2, B>
+    readonly i1: provide.Provide<R2, E2, B>
   ) {
     super(i0, i1)
   }
@@ -467,18 +467,18 @@ export class Middleware<R, R2, E, A> extends FxOperatorProto<R2, E, A> {
   }
 }
 
-export function matchFxPrimitive<R, E, A, B, C, D, F, G, H, I>(
+export function matchFxPrimitive<R, E, A, B>(
   fx: Fx<R, E, A>,
   matchers: {
     readonly Constructor: (fx: Fx<R, E, A> & Constructor) => B
-    readonly ControlFlow: (fx: Fx<R, E, A> & ControlFlow) => C
-    readonly Operator: (fx: Fx<R, E, A> & Operator) => D
-    readonly Provide: (fx: Fx<R, E, A> & FxProvide<any, any, any, any, any, any>) => F
-    readonly Effect: (effect: Effect.Effect<R, E, A>) => G
-    readonly Cause: (cause: Cause.Cause<E>) => H
-    readonly Iterable: (iterable: Iterable<A>) => I
+    readonly ControlFlow: (fx: Fx<R, E, A> & ControlFlow) => B
+    readonly Operator: (fx: Fx<R, E, A> & Operator) => B
+    readonly Provide: (fx: Fx<R, E, A> & FxProvide<unknown, unknown, unknown, unknown, unknown, unknown>) => B
+    readonly Effect: (effect: Effect.Effect<R, E, A>) => B
+    readonly Cause: (cause: Cause.Cause<E>) => B
+    readonly Iterable: (iterable: Iterable<A>) => B
   }
-): B | C | D | F | G | H | I {
+): B {
   if (TypeId in fx) {
     if (ConstructorTypeId in fx) {
       return matchers.Constructor(fx as Fx<R, E, A> & Constructor)
@@ -487,7 +487,7 @@ export function matchFxPrimitive<R, E, A, B, C, D, F, G, H, I>(
     } else if (OperatorTypeId in fx) {
       return matchers.Operator(fx as Fx<R, E, A> & Operator)
     } else {
-      return matchers.Provide(fx as Fx<R, E, A> & FxProvide<any, any, any, any, any, any>)
+      return matchers.Provide(fx as Fx<R, E, A> & FxProvide<unknown, unknown, unknown, unknown, unknown, unknown>)
     }
   } else if (Effect.EffectTypeId in fx) {
     return matchers.Effect(fx as any)
@@ -498,124 +498,244 @@ export function matchFxPrimitive<R, E, A, B, C, D, F, G, H, I>(
   }
 }
 
-export function matchFxConstructor<R, E, A, B, C, D, F, G, H, I, J, K, L, M, N, O, P, Q>(
+export function matchFxConstructor<R, E, A>(
+  fx: Fx<R, E, A> & Constructor
+) {
+  return <B, C, D, F, G, H, I, J, K, L, M, N, O, P, Q>(
+    matchers: {
+      readonly AcquireUseRelease: (
+        fx: AcquireUseRelease<R, E, any, R, E, A, R, E>
+      ) => B
+      readonly Combine: (fx: Combine<R, E, A>) => C
+      readonly Commit: (fx: Commit<R, E, A>) => D
+      readonly Empty: (fx: Empty) => F
+      readonly Fail: (fx: Fail<E>) => G
+      readonly FromEffect: (fx: FromEffect<R, E, A>) => H
+      readonly FromScheduled: (fx: FromScheduled<R, E, A, R>) => I
+      readonly FromSink: (fx: FromSink<R, E, A>) => J
+      readonly Merge: (fx: Merge<R, E, A>) => K
+      readonly Never: (fx: Never) => L
+      readonly Race: (fx: Race<R, E, A>) => M
+      readonly Succeed: (fx: Succeed<A>) => N
+      readonly Suspend: (fx: Suspend<R, E, A>) => O
+      readonly Sync: (fx: Sync<A>) => P
+      readonly FromIterable: (fx: FromIterable<A>) => Q
+    }
+  ): B | C | D | F | G | H | I | J | K | L | M | N | O | P | Q => {
+    switch (fx._tag) {
+      case "Fx/AcquireUseRelease":
+        return matchers.AcquireUseRelease(fx as AcquireUseRelease<R, E, any, R, E, A, R, E>)
+      case "Fx/Combine":
+        return matchers.Combine(fx as Combine<R, E, A>)
+      case "Fx/Commit":
+        return matchers.Commit(fx as Commit<R, E, A>)
+      case "Fx/Empty":
+        return matchers.Empty(fx)
+      case "Fx/Fail":
+        return matchers.Fail(fx as Fail<E>)
+      case "Fx/FromEffect":
+        return matchers.FromEffect(fx as FromEffect<R, E, A>)
+      case "Fx/FromScheduled":
+        return matchers.FromScheduled(fx as FromScheduled<R, E, A, R>)
+      case "Fx/FromSink":
+        return matchers.FromSink(fx as FromSink<R, E, A>)
+      case "Fx/Merge":
+        return matchers.Merge(fx as Merge<R, E, A>)
+      case "Fx/Never":
+        return matchers.Never(fx as Never)
+      case "Fx/Race":
+        return matchers.Race(fx as Race<R, E, A>)
+      case "Fx/Succeed":
+        return matchers.Succeed(fx as Succeed<A>)
+      case "Fx/Suspend":
+        return matchers.Suspend(fx as Suspend<R, E, A>)
+      case "Fx/Sync":
+        return matchers.Sync(fx as Sync<A>)
+      case "Fx/FromIterable":
+        return matchers.FromIterable(fx as FromIterable<A>)
+    }
+  }
+}
+
+export function matchFxControlFlow<R, E, A>(fx: Fx<R, E, A> & ControlFlow) {
+  return <B, C, D, F, G, H, I, J, K, L>(
+    matchers: {
+      readonly FlatMap: (fx: FlatMap<R, E, any, R, E, A>) => B
+      readonly FlatMapCause: (fx: FlatMapCause<R, any, A, R, E, A>) => C
+      readonly MatchCause: (
+        fx: MatchCause<R, any, any, R, E, A, R, E, A>
+      ) => D
+      readonly ContinueWith: (fx: ContinueWith<R, E, A, R, E, A>) => F
+      readonly RecoverWith: (fx: RecoverWith<R, any, A, R, E, A>) => G
+      readonly Share: (fx: Share<R, E, A, R>) => H
+      readonly During: (fx: During<R, E, A, R, E, R, E, any>) => I
+      readonly TakeWhile: (fx: TakeWhile<R, E, A, R, E>) => J
+      readonly DropWhile: (fx: DropWhile<R, E, A, R, E>) => K
+      readonly DropAfter: (fx: DropAfter<R, E, A, R, E>) => L
+    }
+  ): B | C | D | F | G | H | I | J | K | L => {
+    switch (fx._tag) {
+      case "Fx/FlatMap":
+        return matchers.FlatMap(fx as FlatMap<R, E, any, R, E, A>)
+      case "Fx/FlatMapCause":
+        return matchers.FlatMapCause(fx as FlatMapCause<R, any, A, R, E, A>)
+      case "Fx/MatchCause":
+        return matchers.MatchCause(fx as MatchCause<R, any, any, R, E, A, R, E, A>)
+      case "Fx/ContinueWith":
+        return matchers.ContinueWith(fx as ContinueWith<R, E, A, R, E, A>)
+      case "Fx/RecoverWith":
+        return matchers.RecoverWith(fx as RecoverWith<R, any, A, R, E, A>)
+      case "Fx/Share":
+        return matchers.Share(fx as Share<R, E, A, R>)
+      case "Fx/During":
+        return matchers.During(fx as During<R, E, A, R, E, R, E, any>)
+      case "Fx/TakeWhile":
+        return matchers.TakeWhile(fx as TakeWhile<R, E, A, R, E>)
+      case "Fx/DropWhile":
+        return matchers.DropWhile(fx as DropWhile<R, E, A, R, E>)
+      case "Fx/DropAfter":
+        return matchers.DropAfter(fx as DropAfter<R, E, A, R, E>)
+    }
+  }
+}
+
+export function matchFxOperator<R, E, A>(fx: Fx<R, E, A> & Operator) {
+  return <B, C, D, F, G, H>(
+    matchers: {
+      readonly Transformer: (fx: Fx<R, E, A> & Transformer<R, E, A>) => B
+      readonly TransfomerEffect: (fx: Fx<R, E, A> & TransformerEffect<R, E, A>) => C
+      readonly Loop: (fx: Fx<R, E, A> & Loop<unknown, unknown, unknown, unknown, unknown>) => D
+      readonly LoopEffect: (
+        fx: Fx<R, E, A> & LoopEffect<unknown, unknown, unknown, unknown, unknown, unknown, unknown>
+      ) => F
+      readonly Snapshot: (
+        fx: Fx<R, E, A> & Snapshot<unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown>
+      ) => G
+      readonly Middleware: (
+        fx: Fx<R, E, A> & Middleware<unknown, unknown, unknown, unknown>
+      ) => H
+    }
+  ): B | C | D | F | G | H => {
+    switch (fx._tag) {
+      case "Fx/Transformer":
+        return matchers.Transformer(fx)
+      case "Fx/TransformerEffect":
+        return matchers.TransfomerEffect(fx)
+      case "Fx/Loop":
+        return matchers.Loop(fx)
+      case "Fx/LoopEffect":
+        return matchers.LoopEffect(fx)
+      case "Fx/Snapshot":
+        return matchers.Snapshot(fx)
+      case "Fx/Middleware":
+        return matchers.Middleware(fx)
+    }
+  }
+}
+export function run<R, E, A, R2>(
+  fx: Fx<R, E, A>,
+  sink: Sink.WithContext<R2, E, A>
+): Effect.Effect<R | R2, E, unknown> {
+  return matchFxPrimitive(fx, {
+    Constructor: (fx) => runConstructor<R, E, A, R2>(fx, sink),
+    ControlFlow: (fx) => runControlFlow<R, E, A, R2>(fx, sink),
+    Operator: (fx) => runOperator<R, E, A, R2>(fx, sink),
+    Provide: (fx) => runProvide<R, E, A, R2>(fx, sink),
+    Effect: (effect) => runEffect<R, E, A, R2>(effect, sink),
+    Cause: (cause) => sink.onFailure(cause),
+    Iterable: (iterable) => Effect.forEach(iterable, sink.onSuccess)
+  })
+}
+
+const notImplementedYet = Effect.fail("Not Implemented" as never)
+
+export function runConstructor<R, E, A, R2>(
   fx: Fx<R, E, A> & Constructor,
-  matchers: {
-    readonly AcquireUseRelease: (
-      fx: AcquireUseRelease<any, any, any, any, any, any, any, any>
-    ) => B
-    readonly Combine: (fx: Combine<any, any, any>) => C
-    readonly Commit: (fx: Commit<any, any, any>) => D
-    readonly Empty: (fx: Empty) => F
-    readonly Fail: (fx: Fail<any>) => G
-    readonly FromEffect: (fx: FromEffect<any, any, any>) => H
-    readonly FromScheduled: (fx: FromScheduled<any, any, any, any>) => I
-    readonly FromSink: (fx: FromSink<any, any, any>) => J
-    readonly Merge: (fx: Merge<any, any, any>) => K
-    readonly Never: (fx: Never) => L
-    readonly Race: (fx: Race<any, any, any>) => M
-    readonly Succeed: (fx: Succeed<any>) => N
-    readonly Suspend: (fx: Suspend<any, any, any>) => O
-    readonly Sync: (fx: Sync<any>) => P
-    readonly FromIterable: (fx: FromIterable<any>) => Q
-  }
-): B | C | D | F | G | H | I | J | K | L | M | N | O | P | Q {
-  switch (fx._tag) {
-    case "Fx/AcquireUseRelease":
-      return matchers.AcquireUseRelease(fx)
-    case "Fx/Combine":
-      return matchers.Combine(fx)
-    case "Fx/Commit":
-      return matchers.Commit(fx)
-    case "Fx/Empty":
-      return matchers.Empty(fx)
-    case "Fx/Fail":
-      return matchers.Fail(fx)
-    case "Fx/FromEffect":
-      return matchers.FromEffect(fx)
-    case "Fx/FromScheduled":
-      return matchers.FromScheduled(fx)
-    case "Fx/FromSink":
-      return matchers.FromSink(fx)
-    case "Fx/Merge":
-      return matchers.Merge(fx)
-    case "Fx/Never":
-      return matchers.Never(fx)
-    case "Fx/Race":
-      return matchers.Race(fx)
-    case "Fx/Succeed":
-      return matchers.Succeed(fx)
-    case "Fx/Suspend":
-      return matchers.Suspend(fx)
-    case "Fx/Sync":
-      return matchers.Sync(fx)
-    case "Fx/FromIterable":
-      return matchers.FromIterable(fx)
-  }
+  sink: Sink.WithContext<R2, E, A>
+): Effect.Effect<R | R2, E, unknown> {
+  return matchFxConstructor<R, E, A>(fx)({
+    AcquireUseRelease: (fx) =>
+      Effect.acquireUseRelease(
+        fx.i0,
+        (a) => run(fx.i1(a), sink),
+        (a, exit) => Effect.catchAllCause(fx.i2(a, exit), sink.onFailure)
+      ),
+    Combine: () => notImplementedYet,
+    Commit: (fx) => run(fx.commit(), sink),
+    Empty: () => Effect.unit,
+    Fail: (fx) => sink.onFailure(fx.i0),
+    FromEffect: (fx) => fx.i0,
+    FromScheduled: (fx) => Effect.repeat(Effect.matchCauseEffect(fx.i0, sink), fx.i1),
+    FromSink: (fx) => Effect.contextWithEffect((ctx) => fx.i0(Sink.provide(sink, ctx))),
+    Merge: (fx) => {
+      // TODO: Manage strategies properly
+      switch (fx.i1._tag) {
+        case "Ordered":
+        case "Switch":
+        default:
+          return Effect.all(fx.i0.map((fx) => run(fx, sink)), { concurrency: "unbounded" })
+      }
+    },
+    Never: () => Effect.never,
+    Race: () => notImplementedYet,
+    Succeed: (fx) => sink.onSuccess(fx.i0),
+    Suspend: (fx) => run(fx.i0(), sink),
+    Sync: (fx) => sink.onSuccess(fx.i0()),
+    FromIterable: (fx) => Effect.forEach(fx.i0, sink.onSuccess)
+  })
 }
 
-export function matchFxControlFlow<R, E, A, B, C, D, F, G, H, I, J, K, L>(
+export function runControlFlow<R, E, A, R2>(
   fx: Fx<R, E, A> & ControlFlow,
-  matchers: {
-    readonly FlatMap: (fx: FlatMap<any, any, any, any, any, any>) => B
-    readonly FlatMapCause: (fx: FlatMapCause<any, any, any, any, any, any>) => C
-    readonly MatchCause: (fx: MatchCause<any, any, any, any, any, any, any, any, any>) => D
-    readonly ContinueWith: (fx: ContinueWith<any, any, any, any, any, any>) => F
-    readonly RecoverWith: (fx: RecoverWith<any, any, any, any, any, any>) => G
-    readonly Share: (fx: Share<any, any, any, any>) => H
-    readonly During: (fx: During<any, any, any, any, any, any, any, any>) => I
-    readonly TakeWhile: (fx: TakeWhile<any, any, any, any, any>) => J
-    readonly DropWhile: (fx: DropWhile<any, any, any, any, any>) => K
-    readonly DropAfter: (fx: DropAfter<any, any, any, any, any>) => L
-  }
-): B | C | D | F | G | H | I | J | K | L {
-  switch (fx._tag) {
-    case "Fx/FlatMap":
-      return matchers.FlatMap(fx)
-    case "Fx/FlatMapCause":
-      return matchers.FlatMapCause(fx)
-    case "Fx/MatchCause":
-      return matchers.MatchCause(fx)
-    case "Fx/ContinueWith":
-      return matchers.ContinueWith(fx)
-    case "Fx/RecoverWith":
-      return matchers.RecoverWith(fx)
-    case "Fx/Share":
-      return matchers.Share(fx)
-    case "Fx/During":
-      return matchers.During(fx)
-    case "Fx/TakeWhile":
-      return matchers.TakeWhile(fx)
-    case "Fx/DropWhile":
-      return matchers.DropWhile(fx)
-    case "Fx/DropAfter":
-      return matchers.DropAfter(fx)
-  }
+  sink: Sink.WithContext<R2, E, A>
+): Effect.Effect<R | R2, E, unknown> {
+  return matchFxControlFlow<R, E, A>(fx)({
+    FlatMap: () => notImplementedYet,
+    FlatMapCause: () => notImplementedYet,
+    MatchCause: () => notImplementedYet,
+    ContinueWith: () => notImplementedYet,
+    RecoverWith: () => notImplementedYet,
+    Share: () => notImplementedYet,
+    During: () => notImplementedYet,
+    TakeWhile: () => notImplementedYet,
+    DropWhile: () => notImplementedYet,
+    DropAfter: () => notImplementedYet
+  })
 }
 
-export function matchFxOperator<R, E, A, B, C, D, F, G, H>(
+export function runOperator<R, E, A, R2>(
   fx: Fx<R, E, A> & Operator,
-  matchers: {
-    readonly Transformer: (fx: Transformer<any, any, any>) => B
-    readonly TransfomerEffect: (fx: TransformerEffect<any, any, any>) => C
-    readonly Loop: (fx: Loop<any, any, any, any, any>) => D
-    readonly LoopEffect: (fx: LoopEffect<any, any, any, any, any, any, any>) => F
-    readonly Snapshot: (fx: Snapshot<any, any, any, any, any, any, any, any, any>) => G
-    readonly Middleware: (fx: Middleware<any, any, any, any>) => H
-  }
-): B | C | D | F | G | H {
-  switch (fx._tag) {
-    case "Fx/Transformer":
-      return matchers.Transformer(fx)
-    case "Fx/TransformerEffect":
-      return matchers.TransfomerEffect(fx)
-    case "Fx/Loop":
-      return matchers.Loop(fx)
-    case "Fx/LoopEffect":
-      return matchers.LoopEffect(fx)
-    case "Fx/Snapshot":
-      return matchers.Snapshot(fx)
-    case "Fx/Middleware":
-      return matchers.Middleware(fx)
-  }
+  sink: Sink.WithContext<R2, E, A>
+): Effect.Effect<R | R2, E, unknown> {
+  return matchFxOperator<R, E, A>(fx)({
+    Transformer: (transformer) => runTransformer(transformer, sink),
+    TransfomerEffect: () => notImplementedYet,
+    Loop: () => notImplementedYet,
+    LoopEffect: () => notImplementedYet,
+    Snapshot: () => notImplementedYet,
+    Middleware: () => notImplementedYet
+  })
+}
+
+export function runTransformer<R, E, A, R2>(
+  fx: Fx<R, E, A> & Transformer<R, E, A>,
+  sink: Sink.WithContext<R2, E, A>
+): Effect.Effect<R | R2, E, unknown> {
+  return Effect.gen(function*(_) {
+    // TODO: Implement
+  })
+}
+
+export function runProvide<R, E, A, R2>(
+  fx: Fx<R, E, A> & FxProvide<any, any, any, any, any, any>,
+  sink: Sink.WithContext<R2, E, A>
+): Effect.Effect<R | R2, E, unknown> {
+  return provide.provideToEffect(run(fx.i0, sink), fx.i1)
+}
+
+export function runEffect<R, E, A, R2>(
+  effect: Effect.Effect<R, E, A>,
+  sink: Sink.WithContext<R2, E, A>
+): Effect.Effect<R | R2, E, unknown> {
+  return Effect.matchCauseEffect(effect, sink)
 }

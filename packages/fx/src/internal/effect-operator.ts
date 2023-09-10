@@ -168,3 +168,24 @@ export function liftSyncOperator(op: SyncOperator): EffectOperator {
     }
   }
 }
+
+export function matchEffectOperator<A, B, C, D>(
+  operator: EffectOperator,
+  matchers: {
+    readonly MapEffect: (f: MapEffect<any, any, any, any>) => A
+    readonly TapEffect: (f: TapEffect<any, any, any, any>) => B
+    readonly FilterEffect: (f: FilterEffect<any, any, any>) => C
+    readonly FilterMapEffect: (f: FilterMapEffect<any, any, any, any>) => D
+  }
+): A | B | C | D {
+  switch (operator._tag) {
+    case "MapEffect":
+      return matchers.MapEffect(operator)
+    case "TapEffect":
+      return matchers.TapEffect(operator)
+    case "FilterEffect":
+      return matchers.FilterEffect(operator)
+    case "FilterMapEffect":
+      return matchers.FilterMapEffect(operator)
+  }
+}

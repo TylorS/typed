@@ -82,3 +82,21 @@ const SyncOperatorFusionMap: SyncOperatorFusionMap = {
 export function fuseSyncOperators(op1: SyncOperator, op2: SyncOperator): Fusion.FusionDecision<SyncOperator> {
   return SyncOperatorFusionMap[op1._tag][op2._tag](op1 as any, op2 as any)
 }
+
+export function matchSyncOperator<A, B, C, D>(operator: SyncOperator, matchers: {
+  readonly Map: (f: Map<any, any>) => A
+  readonly Filter: (f: Filter<any>) => B
+  readonly FilterMap: (f: FilterMap<any, any>) => C
+  readonly Slice: (f: Slice) => D
+}): A | B | C | D {
+  switch (operator._tag) {
+    case "Map":
+      return matchers.Map(operator)
+    case "Filter":
+      return matchers.Filter(operator)
+    case "FilterMap":
+      return matchers.FilterMap(operator)
+    case "Slice":
+      return matchers.Slice(operator)
+  }
+}
