@@ -1321,7 +1321,7 @@ export const acquireUseRelease: {
   return new AcquireUseRelease(acquire, use, release)
 })
 
-export function combine<FX extends ReadonlyArray<Fx<any, any, any>>>(
+export function combine<const FX extends ReadonlyArray<Fx<any, any, any>>>(
   fxs: FX
 ): Fx<
   Fx.Context<FX[number]>,
@@ -1333,7 +1333,7 @@ export function combine<FX extends ReadonlyArray<Fx<any, any, any>>>(
   return new Combine(fxs)
 }
 
-export function merge<FX extends ReadonlyArray<Fx<any, any, any>>>(
+export function merge<const FX extends ReadonlyArray<Fx<any, any, any>>>(
   fxs: FX
 ): Fx<
   Fx.Context<FX[number]>,
@@ -1344,10 +1344,10 @@ export function merge<FX extends ReadonlyArray<Fx<any, any, any>>>(
 }
 
 export const mergeConcurrently: {
-  (concurrency: number): <FX extends ReadonlyArray<Fx<any, any, any>>>(
+  (concurrency: number): <const FX extends ReadonlyArray<Fx<any, any, any>>>(
     fxs: FX
   ) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
-  <FX extends ReadonlyArray<Fx<any, any, any>>>(
+  <const FX extends ReadonlyArray<Fx<any, any, any>>>(
     fxs: FX,
     concurrency: number
   ): Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
@@ -1362,7 +1362,7 @@ export const mergeConcurrently: {
   return Merge.make(fxs, strategies.Unordered(concurrency))
 })
 
-export function mergeBuffer<FX extends ReadonlyArray<Fx<any, any, any>>>(
+export function mergeBuffer<const FX extends ReadonlyArray<Fx<any, any, any>>>(
   fxs: FX
 ): Fx<
   Fx.Context<FX[number]>,
@@ -1373,10 +1373,10 @@ export function mergeBuffer<FX extends ReadonlyArray<Fx<any, any, any>>>(
 }
 
 export const mergeBufferConcurrently: {
-  (concurrency: number): <FX extends ReadonlyArray<Fx<any, any, any>>>(
+  (concurrency: number): <const FX extends ReadonlyArray<Fx<any, any, any>>>(
     fxs: FX
   ) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
-  <FX extends ReadonlyArray<Fx<any, any, any>>>(
+  <const FX extends ReadonlyArray<Fx<any, any, any>>>(
     fxs: FX,
     concurrency: number
   ): Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
@@ -1391,7 +1391,7 @@ export const mergeBufferConcurrently: {
   return Merge.make(fxs, strategies.Ordered(concurrency))
 })
 
-export const mergeSwitch = <FX extends ReadonlyArray<Fx<any, any, any>>>(
+export const mergeSwitch = <const FX extends ReadonlyArray<Fx<any, any, any>>>(
   fxs: FX
 ): Fx<
   Fx.Context<FX[number]>,
@@ -1399,7 +1399,7 @@ export const mergeSwitch = <FX extends ReadonlyArray<Fx<any, any, any>>>(
   Fx.Success<FX[number]>
 > => Merge.make(fxs, strategies.Switch)
 
-export function race<FX extends ReadonlyArray<Fx<any, any, any>>>(
+export function race<const FX extends ReadonlyArray<Fx<any, any, any>>>(
   fxs: FX
 ): Fx<
   Fx.Context<FX[number]>,
