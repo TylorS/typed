@@ -24,18 +24,18 @@ class SubjectImpl<E, A> extends Commit<never, E, A> implements Subject<never, E,
   protected sinks: Set<Sink<E, A>> = new Set()
 
   // Emit a failure to all sinks
-  onFailure = (cause: Cause<E>) => Effect.forEach(this.sinks, (sink) => sink.onFailure(cause))
+  onFailure = (cause: Cause<E>) => this.onCause(cause)
 
   // Emit an event to all sinks
-  onSuccess = (a: A) => Effect.forEach(this.sinks, (sink) => sink.onSuccess(a))
+  onSuccess = (a: A) => this.onEvent(a)
 
   commit(): Fx<never, E, A> {
-    return fromSink<never, E, A>((sink) => this.addSink(sink, Effect.zipRight(Effect.never)))
+    return fromSink<never, E, A>((sink) => this.addSink(sink, () => Effect.never))
   }
 
   protected addSink<R2, B>(
     sink: Sink<E, A>,
-    f: (effect: Effect.Effect<never, never, number>) => Effect.Effect<R2, never, B>
+    f: () => Effect.Effect<R2, never, B>
   ): Effect.Effect<R2, never, B> {
     return Effect.acquireUseRelease(
       Scope.make(),
@@ -49,10 +49,18 @@ class SubjectImpl<E, A> extends Commit<never, E, A> implements Subject<never, E,
           () => Effect.sync(() => this.sinks.delete(sink))
         ).pipe(
           Effect.provideService(Scope.Scope, scope),
-          f
+          Effect.flatMap(f)
         ),
       (scope, exit) => Scope.close(scope, exit)
     )
+  }
+
+  protected onEvent(a: A) {
+    return Effect.forEach(this.sinks, (sink) => sink.onSuccess(a), { concurrency: "unbounded" })
+  }
+
+  protected onCause(cause: Cause<E>) {
+    return Effect.forEach(this.sinks, (sink) => sink.onFailure(cause), { concurrency: "unbounded" })
   }
 }
 
@@ -64,21 +72,16 @@ class HoldSubjectImpl<E, A> extends SubjectImpl<E, A> implements Subject<never, 
     Effect.suspend(() => {
       MutableRef.set(this.lastValue, Option.some(a))
 
-      return Effect.forEach(this.sinks, (sink) => sink.onSuccess(a))
+      return this.onEvent(a)
     })
 
   commit(): Fx<never, E, A> {
     return fromSink<never, E, A>((sink) =>
-      this.addSink(sink, (effect) =>
-        effect.pipe(
-          Effect.tap(() =>
-            Option.match(MutableRef.get(this.lastValue), {
-              onNone: () => Effect.unit,
-              onSome: sink.onSuccess
-            })
-          ),
-          Effect.zipRight(Effect.never)
-        ))
+      this.addSink(sink, () =>
+        Option.match(MutableRef.get(this.lastValue), {
+          onNone: () => Effect.never,
+          onSome: (a) => Effect.zipRight(sink.onSuccess(a), Effect.never)
+        }))
     )
   }
 }
@@ -93,16 +96,12 @@ class ReplaySubjectImpl<E, A> extends SubjectImpl<E, A> {
     Effect.suspend(() => {
       this.buffer.push(a)
 
-      return Effect.forEach(this.sinks, (sink) => sink.onSuccess(a))
+      return this.onEvent(a)
     })
 
   commit(): Fx<never, E, A> {
     return fromSink<never, E, A>((sink) =>
-      this.addSink(sink, (effect) =>
-        effect.pipe(
-          Effect.tap(() => this.buffer.forEach(sink.onSuccess)),
-          Effect.zipRight(Effect.never)
-        ))
+      this.addSink(sink, () => Effect.zipRight(this.buffer.forEach(sink.onSuccess), Effect.never))
     )
   }
 }
