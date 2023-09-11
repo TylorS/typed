@@ -26,9 +26,9 @@
     "tc": "ultra -r tc",
     "version": "changeset version && pnpm install --no-frozen-lockfile",
     "new-package": "./scripts/new-package.sh",
-    "sync-dependencies": "syncpack fix-mismatches",
-    "update-dependencies": "syncpack update",
-    "sync-references": "node ./scripts/sync-project-references.js",
+    "sync-deps": "syncpack fix-mismatches",
+    "update-deps": "syncpack update",
+    "sync-refs": "node ./scripts/sync-project-references.js",
     "update-paths": "node ./scripts/update-path-references.js"
   },
   "devDependencies": {
