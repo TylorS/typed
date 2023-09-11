@@ -9,6 +9,7 @@ import * as Cause from "@effect/io/Cause"
 import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import type * as Exit from "@effect/io/Exit"
+import * as Fiber from "@effect/io/Fiber"
 import type * as Layer from "@effect/io/Layer"
 import * as Ref from "@effect/io/Ref"
 import * as SynchronizedRef from "@effect/io/SynchronizedRef"
@@ -26,7 +27,7 @@ import {
   MapEffect,
   TapEffect
 } from "@typed/fx/internal/effect-operator"
-import { withFlattenStrategy, withScopedFork } from "@typed/fx/internal/helpers"
+import { withBuffers, withEarlyExit, withFlattenStrategy, withScopedFork } from "@typed/fx/internal/helpers"
 import * as Provide from "@typed/fx/internal/provide"
 import * as Sink from "@typed/fx/internal/sink"
 import * as strategies from "@typed/fx/internal/strategies"
@@ -56,7 +57,7 @@ type OperatorTypeId = typeof OperatorTypeId
 const ProvideTypeId = Symbol.for("@typed/Fx/ProvideTypeId")
 type ProvideTypeId = typeof ProvideTypeId
 
-// TODO: TransformerCause + TransformerCauseEffect
+// TODO: TransformerCause + TransformerCauseEffect + SkipRepeats
 
 export interface Fx<R, E, A> extends Fx.Variance<R, E, A>, Pipeable {}
 
@@ -767,8 +768,6 @@ export function run<R, E, A, R2>(
   })
 }
 
-const notImplementedYet = Effect.fail("Not Implemented" as never)
-
 export function runConstructor<R, E, A, R2>(
   fx: Fx<R, E, A> & Constructor,
   sink: Sink.WithContext<R2, E, A>
@@ -783,9 +782,30 @@ export function runConstructor<R, E, A, R2>(
         ),
         sink.onFailure
       ),
-    Combine: () => notImplementedYet,
+    Combine: (fx) =>
+      Effect.suspend(() => {
+        const values = new globalThis.Map<number, any>()
+        const total = fx.i0.length
+
+        const sample = () => Array.from({ length: total }, (_, i) => values.get(i)) as any as A
+
+        const emitIfReady = (value: any, index: number) =>
+          Effect.suspend(() => {
+            values.set(index, value)
+            if (values.size === total) {
+              return sink.onSuccess(sample())
+            } else {
+              return Effect.unit
+            }
+          })
+
+        return Effect.all(
+          fx.i0.map((fx, index) => run(fx, Sink.WithContext(sink.onFailure, (a) => emitIfReady(a, index)))),
+          { concurrency: "unbounded" }
+        )
+      }),
     Commit: (fx) => Effect.suspend(() => run(fx.commit(), sink)),
-    Empty: () => Effect.unit,
+    Empty: constUnit,
     Fail: (fx) => sink.onFailure(fx.i0),
     FromEffect: (fx) => Effect.matchCauseEffect(fx.i0, sink),
     FromScheduled: (fx) =>
@@ -793,10 +813,32 @@ export function runConstructor<R, E, A, R2>(
     FromSink: (fx) => Effect.contextWithEffect((ctx: Context<R | R2>) => fx.i0(Sink.provide(sink, ctx))),
     Merge: (fx) => {
       switch (fx.i1._tag) {
-        case "Ordered":
-          return notImplementedYet
+        case "Ordered": {
+          const concurrency = fx.i1.concurrency === Infinity ? "unbounded" : fx.i1.concurrency
+
+          return (
+            Effect.flatMap(withBuffers(fx.i0.length, sink), (buffers) =>
+              Effect.all(
+                fx.i0.map((fx, i) =>
+                  Effect.flatMap(
+                    run(
+                      fx,
+                      Sink.WithContext(
+                        sink.onFailure,
+                        (a) => buffers.onSuccess(i, a)
+                      )
+                    ),
+                    () => buffers.onEnd(i)
+                  )
+                ),
+                {
+                  concurrency
+                }
+              ))
+          )
+        }
         case "Switch":
-          return Effect.all(fx.i0.map((fx) => run(take(fx, 1), sink)), { concurrency: 1 })
+          return Effect.all(fx.i0.map((fx) => run(fx, sink)), { concurrency: 1 })
         case "Unordered":
           return Effect.all(fx.i0.map((fx) => run(fx, sink)), {
             concurrency: fx.i1.concurrency === Infinity ? "unbounded" : fx.i1.concurrency
@@ -804,7 +846,36 @@ export function runConstructor<R, E, A, R2>(
       }
     },
     Never: () => Effect.never,
-    Race: () => notImplementedYet,
+    Race: (fx) =>
+      Effect.suspend(() => {
+        const fibers: Array<Fiber.Fiber<any, any>> = []
+        let winnerFound = -1
+
+        return Effect.all(fx.i0.map((fx, i) => run(fx, raceSink(i))), { concurrency: "unbounded" })
+
+        function raceSink(i: number): Sink.WithContext<R2, E, A> {
+          return Sink.WithContext(
+            (cause) => raceEvent(i, cause, sink.onFailure),
+            (a) => raceEvent(i, a, sink.onSuccess)
+          )
+        }
+
+        function raceEvent<A>(i: number, value: A, f: (a: A) => Effect.Effect<R2, never, unknown>) {
+          // We found a winner!
+          if (winnerFound === -1) {
+            // Remove winner from the list of fibers to interrupt
+            fibers.splice(winnerFound = i, 1)
+
+            // Interrupt fibers and emit value
+            return Fiber.interruptAll(fibers).pipe(
+              Effect.flatMap(() => f(value))
+            )
+          } else {
+            // Emit only if the value is from the winning fiber
+            return i === winnerFound ? f(value) : Effect.unit
+          }
+        }
+      }),
     Succeed: (fx) => sink.onSuccess(fx.i0),
     Suspend: (fx) => Effect.suspend(() => run(fx.i0(), sink)),
     Sync: (fx) => Effect.suspend(() => sink.onSuccess(fx.i0())),
@@ -839,10 +910,86 @@ export function runControlFlow<R, E, A, R2>(
       Effect.flatMap(run<R, E, A, R2>(continueWith.i0, sink), () => run(continueWith.i1(), sink)),
     RecoverWith: (recoverWith) =>
       Effect.catchAllCause(observe(recoverWith.i0, sink.onSuccess), (cause) => run(recoverWith.i1(cause), sink)),
-    During: () => notImplementedYet,
-    TakeWhile: () => notImplementedYet,
-    DropWhile: () => notImplementedYet,
-    DropAfter: () => notImplementedYet
+    During: (fx) =>
+      withScopedFork((fork) =>
+        withEarlyExit(sink, (sink) =>
+          Effect.suspend(() => {
+            let taking = false
+
+            return run(
+              take(fx.i1, 1),
+              Sink.WithContext(sink.onFailure, (nested) => {
+                taking = true
+                return fork(run(take(nested, 1), Sink.WithContext(sink.onFailure, () => sink.end)))
+              })
+            ).pipe(
+              fork,
+              Effect.flatMap(() =>
+                run(
+                  fx.i0,
+                  Sink.WithContext(
+                    sink.onFailure,
+                    (a) => taking ? sink.onSuccess(a) : Effect.unit
+                  )
+                )
+              )
+            )
+          }))
+      ),
+    TakeWhile: (fx) =>
+      withEarlyExit(sink, (sink) =>
+        run(
+          fx.i0,
+          Sink.WithContext(sink.onFailure, (a) =>
+            Effect.matchCauseEffect(fx.i1(a), {
+              onFailure: sink.onFailure,
+              onSuccess: (b) => b ? sink.onSuccess(a) : sink.end
+            }))
+        )),
+    DropWhile: (fx) =>
+      Effect.suspend(() => {
+        let isDropping = true
+
+        return run(
+          fx.i0,
+          Sink.WithContext(sink.onFailure, (a) =>
+            isDropping ?
+              Effect.matchCauseEffect(fx.i1(a), {
+                onFailure: sink.onFailure,
+                onSuccess: (b) => {
+                  if (b) {
+                    return Effect.unit
+                  } else {
+                    isDropping = false
+                    return sink.onSuccess(a)
+                  }
+                }
+              }) :
+              sink.onSuccess(a))
+        )
+      }),
+    DropAfter: (fx) =>
+      Effect.suspend(() => {
+        let isDropping = false
+
+        return run(
+          fx.i0,
+          Sink.WithContext(sink.onFailure, (a) =>
+            isDropping ?
+              Effect.unit :
+              Effect.matchCauseEffect(fx.i1(a), {
+                onFailure: sink.onFailure,
+                onSuccess: (b) => {
+                  if (b) {
+                    isDropping = false
+                    return Effect.unit
+                  } else {
+                    return sink.onSuccess(a)
+                  }
+                }
+              }))
+        )
+      })
   })
 }
 
@@ -861,13 +1008,14 @@ export function runOperator<R, E, A, R2>(
           loop.i0,
           Sink.WithContext(
             sink.onFailure,
-            (a) => {
-              const [c, b] = loop.i1(acc, a)
+            (a) =>
+              Effect.suspend(() => {
+                const [c, b] = loop.i1(acc, a)
 
-              acc = b
+                acc = b
 
-              return sink.onSuccess(c)
-            }
+                return sink.onSuccess(c)
+              })
           )
         )
       }),
@@ -881,7 +1029,7 @@ export function runOperator<R, E, A, R2>(
                 loop.i1(b, a).pipe(
                   Effect.matchCauseEffect({
                     onFailure: sink.onFailure,
-                    onSuccess: ([c, b]) => sink.onSuccess(c).pipe(Effect.as(b))
+                    onSuccess: ([c, b]) => Effect.as(sink.onSuccess(c), b)
                   })
                 )))
           )
@@ -895,16 +1043,17 @@ export function runOperator<R, E, A, R2>(
           loop.i0,
           Sink.WithContext(
             sink.onFailure,
-            (a) => {
-              const optionCB = loop.i1(acc, a)
+            (a) =>
+              Effect.suspend(() => {
+                const optionCB = loop.i1(acc, a)
 
-              if (Option.isNone(optionCB)) return Effect.unit
+                if (Option.isNone(optionCB)) return Effect.unit
 
-              const [c, b] = optionCB.value
-              acc = b
+                const [c, b] = optionCB.value
+                acc = b
 
-              return sink.onSuccess(c)
-            }
+                return sink.onSuccess(c)
+              })
           )
         )
       }),
@@ -920,14 +1069,15 @@ export function runOperator<R, E, A, R2>(
               loop.i1(acc, a).pipe(
                 Effect.matchCauseEffect({
                   onFailure: sink.onFailure,
-                  onSuccess: (optionCB) => {
-                    if (Option.isNone(optionCB)) return Effect.unit
+                  onSuccess: (optionCB) =>
+                    Effect.suspend(() => {
+                      if (Option.isNone(optionCB)) return Effect.unit
 
-                    const [c, b] = optionCB.value
-                    acc = b
+                      const [c, b] = optionCB.value
+                      acc = b
 
-                    return sink.onSuccess(c)
-                  }
+                      return sink.onSuccess(c)
+                    })
                 })
               )
           )
@@ -968,34 +1118,32 @@ export function runOperator<R, E, A, R2>(
         return middleware.i1(run(middleware.i0, provided), provided)
       }),
     Slice: (slice) =>
-      Effect.asyncEffect((resume) =>
+      withEarlyExit(sink, (sink) =>
         Effect.suspend(() => {
           let toSkip = slice.i1.min
           let toTake = slice.i1.max
 
           return run(
             slice.i0,
-            Sink.WithContext(sink.onFailure, (a) => {
-              if (toSkip > 0) {
-                toSkip -= 1
-                return Effect.unit
-              } else if (toTake > 0) {
-                toTake -= 1
-                return sink.onSuccess(a).pipe(
-                  Effect.flatMap(() => toTake <= 0 ? Effect.sync(() => resume(Effect.unit)) : Effect.unit)
-                )
-              } else {
-                return Effect.sync(() => resume(Effect.unit))
-              }
-            })
+            Sink.WithContext(sink.onFailure, (a) =>
+              Effect.suspend(() => {
+                if (toSkip > 0) {
+                  toSkip -= 1
+                  return Effect.unit
+                } else if (toTake > 0) {
+                  toTake -= 1
+                  return Effect.flatMap(sink.onSuccess(a), () => toTake <= 0 ? sink.end : Effect.unit)
+                } else {
+                  return sink.end
+                }
+              }))
           ).pipe(
             Effect.matchCauseEffect({
               onFailure: sink.onFailure,
-              onSuccess: () => Effect.sync(() => resume(Effect.unit))
+              onSuccess: () => sink.end
             })
           )
-        })
-      )
+        }))
   })
 }
 
@@ -1055,15 +1203,17 @@ export function observe<R, E, A, R2, E2>(
           (a) => Effect.catchAllCause(onSuccees(a), (cause) => Deferred.failCause(deferred, cause))
         )
       ).pipe(
-        Effect.flatMap(() => Deferred.succeed(deferred, undefined)),
+        Effect.intoDeferred(deferred),
         fork,
         Effect.flatMap(() => Deferred.await(deferred))
       ))
   )
 }
 
+const constUnit = () => Effect.unit
+
 export function drain<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, void> {
-  return observe(fx, () => Effect.unit)
+  return observe(fx, constUnit)
 }
 
 export function toArray<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, Array<A>> {

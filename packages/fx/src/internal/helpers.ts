@@ -5,6 +5,7 @@ import * as Fiber from "@effect/io/Fiber"
 import * as Ref from "@effect/io/Ref"
 import * as Scope from "@effect/io/Scope"
 import * as SynchronizedRef from "@effect/io/SynchronizedRef"
+import type { WithContext } from "@typed/fx/internal/sink"
 import type { FlattenStrategy } from "@typed/fx/internal/strategies"
 
 export type ScopedFork = <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, never, Fiber.Fiber.Runtime<E, A>>
@@ -219,4 +220,74 @@ export class RingBuffer<A> {
       options
     )
   }
+}
+
+export interface EarlyExitSink<R, E, A> extends WithContext<R, E, A> {
+  readonly end: Effect.Effect<never, never, void>
+}
+
+export function withEarlyExit<R, E, A, R2, B>(
+  sink: WithContext<R, E, A>,
+  f: (sink: EarlyExitSink<R, E, A>) => Effect.Effect<R2, E, B>
+): Effect.Effect<R | R2, never, void> {
+  return Effect.asyncEffect<never, never, void, R | R2, never, void>((resume) => {
+    const earlyExit: EarlyExitSink<R, E, A> = {
+      ...sink,
+      end: Effect.sync(() => resume(Effect.unit))
+    }
+
+    return f(earlyExit).pipe(
+      Effect.matchCauseEffect({
+        onFailure: sink.onFailure,
+        onSuccess: () => earlyExit.end
+      })
+    )
+  })
+}
+
+export function withBuffers<R, E, A>(count: number, sink: WithContext<R, E, A>) {
+  return Effect.sync(() => {
+    const buffers = Array(count).fill([] as Array<A>)
+    const finished = new Set<number>()
+    let currentIndex = 0
+
+    const drainBuffer = (index: number): Effect.Effect<R, never, void> => {
+      const effect = Effect.forEach(buffers[index], sink.onSuccess)
+      buffers[index] = []
+      return Effect.flatMap(effect, () => finished.has(index) ? onEnd(index) : Effect.unit)
+    }
+
+    const onSuccess = (index: number, value: A) =>
+      Effect.sync(() => {
+        if (index === currentIndex) {
+          const buffer = buffers[index]
+
+          if (buffer.length === 0) {
+            return sink.onSuccess(value)
+          } else {
+            buffer.push(value)
+
+            return drainBuffer(index)
+          }
+        } else {
+          buffers[index].push(value)
+        }
+      })
+
+    const onEnd = (index: number) =>
+      Effect.suspend(() => {
+        finished.add(index)
+
+        if (index === currentIndex) {
+          return drainBuffer(++currentIndex)
+        } else {
+          return Effect.unit
+        }
+      })
+
+    return {
+      onSuccess,
+      onEnd
+    }
+  })
 }
