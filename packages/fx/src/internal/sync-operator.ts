@@ -1,7 +1,6 @@
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import { WithContext } from "@typed/fx/internal/sink"
-import * as Fusion from "./fusion"
 
 // Sync operators are a subset of operators which can be safely fused together synchronously
 
@@ -36,34 +35,34 @@ type SyncOperatorFusionMap = {
     readonly [K2 in SyncOperator["_tag"]]: (
       op1: Extract<SyncOperator, { readonly _tag: K }>,
       op2: Extract<SyncOperator, { readonly _tag: K2 }>
-    ) => Fusion.FusionDecision<SyncOperator>
+    ) => SyncOperator
   }
 }
 
 const SyncOperatorFusionMap: SyncOperatorFusionMap = {
   Map: {
-    Map: (op1, op2) => Fusion.Replace(Map((a: any) => op2.f(op1.f(a)))),
+    Map: (op1, op2) => Map((a: any) => op2.f(op1.f(a))),
     Filter: (op1, op2) =>
-      Fusion.Replace(FilterMap((a: any) => {
+      FilterMap((a: any) => {
         const b = op1.f(a)
         return op2.f(b) ? Option.some(b) : Option.none()
-      })),
-    FilterMap: (op1, op2) => Fusion.Replace(FilterMap((a: any) => op2.f(op1.f(a))))
+      }),
+    FilterMap: (op1, op2) => FilterMap((a: any) => op2.f(op1.f(a)))
   },
   Filter: {
-    Map: (op1, op2) => Fusion.Replace(FilterMap((a: any) => op1.f(a) ? Option.some(op2.f(a)) : Option.none())),
-    Filter: (op1, op2) => Fusion.Replace(Filter((a: any) => op1.f(a) && op2.f(a))),
-    FilterMap: (op1, op2) => Fusion.Replace(FilterMap((a) => op1.f(a) ? op2.f(a) : Option.none()))
+    Map: (op1, op2) => FilterMap((a: any) => op1.f(a) ? Option.some(op2.f(a)) : Option.none()),
+    Filter: (op1, op2) => Filter((a: any) => op1.f(a) && op2.f(a)),
+    FilterMap: (op1, op2) => FilterMap((a) => op1.f(a) ? op2.f(a) : Option.none())
   },
   FilterMap: {
-    Map: (op1, op2) => Fusion.Replace(FilterMap((a: any) => Option.map(op1.f(a), op2.f))),
+    Map: (op1, op2) => FilterMap((a: any) => Option.map(op1.f(a), op2.f)),
     Filter: (op1, op2) =>
-      Fusion.Replace(FilterMap((a: any) => Option.flatMap(op1.f(a), (b) => op2.f(b) ? Option.some(b) : Option.none()))),
-    FilterMap: (op1, op2) => Fusion.Replace(FilterMap((a: any) => Option.flatMap(op1.f(a), op2.f)))
+      FilterMap((a: any) => Option.flatMap(op1.f(a), (b) => op2.f(b) ? Option.some(b) : Option.none())),
+    FilterMap: (op1, op2) => FilterMap((a: any) => Option.flatMap(op1.f(a), op2.f))
   }
 }
 
-export function fuseSyncOperators(op1: SyncOperator, op2: SyncOperator): Fusion.FusionDecision<SyncOperator> {
+export function fuseSyncOperators(op1: SyncOperator, op2: SyncOperator): SyncOperator {
   return SyncOperatorFusionMap[op1._tag][op2._tag](op1 as any, op2 as any)
 }
 

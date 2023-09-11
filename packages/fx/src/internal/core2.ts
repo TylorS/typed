@@ -9,6 +9,7 @@ import * as Cause from "@effect/io/Cause"
 import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import type * as Exit from "@effect/io/Exit"
+import type * as Layer from "@effect/io/Layer"
 import * as Ref from "@effect/io/Ref"
 import * as SynchronizedRef from "@effect/io/SynchronizedRef"
 
@@ -25,9 +26,8 @@ import {
   MapEffect,
   TapEffect
 } from "@typed/fx/internal/effect-operator"
-import { matchFusionDecision } from "@typed/fx/internal/fusion"
 import { withFlattenStrategy, withScopedFork } from "@typed/fx/internal/helpers"
-import * as provide from "@typed/fx/internal/provide"
+import * as Provide from "@typed/fx/internal/provide"
 import * as Sink from "@typed/fx/internal/sink"
 import * as strategies from "@typed/fx/internal/strategies"
 import {
@@ -414,14 +414,7 @@ export class Transformer<R, E, A> extends FxOperatorProto<R, E, A> {
 
   static make<R, E, A>(fx: Fx<unknown, unknown, unknown>, operator: SyncOperator): Fx<R, E, A> {
     if (fx instanceof Transformer) {
-      return matchFusionDecision(
-        fuseSyncOperators(fx.i1, operator),
-        {
-          Append: (operator) => new Transformer(fx, operator),
-          Replace: (operator) => new Transformer(fx.i0, operator),
-          Commute: (operator) => new Transformer(new Transformer(fx.i0, operator), fx.i1)
-        }
-      )
+      return new Transformer(fx.i0, fuseSyncOperators(fx.i1, operator))
     } else {
       return new Transformer<R, E, A>(fx, operator)
     }
@@ -545,9 +538,20 @@ export class FxProvide<R, E, A, R2, E2, B> extends FxProto<Exclude<R, B> | R2, E
 
   constructor(
     readonly i0: Fx<R, E, A>,
-    readonly i1: provide.Provide<R2, E2, B>
+    readonly i1: Provide.Provide<R2, E2, B>
   ) {
     super(i0, i1)
+  }
+
+  static make<R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    provide: Provide.Provide<R2, E2, B>
+  ): Fx<Exclude<R, B> | R2, E | E2, A> {
+    if (fx instanceof FxProvide) {
+      return new FxProvide(fx.i0, Provide.merge(fx.i1, provide))
+    } else {
+      return new FxProvide(fx, provide)
+    }
   }
 }
 
@@ -1013,7 +1017,7 @@ export function runProvide<R, R2, E, A>(
   fx: FxProvide<any, any, any, any, any, any>,
   sink: Sink.WithContext<R2, E, A>
 ): Effect.Effect<R | R2, never, unknown> {
-  return Effect.catchAllCause(provide.provideToEffect(run(fx.i0, sink), fx.i1), sink.onFailure)
+  return Effect.catchAllCause(Provide.provideToEffect(run(fx.i0, sink), fx.i1), sink.onFailure)
 }
 
 export function runEffect<R, E, A, R2>(
@@ -1719,4 +1723,44 @@ export const periodic: {
   duration: DurationInput
 ): Fx<R, E, A> {
   return fromScheduled(fx, Schedule.spaced(duration))
+})
+
+export const provideContext: {
+  <R>(context: Context<R>): <E, A>(fx: Fx<R, E, A>) => Fx<never, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, context: Context<R>): Fx<never, E, A>
+} = dual(2, function provideContext<R, E, A>(
+  fx: Fx<R, E, A>,
+  context: Context<R>
+): Fx<never, E, A> {
+  return FxProvide.make(fx, Provide.ProvideContext(context))
+})
+
+export const provideSomeContext: {
+  <R2>(context: Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, context: Context<R2>): Fx<Exclude<R, R2>, E, A>
+} = dual(2, function provideSomeContext<R, E, A, R2>(
+  fx: Fx<R, E, A>,
+  context: Context<R2>
+): Fx<Exclude<R, R2>, E, A> {
+  return FxProvide.make(fx, Provide.ProvideSomeContext(context))
+})
+
+export const provideLayer: {
+  <R2, E2, R>(layer: Layer.Layer<R2, E2, R>): <E, A>(fx: Fx<R, E, A>) => Fx<R2, E | E2, A>
+  <R, E, A, R2, E2>(fx: Fx<R, E, A>, layer: Layer.Layer<R2, E2, R>): Fx<R2, E | E2, A>
+} = dual(2, function provideLayer<R, E, A, R2, E2>(
+  fx: Fx<R, E, A>,
+  layer: Layer.Layer<R2, E2, R>
+): Fx<R2, E | E2, A> {
+  return FxProvide.make(fx, Provide.ProvideLayer(layer))
+})
+
+export const provideSomeLayer: {
+  <R2, E2, S>(layer: Layer.Layer<R2, E2, S>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E | E2, A>
+  <R, E, A, R2, E2, S>(fx: Fx<R, E, A>, layer: Layer.Layer<R2, E2, S>): Fx<R2 | Exclude<R, S>, E | E2, A>
+} = dual(2, function provideSomeLayer<R, E, A, R2, E2, S>(
+  fx: Fx<R, E, A>,
+  layer: Layer.Layer<R2, E2, R>
+): Fx<Exclude<R, S> | R2, E | E2, A> {
+  return FxProvide.make(fx, Provide.ProvideSomeLayer(layer))
 })
