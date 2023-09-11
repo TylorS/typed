@@ -1,6 +1,8 @@
 import * as Either from "@effect/data/Either"
 import * as Effect from "@effect/io/Effect"
+import * as Fiber from "@effect/io/Fiber"
 import * as Core from "@typed/fx/internal/core2"
+import * as Share from "@typed/fx/internal/share"
 
 describe(__filename, () => {
   it("maps a success value", async () => {
@@ -57,6 +59,39 @@ describe(__filename, () => {
     const array = await Effect.runPromise(test)
 
     expect(array).toEqual(["2", "4"])
+  })
+
+  describe("multicast", () => {
+    it("shares a value", async () => {
+      let i = 0
+      const iterator = Effect.sync(() => i++)
+
+      const sut = Core.periodic(iterator, 10).pipe(
+        Core.take(5),
+        Share.multicast,
+        Core.toReadonlyArray
+      )
+
+      const test = Effect.gen(function*(_) {
+        // start first fiber
+        const a = yield* _(Effect.fork(sut))
+
+        // Allow fiber to start
+        yield* _(Effect.sleep(0))
+
+        // Allow 2 events to occur
+        yield* _(Effect.sleep(20))
+
+        // Start the second
+        const b = yield* _(Effect.fork(sut))
+
+        // Validate the outputs
+        expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
+        expect(yield* _(Fiber.join(b))).toEqual([2, 3, 4])
+      })
+
+      await Effect.runPromise(test)
+    })
   })
 
   describe("Effect Supertype", () => {

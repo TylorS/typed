@@ -1,5 +1,5 @@
 import * as Option from "@effect/data/Option"
-import { unit } from "@effect/io/Effect"
+import * as Effect from "@effect/io/Effect"
 import { WithContext } from "@typed/fx/internal/sink"
 import * as Fusion from "./fusion"
 
@@ -67,11 +67,11 @@ export function fuseSyncOperators(op1: SyncOperator, op2: SyncOperator): Fusion.
   return SyncOperatorFusionMap[op1._tag][op2._tag](op1 as any, op2 as any)
 }
 
-export function matchSyncOperator<A, B, C>(operator: SyncOperator, matchers: {
+export function matchSyncOperator<A>(operator: SyncOperator, matchers: {
   readonly Map: (f: Map<any, any>) => A
-  readonly Filter: (f: Filter<any>) => B
-  readonly FilterMap: (f: FilterMap<any, any>) => C
-}): A | B | C {
+  readonly Filter: (f: Filter<any>) => A
+  readonly FilterMap: (f: FilterMap<any, any>) => A
+}): A {
   switch (operator._tag) {
     case "Map":
       return matchers.Map(operator)
@@ -88,12 +88,23 @@ export function compileSyncOperatorSink<R>(
 ): WithContext<R, any, any> {
   return matchSyncOperator(operator, {
     Map: (op) => WithContext(sink.onFailure, (a) => sink.onSuccess(op.f(a))),
-    Filter: (op) => WithContext(sink.onFailure, (a) => op.f(a) ? sink.onSuccess(a) : unit),
+    Filter: (op) => WithContext(sink.onFailure, (a) => op.f(a) ? sink.onSuccess(a) : Effect.unit),
     FilterMap: (op) =>
       WithContext(sink.onFailure, (a) =>
         Option.match(op.f(a), {
-          onNone: () => unit,
+          onNone: () => Effect.unit,
           onSome: sink.onSuccess
         }))
+  })
+}
+
+export function compileSyncLoop<A, B, C>(
+  operator: SyncOperator,
+  f: (b: B, a: A) => readonly [C, B]
+): (b: B, a: any) => Option.Option<readonly [C, B]> {
+  return matchSyncOperator(operator, {
+    Map: (op) => (b, a) => Option.some(f(b, op.f(a))),
+    Filter: (op) => (b, a) => op.f(a) ? Option.some(f(b, a)) : Option.none(),
+    FilterMap: (op) => (b, i) => Option.map(op.f(i), (a) => f(b, a))
   })
 }

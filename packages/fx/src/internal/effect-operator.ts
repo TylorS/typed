@@ -215,3 +215,24 @@ export function compileEffectOperatorSink<R>(
     TapEffect: (op) => WithContext(sink.onFailure, (a) => Effect.matchCauseEffect(Effect.as(op.f(a), a), sink))
   })
 }
+
+export function compileEffectLoop<B, A, R2, E2, C>(
+  operator: EffectOperator,
+  loop: (b: B, a: A) => Effect.Effect<R2, E2, readonly [C, B]>
+): (b: B, i: any) => Effect.Effect<R2, E2, Option.Option<readonly [C, B]>> {
+  return matchEffectOperator(operator, {
+    MapEffect: (op) => (b, i) => op.f(i).pipe(Effect.flatMap((a) => loop(b, a)), Effect.map(Option.some)),
+    TapEffect: (op) => (b, i) => op.f(i).pipe(Effect.flatMap(() => loop(b, i)), Effect.map(Option.some)),
+    FilterEffect: (op) => (b, i) =>
+      op.f(i).pipe(
+        Effect.flatMap((a) => a ? Effect.map(loop(b, i), Option.some) : Effect.succeedNone)
+      ),
+    FilterMapEffect: (op) => (b, i) =>
+      op.f(i).pipe(
+        Effect.flatMap(Option.match({
+          onNone: () => Effect.succeedNone,
+          onSome: (a) => Effect.map(loop(b, a), Option.some)
+        }))
+      )
+  })
+}

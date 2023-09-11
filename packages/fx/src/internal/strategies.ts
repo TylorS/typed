@@ -31,7 +31,6 @@ export interface ExhaustLatest {
 
 export const ExhaustLatest: ExhaustLatest = { _tag: "ExhaustLatest" }
 
-
 export type MergeStrategy = Unordered | Ordered | Switch
 
 export interface Unordered {
