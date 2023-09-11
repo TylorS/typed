@@ -97,9 +97,10 @@ describe(__filename, () => {
   describe("hold", () => {
     it("shares a value with replay of the last", async () => {
       let i = 0
+      const delay = 100
       const iterator = Effect.sync(() => i++)
 
-      const sut = Core.periodic(iterator, 10).pipe(
+      const sut = Core.periodic(iterator, delay).pipe(
         Core.take(5),
         Share.hold,
         Core.toReadonlyArray
@@ -113,7 +114,7 @@ describe(__filename, () => {
         yield* _(Effect.sleep(0))
 
         // Allow 2 events to occur
-        yield* _(Effect.sleep(20))
+        yield* _(Effect.sleep(delay * 2))
 
         // Start the second
         const b = yield* _(Effect.fork(sut))

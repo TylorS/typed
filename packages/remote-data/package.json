@@ -1,6 +1,6 @@
 {
   "name": "@typed/remote-data",
-  "version": "0.0.0",
+  "version": "0.0.4",
   "description": "",
   "publishConfig": {
     "access": "public",
@@ -40,11 +40,11 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/data": "^0.18.3",
-    "@effect/io": "^0.39.1"
+    "@effect/data": "^0.18.5",
+    "@effect/io": "^0.40.1"
   },
   "peerDependencies": {
-    "@effect/data": "^0.18.3",
-    "@effect/io": "^0.39.1"
+    "@effect/data": "^0.18.5",
+    "@effect/io": "^0.40.1"
   }
 }

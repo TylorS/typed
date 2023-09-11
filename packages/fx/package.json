@@ -1,6 +1,6 @@
 {
   "name": "@typed/fx",
-  "version": "0.0.0",
+  "version": "1.17.4",
   "description": "",
   "publishConfig": {
     "access": "public",
@@ -40,13 +40,13 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/data": "^0.18.3",
-    "@effect/io": "^0.39.1",
+    "@effect/data": "^0.18.5",
+    "@effect/io": "^0.40.1",
     "@effect/typeclass": "0.5.0",
     "@typed/context": "workspace:*"
   },
   "peerDependencies": {
-    "@effect/data": "^0.18.3",
-    "@effect/io": "^0.39.1"
+    "@effect/data": "^0.18.5",
+    "@effect/io": "^0.40.1"
   }
 }
