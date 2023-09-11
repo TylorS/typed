@@ -1,5 +1,6 @@
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
+import { WithContext } from "@typed/fx/internal/sink"
 import type { SyncOperator } from "@typed/fx/internal/sync-operator"
 
 // Effect operators are a subset of operators which can be safely fused together assynchronously
@@ -163,9 +164,6 @@ export function liftSyncOperator(op: SyncOperator): EffectOperator {
       return FilterMapEffect((a) => Effect.sync(() => op.f(a)))
     case "Map":
       return MapEffect((a) => Effect.sync(() => op.f(a)))
-    case "Slice": {
-      throw new Error("Cannot lift Slice operator")
-    }
   }
 }
 
@@ -188,4 +186,32 @@ export function matchEffectOperator<A, B, C, D>(
     case "FilterMapEffect":
       return matchers.FilterMapEffect(operator)
   }
+}
+
+export function compileEffectOperatorSink<R>(
+  operator: EffectOperator,
+  sink: WithContext<R, any, any>
+): WithContext<R, any, any> {
+  return matchEffectOperator(operator, {
+    MapEffect: (op) => WithContext(sink.onFailure, (a) => Effect.matchCauseEffect(op.f(a), sink)),
+    FilterEffect: (op) =>
+      WithContext(
+        sink.onFailure,
+        (a) =>
+          Effect.matchCauseEffect(op.f(a), {
+            onFailure: sink.onFailure,
+            onSuccess: (b) => b ? sink.onSuccess(a) : Effect.unit
+          })
+      ),
+    FilterMapEffect: (op) =>
+      WithContext(sink.onFailure, (a) =>
+        Effect.matchCauseEffect(op.f(a), {
+          onFailure: sink.onFailure,
+          onSuccess: Option.match({
+            onNone: () => Effect.unit,
+            onSome: sink.onSuccess
+          })
+        })),
+    TapEffect: (op) => WithContext(sink.onFailure, (a) => Effect.matchCauseEffect(Effect.as(op.f(a), a), sink))
+  })
 }

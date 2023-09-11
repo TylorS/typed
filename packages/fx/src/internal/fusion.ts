@@ -1,5 +1,3 @@
-import * as Chunk from "@effect/data/Chunk"
-
 export type FusionDecision<T> = Append<T> | Replace<T> | Commute<T>
 
 export type Append<T> = {
@@ -47,25 +45,4 @@ export function matchFusionDecision<T, A, B, C>(
   }
 ): A | B | C {
   return matchers[decision._tag](decision.operator)
-}
-
-export function applyFusionDecision<T>(
-  chunk: Chunk.Chunk<T>,
-  next: T,
-  makeDecision: (operator: T, next: T) => FusionDecision<T>
-): Chunk.NonEmptyChunk<T> {
-  const size = Chunk.size(chunk)
-
-  if (size === 0) return Chunk.of(next)
-
-  const last = Chunk.unsafeLast(chunk)
-  const decision = makeDecision(last, next)
-
-  return matchFusionDecision(decision, {
-    Append: (operator) => Chunk.append(chunk, operator),
-    Replace: (operator) => Chunk.replace(chunk, size - 1, operator) as Chunk.NonEmptyChunk<T>,
-    // Recursiving Commute as possible, shouldn't be more than 2 levels deep, so recursion is safe
-    // e.g. slice(a, b).map(f).slice(c, d) => slice(a, b).slice(c, d).map(f) => slice(mergeBounds([a, b], [c, d])).map(f)
-    Commute: (operator) => Chunk.append(applyFusionDecision(Chunk.dropRight(chunk, 1), operator, makeDecision), last)
-  })
 }

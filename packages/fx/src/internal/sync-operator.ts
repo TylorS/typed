@@ -1,5 +1,6 @@
 import * as Option from "@effect/data/Option"
-import { type Bounds, mergeBounds } from "@typed/fx/internal/bounds"
+import { unit } from "@effect/io/Effect"
+import { WithContext } from "@typed/fx/internal/sink"
 import * as Fusion from "./fusion"
 
 // Sync operators are a subset of operators which can be safely fused together synchronously
@@ -8,7 +9,6 @@ export type SyncOperator =
   | Map<any, any>
   | Filter<any>
   | FilterMap<any, any>
-  | Slice // Kind of a special case as it will commute with Map only
 
 export interface Map<A, B> {
   readonly _tag: "Map"
@@ -31,13 +31,6 @@ export interface FilterMap<A, B> {
 
 export const FilterMap = <A, B>(f: (a: A) => Option.Option<B>): FilterMap<A, B> => ({ _tag: "FilterMap", f })
 
-export interface Slice {
-  readonly _tag: "Slice"
-  readonly bounds: Bounds
-}
-
-export const Slice = (bounds: Bounds): Slice => ({ _tag: "Slice", bounds })
-
 type SyncOperatorFusionMap = {
   readonly [K in SyncOperator["_tag"]]: {
     readonly [K2 in SyncOperator["_tag"]]: (
@@ -55,27 +48,18 @@ const SyncOperatorFusionMap: SyncOperatorFusionMap = {
         const b = op1.f(a)
         return op2.f(b) ? Option.some(b) : Option.none()
       })),
-    FilterMap: (op1, op2) => Fusion.Replace(FilterMap((a: any) => op2.f(op1.f(a)))),
-    Slice: (_, op2) => Fusion.Commute(op2)
+    FilterMap: (op1, op2) => Fusion.Replace(FilterMap((a: any) => op2.f(op1.f(a))))
   },
   Filter: {
     Map: (op1, op2) => Fusion.Replace(FilterMap((a: any) => op1.f(a) ? Option.some(op2.f(a)) : Option.none())),
     Filter: (op1, op2) => Fusion.Replace(Filter((a: any) => op1.f(a) && op2.f(a))),
-    FilterMap: (op1, op2) => Fusion.Replace(FilterMap((a) => op1.f(a) ? op2.f(a) : Option.none())),
-    Slice: (_, op2) => Fusion.Append(op2)
+    FilterMap: (op1, op2) => Fusion.Replace(FilterMap((a) => op1.f(a) ? op2.f(a) : Option.none()))
   },
   FilterMap: {
     Map: (op1, op2) => Fusion.Replace(FilterMap((a: any) => Option.map(op1.f(a), op2.f))),
     Filter: (op1, op2) =>
       Fusion.Replace(FilterMap((a: any) => Option.flatMap(op1.f(a), (b) => op2.f(b) ? Option.some(b) : Option.none()))),
-    FilterMap: (op1, op2) => Fusion.Replace(FilterMap((a: any) => Option.flatMap(op1.f(a), op2.f))),
-    Slice: (_, op2) => Fusion.Append(op2)
-  },
-  Slice: {
-    Map: (_, op2) => Fusion.Append(op2),
-    Filter: (_, op2) => Fusion.Append(op2),
-    FilterMap: (_, op2) => Fusion.Append(op2),
-    Slice: (op1, op2) => Fusion.Replace(Slice(mergeBounds(op1.bounds, op2.bounds)))
+    FilterMap: (op1, op2) => Fusion.Replace(FilterMap((a: any) => Option.flatMap(op1.f(a), op2.f)))
   }
 }
 
@@ -83,12 +67,11 @@ export function fuseSyncOperators(op1: SyncOperator, op2: SyncOperator): Fusion.
   return SyncOperatorFusionMap[op1._tag][op2._tag](op1 as any, op2 as any)
 }
 
-export function matchSyncOperator<A, B, C, D>(operator: SyncOperator, matchers: {
+export function matchSyncOperator<A, B, C>(operator: SyncOperator, matchers: {
   readonly Map: (f: Map<any, any>) => A
   readonly Filter: (f: Filter<any>) => B
   readonly FilterMap: (f: FilterMap<any, any>) => C
-  readonly Slice: (f: Slice) => D
-}): A | B | C | D {
+}): A | B | C {
   switch (operator._tag) {
     case "Map":
       return matchers.Map(operator)
@@ -96,7 +79,21 @@ export function matchSyncOperator<A, B, C, D>(operator: SyncOperator, matchers: 
       return matchers.Filter(operator)
     case "FilterMap":
       return matchers.FilterMap(operator)
-    case "Slice":
-      return matchers.Slice(operator)
   }
+}
+
+export function compileSyncOperatorSink<R>(
+  operator: SyncOperator,
+  sink: WithContext<R, any, any>
+): WithContext<R, any, any> {
+  return matchSyncOperator(operator, {
+    Map: (op) => WithContext(sink.onFailure, (a) => sink.onSuccess(op.f(a))),
+    Filter: (op) => WithContext(sink.onFailure, (a) => op.f(a) ? sink.onSuccess(a) : unit),
+    FilterMap: (op) =>
+      WithContext(sink.onFailure, (a) =>
+        Option.match(op.f(a), {
+          onNone: () => unit,
+          onSome: sink.onSuccess
+        }))
+  })
 }
