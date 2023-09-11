@@ -1,23 +1,36 @@
+import { dual } from "@effect/data/Function"
 import * as MutableRef from "@effect/data/MutableRef"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
-import { makeSubject } from "@typed/fx/internal/core-subject"
+import { makeHoldSubject, makeReplaySubject, makeSubject } from "@typed/fx/internal/core-subject"
 import { Commit, fromSink, type Fx, run, type Subject } from "@typed/fx/internal/core2"
 import { withScopedFork } from "@typed/fx/internal/helpers"
 
 export function share<R, E, A, R2>(
   fx: Fx<R, E, A>,
-  makeSubject: Subject<R2, E, A>
+  subject: Subject<R2, E, A>
 ): Fx<R | R2, E, A> {
-  return new Share(fx, makeSubject)
+  return new Share(fx, subject)
+}
+
+class RefCounter {
+  private refCount: MutableRef.MutableRef<number> = MutableRef.make(0)
+
+  increment() {
+    return MutableRef.updateAndGet(this.refCount, (n) => n + 1)
+  }
+
+  decrement() {
+    return MutableRef.updateAndGet(this.refCount, (n) => Math.max(0, n - 1))
+  }
 }
 
 // TODO: We should keep track of a Set of Scope's to enable use to close them all when the
 
 export class Share<R, E, A, R2> extends Commit<R | R2, E, A> {
   private fxFiber: MutableRef.MutableRef<Option.Option<Fiber.Fiber<never, unknown>>> = MutableRef.make(Option.none())
-  private refCount: MutableRef.MutableRef<number> = MutableRef.make(0)
+  private refCount = new RefCounter()
 
   constructor(
     readonly i0: Fx<R, E, A>,
@@ -31,29 +44,21 @@ export class Share<R, E, A, R2> extends Commit<R | R2, E, A> {
       withScopedFork((fork) => {
         return Effect.onExit(
           Effect.flatMap(fork(run(this.i1, sink)), () => this.initialize()),
-          () => Effect.suspend(() => this.decrement() === 0 ? this.interrupt() : Effect.unit)
+          () => Effect.suspend(() => this.refCount.decrement() === 0 ? this.interrupt() : Effect.unit)
         )
       })
     )
   }
 
-  private increment() {
-    return MutableRef.updateAndGet(this.refCount, (n) => n + 1)
-  }
-
-  private decrement() {
-    return MutableRef.updateAndGet(this.refCount, (n) => Math.max(0, n - 1))
-  }
-
   private initialize(): Effect.Effect<R, never, unknown> {
     return Effect.suspend(() => {
-      if (this.increment() === 1) {
+      if (this.refCount.increment() === 1) {
         return run(this.i0, this.i1).pipe(
           Effect.onExit(() => Effect.sync(() => MutableRef.set(this.fxFiber, Option.none()))),
           Effect.interruptible,
           Effect.forkDaemon,
           Effect.tap((fiber) => Effect.sync(() => MutableRef.set(this.fxFiber, Option.some(fiber)))),
-          Effect.flatMap((fiber) => Fiber.join(fiber))
+          Effect.flatMap(Fiber.join)
         )
       } else {
         return Fiber.join(Option.getOrThrow(MutableRef.get(this.fxFiber)))
@@ -75,3 +80,19 @@ export function multicast<R, E, A>(
 ): Fx<R, E, A> {
   return new Share(fx, makeSubject<E, A>())
 }
+
+export function hold<R, E, A>(
+  fx: Fx<R, E, A>
+): Fx<R, E, A> {
+  return new Share(fx, makeHoldSubject<E, A>())
+}
+
+export const replay: {
+  (capacity: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, capacity: number): Fx<R, E, A>
+} = dual(2, function replay<R, E, A>(
+  fx: Fx<R, E, A>,
+  capacity: number
+): Fx<R, E, A> {
+  return new Share(fx, makeReplaySubject<E, A>(capacity))
+})

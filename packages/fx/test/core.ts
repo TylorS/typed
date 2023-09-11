@@ -94,6 +94,73 @@ describe(__filename, () => {
     })
   })
 
+  describe("hold", () => {
+    it("shares a value with replay of the last", async () => {
+      let i = 0
+      const iterator = Effect.sync(() => i++)
+
+      const sut = Core.periodic(iterator, 10).pipe(
+        Core.take(5),
+        Share.hold,
+        Core.toReadonlyArray
+      )
+
+      const test = Effect.gen(function*(_) {
+        // start first fiber
+        const a = yield* _(Effect.fork(sut))
+
+        // Allow fiber to start
+        yield* _(Effect.sleep(0))
+
+        // Allow 2 events to occur
+        yield* _(Effect.sleep(20))
+
+        // Start the second
+        const b = yield* _(Effect.fork(sut))
+
+        // Validate the outputs
+        expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
+        expect(yield* _(Fiber.join(b))).toEqual([1, 2, 3, 4])
+      })
+
+      await Effect.runPromise(test)
+    })
+  })
+
+  describe("replay", () => {
+    it("shares a value with replay of the last N events", async () => {
+      let i = 0
+      const iterator = Effect.sync(() => i++)
+      const delay = 100
+
+      const sut = Core.periodic(iterator, delay).pipe(
+        Core.take(5),
+        Share.replay(2),
+        Core.toReadonlyArray
+      )
+
+      const test = Effect.gen(function*(_) {
+        // start first fiber
+        const a = yield* _(Effect.fork(sut))
+
+        // Allow fiber to start
+        yield* _(Effect.sleep(0))
+
+        // Allow 2 events to occur
+        yield* _(Effect.sleep(delay * 2))
+
+        // Start the second
+        const b = yield* _(Effect.fork(sut))
+
+        // Validate the outputs
+        expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
+        expect(yield* _(Fiber.join(b))).toEqual([0, 1, 2, 3, 4])
+      })
+
+      await Effect.runPromise(test)
+    })
+  })
+
   describe("Effect Supertype", () => {
     it("lifts a success", async () => {
       const test = Effect.succeed(1).pipe(Core.toReadonlyArray)

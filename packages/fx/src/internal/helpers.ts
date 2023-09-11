@@ -1,4 +1,5 @@
 import * as Option from "@effect/data/Option"
+import type { Concurrency } from "@effect/io/Concurrency"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
 import * as Ref from "@effect/io/Ref"
@@ -179,5 +180,43 @@ export function withFlattenStrategy(strategy: FlattenStrategy) {
       return withSwitchFork
     case "Unbounded":
       return withUnboundedFork
+  }
+}
+
+export class RingBuffer<A> {
+  constructor(
+    readonly capacity: number
+  ) {}
+
+  private _buffer: Array<A> = Array(this.capacity)
+  private _size = 0
+
+  get size() {
+    return this._size
+  }
+
+  push(a: A) {
+    if (this._size < this.capacity) {
+      this._buffer[this._size] = a
+      this._size++
+    } else {
+      this._buffer.shift()
+      this._buffer.push(a)
+    }
+  }
+
+  forEach<R2, E2, B>(
+    f: (a: A, i: number) => Effect.Effect<R2, E2, B>,
+    options?: {
+      readonly concurrency?: Concurrency
+      readonly batching?: boolean | "inherit"
+      readonly discard?: false
+    }
+  ) {
+    return Effect.forEach(
+      Array.from({ length: this._size }, (_, i) => this._buffer[i]),
+      f,
+      options
+    )
   }
 }
