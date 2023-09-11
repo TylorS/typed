@@ -1,5 +1,4 @@
 import * as Option from "@effect/data/Option"
-import type { Concurrency } from "@effect/io/Concurrency"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
 import * as Ref from "@effect/io/Ref"
@@ -198,8 +197,7 @@ export class RingBuffer<A> {
 
   push(a: A) {
     if (this._size < this.capacity) {
-      this._buffer[this._size] = a
-      this._size++
+      this._buffer[this._size++] = a
     } else {
       this._buffer.shift()
       this._buffer.push(a)
@@ -207,18 +205,29 @@ export class RingBuffer<A> {
   }
 
   forEach<R2, E2, B>(
-    f: (a: A, i: number) => Effect.Effect<R2, E2, B>,
-    options?: {
-      readonly concurrency?: Concurrency
-      readonly batching?: boolean | "inherit"
-      readonly discard?: false
-    }
+    f: (a: A, i: number) => Effect.Effect<R2, E2, B>
   ) {
-    return Effect.forEach(
-      Array.from({ length: this._size }, (_, i) => this._buffer[i]),
-      f,
-      options
-    )
+    switch (this._size) {
+      case 0:
+        return Effect.unit
+      case 1:
+        return f(this._buffer[0], 0)
+      case 2:
+        return Effect.flatMap(f(this._buffer[0], 0), () => f(this._buffer[1], 1))
+      case 3:
+        return Effect.flatMap(
+          f(this._buffer[0], 0),
+          () => Effect.flatMap(f(this._buffer[1], 1), () => f(this._buffer[2], 2))
+        )
+      default:
+        return Effect.forEach(
+          Array.from({ length: this._size }, (_, i) => this._buffer[i]),
+          f,
+          {
+            discard: true
+          }
+        )
+    }
   }
 }
 
@@ -258,7 +267,7 @@ export function withBuffers<R, E, A>(count: number, sink: WithContext<R, E, A>) 
     }
 
     const onSuccess = (index: number, value: A) =>
-      Effect.sync(() => {
+      Effect.suspend(() => {
         if (index === currentIndex) {
           const buffer = buffers[index]
 
@@ -271,6 +280,7 @@ export function withBuffers<R, E, A>(count: number, sink: WithContext<R, E, A>) 
           }
         } else {
           buffers[index].push(value)
+          return Effect.unit
         }
       })
 
@@ -278,8 +288,8 @@ export function withBuffers<R, E, A>(count: number, sink: WithContext<R, E, A>) 
       Effect.suspend(() => {
         finished.add(index)
 
-        if (index === currentIndex) {
-          return drainBuffer(++currentIndex)
+        if (index === currentIndex && ++currentIndex < count) {
+          return drainBuffer(currentIndex)
         } else {
           return Effect.unit
         }

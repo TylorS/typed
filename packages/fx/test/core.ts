@@ -61,104 +61,127 @@ describe(__filename, () => {
     expect(array).toEqual(["2", "4"])
   })
 
-  describe("multicast", () => {
-    it("shares a value", async () => {
-      let i = 0
-      const iterator = Effect.sync(() => i++)
+  it("mergeBuffer keeps the ordering of concurrent streams", async () => {
+    const test = Core.mergeBuffer([
+      Effect.succeed(1),
+      Core.fromSink<never, never, number>((sink) =>
+        Effect.gen(function*(_) {
+          yield* _(Effect.sleep(100))
+          yield* _(sink.onSuccess(2))
+          yield* _(Effect.sleep(100))
+          yield* _(sink.onSuccess(3))
+        })
+      ),
+      Effect.delay(Effect.succeed(4), 50)
+    ]).pipe(
+      Core.toReadonlyArray
+    )
 
-      const sut = Core.periodic(iterator, 10).pipe(
-        Core.take(5),
-        Share.multicast,
-        Core.toReadonlyArray
-      )
+    const array = await Effect.runPromise(test)
 
-      const test = Effect.gen(function*(_) {
-        // start first fiber
-        const a = yield* _(Effect.fork(sut))
-
-        // Allow fiber to start
-        yield* _(Effect.sleep(0))
-
-        // Allow 2 events to occur
-        yield* _(Effect.sleep(20))
-
-        // Start the second
-        const b = yield* _(Effect.fork(sut))
-
-        // Validate the outputs
-        expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
-        expect(yield* _(Fiber.join(b))).toEqual([2, 3, 4])
-      })
-
-      await Effect.runPromise(test)
-    })
+    expect(array).toEqual([1, 2, 3, 4])
   })
 
-  describe("hold", () => {
-    it("shares a value with replay of the last", async () => {
-      let i = 0
-      const delay = 100
-      const iterator = Effect.sync(() => i++)
+  describe("sharing", () => {
+    describe("multicast", () => {
+      it("shares a value", async () => {
+        let i = 0
+        const iterator = Effect.sync(() => i++)
 
-      const sut = Core.periodic(iterator, delay).pipe(
-        Core.take(5),
-        Share.hold,
-        Core.toReadonlyArray
-      )
+        const sut = Core.periodic(iterator, 10).pipe(
+          Core.take(5),
+          Share.multicast,
+          Core.toReadonlyArray
+        )
 
-      const test = Effect.gen(function*(_) {
-        // start first fiber
-        const a = yield* _(Effect.fork(sut))
+        const test = Effect.gen(function*(_) {
+          // start first fiber
+          const a = yield* _(Effect.fork(sut))
 
-        // Allow fiber to start
-        yield* _(Effect.sleep(0))
+          // Allow fiber to start
+          yield* _(Effect.sleep(0))
 
-        // Allow 2 events to occur
-        yield* _(Effect.sleep(delay * 2))
+          // Allow 2 events to occur
+          yield* _(Effect.sleep(20))
 
-        // Start the second
-        const b = yield* _(Effect.fork(sut))
+          // Start the second
+          const b = yield* _(Effect.fork(sut))
 
-        // Validate the outputs
-        expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
-        expect(yield* _(Fiber.join(b))).toEqual([1, 2, 3, 4])
+          // Validate the outputs
+          expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
+          expect(yield* _(Fiber.join(b))).toEqual([2, 3, 4])
+        })
+
+        await Effect.runPromise(test)
       })
-
-      await Effect.runPromise(test)
     })
-  })
 
-  describe("replay", () => {
-    it("shares a value with replay of the last N events", async () => {
-      let i = 0
-      const iterator = Effect.sync(() => i++)
-      const delay = 100
+    describe("hold", () => {
+      it("shares a value with replay of the last", async () => {
+        let i = 0
+        const delay = 100
+        const iterator = Effect.sync(() => i++)
 
-      const sut = Core.periodic(iterator, delay).pipe(
-        Core.take(5),
-        Share.replay(2),
-        Core.toReadonlyArray
-      )
+        const sut = Core.periodic(iterator, delay).pipe(
+          Core.take(5),
+          Share.hold,
+          Core.toReadonlyArray
+        )
 
-      const test = Effect.gen(function*(_) {
-        // start first fiber
-        const a = yield* _(Effect.fork(sut))
+        const test = Effect.gen(function*(_) {
+          // start first fiber
+          const a = yield* _(Effect.fork(sut))
 
-        // Allow fiber to start
-        yield* _(Effect.sleep(0))
+          // Allow fiber to start
+          yield* _(Effect.sleep(0))
 
-        // Allow 2 events to occur
-        yield* _(Effect.sleep(delay * 2))
+          // Allow 2 events to occur
+          yield* _(Effect.sleep(delay * 2))
 
-        // Start the second
-        const b = yield* _(Effect.fork(sut))
+          // Start the second
+          const b = yield* _(Effect.fork(sut))
 
-        // Validate the outputs
-        expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
-        expect(yield* _(Fiber.join(b))).toEqual([0, 1, 2, 3, 4])
+          // Validate the outputs
+          expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
+          expect(yield* _(Fiber.join(b))).toEqual([1, 2, 3, 4])
+        })
+
+        await Effect.runPromise(test)
       })
+    })
 
-      await Effect.runPromise(test)
+    describe("replay", () => {
+      it("shares a value with replay of the last N events", async () => {
+        let i = 0
+        const iterator = Effect.sync(() => i++)
+        const delay = 100
+
+        const sut = Core.periodic(iterator, delay).pipe(
+          Core.take(5),
+          Share.replay(2),
+          Core.toReadonlyArray
+        )
+
+        const test = Effect.gen(function*(_) {
+          // start first fiber
+          const a = yield* _(Effect.fork(sut))
+
+          // Allow fiber to start
+          yield* _(Effect.sleep(0))
+
+          // Allow 2 events to occur
+          yield* _(Effect.sleep(delay * 2))
+
+          // Start the second
+          const b = yield* _(Effect.fork(sut))
+
+          // Validate the outputs
+          expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
+          expect(yield* _(Fiber.join(b))).toEqual([0, 1, 2, 3, 4])
+        })
+
+        await Effect.runPromise(test)
+      })
     })
   })
 

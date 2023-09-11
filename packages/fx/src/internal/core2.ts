@@ -241,11 +241,10 @@ export class Merge<R, E, A> extends FxConstructorProto<R, E, A> {
   }
 
   static make<R, E, A>(fx: ReadonlyArray<Fx<R, E, A>>, strategy: strategies.MergeStrategy): Fx<R, E, A> {
-    if (fx.length === 0) return new Empty()
-
+    if (fx.length === 0) return empty
     const nonEmptyFx = fx.filter((fx) => !(fx instanceof Empty))
 
-    if (nonEmptyFx.length === 0) return new Empty()
+    if (nonEmptyFx.length === 0) return empty
     if (nonEmptyFx.length === 1) return nonEmptyFx[0]
 
     const neverIndex = nonEmptyFx.findIndex((fx) => fx instanceof Never)
@@ -807,7 +806,7 @@ export function runConstructor<R, E, A, R2>(
     Commit: (fx) => Effect.suspend(() => run(fx.commit(), sink)),
     Empty: constUnit,
     Fail: (fx) => sink.onFailure(fx.i0),
-    FromEffect: (fx) => Effect.matchCauseEffect(fx.i0, sink),
+    FromEffect: (fx) => runEffect(fx.i0, sink),
     FromScheduled: (fx) =>
       Effect.catchAllCause(Effect.repeat(Effect.matchCauseEffect(fx.i0, sink), fx.i1), sink.onFailure),
     FromSink: (fx) => Effect.contextWithEffect((ctx: Context<R | R2>) => fx.i0(Sink.provide(sink, ctx))),
