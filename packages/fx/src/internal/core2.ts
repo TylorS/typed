@@ -111,7 +111,6 @@ export namespace Fx {
 }
 
 export type Primitive =
-  | ToFx<unknown, unknown, unknown>
   | Empty
   | Fail<unknown>
   | FromEffect<unknown, unknown, unknown>
@@ -121,13 +120,14 @@ export type Primitive =
   | Succeed<unknown>
   | Suspend<unknown, unknown, unknown>
   | Sync<unknown>
-  | WithEarlyExit<unknown, unknown, unknown>
-  | WithScopedFork<unknown, unknown, unknown>
-  | WithFlattenStrategy<unknown, unknown, unknown>
+  | ToFx<unknown, unknown, unknown>
   | Transformer<unknown, unknown, unknown>
-  | TransformerEffect<unknown, unknown, unknown>
   | TransformerCause<unknown, unknown, unknown>
   | TransformerCauseEffect<unknown, unknown, unknown>
+  | TransformerEffect<unknown, unknown, unknown>
+  | WithEarlyExit<unknown, unknown, unknown>
+  | WithFlattenStrategy<unknown, unknown, unknown>
+  | WithScopedFork<unknown, unknown, unknown>
 
 export abstract class ToFx<R, E, A> extends FxProto<R, E, A> {
   readonly _fxTag = "ToFx"
