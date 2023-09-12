@@ -97,6 +97,22 @@ export function compileSyncOperatorSink<R>(
   })
 }
 
+export function compileSyncOperatorFailureSink<R>(
+  operator: SyncOperator,
+  sink: WithContext<R, any, any>
+): WithContext<R, any, any> {
+  return matchSyncOperator(operator, {
+    Map: (op) => WithContext((a) => sink.onFailure(op.f(a)), sink.onSuccess),
+    Filter: (op) => WithContext((a) => op.f(a) ? sink.onFailure(a) : Effect.unit, sink.onSuccess),
+    FilterMap: (op) =>
+      WithContext((a) =>
+        Option.match(op.f(a), {
+          onNone: () => Effect.unit,
+          onSome: sink.onFailure
+        }), sink.onSuccess)
+  })
+}
+
 export function compileSyncLoop<A, B, C>(
   operator: SyncOperator,
   f: (b: B, a: A) => readonly [C, B]

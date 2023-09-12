@@ -1,12 +1,12 @@
-import type { Cause } from "@effect/io/Cause"
-import { type Effect, provideContext } from "@effect/io/Effect"
+import type * as Cause from "@effect/io/Cause"
+import * as Effect from "@effect/io/Effect"
 import type { Context } from "@typed/context"
 
 export interface Sink<E, A> extends WithContext<never, E, A> {}
 
 export function Sink<E, A>(
-  onFailure: (cause: Cause<E>) => Effect<never, never, unknown>,
-  onSuccess: (a: A) => Effect<never, never, unknown>
+  onFailure: (cause: Cause.Cause<E>) => Effect.Effect<never, never, unknown>,
+  onSuccess: (a: A) => Effect.Effect<never, never, unknown>
 ): Sink<E, A> {
   return {
     onFailure,
@@ -20,14 +20,14 @@ export namespace Sink {
 }
 
 export interface WithContext<R, E, A> {
-  readonly onFailure: (cause: Cause<E>) => Effect<R, never, unknown>
-  readonly onSuccess: (a: A) => Effect<R, never, unknown>
+  readonly onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R, never, unknown>
+  readonly onSuccess: (a: A) => Effect.Effect<R, never, unknown>
 }
 
-export function WithContext<R, E, A>(
-  onFailure: (cause: Cause<E>) => Effect<R, never, unknown>,
-  onSuccess: (a: A) => Effect<R, never, unknown>
-): WithContext<R, E, A> {
+export function WithContext<R, E, A, R2>(
+  onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R, never, unknown>,
+  onSuccess: (a: A) => Effect.Effect<R2, never, unknown>
+): WithContext<R | R2, E, A> {
   return {
     onFailure,
     onSuccess
@@ -42,7 +42,11 @@ export namespace WithContext {
 
 export function provide<R, E, A>(sink: WithContext<R, E, A>, ctx: Context<R>): Sink<E, A> {
   return Sink(
-    (cause) => provideContext(sink.onFailure(cause), ctx),
-    (a) => provideContext(sink.onSuccess(a), ctx)
+    (cause) => Effect.provideContext(sink.onFailure(cause), ctx),
+    (a) => Effect.provideContext(sink.onSuccess(a), ctx)
   )
+}
+
+export interface WithEarlyExit<E, A> extends Sink<E, A> {
+  readonly earlyExit: Effect.Effect<never, never, void>
 }

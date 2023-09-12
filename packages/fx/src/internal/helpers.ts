@@ -4,7 +4,7 @@ import * as Fiber from "@effect/io/Fiber"
 import * as Ref from "@effect/io/Ref"
 import * as Scope from "@effect/io/Scope"
 import * as SynchronizedRef from "@effect/io/SynchronizedRef"
-import type { WithContext } from "@typed/fx/internal/sink"
+import type * as Sink from "@typed/fx/internal/sink"
 import type { FlattenStrategy } from "@typed/fx/internal/strategies"
 
 export type ScopedFork = <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, never, Fiber.Fiber.Runtime<E, A>>
@@ -24,9 +24,9 @@ export type FxFork = <R>(
 ) => Effect.Effect<R, never, void>
 
 export function withSwitchFork<R, E, A>(
-  f: (fork: FxFork) => Effect.Effect<R, E, A>
+  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
 ) {
-  return withScopedFork((fork) =>
+  return withScopedFork((fork, scope) =>
     Effect.flatMap(
       SynchronizedRef.make<Fiber.Fiber<never, void>>(Fiber.unit),
       (ref) =>
@@ -35,8 +35,7 @@ export function withSwitchFork<R, E, A>(
             SynchronizedRef.updateAndGetEffect(
               ref,
               (fiber) => Effect.flatMap(Fiber.interrupt(fiber), () => fork(effect))
-            )
-          ),
+            ), scope),
           () => Effect.flatMap(SynchronizedRef.get(ref), Fiber.join)
         )
     )
@@ -44,9 +43,9 @@ export function withSwitchFork<R, E, A>(
 }
 
 export function withExhaustFork<R, E, A>(
-  f: (fork: FxFork) => Effect.Effect<R, E, A>
+  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
 ) {
-  return withScopedFork((fork) =>
+  return withScopedFork((fork, scope) =>
     Effect.flatMap(
       SynchronizedRef.make<Fiber.Fiber<never, void> | null>(null),
       (ref) =>
@@ -55,8 +54,7 @@ export function withExhaustFork<R, E, A>(
             SynchronizedRef.updateEffect(
               ref,
               (fiber) => fiber ? Effect.succeed(fiber) : fork(Effect.onExit(effect, () => Ref.set(ref, null)))
-            )
-          ),
+            ), scope),
           () => Effect.flatMap(Ref.get(ref), (fiber) => fiber ? Fiber.join(fiber) : Effect.unit)
         )
     )
@@ -64,9 +62,9 @@ export function withExhaustFork<R, E, A>(
 }
 
 export function withExhaustLatestFork<R, E, A>(
-  f: (exhaustLatestFork: FxFork) => Effect.Effect<R, E, A>
+  f: (exhaustLatestFork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
 ) {
-  return withScopedFork((fork) =>
+  return withScopedFork((fork, scope) =>
     Effect.flatMap(
       Effect.zip(
         Ref.make<Fiber.Fiber<never, void> | void>(undefined),
@@ -104,14 +102,14 @@ export function withExhaustLatestFork<R, E, A>(
               ? Ref.set(nextEffect, Option.some(eff))
               : Effect.flatMap(fork(Effect.ensuring(eff, Effect.zip(reset, runNext))), (fiber) => Ref.set(ref, fiber)))
 
-        return Effect.zip(f(exhaustLatestFork), awaitNext)
+        return Effect.zip(f(exhaustLatestFork, scope), awaitNext)
       }
     )
   )
 }
 
 export function withUnboundedFork<R, E, A>(
-  f: (fork: FxFork) => Effect.Effect<R, E, A>
+  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
 ) {
   return withScopedFork((fork, scope) =>
     Effect.flatMap(
@@ -130,8 +128,7 @@ export function withUnboundedFork<R, E, A>(
                   })
                 )
               )
-            )
-          ),
+            ), scope),
           () => Effect.flatMap(Ref.get(ref), (fibers) => fibers.size > 0 ? Fiber.joinAll(fibers) : Effect.unit)
         )
     )
@@ -140,7 +137,7 @@ export function withUnboundedFork<R, E, A>(
 
 export function withBoundedFork(capacity: number) {
   return <R, E, A>(
-    f: (fork: FxFork) => Effect.Effect<R, E, A>
+    f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
   ) => {
     return withScopedFork((fork, scope) =>
       Effect.flatMap(
@@ -159,8 +156,7 @@ export function withBoundedFork(capacity: number) {
                     })
                   )
                 )
-              )
-            ),
+              ), scope),
             () => Effect.flatMap(Ref.get(ref), (fibers) => fibers.size > 0 ? Fiber.joinAll(fibers) : Effect.unit)
           )
       )
@@ -168,7 +164,9 @@ export function withBoundedFork(capacity: number) {
   }
 }
 
-export function withFlattenStrategy(strategy: FlattenStrategy) {
+export function withFlattenStrategy(
+  strategy: FlattenStrategy
+): <R, E, A>(f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>) => Effect.Effect<R, E, void> {
   switch (strategy._tag) {
     case "Bounded":
       return withBoundedFork(strategy.capacity)
@@ -231,30 +229,24 @@ export class RingBuffer<A> {
   }
 }
 
-export interface EarlyExitSink<R, E, A> extends WithContext<R, E, A> {
-  readonly end: Effect.Effect<never, never, void>
-}
-
 export function withEarlyExit<R, E, A, R2, B>(
-  sink: WithContext<R, E, A>,
-  f: (sink: EarlyExitSink<R, E, A>) => Effect.Effect<R2, E, B>
+  sink: Sink.Sink<E, A>,
+  f: (sink: Sink.WithEarlyExit<E, A>) => Effect.Effect<R2, E, B>
 ): Effect.Effect<R | R2, never, void> {
   return Effect.asyncEffect<never, never, void, R | R2, never, void>((resume) => {
-    const earlyExit: EarlyExitSink<R, E, A> = {
+    const earlyExit: Sink.WithEarlyExit<E, A> = {
       ...sink,
-      end: Effect.sync(() => resume(Effect.unit))
+      earlyExit: Effect.sync(() => resume(Effect.unit))
     }
 
-    return f(earlyExit).pipe(
-      Effect.matchCauseEffect({
-        onFailure: sink.onFailure,
-        onSuccess: () => earlyExit.end
-      })
-    )
+    return Effect.matchCauseEffect(f(earlyExit), {
+      onFailure: sink.onFailure,
+      onSuccess: () => earlyExit.earlyExit
+    })
   })
 }
 
-export function withBuffers<R, E, A>(count: number, sink: WithContext<R, E, A>) {
+export function withBuffers<R, E, A>(count: number, sink: Sink.WithContext<R, E, A>) {
   return Effect.sync(() => {
     const buffers = Array(count).fill([] as Array<A>)
     const finished = new Set<number>()

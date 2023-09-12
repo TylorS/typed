@@ -4,7 +4,7 @@ import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
 import { makeHoldSubject, makeReplaySubject, makeSubject } from "@typed/fx/internal/core-subject"
-import { Commit, fromSink, type Fx, run, type Subject } from "@typed/fx/internal/core2"
+import { fromSink, type Fx, run, type Subject, ToFx } from "@typed/fx/internal/core2"
 import { withScopedFork } from "@typed/fx/internal/helpers"
 
 export function share<R, E, A, R2>(
@@ -28,7 +28,7 @@ class RefCounter {
 
 // TODO: We should keep track of a Set of Scope's to enable use to close them all when the
 
-export class Share<R, E, A, R2> extends Commit<R | R2, E, A> {
+export class Share<R, E, A, R2> extends ToFx<R | R2, E, A> {
   private fxFiber: MutableRef.MutableRef<Option.Option<Fiber.Fiber<never, unknown>>> = MutableRef.make(Option.none())
   private refCount = new RefCounter()
 
@@ -39,7 +39,7 @@ export class Share<R, E, A, R2> extends Commit<R | R2, E, A> {
     super(i0, i1)
   }
 
-  commit(): Fx<R | R2, E, A> {
+  toFx(): Fx<R | R2, E, A> {
     return fromSink((sink) =>
       withScopedFork((fork) => {
         return Effect.onExit(

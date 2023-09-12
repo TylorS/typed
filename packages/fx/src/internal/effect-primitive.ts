@@ -201,3 +201,23 @@ export interface WithRuntime extends
 
 /** @internal */
 export interface Yield extends Op<OpCodes.OP_YIELD> {}
+
+export function matchEffectPrimitive<B>(
+  effect: InternalEffect,
+  matchers: {
+    readonly Success: (succes: Success) => B
+    readonly Failure: (failure: Failure) => B
+    readonly Sync: (sync: Sync) => B
+    readonly Left: (left: Either.Left<any, any>) => B
+    readonly Right: (right: Either.Right<any, any>) => B
+    readonly Some: (some: Option.Some<any>) => B
+    readonly None: (none: Option.None<any>) => B
+    readonly Otherwise: (effect: InternalEffect) => B
+  }
+): B {
+  if (effect._tag in matchers) {
+    return matchers[effect._tag as keyof typeof matchers](effect as any)
+  } else {
+    return matchers.Otherwise(effect)
+  }
+}

@@ -12,11 +12,13 @@ import type * as Exit from "@effect/io/Exit"
 import * as Fiber from "@effect/io/Fiber"
 import type * as Layer from "@effect/io/Layer"
 import * as Ref from "@effect/io/Ref"
+import type * as Scope from "@effect/io/Scope"
 import * as SynchronizedRef from "@effect/io/SynchronizedRef"
 
 import * as Schedule from "@effect/io/Schedule"
 import { type Context } from "@typed/context"
 import {
+  compileCauseEffectOperatorSink,
   compileEffectLoop,
   compileEffectOperatorSink,
   type EffectOperator,
@@ -27,12 +29,14 @@ import {
   MapEffect,
   TapEffect
 } from "@typed/fx/internal/effect-operator"
-import { withBuffers, withEarlyExit, withFlattenStrategy, withScopedFork } from "@typed/fx/internal/helpers"
+import type { FxFork } from "@typed/fx/internal/helpers"
+import * as helpers from "@typed/fx/internal/helpers"
 import * as Provide from "@typed/fx/internal/provide"
 import * as Sink from "@typed/fx/internal/sink"
 import * as strategies from "@typed/fx/internal/strategies"
 import {
   compileSyncLoop,
+  compileSyncOperatorFailureSink,
   compileSyncOperatorSink,
   fuseSyncOperators,
   Map,
@@ -40,24 +44,23 @@ import {
 } from "@typed/fx/internal/sync-operator"
 
 import type { DurationInput } from "@effect/data/Duration"
+import type { Equivalence } from "@effect/data/Equivalence"
 import { type Bounds, boundsFrom, mergeBounds } from "@typed/fx/internal/bounds"
+import { matchEffectPrimitive } from "@typed/fx/internal/effect-primitive"
+import type { InternalEffect } from "@typed/fx/internal/effect-primitive"
 
 export const TypeId = Symbol.for("@typed/Fx/TypeId")
 export type TypeId = typeof TypeId
 
-const ConstructorTypeId = Symbol.for("@typed/Fx/ConstructorTypeId")
-type ConstructorTypeId = typeof ConstructorTypeId
+export const ConstructorTypeId = Symbol.for("@typed/Fx/ConstructorTypeId")
+export type ConstructorTypeId = typeof ConstructorTypeId
 
-const ControlFlowTypeId = Symbol.for("@typed/Fx/ControlFlowTypeId")
-type ControlFlowTypeId = typeof ControlFlowTypeId
+export const OperatorTypeId = Symbol.for("@typed/Fx/OperatorTypeId")
+export type OperatorTypeId = typeof OperatorTypeId
 
-const OperatorTypeId = Symbol.for("@typed/Fx/OperatorTypeId")
-type OperatorTypeId = typeof OperatorTypeId
-
-const ProvideTypeId = Symbol.for("@typed/Fx/ProvideTypeId")
-type ProvideTypeId = typeof ProvideTypeId
-
-// TODO: TransformerCause + TransformerCauseEffect + SkipRepeats
+// TODO: TransformerCause TransformerCauseEffect
+// TODO: TransformerBothCause TransformerBothEffect
+// TODO: Optimize Snapshot for sampling Effects
 
 export interface Fx<R, E, A> extends Fx.Variance<R, E, A>, Pipeable {}
 
@@ -70,7 +73,7 @@ const Variance: Fx<any, any, any>[TypeId] = {
 }
 
 export abstract class FxProto<R, E, A> implements Fx<R, E, A> {
-  abstract readonly _tag: string
+  abstract readonly _fxTag: string
   readonly [TypeId]: Fx<R, E, A>[TypeId] = Variance
 
   constructor(
@@ -93,18 +96,6 @@ export abstract class FxProto<R, E, A> implements Fx<R, E, A> {
   }
 }
 
-abstract class FxConstructorProto<R, E, A> extends FxProto<R, E, A> {
-  readonly [ConstructorTypeId]: ConstructorTypeId = ConstructorTypeId
-}
-
-abstract class FxControlFlowProto<R, E, A> extends FxProto<R, E, A> {
-  readonly [ControlFlowTypeId]: ControlFlowTypeId = ControlFlowTypeId
-}
-
-abstract class FxOperatorProto<R, E, A> extends FxProto<R, E, A> {
-  readonly [OperatorTypeId]: OperatorTypeId = OperatorTypeId
-}
-
 export namespace Fx {
   export type Context<T> = T extends Fx<infer R, infer _E, infer _A> ? R : never
   export type Error<T> = T extends Fx<infer _R, infer E, infer _A> ? E : never
@@ -119,128 +110,85 @@ export namespace Fx {
   }
 }
 
-export type Primitive = Constructor | ControlFlow | Operator | FxProvide<any, any, any, any, any, any>
-
-export type Constructor =
-  | AcquireUseRelease<unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown>
-  | Combine<unknown, unknown, unknown>
-  | Commit<unknown, unknown, unknown>
+export type Primitive =
+  | ToFx<unknown, unknown, unknown>
   | Empty
   | Fail<unknown>
-  | FromIterable<unknown>
   | FromEffect<unknown, unknown, unknown>
-  | FromScheduled<unknown, unknown, unknown, unknown>
+  | FromIterable<unknown>
   | FromSink<unknown, unknown, unknown>
-  | Merge<unknown, unknown, unknown>
   | Never
-  | Race<unknown, unknown, unknown>
   | Succeed<unknown>
   | Suspend<unknown, unknown, unknown>
   | Sync<unknown>
-
-export type ControlFlow =
-  | FlatMap<unknown, unknown, unknown, unknown, unknown, unknown>
-  | FlatMapCause<unknown, unknown, unknown, unknown, unknown, unknown>
-  | MatchCause<unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown>
-  | ContinueWith<unknown, unknown, unknown, unknown, unknown, unknown>
-  | RecoverWith<unknown, unknown, unknown, unknown, unknown, unknown>
-  | During<unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown>
-  | TakeWhile<unknown, unknown, unknown, unknown, unknown>
-  | DropWhile<unknown, unknown, unknown, unknown, unknown>
-  | DropAfter<unknown, unknown, unknown, unknown, unknown>
-
-export type Operator =
+  | WithEarlyExit<unknown, unknown, unknown>
+  | WithScopedFork<unknown, unknown, unknown>
+  | WithFlattenStrategy<unknown, unknown, unknown>
   | Transformer<unknown, unknown, unknown>
   | TransformerEffect<unknown, unknown, unknown>
-  | Slice<unknown, unknown, unknown>
-  | Loop<unknown, unknown, unknown, unknown, unknown>
-  | FilterMapLoop<unknown, unknown, unknown, unknown, unknown>
-  | LoopEffect<unknown, unknown, unknown, unknown, unknown, unknown, unknown>
-  | FilterMapLoopEffect<unknown, unknown, unknown, unknown, unknown, unknown, unknown>
-  | Snapshot<unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown>
-  | Middleware<unknown, unknown, unknown, unknown>
+  | TransformerCause<unknown, unknown, unknown>
+  | TransformerCauseEffect<unknown, unknown, unknown>
 
-export class AcquireUseRelease<R, E, A, R1, E1, A1, R2, E2> extends FxConstructorProto<R | R1 | R2, E | E1 | E2, A1> {
-  readonly _tag = "Fx/AcquireUseRelease"
+export abstract class ToFx<R, E, A> extends FxProto<R, E, A> {
+  readonly _fxTag = "ToFx"
 
-  constructor(
-    readonly i0: Effect.Effect<R, E, A>,
-    readonly i1: (a: A) => Fx<R1, E1, A1>,
-    readonly i2: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<R2, E2, unknown>
-  ) {
-    super(i0, i1, i2)
+  protected abstract toFx(): Fx<R, E, A>
+
+  #fx: Fx<R, E, A> | undefined
+  get fx(): Fx<R, E, A> {
+    // Memoize the constructed Fx
+    if (this.#fx === undefined) {
+      return (this.#fx = this.toFx())
+    } else {
+      return this.#fx
+    }
   }
 }
 
-export class Combine<R, E, A> extends FxConstructorProto<R, E, A> {
-  readonly _tag = "Fx/Combine"
-
-  constructor(readonly i0: ReadonlyArray<Fx<R, E, A[keyof A]>>) {
-    super(i0)
-  }
+export class Empty extends FxProto<never, never, never> {
+  readonly _fxTag = "Empty"
 }
 
-export abstract class Commit<R, E, A> extends FxConstructorProto<R, E, A> {
-  readonly _tag = "Fx/Commit"
-
-  abstract commit(): Fx<R, E, A>
-}
-
-export class Empty extends FxConstructorProto<never, never, never> {
-  readonly _tag = "Fx/Empty"
-}
-
-export class Fail<E> extends FxConstructorProto<never, E, never> {
-  readonly _tag = "Fx/Fail"
+export class Fail<E> extends FxProto<never, E, never> {
+  readonly _fxTag = "Fail"
 
   constructor(readonly i0: Cause.Cause<E>) {
     super(i0)
   }
 }
 
-export class FromIterable<A> extends FxConstructorProto<never, never, A> {
-  readonly _tag = "Fx/FromIterable"
+export class FromIterable<A> extends FxProto<never, never, A> {
+  readonly _fxTag = "FromIterable"
 
   constructor(readonly i0: Iterable<A>) {
     super(i0)
   }
 }
 
-export class FromEffect<R, E, A> extends FxConstructorProto<R, E, A> {
-  readonly _tag = "Fx/FromEffect"
+export class FromEffect<R, E, A> extends FxProto<R, E, A> {
+  readonly _fxTag = "FromEffect"
 
   constructor(readonly i0: Effect.Effect<R, E, A>) {
     super(i0)
   }
 }
 
-export class FromScheduled<R, E, A, R1> extends FxConstructorProto<R | R1, E, A> {
-  readonly _tag = "Fx/FromScheduled"
-
-  constructor(
-    readonly i0: Effect.Effect<R, E, A>,
-    readonly i1: Schedule.Schedule<R1, unknown, unknown>
-  ) {
-    super(i0, i1)
-  }
-}
-
-export class FromSink<R, E, A> extends FxConstructorProto<R, E, A> {
-  readonly _tag = "Fx/FromSink"
+export class FromSink<R, E, A> extends FxProto<R, E, A> {
+  readonly _fxTag = "FromSink"
 
   constructor(readonly i0: (sink: Sink.Sink<E, A>) => Effect.Effect<R, never, unknown>) {
     super(i0)
   }
 }
 
-export class Merge<R, E, A> extends FxConstructorProto<R, E, A> {
-  readonly _tag = "Fx/Merge"
-
+export class Merge<R, E, A> extends ToFx<R, E, A> {
   constructor(readonly i0: ReadonlyArray<Fx<R, E, A>>, readonly i1: strategies.MergeStrategy) {
     super(i0, i1)
   }
 
   static make<R, E, A>(fx: ReadonlyArray<Fx<R, E, A>>, strategy: strategies.MergeStrategy): Fx<R, E, A> {
+    // TODO: Flatten nested Merges
+
     if (fx.length === 0) return empty
     const nonEmptyFx = fx.filter((fx) => !(fx instanceof Empty))
 
@@ -261,149 +209,126 @@ export class Merge<R, E, A> extends FxConstructorProto<R, E, A> {
         return new Merge(nonEmptyFx.filter((fx) => !(fx instanceof Never)), strategy)
     }
   }
-}
 
-export class Never extends FxConstructorProto<never, never, never> {
-  readonly _tag = "Fx/Never"
-}
+  toFx(): Fx<R, E, A> {
+    const { i0, i1 } = this
 
-export class Race<R, E, A> extends FxConstructorProto<R, E, A> {
-  readonly _tag = "Fx/Race"
+    switch (i1._tag) {
+      case "Ordered": {
+        const concurrency = i1.concurrency === Infinity ? "unbounded" : i1.concurrency
 
-  constructor(readonly i0: ReadonlyArray<Fx<R, E, A>>) {
-    super(i0)
+        return fromSink((sink) => (
+          Effect.flatMap(helpers.withBuffers(i0.length, sink), (buffers) =>
+            Effect.all(
+              i0.map((fx, i) =>
+                Effect.flatMap(
+                  run(
+                    fx,
+                    Sink.WithContext(
+                      sink.onFailure,
+                      (a) => buffers.onSuccess(i, a)
+                    )
+                  ),
+                  () => buffers.onEnd(i)
+                )
+              ),
+              {
+                concurrency
+              }
+            ))
+        ))
+      }
+      case "Switch":
+        return fromSink((sink) => Effect.all(i0.map((fx) => run(fx, sink)), { concurrency: 1 }))
+      case "Unordered":
+        return fromSink((sink) =>
+          Effect.all(i0.map((fx) => run(fx, sink)), {
+            concurrency: i1.concurrency === Infinity ? "unbounded" : i1.concurrency
+          })
+        )
+    }
   }
 }
 
-export class Succeed<A> extends FxConstructorProto<never, never, A> {
-  readonly _tag = "Fx/Succeed"
+export class Never extends FxProto<never, never, never> {
+  readonly _fxTag = "Never"
+}
+
+export class Succeed<A> extends FxProto<never, never, A> {
+  readonly _fxTag = "Succeed"
 
   constructor(readonly i0: A) {
     super(i0)
   }
 }
 
-export class Sync<A> extends FxConstructorProto<never, never, A> {
-  readonly _tag = "Fx/Sync"
+export class Sync<A> extends FxProto<never, never, A> {
+  readonly _fxTag = "Sync"
 
   constructor(readonly i0: () => A) {
     super(i0)
   }
 }
 
-export class Suspend<R, E, A> extends FxConstructorProto<R, E, A> {
-  readonly _tag = "Fx/Suspend"
+export class Suspend<R, E, A> extends FxProto<R, E, A> {
+  readonly _fxTag = "Suspend"
 
   constructor(readonly i0: () => Fx<R, E, A>) {
     super(i0)
   }
 }
 
-export class FlatMap<R, E, A, R1, E1, A1> extends FxControlFlowProto<R | R1, E | E1, A1> {
-  readonly _tag = "Fx/FlatMap"
-
-  constructor(
-    readonly i0: Fx<R, E, A>,
-    readonly i1: (a: A) => Fx<R1, E1, A1>,
-    readonly i2: strategies.FlattenStrategy
-  ) {
-    super(i0, i1, i2)
-  }
+export type WithFlattenStrategyParams<E, A> = {
+  readonly sink: Sink.Sink<E, A>
+  readonly fork: FxFork
+  readonly scope: Scope.Scope
 }
 
-export class FlatMapCause<R, E, A, R1, E1, A1> extends FxControlFlowProto<R | R1, E1, A | A1> {
-  readonly _tag = "Fx/FlatMapCause"
+export class WithFlattenStrategy<R, E, A> extends FxProto<R, E, A> {
+  readonly _fxTag = "WithFlattenStrategy"
 
   constructor(
-    readonly i0: Fx<R, E, A>,
-    readonly i1: (cause: Cause.Cause<E>) => Fx<R1, E1, A1>,
-    readonly i2: strategies.FlattenStrategy
-  ) {
-    super(i0, i1, i2)
-  }
-}
-
-export class MatchCause<R, E, A, R1, E1, A1, R2, E2, A2> extends FxControlFlowProto<R | R1 | R2, E1 | E2, A1 | A2> {
-  readonly _tag = "Fx/MatchCause"
-
-  constructor(
-    readonly i0: Fx<R, E, A>,
-    readonly i1: (cause: Cause.Cause<E>) => Fx<R1, E1, A1>,
-    readonly i2: (a: A) => Fx<R2, E2, A2>,
-    readonly i3: strategies.FlattenStrategy
-  ) {
-    super(i0, i1, i2)
-  }
-}
-
-export class ContinueWith<R, E, A, R1, E1, A1> extends FxControlFlowProto<R | R1, E | E1, A1> {
-  readonly _tag = "Fx/ContinueWith"
-
-  constructor(
-    readonly i0: Fx<R, E, A>,
-    readonly i1: () => Fx<R1, E1, A1>
+    readonly i0: (options: WithFlattenStrategyParams<E, A>) => Effect.Effect<R, never, unknown>,
+    readonly i1: strategies.FlattenStrategy
   ) {
     super(i0, i1)
   }
 }
 
-export class RecoverWith<R, E, A, R1, E1, A1> extends FxControlFlowProto<R | R1, E1, A | A1> {
-  readonly _tag = "Fx/RecoverWith"
+export type WithEarlyExitParams<E, A> = {
+  readonly sink: Sink.WithEarlyExit<E, A>
+  readonly fork: helpers.ScopedFork
+  readonly scope: Scope.Scope
+}
+
+export class WithEarlyExit<R, E, A> extends FxProto<R, E, A> {
+  readonly _fxTag = "WithEarlyExit"
 
   constructor(
-    readonly i0: Fx<R, E, A>,
-    readonly i1: (cause: Cause.Cause<E>) => Fx<R1, E1, A1>
+    readonly i0: (options: WithEarlyExitParams<E, A>) => Effect.Effect<R, never, unknown>
   ) {
-    super(i0, i1)
+    super(i0)
   }
 }
 
-export class During<R, E, A, R1, E1, R2, E2, A2> extends FxControlFlowProto<R | R1 | R2, E | E1 | E2, A> {
-  readonly _tag = "Fx/During"
+export type WithScopedForkParams<E, A> = {
+  readonly sink: Sink.Sink<E, A>
+  readonly fork: helpers.ScopedFork
+  readonly scope: Scope.Scope
+}
+
+export class WithScopedFork<R, E, A> extends FxProto<R, E, A> {
+  readonly _fxTag = "WithScopedFork"
 
   constructor(
-    readonly i0: Fx<R, E, A>,
-    readonly i1: Fx<R1, E1, Fx<R2, E2, A2>>
+    readonly i0: (options: WithScopedForkParams<E, A>) => Effect.Effect<R, never, unknown>
   ) {
-    super(i0, i1)
+    super(i0)
   }
 }
 
-export class TakeWhile<R, E, A, R1, E1> extends FxControlFlowProto<R | R1, E | E1, A> {
-  readonly _tag = "Fx/TakeWhile"
-
-  constructor(
-    readonly i0: Fx<R, E, A>,
-    readonly i1: (a: A) => Effect.Effect<R1, E1, boolean>
-  ) {
-    super(i0, i1)
-  }
-}
-
-export class DropWhile<R, E, A, R1, E1> extends FxControlFlowProto<R | R1, E | E1, A> {
-  readonly _tag = "Fx/DropWhile"
-
-  constructor(
-    readonly i0: Fx<R, E, A>,
-    readonly i1: (a: A) => Effect.Effect<R1, E1, boolean>
-  ) {
-    super(i0, i1)
-  }
-}
-
-export class DropAfter<R, E, A, R1, E1> extends FxControlFlowProto<R | R1, E | E1, A> {
-  readonly _tag = "Fx/DropAfter"
-
-  constructor(
-    readonly i0: Fx<R, E, A>,
-    readonly i1: (a: A) => Effect.Effect<R1, E1, boolean>
-  ) {
-    super(i0, i1)
-  }
-}
-
-export class Transformer<R, E, A> extends FxOperatorProto<R, E, A> {
-  readonly _tag = "Fx/Transformer"
+export class Transformer<R, E, A> extends FxProto<R, E, A> {
+  readonly _fxTag = "Transformer"
 
   constructor(
     readonly i0: Fx<unknown, unknown, unknown>,
@@ -421,8 +346,27 @@ export class Transformer<R, E, A> extends FxOperatorProto<R, E, A> {
   }
 }
 
-export class TransformerEffect<R, E, A> extends FxOperatorProto<R, E, A> {
-  readonly _tag = "Fx/TransformerEffect"
+export class TransformerCause<R, E, A> extends FxProto<R, E, A> {
+  readonly _fxTag = "TransformerCause"
+
+  constructor(
+    readonly i0: Fx<unknown, unknown, unknown>,
+    readonly i1: SyncOperator
+  ) {
+    super(i0, i1)
+  }
+
+  static make<R, E, A>(fx: Fx<unknown, unknown, unknown>, operator: SyncOperator): Fx<R, E, A> {
+    if (fx instanceof TransformerCause) {
+      return new TransformerCause(fx.i0, fuseSyncOperators(fx.i1, operator))
+    } else {
+      return new TransformerCause<R, E, A>(fx, operator)
+    }
+  }
+}
+
+export class TransformerEffect<R, E, A> extends FxProto<R, E, A> {
+  readonly _fxTag = "TransformerEffect"
 
   constructor(
     readonly i0: Fx<unknown, unknown, unknown>,
@@ -443,9 +387,29 @@ export class TransformerEffect<R, E, A> extends FxOperatorProto<R, E, A> {
   }
 }
 
-export class Slice<R, E, A> extends FxOperatorProto<R, E, A> {
-  readonly _tag = "Fx/Slice"
+export class TransformerCauseEffect<R, E, A> extends FxProto<R, E, A> {
+  readonly _fxTag = "TransformerCauseEffect"
 
+  constructor(
+    readonly i0: Fx<unknown, unknown, unknown>,
+    readonly i1: EffectOperator
+  ) {
+    super(i0, i1)
+  }
+
+  static make<R, E, A>(fx: Fx<unknown, unknown, unknown>, operator: EffectOperator): Fx<R, E, A> {
+    if (fx instanceof TransformerCause) {
+      return new TransformerCauseEffect(fx.i0, fuseEffectOperators(liftSyncOperator(fx.i1), operator))
+    } else if (fx instanceof TransformerCauseEffect) {
+      // All EffectOperators can be fused together
+      return new TransformerCauseEffect(fx.i0, fuseEffectOperators(fx.i1, operator))
+    } else {
+      return new TransformerCauseEffect<R, E, A>(fx, operator)
+    }
+  }
+}
+
+export class Slice<R, E, A> extends ToFx<R, E, A> {
   constructor(
     readonly i0: Fx<R, E, A>,
     readonly i1: Bounds
@@ -462,11 +426,37 @@ export class Slice<R, E, A> extends FxOperatorProto<R, E, A> {
       return new Slice(fx, bounds)
     }
   }
+
+  toFx(): Fx<R, E, A> {
+    const fx = this.i0
+    const { max, min } = this.i1
+
+    return withEarlyExit(({ sink }) =>
+      Effect.suspend(() => {
+        let toSkip = min
+        let toTake = max
+
+        return run(
+          fx,
+          Sink.WithContext(sink.onFailure, (a) =>
+            Effect.suspend(() => {
+              if (toSkip > 0) {
+                toSkip -= 1
+                return Effect.unit
+              } else if (toTake > 0) {
+                toTake -= 1
+                return Effect.flatMap(sink.onSuccess(a), () => toTake <= 0 ? sink.earlyExit : Effect.unit)
+              } else {
+                return sink.earlyExit
+              }
+            }))
+        )
+      })
+    )
+  }
 }
 
-export class Loop<R, E, A, B, C> extends FxOperatorProto<R, E, C> {
-  readonly _tag = "Fx/Loop"
-
+export class Loop<R, E, A, B, C> extends ToFx<R, E, C> {
   constructor(
     readonly i0: Fx<R, E, A>,
     readonly i1: (b: B, a: A) => readonly [C, B],
@@ -475,30 +465,81 @@ export class Loop<R, E, A, B, C> extends FxOperatorProto<R, E, C> {
     super(i0, i1, i2)
   }
 
-  static make<R, E, A, B, C>(fx: Fx<R, E, A>, f: (b: B, a: A) => readonly [C, B], b: B): Fx<R, E, C> {
+  static make<R, E, A, B, C>(fx: Fx<R, E, A>, b: B, f: (b: B, a: A) => readonly [C, B]): Fx<R, E, C> {
     if (fx instanceof Transformer) {
-      return new FilterMapLoop(fx.i0 as Fx<R, E, any>, compileSyncLoop(fx.i1, f), b)
+      return new FilterMapLoop(fx.i0 as Fx<R, E, any>, b, compileSyncLoop(fx.i1, f))
+    } else if (fx instanceof TransformerEffect) {
+      return new FilterMapLoopEffect(
+        fx.i0 as Fx<R, E, any>,
+        b,
+        compileEffectLoop(fx.i1, (b: B, a: A) => Effect.sync(() => f(b, a)))
+      )
     } else {
       return new Loop(fx, f, b)
     }
   }
-}
 
-export class FilterMapLoop<R, E, A, B, C> extends FxOperatorProto<R, E, C> {
-  readonly _tag = "Fx/FilterMapLoop"
+  toFx(): Fx<R, E, C> {
+    return fromSink((sink) =>
+      Effect.suspend(() => {
+        let acc = this.i2
 
-  constructor(
-    readonly i0: Fx<R, E, A>,
-    readonly i1: (b: B, a: A) => Option.Option<readonly [C, B]>,
-    readonly i2: B
-  ) {
-    super(i0, i1, i2)
+        return run(
+          this.i0,
+          Sink.WithContext(
+            sink.onFailure,
+            (a) =>
+              Effect.suspend(() => {
+                const [c, b] = this.i1(acc, a)
+
+                acc = b
+
+                return sink.onSuccess(c)
+              })
+          )
+        )
+      })
+    )
   }
 }
 
-export class LoopEffect<R, E, A, R2, E2, B, C> extends FxOperatorProto<R | R2, E | E2, C> {
-  readonly _tag = "Fx/LoopEffect"
+export class FilterMapLoop<R, E, A, B, C> extends ToFx<R, E, C> {
+  constructor(
+    readonly i0: Fx<R, E, A>,
+    readonly i1: B,
+    readonly i2: (b: B, a: A) => Option.Option<readonly [C, B]>
+  ) {
+    super(i0, i1, i2)
+  }
 
+  toFx(): Fx<R, E, C> {
+    return fromSink((sink) =>
+      Effect.suspend(() => {
+        let acc = this.i1
+
+        return run(
+          this.i0,
+          Sink.WithContext(
+            sink.onFailure,
+            (a) =>
+              Effect.suspend(() => {
+                const optionCB = this.i2(acc, a)
+
+                if (Option.isNone(optionCB)) return Effect.unit
+
+                const [c, b] = optionCB.value
+                acc = b
+
+                return sink.onSuccess(c)
+              })
+          )
+        )
+      })
+    )
+  }
+}
+
+export class LoopEffect<R, E, A, R2, E2, B, C> extends ToFx<R | R2, E | E2, C> {
   constructor(
     readonly i0: Fx<R, E, A>,
     readonly i1: (b: B, a: A) => Effect.Effect<R2, E2, readonly [C, B]>,
@@ -513,29 +554,73 @@ export class LoopEffect<R, E, A, R2, E2, B, C> extends FxOperatorProto<R | R2, E
     b: B
   ): Fx<R | R2, E | E2, C> {
     if (fx instanceof TransformerEffect) {
-      return new FilterMapLoopEffect(fx.i0 as Fx<R, E, any>, compileEffectLoop(fx.i1, f), b)
+      return new FilterMapLoopEffect(fx.i0 as Fx<R, E, any>, b, compileEffectLoop(fx.i1, f))
+    } else if (fx instanceof Transformer) {
+      return new FilterMapLoopEffect(fx.i0 as Fx<R, E, any>, b, compileEffectLoop(liftSyncOperator(fx.i1), f))
     } else {
       return new LoopEffect(fx, f, b)
     }
   }
-}
 
-export class FilterMapLoopEffect<R, E, A, R2, E2, B, C> extends FxOperatorProto<R | R2, E | E2, C> {
-  readonly _tag = "Fx/FilterMapLoopEffect"
+  toFx(): Fx<R | R2, E | E2, C> {
+    const { i0, i1, i2 } = this
 
-  constructor(
-    readonly i0: Fx<R, E, A>,
-    readonly i1: (b: B, a: A) => Effect.Effect<R2, E2, Option.Option<readonly [C, B]>>,
-    readonly i2: B
-  ) {
-    super(i0, i1, i2)
+    return fromSink((sink) =>
+      Effect.flatMap(SynchronizedRef.make(i2), (ref) =>
+        run(
+          i0,
+          Sink.WithContext(sink.onFailure, (a) =>
+            SynchronizedRef.updateEffect(ref, (b) =>
+              Effect.matchCauseEffect(i1(b, a), {
+                onFailure: (cause) => Effect.as(sink.onFailure(cause), b),
+                onSuccess: ([c, b2]: readonly [C, B]) => Effect.as(sink.onSuccess(c), b2)
+              })))
+        ))
+    )
   }
 }
 
-export class FxProvide<R, E, A, R2, E2, B> extends FxProto<Exclude<R, B> | R2, E | E2, A> {
-  readonly _tag = "Fx/Provide"
-  readonly [ProvideTypeId]: ProvideTypeId = ProvideTypeId
+export class FilterMapLoopEffect<R, E, A, R2, E2, B, C> extends ToFx<R | R2, E | E2, C> {
+  constructor(
+    readonly i0: Fx<R, E, A>,
+    readonly i1: B,
+    readonly i2: (b: B, a: A) => Effect.Effect<R2, E2, Option.Option<readonly [C, B]>>
+  ) {
+    super(i0, i1, i2)
+  }
 
+  toFx(): Fx<R | R2, E | E2, C> {
+    return fromSink((sink) =>
+      Effect.suspend(() => {
+        let acc = this.i1
+
+        return run(
+          this.i0,
+          Sink.WithContext(
+            sink.onFailure,
+            (a) =>
+              this.i2(acc, a).pipe(
+                Effect.matchCauseEffect({
+                  onFailure: sink.onFailure,
+                  onSuccess: (optionCB) =>
+                    Effect.suspend(() => {
+                      if (Option.isNone(optionCB)) return Effect.unit
+
+                      const [c, b] = optionCB.value
+                      acc = b
+
+                      return sink.onSuccess(c)
+                    })
+                })
+              )
+          )
+        )
+      })
+    )
+  }
+}
+
+export class FxProvide<R, E, A, R2, E2, B> extends ToFx<Exclude<R, B> | R2, E | E2, A> {
   constructor(
     readonly i0: Fx<R, E, A>,
     readonly i1: Provide.Provide<R2, E2, B>
@@ -553,11 +638,15 @@ export class FxProvide<R, E, A, R2, E2, B> extends FxProto<Exclude<R, B> | R2, E
       return new FxProvide(fx, provide)
     }
   }
+
+  protected toFx(): Fx<R2 | Exclude<R, B>, E | E2, A> {
+    return fromSink((sink) =>
+      Effect.catchAllCause(Provide.provideToEffect(run(this.i0, sink), this.i1), sink.onFailure)
+    )
+  }
 }
 
-export class Snapshot<R, E, A, R2, E2, B, R3, E3, C> extends FxOperatorProto<R | R2 | R2, E | E2 | E3, C> {
-  readonly _tag = "Fx/Snapshot"
-
+export class Snapshot<R, E, A, R2, E2, B, R3, E3, C> extends ToFx<R | R2 | R3, E | E2 | E3, C> {
   constructor(
     readonly i0: Fx<R, E, A>,
     readonly i1: Fx<R2, E2, B>,
@@ -565,11 +654,37 @@ export class Snapshot<R, E, A, R2, E2, B, R3, E3, C> extends FxOperatorProto<R |
   ) {
     super(i0, i1, i2)
   }
+
+  toFx(): Fx<R | R2 | R3, E | E2 | E3, C> {
+    return withScopedFork(({ fork, sink }) =>
+      Effect.flatMap(Ref.make(Option.none<B>()), (ref) =>
+        Effect.flatMap(
+          fork(run(
+            this.i1,
+            Sink.WithContext(
+              sink.onFailure,
+              (b) => Ref.set(ref, Option.some(b))
+            )
+          )),
+          () =>
+            run(
+              this.i0,
+              Sink.WithContext(
+                sink.onFailure,
+                (a) =>
+                  Ref.get(ref).pipe(
+                    Effect.flatten,
+                    Effect.flatMap((b) => Effect.matchCauseEffect(this.i2(a, b), sink)),
+                    Effect.optionFromOptional
+                  )
+              )
+            )
+        ))
+    )
+  }
 }
 
-export class Middleware<R, R2, E, A> extends FxOperatorProto<R2, E, A> {
-  readonly _tag = "Fx/Middleware"
-
+export class Middleware<R, R2, E, A> extends ToFx<R2, E, A> {
   constructor(
     readonly i0: Fx<R, E, A>,
     readonly i1: (effect: Effect.Effect<R, never, unknown>, sink: Sink.Sink<E, A>) => Effect.Effect<R2, never, unknown>
@@ -587,591 +702,145 @@ export class Middleware<R, R2, E, A> extends FxOperatorProto<R2, E, A> {
       return new Middleware(fx, middleware)
     }
   }
+
+  protected toFx(): Fx<R2, E, A> {
+    return fromSink((sink) => this.i1(run(this.i0, sink), sink))
+  }
 }
 
-export function matchFxPrimitive<R, E, A, B>(
+export function run<R, E, A, R2>(
+  fx: Fx<R, E, A>,
+  sink: Sink.WithContext<R2, E, A>
+): Effect.Effect<R | R2, never, unknown> {
+  return matchFxKind(fx, {
+    Fx: (fx) => runFxPrimitive<R, E, A, R2>(fx, sink),
+    Effect: (effect) => runEffect<R, E, A, R2>(effect, sink),
+    Cause: (cause) => sink.onFailure(cause)
+  })
+}
+
+function matchFxKind<R, E, A, B>(
   fx: Fx<R, E, A>,
   matchers: {
-    readonly Constructor: (fx: Fx<R, E, A> & Constructor) => B
-    readonly ControlFlow: (fx: Fx<R, E, A> & ControlFlow) => B
-    readonly Operator: (fx: Fx<R, E, A> & Operator) => B
-    readonly Provide: (fx: Fx<R, E, A> & FxProvide<any, any, any, any, any, any>) => B
+    readonly Fx: (fx: Fx<R, E, A> & Primitive) => B
     readonly Effect: (effect: Effect.Effect<R, E, A>) => B
     readonly Cause: (cause: Cause.Cause<E>) => B
-    readonly Iterable: (iterable: Iterable<A>) => B
   }
 ): B {
   if (TypeId in fx) {
-    if (ConstructorTypeId in fx) {
-      return matchers.Constructor(fx as Fx<R, E, A> & Constructor)
-    } else if (ControlFlowTypeId in fx) {
-      return matchers.ControlFlow(fx as Fx<R, E, A> & ControlFlow)
-    } else if (OperatorTypeId in fx) {
-      return matchers.Operator(fx as Fx<R, E, A> & Operator)
-    } else {
-      return matchers.Provide(fx as Fx<R, E, A> & FxProvide<unknown, unknown, unknown, unknown, unknown, unknown>)
-    }
+    return matchers.Fx(fx as any)
   } else if (Effect.EffectTypeId in fx) {
     return matchers.Effect(fx as any)
   } else if (Cause.CauseTypeId in fx) {
     return matchers.Cause(fx as any)
   } else {
-    return matchers.Iterable(fx as any)
+    throw new TypeError(`Unknown Fx type: ${fx}`)
   }
 }
 
-export function matchFxConstructor<R, E, A>(
-  fx: Fx<R, E, A> & Constructor
-) {
-  return <B>(
-    matchers: {
-      readonly AcquireUseRelease: (
-        fx: AcquireUseRelease<R, E, any, R, E, A, R, E>
-      ) => B
-      readonly Combine: (fx: Combine<R, E, A>) => B
-      readonly Commit: (fx: Commit<R, E, A>) => B
-      readonly Empty: (fx: Empty) => B
-      readonly Fail: (fx: Fail<E>) => B
-      readonly FromEffect: (fx: FromEffect<R, E, A>) => B
-      readonly FromScheduled: (fx: FromScheduled<R, E, A, R>) => B
-      readonly FromSink: (fx: FromSink<R, E, A>) => B
-      readonly Merge: (fx: Merge<R, E, A>) => B
-      readonly Never: (fx: Never) => B
-      readonly Race: (fx: Race<R, E, A>) => B
-      readonly Succeed: (fx: Succeed<A>) => B
-      readonly Suspend: (fx: Suspend<R, E, A>) => B
-      readonly Sync: (fx: Sync<A>) => B
-      readonly FromIterable: (fx: FromIterable<A>) => B
-    }
-  ): B => {
-    switch (fx._tag) {
-      case "Fx/AcquireUseRelease":
-        return matchers.AcquireUseRelease(fx as AcquireUseRelease<R, E, any, R, E, A, R, E>)
-      case "Fx/Combine":
-        return matchers.Combine(fx as Combine<R, E, A>)
-      case "Fx/Commit":
-        return matchers.Commit(fx as Commit<R, E, A>)
-      case "Fx/Empty":
-        return matchers.Empty(fx)
-      case "Fx/Fail":
-        return matchers.Fail(fx as Fail<E>)
-      case "Fx/FromEffect":
-        return matchers.FromEffect(fx as FromEffect<R, E, A>)
-      case "Fx/FromScheduled":
-        return matchers.FromScheduled(fx as FromScheduled<R, E, A, R>)
-      case "Fx/FromSink":
-        return matchers.FromSink(fx as FromSink<R, E, A>)
-      case "Fx/Merge":
-        return matchers.Merge(fx as Merge<R, E, A>)
-      case "Fx/Never":
-        return matchers.Never(fx as Never)
-      case "Fx/Race":
-        return matchers.Race(fx as Race<R, E, A>)
-      case "Fx/Succeed":
-        return matchers.Succeed(fx as Succeed<A>)
-      case "Fx/Suspend":
-        return matchers.Suspend(fx as Suspend<R, E, A>)
-      case "Fx/Sync":
-        return matchers.Sync(fx as Sync<A>)
-      case "Fx/FromIterable":
-        return matchers.FromIterable(fx as FromIterable<A>)
-    }
+function matchFxPrimitive<R, E, A, B>(
+  fx: Fx<R, E, A> & Primitive,
+  matchers: {
+    readonly Empty: (fx: Empty) => B
+    readonly Fail: (fx: Fail<E>) => B
+    readonly FromEffect: (fx: FromEffect<R, E, A>) => B
+    readonly FromIterable: (fx: FromIterable<A>) => B
+    readonly FromSink: (fx: FromSink<R, E, A>) => B
+    readonly Never: (fx: Never) => B
+    readonly Succeed: (fx: Succeed<A>) => B
+    readonly Suspend: (fx: Suspend<R, E, A>) => B
+    readonly Sync: (fx: Sync<A>) => B
+    readonly ToFx: (fx: ToFx<R, E, A>) => B
+    readonly WithEarlyExit: (fx: WithEarlyExit<R, E, A>) => B
+    readonly WithScopedFork: (fx: WithScopedFork<R, E, A>) => B
+    readonly WithFlattenStrategy: (fx: WithFlattenStrategy<R, E, A>) => B
+    readonly Transformer: (fx: Transformer<R, E, A>) => B
+    readonly TransformerEffect: (fx: TransformerEffect<R, E, A>) => B
+    readonly TransformerCause: (fx: TransformerCause<R, E, A>) => B
+    readonly TransformerCauseEffect: (fx: TransformerCauseEffect<R, E, A>) => B
   }
+): B {
+  return matchers[fx._fxTag](fx as any)
 }
 
-export function matchFxControlFlow<R, E, A>(fx: Fx<R, E, A> & ControlFlow) {
-  return <B>(
-    matchers: {
-      readonly FlatMap: (fx: FlatMap<R, E, any, R, E, A>) => B
-      readonly FlatMapCause: (fx: FlatMapCause<R, any, A, R, E, A>) => B
-      readonly MatchCause: (fx: MatchCause<R, any, any, R, E, A, R, E, A>) => B
-      readonly ContinueWith: (fx: ContinueWith<R, E, A, R, E, A>) => B
-      readonly RecoverWith: (fx: RecoverWith<R, any, A, R, E, A>) => B
-      readonly During: (fx: During<R, E, A, R, E, R, E, any>) => B
-      readonly TakeWhile: (fx: TakeWhile<R, E, A, R, E>) => B
-      readonly DropWhile: (fx: DropWhile<R, E, A, R, E>) => B
-      readonly DropAfter: (fx: DropAfter<R, E, A, R, E>) => B
-    }
-  ): B => {
-    switch (fx._tag) {
-      case "Fx/FlatMap":
-        return matchers.FlatMap(fx as FlatMap<R, E, any, R, E, A>)
-      case "Fx/FlatMapCause":
-        return matchers.FlatMapCause(fx as FlatMapCause<R, any, A, R, E, A>)
-      case "Fx/MatchCause":
-        return matchers.MatchCause(fx as MatchCause<R, any, any, R, E, A, R, E, A>)
-      case "Fx/ContinueWith":
-        return matchers.ContinueWith(fx as ContinueWith<R, E, A, R, E, A>)
-      case "Fx/RecoverWith":
-        return matchers.RecoverWith(fx as RecoverWith<R, any, A, R, E, A>)
-      case "Fx/During":
-        return matchers.During(fx as During<R, E, A, R, E, R, E, any>)
-      case "Fx/TakeWhile":
-        return matchers.TakeWhile(fx as TakeWhile<R, E, A, R, E>)
-      case "Fx/DropWhile":
-        return matchers.DropWhile(fx as DropWhile<R, E, A, R, E>)
-      case "Fx/DropAfter":
-        return matchers.DropAfter(fx as DropAfter<R, E, A, R, E>)
-    }
-  }
-}
-
-export function matchFxOperator<R, E, A>(fx: Fx<R, E, A> & Operator) {
-  return <B>(
-    matchers: {
-      readonly Transformer: (fx: Transformer<R, E, A>) => B
-      readonly TransfomerEffect: (fx: TransformerEffect<R, E, A>) => B
-      readonly Loop: (fx: Loop<R, E, any, any, A>) => B
-      readonly LoopEffect: (fx: LoopEffect<R, E, any, R, E, any, A>) => B
-      readonly FilterMapLoop: (fx: FilterMapLoop<R, E, any, any, A>) => B
-      readonly FilterMapLoopEffect: (fx: FilterMapLoopEffect<R, E, any, R, E, any, A>) => B
-      readonly Snapshot: (fx: Snapshot<R, E, any, R, E, any, R, E, A>) => B
-      readonly Middleware: (fx: Middleware<any, R, E, A>) => B
-      readonly Slice: (fx: Slice<R, E, A>) => B
-    }
-  ): B => {
-    switch (fx._tag) {
-      case "Fx/Transformer":
-        return matchers.Transformer(fx)
-      case "Fx/TransformerEffect":
-        return matchers.TransfomerEffect(fx)
-      case "Fx/Loop":
-        return matchers.Loop(fx as Loop<R, E, any, any, A>)
-      case "Fx/LoopEffect":
-        return matchers.LoopEffect(fx as LoopEffect<R, E, any, R, E, any, A>)
-      case "Fx/FilterMapLoop":
-        return matchers.FilterMapLoop(fx as FilterMapLoop<R, E, any, any, A>)
-      case "Fx/FilterMapLoopEffect":
-        return matchers.FilterMapLoopEffect(fx as FilterMapLoopEffect<R, E, any, R, E, any, A>)
-      case "Fx/Snapshot":
-        return matchers.Snapshot(fx as Snapshot<R, E, any, R, E, any, R, E, A>)
-      case "Fx/Middleware":
-        return matchers.Middleware(fx as Middleware<any, R, E, A>)
-      case "Fx/Slice":
-        return matchers.Slice(fx as Slice<R, E, A>)
-    }
-  }
-}
-export function run<R, E, A, R2>(
-  fx: Fx<R, E, A>,
+function runFxPrimitive<R, E, A, R2>(
+  fx: Fx<R, E, A> & Primitive,
   sink: Sink.WithContext<R2, E, A>
 ): Effect.Effect<R | R2, never, unknown> {
-  return matchFxPrimitive(fx, {
-    Constructor: (fx) => runConstructor<R, E, A, R2>(fx, sink),
-    ControlFlow: (fx) => runControlFlow<R, E, A, R2>(fx, sink),
-    Operator: (fx) => runOperator<R, E, A, R2>(fx, sink),
-    Provide: (fx) => runProvide(fx, sink),
-    Effect: (effect) => runEffect<R, E, A, R2>(effect, sink),
-    Cause: (cause) => sink.onFailure(cause),
-    Iterable: (iterable) => Effect.forEach(iterable, sink.onSuccess)
-  })
-}
-
-export function runConstructor<R, E, A, R2>(
-  fx: Fx<R, E, A> & Constructor,
-  sink: Sink.WithContext<R2, E, A>
-): Effect.Effect<R | R2, never, unknown> {
-  return matchFxConstructor<R, E, A>(fx)<Effect.Effect<R | R2, never, unknown>>({
-    AcquireUseRelease: (fx) =>
-      Effect.catchAllCause(
-        Effect.acquireUseRelease(
-          fx.i0,
-          (a) => run(fx.i1(a), sink),
-          (a, exit) => Effect.catchAllCause(fx.i2(a, exit), sink.onFailure)
-        ),
-        sink.onFailure
-      ),
-    Combine: (fx) =>
-      Effect.suspend(() => {
-        const values = new globalThis.Map<number, any>()
-        const total = fx.i0.length
-
-        const sample = () => Array.from({ length: total }, (_, i) => values.get(i)) as any as A
-
-        const emitIfReady = (value: any, index: number) =>
-          Effect.suspend(() => {
-            values.set(index, value)
-            if (values.size === total) {
-              return sink.onSuccess(sample())
-            } else {
-              return Effect.unit
-            }
-          })
-
-        return Effect.all(
-          fx.i0.map((fx, index) => run(fx, Sink.WithContext(sink.onFailure, (a) => emitIfReady(a, index)))),
-          { concurrency: "unbounded" }
-        )
-      }),
-    Commit: (fx) => Effect.suspend(() => run(fx.commit(), sink)),
+  return matchFxPrimitive<R, E, A, Effect.Effect<R | R2, never, unknown>>(fx, {
     Empty: constUnit,
     Fail: (fx) => sink.onFailure(fx.i0),
     FromEffect: (fx) => runEffect(fx.i0, sink),
-    FromScheduled: (fx) =>
-      Effect.catchAllCause(Effect.repeat(Effect.matchCauseEffect(fx.i0, sink), fx.i1), sink.onFailure),
+    FromIterable: (fx) => Effect.forEach(fx.i0, sink.onSuccess),
     FromSink: (fx) => Effect.contextWithEffect((ctx: Context<R | R2>) => fx.i0(Sink.provide(sink, ctx))),
-    Merge: (fx) => {
-      switch (fx.i1._tag) {
-        case "Ordered": {
-          const concurrency = fx.i1.concurrency === Infinity ? "unbounded" : fx.i1.concurrency
-
-          return (
-            Effect.flatMap(withBuffers(fx.i0.length, sink), (buffers) =>
-              Effect.all(
-                fx.i0.map((fx, i) =>
-                  Effect.flatMap(
-                    run(
-                      fx,
-                      Sink.WithContext(
-                        sink.onFailure,
-                        (a) => buffers.onSuccess(i, a)
-                      )
-                    ),
-                    () => buffers.onEnd(i)
-                  )
-                ),
-                {
-                  concurrency
-                }
-              ))
-          )
-        }
-        case "Switch":
-          return Effect.all(fx.i0.map((fx) => run(fx, sink)), { concurrency: 1 })
-        case "Unordered":
-          return Effect.all(fx.i0.map((fx) => run(fx, sink)), {
-            concurrency: fx.i1.concurrency === Infinity ? "unbounded" : fx.i1.concurrency
-          })
-      }
-    },
     Never: () => Effect.never,
-    Race: (fx) =>
-      Effect.suspend(() => {
-        const fibers: Array<Fiber.Fiber<any, any>> = []
-        let winnerFound = -1
-
-        return Effect.all(fx.i0.map((fx, i) => run(fx, raceSink(i))), { concurrency: "unbounded" })
-
-        function raceSink(i: number): Sink.WithContext<R2, E, A> {
-          return Sink.WithContext(
-            (cause) => raceEvent(i, cause, sink.onFailure),
-            (a) => raceEvent(i, a, sink.onSuccess)
-          )
-        }
-
-        function raceEvent<A>(i: number, value: A, f: (a: A) => Effect.Effect<R2, never, unknown>) {
-          // We found a winner!
-          if (winnerFound === -1) {
-            // Remove winner from the list of fibers to interrupt
-            fibers.splice(winnerFound = i, 1)
-
-            // Interrupt fibers and emit value
-            return Fiber.interruptAll(fibers).pipe(
-              Effect.flatMap(() => f(value))
-            )
-          } else {
-            // Emit only if the value is from the winning fiber
-            return i === winnerFound ? f(value) : Effect.unit
-          }
-        }
-      }),
     Succeed: (fx) => sink.onSuccess(fx.i0),
     Suspend: (fx) => Effect.suspend(() => run(fx.i0(), sink)),
     Sync: (fx) => Effect.suspend(() => sink.onSuccess(fx.i0())),
-    FromIterable: (fx) => Effect.forEach(fx.i0, sink.onSuccess)
-  })
-}
-
-export function runControlFlow<R, E, A, R2>(
-  fx: Fx<R, E, A> & ControlFlow,
-  sink: Sink.WithContext<R2, E, A>
-): Effect.Effect<R | R2, never, unknown> {
-  return matchFxControlFlow<R, E, A>(fx)({
-    FlatMap: (flatMap) =>
-      withFlattenStrategy(flatMap.i2)((fork) =>
-        run(flatMap.i0, Sink.WithContext(sink.onFailure, (a) => fork(run(flatMap.i1(a), sink))))
-      ),
-    FlatMapCause: (flatMapCause) =>
-      withFlattenStrategy(flatMapCause.i2)((fork) =>
-        run(flatMapCause.i0, Sink.WithContext((cause) => fork(run(flatMapCause.i1(cause), sink)), sink.onSuccess))
-      ),
-    MatchCause: (matchCause) =>
-      withFlattenStrategy(matchCause.i3)((fork) =>
-        run(
-          matchCause.i0,
-          Sink.WithContext(
-            (cause) => fork(run(matchCause.i1(cause), sink)),
-            (a) => fork(run(matchCause.i2(a), sink))
-          )
+    ToFx: (fx) => run(fx.fx, sink),
+    WithEarlyExit: (fx) =>
+      Effect.contextWithEffect((ctx) =>
+        helpers.withScopedFork((fork, scope) =>
+          helpers.withEarlyExit(Sink.provide(sink, ctx), (sink) => fx.i0({ sink, fork, scope }))
         )
       ),
-    ContinueWith: (continueWith) =>
-      Effect.flatMap(run<R, E, A, R2>(continueWith.i0, sink), () => run(continueWith.i1(), sink)),
-    RecoverWith: (recoverWith) =>
-      Effect.catchAllCause(observe(recoverWith.i0, sink.onSuccess), (cause) => run(recoverWith.i1(cause), sink)),
-    During: (fx) =>
-      withScopedFork((fork) =>
-        withEarlyExit(sink, (sink) =>
-          Effect.suspend(() => {
-            let taking = false
-
-            return run(
-              take(fx.i1, 1),
-              Sink.WithContext(sink.onFailure, (nested) => {
-                taking = true
-                return fork(run(take(nested, 1), Sink.WithContext(sink.onFailure, () => sink.end)))
-              })
-            ).pipe(
-              fork,
-              Effect.flatMap(() =>
-                run(
-                  fx.i0,
-                  Sink.WithContext(
-                    sink.onFailure,
-                    (a) => taking ? sink.onSuccess(a) : Effect.unit
-                  )
-                )
-              )
-            )
-          }))
+    WithScopedFork: (fx) =>
+      Effect.contextWithEffect((ctx) =>
+        helpers.withScopedFork((fork, scope) => fx.i0({ sink: Sink.provide(sink, ctx), fork, scope }))
       ),
-    TakeWhile: (fx) =>
-      withEarlyExit(sink, (sink) =>
-        run(
-          fx.i0,
-          Sink.WithContext(sink.onFailure, (a) =>
-            Effect.matchCauseEffect(fx.i1(a), {
-              onFailure: sink.onFailure,
-              onSuccess: (b) => b ? sink.onSuccess(a) : sink.end
-            }))
-        )),
-    DropWhile: (fx) =>
-      Effect.suspend(() => {
-        let isDropping = true
-
-        return run(
-          fx.i0,
-          Sink.WithContext(sink.onFailure, (a) =>
-            isDropping ?
-              Effect.matchCauseEffect(fx.i1(a), {
-                onFailure: sink.onFailure,
-                onSuccess: (b) => {
-                  if (b) {
-                    return Effect.unit
-                  } else {
-                    isDropping = false
-                    return sink.onSuccess(a)
-                  }
-                }
-              }) :
-              sink.onSuccess(a))
-        )
-      }),
-    DropAfter: (fx) =>
-      Effect.suspend(() => {
-        let isDropping = false
-
-        return run(
-          fx.i0,
-          Sink.WithContext(sink.onFailure, (a) =>
-            isDropping ?
-              Effect.unit :
-              Effect.matchCauseEffect(fx.i1(a), {
-                onFailure: sink.onFailure,
-                onSuccess: (b) => {
-                  if (b) {
-                    isDropping = false
-                    return Effect.unit
-                  } else {
-                    return sink.onSuccess(a)
-                  }
-                }
-              }))
-        )
-      })
-  })
-}
-
-export function runOperator<R, E, A, R2>(
-  fx: Fx<R, E, A> & Operator,
-  sink: Sink.WithContext<R2, E, A>
-): Effect.Effect<R | R2, never, unknown> {
-  return matchFxOperator<R, E, A>(fx)({
+    WithFlattenStrategy: (fx) =>
+      Effect.contextWithEffect((ctx) =>
+        helpers.withFlattenStrategy(fx.i1)((fork, scope) => fx.i0({ sink: Sink.provide(sink, ctx), fork, scope }))
+      ),
     Transformer: (transformer) => runTransformer(transformer, sink),
-    TransfomerEffect: (transformer) => runTransformerEffect(transformer, sink),
-    Loop: (loop) =>
-      Effect.suspend(() => {
-        let acc = loop.i2
-
-        return run(
-          loop.i0,
-          Sink.WithContext(
-            sink.onFailure,
-            (a) =>
-              Effect.suspend(() => {
-                const [c, b] = loop.i1(acc, a)
-
-                acc = b
-
-                return sink.onSuccess(c)
-              })
-          )
-        )
-      }),
-    LoopEffect: (loop) =>
-      SynchronizedRef.make(loop.i2).pipe(
-        Effect.flatMap((ref) =>
-          run(
-            loop.i0,
-            Sink.WithContext(sink.onFailure, (a) =>
-              SynchronizedRef.updateEffect(ref, (b) =>
-                loop.i1(b, a).pipe(
-                  Effect.matchCauseEffect({
-                    onFailure: sink.onFailure,
-                    onSuccess: ([c, b]) => Effect.as(sink.onSuccess(c), b)
-                  })
-                )))
-          )
-        )
-      ),
-    FilterMapLoop: (loop) =>
-      Effect.suspend(() => {
-        let acc = loop.i2
-
-        return run(
-          loop.i0,
-          Sink.WithContext(
-            sink.onFailure,
-            (a) =>
-              Effect.suspend(() => {
-                const optionCB = loop.i1(acc, a)
-
-                if (Option.isNone(optionCB)) return Effect.unit
-
-                const [c, b] = optionCB.value
-                acc = b
-
-                return sink.onSuccess(c)
-              })
-          )
-        )
-      }),
-    FilterMapLoopEffect: (loop) =>
-      Effect.suspend(() => {
-        let acc = loop.i2
-
-        return run(
-          loop.i0,
-          Sink.WithContext(
-            sink.onFailure,
-            (a) =>
-              loop.i1(acc, a).pipe(
-                Effect.matchCauseEffect({
-                  onFailure: sink.onFailure,
-                  onSuccess: (optionCB) =>
-                    Effect.suspend(() => {
-                      if (Option.isNone(optionCB)) return Effect.unit
-
-                      const [c, b] = optionCB.value
-                      acc = b
-
-                      return sink.onSuccess(c)
-                    })
-                })
-              )
-          )
-        )
-      }),
-    Snapshot: (snapshot) =>
-      withScopedFork((fork) =>
-        Ref.make(Option.none<any>()).pipe(
-          Effect.flatMap((ref) =>
-            fork(run(
-              snapshot.i1,
-              Sink.WithContext(
-                sink.onFailure,
-                (b) => Ref.set(ref, b)
-              )
-            )).pipe(
-              Effect.flatMap(() =>
-                run(
-                  snapshot.i0,
-                  Sink.WithContext(
-                    sink.onFailure,
-                    (a) =>
-                      Ref.get(ref).pipe(
-                        Effect.flatten,
-                        Effect.flatMap((b) => Effect.matchCauseEffect(snapshot.i2(a, b), sink)),
-                        Effect.optionFromOptional
-                      )
-                  )
-                )
-              )
-            )
-          )
-        )
-      ),
-    Middleware: (middleware) =>
-      Effect.contextWithEffect((ctx: Context<R | R2>) => {
-        const provided = Sink.provide(sink, ctx)
-        return middleware.i1(run(middleware.i0, provided), provided)
-      }),
-    Slice: (slice) =>
-      withEarlyExit(sink, (sink) =>
-        Effect.suspend(() => {
-          let toSkip = slice.i1.min
-          let toTake = slice.i1.max
-
-          return run(
-            slice.i0,
-            Sink.WithContext(sink.onFailure, (a) =>
-              Effect.suspend(() => {
-                if (toSkip > 0) {
-                  toSkip -= 1
-                  return Effect.unit
-                } else if (toTake > 0) {
-                  toTake -= 1
-                  return Effect.flatMap(sink.onSuccess(a), () => toTake <= 0 ? sink.end : Effect.unit)
-                } else {
-                  return sink.end
-                }
-              }))
-          ).pipe(
-            Effect.matchCauseEffect({
-              onFailure: sink.onFailure,
-              onSuccess: () => sink.end
-            })
-          )
-        }))
+    TransformerEffect: (transformer) => runTransformerEffect(transformer, sink),
+    TransformerCause: (transformer) => runTransformerCause(transformer, sink),
+    TransformerCauseEffect: (transformer) => runTransformerCauseEffect(transformer, sink)
   })
 }
 
-export function runTransformer<R, E, A, R2>(
+function runTransformer<R, E, A, R2>(
   fx: Transformer<R, E, A>,
   sink: Sink.WithContext<R2, E, A>
 ): Effect.Effect<R | R2, never, unknown> {
   return run(fx.i0 as Fx<R, E, A>, compileSyncOperatorSink(fx.i1, sink))
 }
 
-export function runTransformerEffect<R, E, A, R2>(
+function runTransformerEffect<R, E, A, R2>(
   fx: TransformerEffect<R, E, A>,
   sink: Sink.WithContext<R2, E, A>
 ): Effect.Effect<R | R2, never, unknown> {
   return run(fx.i0 as Fx<R, E, A>, compileEffectOperatorSink(fx.i1, sink))
 }
 
-export function runProvide<R, R2, E, A>(
-  fx: FxProvide<any, any, any, any, any, any>,
+function runTransformerCause<R, E, A, R2>(
+  fx: TransformerCause<R, E, A>,
   sink: Sink.WithContext<R2, E, A>
 ): Effect.Effect<R | R2, never, unknown> {
-  return Effect.catchAllCause(Provide.provideToEffect(run(fx.i0, sink), fx.i1), sink.onFailure)
+  return run(fx.i0 as Fx<R, E, A>, compileSyncOperatorFailureSink(fx.i1, sink))
 }
 
-export function runEffect<R, E, A, R2>(
+function runTransformerCauseEffect<R, E, A, R2>(
+  fx: TransformerCauseEffect<R, E, A>,
+  sink: Sink.WithContext<R2, E, A>
+) {
+  return run(fx.i0 as Fx<R, E, A>, compileCauseEffectOperatorSink(fx.i1, sink))
+}
+
+function runEffect<R, E, A, R2>(
   effect: Effect.Effect<R, E, A>,
   sink: Sink.WithContext<R2, E, A>
 ): Effect.Effect<R | R2, never, unknown> {
-  return Effect.matchCauseEffect(effect, sink)
+  return matchEffectPrimitive(effect as InternalEffect, {
+    Success: (success) => sink.onSuccess(success.i0 as A),
+    Failure: (failure) => sink.onFailure(failure.i0 as Cause.Cause<E>),
+    Sync: (sync) => Effect.suspend(() => sink.onSuccess(sync.i0() as A)),
+    Left: (left) => sink.onFailure(Cause.fail(left.left as E)),
+    Right: (right) => sink.onSuccess(right.right as A),
+    Some: (some) => sink.onSuccess(some.value as A),
+    None: () => sink.onFailure(Cause.fail(Cause.NoSuchElementException() as E)),
+    Otherwise: () => Effect.matchCauseEffect(effect, sink)
+  })
 }
 
 export function succeed<A>(value: A): Fx<never, never, A> {
@@ -1193,7 +862,7 @@ export function observe<R, E, A, R2, E2>(
   fx: Fx<R, E, A>,
   onSuccees: (a: A) => Effect.Effect<R2, E2, unknown>
 ): Effect.Effect<R | R2, E | E2, void> {
-  return withScopedFork((fork) =>
+  return helpers.withScopedFork((fork) =>
     Effect.flatMap(Deferred.make<E | E2, void>(), (deferred) =>
       run(
         fx,
@@ -1219,8 +888,9 @@ export function toArray<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, Array<A>>
   return Effect.suspend(() => {
     const array: Array<A> = []
 
-    return observe(fx, (a) => Effect.sync(() => array.push(a))).pipe(
-      Effect.as(array)
+    return Effect.as(
+      observe(fx, (a) => Effect.sync(() => array.push(a))),
+      array
     )
   })
 }
@@ -1229,13 +899,37 @@ export function toReadonlyArray<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, R
   return toArray(fx)
 }
 
+export const flatMapWithStrategy: {
+  <A, R2, E2, B>(
+    f: (a: A) => Fx<R2, E2, B>,
+    strategy: strategies.FlattenStrategy
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Fx<R2, E2, B>,
+    strategy: strategies.FlattenStrategy
+  ): Fx<R | R2, E | E2, B>
+} = dual(
+  3,
+  function flatMapWithStrategy<R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Fx<R2, E2, B>,
+    strategy: strategies.FlattenStrategy
+  ): Fx<R | R2, E | E2, B> {
+    return new WithFlattenStrategy(
+      ({ fork, sink }) => run(fx, Sink.WithContext(sink.onFailure, (a) => fork(run(f(a), sink)))),
+      strategy
+    )
+  }
+)
+
 export const switchMap: {
   <A, R2, E2, B>(f: (a: A) => Fx<R2, E2, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Fx<R2, E2, B>): Fx<R | R2, E | E2, B>
 } = dual(
   2,
   function switchMap<R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Fx<R2, E2, B>): Fx<R | R2, E | E2, B> {
-    return new FlatMap(fx, f, strategies.Switch)
+    return flatMapWithStrategy(fx, f, strategies.Switch)
   }
 )
 
@@ -1245,7 +939,7 @@ export const exhaustMap: {
 } = dual(
   2,
   function exhaustmap<R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Fx<R2, E2, B>): Fx<R | R2, E | E2, B> {
-    return new FlatMap(fx, f, strategies.Exhaust)
+    return flatMapWithStrategy(fx, f, strategies.Exhaust)
   }
 )
 
@@ -1257,7 +951,7 @@ export const exhaustMapLatest: {
 } = dual(
   2,
   function exhaustMapLatest<R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Fx<R2, E2, B>): Fx<R | R2, E | E2, B> {
-    return new FlatMap(fx, f, strategies.ExhaustLatest)
+    return flatMapWithStrategy(fx, f, strategies.ExhaustLatest)
   }
 )
 
@@ -1269,7 +963,7 @@ export const flatMap: {
 } = dual(
   2,
   function flatMap<R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Fx<R2, E2, B>): Fx<R | R2, E | E2, B> {
-    return new FlatMap(fx, f, strategies.Unbounded)
+    return flatMapWithStrategy(fx, f, strategies.Unbounded)
   }
 )
 
@@ -1285,7 +979,7 @@ export const flatMapConcurrently: {
     f: (a: A) => Fx<R2, E2, B>,
     concurrency: number
   ): Fx<R | R2, E | E2, B> {
-    return new FlatMap(fx, f, strategies.Bounded(concurrency))
+    return flatMapWithStrategy(fx, f, strategies.Bounded(concurrency))
   }
 )
 
@@ -1298,7 +992,7 @@ export const concatMap: {
     fx: Fx<R, E, A>,
     f: (a: A) => Fx<R2, E2, B>
   ): Fx<R | R2, E | E2, B> {
-    return new FlatMap(fx, f, strategies.Bounded(1))
+    return flatMapConcurrently(fx, f, 1)
   }
 )
 
@@ -1318,7 +1012,16 @@ export const acquireUseRelease: {
   use: (a: A) => Fx<R2, E2, B>,
   release: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<R3, E3, unknown>
 ): Fx<R | R2 | R3, E | E2 | E3, B> {
-  return new AcquireUseRelease(acquire, use, release)
+  return fromSink((sink) =>
+    Effect.catchAllCause(
+      Effect.acquireUseRelease(
+        acquire,
+        (a) => run(use(a), sink),
+        (a, exit) => Effect.catchAllCause(release(a, exit), sink.onFailure)
+      ),
+      sink.onFailure
+    )
+  )
 })
 
 export function combine<const FX extends ReadonlyArray<Fx<any, any, any>>>(
@@ -1330,7 +1033,32 @@ export function combine<const FX extends ReadonlyArray<Fx<any, any, any>>>(
     readonly [K in keyof FX]: Fx.Success<FX[K]>
   }
 > {
-  return new Combine(fxs)
+  return fromSink((sink) =>
+    Effect.suspend(() => {
+      const values = new globalThis.Map<number, any>()
+      const total = fxs.length
+
+      const sample = () =>
+        Array.from({ length: total }, (_, i) => values.get(i)) as {
+          readonly [K in keyof FX]: Fx.Success<FX[K]>
+        }
+
+      const emitIfReady = (value: any, index: number) =>
+        Effect.suspend(() => {
+          values.set(index, value)
+          if (values.size === total) {
+            return sink.onSuccess(sample())
+          } else {
+            return Effect.unit
+          }
+        })
+
+      return Effect.all(
+        fxs.map((fx, index) => run(fx, Sink.WithContext(sink.onFailure, (a) => emitIfReady(a, index)))),
+        { concurrency: "unbounded" }
+      )
+    })
+  )
 }
 
 export function merge<const FX extends ReadonlyArray<Fx<any, any, any>>>(
@@ -1406,7 +1134,39 @@ export function race<const FX extends ReadonlyArray<Fx<any, any, any>>>(
   Fx.Error<FX[number]>,
   Fx.Success<FX[number]>
 > {
-  return new Race(fxs)
+  return fromSink((sink) =>
+    Effect.suspend(() => {
+      const fibers: Array<Fiber.Fiber<any, any>> = []
+      let winnerFound = -1
+
+      return Effect.all(fxs.map((fx, i) => run(fx, raceSink(i))), { concurrency: "unbounded" })
+
+      function raceSink(
+        i: number
+      ): Sink.WithContext<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>> {
+        return Sink.WithContext(
+          (cause) => raceEvent(i, cause, sink.onFailure),
+          (a) => raceEvent(i, a, sink.onSuccess)
+        )
+      }
+
+      function raceEvent<A>(i: number, value: A, f: (a: A) => Effect.Effect<Fx.Context<FX[number]>, never, unknown>) {
+        // We found a winner!
+        if (winnerFound === -1) {
+          // Remove winner from the list of fibers to interrupt
+          fibers.splice(winnerFound = i, 1)
+
+          // Interrupt fibers and emit value
+          return Fiber.interruptAll(fibers).pipe(
+            Effect.flatMap(() => f(value))
+          )
+        } else {
+          // Emit only if the value is from the winning fiber
+          return i === winnerFound ? f(value) : Effect.unit
+        }
+      }
+    })
+  )
 }
 
 export const empty: Fx<never, never, never> = new Empty()
@@ -1455,7 +1215,16 @@ export const takeWhile: {
     fx: Fx<R, E, A>,
     predicate: (a: A) => Effect.Effect<R2, E2, boolean>
   ): Fx<R | R2, E | E2, A> {
-    return new TakeWhile(fx, predicate)
+    return withEarlyExit(({ sink }) =>
+      run(
+        fx,
+        Sink.WithContext(sink.onFailure, (a) =>
+          Effect.matchCauseEffect(predicate(a), {
+            onFailure: sink.onFailure,
+            onSuccess: (b) => b ? sink.onSuccess(a) : sink.earlyExit
+          }))
+      )
+    )
   }
 )
 
@@ -1468,7 +1237,7 @@ export const takeUntil: {
     fx: Fx<R, E, A>,
     predicate: (a: A) => Effect.Effect<R2, E2, boolean>
   ): Fx<R | R2, E | E2, A> {
-    return new TakeWhile(fx, (a) => Effect.map(predicate(a), (x) => !x))
+    return takeWhile(fx, (a) => Effect.map(predicate(a), (x) => !x))
   }
 )
 
@@ -1481,7 +1250,29 @@ export const dropWhile: {
     fx: Fx<R, E, A>,
     predicate: (a: A) => Effect.Effect<R2, E2, boolean>
   ): Fx<R | R2, E | E2, A> {
-    return new DropWhile(fx, predicate)
+    return withEarlyExit(({ sink }) =>
+      Effect.suspend(() => {
+        let isDropping = true
+
+        return run(
+          fx,
+          Sink.WithContext(sink.onFailure, (a) =>
+            isDropping ?
+              Effect.matchCauseEffect(predicate(a), {
+                onFailure: sink.onFailure,
+                onSuccess: (b) => {
+                  if (b) {
+                    return Effect.unit
+                  } else {
+                    isDropping = false
+                    return sink.onSuccess(a)
+                  }
+                }
+              }) :
+              sink.onSuccess(a))
+        )
+      })
+    )
   }
 )
 
@@ -1494,7 +1285,7 @@ export const dropUntil: {
     fx: Fx<R, E, A>,
     predicate: (a: A) => Effect.Effect<R2, E2, boolean>
   ): Fx<R | R2, E | E2, A> {
-    return new DropWhile(fx, (a) => Effect.map(predicate(a), (x) => !x))
+    return dropWhile(fx, (a) => Effect.map(predicate(a), (x) => !x))
   }
 )
 
@@ -1507,7 +1298,29 @@ export const dropAfter: {
     fx: Fx<R, E, A>,
     predicate: (a: A) => Effect.Effect<R2, E2, boolean>
   ): Fx<R | R2, E | E2, A> {
-    return new DropAfter(fx, predicate)
+    return fromSink((sink) =>
+      Effect.suspend(() => {
+        let isDropping = false
+
+        return run(
+          fx,
+          Sink.WithContext(sink.onFailure, (a) =>
+            isDropping ?
+              Effect.unit :
+              Effect.matchCauseEffect(predicate(a), {
+                onFailure: sink.onFailure,
+                onSuccess: (b) => {
+                  if (b) {
+                    isDropping = true
+                    return Effect.unit
+                  } else {
+                    return sink.onSuccess(a)
+                  }
+                }
+              }))
+        )
+      })
+    )
   }
 )
 
@@ -1517,7 +1330,7 @@ export const continueWith: {
 } = dual(
   2,
   function continueWith<R, E, R2, E2, A>(fx: Fx<R, E, A>, f: () => Fx<R2, E2, A>): Fx<R | R2, E | E2, A> {
-    return new ContinueWith(fx, f)
+    return fromSink((sink) => Effect.flatMap(run(fx, sink), () => run(f(), sink)))
   }
 )
 
@@ -1530,7 +1343,7 @@ export const recoverWith: {
     fx: Fx<R, E, A>,
     f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
   ): Fx<R | R2, E2, A | B> {
-    return new RecoverWith(fx, f)
+    return fromSink((sink) => Effect.catchAllCause(observe(fx, sink.onSuccess), (cause) => run(f(cause), sink)))
   }
 )
 
@@ -1604,7 +1417,7 @@ export const loop: {
   seed: B,
   f: (acc: B, a: A) => readonly [C, B]
 ): Fx<R, E, C> {
-  return Loop.make(fx, f, seed)
+  return Loop.make(fx, seed, f)
 })
 
 export const loopEffect: {
@@ -1626,6 +1439,20 @@ export const loopEffect: {
   return LoopEffect.make(fx, f, seed)
 })
 
+export const startWith: {
+  <B>(value: B): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A | B>
+  <R, E, A, B>(fx: Fx<R, E, A>, value: B): Fx<R, E, A | B>
+} = dual(2, function startWith<R, E, A, B>(fx: Fx<R, E, A>, value: B): Fx<R, E, A | B> {
+  return fromSink((sink) => Effect.flatMap(sink.onSuccess(value), () => run(fx, sink)))
+})
+
+export const endWith: {
+  <B>(value: B): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A | B>
+  <R, E, A, B>(fx: Fx<R, E, A>, value: B): Fx<R, E, A | B>
+} = dual(2, function endWith<R, E, A, B>(fx: Fx<R, E, A>, value: B): Fx<R, E, A | B> {
+  return fromSink((sink) => Effect.flatMap(run(fx, sink), () => sink.onSuccess(value)))
+})
+
 export const scan: {
   <A, B>(seed: B, f: (acc: B, a: A) => B): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
   <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B): Fx<R, E, B>
@@ -1634,14 +1461,14 @@ export const scan: {
   seed: B,
   f: (acc: B, a: A) => B
 ): Fx<R, E, B> {
-  return new ContinueWith(
+  return continueWith(
     new Succeed(seed),
     () =>
-      Loop.make(fx, (b, a) => {
+      Loop.make(fx, seed, (b, a) => {
         const b2 = f(b, a)
 
         return [b2, b2]
-      }, seed)
+      })
   )
 })
 
@@ -1656,9 +1483,30 @@ export const scanEffect: {
   seed: B,
   f: (acc: B, a: A) => Effect.Effect<R2, E2, B>
 ): Fx<R | R2, E | E2, B> {
-  return new ContinueWith(
+  return continueWith(
     new Succeed(seed),
     () => LoopEffect.make(fx, (b, a) => Effect.map(f(b, a), (b2) => [b2, b2]), seed)
+  )
+})
+
+export const flatMapCauseWithStrategy: {
+  <E, R2, E2, B>(
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    strategy: strategies.FlattenStrategy
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    strategy: strategies.FlattenStrategy
+  ): Fx<R | R2, E2, A | B>
+} = dual(3, function flatMapCause<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  strategy: strategies.FlattenStrategy
+): Fx<R | R2, E2, A | B> {
+  return new WithFlattenStrategy(
+    ({ fork, sink }) => run(fx, Sink.WithContext((cause) => fork(run(f(cause), sink)), sink.onSuccess)),
+    strategy
   )
 })
 
@@ -1669,7 +1517,7 @@ export const flatMapCause: {
   fx: Fx<R, E, A>,
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
 ): Fx<R | R2, E2, A | B> {
-  return new FlatMapCause(fx, f, strategies.Unbounded)
+  return flatMapCauseWithStrategy(fx, f, strategies.Unbounded)
 })
 
 export const flatMapCauseConcurrently: {
@@ -1687,7 +1535,7 @@ export const flatMapCauseConcurrently: {
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
   concurrency: number
 ): Fx<R | R2, E2, A | B> {
-  return new FlatMapCause(fx, f, strategies.Bounded(concurrency))
+  return flatMapCauseWithStrategy(fx, f, strategies.Bounded(concurrency))
 })
 
 export const switchMapCause: {
@@ -1697,7 +1545,7 @@ export const switchMapCause: {
   fx: Fx<R, E, A>,
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
 ): Fx<R | R2, E2, A | B> {
-  return new FlatMapCause(fx, f, strategies.Switch)
+  return flatMapCauseWithStrategy(fx, f, strategies.Switch)
 })
 
 export const exhaustMapCause: {
@@ -1707,7 +1555,7 @@ export const exhaustMapCause: {
   fx: Fx<R, E, A>,
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
 ): Fx<R | R2, E2, A | B> {
-  return new FlatMapCause(fx, f, strategies.Exhaust)
+  return flatMapCauseWithStrategy(fx, f, strategies.Exhaust)
 })
 
 export const exhaustMapLatestCause: {
@@ -1717,7 +1565,31 @@ export const exhaustMapLatestCause: {
   fx: Fx<R, E, A>,
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
 ): Fx<R | R2, E2, A | B> {
-  return new FlatMapCause(fx, f, strategies.ExhaustLatest)
+  return flatMapCauseWithStrategy(fx, f, strategies.ExhaustLatest)
+})
+
+export const matchCauseWithStrategy: {
+  <E, R2, E2, B, A, R3, E3, C>(
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    g: (a: A) => Fx<R3, E3, C>,
+    strategy: strategies.FlattenStrategy
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    g: (a: A) => Fx<R3, E3, C>,
+    strategy: strategies.FlattenStrategy
+  ): Fx<R | R2, E2 | E3, B | C>
+} = dual(4, function flatMapCause<R, E, A, R2, E2, B, R3, E3, C>(
+  fx: Fx<R, E, A>,
+  f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  g: (a: A) => Fx<R3, E3, C>,
+  strategy: strategies.FlattenStrategy
+): Fx<R | R2 | R3, E2 | E3, B | C> {
+  return new WithFlattenStrategy(
+    ({ fork, sink }) => run(fx, Sink.WithContext((cause) => fork(run(f(cause), sink)), (a) => fork(run(g(a), sink)))),
+    strategy
+  )
 })
 
 export const matchCause: {
@@ -1736,7 +1608,7 @@ export const matchCause: {
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
   g: (a: A) => Fx<R3, E3, C>
 ): Fx<R | R2 | R3, E2 | E3, B | C> {
-  return new MatchCause(fx, f, g, strategies.Unbounded)
+  return matchCauseWithStrategy(fx, f, g, strategies.Unbounded)
 })
 
 export const matchCauseConcurrently: {
@@ -1758,7 +1630,7 @@ export const matchCauseConcurrently: {
   g: (a: A) => Fx<R3, E3, C>,
   concurrency: number
 ): Fx<R | R2 | R3, E2 | E3, B | C> {
-  return new MatchCause(fx, f, g, strategies.Bounded(concurrency))
+  return matchCauseWithStrategy(fx, f, g, strategies.Bounded(concurrency))
 })
 
 export const switchMatchCause: {
@@ -1777,7 +1649,7 @@ export const switchMatchCause: {
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
   g: (a: A) => Fx<R3, E3, C>
 ): Fx<R | R2 | R3, E2 | E3, B | C> {
-  return new MatchCause(fx, f, g, strategies.Switch)
+  return matchCauseWithStrategy(fx, f, g, strategies.Switch)
 })
 
 export const exhaustMatchCause: {
@@ -1796,7 +1668,7 @@ export const exhaustMatchCause: {
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
   g: (a: A) => Fx<R3, E3, C>
 ): Fx<R | R2 | R3, E2 | E3, B | C> {
-  return new MatchCause(fx, f, g, strategies.Exhaust)
+  return matchCauseWithStrategy(fx, f, g, strategies.Exhaust)
 })
 
 export const exhaustLatestMatchCause: {
@@ -1815,8 +1687,16 @@ export const exhaustLatestMatchCause: {
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
   g: (a: A) => Fx<R3, E3, C>
 ): Fx<R | R2 | R3, E2 | E3, B | C> {
-  return new MatchCause(fx, f, g, strategies.ExhaustLatest)
+  return matchCauseWithStrategy(fx, f, g, strategies.ExhaustLatest)
 })
+
+export const withEarlyExit = <R, E, A>(
+  f: (params: WithEarlyExitParams<E, A>) => Effect.Effect<R, never, unknown>
+): Fx<R, E, A> => new WithEarlyExit(f)
+
+export const withScopedFork = <R, E, A>(
+  f: (params: WithScopedForkParams<E, A>) => Effect.Effect<R, never, unknown>
+): Fx<R, E, A> => new WithScopedFork(f)
 
 export const during: {
   <R2, E2, R3, E3>(
@@ -1830,8 +1710,30 @@ export const during: {
 } = dual(2, function during<R, E, A, R2, E2, R3, E3>(
   fx: Fx<R, E, A>,
   window: Fx<R2, E2, Fx<R3, E3, unknown>>
-) {
-  return new During(fx, window)
+): Fx<R | R2 | R3, E | E2 | E3, A> {
+  return withEarlyExit(({ fork, sink }) =>
+    Effect.suspend(() => {
+      let taking = false
+
+      return Effect.flatMap(
+        fork(run(
+          take(window, 1),
+          Sink.WithContext(sink.onFailure, (nested) => {
+            taking = true
+            return fork(run(take(nested, 1), Sink.WithContext(sink.onFailure, () => sink.earlyExit)))
+          })
+        )),
+        () =>
+          run(
+            fx,
+            Sink.Sink(
+              sink.onFailure,
+              (a) => taking ? sink.onSuccess(a) : Effect.unit
+            )
+          )
+      )
+    })
+  )
 })
 
 export const since: {
@@ -1841,7 +1743,7 @@ export const since: {
   fx: Fx<R, E, A>,
   window: Fx<R2, E2, unknown>
 ): Fx<R | R2, E | E2, A> {
-  return new During(fx, switchMap(take(window, 1), () => never))
+  return during(fx, switchMap(take(window, 1), () => never))
 })
 
 export const until: {
@@ -1851,7 +1753,7 @@ export const until: {
   fx: Fx<R, E, A>,
   window: Fx<R2, E2, unknown>
 ): Fx<R | R2, E | E2, A> {
-  return new During(fx, succeed(window))
+  return during(fx, succeed(window))
 })
 
 export const fromScheduled: {
@@ -1861,7 +1763,9 @@ export const fromScheduled: {
   fx: Effect.Effect<R, E, A>,
   scheduled: Schedule.Schedule<R2, unknown, unknown>
 ): Fx<R | R2, E, A> {
-  return new FromScheduled(fx, scheduled)
+  return fromSink((sink) =>
+    Effect.catchAllCause(Effect.repeat(Effect.matchCauseEffect(fx, sink), scheduled), sink.onFailure)
+  )
 })
 
 export const periodic: {
@@ -1913,3 +1817,19 @@ export const provideSomeLayer: {
 ): Fx<Exclude<R, S> | R2, E | E2, A> {
   return FxProvide.make(fx, Provide.ProvideSomeLayer(layer))
 })
+
+export const skipRepeatsWith: {
+  <A>(eq: Equivalence<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, eq: Equivalence<A>): Fx<R, E, A>
+} = dual(2, function skipRepeatsWith<R, E, A>(
+  fx: Fx<R, E, A>,
+  eq: Equivalence<A>
+): Fx<R, E, A> {
+  return new FilterMapLoop(fx, Option.none<A>(), (previous, a) =>
+    Option.match(previous, {
+      onNone: () => Option.some([a, Option.some(a)]),
+      onSome: (prev) => eq(a, prev) ? Option.none() : Option.some([a, Option.some(a)])
+    }))
+})
+
+export const skipRepeats: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = (fx) => skipRepeatsWith(fx, Equal.equals)

@@ -216,6 +216,42 @@ export function compileEffectOperatorSink<R>(
   })
 }
 
+export function compileCauseEffectOperatorSink<R>(
+  operator: EffectOperator,
+  sink: WithContext<R, any, any>
+): WithContext<R, any, any> {
+  return matchEffectOperator(operator, {
+    MapEffect: (op) =>
+      WithContext(
+        (a) => Effect.matchCauseEffect(op.f(a), WithContext(sink.onFailure, sink.onFailure)),
+        sink.onSuccess
+      ),
+    FilterEffect: (op) =>
+      WithContext(
+        (a) =>
+          Effect.matchCauseEffect(op.f(a), {
+            onFailure: sink.onFailure,
+            onSuccess: (b) => b ? sink.onFailure(a) : Effect.unit
+          }),
+        sink.onSuccess
+      ),
+    FilterMapEffect: (op) =>
+      WithContext((a) =>
+        Effect.matchCauseEffect(op.f(a), {
+          onFailure: sink.onFailure,
+          onSuccess: Option.match({
+            onNone: () => Effect.unit,
+            onSome: sink.onFailure
+          })
+        }), sink.onSuccess),
+    TapEffect: (op) =>
+      WithContext(
+        (a) => Effect.matchCauseEffect(Effect.as(op.f(a), a), WithContext(sink.onFailure, sink.onFailure)),
+        sink.onSuccess
+      )
+  })
+}
+
 export function compileEffectLoop<B, A, R2, E2, C>(
   operator: EffectOperator,
   loop: (b: B, a: A) => Effect.Effect<R2, E2, readonly [C, B]>
