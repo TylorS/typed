@@ -3,9 +3,8 @@ import * as MutableRef from "@effect/data/MutableRef"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
+import { type Fx, run, type Subject, ToFx, withScopedFork } from "@typed/fx/internal/core"
 import { makeHoldSubject, makeReplaySubject, makeSubject } from "@typed/fx/internal/core-subject"
-import { fromSink, type Fx, run, type Subject, ToFx } from "@typed/fx/internal/core2"
-import { withScopedFork } from "@typed/fx/internal/helpers"
 
 export function share<R, E, A, R2>(
   fx: Fx<R, E, A>,
@@ -40,13 +39,11 @@ export class Share<R, E, A, R2> extends ToFx<R | R2, E, A> {
   }
 
   toFx(): Fx<R | R2, E, A> {
-    return fromSink((sink) =>
-      withScopedFork((fork) => {
-        return Effect.onExit(
-          Effect.flatMap(fork(run(this.i1, sink)), () => this.initialize()),
-          () => Effect.suspend(() => this.refCount.decrement() === 0 ? this.interrupt() : Effect.unit)
-        )
-      })
+    return withScopedFork(({ fork, sink }) =>
+      Effect.flatMap(
+        fork(Effect.onExit(run(this.i1, sink), () => this.refCount.decrement() === 0 ? this.interrupt() : Effect.unit)),
+        () => this.initialize()
+      )
     )
   }
 

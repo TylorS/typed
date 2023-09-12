@@ -1,7 +1,7 @@
 import * as Either from "@effect/data/Either"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
-import * as Core from "@typed/fx/internal/core2"
+import * as Core from "@typed/fx/internal/core"
 import * as Share from "@typed/fx/internal/share"
 
 describe(__filename, () => {
@@ -26,6 +26,18 @@ describe(__filename, () => {
     const array = await Effect.runPromise(test)
 
     expect(array).toEqual([2, 3, 4])
+  })
+
+  it("maps a failure value", async () => {
+    const test = Core.fail(1).pipe(
+      Core.mapError((x) => x + 1),
+      Core.mapError((x) => x + 1),
+      Core.toReadonlyArray
+    )
+
+    const array = await Effect.runPromise(Effect.either(test))
+
+    expect(array).toEqual(Either.left(3))
   })
 
   it("switchMap favors the latest inner Fx", async () => {

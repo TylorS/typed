@@ -1,4 +1,5 @@
 import * as Option from "@effect/data/Option"
+import * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import { WithContext } from "@typed/fx/internal/sink"
 import type { SyncOperator } from "@typed/fx/internal/sync-operator"
@@ -223,14 +224,18 @@ export function compileCauseEffectOperatorSink<R>(
   return matchEffectOperator(operator, {
     MapEffect: (op) =>
       WithContext(
-        (a) => Effect.matchCauseEffect(op.f(a), WithContext(sink.onFailure, sink.onFailure)),
+        (a) =>
+          Effect.matchCauseEffect(
+            op.f(a),
+            WithContext((cause2) => sink.onFailure(Cause.sequential(a, cause2)), sink.onFailure)
+          ),
         sink.onSuccess
       ),
     FilterEffect: (op) =>
       WithContext(
         (a) =>
           Effect.matchCauseEffect(op.f(a), {
-            onFailure: sink.onFailure,
+            onFailure: (cause2) => sink.onFailure(Cause.sequential(a, cause2)),
             onSuccess: (b) => b ? sink.onFailure(a) : Effect.unit
           }),
         sink.onSuccess
@@ -238,7 +243,7 @@ export function compileCauseEffectOperatorSink<R>(
     FilterMapEffect: (op) =>
       WithContext((a) =>
         Effect.matchCauseEffect(op.f(a), {
-          onFailure: sink.onFailure,
+          onFailure: (cause2) => sink.onFailure(Cause.sequential(a, cause2)),
           onSuccess: Option.match({
             onNone: () => Effect.unit,
             onSome: sink.onFailure
@@ -246,7 +251,11 @@ export function compileCauseEffectOperatorSink<R>(
         }), sink.onSuccess),
     TapEffect: (op) =>
       WithContext(
-        (a) => Effect.matchCauseEffect(Effect.as(op.f(a), a), WithContext(sink.onFailure, sink.onFailure)),
+        (a) =>
+          Effect.matchCauseEffect(
+            Effect.as(op.f(a), a),
+            WithContext((cause2) => sink.onFailure(Cause.sequential(a, cause2)), sink.onFailure)
+          ),
         sink.onSuccess
       )
   })
@@ -257,18 +266,17 @@ export function compileEffectLoop<B, A, R2, E2, C>(
   loop: (b: B, a: A) => Effect.Effect<R2, E2, readonly [C, B]>
 ): (b: B, i: any) => Effect.Effect<R2, E2, Option.Option<readonly [C, B]>> {
   return matchEffectOperator(operator, {
-    MapEffect: (op) => (b, i) => op.f(i).pipe(Effect.flatMap((a) => loop(b, a)), Effect.map(Option.some)),
-    TapEffect: (op) => (b, i) => op.f(i).pipe(Effect.flatMap(() => loop(b, i)), Effect.map(Option.some)),
+    MapEffect: (op) => (b, i) => Effect.map(Effect.flatMap(op.f(i), (a) => loop(b, a)), Option.some),
+    TapEffect: (op) => (b, i) => Effect.map(Effect.flatMap(op.f(i), () => loop(b, i)), Option.some),
     FilterEffect: (op) => (b, i) =>
-      op.f(i).pipe(
-        Effect.flatMap((a) => a ? Effect.map(loop(b, i), Option.some) : Effect.succeedNone)
-      ),
+      Effect.flatMap(op.f(i), (a) => a ? Effect.map(loop(b, i), Option.some) : Effect.succeedNone),
     FilterMapEffect: (op) => (b, i) =>
-      op.f(i).pipe(
-        Effect.flatMap(Option.match({
+      Effect.flatMap(
+        op.f(i),
+        Option.match({
           onNone: () => Effect.succeedNone,
           onSome: (a) => Effect.map(loop(b, a), Option.some)
-        }))
+        })
       )
   })
 }

@@ -2,7 +2,6 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Context from "@typed/context"
 
-// TODO: Need to separate Provide + ProvideSome
 export type Provide<R, E, A> =
   | ProvideContext<A>
   | ProvideSomeContext<A>
@@ -91,7 +90,7 @@ export function merge<R = never, E = never, A = never, R2 = never, E2 = never, B
     ProvideSomeLayer: (a) =>
       matchProvide(that, {
         ProvideContext: (b): Provide<Exclude<R, B> | R2, E | E2, A | B> =>
-          ProvideSomeLayer(Layer.provideMerge(Layer.succeedContext(b), a)),
+          ProvideLayer(Layer.provideMerge(Layer.succeedContext(b), a)),
         ProvideSomeContext: (b) => ProvideSomeLayer(Layer.provideMerge(Layer.succeedContext(b), a)),
         ProvideLayer: (b) => ProvideSomeLayer(Layer.provideMerge(b, a)),
         ProvideSomeLayer: (b) => ProvideSomeLayer(Layer.provideMerge(b, a))

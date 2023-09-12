@@ -1,5 +1,5 @@
 import type * as Cause from "@effect/io/Cause"
-import type { Fx } from "./core2"
+import type { Fx } from "./core"
 
 declare module "@effect/data/Option" {
   export interface None<A> extends Fx<never, Cause.NoSuchElementException, A> {}
