@@ -157,6 +157,19 @@ importers:
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
+    devDependencies:
+      '@most/core':
+        specifier: ^1.6.1
+        version: 1.6.1
+      '@most/scheduler':
+        specifier: ^1.3.0
+        version: 1.3.0
+      '@most/types':
+        specifier: ^1.1.0
+        version: 1.1.0
+      rxjs:
+        specifier: ^7.8.1
+        version: 7.8.1
     publishDirectory: dist
 
   packages/path:
@@ -1206,6 +1219,37 @@ packages:
       fs-extra: 8.1.0
       globby: 11.1.0
       read-yaml-file: 1.1.0
+    dev: true
+
+  /@most/core@1.6.1:
+    resolution: {integrity: sha512-H989BS6v9QxSZRGPZlbomXTRpUU60iy76AHJoPveKtj27bE0Pv3mwMENRzNZijJK9ntUwhoJ0SYCoXaMCYuWEQ==}
+    dependencies:
+      '@most/disposable': 1.3.0
+      '@most/prelude': 1.8.0
+      '@most/scheduler': 1.3.0
+      '@most/types': 1.1.0
+    dev: true
+
+  /@most/disposable@1.3.0:
+    resolution: {integrity: sha512-0lCve1GmWlZrvTGQpMgTFTHH6uRtzM31jyYTIN7303XX4KoLCLWw9L6hfTYLLBtge6s+QyiBQVokAhy2GjNAUQ==}
+    dependencies:
+      '@most/prelude': 1.8.0
+      '@most/types': 1.1.0
+    dev: true
+
+  /@most/prelude@1.8.0:
+    resolution: {integrity: sha512-t1CcURpZzfmBA6fEWwqmCqeNzWAj1w2WqEmCk/2yXMe/p8Ut000wFmVKMy8A1Rl9VVxZEZ5nBHd/pU0dR4bv/w==}
+    dev: true
+
+  /@most/scheduler@1.3.0:
+    resolution: {integrity: sha512-bbJGyhbZxNqlkVjP8+YT9wIVMvYnpzWOzV8jZueqlTH2PJWewH2f54YziZn7/wWa6AJdN03H1vb8Tbi9GcA/cw==}
+    dependencies:
+      '@most/prelude': 1.8.0
+      '@most/types': 1.1.0
+    dev: true
+
+  /@most/types@1.1.0:
+    resolution: {integrity: sha512-v2trqAWu1jqP4Yd/CyI1O6mAeJyygK1uJOrFRpNPkPZIaYw4khA4EQe4WzcyOFKuXdiP8qAqaxGtXXJJ2LZdXg==}
     dev: true
 
   /@nicolo-ribaudo/chokidar-2@2.1.8-no-fsevents.3:

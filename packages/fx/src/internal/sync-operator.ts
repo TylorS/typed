@@ -113,10 +113,10 @@ export function compileSyncOperatorFailureSink<R>(
   })
 }
 
-export function compileSyncLoop<A, B, C>(
+export function compileSyncReducer<A, B, C>(
   operator: SyncOperator,
-  f: (b: B, a: A) => readonly [C, B]
-): (b: B, a: any) => Option.Option<readonly [C, B]> {
+  f: (b: B, a: A) => C
+): (b: B, a: any) => Option.Option<C> {
   return matchSyncOperator(operator, {
     Map: (op) => (b, a) => Option.some(f(b, op.f(a))),
     Filter: (op) => (b, a) => op.f(a) ? Option.some(f(b, a)) : Option.none(),

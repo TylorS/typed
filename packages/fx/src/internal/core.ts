@@ -1,5 +1,6 @@
 import "./module-agumentation"
 
+import * as Chunk from "@effect/data/Chunk"
 import * as Equal from "@effect/data/Equal"
 import { dual, identity } from "@effect/data/Function"
 import * as Hash from "@effect/data/Hash"
@@ -35,9 +36,9 @@ import * as Provide from "@typed/fx/internal/provide"
 import * as Sink from "@typed/fx/internal/sink"
 import * as strategies from "@typed/fx/internal/strategies"
 import {
-  compileSyncLoop,
   compileSyncOperatorFailureSink,
   compileSyncOperatorSink,
+  compileSyncReducer,
   Filter,
   FilterMap,
   fuseSyncOperators,
@@ -47,6 +48,8 @@ import {
 
 import type { DurationInput } from "@effect/data/Duration"
 import type { Equivalence } from "@effect/data/Equivalence"
+import { NodeInspectSymbol } from "@effect/data/Inspectable"
+import type { Inspectable } from "@effect/data/Inspectable"
 import { type Bounds, boundsFrom, mergeBounds } from "@typed/fx/internal/bounds"
 import { matchEffectPrimitive } from "@typed/fx/internal/effect-primitive"
 import type { InternalEffect } from "@typed/fx/internal/effect-primitive"
@@ -60,27 +63,19 @@ export type ConstructorTypeId = typeof ConstructorTypeId
 export const OperatorTypeId = Symbol.for("@typed/Fx/OperatorTypeId")
 export type OperatorTypeId = typeof OperatorTypeId
 
-export interface Fx<R, E, A> extends Fx.Variance<R, E, A>, Pipeable {}
+export interface Fx<R, E, A> extends Fx.Variance<R, E, A>, Pipeable, Inspectable {}
 
 export interface Subject<R, E, A> extends Fx<R, E, A>, Sink.Sink<E, A> {}
 
-const Variance: Fx<any, any, any>[TypeId] = {
+export const Variance: Fx<any, any, any>[TypeId] = {
   _R: identity,
   _E: identity,
   _A: identity
 }
 
-export abstract class FxProto<R, E, A> implements Fx<R, E, A> {
-  abstract readonly _fxTag: string
-  readonly [TypeId]: Fx<R, E, A>[TypeId] = Variance
+const constUnit = () => Effect.unit
 
-  constructor(
-    readonly i0?: unknown,
-    readonly i1?: unknown,
-    readonly i2?: unknown
-  ) {
-  }
-
+export abstract class BaseProto implements Equal.Equal, Hash.Hash, Inspectable {
   [Equal.symbol](that: unknown) {
     return this === that
   }
@@ -92,8 +87,66 @@ export abstract class FxProto<R, E, A> implements Fx<R, E, A> {
   pipe() {
     return pipeArguments(this, arguments)
   }
+
+  toJSON(): unknown {
+    return this
+  }
+
+  [NodeInspectSymbol]() {
+    return this.toJSON()
+  }
+
+  toString() {
+    return JSON.stringify(this.toJSON())
+  }
 }
 
+export abstract class EffectProto<R, E, A> extends BaseProto implements Omit<Effect.Effect<R, E, A>, TypeId> {
+  readonly _tag = "Commit"
+
+  readonly [Effect.EffectTypeId] = Variance as any
+
+  abstract toEffect(): Effect.Effect<R, E, A>
+
+  private effect: Effect.Effect<R, E, A> | undefined
+
+  commit(): Effect.Effect<R, E, A> {
+    if (this.effect === undefined) {
+      return (this.effect = this.toEffect())
+    } else {
+      return this.effect
+    }
+  }
+}
+
+export abstract class FxProto<R, E, A> extends BaseProto implements Fx<R, E, A> {
+  abstract readonly _fxTag: string
+  readonly [TypeId]: Fx<R, E, A>[TypeId] = Variance
+
+  constructor(
+    readonly i0?: unknown,
+    readonly i1?: unknown,
+    readonly i2?: unknown
+  ) {
+    super()
+  }
+
+  [Equal.symbol](that: unknown) {
+    return this === that
+  }
+
+  [Hash.symbol]() {
+    return Hash.random(this)
+  }
+
+  toJSON(): unknown {
+    return this
+  }
+
+  pipe() {
+    return pipeArguments(this, arguments)
+  }
+}
 export namespace Fx {
   export type Context<T> = T extends Fx<infer R, infer _E, infer _A> ? R : never
   export type Error<T> = T extends Fx<infer _R, infer E, infer _A> ? E : never
@@ -465,7 +518,7 @@ export class Loop<R, E, A, B, C> extends ToFx<R, E, C> {
 
   static make<R, E, A, B, C>(fx: Fx<R, E, A>, b: B, f: (b: B, a: A) => readonly [C, B]): Fx<R, E, C> {
     if (fx instanceof Transformer) {
-      return new FilterMapLoop(fx.i0 as Fx<R, E, any>, b, compileSyncLoop(fx.i1, f))
+      return FilterMapLoop.make(fx.i0 as Fx<R, E, any>, b, compileSyncReducer(fx.i1, f))
     } else if (fx instanceof TransformerEffect) {
       return new FilterMapLoopEffect(
         fx.i0 as Fx<R, E, any>,
@@ -508,6 +561,14 @@ export class FilterMapLoop<R, E, A, B, C> extends ToFx<R, E, C> {
     readonly i2: (b: B, a: A) => Option.Option<readonly [C, B]>
   ) {
     super(i0, i1, i2)
+  }
+
+  static make<R, E, A, B, C>(
+    fx: Fx<R, E, A>,
+    b: B,
+    f: (b: B, a: A) => Option.Option<readonly [C, B]>
+  ): Fx<R, E, C> {
+    return new FilterMapLoop(fx, b, f)
   }
 
   toFx(): Fx<R, E, C> {
@@ -767,65 +828,71 @@ function matchFxKind<R, E, A, B>(
   }
 }
 
-function matchFxPrimitive<R, E, A, B>(
-  fx: Fx<R, E, A> & Primitive,
+function matchFxPrimitive<B>(
   matchers: {
-    readonly Empty: (fx: Empty) => B
-    readonly Fail: (fx: Fail<E>) => B
-    readonly FromEffect: (fx: FromEffect<R, E, A>) => B
-    readonly FromIterable: (fx: FromIterable<A>) => B
-    readonly FromSink: (fx: FromSink<R, E, A>) => B
-    readonly Never: (fx: Never) => B
-    readonly Succeed: (fx: Succeed<A>) => B
-    readonly Suspend: (fx: Suspend<R, E, A>) => B
-    readonly Sync: (fx: Sync<A>) => B
-    readonly ToFx: (fx: ToFx<R, E, A>) => B
-    readonly WithEarlyExit: (fx: WithEarlyExit<R, E, A>) => B
-    readonly WithScopedFork: (fx: WithScopedFork<R, E, A>) => B
-    readonly WithFlattenStrategy: (fx: WithFlattenStrategy<R, E, A>) => B
-    readonly Transformer: (fx: Transformer<R, E, A>) => B
-    readonly TransformerEffect: (fx: TransformerEffect<R, E, A>) => B
-    readonly TransformerCause: (fx: TransformerCause<R, E, A>) => B
-    readonly TransformerCauseEffect: (fx: TransformerCauseEffect<R, E, A>) => B
+    readonly Empty: <R2>(fx: Empty, sink: Sink.WithContext<R2, never, never>) => B
+    readonly Fail: <E, R2>(fx: Fail<E>, sink: Sink.WithContext<R2, E, never>) => B
+    readonly FromEffect: <R, E, A, R2>(fx: FromEffect<R, E, A>, sink: Sink.WithContext<R2, E, A>) => B
+    readonly FromIterable: <A, R2>(fx: FromIterable<A>, sink: Sink.WithContext<R2, never, A>) => B
+    readonly FromSink: <R, E, A, R2>(fx: FromSink<R, E, A>, sink: Sink.WithContext<R2, E, A>) => B
+    readonly Never: <R2>(fx: Never, sink: Sink.WithContext<R2, never, never>) => B
+    readonly Succeed: <A, R2>(fx: Succeed<A>, sink: Sink.WithContext<R2, never, A>) => B
+    readonly Suspend: <R, E, A, R2>(fx: Suspend<R, E, A>, sink: Sink.WithContext<R2, E, A>) => B
+    readonly Sync: <A, R2>(fx: Sync<A>, sink: Sink.WithContext<R2, never, A>) => B
+    readonly ToFx: <R, E, A, R2>(fx: ToFx<R, E, A>, sink: Sink.WithContext<R2, E, A>) => B
+    readonly WithEarlyExit: <R, E, A, R2>(fx: WithEarlyExit<R, E, A>, sink: Sink.WithContext<R2, E, A>) => B
+    readonly WithScopedFork: <R, E, A, R2>(fx: WithScopedFork<R, E, A>, sink: Sink.WithContext<R2, E, A>) => B
+    readonly WithFlattenStrategy: <R, E, A, R2>(fx: WithFlattenStrategy<R, E, A>, sink: Sink.WithContext<R2, E, A>) => B
+    readonly Transformer: <R, E, A, R2>(fx: Transformer<R, E, A>, sink: Sink.WithContext<R2, E, A>) => B
+    readonly TransformerEffect: <R, E, A, R2>(fx: TransformerEffect<R, E, A>, sink: Sink.WithContext<R2, E, A>) => B
+    readonly TransformerCause: <R, E, A, R2>(fx: TransformerCause<R, E, A>, sink: Sink.WithContext<R2, E, A>) => B
+    readonly TransformerCauseEffect: <R, E, A, R2>(
+      fx: TransformerCauseEffect<R, E, A>,
+      sink: Sink.WithContext<R2, E, A>
+    ) => B
   }
-): B {
-  return matchers[fx._fxTag](fx as any)
+) {
+  return <R, E, A, R2>(fx: Fx<R, E, A> & Primitive, sink: Sink.WithContext<R2, E, A>): B =>
+    (matchers as any)[fx._fxTag](fx as any, sink)
 }
+
+const runFx = matchFxPrimitive<Effect.Effect<any, never, unknown>>({
+  Empty: constUnit,
+  Fail: (fx, sink) => sink.onFailure(fx.i0),
+  FromEffect: (fx, sink) => runEffect(fx.i0, sink),
+  FromIterable: (fx, sink) => Effect.forEach(fx.i0, sink.onSuccess),
+  FromSink: <R, E, A, R2>(fx: FromSink<R, E, A>, sink: Sink.WithContext<R2, E, A>) =>
+    Effect.contextWithEffect((ctx: Context<R | R2>) => fx.i0(Sink.provide(sink, ctx))),
+  Never: () => Effect.never,
+  Succeed: (fx, sink) => sink.onSuccess(fx.i0),
+  Suspend: (fx, sink) => Effect.suspend(() => run(fx.i0(), sink)),
+  Sync: (fx, sink) => Effect.suspend(() => sink.onSuccess(fx.i0())),
+  ToFx: ({ fx }, sink) => run(fx, sink),
+  WithEarlyExit: (fx, sink) =>
+    Effect.contextWithEffect((ctx) =>
+      helpers.withScopedFork((fork, scope) =>
+        helpers.withEarlyExit(Sink.provide(sink, ctx), (sink) => fx.i0({ sink, fork, scope }))
+      )
+    ),
+  WithScopedFork: (fx, sink) =>
+    Effect.contextWithEffect((ctx) =>
+      helpers.withScopedFork((fork, scope) => fx.i0({ sink: Sink.provide(sink, ctx), fork, scope }))
+    ),
+  WithFlattenStrategy: (fx, sink) =>
+    Effect.contextWithEffect((ctx) =>
+      helpers.withFlattenStrategy(fx.i1)((fork, scope) => fx.i0({ sink: Sink.provide(sink, ctx), fork, scope }))
+    ),
+  Transformer: runTransformer,
+  TransformerEffect: runTransformerEffect,
+  TransformerCause: runTransformerCause,
+  TransformerCauseEffect: runTransformerCauseEffect
+})
 
 function runFxPrimitive<R, E, A, R2>(
   fx: Fx<R, E, A>,
   sink: Sink.WithContext<R2, E, A>
 ): Effect.Effect<R | R2, never, unknown> {
-  return matchFxPrimitive<R, E, A, Effect.Effect<R | R2, never, unknown>>(fx as Fx<R, E, A> & Primitive, {
-    Empty: constUnit,
-    Fail: (fx) => sink.onFailure(fx.i0),
-    FromEffect: (fx) => runEffect(fx.i0, sink),
-    FromIterable: (fx) => Effect.forEach(fx.i0, sink.onSuccess),
-    FromSink: (fx) => Effect.contextWithEffect((ctx: Context<R | R2>) => fx.i0(Sink.provide(sink, ctx))),
-    Never: () => Effect.never,
-    Succeed: (fx) => sink.onSuccess(fx.i0),
-    Suspend: (fx) => Effect.suspend(() => run(fx.i0(), sink)),
-    Sync: (fx) => Effect.suspend(() => sink.onSuccess(fx.i0())),
-    ToFx: ({ fx }) => run(fx, sink),
-    WithEarlyExit: (fx) =>
-      Effect.contextWithEffect((ctx) =>
-        helpers.withScopedFork((fork, scope) =>
-          helpers.withEarlyExit(Sink.provide(sink, ctx), (sink) => fx.i0({ sink, fork, scope }))
-        )
-      ),
-    WithScopedFork: (fx) =>
-      Effect.contextWithEffect((ctx) =>
-        helpers.withScopedFork((fork, scope) => fx.i0({ sink: Sink.provide(sink, ctx), fork, scope }))
-      ),
-    WithFlattenStrategy: (fx) =>
-      Effect.contextWithEffect((ctx) =>
-        helpers.withFlattenStrategy(fx.i1)((fork, scope) => fx.i0({ sink: Sink.provide(sink, ctx), fork, scope }))
-      ),
-    Transformer: (transformer) => runTransformer(transformer, sink),
-    TransformerEffect: (transformer) => runTransformerEffect(transformer, sink),
-    TransformerCause: (transformer) => runTransformerCause(transformer, sink),
-    TransformerCauseEffect: (transformer) => runTransformerCauseEffect(transformer, sink)
-  })
+  return runFx(fx as Fx<R, E, A> & Primitive, sink)
 }
 
 function runTransformer<R, E, A, R2>(
@@ -952,8 +1019,6 @@ export function observe<R, E, A, R2, E2>(
       ))
   )
 }
-
-const constUnit = () => Effect.unit
 
 export function drain<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, void> {
   return observe(fx, constUnit)
@@ -1900,7 +1965,7 @@ export const skipRepeatsWith: {
   fx: Fx<R, E, A>,
   eq: Equivalence<A>
 ): Fx<R, E, A> {
-  return new FilterMapLoop(fx, Option.none<A>(), (previous, a) =>
+  return FilterMapLoop.make(fx, Option.none<A>(), (previous, a) =>
     Option.match(previous, {
       onNone: () => Option.some([a, Option.some(a)]),
       onSome: (prev) => eq(a, prev) ? Option.none() : Option.some([a, Option.some(a)])
@@ -1908,3 +1973,126 @@ export const skipRepeatsWith: {
 })
 
 export const skipRepeats: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = (fx) => skipRepeatsWith(fx, Equal.equals)
+
+class Reduce<R, E, A, B> extends EffectProto<R, E, B> {
+  constructor(readonly fx: Fx<R, E, A>, readonly seed: B, readonly f: (acc: B, a: A) => B) {
+    super()
+  }
+
+  static make<R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B): Effect.Effect<R, E, B> {
+    if (fx instanceof Transformer) {
+      return FilterMapReduce.make(fx.i0, seed, compileSyncReducer(fx.i1, f)) as any
+    }
+
+    // @ts-expect-error Reduce doesn't implement Fx, which our module augmentation makes TS believe is true.
+    return new Reduce(fx, seed, f)
+  }
+
+  toEffect() {
+    const { f, seed } = this
+    return matchFxKind(this.fx, {
+      Fx: (fx) =>
+        Effect.suspend(() => {
+          let acc = seed
+
+          return Effect.map(observe(fx, (a) => Effect.sync(() => acc = f(acc, a))), () => acc)
+        }),
+      Effect: (effect) => Effect.map(effect, (a) => f(this.seed, a)),
+      Cause: Effect.failCause
+    })
+  }
+}
+
+export class FilterMapReduce<R, E, A, B> extends EffectProto<R, E, B> {
+  constructor(
+    readonly i0: Fx<R, E, A>,
+    readonly i1: B,
+    readonly i2: (b: B, a: A) => Option.Option<B>
+  ) {
+    super()
+  }
+
+  static make<R, E, A, B>(
+    fx: Fx<R, E, A>,
+    seed: B,
+    f: (b: B, a: A) => Option.Option<B>
+  ): Effect.Effect<R, E, B> {
+    if (fx instanceof FromIterable) {
+      if (Array.isArray(fx.i0)) {
+        return Effect.sync(() => reduceFilterArray(fx.i0 as Array<A>, seed, f))
+      } else {
+        return Effect.sync(() => reduceFilterIterable(fx.i0, seed, f))
+      }
+    }
+
+    return new FilterMapReduce(fx, seed, f) as any
+  }
+
+  toEffect(): Effect.Effect<R, E, B> {
+    return Effect.suspend(() => {
+      let acc = this.i1
+
+      return Effect.map(
+        observe(this.i0, (a) =>
+          Option.match(this.i2(acc, a), {
+            onNone: () => Effect.unit,
+            onSome: (b) => Effect.succeed(acc = b)
+          })),
+        () => acc
+      )
+    })
+  }
+}
+
+function reduceFilterIterable<A, B>(
+  iterable: Iterable<A>,
+  seed: B,
+  f: (acc: B, a: A) => Option.Option<B>
+): B {
+  const iterator = iterable[Symbol.iterator]()
+  let acc = seed
+  let result = iterator.next()
+
+  while (!result.done) {
+    const option = f(acc, result.value)
+    if (Option.isSome(option)) {
+      acc = option.value
+    }
+    result = iterator.next()
+  }
+
+  return acc
+}
+
+function reduceFilterArray<A, B>(
+  iterable: Array<A>,
+  seed: B,
+  f: (acc: B, a: A) => Option.Option<B>
+): B {
+  const length = iterable.length
+  let acc = seed
+
+  for (let i = 0; i < length; i++) {
+    const option = f(acc, iterable[i])
+    if (Option.isSome(option)) {
+      acc = option.value
+    }
+  }
+
+  return acc
+}
+
+export const reduce: {
+  <A, B>(seed: B, f: (acc: B, a: A) => B): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, B>
+  <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B): Effect.Effect<R, E, B>
+} = dual(3, function loop<R, E, A, B>(
+  fx: Fx<R, E, A>,
+  seed: B,
+  f: (acc: B, a: A) => B
+): Effect.Effect<R, E, B> {
+  return Reduce.make(fx, seed, f)
+})
+
+export function toChunk<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, Chunk.Chunk<A>> {
+  return reduce(fx, Chunk.empty<A>(), (acc, a) => Chunk.append(acc, a))
+}

@@ -1,9 +1,15 @@
 import * as Effect from "@effect/io/Effect"
+import * as mostCore from "@most/core"
+import { newDefaultScheduler } from "@most/scheduler"
+import type * as mostTypes from "@most/types"
 import { performance } from "perf_hooks"
+import type * as rxjs from "rxjs"
 import { describe, it } from "vitest"
 
 const SECOND_MS = 1000
 const MINUTE_MS = SECOND_MS * 60
+
+const mostScheduler = newDefaultScheduler()
 
 export function benchmark(name: string): BenchmarkBuilder {
   return new BenchmarkBuilder(name, [])
@@ -57,7 +63,7 @@ function benchmarkSuite<const B extends ReadonlyArray<Benchmark<any, any>>>(
   benchmarks: B,
   options?: BenchmarkOptions
 ) {
-  describe(name, () => {
+  describe.concurrent(name, () => {
     const reports = benchmarks.map((benchmark) =>
       benchmarkIt({
         ...options,
@@ -89,7 +95,7 @@ function benchmarkIt<E, A>(
   const runs: Array<number> = []
   const iterations = options?.iterations || 1000
 
-  it(`[Benchmark] ${name}`, () =>
+  it.concurrent(`[Benchmark] ${name}`, () =>
     Effect.runPromise(Effect.repeatN(
       timed(effect, (time) => {
         total += time
@@ -151,3 +157,49 @@ const timed = <R, E, A, B>(effect: Effect.Effect<R, E, A>, f: (time: number, a: 
 
     return Effect.map(effect, (a) => f(performance.now() - start, a))
   })
+
+export function comparison(name: string, tests: {
+  rxjs?: () => rxjs.Observable<any>
+  most?: () => mostTypes.Stream<any>
+  fx?: () => Effect.Effect<never, any, any>
+  array?: () => any
+}, options?: BenchmarkOptions) {
+  let bench = benchmark(name)
+
+  if (tests.rxjs) {
+    bench = bench.test(
+      "rxjs",
+      runRxjs(tests.rxjs())
+    )
+  }
+
+  if (tests.most) {
+    bench = bench.test(
+      "most",
+      runMost(tests.most())
+    )
+  }
+
+  if (tests.fx) {
+    bench = bench.test(
+      "fx",
+      tests.fx()
+    )
+  }
+
+  if (tests.array) {
+    bench = bench.test(
+      "array",
+      Effect.sync(() => tests.array!())
+    )
+  }
+
+  return bench.run(options)
+}
+
+const runRxjs = (observable: rxjs.Observable<any>) =>
+  Effect.async<never, never, void>((resume) => {
+    observable.subscribe({ complete: () => resume(Effect.unit) })
+  })
+
+const runMost = (stream: mostTypes.Stream<any>) => Effect.promise(() => mostCore.runEffects(stream, mostScheduler))
