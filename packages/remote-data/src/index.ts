@@ -353,7 +353,7 @@ export const toOptionError = <E, A>(data: RemoteData<E, A>): Option.Option<E> =>
   isFailure(data) ? Either.getLeft(Cause.failureOrCause(data.cause)) : Option.none()
 
 export function fromExit<E, A>(exit: Exit.Exit<E, A>): RemoteData<E, A> {
-  return Exit.match<E, A, RemoteData<E, A>>(exit, {
+  return Exit.match(exit, {
     onFailure: unwrapCause,
     onSuccess: success
   })

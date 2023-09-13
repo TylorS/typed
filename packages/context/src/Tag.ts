@@ -3,7 +3,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import type * as Scope from "@effect/io/Scope"
 import { ContextBuilder } from "./Builder"
-import type { IdentifierInput, IdentifierOf } from "./Identifier"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
 import { makeIdentifier } from "./Identifier"
 import type { Actions, Builder, Layers, Provide, Tagged } from "./Interface"
 
@@ -13,6 +13,12 @@ import type { Actions, Builder, Layers, Provide, Tagged } from "./Interface"
  */
 export interface Tag<I, S = I> extends C.Tag<I, S>, Tagged<I, S> {}
 
+export function Tag<const I extends IdentifierFactory<any>, S = I>(
+  id?: I | string
+): Tag<IdentifierOf<I>, S>
+export function Tag<const I, S = I>(
+  id?: I | string
+): Tag<IdentifierOf<I>, S>
 export function Tag<const I extends IdentifierInput<any>, S = I>(
   id?: I | string
 ): Tag<IdentifierOf<I>, S> {
