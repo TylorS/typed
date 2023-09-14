@@ -3,6 +3,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as R from "@effect/io/Ref"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
+import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
 export interface Ref<I, A> extends Tag<I, R.Ref<A>> {
@@ -34,7 +35,7 @@ export function Ref<A>() {
   function makeRef<const I extends IdentifierFactory<any>>(id: I): Ref<IdentifierOf<I>, A>
   function makeRef<const I>(id: IdentifierInput<I>): Ref<IdentifierOf<I>, A>
   function makeRef<const I>(id: I): Ref<IdentifierOf<I>, A> {
-    const tag = Tag<I, R.Ref<A>>(id)
+    const tag = withActions(Tag<I, R.Ref<A>>(id))
 
     const actions: Omit<Ref<IdentifierOf<I>, A>, keyof typeof tag> = {
       [R.RefTypeId]: R.RefTypeId,

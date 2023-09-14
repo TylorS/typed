@@ -5,6 +5,7 @@ import type { Effect } from "@effect/io/Effect"
 import type { Exit } from "@effect/io/Exit"
 import * as Layer from "@effect/io/Layer"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
+import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
 export interface Cache<I, K, E, A> extends Tag<I, C.Cache<K, E, A>> {
@@ -34,7 +35,7 @@ export function Cache<K, E, A>() {
   function makeCache<const I extends IdentifierFactory<any>>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
   function makeCache<const I>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
   function makeCache<const I extends IdentifierInput<any>>(identifier: I): Cache<IdentifierOf<I>, K, E, A> {
-    const tag = Tag<I, C.Cache<K, E, A>>(identifier)
+    const tag = Tag<I, C.Cache<K, E, A>>(identifier).pipe(withActions)
     const self: Omit<Cache<IdentifierOf<I>, K, E, A>, keyof typeof tag> = {
       get: (key) => tag.withEffect((cache) => cache.get(key)),
       getEither: (key) => tag.withEffect((cache) => cache.getEither(key)),

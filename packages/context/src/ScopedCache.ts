@@ -7,6 +7,7 @@ import * as Layer from "@effect/io/Layer"
 import type { Scope } from "@effect/io/Scope"
 import * as SC from "@effect/io/ScopedCache"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
+import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
 export interface ScopedCache<I, K, E, A> extends Tag<I, SC.ScopedCache<K, E, A>> {
@@ -42,7 +43,7 @@ export function ScopedCache<K, E, A>() {
   function makeScopedCache<const I extends IdentifierFactory<any>>(identifier: I): ScopedCache<IdentifierOf<I>, K, E, A>
   function makeScopedCache<const I>(identifier: I): ScopedCache<IdentifierOf<I>, K, E, A>
   function makeScopedCache<const I extends IdentifierInput<any>>(identifier: I): ScopedCache<IdentifierOf<I>, K, E, A> {
-    const tag = Tag<I, SC.ScopedCache<K, E, A>>(identifier)
+    const tag = withActions(Tag<I, SC.ScopedCache<K, E, A>>(identifier))
     const self: Omit<ScopedCache<IdentifierOf<I>, K, E, A>, keyof typeof tag> = {
       cacheStats: tag.withEffect((cache) => cache.cacheStats()),
       contains: (key) => tag.withEffect((cache) => cache.contains(key)),

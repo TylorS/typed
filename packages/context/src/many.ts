@@ -1,5 +1,6 @@
 import type * as C from "@effect/data/Context"
 import * as Effect from "@effect/io/Effect"
+import * as Layer from "@effect/io/Layer"
 
 import { ContextBuilder } from "./Builder"
 import type { Tagged } from "./Interface"
@@ -27,7 +28,12 @@ export function tuple<Tags extends TupleOfTags>(...tags: Tags): TaggedTuple<Tags
     tags,
     with: (f) => Effect.map(all, f),
     withEffect: (f) => Effect.flatMap(all, f),
-    build: (s) => buildTupleContext(tags, s)
+    build: (s) => buildTupleContext(tags, s),
+    provide: (s) => (effect) => Effect.provideSomeContext(effect, buildTupleContext(tags, s).context),
+    provideEffect: (make) => (effect) =>
+      Effect.flatMap(make, (s) => Effect.provideSomeContext(effect, buildTupleContext(tags, s).context)),
+    layer: (make) => Layer.effectContext(Effect.map(make, (s) => buildTupleContext(tags, s).context)),
+    scoped: (make) => Layer.scopedContext(Effect.map(make, (s) => buildTupleContext(tags, s).context))
   }
 
   return Object.assign(all, self)
@@ -56,7 +62,12 @@ export function struct<Tags extends StructOfTags>(tags: Tags): TaggedStruct<Tags
     tags,
     with: (f) => Effect.map(all, f),
     withEffect: (f) => Effect.flatMap(all, f),
-    build: (s) => buildStructContext(tags, s)
+    build: (s) => buildStructContext(tags, s),
+    provide: (s) => (effect) => Effect.provideSomeContext(effect, buildStructContext(tags, s).context),
+    provideEffect: (make) => (effect) =>
+      Effect.flatMap(make, (s) => Effect.provideSomeContext(effect, buildStructContext(tags, s).context)),
+    layer: (make) => Layer.effectContext(Effect.map(make, (s) => buildStructContext(tags, s).context)),
+    scoped: (make) => Layer.scopedContext(Effect.map(make, (s) => buildStructContext(tags, s).context))
   }
 
   return Object.assign(all, self)

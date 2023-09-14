@@ -1,8 +1,4 @@
 import * as C from "@effect/data/Context"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
-import type * as Scope from "@effect/io/Scope"
-import { ContextBuilder } from "./Builder"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
 import { makeIdentifier } from "./Identifier"
 import type { Tagged } from "./Interface"
@@ -11,7 +7,7 @@ import type { Tagged } from "./Interface"
  * Provides extensions to the `Context` module's Tag implementation to
  * provide a more ergonomic API for working with Effect + Fx.
  */
-export interface Tag<I, S = I> extends C.Tag<I, S>, Tagged<I, S> {}
+export interface Tag<I, S = I> extends C.Tag<I, S> {}
 
 export function Tag<const I extends IdentifierFactory<any>, S = I>(
   id?: I | string
@@ -22,7 +18,7 @@ export function Tag<const I, S = I>(
 export function Tag<const I extends IdentifierInput<any>, S = I>(
   id?: I | string
 ): Tag<IdentifierOf<I>, S> {
-  return Tag.tag(C.Tag<IdentifierOf<I>, S>(makeIdentifier(id)))
+  return C.Tag<IdentifierOf<I>, S>(makeIdentifier(id))
 }
 
 export namespace Tag {
@@ -33,21 +29,4 @@ export namespace Tag {
   export type Service<T> = [T] extends [C.Tag<infer _, infer S>] ? S
     : [T] extends [Tagged<infer _, infer S>] ? S
     : never
-
-  export function tagged<I, S>(tag: C.Tag<I, S>): Tagged<I, S> {
-    return Object.assign(tag, {
-      with: <A>(f: (s: S) => A) => Effect.map(tag, f),
-      withEffect: <R, E, A>(f: (s: S) => Effect.Effect<R, E, A>) => Effect.flatMap(tag, f),
-      provide: (s: S) => Effect.provideService(tag, s),
-      provideEffect: <R2, E2>(effect: Effect.Effect<R2, E2, S>) => Effect.provideServiceEffect(tag, effect),
-      layer: <R, E>(effect: Effect.Effect<R, E, S>) => Layer.effect(tag, effect),
-      scoped: <R, E>(effect: Effect.Effect<R | Scope.Scope, E, S>) => Layer.scoped(tag, effect),
-      layerOf: (s: S) => Layer.succeed(tag, s),
-      build: (s: S) => ContextBuilder.fromTag(tag, s)
-    })
-  }
-
-  export function tag<I, S>(tag: C.Tag<I, S>): Tag<I, S> {
-    return Object.assign(tag, tagged(tag))
-  }
 }

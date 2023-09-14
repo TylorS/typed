@@ -3,6 +3,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as SyncRef from "@effect/io/SynchronizedRef"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
+import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
 export interface SynchronizedRef<I, A> extends Tag<I, SyncRef.SynchronizedRef<A>> {
@@ -60,7 +61,7 @@ export function SynchronizedRef<A>() {
   function makeSynchronizedRef<const I extends IdentifierFactory<any>>(id: I): SynchronizedRef<IdentifierOf<I>, A>
   function makeSynchronizedRef<const I>(id: IdentifierInput<I>): SynchronizedRef<IdentifierOf<I>, A>
   function makeSynchronizedRef<const I>(id: I): SynchronizedRef<IdentifierOf<I>, A> {
-    const tag = Tag<I, SyncRef.SynchronizedRef<A>>(id)
+    const tag = withActions(Tag<I, SyncRef.SynchronizedRef<A>>(id))
 
     const actions: Omit<SynchronizedRef<IdentifierOf<I>, A>, keyof typeof tag> = {
       [SyncRef.SynchronizedRefTypeId]: SyncRef.SynchronizedRefTypeId,

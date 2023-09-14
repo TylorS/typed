@@ -86,7 +86,7 @@ export namespace Fn {
 
     return Object.assign(tag, {
       [FnTypeId]: FnTypeId,
-      apply: (...args: EffectFn.ArgsOf<S>) => tag.withEffect((f) => f(...args)),
+      apply: (...args: EffectFn.ArgsOf<S>) => Effect.flatMap(tag, (f) => f(...args)),
       implement,
       provideImplementation: dual(
         2,

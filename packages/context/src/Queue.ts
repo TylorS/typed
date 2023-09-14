@@ -4,6 +4,7 @@ import type * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Q from "@effect/io/Queue"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
+import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
 export interface Queue<I, A> extends Tag<I, Q.Queue<A>> {
@@ -42,7 +43,7 @@ export function Queue<A>(): <const I extends IdentifierFactory<any>>(identifier:
 export function Queue<A>(): <const I>(identifier: I) => Queue<IdentifierOf<I>, A>
 export function Queue<A>() {
   return <const I extends IdentifierInput<any>>(identifier: I): Queue<IdentifierOf<I>, A> => {
-    const tag = Tag<I, Q.Queue<A>>(identifier)
+    const tag = withActions(Tag<I, Q.Queue<A>>(identifier))
 
     return Object.assign(tag, {
       capacity: tag.with((d) => d.capacity()),

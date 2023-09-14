@@ -1,10 +1,21 @@
 import * as Effect from "@effect/io/Effect"
-import { Model, Ref, ScopedRef, SynchronizedRef } from "@typed/context"
+import * as Context from "@typed/context"
 
 describe(__filename, () => {
-  describe(Ref, () => {
+  describe(Context.tagged, () => {
+    it("adds actions + provision methods", async () => {
+      const tag = Context.Tag<number>().pipe(Context.tagged)
+
+      const test = tag.with((x) => x + 1).pipe(tag.provide(1))
+      const result = await Effect.runPromise(test)
+
+      expect(result).toBe(2)
+    })
+  })
+
+  describe(Context.Ref, () => {
     it("allows creating a Ref in the effect context", async () => {
-      const ref = Ref<number>()("test")
+      const ref = Context.Ref<number>()("test")
       const test = ref.get.pipe(ref.provide(1))
       const result = await Effect.runPromise(test)
 
@@ -12,9 +23,9 @@ describe(__filename, () => {
     })
   })
 
-  describe(ScopedRef, () => {
+  describe(Context.ScopedRef, () => {
     it("allows creating a ScopedRef in the effect context", async () => {
-      const ref = ScopedRef<number>()("test")
+      const ref = Context.ScopedRef<number>()("test")
       const test = ref.get.pipe(ref.provide(1), Effect.scoped)
       const result = await Effect.runPromise(test)
 
@@ -22,9 +33,9 @@ describe(__filename, () => {
     })
   })
 
-  describe(SynchronizedRef, () => {
+  describe(Context.SynchronizedRef, () => {
     it("allows creating a SynchronizedRef in the effect context", async () => {
-      const ref = SynchronizedRef<number>()("test")
+      const ref = Context.SynchronizedRef<number>()("test")
       const test = ref.get.pipe(ref.provide(1))
       const result = await Effect.runPromise(test)
 
@@ -32,12 +43,12 @@ describe(__filename, () => {
     })
   })
 
-  describe(Model, () => {
+  describe(Context.Model, () => {
     it("allows composing a set of Refs into a single Model", async () => {
-      const A = Ref<number>()("A")
-      const B = ScopedRef<number>()("B")
-      const C = SynchronizedRef<number>()("C")
-      const model = Model({ A, B, C })
+      const A = Context.Ref<number>()("A")
+      const B = Context.ScopedRef<number>()("B")
+      const C = Context.SynchronizedRef<number>()("C")
+      const model = Context.Model({ A, B, C })
 
       const test = Effect.gen(function*(_) {
         expect(yield* _(model.get)).toEqual({ A: 1, B: 2, C: 3 })

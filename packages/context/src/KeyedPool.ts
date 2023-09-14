@@ -4,6 +4,7 @@ import * as KP from "@effect/io/KeyedPool"
 import * as Layer from "@effect/io/Layer"
 import type { Scope } from "@effect/io/Scope"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
+import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
 export interface KeyedPool<I, K, E, A> extends Tag<I, KP.KeyedPool<K, E, A>> {
@@ -47,7 +48,7 @@ export function KeyedPool<K, E, A>(): <const I>(identifier: I) => KeyedPool<Iden
 
 export function KeyedPool<K, E, A>() {
   return <const I extends IdentifierInput<any>>(identifier: I): KeyedPool<IdentifierOf<I>, K, E, A> => {
-    const tag = Tag<I, KP.KeyedPool<K, E, A>>(identifier)
+    const tag = withActions(Tag<I, KP.KeyedPool<K, E, A>>(identifier))
 
     return Object.assign(
       tag,

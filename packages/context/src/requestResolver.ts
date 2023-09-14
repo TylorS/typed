@@ -3,6 +3,7 @@ import * as Layer from "@effect/io/Layer"
 import type * as Req from "@effect/io/Request"
 import * as RR from "@effect/io/RequestResolver"
 
+import { withActions } from "@typed/context/Interface"
 import type { Context } from "./Context"
 import type { IdentifierFactory, IdentifierOf } from "./Identifier"
 import type { Request } from "./Request"
@@ -68,6 +69,8 @@ export function RequestResolver<
     type _Req = Request.Req<Requests[keyof Requests]>
     type _Resolver = RequestResolver<IdentifierOf<Id>, Requests>
 
+    const tag = withActions(Tag<Id, RR.RequestResolver<_Req>>(id))
+
     const [first, ...rest] = Object.values(requests).map((r) =>
       r.implement((req: _Req) => tag.withEffect((resolver) => Effect.request(req, resolver)))
     )
@@ -79,7 +82,6 @@ export function RequestResolver<
     const provideMerge = <R>(resolverLayer: Layer.Layer<R, never, IdentifierOf<Id>>) =>
       Layer.provideMerge(resolverLayer, requestLayer)
 
-    const tag = Tag<Id, RR.RequestResolver<_Req>>(id)
     const derivedRequests = Object.fromEntries(
       Object.entries(requests).map(
         ([k, v]) => [k, (input: any) => Effect.provideSomeLayer(v.make(input), requestLayer)] as const

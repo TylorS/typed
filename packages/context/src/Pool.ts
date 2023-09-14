@@ -4,6 +4,7 @@ import * as Layer from "@effect/io/Layer"
 import * as P from "@effect/io/Pool"
 import type { Scope } from "@effect/io/Scope"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
+import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
 export interface Pool<I, E, A> extends Tag<I, P.Pool<E, A>> {
@@ -29,7 +30,7 @@ export function Pool<E, A>(): <const I extends IdentifierFactory<any>>(identifie
 export function Pool<E, A>(): <const I>(identifier: I) => Pool<IdentifierOf<I>, E, A>
 export function Pool<E, A>() {
   return <const I extends IdentifierInput<any>>(identifier: I): Pool<IdentifierOf<I>, E, A> => {
-    const tag = Tag<I, P.Pool<E, A>>(identifier)
+    const tag = withActions(Tag<I, P.Pool<E, A>>(identifier))
 
     return Object.assign(
       tag,

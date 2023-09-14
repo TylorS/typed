@@ -5,6 +5,7 @@ import * as Layer from "@effect/io/Layer"
 import * as Q from "@effect/io/Queue"
 import type { Hub } from "@typed/context/Hub"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
+import { withActions } from "@typed/context/Interface"
 import type { Queue } from "@typed/context/Queue"
 import { Tag } from "@typed/context/Tag"
 
@@ -34,7 +35,7 @@ export function Dequeue<A>(): <const I extends IdentifierFactory<any>>(identifie
 export function Dequeue<A>(): <const I>(identifier: I) => Dequeue<IdentifierOf<I>, A>
 export function Dequeue<A>() {
   return <const I extends IdentifierInput<any>>(identifier: I): Dequeue<IdentifierOf<I>, A> => {
-    const tag = Tag<I, Q.Dequeue<A>>(identifier)
+    const tag = withActions(Tag<I, Q.Dequeue<A>>(identifier))
 
     return Object.assign(tag, {
       capacity: tag.with((d) => d.capacity()),
