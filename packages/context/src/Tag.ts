@@ -5,7 +5,7 @@ import type * as Scope from "@effect/io/Scope"
 import { ContextBuilder } from "./Builder"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
 import { makeIdentifier } from "./Identifier"
-import type { Actions, Builder, Layers, Provide, Tagged } from "./Interface"
+import type { Tagged } from "./Interface"
 
 /**
  * Provides extensions to the `Context` module's Tag implementation to
@@ -34,41 +34,17 @@ export namespace Tag {
     : [T] extends [Tagged<infer _, infer S>] ? S
     : never
 
-  export function actions<I, S>(tag: C.Tag<I, S>): Actions<I, S> {
-    return {
+  export function tagged<I, S>(tag: C.Tag<I, S>): Tagged<I, S> {
+    return Object.assign(tag, {
       with: <A>(f: (s: S) => A) => Effect.map(tag, f),
-      withEffect: <R, E, A>(f: (s: S) => Effect.Effect<R, E, A>) => Effect.flatMap(tag, f)
-    }
-  }
-
-  export function provide<I, S>(tag: C.Tag<I, S>): Provide<I, S> {
-    return {
+      withEffect: <R, E, A>(f: (s: S) => Effect.Effect<R, E, A>) => Effect.flatMap(tag, f),
       provide: (s: S) => Effect.provideService(tag, s),
-      provideEffect: <R2, E2>(effect: Effect.Effect<R2, E2, S>) => Effect.provideServiceEffect(tag, effect)
-    }
-  }
-
-  export function layers<I, S>(tag: C.Tag<I, S>): Layers<I, S> {
-    return {
+      provideEffect: <R2, E2>(effect: Effect.Effect<R2, E2, S>) => Effect.provideServiceEffect(tag, effect),
       layer: <R, E>(effect: Effect.Effect<R, E, S>) => Layer.effect(tag, effect),
       scoped: <R, E>(effect: Effect.Effect<R | Scope.Scope, E, S>) => Layer.scoped(tag, effect),
-      layerOf: (s: S) => Layer.succeed(tag, s)
-    }
-  }
-
-  export function builder<I, S>(tag: C.Tag<I, S>): Builder<I, S> {
-    return {
+      layerOf: (s: S) => Layer.succeed(tag, s),
       build: (s: S) => ContextBuilder.fromTag(tag, s)
-    }
-  }
-
-  export function tagged<I, S>(tag: C.Tag<I, S>): Tagged<I, S> {
-    return {
-      ...actions(tag),
-      ...provide(tag),
-      ...layers(tag),
-      ...builder(tag)
-    }
+    })
   }
 
   export function tag<I, S>(tag: C.Tag<I, S>): Tag<I, S> {

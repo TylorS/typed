@@ -1,6 +1,6 @@
 import type { DurationInput } from "@effect/data/Duration"
 import type * as Effect from "@effect/io/Effect"
-import type { Layer } from "@effect/io/Layer"
+import * as Layer from "@effect/io/Layer"
 import * as P from "@effect/io/Pool"
 import type { Scope } from "@effect/io/Scope"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
@@ -13,7 +13,7 @@ export interface Pool<I, E, A> extends Tag<I, P.Pool<E, A>> {
   readonly make: <R>(options: {
     readonly acquire: Effect.Effect<R, E, A>
     readonly size: number
-  }) => Layer<R, never, I>
+  }) => Layer.Layer<R, never, I>
 
   readonly makeWithTTL: <R>(
     options: {
@@ -22,7 +22,7 @@ export interface Pool<I, E, A> extends Tag<I, P.Pool<E, A>> {
       readonly max: number
       readonly timeToLive: DurationInput
     }
-  ) => Layer<R, never, I>
+  ) => Layer.Layer<R, never, I>
 }
 
 export function Pool<E, A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Pool<IdentifierOf<I>, E, A>
@@ -39,7 +39,7 @@ export function Pool<E, A>() {
         make: <R>(options: {
           readonly acquire: Effect.Effect<R, E, A>
           readonly size: number
-        }) => tag.scoped(P.make(options)),
+        }) => Layer.scoped(tag, P.make(options)),
         makeWithTTL: <R>(
           options: {
             readonly acquire: Effect.Effect<R, E, A>
@@ -47,7 +47,7 @@ export function Pool<E, A>() {
             readonly max: number
             readonly timeToLive: DurationInput
           }
-        ) => tag.scoped(P.makeWithTTL(options))
+        ) => Layer.scoped(tag, P.makeWithTTL(options))
       } as const
     ) satisfies Pool<IdentifierOf<I>, E, A>
   }

@@ -1,6 +1,6 @@
 import type * as Effect from "@effect/io/Effect"
 import * as H from "@effect/io/Hub"
-import type { Layer } from "@effect/io/Layer"
+import * as Layer from "@effect/io/Layer"
 import type * as Q from "@effect/io/Queue"
 import type { Scope } from "@effect/io/Scope"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
@@ -23,10 +23,10 @@ export interface Hub<I, A> extends Tag<I, H.Hub<A>> {
   readonly subscribe: Effect.Effect<I | Scope, never, Q.Dequeue<A>>
 
   // Constructors
-  readonly bounded: (capacity: number) => Layer<never, never, I>
-  readonly dropping: (capacity: number) => Layer<never, never, I>
-  readonly sliding: (capacity: number) => Layer<never, never, I>
-  readonly unbounded: Layer<never, never, I>
+  readonly bounded: (capacity: number) => Layer.Layer<never, never, I>
+  readonly dropping: (capacity: number) => Layer.Layer<never, never, I>
+  readonly sliding: (capacity: number) => Layer.Layer<never, never, I>
+  readonly unbounded: Layer.Layer<never, never, I>
 }
 
 export function Hub<A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Hub<IdentifierOf<I>, A>
@@ -47,10 +47,10 @@ export function Hub<A>() {
       publish: (a: A) => tag.withEffect(H.publish(a)),
       publishAll: (a: Iterable<A>) => tag.withEffect(H.publishAll(a)),
       subscribe: tag.withEffect(H.subscribe),
-      bounded: (capacity: number) => tag.layer(H.bounded(capacity)),
-      dropping: (capacity: number) => tag.layer(H.dropping(capacity)),
-      sliding: (capacity: number) => tag.layer(H.sliding(capacity)),
-      unbounded: tag.layer(H.unbounded<A>())
+      bounded: (capacity: number) => Layer.effect(tag, H.bounded(capacity)),
+      dropping: (capacity: number) => Layer.effect(tag, H.dropping(capacity)),
+      sliding: (capacity: number) => Layer.effect(tag, H.sliding(capacity)),
+      unbounded: Layer.effect(tag, H.unbounded<A>())
     })
   }
 }

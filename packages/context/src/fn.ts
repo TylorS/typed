@@ -1,6 +1,6 @@
 import { dual } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
-import type * as Layer from "@effect/io/Layer"
+import * as Layer from "@effect/io/Layer"
 
 import type { EffectFn } from "./EffectFn"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
@@ -76,7 +76,8 @@ export namespace Fn {
     const implement = <T2 extends EffectFn.Extendable<S>>(
       implementation: T2
     ): Layer.Layer<EffectFn.ResourcesOf<T2>, never, I> =>
-      tag.layer(
+      Layer.effect(
+        tag,
         Effect.map(
           Effect.context<EffectFn.ResourcesOf<T2>>(),
           (c) => ((...a: any) => Effect.provideSomeContext(implementation(...a), c)) as any

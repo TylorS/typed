@@ -44,8 +44,8 @@ export function identifierToString(x: unknown): string {
   }
 }
 
-export function makeIdentifier<T>(input: IdentifierInput<T>): T | IdentifierConstructor<T> {
-  return typeof input === "function" && input.length === 1
+export function makeIdentifier<T>(input: IdentifierInput<T>): IdentifierOf<T> {
+  return (typeof input === "function" && input.length === 1
     ? (input as IdentifierFactory<T>)(id)
-    : (input as T)
+    : (input as T)) as IdentifierOf<T>
 }

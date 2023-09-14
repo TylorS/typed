@@ -1,7 +1,7 @@
 import type * as Chunk from "@effect/data/Chunk"
 import type { Option } from "@effect/data/Option"
 import type * as Effect from "@effect/io/Effect"
-import type { Layer } from "@effect/io/Layer"
+import * as Layer from "@effect/io/Layer"
 import * as Q from "@effect/io/Queue"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 import { Tag } from "@typed/context/Tag"
@@ -31,11 +31,11 @@ export interface Queue<I, A> extends Tag<I, Q.Queue<A>> {
   readonly offerAll: (as: Iterable<A>) => Effect.Effect<I, never, boolean>
 
   // Queue
-  readonly bounded: (capacity: number) => Layer<never, never, I>
-  readonly dropping: (capacity: number) => Layer<never, never, I>
-  readonly make: (queue: Q.BackingQueue<A>, strategy: Q.Strategy<A>) => Layer<never, never, I>
-  readonly sliding: (capacity: number) => Layer<never, never, I>
-  readonly unbounded: Layer<never, never, I>
+  readonly bounded: (capacity: number) => Layer.Layer<never, never, I>
+  readonly dropping: (capacity: number) => Layer.Layer<never, never, I>
+  readonly make: (queue: Q.BackingQueue<A>, strategy: Q.Strategy<A>) => Layer.Layer<never, never, I>
+  readonly sliding: (capacity: number) => Layer.Layer<never, never, I>
+  readonly unbounded: Layer.Layer<never, never, I>
 }
 
 export function Queue<A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Queue<IdentifierOf<I>, A>
@@ -63,11 +63,11 @@ export function Queue<A>() {
       unsafeOffer: (a: A) => tag.with(Q.unsafeOffer(a)),
       offerAll: (as: Iterable<A>): Effect.Effect<IdentifierOf<I>, never, boolean> =>
         tag.withEffect((enqueue) => Q.offerAll<A>(enqueue, as)),
-      bounded: (capacity: number) => tag.layer(Q.bounded(capacity)),
-      dropping: (capacity: number) => tag.layer(Q.dropping(capacity)),
-      make: (queue: Q.BackingQueue<A>, strategy: Q.Strategy<A>) => tag.layer(Q.make(queue, strategy)),
-      sliding: (capacity: number) => tag.layer(Q.sliding(capacity)),
-      unbounded: tag.layer(Q.unbounded<A>())
+      bounded: (capacity: number) => Layer.effect(tag, Q.bounded(capacity)),
+      dropping: (capacity: number) => Layer.effect(tag, Q.dropping(capacity)),
+      make: (queue: Q.BackingQueue<A>, strategy: Q.Strategy<A>) => Layer.effect(tag, Q.make(queue, strategy)),
+      sliding: (capacity: number) => Layer.effect(tag, Q.sliding(capacity)),
+      unbounded: Layer.effect(tag, Q.unbounded<A>())
     })
   }
 }

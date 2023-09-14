@@ -1,7 +1,7 @@
 import type * as Chunk from "@effect/data/Chunk"
 import type { Option } from "@effect/data/Option"
 import type * as Effect from "@effect/io/Effect"
-import type { Layer } from "@effect/io/Layer"
+import * as Layer from "@effect/io/Layer"
 import * as Q from "@effect/io/Queue"
 import type { Hub } from "@typed/context/Hub"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
@@ -26,8 +26,8 @@ export interface Dequeue<I, A> extends Tag<I, Q.Dequeue<A>> {
   readonly awaitShutdown: Effect.Effect<I, never, void>
 
   // Provide
-  readonly fromQueue: <I2>(queue: Queue<I2, A>) => Layer<I2, never, I>
-  readonly fromHub: <I2>(hub: Hub<I2, A>) => Layer<I2, never, I>
+  readonly fromQueue: <I2>(queue: Queue<I2, A>) => Layer.Layer<I2, never, I>
+  readonly fromHub: <I2>(hub: Hub<I2, A>) => Layer.Layer<I2, never, I>
 }
 
 export function Dequeue<A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Dequeue<IdentifierOf<I>, A>
@@ -51,8 +51,8 @@ export function Dequeue<A>() {
       poll: tag.withEffect(Q.poll),
       takeUpTo: (max: number) => tag.withEffect(Q.takeUpTo(max)),
       takeBetween: (min: number, max: number) => tag.withEffect(Q.takeBetween(min, max)),
-      fromQueue: <I2>(queue: Queue<I2, A>) => tag.layer(queue),
-      fromHub: <I2>(hub: Hub<I2, A>) => tag.scoped(hub.subscribe)
+      fromQueue: <I2>(queue: Queue<I2, A>) => Layer.effect(tag, queue),
+      fromHub: <I2>(hub: Hub<I2, A>) => Layer.scoped(tag, hub.subscribe)
     })
   }
 }

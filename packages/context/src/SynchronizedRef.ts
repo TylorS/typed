@@ -1,10 +1,9 @@
-import { Tag } from "@effect/data/Context"
 import type { Option } from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as SyncRef from "@effect/io/SynchronizedRef"
-import { makeIdentifier } from "@typed/context/Identifier"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
+import { Tag } from "@typed/context/Tag"
 
 export interface SynchronizedRef<I, A> extends Tag<I, SyncRef.SynchronizedRef<A>> {
   readonly [SyncRef.SynchronizedRefTypeId]: SyncRef.SynchronizedRefTypeId
@@ -52,9 +51,6 @@ export interface SynchronizedRef<I, A> extends Tag<I, SyncRef.SynchronizedRef<A>
 
   // Provision
   readonly provide: (a: A) => <R, E, B>(effect: Effect.Effect<R, E, B>) => Effect.Effect<Exclude<R, I>, E, B>
-  readonly provideLayer: <R2, E2>(
-    effect: Effect.Effect<R2, E2, A>
-  ) => <R, E, B>(effect: Effect.Effect<R, E, B>) => Effect.Effect<Exclude<R, I> | R2, E | E2, B>
   readonly layer: <R2, E2>(
     effect: Effect.Effect<R2, E2, A>
   ) => Layer.Layer<R2, E2, I>
@@ -63,37 +59,32 @@ export interface SynchronizedRef<I, A> extends Tag<I, SyncRef.SynchronizedRef<A>
 export function SynchronizedRef<A>() {
   function makeSynchronizedRef<const I extends IdentifierFactory<any>>(id: I): SynchronizedRef<IdentifierOf<I>, A>
   function makeSynchronizedRef<const I>(id: IdentifierInput<I>): SynchronizedRef<IdentifierOf<I>, A>
-  function makeSynchronizedRef<const I>(id: IdentifierInput<I>): SynchronizedRef<IdentifierOf<I>, A> {
-    const tag = Tag<IdentifierOf<I>, SyncRef.SynchronizedRef<A>>(makeIdentifier(id))
-
-    const withRef = <R2, E2, B>(
-      f: (ref: SyncRef.SynchronizedRef<A>) => Effect.Effect<R2, E2, B>
-    ) => Effect.flatMap(tag, f)
+  function makeSynchronizedRef<const I>(id: I): SynchronizedRef<IdentifierOf<I>, A> {
+    const tag = Tag<I, SyncRef.SynchronizedRef<A>>(id)
 
     const actions: Omit<SynchronizedRef<IdentifierOf<I>, A>, keyof typeof tag> = {
       [SyncRef.SynchronizedRefTypeId]: SyncRef.SynchronizedRefTypeId,
-      get: withRef(SyncRef.get),
-      getAndSet: (a) => withRef(SyncRef.getAndSet(a)),
-      getAndUpdate: (f) => withRef(SyncRef.getAndUpdate(f)),
-      getAndUpdateSome: (f) => withRef(SyncRef.getAndUpdateSome(f)),
-      modify: (f) => withRef(SyncRef.modify(f)),
-      modifySome: (fallback, f) => withRef(SyncRef.modifySome(fallback, f)),
-      set: (a) => withRef(SyncRef.set(a)),
-      setAndGet: (a) => withRef(SyncRef.setAndGet(a)),
-      update: (f) => withRef(SyncRef.update(f)),
-      updateAndGet: (f) => withRef(SyncRef.updateAndGet(f)),
-      updateSome: (f) => withRef(SyncRef.updateSome(f)),
-      updateSomeAndGet: (f) => withRef(SyncRef.updateSomeAndGet(f)),
-      modifyEffect: (f) => withRef(SyncRef.modifyEffect(f)),
-      modifySomeEffect: (fallback, f) => withRef(SyncRef.modifySomeEffect(fallback, f)),
-      updateEffect: (f) => withRef(SyncRef.updateEffect(f)),
-      updateSomeEffect: (f) => withRef(SyncRef.updateSomeEffect(f)),
-      updateSomeAndGetEffect: (f) => withRef(SyncRef.updateSomeAndGetEffect(f)),
-      getAndUpdateEffect: (f) => withRef(SyncRef.getAndUpdateEffect(f)),
-      getAndUpdateSomeEffect: (f) => withRef(SyncRef.getAndUpdateSomeEffect(f)),
-      updateAndGetEffect: (f) => withRef(SyncRef.updateAndGetEffect(f)),
+      get: tag.withEffect(SyncRef.get),
+      getAndSet: (a) => tag.withEffect(SyncRef.getAndSet(a)),
+      getAndUpdate: (f) => tag.withEffect(SyncRef.getAndUpdate(f)),
+      getAndUpdateSome: (f) => tag.withEffect(SyncRef.getAndUpdateSome(f)),
+      modify: (f) => tag.withEffect(SyncRef.modify(f)),
+      modifySome: (fallback, f) => tag.withEffect(SyncRef.modifySome(fallback, f)),
+      set: (a) => tag.withEffect(SyncRef.set(a)),
+      setAndGet: (a) => tag.withEffect(SyncRef.setAndGet(a)),
+      update: (f) => tag.withEffect(SyncRef.update(f)),
+      updateAndGet: (f) => tag.withEffect(SyncRef.updateAndGet(f)),
+      updateSome: (f) => tag.withEffect(SyncRef.updateSome(f)),
+      updateSomeAndGet: (f) => tag.withEffect(SyncRef.updateSomeAndGet(f)),
+      modifyEffect: (f) => tag.withEffect(SyncRef.modifyEffect(f)),
+      modifySomeEffect: (fallback, f) => tag.withEffect(SyncRef.modifySomeEffect(fallback, f)),
+      updateEffect: (f) => tag.withEffect(SyncRef.updateEffect(f)),
+      updateSomeEffect: (f) => tag.withEffect(SyncRef.updateSomeEffect(f)),
+      updateSomeAndGetEffect: (f) => tag.withEffect(SyncRef.updateSomeAndGetEffect(f)),
+      getAndUpdateEffect: (f) => tag.withEffect(SyncRef.getAndUpdateEffect(f)),
+      getAndUpdateSomeEffect: (f) => tag.withEffect(SyncRef.getAndUpdateSomeEffect(f)),
+      updateAndGetEffect: (f) => tag.withEffect(SyncRef.updateAndGetEffect(f)),
       provide: (a) => Effect.provideServiceEffect(tag, SyncRef.make(a)),
-      provideLayer: (effect) => Effect.provideSomeLayer(actions.layer(effect)),
       layer: (effect) => Layer.effect(tag, Effect.flatMap(effect, SyncRef.make))
     }
 

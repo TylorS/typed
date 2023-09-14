@@ -1,5 +1,5 @@
 import type * as Effect from "@effect/io/Effect"
-import type { Layer } from "@effect/io/Layer"
+import * as Layer from "@effect/io/Layer"
 import * as Q from "@effect/io/Queue"
 import type { Hub } from "@typed/context/Hub"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
@@ -21,8 +21,8 @@ export interface Enqueue<I, A> extends Tag<I, Q.Enqueue<A>> {
   readonly awaitShutdown: Effect.Effect<I, never, void>
 
   // Provide
-  readonly fromQueue: <I2>(queue: Queue<I2, A>) => Layer<I2, never, I>
-  readonly fromHub: <I2>(hub: Hub<I2, A>) => Layer<I2, never, I>
+  readonly fromQueue: <I2>(queue: Queue<I2, A>) => Layer.Layer<I2, never, I>
+  readonly fromHub: <I2>(hub: Hub<I2, A>) => Layer.Layer<I2, never, I>
 }
 
 export function Enqueue<A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Enqueue<IdentifierOf<I>, A>
@@ -44,8 +44,8 @@ export function Enqueue<A>() {
       unsafeOffer: (a: A) => tag.with(Q.unsafeOffer(a)),
       offerAll: (as: Iterable<A>): Effect.Effect<IdentifierOf<I>, never, boolean> =>
         tag.withEffect((enqueue) => Q.offerAll<A>(enqueue, as)),
-      fromQueue: tag.layer,
-      fromHub: tag.layer
+      fromQueue: <I2>(queue: Queue<I2, A>) => Layer.effect(tag, queue),
+      fromHub: <I2>(hub: Hub<I2, A>) => Layer.effect(tag, hub)
     })
   }
 }

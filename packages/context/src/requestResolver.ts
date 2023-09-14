@@ -86,13 +86,13 @@ export function RequestResolver<
       )
     ) as _Resolver["requests"]
 
-    const fromFunction: _Resolver["fromFunction"] = (f) => provideMerge(tag.layerOf(RR.fromFunction(f)))
+    const fromFunction: _Resolver["fromFunction"] = (f) => provideMerge(Layer.succeed(tag, RR.fromFunction(f)))
 
     const fromFunctionBatched: _Resolver["fromFunctionBatched"] = (f) =>
-      provideMerge(tag.layerOf(RR.fromFunctionBatched(f)))
+      provideMerge(Layer.succeed(tag, RR.fromFunctionBatched(f)))
 
     const layerWithContext = <R = never>(f: () => RR.RequestResolver<_Req, R>) =>
-      provideMerge(tag.layer(Effect.contextWith((ctx: Context<R>) => RR.provideContext(f(), ctx))))
+      provideMerge(Layer.effect(tag, Effect.contextWith((ctx: Context<R>) => RR.provideContext(f(), ctx))))
 
     const fromFunctionEffect: _Resolver["fromFunctionEffect"] = (f) => layerWithContext(() => RR.fromFunctionEffect(f))
 

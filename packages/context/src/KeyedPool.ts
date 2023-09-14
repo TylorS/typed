@@ -1,7 +1,7 @@
 import type { DurationInput } from "@effect/data/Duration"
 import type * as Effect from "@effect/io/Effect"
 import * as KP from "@effect/io/KeyedPool"
-import type { Layer } from "@effect/io/Layer"
+import * as Layer from "@effect/io/Layer"
 import type { Scope } from "@effect/io/Scope"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 import { Tag } from "@typed/context/Tag"
@@ -13,12 +13,12 @@ export interface KeyedPool<I, K, E, A> extends Tag<I, KP.KeyedPool<K, E, A>> {
   readonly make: <R>(options: {
     readonly acquire: (key: K) => Effect.Effect<R, E, A>
     readonly size: number
-  }) => Layer<R, never, I>
+  }) => Layer.Layer<R, never, I>
 
   readonly makeWith: <R>(options: {
     readonly acquire: (key: K) => Effect.Effect<R, E, A>
     readonly size: (key: K) => number
-  }) => Layer<R, never, I>
+  }) => Layer.Layer<R, never, I>
 
   readonly makeWithTTL: <R>(
     options: {
@@ -27,7 +27,7 @@ export interface KeyedPool<I, K, E, A> extends Tag<I, KP.KeyedPool<K, E, A>> {
       readonly max: (key: K) => number
       readonly timeToLive: DurationInput
     }
-  ) => Layer<R, never, I>
+  ) => Layer.Layer<R, never, I>
 
   readonly makeWithTTLBy: <R>(
     options: {
@@ -36,7 +36,7 @@ export interface KeyedPool<I, K, E, A> extends Tag<I, KP.KeyedPool<K, E, A>> {
       readonly max: (key: K) => number
       readonly timeToLive: (key: K) => DurationInput
     }
-  ) => Layer<R, never, I>
+  ) => Layer.Layer<R, never, I>
 }
 
 export function KeyedPool<K, E, A>(): <const I extends IdentifierFactory<any>>(
@@ -57,13 +57,13 @@ export function KeyedPool<K, E, A>() {
         make: <R>(options: {
           readonly acquire: (key: K) => Effect.Effect<R, E, A>
           readonly size: number
-        }) => tag.scoped(KP.make(options)),
+        }) => Layer.scoped(tag, KP.make(options)),
         makeWith: <R>(
           options: {
             readonly acquire: (key: K) => Effect.Effect<R, E, A>
             readonly size: (key: K) => number
           }
-        ) => tag.scoped(KP.makeWith(options)),
+        ) => Layer.scoped(tag, KP.makeWith(options)),
         makeWithTTL: <R>(
           options: {
             readonly acquire: (key: K) => Effect.Effect<R, E, A>
@@ -71,7 +71,7 @@ export function KeyedPool<K, E, A>() {
             readonly max: (key: K) => number
             readonly timeToLive: DurationInput
           }
-        ) => tag.scoped(KP.makeWithTTL(options)),
+        ) => Layer.scoped(tag, KP.makeWithTTL(options)),
         makeWithTTLBy: <R>(
           options: {
             readonly acquire: (key: K) => Effect.Effect<R, E, A>
@@ -79,7 +79,7 @@ export function KeyedPool<K, E, A>() {
             readonly max: (key: K) => number
             readonly timeToLive: (key: K) => DurationInput
           }
-        ) => tag.scoped(KP.makeWithTTLBy(options))
+        ) => Layer.scoped(tag, KP.makeWithTTLBy(options))
       } as const
     )
   }

@@ -1,5 +1,7 @@
-// TODO: Cache, ScopedCache, Resourcce, Metrics, Reloadable
+// TODO: Resourcce, Metrics, Reloadable
 
+export * from "./Builder"
+export * from "./Cache"
 export * from "./Context"
 export * from "./Dequeue"
 export * from "./EffectFn"
@@ -17,6 +19,7 @@ export * from "./Ref"
 export * from "./Repository"
 export * from "./Request"
 export * from "./RequestResolver"
+export * from "./ScopedCache"
 export * from "./ScopedRef"
 export * from "./SynchronizedRef"
 export * from "./Tag"
