@@ -246,46 +246,46 @@ export function withEarlyExit<R, E, A, R2, B>(
   })
 }
 
-export function withBuffers<R, E, A>(count: number, sink: Sink.WithContext<R, E, A>) {
+export function withBuffers<R, E, A>(size: number, sink: Sink.WithContext<R, E, A>) {
   return Effect.sync(() => {
-    const buffers = Array(count).fill([] as Array<A>)
+    const buffers: Array<Array<A>> = Array.from({ length: size }, () => [])
     const finished = new Set<number>()
     let currentIndex = 0
 
     const drainBuffer = (index: number): Effect.Effect<R, never, void> => {
       const effect = Effect.forEach(buffers[index], sink.onSuccess)
       buffers[index] = []
+
       return Effect.flatMap(effect, () => finished.has(index) ? onEnd(index) : Effect.unit)
     }
 
-    const onSuccess = (index: number, value: A) =>
-      Effect.suspend(() => {
-        if (index === currentIndex) {
-          const buffer = buffers[index]
+    const onSuccess = (index: number, value: A) => {
+      if (index === currentIndex) {
+        const buffer = buffers[index]
 
-          if (buffer.length === 0) {
-            return sink.onSuccess(value)
-          } else {
-            buffer.push(value)
-
-            return drainBuffer(index)
-          }
+        if (buffer.length === 0) {
+          return sink.onSuccess(value)
         } else {
-          buffers[index].push(value)
-          return Effect.unit
-        }
-      })
+          buffer.push(value)
 
-    const onEnd = (index: number) =>
-      Effect.suspend(() => {
-        finished.add(index)
-
-        if (index === currentIndex && ++currentIndex < count) {
-          return drainBuffer(currentIndex)
-        } else {
-          return Effect.unit
+          return drainBuffer(index)
         }
-      })
+      } else {
+        buffers[index].push(value)
+
+        return Effect.unit
+      }
+    }
+
+    const onEnd = (index: number) => {
+      finished.add(index)
+
+      if (index === currentIndex && ++currentIndex < size) {
+        return drainBuffer(currentIndex)
+      } else {
+        return Effect.unit
+      }
+    }
 
     return {
       onSuccess,

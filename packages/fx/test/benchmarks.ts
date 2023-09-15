@@ -32,6 +32,8 @@ const filterMapReduce = (array: Array<number>) => {
 
 const arrayTo = (length: number) => Array.from({ length }, (_, i) => i)
 
-filterMapReduce(arrayTo(1000))
-filterMapReduce(arrayTo(10000))
-filterMapReduce(arrayTo(100000))
+describe.skip("Benchmarks", () => {
+  filterMapReduce(arrayTo(1000))
+  filterMapReduce(arrayTo(10000))
+  filterMapReduce(arrayTo(100000))
+})

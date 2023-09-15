@@ -86,14 +86,15 @@ describe(__filename, () => {
           yield* _(sink.onSuccess(3))
         })
       ),
-      Effect.delay(Effect.succeed(4), 50)
+      Stream.fromIterable([4, 5, 6]),
+      Effect.delay(Effect.succeed(7), 50)
     ]).pipe(
       Core.toReadonlyArray
     )
 
     const array = await Effect.runPromise(test)
 
-    expect(array).toEqual([1, 2, 3, 4])
+    expect(array).toEqual([1, 2, 3, 4, 5, 6, 7])
   })
 
   describe("sharing", () => {
