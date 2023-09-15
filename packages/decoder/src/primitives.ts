@@ -46,7 +46,7 @@ export { null_ as null, undefined_ as undefined, void_ as void }
 
 export const instanceOf = <A extends abstract new(...args: any) => any>(
   constructor: A,
-  annotationOptions?: S.AnnotationOptions<object>
+  annotationOptions?: S.FilterAnnotations<object>
 ): SchemaDecoder<InstanceType<A>> => fromSchema(S.instanceOf(constructor, annotationOptions))
 
 export const lazy = <I, O>(f: () => Decoder<I, O>): Decoder<I, O> => {
