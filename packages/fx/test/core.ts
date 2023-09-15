@@ -1,6 +1,8 @@
 import * as Either from "@effect/data/Either"
+import * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
+import * as Stream from "@effect/stream/Stream"
 import * as Core from "@typed/fx/internal/core"
 import * as Share from "@typed/fx/internal/share"
 
@@ -17,7 +19,7 @@ describe(__filename, () => {
     expect(array).toEqual([3])
   })
 
-  it("maps a multiple values", async () => {
+  it("maps multiple values", async () => {
     const test = Core.fromIterable([1, 2, 3]).pipe(
       Core.map((x) => x + 1),
       Core.toReadonlyArray
@@ -208,6 +210,32 @@ describe(__filename, () => {
 
     it("lifts a failure", async () => {
       const test = Effect.fail(1).pipe(Core.toReadonlyArray, Effect.either)
+      const either = await Effect.runPromise(test)
+
+      expect(either).toEqual(Either.left(1))
+    })
+  })
+
+  describe("Stream Supertype", () => {
+    it("lifts a success", async () => {
+      const test = Stream.succeed(1).pipe(Core.toReadonlyArray)
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1])
+    })
+
+    it("lifts a failure", async () => {
+      const test = Stream.fail(1).pipe(Core.toReadonlyArray, Effect.either)
+      const either = await Effect.runPromise(test)
+
+      expect(either).toEqual(Either.left(1))
+    })
+  })
+
+  describe("Cause Supertype", () => {
+    it("lifts a failure", async () => {
+      const test = Cause.fail(1).pipe(Core.toReadonlyArray, Effect.either)
       const either = await Effect.runPromise(test)
 
       expect(either).toEqual(Either.left(1))
