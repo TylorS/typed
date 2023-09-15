@@ -4,10 +4,8 @@ import * as Fiber from "@effect/io/Fiber"
 import * as Ref from "@effect/io/Ref"
 import * as Scope from "@effect/io/Scope"
 import * as SynchronizedRef from "@effect/io/SynchronizedRef"
-import type * as Sink from "@typed/fx/internal/sink"
-import type { FlattenStrategy } from "@typed/fx/internal/strategies"
-
-export type ScopedFork = <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, never, Fiber.Fiber.Runtime<E, A>>
+import type { FlattenStrategy, FxFork, ScopedFork } from "@typed/fx/Fx"
+import type * as Sink from "@typed/fx/Sink"
 
 export function withScopedFork<R, E, A>(
   f: (fork: ScopedFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
@@ -18,10 +16,6 @@ export function withScopedFork<R, E, A>(
     Scope.close
   )
 }
-
-export type FxFork = <R>(
-  effect: Effect.Effect<R, never, void>
-) => Effect.Effect<R, never, void>
 
 export function withSwitchFork<R, E, A>(
   f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>

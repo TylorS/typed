@@ -1,12 +1,13 @@
 import * as Effect from "@effect/io/Effect"
-import type { Fx, TypeId } from "@typed/fx/internal/core"
-import { ToFx, Variance } from "@typed/fx/internal/core"
+import type { Fx } from "@typed/fx/Fx"
+import { ToFx } from "@typed/fx/internal/fx-primitive"
+import { type ModuleAgumentedEffectKeysToOmit, Variance } from "@typed/fx/internal/protos"
 
 /**
  * Prototype for creqting a type which is both an Effect and an Fx
  */
 export abstract class FxEffectProto<R, E, A, R2, E2, B> extends ToFx<R, E, A>
-  implements Omit<Effect.Effect<R2, E2, B>, TypeId>, Fx<R, E, A>
+  implements Omit<Effect.Effect<R2, E2, B>, ModuleAgumentedEffectKeysToOmit>, Fx<R, E, A>
 {
   readonly _tag = "Commit"
 
