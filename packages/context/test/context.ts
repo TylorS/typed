@@ -4,7 +4,7 @@ import * as Context from "@typed/context"
 describe(__filename, () => {
   describe(Context.tagged, () => {
     it("adds actions + provision methods", async () => {
-      const tag = Context.Tag<number>().pipe(Context.tagged)
+      const tag = Context.Tag<number>()("test").pipe(Context.tagged)
 
       const test = tag.with((x) => x + 1).pipe(tag.provide(1))
       const result = await Effect.runPromise(test)
