@@ -10,6 +10,7 @@ import type { Sink } from "@typed/fx/Sink"
 /**
  * A Subject is an Fx which is also a Sink, and can be used to
  * broadcast events to many consumers.
+ * @since 1.18.0
  */
 export interface Subject<R, E, A> extends Fx<R, E, A>, Sink<E, A> {}
 
