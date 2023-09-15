@@ -20,6 +20,9 @@ import type * as RuntimeFlagsPatch from "@effect/io/RuntimeFlagsPatch"
 /** @internal */
 export const EffectTypeId: Effect.EffectTypeId = Symbol.for("@effect/io/Effect") as Effect.EffectTypeId
 
+/**
+ * @internal
+ */
 export type InternalEffect = EffectPrimitive | EffectContinuation
 
 /** @internal */
@@ -202,6 +205,9 @@ export interface WithRuntime extends
 /** @internal */
 export interface Yield extends Op<OpCodes.OP_YIELD> {}
 
+/**
+ * @internal
+ */
 export function matchEffectPrimitive<B>(
   effect: InternalEffect,
   matchers: {
@@ -212,6 +218,7 @@ export function matchEffectPrimitive<B>(
     readonly Right: (right: Either.Right<any, any>) => B
     readonly Some: (some: Option.Some<any>) => B
     readonly None: (none: Option.None<any>) => B
+    // We really only care about matching against types we can convert directly into Fx workflows
     readonly Otherwise: (effect: InternalEffect) => B
   }
 ): B {
