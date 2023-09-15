@@ -3,8 +3,12 @@ import * as MutableRef from "@effect/data/MutableRef"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
-import { type Fx, run, type Subject, ToFx, withScopedFork } from "@typed/fx/internal/core"
+import type { Fx } from "@typed/fx/Fx"
+import { withScopedFork } from "@typed/fx/internal/core"
 import { makeHoldSubject, makeReplaySubject, makeSubject } from "@typed/fx/internal/core-subject"
+import { ToFx } from "@typed/fx/internal/fx-primitive"
+import { run } from "@typed/fx/internal/run"
+import type { Subject } from "@typed/fx/Subject"
 
 export function share<R, E, A, R2>(
   fx: Fx<R, E, A>,

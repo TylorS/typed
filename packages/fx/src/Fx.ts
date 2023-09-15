@@ -7,7 +7,7 @@ import type { Inspectable } from "@effect/data/Inspectable"
 import type * as Option from "@effect/data/Option"
 import type { Pipeable } from "@effect/data/Pipeable"
 import * as Cause from "@effect/io/Cause"
-import * as Effect from "@effect/io/Effect"
+import type * as Effect from "@effect/io/Effect"
 import type * as Exit from "@effect/io/Exit"
 import type * as Fiber from "@effect/io/Fiber"
 import type { FiberId } from "@effect/io/FiberId"
@@ -17,8 +17,10 @@ import type * as Scope from "@effect/io/Scope"
 import * as core from "@typed/fx/internal/core"
 import * as primitive from "@typed/fx/internal/fx-primitive"
 import * as internalRun from "@typed/fx/internal/run"
+import * as Share from "@typed/fx/internal/share"
 import * as strategies from "@typed/fx/internal/strategies"
 import type * as Sink from "@typed/fx/Sink"
+import type { Subject } from "@typed/fx/Subject"
 import type { TypeId } from "@typed/fx/TypeId"
 
 /* #region Model */
@@ -662,8 +664,15 @@ export const snapshot: {
   ): Fx<R | R2 | R3, E | E2 | E3, C>
 } = core.snapshot
 
-/* #endregion */
+export const share: <R, E, A, R2>(fx: Fx<R, E, A>, subject: Subject<R2, E, A>) => Fx<R | R2, E, A> = Share.share
 
-const x = succeed(1).pipe(
-  middleware(Effect.withConcurrency(10))
-)
+export const multicast: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = Share.multicast
+
+export const hold: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = Share.hold
+
+export const replay: {
+  (capacity: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, capacity: number): Fx<R, E, A>
+} = Share.replay
+
+/* #endregion */

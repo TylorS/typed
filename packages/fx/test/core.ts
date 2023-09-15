@@ -3,15 +3,14 @@ import * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
 import * as Stream from "@effect/stream/Stream"
-import * as Core from "@typed/fx/internal/core"
-import * as Share from "@typed/fx/internal/share"
+import * as Fx from "@typed/fx/Fx"
 
 describe(__filename, () => {
   it("maps a success value", async () => {
-    const test = Core.succeed(1).pipe(
-      Core.map((x) => x + 1),
-      Core.map((x) => x + 1),
-      Core.toReadonlyArray
+    const test = Fx.succeed(1).pipe(
+      Fx.map((x) => x + 1),
+      Fx.map((x) => x + 1),
+      Fx.toReadonlyArray
     )
 
     const array = await Effect.runPromise(test)
@@ -20,9 +19,9 @@ describe(__filename, () => {
   })
 
   it("maps multiple values", async () => {
-    const test = Core.fromIterable([1, 2, 3]).pipe(
-      Core.map((x) => x + 1),
-      Core.toReadonlyArray
+    const test = Fx.fromIterable([1, 2, 3]).pipe(
+      Fx.map((x) => x + 1),
+      Fx.toReadonlyArray
     )
 
     const array = await Effect.runPromise(test)
@@ -31,10 +30,10 @@ describe(__filename, () => {
   })
 
   it("maps a failure value", async () => {
-    const test = Core.fail(1).pipe(
-      Core.mapError((x) => x + 1),
-      Core.mapError((x) => x + 1),
-      Core.toReadonlyArray
+    const test = Fx.fail(1).pipe(
+      Fx.mapError((x) => x + 1),
+      Fx.mapError((x) => x + 1),
+      Fx.toReadonlyArray
     )
 
     const array = await Effect.runPromise(Effect.either(test))
@@ -43,9 +42,9 @@ describe(__filename, () => {
   })
 
   it("switchMap favors the latest inner Fx", async () => {
-    const test = Core.fromIterable([1, 2, 3]).pipe(
-      Core.switchMap((x) => Core.succeed(String(x + 1))),
-      Core.toReadonlyArray
+    const test = Fx.fromIterable([1, 2, 3]).pipe(
+      Fx.switchMap((x) => Fx.succeed(String(x + 1))),
+      Fx.toReadonlyArray
     )
 
     const array = await Effect.runPromise(test)
@@ -54,9 +53,9 @@ describe(__filename, () => {
   })
 
   it("exhaustMap favors the first inner Fx", async () => {
-    const test = Core.fromIterable([1, 2, 3]).pipe(
-      Core.exhaustMap((x) => Core.succeed(String(x + 1))),
-      Core.toReadonlyArray
+    const test = Fx.fromIterable([1, 2, 3]).pipe(
+      Fx.exhaustMap((x) => Fx.succeed(String(x + 1))),
+      Fx.toReadonlyArray
     )
 
     const array = await Effect.runPromise(test)
@@ -65,9 +64,9 @@ describe(__filename, () => {
   })
 
   it("exhaustMapLatest favors the first and last inner Fx", async () => {
-    const test = Core.fromIterable([1, 2, 3]).pipe(
-      Core.exhaustMapLatest((x) => Core.succeed(String(x + 1))),
-      Core.toReadonlyArray
+    const test = Fx.fromIterable([1, 2, 3]).pipe(
+      Fx.exhaustMapLatest((x) => Fx.succeed(String(x + 1))),
+      Fx.toReadonlyArray
     )
 
     const array = await Effect.runPromise(test)
@@ -76,9 +75,9 @@ describe(__filename, () => {
   })
 
   it("mergeBuffer keeps the ordering of concurrent streams", async () => {
-    const test = Core.mergeBuffer([
+    const test = Fx.mergeBuffer([
       Effect.succeed(1),
-      Core.fromSink<never, never, number>((sink) =>
+      Fx.fromSink<never, never, number>((sink) =>
         Effect.gen(function*(_) {
           yield* _(Effect.sleep(100))
           yield* _(sink.onSuccess(2))
@@ -89,7 +88,7 @@ describe(__filename, () => {
       Stream.fromIterable([4, 5, 6]),
       Effect.delay(Effect.succeed(7), 50)
     ]).pipe(
-      Core.toReadonlyArray
+      Fx.toReadonlyArray
     )
 
     const array = await Effect.runPromise(test)
@@ -103,10 +102,10 @@ describe(__filename, () => {
         let i = 0
         const iterator = Effect.sync(() => i++)
 
-        const sut = Core.periodic(iterator, 10).pipe(
-          Core.take(5),
-          Share.multicast,
-          Core.toReadonlyArray
+        const sut = Fx.periodic(iterator, 10).pipe(
+          Fx.take(5),
+          Fx.multicast,
+          Fx.toReadonlyArray
         )
 
         const test = Effect.gen(function*(_) {
@@ -137,10 +136,10 @@ describe(__filename, () => {
         const delay = 100
         const iterator = Effect.sync(() => i++)
 
-        const sut = Core.periodic(iterator, delay).pipe(
-          Core.take(5),
-          Share.hold,
-          Core.toReadonlyArray
+        const sut = Fx.periodic(iterator, delay).pipe(
+          Fx.take(5),
+          Fx.hold,
+          Fx.toReadonlyArray
         )
 
         const test = Effect.gen(function*(_) {
@@ -171,10 +170,10 @@ describe(__filename, () => {
         const iterator = Effect.sync(() => i++)
         const delay = 100
 
-        const sut = Core.periodic(iterator, delay).pipe(
-          Core.take(5),
-          Share.replay(2),
-          Core.toReadonlyArray
+        const sut = Fx.periodic(iterator, delay).pipe(
+          Fx.take(5),
+          Fx.replay(2),
+          Fx.toReadonlyArray
         )
 
         const test = Effect.gen(function*(_) {
@@ -202,7 +201,7 @@ describe(__filename, () => {
 
   describe("Effect Supertype", () => {
     it("lifts a success", async () => {
-      const test = Effect.succeed(1).pipe(Core.toReadonlyArray)
+      const test = Effect.succeed(1).pipe(Fx.toReadonlyArray)
 
       const array = await Effect.runPromise(test)
 
@@ -210,7 +209,7 @@ describe(__filename, () => {
     })
 
     it("lifts a failure", async () => {
-      const test = Effect.fail(1).pipe(Core.toReadonlyArray, Effect.either)
+      const test = Effect.fail(1).pipe(Fx.toReadonlyArray, Effect.either)
       const either = await Effect.runPromise(test)
 
       expect(either).toEqual(Either.left(1))
@@ -219,7 +218,7 @@ describe(__filename, () => {
 
   describe("Stream Supertype", () => {
     it("lifts a success", async () => {
-      const test = Stream.fromIterable([1, 2, 3]).pipe(Core.toReadonlyArray)
+      const test = Stream.fromIterable([1, 2, 3]).pipe(Fx.toReadonlyArray)
 
       const array = await Effect.runPromise(test)
 
@@ -227,7 +226,7 @@ describe(__filename, () => {
     })
 
     it("lifts a failure", async () => {
-      const test = Stream.fail(1).pipe(Core.toReadonlyArray, Effect.either)
+      const test = Stream.fail(1).pipe(Fx.toReadonlyArray, Effect.either)
       const either = await Effect.runPromise(test)
 
       expect(either).toEqual(Either.left(1))
@@ -236,7 +235,7 @@ describe(__filename, () => {
 
   describe("Cause Supertype", () => {
     it("lifts a failure", async () => {
-      const test = Cause.fail(1).pipe(Core.toReadonlyArray, Effect.either)
+      const test = Cause.fail(1).pipe(Fx.toReadonlyArray, Effect.either)
       const either = await Effect.runPromise(test)
 
       expect(either).toEqual(Either.left(1))

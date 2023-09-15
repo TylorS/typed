@@ -1,6 +1,6 @@
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
-import { WithContext } from "@typed/fx/internal/sink"
+import { WithContext } from "@typed/fx/Sink"
 
 // Sync operators are a subset of operators which can be safely fused together synchronously
 

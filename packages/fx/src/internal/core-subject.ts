@@ -3,10 +3,12 @@ import * as Option from "@effect/data/Option"
 import type { Cause } from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import * as Scope from "@effect/io/Scope"
-import { fromSink, ToFx } from "@typed/fx/internal/core"
-import type { Fx, Subject } from "@typed/fx/internal/core"
+import type { Fx } from "@typed/fx/Fx"
+import { fromSink } from "@typed/fx/internal/core"
+import { ToFx } from "@typed/fx/internal/fx-primitive"
 import { RingBuffer } from "@typed/fx/internal/helpers"
-import type { Sink } from "@typed/fx/internal/sink"
+import type { Sink } from "@typed/fx/Sink"
+import type { Subject } from "@typed/fx/Subject"
 
 export function makeSubject<E, A>(): Subject<never, E, A> {
   return new SubjectImpl<E, A>()
