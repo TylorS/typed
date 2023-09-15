@@ -218,11 +218,11 @@ describe(__filename, () => {
 
   describe("Stream Supertype", () => {
     it("lifts a success", async () => {
-      const test = Stream.succeed(1).pipe(Core.toReadonlyArray)
+      const test = Stream.fromIterable([1, 2, 3]).pipe(Core.toReadonlyArray)
 
       const array = await Effect.runPromise(test)
 
-      expect(array).toEqual([1])
+      expect(array).toEqual([1, 2, 3])
     })
 
     it("lifts a failure", async () => {
