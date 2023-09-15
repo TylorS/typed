@@ -15,6 +15,9 @@ import type * as Layer from "@effect/io/Layer"
 import * as Ref from "@effect/io/Ref"
 import type * as Scope from "@effect/io/Scope"
 import * as SynchronizedRef from "@effect/io/SynchronizedRef"
+import type * as Channel from "@effect/stream/Channel"
+import * as StreamSink from "@effect/stream/Sink"
+import * as Stream from "@effect/stream/Stream"
 
 import * as Schedule from "@effect/io/Schedule"
 import { type Context } from "@typed/context"
@@ -101,18 +104,34 @@ export abstract class BaseProto implements Equal.Equal, Hash.Hash, Inspectable {
   }
 }
 
-export abstract class EffectProto<R, E, A> extends BaseProto implements Omit<Effect.Effect<R, E, A>, TypeId> {
+type ModuleAgumentedEffectKeysToOmit =
+  | TypeId
+  | keyof Stream.Stream<any, any, any>
+  | keyof StreamSink.Sink<any, any, any, any, any>
+  | keyof Channel.Channel<any, any, any, any, any, any, any>
+
+export abstract class EffectProto<R, E, A> extends BaseProto implements
+  Omit<
+    Effect.Effect<R, E, A>,
+    ModuleAgumentedEffectKeysToOmit
+  >
+{
   readonly _tag = "Commit"
 
   readonly [Effect.EffectTypeId] = Variance as any
 
-  abstract toEffect(): Effect.Effect<R, E, A>
+  abstract toEffect():
+    | Effect.Effect<R, E, A>
+    | Omit<
+      Effect.Effect<R, E, A>,
+      ModuleAgumentedEffectKeysToOmit
+    >
 
   private effect: Effect.Effect<R, E, A> | undefined
 
   commit(): Effect.Effect<R, E, A> {
     if (this.effect === undefined) {
-      return (this.effect = this.toEffect())
+      return (this.effect = this.toEffect() as Effect.Effect<R, E, A>)
     } else {
       return this.effect
     }
@@ -147,6 +166,7 @@ export abstract class FxProto<R, E, A> extends BaseProto implements Fx<R, E, A> 
     return pipeArguments(this, arguments)
   }
 }
+
 export namespace Fx {
   export type Context<T> = T extends Fx<infer R, infer _E, infer _A> ? R : never
   export type Error<T> = T extends Fx<infer _R, infer E, infer _A> ? E : never
@@ -720,22 +740,32 @@ export class Snapshot<R, E, A, R2, E2, B, R3, E3, C> extends ToFx<R | R2 | R3, E
         matchFxKind(this.i1, {
           Fx: (fx2) => this.#runScoped(fx, fx2, this.i2),
           Effect: (effect2) => mapEffect(fx, (a) => Effect.flatMap(effect2, (b) => this.i2(a, b))),
+          Stream: (stream2) => this.#runScoped(fx, stream2, this.i2),
           Cause: (cause) => this.#runScoped(fx, this.i1, () => Effect.failCause(cause))
         }),
       Effect: (effect) =>
         matchFxKind(this.i1, {
           Fx: (fx2) => this.#runScoped(effect, fx2, this.i2),
           Effect: (effect2) => Effect.flatMap(effect, (a) => Effect.flatMap(effect2, (b) => this.i2(a, b))),
+          Stream: (stream2) => this.#runScoped(effect, stream2, this.i2),
           Cause: (cause2) =>
             Effect.matchCauseEffect(effect, {
               onFailure: (cause) => Effect.failCause(Cause.sequential(cause, cause2)),
               onSuccess: () => Effect.failCause(cause2)
             })
         }),
+      Stream: (stream) =>
+        matchFxKind(this.i1, {
+          Fx: (fx2) => this.#runScoped(stream, fx2, this.i2),
+          Effect: (effect2) => mapEffect(stream, (a) => Effect.flatMap(effect2, (b) => this.i2(a, b))),
+          Stream: (stream2) => this.#runScoped(stream, stream2, this.i2),
+          Cause: (cause) => this.#runScoped(stream, this.i1, () => Effect.failCause(cause))
+        }),
       Cause: (cause) =>
         matchFxKind(this.i1, {
           Fx: () => cause,
           Effect: () => cause,
+          Stream: () => cause,
           Cause: (cause2) => Cause.sequential(cause, cause2)
         })
     })
@@ -803,8 +833,9 @@ export function run<R, E, A, R2>(
   sink: Sink.WithContext<R2, E, A>
 ): Effect.Effect<R | R2, never, unknown> {
   return matchFxKind(fx, {
-    Fx: (fx) => runFxPrimitive<R, E, A, R2>(fx, sink),
+    Fx: (fx) => runFx<R, E, A, R2>(fx, sink),
     Effect: (effect) => runEffect<R, E, A, R2>(effect, sink),
+    Stream: (stream) => runStream(stream, sink),
     Cause: (cause) => sink.onFailure(cause)
   })
 }
@@ -814,6 +845,7 @@ function matchFxKind<R, E, A, B>(
   matchers: {
     readonly Fx: (fx: Fx<R, E, A>) => B
     readonly Effect: (effect: Effect.Effect<R, E, A>) => B
+    readonly Stream: (effect: Stream.Stream<R, E, A>) => B
     readonly Cause: (cause: Cause.Cause<E>) => B
   }
 ): B {
@@ -821,6 +853,8 @@ function matchFxKind<R, E, A, B>(
     return matchers.Fx(fx as any)
   } else if (Effect.EffectTypeId in fx) {
     return matchers.Effect(fx as any)
+  } else if (Stream.StreamTypeId in fx) {
+    return matchers.Stream(fx as any)
   } else if (Cause.CauseTypeId in fx) {
     return matchers.Cause(fx as any)
   } else {
@@ -856,7 +890,7 @@ function matchFxPrimitive<B>(
     (matchers as any)[fx._fxTag](fx as any, sink)
 }
 
-const runFx = matchFxPrimitive<Effect.Effect<any, never, unknown>>({
+const runFxPrimitive = matchFxPrimitive<Effect.Effect<any, never, unknown>>({
   Empty: constUnit,
   Fail: (fx, sink) => sink.onFailure(fx.i0),
   FromEffect: (fx, sink) => runEffect(fx.i0, sink),
@@ -888,11 +922,11 @@ const runFx = matchFxPrimitive<Effect.Effect<any, never, unknown>>({
   TransformerCauseEffect: runTransformerCauseEffect
 })
 
-function runFxPrimitive<R, E, A, R2>(
+function runFx<R, E, A, R2>(
   fx: Fx<R, E, A>,
   sink: Sink.WithContext<R2, E, A>
 ): Effect.Effect<R | R2, never, unknown> {
-  return runFx(fx as Fx<R, E, A> & Primitive, sink)
+  return runFxPrimitive(fx as Fx<R, E, A> & Primitive, sink)
 }
 
 function runTransformer<R, E, A, R2>(
@@ -937,6 +971,13 @@ function runEffect<R, E, A, R2>(
     None: () => sink.onFailure(Cause.fail(Cause.NoSuchElementException() as E)),
     Otherwise: () => Effect.matchCauseEffect(effect, sink)
   })
+}
+
+function runStream<R, E, A, R2>(
+  stream: Stream.Stream<R, E, A>,
+  sink: Sink.WithContext<R2, E, A>
+): Effect.Effect<R | R2, never, unknown> {
+  return Effect.catchAllCause(Stream.run(stream, StreamSink.forEach(sink.onSuccess)), sink.onFailure)
 }
 
 export function succeed<A>(value: A): Fx<never, never, A> {
@@ -1297,9 +1338,7 @@ export function race<const FX extends ReadonlyArray<Fx<any, any, any>>>(
           fibers.splice(winnerFound = i, 1)
 
           // Interrupt fibers and emit value
-          return Fiber.interruptAll(fibers).pipe(
-            Effect.flatMap(() => f(value))
-          )
+          return Effect.flatMap(Fiber.interruptAll(fibers), () => f(value))
         } else {
           // Emit only if the value is from the winning fiber
           return i === winnerFound ? f(value) : Effect.unit
@@ -1536,16 +1575,16 @@ export const filterMapEffect: {
 export const middleware: {
   <R, E, A, R2>(
     f: (effect: Effect.Effect<R, never, unknown>, sink: Sink.Sink<E, A>) => Effect.Effect<R2, never, unknown>
-  ): (fx: Fx<R, E, A>) => Fx<R | R2, E, A>
+  ): (fx: Fx<R, E, A>) => Fx<R2, E, A>
 
   <R, E, A, R2>(
     fx: Fx<R, E, A>,
     f: (effect: Effect.Effect<R, never, unknown>, sink: Sink.Sink<E, A>) => Effect.Effect<R2, never, unknown>
-  ): Fx<R | R2, E, A>
+  ): Fx<R2, E, A>
 } = dual(2, function middleware<R, E, A, R2>(
   fx: Fx<R, E, A>,
   f: (effect: Effect.Effect<R, never, unknown>, sink: Sink.Sink<E, A>) => Effect.Effect<R2, never, unknown>
-): Fx<R | R2, E, A> {
+): Fx<R2, E, A> {
   return Middleware.make(fx, (effect, sink) => Effect.catchAllCause(f(effect, sink), sink.onFailure))
 })
 
@@ -1998,6 +2037,7 @@ class Reduce<R, E, A, B> extends EffectProto<R, E, B> {
           return Effect.map(observe(fx, (a) => Effect.sync(() => acc = f(acc, a))), () => acc)
         }),
       Effect: (effect) => Effect.map(effect, (a) => f(this.seed, a)),
+      Stream: (stream) => Stream.runFold(stream, seed, f),
       Cause: Effect.failCause
     })
   }

@@ -29,3 +29,7 @@ declare module "@effect/io/Exit" {
 declare module "@effect/io/Effect" {
   export interface Effect<R, E, A> extends Fx<R, E, A> {}
 }
+
+declare module "@effect/stream/Stream" {
+  export interface Stream<R, E, A> extends Fx<R, E, A> {}
+}
