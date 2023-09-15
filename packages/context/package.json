@@ -41,10 +41,10 @@
   "sideEffects": [],
   "dependencies": {
     "@effect/data": "^0.18.5",
-    "@effect/io": "^0.40.1"
+    "@effect/io": "^0.40.3"
   },
   "peerDependencies": {
     "@effect/data": "^0.18.5",
-    "@effect/io": "^0.40.1"
+    "@effect/io": "^0.40.3"
   }
 }
