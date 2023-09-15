@@ -2,7 +2,7 @@ name: Main Flow
 
 on:
   push:
-    branches: [main]
+    branches: [development, ts/refactor/fx-as-effect]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
