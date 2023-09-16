@@ -75,7 +75,10 @@ type Compact<Input> = [{ [K in keyof Input]: Input[K] }] extends [infer R] ? R :
  */
 export function RequestResolver<
   const Requests extends Readonly<Record<string, Request<any, any, any>>>
->(requests: Requests) {
+>(requests: Requests): {
+  <const Id extends IdentifierFactory<any>>(id: Id): RequestResolver<IdentifierOf<Id>, Requests>
+  <const Id>(id: Id): RequestResolver<IdentifierOf<Id>, Requests>
+} {
   function makeRequestResolver<const Id extends IdentifierFactory<any>>(
     id: Id
   ): RequestResolver<IdentifierOf<Id>, Requests>

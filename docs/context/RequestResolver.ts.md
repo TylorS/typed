@@ -37,7 +37,10 @@ Construct a RequestResolver implementation to be utilized from the Effect Contex
 ```ts
 export declare function RequestResolver<const Requests extends Readonly<Record<string, Request<any, any, any>>>>(
   requests: Requests
-)
+): {
+  <const Id extends IdentifierFactory<any>>(id: Id): RequestResolver<IdentifierOf<Id>, Requests>
+  <const Id>(id: Id): RequestResolver<IdentifierOf<Id>, Requests>
+}
 ```
 
 Added in v1.0.0
