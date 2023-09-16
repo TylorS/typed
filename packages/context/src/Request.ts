@@ -37,7 +37,7 @@ type SimplifyInputArg<Input> = [keyof Input] extends [never] ? [Compact<Input>?]
  * @since 1.0.0
  * @category constructors
  */
-export interface RequestConstructr {
+export interface RequestConstructor {
   <Input, Req extends R.Request<any, any>>(
     makeRequest: (input: Input) => Req
   ): {
@@ -78,7 +78,7 @@ export interface RequestConstructr {
  * @since 1.0.0
  * @category constructors
  */
-export const Request: RequestConstructr = Object.assign(
+export const Request: RequestConstructor = Object.assign(
   function Request<Input, Req extends R.Request<any, any>>(
     makeRequest: (input: Input) => Req
   ): {
