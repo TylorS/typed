@@ -181,6 +181,9 @@ importers:
 
   packages/route:
     dependencies:
+      '@effect/data':
+        specifier: ^0.18.5
+        version: 0.18.5
       '@typed/path':
         specifier: workspace:*
         version: link:../path/dist
