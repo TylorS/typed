@@ -23,12 +23,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - uses: pnpm/action-setup@v2.0.1
-        name: Install pnpm
+      - name: Install pnpm
         id: pnpm-install
-        with:
-          version: 8
-          run_install: false
+        run: |
+          corepack enable
       - name: Get pnpm store directory
         id: pnpm-cache
         run: |
