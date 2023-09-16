@@ -17,6 +17,7 @@
  */
 
 export * from "./Fx"
+export * as RefSubject from "./RefSubject"
 export * as Sink from "./Sink"
 export * as Subject from "./Subject"
 export * as Typeclass from "./Typeclass"

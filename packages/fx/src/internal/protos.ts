@@ -11,6 +11,7 @@ import type * as Stream from "@effect/stream/Stream"
 
 import { NodeInspectSymbol } from "@effect/data/Inspectable"
 import type { Inspectable } from "@effect/data/Inspectable"
+import * as Fiber from "@effect/io/Fiber"
 import { type Fx } from "@typed/fx/Fx"
 import { TypeId } from "@typed/fx/TypeId"
 
@@ -69,13 +70,13 @@ export abstract class EffectProto<R, E, A> extends BaseProto implements
       ModuleAgumentedEffectKeysToOmit
     >
 
-  private effect: Effect.Effect<R, E, A> | undefined
+  #effect: Effect.Effect<R, E, A> | undefined
 
   commit(): Effect.Effect<R, E, A> {
-    if (this.effect === undefined) {
-      return (this.effect = this.toEffect() as Effect.Effect<R, E, A>)
+    if (this.#effect === undefined) {
+      return (this.#effect = this.toEffect() as Effect.Effect<R, E, A>)
     } else {
-      return this.effect
+      return this.#effect
     }
   }
 }
@@ -108,3 +109,28 @@ export abstract class FxProto<R, E, A> extends BaseProto implements Fx<R, E, A> 
     return pipeArguments(this, arguments)
   }
 }
+
+export class OnceEffect<R, E, A> extends EffectProto<R, E, A> {
+  #fiber: Fiber.Fiber<E, A> | undefined
+
+  constructor(
+    readonly effect: Effect.Effect<R, E, A>
+  ) {
+    super()
+  }
+
+  toEffect() {
+    return Effect.suspend(() => {
+      if (this.#fiber) {
+        return Fiber.join(this.#fiber)
+      } else {
+        return Effect.forkDaemon(this.effect).pipe(
+          Effect.tap((fiber) => Effect.sync(() => this.#fiber = fiber)),
+          Effect.flatMap(Fiber.join)
+        )
+      }
+    })
+  }
+}
+
+export const once = <R, E, A>(effect: Effect.Effect<R, E, A>): Effect.Effect<R, E, A> => new OnceEffect(effect) as any

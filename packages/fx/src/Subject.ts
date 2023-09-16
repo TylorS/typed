@@ -4,6 +4,7 @@
  * @since 1.18.0
  */
 
+import type * as Effect from "@effect/io/Effect"
 import type { Fx } from "@typed/fx/Fx"
 import * as internal from "@typed/fx/internal/core-subject"
 import type { Sink } from "@typed/fx/Sink"
@@ -14,7 +15,9 @@ import type { Sink } from "@typed/fx/Sink"
  * @since 1.18.0
  * @category models
  */
-export interface Subject<R, E, A> extends Fx<R, E, A>, Sink<E, A> {}
+export interface Subject<R, E, A> extends Fx<R, E, A>, Sink<E, A> {
+  readonly subscriberCount: Effect.Effect<never, never, number>
+}
 
 /**
  * Constructs a Subject that can be used to broadcast events to many consumers.

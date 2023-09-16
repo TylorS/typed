@@ -4,6 +4,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
 import * as Stream from "@effect/stream/Stream"
 import * as Fx from "@typed/fx/Fx"
+import * as RefSubject from "@typed/fx/RefSubject"
 
 describe(__filename, () => {
   it("maps a success value", async () => {
@@ -239,6 +240,48 @@ describe(__filename, () => {
       const either = await Effect.runPromise(test)
 
       expect(either).toEqual(Either.left(1))
+    })
+  })
+
+  describe("RefSubject", () => {
+    it("allows keeping state", async () => {
+      const test = Effect.gen(function*(_) {
+        const ref = yield* _(RefSubject.make(Effect.succeed(0)))
+
+        expect(yield* _(ref)).toEqual(0)
+
+        yield* _(ref.set(1))
+
+        expect(yield* _(ref)).toEqual(1)
+
+        yield* _(ref.update((x) => x + 1))
+
+        expect(yield* _(ref)).toEqual(2)
+
+        yield* _(ref.delete)
+
+        expect(yield* _(ref)).toEqual(0)
+      })
+
+      await Effect.runPromise(test)
+    })
+
+    it("allows subscribing to those state changes", async () => {
+      const test = Effect.gen(function*(_) {
+        const ref = yield* _(RefSubject.make(Effect.succeed(0)))
+
+        const fiber = yield* _(Effect.fork(Fx.toReadonlyArray(Fx.take(ref, 3))))
+
+        // Allow fiber to start
+        yield* _(Effect.sleep(0))
+
+        yield* _(ref.set(1))
+        yield* _(ref.set(2))
+
+        expect(yield* _(Fiber.join(fiber))).toEqual([0, 1, 2])
+      })
+
+      await Effect.runPromise(test)
     })
   })
 })

@@ -22,7 +22,10 @@ export function makeReplaySubject<E, A>(capacity: number): Subject<never, E, A> 
   return new ReplaySubjectImpl<E, A>(new RingBuffer(capacity))
 }
 
-class SubjectImpl<E, A> extends ToFx<never, E, A> implements Subject<never, E, A> {
+/**
+ * @internal
+ */
+export class SubjectImpl<E, A> extends ToFx<never, E, A> implements Subject<never, E, A> {
   protected sinks: Set<Sink<E, A>> = new Set()
 
   // Emit a failure to all sinks
@@ -57,6 +60,8 @@ class SubjectImpl<E, A> extends ToFx<never, E, A> implements Subject<never, E, A
     )
   }
 
+  readonly subscriberCount: Effect.Effect<never, never, number> = Effect.sync(() => this.sinks.size)
+
   protected onEvent(a: A) {
     return Effect.forEach(this.sinks, (sink) => sink.onSuccess(a), { concurrency: "unbounded" })
   }
@@ -66,7 +71,10 @@ class SubjectImpl<E, A> extends ToFx<never, E, A> implements Subject<never, E, A
   }
 }
 
-class HoldSubjectImpl<E, A> extends SubjectImpl<E, A> implements Subject<never, E, A> {
+/**
+ * @internal
+ */
+export class HoldSubjectImpl<E, A> extends SubjectImpl<E, A> implements Subject<never, E, A> {
   private lastValue: MutableRef.MutableRef<Option.Option<A>> = MutableRef.make(Option.none())
 
   // Emit an event to all sinks
@@ -88,7 +96,10 @@ class HoldSubjectImpl<E, A> extends SubjectImpl<E, A> implements Subject<never, 
   }
 }
 
-class ReplaySubjectImpl<E, A> extends SubjectImpl<E, A> {
+/**
+ * @internal
+ */
+export class ReplaySubjectImpl<E, A> extends SubjectImpl<E, A> {
   constructor(readonly buffer: RingBuffer<A>) {
     super(buffer)
   }

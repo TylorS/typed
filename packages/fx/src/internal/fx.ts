@@ -29,7 +29,7 @@ import * as Typeclass from "@typed/fx/Typeclass"
 //       asRef, asComputed, asFiltered
 // TODO: fromDequeue, fromQueue, drainEnqueue
 // TODO: Create a Stream module with various ways to convert to an Fx
-// TODO: keyed, onExit, onInterrupt, scoped,
+// TODO: keyed
 
 /**
  * Create an Fx which will emit a value after waiting for a specified duration.
