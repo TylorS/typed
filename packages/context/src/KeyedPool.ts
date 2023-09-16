@@ -1,3 +1,8 @@
+/**
+ * Contextual wrappers around @effect/io/KeyedPool
+ * @since 1.0.0
+ */
+
 import type { DurationInput } from "@effect/data/Duration"
 import type * as Effect from "@effect/io/Effect"
 import * as KP from "@effect/io/KeyedPool"
@@ -7,6 +12,10 @@ import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/co
 import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
+/**
+ * Contextual wrappers around @effect/io/KeyedPool
+ * @since 1.0.0
+ */
 export interface KeyedPool<I, K, E, A> extends Tag<I, KP.KeyedPool<K, E, A>> {
   readonly invalidate: (a: A) => Effect.Effect<I | Scope, never, void>
   readonly get: (key: K) => Effect.Effect<I | Scope, E, A>
@@ -40,6 +49,10 @@ export interface KeyedPool<I, K, E, A> extends Tag<I, KP.KeyedPool<K, E, A>> {
   ) => Layer.Layer<R, never, I>
 }
 
+/**
+ * Construct a KeyedPool implementation to be utilized from the Effect Context.
+ * @since 1.0.0
+ */
 export function KeyedPool<K, E, A>(): <const I extends IdentifierFactory<any>>(
   identifier: I
 ) => KeyedPool<IdentifierOf<I>, K, E, A>

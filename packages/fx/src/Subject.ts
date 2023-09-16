@@ -1,5 +1,6 @@
 /**
- * Subjects are the basis for sharing events between multiple consumers in an effecient manner.
+ * Subjects are the basis for sharing events between multiple consumers in an effecient manner
+ * and for event-bus-like functionality.
  * @since 1.18.0
  */
 

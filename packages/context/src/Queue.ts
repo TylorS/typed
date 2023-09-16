@@ -1,3 +1,8 @@
+/**
+ * Contextual wrappers around @effect/data/Queue
+ * @since 1.0.0
+ */
+
 import type * as Chunk from "@effect/data/Chunk"
 import type { Option } from "@effect/data/Option"
 import type * as Effect from "@effect/io/Effect"
@@ -7,6 +12,10 @@ import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/co
 import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
+/**
+ * Contextual wrappers around @effect/data/Queue
+ * @since 1.0.0
+ */
 export interface Queue<I, A> extends Tag<I, Q.Queue<A>> {
   // Common
   readonly capacity: Effect.Effect<I, never, number>
@@ -39,6 +48,10 @@ export interface Queue<I, A> extends Tag<I, Q.Queue<A>> {
   readonly unbounded: Layer.Layer<never, never, I>
 }
 
+/**
+ * Construct a Queue implementation to be utilized from the Effect Context.
+ * @since 1.0.0
+ */
 export function Queue<A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Queue<IdentifierOf<I>, A>
 export function Queue<A>(): <const I>(identifier: I) => Queue<IdentifierOf<I>, A>
 export function Queue<A>() {

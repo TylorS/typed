@@ -1,0 +1,140 @@
+---
+title: Request.ts
+nav_order: 19
+parent: "@typed/context"
+---
+
+## Request overview
+
+Contextual wrappers around @effect/io/Request
+
+Added in v1.0.0
+
+---
+
+<h2 class="text-delta">Table of contents</h2>
+
+- [utils](#utils)
+  - [Request](#request)
+  - [Request (interface)](#request-interface)
+  - [Request (namespace)](#request-namespace)
+    - [Error (type alias)](#error-type-alias)
+    - [Identifier (type alias)](#identifier-type-alias)
+    - [Input (type alias)](#input-type-alias)
+    - [InputArg (type alias)](#inputarg-type-alias)
+    - [Req (type alias)](#req-type-alias)
+    - [Success (type alias)](#success-type-alias)
+
+---
+
+# utils
+
+## Request
+
+Construct a Request implementation to be utilized from the Effect Context.
+
+**Signature**
+
+```ts
+export declare function Request<const Id extends IdentifierFactory<any>, Input, Req extends R.Request<any, any>>(
+  id: Id,
+  makeRequest: (input: Input) => Req
+): Request<IdentifierOf<Id>, Input, Req>
+export declare function Request<const Id, Input, Req extends R.Request<any, any>>(
+  id: Id,
+  makeRequest: (input: Input) => Req
+): Request<IdentifierOf<Id>, Input, Req>
+```
+
+Added in v1.0.0
+
+## Request (interface)
+
+Contextual wrappers around @effect/io/Request
+
+**Signature**
+
+```ts
+export interface Request<I, Input, Req extends R.Request<any, any>>
+  extends Fn<I, (requests: Req) => Effect<never, R.Request.Error<Req>, R.Request.Success<Req>>> {
+  readonly make: (...input: SimplifyInputArg<Input>) => Effect<I, R.Request.Error<Req>, R.Request.Success<Req>>
+}
+```
+
+Added in v1.0.0
+
+## Request (namespace)
+
+Added in v1.0.0
+
+### Error (type alias)
+
+Extract the Error of a Request
+
+**Signature**
+
+```ts
+export type Error<T> = R.Request.Error<Req<T>>
+```
+
+Added in v1.0.0
+
+### Identifier (type alias)
+
+Extract the Identifier of a Request
+
+**Signature**
+
+```ts
+export type Identifier<T> = T extends Request<infer Id, infer _, infer __> ? Id : never
+```
+
+Added in v1.0.0
+
+### Input (type alias)
+
+Extract the Input of a Request
+
+**Signature**
+
+```ts
+export type Input<T> = T extends Request<infer _, infer Input, infer __> ? Input : never
+```
+
+Added in v1.0.0
+
+### InputArg (type alias)
+
+Extract the InputArg of a Request
+
+**Signature**
+
+```ts
+export type InputArg<T> = [keyof Input<T>] extends [never] ? [Input<T>?] : [Input<T>]
+```
+
+Added in v1.0.0
+
+### Req (type alias)
+
+Extract the Request of a Request
+
+**Signature**
+
+```ts
+export type Req<T> = T extends Request<infer _, infer __, infer Req> ? Req : never
+```
+
+Added in v1.0.0
+
+### Success (type alias)
+
+Extract the Success of a Request
+
+**Signature**
+
+```ts
+export type Success<T> = R.Request.Success<Req<T>>
+```
+
+Added in v1.0.0

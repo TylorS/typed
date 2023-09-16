@@ -1,3 +1,8 @@
+/**
+ * Contextual wrappers around @effect/io/ScopedCache
+ * @since 1.0.0
+ */
+
 import type { DurationInput } from "@effect/data/Duration"
 import type { Option } from "@effect/data/Option"
 import type * as C from "@effect/io/Cache"
@@ -10,6 +15,10 @@ import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/co
 import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
+/**
+ * Contextual wrappers around @effect/io/ScopedCache
+ * @since 1.0.0
+ */
 export interface ScopedCache<I, K, E, A> extends Tag<I, SC.ScopedCache<K, E, A>> {
   readonly cacheStats: Effect<I, never, C.CacheStats>
   readonly contains: (key: K) => Effect<I, never, boolean>
@@ -39,6 +48,10 @@ export interface ScopedCache<I, K, E, A> extends Tag<I, SC.ScopedCache<K, E, A>>
   ) => Layer.Layer<R, never, I>
 }
 
+/**
+ * Construct a ScopedCache implementation to be utilized from the Effect Context.
+ * @since 1.0.0
+ */
 export function ScopedCache<K, E, A>() {
   function makeScopedCache<const I extends IdentifierFactory<any>>(identifier: I): ScopedCache<IdentifierOf<I>, K, E, A>
   function makeScopedCache<const I>(identifier: I): ScopedCache<IdentifierOf<I>, K, E, A>

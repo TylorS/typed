@@ -1,3 +1,8 @@
+/**
+ * A Contextual wrapper around @effect/io/Queue.Enqueue
+ * @since 1.0.0
+ */
+
 import type * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Q from "@effect/io/Queue"
@@ -7,6 +12,11 @@ import { withActions } from "@typed/context/Interface"
 import type { Queue } from "@typed/context/Queue"
 import { Tag } from "@typed/context/Tag"
 
+/**
+ * A Contextual wrapper around @effect/io/Queue.Enqueue
+ * @since 1.0.0
+ * @category models
+ */
 export interface Enqueue<I, A> extends Tag<I, Q.Enqueue<A>> {
   readonly offer: (a: A) => Effect.Effect<I, never, boolean>
   readonly unsafeOffer: (a: A) => Effect.Effect<I, never, boolean>
@@ -26,6 +36,10 @@ export interface Enqueue<I, A> extends Tag<I, Q.Enqueue<A>> {
   readonly fromHub: <I2>(hub: Hub<I2, A>) => Layer.Layer<I2, never, I>
 }
 
+/**
+ * Construct a Enqueue implementation to be utilized from the Effect Context.
+ * @since 1.0.0
+ */
 export function Enqueue<A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Enqueue<IdentifierOf<I>, A>
 export function Enqueue<A>(): <const I>(identifier: I) => Enqueue<IdentifierOf<I>, A>
 export function Enqueue<A>() {

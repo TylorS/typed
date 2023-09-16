@@ -216,9 +216,18 @@ export class TransformerCauseEffect<R, E, A> extends FxProto<R, E, A> {
 export abstract class ToFx<R, E, A> extends FxProto<R, E, A> {
   readonly _fxTag = "ToFx"
 
+  /**
+   * Convert this primitive to an Fx
+   * @since 1.18.0
+   */
   protected abstract toFx(): Fx<R, E, A>
 
   #fx: Fx<R, E, A> | undefined
+
+  /**
+   * Get the Fx that this primitive represents.
+   * @since 1.18.0
+   */
   get fx(): Fx<R, E, A> {
     // Memoize the constructed Fx
     if (this.#fx === undefined) {

@@ -1,3 +1,9 @@
+/**
+ * @typed/context/Model provides a way to group Refs together into a single Ref
+ * that is utilized as a single unit from the Effect Context.
+ * @since 1.0.0
+ */
+
 import * as Effect from "@effect/io/Effect"
 import type { Scope } from "@effect/io/Scope"
 import { ScopedRefTypeId } from "@effect/io/ScopedRef"
@@ -5,14 +11,31 @@ import type { Ref } from "@typed/context/Ref"
 import type { ScopedRef } from "@typed/context/ScopedRef"
 import type { SynchronizedRef } from "@typed/context/SynchronizedRef"
 
+/**
+ * A ModelRef<I, A> is a Ref/ScopedRef/SynchronizedRef that is part of a Model.
+ * @since 1.0.0
+ */
 export type ModelRef<I, A> =
   | Ref<I, A>
   | ScopedRef<I, A>
   | SynchronizedRef<I, A>
 
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
 export const ModelTypeId = Symbol.for("@typed/context/Model")
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
 export type ModelTypeId = typeof ModelTypeId
 
+/**
+ * A Model is a collection of Refs that can be utilized as a single unit from the Effect Context.
+ * @since 1.0.0
+ */
 export interface Model<Refs extends Readonly<Record<string, ModelRef<any, any> | Model<any>>>> {
   readonly [ModelTypeId]: ModelTypeId
 
@@ -35,6 +58,10 @@ export interface Model<Refs extends Readonly<Record<string, ModelRef<any, any> |
   ) => Effect.Effect<Exclude<R, Model.Identifier<this>> | Scope, E, B>
 }
 
+/**
+ * Create a Model from a collection of Refs.
+ * @since 1.0.0
+ */
 export function Model<const Refs extends Readonly<Record<string, ModelRef<any, any> | Model<any>>>>(
   refs: Refs
 ): Model<Refs> {
@@ -74,21 +101,35 @@ export function Model<const Refs extends Readonly<Record<string, ModelRef<any, a
   return self
 }
 
+/**
+ * @since 1.0.0
+ */
 export namespace Model {
+  /**
+   * Extract the Identifier of a Model
+   * @since 1.0.0
+   */
   export type Identifier<T> = T extends Ref<infer I, infer _> ? I
     : T extends ScopedRef<infer I, infer _> ? I
     : T extends SynchronizedRef<infer I, infer _> ? I
     : T extends Model<infer R> ? { readonly [K in keyof R]: Identifier<R[K]> }[keyof R]
     : never
 
+  /**
+   * Extract the State of a Model
+   * @since 1.0.0
+   */
   export type State<T> = T extends Ref<infer _, infer S> ? S
     : T extends ScopedRef<infer _, infer S> ? S
     : T extends SynchronizedRef<infer _, infer S> ? S
     : T extends Model<infer R> ? { readonly [K in keyof R]: State<R[K]> }
     : never
 
-  // Type-level helper for use in an "extends" clause to constrain the type of a Model
-  // but not the Context needed to provide them.
+  /**
+   * Type-level helper for use in an "extends" clause to constrain the type of a Model
+   * but not the Context needed to provide them.
+   * @since 1.0.0
+   */
   export type Of<A> = {
     readonly [K in keyof A]: ModelRef<any, A[K]>
   }

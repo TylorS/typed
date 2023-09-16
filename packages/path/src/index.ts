@@ -1,11 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/ban-types */
-
 /**
  * @typed/path is a collection of helpers for constructing paths that follow
  * the path-to-regexp syntax and type-level combinators for parsing that syntax and
  * for interpolating values.
+ * @since 1.0.0
  */
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/ban-types */
+
 import type { A, N } from "ts-toolbelt"
 
 /* Start Region: Parameter DSL */
@@ -13,33 +15,39 @@ import type { A, N } from "ts-toolbelt"
 /**
  * Template for parameters
  * @category Model
+ * @since 1.0.0
  */
 export type Param<A extends string> = `:${A}`
 
 /**
  * @category Constructor
+ * @since 1.0.0
  */
 export const param = <A extends string>(param: A): Param<A> => `:${param}` as Param<A>
 
 /**
  * Template for optional path parts
  * @category Model
+ * @since 1.0.0
  */
 export type Optional<A extends string> = `${A}?`
 
 /**
  * @category Constructor
+ * @since 1.0.0
  */
 export const optional = <A extends string>(param: A): Optional<A> => `${param}?` as Optional<A>
 
 /**
  *  Construct a custom prefix
  * @category Model
+ * @since 1.0.0
  */
 export type Prefix<P extends string, A extends string> = `{${P}${A}}`
 
 /**
  * @category Constructor
+ * @since 1.0.0
  */
 export const prefix = <P extends string, A extends Param<string> | Unnamed>(prefix: P, param: A) =>
   `{${prefix}${param}}` as Prefix<P, A>
@@ -47,12 +55,14 @@ export const prefix = <P extends string, A extends Param<string> | Unnamed>(pref
 /**
  * Construct query params
  * @category Model
+ * @since 1.0.0
  */
 export type QueryParam<K extends string, V extends string> = `` extends V ? K : `${K}=${V}`
 
 /**
  * Construct query params
  * @category Constructor
+ * @since 1.0.0
  */
 export const queryParam = <K extends string, V extends string>(key: K, value: V) =>
   `${key}=${value}` as QueryParam<K, V>
@@ -60,28 +70,33 @@ export const queryParam = <K extends string, V extends string>(key: K, value: V)
 /**
  * zero or more path parts will be matched to this param
  * @category Model
+ * @since 1.0.0
  */
 export type ZeroOrMore<A extends string> = `${Param<A>}*`
 
 /**
  * @category Constructor
+ * @since 1.0.0
  */
 export const zeroOrMore = <A extends string>(param: A): ZeroOrMore<A> => `:${param}*` as ZeroOrMore<A>
 
 /**
  * @category Model
+ * @since 1.0.0
  */
 export type OneOrMore<A extends string> = `${Param<A>}+`
 
 /**
  * one or more path parts will be matched to this param
  * @category Constructor
+ * @since 1.0.0
  */
 export const oneOrMore = <A extends string>(param: A): OneOrMore<A> => `:${param}+` as OneOrMore<A>
 
 /**
  *  Creates the path-to-regexp syntax for query parameters
  * @category Model
+ * @since 1.0.0
  */
 export type QueryParams<
   Q extends ReadonlyArray<QueryParam<any, any>>,
@@ -94,6 +109,7 @@ export type QueryParams<
 
 /**
  * @category Constructor
+ * @since 1.0.0
  */
 export const queryParams = <P extends readonly [QueryParam<any, any>, ...QueryParam<any, any>]>(
   ...params: P
@@ -101,17 +117,20 @@ export const queryParams = <P extends readonly [QueryParam<any, any>, ...QueryPa
 
 /**
  * @category Constructor
+ * @since 1.0.0
  */
 export const unnamed = `(.*)` as const
 
 /**
  * @category Model
+ * @since 1.0.0
  */
 export type Unnamed = typeof unnamed
 
 /**
  * Composes other path parts into a single path
  * @category Type-level
+ * @since 1.0.0
  */
 export type PathJoin<A extends ReadonlyArray<string>> = A extends readonly [
   infer Head extends string,
@@ -120,7 +139,9 @@ export type PathJoin<A extends ReadonlyArray<string>> = A extends readonly [
   : ``
 
 /**
+ * Join together path parts
  * @category Combinator
+ * @since 1.0.0
  */
 export const pathJoin = <P extends ReadonlyArray<string>>(...parts: P): PathJoin<P> => {
   if (parts.length === 0) {
@@ -135,6 +156,7 @@ export const pathJoin = <P extends ReadonlyArray<string>>(...parts: P): PathJoin
 /**
  * Formats a piece of a path
  * @category Combinator
+ * @since 1.0.0
  */
 export const formatPart = (part: string) => {
   part = removeLeadingSlash(part)
@@ -153,6 +175,7 @@ export const formatPart = (part: string) => {
 
 /**
  * @category Type-level
+ * @since 1.0.0
  */
 export type FormatPart<P extends string> = A.Equals<string, P> extends 1 ? `/${string}`
   : `` extends P ? P
@@ -164,11 +187,13 @@ export type FormatPart<P extends string> = A.Equals<string, P> extends 1 ? `/${s
 /**
  * Remove forward slashes prefixes recursively
  * @category Type-level
+ * @since 1.0.0
  */
 export type RemoveLeadingSlash<A> = A extends `/${infer R}` ? RemoveLeadingSlash<R> : A
 
 /**
  * @category Combinator
+ * @since 1.0.0
  */
 export const removeLeadingSlash = <A extends string>(a: A): RemoveLeadingSlash<A> => {
   let s = a.slice()
@@ -182,6 +207,7 @@ export const removeLeadingSlash = <A extends string>(a: A): RemoveLeadingSlash<A
 
 /**
  * @category Combinator
+ * @since 1.0.0
  */
 export const removeTrailingSlash = <A extends string>(a: A): RemoveTrailingSlash<A> => {
   let s = a.slice()
@@ -196,6 +222,7 @@ export const removeTrailingSlash = <A extends string>(a: A): RemoveTrailingSlash
 /**
  * Remove forward slashes postfixes recursively
  * @category Type-level
+ * @since 1.0.0
  */
 export type RemoveTrailingSlash<A> = A extends `${infer R}/` ? RemoveTrailingSlash<R> : A
 
@@ -203,21 +230,24 @@ export type RemoveTrailingSlash<A> = A extends `${infer R}/` ? RemoveTrailingSla
 
 /* Start Region: Extract Parameters from Path */
 
-// Extract the parameters out of a path
 /**
+ * Extract the parameters out of a path
  * @category Type-level
+ * @since 1.0.0
  */
 export type ParamsOf<A extends string> = Compact<PartsToParams<PathToParts<A>>>
 
-// Extract the Query parameters out of a path
 /**
+ * Extract the Query parameters out of a path
  * @category Type-level
+ * @since 1.0.0
  */
 export type QueryParamsOf<P extends string> = Compact<QueryToParams<PathToQuery<P>>>
 
-// Convert a path back into a tuple of path parts
 /**
+ * Convert a path back into a tuple of path parts
  * @category Type-level
+ * @since 1.0.0
  */
 export type PathToParts<P> = P extends `${infer Head}\\?${infer Tail}` ? readonly [...PathToParts<Head>, `\\?${Tail}`]
   : P extends `${infer Head}/${infer Tail}` ? readonly [...PathToParts<Head>, ...PathToParts<Tail>]
@@ -229,7 +259,9 @@ export type PathToParts<P> = P extends `${infer Head}\\?${infer Tail}` ? readonl
   : readonly [P]
 
 /**
+ * Convert a path back into a tuple of path parts
  * @category Type-level
+ * @since 1.0.0
  */
 export type PartsToParams<A extends ReadonlyArray<string>, AST = {}> = A extends readonly [
   infer Head extends string,
@@ -239,6 +271,7 @@ export type PartsToParams<A extends ReadonlyArray<string>, AST = {}> = A extends
 
 /**
  * @category Type-level
+ * @since 1.0.0
  */
 export type PartToParam<A extends string, AST> = A extends `\\${infer R}`
   ? PartsToParams<QueryParamsToParts<R, []>, AST>
@@ -259,6 +292,7 @@ export type PartToParam<A extends string, AST> = A extends `\\${infer R}`
 
 /**
  * @category Type-level
+ * @since 1.0.0
  */
 export type QueryParamsToParts<
   Q extends string,
@@ -270,6 +304,7 @@ export type QueryParamsToParts<
 
 /**
  * @category Type-level
+ * @since 1.0.0
  */
 export type QueryToParams<Q extends string, AST = {}> = Q extends `${infer Head}&${infer Tail}`
   ? QueryToParams<Tail, QueryToParams<Head, AST>>
@@ -278,15 +313,18 @@ export type QueryToParams<Q extends string, AST = {}> = Q extends `${infer Head}
   : Q extends `${infer K}` ? AST & QueryParamAst<K>
   : AST
 
-// Increments up from I until it finds an index that is not taken
 /**
+ *  Increments up from I until it finds an index that is not taken
  * @category Type-level
+ * @since 1.0.0
  */
 export type FindNextIndex<AST, I extends number = 0> = I extends keyof AST ? FindNextIndex<AST, N.Add<I, 1>>
   : I
 
 /**
+ * Extracts the query params from a path
  * @category Type-level
+ * @since 1.0.0
  */
 export type PathToQuery<P extends string> = P extends `${infer _}\\${infer Q}` ? Q : ``
 
@@ -308,7 +346,9 @@ type Compact<A> = { readonly [K in keyof A]: A[K] }
 /* Start Region: Interpolations */
 
 /**
+ * Interpolate a path with a set of parameters
  * @category Type-level
+ * @since 1.0.0
  */
 export type Interpolate<P extends string, Params extends ParamsOf<P>> = [Params] extends [never] ? P
   : P extends `${infer Head}\\?${infer Tail}` ? PathJoin<
@@ -321,7 +361,9 @@ export type Interpolate<P extends string, Params extends ParamsOf<P>> = [Params]
   : PathJoin<InpterpolateParts<PathToParts<P>, Params>[0]>
 
 /**
+ * Interpolate a path with a set of parameters
  * @category Type-level
+ * @since 1.0.0
  */
 export type InpterpolateParts<
   Parts extends ReadonlyArray<any>,
@@ -367,6 +409,7 @@ export type InpterpolateParts<
 
 /**
  * @category Type-level
+ * @since 1.0.0
  */
 export type AppendPrefix<
   R extends ReadonlyArray<any>,
@@ -377,6 +420,7 @@ export type AppendPrefix<
 
 /**
  * @category Type-level
+ * @since 1.0.0
  */
 export type InpterpolatePartsWithNext<
   Parts extends ReadonlyArray<any>,
@@ -387,6 +431,7 @@ export type InpterpolatePartsWithNext<
 
 /**
  * @category Type-level
+ * @since 1.0.0
  */
 export type InterpolatePart<P, Params, AST> = P extends Optional<Param<infer R>>
   ? R extends keyof Params ? readonly [Params[R], AST & Record<R, Params[R]>]
@@ -406,6 +451,7 @@ export type InterpolatePart<P, Params, AST> = P extends Optional<Param<infer R>>
 
 /**
  * @category Type-level
+ * @since 1.0.0
  */
 export type InterpolateUnnamedPart<Params, K extends keyof Params, AST> = readonly [
   Params[K],
@@ -427,6 +473,7 @@ type InterpolateWithQueryParams<
 
 /**
  * @category Type-level
+ * @since 1.0.0
  */
 export type InterpolateQueryParamPart<
   Part,

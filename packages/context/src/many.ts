@@ -1,3 +1,8 @@
+/**
+ * Create product types from products of Tags.
+ * @since 1.0.0
+ */
+
 import type * as C from "@effect/data/Context"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
@@ -7,6 +12,10 @@ import type { Tagged } from "./Interface"
 
 type TupleOfTags = ReadonlyArray<C.Tag<any, any>>
 
+/**
+ * A product type from a tuple of Tags
+ * @since 1.0.0
+ */
 export interface TaggedTuple<Tags extends TupleOfTags> extends
   Tagged<
     C.Tag.Identifier<Tags[number]>,
@@ -17,6 +26,10 @@ export interface TaggedTuple<Tags extends TupleOfTags> extends
   readonly tags: Tags
 }
 
+/**
+ * Create a TaggedTuple from a tuple of Tags
+ * @since 1.0.0
+ */
 export function tuple<Tags extends TupleOfTags>(...tags: Tags): TaggedTuple<Tags> {
   const all = Effect.all(tags) as any as Effect.Effect<
     C.Tag.Identifier<Tags[number]>,
@@ -41,6 +54,10 @@ export function tuple<Tags extends TupleOfTags>(...tags: Tags): TaggedTuple<Tags
 
 type StructOfTags = { readonly [key: PropertyKey]: C.Tag<any, any> }
 
+/**
+ * A product type from a struct of Tags
+ * @since 1.0.0
+ */
 export interface TaggedStruct<Tags extends StructOfTags> extends
   Tagged<
     C.Tag.Identifier<Tags[keyof Tags]>,
@@ -51,6 +68,10 @@ export interface TaggedStruct<Tags extends StructOfTags> extends
   readonly tags: Tags
 }
 
+/**
+ * Create a TaggedStruct from a struct of Tags
+ * @since 1.0.0
+ */
 export function struct<Tags extends StructOfTags>(tags: Tags): TaggedStruct<Tags> {
   const all = Effect.all(tags) as any as Effect.Effect<
     C.Tag.Identifier<Tags[keyof Tags]>,

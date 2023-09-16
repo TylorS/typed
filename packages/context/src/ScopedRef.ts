@@ -1,3 +1,8 @@
+/**
+ * Contextual wrappers around @effect/io/ScopedRef
+ * @since 1.0.0
+ */
+
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import type { Scope } from "@effect/io/Scope"
@@ -5,6 +10,10 @@ import * as S from "@effect/io/ScopedRef"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 import { Tag } from "@typed/context/Tag"
 
+/**
+ * Contextual wrappers around @effect/io/ScopedRef
+ * @since 1.0.0
+ */
 export interface ScopedRef<I, A> extends Tag<I, S.ScopedRef<A>> {
   readonly [S.ScopedRefTypeId]: S.ScopedRefTypeId
 
@@ -19,6 +28,10 @@ export interface ScopedRef<I, A> extends Tag<I, S.ScopedRef<A>> {
   ) => Layer.Layer<Exclude<R2, Scope>, E2, I>
 }
 
+/**
+ * Construct a ScopedRef implementation to be utilized from the Effect Context.
+ * @since 1.0.0
+ */
 export function ScopedRef<A>() {
   function makeScopedRef<const I extends IdentifierFactory<any>>(id: I): ScopedRef<IdentifierOf<I>, A>
   function makeScopedRef<const I>(id: IdentifierInput<I>): ScopedRef<IdentifierOf<I>, A>

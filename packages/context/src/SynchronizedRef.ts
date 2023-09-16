@@ -1,3 +1,8 @@
+/**
+ * Contextual wrappers around @effect/io/SynchronizedRef
+ * @since 1.0.0
+ */
+
 import type { Option } from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
@@ -6,6 +11,10 @@ import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/co
 import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
+/**
+ * Contextual wrappers around @effect/io/SynchronizedRef
+ * @since 1.0.0
+ */
 export interface SynchronizedRef<I, A> extends Tag<I, SyncRef.SynchronizedRef<A>> {
   readonly [SyncRef.SynchronizedRefTypeId]: SyncRef.SynchronizedRefTypeId
 
@@ -57,6 +66,10 @@ export interface SynchronizedRef<I, A> extends Tag<I, SyncRef.SynchronizedRef<A>
   ) => Layer.Layer<R2, E2, I>
 }
 
+/**
+ * Construct a SynchronizedRef implementation to be utilized from the Effect Context.
+ * @since 1.0.0
+ */
 export function SynchronizedRef<A>() {
   function makeSynchronizedRef<const I extends IdentifierFactory<any>>(id: I): SynchronizedRef<IdentifierOf<I>, A>
   function makeSynchronizedRef<const I>(id: IdentifierInput<I>): SynchronizedRef<IdentifierOf<I>, A>

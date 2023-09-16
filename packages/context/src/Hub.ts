@@ -1,3 +1,8 @@
+/**
+ * Contextual wrappers around @effect/io/Hub
+ * @since 1.0.0
+ */
+
 import type * as Effect from "@effect/io/Effect"
 import * as H from "@effect/io/Hub"
 import * as Layer from "@effect/io/Layer"
@@ -7,6 +12,10 @@ import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/co
 import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
+/**
+ * Contextual wrappers around @effect/io/Hub
+ * @since 1.0.0
+ */
 export interface Hub<I, A> extends Tag<I, H.Hub<A>> {
   // Common
   readonly capacity: Effect.Effect<I, never, number>
@@ -30,6 +39,10 @@ export interface Hub<I, A> extends Tag<I, H.Hub<A>> {
   readonly unbounded: Layer.Layer<never, never, I>
 }
 
+/**
+ * Construct a Hub implementation to be utilized from the Effect Context.
+ * @since 1.0.0
+ */
 export function Hub<A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Hub<IdentifierOf<I>, A>
 export function Hub<A>(): <const I>(identifier: I) => Hub<IdentifierOf<I>, A>
 export function Hub<A>() {

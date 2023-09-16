@@ -1,3 +1,14 @@
+/**
+ * Wire is a data type that serves as a DocumentFragment that can be
+ * utilized to create a persistent DOM structure.
+ * @since 1.0.0
+ */
+
+/**
+ * Wire is a data type that serves as a DocumentFragment that can be
+ * utilized to create a persistent DOM structure.
+ * @since 1.0.0
+ */
 export interface Wire {
   readonly ELEMENT_NODE: 1
   readonly DOCUMENT_FRAGMENT_NODE: 11
@@ -21,6 +32,10 @@ const remove = ({ firstChild, lastChild }: Node, document: Document): Node => {
   return firstChild as Node
 }
 
+/**
+ * Create a diffable node from any Node which also might be a Wire.
+ * @since 1.0.0
+ */
 export const diffable = (document: Document) => (node: Node, operation: number): Node => {
   if (node.nodeType !== nodeType) return node
 
@@ -31,6 +46,11 @@ export const diffable = (document: Document) => (node: Node, operation: number):
   return operation ? (node.valueOf() as Node) : (node.firstChild as Node)
 }
 
+/**
+ * Create a Wire from a DocumentFragment only if it has more than one child.
+ * otherwise return the first child.
+ * @since 1.0.0
+ */
 export const persistent = (fragment: DocumentFragment): DocumentFragment | Node | Wire => {
   const { childNodes } = fragment
   const { length } = childNodes
@@ -60,6 +80,10 @@ export const persistent = (fragment: DocumentFragment): DocumentFragment | Node 
 
 type Rendered = Node | DocumentFragment | Wire | ReadonlyArray<Rendered>
 
+/**
+ * Check if a node is a Wire
+ * @since 1.0.0
+ */
 export function isWire(node: Rendered): node is Wire {
   if (!Array.isArray(node)) return (node as Node | Document | Wire).nodeType === nodeType
 

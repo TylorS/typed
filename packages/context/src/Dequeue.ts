@@ -1,3 +1,8 @@
+/**
+ * A Contextual wrapper around @effect/io/Queue.Dequeue
+ * @since 1.0.0
+ */
+
 import type * as Chunk from "@effect/data/Chunk"
 import type { Option } from "@effect/data/Option"
 import type * as Effect from "@effect/io/Effect"
@@ -9,6 +14,11 @@ import { withActions } from "@typed/context/Interface"
 import type { Queue } from "@typed/context/Queue"
 import { Tag } from "@typed/context/Tag"
 
+/**
+ * A Contextual wrapper around @effect/io/Queue.Dequeue
+ * @since 1.0.0
+ * @category models
+ */
 export interface Dequeue<I, A> extends Tag<I, Q.Dequeue<A>> {
   readonly take: Effect.Effect<I, never, A>
   readonly takeAll: Effect.Effect<I, never, Chunk.Chunk<A>>
@@ -31,6 +41,11 @@ export interface Dequeue<I, A> extends Tag<I, Q.Dequeue<A>> {
   readonly fromHub: <I2>(hub: Hub<I2, A>) => Layer.Layer<I2, never, I>
 }
 
+/**
+ * Construct a Dequeue implementation to be utilized from the Effect Context.
+ * @since 1.0.0
+ * @category constructors
+ */
 export function Dequeue<A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Dequeue<IdentifierOf<I>, A>
 export function Dequeue<A>(): <const I>(identifier: I) => Dequeue<IdentifierOf<I>, A>
 export function Dequeue<A>() {

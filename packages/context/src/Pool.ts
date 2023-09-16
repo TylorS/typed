@@ -1,3 +1,9 @@
+/**
+ * Contextual wrapper for @effect/io/Pool
+ *
+ * @since 1.0.0
+ */
+
 import type { DurationInput } from "@effect/data/Duration"
 import type * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
@@ -7,6 +13,10 @@ import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/co
 import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
+/**
+ * Contextual wrapper for @effect/io/Pool
+ * @since 1.0.0
+ */
 export interface Pool<I, E, A> extends Tag<I, P.Pool<E, A>> {
   readonly invalidate: (a: A) => Effect.Effect<I | Scope, never, void>
   readonly get: Effect.Effect<I | Scope, E, A>
@@ -26,6 +36,10 @@ export interface Pool<I, E, A> extends Tag<I, P.Pool<E, A>> {
   ) => Layer.Layer<R, never, I>
 }
 
+/**
+ * Construct a Pool implementation to be utilized from the Effect Context.
+ * @since 1.0.0
+ */
 export function Pool<E, A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Pool<IdentifierOf<I>, E, A>
 export function Pool<E, A>(): <const I>(identifier: I) => Pool<IdentifierOf<I>, E, A>
 export function Pool<E, A>() {

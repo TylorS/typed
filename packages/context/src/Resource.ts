@@ -1,3 +1,8 @@
+/**
+ * Contextual wrappers around @effect/io/Resource
+ * @since 1.0.0
+ */
+
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as R from "@effect/io/Resource"
@@ -5,6 +10,10 @@ import type * as Schedule from "@effect/io/Schedule"
 import type { IdentifierFactory, IdentifierOf } from "@typed/context/Identifier"
 import { Tag } from "@typed/context/Tag"
 
+/**
+ * Contextual wrappers around @effect/io/Resource
+ * @since 1.0.0
+ */
 export interface Resource<I, E, A> extends Tag<I, R.Resource<E, A>> {
   readonly get: Effect.Effect<I, E, A>
   readonly refresh: Effect.Effect<I, E, void>
@@ -17,6 +26,10 @@ export interface Resource<I, E, A> extends Tag<I, R.Resource<E, A>> {
   readonly manual: <R>(acquire: Effect.Effect<R, E, A>) => Layer.Layer<R, never, I>
 }
 
+/**
+ * Construct a Resource implementation to be utilized from the Effect Context.
+ * @since 1.0.0
+ */
 export function Resource<E, A>() {
   function makeResource<const I extends IdentifierFactory<any>>(identifier: I): Resource<IdentifierOf<I>, E, A>
   function makeResource<const I>(identifier: I): Resource<IdentifierOf<I>, E, A>

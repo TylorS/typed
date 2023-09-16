@@ -1,3 +1,7 @@
+/**
+ * A Contextual wrapper around @effect/io/Cache
+ * @since 1.0.0
+ */
 import type { DurationInput } from "@effect/data/Duration"
 import type { Either } from "@effect/data/Either"
 import * as C from "@effect/io/Cache"
@@ -8,10 +12,17 @@ import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/co
 import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
+/**
+ * A Contextual wrapper around @effect/io/Cache
+ * @since 1.0.0
+ */
 export interface Cache<I, K, E, A> extends Tag<I, C.Cache<K, E, A>> {
   readonly get: (key: K) => Effect<I, E, A>
+
   readonly getEither: (key: K) => Effect<I, E, Either<A, A>>
+
   readonly refresh: (key: K) => Effect<I, E, void>
+
   readonly set: (key: K, value: A) => Effect<I, never, void>
 
   readonly make: <R>(
@@ -31,6 +42,10 @@ export interface Cache<I, K, E, A> extends Tag<I, C.Cache<K, E, A>> {
   ) => Layer.Layer<R, never, I>
 }
 
+/**
+ * Construct a Cache implementation to be utilized from the Effect Context.
+ * @since 1.0.0
+ */
 export function Cache<K, E, A>() {
   function makeCache<const I extends IdentifierFactory<any>>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
   function makeCache<const I>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
