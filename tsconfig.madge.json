@@ -16,18 +16,6 @@
       "@typed/context/examples/*": [
         "packages/context/build/examples/*"
       ],
-      "@typed/decoder": [
-        "packages/decoder/build/esm/index.js"
-      ],
-      "@typed/decoder/*": [
-        "packages/decoder/build/esm/*"
-      ],
-      "@typed/decoder/test/*": [
-        "packages/decoder/build/test/*"
-      ],
-      "@typed/decoder/examples/*": [
-        "packages/decoder/build/examples/*"
-      ],
       "@typed/fx": [
         "packages/fx/build/esm/index.js"
       ],
@@ -94,9 +82,6 @@
     "packages/context/build/esm/**/*",
     "packages/context/build/test/**/*",
     "packages/context/build/examples/**/*",
-    "packages/decoder/build/esm/**/*",
-    "packages/decoder/build/test/**/*",
-    "packages/decoder/build/examples/**/*",
     "packages/fx/build/esm/**/*",
     "packages/fx/build/test/**/*",
     "packages/fx/build/examples/**/*",

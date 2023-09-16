@@ -43,7 +43,7 @@
     "@effect/eslint-plugin": "^0.1.2",
     "@effect/language-service": "0.0.21",
     "@types/chai": "^4.3.6",
-    "@types/node": "^20.6.0",
+    "@types/node": "^20.6.1",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
     "@vitejs/plugin-react": "^4.0.4",
