@@ -6,7 +6,7 @@ parent: "@typed/fx"
 
 ## TypeId overview
 
-Added in v0.18.0
+Added in v1.18.0
 
 ---
 
@@ -28,7 +28,7 @@ Added in v0.18.0
 export declare const TypeId: typeof TypeId
 ```
 
-Added in v0.18.0
+Added in v1.18.0
 
 ## TypeId (type alias)
 
@@ -38,4 +38,4 @@ Added in v0.18.0
 export type TypeId = typeof TypeId
 ```
 
-Added in v0.18.0
+Added in v1.18.0
