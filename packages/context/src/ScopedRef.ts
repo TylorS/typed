@@ -34,7 +34,10 @@ export interface ScopedRef<I, A> extends Tag<I, S.ScopedRef<A>> {
  * @since 1.0.0
  * @category constructors
  */
-export function ScopedRef<A>() {
+export function ScopedRef<A>(): {
+  <const I extends IdentifierFactory<any>>(id: I): ScopedRef<IdentifierOf<I>, A>
+  <const I>(id: IdentifierInput<I>): ScopedRef<IdentifierOf<I>, A>
+} {
   function makeScopedRef<const I extends IdentifierFactory<any>>(id: I): ScopedRef<IdentifierOf<I>, A>
   function makeScopedRef<const I>(id: IdentifierInput<I>): ScopedRef<IdentifierOf<I>, A>
   function makeScopedRef<const I>(id: I): ScopedRef<IdentifierOf<I>, A> {

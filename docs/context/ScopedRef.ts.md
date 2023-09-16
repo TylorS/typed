@@ -30,7 +30,10 @@ Construct a ScopedRef implementation to be utilized from the Effect Context.
 **Signature**
 
 ```ts
-export declare function ScopedRef<A>()
+export declare function ScopedRef<A>(): {
+  <const I extends IdentifierFactory<any>>(id: I): ScopedRef<IdentifierOf<I>, A>
+  <const I>(id: IdentifierInput<I>): ScopedRef<IdentifierOf<I>, A>
+}
 ```
 
 Added in v1.0.0
