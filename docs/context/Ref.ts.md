@@ -14,13 +14,14 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [constructors](#constructors)
   - [Ref](#ref)
+- [models](#models)
   - [Ref (interface)](#ref-interface)
 
 ---
 
-# utils
+# constructors
 
 ## Ref
 
@@ -29,10 +30,15 @@ Construct a Ref implementation to be utilized from the Effect Context.
 **Signature**
 
 ```ts
-export declare function Ref<A>()
+export declare function Ref<A>(): {
+  <const I extends IdentifierFactory<any>>(id: I): Ref<IdentifierOf<I>, A>
+  <const I>(id: IdentifierInput<I>): Ref<IdentifierOf<I>, A>
+}
 ```
 
 Added in v1.0.0
+
+# models
 
 ## Ref (interface)
 
@@ -59,6 +65,7 @@ export interface Ref<I, A> extends Tag<I, R.Ref<A>> {
   readonly updateSomeAndGet: (f: (a: A) => Option<A>) => Effect.Effect<I, never, A>
 
   // Provision
+
   readonly provide: (a: A) => <R, E, B>(effect: Effect.Effect<R, E, B>) => Effect.Effect<Exclude<R, I>, E, B>
 
   readonly layer: <R2, E2>(effect: Effect.Effect<R2, E2, A>) => Layer.Layer<R2, E2, I>

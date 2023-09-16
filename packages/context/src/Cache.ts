@@ -8,13 +8,14 @@ import * as C from "@effect/io/Cache"
 import type { Effect } from "@effect/io/Effect"
 import type { Exit } from "@effect/io/Exit"
 import * as Layer from "@effect/io/Layer"
+import { withActions } from "@typed/context/Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
-import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
 /**
  * A Contextual wrapper around @effect/io/Cache
  * @since 1.0.0
+ * @category models
  */
 export interface Cache<I, K, E, A> extends Tag<I, C.Cache<K, E, A>> {
   readonly get: (key: K) => Effect<I, E, A>
@@ -45,8 +46,12 @@ export interface Cache<I, K, E, A> extends Tag<I, C.Cache<K, E, A>> {
 /**
  * Construct a Cache implementation to be utilized from the Effect Context.
  * @since 1.0.0
+ * @category constructors
  */
-export function Cache<K, E, A>() {
+export function Cache<K, E, A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
+  <const I>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
+} {
   function makeCache<const I extends IdentifierFactory<any>>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
   function makeCache<const I>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
   function makeCache<const I extends IdentifierInput<any>>(identifier: I): Cache<IdentifierOf<I>, K, E, A> {

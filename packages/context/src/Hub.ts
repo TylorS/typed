@@ -8,44 +8,105 @@ import * as H from "@effect/io/Hub"
 import * as Layer from "@effect/io/Layer"
 import type * as Q from "@effect/io/Queue"
 import type { Scope } from "@effect/io/Scope"
+import { withActions } from "@typed/context/Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
-import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
 /**
  * Contextual wrappers around @effect/io/Hub
  * @since 1.0.0
+ * @category models
  */
 export interface Hub<I, A> extends Tag<I, H.Hub<A>> {
-  // Common
+  /**
+   * The capacity of the Hub
+   */
   readonly capacity: Effect.Effect<I, never, number>
+
+  /**
+   * Is the Hub active?
+   */
   readonly isActive: Effect.Effect<I, never, boolean>
+
+  /**
+   * The current size of the Hub
+   */
   readonly size: Effect.Effect<I, never, number>
+
+  /**
+   * Is the Hub full?
+   */
   readonly isFull: Effect.Effect<I, never, boolean>
+
+  /**
+   * Is the Hub empty?
+   */
   readonly isEmpty: Effect.Effect<I, never, boolean>
+
+  /**
+   * Shutdown the Hub
+   */
   readonly shutdown: Effect.Effect<I, never, void>
+
+  /**
+   * Is the Hub shutdown?
+   */
   readonly isShutdown: Effect.Effect<I, never, boolean>
+
+  /**
+   * Wait for the Hub to shutdown
+   */
   readonly awaitShutdown: Effect.Effect<I, never, void>
 
   // Hub
+
+  /**
+   * Publish a value to the Hub
+   */
   readonly publish: (a: A) => Effect.Effect<I, never, boolean>
+
+  /**
+   * Publish multiple values to the Hub
+   */
   readonly publishAll: (as: Iterable<A>) => Effect.Effect<I, never, boolean>
+
+  /**
+   * Subscribe to the Hub
+   */
   readonly subscribe: Effect.Effect<I | Scope, never, Q.Dequeue<A>>
 
   // Constructors
+
+  /**
+   * Create a bounded Hub
+   */
   readonly bounded: (capacity: number) => Layer.Layer<never, never, I>
+
+  /**
+   * Create a dropping Hub
+   */
   readonly dropping: (capacity: number) => Layer.Layer<never, never, I>
+
+  /**
+   * Create a sliding Hub
+   */
   readonly sliding: (capacity: number) => Layer.Layer<never, never, I>
+
+  /**
+   * Create an unbounded Hub
+   */
   readonly unbounded: Layer.Layer<never, never, I>
 }
 
 /**
  * Construct a Hub implementation to be utilized from the Effect Context.
  * @since 1.0.0
+ * @category constructors
  */
-export function Hub<A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Hub<IdentifierOf<I>, A>
-export function Hub<A>(): <const I>(identifier: I) => Hub<IdentifierOf<I>, A>
-export function Hub<A>() {
+export function Hub<A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Hub<IdentifierOf<I>, A>
+  <const I>(identifier: I): Hub<IdentifierOf<I>, A>
+} {
   return <const I extends IdentifierInput<any>>(identifier: I): Hub<IdentifierOf<I>, A> => {
     const tag = withActions(Tag<I, H.Hub<A>>(identifier))
 

@@ -14,12 +14,29 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [constructors](#constructors)
+  - [Enqueue](#enqueue)
 - [models](#models)
   - [Enqueue (interface)](#enqueue-interface)
-- [utils](#utils)
-  - [Enqueue](#enqueue)
 
 ---
+
+# constructors
+
+## Enqueue
+
+Construct a Enqueue implementation to be utilized from the Effect Context.
+
+**Signature**
+
+```ts
+export declare function Enqueue<A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Enqueue<IdentifierOf<I>, A>
+  <const I>(identifier: I): Enqueue<IdentifierOf<I>, A>
+}
+```
+
+Added in v1.0.0
 
 # models
 
@@ -48,23 +65,6 @@ export interface Enqueue<I, A> extends Tag<I, Q.Enqueue<A>> {
   readonly fromQueue: <I2>(queue: Queue<I2, A>) => Layer.Layer<I2, never, I>
   readonly fromHub: <I2>(hub: Hub<I2, A>) => Layer.Layer<I2, never, I>
 }
-```
-
-Added in v1.0.0
-
-# utils
-
-## Enqueue
-
-Construct a Enqueue implementation to be utilized from the Effect Context.
-
-**Signature**
-
-```ts
-export declare function Enqueue<A>(): <const I extends IdentifierFactory<any>>(
-  identifier: I
-) => Enqueue<IdentifierOf<I>, A>
-export declare function Enqueue<A>(): <const I>(identifier: I) => Enqueue<IdentifierOf<I>, A>
 ```
 
 Added in v1.0.0

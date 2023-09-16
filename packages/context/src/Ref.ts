@@ -7,13 +7,14 @@ import type { Option } from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as R from "@effect/io/Ref"
+import { withActions } from "@typed/context/Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
-import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
 /**
  * Contextual wrappers around @effect/io/Ref
  * @since 1.0.0
+ * @category models
  */
 export interface Ref<I, A> extends Tag<I, R.Ref<A>> {
   readonly [R.RefTypeId]: R.RefTypeId
@@ -33,6 +34,7 @@ export interface Ref<I, A> extends Tag<I, R.Ref<A>> {
   readonly updateSomeAndGet: (f: (a: A) => Option<A>) => Effect.Effect<I, never, A>
 
   // Provision
+
   readonly provide: (a: A) => <R, E, B>(effect: Effect.Effect<R, E, B>) => Effect.Effect<Exclude<R, I>, E, B>
 
   readonly layer: <R2, E2>(
@@ -43,8 +45,12 @@ export interface Ref<I, A> extends Tag<I, R.Ref<A>> {
 /**
  * Construct a Ref implementation to be utilized from the Effect Context.
  * @since 1.0.0
+ * @category constructors
  */
-export function Ref<A>() {
+export function Ref<A>(): {
+  <const I extends IdentifierFactory<any>>(id: I): Ref<IdentifierOf<I>, A>
+  <const I>(id: IdentifierInput<I>): Ref<IdentifierOf<I>, A>
+} {
   function makeRef<const I extends IdentifierFactory<any>>(id: I): Ref<IdentifierOf<I>, A>
   function makeRef<const I>(id: IdentifierInput<I>): Ref<IdentifierOf<I>, A>
   function makeRef<const I>(id: I): Ref<IdentifierOf<I>, A> {

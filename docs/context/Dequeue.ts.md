@@ -30,10 +30,10 @@ Construct a Dequeue implementation to be utilized from the Effect Context.
 **Signature**
 
 ```ts
-export declare function Dequeue<A>(): <const I extends IdentifierFactory<any>>(
-  identifier: I
-) => Dequeue<IdentifierOf<I>, A>
-export declare function Dequeue<A>(): <const I>(identifier: I) => Dequeue<IdentifierOf<I>, A>
+export declare function Dequeue<A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Dequeue<IdentifierOf<I>, A>
+  <const I>(identifier: I): Dequeue<IdentifierOf<I>, A>
+}
 ```
 
 Added in v1.0.0

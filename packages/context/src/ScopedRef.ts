@@ -13,6 +13,7 @@ import { Tag } from "@typed/context/Tag"
 /**
  * Contextual wrappers around @effect/io/ScopedRef
  * @since 1.0.0
+ * @category models
  */
 export interface ScopedRef<I, A> extends Tag<I, S.ScopedRef<A>> {
   readonly [S.ScopedRefTypeId]: S.ScopedRefTypeId
@@ -31,6 +32,7 @@ export interface ScopedRef<I, A> extends Tag<I, S.ScopedRef<A>> {
 /**
  * Construct a ScopedRef implementation to be utilized from the Effect Context.
  * @since 1.0.0
+ * @category constructors
  */
 export function ScopedRef<A>() {
   function makeScopedRef<const I extends IdentifierFactory<any>>(id: I): ScopedRef<IdentifierOf<I>, A>

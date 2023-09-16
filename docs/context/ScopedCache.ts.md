@@ -29,7 +29,10 @@ Construct a ScopedCache implementation to be utilized from the Effect Context.
 **Signature**
 
 ```ts
-export declare function ScopedCache<K, E, A>()
+export declare function ScopedCache<K, E, A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): ScopedCache<IdentifierOf<I>, K, E, A>
+  <const I>(identifier: I): ScopedCache<IdentifierOf<I>, K, E, A>
+}
 ```
 
 Added in v1.0.0

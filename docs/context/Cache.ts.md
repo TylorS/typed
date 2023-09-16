@@ -14,13 +14,14 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [constructors](#constructors)
   - [Cache](#cache)
+- [models](#models)
   - [Cache (interface)](#cache-interface)
 
 ---
 
-# utils
+# constructors
 
 ## Cache
 
@@ -29,10 +30,15 @@ Construct a Cache implementation to be utilized from the Effect Context.
 **Signature**
 
 ```ts
-export declare function Cache<K, E, A>()
+export declare function Cache<K, E, A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
+  <const I>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
+}
 ```
 
 Added in v1.0.0
+
+# models
 
 ## Cache (interface)
 

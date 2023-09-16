@@ -14,13 +14,14 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [constructors](#constructors)
   - [Queue](#queue)
+- [models](#models)
   - [Queue (interface)](#queue-interface)
 
 ---
 
-# utils
+# constructors
 
 ## Queue
 
@@ -29,11 +30,15 @@ Construct a Queue implementation to be utilized from the Effect Context.
 **Signature**
 
 ```ts
-export declare function Queue<A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Queue<IdentifierOf<I>, A>
-export declare function Queue<A>(): <const I>(identifier: I) => Queue<IdentifierOf<I>, A>
+export declare function Queue<A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Queue<IdentifierOf<I>, A>
+  <const I>(identifier: I): Queue<IdentifierOf<I>, A>
+}
 ```
 
 Added in v1.0.0
+
+# models
 
 ## Queue (interface)
 

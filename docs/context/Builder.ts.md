@@ -14,13 +14,30 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [constructors](#constructors)
+  - [ContextBuilder](#contextbuilder)
+- [models](#models)
   - [ContextBuilder (interface)](#contextbuilder-interface)
-  - [ContextBuilder (namespace)](#contextbuilder-namespace)
 
 ---
 
-# utils
+# constructors
+
+## ContextBuilder
+
+**Signature**
+
+```ts
+export declare const ContextBuilder: {
+  readonly empty: ContextBuilder<never>
+  readonly fromContext: <I>(context: C.Context<I>) => ContextBuilder<I>
+  readonly fromTag: <I, S>(tag: C.Tag<I, S>, s: S) => ContextBuilder<I>
+}
+```
+
+Added in v1.0.0
+
+# models
 
 ## ContextBuilder (interface)
 
@@ -39,9 +56,5 @@ export interface ContextBuilder<I> {
   ) => ContextBuilder<C.Tag.Identifier<S[number]>>
 }
 ```
-
-Added in v1.0.0
-
-## ContextBuilder (namespace)
 
 Added in v1.0.0

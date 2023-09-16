@@ -14,9 +14,8 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [constructors](#constructors)
   - [Request](#request)
-  - [Request (interface)](#request-interface)
   - [Request (namespace)](#request-namespace)
     - [Error (type alias)](#error-type-alias)
     - [Identifier (type alias)](#identifier-type-alias)
@@ -24,10 +23,13 @@ Added in v1.0.0
     - [InputArg (type alias)](#inputarg-type-alias)
     - [Req (type alias)](#req-type-alias)
     - [Success (type alias)](#success-type-alias)
+  - [of](#of)
+- [models](#models)
+  - [Request (interface)](#request-interface)
 
 ---
 
-# utils
+# constructors
 
 ## Request
 
@@ -36,28 +38,11 @@ Construct a Request implementation to be utilized from the Effect Context.
 **Signature**
 
 ```ts
-export declare function Request<const Id extends IdentifierFactory<any>, Input, Req extends R.Request<any, any>>(
-  id: Id,
+export declare function Request<Input, Req extends R.Request<any, any>>(
   makeRequest: (input: Input) => Req
-): Request<IdentifierOf<Id>, Input, Req>
-export declare function Request<const Id, Input, Req extends R.Request<any, any>>(
-  id: Id,
-  makeRequest: (input: Input) => Req
-): Request<IdentifierOf<Id>, Input, Req>
-```
-
-Added in v1.0.0
-
-## Request (interface)
-
-Contextual wrappers around @effect/io/Request
-
-**Signature**
-
-```ts
-export interface Request<I, Input, Req extends R.Request<any, any>>
-  extends Fn<I, (requests: Req) => Effect<never, R.Request.Error<Req>, R.Request.Success<Req>>> {
-  readonly make: (...input: SimplifyInputArg<Input>) => Effect<I, R.Request.Error<Req>, R.Request.Success<Req>>
+): {
+  <const Id extends IdentifierFactory<any>>(id: Id): Request<IdentifierOf<Id>, Input, Req>
+  <const Id>(id: Id): Request<IdentifierOf<Id>, Input, Req>
 }
 ```
 
@@ -135,6 +120,47 @@ Extract the Success of a Request
 
 ```ts
 export type Success<T> = R.Request.Success<Req<T>>
+```
+
+Added in v1.0.0
+
+## of
+
+Construct a Request implementation to be utilized from the Effect Context.
+
+**Signature**
+
+```ts
+export declare function of<Req extends R.Request<any, any>>(): {
+  <const Id extends IdentifierFactory<any>>(id: Id): Request<
+    IdentifierOf<Id>,
+    Compact<Omit<Req, R.RequestTypeId | keyof Data.Case>>,
+    Req
+  >
+
+  <const Id>(id: Id): Request<IdentifierOf<Id>, Compact<Omit<Req, R.RequestTypeId | keyof Data.Case>>, Req>
+}
+```
+
+Added in v1.0.0
+
+# models
+
+## Request (interface)
+
+Contextual wrappers around @effect/io/Request
+
+**Signature**
+
+```ts
+export interface Request<I, Input, Req extends R.Request<any, any>>
+  extends Fn<I, (requests: Req) => Effect<never, R.Request.Error<Req>, R.Request.Success<Req>>> {
+  /**
+   * Make the request using the provided impleemtation from the Effect Context.
+   * @since 1.0.0
+   */
+  readonly make: (...input: SimplifyInputArg<Input>) => Effect<I, R.Request.Error<Req>, R.Request.Success<Req>>
+}
 ```
 
 Added in v1.0.0

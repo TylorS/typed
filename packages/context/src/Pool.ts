@@ -9,13 +9,14 @@ import type * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as P from "@effect/io/Pool"
 import type { Scope } from "@effect/io/Scope"
+import { withActions } from "@typed/context/Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
-import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
 /**
  * Contextual wrapper for @effect/io/Pool
  * @since 1.0.0
+ * @category models
  */
 export interface Pool<I, E, A> extends Tag<I, P.Pool<E, A>> {
   readonly invalidate: (a: A) => Effect.Effect<I | Scope, never, void>
@@ -39,10 +40,12 @@ export interface Pool<I, E, A> extends Tag<I, P.Pool<E, A>> {
 /**
  * Construct a Pool implementation to be utilized from the Effect Context.
  * @since 1.0.0
+ * @category constructors
  */
-export function Pool<E, A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Pool<IdentifierOf<I>, E, A>
-export function Pool<E, A>(): <const I>(identifier: I) => Pool<IdentifierOf<I>, E, A>
-export function Pool<E, A>() {
+export function Pool<E, A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Pool<IdentifierOf<I>, E, A>
+  <const I>(identifier: I): Pool<IdentifierOf<I>, E, A>
+} {
   return <const I extends IdentifierInput<any>>(identifier: I): Pool<IdentifierOf<I>, E, A> => {
     const tag = withActions(Tag<I, P.Pool<E, A>>(identifier))
 

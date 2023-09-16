@@ -6,9 +6,9 @@
 import type * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Q from "@effect/io/Queue"
+import { withActions } from "@typed/context/Extensions"
 import type { Hub } from "@typed/context/Hub"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
-import { withActions } from "@typed/context/Interface"
 import type { Queue } from "@typed/context/Queue"
 import { Tag } from "@typed/context/Tag"
 
@@ -39,10 +39,12 @@ export interface Enqueue<I, A> extends Tag<I, Q.Enqueue<A>> {
 /**
  * Construct a Enqueue implementation to be utilized from the Effect Context.
  * @since 1.0.0
+ * @category constructors
  */
-export function Enqueue<A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Enqueue<IdentifierOf<I>, A>
-export function Enqueue<A>(): <const I>(identifier: I) => Enqueue<IdentifierOf<I>, A>
-export function Enqueue<A>() {
+export function Enqueue<A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Enqueue<IdentifierOf<I>, A>
+  <const I>(identifier: I): Enqueue<IdentifierOf<I>, A>
+} {
   return <const I extends IdentifierInput<any>>(identifier: I): Enqueue<IdentifierOf<I>, A> => {
     const tag = withActions(Tag<I, Q.Enqueue<A>>(identifier))
 

@@ -14,13 +14,14 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [constructors](#constructors)
   - [Pool](#pool)
+- [models](#models)
   - [Pool (interface)](#pool-interface)
 
 ---
 
-# utils
+# constructors
 
 ## Pool
 
@@ -29,13 +30,15 @@ Construct a Pool implementation to be utilized from the Effect Context.
 **Signature**
 
 ```ts
-export declare function Pool<E, A>(): <const I extends IdentifierFactory<any>>(
-  identifier: I
-) => Pool<IdentifierOf<I>, E, A>
-export declare function Pool<E, A>(): <const I>(identifier: I) => Pool<IdentifierOf<I>, E, A>
+export declare function Pool<E, A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Pool<IdentifierOf<I>, E, A>
+  <const I>(identifier: I): Pool<IdentifierOf<I>, E, A>
+}
 ```
 
 Added in v1.0.0
+
+# models
 
 ## Pool (interface)
 

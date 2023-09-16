@@ -5,9 +5,9 @@
  */
 
 import * as C from "@effect/data/Context"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
-import { makeIdentifier } from "./Identifier"
-import type { Tagged } from "./Interface"
+import type { Tagged } from "@typed/context/Extensions"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
+import { makeIdentifier } from "@typed/context/Identifier"
 
 /**
  * Provides extensions to the `Context` module's Tag implementation to
@@ -28,17 +28,15 @@ export function Tag<S>(): {
 }
 
 export function Tag<S>(id?: unknown) {
-  function makeTag<const I extends IdentifierFactory<any>>(id: I): Tag<IdentifierOf<I>, S>
-  function makeTag<const I>(id: I): Tag<IdentifierOf<I>, S>
-  function makeTag<const I extends IdentifierInput<any>>(id: I): Tag<IdentifierOf<I>, S> {
-    return C.Tag<IdentifierOf<I>, S>(makeIdentifier(id))
+  if (arguments.length > 0) {
+    return makeTag<any, S>(id)
+  } else {
+    return makeTag
   }
+}
 
-  if (id) {
-    return makeTag(id)
-  }
-
-  return makeTag
+function makeTag<const I extends IdentifierInput<any>, S>(id: I): Tag<IdentifierOf<I>, S> {
+  return C.Tag<IdentifierOf<I>, S>(makeIdentifier(id))
 }
 
 /**

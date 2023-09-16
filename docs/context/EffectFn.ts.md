@@ -14,8 +14,9 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [models](#models)
   - [EffectFn (interface)](#effectfn-interface)
+- [utils](#utils)
   - [EffectFn (namespace)](#effectfn-namespace)
     - [ArgsOf (type alias)](#argsof-type-alias)
     - [Context (type alias)](#context-type-alias)
@@ -25,7 +26,7 @@ Added in v1.0.0
 
 ---
 
-# utils
+# models
 
 ## EffectFn (interface)
 
@@ -40,6 +41,8 @@ export interface EffectFn<Args extends ReadonlyArray<any> = ReadonlyArray<any>, 
 ```
 
 Added in v1.0.0
+
+# utils
 
 ## EffectFn (namespace)
 

@@ -12,19 +12,115 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [constructors](#constructors)
+  - [Model](#model)
+- [models](#models)
+  - [Model (interface)](#model-interface)
+  - [ModelRef (type alias)](#modelref-type-alias)
 - [symbols](#symbols)
   - [ModelTypeId](#modeltypeid)
   - [ModelTypeId (type alias)](#modeltypeid-type-alias)
 - [utils](#utils)
-  - [Model](#model)
-  - [Model (interface)](#model-interface)
   - [Model (namespace)](#model-namespace)
     - [Identifier (type alias)](#identifier-type-alias)
     - [Of (type alias)](#of-type-alias)
     - [State (type alias)](#state-type-alias)
-  - [ModelRef (type alias)](#modelref-type-alias)
 
 ---
+
+# constructors
+
+## Model
+
+Create a Model from a collection of Refs.
+
+**Signature**
+
+```ts
+export declare function Model<const Refs extends Readonly<Record<string, ModelRef<any, any> | Model<any>>>>(
+  refs: Refs
+): Model<Refs>
+```
+
+Added in v1.0.0
+
+# models
+
+## Model (interface)
+
+A Model is a collection of Refs that can be utilized as a single unit from the Effect Context.
+
+**Signature**
+
+```ts
+export interface Model<Refs extends Readonly<Record<string, ModelRef<any, any> | Model<any>>>> {
+  readonly [ModelTypeId]: ModelTypeId
+
+  /**
+   * A Lens into a Ref from any given model at a particular key.
+   * @since 1.0.0
+   */
+  readonly fromKey: <K extends keyof Refs>(key: K) => Refs[K]
+
+  /**
+   * Get the current state of the Model
+   * @since 1.0.0
+   */
+  readonly get: Effect.Effect<Model.Identifier<this>, never, Model.State<this>>
+
+  /**
+   * Set the state of the Model
+   * @since 1.0.0
+   */
+  readonly set: (state: Model.State<this>) => Effect.Effect<Model.Identifier<this>, never, void>
+
+  /**
+   * Update the state of the Model
+   * @since 1.0.0
+   */
+  readonly update: (
+    f: (state: Model.State<this>) => Model.State<this>
+  ) => Effect.Effect<Model.Identifier<this>, never, void>
+
+  /**
+   * Modify the state of the Model and return a value
+   * @since 1.0.0
+   */
+  readonly modify: <B>(
+    f: (state: Model.State<this>) => readonly [B, Model.State<this>]
+  ) => Effect.Effect<Model.Identifier<this>, never, B>
+
+  /**
+   * Provide a Model to an Effect
+   * @since 1.0.0
+   */
+  readonly provide: (
+    state: Model.State<this>
+  ) => <R, E, B>(effect: Effect.Effect<R, E, B>) => Effect.Effect<Exclude<R, Model.Identifier<this>> | Scope, E, B>
+
+  /**
+   * Construct a Layer to provide a Model to an Effect
+   * @since 1.0.0
+   */
+  readonly layer: <R, E>(
+    effect: Effect.Effect<R, E, Model.State<this>>
+  ) => Layer.Layer<Exclude<R, Scope>, E, Model.Identifier<this>>
+}
+```
+
+Added in v1.0.0
+
+## ModelRef (type alias)
+
+A ModelRef<I, A> is a Ref/ScopedRef/SynchronizedRef that is part of a Model.
+
+**Signature**
+
+```ts
+export type ModelRef<I, A> = Ref<I, A> | ScopedRef<I, A> | SynchronizedRef<I, A>
+```
+
+Added in v1.0.0
 
 # symbols
 
@@ -49,52 +145,6 @@ export type ModelTypeId = typeof ModelTypeId
 Added in v1.0.0
 
 # utils
-
-## Model
-
-Create a Model from a collection of Refs.
-
-**Signature**
-
-```ts
-export declare function Model<const Refs extends Readonly<Record<string, ModelRef<any, any> | Model<any>>>>(
-  refs: Refs
-): Model<Refs>
-```
-
-Added in v1.0.0
-
-## Model (interface)
-
-A Model is a collection of Refs that can be utilized as a single unit from the Effect Context.
-
-**Signature**
-
-```ts
-export interface Model<Refs extends Readonly<Record<string, ModelRef<any, any> | Model<any>>>> {
-  readonly [ModelTypeId]: ModelTypeId
-
-  // Gain access to a Ref by key
-  readonly fromKey: <K extends keyof Refs>(key: K) => Refs[K]
-
-  // Simple Ref operations
-  readonly get: Effect.Effect<Model.Identifier<this>, never, Model.State<this>>
-  readonly set: (state: Model.State<this>) => Effect.Effect<Model.Identifier<this>, never, void>
-  readonly update: (
-    f: (state: Model.State<this>) => Model.State<this>
-  ) => Effect.Effect<Model.Identifier<this>, never, void>
-  readonly modify: <B>(
-    f: (state: Model.State<this>) => readonly [B, Model.State<this>]
-  ) => Effect.Effect<Model.Identifier<this>, never, B>
-
-  // Provision
-  readonly provide: (
-    state: Model.State<this>
-  ) => <R, E, B>(effect: Effect.Effect<R, E, B>) => Effect.Effect<Exclude<R, Model.Identifier<this>> | Scope, E, B>
-}
-```
-
-Added in v1.0.0
 
 ## Model (namespace)
 
@@ -151,18 +201,6 @@ export type State<T> = T extends Ref<infer _, infer S>
   : T extends Model<infer R>
   ? { readonly [K in keyof R]: State<R[K]> }
   : never
-```
-
-Added in v1.0.0
-
-## ModelRef (type alias)
-
-A ModelRef<I, A> is a Ref/ScopedRef/SynchronizedRef that is part of a Model.
-
-**Signature**
-
-```ts
-export type ModelRef<I, A> = Ref<I, A> | ScopedRef<I, A> | SynchronizedRef<I, A>
 ```
 
 Added in v1.0.0

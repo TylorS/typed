@@ -1,6 +1,6 @@
 ---
 title: Fn.ts
-nav_order: 7
+nav_order: 8
 parent: "@typed/context"
 ---
 
@@ -15,12 +15,14 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [constructors](#constructors)
+  - [Fn](#fn)
+- [models](#models)
+  - [Fn (interface)](#fn-interface)
 - [symbols](#symbols)
   - [FnTypeId](#fntypeid)
   - [FnTypeId (type alias)](#fntypeid-type-alias)
 - [utils](#utils)
-  - [Fn](#fn)
-  - [Fn (interface)](#fn-interface)
   - [Fn (namespace)](#fn-namespace)
     - [Any (type alias)](#any-type-alias)
     - [FnOf (type alias)](#fnof-type-alias)
@@ -28,29 +30,7 @@ Added in v1.0.0
 
 ---
 
-# symbols
-
-## FnTypeId
-
-**Signature**
-
-```ts
-export declare const FnTypeId: typeof FnTypeId
-```
-
-Added in v1.0.0
-
-## FnTypeId (type alias)
-
-**Signature**
-
-```ts
-export type FnTypeId = typeof FnTypeId
-```
-
-Added in v1.0.0
-
-# utils
+# constructors
 
 ## Fn
 
@@ -59,10 +39,15 @@ Create a new Fn
 **Signature**
 
 ```ts
-export declare function Fn<T extends EffectFn>()
+export declare function Fn<T extends EffectFn>(): {
+  <const Id extends IdentifierFactory<any>>(id: Id): Fn<IdentifierOf<Id>, T>
+  <const Id>(id: Id): Fn<IdentifierOf<Id>, T>
+}
 ```
 
 Added in v1.0.0
+
+# models
 
 ## Fn (interface)
 
@@ -113,6 +98,30 @@ export interface Fn<Key, T extends EffectFn>
 ```
 
 Added in v1.0.0
+
+# symbols
+
+## FnTypeId
+
+**Signature**
+
+```ts
+export declare const FnTypeId: typeof FnTypeId
+```
+
+Added in v1.0.0
+
+## FnTypeId (type alias)
+
+**Signature**
+
+```ts
+export type FnTypeId = typeof FnTypeId
+```
+
+Added in v1.0.0
+
+# utils
 
 ## Fn (namespace)
 

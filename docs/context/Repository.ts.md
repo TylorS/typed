@@ -15,15 +15,31 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [constructors](#constructors)
+  - [repository](#repository)
+- [models](#models)
   - [Repository (type alias)](#repository-type-alias)
   - [RepositoryFns (type alias)](#repositoryfns-type-alias)
   - [RepositoryImplement (type alias)](#repositoryimplement-type-alias)
-  - [repository](#repository)
+  - [RepositoryMake (type alias)](#repositorymake-type-alias)
 
 ---
 
-# utils
+# constructors
+
+## repository
+
+Create a Repository from a collection of Fns.
+
+**Signature**
+
+```ts
+export declare function repository<Fns extends AnyFns>(input: Fns): Repository<Fns>
+```
+
+Added in v1.0.0
+
+# models
 
 ## Repository (type alias)
 
@@ -35,7 +51,8 @@ and utilized in a single place.
 ```ts
 export type Repository<Fns extends AnyFns> = RepositoryFns<Fns> &
   TaggedStruct<Fns> &
-  RepositoryImplement<Fns> & {
+  RepositoryImplement<Fns> &
+  RepositoryMake<Fns> & {
     readonly functions: Fns
   }
 ```
@@ -72,14 +89,18 @@ export type RepositoryImplement<Fns extends AnyFns> = {
 
 Added in v1.0.0
 
-## repository
+## RepositoryMake (type alias)
 
-Create a Repository from a collection of Fns.
+A Repository can be implemented with a collection of Fns.
 
 **Signature**
 
 ```ts
-export declare function repository<Fns extends AnyFns>(input: Fns): Repository<Fns>
+export type RepositoryMake<Fns extends AnyFns> = {
+  readonly make: <R, E, Impls extends { readonly [K in keyof Fns]: EffectFn.Extendable<Fn.FnOf<Fns[K]>> }>(
+    implementations: Effect.Effect<R, E, Impls>
+  ) => Layer.Layer<Exclude<EffectFn.Context<Impls[keyof Impls]>, Scope>, never, Fn.Identifier<Fns[keyof Fns]>>
+}
 ```
 
 Added in v1.0.0

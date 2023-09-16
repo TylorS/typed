@@ -14,9 +14,11 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [constructors](#constructors)
   - [RequestResolver](#requestresolver)
+- [models](#models)
   - [RequestResolver (interface)](#requestresolver-interface)
+- [utils](#utils)
   - [RequestResolver (namespace)](#requestresolver-namespace)
     - [Identifier (type alias)](#identifier-type-alias)
     - [Identifiers (type alias)](#identifiers-type-alias)
@@ -24,7 +26,7 @@ Added in v1.0.0
 
 ---
 
-# utils
+# constructors
 
 ## RequestResolver
 
@@ -39,6 +41,8 @@ export declare function RequestResolver<const Requests extends Readonly<Record<s
 ```
 
 Added in v1.0.0
+
+# models
 
 ## RequestResolver (interface)
 
@@ -80,6 +84,8 @@ export interface RequestResolver<Id, Requests extends Readonly<Record<string, Re
 ```
 
 Added in v1.0.0
+
+# utils
 
 ## RequestResolver (namespace)
 

@@ -8,6 +8,7 @@ import type * as Effect from "@effect/io/Effect"
 /**
  * EffectFn is a type-alias for a function that returns an Effect.
  * @since 1.0.0
+ * @category models
  */
 export interface EffectFn<Args extends ReadonlyArray<any> = ReadonlyArray<any>, R = any, E = any, A = any> {
   (...args: Args): Effect.Effect<R, E, A>
@@ -20,6 +21,7 @@ export namespace EffectFn {
   /**
    * A helper for utilizing an EffectFn in an `extends` clause.
    * @since 1.0.0
+   * @category type-level
    */
   export type Extendable<T extends EffectFn> = T extends (
     ...args: infer Args
@@ -29,6 +31,7 @@ export namespace EffectFn {
   /**
    * A helper for extracting the arguments of an EffectFn.
    * @since 1.0.0
+   * @category type-level
    */
   export type ArgsOf<T extends EffectFn> = T extends (
     ...args: infer Args
@@ -39,6 +42,7 @@ export namespace EffectFn {
   /**
    * A helper for extracting the context of an EffectFn.
    * @since 1.0.0
+   * @category type-level
    */
   export type Context<T extends EffectFn> = T extends (
     ...args: infer _Args
@@ -49,6 +53,7 @@ export namespace EffectFn {
   /**
    * A helper for extracting the error of an EffectFn.
    * @since 1.0.0
+   * @category type-level
    */
   export type Error<T extends EffectFn> = T extends (
     ...args: infer _Args
@@ -59,6 +64,7 @@ export namespace EffectFn {
   /**
    * A helper for extracting the success of an EffectFn.
    * @since 1.0.0
+   * @category type-level
    */
   export type Success<T extends EffectFn> = T extends (
     ...args: infer _Args

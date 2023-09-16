@@ -8,13 +8,14 @@ import type { Option } from "@effect/data/Option"
 import type * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Q from "@effect/io/Queue"
+import { withActions } from "@typed/context/Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
-import { withActions } from "@typed/context/Interface"
 import { Tag } from "@typed/context/Tag"
 
 /**
  * Contextual wrappers around @effect/data/Queue
  * @since 1.0.0
+ * @category models
  */
 export interface Queue<I, A> extends Tag<I, Q.Queue<A>> {
   // Common
@@ -51,10 +52,12 @@ export interface Queue<I, A> extends Tag<I, Q.Queue<A>> {
 /**
  * Construct a Queue implementation to be utilized from the Effect Context.
  * @since 1.0.0
+ * @category constructors
  */
-export function Queue<A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Queue<IdentifierOf<I>, A>
-export function Queue<A>(): <const I>(identifier: I) => Queue<IdentifierOf<I>, A>
-export function Queue<A>() {
+export function Queue<A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Queue<IdentifierOf<I>, A>
+  <const I>(identifier: I): Queue<IdentifierOf<I>, A>
+} {
   return <const I extends IdentifierInput<any>>(identifier: I): Queue<IdentifierOf<I>, A> => {
     const tag = withActions(Tag<I, Q.Queue<A>>(identifier))
 

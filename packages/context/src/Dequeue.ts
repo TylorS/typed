@@ -8,9 +8,9 @@ import type { Option } from "@effect/data/Option"
 import type * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Q from "@effect/io/Queue"
+import { withActions } from "@typed/context/Extensions"
 import type { Hub } from "@typed/context/Hub"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
-import { withActions } from "@typed/context/Interface"
 import type { Queue } from "@typed/context/Queue"
 import { Tag } from "@typed/context/Tag"
 
@@ -46,9 +46,11 @@ export interface Dequeue<I, A> extends Tag<I, Q.Dequeue<A>> {
  * @since 1.0.0
  * @category constructors
  */
-export function Dequeue<A>(): <const I extends IdentifierFactory<any>>(identifier: I) => Dequeue<IdentifierOf<I>, A>
-export function Dequeue<A>(): <const I>(identifier: I) => Dequeue<IdentifierOf<I>, A>
-export function Dequeue<A>() {
+
+export function Dequeue<A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Dequeue<IdentifierOf<I>, A>
+  <const I>(identifier: I): Dequeue<IdentifierOf<I>, A>
+} {
   return <const I extends IdentifierInput<any>>(identifier: I): Dequeue<IdentifierOf<I>, A> => {
     const tag = withActions(Tag<I, Q.Dequeue<A>>(identifier))
 

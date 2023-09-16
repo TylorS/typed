@@ -1,6 +1,6 @@
 ---
 title: Identifier.ts
-nav_order: 9
+nav_order: 10
 parent: "@typed/context"
 ---
 
@@ -17,19 +17,36 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [constructors](#constructors)
+  - [id](#id)
+- [models](#models)
   - [Identifier (interface)](#identifier-interface)
   - [IdentifierConstructor (interface)](#identifierconstructor-interface)
   - [IdentifierFactory (type alias)](#identifierfactory-type-alias)
   - [IdentifierInput (type alias)](#identifierinput-type-alias)
+- [type-level](#type-level)
   - [IdentifierOf (type alias)](#identifierof-type-alias)
-  - [id](#id)
+- [utils](#utils)
   - [identifierToString](#identifiertostring)
   - [makeIdentifier](#makeidentifier)
 
 ---
 
-# utils
+# constructors
+
+## id
+
+Construct a unique identifier for a Contextual implementation.
+
+**Signature**
+
+```ts
+export declare function id<const T>(uniqueIdentifier: T): IdentifierConstructor<T>
+```
+
+Added in v1.0.0
+
+# models
 
 ## Identifier (interface)
 
@@ -83,6 +100,8 @@ export type IdentifierInput<T> = IdentifierFactory<T> | IdentifierConstructor<T>
 
 Added in v1.0.0
 
+# type-level
+
 ## IdentifierOf (type alias)
 
 Extract the Identifier from a Contextual implementation.
@@ -100,17 +119,7 @@ export type IdentifierOf<T> = T extends (_id: typeof id) => IdentifierConstructo
 
 Added in v1.0.0
 
-## id
-
-Construct a unique identifier for a Contextual implementation.
-
-**Signature**
-
-```ts
-export declare function id<const T>(uniqueIdentifier: T): IdentifierConstructor<T>
-```
-
-Added in v1.0.0
+# utils
 
 ## identifierToString
 

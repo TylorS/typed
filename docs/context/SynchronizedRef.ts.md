@@ -14,13 +14,14 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [constructors](#constructors)
   - [SynchronizedRef](#synchronizedref)
+- [models](#models)
   - [SynchronizedRef (interface)](#synchronizedref-interface)
 
 ---
 
-# utils
+# constructors
 
 ## SynchronizedRef
 
@@ -29,10 +30,15 @@ Construct a SynchronizedRef implementation to be utilized from the Effect Contex
 **Signature**
 
 ```ts
-export declare function SynchronizedRef<A>()
+export declare function SynchronizedRef<A>(): {
+  <const I extends IdentifierFactory<any>>(id: I): SynchronizedRef<IdentifierOf<I>, A>
+  <const I>(id: IdentifierInput<I>): SynchronizedRef<IdentifierOf<I>, A>
+}
 ```
 
 Added in v1.0.0
+
+# models
 
 ## SynchronizedRef (interface)
 

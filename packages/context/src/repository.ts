@@ -5,17 +5,21 @@
  * @since 1.0.0
  */
 
+import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
+import type { Scope } from "@effect/io/Scope"
+import { ContextBuilder } from "@typed/context/Builder"
 
-import type { EffectFn } from "./EffectFn"
-import type { Fn } from "./Fn"
-import { struct, type TaggedStruct } from "./Many"
+import type { EffectFn } from "@typed/context/EffectFn"
+import type { Fn } from "@typed/context/Fn"
+import { struct, type TaggedStruct } from "@typed/context/Many"
 
 type AnyFns = Readonly<Record<string, Fn.Any>>
 
 /**
  * Create a Repository from a collection of Fns.
  * @since 1.0.0
+ * @category constructors
  */
 export function repository<Fns extends AnyFns>(input: Fns): Repository<Fns> {
   const entries = Object.entries(input)
@@ -28,10 +32,30 @@ export function repository<Fns extends AnyFns>(input: Fns): Repository<Fns> {
     return Layer.mergeAll(first, ...rest)
   }) as RepositoryImplement<Fns>["implement"]
 
+  const make: RepositoryMake<Fns>["make"] = ((effect) =>
+    Layer.scopedContext(Effect.gen(function*($) {
+      const scope = yield* $(Effect.scope)
+      const impls = yield* $(effect)
+
+      let context = ContextBuilder.empty
+
+      for (const [k, fn] of Object.entries(input)) {
+        context = context.mergeContext(
+          yield* $(Layer.buildWithScope(
+            fn.implement(impls[k]),
+            scope
+          ))
+        )
+      }
+
+      return context.context
+    }))) as RepositoryMake<Fns>["make"]
+
   return {
     ...fns,
     ...struct(input),
     implement,
+    make,
     functions: input
   }
 }
@@ -40,11 +64,13 @@ export function repository<Fns extends AnyFns>(input: Fns): Repository<Fns> {
  * A Repository is a collection of Context.Fns that can be implemented
  * and utilized in a single place.
  * @since 1.0.0
+ * @category models
  */
 export type Repository<Fns extends AnyFns> =
   & RepositoryFns<Fns>
   & TaggedStruct<Fns>
   & RepositoryImplement<Fns>
+  & RepositoryMake<Fns>
   & {
     readonly functions: Fns
   }
@@ -52,6 +78,7 @@ export type Repository<Fns extends AnyFns> =
 /**
  * Constructs a record of methods from a collection of Fns.
  * @since 1.0.0
+ * @category models
  */
 export type RepositoryFns<Fns extends AnyFns> = {
   readonly [K in keyof Fns]: Fns[K]["apply"]
@@ -60,6 +87,7 @@ export type RepositoryFns<Fns extends AnyFns> = {
 /**
  * A Repository can be implemented with a collection of Fns.
  * @since 1.0.0
+ * @category models
  */
 export type RepositoryImplement<Fns extends AnyFns> = {
   readonly implement: <
@@ -67,4 +95,19 @@ export type RepositoryImplement<Fns extends AnyFns> = {
   >(
     implementations: Impls
   ) => Layer.Layer<EffectFn.Context<Impls[keyof Impls]>, never, Fn.Identifier<Fns[keyof Fns]>>
+}
+
+/**
+ * A Repository can be implemented with a collection of Fns.
+ * @since 1.0.0
+ * @category models
+ */
+export type RepositoryMake<Fns extends AnyFns> = {
+  readonly make: <
+    R,
+    E,
+    Impls extends { readonly [K in keyof Fns]: EffectFn.Extendable<Fn.FnOf<Fns[K]>> }
+  >(
+    implementations: Effect.Effect<R, E, Impls>
+  ) => Layer.Layer<Exclude<EffectFn.Context<Impls[keyof Impls]>, Scope>, never, Fn.Identifier<Fns[keyof Fns]>>
 }

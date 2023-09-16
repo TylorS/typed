@@ -10,6 +10,7 @@
 /**
  * Construct a unique identifier for a Contextual implementation.
  * @since 1.0.0
+ * @category constructors
  */
 export function id<const T>(uniqueIdentifier: T): IdentifierConstructor<T> {
   return class Id implements Identifier<T> {
@@ -21,6 +22,7 @@ export function id<const T>(uniqueIdentifier: T): IdentifierConstructor<T> {
 /**
  * A constructor for a unique identifier for a Contextual implementation.
  * @since 1.0.0
+ * @category models
  */
 export interface IdentifierConstructor<T> extends Identifier<T> {
   new(): Identifier<T>
@@ -29,6 +31,7 @@ export interface IdentifierConstructor<T> extends Identifier<T> {
 /**
  * A unique identifier for a Contextual implementation.
  * @since 1.0.0
+ * @category models
  */
 export interface Identifier<T> {
   readonly __identifier__: T
@@ -38,6 +41,7 @@ export interface Identifier<T> {
 /**
  * Extract the Identifier from a Contextual implementation.
  * @since 1.0.0
+ * @category type-level
  */
 export type IdentifierOf<T> = T extends (_id: typeof id) => IdentifierConstructor<infer _> ? InstanceType<ReturnType<T>>
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -47,12 +51,14 @@ export type IdentifierOf<T> = T extends (_id: typeof id) => IdentifierConstructo
 /**
  * A factory for creating a unique identifier for a Contextual implementation.
  * @since 1.0.0
+ * @category models
  */
 export type IdentifierFactory<T> = (_id: typeof id) => IdentifierConstructor<T>
 
 /**
  * A factory, constructor, or instance of a unique identifier for a Contextual implementation.
  * @since 1.0.0
+ * @category models
  */
 export type IdentifierInput<T> = IdentifierFactory<T> | IdentifierConstructor<T> | T
 

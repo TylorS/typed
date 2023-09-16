@@ -8,15 +8,16 @@ import * as Layer from "@effect/io/Layer"
 import type * as Req from "@effect/io/Request"
 import * as RR from "@effect/io/RequestResolver"
 
-import { withActions } from "@typed/context/Interface"
-import type { Context } from "./Context"
-import type { IdentifierFactory, IdentifierOf } from "./Identifier"
-import type { Request } from "./Request"
-import { Tag } from "./Tag"
+import type { Context } from "@typed/context/Context"
+import { withActions } from "@typed/context/Extensions"
+import type { IdentifierFactory, IdentifierOf } from "@typed/context/Identifier"
+import type { Request } from "@typed/context/Request"
+import { Tag } from "@typed/context/Tag"
 
 /**
  * Contextual wrappers around @effect/io/RequestResolver
  * @since 1.0.0
+ * @category models
  */
 export interface RequestResolver<
   Id,
@@ -70,6 +71,7 @@ type Compact<Input> = [{ [K in keyof Input]: Input[K] }] extends [infer R] ? R :
 /**
  * Construct a RequestResolver implementation to be utilized from the Effect Context.
  * @since 1.0.0
+ * @category constructors
  */
 export function RequestResolver<
   const Requests extends Readonly<Record<string, Request<any, any, any>>>
@@ -140,18 +142,21 @@ export namespace RequestResolver {
   /**
    * Extract the Identifier of a RequestResolver
    * @since 1.0.0
+   * @category type-level
    */
   export type Identifier<T> = [T] extends [RequestResolver<infer Id, any>] ? Id : never
 
   /**
    * Extract the Requests of a RequestResolver
    * @since 1.0.0
+   * @category type-level
    */
   export type Requests<T> = [T] extends [RequestResolver<any, infer Requests>] ? Requests : never
 
   /**
    * Extract the Identifiers of a RequestResolver
    * @since 1.0.0
+   * @category type-level
    */
   export type Identifiers<T> = Identifier<T> | Request.Identifier<Requests<T>>
 }

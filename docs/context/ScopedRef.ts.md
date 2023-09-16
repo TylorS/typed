@@ -14,13 +14,14 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [constructors](#constructors)
   - [ScopedRef](#scopedref)
+- [models](#models)
   - [ScopedRef (interface)](#scopedref-interface)
 
 ---
 
-# utils
+# constructors
 
 ## ScopedRef
 
@@ -33,6 +34,8 @@ export declare function ScopedRef<A>()
 ```
 
 Added in v1.0.0
+
+# models
 
 ## ScopedRef (interface)
 

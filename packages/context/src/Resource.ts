@@ -13,9 +13,11 @@ import { Tag } from "@typed/context/Tag"
 /**
  * Contextual wrappers around @effect/io/Resource
  * @since 1.0.0
+ * @category models
  */
 export interface Resource<I, E, A> extends Tag<I, R.Resource<E, A>> {
   readonly get: Effect.Effect<I, E, A>
+
   readonly refresh: Effect.Effect<I, E, void>
 
   readonly auto: <R, R2, Out>(
@@ -30,7 +32,10 @@ export interface Resource<I, E, A> extends Tag<I, R.Resource<E, A>> {
  * Construct a Resource implementation to be utilized from the Effect Context.
  * @since 1.0.0
  */
-export function Resource<E, A>() {
+export function Resource<E, A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Resource<IdentifierOf<I>, E, A>
+  <const I>(identifier: I): Resource<IdentifierOf<I>, E, A>
+} {
   function makeResource<const I extends IdentifierFactory<any>>(identifier: I): Resource<IdentifierOf<I>, E, A>
   function makeResource<const I>(identifier: I): Resource<IdentifierOf<I>, E, A>
   function makeResource<const I>(identifier: I): Resource<IdentifierOf<I>, E, A> {

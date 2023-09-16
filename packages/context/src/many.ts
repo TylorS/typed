@@ -7,14 +7,15 @@ import type * as C from "@effect/data/Context"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 
-import { ContextBuilder } from "./Builder"
-import type { Tagged } from "./Interface"
+import { ContextBuilder } from "@typed/context/Builder"
+import type { Tagged } from "@typed/context/Extensions"
 
 type TupleOfTags = ReadonlyArray<C.Tag<any, any>>
 
 /**
  * A product type from a tuple of Tags
  * @since 1.0.0
+ * @category models
  */
 export interface TaggedTuple<Tags extends TupleOfTags> extends
   Tagged<
@@ -29,6 +30,7 @@ export interface TaggedTuple<Tags extends TupleOfTags> extends
 /**
  * Create a TaggedTuple from a tuple of Tags
  * @since 1.0.0
+ * @category constructors
  */
 export function tuple<Tags extends TupleOfTags>(...tags: Tags): TaggedTuple<Tags> {
   const all = Effect.all(tags) as any as Effect.Effect<
@@ -57,6 +59,7 @@ type StructOfTags = { readonly [key: PropertyKey]: C.Tag<any, any> }
 /**
  * A product type from a struct of Tags
  * @since 1.0.0
+ * @category models
  */
 export interface TaggedStruct<Tags extends StructOfTags> extends
   Tagged<
@@ -71,6 +74,7 @@ export interface TaggedStruct<Tags extends StructOfTags> extends
 /**
  * Create a TaggedStruct from a struct of Tags
  * @since 1.0.0
+ * @category constructors
  */
 export function struct<Tags extends StructOfTags>(tags: Tags): TaggedStruct<Tags> {
   const all = Effect.all(tags) as any as Effect.Effect<

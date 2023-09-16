@@ -4,9 +4,12 @@
  * @since 1.0.0
  */
 
+import type { Context } from "@effect/data/Context"
 import * as Effect from "@effect/io/Effect"
+import * as Layer from "@effect/io/Layer"
 import type { Scope } from "@effect/io/Scope"
 import { ScopedRefTypeId } from "@effect/io/ScopedRef"
+import { ContextBuilder } from "@typed/context/Builder"
 import type { Ref } from "@typed/context/Ref"
 import type { ScopedRef } from "@typed/context/ScopedRef"
 import type { SynchronizedRef } from "@typed/context/SynchronizedRef"
@@ -14,6 +17,7 @@ import type { SynchronizedRef } from "@typed/context/SynchronizedRef"
 /**
  * A ModelRef<I, A> is a Ref/ScopedRef/SynchronizedRef that is part of a Model.
  * @since 1.0.0
+ * @category models
  */
 export type ModelRef<I, A> =
   | Ref<I, A>
@@ -35,32 +39,66 @@ export type ModelTypeId = typeof ModelTypeId
 /**
  * A Model is a collection of Refs that can be utilized as a single unit from the Effect Context.
  * @since 1.0.0
+ * @category models
  */
 export interface Model<Refs extends Readonly<Record<string, ModelRef<any, any> | Model<any>>>> {
   readonly [ModelTypeId]: ModelTypeId
 
-  // Gain access to a Ref by key
+  /**
+   * A Lens into a Ref from any given model at a particular key.
+   * @since 1.0.0
+   */
   readonly fromKey: <K extends keyof Refs>(key: K) => Refs[K]
 
-  // Simple Ref operations
+  /**
+   * Get the current state of the Model
+   * @since 1.0.0
+   */
   readonly get: Effect.Effect<Model.Identifier<this>, never, Model.State<this>>
+
+  /**
+   * Set the state of the Model
+   * @since 1.0.0
+   */
   readonly set: (state: Model.State<this>) => Effect.Effect<Model.Identifier<this>, never, void>
+
+  /**
+   * Update the state of the Model
+   * @since 1.0.0
+   */
   readonly update: (
     f: (state: Model.State<this>) => Model.State<this>
   ) => Effect.Effect<Model.Identifier<this>, never, void>
+
+  /**
+   * Modify the state of the Model and return a value
+   * @since 1.0.0
+   */
   readonly modify: <B>(
     f: (state: Model.State<this>) => readonly [B, Model.State<this>]
   ) => Effect.Effect<Model.Identifier<this>, never, B>
 
-  // Provision
+  /**
+   * Provide a Model to an Effect
+   * @since 1.0.0
+   */
   readonly provide: (state: Model.State<this>) => <R, E, B>(
     effect: Effect.Effect<R, E, B>
   ) => Effect.Effect<Exclude<R, Model.Identifier<this>> | Scope, E, B>
+
+  /**
+   * Construct a Layer to provide a Model to an Effect
+   * @since 1.0.0
+   */
+  readonly layer: <R, E>(
+    effect: Effect.Effect<R, E, Model.State<this>>
+  ) => Layer.Layer<Exclude<R, Scope>, E, Model.Identifier<this>>
 }
 
 /**
  * Create a Model from a collection of Refs.
  * @since 1.0.0
+ * @category constructors
  */
 export function Model<const Refs extends Readonly<Record<string, ModelRef<any, any> | Model<any>>>>(
   refs: Refs
@@ -95,7 +133,25 @@ export function Model<const Refs extends Readonly<Record<string, ModelRef<any, a
       Object.entries(refs).reduce(
         (effect: Effect.Effect<any, any, any>, [k, ref]) => ref.provide(state[k])(effect),
         effect
-      )
+      ),
+    layer: (effect) =>
+      Layer.scopedContext(Effect.gen(function*(_) {
+        const scope = yield* _(Effect.scope)
+        const initial = yield* _(effect)
+
+        let context = ContextBuilder.empty
+
+        for (const [k, ref] of Object.entries(refs)) {
+          context = context.mergeContext(
+            yield* _(Layer.buildWithScope(
+              ref.layer(Effect.succeed(initial[k])),
+              scope
+            ))
+          )
+        }
+
+        return context.context as Context<Model.Identifier<typeof self>>
+      }))
   }
 
   return self
