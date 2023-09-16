@@ -15,28 +15,16 @@ Added in v1.18.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
-  - [Subject (interface)](#subject-interface)
+- [constructors](#constructors)
   - [make](#make)
   - [makeHold](#makehold)
   - [makeReplay](#makereplay)
+- [models](#models)
+  - [Subject (interface)](#subject-interface)
 
 ---
 
-# utils
-
-## Subject (interface)
-
-A Subject is an Fx which is also a Sink, and can be used to
-broadcast events to many consumers.
-
-**Signature**
-
-```ts
-export interface Subject<R, E, A> extends Fx<R, E, A>, Sink<E, A> {}
-```
-
-Added in v1.18.0
+# constructors
 
 ## make
 
@@ -74,6 +62,21 @@ receive _up to_ `capacity` previous events.
 
 ```ts
 export declare const makeReplay: <E, A>(capacity: number) => Subject<never, E, A>
+```
+
+Added in v1.18.0
+
+# models
+
+## Subject (interface)
+
+A Subject is an Fx which is also a Sink, and can be used to
+broadcast events to many consumers.
+
+**Signature**
+
+```ts
+export interface Subject<R, E, A> extends Fx<R, E, A>, Sink<E, A> {}
 ```
 
 Added in v1.18.0

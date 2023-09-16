@@ -12,52 +12,69 @@ Added in v1.18.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
-  - [Alternative](#alternative)
+- [Alternative](#alternative)
+  - [Alternative](#alternative-1)
   - [AlternativeConcat](#alternativeconcat)
   - [AlternativeMerge](#alternativemerge)
   - [AlternativeRace](#alternativerace)
-  - [Applicative](#applicative)
-  - [Bicovariant](#bicovariant)
-  - [Chainable](#chainable)
-  - [ConcatMap](#concatmap)
+- [Applicative](#applicative)
+  - [Applicative](#applicative-1)
+- [Bicovariant](#bicovariant)
+  - [Bicovariant](#bicovariant-1)
+- [Chainable](#chainable)
+  - [Chainable](#chainable-1)
   - [ConcatMapChainable](#concatmapchainable)
-  - [ConcatMapMonad](#concatmapmonad)
+  - [ExhaustMapChainable](#exhaustmapchainable)
+  - [ExhaustMapLatestChainable](#exhaustmaplatestchainable)
+  - [SwitchMapChainable](#switchmapchainable)
+- [Coproduct](#coproduct)
   - [CoproductConcat](#coproductconcat)
   - [CoproductMerge](#coproductmerge)
   - [CoproductRace](#coproductrace)
-  - [Covariant](#covariant)
+- [Covariant](#covariant)
+  - [Covariant](#covariant-1)
+- [Filterable](#filterable)
+  - [Filterable](#filterable-1)
+- [FlatMap](#flatmap)
+  - [ConcatMap](#concatmap)
   - [ExhaustMap](#exhaustmap)
-  - [ExhaustMapChainable](#exhaustmapchainable)
   - [ExhaustMapLatest](#exhaustmaplatest)
-  - [ExhaustMapLatestChainable](#exhaustmaplatestchainable)
+  - [FlatMap](#flatmap-1)
+  - [SwitchMap](#switchmap)
+- [Invariant](#invariant)
+  - [Invariant](#invariant-1)
+- [Monad](#monad)
+  - [ConcatMapMonad](#concatmapmonad)
   - [ExhaustMapLatestMonad](#exhaustmaplatestmonad)
   - [ExhaustMapMonad](#exhaustmapmonad)
-  - [Filterable](#filterable)
-  - [FlatMap](#flatmap)
-  - [FxTypeLambda (interface)](#fxtypelambda-interface)
-  - [Invariant](#invariant)
-  - [Monad](#monad)
-  - [Of](#of)
-  - [Pointed](#pointed)
-  - [Product](#product)
-  - [SemiAlternative](#semialternative)
+  - [Monad](#monad-1)
+  - [SwitchMapMonad](#switchmapmonad)
+- [Of](#of)
+  - [Of](#of-1)
+- [Pointed](#pointed)
+  - [Pointed](#pointed-1)
+- [Product](#product)
+  - [Product](#product-1)
+- [SemiAlternative](#semialternative)
+  - [SemiAlternative](#semialternative-1)
   - [SemiAlternativeConcat](#semialternativeconcat)
   - [SemiAlternativeMerge](#semialternativemerge)
   - [SemiAlternativeRace](#semialternativerace)
-  - [SemiApplicative](#semiapplicative)
-  - [SemiCoproduct](#semicoproduct)
+- [SemiApplicative](#semiapplicative)
+  - [SemiApplicative](#semiapplicative-1)
+- [SemiCoproduct](#semicoproduct)
+  - [SemiCoproduct](#semicoproduct-1)
   - [SemiCoproductConcat](#semicoproductconcat)
   - [SemiCoproductMerge](#semicoproductmerge)
   - [SemiCoproductRace](#semicoproductrace)
-  - [Semiproduct](#semiproduct)
-  - [SwitchMap](#switchmap)
-  - [SwitchMapChainable](#switchmapchainable)
-  - [SwitchMapMonad](#switchmapmonad)
+- [SemiProduct](#semiproduct)
+  - [Semiproduct](#semiproduct-1)
+- [TypeLambda](#typelambda)
+  - [FxTypeLambda (interface)](#fxtypelambda-interface)
 
 ---
 
-# utils
+# Alternative
 
 ## Alternative
 
@@ -111,6 +128,8 @@ export declare const AlternativeRace: Alt.Alternative<FxTypeLambda>
 
 Added in v1.18.0
 
+# Applicative
+
 ## Applicative
 
 Applicative instance for Fx
@@ -122,6 +141,8 @@ export declare const Applicative: App.Applicative<FxTypeLambda>
 ```
 
 Added in v1.18.0
+
+# Bicovariant
 
 ## Bicovariant
 
@@ -135,6 +156,8 @@ export declare const Bicovariant: BiCov.Bicovariant<FxTypeLambda>
 
 Added in v1.18.0
 
+# Chainable
+
 ## Chainable
 
 Monad instance for Fx which uses unbounded concurrency
@@ -143,18 +166,6 @@ Monad instance for Fx which uses unbounded concurrency
 
 ```ts
 export declare const Chainable: Ch.Chainable<FxTypeLambda>
-```
-
-Added in v1.18.0
-
-## ConcatMap
-
-FlatMap instance for Fx which uses bounded concurrency, concatenating inner Fx on after another.
-
-**Signature**
-
-```ts
-export declare const ConcatMap: F.FlatMap<FxTypeLambda>
 ```
 
 Added in v1.18.0
@@ -171,17 +182,43 @@ export declare const ConcatMapChainable: Ch.Chainable<FxTypeLambda>
 
 Added in v1.18.0
 
-## ConcatMapMonad
+## ExhaustMapChainable
 
-Monad instance for Fx which uses bounded concurrency, concatenating inner Fx on after another.
+Chainable instance for Fx which uses bounded concurrency, favoring the first inner Fx.
 
 **Signature**
 
 ```ts
-export declare const ConcatMapMonad: M.Monad<FxTypeLambda>
+export declare const ExhaustMapChainable: Ch.Chainable<FxTypeLambda>
 ```
 
 Added in v1.18.0
+
+## ExhaustMapLatestChainable
+
+Chainable instance for Fx which uses bounded concurrency, favoring the first and latest inner Fx.
+
+**Signature**
+
+```ts
+export declare const ExhaustMapLatestChainable: Ch.Chainable<FxTypeLambda>
+```
+
+Added in v1.18.0
+
+## SwitchMapChainable
+
+Chainable instance for Fx which uses bounded concurrency, favoring the latest inner Fx.
+
+**Signature**
+
+```ts
+export declare const SwitchMapChainable: Ch.Chainable<FxTypeLambda>
+```
+
+Added in v1.18.0
+
+# Coproduct
 
 ## CoproductConcat
 
@@ -219,6 +256,8 @@ export declare const CoproductRace: CP.Coproduct<FxTypeLambda>
 
 Added in v1.18.0
 
+# Covariant
+
 ## Covariant
 
 Covariant instance for Fx
@@ -227,6 +266,34 @@ Covariant instance for Fx
 
 ```ts
 export declare const Covariant: COV.Covariant<FxTypeLambda>
+```
+
+Added in v1.18.0
+
+# Filterable
+
+## Filterable
+
+Filterable instance for Fx
+
+**Signature**
+
+```ts
+export declare const Filterable: Filter.Filterable<FxTypeLambda>
+```
+
+Added in v1.18.0
+
+# FlatMap
+
+## ConcatMap
+
+FlatMap instance for Fx which uses bounded concurrency, concatenating inner Fx on after another.
+
+**Signature**
+
+```ts
+export declare const ConcatMap: F.FlatMap<FxTypeLambda>
 ```
 
 Added in v1.18.0
@@ -243,18 +310,6 @@ export declare const ExhaustMap: F.FlatMap<FxTypeLambda>
 
 Added in v1.18.0
 
-## ExhaustMapChainable
-
-Chainable instance for Fx which uses bounded concurrency, favoring the first inner Fx.
-
-**Signature**
-
-```ts
-export declare const ExhaustMapChainable: Ch.Chainable<FxTypeLambda>
-```
-
-Added in v1.18.0
-
 ## ExhaustMapLatest
 
 FlatMap instance for Fx which uses bounded concurrency, favoring the first and latest inner Fx.
@@ -267,14 +322,54 @@ export declare const ExhaustMapLatest: F.FlatMap<FxTypeLambda>
 
 Added in v1.18.0
 
-## ExhaustMapLatestChainable
+## FlatMap
 
-Chainable instance for Fx which uses bounded concurrency, favoring the first and latest inner Fx.
+FlatMap instance for Fx which uses unbounded concurrency
 
 **Signature**
 
 ```ts
-export declare const ExhaustMapLatestChainable: Ch.Chainable<FxTypeLambda>
+export declare const FlatMap: F.FlatMap<FxTypeLambda>
+```
+
+Added in v1.18.0
+
+## SwitchMap
+
+FlatMap instance for Fx which uses bounded concurrency, favoring the latest inner Fx.
+
+**Signature**
+
+```ts
+export declare const SwitchMap: F.FlatMap<FxTypeLambda>
+```
+
+Added in v1.18.0
+
+# Invariant
+
+## Invariant
+
+Invariant instance for Fx
+
+**Signature**
+
+```ts
+export declare const Invariant: I.Invariant<FxTypeLambda>
+```
+
+Added in v1.18.0
+
+# Monad
+
+## ConcatMapMonad
+
+Monad instance for Fx which uses bounded concurrency, concatenating inner Fx on after another.
+
+**Signature**
+
+```ts
+export declare const ConcatMapMonad: M.Monad<FxTypeLambda>
 ```
 
 Added in v1.18.0
@@ -303,56 +398,6 @@ export declare const ExhaustMapMonad: M.Monad<FxTypeLambda>
 
 Added in v1.18.0
 
-## Filterable
-
-Filterable instance for Fx
-
-**Signature**
-
-```ts
-export declare const Filterable: Filter.Filterable<FxTypeLambda>
-```
-
-Added in v1.18.0
-
-## FlatMap
-
-FlatMap instance for Fx which uses unbounded concurrency
-
-**Signature**
-
-```ts
-export declare const FlatMap: F.FlatMap<FxTypeLambda>
-```
-
-Added in v1.18.0
-
-## FxTypeLambda (interface)
-
-TypeLambda for an Fx
-
-**Signature**
-
-```ts
-export interface FxTypeLambda extends HKT.TypeLambda {
-  readonly type: Fx<this['Out2'], this['Out1'], this['Target']>
-}
-```
-
-Added in v1.18.0
-
-## Invariant
-
-Invariant instance for Fx
-
-**Signature**
-
-```ts
-export declare const Invariant: I.Invariant<FxTypeLambda>
-```
-
-Added in v1.18.0
-
 ## Monad
 
 Monad instance for Fx which uses unbounded concurrency
@@ -364,6 +409,20 @@ export declare const Monad: M.Monad<FxTypeLambda>
 ```
 
 Added in v1.18.0
+
+## SwitchMapMonad
+
+Monad instance for Fx which uses bounded concurrency, favoring the latest inner Fx.
+
+**Signature**
+
+```ts
+export declare const SwitchMapMonad: M.Monad<FxTypeLambda>
+```
+
+Added in v1.18.0
+
+# Of
 
 ## Of
 
@@ -377,6 +436,8 @@ export declare const Of: O.Of<FxTypeLambda>
 
 Added in v1.18.0
 
+# Pointed
+
 ## Pointed
 
 Pointed instance for Fx
@@ -389,6 +450,8 @@ export declare const Pointed: Point.Pointed<FxTypeLambda>
 
 Added in v1.18.0
 
+# Product
+
 ## Product
 
 Product instance for Fx
@@ -400,6 +463,8 @@ export declare const Product: P.Product<FxTypeLambda>
 ```
 
 Added in v1.18.0
+
+# SemiAlternative
 
 ## SemiAlternative
 
@@ -453,6 +518,8 @@ export declare const SemiAlternativeRace: SAlt.SemiAlternative<FxTypeLambda>
 
 Added in v1.18.0
 
+# SemiApplicative
+
 ## SemiApplicative
 
 SemiAppliative instance for Fx
@@ -464,6 +531,8 @@ export declare const SemiApplicative: SApp.SemiApplicative<FxTypeLambda>
 ```
 
 Added in v1.18.0
+
+# SemiCoproduct
 
 ## SemiCoproduct
 
@@ -517,6 +586,8 @@ export declare const SemiCoproductRace: SCP.SemiCoproduct<FxTypeLambda>
 
 Added in v1.18.0
 
+# SemiProduct
+
 ## Semiproduct
 
 SemiProduct instance for Fx
@@ -529,38 +600,18 @@ export declare const Semiproduct: SP.SemiProduct<FxTypeLambda>
 
 Added in v1.18.0
 
-## SwitchMap
+# TypeLambda
 
-FlatMap instance for Fx which uses bounded concurrency, favoring the latest inner Fx.
+## FxTypeLambda (interface)
 
-**Signature**
-
-```ts
-export declare const SwitchMap: F.FlatMap<FxTypeLambda>
-```
-
-Added in v1.18.0
-
-## SwitchMapChainable
-
-Chainable instance for Fx which uses bounded concurrency, favoring the latest inner Fx.
+TypeLambda for an Fx
 
 **Signature**
 
 ```ts
-export declare const SwitchMapChainable: Ch.Chainable<FxTypeLambda>
-```
-
-Added in v1.18.0
-
-## SwitchMapMonad
-
-Monad instance for Fx which uses bounded concurrency, favoring the latest inner Fx.
-
-**Signature**
-
-```ts
-export declare const SwitchMapMonad: M.Monad<FxTypeLambda>
+export interface FxTypeLambda extends HKT.TypeLambda {
+  readonly type: Fx<this['Out2'], this['Out1'], this['Target']>
+}
 ```
 
 Added in v1.18.0

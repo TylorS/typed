@@ -15,24 +15,27 @@ Added in v1.18.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [constructors](#constructors)
   - [Sink](#sink)
+  - [WithContext](#withcontext)
+- [context](#context)
+  - [provide](#provide)
+- [models](#models)
   - [Sink (interface)](#sink-interface)
+  - [WithContext (interface)](#withcontext-interface)
+  - [WithEarlyExit (interface)](#withearlyexit-interface)
+- [utils](#utils)
   - [Sink (namespace)](#sink-namespace)
     - [Error (type alias)](#error-type-alias)
     - [Success (type alias)](#success-type-alias)
-  - [WithContext](#withcontext)
-  - [WithContext (interface)](#withcontext-interface)
   - [WithContext (namespace)](#withcontext-namespace)
     - [Context (type alias)](#context-type-alias)
     - [Error (type alias)](#error-type-alias-1)
     - [Success (type alias)](#success-type-alias-1)
-  - [WithEarlyExit (interface)](#withearlyexit-interface)
-  - [provide](#provide)
 
 ---
 
-# utils
+# constructors
 
 ## Sink
 
@@ -49,6 +52,37 @@ export declare function Sink<E, A>(
 
 Added in v1.18.0
 
+## WithContext
+
+Construct a Sink that can be used to handle failures and successes with a Context.
+
+**Signature**
+
+```ts
+export declare function WithContext<R, E, A, R2>(
+  onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R, never, unknown>,
+  onSuccess: (a: A) => Effect.Effect<R2, never, unknown>
+): WithContext<R | R2, E, A>
+```
+
+Added in v1.18.0
+
+# context
+
+## provide
+
+Provide a Context to a Sink
+
+**Signature**
+
+```ts
+export declare function provide<R, E, A>(sink: WithContext<R, E, A>, ctx: Context<R>): Sink<E, A>
+```
+
+Added in v1.18.0
+
+# models
+
 ## Sink (interface)
 
 Sink is a data structure that represents a place to send failures and successes
@@ -61,6 +95,38 @@ export interface Sink<E, A> extends WithContext<never, E, A> {}
 ```
 
 Added in v1.18.0
+
+## WithContext (interface)
+
+A Sink that can be used to handle failures and successes with a Context.
+
+**Signature**
+
+```ts
+export interface WithContext<R, E, A> {
+  readonly onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R, never, unknown>
+  readonly onSuccess: (a: A) => Effect.Effect<R, never, unknown>
+}
+```
+
+Added in v1.18.0
+
+## WithEarlyExit (interface)
+
+A Sink which can be utilized to exit early from an Fx.
+Useful for operators the end the stream early.
+
+**Signature**
+
+```ts
+export interface WithEarlyExit<E, A> extends Sink<E, A> {
+  readonly earlyExit: Effect.Effect<never, never, void>
+}
+```
+
+Added in v1.18.0
+
+# utils
 
 ## Sink (namespace)
 
@@ -86,36 +152,6 @@ Extract the Success type from a Sink
 
 ```ts
 export type Success<T> = T extends Sink<any, infer A> ? A : never
-```
-
-Added in v1.18.0
-
-## WithContext
-
-Construct a Sink that can be used to handle failures and successes with a Context.
-
-**Signature**
-
-```ts
-export declare function WithContext<R, E, A, R2>(
-  onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R, never, unknown>,
-  onSuccess: (a: A) => Effect.Effect<R2, never, unknown>
-): WithContext<R | R2, E, A>
-```
-
-Added in v1.18.0
-
-## WithContext (interface)
-
-A Sink that can be used to handle failures and successes with a Context.
-
-**Signature**
-
-```ts
-export interface WithContext<R, E, A> {
-  readonly onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R, never, unknown>
-  readonly onSuccess: (a: A) => Effect.Effect<R, never, unknown>
-}
 ```
 
 Added in v1.18.0
@@ -156,33 +192,6 @@ Extract the Success type from a Sink
 
 ```ts
 export type Success<T> = T extends WithContext<any, any, infer A> ? A : never
-```
-
-Added in v1.18.0
-
-## WithEarlyExit (interface)
-
-A Sink which can be utilized to exit early from an Fx.
-Useful for operators the end the stream early.
-
-**Signature**
-
-```ts
-export interface WithEarlyExit<E, A> extends Sink<E, A> {
-  readonly earlyExit: Effect.Effect<never, never, void>
-}
-```
-
-Added in v1.18.0
-
-## provide
-
-Provide a Context to a Sink
-
-**Signature**
-
-```ts
-export declare function provide<R, E, A>(sink: WithContext<R, E, A>, ctx: Context<R>): Sink<E, A>
 ```
 
 Added in v1.18.0
