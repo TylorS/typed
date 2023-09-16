@@ -23,7 +23,7 @@ Added in v1.0.0
     - [InputArg (type alias)](#inputarg-type-alias)
     - [Req (type alias)](#req-type-alias)
     - [Success (type alias)](#success-type-alias)
-  - [RequestConstructr (interface)](#requestconstructr-interface)
+  - [RequestConstructor (interface)](#requestconstructor-interface)
 - [models](#models)
   - [Request (interface)](#request-interface)
 
@@ -38,7 +38,7 @@ Construct a Request implementation to be utilized from the Effect Context.
 **Signature**
 
 ```ts
-export declare const Request: RequestConstructr
+export declare const Request: RequestConstructor
 ```
 
 Added in v1.0.0
@@ -119,14 +119,14 @@ export type Success<T> = R.Request.Success<Req<T>>
 
 Added in v1.0.0
 
-## RequestConstructr (interface)
+## RequestConstructor (interface)
 
 Construct a Request implementation to be utilized from the Effect Context.
 
 **Signature**
 
 ```ts
-export interface RequestConstructr {
+export interface RequestConstructor {
   <Input, Req extends R.Request<any, any>>(makeRequest: (input: Input) => Req): {
     <const Id extends IdentifierFactory<any>>(id: Id): Request<IdentifierOf<Id>, Input, Req>
     <const Id>(id: Id): Request<IdentifierOf<Id>, Input, Req>
