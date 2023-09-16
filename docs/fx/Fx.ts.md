@@ -26,9 +26,17 @@ Added in v1.18.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [Do](#do)
+  - [Do](#do-1)
+  - [bind](#bind)
+  - [bindTo](#bindto)
+  - [let](#let)
 - [utils](#utils)
   - [Bounded](#bounded)
   - [Bounded (interface)](#bounded-interface)
+  - [EffectGenContext (type alias)](#effectgencontext-type-alias)
+  - [EffectGenError (type alias)](#effectgenerror-type-alias)
+  - [EffectGenSuccess (type alias)](#effectgensuccess-type-alias)
   - [Exhaust](#exhaust)
   - [Exhaust (interface)](#exhaust-interface)
   - [ExhaustLatest](#exhaustlatest)
@@ -57,9 +65,14 @@ Added in v1.18.0
   - [WithFlattenStrategyParams (type alias)](#withflattenstrategyparams-type-alias)
   - [WithScopedForkParams (type alias)](#withscopedforkparams-type-alias)
   - [acquireUseRelease](#acquireuserelease)
+  - [annotateLogs](#annotatelogs)
+  - [annotateSpans](#annotatespans)
+  - [at](#at)
   - [combine](#combine)
   - [concatMap](#concatmap)
   - [continueWith](#continuewith)
+  - [debounce](#debounce)
+  - [delay](#delay)
   - [die](#die)
   - [drain](#drain)
   - [drop](#drop)
@@ -67,8 +80,10 @@ Added in v1.18.0
   - [dropUntil](#dropuntil)
   - [dropWhile](#dropwhile)
   - [during](#during)
+  - [either](#either)
   - [empty](#empty)
   - [endWith](#endwith)
+  - [ensuring](#ensuring)
   - [exhaust](#exhaust-1)
   - [exhaustLatest](#exhaustlatest-1)
   - [exhaustLatestMatchCause](#exhaustlatestmatchcause)
@@ -77,6 +92,7 @@ Added in v1.18.0
   - [exhaustMapLatest](#exhaustmaplatest)
   - [exhaustMapLatestCause](#exhaustmaplatestcause)
   - [exhaustMatchCause](#exhaustmatchcause)
+  - [exit](#exit)
   - [fail](#fail)
   - [failCause](#failcause)
   - [filter](#filter)
@@ -85,6 +101,7 @@ Added in v1.18.0
   - [filterMap](#filtermap)
   - [filterMapCause](#filtermapcause)
   - [filterMapEffect](#filtermapeffect)
+  - [findFirst](#findfirst)
   - [flatMap](#flatmap)
   - [flatMapCause](#flatmapcause)
   - [flatMapCauseConcurrently](#flatmapcauseconcurrently)
@@ -92,15 +109,24 @@ Added in v1.18.0
   - [flatMapConcurrently](#flatmapconcurrently)
   - [flatMapWithStrategy](#flatmapwithstrategy)
   - [flatten](#flatten)
+  - [flip](#flip)
   - [fromEffect](#fromeffect)
+  - [fromFxEffect](#fromfxeffect)
   - [fromIterable](#fromiterable)
+  - [fromNullable](#fromnullable)
   - [fromScheduled](#fromscheduled)
   - [fromSink](#fromsink)
+  - [gen](#gen)
   - [hold](#hold)
+  - [if](#if)
   - [interrupt](#interrupt)
+  - [interruptible](#interruptible)
+  - [locally](#locally)
+  - [locallyWith](#locallywith)
   - [loop](#loop)
   - [loopEffect](#loopeffect)
   - [map](#map)
+  - [mapBoth](#mapboth)
   - [mapEffect](#mapeffect)
   - [mapError](#maperror)
   - [mapErrorCause](#maperrorcause)
@@ -116,10 +142,16 @@ Added in v1.18.0
   - [multicast](#multicast)
   - [never](#never)
   - [observe](#observe)
+  - [onError](#onerror)
+  - [onExit](#onexit)
+  - [onInterrupt](#oninterrupt)
   - [orElse](#orelse)
+  - [partitionMap](#partitionmap)
   - [periodic](#periodic)
   - [provideContext](#providecontext)
   - [provideLayer](#providelayer)
+  - [provideService](#provideservice)
+  - [provideServiceEffect](#provideserviceeffect)
   - [provideSomeContext](#providesomecontext)
   - [provideSomeLayer](#providesomelayer)
   - [race](#race)
@@ -128,6 +160,7 @@ Added in v1.18.0
   - [run](#run)
   - [scan](#scan)
   - [scanEffect](#scaneffect)
+  - [scoped](#scoped)
   - [share](#share)
   - [since](#since)
   - [skipRepeats](#skiprepeats)
@@ -136,6 +169,8 @@ Added in v1.18.0
   - [snapshot](#snapshot)
   - [startWith](#startwith)
   - [succeed](#succeed)
+  - [succeedNone](#succeednone)
+  - [succeedSome](#succeedsome)
   - [suspend](#suspend)
   - [switchMap](#switchmap)
   - [switchMapCause](#switchmapcause)
@@ -145,15 +180,99 @@ Added in v1.18.0
   - [takeUntil](#takeuntil)
   - [takeWhile](#takewhile)
   - [tap](#tap)
+  - [throttle](#throttle)
   - [toArray](#toarray)
   - [toChunk](#tochunk)
   - [toReadonlyArray](#toreadonlyarray)
+  - [uninterruptible](#uninterruptible)
   - [until](#until)
+  - [withConcurrency](#withconcurrency)
   - [withEarlyExit](#withearlyexit)
   - [withFlattenStrategy](#withflattenstrategy)
+  - [withLogSpan](#withlogspan)
+  - [withMaxOpsBeforeYield](#withmaxopsbeforeyield)
+  - [withParentSpan](#withparentspan)
+  - [withRequestBatching](#withrequestbatching)
+  - [withRequestCache](#withrequestcache)
+  - [withRequestCaching](#withrequestcaching)
+  - [withScheduler](#withscheduler)
   - [withScopedFork](#withscopedfork)
+  - [withSpan](#withspan)
+  - [withTracer](#withtracer)
+  - [withTracerTiming](#withtracertiming)
 
 ---
+
+# Do
+
+## Do
+
+Do simulation
+
+**Signature**
+
+```ts
+export declare const Do: Fx<never, never, {}>
+```
+
+Added in v1.18.0
+
+## bind
+
+Do simulation
+
+**Signature**
+
+```ts
+export declare const bind: {
+  <N extends string, A extends object, R2, E2, B>(name: Exclude<N, keyof A>, f: (a: A) => Fx<R2, E2, B>): <R1, E1>(
+    self: Fx<R1, E1, A>
+  ) => Fx<R2 | R1, E2 | E1, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  <R1, E1, A1 extends object, N extends string, R2, E2, B>(
+    self: Fx<R1, E1, A1>,
+    name: Exclude<N, keyof A1>,
+    f: (a: A1) => Fx<R2, E2, B>
+  ): Fx<R1 | R2, E1 | E2, { [K in N | keyof A1]: K extends keyof A1 ? A1[K] : B }>
+}
+```
+
+Added in v1.18.0
+
+## bindTo
+
+Do simulation
+
+**Signature**
+
+```ts
+export declare const bindTo: {
+  <N extends string>(name: N): <R, E, A>(self: Fx<R, E, A>) => Fx<R, E, { [K in N]: A }>
+  <R, E, A, N extends string>(self: Fx<R, E, A>, name: N): Fx<R, E, { [K_1 in N]: A }>
+}
+```
+
+Added in v1.18.0
+
+## let
+
+Do simulation
+
+**Signature**
+
+```ts
+export declare const let: {
+  <N extends string, A extends object, B>(name: Exclude<N, keyof A>, f: (a: A) => B): <R1, E1>(
+    self: Fx<R1, E1, A>
+  ) => Fx<R1, E1, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  <R1, E1, A1 extends object, N extends string, B>(
+    self: Fx<R1, E1, A1>,
+    name: Exclude<N, keyof A1>,
+    f: (a: A1) => B
+  ): Fx<R1, E1, { [K in N | keyof A1]: K extends keyof A1 ? A1[K] : B }>
+}
+```
+
+Added in v1.18.0
 
 # utils
 
@@ -180,6 +299,54 @@ export interface Bounded {
   readonly _tag: 'Bounded'
   readonly capacity: number
 }
+```
+
+Added in v1.18.0
+
+## EffectGenContext (type alias)
+
+Extract the context from an EffectGen
+
+**Signature**
+
+```ts
+export type EffectGenContext<T> = [T] extends [never]
+  ? never
+  : [T] extends [Effect.EffectGen<infer R, any, any>]
+  ? R
+  : never
+```
+
+Added in v1.18.0
+
+## EffectGenError (type alias)
+
+Extract the error from an EffectGen
+
+**Signature**
+
+```ts
+export type EffectGenError<T> = [T] extends [never]
+  ? never
+  : [T] extends [Effect.EffectGen<any, infer E, any>]
+  ? E
+  : never
+```
+
+Added in v1.18.0
+
+## EffectGenSuccess (type alias)
+
+Extract the success value from an EffectGen
+
+**Signature**
+
+```ts
+export type EffectGenSuccess<T> = [T] extends [never]
+  ? never
+  : [T] extends [Effect.EffectGen<any, any, infer A>]
+  ? A
+  : never
 ```
 
 Added in v1.18.0
@@ -562,6 +729,55 @@ export declare const acquireUseRelease: {
 
 Added in v1.18.0
 
+## annotateLogs
+
+Annotate the logs of an Fx
+
+**Signature**
+
+```ts
+export declare const annotateLogs: {
+  (key: string, value: Logger.AnnotationValue): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  (values: Record<string, Logger.AnnotationValue>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, key: string, value: Logger.AnnotationValue): Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, values: Record<string, Logger.AnnotationValue>): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
+## annotateSpans
+
+Annotate the spans of an Fx
+
+**Signature**
+
+```ts
+export declare const annotateSpans: {
+  (key: string, value: Tracer.AttributeValue): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  (values: Record<string, Tracer.AttributeValue>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, key: string, value: Tracer.AttributeValue): Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, values: Record<string, Tracer.AttributeValue>): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
+## at
+
+Create an Fx which will emit a value after waiting for a specified duration.
+
+**Signature**
+
+```ts
+export declare const at: {
+  (delay: DurationInput): <A>(value: A) => Fx<never, never, A>
+  <A>(value: A, delay: DurationInput): Fx<never, never, A>
+}
+```
+
+Added in v1.18.0
+
 ## combine
 
 Combine multiple Fx into a single Fx that will emit the results of all Fx
@@ -600,8 +816,40 @@ Concatenate an Fx after the successful completion of another Fx
 
 ```ts
 export declare const continueWith: {
-  <R2, E2, A>(f: () => Fx<R2, E2, A>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, R2, E2, A>(fx: Fx<R, E, A>, f: () => Fx<R2, E2, A>): Fx<R | R2, E | E2, A>
+  <R2, E2, B>(f: () => Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: () => Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+}
+```
+
+Added in v1.18.0
+
+## debounce
+
+Create an Fx which will wait a specified duration of time where no
+events have occurred before emitting a value.
+
+**Signature**
+
+```ts
+export declare const debounce: {
+  (delay: DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
+## delay
+
+Create an Fx which will wait a specified duration of time where no
+events have occurred before emitting a value.
+
+**Signature**
+
+```ts
+export declare const delay: {
+  (delay: DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R, E, A>
 }
 ```
 
@@ -710,6 +958,18 @@ export declare const during: {
 
 Added in v1.18.0
 
+## either
+
+Capture the errors and success values as Either
+
+**Signature**
+
+```ts
+export declare const either: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, never, Either.Either<E, A>>
+```
+
+Added in v1.18.0
+
 ## empty
 
 An Fx which will immediately end producing 0 events and 0 errors.
@@ -732,6 +992,21 @@ Appends a value to the end of an Fx.
 export declare const endWith: {
   <B>(value: B): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, B | A>
   <R, E, A, B>(fx: Fx<R, E, A>, value: B): Fx<R, E, A | B>
+}
+```
+
+Added in v1.18.0
+
+## ensuring
+
+Ensure a finalizer runs on Fx ext.
+
+**Signature**
+
+```ts
+export declare const ensuring: {
+  <R2>(finalizer: Effect.Effect<R2, never, unknown>): <R, E, A>(self: Fx<R, E, A>) => Fx<R2 | R, E, A>
+  <R, E, A, R2>(self: Fx<R, E, A>, finalizer: Effect.Effect<R2, never, unknown>): Fx<R | R2, E, A>
 }
 ```
 
@@ -771,13 +1046,16 @@ Map over the failures and successes of an Fx, prefering the first
 
 ```ts
 export declare const exhaustLatestMatchCause: {
-  <E, R2, E2, B, A, R3, E3, C>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>, g: (a: A) => Fx<R3, E3, C>): <R>(
-    fx: Fx<R, E, A>
-  ) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <E, R2, E2, B, A, R3, E3, C>(options: {
+    readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
   <R, E, A, R2, E2, B, R3, E3, C>(
     fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
-    g: (a: A) => Fx<R3, E3, C>
+    options: {
+      readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    }
   ): Fx<R | R2 | R3, E2 | E3, B | C>
 }
 ```
@@ -859,15 +1137,30 @@ Fx emitted and dropping any subsequent Fx until it has completed.
 
 ```ts
 export declare const exhaustMatchCause: {
-  <E, R2, E2, B, A, R3, E3, C>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>, g: (a: A) => Fx<R3, E3, C>): <R>(
-    fx: Fx<R, E, A>
-  ) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <E, R2, E2, B, A, R3, E3, C>(options: {
+    readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
   <R, E, A, R2, E2, B, R3, E3, C>(
     fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
-    g: (a: A) => Fx<R3, E3, C>
+    options: {
+      readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    }
   ): Fx<R | R2 | R3, E2 | E3, B | C>
 }
+```
+
+Added in v1.18.0
+
+## exit
+
+Capture the errors and success values as Exit
+
+**Signature**
+
+```ts
+export declare const exit: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, never, Exit.Exit<E, A>>
 ```
 
 Added in v1.18.0
@@ -985,6 +1278,27 @@ Filter and map the success value of an Fx with an Effect.
 export declare const filterMapEffect: {
   <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>): Fx<R | R2, E | E2, B>
+}
+```
+
+Added in v1.18.0
+
+## findFirst
+
+Run an Fx until finding a value which satisfies the predicate.
+
+**Signature**
+
+```ts
+export declare const findFirst: {
+  <A, R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(
+    fx: Fx<R, E, A>
+  ) => Effect.Effect<R2 | R, E2 | E, Option.Option<A>>
+  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, boolean>): Effect.Effect<
+    R | R2,
+    E | E2,
+    Option.Option<A>
+  >
 }
 ```
 
@@ -1108,6 +1422,18 @@ export declare const flatten: <R, E, R2, E2, A>(fx: Fx<R, E, Fx<R2, E2, A>>) => 
 
 Added in v1.18.0
 
+## flip
+
+Transform success values into failures and failures into successes.
+
+**Signature**
+
+```ts
+export declare const flip: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, A, E>
+```
+
+Added in v1.18.0
+
 ## fromEffect
 
 Construct an Fx<R, E, A> from an Effect<R, E, A>
@@ -1116,6 +1442,20 @@ Construct an Fx<R, E, A> from an Effect<R, E, A>
 
 ```ts
 export declare const fromEffect: <R, E, A>(effect: Effect.Effect<R, E, A>) => Fx<R, E, A>
+```
+
+Added in v1.18.0
+
+## fromFxEffect
+
+Run an Effect to produce an Fx to run.
+
+**Signature**
+
+```ts
+export declare const fromFxEffect: <R, E, R2, E2, B>(
+  fxEffect: Effect.Effect<R, E, Fx<R2, E2, B>>
+) => Fx<R | R2, E | E2, B>
 ```
 
 Added in v1.18.0
@@ -1131,6 +1471,18 @@ export declare const fromIterable: {
   <A extends readonly any[]>(array: A): Fx<never, never, A[number]>
   <A>(iterable: Iterable<A>): Fx<never, never, A>
 }
+```
+
+Added in v1.18.0
+
+## fromNullable
+
+Lift a nullable value into an Fx
+
+**Signature**
+
+```ts
+export declare const fromNullable: <A>(value: void | A | null | undefined) => Fx<never, never, NonNullable<A>>
 ```
 
 Added in v1.18.0
@@ -1164,6 +1516,20 @@ export declare const fromSink: <R, E, A>(f: (sink: Sink.Sink<E, A>) => Effect.Ef
 
 Added in v1.18.0
 
+## gen
+
+Utilize Effect.gen to construct an Fx
+
+**Signature**
+
+```ts
+export declare function gen<Yield extends Effect.EffectGen<any, any, any>, R, E, A>(
+  f: () => Generator<Yield, Fx<R, E, A>, any>
+): Fx<R | EffectGenContext<Yield>, E | EffectGenError<Yield>, A>
+```
+
+Added in v1.18.0
+
 ## hold
 
 Effeciently share an underlying stream with multiple subscribers, saving the most
@@ -1177,6 +1543,18 @@ export declare const hold: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
 
 Added in v1.18.0
 
+## if
+
+Logical if/else using Fx.
+
+**Signature**
+
+```ts
+export declare const if: { <R2, E2, B, R3, E3, C>(options: { readonly onTrue: Fx<R2, E2, B>; readonly onFalse: Fx<R3, E3, C>; }): { <R, E>(bool: Fx<R, E, boolean>): Fx<R2 | R3 | R, E2 | E3 | E, B | C>; (bool: boolean): Fx<R2 | R3, E2 | E3, B | C>; }; <R, E, R2, E2, B, R3, E3, C>(bool: Fx<R, E, boolean>, options: { readonly onTrue: Fx<R2, E2, B>; readonly onFalse: Fx<R3, E3, C>; }): Fx<R | R2 | R3, E | E2 | E3, B | C>; <R2, E2, B, R3, E3, C>(bool: boolean, options: { readonly onTrue: Fx<R2, E2, B>; readonly onFalse: Fx<R3, E3, C>; }): Fx<R2 | R3, E2 | E3, B | C>; }
+```
+
+Added in v1.18.0
+
 ## interrupt
 
 Interrupt the current Fx with the specified FiberId
@@ -1184,7 +1562,49 @@ Interrupt the current Fx with the specified FiberId
 **Signature**
 
 ```ts
-export declare const interrupt: (id: FiberId) => Fx<never, never, never>
+export declare const interrupt: (id: FiberId.FiberId) => Fx<never, never, never>
+```
+
+Added in v1.18.0
+
+## interruptible
+
+Mark an Fx as interruptible
+
+**Signature**
+
+```ts
+export declare const interruptible: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+```
+
+Added in v1.18.0
+
+## locally
+
+Locally set the value of a FiberRef
+
+**Signature**
+
+```ts
+export declare const locally: {
+  <A>(self: FiberRef<A>, value: A): <R, E, B>(use: Fx<R, E, B>) => Fx<R, E, B>
+  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef<A>, value: A): Fx<R, E, B>
+}
+```
+
+Added in v1.18.0
+
+## locallyWith
+
+Locally set the value of a FiberRef by updating the current value
+
+**Signature**
+
+```ts
+export declare const locallyWith: {
+  <A>(self: FiberRef<A>, f: (a: A) => A): <R, E, B>(use: Fx<R, E, B>) => Fx<R, E, B>
+  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef<A>, f: (a: A) => A): Fx<R, E, B>
+}
 ```
 
 Added in v1.18.0
@@ -1236,6 +1656,27 @@ Map over the success value of an Fx.
 export declare const map: {
   <A, B>(f: (a: A) => B): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
   <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => B): Fx<R, E, B>
+}
+```
+
+Added in v1.18.0
+
+## mapBoth
+
+Map over both failure and success values of an Fx.
+
+**Signature**
+
+```ts
+export declare const mapBoth: {
+  <E, E2, A, B>(options: { readonly onFailure: (e: E) => E2; readonly onSuccess: (a: A) => B }): <R>(
+    fx: Fx<R, E, A>
+  ) => Fx<R, E2, B>
+  <R, E, A, E2, B>(fx: Fx<R, E, A>, options: { readonly onFailure: (e: E) => E2; readonly onSuccess: (a: A) => B }): Fx<
+    R,
+    E2,
+    B
+  >
 }
 ```
 
@@ -1294,13 +1735,16 @@ Map over the failures and successes of an Fx, flattening both with unbounded con
 
 ```ts
 export declare const matchCause: {
-  <E, R2, E2, B, A, R3, E3, C>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>, g: (a: A) => Fx<R3, E3, C>): <R>(
-    fx: Fx<R, E, A>
-  ) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <E, R2, E2, B, A, R3, E3, C>(options: {
+    readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
   <R, E, A, R2, E2, B, R3, E3, C>(
     fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
-    g: (a: A) => Fx<R3, E3, C>
+    options: {
+      readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    }
   ): Fx<R | R2 | R3, E2 | E3, B | C>
 }
 ```
@@ -1315,16 +1759,18 @@ Map over the failures and successes of an Fx, flattening both with the specified
 
 ```ts
 export declare const matchCauseConcurrently: {
-  <E, R2, E2, B, A, R3, E3, C>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
-    g: (a: A) => Fx<R3, E3, C>,
-    concurrency: number
-  ): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <E, R2, E2, B, A, R3, E3, C>(options: {
+    readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    readonly concurrency: number
+  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
   <R, E, A, R2, E2, B, R3, E3, C>(
     fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
-    g: (a: A) => Fx<R3, E3, C>,
-    concurrency: number
+    options: {
+      readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+      readonly concurrency: number
+    }
   ): Fx<R | R2 | R3, E2 | E3, B | C>
 }
 ```
@@ -1339,16 +1785,18 @@ Map over the failures and successes of an Fx, flattening both using the same str
 
 ```ts
 export declare const matchCauseWithStrategy: {
-  <E, R2, E2, B, A, R3, E3, C>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
-    g: (a: A) => Fx<R3, E3, C>,
-    strategy: FlattenStrategy
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <E, R2, E2, B, A, R3, E3, C>(options: {
+    readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    readonly strategy: FlattenStrategy
+  }): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
   <R, E, A, R2, E2, B, R3, E3, C>(
     fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
-    g: (a: A) => Fx<R3, E3, C>,
-    strategy: FlattenStrategy
+    options: {
+      readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+      readonly strategy: FlattenStrategy
+    }
   ): Fx<R | R2, E2 | E3, B | C>
 }
 ```
@@ -1512,6 +1960,64 @@ export declare const observe: {
 
 Added in v1.18.0
 
+## onError
+
+Run an Effect when an Fx ends with an error
+
+**Signature**
+
+```ts
+export declare const onError: {
+  <R2>(f: (cause: Cause.Cause<never>) => Effect.Effect<R2, never, unknown>): <R, E, A>(
+    fx: Fx<R, E, A>
+  ) => Fx<R2 | R, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<never>) => Effect.Effect<R2, never, unknown>): Fx<R | R2, E, A>
+}
+```
+
+Added in v1.18.0
+
+## onExit
+
+Run an Effect when an Fx exits
+
+**Signature**
+
+```ts
+export declare const onExit: {
+  <R2>(f: (exit: Exit.Exit<never, unknown>) => Effect.Effect<R2, never, unknown>): <R, E, A>(
+    fx: Fx<R, E, A>
+  ) => Fx<R2 | R, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, f: (exit: Exit.Exit<never, unknown>) => Effect.Effect<R2, never, unknown>): Fx<
+    R | R2,
+    E,
+    A
+  >
+}
+```
+
+Added in v1.18.0
+
+## onInterrupt
+
+Run an Effect when an Fx is interrupted
+
+**Signature**
+
+```ts
+export declare const onInterrupt: {
+  <R2>(f: (interruptors: HashSet.HashSet<FiberId.FiberId>) => Effect.Effect<R2, never, unknown>): <R, E, A>(
+    fx: Fx<R, E, A>
+  ) => Fx<R2 | R, E, A>
+  <R, E, A, R2>(
+    fx: Fx<R, E, A>,
+    f: (interruptors: HashSet.HashSet<FiberId.FiberId>) => Effect.Effect<R2, never, unknown>
+  ): Fx<R | R2, E, A>
+}
+```
+
+Added in v1.18.0
+
 ## orElse
 
 Concatenate an Fx after the failure of another Fx
@@ -1522,6 +2028,21 @@ Concatenate an Fx after the failure of another Fx
 export declare const orElse: {
   <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, A>): Fx<R | R2, E2, A | B>
+}
+```
+
+Added in v1.18.0
+
+## partitionMap
+
+Partition an Fx into two Fx's based on a either-returning function.
+
+**Signature**
+
+```ts
+export declare const partitionMap: {
+  <A, B, C>(f: (a: A) => Either.Either<B, C>): <R, E>(self: Fx<R, E, A>) => readonly [Fx<R, E, B>, Fx<R, E, C>]
+  <R, E, A, B, C>(self: Fx<R, E, A>, f: (a: A) => Either.Either<B, C>): readonly [Fx<R, E, B>, Fx<R, E, C>]
 }
 ```
 
@@ -1567,6 +2088,42 @@ Provide the environment to an Fx using a Layer.
 export declare const provideLayer: {
   <R2, E2, R>(layer: Layer.Layer<R2, E2, R>): <E, A>(fx: Fx<R, E, A>) => Fx<R2, E2 | E, A>
   <R, E, A, R2, E2>(fx: Fx<R, E, A>, layer: Layer.Layer<R2, E2, R>): Fx<R2, E | E2, A>
+}
+```
+
+Added in v1.18.0
+
+## provideService
+
+Provide a service to an Fx using a Tag.
+
+**Signature**
+
+```ts
+export declare const provideService: {
+  <I, S>(tag: Tag<I, S>, service: S): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, I>, E, A>
+  <R, E, A, I, S>(fx: Fx<R, E, A>, tag: Tag<I, S>, service: S): Fx<Exclude<R, I>, E, A>
+}
+```
+
+Added in v1.18.0
+
+## provideServiceEffect
+
+Provide a service using an Effect to an Fx using a Tag.
+
+**Signature**
+
+```ts
+export declare const provideServiceEffect: {
+  <I, S, R2, E2>(tag: Tag<I, S>, service: Effect.Effect<R2, E2, S>): <R, E, A>(
+    fx: Fx<R, E, A>
+  ) => Fx<R2 | Exclude<R, I>, E, A>
+  <R, E, A, I, S, R2, E2>(fx: Fx<R, E, A>, tag: Tag<I, S>, service: Effect.Effect<R2, E2, S>): Fx<
+    R2 | Exclude<R, I>,
+    E,
+    A
+  >
 }
 ```
 
@@ -1696,6 +2253,18 @@ export declare const scanEffect: {
 
 Added in v1.18.0
 
+## scoped
+
+Provide a Scope to an Fx
+
+**Signature**
+
+```ts
+export declare const scoped: <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, Scope.Scope>, E, A>
+```
+
+Added in v1.18.0
+
 ## share
 
 Share the output of an Fx, or Effect, with other Fx's using the behavior of the
@@ -1814,6 +2383,30 @@ export declare const succeed: <A>(value: A) => Fx<never, never, A>
 
 Added in v1.18.0
 
+## succeedNone
+
+Create an Fx which will succeed with Option.None
+
+**Signature**
+
+```ts
+export declare const succeedNone: <A = never>() => Fx<never, never, Option.Option<A>>
+```
+
+Added in v1.18.0
+
+## succeedSome
+
+Create an Fx which will succeed with Option.Some
+
+**Signature**
+
+```ts
+export declare const succeedSome: <A>(value: A) => Fx<never, never, Option.Option<A>>
+```
+
+Added in v1.18.0
+
 ## suspend
 
 Lazily construct an Fx.
@@ -1867,13 +2460,16 @@ Fx emitted and interrupting the previous.
 
 ```ts
 export declare const switchMatchCause: {
-  <E, R2, E2, B, A, R3, E3, C>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>, g: (a: A) => Fx<R3, E3, C>): <R>(
-    fx: Fx<R, E, A>
-  ) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <E, R2, E2, B, A, R3, E3, C>(options: {
+    readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
   <R, E, A, R2, E2, B, R3, E3, C>(
     fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
-    g: (a: A) => Fx<R3, E3, C>
+    options: {
+      readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    }
   ): Fx<R | R2 | R3, E2 | E3, B | C>
 }
 ```
@@ -1952,6 +2548,22 @@ export declare const tap: {
 
 Added in v1.18.0
 
+## throttle
+
+Create an Fx which will wait a specified duration of time before emitting
+an event after the last event.
+
+**Signature**
+
+```ts
+export declare const throttle: {
+  (delay: DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
 ## toArray
 
 Run an Fx to completion, collecting all emitted values into an Array.
@@ -1988,6 +2600,18 @@ export declare const toReadonlyArray: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effec
 
 Added in v1.18.0
 
+## uninterruptible
+
+Mark an Fx as uninterruptible
+
+**Signature**
+
+```ts
+export declare const uninterruptible: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+```
+
+Added in v1.18.0
+
 ## until
 
 Listen to the events of an Fx until the provided window emits.
@@ -1998,6 +2622,21 @@ Listen to the events of an Fx until the provided window emits.
 export declare const until: {
   <R2, E2>(window: Fx<R2, E2, unknown>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
   <R, E, A, R2, E2>(fx: Fx<R, E, A>, window: Fx<R2, E2, unknown>): Fx<R | R2, E | E2, A>
+}
+```
+
+Added in v1.18.0
+
+## withConcurrency
+
+Configure the concurreny limit of Fibers running within an Fx
+
+**Signature**
+
+```ts
+export declare const withConcurrency: {
+  (concurrency: number | 'unbounded'): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, concurrency: number | 'unbounded'): Fx<R, E, A>
 }
 ```
 
@@ -2032,6 +2671,111 @@ export declare const withFlattenStrategy: <R, E, A>(
 
 Added in v1.18.0
 
+## withLogSpan
+
+Add a span to your log messages
+
+**Signature**
+
+```ts
+export declare const withLogSpan: {
+  (span: string): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, span: string): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
+## withMaxOpsBeforeYield
+
+Configure the maximum number of operations to run before yielding to the runtime
+
+**Signature**
+
+```ts
+export declare const withMaxOpsBeforeYield: {
+  (maxOps: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, maxOps: number): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
+## withParentSpan
+
+Set the parent Span of an Fx
+
+**Signature**
+
+```ts
+export declare const withParentSpan: {
+  (parentSpan: Tracer.ParentSpan): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, parentSpan: Tracer.ParentSpan): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
+## withRequestBatching
+
+Enable/disable request batching within an Fx
+
+**Signature**
+
+```ts
+export declare const withRequestBatching: {
+  (requestBatching: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, requestBatching: boolean): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
+## withRequestCache
+
+Set the request cache Effects running within an Fx
+
+**Signature**
+
+```ts
+export declare const withRequestCache: {
+  (cache: Request.Cache): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, cache: Request.Cache): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
+## withRequestCaching
+
+Enable/disable request caching within an Fx
+
+**Signature**
+
+```ts
+export declare const withRequestCaching: {
+  (requestCaching: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, requestCaching: boolean): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
+## withScheduler
+
+Configure the scheduler to use within an Fx
+
+**Signature**
+
+```ts
+export declare const withScheduler: {
+  (scheduler: Scheduler): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, scheduler: Scheduler): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
 ## withScopedFork
 
 Construct an Fx which can fork effects into a Scope.
@@ -2042,6 +2786,70 @@ Construct an Fx which can fork effects into a Scope.
 export declare const withScopedFork: <R, E, A>(
   f: (params: WithScopedForkParams<E, A>) => Effect.Effect<R, never, unknown>
 ) => Fx<R, E, A>
+```
+
+Added in v1.18.0
+
+## withSpan
+
+Set the span of an Fx
+
+**Signature**
+
+```ts
+export declare const withSpan: {
+  (
+    name: string,
+    options?: {
+      readonly attributes?: Record<string, Tracer.AttributeValue>
+      readonly links?: ReadonlyArray<Tracer.SpanLink>
+      readonly parent?: Tracer.ParentSpan
+      readonly root?: boolean
+      readonly context?: Context<never>
+    }
+  ): <R, E, A>(self: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(
+    self: Fx<R, E, A>,
+    name: string,
+    options?: {
+      readonly attributes?: Record<string, Tracer.AttributeValue>
+      readonly links?: ReadonlyArray<Tracer.SpanLink>
+      readonly parent?: Tracer.ParentSpan
+      readonly root?: boolean
+      readonly context?: Context<never>
+    }
+  ): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
+## withTracer
+
+Set the tracer used within an Fx
+
+**Signature**
+
+```ts
+export declare const withTracer: {
+  (tracer: Tracer.Tracer): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, tracer: Tracer.Tracer): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
+## withTracerTiming
+
+Enable/disable tracer timing for an Fx
+
+**Signature**
+
+```ts
+export declare const withTracerTiming: {
+  (enabled: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, enabled: boolean): Fx<R, E, A>
+}
 ```
 
 Added in v1.18.0

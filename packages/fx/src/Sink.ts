@@ -12,12 +12,14 @@ import type { Context } from "@typed/context"
  * Sink is a data structure that represents a place to send failures and successes
  * over time in an effectful manner.
  * @since 1.18.0
+ * @category models
  */
 export interface Sink<E, A> extends WithContext<never, E, A> {}
 
 /**
  * Construct a Sink that can be used to handle failures and successes.
  * @since 1.18.0
+ * @category constructors
  */
 export function Sink<E, A>(
   onFailure: (cause: Cause.Cause<E>) => Effect.Effect<never, never, unknown>,
@@ -49,6 +51,7 @@ export namespace Sink {
 /**
  * A Sink that can be used to handle failures and successes with a Context.
  * @since 1.18.0
+ * @category models
  */
 export interface WithContext<R, E, A> {
   readonly onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R, never, unknown>
@@ -58,6 +61,7 @@ export interface WithContext<R, E, A> {
 /**
  * Construct a Sink that can be used to handle failures and successes with a Context.
  * @since 1.18.0
+ * @category constructors
  */
 export function WithContext<R, E, A, R2>(
   onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R, never, unknown>,
@@ -95,6 +99,7 @@ export namespace WithContext {
 /**
  * Provide a Context to a Sink
  * @since 1.18.0
+ * @category context
  */
 export function provide<R, E, A>(sink: WithContext<R, E, A>, ctx: Context<R>): Sink<E, A> {
   return Sink(
@@ -107,6 +112,7 @@ export function provide<R, E, A>(sink: WithContext<R, E, A>, ctx: Context<R>): S
  * A Sink which can be utilized to exit early from an Fx.
  * Useful for operators the end the stream early.
  * @since 1.18.0
+ * @category models
  */
 export interface WithEarlyExit<E, A> extends Sink<E, A> {
   readonly earlyExit: Effect.Effect<never, never, void>

@@ -12,12 +12,14 @@ import type { Sink } from "@typed/fx/Sink"
  * A Subject is an Fx which is also a Sink, and can be used to
  * broadcast events to many consumers.
  * @since 1.18.0
+ * @category models
  */
 export interface Subject<R, E, A> extends Fx<R, E, A>, Sink<E, A> {}
 
 /**
  * Constructs a Subject that can be used to broadcast events to many consumers.
  * @since 1.18.0
+ * @category constructors
  */
 export const make: <E, A>() => Subject<never, E, A> = internal.makeSubject
 
@@ -26,6 +28,7 @@ export const make: <E, A>() => Subject<never, E, A> = internal.makeSubject
  * If a previous event has been consumed previously, any "late" subscribers will
  * receive that previous event.
  * @since 1.18.0
+ * @category constructors
  */
 export const makeHold: <E, A>() => Subject<never, E, A> = internal.makeHoldSubject
 
@@ -34,5 +37,6 @@ export const makeHold: <E, A>() => Subject<never, E, A> = internal.makeHoldSubje
  * If a previous event has been consumed previously, any "late" subscribers will
  * receive _up to_ `capacity` previous events.
  * @since 1.18.0
+ * @category constructors
  */
 export const makeReplay: <E, A>(capacity: number) => Subject<never, E, A> = internal.makeReplaySubject

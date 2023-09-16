@@ -4,6 +4,6 @@ aux_links:
   "Docs":
     - "//tylors.github.io/typed-fp"
   "API Reference":
-    - "//tylors.github.io/typed-fp/docs"
+    - "//tylors.github.io/typed-fp"
   "GitHub":
     - "//github.com/tylors/typed-fp"
