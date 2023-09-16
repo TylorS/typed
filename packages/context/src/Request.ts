@@ -37,102 +37,109 @@ type SimplifyInputArg<Input> = [keyof Input] extends [never] ? [Compact<Input>?]
  * @since 1.0.0
  * @category constructors
  */
-export const Request:
-  & (<Input, Req extends R.Request<any, any>>(
+export interface RequestConstructr {
+  <Input, Req extends R.Request<any, any>>(
     makeRequest: (input: Input) => Req
-  ) => {
+  ): {
     <const Id extends IdentifierFactory<any>>(id: Id): Request<IdentifierOf<Id>, Input, Req>
     <const Id>(id: Id): Request<IdentifierOf<Id>, Input, Req>
-  })
-  & {
+  }
+
+  /**
+   * Construct a tagged Request implementation to be utilized from the Effect Context.
+   * @since 1.0.0
+   * @category constructors
+   */
+  readonly tagged: <Req extends R.Request<any, any> & { readonly _tag: string }>(
+    tag: Req["_tag"]
+  ) => {
+    <const Id extends IdentifierFactory<any>>(
+      id: Id
+    ): Request<IdentifierOf<Id>, Compact<Omit<Req, "_tag" | typeof R.RequestTypeId | keyof Data.Case>>, Req>
+    <const Id>(
+      id: Id
+    ): Request<IdentifierOf<Id>, Compact<Omit<Req, "_tag" | typeof R.RequestTypeId | keyof Data.Case>>, Req>
+  }
+  /**
+   * Construct a Request implementation to be utilized from the Effect Context.
+   * @since 1.0.0
+   * @category constructors
+   */
+  readonly of: <Req extends R.Request<any, any>>() => {
+    <const Id extends IdentifierFactory<any>>(
+      id: Id
+    ): Request<IdentifierOf<Id>, Compact<Omit<Req, typeof R.RequestTypeId | keyof Data.Case>>, Req>
+    <const Id>(id: Id): Request<IdentifierOf<Id>, Compact<Omit<Req, typeof R.RequestTypeId | keyof Data.Case>>, Req>
+  }
+}
+
+/**
+ * Construct a Request implementation to be utilized from the Effect Context.
+ * @since 1.0.0
+ * @category constructors
+ */
+export const Request: RequestConstructr = Object.assign(
+  function Request<Input, Req extends R.Request<any, any>>(
+    makeRequest: (input: Input) => Req
+  ): {
+    <const Id extends IdentifierFactory<any>>(id: Id): Request<IdentifierOf<Id>, Input, Req>
+    <const Id>(id: Id): Request<IdentifierOf<Id>, Input, Req>
+  } {
+    return <Id>(id: IdentifierInput<Id>) => {
+      const fn = Fn<(req: Req) => Effect<never, R.Request.Error<Req>, R.Request.Success<Req>>>()(id)
+
+      return Object.assign(fn, {
+        make: (...[input]: SimplifyInputArg<Input>) => fn.apply(makeRequest((input || {}) as Input))
+      })
+    }
+  },
+  {
     /**
      * Construct a tagged Request implementation to be utilized from the Effect Context.
      * @since 1.0.0
      * @category constructors
      */
-    readonly tagged: <Req extends R.Request<any, any> & { readonly _tag: string }>(
+    tagged: function tagged<Req extends R.Request<any, any> & { readonly _tag: string }>(
       tag: Req["_tag"]
-    ) => {
+    ): {
       <const Id extends IdentifierFactory<any>>(
         id: Id
-      ): Request<IdentifierOf<Id>, Compact<Omit<Req, "_tag" | typeof R.RequestTypeId | keyof Data.Case>>, Req>
+      ): Request<
+        IdentifierOf<Id>,
+        Compact<Omit<Req, R.RequestTypeId | "_tag" | keyof Data.Case>>,
+        Req
+      >
+
       <const Id>(
         id: Id
-      ): Request<IdentifierOf<Id>, Compact<Omit<Req, "_tag" | typeof R.RequestTypeId | keyof Data.Case>>, Req>
-    }
+      ): Request<
+        IdentifierOf<Id>,
+        Compact<Omit<Req, R.RequestTypeId | "_tag" | keyof Data.Case>>,
+        Req
+      >
+    } {
+      return Request(R.tagged(tag)) as any
+    },
+
     /**
      * Construct a Request implementation to be utilized from the Effect Context.
      * @since 1.0.0
      * @category constructors
      */
-    readonly of: <Req extends R.Request<any, any>>() => {
+
+    of: function of<Req extends R.Request<any, any>>(): {
       <const Id extends IdentifierFactory<any>>(
         id: Id
-      ): Request<IdentifierOf<Id>, Compact<Omit<Req, typeof R.RequestTypeId | keyof Data.Case>>, Req>
-      <const Id>(id: Id): Request<IdentifierOf<Id>, Compact<Omit<Req, typeof R.RequestTypeId | keyof Data.Case>>, Req>
-    }
-  } = Object.assign(
-    function Request<Input, Req extends R.Request<any, any>>(
-      makeRequest: (input: Input) => Req
-    ): {
-      <const Id extends IdentifierFactory<any>>(id: Id): Request<IdentifierOf<Id>, Input, Req>
-      <const Id>(id: Id): Request<IdentifierOf<Id>, Input, Req>
+      ): Request<IdentifierOf<Id>, Compact<Omit<Req, R.RequestTypeId | keyof Data.Case>>, Req>
+
+      <const Id>(
+        id: Id
+      ): Request<IdentifierOf<Id>, Compact<Omit<Req, R.RequestTypeId | keyof Data.Case>>, Req>
     } {
-      return <Id>(id: IdentifierInput<Id>) => {
-        const fn = Fn<(req: Req) => Effect<never, R.Request.Error<Req>, R.Request.Success<Req>>>()(id)
-
-        return Object.assign(fn, {
-          make: (...[input]: SimplifyInputArg<Input>) => fn.apply(makeRequest((input || {}) as Input))
-        })
-      }
-    },
-    {
-      /**
-       * Construct a tagged Request implementation to be utilized from the Effect Context.
-       * @since 1.0.0
-       * @category constructors
-       */
-      tagged: function tagged<Req extends R.Request<any, any> & { readonly _tag: string }>(
-        tag: Req["_tag"]
-      ): {
-        <const Id extends IdentifierFactory<any>>(
-          id: Id
-        ): Request<
-          IdentifierOf<Id>,
-          Compact<Omit<Req, R.RequestTypeId | "_tag" | keyof Data.Case>>,
-          Req
-        >
-
-        <const Id>(
-          id: Id
-        ): Request<
-          IdentifierOf<Id>,
-          Compact<Omit<Req, R.RequestTypeId | "_tag" | keyof Data.Case>>,
-          Req
-        >
-      } {
-        return Request(R.tagged(tag)) as any
-      },
-
-      /**
-       * Construct a Request implementation to be utilized from the Effect Context.
-       * @since 1.0.0
-       * @category constructors
-       */
-
-      of: function of<Req extends R.Request<any, any>>(): {
-        <const Id extends IdentifierFactory<any>>(
-          id: Id
-        ): Request<IdentifierOf<Id>, Compact<Omit<Req, R.RequestTypeId | keyof Data.Case>>, Req>
-
-        <const Id>(
-          id: Id
-        ): Request<IdentifierOf<Id>, Compact<Omit<Req, R.RequestTypeId | keyof Data.Case>>, Req>
-      } {
-        return Request(R.of()) as any
-      }
-    } as const
-  )
+      return Request(R.of()) as any
+    }
+  } as const
+)
 
 /**
  * @since 1.0.0
