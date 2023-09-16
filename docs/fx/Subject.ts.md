@@ -1,6 +1,6 @@
 ---
 title: Subject.ts
-nav_order: 4
+nav_order: 6
 parent: "@typed/fx"
 ---
 
@@ -76,7 +76,9 @@ broadcast events to many consumers.
 **Signature**
 
 ```ts
-export interface Subject<R, E, A> extends Fx<R, E, A>, Sink<E, A> {}
+export interface Subject<R, E, A> extends Fx<R, E, A>, Sink<E, A> {
+  readonly subscriberCount: Effect.Effect<never, never, number>
+}
 ```
 
 Added in v1.18.0

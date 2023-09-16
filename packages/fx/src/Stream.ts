@@ -1,3 +1,7 @@
+/**
+ * Additional Stream integrations with Fx.
+ * @since 1.18.0
+ */
 import * as Chunk from "@effect/data/Chunk"
 import * as Option from "@effect/data/Option"
 import * as Cause from "@effect/io/Cause"
