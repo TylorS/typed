@@ -23,7 +23,6 @@ Added in v1.0.0
     - [InputArg (type alias)](#inputarg-type-alias)
     - [Req (type alias)](#req-type-alias)
     - [Success (type alias)](#success-type-alias)
-  - [of](#of)
 - [models](#models)
   - [Request (interface)](#request-interface)
 
@@ -38,11 +37,34 @@ Construct a Request implementation to be utilized from the Effect Context.
 **Signature**
 
 ```ts
-export declare function Request<Input, Req extends R.Request<any, any>>(
+export declare const Request: (<Input, Req extends R.Request<any, any>>(
   makeRequest: (input: Input) => Req
-): {
+) => {
   <const Id extends IdentifierFactory<any>>(id: Id): Request<IdentifierOf<Id>, Input, Req>
   <const Id>(id: Id): Request<IdentifierOf<Id>, Input, Req>
+}) & {
+  readonly tagged: <Req extends R.Request<any, any> & { readonly _tag: string }>(
+    tag: Req['_tag']
+  ) => {
+    <const Id extends IdentifierFactory<any>>(id: Id): Request<
+      IdentifierOf<Id>,
+      Compact<Omit<Req, typeof R.RequestTypeId | '_tag' | keyof Data.Case>>,
+      Req
+    >
+    <const Id>(id: Id): Request<
+      IdentifierOf<Id>,
+      Compact<Omit<Req, typeof R.RequestTypeId | '_tag' | keyof Data.Case>>,
+      Req
+    >
+  }
+  readonly of: <Req extends R.Request<any, any>>() => {
+    <const Id extends IdentifierFactory<any>>(id: Id): Request<
+      IdentifierOf<Id>,
+      Compact<Omit<Req, typeof R.RequestTypeId | keyof Data.Case>>,
+      Req
+    >
+    <const Id>(id: Id): Request<IdentifierOf<Id>, Compact<Omit<Req, typeof R.RequestTypeId | keyof Data.Case>>, Req>
+  }
 }
 ```
 
@@ -120,26 +142,6 @@ Extract the Success of a Request
 
 ```ts
 export type Success<T> = R.Request.Success<Req<T>>
-```
-
-Added in v1.0.0
-
-## of
-
-Construct a Request implementation to be utilized from the Effect Context.
-
-**Signature**
-
-```ts
-export declare function of<Req extends R.Request<any, any>>(): {
-  <const Id extends IdentifierFactory<any>>(id: Id): Request<
-    IdentifierOf<Id>,
-    Compact<Omit<Req, R.RequestTypeId | keyof Data.Case>>,
-    Req
-  >
-
-  <const Id>(id: Id): Request<IdentifierOf<Id>, Compact<Omit<Req, R.RequestTypeId | keyof Data.Case>>, Req>
-}
 ```
 
 Added in v1.0.0
