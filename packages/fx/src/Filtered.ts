@@ -40,6 +40,18 @@ export interface Filtered<out R, out E, out A> extends FxEffect<R, E, A, R, E | 
    * @since 1.18.0
    */
   readonly filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<R, E, B>
+
+  /**
+   * Map the current value of this Computed to a new value using an Effect
+   * @since 1.18.0
+   */
+  readonly mapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) => Filtered<R | R2, E | E2, B>
+
+  /**
+   * Map the current value of this Computed to a new value
+   * @since 1.18.0
+   */
+  readonly map: <B>(f: (a: A) => B) => Filtered<R, E, B>
 }
 
 /**
@@ -74,4 +86,8 @@ class FilteredImpl<R, E, A, R2, E2, B>
     new FilteredImpl(this as any as Filtered<R | R2, E | E2, B>, f) as any
 
   filterMap: Filtered<R | R2, E | E2, B>["filterMap"] = (f) => this.filterMapEffect((a) => Effect.sync(() => f(a)))
+
+  mapEffect: Filtered<R | R2, E | E2, B>["mapEffect"] = (f) => this.filterMapEffect((a) => Effect.asSome(f(a)))
+
+  map: Filtered<R | R2, E | E2, B>["map"] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)))
 }
