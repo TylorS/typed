@@ -4,3 +4,5 @@ has_children: true
 permalink: /docs/remote-data
 nav_order: 5
 ---
+
+RemoteData is a data type that represents the state of a remote resource.
