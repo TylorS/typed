@@ -4,7 +4,7 @@
  */
 
 import type * as Effect from "@effect/io/Effect"
-import * as C from "@typed/context"
+import * as Context from "@typed/context"
 
 type Identity<A> = A
 
@@ -20,7 +20,7 @@ export interface GlobalThis extends Identity<typeof globalThis> {}
  * @since 8.19.0
  * @category context
  */
-export const GlobalThis: C.Tagged<GlobalThis> = C.Tagged<GlobalThis>("@typed/dom/GlobalThis")
+export const GlobalThis: Context.Tagged<GlobalThis> = Context.Tagged<GlobalThis>("@typed/dom/GlobalThis")
 
 /**
  * Construct a new DOMParser

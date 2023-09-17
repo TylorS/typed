@@ -6,7 +6,7 @@
 import { pipe } from "@effect/data/Function"
 import { fromNullable, type Option } from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
-import * as C from "@typed/context"
+import * as Context from "@typed/context"
 
 import { GlobalThis } from "./GlobalThis"
 
@@ -22,7 +22,7 @@ export interface Navigator extends globalThis.Navigator {}
  * @since 8.19.0
  * @category context
  */
-export const Navigator: C.Tagged<Navigator> = C.Tagged<Navigator>("@typed/dom/Navigator")
+export const Navigator: Context.Tagged<Navigator> = Context.Tagged<Navigator>("@typed/dom/Navigator")
 
 /**
  * Check to see if the current navigator can share

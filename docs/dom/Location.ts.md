@@ -58,7 +58,7 @@ Context for the Location object
 **Signature**
 
 ```ts
-export declare const Location: C.Tagged<Location>
+export declare const Location: Context.Tagged<Location>
 ```
 
 Added in v8.19.0

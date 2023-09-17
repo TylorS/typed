@@ -4,7 +4,7 @@
  */
 
 import type * as Effect from "@effect/io/Effect"
-import * as C from "@typed/context"
+import * as Context from "@typed/context"
 
 import type * as Scope from "@effect/io/Scope"
 import type { AddEventListenerOptions } from "./EventTarget"
@@ -20,7 +20,7 @@ export interface Document extends globalThis.Document {}
  * @since 8.19.0
  * @category context
  */
-export const Document: C.Tagged<Document> = C.Tagged<Document>("@typed/dom/Document")
+export const Document: Context.Tagged<Document> = Context.Tagged<Document>("@typed/dom/Document")
 
 /**
  * Retrieve the body element from the current Document

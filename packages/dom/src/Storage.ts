@@ -10,7 +10,7 @@ import type { ParseOptions } from "@effect/schema/AST"
 import * as P from "@effect/schema/Parser"
 import * as ParseResult from "@effect/schema/ParseResult"
 import * as S from "@effect/schema/Schema"
-import * as C from "@typed/context"
+import * as Context from "@typed/context"
 
 import { Window } from "./Window"
 
@@ -28,7 +28,7 @@ export interface Storage extends globalThis.Storage {}
  * @since 8.19.0
  * @category context
  */
-export const Storage: C.Tagged<Storage> = C.Tagged<Storage>("@typed/dom/Storage")
+export const Storage: Context.Tagged<Storage> = Context.Tagged<Storage>("@typed/dom/Storage")
 
 /**
  * Get an item from storage

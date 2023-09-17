@@ -32,7 +32,7 @@ A Context for the globalThis object
 **Signature**
 
 ```ts
-export declare const GlobalThis: C.Tagged<GlobalThis>
+export declare const GlobalThis: Context.Tagged<GlobalThis>
 ```
 
 Added in v8.19.0

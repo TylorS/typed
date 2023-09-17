@@ -37,7 +37,7 @@ Create a DomServices Context
 **Signature**
 
 ```ts
-export declare const makeDomServices: (params: DomServicesParams) => C.Context<DomServices>
+export declare const makeDomServices: (params: DomServicesParams) => Context.Context<DomServices>
 ```
 
 Added in v8.19.0
@@ -51,7 +51,7 @@ All of the core DOM services accessible via a single interfae
 **Signature**
 
 ```ts
-export declare const DomServices: C.Tagged<
+export declare const DomServices: Context.Tagged<
   DomServices,
   {
     readonly globalThis: GlobalThis

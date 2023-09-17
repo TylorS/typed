@@ -4,7 +4,7 @@
  */
 
 import type * as Effect from "@effect/io/Effect"
-import * as C from "@typed/context"
+import * as Context from "@typed/context"
 
 import type * as Scope from "@effect/io/Scope"
 import type { AddEventListenerOptions } from "./EventTarget"
@@ -24,7 +24,7 @@ export interface RootElement {
  * @since 8.19.0
  * @category context
  */
-export const RootElement: C.Tagged<RootElement> = C.Tagged<RootElement>("@typed/dom/RootElement")
+export const RootElement: Context.Tagged<RootElement> = Context.Tagged<RootElement>("@typed/dom/RootElement")
 
 /**
  * Add an event listener to the root of your application.

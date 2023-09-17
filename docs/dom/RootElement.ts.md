@@ -31,7 +31,7 @@ The root element of your application
 **Signature**
 
 ```ts
-export declare const RootElement: C.Tagged<RootElement>
+export declare const RootElement: Context.Tagged<RootElement>
 ```
 
 Added in v8.19.0

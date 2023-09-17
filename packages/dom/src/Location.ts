@@ -4,7 +4,7 @@
  */
 
 import type * as Effect from "@effect/io/Effect"
-import * as C from "@typed/context"
+import * as Context from "@typed/context"
 
 /**
  * Context for the Location object
@@ -18,7 +18,7 @@ export interface Location extends globalThis.Location {}
  * @since 8.19.0
  * @category context
  */
-export const Location: C.Tagged<Location> = C.Tagged<Location>("@typed/dom/Location")
+export const Location: Context.Tagged<Location> = Context.Tagged<Location>("@typed/dom/Location")
 
 /**
  * Get the href from the current Location

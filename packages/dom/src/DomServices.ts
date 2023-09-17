@@ -5,7 +5,7 @@
 
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
-import * as C from "@typed/context"
+import * as Context from "@typed/context"
 
 import { Document } from "./Document"
 import { GlobalThis } from "./GlobalThis"
@@ -36,7 +36,7 @@ export type DomServices =
  * @since 8.19.0
  * @category context
  */
-export const DomServices: C.Tagged<
+export const DomServices: Context.Tagged<
   DomServices,
   {
     readonly globalThis: GlobalThis
@@ -48,7 +48,7 @@ export const DomServices: C.Tagged<
     readonly location: Location
     readonly navigator: Navigator
   }
-> = C.struct({
+> = Context.struct({
   globalThis: GlobalThis,
   window: Window,
   document: Document,
@@ -76,7 +76,7 @@ export type DomServicesParams = {
  * @since 8.19.0
  * @category constructors
  */
-export const makeDomServices = (params: DomServicesParams): C.Context<DomServices> => {
+export const makeDomServices = (params: DomServicesParams): Context.Context<DomServices> => {
   const { globalThis, window } = params
   const { document, history, location, navigator } = window
   const { context } = DomServices.build({

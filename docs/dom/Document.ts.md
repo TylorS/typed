@@ -69,7 +69,7 @@ Added in v8.19.0
 **Signature**
 
 ```ts
-export declare const Document: C.Tagged<Document>
+export declare const Document: Context.Tagged<Document>
 ```
 
 Added in v8.19.0

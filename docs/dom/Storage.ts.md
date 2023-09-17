@@ -107,7 +107,7 @@ persistently across browser sessions.
 **Signature**
 
 ```ts
-export declare const Storage: C.Tagged<Storage>
+export declare const Storage: Context.Tagged<Storage>
 ```
 
 Added in v8.19.0

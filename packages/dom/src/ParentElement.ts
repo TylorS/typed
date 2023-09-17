@@ -6,7 +6,7 @@
 import * as Option from "@effect/data/Option"
 import type * as Effect from "@effect/io/Effect"
 import type * as Scope from "@effect/io/Scope"
-import * as C from "@typed/context"
+import * as Context from "@typed/context"
 
 import * as EventTarget from "./EventTarget"
 import type { GlobalThis } from "./GlobalThis"
@@ -25,7 +25,7 @@ export interface ParentElement {
  * @since 8.19.0
  * @category context
  */
-export const ParentElement: C.Tagged<ParentElement> = C.Tagged<ParentElement>("@typed/dom/ParentElement")
+export const ParentElement: Context.Tagged<ParentElement> = Context.Tagged<ParentElement>("@typed/dom/ParentElement")
 
 /**
  * Query for an element using a CSS selector, relative to the current ParentElement

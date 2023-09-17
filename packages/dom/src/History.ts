@@ -4,7 +4,7 @@
  */
 
 import * as Effect from "@effect/io/Effect"
-import * as C from "@typed/context"
+import * as Context from "@typed/context"
 
 /**
  * A Context for the History object
@@ -18,7 +18,7 @@ export interface History extends globalThis.History {}
  * @since 8.19.0
  * @category context
  */
-export const History: C.Tagged<History, History> = C.Tagged<History>("@typed/dom/History")
+export const History: Context.Tagged<History, History> = Context.Tagged<History>("@typed/dom/History")
 
 /**
  * Call pushState on the History object

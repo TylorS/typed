@@ -5,7 +5,7 @@
 
 import * as Effect from "@effect/io/Effect"
 import type * as Scope from "@effect/io/Scope"
-import * as C from "@typed/context"
+import * as Context from "@typed/context"
 
 import * as EventTarget from "./EventTarget"
 
@@ -21,7 +21,7 @@ export interface Window extends globalThis.Window {}
  * @since 8.19.0
  * @category context
  */
-export const Window: C.Tagged<Window> = C.Tagged<Window>("@typed/dom/Window")
+export const Window: Context.Tagged<Window> = Context.Tagged<Window>("@typed/dom/Window")
 
 /**
  * Get the innerWidth from the Window
