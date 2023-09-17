@@ -1,3 +1,8 @@
+/**
+ * A Computed is a Subject that has a current value that can be read and observed
+ * @since 1.18.0
+ */
+
 import type * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import { Filtered } from "@typed/fx/Filtered"

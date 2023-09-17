@@ -1,3 +1,9 @@
+/**
+ * A Filtered is a Subject that has a current value that can be read and observed
+ * but getting the value might not succeed
+ * @since 1.18.0
+ */
+
 import type * as Option from "@effect/data/Option"
 import type * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"

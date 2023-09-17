@@ -1,6 +1,6 @@
 ---
 title: Fx.ts
-nav_order: 1
+nav_order: 3
 parent: "@typed/fx"
 ---
 
@@ -62,6 +62,7 @@ Added in v1.18.0
 - [combinators](#combinators)
   - [annotateLogs](#annotatelogs)
   - [annotateSpans](#annotatespans)
+  - [compct](#compct)
   - [continueWith](#continuewith)
   - [delay](#delay)
   - [either](#either)
@@ -648,6 +649,18 @@ export declare const annotateSpans: {
   <R, E, A>(fx: Fx<R, E, A>, key: string, value: Tracer.AttributeValue): Fx<R, E, A>
   <R, E, A>(fx: Fx<R, E, A>, values: Record<string, Tracer.AttributeValue>): Fx<R, E, A>
 }
+```
+
+Added in v1.18.0
+
+## compct
+
+Unwrap Options by filtering any None values.
+
+**Signature**
+
+```ts
+export declare const compct: <R, E, A>(fx: Fx<R, E, Option.Option<A>>) => Fx<R, E, A>
 ```
 
 Added in v1.18.0
@@ -2258,7 +2271,7 @@ Type-alias for a Effect.forkIn(scope) that returns a Fiber
 **Signature**
 
 ```ts
-export type ScopedFork = <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, never, Fiber.Fiber.Runtime<E, A>>
+export type ScopedFork = <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, never, Fiber.Fiber<E, A>>
 ```
 
 Added in v1.18.0
