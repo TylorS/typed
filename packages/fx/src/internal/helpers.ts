@@ -1,10 +1,13 @@
 import * as Option from "@effect/data/Option"
+import { type Cause, NoSuchElementException } from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
 import * as Ref from "@effect/io/Ref"
 import * as Scope from "@effect/io/Scope"
 import * as SynchronizedRef from "@effect/io/SynchronizedRef"
 import type { FlattenStrategy, FxFork, ScopedFork } from "@typed/fx/Fx"
+import type { InternalEffect } from "@typed/fx/internal/effect-primitive"
+import { matchEffectPrimitive } from "@typed/fx/internal/effect-primitive"
 import type * as Sink from "@typed/fx/Sink"
 
 export function withScopedFork<R, E, A>(
@@ -12,9 +15,31 @@ export function withScopedFork<R, E, A>(
 ): Effect.Effect<R, E, A> {
   return Effect.acquireUseRelease(
     Scope.make(),
-    (scope) => f((effect) => Effect.forkIn(Effect.interruptible(effect), scope), scope),
+    (scope) => {
+      const fork = makeScopedFork(scope)
+
+      return f((effect) => fork(Effect.interruptible(effect)), scope)
+    },
     Scope.close
   )
+}
+
+function makeScopedFork(scope: Scope.Scope): ScopedFork {
+  const forkIn = Effect.forkIn(scope)
+
+  return <R, E, A>(effect: Effect.Effect<R, E, A>): Effect.Effect<R, never, Fiber.Fiber<E, A>> => {
+    // Convert simple Effects directly into Fibers
+    return matchEffectPrimitive(effect as Effect.Effect<R, E, A> & InternalEffect, {
+      Success: (e): Effect.Effect<R, never, Fiber.Fiber<E, A>> => Effect.succeed(Fiber.succeed(e.i0 as A)),
+      Failure: (e) => Effect.succeed(Fiber.failCause(e.i0 as Cause<E>)),
+      Sync: (e) => Effect.sync(() => Fiber.succeed(e.i0() as A)),
+      Left: (e) => Effect.succeed(Fiber.fail(e.left as E)),
+      Right: (e) => Effect.succeed(Fiber.succeed(e.right as A)),
+      None: () => Effect.succeed(Fiber.fail(NoSuchElementException() as E)),
+      Some: (e) => Effect.succeed(Fiber.succeed(e.value)),
+      Otherwise: (e) => forkIn(e as Effect.Effect<R, E, A>)
+    })
+  }
 }
 
 export function withSwitchFork<R, E, A>(

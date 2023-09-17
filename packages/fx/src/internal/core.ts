@@ -540,6 +540,8 @@ export const filterMap: {
   return Transformer.make<R, E, B>(fx, FilterMap(f))
 })
 
+export const compact = <R, E, A>(fx: Fx<R, E, Option.Option<A>>): Fx<R, E, A> => filterMap(fx, identity)
+
 export const mapErrorCause: {
   <E, E2>(f: (a: Cause.Cause<E>) => Cause.Cause<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
   <R, E, A, E2>(fx: Fx<R, E, A>, f: (a: Cause.Cause<E>) => Cause.Cause<E2>): Fx<R, E2, A>

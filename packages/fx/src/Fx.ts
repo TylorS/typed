@@ -357,7 +357,7 @@ export const at: {
  * @since 1.18.0
  * @category models
  */
-export type ScopedFork = <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, never, Fiber.Fiber.Runtime<E, A>>
+export type ScopedFork = <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, never, Fiber.Fiber<E, A>>
 
 /**
  * Type-alias for Effect.forkIn(scope) which runs the Effect runtime
@@ -694,6 +694,12 @@ export const filterMap: {
   <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => Option.Option<B>): Fx<R, E, B>
 } = core.filterMap
 
+/**
+ * Unwrap Options by filtering any None values.
+ * @since 1.18.0
+ * @category combinators
+ */
+export const compct: <R, E, A>(fx: Fx<R, E, Option.Option<A>>) => Fx<R, E, A> = core.compact
 /**
  * Map over the Cause  of an Fx.
  * @since 1.18.0

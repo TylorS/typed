@@ -1,4 +1,5 @@
 import * as Either from "@effect/data/Either"
+import * as Option from "@effect/data/Option"
 import * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
@@ -282,6 +283,52 @@ describe(__filename, () => {
       })
 
       await Effect.runPromise(test)
+    })
+
+    describe("map to a computed value", () => {
+      it("transform success values", async () => {
+        const test = Effect.gen(function*(_) {
+          const ref = yield* _(RefSubject.make(Effect.succeed(0)))
+          const addOne = ref.map((x) => x + 1)
+
+          expect(yield* _(addOne)).toEqual(1)
+
+          yield* _(ref.set(1))
+
+          expect(yield* _(addOne)).toEqual(2)
+
+          yield* _(ref.update((x) => x + 1))
+
+          expect(yield* _(addOne)).toEqual(3)
+
+          yield* _(ref.delete)
+
+          expect(yield* _(addOne)).toEqual(1)
+        })
+
+        await Effect.runPromise(test)
+      })
+    })
+
+    describe("filterMap to filtered values", () => {
+      it("returns Cause.NoSuchElementException when filtered", async () => {
+        const test = Effect.gen(function*(_) {
+          const ref = yield* _(RefSubject.value(0))
+          const filtered = ref.filterMap(Option.liftPredicate((x) => x % 2 === 0))
+
+          expect(yield* _(Effect.optionFromOptional(filtered))).toEqual(Option.some(0))
+
+          yield* _(ref.set(1))
+
+          expect(yield* _(Effect.optionFromOptional(filtered))).toEqual(Option.none())
+
+          yield* _(ref.set(2))
+
+          expect(yield* _(Effect.optionFromOptional(filtered))).toEqual(Option.some(2))
+        })
+
+        await Effect.runPromise(test)
+      })
     })
   })
 })

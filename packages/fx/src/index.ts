@@ -16,6 +16,8 @@
  * @since 1.18.0
  */
 
+export * as Computed from "./Computed"
+export * as Filtered from "./Filtered"
 export * from "./Fx"
 export * as RefSubject from "./RefSubject"
 export * as Sink from "./Sink"
