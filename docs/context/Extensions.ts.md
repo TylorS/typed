@@ -17,13 +17,14 @@ Added in v1.0.0
 - [constructors](#constructors)
   - [Actions](#actions)
   - [Actions (interface)](#actions-interface)
-  - [tagged](#tagged)
+  - [fromTag](#fromtag)
   - [withActions](#withactions)
 - [models](#models)
   - [Tagged (interface)](#tagged-interface)
 - [utils](#utils)
   - [Provision](#provision)
   - [Provision (interface)](#provision-interface)
+  - [Tagged](#tagged)
   - [withProvision](#withprovision)
 
 ---
@@ -61,14 +62,14 @@ export interface Actions<I, S> {
 
 Added in v1.0.0
 
-## tagged
+## fromTag
 
 Create a Tagged service that can be utilized from the Effect Context.
 
 **Signature**
 
 ```ts
-export declare function tagged<I, S>(tag: Tag<I, S>): Tag<I, S> & Tagged<I, S>
+export declare function fromTag<I, S>(tag: Tag<I, S>): Tagged<I, S>
 ```
 
 Added in v1.0.0
@@ -89,12 +90,14 @@ Added in v1.0.0
 
 ## Tagged (interface)
 
-A Tagged service that can be utilized from the Effect Context.
+A Tagged service is a @effect/data/Context.Tag with additional methods for
+utilizing and providing the service without needing additional imports from Effect, Layer, or Context
+so you're not redefining the same methods over and over again.
 
 **Signature**
 
 ```ts
-export interface Tagged<I, S = I> extends Actions<I, S>, Provision<I, S> {}
+export interface Tagged<I, S = I> extends Tag<I, S>, Actions<I, S>, Provision<I, S> {}
 ```
 
 Added in v1.0.0
@@ -148,6 +151,26 @@ export interface Provision<I, S> {
    * @since 1.0.0
    */
   readonly scoped: <R, E>(effect: Effect.Effect<R, E, S>) => Layer.Layer<Exclude<R, Scope>, E, I>
+}
+```
+
+Added in v1.0.0
+
+## Tagged
+
+Construct a Tagged implementation to be utilized from the Effect Context.
+
+**Signature**
+
+```ts
+export declare function Tagged<const I extends IdentifierFactory<any>, S = I>(
+  id: I | string
+): Tagged<IdentifierOf<I>, S>
+export declare function Tagged<const I, S = I>(id: I | string): Tagged<IdentifierOf<I>, S>
+export declare function Tagged<const I, S>(id: I): Tagged<IdentifierOf<I>, S>
+export declare function Tagged<S>(): {
+  <const I extends IdentifierFactory<any>>(id: I): Tagged<IdentifierOf<I>, S>
+  <const I>(id: I | string): Tagged<IdentifierOf<I>, S>
 }
 ```
 

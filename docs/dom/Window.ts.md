@@ -36,7 +36,7 @@ Context for the Window object
 **Signature**
 
 ```ts
-export declare const Window: any
+export declare const Window: C.Tagged<Window>
 ```
 
 Added in v8.19.0

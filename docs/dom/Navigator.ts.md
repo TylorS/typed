@@ -143,7 +143,7 @@ A Context for the Navigator API
 **Signature**
 
 ```ts
-export declare const Navigator: any
+export declare const Navigator: C.Tagged<Navigator>
 ```
 
 Added in v8.19.0

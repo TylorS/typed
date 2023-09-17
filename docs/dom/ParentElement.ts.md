@@ -53,7 +53,7 @@ A Context for the parentElement of an HTMLElement
 **Signature**
 
 ```ts
-export declare const ParentElement: any
+export declare const ParentElement: C.Tagged<ParentElement>
 ```
 
 Added in v8.19.0

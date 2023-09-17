@@ -176,7 +176,7 @@ A Context for the globalThis object
 **Signature**
 
 ```ts
-export declare const History: any
+export declare const History: C.Tagged<History, History>
 ```
 
 Added in v8.19.0
