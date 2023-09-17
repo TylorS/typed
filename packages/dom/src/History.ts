@@ -18,9 +18,7 @@ export interface History extends globalThis.History {}
  * @since 8.19.0
  * @category context
  */
-export const History: C.Tag<History, History> & C.Tagged<History, History> = C.Tag<History>("@typed/dom/History").pipe(
-  C.tagged
-)
+export const History: C.Tagged<History, History> = C.Tagged<History>("@typed/dom/History")
 
 /**
  * Call pushState on the History object

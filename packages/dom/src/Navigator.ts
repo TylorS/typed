@@ -22,7 +22,7 @@ export interface Navigator extends globalThis.Navigator {}
  * @since 8.19.0
  * @category context
  */
-export const Navigator: C.Tag<Navigator> & C.Tagged<Navigator> = C.tagged(C.Tag<Navigator>("@typed/dom/Navigator"))
+export const Navigator: C.Tagged<Navigator> = C.Tagged<Navigator>("@typed/dom/Navigator")
 
 /**
  * Check to see if the current navigator can share

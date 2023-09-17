@@ -21,7 +21,7 @@ export interface Window extends globalThis.Window {}
  * @since 8.19.0
  * @category context
  */
-export const Window: C.Tag<Window> & C.Tagged<Window> = C.tagged(C.Tag<Window>("@typed/dom/Window"))
+export const Window: C.Tagged<Window> = C.Tagged<Window>("@typed/dom/Window")
 
 /**
  * Get the innerWidth from the Window

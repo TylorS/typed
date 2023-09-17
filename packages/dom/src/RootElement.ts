@@ -24,9 +24,7 @@ export interface RootElement {
  * @since 8.19.0
  * @category context
  */
-export const RootElement: C.Tag<RootElement> & C.Tagged<RootElement> = C.tagged(
-  C.Tag<RootElement>("@typed/dom/RootElement")
-)
+export const RootElement: C.Tagged<RootElement> = C.Tagged<RootElement>("@typed/dom/RootElement")
 
 /**
  * Add an event listener to the root of your application.

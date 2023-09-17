@@ -20,9 +20,7 @@ export interface GlobalThis extends Identity<typeof globalThis> {}
  * @since 8.19.0
  * @category context
  */
-export const GlobalThis: C.Tag<GlobalThis> & C.Tagged<GlobalThis> = C.Tag<GlobalThis>("@typed/dom/GlobalThis").pipe(
-  C.tagged
-)
+export const GlobalThis: C.Tagged<GlobalThis> = C.Tagged<GlobalThis>("@typed/dom/GlobalThis")
 
 /**
  * Construct a new DOMParser

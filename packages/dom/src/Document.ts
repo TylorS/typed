@@ -20,7 +20,7 @@ export interface Document extends globalThis.Document {}
  * @since 8.19.0
  * @category context
  */
-export const Document: C.Tag<Document> & C.Tagged<Document> = C.Tag<Document>("@typed/dom/Document").pipe(C.tagged)
+export const Document: C.Tagged<Document> = C.Tagged<Document>("@typed/dom/Document")
 
 /**
  * Retrieve the body element from the current Document

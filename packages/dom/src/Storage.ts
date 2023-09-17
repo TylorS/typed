@@ -28,7 +28,7 @@ export interface Storage extends globalThis.Storage {}
  * @since 8.19.0
  * @category context
  */
-export const Storage: C.Tag<Storage> & C.Tagged<Storage> = C.tagged(C.Tag<Storage>("@typed/dom/Storage"))
+export const Storage: C.Tagged<Storage> = C.Tagged<Storage>("@typed/dom/Storage")
 
 /**
  * Get an item from storage

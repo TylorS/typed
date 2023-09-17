@@ -18,9 +18,7 @@ export interface Location extends globalThis.Location {}
  * @since 8.19.0
  * @category context
  */
-export const Location: C.Tag<Location> & C.Tagged<Location> = C.Tag<Location>("@typed/dom/Location").pipe(
-  C.tagged
-)
+export const Location: C.Tagged<Location> = C.Tagged<Location>("@typed/dom/Location")
 
 /**
  * Get the href from the current Location

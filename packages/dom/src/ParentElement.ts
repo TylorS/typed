@@ -25,9 +25,7 @@ export interface ParentElement {
  * @since 8.19.0
  * @category context
  */
-export const ParentElement: C.Tag<ParentElement> & C.Tagged<ParentElement> = C.tagged(
-  C.Tag<ParentElement>("@typed/dom/ParentElement")
-)
+export const ParentElement: C.Tagged<ParentElement> = C.Tagged<ParentElement>("@typed/dom/ParentElement")
 
 /**
  * Query for an element using a CSS selector, relative to the current ParentElement

@@ -6,23 +6,47 @@
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 
-import type { Tag } from "@effect/data/Context"
+import { Tag } from "@effect/data/Context"
 import type { Scope } from "@effect/io/Scope"
 import { ContextBuilder } from "@typed/context/Builder"
+import type { IdentifierFactory, IdentifierOf } from "@typed/context/Identifier"
 
 /**
- * A Tagged service that can be utilized from the Effect Context.
+ * A Tagged service is a @effect/data/Context.Tag with additional methods for
+ * utilizing and providing the service without needing additional imports from Effect, Layer, or Context
+ * so you're not redefining the same methods over and over again.
+ *
  * @since 1.0.0
  * @category models
  */
-export interface Tagged<I, S = I> extends Actions<I, S>, Provision<I, S> {}
+export interface Tagged<I, S = I> extends Tag<I, S>, Actions<I, S>, Provision<I, S> {}
+
+/**
+ * Construct a Tagged implementation to be utilized from the Effect Context.
+ * @since 1.0.0
+ */
+export function Tagged<const I extends IdentifierFactory<any>, S = I>(id: I | string): Tagged<IdentifierOf<I>, S>
+export function Tagged<const I, S = I>(id: I | string): Tagged<IdentifierOf<I>, S>
+export function Tagged<const I, S>(id: I): Tagged<IdentifierOf<I>, S>
+export function Tagged<S>(): {
+  <const I extends IdentifierFactory<any>>(id: I): Tagged<IdentifierOf<I>, S>
+  <const I>(id: I | string): Tagged<IdentifierOf<I>, S>
+}
+
+export function Tagged<S>(id?: unknown) {
+  if (arguments.length > 0) {
+    return fromTag(Tag<any, S>(id))
+  } else {
+    return (id: unknown) => fromTag(Tag<any, S>(id))
+  }
+}
 
 /**
  * Create a Tagged service that can be utilized from the Effect Context.
  * @since 1.0.0
  * @category constructors
  */
-export function tagged<I, S>(tag: Tag<I, S>): Tag<I, S> & Tagged<I, S> {
+export function fromTag<I, S>(tag: Tag<I, S>): Tagged<I, S> {
   return Object.assign(tag, Actions.fromTag(tag), Provision.fromTag(tag))
 }
 
