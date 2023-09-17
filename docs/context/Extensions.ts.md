@@ -94,7 +94,7 @@ A Tagged service that can be utilized from the Effect Context.
 **Signature**
 
 ```ts
-export interface Tagged<I, S> extends Actions<I, S>, Provision<I, S> {}
+export interface Tagged<I, S = I> extends Actions<I, S>, Provision<I, S> {}
 ```
 
 Added in v1.0.0

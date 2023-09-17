@@ -15,7 +15,7 @@ import { ContextBuilder } from "@typed/context/Builder"
  * @since 1.0.0
  * @category models
  */
-export interface Tagged<I, S> extends Actions<I, S>, Provision<I, S> {}
+export interface Tagged<I, S = I> extends Actions<I, S>, Provision<I, S> {}
 
 /**
  * Create a Tagged service that can be utilized from the Effect Context.

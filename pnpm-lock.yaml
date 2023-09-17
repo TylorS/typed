@@ -131,6 +131,22 @@ importers:
     publishDirectory: dist
 
   packages/dom:
+    dependencies:
+      '@effect/data':
+        specifier: ^0.18.5
+        version: 0.18.5
+      '@effect/io':
+        specifier: ^0.40.3
+        version: 0.40.3(@effect/data@0.18.5)
+      '@effect/schema':
+        specifier: ^0.36.1
+        version: 0.36.1(@effect/data@0.18.5)(@effect/io@0.40.3)
+      '@typed/context':
+        specifier: workspace:*
+        version: link:../context/dist
+      typed-query-selector:
+        specifier: ^2.11.0
+        version: 2.11.0
     publishDirectory: dist
 
   packages/fx:
@@ -801,6 +817,17 @@ packages:
       '@effect/io': 0.38.0(@effect/data@0.17.1)
       fast-check: 3.13.0
     dev: true
+
+  /@effect/schema@0.36.1(@effect/data@0.18.5)(@effect/io@0.40.3):
+    resolution: {integrity: sha512-sBF5PNe5zZ2OzqABDkhvnUPoJ78be1tI7ByDYMO9rPa8paB28Ku/1OveXJda68YO15Jb4F4Z/IuRGYiEFZNHEA==}
+    peerDependencies:
+      '@effect/data': ^0.18.5
+      '@effect/io': ^0.40.1
+    dependencies:
+      '@effect/data': 0.18.5
+      '@effect/io': 0.40.3(@effect/data@0.18.5)
+      fast-check: 3.13.0
+    dev: false
 
   /@effect/stream@0.36.1(@effect/data@0.18.5)(@effect/io@0.40.3):
     resolution: {integrity: sha512-gF/RzTBGgghCA+lcgYFkHW/ozozyOfx4hrGhKWspkjMXyc4B7p0E7dsHO14byTZtUD/JAXvrekvVX8uV7i8Zzw==}
@@ -2976,7 +3003,6 @@ packages:
     engines: {node: '>=8.0.0'}
     dependencies:
       pure-rand: 6.0.3
-    dev: true
 
   /fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
@@ -4801,7 +4827,6 @@ packages:
 
   /pure-rand@6.0.3:
     resolution: {integrity: sha512-KddyFewCsO0j3+np81IQ+SweXLDnDQTs5s67BOnrYmYe/yNmUhttQyGsYzy8yUnoljGAQ9sl38YB4vH8ur7Y+w==}
-    dev: true
 
   /queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
@@ -5808,6 +5833,10 @@ packages:
       for-each: 0.3.3
       is-typed-array: 1.1.12
     dev: true
+
+  /typed-query-selector@2.11.0:
+    resolution: {integrity: sha512-qBs4sfmnLlPOyo2oSdvHbIFHe2CPgU54/1UGfSNceb7LARpIEVxUaeRX0Doje6oKpuySS2stqy90R3YrynR8Kg==}
+    dev: false
 
   /typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}

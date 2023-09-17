@@ -20,11 +20,12 @@ export interface Tag<I, S = I> extends C.Tag<I, S> {}
  * Construct a Tag implementation to be utilized from the Effect Context.
  * @since 1.0.0
  */
-export function Tag<const I extends IdentifierFactory<any>, S>(id: I): Tag<IdentifierOf<I>, S>
+export function Tag<const I extends IdentifierFactory<any>, S = I>(id: I | string): Tag<IdentifierOf<I>, S>
+export function Tag<const I, S = I>(id: I | string): Tag<IdentifierOf<I>, S>
 export function Tag<const I, S>(id: I): Tag<IdentifierOf<I>, S>
 export function Tag<S>(): {
   <const I extends IdentifierFactory<any>>(id: I): Tag<IdentifierOf<I>, S>
-  <const I>(id: I): Tag<IdentifierOf<I>, S>
+  <const I>(id: I | string): Tag<IdentifierOf<I>, S>
 }
 
 export function Tag<S>(id?: unknown) {
