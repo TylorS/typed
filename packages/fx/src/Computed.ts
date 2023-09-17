@@ -59,8 +59,8 @@ class ComputedImpl<R, E, A, R2, E2, B> extends FxEffectTransform<R, E, A, R, E, 
   ) {
     super(
       input,
-      (fx) => switchMap(fx, f),
-      (effect) => Effect.flatMap(effect, f)
+      switchMap(f),
+      Effect.flatMap(f)
     )
   }
 
