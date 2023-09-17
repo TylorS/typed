@@ -28,7 +28,7 @@ function makeScopedFork(scope: Scope.Scope): ScopedFork {
   const forkIn = Effect.forkIn(scope)
 
   return <R, E, A>(effect: Effect.Effect<R, E, A>): Effect.Effect<R, never, Fiber.Fiber<E, A>> => {
-    // Convert simple Effects directly into Fibers
+    // Convert simple Effects directly into synthetic Fibers to avoid the overhead of constructing a fiber.
     return matchEffectPrimitive(effect as Effect.Effect<R, E, A> & InternalEffect, {
       Success: (e): Effect.Effect<R, never, Fiber.Fiber<E, A>> => Effect.succeed(Fiber.succeed(e.i0 as A)),
       Failure: (e) => Effect.succeed(Fiber.failCause(e.i0 as Cause<E>)),
