@@ -15,6 +15,18 @@
       "@typed/context/examples/*": [
         "packages/context/examples/*"
       ],
+      "@typed/dom": [
+        "packages/dom/src/index.ts"
+      ],
+      "@typed/dom/*": [
+        "packages/dom/src/*"
+      ],
+      "@typed/dom/test/*": [
+        "packages/dom/test/*"
+      ],
+      "@typed/dom/examples/*": [
+        "packages/dom/examples/*"
+      ],
       "@typed/fx": [
         "packages/fx/src/index.ts"
       ],

@@ -5,6 +5,9 @@
       "path": "packages/context"
     },
     {
+      "path": "packages/dom"
+    },
+    {
       "path": "packages/fx"
     },
     {

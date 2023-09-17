@@ -16,6 +16,18 @@
       "@typed/context/examples/*": [
         "packages/context/build/examples/*"
       ],
+      "@typed/dom": [
+        "packages/dom/build/esm/index.js"
+      ],
+      "@typed/dom/*": [
+        "packages/dom/build/esm/*"
+      ],
+      "@typed/dom/test/*": [
+        "packages/dom/build/test/*"
+      ],
+      "@typed/dom/examples/*": [
+        "packages/dom/build/examples/*"
+      ],
       "@typed/fx": [
         "packages/fx/build/esm/index.js"
       ],
@@ -82,6 +94,9 @@
     "packages/context/build/esm/**/*",
     "packages/context/build/test/**/*",
     "packages/context/build/examples/**/*",
+    "packages/dom/build/esm/**/*",
+    "packages/dom/build/test/**/*",
+    "packages/dom/build/examples/**/*",
     "packages/fx/build/esm/**/*",
     "packages/fx/build/test/**/*",
     "packages/fx/build/examples/**/*",

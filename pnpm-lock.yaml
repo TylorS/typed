@@ -130,6 +130,9 @@ importers:
         version: 0.40.3(@effect/data@0.18.5)
     publishDirectory: dist
 
+  packages/dom:
+    publishDirectory: dist
+
   packages/fx:
     dependencies:
       '@effect/data':
