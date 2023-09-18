@@ -178,8 +178,6 @@ export interface Model<Refs extends Readonly<Record<string, Any>>>
     }
   >
 
-  // TODO: Model provision should enable all possibilities of RefSubject provision
-
   /**
    * Provide a Model to an Effect
    * @since 1.18.0
@@ -188,9 +186,7 @@ export interface Model<Refs extends Readonly<Record<string, Any>>>
     state: {
       readonly [K in keyof Refs]: Model.State<Refs[K]>
     },
-    eqs?: {
-      readonly [K in keyof Refs]?: Equivalence<Model.State<Refs[K]>>
-    }
+    eqs?: MakeEqivalenceOptions<Refs>
   ) => Layer.Layer<never, never, Model.Identifier<Refs[keyof Refs]>>
 
   /**
@@ -205,9 +201,7 @@ export interface Model<Refs extends Readonly<Record<string, Any>>>
         readonly [K in keyof Refs]: Model.State<Refs[K]>
       }
     >,
-    eqs?: {
-      readonly [K in keyof Refs]?: Equivalence<Model.State<Refs[K]>>
-    }
+    eqs?: MakeEqivalenceOptions<Refs>
   ) => Layer.Layer<Exclude<R, Scope>, E, Model.Identifier<Refs[keyof Refs]>>
 
   /**
@@ -232,15 +226,9 @@ export interface Model<Refs extends Readonly<Record<string, Any>>>
    * Create a Layer from a Model using the Layers of each Ref
    * @since 1.18.0
    */
-  readonly make: <
-    Opts extends {
-      readonly [K in keyof Refs]: Fx<any, Model.Error<Refs[K]>, Model.State<Refs[K]>>
-    }
-  >(
+  readonly make: <Opts extends MakeOptions<Refs>>(
     options: Opts,
-    eqs?: {
-      readonly [K in keyof Refs]?: Equivalence<Model.State<Refs[K]>>
-    }
+    eqs?: MakeEqivalenceOptions<Refs>
   ) => Layer.Layer<Exclude<Fx.Context<Opts[keyof Refs]>, Scope>, never, Model.Identifier<Refs[keyof Refs]>>
 }
 ```
