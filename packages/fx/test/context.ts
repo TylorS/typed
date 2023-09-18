@@ -156,8 +156,7 @@ describe("Context", () => {
         Effect.provideSomeLayer(foobar.of({
           foo: 0,
           bar: ""
-        })),
-        Effect.scoped
+        }))
       )
 
       await Effect.runPromise(test)
@@ -180,8 +179,7 @@ describe("Context", () => {
         Effect.provideSomeLayer(foobar.of({
           foo: 0,
           bar: ""
-        })),
-        Effect.scoped
+        }))
       )
 
       await Effect.runPromise(test)
