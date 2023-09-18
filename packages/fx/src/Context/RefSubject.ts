@@ -56,7 +56,7 @@ export interface RefSubject<I, E, A> extends VersionedFxEffect<I, I, E, A, I, E,
   readonly map: <B>(f: (a: A) => B) => Computed<I, E, B>
 
   /**
-   * Map the current value of this Filtered to a new value using an Effect
+   * Filter and map the current value of this Filtered to a new value using an Effect
    * @since 1.18.0
    */
   readonly filterMapEffect: <R2, E2, B>(
@@ -64,7 +64,7 @@ export interface RefSubject<I, E, A> extends VersionedFxEffect<I, I, E, A, I, E,
   ) => Filtered<R2, E | E2, B>
 
   /**
-   * Map the current value of this Filtered to a new value
+   * Filter ad map the current value of this Filtered to a new value
    * @since 1.18.0
    */
   readonly filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<never, E, B>
@@ -99,7 +99,9 @@ export interface RefSubject<I, E, A> extends VersionedFxEffect<I, I, E, A, I, E,
  * @category constructors
  */
 export function RefSubject<E, A>(): {
-  <const I extends Context.IdentifierFactory<any>>(identifier: I): RefSubject<Context.IdentifierOf<I>, E, A>
+  <const I extends Context.IdentifierConstructor<any>>(
+    identifier: (id: typeof Context.id) => I
+  ): RefSubject<Context.IdentifierOf<I>, E, A>
   <const I>(identifier: I): RefSubject<Context.IdentifierOf<I>, E, A>
 } {
   function makeRefSubject<const I extends Context.IdentifierFactory<any>>(

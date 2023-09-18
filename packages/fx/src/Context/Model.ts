@@ -5,6 +5,7 @@
  */
 
 import type { Context } from "@effect/data/Context"
+import type { Equivalence } from "@effect/data/Equivalence"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
@@ -14,6 +15,7 @@ import { ContextBuilder } from "@typed/context/Builder"
 import { Computed } from "@typed/fx/Computed"
 import type { RefSubject } from "@typed/fx/Context"
 import { Filtered } from "@typed/fx/Filtered"
+import type { Fx } from "@typed/fx/Fx"
 import { struct } from "@typed/fx/Fx"
 import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
@@ -195,27 +197,68 @@ export interface Model<Refs extends Readonly<Record<string, Any>>> extends
    * Provide a Model to an Effect
    * @since 1.18.0
    */
-  readonly provide: (
+  readonly of: (
     state: {
       readonly [K in keyof Refs]: Model.State<Refs[K]>
+    },
+    eqs?: {
+      readonly [K in keyof Refs]?: Equivalence<Model.State<Refs[K]>>
     }
-  ) => <R, E, B>(
-    effect: Effect.Effect<R, E, B>
-  ) => Effect.Effect<Exclude<R, Model.Identifier<Refs[keyof Refs]>> | Scope, E, B>
+  ) => Layer.Layer<never, never, Model.Identifier<Refs[keyof Refs]>>
 
   /**
    * Construct a Layer to provide a Model to an Effect
    * @since 1.18.0
    */
-  readonly layer: <R, E>(
+  readonly fromEffect: <R, E>(
     effect: Effect.Effect<
       R,
       E,
       {
         readonly [K in keyof Refs]: Model.State<Refs[K]>
       }
-    >
+    >,
+    eqs?: {
+      readonly [K in keyof Refs]?: Equivalence<Model.State<Refs[K]>>
+    }
   ) => Layer.Layer<Exclude<R, Scope>, E, Model.Identifier<Refs[keyof Refs]>>
+
+  /**
+   * Create a Layer from a Model using the Layers of each Ref
+   * @since 1.18.0
+   */
+  readonly makeWith: <
+    Opts extends {
+      readonly [K in keyof Refs]: (
+        ref: Refs[K]
+      ) => Layer.Layer<any, any, Model.Identifier<Refs[K]>> | Layer.Layer<any, never, Model.Identifier<Refs[K]>>
+    }
+  >(
+    options: Opts
+  ) => Layer.Layer<
+    Exclude<Layer.Layer.Context<ReturnType<Opts[keyof Refs]>>, Scope>,
+    Layer.Layer.Error<ReturnType<Opts[keyof Refs]>>,
+    Model.Identifier<Refs[keyof Refs]>
+  >
+
+  /**
+   * Create a Layer from a Model using the Layers of each Ref
+   * @since 1.18.0
+   */
+  readonly make: <
+    Opts extends {
+      readonly [K in keyof Refs]: Fx<any, Model.Error<Refs[K]>, Model.State<Refs[K]>>
+    }
+  >(
+    options: Opts,
+    eqs?: {
+      readonly [K in keyof Refs]?: Equivalence<Model.State<Refs[K]>>
+    }
+  ) => Layer.Layer<
+    Exclude<Fx.Context<Opts[keyof Refs]>, Scope>,
+    never,
+    Model.Identifier<Refs[keyof Refs]>
+  >
 }
 
 /**
@@ -338,13 +381,18 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProt
         return Effect.as(this.set(newState), b)
       }))
 
-  provide: Model<Refs>["provide"] = (state: { readonly [K in keyof Refs]: Model.State<Refs[K]> }) => (effect) =>
-    Object.entries(this.refs).reduce(
-      (effect: Effect.Effect<any, any, any>, [k, ref]) => ref.provide(Effect.succeed(state[k]))(effect),
-      effect
+  of: Model<Refs>["of"] = (state, eqs) => {
+    const [first, ...rest] = Object.entries(this.refs).map(
+      ([k, ref]) => ref.make(Effect.succeed(state[k]), eqs?.[k])
     )
 
-  layer: Model<Refs>["layer"] = (effect) => {
+    return Layer.mergeAll(
+      first,
+      ...rest
+    ) as any
+  }
+
+  fromEffect: Model<Refs>["fromEffect"] = (effect, eq) => {
     const { refs } = this
 
     return Layer.scopedContext(Effect.gen(function*(_) {
@@ -356,7 +404,7 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProt
       for (const [k, ref] of Object.entries(refs)) {
         context = context.mergeContext(
           yield* _(Layer.buildWithScope(
-            (ref).make(Effect.succeed(initial[k])),
+            (ref).make(Effect.succeed(initial[k]), eq?.[k]),
             scope
           ))
         )
@@ -365,6 +413,34 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProt
       return context.context as Context<Model.Identifier<Refs[keyof Refs]>>
     }))
   }
+
+  makeWith: Model<Refs>["makeWith"] = (options) => {
+    const { refs } = this
+
+    return Layer.scopedContext(Effect.gen(function*(_) {
+      const scope = yield* _(Effect.scope)
+
+      let context = ContextBuilder.empty
+
+      for (const [k, ref] of Object.entries(refs)) {
+        context = context.mergeContext(
+          yield* _(Layer.buildWithScope(
+            options[k](ref as any),
+            scope
+          ))
+        )
+      }
+
+      return context.context as Context<Model.Identifier<Refs[keyof Refs]>>
+    }))
+  }
+
+  make: Model<Refs>["make"] = (options, eqs) =>
+    this.makeWith(
+      Object.fromEntries(
+        Object.entries(options).map(([k, fx]) => [k, (ref: RefSubject<any, any, any>) => ref.make(fx, eqs?.[k])])
+      ) as any
+    ) as any
 
   version = Effect.map(
     Effect.all(Object.values(this.refs).map((ref) => ref.version)),

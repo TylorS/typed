@@ -2,9 +2,9 @@ import * as Effect from "@effect/io/Effect"
 import * as Context from "@typed/context"
 
 describe(__filename, () => {
-  describe(Context.tagged, () => {
+  describe(Context.Tagged, () => {
     it("adds actions + provision methods", async () => {
-      const tag = Context.Tag<number>()("test").pipe(Context.tagged)
+      const tag = Context.Tagged<number>()("test")
 
       const test = tag.with((x) => x + 1).pipe(tag.provide(1))
       const result = await Effect.runPromise(test)

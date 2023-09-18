@@ -153,10 +153,10 @@ describe("Context", () => {
 
         expect(yield* _(foobar.get)).toEqual({ foo: 0, bar: "" })
       }).pipe(
-        foobar.provide({
+        Effect.provideSomeLayer(foobar.of({
           foo: 0,
           bar: ""
-        }),
+        })),
         Effect.scoped
       )
 
@@ -177,11 +177,58 @@ describe("Context", () => {
 
         expect(yield* _(mapped.get)).toEqual({ foo: 2, bar: "Hello!" })
       }).pipe(
-        foobar.provide({
+        Effect.provideSomeLayer(foobar.of({
           foo: 0,
           bar: ""
-        }),
+        })),
         Effect.scoped
+      )
+
+      await Effect.runPromise(test)
+    })
+
+    it("allows creating layers using sources refs", async () => {
+      const foobar = Context.Model({
+        foo: Context.RefSubject<never, number>()("Foo"),
+        bar: Context.RefSubject<never, string>()("Bar")
+      })
+      const layer = foobar.makeWith({
+        // This is the most flexible way to create a layer from a Model
+        // allowing provision using Effects, Fx, and configuring the Equivalence.
+        foo: (ref) => ref.make(Effect.succeed(0)),
+        bar: (ref) => ref.make(Effect.succeed(""))
+      })
+
+      const test = Effect.gen(function*(_) {
+        expect(yield* _(foobar.get)).toEqual({ foo: 0, bar: "" })
+
+        yield* _(foobar.set({ foo: 1, bar: "Hello" }))
+
+        expect(yield* _(foobar.get)).toEqual({ foo: 1, bar: "Hello" })
+      }).pipe(
+        Effect.provideSomeLayer(layer)
+      )
+
+      await Effect.runPromise(test)
+    })
+
+    it("allows creating layers using with Effect and Fx", async () => {
+      const foobar = Context.Model({
+        foo: Context.RefSubject<never, number>()((_) => class Foo extends _("Foo") {}),
+        bar: Context.RefSubject<never, string>()((_) => class Bar extends _("Bar") {})
+      })
+
+      const test = Effect.gen(function*(_) {
+        expect(yield* _(foobar.get)).toEqual({ foo: 0, bar: "" })
+
+        yield* _(foobar.set({ foo: 1, bar: "Hello" }))
+
+        expect(yield* _(foobar.get)).toEqual({ foo: 1, bar: "Hello" })
+      }).pipe(
+        Effect.provideSomeLayer(foobar.make({
+          foo: Effect.succeed(0),
+          bar: Fx.succeed("")
+        }))
       )
 
       await Effect.runPromise(test)
