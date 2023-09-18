@@ -147,14 +147,14 @@ export namespace RequestResolver {
    * @since 1.0.0
    * @category type-level
    */
-  export type Identifier<T> = [T] extends [RequestResolver<infer Id, any>] ? Id : never
+  export type Identifier<T> = T extends RequestResolver<infer Id, infer _> ? Id : never
 
   /**
    * Extract the Requests of a RequestResolver
    * @since 1.0.0
    * @category type-level
    */
-  export type Requests<T> = [T] extends [RequestResolver<any, infer Requests>] ? Requests : never
+  export type Requests<T> = T extends RequestResolver<infer _, infer Requests> ? Requests : never
 
   /**
    * Extract the Identifiers of a RequestResolver
@@ -162,4 +162,11 @@ export namespace RequestResolver {
    * @category type-level
    */
   export type Identifiers<T> = Identifier<T> | Request.Identifier<Requests<T>>
+
+  /**
+   * Extract the RequestResolver
+   * @since 1.0.0
+   * @category type-level
+   */
+  export type Resolver<T> = RR.RequestResolver<Request.Req<Requests<T>[keyof Requests<T>]>, Identifiers<T>>
 }
