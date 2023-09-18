@@ -184,25 +184,64 @@ export interface Model<Refs extends Readonly<Record<string, Any>>>
    * Provide a Model to an Effect
    * @since 1.18.0
    */
-  readonly provide: (state: {
-    readonly [K in keyof Refs]: Model.State<Refs[K]>
-  }) => <R, E, B>(
-    effect: Effect.Effect<R, E, B>
-  ) => Effect.Effect<Exclude<R, Model.Identifier<Refs[keyof Refs]>> | Scope, E, B>
+  readonly of: (
+    state: {
+      readonly [K in keyof Refs]: Model.State<Refs[K]>
+    },
+    eqs?: {
+      readonly [K in keyof Refs]?: Equivalence<Model.State<Refs[K]>>
+    }
+  ) => Layer.Layer<never, never, Model.Identifier<Refs[keyof Refs]>>
 
   /**
    * Construct a Layer to provide a Model to an Effect
    * @since 1.18.0
    */
-  readonly layer: <R, E>(
+  readonly fromEffect: <R, E>(
     effect: Effect.Effect<
       R,
       E,
       {
         readonly [K in keyof Refs]: Model.State<Refs[K]>
       }
-    >
+    >,
+    eqs?: {
+      readonly [K in keyof Refs]?: Equivalence<Model.State<Refs[K]>>
+    }
   ) => Layer.Layer<Exclude<R, Scope>, E, Model.Identifier<Refs[keyof Refs]>>
+
+  /**
+   * Create a Layer from a Model using the Layers of each Ref
+   * @since 1.18.0
+   */
+  readonly makeWith: <
+    Opts extends {
+      readonly [K in keyof Refs]: (
+        ref: Refs[K]
+      ) => Layer.Layer<any, any, Model.Identifier<Refs[K]>> | Layer.Layer<any, never, Model.Identifier<Refs[K]>>
+    }
+  >(
+    options: Opts
+  ) => Layer.Layer<
+    Exclude<Layer.Layer.Context<ReturnType<Opts[keyof Refs]>>, Scope>,
+    Layer.Layer.Error<ReturnType<Opts[keyof Refs]>>,
+    Model.Identifier<Refs[keyof Refs]>
+  >
+
+  /**
+   * Create a Layer from a Model using the Layers of each Ref
+   * @since 1.18.0
+   */
+  readonly make: <
+    Opts extends {
+      readonly [K in keyof Refs]: Fx<any, Model.Error<Refs[K]>, Model.State<Refs[K]>>
+    }
+  >(
+    options: Opts,
+    eqs?: {
+      readonly [K in keyof Refs]?: Equivalence<Model.State<Refs[K]>>
+    }
+  ) => Layer.Layer<Exclude<Fx.Context<Opts[keyof Refs]>, Scope>, never, Model.Identifier<Refs[keyof Refs]>>
 }
 ```
 
