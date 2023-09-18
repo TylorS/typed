@@ -219,12 +219,22 @@ describe("Context", () => {
         })
       })
 
+      const quux = foobar.fromKey("baz").fromKey("quux")
+
       const test = Effect.gen(function*(_) {
         expect(yield* _(foobar)).toEqual({ foo: 0, bar: "", baz: { quux: false } })
 
         yield* _(foobar.set({ foo: 1, bar: "Hello", baz: { quux: true } }))
 
         expect(yield* _(foobar)).toEqual({ foo: 1, bar: "Hello", baz: { quux: true } })
+
+        expect(yield* _(quux)).toEqual(true)
+
+        yield* _(quux.set(false))
+
+        expect(yield* _(quux)).toEqual(false)
+
+        yield* _(foobar.set({ foo: 1, bar: "Hello", baz: { quux: false } }))
       }).pipe(
         Effect.provideSomeLayer(foobar.make({
           foo: Effect.succeed(0),
