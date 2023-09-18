@@ -15,6 +15,13 @@ Added in v1.18.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [combinators](#combinators)
+  - [map](#map)
+  - [mapEffect](#mapeffect)
+  - [mapError](#maperror)
+  - [mapErrorCause](#maperrorcause)
+  - [mapErrorCauseEffect](#maperrorcauseeffect)
+  - [mapErrorEffect](#maperroreffect)
 - [constructors](#constructors)
   - [Sink](#sink)
   - [WithContext](#withcontext)
@@ -34,6 +41,104 @@ Added in v1.18.0
     - [Success (type alias)](#success-type-alias-1)
 
 ---
+
+# combinators
+
+## map
+
+Transform the input value of a Sink.
+
+**Signature**
+
+```ts
+export declare const map: {
+  <B, A>(f: (b: B) => A): <E>(sink: Sink<E, A>) => Sink<E, B>
+  <E, A, B>(sink: Sink<E, A>, f: (b: B) => A): Sink<E, B>
+}
+```
+
+Added in v1.18.0
+
+## mapEffect
+
+Transform the input value of a Sink using an Effect.
+
+**Signature**
+
+```ts
+export declare const mapEffect: {
+  <B, R2, E, A>(f: (b: B) => Effect.Effect<R2, E, A>): (sink: Sink<E, A>) => WithContext<R2, E, B>
+  <E, A, R2, B>(sink: Sink<E, A>, f: (b: B) => Effect.Effect<R2, E, A>): WithContext<R2, E, B>
+}
+```
+
+Added in v1.18.0
+
+## mapError
+
+Transform the input Error of a Sink.
+
+**Signature**
+
+```ts
+export declare const mapError: {
+  <E2, E, A>(f: (e: E2) => E): (sink: Sink<E, A>) => Sink<E2, A>
+  <E, A, E2>(sink: Sink<E, A>, f: (e: E2) => E): Sink<E2, A>
+}
+```
+
+Added in v1.18.0
+
+## mapErrorCause
+
+Transform the input Cause of a Sink.
+
+**Signature**
+
+```ts
+export declare const mapErrorCause: {
+  <E2, E, A>(f: (e: Cause.Cause<E2>) => Cause.Cause<E>): (sink: Sink<E, A>) => Sink<E2, A>
+  <E, A, E2>(sink: Sink<E, A>, f: (e: Cause.Cause<E2>) => Cause.Cause<E>): Sink<E2, A>
+}
+```
+
+Added in v1.18.0
+
+## mapErrorCauseEffect
+
+Transform the input Cause of a Sink using an Effect.
+
+**Signature**
+
+```ts
+export declare const mapErrorCauseEffect: {
+  <E2, R2, E, A>(f: (e: Cause.Cause<E2>) => Effect.Effect<R2, E, Cause.Cause<E>>): (
+    sink: Sink<E, A>
+  ) => WithContext<R2, E2, A>
+  <E, A, R2, E2>(sink: Sink<E, A>, f: (e: Cause.Cause<E2>) => Effect.Effect<R2, E, Cause.Cause<E>>): WithContext<
+    R2,
+    E2,
+    A
+  >
+}
+```
+
+Added in v1.18.0
+
+## mapErrorEffect
+
+Transform the input Error of a Sink using an Effect.
+
+**Signature**
+
+```ts
+export declare const mapErrorEffect: {
+  <E2, R2, E, A>(f: (e: E2) => Effect.Effect<R2, E, E>): (sink: Sink<E, A>) => WithContext<R2, E, A>
+  <E, A, R2, E2>(sink: Sink<E, A>, f: (e: E2) => Effect.Effect<R2, E, E>): WithContext<R2, E, A>
+}
+```
+
+Added in v1.18.0
 
 # constructors
 

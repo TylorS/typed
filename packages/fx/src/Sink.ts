@@ -120,6 +120,11 @@ export interface WithEarlyExit<E, A> extends Sink<E, A> {
   readonly earlyExit: Effect.Effect<never, never, void>
 }
 
+/**
+ * Transform the input value of a Sink.
+ * @since 1.18.0
+ * @category combinators
+ */
 export const map: {
   <B, A>(f: (b: B) => A): <E>(sink: Sink<E, A>) => Sink<E, B>
   <E, A, B>(sink: Sink<E, A>, f: (b: B) => A): Sink<E, B>
@@ -133,6 +138,11 @@ export const map: {
   )
 })
 
+/**
+ * Transform the input value of a Sink using an Effect.
+ * @since 1.18.0
+ * @category combinators
+ */
 export const mapEffect: {
   <B, R2, E, A>(f: (b: B) => Effect.Effect<R2, E, A>): (sink: Sink<E, A>) => WithContext<R2, E, B>
   <E, A, R2, B>(sink: Sink<E, A>, f: (b: B) => Effect.Effect<R2, E, A>): WithContext<R2, E, B>
@@ -146,6 +156,11 @@ export const mapEffect: {
   )
 })
 
+/**
+ * Transform the input Cause of a Sink.
+ * @since 1.18.0
+ * @category combinators
+ */
 export const mapErrorCause: {
   <E2, E, A>(f: (e: Cause.Cause<E2>) => Cause.Cause<E>): (sink: Sink<E, A>) => Sink<E2, A>
   <E, A, E2>(sink: Sink<E, A>, f: (e: Cause.Cause<E2>) => Cause.Cause<E>): Sink<E2, A>
@@ -159,6 +174,11 @@ export const mapErrorCause: {
   )
 })
 
+/**
+ * Transform the input Cause of a Sink using an Effect.
+ * @since 1.18.0
+ * @category combinators
+ */
 export const mapErrorCauseEffect: {
   <E2, R2, E, A>(
     f: (e: Cause.Cause<E2>) => Effect.Effect<R2, E, Cause.Cause<E>>
@@ -177,6 +197,11 @@ export const mapErrorCauseEffect: {
   )
 })
 
+/**
+ * Transform the input Error of a Sink.
+ * @since 1.18.0
+ * @category combinators
+ */
 export const mapError: {
   <E2, E, A>(f: (e: E2) => E): (sink: Sink<E, A>) => Sink<E2, A>
   <E, A, E2>(sink: Sink<E, A>, f: (e: E2) => E): Sink<E2, A>
@@ -190,6 +215,11 @@ export const mapError: {
   )
 })
 
+/**
+ * Transform the input Error of a Sink using an Effect.
+ * @since 1.18.0
+ * @category combinators
+ */
 export const mapErrorEffect: {
   <E2, R2, E, A>(f: (e: E2) => Effect.Effect<R2, E, E>): (sink: Sink<E, A>) => WithContext<R2, E, A>
   <E, A, R2, E2>(sink: Sink<E, A>, f: (e: E2) => Effect.Effect<R2, E, E>): WithContext<R2, E, A>
