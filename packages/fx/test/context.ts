@@ -141,17 +141,17 @@ describe("Context", () => {
       const bar = foobar.fromKey("bar")
 
       const test = Effect.gen(function*(_) {
-        expect(yield* _(foobar.get)).toEqual({ foo: 0, bar: "" })
+        expect(yield* _(foobar)).toEqual({ foo: 0, bar: "" })
 
         yield* _(foo.set(1))
         yield* _(bar.set("Hello"))
 
-        expect(yield* _(foobar.get)).toEqual({ foo: 1, bar: "Hello" })
+        expect(yield* _(foobar)).toEqual({ foo: 1, bar: "Hello" })
 
         deepEqual(yield* _(foobar.delete), Option.some({ foo: 1, bar: "Hello" }))
         deepEqual(yield* _(foobar.delete), Option.none())
 
-        expect(yield* _(foobar.get)).toEqual({ foo: 0, bar: "" })
+        expect(yield* _(foobar)).toEqual({ foo: 0, bar: "" })
       }).pipe(
         Effect.provideSomeLayer(foobar.of({
           foo: 0,
@@ -171,11 +171,11 @@ describe("Context", () => {
       const mapped = foobar.map(({ bar, foo }) => ({ foo: foo + 1, bar: bar + "!" }))
 
       const test = Effect.gen(function*(_) {
-        expect(yield* _(mapped.get)).toEqual({ foo: 1, bar: "!" })
+        expect(yield* _(mapped)).toEqual({ foo: 1, bar: "!" })
 
         yield* _(foobar.set({ foo: 1, bar: "Hello" }))
 
-        expect(yield* _(mapped.get)).toEqual({ foo: 2, bar: "Hello!" })
+        expect(yield* _(mapped)).toEqual({ foo: 2, bar: "Hello!" })
       }).pipe(
         Effect.provideSomeLayer(foobar.of({
           foo: 0,
@@ -200,11 +200,11 @@ describe("Context", () => {
       })
 
       const test = Effect.gen(function*(_) {
-        expect(yield* _(foobar.get)).toEqual({ foo: 0, bar: "" })
+        expect(yield* _(foobar)).toEqual({ foo: 0, bar: "" })
 
         yield* _(foobar.set({ foo: 1, bar: "Hello" }))
 
-        expect(yield* _(foobar.get)).toEqual({ foo: 1, bar: "Hello" })
+        expect(yield* _(foobar)).toEqual({ foo: 1, bar: "Hello" })
       }).pipe(
         Effect.provideSomeLayer(layer)
       )
@@ -219,11 +219,11 @@ describe("Context", () => {
       })
 
       const test = Effect.gen(function*(_) {
-        expect(yield* _(foobar.get)).toEqual({ foo: 0, bar: "" })
+        expect(yield* _(foobar)).toEqual({ foo: 0, bar: "" })
 
         yield* _(foobar.set({ foo: 1, bar: "Hello" }))
 
-        expect(yield* _(foobar.get)).toEqual({ foo: 1, bar: "Hello" })
+        expect(yield* _(foobar)).toEqual({ foo: 1, bar: "Hello" })
       }).pipe(
         Effect.provideSomeLayer(foobar.make({
           foo: Effect.succeed(0),
