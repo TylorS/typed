@@ -11,6 +11,9 @@
       "path": "packages/fx"
     },
     {
+      "path": "packages/navigation"
+    },
+    {
       "path": "packages/path"
     },
     {

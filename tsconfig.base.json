@@ -39,6 +39,18 @@
       "@typed/fx/examples/*": [
         "packages/fx/examples/*"
       ],
+      "@typed/navigation": [
+        "packages/navigation/src/index.ts"
+      ],
+      "@typed/navigation/*": [
+        "packages/navigation/src/*"
+      ],
+      "@typed/navigation/test/*": [
+        "packages/navigation/test/*"
+      ],
+      "@typed/navigation/examples/*": [
+        "packages/navigation/examples/*"
+      ],
       "@typed/path": [
         "packages/path/src/index.ts"
       ],

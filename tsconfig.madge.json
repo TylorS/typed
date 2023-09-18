@@ -40,6 +40,18 @@
       "@typed/fx/examples/*": [
         "packages/fx/build/examples/*"
       ],
+      "@typed/navigation": [
+        "packages/navigation/build/esm/index.js"
+      ],
+      "@typed/navigation/*": [
+        "packages/navigation/build/esm/*"
+      ],
+      "@typed/navigation/test/*": [
+        "packages/navigation/build/test/*"
+      ],
+      "@typed/navigation/examples/*": [
+        "packages/navigation/build/examples/*"
+      ],
       "@typed/path": [
         "packages/path/build/esm/index.js"
       ],
@@ -100,6 +112,9 @@
     "packages/fx/build/esm/**/*",
     "packages/fx/build/test/**/*",
     "packages/fx/build/examples/**/*",
+    "packages/navigation/build/esm/**/*",
+    "packages/navigation/build/test/**/*",
+    "packages/navigation/build/examples/**/*",
     "packages/path/build/esm/**/*",
     "packages/path/build/test/**/*",
     "packages/path/build/examples/**/*",
