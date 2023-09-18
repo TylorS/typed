@@ -1988,6 +1988,12 @@ export const partitionMap: {
   <R, E, A, B, C>(self: Fx<R, E, A>, f: (a: A) => Either.Either<B, C>): readonly [Fx<R, E, B>, Fx<R, E, C>]
 } = internal.partitionMap
 
+/**
+ * Convert a list of keyed values into persistent workflows for given each key of the list
+ * even when the list has been re-ordered.
+ *
+ * @since 1.18.0
+ */
 export const keyed: {
   <A, R2, E2, B, C>(
     f: (
