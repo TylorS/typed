@@ -213,19 +213,25 @@ describe("Context", () => {
     it("allows creating layers using with Effect and Fx", async () => {
       const foobar = Context.Model({
         foo: Context.RefSubject<never, number>()((_) => class Foo extends _("Foo") {}),
-        bar: Context.RefSubject<never, string>()((_) => class Bar extends _("Bar") {})
+        bar: Context.RefSubject<never, string>()((_) => class Bar extends _("Bar") {}),
+        baz: Context.Model({
+          quux: Context.RefSubject<never, boolean>()((_) => class Quux extends _("Quux") {})
+        })
       })
 
       const test = Effect.gen(function*(_) {
-        expect(yield* _(foobar)).toEqual({ foo: 0, bar: "" })
+        expect(yield* _(foobar)).toEqual({ foo: 0, bar: "", baz: { quux: false } })
 
-        yield* _(foobar.set({ foo: 1, bar: "Hello" }))
+        yield* _(foobar.set({ foo: 1, bar: "Hello", baz: { quux: true } }))
 
-        expect(yield* _(foobar)).toEqual({ foo: 1, bar: "Hello" })
+        expect(yield* _(foobar)).toEqual({ foo: 1, bar: "Hello", baz: { quux: true } })
       }).pipe(
         Effect.provideSomeLayer(foobar.make({
           foo: Effect.succeed(0),
-          bar: Fx.succeed("")
+          bar: Fx.succeed(""),
+          baz: {
+            quux: Fx.succeed(false)
+          }
         }))
       )
 

@@ -29,8 +29,6 @@ class RefCounter {
   }
 }
 
-// TODO: We should keep track of a Set of Scope's to enable use to close them all when the
-
 export class Share<R, E, A, R2> extends ToFx<R | R2, E, A> {
   #fxFiber: MutableRef.MutableRef<Option.Option<Fiber.Fiber<never, unknown>>> = MutableRef.make(Option.none())
   #refCount = new RefCounter()

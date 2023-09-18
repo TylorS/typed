@@ -10,7 +10,6 @@ import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import type { Scope } from "@effect/io/Scope"
-import { ScopedRefTypeId } from "@effect/io/ScopedRef"
 import { ContextBuilder } from "@typed/context/Builder"
 import { Computed } from "@typed/fx/Computed"
 import type { RefSubject } from "@typed/fx/Context"
@@ -25,7 +24,7 @@ import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
  * @since 1.18.0
  * @category symbols
  */
-export const ModelTypeId = Symbol.for("@typed/context/Model")
+export const ModelTypeId = Symbol.for("@typed/fx/Model")
 
 /**
  * @since 1.18.0
@@ -35,7 +34,7 @@ export type ModelTypeId = typeof ModelTypeId
 
 // TODO: Add support for nested Models
 
-type Any = RefSubject<any, any, any> | RefSubject<any, never, any>
+type Any = RefSubject<any, any, any> | RefSubject<any, never, any> | Model<any>
 
 /**
  * A Model is a collection of Refs that can be utilized as a single unit from the Effect Context.
@@ -191,8 +190,6 @@ export interface Model<Refs extends Readonly<Record<string, Any>>> extends
     }
   >
 
-  // TODO: Model provision should enable all possibilities of RefSubject provision
-
   /**
    * Provide a Model to an Effect
    * @since 1.18.0
@@ -201,9 +198,7 @@ export interface Model<Refs extends Readonly<Record<string, Any>>> extends
     state: {
       readonly [K in keyof Refs]: Model.State<Refs[K]>
     },
-    eqs?: {
-      readonly [K in keyof Refs]?: Equivalence<Model.State<Refs[K]>>
-    }
+    eqs?: MakeEqivalenceOptions<Refs>
   ) => Layer.Layer<never, never, Model.Identifier<Refs[keyof Refs]>>
 
   /**
@@ -218,9 +213,7 @@ export interface Model<Refs extends Readonly<Record<string, Any>>> extends
         readonly [K in keyof Refs]: Model.State<Refs[K]>
       }
     >,
-    eqs?: {
-      readonly [K in keyof Refs]?: Equivalence<Model.State<Refs[K]>>
-    }
+    eqs?: MakeEqivalenceOptions<Refs>
   ) => Layer.Layer<Exclude<R, Scope>, E, Model.Identifier<Refs[keyof Refs]>>
 
   /**
@@ -246,19 +239,25 @@ export interface Model<Refs extends Readonly<Record<string, Any>>> extends
    * @since 1.18.0
    */
   readonly make: <
-    Opts extends {
-      readonly [K in keyof Refs]: Fx<any, Model.Error<Refs[K]>, Model.State<Refs[K]>>
-    }
+    Opts extends MakeOptions<Refs>
   >(
     options: Opts,
-    eqs?: {
-      readonly [K in keyof Refs]?: Equivalence<Model.State<Refs[K]>>
-    }
+    eqs?: MakeEqivalenceOptions<Refs>
   ) => Layer.Layer<
     Exclude<Fx.Context<Opts[keyof Refs]>, Scope>,
     never,
     Model.Identifier<Refs[keyof Refs]>
   >
+}
+
+type MakeOptions<Refs extends Readonly<Record<string, Any>>> = {
+  readonly [K in keyof Refs]: Refs[K] extends Model<infer Refs2> ? MakeOptions<Refs2>
+    : Fx<any, Model.Error<Refs[K]>, Model.State<Refs[K]>>
+}
+
+type MakeEqivalenceOptions<Refs extends Readonly<Record<string, Any>>> = {
+  readonly [K in keyof Refs]?: Refs[K] extends Model<infer Refs2> ? MakeEqivalenceOptions<Refs2>
+    : Equivalence<Model.State<Refs[K]>>
 }
 
 /**
@@ -323,7 +322,7 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProt
     const entries = Object.entries(refs)
 
     this.get = Effect.map(
-      Effect.all(entries.map(([key, ref]) => Effect.map(ref.get, (v) => [key, v]))),
+      Effect.all(entries.map(([key, ref]) => Effect.map(ref.get, (v) => [key, v])), { concurrency: "unbounded" }),
       Object.fromEntries
     ) as Model<Refs>["get"]
 
@@ -333,14 +332,8 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProt
       }
     ) =>
       Effect.all(
-        entries.map(([k, ref]) => {
-          const v = state[k]
-
-          if (ScopedRefTypeId in ref) return ref.set(Effect.succeed(v))
-
-          return ref.set(v)
-        }),
-        { discard: true }
+        entries.map(([k, ref]) => ref.set(state[k])),
+        { concurrency: "unbounded", discard: true }
       )
 
     this.delete = Effect.map(
@@ -383,7 +376,8 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProt
 
   of: Model<Refs>["of"] = (state, eqs) => {
     const [first, ...rest] = Object.entries(this.refs).map(
-      ([k, ref]) => ref.make(Effect.succeed(state[k]), eqs?.[k])
+      ([k, ref]) =>
+        ModelTypeId in ref ? ref.of(state[k], eqs?.[k] as any) : ref.make(Effect.succeed(state[k]), eqs?.[k] as any)
     )
 
     return Layer.mergeAll(
@@ -393,24 +387,18 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProt
   }
 
   fromEffect: Model<Refs>["fromEffect"] = (effect, eq) => {
-    const { refs } = this
+    const { of } = this
 
     return Layer.scopedContext(Effect.gen(function*(_) {
       const scope = yield* _(Effect.scope)
       const initial = yield* _(effect)
+      const layer = of(initial, eq)
+      const context = yield* _(Layer.buildWithScope(
+        layer,
+        scope
+      ))
 
-      let context = ContextBuilder.empty
-
-      for (const [k, ref] of Object.entries(refs)) {
-        context = context.mergeContext(
-          yield* _(Layer.buildWithScope(
-            (ref).make(Effect.succeed(initial[k]), eq?.[k]),
-            scope
-          ))
-        )
-      }
-
-      return context.context as Context<Model.Identifier<Refs[keyof Refs]>>
+      return context as Context<Model.Identifier<Refs[keyof Refs]>>
     }))
   }
 
@@ -438,7 +426,7 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProt
   make: Model<Refs>["make"] = (options, eqs) =>
     this.makeWith(
       Object.fromEntries(
-        Object.entries(options).map(([k, fx]) => [k, (ref: RefSubject<any, any, any>) => ref.make(fx, eqs?.[k])])
+        Object.entries(options).map(([k, fx]) => [k, (ref: RefSubject<any, any, any>) => ref.make(fx, eqs?.[k] as any)])
       ) as any
     ) as any
 

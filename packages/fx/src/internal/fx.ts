@@ -25,11 +25,8 @@ import { multicast } from "@typed/fx/internal/share"
 import { WithContext } from "@typed/fx/Sink"
 import * as Typeclass from "@typed/fx/Typeclass"
 
-// TODO: Refs, Computed, Filtered, RefTansform, RefArray, RefSet, RefMap, RefHashMap, RefHashSet, etc,
-//       asRef, asComputed, asFiltered
-// TODO: fromDequeue, fromQueue, drainEnqueue
-// TODO: Create a Stream module with various ways to convert to an Fx
-// TODO: keyed
+// TODO: RefArray, RefSet, RefMap, RefHashMap, RefHashSet, etc
+// TODO: fromDequeue, fromQueue, toEnequeue, toQueue, toHub
 
 /**
  * Create an Fx which will emit a value after waiting for a specified duration.
