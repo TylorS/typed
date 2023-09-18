@@ -17,6 +17,7 @@ Added in v1.18.0
 - [combinators](#combinators)
   - [append](#append)
   - [appendAll](#appendall)
+  - [contains](#contains)
   - [dedupe](#dedupe)
   - [drop](#drop)
   - [dropRight](#dropright)
@@ -42,13 +43,12 @@ Added in v1.18.0
   - [partition](#partition)
   - [reduce](#reduce)
   - [reduceRight](#reduceright)
+- [constructors](#constructors)
+  - [makeRefArray](#makerefarray)
 - [filtered](#filtered)
   - [getIndex](#getindex)
 - [models](#models)
   - [RefArray (interface)](#refarray-interface)
-  - [makeRefArray](#makerefarray)
-- [utils](#utils)
-  - [contains](#contains)
 
 ---
 
@@ -79,6 +79,21 @@ Append an iterable of values to the current state of a RefArray.
 export declare const appendAll: {
   <A>(value: Iterable<A>): <E>(ref: RefSubject.RefSubject<E, readonly A[]>) => Effect.Effect<never, E, readonly A[]>
   <E, A>(ref: RefSubject.RefSubject<E, readonly A[]>, value: Iterable<A>): Effect.Effect<never, E, readonly A[]>
+}
+```
+
+Added in v1.18.0
+
+## contains
+
+Check to see if a RefArray contains a value.
+
+**Signature**
+
+```ts
+export declare const contains: {
+  <A>(value: A): <E>(ref: RefArray<E, A>) => Computed.Computed<never, E, boolean>
+  <E, A>(ref: RefArray<E, A>, value: A): Computed.Computed<never, E, boolean>
 }
 ```
 
@@ -504,6 +519,27 @@ export declare const reduceRight: {
 
 Added in v1.18.0
 
+# constructors
+
+## makeRefArray
+
+Construct a new RefArray with the given initial value.
+
+**Signature**
+
+```ts
+export declare function makeRefArray<R, E, A>(
+  initial: Effect.Effect<R, E, ReadonlyArray<A>>,
+  eq?: Equivalence<A>
+): Effect.Effect<R, never, RefArray<E, A>>
+export declare function makeRefArray<R, E, A>(
+  initial: Fx.Fx<R, E, ReadonlyArray<A>>,
+  eq?: Equivalence<A>
+): Effect.Effect<R | Scope.Scope, never, RefArray<E, A>>
+```
+
+Added in v1.18.0
+
 # filtered
 
 ## getIndex
@@ -536,42 +572,6 @@ export interface RefArray<E, A> extends RefSubject.RefSubject<E, ReadonlyArray<A
    * @since 1.18.0
    */
   readonly valueEq: Equivalence<A>
-}
-```
-
-Added in v1.18.0
-
-## makeRefArray
-
-Construct a new RefArray with the given initial value.
-
-**Signature**
-
-```ts
-export declare function makeRefArray<R, E, A>(
-  initial: Effect.Effect<R, E, ReadonlyArray<A>>,
-  eq?: Equivalence<A>
-): Effect.Effect<R, never, RefArray<E, A>>
-export declare function makeRefArray<R, E, A>(
-  initial: Fx.Fx<R, E, ReadonlyArray<A>>,
-  eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefArray<E, A>>
-```
-
-Added in v1.18.0
-
-# utils
-
-## contains
-
-Check to see if a RefArray contains a value.
-
-**Signature**
-
-```ts
-export declare const contains: {
-  <A>(value: A): <E>(ref: RefArray<E, A>) => Computed.Computed<never, E, boolean>
-  <E, A>(ref: RefArray<E, A>, value: A): Computed.Computed<never, E, boolean>
 }
 ```
 

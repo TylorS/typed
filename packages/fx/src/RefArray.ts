@@ -32,7 +32,7 @@ export interface RefArray<E, A> extends RefSubject.RefSubject<E, ReadonlyArray<A
 /**
  * Construct a new RefArray with the given initial value.
  * @since 1.18.0
- * @category models
+ * @category constructors
  */
 export function makeRefArray<R, E, A>(
   initial: Effect.Effect<R, E, ReadonlyArray<A>>,
@@ -109,6 +109,7 @@ export const appendAll: {
 /**
  * Check to see if a RefArray contains a value.
  * @since 1.18.0
+ * @category combinators
  */
 export const contains: {
   <A>(value: A): <E>(ref: RefArray<E, A>) => Computed.Computed<never, E, boolean>
