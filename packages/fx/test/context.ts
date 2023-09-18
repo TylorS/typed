@@ -162,5 +162,30 @@ describe("Context", () => {
 
       await Effect.runPromise(test)
     })
+
+    it("allows being mapped over", async () => {
+      const foobar = Context.Model({
+        foo: Context.RefSubject<never, number>()("Foo"),
+        bar: Context.RefSubject<never, string>()("Bar")
+      })
+      const mapped = foobar.map(({ bar, foo }) => ({ foo: foo + 1, bar: bar + "!" }))
+
+      const test = Effect.gen(function*(_) {
+        expect(yield* _(mapped.get)).toEqual({ foo: 1, bar: "!" })
+
+        yield* _(foobar.fromKey("foo").set(1))
+        yield* _(foobar.fromKey("bar").set("Hello"))
+
+        expect(yield* _(mapped.get)).toEqual({ foo: 2, bar: "Hello!" })
+      }).pipe(
+        foobar.provide({
+          foo: 0,
+          bar: ""
+        }),
+        Effect.scoped
+      )
+
+      await Effect.runPromise(test)
+    })
   })
 })

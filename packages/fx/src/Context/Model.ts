@@ -11,7 +11,9 @@ import * as Layer from "@effect/io/Layer"
 import type { Scope } from "@effect/io/Scope"
 import { ScopedRefTypeId } from "@effect/io/ScopedRef"
 import { ContextBuilder } from "@typed/context/Builder"
+import { Computed } from "@typed/fx/Computed"
 import type { RefSubject } from "@typed/fx/Context"
+import { Filtered } from "@typed/fx/Filtered"
 import { struct } from "@typed/fx/Fx"
 import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
@@ -28,6 +30,8 @@ export const ModelTypeId = Symbol.for("@typed/context/Model")
  * @category symbols
  */
 export type ModelTypeId = typeof ModelTypeId
+
+// TODO: Add support for nested Models
 
 type Any = RefSubject<any, any, any> | RefSubject<any, never, any>
 
@@ -123,6 +127,66 @@ export interface Model<Refs extends Readonly<Record<string, Any>>> extends
         readonly [K in keyof Refs]: Model.State<Refs[K]>
       }
     >
+  >
+
+  readonly mapEffect: <R2, E2, B>(
+    f: (
+      state: {
+        readonly [K in keyof Refs]: Model.State<Refs[K]>
+      }
+    ) => Effect.Effect<R2, E2, B>
+  ) => Computed<Model.Identifier<Refs[keyof Refs]> | R2, Model.Error<Refs[keyof Refs]> | E2, B>
+
+  readonly map: <B>(
+    f: (
+      state: {
+        readonly [K in keyof Refs]: Model.State<Refs[K]>
+      }
+    ) => B
+  ) => Computed<Model.Identifier<Refs[keyof Refs]>, Model.Error<Refs[keyof Refs]>, B>
+
+  readonly filterMapEffect: <R2, E2, B>(
+    f: (
+      state: {
+        readonly [K in keyof Refs]: Model.State<Refs[K]>
+      }
+    ) => Effect.Effect<R2, E2, Option.Option<B>>
+  ) => Filtered<Model.Identifier<Refs[keyof Refs]> | R2, Model.Error<Refs[keyof Refs]> | E2, B>
+
+  readonly filterMap: <B>(
+    f: (
+      state: {
+        readonly [K in keyof Refs]: Model.State<Refs[K]>
+      }
+    ) => Option.Option<B>
+  ) => Filtered<Model.Identifier<Refs[keyof Refs]>, Model.Error<Refs[keyof Refs]>, B>
+
+  readonly filterEffect: <R2, E2>(
+    f: (
+      state: {
+        readonly [K in keyof Refs]: Model.State<Refs[K]>
+      }
+    ) => Effect.Effect<R2, E2, boolean>
+  ) => Filtered<
+    Model.Identifier<Refs[keyof Refs]> | R2,
+    Model.Error<Refs[keyof Refs]> | E2,
+    {
+      readonly [K in keyof Refs]: Model.State<Refs[K]>
+    }
+  >
+
+  readonly filter: (
+    f: (
+      state: {
+        readonly [K in keyof Refs]: Model.State<Refs[K]>
+      }
+    ) => boolean
+  ) => Filtered<
+    Model.Identifier<Refs[keyof Refs]>,
+    Model.Error<Refs[keyof Refs]>,
+    {
+      readonly [K in keyof Refs]: Model.State<Refs[K]>
+    }
   >
 
   // TODO: Model provision should enable all possibilities of RefSubject provision
@@ -306,4 +370,17 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProt
     Effect.all(Object.values(this.refs).map((ref) => ref.version)),
     (versions) => versions.reduce((a, b) => a + b, 0)
   )
+
+  mapEffect: Model<Refs>["mapEffect"] = (f) => Computed(this as any, f)
+
+  map: Model<Refs>["map"] = (f) => this.mapEffect((state) => Effect.sync(() => f(state)))
+
+  filterMapEffect: Model<Refs>["filterMapEffect"] = (f) => Filtered(this as any, f)
+
+  filterMap: Model<Refs>["filterMap"] = (f) => this.filterMapEffect((state) => Effect.sync(() => f(state)))
+
+  filterEffect: Model<Refs>["filterEffect"] = (f) =>
+    this.filterMapEffect((state) => Effect.map(f(state), (b) => (b ? Option.some(state) : Option.none())))
+
+  filter: Model<Refs>["filter"] = (f) => this.filterMap((state) => (f(state) ? Option.some(state) : Option.none()))
 }
