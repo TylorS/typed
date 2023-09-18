@@ -3,13 +3,13 @@
  * @since 1.18.0
  */
 
-import type * as Option from "@effect/data/Option"
+import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import { Filtered } from "@typed/fx/Filtered"
-import type { FxEffect } from "@typed/fx/FxEffect"
+import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { switchMap } from "@typed/fx/internal/core"
+import { FxEffectTransform } from "@typed/fx/internal/fx-effect-transform"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
-import { FxEffectTransform } from "@typed/fx/internal/ref-transform"
 
 /**
  * @since 1.18.0
@@ -28,7 +28,7 @@ export type ComputedTypeId = typeof ComputedTypeId
  * @since 1.18.0
  * @category models
  */
-export interface Computed<out R, out E, out A> extends FxEffect<R, E, A, R, E, A> {
+export interface Computed<out R, out E, out A> extends VersionedFxEffect<R, R, E, A, R, E, A> {
   readonly [ComputedTypeId]: ComputedTypeId
 
   /**
@@ -56,6 +56,18 @@ export interface Computed<out R, out E, out A> extends FxEffect<R, E, A, R, E, A
    * @since 1.18.0
    */
   readonly filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<R, E, B>
+
+  /**
+   * Filter the current value of this Filtered to a new value using an Effect
+   */
+  readonly filterEffect: <R2, E2>(
+    f: (a: A) => Effect.Effect<R2, E2, boolean>
+  ) => Filtered<R | R2, E | E2, A>
+
+  /**
+   * Filter the current value of this Filtered to a new value
+   */
+  readonly filter: (f: (a: A) => boolean) => Filtered<R, E, A>
 }
 
 /**
@@ -63,19 +75,20 @@ export interface Computed<out R, out E, out A> extends FxEffect<R, E, A, R, E, A
  * @since 1.18.0
  */
 export function Computed<R, E, A, R2, E2, B>(
-  input: FxEffect<R, E, A, R, E, A>,
+  input: VersionedFxEffect<R, R, E, A, R, E, A>,
   f: (a: A) => Effect.Effect<R2, E2, B>
 ): Computed<R | R2, E | E2, B> {
   return new ComputedImpl(input, f) as any
 }
 
-class ComputedImpl<R, E, A, R2, E2, B> extends FxEffectTransform<R, E, A, R, E, A, R | R2, E | E2, B, R | R2, E | E2, B>
+class ComputedImpl<R, E, A, R2, E2, B>
+  extends FxEffectTransform<R, R, E, A, R, E, A, R | R2, E | E2, B, R | R2, E | E2, B>
   implements Omit<Computed<R | R2, E | E2, B>, ModuleAgumentedEffectKeysToOmit>
 {
   readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
 
   constructor(
-    readonly input: FxEffect<R, E, A, R, E, A>,
+    readonly input: VersionedFxEffect<R, R, E, A, R, E, A>,
     readonly f: (a: A) => Effect.Effect<R2, E2, B>
   ) {
     super(
@@ -89,8 +102,12 @@ class ComputedImpl<R, E, A, R2, E2, B> extends FxEffectTransform<R, E, A, R, E, 
 
   map: Computed<R | R2, E | E2, B>["map"] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)))
 
-  filterMapEffect: Computed<R | R2, E | E2, B>["filterMapEffect"] = (f) =>
-    Filtered(this as any as Computed<R | R2, E | E2, B>, f)
+  filterMapEffect: Computed<R | R2, E | E2, B>["filterMapEffect"] = (f) => Filtered(this as any, f)
 
   filterMap: Computed<R | R2, E | E2, B>["filterMap"] = (f) => this.filterMapEffect((a) => Effect.sync(() => f(a)))
+
+  filterEffect: Computed<R | R2, E | E2, B>["filterEffect"] = (f) =>
+    this.filterMapEffect((a) => Effect.map(f(a), (b) => (b ? Option.some(a) : Option.none())))
+
+  filter: Computed<R | R2, E | E2, B>["filter"] = (f) => this.filterEffect((a) => Effect.sync(() => f(a)))
 }

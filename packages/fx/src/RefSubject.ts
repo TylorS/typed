@@ -11,33 +11,33 @@ import * as Option from "@effect/data/Option"
 import type { Cause } from "@effect/io/Cause"
 import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
+import * as Exit from "@effect/io/Exit"
 import * as Fiber from "@effect/io/Fiber"
 import type * as Scope from "@effect/io/Scope"
 import * as SynchronizedRef from "@effect/io/SynchronizedRef"
 import { Computed } from "@typed/fx/Computed"
 import { Filtered } from "@typed/fx/Filtered"
 import type { Fx } from "@typed/fx/Fx"
-import type { FxEffect } from "@typed/fx/FxEffect"
-import { makeHoldSubject, makeReplaySubject } from "@typed/fx/internal/core-subject"
+import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import { fromFxEffect } from "@typed/fx/internal/fx"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import { matchFxKind } from "@typed/fx/internal/matchers"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { run } from "@typed/fx/internal/run"
-import { WithContext } from "@typed/fx/Sink"
+import { Sink } from "@typed/fx/Sink"
 import type * as Subject from "@typed/fx/Subject"
 
 /**
  * @since 1.18.0
  * @category symbols
  */
-export const RefTypeId = Symbol.for("@typed/fx/RefSubject")
+export const RefSubjectTypeId = Symbol.for("@typed/fx/RefSubject")
 
 /**
  * @since 1.18.0
  * @category symbols
  */
-export type RefTypeId = typeof RefTypeId
+export type RefSubjectTypeId = typeof RefSubjectTypeId
 
 /**
  * A RefSubject is a Subject that has a current value that can be read and updated.
@@ -45,7 +45,7 @@ export type RefTypeId = typeof RefTypeId
  * @category models
  */
 export interface RefSubject<in out E, in out A> extends Subject.Subject<never, E, A>, Effect.Effect<never, E, A> {
-  readonly [RefTypeId]: RefTypeId
+  readonly [RefSubjectTypeId]: RefSubjectTypeId
 
   /**
    * The Equivalence used to determine if a value has changed. Defaults to `Equal.equals`.
@@ -128,9 +128,24 @@ export interface RefSubject<in out E, in out A> extends Subject.Subject<never, E
   readonly filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<never, E, B>
 
   /**
-   * @internal
+   * Filter the current value of this Filtered to a new value using an Effect
    */
-  readonly version: () => number
+  readonly filterEffect: <R2, E2>(
+    f: (a: A) => Effect.Effect<R2, E2, boolean>
+  ) => Filtered<R2, E | E2, A>
+
+  /**
+   * Filter the current value of this Filtered to a new value
+   * @since 1.18.0
+   */
+  readonly filter: (f: (a: A) => boolean) => Filtered<never, E, A>
+
+  /**
+   * A monotonic version number that is incremented every time the value of this RefSubject changes.
+   * It is reset to 0 when the RefSubject is deleted.
+   * @since 1.18.0
+   */
+  readonly version: Effect.Effect<never, never, number>
 }
 
 /**
@@ -138,7 +153,7 @@ export interface RefSubject<in out E, in out A> extends Subject.Subject<never, E
  * @since 1.18.0
  * @category constructors
  */
-export function make<R, E, A>(
+export function fromEffect<R, E, A>(
   initial: Effect.Effect<R, E, A>,
   eq?: Equivalence<A>
 ): Effect.Effect<R, never, RefSubject<E, A>> {
@@ -150,25 +165,34 @@ export function make<R, E, A>(
  * @since 1.18.0
  * @category constructors
  */
-export function value<A, E = never>(initial: A, eq?: Equivalence<A>): Effect.Effect<never, never, RefSubject<E, A>> {
-  return make<never, E, A>(Effect.succeed(initial), eq)
+export function of<A, E = never>(initial: A, eq?: Equivalence<A>): Effect.Effect<never, never, RefSubject<E, A>> {
+  return fromEffect<never, E, A>(Effect.succeed(initial), eq)
 }
 
 /**
- * Convert any Fx into a RefSubject which contains the latest value.
+ * Construct a RefSubject from any Fx value.
  *
  * @since 1.18.0
  * @category constructors
  */
-export function fromFx<R, E, A>(
+export function make<R, E, A>(
+  fx: Effect.Effect<R, E, A>,
+  eq?: Equivalence<A>
+): Effect.Effect<R, never, RefSubject<E, A>>
+export function make<R, E, A>(
+  fx: Fx<R, E, A>,
+  eq?: Equivalence<A>
+): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>>
+
+export function make<R, E, A>(
   fx: Fx<R, E, A>,
   eq?: Equivalence<A>
 ): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>> {
   return matchFxKind(fx, {
     Fx: (fx) => fxAsRef(fx, eq),
-    Effect: (effect) => make(effect, eq),
+    Effect: (effect) => fromEffect(effect, eq),
     Stream: (stream) => fxAsRef(stream, eq),
-    Cause: (cause) => make(Effect.failCause(cause), eq)
+    Cause: (cause) => fromEffect(Effect.failCause(cause), eq)
   })
 }
 
@@ -178,33 +202,21 @@ const fxAsRef = <R, E, A>(
 ): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>> =>
   Effect.gen(function*($) {
     const deferred = yield* $(Deferred.make<E, A>())
-    const ref = yield* $(make<never, E, A>(Deferred.await(deferred), eq))
+    const ref = yield* $(fromEffect<never, E, A>(Deferred.await(deferred), eq))
+
+    const done = (exit: Exit.Exit<E, A>) =>
+      Effect.flatMap(Deferred.done(deferred, exit), (closed) => closed ? Effect.unit : Exit.match(exit, ref))
 
     yield* $(Effect.forkScoped(run(
       fx,
-      WithContext(ref.onFailure, (a) =>
-        Effect.flatMap(Deferred.succeed(deferred, a), (closed) => closed ? Effect.unit : ref.onSuccess(a)))
+      Sink(
+        (e) => done(Exit.failCause(e)),
+        (a) => done(Exit.succeed(a))
+      )
     )))
 
     return ref
   })
-
-/**
- * Construct a RefSubject with an initial value and a capacity for replaying events.
- * @since 1.18.0
- * @category constructors
- */
-export function makeReplay<R, E, A>(
-  initial: Effect.Effect<R, E, A>,
-  { capacity, eq }: {
-    readonly capacity: number
-    readonly eq?: Equivalence<A>
-  }
-): Effect.Effect<R, never, RefSubject<E, A>> {
-  return Effect.contextWith((ctx) =>
-    unsafeMake(Effect.provideContext(initial, ctx), makeReplaySubject<E, A>(capacity), eq)
-  )
-}
 
 /**
  * Construct a RefSubject with an initial value and the specified subject.
@@ -227,7 +239,7 @@ export function unsafeMake<E, A>(
 class RefSubjectImpl<E, A> extends FxEffectProto<never, E, A, never, E, A>
   implements Omit<RefSubject<E, A>, ModuleAgumentedEffectKeysToOmit>
 {
-  readonly [RefTypeId]: RefTypeId = RefTypeId
+  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
 
   #version = 0
 
@@ -238,6 +250,9 @@ class RefSubjectImpl<E, A> extends FxEffectProto<never, E, A, never, E, A>
     readonly subject: Subject.Subject<never, E, A>
   ) {
     super()
+
+    this.onSuccess = this.onSuccess.bind(this)
+    this.onFailure = this.onFailure.bind(this)
   }
 
   static make<E, A>(
@@ -260,7 +275,7 @@ class RefSubjectImpl<E, A> extends FxEffectProto<never, E, A, never, E, A>
     )
   }
 
-  readonly version = (): number => this.#version
+  readonly version = Effect.sync((): number => this.#version)
 
   readonly subscriberCount: Effect.Effect<never, never, number> = this.subject.subscriberCount
 
@@ -345,16 +360,23 @@ class RefSubjectImpl<E, A> extends FxEffectProto<never, E, A, never, E, A>
   })
 
   mapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) => Computed<R2, E | E2, B> = (f) =>
-    Computed(this as any as FxEffect<never, E, A, never, E, A>, f)
+    Computed(this as any, f)
 
   map: <B>(f: (a: A) => B) => Computed<never, E, B> = (f) => this.mapEffect((a) => Effect.sync(() => f(a)))
 
   filterMapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>) => Filtered<R2, E | E2, B> = (
     f
-  ) => Filtered(this as any as FxEffect<never, E, A, never, E, A>, f)
+  ) => Filtered(this as any, f)
 
   filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<never, E, B> = (f) =>
     this.filterMapEffect((a) => Effect.sync(() => f(a)))
+
+  filterEffect: <R2, E2>(
+    f: (a: A) => Effect.Effect<R2, E2, boolean>
+  ) => Filtered<R2, E | E2, A> = (f) =>
+    this.filterMapEffect((a) => Effect.map(f(a), (b) => (b ? Option.some(a) : Option.none())))
+
+  filter = (f: (a: A) => boolean) => this.filterMap(Option.liftPredicate(f))
 
   private getCurrentValue = (fiber: Option.Option<Fiber.Fiber<E, A>>) => {
     return Option.match(fiber, {

@@ -247,7 +247,7 @@ describe(__filename, () => {
   describe("RefSubject", () => {
     it("allows keeping state", async () => {
       const test = Effect.gen(function*(_) {
-        const ref = yield* _(RefSubject.make(Effect.succeed(0)))
+        const ref = yield* _(RefSubject.of(0))
 
         expect(yield* _(ref)).toEqual(0)
 
@@ -269,7 +269,7 @@ describe(__filename, () => {
 
     it("allows subscribing to those state changes", async () => {
       const test = Effect.gen(function*(_) {
-        const ref = yield* _(RefSubject.make(Effect.succeed(0)))
+        const ref = yield* _(RefSubject.of(0))
 
         const fiber = yield* _(Effect.fork(Fx.toReadonlyArray(Fx.take(ref, 3))))
 
@@ -288,7 +288,7 @@ describe(__filename, () => {
     describe("map to a computed value", () => {
       it("transform success values", async () => {
         const test = Effect.gen(function*(_) {
-          const ref = yield* _(RefSubject.make(Effect.succeed(0)))
+          const ref = yield* _(RefSubject.of(0))
           const addOne = ref.map((x) => x + 1)
 
           expect(yield* _(addOne)).toEqual(1)
@@ -313,7 +313,7 @@ describe(__filename, () => {
     describe("filterMap to filtered values", () => {
       it("returns Cause.NoSuchElementException when filtered", async () => {
         const test = Effect.gen(function*(_) {
-          const ref = yield* _(RefSubject.value(0))
+          const ref = yield* _(RefSubject.of(0))
           const filtered = ref.filterMap(Option.liftPredicate((x) => x % 2 === 0))
 
           expect(yield* _(Effect.optionFromOptional(filtered))).toEqual(Option.some(0))
@@ -329,6 +329,51 @@ describe(__filename, () => {
 
         await Effect.runPromise(test)
       })
+    })
+
+    it("allows being initialized by an Effect", async () => {
+      const test = Effect.gen(function*(_) {
+        const ref = yield* _(RefSubject.make(Effect.delay(Effect.succeed(0), 50)))
+
+        expect(yield* _(ref)).toEqual(0)
+
+        yield* _(ref.set(1))
+
+        expect(yield* _(ref)).toEqual(1)
+
+        yield* _(ref.update((x) => x + 1))
+
+        expect(yield* _(ref)).toEqual(2)
+
+        yield* _(ref.delete)
+
+        expect(yield* _(ref)).toEqual(0)
+      })
+
+      await Effect.runPromise(test)
+    })
+
+    it("allows being initialized by an Fx", async () => {
+      const test = Effect.gen(function*(_) {
+        const ref = yield* _(RefSubject.make(Fx.merge([
+          Fx.at("a", 10),
+          Fx.at("z", 50)
+        ])))
+
+        // Lazily initializes with the first value of the Fx
+        expect(yield* _(ref)).toEqual("a")
+
+        // Allows setting a value
+        yield* _(ref.set("b"))
+        expect(yield* _(ref)).toEqual("b")
+
+        yield* _(Effect.sleep(50))
+
+        // Further emitted values reset the current state.
+        expect(yield* _(ref)).toEqual("z")
+      })
+
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 })

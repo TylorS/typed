@@ -469,6 +469,18 @@ export const combine: <const FX extends ReadonlyArray<Fx<any, any, any>>>(
 ) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }> = core.combine
 
 /**
+ * Combine a record of Fx into a single Fx that will emit the results of all Fx
+ * as a record of values.
+ *
+ * @since 1.18.0
+ * @category constructors
+ */
+export const struct: <const FX extends Readonly<Record<string, Fx<any, any, any>>>>(
+  fxs: FX
+) => Fx<Fx.Context<FX[string]>, Fx.Error<FX[string]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }> = (fx) =>
+  map(combine(Object.entries(fx).map(([k, fx]) => map(fx, (v) => [k, v] as const))), Object.fromEntries)
+
+/**
  * Combine multiple Fx into a single Fx that will emit the results of all Fx
  * as they occur.
  * @since 1.18.0

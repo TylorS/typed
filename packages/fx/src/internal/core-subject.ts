@@ -1,6 +1,6 @@
 import * as MutableRef from "@effect/data/MutableRef"
 import * as Option from "@effect/data/Option"
-import type { Cause } from "@effect/io/Cause"
+import { type Cause } from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import { succeed } from "@effect/io/Exit"
 import * as Scope from "@effect/io/Scope"
@@ -23,6 +23,8 @@ export function makeReplaySubject<E, A>(capacity: number): Subject<never, E, A> 
   return new ReplaySubjectImpl<E, A>(new RingBuffer(capacity))
 }
 
+const UNBOUNDED = { concurrency: "unbounded" } as const
+
 /**
  * @internal
  */
@@ -39,12 +41,12 @@ export class SubjectImpl<E, A> extends ToFx<never, E, A> implements Subject<neve
   interrupt = Effect.suspend(() => Effect.forEach(this.scopes, (scope) => Scope.close(scope, succeed(undefined))))
 
   toFx(): Fx<never, E, A> {
-    return fromSink<never, E, A>((sink) => this.addSink(sink, () => Effect.never))
+    return fromSink<never, E, A>((sink) => this.addSink(sink, (scope) => awaitScopeClose(scope)))
   }
 
   protected addSink<R2, B>(
     sink: Sink<E, A>,
-    f: () => Effect.Effect<R2, never, B>
+    f: (scope: Scope.Scope) => Effect.Effect<R2, never, B>
   ): Effect.Effect<R2, never, B> {
     return Effect.acquireUseRelease(
       Scope.make(),
@@ -67,7 +69,7 @@ export class SubjectImpl<E, A> extends ToFx<never, E, A> implements Subject<neve
             Scope.Scope,
             scope
           ),
-          f
+          () => f(scope)
         ),
       (scope, exit) => Scope.close(scope, exit)
     )
@@ -76,11 +78,11 @@ export class SubjectImpl<E, A> extends ToFx<never, E, A> implements Subject<neve
   readonly subscriberCount: Effect.Effect<never, never, number> = Effect.sync(() => this.sinks.size)
 
   protected onEvent(a: A) {
-    return Effect.forEach(this.sinks, (sink) => sink.onSuccess(a), { concurrency: "unbounded" })
+    return Effect.forEach(this.sinks, (sink) => sink.onSuccess(a), UNBOUNDED)
   }
 
   protected onCause(cause: Cause<E>) {
-    return Effect.forEach(this.sinks, (sink) => sink.onFailure(cause), { concurrency: "unbounded" })
+    return Effect.forEach(this.sinks, (sink) => sink.onFailure(cause), UNBOUNDED)
   }
 }
 
@@ -100,10 +102,10 @@ export class HoldSubjectImpl<E, A> extends SubjectImpl<E, A> implements Subject<
 
   toFx(): Fx<never, E, A> {
     return fromSink<never, E, A>((sink) =>
-      this.addSink(sink, () =>
+      this.addSink(sink, (scope) =>
         Option.match(MutableRef.get(this.lastValue), {
-          onNone: () => Effect.never,
-          onSome: (a) => Effect.zipRight(sink.onSuccess(a), Effect.never)
+          onNone: () => awaitScopeClose(scope),
+          onSome: (a) => Effect.zipRight(sink.onSuccess(a), awaitScopeClose(scope))
         }))
     )
   }
@@ -127,7 +129,13 @@ export class ReplaySubjectImpl<E, A> extends SubjectImpl<E, A> {
 
   toFx(): Fx<never, E, A> {
     return fromSink<never, E, A>((sink) =>
-      this.addSink(sink, () => Effect.zipRight(this.buffer.forEach(sink.onSuccess), Effect.never))
+      this.addSink(sink, (scope) => Effect.zipRight(this.buffer.forEach(sink.onSuccess), awaitScopeClose(scope)))
     )
   }
+}
+
+function awaitScopeClose(scope: Scope.Scope) {
+  return Effect.asyncEffect<never, never, unknown, never, never, void>((cb) =>
+    Scope.addFinalizerExit(scope, () => Effect.sync(() => cb(Effect.unit)))
+  )
 }

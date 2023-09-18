@@ -4,13 +4,13 @@
  * @since 1.18.0
  */
 
-import type * as Option from "@effect/data/Option"
+import * as Option from "@effect/data/Option"
 import type * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
-import type { FxEffect } from "@typed/fx/FxEffect"
+import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import * as core from "@typed/fx/internal/core"
+import { FxEffectTransform } from "@typed/fx/internal/fx-effect-transform"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
-import { FxEffectTransform } from "@typed/fx/internal/ref-transform"
 
 /**
  * @since 1.18.0
@@ -30,7 +30,9 @@ export type FilteredTypeId = typeof FilteredTypeId
  * @since 1.18.0
  * @category models
  */
-export interface Filtered<out R, out E, out A> extends FxEffect<R, E, A, R, E | Cause.NoSuchElementException, A> {
+export interface Filtered<out R, out E, out A>
+  extends VersionedFxEffect<R, R, E, A, R, E | Cause.NoSuchElementException, A>
+{
   readonly [FilteredTypeId]: FilteredTypeId
 
   /**
@@ -46,6 +48,18 @@ export interface Filtered<out R, out E, out A> extends FxEffect<R, E, A, R, E | 
    * @since 1.18.0
    */
   readonly filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<R, E, B>
+
+  /**
+   * Filter the current value of this Filtered to a new value using an Effect
+   */
+  readonly filterEffect: <R2, E2>(
+    f: (a: A) => Effect.Effect<R2, E2, boolean>
+  ) => Filtered<R | R2, E | E2, A>
+
+  /**
+   * Filter the current value of this Filtered to a new value
+   */
+  readonly filter: (f: (a: A) => boolean) => Filtered<R, E, A>
 
   /**
    * Map the current value of this Computed to a new value using an Effect
@@ -65,20 +79,20 @@ export interface Filtered<out R, out E, out A> extends FxEffect<R, E, A, R, E | 
  * @since 1.18.0
  */
 export function Filtered<R, E, A, R2, E2, B>(
-  input: FxEffect<R, E, A, R, E, A>,
+  input: VersionedFxEffect<R, R, E, A, R, E, A>,
   f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
 ): Filtered<R | R2, E | E2, B> {
   return new FilteredImpl(input, f) as any
 }
 
 class FilteredImpl<R, E, A, R2, E2, B>
-  extends FxEffectTransform<R, E, A, R, E, A, R | R2, E | E2, B, R | R2, E | E2 | Cause.NoSuchElementException, B>
+  extends FxEffectTransform<R, R, E, A, R, E, A, R | R2, E | E2, B, R | R2, E | E2 | Cause.NoSuchElementException, B>
   implements Omit<Filtered<R | R2, E | E2, B>, ModuleAgumentedEffectKeysToOmit>
 {
   readonly [FilteredTypeId]: FilteredTypeId = FilteredTypeId
 
   constructor(
-    readonly input: FxEffect<R, E, A, R, E, A>,
+    readonly input: VersionedFxEffect<R, R, E, A, R, E, A>,
     readonly f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
   ) {
     super(
@@ -88,10 +102,14 @@ class FilteredImpl<R, E, A, R2, E2, B>
     )
   }
 
-  filterMapEffect: Filtered<R | R2, E | E2, B>["filterMapEffect"] = (f) =>
-    new FilteredImpl(this as any as Filtered<R | R2, E | E2, B>, f) as any
+  filterMapEffect: Filtered<R | R2, E | E2, B>["filterMapEffect"] = (f) => new FilteredImpl(this as any, f) as any
 
   filterMap: Filtered<R | R2, E | E2, B>["filterMap"] = (f) => this.filterMapEffect((a) => Effect.sync(() => f(a)))
+
+  filterEffect: Filtered<R | R2, E | E2, B>["filterEffect"] = (f) =>
+    this.filterMapEffect((a) => Effect.map(f(a), (b) => (b ? Option.some(a) : Option.none())))
+
+  filter: Filtered<R | R2, E | E2, B>["filter"] = (f) => this.filterEffect((a) => Effect.sync(() => f(a)))
 
   mapEffect: Filtered<R | R2, E | E2, B>["mapEffect"] = (f) => this.filterMapEffect((a) => Effect.asSome(f(a)))
 

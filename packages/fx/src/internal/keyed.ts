@@ -9,7 +9,7 @@ import type { Fx, ScopedFork } from "@typed/fx/Fx"
 import { skipRepeats, withScopedFork } from "@typed/fx/internal/core"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import { run } from "@typed/fx/internal/run"
-import { make, type RefSubject } from "@typed/fx/RefSubject"
+import { fromEffect, type RefSubject } from "@typed/fx/RefSubject"
 import { WithContext } from "@typed/fx/Sink"
 import type { Subject } from "@typed/fx/Subject"
 
@@ -208,7 +208,7 @@ function addValue<A, B, C, R2, E2, R3>({
     MutableHashMap.set(state.initialValues, key, value)
 
     const subject = yield* $(
-      make<never, never, A>(
+      fromEffect<never, never, A>(
         Effect.sync(() =>
           // Default to the initial value
           MutableHashMap.get(state.initialValues, key).pipe(Option.getOrElse(() => value))
