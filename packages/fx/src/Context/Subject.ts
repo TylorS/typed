@@ -1,3 +1,8 @@
+/**
+ * A Contextual wrapper around a Subject
+ * @since 1.18.0
+ */
+
 import type * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import type * as Layer from "@effect/io/Layer"
@@ -7,6 +12,11 @@ import { fromFxEffect, provideSomeLayer, ToFx } from "@typed/fx/Fx"
 import type * as Sink from "@typed/fx/Sink"
 import * as S from "@typed/fx/Subject"
 
+/**
+ * A Contextual wrapper around a Subject
+ * @since 1.18.0
+ * @category models
+ */
 export interface Subject<I, E, A> extends Fx<I, E, A>, Sink.WithContext<I, E, A> {
   readonly tag: Context.Tagged<I, S.Subject<never, E, A>>
 
@@ -23,6 +33,11 @@ export interface Subject<I, E, A> extends Fx<I, E, A>, Sink.WithContext<I, E, A>
   readonly make: (replay?: number) => Layer.Layer<never, never, I>
 }
 
+/**
+ * Construct a contextual Subject
+ * @since 1.18.0
+ * @category constructors
+ */
 export function Subject<E, A>() {
   function makeSubject<const I extends Context.IdentifierFactory<any>>(
     identifier: I

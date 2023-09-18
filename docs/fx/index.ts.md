@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 5
+nav_order: 9
 parent: "@typed/fx"
 ---
 

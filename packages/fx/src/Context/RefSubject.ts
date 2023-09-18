@@ -1,3 +1,8 @@
+/**
+ * A Contextual wrapper around a RefSubject
+ * @since 1.18.0
+ */
+
 import type { Equivalence } from "@effect/data/Equivalence"
 import type * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
@@ -15,6 +20,7 @@ import * as Ref from "@typed/fx/RefSubject"
 /**
  * A Contextual wrapper around a RefSubject
  * @since 1.18.0
+ * @category models
  */
 export interface RefSubject<I, E, A> extends VersionedFxEffect<I, I, E, A, I, E, A> {
   readonly tag: Context.Tagged<I, Ref.RefSubject<E, A>>
@@ -89,6 +95,8 @@ export interface RefSubject<I, E, A> extends VersionedFxEffect<I, I, E, A, I, E,
 /**
  * Create a contextual wrapper around a RefSubject while maintaing the full API of
  * a Ref Subject.
+ * @since 1.18.0
+ * @category constructors
  */
 export function RefSubject<E, A>(): {
   <const I extends Context.IdentifierFactory<any>>(identifier: I): RefSubject<Context.IdentifierOf<I>, E, A>
@@ -159,10 +167,25 @@ class RefSubjectImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
   provideFx = <R2>(fx: Fx<R2, E, A>, eq?: Equivalence<A>) => provideSomeLayer(this.make(fx, eq))
 }
 
+/**
+ * @since 1.18.0
+ */
 export namespace RefSubject {
+  /**
+   * Extract the Identifier from a RefSubject
+   * @since 1.18.0
+   */
   export type Identifier<T> = T extends RefSubject<infer I, infer _, infer __> ? I : never
 
+  /**
+   * Extract the Error from a RefSubject
+   * @since 1.18.0
+   */
   export type Error<T> = T extends RefSubject<infer _, infer E, infer __> ? E : never
 
+  /**
+   * Extract the State from a RefSubject
+   * @since 1.18.0
+   */
   export type State<T> = T extends RefSubject<infer _, infer __, infer S> ? S : never
 }

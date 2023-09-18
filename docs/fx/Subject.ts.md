@@ -1,6 +1,6 @@
 ---
 title: Subject.ts
-nav_order: 9
+nav_order: 13
 parent: "@typed/fx"
 ---
 
@@ -78,6 +78,7 @@ broadcast events to many consumers.
 ```ts
 export interface Subject<R, E, A> extends Fx<R, E, A>, Sink<E, A> {
   readonly subscriberCount: Effect.Effect<never, never, number>
+  readonly interrupt: Effect.Effect<never, never, void>
 }
 ```
 

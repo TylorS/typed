@@ -1,6 +1,6 @@
 ---
 title: Fx.ts
-nav_order: 3
+nav_order: 7
 parent: "@typed/fx"
 ---
 
@@ -118,6 +118,7 @@ Added in v1.18.0
   - [never](#never)
   - [periodic](#periodic)
   - [race](#race)
+  - [struct](#struct)
   - [succeed](#succeed)
   - [succeedNone](#succeednone)
   - [succeedSome](#succeedsome)
@@ -221,6 +222,7 @@ Added in v1.18.0
     - [Context (type alias)](#context-type-alias)
     - [Error (type alias)](#error-type-alias)
     - [Success (type alias)](#success-type-alias)
+  - [keyed](#keyed)
 
 ---
 
@@ -1468,6 +1470,21 @@ first Fx to emit a value.
 export declare const race: <const FX extends readonly Fx<any, any, any>[]>(
   fxs: FX
 ) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+```
+
+Added in v1.18.0
+
+## struct
+
+Combine a record of Fx into a single Fx that will emit the results of all Fx
+as a record of values.
+
+**Signature**
+
+```ts
+export declare const struct: <const FX extends Readonly<Record<string, Fx<any, any, any>>>>(
+  fxs: FX
+) => Fx<Fx.Context<FX[string]>, Fx.Error<FX[string]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
 ```
 
 Added in v1.18.0
@@ -2923,6 +2940,28 @@ Extract the Success type from an Fx
 
 ```ts
 export type Success<T> = T extends Fx<infer _R, infer _E, infer A> ? A : never
+```
+
+Added in v1.18.0
+
+## keyed
+
+Convert a list of keyed values into persistent workflows for given each key of the list
+even when the list has been re-ordered.
+
+**Signature**
+
+```ts
+export declare const keyed: {
+  <A, R2, E2, B, C>(f: (ref: RefSubject<never, A>, key: C) => Fx<R2, E2, B>, getKey: (a: A) => C): <R, E>(
+    fx: Fx<R, E, readonly A[]>
+  ) => Fx<R2 | R, E2 | E, readonly B[]>
+  <R, E, A, R2, E2, B, C>(
+    fx: Fx<R, E, readonly A[]>,
+    f: (ref: RefSubject<never, A>, key: C) => Fx<R2, E2, B>,
+    getKey: (a: A) => C
+  ): Fx<R | R2, E | E2, readonly B[]>
+}
 ```
 
 Added in v1.18.0

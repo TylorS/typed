@@ -1,6 +1,6 @@
 ---
 title: RefSubject.ts
-nav_order: 6
+nav_order: 10
 parent: "@typed/fx"
 ---
 
@@ -16,28 +16,28 @@ Added in v1.18.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [constructors](#constructors)
+  - [fromEffect](#fromeffect)
   - [make](#make)
-  - [makeReplay](#makereplay)
+  - [of](#of)
   - [unsafeMake](#unsafemake)
-  - [value](#value)
 - [models](#models)
   - [RefSubject (interface)](#refsubject-interface)
 - [symbols](#symbols)
-  - [RefTypeId](#reftypeid)
-  - [RefTypeId (type alias)](#reftypeid-type-alias)
+  - [RefSubjectTypeId](#refsubjecttypeid)
+  - [RefSubjectTypeId (type alias)](#refsubjecttypeid-type-alias)
 
 ---
 
 # constructors
 
-## make
+## fromEffect
 
 Construct a RefSubject with a lazily initialized value.
 
 **Signature**
 
 ```ts
-export declare function make<R, E, A>(
+export declare function fromEffect<R, E, A>(
   initial: Effect.Effect<R, E, A>,
   eq?: Equivalence<A>
 ): Effect.Effect<R, never, RefSubject<E, A>>
@@ -45,23 +45,33 @@ export declare function make<R, E, A>(
 
 Added in v1.18.0
 
-## makeReplay
+## make
 
-Construct a RefSubject with an initial value and a capacity for replaying events.
+Construct a RefSubject from any Fx value.
 
 **Signature**
 
 ```ts
-export declare function makeReplay<R, E, A>(
-  initial: Effect.Effect<R, E, A>,
-  {
-    capacity,
-    eq,
-  }: {
-    readonly capacity: number
-    readonly eq?: Equivalence<A>
-  }
+export declare function make<R, E, A>(
+  fx: Effect.Effect<R, E, A>,
+  eq?: Equivalence<A>
 ): Effect.Effect<R, never, RefSubject<E, A>>
+export declare function make<R, E, A>(
+  fx: Fx<R, E, A>,
+  eq?: Equivalence<A>
+): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>>
+```
+
+Added in v1.18.0
+
+## of
+
+Construct a RefSubject from a synchronous value.
+
+**Signature**
+
+```ts
+export declare function of<A, E = never>(initial: A, eq?: Equivalence<A>): Effect.Effect<never, never, RefSubject<E, A>>
 ```
 
 Added in v1.18.0
@@ -82,21 +92,6 @@ export declare function unsafeMake<E, A>(
 
 Added in v1.18.0
 
-## value
-
-Construct a RefSubject from a synchronous value.
-
-**Signature**
-
-```ts
-export declare function value<A, E = never>(
-  initial: A,
-  eq?: Equivalence<A>
-): Effect.Effect<never, never, RefSubject<E, A>>
-```
-
-Added in v1.18.0
-
 # models
 
 ## RefSubject (interface)
@@ -107,7 +102,7 @@ A RefSubject is a Subject that has a current value that can be read and updated.
 
 ```ts
 export interface RefSubject<in out E, in out A> extends Subject.Subject<never, E, A>, Effect.Effect<never, E, A> {
-  readonly [RefTypeId]: RefTypeId
+  readonly [RefSubjectTypeId]: RefSubjectTypeId
 
   /**
    * The Equivalence used to determine if a value has changed. Defaults to `Equal.equals`.
@@ -188,9 +183,22 @@ export interface RefSubject<in out E, in out A> extends Subject.Subject<never, E
   readonly filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<never, E, B>
 
   /**
-   * @internal
+   * Filter the current value of this Filtered to a new value using an Effect
    */
-  readonly version: () => number
+  readonly filterEffect: <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>) => Filtered<R2, E | E2, A>
+
+  /**
+   * Filter the current value of this Filtered to a new value
+   * @since 1.18.0
+   */
+  readonly filter: (f: (a: A) => boolean) => Filtered<never, E, A>
+
+  /**
+   * A monotonic version number that is incremented every time the value of this RefSubject changes.
+   * It is reset to 0 when the RefSubject is deleted.
+   * @since 1.18.0
+   */
+  readonly version: Effect.Effect<never, never, number>
 }
 ```
 
@@ -198,22 +206,22 @@ Added in v1.18.0
 
 # symbols
 
-## RefTypeId
+## RefSubjectTypeId
 
 **Signature**
 
 ```ts
-export declare const RefTypeId: typeof RefTypeId
+export declare const RefSubjectTypeId: typeof RefSubjectTypeId
 ```
 
 Added in v1.18.0
 
-## RefTypeId (type alias)
+## RefSubjectTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type RefTypeId = typeof RefTypeId
+export type RefSubjectTypeId = typeof RefSubjectTypeId
 ```
 
 Added in v1.18.0
