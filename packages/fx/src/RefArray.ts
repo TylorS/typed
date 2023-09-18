@@ -21,13 +21,7 @@ import * as RefSubject from "@typed/fx/RefSubject"
  * @since 1.18.0
  * @category models
  */
-export interface RefArray<E, A> extends RefSubject.RefSubject<E, ReadonlyArray<A>> {
-  /**
-   * The eqivalence used for individual values.
-   * @since 1.18.0
-   */
-  readonly valueEq: Equivalence<A>
-}
+export interface RefArray<E, A> extends RefSubject.RefSubject<E, ReadonlyArray<A>> {}
 
 /**
  * Construct a new RefArray with the given initial value.
@@ -60,9 +54,9 @@ export function makeRefArray<R, E, A>(
  * @category combinators
  */
 export const prepend: {
-  <A>(value: A): <E>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
-  <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, value: A): Effect.Effect<never, E, ReadonlyArray<A>>
-} = dual(2, function prepend<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, value: A) {
+  <A>(value: A): <E>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  <E, A>(ref: RefArray<E, A>, value: A): Effect.Effect<never, E, ReadonlyArray<A>>
+} = dual(2, function prepend<E, A>(ref: RefArray<E, A>, value: A) {
   return ref.update(ReadonlyArray.prepend(value))
 })
 
@@ -72,10 +66,11 @@ export const prepend: {
  * @category combinators
  */
 export const prependAll: {
-  <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, value: Iterable<A>): Effect.Effect<never, E, ReadonlyArray<A>>
+  <A>(value: Iterable<A>): <E>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  <E, A>(ref: RefArray<E, A>, value: Iterable<A>): Effect.Effect<never, E, ReadonlyArray<A>>
 } = dual(
   2,
-  function prependAll<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, value: Iterable<A>) {
+  function prependAll<E, A>(ref: RefArray<E, A>, value: Iterable<A>) {
     return ref.update(ReadonlyArray.prependAll(value))
   }
 )
@@ -86,9 +81,9 @@ export const prependAll: {
  * @category combinators
  */
 export const append: {
-  <A>(value: A): <E>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
-  <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, value: A): Effect.Effect<never, E, ReadonlyArray<A>>
-} = dual(2, function append<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, value: A) {
+  <A>(value: A): <E>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  <E, A>(ref: RefArray<E, A>, value: A): Effect.Effect<never, E, ReadonlyArray<A>>
+} = dual(2, function append<E, A>(ref: RefArray<E, A>, value: A) {
   return ref.update(ReadonlyArray.append(value))
 })
 
@@ -100,22 +95,10 @@ export const append: {
 export const appendAll: {
   <A>(
     value: Iterable<A>
-  ): <E>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
-  <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, value: Iterable<A>): Effect.Effect<never, E, ReadonlyArray<A>>
-} = dual(2, function appendAll<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, value: Iterable<A>) {
+  ): <E>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  <E, A>(ref: RefArray<E, A>, value: Iterable<A>): Effect.Effect<never, E, ReadonlyArray<A>>
+} = dual(2, function appendAll<E, A>(ref: RefArray<E, A>, value: Iterable<A>) {
   return ref.update(ReadonlyArray.appendAll(value))
-})
-
-/**
- * Check to see if a RefArray contains a value.
- * @since 1.18.0
- * @category combinators
- */
-export const contains: {
-  <A>(value: A): <E>(ref: RefArray<E, A>) => Computed.Computed<never, E, boolean>
-  <E, A>(ref: RefArray<E, A>, value: A): Computed.Computed<never, E, boolean>
-} = dual(2, function contains<E, A>(ref: RefArray<E, A>, value: A) {
-  return ref.map(ReadonlyArray.containsWith(ref.valueEq)(value))
 })
 
 /**
@@ -124,9 +107,9 @@ export const contains: {
  * @category combinators
  */
 export const drop: {
-  (n: number): <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
-  <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, n: number): Effect.Effect<never, E, ReadonlyArray<A>>
-} = dual(2, function drop<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, n: number) {
+  (n: number): <E, A>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  <E, A>(ref: RefArray<E, A>, n: number): Effect.Effect<never, E, ReadonlyArray<A>>
+} = dual(2, function drop<E, A>(ref: RefArray<E, A>, n: number) {
   return ref.update(ReadonlyArray.drop(n))
 })
 
@@ -136,9 +119,9 @@ export const drop: {
  * @category combinators
  */
 export const dropRight: {
-  (n: number): <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
-  <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, n: number): Effect.Effect<never, E, ReadonlyArray<A>>
-} = dual(2, function dropRight<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, n: number) {
+  (n: number): <E, A>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  <E, A>(ref: RefArray<E, A>, n: number): Effect.Effect<never, E, ReadonlyArray<A>>
+} = dual(2, function dropRight<E, A>(ref: RefArray<E, A>, n: number) {
   return ref.update(ReadonlyArray.dropRight(n))
 })
 
@@ -148,16 +131,16 @@ export const dropRight: {
  * @category combinators
  */
 export const dropWhile: {
-  (
-    predicate: (a: unknown) => boolean
-  ): <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  <A>(
+    predicate: (a: A) => boolean
+  ): <E>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
   <E, A>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>,
+    ref: RefArray<E, A>,
     predicate: (a: unknown) => boolean
   ): Effect.Effect<never, E, ReadonlyArray<A>>
 } = dual(
   2,
-  function dropWhile<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, predicate: (a: unknown) => boolean) {
+  function dropWhile<E, A>(ref: RefArray<E, A>, predicate: (a: unknown) => boolean) {
     return ref.update(ReadonlyArray.dropWhile(predicate))
   }
 )
@@ -168,14 +151,14 @@ export const dropWhile: {
  * @category computed
  */
 export const filterValues: {
-  <A, B extends A>(
-    predicate: (a: A) => a is B
-  ): <E>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Computed.Computed<never, E, ReadonlyArray<B>>
+  <A>(
+    predicate: (a: A) => boolean
+  ): <E>(ref: RefArray<E, A>) => Computed.Computed<never, E, ReadonlyArray<A>>
   <E, A>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>,
+    ref: RefArray<E, A>,
     predicate: (a: A) => boolean
   ): Computed.Computed<never, E, ReadonlyArray<A>>
-} = dual(2, function filterValues<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, predicate: (a: A) => boolean) {
+} = dual(2, function filterValues<E, A>(ref: RefArray<E, A>, predicate: (a: A) => boolean) {
   return ref.map(ReadonlyArray.filter(predicate))
 })
 
@@ -185,9 +168,9 @@ export const filterValues: {
  * @category filtered
  */
 export const getIndex: {
-  (index: number): <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Filtered.Filtered<never, E, A>
-  <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, index: number): Filtered.Filtered<never, E, A>
-} = dual(2, function getIndex<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, index: number) {
+  (index: number): <E, A>(ref: RefArray<E, A>) => Filtered.Filtered<never, E, A>
+  <E, A>(ref: RefArray<E, A>, index: number): Filtered.Filtered<never, E, A>
+} = dual(2, function getIndex<E, A>(ref: RefArray<E, A>, index: number) {
   return ref.filterMap(ReadonlyArray.get(index))
 })
 
@@ -200,13 +183,13 @@ export const groupBy: {
   <A>(
     f: (a: A) => string
   ): <E>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>
+    ref: RefArray<E, A>
   ) => Computed.Computed<never, E, Record<string, ReadonlyArray<A>>>
   <E, A>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>,
+    ref: RefArray<E, A>,
     f: (a: A) => string
   ): Computed.Computed<never, E, Record<string, ReadonlyArray<A>>>
-} = dual(2, function groupBy<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, f: (a: A) => string) {
+} = dual(2, function groupBy<E, A>(ref: RefArray<E, A>, f: (a: A) => string) {
   return ref.map(ReadonlyArray.groupBy(f))
 })
 
@@ -219,13 +202,13 @@ export const insertAt: {
   <A>(
     index: number,
     a: A
-  ): <E>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  ): <E>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
   <E, A>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>,
+    ref: RefArray<E, A>,
     index: number,
     a: A
   ): Effect.Effect<never, E, ReadonlyArray<A>>
-} = dual(3, function insertAt<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, index: number, a: A) {
+} = dual(3, function insertAt<E, A>(ref: RefArray<E, A>, index: number, a: A) {
   return ref.update((as) => Option.getOrElse(ReadonlyArray.insertAt(as, index, a), () => as))
 })
 
@@ -234,7 +217,7 @@ export const insertAt: {
  * @since 1.18.0
  * @category computed
  */
-export const isEmpty = <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>): Computed.Computed<never, E, boolean> =>
+export const isEmpty = <E, A>(ref: RefArray<E, A>): Computed.Computed<never, E, boolean> =>
   ref.map(ReadonlyArray.isEmptyReadonlyArray)
 
 /**
@@ -243,7 +226,7 @@ export const isEmpty = <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>): 
  * @category computed
  */
 export const isNonEmpty = <E, A>(
-  ref: RefSubject.RefSubject<E, ReadonlyArray<A>>
+  ref: RefArray<E, A>
 ): Computed.Computed<never, E, boolean> => ref.map(ReadonlyArray.isNonEmptyReadonlyArray)
 
 /**
@@ -251,8 +234,7 @@ export const isNonEmpty = <E, A>(
  * @since 1.18.0
  * @category computed
  */
-export const length = <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>): Computed.Computed<never, E, number> =>
-  ref.map(ReadonlyArray.length)
+export const length = <E, A>(ref: RefArray<E, A>): Computed.Computed<never, E, number> => ref.map(ReadonlyArray.length)
 
 /**
  * Map (Endomorphic) the values of a RefArray.
@@ -262,31 +244,31 @@ export const length = <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>): C
 export const map: {
   <A>(
     f: (a: A, index: number) => A
-  ): <E>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Computed.Computed<never, E, ReadonlyArray<A>>
+  ): <E>(ref: RefArray<E, A>) => Computed.Computed<never, E, ReadonlyArray<A>>
   <E, A>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>,
+    ref: RefArray<E, A>,
     f: (a: A, index: number) => A
   ): Computed.Computed<never, E, ReadonlyArray<A>>
-} = dual(2, function mapValues<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, f: (a: A, index: number) => A) {
+} = dual(2, function mapValues<E, A>(ref: RefArray<E, A>, f: (a: A, index: number) => A) {
   return ref.update(ReadonlyArray.map(f))
 })
 
 /**
- * Map the values of a RefArray.
+ * Map the values with their indexes of a RefArray.
  * @since 1.18.0
  * @category computed
  */
 export const mapValues: {
   <A, B>(
     f: (a: A, index: number) => B
-  ): <E>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Computed.Computed<never, E, ReadonlyArray<B>>
+  ): <E>(ref: RefArray<E, A>) => Computed.Computed<never, E, ReadonlyArray<B>>
   <E, A, B>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>,
+    ref: RefArray<E, A>,
     f: (a: A, index: number) => B
   ): Computed.Computed<never, E, ReadonlyArray<B>>
 } = dual(
   2,
-  function mapValues<E, A, B>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, f: (a: A, index: number) => B) {
+  function mapValues<E, A, B>(ref: RefArray<E, A>, f: (a: A, index: number) => B) {
     return ref.map(ReadonlyArray.map(f))
   }
 )
@@ -300,13 +282,13 @@ export const modifyAt: {
   <A>(
     index: number,
     f: (a: A) => A
-  ): <E>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  ): <E>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
   <E, A>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>,
+    ref: RefArray<E, A>,
     index: number,
     f: (a: A) => A
   ): Effect.Effect<never, E, ReadonlyArray<A>>
-} = dual(3, function modifyAt<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, index: number, f: (a: A) => A) {
+} = dual(3, function modifyAt<E, A>(ref: RefArray<E, A>, index: number, f: (a: A) => A) {
   return ref.update(ReadonlyArray.modify(index, f))
 })
 
@@ -319,14 +301,14 @@ export const partition: {
   <A, B extends A>(
     predicate: (a: A) => a is B
   ): <E>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>
+    ref: RefArray<E, A>
   ) => Computed.Computed<never, E, readonly [ReadonlyArray<B>, ReadonlyArray<A>]>
-  <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, predicate: (a: A) => boolean): Computed.Computed<
+  <E, A>(ref: RefArray<E, A>, predicate: (a: A) => boolean): Computed.Computed<
     never,
     E,
     readonly [ReadonlyArray<A>, ReadonlyArray<A>]
   >
-} = dual(2, function partition<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, predicate: (a: A) => boolean) {
+} = dual(2, function partition<E, A>(ref: RefArray<E, A>, predicate: (a: A) => boolean) {
   return ref.map(ReadonlyArray.partition(predicate))
 })
 
@@ -339,15 +321,15 @@ export const reduce: {
   <A, B>(
     b: B,
     f: (b: B, a: A, index: number) => B
-  ): <E>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Computed.Computed<never, E, B>
+  ): <E>(ref: RefArray<E, A>) => Computed.Computed<never, E, B>
   <E, A, B>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>,
+    ref: RefArray<E, A>,
     b: B,
     f: (b: B, a: A, index: number) => B
   ): Computed.Computed<never, E, B>
 } = dual(
   3,
-  function reduce<E, A, B>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, b: B, f: (b: B, a: A, index: number) => B) {
+  function reduce<E, A, B>(ref: RefArray<E, A>, b: B, f: (b: B, a: A, index: number) => B) {
     return ref.map(ReadonlyArray.reduce(b, f))
   }
 )
@@ -361,16 +343,16 @@ export const reduceRight: {
   <A, B>(
     b: B,
     f: (b: B, a: A, index: number) => B
-  ): <E>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Computed.Computed<never, E, B>
+  ): <E>(ref: RefArray<E, A>) => Computed.Computed<never, E, B>
   <E, A, B>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>,
+    ref: RefArray<E, A>,
     b: B,
     f: (b: B, a: A, index: number) => B
   ): Computed.Computed<never, E, B>
 } = dual(
   3,
   function reduceRight<E, A, B>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>,
+    ref: RefArray<E, A>,
     b: B,
     f: (b: B, a: A, index: number) => B
   ) {
@@ -387,13 +369,13 @@ export const replaceAt: {
   <A>(
     index: number,
     a: A
-  ): <E>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  ): <E>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
   <E, A>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>,
+    ref: RefArray<E, A>,
     index: number,
     a: A
   ): Effect.Effect<never, E, ReadonlyArray<A>>
-} = dual(3, function replaceAt<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, index: number, a: A) {
+} = dual(3, function replaceAt<E, A>(ref: RefArray<E, A>, index: number, a: A) {
   return ref.update(ReadonlyArray.replace(index, a))
 })
 
@@ -403,9 +385,9 @@ export const replaceAt: {
  * @category combinators
  */
 export const rotate: {
-  (n: number): <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
-  <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, n: number): Effect.Effect<never, E, ReadonlyArray<A>>
-} = dual(2, function rotate<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, n: number) {
+  (n: number): <E, A>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  <E, A>(ref: RefArray<E, A>, n: number): Effect.Effect<never, E, ReadonlyArray<A>>
+} = dual(2, function rotate<E, A>(ref: RefArray<E, A>, n: number) {
   return ref.update(ReadonlyArray.rotate(n))
 })
 
@@ -417,12 +399,12 @@ export const rotate: {
 export const sortBy: {
   <A>(
     orders: Iterable<Order.Order<A>>
-  ): <E>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  ): <E>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
   <E, A>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>,
+    ref: RefArray<E, A>,
     orders: Iterable<Order.Order<A>>
   ): Effect.Effect<never, E, ReadonlyArray<A>>
-} = dual(2, function sortBy<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, orders: Iterable<Order.Order<A>>) {
+} = dual(2, function sortBy<E, A>(ref: RefArray<E, A>, orders: Iterable<Order.Order<A>>) {
   return ref.update(ReadonlyArray.sortBy(...orders))
 })
 
@@ -432,9 +414,9 @@ export const sortBy: {
  * @category combinators
  */
 export const take: {
-  (n: number): <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
-  <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, n: number): Effect.Effect<never, E, ReadonlyArray<A>>
-} = dual(2, function take<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, n: number) {
+  (n: number): <E, A>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  <E, A>(ref: RefArray<E, A>, n: number): Effect.Effect<never, E, ReadonlyArray<A>>
+} = dual(2, function take<E, A>(ref: RefArray<E, A>, n: number) {
   return ref.update(ReadonlyArray.take(n))
 })
 
@@ -444,9 +426,9 @@ export const take: {
  * @category combinators
  */
 export const takeRight: {
-  (n: number): <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
-  <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, n: number): Effect.Effect<never, E, ReadonlyArray<A>>
-} = dual(2, function takeRight<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, n: number) {
+  (n: number): <E, A>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  <E, A>(ref: RefArray<E, A>, n: number): Effect.Effect<never, E, ReadonlyArray<A>>
+} = dual(2, function takeRight<E, A>(ref: RefArray<E, A>, n: number) {
   return ref.update(ReadonlyArray.takeRight(n))
 })
 
@@ -456,16 +438,16 @@ export const takeRight: {
  * @category combinators
  */
 export const takeWhile: {
-  (
-    predicate: (a: unknown) => boolean
-  ): <E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>) => Effect.Effect<never, E, ReadonlyArray<A>>
+  <A>(
+    predicate: (a: A) => boolean
+  ): <E>(ref: RefArray<E, A>) => Effect.Effect<never, E, ReadonlyArray<A>>
   <E, A>(
-    ref: RefSubject.RefSubject<E, ReadonlyArray<A>>,
+    ref: RefArray<E, A>,
     predicate: (a: unknown) => boolean
   ): Effect.Effect<never, E, ReadonlyArray<A>>
 } = dual(
   2,
-  function takeWhile<E, A>(ref: RefSubject.RefSubject<E, ReadonlyArray<A>>, predicate: (a: unknown) => boolean) {
+  function takeWhile<E, A>(ref: RefArray<E, A>, predicate: (a: unknown) => boolean) {
     return ref.update(ReadonlyArray.takeWhile(predicate))
   }
 )
@@ -475,5 +457,6 @@ export const takeWhile: {
  * @since 1.18.0
  * @category combinators
  */
-export const dedupe = <E, A>(ref: RefArray<E, A>): Effect.Effect<never, E, ReadonlyArray<A>> =>
-  ref.update(ReadonlyArray.dedupeWith(ref.valueEq))
+export const dedupeWith =
+  <A>(valueEq: Equivalence<A>) => <E>(ref: RefArray<E, A>): Effect.Effect<never, E, ReadonlyArray<A>> =>
+    ref.update(ReadonlyArray.dedupeWith(valueEq))
