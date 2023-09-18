@@ -247,5 +247,42 @@ describe("Context", () => {
 
       await Effect.runPromise(test)
     })
+
+    it("works with RefArrays", async () => {
+      const foobar = Context.Model({
+        foo: Context.RefArray.make<never, number>()("Foo"),
+        bar: Context.RefArray.make<never, string>()("Bar")
+      })
+      const foo = foobar.fromKey("foo")
+      const bar = foobar.fromKey("bar")
+
+      const test = Effect.gen(function*(_) {
+        expect(yield* _(foobar)).toEqual({ foo: [], bar: [] })
+
+        yield* _(foo, Context.RefArray.appendAll([1, 2, 3]))
+
+        expect(yield* _(foobar)).toEqual({ foo: [1, 2, 3], bar: [] })
+
+        yield* _(bar, Context.RefArray.append("World"))
+        yield* _(bar, Context.RefArray.prepend("Hello"))
+
+        expect(yield* _(foobar)).toEqual({ foo: [1, 2, 3], bar: ["Hello", "World"] })
+
+        yield* _(foo.delete)
+
+        expect(yield* _(foobar)).toEqual({ foo: [], bar: ["Hello", "World"] })
+
+        yield* _(bar.delete)
+
+        expect(yield* _(foobar)).toEqual({ foo: [], bar: [] })
+      }).pipe(
+        Effect.provideSomeLayer(foobar.of({
+          foo: [],
+          bar: []
+        }))
+      )
+
+      await Effect.runPromise(test)
+    })
   })
 })

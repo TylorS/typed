@@ -37,6 +37,17 @@ export function RefArray<E, A>(): {
 }
 
 /**
+ * @since 1.18.0
+ * @category constructors
+ */
+export const make: <E, A>() => {
+  <const I extends Context.IdentifierConstructor<any>>(
+    identifier: (id: <const T>(uniqueIdentifier: T) => Context.IdentifierConstructor<T>) => I
+  ): RefSubject.RefSubject<Context.IdentifierOf<I>, E, ReadonlyArray<A>>
+  <const I>(identifier: I): RefSubject.RefSubject<Context.IdentifierOf<I>, E, ReadonlyArray<A>>
+} = RefArray
+
+/**
  * Prepend a value to the current state of a RefArray.
  * @since 1.18.0
  * @category combinators
