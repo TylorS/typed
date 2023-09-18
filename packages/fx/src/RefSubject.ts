@@ -9,8 +9,10 @@ import * as Equal from "@effect/data/Equal"
 import type { Equivalence } from "@effect/data/Equivalence"
 import * as Option from "@effect/data/Option"
 import type { Cause } from "@effect/io/Cause"
+import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
+import type * as Scope from "@effect/io/Scope"
 import * as SynchronizedRef from "@effect/io/SynchronizedRef"
 import { Computed } from "@typed/fx/Computed"
 import { Filtered } from "@typed/fx/Filtered"
@@ -19,7 +21,10 @@ import type { FxEffect } from "@typed/fx/FxEffect"
 import { makeHoldSubject, makeReplaySubject } from "@typed/fx/internal/core-subject"
 import { fromFxEffect } from "@typed/fx/internal/fx"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
+import { matchFxKind } from "@typed/fx/internal/matchers"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
+import { run } from "@typed/fx/internal/run"
+import { WithContext } from "@typed/fx/Sink"
 import type * as Subject from "@typed/fx/Subject"
 
 /**
@@ -150,6 +155,41 @@ export function value<A, E = never>(initial: A, eq?: Equivalence<A>): Effect.Eff
 }
 
 /**
+ * Convert any Fx into a RefSubject which contains the latest value.
+ *
+ * @since 1.18.0
+ * @category constructors
+ */
+export function fromFx<R, E, A>(
+  fx: Fx<R, E, A>,
+  eq?: Equivalence<A>
+): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>> {
+  return matchFxKind(fx, {
+    Fx: (fx) => fxAsRef(fx, eq),
+    Effect: (effect) => make(effect, eq),
+    Stream: (stream) => fxAsRef(stream, eq),
+    Cause: (cause) => make(Effect.failCause(cause), eq)
+  })
+}
+
+const fxAsRef = <R, E, A>(
+  fx: Fx<R, E, A>,
+  eq?: Equivalence<A>
+): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>> =>
+  Effect.gen(function*($) {
+    const deferred = yield* $(Deferred.make<E, A>())
+    const ref = yield* $(make<never, E, A>(Deferred.await(deferred), eq))
+
+    yield* $(Effect.forkScoped(run(
+      fx,
+      WithContext(ref.onFailure, (a) =>
+        Effect.flatMap(Deferred.succeed(deferred, a), (closed) => closed ? Effect.unit : ref.onSuccess(a)))
+    )))
+
+    return ref
+  })
+
+/**
  * Construct a RefSubject with an initial value and a capacity for replaying events.
  * @since 1.18.0
  * @category constructors
@@ -261,15 +301,13 @@ class RefSubjectImpl<E, A> extends FxEffectProto<never, E, A, never, E, A>
         this.getOrInitialize(fiber).pipe(
           Effect.fromFiberEffect,
           Effect.flatMap((a) => {
-            return f(a).pipe(
-              Effect.flatMap(([b, a2]) => {
-                if (this.eq(a, a2)) {
-                  return Effect.succeed([b, Option.some(Fiber.succeed(a2))])
-                }
+            return Effect.flatMap(f(a), ([b, a2]) => {
+              if (this.eq(a, a2)) {
+                return Effect.succeed([b, Option.some(Fiber.succeed(a2))])
+              }
 
-                return this.emitValue(a2).pipe(Effect.as([b, Option.some(Fiber.succeed(a2))]))
-              })
-            )
+              return this.emitValue(a2).pipe(Effect.as([b, Option.some(Fiber.succeed(a2))]))
+            })
           })
         )
     )
