@@ -1,4 +1,5 @@
 import * as Effect from "@effect/io/Effect"
+import type * as Request from "@effect/io/Request"
 import * as Context from "@typed/context"
 
 describe(__filename, () => {
@@ -82,6 +83,37 @@ describe(__filename, () => {
         expect(yield* _(C.get)).toBe(5)
         expect(yield* _(model.get)).toEqual({ A: 3, B: 4, C: 5 })
       }).pipe(model.provide({ A: 1, B: 2, C: 3 }), Effect.scoped)
+
+      await Effect.runPromise(test)
+    })
+  })
+
+  describe("Request + RequestResolver", () => {
+    it("allow utilizing Requests and RequestResolvers via the context", async () => {
+      interface FooRequest extends Request.Request<never, number> {
+        readonly _tag: "Foo"
+      }
+      const FooRequest = Context.Request.tagged<FooRequest>("Foo")("FooRequest")
+
+      interface BarRequest extends Request.Request<never, number> {
+        readonly _tag: "Bar"
+      }
+      const BarRequest = Context.Request.tagged<BarRequest>("Bar")("BarRequest")
+
+      const FooBar = Context.RequestResolver({
+        foo: FooRequest,
+        bar: BarRequest
+      })((_) => class FooBarResolver extends _("FooBar") {})
+
+      const test = Effect.gen(function*(_) {
+        const foo = yield* _(FooBar.requests.foo())
+        const bar = yield* _(FooBar.requests.bar())
+
+        expect(foo).toBe(1)
+        expect(bar).toBe(2)
+      }).pipe(
+        Effect.provideSomeLayer(FooBar.fromFunction((req) => req._tag === "Foo" ? 1 : 2))
+      )
 
       await Effect.runPromise(test)
     })
