@@ -1,6 +1,6 @@
 ---
 title: RefSubject.ts
-nav_order: 10
+nav_order: 11
 parent: "@typed/fx"
 ---
 
@@ -18,13 +18,11 @@ Added in v1.18.0
 - [constructors](#constructors)
   - [fromEffect](#fromeffect)
   - [make](#make)
+  - [makeWithExtension](#makewithextension)
   - [of](#of)
   - [unsafeMake](#unsafemake)
 - [models](#models)
   - [RefSubject (interface)](#refsubject-interface)
-- [symbols](#symbols)
-  - [RefSubjectTypeId](#refsubjecttypeid)
-  - [RefSubjectTypeId (type alias)](#refsubjecttypeid-type-alias)
 
 ---
 
@@ -64,6 +62,27 @@ export declare function make<R, E, A>(
 
 Added in v1.18.0
 
+## makeWithExtension
+
+Construct a RefSubject from any Fx value.
+
+**Signature**
+
+```ts
+export declare function makeWithExtension<R, E, A, B>(
+  fx: Effect.Effect<R, E, A>,
+  f: (ref: RefSubject<E, A>) => B,
+  eq?: Equivalence<A>
+): Effect.Effect<R, never, RefSubject<E, A> & B>
+export declare function makeWithExtension<R, E, A, B>(
+  fx: Fx<R, E, A>,
+  f: (ref: RefSubject<E, A>) => B,
+  eq?: Equivalence<A>
+): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A> & B>
+```
+
+Added in v1.18.0
+
 ## of
 
 Construct a RefSubject from a synchronous value.
@@ -83,11 +102,11 @@ Construct a RefSubject with an initial value and the specified subject.
 **Signature**
 
 ```ts
-export declare function unsafeMake<E, A>(
+export declare const unsafeMake: <E, A>(
   initial: Effect.Effect<never, E, A>,
   subject: Subject.Subject<never, E, A>,
-  eq: Equivalence<A> = Equal.equals
-): RefSubject<E, A>
+  eq?: Equivalence<A> | undefined
+) => RefSubject<E, A>
 ```
 
 Added in v1.18.0
@@ -200,28 +219,6 @@ export interface RefSubject<in out E, in out A> extends Subject.Subject<never, E
    */
   readonly version: Effect.Effect<never, never, number>
 }
-```
-
-Added in v1.18.0
-
-# symbols
-
-## RefSubjectTypeId
-
-**Signature**
-
-```ts
-export declare const RefSubjectTypeId: typeof RefSubjectTypeId
-```
-
-Added in v1.18.0
-
-## RefSubjectTypeId (type alias)
-
-**Signature**
-
-```ts
-export type RefSubjectTypeId = typeof RefSubjectTypeId
 ```
 
 Added in v1.18.0

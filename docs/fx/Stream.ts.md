@@ -1,6 +1,6 @@
 ---
 title: Stream.ts
-nav_order: 12
+nav_order: 13
 parent: "@typed/fx"
 ---
 
