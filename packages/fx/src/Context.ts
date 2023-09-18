@@ -15,7 +15,7 @@ export {
  * A Contextual wrapper around a RefArray
  * @since 1.18.0
  */
-export * from "./Context/RefArray"
+export * as RefArray from "./Context/RefArray"
 
 export {
   /**
