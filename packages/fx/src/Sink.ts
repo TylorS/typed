@@ -4,7 +4,9 @@
  * @since 1.18.0
  */
 
-import type * as Cause from "@effect/io/Cause"
+import * as Either from "@effect/data/Either"
+import { dual } from "@effect/data/Function"
+import * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import type { Context } from "@typed/context"
 
@@ -117,3 +119,87 @@ export function provide<R, E, A>(sink: WithContext<R, E, A>, ctx: Context<R>): S
 export interface WithEarlyExit<E, A> extends Sink<E, A> {
   readonly earlyExit: Effect.Effect<never, never, void>
 }
+
+export const map: {
+  <B, A>(f: (b: B) => A): <E>(sink: Sink<E, A>) => Sink<E, B>
+  <E, A, B>(sink: Sink<E, A>, f: (b: B) => A): Sink<E, B>
+} = dual(2, function map<E, A, B>(
+  sink: Sink<E, A>,
+  f: (b: B) => A
+): Sink<E, B> {
+  return Sink(
+    sink.onFailure,
+    (a) => sink.onSuccess(f(a))
+  )
+})
+
+export const mapEffect: {
+  <B, R2, E, A>(f: (b: B) => Effect.Effect<R2, E, A>): (sink: Sink<E, A>) => WithContext<R2, E, B>
+  <E, A, R2, B>(sink: Sink<E, A>, f: (b: B) => Effect.Effect<R2, E, A>): WithContext<R2, E, B>
+} = dual(2, function mapEffect<E, A, R2, B>(
+  sink: Sink<E, A>,
+  f: (b: B) => Effect.Effect<R2, E, A>
+): WithContext<R2, E, B> {
+  return WithContext(
+    sink.onFailure,
+    (b) => Effect.matchCauseEffect(f(b), sink)
+  )
+})
+
+export const mapErrorCause: {
+  <E2, E, A>(f: (e: Cause.Cause<E2>) => Cause.Cause<E>): (sink: Sink<E, A>) => Sink<E2, A>
+  <E, A, E2>(sink: Sink<E, A>, f: (e: Cause.Cause<E2>) => Cause.Cause<E>): Sink<E2, A>
+} = dual(2, function mapErrorCause<E, A, E2>(
+  sink: Sink<E, A>,
+  f: (e: Cause.Cause<E2>) => Cause.Cause<E>
+): Sink<E2, A> {
+  return Sink(
+    (cause) => sink.onFailure(f(cause)),
+    sink.onSuccess
+  )
+})
+
+export const mapErrorCauseEffect: {
+  <E2, R2, E, A>(
+    f: (e: Cause.Cause<E2>) => Effect.Effect<R2, E, Cause.Cause<E>>
+  ): (sink: Sink<E, A>) => WithContext<R2, E2, A>
+  <E, A, R2, E2>(
+    sink: Sink<E, A>,
+    f: (e: Cause.Cause<E2>) => Effect.Effect<R2, E, Cause.Cause<E>>
+  ): WithContext<R2, E2, A>
+} = dual(2, function mapErrorCauseEffect<E, A, R2, E2>(
+  sink: Sink<E, A>,
+  f: (e: Cause.Cause<E2>) => Effect.Effect<R2, E, Cause.Cause<E>>
+): WithContext<R2, E2, A> {
+  return WithContext(
+    (cause) => Effect.matchCauseEffect(f(cause), Sink(sink.onFailure, sink.onFailure)),
+    sink.onSuccess
+  )
+})
+
+export const mapError: {
+  <E2, E, A>(f: (e: E2) => E): (sink: Sink<E, A>) => Sink<E2, A>
+  <E, A, E2>(sink: Sink<E, A>, f: (e: E2) => E): Sink<E2, A>
+} = dual(2, function mapError<E, A, E2>(
+  sink: Sink<E, A>,
+  f: (e: E2) => E
+): Sink<E2, A> {
+  return Sink(
+    (cause) => sink.onFailure(Cause.map(cause, f)),
+    sink.onSuccess
+  )
+})
+
+export const mapErrorEffect: {
+  <E2, R2, E, A>(f: (e: E2) => Effect.Effect<R2, E, E>): (sink: Sink<E, A>) => WithContext<R2, E, A>
+  <E, A, R2, E2>(sink: Sink<E, A>, f: (e: E2) => Effect.Effect<R2, E, E>): WithContext<R2, E, A>
+} = dual(2, function mapErrorEffect<E, A, R2, E2>(
+  sink: Sink<E, A>,
+  f: (e: E2) => Effect.Effect<R2, E, E>
+): WithContext<R2, E2, A> {
+  return mapErrorCauseEffect(sink, (cause: Cause.Cause<E2>) =>
+    Either.match(Cause.failureOrCause(cause), {
+      onLeft: (e2) => Effect.map(f(e2), Cause.fail),
+      onRight: (cause) => Effect.succeed(cause)
+    }))
+})

@@ -6,6 +6,8 @@ import * as Fiber from "@effect/io/Fiber"
 import * as Stream from "@effect/stream/Stream"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
+import * as Sink from "@typed/fx/Sink"
+import * as Subject from "@typed/fx/Subject"
 
 describe(__filename, () => {
   it("maps a success value", async () => {
@@ -374,6 +376,27 @@ describe(__filename, () => {
       })
 
       await Effect.runPromise(Effect.scoped(test))
+    })
+  })
+
+  describe("Subject", () => {
+    it("can map the input values using Sink combinators", async () => {
+      const subject = Subject.make<never, number>()
+      const sink = subject.pipe(Sink.map((x: string) => x.length))
+      const test = Effect.gen(function*(_) {
+        const fiber = yield* _(subject, Fx.take(3), Fx.toReadonlyArray, Effect.fork)
+
+        // Allow fiber to start
+        yield* _(Effect.sleep(0))
+
+        yield* _(sink.onSuccess("a"))
+        yield* _(sink.onSuccess("ab"))
+        yield* _(sink.onSuccess("abc"))
+
+        expect(yield* _(Fiber.join(fiber))).toEqual([1, 2, 3])
+      })
+
+      await Effect.runPromise(test)
     })
   })
 })
