@@ -1,3 +1,8 @@
+/**
+ * Extensions to RefSubject for working with arrays of values
+ * @since 1.18.0
+ */
+
 import { equals } from "@effect/data/Equal"
 import type { Equivalence } from "@effect/data/Equivalence"
 import { dual } from "@effect/data/Function"

@@ -19,6 +19,7 @@
 export * as Computed from "./Computed"
 export * as Filtered from "./Filtered"
 export * from "./Fx"
+export * as RefArray from "./RefArray"
 export * as RefSubject from "./RefSubject"
 export * as Sink from "./Sink"
 export * as Subject from "./Subject"
