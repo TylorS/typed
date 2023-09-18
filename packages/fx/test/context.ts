@@ -173,8 +173,7 @@ describe("Context", () => {
       const test = Effect.gen(function*(_) {
         expect(yield* _(mapped.get)).toEqual({ foo: 1, bar: "!" })
 
-        yield* _(foobar.fromKey("foo").set(1))
-        yield* _(foobar.fromKey("bar").set("Hello"))
+        yield* _(foobar.set({ foo: 1, bar: "Hello" }))
 
         expect(yield* _(mapped.get)).toEqual({ foo: 2, bar: "Hello!" })
       }).pipe(
