@@ -11,6 +11,12 @@ export {
   Model
 } from "./Context/Model"
 
+/**
+ * A Contextual wrapper around a RefArray
+ * @since 1.18.0
+ */
+export * from "./Context/RefArray"
+
 export {
   /**
    * A Contextual wrapper around a RefSubject
