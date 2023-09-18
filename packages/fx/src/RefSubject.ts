@@ -15,9 +15,9 @@ import * as SynchronizedRef from "@effect/io/SynchronizedRef"
 import { Computed } from "@typed/fx/Computed"
 import { Filtered } from "@typed/fx/Filtered"
 import type { Fx } from "@typed/fx/Fx"
-import { fromFxEffect } from "@typed/fx/Fx"
 import type { FxEffect } from "@typed/fx/FxEffect"
 import { makeHoldSubject, makeReplaySubject } from "@typed/fx/internal/core-subject"
+import { fromFxEffect } from "@typed/fx/internal/fx"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import type * as Subject from "@typed/fx/Subject"
@@ -223,6 +223,13 @@ class RefSubjectImpl<E, A> extends FxEffectProto<never, E, A, never, E, A>
   readonly version = (): number => this.#version
 
   readonly subscriberCount: Effect.Effect<never, never, number> = this.subject.subscriberCount
+
+  readonly interrupt = Effect.suspend(() =>
+    Effect.all([
+      this.subject.interrupt,
+      SynchronizedRef.get(this.ref).pipe(Effect.flatten, Effect.flatMap(Fiber.interrupt), Effect.optionFromOptional)
+    ])
+  )
 
   toFx(): Fx<never, E, A> {
     return fromFxEffect(

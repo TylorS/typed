@@ -17,6 +17,7 @@ import type { Sink } from "@typed/fx/Sink"
  */
 export interface Subject<R, E, A> extends Fx<R, E, A>, Sink<E, A> {
   readonly subscriberCount: Effect.Effect<never, never, number>
+  readonly interrupt: Effect.Effect<never, never, void>
 }
 
 /**

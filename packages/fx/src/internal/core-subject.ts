@@ -2,6 +2,7 @@ import * as MutableRef from "@effect/data/MutableRef"
 import * as Option from "@effect/data/Option"
 import type { Cause } from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
+import { succeed } from "@effect/io/Exit"
 import * as Scope from "@effect/io/Scope"
 import type { Fx } from "@typed/fx/Fx"
 import { fromSink } from "@typed/fx/internal/core"
@@ -27,12 +28,15 @@ export function makeReplaySubject<E, A>(capacity: number): Subject<never, E, A> 
  */
 export class SubjectImpl<E, A> extends ToFx<never, E, A> implements Subject<never, E, A> {
   protected sinks: Set<Sink<E, A>> = new Set()
+  protected scopes: Set<Scope.CloseableScope> = new Set()
 
   // Emit a failure to all sinks
   onFailure = (cause: Cause<E>) => this.onCause(cause)
 
   // Emit an event to all sinks
   onSuccess = (a: A) => this.onEvent(a)
+
+  interrupt = Effect.suspend(() => Effect.forEach(this.scopes, (scope) => Scope.close(scope, succeed(undefined))))
 
   toFx(): Fx<never, E, A> {
     return fromSink<never, E, A>((sink) => this.addSink(sink, () => Effect.never))
@@ -45,16 +49,25 @@ export class SubjectImpl<E, A> extends ToFx<never, E, A> implements Subject<neve
     return Effect.acquireUseRelease(
       Scope.make(),
       (scope) =>
-        Effect.acquireRelease(
-          Effect.sync(() => {
-            this.sinks.add(sink)
+        Effect.flatMap(
+          Effect.provideService(
+            Effect.acquireRelease(
+              Effect.sync(() => {
+                this.sinks.add(sink)
+                this.scopes.add(scope)
 
-            return this.sinks.size
-          }),
-          () => Effect.sync(() => this.sinks.delete(sink))
-        ).pipe(
-          Effect.provideService(Scope.Scope, scope),
-          Effect.flatMap(f)
+                return this.sinks.size
+              }),
+              () =>
+                Effect.sync(() => {
+                  this.sinks.delete(sink)
+                  this.scopes.delete(scope)
+                })
+            ),
+            Scope.Scope,
+            scope
+          ),
+          f
         ),
       (scope, exit) => Scope.close(scope, exit)
     )

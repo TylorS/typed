@@ -42,9 +42,11 @@ import type * as Tracer from "@effect/io/Tracer"
 import * as core from "@typed/fx/internal/core"
 import * as internal from "@typed/fx/internal/fx"
 import * as primitive from "@typed/fx/internal/fx-primitive"
+import * as internalKeyed from "@typed/fx/internal/keyed"
 import * as internalRun from "@typed/fx/internal/run"
 import * as Share from "@typed/fx/internal/share"
 import * as strategies from "@typed/fx/internal/strategies"
+import type { RefSubject } from "@typed/fx/RefSubject"
 import type * as Sink from "@typed/fx/Sink"
 import type { Subject } from "@typed/fx/Subject"
 import type { TypeId } from "@typed/fx/TypeId"
@@ -1985,5 +1987,24 @@ export const partitionMap: {
   <A, B, C>(f: (a: A) => Either.Either<B, C>): <R, E>(self: Fx<R, E, A>) => readonly [Fx<R, E, B>, Fx<R, E, C>]
   <R, E, A, B, C>(self: Fx<R, E, A>, f: (a: A) => Either.Either<B, C>): readonly [Fx<R, E, B>, Fx<R, E, C>]
 } = internal.partitionMap
+
+export const keyed: {
+  <A, R2, E2, B, C>(
+    f: (
+      ref: RefSubject<never, A>,
+      key: C
+    ) => Fx<R2, E2, B>,
+    getKey: (a: A) => C
+  ): <R, E>(fx: Fx<R, E, ReadonlyArray<A>>) => Fx<R | R2, E | E2, ReadonlyArray<B>>
+
+  <R, E, A, R2, E2, B, C>(
+    fx: Fx<R, E, ReadonlyArray<A>>,
+    f: (
+      ref: RefSubject<never, A>,
+      key: C
+    ) => Fx<R2, E2, B>,
+    getKey: (a: A) => C
+  ): Fx<R | R2, E | E2, ReadonlyArray<B>>
+} = dual(3, internalKeyed.keyed)
 
 /* #endregion */
