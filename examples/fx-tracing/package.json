@@ -25,7 +25,8 @@
     "lint": "eslint --ext .ts,.tsx src/**/* test/**/*",
     "tc": "tsc --noEmit",
     "test": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "otel-collector": "docker-compose up"
   },
   "keywords": [],
   "author": "Typed contributors",
@@ -35,6 +36,9 @@
     "@effect/data": "^0.18.5",
     "@effect/io": "^0.40.3",
     "@effect/opentelemetry": "^0.11.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.43.0",
+    "@opentelemetry/otlp-exporter-base": "^0.43.0",
+    "@opentelemetry/sdk-node": "^0.43.0",
     "@opentelemetry/sdk-trace-base": "^1.17.0",
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",

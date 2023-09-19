@@ -5,12 +5,12 @@ import * as Fx from "@typed/fx/Fx"
 import * as Sink from "@typed/fx/Sink"
 import { deepEqual } from "assert"
 
-describe("Context", () => {
-  describe(Context.RefSubject, () => {
+describe.concurrent("Context", () => {
+  describe.concurrent(Context.RefSubject, () => {
     const initialValue = Math.random() * 100
     const ref = Context.RefSubject<never, number>()("Test")
 
-    it("should allow using a RefSubject from the context", async () => {
+    it.concurrent("should allow using a RefSubject from the context", async () => {
       const test = Effect.gen(function*(_) {
         expect(yield* _(ref)).toEqual(initialValue)
 
@@ -32,7 +32,7 @@ describe("Context", () => {
       await Effect.runPromise(test)
     })
 
-    it("allows mapping over a RefSubject", async () => {
+    it.concurrent("allows mapping over a RefSubject", async () => {
       const addOne = ref.map((n) => n + 1)
 
       const test = Effect.gen(function*(_) {
@@ -49,8 +49,8 @@ describe("Context", () => {
     })
   })
 
-  describe(Context.Subject, () => {
-    it("allows broadcasting values to subscribers via the Context", async () => {
+  describe.concurrent(Context.Subject, () => {
+    it.concurrent("allows broadcasting values to subscribers via the Context", async () => {
       const subject = Context.Subject<never, number>()("Test")
       const sut = Fx.toReadonlyArray(Fx.take(subject, 3))
 
@@ -72,7 +72,7 @@ describe("Context", () => {
       await Effect.runPromise(test)
     })
 
-    it("allows configuring replays of last value", async () => {
+    it.concurrent("allows configuring replays of last value", async () => {
       const subject = Context.Subject<never, number>()("Test")
       const sut = Fx.toReadonlyArray(subject)
 
@@ -102,7 +102,7 @@ describe("Context", () => {
       await Effect.runPromise(test)
     })
 
-    it("allows configuring replays of last n values", async () => {
+    it.concurrent("allows configuring replays of last n values", async () => {
       const subject = Context.Subject<never, number>()("Test")
       const fx = Fx.toReadonlyArray(subject)
 
@@ -131,7 +131,7 @@ describe("Context", () => {
       await Effect.runPromise(test)
     })
 
-    it("allows input values to be mapped over", async () => {
+    it.concurrent("allows input values to be mapped over", async () => {
       const subject = Context.Subject<never, number>()((_) => class TestSubject extends _("Test") {})
       const effect = Fx.toReadonlyArray(subject)
       const sink = subject.pipe(Sink.map((s: string) => s.length))
@@ -157,8 +157,8 @@ describe("Context", () => {
     })
   })
 
-  describe(Context.Model, () => {
-    it("allow working with multiple Refs", async () => {
+  describe.concurrent(Context.Model, () => {
+    it.concurrent("allow working with multiple Refs", async () => {
       const foobar = Context.Model({
         foo: Context.RefSubject<never, number>()("Foo"),
         bar: Context.RefSubject<never, string>()("Bar")
@@ -188,7 +188,7 @@ describe("Context", () => {
       await Effect.runPromise(test)
     })
 
-    it("allows being mapped over", async () => {
+    it.concurrent("allows being mapped over", async () => {
       const foobar = Context.Model({
         foo: Context.RefSubject<never, number>()("Foo"),
         bar: Context.RefSubject<never, string>()("Bar")
@@ -211,7 +211,7 @@ describe("Context", () => {
       await Effect.runPromise(test)
     })
 
-    it("allows creating layers using sources refs", async () => {
+    it.concurrent("allows creating layers using sources refs", async () => {
       const foobar = Context.Model({
         foo: Context.RefSubject<never, number>()("Foo"),
         bar: Context.RefSubject<never, string>()("Bar")
@@ -236,7 +236,7 @@ describe("Context", () => {
       await Effect.runPromise(test)
     })
 
-    it("allows creating layers using with Effect and Fx", async () => {
+    it.concurrent("allows creating layers using with Effect and Fx", async () => {
       const foobar = Context.Model({
         foo: Context.RefSubject<never, number>()((_) => class Foo extends _("Foo") {}),
         bar: Context.RefSubject<never, string>()((_) => class Bar extends _("Bar") {}),
@@ -274,7 +274,7 @@ describe("Context", () => {
       await Effect.runPromise(test)
     })
 
-    it("works with RefArrays", async () => {
+    it.concurrent("works with RefArrays", async () => {
       const foobar = Context.Model({
         foo: Context.RefArray.make<never, number>()("Foo"),
         bar: Context.RefArray.make<never, string>()("Bar")

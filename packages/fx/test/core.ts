@@ -9,8 +9,8 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
 import * as Subject from "@typed/fx/Subject"
 
-describe(__filename, () => {
-  it("maps a success value", async () => {
+describe.concurrent(__filename, () => {
+  it.concurrent("maps a success value", async () => {
     const test = Fx.succeed(1).pipe(
       Fx.map((x) => x + 1),
       Fx.map((x) => x + 1),
@@ -22,7 +22,7 @@ describe(__filename, () => {
     expect(array).toEqual([3])
   })
 
-  it("maps multiple values", async () => {
+  it.concurrent("maps multiple values", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
       Fx.map((x) => x + 1),
       Fx.toReadonlyArray
@@ -33,7 +33,7 @@ describe(__filename, () => {
     expect(array).toEqual([2, 3, 4])
   })
 
-  it("maps a failure value", async () => {
+  it.concurrent("maps a failure value", async () => {
     const test = Fx.fail(1).pipe(
       Fx.mapError((x) => x + 1),
       Fx.mapError((x) => x + 1),
@@ -45,7 +45,7 @@ describe(__filename, () => {
     expect(array).toEqual(Either.left(3))
   })
 
-  it("switchMap favors the latest inner Fx", async () => {
+  it.concurrent("switchMap favors the latest inner Fx", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
       Fx.switchMap((x) => Fx.succeed(String(x + 1))),
       Fx.toReadonlyArray
@@ -56,7 +56,7 @@ describe(__filename, () => {
     expect(array).toEqual(["4"])
   })
 
-  it("exhaustMap favors the first inner Fx", async () => {
+  it.concurrent("exhaustMap favors the first inner Fx", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
       Fx.exhaustMap((x) => Fx.succeed(String(x + 1))),
       Fx.toReadonlyArray
@@ -67,7 +67,7 @@ describe(__filename, () => {
     expect(array).toEqual(["2"])
   })
 
-  it("exhaustMapLatest favors the first and last inner Fx", async () => {
+  it.concurrent("exhaustMapLatest favors the first and last inner Fx", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
       Fx.exhaustMapLatest((x) => Fx.succeed(String(x + 1))),
       Fx.toReadonlyArray
@@ -78,7 +78,7 @@ describe(__filename, () => {
     expect(array).toEqual(["2", "4"])
   })
 
-  it("mergeBuffer keeps the ordering of concurrent streams", async () => {
+  it.concurrent("mergeBuffer keeps the ordering of concurrent streams", async () => {
     const test = Fx.mergeBuffer([
       Effect.succeed(1),
       Fx.fromSink<never, never, number>((sink) =>
@@ -100,9 +100,9 @@ describe(__filename, () => {
     expect(array).toEqual([1, 2, 3, 4, 5, 6, 7])
   })
 
-  describe("sharing", () => {
-    describe("multicast", () => {
-      it("shares a value", async () => {
+  describe.concurrent("sharing", () => {
+    describe.concurrent("multicast", () => {
+      it.concurrent("shares a value", async () => {
         let i = 0
         const iterator = Effect.sync(() => i++)
 
@@ -134,8 +134,8 @@ describe(__filename, () => {
       })
     })
 
-    describe("hold", () => {
-      it("shares a value with replay of the last", async () => {
+    describe.concurrent("hold", () => {
+      it.concurrent("shares a value with replay of the last", async () => {
         let i = 0
         const delay = 100
         const iterator = Effect.sync(() => i++)
@@ -168,8 +168,8 @@ describe(__filename, () => {
       })
     })
 
-    describe("replay", () => {
-      it("shares a value with replay of the last N events", async () => {
+    describe.concurrent("replay", () => {
+      it.concurrent("shares a value with replay of the last N events", async () => {
         let i = 0
         const iterator = Effect.sync(() => i++)
         const delay = 100
@@ -203,8 +203,8 @@ describe(__filename, () => {
     })
   })
 
-  describe("Effect Supertype", () => {
-    it("lifts a success", async () => {
+  describe.concurrent("Effect Supertype", () => {
+    it.concurrent("lifts a success", async () => {
       const test = Effect.succeed(1).pipe(Fx.toReadonlyArray)
 
       const array = await Effect.runPromise(test)
@@ -212,7 +212,7 @@ describe(__filename, () => {
       expect(array).toEqual([1])
     })
 
-    it("lifts a failure", async () => {
+    it.concurrent("lifts a failure", async () => {
       const test = Effect.fail(1).pipe(Fx.toReadonlyArray, Effect.either)
       const either = await Effect.runPromise(test)
 
@@ -220,8 +220,8 @@ describe(__filename, () => {
     })
   })
 
-  describe("Stream Supertype", () => {
-    it("lifts a success", async () => {
+  describe.concurrent("Stream Supertype", () => {
+    it.concurrent("lifts a success", async () => {
       const test = Stream.fromIterable([1, 2, 3]).pipe(Fx.toReadonlyArray)
 
       const array = await Effect.runPromise(test)
@@ -229,7 +229,7 @@ describe(__filename, () => {
       expect(array).toEqual([1, 2, 3])
     })
 
-    it("lifts a failure", async () => {
+    it.concurrent("lifts a failure", async () => {
       const test = Stream.fail(1).pipe(Fx.toReadonlyArray, Effect.either)
       const either = await Effect.runPromise(test)
 
@@ -237,8 +237,8 @@ describe(__filename, () => {
     })
   })
 
-  describe("Cause Supertype", () => {
-    it("lifts a failure", async () => {
+  describe.concurrent("Cause Supertype", () => {
+    it.concurrent("lifts a failure", async () => {
       const test = Cause.fail(1).pipe(Fx.toReadonlyArray, Effect.either)
       const either = await Effect.runPromise(test)
 
@@ -246,8 +246,8 @@ describe(__filename, () => {
     })
   })
 
-  describe("RefSubject", () => {
-    it("allows keeping state", async () => {
+  describe.concurrent("RefSubject", () => {
+    it.concurrent("allows keeping state", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(0))
 
@@ -269,7 +269,7 @@ describe(__filename, () => {
       await Effect.runPromise(test)
     })
 
-    it("allows subscribing to those state changes", async () => {
+    it.concurrent("allows subscribing to those state changes", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(0))
 
@@ -287,8 +287,8 @@ describe(__filename, () => {
       await Effect.runPromise(test)
     })
 
-    describe("map to a computed value", () => {
-      it("transform success values", async () => {
+    describe.concurrent("map to a computed value", () => {
+      it.concurrent("transform success values", async () => {
         const test = Effect.gen(function*(_) {
           const ref = yield* _(RefSubject.of(0))
           const addOne = ref.map((x) => x + 1)
@@ -312,8 +312,8 @@ describe(__filename, () => {
       })
     })
 
-    describe("filterMap to filtered values", () => {
-      it("returns Cause.NoSuchElementException when filtered", async () => {
+    describe.concurrent("filterMap to filtered values", () => {
+      it.concurrent("returns Cause.NoSuchElementException when filtered", async () => {
         const test = Effect.gen(function*(_) {
           const ref = yield* _(RefSubject.of(0))
           const filtered = ref.filterMap(Option.liftPredicate((x) => x % 2 === 0))
@@ -333,7 +333,7 @@ describe(__filename, () => {
       })
     })
 
-    it("allows being initialized by an Effect", async () => {
+    it.concurrent("allows being initialized by an Effect", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.make(Effect.delay(Effect.succeed(0), 50)))
 
@@ -355,7 +355,7 @@ describe(__filename, () => {
       await Effect.runPromise(test)
     })
 
-    it("allows being initialized by an Fx", async () => {
+    it.concurrent("allows being initialized by an Fx", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.make(Fx.merge([
           Fx.at("a", 10),
@@ -379,8 +379,8 @@ describe(__filename, () => {
     })
   })
 
-  describe("Subject", () => {
-    it("can map the input values using Sink combinators", async () => {
+  describe.concurrent("Subject", () => {
+    it.concurrent("can map the input values using Sink combinators", async () => {
       const subject = Subject.make<never, number>()
       const sink = subject.pipe(Sink.map((x: string) => x.length))
       const test = Effect.gen(function*(_) {

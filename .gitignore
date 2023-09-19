@@ -11,3 +11,4 @@ dist/
 .direnv/
 .idea/
 packages/*/docs
+examples/*/tempo-data
