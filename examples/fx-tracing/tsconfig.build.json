@@ -13,7 +13,16 @@
   ],
   "references": [
     {
-      "path": "../context"
+      "path": "../../packages/context"
+    },
+    {
+      "path": "../../packages/dom"
+    },
+    {
+      "path": "../../packages/fx"
+    },
+    {
+      "path": "../../packages/remote-data"
     }
   ]
 }

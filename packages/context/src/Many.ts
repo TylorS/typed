@@ -8,7 +8,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 
 import { ContextBuilder } from "@typed/context/Builder"
-import type { Tagged } from "@typed/context/Extensions"
+import type { Actions, Provision } from "@typed/context/Extensions"
 
 type TupleOfTags = ReadonlyArray<C.Tag<any, any>>
 
@@ -18,7 +18,11 @@ type TupleOfTags = ReadonlyArray<C.Tag<any, any>>
  * @category models
  */
 export interface TaggedTuple<Tags extends TupleOfTags> extends
-  Tagged<
+  Actions<
+    C.Tag.Identifier<Tags[number]>,
+    { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
+  >,
+  Provision<
     C.Tag.Identifier<Tags[number]>,
     { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
   >,
@@ -62,7 +66,11 @@ type StructOfTags = { readonly [key: PropertyKey]: C.Tag<any, any> }
  * @category models
  */
 export interface TaggedStruct<Tags extends StructOfTags> extends
-  Tagged<
+  Actions<
+    C.Tag.Identifier<Tags[keyof Tags]>,
+    { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
+  >,
+  Provision<
     C.Tag.Identifier<Tags[keyof Tags]>,
     { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
   >,

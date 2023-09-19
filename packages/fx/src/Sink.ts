@@ -8,6 +8,7 @@ import * as Either from "@effect/data/Either"
 import { dual } from "@effect/data/Function"
 import * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
+import type * as Tracer from "@effect/io/Tracer"
 import type { Context } from "@typed/context"
 
 /**
@@ -232,4 +233,50 @@ export const mapErrorEffect: {
       onLeft: (e2) => Effect.map(f(e2), Cause.fail),
       onRight: (cause) => Effect.succeed(cause)
     }))
+})
+
+export const withSpan: {
+  (name: string, options?: {
+    readonly attributes?: Record<string, Tracer.AttributeValue>
+    readonly links?: ReadonlyArray<Tracer.SpanLink>
+    readonly parent?: Tracer.ParentSpan
+    readonly root?: boolean
+    readonly context?: Context<never>
+  }): <R, E, A>(self: WithContext<R, E, A>) => WithContext<R, E, A>
+  <R, E, A>(self: WithContext<R, E, A>, name: string, options?: {
+    readonly attributes?: Record<string, Tracer.AttributeValue>
+    readonly links?: ReadonlyArray<Tracer.SpanLink>
+    readonly parent?: Tracer.ParentSpan
+    readonly root?: boolean
+    readonly context?: Context<never>
+  }): WithContext<R, E, A>
+} = dual(3, function withSpan<R, E, A>(
+  self: WithContext<R, E, A>,
+  name: string,
+  options?: {
+    readonly attributes?: Record<string, Tracer.AttributeValue>
+    readonly links?: ReadonlyArray<Tracer.SpanLink>
+    readonly parent?: Tracer.ParentSpan
+    readonly root?: boolean
+    readonly context?: Context<never>
+  }
+): WithContext<R, E, A> {
+  return WithContext(
+    (cause) =>
+      Effect.withSpan(self.onFailure(cause), name, {
+        ...options,
+        attributes: {
+          ...options?.attributes,
+          "fx.sink.onFailure": Cause.pretty(cause)
+        }
+      }),
+    (a) =>
+      Effect.withSpan(self.onSuccess(a), name, {
+        ...options,
+        attributes: {
+          ...options?.attributes,
+          "fx.sink.onSuccess": JSON.stringify(a)
+        }
+      })
+  )
 })

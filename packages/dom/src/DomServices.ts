@@ -36,17 +36,16 @@ export type DomServices =
  * @since 8.19.0
  * @category context
  */
-export const DomServices: Context.Tagged<
-  DomServices,
+export const DomServices: Context.TaggedStruct<
   {
-    readonly globalThis: GlobalThis
-    readonly window: Window
-    readonly document: Document
-    readonly rootElement: RootElement
-    readonly parentElement: ParentElement
-    readonly history: History
-    readonly location: Location
-    readonly navigator: Navigator
+    readonly globalThis: Context.Tagged<GlobalThis, GlobalThis>
+    readonly window: Context.Tagged<Window, Window>
+    readonly document: Context.Tagged<Document, Document>
+    readonly rootElement: Context.Tagged<RootElement, RootElement>
+    readonly parentElement: Context.Tagged<ParentElement, ParentElement>
+    readonly history: Context.Tagged<History, History>
+    readonly location: Context.Tagged<Location, Location>
+    readonly navigator: Context.Tagged<Navigator, Navigator>
   }
 > = Context.struct({
   globalThis: GlobalThis,

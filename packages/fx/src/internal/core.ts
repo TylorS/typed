@@ -460,27 +460,29 @@ class Snapshot<R, E, A, R2, E2, B, R3, E3, C> extends ToFx<R | R2 | R3, E | E2 |
   }
 }
 
-class Middleware<R, R2, E, A> extends ToFx<R2, E, A> {
+class Middleware<R, E, A, R2, R3> extends ToFx<R2 | R3, E, A> {
   constructor(
     readonly i0: Fx<R, E, A>,
-    readonly i1: (effect: Effect.Effect<R, never, unknown>, sink: Sink.Sink<E, A>) => Effect.Effect<R2, never, unknown>
+    readonly i1: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
+    readonly i2: (sink: Sink.Sink<E, A>) => Sink.Sink<E, A>
   ) {
     super(i0, i1)
   }
 
   static make<R, R2, E, A>(
     fx: Fx<R, E, A>,
-    middleware: (effect: Effect.Effect<R, never, unknown>, sink: Sink.Sink<E, A>) => Effect.Effect<R2, never, unknown>
+    middleware: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
+    mapSink: (sink: Sink.Sink<E, A>) => Sink.Sink<E, A>
   ): Fx<R2, E, A> {
     if (fx instanceof Middleware) {
-      return new Middleware(fx.i0 as Fx<R, E, any>, (effect, sink) => middleware(fx.i1(effect, sink), sink))
+      return new Middleware(fx.i0 as Fx<R, E, any>, (effect) => middleware(fx.i1(effect)), (s) => fx.i2(mapSink(s)))
     } else {
-      return new Middleware(fx, middleware)
+      return new Middleware(fx, middleware, mapSink)
     }
   }
 
   protected toFx(): Fx<R2, E, A> {
-    return fromSink((sink) => this.i1(run(this.i0, sink), sink))
+    return fromSink((sink) => this.i1(run(this.i0, this.i2(sink))))
   }
 }
 
@@ -1105,18 +1107,21 @@ export const filterMapEffect: {
 
 export const middleware: {
   <R, E, A, R2>(
-    f: (effect: Effect.Effect<R, never, unknown>, sink: Sink.Sink<E, A>) => Effect.Effect<R2, never, unknown>
+    f: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
+    g?: (sink: Sink.Sink<E, A>) => Sink.Sink<E, A>
   ): (fx: Fx<R, E, A>) => Fx<R2, E, A>
 
   <R, E, A, R2>(
     fx: Fx<R, E, A>,
-    f: (effect: Effect.Effect<R, never, unknown>, sink: Sink.Sink<E, A>) => Effect.Effect<R2, never, unknown>
+    f: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
+    g?: (sink: Sink.Sink<E, A>) => Sink.Sink<E, A>
   ): Fx<R2, E, A>
-} = dual(2, function middleware<R, E, A, R2>(
+} = dual(3, function middleware<R, E, A, R2>(
   fx: Fx<R, E, A>,
-  f: (effect: Effect.Effect<R, never, unknown>, sink: Sink.Sink<E, A>) => Effect.Effect<R2, never, unknown>
+  f: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
+  g?: (sink: Sink.Sink<E, A>) => Sink.Sink<E, A>
 ): Fx<R2, E, A> {
-  return Middleware.make(fx, f)
+  return Middleware.make(fx, f, g ?? identity)
 })
 
 export const loop: {

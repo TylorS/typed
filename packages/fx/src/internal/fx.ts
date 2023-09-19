@@ -22,7 +22,7 @@ import { type Fx } from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
 import { run } from "@typed/fx/internal/run"
 import { multicast } from "@typed/fx/internal/share"
-import { WithContext } from "@typed/fx/Sink"
+import * as Sink from "@typed/fx/Sink"
 import * as Typeclass from "@typed/fx/Typeclass"
 
 // TODO: RefArray, RefSet, RefMap, RefHashMap, RefHashSet, etc
@@ -248,7 +248,7 @@ export const findFirst: {
     Effect.zipRight(
       run(
         fx,
-        WithContext(
+        Sink.WithContext(
           (cause) => Effect.sync(() => resume(Effect.failCause(cause))),
           (a) =>
             Effect.matchCause(f(a), {
@@ -480,7 +480,11 @@ export const withSpan: {
     readonly context?: Context.Context<never>
   }
 ): Fx<R, E, A> {
-  return core.middleware(self, (effect) => Effect.withSpan(effect, name, options))
+  return core.middleware(
+    self,
+    Effect.withSpan(name, { ...options, attributes: { "fx": name, ...options?.attributes } }),
+    Sink.withSpan(name, options)
+  )
 })
 
 export const withTracer: {

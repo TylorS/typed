@@ -1,21 +1,13 @@
 {
-  "name": "@typed/navigation",
-  "version": "0.5.4",
+  "name": "@typed/fx-tracing",
+  "private": true,
+  "version": "0.0.0",
   "description": "",
-  "publishConfig": {
-    "access": "public",
-    "directory": "dist"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/tylors/typed-fp.git"
   },
   "homepage": "https://github.com/tylors/typed-fp",
-  "exports": {
-    "./*": {
-      "require": "./build/cjs/*.js"
-    }
-  },
   "scripts": {
     "example": "ts-node --project tsconfig.examples.json",
     "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run docs-update",
@@ -42,14 +34,11 @@
   "dependencies": {
     "@effect/data": "^0.18.5",
     "@effect/io": "^0.40.3",
+    "@effect/opentelemetry": "^0.11.0",
+    "@opentelemetry/sdk-trace-base": "^1.17.0",
     "@typed/context": "workspace:*",
-    "@virtualstate/navigation": "1.0.1-alpha.199"
-  },
-  "peerDependencies": {
-    "@effect/data": "^0.18.5",
-    "@effect/io": "^0.40.3",
-    "@typed/context": "workspace:*",
-    "@virtualstate/navigation": "1.0.1-alpha.199"
-  },
-  "devDependencies": {}
+    "@typed/dom": "workspace:*",
+    "@typed/fx": "workspace:*",
+    "@typed/remote-data": "workspace:*"
+  }
 }

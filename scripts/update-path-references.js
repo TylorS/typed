@@ -13,8 +13,8 @@ const MADGE_TSCONFIG_JSON = Path.join(ROOT_DIRECTORY, "tsconfig.madge.json")
 
 async function main() {
   const packages = await readAllPackages()
-  const paths = packages.map(({ name }) => makePackagePath(name)).reduce((acc, x) => ({ ...acc, ...x }), {})
-  const madePaths = packages.map(({ name }) => makeMadgePath(name)).reduce((acc, x) => ({ ...acc, ...x }), {})
+  const paths = packages.map(({ example, name }) => makePackagePath(example, name)).reduce((acc, x) => ({ ...acc, ...x }), {})
+  const madePaths = packages.map(({ example, name }) => makeMadgePath(example, name)).reduce((acc, x) => ({ ...acc, ...x }), {})
   const tsconfigBaseJson = await FS.promises.readFile(BASE_TSCONFIG_JSON, "utf8").then(JSON.parse)
   const tsconfigMadgeJson = await FS.promises.readFile(MADGE_TSCONFIG_JSON, "utf8").then(JSON.parse)
   
@@ -28,21 +28,24 @@ async function main() {
   ])
 }
 
-function makePackagePath(name) {
+function makePackagePath(example, name) {
   return {
-    [`@typed/${name}`]: [`packages/${name}/src/index.ts`],
-    [`@typed/${name}/*`]: [`packages/${name}/src/*`],
-    [`@typed/${name}/test/*`]: [`packages/${name}/test/*`],
-    [`@typed/${name}/examples/*`]: [`packages/${name}/examples/*`],
+    [`@typed/${name}`]: [`${exampleOrPackagePath(example)}/${name}/src/index.ts`],
+    [`@typed/${name}/*`]: [`${exampleOrPackagePath(example)}/${name}/src/*`],
+    [`@typed/${name}/test/*`]: [`${exampleOrPackagePath(example)}/${name}/test/*`],
+    [`@typed/${name}/examples/*`]: [`${exampleOrPackagePath(example)}/${name}/examples/*`],
   }
 }
 
-function makeMadgePath(name) {
+function makeMadgePath(example, name) {
   return {
-    [`@typed/${name}`]: [`packages/${name}/build/esm/index.js`],
-    [`@typed/${name}/*`]: [`packages/${name}/build/esm/*`],
-    [`@typed/${name}/test/*`]: [`packages/${name}/build/test/*`],
-    [`@typed/${name}/examples/*`]: [`packages/${name}/build/examples/*`],
+    [`@typed/${name}`]: [`${exampleOrPackagePath(example)}/${name}/build/esm/index.js`],
+    [`@typed/${name}/*`]: [`${exampleOrPackagePath(example)}/${name}/build/esm/*`],
+    [`@typed/${name}/test/*`]: [`${exampleOrPackagePath(example)}/${name}/build/test/*`],
+    [`@typed/${name}/examples/*`]: [`${exampleOrPackagePath(example)}/${name}/build/examples/*`],
   }
 }
 
+function exampleOrPackagePath(example) {
+  return example ? `examples` : `packages` 
+}

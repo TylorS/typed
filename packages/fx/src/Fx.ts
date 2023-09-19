@@ -1029,12 +1029,13 @@ export const filterMapEffect: {
  */
 export const middleware: {
   <R, E, A, R2>(
-    f: (effect: Effect.Effect<R, never, unknown>, sink: Sink.Sink<E, A>) => Effect.Effect<R2, never, unknown>
+    f: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
+    g?: (sink: Sink.Sink<E, A>) => Sink.Sink<E, A>
   ): (fx: Fx<R, E, A>) => Fx<R2, E, A>
-
   <R, E, A, R2>(
     fx: Fx<R, E, A>,
-    f: (effect: Effect.Effect<R, never, unknown>, sink: Sink.Sink<E, A>) => Effect.Effect<R2, never, unknown>
+    f: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
+    g?: (sink: Sink.Sink<E, A>) => Sink.Sink<E, A>
   ): Fx<R2, E, A>
 } = core.middleware
 
