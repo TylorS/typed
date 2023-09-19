@@ -2,6 +2,7 @@ import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Context from "@typed/fx/Context"
 import * as Fx from "@typed/fx/Fx"
+import * as Sink from "@typed/fx/Sink"
 import { deepEqual } from "assert"
 
 describe("Context", () => {
@@ -125,6 +126,31 @@ describe("Context", () => {
         expect(yield* _(Effect.fromFiber(fiber2))).toEqual([1, 2, 3])
       }).pipe(
         subject.provide(3)
+      )
+
+      await Effect.runPromise(test)
+    })
+
+    it("allows input values to be mapped over", async () => {
+      const subject = Context.Subject<never, number>()((_) => class TestSubject extends _("Test") {})
+      const effect = Fx.toReadonlyArray(subject)
+      const sink = subject.pipe(Sink.map((s: string) => s.length))
+
+      const test = Effect.gen(function*(_) {
+        const fiber = yield* _(Effect.fork(effect))
+
+        // Wait for the fibers to start
+        yield* _(Effect.sleep(0))
+
+        yield* _(sink.onSuccess("a"))
+        yield* _(sink.onSuccess("ab"))
+        yield* _(sink.onSuccess("abc"))
+
+        yield _(subject.interrupt)
+
+        expect(yield* _(Effect.fromFiber(fiber))).toEqual([1, 2, 3])
+      }).pipe(
+        subject.provide()
       )
 
       await Effect.runPromise(test)
