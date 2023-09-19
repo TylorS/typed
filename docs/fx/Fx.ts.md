@@ -62,7 +62,7 @@ Added in v1.18.0
 - [combinators](#combinators)
   - [annotateLogs](#annotatelogs)
   - [annotateSpans](#annotatespans)
-  - [compct](#compct)
+  - [compact](#compact)
   - [continueWith](#continuewith)
   - [delay](#delay)
   - [either](#either)
@@ -655,14 +655,14 @@ export declare const annotateSpans: {
 
 Added in v1.18.0
 
-## compct
+## compact
 
 Unwrap Options by filtering any None values.
 
 **Signature**
 
 ```ts
-export declare const compct: <R, E, A>(fx: Fx<R, E, Option.Option<A>>) => Fx<R, E, A>
+export declare const compact: <R, E, A>(fx: Fx<R, E, Option.Option<A>>) => Fx<R, E, A>
 ```
 
 Added in v1.18.0
