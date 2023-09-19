@@ -38,7 +38,10 @@ export interface Subject<I, E, A> extends Fx<I, E, A>, Sink.WithContext<I, E, A>
  * @since 1.18.0
  * @category constructors
  */
-export function Subject<E, A>() {
+export function Subject<E, A>(): {
+  <const I extends Context.IdentifierFactory<any>>(identifier: I): Subject<Context.IdentifierOf<I>, E, A>
+  <const I>(identifier: I): Subject<Context.IdentifierOf<I>, E, A>
+} {
   function makeSubject<const I extends Context.IdentifierFactory<any>>(
     identifier: I
   ): Subject<Context.IdentifierOf<I>, E, A>
