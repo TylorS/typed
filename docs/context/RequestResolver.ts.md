@@ -23,6 +23,7 @@ Added in v1.0.0
     - [Identifier (type alias)](#identifier-type-alias)
     - [Identifiers (type alias)](#identifiers-type-alias)
     - [Requests (type alias)](#requests-type-alias)
+    - [Resolver (type alias)](#resolver-type-alias)
 
 ---
 
@@ -101,7 +102,7 @@ Extract the Identifier of a RequestResolver
 **Signature**
 
 ```ts
-export type Identifier<T> = [T] extends [RequestResolver<infer Id, any>] ? Id : never
+export type Identifier<T> = T extends RequestResolver<infer Id, infer _> ? Id : never
 ```
 
 Added in v1.0.0
@@ -125,7 +126,19 @@ Extract the Requests of a RequestResolver
 **Signature**
 
 ```ts
-export type Requests<T> = [T] extends [RequestResolver<any, infer Requests>] ? Requests : never
+export type Requests<T> = T extends RequestResolver<infer _, infer Requests> ? Requests : never
+```
+
+Added in v1.0.0
+
+### Resolver (type alias)
+
+Extract the RequestResolver
+
+**Signature**
+
+```ts
+export type Resolver<T> = RR.RequestResolver<Request.Req<Requests<T>[keyof Requests<T>]>, Identifiers<T>>
 ```
 
 Added in v1.0.0

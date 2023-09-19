@@ -30,7 +30,10 @@ Construct a contextual Subject
 **Signature**
 
 ```ts
-export declare function Subject<E, A>()
+export declare function Subject<E, A>(): {
+  <const I extends Context.IdentifierFactory<any>>(identifier: I): Subject<Context.IdentifierOf<I>, E, A>
+  <const I>(identifier: I): Subject<Context.IdentifierOf<I>, E, A>
+}
 ```
 
 Added in v1.18.0

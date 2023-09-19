@@ -52,8 +52,8 @@ Transform the input value of a Sink.
 
 ```ts
 export declare const map: {
-  <B, A>(f: (b: B) => A): <E>(sink: Sink<E, A>) => Sink<E, B>
-  <E, A, B>(sink: Sink<E, A>, f: (b: B) => A): Sink<E, B>
+  <B, A>(f: (b: B) => A): <R, E>(sink: WithContext<R, E, A>) => WithContext<R, E, B>
+  <R, E, A, B>(sink: WithContext<R, E, A>, f: (b: B) => A): WithContext<R, E, B>
 }
 ```
 
@@ -67,8 +67,8 @@ Transform the input value of a Sink using an Effect.
 
 ```ts
 export declare const mapEffect: {
-  <B, R2, E, A>(f: (b: B) => Effect.Effect<R2, E, A>): (sink: Sink<E, A>) => WithContext<R2, E, B>
-  <E, A, R2, B>(sink: Sink<E, A>, f: (b: B) => Effect.Effect<R2, E, A>): WithContext<R2, E, B>
+  <B, R2, E, A>(f: (b: B) => Effect.Effect<R2, E, A>): <R>(sink: WithContext<R, E, A>) => WithContext<R2 | R, E, B>
+  <R, E, A, R2, B>(sink: WithContext<R, E, A>, f: (b: B) => Effect.Effect<R2, E, A>): WithContext<R | R2, E, B>
 }
 ```
 
@@ -82,8 +82,8 @@ Transform the input Error of a Sink.
 
 ```ts
 export declare const mapError: {
-  <E2, E, A>(f: (e: E2) => E): (sink: Sink<E, A>) => Sink<E2, A>
-  <E, A, E2>(sink: Sink<E, A>, f: (e: E2) => E): Sink<E2, A>
+  <E2, E, A>(f: (e: E2) => E): <R>(sink: WithContext<R, E, A>) => WithContext<R, E2, A>
+  <R, E, A, E2>(sink: WithContext<R, E, A>, f: (e: E2) => E): WithContext<R, E2, A>
 }
 ```
 
@@ -97,8 +97,8 @@ Transform the input Cause of a Sink.
 
 ```ts
 export declare const mapErrorCause: {
-  <E2, E, A>(f: (e: Cause.Cause<E2>) => Cause.Cause<E>): (sink: Sink<E, A>) => Sink<E2, A>
-  <E, A, E2>(sink: Sink<E, A>, f: (e: Cause.Cause<E2>) => Cause.Cause<E>): Sink<E2, A>
+  <E2, E, A>(f: (e: Cause.Cause<E2>) => Cause.Cause<E>): <R>(sink: WithContext<R, E, A>) => WithContext<R, E2, A>
+  <R, E, A, E2>(sink: WithContext<R, E, A>, f: (e: Cause.Cause<E2>) => Cause.Cause<E>): WithContext<R, E2, A>
 }
 ```
 
@@ -112,14 +112,13 @@ Transform the input Cause of a Sink using an Effect.
 
 ```ts
 export declare const mapErrorCauseEffect: {
-  <E2, R2, E, A>(f: (e: Cause.Cause<E2>) => Effect.Effect<R2, E, Cause.Cause<E>>): (
-    sink: Sink<E, A>
-  ) => WithContext<R2, E2, A>
-  <E, A, R2, E2>(sink: Sink<E, A>, f: (e: Cause.Cause<E2>) => Effect.Effect<R2, E, Cause.Cause<E>>): WithContext<
-    R2,
-    E2,
-    A
-  >
+  <E2, R2, E, A>(f: (e: Cause.Cause<E2>) => Effect.Effect<R2, E, Cause.Cause<E>>): <R>(
+    sink: WithContext<R, E, A>
+  ) => WithContext<R2 | R, E2, A>
+  <R, E, A, R2, E2>(
+    sink: WithContext<R, E, A>,
+    f: (e: Cause.Cause<E2>) => Effect.Effect<R2, E, Cause.Cause<E>>
+  ): WithContext<R | R2, E2, A>
 }
 ```
 
@@ -133,8 +132,8 @@ Transform the input Error of a Sink using an Effect.
 
 ```ts
 export declare const mapErrorEffect: {
-  <E2, R2, E, A>(f: (e: E2) => Effect.Effect<R2, E, E>): (sink: Sink<E, A>) => WithContext<R2, E, A>
-  <E, A, R2, E2>(sink: Sink<E, A>, f: (e: E2) => Effect.Effect<R2, E, E>): WithContext<R2, E, A>
+  <E2, R2, E, A>(f: (e: E2) => Effect.Effect<R2, E, E>): <R>(sink: WithContext<R, E, A>) => WithContext<R2 | R, E, A>
+  <R, E, A, R2, E2>(sink: WithContext<R, E, A>, f: (e: E2) => Effect.Effect<R2, E, E>): WithContext<R | R2, E, A>
 }
 ```
 

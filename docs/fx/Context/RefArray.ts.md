@@ -44,6 +44,7 @@ Added in v1.18.0
   - [reduceRight](#reduceright)
 - [constructors](#constructors)
   - [RefArray](#refarray)
+  - [make](#make)
 - [filtered](#filtered)
   - [getIndex](#getindex)
 - [models](#models)
@@ -466,6 +467,21 @@ export declare function RefArray<E, A>(): {
   >
 
   <const I>(identifier: I): RefSubject.RefSubject<Context.IdentifierOf<I>, E, ReadonlyArray<A>>
+}
+```
+
+Added in v1.18.0
+
+## make
+
+**Signature**
+
+```ts
+export declare const make: <E, A>() => {
+  <const I extends Context.IdentifierConstructor<any>>(
+    identifier: (id: <const T>(uniqueIdentifier: T) => Context.IdentifierConstructor<T>) => I
+  ): RefSubject.RefSubject<Context.IdentifierOf<I>, E, readonly A[]>
+  <const I>(identifier: I): RefSubject.RefSubject<Context.IdentifierOf<I>, E, readonly A[]>
 }
 ```
 
