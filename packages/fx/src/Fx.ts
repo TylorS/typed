@@ -713,7 +713,7 @@ export const filterMap: {
  * @since 1.18.0
  * @category combinators
  */
-export const compct: <R, E, A>(fx: Fx<R, E, Option.Option<A>>) => Fx<R, E, A> = core.compact
+export const compact: <R, E, A>(fx: Fx<R, E, Option.Option<A>>) => Fx<R, E, A> = core.compact
 /**
  * Map over the Cause  of an Fx.
  * @since 1.18.0
