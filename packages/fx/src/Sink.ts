@@ -236,7 +236,12 @@ export const mapErrorEffect: {
     }))
 })
 
-export const withSpan: {
+/**
+ * Set the span a Sink will use to append events to.
+ * @since 1.18.0
+ * @category tracing
+ */
+export const setSpan: {
   (span: Tracer.Span): <R, E, A>(self: WithContext<R, E, A>) => WithContext<R, E, A>
   <R, E, A>(self: WithContext<R, E, A>, span: Tracer.Span): WithContext<R, E, A>
 } = dual(2, function withSpan<R, E, A>(
