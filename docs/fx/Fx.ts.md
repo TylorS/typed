@@ -76,6 +76,7 @@ Added in v1.18.0
   - [flip](#flip)
   - [if](#if)
   - [interruptible](#interruptible)
+  - [keyed](#keyed)
   - [loop](#loop)
   - [loopEffect](#loopeffect)
   - [map](#map)
@@ -222,7 +223,6 @@ Added in v1.18.0
     - [Context (type alias)](#context-type-alias)
     - [Error (type alias)](#error-type-alias)
     - [Success (type alias)](#success-type-alias)
-  - [keyed](#keyed)
 
 ---
 
@@ -846,6 +846,28 @@ Mark an Fx as interruptible
 
 ```ts
 export declare const interruptible: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+```
+
+Added in v1.18.0
+
+## keyed
+
+Convert a list of keyed values into persistent workflows for given each key of the list
+even when the list has been re-ordered.
+
+**Signature**
+
+```ts
+export declare const keyed: {
+  <A, R2, E2, B, C>(f: (ref: RefSubject<never, A>, key: C) => Fx<R2, E2, B>, getKey: (a: A) => C): <R, E>(
+    fx: Fx<R, E, readonly A[]>
+  ) => Fx<R2 | R, E2 | E, readonly B[]>
+  <R, E, A, R2, E2, B, C>(
+    fx: Fx<R, E, readonly A[]>,
+    f: (ref: RefSubject<never, A>, key: C) => Fx<R2, E2, B>,
+    getKey: (a: A) => C
+  ): Fx<R | R2, E | E2, readonly B[]>
+}
 ```
 
 Added in v1.18.0
@@ -2940,28 +2962,6 @@ Extract the Success type from an Fx
 
 ```ts
 export type Success<T> = T extends Fx<infer _R, infer _E, infer A> ? A : never
-```
-
-Added in v1.18.0
-
-## keyed
-
-Convert a list of keyed values into persistent workflows for given each key of the list
-even when the list has been re-ordered.
-
-**Signature**
-
-```ts
-export declare const keyed: {
-  <A, R2, E2, B, C>(f: (ref: RefSubject<never, A>, key: C) => Fx<R2, E2, B>, getKey: (a: A) => C): <R, E>(
-    fx: Fx<R, E, readonly A[]>
-  ) => Fx<R2 | R, E2 | E, readonly B[]>
-  <R, E, A, R2, E2, B, C>(
-    fx: Fx<R, E, readonly A[]>,
-    f: (ref: RefSubject<never, A>, key: C) => Fx<R2, E2, B>,
-    getKey: (a: A) => C
-  ): Fx<R | R2, E | E2, readonly B[]>
-}
 ```
 
 Added in v1.18.0

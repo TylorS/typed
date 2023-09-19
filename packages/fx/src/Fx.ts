@@ -2005,6 +2005,7 @@ export const partitionMap: {
  * even when the list has been re-ordered.
  *
  * @since 1.18.0
+ * @category combinators
  */
 export const keyed: {
   <A, R2, E2, B, C>(
