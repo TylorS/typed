@@ -494,7 +494,7 @@ export const withSpan: {
           effect.pipe(
             Effect.locallyWith(FiberRef.currentTracerSpan, prepend(span))
           ),
-        Sink.withSpan(name, span)
+        Sink.withSpan(span)
       ),
     (span, exit) => Effect.flatMap(currentTimeNanos, (time) => Effect.sync(() => span.end(time, exit)))
   )

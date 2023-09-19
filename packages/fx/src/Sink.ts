@@ -237,23 +237,20 @@ export const mapErrorEffect: {
 })
 
 export const withSpan: {
-  (name: string, span: Tracer.Span): <R, E, A>(self: WithContext<R, E, A>) => WithContext<R, E, A>
-  <R, E, A>(self: WithContext<R, E, A>, name: string, span: Tracer.Span): WithContext<R, E, A>
-} = dual(3, function withSpan<R, E, A>(
+  (span: Tracer.Span): <R, E, A>(self: WithContext<R, E, A>) => WithContext<R, E, A>
+  <R, E, A>(self: WithContext<R, E, A>, span: Tracer.Span): WithContext<R, E, A>
+} = dual(2, function withSpan<R, E, A>(
   self: WithContext<R, E, A>,
-  name: string,
   span: Tracer.Span
 ): WithContext<R, E, A> {
   return WithContext(
     (cause) =>
-      addEvent(self.onFailure(cause), name, span, {
-        "fx.event": "failure",
-        "fx.cause": Cause.pretty(cause)
+      addEvent(self.onFailure(cause), "fx.failure", span, {
+        "cause": Cause.pretty(cause)
       }),
     (a) =>
-      addEvent(self.onSuccess(a), name, span, {
-        "fx.event": "success",
-        "fx.value": JSON.stringify(a)
+      addEvent(self.onSuccess(a), "fx.success", span, {
+        "value": JSON.stringify(a)
       })
   )
 })
@@ -266,9 +263,7 @@ const addEvent = <R, E, A>(
 ): Effect.Effect<R, E, A> =>
   Effect.flatMap(Clock.currentTimeNanos, (time) =>
     Effect.suspend(() => {
-      const eventName = `${time}.${name}`
-
-      span.event(eventName, time, attributes)
+      span.event(name, time, attributes)
 
       return effect
     }))
