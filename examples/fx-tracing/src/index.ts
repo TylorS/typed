@@ -21,13 +21,16 @@ const TracingLive = Layer.provide(
 
 const program = pipe(
   Fx.fromIterable([1, 2, 3]),
-  Fx.withSpan("c"),
+  Fx.withSpan("a"),
+  Fx.map((n) => n * 2),
   Fx.withSpan("b"),
-  Fx.withSpan("a")
+  Fx.map((n) => n + 1),
+  Fx.withSpan("c"),
+  Fx.drain
 )
 
 pipe(
-  Fx.drain(program),
+  program,
   Effect.provideLayer(TracingLive),
   Effect.catchAllCause(Effect.logError),
   Effect.runFork

@@ -3,13 +3,15 @@ import type { DurationInput } from "@effect/data/Duration"
 import * as Either from "@effect/data/Either"
 import { dual } from "@effect/data/Function"
 import type * as HashSet from "@effect/data/HashSet"
+import { prepend } from "@effect/data/List"
 import * as Option from "@effect/data/Option"
 import type { Cause } from "@effect/io/Cause"
+import { currentTimeNanos } from "@effect/io/Clock"
 import type { ConfigProvider } from "@effect/io/ConfigProvider"
 import * as Effect from "@effect/io/Effect"
 import * as Exit from "@effect/io/Exit"
 import type * as FiberId from "@effect/io/FiberId"
-import type { FiberRef } from "@effect/io/FiberRef"
+import * as FiberRef from "@effect/io/FiberRef"
 import type * as Logger from "@effect/io/Logger"
 import type * as Request from "@effect/io/Request"
 import type { Scheduler } from "@effect/io/Scheduler"
@@ -326,22 +328,22 @@ export const interruptible = <R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> => core.mid
 export const uninterruptible = <R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> => core.middleware(fx, Effect.uninterruptible)
 
 export const locally: {
-  <A>(self: FiberRef<A>, value: A): <R, E, B>(use: Fx<R, E, B>) => Fx<R, E, B>
-  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef<A>, value: A): Fx<R, E, B>
+  <A>(self: FiberRef.FiberRef<A>, value: A): <R, E, B>(use: Fx<R, E, B>) => Fx<R, E, B>
+  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef.FiberRef<A>, value: A): Fx<R, E, B>
 } = dual(3, function locally<R, E, B, A>(
   use: Fx<R, E, B>,
-  self: FiberRef<A>,
+  self: FiberRef.FiberRef<A>,
   value: A
 ): Fx<R, E, B> {
   return core.middleware(use, (effect) => Effect.locally(effect, self, value))
 })
 
 export const locallyWith: {
-  <A>(self: FiberRef<A>, f: (a: A) => A): <R, E, B>(use: Fx<R, E, B>) => Fx<R, E, B>
-  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef<A>, f: (a: A) => A): Fx<R, E, B>
+  <A>(self: FiberRef.FiberRef<A>, f: (a: A) => A): <R, E, B>(use: Fx<R, E, B>) => Fx<R, E, B>
+  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef.FiberRef<A>, f: (a: A) => A): Fx<R, E, B>
 } = dual(3, function locally<R, E, B, A>(
   use: Fx<R, E, B>,
-  self: FiberRef<A>,
+  self: FiberRef.FiberRef<A>,
   f: (a: A) => A
 ): Fx<R, E, B> {
   return core.middleware(use, (effect) => Effect.locallyWith(effect, self, f))
@@ -480,10 +482,21 @@ export const withSpan: {
     readonly context?: Context.Context<never>
   }
 ): Fx<R, E, A> {
-  return core.middleware(
-    self,
-    Effect.withSpan(name, { ...options, attributes: { "fx": name, ...options?.attributes } }),
-    Sink.withSpan(name, options)
+  return core.acquireUseRelease(
+    Effect.flatMap(
+      Effect.currentSpan,
+      (parent) => Effect.makeSpan(name, { parent: Option.getOrUndefined(parent), ...options })
+    ),
+    (span) =>
+      core.middleware(
+        self,
+        (effect) =>
+          effect.pipe(
+            Effect.locallyWith(FiberRef.currentTracerSpan, prepend(span))
+          ),
+        Sink.withSpan(name, span)
+      ),
+    (span, exit) => Effect.flatMap(currentTimeNanos, (time) => Effect.sync(() => span.end(time, exit)))
   )
 })
 

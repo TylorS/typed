@@ -7,6 +7,7 @@
 import * as Either from "@effect/data/Either"
 import { dual } from "@effect/data/Function"
 import * as Cause from "@effect/io/Cause"
+import * as Clock from "@effect/io/Clock"
 import * as Effect from "@effect/io/Effect"
 import type * as Tracer from "@effect/io/Tracer"
 import type { Context } from "@typed/context"
@@ -236,47 +237,38 @@ export const mapErrorEffect: {
 })
 
 export const withSpan: {
-  (name: string, options?: {
-    readonly attributes?: Record<string, Tracer.AttributeValue>
-    readonly links?: ReadonlyArray<Tracer.SpanLink>
-    readonly parent?: Tracer.ParentSpan
-    readonly root?: boolean
-    readonly context?: Context<never>
-  }): <R, E, A>(self: WithContext<R, E, A>) => WithContext<R, E, A>
-  <R, E, A>(self: WithContext<R, E, A>, name: string, options?: {
-    readonly attributes?: Record<string, Tracer.AttributeValue>
-    readonly links?: ReadonlyArray<Tracer.SpanLink>
-    readonly parent?: Tracer.ParentSpan
-    readonly root?: boolean
-    readonly context?: Context<never>
-  }): WithContext<R, E, A>
+  (name: string, span: Tracer.Span): <R, E, A>(self: WithContext<R, E, A>) => WithContext<R, E, A>
+  <R, E, A>(self: WithContext<R, E, A>, name: string, span: Tracer.Span): WithContext<R, E, A>
 } = dual(3, function withSpan<R, E, A>(
   self: WithContext<R, E, A>,
   name: string,
-  options?: {
-    readonly attributes?: Record<string, Tracer.AttributeValue>
-    readonly links?: ReadonlyArray<Tracer.SpanLink>
-    readonly parent?: Tracer.ParentSpan
-    readonly root?: boolean
-    readonly context?: Context<never>
-  }
+  span: Tracer.Span
 ): WithContext<R, E, A> {
   return WithContext(
     (cause) =>
-      Effect.withSpan(self.onFailure(cause), name, {
-        ...options,
-        attributes: {
-          ...options?.attributes,
-          "fx.sink.onFailure": Cause.pretty(cause)
-        }
+      addEvent(self.onFailure(cause), name, span, {
+        "fx.event": "failure",
+        "fx.cause": Cause.pretty(cause)
       }),
     (a) =>
-      Effect.withSpan(self.onSuccess(a), name, {
-        ...options,
-        attributes: {
-          ...options?.attributes,
-          "fx.sink.onSuccess": JSON.stringify(a)
-        }
+      addEvent(self.onSuccess(a), name, span, {
+        "fx.event": "success",
+        "fx.value": JSON.stringify(a)
       })
   )
 })
+
+const addEvent = <R, E, A>(
+  effect: Effect.Effect<R, E, A>,
+  name: string,
+  span: Tracer.Span,
+  attributes: Record<string, Tracer.AttributeValue>
+): Effect.Effect<R, E, A> =>
+  Effect.flatMap(Clock.currentTimeNanos, (time) =>
+    Effect.suspend(() => {
+      const eventName = `${time}.${name}`
+
+      span.event(eventName, time, attributes)
+
+      return effect
+    }))
