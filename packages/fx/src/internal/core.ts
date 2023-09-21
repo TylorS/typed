@@ -12,11 +12,12 @@ import type * as Exit from "@effect/io/Exit"
 import * as Fiber from "@effect/io/Fiber"
 import type * as Layer from "@effect/io/Layer"
 import * as Ref from "@effect/io/Ref"
+import * as Scope from "@effect/io/Scope"
 import * as SynchronizedRef from "@effect/io/SynchronizedRef"
 import * as Stream from "@effect/stream/Stream"
 
 import * as Schedule from "@effect/io/Schedule"
-import type { Context, Tag } from "@typed/context"
+import { type Context, type Tag } from "@typed/context"
 import {
   compileEffectLoop,
   FilterEffect,
@@ -32,6 +33,7 @@ import { compileSyncReducer, Filter, FilterMap, Map } from "@typed/fx/internal/s
 
 import type { DurationInput } from "@effect/data/Duration"
 import type { Equivalence } from "@effect/data/Equivalence"
+import * as Emitter from "@typed/fx/Emitter"
 import type {
   FlattenStrategy,
   Fx,
@@ -443,7 +445,7 @@ class Snapshot<R, E, A, R2, E2, B, R3, E3, C> extends ToFx<R | R2 | R3, E | E2 |
             )
           )),
           () =>
-            run(
+            Effect.sleep(0).pipe(Effect.zipRight(run(
               fx,
               Sink.WithContext(
                 sink.onFailure,
@@ -454,7 +456,7 @@ class Snapshot<R, E, A, R2, E2, B, R3, E3, C> extends ToFx<R | R2 | R3, E | E2 |
                     Effect.asUnit
                   )
               )
-            )
+            )))
         ))
     )
   }
@@ -572,6 +574,34 @@ export const filterMapCause: {
   <R, E, A, E2>(fx: Fx<R, E, A>, f: (a: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): Fx<R, E2, A>
 } = dual(2, function map<R, E, A, E2>(fx: Fx<R, E, A>, f: (a: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>) {
   return TransformerCause.make<R, E2, A>(fx, FilterMap(f))
+})
+
+export const filterError: {
+  <E, E2 extends E>(f: (a: E) => a is E2): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
+  <E>(f: (a: E) => boolean): <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, E2 extends E, A>(fx: Fx<R, E, A>, f: (a: E) => a is E2): Fx<R, E2, A>
+  <R, E, A>(fx: Fx<R, E, A>, f: (a: E) => boolean): Fx<R, E, A>
+} = dual(2, function map<R, E, A>(fx: Fx<R, E, A>, f: (a: E) => boolean) {
+  return filterMapCause(fx, (cause) =>
+    Cause.failureOrCause(cause).pipe(
+      Either.match({
+        onLeft: (e) => f(e) ? Option.some(Cause.fail(e)) : Option.none(),
+        onRight: Option.some
+      })
+    ))
+})
+
+export const filterMapError: {
+  <E, E2>(f: (a: E) => Option.Option<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
+  <R, E, A, E2>(fx: Fx<R, E, A>, f: (a: E) => Option.Option<E2>): Fx<R, E2, A>
+} = dual(2, function map<R, E, A, E2>(fx: Fx<R, E, A>, f: (a: E) => Option.Option<E2>) {
+  return filterMapCause(fx, (cause) =>
+    Cause.failureOrCause(cause).pipe(
+      Either.match({
+        onLeft: (e) => Option.map(f(e), Cause.fail),
+        onRight: Option.some
+      })
+    ))
 })
 
 export function observe<R, E, A, R2, E2>(
@@ -848,36 +878,54 @@ export function race<const FX extends ReadonlyArray<Fx<any, any, any>>>(
   Fx.Error<FX[number]>,
   Fx.Success<FX[number]>
 > {
-  return fromSink((sink) =>
-    Effect.suspend(() => {
-      const fibers: Array<Fiber.Fiber<any, any>> = []
-      let winnerFound = -1
+  if (fxs.length === 0) return empty
+  if (fxs.length === 1) return fxs[0]
 
-      return Effect.all(fxs.map((fx, i) => run(fx, raceSink(i))), { concurrency: "unbounded" })
-
-      function raceSink(
-        i: number
-      ): Sink.WithContext<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>> {
-        return Sink.WithContext(
-          (cause) => raceEvent(i, cause, sink.onFailure),
-          (a) => raceEvent(i, a, sink.onSuccess)
+  return withScopedFork(({ fork, sink }) =>
+    Effect.asyncEffect<
+      never,
+      never,
+      readonly [
+        number,
+        Array<Fiber.Fiber<never, unknown>>
+      ],
+      Fx.Context<FX[number]>,
+      never,
+      unknown
+    >((resume) =>
+      Effect.gen(function*(_) {
+        let winningIndex = -1
+        const fibers: Array<Fiber.Fiber<never, unknown>> = yield* _(
+          Effect.forEach(fxs, (fx, i) =>
+            fork(
+              run(
+                fx,
+                Sink.Sink(
+                  (cause) => Effect.suspend(() => pickWinner(i) ? sink.onFailure(cause) : Effect.unit),
+                  (a) => Effect.suspend(() => pickWinner(i) ? sink.onSuccess(a) : Effect.unit)
+                )
+              )
+            ))
         )
-      }
 
-      function raceEvent<A>(i: number, value: A, f: (a: A) => Effect.Effect<Fx.Context<FX[number]>, never, unknown>) {
-        // We found a winner!
-        if (winnerFound === -1) {
-          // Remove winner from the list of fibers to interrupt
-          fibers.splice(winnerFound = i, 1)
+        function pickWinner(i: number) {
+          if (winningIndex === -1) {
+            winningIndex = i
+            resume(Effect.succeed([i, fibers]))
+          }
 
-          // Interrupt fibers and emit value
-          return Effect.flatMap(Fiber.interruptAll(fibers), () => f(value))
-        } else {
-          // Emit only if the value is from the winning fiber
-          return i === winnerFound ? f(value) : Effect.unit
+          return winningIndex === i
         }
-      }
-    })
+      })
+    ).pipe(
+      Effect.flatMap(([winningIndex, fibers]) =>
+        Effect.suspend(() => {
+          const [winner] = fibers.splice(winningIndex, 1)
+
+          return Effect.flatMap(Fiber.interruptAll(fibers), () => Fiber.join(winner))
+        })
+      )
+    )
   )
 }
 
@@ -1235,6 +1283,23 @@ export const flatMapCause: {
   return flatMapCauseWithStrategy(fx, f, strategies.Unbounded)
 })
 
+export const flatMapError: {
+  <E, R2, E2, B>(f: (cause: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+} = dual(2, function flatMapError<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (cause: E) => Fx<R2, E2, B>
+): Fx<R | R2, E2, A | B> {
+  return flatMapCause(fx, (cause) =>
+    cause.pipe(
+      Cause.failureOrCause,
+      Either.match({
+        onLeft: f,
+        onRight: failCause
+      })
+    ))
+})
+
 export const flatMapCauseConcurrently: {
   <E, R2, E2, B>(
     f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
@@ -1541,13 +1606,13 @@ export const during: {
           })
         )),
         () =>
-          run(
+          Effect.sleep(0).pipe(Effect.zipRight(run(
             fx,
             Sink.Sink(
               sink.onFailure,
               (a) => taking ? sink.onSuccess(a) : Effect.unit
             )
-          )
+          )))
       )
     })
   )
@@ -1560,7 +1625,7 @@ export const since: {
   fx: Fx<R, E, A>,
   window: Fx<R2, E2, unknown>
 ): Fx<R | R2, E | E2, A> {
-  return during(fx, switchMap(take(window, 1), () => never))
+  return during(fx, map(window, () => never))
 })
 
 export const until: {
@@ -1821,3 +1886,11 @@ export const snapshot: {
 ): Fx<R | R2 | R3, E | E2 | E3, C> {
   return new Snapshot(fx, sampled, f)
 })
+
+export function fromEmitter<R, E, A>(
+  f: (emitter: Emitter.Emitter<E, A>) => Effect.Effect<R | Scope.Scope, never, unknown>
+): Fx<Exclude<R, Scope.Scope>, E, A> {
+  return withEarlyExit(({ scope, sink }) =>
+    Effect.zipRight(Effect.provideService(Effect.flatMap(Emitter.make(sink), f), Scope.Scope, scope), Effect.never)
+  )
+}

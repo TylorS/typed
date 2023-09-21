@@ -1,8 +1,12 @@
+import * as Duration from "@effect/data/Duration"
 import * as Either from "@effect/data/Either"
 import * as Option from "@effect/data/Option"
 import * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
+import * as Exit from "@effect/io/Exit"
 import * as Fiber from "@effect/io/Fiber"
+import * as FiberId from "@effect/io/FiberId"
+import * as Schedule from "@effect/io/Schedule"
 import * as Stream from "@effect/stream/Stream"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
@@ -397,6 +401,687 @@ describe.concurrent(__filename, () => {
       })
 
       await Effect.runPromise(test)
+    })
+  })
+
+  // Help me write unit tests for the behaviors of all the public API exposed from @typed/fx/Fx
+  // which are not currently quite covered by the above tests.
+
+  describe.concurrent("Fx", () => {
+    describe("Fx.empty", () => {
+      it("ends immediately without producing events", async () => {
+        const test = Fx.empty.pipe(Fx.toReadonlyArray)
+
+        const array = await Effect.runPromise(test)
+
+        expect(array).toEqual([])
+      })
+    })
+
+    describe("Fx.fromIterable", () => {
+      it("produces events from an iterable", async () => {
+        const test = Fx.fromIterable([1, 2, 3]).pipe(Fx.toReadonlyArray)
+
+        const array = await Effect.runPromise(test)
+
+        expect(array).toEqual([1, 2, 3])
+      })
+    })
+
+    describe("Fx.die", () => {
+      it("produces a failure", async () => {
+        const test = Fx.die("error").pipe(Fx.toReadonlyArray, Effect.exit)
+        const exit = await Effect.runPromise(test)
+
+        expect(Exit.unannotate(exit)).toEqual(Exit.die("error"))
+      })
+    })
+
+    describe("Fx.interrupt", () => {
+      it("produces a failure", async () => {
+        const test = Fx.interrupt(FiberId.none).pipe(Fx.toReadonlyArray, Effect.exit)
+        const exit = await Effect.runPromise(test)
+
+        expect(Exit.unannotate(exit)).toEqual(Exit.interrupt(FiberId.none))
+      })
+    })
+
+    describe("Fx.fail", () => {
+      it("produces a failure", async () => {
+        const test = Fx.fail("error").pipe(Fx.toReadonlyArray, Effect.exit)
+        const exit = await Effect.runPromise(test)
+
+        expect(Exit.unannotate(exit)).toEqual(Exit.fail("error"))
+      })
+    })
+
+    describe("Fx.fromSink", () => {
+      it("produces events from a Sink", async () => {
+        const test = Fx.fromSink<never, never, number>((sink) =>
+          Effect.gen(function*(_) {
+            yield* _(sink.onSuccess(1))
+            yield* _(sink.onSuccess(2))
+            yield* _(sink.onSuccess(3))
+          })
+        ).pipe(Fx.toReadonlyArray)
+
+        const array = await Effect.runPromise(test)
+
+        expect(array).toEqual([1, 2, 3])
+      })
+
+      it("produces errors from a Sink", async () => {
+        const test = Fx.fromSink<never, number, never>((sink) =>
+          Effect.gen(function*(_) {
+            yield* _(sink.onFailure(Cause.fail(1)))
+            yield* _(sink.onFailure(Cause.fail(2)))
+            yield* _(sink.onFailure(Cause.fail(3)))
+          })
+        ).pipe(Fx.flip, Fx.toReadonlyArray)
+
+        const array = await Effect.runPromise(test)
+
+        expect(array).toEqual([1, 2, 3])
+      })
+    })
+
+    describe("Fx.fromEmitter", () => {
+      it("produces events from an Emitter", async () => {
+        const test = Fx.fromEmitter<never, never, number>((emitter) =>
+          Effect.sync(() => {
+            emitter.succeed(1)
+            emitter.succeed(2)
+            emitter.succeed(3)
+            emitter.end()
+          })
+        ).pipe(Fx.toReadonlyArray)
+
+        const array = await Effect.runPromise(test)
+
+        expect(array).toEqual([1, 2, 3])
+      })
+
+      it("produces errors from an Emitter", async () => {
+        const test = Fx.fromEmitter<never, number, never>((emitter) =>
+          Effect.sync(() => {
+            emitter.fail(1)
+            emitter.fail(2)
+            emitter.fail(3)
+            emitter.end()
+          })
+        ).pipe(Fx.flip, Fx.toReadonlyArray)
+
+        const array = await Effect.runPromise(test)
+
+        expect(array).toEqual([1, 2, 3])
+      })
+    })
+  })
+
+  describe("Fx.sync", () => {
+    it("produces a success", async () => {
+      const test = Fx.sync(() => 1).pipe(Fx.toReadonlyArray)
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1])
+    })
+
+    it("produces a failure", async () => {
+      const error = new Error("error")
+      const test = Fx.sync(() => {
+        throw error
+      }).pipe(Fx.toReadonlyArray, Effect.exit)
+      const exit = await Effect.runPromise(test)
+
+      expect(exit).toEqual(Exit.die(error))
+    })
+  })
+
+  describe("Fx.suspend", () => {
+    it("produces a success", async () => {
+      const test = Fx.suspend(() => Fx.succeed(1)).pipe(Fx.toReadonlyArray)
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1])
+    })
+
+    it("produces a failure", async () => {
+      const test = Fx.suspend(() => Fx.fail(1)).pipe(Fx.toReadonlyArray, Effect.either)
+      const either = await Effect.runPromise(test)
+
+      expect(either).toEqual(Either.left(1))
+    })
+  })
+
+  describe("Fx.at", () => {
+    it("produces a successful value after the specified delay", async () => {
+      const delay = Math.floor(Math.random() * 50 + 100)
+
+      const control = Fx.succeed("a").pipe(Fx.toReadonlyArray, Effect.timed)
+
+      const [controlDuration, controlArray] = await Effect.runPromise(control)
+
+      expect(Duration.toMillis(controlDuration)).toBeLessThan(delay)
+      expect(controlArray).toEqual(["a"])
+
+      const test = Fx.at("a", delay).pipe(Fx.toReadonlyArray, Effect.timed)
+
+      const [duration, array] = await Effect.runPromise(test)
+
+      expect(Duration.toMillis(duration)).toBeGreaterThan(delay)
+      expect(array).toEqual(["a"])
+    })
+  })
+
+  describe("Fx.combine", () => {
+    it("combines multiple Fx into a single Fx with an output as an array", async () => {
+      const test = Fx.combine([
+        Fx.succeed(1),
+        Fx.succeed(2),
+        Fx.merge([Fx.succeed(3), Fx.at(4, 50), Fx.at(5, 100)])
+      ]).pipe(Fx.toReadonlyArray)
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([[1, 2, 3], [1, 2, 4], [1, 2, 5]])
+    })
+  })
+
+  describe("Fx.struct", () => {
+    it("combines multiple Fx into a single Fx with an output as a record", async () => {
+      const test = Fx.struct(
+        {
+          a: Fx.succeed(1),
+          b: Fx.succeed(2),
+          c: Fx.merge([Fx.succeed(3), Fx.at(4, 50), Fx.at(5, 100)])
+        }
+      ).pipe(Fx.toReadonlyArray)
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([{ a: 1, b: 2, c: 3 }, { a: 1, b: 2, c: 4 }, { a: 1, b: 2, c: 5 }])
+    })
+  })
+
+  describe("Fx.race", () => {
+    it("returns the first successful value", async () => {
+      let runs = 0
+      const inc = Fx.tap(() => Effect.sync(() => runs++))
+
+      const test = Fx.race(
+        [inc(Fx.at(1, 100)), inc(Fx.at(2, 50)), inc(Fx.at(3, 150))]
+      ).pipe(Fx.toReadonlyArray)
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([2])
+
+      expect(runs).toEqual(1)
+    })
+  })
+
+  describe("Fx.merge", () => {
+    it("merges multiple Fx into a single Fx with an output as an array", async () => {
+      const test = Fx.merge([
+        Fx.succeed(1),
+        Fx.succeed(2),
+        Fx.merge([Fx.succeed(3), Fx.at(4, 50), Fx.at(5, 100)])
+      ]).pipe(Fx.toReadonlyArray)
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1, 2, 3, 4, 5])
+    })
+  })
+
+  describe("Fx.fromScheduled", () => {
+    it("runs an Effect on a schedule emitting its output values", async () => {
+      const schedule = Schedule.recurs(2)
+      const effect = Effect.succeed(1)
+      const fx = Fx.fromScheduled(effect, schedule)
+      const test = fx.pipe(Fx.toReadonlyArray)
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1, 1, 1])
+    })
+  })
+
+  describe("Fx.reduce", () => {
+    it("reduces a stream of values into a single value", async () => {
+      const test = Fx.fromIterable([1, 2, 3]).pipe(
+        Fx.reduce(0, (acc, x) => acc + x)
+      )
+
+      const value = await Effect.runPromise(test)
+
+      expect(value).toEqual(6)
+    })
+  })
+
+  describe("Fx.filter", () => {
+    it("filters values from a stream", async () => {
+      const test = Fx.fromIterable([1, 2, 3]).pipe(
+        Fx.filter((x) => x % 2 === 0),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([2])
+    })
+  })
+
+  describe("Fx.filterMap", () => {
+    it("filters values from a stream", async () => {
+      const test = Fx.fromIterable([1, 2, 3]).pipe(
+        Fx.filterMap(Option.liftPredicate((x) => x % 2 === 0)),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([2])
+    })
+  })
+
+  describe("Fx.compact", () => {
+    it("flattens Option values from a stream", async () => {
+      const test = Fx.fromIterable([Option.some(1), Option.none(), Option.some(2)]).pipe(
+        Fx.compact,
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1, 2])
+    })
+  })
+
+  describe("Fx.mapError", () => {
+    it("maps errors from a stream", async () => {
+      const test = Fx.fail(1).pipe(
+        Fx.mapError((x) => x + 1),
+        Fx.toReadonlyArray,
+        Effect.either
+      )
+
+      const either = await Effect.runPromise(test)
+
+      expect(either).toEqual(Either.left(2))
+    })
+  })
+
+  describe("Fx.filterError", () => {
+    it("filters errors from a stream", async () => {
+      const test = Fx.fail(1).pipe(
+        Fx.filterError((x) => x === 1),
+        Fx.toReadonlyArray,
+        Effect.either
+      )
+
+      const either = await Effect.runPromise(test)
+
+      expect(either).toEqual(Either.left(1))
+    })
+  })
+
+  describe("Fx.take", () => {
+    it("takes N values from a stream", async () => {
+      const test = Fx.fromIterable([1, 2, 3]).pipe(
+        Fx.take(2),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1, 2])
+    })
+  })
+
+  describe("Fx.takeWhile", () => {
+    it("takes values from a stream while the predicate is true", async () => {
+      const test = Fx.fromIterable([1, 2, 3]).pipe(
+        Fx.takeWhile((x) => Effect.succeed(x < 3)),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1, 2])
+    })
+  })
+
+  describe("Fx.takeUntil", () => {
+    it("takes values from a stream until the predicate is true", async () => {
+      const test = Fx.fromIterable([1, 2, 3]).pipe(
+        Fx.takeUntil((x) => Effect.succeed(x === 3)),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1, 2])
+    })
+  })
+
+  describe("Fx.drop", () => {
+    it("drops N values from a stream", async () => {
+      const test = Fx.fromIterable([1, 2, 3]).pipe(
+        Fx.drop(2),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([3])
+    })
+  })
+
+  describe("Fx.dropWhile", () => {
+    it("drops values from a stream while the predicate is true", async () => {
+      const test = Fx.fromIterable([1, 2, 3]).pipe(
+        Fx.dropWhile((x) => Effect.succeed(x < 3)),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([3])
+    })
+  })
+
+  describe("Fx.dropUntil", () => {
+    it("drops values from a stream until the predicate is true", async () => {
+      const test = Fx.fromIterable([1, 2, 3]).pipe(
+        Fx.dropUntil((x) => Effect.succeed(x === 3)),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([3])
+    })
+  })
+
+  describe("Fx.orElse", () => {
+    it("allows running an Fx after the failure of another", async () => {
+      const test = Fx.fail(1).pipe(
+        Fx.orElse(() => Fx.succeed(2)),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([2])
+    })
+  })
+
+  describe("Fx.mapEffect", () => {
+    it("maps the inner Effect", async () => {
+      const test = Fx.succeed(1).pipe(
+        Fx.mapEffect((x) => Effect.succeed(x + 1)),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([2])
+    })
+  })
+
+  describe("Fx.loop", () => {
+    it("loops over an Effect until it produces a failure", async () => {
+      const test = Fx.fromIterable([1, 2, 3, 4, 5]).pipe(
+        Fx.loop(0, (acc, x) => [acc + x, x]),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1, 3, 5, 7, 9])
+    })
+  })
+
+  describe("Fx.startWith", () => {
+    it("starts a stream with a value", async () => {
+      const test = Fx.fromIterable([1, 2, 3]).pipe(
+        Fx.startWith(0),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([0, 1, 2, 3])
+    })
+  })
+
+  describe("Fx.endWith", () => {
+    it("ends a stream with a value", async () => {
+      const test = Fx.fromIterable([1, 2, 3]).pipe(
+        Fx.endWith(4),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1, 2, 3, 4])
+    })
+  })
+
+  describe("Fx.during", () => {
+    it("uses a higher-order Fx to take and drop values", async () => {
+      let i = 0
+      const iterator = Effect.sync(() => i++)
+      const test = Fx.toReadonlyArray(Fx.during(
+        Fx.periodic(iterator, 50),
+        Fx.at(Fx.at(null, 100), 100)
+      ))
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([2, 3])
+    })
+  })
+
+  describe("Fx.since", () => {
+    it("uses an Fx to take values", async () => {
+      let i = 0
+      const iterator = Effect.sync(() => i++)
+      const test = Fx.periodic(iterator, 50).pipe(
+        Fx.since(Fx.at(null, 100)),
+        Fx.take(2),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([2, 3])
+    })
+  })
+
+  describe("Fx.until", () => {
+    it("uses an Fx to drop values", async () => {
+      let i = 0
+      const iterator = Effect.sync(() => i++)
+      const test = Fx.periodic(iterator, 50).pipe(
+        Fx.until(Fx.at(null, 100)),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([0, 1])
+    })
+  })
+
+  describe("Fx.skipRepeats", () => {
+    it("skips repeated values", async () => {
+      const test = Fx.fromIterable([1, 1, 2, 2, 3, 3]).pipe(
+        Fx.skipRepeats,
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1, 2, 3])
+    })
+  })
+
+  describe("Fx.snapshot", () => {
+    it("combines the latest value from an Fx with the current value", async () => {
+      const test = Fx.fromIterable([1, 2, 3]).pipe(
+        Fx.snapshot(Fx.fromIterable(["a", "b", "c"]), (a, b) => Effect.succeed(a + b)),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual(["1c", "2c", "3c"])
+    })
+
+    it("runs an Effect each time when an Effect is the sampled", async () => {
+      let i = 0
+      const iterator = Effect.sync(() => i++)
+      const test = Fx.fromIterable([1, 2, 3]).pipe(
+        Fx.snapshot(
+          iterator,
+          (a, b) => Effect.succeed(a + b)
+        ),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1, 3, 5])
+    })
+  })
+
+  describe("Fx.debounce", () => {
+    it("debounces values", async () => {
+      const test = Fx.merge(
+        [Fx.at(1, 50), Fx.at(2, 100), Fx.at(3, 150)]
+      ).pipe(
+        Fx.debounce(50),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([3])
+    })
+  })
+
+  describe("Fx.throttle", () => {
+    it("throttles values", async () => {
+      const test = Fx.merge(
+        [Fx.at(1, 50), Fx.at(2, 100), Fx.at(3, 150)]
+      ).pipe(
+        Fx.throttle(50),
+        Fx.toReadonlyArray
+      )
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1, 3])
+    })
+  })
+
+  describe("Fx.if", () => {
+    it("runs an Fx if the predicate is true", async () => {
+      const test = Fx.if(
+        true,
+        {
+          onTrue: Fx.succeed(1),
+          onFalse: Fx.succeed(2)
+        }
+      ).pipe(Fx.toReadonlyArray)
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1])
+    })
+
+    it("runs an Fx if the predicate is false", async () => {
+      const test = Fx.if(
+        false,
+        {
+          onTrue: Fx.succeed(1),
+          onFalse: Fx.succeed(2)
+        }
+      ).pipe(Fx.toReadonlyArray)
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([2])
+    })
+
+    it("allows boolean to be an Fx", async () => {
+      const test = Fx.if(
+        Fx.merge([
+          Fx.at(true, 50),
+          Fx.at(false, 100)
+        ]),
+        {
+          onTrue: Fx.succeed(1),
+          onFalse: Fx.succeed(2)
+        }
+      ).pipe(Fx.toReadonlyArray)
+
+      const array = await Effect.runPromise(test)
+
+      expect(array).toEqual([1, 2])
+    })
+  })
+
+  describe("Fx.partitionMap", () => {
+    it("partitions values into successes and failures", async () => {
+      const [oddsFx, evensFx] = Fx.fromIterable([1, 2, 3, 4]).pipe(
+        Fx.partitionMap((x) => x % 2 === 0 ? Either.right(x) : Either.left(x))
+      )
+      const odds = await oddsFx.pipe(Fx.toReadonlyArray, Effect.runPromise)
+      const evens = await evensFx.pipe(Fx.toReadonlyArray, Effect.runPromise)
+
+      expect(odds).toEqual([1, 3])
+      expect(evens).toEqual([2, 4])
+    })
+  })
+
+  describe("Fx.keyed", () => {
+    it("allow keeping a reference to a running stream", async () => {
+      const test = Effect.gen(function*($) {
+        const inputs = Fx.merge([
+          Fx.succeed([1, 2, 3]),
+          Fx.at([3, 2, 1], 200),
+          Fx.at([4, 5, 6, 1], 400)
+        ])
+
+        let calls = 0
+
+        const fx = Fx.keyed(
+          inputs,
+          (source) => {
+            calls++
+            return source
+          },
+          (x) => x
+        )
+
+        const events = yield* $(Fx.toReadonlyArray(fx))
+
+        expect(events).toEqual([
+          [1, 2, 3],
+          [3, 2, 1],
+          [4, 5, 6, 1]
+        ])
+
+        // Should only be called once for each unique value
+        expect(calls).toEqual(6)
+      })
+
+      await Effect.runPromise(Effect.scoped(test))
     })
   })
 })

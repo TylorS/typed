@@ -39,6 +39,7 @@ import type * as Schedule from "@effect/io/Schedule"
 import type { Scheduler } from "@effect/io/Scheduler"
 import type * as Scope from "@effect/io/Scope"
 import type * as Tracer from "@effect/io/Tracer"
+import type { Emitter } from "@typed/fx/Emitter"
 import * as core from "@typed/fx/internal/core"
 import * as internal from "@typed/fx/internal/fx"
 import * as primitive from "@typed/fx/internal/fx-primitive"
@@ -303,6 +304,16 @@ export const fromIterable: {
  */
 export const fromSink: <R, E, A>(f: (sink: Sink.Sink<E, A>) => Effect.Effect<R, E, unknown>) => Fx<R, E, A> =
   core.fromSink
+
+/**
+ * Construct an Fx by describing an Scoped Effect that has access to an Emitter
+ * to emit events and errors.
+ * @since 1.18.0
+ * @category constructors
+ */
+export const fromEmitter: <R, E, A>(
+  f: (emitter: Emitter<E, A>) => Effect.Effect<R | Scope.Scope, never, unknown>
+) => Fx<Exclude<R, Scope.Scope>, E, A> = core.fromEmitter
 
 /**
  * An Fx which will never emit any errors or events, and will never end
@@ -735,11 +746,11 @@ export const mapError: {
 } = core.mapError
 
 /**
- * Filter the Error of an Fx.
+ * Filter the Cause of an Fx.
  * @since 1.18.0
  * @category errors
  */
-export const filterCause: {
+export const filterErrorCause: {
   <E, E2 extends E>(f: (a: Cause.Cause<E>) => a is Cause.Cause<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
   <E>(f: (a: Cause.Cause<E>) => boolean): <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
   <R, E, E2 extends E, A>(fx: Fx<R, E, A>, f: (a: Cause.Cause<E>) => a is Cause.Cause<E2>): Fx<R, E2, A>
@@ -747,7 +758,7 @@ export const filterCause: {
 } = core.filterCause
 
 /**
- * Filter and map the Error of an Fx.
+ * Filter and map the Cause of an Fx.
  * @since 1.18.0
  * @category errors
  */
@@ -755,6 +766,28 @@ export const filterMapCause: {
   <E, E2>(f: (a: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
   <R, E, A, E2>(fx: Fx<R, E, A>, f: (a: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): Fx<R, E2, A>
 } = core.filterMapCause
+
+/**
+ * Filter the Error of an Fx.
+ * @since 1.18.0
+ * @category errors
+ */
+export const filterError: {
+  <E, E2 extends E>(f: (a: E) => a is E2): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
+  <E>(f: (a: E) => boolean): <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, E2 extends E, A>(fx: Fx<R, E, A>, f: (a: E) => a is E2): Fx<R, E2, A>
+  <R, E, A>(fx: Fx<R, E, A>, f: (a: E) => boolean): Fx<R, E, A>
+} = core.filterError
+
+/**
+ * Filter and map the error of an Fx.
+ * @since 1.18.0
+ * @category errors
+ */
+export const filterMapError: {
+  <E, E2>(f: (a: E) => Option.Option<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
+  <R, E, A, E2>(fx: Fx<R, E, A>, f: (a: E) => Option.Option<E2>): Fx<R, E2, A>
+} = core.filterMapError
 
 /**
  * Map the success value of an Fx to another Fx, flattening the result
@@ -1145,6 +1178,17 @@ export const flatMapCause: {
   <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
 } = core.flatMapCause
+
+/**
+ * Map the failures of an Fx to another Fx, flattening the result with unbounded concurrency.
+ *
+ * @since 1.18.0
+ * @category flattening
+ */
+export const flatMapError: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+} = core.flatMapError
 
 /**
  * Map the failures of an Fx to another Fx with the specified concurrency.

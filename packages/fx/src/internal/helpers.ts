@@ -3,8 +3,10 @@ import { type Cause, NoSuchElementException } from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
 import * as Ref from "@effect/io/Ref"
+import * as Runtime from "@effect/io/Runtime"
 import * as Scope from "@effect/io/Scope"
 import * as SynchronizedRef from "@effect/io/SynchronizedRef"
+import { unsafeGet } from "@typed/context"
 import type { FlattenStrategy, FxFork, ScopedFork } from "@typed/fx/Fx"
 import type { InternalEffect } from "@typed/fx/internal/effect-primitive"
 import { matchEffectPrimitive } from "@typed/fx/internal/effect-primitive"
@@ -311,4 +313,46 @@ export function withBuffers<R, E, A>(size: number, sink: Sink.WithContext<R, E, 
       onEnd
     }
   })
+}
+
+export type ScopedRuntime<R> = {
+  readonly runtime: Runtime.Runtime<R | Scope.Scope>
+  readonly scope: Scope.Scope
+  readonly run: <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>) => Fiber.Fiber<E, A>
+}
+
+export function scopedRuntime<R>(): Effect.Effect<
+  R | Scope.Scope,
+  never,
+  ScopedRuntime<R>
+> {
+  return Effect.gen(function*(_) {
+    const runtime = yield* _(Effect.runtime<R | Scope.Scope>())
+    const scope = unsafeGet(runtime.context, Scope.Scope)
+    const runFork = Runtime.runFork(runtime)
+
+    const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.Fiber<E, A> => {
+      const fiber: Fiber.Fiber<E, A> = Scope.addFinalizer(
+        scope,
+        Effect.suspend(() => Fiber.interrupt(fiber))
+      ).pipe(
+        Effect.zipRight(effect),
+        runFork
+      )
+
+      return fiber
+    }
+
+    return {
+      runtime,
+      scope,
+      run
+    } as const
+  })
+}
+
+export function awaitScopeClose(scope: Scope.Scope) {
+  return Effect.asyncEffect<never, never, unknown, never, never, void>((cb) =>
+    Scope.addFinalizerExit(scope, () => Effect.sync(() => cb(Effect.unit)))
+  )
 }

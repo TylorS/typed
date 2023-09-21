@@ -62,7 +62,13 @@ export class Share<R, E, A, R2> extends ToFx<R | R2, E, A> {
           Effect.flatMap(Fiber.join)
         )
       } else {
-        return Fiber.join(Option.getOrThrow(MutableRef.get(this.#fxFiber)))
+        return Option.match(
+          MutableRef.get(this.#fxFiber),
+          {
+            onNone: () => Effect.unit,
+            onSome: Fiber.join
+          }
+        )
       }
     })
   }
