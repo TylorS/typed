@@ -1,6 +1,6 @@
 ---
 title: Sink.ts
-nav_order: 13
+nav_order: 15
 parent: "@typed/fx"
 ---
 
@@ -31,6 +31,8 @@ Added in v1.18.0
   - [Sink (interface)](#sink-interface)
   - [WithContext (interface)](#withcontext-interface)
   - [WithEarlyExit (interface)](#withearlyexit-interface)
+- [tracing](#tracing)
+  - [setSpan](#setspan)
 - [utils](#utils)
   - [Sink (namespace)](#sink-namespace)
     - [Error (type alias)](#error-type-alias)
@@ -225,6 +227,23 @@ Useful for operators the end the stream early.
 ```ts
 export interface WithEarlyExit<E, A> extends Sink<E, A> {
   readonly earlyExit: Effect.Effect<never, never, void>
+}
+```
+
+Added in v1.18.0
+
+# tracing
+
+## setSpan
+
+Set the span a Sink will use to append events to.
+
+**Signature**
+
+```ts
+export declare const setSpan: {
+  (span: Tracer.Span): <R, E, A>(self: WithContext<R, E, A>) => WithContext<R, E, A>
+  <R, E, A>(self: WithContext<R, E, A>, span: Tracer.Span): WithContext<R, E, A>
 }
 ```
 

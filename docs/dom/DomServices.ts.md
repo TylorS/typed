@@ -51,19 +51,16 @@ All of the core DOM services accessible via a single interfae
 **Signature**
 
 ```ts
-export declare const DomServices: Context.Tagged<
-  DomServices,
-  {
-    readonly globalThis: GlobalThis
-    readonly window: Window
-    readonly document: Document
-    readonly rootElement: RootElement
-    readonly parentElement: ParentElement
-    readonly history: History
-    readonly location: Location
-    readonly navigator: Navigator
-  }
->
+export declare const DomServices: Context.TaggedStruct<{
+  readonly globalThis: Context.Tagged<GlobalThis, GlobalThis>
+  readonly window: Context.Tagged<Window, Window>
+  readonly document: Context.Tagged<Document, Document>
+  readonly rootElement: Context.Tagged<RootElement, RootElement>
+  readonly parentElement: Context.Tagged<ParentElement, ParentElement>
+  readonly history: Context.Tagged<History, History>
+  readonly location: Context.Tagged<Location, Location>
+  readonly navigator: Context.Tagged<Navigator, Navigator>
+}>
 ```
 
 Added in v8.19.0

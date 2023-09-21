@@ -10,9 +10,9 @@ import * as RemoteData from "@typed/remote-data"
 
 describe("RemoteData", () => {
   describe("Subtype of Effect", () => {
-    describe(RemoteData.success.name, () => {
+    describe(RemoteData.succeed.name, () => {
       it("returns provided a value", async () => {
-        const test = RemoteData.success(1)
+        const test = RemoteData.succeed(1)
 
         expect(await Effect.runPromise(test)).toEqual(1)
       })
@@ -49,18 +49,18 @@ describe("RemoteData", () => {
       RemoteData.RemoteData<number, number>,
       boolean
     ]> = [
-      [RemoteData.success(1), RemoteData.success(1), true],
-      [RemoteData.success(1), RemoteData.success(2), false],
+      [RemoteData.succeed(1), RemoteData.succeed(1), true],
+      [RemoteData.succeed(1), RemoteData.succeed(2), false],
       [RemoteData.fail(1), RemoteData.fail(1), true],
       [RemoteData.fail(1), RemoteData.fail(2), false],
       [RemoteData.noData, RemoteData.noData, true],
       [RemoteData.loading, RemoteData.loading, true],
-      [RemoteData.success(1), RemoteData.fail(1), false],
-      [RemoteData.success(1), RemoteData.noData, false],
-      [RemoteData.success(1), RemoteData.loading, false],
+      [RemoteData.succeed(1), RemoteData.fail(1), false],
+      [RemoteData.succeed(1), RemoteData.noData, false],
+      [RemoteData.succeed(1), RemoteData.loading, false],
       [RemoteData.fail(1), RemoteData.noData, false],
       [RemoteData.fail(1), RemoteData.loading, false],
-      [RemoteData.success(1, true), RemoteData.success(1, false), false],
+      [RemoteData.succeed(1, true), RemoteData.succeed(1, false), false],
       [RemoteData.fail(1, true), RemoteData.fail(1, true), true],
       [RemoteData.fail(1, true), RemoteData.fail(1, false), false]
     ]
@@ -74,9 +74,9 @@ describe("RemoteData", () => {
 
   describe(RemoteData.map.name, () => {
     it("allows transforming a success value", () => {
-      const test = RemoteData.success(1).pipe(RemoteData.map((n) => n + 1))
+      const test = RemoteData.succeed(1).pipe(RemoteData.map((n) => n + 1))
 
-      ok(Equal.equals(test, RemoteData.success(2)))
+      ok(Equal.equals(test, RemoteData.succeed(2)))
     })
   })
 
@@ -90,14 +90,14 @@ describe("RemoteData", () => {
 
   describe(RemoteData.flatMap.name, () => {
     it("allows transforming a success value", () => {
-      const test = RemoteData.success(1).pipe(RemoteData.flatMap((n) => RemoteData.success(n + 1)))
+      const test = RemoteData.succeed(1).pipe(RemoteData.flatMap((n) => RemoteData.succeed(n + 1)))
 
-      ok(Equal.equals(test, RemoteData.success(2)))
+      ok(Equal.equals(test, RemoteData.succeed(2)))
     })
 
     it("does not transform a failure case", () => {
       const test = RemoteData.fail(1).pipe(
-        RemoteData.flatMap((n: number) => RemoteData.success(n + 1))
+        RemoteData.flatMap((n: number) => RemoteData.succeed(n + 1))
       )
 
       ok(Equal.equals(test, RemoteData.fail(1)))
@@ -105,7 +105,7 @@ describe("RemoteData", () => {
 
     it("does not transform a noData case", () => {
       const test = RemoteData.noData.pipe(
-        RemoteData.flatMap((n: number) => RemoteData.success(n + 1))
+        RemoteData.flatMap((n: number) => RemoteData.succeed(n + 1))
       )
 
       ok(Equal.equals(test, RemoteData.noData))
@@ -113,7 +113,7 @@ describe("RemoteData", () => {
 
     it("does not transform a loading case", () => {
       const test = RemoteData.loading.pipe(
-        RemoteData.flatMap((n: number) => RemoteData.success(n + 1))
+        RemoteData.flatMap((n: number) => RemoteData.succeed(n + 1))
       )
 
       ok(Equal.equals(test, RemoteData.loading))
@@ -122,17 +122,17 @@ describe("RemoteData", () => {
 
   describe(RemoteData.zip.name, () => {
     it("favors noData over success and loading", () => {
-      ok(Equal.equals(RemoteData.zip(RemoteData.noData, RemoteData.success(1)), RemoteData.noData))
-      ok(Equal.equals(RemoteData.zip(RemoteData.success(1), RemoteData.noData), RemoteData.noData))
+      ok(Equal.equals(RemoteData.zip(RemoteData.noData, RemoteData.succeed(1)), RemoteData.noData))
+      ok(Equal.equals(RemoteData.zip(RemoteData.succeed(1), RemoteData.noData), RemoteData.noData))
       ok(Equal.equals(RemoteData.zip(RemoteData.noData, RemoteData.loading), RemoteData.noData))
     })
 
     it("favors loading over success", () => {
       ok(
-        Equal.equals(RemoteData.zip(RemoteData.loading, RemoteData.success(1)), RemoteData.loading)
+        Equal.equals(RemoteData.zip(RemoteData.loading, RemoteData.succeed(1)), RemoteData.loading)
       )
       ok(
-        Equal.equals(RemoteData.zip(RemoteData.success(1), RemoteData.loading), RemoteData.loading)
+        Equal.equals(RemoteData.zip(RemoteData.succeed(1), RemoteData.loading), RemoteData.loading)
       )
     })
 
@@ -170,7 +170,7 @@ describe("RemoteData", () => {
       ok(
         Equal.equals(
           await Effect.succeed(1).pipe(RemoteData.unwrapEffect, Effect.runPromise),
-          RemoteData.success(1)
+          RemoteData.succeed(1)
         )
       )
     })

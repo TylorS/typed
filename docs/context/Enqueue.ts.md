@@ -49,7 +49,6 @@ A Contextual wrapper around @effect/io/Queue.Enqueue
 ```ts
 export interface Enqueue<I, A> extends Tag<I, Q.Enqueue<A>> {
   readonly offer: (a: A) => Effect.Effect<I, never, boolean>
-  readonly unsafeOffer: (a: A) => Effect.Effect<I, never, boolean>
   readonly offerAll: (as: Iterable<A>) => Effect.Effect<I, never, boolean>
 
   readonly capacity: Effect.Effect<I, never, number>

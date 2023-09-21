@@ -1,6 +1,6 @@
 ---
 title: FxEffect.ts
-nav_order: 9
+nav_order: 10
 parent: "@typed/fx"
 ---
 
@@ -16,13 +16,13 @@ Added in v1.18.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [models](#models)
   - [FxEffect (interface)](#fxeffect-interface)
   - [VersionedFxEffect (interface)](#versionedfxeffect-interface)
 
 ---
 
-# utils
+# models
 
 ## FxEffect (interface)
 
@@ -38,9 +38,15 @@ Added in v1.18.0
 
 ## VersionedFxEffect (interface)
 
-A data type which is both an Fx and an Effect. This is a more advanced types, and is the basis
+A data type which is both an Fx and an Effect. This is a more advanced type, and is the basis
 for creating Computed + Filtered types from a RefSubject which is the canonical implementation of
-an at type which is both Fx + Effect.
+an at type which is both VersionedFxEffect.
+
+The Fx portion naturally has representations for dealing with keeping things up-to-date and
+avoiding doing any work that is not necessary. The Effect, or "pull", portion utilizes the
+version to determine if the current value is up to date. If it is not, then the Fx portion
+will be run to update the value. This allows for derived types to cache values locally and
+avoid doing any work if the value is up to date.
 
 **Signature**
 

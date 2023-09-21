@@ -2,5 +2,5 @@
 title: "@typed/remote-data"
 has_children: true
 permalink: /docs/remote-data
-nav_order: 7
+nav_order: 6
 ---

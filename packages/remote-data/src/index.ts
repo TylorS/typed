@@ -236,7 +236,7 @@ export const toLoading = <E, A>(data: RemoteData<E, A>): RemoteData<E, A> =>
     onNoData: () => loading,
     onLoading: () => loading,
     onFailure: (cause) => failCause(cause, true),
-    onSuccess: (value) => success(value, true)
+    onSuccess: (value) => succeed(value, true)
   })
 
 /**
@@ -248,7 +248,7 @@ export const stopLoading = <E, A>(data: RemoteData<E, A>): RemoteData<E, A> =>
     onNoData: () => noData,
     onLoading: () => noData,
     onFailure: (cause) => failCause(cause, false),
-    onSuccess: (value) => success(value, false)
+    onSuccess: (value) => succeed(value, false)
   })
 
 const causeEquivalence = <E>(
@@ -395,7 +395,7 @@ export function fail<E>(error: E, refreshing: boolean = false): Failure<E> {
  * Construct a Success from a value
  * @since 1.0.0
  */
-export function success<A>(value: A, refreshing: boolean = false): Success<A> {
+export function succeed<A>(value: A, refreshing: boolean = false): Success<A> {
   const data = Object.create(proto)
 
   data.state = "Success"
@@ -470,7 +470,7 @@ export function isLoadingOrRefreshing<E, A>(
 export function fromEither<E, A>(either: Either.Either<E, A>): RemoteData<E, A> {
   return Either.match(either, {
     onLeft: (e) => failCause(Cause.fail(e)),
-    onRight: success
+    onRight: succeed
   })
 }
 
@@ -481,7 +481,7 @@ export function fromEither<E, A>(either: Either.Either<E, A>): RemoteData<E, A> 
 export function fromOption<A>(option: Option.Option<A>): RemoteData<never, A> {
   return Option.match(option, {
     onNone: () => noData,
-    onSome: success
+    onSome: succeed
   })
 }
 
@@ -513,7 +513,7 @@ export const toOptionError = <E, A>(data: RemoteData<E, A>): Option.Option<E> =>
 export function fromExit<E, A>(exit: Exit.Exit<E, A>): RemoteData<E, A> {
   return Exit.match(exit, {
     onFailure: unwrapCause,
-    onSuccess: success
+    onSuccess: succeed
   })
 }
 
@@ -526,7 +526,7 @@ export const map: {
   <E, A, B>(data: RemoteData<E, A>, f: (a: A) => B): RemoteData<E, B>
 } = Object.assign(dual(2, function map<E, A, B>(data: RemoteData<E, A>, f: (a: A) => B): RemoteData<E, B> {
   if (isSuccess(data)) {
-    return success(f(data.value), data.refreshing)
+    return succeed(f(data.value), data.refreshing)
   } else {
     return data
   }
@@ -727,7 +727,7 @@ export const zipWith: {
     },
     onSuccess: (selfValue, selfRefreshing) => {
       if (isSuccess(that)) {
-        return success(f(selfValue, that.value), selfRefreshing && that.refreshing)
+        return succeed(f(selfValue, that.value), selfRefreshing && that.refreshing)
       } else {
         return that
       }
@@ -804,7 +804,7 @@ export function tuple<Data extends ReadonlyArray<RemoteData.Any>>(
     return failCause(cause, refreshing)
   }
 
-  return success(
+  return succeed(
     successes.map((s) => s.value),
     successes.every((s) => s.refreshing)
   ) as any
@@ -858,7 +858,7 @@ export function unwrapEffect<R, E, A>(
     effect,
     Effect.matchCause({
       onFailure: unwrapCause,
-      onSuccess: success
+      onSuccess: succeed
     })
   )
 }

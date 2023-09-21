@@ -1,6 +1,6 @@
 ---
 title: Fx.ts
-nav_order: 8
+nav_order: 9
 parent: "@typed/fx"
 ---
 
@@ -103,8 +103,11 @@ Added in v1.18.0
   - [empty](#empty)
   - [fail](#fail)
   - [failCause](#failcause)
+  - [fromDequeue](#fromdequeue)
   - [fromEffect](#fromeffect)
+  - [fromEmitter](#fromemitter)
   - [fromFxEffect](#fromfxeffect)
+  - [fromHub](#fromhub)
   - [fromIterable](#fromiterable)
   - [fromNullable](#fromnullable)
   - [fromScheduled](#fromscheduled)
@@ -137,8 +140,10 @@ Added in v1.18.0
   - [provideSomeLayer](#providesomelayer)
   - [scoped](#scoped)
 - [errors](#errors)
-  - [filterCause](#filtercause)
+  - [filterError](#filtererror)
+  - [filterErrorCause](#filtererrorcause)
   - [filterMapCause](#filtermapcause)
+  - [filterMapError](#filtermaperror)
   - [mapError](#maperror)
   - [mapErrorCause](#maperrorcause)
 - [flattening](#flattening)
@@ -156,6 +161,7 @@ Added in v1.18.0
   - [flatMapCauseConcurrently](#flatmapcauseconcurrently)
   - [flatMapCauseWithStrategy](#flatmapcausewithstrategy)
   - [flatMapConcurrently](#flatmapconcurrently)
+  - [flatMapError](#flatmaperror)
   - [flatMapWithStrategy](#flatmapwithstrategy)
   - [flatten](#flatten)
   - [matchCause](#matchcause)
@@ -178,12 +184,14 @@ Added in v1.18.0
   - [WithEarlyExitParams (type alias)](#withearlyexitparams-type-alias)
   - [WithFlattenStrategyParams (type alias)](#withflattenstrategyparams-type-alias)
   - [WithScopedForkParams (type alias)](#withscopedforkparams-type-alias)
+- [run](#run)
+  - [toEnqueue](#toenqueue)
 - [running](#running)
   - [drain](#drain)
   - [findFirst](#findfirst)
   - [observe](#observe)
   - [reduce](#reduce)
-  - [run](#run)
+  - [run](#run-1)
   - [toArray](#toarray)
   - [toChunk](#tochunk)
   - [toReadonlyArray](#toreadonlyarray)
@@ -969,11 +977,13 @@ Apply a function to the constructed Effect that represents the running Fx.
 ```ts
 export declare const middleware: {
   <R, E, A, R2>(
-    f: (effect: Effect.Effect<R, never, unknown>, sink: Sink.Sink<E, A>) => Effect.Effect<R2, never, unknown>
+    f: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
+    g?: ((sink: Sink.Sink<E, A>) => Sink.Sink<E, A>) | undefined
   ): (fx: Fx<R, E, A>) => Fx<R2, E, A>
   <R, E, A, R2>(
     fx: Fx<R, E, A>,
-    f: (effect: Effect.Effect<R, never, unknown>, sink: Sink.Sink<E, A>) => Effect.Effect<R2, never, unknown>
+    f: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
+    g?: ((sink: Sink.Sink<E, A>) => Sink.Sink<E, A>) | undefined
   ): Fx<R2, E, A>
 }
 ```
@@ -1255,6 +1265,21 @@ export declare const failCause: <E>(cause: Cause.Cause<E>) => Fx<never, E, never
 
 Added in v1.18.0
 
+## fromDequeue
+
+Consume a Dequeue as soon as values become available and emit them as a Fx.
+
+**Signature**
+
+```ts
+export declare const fromDequeue: {
+  <A>(dequeue: Queue.Dequeue<A>): Fx<never, never, A>
+  <I, A>(dequeue: Context.Dequeue<I, A>): Fx<I, never, A>
+}
+```
+
+Added in v1.18.0
+
 ## fromEffect
 
 Construct an Fx<R, E, A> from an Effect<R, E, A>
@@ -1263,6 +1288,21 @@ Construct an Fx<R, E, A> from an Effect<R, E, A>
 
 ```ts
 export declare const fromEffect: <R, E, A>(effect: Effect.Effect<R, E, A>) => Fx<R, E, A>
+```
+
+Added in v1.18.0
+
+## fromEmitter
+
+Construct an Fx by describing an Scoped Effect that has access to an Emitter
+to emit events and errors.
+
+**Signature**
+
+```ts
+export declare const fromEmitter: <R, E, A>(
+  f: (emitter: Emitter<E, A>) => Effect.Effect<R | Scope.Scope, never, unknown>
+) => Fx<Exclude<R, Scope.Scope>, E, A>
 ```
 
 Added in v1.18.0
@@ -1277,6 +1317,21 @@ Run an Effect to produce an Fx to run.
 export declare const fromFxEffect: <R, E, R2, E2, B>(
   fxEffect: Effect.Effect<R, E, Fx<R2, E2, B>>
 ) => Fx<R | R2, E | E2, B>
+```
+
+Added in v1.18.0
+
+## fromHub
+
+Consume a Hub as soon as values become available and emit them as a Fx.
+
+**Signature**
+
+```ts
+export declare const fromHub: {
+  <A>(hub: Hub.Hub<A>): Fx<Scope.Scope, never, A>
+  <I, A>(hub: Context.Hub<I, A>): Fx<Scope.Scope | I, never, A>
+}
 ```
 
 Added in v1.18.0
@@ -1624,8 +1679,8 @@ Provide the environment to an Fx.
 
 ```ts
 export declare const provideContext: {
-  <R>(context: Context<R>): <E, A>(fx: Fx<R, E, A>) => Fx<never, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, context: Context<R>): Fx<never, E, A>
+  <R>(context: Context.Context<R>): <E, A>(fx: Fx<R, E, A>) => Fx<never, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, context: Context.Context<R>): Fx<never, E, A>
 }
 ```
 
@@ -1654,8 +1709,8 @@ Provide a service to an Fx using a Tag.
 
 ```ts
 export declare const provideService: {
-  <I, S>(tag: Tag<I, S>, service: S): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, I>, E, A>
-  <R, E, A, I, S>(fx: Fx<R, E, A>, tag: Tag<I, S>, service: S): Fx<Exclude<R, I>, E, A>
+  <I, S>(tag: Context.Tag<I, S>, service: S): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, I>, E, A>
+  <R, E, A, I, S>(fx: Fx<R, E, A>, tag: Context.Tag<I, S>, service: S): Fx<Exclude<R, I>, E, A>
 }
 ```
 
@@ -1669,10 +1724,10 @@ Provide a service using an Effect to an Fx using a Tag.
 
 ```ts
 export declare const provideServiceEffect: {
-  <I, S, R2, E2>(tag: Tag<I, S>, service: Effect.Effect<R2, E2, S>): <R, E, A>(
+  <I, S, R2, E2>(tag: Context.Tag<I, S>, service: Effect.Effect<R2, E2, S>): <R, E, A>(
     fx: Fx<R, E, A>
   ) => Fx<R2 | Exclude<R, I>, E, A>
-  <R, E, A, I, S, R2, E2>(fx: Fx<R, E, A>, tag: Tag<I, S>, service: Effect.Effect<R2, E2, S>): Fx<
+  <R, E, A, I, S, R2, E2>(fx: Fx<R, E, A>, tag: Context.Tag<I, S>, service: Effect.Effect<R2, E2, S>): Fx<
     R2 | Exclude<R, I>,
     E,
     A
@@ -1690,8 +1745,8 @@ Provide some of the environment to an Fx.
 
 ```ts
 export declare const provideSomeContext: {
-  <R2>(context: Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, context: Context<R2>): Fx<Exclude<R, R2>, E, A>
+  <R2>(context: Context.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, context: Context.Context<R2>): Fx<Exclude<R, R2>, E, A>
 }
 ```
 
@@ -1726,14 +1781,31 @@ Added in v1.18.0
 
 # errors
 
-## filterCause
+## filterError
 
 Filter the Error of an Fx.
 
 **Signature**
 
 ```ts
-export declare const filterCause: {
+export declare const filterError: {
+  <E, E2 extends E>(f: (a: E) => a is E2): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
+  <E>(f: (a: E) => boolean): <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, E2 extends E, A>(fx: Fx<R, E, A>, f: (a: E) => a is E2): Fx<R, E2, A>
+  <R, E, A>(fx: Fx<R, E, A>, f: (a: E) => boolean): Fx<R, E, A>
+}
+```
+
+Added in v1.18.0
+
+## filterErrorCause
+
+Filter the Cause of an Fx.
+
+**Signature**
+
+```ts
+export declare const filterErrorCause: {
   <E, E2 extends E>(f: (a: Cause.Cause<E>) => a is Cause.Cause<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
   <E>(f: (a: Cause.Cause<E>) => boolean): <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
   <R, E, E2 extends E, A>(fx: Fx<R, E, A>, f: (a: Cause.Cause<E>) => a is Cause.Cause<E2>): Fx<R, E2, A>
@@ -1745,7 +1817,7 @@ Added in v1.18.0
 
 ## filterMapCause
 
-Filter and map the Error of an Fx.
+Filter and map the Cause of an Fx.
 
 **Signature**
 
@@ -1753,6 +1825,21 @@ Filter and map the Error of an Fx.
 export declare const filterMapCause: {
   <E, E2>(f: (a: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
   <R, E, A, E2>(fx: Fx<R, E, A>, f: (a: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): Fx<R, E2, A>
+}
+```
+
+Added in v1.18.0
+
+## filterMapError
+
+Filter and map the error of an Fx.
+
+**Signature**
+
+```ts
+export declare const filterMapError: {
+  <E, E2>(f: (a: E) => Option.Option<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
+  <R, E, A, E2>(fx: Fx<R, E, A>, f: (a: E) => Option.Option<E2>): Fx<R, E2, A>
 }
 ```
 
@@ -2029,6 +2116,21 @@ Map the success value of an Fx to another Fx with the specified concurrency.
 export declare const flatMapConcurrently: {
   <A, R2, E2, B>(f: (a: A) => Fx<R2, E2, B>, concurrency: number): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Fx<R2, E2, B>, concurrency: number): Fx<R | R2, E | E2, B>
+}
+```
+
+Added in v1.18.0
+
+## flatMapError
+
+Map the failures of an Fx to another Fx, flattening the result with unbounded concurrency.
+
+**Signature**
+
+```ts
+export declare const flatMapError: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
 }
 ```
 
@@ -2360,6 +2462,25 @@ export type WithScopedForkParams<E, A> = {
   readonly sink: Sink.Sink<E, A>
   readonly fork: ScopedFork
   readonly scope: Scope.Scope
+}
+```
+
+Added in v1.18.0
+
+# run
+
+## toEnqueue
+
+Consume an Fx and place its values into an Enqueue.
+
+**Signature**
+
+```ts
+export declare const toEnqueue: {
+  <A, B>(enqueue: Queue.Enqueue<A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, void>
+  <I, A, B>(enqueue: Context.Enqueue<I, A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<I | R, E, void>
+  <R, E, A, B>(fx: Fx<R, E, A>, enqueue: Queue.Enqueue<A | B>): Effect.Effect<R, E, void>
+  <R, E, I, A, B>(fx: Fx<R, E, A>, enqueue: Context.Enqueue<I, A | B>): Effect.Effect<R, E, void>
 }
 ```
 
@@ -2809,7 +2930,7 @@ export declare const withSpan: {
       readonly links?: ReadonlyArray<Tracer.SpanLink>
       readonly parent?: Tracer.ParentSpan
       readonly root?: boolean
-      readonly context?: Context<never>
+      readonly context?: Context.Context<never>
     }
   ): <R, E, A>(self: Fx<R, E, A>) => Fx<R, E, A>
   <R, E, A>(
@@ -2820,7 +2941,7 @@ export declare const withSpan: {
       readonly links?: ReadonlyArray<Tracer.SpanLink>
       readonly parent?: Tracer.ParentSpan
       readonly root?: boolean
-      readonly context?: Context<never>
+      readonly context?: Context.Context<never>
     }
   ): Fx<R, E, A>
 }

@@ -214,6 +214,9 @@ importers:
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
+      '@typed/remote-data':
+        specifier: workspace:*
+        version: link:../remote-data/dist
     devDependencies:
       '@most/core':
         specifier: ^1.6.1
@@ -227,22 +230,6 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.1
-    publishDirectory: dist
-
-  packages/navigation:
-    dependencies:
-      '@effect/data':
-        specifier: ^0.18.5
-        version: 0.18.5
-      '@effect/io':
-        specifier: ^0.40.3
-        version: 0.40.3(@effect/data@0.18.5)
-      '@typed/context':
-        specifier: workspace:*
-        version: link:../context/dist
-      '@virtualstate/navigation':
-        specifier: 1.0.1-alpha.199
-        version: 1.0.1-alpha.199
     publishDirectory: dist
 
   packages/path:
@@ -2269,23 +2256,6 @@ packages:
       eslint-visitor-keys: 3.4.3
     dev: true
 
-  /@ungap/structured-clone@1.2.0:
-    resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
-    dev: false
-
-  /@virtualstate/composite-key@1.0.0:
-    resolution: {integrity: sha512-5G3RT87X1w39UQyBvqQpTfsxK9FjoKlXfonvIY9esAHe9d0vOWVGtbElJppwJKWzh508Ja6gWn7W7dWHwj50Jw==}
-    dev: false
-
-  /@virtualstate/navigation@1.0.1-alpha.199:
-    resolution: {integrity: sha512-CFAtLsq9MgLR96hAMOiQaqaonGCFbOB9I1JM3mO0EpsyF1egD8AzjG+mJWSUBC0KzeBawwbzWDb00SWMGP7uog==}
-    dependencies:
-      '@ungap/structured-clone': 1.2.0
-      '@virtualstate/composite-key': 1.0.0
-      abort-controller: 3.0.0
-      uuid: 8.3.2
-    dev: false
-
   /@vitejs/plugin-react@4.0.4(vite@4.4.9):
     resolution: {integrity: sha512-7wU921ABnNYkETiMaZy7XqpueMnpu5VxvVps13MjmCo+utBdD79sZzrApHawHtVX66cCJQQTXFcjH0y9dSUK8g==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -2359,13 +2329,6 @@ packages:
       loupe: 2.3.6
       pretty-format: 29.7.0
     dev: true
-
-  /abort-controller@3.0.0:
-    resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
-    engines: {node: '>=6.5'}
-    dependencies:
-      event-target-shim: 5.0.1
-    dev: false
 
   /acorn-import-assertions@1.9.0(acorn@8.10.0):
     resolution: {integrity: sha512-cmMwop9x+8KFhxvKrKfPYmN6/pKTYYHBqLa0DfvVZcKMJWNyWLnaqND7dx/qn66R7ewM1UX5XMaDVP5wlVTaVA==}
@@ -3714,11 +3677,6 @@ packages:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
     dev: true
-
-  /event-target-shim@5.0.1:
-    resolution: {integrity: sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==}
-    engines: {node: '>=6'}
-    dev: false
 
   /expand-range@1.8.2:
     resolution: {integrity: sha512-AFASGfIlnIbkKPQwX1yHaDjFvh/1gyKJODme52V6IORh69uEYgZp0o9C+qsIGNVEiuuhQU0CSSl++Rlegg1qvA==}

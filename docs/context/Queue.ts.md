@@ -68,7 +68,6 @@ export interface Queue<I, A> extends Tag<I, Q.Queue<A>> {
 
   // Enqueue
   readonly offer: (a: A) => Effect.Effect<I, never, boolean>
-  readonly unsafeOffer: (a: A) => Effect.Effect<I, never, boolean>
   readonly offerAll: (as: Iterable<A>) => Effect.Effect<I, never, boolean>
 
   // Queue

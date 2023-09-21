@@ -65,7 +65,7 @@ Added in v1.0.0
   - [noData](#nodata)
   - [stopLoading](#stoploading)
   - [struct](#struct)
-  - [success](#success)
+  - [succeed](#succeed)
   - [toLoading](#toloading)
   - [toOption](#tooption)
   - [toOptionCause](#tooptioncause)
@@ -756,14 +756,14 @@ export declare function struct<Data extends Readonly<Record<string, RemoteData.A
 
 Added in v1.0.0
 
-## success
+## succeed
 
 Construct a Success from a value
 
 **Signature**
 
 ```ts
-export declare function success<A>(value: A, refreshing: boolean = false): Success<A>
+export declare function succeed<A>(value: A, refreshing: boolean = false): Success<A>
 ```
 
 Added in v1.0.0
