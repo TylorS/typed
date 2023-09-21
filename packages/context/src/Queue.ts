@@ -38,7 +38,6 @@ export interface Queue<I, A> extends Tag<I, Q.Queue<A>> {
 
   // Enqueue
   readonly offer: (a: A) => Effect.Effect<I, never, boolean>
-  readonly unsafeOffer: (a: A) => Effect.Effect<I, never, boolean>
   readonly offerAll: (as: Iterable<A>) => Effect.Effect<I, never, boolean>
 
   // Queue
@@ -77,7 +76,6 @@ export function Queue<A>(): {
       takeN: (n: number) => tag.withEffect(Q.takeN(n)),
       poll: tag.withEffect(Q.poll),
       offer: (a: A) => tag.withEffect(Q.offer(a)),
-      unsafeOffer: (a: A) => tag.with(Q.unsafeOffer(a)),
       offerAll: (as: Iterable<A>): Effect.Effect<IdentifierOf<I>, never, boolean> =>
         tag.withEffect((enqueue) => Q.offerAll<A>(enqueue, as)),
       bounded: (capacity: number) => Layer.effect(tag, Q.bounded(capacity)),

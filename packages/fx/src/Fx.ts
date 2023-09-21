@@ -17,7 +17,6 @@
  */
 
 import type * as Chunk from "@effect/data/Chunk"
-import type { Context, Tag } from "@effect/data/Context"
 import type { DurationInput } from "@effect/data/Duration"
 import type * as Either from "@effect/data/Either"
 import type { Equivalence } from "@effect/data/Equivalence"
@@ -32,13 +31,16 @@ import type * as Exit from "@effect/io/Exit"
 import type * as Fiber from "@effect/io/Fiber"
 import type * as FiberId from "@effect/io/FiberId"
 import type { FiberRef } from "@effect/io/FiberRef"
+import type * as Hub from "@effect/io/Hub"
 import type * as Layer from "@effect/io/Layer"
 import type * as Logger from "@effect/io/Logger"
+import type * as Queue from "@effect/io/Queue"
 import type * as Request from "@effect/io/Request"
 import type * as Schedule from "@effect/io/Schedule"
 import type { Scheduler } from "@effect/io/Scheduler"
 import type * as Scope from "@effect/io/Scope"
 import type * as Tracer from "@effect/io/Tracer"
+import type * as Context from "@typed/Context"
 import type { Emitter } from "@typed/fx/Emitter"
 import * as core from "@typed/fx/internal/core"
 import * as internal from "@typed/fx/internal/fx"
@@ -1431,8 +1433,8 @@ export const until: {
  * @category context
  */
 export const provideContext: {
-  <R>(context: Context<R>): <E, A>(fx: Fx<R, E, A>) => Fx<never, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, context: Context<R>): Fx<never, E, A>
+  <R>(context: Context.Context<R>): <E, A>(fx: Fx<R, E, A>) => Fx<never, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, context: Context.Context<R>): Fx<never, E, A>
 } = core.provideContext
 
 /**
@@ -1442,8 +1444,8 @@ export const provideContext: {
  * @category context
  */
 export const provideSomeContext: {
-  <R2>(context: Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, context: Context<R2>): Fx<Exclude<R, R2>, E, A>
+  <R2>(context: Context.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, context: Context.Context<R2>): Fx<Exclude<R, R2>, E, A>
 } = core.provideSomeContext
 
 /**
@@ -1474,8 +1476,8 @@ export const provideSomeLayer: {
  * @category context
  */
 export const provideService: {
-  <I, S>(tag: Tag<I, S>, service: S): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, I>, E, A>
-  <R, E, A, I, S>(fx: Fx<R, E, A>, tag: Tag<I, S>, service: S): Fx<Exclude<R, I>, E, A>
+  <I, S>(tag: Context.Tag<I, S>, service: S): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, I>, E, A>
+  <R, E, A, I, S>(fx: Fx<R, E, A>, tag: Context.Tag<I, S>, service: S): Fx<Exclude<R, I>, E, A>
 } = core.provideService
 
 /**
@@ -1486,12 +1488,12 @@ export const provideService: {
  */
 export const provideServiceEffect: {
   <I, S, R2, E2>(
-    tag: Tag<I, S>,
+    tag: Context.Tag<I, S>,
     service: Effect.Effect<R2, E2, S>
   ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, I>, E, A>
   <R, E, A, I, S, R2, E2>(
     fx: Fx<R, E, A>,
-    tag: Tag<I, S>,
+    tag: Context.Tag<I, S>,
     service: Effect.Effect<R2, E2, S>
   ): Fx<R2 | Exclude<R, I>, E, A>
 } = core.provideServiceEffect
@@ -2009,7 +2011,7 @@ export const withSpan: {
       readonly links?: ReadonlyArray<Tracer.SpanLink>
       readonly parent?: Tracer.ParentSpan
       readonly root?: boolean
-      readonly context?: Context<never>
+      readonly context?: Context.Context<never>
     }
   ): <R, E, A>(self: Fx<R, E, A>) => Fx<R, E, A>
   <R, E, A>(
@@ -2020,7 +2022,7 @@ export const withSpan: {
       readonly links?: ReadonlyArray<Tracer.SpanLink>
       readonly parent?: Tracer.ParentSpan
       readonly root?: boolean
-      readonly context?: Context<never>
+      readonly context?: Context.Context<never>
     }
   ): Fx<R, E, A>
 } = internal.withSpan
@@ -2070,5 +2072,22 @@ export const keyed: {
     getKey: (a: A) => C
   ): Fx<R | R2, E | E2, ReadonlyArray<B>>
 } = dual(3, internalKeyed.keyed)
+
+export const fromDequeue: {
+  <A>(dequeue: Queue.Dequeue<A>): Fx<never, never, A>
+  <I, A>(dequeue: Context.Dequeue<I, A>): Fx<I, never, A>
+} = internal.fromDequeue
+
+export const toEnqueue: {
+  <A, B>(enqueue: Queue.Enqueue<A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, void>
+  <I, A, B>(enqueue: Context.Enqueue<I, A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<I | R, E, void>
+  <R, E, A, B>(fx: Fx<R, E, A>, enqueue: Queue.Enqueue<A | B>): Effect.Effect<R, E, void>
+  <R, E, I, A, B>(fx: Fx<R, E, A>, enqueue: Context.Enqueue<I, A | B>): Effect.Effect<R, E, void>
+} = internal.toEnqueue
+
+export const fromHub: {
+  <A>(hub: Hub.Hub<A>): Fx<Scope.Scope, never, A>
+  <I, A>(hub: Context.Hub<I, A>): Fx<Scope.Scope | I, never, A>
+} = internal.fromHub
 
 /* #endregion */

@@ -1,3 +1,4 @@
+import * as Chunk from "@effect/data/Chunk"
 import * as Effect from "@effect/io/Effect"
 import type * as Request from "@effect/io/Request"
 import * as Context from "@typed/context"
@@ -106,7 +107,7 @@ describe(__filename, () => {
       })((_) => class FooBarResolver extends _("FooBar") {})
 
       const test = Effect.gen(function*(_) {
-        const foo = yield* _(FooBar.requests.foo())
+        const foo = yield* _(FooRequest.make())
         const bar = yield* _(FooBar.requests.bar())
 
         expect(foo).toBe(1)
@@ -116,6 +117,106 @@ describe(__filename, () => {
       )
 
       await Effect.runPromise(test)
+    })
+  })
+
+  describe(Context.Cache, () => {
+    it("allows creating a Cache in the effect context", async () => {
+      const cache = Context.Cache<string, never, number>()("test")
+      const test = cache.get("foo").pipe(
+        Effect.provideSomeLayer(cache.make({ capacity: 1, timeToLive: 1000, lookup: () => Effect.succeed(1) }))
+      )
+      const result = await Effect.runPromise(test)
+
+      expect(result).toBe(1)
+    })
+  })
+
+  describe(Context.Queue, () => {
+    it("allows creating a Queue in the effect context", async () => {
+      const queue = Context.Queue<number>()("test")
+      const test = queue.offerAll([1, 2, 3]).pipe(
+        Effect.flatMap(() => queue.takeAll),
+        Effect.provideSomeLayer(queue.unbounded)
+      )
+      const result = await Effect.runPromise(test)
+
+      expect(result).toEqual(Chunk.unsafeFromArray([1, 2, 3]))
+    })
+  })
+
+  describe(Context.Hub, () => {
+    it("allows creating a Hub in the effect context", async () => {
+      const hub = Context.Hub<number>()("test")
+      const test = hub.subscribe.pipe(
+        Effect.tap(() => hub.publishAll([1, 2, 3])),
+        Effect.flatMap((sub) => sub.takeAll()),
+        Effect.provideSomeLayer(hub.unbounded),
+        Effect.scoped
+      )
+      const result = await Effect.runPromise(test)
+
+      expect(result).toEqual(Chunk.unsafeFromArray([1, 2, 3]))
+    })
+  })
+
+  describe(Context.Dequeue, () => {
+    it("allows creating a Dequeue from Queue", async () => {
+      const queue = Context.Queue<number>()("test")
+      const dequeue = Context.Dequeue<number>()("test-dequeue")
+      const test = queue.offerAll([1, 2, 3]).pipe(
+        Effect.flatMap(() => dequeue.takeAll),
+        Effect.provideSomeLayer(dequeue.fromQueue(queue)),
+        Effect.provideSomeLayer(queue.unbounded)
+      )
+      const result = await Effect.runPromise(test)
+
+      expect(result).toEqual(Chunk.unsafeFromArray([1, 2, 3]))
+    })
+
+    it("allows creating a Dequeue from Hub", async () => {
+      const hub = Context.Hub<number>()("test")
+      const dequeue = Context.Dequeue<number>()("test-dequeue")
+      const test = hub.subscribe.pipe(
+        Effect.tap(() => hub.publishAll([1, 2, 3])),
+        Effect.flatMap(() => dequeue.takeAll),
+        Effect.provideSomeLayer(dequeue.fromHub(hub)),
+        Effect.provideSomeLayer(hub.unbounded),
+        Effect.scoped
+      )
+      const result = await Effect.runPromise(test)
+
+      expect(result).toEqual(Chunk.unsafeFromArray([1, 2, 3]))
+    })
+  })
+
+  describe(Context.Enqueue, () => {
+    it("allows creating a Enqueue from Queue", async () => {
+      const queue = Context.Queue<number>()("test")
+      const enqueue = Context.Enqueue<number>()("test-enqueue")
+      const test = enqueue.offerAll([1, 2, 3]).pipe(
+        Effect.flatMap(() => queue.takeAll),
+        Effect.provideSomeLayer(enqueue.fromQueue(queue)),
+        Effect.provideSomeLayer(queue.unbounded)
+      )
+      const result = await Effect.runPromise(test)
+
+      expect(result).toEqual(Chunk.unsafeFromArray([1, 2, 3]))
+    })
+
+    it("allows creating a Enqueue from Hub", async () => {
+      const hub = Context.Hub<number>()("test")
+      const enqueue = Context.Enqueue<number>()("test-enqueue")
+      const test = hub.subscribe.pipe(
+        Effect.tap(() => enqueue.offerAll([1, 2, 3])),
+        Effect.flatMap((dequeue) => dequeue.takeAll()),
+        Effect.provideSomeLayer(enqueue.fromHub(hub)),
+        Effect.provideSomeLayer(hub.unbounded),
+        Effect.scoped
+      )
+      const result = await Effect.runPromise(test)
+
+      expect(result).toEqual(Chunk.unsafeFromArray([1, 2, 3]))
     })
   })
 })

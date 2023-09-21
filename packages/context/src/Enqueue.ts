@@ -19,7 +19,6 @@ import { Tag } from "@typed/context/Tag"
  */
 export interface Enqueue<I, A> extends Tag<I, Q.Enqueue<A>> {
   readonly offer: (a: A) => Effect.Effect<I, never, boolean>
-  readonly unsafeOffer: (a: A) => Effect.Effect<I, never, boolean>
   readonly offerAll: (as: Iterable<A>) => Effect.Effect<I, never, boolean>
 
   readonly capacity: Effect.Effect<I, never, number>
@@ -58,7 +57,6 @@ export function Enqueue<A>(): {
       isShutdown: tag.withEffect((e) => e.isShutdown()),
       awaitShutdown: tag.withEffect((e) => e.awaitShutdown()),
       offer: (a: A) => tag.withEffect(Q.offer(a)),
-      unsafeOffer: (a: A) => tag.with(Q.unsafeOffer(a)),
       offerAll: (as: Iterable<A>): Effect.Effect<IdentifierOf<I>, never, boolean> =>
         tag.withEffect((enqueue) => Q.offerAll<A>(enqueue, as)),
       fromQueue: <I2>(queue: Queue<I2, A>) => Layer.effect(tag, queue),

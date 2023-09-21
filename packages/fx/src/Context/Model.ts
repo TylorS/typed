@@ -32,8 +32,6 @@ export const ModelTypeId = Symbol.for("@typed/fx/Model")
  */
 export type ModelTypeId = typeof ModelTypeId
 
-// TODO: Add support for nested Models
-
 type Any = RefSubject<any, any, any> | RefSubject<any, never, any> | Model<any>
 
 /**

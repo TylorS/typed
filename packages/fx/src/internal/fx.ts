@@ -1,18 +1,19 @@
-import type * as Context from "@effect/data/Context"
 import type { DurationInput } from "@effect/data/Duration"
 import * as Either from "@effect/data/Either"
 import { dual } from "@effect/data/Function"
 import type * as HashSet from "@effect/data/HashSet"
-import { prepend } from "@effect/data/List"
+import * as List from "@effect/data/List"
 import * as Option from "@effect/data/Option"
-import type { Cause } from "@effect/io/Cause"
-import { currentTimeNanos } from "@effect/io/Clock"
+import type * as Cause from "@effect/io/Cause"
+import * as Clock from "@effect/io/Clock"
 import type { ConfigProvider } from "@effect/io/ConfigProvider"
 import * as Effect from "@effect/io/Effect"
 import * as Exit from "@effect/io/Exit"
 import type * as FiberId from "@effect/io/FiberId"
 import * as FiberRef from "@effect/io/FiberRef"
+import type * as Hub from "@effect/io/Hub"
 import type * as Logger from "@effect/io/Logger"
+import * as Queue from "@effect/io/Queue"
 import type * as Request from "@effect/io/Request"
 import type { Scheduler } from "@effect/io/Scheduler"
 import type * as Scope from "@effect/io/Scope"
@@ -20,6 +21,7 @@ import type * as Tracer from "@effect/io/Tracer"
 import * as Chainable from "@effect/typeclass/Chainable"
 import * as Covariant from "@effect/typeclass/Covariant"
 import * as Invariant from "@effect/typeclass/Invariant"
+import type * as Context from "@typed/Context"
 import { type Fx } from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
 import { run } from "@typed/fx/internal/run"
@@ -28,7 +30,6 @@ import * as Sink from "@typed/fx/Sink"
 import * as Typeclass from "@typed/fx/Typeclass"
 
 // TODO: RefArray, RefSet, RefMap, RefHashMap, RefHashSet, etc
-// TODO: fromDequeue, fromQueue, toEnequeue, toQueue, toHub
 
 /**
  * Create an Fx which will emit a value after waiting for a specified duration.
@@ -128,15 +129,15 @@ export const onInterrupt: {
  */
 export const onError: {
   <R2>(
-    f: (cause: Cause<never>) => Effect.Effect<R2, never, unknown>
+    f: (cause: Cause.Cause<never>) => Effect.Effect<R2, never, unknown>
   ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2, E, A>
   <R, E, A, R2>(
     fx: Fx<R, E, A>,
-    f: (cause: Cause<never>) => Effect.Effect<R2, never, unknown>
+    f: (cause: Cause.Cause<never>) => Effect.Effect<R2, never, unknown>
   ): Fx<R | R2, E, A>
 } = dual(2, function onError<R, E, A, R2>(
   fx: Fx<R, E, A>,
-  f: (cause: Cause<never>) => Effect.Effect<R2, never, unknown>
+  f: (cause: Cause.Cause<never>) => Effect.Effect<R2, never, unknown>
 ): Fx<R | R2, E, A> {
   return core.middleware(fx, Effect.onError(f))
 })
@@ -492,11 +493,11 @@ export const withSpan: {
         self,
         (effect) =>
           effect.pipe(
-            Effect.locallyWith(FiberRef.currentTracerSpan, prepend(span))
+            Effect.locallyWith(FiberRef.currentTracerSpan, List.prepend(span))
           ),
         Sink.setSpan(span)
       ),
-    (span, exit) => Effect.flatMap(currentTimeNanos, (time) => Effect.sync(() => span.end(time, exit)))
+    (span, exit) => Effect.flatMap(Clock.currentTimeNanos, (time) => Effect.sync(() => span.end(time, exit)))
   )
 })
 
@@ -522,3 +523,63 @@ export const partitionMap: {
     core.filterMap(m, Either.getRight)
   ] as const
 })
+
+export function fromDequeue<A>(dequeue: Queue.Dequeue<A>): Fx<never, never, A>
+export function fromDequeue<I, A>(dequeue: Context.Dequeue<I, A>): Fx<I, never, A>
+export function fromDequeue<I, A>(dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>): Fx<I, never, A> {
+  return core.fromSink((sink) =>
+    Effect.repeatWhileEffect(
+      Effect.matchCauseEffect(takeDequeue(dequeue), sink),
+      () => dequeueIsActive(dequeue)
+    )
+  )
+}
+
+function takeDequeue<I, A>(dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>): Effect.Effect<I, never, A> {
+  if (Queue.DequeueTypeId in dequeue) {
+    return dequeue.take()
+  } else {
+    return dequeue.take
+  }
+}
+
+function dequeueIsActive<I, A>(dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>): Effect.Effect<I, never, boolean> {
+  if (Queue.DequeueTypeId in dequeue) {
+    return Effect.sync(() => dequeue.isActive())
+  } else {
+    return dequeue.isActive
+  }
+}
+
+export const toEnqueue: {
+  <A, B>(enqueue: Queue.Enqueue<A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, void>
+  <I, A, B>(enqueue: Context.Enqueue<I, A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R | I, E, void>
+  <R, E, A, B>(fx: Fx<R, E, A>, enqueue: Queue.Enqueue<A | B>): Effect.Effect<R, E, void>
+  <R, E, I, A, B>(fx: Fx<R, E, A>, enqueue: Context.Enqueue<I, A | B>): Effect.Effect<R, E, void>
+} = dual(
+  2,
+  function toEnqueue<R, E, I, A, B>(
+    fx: Fx<R, E, A>,
+    enqueue: Context.Enqueue<I, A | B> | Queue.Enqueue<A | B>
+  ): Effect.Effect<R | I, E, void> {
+    return core.observe(fx, enqueue.offer)
+  }
+)
+
+export function fromHub<A>(hub: Hub.Hub<A>): Fx<Scope.Scope, never, A>
+export function fromHub<I, A>(hub: Context.Hub<I, A>): Fx<I | Scope.Scope, never, A>
+export function fromHub<I, A>(hub: Context.Hub<I, A> | Hub.Hub<A>): Fx<I | Scope.Scope, never, A> {
+  return core.acquireUseRelease(
+    hubSubscribe(hub),
+    (q) => fromDequeue(q),
+    (d) => d.shutdown()
+  )
+}
+
+function hubSubscribe<I, A>(hub: Context.Hub<I, A> | Hub.Hub<A>) {
+  if (Queue.EnqueueTypeId in hub) {
+    return hub.subscribe()
+  } else {
+    return hub.subscribe
+  }
+}
