@@ -562,7 +562,7 @@ export const toEnqueue: {
     fx: Fx<R, E, A>,
     enqueue: Context.Enqueue<I, A | B> | Queue.Enqueue<A | B>
   ): Effect.Effect<R | I, E, void> {
-    return core.observe(fx, enqueue.offer)
+    return core.observe(fx, (a) => enqueue.offer(a))
   }
 )
 
