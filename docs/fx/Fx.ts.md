@@ -150,11 +150,15 @@ Added in v1.18.0
   - [concatMap](#concatmap)
   - [exhaust](#exhaust-1)
   - [exhaustLatest](#exhaustlatest-1)
+  - [exhaustLatestMatch](#exhaustlatestmatch)
   - [exhaustLatestMatchCause](#exhaustlatestmatchcause)
   - [exhaustMap](#exhaustmap)
   - [exhaustMapCause](#exhaustmapcause)
+  - [exhaustMapError](#exhaustmaperror)
   - [exhaustMapLatest](#exhaustmaplatest)
   - [exhaustMapLatestCause](#exhaustmaplatestcause)
+  - [exhaustMapLatestError](#exhaustmaplatesterror)
+  - [exhaustMatch](#exhaustmatch)
   - [exhaustMatchCause](#exhaustmatchcause)
   - [flatMap](#flatmap)
   - [flatMapCause](#flatmapcause)
@@ -162,13 +166,20 @@ Added in v1.18.0
   - [flatMapCauseWithStrategy](#flatmapcausewithstrategy)
   - [flatMapConcurrently](#flatmapconcurrently)
   - [flatMapError](#flatmaperror)
+  - [flatMapErrorConcurrently](#flatmaperrorconcurrently)
+  - [flatMapErrorWithStrategy](#flatmaperrorwithstrategy)
   - [flatMapWithStrategy](#flatmapwithstrategy)
   - [flatten](#flatten)
+  - [match](#match)
   - [matchCause](#matchcause)
   - [matchCauseConcurrently](#matchcauseconcurrently)
   - [matchCauseWithStrategy](#matchcausewithstrategy)
+  - [matchErrorConcurrently](#matcherrorconcurrently)
+  - [matchErrorWithStrategy](#matcherrorwithstrategy)
   - [switchMap](#switchmap)
   - [switchMapCause](#switchmapcause)
+  - [switchMapError](#switchmaperror)
+  - [switchMatch](#switchmatch)
   - [switchMatchCause](#switchmatchcause)
 - [lifecycles](#lifecycles)
   - [onError](#onerror)
@@ -184,16 +195,15 @@ Added in v1.18.0
   - [WithEarlyExitParams (type alias)](#withearlyexitparams-type-alias)
   - [WithFlattenStrategyParams (type alias)](#withflattenstrategyparams-type-alias)
   - [WithScopedForkParams (type alias)](#withscopedforkparams-type-alias)
-- [run](#run)
-  - [toEnqueue](#toenqueue)
 - [running](#running)
   - [drain](#drain)
   - [findFirst](#findfirst)
   - [observe](#observe)
   - [reduce](#reduce)
-  - [run](#run-1)
+  - [run](#run)
   - [toArray](#toarray)
   - [toChunk](#tochunk)
+  - [toEnqueue](#toenqueue)
   - [toReadonlyArray](#toreadonlyarray)
 - [sharing](#sharing)
   - [hold](#hold)
@@ -571,6 +581,8 @@ export declare class ToFx<R, E, A>
 Added in v1.18.0
 
 ### toFx (method)
+
+Your implementation of an Fx is returned by this function.
 
 **Signature**
 
@@ -1918,9 +1930,34 @@ export declare const exhaustLatest: <R, E, R2, E2, A>(fx: Fx<R, E, Fx<R2, E2, A>
 
 Added in v1.18.0
 
+## exhaustLatestMatch
+
+Map over the failures and successes of an Fx, prefering the first
+Fx emitted and starting the latest Fx when the first completes
+if they are not the same Fx.
+
+**Signature**
+
+```ts
+export declare const exhaustLatestMatch: {
+  <E, R2, E2, B, A, R3, E3, C>(options: {
+    readonly onFailure: (error: E) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: { readonly onFailure: (error: E) => Fx<R2, E2, B>; readonly onSuccess: (a: A) => Fx<R3, E3, C> }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
+}
+```
+
+Added in v1.18.0
+
 ## exhaustLatestMatchCause
 
 Map over the failures and successes of an Fx, prefering the first
+Fx emitted and starting the latest Fx when the first completes
+if they are not the same Fx.
 
 **Signature**
 
@@ -1974,6 +2011,22 @@ export declare const exhaustMapCause: {
 
 Added in v1.18.0
 
+## exhaustMapError
+
+Map the failures of an Fx to another Fx, prefering the first
+Fx emitted and dropping any subsequent Fx until it has completed.
+
+**Signature**
+
+```ts
+export declare const exhaustMapError: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+}
+```
+
+Added in v1.18.0
+
 ## exhaustMapLatest
 
 Map the success value of an Fx to another Fx, prefering the first
@@ -2003,6 +2056,45 @@ the same Fx.
 export declare const exhaustMapLatestCause: {
   <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+}
+```
+
+Added in v1.18.0
+
+## exhaustMapLatestError
+
+Map the failures of an Fx to another Fx, prefering the first
+until completion, and then running the last emitted Fx if they are not
+the same Fx.
+
+**Signature**
+
+```ts
+export declare const exhaustMapLatestError: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+}
+```
+
+Added in v1.18.0
+
+## exhaustMatch
+
+Map over the failures and successes of an Fx, prefering the first
+Fx emitted and dropping any subsequent Fx until it has completed.
+
+**Signature**
+
+```ts
+export declare const exhaustMatch: {
+  <E, R2, E2, B, A, R3, E3, C>(options: {
+    readonly onFailure: (error: E) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: { readonly onFailure: (error: E) => Fx<R2, E2, B>; readonly onSuccess: (a: A) => Fx<R3, E3, C> }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
 }
 ```
 
@@ -2136,6 +2228,43 @@ export declare const flatMapError: {
 
 Added in v1.18.0
 
+## flatMapErrorConcurrently
+
+Map the failures of an Fx to another Fx with the specified concurrency.
+
+**Signature**
+
+```ts
+export declare const flatMapErrorConcurrently: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>, concurrency: number): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>, concurrency: number): Fx<R | R2, E2, A | B>
+}
+```
+
+Added in v1.18.0
+
+## flatMapErrorWithStrategy
+
+Map the failures of an Fx to another Fx, flattening the result
+with the provided FlattenStrategy.
+
+**Signature**
+
+```ts
+export declare const flatMapErrorWithStrategy: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>, strategy: FlattenStrategy): <R, A>(
+    fx: Fx<R, E, A>
+  ) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>, strategy: FlattenStrategy): Fx<
+    R | R2,
+    E2,
+    A | B
+  >
+}
+```
+
+Added in v1.18.0
+
 ## flatMapWithStrategy
 
 Map the success value of an Fx to another Fx, flattening the result
@@ -2162,6 +2291,27 @@ Map the success value of an Fx to another Fx with unbounded concurrency.
 
 ```ts
 export declare const flatten: <R, E, R2, E2, A>(fx: Fx<R, E, Fx<R2, E2, A>>) => Fx<R | R2, E | E2, A>
+```
+
+Added in v1.18.0
+
+## match
+
+Map over the failures and successes of an Fx, flattening both with unbounded concurrency.
+
+**Signature**
+
+```ts
+export declare const match: {
+  <E, R2, E2, B, A, R3, E3, C>(options: {
+    readonly onFailure: (error: E) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: { readonly onFailure: (error: E) => Fx<R2, E2, B>; readonly onSuccess: (a: A) => Fx<R3, E3, C> }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
+}
 ```
 
 Added in v1.18.0
@@ -2242,6 +2392,58 @@ export declare const matchCauseWithStrategy: {
 
 Added in v1.18.0
 
+## matchErrorConcurrently
+
+Map over the failures and successes of an Fx, flattening both with the specified concurrency.
+
+**Signature**
+
+```ts
+export declare const matchErrorConcurrently: {
+  <E, R2, E2, B, A, R3, E3, C>(options: {
+    readonly onFailure: (error: E) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    readonly concurrency: number
+  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+      readonly concurrency: number
+    }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
+}
+```
+
+Added in v1.18.0
+
+## matchErrorWithStrategy
+
+Map over the failures and successes of an Fx, flattening both using the same strategy.
+
+**Signature**
+
+```ts
+export declare const matchErrorWithStrategy: {
+  <E, R2, E2, B, A, R3, E3, C>(options: {
+    readonly onFailure: (error: E) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    readonly strategy: FlattenStrategy
+  }): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+      readonly strategy: FlattenStrategy
+    }
+  ): Fx<R | R2, E2 | E3, B | C>
+}
+```
+
+Added in v1.18.0
+
 ## switchMap
 
 Map the success value of an Fx to another Fx, switching to the latest
@@ -2269,6 +2471,44 @@ Fx emitted and interrupting the previous.
 export declare const switchMapCause: {
   <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+}
+```
+
+Added in v1.18.0
+
+## switchMapError
+
+Map the failures of an Fx to another Fx, switching to the latest
+Fx emitted and interrupting the previous.
+
+**Signature**
+
+```ts
+export declare const switchMapError: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+}
+```
+
+Added in v1.18.0
+
+## switchMatch
+
+Map over the failures and successes of an Fx, switching to the latest
+Fx emitted and interrupting the previous.
+
+**Signature**
+
+```ts
+export declare const switchMatch: {
+  <E, R2, E2, B, A, R3, E3, C>(options: {
+    readonly onFailure: (error: E) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: { readonly onFailure: (error: E) => Fx<R2, E2, B>; readonly onSuccess: (a: A) => Fx<R3, E3, C> }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
 }
 ```
 
@@ -2467,25 +2707,6 @@ export type WithScopedForkParams<E, A> = {
 
 Added in v1.18.0
 
-# run
-
-## toEnqueue
-
-Consume an Fx and place its values into an Enqueue.
-
-**Signature**
-
-```ts
-export declare const toEnqueue: {
-  <A, B>(enqueue: Queue.Enqueue<A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, void>
-  <I, A, B>(enqueue: Context.Enqueue<I, A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<I | R, E, void>
-  <R, E, A, B>(fx: Fx<R, E, A>, enqueue: Queue.Enqueue<A | B>): Effect.Effect<R, E, void>
-  <R, E, I, A, B>(fx: Fx<R, E, A>, enqueue: Context.Enqueue<I, A | B>): Effect.Effect<R, E, void>
-}
-```
-
-Added in v1.18.0
-
 # running
 
 ## drain
@@ -2594,6 +2815,23 @@ Run an Fx to completion, collecting all emitted values into a Chunk.
 
 ```ts
 export declare const toChunk: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
+```
+
+Added in v1.18.0
+
+## toEnqueue
+
+Consume an Fx and place its values into an Enqueue.
+
+**Signature**
+
+```ts
+export declare const toEnqueue: {
+  <A, B>(enqueue: Queue.Enqueue<A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, void>
+  <I, A, B>(enqueue: Context.Enqueue<I, A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<I | R, E, void>
+  <R, E, A, B>(fx: Fx<R, E, A>, enqueue: Queue.Enqueue<A | B>): Effect.Effect<R, E, void>
+  <R, E, I, A, B>(fx: Fx<R, E, A>, enqueue: Context.Enqueue<I, A | B>): Effect.Effect<R, E, void>
+}
 ```
 
 Added in v1.18.0
