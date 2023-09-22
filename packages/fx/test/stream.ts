@@ -19,7 +19,7 @@ describe.concurrent(__filename, () => {
     })
 
     it("allows skipping values from the Fx", async () => {
-      const inputs = Array.from({ length: 20 }, (_, i) => Fx.at(i, (i + 1) * 10))
+      const inputs = Array.from({ length: 20 }, (_, i) => Fx.at(i, (i + 1) * 100))
 
       const stream = FxStream.toStreamSliding(Fx.merge(inputs))
 
@@ -31,7 +31,7 @@ describe.concurrent(__filename, () => {
 
         while (Exit.isSuccess(exit)) {
           values.push(...Chunk.toReadonlyArray(exit.value))
-          yield* _(Effect.sleep(50))
+          yield* _(Effect.sleep(250))
           exit = yield* _(Effect.exit(pull))
         }
 
@@ -50,7 +50,7 @@ describe.concurrent(__filename, () => {
 
       const values = await Effect.runPromise(test)
 
-      expect(values).toEqual([0, 5, 10, 15])
+      expect(values).toEqual([0, 2, 5, 7, 10, 12, 15, 17])
     })
   })
 
