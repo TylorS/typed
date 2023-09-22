@@ -35,7 +35,8 @@ export function toStream<R, E, A>(fx: Fx.Fx<R, E, A>): Stream.Stream<R, E, A> {
 }
 
 /**
- * Convert an Fx to a Stream
+ * Convert an Fx to a Stream using a sliding Queue to buffer values
+ * that have not yet been pulled.
  * @since 1.18.0
  * @category conversions
  */
