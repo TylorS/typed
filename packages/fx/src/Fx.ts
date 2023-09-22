@@ -352,9 +352,21 @@ export const suspend: <R, E, A>(f: () => Fx<R, E, A>) => Fx<R, E, A> = core.susp
  */
 export abstract class ToFx<R, E, A> extends primitive.ToFx<R, E, A> implements Fx<R, E, A> {
   /**
+   * Your implementation of an Fx is returned by this function.
    * @since 1.18.0
    */
   abstract toFx(): Fx<R, E, A>
+
+  /**
+   * The Fx.run implementation and all of its
+   * derivatives utilize this accessor to memoize the Fx.
+   * Because of this, it is important to access external resources lazily
+   * within an Effect/Fx.
+   * @since 1.18.0
+   */
+  get fx(): Fx<R, E, A> {
+    return super.fx
+  }
 }
 
 /**
@@ -921,7 +933,7 @@ export const flatten: <R, E, R2, E2, A>(fx: Fx<R, E, Fx<R2, E2, A>>) => Fx<R | R
 export const flatMapConcurrently: {
   <A, R2, E2, B>(f: (a: A) => Fx<R2, E2, B>, concurrency: number): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Fx<R2, E2, B>, concurrency: number): Fx<R | R2, E | E2, B>
-} = core.flatMapCauseConcurrently
+} = core.flatMapConcurrently
 
 /**
  * Map the success value of an Fx to another Fx one at a time.
@@ -1203,6 +1215,24 @@ export const flatMapCauseWithStrategy: {
 } = core.flatMapCauseWithStrategy
 
 /**
+ * Map the failures of an Fx to another Fx, flattening the result
+ * with the provided FlattenStrategy.
+ * @since 1.18.0
+ * @category flattening
+ */
+export const flatMapErrorWithStrategy: {
+  <E, R2, E2, B>(
+    f: (error: E) => Fx<R2, E2, B>,
+    strategy: FlattenStrategy
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (error: E) => Fx<R2, E2, B>,
+    strategy: FlattenStrategy
+  ): Fx<R | R2, E2, A | B>
+} = core.flatMapErrorWithStrategy
+
+/**
  * Map the failures of an Fx to another Fx, flattening the result with unbounded concurrency.
  *
  * @since 1.18.0
@@ -1243,6 +1273,17 @@ export const flatMapCauseConcurrently: {
 } = core.flatMapCauseConcurrently
 
 /**
+ * Map the failures of an Fx to another Fx with the specified concurrency.
+ *
+ * @since 1.18.0
+ * @category flattening
+ */
+export const flatMapErrorConcurrently: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>, concurrency: number): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>, concurrency: number): Fx<R | R2, E2, A | B>
+} = core.flatMapErrorConcurrently
+
+/**
  * Map the failures of an Fx to another Fx, switching to the latest
  * Fx emitted and interrupting the previous.
  *
@@ -1253,6 +1294,18 @@ export const switchMapCause: {
   <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
 } = core.switchMapCause
+
+/**
+ * Map the failures of an Fx to another Fx, switching to the latest
+ * Fx emitted and interrupting the previous.
+ *
+ * @since 1.18.0
+ * @category flattening
+ */
+export const switchMapError: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+} = core.switchMapError
 
 /**
  * Map the failures of an Fx to another Fx, prefering the first
@@ -1268,6 +1321,18 @@ export const exhaustMapCause: {
 
 /**
  * Map the failures of an Fx to another Fx, prefering the first
+ * Fx emitted and dropping any subsequent Fx until it has completed.
+ *
+ * @since 1.18.0
+ * @category flattening
+ */
+export const exhaustMapError: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+} = core.exhaustMapError
+
+/**
+ * Map the failures of an Fx to another Fx, prefering the first
  * until completion, and then running the last emitted Fx if they are not
  * the same Fx.
  *
@@ -1278,6 +1343,19 @@ export const exhaustMapLatestCause: {
   <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
 } = core.exhaustMapLatestCause
+
+/**
+ * Map the failures of an Fx to another Fx,  prefering the first
+ * until completion, and then running the last emitted Fx if they are not
+ * the same Fx.
+ *
+ * @since 1.18.0
+ * @category flattening
+ */
+export const exhaustMapLatestError: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+} = core.exhaustMapLatestError
 
 /**
  * Map over the failures and successes of an Fx, flattening both using the same strategy.
@@ -1304,6 +1382,30 @@ export const matchCauseWithStrategy: {
 } = core.matchCauseWithStrategy
 
 /**
+ * Map over the failures and successes of an Fx, flattening both using the same strategy.
+ *
+ * @since 1.18.0
+ * @category flattening
+ */
+export const matchErrorWithStrategy: {
+  <E, R2, E2, B, A, R3, E3, C>(
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+      readonly strategy: FlattenStrategy
+    }
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+      readonly strategy: FlattenStrategy
+    }
+  ): Fx<R | R2, E2 | E3, B | C>
+} = core.matchErrorWithStrategy
+
+/**
  * Map over the failures and successes of an Fx, flattening both with unbounded concurrency.
  *
  * @since 1.18.0
@@ -1324,6 +1426,22 @@ export const matchCause: {
     }
   ): Fx<R | R2 | R3, E2 | E3, B | C>
 } = core.matchCause
+
+/**
+ * Map over the failures and successes of an Fx, flattening both with unbounded concurrency.
+ *
+ * @since 1.18.0
+ * @category flattening
+ */
+export const match: {
+  <E, R2, E2, B, A, R3, E3, C>(
+    options: { readonly onFailure: (error: E) => Fx<R2, E2, B>; readonly onSuccess: (a: A) => Fx<R3, E3, C> }
+  ): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: { readonly onFailure: (error: E) => Fx<R2, E2, B>; readonly onSuccess: (a: A) => Fx<R3, E3, C> }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
+} = core.match
 
 /**
  * Map over the failures and successes of an Fx, flattening both with the specified concurrency.
@@ -1350,6 +1468,30 @@ export const matchCauseConcurrently: {
 } = core.matchCauseConcurrently
 
 /**
+ * Map over the failures and successes of an Fx, flattening both with the specified concurrency.
+ *
+ * @since 1.18.0
+ * @category flattening
+ */
+export const matchErrorConcurrently: {
+  <E, R2, E2, B, A, R3, E3, C>(
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+      readonly concurrency: number
+    }
+  ): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+      readonly concurrency: number
+    }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
+} = core.matchErrorConcurrently
+
+/**
  * Map over the failures and successes of an Fx, switching to the latest
  * Fx emitted and interrupting the previous.
  *
@@ -1371,6 +1513,23 @@ export const switchMatchCause: {
     }
   ): Fx<R | R2 | R3, E2 | E3, B | C>
 } = core.switchMatchCause
+
+/**
+ * Map over the failures and successes of an Fx, switching to the latest
+ * Fx emitted and interrupting the previous.
+ *
+ * @since 1.18.0
+ * @category flattening
+ */
+export const switchMatch: {
+  <E, R2, E2, B, A, R3, E3, C>(
+    options: { readonly onFailure: (error: E) => Fx<R2, E2, B>; readonly onSuccess: (a: A) => Fx<R3, E3, C> }
+  ): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: { readonly onFailure: (error: E) => Fx<R2, E2, B>; readonly onSuccess: (a: A) => Fx<R3, E3, C> }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
+} = core.switchMatch
 
 /**
  * Map over the failures and successes of an Fx, prefering the first
@@ -1397,6 +1556,25 @@ export const exhaustMatchCause: {
 
 /**
  * Map over the failures and successes of an Fx, prefering the first
+ * Fx emitted and dropping any subsequent Fx until it has completed.
+ *
+ * @since 1.18.0
+ * @category flattening
+ */
+export const exhaustMatch: {
+  <E, R2, E2, B, A, R3, E3, C>(
+    options: { readonly onFailure: (error: E) => Fx<R2, E2, B>; readonly onSuccess: (a: A) => Fx<R3, E3, C> }
+  ): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: { readonly onFailure: (error: E) => Fx<R2, E2, B>; readonly onSuccess: (a: A) => Fx<R3, E3, C> }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
+} = core.exhaustMatch
+
+/**
+ * Map over the failures and successes of an Fx, prefering the first
+ * Fx emitted and starting the latest Fx when the first completes
+ * if they are not the same Fx.
  *
  * @since 1.18.0
  * @category flattening
@@ -1416,6 +1594,24 @@ export const exhaustLatestMatchCause: {
     }
   ): Fx<R | R2 | R3, E2 | E3, B | C>
 } = core.exhaustLatestMatchCause
+
+/**
+ * Map over the failures and successes of an Fx, prefering the first
+ * Fx emitted and starting the latest Fx when the first completes
+ * if they are not the same Fx.
+ *
+ * @since 1.18.0
+ * @category flattening
+ */
+export const exhaustLatestMatch: {
+  <E, R2, E2, B, A, R3, E3, C>(
+    options: { readonly onFailure: (error: E) => Fx<R2, E2, B>; readonly onSuccess: (a: A) => Fx<R3, E3, C> }
+  ): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: { readonly onFailure: (error: E) => Fx<R2, E2, B>; readonly onSuccess: (a: A) => Fx<R3, E3, C> }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
+} = core.exhaustLatestMatch
 
 /**
  * Listen to the events of an Fx within the provided window. When the window Fx

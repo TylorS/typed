@@ -1273,6 +1273,41 @@ export const flatMapCauseWithStrategy: {
   )
 })
 
+export const flatMapErrorWithStrategy: {
+  <E, R2, E2, B>(
+    f: (error: E) => Fx<R2, E2, B>,
+    strategy: FlattenStrategy
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (error: E) => Fx<R2, E2, B>,
+    strategy: FlattenStrategy
+  ): Fx<R | R2, E2, A | B>
+} = dual(3, function flatMapCause<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (error: E) => Fx<R2, E2, B>,
+  strategy: FlattenStrategy
+): Fx<R | R2, E2, A | B> {
+  return new WithFlattenStrategy(
+    ({ fork, sink }) =>
+      run(
+        fx,
+        Sink.WithContext((cause) =>
+          fork(run(
+            cause.pipe(
+              Cause.failureOrCause,
+              Either.match({
+                onLeft: f,
+                onRight: failCause
+              })
+            ),
+            sink
+          )), sink.onSuccess)
+      ),
+    strategy
+  )
+})
+
 export const flatMapCause: {
   <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
@@ -1284,20 +1319,13 @@ export const flatMapCause: {
 })
 
 export const flatMapError: {
-  <E, R2, E2, B>(f: (cause: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
 } = dual(2, function flatMapError<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
-  f: (cause: E) => Fx<R2, E2, B>
+  f: (error: E) => Fx<R2, E2, B>
 ): Fx<R | R2, E2, A | B> {
-  return flatMapCause(fx, (cause) =>
-    cause.pipe(
-      Cause.failureOrCause,
-      Either.match({
-        onLeft: f,
-        onRight: failCause
-      })
-    ))
+  return flatMapErrorWithStrategy(fx, f, strategies.Unbounded)
 })
 
 export const flatMapCauseConcurrently: {
@@ -1318,6 +1346,24 @@ export const flatMapCauseConcurrently: {
   return flatMapCauseWithStrategy(fx, f, strategies.Bounded(concurrency))
 })
 
+export const flatMapErrorConcurrently: {
+  <E, R2, E2, B>(
+    f: (error: E) => Fx<R2, E2, B>,
+    concurrency: number
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (error: E) => Fx<R2, E2, B>,
+    concurrency: number
+  ): Fx<R | R2, E2, A | B>
+} = dual(3, function flatMapCauseConcurrently<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (error: E) => Fx<R2, E2, B>,
+  concurrency: number
+): Fx<R | R2, E2, A | B> {
+  return flatMapErrorWithStrategy(fx, f, strategies.Bounded(concurrency))
+})
+
 export const switchMapCause: {
   <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
@@ -1326,6 +1372,16 @@ export const switchMapCause: {
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
 ): Fx<R | R2, E2, A | B> {
   return flatMapCauseWithStrategy(fx, f, strategies.Switch)
+})
+
+export const switchMapError: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+} = dual(2, function switchMapError<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (error: E) => Fx<R2, E2, B>
+): Fx<R | R2, E2, A | B> {
+  return flatMapErrorWithStrategy(fx, f, strategies.Switch)
 })
 
 export const exhaustMapCause: {
@@ -1338,6 +1394,16 @@ export const exhaustMapCause: {
   return flatMapCauseWithStrategy(fx, f, strategies.Exhaust)
 })
 
+export const exhaustMapError: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+} = dual(2, function switchMapError<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (error: E) => Fx<R2, E2, B>
+): Fx<R | R2, E2, A | B> {
+  return flatMapErrorWithStrategy(fx, f, strategies.Exhaust)
+})
+
 export const exhaustMapLatestCause: {
   <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
@@ -1346,6 +1412,16 @@ export const exhaustMapLatestCause: {
   f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
 ): Fx<R | R2, E2, A | B> {
   return flatMapCauseWithStrategy(fx, f, strategies.ExhaustLatest)
+})
+
+export const exhaustMapLatestError: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+} = dual(2, function switchMapError<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (error: E) => Fx<R2, E2, B>
+): Fx<R | R2, E2, A | B> {
+  return flatMapErrorWithStrategy(fx, f, strategies.ExhaustLatest)
 })
 
 export const matchCauseWithStrategy: {
@@ -1383,6 +1459,50 @@ export const matchCauseWithStrategy: {
   )
 })
 
+export const matchErrorWithStrategy: {
+  <E, R2, E2, B, A, R3, E3, C>(
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+      readonly strategy: FlattenStrategy
+    }
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+      readonly strategy: FlattenStrategy
+    }
+  ): Fx<R | R2, E2 | E3, B | C>
+} = dual(2, function flatMapCause<R, E, A, R2, E2, B, R3, E3, C>(
+  fx: Fx<R, E, A>,
+  options: {
+    readonly onFailure: (error: E) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    readonly strategy: FlattenStrategy
+  }
+): Fx<R | R2 | R3, E2 | E3, B | C> {
+  return new WithFlattenStrategy(
+    ({ fork, sink }) =>
+      run(
+        fx,
+        Sink.WithContext((cause) =>
+          fork(run(
+            cause.pipe(
+              Cause.failureOrCause,
+              Either.match({
+                onLeft: options.onFailure,
+                onRight: failCause
+              })
+            ),
+            sink
+          )), (a) => fork(run(options.onSuccess(a), sink)))
+      ),
+    options.strategy
+  )
+})
+
 export const matchCause: {
   <E, R2, E2, B, A, R3, E3, C>(
     options: {
@@ -1414,7 +1534,7 @@ export const matchCause: {
 export const match: {
   <E, R2, E2, B, A, R3, E3, C>(
     options: {
-      readonly onFailure: (cause: E) => Fx<R2, E2, B>
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
       readonly onSuccess: (a: A) => Fx<R3, E3, C>
     }
   ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3, E2 | E3, B | C>
@@ -1422,32 +1542,20 @@ export const match: {
   <R, E, A, R2, E2, B, R3, E3, C>(
     fx: Fx<R, E, A>,
     options: {
-      readonly onFailure: (cause: E) => Fx<R2, E2, B>
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
       readonly onSuccess: (a: A) => Fx<R3, E3, C>
     }
   ): Fx<R | R2 | R3, E2 | E3, B | C>
 } = dual(2, function matchCause<R, E, A, R2, E2, B, R3, E3, C>(
   fx: Fx<R, E, A>,
   options: {
-    readonly onFailure: (cause: E) => Fx<R2, E2, B>
+    readonly onFailure: (error: E) => Fx<R2, E2, B>
     readonly onSuccess: (a: A) => Fx<R3, E3, C>
   }
 ): Fx<R | R2 | R3, E2 | E3, B | C> {
-  return matchCauseWithStrategy(
+  return matchErrorWithStrategy(
     fx,
-    {
-      onFailure: (cause) =>
-        Cause.failureOrCause(cause).pipe(
-          Either.match(
-            {
-              onLeft: options.onFailure,
-              onRight: failCause
-            }
-          )
-        ),
-      onSuccess: options.onSuccess,
-      strategy: strategies.Unbounded
-    }
+    { ...options, strategy: strategies.Unbounded }
   )
 })
 
@@ -1483,6 +1591,37 @@ export const matchCauseConcurrently: {
   })
 })
 
+export const matchErrorConcurrently: {
+  <E, R2, E2, B, A, R3, E3, C>(
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+      readonly concurrency: number
+    }
+  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3, E2 | E3, B | C>
+
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+      readonly concurrency: number
+    }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
+} = dual(2, function matchErrorConcurrently<R, E, A, R2, E2, B, R3, E3, C>(
+  fx: Fx<R, E, A>,
+  options: {
+    readonly onFailure: (error: E) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    readonly concurrency: number
+  }
+): Fx<R | R2 | R3, E2 | E3, B | C> {
+  return matchErrorWithStrategy(
+    fx,
+    { ...options, strategy: strategies.Bounded(options.concurrency) }
+  )
+})
+
 export const switchMatchCause: {
   <E, R2, E2, B, A, R3, E3, C>(
     options: {
@@ -1509,6 +1648,34 @@ export const switchMatchCause: {
     ...options,
     strategy: strategies.Switch
   })
+})
+
+export const switchMatch: {
+  <E, R2, E2, B, A, R3, E3, C>(
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    }
+  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3, E2 | E3, B | C>
+
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
+} = dual(2, function matchCause<R, E, A, R2, E2, B, R3, E3, C>(
+  fx: Fx<R, E, A>,
+  options: {
+    readonly onFailure: (error: E) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+  }
+): Fx<R | R2 | R3, E2 | E3, B | C> {
+  return matchErrorWithStrategy(
+    fx,
+    { ...options, strategy: strategies.Switch }
+  )
 })
 
 export const exhaustMatchCause: {
@@ -1539,6 +1706,34 @@ export const exhaustMatchCause: {
   })
 })
 
+export const exhaustMatch: {
+  <E, R2, E2, B, A, R3, E3, C>(
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    }
+  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3, E2 | E3, B | C>
+
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
+} = dual(2, function matchCause<R, E, A, R2, E2, B, R3, E3, C>(
+  fx: Fx<R, E, A>,
+  options: {
+    readonly onFailure: (error: E) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+  }
+): Fx<R | R2 | R3, E2 | E3, B | C> {
+  return matchErrorWithStrategy(
+    fx,
+    { ...options, strategy: strategies.Exhaust }
+  )
+})
+
 export const exhaustLatestMatchCause: {
   <E, R2, E2, B, A, R3, E3, C>(
     options: {
@@ -1565,6 +1760,34 @@ export const exhaustLatestMatchCause: {
     ...options,
     strategy: strategies.ExhaustLatest
   })
+})
+
+export const exhaustLatestMatch: {
+  <E, R2, E2, B, A, R3, E3, C>(
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    }
+  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3, E2 | E3, B | C>
+
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    options: {
+      readonly onFailure: (error: E) => Fx<R2, E2, B>
+      readonly onSuccess: (a: A) => Fx<R3, E3, C>
+    }
+  ): Fx<R | R2 | R3, E2 | E3, B | C>
+} = dual(2, function matchCause<R, E, A, R2, E2, B, R3, E3, C>(
+  fx: Fx<R, E, A>,
+  options: {
+    readonly onFailure: (error: E) => Fx<R2, E2, B>
+    readonly onSuccess: (a: A) => Fx<R3, E3, C>
+  }
+): Fx<R | R2 | R3, E2 | E3, B | C> {
+  return matchErrorWithStrategy(
+    fx,
+    { ...options, strategy: strategies.ExhaustLatest }
+  )
 })
 
 export const withEarlyExit = <R, E, A>(
@@ -1755,7 +1978,7 @@ class Reduce<R, E, A, B> extends EffectProto<R, E, B> {
       return FilterMapReduce.make(fx.i0, seed, compileSyncReducer(fx.i1, f)) as any
     }
 
-    // @ts-expect-error Reduce doesn't implement Fx, which our module augmentation makes TS believe is true.
+    // @ts-expect-error Reduce doesn't implement Effect, which our module augmentation makes TS believe is true.
     return new Reduce(fx, seed, f)
   }
 
@@ -1797,7 +2020,8 @@ class FilterMapReduce<R, E, A, B> extends EffectProto<R, E, B> {
       }
     }
 
-    return new FilterMapReduce(fx, seed, f) as any
+    // @ts-expect-error Reduce doesn't implement Effect, which our module augmentation makes TS believe is true.
+    return new FilterMapReduce(fx, seed, f)
   }
 
   toEffect(): Effect.Effect<R, E, B> {
