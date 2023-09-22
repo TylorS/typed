@@ -3,6 +3,7 @@
  * `Stream.toPull(stream)` to convert a Stream into an Effect which can be used
  * to read chunks of data from the Stream that are ready. This makes it a key part
  * of converting an Fx into a Stream.
+ * @since 1.18.0
  */
 
 import type * as Chunk from "@effect/data/Chunk"

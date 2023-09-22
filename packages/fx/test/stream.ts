@@ -20,7 +20,7 @@ describe.concurrent(__filename, () => {
     it.concurrent("allows skipping values from the Fx", async () => {
       const inputs = Array.from({ length: 20 }, (_, i) => Fx.at(i, (i + 1) * 100))
 
-      const stream = FxStream.toStreamSliding(Fx.merge(inputs))
+      const stream = FxStream.toStreamSliding(Fx.merge(inputs), 1)
 
       const test = Effect.gen(function*(_) {
         const pull = yield* _(Stream.toPull(stream))
