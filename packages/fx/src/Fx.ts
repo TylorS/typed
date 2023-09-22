@@ -599,6 +599,26 @@ export const periodic: {
   <R, E, A>(fx: Effect.Effect<R, E, A>, duration: DurationInput): Fx<R, E, A>
 } = core.periodic
 
+/**
+ * Consume a Dequeue as soon as values become available and emit them as a Fx.
+ * @since 1.18.0
+ * @category constructors
+ */
+export const fromDequeue: {
+  <A>(dequeue: Queue.Dequeue<A>): Fx<never, never, A>
+  <I, A>(dequeue: Context.Dequeue<I, A>): Fx<I, never, A>
+} = internal.fromDequeue
+
+/**
+ * Consume a Hub as soon as values become available and emit them as a Fx.
+ * @since 1.18.0
+ * @category constructors
+ */
+export const fromHub: {
+  <A>(hub: Hub.Hub<A>): Fx<Scope.Scope, never, A>
+  <I, A>(hub: Context.Hub<I, A>): Fx<Scope.Scope | I, never, A>
+} = internal.fromHub
+
 /* #endregion */
 
 /* #region Running */
@@ -669,6 +689,18 @@ export const toReadonlyArray: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, E, 
  * @category running
  */
 export const toChunk: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>> = core.toChunk
+
+/**
+ * Consume an Fx and place its values into an Enqueue.
+ * @since 1.18.0
+ * @category running
+ */
+export const toEnqueue: {
+  <A, B>(enqueue: Queue.Enqueue<A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, void>
+  <I, A, B>(enqueue: Context.Enqueue<I, A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<I | R, E, void>
+  <R, E, A, B>(fx: Fx<R, E, A>, enqueue: Queue.Enqueue<A | B>): Effect.Effect<R, E, void>
+  <R, E, I, A, B>(fx: Fx<R, E, A>, enqueue: Context.Enqueue<I, A | B>): Effect.Effect<R, E, void>
+} = internal.toEnqueue
 
 /* #endregion */
 
@@ -2072,37 +2104,5 @@ export const keyed: {
     getKey: (a: A) => C
   ): Fx<R | R2, E | E2, ReadonlyArray<B>>
 } = dual(3, internalKeyed.keyed)
-
-/**
- * Consume a Dequeue as soon as values become available and emit them as a Fx.
- * @since 1.18.0
- * @category constructors
- */
-export const fromDequeue: {
-  <A>(dequeue: Queue.Dequeue<A>): Fx<never, never, A>
-  <I, A>(dequeue: Context.Dequeue<I, A>): Fx<I, never, A>
-} = internal.fromDequeue
-
-/**
- * Consume an Fx and place its values into an Enqueue.
- * @since 1.18.0
- * @category run
- */
-export const toEnqueue: {
-  <A, B>(enqueue: Queue.Enqueue<A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, void>
-  <I, A, B>(enqueue: Context.Enqueue<I, A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<I | R, E, void>
-  <R, E, A, B>(fx: Fx<R, E, A>, enqueue: Queue.Enqueue<A | B>): Effect.Effect<R, E, void>
-  <R, E, I, A, B>(fx: Fx<R, E, A>, enqueue: Context.Enqueue<I, A | B>): Effect.Effect<R, E, void>
-} = internal.toEnqueue
-
-/**
- * Consume a Hub as soon as values become available and emit them as a Fx.
- * @since 1.18.0
- * @category constructors
- */
-export const fromHub: {
-  <A>(hub: Hub.Hub<A>): Fx<Scope.Scope, never, A>
-  <I, A>(hub: Context.Hub<I, A>): Fx<Scope.Scope | I, never, A>
-} = internal.fromHub
 
 /* #endregion */
