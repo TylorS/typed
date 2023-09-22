@@ -35,14 +35,17 @@ export function toStream<R, E, A>(fx: Fx.Fx<R, E, A>): Stream.Stream<R, E, A> {
 }
 
 /**
- * Convert an Fx to a Stream using a sliding Queue to buffer values
+ * Convert an Fx to a Stream using a Queue to buffer values
  * that have not yet been pulled.
  * @since 1.18.0
  * @category conversions
  */
-export function toStreamSliding<R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number = 1): Stream.Stream<R, E, A> {
+export function toStreamQueued<R, E, A, R2, E2>(
+  fx: Fx.Fx<R, E, A>,
+  make: Effect.Effect<R2, E2, Queue.Queue<Exit.Exit<Option.Option<E>, A>>>
+): Stream.Stream<R | R2, E | E2, A> {
   return Stream.flattenExitOption(Stream.unwrapScoped(Effect.gen(function*(_) {
-    const queue = yield* _(Queue.sliding<Exit.Exit<Option.Option<E>, A>>(capacity))
+    const queue = yield* _(make)
 
     yield* _(
       fx,
@@ -55,6 +58,36 @@ export function toStreamSliding<R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number = 
 
     return Stream.fromQueue(queue)
   })))
+}
+
+/**
+ * Convert an Fx to a Stream using a sliding Queue to buffer values
+ * that have not yet been pulled.
+ * @since 1.18.0
+ * @category conversions
+ */
+export function toStreamSliding<R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number = 1): Stream.Stream<R, E, A> {
+  return toStreamQueued(fx, Queue.sliding(capacity))
+}
+
+/**
+ * Convert an Fx to a Stream using a dropping Queue to buffer values
+ * that have not yet been pulled.
+ * @since 1.18.0
+ * @category conversions
+ */
+export function toStreamDropping<R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number = 1): Stream.Stream<R, E, A> {
+  return toStreamQueued(fx, Queue.dropping(capacity))
+}
+
+/**
+ * Convert an Fx to a Stream using a bounded Queue to buffer values
+ * that have not yet been pulled.
+ * @since 1.18.0
+ * @category conversions
+ */
+export function toStreamBounded<R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number = 1): Stream.Stream<R, E, A> {
+  return toStreamQueued(fx, Queue.bounded(capacity))
 }
 
 /**
