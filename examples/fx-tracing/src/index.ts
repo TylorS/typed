@@ -22,11 +22,11 @@ const TracingLive = Layer.provide(
 
 const program = pipe(
   Fx.fromIterable([1, 2, 3]),
-  Fx.withSpan("a"),
+  Fx.withSpan("c"),
   Fx.map((n) => n * 2),
   Fx.withSpan("b"),
   Fx.map((n) => n + 1),
-  Fx.withSpan("c"),
+  Fx.withSpan("a"),
   Fx.observe(Effect.log)
 )
 
