@@ -2,10 +2,6 @@ export const requestIdleCallback = globalThis.requestIdleCallback || requestIdle
 
 export const cancelIdleCallback = globalThis.cancelIdleCallback || clearTimeout
 
-export function shouldContinue(deadline: IdleDeadline): boolean {
-  return deadline.didTimeout === false && deadline.timeRemaining() > 0
-}
-
 function requestIdleCallbackFallbackToSetTimeout(cb: IdleRequestCallback, options?: IdleRequestOptions) {
   return setTimeout(() => cb(makeIdleDeadline(Date.now(), options)), 1)
 }
