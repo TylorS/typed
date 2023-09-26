@@ -491,10 +491,7 @@ export const withSpan: {
     (span) =>
       core.middleware(
         self,
-        (effect) =>
-          effect.pipe(
-            Effect.locallyWith(FiberRef.currentTracerSpan, List.prepend(span))
-          ),
+        (effect) => Effect.locallyWith(effect, FiberRef.currentTracerSpan, List.append(span)),
         Sink.setSpan(span)
       ),
     (span, exit) => Effect.flatMap(Clock.currentTimeNanos, (time) => Effect.sync(() => span.end(time, exit)))
@@ -535,7 +532,10 @@ export function fromDequeue<I, A>(dequeue: Context.Dequeue<I, A> | Queue.Dequeue
   )
 }
 
-function takeDequeue<I, A>(dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>): Effect.Effect<I, never, A> {
+/**
+ * @internal
+ */
+export function takeDequeue<I, A>(dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>): Effect.Effect<I, never, A> {
   if (Queue.DequeueTypeId in dequeue) {
     return dequeue.take()
   } else {
@@ -543,7 +543,12 @@ function takeDequeue<I, A>(dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>): E
   }
 }
 
-function dequeueIsActive<I, A>(dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>): Effect.Effect<I, never, boolean> {
+/**
+ * @internal
+ */
+export function dequeueIsActive<I, A>(
+  dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>
+): Effect.Effect<I, never, boolean> {
   if (Queue.DequeueTypeId in dequeue) {
     return Effect.sync(() => dequeue.isActive())
   } else {
