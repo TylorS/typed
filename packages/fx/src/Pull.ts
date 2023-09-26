@@ -21,26 +21,11 @@ import type { WithContext } from "@typed/fx/Sink"
  */
 export interface Pull<R, E, A> extends Effect.Effect<R, Option.Option<E>, Chunk.Chunk<A>> {}
 
-/**
- * Schedule the values of a Pull to be pushed into a Sink.
- * @since 1.18.0
- */
-export const schedule: {
-  <R2, R3, E, A>(
-    schedule: Schedule.Schedule<R2, unknown, unknown>,
-    sink: WithContext<R3, E, A>
-  ): <R>(pull: Pull<R, E, A>) => Effect.Effect<R | R2 | R3, never, unknown>
-
-  <R, E, A, R2, R3>(
-    pull: Pull<R, E, A>,
-    schedule: Schedule.Schedule<R2, unknown, unknown>,
-    sink: WithContext<R3, E, A>
-  ): Effect.Effect<R | R2 | R3, never, unknown>
-} = dual(3, function schedulePull<R, E, A, R2, R3>(
+function schedulePull<R, E, A, R2, R3>(
   pull: Pull<R, E, A>,
-  schedule: Schedule.Schedule<R2, unknown, unknown>,
+  f: (effect: Effect.Effect<R | R3, never, unknown>) => Effect.Effect<R2, never, unknown>,
   sink: WithContext<R3, E, A>
-): Effect.Effect<R | R2 | R3, never, void> {
+): Effect.Effect<R2, never, void> {
   return Effect.asyncEffect((resume) =>
     pull.pipe(
       Effect.matchCauseEffect({
@@ -56,8 +41,56 @@ export const schedule: {
           ),
         onSuccess: (chunk) => Effect.forEach(chunk, sink.onSuccess)
       }),
-      Effect.repeat(schedule),
+      f,
       Effect.flatMap(() => Effect.sync(() => resume(Effect.unit)))
     )
   )
+}
+
+/**
+ * Schedule the values of a Pull to be pushed into a Sink
+ * using Effect.schedule.
+ * @since 1.18.0
+ */
+export const schedule: {
+  <R2, R3, E, A>(
+    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    sink: WithContext<R3, E, A>
+  ): <R>(pull: Pull<R, E, A>) => Effect.Effect<R | R2 | R3, never, unknown>
+
+  <R, E, A, R2, R3>(
+    pull: Pull<R, E, A>,
+    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    sink: WithContext<R3, E, A>
+  ): Effect.Effect<R | R2 | R3, never, unknown>
+} = dual(3, function schedule<R, E, A, R2, R3>(
+  pull: Pull<R, E, A>,
+  schedule: Schedule.Schedule<R2, unknown, unknown>,
+  sink: WithContext<R3, E, A>
+): Effect.Effect<R | R2 | R3, never, void> {
+  return schedulePull(pull, Effect.schedule(schedule), sink)
+})
+
+/**
+ * Schedule the values of a Pull to be pushed into a Sink
+ * using Effect.repeat.
+ * @since 1.18.0
+ */
+export const repeat: {
+  <R2, R3, E, A>(
+    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    sink: WithContext<R3, E, A>
+  ): <R>(pull: Pull<R, E, A>) => Effect.Effect<R | R2 | R3, never, unknown>
+
+  <R, E, A, R2, R3>(
+    pull: Pull<R, E, A>,
+    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    sink: WithContext<R3, E, A>
+  ): Effect.Effect<R | R2 | R3, never, unknown>
+} = dual(3, function repeat<R, E, A, R2, R3>(
+  pull: Pull<R, E, A>,
+  schedule: Schedule.Schedule<R2, unknown, unknown>,
+  sink: WithContext<R3, E, A>
+): Effect.Effect<R | R2 | R3, never, void> {
+  return schedulePull(pull, Effect.repeat(schedule), sink)
 })
