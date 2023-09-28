@@ -32,7 +32,7 @@ A Context for the globalThis object
 **Signature**
 
 ```ts
-export declare const GlobalThis: Context.Tagged<GlobalThis>
+export declare const GlobalThis: Context.Tagged<GlobalThis, GlobalThis>
 ```
 
 Added in v8.19.0
@@ -60,7 +60,7 @@ Construct a new DOMParser
 **Signature**
 
 ```ts
-export declare const makeDOMParser: Effect.Effect<GlobalThis, never, globalThis.DOMParser>
+export declare const makeDOMParser: Effect.Effect<GlobalThis, never, DOMParser>
 ```
 
 Added in v8.19.0

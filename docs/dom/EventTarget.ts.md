@@ -97,13 +97,13 @@ Dispatch an event from an EventTarget
 
 ```ts
 export declare const dispatchEvent: {
-  <T extends EventTarget, EventName extends keyof DefaultEventMap<T>>(event: EventName, options?: any): (
+  <T extends EventTarget, EventName extends keyof DefaultEventMap<T>>(event: EventName, options?: EventInit): (
     target: T
   ) => Effect.Effect<GlobalThis, never, boolean>
   <T extends EventTarget, EventName extends keyof DefaultEventMap<T>>(
     target: T,
     event: EventName,
-    options?: any
+    options?: EventInit
   ): Effect.Effect<GlobalThis, never, boolean>
 }
 ```

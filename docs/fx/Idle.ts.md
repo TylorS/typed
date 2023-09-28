@@ -121,7 +121,7 @@ Request to run some work with requestIdleCallback returning an IdleDeadline
 **Signature**
 
 ```ts
-export declare const whenIdle: (options?: any) => Effect.Effect<Scope.Scope, never, IdleDeadline>
+export declare const whenIdle: (options?: IdleRequestOptions) => Effect.Effect<Scope.Scope, never, IdleDeadline>
 ```
 
 Added in v1.18.0

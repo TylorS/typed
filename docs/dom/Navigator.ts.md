@@ -52,7 +52,7 @@ Check to see if the current navigator can share
 **Signature**
 
 ```ts
-export declare const canShare: (shareData?: any) => Effect.Effect<Navigator, never, boolean>
+export declare const canShare: (shareData?: ShareData) => Effect.Effect<Navigator, never, boolean>
 ```
 
 Added in v8.19.0
@@ -114,7 +114,9 @@ Create a new Credential
 **Signature**
 
 ```ts
-export declare const createCredential: (options?: any) => Effect.Effect<Navigator, never, Option<Credential>>
+export declare const createCredential: (
+  options?: CredentialCreationOptions
+) => Effect.Effect<Navigator, never, Option<Credential>>
 ```
 
 Added in v8.19.0
@@ -143,7 +145,7 @@ A Context for the Navigator API
 **Signature**
 
 ```ts
-export declare const Navigator: Context.Tagged<Navigator>
+export declare const Navigator: Context.Tagged<Navigator, Navigator>
 ```
 
 Added in v8.19.0
@@ -193,7 +195,9 @@ Get a Credential
 **Signature**
 
 ```ts
-export declare const getCredential: (options?: any) => Effect.Effect<Navigator, never, Option<Credential>>
+export declare const getCredential: (
+  options?: CredentialRequestOptions
+) => Effect.Effect<Navigator, never, Option<Credential>>
 ```
 
 Added in v8.19.0
@@ -206,7 +210,7 @@ Get the current navigator's geolocation
 
 ```ts
 export declare const getCurrentPosition: (
-  options?: any
+  options?: PositionOptions
 ) => Effect.Effect<Navigator, GeolocationPositionError, GeolocationPosition>
 ```
 

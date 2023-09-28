@@ -31,7 +31,7 @@ The root element of your application
 **Signature**
 
 ```ts
-export declare const RootElement: Context.Tagged<RootElement>
+export declare const RootElement: Context.Tagged<RootElement, RootElement>
 ```
 
 Added in v8.19.0
@@ -60,7 +60,7 @@ Add an event listener to the root of your application.
 
 ```ts
 export declare const addRootElementListener: <EventName extends string, R = never>(
-  options: AddEventListenerOptions<any, EventName, R>
+  options: AddEventListenerOptions<ParentNode & HTMLElement, EventName, R>
 ) => Effect.Effect<Scope.Scope | R | RootElement, never, void>
 ```
 

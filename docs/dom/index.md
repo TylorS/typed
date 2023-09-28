@@ -5,4 +5,9 @@ permalink: /docs/dom
 nav_order: 3
 ---
 
-`@typed/dom` is an wrapper around various DOM APIs to provide type-safety and ease of use with Effect.
+# @typed/dom
+
+> WIP
+
+Docs: https://tylors.github.io/typed-fp/docs/dom
+

@@ -44,8 +44,7 @@ function copyFiles(pkg) {
 
 function generateIndex(pkg, order) {
   const path = Path.join("docs", pkg, "index.md")
-
-  if (Fs.existsSync(path)) return 
+  const readme = Path.join("packages", pkg, "README.md")
 
   const name = pkgName(pkg);
   const content = `---
@@ -54,6 +53,8 @@ has_children: true
 permalink: /docs/${pkg}
 nav_order: ${order}
 ---
+
+${Fs.readFileSync(readme, "utf8")}
 `;
 
   Fs.writeFileSync(path, content);

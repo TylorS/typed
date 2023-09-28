@@ -36,9 +36,9 @@ Dispatch an Event from the current ParentElement
 **Signature**
 
 ```ts
-export declare const dispatchEvent: <EventName extends string | number | symbol>(
+export declare const dispatchEvent: <EventName extends keyof HTMLElementEventMap>(
   event: EventName,
-  options?: any
+  options?: EventInit
 ) => Effect.Effect<GlobalThis | ParentElement, never, boolean>
 ```
 
@@ -53,7 +53,7 @@ A Context for the parentElement of an HTMLElement
 **Signature**
 
 ```ts
-export declare const ParentElement: Context.Tagged<ParentElement>
+export declare const ParentElement: Context.Tagged<ParentElement, ParentElement>
 ```
 
 Added in v8.19.0
@@ -68,7 +68,7 @@ Add an event listener to the current ParentElement
 
 ```ts
 export declare const addParentElementListener: <EventName extends string, R = never>(
-  options: EventTarget.AddEventListenerOptions<any, EventName, R>
+  options: EventTarget.AddEventListenerOptions<ParentNode & HTMLElement, EventName, R>
 ) => Effect.Effect<Scope.Scope | ParentElement | R, never, void>
 ```
 

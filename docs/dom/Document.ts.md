@@ -69,7 +69,7 @@ Added in v8.19.0
 **Signature**
 
 ```ts
-export declare const Document: Context.Tagged<Document>
+export declare const Document: Context.Tagged<Document, Document>
 ```
 
 Added in v8.19.0
@@ -107,9 +107,9 @@ Create a new element
 **Signature**
 
 ```ts
-export declare const createElement: <TagName extends string | number | symbol>(
+export declare const createElement: <TagName extends keyof HTMLElementTagNameMap>(
   tagName: TagName
-) => Effect.Effect<Document, never, HTMLElementTagNameMap>
+) => Effect.Effect<Document, never, HTMLElementTagNameMap[TagName]>
 ```
 
 Added in v8.19.0
@@ -133,9 +133,9 @@ Create a new SVG element
 **Signature**
 
 ```ts
-export declare const createSvgElement: <TagName extends string | number | symbol>(
+export declare const createSvgElement: <TagName extends keyof SVGElementTagNameMap>(
   tagName: TagName
-) => Effect.Effect<Document, never, SVGElementTagNameMap>
+) => Effect.Effect<Document, never, SVGElementTagNameMap[TagName]>
 ```
 
 Added in v8.19.0
@@ -297,7 +297,11 @@ Create a new TreeWalker
 **Signature**
 
 ```ts
-export declare const createTreeWalker: (root: Node, whatToShow?: number, filter?: NodeFilter | null) => any
+export declare const createTreeWalker: (
+  root: Node,
+  whatToShow?: number,
+  filter?: NodeFilter | null
+) => Effect.Effect<Document, never, TreeWalker>
 ```
 
 Added in v8.19.0

@@ -91,7 +91,9 @@ Remove any duplicate values from a RefArray.
 **Signature**
 
 ```ts
-export declare const dedupeWith: <A>(eq: Equivalence<A>) => <I, E>(ref: RefArray<I, E, A>) => any
+export declare const dedupeWith: <A>(
+  eq: Equivalence<A>
+) => <I, E>(ref: RefArray<I, E, A>) => Effect.Effect<I, E, readonly A[]>
 ```
 
 Added in v1.18.0

@@ -5,4 +5,9 @@ permalink: /docs/remote-data
 nav_order: 6
 ---
 
-RemoteData is a data type that represents the state of a remote resource.
+# @typed/remote-data
+
+> WIP
+
+Docs: https://tylors.github.io/typed-fp/docs/remote-data
+
