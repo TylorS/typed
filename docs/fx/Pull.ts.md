@@ -1,6 +1,6 @@
 ---
 title: Pull.ts
-nav_order: 12
+nav_order: 13
 parent: "@typed/fx"
 ---
 
@@ -19,6 +19,7 @@ Added in v1.18.0
 
 - [utils](#utils)
   - [Pull (interface)](#pull-interface)
+  - [repeat](#repeat)
   - [schedule](#schedule)
 
 ---
@@ -37,9 +38,32 @@ export interface Pull<R, E, A> extends Effect.Effect<R, Option.Option<E>, Chunk.
 
 Added in v1.18.0
 
+## repeat
+
+Schedule the values of a Pull to be pushed into a Sink
+using Effect.repeat.
+
+**Signature**
+
+```ts
+export declare const repeat: {
+  <R2, R3, E, A>(schedule: Schedule.Schedule<R2, unknown, unknown>, sink: WithContext<R3, E, A>): <R>(
+    pull: Pull<R, E, A>
+  ) => Effect.Effect<R2 | R3 | R, never, unknown>
+  <R, E, A, R2, R3>(
+    pull: Pull<R, E, A>,
+    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    sink: WithContext<R3, E, A>
+  ): Effect.Effect<R | R2 | R3, never, unknown>
+}
+```
+
+Added in v1.18.0
+
 ## schedule
 
-Schedule the values of a Pull to be pushed into a Sink.
+Schedule the values of a Pull to be pushed into a Sink
+using Effect.schedule.
 
 **Signature**
 

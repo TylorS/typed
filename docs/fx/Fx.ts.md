@@ -1313,7 +1313,7 @@ to emit events and errors.
 
 ```ts
 export declare const fromEmitter: <R, E, A>(
-  f: (emitter: Emitter<E, A>) => Effect.Effect<R | Scope.Scope, never, unknown>
+  f: (emitter: Emitter<E, A>) => Effect.Effect<Scope.Scope | R, never, unknown>
 ) => Fx<Exclude<R, Scope.Scope>, E, A>
 ```
 

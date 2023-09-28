@@ -17,13 +17,25 @@ import { dequeueIsActive, takeDequeue } from "@typed/fx/internal/fx"
 import { cancelIdleCallback, requestIdleCallback } from "@typed/fx/internal/requestIdleCallback"
 
 /**
+ * The IdleScheduler is an implementation of Effect's Scheduler interface, which utilizes a priority queue
+ * to order tasks to be run when the event loop is idle through the usage of requestIdleCallback.
+ *
+ * In the event requestIdleCallback is not available, setTimeout(task, 1) will be utilized as a fallback
+ * @since 1.18.0
+ * @category models
+ */
+export interface IdleScheduler extends Scheduler.Scheduler {
+  dispose(): void
+}
+
+/**
  * Default instance of the IdleScheduler
  * @since 1.18.0
  * @category instances
  */
 export const defaultIdleScheduler: IdleScheduler = globalValue(
   Symbol("@typed/fx/Scheduler/Idle"),
-  () => new IdleScheduler()
+  () => new IdleSchedulerImpl()
 )
 
 /**
@@ -41,15 +53,7 @@ export const withIdleScheduler: <R, E, B>(self: Effect.Effect<R, E, B>) => Effec
  */
 export const setIdleScheduler: Layer.Layer<never, never, never> = Effect.setScheduler(defaultIdleScheduler)
 
-/**
- * The IdleScheduler is an implementation of Effect's Scheduler interface, which utilizes a priority queue
- * to order tasks to be run when the event loop is idle through the usage of requestIdleCallback.
- *
- * In the event requestIdleCallback is not available, setTimeout(task, 1) will be utilized as a fallback
- * @since 1.18.0
- * @category Scheduler
- */
-export class IdleScheduler implements Scheduler.Scheduler {
+class IdleSchedulerImpl implements IdleScheduler {
   #id: number | undefined // ID for any requestIdleCallback calls
   #running = false // If we currently have any schedule tasks to run
   #tasks = new Scheduler.PriorityBuckets() // Priority queue of tasks that need to be run

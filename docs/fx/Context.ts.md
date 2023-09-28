@@ -14,12 +14,28 @@ Added in v1.18.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [exports](#exports)
+  - [From "./Context/RefArray"](#from-contextrefarray)
 - [utils](#utils)
   - [Model](#model)
   - [RefSubject](#refsubject)
   - [Subject](#subject)
 
 ---
+
+# exports
+
+## From "./Context/RefArray"
+
+A Contextual wrapper around a RefArray
+
+**Signature**
+
+```ts
+export * from './Context/RefArray'
+```
+
+Added in v1.18.0
 
 # utils
 
