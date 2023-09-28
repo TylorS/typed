@@ -1,24 +1,6 @@
 {
   "exclude": ["src/internal/**/*.ts"],
   "theme": "mikearnaldi/just-the-docs",
-  "parseCompilerOptions": {
-    "noEmit": true,
-    "strict": true,
-    "target": "es2015",
-    "lib": ["es2015"],
-    "paths": {
-      "@typed/remote-data": ["./src/index.ts"],
-      "@typed/remote-data/*": ["./src/*"]
-    }
-  },
-  "examplesCompilerOptions": {
-    "noEmit": true,
-    "strict": true,
-    "target": "es2015",
-    "lib": ["es2015"],
-    "paths": {
-      "@typed/remote-data": ["./src/index.ts"],
-      "@typed/remote-data/*": ["./src/*"]
-    }
-  }
+  "parseCompilerOptions": "./tsconfig.build.json",
+  "examplesCompilerOptions": "./tsconfig.examples.json"
 }

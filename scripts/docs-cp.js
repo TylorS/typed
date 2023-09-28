@@ -43,6 +43,10 @@ function copyFiles(pkg) {
 }
 
 function generateIndex(pkg, order) {
+  const path = Path.join("docs", pkg, "index.md")
+
+  if (Fs.existsSync(path)) return 
+
   const name = pkgName(pkg);
   const content = `---
 title: "${name}"
@@ -52,7 +56,7 @@ nav_order: ${order}
 ---
 `;
 
-  Fs.writeFileSync(Path.join("docs", pkg, "index.md"), content);
+  Fs.writeFileSync(path, content);
 }
 
 packages().forEach((pkg, i) => {
