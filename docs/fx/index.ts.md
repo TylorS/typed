@@ -68,7 +68,7 @@ Added in v1.18.0
 
 ## From "./Filtered"
 
-Filtered docs: https://tylors.github.io/typed-fp/fx/Filtered.ts.html
+[Filtered documentation](https://tylors.github.io/typed-fp/fx/Filtered.ts.html)
 
 **Signature**
 
@@ -80,7 +80,7 @@ Added in v1.18.0
 
 ## From "./Fx"
 
-Fx docs: https://tylors.github.io/typed-fp/fx/Fx.ts.html
+[Fx documentation](https://tylors.github.io/typed-fp/fx/Fx.ts.html)
 
 **Signature**
 
@@ -92,7 +92,7 @@ Added in v1.18.0
 
 ## From "./RefArray"
 
-RefArray docs: https://tylors.github.io/typed-fp/fx/RefArray.ts.html
+[RefArray documentation](https://tylors.github.io/typed-fp/fx/RefArray.ts.html)
 
 **Signature**
 
@@ -104,7 +104,7 @@ Added in v1.18.0
 
 ## From "./RefRemoteData"
 
-RefRemoteData docs: https://tylors.github.io/typed-fp/fx/RefRemoteData.ts.html
+[RefRemoteData documentation](https://tylors.github.io/typed-fp/fx/RefRemoteData.ts.html)
 
 **Signature**
 
@@ -116,7 +116,7 @@ Added in v1.18.0
 
 ## From "./RefSubject"
 
-RefSubject docs: https://tylors.github.io/typed-fp/fx/RefSubject.ts.html
+[RefSubject documentation](https://tylors.github.io/typed-fp/fx/RefSubject.ts.html)
 
 **Signature**
 
@@ -128,7 +128,7 @@ Added in v1.18.0
 
 ## From "./Sink"
 
-Sink docs: https://tylors.github.io/typed-fp/fx/Sink.ts.html
+[Sink documentation](https://tylors.github.io/typed-fp/fx/Sink.ts.html)
 
 **Signature**
 
@@ -140,7 +140,7 @@ Added in v1.18.0
 
 ## From "./Subject"
 
-Subject docs: https://tylors.github.io/typed-fp/fx/Subject.ts.html
+[Subject documentation](https://tylors.github.io/typed-fp/fx/Subject.ts.html)
 
 **Signature**
 
@@ -152,7 +152,7 @@ Added in v1.18.0
 
 ## From "./TypeId"
 
-TypeId docs: https://tylors.github.io/typed-fp/fx/TypeId.ts.html
+[TypeId documentation](https://tylors.github.io/typed-fp/fx/TypeId.ts.html)
 
 **Signature**
 
@@ -164,7 +164,7 @@ Added in v1.18.0
 
 ## From "./Typeclass"
 
-Typeclass docs: https://tylors.github.io/typed-fp/fx/Typeclass.ts.html
+[Typeclass documentation](https://tylors.github.io/typed-fp/fx/Typeclass.ts.html)
 
 **Signature**
 

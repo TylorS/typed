@@ -56,7 +56,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Cache"
 
-Cache docs: https://tylors.github.io/typed-fp/context/Cache.ts.html
+[Cache Documentation](https://tylors.github.io/typed-fp/context/Cache.ts.html)
 
 **Signature**
 
@@ -68,7 +68,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Context"
 
-Context docs: https://tylors.github.io/typed-fp/context/Context.ts.html
+[Context Documentation](https://tylors.github.io/typed-fp/context/Context.ts.html)
 
 **Signature**
 
@@ -80,7 +80,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Dequeue"
 
-Dequeue docs: https://tylors.github.io/typed-fp/context/Dequeue.ts.html
+[Dequeue Documentation](https://tylors.github.io/typed-fp/context/Dequeue.ts.html)
 
 **Signature**
 
@@ -92,7 +92,7 @@ Added in v1.0.0
 
 ## From "@typed/context/EffectFn"
 
-EffectFn docs: https://tylors.github.io/typed-fp/context/EffectFn.ts.html
+[EffectFn Documentation](https://tylors.github.io/typed-fp/context/EffectFn.ts.html)
 
 **Signature**
 
@@ -104,7 +104,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Enqueue"
 
-Enqueue docs: https://tylors.github.io/typed-fp/context/Enqueue.ts.html
+[Enqueue Documentation](https://tylors.github.io/typed-fp/context/Enqueue.ts.html)
 
 **Signature**
 
@@ -116,7 +116,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Extensions"
 
-Extensions docs: https://tylors.github.io/typed-fp/context/Extensions.ts.html
+[Extensions Documentation](https://tylors.github.io/typed-fp/context/Extensions.ts.html)
 
 **Signature**
 
@@ -128,7 +128,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Fn"
 
-Fn docs: https://tylors.github.io/typed-fp/context/Fn.ts.html
+[Fn Documentation](https://tylors.github.io/typed-fp/context/Fn.ts.html)
 
 **Signature**
 
@@ -140,7 +140,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Hub"
 
-Hub docs: https://tylors.github.io/typed-fp/context/Hub.ts.html
+[Hub Documentation](https://tylors.github.io/typed-fp/context/Hub.ts.html)
 
 **Signature**
 
@@ -152,7 +152,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Identifier"
 
-Identifier docs: https://tylors.github.io/typed-fp/context/Identifier.ts.html
+[Identifier Documentation](https://tylors.github.io/typed-fp/context/Identifier.ts.html)
 
 **Signature**
 
@@ -164,7 +164,7 @@ Added in v1.0.0
 
 ## From "@typed/context/KeyedPool"
 
-KeyedPool docs: https://tylors.github.io/typed-fp/context/KeyedPool.ts.html
+[KeyedPool Documentation](https://tylors.github.io/typed-fp/context/KeyedPool.ts.html)
 
 **Signature**
 
@@ -176,7 +176,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Many"
 
-Many docs: https://tylors.github.io/typed-fp/context/Many.ts.html
+[Many Documentation](https://tylors.github.io/typed-fp/context/Many.ts.html)
 
 **Signature**
 
@@ -188,7 +188,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Model"
 
-Model docs: https://tylors.github.io/typed-fp/context/Model.ts.html
+[Model Documentation](https://tylors.github.io/typed-fp/context/Model.ts.html)
 
 **Signature**
 
@@ -200,7 +200,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Pool"
 
-Pool docs: https://tylors.github.io/typed-fp/context/Pool.ts.html
+[Pool Documentation](https://tylors.github.io/typed-fp/context/Pool.ts.html)
 
 **Signature**
 
@@ -212,7 +212,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Queue"
 
-Queue docs: https://tylors.github.io/typed-fp/context/Queue.ts.html
+[Queue Documentation](https://tylors.github.io/typed-fp/context/Queue.ts.html)
 
 **Signature**
 
@@ -224,7 +224,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Ref"
 
-Ref docs: https://tylors.github.io/typed-fp/context/Ref.ts.html
+[Ref Documentation](https://tylors.github.io/typed-fp/context/Ref.ts.html)
 
 **Signature**
 
@@ -236,7 +236,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Repository"
 
-Repository docs: https://tylors.github.io/typed-fp/context/Repository.ts.html
+[Repository Documentation](https://tylors.github.io/typed-fp/context/Repository.ts.html)
 
 **Signature**
 
@@ -248,7 +248,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Request"
 
-Request docs: https://tylors.github.io/typed-fp/context/Request.ts.html
+[Request Documentation](https://tylors.github.io/typed-fp/context/Request.ts.html)
 
 **Signature**
 
@@ -260,7 +260,7 @@ Added in v1.0.0
 
 ## From "@typed/context/RequestResolver"
 
-RequestResolver docs: https://tylors.github.io/typed-fp/context/RequestResolver.ts.html
+[RequestResolver Documentation](https://tylors.github.io/typed-fp/context/RequestResolver.ts.html)
 
 **Signature**
 
@@ -272,7 +272,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Resource"
 
-Resource docs: https://tylors.github.io/typed-fp/context/Resource.ts.html
+[Resource Documentation](https://tylors.github.io/typed-fp/context/Resource.ts.html)
 
 **Signature**
 
@@ -284,7 +284,7 @@ Added in v1.0.0
 
 ## From "@typed/context/ScopedCache"
 
-ScopedCache docs: https://tylors.github.io/typed-fp/context/ScopedCache.ts.html
+[ScopedCache Documentation](https://tylors.github.io/typed-fp/context/ScopedCache.ts.html)
 
 **Signature**
 
@@ -296,7 +296,7 @@ Added in v1.0.0
 
 ## From "@typed/context/ScopedRef"
 
-ScopedRef docs: https://tylors.github.io/typed-fp/context/ScopedRef.ts.html
+[ScopedRef Documentation](https://tylors.github.io/typed-fp/context/ScopedRef.ts.html)
 
 **Signature**
 
@@ -308,7 +308,7 @@ Added in v1.0.0
 
 ## From "@typed/context/SynchronizedRef"
 
-SynchronizedRef docs: https://tylors.github.io/typed-fp/context/SynchronizedRef.ts.html
+[SynchronizedRef Documentation](https://tylors.github.io/typed-fp/context/SynchronizedRef.ts.html)
 
 **Signature**
 
@@ -320,7 +320,7 @@ Added in v1.0.0
 
 ## From "@typed/context/Tag"
 
-Tag docs: https://tylors.github.io/typed-fp/context/Tag.ts.html
+[Tag Documentation](https://tylors.github.io/typed-fp/context/Tag.ts.html)
 
 **Signature**
 
