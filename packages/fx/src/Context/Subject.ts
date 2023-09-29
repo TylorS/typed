@@ -3,14 +3,14 @@
  * @since 1.18.0
  */
 
-import type * as Cause from "effect/Cause"
-import * as Effect from "effect/Effect"
-import type * as Layer from "effect/Layer"
 import * as Context from "@typed/context"
 import type { Fx } from "@typed/fx/Fx"
 import { fromFxEffect, provideSomeLayer, ToFx } from "@typed/fx/Fx"
 import type * as Sink from "@typed/fx/Sink"
 import * as S from "@typed/fx/Subject"
+import type * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import type * as Layer from "effect/Layer"
 
 /**
  * A Contextual wrapper around a Subject

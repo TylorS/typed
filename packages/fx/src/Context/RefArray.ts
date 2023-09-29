@@ -3,15 +3,15 @@
  * @since 1.18.0
  */
 
-import type { Equivalence } from "effect/Equivalence"
-import { dual } from "effect/Function"
-import type * as Order from "effect/Order"
-import * as ReadonlyArray from "effect/ReadonlyArray"
-import type * as Effect from "effect/Effect"
 import type * as Context from "@typed/context"
 import type * as Computed from "@typed/fx/Computed"
 import * as RefSubject from "@typed/fx/Context/RefSubject"
 import type * as Filtered from "@typed/fx/Filtered"
+import type * as Effect from "effect/Effect"
+import type { Equivalence } from "effect/Equivalence"
+import { dual } from "effect/Function"
+import type * as Order from "effect/Order"
+import * as ReadonlyArray from "effect/ReadonlyArray"
 
 import * as RA from "@typed/fx/RefArray"
 

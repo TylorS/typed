@@ -1,9 +1,9 @@
-import * as Option from "effect/Option"
-import * as Effect from "effect/Effect"
 import type { Fx } from "@typed/fx/Fx"
 import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
+import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
 
 export class FxEffectTransform<R0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
   extends FxEffectProto<R3, E3, C, R0 | R4, E4, D>

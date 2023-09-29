@@ -3,14 +3,14 @@
  * @since 1.0.0
  */
 
-import type * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
-import * as Q from "effect/Queue"
 import { withActions } from "@typed/context/Extensions"
 import type { Hub } from "@typed/context/Hub"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 import type { Queue } from "@typed/context/Queue"
 import { Tag } from "@typed/context/Tag"
+import type * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Q from "effect/Queue"
 
 /**
  * A Contextual wrapper around @effect/io/Queue.Enqueue

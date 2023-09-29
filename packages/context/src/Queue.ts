@@ -3,14 +3,14 @@
  * @since 1.0.0
  */
 
-import type * as Chunk from "effect/Chunk"
-import type { Option } from "effect/Option"
-import type * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
-import * as Q from "effect/Queue"
 import { withActions } from "@typed/context/Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 import { Tag } from "@typed/context/Tag"
+import type * as Chunk from "effect/Chunk"
+import type * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import type { Option } from "effect/Option"
+import * as Q from "effect/Queue"
 
 /**
  * Contextual wrappers around @effect/data/Queue

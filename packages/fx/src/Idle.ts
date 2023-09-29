@@ -4,17 +4,17 @@
  * @since 1.18.0
  */
 
-import { constant, constVoid } from "effect/Function"
-import { globalValue } from "effect/GlobalValue"
+import type * as Context from "@typed/context"
+import { dequeueIsActive, takeDequeue } from "@typed/fx/internal/fx"
+import { cancelIdleCallback, requestIdleCallback } from "@typed/fx/internal/requestIdleCallback"
 import * as Effect from "effect/Effect"
 import type * as Fiber from "effect/Fiber"
+import { constant, constVoid } from "effect/Function"
+import { globalValue } from "effect/GlobalValue"
 import type * as Layer from "effect/Layer"
 import type * as Queue from "effect/Queue"
 import * as Scheduler from "effect/Scheduler"
 import type * as Scope from "effect/Scope"
-import type * as Context from "@typed/context"
-import { dequeueIsActive, takeDequeue } from "@typed/fx/internal/fx"
-import { cancelIdleCallback, requestIdleCallback } from "@typed/fx/internal/requestIdleCallback"
 
 /**
  * The IdleScheduler is an implementation of Effect's Scheduler interface, which utilizes a priority queue

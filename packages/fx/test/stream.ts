@@ -1,11 +1,11 @@
-import * as Chunk from "effect/Chunk"
-import * as Effect from "effect/Effect"
-import * as Schedule from "effect/Schedule"
-import * as Stream from "effect/Stream"
 import * as Fx from "@typed/fx/Fx"
 import * as Pull from "@typed/fx/Pull"
 import * as Sink from "@typed/fx/Sink"
 import * as FxStream from "@typed/fx/Stream"
+import * as Chunk from "effect/Chunk"
+import * as Effect from "effect/Effect"
+import * as Schedule from "effect/Schedule"
+import * as Stream from "effect/Stream"
 
 describe.concurrent(__filename, () => {
   describe.concurrent(FxStream.toStream, () => {

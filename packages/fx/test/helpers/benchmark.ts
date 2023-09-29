@@ -1,7 +1,7 @@
-import * as Effect from "effect/Effect"
 import * as mostCore from "@most/core"
 import { newDefaultScheduler } from "@most/scheduler"
 import type * as mostTypes from "@most/types"
+import * as Effect from "effect/Effect"
 import { performance } from "perf_hooks"
 import type * as rxjs from "rxjs"
 import { describe, it } from "vitest"

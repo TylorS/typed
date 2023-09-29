@@ -3,10 +3,10 @@
  * @since 8.19.0
  */
 
+import * as Context from "@typed/context"
+import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import { fromNullable, type Option } from "effect/Option"
-import * as Effect from "effect/Effect"
-import * as Context from "@typed/context"
 
 import { GlobalThis } from "./GlobalThis"
 

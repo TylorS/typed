@@ -4,13 +4,13 @@
  * @since 1.18.0
  */
 
-import * as Option from "effect/Option"
-import type * as Cause from "effect/Cause"
-import * as Effect from "effect/Effect"
 import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import * as core from "@typed/fx/internal/core"
 import { FxEffectTransform } from "@typed/fx/internal/fx-effect-transform"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
+import type * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
 
 /**
  * @since 1.18.0

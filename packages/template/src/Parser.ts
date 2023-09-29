@@ -1,7 +1,7 @@
-import { globalValue } from "effect/GlobalValue"
 import * as Template from "@typed/template/Template"
 import type { Token } from "@typed/template/Token"
 import { tokenize } from "@typed/template/Tokenizer"
+import { globalValue } from "effect/GlobalValue"
 
 export interface Parser {
   parse(template: ReadonlyArray<string>, tokenStream?: Iterator<Token>): Template.Template

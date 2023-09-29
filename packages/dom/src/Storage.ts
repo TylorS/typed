@@ -3,14 +3,14 @@
  * @since 8.19.0
  */
 
-import * as O from "effect/Option"
-import * as Effect from "effect/Effect"
-import type * as Layer from "effect/Layer"
 import type { ParseOptions } from "@effect/schema/AST"
 import * as P from "@effect/schema/Parser"
 import * as ParseResult from "@effect/schema/ParseResult"
 import * as S from "@effect/schema/Schema"
 import * as Context from "@typed/context"
+import * as Effect from "effect/Effect"
+import type * as Layer from "effect/Layer"
+import * as O from "effect/Option"
 
 import { Window } from "./Window"
 

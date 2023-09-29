@@ -1,7 +1,7 @@
+import * as Context from "@typed/context"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import type * as Request from "effect/Request"
-import * as Context from "@typed/context"
 
 describe(__filename, () => {
   describe(Context.Tagged, () => {

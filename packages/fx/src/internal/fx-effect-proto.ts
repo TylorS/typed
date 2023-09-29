@@ -1,7 +1,7 @@
-import * as Effect from "effect/Effect"
 import type { Fx } from "@typed/fx/Fx"
 import { ToFx } from "@typed/fx/internal/fx-primitive"
 import { Variance } from "@typed/fx/internal/protos"
+import * as Effect from "effect/Effect"
 
 /**
  * Prototype for creqting a type which is both an Effect and an Fx

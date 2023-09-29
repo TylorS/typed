@@ -3,16 +3,16 @@
  * @since 1.18.0
  */
 
-import type * as Either from "effect/Either"
-import { dual } from "effect/Function"
-import type * as Option from "effect/Option"
-import type * as Cause from "effect/Cause"
-import * as Effect from "effect/Effect"
-import type * as Exit from "effect/Exit"
 import type * as Computed from "@typed/fx/Computed"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as RemoteData from "@typed/remote-data"
+import type * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import type * as Either from "effect/Either"
+import type * as Exit from "effect/Exit"
+import { dual } from "effect/Function"
+import type * as Option from "effect/Option"
 
 /**
  * A RefRemoteData is a RefSubject that holds a RemoteData value.

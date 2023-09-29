@@ -1,12 +1,10 @@
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
-import * as Context from "@typed/context"
+import type * as Context from "@typed/context"
+import { Effect, FiberRefsPatch, Layer, Runtime, RuntimeFlags } from "effect"
 
 export type Provide<R, E, A> =
   | ProvideContext<A>
-  | ProvideSomeContext<A>
   | ProvideLayer<R, E, A>
-  | ProvideSomeLayer<R, E, A>
+  | ProvideRuntime<A>
   | ProvideService<A, any>
   | ProvideServiceEffect<R, E, A, any>
 
@@ -20,16 +18,6 @@ export const ProvideContext = <A>(i0: Context.Context<A>): ProvideContext<A> => 
   i0
 })
 
-export interface ProvideSomeContext<A> {
-  readonly _tag: "ProvideSomeContext"
-  readonly i0: Context.Context<A>
-}
-
-export const ProvideSomeContext = <A>(i0: Context.Context<A>): ProvideSomeContext<A> => ({
-  _tag: "ProvideSomeContext",
-  i0
-})
-
 export interface ProvideLayer<R, E, A> {
   readonly _tag: "ProvideLayer"
   readonly i0: Layer.Layer<R, E, A>
@@ -37,16 +25,6 @@ export interface ProvideLayer<R, E, A> {
 
 export const ProvideLayer = <R, E, A>(i0: Layer.Layer<R, E, A>): ProvideLayer<R, E, A> => ({
   _tag: "ProvideLayer",
-  i0
-})
-
-export interface ProvideSomeLayer<R, E, A> {
-  readonly _tag: "ProvideSomeLayer"
-  readonly i0: Layer.Layer<R, E, A>
-}
-
-export const ProvideSomeLayer = <R, E, A>(i0: Layer.Layer<R, E, A>): ProvideSomeLayer<R, E, A> => ({
-  _tag: "ProvideSomeLayer",
   i0
 })
 
@@ -77,13 +55,22 @@ export const ProvideServiceEffect = <R, E, I, S>(
   i1
 })
 
+export interface ProvideRuntime<A> {
+  readonly _tag: "ProvideRuntime"
+  readonly i0: Runtime.Runtime<A>
+}
+
+export const ProvideRuntime = <A>(i0: Runtime.Runtime<A>): ProvideRuntime<A> => ({
+  _tag: "ProvideRuntime",
+  i0
+})
+
 export function matchProvide<R = never, E = never, A = never, B = never>(
   self: Provide<R, E, A>,
   matchers: {
     readonly ProvideContext: (i0: Context.Context<A>) => B
-    readonly ProvideSomeContext: (i0: Context.Context<A>) => B
+    readonly ProvideRuntime: (i0: Runtime.Runtime<A>) => B
     readonly ProvideLayer: (i0: Layer.Layer<R, E, A>) => B
-    readonly ProvideSomeLayer: (i0: Layer.Layer<R, E, A>) => B
     readonly ProvideService: (tag: Context.Tag<A, any>, service: any) => B
     readonly ProvideServiceEffect: (tag: Context.Tag<A, any>, service: Effect.Effect<R, E, any>) => B
   }
@@ -96,69 +83,24 @@ export function merge<R = never, E = never, A = never, R2 = never, E2 = never, B
   that: Provide<R2, E2, B>
 ): Provide<Exclude<R, B> | R2, E | E2, A | B> {
   return matchProvide(self, {
-    ProvideContext: (a) =>
-      matchProvide(that, {
-        ProvideContext: (b): Provide<R2, E2, A | B> => ProvideContext(Context.merge(a, b)),
-        ProvideSomeContext: (b) => ProvideSomeContext(Context.merge(a, b)),
-        ProvideLayer: (b) => ProvideLayer(Layer.provideMerge(b, Layer.succeedContext(a))),
-        ProvideSomeLayer: (b) => ProvideSomeLayer(Layer.provideMerge(b, Layer.succeedContext(a))),
-        ProvideService: (tag, s) => ProvideContext(Context.add(a, tag, s)),
-        ProvideServiceEffect: (tag, effectS) =>
-          ProvideSomeLayer(Layer.provideMerge(Layer.effect(tag, effectS), Layer.succeedContext(a)))
-      }),
-    ProvideSomeContext: (a) =>
-      matchProvide(that, {
-        ProvideContext: (b): Provide<R2, E2, A | B> => ProvideSomeContext(Context.merge(a, b)),
-        ProvideSomeContext: (b) => ProvideSomeContext(Context.merge(a, b)),
-        ProvideLayer: (b) => ProvideSomeLayer(Layer.provideMerge(b, Layer.succeedContext(a))),
-        ProvideSomeLayer: (b) => ProvideSomeLayer(Layer.provideMerge(b, Layer.succeedContext(a))),
-        ProvideService: (tag, s) => ProvideSomeContext(Context.add(a, tag, s)),
-        ProvideServiceEffect: (tag, effectS) =>
-          ProvideSomeLayer(Layer.provideMerge(Layer.effect(tag, effectS), Layer.succeedContext(a)))
-      }),
-    ProvideLayer: (a) =>
-      matchProvide(that, {
-        ProvideContext: (b): Provide<Exclude<R, B> | R2, E | E2, A | B> =>
-          ProvideLayer(Layer.provideMerge(Layer.succeedContext(b), a)),
-        ProvideSomeContext: (b) => ProvideSomeLayer(Layer.provideMerge(Layer.succeedContext(b), a)),
-        ProvideLayer: (b) => ProvideLayer(Layer.provideMerge(b, a)),
-        ProvideSomeLayer: (b) => ProvideSomeLayer(Layer.provideMerge(b, a)),
-        ProvideService: (tag, s) => ProvideSomeLayer(Layer.provideMerge(Layer.succeedContext(Context.make(tag, s)), a)),
-        ProvideServiceEffect: (tag, effectS) => ProvideSomeLayer(Layer.provideMerge(Layer.effect(tag, effectS), a))
-      }),
-    ProvideSomeLayer: (a) =>
-      matchProvide(that, {
-        ProvideContext: (b): Provide<Exclude<R, B> | R2, E | E2, A | B> =>
-          ProvideLayer(Layer.provideMerge(Layer.succeedContext(b), a)),
-        ProvideSomeContext: (b) => ProvideSomeLayer(Layer.provideMerge(Layer.succeedContext(b), a)),
-        ProvideLayer: (b) => ProvideSomeLayer(Layer.provideMerge(b, a)),
-        ProvideSomeLayer: (b) => ProvideSomeLayer(Layer.provideMerge(b, a)),
-        ProvideService: (tag, s) => ProvideSomeLayer(Layer.provideMerge(Layer.succeedContext(Context.make(tag, s)), a)),
-        ProvideServiceEffect: (tag, effectS) => ProvideSomeLayer(Layer.provideMerge(Layer.effect(tag, effectS), a))
-      }),
-    ProvideService: (tag, s) =>
-      matchProvide(that, {
-        ProvideContext: (b): Provide<Exclude<R, B> | R2, E | E2, A | B> => ProvideContext(Context.add(b, tag, s)),
-        ProvideSomeContext: (b) => ProvideSomeContext(Context.add(b, tag, s)),
-        ProvideLayer: (b) => ProvideSomeLayer(Layer.provideMerge(b, Layer.succeedContext(Context.make(tag, s)))),
-        ProvideSomeLayer: (b) => ProvideSomeLayer(Layer.provideMerge(b, Layer.succeedContext(Context.make(tag, s)))),
-        ProvideService: (tag2, s2) => ProvideSomeContext(Context.add(Context.make(tag, s), tag2, s2)),
-        ProvideServiceEffect: (tag2, effectS) =>
-          ProvideSomeLayer(Layer.provideMerge(Layer.effect(tag2, effectS), Layer.succeed(tag, s)))
-      }),
-    ProvideServiceEffect: (tag, effectS) =>
-      matchProvide(that, {
-        ProvideContext: (b): Provide<Exclude<R, B> | R2, E | E2, A | B> =>
-          ProvideSomeLayer(Layer.provideMerge(Layer.succeedContext(b), Layer.effect(tag, effectS))),
-        ProvideSomeContext: (b) =>
-          ProvideSomeLayer(Layer.provideMerge(Layer.succeedContext(b), Layer.effect(tag, effectS))),
-        ProvideLayer: (b) => ProvideSomeLayer(Layer.provideMerge(b, Layer.effect(tag, effectS))),
-        ProvideSomeLayer: (b) => ProvideSomeLayer(Layer.provideMerge(b, Layer.effect(tag, effectS))),
-        ProvideService: (tag2, s) =>
-          ProvideSomeLayer(Layer.provideMerge(Layer.succeed(tag2, s), Layer.effect(tag, effectS))),
-        ProvideServiceEffect: (tag2, effectS2) =>
-          ProvideSomeLayer(Layer.provideMerge(Layer.effect(tag2, effectS2), Layer.effect(tag, effectS)))
-      })
+    ProvideContext: (a) => mergeLayer(Layer.succeedContext(a), that),
+    ProvideLayer: (a) => mergeLayer(a, that),
+    ProvideRuntime: (a) => mergeLayer(runtimeToLayer(a), that),
+    ProvideService: (tag, service) => mergeLayer(Layer.succeed(tag, service), that),
+    ProvideServiceEffect: (tag, service) => mergeLayer(Layer.effect(tag, service), that)
+  })
+}
+
+function mergeLayer<R, E, A, R2, E2, B>(
+  layer: Layer.Layer<R, E, A>,
+  provide: Provide<R2, E2, B>
+): Provide<Exclude<R, B> | R2, E | E2, A | B> {
+  return matchProvide(provide, {
+    ProvideContext: (ctx) => ProvideLayer(Layer.provideMerge(Layer.succeedContext(ctx), layer)),
+    ProvideLayer: (layerB) => ProvideLayer(Layer.provideMerge(layerB, layer)),
+    ProvideRuntime: (runtime) => ProvideLayer(Layer.provideMerge(runtimeToLayer(runtime), layer)),
+    ProvideService: (tag, service) => ProvideLayer(Layer.provideMerge(Layer.succeed(tag, service), layer)),
+    ProvideServiceEffect: (tag, service) => ProvideLayer(Layer.provideMerge(Layer.effect(tag, service), layer))
   })
 }
 
@@ -168,13 +110,34 @@ export function provideToEffect<R, E, A, R2 = never, E2 = never, S = never>(
 ): Effect.Effect<Exclude<R, S> | R2, E | E2, A> {
   switch (provide._tag) {
     case "ProvideContext":
-    case "ProvideSomeContext":
     case "ProvideLayer":
-    case "ProvideSomeLayer":
-      return Effect.provide(effect as any, provide.i0 as any)
+    case "ProvideRuntime":
+      return Effect.provide(effect, provide.i0 as Layer.Layer<R2, E2, S>)
     case "ProvideService":
-      return Effect.provideService(effect as any, provide.i0, provide.i1)
+      return Effect.provideService(effect, provide.i0, provide.i1)
     case "ProvideServiceEffect":
-      return Effect.provideServiceEffect(effect as any, provide.i0, provide.i1)
+      return Effect.provideServiceEffect(effect, provide.i0, provide.i1)
   }
+}
+
+function runtimeToLayer<R>(runtime: Runtime.Runtime<R>): Layer.Layer<never, never, R> {
+  const patchFlags = RuntimeFlags.diff(Runtime.defaultRuntime.runtimeFlags, runtime.runtimeFlags)
+  const inversePatchFlags = RuntimeFlags.diff(runtime.runtimeFlags, Runtime.defaultRuntime.runtimeFlags)
+  const patchRefs = FiberRefsPatch.diff(Runtime.defaultRuntime.fiberRefs, runtime.fiberRefs)
+  const inversePatchRefs = FiberRefsPatch.diff(runtime.fiberRefs, Runtime.defaultRuntime.fiberRefs)
+
+  return Layer.scopedContext(
+    Effect.acquireUseRelease(
+      Effect.flatMap(
+        Effect.patchRuntimeFlags(patchFlags),
+        () => Effect.patchFiberRefs(patchRefs)
+      ),
+      () => Effect.succeed(runtime.context),
+      () =>
+        Effect.flatMap(
+          Effect.patchRuntimeFlags(inversePatchFlags),
+          () => Effect.patchFiberRefs(inversePatchRefs)
+        )
+    )
+  )
 }

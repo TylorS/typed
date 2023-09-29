@@ -4,14 +4,14 @@
  * @since 1.18.0
  */
 
+import type { ScopedRuntime } from "@typed/fx/internal/helpers"
+import { scopedRuntime } from "@typed/fx/internal/helpers"
+import type * as Sink from "@typed/fx/Sink"
 import type * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
 import type * as Fiber from "effect/Fiber"
 import type * as Scope from "effect/Scope"
-import type { ScopedRuntime } from "@typed/fx/internal/helpers"
-import { scopedRuntime } from "@typed/fx/internal/helpers"
-import type * as Sink from "@typed/fx/Sink"
 
 /**
  * An Emitter is a a Sink-like type which is can be utilized to adapt external

@@ -3,18 +3,18 @@
  * @since 1.18.0
  */
 
+import type * as Computed from "@typed/fx/Computed"
+import type * as Filtered from "@typed/fx/Filtered"
+import type * as Fx from "@typed/fx/Fx"
+import * as RefSubject from "@typed/fx/RefSubject"
+import type * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
 import type { Equivalence } from "effect/Equivalence"
 import { dual } from "effect/Function"
 import * as Option from "effect/Option"
 import type * as Order from "effect/Order"
 import * as ReadonlyArray from "effect/ReadonlyArray"
-import type * as Effect from "effect/Effect"
 import type * as Scope from "effect/Scope"
-import type * as Computed from "@typed/fx/Computed"
-import type * as Filtered from "@typed/fx/Filtered"
-import type * as Fx from "@typed/fx/Fx"
-import * as RefSubject from "@typed/fx/RefSubject"
 
 /**
  * A RefArray is a RefSubject that is specialized over an array of values.

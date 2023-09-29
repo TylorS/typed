@@ -1,5 +1,5 @@
 import type { Fx } from "@typed/fx/Fx"
-import { Cause, Equal, Pipeable } from "effect"
+import type { Cause, Equal, Pipeable } from "effect"
 
 declare module "effect/Option" {
   export interface None<A> extends Fx<never, Cause.NoSuchElementException, A> {}

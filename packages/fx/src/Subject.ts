@@ -4,10 +4,10 @@
  * @since 1.18.0
  */
 
-import type * as Effect from "effect/Effect"
 import type { Fx } from "@typed/fx/Fx"
 import * as internal from "@typed/fx/internal/core-subject"
 import type { Sink } from "@typed/fx/Sink"
+import type * as Effect from "effect/Effect"
 
 /**
  * A Subject is an Fx which is also a Sink, and can be used to

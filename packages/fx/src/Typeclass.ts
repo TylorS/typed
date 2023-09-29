@@ -2,10 +2,6 @@
  * @effect/typeclass instances
  * @since 1.18.0
  */
-import type { Either } from "effect/Either"
-import { dual } from "effect/Function"
-import type * as HKT from "effect/HKT"
-import { getLeft, getRight } from "effect/Option"
 import type * as Alt from "@effect/typeclass/Alternative"
 import type * as App from "@effect/typeclass/Applicative"
 import type * as BiCov from "@effect/typeclass/Bicovariant"
@@ -24,6 +20,10 @@ import type * as SApp from "@effect/typeclass/SemiApplicative"
 import type * as SCP from "@effect/typeclass/SemiCoproduct"
 import type * as SP from "@effect/typeclass/SemiProduct"
 import type { Fx } from "@typed/fx/Fx"
+import type { Either } from "effect/Either"
+import { dual } from "effect/Function"
+import type * as HKT from "effect/HKT"
+import { getLeft, getRight } from "effect/Option"
 
 import * as core from "@typed/fx/internal/core"
 import { multicast } from "@typed/fx/internal/share"

@@ -3,10 +3,6 @@
  * @since 1.18.0
  */
 
-import type { Equivalence } from "effect/Equivalence"
-import type * as Option from "effect/Option"
-import * as Effect from "effect/Effect"
-import type * as Layer from "effect/Layer"
 import * as Context from "@typed/context"
 import { Computed } from "@typed/fx/Computed"
 import { Filtered } from "@typed/fx/Filtered"
@@ -16,6 +12,10 @@ import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import * as Ref from "@typed/fx/RefSubject"
+import * as Effect from "effect/Effect"
+import type { Equivalence } from "effect/Equivalence"
+import type * as Layer from "effect/Layer"
+import type * as Option from "effect/Option"
 
 /**
  * A Contextual wrapper around a RefSubject

@@ -3,17 +3,17 @@
  * @since 1.0.0
  */
 
-import type { DurationInput } from "effect/Duration"
-import type { Option } from "effect/Option"
-import type * as C from "effect/Cache"
-import type { Effect } from "effect/Effect"
-import type { Exit } from "effect/Exit"
-import * as Layer from "effect/Layer"
-import type { Scope } from "effect/Scope"
-import * as SC from "effect/ScopedCache"
 import { withActions } from "@typed/context/Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 import { Tag } from "@typed/context/Tag"
+import type * as C from "effect/Cache"
+import type { DurationInput } from "effect/Duration"
+import type { Effect } from "effect/Effect"
+import type { Exit } from "effect/Exit"
+import * as Layer from "effect/Layer"
+import type { Option } from "effect/Option"
+import type { Scope } from "effect/Scope"
+import * as SC from "effect/ScopedCache"
 
 /**
  * Contextual wrappers around @effect/io/ScopedCache

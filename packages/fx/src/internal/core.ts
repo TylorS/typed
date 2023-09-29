@@ -1,23 +1,26 @@
 import "./module-agumentation"
 
-import * as Chunk from "effect/Chunk"
-import * as Either from "effect/Either"
-import * as Equal from "effect/Equal"
-import { dual, identity } from "effect/Function"
-import * as Option from "effect/Option"
-import * as Cause from "effect/Cause"
-import * as Deferred from "effect/Deferred"
-import * as Effect from "effect/Effect"
-import type * as Exit from "effect/Exit"
-import * as Fiber from "effect/Fiber"
-import type * as Layer from "effect/Layer"
-import * as Ref from "effect/Ref"
-import * as Scope from "effect/Scope"
-import * as SynchronizedRef from "effect/SynchronizedRef"
-import * as Stream from "effect/Stream"
+import type { Exit } from "effect"
+import {
+  Cause,
+  Chunk,
+  Deferred,
+  Effect,
+  Effectable,
+  Either,
+  Equal,
+  Fiber,
+  Layer,
+  Option,
+  Ref,
+  Scope,
+  Stream,
+  SynchronizedRef
+} from "effect"
 
-import * as Schedule from "effect/Schedule"
-import { type Context, type Tag } from "@typed/context"
+import { dual, identity } from "effect/Function"
+
+import { type Context, isContext, type Tag } from "@typed/context"
 import {
   compileEffectLoop,
   FilterEffect,
@@ -30,9 +33,8 @@ import * as helpers from "@typed/fx/internal/helpers"
 import * as Provide from "@typed/fx/internal/provide"
 import * as strategies from "@typed/fx/internal/strategies"
 import { compileSyncReducer, Filter, FilterMap, Map } from "@typed/fx/internal/sync-operator"
+import * as Schedule from "effect/Schedule"
 
-import type { DurationInput } from "effect/Duration"
-import type { Equivalence } from "effect/Equivalence"
 import * as Emitter from "@typed/fx/Emitter"
 import type {
   FlattenStrategy,
@@ -61,8 +63,10 @@ import {
   WithScopedFork
 } from "@typed/fx/internal/fx-primitive"
 import { matchFxKind } from "@typed/fx/internal/matchers"
-import { EffectProto } from "@typed/fx/internal/protos"
 import * as Sink from "@typed/fx/Sink"
+import type { DurationInput } from "effect/Duration"
+import type { Equivalence } from "effect/Equivalence"
+import type { Runtime } from "effect/Runtime"
 import { run } from "./run"
 
 const constUnit = () => Effect.unit
@@ -1883,44 +1887,24 @@ export const periodic: {
   return fromScheduled(fx, Schedule.spaced(duration))
 })
 
-export const provideContext: {
-  <R>(context: Context<R>): <E, A>(fx: Fx<R, E, A>) => Fx<never, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, context: Context<R>): Fx<never, E, A>
-} = dual(2, function provideContext<R, E, A>(
-  fx: Fx<R, E, A>,
-  context: Context<R>
-): Fx<never, E, A> {
-  return FxProvide.make(fx, Provide.ProvideContext(context))
-})
-
-export const provideSomeContext: {
-  <R2>(context: Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, context: Context<R2>): Fx<Exclude<R, R2>, E, A>
-} = dual(2, function provideSomeContext<R, E, A, R2>(
-  fx: Fx<R, E, A>,
-  context: Context<R2>
-): Fx<Exclude<R, R2>, E, A> {
-  return FxProvide.make(fx, Provide.ProvideSomeContext(context))
-})
-
-export const provideLayer: {
-  <R2, E2, R>(layer: Layer.Layer<R2, E2, R>): <E, A>(fx: Fx<R, E, A>) => Fx<R2, E | E2, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, layer: Layer.Layer<R2, E2, R>): Fx<R2, E | E2, A>
-} = dual(2, function provideLayer<R, E, A, R2, E2>(
-  fx: Fx<R, E, A>,
-  layer: Layer.Layer<R2, E2, R>
-): Fx<R2, E | E2, A> {
-  return FxProvide.make(fx, Provide.ProvideLayer(layer))
-})
-
-export const provideSomeLayer: {
+export const provide: {
   <R2, E2, S>(layer: Layer.Layer<R2, E2, S>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E | E2, A>
-  <R, E, A, R2, E2, S>(fx: Fx<R, E, A>, layer: Layer.Layer<R2, E2, S>): Fx<R2 | Exclude<R, S>, E | E2, A>
-} = dual(2, function provideSomeLayer<R, E, A, R2, E2, S>(
+  <R2>(runtime: Runtime<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
+  <R2>(context: Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
+  <R, E, A, R2, E2>(fx: Fx<R, E, A>, layer: Layer.Layer<R2, E2, R>): Fx<R2, E | E2, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, runtime: Runtime<R2>): Fx<Exclude<R, R2>, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, context: Context<R2>): Fx<Exclude<R, R2>, E, A>
+} = dual(2, function provideContext<R, E, A, R2, E2, S>(
   fx: Fx<R, E, A>,
-  layer: Layer.Layer<R2, E2, R>
-): Fx<Exclude<R, S> | R2, E | E2, A> {
-  return FxProvide.make(fx, Provide.ProvideSomeLayer(layer))
+  context: Context<S> | Layer.Layer<R2, E2, S> | Runtime<S>
+): Fx<R2 | Exclude<R, S>, E, A> {
+  if (Layer.isLayer(context)) {
+    return FxProvide.make(fx, Provide.ProvideLayer(context)) as any
+  } else if (isContext(context)) {
+    return FxProvide.make(fx, Provide.ProvideContext(context as Context<S>))
+  } else {
+    return FxProvide.make(fx, Provide.ProvideRuntime(context as Runtime<S>))
+  }
 })
 
 export const provideService: {
@@ -1968,21 +1952,20 @@ export const skipRepeatsWith: {
 
 export const skipRepeats: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = (fx) => skipRepeatsWith(fx, Equal.equals)
 
-class Reduce<R, E, A, B> extends EffectProto<R, E, B> {
+class Reduce<R, E, A, B> extends Effectable.Effectable<R, E, B> {
   constructor(readonly fx: Fx<R, E, A>, readonly seed: B, readonly f: (acc: B, a: A) => B) {
     super()
   }
 
   static make<R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B): Effect.Effect<R, E, B> {
     if (fx instanceof Transformer) {
-      return FilterMapReduce.make(fx.i0, seed, compileSyncReducer(fx.i1, f)) as any
+      return FilterMapReduce.make<R, E, A, B>(fx.i0 as Fx<R, E, any>, seed, compileSyncReducer(fx.i1, f))
     }
 
-    // @ts-expect-error Reduce doesn't implement Effect, which our module augmentation makes TS believe is true.
     return new Reduce(fx, seed, f)
   }
 
-  toEffect() {
+  commit() {
     const { f, seed } = this
     return matchFxKind(this.fx, {
       Fx: (fx) =>
@@ -1998,7 +1981,7 @@ class Reduce<R, E, A, B> extends EffectProto<R, E, B> {
   }
 }
 
-class FilterMapReduce<R, E, A, B> extends EffectProto<R, E, B> {
+class FilterMapReduce<R, E, A, B> extends Effectable.Effectable<R, E, B> {
   constructor(
     readonly i0: Fx<R, E, A>,
     readonly i1: B,
@@ -2020,11 +2003,10 @@ class FilterMapReduce<R, E, A, B> extends EffectProto<R, E, B> {
       }
     }
 
-    // @ts-expect-error Reduce doesn't implement Effect, which our module augmentation makes TS believe is true.
     return new FilterMapReduce(fx, seed, f)
   }
 
-  toEffect(): Effect.Effect<R, E, B> {
+  commit(): Effect.Effect<R, E, B> {
     return Effect.suspend(() => {
       let acc = this.i1
 

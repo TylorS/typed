@@ -4,10 +4,10 @@
  * @since 1.0.0
  */
 
-import * as C from "effect/Context"
 import type { Tagged } from "@typed/context/Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 import { makeIdentifier } from "@typed/context/Identifier"
+import * as C from "effect/Context"
 
 /**
  * Provides extensions to the `Context` module's Tag implementation to

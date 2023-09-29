@@ -4,12 +4,6 @@
  * @since 1.18.0
  */
 
-import type { Context } from "effect/Context"
-import type { Equivalence } from "effect/Equivalence"
-import * as Option from "effect/Option"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
-import type { Scope } from "effect/Scope"
 import { ContextBuilder } from "@typed/context/Builder"
 import { Computed } from "@typed/fx/Computed"
 import type { RefSubject } from "@typed/fx/Context"
@@ -19,6 +13,12 @@ import { struct } from "@typed/fx/Fx"
 import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
+import type { Context } from "effect/Context"
+import * as Effect from "effect/Effect"
+import type { Equivalence } from "effect/Equivalence"
+import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
+import type { Scope } from "effect/Scope"
 
 /**
  * @since 1.18.0

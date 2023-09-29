@@ -3,13 +3,13 @@
  * @since 1.0.0
  */
 
-import type { Option } from "effect/Option"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
-import * as SyncRef from "effect/SynchronizedRef"
 import { withActions } from "@typed/context/Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 import { Tag } from "@typed/context/Tag"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import type { Option } from "effect/Option"
+import * as SyncRef from "effect/SynchronizedRef"
 
 /**
  * Contextual wrappers around @effect/io/SynchronizedRef

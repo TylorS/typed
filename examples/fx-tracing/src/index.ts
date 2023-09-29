@@ -1,11 +1,11 @@
-import { pipe } from "effect/Function"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
 import * as NodeSdk from "@effect/opentelemetry/NodeSdk"
 import * as Resource from "@effect/opentelemetry/Resource"
 import * as Tracer from "@effect/opentelemetry/Tracer"
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http"
 import * as Fx from "@typed/fx/Fx"
+import * as Effect from "effect/Effect"
+import { pipe } from "effect/Function"
+import * as Layer from "effect/Layer"
 
 const TracingLive = Layer.provide(
   Resource.layer({ serviceName: "example" }),

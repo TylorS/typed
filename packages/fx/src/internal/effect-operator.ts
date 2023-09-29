@@ -1,8 +1,8 @@
-import * as Option from "effect/Option"
-import * as Cause from "effect/Cause"
-import * as Effect from "effect/Effect"
 import type { SyncOperator } from "@typed/fx/internal/sync-operator"
 import { WithContext } from "@typed/fx/Sink"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
 
 // Effect operators are a subset of operators which can be safely fused together assynchronously
 

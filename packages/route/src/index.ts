@@ -4,8 +4,8 @@
  * @since 1.0.0
  */
 
-import * as Option from "effect/Option"
 import * as Path from "@typed/path"
+import * as Option from "effect/Option"
 import * as ptr from "path-to-regexp"
 
 /**

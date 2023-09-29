@@ -3,8 +3,8 @@
  * @since 8.19.0
  */
 
-import { dual } from "effect/Function"
 import * as Effect from "effect/Effect"
+import { dual } from "effect/Function"
 import * as Scope from "effect/Scope"
 
 import { GlobalThis } from "./GlobalThis"

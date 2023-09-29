@@ -5,10 +5,6 @@
  * @since 1.18.0
  */
 
-import type { Equivalence } from "effect/Equivalence"
-import type * as Option from "effect/Option"
-import * as Effect from "effect/Effect"
-import type * as Scope from "effect/Scope"
 import type { Computed } from "@typed/fx/Computed"
 import type { Filtered } from "@typed/fx/Filtered"
 import type { Fx } from "@typed/fx/Fx"
@@ -16,6 +12,10 @@ import * as coreRefSubject from "@typed/fx/internal/core-ref-subject"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import type * as Subject from "@typed/fx/Subject"
 import type { RefSubjectTypeId } from "@typed/fx/TypeId"
+import * as Effect from "effect/Effect"
+import type { Equivalence } from "effect/Equivalence"
+import type * as Option from "effect/Option"
+import type * as Scope from "effect/Scope"
 
 /**
  * A RefSubject is a Subject that has a current value that can be read and updated.

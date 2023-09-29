@@ -3,10 +3,10 @@
  * @since 8.19.0
  */
 
-import * as Option from "effect/Option"
-import type * as Effect from "effect/Effect"
-import type * as Scope from "effect/Scope"
 import * as Context from "@typed/context"
+import type * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
+import type * as Scope from "effect/Scope"
 
 import * as EventTarget from "./EventTarget"
 import type { GlobalThis } from "./GlobalThis"

@@ -6,10 +6,10 @@
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 
-import { Tag } from "effect/Context"
-import type { Scope } from "effect/Scope"
 import { ContextBuilder } from "@typed/context/Builder"
 import type { IdentifierFactory, IdentifierOf } from "@typed/context/Identifier"
+import { Tag } from "effect/Context"
+import type { Scope } from "effect/Scope"
 
 /**
  * A Tagged service is a @effect/data/Context.Tag with additional methods for

@@ -3,8 +3,8 @@
  * @since 8.19.0
  */
 
-import * as Effect from "effect/Effect"
 import * as Context from "@typed/context"
+import * as Effect from "effect/Effect"
 
 /**
  * A Context for the History object

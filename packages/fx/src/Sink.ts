@@ -4,13 +4,13 @@
  * @since 1.18.0
  */
 
-import * as Either from "effect/Either"
-import { dual } from "effect/Function"
+import type { Context } from "@typed/context"
 import * as Cause from "effect/Cause"
 import * as Clock from "effect/Clock"
 import * as Effect from "effect/Effect"
+import * as Either from "effect/Either"
+import { dual } from "effect/Function"
 import type * as Tracer from "effect/Tracer"
-import type { Context } from "@typed/context"
 
 /**
  * Sink is a data structure that represents a place to send failures and successes

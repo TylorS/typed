@@ -1,9 +1,9 @@
 import { ok } from "assert"
 
-import * as Either from "effect/Either"
-import * as Equal from "effect/Equal"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
+import * as Either from "effect/Either"
+import * as Equal from "effect/Equal"
 import { describe, expect, it } from "vitest"
 
 import * as RemoteData from "@typed/remote-data"

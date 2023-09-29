@@ -5,9 +5,9 @@
  * @since 1.18.0
  */
 
-import type { Effect } from "effect/Effect"
 import type { Fx } from "@typed/fx/Fx"
 import type { TypeId } from "@typed/fx/TypeId"
+import type { Effect } from "effect/Effect"
 
 /**
  * A data type which is both an Fx and an Effect.
