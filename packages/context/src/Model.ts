@@ -4,11 +4,11 @@
  * @since 1.0.0
  */
 
-import type { Context } from "@effect/data/Context"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
-import type { Scope } from "@effect/io/Scope"
-import { ScopedRefTypeId } from "@effect/io/ScopedRef"
+import type { Context } from "effect/Context"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import type { Scope } from "effect/Scope"
+import { ScopedRefTypeId } from "effect/ScopedRef"
 import { ContextBuilder } from "@typed/context/Builder"
 import type { Ref } from "@typed/context/Ref"
 import type { ScopedRef } from "@typed/context/ScopedRef"

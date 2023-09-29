@@ -3,8 +3,8 @@
  * @since 1.18.0
  */
 
-import * as Option from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
+import * as Option from "effect/Option"
+import * as Effect from "effect/Effect"
 import { Filtered } from "@typed/fx/Filtered"
 import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { switchMap } from "@typed/fx/internal/core"

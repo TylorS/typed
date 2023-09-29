@@ -8,8 +8,8 @@ export {
    * Adds a service to a given `Context`.
    *
    * @example
-   * import * as Context from "@effect/data/Context"
-   * import { pipe } from "@effect/data/Function"
+   * import * as Context from "effect/Context"
+   * import { pipe } from "effect/Function"
    *
    * const Port = Context.Tag<{ PORT: number }>()
    * const Timeout = Context.Tag<{ TIMEOUT: number }>()
@@ -36,7 +36,7 @@ export {
    * Returns an empty `Context`.
    *
    * @example
-   * import * as Context from "@effect/data/Context"
+   * import * as Context from "effect/Context"
    *
    * assert.strictEqual(Context.isContext(Context.empty()), true)
    *
@@ -51,8 +51,8 @@ export {
    * @param tag - The `Tag` of the service to retrieve.
    *
    * @example
-   * import * as Context from "@effect/data/Context"
-   * import { pipe } from "@effect/data/Function"
+   * import * as Context from "effect/Context"
+   * import { pipe } from "effect/Function"
    *
    * const Port = Context.Tag<{ PORT: number }>()
    * const Timeout = Context.Tag<{ TIMEOUT: number }>()
@@ -76,8 +76,8 @@ export {
    * @param tag - The `Tag` of the service to retrieve.
    *
    * @example
-   * import * as Context from "@effect/data/Context"
-   * import * as O from "@effect/data/Option"
+   * import * as Context from "effect/Context"
+   * import * as O from "effect/Option"
    *
    * const Port = Context.Tag<{ PORT: number }>()
    * const Timeout = Context.Tag<{ TIMEOUT: number }>()
@@ -95,7 +95,7 @@ export {
    * Returns an empty `Context`.
    *
    * @example
-   * import * as Context from "@effect/data/Context"
+   * import * as Context from "effect/Context"
    *
    * assert.strictEqual(Context.isContext(Context.empty()), true)
    *
@@ -109,7 +109,7 @@ export {
    * @param input - The value to be checked if it is a `Tag`.
    *
    * @example
-   * import * as Context from "@effect/data/Context"
+   * import * as Context from "effect/Context"
    *
    * assert.strictEqual(Context.isTag(Context.Tag()), true)
    *
@@ -121,7 +121,7 @@ export {
    * Creates a new `Context` with a single service associated to the tag.
    *
    * @example
-   * import * as Context from "@effect/data/Context"
+   * import * as Context from "effect/Context"
    *
    * const Port = Context.Tag<{ PORT: number }>()
    *
@@ -140,7 +140,7 @@ export {
    * @param that - The second `Context` to merge.
    *
    * @example
-   * import * as Context from "@effect/data/Context"
+   * import * as Context from "effect/Context"
    *
    * const Port = Context.Tag<{ PORT: number }>()
    * const Timeout = Context.Tag<{ TIMEOUT: number }>()
@@ -168,9 +168,9 @@ export {
    * @param tags - The list of `Tag`s to be included in the new `Context`.
    *
    * @example
-   * import * as Context from "@effect/data/Context"
-   * import { pipe } from "@effect/data/Function"
-   * import * as O from "@effect/data/Option"
+   * import * as Context from "effect/Context"
+   * import { pipe } from "effect/Function"
+   * import * as O from "effect/Option"
    *
    * const Port = Context.Tag<{ PORT: number }>()
    * const Timeout = Context.Tag<{ TIMEOUT: number }>()
@@ -218,7 +218,7 @@ export {
    * @param tag - The `Tag` of the service to retrieve.
    *
    * @example
-   * import * as Context from "@effect/data/Context"
+   * import * as Context from "effect/Context"
    *
    * const Port = Context.Tag<{ PORT: number }>()
    * const Timeout = Context.Tag<{ TIMEOUT: number }>()
@@ -237,4 +237,4 @@ export {
    * @category models
    */
   type ValidTagsById
-} from "@effect/data/Context"
+} from "effect/Context"

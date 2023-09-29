@@ -1,15 +1,15 @@
-import type * as Either from "@effect/data/Either"
-import type { LazyArg } from "@effect/data/Function"
-import type * as Option from "@effect/data/Option"
-import type * as Cause from "@effect/io/Cause"
-import type * as Effect from "@effect/io/Effect"
-import type * as Exit from "@effect/io/Exit"
-import type * as Fiber from "@effect/io/Fiber"
-import type * as FiberId from "@effect/io/FiberId"
-import type * as FiberStatus from "@effect/io/FiberStatus"
-import type * as BlockedRequests from "@effect/io/RequestBlock"
-import type * as RuntimeFlags from "@effect/io/RuntimeFlags"
-import type * as RuntimeFlagsPatch from "@effect/io/RuntimeFlagsPatch"
+import type * as Either from "effect/Either"
+import type { LazyArg } from "effect/Function"
+import type * as Option from "effect/Option"
+import type * as Cause from "effect/Cause"
+import type * as Effect from "effect/Effect"
+import type * as Exit from "effect/Exit"
+import type * as Fiber from "effect/Fiber"
+import type * as FiberId from "effect/FiberId"
+import type * as FiberStatus from "effect/FiberStatus"
+import type * as BlockedRequests from "effect/RequestBlock"
+import type * as RuntimeFlags from "effect/RuntimeFlags"
+import type * as RuntimeFlagsPatch from "effect/RuntimeFlagsPatch"
 
 // -----------------------------------------------------------------------------
 // Effect - very low-level effect primitives
@@ -18,7 +18,7 @@ import type * as RuntimeFlagsPatch from "@effect/io/RuntimeFlagsPatch"
 // -----------------------------------------------------------------------------
 
 /** @internal */
-export const EffectTypeId: Effect.EffectTypeId = Symbol.for("@effect/io/Effect") as Effect.EffectTypeId
+export const EffectTypeId: Effect.EffectTypeId = Symbol.for("effect/Effect") as Effect.EffectTypeId
 
 /**
  * @internal

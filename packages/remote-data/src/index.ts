@@ -3,19 +3,19 @@
  * @since 1.0.0
  */
 
-import * as Chunk from "@effect/data/Chunk"
-import * as Either from "@effect/data/Either"
-import * as Equal from "@effect/data/Equal"
-import type * as Equivalence from "@effect/data/Equivalence"
-import { dual, identity, pipe } from "@effect/data/Function"
-import * as Hash from "@effect/data/Hash"
-import * as Option from "@effect/data/Option"
-import type { Pipeable } from "@effect/data/Pipeable"
-import { pipeArguments } from "@effect/data/Pipeable"
-import type * as Unify from "@effect/data/Unify"
-import * as Cause from "@effect/io/Cause"
-import * as Effect from "@effect/io/Effect"
-import * as Exit from "@effect/io/Exit"
+import * as Chunk from "effect/Chunk"
+import * as Either from "effect/Either"
+import * as Equal from "effect/Equal"
+import type * as Equivalence from "effect/Equivalence"
+import { dual, identity, pipe } from "effect/Function"
+import * as Hash from "effect/Hash"
+import * as Option from "effect/Option"
+import type { Pipeable } from "effect/Pipeable"
+import { pipeArguments } from "effect/Pipeable"
+import type * as Unify from "effect/Unify"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
 
 /**
  * RemoteData is a data type that represents the state of a remote resource.
@@ -907,7 +907,7 @@ export {
    * @category errors
    */
   NoSuchElementException
-} from "@effect/io/Cause"
+} from "effect/Cause"
 
 function makeException<T extends { _tag: string; message?: string }>(
   proto: Omit<T, "message" | "_tag">,

@@ -5,10 +5,10 @@
  * @since 1.18.0
  */
 
-import type { Equivalence } from "@effect/data/Equivalence"
-import type * as Option from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
-import type * as Scope from "@effect/io/Scope"
+import type { Equivalence } from "effect/Equivalence"
+import type * as Option from "effect/Option"
+import * as Effect from "effect/Effect"
+import type * as Scope from "effect/Scope"
 import type { Computed } from "@typed/fx/Computed"
 import type { Filtered } from "@typed/fx/Filtered"
 import type { Fx } from "@typed/fx/Fx"

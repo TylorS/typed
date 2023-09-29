@@ -33,9 +33,8 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/data": "^0.18.7",
-    "@effect/io": "^0.41.1",
-    "@effect/opentelemetry": "^0.12.0",
+    "effect": "^2.0.0-next.39",
+    "@effect/opentelemetry": "^0.13.1",
     "@opentelemetry/exporter-trace-otlp-http": "^0.43.0",
     "@opentelemetry/otlp-exporter-base": "^0.43.0",
     "@opentelemetry/sdk-node": "^0.43.0",

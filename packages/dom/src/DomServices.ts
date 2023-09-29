@@ -3,8 +3,8 @@
  * @since 8.19.0
  */
 
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 import * as Context from "@typed/context"
 
 import { Document } from "./Document"

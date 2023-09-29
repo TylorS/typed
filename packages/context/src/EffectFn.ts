@@ -3,7 +3,7 @@
  * @since 1.0.0
  */
 
-import type * as Effect from "@effect/io/Effect"
+import type * as Effect from "effect/Effect"
 
 /**
  * EffectFn is a type-alias for a function that returns an Effect.

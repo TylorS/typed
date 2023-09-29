@@ -5,7 +5,7 @@
  * @since 1.18.0
  */
 
-import type { Effect } from "@effect/io/Effect"
+import type { Effect } from "effect/Effect"
 import type { Fx } from "@typed/fx/Fx"
 import type { TypeId } from "@typed/fx/TypeId"
 

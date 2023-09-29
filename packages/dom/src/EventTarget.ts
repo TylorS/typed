@@ -3,9 +3,9 @@
  * @since 8.19.0
  */
 
-import { dual } from "@effect/data/Function"
-import * as Effect from "@effect/io/Effect"
-import * as Scope from "@effect/io/Scope"
+import { dual } from "effect/Function"
+import * as Effect from "effect/Effect"
+import * as Scope from "effect/Scope"
 
 import { GlobalThis } from "./GlobalThis"
 import { createScopedRuntime, type DefaultEventMap } from "./internal/_helpers"

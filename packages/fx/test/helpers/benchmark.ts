@@ -1,4 +1,4 @@
-import * as Effect from "@effect/io/Effect"
+import * as Effect from "effect/Effect"
 import * as mostCore from "@most/core"
 import { newDefaultScheduler } from "@most/scheduler"
 import type * as mostTypes from "@most/types"

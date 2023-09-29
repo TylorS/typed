@@ -1,4 +1,4 @@
-import { pipe } from "@effect/data/Function"
+import { pipe } from "effect/Function"
 import * as most from "@most/core"
 import type { Stream } from "@most/types"
 import * as Fx from "@typed/fx/Fx"

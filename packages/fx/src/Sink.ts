@@ -4,12 +4,12 @@
  * @since 1.18.0
  */
 
-import * as Either from "@effect/data/Either"
-import { dual } from "@effect/data/Function"
-import * as Cause from "@effect/io/Cause"
-import * as Clock from "@effect/io/Clock"
-import * as Effect from "@effect/io/Effect"
-import type * as Tracer from "@effect/io/Tracer"
+import * as Either from "effect/Either"
+import { dual } from "effect/Function"
+import * as Cause from "effect/Cause"
+import * as Clock from "effect/Clock"
+import * as Effect from "effect/Effect"
+import type * as Tracer from "effect/Tracer"
 import type { Context } from "@typed/context"
 
 /**

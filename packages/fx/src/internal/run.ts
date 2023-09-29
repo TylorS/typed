@@ -1,9 +1,9 @@
 import "./module-agumentation"
 
-import * as Cause from "@effect/io/Cause"
-import * as Effect from "@effect/io/Effect"
-import * as StreamSink from "@effect/stream/Sink"
-import * as Stream from "@effect/stream/Stream"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as StreamSink from "effect/Sink"
+import * as Stream from "effect/Stream"
 
 import { compileCauseEffectOperatorSink, compileEffectOperatorSink } from "@typed/fx/internal/effect-operator"
 import * as helpers from "@typed/fx/internal/helpers"

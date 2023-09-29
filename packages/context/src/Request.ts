@@ -4,9 +4,9 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type * as Data from "@effect/data/Data"
-import type { Effect } from "@effect/io/Effect"
-import * as R from "@effect/io/Request"
+import type * as Data from "effect/Data"
+import type { Effect } from "effect/Effect"
+import * as R from "effect/Request"
 
 import { Fn } from "@typed/context/Fn"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"

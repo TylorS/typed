@@ -4,9 +4,9 @@
  * @since 1.0.0
  */
 
-import { dual } from "@effect/data/Function"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import { dual } from "effect/Function"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 
 import type { EffectFn } from "@typed/context/EffectFn"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"

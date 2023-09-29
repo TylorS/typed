@@ -3,10 +3,10 @@
  * @since 1.0.0
  */
 
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
-import type { Scope } from "@effect/io/Scope"
-import * as S from "@effect/io/ScopedRef"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import type { Scope } from "effect/Scope"
+import * as S from "effect/ScopedRef"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 import { Tag } from "@typed/context/Tag"
 

@@ -3,11 +3,11 @@
  * @since 1.18.0
  */
 
-import type { Equivalence } from "@effect/data/Equivalence"
-import { dual } from "@effect/data/Function"
-import type * as Order from "@effect/data/Order"
-import * as ReadonlyArray from "@effect/data/ReadonlyArray"
-import type * as Effect from "@effect/io/Effect"
+import type { Equivalence } from "effect/Equivalence"
+import { dual } from "effect/Function"
+import type * as Order from "effect/Order"
+import * as ReadonlyArray from "effect/ReadonlyArray"
+import type * as Effect from "effect/Effect"
 import type * as Context from "@typed/context"
 import type * as Computed from "@typed/fx/Computed"
 import * as RefSubject from "@typed/fx/Context/RefSubject"

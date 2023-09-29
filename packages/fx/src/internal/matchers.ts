@@ -1,8 +1,8 @@
 import "./module-agumentation"
 
-import * as Cause from "@effect/io/Cause"
-import * as Effect from "@effect/io/Effect"
-import * as Stream from "@effect/stream/Stream"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as Stream from "effect/Stream"
 
 import type * as Sink from "@typed/fx/Sink"
 

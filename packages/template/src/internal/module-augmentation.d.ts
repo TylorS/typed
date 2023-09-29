@@ -39,11 +39,11 @@ declare global {
   export interface SVGElement extends Placeholder<never, never, SVGElement> {}
 }
 
-declare module "@effect/io/Effect" {
+declare module "effect/Effect" {
   export interface Effect<R, E, A> extends Placeholder<R, E, A> {}
 }
 
-declare module "@effect/stream/Stream" {
+declare module "effect/Stream" {
   export interface Stream<R, E, A> extends Placeholder<R, E, A> {}
 }
 

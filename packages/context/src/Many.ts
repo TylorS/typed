@@ -3,9 +3,9 @@
  * @since 1.0.0
  */
 
-import type * as C from "@effect/data/Context"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import type * as C from "effect/Context"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 
 import { ContextBuilder } from "@typed/context/Builder"
 import type { Actions, Provision } from "@typed/context/Extensions"

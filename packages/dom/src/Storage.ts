@@ -3,9 +3,9 @@
  * @since 8.19.0
  */
 
-import * as O from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
-import type * as Layer from "@effect/io/Layer"
+import * as O from "effect/Option"
+import * as Effect from "effect/Effect"
+import type * as Layer from "effect/Layer"
 import type { ParseOptions } from "@effect/schema/AST"
 import * as P from "@effect/schema/Parser"
 import * as ParseResult from "@effect/schema/ParseResult"
@@ -160,7 +160,7 @@ const parseJson = <I, A>(schema: S.Schema<I, A>) =>
     schema,
     (s) => {
       try {
-        return S.decodeResult(S.from(schema))(JSON.parse(s))
+        return S.decode(S.from(schema))(JSON.parse(s))
       } catch (err) {
         return ParseResult.failure(ParseResult.type(schema.ast, s))
       }
@@ -201,7 +201,7 @@ export function SchemaStorage<
     }
   > = {}
   const getDecoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof decoders)[K]> =>
-    decoders[key] || (decoders[key] = P.decodeResult(schemas[key]) as any)
+    decoders[key] || (decoders[key] = P.decode(schemas[key]) as any)
 
   const encoders: Partial<
     {
@@ -212,7 +212,7 @@ export function SchemaStorage<
     }
   > = {}
   const getEncoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof encoders)[K]> =>
-    encoders[key] || (encoders[key] = P.encodeResult(schemas[key]) as any)
+    encoders[key] || (encoders[key] = P.encode(schemas[key]) as any)
 
   const get = <K extends keyof Schemas & string>(key: K, options?: ParseOptions) =>
     StorageEffect(
@@ -263,8 +263,8 @@ export function SchemaKeyStorage<K extends string, S extends S.Schema<string, an
   key: K,
   schema: S
 ): SchemaKeyStorage<S> {
-  const decoder = P.decodeResult(schema)
-  const encoder = P.encodeResult(schema)
+  const decoder = P.decode(schema)
+  const encoder = P.encode(schema)
 
   const get = (options?: ParseOptions) =>
     StorageEffect(

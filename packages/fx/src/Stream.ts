@@ -2,15 +2,15 @@
  * Additional Stream integrations with Fx.
  * @since 1.18.0
  */
-import * as Chunk from "@effect/data/Chunk"
-import { dual } from "@effect/data/Function"
-import * as Option from "@effect/data/Option"
-import * as Cause from "@effect/io/Cause"
-import * as Effect from "@effect/io/Effect"
-import * as Exit from "@effect/io/Exit"
-import * as Queue from "@effect/io/Queue"
-import type * as Scope from "@effect/io/Scope"
-import * as Stream from "@effect/stream/Stream"
+import * as Chunk from "effect/Chunk"
+import { dual } from "effect/Function"
+import * as Option from "effect/Option"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
+import * as Queue from "effect/Queue"
+import type * as Scope from "effect/Scope"
+import * as Stream from "effect/Stream"
 import * as Fx from "@typed/fx/Fx"
 import { Sink } from "@typed/fx/Sink"
 

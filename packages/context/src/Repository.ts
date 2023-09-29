@@ -5,9 +5,9 @@
  * @since 1.0.0
  */
 
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
-import type { Scope } from "@effect/io/Scope"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import type { Scope } from "effect/Scope"
 import { ContextBuilder } from "@typed/context/Builder"
 
 import type { EffectFn } from "@typed/context/EffectFn"

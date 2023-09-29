@@ -3,11 +3,11 @@
  * @since 1.0.0
  */
 
-import type * as Effect from "@effect/io/Effect"
-import * as H from "@effect/io/Hub"
-import * as Layer from "@effect/io/Layer"
-import type * as Q from "@effect/io/Queue"
-import type { Scope } from "@effect/io/Scope"
+import type * as Effect from "effect/Effect"
+import * as H from "effect/Hub"
+import * as Layer from "effect/Layer"
+import type * as Q from "effect/Queue"
+import type { Scope } from "effect/Scope"
 import { withActions } from "@typed/context/Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 import { Tag } from "@typed/context/Tag"

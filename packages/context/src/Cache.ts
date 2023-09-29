@@ -2,12 +2,12 @@
  * A Contextual wrapper around @effect/io/Cache
  * @since 1.0.0
  */
-import type { DurationInput } from "@effect/data/Duration"
-import type { Either } from "@effect/data/Either"
-import * as C from "@effect/io/Cache"
-import type { Effect } from "@effect/io/Effect"
-import type { Exit } from "@effect/io/Exit"
-import * as Layer from "@effect/io/Layer"
+import type { DurationInput } from "effect/Duration"
+import type { Either } from "effect/Either"
+import * as C from "effect/Cache"
+import type { Effect } from "effect/Effect"
+import type { Exit } from "effect/Exit"
+import * as Layer from "effect/Layer"
 import { withActions } from "@typed/context/Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 import { Tag } from "@typed/context/Tag"

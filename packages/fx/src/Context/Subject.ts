@@ -3,9 +3,9 @@
  * @since 1.18.0
  */
 
-import type * as Cause from "@effect/io/Cause"
-import * as Effect from "@effect/io/Effect"
-import type * as Layer from "@effect/io/Layer"
+import type * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import type * as Layer from "effect/Layer"
 import * as Context from "@typed/context"
 import type { Fx } from "@typed/fx/Fx"
 import { fromFxEffect, provideSomeLayer, ToFx } from "@typed/fx/Fx"

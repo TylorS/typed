@@ -3,12 +3,12 @@
  * @since 1.18.0
  */
 
-import type * as Either from "@effect/data/Either"
-import { dual } from "@effect/data/Function"
-import type * as Option from "@effect/data/Option"
-import type * as Cause from "@effect/io/Cause"
-import * as Effect from "@effect/io/Effect"
-import type * as Exit from "@effect/io/Exit"
+import type * as Either from "effect/Either"
+import { dual } from "effect/Function"
+import type * as Option from "effect/Option"
+import type * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import type * as Exit from "effect/Exit"
 import type * as Computed from "@typed/fx/Computed"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"

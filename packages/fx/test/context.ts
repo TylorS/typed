@@ -1,5 +1,5 @@
-import * as Option from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
+import * as Option from "effect/Option"
+import * as Effect from "effect/Effect"
 import * as Context from "@typed/fx/Context"
 import * as Fx from "@typed/fx/Fx"
 import * as Sink from "@typed/fx/Sink"

@@ -1,8 +1,8 @@
 import "./module-agumentation"
 
-import type * as Cause from "@effect/io/Cause"
-import type * as Effect from "@effect/io/Effect"
-import type * as Scope from "@effect/io/Scope"
+import type * as Cause from "effect/Cause"
+import type * as Effect from "effect/Effect"
+import type * as Scope from "effect/Scope"
 
 import { type EffectOperator, fuseEffectOperators, liftSyncOperator } from "@typed/fx/internal/effect-operator"
 import * as syncOperator from "@typed/fx/internal/sync-operator"

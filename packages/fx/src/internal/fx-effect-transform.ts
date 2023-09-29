@@ -1,5 +1,5 @@
-import * as Option from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
+import * as Option from "effect/Option"
+import * as Effect from "effect/Effect"
 import type { Fx } from "@typed/fx/Fx"
 import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"

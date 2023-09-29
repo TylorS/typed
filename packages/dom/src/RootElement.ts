@@ -3,10 +3,10 @@
  * @since 8.19.0
  */
 
-import type * as Effect from "@effect/io/Effect"
+import type * as Effect from "effect/Effect"
 import * as Context from "@typed/context"
 
-import type * as Scope from "@effect/io/Scope"
+import type * as Scope from "effect/Scope"
 import type { AddEventListenerOptions } from "./EventTarget"
 import { addEventListener } from "./EventTarget"
 

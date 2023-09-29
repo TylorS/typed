@@ -1,4 +1,4 @@
-import { globalValue } from "@effect/data/GlobalValue"
+import { globalValue } from "effect/GlobalValue"
 import * as Template from "@typed/template/Template"
 import type { Token } from "@typed/template/Token"
 import { tokenize } from "@typed/template/Tokenizer"

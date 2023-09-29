@@ -3,9 +3,9 @@
  * @since 8.19.0
  */
 
-import { pipe } from "@effect/data/Function"
-import { fromNullable, type Option } from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
+import { pipe } from "effect/Function"
+import { fromNullable, type Option } from "effect/Option"
+import * as Effect from "effect/Effect"
 import * as Context from "@typed/context"
 
 import { GlobalThis } from "./GlobalThis"

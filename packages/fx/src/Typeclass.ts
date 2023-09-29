@@ -2,10 +2,10 @@
  * @effect/typeclass instances
  * @since 1.18.0
  */
-import type { Either } from "@effect/data/Either"
-import { dual } from "@effect/data/Function"
-import type * as HKT from "@effect/data/HKT"
-import { getLeft, getRight } from "@effect/data/Option"
+import type { Either } from "effect/Either"
+import { dual } from "effect/Function"
+import type * as HKT from "effect/HKT"
+import { getLeft, getRight } from "effect/Option"
 import type * as Alt from "@effect/typeclass/Alternative"
 import type * as App from "@effect/typeclass/Applicative"
 import type * as BiCov from "@effect/typeclass/Bicovariant"

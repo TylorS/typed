@@ -4,14 +4,14 @@
  * @since 1.18.0
  */
 
-import { constant, constVoid } from "@effect/data/Function"
-import { globalValue } from "@effect/data/GlobalValue"
-import * as Effect from "@effect/io/Effect"
-import type * as Fiber from "@effect/io/Fiber"
-import type * as Layer from "@effect/io/Layer"
-import type * as Queue from "@effect/io/Queue"
-import * as Scheduler from "@effect/io/Scheduler"
-import type * as Scope from "@effect/io/Scope"
+import { constant, constVoid } from "effect/Function"
+import { globalValue } from "effect/GlobalValue"
+import * as Effect from "effect/Effect"
+import type * as Fiber from "effect/Fiber"
+import type * as Layer from "effect/Layer"
+import type * as Queue from "effect/Queue"
+import * as Scheduler from "effect/Scheduler"
+import type * as Scope from "effect/Scope"
 import type * as Context from "@typed/context"
 import { dequeueIsActive, takeDequeue } from "@typed/fx/internal/fx"
 import { cancelIdleCallback, requestIdleCallback } from "@typed/fx/internal/requestIdleCallback"

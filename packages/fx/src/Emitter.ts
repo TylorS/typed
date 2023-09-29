@@ -4,11 +4,11 @@
  * @since 1.18.0
  */
 
-import type * as Cause from "@effect/io/Cause"
-import * as Effect from "@effect/io/Effect"
-import * as Exit from "@effect/io/Exit"
-import type * as Fiber from "@effect/io/Fiber"
-import type * as Scope from "@effect/io/Scope"
+import type * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
+import type * as Fiber from "effect/Fiber"
+import type * as Scope from "effect/Scope"
 import type { ScopedRuntime } from "@typed/fx/internal/helpers"
 import { scopedRuntime } from "@typed/fx/internal/helpers"
 import type * as Sink from "@typed/fx/Sink"

@@ -3,14 +3,14 @@
  * @since 1.18.0
  */
 
-import { equals } from "@effect/data/Equal"
-import type { Equivalence } from "@effect/data/Equivalence"
-import { dual } from "@effect/data/Function"
-import * as Option from "@effect/data/Option"
-import type * as Order from "@effect/data/Order"
-import * as ReadonlyArray from "@effect/data/ReadonlyArray"
-import type * as Effect from "@effect/io/Effect"
-import type * as Scope from "@effect/io/Scope"
+import { equals } from "effect/Equal"
+import type { Equivalence } from "effect/Equivalence"
+import { dual } from "effect/Function"
+import * as Option from "effect/Option"
+import type * as Order from "effect/Order"
+import * as ReadonlyArray from "effect/ReadonlyArray"
+import type * as Effect from "effect/Effect"
+import type * as Scope from "effect/Scope"
 import type * as Computed from "@typed/fx/Computed"
 import type * as Filtered from "@typed/fx/Filtered"
 import type * as Fx from "@typed/fx/Fx"

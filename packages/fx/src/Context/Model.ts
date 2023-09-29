@@ -4,12 +4,12 @@
  * @since 1.18.0
  */
 
-import type { Context } from "@effect/data/Context"
-import type { Equivalence } from "@effect/data/Equivalence"
-import * as Option from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
-import type { Scope } from "@effect/io/Scope"
+import type { Context } from "effect/Context"
+import type { Equivalence } from "effect/Equivalence"
+import * as Option from "effect/Option"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import type { Scope } from "effect/Scope"
 import { ContextBuilder } from "@typed/context/Builder"
 import { Computed } from "@typed/fx/Computed"
 import type { RefSubject } from "@typed/fx/Context"

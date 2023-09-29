@@ -3,10 +3,10 @@
  * @since 1.0.0
  */
 
-import type { Option } from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
-import * as R from "@effect/io/Ref"
+import type { Option } from "effect/Option"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as R from "effect/Ref"
 import { withActions } from "@typed/context/Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
 import { Tag } from "@typed/context/Tag"

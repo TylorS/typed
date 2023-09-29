@@ -1,17 +1,17 @@
 import "./module-agumentation"
 
-import * as Equal from "@effect/data/Equal"
-import { identity } from "@effect/data/Function"
-import * as Hash from "@effect/data/Hash"
-import { pipeArguments } from "@effect/data/Pipeable"
-import * as Effect from "@effect/io/Effect"
-import type * as Channel from "@effect/stream/Channel"
-import type * as StreamSink from "@effect/stream/Sink"
-import type * as Stream from "@effect/stream/Stream"
+import * as Equal from "effect/Equal"
+import { identity } from "effect/Function"
+import * as Hash from "effect/Hash"
+import { pipeArguments } from "effect/Pipeable"
+import * as Effect from "effect/Effect"
+import type * as Channel from "effect/Channel"
+import type * as StreamSink from "effect/Sink"
+import type * as Stream from "effect/Stream"
 
-import { NodeInspectSymbol } from "@effect/data/Inspectable"
-import type { Inspectable } from "@effect/data/Inspectable"
-import * as Fiber from "@effect/io/Fiber"
+import { NodeInspectSymbol } from "effect/Inspectable"
+import type { Inspectable } from "effect/Inspectable"
+import * as Fiber from "effect/Fiber"
 import { type Fx } from "@typed/fx/Fx"
 import { TypeId } from "@typed/fx/TypeId"
 
@@ -59,7 +59,7 @@ export abstract class EffectProto<R, E, A> extends BaseProto implements
     ModuleAgumentedEffectKeysToOmit
   >
 {
-  readonly _tag = "Commit"
+  readonly _op = "Commit"
 
   readonly [Effect.EffectTypeId] = Variance as any
 

@@ -3,7 +3,7 @@
  * @since 8.19.0
  */
 
-import * as Effect from "@effect/io/Effect"
+import * as Effect from "effect/Effect"
 import * as Context from "@typed/context"
 
 /**

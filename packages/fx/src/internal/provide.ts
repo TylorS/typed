@@ -1,5 +1,5 @@
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 import * as Context from "@typed/context"
 
 export type Provide<R, E, A> =

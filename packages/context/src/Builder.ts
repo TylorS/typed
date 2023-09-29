@@ -3,7 +3,7 @@
  * @since 1.0.0
  */
 
-import * as C from "@effect/data/Context"
+import * as C from "effect/Context"
 
 /**
  * ContextBuilder is a fluent interface for building and managing Contexts

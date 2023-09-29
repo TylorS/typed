@@ -3,8 +3,8 @@
  * @since 8.19.0
  */
 
-import * as Effect from "@effect/io/Effect"
-import type * as Scope from "@effect/io/Scope"
+import * as Effect from "effect/Effect"
+import type * as Scope from "effect/Scope"
 import * as Context from "@typed/context"
 
 import * as EventTarget from "./EventTarget"

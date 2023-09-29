@@ -3,9 +3,9 @@
  * @since 1.0.0
  */
 
-import type * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
-import * as Q from "@effect/io/Queue"
+import type * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Q from "effect/Queue"
 import { withActions } from "@typed/context/Extensions"
 import type { Hub } from "@typed/context/Hub"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"

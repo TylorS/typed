@@ -6,13 +6,13 @@
  * @since 1.18.0
  */
 
-import type * as Chunk from "@effect/data/Chunk"
-import * as Either from "@effect/data/Either"
-import { dual } from "@effect/data/Function"
-import * as Option from "@effect/data/Option"
-import * as Cause from "@effect/io/Cause"
-import * as Effect from "@effect/io/Effect"
-import type * as Schedule from "@effect/io/Schedule"
+import type * as Chunk from "effect/Chunk"
+import * as Either from "effect/Either"
+import { dual } from "effect/Function"
+import * as Option from "effect/Option"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import type * as Schedule from "effect/Schedule"
 import type { WithContext } from "@typed/fx/Sink"
 
 /**

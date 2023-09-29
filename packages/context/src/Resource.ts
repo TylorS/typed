@@ -3,10 +3,10 @@
  * @since 1.0.0
  */
 
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
-import * as R from "@effect/io/Resource"
-import type * as Schedule from "@effect/io/Schedule"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as R from "effect/Resource"
+import type * as Schedule from "effect/Schedule"
 import type { IdentifierFactory, IdentifierOf } from "@typed/context/Identifier"
 import { Tag } from "@typed/context/Tag"
 

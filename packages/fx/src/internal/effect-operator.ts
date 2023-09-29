@@ -1,6 +1,6 @@
-import * as Option from "@effect/data/Option"
-import * as Cause from "@effect/io/Cause"
-import * as Effect from "@effect/io/Effect"
+import * as Option from "effect/Option"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
 import type { SyncOperator } from "@typed/fx/internal/sync-operator"
 import { WithContext } from "@typed/fx/Sink"
 

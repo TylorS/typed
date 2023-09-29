@@ -1,6 +1,6 @@
-import * as Chunk from "@effect/data/Chunk"
-import * as Effect from "@effect/io/Effect"
-import type * as Request from "@effect/io/Request"
+import * as Chunk from "effect/Chunk"
+import * as Effect from "effect/Effect"
+import type * as Request from "effect/Request"
 import * as Context from "@typed/context"
 
 describe(__filename, () => {

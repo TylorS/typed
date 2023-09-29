@@ -3,10 +3,10 @@
  * @since 1.0.0
  */
 
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
-import type * as Req from "@effect/io/Request"
-import * as RR from "@effect/io/RequestResolver"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import type * as Req from "effect/Request"
+import * as RR from "effect/RequestResolver"
 
 import type { Context } from "@typed/context/Context"
 import { withActions } from "@typed/context/Extensions"

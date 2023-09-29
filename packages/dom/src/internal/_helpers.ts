@@ -1,7 +1,7 @@
-import * as Effect from "@effect/io/Effect"
-import * as Fiber from "@effect/io/Fiber"
-import * as Runtime from "@effect/io/Runtime"
-import * as Scope from "@effect/io/Scope"
+import * as Effect from "effect/Effect"
+import * as Fiber from "effect/Fiber"
+import * as Runtime from "effect/Runtime"
+import * as Scope from "effect/Scope"
 import type * as TQS from "typed-query-selector/parser"
 
 export type ParseSelector<T extends string, Fallback> = [T] extends [typeof ROOT_CSS_SELECTOR] ? Fallback
