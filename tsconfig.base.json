@@ -1,6 +1,7 @@
 {
   "extends": "./packages/tsconfig/base.json",
   "compilerOptions": {
+    "build": true,
     "baseUrl": ".",
     "paths": {
       "@typed/context": [
@@ -74,6 +75,18 @@
       ],
       "@typed/route/examples/*": [
         "packages/route/examples/*"
+      ],
+      "@typed/template": [
+        "packages/template/src/index.ts"
+      ],
+      "@typed/template/*": [
+        "packages/template/src/*"
+      ],
+      "@typed/template/test/*": [
+        "packages/template/test/*"
+      ],
+      "@typed/template/examples/*": [
+        "packages/template/examples/*"
       ],
       "@typed/wire": [
         "packages/wire/src/index.ts"

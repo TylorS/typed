@@ -48,9 +48,9 @@ export function tuple<Tags extends TupleOfTags>(...tags: Tags): TaggedTuple<Tags
     with: (f) => Effect.map(all, f),
     withEffect: (f) => Effect.flatMap(all, f),
     build: (s) => buildTupleContext(tags, s),
-    provide: (s) => (effect) => Effect.provideSomeContext(effect, buildTupleContext(tags, s).context),
+    provide: (s) => (effect) => Effect.provide(effect, buildTupleContext(tags, s).context),
     provideEffect: (make) => (effect) =>
-      Effect.flatMap(make, (s) => Effect.provideSomeContext(effect, buildTupleContext(tags, s).context)),
+      Effect.flatMap(make, (s) => Effect.provide(effect, buildTupleContext(tags, s).context)),
     layer: (make) => Layer.effectContext(Effect.map(make, (s) => buildTupleContext(tags, s).context)),
     scoped: (make) => Layer.scopedContext(Effect.map(make, (s) => buildTupleContext(tags, s).context))
   }
@@ -96,9 +96,9 @@ export function struct<Tags extends StructOfTags>(tags: Tags): TaggedStruct<Tags
     with: (f) => Effect.map(all, f),
     withEffect: (f) => Effect.flatMap(all, f),
     build: (s) => buildStructContext(tags, s),
-    provide: (s) => (effect) => Effect.provideSomeContext(effect, buildStructContext(tags, s).context),
+    provide: (s) => (effect) => Effect.provide(effect, buildStructContext(tags, s).context),
     provideEffect: (make) => (effect) =>
-      Effect.flatMap(make, (s) => Effect.provideSomeContext(effect, buildStructContext(tags, s).context)),
+      Effect.flatMap(make, (s) => Effect.provide(effect, buildStructContext(tags, s).context)),
     layer: (make) => Layer.effectContext(Effect.map(make, (s) => buildStructContext(tags, s).context)),
     scoped: (make) => Layer.scopedContext(Effect.map(make, (s) => buildStructContext(tags, s).context))
   }

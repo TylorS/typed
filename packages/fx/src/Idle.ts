@@ -5,7 +5,7 @@
  */
 
 import { constant, constVoid } from "@effect/data/Function"
-import { globalValue } from "@effect/data/Global"
+import { globalValue } from "@effect/data/GlobalValue"
 import * as Effect from "@effect/io/Effect"
 import type * as Fiber from "@effect/io/Fiber"
 import type * as Layer from "@effect/io/Layer"
@@ -190,7 +190,7 @@ export function dequeueWhileIdle<I, A, R2, E2, B>(
 ): Effect.Effect<I | R2 | Scope.Scope, E2, void> {
   return whileIdle({
     while: dequeueIsActive(dequeue),
-    body: Effect.flatMap(takeDequeue(dequeue), f),
+    body: Effect.flatMap(takeDequeue<I, A>(dequeue), f),
     ...options
   })
 }

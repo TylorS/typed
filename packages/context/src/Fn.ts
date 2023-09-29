@@ -98,7 +98,7 @@ const wrap = <I, S extends EffectFn>(tag: Tag<I, S>): Fn<I, S> => {
       tag,
       Effect.map(
         Effect.context<EffectFn.Context<T2>>(),
-        (c) => ((...a: any) => Effect.provideSomeContext(implementation(...a), c)) as any
+        (c) => ((...a: any) => Effect.provide(implementation(...a), c)) as any
       )
     )
 
@@ -112,7 +112,7 @@ const wrap = <I, S extends EffectFn>(tag: Tag<I, S>): Fn<I, S> => {
         effect: Effect.Effect<R, E, A>,
         implementation: T2
       ): Effect.Effect<Exclude<R, I> | EffectFn.Context<T2>, E | EffectFn.Error<T2>, A> =>
-        Effect.provideSomeLayer(effect, implement(implementation))
+        Effect.provide(effect, implement(implementation))
     )
   }) as Fn<I, S>
 }

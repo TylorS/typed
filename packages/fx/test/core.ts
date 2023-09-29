@@ -432,7 +432,7 @@ describe.concurrent(__filename, () => {
       const test = Fx.die("error").pipe(Fx.toReadonlyArray, Effect.exit)
       const exit = await Effect.runPromise(test)
 
-      expect(Exit.unannotate(exit)).toEqual(Exit.die("error"))
+      expect(exit).toEqual(Exit.die("error"))
     })
   })
 
@@ -441,7 +441,7 @@ describe.concurrent(__filename, () => {
       const test = Fx.interrupt(FiberId.none).pipe(Fx.toReadonlyArray, Effect.exit)
       const exit = await Effect.runPromise(test)
 
-      expect(Exit.unannotate(exit)).toEqual(Exit.interrupt(FiberId.none))
+      expect(exit).toEqual(Exit.interrupt(FiberId.none))
     })
   })
 
@@ -450,7 +450,7 @@ describe.concurrent(__filename, () => {
       const test = Fx.fail("error").pipe(Fx.toReadonlyArray, Effect.exit)
       const exit = await Effect.runPromise(test)
 
-      expect(Exit.unannotate(exit)).toEqual(Exit.fail("error"))
+      expect(exit).toEqual(Exit.fail("error"))
     })
   })
 

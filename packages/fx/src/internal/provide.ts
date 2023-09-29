@@ -168,13 +168,10 @@ export function provideToEffect<R, E, A, R2 = never, E2 = never, S = never>(
 ): Effect.Effect<Exclude<R, S> | R2, E | E2, A> {
   switch (provide._tag) {
     case "ProvideContext":
-      return Effect.provideContext(effect as any, provide.i0)
     case "ProvideSomeContext":
-      return Effect.provideSomeContext(effect as any, provide.i0)
     case "ProvideLayer":
-      return Effect.provideLayer(effect as any, provide.i0)
     case "ProvideSomeLayer":
-      return Effect.provideSomeLayer(effect as any, provide.i0)
+      return Effect.provide(effect as any, provide.i0 as any)
     case "ProvideService":
       return Effect.provideService(effect as any, provide.i0, provide.i1)
     case "ProvideServiceEffect":

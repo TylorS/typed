@@ -107,8 +107,8 @@ export namespace WithContext {
  */
 export function provide<R, E, A>(sink: WithContext<R, E, A>, ctx: Context<R>): Sink<E, A> {
   return Sink(
-    (cause) => Effect.provideContext(sink.onFailure(cause), ctx),
-    (a) => Effect.provideContext(sink.onSuccess(a), ctx)
+    (cause) => Effect.provide(sink.onFailure(cause), ctx),
+    (a) => Effect.provide(sink.onSuccess(a), ctx)
   )
 }
 

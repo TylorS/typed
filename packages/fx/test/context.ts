@@ -179,7 +179,7 @@ describe.concurrent("Context", () => {
 
         expect(yield* _(foobar)).toEqual({ foo: 0, bar: "" })
       }).pipe(
-        Effect.provideSomeLayer(foobar.of({
+        Effect.provide(foobar.of({
           foo: 0,
           bar: ""
         }))
@@ -202,7 +202,7 @@ describe.concurrent("Context", () => {
 
         expect(yield* _(mapped)).toEqual({ foo: 2, bar: "Hello!" })
       }).pipe(
-        Effect.provideSomeLayer(foobar.of({
+        Effect.provide(foobar.of({
           foo: 0,
           bar: ""
         }))
@@ -230,7 +230,7 @@ describe.concurrent("Context", () => {
 
         expect(yield* _(foobar)).toEqual({ foo: 1, bar: "Hello" })
       }).pipe(
-        Effect.provideSomeLayer(layer)
+        Effect.provide(layer)
       )
 
       await Effect.runPromise(test)
@@ -262,7 +262,7 @@ describe.concurrent("Context", () => {
 
         yield* _(foobar.set({ foo: 1, bar: "Hello", baz: { quux: false } }))
       }).pipe(
-        Effect.provideSomeLayer(foobar.make({
+        Effect.provide(foobar.make({
           foo: Effect.succeed(0),
           bar: Fx.succeed(""),
           baz: {
@@ -302,7 +302,7 @@ describe.concurrent("Context", () => {
 
         expect(yield* _(foobar)).toEqual({ foo: [], bar: [] })
       }).pipe(
-        Effect.provideSomeLayer(foobar.of({
+        Effect.provide(foobar.of({
           foo: [],
           bar: []
         }))

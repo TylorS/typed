@@ -135,7 +135,7 @@ export function fromEffect<R, E, A>(
   initial: Effect.Effect<R, E, A>,
   eq?: Equivalence<A>
 ): Effect.Effect<R, never, RefSubject<E, A>> {
-  return Effect.contextWith((ctx) => unsafeMake(Effect.provideContext(initial, ctx), makeHoldSubject<E, A>(), eq))
+  return Effect.contextWith((ctx) => unsafeMake(Effect.provide(initial, ctx), makeHoldSubject<E, A>(), eq))
 }
 
 /**

@@ -113,7 +113,7 @@ describe(__filename, () => {
         expect(foo).toBe(1)
         expect(bar).toBe(2)
       }).pipe(
-        Effect.provideSomeLayer(FooBar.fromFunction((req) => req._tag === "Foo" ? 1 : 2))
+        Effect.provide(FooBar.fromFunction((req) => req._tag === "Foo" ? 1 : 2))
       )
 
       await Effect.runPromise(test)
@@ -124,7 +124,7 @@ describe(__filename, () => {
     it("allows creating a Cache in the effect context", async () => {
       const cache = Context.Cache<string, never, number>()("test")
       const test = cache.get("foo").pipe(
-        Effect.provideSomeLayer(cache.make({ capacity: 1, timeToLive: 1000, lookup: () => Effect.succeed(1) }))
+        Effect.provide(cache.make({ capacity: 1, timeToLive: 1000, lookup: () => Effect.succeed(1) }))
       )
       const result = await Effect.runPromise(test)
 
@@ -137,7 +137,7 @@ describe(__filename, () => {
       const queue = Context.Queue<number>()("test")
       const test = queue.offerAll([1, 2, 3]).pipe(
         Effect.flatMap(() => queue.takeAll),
-        Effect.provideSomeLayer(queue.unbounded)
+        Effect.provide(queue.unbounded)
       )
       const result = await Effect.runPromise(test)
 
@@ -151,7 +151,7 @@ describe(__filename, () => {
       const test = hub.subscribe.pipe(
         Effect.tap(() => hub.publishAll([1, 2, 3])),
         Effect.flatMap((sub) => sub.takeAll()),
-        Effect.provideSomeLayer(hub.unbounded),
+        Effect.provide(hub.unbounded),
         Effect.scoped
       )
       const result = await Effect.runPromise(test)
@@ -166,8 +166,8 @@ describe(__filename, () => {
       const dequeue = Context.Dequeue<number>()("test-dequeue")
       const test = queue.offerAll([1, 2, 3]).pipe(
         Effect.flatMap(() => dequeue.takeAll),
-        Effect.provideSomeLayer(dequeue.fromQueue(queue)),
-        Effect.provideSomeLayer(queue.unbounded)
+        Effect.provide(dequeue.fromQueue(queue)),
+        Effect.provide(queue.unbounded)
       )
       const result = await Effect.runPromise(test)
 
@@ -180,8 +180,8 @@ describe(__filename, () => {
       const test = hub.subscribe.pipe(
         Effect.tap(() => hub.publishAll([1, 2, 3])),
         Effect.flatMap(() => dequeue.takeAll),
-        Effect.provideSomeLayer(dequeue.fromHub(hub)),
-        Effect.provideSomeLayer(hub.unbounded),
+        Effect.provide(dequeue.fromHub(hub)),
+        Effect.provide(hub.unbounded),
         Effect.scoped
       )
       const result = await Effect.runPromise(test)
@@ -196,8 +196,8 @@ describe(__filename, () => {
       const enqueue = Context.Enqueue<number>()("test-enqueue")
       const test = enqueue.offerAll([1, 2, 3]).pipe(
         Effect.flatMap(() => queue.takeAll),
-        Effect.provideSomeLayer(enqueue.fromQueue(queue)),
-        Effect.provideSomeLayer(queue.unbounded)
+        Effect.provide(enqueue.fromQueue(queue)),
+        Effect.provide(queue.unbounded)
       )
       const result = await Effect.runPromise(test)
 
@@ -210,8 +210,8 @@ describe(__filename, () => {
       const test = hub.subscribe.pipe(
         Effect.tap(() => enqueue.offerAll([1, 2, 3])),
         Effect.flatMap((dequeue) => dequeue.takeAll()),
-        Effect.provideSomeLayer(enqueue.fromHub(hub)),
-        Effect.provideSomeLayer(hub.unbounded),
+        Effect.provide(enqueue.fromHub(hub)),
+        Effect.provide(hub.unbounded),
         Effect.scoped
       )
       const result = await Effect.runPromise(test)

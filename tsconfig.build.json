@@ -20,6 +20,9 @@
       "path": "packages/route"
     },
     {
+      "path": "packages/template"
+    },
+    {
       "path": "packages/wire"
     },
     {

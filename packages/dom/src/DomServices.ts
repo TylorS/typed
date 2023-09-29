@@ -111,7 +111,7 @@ export const provideDomServices = (window: Window & GlobalThis, params?: DomServ
 <R, E, A>(
   effect: Effect.Effect<R | DomServices, E, A>
 ): Effect.Effect<Exclude<R, DomServices>, E, A> =>
-  Effect.provideSomeContext(
+  Effect.provide(
     effect,
     makeDomServices({
       window,

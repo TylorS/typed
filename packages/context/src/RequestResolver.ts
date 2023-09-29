@@ -102,7 +102,7 @@ export function RequestResolver<
 
     const derivedRequests = Object.fromEntries(
       Object.entries(requests).map(
-        ([k, v]) => [k, (input: any) => Effect.provideSomeLayer(v.make(input), requestLayer)] as const
+        ([k, v]) => [k, (input: any) => Effect.provide(v.make(input), requestLayer)] as const
       )
     ) as _Resolver["requests"]
 

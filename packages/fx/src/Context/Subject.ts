@@ -90,7 +90,7 @@ class SubjectImpl<I, E, A> extends ToFx<I, E, A> implements Subject<I, E, A> {
   }
 
   provide: (replay?: number) => <R2, E2, B>(effect: Effect.Effect<R2, E2, B>) => Effect.Effect<Exclude<R2, I>, E2, B> =
-    (replay) => (effect) => Effect.provideSomeLayer(effect, this.make(replay))
+    (replay) => (effect) => Effect.provide(effect, this.make(replay))
 
   provideFx: (replay?: number) => <R2, E2, B>(fx: Fx<R2, E2, B>) => Fx<Exclude<R2, I>, E2, B> = (replay) => (fx) =>
     provideSomeLayer(fx, this.make(replay))

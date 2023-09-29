@@ -13,7 +13,7 @@
   "homepage": "https://github.com/tylors/typed-fp",
   "exports": {
     "./*": {
-      "require": "./build/cjs/*.js"
+      "require": "./dist/*.js"
     }
   },
   "scripts": {

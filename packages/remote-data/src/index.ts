@@ -572,14 +572,6 @@ export const mapErrorCause: {
 })
 
 /**
- * Unannotate a cause held within a RemoteData. Useful for testing.
- * @since 1.0.0
- */
-export function unannotate<E, A>(data: RemoteData<E, A>): RemoteData<E, A> {
-  return mapErrorCause(data, Cause.unannotate)
-}
-
-/**
  * Chain together a function that returns a RemoteData
  * @since 1.0.0
  */

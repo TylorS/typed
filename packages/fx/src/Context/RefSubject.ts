@@ -164,7 +164,7 @@ class RefSubjectImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
 
   make = <R>(fx: Fx<R, E, A>, eq?: Equivalence<A>): Layer.Layer<R, never, I> => this.tag.scoped(Ref.make(fx, eq))
 
-  provide = <R2>(fx: Fx<R2, E, A>, eq?: Equivalence<A>) => Effect.provideSomeLayer(this.make(fx, eq))
+  provide = <R2>(fx: Fx<R2, E, A>, eq?: Equivalence<A>) => Effect.provide(this.make(fx, eq))
 
   provideFx = <R2>(fx: Fx<R2, E, A>, eq?: Equivalence<A>) => provideSomeLayer(this.make(fx, eq))
 }

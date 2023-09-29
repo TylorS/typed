@@ -281,11 +281,10 @@ export const getOrElse: {
 export const getOrNull = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<never, never, A | null> =>
   ref.map(RemoteData.getOrNull)
 
-  /**
+/**
  * Get the success value or undefined.
  * @since 1.18.0
  * @category computed
  */
 export const getOrUndefined = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<never, never, A | undefined> =>
   ref.map(RemoteData.getOrUndefined)
-

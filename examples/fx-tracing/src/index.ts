@@ -4,7 +4,6 @@ import * as Layer from "@effect/io/Layer"
 import * as NodeSdk from "@effect/opentelemetry/NodeSdk"
 import * as Resource from "@effect/opentelemetry/Resource"
 import * as Tracer from "@effect/opentelemetry/Tracer"
-// import { ConsoleSpanExporter } from "@opentelemetry/sdk-trace-base"
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http"
 import * as Fx from "@typed/fx/Fx"
 
@@ -32,7 +31,7 @@ const program = pipe(
 
 pipe(
   program,
-  Effect.provideLayer(TracingLive),
+  Effect.provide(TracingLive),
   Effect.catchAllCause(Effect.logError),
   Effect.runFork
 )

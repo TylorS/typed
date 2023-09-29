@@ -323,7 +323,7 @@ export function StorageEffect<R, E, A>(
   effect: Effect.Effect<R | Storage, E, A>
 ): StorageEffect<Exclude<R, Storage>, E, A> {
   return Object.assign(effect, {
-    local: Effect.provideSomeLayer(effect, localStorage),
-    session: Effect.provideSomeLayer(effect, sessionStorage)
+    local: Effect.provide(effect, localStorage),
+    session: Effect.provide(effect, sessionStorage)
   }) as StorageEffect<Exclude<R, Storage>, E, A>
 }

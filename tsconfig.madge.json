@@ -76,6 +76,18 @@
       "@typed/route/examples/*": [
         "packages/route/build/examples/*"
       ],
+      "@typed/template": [
+        "packages/template/build/esm/index.js"
+      ],
+      "@typed/template/*": [
+        "packages/template/build/esm/*"
+      ],
+      "@typed/template/test/*": [
+        "packages/template/build/test/*"
+      ],
+      "@typed/template/examples/*": [
+        "packages/template/build/examples/*"
+      ],
       "@typed/wire": [
         "packages/wire/build/esm/index.js"
       ],
@@ -109,6 +121,9 @@
     "packages/route/build/esm/**/*",
     "packages/route/build/test/**/*",
     "packages/route/build/examples/**/*",
+    "packages/template/build/esm/**/*",
+    "packages/template/build/test/**/*",
+    "packages/template/build/examples/**/*",
     "packages/wire/build/esm/**/*",
     "packages/wire/build/test/**/*",
     "packages/wire/build/examples/**/*"
