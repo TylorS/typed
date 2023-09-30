@@ -201,39 +201,41 @@ function addValue<A, B, C, R2, E2, R3>({
   error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
   getKey: (a: A) => C
 }) {
-  return Effect.gen(function*($) {
+  return Effect.suspend(() => {
     const key = getKey(value)
 
     // Set the initial value
     MutableHashMap.set(state.initialValues, key, value)
 
-    const subject = yield* $(
-      fromEffect<never, never, A>(
-        Effect.sync(() =>
-          // Default to the initial value
-          MutableHashMap.get(state.initialValues, key).pipe(Option.getOrElse(() => value))
-        )
+    return fromEffect<never, never, A>(
+      Effect.sync(() =>
+        // Default to the initial value
+        MutableHashMap.get(state.initialValues, key).pipe(Option.getOrElse(() => value))
       )
-    )
-    const fx = f(subject, key)
-    const fiber = yield* $(
-      fork(
-        run(
-          fx,
-          WithContext(
-            error,
-            (b: B) =>
-              Effect.suspend(() => {
-                MutableHashMap.set(state.values, key, b)
-                return emit
-              })
+    ).pipe(
+      Effect.flatMap((subject) =>
+        fork(
+          run(
+            f(subject, key),
+            WithContext(
+              error,
+              (b: B) =>
+                Effect.suspend(() => {
+                  MutableHashMap.set(state.values, key, b)
+                  return emit
+                })
+            )
+          )
+        ).pipe(
+          Effect.tap((fiber) =>
+            Effect.sync(() => {
+              MutableHashMap.set(state.subjects, key, subject)
+              MutableHashMap.set(state.fibers, key, fiber)
+            })
           )
         )
       )
     )
-
-    MutableHashMap.set(state.subjects, key, subject)
-    MutableHashMap.set(state.fibers, key, fiber)
   })
 }
 
