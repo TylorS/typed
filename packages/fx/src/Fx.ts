@@ -49,6 +49,7 @@ import type * as Option from "effect/Option"
 import type { Pipeable } from "effect/Pipeable"
 import type * as Queue from "effect/Queue"
 import type * as Request from "effect/Request"
+import type * as Runtime from "effect/Runtime"
 import type * as Schedule from "effect/Schedule"
 import type { Scheduler } from "effect/Scheduler"
 import type * as Scope from "effect/Scope"
@@ -1660,43 +1661,14 @@ export const until: {
  * @since 1.18.0
  * @category context
  */
-export const provideContext: {
-  <R>(context: Context.Context<R>): <E, A>(fx: Fx<R, E, A>) => Fx<never, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, context: Context.Context<R>): Fx<never, E, A>
-} = core.provideContext
-
-/**
- * Provide some of the environment to an Fx.
- *
- * @since 1.18.0
- * @category context
- */
-export const provideSomeContext: {
+export const provide: {
+  <R2, E2, S>(layer: Layer.Layer<R2, E2, S>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E2 | E, A>
+  <R2>(runtime: Runtime.Runtime<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
   <R2>(context: Context.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, context: Context.Context<R2>): Fx<Exclude<R, R2>, E, A>
-} = core.provideSomeContext
-
-/**
- * Provide the environment to an Fx using a Layer.
- *
- * @since 1.18.0
- * @category context
- */
-export const provideLayer: {
-  <R2, E2, R>(layer: Layer.Layer<R2, E2, R>): <E, A>(fx: Fx<R, E, A>) => Fx<R2, E | E2, A>
   <R, E, A, R2, E2>(fx: Fx<R, E, A>, layer: Layer.Layer<R2, E2, R>): Fx<R2, E | E2, A>
-} = core.provideLayer
-
-/**
- * Provide some of the environment to an Fx using a Layer.
- *
- * @since 1.18.0
- * @category context
- */
-export const provideSomeLayer: {
-  <R2, E2, S>(layer: Layer.Layer<R2, E2, S>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E | E2, A>
-  <R, E, A, R2, E2, S>(fx: Fx<R, E, A>, layer: Layer.Layer<R2, E2, S>): Fx<R2 | Exclude<R, S>, E | E2, A>
-} = core.provideSomeLayer
+  <R, E, A, R2>(fx: Fx<R, E, A>, runtime: Runtime.Runtime<R2>): Fx<Exclude<R, R2>, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, context: Context.Context<R2>): Fx<Exclude<R, R2>, E, A>
+} = core.provide
 
 /**
  * Provide a service to an Fx using a Tag.
