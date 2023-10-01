@@ -11,6 +11,8 @@ import { type RefSubject } from "@typed/fx/RefSubject"
 import { Sink } from "@typed/fx/Sink"
 import type * as Subject from "@typed/fx/Subject"
 import { RefSubjectTypeId } from "@typed/fx/TypeId"
+import type { FiberId } from "effect"
+import { Effectable } from "effect"
 import type { Cause } from "effect/Cause"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
@@ -247,16 +249,38 @@ export function make<R, E, A>(
   })
 }
 
+class DeferredRef<E, A> extends Effectable.Effectable<never, E, A> {
+  // Keep track of the latest value emitted by the stream
+  private current: Option.Option<Exit.Exit<E, A>> = Option.none()
+  private deferred = Deferred.unsafeMake<E, A>(this.id)
+
+  constructor(private id: FiberId.FiberId) {
+    super()
+  }
+
+  commit() {
+    return Effect.suspend(() => Option.getOrElse(this.current, () => Deferred.await(this.deferred)))
+  }
+
+  done(exit: Exit.Exit<E, A>) {
+    return Effect.suspend(() => {
+      this.current = Option.some(exit)
+
+      return Deferred.done(this.deferred, exit)
+    })
+  }
+}
+
 const fxAsRef = <R, E, A>(
   fx: Fx<R, E, A>,
   eq?: Equivalence<A>
 ): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>> =>
   Effect.gen(function*($) {
-    const deferred = yield* $(Deferred.make<E, A>())
-    const ref = yield* $(fromEffect<never, E, A>(Deferred.await(deferred), eq))
+    const deferred = new DeferredRef<E, A>(yield* $(Effect.fiberId))
+    const ref = yield* $(fromEffect<never, E, A>(deferred, eq))
 
     const done = (exit: Exit.Exit<E, A>) =>
-      Effect.flatMap(Deferred.done(deferred, exit), (closed) => closed ? Effect.unit : Exit.match(exit, ref))
+      Effect.flatMap(deferred.done(exit), (closed) => closed ? Effect.unit : Exit.match(exit, ref))
 
     yield* $(Effect.forkScoped(run(
       fx,

@@ -373,9 +373,16 @@ describe.concurrent(__filename, () => {
         yield* _(ref.set("b"))
         expect(yield* _(ref)).toEqual("b")
 
+        yield* _(ref.delete)
+        expect(yield* _(ref)).toEqual("a")
+
         yield* _(Effect.sleep(50))
 
         // Further emitted values reset the current state.
+        expect(yield* _(ref)).toEqual("z")
+
+        yield* _(ref.delete)
+
         expect(yield* _(ref)).toEqual("z")
       })
 
