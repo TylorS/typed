@@ -52,6 +52,7 @@
     "effect": "^2.0.0-next.39"
   },
   "devDependencies": {
-    "@types/escape-html": "^1.0.2"
+    "@types/escape-html": "^1.0.2",
+    "happy-dom": "^12.5.0"
   }
 }

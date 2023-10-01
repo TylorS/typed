@@ -1,4 +1,3 @@
-import { Computed } from "@typed/fx/Computed"
 import type { Fx } from "@typed/fx/Fx"
 import { compact } from "@typed/fx/Fx"
 import type { VersionedFxEffect } from "@typed/fx/FxEffect"
@@ -8,6 +7,7 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import { type ElementSource, ElementSourceImpl } from "@typed/template/ElementSource"
 import { type Rendered } from "@typed/wire"
 import { Effect, Option } from "effect"
+import type { NoSuchElementException } from "effect/Cause"
 
 export const ElementRefTypeId = Symbol.for("@typed/template/ElementRef")
 export type ElementRefTypeId = typeof ElementRefTypeId
@@ -17,7 +17,7 @@ export type ElementRefTypeId = typeof ElementRefTypeId
  * @since 1.0.0
  */
 export interface ElementRef<T extends Rendered = Rendered>
-  extends VersionedFxEffect<never, never, never, T, never, never, Option.Option<T>>, ElementSource<T>
+  extends VersionedFxEffect<never, never, never, T, never, NoSuchElementException, T>, ElementSource<T>
 {
   readonly [ElementRefTypeId]: RefSubject.RefSubject<never, Option.Option<T>>
   readonly set: (rendered: T) => Effect.Effect<never, never, T>
@@ -32,12 +32,12 @@ export function ElementRef<T extends Rendered = Rendered>(): Effect.Effect<never
   )
 }
 
-class ElementRefImpl<T extends Rendered> extends FxEffectProto<never, never, T, never, never, Option.Option<T>>
+class ElementRefImpl<T extends Rendered> extends FxEffectProto<never, never, T, never, NoSuchElementException, T>
   implements Omit<ElementRef<T>, ModuleAgumentedEffectKeysToOmit>
 {
   readonly [ElementRefTypeId]: RefSubject.RefSubject<never, Option.Option<T>>
 
-  private source = new ElementSourceImpl(Computed<never, never, T, never, never, T>(this as any, Effect.succeed))
+  private source = new ElementSourceImpl(this.ref.filterMap((x) => x))
 
   readonly selectors = this.source.selectors
 
@@ -50,8 +50,8 @@ class ElementRefImpl<T extends Rendered> extends FxEffectProto<never, never, T, 
     return compact(this.ref)
   }
 
-  protected toEffect(): Effect.Effect<never, never, Option.Option<T>> {
-    return this.ref
+  protected toEffect(): Effect.Effect<never, NoSuchElementException, T> {
+    return this.get
   }
 
   set(rendered: T): Effect.Effect<never, never, T> {
@@ -60,7 +60,7 @@ class ElementRefImpl<T extends Rendered> extends FxEffectProto<never, never, T, 
 
   version = this.ref.version
 
-  get = this.ref.get
+  get = Effect.flatten(this.ref.get)
 
   query = this.source.query
   events = this.source.events

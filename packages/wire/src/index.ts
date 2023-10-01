@@ -78,7 +78,15 @@ export const persistent = (fragment: DocumentFragment): DocumentFragment | Node 
   }
 }
 
-export type Rendered = Node | DocumentFragment | Wire | ReadonlyArray<Rendered>
+export type Rendered = Rendered.Value | ReadonlyArray<Rendered>
+
+export namespace Rendered {
+  export type Value = Node | DocumentFragment | Wire
+
+  export type Values<T extends Rendered> = [T] extends [ReadonlyArray<infer R>] ?
+    ReadonlyArray<R | Exclude<T, ReadonlyArray<any>>>
+    : ReadonlyArray<T>
+}
 
 /**
  * Check if a node is a Wire

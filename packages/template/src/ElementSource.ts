@@ -1,6 +1,6 @@
 import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import { addEventListener } from "@typed/dom/EventTarget"
-import type { Computed } from "@typed/fx/Computed"
+import type { Filtered } from "@typed/fx/Filtered"
 import * as Fx from "@typed/fx/Fx"
 import type { Rendered } from "@typed/wire"
 import { isWire } from "@typed/wire"
@@ -10,19 +10,25 @@ import * as Scope from "effect/Scope"
 
 import type * as TQS from "typed-query-selector/parser"
 
-export interface ElementSource<T extends Rendered, EventMap extends {} = DefaultEventMap<T>> {
+export interface ElementSource<T extends Rendered = Element, EventMap extends {} = DefaultEventMap<T>> {
   readonly selectors: ReadonlyArray<string>
 
-  readonly query: <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, T>>>(
+  readonly query: <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
     selector: S
-  ) => ElementSource<ParseSelector<S, T>, Ev>
+  ) => ElementSource<ParseSelector<S, Element>, Ev>
 
-  readonly elements: Computed<never, never, ReadonlyArray<T>>
+  readonly elements: Filtered<never, never, Rendered.Values<T>>
 
   readonly events: <Type extends keyof EventMap>(
     type: Type,
     options?: AddEventListenerOptions
   ) => Fx.Fx<never, never, EventWithCurrentTarget<T, EventMap[Type]>>
+}
+
+export function ElementSource<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>(
+  rootElement: Filtered<never, never, T>
+): ElementSource<T, EventMap> {
+  return new ElementSourceImpl<T, EventMap>(rootElement)
 }
 
 export type ParseSelector<T extends string, Fallback> = [T] extends [typeof ROOT_CSS_SELECTOR] ? Fallback
@@ -35,8 +41,8 @@ export type DefaultEventMap<T> = T extends Window ? WindowEventMap
   : T extends HTMLMediaElement ? HTMLMediaElementEventMap
   : T extends HTMLElement ? HTMLElementEventMap
   : T extends SVGElement ? SVGElementEventMap
-  : T extends Element ? ElementEventMap
-  : Readonly<Record<string, unknown>>
+  : T extends Element ? ElementEventMap & Readonly<Record<string, Event>>
+  : Readonly<Record<string, Event>>
 
 export const ROOT_CSS_SELECTOR = `:root` as const
 
@@ -107,21 +113,23 @@ function makeEventStream<Ev extends Event>(
 
     const event$ = Fx.merge(
       elements.map((element) =>
-        Fx.withScopedFork<never, never, Ev>(({ scope, sink }) =>
-          Effect.provideService(
-            addEventListener(element, {
-              eventName,
-              handler: (ev) => sink.onSuccess(ev as any as Ev)
-            }),
-            Scope.Scope,
-            scope
-          )
-        ).pipe(
-          Fx.filter(
-            (event: Ev) =>
-              ensureMatches(cssSelector, element, event, capture) ||
-              ensureMatches(lastTwoCssSelectors, element, event, capture)
-          )
+        Fx.filter(
+          Fx.withScopedFork<never, never, Ev>(({ scope, sink }) =>
+            Effect.zipRight(
+              Effect.provideService(
+                addEventListener(element, {
+                  eventName,
+                  handler: (ev) => sink.onSuccess(ev as any as Ev)
+                }),
+                Scope.Scope,
+                scope
+              ),
+              Effect.never
+            )
+          ),
+          (event: Ev) =>
+            ensureMatches(cssSelector, element, event, capture) ||
+            ensureMatches(lastTwoCssSelectors, element, event, capture)
         )
       )
     )
@@ -197,36 +205,32 @@ export class ElementSourceImpl<T extends Rendered, EventMap extends {} = Default
 {
   private eventMap = new Map<any, Fx.Fx<never, never, any>>()
 
-  constructor(readonly rootElement: Computed<never, never, T>, readonly selectors: ReadonlyArray<string> = []) {
+  constructor(readonly rootElement: Filtered<never, never, T>, readonly selectors: ReadonlyArray<string> = []) {
     this.query = this.query.bind(this)
     this.events = this.events.bind(this)
   }
 
-  query<S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, T>>>(
+  query<S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
     selector: S
-  ): ElementSource<ParseSelector<S, T>, Ev> {
+  ): ElementSource<ParseSelector<S, Element>, Ev> {
     if (selector === ROOT_CSS_SELECTOR) {
-      return this as unknown as ElementSource<ParseSelector<S, T>, Ev>
+      return this as any
     }
 
-    return new ElementSourceImpl(
-      this.rootElement.map(findMostSpecificElement(this.selectors)),
-      [...this.selectors, selector]
-    ) as any as ElementSource<ParseSelector<S, T>, Ev>
+    return new ElementSourceImpl(this.rootElement, [...this.selectors, selector]) as any
   }
 
   readonly elements: ElementSource<T, EventMap>["elements"] = this.selectors.length === 0
-    ? this.rootElement.map(getElements)
+    ? this.rootElement.map(getElements) as any
     : this.rootElement.map(findMatchingElements<any>(this.selectors))
 
   events<Type extends keyof EventMap>(
     type: Type,
     options?: AddEventListenerOptions
   ) {
-    if (this.eventMap.has(type)) return this.eventMap.get(type) as Fx.Fx<never, never, any>
+    if (this.eventMap.has(type)) return this.eventMap.get(type)!
 
-    const s = pipe(
-      this.rootElement,
+    const s = this.rootElement.map(findMostSpecificElement(this.selectors)).pipe(
       Fx.switchMap(makeEventStream(this.selectors, type as any, options)),
       Fx.multicast
     )

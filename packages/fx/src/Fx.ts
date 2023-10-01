@@ -39,7 +39,7 @@ import type * as Exit from "effect/Exit"
 import type * as Fiber from "effect/Fiber"
 import type * as FiberId from "effect/FiberId"
 import type { FiberRef } from "effect/FiberRef"
-import { dual, identity } from "effect/Function"
+import { constant, dual, identity } from "effect/Function"
 import type * as HashSet from "effect/HashSet"
 import type * as Hub from "effect/Hub"
 import type { Inspectable } from "effect/Inspectable"
@@ -2032,6 +2032,15 @@ export const findFirst: {
     f: (a: A) => Effect.Effect<R2, E2, boolean>
   ): Effect.Effect<R | R2, E | E2, Option.Option<A>>
 } = internal.findFirst
+
+/**
+ * Grab the first value emitted by an Fx
+ * @since 1.18.0
+ * @category running
+ */
+export const first: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, E, Option.Option<A>> = findFirst(
+  constant(Effect.succeed(true))
+)
 
 /**
  * Transform success values into failures and failures into successes.
