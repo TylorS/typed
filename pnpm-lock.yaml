@@ -249,6 +249,9 @@ importers:
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
+      '@typed/dom':
+        specifier: workspace:*
+        version: link:../dom/dist
       '@typed/fx':
         specifier: workspace:*
         version: link:../fx/dist
@@ -258,6 +261,16 @@ importers:
       effect:
         specifier: ^2.0.0-next.39
         version: 2.0.0-next.39
+      escape-html:
+        specifier: ^1.0.3
+        version: 1.0.3
+      typed-query-selector:
+        specifier: ^2.11.0
+        version: 2.11.0
+    devDependencies:
+      '@types/escape-html':
+        specifier: ^1.0.2
+        version: 1.0.2
     publishDirectory: dist
 
   packages/tsconfig: {}
@@ -1741,6 +1754,10 @@ packages:
     resolution: {integrity: sha512-VOVRLM1mBxIRxydiViqPcKn6MIxZytrbMpd6RJLIWKxUNr3zux8no0Oc7kJx0WAPIitgZ0gkrDS+btlqQpubpw==}
     dev: true
 
+  /@types/escape-html@1.0.2:
+    resolution: {integrity: sha512-gaBLT8pdcexFztLSPRtriHeXY/Kn4907uOCZ4Q3lncFBkheAWOuNt53ypsF8szgxbEJ513UeBzcf4utN0EzEwA==}
+    dev: true
+
   /@types/is-ci@3.0.1:
     resolution: {integrity: sha512-mnb1ngaGQPm6LFZaNdh3xPOoQMkrQb/KBPhPPN2p2Wk8XgeUqWj6xPnvyQ8rvcK/VFritVmQG8tvQuy7g+9/nQ==}
     dependencies:
@@ -3158,6 +3175,10 @@ packages:
   /escalade@3.1.1:
     resolution: {integrity: sha512-k0er2gUkLf8O0zKJiAhmkTnJlTvINGv7ygDNPbeIsX/TJjGJZHuh9B2UxbsaEkmlEo9MfhrSzmhIlhRlI2GXnw==}
     engines: {node: '>=6'}
+
+  /escape-html@1.0.3:
+    resolution: {integrity: sha512-NiSupZ4OeuGwr68lGIeym/ksIZMJodUGOSCZ/FSnTxcrekbvqrgdUxlJOMpijaKZVjAJrWrGs/6Jy8OMuyj9ow==}
+    dev: false
 
   /escape-string-regexp@1.0.5:
     resolution: {integrity: sha512-vbRorB5FUQWvla16U8R/qgaFIya2qGzwDrNmCZuYKrbdSUMG6I1ZCGQRefkRVhuOkIGVne7BQ35DSfo1qvJqFg==}

@@ -78,7 +78,7 @@ export const persistent = (fragment: DocumentFragment): DocumentFragment | Node 
   }
 }
 
-type Rendered = Node | DocumentFragment | Wire | ReadonlyArray<Rendered>
+export type Rendered = Node | DocumentFragment | Wire | ReadonlyArray<Rendered>
 
 /**
  * Check if a node is a Wire

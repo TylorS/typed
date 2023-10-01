@@ -16,6 +16,18 @@
       "@typed/context/examples/*": [
         "packages/context/build/examples/*"
       ],
+      "@typed/directive": [
+        "packages/directive/build/esm/index.js"
+      ],
+      "@typed/directive/*": [
+        "packages/directive/build/esm/*"
+      ],
+      "@typed/directive/test/*": [
+        "packages/directive/build/test/*"
+      ],
+      "@typed/directive/examples/*": [
+        "packages/directive/build/examples/*"
+      ],
       "@typed/dom": [
         "packages/dom/build/esm/index.js"
       ],
@@ -27,6 +39,18 @@
       ],
       "@typed/dom/examples/*": [
         "packages/dom/build/examples/*"
+      ],
+      "@typed/element-ref": [
+        "packages/element-ref/build/esm/index.js"
+      ],
+      "@typed/element-ref/*": [
+        "packages/element-ref/build/esm/*"
+      ],
+      "@typed/element-ref/test/*": [
+        "packages/element-ref/build/test/*"
+      ],
+      "@typed/element-ref/examples/*": [
+        "packages/element-ref/build/examples/*"
       ],
       "@typed/fx": [
         "packages/fx/build/esm/index.js"
@@ -40,6 +64,18 @@
       "@typed/fx/examples/*": [
         "packages/fx/build/examples/*"
       ],
+      "@typed/part": [
+        "packages/part/build/esm/index.js"
+      ],
+      "@typed/part/*": [
+        "packages/part/build/esm/*"
+      ],
+      "@typed/part/test/*": [
+        "packages/part/build/test/*"
+      ],
+      "@typed/part/examples/*": [
+        "packages/part/build/examples/*"
+      ],
       "@typed/path": [
         "packages/path/build/esm/index.js"
       ],
@@ -52,6 +88,18 @@
       "@typed/path/examples/*": [
         "packages/path/build/examples/*"
       ],
+      "@typed/placeholder": [
+        "packages/placeholder/build/esm/index.js"
+      ],
+      "@typed/placeholder/*": [
+        "packages/placeholder/build/esm/*"
+      ],
+      "@typed/placeholder/test/*": [
+        "packages/placeholder/build/test/*"
+      ],
+      "@typed/placeholder/examples/*": [
+        "packages/placeholder/build/examples/*"
+      ],
       "@typed/remote-data": [
         "packages/remote-data/build/esm/index.js"
       ],
@@ -63,6 +111,18 @@
       ],
       "@typed/remote-data/examples/*": [
         "packages/remote-data/build/examples/*"
+      ],
+      "@typed/rendered": [
+        "packages/rendered/build/esm/index.js"
+      ],
+      "@typed/rendered/*": [
+        "packages/rendered/build/esm/*"
+      ],
+      "@typed/rendered/test/*": [
+        "packages/rendered/build/test/*"
+      ],
+      "@typed/rendered/examples/*": [
+        "packages/rendered/build/examples/*"
       ],
       "@typed/route": [
         "packages/route/build/esm/index.js"
@@ -106,18 +166,33 @@
     "packages/context/build/esm/**/*",
     "packages/context/build/test/**/*",
     "packages/context/build/examples/**/*",
+    "packages/directive/build/esm/**/*",
+    "packages/directive/build/test/**/*",
+    "packages/directive/build/examples/**/*",
     "packages/dom/build/esm/**/*",
     "packages/dom/build/test/**/*",
     "packages/dom/build/examples/**/*",
+    "packages/element-ref/build/esm/**/*",
+    "packages/element-ref/build/test/**/*",
+    "packages/element-ref/build/examples/**/*",
     "packages/fx/build/esm/**/*",
     "packages/fx/build/test/**/*",
     "packages/fx/build/examples/**/*",
+    "packages/part/build/esm/**/*",
+    "packages/part/build/test/**/*",
+    "packages/part/build/examples/**/*",
     "packages/path/build/esm/**/*",
     "packages/path/build/test/**/*",
     "packages/path/build/examples/**/*",
+    "packages/placeholder/build/esm/**/*",
+    "packages/placeholder/build/test/**/*",
+    "packages/placeholder/build/examples/**/*",
     "packages/remote-data/build/esm/**/*",
     "packages/remote-data/build/test/**/*",
     "packages/remote-data/build/examples/**/*",
+    "packages/rendered/build/esm/**/*",
+    "packages/rendered/build/test/**/*",
+    "packages/rendered/build/examples/**/*",
     "packages/route/build/esm/**/*",
     "packages/route/build/test/**/*",
     "packages/route/build/examples/**/*",
