@@ -1,6 +1,7 @@
 import type { Fx } from "@typed/fx/Fx"
 import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
+import { MulticastEffect } from "@typed/fx/internal/helpers"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
@@ -30,23 +31,22 @@ export class FxEffectTransform<R0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
 
-    const effect = that._transformGet(that.input as any as Effect.Effect<R2, E2, B>)
-
-    return Effect.gen(function*(_) {
-      if (Option.isSome(that.#currentValue)) {
-        const version = yield* _(that.input.version)
-
-        if (version === that.#version) {
-          return that.#currentValue.value
-        }
-      }
-
-      const x = yield* _(effect)
+    // Use MulticastEffect to ensure at most 1 effect is running at a time
+    const update = new MulticastEffect(Effect.gen(function*(_) {
+      const x = yield* _(that._transformGet(that.input as any as Effect.Effect<R2, E2, B>))
 
       that.#currentValue = Option.some(x)
       that.#version = yield* _(that.input.version)
 
       return x
+    }))
+
+    return Effect.gen(function*(_) {
+      if (Option.isSome(that.#currentValue) && (yield* _(that.input.version)) === that.#version) {
+        return that.#currentValue.value
+      }
+
+      return yield* _(update)
     })
   }
 

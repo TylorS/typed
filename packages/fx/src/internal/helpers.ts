@@ -3,6 +3,8 @@ import type { FlattenStrategy, FxFork, ScopedFork } from "@typed/fx/Fx"
 import type { InternalEffect } from "@typed/fx/internal/effect-primitive"
 import { matchEffectPrimitive } from "@typed/fx/internal/effect-primitive"
 import type * as Sink from "@typed/fx/Sink"
+import type { Exit, FiberId } from "effect"
+import { Deferred, Effectable } from "effect"
 import { type Cause, NoSuchElementException } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Fiber from "effect/Fiber"
@@ -355,4 +357,60 @@ export function awaitScopeClose(scope: Scope.Scope) {
   return Effect.asyncEffect<never, never, unknown, never, never, void>((cb) =>
     Scope.addFinalizerExit(scope, () => Effect.sync(() => cb(Effect.unit)))
   )
+}
+
+export class DeferredRef<E, A> extends Effectable.Effectable<never, E, A> {
+  // Keep track of the latest value emitted by the stream
+  private current: Option.Option<Exit.Exit<E, A>> = Option.none()
+  private deferred = Deferred.unsafeMake<E, A>(this.id)
+
+  constructor(private id: FiberId.FiberId) {
+    super()
+  }
+
+  commit() {
+    return Effect.suspend(() => Option.getOrElse(this.current, () => Deferred.await(this.deferred)))
+  }
+
+  done(exit: Exit.Exit<E, A>) {
+    return Effect.suspend(() => {
+      this.current = Option.some(exit)
+
+      return Deferred.done(this.deferred, exit)
+    })
+  }
+}
+
+export class MulticastEffect<R, E, A> extends Effectable.Effectable<R, E, A> {
+  #fiber: Fiber.Fiber<E, A> | null = null
+
+  constructor(
+    readonly effect: Effect.Effect<R, E, A>
+  ) {
+    super()
+  }
+
+  commit() {
+    return Effect.suspend(() => {
+      if (this.#fiber) {
+        return Fiber.join(this.#fiber)
+      } else {
+        return Effect.forkDaemon(this.effect).pipe(
+          Effect.tap((fiber) => Effect.sync(() => this.#fiber = fiber)),
+          Effect.flatMap(Fiber.join),
+          Effect.ensuring(Effect.sync(() => this.#fiber = null))
+        )
+      }
+    })
+  }
+
+  interrupt() {
+    return Effect.suspend(() => {
+      if (this.#fiber) {
+        return Fiber.interruptFork(this.#fiber)
+      } else {
+        return Effect.unit
+      }
+    })
+  }
 }
