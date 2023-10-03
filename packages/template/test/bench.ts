@@ -6,6 +6,8 @@ import * as Old from "@typed/template/Parser"
 
 const simpleDivTemplate = h`<div></div>`
 
+const simpleAttributesTemplate = h`<div id=${"foo"} class=${"bar"}></div>`
+
 const nestedTemplate = h`
     <div>
       <p>test ${"test"}</p>
@@ -23,10 +25,33 @@ const nestedTemplate = h`
     </footer>`
 
 benchmark("Old vs New Parser")
-  .test("simple (old)", Effect.sync(() => Old.parser.parse(simpleDivTemplate)))
-  .test("simple (new)", Effect.sync(() => New.parser.parse(simpleDivTemplate)))
-  .test("nested (old)", Effect.sync(() => Old.parser.parse(nestedTemplate)))
-  .test("nested (new)", Effect.sync(() => New.parser.parse(nestedTemplate)))
+  .comparison("simple", [{
+    name: "old",
+    effect: Effect.sync(() => Old.parser.parse(simpleDivTemplate))
+  }, {
+    name: "new",
+    effect: Effect.sync(() => New.parser.parse(simpleDivTemplate))
+  }])
+  .comparison("simple with attributes", [
+    {
+      name: "old",
+      effect: Effect.sync(() => Old.parser.parse(simpleAttributesTemplate))
+    },
+    {
+      name: "new",
+      effect: Effect.sync(() => New.parser.parse(simpleAttributesTemplate))
+    }
+  ])
+  .comparison("nested", [
+    {
+      name: "old",
+      effect: Effect.sync(() => Old.parser.parse(nestedTemplate))
+    },
+    {
+      name: "new",
+      effect: Effect.sync(() => New.parser.parse(nestedTemplate))
+    }
+  ])
   .run()
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

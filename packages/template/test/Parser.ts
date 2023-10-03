@@ -29,7 +29,6 @@ import {
   TextPartNode
 } from "@typed/template/Template"
 import * as Chunk from "effect/Chunk"
-import { inspect } from "util"
 
 // TODO: Port over Tokenizer-based tests to Parser2
 
@@ -470,11 +469,6 @@ describe("Parser2", () => {
 
     const actual = Parser2.parser.parse(template)
 
-    console.log("Actual:")
-    log(actual.parts)
-    console.log("\nExpected:")
-    log(expected.parts)
-
     expect(actual).toEqual(expected)
   })
 
@@ -513,8 +507,4 @@ describe("Parser2", () => {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function h<Values extends ReadonlyArray<any>>(template: TemplateStringsArray, ..._: Values) {
   return template
-}
-
-function log(value: any) {
-  console.log(inspect(value, false, Infinity))
 }

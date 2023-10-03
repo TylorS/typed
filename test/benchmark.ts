@@ -10,7 +10,7 @@ export function benchmark(name: string): BenchmarkBuilder {
 }
 
 export class BenchmarkBuilder {
-  constructor(readonly name: string, readonly benchmarks: Array<Benchmark<any, any>>) {}
+  constructor(readonly name: string, readonly benchmarks: Array<Benchmark<any, any> | Comparison<any, any>>) {}
 
   test<E, A>(
     name: string,
@@ -23,9 +23,37 @@ export class BenchmarkBuilder {
     ])
   }
 
+  comparison<E, A>(
+    name: string,
+    tests: Array<{
+      name: string
+      effect: Effect.Effect<never, E, A>
+      options?: BenchmarkOptions
+    }>,
+    options?: BenchmarkOptions
+  ): BenchmarkBuilder {
+    return new BenchmarkBuilder(this.name, [
+      ...this.benchmarks,
+      Comparison(name, tests, options)
+    ])
+  }
+
   run(options?: BenchmarkOptions) {
     benchmarkSuite(`[Benchmark] ${this.name}`, this.benchmarks, options)
   }
+}
+
+type AnyBenchmarks = ReadonlyArray<Benchmark<any, any> | Comparison<any, any>>
+
+interface Comparison<E, A> {
+  readonly name: string
+  readonly tests: Array<{
+    name: string
+    effect: Effect.Effect<never, E, A>
+    options?: BenchmarkOptions
+  }>
+  readonly timeout?: number
+  readonly iterations?: number
 }
 
 interface Benchmark<E, A> {
@@ -40,6 +68,22 @@ export interface BenchmarkOptions {
   readonly iterations?: number // 1000
 }
 
+function Comparison<E, A>(
+  name: string,
+  tests: Array<{
+    name: string
+    effect: Effect.Effect<never, E, A>
+    options?: BenchmarkOptions
+  }>,
+  options?: BenchmarkOptions
+): Comparison<E, A> {
+  return {
+    name,
+    tests,
+    ...options
+  }
+}
+
 function Benchmark<E, A>(
   name: string,
   effect: Effect.Effect<never, E, A>,
@@ -52,23 +96,37 @@ function Benchmark<E, A>(
   }
 }
 
-function benchmarkSuite<const B extends ReadonlyArray<Benchmark<any, any>>>(
+function benchmarkSuite<const B extends AnyBenchmarks>(
   name: string,
   benchmarks: B,
   options?: BenchmarkOptions
 ) {
   describe.concurrent(name, () => {
-    const reports = benchmarks.map((benchmark) =>
-      benchmarkIt({
-        ...options,
-        ...benchmark
-      })
-    )
+    const reports = benchmarks.map((benchmark) => {
+      if ("effect" in benchmark) {
+        return benchmarkIt({
+          ...options,
+          ...benchmark
+        })
+      } else {
+        return benchmarkComparison({
+          ...options,
+          ...benchmark
+        })
+      }
+    })
 
     afterAll(() => {
+      const testReports = reports.flatMap((report) =>
+        report._tag === "Test" ? [report] : report.reports().map((r) => ({ ...r, name: `${report.name} :: ${r.name}` }))
+      )
+      const comparisonReports = reports.filter((report): report is ComparisonReport => report._tag === "Comparison")
+
+      console.log("")
       console.log(name)
+
       console.table(
-        reports.reduce((acc, report) => {
+        testReports.reduce((acc, report) => {
           Object.assign(
             acc,
             createTabularData(report.name, report.iterations, report.getTotal(), report.getRuns())
@@ -78,13 +136,33 @@ function benchmarkSuite<const B extends ReadonlyArray<Benchmark<any, any>>>(
         }, {}),
         tabularDataKeys
       )
+
+      for (const report of comparisonReports) {
+        console.log("")
+        console.log(`[Comparision] ${report.name}`)
+        console.table(createComparisonTabularData(report.reports()), tabularDataKeys.filter((x) => x !== "iterations"))
+      }
     })
   })
 }
 
+type ComparisonReport = {
+  readonly _tag: "Comparison"
+  readonly name: string
+  readonly reports: () => Array<TestReport>
+}
+
+type TestReport = {
+  readonly _tag: "Test"
+  readonly name: string
+  readonly iterations: number
+  readonly getTotal: () => number
+  readonly getRuns: () => Array<number>
+}
+
 function benchmarkIt<E, A>(
   { effect, name, ...options }: Benchmark<E, A>
-) {
+): TestReport {
   let total = 0
   const runs: Array<number> = []
   const iterations = options?.iterations || 1000
@@ -99,10 +177,29 @@ function benchmarkIt<E, A>(
     )))
 
   return {
+    _tag: "Test",
     name,
     iterations,
     getTotal: () => total,
     getRuns: () => runs
+  } as const
+}
+
+function benchmarkComparison<E, A>(
+  { name, tests, ...options }: Comparison<E, A>
+): ComparisonReport {
+  const reports: Array<TestReport> = []
+
+  describe.concurrent(`[Comparison] ${name}`, () => {
+    for (const benchmark of tests) {
+      reports.push(benchmarkIt(Benchmark(benchmark.name, benchmark.effect, { ...options, ...benchmark.options })))
+    }
+  })
+
+  return {
+    _tag: "Comparison",
+    name,
+    reports: () => reports
   } as const
 }
 
@@ -151,3 +248,62 @@ const timed = <R, E, A, B>(effect: Effect.Effect<R, E, A>, f: (time: number, a: 
 
     return Effect.map(effect, (a) => f(performance.now() - start, a))
   })
+
+function createComparisonTabularData(reports: Array<TestReport>) {
+  const reportData = reports.map(
+    (r): { name: string; total: number; low: number; high: number; median: number; average: number } => {
+      const tabular = createTabularData(r.name, r.iterations, r.getTotal(), r.getRuns())[r.name]
+
+      return {
+        name: r.name,
+        total: parseFloat(tabular.total),
+        low: parseFloat(tabular.low),
+        high: parseFloat(tabular.high),
+        median: parseFloat(tabular.median),
+        average: parseFloat(tabular.average)
+      }
+    }
+  )
+
+  const output: Record<string, {
+    total: number
+    low: number
+    high: number
+    median: number
+    average: number
+  }> = {}
+
+  merge(output, getRelativeNumbers(reportData, "total"))
+  merge(output, getRelativeNumbers(reportData, "low"))
+  merge(output, getRelativeNumbers(reportData, "high"))
+  merge(output, getRelativeNumbers(reportData, "median"))
+  merge(output, getRelativeNumbers(reportData, "average"))
+
+  return output
+}
+
+type D = { name: string; total: number; low: number; high: number; median: number; average: number }
+type D2 = Record<string, {
+  total: number
+  low: number
+  high: number
+  median: number
+  average: number
+}>
+
+function getRelativeNumbers(input: Array<D>, key: Exclude<keyof D, "name">) {
+  const nums = input.slice()
+  nums.sort((a, b) => a[key] - b[key])
+  const [first, ...rest] = nums
+  const baseline = first[key]
+  return {
+    [first.name]: { [key]: 1 },
+    ...Object.fromEntries(rest.map((n) => [n.name, { [key]: ((n[key] / baseline) * 100).toFixed(2) + "%" }]))
+  }
+}
+
+function merge(d2: D2, d: Record<string, Partial<D>>) {
+  for (const [k, v] of Object.entries(d)) {
+    d2[k] = { ...d2[k], ...v }
+  }
+}

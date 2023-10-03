@@ -105,6 +105,24 @@ class PathStack {
   }
 }
 
+const predicatesCache = new WeakMap<Predicates, readonly [ReadonlyArray<string>, number]>()
+
+function getPredicatesCache(predicates: Predicates) {
+  const cached = predicatesCache.get(predicates)
+
+  if (cached === undefined) {
+    const keys = Object.keys(predicates)
+    const length = keys.length
+    const toCache = [keys, length] as const
+
+    predicatesCache.set(predicates, toCache)
+
+    return toCache
+  } else {
+    return cached
+  }
+}
+
 class ParserImpl implements Parser {
   context!: Context
   input!: string
@@ -130,10 +148,10 @@ class ParserImpl implements Parser {
     while (this.pos < this.length) {
       const node = this.parseNodeFromContext(this.context)
 
-      if (node) {
-        nodes.push(...node)
+      if (node === undefined) {
+        return nodes
       } else {
-        break
+        nodes.push(...node)
       }
     }
 
@@ -149,30 +167,43 @@ class ParserImpl implements Parser {
   }
 
   private parseUnknown(): Array<Template.Node> | undefined {
+    if (this.nextChar() === "<") { // Open tag / comment / self-closing tag
+      return this.openBracket()
+    } else {
+      return this.unknownChunk()
+    }
+  }
+
+  private openBracket() {
+    this.consumeAmount(1)
+    this.skipWhitespace()
+
     const nextChar = this.nextChar()
 
+    if (nextChar === "!") { // Comment
+      this.consumeAmount(3)
+
+      return [this.parseComment()]
+    } else if (nextChar === "/") { // Self-closing tag
+      return this.selfClosingTagEnd()
+    } else { // Elements
+      return [this.parseElement()]
+    }
+  }
+
+  private selfClosingTagEnd() {
+    this.consumeAmount(1)
+    this.parseTagName()
+    this.skipWhitespace()
+    this.consumeAmount(1)
+    this.context = "unknown"
+    return undefined
+  }
+
+  private unknownChunk() {
     let next: TextChunk | undefined
 
-    if (nextChar === "<") { // Open tag / comment / self-closing tag
-      this.consumeAmount(1)
-      this.skipWhitespace()
-
-      const nextChar = this.nextChar()
-
-      if (nextChar === "!") { // Comment
-        this.consumeAmount(3)
-
-        return [this.parseComment()]
-      } else if (nextChar === "/") { // Self-closing tag
-        this.consumeAmount(1)
-        this.parseTagName()
-        this.skipWhitespace()
-        this.consumeAmount(1)
-        this.context = "unknown"
-      } else { // Elements
-        return [this.parseElement()]
-      }
-    } else if ((next = this.chunk(getPart))) { // Parts
+    if ((next = this.chunk(getPart))) { // Parts
       this._skipWhitespace = false
       return [this.addPartWithCurrentPath(new Template.NodePart(parseInt(next.match[2], 10)))]
     } else if ((next = this.chunk(getWhitespace))) { // Whitespace
@@ -185,6 +216,15 @@ class ParserImpl implements Parser {
   }
 
   private parseElement(): Template.ParentNode {
+    const node = this.parseElementKind()
+
+    this.context = "unknown"
+    this._skipWhitespace = true
+
+    return node
+  }
+
+  private parseElementKind() {
     this.context = "element"
 
     const [tagName, matched] = this.parseTagName()
@@ -193,27 +233,22 @@ class ParserImpl implements Parser {
       this.skipWhitespace()
     }
 
-    try {
-      if (SELF_CLOSING_TAGS.has(tagName)) {
-        const element = this.parseSelfClosingElement(tagName)
+    if (SELF_CLOSING_TAGS.has(tagName)) {
+      const element = this.parseSelfClosingElement(tagName)
 
-        return element
-      } else if (TEXT_ONLY_NODES_REGEX.has(tagName)) {
-        const element = this.parseTextOnlyElement(tagName)
+      return element
+    } else if (TEXT_ONLY_NODES_REGEX.has(tagName)) {
+      const element = this.parseTextOnlyElement(tagName)
 
-        return element
-      } else {
-        const attributes = this.parseAttributes()
-        this.path.push()
-        const children = this.parseTemplateChildren()
-        this.path.pop()
-        const element = new Template.ElementNode(tagName, attributes, children)
+      return element
+    } else {
+      const attributes = this.parseAttributes()
+      this.path.push()
+      const children = this.parseTemplateChildren()
+      this.path.pop()
+      const element = new Template.ElementNode(tagName, attributes, children)
 
-        return element
-      }
-    } finally {
-      this.context = "unknown"
-      this._skipWhitespace = true
+      return element
     }
   }
 
@@ -231,8 +266,6 @@ class ParserImpl implements Parser {
   }
 
   private parseComment(): Template.Comment {
-    // TODO: Comments need to be able to have multiple text nodes and parts.
-
     const text = this.parseTextUntil(isCommentEndToken)
     this.consumeAmount(3)
 
@@ -296,18 +329,14 @@ class ParserImpl implements Parser {
 
     const nextChar = this.nextChar()
 
-    let predicate: TextPredicate = isWhitespaceToken
-
     const isDoubleQuoted = nextChar === `"`
     const isSingleQuoted = nextChar === "'"
     const isQuoted = isDoubleQuoted || isSingleQuoted
 
     if (isQuoted) {
-      predicate = isDoubleQuoted ? isQuoteToken : isSingleQuoteToken
+      attributeValueMatches.base = isDoubleQuoted ? isQuoteToken : isSingleQuoteToken
       this.consumeAmount(1)
     }
-
-    attributeValueMatches.base = predicate
 
     const matched = this.parseTextUntilMany(attributeValueMatches)
     const text = matched[0].trimEnd()
@@ -427,18 +456,23 @@ class ParserImpl implements Parser {
     return text
   }
 
-  private parseTextUntilMany<const T extends Predicates>(predicates: T) {
-    const keys = Object.keys(predicates) as Array<keyof T>
+  private parseTextUntilMany<const T extends Predicates>(
+    predicates: T
+  ): readonly [string, keyof T] | readonly [string, null] {
+    const [keys, length] = getPredicatesCache(predicates)
+
     let text = ""
+    let i = 0
 
     while (this.pos < this.length) {
       const char = this.nextChar()
 
-      for (const key of keys) {
-        if (predicates[key](this.input, this.pos)) {
-          return [text, key] as const
+      for (; i < length; i++) {
+        if (predicates[keys[i]](this.input, this.pos)) {
+          return [text, keys[i]] as const
         }
       }
+      i = 0
 
       text += char
       this.consumeAmount(1)
