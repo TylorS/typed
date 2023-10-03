@@ -39,7 +39,7 @@ const isSelfClosingTagEndToken: TextPredicate = (input, pos) => input[pos] === "
 const isCommentEndToken: TextPredicate = (input, pos) =>
   input[pos] === "-" && input[pos + 1] === "-" && input[pos + 2] === ">"
 
-type Context = "unknown" | "element" | "comment"
+type Context = "unknown" | "element"
 
 type TextPredicate = (input: string, pos: number) => boolean
 
@@ -55,48 +55,64 @@ type Skip = ["skip"]
 const Skip: Skip = ["skip"]
 
 type Predicates = {
-  readonly [key: string]: (char: string, pos: number) => boolean
+  [key: string]: (char: string, pos: number) => boolean
+}
+
+const tagNameMatches = {
+  whitespace: isWhitespaceToken,
+  openTagEnd: isOpenTagEndToken,
+  selfClosingTagEnd: isSelfClosingTagEndToken
+}
+
+const attributeMatches = {
+  whitespace: isWhitespaceToken,
+  equals: isEqualsToken,
+  closingTag: isElementCloseToken,
+  openTagEnd: isOpenTagEndToken,
+  selfClosingTagEnd: isSelfClosingTagEndToken
+}
+
+const attributeValueMatches = {
+  base: (() => false) as TextPredicate,
+  openTagEnd: isOpenTagEndToken,
+  selfClosingTagEnd: isSelfClosingTagEndToken
+} satisfies Predicates
+
+const textChildMatches = {
+  part: isPartToken,
+  elementOpen: isElementOpenToken,
+  elementClose: isElementCloseToken
 }
 
 class PathStack {
-  #chunk: Chunk.Chunk<number> = Chunk.of(0)
-  #count = 0
+  chunk: Chunk.Chunk<number> = Chunk.of(0)
+  count = 0
 
-  constructor() {}
-
-  increment(): void {
-    const size = Chunk.size(this.#chunk)
-    this.#chunk = Chunk.replace(this.#chunk, size - 1, this.#count++)
-  }
-
-  extend(): void {
-    this.#chunk = Chunk.append(this.#chunk, this.#count = 0)
+  push(): void {
+    this.chunk = Chunk.append(Chunk.replace(this.chunk, Chunk.size(this.chunk) - 1, this.count), this.count = 0)
   }
 
   pop(): void {
-    this.#chunk = this.previousChunk()
-    this.#count = Chunk.unsafeLast(this.#chunk) + 1
+    this.count = Chunk.unsafeLast(this.chunk = this.previousChunk()) + 1
   }
 
   toChunk(): Chunk.Chunk<number> {
-    return this.#chunk
+    return this.chunk
   }
 
   previousChunk() {
-    return Chunk.dropRight(this.#chunk, 1)
+    return Chunk.dropRight(this.chunk, 1)
   }
 }
 
 class ParserImpl implements Parser {
-  #context!: Context
-  #input!: string
-  #length!: number
-  #parts!: Array<[Template.PartNode | Template.SparsePartNode, Chunk.Chunk<number>]>
-  #pos!: number
-  #path!: PathStack
-  #skipWhitespace!: boolean
-
-  constructor() {}
+  context!: Context
+  input!: string
+  length!: number
+  parts!: Array<[Template.PartNode | Template.SparsePartNode, Chunk.Chunk<number>]>
+  pos!: number
+  path!: PathStack
+  _skipWhitespace!: boolean
 
   parse(templateStrings: ReadonlyArray<string>): Template.Template {
     this.init(templateStrings)
@@ -105,28 +121,20 @@ class ParserImpl implements Parser {
   }
 
   private parseTemplate(hash: string) {
-    return new Template.Template(this.parseTemplateChildren(false), hash, this.#parts)
+    return new Template.Template(this.parseTemplateChildren(), hash, this.parts)
   }
 
-  private parseTemplateChildren(shouldExtend: boolean) {
-    if (shouldExtend) {
-      this.#path.extend()
-    }
-
+  private parseTemplateChildren() {
     const nodes: Array<Template.Node> = []
 
-    while (this.#pos < this.#length) {
-      const node = this.parseNodeFromContext(this.#context)
+    while (this.pos < this.length) {
+      const node = this.parseNodeFromContext(this.context)
 
       if (node) {
         nodes.push(...node)
       } else {
         break
       }
-    }
-
-    if (shouldExtend) {
-      this.#path.pop()
     }
 
     return nodes
@@ -154,23 +162,21 @@ class ParserImpl implements Parser {
       if (nextChar === "!") { // Comment
         this.consumeAmount(3)
 
-        this.#context = "comment"
         return [this.parseComment()]
       } else if (nextChar === "/") { // Self-closing tag
         this.consumeAmount(1)
         this.parseTagName()
         this.skipWhitespace()
         this.consumeAmount(1)
-        this.#context = "unknown"
+        this.context = "unknown"
       } else { // Elements
-        const els = [this.parseElement()]
-        return els
+        return [this.parseElement()]
       }
     } else if ((next = this.chunk(getPart))) { // Parts
-      this.#skipWhitespace = false
+      this._skipWhitespace = false
       return [this.addPartWithCurrentPath(new Template.NodePart(parseInt(next.match[2], 10)))]
     } else if ((next = this.chunk(getWhitespace))) { // Whitespace
-      return this.#skipWhitespace ? [] : [new Template.TextNode(next.match[1])]
+      return this._skipWhitespace ? [] : [new Template.TextNode(next.match[1])]
     } else if ((next = this.chunk(getTextUntilCloseBrace))) { // Text and parts
       return parseTextAndParts(next.match[1], (i) => this.addPartWithCurrentPath(new Template.NodePart(i)))
     } else {
@@ -179,7 +185,7 @@ class ParserImpl implements Parser {
   }
 
   private parseElement(): Template.ParentNode {
-    this.#context = "element"
+    this.context = "element"
 
     const [tagName, matched] = this.parseTagName()
 
@@ -198,16 +204,16 @@ class ParserImpl implements Parser {
         return element
       } else {
         const attributes = this.parseAttributes()
-        this.#path.increment()
-
-        const children = this.parseTemplateChildren(true)
+        this.path.push()
+        const children = this.parseTemplateChildren()
+        this.path.pop()
         const element = new Template.ElementNode(tagName, attributes, children)
 
         return element
       }
     } finally {
-      this.#context = "unknown"
-      this.#skipWhitespace = true
+      this.context = "unknown"
+      this._skipWhitespace = true
     }
   }
 
@@ -246,11 +252,7 @@ class ParserImpl implements Parser {
   }
 
   private parseTagName() {
-    return this.parseTextUntilMany({
-      whitespace: isWhitespaceToken,
-      openTagEnd: isOpenTagEndToken,
-      selfClosingTagEnd: isSelfClosingTagEndToken
-    })
+    return this.parseTextUntilMany(tagNameMatches)
   }
 
   private parseAttributes(): Array<Template.Attribute> {
@@ -258,13 +260,7 @@ class ParserImpl implements Parser {
   }
 
   private parseAttribute(): LoopDecision<Array<Template.Attribute>> {
-    const [name, matched] = this.parseTextUntilMany({
-      whitespace: isWhitespaceToken,
-      equals: isEqualsToken,
-      closingTag: isElementCloseToken,
-      openTagEnd: isOpenTagEndToken,
-      selfClosingTagEnd: isSelfClosingTagEndToken
-    })
+    const [name, matched] = this.parseTextUntilMany(attributeMatches)
 
     switch (matched) {
       case null:
@@ -277,18 +273,18 @@ class ParserImpl implements Parser {
       }
       case "openTagEnd": {
         this.consumeAmount(1)
-        this.#context = "unknown"
+        this.context = "unknown"
         return Break<Array<Template.Attribute>>(name ? [new Template.BooleanNode(name)] : undefined)
       }
       case "selfClosingTagEnd": {
         this.consumeAmount(2)
-        this.#context = "unknown"
+        this.context = "unknown"
 
         return Break<Array<Template.Attribute>>()
       }
       case "closingTag": {
         this.consumeAmount(name.length)
-        this.#context = "unknown"
+        this.context = "unknown"
 
         return Break<Array<Template.Attribute>>()
       }
@@ -310,6 +306,8 @@ class ParserImpl implements Parser {
       predicate = isDoubleQuoted ? isQuoteToken : isSingleQuoteToken
       this.consumeAmount(1)
     }
+
+    attributeValueMatches.base = predicate
 
     const matched = this.parseTextUntilMany({
       base: predicate,
@@ -387,11 +385,7 @@ class ParserImpl implements Parser {
   }
 
   private parseTextChild(): LoopDecision<Array<Template.Text>> {
-    const [parsed, matched] = this.parseTextUntilMany({
-      part: isPartToken,
-      elementOpen: isElementOpenToken,
-      elementClose: isElementCloseToken
-    })
+    const [parsed, matched] = this.parseTextUntilMany(textChildMatches)
     const text = parsed.trim()
 
     switch (matched) {
@@ -423,10 +417,10 @@ class ParserImpl implements Parser {
   private parseTextUntil(predicate: (char: string, pos: number) => boolean) {
     let text = ""
 
-    while (this.#pos < this.#length) {
+    while (this.pos < this.length) {
       const char = this.nextChar()
 
-      if (predicate(this.#input, this.#pos)) {
+      if (predicate(this.input, this.pos)) {
         break
       }
 
@@ -441,11 +435,11 @@ class ParserImpl implements Parser {
     const keys = Object.keys(predicates) as Array<keyof T>
     let text = ""
 
-    while (this.#pos < this.#length) {
+    while (this.pos < this.length) {
       const char = this.nextChar()
 
       for (const key of keys) {
-        if (predicates[key](this.#input, this.#pos)) {
+        if (predicates[key](this.input, this.pos)) {
           return [text, key] as const
         }
       }
@@ -460,22 +454,19 @@ class ParserImpl implements Parser {
   private parseArray<T>(parser: () => LoopDecision<Array<T>>): Array<T> | null {
     const children: Array<T> = []
 
-    while (this.#pos < this.#length) {
-      const next = parser()
+    while (this.pos < this.length) {
+      const [decision, value] = parser()
 
-      switch (next[0]) {
-        case "continue":
-          children.push(...next[1])
-          break
-        case "break": {
-          if (Option.isSome(next[1])) {
-            children.push(...next[1].value)
-          }
-
-          return children
+      if (decision === "continue") {
+        children.push(...value)
+      } else if (decision === "break") {
+        if (Option.isSome(value)) {
+          children.push(...value.value)
         }
-        case "skip":
-          return null
+
+        return children
+      } else {
+        return null
       }
     }
 
@@ -483,7 +474,7 @@ class ParserImpl implements Parser {
   }
 
   private skipWhitespace() {
-    while (this.#pos < this.#length) {
+    while (this.pos < this.length) {
       const char = this.nextChar()
 
       if (SPACE_REGEX.test(char)) {
@@ -495,41 +486,41 @@ class ParserImpl implements Parser {
   }
 
   private nextChar() {
-    return this.#input[this.#pos]
+    return this.input[this.pos]
   }
 
   private consumeAmount(amount: number) {
-    this.#pos += amount
+    this.pos += amount
   }
 
   private chunk(f: (str: string, pos: number) => TextChunk | undefined): TextChunk | undefined {
-    const chunk = f(this.#input, this.#pos)
+    const chunk = f(this.input, this.pos)
 
     if (chunk) {
-      this.#pos += chunk.length
+      this.pos += chunk.length
     }
 
     return chunk
   }
 
   private addPart<T extends Template.PartNode | Template.SparsePartNode>(part: T): T {
-    this.#parts.push([part, this.#path.toChunk()])
+    this.parts.push([part, this.path.toChunk()])
     return part
   }
 
   private addPartWithCurrentPath<T extends Template.PartNode | Template.SparsePartNode>(part: T): T {
-    this.#parts.push([part, this.#path.previousChunk()])
+    this.parts.push([part, this.path.previousChunk()])
     return part
   }
 
   private init(templateStrings: ReadonlyArray<string>): void {
-    this.#context = "unknown"
-    this.#input = templateWithParts(templateStrings).trim()
-    this.#length = this.#input.length
-    this.#parts = []
-    this.#pos = 0
-    this.#path = new PathStack()
-    this.#skipWhitespace = true
+    this.context = "unknown"
+    this.input = templateWithParts(templateStrings).trim()
+    this.length = this.input.length
+    this.parts = []
+    this.pos = 0
+    this.path = new PathStack()
+    this._skipWhitespace = true
   }
 }
 
