@@ -73,7 +73,7 @@ const attributeMatches = {
 }
 
 const attributeValueMatches = {
-  base: (() => false) as TextPredicate,
+  base: isWhitespaceToken,
   openTagEnd: isOpenTagEndToken,
   selfClosingTagEnd: isSelfClosingTagEndToken
 } satisfies Predicates
@@ -333,8 +333,13 @@ class ParserImpl implements Parser {
     const isSingleQuoted = nextChar === "'"
     const isQuoted = isDoubleQuoted || isSingleQuoted
 
+    attributeValueMatches.base = isDoubleQuoted
+      ? isQuoteToken :
+      isSingleQuoted
+      ? isSingleQuoteToken
+      : isWhitespaceToken
+
     if (isQuoted) {
-      attributeValueMatches.base = isDoubleQuoted ? isQuoteToken : isSingleQuoteToken
       this.consumeAmount(1)
     }
 
