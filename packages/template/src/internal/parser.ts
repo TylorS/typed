@@ -309,11 +309,7 @@ class ParserImpl implements Parser {
 
     attributeValueMatches.base = predicate
 
-    const matched = this.parseTextUntilMany({
-      base: predicate,
-      openTagEnd: isOpenTagEndToken,
-      selfClosingTagEnd: isSelfClosingTagEndToken
-    })
+    const matched = this.parseTextUntilMany(attributeValueMatches)
     const text = matched[0].trimEnd()
 
     if (isQuoted) {
