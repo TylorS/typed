@@ -333,14 +333,13 @@ class ParserImpl implements Parser {
     const isSingleQuoted = nextChar === "'"
     const isQuoted = isDoubleQuoted || isSingleQuoted
 
-    attributeValueMatches.base = isDoubleQuoted
-      ? isQuoteToken :
-      isSingleQuoted
-      ? isSingleQuoteToken
-      : isWhitespaceToken
-
     if (isQuoted) {
+      attributeValueMatches.base = isDoubleQuoted
+        ? isQuoteToken
+        : isWhitespaceToken
       this.consumeAmount(1)
+    } else {
+      attributeValueMatches.base = isWhitespaceToken
     }
 
     const matched = this.parseTextUntilMany(attributeValueMatches)

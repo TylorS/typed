@@ -298,7 +298,7 @@ function getRelativeNumbers(input: Array<D>, key: Exclude<keyof D, "name">) {
   const baseline = first[key]
   return {
     [first.name]: { [key]: 1 },
-    ...Object.fromEntries(rest.map((n) => [n.name, { [key]: ((n[key] / baseline) * 100).toFixed(2) + "%" }]))
+    ...Object.fromEntries(rest.map((n) => [n.name, { [key]: Number((n[key] / baseline).toFixed(2)) }]))
   }
 }
 

@@ -15,6 +15,36 @@ describe(__filename, () => {
     })
   })
 
+  describe(Context.tuple, () => {
+    it("combines multiple Tagged context types", async () => {
+      const tag1 = Context.Tagged<number>()("test1")
+      const tag2 = Context.Tagged<string>()("test2")
+      const tag3 = Context.Tagged<boolean>()("test3")
+
+      const tuple = Context.tuple(tag1, tag2, tag3)
+      const test = tuple.with(([x, y, z]) => [x + 1, y + "a", !z]).pipe(tuple.provide([1, "b", true]))
+      const result = await Effect.runPromise(test)
+
+      expect(result).toEqual([2, "ba", false])
+    })
+  })
+
+  describe(Context.struct, () => {
+    it("combines multiple Tagged context types into a struct", async () => {
+      const tag1 = Context.Tagged<number>()("test1")
+      const tag2 = Context.Tagged<string>()("test2")
+      const tag3 = Context.Tagged<boolean>()("test3")
+
+      const struct = Context.struct({ tag1, tag2, tag3 })
+      const test = struct.with(({ tag1: x, tag2: y, tag3: z }) => ({ tag1: x + 1, tag2: y + "a", tag3: !z })).pipe(
+        struct.provide({ tag1: 1, tag2: "b", tag3: true })
+      )
+      const result = await Effect.runPromise(test)
+
+      expect(result).toEqual({ tag1: 2, tag2: "ba", tag3: false })
+    })
+  })
+
   describe(Context.Ref, () => {
     it("allows creating a Ref in the effect context", async () => {
       const ref = Context.Ref<number>()("test")
