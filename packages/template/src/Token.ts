@@ -30,7 +30,7 @@ export class OpeningTagToken {
   constructor(
     readonly name: string,
     readonly isSelfClosing: boolean = SELF_CLOSING_TAGS.has(name),
-    readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.test(name)
+    readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.has(name)
   ) {}
 }
 
@@ -117,7 +117,7 @@ export class OpeningTagEndToken {
   constructor(
     readonly name: string,
     readonly selfClosing: boolean = SELF_CLOSING_TAGS.has(name),
-    readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.test(name)
+    readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.has(name)
   ) {}
 }
 
@@ -126,7 +126,7 @@ export class ClosingTagToken {
 
   constructor(
     readonly name: string,
-    readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.test(name)
+    readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.has(name)
   ) {}
 }
 
@@ -155,7 +155,14 @@ export class PartToken {
   constructor(readonly index: number) {}
 }
 
-export const TEXT_ONLY_NODES_REGEX = /^(?:textarea|script|style|title|plaintext|xmp)$/
+export const TEXT_ONLY_NODES_REGEX = new Set([
+  "textarea",
+  "script",
+  "style",
+  "title",
+  "plaintext",
+  "xmp"
+])
 
 export const SELF_CLOSING_TAGS = new Set([
   "area",

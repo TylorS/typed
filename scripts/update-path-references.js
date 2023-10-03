@@ -13,13 +13,17 @@ const MADGE_TSCONFIG_JSON = Path.join(ROOT_DIRECTORY, "tsconfig.madge.json")
 
 async function main() {
   const packages = await readAllPackages()
-  const paths = packages.map(({ example, name }) => makePackagePath(example, name)).reduce((acc, x) => ({ ...acc, ...x }), {})
-  const madePaths = packages.map(({ example, name }) => makeMadgePath(example, name)).reduce((acc, x) => ({ ...acc, ...x }), {})
+  const testPaths = 
+    {
+      "@/test/*": ["./test/*"],
+    }
+  const paths = packages.map(({ example, name }) => makePackagePath(example, name)).reduce((acc, x) => ({ ...acc, ...x }), testPaths)
+  const madgePaths = packages.map(({ example, name }) => makeMadgePath(example, name)).reduce((acc, x) => ({ ...acc, ...x }), testPaths)
   const tsconfigBaseJson = await FS.promises.readFile(BASE_TSCONFIG_JSON, "utf8").then(JSON.parse)
   const tsconfigMadgeJson = await FS.promises.readFile(MADGE_TSCONFIG_JSON, "utf8").then(JSON.parse)
-  
+
   tsconfigBaseJson.compilerOptions.paths = paths
-  tsconfigMadgeJson.compilerOptions.paths = madePaths
+  tsconfigMadgeJson.compilerOptions.paths = madgePaths
   tsconfigMadgeJson.include = packages.flatMap(({ name }) => [`packages/${name}/build/esm/**/*`, `packages/${name}/build/test/**/*`, `packages/${name}/build/examples/**/*`])
 
   await Promise.all([

@@ -4,13 +4,14 @@
     "outDir": "build/test",
     "declarationDir": "build/test-dts",
     "tsBuildInfoFile": "build/tsbuildinfo/test.tsbuildinfo",
-    "rootDir": "test",
+    "rootDir": "../../",
     "types": [
       "vitest/globals"
     ]
   },
   "include": [
-    "test/**/*.ts"
+    "test/**/*.ts",
+    "../../test"
   ],
   "references": [
     {

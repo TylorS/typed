@@ -1,6 +1,7 @@
 import * as Template from "@typed/template/Template"
 import type { Token } from "@typed/template/Token"
 import { tokenize } from "@typed/template/Tokenizer"
+import * as Chunk from "effect/Chunk"
 import { globalValue } from "effect/GlobalValue"
 
 export interface Parser {
@@ -9,12 +10,14 @@ export interface Parser {
 
 const iterator = <A>(iterable: Iterable<A>): Iterator<A> => iterable[Symbol.iterator]()
 
+const dropLast = Chunk.dropRight(1)
+
 class ParserImpl {
   protected _template: ReadonlyArray<string> = []
   protected _tokenStream!: Iterator<Token>
   protected _lookahead!: Token | null
-  protected _stack!: Array<number>
-  protected _parts!: Array<[Template.PartNode | Template.SparsePartNode, ReadonlyArray<number>]>
+  protected _stack!: Chunk.Chunk<number>
+  protected _parts!: Array<[Template.PartNode | Template.SparsePartNode, Chunk.Chunk<number>]>
   protected _skipWhitespace!: boolean
 
   parse(
@@ -24,7 +27,7 @@ class ParserImpl {
     this._template = template
     this._tokenStream = tokenStream
     this._lookahead = this.getNextToken()
-    this._stack = []
+    this._stack = Chunk.empty()
     this._parts = []
     this._skipWhitespace = true
 
@@ -295,9 +298,9 @@ class ParserImpl {
       ) {
         this._lookahead = this.getNextToken()
       } else {
-        this._stack.push(i++)
+        this._stack = Chunk.append(this._stack, i++)
         const child = this.Node()
-        this._stack.pop()
+        this._stack = Chunk.dropRight(this._stack, 1)
 
         if (child) {
           children.push(child)
@@ -420,16 +423,13 @@ class ParserImpl {
   }
 
   protected addPart<A extends Template.PartNode | Template.SparsePartNode>(part: A): A {
-    this._parts.push([part, this._stack.slice(0)])
+    this._parts.push([part, this._stack])
 
     return part
   }
 
   protected addPartWithoutCurrent<A extends Template.PartNode>(part: A): A {
-    const current = this._stack[this._stack.length - 1]
-    this._stack.pop()
-    this.addPart(part)
-    this._stack.push(current)
+    this._parts.push([part, dropLast(this._stack)])
 
     return part
   }

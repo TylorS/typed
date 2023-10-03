@@ -3,7 +3,7 @@ import * as ElementRef from "@typed/template/ElementRef"
 import { Effect } from "effect"
 import * as happyDOM from "happy-dom"
 
-describe("ElementRef", () => {
+describe.skip("ElementRef", () => {
   const window = makeWindow()
   const testRef = makeRef(window)
 

@@ -15,7 +15,7 @@ import {
   PART_REGEX,
   PART_STRING
 } from "@typed/template/internal/chunks"
-import type { Chunk } from "@typed/template/internal/chunks"
+import type { TextChunk } from "@typed/template/internal/chunks"
 import * as Token from "@typed/template/Token"
 
 export function tokenize(template: ReadonlyArray<string>): Iterable<Token.Token> {
@@ -80,7 +80,7 @@ class Tokenizer implements Iterable<Token.Token> {
     const char = this.nextChar()
     const isOpenBracket = char === "<"
 
-    let next: Chunk | undefined
+    let next: TextChunk | undefined
 
     if (isOpenBracket && (next = this.chunk(getOpeningTag))) {
       const name = next.match[2]
@@ -88,7 +88,7 @@ class Tokenizer implements Iterable<Token.Token> {
       this.pushTag(name)
       this.context = Token.SELF_CLOSING_TAGS.has(name)
         ? "self-closing"
-        : Token.TEXT_ONLY_NODES_REGEX.test(name)
+        : Token.TEXT_ONLY_NODES_REGEX.has(name)
         ? "text-only"
         : "element"
 
@@ -110,7 +110,7 @@ class Tokenizer implements Iterable<Token.Token> {
   }
 
   private *nextElementToken(): Generator<Token.Token> {
-    let next: Chunk | undefined
+    let next: TextChunk | undefined
 
     if ((next = this.chunk(getAttributeWithQuotes))) {
       yield* this.parseAttribute(next.match[2], next.match[4])
@@ -135,7 +135,7 @@ class Tokenizer implements Iterable<Token.Token> {
   }
 
   private *nextSelfClosingToken(): Generator<Token.Token> {
-    let next: Chunk | undefined
+    let next: TextChunk | undefined
 
     if ((next = this.chunk(getAttributeWithQuotes))) {
       yield* this.parseAttribute(next.match[2], next.match[4])
@@ -153,7 +153,7 @@ class Tokenizer implements Iterable<Token.Token> {
   }
 
   private *nextTextOnlyToken(): Generator<Token.Token> {
-    let next: Chunk | undefined
+    let next: TextChunk | undefined
 
     if ((next = this.chunk(getAttributeWithQuotes))) {
       yield* this.parseAttribute(next.match[2], next.match[4])
@@ -228,7 +228,7 @@ class Tokenizer implements Iterable<Token.Token> {
     return text
   }
 
-  private chunk(f: (str: string, pos: number) => Chunk | undefined): Chunk | undefined {
+  private chunk(f: (str: string, pos: number) => TextChunk | undefined): TextChunk | undefined {
     const chunk = f(this.input, this.pos)
 
     if (chunk) {
@@ -265,7 +265,7 @@ class Stack<A> {
 }
 
 function* parseTextAndParts(s: string): Generator<Token.TextToken | Token.PartToken> {
-  let next: Chunk | undefined
+  let next: TextChunk | undefined
   let pos: number = 0
 
   while (pos < s.length) {

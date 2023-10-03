@@ -1,0 +1,588 @@
+import type { TextChunk } from "@typed/template/internal/chunks"
+import {
+  getPart,
+  getStrictPart,
+  getTextUntilCloseBrace,
+  getTextUntilPart,
+  getWhitespace,
+  PART_STRING
+} from "@typed/template/internal/chunks"
+import { templateHash } from "@typed/template/Parser"
+import * as Template from "@typed/template/Template"
+import { SELF_CLOSING_TAGS, TEXT_ONLY_NODES_REGEX } from "@typed/template/Token"
+import * as Chunk from "effect/Chunk"
+import { globalValue } from "effect/GlobalValue"
+import * as Option from "effect/Option"
+
+// TODO: Consider ways to surface useful errors and warnings.
+// TODO: Profile for performance optimization
+
+export interface Parser {
+  parse(templateStrings: ReadonlyArray<string>): Template.Template
+}
+
+export function parse(templateStrings: ReadonlyArray<string>): Template.Template {
+  return parser.parse(templateStrings)
+}
+
+const SPACE_REGEX = /\s/
+const isPartToken: TextPredicate = (input, pos) => input[pos] === "{" && input.slice(pos, pos + 8) === "{{__PART"
+const isPartEndToken: TextPredicate = (input, pos) => input[pos] === "_" && input.slice(pos, pos + 4) === "__}}"
+const isElementOpenToken: TextPredicate = (input, pos) => input[pos] === "<" && input[pos + 1] !== "/"
+const isElementCloseToken: TextPredicate = (input, pos) => input[pos] === "<" && input[pos + 1] === "/"
+const isEqualsToken: TextPredicate = (input, pos) => input[pos] === "="
+const isQuoteToken: TextPredicate = (input, pos) => input[pos] === `"`
+const isSingleQuoteToken: TextPredicate = (input, pos) => input[pos] === "'"
+const isWhitespaceToken: TextPredicate = (input, pos) => SPACE_REGEX.test(input[pos])
+const isOpenTagEndToken: TextPredicate = (input, pos) => input[pos] === ">"
+const isSelfClosingTagEndToken: TextPredicate = (input, pos) => input[pos] === "/" && input[pos + 1] === ">"
+const isCommentEndToken: TextPredicate = (input, pos) =>
+  input[pos] === "-" && input[pos + 1] === "-" && input[pos + 2] === ">"
+
+type Context = "unknown" | "element" | "comment"
+
+type TextPredicate = (input: string, pos: number) => boolean
+
+type LoopDecision<A> = Continue<A> | Break<A> | Skip
+
+type Continue<A> = ["continue", A]
+const Continue = <A>(a: A): Continue<A> => ["continue", a]
+
+type Break<A> = ["break", Option.Option<A>]
+const Break = <A>(a?: A): Break<A> => ["break", Option.fromNullable(a)]
+
+type Skip = ["skip"]
+const Skip: Skip = ["skip"]
+
+type Predicates = {
+  readonly [key: string]: (char: string, pos: number) => boolean
+}
+
+class PathStack {
+  #chunk: Chunk.Chunk<number> = Chunk.of(0)
+  #count = 0
+
+  constructor() {}
+
+  increment(): void {
+    const size = Chunk.size(this.#chunk)
+    this.#chunk = Chunk.replace(this.#chunk, size - 1, this.#count++)
+  }
+
+  extend(): void {
+    this.#chunk = Chunk.append(this.#chunk, this.#count = 0)
+  }
+
+  pop(): void {
+    this.#chunk = this.previousChunk()
+    this.#count = Chunk.unsafeLast(this.#chunk) + 1
+  }
+
+  toChunk(): Chunk.Chunk<number> {
+    return this.#chunk
+  }
+
+  previousChunk() {
+    return Chunk.dropRight(this.#chunk, 1)
+  }
+}
+
+class ParserImpl implements Parser {
+  #context!: Context
+  #input!: string
+  #length!: number
+  #parts!: Array<[Template.PartNode | Template.SparsePartNode, Chunk.Chunk<number>]>
+  #pos!: number
+  #path!: PathStack
+  #skipWhitespace!: boolean
+
+  constructor() {}
+
+  parse(templateStrings: ReadonlyArray<string>): Template.Template {
+    this.init(templateStrings)
+
+    return this.parseTemplate(templateHash(templateStrings))
+  }
+
+  private parseTemplate(hash: string) {
+    return new Template.Template(this.parseTemplateChildren(false), hash, this.#parts)
+  }
+
+  private parseTemplateChildren(shouldExtend: boolean) {
+    if (shouldExtend) {
+      this.#path.extend()
+    }
+
+    const nodes: Array<Template.Node> = []
+
+    while (this.#pos < this.#length) {
+      const node = this.parseNodeFromContext(this.#context)
+
+      if (node) {
+        nodes.push(...node)
+      } else {
+        break
+      }
+    }
+
+    if (shouldExtend) {
+      this.#path.pop()
+    }
+
+    return nodes
+  }
+
+  protected parseNodeFromContext(ctx: Context): Array<Template.Node> | undefined {
+    if (ctx === "element") {
+      return [this.parseElement()]
+    } else {
+      return this.parseUnknown()
+    }
+  }
+
+  private parseUnknown(): Array<Template.Node> | undefined {
+    const nextChar = this.nextChar()
+
+    let next: TextChunk | undefined
+
+    if (nextChar === "<") { // Open tag / comment / self-closing tag
+      this.consumeAmount(1)
+      this.skipWhitespace()
+
+      const nextChar = this.nextChar()
+
+      if (nextChar === "!") { // Comment
+        this.consumeAmount(3)
+
+        this.#context = "comment"
+        return [this.parseComment()]
+      } else if (nextChar === "/") { // Self-closing tag
+        this.consumeAmount(1)
+        this.parseTagName()
+        this.skipWhitespace()
+        this.consumeAmount(1)
+        this.#context = "unknown"
+      } else { // Elements
+        const els = [this.parseElement()]
+        return els
+      }
+    } else if ((next = this.chunk(getPart))) { // Parts
+      this.#skipWhitespace = false
+      return [this.addPartWithCurrentPath(new Template.NodePart(parseInt(next.match[2], 10)))]
+    } else if ((next = this.chunk(getWhitespace))) { // Whitespace
+      return this.#skipWhitespace ? [] : [new Template.TextNode(next.match[1])]
+    } else if ((next = this.chunk(getTextUntilCloseBrace))) { // Text and parts
+      return parseTextAndParts(next.match[1], (i) => this.addPartWithCurrentPath(new Template.NodePart(i)))
+    } else {
+      return [new Template.TextNode(this.nextChar())]
+    }
+  }
+
+  private parseElement(): Template.ParentNode {
+    this.#context = "element"
+
+    const [tagName, matched] = this.parseTagName()
+
+    if (matched === "whitespace") {
+      this.skipWhitespace()
+    }
+
+    try {
+      if (SELF_CLOSING_TAGS.has(tagName)) {
+        const element = this.parseSelfClosingElement(tagName)
+
+        return element
+      } else if (TEXT_ONLY_NODES_REGEX.has(tagName)) {
+        const element = this.parseTextOnlyElement(tagName)
+
+        return element
+      } else {
+        const attributes = this.parseAttributes()
+        this.#path.increment()
+
+        const children = this.parseTemplateChildren(true)
+        const element = new Template.ElementNode(tagName, attributes, children)
+
+        return element
+      }
+    } finally {
+      this.#context = "unknown"
+      this.#skipWhitespace = true
+    }
+  }
+
+  private parseSelfClosingElement(tagName: string): Template.SelfClosingElementNode {
+    const attributes = this.parseAttributes()
+
+    return new Template.SelfClosingElementNode(tagName, attributes)
+  }
+
+  private parseTextOnlyElement(tagName: string): Template.TextOnlyElement {
+    const attributes = this.parseAttributes()
+    const children = this.parseTextChildren()
+
+    return new Template.TextOnlyElement(tagName, attributes, children || [])
+  }
+
+  private parseComment(): Template.Comment {
+    // TODO: Comments need to be able to have multiple text nodes and parts.
+
+    const text = this.parseTextUntil(isCommentEndToken)
+    this.consumeAmount(3)
+
+    const textAndParts = parseTextAndParts(text, (i) => new Template.CommentPartNode(i))
+
+    if (textAndParts.length === 1) {
+      const part = textAndParts[0]
+
+      if (part.type === "text") {
+        return new Template.CommentNode(part.value)
+      } else {
+        return this.addPart(new Template.CommentPartNode(part.index))
+      }
+    }
+
+    return this.addPart(new Template.SparseCommentNode(textAndParts))
+  }
+
+  private parseTagName() {
+    return this.parseTextUntilMany({
+      whitespace: isWhitespaceToken,
+      openTagEnd: isOpenTagEndToken,
+      selfClosingTagEnd: isSelfClosingTagEndToken
+    })
+  }
+
+  private parseAttributes(): Array<Template.Attribute> {
+    return this.parseArray<Template.Attribute>(() => this.parseAttribute()) || []
+  }
+
+  private parseAttribute(): LoopDecision<Array<Template.Attribute>> {
+    const [name, matched] = this.parseTextUntilMany({
+      whitespace: isWhitespaceToken,
+      equals: isEqualsToken,
+      closingTag: isElementCloseToken,
+      openTagEnd: isOpenTagEndToken,
+      selfClosingTagEnd: isSelfClosingTagEndToken
+    })
+
+    switch (matched) {
+      case null:
+        return Skip
+      case "whitespace":
+        return Continue([new Template.BooleanNode(name)])
+      case "equals": {
+        this.consumeAmount(1)
+        return Continue([this.parseAttributeValue(name)])
+      }
+      case "openTagEnd": {
+        this.consumeAmount(1)
+        this.#context = "unknown"
+        return Break<Array<Template.Attribute>>(name ? [new Template.BooleanNode(name)] : undefined)
+      }
+      case "selfClosingTagEnd": {
+        this.consumeAmount(2)
+        this.#context = "unknown"
+
+        return Break<Array<Template.Attribute>>()
+      }
+      case "closingTag": {
+        this.consumeAmount(name.length)
+        this.#context = "unknown"
+
+        return Break<Array<Template.Attribute>>()
+      }
+    }
+  }
+
+  private parseAttributeValue(name: string): Template.Attribute {
+    this.skipWhitespace()
+
+    const nextChar = this.nextChar()
+
+    let predicate: TextPredicate = isWhitespaceToken
+
+    const isDoubleQuoted = nextChar === `"`
+    const isSingleQuoted = nextChar === "'"
+    const isQuoted = isDoubleQuoted || isSingleQuoted
+
+    if (isQuoted) {
+      predicate = isDoubleQuoted ? isQuoteToken : isSingleQuoteToken
+      this.consumeAmount(1)
+    }
+
+    const matched = this.parseTextUntilMany({
+      base: predicate,
+      openTagEnd: isOpenTagEndToken,
+      selfClosingTagEnd: isSelfClosingTagEndToken
+    })
+    const text = matched[0].trimEnd()
+
+    if (isQuoted) {
+      this.consumeAmount(1)
+    }
+
+    this.skipWhitespace()
+
+    if (text === "") {
+      return new Template.BooleanNode(name)
+    }
+
+    switch (name[0]) {
+      case "?":
+        return this.addPart(new Template.BooleanPartNode(name.slice(1), unsafeParsePartIndex(text)))
+      case ".": {
+        const property = name.slice(1)
+
+        return this.addPart(
+          property === "data"
+            ? new Template.DataPartNode(unsafeParsePartIndex(text))
+            : new Template.PropertyPartNode(property, unsafeParsePartIndex(text))
+        )
+      }
+      case "@":
+        return this.addPart(new Template.EventPartNode(name.slice(1), unsafeParsePartIndex(text)))
+      case "o": {
+        if (name[1] === "n") {
+          return this.addPart(new Template.EventPartNode(name.slice(2), unsafeParsePartIndex(text)))
+        }
+      }
+    }
+
+    const lowerCaseName = name.toLowerCase()
+
+    if (lowerCaseName === "ref") {
+      return this.addPart(new Template.RefPartNode(unsafeParsePartIndex(text)))
+    }
+
+    const isClass = lowerCaseName === "class" || lowerCaseName === "classname"
+    const textAndParts = parseTextAndParts(
+      text,
+      (i) => isClass ? new Template.ClassNamePartNode(i) : new Template.AttrPartNode(name, i)
+    )
+
+    if (textAndParts.length === 1) {
+      const part = textAndParts[0]
+
+      if (part.type === "text") {
+        return new Template.AttributeNode(name, part.value)
+      } else {
+        return this.addPart(
+          isClass ? new Template.ClassNamePartNode(part.index) : new Template.AttrPartNode(name, part.index)
+        )
+      }
+    }
+
+    return this.addPart(
+      isClass
+        ? new Template.SparseClassNameNode(
+          textAndParts.filter((x): x is Template.ClassNamePartNode => x.type === "className-part")
+        )
+        : new Template.SparseAttrNode(name, textAndParts as any)
+    )
+  }
+
+  private parseTextChildren(): Array<Template.Text> | null {
+    return this.parseArray(() => this.parseTextChild())
+  }
+
+  private parseTextChild(): LoopDecision<Array<Template.Text>> {
+    const [parsed, matched] = this.parseTextUntilMany({
+      part: isPartToken,
+      elementOpen: isElementOpenToken,
+      elementClose: isElementCloseToken
+    })
+    const text = parsed.trim()
+
+    switch (matched) {
+      case null:
+        return Skip
+      case "part": {
+        this.consumeAmount(8)
+        const part = this.parsePartToken((i) => this.addPart(new Template.TextPartNode(i)))
+
+        return text === "" ? Continue([part]) : Continue([new Template.TextNode(text), part])
+      }
+      case "elementClose":
+      case "elementOpen": // In this case we make the assumption that you forgot to close this element
+        return Break(
+          text ? [new Template.TextNode(text)] : undefined
+        )
+    }
+  }
+
+  private parsePartToken<T extends Template.PartNode>(f: (index: number) => T): T {
+    const text = this.parseTextUntil(isPartEndToken)
+    const index = Number(text)
+
+    this.consumeAmount(4)
+
+    return f(index)
+  }
+
+  private parseTextUntil(predicate: (char: string, pos: number) => boolean) {
+    let text = ""
+
+    while (this.#pos < this.#length) {
+      const char = this.nextChar()
+
+      if (predicate(this.#input, this.#pos)) {
+        break
+      }
+
+      text += char
+      this.consumeAmount(1)
+    }
+
+    return text
+  }
+
+  private parseTextUntilMany<const T extends Predicates>(predicates: T) {
+    const keys = Object.keys(predicates) as Array<keyof T>
+    let text = ""
+
+    while (this.#pos < this.#length) {
+      const char = this.nextChar()
+
+      for (const key of keys) {
+        if (predicates[key](this.#input, this.#pos)) {
+          return [text, key] as const
+        }
+      }
+
+      text += char
+      this.consumeAmount(1)
+    }
+
+    return [text, null] as const
+  }
+
+  private parseArray<T>(parser: () => LoopDecision<Array<T>>): Array<T> | null {
+    const children: Array<T> = []
+
+    while (this.#pos < this.#length) {
+      const next = parser()
+
+      switch (next[0]) {
+        case "continue":
+          children.push(...next[1])
+          break
+        case "break": {
+          if (Option.isSome(next[1])) {
+            children.push(...next[1].value)
+          }
+
+          return children
+        }
+        case "skip":
+          return null
+      }
+    }
+
+    return children
+  }
+
+  private skipWhitespace() {
+    while (this.#pos < this.#length) {
+      const char = this.nextChar()
+
+      if (SPACE_REGEX.test(char)) {
+        this.consumeAmount(1)
+      } else {
+        break
+      }
+    }
+  }
+
+  private nextChar() {
+    return this.#input[this.#pos]
+  }
+
+  private consumeAmount(amount: number) {
+    this.#pos += amount
+  }
+
+  private chunk(f: (str: string, pos: number) => TextChunk | undefined): TextChunk | undefined {
+    const chunk = f(this.#input, this.#pos)
+
+    if (chunk) {
+      this.#pos += chunk.length
+    }
+
+    return chunk
+  }
+
+  private addPart<T extends Template.PartNode | Template.SparsePartNode>(part: T): T {
+    this.#parts.push([part, this.#path.toChunk()])
+    return part
+  }
+
+  private addPartWithCurrentPath<T extends Template.PartNode | Template.SparsePartNode>(part: T): T {
+    this.#parts.push([part, this.#path.previousChunk()])
+    return part
+  }
+
+  private init(templateStrings: ReadonlyArray<string>): void {
+    this.#context = "unknown"
+    this.#input = templateWithParts(templateStrings).trim()
+    this.#length = this.#input.length
+    this.#parts = []
+    this.#pos = 0
+    this.#path = new PathStack()
+    this.#skipWhitespace = true
+  }
+}
+
+function templateWithParts(template: ReadonlyArray<string>): string {
+  const length = template.length
+  const lastIndex = length - 1
+
+  let output = ""
+
+  for (let i = 0; i < length; i++) {
+    const str = template[i]
+
+    if (i === lastIndex) {
+      output += str
+    } else {
+      output += str + PART_STRING(i)
+    }
+  }
+
+  return output
+}
+
+function unsafeParsePartIndex(text: string): number {
+  const next = getStrictPart(text, 0)
+
+  if (!next) {
+    throw new SyntaxError(`Could not parse part index from ${text}`)
+  }
+
+  return parseInt(next.match[2], 10)
+}
+
+function parseTextAndParts<T>(s: string, f: (index: number) => T): Array<Template.TextNode | T> {
+  let next: TextChunk | undefined
+  let pos: number = 0
+  const out: Array<Template.TextNode | T> = []
+
+  while (pos < s.length) {
+    if ((next = getPart(s, pos))) {
+      out.push(f(parseInt(next.match[2], 10)))
+      pos += next.length
+    } else if ((next = getTextUntilPart(s, pos))) {
+      out.push(new Template.TextNode(next.match[1]))
+
+      pos += next.length
+    } else {
+      out.push(new Template.TextNode(s.substring(pos)))
+
+      return out
+    }
+  }
+
+  return out
+}
+
+export const parser: Parser = globalValue(Symbol.for("@typed/template/Parser2"), () => new ParserImpl())

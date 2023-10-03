@@ -4,6 +4,9 @@
     "build": true,
     "baseUrl": ".",
     "paths": {
+      "@/test/*": [
+        "./test/*"
+      ],
       "@typed/context": [
         "packages/context/src/index.ts"
       ],
@@ -15,18 +18,6 @@
       ],
       "@typed/context/examples/*": [
         "packages/context/examples/*"
-      ],
-      "@typed/directive": [
-        "packages/directive/src/index.ts"
-      ],
-      "@typed/directive/*": [
-        "packages/directive/src/*"
-      ],
-      "@typed/directive/test/*": [
-        "packages/directive/test/*"
-      ],
-      "@typed/directive/examples/*": [
-        "packages/directive/examples/*"
       ],
       "@typed/dom": [
         "packages/dom/src/index.ts"
@@ -40,18 +31,6 @@
       "@typed/dom/examples/*": [
         "packages/dom/examples/*"
       ],
-      "@typed/element-ref": [
-        "packages/element-ref/src/index.ts"
-      ],
-      "@typed/element-ref/*": [
-        "packages/element-ref/src/*"
-      ],
-      "@typed/element-ref/test/*": [
-        "packages/element-ref/test/*"
-      ],
-      "@typed/element-ref/examples/*": [
-        "packages/element-ref/examples/*"
-      ],
       "@typed/fx": [
         "packages/fx/src/index.ts"
       ],
@@ -63,18 +42,6 @@
       ],
       "@typed/fx/examples/*": [
         "packages/fx/examples/*"
-      ],
-      "@typed/part": [
-        "packages/part/src/index.ts"
-      ],
-      "@typed/part/*": [
-        "packages/part/src/*"
-      ],
-      "@typed/part/test/*": [
-        "packages/part/test/*"
-      ],
-      "@typed/part/examples/*": [
-        "packages/part/examples/*"
       ],
       "@typed/path": [
         "packages/path/src/index.ts"
@@ -88,18 +55,6 @@
       "@typed/path/examples/*": [
         "packages/path/examples/*"
       ],
-      "@typed/placeholder": [
-        "packages/placeholder/src/index.ts"
-      ],
-      "@typed/placeholder/*": [
-        "packages/placeholder/src/*"
-      ],
-      "@typed/placeholder/test/*": [
-        "packages/placeholder/test/*"
-      ],
-      "@typed/placeholder/examples/*": [
-        "packages/placeholder/examples/*"
-      ],
       "@typed/remote-data": [
         "packages/remote-data/src/index.ts"
       ],
@@ -111,18 +66,6 @@
       ],
       "@typed/remote-data/examples/*": [
         "packages/remote-data/examples/*"
-      ],
-      "@typed/rendered": [
-        "packages/rendered/src/index.ts"
-      ],
-      "@typed/rendered/*": [
-        "packages/rendered/src/*"
-      ],
-      "@typed/rendered/test/*": [
-        "packages/rendered/test/*"
-      ],
-      "@typed/rendered/examples/*": [
-        "packages/rendered/examples/*"
       ],
       "@typed/route": [
         "packages/route/src/index.ts"

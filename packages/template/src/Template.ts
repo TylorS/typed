@@ -1,10 +1,13 @@
+import type { Chunk } from "effect/Chunk"
+
 export class Template {
   readonly type = "template"
 
   constructor(
     readonly nodes: ReadonlyArray<Node>,
     readonly hash: string,
-    readonly parts: ReadonlyArray<readonly [part: PartNode | SparsePartNode, path: ReadonlyArray<number>]>
+    // Parts are a array of Parts to the respective path from the root node to access it during
+    readonly parts: ReadonlyArray<readonly [part: PartNode | SparsePartNode, path: Chunk<number>]>
   ) {}
 }
 
@@ -30,7 +33,7 @@ export type PartNode =
   | TextPartNode
   | CommentPartNode
 
-export type SparsePartNode = SparseAttrNode | SparseClassNameNode
+export type SparsePartNode = SparseAttrNode | SparseClassNameNode | SparseCommentNode
 
 export class ElementNode {
   readonly type = "element"
@@ -170,7 +173,7 @@ export class TextPartNode {
   constructor(readonly index: number) {}
 }
 
-export type Comment = CommentNode | CommentPartNode
+export type Comment = CommentNode | CommentPartNode | SparseCommentNode
 
 export class CommentNode {
   readonly type = "comment" as const
@@ -181,9 +184,11 @@ export class CommentNode {
 export class CommentPartNode {
   readonly type = "comment-part" as const
 
-  constructor(
-    readonly before: string,
-    readonly after: string,
-    readonly index: number
-  ) {}
+  constructor(readonly index: number) {}
+}
+
+export class SparseCommentNode {
+  readonly type = "sparse-comment" as const
+
+  constructor(readonly nodes: Array<TextNode | CommentPartNode>) {}
 }

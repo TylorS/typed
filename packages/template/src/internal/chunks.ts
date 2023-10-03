@@ -1,4 +1,4 @@
-export type Chunk = {
+export type TextChunk = {
   readonly length: number
   readonly match: RegExpExecArray
 }
@@ -8,6 +8,10 @@ export const PART_STRING = (i: number) => `{{__PART${i}__}}`
 export const PART_REGEX = /(\{\{__PART(\d+)__\}\})/g
 
 export const getPart = chunker(PART_REGEX)
+
+export const STRICT_PART_REGEX = /^(\{\{__PART(\d+)__\}\})$/g
+
+export const getStrictPart = chunker(STRICT_PART_REGEX)
 
 export const getOpeningTag = chunker(/(\s?<(([a-z0-9-]+:)?[a-z0-9-]+))\s?/gi)
 
@@ -52,7 +56,7 @@ export const getAllTextUntilElementClose = (tagName: string) => {
 export const getWhitespace = chunker(/(\s+)/g)
 
 function chunker(regex: RegExp) {
-  return (str: string, pos: number): Chunk | undefined => {
+  return (str: string, pos: number): TextChunk | undefined => {
     regex.lastIndex = pos
     const match = regex.exec(str)
     regex.lastIndex = 0
