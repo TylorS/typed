@@ -16,32 +16,74 @@ describe(__filename, () => {
   })
 
   describe(Context.tuple, () => {
-    it("combines multiple Tagged context types", async () => {
-      const tag1 = Context.Tagged<number>()("test1")
-      const tag2 = Context.Tagged<string>()("test2")
-      const tag3 = Context.Tagged<boolean>()("test3")
+    const tag1 = Context.Tagged<number>()("test1")
+    const tag2 = Context.Tagged<string>()("test2")
+    const tag3 = Context.Tagged<boolean>()("test3")
+    const tuple = Context.tuple(tag1, tag2, tag3)
 
-      const tuple = Context.tuple(tag1, tag2, tag3)
+    it("combines multiple Tagged context types", async () => {
       const test = tuple.with(([x, y, z]) => [x + 1, y + "a", !z]).pipe(tuple.provide([1, "b", true]))
       const result = await Effect.runPromise(test)
 
       expect(result).toEqual([2, "ba", false])
     })
+
+    it("allows utilizing as an Effect + providing with layer", async () => {
+      const gen = Effect.gen(function*(_) {
+        const [x, y, z] = yield* _(tuple)
+
+        return {
+          x,
+          y,
+          z
+        }
+      }).pipe(
+        Effect.provide(tuple.layer(Effect.sync(() => [1, "", false])))
+      )
+
+      const result = await Effect.runPromise(gen)
+
+      expect(result).toEqual({
+        x: 1,
+        y: "",
+        z: false
+      })
+    })
   })
 
   describe(Context.struct, () => {
-    it("combines multiple Tagged context types into a struct", async () => {
-      const tag1 = Context.Tagged<number>()("test1")
-      const tag2 = Context.Tagged<string>()("test2")
-      const tag3 = Context.Tagged<boolean>()("test3")
+    const tag1 = Context.Tagged<number>()("test1")
+    const tag2 = Context.Tagged<string>()("test2")
+    const tag3 = Context.Tagged<boolean>()("test3")
+    const struct = Context.struct({ tag1, tag2, tag3 })
 
-      const struct = Context.struct({ tag1, tag2, tag3 })
-      const test = struct.with(({ tag1: x, tag2: y, tag3: z }) => ({ tag1: x + 1, tag2: y + "a", tag3: !z })).pipe(
-        struct.provide({ tag1: 1, tag2: "b", tag3: true })
-      )
+    it("combines multiple Tagged context types into a struct", async () => {
+      const test = struct.pipe(struct.provide({ tag1: 1, tag2: "b", tag3: true }))
       const result = await Effect.runPromise(test)
 
-      expect(result).toEqual({ tag1: 2, tag2: "ba", tag3: false })
+      expect(result).toEqual({ tag1: 1, tag2: "b", tag3: true })
+    })
+
+    it("allows utilizing as an Effect + providing with layer", async () => {
+      const gen = Effect.gen(function*(_) {
+        const { tag1, tag2, tag3 } = yield* _(struct)
+
+        return {
+          x: tag1 + 1,
+          y: "b" + tag2,
+          z: !tag3
+        }
+      }).pipe(
+        Effect.provide(struct.layer(Effect.sync(() => ({ tag1: 1, tag2: "", tag3: false }))))
+      )
+
+      const result = await Effect.runPromise(gen)
+
+      expect(result).toEqual({
+        x: 2,
+        y: "b",
+        z: true
+      })
     })
   })
 
