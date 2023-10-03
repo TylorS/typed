@@ -23,13 +23,11 @@ const nestedTemplate = h`
     </footer>`
 
 benchmark("Old vs New Parser")
-  .test("simple (old", Effect.sync(() => Old.parser.parse(simpleDivTemplate)))
-  .test("simple (new", Effect.sync(() => New.parser.parse(simpleDivTemplate)))
-  .test("nested (old", Effect.sync(() => Old.parser.parse(nestedTemplate)))
-  .test("nested (new", Effect.sync(() => New.parser.parse(nestedTemplate)))
-  .run({
-    iterations: 10_000
-  })
+  .test("simple (old)", Effect.sync(() => Old.parser.parse(simpleDivTemplate)))
+  .test("simple (new)", Effect.sync(() => New.parser.parse(simpleDivTemplate)))
+  .test("nested (old)", Effect.sync(() => Old.parser.parse(nestedTemplate)))
+  .test("nested (new)", Effect.sync(() => New.parser.parse(nestedTemplate)))
+  .run()
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function h<Values extends ReadonlyArray<any>>(template: TemplateStringsArray, ..._: Values) {
