@@ -173,7 +173,7 @@ function benchmarkIt<E, A>(
         total += time
         runs.push(time)
       }),
-      iterations
+      iterations - 1
     )))
 
   return {

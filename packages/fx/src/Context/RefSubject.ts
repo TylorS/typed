@@ -6,8 +6,7 @@
 import * as Context from "@typed/context"
 import { Computed } from "@typed/fx/Computed"
 import { Filtered } from "@typed/fx/Filtered"
-import type { Fx } from "@typed/fx/Fx"
-import { fromFxEffect, provideSomeLayer } from "@typed/fx/Fx"
+import * as Fx from "@typed/fx/Fx"
 import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
@@ -73,13 +72,13 @@ export interface RefSubject<I, E, A> extends VersionedFxEffect<I, I, E, A, I, E,
    * Make a layer initializing a RefSubject
    * @since 1.18.0
    */
-  readonly make: <R>(fx: Fx<R, E, A>, eq?: Equivalence<A>) => Layer.Layer<R, never, I>
+  readonly make: <R>(fx: Fx.Fx<R, E, A>, eq?: Equivalence<A>) => Layer.Layer<R, never, I>
 
   /**
    * Provide an implementation of this RefSubject
    * @since 1.18.0
    */
-  readonly provide: <R2>(fx: Fx<R2, E, A>, eq?: Equivalence<A>) => <R3, E3, C>(
+  readonly provide: <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => <R3, E3, C>(
     effect: Effect.Effect<R3, E3, C>
   ) => Effect.Effect<R2 | Exclude<R3, I>, E | E3, C>
 
@@ -87,9 +86,9 @@ export interface RefSubject<I, E, A> extends VersionedFxEffect<I, I, E, A, I, E,
    * Provide an implementation of this RefSubject
    * @since 1.18.0
    */
-  readonly provideFx: <R2>(fx: Fx<R2, E, A>, eq?: Equivalence<A>) => <R3, E3, C>(
-    effect: Fx<R3, E3, C>
-  ) => Fx<R2 | Exclude<R3, I>, E | E3, C>
+  readonly provideFx: <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => <R3, E3, C>(
+    effect: Fx.Fx<R3, E3, C>
+  ) => Fx.Fx<R2 | Exclude<R3, I>, E | E3, C>
 }
 
 /**
@@ -122,8 +121,8 @@ class RefSubjectImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
     super()
   }
 
-  protected toFx(): Fx<I, E, A> {
-    return fromFxEffect(this.tag)
+  protected toFx(): Fx.Fx<I, E, A> {
+    return Fx.fromFxEffect(this.tag)
   }
 
   protected toEffect(): Effect.Effect<I, E, A> {
@@ -162,11 +161,11 @@ class RefSubjectImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
   filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<never, E, B> = (f) =>
     Filtered(this as any, (a: A) => Effect.sync(() => f(a)))
 
-  make = <R>(fx: Fx<R, E, A>, eq?: Equivalence<A>): Layer.Layer<R, never, I> => this.tag.scoped(Ref.make(fx, eq))
+  make = <R>(fx: Fx.Fx<R, E, A>, eq?: Equivalence<A>): Layer.Layer<R, never, I> => this.tag.scoped(Ref.make(fx, eq))
 
-  provide = <R2>(fx: Fx<R2, E, A>, eq?: Equivalence<A>) => Effect.provide(this.make(fx, eq))
+  provide = <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => Effect.provide(this.make(fx, eq))
 
-  provideFx = <R2>(fx: Fx<R2, E, A>, eq?: Equivalence<A>) => provideSomeLayer(this.make(fx, eq))
+  provideFx = <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => Fx.provide(this.make(fx, eq))
 }
 
 /**

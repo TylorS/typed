@@ -20,6 +20,8 @@ function buildNode(document: Document, node: Template.Node, isSvgContext: boolea
       return document.createTextNode(node.value)
     case "comment":
       return document.createComment(node.value)
+    case "sparse-comment":
+      return document.createComment("")
     // Create placeholders for these elements
     case "comment-part":
     case "node":

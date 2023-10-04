@@ -58,6 +58,8 @@ type Predicates = {
   [key: string]: (char: string, pos: number) => boolean
 }
 
+const BREAK_ATTR = Break<Array<Template.Attribute>>()
+
 const tagNameMatches = {
   whitespace: isWhitespaceToken,
   openTagEnd: isOpenTagEndToken,
@@ -313,13 +315,13 @@ class ParserImpl implements Parser {
         this.consumeAmount(2)
         this.context = "unknown"
 
-        return Break<Array<Template.Attribute>>()
+        return BREAK_ATTR
       }
       case "closingTag": {
         this.consumeAmount(name.length)
         this.context = "unknown"
 
-        return Break<Array<Template.Attribute>>()
+        return BREAK_ATTR
       }
     }
   }
@@ -336,7 +338,7 @@ class ParserImpl implements Parser {
     if (isQuoted) {
       attributeValueMatches.base = isDoubleQuoted
         ? isQuoteToken
-        : isWhitespaceToken
+        : isSingleQuoteToken
       this.consumeAmount(1)
     } else {
       attributeValueMatches.base = isWhitespaceToken

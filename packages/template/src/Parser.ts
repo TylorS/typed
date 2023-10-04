@@ -330,28 +330,36 @@ class ParserImpl {
     return children
   }
 
-  protected Comment(before: string): Template.CommentPartNode {
-    let after = ""
-    let index: number
+  protected Comment(before: string): Template.Comment {
+    const nodes: Array<Template.CommentPartNode | Template.TextNode> = []
+
+    if (before) {
+      nodes.push(new Template.TextNode(before))
+    }
 
     while (this._lookahead !== null) {
       const token = this.findTokenOfType("part-token", "text", "comment-end")
 
       if (token._tag === "part-token") {
-        index = token.index
+        nodes.push(new Template.CommentPartNode(token.index))
       } else if (token._tag === "text") {
-        // @ts-expect-error - We know that the token is a text token
-        if (undefined === index) {
-          before += token.value
-        } else {
-          after += token.value
-        }
+        nodes.push(new Template.TextNode(token.value))
       } else {
         break
       }
     }
 
-    return this.addPart(new Template.CommentPartNode(before, after, index!))
+    if (nodes.length === 1) {
+      const node = nodes[0]
+
+      if (node.type === "comment-part") {
+        return new Template.CommentPartNode(node.index)
+      } else {
+        return new Template.CommentNode(node.value)
+      }
+    }
+
+    return this.addPart(new Template.SparseCommentNode(nodes))
   }
 
   protected findTokenOfType<T extends ReadonlyArray<Token["_tag"]>>(

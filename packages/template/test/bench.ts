@@ -25,9 +25,9 @@ const nestedTemplate = h`
       </div>
     </footer>`
 
-const seasonedTemplate = splitTemplateByParts(`<section
+const lotsOfAttributesTemplate = splitTemplateByParts(`<formgroup
     ref="{{__PART0__}}"
-    class="seasoned-input-field {{__PART1__}}"
+    class="seasoned-input-group {{__PART1__}}"
   >
     <div
       class={{__PART2__}}
@@ -36,7 +36,7 @@ const seasonedTemplate = splitTemplateByParts(`<section
 
       <textarea
         ref="{{__PART4__}}"
-        class="seasoned-input-field__textarea"
+        class="seasoned-input-group__textarea"
         type="{{__PART5__}}"
         placeholder=" "
         ?disabled="{{__PART6__}}"
@@ -62,7 +62,7 @@ const seasonedTemplate = splitTemplateByParts(`<section
 
     {{__PART23__}}
     {{__PART24__}}
-  </section>`)
+  </formgroup>`)
 
 benchmark("Old vs New Parser")
   .comparison("simple", [{
@@ -92,17 +92,19 @@ benchmark("Old vs New Parser")
       effect: Effect.sync(() => New.parser.parse(nestedTemplate))
     }
   ])
-  .comparison("seasoned", [
+  .comparison("lots-o-attributes", [
     {
       name: "old",
-      effect: Effect.sync(() => Old.parser.parse(seasonedTemplate))
+      effect: Effect.sync(() => Old.parser.parse(lotsOfAttributesTemplate))
     },
     {
       name: "new",
-      effect: Effect.sync(() => New.parser.parse(seasonedTemplate))
+      effect: Effect.sync(() => New.parser.parse(lotsOfAttributesTemplate))
     }
   ])
-  .run()
+  .run(
+    { iterations: 1 }
+  )
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function h<Values extends ReadonlyArray<any>>(template: TemplateStringsArray, ..._: Values) {

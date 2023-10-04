@@ -81,8 +81,9 @@ const nodeMap: NodeMap = {
   "text-only-element": textOnlyElementToHtmlChunks,
   comment: (node) => [new TextChunk(`<!--${node.value}-->`)],
   "comment-part": (node) => [
-    new PartChunk(node, (value) => `<!--${node.before}${value}${node.after}-->`)
-  ]
+    new PartChunk(node, (value) => `<!--${value}-->`)
+  ],
+  "sparse-comment": (node) => node.nodes.flatMap((node) => nodeMap[node.type](node as any))
 }
 
 function nodeToHtmlChunk(node: Node, hash?: string): Array<HtmlChunk> {

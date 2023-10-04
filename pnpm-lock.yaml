@@ -27,29 +27,20 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0(@babel/core@7.23.0)
       '@effect/build-utils':
-        specifier: ^0.1.4
-        version: 0.1.4
-      '@effect/data':
-        specifier: ^0.18.7
-        version: 0.18.7
+        specifier: ^0.1.5
+        version: 0.1.5
       '@effect/docgen':
         specifier: ^0.1.8
         version: 0.1.8(@types/node@20.8.2)(typescript@5.2.2)
       '@effect/eslint-plugin':
         specifier: ^0.1.2
         version: 0.1.2
-      '@effect/io':
-        specifier: ^0.41.2
-        version: 0.41.2(@effect/data@0.18.7)
       '@effect/language-service':
         specifier: 0.0.21
         version: 0.0.21
-      '@effect/stream':
-        specifier: ^0.37.1
-        version: 0.37.1(@effect/data@0.18.7)(@effect/io@0.41.2)
       '@effect/typeclass':
         specifier: 0.6.2
-        version: 0.6.2(effect@2.0.0-next.39)
+        version: 0.6.2(effect@2.0.0-next.44)
       '@types/chai':
         specifier: ^4.3.6
         version: 4.3.6
@@ -64,7 +55,7 @@ importers:
         version: 6.7.4(eslint@8.50.0)(typescript@5.2.2)
       '@vitejs/plugin-react':
         specifier: ^4.1.0
-        version: 4.1.0(vite@4.4.9)
+        version: 4.1.0(vite@4.4.10)
       '@vitest/coverage-v8':
         specifier: ^0.34.6
         version: 0.34.6(vitest@0.34.6)
@@ -81,8 +72,8 @@ importers:
         specifier: ^8.2.1
         version: 8.2.1
       effect:
-        specifier: 2.0.0-next.39
-        version: 2.0.0-next.39
+        specifier: ^2.0.0-next.44
+        version: 2.0.0-next.44
       eslint:
         specifier: ^8.50.0
         version: 8.50.0
@@ -126,11 +117,11 @@ importers:
         specifier: ^3.10.5
         version: 3.10.5
       vite:
-        specifier: ^4.4.9
-        version: 4.4.9(@types/node@20.8.2)
+        specifier: ^4.4.10
+        version: 4.4.10(@types/node@20.8.2)
       vite-plugin-tsconfig-paths:
         specifier: ^1.3.1
-        version: 1.3.1(typescript@5.2.2)(vite@4.4.9)
+        version: 1.3.1(typescript@5.2.2)(vite@4.4.10)
       vitest:
         specifier: 0.34.6
         version: 0.34.6
@@ -139,7 +130,7 @@ importers:
     dependencies:
       '@effect/opentelemetry':
         specifier: ^0.13.1
-        version: 0.13.1(@opentelemetry/api@1.6.0)(effect@2.0.0-next.39)
+        version: 0.13.1(@opentelemetry/api@1.6.0)(effect@2.0.0-next.44)
       '@opentelemetry/exporter-trace-otlp-http':
         specifier: ^0.43.0
         version: 0.43.0(@opentelemetry/api@1.6.0)
@@ -165,27 +156,27 @@ importers:
         specifier: workspace:*
         version: link:../../packages/remote-data/dist
       effect:
-        specifier: ^2.0.0-next.39
-        version: 2.0.0-next.39
+        specifier: ^2.0.0-next.44
+        version: 2.0.0-next.44
 
   packages/context:
     dependencies:
       effect:
-        specifier: ^2.0.0-next.39
-        version: 2.0.0-next.39
+        specifier: ^2.0.0-next.44
+        version: 2.0.0-next.44
     publishDirectory: dist
 
   packages/dom:
     dependencies:
       '@effect/schema':
         specifier: ^0.39.1
-        version: 0.39.1(effect@2.0.0-next.39)
+        version: 0.39.1(effect@2.0.0-next.44)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
       effect:
-        specifier: ^2.0.0-next.39
-        version: 2.0.0-next.39
+        specifier: ^2.0.0-next.44
+        version: 2.0.0-next.44
       typed-query-selector:
         specifier: ^2.11.0
         version: 2.11.0
@@ -194,8 +185,8 @@ importers:
   packages/fx:
     dependencies:
       '@effect/typeclass':
-        specifier: 0.6.1
-        version: 0.6.1(effect@2.0.0-next.39)
+        specifier: 0.6.2
+        version: 0.6.2(effect@2.0.0-next.44)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -203,8 +194,8 @@ importers:
         specifier: workspace:*
         version: link:../remote-data/dist
       effect:
-        specifier: ^2.0.0-next.39
-        version: 2.0.0-next.39
+        specifier: ^2.0.0-next.44
+        version: 2.0.0-next.44
     devDependencies:
       '@most/core':
         specifier: ^1.6.1
@@ -230,8 +221,8 @@ importers:
   packages/remote-data:
     dependencies:
       effect:
-        specifier: ^2.0.0-next.39
-        version: 2.0.0-next.39
+        specifier: ^2.0.0-next.44
+        version: 2.0.0-next.44
     publishDirectory: dist
 
   packages/route:
@@ -240,8 +231,8 @@ importers:
         specifier: workspace:*
         version: link:../path/dist
       effect:
-        specifier: ^2.0.0-next.39
-        version: 2.0.0-next.39
+        specifier: ^2.0.0-next.44
+        version: 2.0.0-next.44
       path-to-regexp:
         specifier: ^6.2.1
         version: 6.2.1
@@ -262,8 +253,8 @@ importers:
         specifier: workspace:*
         version: link:../wire/dist
       effect:
-        specifier: ^2.0.0-next.39
-        version: 2.0.0-next.39
+        specifier: ^2.0.0-next.44
+        version: 2.0.0-next.44
       escape-html:
         specifier: ^1.0.3
         version: 1.0.3
@@ -800,18 +791,14 @@ packages:
       '@babel/core': 7.23.0
     dev: true
 
-  /@effect/build-utils@0.1.4:
-    resolution: {integrity: sha512-eQs28z44SHdDR0lFyO0e+0R6+kx0yNqzXOOKgbQOssDaoqXyEutiFfde2aSWBvcQRS7yt0WW6dYNQ2y7jYFK9Q==}
+  /@effect/build-utils@0.1.5:
+    resolution: {integrity: sha512-j1ggCQnhIQ4TZaEAc2xyQXC2ChWsbIziwxDwKqBH6xL2VZDCEpxkNKPhN66QLJFVOuv/POUI9mzOKRZVde6LVQ==}
     engines: {node: '>=16.17.1'}
     hasBin: true
     dev: true
 
   /@effect/data@0.17.1:
     resolution: {integrity: sha512-QCYkLE5Y5Dm5Yax5R3GmW4ZIgTx7W+kSZ7yq5eqQ/mFWa8i4yxbLuu8cudqzdeZtRtTGZKlhDxfFfgVtMywXJg==}
-    dev: true
-
-  /@effect/data@0.18.7:
-    resolution: {integrity: sha512-r7C9VjavmG85wb5BOvcbbKGioPJCoBAFsJVOUNWlxZBRIU+l68ENpsyzCkWsU7dP4teAztjBZ89O3hVhBX0Huw==}
     dev: true
 
   /@effect/docgen@0.1.8(@types/node@20.8.2)(typescript@5.2.2):
@@ -853,14 +840,6 @@ packages:
       '@effect/data': 0.17.1
     dev: true
 
-  /@effect/io@0.41.2(@effect/data@0.18.7):
-    resolution: {integrity: sha512-kSMMQbowTPhUGQIo+B/5F6WWynY14IWr9avLAv4oaZ6PtjP+w8sOOdO0YU3a+idBaO12uIuvba2ZFR6LnASM6w==}
-    peerDependencies:
-      '@effect/data': ^0.18.5
-    dependencies:
-      '@effect/data': 0.18.7
-    dev: true
-
   /@effect/language-service@0.0.21:
     resolution: {integrity: sha512-e8vfKbjnbYiyneBincEFS0tzXluopGK77OkVFbPRtUbNDS5tJfb+jiwOQEiqASDsadcZmd+9J9+Q6v/z7GuN2g==}
     dev: true
@@ -872,10 +851,10 @@ packages:
       '@effect/schema': ^0.33.0
     dependencies:
       '@effect/data': 0.17.1
-      '@effect/schema': 0.33.1(@effect/data@0.18.7)(@effect/io@0.41.2)
+      '@effect/schema': 0.33.1(@effect/data@0.17.1)(@effect/io@0.38.0)
     dev: true
 
-  /@effect/opentelemetry@0.13.1(@opentelemetry/api@1.6.0)(effect@2.0.0-next.39):
+  /@effect/opentelemetry@0.13.1(@opentelemetry/api@1.6.0)(effect@2.0.0-next.44):
     resolution: {integrity: sha512-J4lLQTu/GLYnrTEtWl24zSkws5nvRRiBiHoTrLt3lItUvH8++J0x+8MPbbsfh58++beKnm7gsB6TtFe/PbiczQ==}
     peerDependencies:
       '@opentelemetry/api': ^1.4.0
@@ -886,56 +865,37 @@ packages:
       '@opentelemetry/sdk-metrics': 1.17.0(@opentelemetry/api@1.6.0)
       '@opentelemetry/sdk-node': 0.43.0(@opentelemetry/api@1.6.0)
       '@opentelemetry/semantic-conventions': 1.17.0
-      effect: 2.0.0-next.39
+      effect: 2.0.0-next.44
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /@effect/schema@0.33.1(@effect/data@0.18.7)(@effect/io@0.41.2):
+  /@effect/schema@0.33.1(@effect/data@0.17.1)(@effect/io@0.38.0):
     resolution: {integrity: sha512-h+fQInui4q3we8fegAygL0Cs5B2DD/+oC3JWthOh8eLcbKkbYM9smCD/PsHuyQ+BaeWiSP5JdvREGlP4Sg+Ysw==}
     peerDependencies:
       '@effect/data': ^0.17.1
       '@effect/io': ^0.38.0
     dependencies:
-      '@effect/data': 0.18.7
-      '@effect/io': 0.41.2(@effect/data@0.18.7)
+      '@effect/data': 0.17.1
+      '@effect/io': 0.38.0(@effect/data@0.17.1)
       fast-check: 3.13.1
     dev: true
 
-  /@effect/schema@0.39.1(effect@2.0.0-next.39):
+  /@effect/schema@0.39.1(effect@2.0.0-next.44):
     resolution: {integrity: sha512-O/BO7I4q7A1edmqs0+UrkHpqX7bzWfzAEdEm5u42FJkJFQBjUEMJpz8qaVDrY/WI2dKFWKZRS6Z5oP2qJtILTQ==}
     peerDependencies:
       effect: 2.0.0-next.38
     dependencies:
-      effect: 2.0.0-next.39
+      effect: 2.0.0-next.44
       fast-check: 3.13.1
     dev: false
 
-  /@effect/stream@0.37.1(@effect/data@0.18.7)(@effect/io@0.41.2):
-    resolution: {integrity: sha512-dujPqjKF+Nfn3agD8UerujvtzYk7Z1E9BhwazR6R1P53y/pz4voxZJJXj8v0/cTyn0bbO5dwYCq1K31FXSiN2Q==}
-    peerDependencies:
-      '@effect/data': ^0.18.6
-      '@effect/io': ^0.41.1
-    dependencies:
-      '@effect/data': 0.18.7
-      '@effect/io': 0.41.2(@effect/data@0.18.7)
-    dev: true
-
-  /@effect/typeclass@0.6.1(effect@2.0.0-next.39):
-    resolution: {integrity: sha512-0KheJAgQdLQpui70l73Fxv1t9Ye9iFZeLSvZ6Bac0PDQ3hA4bXe/YLMtqe0vpqL4na489xnJQ5tZfs0yESzwjQ==}
-    peerDependencies:
-      effect: 2.0.0-next.38
-    dependencies:
-      effect: 2.0.0-next.39
-    dev: false
-
-  /@effect/typeclass@0.6.2(effect@2.0.0-next.39):
+  /@effect/typeclass@0.6.2(effect@2.0.0-next.44):
     resolution: {integrity: sha512-H9FklKKpzm8RjaIwHVruk+hHUK6HYW9aVRQ09YMCQMJBdxs/bPdJ6/hJvBVhPp1TmcwGLe0mI2+IQ3HSpIjgfg==}
     peerDependencies:
       effect: ^2.0.0-next.39
     dependencies:
-      effect: 2.0.0-next.39
-    dev: true
+      effect: 2.0.0-next.44
 
   /@esbuild/android-arm64@0.18.20:
     resolution: {integrity: sha512-Nz4rJcchGDtENV0eMKUNa6L12zz2zBDXuhj/Vjh18zGqB44Bi7MBMSXjgunJgjRhCmKOjnPuZp4Mb6OKqtMHLQ==}
@@ -2030,7 +1990,7 @@ packages:
       eslint-visitor-keys: 3.4.3
     dev: true
 
-  /@vitejs/plugin-react@4.1.0(vite@4.4.9):
+  /@vitejs/plugin-react@4.1.0(vite@4.4.10):
     resolution: {integrity: sha512-rM0SqazU9iqPUraQ2JlIvReeaxOoRj6n+PzB1C0cBzIbd8qP336nC39/R9yPi3wVcah7E7j/kdU1uCUqMEU4OQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -2041,7 +2001,7 @@ packages:
       '@babel/plugin-transform-react-jsx-source': 7.22.5(@babel/core@7.23.0)
       '@types/babel__core': 7.20.2
       react-refresh: 0.14.0
-      vite: 4.4.9(@types/node@20.8.2)
+      vite: 4.4.10(@types/node@20.8.2)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -2394,8 +2354,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001542
-      electron-to-chromium: 1.4.539
+      caniuse-lite: 1.0.30001543
+      electron-to-chromium: 1.4.540
       node-releases: 2.0.13
       update-browserslist-db: 1.0.13(browserslist@4.22.1)
     dev: true
@@ -2458,8 +2418,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /caniuse-lite@1.0.30001542:
-    resolution: {integrity: sha512-UrtAXVcj1mvPBFQ4sKd38daP8dEcXXr5sQe6QNNinaPd0iA/cxg9/l3VrSdL73jgw5sKyuQ6jNgiKO12W3SsVA==}
+  /caniuse-lite@1.0.30001543:
+    resolution: {integrity: sha512-qxdO8KPWPQ+Zk6bvNpPeQIOH47qZSYdFZd6dXQzb2KzhnSXju4Kd7H1PkSJx6NICSMgo/IhRZRhhfPTHYpJUCA==}
     dev: true
 
   /chai@4.3.10:
@@ -3039,11 +2999,11 @@ packages:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
     dev: true
 
-  /effect@2.0.0-next.39:
-    resolution: {integrity: sha512-4i6OI4pI55MeDALupg8wOX3Y6nvdwqJcJRGjwYNK7xqAGK3QXy6jbxAi4jf1FBVkIChtJLn2pQ42CbcrjNjewA==}
+  /effect@2.0.0-next.44:
+    resolution: {integrity: sha512-0oBnoqWW5u1b0AhmDiGZ/TX8La697YcCrTacEBU7v+gKZeH+bbVJwPEqesGagot0sErBrvyE0H9h7Si4lHhkuA==}
 
-  /electron-to-chromium@1.4.539:
-    resolution: {integrity: sha512-wRmWJ8F7rgmINuI32S6r2SLrw/h/bJQsDSvBiq9GBfvc2Lh73qTOwn73r3Cf67mjVgFGJYcYtmERzySa5jIWlg==}
+  /electron-to-chromium@1.4.540:
+    resolution: {integrity: sha512-aoCqgU6r9+o9/S7wkcSbmPRFi7OWZWiXS9rtjEd+Ouyu/Xyw5RSq2XN8s5Qp8IaFOLiRrhQCphCIjAxgG3eCAg==}
     dev: true
 
   /emoji-regex@8.0.0:
@@ -3102,7 +3062,7 @@ packages:
       get-symbol-description: 1.0.0
       globalthis: 1.0.3
       gopd: 1.0.1
-      has: 1.0.3
+      has: 1.0.4
       has-property-descriptors: 1.0.0
       has-proto: 1.0.1
       has-symbols: 1.0.3
@@ -3137,14 +3097,14 @@ packages:
     engines: {node: '>= 0.4'}
     dependencies:
       get-intrinsic: 1.2.1
-      has: 1.0.3
+      has: 1.0.4
       has-tostringtag: 1.0.0
     dev: true
 
   /es-shim-unscopables@1.0.0:
     resolution: {integrity: sha512-Jm6GPcCdC30eMLbZ2x8z2WuRwAws3zTBBKuusffYVUrNj/GVSUAZ+xKMaUpfNDR5IbyNA5LJbaecoUVbmUcB1w==}
     dependencies:
-      has: 1.0.3
+      has: 1.0.4
     dev: true
 
   /es-to-primitive@1.2.1:
@@ -3339,7 +3299,7 @@ packages:
       eslint: 8.50.0
       eslint-import-resolver-node: 0.3.9
       eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.7.4)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.50.0)
-      has: 1.0.3
+      has: 1.0.4
       is-core-module: 2.13.0
       is-glob: 4.0.3
       minimatch: 3.1.2
@@ -3754,7 +3714,7 @@ packages:
     resolution: {integrity: sha512-2DcsyfABl+gVHEfCOaTrWgyt+tb6MSEGmKq+kI5HwLbIYgjgmMcV8KQ41uaKz1xxUcn9tJtgFbQUEVcEbd0FYw==}
     dependencies:
       function-bind: 1.1.1
-      has: 1.0.3
+      has: 1.0.4
       has-proto: 1.0.1
       has-symbols: 1.0.3
     dev: true
@@ -3953,6 +3913,11 @@ packages:
     dependencies:
       function-bind: 1.1.1
 
+  /has@1.0.4:
+    resolution: {integrity: sha512-qdSAmqLF6209RFj4VVItywPMbm3vWylknmB3nvNiUIs72xAimcM8nVYxYr7ncvZq5qzk9MKIZR8ijqD/1QuYjQ==}
+    engines: {node: '>= 0.4.0'}
+    dev: true
+
   /hexer@1.5.0:
     resolution: {integrity: sha512-dyrPC8KzBzUJ19QTIo1gXNqIISRXQ0NwteW6OeQHRN4ZuZeHkdODfj0zHBdOlHbRY8GqbqK57C9oWSvQZizFsg==}
     engines: {node: '>= 0.10.x'}
@@ -4057,7 +4022,7 @@ packages:
     engines: {node: '>= 0.4'}
     dependencies:
       get-intrinsic: 1.2.1
-      has: 1.0.3
+      has: 1.0.4
       side-channel: 1.0.4
     dev: true
 
@@ -6138,7 +6103,7 @@ packages:
       '@effect/data': 0.17.1
       '@effect/io': 0.38.0(@effect/data@0.17.1)
       '@effect/match': 0.32.0(@effect/data@0.17.1)(@effect/schema@0.33.1)
-      '@effect/schema': 0.33.1(@effect/data@0.18.7)(@effect/io@0.41.2)
+      '@effect/schema': 0.33.1(@effect/data@0.17.1)(@effect/io@0.38.0)
       chalk: 4.1.2
       commander: 11.0.0
       cosmiconfig: 8.2.0
@@ -6611,7 +6576,7 @@ packages:
       mlly: 1.4.2
       pathe: 1.1.1
       picocolors: 1.0.0
-      vite: 4.4.9(@types/node@20.8.2)
+      vite: 4.4.10(@types/node@20.8.2)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -6623,19 +6588,19 @@ packages:
       - terser
     dev: true
 
-  /vite-plugin-tsconfig-paths@1.3.1(typescript@5.2.2)(vite@4.4.9):
+  /vite-plugin-tsconfig-paths@1.3.1(typescript@5.2.2)(vite@4.4.10):
     resolution: {integrity: sha512-4rTVTPqYC6B8Sy71EjKfxPbgqjz1PfRIp66Tmd6eIgnVRtM5zSd/uhVOA0HvAhvU0ncLtO2JuV/5xmUT9PbdSg==}
     peerDependencies:
       vite: '*'
     dependencies:
       typescript-paths: 1.5.1(typescript@5.2.2)
-      vite: 4.4.9(@types/node@20.8.2)
+      vite: 4.4.10(@types/node@20.8.2)
     transitivePeerDependencies:
       - typescript
     dev: true
 
-  /vite@4.4.9(@types/node@20.8.2):
-    resolution: {integrity: sha512-2mbUn2LlUmNASWwSCNSJ/EG2HuSRTnVNaydp6vMCm5VIqJsjMfbIWtbH2kDuwUVW5mMUKKZvGPX/rqeqVvv1XA==}
+  /vite@4.4.10(@types/node@20.8.2):
+    resolution: {integrity: sha512-TzIjiqx9BEXF8yzYdF2NTf1kFFbjMjUSV0LFZ3HyHoI3SGSPLnnFUKiIQtL3gl2AjHvMrprOvQ3amzaHgQlAxw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -6722,7 +6687,7 @@ packages:
       strip-literal: 1.3.0
       tinybench: 2.5.1
       tinypool: 0.7.0
-      vite: 4.4.9(@types/node@20.8.2)
+      vite: 4.4.10(@types/node@20.8.2)
       vite-node: 0.34.6(@types/node@20.8.2)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:

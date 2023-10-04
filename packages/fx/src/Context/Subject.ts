@@ -5,7 +5,7 @@
 
 import * as Context from "@typed/context"
 import type { Fx } from "@typed/fx/Fx"
-import { fromFxEffect, provideSomeLayer, ToFx } from "@typed/fx/Fx"
+import { fromFxEffect, provide, ToFx } from "@typed/fx/Fx"
 import type * as Sink from "@typed/fx/Sink"
 import * as S from "@typed/fx/Subject"
 import type * as Cause from "effect/Cause"
@@ -77,7 +77,7 @@ class SubjectImpl<I, E, A> extends ToFx<I, E, A> implements Subject<I, E, A> {
 
   interrupt: Effect.Effect<I, never, void> = this.tag.withEffect((subject) => subject.interrupt)
 
-  make(replay?: number) {
+  make(replay?: number): Layer.Layer<never, never, I> {
     return this.tag.layer(Effect.sync(() => {
       if (replay === undefined || replay <= 0) {
         return S.make<E, A>()
@@ -93,5 +93,5 @@ class SubjectImpl<I, E, A> extends ToFx<I, E, A> implements Subject<I, E, A> {
     (replay) => (effect) => Effect.provide(effect, this.make(replay))
 
   provideFx: (replay?: number) => <R2, E2, B>(fx: Fx<R2, E2, B>) => Fx<Exclude<R2, I>, E2, B> = (replay) => (fx) =>
-    provideSomeLayer(fx, this.make(replay))
+    provide(fx, this.make(replay))
 }
