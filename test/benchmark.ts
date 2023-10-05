@@ -118,7 +118,9 @@ function benchmarkSuite<const B extends AnyBenchmarks>(
 
     afterAll(() => {
       const testReports = reports.flatMap((report) =>
-        report._tag === "Test" ? [report] : report.reports().map((r) => ({ ...r, name: `${report.name} :: ${r.name}` }))
+        report._tag === "Test"
+          ? [report]
+          : report.reports().map((r) => ({ ...r, name: report.name ? `${report.name} :: ${r.name}` : r.name }))
       )
       const comparisonReports = reports.filter((report): report is ComparisonReport => report._tag === "Comparison")
 
@@ -256,11 +258,11 @@ function createComparisonTabularData(reports: Array<TestReport>) {
 
       return {
         name: r.name,
-        total: parseFloat(tabular.total),
-        low: parseFloat(tabular.low),
-        high: parseFloat(tabular.high),
-        median: parseFloat(tabular.median),
-        average: parseFloat(tabular.average)
+        total: parseMilliseconds(tabular.total),
+        low: parseMilliseconds(tabular.low),
+        high: parseMilliseconds(tabular.high),
+        median: parseMilliseconds(tabular.median),
+        average: parseMilliseconds(tabular.average)
       }
     }
   )
@@ -282,6 +284,18 @@ function createComparisonTabularData(reports: Array<TestReport>) {
   return output
 }
 
+function parseMilliseconds(s: string): number {
+  if (s.endsWith("min")) {
+    return parseFloat(s.slice(0, -3)) * MINUTE_MS
+  }
+
+  if (s.endsWith("ms")) {
+    return parseFloat(s.slice(0, -2))
+  }
+
+  return parseFloat(s.slice(0, -1)) * SECOND_MS
+}
+
 type D = { name: string; total: number; low: number; high: number; median: number; average: number }
 type D2 = Record<string, {
   total: number
@@ -298,7 +312,7 @@ function getRelativeNumbers(input: Array<D>, key: Exclude<keyof D, "name">) {
   const baseline = first[key]
   return {
     [first.name]: { [key]: 1 },
-    ...Object.fromEntries(rest.map((n) => [n.name, { [key]: Number((n[key] / baseline).toFixed(2)) }]))
+    ...Object.fromEntries(rest.map((n) => [n.name, { [key]: (n[key] / baseline).toFixed(2) }]))
   }
 }
 
