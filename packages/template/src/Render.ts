@@ -7,7 +7,9 @@ import type * as Template from "@typed/template/Template"
 import type { Rendered } from "@typed/wire"
 import * as Effect from "effect/Effect"
 
-export function render<R, E>(rendered: Fx.Fx<R, E, RenderEvent>): Fx.Fx<R | RenderContext | RootElement, E, Rendered> {
+export function render<R, E>(
+  rendered: Fx.Fx<R, E, RenderEvent | null>
+): Fx.Fx<R | RenderContext | RootElement, E, Rendered | null> {
   return Fx.fromFxEffect(Effect.contextWith((context) => {
     const [{ renderCache }, { rootElement }] = Context.getMany(context, RenderContext, RootElement)
 
@@ -18,21 +20,23 @@ export function render<R, E>(rendered: Fx.Fx<R, E, RenderEvent>): Fx.Fx<R | Rend
 function attachRoot(
   cache: RenderContext["renderCache"],
   where: HTMLElement,
-  what: RenderEvent
-): Effect.Effect<never, never, Rendered> {
+  what: RenderEvent | null
+): Effect.Effect<never, never, Rendered | null> {
   return Effect.sync(() => {
-    const wire = what.valueOf() as Rendered
+    const wire = what?.valueOf() as Rendered | null
     const previous = cache.get(where)
 
     if (wire !== previous) {
       if (previous && !wire) where.removeChild(previous.valueOf() as globalThis.Node)
 
-      cache.set(where, wire)
+      cache.set(where, wire || null)
 
       if (wire) where.replaceChildren(wire.valueOf() as globalThis.Node)
+
+      return wire
     }
 
-    return wire
+    return previous
   })
 }
 
