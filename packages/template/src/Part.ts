@@ -1,6 +1,7 @@
 import type { ElementRef } from "@typed/template/ElementRef"
 import type { EventHandler } from "@typed/template/EventHandler"
 import type { Rendered } from "@typed/wire"
+import type { Cause } from "effect/Cause"
 import type { Effect } from "effect/Effect"
 import type { Scope } from "effect/Scope"
 
@@ -41,7 +42,7 @@ export interface ClassNamePart {
 
 export interface DataPart {
   readonly _tag: "data"
-  readonly value: Readonly<Record<string, string>> | null | undefined
+  readonly value: Readonly<Record<string, string | undefined>> | null | undefined
 
   readonly update: (value: this["value"]) => Effect<Scope, never, void>
 }
@@ -49,11 +50,10 @@ export interface DataPart {
 export interface EventPart {
   readonly _tag: "event"
   readonly name: string
-  readonly value: EventHandler<unknown, unknown> | null | undefined // TODO: Represent an EventHandler
+  readonly value: EventHandler<unknown, never> | null | undefined // TODO: Represent an EventHandler
+  readonly onCause: (cause: Cause<unknown>) => Effect<never, never, unknown>
 
-  readonly update: (
-    value: this["value"] | ((event: Event) => Effect<unknown, unknown, unknown>)
-  ) => Effect<Scope, never, void>
+  readonly update: <R>(value: EventHandler<R, never> | null | undefined) => Effect<R | Scope, never, void>
 }
 
 export interface PropertyPart {

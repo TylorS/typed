@@ -86,6 +86,10 @@ export namespace Rendered {
   export type Values<T extends Rendered> = [T] extends [ReadonlyArray<infer R>] ?
     ReadonlyArray<R | Exclude<T, ReadonlyArray<any>>>
     : ReadonlyArray<T>
+
+  export type Elements<T extends Rendered> = [T] extends [ReadonlyArray<infer R>] ?
+    ReadonlyArray<Exclude<R | Exclude<T, ReadonlyArray<any>>, DocumentFragment | Wire>>
+    : ReadonlyArray<Exclude<T, DocumentFragment | Wire>>
 }
 
 /**

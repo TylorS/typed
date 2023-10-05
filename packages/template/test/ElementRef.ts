@@ -3,7 +3,7 @@ import * as ElementRef from "@typed/template/ElementRef"
 import { Effect } from "effect"
 import * as happyDOM from "happy-dom"
 
-describe.skip("ElementRef", () => {
+describe("ElementRef", () => {
   const window = makeWindow()
   const testRef = makeRef(window)
 
@@ -22,7 +22,7 @@ describe.skip("ElementRef", () => {
       const [ref, element] = yield* _(testRef`<p id="foo">asdf</p>`)
       const child = ref.query("#foo")
 
-      expect(yield* _(child.elements)).toEqual(Array.from(element.childNodes))
+      expect(yield* _(child)).toEqual(Array.from(element.childNodes))
     })
 
     await Effect.runPromise(test)
@@ -32,8 +32,7 @@ describe.skip("ElementRef", () => {
     const test = Effect.gen(function*(_) {
       const [ref] = yield* _(testRef`<p id="foo">asdf</p>`)
       const foo = ref.query("p#foo")
-      const elements = yield* _(foo.elements)
-      const p = elements[0] as HTMLParagraphElement
+      const [p] = yield* _(foo)
       const fiber = yield* _(foo.events("click"), Fx.first, Effect.flatten, Effect.fork)
 
       // Allow fiber to start
@@ -71,7 +70,7 @@ function makeRef(window: Window) {
       const ref = yield* _(ElementRef.ElementRef())
       const element = html(template)
 
-      yield* _(ref.set(element))
+      yield* _(ElementRef.set(ref, element))
 
       return [ref, element] as const
     })

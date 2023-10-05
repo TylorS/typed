@@ -31,11 +31,6 @@ export interface FxEffect<R, E, A, R2, E2, B> extends Fx<R, E, A>, Omit<Effect<R
  */
 export interface VersionedFxEffect<R0, R, E, A, R2, E2, B> extends FxEffect<R, E, A, R2, E2, B> {
   /**
-   * Get the current value
-   */
-  readonly get: Effect<R2, E2, B>
-
-  /**
    * The current version of this FxEffect. This is used to determine if the current value
    * is up to date to allow localized caching of value.
    */

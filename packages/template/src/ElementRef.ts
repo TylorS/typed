@@ -8,6 +8,7 @@ import { type ElementSource, ElementSourceImpl } from "@typed/template/ElementSo
 import { type Rendered } from "@typed/wire"
 import { Effect, Option } from "effect"
 import type { NoSuchElementException } from "effect/Cause"
+import { dual } from "effect/Function"
 
 export const ElementRefTypeId = Symbol.for("@typed/template/ElementRef")
 export type ElementRefTypeId = typeof ElementRefTypeId
@@ -17,10 +18,13 @@ export type ElementRefTypeId = typeof ElementRefTypeId
  * @since 1.0.0
  */
 export interface ElementRef<T extends Rendered = Rendered>
-  extends VersionedFxEffect<never, never, never, T, never, NoSuchElementException, T>, ElementSource<T>
+  extends VersionedFxEffect<never, never, never, T, never, NoSuchElementException, T>
 {
   readonly [ElementRefTypeId]: RefSubject.RefSubject<never, Option.Option<T>>
-  readonly set: (rendered: T) => Effect.Effect<never, never, T>
+
+  readonly query: ElementSource<T>["query"]
+  readonly elements: ElementSource<T>["elements"]
+  readonly events: ElementSource<T>["events"]
 }
 
 const strictEqual = Option.getEquivalence((a, b) => a === b)
@@ -54,15 +58,17 @@ class ElementRefImpl<T extends Rendered> extends FxEffectProto<never, never, T, 
     return this.get
   }
 
-  set(rendered: T): Effect.Effect<never, never, T> {
-    return Effect.as(this.ref.set(Option.some(rendered)), rendered)
-  }
-
   version = this.ref.version
-
   get = Effect.flatten(this.ref.get)
 
   query = this.source.query
   events = this.source.events
   elements = this.source.elements
 }
+
+export const set: {
+  <A extends Rendered>(value: A): (elementRef: ElementRef<A>) => Effect.Effect<never, never, A>
+  <A extends Rendered>(elementRef: ElementRef<A>, value: A): Effect.Effect<never, never, A>
+} = dual(2, function set<A extends Rendered>(elementRef: ElementRef<A>, value: A) {
+  return Effect.as(elementRef[ElementRefTypeId].set(Option.some(value)), value)
+})

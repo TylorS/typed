@@ -3,6 +3,9 @@
  * @since 1.0.0
  */
 
+import { type Context, get, isContext, type Tag, type ValidTagsById } from "effect/Context"
+import { dual } from "effect/Function"
+
 export {
   /**
    * Adds a service to a given `Context`.
@@ -238,3 +241,16 @@ export {
    */
   type ValidTagsById
 } from "effect/Context"
+
+/**
+ * Get multiple services from the context that corresponds to the given tags.
+ */
+export const getMany: {
+  <Services, T extends ReadonlyArray<ValidTagsById<Services>>>(
+    ...tags: T
+  ): (self: Context<Services>) => { readonly [K in keyof T]: Tag.Service<T[K]> }
+  <Services, T extends ReadonlyArray<ValidTagsById<Services>>>(
+    self: Context<Services>,
+    ...tags: T
+  ): { readonly [K in keyof T]: Tag.Service<T[K]> }
+} = dual((args) => isContext(args[0]), (self, ...tags) => tags.map((t) => get(self, t)))

@@ -39,7 +39,7 @@ export const RenderContext: Context.Tagged<RenderContext, RenderContext> = Conte
 )
 
 export interface RenderQueue {
-  readonly add: (part: Part, effect: Effect.Effect<never, never, unknown>) => Effect.Effect<Scope, never, void>
+  readonly add: (part: Part, task: () => void) => Effect.Effect<Scope, never, void>
 }
 
 export type RenderContextOptions = IdleRequestOptions & {
@@ -81,38 +81,38 @@ export function getTemplateCache(
 }
 
 class RenderQueueImpl implements RenderQueue {
-  #queue = new Map<Part, Effect.Effect<never, never, unknown>>()
-  #iterator = this.#queue.entries()[Symbol.iterator]()
+  queue = new Map<Part, () => void>()
+  iterator = this.queue.entries()[Symbol.iterator]()
 
   constructor(readonly options?: IdleRequestOptions) {}
 
-  add = (part: Part, effect: Effect.Effect<never, never, unknown>) =>
+  add = (part: Part, task: () => void) =>
     Effect.acquireUseRelease(
-      Effect.sync(() => this.#queue.set(part, effect)),
-      () => this.#scheduleNextRun,
-      () => Effect.sync(() => this.#queue.delete(part))
+      Effect.sync(() => this.queue.set(part, task)),
+      () => this.scheduleNextRun,
+      () => Effect.sync(() => this.queue.delete(part))
     )
 
-  #scheduleNextRun = Effect.suspend(() => this.#queue.size === 0 ? Effect.unit : this.#run)
+  scheduleNextRun = Effect.suspend(() => this.queue.size === 0 ? Effect.unit : this.run)
 
-  #run: Effect.Effect<Scope, never, void> = new MulticastEffect(
+  run: Effect.Effect<Scope, never, void> = new MulticastEffect(
     Effect.flatMap(Idle.whenIdle(this.options), (deadline) =>
-      Effect.whileLoop({
-        while: () => Idle.shouldContinue(deadline),
-        step: () => Effect.unit,
-        body: () => this.#runNext
+      Effect.sync(() => {
+        while (Idle.shouldContinue(deadline)) {
+          this.runNext()
+        }
       }))
   )
 
-  #runNext = Effect.suspend(() => {
-    const next = this.#iterator.next()
+  runNext = () => {
+    const next = this.iterator.next()
 
-    if (next.done) return Effect.unit
+    if (next.done) return
 
-    const [part, effect] = next.value
+    const [part, task] = next.value
 
-    this.#queue.delete(part)
+    this.queue.delete(part)
 
-    return effect
-  })
+    task()
+  }
 }

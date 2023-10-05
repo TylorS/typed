@@ -1,4 +1,40 @@
+import * as Context from "@typed/context"
+import { RootElement } from "@typed/dom/RootElement"
+import * as Fx from "@typed/fx/Fx"
+import { RenderContext } from "@typed/template/RenderContext"
+import type { RenderEvent } from "@typed/template/RenderEvent"
 import type * as Template from "@typed/template/Template"
+import type { Rendered } from "@typed/wire"
+import * as Effect from "effect/Effect"
+
+export function render<R, E>(rendered: Fx.Fx<R, E, RenderEvent>): Fx.Fx<R | RenderContext | RootElement, E, Rendered> {
+  return Fx.fromFxEffect(Effect.contextWith((context) => {
+    const [{ renderCache }, { rootElement }] = Context.getMany(context, RenderContext, RootElement)
+
+    return Fx.mapEffect(rendered, (what) => attachRoot(renderCache, rootElement, what))
+  }))
+}
+
+function attachRoot(
+  cache: RenderContext["renderCache"],
+  where: HTMLElement,
+  what: RenderEvent
+): Effect.Effect<never, never, Rendered> {
+  return Effect.sync(() => {
+    const wire = what.valueOf() as Rendered
+    const previous = cache.get(where)
+
+    if (wire !== previous) {
+      if (previous && !wire) where.removeChild(previous.valueOf() as globalThis.Node)
+
+      cache.set(where, wire)
+
+      if (wire) where.replaceChildren(wire.valueOf() as globalThis.Node)
+    }
+
+    return wire
+  })
+}
 
 export function buildTemplate(document: Document, { nodes }: Template.Template): DocumentFragment {
   const fragment = document.createDocumentFragment()

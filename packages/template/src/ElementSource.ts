@@ -2,22 +2,28 @@ import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import { addEventListener } from "@typed/dom/EventTarget"
 import type { Filtered } from "@typed/fx/Filtered"
 import * as Fx from "@typed/fx/Fx"
+import type { VersionedFxEffect } from "@typed/fx/FxEffect"
+import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { Rendered } from "@typed/wire"
 import { isWire } from "@typed/wire"
+import type { NoSuchElementException } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Scope from "effect/Scope"
 
 import type * as TQS from "typed-query-selector/parser"
 
-export interface ElementSource<T extends Rendered = Element, EventMap extends {} = DefaultEventMap<T>> {
+export interface ElementSource<T extends Rendered = Element, EventMap extends {} = DefaultEventMap<T>>
+  extends
+    VersionedFxEffect<never, never, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
+{
   readonly selectors: ReadonlyArray<string>
 
   readonly query: <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
     selector: S
   ) => ElementSource<ParseSelector<S, Element>, Ev>
 
-  readonly elements: Filtered<never, never, Rendered.Values<T>>
+  readonly elements: Filtered<never, never, Rendered.Elements<T>>
 
   readonly events: <Type extends keyof EventMap>(
     type: Type,
@@ -28,7 +34,7 @@ export interface ElementSource<T extends Rendered = Element, EventMap extends {}
 export function ElementSource<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>(
   rootElement: Filtered<never, never, T>
 ): ElementSource<T, EventMap> {
-  return new ElementSourceImpl<T, EventMap>(rootElement)
+  return new ElementSourceImpl<T, EventMap>(rootElement) as any
 }
 
 export type ParseSelector<T extends string, Fallback> = [T] extends [typeof ROOT_CSS_SELECTOR] ? Fallback
@@ -200,14 +206,25 @@ function isElement(element: RenderedWithoutArray): element is Element {
 /**
  * @internal
  */
+// @ts-expect-error Missing module agumented
 export class ElementSourceImpl<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>
+  extends FxEffectProto<never, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
   implements ElementSource<T, EventMap>
 {
   private eventMap = new Map<any, Fx.Fx<never, never, any>>()
 
   constructor(readonly rootElement: Filtered<never, never, T>, readonly selectors: ReadonlyArray<string> = []) {
+    super()
     this.query = this.query.bind(this)
     this.events = this.events.bind(this)
+  }
+
+  protected toEffect(): Effect.Effect<never, NoSuchElementException, Rendered.Elements<T>> {
+    return this.elements
+  }
+
+  protected toFx() {
+    return this.elements
   }
 
   query<S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
@@ -223,6 +240,8 @@ export class ElementSourceImpl<T extends Rendered, EventMap extends {} = Default
   readonly elements: ElementSource<T, EventMap>["elements"] = this.selectors.length === 0
     ? this.rootElement.map(getElements) as any
     : this.rootElement.map(findMatchingElements<any>(this.selectors))
+
+  readonly version = this.elements.version
 
   events<Type extends keyof EventMap>(
     type: Type,
