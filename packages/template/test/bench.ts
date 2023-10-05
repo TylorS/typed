@@ -9,8 +9,7 @@ const simpleDivTemplate = h`<div></div>`
 
 const simpleAttributesTemplate = h`<div id=${"foo"} class=${"bar"}></div>`
 
-const nestedTemplate = h`
-    <div>
+const nestedTemplate = h`<div>
       <p>test ${"test"}</p>
     </div>
     <div>
@@ -103,6 +102,9 @@ benchmark("Old vs New Parser")
     }
   ])
   .run(
+    // Only run 1 iteration because we want to compare the speed of parsing without the JIT
+    // being warmed up as it will be when first loading your application in your browser when
+    // we want to avoid as much blocking time as possible
     { iterations: 1 }
   )
 

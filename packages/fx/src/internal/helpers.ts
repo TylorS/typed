@@ -397,8 +397,9 @@ export class MulticastEffect<R, E, A> extends Effectable.Effectable<R, E, A> {
       } else {
         return Effect.forkDaemon(this.effect).pipe(
           Effect.tap((fiber) => Effect.sync(() => this.#fiber = fiber)),
-          Effect.flatMap(Fiber.join),
-          Effect.ensuring(Effect.sync(() => this.#fiber = null))
+          Effect.flatMap((fiber) =>
+            Effect.ensuring(Fiber.join(fiber), Effect.sync(() => this.#fiber === fiber ? this.#fiber = null : null))
+          )
         )
       }
     })

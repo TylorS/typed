@@ -345,7 +345,7 @@ class ParserImpl implements Parser {
     }
 
     const matched = this.parseTextUntilMany(attributeValueMatches)
-    const text = matched[0].trimEnd()
+    const text = matched[0]
 
     if (isQuoted) {
       this.consumeAmount(1)
@@ -551,7 +551,7 @@ class ParserImpl implements Parser {
 
   private init(templateStrings: ReadonlyArray<string>): void {
     this.context = "unknown"
-    this.input = templateWithParts(templateStrings).trim()
+    this.input = templateWithParts(templateStrings)
     this.length = this.input.length
     this.parts = []
     this.pos = 0

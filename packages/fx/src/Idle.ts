@@ -28,31 +28,6 @@ export interface IdleScheduler extends Scheduler.Scheduler {
   dispose(): void
 }
 
-/**
- * Default instance of the IdleScheduler
- * @since 1.18.0
- * @category instances
- */
-export const defaultIdleScheduler: IdleScheduler = globalValue(
-  Symbol("@typed/fx/Scheduler/Idle"),
-  () => new IdleSchedulerImpl()
-)
-
-/**
- * Run an Effect using the IdleScheduler.
- * @since 1.18.0
- * @category combinators
- */
-export const withIdleScheduler: <R, E, B>(self: Effect.Effect<R, E, B>) => Effect.Effect<R, E, B> = Effect
-  .withScheduler(defaultIdleScheduler)
-
-/**
- * Provide the IdleScheduler using a Layer.
- * @since 1.18.0
- * @category layers
- */
-export const setIdleScheduler: Layer.Layer<never, never, never> = Effect.setScheduler(defaultIdleScheduler)
-
 class IdleSchedulerImpl implements IdleScheduler {
   #id: number | undefined // ID for any requestIdleCallback calls
   #running = false // If we currently have any schedule tasks to run
@@ -110,6 +85,31 @@ class IdleSchedulerImpl implements IdleScheduler {
     }
   }
 }
+
+/**
+ * Default instance of the IdleScheduler
+ * @since 1.18.0
+ * @category instances
+ */
+export const defaultIdleScheduler: IdleScheduler = globalValue(
+  Symbol("@typed/fx/Scheduler/Idle"),
+  () => new IdleSchedulerImpl()
+)
+
+/**
+ * Run an Effect using the IdleScheduler.
+ * @since 1.18.0
+ * @category combinators
+ */
+export const withIdleScheduler: <R, E, B>(self: Effect.Effect<R, E, B>) => Effect.Effect<R, E, B> = Effect
+  .withScheduler(defaultIdleScheduler)
+
+/**
+ * Provide the IdleScheduler using a Layer.
+ * @since 1.18.0
+ * @category layers
+ */
+export const setIdleScheduler: Layer.Layer<never, never, never> = Effect.setScheduler(defaultIdleScheduler)
 
 /**
  * Request to run some work with requestIdleCallback returning an IdleDeadline

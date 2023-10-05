@@ -427,7 +427,7 @@ describe("Parser2", () => {
     expect(Parser2.parser.parse(template)).toEqual(expected)
   })
 
-  it.only("determines the correct path for parts", () => {
+  it("determines the correct path for parts", () => {
     const template = h`
     <div>
       <p>test ${"test"}</p>

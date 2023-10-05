@@ -101,7 +101,7 @@ function benchmarkSuite<const B extends AnyBenchmarks>(
   benchmarks: B,
   options?: BenchmarkOptions
 ) {
-  describe.concurrent(name, () => {
+  describe(name, () => {
     const reports = benchmarks.map((benchmark) => {
       if ("effect" in benchmark) {
         return benchmarkIt({
@@ -167,7 +167,7 @@ function benchmarkIt<E, A>(
   const runs: Array<number> = []
   const iterations = options?.iterations || 1000
 
-  it.concurrent(`[Benchmark] ${name}`, () =>
+  it(`[Benchmark] ${name}`, () =>
     Effect.runPromise(Effect.repeatN(
       timed(effect, (time) => {
         total += time
@@ -190,7 +190,7 @@ function benchmarkComparison<E, A>(
 ): ComparisonReport {
   const reports: Array<TestReport> = []
 
-  describe.concurrent(`[Comparison] ${name}`, () => {
+  describe(`[Comparison] ${name}`, () => {
     for (const benchmark of tests) {
       reports.push(benchmarkIt(Benchmark(benchmark.name, benchmark.effect, { ...options, ...benchmark.options })))
     }

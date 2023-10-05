@@ -3,8 +3,9 @@ export const requestIdleCallback = globalThis.requestIdleCallback || requestIdle
 export const cancelIdleCallback = globalThis.cancelIdleCallback || clearTimeout
 
 function requestIdleCallbackFallbackToSetTimeout(cb: IdleRequestCallback, options?: IdleRequestOptions) {
-  return setTimeout(() => cb(makeIdleDeadline(Date.now(), options)), 1)
+  return setTimeout(() => cb(makeIdleDeadline(Date.now(), options)))
 }
+
 function makeIdleDeadline(start: number, options?: IdleRequestOptions) {
   const timeout = options?.timeout ?? 50
 
