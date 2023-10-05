@@ -13,37 +13,25 @@ export function comparison(name: string, tests: {
   fx?: () => Effect.Effect<never, any, any>
   array?: () => any
 }, options?: BenchmarkOptions) {
-  let bench = benchmark(name)
+  const comparisions: any = []
 
   if (tests.rxjs) {
-    bench = bench.test(
-      "rxjs",
-      runRxjs(tests.rxjs())
-    )
+    comparisions.push({ name: "rxjs", effect: runRxjs(tests.rxjs()) })
   }
 
   if (tests.most) {
-    bench = bench.test(
-      "most",
-      runMost(tests.most())
-    )
+    comparisions.push({ name: "most", effect: runMost(tests.most()) })
   }
 
   if (tests.fx) {
-    bench = bench.test(
-      "fx",
-      tests.fx()
-    )
+    comparisions.push({ name: "fx", effect: tests.fx() })
   }
 
   if (tests.array) {
-    bench = bench.test(
-      "array",
-      Effect.sync(() => tests.array!())
-    )
+    comparisions.push({ name: "array", effect: Effect.sync(() => tests.array!()) })
   }
 
-  return bench.run(options)
+  return benchmark(name).comparison<any, any>("", comparisions).run(options)
 }
 
 const runRxjs = (observable: rxjs.Observable<any>) =>
