@@ -19,6 +19,7 @@ import type * as Sink from "@typed/fx/Sink"
 import type * as Subject from "@typed/fx/Subject"
 import { RefSubjectTypeId } from "@typed/fx/TypeId"
 import type { Versioned } from "@typed/fx/Versioned"
+import { identity } from "effect"
 import type { Cause } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import type { Equivalence } from "effect/Equivalence"
@@ -351,3 +352,11 @@ export const unsafeMake: <R, E, A>(
   subject: Subject.Subject<R, E, A>,
   eq?: Equivalence<A>
 ) => RefSubject<R, E, A> = coreRefSubject.unsafeMake
+
+/**
+ * Flatten an RefSubject of an Option into a Filtered.
+ * @since 1.18.0
+ * @category combinators
+ */
+export const compact = <R, E, A>(refSubject: RefSubject<R, E, Option.Option<A>>): Filtered<R, E, A> =>
+  refSubject.filterMap(identity)
