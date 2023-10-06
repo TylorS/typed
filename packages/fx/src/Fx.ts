@@ -2266,7 +2266,7 @@ export const partitionMap: {
 export const keyed: {
   <A, R2, E2, B, C>(
     f: (
-      ref: RefSubject<never, A>,
+      ref: RefSubject<never, never, A>,
       key: C
     ) => Fx<R2, E2, B>,
     getKey: (a: A) => C
@@ -2275,7 +2275,7 @@ export const keyed: {
   <R, E, A, R2, E2, B, C>(
     fx: Fx<R, E, ReadonlyArray<A>>,
     f: (
-      ref: RefSubject<never, A>,
+      ref: RefSubject<never, never, A>,
       key: C
     ) => Fx<R2, E2, B>,
     getKey: (a: A) => C

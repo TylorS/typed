@@ -1,14 +1,17 @@
-import * as Context from "@typed/fx/Context"
 import * as Fx from "@typed/fx/Fx"
+import * as Model from "@typed/fx/Model"
+import * as RefArray from "@typed/fx/RefArray"
+import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
+import * as Subject from "@typed/fx/Subject"
 import { deepEqual } from "assert"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 
 describe.concurrent("Context", () => {
-  describe.concurrent(Context.RefSubject, () => {
+  describe.concurrent("RefSubject.tagged", () => {
     const initialValue = Math.random() * 100
-    const ref = Context.RefSubject<never, number>()("Test")
+    const ref = RefSubject.tagged<never, number>()("Test")
 
     it.concurrent("should allow using a RefSubject from the context", async () => {
       const test = Effect.gen(function*(_) {
@@ -49,9 +52,9 @@ describe.concurrent("Context", () => {
     })
   })
 
-  describe.concurrent(Context.Subject, () => {
+  describe.concurrent("Subject.tagged", () => {
     it.concurrent("allows broadcasting values to subscribers via the Context", async () => {
-      const subject = Context.Subject<never, number>()("Test")
+      const subject = Subject.tagged<never, number>()("Test")
       const sut = Fx.toReadonlyArray(Fx.take(subject, 3))
 
       const test = Effect.gen(function*(_) {
@@ -73,7 +76,7 @@ describe.concurrent("Context", () => {
     })
 
     it.concurrent("allows configuring replays of last value", async () => {
-      const subject = Context.Subject<never, number>()("Test")
+      const subject = Subject.tagged<never, number>()("Test")
       const sut = Fx.toReadonlyArray(subject)
 
       const test = Effect.gen(function*(_) {
@@ -103,7 +106,7 @@ describe.concurrent("Context", () => {
     })
 
     it.concurrent("allows configuring replays of last n values", async () => {
-      const subject = Context.Subject<never, number>()("Test")
+      const subject = Subject.tagged<never, number>()("Test")
       const fx = Fx.toReadonlyArray(subject)
 
       const test = Effect.gen(function*(_) {
@@ -132,7 +135,7 @@ describe.concurrent("Context", () => {
     })
 
     it.concurrent("allows input values to be mapped over", async () => {
-      const subject = Context.Subject<never, number>()((_) => class TestSubject extends _("Test") {})
+      const subject = Subject.tagged<never, number>()((_) => class TestSubject extends _("Test") {})
       const effect = Fx.toReadonlyArray(subject)
       const sink = subject.pipe(Sink.map((s: string) => s.length))
 
@@ -157,11 +160,11 @@ describe.concurrent("Context", () => {
     })
   })
 
-  describe.concurrent(Context.Model, () => {
+  describe.concurrent("Model.tagged", () => {
     it.concurrent("allow working with multiple Refs", async () => {
-      const foobar = Context.Model({
-        foo: Context.RefSubject<never, number>()("Foo"),
-        bar: Context.RefSubject<never, string>()("Bar")
+      const foobar = Model.tagged({
+        foo: RefSubject.tagged<never, number>()("Foo"),
+        bar: RefSubject.tagged<never, string>()("Bar")
       })
       const foo = foobar.fromKey("foo")
       const bar = foobar.fromKey("bar")
@@ -189,9 +192,9 @@ describe.concurrent("Context", () => {
     })
 
     it.concurrent("allows being mapped over", async () => {
-      const foobar = Context.Model({
-        foo: Context.RefSubject<never, number>()("Foo"),
-        bar: Context.RefSubject<never, string>()("Bar")
+      const foobar = Model.tagged({
+        foo: RefSubject.tagged<never, number>()("Foo"),
+        bar: RefSubject.tagged<never, string>()("Bar")
       })
       const mapped = foobar.map(({ bar, foo }) => ({ foo: foo + 1, bar: bar + "!" }))
 
@@ -212,9 +215,9 @@ describe.concurrent("Context", () => {
     })
 
     it.concurrent("allows creating layers using sources refs", async () => {
-      const foobar = Context.Model({
-        foo: Context.RefSubject<never, number>()("Foo"),
-        bar: Context.RefSubject<never, string>()("Bar")
+      const foobar = Model.tagged({
+        foo: RefSubject.tagged<never, number>()("Foo"),
+        bar: RefSubject.tagged<never, string>()("Bar")
       })
       const layer = foobar.makeWith({
         // This is the most flexible way to create a layer from a Model
@@ -237,11 +240,11 @@ describe.concurrent("Context", () => {
     })
 
     it.concurrent("allows creating layers using with Effect and Fx", async () => {
-      const foobar = Context.Model({
-        foo: Context.RefSubject<never, number>()((_) => class Foo extends _("Foo") {}),
-        bar: Context.RefSubject<never, string>()((_) => class Bar extends _("Bar") {}),
-        baz: Context.Model({
-          quux: Context.RefSubject<never, boolean>()((_) => class Quux extends _("Quux") {})
+      const foobar = Model.tagged({
+        foo: RefSubject.tagged<never, number>()((_) => class Foo extends _("Foo") {}),
+        bar: RefSubject.tagged<never, string>()((_) => class Bar extends _("Bar") {}),
+        baz: Model.tagged({
+          quux: RefSubject.tagged<never, boolean>()((_) => class Quux extends _("Quux") {})
         })
       })
 
@@ -275,9 +278,9 @@ describe.concurrent("Context", () => {
     })
 
     it.concurrent("works with RefArrays", async () => {
-      const foobar = Context.Model({
-        foo: Context.RefArray.make<never, number>()("Foo"),
-        bar: Context.RefArray.make<never, string>()("Bar")
+      const foobar = Model.tagged({
+        foo: RefArray.tagged<never, number>()("Foo"),
+        bar: RefArray.tagged<never, string>()("Bar")
       })
       const foo = foobar.fromKey("foo")
       const bar = foobar.fromKey("bar")
@@ -285,12 +288,12 @@ describe.concurrent("Context", () => {
       const test = Effect.gen(function*(_) {
         expect(yield* _(foobar)).toEqual({ foo: [], bar: [] })
 
-        yield* _(foo, Context.RefArray.appendAll([1, 2, 3]))
+        yield* _(foo, RefArray.appendAll([1, 2, 3]))
 
         expect(yield* _(foobar)).toEqual({ foo: [1, 2, 3], bar: [] })
 
-        yield* _(bar, Context.RefArray.append("World"))
-        yield* _(bar, Context.RefArray.prepend("Hello"))
+        yield* _(bar, RefArray.append("World"))
+        yield* _(bar, RefArray.prepend("Hello"))
 
         expect(yield* _(foobar)).toEqual({ foo: [1, 2, 3], bar: ["Hello", "World"] })
 

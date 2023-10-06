@@ -3,6 +3,7 @@
  * @since 1.18.0
  */
 
+import type { IdentifierConstructor, IdentifierOf } from "@typed/context"
 import type * as Computed from "@typed/fx/Computed"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
@@ -19,33 +20,51 @@ import type * as Option from "effect/Option"
  * @since 1.18.0
  * @category models
  */
-export interface RefRemoteData<E, A> extends RefSubject.RefSubject<never, RemoteData.RemoteData<E, A>> {}
+export interface RefRemoteData<R, E, A> extends RefSubject.RefSubject<R, never, RemoteData.RemoteData<E, A>> {}
 
 /**
  * Create a RefRemoteData
  * @since 1.18.0
  * @category constructors
  */
-export const make: <E, A>() => Effect.Effect<never, never, RefSubject.RefSubject<never, RemoteData.RemoteData<E, A>>> =
-  <E, A>() => RefSubject.of<RemoteData.RemoteData<E, A>>(RemoteData.noData)
+export const make: <E, A>() => Effect.Effect<
+  never,
+  never,
+  RefSubject.RefSubject<never, never, RemoteData.RemoteData<E, A>>
+> = <E, A>() => RefSubject.of<RemoteData.RemoteData<E, A>>(RemoteData.noData)
+
+/**
+ * Create a Tagged RefRemoteData
+ * @since 1.18.0
+ * @category constructors
+ */
+export const tagged: <E, A>() => {
+  <const I extends IdentifierConstructor<any>>(
+    identifier: (id: <const T>(uniqueIdentifier: T) => IdentifierConstructor<T>) => I
+  ): RefSubject.RefSubject.Tagged<IdentifierOf<I>, never, RemoteData.RemoteData<E, A>>
+
+  <const I>(identifier: I): RefSubject.RefSubject.Tagged<IdentifierOf<I>, never, RemoteData.RemoteData<E, A>>
+} = <E, A>() => RefSubject.tagged<never, RemoteData.RemoteData<E, A>>()
 
 /**
  * Change the current value of a RefRemoteData to a loading or refreshing state.
  * @since 1.18.0
  * @category updates
  */
-export const toLoading: <E, A>(ref: RefRemoteData<E, A>) => Effect.Effect<never, never, RemoteData.RemoteData<E, A>> = <
-  E,
-  A
->(ref: RefRemoteData<E, A>) => ref.update(RemoteData.toLoading)
+export const toLoading: <R, E, A>(
+  ref: RefRemoteData<R, E, A>
+) => Effect.Effect<R, never, RemoteData.RemoteData<E, A>> = <R, E, A>(ref: RefRemoteData<R, E, A>) =>
+  ref.update(RemoteData.toLoading)
 
 /**
  * Change the current value of a RefRemoteData to a non-loading/non-refreshing state.
  * @since 1.18.0
  * @category updates
  */
-export const stopLoading: <E, A>(ref: RefRemoteData<E, A>) => Effect.Effect<never, never, RemoteData.RemoteData<E, A>> =
-  <E, A>(ref: RefRemoteData<E, A>) => ref.update(RemoteData.stopLoading)
+export const stopLoading: <R, E, A>(
+  ref: RefRemoteData<R, E, A>
+) => Effect.Effect<R, never, RemoteData.RemoteData<E, A>> = <R, E, A>(ref: RefRemoteData<R, E, A>) =>
+  ref.update(RemoteData.stopLoading)
 
 /**
  * Update the state with a failure cause.
@@ -53,11 +72,16 @@ export const stopLoading: <E, A>(ref: RefRemoteData<E, A>) => Effect.Effect<neve
  * @category updates
  */
 export const failCause: {
-  <E>(cause: Cause.Cause<E>): <A>(ref: RefRemoteData<E, A>) => Effect.Effect<never, never, RemoteData.RemoteData<E, A>>
-  <E, A>(ref: RefRemoteData<E, A>, cause: Cause.Cause<E>): Effect.Effect<never, never, RemoteData.RemoteData<E, A>>
+  <E>(
+    cause: Cause.Cause<E>
+  ): <R, A>(ref: RefRemoteData<R, E, A>) => Effect.Effect<R, never, RemoteData.RemoteData<E, A>>
+  <R, E, A>(
+    ref: RefRemoteData<R, E, A>,
+    cause: Cause.Cause<E>
+  ): Effect.Effect<R, never, RemoteData.RemoteData<E, A>>
 } = dual(
   2,
-  <E, A>(ref: RefRemoteData<E, A>, cause: Cause.Cause<E>) => ref.set(RemoteData.failCause(cause))
+  <R, E, A>(ref: RefRemoteData<R, E, A>, cause: Cause.Cause<E>) => ref.set(RemoteData.failCause(cause))
 )
 
 /**
@@ -66,9 +90,9 @@ export const failCause: {
  * @category updates
  */
 export const fail: {
-  <E>(error: E): <A>(ref: RefRemoteData<E, A>) => Effect.Effect<never, never, RemoteData.RemoteData<E, A>>
-  <E, A>(ref: RefRemoteData<E, A>, error: E): Effect.Effect<never, never, RemoteData.RemoteData<E, A>>
-} = dual(2, <E, A>(ref: RefRemoteData<E, A>, error: E) => ref.set(RemoteData.fail(error)))
+  <E>(error: E): <R, A>(ref: RefRemoteData<R, E, A>) => Effect.Effect<R, never, RemoteData.RemoteData<E, A>>
+  <R, E, A>(ref: RefRemoteData<R, E, A>, error: E): Effect.Effect<R, never, RemoteData.RemoteData<E, A>>
+} = dual(2, <R, E, A>(ref: RefRemoteData<R, E, A>, error: E) => ref.set(RemoteData.fail(error)))
 
 /**
  * Update the state with a success.
@@ -76,16 +100,16 @@ export const fail: {
  * @category updates
  */
 export const succeed: {
-  <A>(value: A): <E>(ref: RefRemoteData<E, A>) => Effect.Effect<never, never, RemoteData.RemoteData<E, A>>
-  <E, A>(ref: RefRemoteData<E, A>, value: A): Effect.Effect<never, never, RemoteData.RemoteData<E, A>>
-} = dual(2, <E, A>(ref: RefRemoteData<E, A>, value: A) => ref.set(RemoteData.succeed(value)))
+  <A>(value: A): <R, E>(ref: RefRemoteData<R, E, A>) => Effect.Effect<R, never, RemoteData.RemoteData<E, A>>
+  <R, E, A>(ref: RefRemoteData<R, E, A>, value: A): Effect.Effect<R, never, RemoteData.RemoteData<E, A>>
+} = dual(2, <R, E, A>(ref: RefRemoteData<R, E, A>, value: A) => ref.set(RemoteData.succeed(value)))
 
 /**
  * Returns true if the current state is NoData.
  * @since 1.18.0
  * @category computed
  */
-export const isNoData = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<never, never, boolean> =>
+export const isNoData = <R, E, A>(ref: RefRemoteData<R, E, A>): Computed.Computed<R, never, boolean> =>
   ref.map(RemoteData.isNoData)
 
 /**
@@ -93,7 +117,7 @@ export const isNoData = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<neve
  * @since 1.18.0
  * @category computed
  */
-export const isLoading = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<never, never, boolean> =>
+export const isLoading = <R, E, A>(ref: RefRemoteData<R, E, A>): Computed.Computed<R, never, boolean> =>
   ref.map(RemoteData.isLoading)
 
 /**
@@ -101,7 +125,7 @@ export const isLoading = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<nev
  * @since 1.18.0
  * @category computed
  */
-export const isFailure = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<never, never, boolean> =>
+export const isFailure = <R, E, A>(ref: RefRemoteData<R, E, A>): Computed.Computed<R, never, boolean> =>
   ref.map(RemoteData.isFailure)
 
 /**
@@ -109,7 +133,7 @@ export const isFailure = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<nev
  * @since 1.18.0
  * @category computed
  */
-export const isSuccess = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<never, never, boolean> =>
+export const isSuccess = <R, E, A>(ref: RefRemoteData<R, E, A>): Computed.Computed<R, never, boolean> =>
   ref.map(RemoteData.isSuccess)
 
 /**
@@ -117,7 +141,7 @@ export const isSuccess = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<nev
  * @since 1.18.0
  * @category computed
  */
-export const isRefreshing = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<never, never, boolean> =>
+export const isRefreshing = <R, E, A>(ref: RefRemoteData<R, E, A>): Computed.Computed<R, never, boolean> =>
   ref.map(RemoteData.isRefreshing)
 
 /**
@@ -125,7 +149,7 @@ export const isRefreshing = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<
  * @since 1.18.0
  * @category computed
  */
-export const isLoadingOrRefreshing = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<never, never, boolean> =>
+export const isLoadingOrRefreshing = <R, E, A>(ref: RefRemoteData<R, E, A>): Computed.Computed<R, never, boolean> =>
   ref.map(RemoteData.isLoadingOrRefreshing)
 
 /**
@@ -133,52 +157,55 @@ export const isLoadingOrRefreshing = <E, A>(ref: RefRemoteData<E, A>): Computed.
  * @since 1.18.0
  * @category updates
  */
-export const fromEither: {
-  <E, A>(
+export const setEither: {
+  <R, E, A>(
     either: Either.Either<E, A>
-  ): (ref: RefRemoteData<E, A>) => Effect.Effect<never, never, RemoteData.RemoteData<E, A>>
-  <E, A>(
-    ref: RefRemoteData<E, A>,
+  ): (ref: RefRemoteData<R, E, A>) => Effect.Effect<R, never, RemoteData.RemoteData<E, A>>
+  <R, E, A>(
+    ref: RefRemoteData<R, E, A>,
     either: Either.Either<E, A>
-  ): Effect.Effect<never, never, RemoteData.RemoteData<E, A>>
-} = dual(2, <E, A>(ref: RefRemoteData<E, A>, either: Either.Either<E, A>) => ref.set(RemoteData.fromEither(either)))
+  ): Effect.Effect<R, never, RemoteData.RemoteData<E, A>>
+} = dual(
+  2,
+  <R, E, A>(ref: RefRemoteData<R, E, A>, either: Either.Either<E, A>) => ref.set(RemoteData.fromEither(either))
+)
 
 /**
  * Update that state with an Option
  * @since 1.18.0
  * @category updates
  */
-export const fromOption: {
+export const setOption: {
   <A>(
     option: Option.Option<A>
-  ): <E>(ref: RefRemoteData<E, A>) => Effect.Effect<never, never, RemoteData.RemoteData<E, A>>
-  <E, A>(
-    ref: RefRemoteData<E, A>,
+  ): <R, E>(ref: RefRemoteData<R, E, A>) => Effect.Effect<R, never, RemoteData.RemoteData<E, A>>
+  <R, E, A>(
+    ref: RefRemoteData<R, E, A>,
     option: Option.Option<A>
-  ): Effect.Effect<never, never, RemoteData.RemoteData<E, A>>
-} = dual(2, <E, A>(ref: RefRemoteData<E, A>, option: Option.Option<A>) => ref.set(RemoteData.fromOption(option)))
+  ): Effect.Effect<R, never, RemoteData.RemoteData<E, A>>
+} = dual(2, <R, E, A>(ref: RefRemoteData<R, E, A>, option: Option.Option<A>) => ref.set(RemoteData.fromOption(option)))
 
 /**
  * Update that state with an Exit
  * @since 1.18.0
  * @category updates
  */
-export const fromExit: {
+export const done: {
   <E, A>(
     either: Exit.Exit<E, A>
-  ): (ref: RefRemoteData<E, A>) => Effect.Effect<never, never, RemoteData.RemoteData<E, A>>
-  <E, A>(
-    ref: RefRemoteData<E, A>,
+  ): <R>(ref: RefRemoteData<R, E, A>) => Effect.Effect<R, never, RemoteData.RemoteData<E, A>>
+  <R, E, A>(
+    ref: RefRemoteData<R, E, A>,
     exit: Exit.Exit<E, A>
-  ): Effect.Effect<never, never, RemoteData.RemoteData<E, A>>
-} = dual(2, <E, A>(ref: RefRemoteData<E, A>, exit: Exit.Exit<E, A>) => ref.set(RemoteData.fromExit(exit)))
+  ): Effect.Effect<R, never, RemoteData.RemoteData<E, A>>
+} = dual(2, <R, E, A>(ref: RefRemoteData<R, E, A>, exit: Exit.Exit<E, A>) => ref.set(RemoteData.fromExit(exit)))
 
 /**
  * Extract the success value from a RefRemoteData
  * @since 1.18.0
  * @category computed
  */
-export const toOption = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<never, never, Option.Option<A>> =>
+export const toOption = <R, E, A>(ref: RefRemoteData<R, E, A>): Computed.Computed<R, never, Option.Option<A>> =>
   ref.map(RemoteData.toOption)
 
 /**
@@ -186,9 +213,9 @@ export const toOption = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<neve
  * @since 1.18.0
  * @category computed
  */
-export const toOptionError = <E, A>(
-  ref: RefRemoteData<E, A>
-): Computed.Computed<never, never, Option.Option<E>> => ref.map(RemoteData.toOptionError)
+export const toOptionError = <R, E, A>(
+  ref: RefRemoteData<R, E, A>
+): Computed.Computed<R, never, Option.Option<E>> => ref.map(RemoteData.toOptionError)
 
 /**
  * map the success value of a RefRemoteData
@@ -196,9 +223,11 @@ export const toOptionError = <E, A>(
  * @category computed
  */
 export const map: {
-  <A, B>(f: (a: A) => B): <E>(ref: RefRemoteData<E, A>) => Computed.Computed<never, never, RemoteData.RemoteData<E, B>>
-  <E, A, B>(ref: RefRemoteData<E, A>, f: (a: A) => B): Computed.Computed<never, never, RemoteData.RemoteData<E, B>>
-} = dual(2, <E, A, B>(ref: RefRemoteData<E, A>, f: (a: A) => B) => ref.map(RemoteData.map(f)))
+  <A, B>(
+    f: (a: A) => B
+  ): <R, E>(ref: RefRemoteData<R, E, A>) => Computed.Computed<R, never, RemoteData.RemoteData<E, B>>
+  <R, E, A, B>(ref: RefRemoteData<R, E, A>, f: (a: A) => B): Computed.Computed<R, never, RemoteData.RemoteData<E, B>>
+} = dual(2, <R, E, A, B>(ref: RefRemoteData<R, E, A>, f: (a: A) => B) => ref.map(RemoteData.map(f)))
 
 /**
  * map the error value of a RefRemoteData
@@ -208,9 +237,12 @@ export const map: {
 export const mapError: {
   <E, E2>(
     f: (e: E) => E2
-  ): <A>(ref: RefRemoteData<E, A>) => Computed.Computed<never, never, RemoteData.RemoteData<E2, A>>
-  <E, A, E2>(ref: RefRemoteData<E, A>, f: (e: E) => E2): Computed.Computed<never, never, RemoteData.RemoteData<E2, A>>
-} = dual(2, <E, A, E2>(ref: RefRemoteData<E, A>, f: (e: E) => E2) => ref.map(RemoteData.mapError(f)))
+  ): <R, A>(ref: RefRemoteData<R, E, A>) => Computed.Computed<R, never, RemoteData.RemoteData<E2, A>>
+  <R, E, A, E2>(
+    ref: RefRemoteData<R, E, A>,
+    f: (e: E) => E2
+  ): Computed.Computed<R, never, RemoteData.RemoteData<E2, A>>
+} = dual(2, <R, E, A, E2>(ref: RefRemoteData<R, E, A>, f: (e: E) => E2) => ref.map(RemoteData.mapError(f)))
 
 /**
  * map the cause value of a RefRemoteData
@@ -220,14 +252,14 @@ export const mapError: {
 export const mapErrorCause: {
   <E, E2>(
     f: (e: Cause.Cause<E>) => Cause.Cause<E2>
-  ): <A>(ref: RefRemoteData<E, A>) => Computed.Computed<never, never, RemoteData.RemoteData<E2, A>>
-  <E, A, E2>(
-    ref: RefRemoteData<E, A>,
+  ): <R, A>(ref: RefRemoteData<R, E, A>) => Computed.Computed<R, never, RemoteData.RemoteData<E2, A>>
+  <R, E, A, E2>(
+    ref: RefRemoteData<R, E, A>,
     f: (e: Cause.Cause<E>) => Cause.Cause<E2>
-  ): Computed.Computed<never, never, RemoteData.RemoteData<E2, A>>
+  ): Computed.Computed<R, never, RemoteData.RemoteData<E2, A>>
 } = dual(
   2,
-  <E, A, E2>(ref: RefRemoteData<E, A>, f: (e: Cause.Cause<E>) => Cause.Cause<E2>) =>
+  <R, E, A, E2>(ref: RefRemoteData<R, E, A>, f: (e: Cause.Cause<E>) => Cause.Cause<E2>) =>
     ref.map(RemoteData.mapErrorCause(f))
 )
 
@@ -253,13 +285,8 @@ export const switchMap: {
 ): Fx.Fx<R | R2, E | E2, RemoteData.RemoteData<E1 | E3, B>> {
   return Fx.switchMap(
     fx,
-    (data) =>
-      RemoteData.match(data, {
-        onNoData: (): Fx.Fx<R2, E | E2, RemoteData.RemoteData<E1 | E3, B>> => Effect.succeed(RemoteData.noData),
-        onLoading: (): Fx.Fx<R2, E | E2, RemoteData.RemoteData<E1 | E3, B>> => Effect.succeed(RemoteData.loading),
-        onFailure: (e): Fx.Fx<R2, E | E2, RemoteData.RemoteData<E1 | E3, B>> => Effect.succeed(RemoteData.failCause(e)),
-        onSuccess: f
-      })
+    (data): Fx.Fx<R2, E2, RemoteData.RemoteData<E1 | E3, B>> =>
+      RemoteData.isSuccess(data) ? f(data.value) : Effect.succeed(data)
   )
 })
 
@@ -269,16 +296,16 @@ export const switchMap: {
  * @category computed
  */
 export const getOrElse: {
-  <B>(orElse: () => B): <E, A>(ref: RefRemoteData<E, A>) => Computed.Computed<never, never, A | B>
-  <E, A, B>(ref: RefRemoteData<E, A>, orElse: () => B): Computed.Computed<never, never, A | B>
-} = dual(2, <E, A, B>(ref: RefRemoteData<E, A>, orElse: () => B) => ref.map(RemoteData.getOrElse(orElse)))
+  <B>(orElse: () => B): <R, E, A>(ref: RefRemoteData<R, E, A>) => Computed.Computed<R, never, A | B>
+  <R, E, A, B>(ref: RefRemoteData<R, E, A>, orElse: () => B): Computed.Computed<R, never, A | B>
+} = dual(2, <R, E, A, B>(ref: RefRemoteData<R, E, A>, orElse: () => B) => ref.map(RemoteData.getOrElse(orElse)))
 
 /**
  * Get the success value or null.
  * @since 1.18.0
  * @category computed
  */
-export const getOrNull = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<never, never, A | null> =>
+export const getOrNull = <R, E, A>(ref: RefRemoteData<R, E, A>): Computed.Computed<R, never, A | null> =>
   ref.map(RemoteData.getOrNull)
 
 /**
@@ -286,5 +313,5 @@ export const getOrNull = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<nev
  * @since 1.18.0
  * @category computed
  */
-export const getOrUndefined = <E, A>(ref: RefRemoteData<E, A>): Computed.Computed<never, never, A | undefined> =>
+export const getOrUndefined = <R, E, A>(ref: RefRemoteData<R, E, A>): Computed.Computed<R, never, A | undefined> =>
   ref.map(RemoteData.getOrUndefined)

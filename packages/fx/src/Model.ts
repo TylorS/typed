@@ -4,16 +4,15 @@
  * @since 1.18.0
  */
 
-import { ContextBuilder } from "@typed/context/Builder"
+import { type Context, ContextBuilder } from "@typed/context"
 import { Computed } from "@typed/fx/Computed"
-import type { RefSubject } from "@typed/fx/Context"
 import { Filtered } from "@typed/fx/Filtered"
 import type { Fx } from "@typed/fx/Fx"
 import { struct } from "@typed/fx/Fx"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
-import type { VersionedFxEffect } from "@typed/fx/Versioned"
-import type { Context } from "effect/Context"
+import type { RefSubject } from "@typed/fx/RefSubject"
+import type { Versioned } from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
 import type { Equivalence } from "effect/Equivalence"
 import * as Layer from "effect/Layer"
@@ -40,7 +39,7 @@ type Any = RefSubject<any, any, any> | RefSubject<any, never, any> | Model<any>
  * @category models
  */
 export interface Model<Refs extends Readonly<Record<string, Any>>> extends
-  VersionedFxEffect<
+  Versioned<
     Model.Identifier<Refs[keyof Refs]>,
     Model.Identifier<Refs[keyof Refs]>,
     Model.Error<Refs[keyof Refs]>,
@@ -187,74 +186,82 @@ export interface Model<Refs extends Readonly<Record<string, Any>>> extends
       readonly [K in keyof Refs]: Model.State<Refs[K]>
     }
   >
+}
 
-  /**
-   * Provide a Model to an Effect
-   * @since 1.18.0
-   */
-  readonly of: (
-    state: {
-      readonly [K in keyof Refs]: Model.State<Refs[K]>
-    },
-    eqs?: MakeEqivalenceOptions<Refs>
-  ) => Layer.Layer<never, never, Model.Identifier<Refs[keyof Refs]>>
+export namespace Model {
+  export type AnyTagged = RefSubject.Tagged<any, any, any> | RefSubject.Tagged<any, never, any> | Model.Tagged<any>
 
-  /**
-   * Construct a Layer to provide a Model to an Effect
-   * @since 1.18.0
-   */
-  readonly fromEffect: <R, E>(
-    effect: Effect.Effect<
-      R,
-      E,
-      {
+  export interface Tagged<Refs extends Readonly<Record<string, AnyTagged>>> extends Model<Refs> {
+    /**
+     * Provide a Model to an Effect
+     * @since 1.18.0
+     */
+    readonly of: (
+      state: {
         readonly [K in keyof Refs]: Model.State<Refs[K]>
+      },
+      eqs?: MakeEqivalenceOptions<Refs>
+    ) => Layer.Layer<never, never, Model.Identifier<Refs[keyof Refs]>>
+
+    /**
+     * Construct a Layer to provide a Model to an Effect
+     * @since 1.18.0
+     */
+    readonly fromEffect: <R, E>(
+      effect: Effect.Effect<
+        R,
+        E,
+        {
+          readonly [K in keyof Refs]: Model.State<Refs[K]>
+        }
+      >,
+      eqs?: MakeEqivalenceOptions<Refs>
+    ) => Layer.Layer<Exclude<R, Scope>, E, Model.Identifier<Refs[keyof Refs]>>
+
+    /**
+     * Create a Layer from a Model using the Layers of each Ref
+     * @since 1.18.0
+     */
+    readonly makeWith: <
+      Opts extends {
+        readonly [K in keyof Refs]: (
+          ref: Refs[K]
+        ) => Layer.Layer<any, any, Model.Identifier<Refs[K]>> | Layer.Layer<any, never, Model.Identifier<Refs[K]>>
       }
-    >,
-    eqs?: MakeEqivalenceOptions<Refs>
-  ) => Layer.Layer<Exclude<R, Scope>, E, Model.Identifier<Refs[keyof Refs]>>
+    >(
+      options: Opts
+    ) => Layer.Layer<
+      Exclude<Layer.Layer.Context<ReturnType<Opts[keyof Refs]>>, Scope>,
+      Layer.Layer.Error<ReturnType<Opts[keyof Refs]>>,
+      Model.Identifier<Refs[keyof Refs]>
+    >
 
-  /**
-   * Create a Layer from a Model using the Layers of each Ref
-   * @since 1.18.0
-   */
-  readonly makeWith: <
-    Opts extends {
-      readonly [K in keyof Refs]: (
-        ref: Refs[K]
-      ) => Layer.Layer<any, any, Model.Identifier<Refs[K]>> | Layer.Layer<any, never, Model.Identifier<Refs[K]>>
-    }
-  >(
-    options: Opts
-  ) => Layer.Layer<
-    Exclude<Layer.Layer.Context<ReturnType<Opts[keyof Refs]>>, Scope>,
-    Layer.Layer.Error<ReturnType<Opts[keyof Refs]>>,
-    Model.Identifier<Refs[keyof Refs]>
-  >
-
-  /**
-   * Create a Layer from a Model using the Layers of each Ref
-   * @since 1.18.0
-   */
-  readonly make: <
-    Opts extends MakeOptions<Refs>
-  >(
-    options: Opts,
-    eqs?: MakeEqivalenceOptions<Refs>
-  ) => Layer.Layer<
-    Exclude<Fx.Context<Opts[keyof Refs]>, Scope>,
-    never,
-    Model.Identifier<Refs[keyof Refs]>
-  >
+    /**
+     * Create a Layer from a Model using the Layers of each Ref
+     * @since 1.18.0
+     */
+    readonly make: <
+      Opts extends MakeOptions<Refs>
+    >(
+      options: Opts,
+      eqs?: MakeEqivalenceOptions<Refs>
+    ) => Layer.Layer<
+      Exclude<Fx.Context<Opts[keyof Refs]>, Scope>,
+      never,
+      Model.Identifier<Refs[keyof Refs]>
+    >
+  }
 }
 
 type MakeOptions<Refs extends Readonly<Record<string, Any>>> = {
-  readonly [K in keyof Refs]: Refs[K] extends Model<infer Refs2> ? MakeOptions<Refs2>
+  readonly [K in keyof Refs]: Refs[K] extends Model.Tagged<infer Refs2> ? MakeOptions<Refs2> :
+    Refs[K] extends Model<infer Refs2> ? MakeOptions<Refs2>
     : Fx<any, Model.Error<Refs[K]>, Model.State<Refs[K]>>
 }
 
 type MakeEqivalenceOptions<Refs extends Readonly<Record<string, Any>>> = {
-  readonly [K in keyof Refs]?: Refs[K] extends Model<infer Refs2> ? MakeEqivalenceOptions<Refs2>
+  readonly [K in keyof Refs]?: Refs[K] extends Model.Tagged<infer Refs2> ? MakeEqivalenceOptions<Refs2> :
+    Refs[K] extends Model<infer Refs2> ? MakeEqivalenceOptions<Refs2>
     : Equivalence<Model.State<Refs[K]>>
 }
 
@@ -270,6 +277,17 @@ export function Model<const Refs extends Readonly<Record<string, Any>>>(
 }
 
 /**
+ * Create a Model from a collection of Refs.
+ * @since 1.18.0
+ * @category constructors
+ */
+export function tagged<const Refs extends Readonly<Record<string, Model.AnyTagged>>>(
+  refs: Refs
+): Model.Tagged<Refs> {
+  return new TaggedImpl(refs) as any
+}
+
+/**
  * @since 1.18.0
  */
 export namespace Model {
@@ -277,8 +295,9 @@ export namespace Model {
    * Extract the Identifier of a Model
    * @since 1.18.0
    */
-  export type Identifier<T> = T extends RefSubject<infer I, infer _, infer __> ? I
-    : T extends Model<infer R> ? { readonly [K in keyof R]: Identifier<R[K]> }[keyof R]
+  export type Identifier<T> = T extends RefSubject<infer I, infer _, infer __> ? I :
+    [T] extends [Model.Tagged<infer R>] ? { readonly [K in keyof R]: Identifier<R[K]> }[keyof R] :
+    T extends Model<infer R> ? { readonly [K in keyof R]: Identifier<R[K]> }[keyof R]
     : never
 
   /**
@@ -286,6 +305,7 @@ export namespace Model {
    * @since 1.18.0
    */
   export type Error<T> = T extends RefSubject<infer _, infer E, infer _> ? E
+    : T extends Model.Tagged<infer R> ? { readonly [K in keyof R]: Error<R[K]> }[keyof R]
     : T extends Model<infer R> ? { readonly [K in keyof R]: Error<R[K]> }[keyof R]
     : never
 
@@ -294,7 +314,8 @@ export namespace Model {
    * @since 1.18.0
    */
   export type State<T> = T extends RefSubject<infer _, infer __, infer S> ? S
-    : T extends Model<infer R> ? { readonly [K in keyof R]: State<R[K]> }
+    : T extends Model.Tagged<infer R> ? [keyof R] extends [never] ? R : { readonly [K in keyof R]: State<R[K]> } :
+    T extends Model<infer R> ? [keyof R] extends [never] ? R : { readonly [K in keyof R]: State<R[K]> }
     : never
 }
 
@@ -372,7 +393,27 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProt
         return Effect.as(this.set(newState), b)
       }))
 
-  of: Model<Refs>["of"] = (state, eqs) => {
+  version = Effect.map(
+    Effect.all(Object.values(this.refs).map((ref) => ref.version)),
+    (versions) => versions.reduce((a, b) => a + b, 0)
+  )
+
+  mapEffect: Model<Refs>["mapEffect"] = (f) => Computed(this as any, f)
+
+  map: Model<Refs>["map"] = (f) => this.mapEffect((state) => Effect.sync(() => f(state)))
+
+  filterMapEffect: Model<Refs>["filterMapEffect"] = (f) => Filtered(this as any, f)
+
+  filterMap: Model<Refs>["filterMap"] = (f) => this.filterMapEffect((state) => Effect.sync(() => f(state)))
+
+  filterEffect: Model<Refs>["filterEffect"] = (f) =>
+    this.filterMapEffect((state) => Effect.map(f(state), (b) => (b ? Option.some(state) : Option.none())))
+
+  filter: Model<Refs>["filter"] = (f) => this.filterMap((state) => (f(state) ? Option.some(state) : Option.none()))
+}
+
+class TaggedImpl<Refs extends Readonly<Record<string, Model.AnyTagged>>> extends ModelImpl<Refs> {
+  of: Model.Tagged<Refs>["of"] = (state, eqs) => {
     const [first, ...rest] = Object.entries(this.refs).map(
       ([k, ref]) =>
         ModelTypeId in ref ? ref.of(state[k], eqs?.[k] as any) : ref.make(Effect.succeed(state[k]), eqs?.[k] as any)
@@ -384,7 +425,7 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProt
     ) as any
   }
 
-  fromEffect: Model<Refs>["fromEffect"] = (effect, eq) => {
+  fromEffect: Model.Tagged<Refs>["fromEffect"] = (effect, eq) => {
     const { of } = this
 
     return Layer.scopedContext(Effect.gen(function*(_) {
@@ -400,7 +441,7 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProt
     }))
   }
 
-  makeWith: Model<Refs>["makeWith"] = (options) => {
+  makeWith: Model.Tagged<Refs>["makeWith"] = (options) => {
     const { refs } = this
 
     return Layer.scopedContext(Effect.gen(function*(_) {
@@ -421,28 +462,12 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProt
     }))
   }
 
-  make: Model<Refs>["make"] = (options, eqs) =>
+  make: Model.Tagged<Refs>["make"] = (options, eqs) =>
     this.makeWith(
       Object.fromEntries(
-        Object.entries(options).map(([k, fx]) => [k, (ref: RefSubject<any, any, any>) => ref.make(fx, eqs?.[k] as any)])
+        Object.entries(options).map(([k, fx]) => [k, (ref: RefSubject.Tagged<any, any, any>) =>
+          ref.make(fx, eqs?.[k] as any)]
+        )
       ) as any
     ) as any
-
-  version = Effect.map(
-    Effect.all(Object.values(this.refs).map((ref) => ref.version)),
-    (versions) => versions.reduce((a, b) => a + b, 0)
-  )
-
-  mapEffect: Model<Refs>["mapEffect"] = (f) => Computed(this as any, f)
-
-  map: Model<Refs>["map"] = (f) => this.mapEffect((state) => Effect.sync(() => f(state)))
-
-  filterMapEffect: Model<Refs>["filterMapEffect"] = (f) => Filtered(this as any, f)
-
-  filterMap: Model<Refs>["filterMap"] = (f) => this.filterMapEffect((state) => Effect.sync(() => f(state)))
-
-  filterEffect: Model<Refs>["filterEffect"] = (f) =>
-    this.filterMapEffect((state) => Effect.map(f(state), (b) => (b ? Option.some(state) : Option.none())))
-
-  filter: Model<Refs>["filter"] = (f) => this.filterMap((state) => (f(state) ? Option.some(state) : Option.none()))
 }

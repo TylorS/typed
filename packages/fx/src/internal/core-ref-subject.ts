@@ -24,18 +24,18 @@ import * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
 import * as SynchronizedRef from "effect/SynchronizedRef"
 
-export class RefSubjectImpl<E, A> extends FxEffectProto<never, E, A, never, E, A>
-  implements Omit<RefSubject<E, A>, ModuleAgumentedEffectKeysToOmit>
+export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
+  implements Omit<RefSubject<R, E, A>, ModuleAgumentedEffectKeysToOmit>
 {
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
 
   #version = 0
 
   constructor(
-    readonly initial: Effect.Effect<never, E, A>,
+    readonly initial: Effect.Effect<R, E, A>,
     readonly eq: Equivalence<A>,
     readonly ref: SynchronizedRef.SynchronizedRef<Option.Option<Fiber.Fiber<E, A>>>,
-    readonly subject: Subject.Subject<never, E, A>
+    readonly subject: Subject.Subject<R, E, A>
   ) {
     super()
 
@@ -43,20 +43,20 @@ export class RefSubjectImpl<E, A> extends FxEffectProto<never, E, A, never, E, A
     this.onFailure = this.onFailure.bind(this)
   }
 
-  static make<E, A>(
-    initial: Effect.Effect<never, E, A>,
+  static make<R, E, A>(
+    initial: Effect.Effect<R, E, A>,
     eq: Equivalence<A>,
     ref: SynchronizedRef.SynchronizedRef<Option.Option<Fiber.Fiber<E, A>>>,
-    subject: Subject.Subject<never, E, A>
-  ): RefSubject<E, A> {
+    subject: Subject.Subject<R, E, A>
+  ): RefSubject<R, E, A> {
     return new RefSubjectImpl(initial, eq, ref, subject) as any
   }
 
-  onSuccess(a: A): Effect.Effect<never, never, unknown> {
+  onSuccess(a: A): Effect.Effect<R, never, unknown> {
     return this.set(a)
   }
 
-  onFailure(cause: Cause<E>): Effect.Effect<never, never, unknown> {
+  onFailure(cause: Cause<E>): Effect.Effect<R, never, unknown> {
     return Effect.tap(
       SynchronizedRef.set(this.ref, Option.some(Fiber.failCause(cause))),
       () => this.subject.onFailure(cause)
@@ -65,7 +65,7 @@ export class RefSubjectImpl<E, A> extends FxEffectProto<never, E, A, never, E, A
 
   readonly version = Effect.sync((): number => this.#version)
 
-  readonly subscriberCount: Effect.Effect<never, never, number> = this.subject.subscriberCount
+  readonly subscriberCount: Effect.Effect<R, never, number> = this.subject.subscriberCount
 
   readonly interrupt = Effect.suspend(() =>
     Effect.all([
@@ -74,7 +74,7 @@ export class RefSubjectImpl<E, A> extends FxEffectProto<never, E, A, never, E, A
     ])
   )
 
-  toFx(): Fx<never, E, A> {
+  toFx(): Fx<R, E, A> {
     return fromFxEffect(
       Effect.as(
         SynchronizedRef.updateEffect(this.ref, (fiber) => Effect.asSome(this.getOrInitialize(fiber))),
@@ -127,7 +127,7 @@ export class RefSubjectImpl<E, A> extends FxEffectProto<never, E, A, never, E, A
       return [a2, a2]
     })
 
-  readonly delete: Effect.Effect<never, never, Option.Option<A>> = SynchronizedRef.modifyEffect(this.ref, (fiber) => {
+  readonly delete: Effect.Effect<R, never, Option.Option<A>> = SynchronizedRef.modifyEffect(this.ref, (fiber) => {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
 
@@ -191,7 +191,7 @@ export class RefSubjectImpl<E, A> extends FxEffectProto<never, E, A, never, E, A
     return this.subject.onSuccess(a)
   }
 
-  private initialize(): Effect.Effect<never, never, Fiber.Fiber<E, A>> {
+  private initialize(): Effect.Effect<R, never, Fiber.Fiber<E, A>> {
     return this.initial.pipe(
       Effect.tap((a) => this.emitValue(a)),
       Effect.tapErrorCause((cause) => this.subject.onFailure(cause)),
@@ -211,7 +211,7 @@ export class RefSubjectImpl<E, A> extends FxEffectProto<never, E, A, never, E, A
 export function fromEffect<R, E, A>(
   initial: Effect.Effect<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R, never, RefSubject<E, A>> {
+): Effect.Effect<R, never, RefSubject<never, E, A>> {
   return Effect.contextWith((ctx) => unsafeMake(Effect.provide(initial, ctx), makeHoldSubject<E, A>(), eq))
 }
 
@@ -220,7 +220,10 @@ export function fromEffect<R, E, A>(
  * @since 1.18.0
  * @category constructors
  */
-export function of<A, E = never>(initial: A, eq?: Equivalence<A>): Effect.Effect<never, never, RefSubject<E, A>> {
+export function of<A, E = never>(
+  initial: A,
+  eq?: Equivalence<A>
+): Effect.Effect<never, never, RefSubject<never, E, A>> {
   return fromEffect<never, E, A>(Effect.succeed(initial), eq)
 }
 
@@ -231,16 +234,16 @@ export function of<A, E = never>(initial: A, eq?: Equivalence<A>): Effect.Effect
 export function make<R, E, A>(
   fx: Effect.Effect<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R, never, RefSubject<E, A>>
+): Effect.Effect<R, never, RefSubject<never, E, A>>
 export function make<R, E, A>(
   fx: Fx<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>>
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>>
 
 export function make<R, E, A>(
   fx: Fx<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>> {
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>> {
   return matchFxKind(fx, {
     Fx: (fx) => fxAsRef(fx, eq),
     Effect: (effect) => fromEffect(effect, eq),
@@ -274,7 +277,7 @@ class DeferredRef<E, A> extends Effectable.Effectable<never, E, A> {
 const fxAsRef = <R, E, A>(
   fx: Fx<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>> =>
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>> =>
   Effect.gen(function*($) {
     const deferred = new DeferredRef<E, A>(yield* $(Effect.fiberId))
     const ref = yield* $(fromEffect<never, E, A>(deferred, eq))
@@ -299,20 +302,20 @@ const fxAsRef = <R, E, A>(
  */
 export function makeWithExtension<R, E, A, B>(
   fx: Effect.Effect<R, E, A>,
-  f: (ref: RefSubject<E, A>) => B,
+  f: (ref: RefSubject<never, E, A>) => B,
   eq?: Equivalence<A>
-): Effect.Effect<R, never, RefSubject<E, A> & B>
+): Effect.Effect<R, never, RefSubject<never, E, A> & B>
 export function makeWithExtension<R, E, A, B>(
   fx: Fx<R, E, A>,
-  f: (ref: RefSubject<E, A>) => B,
+  f: (ref: RefSubject<never, E, A>) => B,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A> & B>
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A> & B>
 
 export function makeWithExtension<R, E, A, B>(
   fx: Fx<R, E, A>,
-  f: (ref: RefSubject<E, A>) => B,
+  f: (ref: RefSubject<never, E, A>) => B,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A> & B> {
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A> & B> {
   return Effect.map(make(fx, eq), (ref) => Object.assign(ref, f(ref)))
 }
 
@@ -321,11 +324,11 @@ export function makeWithExtension<R, E, A, B>(
  * @since 1.18.0
  * @category constructors
  */
-export function unsafeMake<E, A>(
-  initial: Effect.Effect<never, E, A>,
-  subject: Subject.Subject<never, E, A>,
+export function unsafeMake<R, E, A>(
+  initial: Effect.Effect<R, E, A>,
+  subject: Subject.Subject<R, E, A>,
   eq: Equivalence<A> = equals
-): RefSubject<E, A> {
+): RefSubject<R, E, A> {
   return RefSubjectImpl.make(
     initial,
     eq,

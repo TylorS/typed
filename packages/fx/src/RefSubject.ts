@@ -5,16 +5,25 @@
  * @since 1.18.0
  */
 
-import type { Computed } from "@typed/fx/Computed"
-import type { Filtered } from "@typed/fx/Filtered"
-import type { Fx } from "@typed/fx/Fx"
+import * as C from "@typed/context"
+import { Computed } from "@typed/fx/Computed"
+import { Filtered } from "@typed/fx/Filtered"
+import type * as Fx from "@typed/fx/Fx"
+import { provide } from "@typed/fx/internal/core"
 import * as coreRefSubject from "@typed/fx/internal/core-ref-subject"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
+import { fromFxEffect } from "@typed/fx/internal/fx"
+import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
+import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
+import type * as Sink from "@typed/fx/Sink"
 import type * as Subject from "@typed/fx/Subject"
-import type { RefSubjectTypeId } from "@typed/fx/TypeId"
+import { RefSubjectTypeId } from "@typed/fx/TypeId"
+import type { Versioned } from "@typed/fx/Versioned"
+import type { Cause } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import type { Equivalence } from "effect/Equivalence"
-import type * as Option from "effect/Option"
+import type * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
 
 /**
@@ -22,14 +31,8 @@ import type * as Scope from "effect/Scope"
  * @since 1.18.0
  * @category models
  */
-export interface RefSubject<in out E, in out A> extends Subject.Subject<never, E, A>, Effect.Effect<never, E, A> {
+export interface RefSubject<R, in out E, in out A> extends Versioned<R, R, E, A, R, E, A>, Sink.WithContext<R, E, A> {
   readonly [RefSubjectTypeId]: RefSubjectTypeId
-
-  /**
-   * The Equivalence used to determine if a value has changed. Defaults to `Equal.equals`.
-   * @since 1.18.0
-   */
-  readonly eq: Equivalence<A>
 
   /**
    * Get the current value of this RefSubject. If the RefSubject has not been initialized
@@ -37,25 +40,25 @@ export interface RefSubject<in out E, in out A> extends Subject.Subject<never, E
    * only compute the initial value once.
    * @since 1.18.0
    */
-  readonly get: Effect.Effect<never, E, A>
+  readonly get: Effect.Effect<R, E, A>
 
   /**
    * Set the current value of this RefSubject.
    * @since 1.18.0
    */
-  readonly set: (a: A) => Effect.Effect<never, never, A>
+  readonly set: (a: A) => Effect.Effect<R, never, A>
 
   /**
    * Modify the current value of this RefSubject using the provided function.
    * @since 1.18.0
    */
-  readonly update: (f: (a: A) => A) => Effect.Effect<never, E, A>
+  readonly update: (f: (a: A) => A) => Effect.Effect<R, E, A>
 
   /**
    * Modify the current value of this RefSubject and compute a new value.
    * @since 1.18.0
    */
-  readonly modify: <B>(f: (a: A) => readonly [B, A]) => Effect.Effect<never, E, B>
+  readonly modify: <B>(f: (a: A) => readonly [B, A]) => Effect.Effect<R, E, B>
 
   /**
    * Delete the current value of this RefSubject. If it was not initialized the Option.none will be returned.
@@ -63,7 +66,7 @@ export interface RefSubject<in out E, in out A> extends Subject.Subject<never, E
    * If there are existing subscribers to this RefSubject then the RefSubject will be re-initialized.
    * @since 1.18.0
    */
-  readonly delete: Effect.Effect<never, never, Option.Option<A>>
+  readonly delete: Effect.Effect<R, never, Option.Option<A>>
 
   /**
    * Modify the current value of this RefSubject and compute a new value using the provided effectful function.
@@ -71,25 +74,25 @@ export interface RefSubject<in out E, in out A> extends Subject.Subject<never, E
    */
   readonly modifyEffect: <R2, E2, B>(
     f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>
-  ) => Effect.Effect<R2, E | E2, B>
+  ) => Effect.Effect<R | R2, E | E2, B>
 
   /**
    * Modify the current value of this RefSubject using the provided effectful function.
    * @since 1.18.0
    */
-  readonly updateEffect: <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, A>) => Effect.Effect<R2, E | E2, A>
+  readonly updateEffect: <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, A>) => Effect.Effect<R | R2, E | E2, A>
 
   /**
    * Map the current value of this Computed to a new value using an Effect
    * @since 1.18.0
    */
-  readonly mapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) => Computed<R2, E | E2, B>
+  readonly mapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) => Computed<R | R2, E | E2, B>
 
   /**
    * Map the current value of this Computed to a new value
    * @since 1.18.0
    */
-  readonly map: <B>(f: (a: A) => B) => Computed<never, E, B>
+  readonly map: <B>(f: (a: A) => B) => Computed<R, E, B>
 
   /**
    * Map the current value of this Filtered to a new value using an Effect
@@ -97,33 +100,84 @@ export interface RefSubject<in out E, in out A> extends Subject.Subject<never, E
    */
   readonly filterMapEffect: <R2, E2, B>(
     f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
-  ) => Filtered<R2, E | E2, B>
+  ) => Filtered<R | R2, E | E2, B>
 
   /**
    * Map the current value of this Filtered to a new value
    * @since 1.18.0
    */
-  readonly filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<never, E, B>
+  readonly filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<R, E, B>
 
   /**
    * Filter the current value of this Filtered to a new value using an Effect
    */
   readonly filterEffect: <R2, E2>(
     f: (a: A) => Effect.Effect<R2, E2, boolean>
-  ) => Filtered<R2, E | E2, A>
+  ) => Filtered<R | R2, E | E2, A>
 
   /**
    * Filter the current value of this Filtered to a new value
    * @since 1.18.0
    */
-  readonly filter: (f: (a: A) => boolean) => Filtered<never, E, A>
+  readonly filter: (f: (a: A) => boolean) => Filtered<R, E, A>
 
   /**
    * A monotonic version number that is incremented every time the value of this RefSubject changes.
    * It is reset to 0 when the RefSubject is deleted.
    * @since 1.18.0
    */
-  readonly version: Effect.Effect<never, never, number>
+  readonly version: Effect.Effect<R, never, number>
+}
+
+export namespace RefSubject {
+  /**
+   * A Contextual wrapper around a RefSubject
+   * @since 1.18.0
+   * @category models
+   */
+  export interface Tagged<I, E, A> extends RefSubject<I, E, A> {
+    readonly tag: C.Tagged<I, RefSubject<never, E, A>>
+
+    /**
+     * Make a layer initializing a RefSubject
+     * @since 1.18.0
+     */
+    readonly make: <R>(fx: Fx.Fx<R, E, A>, eq?: Equivalence<A>) => Layer.Layer<R, never, I>
+
+    /**
+     * Provide an implementation of this RefSubject
+     * @since 1.18.0
+     */
+    readonly provide: <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => <R3, E3, C>(
+      effect: Effect.Effect<R3, E3, C>
+    ) => Effect.Effect<R2 | Exclude<R3, I>, E | E3, C>
+
+    /**
+     * Provide an implementation of this RefSubject
+     * @since 1.18.0
+     */
+    readonly provideFx: <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => <R3, E3, C>(
+      effect: Fx.Fx<R3, E3, C>
+    ) => Fx.Fx<R2 | Exclude<R3, I>, E | E3, C>
+  }
+
+  /**
+   * Extract the Identifier from a RefSubject
+   * @since 1.18.0
+   */
+  export type Identifier<T> = T extends RefSubject<infer I, infer _, infer __> ? I : never
+
+  /**
+   * Extract the Error from a RefSubject
+   * @since 1.18.0
+   */
+  export type Error<T> = T extends RefSubject<infer _, infer E, infer __> ? E : never
+
+  /**
+   * Extract the State from a RefSubject
+   * @since 1.18.0
+   */
+  export type State<T> = T extends RefSubject<infer _, infer __, infer S> ? S : never
 }
 
 /**
@@ -134,7 +188,7 @@ export interface RefSubject<in out E, in out A> extends Subject.Subject<never, E
 export function fromEffect<R, E, A>(
   initial: Effect.Effect<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R, never, RefSubject<E, A>> {
+): Effect.Effect<R, never, RefSubject<never, E, A>> {
   return Effect.contextWith((ctx) => unsafeMake(Effect.provide(initial, ctx), makeHoldSubject<E, A>(), eq))
 }
 
@@ -143,7 +197,10 @@ export function fromEffect<R, E, A>(
  * @since 1.18.0
  * @category constructors
  */
-export function of<A, E = never>(initial: A, eq?: Equivalence<A>): Effect.Effect<never, never, RefSubject<E, A>> {
+export function of<A, E = never>(
+  initial: A,
+  eq?: Equivalence<A>
+): Effect.Effect<never, never, RefSubject<never, E, A>> {
   return fromEffect<never, E, A>(Effect.succeed(initial), eq)
 }
 
@@ -156,17 +213,107 @@ export function of<A, E = never>(initial: A, eq?: Equivalence<A>): Effect.Effect
 export function make<R, E, A>(
   fx: Effect.Effect<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R, never, RefSubject<E, A>>
+): Effect.Effect<R, never, RefSubject<never, E, A>>
 export function make<R, E, A>(
-  fx: Fx<R, E, A>,
+  fx: Fx.Fx<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>>
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>>
 
 export function make<R, E, A>(
-  fx: Fx<R, E, A>,
+  fx: Fx.Fx<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A>> {
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>> {
   return coreRefSubject.make(fx, eq)
+}
+
+/**
+ * Create a contextual wrapper around a RefSubject while maintaing the full API of
+ * a Ref Subject.
+ * @since 1.18.0
+ * @category constructors
+ */
+export function tagged<E, A>(): {
+  <const I extends C.IdentifierConstructor<any>>(
+    identifier: (id: typeof C.id) => I
+  ): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
+  <const I>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
+} {
+  function makeTagged<const I extends C.IdentifierFactory<any>>(
+    identifier: I
+  ): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
+  function makeTagged<const I>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
+  function makeTagged<const I>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A> {
+    return new ContextImpl(C.Tagged<I, RefSubject<never, E, A>>(identifier)) as any
+  }
+
+  return makeTagged
+}
+
+class ContextImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
+  implements Omit<RefSubject<I, E, A>, ModuleAgumentedEffectKeysToOmit>
+{
+  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
+
+  constructor(readonly tag: C.Tagged<I, RefSubject<never, E, A>>) {
+    super()
+  }
+
+  protected toFx(): Fx.Fx<I, E, A> {
+    return fromFxEffect(this.tag)
+  }
+
+  protected toEffect(): Effect.Effect<I, E, A> {
+    return Effect.flatten(this.tag)
+  }
+
+  version = this.tag.withEffect((ref) => ref.version)
+
+  modifyEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>) => Effect.Effect<I | R2, E | E2, B> = (
+    f
+  ) => this.tag.withEffect((ref) => ref.modifyEffect(f))
+
+  modify: <B>(f: (a: A) => readonly [B, A]) => Effect.Effect<I, E, B> = (f) =>
+    this.tag.withEffect((ref) => ref.modify(f))
+
+  updateEffect: <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, A>) => Effect.Effect<I | R2, E | E2, A> = (f) =>
+    this.tag.withEffect((ref) => ref.updateEffect(f))
+
+  update: (f: (a: A) => A) => Effect.Effect<I, E, A> = (f) => this.tag.withEffect((ref) => ref.update(f))
+
+  get: Effect.Effect<I, E, A> = this.tag.withEffect((ref) => ref.get)
+
+  set: (a: A) => Effect.Effect<I, never, A> = (a) => this.tag.withEffect((ref) => ref.set(a))
+
+  delete: Effect.Effect<I, never, Option.Option<A>> = this.tag.withEffect((ref) => ref.delete)
+
+  mapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) => Computed<R2, E | E2, B> = (f) =>
+    Computed(this as any, f)
+
+  map: <B>(f: (a: A) => B) => Computed<I, E, B> = (f) => Computed(this as any, (a: A) => Effect.sync(() => f(a)))
+
+  filterMapEffect: <R2, E2, B>(
+    f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
+  ) => Filtered<R2, E | E2, B> = (f) => Filtered(this as any, f)
+
+  filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<never, E, B> = (f) =>
+    Filtered(this as any, (a: A) => Effect.sync(() => f(a)))
+
+  filter: (f: (a: A) => boolean) => Filtered<I, E, A> = (f) =>
+    this.filterMap((a) => f(a) ? Option.some(a) : Option.none())
+
+  filterEffect: <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>) => Filtered<I | R2, E | E2, A> = (f) =>
+    this.filterMapEffect((a) => Effect.map(f(a), (b) => b ? Option.some(a) : Option.none()))
+
+  onFailure: (cause: Cause<E>) => Effect.Effect<I, never, unknown> = (cause) =>
+    this.tag.withEffect((ref) => ref.onFailure(cause))
+
+  onSuccess: (value: A) => Effect.Effect<I, never, unknown> = (a) => this.tag.withEffect((ref) => ref.onSuccess(a))
+
+  make = <R>(fx: Fx.Fx<R, E, A>, eq?: Equivalence<A>): Layer.Layer<R, never, I> => this.tag.scoped(make(fx, eq))
+
+  provide = <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => Effect.provide(this.make(fx, eq))
+
+  provideFx = <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => provide(this.make(fx, eq))
 }
 
 /**
@@ -177,20 +324,20 @@ export function make<R, E, A>(
  */
 export function makeWithExtension<R, E, A, B>(
   fx: Effect.Effect<R, E, A>,
-  f: (ref: RefSubject<E, A>) => B,
+  f: (ref: RefSubject<never, E, A>) => B,
   eq?: Equivalence<A>
-): Effect.Effect<R, never, RefSubject<E, A> & B>
+): Effect.Effect<R, never, RefSubject<never, E, A> & B>
 export function makeWithExtension<R, E, A, B>(
-  fx: Fx<R, E, A>,
-  f: (ref: RefSubject<E, A>) => B,
+  fx: Fx.Fx<R, E, A>,
+  f: (ref: RefSubject<never, E, A>) => B,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A> & B>
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A> & B>
 
 export function makeWithExtension<R, E, A, B>(
-  fx: Fx<R, E, A>,
-  f: (ref: RefSubject<E, A>) => B,
+  fx: Fx.Fx<R, E, A>,
+  f: (ref: RefSubject<never, E, A>) => B,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefSubject<E, A> & B> {
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A> & B> {
   return coreRefSubject.makeWithExtension(fx, f, eq)
 }
 
@@ -199,8 +346,8 @@ export function makeWithExtension<R, E, A, B>(
  * @since 1.18.0
  * @category constructors
  */
-export const unsafeMake: <E, A>(
-  initial: Effect.Effect<never, E, A>,
-  subject: Subject.Subject<never, E, A>,
+export const unsafeMake: <R, E, A>(
+  initial: Effect.Effect<R, E, A>,
+  subject: Subject.Subject<R, E, A>,
   eq?: Equivalence<A>
-) => RefSubject<E, A> = coreRefSubject.unsafeMake
+) => RefSubject<R, E, A> = coreRefSubject.unsafeMake
