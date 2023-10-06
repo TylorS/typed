@@ -15,7 +15,7 @@ import * as Scope from "effect/Scope"
 
 export function keyed<R, E, A, R2, E2, B, C>(
   fx: Fx<R, E, ReadonlyArray<A>>,
-  f: (fx: RefSubject<never, A>, key: C) => Fx<R2, E2, B>,
+  f: (fx: RefSubject<never, never, A>, key: C) => Fx<R2, E2, B>,
   getKey: (a: A) => C
 ): Fx<R | R2, E | E2, ReadonlyArray<B>> {
   return withScopedFork(({ fork, scope, sink }) =>
@@ -59,7 +59,7 @@ type KeyedState<A, B, C> = {
   previous: ReadonlyArray<A>
   previousKeys: ReadonlySet<C>
 
-  readonly subjects: MutableHashMap.MutableHashMap<C, RefSubject<never, A>>
+  readonly subjects: MutableHashMap.MutableHashMap<C, RefSubject<never, never, A>>
   readonly initialValues: MutableHashMap.MutableHashMap<C, A>
   readonly fibers: MutableHashMap.MutableHashMap<C, Fiber.RuntimeFiber<never, void>>
   readonly values: MutableHashMap.MutableHashMap<C, B>
@@ -90,7 +90,7 @@ function updateState<A, B, C, R2, E2, R3>({
 }: {
   state: KeyedState<A, B, C>
   updated: ReadonlyArray<A>
-  f: (fx: RefSubject<never, A>, key: C) => Fx<R2, E2, B>
+  f: (fx: RefSubject<never, never, A>, key: C) => Fx<R2, E2, B>
   fork: ScopedFork
   scope: Scope.Scope
   emit: Effect.Effect<never, never, void>
@@ -195,7 +195,7 @@ function addValue<A, B, C, R2, E2, R3>({
 }: {
   state: KeyedState<A, B, C>
   value: A
-  f: (fx: RefSubject<never, A>, key: C) => Fx<R2, E2, B>
+  f: (fx: RefSubject<never, never, A>, key: C) => Fx<R2, E2, B>
   fork: ScopedFork
   emit: Effect.Effect<never, never, void>
   error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>

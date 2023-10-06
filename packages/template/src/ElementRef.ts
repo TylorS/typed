@@ -1,9 +1,9 @@
 import type { Fx } from "@typed/fx/Fx"
 import { compact } from "@typed/fx/Fx"
-import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import * as RefSubject from "@typed/fx/RefSubject"
+import type { Versioned } from "@typed/fx/Versioned"
 import { type ElementSource, ElementSourceImpl } from "@typed/template/ElementSource"
 import { type Rendered } from "@typed/wire"
 import { Effect, Option } from "effect"
@@ -18,9 +18,9 @@ export type ElementRefTypeId = typeof ElementRefTypeId
  * @since 1.0.0
  */
 export interface ElementRef<T extends Rendered = Rendered>
-  extends VersionedFxEffect<never, never, never, T, never, NoSuchElementException, T>
+  extends Versioned<never, never, never, T, never, NoSuchElementException, T>
 {
-  readonly [ElementRefTypeId]: RefSubject.RefSubject<never, Option.Option<T>>
+  readonly [ElementRefTypeId]: RefSubject.RefSubject<never, never, Option.Option<T>>
 
   readonly query: ElementSource<T>["query"]
   readonly elements: ElementSource<T>["elements"]
@@ -39,13 +39,13 @@ export function ElementRef<T extends Rendered = Rendered>(): Effect.Effect<never
 class ElementRefImpl<T extends Rendered> extends FxEffectProto<never, never, T, never, NoSuchElementException, T>
   implements Omit<ElementRef<T>, ModuleAgumentedEffectKeysToOmit>
 {
-  readonly [ElementRefTypeId]: RefSubject.RefSubject<never, Option.Option<T>>
+  readonly [ElementRefTypeId]: RefSubject.RefSubject<never, never, Option.Option<T>>
 
-  private source = new ElementSourceImpl(this.ref.filterMap((x) => x))
+  private source = new ElementSourceImpl(RefSubject.compact(this.ref))
 
   readonly selectors = this.source.selectors
 
-  constructor(readonly ref: RefSubject.RefSubject<never, Option.Option<T>>) {
+  constructor(readonly ref: RefSubject.RefSubject<never, never, Option.Option<T>>) {
     super()
     this[ElementRefTypeId] = ref
   }

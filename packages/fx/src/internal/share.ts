@@ -51,7 +51,7 @@ export class Share<R, E, A, R2> extends ToFx<R | R2, E, A> {
     )
   }
 
-  private initialize(): Effect.Effect<R, never, unknown> {
+  private initialize(): Effect.Effect<R | R2, never, unknown> {
     return Effect.suspend(() => {
       if (this.#refCount.increment() === 1) {
         return run(this.i0, this.i1).pipe(
@@ -73,7 +73,7 @@ export class Share<R, E, A, R2> extends ToFx<R | R2, E, A> {
     })
   }
 
-  private interrupt(): Effect.Effect<R, never, void> {
+  private interrupt(): Effect.Effect<R | R2, never, void> {
     return Effect.suspend(() => {
       const fiber = Option.getOrNull(MutableRef.get(this.#fxFiber))
 

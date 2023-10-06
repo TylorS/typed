@@ -2,8 +2,8 @@ import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import { addEventListener } from "@typed/dom/EventTarget"
 import type { Filtered } from "@typed/fx/Filtered"
 import * as Fx from "@typed/fx/Fx"
-import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
+import type { Versioned } from "@typed/fx/Versioned"
 import type { Rendered } from "@typed/wire"
 import { isWire } from "@typed/wire"
 import type { NoSuchElementException } from "effect/Cause"
@@ -14,8 +14,7 @@ import * as Scope from "effect/Scope"
 import type * as TQS from "typed-query-selector/parser"
 
 export interface ElementSource<T extends Rendered = Element, EventMap extends {} = DefaultEventMap<T>>
-  extends
-    VersionedFxEffect<never, never, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
+  extends Versioned<never, never, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
 {
   readonly selectors: ReadonlyArray<string>
 

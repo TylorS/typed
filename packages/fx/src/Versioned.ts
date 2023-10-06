@@ -5,7 +5,8 @@
  * @since 1.18.0
  */
 
-import * as Fx from "@typed/fx/Fx"
+import type * as Fx from "@typed/fx/Fx"
+import * as core from "@typed/fx/internal/core"
 import { VersionedTransform } from "@typed/fx/internal/verionsed-transform"
 import type { TypeId } from "@typed/fx/TypeId"
 import { Effect, identity } from "effect"
@@ -124,7 +125,7 @@ export const map: {
     onEffect: (b: B) => D
   }
 ): Versioned<R0, R, E, C, R2, E2, D> {
-  return transform(versioned, Fx.map(options.onFx), Effect.map(options.onEffect))
+  return transform(versioned, core.map(options.onFx), Effect.map(options.onEffect))
 })
 
 /**
@@ -150,5 +151,5 @@ export const mapEffect: {
     onEffect: (b: B) => Effect.Effect<R4, E4, D>
   }
 ): Versioned<R0, R | R3, E | E3, C, R2 | R4, E2 | E4, D> {
-  return transform(versioned, Fx.mapEffect(options.onFx), Effect.flatMap(options.onEffect))
+  return transform(versioned, core.mapEffect(options.onFx), Effect.flatMap(options.onEffect))
 })

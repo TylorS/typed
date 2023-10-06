@@ -12,15 +12,14 @@ import type * as Fx from "@typed/fx/Fx"
 import { provide } from "@typed/fx/internal/core"
 import * as coreRefSubject from "@typed/fx/internal/core-ref-subject"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
-import { fromFxEffect } from "@typed/fx/internal/fx"
+import { exit, fromFxEffect } from "@typed/fx/internal/fx"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import type * as Sink from "@typed/fx/Sink"
 import type * as Subject from "@typed/fx/Subject"
 import { RefSubjectTypeId } from "@typed/fx/TypeId"
-import type { Versioned } from "@typed/fx/Versioned"
-import { identity } from "effect"
-import type { Cause } from "effect/Cause"
+import * as Versioned from "@typed/fx/Versioned"
+import { Cause, Either, Exit, identity } from "effect"
 import * as Effect from "effect/Effect"
 import type { Equivalence } from "effect/Equivalence"
 import type * as Layer from "effect/Layer"
@@ -32,7 +31,9 @@ import type * as Scope from "effect/Scope"
  * @since 1.18.0
  * @category models
  */
-export interface RefSubject<R, in out E, in out A> extends Versioned<R, R, E, A, R, E, A>, Sink.WithContext<R, E, A> {
+export interface RefSubject<R, in out E, in out A>
+  extends Versioned.Versioned<R, R, E, A, R, E, A>, Sink.WithContext<R, E, A>
+{
   readonly [RefSubjectTypeId]: RefSubjectTypeId
 
   /**
@@ -128,6 +129,11 @@ export interface RefSubject<R, in out E, in out A> extends Versioned<R, R, E, A,
    * @since 1.18.0
    */
   readonly version: Effect.Effect<R, never, number>
+
+  /**
+   * Interrupt the current Fibers.
+   */
+  readonly interrupt: Effect.Effect<R, never, void>
 }
 
 export namespace RefSubject {
@@ -305,10 +311,12 @@ class ContextImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
   filterEffect: <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>) => Filtered<I | R2, E | E2, A> = (f) =>
     this.filterMapEffect((a) => Effect.map(f(a), (b) => b ? Option.some(a) : Option.none()))
 
-  onFailure: (cause: Cause<E>) => Effect.Effect<I, never, unknown> = (cause) =>
+  onFailure: (cause: Cause.Cause<E>) => Effect.Effect<I, never, unknown> = (cause) =>
     this.tag.withEffect((ref) => ref.onFailure(cause))
 
   onSuccess: (value: A) => Effect.Effect<I, never, unknown> = (a) => this.tag.withEffect((ref) => ref.onSuccess(a))
+
+  interrupt: Effect.Effect<I, never, void> = this.tag.withEffect((r) => r.interrupt)
 
   make = <R>(fx: Fx.Fx<R, E, A>, eq?: Equivalence<A>): Layer.Layer<R, never, I> => this.tag.scoped(make(fx, eq))
 
@@ -360,3 +368,35 @@ export const unsafeMake: <R, E, A>(
  */
 export const compact = <R, E, A>(refSubject: RefSubject<R, E, Option.Option<A>>): Filtered<R, E, A> =>
   refSubject.filterMap(identity)
+
+/**
+ * Split a RefSubject's into 2 Filtered values that track its errors and
+ * success values separately.
+ * @since 1.18.0
+ * @category combinators
+ */
+export const split = <R, E, A>(
+  refSubject: RefSubject<R, E, A>
+): readonly [Filtered<R, never, E>, Filtered<R, never, A>] => {
+  const versioned = Versioned.transform(refSubject, exit, Effect.exit)
+  const left = Filtered(versioned, getLeft)
+  const right = Filtered(versioned, getRight)
+
+  return [left, right] as const
+}
+
+const getLeft = <E, A>(exit: Exit.Exit<E, A>) =>
+  Effect.sync(() =>
+    Exit.match(exit, {
+      onFailure: (cause) => Either.getLeft(Cause.failureOrCause(cause)),
+      onSuccess: () => Option.none()
+    })
+  )
+
+const getRight = <E, A>(exit: Exit.Exit<E, A>) =>
+  Effect.sync(() =>
+    Exit.match(exit, {
+      onFailure: () => Option.none(),
+      onSuccess: (a) => Option.some(a)
+    })
+  )
