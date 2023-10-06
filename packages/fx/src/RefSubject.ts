@@ -239,7 +239,7 @@ export function make<R, E, A>(
  * @since 1.18.0
  * @category constructors
  */
-export function tagged<E, A>(): {
+export function tagged<E, A>(defaultEq?: Equivalence<A>): {
   <const I extends C.IdentifierConstructor<any>>(
     identifier: (id: typeof C.id) => I
   ): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
@@ -250,7 +250,7 @@ export function tagged<E, A>(): {
   ): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
   function makeTagged<const I>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
   function makeTagged<const I>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A> {
-    return new ContextImpl(C.Tagged<I, RefSubject<never, E, A>>(identifier)) as any
+    return new ContextImpl(C.Tagged<I, RefSubject<never, E, A>>(identifier), defaultEq) as any
   }
 
   return makeTagged
@@ -261,7 +261,7 @@ class ContextImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
 {
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
 
-  constructor(readonly tag: C.Tagged<I, RefSubject<never, E, A>>) {
+  constructor(readonly tag: C.Tagged<I, RefSubject<never, E, A>>, readonly defaultEq?: Equivalence<A>) {
     super()
   }
 
@@ -318,11 +318,12 @@ class ContextImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
 
   interrupt: Effect.Effect<I, never, void> = this.tag.withEffect((r) => r.interrupt)
 
-  make = <R>(fx: Fx.Fx<R, E, A>, eq?: Equivalence<A>): Layer.Layer<R, never, I> => this.tag.scoped(make(fx, eq))
+  make = <R>(fx: Fx.Fx<R, E, A>, eq?: Equivalence<A>): Layer.Layer<R, never, I> =>
+    this.tag.scoped(make(fx, eq || this.defaultEq))
 
-  provide = <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => Effect.provide(this.make(fx, eq))
+  provide = <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => Effect.provide(this.make(fx, eq || this.defaultEq))
 
-  provideFx = <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => provide(this.make(fx, eq))
+  provideFx = <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => provide(this.make(fx, eq || this.defaultEq))
 }
 
 /**
