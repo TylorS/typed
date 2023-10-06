@@ -35,7 +35,7 @@ export function make<R, E, K, V>(
 }
 
 /**
- * Create a Tagged RefRemoteData
+ * Create a Tagged RefHashMap
  * @since 1.18.0
  * @category constructors
  */

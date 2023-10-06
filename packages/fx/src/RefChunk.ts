@@ -47,7 +47,7 @@ export function make<R, E, A>(
 }
 
 /**
- * Create a Tagged RefRemoteData
+ * Create a Tagged RefChunk
  * @since 1.18.0
  * @category constructors
  */

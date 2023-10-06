@@ -49,6 +49,7 @@ export function make<R, E, A>(
 }
 
 /**
+ * Construct a Tagged RefArray
  * @since 1.18.0
  * @category constructors
  */
