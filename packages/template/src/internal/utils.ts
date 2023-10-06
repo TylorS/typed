@@ -1,4 +1,5 @@
 import { TEXT_START, TYPED_START } from "@typed/template/Meta"
+import * as Chunk from "effect/Chunk"
 
 export function isComment(node: Node): node is Comment {
   return node.nodeType === node.COMMENT_NODE
@@ -43,4 +44,12 @@ export function getPreviousNodes(comment: Node, index: number) {
   previousComments.delete(previousHole)
 
   return nodes
+}
+
+export const findPath = (node: ParentChildNodes, path: Chunk.Chunk<number>): Node =>
+  Chunk.reduce(path, node, ({ childNodes }, index) => childNodes[index]) as Node
+
+export interface ParentChildNodes {
+  readonly parentNode: Node | null
+  readonly childNodes: ArrayLike<Node>
 }
