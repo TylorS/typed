@@ -1,20 +1,20 @@
 import type { Fx } from "@typed/fx/Fx"
-import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import { MulticastEffect } from "@typed/fx/internal/helpers"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
+import type { Versioned } from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 
-export class FxEffectTransform<R0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
+export class VersionedTransform<R0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
   extends FxEffectProto<R3, E3, C, R0 | R4, E4, D>
-  implements Omit<VersionedFxEffect<R0, R3, E3, C, R4, E4, D>, ModuleAgumentedEffectKeysToOmit>
+  implements Omit<Versioned<R0, R3, E3, C, R4, E4, D>, ModuleAgumentedEffectKeysToOmit>
 {
   #version = 0
   #currentValue: Option.Option<D> = Option.none()
 
   constructor(
-    readonly input: VersionedFxEffect<R0, R, E, A, R2, E2, B>,
+    readonly input: Versioned<R0, R, E, A, R2, E2, B>,
     private _transformFx: (fx: Fx<R, E, A>) => Fx<R3, E3, C>,
     private _transformGet: (effect: Effect.Effect<R2, E2, B>) => Effect.Effect<R4, E4, D>
   ) {

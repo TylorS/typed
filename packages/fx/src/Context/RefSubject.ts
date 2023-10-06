@@ -7,10 +7,10 @@ import * as Context from "@typed/context"
 import { Computed } from "@typed/fx/Computed"
 import { Filtered } from "@typed/fx/Filtered"
 import * as Fx from "@typed/fx/Fx"
-import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import * as Ref from "@typed/fx/RefSubject"
+import type { Versioned } from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
 import type { Equivalence } from "effect/Equivalence"
 import type * as Layer from "effect/Layer"
@@ -21,7 +21,7 @@ import type * as Option from "effect/Option"
  * @since 1.18.0
  * @category models
  */
-export interface RefSubject<I, E, A> extends VersionedFxEffect<I, I, E, A, I, E, A> {
+export interface RefSubject<I, E, A> extends Versioned<I, I, E, A, I, E, A> {
   readonly tag: Context.Tagged<I, Ref.RefSubject<E, A>>
 
   readonly get: Effect.Effect<I, E, A>

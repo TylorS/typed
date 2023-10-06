@@ -28,7 +28,7 @@ export interface Subject<I, E, A> extends Fx<I, E, A>, Sink.WithContext<I, E, A>
 
   readonly provideFx: (
     replay?: number
-  ) => <R2, E2, B>(effect: Fx<R2, E2, B>) => Fx<Exclude<R2, I>, E2, B>
+  ) => <R2, E2, B>(fx: Fx<R2, E2, B>) => Fx<Exclude<R2, I>, E2, B>
 
   readonly make: (replay?: number) => Layer.Layer<never, never, I>
 }

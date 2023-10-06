@@ -4,10 +4,10 @@
  * @since 1.18.0
  */
 
-import type { VersionedFxEffect } from "@typed/fx/FxEffect"
 import * as core from "@typed/fx/internal/core"
-import { FxEffectTransform } from "@typed/fx/internal/fx-effect-transform"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
+import { VersionedTransform } from "@typed/fx/internal/verionsed-transform"
+import type { VersionedFxEffect } from "@typed/fx/Versioned"
 import type * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
@@ -86,7 +86,7 @@ export function Filtered<R, E, A, R2, E2, B>(
 }
 
 class FilteredImpl<R, E, A, R2, E2, B>
-  extends FxEffectTransform<R, R, E, A, R, E, A, R | R2, E | E2, B, R | R2, E | E2 | Cause.NoSuchElementException, B>
+  extends VersionedTransform<R, R, E, A, R, E, A, R | R2, E | E2, B, R | R2, E | E2 | Cause.NoSuchElementException, B>
   implements Omit<Filtered<R | R2, E | E2, B>, ModuleAgumentedEffectKeysToOmit>
 {
   readonly [FilteredTypeId]: FilteredTypeId = FilteredTypeId

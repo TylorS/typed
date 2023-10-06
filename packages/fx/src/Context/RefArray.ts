@@ -208,11 +208,17 @@ export const length = <I, E, A>(ref: RefArray<I, E, A>) => ref.map(ReadonlyArray
  * @category combinators
  */
 export const map: {
-  <A, B>(f: (value: A, index: number) => A): <I, E>(ref: RefArray<I, E, A>) => Effect.Effect<I, E, ReadonlyArray<B>>
+  <A>(f: (value: A, index: number) => A): <I, E>(ref: RefArray<I, E, A>) => Effect.Effect<I, E, ReadonlyArray<A>>
   <I, E, A>(ref: RefArray<I, E, A>, f: (value: A, index: number) => A): Effect.Effect<I, E, ReadonlyArray<A>>
-} = dual(2, function map<I, E, A>(ref: RefArray<I, E, A>, f: (value: A, index: number) => A) {
-  return ref.tag.withEffect(RA.map(f))
-})
+} = dual(
+  2,
+  function map<I, E, A>(
+    ref: RefArray<I, E, A>,
+    f: (value: A, index: number) => A
+  ): Effect.Effect<I, E, ReadonlyArray<A>> {
+    return ref.tag.withEffect(RA.map(f))
+  }
+)
 
 /**
  * Map the values with their indexes of a RefArray.
