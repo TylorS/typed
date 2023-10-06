@@ -7,7 +7,7 @@
 import * as core from "@typed/fx/internal/core"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { VersionedTransform } from "@typed/fx/internal/verionsed-transform"
-import type { VersionedFxEffect } from "@typed/fx/Versioned"
+import type { Versioned } from "@typed/fx/Versioned"
 import type * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
@@ -30,9 +30,7 @@ export type FilteredTypeId = typeof FilteredTypeId
  * @since 1.18.0
  * @category models
  */
-export interface Filtered<out R, out E, out A>
-  extends VersionedFxEffect<R, R, E, A, R, E | Cause.NoSuchElementException, A>
-{
+export interface Filtered<out R, out E, out A> extends Versioned<R, R, E, A, R, E | Cause.NoSuchElementException, A> {
   readonly [FilteredTypeId]: FilteredTypeId
 
   /**
@@ -79,7 +77,7 @@ export interface Filtered<out R, out E, out A>
  * @since 1.18.0
  */
 export function Filtered<R, E, A, R2, E2, B>(
-  input: VersionedFxEffect<R, R, E, A, R, E, A>,
+  input: Versioned<R, R, E, A, R, E, A>,
   f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
 ): Filtered<R | R2, E | E2, B> {
   return new FilteredImpl(input, f) as any
@@ -92,7 +90,7 @@ class FilteredImpl<R, E, A, R2, E2, B>
   readonly [FilteredTypeId]: FilteredTypeId = FilteredTypeId
 
   constructor(
-    readonly input: VersionedFxEffect<R, R, E, A, R, E, A>,
+    readonly input: Versioned<R, R, E, A, R, E, A>,
     readonly f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
   ) {
     super(

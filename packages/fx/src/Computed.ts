@@ -5,8 +5,8 @@
 
 import { Filtered } from "@typed/fx/Filtered"
 import { switchMap } from "@typed/fx/internal/core"
-import { VersionedTransform } from "@typed/fx/internal/verionsed-transform"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
+import { VersionedTransform } from "@typed/fx/internal/verionsed-transform"
 import type { Versioned } from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
