@@ -1,4 +1,5 @@
 import * as Context from "@typed/context"
+import { Document } from "@typed/dom/Document"
 import { RootElement } from "@typed/dom/RootElement"
 import * as Fx from "@typed/fx/Fx"
 import * as Versioned from "@typed/fx/Versioned"
@@ -11,7 +12,7 @@ import type { Part, Parts, SparsePart } from "@typed/template/Part"
 import type { Renderable } from "@typed/template/Renderable"
 import { RenderContext } from "@typed/template/RenderContext"
 import { DomRenderEvent, type RenderEvent } from "@typed/template/RenderEvent"
-import type { RenderTemplate } from "@typed/template/RenderTemplate"
+import { RenderTemplate } from "@typed/template/RenderTemplate"
 import type * as Template from "@typed/template/Template"
 import { TemplateInstance } from "@typed/template/TemplateInstance"
 import type { Rendered } from "@typed/wire"
@@ -19,11 +20,13 @@ import * as Effect from "effect/Effect"
 
 export function render<R, E>(
   rendered: Fx.Fx<R, E, RenderEvent | null>
-): Fx.Fx<R | RenderContext | RootElement, E, Rendered | null> {
+): Fx.Fx<Exclude<R, RenderTemplate> | Document | RenderContext | RootElement, E, Rendered | null> {
   return Fx.fromFxEffect(Effect.contextWith((context) => {
-    const [{ renderCache }, { rootElement }] = Context.getMany(context, RenderContext, RootElement)
+    const [document, ctx, { rootElement }] = Context.getMany(context, Document, RenderContext, RootElement)
 
-    return Fx.mapEffect(rendered, (what) => attachRoot(renderCache, rootElement, what))
+    return Fx.mapEffect(rendered, (what) => attachRoot(ctx.renderCache, rootElement, what)).pipe(
+      Fx.provideService(RenderTemplate, renderTemplate(document, ctx))
+    )
   }))
 }
 
