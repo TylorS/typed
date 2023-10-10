@@ -92,7 +92,7 @@ export interface NodePart {
   readonly update: (value: this["value"]) => Effect<Scope, never, void>
 }
 
-export type SparsePart = SparseAttributePart | SparseClassNamePart
+export type SparsePart = SparseAttributePart | SparseClassNamePart | SparseCommentPart
 
 export interface SparseAttributePart {
   readonly _tag: "sparse/attribute"
@@ -102,8 +102,12 @@ export interface SparseAttributePart {
 
 export interface SparseClassNamePart {
   readonly _tag: "sparse/className"
-  readonly name: string
   readonly parts: ReadonlyArray<ClassNamePart | StaticText>
+}
+
+export interface SparseCommentPart {
+  readonly _tag: "sparse/comment"
+  readonly parts: ReadonlyArray<CommentPart | StaticText>
 }
 
 export interface StaticText {

@@ -7,8 +7,14 @@ import type {
   EventPart,
   NodePart,
   Part,
+  PropertyPart,
+  RefPart,
+  SparseAttributePart,
+  SparseClassNamePart,
+  SparseCommentPart,
   SparsePart,
-  StaticText
+  StaticText,
+  TextPart
 } from "@typed/template/Part"
 import type { RenderContext } from "@typed/template/RenderContext"
 import type { Cause } from "effect/Cause"
@@ -16,6 +22,7 @@ import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
 import { strict } from "effect/Equivalence"
 import type { Equivalence } from "effect/Equivalence"
+import * as ReadonlyArray from "effect/ReadonlyArray"
 import type { Scope } from "effect/Scope"
 
 const strictEq = strict<any>()
@@ -116,7 +123,6 @@ export class BooleanPartImpl extends base("boolean") implements BooleanPart {
 
 export class ClassNamePartImpl extends base("className") implements ClassNamePart {
   constructor(
-    readonly name: string,
     context: RenderContext,
     commit: ClassNamePartImpl["commit"],
     value: ClassNamePart["value"]
@@ -124,9 +130,8 @@ export class ClassNamePartImpl extends base("className") implements ClassNamePar
     super(context, commit, value, strictEq)
   }
 
-  static browser(element: Element, name: string, context: RenderContext): ClassNamePartImpl {
+  static browser(element: Element, context: RenderContext): ClassNamePartImpl {
     return new ClassNamePartImpl(
-      name,
       context,
       ({ part, previous, value }) =>
         context.queue.add(
@@ -143,11 +148,10 @@ export class ClassNamePartImpl extends base("className") implements ClassNamePar
   }
 
   static server(
-    name: string,
     context: RenderContext,
     commit: ClassNamePartImpl["commit"]
   ) {
-    return new ClassNamePartImpl(name, context, commit, null)
+    return new ClassNamePartImpl(context, commit, null)
   }
 }
 
@@ -259,11 +263,70 @@ export class EventPartImpl extends base("event") implements EventPart {
     super(context, commit, value, strictEq)
   }
 
-  // TODO: We need a way to utilize event delegation
+  static browser(
+    name: string,
+    element: HTMLElement | SVGElement,
+    onCause: (cause: Cause<unknown>) => Effect.Effect<never, never, unknown>,
+    ctx: RenderContext
+  ) {
+    return new EventPartImpl(
+      name,
+      onCause,
+      ctx,
+      // TODO: We need a way to utilize event delegation
+      () => Effect.unit,
+      null
+    )
+  }
 }
 
 export class NodePartImpl extends base("node") implements NodePart {
-  // TODO: We need to port over the diffing of children
+  static browser(element: HTMLElement | SVGElement, ctx: RenderContext) {
+    return new NodePartImpl(ctx, ({ part }) =>
+      ctx.queue.add(part, () => {
+        // TODO: We need to port over the diffing of children
+      }), [])
+  }
+}
+
+export class PropertyPartImpl extends base("property") implements PropertyPart {
+  constructor(
+    readonly name: string,
+    context: RenderContext,
+    commit: PropertyPartImpl["commit"],
+    value: PropertyPartImpl["value"]
+  ) {
+    super(context, commit, value, strictEq)
+  }
+
+  static browser(node: Node, name: string, ctx: RenderContext) {
+    // TODO: We need to be able to set the Reference at the right time.
+    return new PropertyPartImpl(
+      name,
+      ctx,
+      ({ part, value }) => ctx.queue.add(part, () => (node as any)[name] = value),
+      null
+    )
+  }
+}
+
+export class RefPartImpl extends base("ref") implements RefPart {
+  static browser(node: Node, ctx: RenderContext) {
+    // TODO: We need to be able to set the Reference at the right time.
+    return new RefPartImpl(ctx, () => Effect.unit, null, strictEq)
+  }
+}
+
+export class TextPartImpl extends base("text") implements TextPart {
+  // TODO: Make this properly
+  static browser(element: Element, ctx: RenderContext) {
+    return new TextPartImpl(
+      ctx,
+      ({ part, value }) => ctx.queue.add(part, () => element.textContent = value || ""),
+      element.textContent,
+      strictEq
+    )
+  }
 }
 
 const sparse = <T extends SparsePart["_tag"]>(tag: T) =>
@@ -296,19 +359,96 @@ const sparse = <T extends SparsePart["_tag"]>(tag: T) =>
     }
   }
 
-type SparseAttributeValues<T extends ReadonlyArray<AttributePart | ClassNamePart | StaticText>> = ReadonlyArray<
-  SparseAttributeValue<T[number]>
->
-type SparseAttributeValue<T extends AttributePart | ClassNamePart | StaticText> = T["value"]
+type SparseAttributeValues<T extends ReadonlyArray<AttributePart | ClassNamePart | CommentPart | StaticText>> =
+  ReadonlyArray<
+    SparseAttributeValue<T[number]>
+  >
+type SparseAttributeValue<T extends AttributePart | ClassNamePart | CommentPart | StaticText> = T["value"]
 
 // TODO: Need patterns for managing sparse attributes ported over
 
-export class SparseAttributePartImpl extends sparse("sparse/attribute") {}
+export class SparseAttributePartImpl extends sparse("sparse/attribute") implements SparseAttributePart {
+  constructor(
+    readonly name: string,
+    readonly parts: ReadonlyArray<AttributePart | StaticText>,
+    ctx: RenderContext,
+    commit: SparseAttributePartImpl["commit"]
+  ) {
+    super(ctx, commit, [], ReadonlyArray.getEquivalence(strictEq))
+  }
 
-export class SparseClassNamePartImpl extends sparse("sparse/className") {}
+  static browser(
+    name: string,
+    parts: ReadonlyArray<AttributePart | StaticText>,
+    element: HTMLElement | SVGElement,
+    ctx: RenderContext
+  ) {
+    return new SparseAttributePartImpl(
+      name,
+      parts,
+      ctx,
+      ({ part, value }) =>
+        ctx.queue.add(part, () => element.setAttribute(name, value.flatMap(isNonEmptyString).join("")))
+    )
+  }
+}
+
+export class SparseClassNamePartImpl extends sparse("sparse/className") implements SparseClassNamePart {
+  constructor(
+    readonly parts: ReadonlyArray<ClassNamePart | StaticText>,
+    ctx: RenderContext,
+    commit: SparseClassNamePartImpl["commit"]
+  ) {
+    super(ctx, commit, [], ReadonlyArray.getEquivalence(strictEq))
+  }
+
+  static browser(
+    parts: ReadonlyArray<ClassNamePart | StaticText>,
+    element: HTMLElement | SVGElement,
+    ctx: RenderContext
+  ) {
+    return new SparseClassNamePartImpl(
+      parts,
+      ctx,
+      ({ part, value }) =>
+        ctx.queue.add(part, () => element.setAttribute("class", value.flatMap(isNonEmptyString).join(" ")))
+    )
+  }
+}
+
+export class SparseCommentPartImpl extends sparse("sparse/comment") implements SparseCommentPart {
+  constructor(
+    readonly parts: ReadonlyArray<CommentPart | StaticText>,
+    ctx: RenderContext,
+    commit: SparseCommentPartImpl["commit"],
+    value: SparseCommentPartImpl["value"]
+  ) {
+    super(ctx, commit, value, ReadonlyArray.getEquivalence(strictEq))
+  }
+
+  static browser(comment: Comment, parts: ReadonlyArray<CommentPart | StaticText>, ctx: RenderContext) {
+    return new SparseCommentPartImpl(
+      parts,
+      ctx,
+      ({ part, value }) => ctx.queue.add(part, () => comment.nodeValue = value.flatMap(isNonEmptyString).join("")),
+      []
+    )
+  }
+}
 
 export class StaticTextImpl implements StaticText {
   readonly _tag = "static/text"
 
   constructor(readonly value: string) {}
+}
+
+function isNonEmptyString(s: string | ReadonlyArray<string> | null | undefined): Array<string> {
+  if (s == null) return []
+  if (Array.isArray(s)) return s.flatMap(isNonEmptyString)
+
+  const trimmed = (s as string).trim()
+
+  if (trimmed.length === 0) return []
+
+  return [trimmed]
 }

@@ -1,7 +1,7 @@
 import type { Chunk } from "effect/Chunk"
 
 export class Template {
-  readonly type = "template"
+  readonly _tag = "template"
 
   constructor(
     readonly nodes: ReadonlyArray<Node>,
@@ -36,7 +36,7 @@ export type PartNode =
 export type SparsePartNode = SparseAttrNode | SparseClassNameNode | SparseCommentNode
 
 export class ElementNode {
-  readonly type = "element"
+  readonly _tag = "element"
   constructor(
     readonly tagName: string,
     readonly attributes: Array<Attribute>,
@@ -45,12 +45,12 @@ export class ElementNode {
 }
 
 export class NodePart {
-  readonly type = "node"
+  readonly _tag = "node"
   constructor(readonly index: number) {}
 }
 
 export class SelfClosingElementNode {
-  readonly type = "self-closing-element"
+  readonly _tag = "self-closing-element"
   constructor(
     readonly tagName: string,
     readonly attributes: Array<Attribute>
@@ -58,7 +58,7 @@ export class SelfClosingElementNode {
 }
 
 export class TextOnlyElement {
-  readonly type = "text-only-element"
+  readonly _tag = "text-only-element"
   constructor(
     readonly tagName: string,
     readonly attributes: Array<Attribute>,
@@ -80,7 +80,7 @@ export type Attribute =
   | RefPartNode
 
 export class AttributeNode {
-  readonly type = "attribute" as const
+  readonly _tag = "attribute" as const
   constructor(
     readonly name: string,
     readonly value: string
@@ -88,7 +88,7 @@ export class AttributeNode {
 }
 
 export class AttrPartNode {
-  readonly type = "attr" as const
+  readonly _tag = "attr" as const
   constructor(
     readonly name: string,
     readonly index: number
@@ -96,7 +96,7 @@ export class AttrPartNode {
 }
 
 export class SparseAttrNode {
-  readonly type = "sparse-attr" as const
+  readonly _tag = "sparse-attr" as const
   constructor(
     readonly name: string,
     readonly nodes: Array<AttrPartNode | TextNode>
@@ -104,12 +104,12 @@ export class SparseAttrNode {
 }
 
 export class BooleanNode {
-  readonly type = "boolean" as const
+  readonly _tag = "boolean" as const
   constructor(readonly name: string) {}
 }
 
 export class BooleanPartNode {
-  readonly type = "boolean-part" as const
+  readonly _tag = "boolean-part" as const
   constructor(
     readonly name: string,
     readonly index: number
@@ -119,24 +119,24 @@ export class BooleanPartNode {
 export type ClassNameNode = TextNode | ClassNamePartNode
 
 export class ClassNamePartNode {
-  readonly type = "className-part" as const
+  readonly _tag = "className-part" as const
   constructor(readonly index: number) {}
 }
 
 export class SparseClassNameNode {
-  readonly type: "sparse-class-name" = "sparse-class-name" as const
+  readonly _tag = "sparse-class-name" as const
 
   constructor(readonly nodes: Array<ClassNameNode>) {}
 }
 
 export class DataPartNode {
-  readonly type = "data" as const
+  readonly _tag = "data" as const
 
   constructor(readonly index: number) {}
 }
 
 export class EventPartNode {
-  readonly type = "event" as const
+  readonly _tag = "event" as const
 
   constructor(
     readonly name: string,
@@ -145,7 +145,7 @@ export class EventPartNode {
 }
 
 export class PropertyPartNode {
-  readonly type = "property" as const
+  readonly _tag = "property" as const
 
   constructor(
     readonly name: string,
@@ -154,7 +154,7 @@ export class PropertyPartNode {
 }
 
 export class RefPartNode {
-  readonly type = "ref" as const
+  readonly _tag = "ref" as const
 
   constructor(readonly index: number) {}
 }
@@ -162,13 +162,13 @@ export class RefPartNode {
 export type Text = TextNode | TextPartNode
 
 export class TextNode {
-  readonly type = "text" as const
+  readonly _tag = "text" as const
 
   constructor(readonly value: string) {}
 }
 
 export class TextPartNode {
-  readonly type = "text-part" as const
+  readonly _tag = "text-part" as const
 
   constructor(readonly index: number) {}
 }
@@ -176,19 +176,19 @@ export class TextPartNode {
 export type Comment = CommentNode | CommentPartNode | SparseCommentNode
 
 export class CommentNode {
-  readonly type = "comment" as const
+  readonly _tag = "comment" as const
 
   constructor(readonly value: string) {}
 }
 
 export class CommentPartNode {
-  readonly type = "comment-part" as const
+  readonly _tag = "comment-part" as const
 
   constructor(readonly index: number) {}
 }
 
 export class SparseCommentNode {
-  readonly type = "sparse-comment" as const
+  readonly _tag = "sparse-comment" as const
 
   constructor(readonly nodes: Array<TextNode | CommentPartNode>) {}
 }

@@ -1,7 +1,7 @@
 import * as Context from "@typed/context"
 import * as Idle from "@typed/fx/Idle"
 import type { Entry } from "@typed/template/Entry"
-import type { Part } from "@typed/template/Part"
+import type { Part, SparsePart } from "@typed/template/Part"
 import type { Rendered } from "@typed/wire"
 import type { Layer } from "effect"
 import { Effect, Fiber, Option } from "effect"
@@ -39,7 +39,7 @@ export const RenderContext: Context.Tagged<RenderContext, RenderContext> = Conte
 )
 
 export interface RenderQueue {
-  readonly add: (part: Part, task: () => void) => Effect.Effect<Scope.Scope, never, void>
+  readonly add: (part: Part | SparsePart, task: () => void) => Effect.Effect<Scope.Scope, never, void>
 }
 
 export type RenderContextOptions = IdleRequestOptions & {
@@ -116,12 +116,12 @@ const static_: (isBot?: boolean) => Layer.Layer<never, never, RenderContext> = (
 export { static_ as static }
 
 class RenderQueueImpl implements RenderQueue {
-  queue = new Map<Part, () => void>()
+  queue = new Map<Part | SparsePart, () => void>()
   scheduled = false
 
   constructor(readonly scope: Scope.Scope, readonly options?: IdleRequestOptions) {}
 
-  add = (part: Part, task: () => void) =>
+  add = (part: Part | SparsePart, task: () => void) =>
     Effect.suspend(() => {
       this.queue.set(part, task)
 

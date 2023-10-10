@@ -6,9 +6,32 @@ import * as Versioned from "@typed/fx/Versioned"
 import { ElementRef } from "@typed/template/ElementRef"
 import type { BrowserEntry } from "@typed/template/Entry"
 import { parser } from "@typed/template/internal/parser"
-import { AttributePartImpl } from "@typed/template/internal/parts"
+import {
+  AttributePartImpl,
+  BooleanPartImpl,
+  ClassNamePartImpl,
+  CommentPartImpl,
+  DataPartImpl,
+  EventPartImpl,
+  NodePartImpl,
+  PropertyPartImpl,
+  RefPartImpl,
+  SparseAttributePartImpl,
+  SparseClassNamePartImpl,
+  SparseCommentPartImpl,
+  StaticTextImpl,
+  TextPartImpl
+} from "@typed/template/internal/parts"
 import { findPath } from "@typed/template/internal/utils"
-import type { Part, Parts, SparsePart } from "@typed/template/Part"
+import type {
+  AttributePart,
+  ClassNamePart,
+  CommentPart,
+  Part,
+  Parts,
+  SparsePart,
+  StaticText
+} from "@typed/template/Part"
 import type { Renderable } from "@typed/template/Renderable"
 import { RenderContext } from "@typed/template/RenderContext"
 import { DomRenderEvent, type RenderEvent } from "@typed/template/RenderEvent"
@@ -17,6 +40,7 @@ import type * as Template from "@typed/template/Template"
 import { TemplateInstance } from "@typed/template/TemplateInstance"
 import type { Rendered } from "@typed/wire"
 import * as Effect from "effect/Effect"
+import { replace } from "effect/ReadonlyArray"
 
 export function render<R, E>(
   rendered: Fx.Fx<R, E, RenderEvent | null>
@@ -102,33 +126,107 @@ function buildPartWithNode(
   part: Template.PartNode | Template.SparsePartNode,
   node: Node
 ): Part | SparsePart {
-  switch (part.type) {
+  switch (part._tag) {
     case "attr":
       return AttributePartImpl.browser(node as Element, part.name, ctx)
     case "boolean-part":
-      return void 0
+      return BooleanPartImpl.browser(node as Element, part.name, ctx)
     case "className-part":
-      return void 0
+      return ClassNamePartImpl.browser(node as Element, ctx)
     case "comment-part":
-      return void 0
+      return CommentPartImpl.browser(node as Comment, ctx)
     case "data":
-      return void 0
+      return DataPartImpl.browser(node as HTMLElement | SVGElement, ctx)
     case "event":
-      return void 0
+      return EventPartImpl.browser(part.name, node as HTMLElement | SVGElement, Effect.logError, ctx)
     case "node":
-      return void 0
+      return NodePartImpl.browser(node as HTMLElement | SVGElement, ctx)
     case "property":
-      return void 0
+      return PropertyPartImpl.browser(node, part.name, ctx)
     case "ref":
-      return void 0
-    case "sparse-attr":
-      return void 0
-    case "sparse-class-name":
-      return void 0
-    case "sparse-comment":
-      return void 0
+      return RefPartImpl.browser(node, ctx)
+    case "sparse-attr": {
+      const parts: Array<AttributePart | StaticText> = Array(part.nodes.length)
+      const sparse = SparseAttributePartImpl.browser(
+        part.name,
+        parts,
+        node as HTMLElement | SVGElement,
+        ctx
+      )
+
+      for (let i = 0; i < part.nodes.length; ++i) {
+        const node = part.nodes[i]
+
+        if (node._tag === "text") {
+          parts.push(new StaticTextImpl(node.value))
+        } else {
+          parts.push(
+            new AttributePartImpl(
+              node.name,
+              ctx,
+              ({ value }) => sparse.update(replace(sparse.value, i, value || "")),
+              sparse.value[i]
+            )
+          )
+        }
+      }
+
+      return sparse
+    }
+    case "sparse-class-name": {
+      const parts: Array<ClassNamePart | StaticText> = Array(part.nodes.length)
+      const sparse = SparseClassNamePartImpl.browser(
+        parts,
+        node as HTMLElement | SVGElement,
+        ctx
+      )
+
+      for (let i = 0; i < part.nodes.length; ++i) {
+        const node = part.nodes[i]
+
+        if (node._tag === "text") {
+          parts.push(new StaticTextImpl(node.value))
+        } else {
+          parts.push(
+            new ClassNamePartImpl(
+              ctx,
+              ({ value }) => sparse.update(replace(sparse.value, i, value || "")),
+              (Array.isArray(sparse.value[i]) ? sparse.value[i] : [sparse.value[i]]) as Array<string>
+            )
+          )
+        }
+      }
+
+      return sparse
+    }
+    case "sparse-comment": {
+      const parts: Array<CommentPart | StaticText> = Array(part.nodes.length)
+      const sparse = SparseCommentPartImpl.browser(
+        node as Comment,
+        parts,
+        ctx
+      )
+
+      for (let i = 0; i < part.nodes.length; ++i) {
+        const node = part.nodes[i]
+
+        if (node._tag === "text") {
+          parts.push(new StaticTextImpl(node.value))
+        } else {
+          parts.push(
+            new CommentPartImpl(
+              ctx,
+              ({ value }) => sparse.update(replace(sparse.value, i, value || "")),
+              sparse.value[i]
+            )
+          )
+        }
+      }
+
+      return sparse
+    }
     case "text-part":
-      return void 0
+      return TextPartImpl.browser(node as Element, ctx)
   }
 }
 
@@ -143,7 +241,7 @@ export function buildTemplate(document: Document, { nodes }: Template.Template):
 }
 
 function buildNode(document: Document, node: Template.Node, isSvgContext: boolean): globalThis.Node {
-  switch (node.type) {
+  switch (node._tag) {
     case "element":
     case "self-closing-element":
     case "text-only-element":
@@ -168,7 +266,7 @@ function buildElement(
   node: Template.ElementNode | Template.SelfClosingElementNode | Template.TextOnlyElement,
   isSvgContext: boolean
 ): Element {
-  const { attributes, tagName, type } = node
+  const { _tag, attributes, tagName } = node
   const isSvg = isSvgContext ? tagName !== "foreignObject" : tagName === "svg"
   const element = isSvg
     ? document.createElementNS(SVG_NAMESPACE, tagName)
@@ -178,16 +276,16 @@ function buildElement(
     const attr = attributes[i]
 
     // We only handle static attributes here, parts are handled elsewhere
-    if (attr.type === "attribute") {
+    if (attr._tag === "attribute") {
       element.setAttribute(attr.name, attr.value)
-    } else if (attr.type === "boolean") {
+    } else if (attr._tag === "boolean") {
       element.toggleAttribute(attr.name, true)
     }
   }
 
-  if (type === "element") {
+  if (_tag === "element") {
     element.append(...node.children.map((child) => buildNode(document, child, isSvg)))
-  } else if (node.type === "text-only-element") {
+  } else if (_tag === "text-only-element") {
     element.append(...node.children.map((child) => buildTextChild(document, child)))
   }
 
@@ -195,7 +293,7 @@ function buildElement(
 }
 
 function buildTextChild(document: Document, node: Template.Text): globalThis.Node {
-  if (node.type === "text") {
+  if (node._tag === "text") {
     return document.createTextNode(node.value)
   }
 
