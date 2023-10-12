@@ -2,9 +2,13 @@ import * as Context from "@typed/context"
 import { Document } from "@typed/dom/Document"
 import { RootElement } from "@typed/dom/RootElement"
 import * as Fx from "@typed/fx/Fx"
-import * as Versioned from "@typed/fx/Versioned"
-import { ElementRef } from "@typed/template/ElementRef"
+import { makeSubject } from "@typed/fx/internal/core-subject"
+import * as TypeId from "@typed/fx/TypeId"
+import { isDirective } from "@typed/template/Directive"
+import * as ElementRef from "@typed/template/ElementRef"
 import type { BrowserEntry } from "@typed/template/Entry"
+import type { IndexRefCounter } from "@typed/template/internal/indexRefCounter"
+import { indexRefCounter } from "@typed/template/internal/indexRefCounter"
 import { parser } from "@typed/template/internal/parser"
 import {
   AttributePartImpl,
@@ -32,25 +36,33 @@ import type {
   SparsePart,
   StaticText
 } from "@typed/template/Part"
+import type { Placeholder } from "@typed/template/Placeholder"
 import type { Renderable } from "@typed/template/Renderable"
 import { RenderContext } from "@typed/template/RenderContext"
-import { DomRenderEvent, type RenderEvent } from "@typed/template/RenderEvent"
+import { DomRenderEvent, isRenderEvent, type RenderEvent } from "@typed/template/RenderEvent"
 import { RenderTemplate } from "@typed/template/RenderTemplate"
 import type * as Template from "@typed/template/Template"
 import { TemplateInstance } from "@typed/template/TemplateInstance"
-import type { Rendered } from "@typed/wire"
+import { persistent, type Rendered } from "@typed/wire"
+import type { Cause } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { replace } from "effect/ReadonlyArray"
+import type { Scope } from "effect/Scope"
+import * as Stream from "effect/Stream"
 
-export function render<R, E>(
-  rendered: Fx.Fx<R, E, RenderEvent | null>
-): Fx.Fx<Exclude<R, RenderTemplate> | Document | RenderContext | RootElement, E, Rendered | null> {
+type ToRendered<T extends RenderEvent | null> = T extends null ? Rendered | null : Rendered
+
+export function render<R, E, T extends RenderEvent | null>(
+  rendered: Fx.Fx<R, E, T>
+): Fx.Fx<Exclude<R, RenderTemplate> | Document | RenderContext | RootElement, E, ToRendered<T>> {
   return Fx.fromFxEffect(Effect.contextWith((context) => {
     const [document, ctx, { rootElement }] = Context.getMany(context, Document, RenderContext, RootElement)
 
-    return Fx.mapEffect(rendered, (what) => attachRoot(ctx.renderCache, rootElement, what)).pipe(
-      Fx.provideService(RenderTemplate, renderTemplate(document, ctx))
-    )
+    return Fx.provideService(
+      Fx.mapEffect(rendered, (what) => attachRoot(ctx.renderCache, rootElement, what)),
+      RenderTemplate,
+      renderTemplate(document, ctx)
+    ) as any
   }))
 }
 
@@ -59,20 +71,115 @@ const renderTemplate: (document: Document, ctx: RenderContext) => RenderTemplate
   <Values extends ReadonlyArray<Renderable<any, any>>, T extends Rendered = Rendered>(
     templateStrings: TemplateStringsArray,
     values: Values,
-    providedRef?: ElementRef<T>
+    providedRef?: ElementRef.ElementRef<T>
   ) =>
     Effect.gen(function*(_) {
-      const ref = providedRef || (yield* _(ElementRef<T>()))
-      const events = Versioned.map(ref, { onFx: DomRenderEvent, onEffect: DomRenderEvent })
+      const ref = providedRef || (yield* _(ElementRef.ElementRef<T>()))
+      const events = Fx.map(ref, DomRenderEvent)
+      const errors = makeSubject<Placeholder.Error<Values[number]>, never>()
       const entry = getBrowserEntry(document, ctx, templateStrings)
       const content = document.importNode(entry.content, true) // Clone our template
-      const parts = buildParts(ctx, entry.template, content) // Build runtime-variant of parts with our content.
+      const parts = yield* _(buildParts(ctx, entry.template, content, ref, errors.onFailure as any)) // Build runtime-variant of parts with our content.
 
-      // TODO: Utilize the Values to update the parts
-      // TODO: ensure Ref's are updated last
+      // If there are parts we need to render them before constructing our Wire
+      if (parts.length > 0) {
+        const refCounter = yield* _(indexRefCounter(getPartsLength(parts)))
 
-      return TemplateInstance(events, ref)
+        // Do the work
+        yield* _(renderValues(values, parts, refCounter))
+
+        // Wait for initial work to be completed
+        yield* _(refCounter.onReady)
+      }
+
+      // Set the element when it is ready
+      yield* _(ElementRef.set(ref, persistent(content) as T))
+
+      // Return the Template instance
+      return TemplateInstance(events, errors, ref, parts)
     })
+
+function getPartsLength(parts: Parts) {
+  return parts.reduce((acc, part) => acc + getPartLength(part), 0)
+}
+
+function getPartLength(part: Parts[number] | StaticText): number {
+  if (part._tag === "ref" || part._tag === "static/text") return 0
+  if (part._tag === "sparse/attribute" || part._tag === "sparse/className" || part._tag === "sparse/comment") {
+    return part.parts.reduce((acc, p) => acc + getPartLength(p), 0)
+  } else {
+    return 1
+  }
+}
+
+function renderValues<Values extends ReadonlyArray<Renderable<any, any>>>(
+  values: Values,
+  parts: Parts,
+  refCounter: IndexRefCounter
+): Effect.Effect<Placeholder.Context<Values[number]> | Scope, never, void> {
+  return Effect.all(parts.map((part) => {
+    switch (part._tag) {
+      case "sparse/attribute":
+      case "sparse/className":
+      case "sparse/comment": {
+        return renderSparsePart(values, part, refCounter)
+      }
+      default:
+        return renderPart(values, part, refCounter)
+    }
+  })) as any
+}
+
+function renderSparsePart<Values extends ReadonlyArray<Renderable<any, any>>>(
+  values: Values,
+  part: SparsePart,
+  refCounter: IndexRefCounter
+) {
+  return Effect.all(
+    part.parts.map((part) => part._tag === "static/text" ? Effect.unit : renderPart(values, part, refCounter))
+  )
+}
+
+function renderPart<Values extends ReadonlyArray<Renderable<any, any>>>(
+  values: Values,
+  part: Part,
+  refCounter: IndexRefCounter
+) {
+  // Ref's are set immediately
+  if (part._tag === "ref") return Effect.unit
+
+  const renderable = values[part.index]
+
+  if (isDirective(renderable)) {
+    // @ts-expect-error
+    return Effect.forkScoped(Effect.tap((renderable as any)(part), () => refCounter.onValue(part.index)))
+  }
+
+  return Effect.forkScoped(
+    Fx.observe(
+      unwrapRenderable(values[part.index]),
+      (value) => Effect.tap(part.update(value), () => refCounter.onValue(part.index))
+    )
+  )
+}
+
+function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<R, E, any> {
+  switch (typeof renderable) {
+    case "undefined":
+    case "object": {
+      if (renderable === null || renderable === undefined) return Fx.succeed(null)
+      else if (isRenderEvent(renderable)) return Fx.succeed(renderable.valueOf())
+      else if (Array.isArray(renderable)) return Fx.combine(renderable.map(unwrapRenderable)) as any
+      else if (TypeId.TypeId in renderable || Stream.StreamTypeId in renderable) return renderable as any
+      // Unwrap Effects such that templates can be embeded directly
+      else if (Effect.EffectTypeId in renderable) {
+        return Fx.fromFxEffect(Effect.map(renderable as any, unwrapRenderable<R, E>))
+      } else return Fx.succeed(renderable as any)
+    }
+    default:
+      return Fx.succeed(renderable)
+  }
+}
 
 function attachRoot(
   cache: RenderContext["renderCache"],
@@ -117,34 +224,44 @@ function getBrowserEntry(document: Document, ctx: RenderContext, templateStrings
   }
 }
 
-function buildParts(ctx: RenderContext, template: Template.Template, content: DocumentFragment): Parts {
-  return template.parts.map(([part, path]) => buildPartWithNode(ctx, part, findPath(content, path)))
+function buildParts<T extends Rendered>(
+  ctx: RenderContext,
+  template: Template.Template,
+  content: DocumentFragment,
+  ref: ElementRef.ElementRef<T>,
+  onCause: (cause: Cause<unknown>) => Effect.Effect<never, never, void>
+): Effect.Effect<Scope, never, Parts> {
+  return Effect.all(
+    template.parts.map(([part, path]) => buildPartWithNode(ctx, part, findPath(content, path), ref, onCause))
+  )
 }
 
-function buildPartWithNode(
+function buildPartWithNode<T extends Rendered>(
   ctx: RenderContext,
   part: Template.PartNode | Template.SparsePartNode,
-  node: Node
-): Part | SparsePart {
+  node: Node,
+  ref: ElementRef.ElementRef<T>,
+  onCause: (cause: Cause<unknown>) => Effect.Effect<never, never, void>
+): Effect.Effect<Scope, never, Part | SparsePart> {
   switch (part._tag) {
     case "attr":
-      return AttributePartImpl.browser(node as Element, part.name, ctx)
+      return Effect.succeed(AttributePartImpl.browser(part.index, node as Element, part.name, ctx))
     case "boolean-part":
-      return BooleanPartImpl.browser(node as Element, part.name, ctx)
+      return Effect.succeed(BooleanPartImpl.browser(part.index, node as Element, part.name, ctx))
     case "className-part":
-      return ClassNamePartImpl.browser(node as Element, ctx)
+      return Effect.succeed(ClassNamePartImpl.browser(part.index, node as Element, ctx))
     case "comment-part":
-      return CommentPartImpl.browser(node as Comment, ctx)
+      return Effect.succeed(CommentPartImpl.browser(part.index, node as Comment, ctx))
     case "data":
-      return DataPartImpl.browser(node as HTMLElement | SVGElement, ctx)
+      return Effect.succeed(DataPartImpl.browser(part.index, node as HTMLElement | SVGElement, ctx))
     case "event":
-      return EventPartImpl.browser(part.name, node as HTMLElement | SVGElement, Effect.logError, ctx)
+      return EventPartImpl.browser(part.name, part.index, ref, node as HTMLElement | SVGElement, onCause) as any
     case "node":
-      return NodePartImpl.browser(node as HTMLElement | SVGElement, ctx)
+      return Effect.succeed(NodePartImpl.browser(part.index, node as HTMLElement | SVGElement, ctx))
     case "property":
-      return PropertyPartImpl.browser(node, part.name, ctx)
+      return Effect.succeed(PropertyPartImpl.browser(part.index, node, part.name, ctx))
     case "ref":
-      return RefPartImpl.browser(node, ctx)
+      return Effect.succeed(new RefPartImpl(ref.query(node as HTMLElement | SVGElement), part.index))
     case "sparse-attr": {
       const parts: Array<AttributePart | StaticText> = Array(part.nodes.length)
       const sparse = SparseAttributePartImpl.browser(
@@ -159,11 +276,12 @@ function buildPartWithNode(
 
         if (node._tag === "text") {
           parts.push(new StaticTextImpl(node.value))
+          ;(sparse as any).value[i] = node.value
         } else {
           parts.push(
             new AttributePartImpl(
               node.name,
-              ctx,
+              node.index,
               ({ value }) => sparse.update(replace(sparse.value, i, value || "")),
               sparse.value[i]
             )
@@ -171,7 +289,7 @@ function buildPartWithNode(
         }
       }
 
-      return sparse
+      return Effect.succeed(sparse)
     }
     case "sparse-class-name": {
       const parts: Array<ClassNamePart | StaticText> = Array(part.nodes.length)
@@ -186,10 +304,11 @@ function buildPartWithNode(
 
         if (node._tag === "text") {
           parts.push(new StaticTextImpl(node.value))
+          ;(sparse as any).value[i] = node.value
         } else {
           parts.push(
             new ClassNamePartImpl(
-              ctx,
+              node.index,
               ({ value }) => sparse.update(replace(sparse.value, i, value || "")),
               (Array.isArray(sparse.value[i]) ? sparse.value[i] : [sparse.value[i]]) as Array<string>
             )
@@ -197,7 +316,7 @@ function buildPartWithNode(
         }
       }
 
-      return sparse
+      return Effect.succeed(sparse)
     }
     case "sparse-comment": {
       const parts: Array<CommentPart | StaticText> = Array(part.nodes.length)
@@ -212,10 +331,11 @@ function buildPartWithNode(
 
         if (node._tag === "text") {
           parts.push(new StaticTextImpl(node.value))
+          ;(sparse as any).value[i] = node.value
         } else {
           parts.push(
             new CommentPartImpl(
-              ctx,
+              node.index,
               ({ value }) => sparse.update(replace(sparse.value, i, value || "")),
               sparse.value[i]
             )
@@ -223,10 +343,10 @@ function buildPartWithNode(
         }
       }
 
-      return sparse
+      return Effect.succeed(sparse)
     }
     case "text-part":
-      return TextPartImpl.browser(node as Element, ctx)
+      return Effect.succeed(TextPartImpl.browser(part.index, node as Element, ctx))
   }
 }
 

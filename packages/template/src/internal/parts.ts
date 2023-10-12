@@ -1,3 +1,7 @@
+import type { Context } from "@typed/context"
+import * as Fx from "@typed/fx/Fx"
+import type { ElementRef } from "@typed/template/ElementRef"
+import type { ElementSource } from "@typed/template/ElementSource"
 import type {
   AttributePart,
   BooleanPart,
@@ -17,13 +21,16 @@ import type {
   TextPart
 } from "@typed/template/Part"
 import type { RenderContext } from "@typed/template/RenderContext"
+import type { Rendered } from "@typed/wire"
 import type { Cause } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
 import { strict } from "effect/Equivalence"
 import type { Equivalence } from "effect/Equivalence"
+import * as Fiber from "effect/Fiber"
 import * as ReadonlyArray from "effect/ReadonlyArray"
 import type { Scope } from "effect/Scope"
+import * as SynchronizedRef from "effect/SynchronizedRef"
 
 const strictEq = strict<any>()
 
@@ -32,7 +39,7 @@ const base = <T extends Part["_tag"]>(tag: T) =>
     readonly _tag: T = tag
 
     constructor(
-      readonly context: RenderContext,
+      readonly index: number,
       readonly commit: (
         params: {
           previous: Extract<Part, { readonly _tag: T }>["value"]
@@ -60,17 +67,17 @@ const base = <T extends Part["_tag"]>(tag: T) =>
 export class AttributePartImpl extends base("attribute") implements AttributePart {
   constructor(
     readonly name: string,
-    context: RenderContext,
+    index: number,
     commit: AttributePartImpl["commit"],
     value: AttributePart["value"]
   ) {
-    super(context, commit, value, strictEq)
+    super(index, commit, value, strictEq)
   }
 
-  static browser(element: Element, name: string, context: RenderContext): AttributePartImpl {
+  static browser(index: number, element: Element, name: string, context: RenderContext): AttributePartImpl {
     return new AttributePartImpl(
       name,
-      context,
+      index,
       ({ part, value }) =>
         context.queue.add(
           part,
@@ -82,27 +89,27 @@ export class AttributePartImpl extends base("attribute") implements AttributePar
 
   static server(
     name: string,
-    context: RenderContext,
+    index: number,
     commit: AttributePartImpl["commit"]
   ) {
-    return new AttributePartImpl(name, context, commit, null)
+    return new AttributePartImpl(name, index, commit, null)
   }
 }
 
 export class BooleanPartImpl extends base("boolean") implements BooleanPart {
   constructor(
     readonly name: string,
-    context: RenderContext,
+    index: number,
     commit: BooleanPartImpl["commit"],
     value: BooleanPart["value"]
   ) {
-    super(context, commit, value, strictEq)
+    super(index, commit, value, strictEq)
   }
 
-  static browser(element: Element, name: string, context: RenderContext): BooleanPartImpl {
+  static browser(index: number, element: Element, name: string, context: RenderContext): BooleanPartImpl {
     return new BooleanPartImpl(
       name,
-      context,
+      index,
       ({ part, value }) =>
         context.queue.add(
           part,
@@ -114,25 +121,25 @@ export class BooleanPartImpl extends base("boolean") implements BooleanPart {
 
   static server(
     name: string,
-    context: RenderContext,
+    index: number,
     commit: BooleanPartImpl["commit"]
   ) {
-    return new BooleanPartImpl(name, context, commit, null)
+    return new BooleanPartImpl(name, index, commit, null)
   }
 }
 
 export class ClassNamePartImpl extends base("className") implements ClassNamePart {
   constructor(
-    context: RenderContext,
+    index: number,
     commit: ClassNamePartImpl["commit"],
     value: ClassNamePart["value"]
   ) {
-    super(context, commit, value, strictEq)
+    super(index, commit, value, strictEq)
   }
 
-  static browser(element: Element, context: RenderContext): ClassNamePartImpl {
+  static browser(index: number, element: Element, context: RenderContext): ClassNamePartImpl {
     return new ClassNamePartImpl(
-      context,
+      index,
       ({ part, previous, value }) =>
         context.queue.add(
           part,
@@ -143,15 +150,15 @@ export class ClassNamePartImpl extends base("className") implements ClassNamePar
             element.classList.remove(...removed)
           }
         ),
-      Array.from(element.classList)
+      null
     )
   }
 
   static server(
-    context: RenderContext,
+    index: number,
     commit: ClassNamePartImpl["commit"]
   ) {
-    return new ClassNamePartImpl(context, commit, null)
+    return new ClassNamePartImpl(index, commit, null)
   }
 }
 
@@ -193,24 +200,24 @@ function diffStrings(
 }
 
 export class CommentPartImpl extends base("comment") implements CommentPart {
-  static browser(comment: globalThis.Comment, ctx: RenderContext) {
+  static browser(index: number, comment: globalThis.Comment, ctx: RenderContext) {
     return new CommentPartImpl(
-      ctx,
+      index,
       ({ part, value }) => ctx.queue.add(part, () => comment.data = value || ""),
       comment.data,
       strictEq
     )
   }
 
-  static server(ctx: RenderContext, commit: CommentPartImpl["commit"]) {
-    return new CommentPartImpl(ctx, commit, null)
+  static server(index: number, ctx: RenderContext, commit: CommentPartImpl["commit"]) {
+    return new CommentPartImpl(index, commit, null)
   }
 }
 
 export class DataPartImpl extends base("data") implements DataPart {
-  static browser(element: HTMLElement | SVGElement, ctx: RenderContext) {
+  static browser(index: number, element: HTMLElement | SVGElement, ctx: RenderContext) {
     return new DataPartImpl(
-      ctx,
+      index,
       ({ part, previous, value }) =>
         ctx.queue.add(
           part,
@@ -220,7 +227,7 @@ export class DataPartImpl extends base("data") implements DataPart {
             if (diff) {
               const { added, removed } = diff
 
-              removed.forEach(([k]) => delete element.dataset[k])
+              removed.forEach((k) => delete element.dataset[k])
               added.forEach(([k, v]) => element.dataset[k] = v)
             }
           }
@@ -229,8 +236,8 @@ export class DataPartImpl extends base("data") implements DataPart {
     )
   }
 
-  static server(ctx: RenderContext, commit: DataPartImpl["commit"]) {
-    return new DataPartImpl(ctx, commit, null)
+  static server(index: number, ctx: RenderContext, commit: DataPartImpl["commit"]) {
+    return new DataPartImpl(index, commit, null)
   }
 }
 
@@ -238,17 +245,17 @@ function diffDataSet(
   a: Record<string, string | undefined> | null | undefined,
   b: Record<string, string | undefined> | null | undefined
 ):
-  | { added: Array<readonly [string, string | undefined]>; removed: Array<readonly [string, string | undefined]> }
+  | { added: Array<readonly [string, string | undefined]>; removed: ReadonlyArray<string> }
   | null
 {
   if (!a) return b ? { added: Object.entries(b), removed: [] } : null
-  if (!b) return a ? { added: [], removed: Object.entries(a) } : null
+  if (!b) return { added: [], removed: Object.keys(a) }
 
   const { added, removed, unchanged } = diffStrings(Object.keys(a), Object.keys(b))
 
   return {
     added: added.concat(unchanged).map((k) => [k, b[k]] as const),
-    removed: removed.map((k) => [k, a[k]] as const)
+    removed
   }
 }
 
@@ -256,33 +263,73 @@ export class EventPartImpl extends base("event") implements EventPart {
   constructor(
     readonly name: string,
     readonly onCause: (cause: Cause<unknown>) => Effect.Effect<never, never, unknown>,
-    context: RenderContext,
+    index: number,
     commit: EventPartImpl["commit"],
     value: EventPart["value"]
   ) {
-    super(context, commit, value, strictEq)
+    super(index, commit, value, strictEq)
   }
 
-  static browser(
+  static browser<T extends Rendered>(
     name: string,
+    index: number,
+    ref: ElementRef<T>,
     element: HTMLElement | SVGElement,
-    onCause: (cause: Cause<unknown>) => Effect.Effect<never, never, unknown>,
-    ctx: RenderContext
-  ) {
-    return new EventPartImpl(
-      name,
-      onCause,
-      ctx,
-      // TODO: We need a way to utilize event delegation
-      () => Effect.unit,
-      null
-    )
+    onCause: (cause: Cause<unknown>) => Effect.Effect<never, never, unknown>
+  ): Effect.Effect<unknown, never, void> {
+    return withSwitchFork((fork, ctx) => {
+      const source = ref.query(element)
+
+      return Effect.succeed(
+        new EventPartImpl(
+          name,
+          onCause,
+          index,
+          ({ value }) =>
+            value
+              ? source.events(name as any, value.options).pipe(
+                Fx.mapEffect((ev) => Effect.catchAllCause(value.handler(ev), onCause)),
+                Fx.provide(ctx),
+                Fx.drain,
+                fork
+              )
+              : fork(Effect.unit),
+          null
+        )
+      )
+    })
   }
 }
 
+function withScopedFork<R, E, A>(f: (fork: Fx.ScopedFork) => Effect.Effect<R, E, A>): Effect.Effect<R | Scope, E, A> {
+  return Effect.scopeWith((scope) => f(Effect.forkIn(scope)))
+}
+
+// Ensures only a single fiber is executing
+function withSwitchFork<R, E, A>(
+  f: (fork: Fx.FxFork, ctx: Context<R | Scope>) => Effect.Effect<R, E, A>
+): Effect.Effect<R | Scope, E, void> {
+  return Effect.contextWithEffect((ctx) =>
+    withScopedFork((fork) =>
+      Effect.flatMap(
+        SynchronizedRef.make<Fiber.Fiber<never, void>>(Fiber.unit),
+        (ref) =>
+          Effect.flatMap(
+            f((effect) =>
+              SynchronizedRef.updateAndGetEffect(
+                ref,
+                (fiber) => Effect.flatMap(Fiber.interrupt(fiber), () => fork(effect))
+              ), ctx),
+            () => Effect.flatMap(SynchronizedRef.get(ref), Fiber.join)
+          )
+      )
+    )
+  )
+}
+
 export class NodePartImpl extends base("node") implements NodePart {
-  static browser(element: HTMLElement | SVGElement, ctx: RenderContext) {
-    return new NodePartImpl(ctx, ({ part }) =>
+  static browser(index: number, element: HTMLElement | SVGElement, ctx: RenderContext) {
+    return new NodePartImpl(index, ({ part }) =>
       ctx.queue.add(part, () => {
         // TODO: We need to port over the diffing of children
       }), [])
@@ -292,36 +339,34 @@ export class NodePartImpl extends base("node") implements NodePart {
 export class PropertyPartImpl extends base("property") implements PropertyPart {
   constructor(
     readonly name: string,
-    context: RenderContext,
+    index: number,
     commit: PropertyPartImpl["commit"],
     value: PropertyPartImpl["value"]
   ) {
-    super(context, commit, value, strictEq)
+    super(index, commit, value, strictEq)
   }
 
-  static browser(node: Node, name: string, ctx: RenderContext) {
-    // TODO: We need to be able to set the Reference at the right time.
+  static browser(index: number, node: Node, name: string, ctx: RenderContext) {
     return new PropertyPartImpl(
       name,
-      ctx,
+      index,
       ({ part, value }) => ctx.queue.add(part, () => (node as any)[name] = value),
       null
     )
   }
 }
 
-export class RefPartImpl extends base("ref") implements RefPart {
-  static browser(node: Node, ctx: RenderContext) {
-    // TODO: We need to be able to set the Reference at the right time.
-    return new RefPartImpl(ctx, () => Effect.unit, null, strictEq)
-  }
+export class RefPartImpl implements RefPart {
+  readonly _tag = "ref"
+
+  constructor(readonly value: ElementSource, readonly index: number) {}
 }
 
 export class TextPartImpl extends base("text") implements TextPart {
   // TODO: Make this properly
-  static browser(element: Element, ctx: RenderContext) {
+  static browser(index: number, element: Element, ctx: RenderContext) {
     return new TextPartImpl(
-      ctx,
+      index,
       ({ part, value }) => ctx.queue.add(part, () => element.textContent = value || ""),
       element.textContent,
       strictEq
@@ -334,7 +379,6 @@ const sparse = <T extends SparsePart["_tag"]>(tag: T) =>
     readonly _tag: T = tag
 
     constructor(
-      readonly context: RenderContext,
       readonly commit: (
         params: {
           previous: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>
@@ -365,16 +409,13 @@ type SparseAttributeValues<T extends ReadonlyArray<AttributePart | ClassNamePart
   >
 type SparseAttributeValue<T extends AttributePart | ClassNamePart | CommentPart | StaticText> = T["value"]
 
-// TODO: Need patterns for managing sparse attributes ported over
-
 export class SparseAttributePartImpl extends sparse("sparse/attribute") implements SparseAttributePart {
   constructor(
     readonly name: string,
     readonly parts: ReadonlyArray<AttributePart | StaticText>,
-    ctx: RenderContext,
     commit: SparseAttributePartImpl["commit"]
   ) {
-    super(ctx, commit, [], ReadonlyArray.getEquivalence(strictEq))
+    super(commit, [], ReadonlyArray.getEquivalence(strictEq))
   }
 
   static browser(
@@ -386,7 +427,6 @@ export class SparseAttributePartImpl extends sparse("sparse/attribute") implemen
     return new SparseAttributePartImpl(
       name,
       parts,
-      ctx,
       ({ part, value }) =>
         ctx.queue.add(part, () => element.setAttribute(name, value.flatMap(isNonEmptyString).join("")))
     )
@@ -396,10 +436,9 @@ export class SparseAttributePartImpl extends sparse("sparse/attribute") implemen
 export class SparseClassNamePartImpl extends sparse("sparse/className") implements SparseClassNamePart {
   constructor(
     readonly parts: ReadonlyArray<ClassNamePart | StaticText>,
-    ctx: RenderContext,
     commit: SparseClassNamePartImpl["commit"]
   ) {
-    super(ctx, commit, [], ReadonlyArray.getEquivalence(strictEq))
+    super(commit, [], ReadonlyArray.getEquivalence(strictEq))
   }
 
   static browser(
@@ -409,7 +448,6 @@ export class SparseClassNamePartImpl extends sparse("sparse/className") implemen
   ) {
     return new SparseClassNamePartImpl(
       parts,
-      ctx,
       ({ part, value }) =>
         ctx.queue.add(part, () => element.setAttribute("class", value.flatMap(isNonEmptyString).join(" ")))
     )
@@ -419,17 +457,15 @@ export class SparseClassNamePartImpl extends sparse("sparse/className") implemen
 export class SparseCommentPartImpl extends sparse("sparse/comment") implements SparseCommentPart {
   constructor(
     readonly parts: ReadonlyArray<CommentPart | StaticText>,
-    ctx: RenderContext,
     commit: SparseCommentPartImpl["commit"],
     value: SparseCommentPartImpl["value"]
   ) {
-    super(ctx, commit, value, ReadonlyArray.getEquivalence(strictEq))
+    super(commit, value, ReadonlyArray.getEquivalence(strictEq))
   }
 
   static browser(comment: Comment, parts: ReadonlyArray<CommentPart | StaticText>, ctx: RenderContext) {
     return new SparseCommentPartImpl(
       parts,
-      ctx,
       ({ part, value }) => ctx.queue.add(part, () => comment.nodeValue = value.flatMap(isNonEmptyString).join("")),
       []
     )

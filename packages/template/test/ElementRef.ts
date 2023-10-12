@@ -28,12 +28,44 @@ describe("ElementRef", () => {
     await Effect.runPromise(test)
   })
 
+  it("allows querying for children by reference", async () => {
+    const test = Effect.gen(function*(_) {
+      const [ref, element] = yield* _(testRef`<p id="foo">asdf</p>`)
+      const child = ref.query(element.children[0] as HTMLParagraphElement)
+
+      expect(yield* _(child)).toEqual(Array.from(element.childNodes))
+    })
+
+    await Effect.runPromise(test)
+  })
+
   it("allows listening to events", async () => {
     const test = Effect.gen(function*(_) {
       const [ref] = yield* _(testRef`<p id="foo">asdf</p>`)
       const foo = ref.query("p#foo")
       const [p] = yield* _(foo)
       const fiber = yield* _(foo.events("click"), Fx.first, Effect.flatten, Effect.fork)
+
+      // Allow fiber to start
+      yield* _(Effect.sleep(1))
+
+      p.click()
+
+      const event = yield* _(Effect.fromFiber(fiber))
+
+      expect(event instanceof window.MouseEvent).toBe(true)
+    })
+
+    await Effect.runPromise(test)
+  })
+
+  it("allows listening to events using element reference", async () => {
+    const test = Effect.gen(function*(_) {
+      const [ref, element] = yield* _(testRef`<button><p id="foo">asdf</p><button>`)
+      const button = element.children[0] as HTMLButtonElement
+      const foo = ref.query(button).query("p#foo")
+      const [p] = yield* _(foo)
+      const fiber = yield* _(ref.query(button).query("p#foo").events("click"), Fx.first, Effect.flatten, Effect.fork)
 
       // Allow fiber to start
       yield* _(Effect.sleep(1))

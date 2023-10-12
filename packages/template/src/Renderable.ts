@@ -5,7 +5,7 @@ import type { RenderEvent } from "./RenderEvent"
 export type Renderable<R = never, E = never> =
   | Renderable.Value
   | { readonly [key: string]: Renderable.Value } // TODO: Should we manage data attributes this way?
-  | Placeholder<R, E, Renderable.Value>
+  | Placeholder<R, E, Renderable<R, E>>
   | ReadonlyArray<Renderable<R, E>>
 
 export namespace Renderable {

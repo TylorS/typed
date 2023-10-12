@@ -36,6 +36,13 @@ export function ElementRef<T extends Rendered = Rendered>(): Effect.Effect<never
   )
 }
 
+export function of<T extends Rendered>(rendered: T): Effect.Effect<never, never, ElementRef<T>> {
+  return Effect.map(
+    RefSubject.of(Option.some<T>(rendered), strictEqual),
+    (ref) => new ElementRefImpl(ref) as any as ElementRef<T>
+  )
+}
+
 class ElementRefImpl<T extends Rendered> extends FxEffectProto<never, never, T, never, NoSuchElementException, T>
   implements Omit<ElementRef<T>, ModuleAgumentedEffectKeysToOmit>
 {
@@ -43,7 +50,7 @@ class ElementRefImpl<T extends Rendered> extends FxEffectProto<never, never, T, 
 
   private source = new ElementSourceImpl(RefSubject.compact(this.ref))
 
-  readonly selectors = this.source.selectors
+  readonly selectors = this.source.selector
 
   constructor(readonly ref: RefSubject.RefSubject<never, never, Option.Option<T>>) {
     super()

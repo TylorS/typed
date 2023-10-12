@@ -1,9 +1,10 @@
 import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import { addEventListener } from "@typed/dom/EventTarget"
-import type { Filtered } from "@typed/fx/Filtered"
+import { Filtered } from "@typed/fx/Filtered"
 import * as Fx from "@typed/fx/Fx"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
-import type { Versioned } from "@typed/fx/Versioned"
+import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
+import * as Versioned from "@typed/fx/Versioned"
 import type { Rendered } from "@typed/wire"
 import { isWire } from "@typed/wire"
 import type { NoSuchElementException } from "effect/Cause"
@@ -14,13 +15,20 @@ import * as Scope from "effect/Scope"
 import type * as TQS from "typed-query-selector/parser"
 
 export interface ElementSource<T extends Rendered = Element, EventMap extends {} = DefaultEventMap<T>>
-  extends Versioned<never, never, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
+  extends
+    Versioned.Versioned<never, never, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
 {
-  readonly selectors: ReadonlyArray<string>
+  readonly selector: Selector
 
-  readonly query: <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
-    selector: S
-  ) => ElementSource<ParseSelector<S, Element>, Ev>
+  readonly query: {
+    <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
+      selector: S
+    ): ElementSource<ParseSelector<S, Element>, Ev>
+
+    <Target extends Rendered, EventMap extends {} = DefaultEventMap<Target>>(
+      rendered: Target
+    ): ElementSource<Target, EventMap>
+  }
 
   readonly elements: Filtered<never, never, Rendered.Elements<T>>
 
@@ -88,6 +96,8 @@ function findMostSpecificElement<T extends Element>(cssSelectors: ReadonlyArray<
 }
 
 function findMatchingElements<El extends Element = Element>(cssSelectors: ReadonlyArray<string>) {
+  if (cssSelectors.length === 0) return getElements
+
   const cssSelector = cssSelectors.join(" ")
   return function(element: Rendered): ReadonlyArray<El> {
     const elements = getElements(element)
@@ -141,6 +151,44 @@ function makeEventStream<Ev extends Event>(
 
     if (capture) {
       return pipe(event$, Fx.map(findCurrentTarget(cssSelector, element)))
+    }
+
+    return event$
+  }
+}
+
+function makeElementEventStream<Ev extends Event>(
+  currentTarget: Element,
+  eventName: string,
+  options: EventListenerOptions = {}
+) {
+  return function(rendered: Rendered): Fx.Fx<never, never, Ev> {
+    const { capture } = options
+    const elements = getElements(rendered)
+
+    const event$ = Fx.merge(
+      elements.map((element) =>
+        Fx.filter(
+          Fx.withScopedFork<never, never, Ev>(({ scope, sink }) =>
+            Effect.zipRight(
+              Effect.provideService(
+                addEventListener(element, {
+                  eventName,
+                  handler: (ev) => sink.onSuccess(ev as any as Ev)
+                }),
+                Scope.Scope,
+                scope
+              ),
+              Effect.never
+            )
+          ),
+          (event: Ev) => event.target ? currentTarget.contains(event.target as Element) : false
+        )
+      )
+    )
+
+    if (capture) {
+      return event$.pipe(Fx.map((ev) => cloneEvent(ev, currentTarget)))
     }
 
     return event$
@@ -205,17 +253,20 @@ function isElement(element: RenderedWithoutArray): element is Element {
 /**
  * @internal
  */
-// @ts-expect-error Missing module agumented
 export class ElementSourceImpl<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>
   extends FxEffectProto<never, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
-  implements ElementSource<T, EventMap>
+  implements Omit<ElementSource<T, EventMap>, ModuleAgumentedEffectKeysToOmit>
 {
   private eventMap = new Map<any, Fx.Fx<never, never, any>>()
 
-  constructor(readonly rootElement: Filtered<never, never, T>, readonly selectors: ReadonlyArray<string> = []) {
+  constructor(readonly rootElement: Filtered<never, never, T>, readonly selector: Selector = CssSelectors([])) {
     super()
     this.query = this.query.bind(this)
     this.events = this.events.bind(this)
+  }
+
+  static fromElement<T extends Rendered>(rootElement: T): ElementSource<T> {
+    return new ElementSourceImpl(Filtered(Versioned.of(rootElement), Effect.succeedSome)) as any
   }
 
   protected toEffect(): Effect.Effect<never, NoSuchElementException, Rendered.Elements<T>> {
@@ -231,14 +282,20 @@ export class ElementSourceImpl<T extends Rendered, EventMap extends {} = Default
   ): ElementSource<ParseSelector<S, Element>, Ev> {
     if (selector === ROOT_CSS_SELECTOR) {
       return this as any
+    } else if (typeof selector === "string") {
+      if (this.selector._tag === "css") {
+        return new ElementSourceImpl(this.rootElement, CssSelectors([...this.selector.selectors, selector])) as any
+      } else {
+        return ElementSourceImpl.fromElement(this.selector.element).query(selector)
+      }
+    } else {
+      return new ElementSourceImpl(this.rootElement, ElementSelector(selector)) as any
     }
-
-    return new ElementSourceImpl(this.rootElement, [...this.selectors, selector]) as any
   }
 
-  readonly elements: ElementSource<T, EventMap>["elements"] = this.selectors.length === 0
-    ? this.rootElement.map(getElements) as any
-    : this.rootElement.map(findMatchingElements<any>(this.selectors))
+  readonly elements: ElementSource<T, EventMap>["elements"] = this.selector._tag === "css" ?
+    this.rootElement.map(findMatchingElements<any>(this.selector.selectors)) :
+    Filtered(Versioned.of(this.selector.element), (x) => Effect.succeedSome([x])) as any
 
   readonly version = this.elements.version
 
@@ -248,13 +305,44 @@ export class ElementSourceImpl<T extends Rendered, EventMap extends {} = Default
   ) {
     if (this.eventMap.has(type)) return this.eventMap.get(type)!
 
-    const s = this.rootElement.map(findMostSpecificElement(this.selectors)).pipe(
-      Fx.switchMap(makeEventStream(this.selectors, type as any, options)),
-      Fx.multicast
-    )
+    const events = this.selector._tag === "css" ?
+      this.rootElement.map(findMostSpecificElement(this.selector.selectors)).pipe(
+        Fx.switchMap(makeEventStream(this.selector.selectors, type as any, options)),
+        Fx.multicast
+      ) :
+      this.rootElement.pipe(
+        Fx.switchMap(makeElementEventStream(this.selector.element, type as string, options)),
+        Fx.multicast
+      )
 
-    this.eventMap.set(type, s)
+    this.eventMap.set(type, events)
 
-    return s
+    return events
+  }
+}
+
+export type Selector = CssSelectors | ElementSelector
+
+export interface CssSelectors {
+  readonly _tag: "css"
+  readonly selectors: ReadonlyArray<string>
+}
+
+export function CssSelectors(selectors: ReadonlyArray<string>): CssSelectors {
+  return {
+    _tag: "css",
+    selectors
+  }
+}
+
+export interface ElementSelector {
+  readonly _tag: "element"
+  readonly element: Element
+}
+
+export function ElementSelector(element: Element): ElementSelector {
+  return {
+    _tag: "element",
+    element
   }
 }

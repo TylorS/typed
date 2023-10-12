@@ -1,5 +1,6 @@
 import type * as Part from "@typed/template/Part"
 import type { Placeholder } from "@typed/template/Placeholder"
+import type { Renderable } from "@typed/template/Renderable"
 import * as Effect from "effect/Effect"
 
 export const DirectiveTypeId = Symbol.for("@typed/templateDirective")
@@ -59,3 +60,7 @@ export const text: <R, E>(directive: (part: Part.TextPart) => Effect.Effect<R, E
 
 export const node: <R, E>(directive: (part: Part.NodePart) => Effect.Effect<R, E, unknown>) => Directive<R, E> =
   withTag("node")
+
+export function isDirective<R, E>(renderable: Renderable<R, E> | Placeholder<R, E>): renderable is Directive<R, E> {
+  return typeof renderable === "function" && DirectiveTypeId in (renderable as object)
+}

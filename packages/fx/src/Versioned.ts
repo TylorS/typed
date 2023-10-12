@@ -7,6 +7,7 @@
 
 import type * as Fx from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
+import * as fxEffectProto from "@typed/fx/internal/fx-effect-proto"
 import { VersionedTransform } from "@typed/fx/internal/verionsed-transform"
 import type { TypeId } from "@typed/fx/TypeId"
 import { Effect, identity } from "effect"
@@ -32,6 +33,26 @@ export interface Versioned<R0, R, E, A, R2, E2, B> extends Fx.Fx<R, E, A>, Omit<
    */
   readonly version: Effect.Effect<R0, never, number>
 }
+
+/**
+ * Construct a Versioned type.
+ * @since 1.18.0
+ * @category constructors
+ */
+export const make: <R0, R, E, A, R2, E2, B>(
+  { effect, fx, version }: {
+    version: Effect.Effect<R0, never, number>
+    fx: Fx.Fx<R, E, A>
+    effect: Effect.Effect<R2, E2, B>
+  }
+) => Versioned<R0, R, E, A, R2, E2, B> = fxEffectProto.makeVersioned
+
+/**
+ * Construct a Versioned type from a static value.
+ * @since 1.18.0
+ * @category constructors
+ */
+export const of: <A>(value: A) => Versioned<never, never, never, A, never, never, A> = fxEffectProto.versionedOf
 
 /**
  * Transform a Versioned as an Fx and as an Effect separately.
