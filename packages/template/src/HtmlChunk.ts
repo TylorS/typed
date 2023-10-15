@@ -16,12 +16,12 @@ import escapeHTML from "escape-html"
 export type HtmlChunk = TextChunk | PartChunk | SparsePartChunk
 
 export class TextChunk {
-  readonly type = "text"
+  readonly _tag = "text"
   constructor(readonly value: string) {}
 }
 
 export class PartChunk {
-  readonly type = "part"
+  readonly _tag = "part"
 
   constructor(
     readonly node: PartNode,
@@ -30,7 +30,7 @@ export class PartChunk {
 }
 
 export class SparsePartChunk {
-  readonly type = "sparse-part"
+  readonly _tag = "sparse-part"
 
   constructor(
     readonly node: SparseAttrNode | SparseClassNameNode,
@@ -56,7 +56,7 @@ function fuseTextChunks(chunks: Array<HtmlChunk>): ReadonlyArray<HtmlChunk> {
       const prev = output[prevIndex]
       const curr = chunks[i]
 
-      if (prev.type === "text" && curr.type === "text") {
+      if (prev._tag === "text" && curr._tag === "text") {
         output[prevIndex] = new TextChunk(prev.value + curr.value)
       } else {
         output.push(curr)
@@ -70,7 +70,7 @@ function fuseTextChunks(chunks: Array<HtmlChunk>): ReadonlyArray<HtmlChunk> {
 }
 
 type NodeMap = {
-  readonly [K in Node["type"]]: (node: Extract<Node, { type: K }>, hash?: string) => Array<HtmlChunk>
+  readonly [K in Node["_tag"]]: (node: Extract<Node, { _tag: K }>, hash?: string) => Array<HtmlChunk>
 }
 
 const nodeMap: NodeMap = {
@@ -83,11 +83,11 @@ const nodeMap: NodeMap = {
   "comment-part": (node) => [
     new PartChunk(node, (value) => `<!--${value}-->`)
   ],
-  "sparse-comment": (node) => node.nodes.flatMap((node) => nodeMap[node.type](node as any))
+  "sparse-comment": (node) => node.nodes.flatMap((node) => nodeMap[node._tag](node as any))
 }
 
 function nodeToHtmlChunk(node: Node, hash?: string): Array<HtmlChunk> {
-  return nodeMap[node.type](node as any, hash)
+  return nodeMap[node._tag](node as any, hash)
 }
 
 function elementToHtmlChunks(
@@ -131,7 +131,7 @@ function selfClosingElementToHtmlChunks(
 }
 
 function textToHtmlChunks(text: Text): HtmlChunk {
-  return text.type === "text" ? new TextChunk(text.value) : new PartChunk(text, String)
+  return text._tag === "text" ? new TextChunk(text.value) : new PartChunk(text, String)
 }
 
 function textOnlyElementToHtmlChunks(
@@ -158,7 +158,7 @@ function textOnlyElementToHtmlChunks(
 }
 
 type AttrMap = {
-  [K in Attribute["type"]]: (attr: Extract<Attribute, { readonly type: K }>) => HtmlChunk
+  [K in Attribute["_tag"]]: (attr: Extract<Attribute, { readonly _tag: K }>) => HtmlChunk
 }
 
 const attrMap: AttrMap = {
@@ -188,7 +188,7 @@ const attrMap: AttrMap = {
 }
 
 function attributeToHtmlChunk(attr: Attribute): HtmlChunk {
-  return attrMap[attr.type](attr as any)
+  return attrMap[attr._tag](attr as any)
 }
 
 function isString(value: unknown): value is string {

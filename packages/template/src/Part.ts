@@ -70,9 +70,9 @@ export interface PropertyPart {
   readonly update: (value: this["value"]) => Effect<Scope, never, void>
 }
 
-export interface RefPart {
+export interface RefPart<E = any> {
   readonly _tag: "ref"
-  readonly value: ElementSource<Rendered>
+  readonly value: ElementSource<Rendered, E>
   readonly index: number
 }
 

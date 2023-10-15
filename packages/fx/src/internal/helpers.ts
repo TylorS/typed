@@ -359,7 +359,7 @@ export function awaitScopeClose(scope: Scope.Scope) {
   )
 }
 
-export class DeferredRef<E, A> extends Effectable.Effectable<never, E, A> {
+export class DeferredRef<E, A> extends Effectable.Class<never, E, A> {
   // Keep track of the latest value emitted by the stream
   private current: Option.Option<Exit.Exit<E, A>> = Option.none()
   private deferred = Deferred.unsafeMake<E, A>(this.id)
@@ -381,7 +381,7 @@ export class DeferredRef<E, A> extends Effectable.Effectable<never, E, A> {
   }
 }
 
-export class MulticastEffect<R, E, A> extends Effectable.Effectable<R, E, A> {
+export class MulticastEffect<R, E, A> extends Effectable.Class<R, E, A> {
   #fiber: Fiber.Fiber<E, A> | null = null
 
   constructor(

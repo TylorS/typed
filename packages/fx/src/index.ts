@@ -17,61 +17,61 @@
  */
 
 /**
- * [Computed documentation](https://tylors.github.io/typed-fp/fx/Computed.ts.html)
+ * [Computed documentation](https://tylors.gitPubSub.io/typed-fp/fx/Computed.ts.html)
  * @since 1.18.0
  */
 export * as Computed from "./Computed"
 
 /**
- * [Filtered documentation](https://tylors.github.io/typed-fp/fx/Filtered.ts.html)
+ * [Filtered documentation](https://tylors.gitPubSub.io/typed-fp/fx/Filtered.ts.html)
  * @since 1.18.0
  */
 export * as Filtered from "./Filtered"
 
 /**
- * [Fx documentation](https://tylors.github.io/typed-fp/fx/Fx.ts.html)
+ * [Fx documentation](https://tylors.gitPubSub.io/typed-fp/fx/Fx.ts.html)
  * @since 1.18.0
  */
 export * from "./Fx"
 
 /**
- * [RefArray documentation](https://tylors.github.io/typed-fp/fx/RefArray.ts.html)
+ * [RefArray documentation](https://tylors.gitPubSub.io/typed-fp/fx/RefArray.ts.html)
  * @since 1.18.0
  */
 export * as RefArray from "./RefArray"
 
 /**
- * [RefRemoteData documentation](https://tylors.github.io/typed-fp/fx/RefRemoteData.ts.html)
+ * [RefRemoteData documentation](https://tylors.gitPubSub.io/typed-fp/fx/RefRemoteData.ts.html)
  * @since 1.18.0
  */
 export * as RefRemoteData from "./RefRemoteData"
 
 /**
- * [RefSubject documentation](https://tylors.github.io/typed-fp/fx/RefSubject.ts.html)
+ * [RefSubject documentation](https://tylors.gitPubSub.io/typed-fp/fx/RefSubject.ts.html)
  * @since 1.18.0
  */
 export * as RefSubject from "./RefSubject"
 
 /**
- * [Sink documentation](https://tylors.github.io/typed-fp/fx/Sink.ts.html)
+ * [Sink documentation](https://tylors.gitPubSub.io/typed-fp/fx/Sink.ts.html)
  * @since 1.18.0
  */
 export * as Sink from "./Sink"
 
 /**
- * [Subject documentation](https://tylors.github.io/typed-fp/fx/Subject.ts.html)
+ * [Subject documentation](https://tylors.gitPubSub.io/typed-fp/fx/Subject.ts.html)
  * @since 1.18.0
  */
 export * as Subject from "./Subject"
 
 /**
- * [Typeclass documentation](https://tylors.github.io/typed-fp/fx/Typeclass.ts.html)
+ * [Typeclass documentation](https://tylors.gitPubSub.io/typed-fp/fx/Typeclass.ts.html)
  * @since 1.18.0
  */
 export * as Typeclass from "./Typeclass"
 
 /**
- * [TypeId documentation](https://tylors.github.io/typed-fp/fx/TypeId.ts.html)
+ * [TypeId documentation](https://tylors.gitPubSub.io/typed-fp/fx/TypeId.ts.html)
  * @since 1.18.0
  */
 export * from "./TypeId"

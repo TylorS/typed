@@ -6,15 +6,15 @@
 import * as Cause from "effect/Cause"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
+import * as Effectable from "effect/Effectable"
 import * as Either from "effect/Either"
 import * as Equal from "effect/Equal"
 import type * as Equivalence from "effect/Equivalence"
 import * as Exit from "effect/Exit"
-import { dual, identity, pipe } from "effect/Function"
+import { dual, pipe } from "effect/Function"
 import * as Hash from "effect/Hash"
 import * as Option from "effect/Option"
 import type { Pipeable } from "effect/Pipeable"
-import { pipeArguments } from "effect/Pipeable"
 import type * as Unify from "effect/Unify"
 
 /**
@@ -288,18 +288,9 @@ export const getEquivalence = <E, A>(
   }
 }
 
-const variance = {
-  _R: identity,
-  _E: identity,
-  _A: identity
-}
 const eqAny = getEquivalence(Equal.equals, Equal.equals)
 const proto = {
-  _tag: "Commit",
-  [Effect.EffectTypeId]: variance,
-  i0: undefined,
-  i1: undefined,
-  i2: undefined,
+  ...Effectable.CommitPrototype,
   [Equal.symbol](this: RemoteData<any, any>, that: any) {
     return isRemoteData(that) && eqAny(this, that)
   },
@@ -321,10 +312,6 @@ const proto = {
           Hash.combine(Hash.hash((this as Success<any>).refreshing))
         )
     }
-  },
-  pipe() {
-    // eslint-disable-next-line prefer-rest-params
-    return pipeArguments(this, arguments)
   }
 }
 

@@ -352,7 +352,7 @@ class ParserImpl {
     if (nodes.length === 1) {
       const node = nodes[0]
 
-      if (node.type === "comment-part") {
+      if (node._tag === "comment-part") {
         return new Template.CommentPartNode(node.index)
       } else {
         return new Template.CommentNode(node.value)

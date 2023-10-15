@@ -276,7 +276,7 @@ class ParserImpl implements Parser {
     if (textAndParts.length === 1) {
       const part = textAndParts[0]
 
-      if (part.type === "text") {
+      if (part._tag === "text") {
         return new Template.CommentNode(part.value)
       } else {
         return this.addPart(new Template.CommentPartNode(part.index))
@@ -393,7 +393,7 @@ class ParserImpl implements Parser {
     if (textAndParts.length === 1) {
       const part = textAndParts[0]
 
-      if (part.type === "text") {
+      if (part._tag === "text") {
         return new Template.AttributeNode(name, part.value)
       } else {
         return this.addPart(
@@ -405,7 +405,8 @@ class ParserImpl implements Parser {
     return this.addPart(
       isClass
         ? new Template.SparseClassNameNode(
-          textAndParts.filter((x): x is Template.ClassNamePartNode => x.type === "className-part")
+          // We don't need empty text spaces to generate the correct class namesq
+          textAndParts.filter((t) => t._tag === "text" ? t.value.trim().length > 0 : true) as any
         )
         : new Template.SparseAttrNode(name, textAndParts as any)
     )

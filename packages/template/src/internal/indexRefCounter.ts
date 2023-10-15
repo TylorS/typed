@@ -2,43 +2,53 @@ import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 
 export type IndexRefCounter = {
-  onReady: Effect.Effect<never, never, void>
-  onValue: (index: number) => Effect.Effect<never, never, void>
+  acquire: (index: number) => Effect.Effect<never, never, void>
+  release: (index: number) => Effect.Effect<never, never, void>
+  wait: Effect.Effect<never, never, void>
 }
 
 /**
  * @internal
  */
-export function indexRefCounter(
-  expected: number
-): Effect.Effect<
+export function indexRefCounter(): Effect.Effect<
   never,
   never,
   IndexRefCounter
 > {
   return Effect.map(Deferred.make<never, void>(), (deferred) => {
-    const hasValue = new Set<number>()
+    const indexes = new Set<number>()
 
+    let waiting = false
     let finished = false
 
-    function onValue(index: number) {
+    function acquire(index: number) {
+      return Effect.sync(() => indexes.add(index))
+    }
+
+    function release(index: number) {
+      return Effect.suspend(() => {
+        if (indexes.delete(index)) return checkRefCount()
+        else return Effect.unit
+      })
+    }
+
+    function checkRefCount() {
       if (finished) return Effect.unit
-
-      hasValue.add(index)
-
-      if (hasValue.size === expected) {
+      else if (indexes.size === 0 && waiting) {
         finished = true
-        hasValue.clear()
 
         return Deferred.succeed(deferred, undefined)
-      }
-
-      return Effect.unit
+      } else return Effect.unit
     }
 
     return {
-      onReady: Deferred.await(deferred),
-      onValue
+      acquire,
+      release,
+      wait: Effect.suspend(() => {
+        waiting = true
+
+        return Deferred.await(deferred)
+      })
     }
   })
 }

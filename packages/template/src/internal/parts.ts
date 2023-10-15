@@ -1,5 +1,6 @@
 import type { Context } from "@typed/context"
 import * as Fx from "@typed/fx/Fx"
+import { WithContext } from "@typed/fx/Sink"
 import type { ElementRef } from "@typed/template/ElementRef"
 import type { ElementSource } from "@typed/template/ElementSource"
 import type {
@@ -209,7 +210,7 @@ export class CommentPartImpl extends base("comment") implements CommentPart {
     )
   }
 
-  static server(index: number, ctx: RenderContext, commit: CommentPartImpl["commit"]) {
+  static server(index: number, commit: CommentPartImpl["commit"]) {
     return new CommentPartImpl(index, commit, null)
   }
 }
@@ -236,7 +237,7 @@ export class DataPartImpl extends base("data") implements DataPart {
     )
   }
 
-  static server(index: number, ctx: RenderContext, commit: DataPartImpl["commit"]) {
+  static server(index: number, commit: DataPartImpl["commit"]) {
     return new DataPartImpl(index, commit, null)
   }
 }
@@ -262,7 +263,7 @@ function diffDataSet(
 export class EventPartImpl extends base("event") implements EventPart {
   constructor(
     readonly name: string,
-    readonly onCause: (cause: Cause<unknown>) => Effect.Effect<never, never, unknown>,
+    readonly onCause: <E>(cause: Cause<E>) => Effect.Effect<never, never, unknown>,
     index: number,
     commit: EventPartImpl["commit"],
     value: EventPart["value"]
@@ -270,12 +271,12 @@ export class EventPartImpl extends base("event") implements EventPart {
     super(index, commit, value, strictEq)
   }
 
-  static browser<T extends Rendered>(
+  static browser<T extends Rendered, E>(
     name: string,
     index: number,
-    ref: ElementRef<T>,
+    ref: ElementRef<T, E>,
     element: HTMLElement | SVGElement,
-    onCause: (cause: Cause<unknown>) => Effect.Effect<never, never, unknown>
+    onCause: <E>(cause: Cause<E>) => Effect.Effect<never, never, unknown>
   ): Effect.Effect<unknown, never, void> {
     return withSwitchFork((fork, ctx) => {
       const source = ref.query(element)
@@ -287,10 +288,11 @@ export class EventPartImpl extends base("event") implements EventPart {
           index,
           ({ value }) =>
             value
-              ? source.events(name as any, value.options).pipe(
-                Fx.mapEffect((ev) => Effect.catchAllCause(value.handler(ev), onCause)),
-                Fx.provide(ctx),
-                Fx.drain,
+              ? Fx.run(
+                source.events(name as any, value.options),
+                WithContext(onCause, (ev) => value.handler(ev as any))
+              ).pipe(
+                Effect.provide(ctx),
                 fork
               )
               : fork(Effect.unit),
@@ -359,7 +361,7 @@ export class PropertyPartImpl extends base("property") implements PropertyPart {
 export class RefPartImpl implements RefPart {
   readonly _tag = "ref"
 
-  constructor(readonly value: ElementSource, readonly index: number) {}
+  constructor(readonly value: ElementSource<any, any, any>, readonly index: number) {}
 }
 
 export class TextPartImpl extends base("text") implements TextPart {

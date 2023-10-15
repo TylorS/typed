@@ -4,8 +4,8 @@
  */
 
 import { withActions } from "@typed/context/Extensions"
-import type { Hub } from "@typed/context/Hub"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
+import type { PubSub } from "@typed/context/PubSub"
 import type { Queue } from "@typed/context/Queue"
 import { Tag } from "@typed/context/Tag"
 import type * as Effect from "effect/Effect"
@@ -32,7 +32,7 @@ export interface Enqueue<I, A> extends Tag<I, Q.Enqueue<A>> {
 
   // Provide
   readonly fromQueue: <I2>(queue: Queue<I2, A>) => Layer.Layer<I2, never, I>
-  readonly fromHub: <I2>(hub: Hub<I2, A>) => Layer.Layer<I2, never, I>
+  readonly fromPubSub: <I2>(PubSub: PubSub<I2, A>) => Layer.Layer<I2, never, I>
 }
 
 /**
@@ -60,7 +60,7 @@ export function Enqueue<A>(): {
       offerAll: (as: Iterable<A>): Effect.Effect<IdentifierOf<I>, never, boolean> =>
         tag.withEffect((enqueue) => Q.offerAll<A>(enqueue, as)),
       fromQueue: <I2>(queue: Queue<I2, A>) => Layer.effect(tag, queue),
-      fromHub: <I2>(hub: Hub<I2, A>) => Layer.effect(tag, hub)
+      fromPubSub: <I2>(PubSub: PubSub<I2, A>) => Layer.effect(tag, PubSub)
     })
   }
 }

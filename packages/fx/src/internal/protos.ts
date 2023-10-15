@@ -83,7 +83,7 @@ export abstract class FxProto<R, E, A> extends BaseProto implements Fx<R, E, A> 
   }
 }
 
-export class OnceEffect<R, E, A> extends Effectable.Effectable<R, E, A> {
+export class OnceEffect<R, E, A> extends Effectable.Class<R, E, A> {
   #fiber: Fiber.Fiber<E, A> | undefined
 
   constructor(

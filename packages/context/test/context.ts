@@ -217,13 +217,13 @@ describe(__filename, () => {
     })
   })
 
-  describe(Context.Hub, () => {
-    it("allows creating a Hub in the effect context", async () => {
-      const hub = Context.Hub<number>()("test")
-      const test = hub.subscribe.pipe(
-        Effect.tap(() => hub.publishAll([1, 2, 3])),
+  describe(Context.PubSub, () => {
+    it("allows creating a PubSub in the effect context", async () => {
+      const PubSub = Context.PubSub<number>()("test")
+      const test = PubSub.subscribe.pipe(
+        Effect.tap(() => PubSub.publishAll([1, 2, 3])),
         Effect.flatMap((sub) => sub.takeAll()),
-        Effect.provide(hub.unbounded),
+        Effect.provide(PubSub.unbounded),
         Effect.scoped
       )
       const result = await Effect.runPromise(test)
@@ -246,14 +246,14 @@ describe(__filename, () => {
       expect(result).toEqual(Chunk.unsafeFromArray([1, 2, 3]))
     })
 
-    it("allows creating a Dequeue from Hub", async () => {
-      const hub = Context.Hub<number>()("test")
+    it("allows creating a Dequeue from PubSub", async () => {
+      const PubSub = Context.PubSub<number>()("test")
       const dequeue = Context.Dequeue<number>()("test-dequeue")
-      const test = hub.subscribe.pipe(
-        Effect.tap(() => hub.publishAll([1, 2, 3])),
+      const test = PubSub.subscribe.pipe(
+        Effect.tap(() => PubSub.publishAll([1, 2, 3])),
         Effect.flatMap(() => dequeue.takeAll),
-        Effect.provide(dequeue.fromHub(hub)),
-        Effect.provide(hub.unbounded),
+        Effect.provide(dequeue.fromPubSub(PubSub)),
+        Effect.provide(PubSub.unbounded),
         Effect.scoped
       )
       const result = await Effect.runPromise(test)
@@ -276,14 +276,14 @@ describe(__filename, () => {
       expect(result).toEqual(Chunk.unsafeFromArray([1, 2, 3]))
     })
 
-    it("allows creating a Enqueue from Hub", async () => {
-      const hub = Context.Hub<number>()("test")
+    it("allows creating a Enqueue from PubSub", async () => {
+      const PubSub = Context.PubSub<number>()("test")
       const enqueue = Context.Enqueue<number>()("test-enqueue")
-      const test = hub.subscribe.pipe(
+      const test = PubSub.subscribe.pipe(
         Effect.tap(() => enqueue.offerAll([1, 2, 3])),
         Effect.flatMap((dequeue) => dequeue.takeAll()),
-        Effect.provide(enqueue.fromHub(hub)),
-        Effect.provide(hub.unbounded),
+        Effect.provide(enqueue.fromPubSub(PubSub)),
+        Effect.provide(PubSub.unbounded),
         Effect.scoped
       )
       const result = await Effect.runPromise(test)

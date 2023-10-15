@@ -264,7 +264,7 @@ const addEvent = <R, E, A>(
   effect: Effect.Effect<R, E, A>,
   name: string,
   span: Tracer.Span,
-  attributes: Record<string, Tracer.AttributeValue>
+  attributes: Record<string, unknown>
 ): Effect.Effect<R, E, A> =>
   Effect.flatMap(Clock.currentTimeNanos, (time) =>
     Effect.suspend(() => {

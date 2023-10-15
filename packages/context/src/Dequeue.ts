@@ -4,8 +4,8 @@
  */
 
 import { withActions } from "@typed/context/Extensions"
-import type { Hub } from "@typed/context/Hub"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
+import type { PubSub } from "@typed/context/PubSub"
 import type { Queue } from "@typed/context/Queue"
 import { Tag } from "@typed/context/Tag"
 import type * as Chunk from "effect/Chunk"
@@ -38,7 +38,7 @@ export interface Dequeue<I, A> extends Tag<I, Q.Dequeue<A>> {
 
   // Provide
   readonly fromQueue: <I2>(queue: Queue<I2, A>) => Layer.Layer<I2, never, I>
-  readonly fromHub: <I2>(hub: Hub<I2, A>) => Layer.Layer<I2, never, I>
+  readonly fromPubSub: <I2>(PubSub: PubSub<I2, A>) => Layer.Layer<I2, never, I>
 }
 
 /**
@@ -70,7 +70,7 @@ export function Dequeue<A>(): {
       takeUpTo: (max: number) => tag.withEffect(Q.takeUpTo(max)),
       takeBetween: (min: number, max: number) => tag.withEffect(Q.takeBetween(min, max)),
       fromQueue: <I2>(queue: Queue<I2, A>) => Layer.effect(tag, queue),
-      fromHub: <I2>(hub: Hub<I2, A>) => Layer.scoped(tag, hub.subscribe)
+      fromPubSub: <I2>(PubSub: PubSub<I2, A>) => Layer.scoped(tag, PubSub.subscribe)
     })
   }
 }

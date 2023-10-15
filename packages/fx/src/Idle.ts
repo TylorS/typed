@@ -11,7 +11,7 @@ import * as Effect from "effect/Effect"
 import type * as Fiber from "effect/Fiber"
 import { constant, constVoid } from "effect/Function"
 import { globalValue } from "effect/GlobalValue"
-import type * as Layer from "effect/Layer"
+import * as Layer from "effect/Layer"
 import type * as Queue from "effect/Queue"
 import * as Scheduler from "effect/Scheduler"
 import type * as Scope from "effect/Scope"
@@ -109,7 +109,7 @@ export const withIdleScheduler: <R, E, B>(self: Effect.Effect<R, E, B>) => Effec
  * @since 1.18.0
  * @category layers
  */
-export const setIdleScheduler: Layer.Layer<never, never, never> = Effect.setScheduler(defaultIdleScheduler)
+export const setIdleScheduler: Layer.Layer<never, never, never> = Layer.setScheduler(defaultIdleScheduler)
 
 /**
  * Request to run some work with requestIdleCallback returning an IdleDeadline

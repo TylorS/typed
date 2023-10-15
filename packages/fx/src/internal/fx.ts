@@ -19,10 +19,9 @@ import type * as FiberId from "effect/FiberId"
 import * as FiberRef from "effect/FiberRef"
 import { dual } from "effect/Function"
 import type * as HashSet from "effect/HashSet"
-import type * as Hub from "effect/Hub"
 import * as List from "effect/List"
-import type * as Logger from "effect/Logger"
 import * as Option from "effect/Option"
+import type * as PubSub from "effect/PubSub"
 import * as Queue from "effect/Queue"
 import type * as Request from "effect/Request"
 import type { Scheduler } from "effect/Scheduler"
@@ -146,29 +145,29 @@ export const scoped = <R, E, A>(fx: Fx<R, E, A>): Fx<Exclude<R, Scope.Scope>, E,
   core.middleware(fx, Effect.scoped)
 
 export const annotateLogs: {
-  (key: string, value: Logger.AnnotationValue): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  (values: Record<string, Logger.AnnotationValue>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, key: string, value: Logger.AnnotationValue): Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, values: Record<string, Logger.AnnotationValue>): Fx<R, E, A>
+  (key: string, value: unknown): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  (values: Record<string, unknown>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, key: string, value: unknown): Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, values: Record<string, unknown>): Fx<R, E, A>
 } = dual(3, function annotateLogs<R, E, A>(
   fx: Fx<R, E, A>,
-  key: string | Record<string, Logger.AnnotationValue>,
-  value?: Logger.AnnotationValue
+  key: string | Record<string, unknown>,
+  value?: unknown
 ): Fx<R, E, A> {
-  return core.middleware(fx, (effect) => Effect.annotateLogs(effect, key as string, value as Logger.AnnotationValue))
+  return core.middleware(fx, (effect) => Effect.annotateLogs(effect, key as string, value as unknown))
 })
 
 export const annotateSpans: {
-  (key: string, value: Tracer.AttributeValue): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  (values: Record<string, Tracer.AttributeValue>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, key: string, value: Tracer.AttributeValue): Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, values: Record<string, Tracer.AttributeValue>): Fx<R, E, A>
+  (key: string, value: unknown): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  (values: Record<string, unknown>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, key: string, value: unknown): Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, values: Record<string, unknown>): Fx<R, E, A>
 } = dual(3, function annotateSpans<R, E, A>(
   fx: Fx<R, E, A>,
-  key: string | Record<string, Tracer.AttributeValue>,
-  value?: Tracer.AttributeValue
+  key: string | Record<string, unknown>,
+  value?: unknown
 ): Fx<R, E, A> {
-  return core.middleware(fx, (effect) => Effect.annotateSpans(effect, key as string, value as Tracer.AttributeValue))
+  return core.middleware(fx, (effect) => Effect.annotateSpans(effect, key as string, value as unknown))
 })
 
 export const succeedNone = <A = never>(): Fx<never, never, Option.Option<A>> => core.succeed(Option.none<A>())
@@ -454,7 +453,7 @@ export const withSpan: {
   (
     name: string,
     options?: {
-      readonly attributes?: Record<string, Tracer.AttributeValue>
+      readonly attributes?: Record<string, unknown>
       readonly links?: ReadonlyArray<Tracer.SpanLink>
       readonly parent?: Tracer.ParentSpan
       readonly root?: boolean
@@ -465,7 +464,7 @@ export const withSpan: {
     self: Fx<R, E, A>,
     name: string,
     options?: {
-      readonly attributes?: Record<string, Tracer.AttributeValue>
+      readonly attributes?: Record<string, unknown>
       readonly links?: ReadonlyArray<Tracer.SpanLink>
       readonly parent?: Tracer.ParentSpan
       readonly root?: boolean
@@ -476,7 +475,7 @@ export const withSpan: {
   self: Fx<R, E, A>,
   name: string,
   options?: {
-    readonly attributes?: Record<string, Tracer.AttributeValue>
+    readonly attributes?: Record<string, unknown>
     readonly links?: ReadonlyArray<Tracer.SpanLink>
     readonly parent?: Tracer.ParentSpan
     readonly root?: boolean
@@ -571,20 +570,20 @@ export const toEnqueue: {
   }
 )
 
-export function fromHub<A>(hub: Hub.Hub<A>): Fx<Scope.Scope, never, A>
-export function fromHub<I, A>(hub: Context.Hub<I, A>): Fx<I | Scope.Scope, never, A>
-export function fromHub<I, A>(hub: Context.Hub<I, A> | Hub.Hub<A>): Fx<I | Scope.Scope, never, A> {
+export function fromPubSub<A>(PubSub: PubSub.PubSub<A>): Fx<Scope.Scope, never, A>
+export function fromPubSub<I, A>(PubSub: Context.PubSub<I, A>): Fx<I | Scope.Scope, never, A>
+export function fromPubSub<I, A>(PubSub: Context.PubSub<I, A> | PubSub.PubSub<A>): Fx<I | Scope.Scope, never, A> {
   return core.acquireUseRelease(
-    hubSubscribe(hub),
+    PubSubSubscribe(PubSub),
     (q) => fromDequeue(q),
     (d) => d.shutdown()
   )
 }
 
-function hubSubscribe<I, A>(hub: Context.Hub<I, A> | Hub.Hub<A>) {
-  if (Queue.EnqueueTypeId in hub) {
-    return hub.subscribe()
+function PubSubSubscribe<I, A>(PubSub: Context.PubSub<I, A> | PubSub.PubSub<A>) {
+  if (Queue.EnqueueTypeId in PubSub) {
+    return PubSub.subscribe()
   } else {
-    return hub.subscribe
+    return PubSub.subscribe
   }
 }

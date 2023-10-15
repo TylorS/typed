@@ -14,28 +14,28 @@ import * as Scope from "effect/Scope"
 
 import type * as TQS from "typed-query-selector/parser"
 
-export interface ElementSource<T extends Rendered = Element, EventMap extends {} = DefaultEventMap<T>>
+export interface ElementSource<T extends Rendered = Element, E = never, EventMap extends {} = DefaultEventMap<T>>
   extends
-    Versioned.Versioned<never, never, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
+    Versioned.Versioned<never, never, E, Rendered.Elements<T>, never, E | NoSuchElementException, Rendered.Elements<T>>
 {
   readonly selector: Selector
 
   readonly query: {
     <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
       selector: S
-    ): ElementSource<ParseSelector<S, Element>, Ev>
+    ): ElementSource<ParseSelector<S, Element>, E, Ev>
 
     <Target extends Rendered, EventMap extends {} = DefaultEventMap<Target>>(
       rendered: Target
-    ): ElementSource<Target, EventMap>
+    ): ElementSource<Target, E, EventMap>
   }
 
-  readonly elements: Filtered<never, never, Rendered.Elements<T>>
+  readonly elements: Filtered<never, E, Rendered.Elements<T>>
 
   readonly events: <Type extends keyof EventMap>(
     type: Type,
     options?: AddEventListenerOptions
-  ) => Fx.Fx<never, never, EventWithCurrentTarget<T, EventMap[Type]>>
+  ) => Fx.Fx<never, E, EventWithCurrentTarget<T, EventMap[Type]>>
 }
 
 export function ElementSource<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>(
@@ -253,13 +253,13 @@ function isElement(element: RenderedWithoutArray): element is Element {
 /**
  * @internal
  */
-export class ElementSourceImpl<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>
-  extends FxEffectProto<never, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
-  implements Omit<ElementSource<T, EventMap>, ModuleAgumentedEffectKeysToOmit>
+export class ElementSourceImpl<T extends Rendered, E, EventMap extends {} = DefaultEventMap<T>>
+  extends FxEffectProto<never, E, Rendered.Elements<T>, never, E | NoSuchElementException, Rendered.Elements<T>>
+  implements Omit<ElementSource<T, E, EventMap>, ModuleAgumentedEffectKeysToOmit>
 {
-  private eventMap = new Map<any, Fx.Fx<never, never, any>>()
+  private eventMap = new Map<any, Fx.Fx<never, E, any>>()
 
-  constructor(readonly rootElement: Filtered<never, never, T>, readonly selector: Selector = CssSelectors([])) {
+  constructor(readonly rootElement: Filtered<never, E, T>, readonly selector: Selector = CssSelectors([])) {
     super()
     this.query = this.query.bind(this)
     this.events = this.events.bind(this)
@@ -269,7 +269,7 @@ export class ElementSourceImpl<T extends Rendered, EventMap extends {} = Default
     return new ElementSourceImpl(Filtered(Versioned.of(rootElement), Effect.succeedSome)) as any
   }
 
-  protected toEffect(): Effect.Effect<never, NoSuchElementException, Rendered.Elements<T>> {
+  protected toEffect(): Effect.Effect<never, E | NoSuchElementException, Rendered.Elements<T>> {
     return this.elements
   }
 
@@ -279,21 +279,21 @@ export class ElementSourceImpl<T extends Rendered, EventMap extends {} = Default
 
   query<S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
     selector: S
-  ): ElementSource<ParseSelector<S, Element>, Ev> {
+  ): ElementSource<ParseSelector<S, Element>, E, Ev> {
     if (selector === ROOT_CSS_SELECTOR) {
       return this as any
     } else if (typeof selector === "string") {
       if (this.selector._tag === "css") {
         return new ElementSourceImpl(this.rootElement, CssSelectors([...this.selector.selectors, selector])) as any
       } else {
-        return ElementSourceImpl.fromElement(this.selector.element).query(selector)
+        return ElementSourceImpl.fromElement(this.selector.element).query(selector) as any
       }
     } else {
       return new ElementSourceImpl(this.rootElement, ElementSelector(selector)) as any
     }
   }
 
-  readonly elements: ElementSource<T, EventMap>["elements"] = this.selector._tag === "css" ?
+  readonly elements: ElementSource<T, E, EventMap>["elements"] = this.selector._tag === "css" ?
     this.rootElement.map(findMatchingElements<any>(this.selector.selectors)) :
     Filtered(Versioned.of(this.selector.element), (x) => Effect.succeedSome([x])) as any
 

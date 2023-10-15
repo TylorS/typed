@@ -39,14 +39,6 @@ declare global {
   export interface SVGElement extends Placeholder<never, never, SVGElement> {}
 }
 
-declare module "effect/Effect" {
-  export interface Effect<R, E, A> extends Placeholder<R, E, A> {}
-}
-
-declare module "effect/Stream" {
-  export interface Stream<R, E, A> extends Placeholder<R, E, A> {}
-}
-
 declare module "@typed/fx/Fx" {
   export interface Fx<R, E, A> extends Placeholder<R, E, A> {}
 }

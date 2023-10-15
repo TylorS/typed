@@ -41,12 +41,11 @@ import type * as FiberId from "effect/FiberId"
 import type { FiberRef } from "effect/FiberRef"
 import { constant, dual, identity } from "effect/Function"
 import type * as HashSet from "effect/HashSet"
-import type * as Hub from "effect/Hub"
 import type { Inspectable } from "effect/Inspectable"
 import type * as Layer from "effect/Layer"
-import type * as Logger from "effect/Logger"
 import type * as Option from "effect/Option"
 import type { Pipeable } from "effect/Pipeable"
+import type * as PubSub from "effect/PubSub"
 import type * as Queue from "effect/Queue"
 import type * as Request from "effect/Request"
 import type * as Runtime from "effect/Runtime"
@@ -623,14 +622,14 @@ export const fromDequeue: {
 } = internal.fromDequeue
 
 /**
- * Consume a Hub as soon as values become available and emit them as a Fx.
+ * Consume a PubSub as soon as values become available and emit them as a Fx.
  * @since 1.18.0
  * @category constructors
  */
-export const fromHub: {
-  <A>(hub: Hub.Hub<A>): Fx<Scope.Scope, never, A>
-  <I, A>(hub: Context.Hub<I, A>): Fx<Scope.Scope | I, never, A>
-} = internal.fromHub
+export const fromPubSub: {
+  <A>(PubSub: PubSub.PubSub<A>): Fx<Scope.Scope, never, A>
+  <I, A>(PubSub: Context.PubSub<I, A>): Fx<Scope.Scope | I, never, A>
+} = internal.fromPubSub
 
 /* #endregion */
 
@@ -1907,10 +1906,10 @@ export const scoped: <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, Scope.Scope>, E
  * @category combinators
  */
 export const annotateLogs: {
-  (key: string, value: Logger.AnnotationValue): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  (values: Record<string, Logger.AnnotationValue>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, key: string, value: Logger.AnnotationValue): Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, values: Record<string, Logger.AnnotationValue>): Fx<R, E, A>
+  (key: string, value: unknown): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  (values: Record<string, unknown>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, key: string, value: unknown): Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, values: Record<string, unknown>): Fx<R, E, A>
 } = internal.annotateLogs
 
 /**
@@ -1919,10 +1918,10 @@ export const annotateLogs: {
  * @category combinators
  */
 export const annotateSpans: {
-  (key: string, value: Tracer.AttributeValue): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  (values: Record<string, Tracer.AttributeValue>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, key: string, value: Tracer.AttributeValue): Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, values: Record<string, Tracer.AttributeValue>): Fx<R, E, A>
+  (key: string, value: unknown): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  (values: Record<string, unknown>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, key: string, value: unknown): Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, values: Record<string, unknown>): Fx<R, E, A>
 } = internal.annotateSpans
 
 /**
@@ -2216,7 +2215,7 @@ export const withSpan: {
   (
     name: string,
     options?: {
-      readonly attributes?: Record<string, Tracer.AttributeValue>
+      readonly attributes?: Record<string, unknown>
       readonly links?: ReadonlyArray<Tracer.SpanLink>
       readonly parent?: Tracer.ParentSpan
       readonly root?: boolean
@@ -2227,7 +2226,7 @@ export const withSpan: {
     self: Fx<R, E, A>,
     name: string,
     options?: {
-      readonly attributes?: Record<string, Tracer.AttributeValue>
+      readonly attributes?: Record<string, unknown>
       readonly links?: ReadonlyArray<Tracer.SpanLink>
       readonly parent?: Tracer.ParentSpan
       readonly root?: boolean

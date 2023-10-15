@@ -63,6 +63,7 @@ import {
   WithScopedFork
 } from "@typed/fx/internal/fx-primitive"
 import { matchFxKind } from "@typed/fx/internal/matchers"
+import { OnceEffect } from "@typed/fx/internal/protos"
 import * as Sink from "@typed/fx/Sink"
 import type { DurationInput } from "effect/Duration"
 import type { Equivalence } from "effect/Equivalence"
@@ -1952,7 +1953,7 @@ export const skipRepeatsWith: {
 
 export const skipRepeats: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = (fx) => skipRepeatsWith(fx, Equal.equals)
 
-class Reduce<R, E, A, B> extends Effectable.Effectable<R, E, B> {
+class Reduce<R, E, A, B> extends Effectable.Class<R, E, B> {
   constructor(readonly fx: Fx<R, E, A>, readonly seed: B, readonly f: (acc: B, a: A) => B) {
     super()
   }
@@ -1965,23 +1966,24 @@ class Reduce<R, E, A, B> extends Effectable.Effectable<R, E, B> {
     return new Reduce(fx, seed, f)
   }
 
+  private cached: Effect.Effect<R, E, B> | null = null
+
   commit() {
-    const { f, seed } = this
-    return matchFxKind(this.fx, {
+    return (this.cached ||= matchFxKind(this.fx, {
       Fx: (fx) =>
         Effect.suspend(() => {
-          let acc = seed
+          let acc = this.seed
 
-          return Effect.map(observe(fx, (a) => Effect.sync(() => acc = f(acc, a))), () => acc)
+          return Effect.map(observe(fx, (a) => Effect.sync(() => acc = this.f(acc, a))), () => acc)
         }),
-      Effect: (effect) => Effect.map(effect, (a) => f(this.seed, a)),
-      Stream: (stream) => Stream.runFold(stream, seed, f),
+      Effect: (effect) => Effect.map(effect, (a) => this.f(this.seed, a)),
+      Stream: (stream) => Stream.runFold(stream, this.seed, (b, a) => this.f(b, a)),
       Cause: Effect.failCause
-    })
+    }))
   }
 }
 
-class FilterMapReduce<R, E, A, B> extends Effectable.Effectable<R, E, B> {
+class FilterMapReduce<R, E, A, B> extends Effectable.Class<R, E, B> {
   constructor(
     readonly i0: Fx<R, E, A>,
     readonly i1: B,
@@ -1997,17 +1999,19 @@ class FilterMapReduce<R, E, A, B> extends Effectable.Effectable<R, E, B> {
   ): Effect.Effect<R, E, B> {
     if (fx instanceof FromIterable) {
       if (Array.isArray(fx.i0)) {
-        return Effect.sync(() => reduceFilterArray(fx.i0 as Array<A>, seed, f))
+        return new OnceEffect(Effect.sync(() => reduceFilterArray(fx.i0 as Array<A>, seed, f)))
       } else {
-        return Effect.sync(() => reduceFilterIterable(fx.i0, seed, f))
+        return new OnceEffect(Effect.sync(() => reduceFilterIterable(fx.i0, seed, f)))
       }
     }
 
     return new FilterMapReduce(fx, seed, f)
   }
 
+  private cached: Effect.Effect<R, E, B> | null = null
+
   commit(): Effect.Effect<R, E, B> {
-    return Effect.suspend(() => {
+    return this.cached ||= Effect.suspend(() => {
       let acc = this.i1
 
       return Effect.map(
@@ -2030,9 +2034,10 @@ function reduceFilterIterable<A, B>(
   const iterator = iterable[Symbol.iterator]()
   let acc = seed
   let result = iterator.next()
+  let option: Option.Option<B> = Option.none()
 
   while (!result.done) {
-    const option = f(acc, result.value)
+    option = f(acc, result.value)
     if (Option.isSome(option)) {
       acc = option.value
     }
@@ -2049,9 +2054,10 @@ function reduceFilterArray<A, B>(
 ): B {
   const length = iterable.length
   let acc = seed
+  let option: Option.Option<B> = Option.none()
 
   for (let i = 0; i < length; i++) {
-    const option = f(acc, iterable[i])
+    option = f(acc, iterable[i])
     if (Option.isSome(option)) {
       acc = option.value
     }

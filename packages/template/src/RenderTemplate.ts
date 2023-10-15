@@ -11,7 +11,7 @@ export interface RenderTemplate {
   <Values extends ReadonlyArray<Renderable<any, any>>, T extends Rendered = Rendered>(
     templateStrings: TemplateStringsArray,
     values: Values,
-    ref?: ElementRef<T>
+    ref?: ElementRef<T, Placeholder.Error<Values[number]>>
   ): Effect<
     Scope | Placeholder.Context<Values[number]>,
     never,
@@ -32,15 +32,23 @@ export const RenderTemplate: Context.Tagged<RenderTemplate, RenderTemplate> = Co
 export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
-) {
+): Effect<
+  RenderTemplate | Scope | Placeholder.Context<Values[number]>,
+  never,
+  TemplateInstance<Placeholder.Error<Values[number]>, Rendered>
+> {
   return RenderTemplate.withEffect((render) => render(template, values))
 }
 
-export function as<T extends Rendered = Rendered>(ref?: ElementRef<T>) {
+export function as<T extends Rendered = Rendered, E = never>(ref: ElementRef<T, E>) {
   return function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
     template: TemplateStringsArray,
     ...values: Values
-  ) {
-    return RenderTemplate.withEffect((render) => render(template, values, ref))
+  ): Effect<
+    Scope | RenderTemplate | Placeholder.Context<Values[number]>,
+    never,
+    TemplateInstance<E | Placeholder.Error<Values[number]>, Rendered>
+  > {
+    return RenderTemplate.withEffect((render) => render(template, values, ref as any))
   }
 }
