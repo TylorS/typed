@@ -1,5 +1,3 @@
-import "./module-agumentation"
-
 import type * as Cause from "effect/Cause"
 import type * as Effect from "effect/Effect"
 import type * as Scope from "effect/Scope"
@@ -14,7 +12,6 @@ import { FxProto } from "@typed/fx/internal/protos"
 export type Primitive =
   | Empty
   | Fail<unknown>
-  | FromEffect<unknown, unknown, unknown>
   | FromIterable<unknown>
   | FromSink<unknown, unknown, unknown>
   | Never
@@ -46,14 +43,6 @@ export class FromIterable<A> extends FxProto<never, never, A> {
   readonly _fxTag = "FromIterable"
 
   constructor(readonly i0: Iterable<A>) {
-    super(i0)
-  }
-}
-
-export class FromEffect<R, E, A> extends FxProto<R, E, A> {
-  readonly _fxTag = "FromEffect"
-
-  constructor(readonly i0: Effect.Effect<R, E, A>) {
     super(i0)
   }
 }
@@ -222,18 +211,13 @@ export abstract class ToFx<R, E, A> extends FxProto<R, E, A> {
    */
   protected abstract toFx(): Fx<R, E, A>
 
-  #fx: Fx<R, E, A> | undefined
+  private _fx: Fx<R, E, A> | undefined
 
   /**
    * Get the Fx that this primitive represents.
    * @since 1.18.0
    */
   get fx(): Fx<R, E, A> {
-    // Memoize the constructed Fx
-    if (this.#fx === undefined) {
-      return (this.#fx = this.toFx())
-    } else {
-      return this.#fx
-    }
+    return (this._fx ||= this.toFx())
   }
 }

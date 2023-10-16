@@ -8,8 +8,7 @@
 import type * as Fx from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
 import * as fxEffectProto from "@typed/fx/internal/fx-effect-proto"
-import { VersionedTransform } from "@typed/fx/internal/verionsed-transform"
-import type { TypeId } from "@typed/fx/TypeId"
+import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
 import { Effect, identity } from "effect"
 import { dual } from "effect/Function"
 
@@ -26,7 +25,7 @@ import { dual } from "effect/Function"
  * @since 1.18.0
  * @category models
  */
-export interface Versioned<R0, R, E, A, R2, E2, B> extends Fx.Fx<R, E, A>, Omit<Effect.Effect<R2, E2, B>, TypeId> {
+export interface Versioned<R0, R, E, A, R2, E2, B> extends Fx.Fx<R, E, A>, Effect.Effect<R2, E2, B> {
   /**
    * The current version of this FxEffect. This is used to determine if the current value
    * is up to date to allow localized caching of value.

@@ -5,6 +5,7 @@ import * as Fx from "@typed/fx/Fx"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import * as Versioned from "@typed/fx/Versioned"
+import type { Placeholder } from "@typed/template/Placeholder"
 import type { Rendered } from "@typed/wire"
 import { isWire } from "@typed/wire"
 import type { NoSuchElementException } from "effect/Cause"
@@ -255,7 +256,7 @@ function isElement(element: RenderedWithoutArray): element is Element {
  */
 export class ElementSourceImpl<T extends Rendered, E, EventMap extends {} = DefaultEventMap<T>>
   extends FxEffectProto<never, E, Rendered.Elements<T>, never, E | NoSuchElementException, Rendered.Elements<T>>
-  implements Omit<ElementSource<T, E, EventMap>, ModuleAgumentedEffectKeysToOmit>
+  implements Omit<ElementSource<T, E, EventMap>, ModuleAgumentedEffectKeysToOmit | keyof Placeholder<any, any, any>>
 {
   private eventMap = new Map<any, Fx.Fx<never, E, any>>()
 

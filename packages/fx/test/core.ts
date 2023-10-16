@@ -60,6 +60,28 @@ describe.concurrent(__filename, () => {
     expect(array).toEqual(["4"])
   })
 
+  it.concurrent("switchMap supports Effects", async () => {
+    const test = Fx.fromIterable([1, 2, 3]).pipe(
+      Fx.switchMap((x) => Effect.succeed(String(x + 1))),
+      Fx.toReadonlyArray
+    )
+
+    const array = await Effect.runPromise(test)
+
+    expect(array).toEqual(["4"])
+  })
+
+  it.concurrent("switchMap supports Iterables", async () => {
+    const test = Fx.fromIterable([1, 2, 3]).pipe(
+      Fx.switchMap((x) => new Set([String(x + 1)])),
+      Fx.toReadonlyArray
+    )
+
+    const array = await Effect.runPromise(test)
+
+    expect(array).toEqual(["4"])
+  })
+
   it.concurrent("exhaustMap favors the first inner Fx", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
       Fx.exhaustMap((x) => Fx.succeed(String(x + 1))),
@@ -84,7 +106,7 @@ describe.concurrent(__filename, () => {
 
   it.concurrent("mergeBuffer keeps the ordering of concurrent streams", async () => {
     const test = Fx.mergeBuffer([
-      Effect.succeed(1),
+      Fx.from(Effect.succeed(1)),
       Fx.fromSink<never, never, number>((sink) =>
         Effect.gen(function*(_) {
           yield* _(Effect.sleep(100))
@@ -93,8 +115,8 @@ describe.concurrent(__filename, () => {
           yield* _(sink.onSuccess(3))
         })
       ),
-      Stream.fromIterable([4, 5, 6]),
-      Effect.delay(Effect.succeed(7), 50)
+      Fx.from(Stream.fromIterable([4, 5, 6])),
+      Fx.from(Effect.delay(Effect.succeed(7), 50))
     ]).pipe(
       Fx.toReadonlyArray
     )
@@ -204,49 +226,6 @@ describe.concurrent(__filename, () => {
 
         await Effect.runPromise(test)
       })
-    })
-  })
-
-  describe.concurrent("Effect Supertype", () => {
-    it.concurrent("lifts a success", async () => {
-      const test = Effect.succeed(1).pipe(Fx.toReadonlyArray)
-
-      const array = await Effect.runPromise(test)
-
-      expect(array).toEqual([1])
-    })
-
-    it.concurrent("lifts a failure", async () => {
-      const test = Effect.fail(1).pipe(Fx.toReadonlyArray, Effect.either)
-      const either = await Effect.runPromise(test)
-
-      expect(either).toEqual(Either.left(1))
-    })
-  })
-
-  describe.concurrent("Stream Supertype", () => {
-    it.concurrent("lifts a success", async () => {
-      const test = Stream.fromIterable([1, 2, 3]).pipe(Fx.toReadonlyArray)
-
-      const array = await Effect.runPromise(test)
-
-      expect(array).toEqual([1, 2, 3])
-    })
-
-    it.concurrent("lifts a failure", async () => {
-      const test = Stream.fail(1).pipe(Fx.toReadonlyArray, Effect.either)
-      const either = await Effect.runPromise(test)
-
-      expect(either).toEqual(Either.left(1))
-    })
-  })
-
-  describe.concurrent("Cause Supertype", () => {
-    it.concurrent("lifts a failure", async () => {
-      const test = Cause.fail(1).pipe(Fx.toReadonlyArray, Effect.either)
-      const either = await Effect.runPromise(test)
-
-      expect(either).toEqual(Either.left(1))
     })
   })
 
@@ -1088,5 +1067,49 @@ describe.concurrent("Fx.keyed", () => {
     })
 
     await Effect.runPromise(Effect.scoped(test))
+  })
+
+  describe.concurrent("Fx.from", () => {
+    it.concurrent("does returns an Fx as-is", async () => {
+      const test = Fx.from(Fx.fromIterable([1, 2, 3])).pipe(Fx.toReadonlyArray)
+      const events = await Effect.runPromise(test)
+
+      expect(events).toEqual([1, 2, 3])
+    })
+
+    it.concurrent("lifts a Stream", async () => {
+      const test = Fx.from(Stream.fromIterable([1, 2, 3])).pipe(Fx.toReadonlyArray)
+      const events = await Effect.runPromise(test)
+
+      expect(events).toEqual([1, 2, 3])
+    })
+
+    it.concurrent("lifts an Effect", async () => {
+      const test = Fx.from(Effect.succeed(1)).pipe(Fx.toReadonlyArray)
+      const events = await Effect.runPromise(test)
+
+      expect(events).toEqual([1])
+    })
+
+    it.concurrent("lifts a Cause", async () => {
+      const test = Fx.from(Cause.fail(1)).pipe(Fx.flip, Fx.toReadonlyArray)
+      const events = await Effect.runPromise(test)
+
+      expect(events).toEqual([1])
+    })
+
+    it.concurrent("lifts an Iterable", async () => {
+      const test = Fx.from(new Set([1, 2, 3])).pipe(Fx.toReadonlyArray)
+      const events = await Effect.runPromise(test)
+
+      expect(events).toEqual([1, 2, 3])
+    })
+
+    it.concurrent("lifts a value", async () => {
+      const test = Fx.from(1).pipe(Fx.toReadonlyArray)
+      const events = await Effect.runPromise(test)
+
+      expect(events).toEqual([1])
+    })
   })
 })

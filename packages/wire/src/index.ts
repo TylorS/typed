@@ -97,7 +97,80 @@ export namespace Rendered {
  * @since 1.0.0
  */
 export function isWire(node: Rendered): node is Wire {
-  if (!Array.isArray(node)) return (node as Node | Document | Wire).nodeType === nodeType
-
+  if (!isArray(node)) return node.nodeType === nodeType
   return false
+}
+
+/**
+ * Check if a node is a Node
+ * @since 1.0.0
+ */
+export function isNode(node: Rendered): node is Node {
+  if (!isArray(node)) return node.nodeType !== node.DOCUMENT_FRAGMENT_NODE
+  return false
+}
+
+/**
+ * Check if a node is an Element
+ * @since 1.0.0
+ */
+export function isElement(node: Rendered): node is Element {
+  return isNode(node) && node.nodeType === node.ELEMENT_NODE
+}
+
+/**
+ * Check if a node is an SvgElement
+ * @since 1.0.0
+ */
+export function isSvgElement(node: Rendered): node is SVGElement {
+  return isElement(node) && "ownerSVGElement" in node
+}
+
+/**
+ * Check if a node is a HTMLEelement
+ * @since 1.0.0
+ */
+export function isHtmlElement(node: Rendered): node is HTMLElement {
+  return isElement(node) && !("ownerSVGElement" in node)
+}
+
+/**
+ * Check if a node is a Text
+ * @since 1.0.0
+ */
+export function isText(node: Rendered): node is Text {
+  return isNode(node) && node.nodeType === node.TEXT_NODE
+}
+
+/**
+ * Check if a node is an Attr
+ * @since 1.0.0
+ */
+export function isAttr(node: Rendered): node is Attr {
+  return isNode(node) && node.nodeType === node.ATTRIBUTE_NODE
+}
+
+/**
+ * Check if a node is a Comment
+ * @since 1.0.0
+ */
+export function isComment(node: Rendered): node is Comment {
+  return isNode(node) && node.nodeType === node.COMMENT_NODE
+}
+
+/**
+ * Check if a node is a DocumentFragment
+ * @since 1.0.0
+ */
+export function isDocumentFragment(node: Rendered): node is Node {
+  if (!isArray(node)) return node.nodeType === node.DOCUMENT_FRAGMENT_NODE
+  return false
+}
+
+/**
+ * Check if is an Array of nodes
+ * @since 1.0.0
+ */
+export function isArray(node: Rendered): node is ReadonlyArray<Rendered> {
+  return Array.isArray(node)
 }

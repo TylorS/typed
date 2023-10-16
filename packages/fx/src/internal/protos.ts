@@ -1,5 +1,3 @@
-import "./module-agumentation"
-
 import type * as Channel from "effect/Channel"
 import * as Effect from "effect/Effect"
 import * as Equal from "effect/Equal"

@@ -5,6 +5,7 @@ import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Versioned } from "@typed/fx/Versioned"
 import { type ElementSource, ElementSourceImpl } from "@typed/template/ElementSource"
+import type { Placeholder } from "@typed/template/Placeholder"
 import { type Rendered } from "@typed/wire"
 import { Effect, Option } from "effect"
 import type { NoSuchElementException } from "effect/Cause"
@@ -44,7 +45,7 @@ export function of<T extends Rendered, E = never>(rendered: T): Effect.Effect<ne
 }
 
 class ElementRefImpl<T extends Rendered, E> extends FxEffectProto<never, E, T, never, E | NoSuchElementException, T>
-  implements Omit<ElementRef<T, E>, ModuleAgumentedEffectKeysToOmit>
+  implements Omit<ElementRef<T, E>, ModuleAgumentedEffectKeysToOmit | keyof Placeholder<any, any, any>>
 {
   readonly [ElementRefTypeId]: RefSubject.RefSubject<never, E, Option.Option<T>>
 

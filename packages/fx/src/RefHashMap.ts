@@ -29,7 +29,7 @@ export function make<R, E, K, V>(
 ): Effect.Effect<R | Scope.Scope, never, RefHashMap<never, E, K, V>>
 
 export function make<R, E, K, V>(
-  initial: Fx.Fx<R, E, HashMap.HashMap<K, V>>
+  initial: Fx.FxInput<R, E, HashMap.HashMap<K, V>>
 ): Effect.Effect<R | Scope.Scope, never, RefHashMap<never, E, K, V>> {
   return RefSubject.make(initial)
 }

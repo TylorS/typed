@@ -37,7 +37,7 @@ export function make<R, E, A>(
 ): Effect.Effect<R | Scope.Scope, never, RefChunk<never, E, A>>
 
 export function make<R, E, A>(
-  initial: Fx.Fx<R, E, Chunk.Chunk<A>>,
+  initial: Fx.FxInput<R, E, Chunk.Chunk<A>>,
   eq: Equivalence<A> = equals
 ): Effect.Effect<R | Scope.Scope, never, RefChunk<never, E, A>> {
   return RefSubject.make(

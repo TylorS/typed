@@ -26,7 +26,7 @@ export function make<R, E>(
 ): Effect.Effect<R | Scope, never, RefBoolean<never, E>>
 
 export function make<R, E>(
-  initial: Fx.Fx<R, E, boolean>
+  initial: Fx.FxInput<R, E, boolean>
 ): Effect.Effect<R | Scope, never, RefBoolean<never, E>> {
   return RefSubject.make(initial, strict())
 }

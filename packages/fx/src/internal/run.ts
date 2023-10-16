@@ -1,9 +1,4 @@
-import "./module-agumentation"
-
-import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
-import * as StreamSink from "effect/Sink"
-import * as Stream from "effect/Stream"
 
 import { compileCauseEffectOperatorSink, compileEffectOperatorSink } from "@typed/fx/internal/effect-operator"
 import * as helpers from "@typed/fx/internal/helpers"
@@ -11,9 +6,7 @@ import { compileSyncOperatorFailureSink, compileSyncOperatorSink } from "@typed/
 import * as Sink from "@typed/fx/Sink"
 
 import type { Fx } from "@typed/fx/Fx"
-import { matchEffectPrimitive } from "@typed/fx/internal/effect-primitive"
-import type { InternalEffect } from "@typed/fx/internal/effect-primitive"
-import { matchFxKind, matchFxPrimitive } from "@typed/fx/internal/matchers"
+import { matchFxPrimitive } from "@typed/fx/internal/matchers"
 
 const constUnit = () => Effect.unit
 
@@ -24,18 +17,12 @@ export function run<R, E, A, R2>(
   fx: Fx<R, E, A>,
   sink: Sink.WithContext<R2, E, A>
 ): Effect.Effect<R | R2, never, unknown> {
-  return matchFxKind(fx, {
-    Fx: (fx) => runFx<R, E, A, R2>(fx, sink),
-    Effect: (effect) => runEffect<R, E, A, R2>(effect, sink),
-    Stream: (stream) => runStream(stream, sink),
-    Cause: (cause) => sink.onFailure(cause)
-  })
+  return runFx(fx, sink)
 }
 
 const runFx = matchFxPrimitive<Effect.Effect<any, never, unknown>>({
   Empty: constUnit,
   Fail: (fx, sink) => sink.onFailure(fx.i0),
-  FromEffect: (fx, sink) => runEffect(fx.i0, sink),
   FromIterable: (fx, sink) => Effect.forEach(fx.i0, sink.onSuccess),
   FromSink: (fx, sink) => Effect.contextWithEffect((ctx) => fx.i0(Sink.provide(sink, ctx))),
   Never: () => Effect.never,
@@ -62,26 +49,3 @@ const runFx = matchFxPrimitive<Effect.Effect<any, never, unknown>>({
   TransformerCause: (fx, sink) => run(fx.i0, compileSyncOperatorFailureSink(fx.i1, sink)),
   TransformerCauseEffect: (fx, sink) => run(fx.i0, compileCauseEffectOperatorSink(fx.i1, sink))
 })
-
-function runEffect<R, E, A, R2>(
-  effect: Effect.Effect<R, E, A>,
-  sink: Sink.WithContext<R2, E, A>
-): Effect.Effect<R | R2, never, unknown> {
-  return matchEffectPrimitive(effect as InternalEffect, {
-    Success: (success) => sink.onSuccess(success.i0 as A),
-    Failure: (failure) => sink.onFailure(failure.i0 as Cause.Cause<E>),
-    Sync: (sync) => Effect.suspend(() => sink.onSuccess(sync.i0() as A)),
-    Left: (left) => sink.onFailure(Cause.fail(left.left as E)),
-    Right: (right) => sink.onSuccess(right.right as A),
-    Some: (some) => sink.onSuccess(some.value as A),
-    None: () => sink.onFailure(Cause.fail(Cause.NoSuchElementException() as E)),
-    Otherwise: () => Effect.matchCauseEffect(effect, sink)
-  })
-}
-
-function runStream<R, E, A, R2>(
-  stream: Stream.Stream<R, E, A>,
-  sink: Sink.WithContext<R2, E, A>
-): Effect.Effect<R | R2, never, unknown> {
-  return Effect.catchAllCause(Stream.run(stream, StreamSink.forEach(sink.onSuccess)), sink.onFailure)
-}

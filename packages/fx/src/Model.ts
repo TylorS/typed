@@ -7,7 +7,7 @@
 import { type Context, ContextBuilder } from "@typed/context"
 import { Computed } from "@typed/fx/Computed"
 import { Filtered } from "@typed/fx/Filtered"
-import type { Fx } from "@typed/fx/Fx"
+import type { Fx, FxInput } from "@typed/fx/Fx"
 import { struct } from "@typed/fx/Fx"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
@@ -256,7 +256,7 @@ export namespace Model {
 type MakeOptions<Refs extends Readonly<Record<string, Any>>> = {
   readonly [K in keyof Refs]: Refs[K] extends Model.Tagged<infer Refs2> ? MakeOptions<Refs2> :
     Refs[K] extends Model<infer Refs2> ? MakeOptions<Refs2>
-    : Fx<any, Model.Error<Refs[K]>, Model.State<Refs[K]>>
+    : FxInput<any, Model.Error<Refs[K]>, Model.State<Refs[K]>>
 }
 
 type MakeEqivalenceOptions<Refs extends Readonly<Record<string, Any>>> = {

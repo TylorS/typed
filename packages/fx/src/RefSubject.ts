@@ -149,13 +149,15 @@ export namespace RefSubject {
      * Make a layer initializing a RefSubject
      * @since 1.18.0
      */
-    readonly make: <R>(fx: Fx.Fx<R, E, A>, eq?: Equivalence<A>) => Layer.Layer<R, never, I>
+    readonly make: {
+      <R>(fx: Fx.FxInput<R, E, A>, eq?: Equivalence<A>): Layer.Layer<R, never, I>
+    }
 
     /**
      * Provide an implementation of this RefSubject
      * @since 1.18.0
      */
-    readonly provide: <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => <R3, E3, C>(
+    readonly provide: <R2>(fx: Fx.FxInput<R2, E, A>, eq?: Equivalence<A>) => <R3, E3, C>(
       effect: Effect.Effect<R3, E3, C>
     ) => Effect.Effect<R2 | Exclude<R3, I>, E | E3, C>
 
@@ -163,7 +165,7 @@ export namespace RefSubject {
      * Provide an implementation of this RefSubject
      * @since 1.18.0
      */
-    readonly provideFx: <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => <R3, E3, C>(
+    readonly provideFx: <R2>(fx: Fx.FxInput<R2, E, A>, eq?: Equivalence<A>) => <R3, E3, C>(
       effect: Fx.Fx<R3, E3, C>
     ) => Fx.Fx<R2 | Exclude<R3, I>, E | E3, C>
   }
@@ -222,12 +224,12 @@ export function make<R, E, A>(
   eq?: Equivalence<A>
 ): Effect.Effect<R, never, RefSubject<never, E, A>>
 export function make<R, E, A>(
-  fx: Fx.Fx<R, E, A>,
+  fx: Fx.FxInput<R, E, A>,
   eq?: Equivalence<A>
 ): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>>
 
 export function make<R, E, A>(
-  fx: Fx.Fx<R, E, A>,
+  fx: Fx.FxInput<R, E, A>,
   eq?: Equivalence<A>
 ): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>> {
   return coreRefSubject.make(fx, eq)
@@ -338,13 +340,13 @@ export function makeWithExtension<R, E, A, B>(
   eq?: Equivalence<A>
 ): Effect.Effect<R, never, RefSubject<never, E, A> & B>
 export function makeWithExtension<R, E, A, B>(
-  fx: Fx.Fx<R, E, A>,
+  fx: Fx.FxInput<R, E, A>,
   f: (ref: RefSubject<never, E, A>) => B,
   eq?: Equivalence<A>
 ): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A> & B>
 
 export function makeWithExtension<R, E, A, B>(
-  fx: Fx.Fx<R, E, A>,
+  fx: Fx.FxInput<R, E, A>,
   f: (ref: RefSubject<never, E, A>) => B,
   eq?: Equivalence<A>
 ): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A> & B> {

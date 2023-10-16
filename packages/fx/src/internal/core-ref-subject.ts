@@ -1,10 +1,11 @@
 import { Computed } from "@typed/fx/Computed"
 import { Filtered } from "@typed/fx/Filtered"
-import type { Fx } from "@typed/fx/Fx"
+import type { Fx, FxInput } from "@typed/fx/Fx"
+import { fromStream } from "@typed/fx/internal/core"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import { fromFxEffect } from "@typed/fx/internal/fx"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
-import { matchFxKind } from "@typed/fx/internal/matchers"
+import { matchFxInput } from "@typed/fx/internal/matchers"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { run } from "@typed/fx/internal/run"
 import { type RefSubject } from "@typed/fx/RefSubject"
@@ -21,6 +22,7 @@ import type { Equivalence } from "effect/Equivalence"
 import * as Exit from "effect/Exit"
 import * as Fiber from "effect/Fiber"
 import * as Option from "effect/Option"
+import { getEquivalence } from "effect/ReadonlyArray"
 import type * as Scope from "effect/Scope"
 import * as SynchronizedRef from "effect/SynchronizedRef"
 
@@ -231,24 +233,30 @@ export function of<A, E = never>(
  * @since 1.18.0
  * @category constructors
  */
+export function make<A, E = never>(
+  iterable: Iterable<A>,
+  eq?: Equivalence<A>
+): Effect.Effect<never, never, RefSubject<never, E, ReadonlyArray<A>>>
 export function make<R, E, A>(
-  fx: Effect.Effect<R, E, A>,
+  effect: Effect.Effect<R, E, A>,
   eq?: Equivalence<A>
 ): Effect.Effect<R, never, RefSubject<never, E, A>>
 export function make<R, E, A>(
-  fx: Fx<R, E, A>,
+  fx: FxInput<R, E, A>,
   eq?: Equivalence<A>
 ): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>>
 
 export function make<R, E, A>(
-  fx: Fx<R, E, A>,
+  fx: FxInput<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>> {
-  return matchFxKind(fx, {
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, any>> {
+  return matchFxInput(fx, {
     Fx: (fx) => fxAsRef(fx, eq),
+    Stream: (stream) => fxAsRef(fromStream(stream), eq),
     Effect: (effect) => fromEffect(effect, eq),
-    Stream: (stream) => fxAsRef(stream, eq),
-    Cause: (cause) => fromEffect(Effect.failCause(cause), eq)
+    Cause: (cause) => fromEffect(Effect.failCause(cause), eq),
+    Iterable: (iterable) => fromEffect<R, E, any>(Effect.succeed(Array.from(iterable)), getEquivalence(eq || equals)),
+    Otherwise: (value) => of(value, eq)
   })
 }
 
@@ -301,21 +309,21 @@ const fxAsRef = <R, E, A>(
  * @category constructors
  */
 export function makeWithExtension<R, E, A, B>(
-  fx: Effect.Effect<R, E, A>,
+  effect: Effect.Effect<R, E, A>,
   f: (ref: RefSubject<never, E, A>) => B,
   eq?: Equivalence<A>
 ): Effect.Effect<R, never, RefSubject<never, E, A> & B>
 export function makeWithExtension<R, E, A, B>(
-  fx: Fx<R, E, A>,
+  fx: FxInput<R, E, A>,
   f: (ref: RefSubject<never, E, A>) => B,
   eq?: Equivalence<A>
 ): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A> & B>
 
 export function makeWithExtension<R, E, A, B>(
-  fx: Fx<R, E, A>,
+  fx: FxInput<R, E, A>,
   f: (ref: RefSubject<never, E, A>) => B,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A> & B> {
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, any> & B> {
   return Effect.map(make(fx, eq), (ref) => Object.assign(ref, f(ref)))
 }
 

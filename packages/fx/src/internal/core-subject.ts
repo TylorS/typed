@@ -6,7 +6,7 @@ import type { Sink } from "@typed/fx/Sink"
 import type { Subject } from "@typed/fx/Subject"
 import { type Cause } from "effect/Cause"
 import * as Effect from "effect/Effect"
-import { succeed } from "effect/Exit"
+import * as Exit from "effect/Exit"
 import * as MutableRef from "effect/MutableRef"
 import * as Option from "effect/Option"
 import * as Scope from "effect/Scope"
@@ -38,7 +38,7 @@ export class SubjectImpl<E, A> extends ToFx<never, E, A> implements Subject<neve
   // Emit an event to all sinks
   onSuccess = (a: A) => this.onEvent(a)
 
-  interrupt = Effect.suspend(() => Effect.forEach(this.scopes, (scope) => Scope.close(scope, succeed(undefined))))
+  interrupt = Effect.suspend(() => Effect.forEach(this.scopes, (scope) => Scope.close(scope, Exit.unit)))
 
   toFx(): Fx<never, E, A> {
     return fromSink<never, E, A>((sink) => this.addSink(sink, (scope) => awaitScopeClose(scope)))

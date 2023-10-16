@@ -39,7 +39,7 @@ export function make<R, E, A>(
 ): Effect.Effect<R | Scope.Scope, never, RefArray<never, E, A>>
 
 export function make<R, E, A>(
-  initial: Fx.Fx<R, E, ReadonlyArray<A>>,
+  initial: Fx.FxInput<R, E, ReadonlyArray<A>>,
   eq: Equivalence<A> = equals
 ): Effect.Effect<R | Scope.Scope, never, RefArray<never, E, A>> {
   return RefSubject.make(

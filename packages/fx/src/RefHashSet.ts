@@ -32,7 +32,7 @@ export function make<R, E, A>(
 ): Effect.Effect<R | Scope.Scope, never, RefHashSet<never, E, A>>
 
 export function make<R, E, A>(
-  initial: Fx.Fx<R, E, HashSet.HashSet<A>>
+  initial: Fx.FxInput<R, E, HashSet.HashSet<A>>
 ): Effect.Effect<R | Scope.Scope, never, RefHashSet<never, E, A>> {
   return RefSubject.make(
     initial

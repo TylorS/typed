@@ -12,12 +12,13 @@ import type { Effect } from "effect/Effect"
 export const TemplateInstanceTypeId = Symbol.for("@typed/template/TemplateInstance")
 export type TemplateInstanceTypeId = typeof TemplateInstanceTypeId
 
-export interface TemplateInstance<E, T extends Rendered = Rendered> extends Fx.Fx<never, E, RenderEvent> {
+export interface TemplateInstance<E, T extends Rendered = Rendered>
+  extends Fx.Fx<never, E, RenderEvent>, Effect<never, E | NoSuchElementException, T>
+{
   readonly [TemplateInstanceTypeId]: TemplateInstanceTypeId
 
   readonly parts: Parts
 
-  readonly get: Effect<never, E | NoSuchElementException, T>
   readonly query: ElementRef<T, E>["query"]
   readonly events: ElementRef<T, E>["events"]
   readonly elements: ElementRef<T, E>["elements"]
@@ -53,7 +54,6 @@ class TemplateInstanceImpl<E, T extends Rendered>
     return this.i1
   }
 
-  get = this.i1
   query = this.i1.query
   events = this.i1.events
   elements = this.i1.elements

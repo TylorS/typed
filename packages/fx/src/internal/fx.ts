@@ -38,7 +38,7 @@ export const at: {
   (delay: DurationInput): <A>(value: A) => Fx<never, never, A>
   <A>(value: A, delay: DurationInput): Fx<never, never, A>
 } = dual(2, function<A>(value: A, delay: DurationInput): Fx<never, never, A> {
-  return Effect.delay(Effect.succeed(value), delay)
+  return core.fromEffect(Effect.delay(Effect.succeed(value), delay))
 })
 
 /**
@@ -50,7 +50,7 @@ export const debounce: {
   (delay: DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
   <R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R, E, A>
 } = dual(2, function<R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R, E, A> {
-  return core.switchMap(fx, (a) => Effect.delay(Effect.succeed(a), delay))
+  return core.switchMap(fx, (a) => core.fromEffect(Effect.delay(Effect.succeed(a), delay)))
 })
 
 /**
@@ -62,7 +62,7 @@ export const throttle: {
   (delay: DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
   <R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R, E, A>
 } = dual(2, function<R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R, E, A> {
-  return core.exhaustMap(fx, (a) => Effect.delay(Effect.succeed(a), delay))
+  return core.exhaustMap(fx, (a) => core.fromEffect(Effect.delay(Effect.succeed(a), delay)))
 })
 
 /**
@@ -74,7 +74,7 @@ export const delay: {
   (delay: DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
   <R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R, E, A>
 } = dual(2, function<R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R, E, A> {
-  return core.flatMap(fx, (a) => Effect.delay(Effect.succeed(a), delay))
+  return core.flatMap(fx, (a) => core.fromEffect(Effect.delay(Effect.succeed(a), delay)))
 })
 
 /**

@@ -62,5 +62,5 @@ export const node: <R, E>(directive: (part: Part.NodePart) => Effect.Effect<R, E
   withTag("node")
 
 export function isDirective<R, E>(renderable: Renderable<R, E> | Placeholder<R, E>): renderable is Directive<R, E> {
-  return typeof renderable === "function" && DirectiveTypeId in (renderable as object)
+  return typeof renderable === "function" && DirectiveTypeId in (renderable as any)
 }

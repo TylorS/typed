@@ -1,42 +1,17 @@
-import "./module-agumentation"
-
+import * as TypeId from "@typed/fx/TypeId"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Stream from "effect/Stream"
 
 import type * as Sink from "@typed/fx/Sink"
 
-import type { Fx } from "@typed/fx/Fx"
+import type { Fx, FxInput } from "@typed/fx/Fx"
 import type * as Primitive from "@typed/fx/internal/fx-primitive"
-import { TypeId } from "@typed/fx/TypeId"
-
-export function matchFxKind<R, E, A, B>(
-  fx: Fx<R, E, A>,
-  matchers: {
-    readonly Fx: (fx: Fx<R, E, A>) => B
-    readonly Effect: (effect: Effect.Effect<R, E, A>) => B
-    readonly Stream: (effect: Stream.Stream<R, E, A>) => B
-    readonly Cause: (cause: Cause.Cause<E>) => B
-  }
-): B {
-  if (TypeId in fx) {
-    return matchers.Fx(fx as any)
-  } else if (Effect.EffectTypeId in fx) {
-    return matchers.Effect(fx as any)
-  } else if (Stream.StreamTypeId in fx) {
-    return matchers.Stream(fx as any)
-  } else if (Cause.CauseTypeId in fx) {
-    return matchers.Cause(fx as any)
-  } else {
-    throw new TypeError(`Unknown Fx type: ${fx}`)
-  }
-}
 
 export function matchFxPrimitive<B>(
   matchers: {
     readonly Empty: <R2>(fx: Primitive.Empty, sink: Sink.WithContext<R2, never, never>) => B
     readonly Fail: <E, R2>(fx: Primitive.Fail<E>, sink: Sink.WithContext<R2, E, never>) => B
-    readonly FromEffect: <R, E, A, R2>(fx: Primitive.FromEffect<R, E, A>, sink: Sink.WithContext<R2, E, A>) => B
     readonly FromIterable: <A, R2>(fx: Primitive.FromIterable<A>, sink: Sink.WithContext<R2, never, A>) => B
     readonly FromSink: <R, E, A, R2>(fx: Primitive.FromSink<R, E, A>, sink: Sink.WithContext<R2, E, A>) => B
     readonly Never: <R2>(fx: Primitive.Never, sink: Sink.WithContext<R2, never, never>) => B
@@ -70,4 +45,38 @@ export function matchFxPrimitive<B>(
 ) {
   return <R, E, A, R2>(fx: Fx<R, E, A>, sink: Sink.WithContext<R2, E, A>): B =>
     (matchers as any)[(fx as Primitive.Primitive)._fxTag](fx as any, sink)
+}
+
+export function matchFxInput<R, E, A, B>(fx: FxInput<R, E, A>, matchers: {
+  Fx: (fx: Fx<R, E, A>) => B
+  Stream: (stream: Stream.Stream<R, E, A>) => B
+  Effect: (effect: Effect.Effect<R, E, A>) => B
+  Cause: (cause: Cause.Cause<E>) => B
+  Iterable: (iterable: Iterable<A>) => B
+  Otherwise: (value: A) => B
+}): B {
+  const type = typeof fx
+  if (!(type === "object" || type === "function")) return matchers.Otherwise(fx as A)
+  else if (isFx(fx)) return matchers.Fx(fx)
+  else if (isStream(fx)) return matchers.Stream(fx)
+  else if (isEffect(fx)) return matchers.Effect(fx)
+  else if (isCause(fx)) return matchers.Cause(fx)
+  else if (Symbol.iterator in fx) return matchers.Iterable(fx)
+  else return matchers.Otherwise(fx as A)
+}
+
+function isFx<R, E, A>(input: FxInput<R, E, A>): input is Fx<R, E, A> {
+  return TypeId.TypeId in input
+}
+
+function isStream<R, E, A>(input: FxInput<R, E, A>): input is Stream.Stream<R, E, A> {
+  return Stream.StreamTypeId in input
+}
+
+function isEffect<R, E, A>(input: FxInput<R, E, A>): input is Effect.Effect<R, E, A> {
+  return Effect.EffectTypeId in input
+}
+
+function isCause<R, E, A>(input: FxInput<R, E, A>): input is Cause.Cause<E> {
+  return Cause.CauseTypeId in input
 }
