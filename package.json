@@ -1,11 +1,11 @@
 {
-  "name": "@typed/fp",
+  "name": "typed",
   "private": true,
   "description": "Web Applications with Effect",
   "author": "The Typed contributors",
   "repository": {
     "type": "git",
-    "url": "https://github.comtytyped-fp/platform.git"
+    "url": "https://github.com/tylors/typed.git"
   },
   "workspaces": [
     "packages/*"

@@ -1,3 +1,3 @@
 WIP.
 
-Docs: https:/tylors.github.io/typed-fp
+Docs: https:/tylors.github.io/typed

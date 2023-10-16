@@ -7,9 +7,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tylors/typed-fp.git"
+    "url": "https://github.com/tylors/typed.git"
   },
-  "homepage": "https://github.com/tylors/typed-fp",
+  "homepage": "https://github.com/tylors/typed",
   "scripts": {
     "version": "changeset version && pnpm install --no-frozen-lockfile",
     "release": "pnpm run build && changeset publish"

@@ -71,7 +71,6 @@ Added in v1.0.0
   - [toOptionCause](#tooptioncause)
   - [toOptionError](#tooptionerror)
   - [tuple](#tuple)
-  - [unannotate](#unannotate)
   - [unwrapEffect](#unwrapeffect)
   - [zip](#zip)
   - [zipWith](#zipwith)
@@ -826,18 +825,6 @@ Combine the success values of multiple RemoteData values.
 export declare function tuple<Data extends ReadonlyArray<RemoteData.Any>>(
   ...data: Data
 ): RemoteData<RemoteData.Error<Data[number]>, { readonly [K in keyof Data]: RemoteData.Success<Data[K]> }>
-```
-
-Added in v1.0.0
-
-## unannotate
-
-Unannotate a cause held within a RemoteData. Useful for testing.
-
-**Signature**
-
-```ts
-export declare function unannotate<E, A>(data: RemoteData<E, A>): RemoteData<E, A>
 ```
 
 Added in v1.0.0

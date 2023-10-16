@@ -2,12 +2,12 @@
 title: "@typed/wire"
 has_children: true
 permalink: /docs/wire
-nav_order: 8
+nav_order: 9
 ---
 
 # @typed/wire
 
 > WIP
 
-Docs: https://tylors.github.io/typed-fp/docs/wire
+Docs: https://tylors.github.io/typed/docs/wire
 

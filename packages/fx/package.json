@@ -8,9 +8,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tylors/typed-fp.git"
+    "url": "https://github.com/tylors/typed.git"
   },
-  "homepage": "https://github.com/tylors/typed-fp",
+  "homepage": "https://github.com/tylors/typed",
   "exports": {
     "./*": {
       "require": "./dist/*.js"

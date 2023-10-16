@@ -2,4 +2,4 @@
 
 > WIP
 
-Docs: https://tylors.github.io/typed-fp/docs/route
+Docs: https://tylors.github.io/typed/docs/route

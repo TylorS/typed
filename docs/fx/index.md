@@ -9,5 +9,5 @@ nav_order: 4
 
 > WIP
 
-Docs: https://tylors.github.io/typed-fp/docs/fx
+Docs: https://tylors.github.io/typed/docs/fx
 

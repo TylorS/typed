@@ -2,4 +2,4 @@
 
 > WIP
 
-Docs: https://tylors.github.io/typed-fp/docs/remote-data
+Docs: https://tylors.github.io/typed/docs/remote-data

@@ -1,3 +1,8 @@
+/**
+ * The context in which templates are rendered within
+ * @since 1.0.0
+ */
+
 import * as Context from "@typed/context"
 import * as Idle from "@typed/fx/Idle"
 import type { Entry } from "@typed/template/Entry"
@@ -7,6 +12,10 @@ import type { Layer } from "effect"
 import { Effect, Fiber, Option } from "effect"
 import * as Scope from "effect/Scope"
 
+/**
+ * The context in which templates are rendered within
+ * @since 1.0.0
+ */
 export interface RenderContext {
   /**
    * The current environment.
@@ -34,20 +43,33 @@ export interface RenderContext {
   readonly queue: RenderQueue
 }
 
+/**
+ * The context in which templates are rendered within
+ * @since 1.0.0
+ */
 export const RenderContext: Context.Tagged<RenderContext, RenderContext> = Context.Tagged<RenderContext>(
   "@typed/template/RenderContext"
 )
 
+/**
+ * @since 1.0.0
+ */
 export interface RenderQueue {
   readonly add: (part: Part | SparsePart, task: () => void) => Effect.Effect<Scope.Scope, never, void>
 }
 
+/**
+ * @since 1.0.0
+ */
 export type RenderContextOptions = IdleRequestOptions & {
   readonly environment: RenderContext["environment"]
   readonly scope: Scope.Scope
   readonly isBot?: RenderContext["isBot"]
 }
 
+/**
+ * @since 1.0.0
+ */
 export function make({
   environment,
   isBot = false,
@@ -63,18 +85,30 @@ export function make({
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export type Environment = RenderContext["environment"]
 
+/**
+ * @since 1.0.0
+ */
 export const Environment: { readonly [_ in Environment]: _ } = {
   server: "server",
   browser: "browser",
   static: "static"
 }
 
+/**
+ * @since 1.0.0
+ */
 export function getRenderCache<T>(renderCache: RenderContext["renderCache"], key: object): Option.Option<T> {
   return renderCache.has(key) ? Option.some(renderCache.get(key) as T) : Option.none()
 }
 
+/**
+ * @since 1.0.0
+ */
 export function getTemplateCache(
   templateCache: RenderContext["templateCache"],
   key: TemplateStringsArray
@@ -82,6 +116,9 @@ export function getTemplateCache(
   return Option.fromNullable(templateCache.get(key))
 }
 
+/**
+ * @since 1.0.0
+ */
 export const browser: Layer.Layer<never, never, RenderContext> = RenderContext.scoped(
   Effect.scopeWith((scope) =>
     Effect.succeed(make({
@@ -91,6 +128,9 @@ export const browser: Layer.Layer<never, never, RenderContext> = RenderContext.s
   )
 )
 
+/**
+ * @since 1.0.0
+ */
 export const server: (isBot?: boolean) => Layer.Layer<never, never, RenderContext> = (isBot) =>
   RenderContext.scoped(
     Effect.scopeWith((scope) =>
@@ -113,7 +153,12 @@ const static_: (isBot?: boolean) => Layer.Layer<never, never, RenderContext> = (
     )
   )
 
-export { static_ as static }
+export {
+  /**
+   * @since 1.0.0
+   */
+  static_ as static
+}
 
 class RenderQueueImpl implements RenderQueue {
   queue = new Map<Part | SparsePart, () => void>()

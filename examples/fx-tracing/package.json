@@ -5,9 +5,9 @@
   "description": "",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tylors/typed-fp.git"
+    "url": "https://github.com/tylors/typed.git"
   },
-  "homepage": "https://github.com/tylors/typed-fp",
+  "homepage": "https://github.com/tylors/typed",
   "scripts": {
     "example": "ts-node --project tsconfig.examples.json",
     "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run docs-update",

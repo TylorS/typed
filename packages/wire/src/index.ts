@@ -78,15 +78,36 @@ export const persistent = (fragment: DocumentFragment): DocumentFragment | Node 
   }
 }
 
+/**
+ * When supporting a Wire for persisten document fragment behavior,
+ * these are the kinds of values which can be rendered.
+ * @since 1.0.0
+ */
 export type Rendered = Rendered.Value | ReadonlyArray<Rendered>
 
+/**
+ * @since 1.0.0
+ */
 export namespace Rendered {
+  /**
+   * When supporting a Wire for persisten document fragment behavior,
+   * these are the kinds of values which can be rendered.
+   * @since 1.0.0
+   */
   export type Value = Node | DocumentFragment | Wire
 
+  /**
+   * Extract the values from a Rendered type
+   * @since 1.0.0
+   */
   export type Values<T extends Rendered> = [T] extends [ReadonlyArray<infer R>] ?
     ReadonlyArray<R | Exclude<T, ReadonlyArray<any>>>
     : ReadonlyArray<T>
 
+  /**
+   * Extract the elements from a Rendered type
+   * @since 1.0.0
+   */
   export type Elements<T extends Rendered> = ReadonlyArray<
     Exclude<T, DocumentFragment | Wire | ReadonlyArray<Rendered>>
   >
