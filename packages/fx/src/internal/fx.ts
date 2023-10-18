@@ -28,8 +28,6 @@ import type { Scheduler } from "effect/Scheduler"
 import type * as Scope from "effect/Scope"
 import type * as Tracer from "effect/Tracer"
 
-// TODO: RefArray, RefSet, RefMap, RefHashMap, RefHashSet, etc
-
 /**
  * Create an Fx which will emit a value after waiting for a specified duration.
  * @since 1.18.0
