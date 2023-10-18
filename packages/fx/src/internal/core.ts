@@ -2108,23 +2108,31 @@ export function fromEffect<R, E, A>(effect: Effect.Effect<R, E, A>): Fx<R, E, A>
   })
 }
 
-export function fromStream<R, E, A>(stream: Stream.Stream<R, E, A>): Fx<R, E, A> {
-  return fromSink((sink) =>
-    Effect.scoped(Effect.gen(function*(_) {
-      const pull = Effect.either(yield* _(Stream.toPull(stream)))
+export function fromStream<R, E, A>(stream: Stream.Stream<R, E, A>, options?: { priority?: number }): Fx<R, E, A> {
+  return fromSink<R, E, A>((sink) =>
+    Effect.acquireUseRelease<never, never, Scope.CloseableScope, R, never, unknown, never, unknown>(
+      Scope.make(),
+      (scope) =>
+        Effect.gen(function*(_) {
+          const pull = Effect.either(yield* _(Stream.toPull(stream), Effect.provideService(Scope.Scope, scope)))
 
-      while (true) {
-        const either = yield* _(pull)
+          while (true) {
+            const either = yield* _(pull)
 
-        if (Either.isRight(either)) {
-          yield* _(Effect.forEach(either.right, sink.onSuccess))
-        } else if (Option.isNone(either.left)) {
-          break
-        } else {
-          yield* _(sink.onFailure(Cause.fail(either.left.value)))
-        }
-      }
-    }))
+            if (Either.isRight(either)) {
+              yield* _(Effect.forEach(either.right, sink.onSuccess))
+            } else if (Option.isNone(either.left)) {
+              return
+            } else {
+              yield* _(sink.onFailure(Cause.fail(either.left.value)))
+            }
+
+            // Schedule subsequent pulls using the current scheduler.
+            yield* _(Effect.yieldNow(options))
+          }
+        }),
+      Scope.close
+    )
   )
 }
 
