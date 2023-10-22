@@ -226,12 +226,10 @@ class FormImpl<Entries extends Form.AnyEntries> extends FxEffectProto<
     )
   }
 
-  get decoded(): Form<Entries>["decoded"] {
-    return Computed(
-      this as any as Form<Entries>,
-      (i) => S.decode(this.schema)(i, parseOptions)
-    )
-  }
+  decoded: Form<Entries>["decoded"] = Computed(
+    this as any as Form<Entries>,
+    (i) => S.decode(this.schema)(i, parseOptions)
+  )
 }
 
 function buildSchema<Entries extends Form.AnyEntries>(
