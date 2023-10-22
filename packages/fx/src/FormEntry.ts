@@ -17,15 +17,15 @@ import type { Scope } from "effect"
 import * as Option from "effect/Option"
 import { type Stream, StreamTypeId } from "effect/Stream"
 
-export interface FormEntry<out R, in out E, in out I, in out O> extends RefSubject.RefSubject<R, E | ParseError, I> {
+export interface FormEntry<in out E, in out I, in out O> extends RefSubject.RefSubject<never, E | ParseError, I> {
   readonly name: PropertyKey
   readonly schema: Schema.Schema<I, O>
-  readonly decoded: Computed<R, E | ParseError, O>
+  readonly decoded: Computed<never, E | ParseError, O>
 }
 
 export namespace FormEntry {
-  export interface Derived<R0, R, E, I, O> extends FormEntry<R, E, I, O> {
-    readonly persist: Effect.Effect<R0, E | ParseError, O>
+  export interface Derived<R, E, I, O> extends FormEntry<E, I, O> {
+    readonly persist: Effect.Effect<R, E | ParseError, O>
   }
 }
 
@@ -41,10 +41,10 @@ export interface FormEntryOptions<I, O> {
 export type MakeFormEntry<I, O> = {
   <R, E>(
     ref: RefSubject.RefSubject<R, E, O>
-  ): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<R, never, E, I, O>>
-  <R, E>(fx: Fx<R, E, O>): Effect.Effect<R | Scope.Scope, never, FormEntry<never, E, I, O>>
-  <R, E>(stream: Stream<R, E, O>): Effect.Effect<R | Scope.Scope, never, FormEntry<never, E, I, O>>
-  <R, E>(effect: Effect.Effect<R, E, O>): Effect.Effect<R, never, FormEntry<never, E, I, O>>
+  ): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<R, E, I, O>>
+  <R, E>(fx: Fx<R, E, O>): Effect.Effect<R | Scope.Scope, never, FormEntry<E, I, O>>
+  <R, E>(stream: Stream<R, E, O>): Effect.Effect<R | Scope.Scope, never, FormEntry<E, I, O>>
+  <R, E>(effect: Effect.Effect<R, E, O>): Effect.Effect<R, never, FormEntry<E, I, O>>
 }
 
 export function make<I, O>(options: FormEntryOptions<I, O>): MakeFormEntry<I, O> {
@@ -69,7 +69,7 @@ const parseOptions: ParseOptions = {
 function makeEffectFormEntry<R, E, I, O>(
   input: Effect.Effect<R, E, O>,
   options: FormEntryOptions<I, O>
-): Effect.Effect<R, never, FormEntry<never, E, I, O>> {
+): Effect.Effect<R, never, FormEntry<E, I, O>> {
   return Effect.contextWith((ctx) =>
     FormEntryImpl.formEntry(
       Effect.provide(Effect.flatMap(input, (i) => Schema.encode(options.schema)(i, parseOptions)), ctx),
@@ -82,7 +82,7 @@ function makeEffectFormEntry<R, E, I, O>(
 function makeFxFormEntry<R, E, I, O>(
   input: Fx<R, E, O>,
   options: FormEntryOptions<I, O>
-): Effect.Effect<R | Scope.Scope, never, FormEntry<never, E, I, O>> {
+): Effect.Effect<R | Scope.Scope, never, FormEntry<E, I, O>> {
   const encode_ = Schema.encode(options.schema)
 
   return Effect.gen(function*(_) {
@@ -119,7 +119,7 @@ function makeFxFormEntry<R, E, I, O>(
 function makeDerivedFormEntry<R, E, I, O>(
   input: RefSubject.RefSubject<R, E, O>,
   options: FormEntryOptions<I, O>
-): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<R, never, E, I, O>> {
+): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<R, E, I, O>> {
   const decode_ = Schema.decode(options.schema)
 
   return Effect.map(makeFxFormEntry(input, options), (entry) =>
@@ -128,14 +128,14 @@ function makeDerivedFormEntry<R, E, I, O>(
       {
         persist: input.updateEffect(() => Effect.flatMap(entry, decode_))
       } as const
-    ) satisfies FormEntry.Derived<R, never, E, I, O>)
+    ) satisfies FormEntry.Derived<R, E, I, O>)
 }
 
-class FormEntryImpl<R, E, I, O> extends RefSubjectImpl<R, E | ParseError, I>
-  implements Omit<FormEntry<R, E, I, O>, ModuleAgumentedEffectKeysToOmit>
+class FormEntryImpl<E, I, O> extends RefSubjectImpl<never, E | ParseError, I>
+  implements Omit<FormEntry<E, I, O>, ModuleAgumentedEffectKeysToOmit>
 {
   constructor(
-    initial: Effect.Effect<R, E, I>,
+    initial: Effect.Effect<never, E, I>,
     readonly name: PropertyKey,
     readonly schema: Schema.Schema<I, O>,
     readonly parseOptions?: ParseOptions
@@ -150,11 +150,11 @@ class FormEntryImpl<R, E, I, O> extends RefSubjectImpl<R, E | ParseError, I>
 
   decoded = this.mapEffect((i) => Schema.decode(this.schema)(i, this.parseOptions))
 
-  static formEntry<R, E, I, O>(
-    initial: Effect.Effect<R, E | ParseError, I>,
+  static formEntry<E, I, O>(
+    initial: Effect.Effect<never, E | ParseError, I>,
     name: PropertyKey,
     schema: Schema.Schema<I, O>
-  ): FormEntry<R, E, I, O> {
+  ): FormEntry<E, I, O> {
     return new FormEntryImpl(initial, name, schema, parseOptions) as any
   }
 }

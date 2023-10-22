@@ -35,12 +35,12 @@ describe("Form", () => {
       const test = Effect.gen(function*(_) {
         const form: Form.Form<
           {
-            readonly id: FormEntry<never, never, string, string>
-            readonly timestamp: FormEntry<never, never, string, Date>
+            readonly id: FormEntry<never, string, string>
+            readonly timestamp: FormEntry<never, string, Date>
           }
         > = yield* _(makeFooForm(Effect.succeed(initialFooOutput)))
-        const id: FormEntry<never, never, string, string> = form.get("id")
-        const timestamp: FormEntry<never, never, string, Date> = form.get("timestamp")
+        const id: FormEntry<never, string, string> = form.get("id")
+        const timestamp: FormEntry<never, string, Date> = form.get("timestamp")
 
         deepStrictEqual(yield* _(form), initialFooInput)
         deepStrictEqual(yield* _(form.decoded), initialFooOutput)
@@ -131,7 +131,7 @@ describe("Form", () => {
         const ref = yield* _(RefSubject.of(initialFooOutput))
         const form = yield* _(makeFooForm(ref))
 
-        const timestamp: FormEntry<never, never, string, Date> = form.get("timestamp")
+        const timestamp: FormEntry<never, string, Date> = form.get("timestamp")
 
         deepStrictEqual(yield* _(form), initialFooInput)
         deepStrictEqual(yield* _(form.decoded), initialFooOutput)
@@ -157,7 +157,7 @@ describe("Form", () => {
       const test = Effect.gen(function*(_) {
         const form = yield* _(makeFooForm(ref))
 
-        const timestamp: FormEntry<never, never, string, Date> = form.get("timestamp")
+        const timestamp: FormEntry<never, string, Date> = form.get("timestamp")
 
         deepStrictEqual(yield* _(form), initialFooInput)
         deepStrictEqual(yield* _(form.decoded), initialFooOutput)
