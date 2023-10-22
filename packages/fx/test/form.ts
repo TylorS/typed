@@ -146,6 +146,32 @@ describe("Form", () => {
       await Effect.runPromise(test)
     })
 
+    it("allows persisting form state to a RefSubject from the context", async () => {
+      const ref = RefSubject.tagged<never, FooOutput>()("TestRef")
+
+      const test = Effect.gen(function*(_) {
+        const form = yield* _(makeFooForm(ref))
+
+        const timestamp: FormEntry<never, never, string, Date> = form.fromKey("timestamp")
+
+        deepStrictEqual(yield* _(form), initialFooInput)
+        deepStrictEqual(yield* _(form.decoded), initialFooOutput)
+
+        const date = new Date()
+
+        yield* _(timestamp.set(date.toISOString()))
+
+        deepStrictEqual(yield* _(timestamp), date.toISOString())
+        deepStrictEqual(yield* _(ref), initialFooOutput)
+
+        yield* _(form.persist)
+
+        deepStrictEqual(yield* _(ref), { ...initialFooOutput, timestamp: date })
+      }).pipe(ref.provide(Effect.succeed(initialFooOutput)), Effect.scoped)
+
+      await Effect.runPromise(test)
+    })
+
     it("allow deriving optional form states", async () => {
       const Bar = Schema.struct({
         baz: Schema.optional(Schema.string)
