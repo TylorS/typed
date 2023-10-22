@@ -33,9 +33,14 @@ describe("Form", () => {
 
     it("allows deriving form state from a source", async () => {
       const test = Effect.gen(function*(_) {
-        const form = yield* _(makeFooForm(Effect.succeed(initialFooOutput)))
-        const id = form.fromKey("id")
-        const timestamp = form.fromKey("timestamp")
+        const form: Form.Form<
+          {
+            readonly id: FormEntry<never, never, string, string>
+            readonly timestamp: FormEntry<never, never, string, Date>
+          }
+        > = yield* _(makeFooForm(Effect.succeed(initialFooOutput)))
+        const id: FormEntry<never, never, string, string> = form.get("id")
+        const timestamp: FormEntry<never, never, string, Date> = form.get("timestamp")
 
         deepStrictEqual(yield* _(form), initialFooInput)
         deepStrictEqual(yield* _(form.decoded), initialFooOutput)
@@ -126,7 +131,7 @@ describe("Form", () => {
         const ref = yield* _(RefSubject.of(initialFooOutput))
         const form = yield* _(makeFooForm(ref))
 
-        const timestamp: FormEntry<never, never, string, Date> = form.fromKey("timestamp")
+        const timestamp: FormEntry<never, never, string, Date> = form.get("timestamp")
 
         deepStrictEqual(yield* _(form), initialFooInput)
         deepStrictEqual(yield* _(form.decoded), initialFooOutput)
@@ -152,7 +157,7 @@ describe("Form", () => {
       const test = Effect.gen(function*(_) {
         const form = yield* _(makeFooForm(ref))
 
-        const timestamp: FormEntry<never, never, string, Date> = form.fromKey("timestamp")
+        const timestamp: FormEntry<never, never, string, Date> = form.get("timestamp")
 
         deepStrictEqual(yield* _(form), initialFooInput)
         deepStrictEqual(yield* _(form.decoded), initialFooOutput)
@@ -180,7 +185,7 @@ describe("Form", () => {
 
       const test = Effect.gen(function*(_) {
         const form = yield* _(makeBarForm(Effect.succeed({})))
-        const baz = form.fromKey("baz")
+        const baz = form.get("baz")
 
         deepStrictEqual(yield* _(baz), undefined)
 
@@ -203,12 +208,12 @@ describe("Form", () => {
 
       const test = Effect.gen(function*(_) {
         const form = yield* _(makeBazForm(Effect.succeed({ quux: { a: 1, b: true } })))
-        const quux = form.fromKey("quux")
+        const quux = form.get("quux")
 
         ok(Form.FormTypeId in quux)
 
-        const a = quux.fromKey("a")
-        const b = quux.fromKey("b")
+        const a = quux.get("a")
+        const b = quux.get("b")
 
         yield* _(a.set(42))
         yield* _(b.set(false))

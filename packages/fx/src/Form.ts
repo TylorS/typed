@@ -8,6 +8,8 @@ import type { Fx } from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
+import { from } from "@typed/fx/internal/schema-equivalence"
+import { hold } from "@typed/fx/internal/share"
 import type { RefSubject } from "@typed/fx/RefSubject"
 import { RefSubjectTypeId, TypeId } from "@typed/fx/TypeId"
 import type * as Versioned from "@typed/fx/Versioned"
@@ -47,7 +49,7 @@ export namespace Form {
       O
     >
 
-    readonly fromKey: <K extends keyof Entries>(key: K) => Entries[K]
+    readonly get: <K extends keyof Entries>(key: K) => Entries[K]
 
     readonly decoded: Computed<
       R,
@@ -56,7 +58,12 @@ export namespace Form {
     >
   }
 
-  export type AnyEntry = FormEntry.FormEntry<any, any, any, any> | Base<any, any, any, any, any>
+  export type AnyEntry =
+    | FormEntry.FormEntry<any, any, any, any>
+    | FormEntry.FormEntry<any, never, any, any>
+    | FormEntry.FormEntry<any, any, never, any>
+    | FormEntry.FormEntry<any, never, never, any>
+    | Base<any, any, any, any, any>
 
   export type AnyEntries = Readonly<Record<PropertyKey, AnyEntry>>
 
@@ -187,7 +194,7 @@ class FormImpl<Entries extends Form.AnyEntries> extends FxEffectProto<
     super()
   }
 
-  fromKey: Form<Entries>["fromKey"] = (k) => this.entries[k] as any
+  get: Form<Entries>["get"] = (k) => this.entries[k] as any
 
   schema: Form<Entries>["schema"] = buildSchema(this.entries)
 
@@ -206,7 +213,7 @@ class FormImpl<Entries extends Form.AnyEntries> extends FxEffectProto<
     Form.Error<Entries> | ParseError,
     Form.Input<Entries>
   > {
-    return core.struct(this.entries as any) as any
+    return hold(core.skipRepeatsWith(core.struct(this.entries as any) as any, from(this.schema))) as any
   }
 
   toEffect(): Effect.Effect<

@@ -17,7 +17,7 @@ import type { Scope } from "effect"
 import * as Option from "effect/Option"
 import { type Stream, StreamTypeId } from "effect/Stream"
 
-export interface FormEntry<R, E, I, O> extends RefSubject.RefSubject<R, E | ParseError, I> {
+export interface FormEntry<out R, in out E, in out I, in out O> extends RefSubject.RefSubject<R, E | ParseError, I> {
   readonly name: PropertyKey
   readonly schema: Schema.Schema<I, O>
   readonly decoded: Computed<R, E | ParseError, O>
