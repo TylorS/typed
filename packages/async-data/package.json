@@ -1,6 +1,6 @@
 {
-  "name": "@typed/fx",
-  "version": "1.17.4",
+  "name": "@typed/async-data",
+  "version": "0.0.0",
   "description": "",
   "publishConfig": {
     "access": "public",
@@ -13,7 +13,7 @@
   "homepage": "https://github.com/tylors/typed",
   "exports": {
     "./*": {
-      "require": "./dist/*.js"
+      "require": "./build/cjs/*.js"
     }
   },
   "scripts": {
@@ -35,31 +35,12 @@
     "test": "vitest",
     "coverage": "vitest run --coverage"
   },
-  "keywords": [
-    "Push-based Streams",
-    "Reactivity",
-    "Functional Programming",
-    "Effect",
-    "Typed"
-  ],
+  "keywords": [],
   "author": "Typed contributors",
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.45.5",
-    "@effect/typeclass": "0.6.2",
-    "@typed/context": "workspace:*",
-    "@typed/remote-data": "workspace:*",
-    "effect": "2.0.0-next.48"
-  },
-  "peerDependencies": {
-    "@effect/typeclass": "0.6.2",
-    "effect": "2.0.0-next.48"
-  },
-  "devDependencies": {
-    "@most/core": "^1.6.1",
-    "@most/scheduler": "^1.3.0",
-    "@most/types": "^1.1.0",
-    "rxjs": "^7.8.1"
+    "@effect/schema": "^0.43.1",
+    "effect": "2.0.0-next.50"
   }
 }

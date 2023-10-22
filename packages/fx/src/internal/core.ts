@@ -397,6 +397,7 @@ class Snapshot<R, E, A, R2, E2, B, R3, E3, C> extends ToFx<R | R2 | R3, E | E2 |
 
   toFx(): Fx<R | R2 | R3, E | E2 | E3, C> {
     return matchFxInput(this.i1, {
+      RefSubject: (fx2) => this.runScoped(this.i0, fx2, this.i2),
       Fx: (fx2) => this.runScoped(this.i0, fx2, this.i2),
       Stream: (stream2) => this.runScoped(this.i0, fromStream(stream2), this.i2),
       Effect: (effect2) => mapEffect(this.i0, (a) => Effect.flatMap(effect2, (b) => this.i2(a, b))),
@@ -802,6 +803,18 @@ export function combine<const FX extends ReadonlyArray<Fx<any, any, any>>>(
       )
     })
   )
+}
+
+export function struct<const FX extends Readonly<Record<PropertyKey, Fx<any, any, any>>>>(
+  fxs: FX
+): Fx<
+  Fx.Context<FX[string]>,
+  Fx.Error<FX[string]>,
+  {
+    readonly [K in keyof FX]: Fx.Success<FX[K]>
+  }
+> {
+  return map(combine(Object.entries(fxs).map(([k, fx]) => map(fx, (a) => [k, a] as const))), Object.fromEntries)
 }
 
 export function merge<const FX extends ReadonlyArray<Fx<any, any, any>>>(
@@ -2137,6 +2150,7 @@ export function fromStream<R, E, A>(stream: Stream.Stream<R, E, A>, options?: { 
 }
 
 const matchers = {
+  RefSubject: identity,
   Fx: identity,
   Stream: fromStream,
   Effect: fromEffect,

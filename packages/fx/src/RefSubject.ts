@@ -5,6 +5,7 @@
  * @since 1.18.0
  */
 
+import type { Schema } from "@effect/schema"
 import * as C from "@typed/context"
 import { Computed } from "@typed/fx/Computed"
 import { Filtered } from "@typed/fx/Filtered"
@@ -15,11 +16,12 @@ import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import { exit, fromFxEffect } from "@typed/fx/internal/fx"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
-import type * as Sink from "@typed/fx/Sink"
+import { fromRefSubject, toRefSubject } from "@typed/fx/internal/schema-ref-subject"
 import type * as Subject from "@typed/fx/Subject"
 import { RefSubjectTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
-import { Cause, Either, Exit, identity } from "effect"
+import type { Stream } from "effect"
+import { Cause, Exit, identity } from "effect"
 import * as Effect from "effect/Effect"
 import type { Equivalence } from "effect/Equivalence"
 import type * as Layer from "effect/Layer"
@@ -32,7 +34,7 @@ import type * as Scope from "effect/Scope"
  * @category models
  */
 export interface RefSubject<R, in out E, in out A>
-  extends Versioned.Versioned<R, R, E, A, R, E, A>, Sink.WithContext<R, E, A>
+  extends Versioned.Versioned<R, R, E, A, R, E, A>, Subject.Subject<R, E, A>
 {
   readonly [RefSubjectTypeId]: RefSubjectTypeId
 
@@ -171,10 +173,19 @@ export namespace RefSubject {
   }
 
   /**
+   * A Contextual wrapper around a RefSubject
+   * @since 1.18.0
+   * @category models
+   */
+  export interface Derived<R0, R, E, A> extends RefSubject<R, E, A> {
+    readonly commit: Effect.Effect<R0, never, void>
+  }
+
+  /**
    * Extract the Identifier from a RefSubject
    * @since 1.18.0
    */
-  export type Identifier<T> = T extends RefSubject<infer I, infer _, infer __> ? I : never
+  export type Context<T> = T extends RefSubject<infer I, infer _, infer __> ? I : never
 
   /**
    * Extract the Error from a RefSubject
@@ -186,7 +197,7 @@ export namespace RefSubject {
    * Extract the State from a RefSubject
    * @since 1.18.0
    */
-  export type State<T> = T extends RefSubject<infer _, infer __, infer S> ? S : never
+  export type Success<T> = T extends RefSubject<infer _, infer __, infer S> ? S : never
 }
 
 /**
@@ -276,6 +287,8 @@ class ContextImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
   }
 
   version = this.tag.withEffect((ref) => ref.version)
+
+  subscriberCount: Effect.Effect<I, never, number> = this.tag.withEffect((ref) => ref.subscriberCount)
 
   modifyEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>) => Effect.Effect<I | R2, E | E2, B> = (
     f
@@ -389,17 +402,84 @@ export const split = <R, E, A>(
 }
 
 const getLeft = <E, A>(exit: Exit.Exit<E, A>) =>
-  Effect.sync(() =>
+  Effect.succeed(
     Exit.match(exit, {
-      onFailure: (cause) => Either.getLeft(Cause.failureOrCause(cause)),
+      onFailure: (cause) => Cause.failureOption(cause),
       onSuccess: () => Option.none()
     })
   )
 
 const getRight = <E, A>(exit: Exit.Exit<E, A>) =>
-  Effect.sync(() =>
+  Effect.succeed(
     Exit.match(exit, {
-      onFailure: () => Option.none(),
-      onSuccess: (a) => Option.some(a)
+      onFailure: Option.none,
+      onSuccess: Option.some
     })
   )
+
+/**
+ * RefSubjectSchema is a RefSubject factory function dervied from a Schema.
+ * @since 1.18.0
+ */
+export type RefSubjectSchema<O> = {
+  <R, E>(
+    input: RefSubject<R, E, O>,
+    eq?: Equivalence<O>
+  ): Effect.Effect<R | Scope.Scope, never, SchemaToDerived<R, E, O>>
+
+  <R, E>(input: Effect.Effect<R, E, O>, eq?: Equivalence<O>): Effect.Effect<R, never, SchemaToRefSubject<E, O>>
+
+  <R, E>(
+    input: Stream.Stream<R, E, O>,
+    eq?: Equivalence<O>
+  ): Effect.Effect<R | Scope.Scope, never, SchemaToRefSubject<E, O>>
+
+  <R, E>(input: Fx.Fx<R, E, O>, eq?: Equivalence<O>): Effect.Effect<R | Scope.Scope, never, SchemaToRefSubject<E, O>>
+
+  <E>(input: Cause.Cause<E>, eq?: Equivalence<O>): Effect.Effect<never, never, SchemaToRefSubject<E, O>>
+
+  <R, E>(
+    input: Fx.FxInput<R, E, O>,
+    eq?: Equivalence<O>
+  ): Effect.Effect<R | Scope.Scope, never, SchemaToRefSubject<E, O>>
+}
+
+/**
+ * Converts an error `E` and an output `O` into a RefSubject or a Record of RefSubjects if
+ * the ouput value is a Record as well.
+ * @since 1.18.0
+ */
+export type SchemaToRefSubject<E, O> = O extends Readonly<Record<PropertyKey, any>> ? {
+    readonly [K in keyof O]: SchemaToRefSubject<E, O[K]>
+  } :
+  RefSubject<never, E, O>
+
+/**
+ * Converts an error `E` and an output `O` into a RefSubject or a Record of RefSubjects if
+ * the ouput value is a Record as well.
+ * @since 1.18.0
+ */
+export type SchemaToDerived<R, E, O> = O extends Readonly<Record<PropertyKey, any>> ?
+    & {
+      readonly [K in keyof O]: SchemaToRefSubject<E, O[K]>
+    }
+    & {
+      readonly commit: Effect.Effect<R, E, O>
+    } :
+  RefSubject.Derived<R, never, E, O>
+
+/**
+ * Derive a RefSubjectSchema using the "from" or "encoded" value represented by a Schema.
+ * @since 1.18.0
+ */
+export function deriveFromSchema<I, O>(schema: Schema.Schema<I, O>): RefSubjectSchema<I> {
+  return fromRefSubject(schema)
+}
+
+/**
+ * Derive a RefSubjectSchema using the "to" or "decoded" value represented by a Schema.
+ * @since 1.18.0
+ */
+export function deriveToSchema<I, O>(schema: Schema.Schema<I, O>): RefSubjectSchema<O> {
+  return toRefSubject(schema)
+}

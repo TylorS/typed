@@ -2,6 +2,9 @@
   "extends": "./tsconfig.base.json",
   "references": [
     {
+      "path": "packages/async-data"
+    },
+    {
       "path": "packages/context"
     },
     {
@@ -18,6 +21,9 @@
     },
     {
       "path": "packages/route"
+    },
+    {
+      "path": "packages/schema"
     },
     {
       "path": "packages/template"

@@ -7,6 +7,18 @@
       "@/test/*": [
         "./test/*"
       ],
+      "@typed/async-data": [
+        "packages/async-data/src/index.ts"
+      ],
+      "@typed/async-data/*": [
+        "packages/async-data/src/*"
+      ],
+      "@typed/async-data/test/*": [
+        "packages/async-data/test/*"
+      ],
+      "@typed/async-data/examples/*": [
+        "packages/async-data/examples/*"
+      ],
       "@typed/context": [
         "packages/context/src/index.ts"
       ],

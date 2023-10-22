@@ -7,6 +7,7 @@ import type * as Sink from "@typed/fx/Sink"
 
 import type { Fx, FxInput } from "@typed/fx/Fx"
 import type * as Primitive from "@typed/fx/internal/fx-primitive"
+import type { RefSubject } from "@typed/fx/RefSubject"
 
 export function matchFxPrimitive<B>(
   matchers: {
@@ -48,6 +49,7 @@ export function matchFxPrimitive<B>(
 }
 
 export function matchFxInput<R, E, A, B>(fx: FxInput<R, E, A>, matchers: {
+  RefSubject: (fx: RefSubject<R, E, A>) => B
   Fx: (fx: Fx<R, E, A>) => B
   Stream: (stream: Stream.Stream<R, E, A>) => B
   Effect: (effect: Effect.Effect<R, E, A>) => B
@@ -57,6 +59,7 @@ export function matchFxInput<R, E, A, B>(fx: FxInput<R, E, A>, matchers: {
 }): B {
   const type = typeof fx
   if (!(type === "object" || type === "function")) return matchers.Otherwise(fx as A)
+  else if (isRefSubject(fx)) return matchers.RefSubject(fx)
   else if (isFx(fx)) return matchers.Fx(fx)
   else if (isStream(fx)) return matchers.Stream(fx)
   else if (isEffect(fx)) return matchers.Effect(fx)
@@ -67,6 +70,10 @@ export function matchFxInput<R, E, A, B>(fx: FxInput<R, E, A>, matchers: {
 
 function isFx<R, E, A>(input: FxInput<R, E, A>): input is Fx<R, E, A> {
   return TypeId.TypeId in input
+}
+
+function isRefSubject<R, E, A>(input: FxInput<R, E, A>): input is RefSubject<R, E, A> {
+  return TypeId.RefSubjectTypeId in input
 }
 
 function isStream<R, E, A>(input: FxInput<R, E, A>): input is Stream.Stream<R, E, A> {

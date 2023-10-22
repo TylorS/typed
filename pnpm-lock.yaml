@@ -159,6 +159,16 @@ importers:
         specifier: ^2.0.0-next.44
         version: 2.0.0-next.44
 
+  packages/async-data:
+    dependencies:
+      '@effect/schema':
+        specifier: ^0.43.1
+        version: 0.43.1(effect@2.0.0-next.50)(fast-check@3.13.1)
+      effect:
+        specifier: 2.0.0-next.50
+        version: 2.0.0-next.50
+    publishDirectory: dist
+
   packages/context:
     dependencies:
       effect:
@@ -184,6 +194,9 @@ importers:
 
   packages/fx:
     dependencies:
+      '@effect/schema':
+        specifier: ^0.45.5
+        version: 0.45.5(effect@2.0.0-next.48)(fast-check@3.13.1)
       '@effect/typeclass':
         specifier: 0.6.2
         version: 0.6.2(effect@2.0.0-next.48)
@@ -236,6 +249,9 @@ importers:
       path-to-regexp:
         specifier: ^6.2.1
         version: 6.2.1
+    publishDirectory: dist
+
+  packages/schema:
     publishDirectory: dist
 
   packages/template:
@@ -884,6 +900,26 @@ packages:
     resolution: {integrity: sha512-2IMfeLJiRqryAqNliSl3Tjr6mC98KkBPOmR9HtgAbo09L4GolpWOMKo6XsALlYLnCNmLur67FGyuOW+bDEDxUw==}
     peerDependencies:
       effect: 2.0.0-next.48
+      fast-check: ^3.13.1
+    dependencies:
+      effect: 2.0.0-next.48
+      fast-check: 3.13.1
+    dev: false
+
+  /@effect/schema@0.43.1(effect@2.0.0-next.50)(fast-check@3.13.1):
+    resolution: {integrity: sha512-2IMfeLJiRqryAqNliSl3Tjr6mC98KkBPOmR9HtgAbo09L4GolpWOMKo6XsALlYLnCNmLur67FGyuOW+bDEDxUw==}
+    peerDependencies:
+      effect: 2.0.0-next.48
+      fast-check: ^3.13.1
+    dependencies:
+      effect: 2.0.0-next.50
+      fast-check: 3.13.1
+    dev: false
+
+  /@effect/schema@0.45.5(effect@2.0.0-next.48)(fast-check@3.13.1):
+    resolution: {integrity: sha512-YiZP0j8XfpzbhZI1GjELXqDmM5DZlsAWNhfQhJSrDtHIUpwvuMYanUZx6W5PBFeadXXyJv3V/s8i75/Vh5J/sw==}
+    peerDependencies:
+      effect: 2.0.0-next.50
       fast-check: ^3.13.1
     dependencies:
       effect: 2.0.0-next.48
@@ -3012,6 +3048,10 @@ packages:
 
   /effect@2.0.0-next.48:
     resolution: {integrity: sha512-vwMIl39m8fMBeXoGIdSwMi2lrg7NltyrGMK0N/liGDl7G9LXvERKOCipNcobSIGO0V7hjaXEWgL6W/KEWEww+g==}
+
+  /effect@2.0.0-next.50:
+    resolution: {integrity: sha512-dlwI31Vza4ybFtNDstx3AnZkBBzaSMMNfZmwXNrzm1S3fE1IoQzoHCHelBH9gSZCRtE4gzZbplyWD/B6iePGxg==}
+    dev: false
 
   /electron-to-chromium@1.4.554:
     resolution: {integrity: sha512-Q0umzPJjfBrrj8unkONTgbKQXzXRrH7sVV7D9ea2yBV3Oaogz991yhbpfvo2LMNkJItmruXTEzVpP9cp7vaIiQ==}

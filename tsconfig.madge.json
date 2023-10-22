@@ -7,6 +7,18 @@
       "@/test/*": [
         "./test/*"
       ],
+      "@typed/async-data": [
+        "packages/async-data/build/esm/index.js"
+      ],
+      "@typed/async-data/*": [
+        "packages/async-data/build/esm/*"
+      ],
+      "@typed/async-data/test/*": [
+        "packages/async-data/build/test/*"
+      ],
+      "@typed/async-data/examples/*": [
+        "packages/async-data/build/examples/*"
+      ],
       "@typed/context": [
         "packages/context/build/esm/index.js"
       ],
@@ -106,6 +118,9 @@
     }
   },
   "include": [
+    "packages/async-data/build/esm/**/*",
+    "packages/async-data/build/test/**/*",
+    "packages/async-data/build/examples/**/*",
     "packages/context/build/esm/**/*",
     "packages/context/build/test/**/*",
     "packages/context/build/examples/**/*",
@@ -124,6 +139,9 @@
     "packages/route/build/esm/**/*",
     "packages/route/build/test/**/*",
     "packages/route/build/examples/**/*",
+    "packages/schema/build/esm/**/*",
+    "packages/schema/build/test/**/*",
+    "packages/schema/build/examples/**/*",
     "packages/template/build/esm/**/*",
     "packages/template/build/test/**/*",
     "packages/template/build/examples/**/*",

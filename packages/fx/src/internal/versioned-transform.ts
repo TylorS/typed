@@ -10,8 +10,8 @@ export class VersionedTransform<R0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
   extends FxEffectProto<R3, E3, C, R0 | R4, E4, D>
   implements Omit<Versioned<R0, R3, E3, C, R4, E4, D>, ModuleAgumentedEffectKeysToOmit>
 {
-  #version = 0
-  #currentValue: Option.Option<D> = Option.none()
+  private _version = 0
+  private _currentValue: Option.Option<D> = Option.none()
 
   constructor(
     readonly input: Versioned<R0, R, E, A, R2, E2, B>,
@@ -21,7 +21,7 @@ export class VersionedTransform<R0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
     super()
   }
 
-  readonly version = Effect.sync(() => this.#version)
+  readonly version = Effect.sync(() => this._version)
 
   toFx() {
     return this._transformFx(this.input)
@@ -35,15 +35,15 @@ export class VersionedTransform<R0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
     const update = new MulticastEffect(Effect.gen(function*(_) {
       const x = yield* _(that._transformGet(that.input as any as Effect.Effect<R2, E2, B>))
 
-      that.#currentValue = Option.some(x)
-      that.#version = yield* _(that.input.version)
+      that._currentValue = Option.some(x)
+      that._version = yield* _(that.input.version)
 
       return x
     }))
 
     return Effect.gen(function*(_) {
-      if (Option.isSome(that.#currentValue) && (yield* _(that.input.version)) === that.#version) {
-        return that.#currentValue.value
+      if (Option.isSome(that._currentValue) && (yield* _(that.input.version)) === that._version) {
+        return that._currentValue.value
       }
 
       return yield* _(update)
