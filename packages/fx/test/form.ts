@@ -165,5 +165,32 @@ describe("Form", () => {
 
       await Effect.runPromise(test)
     })
+
+    it("allows nesting objects", async () => {
+      const Baz = Schema.struct({
+        quux: Schema.struct({
+          a: Schema.number,
+          b: Schema.boolean
+        })
+      })
+      const makeBazForm = Form.make(Baz)
+
+      const test = Effect.gen(function*(_) {
+        const form = yield* _(makeBazForm(Effect.succeed({ quux: { a: 1, b: true } })))
+        const quux = form.fromKey("quux")
+
+        ok(Form.FormTypeId in quux)
+
+        const a = quux.fromKey("a")
+        const b = quux.fromKey("b")
+
+        yield* _(a.set(42))
+        yield* _(b.set(false))
+
+        deepStrictEqual(yield* _(form), { quux: { a: 42, b: false } })
+      })
+
+      await Effect.runPromise(test)
+    })
   })
 })

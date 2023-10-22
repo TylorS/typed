@@ -18,46 +18,54 @@ import * as Stream from "effect/Stream"
 export const FormTypeId = Symbol.for("@typed/fx/Form")
 export type FormTypeId = typeof FormTypeId
 
+type AnyObject = Readonly<Record<PropertyKey, any>>
+type AnyObjectWithKeys<K extends PropertyKey> = Readonly<Record<K, any>>
+
 export interface Form<Entries extends Form.AnyEntries> extends
-  Versioned.Versioned<
-    Form.Context<Entries>,
-    Form.Context<Entries>,
-    Form.Error<Entries> | ParseError,
+  Form.Base<
+    Form.Context<Entries[keyof Entries]>,
+    Form.Error<Entries[keyof Entries]>,
     Form.Input<Entries>,
-    Form.Context<Entries>,
-    Form.Error<Entries> | ParseError,
-    Form.Input<Entries>
+    Form.Output<Entries>,
+    Entries
   >
-{
-  readonly [FormTypeId]: FormTypeId
-
-  readonly entries: Entries
-
-  readonly schema: S.Schema<
-    Form.Input<Entries>,
-    Form.Output<Entries>
-  >
-
-  readonly fromKey: <K extends keyof Entries>(key: K) => Entries[K]
-
-  readonly decoded: Computed<
-    Form.Context<Entries>,
-    Form.Error<Entries> | ParseError,
-    Form.Output<Entries>
-  >
-}
+{}
 
 export namespace Form {
-  export type AnyEntry = FormEntry.FormEntry<any, any, any, any> | Form<any>
+  /**
+   * Base interface is to improve type-checking performance by memoizing the derived R, E, I, and O values.
+   */
+  export interface Base<R, E, I, O, Entries extends Form.AnyEntries>
+    extends Versioned.Versioned<R, R, E | ParseError, I, R, E | ParseError, I>
+  {
+    readonly [FormTypeId]: FormTypeId
+
+    readonly entries: Entries
+
+    readonly schema: S.Schema<
+      I,
+      O
+    >
+
+    readonly fromKey: <K extends keyof Entries>(key: K) => Entries[K]
+
+    readonly decoded: Computed<
+      R,
+      E | ParseError,
+      O
+    >
+  }
+
+  export type AnyEntry = FormEntry.FormEntry<any, any, any, any> | Base<any, any, any, any, any>
 
   export type AnyEntries = Readonly<Record<PropertyKey, AnyEntry>>
 
   export type Context<T> = T extends FormEntry.FormEntry<infer R, infer _E, infer _I, infer _> ? R :
-    T extends Form<infer Entries> ? Context<Entries[keyof Entries]> :
+    [T] extends [Base<infer R, infer _E, infer _I, infer _O, infer _Entries>] ? R :
     never
 
   export type Error<T> = T extends FormEntry.FormEntry<infer _R, infer E, infer _I, infer _> ? E :
-    T extends Form<infer Entries> ? Error<Entries[keyof Entries]> :
+    [T] extends [Base<infer _R, infer _E, infer _I, infer _O, infer _Entries>] ? _E :
     never
 
   export type Input<T> = T extends FormEntry.FormEntry<infer _R, infer _E, infer I, infer _> ? I :
@@ -75,8 +83,8 @@ export namespace Form {
   export interface Derived<R, Entries extends AnyEntries> extends Form<Entries> {
     readonly persist: Effect.Effect<
       R,
-      Effect.Effect.Error<this>,
-      Effect.Effect.Success<this>
+      Error<Entries>,
+      Output<Entries>
     >
   }
 }
@@ -86,8 +94,8 @@ export function Form<Entries extends Form.AnyEntries>(entries: Entries): Form<En
 }
 
 export type MakeForm<
-  I extends Readonly<Record<PropertyKey, any>>,
-  O extends Readonly<Record<keyof I, any>>
+  I extends AnyObject,
+  O extends AnyObjectWithKeys<keyof I>
 > = {
   <R, E>(fx: RefSubject<R, E, O>): Effect.Effect<
     R | Scope.Scope,
@@ -114,12 +122,24 @@ export type MakeForm<
   >
 }
 
-export type FormFromIO<E, I extends Readonly<Record<PropertyKey, any>>, O extends Readonly<Record<keyof I, any>>> =
-  Form<
-    {
-      readonly [K in keyof I]-?: FormEntry.FormEntry<never, E, I[K], O[K]>
-    }
-  >
+export type FormFromIO<
+  E,
+  I extends AnyObject,
+  O extends AnyObjectWithKeys<keyof I>
+> = Form<
+  [FormEntriesFromIO<E, I, O>] extends [infer R] ? { readonly [K in keyof R]: R[K] } : never
+>
+
+export type FormEntriesFromIO<
+  E,
+  I extends AnyObject,
+  O extends AnyObjectWithKeys<keyof I>
+> = {
+  readonly [K in keyof I]-?: [I[K], O[K]] extends [AnyObject, AnyObjectWithKeys<keyof I[K]>] ? Form<
+      [FormEntriesFromIO<E, I[K], O[K]>] extends [infer R] ? { readonly [K in keyof R]: R[K] } : never
+    > :
+    FormEntry.FormEntry<never, E, I[K], O[K]>
+}
 
 export type DerviedFromIO<
   R,
@@ -135,7 +155,7 @@ export type DerviedFromIO<
 
 export function make<
   I extends Partial<Readonly<Record<PropertyKey, any>>>,
-  O extends Partial<Readonly<Record<keyof I, any>>>
+  O extends Partial<AnyObjectWithKeys<keyof I>>
 >(schema: S.Schema<I, O>): MakeForm<I, O> {
   return (input) =>
     Effect.map(deriveMakeEntries(input, schema.ast), (entries) => {
@@ -167,14 +187,14 @@ class FormImpl<Entries extends Form.AnyEntries> extends FxEffectProto<
     super()
   }
 
-  fromKey: Form<Entries>["fromKey"] = (k) => this.entries[k]
+  fromKey: Form<Entries>["fromKey"] = (k) => this.entries[k] as any
 
   schema: Form<Entries>["schema"] = buildSchema(this.entries)
 
   version: Form<Entries>["version"] = Effect.map(
     // @ts-ignore Infinite type instantiation
     Effect.all(Object.values(this.entries).map((e) => e.version)) as Effect.Effect<
-      Form.Context<Entries>,
+      Form.Context<Entries[keyof Entries]>,
       never,
       ReadonlyArray<number>
     >,
@@ -252,11 +272,13 @@ const deriveMakeEntries = <
             const ast = prop.isOptional ? AST.createUnion([prop.type, AST.undefinedKeyword]) : prop.type
 
             if (prop.type._tag === "TypeLiteral") {
-              entries[prop.name] = yield* _(
-                deriveMakeEntries(
-                  nested,
-                  ast
-                )
+              entries[prop.name] = Form(
+                (yield* _(
+                  deriveMakeEntries(
+                    nested,
+                    ast
+                  )
+                )) as any
               )
             } else {
               entries[prop.name] = yield* _(
