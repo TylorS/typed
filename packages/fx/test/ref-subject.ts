@@ -15,7 +15,7 @@ describe(__filename, () => {
       })
     })
 
-    type Foo = Schema.Schema.To<typeof Foo>
+    type Foo = Schema.Schema.From<typeof Foo>
 
     const makeFooState = RefSubject.deriveFromSchema(Foo)
 
@@ -60,6 +60,7 @@ describe(__filename, () => {
 
         expect(yield* _(source)).toEqual(initial)
 
+        // Replicate local changes back into the Source RefSubject
         yield* _(commit)
 
         expect(yield* _(source)).toEqual({

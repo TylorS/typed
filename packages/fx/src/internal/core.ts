@@ -814,7 +814,7 @@ export function struct<const FX extends Readonly<Record<PropertyKey, Fx<any, any
     readonly [K in keyof FX]: Fx.Success<FX[K]>
   }
 > {
-  return map(combine(Object.entries(fxs).map(([k, fx]) => map(fx, (a) => [k, a] as const))), Object.fromEntries)
+  return map(combine(Reflect.ownKeys(fxs).map((k) => map(fxs[k], (a) => [k, a] as const))), Object.fromEntries)
 }
 
 export function merge<const FX extends ReadonlyArray<Fx<any, any, any>>>(

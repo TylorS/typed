@@ -19,13 +19,13 @@ export abstract class FxEffectProto<R, E, A, R2, E2, B> extends ToFx<R, E, A>
 
   protected abstract toEffect(): Effect.Effect<R2, E2, B>
 
-  #effect: Effect.Effect<R2, E2, B> | undefined
+  private _effect: Effect.Effect<R2, E2, B> | undefined
 
   commit(): Effect.Effect<R2, E2, B> {
-    if (this.#effect === undefined) {
-      return (this.#effect = this.toEffect())
+    if (this._effect === undefined) {
+      return (this._effect = this.toEffect())
     } else {
-      return this.#effect
+      return this._effect
     }
   }
 }

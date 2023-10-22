@@ -6,7 +6,7 @@ import type { Fx, FxInput } from "@typed/fx/Fx"
 import { from, map } from "@typed/fx/internal/core"
 import { make, struct } from "@typed/fx/internal/core-ref-subject"
 import { matchFxInput } from "@typed/fx/internal/matchers"
-import type { RefSubject, RefSubjectSchema, SchemaToRefSubject } from "@typed/fx/RefSubject"
+import type { MakeRefSubject, RefSubject, ToRefSubject } from "@typed/fx/RefSubject"
 import { RefSubjectTypeId } from "@typed/fx/TypeId"
 import { Option } from "effect"
 import * as Effect from "effect/Effect"
@@ -18,8 +18,8 @@ const makeSchema = <O>(
   f: <R, E>(
     input: FxInput<R, E, O>,
     eq?: Equivalence.Equivalence<O>
-  ) => Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, any> | SchemaToRefSubject<E, O>>
-): RefSubjectSchema<O> => f as any as RefSubjectSchema<O>
+  ) => Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, any> | ToRefSubject<E, O>>
+): MakeRefSubject<O> => f as any as MakeRefSubject<O>
 
 const memoizeThunk = <A>(f: () => A) => {
   let memoized: Option.Option<A> = Option.none()
@@ -38,8 +38,8 @@ const defaultSchema = <O>(defaultEq?: Equivalence.Equivalence<O>) =>
 
 const go = <O>(
   ast: AST.AST,
-  defaultEq: Equivalence.Equivalence<O> = SchemaEquivalence.go(ast)()
-): RefSubjectSchema<O> => {
+  defaultEq: Equivalence.Equivalence<O> = SchemaEquivalence.go(ast)
+): MakeRefSubject<O> => {
   switch (ast._tag) {
     case "AnyKeyword":
     case "BigIntKeyword":
@@ -57,6 +57,7 @@ const go = <O>(
     case "UniqueSymbol":
     case "UnknownKeyword":
     case "VoidKeyword":
+    case "Union": // TODO: Union should probably be better somehow
       return defaultSchema<O>(defaultEq)
     case "Lazy": {
       const get = memoizeThunk(() => go<O>(ast.f(), defaultEq))
@@ -135,17 +136,15 @@ const go = <O>(
         })
       )
     }
-    case "Union":
-      throw new Error("Unimplemented")
   }
 }
 
-export function fromRefSubject<I, O>(source: Schema.Schema<I, O>): RefSubjectSchema<I> {
-  return go<I>(Schema.from(source).ast, SchemaEquivalence.from(source)())
+export function fromRefSubject<I, O>(source: Schema.Schema<I, O>): MakeRefSubject<I> {
+  return go<I>(Schema.from(source).ast, SchemaEquivalence.from(source))
 }
 
-export function toRefSubject<I, O>(source: Schema.Schema<I, O>): RefSubjectSchema<O> {
-  return go<O>(Schema.to(source).ast, SchemaEquivalence.to(source)())
+export function toRefSubject<I, O>(source: Schema.Schema<I, O>): MakeRefSubject<O> {
+  return go<O>(Schema.to(source).ast, SchemaEquivalence.to(source))
 }
 
 const rebuild = (subjects: Record<PropertyKey, any>) => {

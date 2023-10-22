@@ -3,6 +3,7 @@ import { Filtered } from "@typed/fx/Filtered"
 import type { Fx, FxInput } from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
+import { DeferredRef } from "@typed/fx/internal/deferred-ref"
 import { fromFxEffect } from "@typed/fx/internal/fx"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import { matchFxInput } from "@typed/fx/internal/matchers"
@@ -12,8 +13,6 @@ import { type RefSubject } from "@typed/fx/RefSubject"
 import { Sink, WithContext } from "@typed/fx/Sink"
 import type * as Subject from "@typed/fx/Subject"
 import { RefSubjectTypeId } from "@typed/fx/TypeId"
-import type { FiberId } from "effect"
-import { Effectable } from "effect"
 import type { Cause } from "effect/Cause"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
@@ -89,10 +88,12 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
     return this.get
   }
 
-  readonly get = Effect.fromFiberEffect(
-    SynchronizedRef.modifyEffect(
-      this.ref,
-      (fiber) => Effect.map(this.getOrInitialize(fiber), (f) => [f, Option.some(f)] as const)
+  readonly get = (
+    Effect.fromFiberEffect(
+      SynchronizedRef.modifyEffect(
+        this.ref,
+        (fiber) => Effect.map(this.getOrInitialize(fiber), (f) => [f, Option.some(f)] as const)
+      )
     )
   )
 
@@ -265,34 +266,12 @@ export function make<R, E, A>(
   })
 }
 
-class DeferredRef<E, A> extends Effectable.Class<never, E, A> {
-  // Keep track of the latest value emitted by the stream
-  private current: Option.Option<Exit.Exit<E, A>> = Option.none()
-  private deferred = Deferred.unsafeMake<E, A>(this.id)
-
-  constructor(private id: FiberId.FiberId) {
-    super()
-  }
-
-  commit() {
-    return Effect.suspend(() => Option.getOrElse(this.current, () => Deferred.await(this.deferred)))
-  }
-
-  done(exit: Exit.Exit<E, A>) {
-    return Effect.suspend(() => {
-      this.current = Option.some(exit)
-
-      return Deferred.done(this.deferred, exit)
-    })
-  }
-}
-
 const fxAsRef = <R, E, A>(
   fx: Fx<R, E, A>,
   eq?: Equivalence<A>
 ): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>> =>
   Effect.gen(function*($) {
-    const deferred = new DeferredRef<E, A>(yield* $(Effect.fiberId))
+    const deferred = new DeferredRef<E, A>(yield* $(Deferred.make<E, A>()))
     const ref = yield* $(fromEffect<never, E, A>(deferred, eq))
 
     const done = (exit: Exit.Exit<E, A>) =>
@@ -314,7 +293,7 @@ const derivedRefSubject = <R, E, A>(
   eq?: Equivalence<A>
 ): Effect.Effect<R | Scope.Scope, never, RefSubject.Derived<R, never, E, A>> =>
   Effect.gen(function*($) {
-    const deferred = new DeferredRef<E, A>(yield* $(Effect.fiberId))
+    const deferred = new DeferredRef<E, A>(yield* $(Deferred.make<E, A>()))
     const ref = yield* $(fromEffect<never, E, A>(deferred, eq))
 
     const done = (exit: Exit.Exit<E, A>) =>

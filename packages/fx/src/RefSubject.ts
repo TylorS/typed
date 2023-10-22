@@ -418,30 +418,30 @@ const getRight = <E, A>(exit: Exit.Exit<E, A>) =>
   )
 
 /**
- * RefSubjectSchema is a RefSubject factory function dervied from a Schema.
+ * MakeRefSubject is a RefSubject factory function dervied from a Schema.
  * @since 1.18.0
  */
-export type RefSubjectSchema<O> = {
+export type MakeRefSubject<O> = {
   <R, E>(
     input: RefSubject<R, E, O>,
     eq?: Equivalence<O>
-  ): Effect.Effect<R | Scope.Scope, never, SchemaToDerived<R, E, O>>
+  ): Effect.Effect<R | Scope.Scope, never, ToDerived<R, E, O>>
 
-  <R, E>(input: Effect.Effect<R, E, O>, eq?: Equivalence<O>): Effect.Effect<R, never, SchemaToRefSubject<E, O>>
+  <R, E>(input: Effect.Effect<R, E, O>, eq?: Equivalence<O>): Effect.Effect<R, never, ToRefSubject<E, O>>
 
   <R, E>(
     input: Stream.Stream<R, E, O>,
     eq?: Equivalence<O>
-  ): Effect.Effect<R | Scope.Scope, never, SchemaToRefSubject<E, O>>
+  ): Effect.Effect<R | Scope.Scope, never, ToRefSubject<E, O>>
 
-  <R, E>(input: Fx.Fx<R, E, O>, eq?: Equivalence<O>): Effect.Effect<R | Scope.Scope, never, SchemaToRefSubject<E, O>>
+  <R, E>(input: Fx.Fx<R, E, O>, eq?: Equivalence<O>): Effect.Effect<R | Scope.Scope, never, ToRefSubject<E, O>>
 
-  <E>(input: Cause.Cause<E>, eq?: Equivalence<O>): Effect.Effect<never, never, SchemaToRefSubject<E, O>>
+  <E>(input: Cause.Cause<E>, eq?: Equivalence<O>): Effect.Effect<never, never, ToRefSubject<E, O>>
 
   <R, E>(
     input: Fx.FxInput<R, E, O>,
     eq?: Equivalence<O>
-  ): Effect.Effect<R | Scope.Scope, never, SchemaToRefSubject<E, O>>
+  ): Effect.Effect<R | Scope.Scope, never, ToRefSubject<E, O>>
 }
 
 /**
@@ -449,30 +449,25 @@ export type RefSubjectSchema<O> = {
  * the ouput value is a Record as well.
  * @since 1.18.0
  */
-export type SchemaToRefSubject<E, O> = O extends Readonly<Record<PropertyKey, any>> ? {
-    readonly [K in keyof O]: SchemaToRefSubject<E, O[K]>
+export type ToRefSubject<E, O> = O extends Readonly<Record<PropertyKey, any>> ? {
+    readonly [K in keyof O]: ToRefSubject<E, O[K]>
   } :
-  RefSubject<never, E, O>
+  RefSubject<never, E, O> // TODO: We should apply ParseErrors here too somehow
 
 /**
  * Converts an error `E` and an output `O` into a RefSubject or a Record of RefSubjects if
  * the ouput value is a Record as well.
  * @since 1.18.0
  */
-export type SchemaToDerived<R, E, O> = O extends Readonly<Record<PropertyKey, any>> ?
-    & {
-      readonly [K in keyof O]: SchemaToRefSubject<E, O[K]>
-    }
-    & {
-      readonly commit: Effect.Effect<R, E, O>
-    } :
-  RefSubject.Derived<R, never, E, O>
+export type ToDerived<R, E, O> = ToRefSubject<E, O> & {
+  readonly commit: Effect.Effect<R, E, O>
+}
 
 /**
  * Derive a RefSubjectSchema using the "from" or "encoded" value represented by a Schema.
  * @since 1.18.0
  */
-export function deriveFromSchema<I, O>(schema: Schema.Schema<I, O>): RefSubjectSchema<I> {
+export function deriveFromSchema<I, O>(schema: Schema.Schema<I, O>): MakeRefSubject<I> {
   return fromRefSubject(schema)
 }
 
@@ -480,6 +475,6 @@ export function deriveFromSchema<I, O>(schema: Schema.Schema<I, O>): RefSubjectS
  * Derive a RefSubjectSchema using the "to" or "decoded" value represented by a Schema.
  * @since 1.18.0
  */
-export function deriveToSchema<I, O>(schema: Schema.Schema<I, O>): RefSubjectSchema<O> {
+export function deriveToSchema<I, O>(schema: Schema.Schema<I, O>): MakeRefSubject<O> {
   return toRefSubject(schema)
 }

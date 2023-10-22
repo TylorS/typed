@@ -23,9 +23,6 @@
       "path": "packages/route"
     },
     {
-      "path": "packages/schema"
-    },
-    {
       "path": "packages/template"
     },
     {
