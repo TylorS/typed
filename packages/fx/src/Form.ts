@@ -1,5 +1,6 @@
+import { AST } from "@effect/schema"
 import type { ParseOptions } from "@effect/schema/AST"
-import type { ParseError } from "@effect/schema/dist/declarations/src/ParseResult"
+import type { ParseError } from "@effect/schema/ParseResult"
 import * as S from "@effect/schema/Schema"
 import { Computed } from "@typed/fx/Computed"
 import * as FormEntry from "@typed/fx/FormEntry"
@@ -74,8 +75,8 @@ export namespace Form {
   export interface Derived<R, Entries extends AnyEntries> extends Form<Entries> {
     readonly persist: Effect.Effect<
       R,
-      Form.Error<Entries[keyof Entries]> | ParseError,
-      Form.Output<Entries[keyof Entries]>
+      Effect.Effect.Error<this>,
+      Effect.Effect.Success<this>
     >
   }
 }
@@ -91,46 +92,53 @@ export type MakeForm<
   <R, E>(fx: RefSubject<R, E, O>): Effect.Effect<
     R | Scope.Scope,
     never,
-    Form.Derived<
-      R,
-      {
-        readonly [K in keyof I]: FormEntry.FormEntry<R, E, I[K], O[K]>
-      }
-    >
+    [DerviedFromIO<R, E, I, O>] extends [Form.Derived<infer R, infer R2>] ? Form.Derived<R, R2> : never
   >
 
   <R, E>(fx: Fx<R, E, O>): Effect.Effect<
     R | Scope.Scope,
     never,
-    FormFromIO<E, I, O>
-  >
-
-  <R, E>(stream: Stream.Stream<R, E, O>): Effect.Effect<
-    R | Scope.Scope,
-    never,
-    FormFromIO<E, I, O>
+    [FormFromIO<E, I, O>] extends [Form<infer R>] ? Form<R> : never
   >
 
   <R, E>(effect: Effect.Effect<R, E, O>): Effect.Effect<
     R,
     never,
-    FormFromIO<E, I, O>
+    [FormFromIO<E, I, O>] extends [Form<infer R>] ? Form<R> : never
+  >
+
+  <R, E>(stream: Stream.Stream<R, E, O>): Effect.Effect<
+    R | Scope.Scope,
+    never,
+    [FormFromIO<E, I, O>] extends [Form<infer R>] ? Form<R> : never
   >
 }
 
 export type FormFromIO<E, I extends Readonly<Record<PropertyKey, any>>, O extends Readonly<Record<keyof I, any>>> =
   Form<
     {
-      readonly [K in keyof I]: FormEntry.FormEntry<never, E, I[K], O[K]>
+      readonly [K in keyof I]-?: FormEntry.FormEntry<never, E, I[K], O[K]>
     }
   >
 
-export function make<
+export type DerviedFromIO<
+  R,
+  E,
   I extends Readonly<Record<PropertyKey, any>>,
   O extends Readonly<Record<keyof I, any>>
+> = Form.Derived<
+  R,
+  {
+    readonly [K in keyof I]-?: FormEntry.FormEntry<never, E, I[K], O[K]>
+  }
+>
+
+export function make<
+  I extends Partial<Readonly<Record<PropertyKey, any>>>,
+  O extends Partial<Readonly<Record<keyof I, any>>>
 >(schema: S.Schema<I, O>): MakeForm<I, O> {
   return (input) =>
-    Effect.map(deriveMakeEntries(input, schema), (entries) => {
+    Effect.map(deriveMakeEntries(input, schema.ast), (entries) => {
       const form = (Form as any)(entries)
 
       if (RefSubjectTypeId in input) {
@@ -229,23 +237,34 @@ const deriveMakeEntries = <
   O extends Readonly<Record<keyof I, any>>
 >(
   input: RefSubject<R, E, O> | Fx<R, E, O> | Stream.Stream<R, E, O> | Effect.Effect<R, E, O>,
-  schema: S.Schema<I, O>
+  ast: AST.AST
 ): Effect.Effect<R | Scope.Scope, never, DeriveMakeEntries<E, I, O>> =>
   Effect.suspend(() => {
-    switch (schema.ast._tag) {
+    switch (ast._tag) {
       case "TypeLiteral": {
-        const propertySignatures = schema.ast.propertySignatures
+        const propertySignatures = ast.propertySignatures
 
         return Effect.gen(function*(_) {
           const entries: any = {}
 
           for (const prop of propertySignatures) {
             const nested = propOf(input, prop.name)
+            const ast = prop.isOptional ? AST.createUnion([prop.type, AST.undefinedKeyword]) : prop.type
+
             if (prop.type._tag === "TypeLiteral") {
-              entries[prop.name] = yield* _(deriveMakeEntries(nested, S.make(prop.type) as any))
+              entries[prop.name] = yield* _(
+                deriveMakeEntries(
+                  nested,
+                  ast
+                )
+              )
             } else {
-              const makeEntry = FormEntry.make<any, any>({ name: prop.name, schema: S.make(prop.type) })
-              entries[prop.name] = yield* _(makeEntry(nested as Fx<R, E, any>))
+              entries[prop.name] = yield* _(
+                FormEntry.make<any, any>({
+                  name: prop.name,
+                  schema: S.make(ast)
+                })(nested as Fx<R, E, any>)
+              )
             }
           }
 

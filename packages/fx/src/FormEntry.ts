@@ -1,6 +1,6 @@
 import { Schema } from "@effect/schema"
 import type { ParseOptions } from "@effect/schema/AST"
-import type { ParseError } from "@effect/schema/dist/declarations/src/ParseResult"
+import { type ParseError } from "@effect/schema/ParseResult"
 import type { RefSubject } from "@typed/fx"
 import type { Computed } from "@typed/fx/Computed"
 import { type Fx, run } from "@typed/fx/Fx"
@@ -20,7 +20,7 @@ import { type Stream, StreamTypeId } from "effect/Stream"
 export interface FormEntry<R, E, I, O> extends RefSubject.RefSubject<R, E | ParseError, I> {
   readonly name: PropertyKey
   readonly schema: Schema.Schema<I, O>
-  readonly value: Computed<R, E | ParseError, O>
+  readonly decoded: Computed<R, E | ParseError, O>
 }
 
 export namespace FormEntry {
@@ -72,7 +72,7 @@ function makeEffectFormEntry<R, E, I, O>(
 ): Effect.Effect<R, never, FormEntry<never, E, I, O>> {
   return Effect.contextWith((ctx) =>
     FormEntryImpl.formEntry(
-      Effect.provide(Effect.flatMap(input, Schema.encode(options.schema)), ctx),
+      Effect.provide(Effect.flatMap(input, (i) => Schema.encode(options.schema)(i, parseOptions)), ctx),
       options.name,
       options.schema
     )
@@ -148,7 +148,7 @@ class FormEntryImpl<R, E, I, O> extends RefSubjectImpl<R, E | ParseError, I>
     )
   }
 
-  value = this.mapEffect((i) => Schema.decode(this.schema)(i, this.parseOptions))
+  decoded = this.mapEffect((i) => Schema.decode(this.schema)(i, this.parseOptions))
 
   static formEntry<R, E, I, O>(
     initial: Effect.Effect<R, E | ParseError, I>,
