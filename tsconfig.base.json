@@ -67,18 +67,6 @@
       "@typed/path/examples/*": [
         "packages/path/examples/*"
       ],
-      "@typed/remote-data": [
-        "packages/remote-data/src/index.ts"
-      ],
-      "@typed/remote-data/*": [
-        "packages/remote-data/src/*"
-      ],
-      "@typed/remote-data/test/*": [
-        "packages/remote-data/test/*"
-      ],
-      "@typed/remote-data/examples/*": [
-        "packages/remote-data/examples/*"
-      ],
       "@typed/route": [
         "packages/route/src/index.ts"
       ],

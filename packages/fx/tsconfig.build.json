@@ -17,9 +17,6 @@
     },
     {
       "path": "../context"
-    },
-    {
-      "path": "../remote-data"
     }
   ]
 }

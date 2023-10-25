@@ -41,12 +41,6 @@ export * from "./Fx"
 export * as RefArray from "./RefArray"
 
 /**
- * [RefRemoteData documentation](https://tylors.github.io/typed/fx/RefRemoteData.ts.html)
- * @since 1.18.0
- */
-export * as RefRemoteData from "./RefRemoteData"
-
-/**
  * [RefSubject documentation](https://tylors.github.io/typed/fx/RefSubject.ts.html)
  * @since 1.18.0
  */

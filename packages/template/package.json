@@ -41,7 +41,7 @@
   "sideEffects": [],
   "dependencies": {
     "escape-html": "^1.0.3",
-    "effect": "2.0.0-next.50",
+    "effect": "2.0.0-next.51",
     "typed-query-selector": "^2.11.0",
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",
@@ -49,7 +49,7 @@
     "@typed/wire": "workspace:*"
   },
   "peerDependencies": {
-    "effect": "2.0.0-next.50"
+    "effect": "2.0.0-next.51"
   },
   "devDependencies": {
     "@types/escape-html": "^1.0.3",
