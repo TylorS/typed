@@ -243,6 +243,9 @@ importers:
 
   packages/template:
     dependencies:
+      '@effect/schema':
+        specifier: 0.46.0
+        version: 0.46.0(effect@2.0.0-next.51)(fast-check@3.13.2)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -888,6 +891,16 @@ packages:
     peerDependencies:
       effect: 2.0.0-next.50
       fast-check: ^3.13.1
+    dependencies:
+      effect: 2.0.0-next.51
+      fast-check: 3.13.2
+    dev: false
+
+  /@effect/schema@0.46.0(effect@2.0.0-next.51)(fast-check@3.13.2):
+    resolution: {integrity: sha512-CrdKErEVy9Hp/p4q94yfmT7oK2hIht2LQzwWKMJQtRxh7IDvjw8ZO5rqqRiqdRLJ52iL+ryCr9JUnO+hJrA8DQ==}
+    peerDependencies:
+      effect: 2.0.0-next.51
+      fast-check: ^3.13.2
     dependencies:
       effect: 2.0.0-next.51
       fast-check: 3.13.2

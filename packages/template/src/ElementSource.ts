@@ -15,9 +15,12 @@ import * as Scope from "effect/Scope"
 
 import type * as TQS from "typed-query-selector/parser"
 
-export interface ElementSource<T extends Rendered = Element, E = never, EventMap extends {} = DefaultEventMap<T>>
-  extends
-    Versioned.Versioned<never, never, E, Rendered.Elements<T>, never, E | NoSuchElementException, Rendered.Elements<T>>
+export interface ElementSource<
+  T extends Rendered = Element,
+  E = never,
+  EventMap extends {} = DefaultEventMap<Rendered.Elements<T>[number]>
+> extends
+  Versioned.Versioned<never, never, E, Rendered.Elements<T>, never, E | NoSuchElementException, Rendered.Elements<T>>
 {
   readonly selector: Selector
 
@@ -36,7 +39,7 @@ export interface ElementSource<T extends Rendered = Element, E = never, EventMap
   readonly events: <Type extends keyof EventMap>(
     type: Type,
     options?: AddEventListenerOptions
-  ) => Fx.Fx<never, E, EventWithCurrentTarget<T, EventMap[Type]>>
+  ) => Fx.Fx<never, E, EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>>
 }
 
 export function ElementSource<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>(
@@ -62,7 +65,7 @@ export const ROOT_CSS_SELECTOR = `:root` as const
 
 type RenderedWithoutArray = Exclude<Rendered, ReadonlyArray<Rendered>>
 
-function getElements<T extends Rendered>(element: T): ReadonlyArray<Element> {
+export function getElements<T extends Rendered>(element: T): ReadonlyArray<Element> {
   if (Array.isArray(element)) return element.flatMap(getElements)
   if (isWire(element as RenderedWithoutArray)) {
     return Array.from((element.valueOf() as DocumentFragment).children)
@@ -254,8 +257,11 @@ function isElement(element: RenderedWithoutArray): element is Element {
 /**
  * @internal
  */
-export class ElementSourceImpl<T extends Rendered, E, EventMap extends {} = DefaultEventMap<T>>
-  extends FxEffectProto<never, E, Rendered.Elements<T>, never, E | NoSuchElementException, Rendered.Elements<T>>
+export class ElementSourceImpl<
+  T extends Rendered,
+  E,
+  EventMap extends {} = DefaultEventMap<Rendered.Elements<T>[number]>
+> extends FxEffectProto<never, E, Rendered.Elements<T>, never, E | NoSuchElementException, Rendered.Elements<T>>
   implements Omit<ElementSource<T, E, EventMap>, ModuleAgumentedEffectKeysToOmit | keyof Placeholder<any, any, any>>
 {
   private eventMap = new Map<any, Fx.Fx<never, E, any>>()

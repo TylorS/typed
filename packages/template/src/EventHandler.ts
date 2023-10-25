@@ -1,9 +1,10 @@
+import type { Placeholder } from "@typed/template/Placeholder"
 import type { Effect } from "effect/Effect"
 
 export const EventHandlerTypeId = Symbol.for("@typed/template/EventHandler")
 export type EventHandlerTypeId = typeof EventHandlerTypeId
 
-export interface EventHandler<R, E, Ev extends Event = Event> {
+export interface EventHandler<R, E, Ev extends Event = Event> extends Placeholder<R, E, null> {
   readonly [EventHandlerTypeId]: EventHandlerTypeId
   readonly handler: (event: Ev) => Effect<R, E, unknown>
   readonly options: AddEventListenerOptions | undefined
@@ -17,5 +18,5 @@ export function EventHandler<R, E, Ev extends Event>(
     [EventHandlerTypeId]: EventHandlerTypeId,
     handler,
     options
-  }
+  } as any
 }

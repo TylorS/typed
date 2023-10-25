@@ -1929,7 +1929,7 @@ export type EffectGenSuccess<T> = [T] extends [never] ? never
  * @category constructors
  */
 export function gen<Yield extends Effect.EffectGen<any, any, any>, R, E, A>(
-  f: () => Generator<Yield, Fx<R, E, A>, any>
+  f: (_: Effect.Adapter) => Generator<Yield, Fx<R, E, A>, any>
 ): Fx<R | EffectGenContext<Yield>, E | EffectGenError<Yield>, A> {
   return fromFxEffect(Effect.gen(f))
 }

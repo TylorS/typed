@@ -1,19 +1,20 @@
 import type * as Fx from "@typed/fx/Fx"
 import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
+import type * as Versioned from "@typed/fx/Versioned"
 import { type ElementRef, ElementRefTypeId } from "@typed/template/ElementRef"
 import type { Parts } from "@typed/template/Part"
 import type { Placeholder } from "@typed/template/Placeholder"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { Rendered } from "@typed/wire"
 import type { NoSuchElementException } from "effect/Cause"
-import type { Effect } from "effect/Effect"
+import type * as Effect from "effect/Effect"
 
 export const TemplateInstanceTypeId = Symbol.for("@typed/template/TemplateInstance")
 export type TemplateInstanceTypeId = typeof TemplateInstanceTypeId
 
 export interface TemplateInstance<E, T extends Rendered = Rendered>
-  extends Fx.Fx<never, E, RenderEvent>, Effect<never, E | NoSuchElementException, T>
+  extends Versioned.Versioned<never, never, E, RenderEvent, never, E | NoSuchElementException, T>
 {
   readonly [TemplateInstanceTypeId]: TemplateInstanceTypeId
 
@@ -50,7 +51,7 @@ class TemplateInstanceImpl<E, T extends Rendered>
     return this.i0
   }
 
-  toEffect(): Effect<never, E | NoSuchElementException, T> {
+  toEffect(): Effect.Effect<never, E | NoSuchElementException, T> {
     return this.i1
   }
 
