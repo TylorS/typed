@@ -95,12 +95,12 @@ const asyncDataPretty = <E, A>(
     NoData: () => `AsyncData.NoData`,
     Loading: (loading) => `AsyncData.Loading(timestamp=${prettyTimestamp(loading.timestamp)})`,
     Failure: (cause, data) =>
-      `AsyncData.Failure(cause=${prettyCause(cause)}, timestamp=${prettyTimestamp(data.timestamp)}, refreshing=${
-        isSome(data.refreshing)
+      `AsyncData.Failure(timestamp=${prettyTimestamp(data.timestamp)}, refreshing=${isSome(data.refreshing)}, cause=${
+        prettyCause(cause)
       })`,
     Success: (value, data) =>
-      `AsyncData.Success(value=${prettyValue(value)}, timestamp=${prettyTimestamp(data.timestamp)},refreshing=${
-        isSome(data.refreshing)
+      `AsyncData.Success(timestamp=${prettyTimestamp(data.timestamp)}, refreshing=${isSome(data.refreshing)}, value=${
+        prettyValue(value)
       })`
   })
 
