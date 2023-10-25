@@ -74,11 +74,17 @@ export namespace Form {
     T extends Form<infer Entries> ? {
         readonly [K in keyof Entries]: Input<Entries[K]>
       } :
+    T extends AnyEntries ? {
+        readonly [K in keyof T]: Input<T[K]>
+      } :
     never
 
   export type Output<T> = T extends FormEntry.FormEntry<infer _E, infer _I, infer O> ? O :
     T extends Form<infer Entries> ? {
         readonly [K in keyof Entries]: Output<Entries[K]>
+      } :
+    T extends AnyEntries ? {
+        readonly [K in keyof T]: Output<T[K]>
       } :
     never
 
