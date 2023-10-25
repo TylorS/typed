@@ -92,14 +92,14 @@ const asyncDataPretty = <E, A>(
   prettyValue: Pretty.Pretty<A>
 ): Pretty.Pretty<AsyncData.AsyncData<E, A>> =>
   AsyncData.match({
-    NoData: () => `NoData`,
-    Loading: (loading) => `Loading(timestamp=${prettyTimestamp(loading.timestamp)})`,
+    NoData: () => `AsyncData.NoData`,
+    Loading: (loading) => `AsyncData.Loading(timestamp=${prettyTimestamp(loading.timestamp)})`,
     Failure: (cause, data) =>
-      `Failure(cause=${prettyCause(cause)}, timestamp=${prettyTimestamp(data.timestamp)}, refreshing=${
+      `AsyncData.Failure(cause=${prettyCause(cause)}, timestamp=${prettyTimestamp(data.timestamp)}, refreshing=${
         isSome(data.refreshing)
       })`,
     Success: (value, data) =>
-      `Success(value=${prettyValue(value)}, timestamp=${prettyTimestamp(data.timestamp)},refreshing=${
+      `AsyncData.Success(value=${prettyValue(value)}, timestamp=${prettyTimestamp(data.timestamp)},refreshing=${
         isSome(data.refreshing)
       })`
   })

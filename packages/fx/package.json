@@ -46,15 +46,16 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.45.5",
-    "@effect/typeclass": "0.6.2",
+    "@effect/schema": "^0.45.6",
+    "@effect/typeclass": "0.12.0",
+    "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/remote-data": "workspace:*",
-    "effect": "2.0.0-next.48"
+    "effect": "2.0.0-next.50"
   },
   "peerDependencies": {
-    "@effect/typeclass": "0.6.2",
-    "effect": "2.0.0-next.48"
+    "@effect/typeclass": "0.12.0",
+    "effect": "2.0.0-next.50"
   },
   "devDependencies": {
     "@most/core": "^1.6.1",

@@ -12,7 +12,7 @@ import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import * as schemaEquivalence from "@typed/fx/internal/schema-equivalence"
 import { Sink } from "@typed/fx/Sink"
 import { RefSubjectTypeId, TypeId } from "@typed/fx/TypeId"
-import { Deferred, Effect, Exit, SynchronizedRef } from "effect"
+import { Deferred, Effect, Exit, Ref } from "effect"
 import type { Scope } from "effect"
 import * as Option from "effect/Option"
 import { type Stream, StreamTypeId } from "effect/Stream"
@@ -143,7 +143,8 @@ class FormEntryImpl<E, I, O> extends RefSubjectImpl<never, E | ParseError, I>
     super(
       initial,
       schemaEquivalence.from(schema),
-      SynchronizedRef.unsafeMake(Option.none()),
+      Ref.unsafeMake(Option.none()),
+      Effect.unsafeMakeSemaphore(1),
       makeHoldSubject()
     )
   }

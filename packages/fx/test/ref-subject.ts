@@ -1,10 +1,44 @@
 import * as Schema from "@effect/schema/Schema"
+import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Effect from "effect/Effect"
 
 import { describe, it } from "vitest"
 
 describe(__filename, () => {
+  describe("runUpdate", () => {
+    it("allows changing the value of a ref multiple times withing a single workflow", async () => {
+      const test = Effect.gen(function*(_) {
+        const ref = yield* _(RefSubject.of(1))
+        const fiber = yield* _(ref, Fx.take(5), Fx.toReadonlyArray, Effect.fork)
+
+        // Allow fiber to start
+        yield* _(Effect.sleep(0))
+
+        expect(
+          yield* _(ref.runUpdate((get, set) =>
+            Effect.gen(function*(_) {
+              expect(yield* _(get)).toEqual(1)
+              expect(yield* _(set(2))).toEqual(2)
+              expect(yield* _(set(2))).toEqual(2) // Skips duplicates
+              expect(yield* _(set(3))).toEqual(3)
+              expect(yield* _(set(4))).toEqual(4)
+              expect(yield* _(set(5))).toEqual(5)
+
+              return 42
+            })
+          ))
+        ).toEqual(42)
+
+        const values = yield* _(Effect.fromFiber(fiber))
+
+        expect(values).toEqual([1, 2, 3, 4, 5])
+      })
+
+      await Effect.runPromise(test)
+    })
+  })
+
   describe("deriveFromSchema", () => {
     const Foo = Schema.struct({
       id: Schema.string,

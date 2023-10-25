@@ -5,13 +5,14 @@
 
 import type { ParseOptions } from "@effect/schema/AST"
 import * as P from "@effect/schema/Parser"
-import * as ParseResult from "@effect/schema/ParseResult"
-import * as S from "@effect/schema/Schema"
+import type * as ParseResult from "@effect/schema/ParseResult"
+import type * as S from "@effect/schema/Schema"
 import * as Context from "@typed/context"
 import * as Effect from "effect/Effect"
 import type * as Layer from "effect/Layer"
 import * as O from "effect/Option"
 
+import { Schema } from "@effect/schema"
 import { Window } from "./Window"
 
 /**
@@ -154,25 +155,15 @@ export interface SchemaKeyStorage<S extends S.Schema<string, any>> {
   readonly remove: StorageEffect<never, never, void>
 }
 
-const parseJson = <I, A>(schema: S.Schema<I, A>) =>
-  S.transform(
-    S.string,
+const parseJson = <I, A>(schema: S.Schema<I, A>): Schema.Schema<string, A> => {
+  const self: Schema.Schema<string, A> = Schema.parseJson(Schema.string).pipe(Schema.transform(
     schema,
-    (s) => {
-      try {
-        return S.decode(S.from(schema))(JSON.parse(s))
-      } catch (err) {
-        return ParseResult.failure(ParseResult.type(schema.ast, s))
-      }
-    },
-    (i) => {
-      try {
-        return ParseResult.success(JSON.stringify(i))
-      } catch {
-        return ParseResult.failure(ParseResult.type(schema.ast, i))
-      }
-    }
-  )
+    (b, options) => Schema.parseSync(Schema.from(schema))(b, options),
+    (i) => i
+  ))
+
+  return self
+}
 
 /**
  * Helpers for constructing a SchemaStorage

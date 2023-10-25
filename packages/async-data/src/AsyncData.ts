@@ -1,6 +1,15 @@
+import {
+  currentTimestamp,
+  FailureImpl,
+  hasDataOptions,
+  hasEquality,
+  isTaggedRecord,
+  SuccessImpl
+} from "@typed/async-data/internal/async-data"
 import type { Progress } from "@typed/async-data/Progress"
-import { Cause, Data, Effect, Effectable, Equal, Hash, Match, Option, pipe, Unify } from "effect"
-import { constant, dual } from "effect/Function"
+import type { Effect } from "effect"
+import { Cause, Data, Duration, Exit, Match, Option, Unify } from "effect"
+import { dual } from "effect/Function"
 
 export const NO_DATA_TAG = "NoData" as const
 
@@ -249,89 +258,23 @@ export function isAsyncData<E, A>(u: unknown): u is AsyncData<E, A> {
   } else return false
 }
 
-// Internal
+export const fromExit = <E, A>(exit: Exit.Exit<E, A>): AsyncData<E, A> =>
+  Exit.match(exit, {
+    onFailure: (cause) => failCause(cause),
+    onSuccess: (value) => success(value)
+  })
 
-const defaultClock = Effect.runSync(Effect.clock)
-const currentTimestamp = () => defaultClock.unsafeCurrentTimeNanos()
+export const checkIsOutdated = <E, A>(
+  data: AsyncData<E, A>,
+  timeToLive: Duration.DurationInput
+): data is Success<A> => {
+  if (isSuccess(data)) {
+    const currentTime = currentTimestamp()
+    const updatedTime = data.timestamp
+    const difference = Duration.nanos(currentTime - updatedTime)
 
-class FailureImpl<E> extends Effectable.Class<never, E, never> implements Failure<E> {
-  readonly _tag = "Failure"
-
-  commit: () => Effect.Effect<never, E, never>;
-
-  [Unify.typeSymbol]!: unknown;
-  [Unify.unifySymbol]!: AsyncData.Unify<this>;
-  [Unify.blacklistSymbol]!: AsyncData.UnifyBlackList
-
-  constructor(readonly cause: Cause.Cause<E>, readonly timestamp: bigint, readonly refreshing: Option.Option<Loading>) {
-    super()
-
-    this.commit = constant(Effect.failCause(cause))
+    return Duration.greaterThanOrEqualTo(difference, timeToLive)
   }
 
-  [Equal.symbol](that: unknown) {
-    return that instanceof FailureImpl
-      && Equal.equals(this.cause, that.cause)
-      && Equal.equals(this.timestamp, that.timestamp)
-      && Equal.equals(this.refreshing, that.refreshing)
-  }
-
-  [Hash.symbol]() {
-    return pipe(
-      Hash.string(this._tag),
-      Hash.combine(Hash.hash(this.cause)),
-      Hash.combine(Hash.hash(this.timestamp)),
-      Hash.combine(Hash.hash(this.refreshing))
-    )
-  }
-}
-
-class SuccessImpl<A> extends Effectable.Class<never, never, A> implements Success<A> {
-  readonly _tag = "Success"
-
-  commit: () => Effect.Effect<never, never, A>;
-
-  [Unify.typeSymbol]!: unknown;
-  [Unify.unifySymbol]!: AsyncData.Unify<this>;
-  [Unify.blacklistSymbol]!: AsyncData.UnifyBlackList
-
-  constructor(readonly value: A, readonly timestamp: bigint, readonly refreshing: Option.Option<Loading>) {
-    super()
-
-    this.commit = constant(Effect.succeed(value))
-  }
-
-  [Equal.symbol](that: unknown) {
-    return that instanceof SuccessImpl
-      && Equal.equals(this.value, that.value)
-      && Equal.equals(this.timestamp, that.timestamp)
-      && Equal.equals(this.refreshing, that.refreshing)
-  }
-
-  [Hash.symbol]() {
-    return pipe(
-      Hash.string(this._tag),
-      Hash.combine(Hash.hash(this.value)),
-      Hash.combine(Hash.hash(this.timestamp)),
-      Hash.combine(Hash.hash(this.refreshing))
-    )
-  }
-}
-
-function hasDataOptions(u: Record<PropertyKey, unknown>): boolean {
-  if ("timestamp" in u && "refreshing" in u) {
-    return typeof u.timestamp === "bigint" && Option.isOption(u.refreshing)
-  } else return false
-}
-
-function hasEquality(u: Record<PropertyKey, unknown>): boolean {
-  return Equal.symbol in u && Hash.symbol in u
-}
-
-function isTaggedRecord(u: unknown): u is Record<PropertyKey, unknown> & { readonly _tag: unknown } {
-  return isRecord(u) && "_tag" in u
-}
-
-function isRecord(u: unknown): u is Record<PropertyKey, unknown> {
-  return typeof u === "object" && u !== null && !Array.isArray(u)
+  return false
 }

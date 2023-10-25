@@ -81,6 +81,18 @@ export interface RefSubject<R, in out E, in out A>
   ) => Effect.Effect<R | R2, E | E2, B>
 
   /**
+   * Modify the current value of this RefSubject and compute a new value using the provided effectful function.
+   * @since 1.18.0
+   */
+  readonly runUpdate: <R2, E2, B, R3 = never, E3 = never>(
+    updates: (
+      get: RefSubject<R, E, A>["get"],
+      set: RefSubject<R, E, A>["set"]
+    ) => Effect.Effect<R2, E2, B>,
+    onInterrupt?: (current: A) => Effect.Effect<R3, E3, A>
+  ) => Effect.Effect<R | R2 | R3, E | E2 | E3, B>
+
+  /**
    * Modify the current value of this RefSubject using the provided effectful function.
    * @since 1.18.0
    */
@@ -289,6 +301,11 @@ class ContextImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
   version = this.tag.withEffect((ref) => ref.version)
 
   subscriberCount: Effect.Effect<I, never, number> = this.tag.withEffect((ref) => ref.subscriberCount)
+
+  runUpdate: RefSubject<I, E, A>["runUpdate"] = (
+    f,
+    onInterrupt
+  ) => this.tag.withEffect((ref) => ref.runUpdate(f, onInterrupt))
 
   modifyEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>) => Effect.Effect<I | R2, E | E2, B> = (
     f

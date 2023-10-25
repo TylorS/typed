@@ -64,7 +64,7 @@ export interface RenderQueue {
 export type RenderContextOptions = IdleRequestOptions & {
   readonly environment: RenderContext["environment"]
   readonly scope: Scope.Scope
-  readonly isBot?: RenderContext["isBot"]
+  readonly isBot?: RenderContext["isBot"] | undefined
 }
 
 /**

@@ -64,7 +64,7 @@ export function Route<const P extends string>(path: P, options?: RouteOptions): 
   const match = Route.makeMatch(path, options?.match)
   const self: Route<P> = {
     path,
-    options,
+    ...(options ? { options } : {}),
     make: ptr.compile(path, options?.make) as Route<P>["make"],
     match,
     concat<P2 extends string>(

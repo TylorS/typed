@@ -26,7 +26,7 @@ const program = pipe(
   Fx.withSpan("b"),
   Fx.map((n) => n + 1),
   Fx.withSpan("a"),
-  Fx.observe(Effect.log)
+  Fx.observe((a) => Effect.log(a))
 )
 
 pipe(

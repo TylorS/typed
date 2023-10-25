@@ -16,17 +16,16 @@ import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
 import * as Exit from "effect/Exit"
 import type * as FiberId from "effect/FiberId"
-import * as FiberRef from "effect/FiberRef"
+import type * as FiberRef from "effect/FiberRef"
 import { dual } from "effect/Function"
 import type * as HashSet from "effect/HashSet"
-import * as List from "effect/List"
 import * as Option from "effect/Option"
 import type * as PubSub from "effect/PubSub"
 import * as Queue from "effect/Queue"
 import type * as Request from "effect/Request"
 import type { Scheduler } from "effect/Scheduler"
 import type * as Scope from "effect/Scope"
-import type * as Tracer from "effect/Tracer"
+import * as Tracer from "effect/Tracer"
 
 /**
  * Create an Fx which will emit a value after waiting for a specified duration.
@@ -472,23 +471,23 @@ export const withSpan: {
 } = dual(3, function withSpan<R, E, A>(
   self: Fx<R, E, A>,
   name: string,
-  options?: {
+  options: {
     readonly attributes?: Record<string, unknown>
     readonly links?: ReadonlyArray<Tracer.SpanLink>
     readonly parent?: Tracer.ParentSpan
     readonly root?: boolean
     readonly context?: Context.Context<never>
-  }
+  } = {}
 ): Fx<R, E, A> {
   return core.acquireUseRelease(
     Effect.flatMap(
       Effect.currentSpan,
-      (parent) => Effect.makeSpan(name, { parent: Option.getOrUndefined(parent), ...options })
+      (parent) => Effect.makeSpan(name, { ...options, parent: options?.parent || Option.getOrUndefined(parent) } as any)
     ),
     (span) =>
       core.middleware(
         self,
-        (effect) => Effect.locallyWith(effect, FiberRef.currentTracerSpan, List.append(span)),
+        (effect) => Effect.provideService(effect, Tracer.ParentSpan, span),
         Sink.setSpan(span)
       ),
     (span, exit) => Effect.flatMap(Clock.currentTimeNanos, (time) => Effect.sync(() => span.end(time, exit)))

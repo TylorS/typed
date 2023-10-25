@@ -13,7 +13,8 @@ import { type RefSubject } from "@typed/fx/RefSubject"
 import { Sink, WithContext } from "@typed/fx/Sink"
 import type * as Subject from "@typed/fx/Subject"
 import { RefSubjectTypeId } from "@typed/fx/TypeId"
-import type { Cause } from "effect/Cause"
+import { Ref } from "effect"
+import { type Cause, isInterrupted } from "effect/Cause"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
@@ -23,7 +24,6 @@ import * as Fiber from "effect/Fiber"
 import * as Option from "effect/Option"
 import { getEquivalence } from "effect/ReadonlyArray"
 import type * as Scope from "effect/Scope"
-import * as SynchronizedRef from "effect/SynchronizedRef"
 
 export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
   implements Omit<RefSubject<R, E, A>, ModuleAgumentedEffectKeysToOmit>
@@ -31,11 +31,13 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
 
   private _version = 0
+  private _lock = this.semaphore.withPermits(1).bind(this.semaphore)
 
   constructor(
     readonly initial: Effect.Effect<R, E, A>,
     readonly eq: Equivalence<A>,
-    readonly ref: SynchronizedRef.SynchronizedRef<Option.Option<Fiber.Fiber<E, A>>>,
+    readonly ref: Ref.Ref<Option.Option<Fiber.Fiber<E, A>>>,
+    readonly semaphore: Effect.Semaphore,
     readonly subject: Subject.Subject<R, E, A>
   ) {
     super()
@@ -47,10 +49,11 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
   static make<R, E, A>(
     initial: Effect.Effect<R, E, A>,
     eq: Equivalence<A>,
-    ref: SynchronizedRef.SynchronizedRef<Option.Option<Fiber.Fiber<E, A>>>,
-    subject: Subject.Subject<R, E, A>
+    ref: Ref.Ref<Option.Option<Fiber.Fiber<E, A>>>,
+    subject: Subject.Subject<R, E, A>,
+    semaphore: Effect.Semaphore = Effect.unsafeMakeSemaphore(1)
   ): RefSubject<R, E, A> {
-    return new RefSubjectImpl(initial, eq, ref, subject) as any
+    return new RefSubjectImpl(initial, eq, ref, semaphore, subject) as any
   }
 
   onSuccess(a: A): Effect.Effect<R, never, unknown> {
@@ -59,7 +62,7 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
 
   onFailure(cause: Cause<E>): Effect.Effect<R, never, unknown> {
     return Effect.tap(
-      SynchronizedRef.set(this.ref, Option.some(Fiber.failCause(cause))),
+      Ref.set(this.ref, Option.some(Fiber.failCause(cause))),
       () => this.subject.onFailure(cause)
     )
   }
@@ -71,14 +74,14 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
   readonly interrupt = Effect.suspend(() =>
     Effect.all([
       this.subject.interrupt,
-      SynchronizedRef.get(this.ref).pipe(Effect.flatten, Effect.flatMap(Fiber.interrupt), Effect.optionFromOptional)
+      Ref.get(this.ref).pipe(Effect.flatten, Effect.flatMap(Fiber.interrupt), Effect.optionFromOptional)
     ])
   )
 
   toFx(): Fx<R, E, A> {
     return fromFxEffect(
       Effect.as(
-        SynchronizedRef.updateEffect(this.ref, (fiber) => Effect.asSome(this.getOrInitialize(fiber))),
+        Ref.get(this.ref).pipe(Effect.flatMap((fiber) => Effect.asSome(this.getOrInitialize(fiber)))),
         this.subject
       )
     )
@@ -88,35 +91,51 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
     return this.get
   }
 
-  readonly get = (
-    Effect.fromFiberEffect(
-      SynchronizedRef.modifyEffect(
-        this.ref,
-        (fiber) => Effect.map(this.getOrInitialize(fiber), (f) => [f, Option.some(f)] as const)
-      )
-    )
+  readonly get: RefSubject<R, E, A>["get"] = Effect.fromFiberEffect(
+    Effect.flatMap(Ref.get(this.ref), (fiber) => this.getOrInitialize(fiber))
   )
 
-  readonly set = (a: A) =>
-    Effect.catchAllCause(this.update(() => a), () => Effect.tap(this.setValue(a), () => this.emitValue(a)))
+  readonly modifyEffect: RefSubject<R, E, A>["modifyEffect"] = (f) =>
+    this._lock(
+      this.get.pipe(
+        Effect.flatMap((a) =>
+          f(a).pipe(
+            Effect.tap(([, a2]) =>
+              Effect.if(this.eq(a2, a), {
+                onTrue: this.setValue(a2),
+                onFalse: Effect.zipRight(this.setValue(a2), this.emitValue(a2))
+              })
+            ),
+            Effect.map(([b]) => b)
+          )
+        )
+      )
+    )
 
-  readonly modifyEffect = <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, readonly [B, A]>) =>
-    SynchronizedRef.modifyEffect(
-      this.ref,
-      (fiber) =>
-        this.getOrInitialize(fiber).pipe(
-          Effect.fromFiberEffect,
-          Effect.flatMap((a) => {
-            return Effect.flatMap(f(a), ([b, a2]) => {
-              if (this.eq(a, a2)) {
-                return Effect.succeed([b, Option.some(Fiber.succeed(a2))])
-              }
-
-              return this.emitValue(a2).pipe(Effect.as([b, Option.some(Fiber.succeed(a2))]))
-            })
-          })
+  readonly runUpdate: RefSubject<R, E, A>["runUpdate"] = (updates, onInterrupt) =>
+    Effect.uninterruptibleMask((restore) =>
+      updates(this.get, (a) =>
+        this.get.pipe(
+          Effect.matchCauseEffect({
+            onFailure: () => Effect.zipRight(this.setValue(a), this.emitValue(a)),
+            onSuccess: (current) =>
+              this.eq(current, a) ? this.setValue(a) : Effect.zipRight(this.setValue(a), this.emitValue(a))
+          }),
+          Effect.as(a)
+        )).pipe(
+          this._lock,
+          restore,
+          Effect.tapErrorCause(
+            (cause) =>
+              onInterrupt && isInterrupted(cause)
+                ? Effect.flatMap(this.get, onInterrupt)
+                : Effect.unit
+          )
         )
     )
+
+  readonly set = (a: A) =>
+    Effect.catchAllCause(this.update(() => a), () => Effect.tap(this._lock(this.setValue(a)), () => this.emitValue(a)))
 
   readonly updateEffect = <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, A>) =>
     this.modifyEffect((a) => f(a).pipe(Effect.map((a2) => [a2, a2] as const)))
@@ -130,7 +149,7 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
       return [a2, a2]
     })
 
-  readonly delete: Effect.Effect<R, never, Option.Option<A>> = SynchronizedRef.modifyEffect(this.ref, (fiber) => {
+  readonly delete: Effect.Effect<R, never, Option.Option<A>> = this.modifyRef((fiber) => {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
 
@@ -185,7 +204,7 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
   }
 
   private setValue(a: A) {
-    return Effect.as(SynchronizedRef.set(this.ref, Option.some(Fiber.succeed(a))), a)
+    return Effect.as(Ref.set(this.ref, Option.some(Fiber.succeed(a))), a)
   }
 
   private emitValue(a: A) {
@@ -198,7 +217,20 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
     return this.initial.pipe(
       Effect.tap((a) => this.emitValue(a)),
       Effect.tapErrorCause((cause) => this.subject.onFailure(cause)),
-      Effect.forkDaemon
+      Effect.forkDaemon,
+      Effect.tap((fiber) => Ref.set(this.ref, Option.some(fiber)))
+    )
+  }
+
+  private modifyRef<R2, E2, B>(
+    f: (
+      fiber: Option.Option<Fiber.Fiber<E, A>>
+    ) => Effect.Effect<R2, E2, readonly [B, Option.Option<Fiber.Fiber<E, A>>]>
+  ) {
+    return this._lock(
+      Ref.get(this.ref).pipe(
+        Effect.flatMap((fiber) => f(fiber).pipe(Effect.flatMap(([b, a2]) => Ref.set(this.ref, a2).pipe(Effect.as(b)))))
+      )
     )
   }
 }
@@ -350,7 +382,7 @@ export function unsafeMake<R, E, A>(
   return RefSubjectImpl.make(
     initial,
     eq,
-    SynchronizedRef.unsafeMake<Option.Option<Fiber.Fiber<E, A>>>(Option.none()),
+    Ref.unsafeMake<Option.Option<Fiber.Fiber<E, A>>>(Option.none()),
     subject
   )
 }
