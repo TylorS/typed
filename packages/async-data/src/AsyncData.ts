@@ -266,10 +266,13 @@ export const fromExit = <E, A>(exit: Exit.Exit<E, A>): AsyncData<E, A> =>
 
 export const checkIsOutdated = <E, A>(
   data: AsyncData<E, A>,
-  timeToLive: Duration.DurationInput
+  timeToLive: Duration.DurationInput,
+  currentTime?: bigint
 ): data is Success<A> => {
   if (isSuccess(data)) {
-    const currentTime = currentTimestamp()
+    if (currentTime === undefined) {
+      currentTime = currentTimestamp()
+    }
     const updatedTime = data.timestamp
     const difference = Duration.nanos(currentTime - updatedTime)
 
