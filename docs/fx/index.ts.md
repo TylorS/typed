@@ -61,115 +61,115 @@ be pulled from the producer as soon as possible.
 **Signature**
 
 ```ts
-export * from "./Computed";
+export * from './Computed'
 ```
 
 Added in v1.18.0
 
 ## From "./Filtered"
 
-[Filtered documentation](https://tylors.github.io/typed/fx/Filtered.ts.html)
+[Filtered documentation](https://tylors.github.io/typed-fp/fx/Filtered.ts.html)
 
 **Signature**
 
 ```ts
-export * from "./Filtered";
+export * from './Filtered'
 ```
 
 Added in v1.18.0
 
 ## From "./Fx"
 
-[Fx documentation](https://tylors.github.io/typed/fx/Fx.ts.html)
+[Fx documentation](https://tylors.github.io/typed-fp/fx/Fx.ts.html)
 
 **Signature**
 
 ```ts
-export * from "./Fx";
+export * from './Fx'
 ```
 
 Added in v1.18.0
 
 ## From "./RefArray"
 
-[RefArray documentation](https://tylors.github.io/typed/fx/RefArray.ts.html)
+[RefArray documentation](https://tylors.github.io/typed-fp/fx/RefArray.ts.html)
 
 **Signature**
 
 ```ts
-export * from "./RefArray";
+export * from './RefArray'
 ```
 
 Added in v1.18.0
 
 ## From "./RefRemoteData"
 
-[RefRemoteData documentation](https://tylors.github.io/typed/fx/RefRemoteData.ts.html)
+[RefRemoteData documentation](https://tylors.github.io/typed-fp/fx/RefRemoteData.ts.html)
 
 **Signature**
 
 ```ts
-export * from "./RefRemoteData";
+export * from './RefRemoteData'
 ```
 
 Added in v1.18.0
 
 ## From "./RefSubject"
 
-[RefSubject documentation](https://tylors.github.io/typed/fx/RefSubject.ts.html)
+[RefSubject documentation](https://tylors.github.io/typed-fp/fx/RefSubject.ts.html)
 
 **Signature**
 
 ```ts
-export * from "./RefSubject";
+export * from './RefSubject'
 ```
 
 Added in v1.18.0
 
 ## From "./Sink"
 
-[Sink documentation](https://tylors.github.io/typed/fx/Sink.ts.html)
+[Sink documentation](https://tylors.github.io/typed-fp/fx/Sink.ts.html)
 
 **Signature**
 
 ```ts
-export * from "./Sink";
+export * from './Sink'
 ```
 
 Added in v1.18.0
 
 ## From "./Subject"
 
-[Subject documentation](https://tylors.github.io/typed/fx/Subject.ts.html)
+[Subject documentation](https://tylors.github.io/typed-fp/fx/Subject.ts.html)
 
 **Signature**
 
 ```ts
-export * from "./Subject";
+export * from './Subject'
 ```
 
 Added in v1.18.0
 
 ## From "./TypeId"
 
-[TypeId documentation](https://tylors.github.io/typed/fx/TypeId.ts.html)
+[TypeId documentation](https://tylors.github.io/typed-fp/fx/TypeId.ts.html)
 
 **Signature**
 
 ```ts
-export * from "./TypeId";
+export * from './TypeId'
 ```
 
 Added in v1.18.0
 
 ## From "./Typeclass"
 
-[Typeclass documentation](https://tylors.github.io/typed/fx/Typeclass.ts.html)
+[Typeclass documentation](https://tylors.github.io/typed-fp/fx/Typeclass.ts.html)
 
 **Signature**
 
 ```ts
-export * from "./Typeclass";
+export * from './Typeclass'
 ```
 
 Added in v1.18.0

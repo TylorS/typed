@@ -109,7 +109,7 @@ Added in v1.0.0
 export type RenderContextOptions = IdleRequestOptions & {
   readonly environment: RenderContext['environment']
   readonly scope: Scope.Scope
-  readonly isBot?: RenderContext['isBot']
+  readonly isBot?: RenderContext['isBot'] | undefined
 }
 ```
 
