@@ -8,6 +8,9 @@
       "path": "packages/context"
     },
     {
+      "path": "packages/decoder"
+    },
+    {
       "path": "packages/dom"
     },
     {

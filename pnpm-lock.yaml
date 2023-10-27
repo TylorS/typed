@@ -173,6 +173,13 @@ importers:
         version: 2.0.0-next.51
     publishDirectory: dist
 
+  packages/decoder:
+    dependencies:
+      '@effect/schema':
+        specifier: ^0.46.1
+        version: 0.46.1(effect@2.0.0-next.52)(fast-check@3.13.2)
+    publishDirectory: dist
+
   packages/dom:
     dependencies:
       '@effect/schema':
@@ -903,6 +910,16 @@ packages:
       fast-check: ^3.13.2
     dependencies:
       effect: 2.0.0-next.51
+      fast-check: 3.13.2
+    dev: false
+
+  /@effect/schema@0.46.1(effect@2.0.0-next.52)(fast-check@3.13.2):
+    resolution: {integrity: sha512-+uaJy6vn2wd5cuYzeCZ68EMPcwNran5/JPL0+MUlRL8x23Bp15YCiT9oqOPH+Bo9+JPVuS7BOPQD3tj/MNLzWQ==}
+    peerDependencies:
+      effect: 2.0.0-next.52
+      fast-check: ^3.13.2
+    dependencies:
+      effect: 2.0.0-next.52
       fast-check: 3.13.2
     dev: false
 
@@ -3031,6 +3048,10 @@ packages:
 
   /effect@2.0.0-next.51:
     resolution: {integrity: sha512-FUqLrZI8GK+6f6bTKD9qlW1iG0DKKDXG1vzsDfl5LhTe1dCur/UD1nj/HI/OjC0/8zwy+K/ZxTBYxj999/CUEg==}
+
+  /effect@2.0.0-next.52:
+    resolution: {integrity: sha512-6VmmfS6xyOZsJRT0hcEsMx03HxXSeG/VmcniDvVw0nzBudlu+4qUvj8GBGYVFVgJfKcISSRey0tzfO9HXIzApg==}
+    dev: false
 
   /electron-to-chromium@1.4.566:
     resolution: {integrity: sha512-mv+fAy27uOmTVlUULy15U3DVJ+jg+8iyKH1bpwboCRhtDC69GKf1PPTZvEIhCyDr81RFqfxZJYrbgp933a1vtg==}
