@@ -1,3 +1,4 @@
+import type { Fx } from "@typed/fx/Fx"
 import type { Rendered } from "@typed/wire"
 import type { Effect } from "effect/Effect"
 import type { Placeholder } from "./Placeholder"
@@ -7,7 +8,8 @@ export type Renderable<R = never, E = never> =
   | Renderable.Value
   | { readonly [key: string]: Renderable.Value } // TODO: Should we manage data attributes this way?
   | Placeholder<R, E, Renderable.Value>
-  | Effect<R, E, Renderable<R, E>>
+  | Effect<R, E, any>
+  | Fx<R, E, Renderable.Value | ReadonlyArray<Renderable.Value>>
   | ReadonlyArray<Renderable<R, E>>
 
 export namespace Renderable {

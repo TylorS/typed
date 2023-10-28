@@ -91,7 +91,7 @@ class PathStack {
   count = 0
 
   push(): void {
-    this.chunk = Chunk.append(Chunk.replace(this.chunk, Chunk.size(this.chunk) - 1, this.count), this.count = 0)
+    this.chunk = Chunk.append(this.toChunk(), this.count = 0)
   }
 
   pop(): void {
@@ -99,7 +99,7 @@ class PathStack {
   }
 
   toChunk(): Chunk.Chunk<number> {
-    return this.chunk
+    return Chunk.replace(this.chunk, Chunk.size(this.chunk) - 1, this.count)
   }
 
   previousChunk() {

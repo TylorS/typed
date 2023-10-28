@@ -50,18 +50,30 @@ const base = <T extends Part["_tag"]>(tag: T) =>
       ) => Effect.Effect<Scope, never, void>,
       public value: Extract<Part, { readonly _tag: T }>["value"],
       readonly eq: Equivalence<Extract<Part, { readonly _tag: T }>["value"]> = equals
-    ) {}
+    ) {
+      this.update = this.update.bind(this)
+    }
 
-    update = (value: this["value"]) => {
-      if (this.eq(this.value as any, value as any)) {
+    update(input: this["value"]) {
+      const previous = this.value as any
+      const value = this.getValue(input) as any
+
+      if (this.eq(previous as any, value as any)) {
         return Effect.unit
       }
 
-      return this.commit({
-        previous: this.value,
-        value: this.value = value as any,
-        part: this
-      } as any)
+      return Effect.tap(
+        this.commit.call(this, {
+          previous,
+          value,
+          part: this as any
+        }),
+        () => Effect.sync(() => this.value = value)
+      )
+    }
+
+    getValue(value: unknown) {
+      return value
     }
   }
 
@@ -129,6 +141,8 @@ export class BooleanPartImpl extends base("boolean") implements BooleanPart {
   }
 }
 
+const isString = (x: unknown): x is string => typeof x === "string"
+
 export class ClassNamePartImpl extends base("className") implements ClassNamePart {
   constructor(
     index: number,
@@ -138,6 +152,18 @@ export class ClassNamePartImpl extends base("className") implements ClassNamePar
     super(index, commit, value, strictEq)
   }
 
+  getValue(value: unknown): ReadonlyArray<string> {
+    if (isString(value)) {
+      return value.split(" ").filter((x) => isString(x) && x.trim() !== "")
+    }
+
+    if (Array.isArray(value)) {
+      return value.filter((x) => isString(x) && x.trim() !== "")
+    }
+
+    return []
+  }
+
   static browser(index: number, element: Element, context: RenderContext): ClassNamePartImpl {
     return new ClassNamePartImpl(
       index,
@@ -145,7 +171,10 @@ export class ClassNamePartImpl extends base("className") implements ClassNamePar
         context.queue.add(
           part,
           () => {
-            const { added, removed } = diffStrings(previous, value)
+            const { added, removed } = diffStrings(
+              previous,
+              value
+            )
 
             element.classList.add(...added)
             element.classList.remove(...removed)
@@ -286,8 +315,8 @@ export class EventPartImpl extends base("event") implements EventPart {
           name,
           onCause,
           index,
-          ({ value }) =>
-            value
+          ({ value }) => {
+            return value
               ? Fx.run(
                 source.events(name as any, value.options),
                 WithContext(onCause, (ev) => value.handler(ev as any))
@@ -295,7 +324,8 @@ export class EventPartImpl extends base("event") implements EventPart {
                 Effect.provide(ctx),
                 fork
               )
-              : fork(Effect.unit),
+              : fork(Effect.unit)
+          },
           null
         )
       )
@@ -310,33 +340,23 @@ function withScopedFork<R, E, A>(f: (fork: Fx.ScopedFork) => Effect.Effect<R, E,
 // Ensures only a single fiber is executing
 function withSwitchFork<R, E, A>(
   f: (fork: Fx.FxFork, ctx: Context<R | Scope>) => Effect.Effect<R, E, A>
-): Effect.Effect<R | Scope, E, void> {
+): Effect.Effect<R | Scope, E, A> {
   return Effect.contextWithEffect((ctx) =>
     withScopedFork((fork) =>
       Effect.flatMap(
         SynchronizedRef.make<Fiber.Fiber<never, void>>(Fiber.unit),
         (ref) =>
-          Effect.flatMap(
-            f((effect) =>
-              SynchronizedRef.updateAndGetEffect(
-                ref,
-                (fiber) => Effect.flatMap(Fiber.interrupt(fiber), () => fork(effect))
-              ), ctx),
-            () => Effect.flatMap(SynchronizedRef.get(ref), Fiber.join)
-          )
+          f((effect) =>
+            SynchronizedRef.updateAndGetEffect(
+              ref,
+              (fiber) => Effect.flatMap(Fiber.interrupt(fiber), () => fork(effect))
+            ), ctx)
       )
     )
   )
 }
 
-export class NodePartImpl extends base("node") implements NodePart {
-  static browser(index: number, element: HTMLElement | SVGElement, ctx: RenderContext) {
-    return new NodePartImpl(index, ({ part }) =>
-      ctx.queue.add(part, () => {
-        // TODO: We need to port over the diffing of children
-      }), [])
-  }
-}
+export class NodePartImpl extends base("node") implements NodePart {}
 
 export class PropertyPartImpl extends base("property") implements PropertyPart {
   constructor(
@@ -438,20 +458,25 @@ export class SparseAttributePartImpl extends sparse("sparse/attribute") implemen
 export class SparseClassNamePartImpl extends sparse("sparse/className") implements SparseClassNamePart {
   constructor(
     readonly parts: ReadonlyArray<ClassNamePart | StaticText>,
-    commit: SparseClassNamePartImpl["commit"]
+    commit: SparseClassNamePartImpl["commit"],
+    values: Array<string | Array<string>>
   ) {
-    super(commit, [], ReadonlyArray.getEquivalence(strictEq))
+    super(commit, values, ReadonlyArray.getEquivalence(strictEq))
   }
 
   static browser(
     parts: ReadonlyArray<ClassNamePart | StaticText>,
     element: HTMLElement | SVGElement,
-    ctx: RenderContext
+    ctx: RenderContext,
+    values: Array<string | Array<string>> = []
   ) {
     return new SparseClassNamePartImpl(
       parts,
       ({ part, value }) =>
-        ctx.queue.add(part, () => element.setAttribute("class", value.flatMap(isNonEmptyString).join(" ")))
+        ctx.queue.add(part, () => {
+          return element.setAttribute("class", value.flatMap(isNonEmptyString).join(" "))
+        }),
+      values
     )
   }
 }

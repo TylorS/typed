@@ -164,10 +164,12 @@ class RenderQueueImpl implements RenderQueue {
   queue = new Map<Part | SparsePart, () => void>()
   scheduled = false
 
-  constructor(readonly scope: Scope.Scope, readonly options?: IdleRequestOptions) {}
+  constructor(readonly scope: Scope.Scope, readonly options?: IdleRequestOptions) {
+    this.add.bind(this)
+  }
 
-  add = (part: Part | SparsePart, task: () => void) =>
-    Effect.suspend(() => {
+  add(part: Part | SparsePart, task: () => void) {
+    return Effect.suspend(() => {
       this.queue.set(part, task)
 
       return Effect.zipRight(
@@ -184,6 +186,7 @@ class RenderQueueImpl implements RenderQueue {
         this.scheduleNextRun
       )
     })
+  }
 
   scheduleNextRun = Effect.suspend(() => {
     if (this.queue.size === 0 || this.scheduled) return Effect.unit

@@ -43,7 +43,7 @@ import { constant, dual } from "effect/Function"
 import type * as HashSet from "effect/HashSet"
 import type { Inspectable } from "effect/Inspectable"
 import type * as Layer from "effect/Layer"
-import type * as Option from "effect/Option"
+import * as Option from "effect/Option"
 import type { Pipeable } from "effect/Pipeable"
 import type * as PubSub from "effect/PubSub"
 import type * as Queue from "effect/Queue"
@@ -889,6 +889,16 @@ export const switchMap: {
 } = core.switchMap
 
 /**
+ * Map the success value of an Fx to another Fx, switching to the latest
+ * Fx emitted and interrupting the previous.
+ * @since 1.18.0
+ * @category flattening
+ */
+export const switchLatest: {
+  <R, E, R2, E2, B>(fx: Fx<R, E, FxInput<R2, E2, B>>): Fx<R | R2, E | E2, B>
+} = core.switchMap((x) => x)
+
+/**
  * Map the success value of an Fx to another Fx, prefering the first
  * Fx emitted and dropping any subsequent Fx until it has completed.
  * @since 1.18.0
@@ -1167,6 +1177,23 @@ export const loop: {
   <A, B, C>(seed: B, f: (acc: B, a: A) => readonly [C, B]): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, C>
   <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => readonly [C, B]): Fx<R, E, C>
 } = core.loop
+
+/**
+ * Emit values with their previously emitted values when possible.
+ *
+ * @since 1.18.0
+ * @category combinators
+ */
+export const withPrevious: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, readonly [previous: Option.Option<A>, current: A]> = <
+  R,
+  E,
+  A
+>(fx: Fx<R, E, A>): Fx<R, E, readonly [previous: Option.Option<A>, current: A]> =>
+  loop(
+    fx,
+    Option.none<A>(),
+    (previous, current) => [[previous, current] as const, Option.some(current)]
+  )
 
 /**
  * Accumulate a value over the success values of an Fx and atomically produce derived value
@@ -1932,6 +1959,17 @@ export function gen<Yield extends Effect.EffectGen<any, any, any>, R, E, A>(
   f: (_: Effect.Adapter) => Generator<Yield, Fx<R, E, A>, any>
 ): Fx<R | EffectGenContext<Yield>, E | EffectGenError<Yield>, A> {
   return fromFxEffect(Effect.gen(f))
+}
+
+/**
+ * Utilize Effect.gen to construct an Fx
+ * @since 1.18.0
+ * @category constructors
+ */
+export function genScoped<Yield extends Effect.EffectGen<any, any, any>, R, E, A>(
+  f: (_: Effect.Adapter) => Generator<Yield, Fx<R, E, A>, any>
+): Fx<Exclude<R | EffectGenContext<Yield>, Scope.Scope>, E | EffectGenError<Yield>, A> {
+  return scoped(fromFxEffect(Effect.gen(f)))
 }
 
 /**

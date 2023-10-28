@@ -44,8 +44,9 @@ export function matchFxPrimitive<B>(
     ) => B
   }
 ) {
-  return <R, E, A, R2>(fx: Fx<R, E, A>, sink: Sink.WithContext<R2, E, A>): B =>
-    (matchers as any)[(fx as Primitive.Primitive)._fxTag](fx as any, sink)
+  return <R, E, A, R2>(fx: Fx<R, E, A>, sink: Sink.WithContext<R2, E, A>): B => {
+    return (matchers as any)[(fx as Primitive.Primitive)._fxTag](fx as any, sink)
+  }
 }
 
 export function matchFxInput<R, E, A, B>(fx: FxInput<R, E, A>, matchers: {
@@ -58,7 +59,7 @@ export function matchFxInput<R, E, A, B>(fx: FxInput<R, E, A>, matchers: {
   Otherwise: (value: A) => B
 }): B {
   const type = typeof fx
-  if (!(type === "object" || type === "function")) return matchers.Otherwise(fx as A)
+  if (!fx || !(type === "object" || type === "function")) return matchers.Otherwise(fx as A)
   else if (isRefSubject(fx)) return matchers.RefSubject(fx)
   else if (isFx(fx)) return matchers.Fx(fx)
   else if (isStream(fx)) return matchers.Stream(fx)

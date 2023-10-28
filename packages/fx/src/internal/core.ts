@@ -1176,7 +1176,7 @@ export const middleware: {
     f: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
     g?: (sink: Sink.Sink<E, A>) => Sink.Sink<E, A>
   ): Fx<R2, E, A>
-} = dual(3, function middleware<R, E, A, R2>(
+} = dual((args) => args.length === 3 || typeof args[0] !== "function", function middleware<R, E, A, R2>(
   fx: Fx<R, E, A>,
   f: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
   g?: (sink: Sink.Sink<E, A>) => Sink.Sink<E, A>

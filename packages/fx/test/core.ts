@@ -367,6 +367,60 @@ describe.concurrent(__filename, () => {
 
       await Effect.runPromise(Effect.scoped(test))
     })
+
+    describe.concurrent("tagged", () => {
+      it.concurrent("allows deferring provision via Effect context", async () => {
+        const ref = RefSubject.tagged<never, number>()("test")
+        const test = Effect.gen(function*(_) {
+          expect(yield* _(ref)).toEqual(0)
+
+          yield* _(ref.set(1))
+
+          expect(yield* _(ref)).toEqual(1)
+
+          yield* _(ref.update((x) => x + 1))
+
+          expect(yield* _(ref)).toEqual(2)
+
+          yield* _(ref.delete)
+
+          expect(yield* _(ref)).toEqual(0)
+        }).pipe(ref.provide(Effect.succeed(0)))
+
+        await Effect.runPromise(test)
+      })
+
+      it.concurrent("allows being initialized by an Fx", async () => {
+        const ref = RefSubject.tagged<never, string>()("test")
+        const test = Effect.gen(function*(_) {
+          // Lazily initializes with the first value of the Fx
+          expect(yield* _(ref)).toEqual("a")
+
+          // Allows setting a value
+          yield* _(ref.set("b"))
+          expect(yield* _(ref)).toEqual("b")
+
+          yield* _(ref.delete)
+          expect(yield* _(ref)).toEqual("a")
+
+          yield* _(Effect.sleep(50))
+
+          // Further emitted values reset the current state.
+          expect(yield* _(ref)).toEqual("z")
+
+          yield* _(ref.delete)
+
+          expect(yield* _(ref)).toEqual("z")
+        }).pipe(
+          Effect.provide(ref.make(Fx.merge([
+            Fx.at("a", 10),
+            Fx.at("z", 50)
+          ])))
+        )
+
+        await Effect.runPromise(Effect.scoped(test))
+      })
+    })
   })
 
   describe.concurrent("Subject", () => {

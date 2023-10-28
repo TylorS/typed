@@ -1,0 +1,37 @@
+{
+  "name": "@typed/example-todomvc",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tylors/typed.git"
+  },
+  "homepage": "https://github.com/tylors/typed",
+  "scripts": {
+    "build": "vite --config ./vite.config.ts build src",
+    "preview": "vite --config ./vite.config.ts preview src",
+    "start": "vite --config ./vite.config.ts serve src"
+  },
+  "keywords": [],
+  "author": "Typed contributors",
+  "license": "MIT",
+  "sideEffects": [],
+  "dependencies": {
+    "@effect/platform": "^0.26.2",
+    "@effect/platform-browser": "^0.14.3",
+    "@effect/schema": "^0.46.1",
+    "@typed/context": "workspace:*",
+    "@typed/dom": "workspace:*",
+    "@typed/fx": "workspace:*",
+    "@typed/template": "workspace:*",
+    "effect": "2.0.0-next.52",
+    "todomvc-app-css": "^2.4.2",
+    "todomvc-common": "^1.0.5"
+  },
+  "devDependencies": {
+    "vite": "^4.5.0",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-tsconfig-paths": "^4.2.1"
+  }
+}

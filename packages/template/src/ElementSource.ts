@@ -264,7 +264,8 @@ export class ElementSourceImpl<
 > extends FxEffectProto<never, E, Rendered.Elements<T>, never, E | NoSuchElementException, Rendered.Elements<T>>
   implements Omit<ElementSource<T, E, EventMap>, ModuleAgumentedEffectKeysToOmit | keyof Placeholder<any, any, any>>
 {
-  private eventMap = new Map<any, Fx.Fx<never, E, any>>()
+  private bubbleMap = new Map<any, Fx.Fx<never, E, any>>()
+  private captureMap = new Map<any, Fx.Fx<never, E, any>>()
 
   constructor(readonly rootElement: Filtered<never, E, T>, readonly selector: Selector = CssSelectors([])) {
     super()
@@ -310,21 +311,28 @@ export class ElementSourceImpl<
     type: Type,
     options?: AddEventListenerOptions
   ) {
-    if (this.eventMap.has(type)) return this.eventMap.get(type)!
+    const capture = options?.capture === true
+    const map = capture ? this.captureMap : this.bubbleMap
 
-    const events = this.selector._tag === "css" ?
-      this.rootElement.map(findMostSpecificElement(this.selector.selectors)).pipe(
-        Fx.switchMap(makeEventStream(this.selector.selectors, type as any, options)),
-        Fx.multicast
-      ) :
-      this.rootElement.pipe(
-        Fx.switchMap(makeElementEventStream(this.selector.element, type as string, options)),
-        Fx.multicast
-      )
+    let current = map.get(type)
 
-    this.eventMap.set(type, events)
+    if (current === undefined) {
+      if (this.selector._tag === "css") {
+        current = this.rootElement.map(findMostSpecificElement(this.selector.selectors)).pipe(
+          Fx.switchMap(makeEventStream(this.selector.selectors, type as any, options)),
+          Fx.multicast
+        )
+      } else {
+        current = this.rootElement.pipe(
+          Fx.switchMap(makeElementEventStream(this.selector.element, type as string, options)),
+          Fx.multicast
+        )
+      }
 
-    return events
+      map.set(type, current)
+    }
+
+    return current
   }
 }
 

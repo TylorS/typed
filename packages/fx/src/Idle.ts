@@ -7,7 +7,7 @@
 import type * as Context from "@typed/context"
 import { dequeueIsActive, takeDequeue } from "@typed/fx/internal/fx"
 import { cancelIdleCallback, requestIdleCallback } from "@typed/fx/internal/requestIdleCallback"
-import { MutableHashMap, Option } from "effect/dist/declarations/src"
+import { MutableHashMap, Option } from "effect"
 import * as Effect from "effect/Effect"
 import * as Fiber from "effect/Fiber"
 import { constant, constVoid } from "effect/Function"

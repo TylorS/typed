@@ -6,9 +6,10 @@ import * as TypeId from "@typed/fx/TypeId"
 import { isDirective } from "@typed/template/Directive"
 import * as ElementRef from "@typed/template/ElementRef"
 import type { BrowserEntry } from "@typed/template/Entry"
+import * as EventHandler from "@typed/template/EventHandler"
+import { makeRenderNodePart } from "@typed/template/internal/browser"
 import type { IndexRefCounter } from "@typed/template/internal/indexRefCounter"
 import { indexRefCounter } from "@typed/template/internal/indexRefCounter"
-import { parser } from "@typed/template/internal/parser"
 import {
   AttributePartImpl,
   BooleanPartImpl,
@@ -16,7 +17,6 @@ import {
   CommentPartImpl,
   DataPartImpl,
   EventPartImpl,
-  NodePartImpl,
   PropertyPartImpl,
   RefPartImpl,
   SparseAttributePartImpl,
@@ -26,6 +26,7 @@ import {
   TextPartImpl
 } from "@typed/template/internal/parts"
 import { findPath } from "@typed/template/internal/utils"
+import { parser } from "@typed/template/Parser"
 import type {
   AttributePart,
   ClassNamePart,
@@ -75,18 +76,18 @@ const renderTemplate: (document: Document, ctx: RenderContext) => RenderTemplate
     Effect.gen(function*(_) {
       const elementRef = providedRef || (yield* _(ElementRef.ElementRef<T, Placeholder.Error<Values[number]>>()))
       const events = Fx.map(elementRef, DomRenderEvent)
-      const errors = elementRef[ElementRef.ElementRefTypeId]
+      const errors = elementRef[ElementRef.ElementRefTypeId] // TODO: Remove errors from ElementRef
       const entry = getBrowserEntry(document, ctx, templateStrings)
       const content = document.importNode(entry.content, true) // Clone our template
-      const parts = yield* _(buildParts(ctx, entry.template, content, elementRef, errors.onFailure as any)) // Build runtime-variant of parts with our content.
+
+      const parts = yield* _(buildParts(document, ctx, entry.template, content, elementRef, errors.onFailure as any)) // Build runtime-variant of parts with our content.
 
       // If there are parts we need to render them before constructing our Wire
       if (parts.length > 0) {
-        const refCounter = yield* _(indexRefCounter())
+        const refCounter = yield* _(indexRefCounter(parts.length))
 
         // Do the work
-        yield* _(renderValues(values, parts, refCounter))
-
+        yield* _(renderValues(values, parts, refCounter, errors.onFailure as any))
         // Wait for initial work to be completed
         yield* _(refCounter.wait)
       }
@@ -101,7 +102,8 @@ const renderTemplate: (document: Document, ctx: RenderContext) => RenderTemplate
 function renderValues<Values extends ReadonlyArray<Renderable<any, any>>>(
   values: Values,
   parts: Parts,
-  refCounter: IndexRefCounter
+  refCounter: IndexRefCounter,
+  onCause: <E>(cause: Cause<E>) => Effect.Effect<never, never, unknown>
 ): Effect.Effect<Placeholder.Context<Values[number]> | Scope, never, void> {
   return Effect.all(parts.map((part) => {
     switch (part._tag) {
@@ -111,7 +113,7 @@ function renderValues<Values extends ReadonlyArray<Renderable<any, any>>>(
         return renderSparsePart(values, part, refCounter)
       }
       default:
-        return renderPart(values, part, refCounter)
+        return renderPart(values, part, refCounter, onCause)
     }
   })) as any
 }
@@ -121,40 +123,69 @@ function renderSparsePart<Values extends ReadonlyArray<Renderable<any, any>>>(
   part: SparsePart,
   refCounter: IndexRefCounter
 ) {
-  return Effect.all(
-    part.parts.map((part) => part._tag === "static/text" ? Effect.unit : renderPart(values, part, refCounter))
+  const indexes = part.parts.flatMap((p) => p._tag === "static/text" ? [] : [p.index])
+
+  return Effect.forkScoped(
+    Fx.observe(
+      // @ts-ignore
+      unwrapSparsePartRenderables(
+        part.parts.map((p) => p._tag === "static/text" ? Fx.succeed(p.value) : values[p.index]),
+        part
+      ),
+      (value) => {
+        return Effect.tap(part.update(value as any), () => Effect.forEach(indexes, (a) => refCounter.release(a)))
+      }
+    )
   )
 }
 
 function renderPart<Values extends ReadonlyArray<Renderable<any, any>>>(
   values: Values,
   part: Part,
-  refCounter: IndexRefCounter
-) {
-  const renderable = values[part.index]
+  refCounter: IndexRefCounter,
+  onCause: <E>(cause: Cause<E>) => Effect.Effect<never, never, unknown>
+): Effect.Effect<any, never, void> {
+  const index = part.index
+  const renderable = values[index]
 
+  // @ts-ignore type recursion too deep
   if (isDirective(renderable)) {
-    return refCounter.acquire(part.index).pipe(
-      // @ts-expect-error type recursion too deep
-      Effect.flatMap(() => (renderable as any)(part)),
-      Effect.tap(() => refCounter.release(part.index)),
+    // @ts-ignore type recursion too deep
+    return renderable(part).pipe(
+      Effect.tap(() => refCounter.release(index)),
       Effect.forkScoped
     )
-  }
-
-  // Ref's are set immediately
-  if (part._tag === "ref") return Effect.unit
-
-  return refCounter.acquire(part.index).pipe(
-    Effect.flatMap(() =>
-      Effect.forkScoped(
-        Fx.observe(
-          unwrapRenderable(values[part.index]),
-          (value) => Effect.tap(part.update(value), () => refCounter.release(part.index))
-        )
+  } else if (part._tag === "ref") {
+    // Ref's are set immediately
+    return refCounter.release(index)
+  } else if (part._tag === "event") {
+    return Effect.tap(part.update(getEventHandler(values[index], onCause)), () => refCounter.release(index))
+  } else {
+    return Effect.forkScoped(
+      Fx.observe(
+        unwrapRenderable(values[index]),
+        (value) => Effect.tap(part.update(value), () => refCounter.release(index))
       )
     )
-  )
+  }
+}
+
+function getEventHandler<R, E>(
+  renderable: Renderable<R, E>,
+  onCause: <E>(cause: Cause<E>) => Effect.Effect<never, never, unknown>
+): EventHandler.EventHandler<R, never> | null {
+  if (renderable && typeof renderable === "object") {
+    if (EventHandler.EventHandlerTypeId in renderable) {
+      return EventHandler.make(
+        (ev) => Effect.catchAllCause((renderable as EventHandler.EventHandler<R, E>).handler(ev), onCause),
+        (renderable as EventHandler.EventHandler<R, E>).options
+      )
+    } else if (Effect.EffectTypeId in renderable) {
+      return EventHandler.make(() => Effect.catchAllCause(renderable, onCause))
+    }
+  }
+
+  return null
 }
 
 function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<R, E, any> {
@@ -172,6 +203,31 @@ function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<R, E, any> {
     default:
       return Fx.succeed(renderable)
   }
+}
+
+function unwrapSparsePartRenderables<R, E>(
+  renderables: ReadonlyArray<Renderable<R, E>>,
+  part: SparsePart
+): Fx.Fx<R | Scope, E, unknown> {
+  return Fx.combine(
+    // @ts-ignore type too deep
+    renderables.map((renderable, i) => {
+      const p = part.parts[i]
+
+      if (p._tag === "static/text") {
+        return Fx.succeed(p.value)
+      }
+
+      if (isDirective<R, E>(renderable)) {
+        return Fx.fromEffect(Effect.map(renderable(p), () => p.value))
+      }
+
+      return Fx.mapEffect(
+        unwrapRenderable<R, E>(renderable),
+        (u) => Effect.map(p.update(u) as Effect.Effect<R | Scope, E, unknown>, () => p.value)
+      )
+    })
+  ) as any
 }
 
 function attachRoot<T extends RenderEvent | null>(
@@ -218,6 +274,7 @@ function getBrowserEntry(document: Document, ctx: RenderContext, templateStrings
 }
 
 function buildParts<T extends Rendered, E>(
+  document: Document,
   ctx: RenderContext,
   template: Template.Template,
   content: DocumentFragment,
@@ -225,11 +282,12 @@ function buildParts<T extends Rendered, E>(
   onCause: <E>(cause: Cause<E>) => Effect.Effect<never, never, void>
 ): Effect.Effect<Scope, never, Parts> {
   return Effect.all(
-    template.parts.map(([part, path]) => buildPartWithNode(ctx, part, findPath(content, path), ref, onCause))
+    template.parts.map(([part, path]) => buildPartWithNode(document, ctx, part, findPath(content, path), ref, onCause))
   )
 }
 
 function buildPartWithNode<T extends Rendered, E>(
+  document: Document,
   ctx: RenderContext,
   part: Template.PartNode | Template.SparsePartNode,
   node: Node,
@@ -250,7 +308,7 @@ function buildPartWithNode<T extends Rendered, E>(
     case "event":
       return EventPartImpl.browser(part.name, part.index, ref, node as HTMLElement | SVGElement, onCause) as any
     case "node":
-      return Effect.succeed(NodePartImpl.browser(part.index, node as HTMLElement | SVGElement, ctx))
+      return Effect.sync(() => makeRenderNodePart(part.index, node as HTMLElement | SVGElement, ctx, document))
     case "property":
       return Effect.succeed(PropertyPartImpl.browser(part.index, node, part.name, ctx))
     case "ref":
@@ -285,11 +343,13 @@ function buildPartWithNode<T extends Rendered, E>(
       return Effect.succeed(sparse)
     }
     case "sparse-class-name": {
-      const parts: Array<ClassNamePart | StaticText> = Array(part.nodes.length)
+      const parts: Array<ClassNamePart | StaticText> = []
+      const values: Array<string | Array<string>> = [] // TODO: Do this for all other sparse attrs
       const sparse = SparseClassNamePartImpl.browser(
         parts,
         node as HTMLElement | SVGElement,
-        ctx
+        ctx,
+        values
       )
 
       for (let i = 0; i < part.nodes.length; ++i) {
@@ -297,13 +357,14 @@ function buildPartWithNode<T extends Rendered, E>(
 
         if (node._tag === "text") {
           parts.push(new StaticTextImpl(node.value))
-          ;(sparse as any).value[i] = node.value
+          values.push(node.value)
         } else {
+          values.push([])
           parts.push(
             new ClassNamePartImpl(
               node.index,
               ({ value }) => sparse.update(replace(sparse.value, i, value || "")),
-              (Array.isArray(sparse.value[i]) ? sparse.value[i] : [sparse.value[i]]) as Array<string>
+              []
             )
           )
         }
