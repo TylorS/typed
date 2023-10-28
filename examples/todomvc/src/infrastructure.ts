@@ -22,17 +22,19 @@ const writeTodos = Fx.tap(App.TodoList, (list) => todos.set(list).pipe(Effect.ca
 
 const hashesToFilterState = ReadonlyRecord.fromEntries(ReadonlyRecord.toEntries(Domain.FilterState).map(Tuple.swap))
 
+const getFilterState = () => {
+  const hash = location.hash.slice(1)
+
+  if (hash in hashesToFilterState) {
+    return (Domain.FilterState[hashesToFilterState[hash]])
+  } else {
+    return (Domain.FilterState.All)
+  }
+}
+
 const currentFilterState = Fx.fromEmitter<never, never, Domain.FilterState>((emitter) =>
   Effect.sync(() => {
-    const onHashChange = () => {
-      const hash = location.hash.replace("#", "")
-
-      if (hash in hashesToFilterState) {
-        emitter.succeed(Domain.FilterState[hashesToFilterState[hash]])
-      } else {
-        emitter.succeed(Domain.FilterState.All)
-      }
-    }
+    const onHashChange = () => emitter.succeed(getFilterState())
 
     window.addEventListener("hashchange", onHashChange)
 
